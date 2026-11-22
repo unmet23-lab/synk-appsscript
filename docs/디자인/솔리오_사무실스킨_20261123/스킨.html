@@ -1,0 +1,1518 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>솔리오 사무실 스킨 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+
+/* 짜임: 검정 구 클라이언트의 솔리오 방 하나다. 맨 위 문장이 결론을 말하고, 왼쪽에 사무실, 오른쪽에 부서 줄을 둔다.
+   직원은 구의 작은 분신이다. 색은 하나이고, 급한 것만 밝다. */
+:root{
+  color-scheme:dark;
+  --void:#000000;
+  --paper:#F3F1EC;
+  --dim:rgba(243,241,236,.46);
+  --hair:rgba(243,241,236,.10);
+  --hair-strong:rgba(243,241,236,.20);
+  --ring:rgba(243,241,236,.55);
+  --pit:#0C0C0B;
+  --sheet:#FFFFFF;
+  --sheet-ink:#151514;
+  --sheet-dim:#6B6A66;
+  --sheet-rule:#E7E5E0;
+  --meta-bg:rgba(10,10,10,.84);
+  --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --display:300 clamp(25px,min(3.5cqw,5.6cqh),54px)/1.3 var(--sans);
+  --body:400 16px/1.25 var(--sans);
+  --small:400 13px/1.3 var(--sans);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);overflow:hidden;display:grid;place-items:center;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;word-break:keep-all;overflow-wrap:break-word}
+button,input{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 무대가 곧 창이다. 안의 것은 무대의 크기를 보고 놓인다 */
+#stage{position:relative;width:var(--sw,100%);height:var(--sh,100%);max-width:100%;max-height:100%;min-height:240px;overflow:hidden;background:var(--void);user-select:none;-webkit-user-select:none;cursor:default;container-type:size;container-name:stage}
+body.sized #stage{outline:1px solid var(--hair)}
+#floor{position:absolute;inset:0;width:100%;height:100%;display:block}
+.layer{position:absolute;inset:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* 왼쪽 위의 구와 이 공간의 프로그램 */
+.here{position:absolute;z-index:2;left:calc(clamp(20px,9.5cqw,168px) - 9px);top:clamp(12px,3.4cqh,38px);display:flex;align-items:center;gap:6px}
+#orb-btn{width:44px;height:44px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer}
+#here-name{padding:10px 8px 10px 0;display:inline-flex;align-items:center;gap:9px;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7)}
+#here-name svg{width:8px;height:5px;flex:none;opacity:.7}
+.rail{display:flex;align-items:center;gap:2px;margin-left:18px}
+.obj{appearance:none;background:none;border:0;margin:0;padding:10px 8px;display:inline-flex;align-items:center;color:rgba(243,241,236,.46);cursor:pointer;border-radius:2px;transition:color .25s ease}
+.obj svg{width:18px;height:18px;flex:none}
+.obj-n{max-width:0;margin-left:0;opacity:0;overflow:hidden;white-space:nowrap;font:400 13px/1.3 var(--sans);letter-spacing:.03em;transition:max-width .46s cubic-bezier(.2,.8,.2,1) calc(var(--k) * 70ms),margin-left .46s cubic-bezier(.2,.8,.2,1) calc(var(--k) * 70ms),opacity .3s ease calc(var(--k) * 70ms)}
+.rail:hover .obj-n,.obj[aria-current="true"] .obj-n,.obj:focus-visible .obj-n{max-width:9em;margin-left:9px;opacity:1}
+.obj[aria-current="true"],.obj:hover,.obj:focus-visible{color:var(--paper)}
+:is(.obj,#orb-btn,.quiet,.go,.reread):focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+
+/* 방: 한 문장, 그 아래에 사무실과 부서 줄 */
+.room{position:absolute;left:clamp(20px,9.5cqw,168px);right:clamp(20px,9.5cqw,168px);top:clamp(92px,21cqh,196px);max-height:calc(100% - clamp(92px,21cqh,196px) - 30px);overflow-y:auto;scrollbar-width:none;padding-bottom:34px;-webkit-mask-image:linear-gradient(#000 calc(100% - 30px),transparent);mask-image:linear-gradient(#000 calc(100% - 30px),transparent)}
+.say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance}
+.say .then{display:block;color:var(--dim)}
+.office{margin-top:clamp(22px,4.6cqh,52px);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);column-gap:clamp(22px,3.6cqw,60px);align-items:start}
+/* 사무실이 놓이는 자리. 그림은 뒤의 캔버스가 이 자리에 맞춰 그린다. 줄이 펼쳐져 방이 길어져도 제자리에 있다 */
+#slot{position:sticky;top:0;height:clamp(230px,54cqh,540px);min-width:0}
+
+.rows{display:grid;grid-template-columns:minmax(76px,auto) minmax(0,1fr) auto;column-gap:18px;min-width:0}
+.row{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:center;padding:15px 0;border-top:1px solid var(--hair);color:var(--dim);transition:color .25s ease}
+button.row{appearance:none;background:none;border:0;border-top:1px solid var(--hair);border-radius:0;margin:0;width:100%;text-align:left;font:inherit;cursor:pointer}
+button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
+.row.now,button.row:hover,button.row.opened,button.row.hot{color:var(--paper)}
+.nm{font:var(--body);white-space:nowrap}
+.nm small{display:block;margin-top:4px;font:var(--small);color:var(--dim)}
+.mid{min-width:0;font:var(--small);color:var(--dim);transition:color .25s ease}
+button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.now .mid,button.row:hover .mid,button.row.opened .mid{color:rgba(243,241,236,.84)}
+.val{font:var(--small);text-align:right;white-space:nowrap}
+.row.now .val{font-weight:500}
+.when{font:var(--small);font-variant-numeric:tabular-nums;text-align:right;color:var(--dim);white-space:nowrap}
+/* 줄의 안쪽: 다가가면 그 줄 아래로 차례로 펼쳐진다 */
+.more{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;grid-template-rows:0fr;transition:grid-template-rows .46s cubic-bezier(.2,.8,.2,1)}
+.more.open{grid-template-rows:1fr}
+.more-in{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-content:start;min-height:0;overflow:hidden}
+.more-in > *{grid-column:1 / -1;opacity:0;transform:translateY(-7px);transition:opacity .14s ease,transform .14s ease}
+.more.open .more-in > *{opacity:1;transform:none;transition:opacity .34s ease calc(70ms + var(--j,0) * 50ms),transform .46s cubic-bezier(.2,.8,.2,1) calc(70ms + var(--j,0) * 50ms)}
+.more.snap,.more.snap .more-in > *{transition:none !important}
+.more-in .row{border:0;padding:7px 0;align-items:start}
+.more-in .row .mid b{display:block;font:var(--small);font-weight:400;color:rgba(243,241,236,.84)}
+.more-in .row .mid small{display:block;margin-top:3px;font:var(--small);color:var(--dim)}
+.row.sub.now .mid b,.row.sub.hot .mid b{color:var(--paper)}
+.row.sub.hot .nm{color:var(--paper)}
+.row.sub .nm{font:var(--small);color:rgba(243,241,236,.7)}
+.row.sub.fact .nm{color:var(--dim)}
+.more-acts{margin:0;padding:4px 0 10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.more-acts .lab{font:var(--small);color:var(--dim)}
+.more-note{margin:0;padding:0 0 12px;font:var(--small);color:var(--dim)}
+.more-in > :last-child{padding-bottom:18px}
+/* 부서의 기능 줄: 누르면 그 자리에서 안쪽이 열린다. 펼침은 줄의 안쪽과 같은 움직임이다 */
+.fold{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;grid-template-rows:0fr;transition:grid-template-rows .46s cubic-bezier(.2,.8,.2,1)}
+.fold.open{grid-template-rows:1fr}
+.fold-in{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-content:start;min-height:0;overflow:hidden}
+.fold-in > *{grid-column:1 / -1;opacity:0;transform:translateY(-7px);transition:opacity .14s ease,transform .14s ease}
+.fold.open .fold-in > *{opacity:1;transform:none;transition:opacity .34s ease calc(70ms + var(--j,0) * 50ms),transform .46s cubic-bezier(.2,.8,.2,1) calc(70ms + var(--j,0) * 50ms)}
+.fold.snap,.fold.snap .fold-in > *{transition:none !important}
+.fold.open .fold-in > :last-child{padding-bottom:12px}
+.more-in .row.item,.more-in .row.soon{padding:9px 0;align-items:center}
+.row.soon .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.sub.item .nm{font-weight:500;color:rgba(243,241,236,.84)}
+.row.sub.item:hover .nm,.row.sub.item.opened .nm{color:var(--paper)}
+/* 종류가 다른 줄(이 PC) 앞에는 틈을 둔다 */
+.row.gap{margin-top:clamp(14px,2.6cqh,26px)}
+.more:has(+ .row.gap){border-bottom:1px solid var(--hair)}
+.quiet{appearance:none;background:none;text-align:left;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;margin:0;padding:0 0 4px;font:var(--small);color:rgba(243,241,236,.8);cursor:pointer;transition:color .25s ease,border-color .25s ease}
+.quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
+.quiet[aria-pressed="false"]{border-bottom-color:transparent;color:var(--dim)}
+.quiet[aria-pressed="true"],.quiet.warn{color:var(--paper);border-bottom-color:var(--paper)}
+/* 맡기기: 글을 넣는 칸은 밑줄 한 줄, 누르는 것은 알약 */
+.give{display:flex;align-items:center;gap:12px;padding:12px 0 8px}
+.give input{flex:1 1 auto;min-width:0;height:36px;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;outline:0;padding:0 2px;font:400 15px/1 var(--sans);color:var(--paper);user-select:text;-webkit-user-select:text;transition:border-color .3s ease}
+.give input::placeholder{color:rgba(243,241,236,.46)}
+.give input:hover{border-bottom-color:rgba(243,241,236,.6)}
+.give input:focus{border-bottom-color:var(--paper)}
+.go{appearance:none;flex:none;height:36px;margin:0;padding:0 18px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);font:500 14px/1 var(--sans);color:var(--paper);cursor:pointer;transition:background-color .25s ease,border-color .25s ease,color .25s ease}
+.go:hover{border-color:var(--paper)}
+.give:has(input:not(:placeholder-shown)) .go{background:var(--paper);border-color:var(--paper);color:var(--void)}
+.read{grid-column:1 / -1;margin:0;padding-top:16px;border-top:1px solid var(--hair);display:flex;align-items:center;justify-content:space-between;gap:14px;font:var(--small);color:var(--dim)}
+.reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0;white-space:nowrap}
+.reread:hover{border-bottom-color:var(--paper)}
+
+/* 알림: 새 소식이 있는 부서와 직원의 이름 옆, 그리고 위쪽 「사무실」 오브제에 느낌표가 붙는다.
+   색은 쓰지 않는다(유호님 11-19 「느낌표만」) */
+.flag{display:inline-block;margin-left:7px;font:700 13px/1 var(--sans);color:var(--paper)}
+.flag.pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.obj{position:relative}
+.obj.news::after{content:'!';position:absolute;left:26px;top:4px;font:700 11px/1 var(--sans);color:var(--paper)}
+
+/* 스킨 가게(11-23 시안): 사무실 그림이 곧 진열대다. 줄을 누르면 그 스킨이 지금 사무실에 먼저 입혀진다.
+   색은 사무실 그림과 줄 앞의 작은 견본에만 있다. 글과 줄, 단추는 이 방의 한 색 그대로이고, 흰 알약은 결정(사기, 쓰기)에만 쓴다 */
+.shop-top{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 0 16px}
+.shop-top .lab{font:var(--small);color:var(--dim)}
+.row.skin .nm{display:inline-flex;align-items:center}
+#stage.shopping .room{top:calc(clamp(76px,12cqh,118px) - 22px);max-height:calc(100% - clamp(76px,12cqh,118px) + 22px);padding-top:22px;-webkit-mask-image:linear-gradient(transparent,#000 22px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(transparent,#000 22px,#000 calc(100% - 30px),transparent)}
+#stage.shopping .say{font:300 clamp(22px,min(2.3cqw,4.4cqh),34px)/1.3 var(--sans)}
+#stage.shopping .office{margin-top:clamp(14px,2.4cqh,28px);grid-template-columns:minmax(0,1.9fr) minmax(320px,1fr)}
+#stage.shopping #slot{height:clamp(260px,68cqh,680px)}
+/* 가게의 줄은 누르면 입혀 보는 자리라 설명 글보다 밝다 */
+button.row.skin{color:rgba(243,241,236,.84)}
+button.row.skin .mid{color:rgba(243,241,236,.6)}
+.skin-sw{flex:none;width:60px;height:40px;margin-right:14px;border-radius:2px}
+.row.skin .val{font-variant-numeric:tabular-nums}
+.row.skin.worn .val{color:var(--paper)}
+.buy{appearance:none;flex:none;height:36px;margin:0;padding:0 18px;border:1px solid var(--paper);border-radius:999px;background:var(--paper);font:500 14px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--void);cursor:pointer;transition:background-color .25s ease}
+.buy:hover{background:#fff}
+.buy:focus-visible,.back:focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+.paying{display:inline-flex;align-items:center;gap:10px;font:var(--small);color:rgba(243,241,236,.84)}
+.shop-note{grid-column:1 / -1;margin:0;padding:14px 0 0;border-top:1px solid var(--hair);font:var(--small);color:var(--dim)}
+.shop-note + .shop-note{border-top:0;padding-top:6px}
+
+[hidden]{display:none !important}
+
+/* 기획부 「사업계획서」 작업 화면(11-23): 검은 방 위에 흰 계획서 한 장이 주인공이다.
+   종이 옆에 직원의 메모가 그 문단 높이에 붙고, 고른 메모 하나만 단추를 보인다. 색은 결정 단추(흰 알약)에만 쓴다 */
+/* 작업 화면에서는 맨 위 문장을 줄이고 방을 위로 올려 계획서가 한 화면에 더 많이 보이게 한다 */
+/* 종이 아래끝을 검게 덮던 아래 흐림을 빼고, 올라간 글이 잘린 조각으로 남지 않게 위쪽만 22px 흐린다 */
+#stage.planning .room{top:calc(clamp(76px,12cqh,118px) - 22px);max-height:calc(100% - clamp(76px,12cqh,118px) + 22px);padding-top:22px;padding-bottom:28px;-webkit-mask-image:linear-gradient(transparent,#000 22px);mask-image:linear-gradient(transparent,#000 22px)}
+#stage.planning .say{font:300 clamp(22px,min(2.3cqw,4.4cqh),34px)/1.3 var(--sans)}
+.work{margin-top:clamp(16px,2.6cqh,30px);padding-bottom:20px}
+.work-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-bottom:clamp(16px,2.6cqh,26px)}
+.back{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;padding:0 0 4px;font:var(--small);color:rgba(243,241,236,.8);cursor:pointer}
+.back:hover{color:var(--paper);border-bottom-color:var(--paper)}
+.who{display:inline-flex;align-items:center;gap:9px;min-width:0;font:var(--small);color:rgba(243,241,236,.72)}
+.who b{font-weight:500;color:var(--paper)}
+.mini{position:relative;flex:none;width:20px;height:20px;border-radius:50%;background:#000;border:1px solid rgba(243,241,236,.5)}
+.mini::before,.mini::after{content:'';position:absolute;top:7.5px;width:2.5px;height:2.5px;border-radius:50%;background:var(--paper)}
+.mini::before{left:5.5px}.mini::after{right:5.5px}
+.mini.on{animation:rim 3.2s ease-in-out infinite}
+@keyframes rim{50%{border-color:rgba(243,241,236,.95)}}
+.call{padding:12px 0 14px;border-top:1px solid var(--hair-strong)}
+.call .pg{display:block;font:400 12px/1.3 var(--sans);color:var(--dim)}
+.call p{margin:3px 0 0;font:var(--small);color:rgba(243,241,236,.72)}
+.call p b{font:500 15px/1.4 var(--sans);color:var(--paper)}
+.items{display:grid;gap:7px;margin:12px 0 0;padding:0;list-style:none;font:var(--small);color:rgba(243,241,236,.84)}
+.items li{display:inline-flex;align-items:center;gap:7px}
+.items li i{width:5px;height:5px;border-radius:50%;background:rgba(243,241,236,.7)}
+.items li small{font:inherit;color:var(--dim)}
+.items li.weak{color:var(--paper);font-weight:500}
+.items li.weak i{width:10px;height:1.5px;border-radius:0;background:var(--paper)}
+.items li.weak small{color:rgba(243,241,236,.84);font-weight:400}
+.desk{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr);column-gap:clamp(22px,3.4cqw,56px);row-gap:20px;align-items:start}
+/* 계획서 종이 */
+.sheet{display:block;background:var(--sheet);color:var(--sheet-ink);border-radius:2px;padding:clamp(22px,3cqw,40px) clamp(22px,3.4cqw,46px) clamp(14px,2cqw,24px);box-shadow:0 30px 70px -24px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.04)}
+.sheet-h{padding-bottom:16px}
+.sheet-h small{font:400 12px/1.3 var(--sans);color:var(--sheet-dim)}
+.sheet-h h3{margin:8px 0 4px;font:600 clamp(20px,2cqw,24px)/1.25 var(--sans);letter-spacing:-.01em}
+.sheet-h p{margin:0;font:400 14px/1.4 var(--sans);color:var(--sheet-dim)}
+.sec{position:relative;padding:15px 0 16px;border-top:1px solid var(--sheet-rule);transition:opacity .45s ease}
+.sec .pg{display:block;font:400 12px/1.3 var(--sans);color:var(--sheet-dim)}
+.sec h4{margin:5px 0 6px;font:600 15px/1.4 var(--sans)}
+.sec p{margin:0;font:400 15px/1.7 var(--sans);color:#2b2a27}
+.sec.unread{opacity:.2}
+.sec.has{cursor:pointer}
+.sec.has::before{content:'';position:absolute;left:-17px;top:21px;width:5px;height:5px;border-radius:50%;background:var(--sheet-ink)}
+.sec.on::before{top:15px;bottom:16px;left:-15px;width:2px;height:auto;border-radius:0}
+.sec.changed p{animation:settle .9s cubic-bezier(.2,.8,.2,1)}
+@keyframes settle{from{opacity:0;transform:translateY(5px)}}
+/* 메모 */
+.notes{position:relative;min-width:0}
+.notes.side > *{position:absolute;left:0;right:0;transition:top .38s cubic-bezier(.2,.8,.2,1)}
+.note{padding:12px 0 14px;border-top:1px solid var(--hair-strong)}
+.note .pg{display:block;font:400 12px/1.3 var(--sans);color:var(--dim)}
+.note .what{display:block;margin:4px 0 0;padding:0;background:none;border:0;text-align:left;font:400 15px/1.45 var(--sans);color:rgba(243,241,236,.78);cursor:pointer}
+.note button.what:hover{color:var(--paper)}
+.note .what .arw{color:var(--dim);transition:color .25s ease}
+.note button.what:hover .arw{color:var(--paper)}
+.picked{margin:12px 0 0;font:var(--small);color:rgba(243,241,236,.72)}
+.note .why{margin:5px 0 0;font:400 13px/1.55 var(--sans);color:var(--dim)}
+.note.sel{border-top-color:var(--paper)}
+.note.sel .what{font-size:17px;font-weight:500;color:var(--paper);cursor:default}
+.note.sel .why{color:rgba(243,241,236,.76)}
+.note.done .what{font-size:13px;color:var(--dim);cursor:default}
+.note.done{border-top-color:var(--hair)}
+.note.new{animation:noteIn .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes noteIn{from{opacity:0;transform:translateX(10px)}}
+.note .acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-top:13px}
+.note .lab{font:var(--small);color:var(--dim)}
+.pill{appearance:none;display:inline-flex;align-items:center;height:38px;margin:0;padding:0 18px;border:1px solid var(--paper);border-radius:999px;background:var(--paper);font:500 14px/1 var(--sans);color:#000;cursor:pointer;white-space:nowrap}
+.pill:hover{background:#fff}
+.pill.ghost{background:none;border-color:rgba(243,241,236,.42);color:var(--paper)}
+.pill.ghost:hover{border-color:var(--paper)}
+.pill.small{height:34px;padding:0 14px;font-weight:400}
+.pill.dark{border-color:rgba(21,21,20,.4);color:var(--sheet-ink)}
+:is(.pill,.back,.note .what,.sec.has):focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+.prop{margin-top:12px;padding:12px 14px;border:1px solid var(--hair-strong);border-radius:2px}
+.prop p{margin:0;font:400 14px/1.6 var(--sans);color:var(--paper)}
+.prop p + p{margin-top:8px;padding-top:8px;border-top:1px dashed var(--hair-strong)}
+.prop p:first-child:not(:last-child){color:var(--dim)}
+.prop small{display:block;font:400 12px/1.3 var(--sans);color:var(--dim)}
+.draft.reveal .s{animation:sIn .45s ease both;animation-delay:calc(var(--k) * 420ms)}
+@keyframes sIn{from{opacity:0}}
+.state{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;font:400 14px/1.5 var(--sans);color:rgba(243,241,236,.86)}
+.talk{margin-top:12px}
+.talk .q{display:flex;gap:9px;align-items:flex-start;margin:0;font:400 14px/1.5 var(--sans);color:var(--dim)}
+.talk .q.now{color:var(--paper)}
+.talk .a{margin:4px 0 10px 29px;font:500 14px/1.4 var(--sans);color:rgba(243,241,236,.86)}
+.talk .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0 29px}
+.talk .step{margin:12px 0 0 29px;font:var(--small);color:var(--dim)}
+/* 넣기: 종이 자리 */
+/* 빈 종이: 안쪽 18px에 점선을 둘러 「여기에 놓는다」를 보인다 */
+.sheet.blank{display:grid;place-items:center;min-height:clamp(300px,50cqh,480px);cursor:pointer;text-align:center;outline:1px dashed #CFCAC0;outline-offset:-18px;transition:box-shadow .25s ease}
+.sheet.blank:hover{outline-color:#8F8B83}
+.sheet.blank.drag{box-shadow:0 0 0 2px var(--paper),0 30px 70px -24px rgba(0,0,0,.9)}
+.blank-in{display:grid;justify-items:center;gap:10px;max-width:24em}
+.blank-in b{font:600 19px/1.35 var(--sans)}
+.blank-in small{font:400 13px/1.55 var(--sans);color:var(--sheet-dim)}
+.blank-in .pill{margin-top:8px}
+.start-side{display:grid;gap:12px;align-content:start}
+.start-side .lab{font:500 15px/1.4 var(--sans);color:var(--paper)}
+.start-side select{appearance:none;-webkit-appearance:none;height:42px;padding:0 40px 0 14px;border:1px solid rgba(243,241,236,.34);border-radius:2px;background:var(--pit) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M.5.5 5 5 9.5.5' fill='none' stroke='%23F3F1EC' stroke-opacity='.7'/%3E%3C/svg%3E") no-repeat right 16px center;font:400 14px var(--sans);color:var(--paper);cursor:pointer}
+.start-side select:hover{border-color:rgba(243,241,236,.6)}
+.start-side select:focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+.start-side .why{margin:2px 0 0;font:400 13px/1.6 var(--sans);color:rgba(243,241,236,.66)}
+.start-side .acts{margin-top:6px}
+.start-side .hint{margin:0;font:var(--small);color:var(--paper)}
+@container stage (max-width:860px){
+  .desk{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  .mini.on,.note.new,.sec.changed p,.draft.reveal .s{animation:none !important}
+  .sec,.notes.side > *{transition:none !important}
+}
+
+/* 창이 좁으면 사무실이 위, 줄이 아래로 쌓인다 */
+@container stage (max-width:860px){
+  .office{grid-template-columns:minmax(0,1fr);row-gap:22px}
+  #slot{position:static;height:clamp(200px,36cqh,320px)}
+}
+/* 아주 작은 창에서는 구와 한 문장만 남는다 */
+@container stage (max-height:330px){
+  .office{display:none}
+}
+
+/* 시안 조작 막대. 디자인의 일부가 아니다 */
+#meta{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9;display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--meta-bg);border:1px solid var(--hair);max-width:calc(100% - 32px);overflow-x:auto;scrollbar-width:none;transition:opacity .4s ease}
+#meta.away{opacity:0;pointer-events:none}
+#meta button{appearance:none;border:0;background:none;color:rgba(243,241,236,.7);font:400 12px/1 var(--sans);padding:9px 13px;border-radius:999px;white-space:nowrap;cursor:pointer}
+#meta button:hover,#meta button:focus-visible{color:var(--paper);background:rgba(243,241,236,.08);outline:none}
+@media (prefers-reduced-motion:reduce){
+  .more,.more-in > *,.fold,.fold-in > *,.obj-n{transition:none !important}
+  .flag.pop{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="floor" aria-hidden="true"></canvas>
+  <div class="layer">
+    <div class="here">
+      <button id="orb-btn" type="button" aria-label="SYNK 구"></button>
+      <span id="here-name">SOLIO<svg viewBox="0 0 8 5" aria-hidden="true"><path d="M.5.5 4 4 7.5.5" fill="none" stroke="currentColor"/></svg></span>
+      <nav class="rail" aria-label="솔리오의 프로그램">
+        <button class="obj" type="button" style="--k:0"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 9V2.5A6.5 6.5 0 0 1 15.5 9z" fill="currentColor" stroke="none"/></svg><span class="obj-n">구독</span></button>
+        <button class="obj" type="button" style="--k:1"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><circle cx="9" cy="9" r="2.6"/></svg><span class="obj-n">백업</span></button>
+        <button class="obj" type="button" style="--k:2"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M14.6 12.3A6.5 6.5 0 1 1 15.5 9"/></svg><span class="obj-n">방문자 분석</span></button>
+        <button class="obj" type="button" style="--k:3" aria-current="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="2.5" y="4" width="13" height="10" rx="1"/><circle cx="6.6" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="11.4" cy="9" r="1.2" fill="currentColor" stroke="none"/></svg><span class="obj-n">사무실</span></button>
+      </nav>
+    </div>
+    <main class="room" id="room">
+      <p class="say" id="say" aria-live="polite"></p>
+      <div class="office">
+        <div id="slot" role="img" aria-label="부서마다 직원이 앉아 있는 사무실 그림. 같은 내용이 옆의 부서 줄에 글로 있습니다."></div>
+        <div class="rows" id="rows"></div>
+      </div>
+      <section class="work" id="work" hidden aria-label="기획부 사업계획서"></section>
+    </main>
+  </div>
+</div>
+<div id="meta" role="toolbar" aria-label="시안 조작">
+  <button type="button" id="m-case">상황 · 승인 물음</button>
+  <button type="button" id="m-ping">알림 받기</button>
+  <button type="button" id="m-pc">PC</button>
+  <button type="button" id="m-sub">구독</button>
+  <button type="button" id="m-size">창 크기 · 꽉 참</button>
+  <button type="button" id="m-shop">스킨 가게</button>
+  <button type="button" id="m-again">처음부터</button>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const stage = $('#stage'), cv = $('#floor');
+let ctx = cv.getContext('2d');       // 스킨 견본을 그릴 때 잠깐 견본의 캔버스로 바꾼다
+const slot = $('#slot'), room = $('#room'), rowsEl = $('#rows'), sayEl = $('#say'), orbBtn = $('#orb-btn'), workEl = $('#work'), officeEl = $('.office');
+const officeObj = $('.obj[aria-current="true"]');
+const INK = '243,241,236';
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ── 자료(모두 예시) ─────────────────────────────────────────── */
+const DEPTS = [
+  {id:'plan', name:'기획부', col:0, row:0, role:'사업계획서를 공고와 회사 자료에 맞춰 읽고, 빠진 것과 사실이 아닌 문장을 짚습니다.', dir:'문서\\기획'},
+  {id:'mkt', name:'마케팅부', col:1, row:0, role:'블로그와 SNS 글을 쓰고, 반응과 경쟁사를 살핍니다.', dir:'문서\\마케팅'},
+  {id:'law', name:'법무부', col:2, row:0, role:'계약서와 약관을 읽고 위험한 조항을 짚습니다.', dir:'문서\\계약'},
+  {id:'dev', name:'개발부', col:3, row:0, role:'코드를 고치고 시험을 돌립니다.', dir:'코드\\shop'},
+  {id:'des', name:'디자인부', col:0, row:1, role:'상세 페이지와 배너 시안을 만듭니다.', dir:'문서\\디자인'},
+  {id:'acc', name:'회계부', col:1, row:1, role:'영수증과 세금계산서를 정리합니다.', dir:'문서\\회계'},
+  {id:'cs', name:'고객지원부', col:2, row:1, role:'문의 메일에 답장 초안을 씁니다.', dir:'문서\\문의'},
+  {id:'lobby', name:'부서 없는 일', lobby:true},
+];
+const deptOf = id => DEPTS.find(d => d.id === id);
+/* 이 PC가 함께 돌릴 수 있는 인원: 논리 코어 둘마다 하나, 메모리 4GB마다 하나, 둘 가운데 적은 쪽. 값은 예시 PC 넷이다 */
+const PCS = [{cores:16, ram:32, load:38, free:19}, {cores:24, ram:64, load:22, free:41}, {cores:4, ram:8, load:61, free:2.6}, {cores:8, ram:16, load:44, free:7}];
+/* 구독의 남은 양도 본다(유호님 11-19 「구독도 보기」). 값은 구독 방의 예시와 같다 */
+const SUBCASES = [
+  {name:'Codex 12%', 'Claude Code':{left:64, reset:'목 09:00'}, Codex:{left:12, reset:'토 14:00'}},
+  {name:'모두 넉넉함', 'Claude Code':{left:64, reset:'목 09:00'}, Codex:{left:71, reset:'토 14:00'}},
+  {name:'Claude 38%', 'Claude Code':{left:38, reset:'목 09:00'}, Codex:{left:12, reset:'토 14:00'}},
+];
+const TOOLS = ['Claude Code', 'Codex'], short = t => t === 'Codex' ? 'Codex' : 'Claude';
+let pi = 0, sbi = 0, queue = {}, queueWhy = {}, sayHold = null;
+const subOf = t => SUBCASES[sbi][t];
+const pcCap = () => Math.max(1, Math.min(Math.floor(PCS[pi].cores / 2), Math.floor(PCS[pi].ram / 4)));
+/* 구독이 절반 넘게 남으면 PC 한도까지, 절반 아래면 그 절반, 20% 아래면 한 사람, 다 쓰면 다시 찰 때까지 쉰다 */
+const toolCap = t => { const l = subOf(t).left, n = pcCap(); return l >= 50 ? n : l >= 20 ? Math.ceil(n / 2) : l > 0 ? 1 : 0; };
+const CAP = () => Math.max(1, Math.min(pcCap(), TOOLS.reduce((a, t) => a + toolCap(t), 0)));
+const seatCap = () => Math.min(3, Math.max(1, Math.ceil(CAP() / 3)));
+const SEATS = d => d.lobby ? 4 : seatCap();
+let uid = 0;
+const S = (dept, seat, tool, model, state, say, act, when, extra) => Object.assign({id:'s' + (++uid), dept, seat, tool, model, state, say, act, when, blink:0, nextBlink:performance.now() + 1500 + Math.random() * 5000}, extra);
+function cast0(scene) {
+  uid = 0;
+  if (scene === 'rest') return [
+    S('plan', 0, 'Claude Code', 'Opus', 'idle', '사업계획서를 기다리고 있습니다', '쉬는 중', ''),
+    S('mkt', 0,'Claude Code', 'Sonnet', 'idle', '어제 블로그 글 둘을 끝냈습니다', '쉬는 중', '어제'),
+    S('law', 0, 'Claude Code', 'Opus', 'idle', '용역 계약서 검토를 끝냈습니다', '쉬는 중', '어제'),
+    S('dev', 0, 'Codex', 'GPT', 'idle', '결제 화면의 시험을 모두 통과했습니다', '쉬는 중', '3시간 전'),
+    S('des', 0, 'Claude Code', 'Sonnet', 'idle', '상세 페이지 시안 셋을 끝냈습니다', '쉬는 중', '어제'),
+  ];
+  const ask = scene === 'ask';
+  return [
+    S('plan', 0, 'Claude Code', 'Opus', 'idle', '사업계획서를 기다리고 있습니다', '쉬는 중', ''),
+    S('mkt', 0,'Claude Code', 'Sonnet', 'work', '11월 블로그 글 초안을 쓰고 있습니다', '쓰기 · 블로그_11월.md', '14분째', {fin:'11월 블로그 글 초안을 다 썼습니다'}),
+    S('mkt', 1, 'Claude Code', 'Sonnet', 'work', '지난주 인스타그램 반응을 표로 정리하고 있습니다', '읽기 · 반응_46주.csv', '6분째', {fin:'지난주 인스타그램 반응을 표로 정리했습니다'}),
+    ask ? S('law', 0, 'Claude Code', 'Opus', 'ask', '폴더 「계약_옛판」을 지워도 되는지 물었습니다', '3분 전에 승인을 물었습니다', '3분 전')
+        : S('law', 0, 'Claude Code', 'Opus', 'work', '용역 계약서 7조의 손해배상 조항을 읽고 있습니다', '읽기 · 용역계약_v3.docx', '9분째', {fin:'용역 계약서 검토를 끝냈습니다'}),
+    S('dev', 0, 'Codex', 'GPT', 'work', '결제 화면의 시험을 돌리고 있습니다', '명령 · npm test · 도우미 둘과 함께', '21분째', {subs:2, fin:'결제 화면의 시험을 모두 통과했습니다'}),
+    ask ? S('dev', 1, 'Claude Code', 'Opus', 'stall', '로그인 오류의 원인을 찾고 있습니다', '12분째 소식이 없습니다', '31분째')
+        : S('dev', 1, 'Claude Code', 'Opus', 'work', '로그인 오류의 원인을 찾고 있습니다', '읽기 · auth.ts', '4분째', {fin:'로그인 오류의 원인을 찾았습니다'}),
+    S('des', 0, 'Claude Code', 'Sonnet', 'idle', '상세 페이지 시안 셋을 끝냈습니다', '쉬는 중', '어제'),
+    S('acc', 0, 'Claude Code', 'Sonnet', 'done', '10월 영수증 42장을 정리했습니다', '끝냄 · 영수증_10월.xlsx', '방금', {news:true}),
+    S('lobby', 0, 'Claude Code', 'Sonnet', 'work', '회의록을 요약하고 있습니다', '읽기 · 회의록_1118.txt', '2분째'),
+  ];
+}
+/* 수용 인원을 넘는 일은 자리가 비기를 기다린다. 승인을 물은 일과 이미 밖에서 돌고 있는 일을 먼저 세운다 */
+function fitToPC(list) {
+  queue = {}; queueWhy = {};
+  const cap = CAP(), per = {}, out = [], byTool = {}; let n = 0;
+  const pri = s => s.state === 'ask' || s.dept === 'lobby' ? 0 : busy(s) ? 1 : 2;
+  for (const s of [...list].sort((a, b) => pri(a) - pri(b))) {
+    const d = s.dept, active = s.state === 'ask' || busy(s), held = active && d !== 'lobby' && s.state !== 'ask'; per[d] = per[d] || 0;
+    const why = per[d] >= SEATS(deptOf(d)) || (held && n >= cap) ? 'pc' : held && (byTool[s.tool] || 0) >= toolCap(s.tool) ? s.tool : null;
+    if (why) { if (active) { queue[d] = (queue[d] || 0) + 1; queueWhy[d] = why; } continue; }
+    s.seat = per[d]++; if (active) { n++; byTool[s.tool] = (byTool[s.tool] || 0) + 1; } out.push(s);
+  }
+  return out.sort((a, b) => a.id.slice(1) - b.id.slice(1));
+}
+const cast = scene => fitToPC(cast0(scene));
+const waiting = () => Object.values(queue).reduce((a, b) => a + b, 0);
+const active = t => staff.filter(s => (s.state === 'ask' || busy(s)) && (!t || s.tool === t)).length;
+const 까지 = n => n === 1 ? '한 사람씩' : `동시에 ${수(n)}까지`;
+const whyText = d => { const w = queueWhy[d]; return !w || w === 'pc' ? '이 PC의 자리가 비면 시작합니다' : `${이가(short(w))} ${subOf(w).left}% 남아 ${까지(toolCap(w))} 일합니다`; };
+let scene = 'ask', staff = [];
+const toolOf = {}; DEPTS.forEach(d => toolOf[d.id] = d.id === 'dev' ? 'Codex' : 'Claude Code');
+const notes = {};
+/* 경쟁사 살펴보기: 마케팅부가 정해 둔 곳의 공개된 쪽을 매주 다시 읽고, 지난번과 달라진 것만 말한다(이름과 값은 모두 예시).
+   첫 값은 지난 월요일에 읽은 것이고, 「지금 읽기」를 누를 때마다 다음 값으로 넘어간다. 마지막 값은 바뀐 곳이 없는 때다 */
+const MISS = '한뼘상점의 후기는 로그인이 필요해 읽지 않았습니다';
+const SCOUTS = [
+  {head:'한 곳이 바뀌었습니다', when:'월 09:02', who:'온결상점', what:'기본 묶음을 39,000원에서 29,000원으로 내렸습니다', src:'가격 쪽 · onkyeol.example', rest:'한뼘상점과 두루상점은 지난번과 같습니다'},
+  {head:'한 곳이 바뀌었습니다', when:'방금', who:'두루상점', what:'무료 배송 기준을 5만 원에서 3만 원으로 낮췄습니다', src:'배송 안내 · duru.example', rest:'온결상점과 한뼘상점은 지난번과 같습니다', say:['두루상점이 무료 배송 기준을 낮췄습니다.', '마케팅부가 경쟁사 세 곳을 방금 다 읽었습니다.']},
+  {head:'세 곳 모두 지난번과 같습니다', when:'방금', rest:'온결상점, 한뼘상점, 두루상점', say:['경쟁사 세 곳은 지난번과 같습니다.', '마케팅부가 방금 다 읽었습니다.']},
+];
+let scoutI = 0, scouting = null, scoutT = [], lastHold = null, rivalNews = 0;
+/* 기획부 「사업계획서」 작업 화면(11-23 다시 지음). 계획서 한 장이 주인공이다. 흰 종이 위 문단 옆에 기획부 직원의 메모가 붙고,
+   메모마다 그 자리에서 고치는 단추가 있다. 순서는 넣기 → 읽기 → 메모를 하나씩 보며 고치기 → 새 파일로 저장이다(이름과 값은 모두 예시) */
+const CALLS = [
+  {name:'새싹창업 지원사업', due:'12월 5일 18:00 마감', left:'14일 남음', file:'공고문_새싹창업.pdf'},
+  {name:'소상공인 온라인 판로 지원', due:'12월 12일 18:00 마감', left:'21일 남음', file:'공고문_판로지원.pdf'},
+];
+const PLAN0 = {file:'사업계획서_v3.docx', title:'수제 그래놀라 정기배송', sub:'신청서 · 3판', secs:[
+  {id:'s2', pg:'2쪽', item:'문제 인식', h:'왜 이 일을 하나', p:'바쁜 직장인은 아침을 거르기 쉽습니다. 시중 그래놀라는 설탕이 많아 매일 먹기 어렵습니다.'},
+  {id:'s3', pg:'3쪽', item:'실현 가능성', h:'지금까지 한 일', p:'2025년 9월부터 온라인으로 팔아 왔습니다. 단골 손님 300명이 매달 다시 삽니다.'},
+  {id:'s4', pg:'4쪽', item:'실현 가능성', h:'주문하는 법', p:'홈페이지에서 주문합니다. 휴대폰에서 바로 주문할 수 있습니다.'},
+  {id:'s5', pg:'5쪽', item:'성장 전략', h:'3년 뒤', p:'3년 뒤 매출 5억 원을 목표로 합니다.'},
+  {id:'s6', pg:'6쪽', item:'팀 구성', h:'함께하는 사람', p:'대표가 직접 굽고, 포장은 동네 자활센터와 함께합니다.'},
+]};
+const ITEMS4 = [{nm:'문제 인식', secs:['s2']}, {nm:'실현 가능성', secs:['s3', 's4']}, {nm:'성장 전략', secs:['s5'], weak:'n3'}, {nm:'팀 구성', secs:['s6']}];
+/* 메모 셋: 자료와 다른 숫자(고쳐 줘), 아직 사실이 아닌 문장(만들어 달라기 또는 여는 때로), 빈약한 평가 항목(같이 쓰기) */
+const NOTES = [
+  {id:'n1', sec:'s3', what:'단골 손님 수가 회계부 자료와 다릅니다.', why:'계획서에는 300명이라고 썼는데, 회계부의 10월 영수증에서 다시 산 손님은 112명입니다.', from:'단골 손님 300명이 매달 다시 삽니다.', to:'10월 한 달 동안 다시 산 손님은 112명입니다.', done:'3쪽의 단골 손님 수를 112명으로 고쳤습니다.'},
+  {id:'n2', sec:'s4', what:'휴대폰 주문은 아직 없습니다.', why:'개발부가 맡은 가게 코드에 휴대폰 주문 화면이 없습니다. 만들면 이 문장이 사실이 됩니다.', from:'휴대폰에서 바로 주문할 수 있습니다.', to:'휴대폰 주문은 2027년 3월에 엽니다.', done:'4쪽의 휴대폰 주문을 「2027년 3월에 엽니다」로 고쳤습니다.', made:'개발부가 휴대폰 주문 화면을 만들었습니다. 4쪽 문장이 이제 사실입니다.'},
+  {id:'n3', sec:'s5', what:'「성장 전략」이 목표 숫자 한 줄뿐입니다.', why:'공고의 셋째 평가 항목입니다. 새 손님을 어디서 만나고, 어떻게 늘릴지가 빠졌습니다.', done:'5쪽에 성장 전략을 채웠습니다.'},
+];
+/* 같이 쓰기: 직원이 셋을 묻고, 고른 답으로 문단 초안을 쓴다. 둘째 물음은 회계부 영수증에서 읽은 값을 먼저 보여 준다 */
+const ASKS = [
+  {q:'첫해에 새 손님을 주로 어디서 만나나요?', opts:[['인스타그램', '인스타그램에서'], ['지인 소개', '지인 소개로'], ['오픈마켓', '오픈마켓에서']]},
+  {q:'10월 영수증을 보면 손님 한 분이 한 번에 평균 2만 4천 원어치를 삽니다. 이 값으로 셈할까요?', opts:[['네, 2만 4천 원으로', '2만 4천'], ['2만 8천 원으로 올려서', '2만 8천']]},
+  {q:'2년째부터 무엇으로 늘릴까요?', opts:[['정기배송 묶음', '정기배송 묶음을 열어 매달 다시 사게 합니다'], ['회사 단체 주문', '회사 단체 주문을 받아 한 번에 많이 팝니다'], ['새 맛 추가', '새 맛을 더해 다시 사는 손님을 늘립니다']]},
+];
+const draftOf = a => [`첫해에는 ${a[0]} 새 손님을 만납니다.`, `손님 한 분은 한 번에 평균 ${a[1]} 원어치를 삽니다.`, `2년째부터는 ${a[2]}.`, '이렇게 3년 뒤 매출 5억 원을 목표로 합니다.'];
+let planView = false, pv = null, pvTimers = [];
+const pvNew = () => ({stage:'start', file:'', call:0, secs:PLAN0.secs.map(s => ({...s})), read:0, step:'', who:null, sel:'n1', st:{n1:'open', n2:'open', n3:'open'}, prev:{}, ans:[], make:null, changed:null, changedT:0, draftT:0, foundT:{}, saved:false});
+pv = pvNew();
+const openNotes = () => NOTES.filter(n => pv.st[n.id] !== 'done');
+const secOf = id => pv.secs.find(s => s.id === id);
+/* 부서의 기능: 부서를 누르면 직원 줄과 맡기기 칸 아래에 기능 이름이 한 줄씩 차례로 펼쳐진다. 기능이 늘어도 줄 하나씩만 는다.
+   「경쟁사」만 지었고, soon이 붙은 둘은 기능이 늘었을 때의 모습을 보이는 자리다. 모든 부서의 맨 아래에는 「부서 설정」이 있다 */
+const ITEMS = {
+  plan: [
+    {id:'bizplan', name:'사업계획서'},
+    {id:'calls', name:'지원사업 공고', soon:'내 사업에 맞는 공고를 찾아 마감일을 알려 줍니다'},
+  ],
+  mkt: [
+    {id:'rivals', name:'경쟁사'},
+    {id:'blog', name:'블로그 글', soon:'매주 글감을 찾아 초안을 씁니다'},
+    {id:'sns', name:'SNS 반응', soon:'올린 글의 반응을 모아 정리합니다'},
+  ],
+};
+const openItem = {};
+/* 알림: 승인을 물은 직원, 소식이 없는 직원, 끝냈는데 아직 보지 않은 일에 붙는다.
+   끝낸 일의 알림은 그 부서의 줄을 열었다 닫으면 본 것으로 치고 지운다 */
+const alerting = s => s.state === 'ask' || s.state === 'stall' || (s.state === 'done' && !!s.news);
+const flag = t0 => `<i class="flag${performance.now() - t0 < 700 ? ' pop' : ''}" aria-hidden="true">!</i><span class="sr"> 새 소식</span>`;
+/* 맨 위 문장이 잠깐 새 소식을 말하고 제자리로 돌아간다 */
+function hold(lines, ms) { sayHold = lastHold = lines; render(true); setTimeout(() => { if (sayHold === lines) { sayHold = null; render(true); } }, ms); }
+
+/* ── 말 ─────────────────────────────────────────────────────── */
+const 받침 = w => { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; };
+const 이가 = w => w + (받침(w) ? '이' : '가');
+const 은는 = w => w + (받침(w) ? '은' : '는');
+const 수 = n => n > 10 && n < 20 ? '열' + 수(n - 10) : ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열'][n] || (n + '명');
+const busy = s => s.state === 'work' || s.state === 'stall';
+function headline() {
+  if (sayHold) return sayHold;
+  if (shopView) return shopSay();
+  if (planView) return planSay();
+  const asks = staff.filter(s => s.state === 'ask'), works = staff.filter(busy), q = waiting();
+  if (asks.length) return [이가(deptOf(asks[0].dept).name) + ' ' + asks[0].act + '.',
+    works.length && q ? `나머지 ${은는(수(works.length))} 일하고, ${은는(수(q))} 차례를 기다립니다.` : works.length ? '나머지 ' + 은는(수(works.length)) + ' 일하고 있습니다.' : q ? 은는(수(q)) + ' 차례를 기다립니다.' : '다른 일은 없습니다.'];
+  if (works.length) return [이가(수(works.length)) + ' 일하고 있습니다.', q ? 은는(수(q)) + ' 차례를 기다립니다.' : '기다리는 일은 없습니다.'];
+  return ['지금은 모두 쉬고 있습니다.', '부서에 다가가 일을 맡기면 깨어납니다.'];
+}
+function summary(d) {
+  const st = staff.filter(s => s.dept === d.id);
+  const asks = st.filter(s => s.state === 'ask'), works = st.filter(busy);
+  const lead = asks[0] || works[0] || st.find(s => s.state === 'done') || st[0];
+  let val = '빈 자리', now = false;
+  const q = queue[d.id] || 0;
+  if (asks.length) { val = '승인을 물었습니다'; now = true; }
+  else if (works.length) val = 수(works.length) + ' 일하는 중';
+  else if (q) val = '';
+  else if (st.some(s => s.state === 'done')) val = '끝냄';
+  else if (st.length) val = '쉬는 중';
+  if (q) val += (val ? ' · ' : '') + 수(q) + ' 기다림';
+  return {st, val, now, q, mid: lead ? lead.say : (d.lobby ? '솔리오 밖에서 연 일이 여기에 섭니다' : d.role)};
+}
+
+/* ── 줄 ─────────────────────────────────────────────────────── */
+const open = new Set(); let pinned = null, hotDept = null, hotStaff = null;
+function moreHTML(d, st) {
+  let j = 0, h = '';
+  for (const s of st) {
+    h += `<div class="row sub${s.state === 'ask' ? ' now' : ''}${alerting(s) ? ' news' : ''}" data-s="${s.id}" style="--j:${j++}"><span class="nm">${esc(s.tool)}${alerting(s) ? flag(s.newsT0 || -1e9) : ''}<small>${esc(s.model)}</small></span><span class="mid"><b>${esc(s.say)}</b><small>${esc(s.act)}</small></span><span class="when">${esc(s.when)}</span></div>`;
+    if (s.state === 'ask') h += `<p class="more-acts" style="--j:${j++}"><button class="quiet warn" type="button" data-term="${s.id}">터미널 열기</button><span class="lab">승인은 그 도구의 창에서 합니다.</span></p>`;
+  }
+  if (d.lobby) {
+    if (st.length) h += `<p class="more-acts" style="--j:${j++}"><span class="lab">보낼 부서</span>${DEPTS.filter(x => !x.lobby).map(x => `<button class="quiet" type="button" aria-pressed="false" data-send="${x.id}">${esc(x.name)}</button>`).join('')}</p>`;
+    h += `<p class="more-note" style="--j:${j++}">${esc(notes.lobby || '솔리오 밖에서 직접 연 일은 여기에 섭니다. 작업 폴더가 부서의 폴더이면 그 부서로 갑니다.')}</p>`;
+    return h;
+  }
+  if (queue[d.id]) h += `<div class="row sub fact" style="--j:${j++}"><span class="nm">기다림</span><span class="mid"><b>기다리는 일 ${수(queue[d.id])}</b><small>${esc(whyText(d.id))}</small></span><span class="when"></span></div>`;
+  const tool = toolOf[d.id], plan = tool === 'Codex' ? 'ChatGPT' : 'Claude';
+  const tight = subOf(tool).left < 50 ? ` 지금 ${subOf(tool).left}% 남아 ${까지(toolCap(tool))} 일합니다.` : '';
+  h += `<form class="give" data-give="${d.id}" style="--j:${j++}"><label class="sr" for="task-${d.id}">${esc(d.name)}에 맡길 일</label><input id="task-${d.id}" type="text" placeholder="${esc(d.name)}에 맡길 일" autocomplete="off"><button class="go" type="submit">맡기기</button></form>`;
+  if (notes[d.id]) h += `<p class="more-note" style="--j:${j++}">${esc(notes[d.id])}</p>`;
+  const setHTML = `<p class="more-acts" style="--j:0"><span class="lab">실행</span><button class="quiet" type="button" aria-pressed="${tool === 'Claude Code'}" data-tool="Claude Code">Claude Code</button><button class="quiet" type="button" aria-pressed="${tool === 'Codex'}" data-tool="Codex">Codex</button></p>`
+    + `<p class="more-note" style="--j:1">${esc(`이 PC에 설치된 ${tool}로 실행합니다. 사용량은 내 ${plan} 구독에서 나갑니다.${tight}`)}</p>`
+    + `<div class="row sub fact" style="--j:2"><span class="nm">역할</span><span class="mid"><b>${esc(d.role)}</b></span><span class="when"><button class="quiet" type="button" data-noop>고치기</button></span></div>`
+    + `<div class="row sub fact" style="--j:3"><span class="nm">폴더</span><span class="mid"><b>${esc(d.dir)}</b></span><span class="when">${까지(seatCap())}</span></div>`;
+  // 기능: 이름이 한 줄씩 차례로 펼쳐지고, 누르면 그 자리에서 안쪽이 열린다. 한 번에 하나만 열린다
+  const item = (id, name, mid, when, inner, news) => {
+    const on = openItem[d.id] === id, key = d.id + ':' + id;
+    return `<button class="row sub item${on ? ' opened' : ''}" type="button" data-item="${key}" aria-expanded="${on}" aria-controls="fold-${key}" style="--j:${j++}"><span class="nm">${esc(name)}${news ? flag(news) : ''}</span><span class="mid">${esc(mid)}</span><span class="when">${esc(when)}</span></button>`
+      + `<div class="fold${on ? ' open' : ''} snap" id="fold-${key}" data-fold="${key}"${on ? '' : ' inert'}><div class="fold-in">${inner}</div></div>`;
+  };
+  for (const f of ITEMS[d.id] || []) {
+    if (f.soon) h += `<div class="row sub fact soon" style="--j:${j++}"><span class="nm">${esc(f.name)}</span><span class="mid">${esc(f.soon)}</span><span class="when">준비 중</span></div>`;
+    else if (f.id === 'rivals') { const r = SCOUTS[scoutI]; h += item('rivals', f.name, scouting ? '세 곳을 다시 읽고 있습니다' : r.head, scouting ? '읽는 중' : r.when + ' 읽음', rivalsHTML(), rivalNews); }
+    else if (f.id === 'bizplan') h += `<button class="row sub item" type="button" data-openplan style="--j:${j++}"><span class="nm">${esc(f.name)}</span><span class="mid">${esc(planRowMid())}</span><span class="when">${pv.stage === 'reading' ? '읽는 중' : '열기'}</span></button>`;
+  }
+  h += item('set', '부서 설정', `${tool} · ${d.dir}`, '', setHTML);
+  return h;
+}
+/* 마케팅부 「경쟁사」의 안쪽: 바뀐 곳은 무엇이 어떻게 바뀌었는지와 읽은 곳, 읽은 때를 적고, 나머지는 한 줄로 묶는다 */
+function rivalsHTML() {
+  const r = SCOUTS[scoutI], read = esc(r.when) + ' 읽음'; let j = 0;
+  const row = (cls, nm, b, small, when) => `<div class="row sub${cls}" style="--j:${j++}"><span class="nm">${nm}</span><span class="mid"><b>${b}</b><small>${small}</small></span><span class="when">${when}</span></div>`;
+  let h = '';
+  if (r.who) h += row('', esc(r.who), esc(r.what), `<button class="quiet" type="button" data-noop>${esc(r.src)}</button>`, read);
+  h += row(' fact', r.who ? '그 밖' : '읽은 곳', esc(r.rest), esc(MISS), r.who ? '' : read);
+  h += `<p class="more-acts" style="--j:${j++}">${scouting ? '<span class="lab">읽는 중</span>' : '<button class="quiet" type="button" data-scout>지금 읽기</button>'}<button class="quiet" type="button" data-noop>목록 고치기</button></p>`;
+  h += `<p class="more-note" style="--j:${j++}">세 곳을 월요일 09:00마다 다시 읽습니다. 누구나 볼 수 있는 쪽만 읽습니다.</p>`;
+  return h;
+}
+/* ── 기획부 「사업계획서」 작업 화면 ─────────────────────────── */
+const planRowMid = () => pv.stage === 'start' ? '계획서를 넣으면 공고에 맞춰 읽고, 고칠 곳을 문장 옆에 적어 줍니다'
+  : pv.stage === 'reading' ? '계획서를 읽고 있습니다' : pv.saved ? '고친 판을 사업계획서_v4.docx로 저장했습니다'
+  : openNotes().length ? `고칠 곳이 ${수(openNotes().length)} 남았습니다` : '고칠 곳을 모두 정리했습니다';
+function planSay() {
+  if (pv.stage === 'start') return ['사업계획서를 넣어 주세요.', '공고에 맞춰 읽고, 고칠 곳을 문장 옆에 적어 드립니다.'];
+  if (pv.stage === 'reading') return ['기획부가 계획서를 읽고 있습니다.', '공고와 회사 자료에 한 쪽씩 견주는 중입니다.'];
+  if (pv.saved) return ['사업계획서_v4.docx로 저장했습니다.', '원본 3판은 그대로 남아 있습니다.'];
+  const n = openNotes().length;
+  // 메모가 종이 옆에 서는 넓은 창과 종이 아래로 쌓이는 좁은 창에서 가리키는 쪽이 다르다
+  const where = stage.clientWidth > 860 ? '오른쪽' : '계획서 아래';
+  return n ? [`고칠 곳이 ${수(n)} ${n === NOTES.length ? '있습니다' : '남았습니다'}.`, `${where} 메모를 위에서부터 하나씩 보시면 됩니다.`]
+    : ['고칠 곳을 모두 정리했습니다.', '고친 판을 새 파일로 저장하면 원본은 그대로 남습니다.'];
+}
+const fresh = (t, ms) => t && performance.now() - t < ms;
+function workHTML() {
+  const S = pv.stage;
+  const line = S === 'reading' ? pv.step : S === 'start' ? '계획서를 기다리고 있습니다' : pv.saved ? '저장을 마쳤습니다' : '다 읽었습니다. 메모를 보며 같이 고칩니다';
+  let h = `<div class="work-top"><button class="back" type="button" data-back>← 사무실</button>`
+    + `<span class="who"><i class="mini${S === 'reading' ? ' on' : ''}" aria-hidden="true"></i><b>기획부 직원</b><span>${esc(line)}</span></span></div>`;
+  if (S === 'start') return h + startHTML();
+  return h + `<div class="desk"><article class="sheet" aria-label="사업계획서">${sheetHTML()}</article><div class="notes" id="notes">${callHTML()}${notesHTML()}</div></div>`;
+}
+/* 공고와 평가 항목 넷: 메모 칸 맨 위, 계획서 머리와 같은 높이에 선다. 어느 쪽이 어느 항목에 답하는지와 빈약한 항목을 보인다 */
+function callHTML() {
+  const c = CALLS[pv.call], S = pv.stage;
+  return `<div class="call"><small class="pg">공고</small><p><b>${esc(c.name)}</b></p><p>${esc(c.due)} · ${esc(c.left)}</p><ul class="items">`
+    + ITEMS4.map(it => { const weak = it.weak && pv.st[it.weak] !== 'done' && S !== 'reading'; return `<li class="${weak ? 'weak' : ''}"><i aria-hidden="true"></i>${esc(it.nm)}<small>${esc(it.secs.map(id => secOf(id).pg).join(' · '))}${weak ? ' · 한 줄뿐' : ''}</small></li>`; }).join('')
+    + `</ul></div>`;
+}
+/* 넣기: 종이 자리에 파일을 놓거나 고르고, 낼 공고를 고른 뒤 맡긴다 */
+function startHTML() {
+  const f = pv.file;
+  return `<div class="desk start"><label class="sheet blank" for="plan-file"><input id="plan-file" class="sr" type="file" accept=".docx,.pdf"><span class="blank-in">`
+    + (f ? `<b>${esc(f)}</b><small>이 파일을 읽습니다. 시안이라 내용은 예시 계획서로 보여 드립니다.</small><span class="pill ghost dark">다른 파일 고르기</span>`
+         : `<b>계획서 파일을 여기에 놓으세요</b><small>.docx나 .pdf를 넣습니다. 한글(.hwp) 파일은 PDF로 저장해 넣어 주세요.</small><span class="pill ghost dark">파일 고르기</span>`)
+    + `</span></label><div class="start-side"><label class="lab" for="plan-call">어느 공고에 내나요?</label>`
+    + `<select id="plan-call">${CALLS.map((c, i) => `<option value="${i}"${i === pv.call ? ' selected' : ''}>${esc(c.name)} · ${esc(c.due)}</option>`).join('')}</select>`
+    + `<p class="why">기획부 직원이 공고의 평가 항목과 회사 자료(회계부의 영수증, 개발부의 가게 코드)에 계획서를 맞춰 읽습니다. 점수는 매기지 않습니다. 계획서는 솔리오 서버로 보내지 않고, 내가 연결한 AI 구독으로만 읽습니다.</p>`
+    + `<div class="acts"><button class="pill" type="button" data-go>${f ? '기획부에 맡기기' : '예시 계획서로 맡겨 보기'}</button></div>`
+    + (notes.plan ? `<p class="hint">${esc(notes.plan)}</p>` : '') + `</div></div>`;
+}
+/* 계획서 종이: 읽는 동안은 읽은 쪽만 밝아지고, 메모가 붙은 문단은 왼쪽 여백에 점, 고르면 세로선이 선다 */
+function sheetHTML() {
+  const S = pv.stage;
+  const secs = pv.secs.map((s, i) => {
+    const n = NOTES.find(x => x.sec === s.id && pv.st[x.id] !== 'done' && (S !== 'reading' || i < pv.read));
+    const cls = ['sec', n ? 'has' : '', n && pv.sel === n.id && S !== 'reading' ? 'on' : '', S === 'reading' && i >= pv.read ? 'unread' : '', pv.changed === s.id && fresh(pv.changedT, 1400) ? 'changed' : ''].filter(Boolean).join(' ');
+    return `<section class="${cls}" data-sec="${s.id}"${n ? ` data-pick="${n.id}"` : ''}><small class="pg">${esc(s.pg)} · ${esc(s.item)}</small><h4>${esc(s.h)}</h4><p>${esc(s.p)}</p></section>`;
+  }).join('');
+  return `<header class="sheet-h"><small>${esc(pv.saved ? '사업계획서_v4.docx' : pv.file || PLAN0.file)}</small><h3>${esc(PLAN0.title)}</h3><p>${esc(CALLS[pv.call].name)} ${esc(pv.saved ? PLAN0.sub.replace('3판', '4판') : PLAN0.sub)}</p></header>${secs}`;
+}
+/* 메모: 고른 메모 하나만 단추를 보인다(한 번에 하나씩). 나머지는 무엇이 문제인지 한 문장만 보인다 */
+function notesHTML() {
+  const S = pv.stage; let h = '';
+  if (pv.st.n2 === 'make' && pv.make && pv.make !== 'wait' && pv.make.state === 'done') pv.st.n2 = 'done';
+  for (const n of NOTES) {
+    const i = pv.secs.findIndex(s => s.id === n.sec);
+    if (S === 'reading' && i >= pv.read) continue;
+    h += noteHTML(n, S === 'reading');
+  }
+  if (S === 'review' && !openNotes().length) h += pv.saved
+    ? `<div class="note save"><p class="what">문서\\기획 폴더에 사업계획서_v4.docx로 저장했습니다.</p><p class="why">원본 사업계획서_v3.docx는 그대로 있습니다.</p><div class="acts"><button class="quiet" type="button" data-again>처음부터 다시 보기</button></div></div>`
+    : `<div class="note save sel"><p class="what">세 곳을 모두 정리했습니다.</p><p class="why">원본은 그대로 두고, 고친 판을 새 파일로 저장합니다.</p><div class="acts"><button class="pill" type="button" data-save>사업계획서_v4.docx로 저장</button></div></div>`;
+  return h;
+}
+function noteHTML(n, still) {
+  const st = pv.st[n.id], sel = pv.sel === n.id && !still, pg = secOf(n.sec).pg, nw = fresh(pv.foundT[n.id], 700) ? ' new' : '';
+  if (st === 'done') {
+    const made = n.id === 'n2' && pv.make && pv.make !== 'wait' && pv.make.state === 'done';
+    return `<div class="note done${nw}" data-for="${n.sec}"><p class="what">${esc(made ? n.made : n.done)}</p>${made || pv.saved ? '' : `<div class="acts"><button class="quiet" type="button" data-undo="${n.id}">되돌리기</button></div>`}</div>`;
+  }
+  // 고르지 않은 메모는 쪽과 한 문장만 보인다. 문단 높이에 맞춰 서고, 누르면 그 메모가 열린다
+  const head = `<small class="pg">${esc(pg)}</small>` + (sel ? `<p class="what">${esc(n.what)}</p><p class="why">${esc(n.why)}</p>` : `<button class="what" type="button" data-pick="${n.id}"${still ? ' disabled' : ''}>${esc(n.what)}<span class="arw" aria-hidden="true"> ›</span></button>`);
+  return `<div class="note${sel ? ' sel' : ''}${nw}" data-for="${n.sec}">${head}${sel ? actsHTML(n, st) : ''}</div>`;
+}
+function actsHTML(n, st) {
+  const prop = (now, next) => `<div class="prop"><p><small>지금</small>${esc(now)}</p><p><small>고친 글</small>${esc(next)}</p></div>`;
+  if (n.id === 'n1') return st === 'prop'
+    ? prop(n.from, n.to) + `<div class="acts"><button class="pill" type="button" data-put="n1">계획서에 넣기</button><button class="pill ghost" type="button" data-keep="n1">그대로 두기</button></div>`
+    : `<div class="acts"><button class="pill" type="button" data-prop="n1">112명으로 고쳐 줘</button><button class="quiet" type="button" data-noop>영수증 보기</button></div>`;
+  if (n.id === 'n2') {
+    if (st === 'prop') return prop(n.from, n.to) + `<div class="acts"><button class="pill" type="button" data-put="n2">계획서에 넣기</button><button class="pill ghost" type="button" data-keep="n2">다른 방법 보기</button></div>`;
+    if (st === 'make') return `<p class="state"><i class="mini on" aria-hidden="true"></i>${esc(pv.make === 'wait' ? `개발부에 맡겼습니다. ${whyText('dev')}. 차례가 오면 시작합니다.` : '개발부가 휴대폰 주문 화면을 만들고 있습니다. 끝나면 이 메모가 알려 드립니다.')}</p>`
+      + `<div class="acts"><button class="quiet" type="button" data-prop="n2">기다리지 않고 여는 때로 고쳐 쓰기</button></div>`;
+    return `<div class="acts"><button class="pill" type="button" data-make>개발부에 만들어 달라기</button><button class="pill ghost" type="button" data-prop="n2">여는 때로 고쳐 쓰기</button></div>`;
+  }
+  if (st === 'ask') {
+    const k = pv.ans.length;
+    let h = '<div class="talk">';
+    pv.ans.forEach((a, i) => { h += `<p class="q">${esc(ASKS[i].q)}</p><p class="a">${esc(a[0])}</p>`; });
+    h += `<p class="q now"><i class="mini" aria-hidden="true"></i>${esc(ASKS[k].q)}</p><div class="chips">${ASKS[k].opts.map((o, i) => `<button class="pill ghost small" type="button" data-ans="${i}">${esc(o[0])}</button>`).join('')}</div>`;
+    return h + `<p class="step">${수(k + 1)}째 물음 · 모두 셋</p></div>`;
+  }
+  if (st === 'draft') {
+    const rv = fresh(pv.draftT, 2200) ? ' reveal' : '';
+    return `<p class="picked">고른 답 · ${pv.ans.map(a => esc(a[0])).join(' · ')}</p><div class="prop draft${rv}"><p><small>초안</small>${draftOf(pv.ans.map(a => a[1])).map((s, i) => `<span class="s" style="--k:${i}">${esc(s)} </span>`).join('')}</p></div>`
+      + `<div class="acts"><button class="pill" type="button" data-put="n3">계획서에 넣기</button><button class="pill ghost" type="button" data-ask>다시 고르기</button></div>`;
+  }
+  return `<div class="acts"><button class="pill" type="button" data-ask>같이 쓰기</button><span class="lab">세 가지를 여쭤보고 초안을 써 드립니다.</span></div>`;
+}
+/* 메모를 그 문단 옆에 놓는다. 종이와 메모가 나란히 설 때만이고, 좁으면 메모가 종이 아래로 쌓인다 */
+function placeNotes() {
+  const box = document.getElementById('notes'), sheet = room.querySelector('.sheet:not(.blank)');
+  if (!box || !sheet) return;
+  const side = box.getBoundingClientRect().left >= sheet.getBoundingClientRect().right - 1;
+  box.classList.toggle('side', side);
+  const list = [...box.children];
+  if (!side) { box.style.height = ''; list.forEach(el => el.style.top = ''); return; }
+  const base = sheet.getBoundingClientRect().top; let y = 0;
+  for (const el of list) {
+    const sec = el.dataset.for && sheet.querySelector(`[data-sec="${el.dataset.for}"]`);
+    const top = Math.max(sec ? sec.getBoundingClientRect().top - base : y, y);
+    el.style.top = top + 'px'; y = top + el.offsetHeight + 14;
+  }
+  box.style.height = Math.max(y, sheet.offsetHeight) + 'px';
+}
+/* 설정: 사무실을 보는 각도를 고른다. 비스듬히(3D)와 위에서(2D)를 둘 다 지원한다 */
+function cfgHTML(snap) {
+  const on = open.has('cfg');
+  return `<button class="row${on ? ' opened' : ''}" type="button" data-d="cfg" aria-expanded="${on}" aria-controls="more-cfg"><span class="nm">설정</span><span class="mid">보기 · ${viewTo ? '비스듬히' : '위에서'}</span><span class="val"></span></button>`
+    + `<div class="more${on ? ' open' : ''}${snap ? ' snap' : ''}" id="more-cfg" data-d="cfg"${on ? '' : ' inert'}><div class="more-in">`
+    + `<p class="more-acts" style="--j:0"><span class="lab">보기</span><button class="quiet" type="button" aria-pressed="${viewTo === 1}" data-view="1">비스듬히</button><button class="quiet" type="button" aria-pressed="${viewTo === 0}" data-view="0">위에서</button></p>`
+    + `<p class="more-note" style="--j:1">같은 사무실을 보는 각도입니다. 고른 보기는 다음에 열 때도 그대로입니다.</p>`
+    + `</div></div>`;
+}
+/* 이 PC: 프로세서와 메모리를 읽어 함께 일할 수 있는 인원을 정한다 */
+function pcHTML(snap) {
+  const p = PCS[pi], n = CAP(), on = open.has('pc'), act = active();
+  const low = TOOLS.filter(t => subOf(t).left < 50).map(t => ` · ${short(t)} ${subOf(t).left}%`).join('');
+  const sub = (j, t) => fact(j, short(t), `${subOf(t).left}% 남음`, `${subOf(t).reset}에 다시 찹니다`, toolCap(t) ? `${수(toolCap(t))}까지` : '쉬는 중');
+  const fact = (j, nm, b, small, when) => `<div class="row sub fact" style="--j:${j}"><span class="nm">${nm}</span><span class="mid"><b>${b}</b><small>${small}</small></span><span class="when">${when}</span></div>`;
+  return `<button class="row gap${on ? ' opened' : ''}" type="button" data-d="pc" aria-expanded="${on}" aria-controls="more-pc"><span class="nm">수용 인원</span><span class="mid">${p.cores}코어 · ${p.ram}GB${low}</span><span class="val">${수(n)}까지</span></button>`
+    + `<div class="more${on ? ' open' : ''}${snap ? ' snap' : ''}" id="more-pc" data-d="pc"${on ? '' : ' inert'}><div class="more-in">`
+    + fact(0, '프로세서', `논리 코어 ${p.cores}개`, `지금 ${p.load}% 쓰는 중`, `둘마다 하나 · ${수(Math.floor(p.cores / 2))}`)
+    + fact(1, '메모리', `${p.ram}GB`, `지금 ${p.free}GB 비어 있음`, `4GB마다 하나 · ${수(Math.floor(p.ram / 4))}`)
+    + sub(2, 'Claude Code') + sub(3, 'Codex')
+    + fact(4, '합쳐서', `동시에 ${수(n)}까지`, `PC와 구독 가운데 적은 쪽입니다. ${act ? '지금 ' + 이가(수(act)) + ' 일하고 있습니다' : '지금은 아무도 일하지 않습니다'}`, '')
+    + `<p class="more-acts" style="--j:5"><span class="lab">정하는 방법</span><button class="quiet" type="button" aria-pressed="true" data-noop>자동</button><button class="quiet" type="button" aria-pressed="false" data-noop>직접 정하기</button><button class="quiet" type="button" data-diag>다시 살펴보기</button></p>`
+    + `<p class="more-note" style="--j:6">구독이 절반 넘게 남으면 PC 한도까지, 절반 아래면 그 절반, 20% 아래면 한 사람이 일합니다. 다 쓰면 다시 찰 때까지 쉽니다. 일을 맡기는 순간 프로세서를 85% 넘게 쓰고 있거나 빈 메모리가 2GB 아래여도 새 직원은 기다립니다. 이 값은 아이디와 PC마다 따로 기억합니다.</p>`
+    + `</div></div>`;
+}
+function render(snap) {
+  const act = document.activeElement, keep = act && rowsEl.contains(act) && act.id ? {id:act.id, v:act.value, a:act.selectionStart} : null;
+  const [a, b] = headline();
+  sayEl.innerHTML = `${esc(a)}<span class="then">${esc(b)}</span>`;
+  let h = '';
+  if (shopView) {
+    rowsEl.innerHTML = shopHTML(snap); drawSwatches();
+    officeEl.hidden = false; workEl.hidden = true; stage.classList.remove('planning'); stage.classList.add('shopping');
+    if (keep) { const el = document.getElementById(keep.id); if (el) el.focus(); }
+    requestAnimationFrame(() => rowsEl.querySelectorAll('.snap').forEach(m => m.classList.remove('snap')));
+    return;
+  }
+  for (const d of DEPTS) {
+    const m = summary(d);
+    if (d.lobby && !m.st.length) { open.delete(d.id); continue; }
+    const on = open.has(d.id), al = m.st.filter(alerting);
+    h += `<button class="row${m.now ? ' now' : ''}${on ? ' opened' : ''}${al.length ? ' news' : ''}" type="button" data-d="${d.id}" aria-expanded="${on}" aria-controls="more-${d.id}"><span class="nm">${esc(d.name)}${al.length ? flag(Math.max(...al.map(s => s.newsT0 || -1e9))) : ''}</span><span class="mid">${esc(m.mid)}</span><span class="val">${esc(m.val)}</span></button>`;
+    h += `<div class="more${on ? ' open' : ''}${snap ? ' snap' : ''}" id="more-${d.id}" data-d="${d.id}"${on ? '' : ' inert'}><div class="more-in">${moreHTML(d, m.st)}</div></div>`;
+  }
+  h += pcHTML(snap) + cfgHTML(snap);
+  h += `<button class="row" type="button" data-shop><span class="nm">스킨</span><span class="mid">${esc(skinOf(worn).name)} · 쓰는 중</span><span class="val">고르기</span></button>`;
+  h += `<p class="read"><span>방금 읽었습니다. 이름과 일은 모두 예시입니다.</span><button class="reread" type="button" data-noop>부서 더하기</button></p>`;
+  rowsEl.innerHTML = h;
+  officeObj.classList.toggle('news', staff.some(alerting));
+  // 사업계획서 작업 화면에서는 사무실 그림과 줄을 접고 계획서 한 장을 크게 둔다
+  officeEl.hidden = planView; workEl.hidden = !planView; stage.classList.toggle('planning', planView); stage.classList.remove('shopping');
+  if (planView) {
+    workEl.innerHTML = workHTML(); placeNotes();
+    // 고른 메모가 바뀌면 그 메모와 문단이 보이게 방을 내린다
+    if (pv.scroll) { pv.scroll = false; const n = workEl.querySelector('.note.sel'); if (n) n.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }
+  }
+  if (keep) { const el = document.getElementById(keep.id); if (el) { el.value = keep.v || ''; el.focus(); try { el.setSelectionRange(keep.a, keep.a); } catch (e) {} } }
+  requestAnimationFrame(() => rowsEl.querySelectorAll('.snap').forEach(m => m.classList.remove('snap')));
+  mark();
+}
+let wasOpen = new Set();
+function sync() {
+  rowsEl.querySelectorAll('button.row[data-d]').forEach(r => { const on = open.has(r.dataset.d); r.classList.toggle('opened', on); r.setAttribute('aria-expanded', on); });
+  rowsEl.querySelectorAll('.more').forEach(m => { const on = open.has(m.dataset.d); m.classList.toggle('open', on); m.inert = !on; });
+  // 열었다 닫은 부서의 끝낸 일은 본 것으로 친다. 줄이 다 접힌 뒤에 알림을 지운다
+  let read = false;
+  for (const id of wasOpen) if (!open.has(id)) {
+    if (openItem[id]) { openItem[id] = null; read = true; }          // 닫힌 부서는 다음에 열 때 기능이 접힌 채로 열린다
+    if (id === 'mkt' && rivalNews) { rivalNews = 0; read = true; }
+    for (const s of staff) if (s.dept === id && s.news) { s.news = false; read = true; }
+  }
+  wasOpen = new Set(open);
+  if (read) setTimeout(() => render(true), 520);
+}
+/* 기능 줄을 누르면 그 기능의 안쪽이 열리고, 열려 있던 다른 기능은 접힌다 */
+function syncItems() {
+  rowsEl.querySelectorAll('[data-item]').forEach(b => { const [dep, id] = b.dataset.item.split(':'), on = openItem[dep] === id; b.classList.toggle('opened', on); b.setAttribute('aria-expanded', on); });
+  rowsEl.querySelectorAll('[data-fold]').forEach(f => { const [dep, id] = f.dataset.fold.split(':'), on = openItem[dep] === id; f.classList.toggle('open', on); f.inert = !on; });
+}
+function mark() {
+  rowsEl.querySelectorAll('button.row[data-d]').forEach(r => r.classList.toggle('hot', r.dataset.d === hotDept));
+  rowsEl.querySelectorAll('.row.sub[data-s]').forEach(r => r.classList.toggle('hot', r.dataset.s === hotStaff));
+}
+/* 줄은 누르면 열리고 다시 누르면 접힌다. 한 번에 한 줄만 열린다(11-23, 다가가면 열렸다 닫히던 것을 뺐다) */
+let openT = 0, closeT = 0;
+function pin(id) {
+  clearTimeout(openT); clearTimeout(closeT); pinned = id; open.clear(); open.add(id); sync();   // 한 번에 한 줄만 열린다(11-23)
+  // 눌러서 연 줄이 방 아래에 걸리면 안쪽이 보이게 내린다
+  setTimeout(() => { const m = document.getElementById('more-' + id); if (m && pinned === id) m.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }, 480);
+}
+rowsEl.addEventListener('mouseover', e => {
+  const r = e.target.closest('button.row[data-d], .more');
+  if (r) hotDept = r.dataset.d;      // 다가가면 밝아지기만 하고, 여는 것은 누를 때다(11-23 유호님 「뻣뻣하다」 · 다가가면 열렸다 닫혀 화면이 움직이던 것)
+  const s = e.target.closest('.row.sub[data-s]'); hotStaff = s ? s.dataset.s : null;
+  mark();
+});
+rowsEl.addEventListener('mouseleave', () => { hotDept = hotStaff = null; mark(); });
+rowsEl.addEventListener('focusin', e => { const m = e.target.closest('.more'); if (m && m.dataset.d) pin(m.dataset.d); });
+rowsEl.addEventListener('pointerdown', e => { const m = e.target.closest('.more'); if (m && m.dataset.d) pin(m.dataset.d); });
+rowsEl.addEventListener('click', e => {
+  const t = e.target, it = t.closest('[data-item]'), r = t.closest('button.row[data-d]');
+  if (shopClick(t)) return;
+  if (t.closest('[data-openplan]')) { enterPlan(); return; }
+  if (it) {
+    const [dep, id] = it.dataset.item.split(':'); openItem[dep] = openItem[dep] === id ? null : id; syncItems();
+    if (openItem[dep]) setTimeout(() => { const f = rowsEl.querySelector(`[data-fold="${dep}:${id}"]`); if (f && openItem[dep] === id) f.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }, 480);
+    return;
+  }
+  if (t.dataset.view) { viewTo = +t.dataset.view; render(true); return; }
+  if (r) { const id = r.dataset.d; if (open.has(id)) { pinned = null; open.delete(id); sync(); } else pin(id); return; }
+  if (t.dataset.term) { const s = staff.find(x => x.id === t.dataset.term); if (s) { s.state = 'work'; s.say = '승인을 받아 계약서 폴더를 정리하고 있습니다'; s.act = '명령 · 폴더 정리'; s.when = '방금'; render(true); } return; }
+  if (t.dataset.tool) { const id = t.closest('.more').dataset.d; toolOf[id] = t.dataset.tool; delete notes[id]; render(true); return; }
+  if (t.dataset.send) { send(t.dataset.send); return; }
+  if ('scout' in t.dataset) { scout(); return; }
+  if ('diag' in t.dataset) diagnose();
+});
+/* 사무실을 처음 열 때와 「다시 살펴보기」: PC를 읽고, 몇이 함께 일할 수 있는지 한 문장으로 말한다 */
+let dT1 = 0, dT2 = 0;
+function diagnose() {
+  const p = PCS[pi]; clearTimeout(dT1); clearTimeout(dT2);
+  sayHold = ['이 PC를 살펴보고 있습니다.', '프로세서와 메모리, 구독의 남은 양을 읽는 중입니다.']; render(true);
+  dT1 = setTimeout(() => {
+    sayHold = [`지금은 ${이가(수(CAP()))} 함께 일할 수 있습니다.`, `논리 코어 ${p.cores}개, 메모리 ${p.ram}GB, 구독의 남은 양을 보고 정했습니다.`]; render(true);
+    dT2 = setTimeout(() => { sayHold = null; render(true); }, 3400);
+  }, 1500);
+}
+rowsEl.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target.closest('form[data-give]'); if (!f) return;
+  const id = f.dataset.give, inp = f.querySelector('input'), txt = inp.value.trim();
+  if (!txt) { inp.focus(); return; }
+  give(id, txt); inp.value = ''; render(true);
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && shopView) { exitShop(); return; } if (e.key === 'Escape' && planView) { exitPlan(); return; } if (e.key === 'Escape') { pinned = null; open.clear(); sync(); if (document.activeElement) document.activeElement.blur(); } });
+
+function freeSeat(id) { const used = staff.filter(s => s.dept === id).map(s => s.seat); for (let i = 0; i < SEATS(deptOf(id)); i++) if (!used.includes(i)) return i; return -1; }
+/* 일을 맡기면 쉬던 직원이 깨어나거나, 빈 자리에 새 직원이 나타난다 */
+function give(id, txt) {
+  const d = deptOf(id), tool = toolOf[id];
+  const rest = staff.find(s => s.dept === id && (s.state === 'idle' || s.state === 'done') && s.tool === tool);
+  delete notes[id];
+  if (active() >= CAP()) { queue[id] = (queue[id] || 0) + 1; queueWhy[id] = 'pc'; notes[id] = `지금은 동시에 ${수(CAP())}까지 일합니다. 자리가 비면 시작합니다.`; return; }
+  if (active(tool) >= toolCap(tool)) {     // 구독이 얼마 남지 않은 도구는 차례를 기다린다
+    queue[id] = (queue[id] || 0) + 1; queueWhy[id] = tool;
+    notes[id] = toolCap(tool) ? `${이가(short(tool))} ${subOf(tool).left}% 남아 ${까지(toolCap(tool))} 일합니다. ${subOf(tool).reset}에 다시 찹니다.` : `${은는(short(tool))} 다 썼습니다. ${subOf(tool).reset}에 다시 찹니다.`; return;
+  }
+  if (rest) Object.assign(rest, {state:'work', say:txt, act:'시작하는 중', when:'방금'});
+  else {
+    const seat = freeSeat(id);
+    if (seat < 0) { queue[id] = (queue[id] || 0) + 1; notes[id] = `${은는(d.name)} 동시에 ${수(seatCap())}까지 일합니다. 한 자리가 비면 시작합니다.`; return; }
+    staff.push(S(id, seat, tool, tool === 'Codex' ? 'GPT' : 'Sonnet', 'work', txt, '시작하는 중', '방금', {born:performance.now()}));
+  }
+  const who = rest || staff[staff.length - 1];
+  setTimeout(() => { if (who.act === '시작하는 중') { who.act = '읽기 · ' + d.dir; render(true); } }, 2600);
+  return who;
+}
+/* 「지금 읽기」: 마케팅부의 직원 하나가 경쟁사의 공개된 쪽을 차례로 읽는다. 다 읽으면 지난번과 달라진 것을 맨 위 문장과 경쟁사 줄이 말한다.
+   자리가 없으면 다른 일처럼 차례를 기다린다 */
+function scout() {
+  if (scouting) return;
+  const who = give('mkt', '경쟁사 세 곳의 공개된 쪽을 다시 읽고 있습니다');
+  if (!who) { render(true); return; }
+  scouting = who;
+  const steps = ['읽기 · 온결상점 가격 쪽', '읽기 · 한뼘상점 새 글', '읽기 · 두루상점 배송 안내'];
+  who.act = steps[0];
+  steps.slice(1).forEach((a, i) => scoutT.push(setTimeout(() => { who.act = a; render(true); }, 1700 * (i + 1))));
+  scoutT.push(setTimeout(() => {
+    scoutI = Math.min(scoutI + 1, SCOUTS.length - 1); scouting = null;
+    const r = SCOUTS[scoutI];
+    // 바뀐 곳이 있을 때만 알림이 붙는다
+    Object.assign(who, {state:'done', say:'경쟁사 세 곳을 다 읽었습니다. ' + (r.who ? '한 곳이 바뀌었습니다' : '바뀐 곳이 없습니다'), act:'끝냄 · 경쟁사_47주.md', when:'방금', news:!!r.who, newsT0:performance.now()});
+    rivalNews = r.who ? performance.now() : 0;
+    hold(r.say, 4600);
+  }, 1700 * steps.length + 300));
+  render(true);
+}
+/* 작업 화면 열기 · 닫기 */
+function enterPlan(stage) {
+  planView = true; shopView = false; trying = null; pinned = null; open.clear();
+  if (stage === 'review' && pv.stage === 'start') { pv.stage = 'review'; pv.read = pv.secs.length; }
+  render(true); room.scrollTop = 0;
+}
+function exitPlan() { planView = false; render(true); }
+function resetPlan() { pvTimers.forEach(clearTimeout); pvTimers = []; pv = pvNew(); delete notes.plan; }
+/* 맡기기: 기획부 직원이 한 쪽씩 읽는다. 읽은 쪽이 밝아지고, 찾은 메모가 그 문단 옆에 하나씩 놓인다.
+   자리가 없으면 다른 일처럼 차례를 기다리고, 넣는 화면에 그 까닭을 말한다 */
+function startRead() {
+  const who = give('plan', '사업계획서를 공고와 회사 자료에 맞춰 읽고 있습니다');
+  if (!who) { render(true); return; }
+  const steps = [`읽기 · ${pv.file || PLAN0.file}`, `견주기 · ${CALLS[pv.call].file}`, '견주기 · 회계부 영수증_10월.xlsx', '견주기 · 개발부 가게 코드', '견주기 · 공고의 평가 항목 넷', '메모 정리하는 중'];
+  Object.assign(pv, {stage:'reading', read:0, who, step:steps[0]}); who.act = steps[0];
+  for (let i = 1; i <= pv.secs.length; i++) pvTimers.push(setTimeout(() => {
+    pv.read = i; pv.step = steps[Math.min(i, steps.length - 1)]; who.act = pv.step;
+    const n = NOTES.find(x => x.sec === pv.secs[i - 1].id); if (n) pv.foundT[n.id] = performance.now();
+    render(true);
+  }, 800 * i));
+  pvTimers.push(setTimeout(() => {
+    pv.stage = 'review'; pv.sel = 'n1';
+    Object.assign(who, {state:'done', say:'사업계획서를 다 읽었습니다. 고칠 곳이 셋입니다', act:'끝냄 · 계획서_메모_3판.md', when:'방금'});
+    render(true);
+  }, 800 * (pv.secs.length + 1)));
+  render(true);
+}
+/* 고른 메모 다음의 열린 메모로 넘어간다 */
+const nextOpen = id => { const i = NOTES.findIndex(n => n.id === id), rest = [...NOTES.slice(i + 1), ...NOTES.slice(0, i)]; const n = rest.find(x => pv.st[x.id] !== 'done'); return n ? n.id : null; };
+function putNote(id) {
+  const n = NOTES.find(x => x.id === id), s = secOf(n.sec);
+  pv.prev[id] = s.p;
+  s.p = id === 'n3' ? draftOf(pv.ans.map(a => a[1])).join(' ') : s.p.replace(n.from, n.to);
+  pv.st[id] = 'done'; pv.changed = s.id; pv.changedT = performance.now(); pv.sel = nextOpen(id);
+}
+/* 「개발부에 만들어 달라기」: 아직 사실이 아닌 문장을 만들어서 사실로 만든다. 개발부의 자리와 구독을 따라 시작하거나 기다린다.
+   시안에서는 일곱 초 뒤에 개발부가 다 만든 것으로 친다 */
+function planMakeGo() {
+  const who = give('dev', '휴대폰 주문 화면을 만들고 있습니다');
+  pv.make = who || 'wait'; pv.st.n2 = 'make';
+  if (who) {
+    who.fin = '휴대폰 주문 화면을 만들었습니다';
+    pvTimers.push(setTimeout(() => {
+      if (!busy(who)) return;
+      Object.assign(who, {state:'done', say:who.fin, act:'끝냄 · 코드\\shop', when:'방금', subs:0, news:true, newsT0:performance.now()});
+      if (pv.st.n2 === 'make') { pv.st.n2 = 'done'; if (pv.sel === 'n2') pv.sel = nextOpen('n2'); }
+      hold(['개발부가 휴대폰 주문 화면을 만들었습니다.', '4쪽 문장이 이제 사실입니다.'], 4200);
+    }, 7000));
+  }
+  render(true);
+}
+workEl.addEventListener('click', e => {
+  const t = e.target.closest('button, [data-pick]'); if (!t || t.disabled) return;
+  const d = t.dataset;
+  if ('back' in d) return exitPlan();
+  if ('go' in d) return startRead();
+  if (d.pick) { if (pv.stage !== 'reading') pv.sel = d.pick; }
+  else if (d.prop) { pv.st[d.prop] = 'prop'; pv.sel = d.prop; }
+  else if (d.keep) pv.st[d.keep] = 'open';
+  else if (d.put) putNote(d.put);
+  else if ('make' in d) return planMakeGo();
+  else if ('ask' in d) { pv.st.n3 = 'ask'; pv.ans = []; pv.sel = 'n3'; }
+  else if (d.ans) { pv.ans.push(ASKS[pv.ans.length].opts[+d.ans]); if (pv.ans.length === ASKS.length) { pv.st.n3 = 'draft'; pv.draftT = performance.now(); } }
+  else if (d.undo) { const n = NOTES.find(x => x.id === d.undo); secOf(n.sec).p = pv.prev[d.undo]; pv.st[d.undo] = 'open'; pv.sel = d.undo; if (d.undo === 'n2') pv.make = null; }
+  else if ('save' in d) pv.saved = true;
+  else if ('again' in d) resetPlan();
+  else return;
+  pv.scroll = !('save' in d) && !('again' in d);
+  render(true);
+});
+workEl.addEventListener('change', e => {
+  if (e.target.id === 'plan-file' && e.target.files[0]) { pv.file = e.target.files[0].name; render(true); }
+  if (e.target.id === 'plan-call') { pv.call = +e.target.value; render(true); }
+});
+workEl.addEventListener('dragover', e => { const b = e.target.closest('.blank'); if (b) { e.preventDefault(); b.classList.add('drag'); } });
+workEl.addEventListener('dragleave', e => { const b = e.target.closest('.blank'); if (b && !b.contains(e.relatedTarget)) b.classList.remove('drag'); });
+workEl.addEventListener('drop', e => { const b = e.target.closest('.blank'); if (!b) return; e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { pv.file = f.name; render(true); } });
+function send(to) {
+  const s = staff.find(x => x.dept === 'lobby'); if (!s) return;
+  const seat = freeSeat(to);
+  if (seat < 0) { notes.lobby = `${은는(deptOf(to).name)} 자리가 다 찼습니다. 다른 부서로 보내 주세요.`; render(true); return; }
+  delete notes.lobby;
+  s.born = performance.now();
+  s.dept = to; s.seat = seat; open.delete('lobby'); if (pinned === 'lobby') pinned = null;
+  pin(to); render(true);
+}
+
+/* ── 사무실 그림 ─────────────────────────────────────────────── */
+const ZW = 3.2, ZD = 2.4, GAP = .6, SLAB = .1, R0 = .3;
+/* 줄마다 부서 수가 달라도(앞줄 넷, 뒷줄 셋) 가운데를 맞춰 놓는다. FX는 가장 긴 줄의 반폭이다 */
+const ROWN = r => DEPTS.filter(d => !d.lobby && d.row === r).length;
+const FX = (Math.max(ROWN(0), ROWN(1)) * (ZW + GAP) - GAP) / 2;
+function rectOf(d) {
+  if (d.lobby) return {x0:-FX, x1:FX, z0:3.35, z1:4.45};
+  const cx = (d.col - (ROWN(d.row) - 1) / 2) * (ZW + GAP), cz = (d.row - .5) * (ZD + GAP);
+  return {x0:cx - ZW / 2, x1:cx + ZW / 2, z0:cz - ZD / 2, z1:cz + ZD / 2};
+}
+function seatOf(d, i) {
+  const r = rectOf(d);
+  if (d.lobby) return {x:-1.8 + i * 1.2, z:(r.z0 + r.z1) / 2 + .12};
+  const n = seatCap();
+  return {x:r.x0 + ZW * (n === 1 ? [.5] : n === 2 ? [.34, .66] : [.22, .5, .78])[i], z:(r.z0 + r.z1) / 2 - .18};
+}
+let view = 1, viewTo = 1;          // 1 = 비스듬히(3D), 0 = 위에서(2D)
+let px = -9999, py = -9999;
+let cam = {cy:1, sy:0, ca:0, sa:1, k:0, S:50, ox:0, oy:0};
+/* ── 스킨(11-23 시안) ─────────────────────────────────────────────
+   스킨은 사무실 그림의 모습만 바꾼다. 바닥, 부서 자리, 빛, 벽이 바뀌고 직원은 늘 검은 구다.
+   일하는 사람 수와 빠르기, 기능은 바꾸지 않는다. 이름과 값은 모두 예시다 */
+const SKINS = [
+  {id:'black', name:'검정', price:0, line:'처음부터 있는 사무실입니다',
+    parts:[['바닥', '없음', '사무실이 검은 방 위에 떠 있습니다'], ['부서 자리', '검은 판과 가는 선', ''], ['빛', '일하는 직원의 테두리', '']]},
+  {id:'walnut', name:'호두나무 서재', price:4900, line:'일하는 부서 위에만 등이 켜집니다',
+    parts:[['바닥', '짙은 호두나무 마루', ''], ['부서 자리', '호두나무 책상과 탁상 등', ''], ['빛', '일하는 부서의 등만 켜집니다', '모두 쉬면 방이 어두워집니다']]},
+  {id:'hanok', name:'한옥', price:4900, line:'창호지 너머로 낮의 빛이 듭니다',
+    parts:[['바닥', '우물마루', '긴 귀틀 사이에 짧은 널을 끼운 마루입니다'], ['부서 자리', '한 단 높인 마루', ''], ['빛', '뒤쪽 창호로 드는 낮의 빛', '']]},
+  {id:'glass', name:'새벽 유리', price:4900, line:'일하는 부서의 유리가 밝아집니다',
+    parts:[['바닥', '짙은 남색 유리', ''], ['부서 자리', '반투명한 유리판', ''], ['빛', '일하는 부서의 유리판이 안에서 밝아집니다', '쉬는 부서는 어둡게 가라앉습니다']]},
+  {id:'gallery', name:'흰 갤러리', price:4900, line:'흰 받침 위에 검은 구가 놓입니다',
+    parts:[['바닥', '흰 바닥', ''], ['부서 자리', '높은 흰 받침', ''], ['빛', '고른 빛과 받침의 그림자', '']]},
+];
+const skinOf = id => SKINS.find(s => s.id === id);
+/* 스킨마다의 재질. rim은 직원 테두리의 빛, label은 부서 이름, bang은 느낌표, dot은 도우미 점의 색이다 */
+const SK = {
+  black:{slab:.1, rim:INK, label:INK, bang:INK, dot:INK},
+  walnut:{slab:.12, boost:1.25, rim:'255,221,182', label:'255,232,206', bang:INK, dot:INK, shadow:.55,
+    floor:{thick:.16, top:['#1b120b', '#2a1c12'], front:'#120b06', left:'#0b0703', edge:'rgba(255,214,170,.16)', seam:'rgba(0,0,0,.6)', grain:'rgba(255,212,168,.05)', tone:'rgba(255,196,140,.028)'},
+    ped:{top:['#452c1c', '#5d3e28'], front:'#2a190e', left:'#1f1209', edge:'rgba(255,224,190,.36)', line:'rgba(255,224,190,.10)', hot:'rgba(255,236,212,.85)', urgent:'rgba(255,236,212,.6)', hotFill:'rgba(255,220,180,.05)', grain:'rgba(255,220,182,.07)'},
+    mat:'rgba(0,0,0,.26)'},
+  hanok:{slab:.16, boost:1.3, rim:'255,240,214', label:'252,240,220', bang:'44,26,10', dot:INK, shadow:.34,
+    floor:{thick:.2, top:['#9a7247', '#b88e5e'], front:'#58391e', left:'#472e17', edge:'rgba(255,240,214,.3)', seam:'rgba(64,40,18,.34)', beam:'rgba(92,58,28,.5)', tone:'rgba(70,44,18,.032)'},
+    ped:{top:['#6a4729', '#815935'], front:'#462f19', left:'#3a2613', edge:'rgba(255,236,206,.34)', line:'rgba(40,24,10,.3)', hot:'rgba(255,246,228,.9)', urgent:'rgba(255,246,228,.65)', hotFill:'rgba(255,240,214,.06)', seam:'rgba(36,22,8,.3)', frame:'rgba(46,28,12,.42)'},
+    mat:'rgba(70,44,20,.24)'},
+  glass:{slab:.2, boost:1.6, rim:'200,222,255', label:'214,228,250', bang:INK, dot:INK, shadow:.2,
+    floor:{thick:.12, top:['#09111e', '#142038'], front:'#08101c', left:'#050a14', edge:'rgba(190,215,255,.34)'},
+    ped:{top:['rgba(150,185,235,.10)', 'rgba(170,205,250,.17)'], front:'rgba(150,190,240,.20)', left:'rgba(120,160,215,.15)', edge:'rgba(225,238,255,.74)', line:'rgba(200,225,255,.24)', hot:'rgba(235,244,255,.95)', urgent:'rgba(235,244,255,.7)', hotFill:'rgba(200,225,255,.06)'},
+    mat:'rgba(150,190,240,.06)'},
+  gallery:{slab:.36, rim:INK, label:'58,56,52', bang:'30,29,27', dot:'40,38,35', shadow:.5,
+    floor:{thick:.12, top:['#e4e2dd', '#f2f1ed'], front:'#c9c5bd', left:'#b9b5ad', edge:'rgba(255,255,255,.8)', seam:'rgba(0,0,0,.05)'},
+    ped:{top:['#f6f5f2', '#fdfcfa'], front:'#d5d1c9', left:'#bfbab1', edge:'rgba(0,0,0,.16)', line:'rgba(0,0,0,.07)', hot:'rgba(0,0,0,.42)', urgent:'rgba(0,0,0,.3)', hotFill:'rgba(0,0,0,.025)'},
+    mat:'rgba(0,0,0,.035)'},
+};
+/* 스킨의 바닥. 부서 없는 일의 자리까지 덮는다 */
+const FL = {x0:-FX - .5, x1:FX + .5, z0:-3.05, z1:4.7};
+let shopView = false, worn = 'black', owned = new Set(['black']), trying = null, paying = null, payT = 0;
+const curSkin = () => shopView && trying ? trying : worn;
+let skinFrom = 'black', skinTo = 'black', skinT0 = -1e9, T3 = 1, orbInk = INK, bangInk = INK, rimBoost = 1;
+const lampK = {}, topBy = {};
+const lampOn = id => staff.some(s => s.dept === id && (busy(s) || s.state === 'ask'));
+/* 스킨이 바뀌면 바닥부터, 그다음 부서 자리가 뒷줄에서 앞줄로 차례로 새 모습이 된다(한 자리 0.06초 간격, 0.38초씩) */
+const kOf = (i, now) => { if (still) return 1; const k = Math.min(1, Math.max(0, (now - skinT0 - i * 60) / 380)); return k * k * (3 - 2 * k); };
+const mixRGB = (a, b, k) => { const x = a.split(',').map(Number), y = b.split(',').map(Number); return x.map((v, i) => Math.round(v + (y[i] - v) * k)).join(','); };
+const rng = seed => () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const HQ = (q, y) => [P(q.x0, y, q.z0), P(q.x1, y, q.z0), P(q.x1, y, q.z1), P(q.x0, y, q.z1)];
+const area = f => { let a = 0; for (let i = 0; i < f.length; i++) { const p = f[i], n = f[(i + 1) % f.length]; a += p[0] * n[1] - n[0] * p[1]; } return a / 2; };
+/* 상자의 옆면 가운데 보이는 것만 돌려준다(뒤로 돈 면은 그리지 않는다) */
+function faces(q, y0, y1) {
+  const b = HQ(q, y0), t = HQ(q, y1), out = [];
+  [['back', 0, 1], ['right', 1, 2], ['front', 2, 3], ['left', 3, 0]].forEach(([kind, i, j]) => { const f = [t[j], t[i], b[i], b[j]]; if (area(f) > .5) out.push({kind, pts:f}); });
+  return out;
+}
+const midOf = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+function depthGrad(top, c0, c1) { const a = midOf(top[0], top[1]), b = midOf(top[3], top[2]), g = ctx.createLinearGradient(a[0], a[1], b[0], b[1]); g.addColorStop(0, c0); g.addColorStop(1, c1); return g; }
+function seg(a, b, color, w) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.strokeStyle = color; ctx.lineWidth = w || 1; ctx.stroke(); }
+function wpath(pts, y) { ctx.beginPath(); pts.forEach(([x, z], i) => { const p = P(x, y, z); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); }
+/* 바닥 위에 퍼지는 둥근 빛이나 그림자. 바닥의 원이 비스듬히 보이는 만큼 납작하게 그린다 */
+function pool(x, y, z, rad, rgb, alpha, op) {
+  const p = P(x, y, z), R = rad * cam.S * p[3]; if (R < 1 || alpha < .003) return;
+  ctx.save(); if (op) ctx.globalCompositeOperation = op; ctx.translate(p[0], p[1]); ctx.scale(1, Math.max(.22, cam.sa));
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, `rgba(${rgb},${alpha})`); g.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+/* 재질의 결: 나뭇결, 마루의 귀틀과 널, 바닥의 이음매. 세계 좌표로 한 번 만들어 두고 그릴 때마다 비춘다 */
+const TEX = new Map();
+function tex(id, part, q) {
+  const key = [id, part, q.x0, q.z0, q.x1, q.z1].map(v => typeof v === 'number' ? v.toFixed(2) : v).join('|');
+  if (TEX.has(key)) return TEX.get(key);
+  const out = [], r = rng(Math.round(Math.abs(q.x0 * 31 + q.z0 * 17) * 100) + part.length * 7 + id.length);
+  const L = (c, pts, w) => out.push({c, pts, w}), F = (c, pts) => out.push({c, pts, fill:true});
+  const rect = (x0, z0, x1, z1) => [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+  if (id === 'walnut') {
+    const pl = part === 'floor' ? .44 : .2;
+    for (let z = q.z0; z < q.z1 - .02; z += pl) {
+      const z1 = Math.min(q.z1, z + pl);
+      if (part === 'floor') {
+        if (r() < .5) F('tone', rect(q.x0, z, q.x1, z1));
+        if (z > q.z0) L('seam', [[q.x0, z], [q.x1, z]]);
+        let x = q.x0 + .4 + r() * 2.4; while (x < q.x1 - .4) { L('seam', [[x, z], [x, z1]]); x += 2.3 + r() * 1.9; }
+      }
+      for (const f of part === 'floor' ? [.3, .7] : [.5]) {
+        const zz = z + (z1 - z) * f, ph = r() * 6, amp = part === 'floor' ? .03 : .016, pts = [];
+        for (let x = q.x0; x <= q.x1 + .01; x += .4) pts.push([x, zz + Math.sin(x * 1.3 + ph) * amp]);
+        L('grain', pts, .8);
+      }
+    }
+  } else if (id === 'hanok' && part === 'floor') {
+    // 우물마루: 긴 귀틀이 앞뒤로 달리고, 그 사이에 짧은 널이 가로로 끼워진다
+    const bw = .07, n = Math.max(1, Math.round((q.x1 - q.x0) / 1.95)), step = (q.x1 - q.x0) / n;
+    for (let j = 0; j < n; j++) {
+      const xa = q.x0 + j * step + bw, xb = xa + step - bw * 2;
+      for (let z = q.z0, k = 0; z < q.z1 - .05; z += .3, k++) { if ((k + j) % 2) F('tone', rect(xa, z, xb, Math.min(q.z1, z + .3))); if (z > q.z0) L('seam', [[xa, z], [xb, z]]); }
+    }
+    for (let j = 0; j <= n; j++) { const x = q.x0 + j * step; F('beam', rect(Math.max(q.x0, x - bw), q.z0, Math.min(q.x1, x + bw), q.z1)); }
+  } else if (id === 'hanok') {
+    // 한 단 높인 마루: 둘레에 귀틀, 안쪽은 앞뒤로 놓인 널
+    const fw = .09;
+    for (let x = q.x0 + fw + .32; x < q.x1 - fw - .05; x += .32) L('seam', [[x, q.z0 + fw], [x, q.z1 - fw]]);
+    F('frame', rect(q.x0, q.z0, q.x1, q.z0 + fw)); F('frame', rect(q.x0, q.z1 - fw, q.x1, q.z1));
+    F('frame', rect(q.x0, q.z0 + fw, q.x0 + fw, q.z1 - fw)); F('frame', rect(q.x1 - fw, q.z0 + fw, q.x1, q.z1 - fw));
+  } else if (id === 'gallery' && part === 'floor') {
+    for (let x = q.x0 + 2.2; x < q.x1 - .1; x += 2.2) L('seam', [[x, q.z0], [x, q.z1]]);
+    for (let z = q.z0 + 2.2; z < q.z1 - .1; z += 2.2) L('seam', [[q.x0, z], [q.x1, z]]);
+  }
+  TEX.set(key, out); return out;
+}
+function paintTex(id, part, q, y) {
+  const st = part === 'floor' ? SK[id].floor : SK[id].ped;
+  for (const t of tex(id, part, q)) {
+    wpath(t.pts, y);
+    if (t.fill) { ctx.closePath(); ctx.fillStyle = st[t.c]; ctx.fill(); }
+    else { ctx.strokeStyle = st[t.c]; ctx.lineWidth = t.w || 1; ctx.stroke(); }
+  }
+}
+function paintFloor(id, a, q, mini) {
+  const f = SK[id].floor; if (!f || a < .003) return;
+  ctx.save(); ctx.globalAlpha *= a;
+  const top = HQ(q, 0);
+  if (T3 > .02) for (const fc of faces(q, -f.thick * T3, 0)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? f.front : f.left; ctx.fill(); }
+  poly(top); ctx.fillStyle = depthGrad(top, f.top[0], f.top[1]); ctx.fill();
+  ctx.save(); poly(top); ctx.clip();
+  paintTex(id, 'floor', q, 0);
+  if (id === 'walnut' && !mini) for (const d of DEPTS) if (!d.lobby && lampK[d.id] > .01) { const r = rectOf(d); pool((r.x0 + r.x1) / 2, 0, (r.z0 + r.z1) / 2, 3.1, '255,168,92', .09 * lampK[d.id], 'lighter'); }
+  if (id === 'hanok' && T3 > .03) {
+    const posts = Math.max(1, Math.round((q.x1 - q.x0) / 3.8)), span = (q.x1 - q.x0) / posts, w2 = (span - .16) / 2, L = Math.min(2.6, (q.z1 - q.z0) * .55), sh = .55;
+    for (let i = 0; i < posts; i++) for (let j = 0; j < 2; j++) {
+      const x0 = q.x0 + i * span + .08 + j * w2 + .05, x1 = x0 + w2 - .1, z0 = q.z0 + .02;
+      const quad = [P(x0, 0, z0), P(x1, 0, z0), P(x1 + sh, 0, z0 + L), P(x0 + sh, 0, z0 + L)];
+      const g = ctx.createLinearGradient(quad[0][0], quad[0][1], quad[3][0], quad[3][1]); g.addColorStop(0, `rgba(255,246,220,${.5 * T3})`); g.addColorStop(1, 'rgba(255,244,214,0)');
+      poly(quad); ctx.fillStyle = g; ctx.fill();
+      const xm = (x0 + x1) / 2, bar = `rgba(80,52,24,${.32 * T3})`, lw = Math.max(1, cam.S * .022);
+      seg(P(xm, 0, z0), P(xm + sh * .8, 0, z0 + L * .8), bar, lw);
+      for (const f of [.3, .6]) seg(P(x0 + sh * f, 0, z0 + L * f), P(x1 + sh * f, 0, z0 + L * f), bar, lw);
+    }
+  }
+  if (id === 'hanok') { const a0 = P(0, 0, q.z0), a1 = P(0, 0, q.z0 + (q.z1 - q.z0) * .5), g = ctx.createLinearGradient(a0[0], a0[1], a1[0], a1[1]); g.addColorStop(0, 'rgba(255,247,228,.32)'); g.addColorStop(1, 'rgba(255,247,228,0)'); ctx.fillStyle = g; poly(top); ctx.fill(); }
+  if (id === 'glass') { const g = ctx.createLinearGradient(top[0][0], top[0][1], top[2][0], top[2][1]); [[.26, 0], [.32, .06], [.38, 0], [.6, 0], [.64, .045], [.68, 0]].forEach(([o, al]) => g.addColorStop(o, `rgba(160,200,255,${al})`)); ctx.fillStyle = g; poly(top); ctx.fill(); }
+  ctx.restore();
+  seg(top[3], top[2], f.edge);
+  ctx.restore();
+}
+/* 한옥의 뒤쪽 벽: 기둥 사이마다 창호 두 짝. 살은 용(用)자 꼴로 굵고 드물게 둔다 */
+function wall(q, a) {
+  if (T3 < .03) return;
+  const z = q.z0, posts = Math.max(1, Math.round((q.x1 - q.x0) / 3.8)), span = (q.x1 - q.x0) / posts;
+  const C = (x, y) => P(x, y, z), V = (x0, x1, y0, y1, color) => { poly([C(x0, y1), C(x1, y1), C(x1, y0), C(x0, y0)]); ctx.fillStyle = color; ctx.fill(); };
+  ctx.save(); ctx.globalAlpha *= a * Math.min(1, (T3 - .03) * 4);
+  V(q.x0, q.x1, 0, .13, '#47301a'); V(q.x0, q.x1, .9, 1, '#4c321b');
+  const lw = Math.max(.6, cam.S * .018);
+  for (let i = 0; i < posts; i++) {
+    const xa = q.x0 + i * span, w2 = (span - .16) / 2;
+    for (let j = 0; j < 2; j++) {
+      const x0 = xa + .08 + j * w2, x1 = x0 + w2, pts = [C(x0, .9), C(x1, .9), C(x1, .13), C(x0, .13)];
+      poly(pts); const g = ctx.createLinearGradient(pts[0][0], pts[0][1], pts[3][0], pts[3][1]); g.addColorStop(0, '#f7efdc'); g.addColorStop(1, '#e4d4b4'); ctx.fillStyle = g; ctx.fill();
+      ctx.strokeStyle = '#5a3b20'; ctx.lineWidth = lw; poly(pts); ctx.stroke();
+      const xm = (x0 + x1) / 2; seg(C(xm, .9), C(xm, .13), '#5a3b20', lw);
+      for (const yy of [.13 + .77 / 3, .13 + .77 * 2 / 3]) seg(C(x0, yy), C(x1, yy), '#5a3b20', lw);
+    }
+    V(xa - .07, xa + .07, 0, 1, '#3c2713');
+  }
+  V(q.x1 - .07, q.x1 + .07, 0, 1, '#3c2713');
+  ctx.restore();
+}
+/* 호두나무 책상의 탁상 등. 그 부서가 일하는 동안만 켜진다 */
+function deskLamp(d, q, slab) {
+  const lk = d === 'mini' ? 1 : (lampK[d.id] || 0);
+  const lx = q.x0 + .36, lz = q.z0 + .34, b = P(lx, slab, lz), t = P(lx, slab + .72, lz), s = 1.4 * cam.S * t[3] / 50;
+  if (T3 > .3) { seg(b, t, 'rgba(16,10,5,.95)', Math.max(1, 1.3 * s)); ctx.save(); ctx.translate(b[0], b[1]); ctx.scale(1, Math.max(.3, cam.sa)); ctx.beginPath(); ctx.arc(0, 0, 3.6 * s, 0, Math.PI * 2); ctx.fillStyle = '#1a1009'; ctx.fill(); ctx.restore(); }
+  const hw0 = 2.2 * s, hw1 = 6.2 * s, h0 = 5.4 * s, cx = t[0], cy = t[1], by = cy + h0 * .45;
+  ctx.beginPath(); ctx.moveTo(cx - hw0, cy - h0 * .55); ctx.lineTo(cx + hw0, cy - h0 * .55); ctx.lineTo(cx + hw1, by); ctx.lineTo(cx - hw1, by); ctx.closePath();
+  ctx.fillStyle = '#21150c'; ctx.fill(); ctx.strokeStyle = 'rgba(255,224,190,.18)'; ctx.lineWidth = 1; ctx.stroke();
+  if (lk > .01) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(cx, by, 0, cx, by, 16 * s); g.addColorStop(0, `rgba(255,196,128,${.55 * lk})`); g.addColorStop(1, 'rgba(255,196,128,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, by, 16 * s, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    seg([cx - hw1, by], [cx + hw1, by], `rgba(255,220,168,${.9 * lk})`, Math.max(1, 1.3 * s));
+  }
+}
+function paintPed(id, a, d, q, slab, hot, urgent) {
+  const k = SK[id], p = k.ped; if (a < .003) return;
+  ctx.save(); ctx.globalAlpha *= a;
+  if (id === 'gallery') {      // 받침이 바닥에 드리운 그림자
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.22)'; ctx.shadowBlur = Math.max(4, cam.S * .32); ctx.shadowOffsetY = cam.S * .07 * T3;
+    poly(HQ(q, 0)); ctx.fillStyle = p.front; ctx.fill(); ctx.restore();
+  }
+  const top = HQ(q, slab);
+  if (slab > .004 && T3 > .02) for (const fc of faces(q, 0, slab)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? p.front : p.left; ctx.fill(); ctx.strokeStyle = p.line; ctx.lineWidth = 1; ctx.stroke(); }
+  poly(top); ctx.fillStyle = depthGrad(top, p.top[0], p.top[1]); ctx.fill();
+  ctx.save(); poly(top); ctx.clip();
+  paintTex(id, 'ped', q, slab);
+  if (id === 'walnut') { const lk = d === 'mini' ? 1 : (lampK[d.id] || 0); pool(q.x0 + 1, slab, q.z0 + .8, 2.1, '255,176,100', .28 * lk, 'lighter'); }
+  if (id === 'glass') {
+    const lk = d === 'mini' ? 1 : (lampK[d.id] || 0), g = ctx.createLinearGradient(top[0][0], top[0][1], top[2][0], top[2][1]);
+    [[.38, 0], [.46, .14 * (.25 + .75 * lk)], [.54, 0]].forEach(([o, al]) => g.addColorStop(o, `rgba(225,238,255,${al})`)); ctx.fillStyle = g; poly(top); ctx.fill();
+    pool((q.x0 + q.x1) / 2, slab, (q.z0 + q.z1) / 2, 2.2, '130,185,255', .2 * lk, 'lighter');
+  }
+  if (hot) { ctx.fillStyle = p.hotFill; poly(top); ctx.fill(); }
+  ctx.restore();
+  poly(top); ctx.strokeStyle = hot ? p.hot : urgent ? p.urgent : p.line; ctx.lineWidth = 1; ctx.stroke();
+  seg(top[3], top[2], hot ? p.hot : p.edge);        // 앞 모서리에 빛이 맺힌다
+  if (id === 'glass' && slab > .02 && T3 > .1) { const b3 = P(q.x0, slab * .25, q.z1), b2 = P(q.x1, slab * .25, q.z1), l0 = P(q.x0, slab * .25, q.z0); seg(b3, b2, 'rgba(170,205,255,.42)'); seg(l0, b3, 'rgba(170,205,255,.22)'); }
+  if (id === 'walnut') deskLamp(d, q, slab);
+  ctx.restore();
+}
+/* 기본 「검정」의 부서 자리: 검은 판과 가는 선(사무실 시안 그대로) */
+function pedBlack(a, d, q, slab, hot, urgent) {
+  ctx.save(); ctx.globalAlpha *= a;
+  const y = d.lobby ? 0 : slab, topF = HQ(q, y);
+  if (!d.lobby && slab > .004) {
+    const base = HQ(q, 0);
+    poly(base); ctx.strokeStyle = ink(hot ? .2 : .07); ctx.lineWidth = 1; ctx.stroke();
+    ctx.beginPath(); for (let i = 0; i < 4; i++) { ctx.moveTo(base[i][0], base[i][1]); ctx.lineTo(topF[i][0], topF[i][1]); } ctx.stroke();
+  }
+  poly(topF);
+  if (!d.lobby) { ctx.fillStyle = hot ? 'rgb(13,13,12)' : 'rgb(5,5,5)'; ctx.fill(); }
+  ctx.strokeStyle = ink(hot ? .5 : urgent ? .3 : .13); ctx.lineWidth = 1; ctx.stroke();
+  ctx.restore();
+}
+/* 부서 없는 일의 자리: 스킨에서는 바닥 위의 깔개다 */
+function paintMat(id, a, q) {
+  ctx.save(); ctx.globalAlpha *= a;
+  const top = HQ({x0:q.x0 + .1, x1:q.x1 - .1, z0:q.z0 + .1, z1:q.z1 - .1}, .004);
+  poly(top); ctx.fillStyle = SK[id].mat; ctx.fill(); ctx.strokeStyle = `rgba(${SK[id].label},.22)`; ctx.lineWidth = 1; ctx.stroke();
+  ctx.restore();
+}
+/* 바닥 위의 글: 그 자리의 바닥 축(세계의 x, z)대로 눕혀 쓴다. 위에서 보면 그대로 똑바르다 */
+function planeText(text, x, y, z) {
+  const o = P(x, y, z), ex = P(x + .01, y, z), ez = P(x, y, z + .01);
+  ctx.save(); ctx.translate(o[0], o[1]);
+  ctx.transform(ex[0] - o[0], ex[1] - o[1], ez[0] - o[0], ez[1] - o[1], 0, 0);
+  ctx.font = '500 29px "SUIT Variable","Malgun Gothic",sans-serif'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText(text, 0, 0); ctx.restore();
+}
+/* 부서 이름과 빈 자리 */
+function pedText(id, a, d, q, y, hot, urgent) {
+  const lc = SK[id].label, dark = id === 'black';
+  ctx.save(); ctx.globalAlpha *= a;
+  const lp = P(q.x0 + .2, y, q.z1 - .2);
+  ctx.fillStyle = `rgba(${lc},${hot || urgent ? .95 : dark ? .5 : .72})`; planeText(d.name, q.x0 + .2, y, q.z1 - .2);
+  const used = staff.filter(s => s.dept === d.id).map(s => s.seat);
+  for (let i = 0; i < SEATS(d); i++) {            // 빈 자리는 가는 짧은 선 하나다
+    if (used.includes(i)) continue;
+    const c = seatOf(d, i), s0 = P(c.x - .17, y, c.z + .3), s1 = P(c.x + .17, y, c.z + .3);
+    seg(s0, s1, `rgba(${lc},${dark ? (hot ? .22 : .12) : (hot ? .5 : .3)})`);
+  }
+  ctx.restore();
+}
+/* 직원 아래: 자리에 지는 그림자 */
+function underOrb(id, a, top, c, base, y, R) {
+  const k = SK[id]; if (!k.floor || a < .003) return;
+  ctx.save(); ctx.globalAlpha *= a;
+  if (id === 'glass' && top && T3 > .05) {
+    const m = P(c.x, base - (y - base), c.z), mr = R0 * cam.S * m[3];
+    ctx.save(); poly(top); ctx.clip();
+    const g = ctx.createLinearGradient(0, m[1] - mr, 0, m[1] + mr); g.addColorStop(0, `rgba(2,6,14,${.55 * T3})`); g.addColorStop(1, 'rgba(2,6,14,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(m[0], m[1], mr, mr * .92, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  const h = Math.max(0, y - R0 - base);
+  { const sp = P(c.x, base, c.z), sr = R0 * (1.25 + h * 1.6) * cam.S * sp[3], al = k.shadow * 1.25 * (1 - Math.min(.5, h * 1.6)) * T3;
+    if (sr > 1 && al > .003) { ctx.save(); ctx.translate(sp[0], sp[1]); ctx.scale(1, Math.max(.22, cam.sa)); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sr);
+      g.addColorStop(0, `rgba(0,0,0,${Math.min(.85, al)})`); g.addColorStop(.45, `rgba(0,0,0,${Math.min(.85, al) * .55})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, sr, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } }
+  ctx.restore();
+}
+/* 줄 앞의 작은 견본: 그 스킨의 바닥 한 조각과 자리 하나, 직원 하나를 그린다 */
+function drawSwatches() {
+  const dpr = Math.min(2, devicePixelRatio || 1), w = 60, h = 40;
+  rowsEl.querySelectorAll('canvas[data-sw]').forEach(cnv => {
+    const id = cnv.dataset.sw; cnv.width = Math.round(w * dpr); cnv.height = Math.round(h * dpr);
+    const sv = {c:ctx, cam:{...cam}, t:T3};
+    ctx = cnv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); setCam(1); T3 = 1;
+    const FQ = {x0:-3, x1:3, z0:-1.5, z1:2.4}, PQ = {x0:-1.55, x1:1.55, z0:-.95, z1:.95}, sl = SK[id].slab;
+    let a = 1e9, b = -1e9, e0 = 1e9, e1 = -1e9;
+    for (const x of [-1.75, 1.75]) for (const z of [id === 'hanok' ? -1.55 : -1.15, 1.2]) for (const y of [0, id === 'hanok' ? 1 : .75]) { const p = P0(x, y, z); a = Math.min(a, p[0]); b = Math.max(b, p[0]); e0 = Math.min(e0, p[1]); e1 = Math.max(e1, p[1]); }
+    cam.S = Math.max(w / (b - a), h / (e1 - e0)); cam.ox = w / 2 - (a + b) / 2 * cam.S; cam.oy = h / 2 - (e0 + e1) / 2 * cam.S;
+    if (id === 'black') pedBlack(1, {lobby:false}, PQ, sl, true, false);
+    else { paintFloor(id, 1, FQ, true); if (id === 'hanok') wall(FQ, 1); paintPed(id, 1, 'mini', PQ, sl, false, false); }
+    const oy = sl + R0 + .14, p = P(.25, oy, .05), R = R0 * cam.S * p[3];
+    underOrb(id, 1, HQ(PQ, sl), {x:.25, z:.05}, sl, oy, R);
+    ctx.beginPath(); ctx.arc(p[0], p[1], R, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill(); ctx.strokeStyle = `rgba(${SK[id].rim},.6)`; ctx.lineWidth = 1; ctx.stroke();
+    ctx = sv.c; Object.assign(cam, sv.cam); T3 = sv.t;
+  });
+}
+
+/* ── 스킨 가게 ── 사무실 그림이 곧 진열대다. 줄을 누르면 지금 사무실에 먼저 입혀 보고, 마음에 들면 산다 */
+const won = n => n.toLocaleString('ko-KR') + '원';
+const 을를 = w => w + (받침(w) ? '을' : '를');
+const 으로 = w => { const c = w.charCodeAt(w.length - 1), j = c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : 0; return w + (j && j !== 8 ? '으로' : '로'); };
+function shopSay() {
+  if (paying) return ['브라우저에서 결제를 기다리고 있습니다.', '결제를 마치면 사무실에 바로 입혀집니다.'];
+  const t = trying && skinOf(trying);
+  if (!t || t.id === worn) return [`지금 사무실은 ${skinOf(worn).name}입니다.`, '줄을 누르면 지금 사무실에 먼저 입혀 봅니다.'];
+  if (owned.has(t.id)) return [`${은는(t.name)} 이미 가지고 있습니다.`, '「이 스킨 쓰기」를 누르면 바로 바뀝니다.'];
+  return [`${을를(t.name)} 입혀 보고 있습니다.`, '마음에 들면 사고, 가게를 나가면 원래대로 돌아갑니다.'];
+}
+function skinMore(s) {
+  let j = 0, h = '';
+  for (const [nm, b, small] of s.parts) h += `<div class="row sub fact" style="--j:${j++}"><span class="nm">${esc(nm)}</span><span class="mid"><b>${esc(b)}</b>${small ? `<small>${esc(small)}</small>` : ''}</span><span class="when"></span></div>`;
+  if (worn === s.id) h += `<p class="more-note" style="--j:${j++}">지금 쓰는 스킨입니다.</p>`;
+  else if (owned.has(s.id)) h += `<p class="more-acts" style="--j:${j++}"><button class="buy" type="button" data-wear="${s.id}">이 스킨 쓰기</button><button class="quiet" type="button" data-untry>원래대로</button></p>`;
+  else if (paying === s.id) h += `<p class="more-acts" style="--j:${j++}"><span class="paying"><span class="mini on" aria-hidden="true"></span>브라우저에서 결제를 기다리고 있습니다</span><button class="quiet" type="button" data-paycancel>취소</button></p>`;
+  else h += `<p class="more-acts" style="--j:${j++}"><button class="buy" type="button" data-buy="${s.id}">${won(s.price)}에 사기</button><button class="quiet" type="button" data-untry>원래대로</button></p>`
+    + `<p class="more-note" style="--j:${j++}">SYNK 계정으로 삽니다. 결제는 브라우저에서 하고, 마치면 바로 입혀집니다.</p>`;
+  return h;
+}
+function shopHTML(snap) {
+  let h = `<div class="shop-top"><button class="back" type="button" data-shopback>← 사무실</button><span class="lab">가진 스킨 ${수(owned.size)}</span></div>`;
+  for (const s of SKINS) {
+    const on = trying === s.id, val = worn === s.id ? '쓰는 중' : owned.has(s.id) ? '가짐' : won(s.price);
+    h += `<button class="row skin${on ? ' opened' : ''}${worn === s.id ? ' worn' : ''}" type="button" data-skin="${s.id}" aria-expanded="${on}" aria-controls="more-sk-${s.id}"><span class="nm"><canvas class="skin-sw" data-sw="${s.id}" aria-hidden="true"></canvas>${esc(s.name)}</span><span class="mid">${esc(s.line)}</span><span class="val">${val}</span></button>`;
+    h += `<div class="more${on ? ' open' : ''}${snap ? ' snap' : ''}" id="more-sk-${s.id}" data-sk="${s.id}"${on ? '' : ' inert'}><div class="more-in">${skinMore(s)}</div></div>`;
+  }
+  h += `<p class="shop-note">스킨은 사무실의 모습만 바꿉니다. 일하는 사람 수와 빠르기는 그대로입니다.</p><p class="shop-note">산 스킨은 SYNK 계정에 남아 새 PC에서도 돌아옵니다. 이름과 값은 예시입니다.</p>`;
+  return h;
+}
+function syncShop() {
+  rowsEl.querySelectorAll('[data-skin]').forEach(b => { const on = b.dataset.skin === trying; b.classList.toggle('opened', on); b.setAttribute('aria-expanded', on); });
+  rowsEl.querySelectorAll('.more[data-sk]').forEach(m => { const on = m.dataset.sk === trying; m.classList.toggle('open', on); m.inert = !on; });
+  const [a, b] = headline(); sayEl.innerHTML = `${esc(a)}<span class="then">${esc(b)}</span>`;
+}
+const cancelPay = () => { clearTimeout(payT); paying = null; };
+function buy(id) {
+  paying = id; render(true);
+  // 시안에서는 브라우저의 결제를 2.2초 뒤에 마친 것으로 친다
+  payT = setTimeout(() => { paying = null; owned.add(id); worn = id; hold([`${을를(skinOf(id).name)} 샀습니다.`, '사무실에 입혔습니다. 다른 PC에서도 SYNK 계정으로 돌아옵니다.'], 4200); }, 2200);
+}
+function wear(id) { worn = id; hold([`사무실을 ${으로(skinOf(id).name)} 바꿨습니다.`, '다른 PC에서도 같은 모습으로 열립니다.'], 3600); }
+function enterShop() { planView = false; shopView = true; pinned = null; open.clear(); hotDept = hotStaff = null; render(true); room.scrollTop = 0; }
+function exitShop() { cancelPay(); shopView = false; trying = null; sayHold = null; render(true); }
+function shopClick(t) {
+  if (t.closest('[data-shop]')) { enterShop(); return true; }
+  if (!shopView) return false;
+  if (t.closest('[data-shopback]')) { exitShop(); return true; }
+  const sk = t.closest('[data-skin]');
+  if (sk) {
+    const id = sk.dataset.skin; if (paying && paying !== id) { cancelPay(); render(true); }
+    trying = trying === id ? null : id; sayHold = null; syncShop();      // 새로 고르면 「샀습니다」 같은 지난 소식 대신 고른 것을 말한다
+    if (trying) setTimeout(() => { const m = document.getElementById('more-sk-' + id); if (m && trying === id) m.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }, 480);
+    return true;
+  }
+  if ('untry' in t.dataset) { trying = null; sayHold = null; syncShop(); return true; }
+  if (t.dataset.buy) { buy(t.dataset.buy); return true; }
+  if (t.dataset.wear) { wear(t.dataset.wear); return true; }
+  if ('paycancel' in t.dataset) { cancelPay(); render(true); return true; }
+  return true;
+}
+function setCam(t) {
+  const e = t * t * (3 - 2 * t);
+  const yaw = -16 * e * Math.PI / 180, pitch = (90 - 43 * e) * Math.PI / 180;
+  cam.cy = Math.cos(yaw); cam.sy = Math.sin(yaw); cam.ca = Math.cos(pitch); cam.sa = Math.sin(pitch); cam.k = .028 * e;
+}
+function P0(x, y, z) {
+  const xr = x * cam.cy - z * cam.sy, zr = x * cam.sy + z * cam.cy;
+  const d = zr * cam.ca + y * cam.sa, s = 1 / (1 - d * cam.k);
+  return [xr * s, (zr * cam.sa - y * cam.ca) * s, d, s];
+}
+const P = (x, y, z) => { const p = P0(x, y, z); return [cam.ox + p[0] * cam.S, cam.oy + p[1] * cam.S, p[2], p[3]]; };
+function fit(w, h, left, top, t3) {
+  let a = 1e9, b = -1e9, c = 1e9, e = -1e9;
+  for (const x of [FL.x0, FL.x1]) for (const z of [FL.z0, FL.z1]) for (const y of [-.2, 1.05]) { const p = P0(x, y, z); a = Math.min(a, p[0]); b = Math.max(b, p[0]); c = Math.min(c, p[1]); e = Math.max(e, p[1]); }
+  // 사무실은 검정 위에 떠 있으므로 자리의 옆 여백까지 쓴다. 남는 높이는 아래에 더 둔다(줄의 첫 줄과 윗선이 가깝게)
+  const spill = Math.max(0, Math.min(56, left - 14)) * t3; left -= spill; w += spill * 1.6;
+  const pad = 10; cam.S = Math.min((w - pad * 2) / (b - a), (h - pad * 2) / (e - c));
+  cam.ox = left + w / 2 - (a + b) / 2 * cam.S; cam.oy = top + pad + (h - pad * 2 - (e - c) * cam.S) * .3 - c * cam.S;
+}
+const ink = a => `rgba(${INK},${a})`;
+function poly(pts) { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); }
+function eyes(x, y, R, mode, gx, gy, blink, a) {
+  const ex = .21 * R, ey = -.06 * R, er = Math.max(1.05, R * .085);
+  ctx.fillStyle = ctx.strokeStyle = ink(a); ctx.lineWidth = Math.max(1, er * .95); ctx.lineCap = 'round';
+  for (const s of [-1, 1]) {
+    const cx = x + s * ex + gx, cy = y + ey + gy;
+    ctx.beginPath();
+    if (mode === 'closed') { ctx.moveTo(cx - er * 1.4, cy + er); ctx.lineTo(cx + er * 1.4, cy + er); ctx.stroke(); }
+    else if (mode === 'smile') { ctx.arc(cx, cy + er * 1.3, er * 1.7, Math.PI * 1.18, Math.PI * 1.82); ctx.stroke(); }
+    else { ctx.ellipse(cx, cy, er, Math.max(.3, er * (1 - blink)), 0, 0, Math.PI * 2); ctx.fill(); }
+  }
+}
+const LOOK = {
+  work:  {rim:.5,  glow:.16, lift:.14, eye:.9},
+  ask:   {rim:.98, glow:.34, lift:.24, eye:1},
+  stall: {rim:.32, glow:.09, lift:.06, eye:.6},
+  idle:  {rim:.24, glow:.06, lift:0,   eye:.42},
+  done:  {rim:.62, glow:.15, lift:.05, eye:.9},
+};
+/* 직원 위의 느낌표. 알림이 온 순간 튀어나오고, 승인을 물은 동안은 위아래로 조금 뛴다 */
+function bang(x, y, R, s, now, color) {
+  const k = still ? 1 : Math.min(1, (now - (s.newsT0 || 0)) / 420), e = 1 + 2.70158 * Math.pow(k - 1, 3) + 1.70158 * Math.pow(k - 1, 2);
+  const h = Math.max(8, R * .95) * e, lw = Math.max(1.5, R * .16);
+  const by = y - R - 6 - (s.state === 'ask' && !still ? Math.abs(Math.sin(now / 520)) * 2.5 : 0);
+  ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x, by - h); ctx.lineTo(x, by - h * .38); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, by - lw * .2, lw * .62 * Math.min(1, e), 0, Math.PI * 2); ctx.fill();
+}
+function orb(x, y, R, s, now, t3) {
+  const L = LOOK[s.state], hot = hotStaff === s.id;
+  ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill();
+  const g = ctx.createRadialGradient(x - R * .3, y - R * .38, 0, x - R * .3, y - R * .38, R * 1.15);
+  const oink = a => `rgba(${orbInk},${a})`;
+  g.addColorStop(0, oink(L.glow * (.4 + .6 * t3))); g.addColorStop(1, oink(0));
+  ctx.fillStyle = g; ctx.fill();
+  // 일하는 동안은 테두리 밝기만 3.2초에 한 번 천천히 오간다(빛줄기 · 고리 없음)
+  const rim = s.state === 'work' ? (still ? .5 : .38 + .24 * (.5 + .5 * Math.sin(now * 2 * Math.PI / 3200 + s.seat * 2.1))) : L.rim;
+  ctx.strokeStyle = oink(Math.min(1, (hot ? Math.max(rim, .85) : rim) * rimBoost)); ctx.lineWidth = s.state === 'ask' ? 1.3 : 1;
+  ctx.stroke();
+  if (R < 5) return;
+  let gx = 0, gy = 0, mode = 'open';
+  if (s.state === 'idle') mode = 'closed';
+  else if (s.state === 'done') mode = 'smile';
+  else if (s.state === 'ask') { const dx = px - x, dy = py - y, m = Math.hypot(dx, dy) || 1, k = px < -9000 ? 0 : Math.min(1, m / 120) * R * .2; gx = dx / m * k; gy = dy / m * k; }
+  else { gy = R * .16; gx = still ? 0 : Math.sin(now / 1400 + s.seat) * R * .08; }
+  eyes(x, y, R, mode, gx, gy, s.blink, L.eye);
+  if (alerting(s)) bang(x, y, R, s, now, `rgba(${bangInk},.95)`);
+}
+function orbXY() { const a = orbBtn.getBoundingClientRect(), b = stage.getBoundingClientRect(); return {x:a.left - b.left + a.width / 2, y:a.top - b.top + a.height / 2}; }
+let zones = [], W = 0, H = 0, last = 0;
+function resize() {
+  const dpr = Math.min(2, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (planView) render(true);        // 창 너비에 따라 메모 자리와 맨 위 문장(「오른쪽」 · 「계획서 아래」)이 바뀐다
+}
+officeObj.addEventListener('click', () => { if (planView) exitPlan(); });
+new ResizeObserver(resize).observe(stage);
+
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!W) return;
+  const dt = Math.min(400, now - (last || now)); last = now;       // 걸린 시간으로 움직인다(화면이 느려도 같은 빠르기)
+  view += (viewTo - view) * (still ? 1 : 1 - Math.exp(-dt / 230)); if (Math.abs(viewTo - view) < .001) view = viewTo;
+  ctx.clearRect(0, 0, W, H);
+  const sb = stage.getBoundingClientRect();
+
+  // 왼쪽 위의 구
+  const o = orbXY(), OR = 11;
+  ctx.beginPath(); ctx.arc(o.x, o.y, OR, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill(); ctx.strokeStyle = ink(.55); ctx.lineWidth = 1; ctx.stroke();
+  ctx.beginPath(); ctx.arc(o.x, o.y, OR - 2.6, -2.5, -1.5); ctx.strokeStyle = ink(.34); ctx.stroke();
+  { const dx = px - o.x, dy = py - o.y, m = Math.hypot(dx, dy) || 1, k = px < -9000 ? 0 : Math.min(1, m / 200) * 2.2; eyes(o.x, o.y, OR, 'open', dx / m * k, dy / m * k, mainBlink(now), .95); }
+
+  const r = slot.getBoundingClientRect(), rr = room.getBoundingClientRect();
+  zones = [];
+  if (r.width < 40 || r.height < 40) return;
+  const left = r.left - sb.left, top = r.top - sb.top;
+  const t3 = view * view * (3 - 2 * view), slab = SLAB * t3;
+  setCam(view); fit(r.width, r.height, left, top, t3);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, rr.top - sb.top, W, rr.height); ctx.clip();
+
+  // 스킨: 바닥과 벽, 부서 자리, 직원 아래의 그림자를 스킨으로 그린다. 바뀌는 동안에는 앞의 스킨과 겹쳐 차례로 넘어간다
+  const want = curSkin();
+  if (want !== skinTo) { skinFrom = skinTo; skinTo = want; skinT0 = now; }
+  T3 = t3;
+  for (const d of DEPTS) { const tg = lampOn(d.id) ? 1 : 0, v = lampK[d.id] || 0; lampK[d.id] = still ? tg : v + (tg - v) * (1 - Math.exp(-dt / 450)); }
+  const A = skinFrom, B = skinTo, k0 = kOf(0, now), mix = k => A === B ? [[B, 1]] : [[A, 1 - k], [B, k]];
+  for (const [id, a] of mix(k0)) { paintFloor(id, a, FL); if (id === 'hanok') wall(FL, a); }
+
+  // 부서 자리: 뒤에서 앞으로
+  const order = DEPTS.filter(d => !d.lobby || staff.some(s => s.dept === 'lobby')).map(d => ({d, r:rectOf(d)})).sort((a, b) => P0(0, 0, a.r.z0)[2] - P0(0, 0, b.r.z0)[2]);
+  ctx.font = '400 12.5px "SUIT Variable","Malgun Gothic",sans-serif'; ctx.textBaseline = 'alphabetic';
+  const kD = {}, yD = {};
+  order.forEach(({d, r:q}, i) => {
+    const hot = hotDept === d.id || open.has(d.id), urgent = staff.some(s => s.dept === d.id && s.state === 'ask');
+    const k = A === B ? 1 : d.lobby ? k0 : kOf(1 + i, now);
+    const sl = (SK[A].slab * (1 - k) + SK[B].slab * k) * t3, y = d.lobby ? 0 : sl;
+    kD[d.id] = k; yD[d.id] = y;
+    for (const [id, a] of mix(k)) {
+      if (id === 'black') pedBlack(a, d, q, sl, hot, urgent);
+      else if (d.lobby) paintMat(id, a, q);
+      else paintPed(id, a, d, q, sl, hot, urgent);
+      pedText(id, a, d, q, y, hot, urgent);
+    }
+    const topF = HQ(q, y); topBy[d.id] = d.lobby ? null : topF;
+    zones.push({id:d.id, pts:topF});
+  });
+
+  // 직원: 먼 것부터
+  const list = [];
+  for (const s of staff) {
+    const d = deptOf(s.dept), c = seatOf(d, s.seat), L = LOOK[s.state], base = yD[d.id] || 0;
+    const y = base + R0 + L.lift * (.25 + .75 * t3);
+    const p = P(c.x, y, c.z);
+    list.push({s, d, c, base, y, p, R:R0 * cam.S * p[3], depth:p[2]});
+    if (s.blink > 0) s.blink = Math.max(0, s.blink - .12); else if (now > s.nextBlink && !still) { s.blink = 1; s.nextBlink = now + 2400 + Math.random() * 5200; }
+  }
+  list.sort((a, b) => a.depth - b.depth);
+  for (const {s, d, c, base, y, p, R} of list) {
+    const k = kD[d.id] === undefined ? 1 : kD[d.id], near = k < .5 ? A : B;
+    ctx.save(); ctx.globalAlpha = still || !s.born ? 1 : Math.min(1, (now - s.born) / 300);   // 새 직원은 0.3초 동안 나타난다
+    for (const [id, a] of mix(k)) underOrb(id, a, topBy[d.id], c, base, y, R);
+    // 기본 「검정」에서는 직원과 자리를 가는 선 하나로 잇는다
+    const lineA = (A === 'black' ? 1 - k : 0) + (B === 'black' ? k : 0);
+    if (lineA > .01 && t3 > .02 && y - R0 - base > .02) { const b = P(c.x, base, c.z), a = P(c.x, y - R0, c.z); ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(a[0], a[1]); ctx.strokeStyle = ink(.16 * t3 * lineA); ctx.lineWidth = 1; ctx.stroke(); }
+    // 도우미는 그 직원 앞, 자리 위에 놓인 꽉 찬 작은 점이다. 셋까지 가만히 둔다
+    ctx.fillStyle = `rgba(${SK[near].dot},.7)`;
+    for (let i = 0; i < Math.min(3, s.subs || 0); i++) { const h = P(c.x - .12 + i * .12, base, c.z + .4), hr = Math.max(1.4, .038 * cam.S * h[3]); ctx.beginPath(); ctx.ellipse(h[0], h[1], hr, hr * Math.max(.45, cam.sa), 0, 0, Math.PI * 2); ctx.fill(); }
+    orbInk = mixRGB(SK[A].rim, SK[B].rim, k); bangInk = SK[near].bang; rimBoost = SK[near].boost || 1;
+    orb(p[0], p[1], R, s, now, t3);
+    ctx.restore();
+    s.scr = {x:p[0], y:p[1], r:R};
+  }
+  ctx.restore();
+}
+let mb = 0, mbNext = performance.now() + 3000;
+function mainBlink(now) { if (mb > 0) mb = Math.max(0, mb - .12); else if (now > mbNext && !still) { mb = 1; mbNext = now + 2600 + Math.random() * 4200; } return mb; }
+
+/* 사무실 위에서의 손: 부서에 다가가면 그 부서의 줄이 열리고, 직원을 가리키면 그 직원의 줄이 밝아진다 */
+function inside(pts, x, y) { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const a = pts[i], b = pts[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; }
+function hit(x, y) {
+  let st = null; for (const s of staff) if (s.scr && Math.hypot(x - s.scr.x, y - s.scr.y) < s.scr.r + 6) st = s;
+  let z = st ? st.dept : null; if (!z) for (const q of zones) if (inside(q.pts, x, y)) z = q.id;
+  return {st, z};
+}
+let overFloor = false;
+stage.addEventListener('pointermove', e => {
+  const b = stage.getBoundingClientRect(); px = e.clientX - b.left; py = e.clientY - b.top;
+  const onSlot = e.target === slot;
+  if (!onSlot) { if (overFloor) { overFloor = false; slot.style.cursor = ''; if (!rowsEl.matches(':hover')) { hotDept = hotStaff = null; mark(); } } return; }
+  const h = hit(px, py), was = hotDept;
+  overFloor = true; hotStaff = h.st ? h.st.id : null; hotDept = h.z; slot.style.cursor = h.z && !shopView ? 'pointer' : '';
+  mark();
+});
+stage.addEventListener('pointerleave', () => { px = py = -9999; if (overFloor) { overFloor = false; hotDept = hotStaff = null; mark(); } });
+slot.addEventListener('click', e => { if (shopView) return; const b = stage.getBoundingClientRect(), h = hit(e.clientX - b.left, e.clientY - b.top); if (h.z) { pin(h.z); const f = document.getElementById('task-' + h.z); if (f) setTimeout(() => f.focus({preventScroll:true}), 60); } else { pinned = null; open.clear(); sync(); } });
+
+/* ── 시안 조작 막대 ──────────────────────────────────────────── */
+const meta = $('#meta'); let awayT = 0;
+function wake() { meta.classList.remove('away'); clearTimeout(awayT); awayT = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('away'); }, 4000); }
+addEventListener('pointermove', wake); addEventListener('keydown', wake); wake();
+const CASES = [['ask', '승인 물음'], ['calm', '평소'], ['rest', '모두 쉼']];
+function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; resetPlan(); if (sayHold === lastHold) sayHold = null; wasOpen = new Set(); rivalNews = 0; for (const k in openItem) delete openItem[k]; scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
+let ci = 0; $('#m-case').onclick = () => setCase(ci = (ci + 1) % CASES.length);
+/* 「알림 받기」: 일하던 직원 하나가 일을 끝내 알림이 오는 순간을 본다 */
+$('#m-ping').onclick = () => {
+  const c = staff.filter(s => s.state === 'work' && s.fin && s !== scouting && s !== pv.who);
+  const s = c.find(x => !staff.some(y => y.dept === x.dept && alerting(y))) || c[0];
+  if (!s) return;
+  Object.assign(s, {state:'done', say:s.fin, act:'끝냄', when:'방금', subs:0, news:true, newsT0:performance.now()});
+  hold([이가(deptOf(s.dept).name) + ' 일을 하나 끝냈습니다.', s.fin + '.'], 4200);
+};
+const SIZES = [['꽉 참'], ['1080×700', 1080, 700], ['720×760', 720, 760], ['420×760', 420, 760], ['380×250', 380, 250]];
+let si = 0; $('#m-size').onclick = e => { si = (si + 1) % SIZES.length; const z = SIZES[si]; document.body.classList.toggle('sized', !!z[1]); stage.style.setProperty('--sw', z[1] ? z[1] + 'px' : '100%'); stage.style.setProperty('--sh', z[1] ? z[2] + 'px' : '100%'); e.currentTarget.textContent = '창 크기 · ' + z[0]; };
+$('#m-again').onclick = () => { clearTimeout(payT); paying = null; owned = new Set(['black']); worn = 'black'; trying = null; setCase(ci); diagnose(); };
+$('#m-shop').onclick = () => shopView ? exitShop() : enterShop();
+const pcName = () => `PC · ${PCS[pi].cores}코어 ${PCS[pi].ram}GB`;
+$('#m-pc').onclick = e => { pi = (pi + 1) % PCS.length; e.currentTarget.textContent = pcName(); setCase(ci); diagnose(); };
+{ const m = location.hash.match(/pc(\d)/); if (m && PCS[m[1]]) pi = +m[1]; $('#m-pc').textContent = pcName(); }
+$('#m-sub').onclick = e => { sbi = (sbi + 1) % SUBCASES.length; e.currentTarget.textContent = '구독 · ' + SUBCASES[sbi].name; setCase(ci); diagnose(); };
+{ const m = location.hash.match(/sub(\d)/); if (m && SUBCASES[m[1]]) sbi = +m[1]; $('#m-sub').textContent = '구독 · ' + SUBCASES[sbi].name; }
+
+/* 주소 끝의 #2d · #calm · #rest로 바로 그 모습을 연다(화면 확인용) */
+if (/2d/.test(location.hash)) view = viewTo = 0;
+const h0 = CASES.findIndex(c => location.hash.includes(c[0])); if (h0 > 0) ci = h0;
+{ const m = location.hash.match(/worn-([a-z]+)/); if (m && SK[m[1]]) { worn = m[1]; owned.add(m[1]); } }
+/* 주소에 아무것도 없으면 스킨 가게에서 호두나무 서재를 입혀 본 채로 연다(이 시안의 첫 화면) */
+if (!location.hash.replace('#', '')) { shopView = true; trying = 'walnut'; ci = 1; }
+if (/shop/.test(location.hash)) { shopView = true; const m = location.hash.match(/shop-([a-z]+)/); if (m && SK[m[1]]) trying = m[1]; }
+skinFrom = skinTo = curSkin();
+resize(); setCase(ci); requestAnimationFrame(frame);
+if (/mkt/.test(location.hash)) pin('mkt');          // #mkt: 마케팅부의 줄을 연 채로 연다
+if (/plan/.test(location.hash)) enterPlan(/review/.test(location.hash) ? 'review' : 'start');   // #plan: 사업계획서 넣기 화면, #plan-review: 다 읽은 뒤 메모 화면
+})();
+</script>
+</body>
+</html>
