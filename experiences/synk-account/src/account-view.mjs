@@ -132,7 +132,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
       if(phase==='stopped')playStatus.textContent='계정 연결이 종료됐어요. 다시 로그인해 주세요. / Account connection ended. Sign in again.';
       if(phase==='synced'&&playState.rejected)playStatus.textContent=`${playState.message} / Saved to your account. ${playState.rejected} record${playState.rejected===1?'':'s'} couldn’t be saved and stay on this device.`;
       playRetry.textContent=phase==='stopped'?'다시 로그인하기':'게임 기록 다시 연결';
-      playRetry.hidden=preview||localConnection||data.account.status!=='active'||phase==='synced'||phase==='saving'||phase==='conflict';playRetry.disabled=phase==='loading';useRemote.hidden=phase!=='conflict';useLocal.hidden=phase!=='conflict'||playState.code==='IMPORT_CONFLICT';importOld.hidden=preview||!playState.canImport||phase!=='synced';
+      playRetry.hidden=preview||localConnection||data.account.status!=='active'||phase==='synced'||phase==='saving'||phase==='conflict'||phase==='loading';playRetry.disabled=phase==='loading';useRemote.hidden=phase!=='conflict';useLocal.hidden=phase!=='conflict'||playState.code==='IMPORT_CONFLICT';importOld.hidden=preview||!playState.canImport||phase!=='synced';
       if(playState.code==='IMPORT_CONFLICT')playStatus.textContent='계정에 이미 게임 기록이 있어 이전 브라우저 기록을 합치지 않았어요. 계정 진도를 선택해 주세요. 이전 기록은 이 기기에 보존돼요.';
       if(phase==='conflict'||phase==='stopped')closeGame();
     }

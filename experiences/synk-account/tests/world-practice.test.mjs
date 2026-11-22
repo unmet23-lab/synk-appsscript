@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WORLD_GAMES } from '../src/atlas-words.mjs';
-import { GAME_SKILLS, SKILL_SHORT, STATUS_WORDS, practiceSkills, firstPick, gamesFor, orderGames, particle, createWorldPractice } from '../src/world-practice.mjs';
+import { GAME_SKILLS, SKILL_SHORT, STATUS_WORDS, practiceSkills, firstPick, gamesFor, orderGames, particle, ratioOf, createWorldPractice } from '../src/world-practice.mjs';
 
 const paths = WORLD_GAMES.map(game => game.path);
 const skill = (id, status, label = SKILL_SHORT[id]) => ({ id, label, status, line: `${label} 줄` });
@@ -46,6 +46,12 @@ test('game order: chosen skill games, then other skills still to practise, then 
   assert.deepEqual(plain.order, [...paths.filter(path => path !== 'learning-hub'), 'learning-hub']);
 });
 
+test('the ratio is correct over recent first tries alone, and only when there were some', () => {
+  assert.deepEqual(ratioOf({ recent: 9, correct: 4 }), { recent: 9, correct: 4, pct: 44 });
+  assert.deepEqual(ratioOf({ recent: 12, correct: 11 }), { recent: 12, correct: 11, pct: 92 });
+  for (const bad of [{ recent: 0, correct: 0 }, { recent: 3, correct: 4 }, { recent: 2 }, { recent: 2.5, correct: 1 }, {}, null]) assert.equal(ratioOf(bad), null);
+});
+
 test('particles follow the final consonant', () => {
   assert.equal(particle('바람길', '으로', '로'), '로');
   assert.equal(particle('말의 리듬', '으로', '로'), '으로');
@@ -72,7 +78,11 @@ const view = () => { const opened = [], account = [];const practice = createWorl
 test('the practice view fills from one summary and a picked row moves the hero, the button and the yellow games', async () => {
   const { practice, opened } = view();
   assert.equal(practice.status().state, 'loading');
-  practice.setSummary({ shared: 'practice-and-settings', summary: { practice: { answered: 10, independent: 7, assisted: 3, periods: { recent: { answered: 10, independent: 7, assisted: 3, activeDays: 4 } }, skills: SKILLS } } });
+  practice.setSummary({ shared: 'practice-and-settings', summary: { practice: { answered: 10, independent: 7, assisted: 3, periods: { recent: { answered: 10, independent: 7, assisted: 3, activeDays: 4 } }, skills: [{ ...SKILLS[0], recent: 9, correct: 4 }, SKILLS[1], SKILLS[2], { ...SKILLS[3], recent: 12, correct: 11 }] } } });
+  // 유호님 11-22 「비율도 보여 줘」: 줄과 첫 판에 최근 혼자 푼 문항 중 맞힌 비율. 푼 문항이 없는 줄은 비율 없이 상태 말만.
+  const pctOf = id => find(find(practice.skills, n => n.dataset.skill === id), n => n.className === 'wp-pct').textContent;
+  assert.equal(pctOf('ko.listening.negation'), '44%');assert.equal(pctOf('ko.listening.word'), '92%');assert.equal(pctOf('ko.reading.condition'), '');
+  assert.equal(find(practice.hero, n => n.className === 'wp-meta').children[0].textContent, '최근 혼자 푼 9문항 중 4문항 맞힘');
   assert.equal(find(practice.hero, n => n.tagName === 'h2').textContent, '듣고 부정·변경 이해하기');
   const go = () => find(practice.hero, n => Object.hasOwn(n.dataset, 'recGo'));
   assert.equal(go().textContent, '바람길로 연습');

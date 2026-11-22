@@ -17,12 +17,12 @@ if (!playwrightDir || !outArg) { console.error('usage: scenes.mjs <playwright �
 const out = path.resolve(outArg);fs.mkdirSync(out, { recursive: true });
 const { chromium } = createRequire(import.meta.url)(path.resolve(playwrightDir));
 const at = '2026-11-21T10:00:00.000Z';
-const skill = (id, label, status, line) => ({ id, label, domain: id.split('.')[1], status, recent: 8, correct: 4, assisted: 1, lastAt: at, line });
+const skill = (id, label, status, line, recent = 0, correct = 0) => ({ id, label, domain: id.split('.')[1], status, recent, correct, assisted: 1, lastAt: at, line });
 const SKILLS = [
-  skill('ko.listening.negation', '듣고 부정·변경 이해하기', 'practice', '최근 놓친 「듣고 부정·변경 이해하기」를 조금 더 연습해 봐요.'),
+  skill('ko.listening.negation', '듣고 부정·변경 이해하기', 'practice', '최근 놓친 「듣고 부정·변경 이해하기」를 조금 더 연습해 봐요.', 9, 4),
   skill('ko.reading.condition', '읽고 조건 이해하기', 'supported', '「읽고 조건 이해하기」를 도움과 함께 해냈어요. 이어서 살펴봐요.'),
   skill('ko.reading.grammar', '조사·문형 읽기', 'review', '「조사·문형 읽기」를 다시 살펴볼 때예요.'),
-  skill('ko.listening.word', '낱말 듣기', 'recent-independent', '「낱말 듣기」를 최근 혼자 해냈어요. 가볍게 이어가요.'),
+  skill('ko.listening.word', '낱말 듣기', 'recent-independent', '「낱말 듣기」를 최근 혼자 해냈어요. 가볍게 이어가요.', 12, 11),
 ];
 const periods = { days: 30, recent: { answered: 128, independent: 96, assisted: 32, activeDays: 9 }, previous: { answered: 60, independent: 40, assisted: 20, activeDays: 5 }, sufficient: true };
 const summary = (practice, shared = 'practice-and-settings') => ({ ok: true, shared, learning: { enabled: shared === 'practice-and-settings', revision: 3 }, summary: { reasons: ['travel'], presentation: { support: 'choose' }, forReasons: [], practice } });
@@ -95,6 +95,8 @@ try {
       if (width >= 1280 && m.fold && m.fold > height) console.log(`  note ${name} ${width}: 게임 판 아래 끝 ${m.fold}px > 창 ${height}px`);
       if (name === 'practice') {
         (await text(page, '.wp-hero h2')) === '듣고 부정·변경 이해하기' ? ok('첫 판: 가장 먼저 연습할 곳') : bad('첫 판 기술 ' + await text(page, '.wp-hero h2'));
+        (await text(page, '.wp-meta')).includes('최근 혼자 푼 9문항 중 4문항 맞힘') && (await text(page, '.wp-meta b')) === '44%' ? ok('첫 판 비율 44%') : bad('첫 판 비율 ' + await text(page, '.wp-meta'));
+        (await text(page, '.wp-skill[data-skill="ko.listening.word"] .wp-pct')) === '92%' && (await text(page, '.wp-skill[data-skill="ko.reading.condition"] .wp-pct')) === '' ? ok('줄 비율(푼 문항 없는 줄은 비움)') : bad('줄 비율');
         (await text(page, '[data-rec-go]')) === '바람길로 연습' ? ok('연습 단추: 바람길(부정·변경 듣기가 주된 연습인 첫 게임)') : bad('연습 단추 ' + await text(page, '[data-rec-go]'));
         (await page.getAttribute('.game-links>button >> nth=0', 'data-game')) === 'korean-runner' ? ok('첫 게임 칸: 바람길') : bad('첫 게임 칸');
         (await page.locator('.game-links>button[data-rec]').count()) === 3 ? ok('노란 칸 셋') : bad('노란 칸 수 ' + await page.locator('.game-links>button[data-rec]').count());
