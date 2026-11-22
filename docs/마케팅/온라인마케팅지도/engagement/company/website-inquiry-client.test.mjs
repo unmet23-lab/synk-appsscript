@@ -223,14 +223,15 @@ test('non-admin sessions never request the inquiry inbox',()=>{
   f.api.ensure();assert.equal(calls,0);
 });
 
-const registered=(id,productId='topik4',extra={})=>inquiry(id,'new',{replyDraft:'',registration:{productId,label:productId==='topik4'?'TOPIK 4급 온라인 반':productId==='ub-academy'?'울란바토르 한국어 학원':'한국 유학 상담',source:'direct',language:'ko',hasNote:false,resubmitted:false,waitlistOnly:true,manualReviewRequired:false},...extra});
-const registrations=(records=3)=>({products:[['topik4','TOPIK 4급 온라인 반'],['ub-academy','울란바토르 한국어 학원'],['ub-consult','한국 유학 상담']].map(([id,label],i)=>({id,label,records:i?0:records,uniqueEmails:i?0:Math.min(records,2),duplicateRecords:i?0:Math.max(0,records-2),waitlistRecords:i?0:records,needsReviewRecords:0,resubmittedRecords:0,sources:i||!records?[]:[{source:'direct',records,uniqueEmails:Math.min(records,2)}]}))});
+const PRODUCT_LABELS={'topik4':'TOPIK 4급 온라인 반','ub-academy':'울란바토르 한국어 학원','ub-consult':'한국 유학 상담','app-reserve':'SYNK 사전예약'};
+const registered=(id,productId='topik4',extra={})=>inquiry(id,'new',{replyDraft:'',registration:{productId,label:PRODUCT_LABELS[productId],source:'direct',language:'ko',hasNote:false,resubmitted:false,waitlistOnly:true,manualReviewRequired:false},...extra});
+const registrations=(records=3)=>({products:Object.entries(PRODUCT_LABELS).map(([id,label],i)=>({id,label,records:i?0:records,uniqueEmails:i?0:Math.min(records,2),duplicateRecords:i?0:Math.max(0,records-2),waitlistRecords:i?0:records,needsReviewRecords:0,resubmittedRecords:0,sources:i||!records?[]:[{source:'direct',records,uniqueEmails:Math.min(records,2)}]}))});
 const registrationView=()=>({...ready(),registrations:registrations(),items:[registered('registration'),inquiry('ordinary','new')]});
 const settle=async()=>{for(let i=0;i<16;i++)await Promise.resolve();};
 const productClick=(f,product)=>f.listeners.click({target:{closest:selector=>selector==='[data-wi-action]'?{dataset:{wiAction:'product',product},disabled:false}:null}});
 
 test('registration counts remain unknown before a connection, first collection or complete summary, including failed refresh',async()=>{
-  for(const view of [{...data(),registrations:registrations(0)},{...registrationView(),run:{status:'ready',lastSuccessAt:null}},{...ready(),items:[]},{...registrationView(),registrations:{products:[registrations().products[0]]}}]){
+  for(const view of [{...data(),registrations:registrations(0)},{...registrationView(),run:{status:'ready',lastSuccessAt:null}},{...ready(),items:[]},{...registrationView(),registrations:{products:[registrations().products[0]]}},{...registrationView(),registrations:{products:registrations().products.filter(p=>p.id!=='app-reserve')}}]){
     const f=fixture();f.context.api=async()=>view;await f.api.load();const html=f.api.panel();
     assert.doesNotMatch(html,/data-wi-product-card=/,'an incomplete or uncollected summary is not three zero cards');
     assert.match(html,/집계를 확인/);
@@ -239,15 +240,17 @@ test('registration counts remain unknown before a connection, first collection o
   f.context.api=async()=>{throw Error('조회 실패');};await f.api.load();assert.doesNotMatch(f.api.panel(),/data-wi-product-card=/);assert.match(f.api.panel(),/집계를 확인하지 못했어요/);
 });
 
-test('three registration cards use server totals, escape sources and filter only active matching registrations',async()=>{
+test('four registration cards use server totals, escape sources and filter only active matching registrations',async()=>{
   const f=fixture(),view=registrationView();view.registrations.products[0].records=11;view.registrations.products[0].sources=[{source:'<img src=x onerror=alert(1)>',records:11,uniqueEmails:2}];
-  view.items.push(registered('finished','topik4',{status:'closed'}),registered('test','topik4',{classification:{isTest:true,category:'test'}}),registered('privacy','topik4',{classification:{category:'privacy'}}),registered('other-product','ub-consult'));
-  f.context.api=async()=>view;await f.api.load();let html=f.api.panel();assert.equal((html.match(/data-wi-product-card=/g)||[]).length,3);
-  assert.match(html,/<dt>등록<\/dt><dd>11<small>건/,'the UI does not recompute the server summary from visible rows');assert.match(html,/고유 이메일/);assert.match(html,/수강 확정 인원이 아니에요/);assert.match(html,/유입별 고유 이메일 수를 더하지 않아요/);
+  view.items.push(registered('finished','topik4',{status:'closed'}),registered('test','topik4',{classification:{isTest:true,category:'test'}}),registered('privacy','topik4',{classification:{category:'privacy'}}),registered('other-product','ub-consult'),registered('reserve','app-reserve'));
+  f.context.api=async()=>view;await f.api.load();let html=f.api.panel();
+  assert.deepEqual([...html.matchAll(/data-wi-product-card="([^"]+)"/g)].map(m=>m[1]),['app-reserve','topik4','ub-academy','ub-consult'],'the open pre-reservation comes first');
+  assert.match(html,/<dt>등록<\/dt><dd>11<small>건/,'the UI does not recompute the server summary from visible rows');assert.match(html,/고유 이메일/);assert.match(html,/수강이나 가입을 확정한 사람 수가 아니에요/);assert.match(html,/유입별 고유 이메일 수를 더하지 않아요/);
   assert.doesNotMatch(html,/<img src=x/);assert.match(html,/&lt;img src=x/);
   await productClick(f,'topik4');html=f.api.panel();assert.deepEqual([...html.matchAll(/data-wi-open="([^"]+)"/g)].map(m=>m[1]),['registration']);assert.equal(f.api.state.scope,'all');
   f.api.state.dirty=true;f.context.confirm=()=>false;await productClick(f,'ub-consult');assert.equal(f.api.state.product,'topik4','changing products honors the unsaved draft confirmation');
-  f.api.state.dirty=false;await productClick(f,'');assert.equal(f.api.state.product,'');assert.match(f.api.panel(),/data-wi-open="ordinary"/);
+  f.api.state.dirty=false;await productClick(f,'app-reserve');assert.deepEqual([...f.api.panel().matchAll(/data-wi-open="([^"]+)"/g)].map(m=>m[1]),['reserve']);
+  await productClick(f,'');assert.equal(f.api.state.product,'');assert.match(f.api.panel(),/data-wi-open="ordinary"/);
 });
 
 test('waitlist details avoid false task promises, preserve existing tasks and identify resubmissions for manual review',async()=>{

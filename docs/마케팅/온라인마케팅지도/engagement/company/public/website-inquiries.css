@@ -13,7 +13,7 @@
 :root .synk-workspace .mt .wi-registrations{margin:0 0 22px;padding:16px;border:1px solid var(--mt-line,rgba(255,255,255,.13));border-radius:8px;background:#000000}
 :root .synk-workspace .mt .wi-registration-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:8px}
 :root .synk-workspace .mt .wi-registrations h2{margin:0;font-size:17px;color:var(--mt-ink,#FFFFFF)}
-:root .synk-workspace .mt .wi-registration-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+:root .synk-workspace .mt .wi-registration-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
 :root .synk-workspace .mt .wi-registration-card{min-width:0;padding:14px;border-radius:8px;border:1px solid var(--mt-line,rgba(255,255,255,.13));background:var(--mt-surface,#07080A)}
 :root .synk-workspace .mt .wi-registration-card h3{margin:0 0 12px;font-size:15px}
 :root .synk-workspace .mt .wi-registration-card h3 button{max-width:100%;padding:6px 10px;border:1px solid var(--mt-control-line,#78808E);border-radius:6px;background:#000000;color:var(--mt-ink,#FFFFFF);font:inherit;font-weight:var(--w-strong);text-align:left;white-space:normal;overflow-wrap:anywhere;cursor:pointer}

@@ -1,10 +1,14 @@
-// Read-only interpretation of the three existing interest-registration forms.
+// Read-only interpretation of the published interest-registration forms.
 // No customer text or email is retained in the returned metadata or summary.
 const PRODUCTS=[
   {id:'topik4',label:'TOPIK 4급 온라인 반',marker:'[TOPIK 4급 온라인 반 관심 등록]',types:['LAB · 한국어 교육'],fields:['이름','지금 급수','4급이 필요한 때','토요일 시간'],optional:['값 의향'],note:'쓰기에서 어려운 점'},
   {id:'ub-academy',label:'울란바토르 한국어 학원',marker:'[울란바토르 관심 등록 · 학원]',types:['LAB · 한국어 교육'],fields:['이름','누가 적었나','학생 한국어','한국에 가려는 때','다니기 좋은 때'],note:'궁금한 점'},
   {id:'ub-consult',label:'한국 유학 상담',marker:'[울란바토르 관심 등록 · 유학 상담]',types:['PATH · 유학·취업 연계','SHIFT · 유학·취업 연계'],fields:['이름','누가 적었나','학생 한국어','한국에 가려는 때','생각하는 유학'],note:'궁금한 점'},
+  // synk.im/reserve/ 앱 출시(2027년 2월) 사전예약. 관심 값은 화면의 고르기 칸에서만 오므로 다른 값이면 사람이 읽는다.
+  {id:'app-reserve',label:'SYNK 사전예약',marker:'[SYNK 사전예약]',types:['출시 소식 문의'],fields:['관심'],note:'궁금한 점',languages:['한국어','몽골어','영어'],
+    values:{관심:/^(?:\(안 고름\)|(?:한국어|유학|취업)(?: · (?:한국어|유학|취업))*)$/}},
 ];
+const LANGUAGES={한국어:'ko',몽골어:'mn',영어:'en'};
 
 export function websiteInquiryRegistration(input){
   const message=typeof input?.message==='string'?input.message:'';
@@ -15,14 +19,14 @@ export function websiteInquiryRegistration(input){
   const seen=new Set();let source='direct',language=null,hasNote=false,resubmitted=false,unrecognized=false,inNote=false,sourceSeen=false;
   for(const line of lines.slice(1)){
     if(!line.trim())continue;
-    const origin=/^들어온 곳: ([a-z0-9][a-z0-9-]{0,39}) · 화면 언어 (한국어|몽골어)$/.exec(line);
-    if(origin){if(sourceSeen)unrecognized=true;sourceSeen=true;source=origin[1];language=origin[2]==='한국어'?'ko':'mn';inNote=false;continue;}
+    const origin=/^들어온 곳: ([a-z0-9][a-z0-9-]{0,39}) · 화면 언어 (한국어|몽골어|영어)$/.exec(line);
+    if(origin&&(product.languages||['한국어','몽골어']).includes(origin[2])){if(sourceSeen)unrecognized=true;sourceSeen=true;source=origin[1];language=LANGUAGES[origin[2]];inNote=false;continue;}
     if(line.startsWith('다시 등록:')){resubmitted=true;inNote=false;continue;}
     if(line.startsWith(product.note+':')){hasNote||=!!line.slice(product.note.length+1).trim();inNote=true;continue;}
     if(inNote){hasNote=true;continue;}
     const field=[...product.fields,...(product.optional||[])].find(name=>line.startsWith(name+':'));
-    if(field){if(seen.has(field)||!line.slice(field.length+1).trim())unrecognized=true;seen.add(field);continue;}
-    if(product.id!=='topik4'&&line.startsWith('함께 등록:')&&line.slice(6).trim())continue;
+    if(field){const value=line.slice(field.length+1).trim();if(seen.has(field)||!value||product.values?.[field]&&!product.values[field].test(value))unrecognized=true;seen.add(field);continue;}
+    if(product.id.startsWith('ub-')&&line.startsWith('함께 등록:')&&line.slice(6).trim())continue;
     unrecognized=true;
   }
   const manualReviewRequired=hasNote||resubmitted||unrecognized||!sourceSeen||product.fields.some(field=>!seen.has(field));

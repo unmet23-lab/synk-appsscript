@@ -54,5 +54,42 @@ test('summaries deduplicate email within products, omit closed rows, retain sour
   assert.deepEqual(a.sources,[{source:'friend',records:1,uniqueEmails:1},{source:'univ-test',records:4,uniqueEmails:4}]);
   assert.equal(result.products[1].uniqueEmails,1);assert.equal(result.products[2].uniqueEmails,1);
   assert.doesNotMatch(JSON.stringify(result),/@|시험|쓰기에서 어려운/);
-  assert.deepEqual(summarizeWebsiteRegistrations([]).products.map(p=>p.records),[0,0,0]);
+  assert.deepEqual(summarizeWebsiteRegistrations([]).products.map(p=>p.records),[0,0,0,0]);
+});
+
+const reserve=(patch={},lines=['관심: 한국어 · 취업','들어온 곳: fb-test · 화면 언어 몽골어'])=>({email:'reserve@example.com',type:'출시 소식 문의',status:'new',message:['[SYNK 사전예약]',...lines].join('\n'),...patch});
+
+test('a plain app pre-reservation waits in the list without a reply review, in all three screen languages',()=>{
+  assert.deepEqual(websiteInquiryRegistration(reserve()),{productId:'app-reserve',label:'SYNK 사전예약',source:'fb-test',language:'mn',hasNote:false,resubmitted:false,waitlistOnly:true,manualReviewRequired:false});
+  for(const [screen,language]of[['한국어','ko'],['몽골어','mn'],['영어','en']]){
+    const parsed=websiteInquiryRegistration(reserve({},['관심: 유학',`들어온 곳: direct · 화면 언어 ${screen}`]));
+    assert.equal(parsed.language,language,screen);assert.equal(parsed.waitlistOnly,true,screen);assert.equal(parsed.source,'direct',screen);
+  }
+  for(const value of ['(안 고름)','한국어','한국어 · 유학 · 취업','취업 · 한국어']){
+    const parsed=websiteInquiryRegistration(reserve({},['관심: '+value,'들어온 곳: direct · 화면 언어 영어']));
+    assert.equal(parsed.waitlistOnly,true,value);assert.equal(parsed.manualReviewRequired,false,value);
+  }
+});
+
+test('pre-reservations with a wrong type, a correction or text outside the form go to a person',()=>{
+  for(const row of [reserve({type:'LAB · 한국어 교육'}),reserve({type:'PATH · 유학·취업 연계'}),reserve({message:'[SYNK 사전예약 안내]\n관심: 한국어\n들어온 곳: direct · 화면 언어 한국어'})])assert.equal(websiteInquiryRegistration(row),null);
+  const resubmitted=websiteInquiryRegistration(reserve({},['관심: 한국어','들어온 곳: direct · 화면 언어 한국어','다시 등록: 앞서 old@example.com으로 보낸 등록을 고쳐 다시 보냄(앞 등록은 버림)']));
+  assert.equal(resubmitted.resubmitted,true);assert.equal(resubmitted.manualReviewRequired,true);assert.doesNotMatch(JSON.stringify(resubmitted),/old@example/);
+  for(const [label,lines]of[['missing interest',['들어온 곳: direct · 화면 언어 한국어']],['missing origin',['관심: 한국어']],['free interest',['관심: 언제 나오나요?','들어온 곳: direct · 화면 언어 한국어']],
+    ['empty interest',['관심:','들어온 곳: direct · 화면 언어 한국어']],['note',['관심: 한국어','들어온 곳: direct · 화면 언어 한국어','궁금한 점: 값은 얼마인가요']],['extra line',['관심: 한국어','들어온 곳: direct · 화면 언어 한국어','함께 등록: 유학 상담']]]){
+    const parsed=websiteInquiryRegistration(reserve({},lines));assert.equal(parsed.waitlistOnly,false,label);assert.equal(parsed.manualReviewRequired,true,label);
+  }
+  assert.equal(websiteInquiryRegistration(reserve({},['관심: 한국어','들어온 곳: ../unsafe · 화면 언어 한국어'])).source,'direct');
+  assert.equal(websiteInquiryRegistration(topik({message:topik().message.replace('화면 언어 몽골어','화면 언어 영어')})).manualReviewRequired,true,'older pages never sent English, so it stays unexpected there');
+  assert.equal(websiteInquiryRegistration(ub()).waitlistOnly,true,'the academy page still lists its companion registration');
+});
+
+test('the pre-reservation summary counts unique emails apart from the class products and exposes no addresses',()=>{
+  const rows=[reserve(),reserve({email:' RESERVE@EXAMPLE.COM ',message:reserve().message.replace('fb-test','ig-test')}),reserve({email:'second@example.com',message:reserve().message.replace('관심: 한국어 · 취업','관심: (안 고름)')}),
+    reserve({email:'third@example.com',status:'closed'}),reserve({email:'not-an-email'}),topik()];
+  const result=summarizeWebsiteRegistrations(rows),app=result.products.find(p=>p.id==='app-reserve');
+  assert.deepEqual({...app,sources:null},{id:'app-reserve',label:'SYNK 사전예약',records:3,uniqueEmails:2,duplicateRecords:1,waitlistRecords:3,needsReviewRecords:0,resubmittedRecords:0,sources:null});
+  assert.deepEqual(app.sources,[{source:'fb-test',records:2,uniqueEmails:2},{source:'ig-test',records:1,uniqueEmails:1}]);
+  assert.equal(result.products[0].records,1,'the TOPIK row stays in its own product');
+  assert.doesNotMatch(JSON.stringify(result),/@|한국어 · 취업/);
 });

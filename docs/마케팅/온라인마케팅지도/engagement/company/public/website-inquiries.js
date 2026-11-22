@@ -5,7 +5,7 @@
 // 서버 계약(/api/website-inquiries · data-wi-* · 상태 new/reviewing/replied/closed · 답변은 보내지 않음)은 그대로다. 서버가 준 글(분류 이름 · 근거 · 다음 할 일 · 오류)은 그대로 보인다.
 // 지우기는 두 번 부른다(10-22): …/erase-check가 Google 원본 상태 · 함께 지울 할 일과 10분짜리 확인 번호를 주고, …/erase가 그 번호로 지운다. 번호는 화면 메모리에만 둔다.
 const websiteInquiryState={identity:'',request:0,loading:false,saving:false,busyKind:'',attempted:false,data:null,error:'',selected:null,draft:null,dirty:false,query:'',scope:'open',product:'',registrationStale:true,picking:false,folds:{},copied:{},lastTarget:'',erasure:null,eraseError:null};
-const wiProducts=['topik4','ub-academy','ub-consult'];
+const wiProducts=['app-reserve','topik4','ub-academy','ub-consult'];
 const wiStatus={new:'새 문의',reviewing:'검토 중',replied:'답변 완료',closed:'종결'};
 const wiTones={new:'wait',reviewing:'info',replied:'ok',closed:'off'};
 const wiRunStatus={'not-connected':'읽기 연결 필요',ready:'자동 수집 켜짐',paused:'자동 수집 꺼짐',running:'수집 중','catching-up':'지난 문의 수집 중',failed:'수집 멈춤'};
@@ -56,7 +56,7 @@ const wiProductMatch=(row,id)=>row.status!=='closed'&&wiRegistration(row)?.produ
 // 집계는 서버 값만 쓴다. 연결·첫 전체 수집·최신 GET이 확인되기 전에는 0건으로 단정하지 않는다.
 function wiRegistrationProducts(){
   const s=websiteInquiryState,data=s.data,products=data?.registrations?.products;
-  if(s.registrationStale||!data?.connection?.configured||!data.run?.lastSuccessAt||!Array.isArray(products)||products.length!==3)return null;
+  if(s.registrationStale||!data?.connection?.configured||!data.run?.lastSuccessAt||!Array.isArray(products)||products.length!==wiProducts.length)return null;
   const count=value=>Number.isSafeInteger(value)&&value>=0,fields=['records','uniqueEmails','duplicateRecords','waitlistRecords','needsReviewRecords','resubmittedRecords'];
   if(!wiProducts.every(id=>products.filter(p=>p?.id===id).length===1)||!products.every(p=>fields.every(key=>count(p[key]))&&Array.isArray(p.sources)&&p.sources.every(row=>typeof row.source==='string'&&count(row.records)&&count(row.uniqueEmails))))return null;
   return wiProducts.map(id=>products.find(p=>p.id===id));
@@ -64,7 +64,7 @@ function wiRegistrationProducts(){
 function wiRegistrations(){
   const s=websiteInquiryState,products=wiRegistrationProducts(),busy=s.loading||s.saving;
   const heading=`<div class="wi-registration-heading"><h2>관심 등록</h2><button type="button" class="btn small" data-wi-action="product" data-product="" aria-pressed="${!s.product}" ${busy?'disabled':''}>전체 문의 보기</button></div>`;
-  const intro='<p class="mt-note">종결 · 기능 점검 · 개인정보 문의는 빼요. 고유 이메일은 제품별로 세며 수강 확정 인원이 아니에요.</p>';
+  const intro='<p class="mt-note">종결 · 기능 점검 · 개인정보 문의는 빼요. 고유 이메일은 제품별로 세요. 수강이나 가입을 확정한 사람 수가 아니에요.</p>';
   if(!products){const text=s.loading||s.saving?'관심 등록 집계를 새로 읽고 있어요.':!s.data?.connection?.configured?'읽기 연결 뒤 관심 등록 집계를 확인해요.':!s.data.run?.lastSuccessAt?'첫 전체 수집이 끝나면 관심 등록 집계를 확인해요.':'관심 등록 집계를 확인하지 못했어요. 새로 읽어 주세요.';return `<section class="wi-registrations" aria-label="관심 등록 집계">${heading}<p class="mt-note" role="status">${text}</p></section>`;}
   const cards=products.map(p=>{const metrics=[['등록',p.records,'건'],['고유 이메일',p.uniqueEmails,'개'],['중복 등록',p.duplicateRecords,'건'],['답장 검토',p.needsReviewRecords,'건'],['대기만',p.waitlistRecords,'건'],['재등록',p.resubmittedRecords,'건']];return `<article class="wi-registration-card" data-wi-product-card="${p.id}"><h3><button type="button" data-wi-action="product" data-product="${p.id}" aria-pressed="${s.product===p.id}" ${busy?'disabled':''}>${escape(p.label)}</button></h3><dl>${metrics.map(([label,value,unit])=>`<div><dt>${label}</dt><dd>${mtNum(value)}<small>${unit}</small></dd></div>`).join('')}</dl><details class="wi-sources"><summary>유입별 등록 ${mtNum(p.sources.length)}곳</summary>${p.sources.length?`<ul>${p.sources.map(row=>`<li><strong>${escape(row.source)}</strong><span>등록 ${mtNum(row.records)}건 · 고유 이메일 ${mtNum(row.uniqueEmails)}개</span></li>`).join('')}</ul><p class="mt-note">같은 이메일이 여러 유입에 있으면 각각 세요. 유입별 고유 이메일 수를 더하지 않아요.</p>`:'<p class="mt-note">아직 등록된 유입이 없어요.</p>'}</details></article>`;}).join('');
   return `<section class="wi-registrations" aria-label="관심 등록 집계">${heading}${intro}<div class="wi-registration-grid">${cards}</div></section>`;
