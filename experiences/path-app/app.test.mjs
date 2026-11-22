@@ -16,6 +16,9 @@ import * as channelData from './channel-data.mjs';
 import * as channelUi from './channel-ui.mjs';
 import * as pathUi from './path-ui.mjs';
 import * as docsData from './docs-data.mjs';
+import * as studyAccount from './study-account.mjs';
+import * as consentUi from './consent-ui.mjs';
+import * as studyShape from './study-shape.mjs';
 
 // The real app runs unchanged apart from its static ESM imports. This small DOM
 // provides only element parsing, selectors, live input values and event bubbling;
@@ -123,7 +126,7 @@ function fixture() {
   }, '2026-11-09T10:01:00.000Z');
 }
 
-async function boot(t, { failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null } = {}) {
+async function boot(t, { failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null } = {}) {
   const initial = raw ?? JSON.stringify(legacy ? fixture() : { ...createPathDocument('ko'), state: fixture() });
   const originalKey = legacy ? LEGACY_KEY : GUEST_KEY;
   const records = new Map([[originalKey, initial]]);
@@ -149,10 +152,30 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
   const requests = [];
   let statusOverride = null, useRemoteCalls = 0, confirmHook = null;
   const status = () => ({ configured: true, signedIn: true, accountId: owner, status: 'signed-in' });
+  const studyRow = { revision: studyState ? 1 : 0, state: studyState ? studyShape.validateStudyDocument(studyState) : null, saves: 0, failNext: null, loadDown: studyLoadDown };
+  const studyFault = (code, revision) => Object.assign(new Error(code), { code, revision });
+  const studyReply = () => ({ ok: true, scope: 'synk-path', resource: 'path-study', accountId: owner, revision: studyRow.revision, updatedAt: '2026-11-22T00:00:00.000Z', state: structuredClone(studyRow.state) });
+  async function studyServer(operation, values) {
+    if (!study) throw studyFault('PATH_STUDY_UNAVAILABLE');
+    if (operation === 'pathLoad') { if (studyRow.loadDown) throw studyFault(studyRow.loadDown); return studyReply(); }
+    const expected = values.expected_revision;
+    if (operation === 'pathDelete') {
+      if (studyRow.state === null && expected === studyRow.revision - 1) return studyReply();
+      if (expected !== studyRow.revision) throw studyFault('REVISION_CONFLICT', studyRow.revision);
+      studyRow.state = null; studyRow.revision++; return studyReply();
+    }
+    if (studyRow.down) throw studyFault(studyRow.down);
+    if (studyRow.failNext) { const code = studyRow.failNext; studyRow.failNext = null; throw studyFault(code); }
+    const state = studyShape.validateStudyDocument(values.state);
+    if (expected !== studyRow.revision) throw studyFault('REVISION_CONFLICT', studyRow.revision);
+    if (studyRow.state === null ? state.consent.base !== studyRow.revision : JSON.stringify(studyRow.state.consent) !== JSON.stringify(state.consent)) throw studyFault('PATH_STUDY_CONSENT_STALE', studyRow.revision);
+    studyRow.state = state; studyRow.revision++; studyRow.saves++; return studyReply();
+  }
   const accountFactory = signedIn ? options => ({
     status,
     start: async () => { accountOptions = options; options.onStatus(status()); },
-    request: async (operation, values) => {
+    request: async (operation, values, opts = {}) => {
+      if (opts.resource === 'path-study') return studyServer(operation, values);
       requests.push({ operation, owner });
       assert.ok(['pathLoad', 'pathSave'].includes(operation));
       if (operation === 'pathSave' && conflictSave) throw Object.assign(new Error('Synthetic revision conflict'), { code: 'REVISION_CONFLICT', revision: 2 });
@@ -184,7 +207,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
   TestURL.createObjectURL = () => `blob:qa-${downloads.length}`;
   TestURL.revokeObjectURL = value => revoked.push(value);
   const context = {
-    ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi, ...channelData, ...channelUi, ...pathUi, ...docsData,
+    ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi, ...channelData, ...channelUi, ...pathUi, ...docsData, ...studyAccount, ...consentUi, normalizeStudyProfile: studyProfile.normalizeProfile,
     // 기본은 예시 묶음이다. 실제 과정이 자료에 들어와도 아래 흐름 시험은 같은 묶음으로 돈다.
     PROGRAMS: programs ?? studyData.PROGRAMS.filter(program => program.example),
     createPathSession: options => {
@@ -222,7 +245,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
     event('input', textarea);
   };
   return { root, announcer, click, event, typeBody, initial, session,
-    original: () => records.get(originalKey), saved: () => records.get(GUEST_KEY), writes: () => writes, record: key => records.get(key),
+    original: () => records.get(originalKey), saved: () => records.get(GUEST_KEY), writes: () => writes, record: key => records.get(key), keys: () => [...records.keys()],
     failWrites: () => { failWrite = true; }, providerSignOuts: () => providerSignOuts,
     notifyStatus: () => sessionOptions.onStatus(session.status()),
     switchOwner: id => { owner = id; remote = { ...createPathDocument('ko'), state: fixture() }; accountOptions.onStatus(status()); },
@@ -231,7 +254,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
     setConfirmation: value => { confirmation = value; },
     setConfirmHook: callback => { confirmHook = callback; },
     setStatusOverride: value => { statusOverride = value; },
-    useRemoteCalls: () => useRemoteCalls, requests,
+    useRemoteCalls: () => useRemoteCalls, requests, studyRow,
     recoveryRaw, storedRecoveryRaw: () => records.get(recoveryKey) };
 }
 
@@ -477,6 +500,7 @@ const studySeed = (owner, fields = { topik: 4, gradePct: 88 }) => ({ [STUDY_KEY]
 const pageText = app => app.root.textContent.replace(/\s+/g, ' ');
 const studyGoalDocument = () => JSON.stringify({ ...createPathDocument('ko'), state: stateModel.updateProfile(stateModel.createInitialState('ko'), { onboarded: true, primaryGoal: 'study' }, '2026-11-21T00:00:00.000Z') });
 const settle = async () => { for (let i = 0; i < 12; i++) await new Promise(resolve => setImmediate(resolve)); };
+const until = async (check, ms = 3000) => { const end = Date.now() + ms; while (Date.now() < end) { if (check()) return true; await new Promise(resolve => setTimeout(resolve, 10)); } return check(); };
 
 test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과와 탭 저장에만 닿고 계정 문서는 그대로다', async t => {
   const app = await boot(t);
@@ -733,4 +757,167 @@ test('내 길: 대학 자세히에서 과정을 고르면 오늘에 카드가 �
   app.click('studyClear');
   assert.equal(JSON.parse(app.record(STUDY_KEY)).target, 'jj-ug');
   assert.equal(JSON.parse(app.record(STUDY_KEY)).docs.length, 1);
+});
+
+test('계정 저장 동의: 로그인한 학생이 조건을 넣으면 한 번 묻고, 동의 화면에서 18세 미만은 보호자 확인 뒤에만 계정에 저장한다', async t => {
+  const app = await boot(t, { signedIn: true, study: true });
+  await settle();
+  app.click('nav', '[data-page=\"univ\"]'); app.click('nav', '[data-page=\"cond\"]');
+  app.click('studySet', '[data-key="topik"][data-id="3"]');
+  assert.match(pageText(app), /이 조건을 계정에 저장하면 다른 기기에서도 이어서 볼 수 있어요/, '누른 뒤 한 번 묻는다');
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).topik, 3, '누른 동작은 탭에 먼저 반영됐다');
+  app.click('studyConsentOpen');
+  assert.match(app.root.querySelector('h1').textContent, /내 조건을 계정에 저장할까요/);
+  assert.match(pageText(app), /Supabase, Inc\.\)의 싱가포르 서버예요\. 정보가 몽골 밖으로 옮겨져요/);
+  assert.match(pageText(app), /Монгол хэлээр унших/, '몽골어 문장을 함께 둔다');
+  const save = () => app.root.querySelector('[data-action="consentSave"]');
+  assert.doesNotMatch(pageText(app), /계정 저장됨/, '동의 화면 위에는 준비 글의 「계정 저장됨」을 두지 않는다');
+  assert.match(pageText(app), /나이를 고르면 저장할 수 있어요/, '저장 단추가 막힌 까닭을 알린다');
+  assert.equal(save().getAttribute('aria-disabled'), 'true', '나이를 고르기 전에는 저장할 수 없다');
+  app.click('consentAge', '[data-id="minor"]');
+  assert.equal(save().getAttribute('aria-disabled'), 'true', '18세 미만은 보호자 확인 전에는 저장할 수 없다');
+  assert.match(pageText(app), /보호자 확인을 누르면 저장할 수 있어요/);
+  app.click('consentGuardian');
+  assert.equal(app.root.querySelector('[data-action="consentGuardian"]').getAttribute('aria-checked'), 'true');
+  assert.equal(save().getAttribute('aria-disabled'), null);
+  app.click('consentSave');
+  assert.ok(await until(() => app.studyRow.revision === 1), '서버가 받는다');
+  assert.deepEqual({ ...app.studyRow.state.consent, at: 'x' }, { v: 1, at: 'x', minor: true, guardian: true, lang: 'ko', base: 0 });
+  assert.equal(app.studyRow.state.profile.topik, 3);
+  assert.ok(await until(() => app.record(STUDY_KEY) === undefined || JSON.parse(app.record(STUDY_KEY)).topik === null), '서버가 받은 뒤 탭을 비운다');
+  assert.match(pageText(app), /계정에 저장했어요/);
+  app.click('nav', '[data-page=\"univ\"]'); app.click('nav', '[data-page=\"cond\"]');
+  assert.match(pageText(app), /이 조건은 계정에 저장돼요/);
+  app.click('studySet', '[data-key="topik"][data-id="5"]');
+  assert.doesNotMatch(pageText(app), /아직 계정에 올라가지 않은 변경/, '정상으로 보내는 동안에는 올라가지 않았다고 알리지 않는다');
+  assert.ok(await until(() => app.studyRow.state?.profile.topik === 5, 4000), '동의한 뒤의 고침은 계정 문서로 간다');
+  app.click('nav', '[data-page="profile"]');
+  assert.match(pageText(app), /「내 조건」 · 「다가오는 날」 · 고른 과정 · 서류 표시를 계정에 저장하고 있어요/);
+  assert.doesNotMatch(pageText(app), /는 계정에 저장돼요\./, '저장 방식 칸에서 같은 말을 되풀이하지 않는다');
+  app.setConfirmation(true);
+  app.click('studyAccountDelete');
+  assert.ok(await until(() => app.studyRow.state === null && app.studyRow.revision >= 3), '지우면 빈 행과 다음 판');
+  assert.match(app.confirmations.at(-1), /지우고 동의를 거둬요/);
+  assert.doesNotMatch(app.confirmations.at(-1), /백업/, '내려받는 백업에는 이 자료가 없다');
+});
+
+test('계정 저장 동의를 거부하면 이 탭에만 두고 다시 묻지 않으며, 서버가 꺼져 있으면 묻지 않고 탭 저장으로 계속 쓴다', async t => {
+  const app = await boot(t, { signedIn: true, study: true });
+  await settle();
+  app.click('nav', '[data-page=\"univ\"]'); app.click('nav', '[data-page=\"cond\"]');
+  app.click('studySet', '[data-key="topik"][data-id="2"]');
+  app.click('consentRefuse');
+  assert.match(pageText(app), /이 탭에만 둘게요/);
+  app.click('studySet', '[data-key="topik"][data-id="4"]');
+  assert.doesNotMatch(pageText(app), /이 조건을 계정에 저장하면/, '거부한 탭에서는 다시 묻지 않는다');
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).topik, 4);
+  assert.equal(app.studyRow.saves, 0);
+  const off = await boot(t, { signedIn: true, study: false });
+  await settle();
+  off.click('nav', '[data-page=\"univ\"]'); off.click('nav', '[data-page=\"cond\"]');
+  off.click('studySet', '[data-key="topik"][data-id="1"]');
+  assert.doesNotMatch(pageText(off), /이 조건을 계정에 저장하면/, '계정 저장이 쉬면 묻지 않는다');
+  assert.equal(JSON.parse(off.record(STUDY_KEY)).topik, 1, '탭 저장으로 계속 쓴다');
+});
+
+test('계정에 저장된 조건과 이 탭에서 넣은 조건이 다르면 지우기 전에 어느 쪽을 쓸지 고르게 한다', async t => {
+  const saved = studyShape.createStudyDocument({ ...studyProfile.createProfile(), topik: 5 }, { v: 1, at: '2026-11-22T00:00:00.000Z', minor: false, guardian: false, lang: 'ko', base: 0 });
+  const keep = await boot(t, { signedIn: true, study: true, studyState: saved, seed: studySeed('guest', { topik: 2 }) });
+  assert.ok(await until(() => /이 탭에서 넣은 조건이 계정에 저장된 것과 달라요/.test(pageText(keep))), '고르라고 묻는다');
+  assert.equal(JSON.parse(keep.record(STUDY_KEY)).topik, 2, '고르기 전에는 탭의 조건을 지우지 않는다');
+  keep.click('studyUseAccount');
+  assert.equal(JSON.parse(keep.record(STUDY_KEY) || '{"topik":null}').topik, null, '계정 것을 고르면 탭을 비운다');
+  keep.click('nav', '[data-page="univ"]'); keep.click('nav', '[data-page="cond"]');
+  assert.equal(keep.root.querySelector('button[data-action="studySet"][data-key="topik"][data-id="5"]').getAttribute('aria-pressed'), 'true', '계정의 조건을 보인다');
+  assert.equal(keep.studyRow.saves, 0);
+
+  const replace = await boot(t, { signedIn: true, study: true, studyState: saved, seed: studySeed('guest', { topik: 2 }) });
+  assert.ok(await until(() => !!replace.root.querySelector('button[data-action="studyUseTab"]')));
+  replace.click('studyUseTab');
+  assert.ok(await until(() => replace.studyRow.state?.profile.topik === 2, 4000), '이 탭 것으로 바꾸면 계정 문서를 고친다');
+  assert.equal(replace.studyRow.state.consent.base, 0, '동의 기록은 그대로 둔다');
+
+  const same = await boot(t, { signedIn: true, study: true, studyState: saved, seed: studySeed('guest', { topik: 5 }) });
+  assert.ok(await until(() => same.record(STUDY_KEY) === undefined || JSON.parse(same.record(STUDY_KEY)).topik === null), '같으면 묻지 않고 탭을 비운다');
+  assert.doesNotMatch(pageText(same), /어느 쪽을 쓸까요/);
+});
+
+test('동의 저장이 서버에 닿지 않으면 동의 화면에 남아 까닭을 알리고 탭의 조건을 지키며, 다시 누르면 저장한다. 보내지 못한 변경이 남은 채 로그아웃을 확인하면 그 초안을 지운다', async t => {
+  const app = await boot(t, { signedIn: true, study: true });
+  await settle();
+  app.click('nav', '[data-page="univ"]'); app.click('nav', '[data-page="cond"]');
+  app.click('studySet', '[data-key="topik"][data-id="4"]');
+  app.click('studyConsentOpen');
+  app.click('consentAge', '[data-id="adult"]');
+  app.studyRow.failNext = 'NETWORK';
+  app.click('consentSave');
+  assert.ok(await until(() => /계정에 저장하지 못했어요/.test(pageText(app))), '실패를 알린다');
+  assert.match(app.root.querySelector('h1').textContent, /내 조건을 계정에 저장할까요/, '동의 화면에 남는다');
+  assert.equal(app.studyRow.state, null);
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).topik, 4, '탭의 조건은 그대로다');
+  assert.ok(await until(() => !!app.root.querySelector('button[data-action="consentSave"]') && app.root.querySelector('button[data-action="consentSave"]').getAttribute('aria-disabled') === null));
+  app.click('consentSave');
+  assert.ok(await until(() => app.studyRow.revision === 1), '다시 누르면 저장한다');
+  assert.ok(await until(() => /계정에 저장했어요/.test(pageText(app))));
+  // 연결이 끊긴 채 고치면 보내지 못한 초안이 이 탭에 남는다. 로그아웃을 확인하면 그 초안을 지운다(공용 기기).
+  const draftKeys = () => app.keys().filter((k) => k.startsWith('synk-path-study-account:'));
+  app.studyRow.down = 'NETWORK';
+  app.click('nav', '[data-page="univ"]'); app.click('nav', '[data-page="cond"]');
+  app.click('studySet', '[data-key="topik"][data-id="6"]');
+  assert.ok(await until(() => draftKeys().length > 0), '보내지 못한 초안이 남아 있다');
+  app.click('nav', '[data-page="profile"]');
+  app.setConfirmation(true);
+  app.click('accountSignOut');
+  assert.ok(await until(() => app.providerSignOuts() === 1));
+  assert.match(app.confirmations.at(-1), /로그아웃하면 이 변경은 지워져요/);
+  assert.deepEqual(draftKeys(), [], '공용 기기에 성적 · 돈이 담긴 초안을 남기지 않는다');
+  assert.equal(app.studyRow.state.profile.topik, 4, '보내지 못한 변경은 계정에 올라가지 않았다');
+});
+
+test('동의 화면 둘레 안내: 남은 초안 고르기, 막힘, 불러오는 중, 연결 오류, 서버 쉼을 저마다 알린다', () => {
+  const html = consentUi.renderStudyNotices({ lang: 'ko', drafts: true });
+  assert.match(html, /data-action="studyDraftAccount"/); assert.match(html, /data-action="studyDraftPick"/);
+  const set = (view) => consentUi.renderStudyAccountSettings({ lang: 'ko', ...view }).replace(/<[^>]+>/g, ' ');
+  assert.match(set({ phase: 'choose' }), /고르기 전에는 조건을 고칠 수 없어요/);
+  assert.match(set({ phase: 'loading', store: 'wait' }), /불러오는 중이에요/);
+  assert.match(set({ phase: 'error', store: 'blocked' }), /지금 불러오지 못했어요/);
+  assert.match(consentUi.renderStudyAccountSettings({ lang: 'ko', phase: 'error', store: 'blocked' }), /data-action="studyAccountRetry"/);
+  assert.match(set({ phase: 'paused', store: 'tab', errorCode: 'NETWORK' }), /연결을 확인하고 다시 시도해 주세요/);
+  assert.equal(consentUi.renderStudyAccountSettings({ lang: 'ko', phase: 'paused', store: 'tab', errorCode: 'PATH_STUDY_UNAVAILABLE' }), '', '서버가 아직 열지 않았으면 칸을 두지 않는다');
+  assert.match(consentUi.renderStudyConsent({ lang: 'ko', minor: null }), /data-fold="consent-mn"/, '몽골어 접이는 다시 그려도 펼친 채다');
+});
+
+test('이 탭에서 동의를 확인한 학생이 새로 고쳤을 때 계정을 못 불러오면 탭으로 돌아가지 않고 고침을 막으며, 다시 시도로 받으면 탭과 견준다', async t => {
+  const saved = studyShape.createStudyDocument({ ...studyProfile.createProfile(), topik: 5 }, { v: 1, at: '2026-11-22T00:00:00.000Z', minor: false, guardian: false, lang: 'ko', base: 0 });
+  const app = await boot(t, { signedIn: true, study: true, studyState: saved, studyLoadDown: 'NETWORK', seed: { 'synk-path-study-consent-seen': 'qa-account', ...studySeed('qa-account', { topik: 2 }) } });
+  await settle();
+  assert.equal(app.record('synk-path-study-consent-seen'), 'qa-account', '불러오는 동안 「동의 확인」을 지우지 않는다');
+  app.click('nav', '[data-page="univ"]'); app.click('nav', '[data-page="cond"]');
+  assert.match(pageText(app), /계정에 저장한 조건을 지금 불러오지 못했어요/);
+  assert.match(pageText(app), /지금 불러오지 못해 고칠 수 없어요/, '저장 안내 줄도 막힘을 알린다');
+  assert.doesNotMatch(pageText(app), /이 조건은 이 탭에만 저장돼요|계정에 저장하면 다른 기기에서도/);
+  app.click('studySet', '[data-key="topik"][data-id="6"]');
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).topik, 2, '막힌 동안 고침이 탭으로 가지 않는다');
+  assert.match(app.announcer.textContent, /지금 불러오지 못해 고칠 수 없어요/, '바꾼 것처럼 알리지 않고 막힌 까닭을 알린다');
+  assert.equal(app.studyRow.saves, 0);
+  app.studyRow.loadDown = null;
+  app.click('studyAccountRetry');
+  assert.ok(await until(() => /이 탭에서 넣은 조건이 계정에 저장된 것과 달라요/.test(pageText(app))), '다시 시도로 받은 뒤에도 탭과 견주어 고르게 한다');
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).topik, 2, '고르기 전에는 탭을 지우지 않는다');
+});
+
+test('PATH 앱 원천에는 제어 문자가 없다(정규식의 \\b가 백스페이스로 바뀌는 일 따위)', () => {
+  for (const name of ['app.mjs', 'consent-ui.mjs', 'study-account.mjs', 'study-shape.mjs', 'study-ui.mjs', 'channel-ui.mjs', 'path-ui.mjs', 'account.mjs']) {
+    const text = readFileSync(new URL('./' + name, import.meta.url), 'utf8');
+    assert.equal(/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text), false, name);
+  }
+});
+
+test('「이 탭에만 두기」는 새로 고쳐도 다시 묻지 않는다', async t => {
+  const app = await boot(t, { signedIn: true, study: true, seed: { 'synk-path-study-consent-refused': 'qa-account' } });
+  await settle();
+  app.click('nav', '[data-page="univ"]'); app.click('nav', '[data-page="cond"]');
+  app.click('studySet', '[data-key="topik"][data-id="3"]');
+  assert.doesNotMatch(pageText(app), /이 조건을 계정에 저장하면/);
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).topik, 3);
 });

@@ -5,6 +5,9 @@ import { createJobsFeed, renderJobs, jobOpportunity } from './jobs-ui.mjs';
 import { SCHEMA_VERSION, STORAGE_KEY, createInitialState, normalizeState, updateProfile, upsertTask, confirmTask, getNextTask } from './state.mjs';
 import { PROGRAMS, RULES, rulesAt, programsFor } from './study-data.mjs';
 import { createProfileStore, createProfile, setField, toggleCompare, parseWhole, GUEST_OWNER, MAX_DATES, addDate, removeDate, confirmDate, keepDates, toggleChannel, setTarget, toggleDoc } from './study-profile.mjs';
+import { normalizeProfile as normalizeStudyProfile } from './study-profile.mjs';
+import { createStudyAccount } from './study-account.mjs';
+import { renderStudyConsent, renderStudyNotices, renderStudyAccountSettings } from './consent-ui.mjs';
 import { POSTS, allPosts, findDate, endDay, dateStatus } from './channel-data.mjs';
 import { renderChannels, renderPost, renderUpcoming, renderNews, icsText } from './channel-ui.mjs';
 import { renderPath, renderPathCard, renderPathPick, pathTarget, stageCounts } from './path-ui.mjs';
@@ -155,15 +158,114 @@ function syncStudyOwner() {
   S.studyText = {}; S.studyErrors = {}; S.univId = null; S.univFilter = 'all';
   return true;
 }
+// 계정의 유학 준비 문서(3-1b). 동의한 학생의 조건은 계정 문서에, 동의 전 · 거부 · 손님은 탭 저장(study)에 둔다.
+// 이 탭에서 이 계정의 동의를 확인했으면(CONSENT_SEEN_KEY) 계정을 못 쓸 때 탭으로 몰래 돌아가지 않고 고침을 막는다.
+const CONSENT_SEEN_KEY = 'synk-path-study-consent-seen';
+const tabStorage = () => { try { return sessionStorage; } catch { return null; } };
+const seenGet = () => { try { return tabStorage()?.getItem(CONSENT_SEEN_KEY) || null; } catch { return null; } };
+const seenSet = (id) => { try { if (id) tabStorage()?.setItem(CONSENT_SEEN_KEY, id); else tabStorage()?.removeItem(CONSENT_SEEN_KEY); } catch {} };
+const CONSENT_REFUSED_KEY = 'synk-path-study-consent-refused';
+const refusedGet = () => { try { return tabStorage()?.getItem(CONSENT_REFUSED_KEY) || null; } catch { return null; } };
+const refusedSet = (id) => { try { if (id) tabStorage()?.setItem(CONSENT_REFUSED_KEY, id); else tabStorage()?.removeItem(CONSENT_REFUSED_KEY); } catch {} };
+let studyAcctId = null;
+let studyCompared = null;
+const studyAcct = createStudyAccount({ request: (op, v) => session.studyRequest(op, v), storage: tabStorage(), onChange: (sn) => {
+  if (!studyAcctId) return;
+  if (sn?.phase === 'none') { if (seenGet() === studyAcctId) seenSet(null); studyCompared = null; S.studyChoice = false; }
+  if (sn?.phase === 'choose') seenSet(studyAcctId);
+  // 동의하는 중(서버 확인 전)에는 견주지 않는다: 실패하면 탭의 조건이 그대로 남아야 한다.
+  if (sn?.phase === 'consented' && studyCompared !== studyAcctId && !S.consentBusy) settleStudy(sn);
+  render(false);
+} });
+// 이 계정의 동의 문서를 처음 받았을 때 한 번: 이 탭의 「동의 확인」을 남기고, 탭에도 넣은 것이 있으면 같으면 비우고 다르면 고르게 한다(고르기 전에는 지우지 않는다).
+function settleStudy(sn) {
+  studyCompared = studyAcctId; seenSet(studyAcctId);
+  const tabP = tabStudyProfile();
+  if (hasStudyData(tabP)) { if (sameStudy(tabP, sn.profile)) { study.clear(); study.setOwner(studyAcctId); } else S.studyChoice = true; }
+}
+// 연결이 돌아오면 올라가지 않은 변경을 다시 보낸다.
+try { globalThis.addEventListener?.('online', () => { if (studyAcctId && studyAcct.snapshot().pending) void studyAcct.retry(); }); } catch {}
+const STUDY_SCALARS = ['topik', 'gradePct', 'fundsWon', 'education', 'target'];
+const STUDY_LISTS = { compare: (x) => x, channelsOff: (x) => x, dates: (x) => x.id, docs: (x) => x.id };
+const hasStudyData = (p) => STUDY_SCALARS.some((k) => p[k] !== null && p[k] !== undefined) || Object.keys(STUDY_LISTS).some((k) => (p[k] || []).length > 0);
+const sameStudy = (a, b) => JSON.stringify(normalizeStudyProfile({ ...a, v: 1 })) === JSON.stringify(normalizeStudyProfile({ ...b, v: 1 }));
+// 판 충돌 때 계정 것 위에 다시 적용할 동작: 바뀐 칸만, 목록은 더하고 뺀 것만 옮긴다.
+function studyDiff(before, after) {
+  return (base) => {
+    const out = { ...base };
+    for (const k of STUDY_SCALARS) if (before[k] !== after[k]) out[k] = after[k];
+    for (const [k, id] of Object.entries(STUDY_LISTS)) {
+      const b = new Map((before[k] || []).map((x) => [id(x), x])), a = new Map((after[k] || []).map((x) => [id(x), x]));
+      let list = (base[k] || []).filter((x) => !(b.has(id(x)) && !a.has(id(x))));
+      for (const [key, v] of a) if (!b.has(key) || JSON.stringify(b.get(key)) !== JSON.stringify(v)) { const i = list.findIndex((y) => id(y) === key); if (i >= 0) list[i] = v; else list.push(v); }
+      out[k] = list;
+    }
+    return normalizeStudyProfile({ ...out, v: 1 });
+  };
+}
+function tabStudyProfile() {
+  const o = study.owner();
+  return o === GUEST_OWNER || o === studyOwnerNow() ? study.get() : createProfile();
+}
+/** 지금 조건을 어디에 두는지: 'account'(동의함) · 'blocked'(남은 초안 고르기, 또는 이 탭에서 동의를 확인했는데 지금 계정을 못 씀) · 'wait'(동의를 확인한 탭에서 불러오는 중) · 'tab'. */
+function studyStore() {
+  if (!studyAcctId) return 'tab';
+  const phase = studyAcct.snapshot().phase;
+  if (phase === 'consented') return 'account';
+  if (phase === 'choose') return 'blocked';
+  if (seenGet() === studyAcctId && phase === 'loading') return 'wait';
+  if (seenGet() === studyAcctId && ['paused', 'error'].includes(phase)) return 'blocked';
+  return 'tab';
+}
+const studyLocked = () => ['blocked', 'wait'].includes(studyStore());
+// 조건 · 날 · 과정 · 표시 · 비교 · 채널을 바꾸는 동작. 막힌 동안에는 받지 않는다(바꾼 것처럼 알리지 않게).
+const STUDY_WRITE_ACTS = new Set(['channelShow', 'dateToggle', 'dateConfirm', 'datesClean', 'studySet', 'studyClear', 'pathPick', 'docToggle', 'studyCompare']);
+function studyStoreNote() {
+  const where = studyStore();
+  if (where === 'wait') return accL('계정에 저장한 조건을 불러오는 중이에요.', 'Loading the conditions saved to your account.');
+  if (where === 'blocked') return studyAcct.snapshot().phase === 'choose'
+    ? accL('계정에 올라가지 않은 변경이 남아 있어요. 위에서 어느 쪽을 쓸지 고르면 조건을 고칠 수 있어요.', 'Some changes never reached your account. Choose which to use above, then you can change conditions.')
+    : accL('계정에 저장한 조건을 지금 불러오지 못해 고칠 수 없어요. 위의 「다시 시도」를 눌러 주세요.', 'Your saved conditions could not be loaded, so they cannot be changed right now. Press Retry above.');
+  return '';
+}
+function syncStudyAccount() {
+  const id = session.status().accountId || null;
+  if (id === studyAcctId) return;
+  studyAcctId = id; studyCompared = null; S.consentAsk = false; S.studyChoice = false;
+  if (refusedGet() && refusedGet() !== id) refusedSet(null);
+  S.consentRefused = !!id && refusedGet() === id;
+  if (!id) { studyAcct.close(); seenSet(null); refusedSet(null); return; }
+  void studyAcct.open(id).then(() => { if (studyAcctId === id) render(false); });
+}
 // 감춰 둔 남의 조건 위에 쓰지 않는다: 주인이 다르면 비우고 지금 주인 것으로 새로 쓴다.
 function studyWrite(next) {
+  const where = studyStore();
+  if (where === 'blocked' || where === 'wait') return studyProfile();
+  if (where === 'account') {
+    // 계정과 탭이 다르다고 묻는 중에 계정 쪽 조건을 고치면 계정 것을 고른 것으로 본다(옛 탭 값으로 나중에 덮지 않게).
+    if (S.studyChoice) { study.clear(); study.setOwner(studyAcctId); S.studyChoice = false; }
+    const before = studyProfile(), after = normalizeStudyProfile({ ...next, v: 1 });
+    try { studyAcct.write(after, studyDiff(before, after)); } catch { /* 고르기 · 불러오기 중: 알림이 막힌 까닭을 보인다 */ }
+    return after;
+  }
   if (study.owner() !== studyOwnerNow()) { study.clear(); study.setOwner(studyOwnerNow()); }
-  return study.set(next);
+  const out = study.set(next);
+  // 로그인했고 계정에 동의 문서가 없으면 한 번 묻는다. 누른 동작은 이미 탭에 반영됐다.
+  if (studyAcctId && studyAcct.snapshot().phase === 'none' && !S.consentRefused && hasStudyData(out)) S.consentAsk = true;
+  return out;
 }
 function studyProfile() {
-  if (study.owner() !== studyOwnerNow()) return createProfile();
-  const p = study.get();
+  const where = studyStore();
+  if (where === 'blocked' || where === 'wait') return createProfile();
+  const p = where === 'account' ? normalizeStudyProfile({ ...studyAcct.snapshot().profile, v: 1 }) : study.owner() !== studyOwnerNow() ? null : study.get();
+  if (!p) return createProfile();
   return { ...p, compare: p.compare.filter((id) => STUDY_IDS.includes(id)) };
+}
+const STUDY_PAGES = ['today', 'path', 'univ', 'univDetail', 'univCompare', 'cond', 'channels', 'post'];
+function studyNoticesHtml() {
+  if (!STUDY_ON || !studyAcctId || !STUDY_PAGES.includes(S.page)) return '';
+  const sn = studyAcct.snapshot();
+  return renderStudyNotices({ lang: state.lang, ask: S.consentAsk && sn.phase === 'none', choice: S.studyChoice && sn.phase === 'consented', drafts: sn.phase === 'choose', deleted: sn.deletedElsewhere, blocked: studyStore() === 'blocked' && sn.phase !== 'choose', pending: sn.phase === 'consented' && sn.sendFailed });
 }
 const session = createPathSession({
   configUrl: './config.json',
@@ -180,7 +282,7 @@ const session = createPathSession({
 state = session.document()?.state || createInitialState('ko');
 hadDoc = !!session.document()?.state;
 
-const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {}, channelId: null, postId: null, dateNote: null, docFull: false };
+const S = { consentAsk: false, consentRefused: false, consentMinor: null, consentGuardian: false, consentBusy: false, consentError: '', consentReturn: null, studyChoice: false, page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {}, channelId: null, postId: null, dateNote: null, docFull: false };
 activeOwner = ownerKey(); wasOnboarded = !!state.onboarded;
 
 function persist() { return commit(state); }
@@ -291,8 +393,11 @@ function notices(quiet = false, noFlash = false) {
   const guestStore = storageError && !accSt.signedIn;
   const plainGuest = !accSt.signedIn && !accSt.error;
   let h = guestStore || (quiet && plainGuest) ? '' : (renderAccountNotice(accSt, state.lang) || '');
+  // 동의 화면에서는 준비 글의 「계정 저장됨」을 숨긴다(아래 「내 조건을 계정에 저장할까요?」와 엇갈려 읽힌다). 오류 알림은 그대로 둔다.
+  if (S.page === 'studyConsent' && h.includes('data-state="saved"')) h = '';
   if (blocked) h += `<div class="notice error" role="alert"><p>${t('blocked')}</p><div class="actions"><button type="button" class="secondary" data-action="reset">${t('reset')}</button></div></div>`;
   h += `<div id="store-note" class="notice error" role="status"${storageError ? '' : ' hidden'}><span>${t('storeFail')}</span>${guestStore ? ` <button type="button" class="text-button" data-action="accountRetry">${accL('다시 시도', 'Retry')}</button>` : ''}</div>`;
+  h += studyNoticesHtml();
   if (S.flash && !noFlash) h += `<div id="flash" class="notice" role="status">${S.flash}</div>`;
   return `<div class="notices">${h}</div>`;
 }
@@ -460,10 +565,10 @@ function profile() {
 <section class="settings-group"><h2>${t('goal')}</h2><p>${g ? esc(pick(g.label)) : t('none')}</p><button type="button" class="btn-line" data-action="changeGoal">${t('changeGoal')}</button></section>
 <section class="settings-group"><h2>${t('location')}</h2><p>${t(state.location || 'unknown')}</p></section>
 <section class="settings-group"><h2>${t('lang')}</h2><p>${state.lang === 'en' ? 'English' : '한국어'}</p></section>
-<section class="settings-group"><h2>${t('storage')}</h2>${accSt.signedIn ? `<p>${state.lang === 'en' ? 'Syncs to your account. Please check the save status above.' : '계정에 동기화합니다. 위의 저장 상태를 확인해 주세요.'}</p>` : `<p>${t('storageText')}</p><button type="button" class="btn-line danger" data-action="clear">${t('clear')}</button>`}${STUDY_ON ? `<p>${t('studyStore')}</p>` : CHANNEL_ON ? `<p>${t('datesStore')}</p>` : ''}</section></div>`;
+<section class="settings-group"><h2>${t('storage')}</h2>${accSt.signedIn ? `<p>${state.lang === 'en' ? 'Syncs to your account. Please check the save status above.' : '계정에 동기화합니다. 위의 저장 상태를 확인해 주세요.'}</p>` : `<p>${t('storageText')}</p><button type="button" class="btn-line danger" data-action="clear">${t('clear')}</button>`}${STUDY_ON ? (studyStore() === 'tab' ? `<p>${t('studyStore')}</p>` : '') : CHANNEL_ON ? `<p>${t('datesStore')}</p>` : ''}</section>${STUDY_ON && accSt.signedIn ? renderStudyAccountSettings({ lang: state.lang, phase: studyAcct.snapshot().phase, consent: studyAcct.snapshot().consent, store: studyStore(), errorCode: studyAcct.snapshot().error?.code || null }) : ''}</div>`;
 }
 
-const studyView = () => ({ lang: state.lang, profile: studyProfile(), programs: STUDY_PROGRAMS, rules: rulesAt(RULES, new Date()), now: new Date() });
+const studyView = () => ({ lang: state.lang, profile: studyProfile(), programs: STUDY_PROGRAMS, rules: rulesAt(RULES, new Date()), now: new Date(), store: studyStore(), storeNote: studyStoreNote() });
 const condView = () => ({ ...studyView(), persisted: study.persisted(), text: S.studyText, errors: S.studyErrors });
 // 날짜 목록 위 경고는 종류만 기억하고 그릴 때 지금 언어로 고른다(언어를 바꿔도 앞 언어로 남지 않게).
 const DATE_NOTES = {
@@ -485,12 +590,14 @@ const path = () => renderPath({ ...channelView(), docFull: S.docFull });
 const pathHtml = () => (STUDY_ON ? renderPathCard(channelView()) : '');
 const univCompare = () => renderUnivCompare(studyView());
 const cond = () => renderCond(condView());
-const PAGES = { today, path, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile };
+const studyConsent = () => renderStudyConsent({ lang: state.lang, minor: S.consentMinor, guardian: S.consentGuardian, busy: S.consentBusy, error: S.consentError });
+const PAGES = { today, path, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile, studyConsent };
 const LOCKED_ACTIONS = ['pickGoal', 'step2', 'toggle', 'finish', 'skip', 'prepareThis', 'confirm', 'body', 'loc', 'setLang', 'changeGoal', 'prepareJob', 'saveJob', 'removeJob'];
 function render(focus = true) {
   if (composingEl && root.contains(composingEl) && document.activeElement === composingEl) { deferredRender = true; deferredFocus = deferredFocus || focus; return; }
   composingEl = null;
   syncStudyOwner();
+  syncStudyAccount();
   if (!STUDY_ON && (S.page === 'univ' || UNIV_PAGES.includes(S.page))) S.page = 'today';
   if (!CHANNEL_ON && (S.page === 'channels' || S.page === 'post')) S.page = 'today';
   const accSt = session.status();
@@ -602,7 +709,7 @@ const ACT = {
       else {
         S.dateNote = null;
         studyWrite(r.profile);
-        msg = study.persisted() ? accL('이 탭의 다가오는 날에 넣었어요.', 'Added to Coming up in this tab.') : accL('이 브라우저에서는 저장할 수 없어 지금 화면에서만 기억해요.', 'This browser cannot store it, so it is kept on this screen only.');
+        msg = studyStore() === 'account' ? accL('다가오는 날에 넣었어요. 계정에 저장돼요.', 'Added to Coming up. Saved to your account.') : study.persisted() ? accL('이 탭의 다가오는 날에 넣었어요.', 'Added to Coming up in this tab.') : accL('이 브라우저에서는 저장할 수 없어 지금 화면에서만 기억해요.', 'This browser cannot store it, so it is kept on this screen only.');
       }
     }
     render(false); (root.querySelector(`[data-action="dateToggle"][data-id="${id}"]`) || root.querySelector('#sx-dates-h') || root.querySelector('.page-title'))?.focus(); say(msg);
@@ -782,7 +889,7 @@ function studyInput(el) {
   if (v === undefined) S.studyErrors = { ...S.studyErrors, [key]: true };
   else {
     const { [key]: _gone, ...rest } = S.studyErrors; S.studyErrors = rest;
-    studyWrite(setField(studyProfile(), key, v === null ? null : key === 'fundsWon' ? v * 10000 : v));
+    if (!studyLocked()) studyWrite(setField(studyProfile(), key, v === null ? null : key === 'fundsWon' ? v * 10000 : v));
   }
   const bad = !!S.studyErrors[key];
   if (bad) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
@@ -843,10 +950,71 @@ const accL = (ko, en) => (state.lang === 'en' ? en : ko);
 const accOk = (r) => r !== false && r?.ok !== false;
 const accStamp = () => new Date().toISOString().slice(0, 10);
 Object.assign(ACT, {
+  studyConsentOpen() { S.consentReturn = S.page === 'studyConsent' ? S.consentReturn : S.page; S.consentMinor = null; S.consentGuardian = false; S.consentError = ''; go('studyConsent'); },
+  consentAge(el) { if (S.consentBusy) return; S.consentMinor = el.dataset.id === 'minor'; if (!S.consentMinor) S.consentGuardian = false; S.consentError = ''; render(false); root.querySelector(`[data-action="consentAge"][data-id="${el.dataset.id}"]`)?.focus(); },
+  consentGuardian() { if (S.consentBusy) return; S.consentGuardian = !S.consentGuardian; render(false); root.querySelector('[data-action="consentGuardian"]')?.focus(); },
+  async consentSave() {
+    if (S.consentBusy || S.consentMinor === null || (S.consentMinor && !S.consentGuardian)) return;
+    S.consentBusy = true; S.consentError = ''; render(false);
+    const id = studyAcctId, ok = await studyAcct.give({ profile: tabStudyProfile(), minor: S.consentMinor, lang: state.lang === 'en' ? 'en' : 'ko' });
+    S.consentBusy = false;
+    if (ok === 'exists' && id === studyAcctId) {
+      S.consentAsk = false; studyCompared = null; settleStudy(studyAcct.snapshot());
+      go(STUDY_PAGES.includes(S.consentReturn) || S.consentReturn === 'profile' ? S.consentReturn : 'today');
+      S.flash = accL('이 계정에는 이미 계정에 저장한 조건이 있어요. 그 조건을 이어서 써요.', 'This account already has saved conditions. Continuing with them.'); render(false); say(S.flash); return;
+    }
+    if (ok !== true || id !== studyAcctId) { S.consentError = accL('계정에 저장하지 못했어요. 조건은 이 탭에 그대로 있어요. 잠시 뒤 다시 시도해 주세요.', 'Could not save to your account. Your conditions are still in this tab. Please try again later.'); render(false); say(S.consentError); return; }
+    // 서버가 받은 뒤에만 탭을 비운다.
+    seenSet(id); refusedSet(null); S.consentRefused = false; studyCompared = id; study.clear(); study.setOwner(id); S.consentAsk = false; S.studyChoice = false;
+    const back = STUDY_PAGES.includes(S.consentReturn) || S.consentReturn === 'profile' ? S.consentReturn : 'today';
+    go(back); S.flash = accL('계정에 저장했어요. 다른 기기에서도 이어서 볼 수 있어요.', 'Saved to your account. You can continue on other devices.'); render(false); say(S.flash);
+  },
+  consentRefuse() {
+    if (S.consentBusy) return;
+    S.consentRefused = true; refusedSet(studyAcctId); S.consentAsk = false;
+    if (S.page === 'studyConsent') go(STUDY_PAGES.includes(S.consentReturn) || S.consentReturn === 'profile' ? S.consentReturn : 'today');
+    S.flash = accL('이 탭에만 둘게요. 내 정보에서 언제든 계정에 저장할 수 있어요.', 'Kept in this tab only. You can save to your account any time on the Profile page.'); render(false); say(S.flash);
+  },
+  async studyAccountDelete() {
+    if (!confirm(accL('계정에 저장한 「내 조건」 · 「다가오는 날」 · 고른 과정 · 서류 표시를 지우고 동의를 거둬요. 지울까요?', 'Delete the conditions, upcoming dates, program and marks saved to your account and withdraw your consent?'))) return;
+    const ok = await studyAcct.remove();
+    if (ok) { seenSet(null); S.consentRefused = true; refusedSet(studyAcctId); S.studyChoice = false; studyCompared = null; }
+    S.flash = ok ? accL('계정의 유학 준비 자료를 지웠어요. 이제 넣는 조건은 이 탭에만 남아요.', 'Deleted your study data from the account. Conditions you add now stay in this tab only.') : accL('지우지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'Could not delete. Please try again later.');
+    render(false); say(S.flash);
+  },
+  async studyAccountRetry() { await studyAcct.retry(); render(false); },
+  studyUseAccount() { study.clear(); if (studyAcctId) study.setOwner(studyAcctId); S.studyChoice = false; S.flash = accL('계정에 저장된 조건을 써요.', 'Using the conditions saved to your account.'); render(false); say(S.flash); },
+  studyUseTab() {
+    const tabP = tabStudyProfile();
+    if (!hasStudyData(tabP)) { ACT.studyUseAccount(); return; }
+    const next = normalizeStudyProfile({ ...tabP, v: 1 });
+    try { studyAcct.write(next, () => next); } catch { return; }
+    study.clear(); if (studyAcctId) study.setOwner(studyAcctId); S.studyChoice = false;
+    S.flash = accL('이 탭의 조건으로 계정을 바꿨어요.', 'Replaced your account conditions with this tab.'); render(false); say(S.flash);
+  },
+  studyNoticeClose() { studyAcct.clearNotice(); render(false); },
+  async studyDraftAccount() { await studyAcct.useAccount(); S.flash = accL('계정에 저장된 조건을 써요.', 'Using the conditions saved to your account.'); render(false); say(S.flash); },
+  async studyDraftPick() {
+    const d = studyAcct.snapshot().localDrafts[0];
+    if (!d) return;
+    const ok = await studyAcct.pickDraft(d.id);
+    S.flash = ok ? accL('남은 변경을 계정에 올려요.', 'Sending the unsent changes to your account.') : accL('남은 변경을 찾지 못했어요. 계정 것을 써요.', 'Could not find the unsent changes. Using the account.');
+    render(false); say(S.flash);
+  },
   accountSignIn: async () => { await session.signIn(); },
   accountSignOut: async () => {
+    // 계정에 올라가지 않은 조건 변경이 있으면 한 번 더 보내 보고, 그래도 남으면 확인받고 지운다(공용 기기).
+    if (studyAcct.snapshot().pending) {
+      await studyAcct.retry();
+      if (studyAcct.snapshot().pending) {
+        if (!confirm(accL('계정에 아직 올라가지 않은 조건 변경이 있어요. 로그아웃하면 이 변경은 지워져요. 로그아웃할까요?', 'Some condition changes are not in your account yet. Signing out deletes them. Sign out?'))) return;
+      }
+    }
+    const studyId = studyAcctId;
     const r = await session.signOut();
+    // 준비 글 쪽 사정으로 로그아웃이 거절되면 조건 초안도 그대로 둔다. 로그아웃한 뒤에만 이 계정의 초안 · 복구 기록을 지운다.
     if (!accOk(r)) { render(false); return; }
+    studyAcct.discardLocal(studyId);
     S.flash = accL('로그아웃했습니다.', 'Signed out.'); render(false); say(S.flash);
   },
   accountRetry: async () => { await session.retry(); render(false); },
@@ -918,6 +1086,7 @@ Object.assign(ACT, {
 root.addEventListener('click', (e) => {
   const el = e.target.closest('button[data-action]');
   if (!el || el.disabled || !ACT[el.dataset.action]) return;
+  if (STUDY_WRITE_ACTS.has(el.dataset.action) && studyLocked()) { const m = studyStoreNote(); S.flash = esc(m); render(false); say(m); return; }
   const fail = (err) => { const m = getAccountErrorMessage(err, state.lang); S.flash = esc(m); render(false); say(m); };
   try { Promise.resolve(ACT[el.dataset.action](el)).catch(fail); } catch (err) { fail(err); }
 });

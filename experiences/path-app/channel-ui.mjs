@@ -29,14 +29,18 @@ function ctx(view) {
   const won = (n) => (en ? `₩${n.toLocaleString('en-US')}` : n < 10000 ? `${n.toLocaleString('ko-KR')}원` : n % 10000 === 0 ? `${(n / 10000).toLocaleString('ko-KR')}만 원` : `${Math.floor(n / 10000).toLocaleString('ko-KR')}만 ${(n % 10000).toLocaleString('ko-KR')}원`);
   const thisYear = Number(new Date((now instanceof Date ? now.getTime() : new Date(now).getTime()) + 9 * 3600000).toISOString().slice(0, 4));
   const md = (d) => monthDay(d, en, thisYear);
-  return { now, en, L, pick, won, md, posts: view.posts || [], programs: view.programs || [], rules: view.rules || [], profile: view.profile, lang: en ? 'en' : 'ko', condOn: view.condOn !== false, persisted: view.persisted !== false, note: typeof view.note === 'string' ? view.note : '' };
+  return { now, en, L, pick, won, md, posts: view.posts || [], programs: view.programs || [], rules: view.rules || [], profile: view.profile, lang: en ? 'en' : 'ko', condOn: view.condOn !== false, store: ['account', 'blocked', 'wait'].includes(view.store) ? view.store : 'tab', storeNote: String(view.storeNote || ''), persisted: view.persisted !== false, note: typeof view.note === 'string' ? view.note : '' };
 }
 
 const channelOf = (id) => CHANNELS.find((c) => c.id === id) || null;
 const newTab = (T) => `<span class="sr-only"> (${T.L('새 탭에서 열림', 'opens in new tab')})</span>`;
 const promise = (T) => `<p class="sx-fine">${T.L('이 결과는 입학이나 비자, 장학금 선발을 약속하지 않아요. 마지막 판단은 대학과 출입국, 장학 기관이 해요.', 'This does not promise admission, a visa or a scholarship. The university, the immigration office and the scholarship body make the final decision.')}</p>`;
 // 저장이 막힌 브라우저면 눈으로도 보이게 경고로 바꾼다. 로그아웃해도 지워진다.
-const storeLine = (T) => (T.persisted
+const storeLine = (T) => ((T.store === 'blocked' || T.store === 'wait') && T.storeNote
+  ? `<p class="sx-fine sx-store-line">${esc(T.storeNote)}</p>`
+  : T.store === 'account'
+  ? `<p class="sx-fine sx-store-line">${T.L('넣은 날은 계정에 저장돼요. 달력에도 넣어 두면 잊지 않아요.', 'Dates you add are saved to your account. Add them to your calendar too.')}</p>`
+  : T.persisted
   ? `<p class="sx-fine sx-store-line">${T.L('넣은 날은 이 탭에만 있어요. 탭을 닫거나 로그아웃하면 사라지니 달력에도 넣어 두세요.', 'Dates you add stay in this tab only. They disappear when you close the tab or sign out, so add them to your calendar too.')}</p>`
   : `<p class="sx-store is-warn sx-store-line">${T.L('이 브라우저에서는 저장할 수 없어서 넣은 날을 지금 화면에서만 기억해요. 새로 고치면 사라지니 달력에 넣어 두세요.', 'This browser cannot store dates, so they are remembered on this screen only and are lost on reload. Add them to your calendar.')}</p>`);
 

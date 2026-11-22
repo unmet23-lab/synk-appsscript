@@ -2,6 +2,7 @@ import { createProductAccount } from '../synk-account/src/product-account.mjs';
 import { createDocumentSync } from '../synk-account/src/document-sync.mjs';
 import { createPathDocument, validatePathDocument, validateSavedJob, jobSourceId, removeSavedJob } from './document.mjs';
 import { normalizeState, SESSION_KEY as LEGACY_STATE_SESSION_KEY } from './state.mjs';
+import { validateStudyDocument, STUDY_RESOURCE } from './study-shape.mjs';
 
 /**
  * PATH account/session controller. Owner: Claude (frontend). No DOM, no UI HTML.
@@ -46,6 +47,7 @@ import { normalizeState, SESSION_KEY as LEGACY_STATE_SESSION_KEY } from './state
  *     useRemote()       -> Promise<boolean>; document-sync.resolveRemote (local records preserved)
  *     chooseRecovery(id)-> Promise<boolean>; document-sync.selectLocalDraft
  *     clearGuest()      -> boolean; explicit clear: persists a verified empty document under the new key as a tombstone (legacy raw untouched, never revived)
+ *     studyRequest(operation, values) -> Promise<reply>; 같은 로그인으로 유학 준비 문서(path-study)를 요청한다(study-account.mjs가 쓴다)
  *     dispose()
  *   No resolveLocal / forced overwrite / account deletion is exposed.
  */
@@ -355,6 +357,8 @@ export function createPathSession(options = {}) {
         clientKey: 'path-app', endpoint: 'synk-path', scope: 'synk-path', resource: 'path-app',
         operations: OPERATIONS,
         validateState: raw => (raw == null ? null : validateDoc(raw)),
+        // 같은 로그인 세션으로 여는 유학 준비 문서. 앱 검사기는 동기화 엔진의 빈 상태(동의 없음)도 받는다.
+        extraResources: { [STUDY_RESOURCE]: raw => (raw == null ? null : validateStudyDocument(raw, { allowEmpty: true })) },
         onStatus: handleAccountStatus,
         fetcher, storage, configUrl,
         ...accountOptions,
@@ -615,10 +619,18 @@ export function createPathSession(options = {}) {
     try { account?.dispose(); } catch {}
   }
 
+  /** 유학 준비 문서 요청. 로그인과 토큰 갱신은 준비 글 문서와 같은 세션을 쓴다. */
+  async function studyRequest(operation, values = {}) {
+    if (disposed) throw fault('PATH_SESSION_DISPOSED', 'disposed');
+    const acc = account || await startAccount();
+    if (!acc) throw fault('ACCOUNT_UNAVAILABLE', '계정 연결을 확인하지 못했어요.');
+    return acc.request(operation, values, { resource: STUDY_RESOURCE });
+  }
+
   return Object.freeze({
     document: () => clone(currentDoc()),
     status: snapshot,
-    init, signIn, signOut, updateState, saveJob, removeJob, importGuest,
+    init, signIn, signOut, updateState, saveJob, removeJob, importGuest, studyRequest,
     exportGuest, exportCurrent, confirmBackup, exportRemote, exportRecovery,
     retry, useRemote, chooseRecovery, clearGuest, dispose,
   });

@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateStudyDocument, createStudyDocument, emptyStudyDocument, STUDY_SCHEMA, STUDY_DOCUMENT_VERSION, CONSENT_VERSION, MAX_DOCS, MAX_DATES, MAX_TOPIK } from './study-shape.mjs';
+import { validateStudyDocument, createStudyDocument, emptyStudyDocument, isStamp, STUDY_SCHEMA, STUDY_DOCUMENT_VERSION, CONSENT_VERSION, MAX_DOCS, MAX_DATES, MAX_TOPIK } from './study-shape.mjs';
 import { createProfile, normalizeProfile } from './study-profile.mjs';
 import { MAX_TOPIK as DATA_MAX_TOPIK } from './study-data.mjs';
 
 const AT = '2026-11-22T10:00:00.000Z';
-const consent = { v: CONSENT_VERSION, at: AT, minor: true, guardian: true, lang: 'mn' };
+const consent = { v: CONSENT_VERSION, at: AT, minor: true, guardian: true, lang: 'mn', base: 0 };
 const full = () => ({
   schema: STUDY_SCHEMA, version: STUDY_DOCUMENT_VERSION, consent: { ...consent },
   profile: { topik: 3, gradePct: 80, fundsWon: 16000000, education: 'expected', compare: ['jbnu-ug', 'jj-ug'],
@@ -37,7 +37,7 @@ test('유학 준비 문서: 모르는 칸 · 범위 밖 · 중복 · 한도 초�
   fails(bad({ dates: [{ id: 'x', start: '2026-12-02', end: '2026-12-01' }] }), '끝이 시작보다 앞');
   fails(bad({ docs: [{ id: 'a', doneAt: 'nope' }] }));
   const noPKey = full(); delete noPKey.profile.channelsOff; fails(noPKey, '빠진 칸');
-  const adult = { v: CONSENT_VERSION, at: AT, minor: false, guardian: false, lang: 'ko' };
+  const adult = { v: CONSENT_VERSION, at: AT, minor: false, guardian: false, lang: 'ko', base: 2 };
   validateStudyDocument({ ...full(), consent: adult });
   fails({ ...full(), consent: { ...adult, v: 0 } }, '동의 판 0');
   fails({ ...full(), consent: { ...adult, v: CONSENT_VERSION + 1 } }, '아직 없는 동의 판');
@@ -46,6 +46,9 @@ test('유학 준비 문서: 모르는 칸 · 범위 밖 · 중복 · 한도 초�
   fails({ ...full(), consent: { ...adult, minor: true } }, '18세 미만인데 보호자 확인이 없다');
   fails({ ...full(), consent: { ...adult, guardian: true } }, '18세 이상인데 보호자 칸이 켜져 있다');
   fails({ ...full(), consent: { ...adult, lang: 'ru' } });
+  fails({ ...full(), consent: { ...adult, base: -1 } }, '판 번호는 0 이상');
+  const { base, ...noBase } = adult; fails({ ...full(), consent: noBase }, '동의한 판이 없다');
+  fails(bad({ dates: [{ id: 'x', start: '2026-02-30', end: '2026-03-01' }] }), '없는 날(2월 30일)');
   fails({ ...full(), consent: null }, '서버 검사(기본)는 동의 없는 문서를 받지 않는다');
 });
 
@@ -63,9 +66,14 @@ test('탭 저장의 조건으로 문서를 짓는다(빈 조건도 된다)', () 
   assert.equal(empty.profile.topik, null);
   assert.deepEqual(empty.profile.docs, []);
   const p = normalizeProfile({ ...createProfile(), topik: 4, target: 'wku-ug', docs: [{ id: 'wku-ug-forms', doneAt: AT }] });
-  const d = createStudyDocument(p, { v: CONSENT_VERSION, at: AT, minor: false, guardian: false, lang: 'en' });
+  const d = createStudyDocument(p, { v: CONSENT_VERSION, at: AT, minor: false, guardian: false, lang: 'en', base: 0 });
   assert.equal(d.profile.topik, 4);
   assert.equal(d.profile.target, 'wku-ug');
   assert.equal(d.consent.minor, false);
-  assert.throws(() => createStudyDocument(p, { v: CONSENT_VERSION, at: AT, lang: 'ko' }), '18세 미만 여부가 없으면 짓지 않는다');
+  assert.throws(() => createStudyDocument(p, { v: CONSENT_VERSION, at: AT, lang: 'ko', base: 0 }), '18세 미만 여부가 없으면 짓지 않는다');
+});
+
+test('동의 시각과 「준비했어요」 시각은 달력에 있는 때만 받는다', () => {
+  for (const v of ['2026-11-22T09:30:00.000Z', '2026-11-22T23:59:59Z', '2028-02-29T00:00:00.000Z']) assert.equal(isStamp(v), true, v);
+  for (const v of ['2026-02-30T12:00:00.000Z', '2027-02-29T00:00:00.000Z', '2026-11-22T24:00:00.000Z', '2026-11-22T12:60:00Z', '2026-11-22T12:00:00+09:00']) assert.equal(isStamp(v), false, v);
 });

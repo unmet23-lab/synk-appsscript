@@ -11,6 +11,8 @@ const publicError = error => ({ code: error.code || 'ACCOUNT_UNAVAILABLE', messa
  */
 export function createProductAccount({
   clientKey, endpoint, scope, validateState, resource = null,
+  // PATH 앱만: 같은 로그인 세션으로 여는 둘째 자원(유학 준비 문서 path-study)과 그 검사기. 요청마다 request(op, values, { resource })로 고른다.
+  extraResources = null,
   operations = { load: 'careLoad', save: 'careSave', delete: 'careDelete' },
   onStatus = () => {}, bridge,
   fetcher = globalThis.fetch, storage = globalThis.sessionStorage,
@@ -22,6 +24,10 @@ export function createProductAccount({
 } = {}) {
   const pathApp = clientKey === 'path-app' || endpoint === 'synk-path';
   if (typeof validateState !== 'function' || (pathApp ? clientKey !== 'path-app' || endpoint !== 'synk-path' || scope !== 'synk-path' || resource !== 'path-app' : !['care', 'path', 'path-travel'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint))) throw new TypeError('앱 계정 설정 형식이 맞지 않아요.');
+  const EXTRA = extraResources === null ? {} : extraResources;
+  if (extraResources !== null && (!pathApp || typeof extraResources !== 'object' || Array.isArray(extraResources)
+    || Object.keys(EXTRA).join(',') !== 'path-study' || typeof EXTRA['path-study'] !== 'function')) throw new TypeError('PATH 둘째 자원은 path-study 하나만 받아요.');
+  const validatorFor = name => (name === resource ? validateState : Object.hasOwn(EXTRA, name) ? EXTRA[name] : null);
   const LIMIT = 4 * 1024 * 1024 + 32768;
   const SESSION_KEY = `synk.oauth.session.${clientKey}`;
   const OPERATIONS = new Set(Object.values(operations));
@@ -83,7 +89,7 @@ export function createProductAccount({
     refreshing = promise;
     try { return await promise; } finally { if (refreshing === promise) refreshing = null; }
   }
-  function requestBody(operation, values = {}) {
+  function requestBody(operation, values = {}, validate = validateState) {
     if (!OPERATIONS.has(operation) || !values || typeof values !== 'object' || Array.isArray(values)) throw fault('INVALID_REQUEST', '제품 계정 요청을 확인해 주세요.');
     const careLibrarySave = clientKey === 'care' && endpoint === 'synk-care' && resource === null && operation === operations.save;
     const allowed = operation === operations.load ? [] : operation === operations.save ? ['expected_revision', 'state', ...(careLibrarySave ? ['messageLibraryVersion', 'checkinPreferenceVersion'] : [])] : ['expected_revision'];
@@ -92,17 +98,20 @@ export function createProductAccount({
     if (Object.hasOwn(values, 'checkinPreferenceVersion') && (!careLibrarySave || values.checkinPreferenceVersion !== 1)) throw fault('INVALID_REQUEST', '안부 설정 자료 형식이 맞지 않아요.');
     if (operation === operations.load) return undefined;
     if (!Number.isSafeInteger(values.expected_revision) || values.expected_revision < 0) throw fault('INVALID_REQUEST', '저장할 자료의 버전을 확인해 주세요.');
-    return { action: operation === operations.save ? 'save' : 'delete', expected_revision: values.expected_revision, ...(operation === operations.save ? { state: validateState(values.state) } : {}), ...(Object.hasOwn(values, 'messageLibraryVersion') ? { messageLibraryVersion: 1 } : {}), ...(Object.hasOwn(values, 'checkinPreferenceVersion') ? { checkinPreferenceVersion: 1 } : {}) };
+    return { action: operation === operations.save ? 'save' : 'delete', expected_revision: values.expected_revision, ...(operation === operations.save ? { state: validate(values.state) } : {}), ...(Object.hasOwn(values, 'messageLibraryVersion') ? { messageLibraryVersion: 1 } : {}), ...(Object.hasOwn(values, 'checkinPreferenceVersion') ? { checkinPreferenceVersion: 1 } : {}) };
   }
-  function validateResponse(data, ownerId) {
+  function validateResponse(data, ownerId, res = resource, validate = validateState) {
     if (data?.ok !== true) throw fault(data?.error?.code || 'ACCOUNT_UNAVAILABLE', data?.error?.message || '계정 자료를 확인하지 못했어요.', { retryable: data?.error?.retryable === true, status: data?.error?.status, revision: data?.revision, ...missingAsset(data?.error) });
-    if (data.scope !== scope || resource && data.resource !== resource || typeof data.accountId !== 'string' || !data.accountId || data.accountId.length > 100 || !Number.isSafeInteger(data.revision) || data.revision < 0 || !Object.hasOwn(data, 'state')) throw fault('INVALID_RESPONSE', '계정 자료의 형식을 확인하지 못했어요. 현재 자료를 유지해 주세요.');
+    if (data.scope !== scope || res && data.resource !== res || typeof data.accountId !== 'string' || !data.accountId || data.accountId.length > 100 || !Number.isSafeInteger(data.revision) || data.revision < 0 || !Object.hasOwn(data, 'state')) throw fault('INVALID_RESPONSE', '계정 자료의 형식을 확인하지 못했어요. 현재 자료를 유지해 주세요.');
     if (ownerId && data.accountId !== ownerId) throw fault('ACCOUNT_CHANGED', '다른 계정의 응답이 도착해 자료를 적용하지 않았어요.');
-    return { ok: true, scope, ...(resource ? { resource } : {}), accountId: data.accountId, revision: data.revision, updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : null, state: data.state === null ? null : validateState(data.state) };
+    return { ok: true, scope, ...(res ? { resource: res } : {}), accountId: data.accountId, revision: data.revision, updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : null, state: data.state === null ? null : validate(data.state) };
   }
-  async function dispatch(operation, values, expected, ownerId) {
-    const body = requestBody(operation, values); guard(expected);
+  async function dispatch(operation, values, expected, ownerId, res = resource) {
+    const validate = validatorFor(res);
+    if (!validate) throw fault('INVALID_REQUEST', '제품 계정 요청을 확인해 주세요.');
+    const body = requestBody(operation, values, validate); guard(expected);
     let data;
+    if (native && res !== resource) throw fault('INVALID_REQUEST', '이 자료는 웹에서만 열 수 있어요.');
     if (native) {
       const params = operation === operations.load ? {} : operation === operations.save ? { expected_revision: body.expected_revision, state: body.state, ...(Object.hasOwn(body, 'messageLibraryVersion') ? { messageLibraryVersion: body.messageLibraryVersion } : {}), ...(Object.hasOwn(body, 'checkinPreferenceVersion') ? { checkinPreferenceVersion: body.checkinPreferenceVersion } : {}) } : { expected_revision: body.expected_revision };
       data = await bridgeRequest.call(bridge, operation, params); guard(expected);
@@ -111,11 +120,11 @@ export function createProductAccount({
       let token = session.access_token;
       if (session.expires_at <= now() + 30000) token = await refresh(expected);
       guard(expected);
-      const url = `${config.accountApiUrl.replace(/\/$/, '')}/functions/v1/${endpoint}${resource && body === undefined ? `?resource=${encodeURIComponent(resource)}` : ''}`;
-      let result = await send(url, token, body === undefined || !resource ? body : { ...body, resource }); guard(expected);
+      const url = `${config.accountApiUrl.replace(/\/$/, '')}/functions/v1/${endpoint}${res && body === undefined ? `?resource=${encodeURIComponent(res)}` : ''}`;
+      let result = await send(url, token, body === undefined || !res ? body : { ...body, resource: res }); guard(expected);
       if (result.response.status === 401 && session?.refresh_token) {
         token = session.access_token !== token ? session.access_token : await refresh(expected); guard(expected);
-        result = await send(url, token, body === undefined || !resource ? body : { ...body, resource }); guard(expected);
+        result = await send(url, token, body === undefined || !res ? body : { ...body, resource: res }); guard(expected);
       }
       if (!result.response.ok || result.data?.ok !== true) {
         const code = result.data?.error?.code || (result.response.status === 401 ? 'AUTH_REQUIRED' : 'ACCOUNT_UNAVAILABLE');
@@ -123,7 +132,7 @@ export function createProductAccount({
       }
       data = result.data;
     }
-    guard(expected); return validateResponse(data, ownerId);
+    guard(expected); return validateResponse(data, ownerId, res, validate);
   }
   async function nativeStatus(source) {
     if (disposed) return status();
@@ -302,10 +311,11 @@ export function createProductAccount({
     }
     return { ok: !snapshot.error, status: status(), serverRevoked: serverSessionRevoked && refreshRevoked, serverSessionRevoked, refreshRevoked };
   }
-  async function request(operation, values = {}) {
+  async function request(operation, values = {}, { resource: res = resource } = {}) {
     if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 계정 자료를 확인해 주세요.');
+    if (!validatorFor(res)) throw fault('INVALID_REQUEST', '제품 계정 요청을 확인해 주세요.');
     const expected = epoch, ownerId = snapshot.accountId;
-    try { return await dispatch(operation, values, expected, ownerId); }
+    try { return await dispatch(operation, values, expected, ownerId, res); }
     catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }
   // A fixed Care-only capability. The browser never receives credentials or chooses an API URL.

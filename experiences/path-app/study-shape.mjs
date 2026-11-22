@@ -24,8 +24,9 @@ export const MAX_STUDY_DOCUMENT_BYTES = 64 * 1024;
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const exact = (v, keys) => isObj(v) && Object.keys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k));
 const intIn = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
-export const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v + 'T00:00:00Z'));
-export const isStamp = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(v) && Number.isFinite(Date.parse(v));
+// 2026-02-30처럼 없는 날은 Date가 다음 달로 넘기므로, 되돌린 글이 같은지까지 본다.
+export const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v + 'T00:00:00Z')) && new Date(v + 'T00:00:00Z').toISOString().slice(0, 10) === v;
+export const isStamp = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?Z$/.test(v) && isDay(v.slice(0, 10)) && Number.isFinite(Date.parse(v));
 const fail = (code = 'INVALID_PATH_STUDY') => { throw Object.assign(new TypeError(code), { code }); };
 const PROFILE_KEYS = ['topik', 'gradePct', 'fundsWon', 'education', 'compare', 'dates', 'channelsOff', 'target', 'docs'];
 
@@ -54,8 +55,9 @@ export function validateStudyDocument(raw, { allowEmpty = false } = {}) {
     return emptyStudyDocument();
   }
   // 18세 미만이면 보호자 확인이 있어야 한다. 18세 이상이면 보호자 칸은 false다.
-  if (!exact(c, ['v', 'at', 'minor', 'guardian', 'lang']) || !intIn(c.v, MIN_CONSENT_VERSION, CONSENT_VERSION) || !isStamp(c.at)
-    || typeof c.minor !== 'boolean' || c.guardian !== c.minor || !CONSENT_LANGS.includes(c.lang)) fail();
+  // base는 동의할 때 본 계정 문서의 판 번호다. 서버는 빈 행 위의 저장을 base가 지금 판과 같을 때만 받는다(학생 기기 시계를 쓰지 않고 옛 탭의 되살리기를 막는다).
+  if (!exact(c, ['v', 'at', 'minor', 'guardian', 'lang', 'base']) || !intIn(c.v, MIN_CONSENT_VERSION, CONSENT_VERSION) || !isStamp(c.at)
+    || typeof c.minor !== 'boolean' || c.guardian !== c.minor || !CONSENT_LANGS.includes(c.lang) || !intIn(c.base, 0, 2147483647)) fail();
   if (!exact(p, PROFILE_KEYS)) fail();
   const nullOr = (v, ok) => v === null || ok(v);
   if (!nullOr(p.topik, (v) => intIn(v, 0, MAX_TOPIK)) || !nullOr(p.gradePct, (v) => intIn(v, 0, 100))
@@ -69,7 +71,7 @@ export function validateStudyDocument(raw, { allowEmpty = false } = {}) {
   if (!uniqueBy(p.docs, MAX_DOCS, okDoc, (d) => d.id)) fail();
   return {
     schema: STUDY_SCHEMA, version: STUDY_DOCUMENT_VERSION,
-    consent: { v: c.v, at: c.at, minor: c.minor, guardian: c.guardian, lang: c.lang },
+    consent: { v: c.v, at: c.at, minor: c.minor, guardian: c.guardian, lang: c.lang, base: c.base },
     profile: {
       topik: p.topik, gradePct: p.gradePct, fundsWon: p.fundsWon, education: p.education,
       compare: [...p.compare],
@@ -86,7 +88,7 @@ export function createStudyDocument(profile, consent) {
   const p = isObj(profile) ? profile : {};
   return validateStudyDocument({
     schema: STUDY_SCHEMA, version: STUDY_DOCUMENT_VERSION,
-    consent: { v: consent?.v, at: consent?.at, minor: consent?.minor, guardian: consent?.guardian, lang: consent?.lang },
+    consent: { v: consent?.v, at: consent?.at, minor: consent?.minor, guardian: consent?.guardian, lang: consent?.lang, base: consent?.base },
     profile: Object.fromEntries(PROFILE_KEYS.map((k) => [k, p[k]]))
   });
 }

@@ -18,7 +18,7 @@ function ctx(view) {
   const L = (ko, e) => (en ? e : ko);
   const pick = (o) => (o ? (en ? o.en : o.ko) : '');
   const thisYear = Number(new Date((now instanceof Date ? now.getTime() : new Date(now).getTime()) + 9 * 3600000).toISOString().slice(0, 4));
-  return { now, en, L, pick, md: (d) => monthDay(d, en, thisYear), profile: view.profile || {}, programs: view.programs || [], posts: view.posts || [], persisted: view.persisted !== false, note: typeof view.note === 'string' ? view.note : '' };
+  return { now, en, L, pick, md: (d) => monthDay(d, en, thisYear), profile: view.profile || {}, programs: view.programs || [], posts: view.posts || [], persisted: view.persisted !== false, store: ['account', 'blocked', 'wait'].includes(view.store) ? view.store : 'tab', storeNote: String(view.storeNote || ''), note: typeof view.note === 'string' ? view.note : '' };
 }
 const newTab = (T) => `<span class="sr-only"> (${T.L('새 탭에서 열림', 'opens in new tab')})</span>`;
 const STAGE = {
@@ -95,6 +95,8 @@ function stageBlock(stage, t, T, done, counts) {
 }
 
 function storeNote(T) {
+  if ((T.store === 'blocked' || T.store === 'wait') && T.storeNote) return `<p class="sx-fine">${esc(T.storeNote)}</p>`;
+  if (T.store === 'account') return `<p class="sx-fine">${T.L('표시는 계정에 저장돼요. 내 정보에서 지울 수 있어요.', 'Marks are saved to your account. You can delete them on the Profile page.')}</p>`;
   return T.persisted
     ? `<p class="sx-fine">${T.L('표시는 이 탭에만 있어요. 탭을 닫거나 로그아웃하면 사라져요.', 'Marks stay in this tab only. They disappear when you close the tab or sign out.')}</p>`
     : `<p class="sx-store is-warn">${T.L('이 브라우저에서는 저장할 수 없어서 표시를 지금 화면에서만 기억해요. 새로 고치면 사라져요.', 'This browser cannot store marks, so they are remembered on this screen only and are lost on reload.')}</p>`;
