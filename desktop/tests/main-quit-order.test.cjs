@@ -34,3 +34,14 @@ test('the probe catches a quit-handler name declared after the lock (the 0.5.5 e
   assert.equal(result.quitCalled,true);
   assert.ok(result.errors.some(e=>/^will-quit: Cannot access 'workspace(Follower|Auth)' before initialization$/.test(e)),result.errors.join(' | ')||'no error');
 });
+
+// GPT pc-second-launch-20261122-e GA1: async 처리기는 첫 await 전까지 그 자리에서 돈다. 거기서 선언 전 이름을 만지면 오류가 약속의 거부로 나온다. 그것도 잡는다
+test('the probe also catches an async quit handler that touches a name declared after the lock',()=>{
+  const source=fs.readFileSync(MAIN,'utf8');
+  const handler=source.match(/^app\.on\('before-quit',\(\)=>aiSubscriptions\?\.dispose\(\)\);\r?\n/m),decl=source.match(/^let aiSubscriptions=null;\r?\n/m);
+  assert.ok(handler&&decl,'the aiSubscriptions quit handler and declaration are where this test expects');
+  const broken=source.replace(handler[0],"app.on('before-quit',async()=>{aiSubscriptions?.dispose();});\n").replace(decl[0],'').replace(/\n$/,'')+'\nlet aiSubscriptions=null;\n';
+  const result=secondLaunch(broken);
+  assert.equal(result.quitCalled,true);
+  assert.ok(result.errors.includes("before-quit: Cannot access 'aiSubscriptions' before initialization"),result.errors.join(' | ')||'no error');
+});

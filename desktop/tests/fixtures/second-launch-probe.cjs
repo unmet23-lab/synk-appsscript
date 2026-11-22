@@ -8,8 +8,10 @@ const main=path.resolve(process.argv[2]);
 const replacement=process.argv.includes('--stdin')?fs.readFileSync(0,'utf8'):null;
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'synk-second-launch-'));
 const stub=()=>{const fn=function(){};return new Proxy(fn,{get:(t,k)=>k===Symbol.toPrimitive?()=>'':k==='then'?(()=>stub()):stub(),apply:()=>stub(),construct:()=>stub()});};
-const handlers={},errors=[];let quitCalled=false;
-const emit=name=>{for(const h of handlers[name]||[]){try{h({preventDefault(){}});}catch(e){errors.push(name+': '+(e&&e.message));}}};
+const handlers={},errors=[],pending=[];let quitCalled=false;
+// async 처리기가 돌려준 약속의 거부도 적는다. 결과는 그 약속들이 끝난 뒤에 쓴다(GPT pc-second-launch-20261122-e GA1)
+const emit=name=>{for(const h of handlers[name]||[]){try{const r=h({preventDefault(){}});if(r&&typeof r.then==='function')pending.push(Promise.resolve(r).catch(e=>{errors.push(name+': '+(e&&e.message));}));}catch(e){errors.push(name+': '+(e&&e.message));}}};
+process.on('unhandledRejection',e=>{errors.push('unhandled: '+(e&&e.message));});
 const app=new Proxy({},{get:(t,k)=>{
   if(k==='on'||k==='once'||k==='prependListener')return (name,h)=>{(handlers[name]||(handlers[name]=[])).push(h);return app;};
   if(k==='requestSingleInstanceLock')return ()=>false;
@@ -27,12 +29,17 @@ const fakeTimer={unref(){return fakeTimer;},ref(){return fakeTimer;},hasRef(){re
 const timers={setInterval:()=>fakeTimer,setTimeout:()=>fakeTimer,setImmediate:()=>fakeTimer,clearInterval(){},clearTimeout(){},clearImmediate(){}};
 const load=Module._load;
 Module._load=function(request){if(request==='electron')return electron;if(request==='node:timers'||request==='timers')return timers;return load.apply(this,arguments);};
+const realImmediate=globalThis.setImmediate;
 for(const k of ['setInterval','setTimeout','setImmediate'])globalThis[k]=()=>fakeTimer;
-process.argv=[process.argv[0],main,'--synk-dev'];
+// 개발 실행은 작업본의 desktop/auth-config.json(Git 밖)을 읽는다. PC마다 다르지 않게 빈 설정 파일을 직접 준다(GPT e GA2)
+const authConfig=path.join(temp,'auth-config.json');fs.writeFileSync(authConfig,'{}\n');
+process.argv=[process.argv[0],main,'--synk-dev','--auth-config='+authConfig];
 let top=null;
 try{
   if(replacement===null)require(main);
   else{const m=new Module(main,module);m.filename=main;m.paths=Module._nodeModulePaths(path.dirname(main));m._compile(replacement,main);}
 }catch(e){top=e&&e.message;}
-try{fs.rmSync(temp,{recursive:true,force:true});}catch{}
-process.stdout.write(JSON.stringify({quitCalled,handlers:Object.fromEntries(Object.entries(handlers).map(([k,v])=>[k,v.length])),errors,top})+'\n',()=>process.exit(0));
+void Promise.allSettled(pending).then(()=>new Promise(done=>realImmediate(done))).then(()=>{
+  try{fs.rmSync(temp,{recursive:true,force:true});}catch{}
+  process.stdout.write(JSON.stringify({quitCalled,handlers:Object.fromEntries(Object.entries(handlers).map(([k,v])=>[k,v.length])),errors,top})+'\n',()=>process.exit(0));
+});
