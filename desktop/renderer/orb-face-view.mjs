@@ -1129,7 +1129,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const p = el('p', 'fan-foot');
       p.style.setProperty('--k', String(names.length));
       p.append(...foot.map(x => button('quiet', x.label, { 'data-orb-act': 'foot', 'data-foot': x.action })));
-      app.fan.replaceChildren(app.fanError, app.fanLead, ...nodes, ...(foot.length ? [p] : []));
+      // 오류 줄(role=alert)과 까닭 줄(role=status)은 떼지 않고 그 뒤만 바꾼다. 알림 영역을 떼었다 붙이면 낭독기가 새 글을 놓친다(카본 A1)
+      if (app.fan.firstElementChild !== app.fanError || app.fanError.nextElementSibling !== app.fanLead) app.fan.prepend(app.fanError, app.fanLead);
+      while (app.fanLead.nextSibling) app.fanLead.nextSibling.remove();
+      app.fan.append(...nodes, ...(foot.length ? [p] : []));
     }
     setText(app.fanError, f?.error || '');
     // 배정 조회 까닭 한 줄(PC 검수 F1). 「다시 확인」은 아래 발치 줄에 선다

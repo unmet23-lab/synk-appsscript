@@ -1422,11 +1422,14 @@ if(!process.versions.electron){
           await captureSizes(w,'fan-check-'+status);
           await w.js("window.__orbFixture.setAssignment({status:'resolved',destinations:['/','/pulse-app/'],unavailable:[]})");
           // 자판으로 누른다. 끝나면 「다시 확인」 단추가 빠져도 초점이 펼침 안의 공간 단추에 남는다(fix-all 화면 Fable F2, 0.5.4 후보 카본 B1)
+          // 알림 줄 둘(오류 · 까닭)이 다시 짓는 동안 떼어지지 않는지 본다. 떼었다 붙이면 낭독기가 새 글을 놓친다(카본 A1)
+          await w.js("(()=>{window.__qaLeadRemoved=false;new MutationObserver(ms=>{for(const m of ms)for(const n of m.removedNodes)if(n.matches?.('[data-fan-lead],[data-fan-error]'))window.__qaLeadRemoved=true;}).observe(document.querySelector('#portal-entry [data-orb-fan]'),{childList:true});})()");
           await w.js("document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]').focus()");await key(w,'Return');let after=null;for(let i=0;i<60;i++){after=await fanSpaces(w);if(after.length===3)break;await wait(60);}
           await wait(120);
           const n2=await note(),c=await calls(w),fo=await w.js("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const a=document.activeElement,f=document.querySelector('#portal-entry [data-orb-fan]');r({inFan:!!a&&!!f&&f.contains(a),go:a?.dataset?.go||'',tag:a?.tagName||''});})))");
           check('6 '+status+' 「다시 확인」 confirms both spaces, says so in the status line, drops the button and opens nothing',JSON.stringify(after)==='["solio","workspace","pulse"]'&&n2.lead==='회사 공간 배정을 다시 확인했습니다.'&&n2.leadShown&&!n2.recheckShown&&!c.some(x=>x.startsWith('open:')),{after,...n2,calls:c});
           check('6 '+status+' keyboard focus stays on a space in the fan after 「다시 확인」',fo.inFan&&fo.go==='solio',fo);
+          check('6 '+status+' the status and error lines stay in place while the fan is rebuilt',(await w.js('window.__qaLeadRemoved'))===false);
           w.win.destroy();
         }
         // 6-2. 들어가 있는 Workspace가 「다시 확인」으로 배정에서 빠지면, 닫힌 방의 「다시 열기」 대신 까닭과 「솔리오로」가 선다(fix-all 화면 Fable F1)
