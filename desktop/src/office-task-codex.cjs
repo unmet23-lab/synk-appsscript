@@ -387,5 +387,27 @@ async function withMailPlannerAccount(spec,hooks,tools,work) {
     return result;
   }finally{client.interruptActive();await client.close();}
 }
-module.exports={runCodex,nativePrompt,withMailPlannerAccount};
+/* 셋째 조각 기능의 도구 없는 차례(기능줄_경쟁사_설계.md 2.4). 메일 계획과 같은 서버 설정·계정 확인을 쓰고,
+   차례마다 새 스레드와 새 상태를 잡는다. 실패 코드는 기능이 정한다 */
+async function withSchemaAccount(spec,hooks,tools,work,codes) {
+  const {mailServerArgs}=require('./office-mail-rpc.cjs');
+  const {schemaTurn}=require('./office-schema-turn.cjs');
+  if(!goodId(spec.id))throw error('SESSION');
+  const salt='solio:office:feature:v1\0'+spec.id;
+  await checkpoint(hooks);
+  const turn=schemaTurn(providerError,codes),client=connect(spec,hooks,tools,turn.receive,mailServerArgs());
+  let workspace;
+  const capture=current=>{if(workspace&&workspace!==current)throw error('LOGIN');workspace=current;};
+  try{
+    const account=await openAccount(client,salt,capture);
+    if(!account)throw error('LOGIN');
+    turn.guard();
+    await checkpoint(hooks);
+    const verify=async()=>{await checkpoint(hooks);if(!sameAccount(account,await readAccount(client,salt,capture)))throw error('LOGIN');turn.check();};
+    const result=await work((prompt,schema,options={})=>turn.ask(client,{cwd:spec.cwd,workspace,signal:hooks.signal,verify,...options},prompt,schema));
+    await verify();
+    return result;
+  }finally{client.interruptActive();await client.close();}
+}
+module.exports={runCodex,nativePrompt,withMailPlannerAccount,withSchemaAccount};
 
