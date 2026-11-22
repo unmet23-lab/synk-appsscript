@@ -76,6 +76,8 @@ test('GA2: a company logout with a saved login never ends in a browser sign-in, 
   const quiet=fixture({saved:true});
   assert.deepEqual(await quiet.teacher.signOut(),{ok:true,serverRevoked:true});
   assert.deepEqual(quiet.log.filter(entry=>typeof entry==='string'),['follower','initialize','signOut']);assert.equal(quiet.teacher.started(),false);assert.equal(browser(quiet.log),0);
+  // 켜지 않은 로그인에 플랫폼 계정이 바뀌어도 아무것도 만들지 않는다
+  const idle=fixture();idle.teacher.follow();assert.equal(made(idle.log),0);assert.equal(idle.log.includes('refresh'),false);
 });
 
 test('GA3: after signing out of 내 수업, a new platform sign-in does not open the browser on its own',async()=>{
@@ -104,6 +106,22 @@ test('pressing sign-in waits for the first pass; following may use that one pres
   // 취소하면 표도 버린다
   const cancelled=fixture({follower:'none',followerStart:()=>new Promise(()=>{})});
   void cancelled.teacher.signIn();await settle();await cancelled.teacher.cancelSignIn();await cancelled.given.signIn();assert.equal(browser(cancelled.log),0);
+});
+
+test('-b GA1: a press is spent by a sign-out or cancel while it waits, and a press following already used opens no second browser',async()=>{
+  // 따라가기의 첫 차례를 기다리는 동안 회사 로그아웃이 오면, 그 뒤에 브라우저를 열지 않는다
+  let release;const waiting=fixture({follower:'none',followerStart:()=>new Promise(resolve=>{release=resolve;})});
+  const pressed=waiting.teacher.signIn();await settle();
+  await waiting.teacher.signOut();release();
+  assert.equal((await pressed).signedIn,false);assert.equal(browser(waiting.log),0,'no browser after the logout');
+  // 따라가기가 그 차례로 브라우저를 열었는데 사람이 취소했으면, 한 번 더 열지 않는다
+  let finish;const cancelled=fixture({follower:'none',followerStart:wrapped=>new Promise(resolve=>{finish=async()=>{await wrapped.signIn();resolve();};})});
+  cancelled.state={...signedOut};
+  const second=cancelled.teacher.signIn();await settle();
+  // 따라가기가 표를 쓴다(브라우저 한 번) — 그 로그인이 취소로 끝난 것처럼 다시 로그아웃 상태로 둔다
+  await finish();cancelled.state={...signedOut};
+  assert.equal(browser(cancelled.log),1);
+  assert.equal((await second).signedIn,false);assert.equal(browser(cancelled.log),1,'the spent press opens no second browser');
 });
 
 test('GA1: a teacher login of another SYNK ID is neither shown nor used, and a platform change refreshes following at once',async()=>{

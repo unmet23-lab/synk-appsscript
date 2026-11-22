@@ -647,7 +647,8 @@ function workspaceNative(){
     // 직원 초대가 Workspace 로그인을 기다릴 때 Suite 따라가기를 한 번 더 돌린다(GPT 엔진 검수 c GA1 · GA5)
     retryLogin:()=>{ensureWorkspaceAuth();return workspaceFollower?.retry?.();},
     // 「내 수업」 교사 로그인(14.3). 화면이 부를 때 만든다
-    teacher:{environment:()=>({...(ensureWorkspaceTeacher()?.environment()||{clientId:'teacher',authProduct:'world',embedded:true,hostClientId:'platform'}),mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}),
+    teacher:{follow:()=>{try{workspaceTeacher?.follow();}catch{}},
+      environment:()=>({...(ensureWorkspaceTeacher()?.environment()||{clientId:'teacher',authProduct:'world',embedded:true,hostClientId:'platform'}),mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}),
       status:()=>ensureWorkspaceTeacher()?.status()??WORKSPACE_TEACHER_NONE,
       signIn:async()=>{const service=ensureWorkspaceTeacher();return service?service.signIn():WORKSPACE_TEACHER_NONE;},
       cancelSignIn:async()=>{const service=ensureWorkspaceTeacher();return service?service.cancelSignIn():WORKSPACE_TEACHER_NONE;},

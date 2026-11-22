@@ -100,6 +100,8 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
   function alive(){return !!activeSurface&&!activeSurface.isDestroyed();}
   function syncContext(account=getAccount?.()){
     if(disposed)return null;
+    // 「내 수업」 교사 로그인도 지금 플랫폼 기록을 다시 따라간다. 계정이 바뀐 순간 진행 중이던 앞 계정의 수업 요청을 막는다(14.3, GPT pc-retire-workspace-20261123-b GA2)
+    try{native.teacher?.follow?.();}catch{}
     const next=workspaceScopeOf(account);if(next===owner)return next;
     if(next===null&&renewing())return null;
     ++epoch;const old=activeSession||(owner?session.fromPartition(workspaceAppPartition(owner)):null);owner=next;activeSession=null;pending=null;closeSurface();

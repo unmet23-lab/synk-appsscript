@@ -22,7 +22,8 @@ const CHANGED=Object.freeze({ok:false,error:Object.freeze({code:'AUTH_CHANGED',m
 const INVALID=Object.freeze({ok:false,error:Object.freeze({code:'INVALID_REQUEST',message:'내 수업에서 지원하는 수업 요청을 확인해 주세요.',retryable:false})});
 
 function createWorkspaceTeacher({config,directory,scope,safeStorage,openExternal,appVersion,getDevice=()=>null,getPlatformAccount=()=>null,onChange=()=>{},suiteStore,createTokenStore,createAuthService,createSuiteFollower,exists=fs.existsSync}){
-  let auth=null,follower=null,firstPass=null,disposed=false,ticket=false;
+  // ticket: 사람이 누른 로그인 하나의 번호(0은 없음). 로그아웃 · 취소가 지우고, 누른 그 차례만 쓴다(GPT pc-retire-workspace-20261123-b GA1)
+  let auth=null,follower=null,firstPass=null,disposed=false,ticket=0,presses=0;
   const usable=()=>!disposed&&!!config&&!!suiteStore&&typeof directory==='string'&&directory.length>0;
   const platformAccount=()=>{try{const id=getPlatformAccount();return typeof id==='string'&&id?id:null;}catch{return null;}};
   // 교사 로그인이 지금 플랫폼 계정의 것인지. 아니면 그 로그인은 없는 것으로 본다
@@ -31,7 +32,7 @@ function createWorkspaceTeacher({config,directory,scope,safeStorage,openExternal
   // 따라가기에 주는 로그인. 다른 일은 그대로 넘기고, 브라우저 로그인만 사람이 준 표가 있을 때 한 번 연다
   function followed(service){
     return {bindPlatform:next=>service.bindPlatform(next),initialize:()=>service.initialize(),status:()=>service.status(),signOut:()=>service.signOut(),getAccessToken:()=>service.getAccessToken(),
-      signIn:async()=>{if(!ticket)return service.status();ticket=false;return service.signIn();}};
+      signIn:async()=>{if(!ticket)return service.status();ticket=0;return service.signIn();}};
   }
   function make(){
     if(auth||!usable())return auth;
@@ -44,27 +45,32 @@ function createWorkspaceTeacher({config,directory,scope,safeStorage,openExternal
   // 따라가기를 켠다. 저장된 로그인을 되살리고, 플랫폼과 같은 SYNK ID가 아니면 끊는다
   function start(){if(!make())return null;if(!firstPass)firstPass=Promise.resolve(follower.start()).catch(()=>{});return auth;}
   // Suite 기록을 지금 다시 읽는다. 바뀐 것이 없으면 따라가기가 바로 돌아온다
-  function follow(){if(!firstPass||!follower||disposed)return Promise.resolve();try{return Promise.resolve(follower.refresh()).catch(()=>{});}catch{return Promise.resolve();}}
+  function followNow(){if(!firstPass||!follower||disposed)return Promise.resolve();try{return Promise.resolve(follower.refresh()).catch(()=>{});}catch{return Promise.resolve();}}
   return Object.freeze({
     environment:()=>({clientId:'teacher',authProduct:'world',embedded:true,hostClientId:'platform'}),
     status(){
       if(!usable())return NONE;
       if(!firstPass&&!saved())return IDLE;
-      const service=start();void follow();return view(service.status());
+      const service=start();void followNow();return view(service.status());
     },
-    // 사람이 누른 로그인. 따라가기의 첫 차례를 기다린 뒤에도 이 계정으로 서지 않았으면 브라우저로 한 번 로그인한다
+    // 사람이 누른 로그인. 따라가기의 첫 차례를 기다린 뒤에도 이 계정으로 서지 않았고, 그 사이 로그아웃 · 취소가 없었고,
+    // 따라가기가 이 차례를 쓰지 않았을 때만 브라우저로 한 번 로그인한다
     async signIn(){
       const service=start();if(!service)return NONE;
-      ticket=true;
-      await firstPass;await follow();if(disposed){ticket=false;return NONE;}
+      const press=++presses;ticket=press;
+      await firstPass;await followNow();
+      const mine=ticket===press;if(mine)ticket=0;
+      if(disposed)return NONE;
       const now=service.status();
-      if(owned(now)||now.status==='signing-in'||now.status==='restoring'){ticket=false;return view(now);}
-      ticket=false;await service.signIn();return view(service.status());
+      if(!mine||owned(now)||now.status==='signing-in'||now.status==='restoring')return view(now);
+      await service.signIn();return view(service.status());
     },
-    async cancelSignIn(){ticket=false;if(!firstPass||!auth)return this.status();return view(await auth.cancel());},
+    // 플랫폼 로그인이 바뀐 순간 Suite 기록을 다시 읽는다(Workspace 관리자의 계정 맞추기가 부른다). 켜지 않았으면 아무것도 하지 않는다
+    follow(){void followNow();},
+    async cancelSignIn(){ticket=0;if(!firstPass||!auth)return this.status();return view(await auth.cancel());},
     // 켜지 않은 채 로그아웃하면 저장된 로그인만 되살려 끊는다. 따라가기는 켜지 않는다
     async signOut(){
-      ticket=false;
+      ticket=0;
       if(!usable())return {ok:true,status:NONE};
       if(!firstPass){if(!saved())return {ok:true,status:IDLE};const service=make();await service.initialize();if(disposed)return {ok:false,status:NONE};}
       return auth.signOut();
@@ -72,11 +78,11 @@ function createWorkspaceTeacher({config,directory,scope,safeStorage,openExternal
     async accountRequest(operation,params){
       if(operation!=='classroom'||!params||typeof params!=='object'||Array.isArray(params))return INVALID;
       if(!firstPass||!auth)return NOT_SIGNED_IN;
-      void follow();const now=auth.status();if(!now.signedIn)return NOT_SIGNED_IN;if(!owned(now))return CHANGED;
+      void followNow();const now=auth.status();if(!now.signedIn)return NOT_SIGNED_IN;if(!owned(now))return CHANGED;
       return teacherAccountRequest(auth,operation,params);
     },
     started:()=>!!firstPass,
-    dispose(){disposed=true;ticket=false;follower?.dispose();auth?.dispose();},
+    dispose(){disposed=true;ticket=0;follower?.dispose();auth?.dispose();},
   });
 }
 module.exports={createWorkspaceTeacher,WORKSPACE_TEACHER_SESSION_FILE:SESSION_FILE};

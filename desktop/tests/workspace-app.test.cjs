@@ -453,6 +453,12 @@ test('the teacher link (내 수업, 14.3): its six channels sit on the same surf
   assert.equal((await n.call(TEACHER_CHANNEL.environment)).clientId,'teacher');assert.equal((await n.call(TEACHER_CHANNEL.signOut)).ok,true);
   assert.equal((await n.call(TEACHER_CHANNEL.account,{},'classroom',{operation:'classes'})).error.code,'AUTH_UNAVAILABLE');
 });
+test('every account sync makes the teacher login read the platform record again, without creating it (14.3, GPT -b GA2)',async()=>{
+  let follows=0;const f=fixture({native:{teacher:{follow:()=>{follows++;},status:()=>({configured:true,signedIn:false,status:'signed-out'})}}});
+  f.app.syncContext(member(A));const first=follows;assert.ok(first>=1);
+  f.setAccount(guest);assert.ok(follows>first,'a sign-out syncs the teacher login at once');
+  const throwing=fixture({native:{teacher:{follow(){throw Error('합성');}}}});assert.equal(throwing.app.syncContext(member(A)),'account:'+A,'a failing follow does not stop the account sync');
+});
 test('publishTeacherAuth reaches only the current surface\'s company / document',async()=>{
   const f=fixture();const state={signedIn:true,status:'signed-in'};f.app.publishTeacherAuth(state);
   await f.app.open();const c=f.surface.webContents;f.app.publishTeacherAuth(state);assert.deepEqual(c.sent,[[TEACHER_CHANNEL.changed,state]]);
@@ -582,6 +588,6 @@ test('main wiring: a zoom change lays out the Workspace view too, and company re
   assert.match(main,/function followWorkspaceNow\(\)\{try\{void workspaceFollower\?\.refresh\(\);\}catch\{\}\}\r?\nfunction publishAuthState\(state\)\{[^}\n]*followWorkspaceNow\(\);workspaceApp\?\.syncContext\(state\);/,'the Workspace login is bound to the new platform record before the views hear of it (설계 검토 R2)');
   // 「내 수업」 교사 로그인(14.3): 지금 플랫폼 계정만 보고, 뷰에 teacher 연결을 준다(GPT pc-retire-workspace-20261123 GA1)
   assert.ok(main.includes("getPlatformAccount:()=>{const state=accountStatus();return state?.signedIn===true&&state.status==='signed-in'?state.account?.synk_user_id||null:null;},"),'the teacher login sees only the current platform account');
-  assert.match(main,/directory:path\.join\(app\.getPath\('userData'\),'WorkspaceTeacher'\)/);assert.match(main,/\n    teacher:\{environment:/);
+  assert.match(main,/directory:path\.join\(app\.getPath\('userData'\),'WorkspaceTeacher'\)/);assert.match(main,/\n    teacher:\{follow:\(\)=>\{try\{workspaceTeacher\?\.follow\(\);\}catch\{\}\},\r?\n      environment:/);
   assert.ok(main.includes("current:()=>{try{return typeof current!=='function'||current()===true;}catch{return false;}}"),'the Workspace jar hands its current check to the request module for the moment right before sending (d GA1)');
 });
