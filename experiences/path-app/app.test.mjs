@@ -167,8 +167,9 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
     if (studyRow.down) throw studyFault(studyRow.down);
     if (studyRow.failNext) { const code = studyRow.failNext; studyRow.failNext = null; throw studyFault(code); }
     const state = studyShape.validateStudyDocument(values.state);
-    if (expected !== studyRow.revision) throw studyFault('REVISION_CONFLICT', studyRow.revision);
+    // 운영 서버와 같은 차례: 동의 검사가 판 검사(저장)보다 먼저다.
     if (studyRow.state === null ? state.consent.base !== studyRow.revision : JSON.stringify(studyRow.state.consent) !== JSON.stringify(state.consent)) throw studyFault('PATH_STUDY_CONSENT_STALE', studyRow.revision);
+    if (expected !== studyRow.revision) throw studyFault('REVISION_CONFLICT', studyRow.revision);
     studyRow.state = state; studyRow.revision++; studyRow.saves++; return studyReply();
   }
   const accountFactory = signedIn ? options => ({
@@ -921,3 +922,55 @@ test('「이 탭에만 두기」는 새로 고쳐도 다시 묻지 않는다', a
   assert.doesNotMatch(pageText(app), /이 조건을 계정에 저장하면/);
   assert.equal(JSON.parse(app.record(STUDY_KEY)).topik, 3);
 });
+
+test('다른 곳에서 지워진 뒤 오래된 탭에서 조건을 누르면 앞의 「계정에 저장했어요」를 지우고, 누른 조건만 이 탭에 남기며 다시 묻지 않는다', async t => {
+  const app = await boot(t, { signedIn: true, study: true });
+  await settle();
+  app.click('nav', '[data-page=\"univ\"]'); app.click('nav', '[data-page=\"cond\"]');
+  app.click('studySet', '[data-key="topik"][data-id="3"]');
+  app.click('studyConsentOpen');
+  app.click('consentAge', '[data-id="adult"]');
+  app.click('consentSave');
+  assert.ok(await until(() => app.studyRow.revision === 1), '서버가 받는다');
+  assert.match(pageText(app), /계정에 저장했어요/);
+  app.click('studySet', '[data-key="education"][data-id="expected"]');
+  assert.ok(await until(() => app.studyRow.state?.profile.education === 'expected', 4000));
+  // 다른 기기에서 지움: 빈 행과 다음 판
+  app.studyRow.state = null; app.studyRow.revision++;
+  const gone = app.studyRow.revision;
+  app.click('studySet', '[data-key="topik"][data-id="4"]');
+  assert.ok(await until(() => /다른 곳에서 지워졌어요/.test(pageText(app)), 4000), '지워졌다고 알린다');
+  assert.doesNotMatch(pageText(app), /계정에 저장했어요/, '앞의 저장 알림은 남지 않는다');
+  assert.equal(app.studyRow.state, null, '계정에 다시 생기지 않는다');
+  assert.equal(app.studyRow.revision, gone);
+  const tab = JSON.parse(app.record(STUDY_KEY));
+  assert.equal(tab.topik, 4, '누른 조건은 이 탭에 남는다');
+  assert.equal(tab.education, null, '지워진 계정의 조건은 탭으로 되살리지 않는다');
+  assert.doesNotMatch(pageText(app), /이 조건을 계정에 저장하면/, '동의를 거둔 뒤라 다시 묻지 않는다');
+  app.click('studySet', '[data-key="topik"][data-id="5"]');
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).topik, 5, '그 뒤 고침도 탭에 남는다');
+  assert.doesNotMatch(pageText(app), /이 조건을 계정에 저장하면/);
+  assert.equal(app.studyRow.state, null);
+});
+
+test('다른 곳에서 이미 지워진 오래된 탭에서 「지우기」를 누르면 「지웠어요」 하나만 알리고 「다른 곳에서 지워졌어요」를 따로 남기지 않는다', async t => {
+  const app = await boot(t, { signedIn: true, study: true });
+  await settle();
+  app.click('nav', '[data-page=\"univ\"]'); app.click('nav', '[data-page=\"cond\"]');
+  app.click('studySet', '[data-key="topik"][data-id="3"]');
+  app.click('studyConsentOpen');
+  app.click('consentAge', '[data-id="adult"]');
+  app.click('consentSave');
+  assert.ok(await until(() => app.studyRow.revision === 1), '서버가 받는다');
+  // 다른 기기에서 지우고, 그 뒤로도 판이 더 올라갔다
+  app.studyRow.state = null; app.studyRow.revision += 3;
+  app.click('nav', '[data-page="profile"]');
+  app.setConfirmation(true);
+  app.click('studyAccountDelete');
+  assert.ok(await until(() => /유학 준비 자료를 지웠어요/.test(pageText(app)), 4000), '지웠다고 알린다');
+  await settle();
+  app.click('nav', '[data-page=\"univ\"]'); app.click('nav', '[data-page=\"cond\"]');
+  assert.doesNotMatch(pageText(app), /다른 곳에서 지워졌어요/, '같은 일을 두 번 알리지 않는다');
+  assert.equal(app.studyRow.state, null);
+});
+

@@ -22,12 +22,15 @@ const stamp = (d) => (d instanceof Date ? d : new Date(d)).toISOString();
  *   give({ profile, minor, lang }) — 동의하고 처음 저장한다. 서버가 받은 뒤 true.
  *   remove() — 계정의 문서를 지운다(동의 거두기). 이 문서의 복구 기록도 지운다.
  *   pickDraft(id) · useAccount() — 남은 초안 고르기
+ *   takeOrphan() — 다른 곳에서 지워져 계정에 닿지 못한 이 탭의 고침(op)을 한 번 넘긴다. 앱은 이것을 탭 저장에 남긴다.
  */
 export function createStudyAccount({ request, storage = globalThis.sessionStorage, onChange = () => {}, syncFactory = createDocumentSync, now = () => new Date() } = {}) {
   if (typeof request !== 'function') throw new TypeError('PATH study request required');
   let sync = null, accountId = null, epoch = 0;
   let doc = null, phase = 'closed', status = { status: 'closed', pending: false, error: null, localDrafts: [] };
   let lastOp = null, deletedElsewhere = false, reapplying = false, preferLocal = false, cleanAfterSave = false, sendFailed = false;
+  // 다른 곳에서 지워진 것을 알았을 때 계정에 닿지 못한 고침. 계정에는 다시 보내지 않고 앱이 탭에 남긴다.
+  let orphan = null;
   // 제어기가 스스로 푸는 오류(판 충돌 · 동의 어긋남)는 「보내지 못함」으로 치지 않는다.
   const SELF_HEALING = new Set(['REVISION_CONFLICT', 'PATH_STUDY_CONSENT_STALE']);
 
@@ -100,28 +103,30 @@ export function createStudyAccount({ request, storage = globalThis.sessionStorag
 
   // 판 충돌: 계정 것을 받고(이 탭 것은 복구 기록에 남는다) 마지막 동작 하나만 다시 적용한다. 계정 쪽이 지워졌으면 다시 쓰지 않는다.
   async function recoverConflict() {
-    const my = epoch; reapplying = true;
+    // 계정 것을 받는 동안 동기화가 「맞춤」을 알리면 lastOp가 비워질 수 있어 먼저 잡아 둔다.
+    const my = epoch, pendingOp = lastOp; reapplying = true;
     try {
       // 학생이 남은 초안을 골랐으면 그 초안으로 계정을 덮는다(동의가 다르면 서버가 409로 막고 아래 recoverStale이 계정 것을 받는다).
       if (preferLocal) { preferLocal = false; if (await sync.resolveLocal()) cleanAfterSave = true; return; }
       if (!(await sync.resolveRemote()) || my !== epoch) return;
-      if (!doc?.consent) { deletedElsewhere = true; lastOp = null; preferLocal = false; try { sync.clearLocalRecords?.(); } catch {} phase = phaseFor(); emit(); return; }
+      if (!doc?.consent) { deletedElsewhere = true; orphan = lastOp || pendingOp; lastOp = null; preferLocal = false; try { sync.clearLocalRecords?.(); } catch {} phase = phaseFor(); emit(); return; }
       if (lastOp) { const op = lastOp; lastOp = null; const next = createStudyDocument(op(clone(doc.profile)), doc.consent); if (sync.change(next)) { doc = next; cleanAfterSave = true; emit(); } }
     } catch {} finally { reapplying = false; }
   }
   // 동의가 맞지 않는다는 409: 다른 곳에서 지웠거나 동의가 바뀌었다. 계정 것을 받고, 비었으면 동의 전으로 돌린다.
   async function recoverStale() {
-    const my = epoch;
+    // 계정 것을 받으면 동기화가 「맞춤」을 알려 lastOp를 비우므로, 넘길 고침은 받기 전에 잡아 둔다(운영 서버는 동의 검사를 판 검사보다 먼저 한다).
+    const my = epoch, pendingOp = lastOp;
     try {
       if (!(await sync.resolveRemote()) || my !== epoch) return;
-      if (!doc?.consent) { deletedElsewhere = true; lastOp = null; try { sync.clearLocalRecords?.(); } catch {} }
+      if (!doc?.consent) { deletedElsewhere = true; orphan = lastOp || pendingOp; lastOp = null; try { sync.clearLocalRecords?.(); } catch {} }
       phase = phaseFor(); emit();
     } catch {}
   }
 
   async function open(id) {
     close();
-    accountId = id; epoch++; deletedElsewhere = false; lastOp = null; doc = null; phase = 'loading'; emit();
+    accountId = id; epoch++; deletedElsewhere = false; lastOp = null; orphan = null; doc = null; phase = 'loading'; emit();
     const my = epoch;
     try {
       await ensureSync().open(id);
@@ -138,7 +143,7 @@ export function createStudyAccount({ request, storage = globalThis.sessionStorag
   function close() {
     epoch++;
     try { sync?.close(); } catch {}
-    accountId = null; doc = null; lastOp = null; preferLocal = false; cleanAfterSave = false; sendFailed = false; phase = 'closed';
+    accountId = null; doc = null; lastOp = null; orphan = null; preferLocal = false; cleanAfterSave = false; sendFailed = false; phase = 'closed';
     status = { status: 'closed', revision: null, pending: false, error: null, localDrafts: [] };
   }
   function write(nextProfile, op = null) {
@@ -165,7 +170,7 @@ export function createStudyAccount({ request, storage = globalThis.sessionStorag
     }
     const consent = { v: CONSENT_VERSION, at: stamp(now()), minor: minor === true, guardian: minor === true, lang, base: status.revision };
     const next = createStudyDocument(profile, consent);
-    deletedElsewhere = false;
+    deletedElsewhere = false; orphan = null;
     const id = accountId, my = epoch;
     sync.change(next); doc = next; phase = phaseFor(); emit();
     let ok = false;
@@ -203,7 +208,8 @@ export function createStudyAccount({ request, storage = globalThis.sessionStorag
   };
   const retry = () => (sync && accountId ? (status.pending ? sync.flush() : sync.refresh()) : Promise.resolve(false));
   const clearNotice = () => { deletedElsewhere = false; emit(); };
+  const takeOrphan = () => { const op = orphan; orphan = null; return op; };
   /** 로그아웃 때 올리지 못한 이 문서의 초안 · 복구 기록을 지운다(학생이 확인한 뒤에만, 공용 기기에 성적 · 돈을 남기지 않게). */
   const discardLocal = (id = accountId) => { if (!id) return; if (accountId === id) close(); wipe(id); emit(); };
-  return Object.freeze({ open, close, snapshot, write, give, remove, pickDraft, useAccount, retry, clearNotice, discardLocal });
+  return Object.freeze({ open, close, snapshot, write, give, remove, pickDraft, useAccount, retry, clearNotice, discardLocal, takeOrphan });
 }

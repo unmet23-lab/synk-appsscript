@@ -27,8 +27,9 @@ function fakeServer() {
     const state = validateStudyDocument(values.state);
     if (expected < row.revision && row.state && JSON.stringify(row.state) === JSON.stringify(state)) return reply();
     const ok = row.state === null ? state.consent.base === row.revision : JSON.stringify(row.state.consent) === JSON.stringify(state.consent);
-    if (expected !== row.revision) throw fault('REVISION_CONFLICT', row.revision);
+    // 운영 서버와 같은 차례: 동의 검사가 판 검사(저장)보다 먼저다.
     if (!ok) throw fault('PATH_STUDY_CONSENT_STALE', row.revision);
+    if (expected !== row.revision) throw fault('REVISION_CONFLICT', row.revision);
     row.state = state; row.revision++;
     if (loseAck) { loseAck = false; throw fault('NETWORK'); }
     return reply();
@@ -80,6 +81,10 @@ test('다른 곳에서 지웠으면 이 탭의 고침을 다시 보내지 않고
   assert.ok(await until(() => acct.snapshot().deletedElsewhere === true), '지워졌다고 알린다');
   assert.equal(acct.snapshot().phase, 'none');
   assert.equal(server.row.state, null, '서버에 다시 생기지 않는다');
+  const op = acct.takeOrphan();
+  assert.equal(typeof op, 'function', '계정에 닿지 못한 고침을 앱에 넘긴다');
+  assert.equal(op(profile()).topik, 5);
+  assert.equal(acct.takeOrphan(), null, '한 번만 넘긴다');
   acct.close();
 });
 

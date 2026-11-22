@@ -169,8 +169,18 @@ const refusedGet = () => { try { return tabStorage()?.getItem(CONSENT_REFUSED_KE
 const refusedSet = (id) => { try { if (id) tabStorage()?.setItem(CONSENT_REFUSED_KEY, id); else tabStorage()?.removeItem(CONSENT_REFUSED_KEY); } catch {} };
 let studyAcctId = null;
 let studyCompared = null;
+let studyGone = false;
 const studyAcct = createStudyAccount({ request: (op, v) => session.studyRequest(op, v), storage: tabStorage(), onChange: (sn) => {
   if (!studyAcctId) return;
+  // 다른 곳에서 지워진 것을 처음 알았을 때: 앞의 「계정에 저장했어요」 같은 알림을 지우고, 계정에 닿지 못한 이 탭의 고침만 탭에 남긴다.
+  // 동의를 거둔 뒤이므로 다시 묻지 않는다(「나」의 「계정에 저장하기」로는 다시 저장할 수 있다).
+  if (sn?.deletedElsewhere && !studyGone) {
+    S.flash = null; S.consentAsk = false; S.consentRefused = true; refusedSet(studyAcctId);
+    const op = studyAcct.takeOrphan();
+    // 그 고침은 studyAcctId 계정의 것이다. 세션 계정이 그새 바뀌었으면(조합 중이라 계정 맞춤이 늦을 때) 버린다.
+    if (op && session.status().accountId === studyAcctId) { const base = tabStudyProfile(); if (study.owner() !== studyAcctId) { study.clear(); study.setOwner(studyAcctId); } try { study.set(op(base)); } catch {} }
+  }
+  studyGone = !!sn?.deletedElsewhere;
   if (sn?.phase === 'none') { if (seenGet() === studyAcctId) seenSet(null); studyCompared = null; S.studyChoice = false; }
   if (sn?.phase === 'choose') seenSet(studyAcctId);
   // 동의하는 중(서버 확인 전)에는 견주지 않는다: 실패하면 탭의 조건이 그대로 남아야 한다.
@@ -978,7 +988,8 @@ Object.assign(ACT, {
   async studyAccountDelete() {
     if (!confirm(accL('계정에 저장한 「내 조건」 · 「다가오는 날」 · 고른 과정 · 서류 표시를 지우고 동의를 거둬요. 지울까요?', 'Delete the conditions, upcoming dates, program and marks saved to your account and withdraw your consent?'))) return;
     const ok = await studyAcct.remove();
-    if (ok) { seenSet(null); S.consentRefused = true; refusedSet(studyAcctId); S.studyChoice = false; studyCompared = null; }
+    // 이 탭에서 지웠으니 지우는 사이 알게 된 「다른 곳에서 지워졌어요」는 끈다(같은 일을 두 번 알리지 않게).
+    if (ok) { seenSet(null); S.consentRefused = true; refusedSet(studyAcctId); S.studyChoice = false; studyCompared = null; studyAcct.clearNotice(); }
     S.flash = ok ? accL('계정의 유학 준비 자료를 지웠어요. 이제 넣는 조건은 이 탭에만 남아요.', 'Deleted your study data from the account. Conditions you add now stay in this tab only.') : accL('지우지 못했어요. 잠시 뒤 다시 시도해 주세요.', 'Could not delete. Please try again later.');
     render(false); say(S.flash);
   },
