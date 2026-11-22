@@ -82,6 +82,9 @@ app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.s
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
 let window,platformTray,trayMemory,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,pulseView,workspaceApp,workspaceView,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+// Workspace 로그인 금고와 Suite 따라가기. will-quit이 정리하므로 단일 실행 잠금(app.requestSingleInstanceLock)보다 위에 선언한다.
+// 이미 켜진 앱을 한 번 더 켜면 그 실행은 모듈을 읽는 도중 app.quit()으로 끝나고, 창이 없어 Electron이 will-quit을 바로 부른다(0.5.5 설치본, 사무실 세션 11-22 보고)
+let workspaceAuth=null,workspaceFollower=null;
 // 켜짐부터 열림까지(1-가 구현 설계 2절). orbBoot는 구가 드러나기 시작한 시각과 움직임 종류다. 본체가 정해 시작 창과 앱 창에 같은 값을 준다.
 // startupHandoff는 시작 창에서 앱 창으로 겹쳐 넘기는 동안의 상태, unseenFailure는 숨은 채 시작한 길에서 아직 보이지 않은 실패다.
 let orbBoot=null,startupHandoff=null,unseenFailure=null;
@@ -105,7 +108,7 @@ let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
 // Workspace 로그인의 Suite 따라가기를 500ms 틈 없이 지금 플랫폼 기록에 묶는다. 묶지 않으면 계정을 바꾼 직후 새 계정의 뷰가 앞 계정의 로그인 상태와 계정 정보를 받는다(4단계 설계 검토 R2).
-// 모듈을 읽는 중(workspaceFollower 선언 앞)에 불려도 다음 따라가기가 다시 본다
+// 따라가기를 아직 만들지 않았거나 닫은 뒤에 불려도 다음 따라가기가 다시 본다
 function followWorkspaceNow(){try{void workspaceFollower?.refresh();}catch{}}
 function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
@@ -587,7 +590,6 @@ const SHARE_ANSWER_MS=60000,SHARE_MAX=24;
   로그인을 따로 갖는다. 금고는 userData/WorkspaceAuth다. 플랫폼이 쓰는 Suite 기록을 따라가 같은 SYNK ID로만 선다(createSuiteFollower).
   처음 Workspace를 열 때 만든다. 그 금고가 비어 있으면 시스템 브라우저가 한 번 열려 같은 SYNK ID로 로그인을 마친다(플랫폼 로그인과 같은 길)
 */
-let workspaceAuth=null,workspaceFollower=null;
 function workspaceAuthConfig(){if(runtime.clientId!=='platform'||smoke||!runtime.auth?.clients?.messenger)return null;try{return configuration(runtime.auth,'messenger',runtime.mode);}catch{return null;}}
 function ensureWorkspaceAuth(){
   if(workspaceAuth)return workspaceAuth;
