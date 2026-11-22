@@ -171,8 +171,8 @@
         },
         {
           "id": "lockers",
-          "x": 0.29,
-          "y": 0.45,
+          "x": 0.33,
+          "y": 0.6,
           "label": "사물함",
           "hint": {
             "mn": "Өвчтөний хувцас, цүнх хийх шүүгээ.",
@@ -1009,7 +1009,7 @@
         {
           "type": "move",
           "place": "exam-front",
-          "caption": "내시경실 앞, 환자분과 둘이"
+          "caption": "내시경실 앞"
         },
         {
           "type": "say",
@@ -1077,6 +1077,9 @@
       "id": "results",
       "title": "결과 상담",
       "minutes": 5,
+      "requires": [
+        "exam"
+      ],
       "place": "clinic-two",
       "steps": [
         {
