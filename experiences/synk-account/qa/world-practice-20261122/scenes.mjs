@@ -96,6 +96,7 @@ try {
       if (name === 'practice') {
         (await text(page, '.wp-hero h2')) === '듣고 부정·변경 이해하기' ? ok('첫 판: 가장 먼저 연습할 곳') : bad('첫 판 기술 ' + await text(page, '.wp-hero h2'));
         (await text(page, '.wp-meta')).includes('최근 첫 시도 9문항 중 4문항 맞힘') && (await text(page, '.wp-meta b')) === '44%' ? ok('첫 판 비율 44%') : bad('첫 판 비율 ' + await text(page, '.wp-meta'));
+        (await page.evaluate(() => document.querySelector('.wp-meta .wp-bar')?.getBoundingClientRect().width || 0)) >= 90 ? ok('첫 판 막대 보임') : bad('첫 판 막대 폭');
         (await text(page, '.wp-skill[data-skill="ko.listening.word"] .wp-pct')) === '92%' && (await text(page, '.wp-skill[data-skill="ko.reading.condition"] .wp-pct')) === '' ? ok('줄 비율(푼 문항 없는 줄은 비움)') : bad('줄 비율');
         (await text(page, '[data-rec-go]')) === '바람길로 연습' ? ok('연습 단추: 바람길(부정·변경 듣기가 주된 연습인 첫 게임)') : bad('연습 단추 ' + await text(page, '[data-rec-go]'));
         (await page.getAttribute('.game-links>button >> nth=0', 'data-game')) === 'korean-runner' ? ok('첫 게임 칸: 바람길') : bad('첫 게임 칸');
@@ -108,7 +109,7 @@ try {
         (await text(page, '.wp-tag')) === '오늘의 연습' ? ok('놓치지 않은 곳 꼬리표') : bad('꼬리표 ' + await text(page, '.wp-tag'));
         (await text(page, '.wp-games .wp-head .small')).startsWith('노란 칸은 「조건 읽기」를') ? ok('게임 머리 글') : bad('게임 머리 글 ' + await text(page, '.wp-games .wp-head .small'));
         await shot('-pick');
-        await page.click('.wp-skill[data-skill="ko.listening.word"]');(await text(page, '.wp-tag')) === '잘 이어 가는 곳' ? ok('혼자 해낸 곳 고름') : bad('혼자 해낸 곳 꼬리');
+        await page.click('.wp-skill[data-skill="ko.listening.word"]');(await text(page, '.wp-tag')) === '잘 이어 가는 곳' && (await text(page, '.wp-meta span')).startsWith('한 유형 · ') ? ok('혼자 해낸 곳 고름(앞말 「한 유형」)') : bad('혼자 해낸 곳 꼬리 · 앞말');
         await page.click('.wp-skill[data-skill="ko.listening.negation"]');
         await page.click('[data-rec-go]');await page.waitForTimeout(500);
         (await page.isVisible('#world-games>iframe')) && (await page.isVisible('.wp-playing')) && !(await page.isVisible('.wp-hero')) && !(await page.isVisible('#world-games>.world-preferences')) && !(await page.isVisible('.wp-games')) ? ok('게임 열림: 판 접고 게임만') : bad('게임 열기');
