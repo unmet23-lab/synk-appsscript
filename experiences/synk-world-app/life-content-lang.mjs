@@ -21,15 +21,15 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
  'greetings-expressions-thanks-transfer':q(
   {prompt:'도움을 준 직원에게 고마움을 전하려고 해요. 어떤 말을 할까요?',context:'직원이 잃어버린 우산을 찾아 줬어요.',explanation:'우산을 찾아 준 도움에 ‘감사합니다’라고 말해요.'},
   {prompt:'You want to thank the staff member who helped you. What do you say?',context:'A staff member found the umbrella you lost.',explanation:'For the help finding your umbrella, say ‘감사합니다’.'},
-  {prompt:'Тусалсан ажилтандаа талархлаа илэрхийлэхийг хүсэж байна. Юу гэж хэлэх вэ?',context:'Ажилтан таны гээсэн шүхрийг олж өглөө.',explanation:'Шүхрийг олж өгч тусалсанд «감사합니다» гэж хэлнэ.'}),
+  {prompt:'Танд тусалсан ажилтанд талархлаа илэрхийлэх гэж байна. Юу гэж хэлэх вэ?',context:'Ажилтан таны гээсэн шүхрийг олж өглөө.',explanation:'Шүхрийг тань олж өгсөн ажилтанд «감사합니다» гэж хэлнэ.'}),
  'greetings-expressions-name':q(
   {prompt:'자기 이름을 소개하는 말을 골라요.',context:'처음 만난 친구에게 내 이름을 말해요.',explanation:'자기 이름을 말할 때는 ‘저는 수진이에요’라고 해요. ‘안녕하세요’는 인사, ‘감사합니다’는 고마움을 전하는 말이에요.'},
   {prompt:'Choose the sentence that introduces your own name.',context:'You tell a friend you just met your name.',explanation:'To say your own name, say ‘저는 수진이에요’. ‘안녕하세요’ is a greeting, and ‘감사합니다’ is how you say thank you.'},
-  {prompt:'Өөрийн нэрээ танилцуулах үгийг сонгоно уу.',context:'Анх уулзаж буй найздаа нэрээ хэлж байна.',explanation:'Өөрийн нэрээ хэлэхдээ «저는 수진이에요» гэж хэлнэ. «안녕하세요» нь мэндчилгээ, «감사합니다» нь талархал илэрхийлэх үг.'}),
+  {prompt:'Өөрийгөө танилцуулах үгийг сонгоно уу.',context:'Анх уулзаж буй найздаа нэрээ хэлж байна.',explanation:'Нэрээ хэлэхдээ «저는 수진이에요» гэж хэлнэ. «안녕하세요» нь мэндчилгээ, «감사합니다» нь талархал илэрхийлэх үг.'}),
  'greetings-expressions-name-transfer':q(
   {prompt:'자기 이름을 소개하는 말을 골라요.',context:'내 이름은 준영이에요.',explanation:'‘저는 준영이에요’는 자기 이름을 말하는 소개예요.'},
   {prompt:'Choose the sentence that introduces your own name.',context:'Your name is Junyoung.',explanation:'‘저는 준영이에요’ is how you say your own name.'},
-  {prompt:'Өөрийн нэрээ танилцуулах үгийг сонгоно уу.',context:'Таны нэр Жүнёон.',explanation:'«저는 준영이에요» нь өөрийн нэрээ хэлж танилцуулж буй үг.'}),
+  {prompt:'Өөрийгөө танилцуулах үгийг сонгоно уу.',context:'Таны нэр Жүнёон.',explanation:'«저는 준영이에요» гэдэг нь нэрээ хэлж өөрийгөө танилцуулж буй үг.'}),
  'greetings-story-name':q(
   {prompt:'처음 인사한 사람의 이름은 무엇이에요?',context:'',explanation:'서하가 가장 먼저 ‘안녕하세요! 저는 서하예요.’라고 인사했어요. 지호와 태오는 그다음에 말했어요.'},
   {prompt:'What is the name of the person who greeted you first?',context:'',explanation:'Seoha greeted you first: ‘안녕하세요! 저는 서하예요.’ Jiho and Taeo spoke after her.'},
@@ -84,7 +84,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
 export const LIFE_EXPRESSION_TEXT=Object.freeze({
  'greet-hello':q('처음 만난 사람이나 아는 사람에게 정중하게 인사해요.','A polite greeting for anyone you meet, even for the first time.','Хэнтэй уулзсан ч, бүр анх удаа ч гэсэн эелдгээр мэндлэх үг.'),
  'greet-thanks':q('도움을 받았을 때 정중하게 고마움을 전해요.','Politely says thank you when someone helps you.','Тусламж авахдаа эелдгээр талархлаа илэрхийлнэ.'),
- 'greet-name':q('자기 이름을 소개해요. 이름 끝에 받침이 있으면 ‘이에요’, 없으면 ‘예요’를 써요.','Introduces your own name. If the name ends in a final consonant (받침), use ‘이에요’; if not, use ‘예요’.','Өөрийн нэрээ танилцуулна. Нэр нь гийгүүлэгчээр (받침) төгссөн бол «이에요»-г, үгүй бол «예요»-г хэрэглэнэ.'),
+ 'greet-name':q('자기 이름을 소개해요. 이름 끝에 받침이 있으면 ‘이에요’, 없으면 ‘예요’를 써요.','Introduces your own name. If the name ends in a final consonant (받침), use ‘이에요’; if not, use ‘예요’.','Өөрийгөө танилцуулахад хэрэглэнэ. Нэр тань гийгүүлэгчээр (받침) төгссөн бол «이에요»-г, үгүй бол «예요»-г хэрэглэнэ.'),
 });
 
 // 「뜻 보기」: 답한 뒤에만 보이는 보기의 뜻. 키는 보기 글자 그대로다.
@@ -150,7 +150,7 @@ const N={
  back:['밖에 나갔다가 집이나 회사에 돌아왔을 때 하는 말이에요.','You say this when you come back home or to work after going out.','Гадуур явж байгаад гэртээ эсвэл ажилдаа буцаж ирэхдээ хэлдэг үг.'],
  backPolite:['밖에 나갔다가 집에 돌아왔을 때 정중하게 하는 말이에요.','You say this politely when you come back home after going out.','Гадуур явж байгаад гэртээ буцаж ирэхдээ эелдгээр хэлдэг үг.'],
  hello:['사람을 만났을 때 하는 인사예요.','This is the greeting you say when you meet someone.','Хүнтэй уулзахдаа хэлдэг мэндчилгээ.'],
- myName:['자기 이름을 말할 때 써요.','You use this to say your own name.','Өөрийн нэрээ хэлэхдээ хэрэглэдэг.'],
+ myName:['자기 이름을 말할 때 써요.','You use this to say your own name.','Нэрээ хэлэхдээ хэрэглэдэг.'],
  firstMeet:['처음 만난 사람에게 정중하게 하는 인사예요. 고마움을 전하는 말은 아니에요.','A polite greeting for someone you meet for the first time. It does not say thank you.','Анх уулзаж буй хүндээ хэлдэг эелдэг мэндчилгээ. Талархал илэрхийлдэггүй.'],
  byeStay:['내가 떠나고 상대가 남을 때 하는 인사예요.','A goodbye you say when you leave and the other person stays.','Та явж, нөгөө хүн үлдэх үед хэлдэг салах ёсны үг.'],
  goPlace:['어디에 가는지 말할 때 써요.','You use this to say where you are going.','Хаашаа явж байгаагаа хэлэхдээ хэрэглэдэг.'],

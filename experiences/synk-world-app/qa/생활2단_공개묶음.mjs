@@ -69,6 +69,9 @@ const ASSETS = f => f.startsWith('experiences/brand-opening/assets/life-people/'
 for (const src of [...changed].filter(ASSETS)) {
   const rel = src.replace('experiences/', '');
   write('new', rel, git('show', `${END}:${src}`)); items.push(`world/${rel}`);
+  // 공개본에 같은 파일이 있으면 기준에도 둔다(없으면 공개.js가 「새로 만든 파일」로 본다)
+  const r = await fetch(`https://synk.im/world/${rel}?probe=${Date.now()}`, {cache: 'no-store'});
+  if (r.ok) write('base', rel, Buffer.from(await r.arrayBuffer()));
 }
 // 이 일이 고치지 않은 원천이 섞이지 않았는지
 const outside = [...changed].filter(f => f.startsWith('experiences/') && !SOURCES.some(rel => srcOf(rel) === f) && !ASSETS(f) && !f.startsWith('experiences/brand-opening/content/') && !/\/qa\//.test(f));

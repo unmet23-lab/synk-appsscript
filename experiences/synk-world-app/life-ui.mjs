@@ -1,15 +1,24 @@
-import {PACKS,LESSONS,lessonById,packById,LIFE_PEOPLE,peopleStory,PACK_PRINTS} from './life-content.mjs';
+import {PACKS,LESSONS,lessonById,packById} from './life-content.mjs';
+// 11-22에 더한 이름(사람 이야기 · 팩 사진 · 움직임 · 쓰임 줄)은 이름공간으로 부른다. 공개 주소 캐시(10분)에 옛 모듈이 남은 사람도
+// 레슨 화면이 깨지지 않고, 그동안은 펠트 이야기 · 움직임 없는 판정 · 쓰임 줄 없는 보기로 보인다.
+import * as lifeContentNext from './life-content.mjs';
 import {CAFE_LESSON_ID,CAFE_COMPOSE_ID,CAFE_LESSON_IDS,CAFE_VISITS,isCafeLesson,resumeCafe,chooseCafe,advanceCafe,chooseCafeSeat,cafeQuestion,updateCafeOrder,submitCafeOrder} from './cafe-activity.mjs';
 import {cafeMarkup,cafeCompletionMarkup,createCafeSpeech,cafeSpeechLabel} from './cafe-ui.mjs';
 import {play,haptic,verdict,getPref} from '../brand-opening/world-sound.mjs'
 import {storyPhotoFile,hasStoryPhoto,cafePhotoFile,hasCafePhoto} from '../brand-opening/tutor-photos.mjs';
 import {storySigns} from '../brand-opening/story-signs.mjs';
 import {storyLineMarkup,storySteps,createStoryDetail} from './life-story.mjs';
-import {motionOn,ink,typeLabel,roll,drop,bindTilt,stitch,wash,shake,spring,stamp,confetti,slam,develop,drawer,reveal,underline,markIn} from '../brand-opening/world-motion.mjs';
+import {motionOn,ink,typeLabel,roll,drop,bindTilt,stitch,wash,shake,spring,stamp,confetti,slam,develop} from '../brand-opening/world-motion.mjs';
+import * as motionNext from '../brand-opening/world-motion.mjs';
 // 화면 언어(10-19 1판): 레슨 화면의 글(단추·안내·결과)은 고른 언어, 학습 내용(보기·표현·이야기 대사·포스터의 큰 한글)은 한국어 그대로.
 // 인사 팩(첫 레슨들)의 문제 지시·상황·해설과 「뜻 보기」는 life-content-lang.mjs. 다른 팩의 문제 글은 2판까지 원문 그대로다.
 import {t,tMessage,currentLang,formatDate,hasString} from '../brand-opening/world-lang.mjs';
-import {lifeQuestionText,lifeExpressionText,lifeChoiceMeanings,lifeChoiceNote} from './life-content-lang.mjs';
+import {lifeQuestionText,lifeExpressionText,lifeChoiceMeanings} from './life-content-lang.mjs';
+import * as lifeLangNext from './life-content-lang.mjs';
+const noMotion=()=>{};
+const LIFE_PEOPLE=lifeContentNext.LIFE_PEOPLE||{},PACK_PRINTS=lifeContentNext.PACK_PRINTS||{},peopleStory=lifeContentNext.peopleStory||(()=>null);
+const drawer=motionNext.drawer||noMotion,reveal=motionNext.reveal||noMotion,markIn=motionNext.markIn||noMotion;
+const lifeChoiceNote=lifeLangNext.lifeChoiceNote||(()=>null);
 if(!document.querySelector('[data-life-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./life-ui.css',import.meta.url).href;style.dataset.lifeStyle='true';document.head.append(style);}
 // 거울 부품이 없을 때(묶음 없이 화면만 시험할 때)의 빈 거울.
 const NO_TRAIL=Object.freeze({shown:()=>null,help(){},delivery(){},answer:()=>null,guided(){},release(){},metrics:()=>({slots:0,presented:0,answered:0}),dispose(){}});
@@ -266,7 +275,6 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   if(type==='life-question'&&answered&&lastFeedback){
    const chosen=content.querySelector('.life-choice.is-chosen'),band=content.querySelector('.life-feedback');
    if(lastFeedback.correct){wash(chosen,lastPoint);markIn(chosen,{delay:220});}else{shake(chosen);drawer(chosen?.querySelector('.life-choice-note:not([hidden])'),{delay:160});reveal(content.querySelector('.life-choice.is-correct'),content.querySelector('.life-choice:not(.is-correct):not(.is-chosen)'),{delay:800});}
-   band?.querySelectorAll('.life-quote').forEach(el=>underline(el,{delay:lastFeedback.correct?850:1100}));
    spring(band,[{opacity:0,transform:'translateY(46px)'},{opacity:1,transform:'translateY(-6px)',offset:.62},{transform:'translateY(2px)',offset:.82},{transform:'none'}],{duration:620,delay:120});
    if(lastFeedback.correct&&!lastFeedback.helped&&reward&&band)stamp(band,{size:92,rot:-12,top:-40,right:4,delay:640,shake:content});
   }
@@ -503,8 +511,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const lang=currentLang(),noteOf=c=>feedback&&c.id!==q.answerId?lifeChoiceNote(q,c.id,lang):null;
   const choiceButtons=q.choices.map(c=>{const chosen=feedback&&c.id===feedback.choiceId,note=noteOf(c);
    return `<button class="life-choice ${chosen?'is-chosen':''} ${feedback&&c.id===q.answerId?'is-correct':''}" data-life-choice="${c.id}" ${feedback?'disabled':''}><span class="life-choice-copy"><span lang="ko">${escape(c.text)}</span>${note?`<span class="life-choice-note" lang="${lang}" ${chosen?'':'hidden'}>${escape(note)}</span>`:''}</span></button>`;}).join('');
-  const chosenNote=feedback&&!feedback.correct?noteOf(q.choices.find(c=>c.id===feedback.choiceId)||{}):null,others=feedback?.correct&&q.choices.some(c=>noteOf(c));
-  // 해설 속 ‘한국어’ · «한국어»는 답 낱말: 밑줄이 그어진다.
+  const chosenNote=feedback&&!feedback.correct?noteOf(q.choices.find(c=>c.id===feedback.choiceId)||{}):null,others=feedback?.correct&&hasString('life.otherNotes')&&q.choices.some(c=>noteOf(c));
+  // 해설 속 ‘한국어’ · «한국어»는 답 낱말: 굵게, 밝은 글씨로 세운다(밑줄은 긋지 않는다 — DESIGN 머리 11-23).
   const why=text=>escape(text).replace(/‘([^’]+)’/g,'‘<b class="life-quote">$1</b>’').replace(/«([^»]+)»/g,'«<b class="life-quote">$1</b>»');
   // 「뜻 보기」(10-19 1판): 답한 뒤에만, 눌러서 보기마다의 뜻을 화면 언어로 연다. 한국어 화면과 1판 밖 문제에는 없다.
   const meanings=feedback?lifeChoiceMeanings(q,currentLang()):null;

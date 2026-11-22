@@ -176,10 +176,6 @@ export function reveal(el,from,{delay=800}={}){
  if(pseudoOk())animate(el,[{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)'}],{pseudoElement:'::after',duration:340,delay:delay+200,easing:'cubic-bezier(.3,.7,.3,1)',fill:'backwards'});
  animate(el,[{outline:'0 solid rgba(125,180,90,0)',outlineOffset:'0px'},{outline:'5px solid rgba(125,180,90,.28)',outlineOffset:'0px',offset:.45},{outline:'0 solid rgba(125,180,90,0)',outlineOffset:'4px'}],{duration:900,delay:delay+120,easing:'ease-out'});
 }
-/** 판정 띠의 답 낱말: 밑줄이 왼쪽부터 그어진다(밑줄은 CSS가 그리고, 여기서는 길이만 늘린다). */
-export function underline(el,{delay=850}={}){
- if(!el||!motionOn())return;animate(el,[{backgroundSize:'0% 2px'},{backgroundSize:'100% 2px'}],{duration:500,delay,easing:'ease-out',fill:'backwards'});
-}
 /** 맞힌 보기의 체크: 왼쪽부터 그려진다. */
 export function markIn(el,{delay=220}={}){
  if(!el||!motionOn()||!pseudoOk())return;animate(el,[{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)'}],{pseudoElement:'::after',duration:340,delay,easing:'cubic-bezier(.3,.7,.3,1)',fill:'backwards'});

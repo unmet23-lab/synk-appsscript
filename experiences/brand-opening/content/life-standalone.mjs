@@ -17271,7 +17271,8 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
 }
 
 // experiences/synk-world-app/life-ui.mjs
-import { motionOn, ink, typeLabel, roll, drop, bindTilt, stitch, wash, shake, spring, stamp, confetti, slam, develop, drawer, reveal, underline, markIn } from "../world-motion.mjs";
+import { motionOn, ink, typeLabel, roll, drop, bindTilt, stitch, wash, shake, spring, stamp, confetti, slam, develop } from "../world-motion.mjs";
+import * as motionNext from "../world-motion.mjs";
 import { t, tMessage, currentLang, formatDate, hasString } from "../world-lang.mjs";
 
 // experiences/synk-world-app/life-content-lang.mjs
@@ -17295,17 +17296,17 @@ var LIFE_QUESTION_TEXT = Object.freeze({
   "greetings-expressions-thanks-transfer": q(
     { prompt: "\uB3C4\uC6C0\uC744 \uC900 \uC9C1\uC6D0\uC5D0\uAC8C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB824\uACE0 \uD574\uC694. \uC5B4\uB5A4 \uB9D0\uC744 \uD560\uAE4C\uC694?", context: "\uC9C1\uC6D0\uC774 \uC783\uC5B4\uBC84\uB9B0 \uC6B0\uC0B0\uC744 \uCC3E\uC544 \uC92C\uC5B4\uC694.", explanation: "\uC6B0\uC0B0\uC744 \uCC3E\uC544 \uC900 \uB3C4\uC6C0\uC5D0 \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB77C\uACE0 \uB9D0\uD574\uC694." },
     { prompt: "You want to thank the staff member who helped you. What do you say?", context: "A staff member found the umbrella you lost.", explanation: "For the help finding your umbrella, say \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019." },
-    { prompt: "\u0422\u0443\u0441\u0430\u043B\u0441\u0430\u043D \u0430\u0436\u0438\u043B\u0442\u0430\u043D\u0434\u0430\u0430 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u044D\u0445\u0438\u0439\u0433 \u0445\u04AF\u0441\u044D\u0436 \u0431\u0430\u0439\u043D\u0430. \u042E\u0443 \u0433\u044D\u0436 \u0445\u044D\u043B\u044D\u0445 \u0432\u044D?", context: "\u0410\u0436\u0438\u043B\u0442\u0430\u043D \u0442\u0430\u043D\u044B \u0433\u044D\u044D\u0441\u044D\u043D \u0448\u04AF\u0445\u0440\u0438\u0439\u0433 \u043E\u043B\u0436 \u04E9\u0433\u043B\u04E9\u04E9.", explanation: "\u0428\u04AF\u0445\u0440\u0438\u0439\u0433 \u043E\u043B\u0436 \u04E9\u0433\u0447 \u0442\u0443\u0441\u0430\u043B\u0441\u0430\u043D\u0434 \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u0433\u044D\u0436 \u0445\u044D\u043B\u043D\u044D." }
+    { prompt: "\u0422\u0430\u043D\u0434 \u0442\u0443\u0441\u0430\u043B\u0441\u0430\u043D \u0430\u0436\u0438\u043B\u0442\u0430\u043D\u0434 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u044D\u0445 \u0433\u044D\u0436 \u0431\u0430\u0439\u043D\u0430. \u042E\u0443 \u0433\u044D\u0436 \u0445\u044D\u043B\u044D\u0445 \u0432\u044D?", context: "\u0410\u0436\u0438\u043B\u0442\u0430\u043D \u0442\u0430\u043D\u044B \u0433\u044D\u044D\u0441\u044D\u043D \u0448\u04AF\u0445\u0440\u0438\u0439\u0433 \u043E\u043B\u0436 \u04E9\u0433\u043B\u04E9\u04E9.", explanation: "\u0428\u04AF\u0445\u0440\u0438\u0439\u0433 \u0442\u0430\u043D\u044C \u043E\u043B\u0436 \u04E9\u0433\u0441\u04E9\u043D \u0430\u0436\u0438\u043B\u0442\u0430\u043D\u0434 \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u0433\u044D\u0436 \u0445\u044D\u043B\u043D\u044D." }
   ),
   "greetings-expressions-name": q(
     { prompt: "\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", context: "\uCC98\uC74C \uB9CC\uB09C \uCE5C\uAD6C\uC5D0\uAC8C \uB0B4 \uC774\uB984\uC744 \uB9D0\uD574\uC694.", explanation: "\uC790\uAE30 \uC774\uB984\uC744 \uB9D0\uD560 \uB54C\uB294 \u2018\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694\u2019\uB77C\uACE0 \uD574\uC694. \u2018\uC548\uB155\uD558\uC138\uC694\u2019\uB294 \uC778\uC0AC, \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019\uB294 \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB294 \uB9D0\uC774\uC5D0\uC694." },
     { prompt: "Choose the sentence that introduces your own name.", context: "You tell a friend you just met your name.", explanation: "To say your own name, say \u2018\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694\u2019. \u2018\uC548\uB155\uD558\uC138\uC694\u2019 is a greeting, and \u2018\uAC10\uC0AC\uD569\uB2C8\uB2E4\u2019 is how you say thank you." },
-    { prompt: "\u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0430\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u0410\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0436 \u0431\u0443\u0439 \u043D\u0430\u0439\u0437\u0434\u0430\u0430 \u043D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u0436 \u0431\u0430\u0439\u043D\u0430.", explanation: "\u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u044D\u0445\u0434\u044D\u044D \xAB\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694\xBB \u0433\u044D\u0436 \u0445\u044D\u043B\u043D\u044D. \xAB\uC548\uB155\uD558\uC138\uC694\xBB \u043D\u044C \u043C\u044D\u043D\u0434\u0447\u0438\u043B\u0433\u044D\u044D, \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u043D\u044C \u0442\u0430\u043B\u0430\u0440\u0445\u0430\u043B \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u044D\u0445 \u04AF\u0433." }
+    { prompt: "\u04E8\u04E9\u0440\u0438\u0439\u0433\u04E9\u04E9 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0430\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u0410\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0436 \u0431\u0443\u0439 \u043D\u0430\u0439\u0437\u0434\u0430\u0430 \u043D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u0436 \u0431\u0430\u0439\u043D\u0430.", explanation: "\u041D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u044D\u0445\u0434\u044D\u044D \xAB\uC800\uB294 \uC218\uC9C4\uC774\uC5D0\uC694\xBB \u0433\u044D\u0436 \u0445\u044D\u043B\u043D\u044D. \xAB\uC548\uB155\uD558\uC138\uC694\xBB \u043D\u044C \u043C\u044D\u043D\u0434\u0447\u0438\u043B\u0433\u044D\u044D, \xAB\uAC10\uC0AC\uD569\uB2C8\uB2E4\xBB \u043D\u044C \u0442\u0430\u043B\u0430\u0440\u0445\u0430\u043B \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u044D\u0445 \u04AF\u0433." }
   ),
   "greetings-expressions-name-transfer": q(
     { prompt: "\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD558\uB294 \uB9D0\uC744 \uACE8\uB77C\uC694.", context: "\uB0B4 \uC774\uB984\uC740 \uC900\uC601\uC774\uC5D0\uC694.", explanation: "\u2018\uC800\uB294 \uC900\uC601\uC774\uC5D0\uC694\u2019\uB294 \uC790\uAE30 \uC774\uB984\uC744 \uB9D0\uD558\uB294 \uC18C\uAC1C\uC608\uC694." },
     { prompt: "Choose the sentence that introduces your own name.", context: "Your name is Junyoung.", explanation: "\u2018\uC800\uB294 \uC900\uC601\uC774\uC5D0\uC694\u2019 is how you say your own name." },
-    { prompt: "\u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0430\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u0422\u0430\u043D\u044B \u043D\u044D\u0440 \u0416\u04AF\u043D\u0451\u043E\u043D.", explanation: "\xAB\uC800\uB294 \uC900\uC601\uC774\uC5D0\uC694\xBB \u043D\u044C \u04E9\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u0436 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0436 \u0431\u0443\u0439 \u04AF\u0433." }
+    { prompt: "\u04E8\u04E9\u0440\u0438\u0439\u0433\u04E9\u04E9 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0430\u0445 \u04AF\u0433\u0438\u0439\u0433 \u0441\u043E\u043D\u0433\u043E\u043D\u043E \u0443\u0443.", context: "\u0422\u0430\u043D\u044B \u043D\u044D\u0440 \u0416\u04AF\u043D\u0451\u043E\u043D.", explanation: "\xAB\uC800\uB294 \uC900\uC601\uC774\uC5D0\uC694\xBB \u0433\u044D\u0434\u044D\u0433 \u043D\u044C \u043D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u0436 \u04E9\u04E9\u0440\u0438\u0439\u0433\u04E9\u04E9 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0436 \u0431\u0443\u0439 \u04AF\u0433." }
   ),
   "greetings-story-name": q(
     { prompt: "\uCC98\uC74C \uC778\uC0AC\uD55C \uC0AC\uB78C\uC758 \uC774\uB984\uC740 \uBB34\uC5C7\uC774\uC5D0\uC694?", context: "", explanation: "\uC11C\uD558\uAC00 \uAC00\uC7A5 \uBA3C\uC800 \u2018\uC548\uB155\uD558\uC138\uC694! \uC800\uB294 \uC11C\uD558\uC608\uC694.\u2019\uB77C\uACE0 \uC778\uC0AC\uD588\uC5B4\uC694. \uC9C0\uD638\uC640 \uD0DC\uC624\uB294 \uADF8\uB2E4\uC74C\uC5D0 \uB9D0\uD588\uC5B4\uC694." },
@@ -17371,7 +17372,7 @@ var LIFE_QUESTION_TEXT = Object.freeze({
 var LIFE_EXPRESSION_TEXT = Object.freeze({
   "greet-hello": q("\uCC98\uC74C \uB9CC\uB09C \uC0AC\uB78C\uC774\uB098 \uC544\uB294 \uC0AC\uB78C\uC5D0\uAC8C \uC815\uC911\uD558\uAC8C \uC778\uC0AC\uD574\uC694.", "A polite greeting for anyone you meet, even for the first time.", "\u0425\u044D\u043D\u0442\u044D\u0439 \u0443\u0443\u043B\u0437\u0441\u0430\u043D \u0447, \u0431\u04AF\u0440 \u0430\u043D\u0445 \u0443\u0434\u0430\u0430 \u0447 \u0433\u044D\u0441\u044D\u043D \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \u043C\u044D\u043D\u0434\u043B\u044D\u0445 \u04AF\u0433."),
   "greet-thanks": q("\uB3C4\uC6C0\uC744 \uBC1B\uC558\uC744 \uB54C \uC815\uC911\uD558\uAC8C \uACE0\uB9C8\uC6C0\uC744 \uC804\uD574\uC694.", "Politely says thank you when someone helps you.", "\u0422\u0443\u0441\u043B\u0430\u043C\u0436 \u0430\u0432\u0430\u0445\u0434\u0430\u0430 \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \u0442\u0430\u043B\u0430\u0440\u0445\u043B\u0430\u0430 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u043D\u044D."),
-  "greet-name": q("\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD574\uC694. \uC774\uB984 \uB05D\uC5D0 \uBC1B\uCE68\uC774 \uC788\uC73C\uBA74 \u2018\uC774\uC5D0\uC694\u2019, \uC5C6\uC73C\uBA74 \u2018\uC608\uC694\u2019\uB97C \uC368\uC694.", "Introduces your own name. If the name ends in a final consonant (\uBC1B\uCE68), use \u2018\uC774\uC5D0\uC694\u2019; if not, use \u2018\uC608\uC694\u2019.", "\u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u043D\u0430. \u041D\u044D\u0440 \u043D\u044C \u0433\u0438\u0439\u0433\u04AF\u04AF\u043B\u044D\u0433\u0447\u044D\u044D\u0440 (\uBC1B\uCE68) \u0442\u04E9\u0433\u0441\u0441\u04E9\u043D \u0431\u043E\u043B \xAB\uC774\uC5D0\uC694\xBB-\u0433, \u04AF\u0433\u04AF\u0439 \u0431\u043E\u043B \xAB\uC608\uC694\xBB-\u0433 \u0445\u044D\u0440\u044D\u0433\u043B\u044D\u043D\u044D.")
+  "greet-name": q("\uC790\uAE30 \uC774\uB984\uC744 \uC18C\uAC1C\uD574\uC694. \uC774\uB984 \uB05D\uC5D0 \uBC1B\uCE68\uC774 \uC788\uC73C\uBA74 \u2018\uC774\uC5D0\uC694\u2019, \uC5C6\uC73C\uBA74 \u2018\uC608\uC694\u2019\uB97C \uC368\uC694.", "Introduces your own name. If the name ends in a final consonant (\uBC1B\uCE68), use \u2018\uC774\uC5D0\uC694\u2019; if not, use \u2018\uC608\uC694\u2019.", "\u04E8\u04E9\u0440\u0438\u0439\u0433\u04E9\u04E9 \u0442\u0430\u043D\u0438\u043B\u0446\u0443\u0443\u043B\u0430\u0445\u0430\u0434 \u0445\u044D\u0440\u044D\u0433\u043B\u044D\u043D\u044D. \u041D\u044D\u0440 \u0442\u0430\u043D\u044C \u0433\u0438\u0439\u0433\u04AF\u04AF\u043B\u044D\u0433\u0447\u044D\u044D\u0440 (\uBC1B\uCE68) \u0442\u04E9\u0433\u0441\u0441\u04E9\u043D \u0431\u043E\u043B \xAB\uC774\uC5D0\uC694\xBB-\u0433, \u04AF\u0433\u04AF\u0439 \u0431\u043E\u043B \xAB\uC608\uC694\xBB-\u0433 \u0445\u044D\u0440\u044D\u0433\u043B\u044D\u043D\u044D.")
 });
 var LIFE_CHOICE_MEANINGS = Object.freeze({
   "\uC548\uB155\uD558\uC138\uC694.": { en: "Hello. (a polite greeting)", mn: "\u0421\u0430\u0439\u043D \u0431\u0430\u0439\u043D\u0430 \u0443\u0443? (\u044D\u0435\u043B\u0434\u044D\u0433 \u043C\u044D\u043D\u0434\u0447\u0438\u043B\u0433\u044D\u044D)" },
@@ -17427,7 +17428,7 @@ var N = {
   back: ["\uBC16\uC5D0 \uB098\uAC14\uB2E4\uAC00 \uC9D1\uC774\uB098 \uD68C\uC0AC\uC5D0 \uB3CC\uC544\uC654\uC744 \uB54C \uD558\uB294 \uB9D0\uC774\uC5D0\uC694.", "You say this when you come back home or to work after going out.", "\u0413\u0430\u0434\u0443\u0443\u0440 \u044F\u0432\u0436 \u0431\u0430\u0439\u0433\u0430\u0430\u0434 \u0433\u044D\u0440\u0442\u044D\u044D \u044D\u0441\u0432\u044D\u043B \u0430\u0436\u0438\u043B\u0434\u0430\u0430 \u0431\u0443\u0446\u0430\u0436 \u0438\u0440\u044D\u0445\u0434\u044D\u044D \u0445\u044D\u043B\u0434\u044D\u0433 \u04AF\u0433."],
   backPolite: ["\uBC16\uC5D0 \uB098\uAC14\uB2E4\uAC00 \uC9D1\uC5D0 \uB3CC\uC544\uC654\uC744 \uB54C \uC815\uC911\uD558\uAC8C \uD558\uB294 \uB9D0\uC774\uC5D0\uC694.", "You say this politely when you come back home after going out.", "\u0413\u0430\u0434\u0443\u0443\u0440 \u044F\u0432\u0436 \u0431\u0430\u0439\u0433\u0430\u0430\u0434 \u0433\u044D\u0440\u0442\u044D\u044D \u0431\u0443\u0446\u0430\u0436 \u0438\u0440\u044D\u0445\u0434\u044D\u044D \u044D\u0435\u043B\u0434\u0433\u044D\u044D\u0440 \u0445\u044D\u043B\u0434\u044D\u0433 \u04AF\u0433."],
   hello: ["\uC0AC\uB78C\uC744 \uB9CC\uB0AC\uC744 \uB54C \uD558\uB294 \uC778\uC0AC\uC608\uC694.", "This is the greeting you say when you meet someone.", "\u0425\u04AF\u043D\u0442\u044D\u0439 \u0443\u0443\u043B\u0437\u0430\u0445\u0434\u0430\u0430 \u0445\u044D\u043B\u0434\u044D\u0433 \u043C\u044D\u043D\u0434\u0447\u0438\u043B\u0433\u044D\u044D."],
-  myName: ["\uC790\uAE30 \uC774\uB984\uC744 \uB9D0\uD560 \uB54C \uC368\uC694.", "You use this to say your own name.", "\u04E8\u04E9\u0440\u0438\u0439\u043D \u043D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u044D\u0445\u0434\u044D\u044D \u0445\u044D\u0440\u044D\u0433\u043B\u044D\u0434\u044D\u0433."],
+  myName: ["\uC790\uAE30 \uC774\uB984\uC744 \uB9D0\uD560 \uB54C \uC368\uC694.", "You use this to say your own name.", "\u041D\u044D\u0440\u044D\u044D \u0445\u044D\u043B\u044D\u0445\u0434\u044D\u044D \u0445\u044D\u0440\u044D\u0433\u043B\u044D\u0434\u044D\u0433."],
   firstMeet: ["\uCC98\uC74C \uB9CC\uB09C \uC0AC\uB78C\uC5D0\uAC8C \uC815\uC911\uD558\uAC8C \uD558\uB294 \uC778\uC0AC\uC608\uC694. \uACE0\uB9C8\uC6C0\uC744 \uC804\uD558\uB294 \uB9D0\uC740 \uC544\uB2C8\uC5D0\uC694.", "A polite greeting for someone you meet for the first time. It does not say thank you.", "\u0410\u043D\u0445 \u0443\u0443\u043B\u0437\u0430\u0436 \u0431\u0443\u0439 \u0445\u04AF\u043D\u0434\u044D\u044D \u0445\u044D\u043B\u0434\u044D\u0433 \u044D\u0435\u043B\u0434\u044D\u0433 \u043C\u044D\u043D\u0434\u0447\u0438\u043B\u0433\u044D\u044D. \u0422\u0430\u043B\u0430\u0440\u0445\u0430\u043B \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u0434\u044D\u0433\u0433\u04AF\u0439."],
   byeStay: ["\uB0B4\uAC00 \uB5A0\uB098\uACE0 \uC0C1\uB300\uAC00 \uB0A8\uC744 \uB54C \uD558\uB294 \uC778\uC0AC\uC608\uC694.", "A goodbye you say when you leave and the other person stays.", "\u0422\u0430 \u044F\u0432\u0436, \u043D\u04E9\u0433\u04E9\u04E9 \u0445\u04AF\u043D \u04AF\u043B\u0434\u044D\u0445 \u04AF\u0435\u0434 \u0445\u044D\u043B\u0434\u044D\u0433 \u0441\u0430\u043B\u0430\u0445 \u0451\u0441\u043D\u044B \u04AF\u0433."],
   goPlace: ["\uC5B4\uB514\uC5D0 \uAC00\uB294\uC9C0 \uB9D0\uD560 \uB54C \uC368\uC694.", "You use this to say where you are going.", "\u0425\u0430\u0430\u0448\u0430\u0430 \u044F\u0432\u0436 \u0431\u0430\u0439\u0433\u0430\u0430\u0433\u0430\u0430 \u0445\u044D\u043B\u044D\u0445\u0434\u044D\u044D \u0445\u044D\u0440\u044D\u0433\u043B\u044D\u0434\u044D\u0433."],
@@ -17468,6 +17469,15 @@ function lifeChoiceNote(question2, choiceId, lang = "ko") {
 }
 
 // experiences/synk-world-app/life-ui.mjs
+var noMotion = () => {
+};
+var LIFE_PEOPLE2 = LIFE_PEOPLE || {};
+var PACK_PRINTS2 = PACK_PRINTS || {};
+var peopleStory2 = peopleStory || (() => null);
+var drawer2 = motionNext.drawer || noMotion;
+var reveal2 = motionNext.reveal || noMotion;
+var markIn2 = motionNext.markIn || noMotion;
+var lifeChoiceNote2 = lifeChoiceNote || (() => null);
 if (!document.querySelector("[data-life-style]")) {
   const style = document.createElement("link");
   style.rel = "stylesheet";
@@ -17548,7 +17558,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }, { passive: true });
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp", "--life-print-position": "world-felt/complete.webp", "--life-print-hangul": "world-felt/hangul.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
-  const print = (name, className = "") => `<span class="w-print ${className}${PACK_PRINTS[name] ? " is-photo" : ""}" aria-hidden="true"><img src="${asset(PACK_PRINTS[name] || "world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
+  const print = (name, className = "") => `<span class="w-print ${className}${PACK_PRINTS2[name] ? " is-photo" : ""}" aria-hidden="true"><img src="${asset(PACK_PRINTS2[name] || "world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
   let screenView = null, reviewMark = null, context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation2 = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null, viewPhase = null;
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Map();
@@ -17942,13 +17952,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       const chosen = content.querySelector(".life-choice.is-chosen"), band = content.querySelector(".life-feedback");
       if (lastFeedback.correct) {
         wash(chosen, lastPoint);
-        markIn(chosen, { delay: 220 });
+        markIn2(chosen, { delay: 220 });
       } else {
         shake(chosen);
-        drawer(chosen?.querySelector(".life-choice-note:not([hidden])"), { delay: 160 });
-        reveal(content.querySelector(".life-choice.is-correct"), content.querySelector(".life-choice:not(.is-correct):not(.is-chosen)"), { delay: 800 });
+        drawer2(chosen?.querySelector(".life-choice-note:not([hidden])"), { delay: 160 });
+        reveal2(content.querySelector(".life-choice.is-correct"), content.querySelector(".life-choice:not(.is-correct):not(.is-chosen)"), { delay: 800 });
       }
-      band?.querySelectorAll(".life-quote").forEach((el) => underline(el, { delay: lastFeedback.correct ? 850 : 1100 }));
       spring(band, [{ opacity: 0, transform: "translateY(46px)" }, { opacity: 1, transform: "translateY(-6px)", offset: 0.62 }, { transform: "translateY(2px)", offset: 0.82 }, { transform: "none" }], { duration: 620, delay: 120 });
       if (lastFeedback.correct && !lastFeedback.helped && reward && band) stamp(band, { size: 92, rot: -12, top: -40, right: 4, delay: 640, shake: content });
     }
@@ -18279,7 +18288,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
         renderLesson();
         return;
       }
-      const people = peopleStory(l.packId), person = people ? LIFE_PEOPLE[scene2.speaker] : null, friend = people ? null : friends[scene2.speaker], who = friend || person;
+      const people = peopleStory2(l.packId), person = people ? LIFE_PEOPLE2[scene2.speaker] : null, friend = people ? null : friends[scene2.speaker], who = friend || person;
       const speaker = who ? scene2.speaker : "narrator", last = context.sceneIndex + 1 === l.scenes.length, at = people?.at?.[speaker];
       if (!people && hasStoryPhoto(l.packId)) for (const one of ["narrator", "mongle", "kkamong", "marine"]) {
         const img = new Image();
@@ -18308,12 +18317,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (lastFeedback) revealFeedback();
   }
   function questionMarkup(q2, feedback, { lesson: lesson2 = null, packId = null, origin = "", rest = "" } = {}) {
-    const lang = currentLang(), noteOf = (c) => feedback && c.id !== q2.answerId ? lifeChoiceNote(q2, c.id, lang) : null;
+    const lang = currentLang(), noteOf = (c) => feedback && c.id !== q2.answerId ? lifeChoiceNote2(q2, c.id, lang) : null;
     const choiceButtons = q2.choices.map((c) => {
       const chosen = feedback && c.id === feedback.choiceId, note2 = noteOf(c);
       return `<button class="life-choice ${chosen ? "is-chosen" : ""} ${feedback && c.id === q2.answerId ? "is-correct" : ""}" data-life-choice="${c.id}" ${feedback ? "disabled" : ""}><span class="life-choice-copy"><span lang="ko">${escape2(c.text)}</span>${note2 ? `<span class="life-choice-note" lang="${lang}" ${chosen ? "" : "hidden"}>${escape2(note2)}</span>` : ""}</span></button>`;
     }).join("");
-    const chosenNote = feedback && !feedback.correct ? noteOf(q2.choices.find((c) => c.id === feedback.choiceId) || {}) : null, others = feedback?.correct && q2.choices.some((c) => noteOf(c));
+    const chosenNote = feedback && !feedback.correct ? noteOf(q2.choices.find((c) => c.id === feedback.choiceId) || {}) : null, others = feedback?.correct && hasString("life.otherNotes") && q2.choices.some((c) => noteOf(c));
     const why = (text2) => escape2(text2).replace(/‘([^’]+)’/g, '\u2018<b class="life-quote">$1</b>\u2019').replace(/«([^»]+)»/g, '\xAB<b class="life-quote">$1</b>\xBB');
     const meanings = feedback ? lifeChoiceMeanings(q2, currentLang()) : null;
     const meaningBox = meanings ? `<details class="life-meanings"><summary>${t("life.meanings")}</summary><ul aria-label="${t("life.meaningsLabel")}">${meanings.map((row) => `<li data-choice="${row.id}"><span lang="ko">${escape2(row.text)}</span><small>${escape2(row.meaning)}</small></li>`).join("")}</ul></details>` : "";
@@ -18521,7 +18530,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     notes: (el) => {
       content.querySelectorAll(".life-choice:not(.is-correct) .life-choice-note[hidden]").forEach((n2) => {
         n2.hidden = false;
-        drawer(n2, { delay: 0 });
+        drawer2(n2, { delay: 0 });
       });
       el.remove();
     },
