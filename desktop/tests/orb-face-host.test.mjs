@@ -215,8 +215,8 @@ test('a company space the lookup cannot confirm does not hold sign-in: Solio sti
   await settle();
   let fan = made.view.scenes.at(-1).fan;
   assert.deepEqual(fan.names.map(n => n.space), ['solio']);
-  // 펼침이 까닭과 「다시 확인」을 둔다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」)
-  assert.equal(fan.lead, '회사 공간 배정을 확인하지 못했습니다.');
+  // 펼침이 까닭과 「다시 확인」을 둔다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」). 회사 로그인이 끊겼으면 다시 로그인하라고 말한다(0.5.4 후보 Fable F1)
+  assert.equal(fan.lead, '로그인 정보가 만료되어 회사 공간 배정을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.');
   assert.deepEqual(fan.foot.map(f => f.action), ['recheck-spaces', 'account', 'settings', 'logout']);
   // 다시 확인이 또 실패하면 까닭이 남고, 확인되면 공간이 서고 까닭이 사라진다. 회사 공간은 열지 않고 첫 화면 경로도 건드리지 않는다
   answer = { status: 'partial', destinations: ['/'], unavailable: ['pulse'] };
@@ -237,12 +237,52 @@ test('a company space the lookup cannot confirm does not hold sign-in: Solio sti
   await settle();
   fan = made.view.scenes.at(-1).fan;
   assert.deepEqual(fan.names.map(n => n.space), ['solio', 'workspace', 'pulse']);
-  assert.equal(fan.lead, '');
+  // 다 확인되면 까닭 대신 확인했다는 한 줄이 서고(화면 낭독기도 듣는다, fix-all 화면 Fable F2), 다음에 펼침을 열면 지워진다
+  assert.equal(fan.lead, '회사 공간 배정을 다시 확인했습니다.');
   assert.deepEqual(fan.foot.map(f => f.action), ['account', 'settings', 'logout']);
+  made.face.handle('close-switch');
+  made.face.handle('open-switch');
+  await settle();
+  assert.equal(made.view.scenes.at(-1).fan.lead, '');
   assert.deepEqual(opens, []);
   assert.equal(host.getState().phase, 'entered');
   assert.deepEqual(opened, ['solio']);
   assert.equal(hashRoutes, 0);
+});
+
+test('a room whose space the recheck took away offers Solio instead of a dead reopen', async t => {
+  const { root } = fakeRoot();
+  const auth = { current: signedInAuth() };
+  const opens = [];
+  let answer = { status: 'partial', destinations: ['/'], unavailable: ['pulse'] };
+  const bridge = { ...companyBridge(auth, { opens }), resolveCompanyEntryDestinations: async request => ({ ok: true, requestId: request.requestId, accountGeneration: request.accountGeneration, result: answer }) };
+  const { mountFace, made } = orbFaceFactory();
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge, mountFace, onOpenPurposeTarget: async () => ({ ok: true }) });
+  t.after(() => host.dispose());
+  await settle();
+  made.face.handle('open-switch');
+  await settle();
+  made.face.handle('go', 'workspace');
+  await settle();
+  assert.deepEqual(opens, ['/']);
+  assert.equal(made.view.scenes.at(-1).room.space, 'workspace');
+  assert.equal(made.view.scenes.at(-1).room.action.action, 'reopen-space');
+  // 다시 확인이 다 확인하고 Workspace를 뺐다. 구는 저절로 옮기지 않고, 방이 까닭과 「솔리오로」를 둔다(fix-all 화면 Fable F1)
+  made.face.handle('open-switch');
+  await settle();
+  answer = { status: 'resolved', destinations: [], unavailable: [] };
+  made.face.handle('foot', 'recheck-spaces');
+  await settle();
+  let room = made.view.scenes.at(-1).room;
+  assert.equal(room.space, 'workspace');
+  assert.equal(room.say, '이 계정에는 Workspace 배정이 없습니다.');
+  assert.deepEqual(room.action, { action: 'room-solio', label: '솔리오로' });
+  made.face.handle('close-switch');
+  made.face.handle('room-solio');
+  await settle();
+  room = made.view.scenes.at(-1).room;
+  assert.equal(room.space, 'solio');
+  assert.deepEqual(opens, ['/'], 'nothing more opened');
 });
 
 test('a recheck that finds no assignment clears the reason and leaves the first screen alone', async t => {
@@ -264,7 +304,8 @@ test('a recheck that finds no assignment clears the reason and leaves the first 
   await settle();
   const fan = made.view.scenes.at(-1).fan;
   assert.deepEqual(fan.names.map(n => n.space), ['solio']);
-  assert.equal(fan.lead, '');
+  assert.equal(fan.lead, '회사 공간 배정을 다시 확인했습니다.');
+  assert.ok(!fan.foot.some(f => f.action === 'recheck-spaces'));
   assert.equal(hashRoutes, routesAfterEntry, 'a recheck never applies the onboarding route');
 });
 

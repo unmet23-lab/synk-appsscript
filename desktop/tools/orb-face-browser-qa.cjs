@@ -1415,14 +1415,42 @@ if(!process.versions.electron){
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
           const fan=await fanSpaces(w);check('6 '+status+' lists only confirmed spaces in the fan',JSON.stringify(fan)===JSON.stringify(want),{fan});
           // 펼침이 까닭 한 줄과 「다시 확인」을 둔다. 다시 확인이 배정을 확인하면 공간이 서고 까닭이 사라진다. 회사 공간은 열지 않는다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」)
-          const lead=status==='partial'?'회사 공간 가운데 일부를 확인하지 못했습니다.':status==='account_mismatch'?'회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했습니다.':'회사 공간 배정을 확인하지 못했습니다.';
-          const note=()=>w.js("(()=>{const l=document.querySelector('#portal-entry [data-fan-lead]'),b=document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]');return {lead:l?.textContent||'',leadShown:!!l&&getComputedStyle(l).display!=='none',recheck:b?.textContent||'',recheckShown:!!b&&getComputedStyle(b).display!=='none'};})()");
-          const n1=await note();check('6 '+status+' shows the reason and 「다시 확인」 in the fan',n1.lead===lead&&n1.leadShown&&n1.recheck==='다시 확인'&&n1.recheckShown,n1);
+          // 회사 로그인이 끊긴 회원에게는 다시 로그인하라고 말한다(0.5.4 후보 Fable F1)
+          const lead=status==='partial'?'회사 공간 가운데 일부를 확인하지 못했습니다.':status==='account_mismatch'?'회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했습니다.':status==='login_required'?'로그인 정보가 만료되어 회사 공간 배정을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.':'회사 공간 배정을 확인하지 못했습니다.';
+          const note=()=>w.js("(()=>{const l=document.querySelector('#portal-entry [data-fan-lead]'),b=document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]');return {lead:l?.textContent||'',leadShown:!!l&&getComputedStyle(l).display!=='none',role:l?.getAttribute('role')||'',recheck:b?.textContent||'',recheckShown:!!b&&getComputedStyle(b).display!=='none'};})()");
+          const n1=await note();check('6 '+status+' shows the reason and 「다시 확인」 in the fan',n1.lead===lead&&n1.leadShown&&n1.role==='status'&&n1.recheck==='다시 확인'&&n1.recheckShown,n1);
           await captureSizes(w,'fan-check-'+status);
           await w.js("window.__orbFixture.setAssignment({status:'resolved',destinations:['/','/pulse-app/'],unavailable:[]})");
-          await click(w,'#portal-entry [data-foot="recheck-spaces"]');let after=null;for(let i=0;i<60;i++){after=await fanSpaces(w);if(after.length===3)break;await wait(60);}
-          const n2=await note(),c=await calls(w);
-          check('6 '+status+' 「다시 확인」 confirms both spaces, drops the reason and opens nothing',JSON.stringify(after)==='["solio","workspace","pulse"]'&&!n2.leadShown&&!n2.recheckShown&&!c.some(x=>x.startsWith('open:')),{after,...n2,calls:c});
+          // 자판으로 누른다. 끝나면 「다시 확인」 단추가 빠져도 초점이 펼침 안의 공간 단추에 남는다(fix-all 화면 Fable F2, 0.5.4 후보 카본 B1)
+          await w.js("document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]').focus()");await key(w,'Return');let after=null;for(let i=0;i<60;i++){after=await fanSpaces(w);if(after.length===3)break;await wait(60);}
+          await wait(120);
+          const n2=await note(),c=await calls(w),fo=await w.js("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const a=document.activeElement,f=document.querySelector('#portal-entry [data-orb-fan]');r({inFan:!!a&&!!f&&f.contains(a),go:a?.dataset?.go||'',tag:a?.tagName||''});})))");
+          check('6 '+status+' 「다시 확인」 confirms both spaces, says so in the status line, drops the button and opens nothing',JSON.stringify(after)==='["solio","workspace","pulse"]'&&n2.lead==='회사 공간 배정을 다시 확인했습니다.'&&n2.leadShown&&!n2.recheckShown&&!c.some(x=>x.startsWith('open:')),{after,...n2,calls:c});
+          check('6 '+status+' keyboard focus stays on a space in the fan after 「다시 확인」',fo.inFan&&fo.go==='solio',fo);
+          w.win.destroy();
+        }
+        // 6-2. 들어가 있는 Workspace가 「다시 확인」으로 배정에서 빠지면, 닫힌 방의 「다시 열기」 대신 까닭과 「솔리오로」가 선다(fix-all 화면 Fable F1)
+        if(only('6-2')){
+          const w=await open();await boot(w,{assignment:{status:'partial',destinations:['/'],unavailable:['pulse']},subs:subsNone},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(600);
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
+          await click(w,'.fan-go[data-go="workspace"]');let band=null;for(let i=0;i<100&&band!=='workspace';i++){band=await w.js('document.documentElement.dataset.orbBand||""');if(band!=='workspace')await wait(60);}
+          let arrived=false;for(let i=0;i<150&&!arrived;i++){arrived=await w.js("(()=>{const v=document.getElementById('qa-workspace-view');return !!v&&Math.round(v.getBoundingClientRect().top)===56;})()");if(!arrived)await wait(40);}
+          await w.js('window.__orbFixture.setWorkspaceOpen(false)');await wait(400);
+          const room=()=>w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),b=q('[data-room=space] [data-orb-act]');return {shown:!!q('[data-room=space]')&&!q('[data-room=space]').hidden,say:(q('[data-space-say]')||{}).textContent||'',then:(q('[data-space-then]')||{}).textContent||'',btn:b?.textContent||'',act:b?.dataset.orbAct||'',btnShown:!!b&&!b.hidden};})()");
+          const r1=await room();check('6-2 a closed Workspace room offers 「다시 열기」 before the recheck',r1.shown&&r1.say==='Workspace가 닫혔습니다.'&&r1.btn==='다시 열기'&&r1.act==='reopen-space'&&r1.btnShown,r1);
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
+          await w.js("window.__orbFixture.setAssignment({status:'resolved',destinations:[],unavailable:[]})");
+          await w.js("document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]').focus()");await key(w,'Return');let after=null;for(let i=0;i<60;i++){after=await fanSpaces(w);if(after.length===1)break;await wait(60);}
+          await wait(120);
+          const fo=await w.js("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const a=document.activeElement,f=document.querySelector('#portal-entry [data-orb-fan]');r({inFan:!!a&&!!f&&f.contains(a),go:a?.dataset?.go||'',tag:a?.tagName||'',cls:String(a?.className||''),act:a?.dataset?.orbAct||'',lead:(document.querySelector('#portal-entry [data-fan-lead]')||{}).textContent||''});})))");
+          check('6-2 the recheck that takes Workspace away leaves only Solio, says so and keeps the focus in the fan',JSON.stringify(after)==='["solio"]'&&fo.inFan&&fo.go==='solio'&&fo.lead==='회사 공간 배정을 다시 확인했습니다.',{after,...fo});
+          await captureSizes(w,'fan-withdrawn');
+          await key(w,'Escape');await wait(500);
+          const r2=await room();check('6-2 the room now says there is no Workspace assignment and offers 「솔리오로」, without moving by itself',r2.shown&&r2.say==='이 계정에는 Workspace 배정이 없습니다.'&&r2.then==='솔리오로 돌아가 이어 가 주세요.'&&r2.btn==='솔리오로'&&r2.act==='room-solio'&&r2.btnShown,r2);
+          await captureSizes(w,'room-withdrawn');
+          await click(w,'[data-room=space] [data-orb-act="room-solio"]');let solio=false;for(let i=0;i<150&&!solio;i++){solio=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]');return !!r&&!r.hidden;})()");if(!solio)await wait(40);}
+          const c=await calls(w);check('6-2 「솔리오로」 goes to Solio and opens nothing more',solio&&c.filter(x=>x==='open:/').length===1&&!c.includes('workspace-open'),{solio,calls:c});
           w.win.destroy();
         }
         // 8. error · enter-error, 다시 시도 뒤 checking에 글이 없다, unconfigured

@@ -95,7 +95,7 @@ function markup() {
       <button class="quiet legacy-back" type="button" data-orb-act="legacy-back">돌아가기</button>
       <button class="quiet band-close" type="button" data-orb-act="band-close" hidden>PULSE 닫기</button>
     </div>
-    <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p><p class="fan-lead" data-fan-lead></p></div>
+    <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p><p class="fan-lead" role="status" data-fan-lead></p></div>
     <div class="room room-top" data-room="solio">
       <p class="sr" role="status" aria-live="polite" data-solio-status></p>
       <div class="dial rise" style="--i:1" data-dial hidden><svg class="dial-sweep" viewBox="-360 -360 720 720" aria-hidden="true"><defs><linearGradient id="orb-dial-sweep" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3F1EC" stop-opacity="0"/><stop offset=".5" stop-color="#F3F1EC" stop-opacity=".5"/><stop offset="1" stop-color="#F3F1EC" stop-opacity="0"/></linearGradient></defs><g class="d-sweep"><circle r="318" class="d-sweep-c" stroke="url(#orb-dial-sweep)"/></g></svg><svg viewBox="-360 -360 720 720" role="img" data-dial-svg></svg><span class="dial-orb" aria-hidden="true"></span><p class="dial-hero" aria-hidden="true"><b data-dial-value></b><small data-dial-unit></small><span data-dial-label></span></p></div>
@@ -229,7 +229,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const moreKeys = new WeakMap();
   let railSince = -1e9, progTimer = 0, visTimer = 0, visLeave = 0, subTimer = 0, subLeave = 0;
   /* 구 곁의 펼침(2단계 첫 조각 설계 1.3절). 다가가 머무는 판정은 화면이 하고, 열고 닫는 것은 컨트롤러에 알린다 */
-  let fanKey = '', fanTimer = 0, fanLeave = 0, fanWasOpen = false, fanReturn = null;
+  let fanKey = '', fanTimer = 0, fanLeave = 0, fanWasOpen = false, fanReturn = null, fanRefocus = null;
   /* 방(2단계 둘째 조각). asideReturn은 방을 연 자리(닫을 때 초점을 돌려줄 곳)다. applied는 컨트롤러가 보낸 요청(열 줄, 접을 줄, 초점)을 한 번씩만 따르려고 적어 둔다.
      stale은 입력 중이거나 누르는 중이라 다시 짓기를 미룬 안쪽이다. 손을 떼거나 초점이 그 안쪽을 떠나면 마저 짓는다 */
   let lastAside = null, asideReturn = null, pressing = false, liveSeq = 0, fldSeq = 0;
@@ -731,6 +731,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       setText(app.spaceThen, room.then);
       setText(app.spaceError, room.error);
       app.reopen.hidden = !room.action;
+      // 배정이 걷힌 방은 같은 단추를 「솔리오로」로 쓴다(fix-all 화면 Fable F1)
+      if (room.action) { setText(app.reopen, room.action.label); if (app.reopen.dataset.orbAct !== room.action.action) app.reopen.dataset.orbAct = room.action.action; }
       app.reopen.disabled = s.busy;
     }
   }
@@ -1110,6 +1112,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const f = s.fan, names = f ? f.names : [], foot = f ? f.foot : [];
     // 1분마다 오는 장면이 같은 목록이면 DOM을 그대로 둔다(초점과 가리킴이 풀리지 않게, 설계 검토 1차 14)
     const key = JSON.stringify([names.map(n => [n.space, n.label, n.desc, n.current]), foot.map(x => [x.action, x.label])]);
+    // 펼침 안에 초점이 있는 채로 단추가 꺼지거나(「다시 확인」 조회 중) 다시 지어지면, 일이 끝난 뒤 같은 단추나 지금 공간으로 초점을 돌려놓는다(fix-all 화면 Fable F2, 0.5.4 후보 카본 B1)
+    const had = fanShown() && app.fan.contains(doc.activeElement) ? doc.activeElement : null;
+    const hadKey = had ? (had.dataset?.go ? `go:${had.dataset.go}` : had.dataset?.foot ? `foot:${had.dataset.foot}` : '') : '';
     if (key !== fanKey) {
       fanKey = key;
       const nodes = names.map((n, i) => {
@@ -1140,6 +1145,19 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (open && f.pin) fanReturn = null;
     for (const x of back) if (x.inert !== open) x.inert = open;
     for (const b of app.fan.querySelectorAll('button')) b.disabled = s.busy;
+    if (had && hadKey && (s.busy || !had.isConnected)) fanRefocus = hadKey;
+    if (!open) fanRefocus = null;
+    else if (fanRefocus && !s.busy) {
+      const want = fanRefocus;
+      fanRefocus = null;
+      const a = doc.activeElement;
+      if (!a || a === doc.body || !app.fan.contains(a) || a.disabled) {
+        const [kind, value] = [want.slice(0, want.indexOf(':')), want.slice(want.indexOf(':') + 1)];
+        const same = [...app.fan.querySelectorAll(kind === 'go' ? '.fan-go' : '[data-foot]')].find(b => (kind === 'go' ? b.dataset.go : b.dataset.foot) === value);
+        const target = same || app.fan.querySelector('.fan-go[aria-current="true"]') || app.fan.querySelector('.fan-go');
+        try { target?.focus?.({ preventScroll: true }); } catch { /* 초점은 사람이 옮길 수 있다 */ }
+      }
+    }
     if (open && !fanWasOpen) {
       // 펼칠 때 오브제와 줄의 머묾 타이머를 지운다. 흐린 방 위에서 걸려 있던 머묾이 펼친 뒤에 열리지 않게 한다(설계 검토 1차 4)
       clearTimeout(fanTimer); fanTimer = 0; clearTimeout(fanLeave); fanLeave = 0;

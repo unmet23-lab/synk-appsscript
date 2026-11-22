@@ -2825,6 +2825,21 @@ test('a tray open on an account whose company check is incomplete opens the fan 
   assert.ok(other.sent.every(v => v.visible === false));
 });
 
+test('a failed recheck shows one error line, not the reason line under it (0.5.4 candidate carbon B2)', async t => {
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: {
+    onEnter: () => ({ ok: true, action: 'purpose', purposeMode: 'existing', destinations: [], assignmentCheck: { status: 'unavailable' } }),
+    onRecheckSpaces: async () => { throw new Error('offline'); },
+  } });
+  await settle(); h.face.setState(signedIn()); await settle();
+  h.face.handle('open-switch'); await settle();
+  assert.equal(h.view.last().fan.lead, '회사 공간 배정을 확인하지 못했습니다.');
+  h.face.handle('foot', 'recheck-spaces'); await settle();
+  const fan = h.view.last().fan;
+  assert.equal(fan.error, '회사 공간을 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요.');
+  assert.equal(fan.lead, '', 'the same meaning is not said twice');
+  assert.ok(fan.foot.some(f => f.action === 'recheck-spaces'), 'the recheck stays');
+});
+
 test('a tray open that comes while another space is opening waits for it, then opens Workspace (F3)', async t => {
   let finish = null;
   const { h, w, opens, tray } = await enteredWithBoth(t, { onOpenSpace: dest => {

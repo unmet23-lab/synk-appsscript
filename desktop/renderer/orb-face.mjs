@@ -100,6 +100,8 @@ const trimmed = value => (typeof value === 'string' && value.trim() ? value.trim
 export function assignmentCheckLead(check) {
   if (check?.status === 'partial') return '회사 공간 가운데 일부를 확인하지 못했습니다.';
   if (check?.status === 'account_mismatch') return '회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했습니다.';
+  // 회사 서버가 이 로그인을 받지 않았다(401 AUTH_REQUIRED · 403 ACCOUNT_UNAVAILABLE). 다시 확인해도 같으니 다시 로그인하라고 말한다(0.5.4 후보 Fable F1)
+  if (check?.status === 'login_required') return '로그인 정보가 만료되어 회사 공간 배정을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.';
   return '회사 공간 배정을 확인하지 못했습니다.';
 }
 
@@ -217,6 +219,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   let assignedAccount = null;
   // 로그인 때 배정 조회가 끝내 다 확인되지 않았으면 그 까닭({ status })이다. 펼침이 까닭과 「다시 확인」을 둔다(PC 검수 F1)
   let assignedCheck = null;
+  // 「다시 확인」이 다 확인하고 끝났다는 한 줄. 까닭 줄 자리에 서서 화면 낭독기도 듣는다. 다음에 펼침을 열면 지운다(fix-all 화면 Fable F2)
+  let recheckNote = '';
   let freshSignIn = false; // 이번에 묻는 화면을 거쳐 들어왔는지(점 로고의 길이를 정한다)
 
   // 구의 움직임은 한 줄로 차례를 지킨다. 계정이 바뀌거나 묻는 화면으로 돌아가면 orbGen을 올려 남은 움직임을 버린다
@@ -396,7 +400,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const foot = signedIn
       ? [...recheck, { action: 'account', label: '계정' }, { action: 'settings', label: '설정' }, { action: 'logout', label: '로그아웃' }]
       : guestOnPulse ? [{ action: 'signin', label: '로그인' }] : [{ action: 'settings', label: '설정' }];
-    return { kind: 'app', names, lead: check ? assignmentCheckLead(check) : '', error: feedback.switch, actions: [], foot, showClose: true };
+    // 오류 줄이 서 있으면 까닭 줄은 비운다. 같은 뜻의 두 줄이 겹치지 않게 한다(0.5.4 후보 카본 B2)
+    const lead = feedback.switch ? '' : check ? assignmentCheckLead(check) : signedIn && assignedAccount === state.accountKey ? recheckNote : '';
+    return { kind: 'app', names, lead, error: feedback.switch, actions: [], foot, showClose: true };
   }
 
   /* 「누구로 보이나」의 기준이다. 들어온 회원이 토큰을 갱신하거나 재시도할 수 있는 연결 오류를 겪는 동안에도,
@@ -493,6 +499,11 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 창 안의 PULSE가 열려 있으면 방은 비운다. 뷰가 띠 아래를 덮고, 펼침을 여는 동안에는 검정으로 남는다
     const slot = slotOf(space);
     if (slot && (slot.open || slot.closing)) return { space, say: '', then: '', action: null, error: feedback.switch, embedded: true };
+    // 다시 확인이 다 확인하고 이 공간을 배정에서 뺐으면 「다시 열기」는 열 수 없다. 까닭과 「솔리오로」를 둔다.
+    // 사람이 하지 않은 일로 구를 옮기지 않으므로 저절로 솔리오로 데려가지 않는다(fix-all 화면 Fable F1, 3단계 설계 검토 R12)
+    if (memberShown(state) && assignedAccount === state.accountKey && !assignedCheck && !assigned.includes(space)) {
+      return { space, say: `이 계정에는 ${SPACE_NAME[space] || space} 배정이 없습니다.`, then: '솔리오로 돌아가 이어 가 주세요.', action: { action: 'room-solio', label: '솔리오로' }, error: feedback.switch };
+    }
     const copy = !slot && SPACE_ROOM_OUTSIDE[space] ? SPACE_ROOM_OUTSIDE[space] : SPACE_ROOM[space];
     return { space, say: copy.say, then: copy.then, action: typeof options.onOpenSpace === 'function' ? { action: 'reopen-space', label: '다시 열기' } : null, error: feedback.switch };
   }
@@ -1023,6 +1034,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const runId = ++asyncSeq;
     busyAction = 'recheck-spaces';
     feedback.switch = '';
+    recheckNote = '';
     render();
     const stillSame = () => !disposed && runId === asyncSeq && machine.read().accountKey === snap.accountKey && machine.read().generation === snap.generation;
     try {
@@ -1033,7 +1045,10 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
           // 다 확인되지 않은 답(일부 · 추가 로그인 · 확인 불가)은 이미 아는 공간을 지우지 않는다. 새로 확인된 공간만 더하고 까닭을 바꾼다(카본 A2)
           mergeAssigned(result.destinations, snap.accountKey);
           assignedCheck = { status: result.assignmentCheck.status };
-        } else rememberAssigned(result.destinations, snap.accountKey, null);
+        } else {
+          rememberAssigned(result.destinations, snap.accountKey, null);
+          recheckNote = '회사 공간 배정을 다시 확인했습니다.';
+        }
       }
       else feedback.switch = faceSentence(result?.message) || '회사 공간을 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
     } catch {
@@ -1548,6 +1563,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     switchOpen = true;
     fanPin = pin;
     feedback.switch = '';
+    recheckNote = '';
     render();
   }
   /* 누르면: 닫혀 있으면 고정해 열고, 다가가서 열린 것이면 고정하고, 고정해 둔 것이면 닫는다(시안 toggleFan) */
@@ -1706,6 +1722,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     assigned = [];
     assignedAccount = null;
     assignedCheck = null;
+    recheckNote = '';
     guestPulse = false;
     stopSolio();
     stopReads();
@@ -2093,6 +2110,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       case 'backup-start': case 'backup-open': case 'backup-dismiss': return backupAction(action, typeof payload === 'string' ? payload : '');
       case 'recheck-auth': void recheckAuth(); return true;
       case 'reopen-space': void runOpenSpace(space, { reopen: true }); return true;
+      case 'room-solio': go('solio'); return true;
       case 'band-f6': if (!embedVisible()) return false; void Promise.resolve(slotOf(space)?.embed.focus?.()).catch(() => {}); return true;
       case 'pulse-close': case 'band-close': void closeSpace(space); return true;
       case 'legacy-back': closeLegacy(); return true;
