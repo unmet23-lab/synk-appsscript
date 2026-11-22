@@ -1288,4 +1288,5 @@ ode_modules`)에만 있어서 `esbuild`를 못 찾는다. 바쁜 PC에서는 관
 - 고침: 같은 명령을 다시 돌린다. 직전 회차에서 같은 변경의 관련 시험이 통과했으면 `--시험건너뜀 "<그 회차 커밋과 지도 run>"`을 붙여 기다림 없이 바로 올린다(이번 253b7b622).
 - 다시 확인: 출력에 「올린 커밋: … · origin 확인 ✓」가 나오고, `git status --short <경로>`가 비어 있다.
 - 11-21 덧붙임(Claude): 문서 한 개를 올리는데 두 번 다시 돌려도 같은 자리에서 멈췄다. 그때 `git rev-list --objects --no-object-names origin/master`를 직접 재니 121초였다(제한 120초, 객체 26만 4천 개). git 프로세스 25개와 node 68개가 돌고 있었다. 이렇게 바쁜 동안은 다시 돌려도 넘지 못한다. 같은 조회가 80초 안에 끝날 때까지 뒤에서 기다렸다가 올린다: `until timeout 80 git rev-list --objects --no-object-names origin/master >/dev/null; do sleep 180; done` 다음에 바로올리기.
+- 11-23 덧붙임(Claude): 위 기다림 명령이 바로 통과했는데도 바로올리기가 네 번 연달아 같은 자리에서 멈췄다. 검사 도구(`git-storage-check.cjs`의 `knownIds`)는 `--missing=print`를 붙여 조회하는데, 이 조회는 같은 때 46초로 붙이지 않은 조회(15초)의 세 배였다. 기다림도 같은 조회로 잰다: `until GIT_NO_LAZY_FETCH=1 timeout 80 git --no-optional-locks rev-list --objects --no-object-names --missing=print origin/master >/dev/null; do sleep 120; done` 다음에 바로올리기(이번 f501957f5).
 
