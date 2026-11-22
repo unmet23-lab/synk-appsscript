@@ -62,8 +62,8 @@ body.sized #stage{outline:1px solid var(--hair)}
 .say .then{display:block;color:var(--soft)}
 .work{margin-top:clamp(16px,2.6cqh,30px)}
 .work-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-bottom:clamp(16px,2.6cqh,26px)}
-.back{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;padding:0 0 4px;font:var(--small);color:rgba(243,241,236,.8);cursor:pointer;text-decoration:none}
-.back:hover{color:var(--paper);border-bottom-color:var(--paper)}
+.back{display:inline-flex;align-items:center;height:30px;padding:0 13px 0 11px;border:1px solid rgba(243,241,236,.38);border-radius:999px;background:none;font:500 13px/1 var(--sans);color:var(--paper);cursor:pointer;text-decoration:none}
+.back:hover{border-color:var(--paper)}
 .who{display:inline-flex;align-items:center;gap:9px;min-width:0;font:var(--small);color:var(--soft)}
 .who b{font-weight:500;color:var(--paper)}
 .mini{position:relative;flex:none;width:20px;height:20px;border-radius:50%;background:#000;border:1px solid rgba(243,241,236,.5)}
@@ -177,17 +177,17 @@ body.sized #stage{outline:1px solid var(--hair)}
 .sheet .pill.line{background:none;border-color:#BDB9B0;color:var(--sheet-ink)}
 .sheet .pill.line:hover{border-color:var(--sheet-ink)}
 .pill.small{height:32px;padding:0 14px;font-size:13px}
-.quiet{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;margin:0;padding:0 0 3px;font:var(--small);color:rgba(243,241,236,.8);cursor:pointer}
-.quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
-.sheet .quiet{border-bottom-color:#C9C6BE;color:var(--sheet-soft)}
-.sheet .quiet:hover{color:var(--sheet-ink);border-bottom-color:var(--sheet-ink)}
+.quiet{appearance:none;display:inline-flex;align-items:center;height:28px;margin:0;padding:0 12px;border:1px solid rgba(243,241,236,.38);border-radius:999px;background:none;font:500 12px/1 var(--sans);color:var(--paper);cursor:pointer;white-space:nowrap}
+.quiet:hover{border-color:var(--paper)}
+.sheet .quiet{border-color:#BDB9B0;color:var(--sheet-ink)}
+.sheet .quiet:hover{border-color:var(--sheet-ink)}
 :is(.pill,.quiet,.back,.src a,.addr input,.weekly select,.side input):focus-visible{outline:1px solid var(--ring);outline-offset:3px}
 .sheet :is(.pill,.quiet,.src a,.addr input,.weekly select):focus-visible{outline-color:var(--sheet-ink)}
 
 /* 오른쪽: 읽는 곳. 읽는 동안 쪽 줄이 차례로 밝아지고, 찾은 값이 줄 끝에 들어와 앉는다 */
 .side{min-width:0}
 .grp{padding:12px 0 10px;border-top:1px solid var(--hair-strong)}
-.grp-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.grp-h{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .grp-h b{font:500 15px/1.4 var(--sans);color:var(--paper)}
 .grp-h small{font:var(--small);color:var(--dim)}
 .pg{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;padding:7px 0 0;font:var(--small);color:var(--dim);transition:color .3s ease}
