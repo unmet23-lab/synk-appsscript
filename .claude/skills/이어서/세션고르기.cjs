@@ -101,7 +101,7 @@ const 방금기준 = 10 * 분;
 const 막움직임기준 = 90 * 1000;
 /* 앱도 7일 안의 오류만 「실패」로 띄운다(app.asar Qt). 그보다 오래된 error 칸은 판정에 쓰지 않는다. */
 const 오류유효 = 7 * 일;
-const 한도문구 = /hit your (?:\w+ )?limit|usage limit|limit reached|rate[ _-]?limit/i;
+const 한도문구 = /hit your (?:[\w-]+ )?limit|usage limit|limit reached|rate[ _-]?limit/i;
 const 멈춤문구 = '[Request interrupted by user';
 const 재시작문구 = 'the session ended before this call';
 const 답없음문구 = /^No response requested\.?$/;

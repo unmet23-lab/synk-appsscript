@@ -410,7 +410,7 @@ function 회차판정(회차, ctx) {
 }
 
 /** 지금 상태 — { 상태: '읽음'|'모름', 이유, 확인시각, 회차들: [{ 작업, 제목, 예정, 세션, 열쇠, 회차열쇠, 판정, 편 }] }. */
-function 지금읽기({ 환경 = process.env, 지금ms = Date.now(), 오프셋분 = null, 살았나판 = 살았나, 로그파일들 = null } = {}) {
+function 지금읽기({ 환경 = process.env, 지금ms = Date.now(), 오프셋분 = null, 살았나판 = 살았나, 로그파일들 = null, 작업상세 = null } = {}) {
   const 오프셋 = 오프셋분 == null ? 기본오프셋 : () => 오프셋분;
   const 경 = 경로들(환경);
   const 폴더들 = 조직폴더들(경.세션뿌리들);
@@ -442,6 +442,11 @@ function 지금읽기({ 환경 = process.env, 지금ms = Date.now(), 오프셋�
       예정: 회차.예정, 시작: 회차.기록 ? 회차.기록.createdAt : null, 세션: 회차.기록 ? 회차.기록.sessionId : null,
       열쇠: `${회차.작업}|${날짜}`, 회차열쇠: `${회차.작업}|${회차.예정 ?? `실행:${회차.기록.sessionId}`}`, 판정,
     };
+    if (작업상세 === 회차.작업 && 회차.기록) {
+      const r = 회차.기록;
+      x.실행 = { 사본: r.worktreePath || r.cwd, 공용: r.originCwd, CLI: r.cliSessionId,
+        바쁨: Boolean(ctx.실행중.get(r.sessionId)?.바쁨), 켜짐: 회차.정의?.enabled === true };
+    }
     const 브랜드 = ctx.지시문(회차).브랜드;
     if (브랜드 && 알릴종류.has(판정.종류)) x.편 = 편사실(편들 || (편들 = 편목록(경.마케팅)), 브랜드, 날짜);
     return x;

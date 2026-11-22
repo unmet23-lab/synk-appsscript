@@ -386,7 +386,9 @@ async function 보내기(본문, 옵션 = {}) {
   const { 목록경로, 상태경로, 기록경로 } = 경로들(옵션);
   const 보낼것 = 옵션.fetch || globalThis.fetch;
   const 지금 = 옵션.지금 || new Date();
-  const 키들 = 목록읽기(목록경로);
+  const 목록키 = 목록읽기(목록경로);
+  const 키들 = 옵션.검수전용키 === undefined ? 목록키
+    : 목록키.filter(키 => 키.한도USD == null && 옵션.검수전용키.includes(키.이름));
   const 상태 = JSON읽기(상태경로, {});
   const 건너뛴키 = [];
   const 본문글 = JSON.stringify(본문);
@@ -401,6 +403,10 @@ async function 보내기(본문, 옵션 = {}) {
     // 한도 키는 예약 줄을 먼저 덧붙이고 앞의 줄만으로 다시 확인한다 — 동시에 도는 다른 요청과 응답을 못 받은 요청까지 한도에 든다.
     const 예약 = 키.한도USD != null ? 예약하기(키, 어림, { 기록경로, 상태, 시각: () => 옵션.지금 || new Date(), 용도: 옵션.용도, model: 본문.model }) : null;
     if (키.한도USD != null && !예약) { 건너뛴키.push({ 이름: 키.이름, 이유: '한도' }); continue; }
+    try { 옵션.보내기전?.(); } catch (e) {
+      if (예약) 예약취소(키, 예약, { 기록경로, 지금 });
+      throw 오류('클로드키_전송전중단', e.message);
+    }
     let 응답, body, 글;
     try {
       응답 = await 보낼것(주소, {

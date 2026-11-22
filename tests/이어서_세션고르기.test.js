@@ -57,6 +57,7 @@ const 보정 = "[Tool call interrupted: the session ended before this call's res
 test('원문 끝: 한도·오류·재시작·멈춤·답없음·보통 끝을 가른다', () => {
   const k = (메시지) => 고르기.끝판정(메시지).종류;
   assert.equal(k([사람('해 줘'), 답("You've hit your session limit · resets 8:20pm (Asia/Seoul)", 지금, { isApiErrorMessage: true })]), '한도');
+  assert.equal(k([사람('해 줘'), 답("You've hit your 5-hour limit · resets 9:50am (Asia/Seoul)", 지금, { isApiErrorMessage: true })]), '한도');
   assert.equal(k([답('Claude AI usage limit reached|1792000000', 지금, { isApiErrorMessage: true })]), '한도');
   assert.equal(k([답('API Error: 500 Internal server error', 지금, { isApiErrorMessage: true })]), '오류');
   assert.equal(k([도구부름(), 도구결과(보정), 답('No response requested.')]), '재시작');

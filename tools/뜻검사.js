@@ -78,6 +78,11 @@ const 넷시험관 = ['sonnet', 'haiku', 'opus', 'gpt'];
 const 웃음칸 = new Set(['딱지', '개그', '해설']);
 const 곳이름 = { tiktok: '틱톡', instagram: '인스타 릴스', facebook: '페이스북 릴스', youtube: '유튜브 쇼츠', douyin: '더우인', xiaohongshu: '샤오훙수', vk: 'VK 클립', rutube: '루튜브', telegram: '텔레그램' };
 
+function 예약세션선택(rows, tree, id) {
+  const matches = rows.filter(r => r.작업 === 'synk-daily-lab-versions' && r.세션 && r.실행?.사본 && !path.relative(r.실행.사본,tree));
+  if (id) return matches.find(r => r.세션 === id || r.실행.CLI === id)?.세션 || null;
+  return matches.length === 1 ? matches[0].세션 : null;
+}
 function kst(ms = Date.now()) {
   return new Date(ms + 9 * 3600 * 1000).toISOString().replace(/\.\d+Z$/, '+09:00');
 }
@@ -259,7 +264,7 @@ function 받은때셈(재료, { 기록 = null } = {}) {
 }
 
 // ── 재료 ─────────────────────────────────────────────────────────────────
-function 재료만들기(글파일, { 편 = null, 밖, 기록 = null } = {}) {
+function 재료만들기(글파일, { 편 = null, 밖, 기록 = null, 키 = null, 뮤즈검토 = null, 사본 = REPO, 예약세션 = null } = {}) {
   const 판 = 판본글.읽기(글파일);
   const d = 판.자료;
   const L = 프로필.언어(d.언어);
@@ -381,21 +386,37 @@ function 재료만들기(글파일, { 편 = null, 밖, 기록 = null } = {}) {
     `없는 칸은 빈 목록 []으로 둔다. 결함은 글이 망가진 것만 적는다(뜻 · 박자 불만은 모름줄). 줄 번호 · (초) · [그림: …] · [한국어 …]${인사묶음 ? ' · [인사 카드: …] · 〔한국어 글: 이 나라 이름〕' : ''}${한국어딱지.size ? ' · 〔한국어 글 ㉮〕' : ''}${인사묶음 || 판.줄.some((z) => String(z.글 || '').includes('\n')) ? ' · 「 / 」' : ''}는 이 시험지가 단 표시라 화면에 나오는 글이 아니다 — 결함으로 적지 않는다.${자리표시 ? ` 글 속 ${자리표시}은 화면에서 숫자 · 낱말이 들어가는 자리다(화면에는 중괄호가 보이지 않는다) — 결함 · 모름줄로 적지 않는다.` : ''}${줄임끝 ? ' 「…」로 끝나는 줄은 다음에 나오는 노래 낱말(한국어 줄)로 이어지게 일부러 끊은 말이다 — 끊긴 문장 결함으로 적지 않는다(무엇으로 이어지는지 모르겠으면 모름줄에 적는다).' : ''}${되풀이있음 ? ' 「(앞 N줄과 같은 글이 다시 뜬다)」가 붙은 줄은 영상이 같은 말을 다시 부르는 장면에서 같은 풀이를 일부러 다시 보이는 자리다(표시는 시험지가 단 것이다) — 「같은 말이 두 번」 결함으로 적지 않는다(되풀이가 거슬리거나 흐름이 늘어지면 모름줄에 적는다).' : ''}`,
     '',
   ].join('\n');
+  const 뮤즈원답 = 뮤즈검토 && 뮤즈검토();
+  if (뮤즈검토 && 판본글.sha256(글파일) !== 판.지문) throw new Error('뮤즈 검수 중 판본 글이 바뀌었다. 재료부터 다시 만든다.');
   fs.mkdirSync(밖, { recursive: true });
   const 앞회차 = 앞회차옮기기(밖, 질문);
   fs.writeFileSync(path.join(밖, '질문.md'), 질문);
   const 재료 = {
     도구, 시각: kst(), 글: path.resolve(글파일), 지문: 판.지문, 편: 편 ? path.basename(path.resolve(편)) : d.편 || null, 편폴더: 편 ? path.resolve(편) : null,
-    판본: d.판본 || null, 언어: L.코드, 문자: L.문자, 나라: 나라들, 틀: d.틀 || null, 기준, 퀴즈,
+    판본: d.판본 || 키, 언어: L.코드, 문자: L.문자, 나라: 나라들, 틀: d.틀 || null, 기준, 퀴즈,
     줄: 줄들.map((z) => ({ 번호: 번호.get(z.id), id: z.id, 칸: z.칸, 웃음: 웃음칸.has(z.칸) || z.대조 === '웃음', ...(인사묶음 && 인사딸린.has(z.id) ? { 묶음: 'hello' } : {}) })),
     딱지경고, 시험관, 시험관넷: 넷,
     ...(앞회차 ? { 앞회차 } : {}),
-    만든곳: REPO,
+    만든곳: 사본, ...(예약세션 ? {예약세션} : {}),
   };
+  if (뮤즈검토) 재료.뮤즈1차 = 뮤즈원답 ? {
+    모델: 'muse-spark-1.3', 원답: path.basename(뮤즈원답), 원답지문: 판본글.sha256(뮤즈원답),
+    질문지문: 판본글.sha256(path.join(밖, '질문.md')), 확인시각: new Date().toISOString(),
+  } : { 상태: '미완료', 질문지문: 판본글.sha256(path.join(밖, '질문.md')) };
   // 받은 때의 셈은 시험지를 만드는 이때 한 번 세어 재료에 적는다(11-12 다시 검수 3 P1-셈1) — 채점 --기록은 이 값을 옮겨 적기만 한다. 채점할 때마다 그때의
   // 이웃 기록으로 다시 세던 동안에는, 재료를 만든 뒤 이웃 편이 두 걸음으로 다시 받아지면(처음통과가 새 시각이 된다) 정당한 시험관 둘 통과가 「넷이어야 한다」로 얼었다.
   재료.시험관셈 = 받은때셈(재료, { 기록 });
   fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify(재료, null, 2) + '\n');
+  const 소속편 = 편 && path.relative(path.join(사본, 'docs', '마케팅'), path.resolve(편));
+  if (뮤즈검토 && 재료.판본 && 소속편 && !소속편.startsWith('..') && !path.isAbsolute(소속편)) {
+    const dir = path.join(사본, '.tmp', '판본뜻검수');
+    fs.mkdirSync(dir, { recursive: true });
+    const hash = require('node:crypto').createHash('sha256').update(path.resolve(밖)).digest('hex');
+    const file = path.join(dir, hash + '.json');
+    const temp = file + '.' + require('node:crypto').randomUUID();
+    fs.writeFileSync(temp, JSON.stringify({ 밖: path.resolve(밖), 지문: 판.지문, 시각: 재료.시각 }));
+    fs.renameSync(temp, file);
+  }
   return 재료;
 }
 
@@ -641,6 +662,7 @@ function 채점하기(밖, { 사람판정 = {} } = {}) {
   const 다시 = 걸린것.filter((c) => 기록.some((r) => (r.걸린것 || []).includes(c)));
   const 채점 = { 도구, 시각: kst(), 글: 재료.글, 지문: 재료.지문, 편: 재료.편, 판본: 재료.판본, 언어: 재료.언어, 결과, 찾음: out, 시험관별, 걸린것, 다음은넷: 다시.length > 0, 다시나온것: 다시, 시험관넷: 재료.시험관넷 };
   if (내린줄.length) 채점.판정줄 = 내린줄;
+  if (재료.뮤즈1차) 채점.뮤즈1차 = 재료.뮤즈1차;
   if (재료.앞회차 || 앞지적.length || 옮긴채점) 채점.앞회차 = { ...(재료.앞회차 || {}), ...(옮긴채점 ? { 옮긴채점 } : {}), 센회차: [...new Set(앞지적.map((x) => x.회차))], 센지적: 앞지적.length };
   if (사람고침.length) 채점.사람판정 = 사람고침;
   fs.writeFileSync(path.join(밖, '채점.json'), JSON.stringify(채점, null, 2) + '\n');
@@ -670,6 +692,7 @@ function main(argv) {
     else if (argv[i].startsWith('--')) { 값[argv[i].slice(2)] = argv[i + 1]; i += 1; } else 위치.push(argv[i]);
   }
   const 명령 = 위치[0];
+  const 과정필수 = () => process.env.SYNK_LAB_REQUIRE_MUSE === '1';
   const 쓰는법 = '쓰는 법: node tools/뜻검사.js 재료 <판본 글.json> [--편 <원본 편 폴더>] [--밖 <폴더>] | 판본 <편 폴더> <판본 키> [--밖 <폴더>] | 답넣기 <밖 폴더> <시험관> <답 파일> | 채점 <밖 폴더> [--판정 <json>] [--기록]';
   const 도장 = kst().replace(/[-:]/g, '').slice(0, 13);
   if (명령 === '재료' || 명령 === '판본') {
@@ -692,18 +715,27 @@ function main(argv) {
     }
     const 이름 = 편 ? `${path.basename(path.resolve(편))}/${키 || path.basename(글파일, '.json')}` : `${path.basename(글파일, '.json')}-${도장}`;
     const 밖 = path.resolve(값.밖 || path.join(메인, '.tmp', '뜻검사', 이름));
-    const 재료 = 재료만들기(글파일, { 편, 밖 });
     const 기획경로 = 편 && path.join(편, '기획.md');
     const 원문 = 기획경로 && fs.existsSync(기획경로) ? fs.readFileSync(기획경로, 'utf8') : '별도 기획 원문 없음';
-    require('./lib/뮤즈1차.js').review('콘텐츠', 원문 + '\n\n판본 글\n' + fs.readFileSync(글파일, 'utf8'));
-    if (키 && !재료.판본) { 재료.판본 = 키; 재료.시험관셈 = 받은때셈(재료); fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify(재료, null, 2) + '\n'); }
+    const 예약세션 = 과정필수() ? 예약세션선택(require('./예약멈춤.js').지금읽기({작업상세:'synk-daily-lab-versions'}).회차들,
+      REPO, process.env.SYNK_LAB_RECOVERY_SESSION || process.env.CLAUDE_CODE_SESSION_ID) : null;
+    const 재료 = 재료만들기(글파일, { 편, 밖, 키, 예약세션, 뮤즈검토: () =>
+      require('./lib/뮤즈1차.js').review('콘텐츠', 원문 + '\n\n판본 글\n' + fs.readFileSync(글파일, 'utf8')) });
     if (재료.앞회차 && 재료.앞회차.번호 && fs.existsSync(path.join(밖, '앞회차', String(재료.앞회차.번호), '채점.json'))) console.log(`앞 회차 ${재료.앞회차.번호}의 채점(준비.json 「기록」이 가리키던 것)은 이제 ${기록자리(path.join(밖, '앞회차', String(재료.앞회차.번호), '채점.json'))}에 있다`);
     if (재료.앞회차 && 재료.앞회차.번호) console.log(`앞 회차 답을 ${기록자리(path.join(밖, '앞회차', String(재료.앞회차.번호), '재료.json')).replace(/\/재료\.json$/, '')}로 옮겼다 — ${재료.앞회차.같은시험지 ? '시험지가 글자 하나 다르지 않다: 채점이 앞 회차 지적을 함께 센다' : '시험지가 바뀌었다: 앞 회차 지적은 세지 않는다'}`);
     console.log(`재료: ${기록자리(밖)} · ${재료.언어} · 줄 ${재료.줄.length} · 퀴즈 ${재료.퀴즈.length}문제 · 기준 「${재료.기준.한문장 || '없음'}」`);
     console.log(`시험관 ${재료.시험관.length}${재료.시험관넷.넷 ? ` — 시험관 넷: ${재료.시험관넷.까닭.join(' · ')}` : ''}`);
     for (const w of 재료.딱지경고) console.log(`  ${w.수준 === 고칠 ? '✗' : '?'} ${w.말}`);
+    if (과정필수() && 재료.뮤즈1차?.상태 === '미완료') {
+      console.error('나라 판본 예약의 뮤즈 원답을 받지 못했습니다. 같은 판본의 재료를 다시 준비한 뒤 시험관을 부릅니다.');
+      return 2;
+    }
     console.log('다음 — 서로 답을 보이지 않고:');
     console.log(부르는법(밖, 재료.시험관, String(재료.시각 || '').replace(/[-:+]/g, '').slice(0, 13)));
+    if (fs.existsSync(path.join(require('node:os').homedir(), '.config', 'synk', 'lab-meaning-review.json'))) {
+      if (재료.뮤즈1차?.질문지문) console.log('나라 판본 예약에서 Claude Agent의 설명(description)에 시험지 번호 ' + 재료.뮤즈1차.질문지문.slice(0,16) + '를 넣는다.');
+      console.log('나라 판본 예약에서 Claude 시험관이 구독 사용 한도로 종료하면, 받은 답은 보존하고 그 시험관만 기존 검수 크레딧으로 잇는다: node tools/나라판본뜻복구.js 시험관 "' + 밖 + '" <시험관 이름>');
+    }
     console.log(`그다음: node tools/뜻검사.js 채점 "${밖}"${재료.편폴더 ? ' --기록' : ''}`);
     return 0;
   }
@@ -809,4 +841,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (e) { console.error(e.message); process.exitCode = 2; }
 }
 
-module.exports = { main, 재료만들기, 채점하기, 앞회차옮기기, 앞회차답, 채점답옮기기, 요약견주기, 웃음견주기, 핵심묶음, 답읽기, 줄기, 넷판단, 시험관모자람, 받은때셈, 지난기록, 문자갈래, 기본시험관, 넷시험관 };
+module.exports = { 예약세션선택, main, 재료만들기, 채점하기, 앞회차옮기기, 앞회차답, 채점답옮기기, 요약견주기, 웃음견주기, 핵심묶음, 답읽기, 줄기, 넷판단, 시험관모자람, 받은때셈, 지난기록, 문자갈래, 기본시험관, 넷시험관 };

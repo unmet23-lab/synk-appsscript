@@ -800,3 +800,31 @@ test('다른 사본 — 다른 사본이 만들고 아직 채점하지 않은 12
   assert.equal(조용히(() => M.main(['채점', 밖, '--기록'])), 2);
   assert.equal(fs.readFileSync(path.join(남편, '게시', '준비.json'), 'utf8'), 앞준비);
 });
+
+test('뮤즈 원답을 받은 회차의 시험지만 같은 예약 사본에서 이어받는다', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'meaning-run-'));
+  t.after(() => fs.rmSync(root, {recursive:true,force:true}));
+  const marketing = path.join(root, 'docs', '마케팅');
+  fs.mkdirSync(marketing, {recursive:true});
+  const { 편, 글파일 } = 판본글만들기(marketing);
+  const exam = path.join(root, '.tmp', '뜻검사');
+  const cache = path.join(root, '.tmp', '뮤즈1차');
+  fs.mkdirSync(cache, {recursive:true});
+  const report = path.join(cache, '1'.repeat(64) + '.txt');
+  fs.writeFileSync(report, '뮤즈 검토 소견');
+  const material = M.재료만들기(글파일,{편,밖:exam,기록:[],사본:root,뮤즈검토:()=>report});
+  const worker = require('../tools/나라판본뜻복구');
+  assert.deepEqual(worker.activeFolders(root,{시작:Date.parse(material.시각)}),[exam]);
+  assert.deepEqual(worker.activeFolders(root,{시작:Date.parse(material.시각)+1000}),[]);
+  assert.ok(!fs.readFileSync(path.join(exam,'질문.md'),'utf8').includes('뮤즈 검토 소견'));
+});
+
+test('같은 사본에 회차가 겹치면 실제 실행 ID로 재료의 소유 회차를 고른다',()=>{
+  const tree=path.resolve('fixture');
+  const rows=['first','second'].map((name,i)=>({작업:'synk-daily-lab-versions',세션:name,시작:i,실행:{사본:tree,CLI:name+'-cli'}}));
+  assert.equal(M.예약세션선택(rows,tree,'first-cli'),'first');
+  assert.equal(M.예약세션선택(rows,tree,'first'),'first');
+  assert.equal(M.예약세션선택(rows,tree,'absent'),null);
+  assert.equal(M.예약세션선택(rows,tree,undefined),null);
+  assert.equal(M.예약세션선택(rows.slice(0,1),tree,undefined),'first');
+});
