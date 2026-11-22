@@ -16,11 +16,12 @@ export type Cell = {
   voTo?: number; // 목소리 파일의 이 초까지(없으면 끝까지)
   ko: string;
   koSize: number;
-  hot?: string; // 한국어 줄에서 산호색으로 짚을 낱말(바뀌는 낱말 — M50 v5 이해 시험에서 둘이 「무엇이 바뀌었는지 모름」)
+  hot?: string; // 한국어 줄에서 짚을 낱말(바뀌는 낱말 — M50 v5 이해 시험에서 둘이 「무엇이 바뀌었는지 모름」). 색은 mark를 따른다
   level?: number | string; // 단계 알약(배울 세 줄은 1~3 — 판본 reads[level − 1]이 그 읽는 법 · 화면에는 「n/3」, 글이면 그대로 — 이해 시험 v2 · v3 haiku 「숫자가 무엇을 세는지 모름」)
   cont?: boolean; // 앞 칸 말풍선을 그대로 잇는 칸(그림만 바뀜)
-  zero?: boolean; // 할아버지께 반말 — 「Түвшин 0 ❌」 알약
+  zero?: boolean; // 할아버지께 반말 — 「Хүндэтгэл 0/3」 빨간 알약에 흰 ✗
   who?: 'g'; // 할아버지가 하는 말 — 말풍선 꼬리가 할아버지를 가리키고 알약이 없다(없으면 몽글)
+  mark?: 'ok' | 'ng'; // 맞는 말(초록 ✓) · 틀린 말(빨강 ✗ · 짚은 낱말에 줄) — 제작 절차 「맞는 말 · 틀린 말」(11-19 · 11-22 돌림 원본으로 옮기며 맞춤). 짚는 낱말 · 알약이 이 값을 따른다. 없으면 알약은 짙은 갈색(맞음 · 틀림이 아닌 단계)
   words?: [string, number, boolean?][]; // (M50 틀 — 이 편은 안 씀) 목소리에 맞춰 낱말씩 밝아지는 한국어 줄 — [낱말, 목소리 안 초, 강조] · '\n'은 줄바꿈
 };
 
@@ -28,7 +29,7 @@ export type Cell = {
 export const CELLS: Cell[] = [
   { at: 0.0, img: 'g1.jpg', b: 0, vo: 's1', voAt: 0.12, ko: '이름이 뭐야?', koSize: 92, level: 1 },
   { at: 1.3, img: 'g2.jpg', b: 1, vo: 's2', voAt: 1.32, ko: '이름이 뭐예요?', koSize: 86, level: 2 },
-  { at: 2.7, img: 'g3.jpg', b: 2, vo: 's3', voAt: 2.75, ko: '성함이\n어떻게 되세요?', koSize: 80, level: 3, hot: '성함' },
+  { at: 2.7, img: 'g3.jpg', b: 2, vo: 's3', voAt: 2.75, ko: '성함이\n어떻게 되세요?', koSize: 80, level: 3, hot: '성함', mark: 'ok' },
   // 할아버지가 흐뭇해서 제 이름을 말한다(원본 M11 사장님 「괜찮아」 · M50 큰절 자리) — 범수
   { at: 4.6, img: 'g4.jpg', b: 3, vo: 'h4', voAt: 4.65, ko: '김철수예요.', koSize: 84, who: 'g' },
   // 몽글이 내린 커피가 할아버지 앞에(딩) → 할아버지가 한 모금, 몽글은 곁눈으로 카메라를 슬쩍(반전을 미리 깐다)
@@ -36,13 +37,13 @@ export const CELLS: Cell[] = [
   { at: 6.15, img: 'g6.jpg', b: 4, vo: '', voAt: 6.15, ko: '커피 나왔어요~', koSize: 80, cont: true },
   { at: 6.9, img: 'g7.jpg', b: 5, vo: 's6', voAt: 6.95, ko: '근데…', koSize: 72 },
   // 커피를 마시는 할아버지를 친구 부르듯 이름만 — 할아버지가 마시던 채로 굳는다(장면 심사 v1: 「맛있어?」를 붙이면 커피가 맛없어 뿜은 것으로도 읽혀 이름 부르기 하나로 좁힘)
-  { at: 7.7, img: 'g8.jpg', b: 6, vo: 'm8', voAt: 7.72, ko: '철수야~!', koSize: 92, zero: true, hot: '철수야' },
+  { at: 7.7, img: 'g8.jpg', b: 6, vo: 'm8', voAt: 7.72, ko: '철수야~!', koSize: 92, zero: true, hot: '철수야', mark: 'ng' },
   // 핵심 장면: 할아버지가 커피를 뿜는다(목소리 대신 물 뿜는 소리)
   { at: 9.1, img: 'g9.jpg', b: 7, vo: '', voAt: 9.1, ko: '푸웁!!', koSize: 92, who: 'g' },
   // 콜록대는 할아버지 앞에 커피가 번진 계산대 — 몽글은 눈치 없이 또 반말로(장면 심사 v2 답 4: 앉아 있는 손님께 「또 와」는 앞뒤가 안 맞아 「괜찮아?」로)
-  { at: 10.1, img: 'g10.jpg', b: 8, vo: 'm10b', voAt: 10.15, ko: '철수야, 괜찮아?', koSize: 72, zero: true, hot: '철수야' },
+  { at: 10.1, img: 'g10.jpg', b: 8, vo: 'm10b', voAt: 10.15, ko: '철수야, 괜찮아?', koSize: 72, zero: true, hot: '철수야', mark: 'ng' },
   // 커피 젖은 수염으로 노려보는 할아버지 · 그제야 식은땀을 흘리며 고쳐 부르는 몽글(장면 심사 v1 답 3 「그럼 뭐라고 불러야 맞나」)
-  { at: 11.7, img: 'g11.jpg', b: 9, vo: 's11', voAt: 11.8, ko: '…김철수 님?', koSize: 80, level: '3/3 ✓', hot: '님' },
+  { at: 11.7, img: 'g11.jpg', b: 9, vo: 's11', voAt: 11.8, ko: '…김철수 님?', koSize: 80, level: '3/3 ✓', hot: '님', mark: 'ok' },
   // 끝: 「님」을 듣고 풀리는 할아버지(장면 심사 v2 답 3 「님 소리를 듣고 할아버지가 어떻게 나오나」) — 번진 커피 · 젖은 수염은 그대로 남는다
   { at: 12.95, img: 'g12.jpg', b: 10, vo: 'h12', voAt: 13.0, ko: '허허, 그래~', koSize: 84, who: 'g' },
 ];

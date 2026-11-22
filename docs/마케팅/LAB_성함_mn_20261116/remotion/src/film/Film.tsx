@@ -17,6 +17,11 @@ export { FPS };
 
 const INK = '#2B2522';
 const CORAL = '#E8503D';
+// 맞는 말 · 틀린 말 색(11-19 유호님 「맞았을때 표현이랑 틀렸을때 표현이랑 글씨 색이 똑같아서 … 헷갈리거든」 — 11-22 돌림 원본으로 옮기며 맞춤) — 맞는 말은 초록 + ✓, 틀린 말은 빨강 + ✗.
+// 색만으로 가르지 않는다(제작 절차 「맞는 말 · 틀린 말」). 본뜬 코드: LAB_계세요(같은 뼈대의 알약 · 짚는 낱말) · LAB_미안죄송합니다(✗ 알약) · LAB_사요찍어요(✕ 글자)
+const OK = '#0A9A66';
+const NG = '#D92D20';
+const HL = 'linear-gradient(transparent 58%, #FFE36A 58%, #FFE36A 92%, transparent 92%)'; // 맞음 · 틀림이 아닌 짚는 낱말 — 형광 밑줄(이 편에는 없다)
 const MEAN = '#B23A26'; // 뜻 줄 — 흰 말풍선 위 진한 산호
 const BUBBLE_TOP = 1000; // 말풍선 위 끝(px) — 계산대 앞판 위쪽(계산대 앞 모서리 바로 아래)
 const TAIL_TIP: [number, number] = [810, 905]; // 꼬리 끝 — 계산대 위 몽글 자리(밑단 가운데 약 820 · 870px 바로 아래 — 판/_판짜기.py Y0 200)
@@ -41,6 +46,19 @@ const Plate: React.FC<{ src: string; push: number }> = ({ src, push }) => (
 // 단계 알약 글 — 판본 level의 {n} 자리에 단계 수
 // M56 이해 시험 v2 · v3: haiku가 두 번 「숫자가 무엇을 세는지 모름」 — 수는 「n/3」으로 셋 가운데 몇인지 보인다(글은 그대로)
 const levelText = (L: LocPack, n: number | string) => L.level.split('{n}').join(typeof n === 'number' ? `${n}/3` : n);
+
+// 꼬리 줄(판본 tags)의 맞음 · 틀림 표시 — ✓는 초록, ❌ · ✗ · ✕는 빨간 ✕로 그린다(이모지 ❌는 제 색이 있어 규칙 색을 못 입힌다). 다른 글은 그대로
+const MARK_GLYPH = /(✓|✔|❌|✗|✕|✖)/u;
+const markedTag = (s: string) =>
+  s.split(MARK_GLYPH).map((part, k) =>
+    part === '✓' || part === '✔' ? (
+      <span key={k} style={{ color: OK }}>✓</span>
+    ) : MARK_GLYPH.test(part) ? (
+      <span key={k} style={{ color: NG }}>✕</span>
+    ) : (
+      part
+    ),
+  );
 
 const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
   const frame = useCurrentFrame();
@@ -75,7 +93,19 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
         ? c.ko.split(c.hot).map((part, k, all) => (
             <React.Fragment key={k}>
               {part}
-              {k < all.length - 1 ? <span style={{ color: CORAL }}>{c.hot}</span> : null}
+              {k < all.length - 1 ? (
+                <span
+                  style={
+                    c.mark === 'ng'
+                      ? { color: NG, textDecoration: 'line-through', textDecorationThickness: 6 }
+                      : c.mark === 'ok'
+                        ? { color: OK }
+                        : { background: HL, padding: '0 4px' }
+                  }
+                >
+                  {c.hot}
+                </span>
+              ) : null}
             </React.Fragment>
           ))
         : c.ko}
@@ -102,14 +132,19 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
         >
           {c.zero ? (
             <div style={{ marginBottom: 4 }}>
-              <span style={{ display: 'inline-block', background: INK, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
-                {levelText(L, 0)} ❌
+              {/* 틀린 말 — 빨간 알약에 흰 ✗(LAB_미안죄송합니다의 ✗ 알약) */}
+              <span style={{ display: 'inline-block', background: NG, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
+                {levelText(L, 0)}
+                <svg width={30} height={30} viewBox="0 0 30 30" style={{ marginLeft: 12, verticalAlign: -3 }}>
+                  <path d="M4 4 L26 26 M26 4 L4 26" stroke="#fff" strokeWidth={6} strokeLinecap="round" fill="none" />
+                </svg>
               </span>
             </div>
           ) : null}
+          {/* 단계 알약 — 맞는 말(3/3 · 3/3 ✓)은 초록, 1 · 2단계는 맞음 · 틀림이 아니라 짙은 갈색(산호색은 빨간 틀림 알약과 거의 같아 보여서 — LAB_계세요와 같은 판단) */}
           {c.level ? (
             <div style={{ marginBottom: 4 }}>
-              <span style={{ display: 'inline-block', background: CORAL, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
+              <span style={{ display: 'inline-block', background: c.mark === 'ok' ? OK : INK, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
                 {levelText(L, c.level)}
               </span>
             </div>
@@ -122,7 +157,7 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
           {/* 두 채널 판(11-14): 로마자 「saeng-sin chu-ka-deu-ryeo-yo」(28자)는 50px로 말풍선 안 폭(680px)을 넘어 「yo」만 줄이 넘어갔다 — 긴 읽기만 44px 한 줄 */}
           {/* M56 이해 시험 v2: GPT · 그록 둘이 「한글 아래 읽기 줄이 작아 못 읽음」 — 읽기 50 → 54px(22자 「сонхами оттокэ двэсэё?」가 말풍선 안 폭 680px에 한 줄로 드는 크기) · 색 한 단계 진하게, 꼬리 44 → 46px(48px는 3단계 꼬리가 「✓」에서 줄이 넘어 앱 글자 자리에 닿음) */}
           {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: read.length > 22 ? 44 : 54, whiteSpace: 'nowrap', color: '#3A2D24', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
-          {tag ? <div style={{ marginTop: 8, fontFamily: enFont, fontWeight: 800, fontSize: 46, color: '#3A2D24', lineHeight: Math.max(1.15, L.lineH), whiteSpace: 'pre-line' }}>→ {tag}</div> : null}
+          {tag ? <div style={{ marginTop: 8, fontFamily: enFont, fontWeight: 800, fontSize: 46, color: '#3A2D24', lineHeight: Math.max(1.15, L.lineH), whiteSpace: 'pre-line' }}>→ {markedTag(tag)}</div> : null}
         </div>
       </div>
       {/* 꼬리 — 말풍선 위 끝에서 계산대 위 말하는 인형으로 */}
