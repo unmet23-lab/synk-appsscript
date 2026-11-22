@@ -24,20 +24,36 @@ function declaredAt(text,name){
 }
 const isFunction=(text,name)=>new RegExp('^(?:async\\s+)?function\\s+'+name+'\\b','m').test(text);
 
-function quitBodies(text){
+// `app.on(` 뒤 여는 괄호부터 짝이 맞는 닫는 괄호까지를 돌려준다. 글자열과 주석 속 괄호는 세지 않는다(처리기가 여러 줄이어도 본다, GPT pc-second-launch GA1)
+function callArgs(text,open){
+  let depth=0;
+  for(let i=open;i<text.length;i++){
+    const c=text[i];
+    if(c==="'"||c==='"'||c==='`'){for(i++;i<text.length&&text[i]!==c;i++)if(text[i]==='\\')i++;continue;}
+    if(c==='/'&&text[i+1]==='/'){i=text.indexOf('\n',i);if(i<0)break;continue;}
+    if(c==='/'&&text[i+1]==='*'){i=text.indexOf('*/',i+2)+1;if(i<=0)break;continue;}
+    if(c==='('||c==='{'||c==='[')depth++;
+    else if(c===')'||c==='}'||c===']'){depth--;if(depth===0)return text.slice(open+1,i);}
+  }
+  throw Error('unbalanced app.on( call at '+open);
+}
+// 잠금 줄보다 앞에서 맨 위(들여쓰기 없는 줄)에 건 끝내기 처리기만 본다. 잠금 뒤에 건 처리기는 두 번째 실행에서 걸리지 않는다
+function quitBodies(text,lock){
   const bodies=[];
-  for(const m of text.matchAll(/^app\.on\('before-quit',([^\n]*)\);$/gm))bodies.push(['before-quit',m[1]]);
-  const start=text.indexOf("app.on('will-quit',event=>{");assert.ok(start>=0,'will-quit handler is present');
-  const end=text.indexOf('\n});\n',start);assert.ok(end>start,'will-quit handler ends');
-  // 업데이트 넘김 갈래(platformUpdate?.needsInstallHandoff())는 잠금 전에는 platformUpdate가 비어 돌지 않는다. 그 아래 정리 줄을 본다
-  const whole=text.slice(start,end),tail=whole.slice(whole.lastIndexOf('});return;\n  }')+1);
-  bodies.push(['will-quit',tail]);
+  for(const m of text.matchAll(/^app\.on\('(before-quit|will-quit)',/gm)){
+    if(m.index>lock)continue;
+    let body=callArgs(text,m.index+'app.on'.length);
+    // will-quit의 업데이트 넘김 갈래(platformUpdate?.needsInstallHandoff())는 잠금 전에는 platformUpdate가 비어 돌지 않는다. 그 갈래 뒤를 본다
+    if(m[1]==='will-quit'&&body.includes('needsInstallHandoff()')){const cut=body.lastIndexOf('});return;');assert.ok(cut>0,'will-quit handoff branch ends with return');body=body.slice(cut+'});return;'.length);}
+    bodies.push([m[1],body]);
+  }
+  assert.ok(bodies.some(([kind])=>kind==='will-quit'),'will-quit handler is present before the lock');
   return bodies;
 }
 function lateNames(text){
   const lock=text.indexOf('else if(!app.requestSingleInstanceLock())app.quit();');assert.ok(lock>0,'single-instance lock line is present');
   const late=[];
-  for(const [kind,body] of quitBodies(text))for(const name of namesIn(body)){
+  for(const [kind,body] of quitBodies(text,lock))for(const name of namesIn(body)){
     if(isFunction(text,name))continue;
     const at=declaredAt(text,name);
     if(at<0||at>lock)late.push(kind+':'+name+(at<0?'(선언 못 찾음)':'(잠금 뒤에 선언)'));
@@ -54,4 +70,15 @@ test('the check catches a quit-handler name declared after the lock',()=>{
   const late=lateNames(broken);
   assert.ok(late.includes('will-quit:workspaceFollower(잠금 뒤에 선언)'),late.join(', '));
   assert.ok(late.includes('will-quit:workspaceAuth(잠금 뒤에 선언)'),late.join(', '));
+});
+
+// GPT pc-second-launch GA1: 한 줄짜리 처리기만 보면 같은 일을 여러 줄 블록으로 쓴 처리기를 놓친다
+test('the check also reads multi-line before-quit handlers',()=>{
+  const one="app.on('before-quit',()=>aiSubscriptions?.dispose());\n";
+  assert.ok(source.includes(one)&&source.includes('let aiSubscriptions=null;\n'),'the aiSubscriptions quit handler and declaration are where this test expects');
+  const broken=source.replace(one,"app.on('before-quit',()=>{\n  // 구독 방 정리\n  aiSubscriptions?.dispose();\n});\n").replace('let aiSubscriptions=null;\n','')+'\nlet aiSubscriptions=null;\n';
+  assert.ok(lateNames(broken).includes('before-quit:aiSubscriptions(잠금 뒤에 선언)'),lateNames(broken).join(', '));
+  // 잠금 뒤에 건 처리기는 두 번째 실행에서 걸리지 않으므로 따지지 않는다
+  const afterLock=source+"\nlet lateThing=null;\napp.on('before-quit',()=>{lateThing?.dispose();});\n";
+  assert.deepEqual(lateNames(afterLock),[]);
 });
