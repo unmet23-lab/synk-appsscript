@@ -93,6 +93,9 @@ test('모델 출력 검사: 줄 수 · 차례 · 길이 · 값', () => {
   assert.equal(checkTranslationOutput({ lines: ok.lines.map((l, i) => ({ ...l, i: i ? i : 3 })) }, SRC), null);
   assert.equal(checkTranslationOutput({ lines: ok.lines.map((l) => ({ ...l, ko: '가'.repeat(500) })) }, SRC), null);
   assert.equal(checkTranslationOutput({ lines: ok.lines.map((l) => ({ ...l, flag: 'verified' })) }, SRC), null);
+  assert.deepEqual(checkTranslationOutput({ lines: [{ i: 0, ko: '수학\t72\t96\tA', flag: 'none' }] }, ['Математик 72 96 А']), [{ i: 0, ko: '수학 72 96 A', flag: 'none' }], '모델 출력의 탭은 빈칸');
+  assert.deepEqual(checkBackOutput({ lines: [{ i: 0, mn: 'Математик\t72\t96' }] }, ['수학 72 96']), [{ i: 0, mn: 'Математик 72 96' }]);
+  assert.equal(splitPasted('Төгссөн он: 2026, Е​̈ үсэг\tбүхий нэр').lines[0], 'Төгссөн он: 2026, Ё үсэг бүхий нэр', '숨은 글자를 지운 뒤 NFC');
   assert.equal(checkTranslationOutput({ lines: ok.lines.map((l) => ({ ...l, extra: 1 })) }, SRC), null);
   assert.equal(checkBackOutput({ lines: [{ i: 0, mn: 'Тест' }] }, ['테스트']).length, 1);
   assert.equal(checkBackOutput({ lines: [{ i: 0, mn: '' }] }, ['테스트']), null);

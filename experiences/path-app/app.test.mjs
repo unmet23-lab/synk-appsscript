@@ -993,7 +993,7 @@ function fakeTranslateServer({ translateStatus = 'done', checkStatus = 'done', c
       return { ...head, status: 'done', lines: body.lines.map((line, i) => ({ i, ko: i === 0 ? '<script>alert(1)</script> 졸업증명서' : i === 1 ? '성명: 바타인 테무렌(Батын Тэмүүлэн)' : line.includes('⟦R1⟧') ? '등록번호: ⟦R1⟧' : '졸업 연도: 2026년 6월 16일', flag: i === 1 ? 'name' : 'none' })) };
     }
     if (checkStatus !== 'done') return { ...head, status: checkStatus, remaining: 3, lines: [] };
-    // 대조 원장은 따로 센다: 화면의 「오늘 남은 장」(초안 8)이 이 3으로 바뀌면 안 된다.
+    // 대조 원장은 따로 센다: 화면의 「오늘 N장 더」(초안 8)이 이 3으로 바뀌면 안 된다.
     return { ...head, status: 'done', remaining: 3, compared, lines: body.lines.map((_, i) => ({ i, back: i === 3 ? 'Төгссөн он: 2026 оны 6 сарын 16' : 'Тест мөр', verdict: i === 3 ? 'differs' : 'same', reason: i === 3 ? 'meaning' : 'none' })) };
   };
   return { server, calls };
@@ -1058,6 +1058,7 @@ test('번역 초안: 보내면 등록번호를 가리고, 초안 띠 · 안내 �
   app.click('trSend');
   await settle();
   assert.equal(calls.length, 2, '번역 뒤 대조를 이어서 보낸다');
+  assert.equal(app.document.activeElement?.getAttribute('id'), 'tr-title', '초안이 나온 뒤 대조가 다시 그려도 초점은 쪽 제목에 남는다');
   assert.equal(calls[0].action, 'translate');
   assert.ok(!JSON.stringify(calls).includes('УБ01234567'), '등록번호는 앱에서 가려 보낸다');
   assert.equal(calls[0].lines[2], 'Регистрийн дугаар: ⟦R1⟧');
@@ -1078,7 +1079,7 @@ test('번역 초안: 보내면 등록번호를 가리고, 초안 띠 · 안내 �
   assert.match(text, /뜻이 달라 보이는 줄 1곳/);
   assert.match(text, /<script>alert\(1\)<\/script> 졸업증명서/, '모델 글은 글자로 보인다');
   assert.equal(app.root.querySelectorAll('script').length, 0);
-  assert.match(text, /오늘 남은 장: 8/);
+  assert.match(text, /오늘 8장 더 만들 수 있어요/);
   app.click('trFlagged');
   assert.equal(app.root.querySelectorAll('li.sx-tr-row').length, 3, '확인할 줄만 보기(원문에 없는 숫자 1 · 이름 줄 · 숫자와 뜻이 다른 줄)');
   app.click('trDownload');

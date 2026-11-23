@@ -32,6 +32,8 @@ const chars = (s) => [...s].length;
 // 줄에 남기지 않는 글자: 제어 문자, 폭 없는 글자, 양방향 덮어쓰기. 화면에 안 보이는 글자로 지시를 숨기지 못하게 한다.
 const HIDDEN_SRC = '[\\u0000-\\u001F\\u007F-\\u009F\\u200B-\\u200F\\u202A-\\u202E\\u2060-\\u2069\\uFEFF]';
 const hasHidden = (s) => new RegExp(HIDDEN_SRC).test(s);
+// 탭 · 세로 탭 · 쪽 넘김은 지우지 않고 빈칸으로 바꾼다(표의 칸 사이). 붙여 넣은 글과 모델 출력에 똑같이 쓴다.
+const cellSpaces = (s) => s.replace(/[\t\v\f]+/g, ' ');
 
 /* ── 등록번호 가리기 ──
  * 몽골 주민등록번호(регистрийн дугаар): 글자 두 자 + 숫자 여덟 자. 키릴 대소문자와 Ө · Ү · Ё, 글자 인식이 내는 모양이 같은 라틴 글자,
@@ -103,7 +105,8 @@ export const stripOriginals = (text) => String(text ?? '').replace(/\s*[(（][^(
 export function splitPasted(text) {
   const raw = String(text ?? '').normalize('NFC').replace(/\r\n?/g, '\n');
   // 탭 · 세로 탭 · 쪽 넘김은 칸 사이 빈칸이다(성적표 표를 복사하면 칸이 탭으로 온다). 지우면 「72」와 「96」이 「7296」으로 붙는다.
-  const lines = raw.split('\n').map((l) => l.replace(/[\t\v\f]/g, ' ').replace(new RegExp(HIDDEN_SRC, 'g'), '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  // 숨은 글자를 지운 뒤 다시 NFC로 맞춘다(글자와 결합 부호 사이에 폭 없는 글자가 끼어 있던 PDF 글).
+  const lines = raw.split('\n').map((l) => cellSpaces(l).replace(new RegExp(HIDDEN_SRC, 'g'), '').replace(/\s+/g, ' ').trim().normalize('NFC')).filter(Boolean);
   if (!lines.length) return { error: 'empty', lines: [] };
   if (lines.length > MAX_LINES) return { error: 'lines', lines };
   // 길이와 언어는 서버가 받는 꼴(등록번호를 가린 줄)로 잰다. 여기서 통과한 글이 서버에서 400이 되지 않게.
@@ -164,8 +167,10 @@ export function checkTranslationOutput(out, sources) {
   if (!plain(out) || !sameIndexes(out.lines, sources.length)) return null;
   const lines = [];
   for (const [i, l] of out.lines.entries()) {
-    if (!exactKeys(l, ['i', 'ko', 'flag']) || typeof l.ko !== 'string' || !l.ko.trim() || chars(l.ko) > outLimit(sources[i]) || /\n/.test(l.ko) || hasHidden(l.ko) || !FLAGS.includes(l.flag)) return null;
-    lines.push({ i, ko: l.ko.trim(), flag: l.flag });
+    if (!exactKeys(l, ['i', 'ko', 'flag']) || typeof l.ko !== 'string') return null;
+    const ko = cellSpaces(l.ko).trim();
+    if (!ko || chars(ko) > outLimit(sources[i]) || /\n/.test(ko) || hasHidden(ko) || !FLAGS.includes(l.flag)) return null;
+    lines.push({ i, ko, flag: l.flag });
   }
   return lines;
 }
@@ -173,8 +178,10 @@ export function checkBackOutput(out, drafts) {
   if (!plain(out) || !sameIndexes(out.lines, drafts.length)) return null;
   const lines = [];
   for (const [i, l] of out.lines.entries()) {
-    if (!exactKeys(l, ['i', 'mn']) || typeof l.mn !== 'string' || !l.mn.trim() || chars(l.mn) > backLimit(drafts[i]) || /\n/.test(l.mn) || hasHidden(l.mn)) return null;
-    lines.push({ i, mn: l.mn.trim() });
+    if (!exactKeys(l, ['i', 'mn']) || typeof l.mn !== 'string') return null;
+    const mn = cellSpaces(l.mn).trim();
+    if (!mn || chars(mn) > backLimit(drafts[i]) || /\n/.test(mn) || hasHidden(mn)) return null;
+    lines.push({ i, mn });
   }
   return lines;
 }

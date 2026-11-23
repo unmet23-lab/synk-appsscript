@@ -1275,9 +1275,8 @@ root.addEventListener('change', (e) => {
   else if (a === 'jobBoard') { S.jobBoard = e.target.value || 'all'; S.jobPage = 0; render(false); root.querySelector('[data-action="jobBoard"]')?.focus(); }
   else if (a === 'savedJobs') { S.onlySaved = !!e.target.checked; S.jobPage = 0; render(false); root.querySelector('[data-action="savedJobs"]')?.focus(); }
   else if (a === 'topic') { S.help = e.target.value; S.copyMsg = null; render(false); root.querySelector('#topic')?.focus(); }
-  else if (S.tr && S.tr.phase !== 'sending' && ['trKind', 'trAge', 'trGuardian', 'trAgree'].includes(a)) {
-    if (a === 'trKind' && ['grad', 'transcript'].includes(e.target.value)) S.tr.kind = e.target.value;
-    else if (a === 'trAge' && ['adult', 'teen', 'under14'].includes(e.target.value)) { S.tr.age = e.target.value; if (S.tr.age !== 'teen') S.tr.guardian = false; if (S.tr.age === 'under14') S.tr.agree = false; }
+  else if (S.tr && S.tr.phase !== 'sending' && ['trAge', 'trGuardian', 'trAgree'].includes(a)) {
+    if (a === 'trAge' && ['adult', 'teen', 'under14'].includes(e.target.value)) { S.tr.age = e.target.value; if (S.tr.age !== 'teen') S.tr.guardian = false; if (S.tr.age === 'under14') S.tr.agree = false; }
     else if (a === 'trGuardian') S.tr.guardian = !!e.target.checked;
     else if (a === 'trAgree') S.tr.agree = !!e.target.checked;
     const id = e.target.id;
