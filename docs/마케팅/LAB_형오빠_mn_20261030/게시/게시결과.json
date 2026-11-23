@@ -574,6 +574,24 @@
       "확인": "TikTok Studio 콘텐츠 목록(@synklab.id) 줄 「Nov 26, 3:00 PM (GMT+9) Seoul Everyone」 · 글 첫 줄 「Di Indonesia, kakak cowok dan kakak cewek sama-sama bisa dipanggil “kakak”. Di bahasa Korea, panggilannya tergantung sia」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 26, 2026 15:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 끔",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
       "기록시각": "2026-11-21T06:25:28.429Z"
+    },
+    {
+      "계정": "lab-ru-vk",
+      "상태": "거는 중",
+      "거는중": "2026-11-23T05:55:30.434Z",
+      "시각": "2026-11-24T13:00:00+03:00",
+      "지문": "e3cb418c852c3966fbaaeca275e43326700177a3dff0995c883fed3babf7ea5b",
+      "게시글지문": "3cca49dab2bc768c037c08eb102f0a3831a893dae2937553385e001aca4e7462",
+      "방법": "ego"
+    },
+    {
+      "계정": "lab-ru-rutube",
+      "상태": "거는 중",
+      "거는중": "2026-11-23T05:55:30.854Z",
+      "시각": "2026-11-24T13:00:00+03:00",
+      "지문": "e3cb418c852c3966fbaaeca275e43326700177a3dff0995c883fed3babf7ea5b",
+      "게시글지문": "611909d07ea7c5be1dcfca7c7e14c97b79111154fee781bc2bfc81ae3653f565",
+      "방법": "ego"
     }
   ]
 }
