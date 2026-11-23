@@ -606,3 +606,31 @@ test('2판 room (카본 A1 · A2 · A3 · A4): before consent a refused pick spe
   v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(FREE_PATIENCE + 60000, { ...old, free: free({ stage: 'claimed' }) }) }), NOW);
   assert.deepEqual([v.board.main.label, v.board.main.disabled], [ONECLICK_LABEL, false]);
 });
+
+test('2판 room (Fable 최종 P1-1 · P2-1 · P2-2): a lead that opens the engine drops only 「엔진 창 열기」; a count answered after turning on says it is on; a lost free answer is said', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const st = sf => ({ ...STATUS, spaceFree: sf });
+  const labels = v => v.acts.map(a => a.label);
+  const answered = { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() };
+  const free = patch => ({ stage: 'sent', result: null, reason: null, answeredAt: null, ...patch });
+  // P1-1: 쉰 답 · 확인할 일 · 미리 보기에서 「파일 되살리기」와 「새 PC로 옮겨 오기」는 남고, 엔진 창을 여는 단추는 하나다
+  const rested = solioBackupView(SNAP({ oneclick: PRESS(120000, { stage: 'answered', result: 'rested', reason: 'battery', answeredAt: new Date(NOW - 60000).toISOString() }) }), NOW);
+  assert.deepEqual(labels(rested), ['엔진 창 열기', '파일 되살리기', '새 PC로 옮겨 오기']);
+  const attention = solioBackupView(SNAP({ status: { ...STATUS, attention: ['folders'] }, oneclick: PRESS(120000, answered) }), NOW);
+  assert.ok(labels(attention).includes('파일 되살리기') && labels(attention).includes('새 PC로 옮겨 오기') && !labels(attention).includes('엔진 창 열기'), JSON.stringify(labels(attention)));
+  const counted = { ...answered, free: free({ ...answered, numbers: { preview: true, freed: 3 * GBy, items: 6, kept: 2, busy: 1 } }) };
+  let v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(120000, counted) }), NOW);
+  assert.deepEqual(labels(v), ['엔진 창에서 켜기', '파일 되살리기', '새 PC로 옮겨 오기']);
+  // P2-1: 셈 뒤에 엔진 창에서 켰으면 「켜면」이 아니라 켠 것을 말하고 「엔진 창에서 켜기」를 내지 않는다
+  v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, counted) }), NOW);
+  assert.match(v.board.steps[2].mid, /^켰습니다\. 다음 누름부터 3\.0GB쯤 비웁니다$/);
+  assert.match(v.then, /「누를 때 비우기」를 켰습니다/);
+  assert.ok(!labels(v).includes('엔진 창에서 켜기') && !/켜면/.test(JSON.stringify(v)), JSON.stringify(labels(v)));
+  // P2-2: 비우기 요청의 답을 잃었으면 03 줄이 그렇다고 쓴다
+  for (const stage of ['gone', 'expired']) {
+    v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ stage, answeredAt: new Date(NOW - 1000).toISOString() }) }) }), NOW);
+    assert.deepEqual([v.board.steps[2].mid, v.board.steps[2].state], ['비우기 결과를 확인하지 못했습니다. 엔진 창의 공간 비우기에서 봐 주세요', 'wait'], stage);
+  }
+  v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(120000, { ...answered, free: free({ stage: 'gone', answeredAt: new Date(NOW - 1000).toISOString() }) }) }), NOW);
+  assert.match(v.board.steps[2].mid, /^셈 결과를 확인하지 못했습니다/);
+});

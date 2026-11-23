@@ -97,6 +97,8 @@ pub fn free_with(root: &Path, places: &Places, ask: &Ask, world: &dyn World) -> 
         }
     };
     run.procs = Some(procs);
+    // 드라이브마다 「시작선 아래인지」는 누름을 시작할 때 한 번 정한다. 임시 파일을 먼저 지워 시작선을 넘어도 빌드 폴더는 목표선까지 간다(카본 끝판 r2 A2).
+    for (_, p) in &picks { run.note_drive(Path::new(p)); }
     for (n, path) in picks {
         run.one(n, Path::new(&path));
     }
@@ -123,6 +125,18 @@ enum Idle { Yes, Recent, Slow, Unreadable }
 enum Kind { Temp, Profile, Build(&'static str) }
 
 impl Press<'_> {
+    /// 그 자리의 드라이브 글자. 이 누름에서 처음 보는 드라이브면 (누름 시작의 「시작선 아래」, 목표선, 미리 보기 셈 0)을 적어 둔다.
+    fn note_drive(&mut self, path: &Path) -> Option<String> {
+        let drive = drive_root(path)?;
+        let letter = drive.to_string_lossy().chars().next().map(|c| c.to_ascii_uppercase().to_string())?;
+        if !self.drives.contains_key(&letter) {
+            let (size, free) = space::drive_space(&drive)?;
+            let start = space::start_lines(self.root).get(&letter).copied().unwrap_or_else(|| space::default_start_line(size)).saturating_mul(GB);
+            self.drives.insert(letter.clone(), (free < start, start.saturating_add((size / 10).min(100 * GB)), 0));
+        }
+        Some(letter)
+    }
+
     fn keep(&mut self, why: &'static str) {
         self.tally.kept += 1; *self.why.entry(why).or_default() += 1;
         // 프로세스가 쓰고 있어 남긴 것도 「쓰는 중이라 남긴 수」로 센다(12.4 busy, 카본 끝판 B7). 이름 바꾸기 거절은 take_and_delete의 Busy가 센다.
@@ -197,6 +211,8 @@ impl Press<'_> {
         if self.started.elapsed() + estimate > PRESS { self.keep("later"); return (false, Some("later")); }
         if self.ask.preview {
             self.tally.items += 1; self.tally.freed += bytes; self.temp_list.push((path_text, bytes));
+            // 미리 보기의 목표선 셈에 같은 드라이브의 임시 몫도 넣는다(카본 끝판 r2 A1)
+            if let Some(d) = self.note_drive(item).and_then(|l| self.drives.get_mut(&l)) { d.2 = d.2.saturating_add(bytes); }
             return (true, None);
         }
         match self.take_and_delete(item, &name, "temp", bytes, files, item) {
@@ -269,14 +285,10 @@ impl Press<'_> {
         if Instant::now() >= check_by { self.slow_line(path); return self.keep("slow"); }
         // 모자란 드라이브에서, 목표선까지만(원칙 3 · 6장).
         let Some(drive) = drive_root(path) else { return self.keep("place") };
-        let Some((size, free)) = space::drive_space(&drive) else { return self.keep("place") };
-        let letter = drive.to_string_lossy().chars().next().map(|c| c.to_ascii_uppercase().to_string()).unwrap_or_default();
-        // 시작선 아래인지는 그 누름에서 그 드라이브를 처음 볼 때 한 번 정한다. 비우는 동안 시작선을 넘어도 목표선까지 간다(6장, 카본 끝판 B1).
-        let root = self.root;
-        let &mut (below, target, would) = self.drives.entry(letter.clone()).or_insert_with(|| {
-            let start = space::start_lines(root).get(&letter).copied().unwrap_or_else(|| space::default_start_line(size)).saturating_mul(GB);
-            (free < start, start.saturating_add((size / 10).min(100 * GB)), 0)
-        });
+        let Some((_, free)) = space::drive_space(&drive) else { return self.keep("place") };
+        let Some(letter) = self.note_drive(path) else { return self.keep("place") };
+        // 시작선 아래인지는 누름을 시작할 때 정한 값이다. 비우는 동안 시작선을 넘어도 목표선까지 간다(6장, 카본 끝판 B1 · r2 A2).
+        let Some(&(below, target, would)) = self.drives.get(&letter) else { return self.keep("place") };
         // 미리 보기는 지우지 않으므로 남은 공간에 이 드라이브에서 셈한 크기를 더해 목표선과 견준다.
         let counted = if self.ask.preview { free.saturating_add(would) } else { free };
         if !below || counted >= target { return self.keep("space-ok"); }
@@ -332,7 +344,8 @@ impl Press<'_> {
         }
         let (gone, deleted, done) = delete_tree(&taken, self.started + PRESS + OVERRUN);
         let after = drive.as_deref().and_then(space::drive_space).map(|(_, f)| f);
-        self.ledger.line(json!({"at": space::iso(self.at), "kind": kind, "stage": if done { "freed" } else { "stopped" }, "path": path.to_string_lossy(), "as": taken.to_string_lossy(),
+        // 보고서 번호와 preview를 함께 적어 엔진 창의 「지난 누름」이 같은 누름의 줄로 묶는다(Fable 최종 P1-2)
+        self.ledger.line(json!({"at": space::iso(self.at), "report": self.ask.report, "preview": false, "kind": kind, "stage": if done { "freed" } else { "stopped" }, "path": path.to_string_lossy(), "as": taken.to_string_lossy(),
             "bytes": gone, "files": deleted, "freeBefore": before, "freeAfter": after, "how": how_of(kind)}));
         if done { Taken::Freed(gone) } else { Taken::Stopped }
     }
@@ -1149,6 +1162,9 @@ mod tests {
         for kept in [&used_nm, &refd_nm, &recent_nm] { assert!(kept.exists(), "{kept:?} stays"); }
         let ledger = fs::read_to_string(state.join("space").join(LEDGER)).unwrap();
         assert!(ledger.contains("\"running\"") && ledger.contains("\"referenced\"") && ledger.contains("\"recent\""), "{ledger}");
+        // 지운 줄도 그 누름의 보고서 번호와 preview:false를 가진다: 엔진 창의 「지난 누름」이 이 줄로 묶는다(Fable 최종 P1-2)
+        let freed: Vec<Value> = ledger.lines().filter_map(|l| serde_json::from_str::<Value>(l).ok()).filter(|r| r["stage"] == "freed").collect();
+        assert!(!freed.is_empty() && freed.iter().all(|r| r["report"] == "space-1-aaaaaaaa" && r["preview"] == false && r["kind"] == "node_modules"), "{ledger}");
         let _ = fs::remove_dir_all(&root); let _ = fs::remove_dir_all(&state);
     }
 

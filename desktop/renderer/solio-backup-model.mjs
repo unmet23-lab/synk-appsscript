@@ -228,8 +228,9 @@ function withBoard(scene, snap, now) {
   const board = oneClickBoard(snap, now), lead = board.lead;
   const quiet = scene.acts.map(a => ({ ...a, primary: false }));
   // 이끄는 단추와 같은 동작 · 낱말이거나 이름이 같은 단추는 뺀다. 주제가 달라도 「엔진 창 열기」가 둘 서지 않는다(카본 A2)
-  // 엔진 창을 여는 단추는 하나만 둔다: 이끄는 단추가 엔진 창을 열면 아래 줄의 「엔진 창 열기」는 뺀다(엔진 창 안에서 옮겨 다닌다)
-  const acts = lead?.act ? [lead.act, ...quiet.filter(a => !(a.act === lead.act.act && (a.arg === lead.act.arg || a.label === lead.act.label || a.act === 'backup-open')))] : quiet;
+  // 이끄는 단추가 엔진 창을 열면 아래 줄의 「엔진 창 열기」(status)만 뺀다. 「파일 되살리기」 · 「새 PC로 옮겨 오기」는 그대로 둔다(Fable 최종 P1-1)
+  const sameDoor = a => a.act === 'backup-open' && lead.act.act === 'backup-open' && a.arg === 'status';
+  const acts = lead?.act ? [lead.act, ...quiet.filter(a => !(a.act === lead.act.act && (a.arg === lead.act.arg || a.label === lead.act.label)) && !sameDoor(a))] : quiet;
   // 줄(다음 백업 · 매시간)이 빠지므로 자동 백업이 도는 것은 아래 범위 칸에 한 줄로 남긴다
   // 「매시간 저절로」는 정상(status · safe)일 때만 쓴다. 소식 없음 · 확인할 일 · 첫 백업 준비 중에는 위 문장과 어긋난다(Fable F4)
   const next = nextWords(snap.status?.nextRunAt, now);
@@ -447,7 +448,8 @@ export function oneClickBoard(snap, now = Date.now()) {
   else if (fLate) sp = { ...sp, mid: freeOn ? '비우기 답을 기다리는 중입니다. 늦어도 다음 매시 백업 때 답합니다' : '셈의 답을 기다리는 중입니다. 늦어도 다음 매시 백업 때 답합니다', val: '기다리는 중', state: 'wait' };
   else if (fPending && c.result) sp = { ...sp, mid: freeOn ? '다시 만들 수 있는 것을 비우는 중입니다' : '켜면 비울 것을 세는 중입니다', val: '', state: 'now' };
   else if (fPending) sp = { ...sp, mid: freeOn ? '백업 뒤에 다시 만들 수 있는 것을 비웁니다' : '백업 뒤에 켜면 비울 것을 셉니다', val: '', state: '' };
-  else if (f?.result === 'done' && n && n.preview) sp = { ...sp, mid: n.items ? `켜면 지금 ${gb(n.freed)}를 비울 수 있습니다` : '지금 비울 만한 것이 없었습니다', val: '', can: n.items > 0 };
+  // 미리 보기 답 뒤에 엔진 창에서 켰으면(상태 파일 on) 「켜면」이 아니라 켠 것을 말한다(Fable 최종 P2-1)
+  else if (f?.result === 'done' && n && n.preview) sp = { ...sp, mid: !n.items ? '지금 비울 만한 것이 없었습니다' : freeOn ? `켰습니다. 다음 누름부터 ${gb(n.freed)}쯤 비웁니다` : `켜면 지금 ${gb(n.freed)}를 비울 수 있습니다`, val: '', can: n.items > 0 };
   else if (f?.result === 'done' && n) {
     const kept = n.busy ? `${n.busy}개는 쓰는 중이라 남겼습니다` : '';
     sp = { ...sp, mid: n.items ? `${gb(n.freed)}를 비웠습니다${kept ? ` · ${kept}` : ''}` : kept || '지금 비울 만한 것이 없었습니다', val: n.items ? gb(n.freed) : '', state: 'done' };
@@ -455,6 +457,8 @@ export function oneClickBoard(snap, now = Date.now()) {
     const words = freeOn ? FREE_ANSWER : FREE_ANSWER_PREVIEW;
     sp = { ...sp, mid: words[f.reason] || (freeOn ? '비우지 못했습니다. 엔진 창에서 확인해 주세요' : '비울 것을 세지 못했습니다. 엔진 창에서 확인해 주세요'), state: f.result === 'failed' || !words[f.reason] ? 'fail' : 'wait' };
   }
+  // 비우기 · 세기 요청의 답을 잃었으면(사라짐 · 하루 만료) 그렇다고 쓴다. 켠 PC에서는 엔진이 실제로 지웠을 수 있다(Fable 최종 P2-2)
+  else if (f && !f.result && ['gone', 'expired'].includes(f.stage)) sp = { ...sp, mid: freeOn ? '비우기 결과를 확인하지 못했습니다. 엔진 창의 공간 비우기에서 봐 주세요' : '셈 결과를 확인하지 못했습니다. 다음 누름에 다시 셉니다', val: '', state: 'wait' };
   else if (!space || space.missing) sp = { ...sp, mid: '엔진이 아직 공간을 재지 않았습니다. 하루 한 번 잽니다', val: '' };
   else if (space.invalid) sp = { ...sp, mid: '공간 보고서를 읽지 못했습니다', val: '' };
   else if (!space.lapFinishedAt && Number.isSafeInteger(space.scanningDays)) sp = { ...sp, mid: `엔진이 디스크를 처음 훑는 중입니다(${space.scanningDays + 1}일째)` };
@@ -479,7 +483,9 @@ export function oneClickBoard(snap, now = Date.now()) {
   // 끝: 누른 백업이 답을 받았고 확인도 끝났으면 넷을 한 줄로 접는다
   const finished = !!c && !pending && !job && !checking && c.result === 'done' && !fWait;
   const freed = f?.result === 'done' && n && !n.preview && n.items > 0 ? n.freed : 0;
-  const canFree = f?.result === 'done' && n?.preview && n.items > 0 ? n.freed : 0;
+  const counted = f?.result === 'done' && n?.preview && n.items > 0 ? n.freed : 0;
+  // 켜기 전의 셈만 「엔진 창에서 켜기」로 이끈다. 셈 뒤에 이미 켰으면 켠 것을 말한다(Fable 최종 P2-1)
+  const canFree = freeOn ? 0 : counted, turnedOn = freeOn ? counted : 0;
   const sum = finished ? { nm: freed ? `백업하고 ${gb(freed)}를 비웠습니다` : '백업을 마쳤습니다', mid: [pr.val && `되살리기 확인 ${pr.val}`, fresh ? '새 판 있음' : ''].filter(Boolean).join(' · '), val: b.val } : null;
   if (finished && !lead) {
     const next = nextWords(s.nextRunAt, now);
@@ -492,6 +498,7 @@ export function oneClickBoard(snap, now = Date.now()) {
         : pr.state === 'fail' ? '다만 마지막 되살리기 확인이 실패했습니다. 엔진 창에서 확인해 주세요.'
           // 2판 미리 보기: 지금 켜면 비울 수 있는 양과 켜는 곳(엔진 창)을 말한다. 솔리오는 켜지 못한다
           : canFree ? `엔진 창에서 「누를 때 비우기」를 켜면 다음 누름부터 ${gb(canFree)}쯤 비웁니다.`
+            : turnedOn ? `「누를 때 비우기」를 켰습니다. 다음 누름부터 ${gb(turnedOn)}쯤 비웁니다.`
             : driveCard(space).below ? '다만 남은 공간이 정한 선보다 적습니다. 아래에서 비울 수 있는 것을 봐 주세요.'
               : fresh ? `${news}.` : next ? `다음 백업은 ${next}입니다.` : '';
     const attention = !!topics || snap.view === 'checking' || pr.state === 'fail';

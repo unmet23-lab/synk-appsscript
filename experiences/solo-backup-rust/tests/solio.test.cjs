@@ -461,6 +461,16 @@ test('2판 engine window: consent and lines are set only from the window; the su
   fs.appendFileSync(path.join(root, 'space', 'freed.jsonl'), many.map(l => JSON.stringify(l)).join('\n') + '\n');
   const big = await solio.readFreeSummary(root);
   assert.deepEqual([big.preview, big.bytes, big.count, big.items.length], [false, 700, 70, 50]);
+  // Rust(space_free.rs)가 실제로 쓰는 줄 꼴: 떼어 낼 것 → 지움(빌드 폴더마다), 임시는 누름마다 한 줄. 지운 빌드 폴더가 지난 누름에 나온다(Fable 최종 P1-2)
+  const at = '2026-11-27T01:00:00.000Z', report = 'space-4-aaaaaaaa';
+  const rust = [
+    { at, report, preview: false, kind: 'node_modules', stage: 'staged', path: 'C:\\shop\\node_modules', as: 'C:\\shop\\node_modules.swb-free-0123abcd', id: '1-2', bytes: 1000, files: 9 },
+    { at, report, preview: false, kind: 'node_modules', stage: 'freed', path: 'C:\\shop\\node_modules', as: 'C:\\shop\\node_modules.swb-free-0123abcd', bytes: 1000, files: 9, freeBefore: 1, freeAfter: 2, how: 'npm ci' },
+    { at, report, preview: false, kind: 'temp', stage: 'freed', n: 3, bytes: 30, list: 'freed/x-temp.txt', how: '저절로 다시 생김' },
+    { at, report, preview: false, stage: 'kept', why: { recent: 1 } }];
+  fs.appendFileSync(path.join(root, 'space', 'freed.jsonl'), rust.map(l => JSON.stringify(l)).join('\n') + '\n');
+  const real = await solio.readFreeSummary(root);
+  assert.deepEqual([real.preview, real.bytes, real.count, real.items.map(x => x.kind)], [false, 1030, 4, ['node_modules', 'temp']]);
 });
 
 test('contract samples in contract/solio are what the engine writes and accepts', () => {
