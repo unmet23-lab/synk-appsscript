@@ -5,16 +5,16 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { CELLS, FPS, JUMP, LEAN, PLEAD, SCENE, SFX, SWING, T, VO } from './data';
+import { CELLS, FPS, JUMP, LEAN, PLEAD, SCENE, SFX, SWING, T, TXT, VO } from './data';
 
-const fr = (sec: number) => Math.round(sec * FPS);
-const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
-const MASTER = 0.8;
+export const fr = (sec: number) => Math.round(sec * FPS);
+export const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
+export const MASTER = 0.8;
 export const SCENE_FRAMES = fr(SCENE);
 
-const INK = '#2A2230';
-const PAPER = '#FFF8EE';
-const MEAN = '#2F4BA0'; // 뜻 줄 — 맞음 · 틀림이 아닌 강조라 초록 · 빨강을 피한다
+export const INK = '#2A2230';
+export const PAPER = '#FFF8EE';
+export const MEAN = '#2F4BA0'; // 뜻 줄 — 맞음 · 틀림이 아닌 강조라 초록 · 빨강을 피한다
 
 const cellAt = (sec: number) => {
   let i = 0;
@@ -24,9 +24,9 @@ const cellAt = (sec: number) => {
   return i;
 };
 
-const pop = (frame: number, at: number) => interpolate(frame, [fr(at), fr(at) + 6], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.7)) });
+export const pop = (frame: number, at: number) => interpolate(frame, [fr(at), fr(at) + 6], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.7)) });
 
-const Bubble: React.FC<{ at: number; to: number; ko: string; mean: string; x: number; y: number; tail?: number; koSize?: number; meanSize?: number; tailLen?: number }> = ({ at, to, ko, mean, x, y, tail = 0.5, koSize = 80, meanSize = 52, tailLen = 34 }) => {
+export const Bubble: React.FC<{ at: number; to: number; ko: string; mean: string; x: number; y: number; tail?: number; koSize?: number; meanSize?: number; tailLen?: number }> = ({ at, to, ko, mean, x, y, tail = 0.5, koSize = 80, meanSize = 52, tailLen = 34 }) => {
   const frame = useCurrentFrame();
   if (frame < fr(at) || frame >= fr(to)) return null;
   const p = pop(frame, at);
@@ -42,14 +42,14 @@ const Bubble: React.FC<{ at: number; to: number; ko: string; mean: string; x: nu
 };
 
 // 층 — 원본과 같은 크기의 투명 PNG를 기준점(ox, oy)으로 옮기고 · 돌리고 · 키운다
-const LayerImg: React.FC<{ img: string; ox: number; oy: number; dx?: number; dy?: number; rot?: number; sx?: number; sy?: number }> = ({ img, ox, oy, dx = 0, dy = 0, rot = 0, sx = 1, sy = 1 }) => (
+export const LayerImg: React.FC<{ img: string; ox: number; oy: number; dx?: number; dy?: number; rot?: number; sx?: number; sy?: number }> = ({ img, ox, oy, dx = 0, dy = 0, rot = 0, sx = 1, sy = 1 }) => (
   <AbsoluteFill style={{ transformOrigin: `${ox}px ${oy}px`, transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${sx}, ${sy})` }}>
     <Img src={staticFile(`img/${img}`)} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1920 }} />
   </AbsoluteFill>
 );
 
 // 바닥 그림자 — 빈 판에는 몽글 그림자가 없으니 웅크린 몽글 밑에 깔고, 뛰어오르면 옅어진다
-const Shadow: React.FC<{ x: number; y: number; w: number; o: number }> = ({ x, y, w, o }) => (
+export const Shadow: React.FC<{ x: number; y: number; w: number; o: number }> = ({ x, y, w, o }) => (
   <div style={{ position: 'absolute', left: x - w / 2, top: y - 18, width: w, height: 36, borderRadius: '50%', background: 'radial-gradient(ellipse at center, rgba(40,20,10,0.45), rgba(40,20,10,0) 70%)', opacity: o }} />
 );
 
@@ -70,7 +70,7 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Scene: React.FC = () => {
+export const Scene: React.FC<{ silent?: boolean }> = ({ silent = false }) => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
   const i = cellAt(t);
@@ -78,7 +78,7 @@ export const Scene: React.FC = () => {
   const next = i + 1 < CELLS.length ? CELLS[i + 1].at : SCENE;
   const range = cell.push || [1.0, 1.03];
   let push = interpolate(t, [cell.at, next], range, { ...clamp, easing: Easing.inOut(Easing.quad) });
-  if (cell.img === 'p5.jpg') push = interpolate(t, [cell.at, cell.at + 0.12, next], [1.0, 1.05, 1.05], { ...clamp, easing: Easing.out(Easing.cubic) }); // 굳는 순간 확 다가감
+  if (cell.img === 'p5.jpg') push = interpolate(t, [cell.at, cell.at + 0.12, next], [range[0], range[1], range[1]], { ...clamp, easing: Easing.out(Easing.cubic) }); // 굳는 순간 확 다가감
 
   let layer: React.ReactNode = null;
   let shadow: React.ReactNode = null;
@@ -90,7 +90,7 @@ export const Scene: React.FC = () => {
     const [bx, by] = LEAN.base;
     layer = <LayerImg img={LEAN.img} ox={bx} oy={by} rot={LEAN.deg * e} sx={1 + bob * 0.5} sy={1 - bob} />;
     shadow = <Shadow x={bx} y={by - 6} w={440} o={0.8} />;
-  } else if (cell.img === 'layer/p2_bg.jpg') {
+  } else if (cell.img === 'layer/p2_bg_f.jpg') {
     const [bx, by] = JUMP.base;
     if (t < JUMP.crouch) {
       const u = (t - JUMP.from) / (JUMP.crouch - JUMP.from);
@@ -108,7 +108,7 @@ export const Scene: React.FC = () => {
     const u = t - SWING.from;
     const deg = SWING.deg * Math.exp(-u * SWING.decay) * Math.cos(2 * Math.PI * SWING.hz * u);
     const land = interpolate(u, [0, 0.08, 0.2], [0.93, 1.03, 1.0], clamp); // 매달리는 순간 눌렸다 펴짐
-    layer = <LayerImg img={SWING.img} ox={SWING.pivot[0]} oy={SWING.pivot[1]} rot={deg} sx={1} sy={land} />;
+    layer = <LayerImg img={SWING.img} ox={SWING.pivot[0]} oy={SWING.pivot[1]} dx={SWING.swayPx * (deg / SWING.deg)} rot={deg} sx={1} sy={land} />;
     if (u < 0.18) shake = [(random(`sh-${frame}`) - 0.5) * 14 * (1 - u / 0.18), (random(`sv-${frame}`) - 0.5) * 10 * (1 - u / 0.18)];
   } else if (cell.img === 'layer/p4_bg.jpg') {
     const q = Math.floor(frame / 2);
@@ -128,10 +128,10 @@ export const Scene: React.FC = () => {
         {layer}
       </AbsoluteFill>
       {/* 아주머니 「다 드셨죠~?」 — 아주머니 머리 위, 꼬리가 아주머니에게 */}
-      <Bubble at={T.a1} to={T.a1To} ko="다 드셨죠~?" mean="All done?" x={250} y={690} tail={0.3} koSize={76} meanSize={50} />
+      <Bubble at={T.a1} to={T.a1To} ko={TXT.a1} mean={TXT.a1m} x={250} y={690} tail={0.3} koSize={76} meanSize={50} />
       {/* 몽글 「아까워!」 — 매달린 몽글 머리 위, 꼬리가 몽글에게 */}
-      <Bubble at={T.m1} to={T.m1To} ko="아까워!" mean="Too good to waste!" x={560} y={500} tail={0.5} koSize={96} meanSize={54} />
-      <Sound />
+      <Bubble at={T.m1} to={T.m1To} ko={TXT.m1} mean={TXT.m1m} x={560} y={500} tail={0.5} koSize={96} meanSize={54} />
+      {silent ? null : <Sound />}
     </AbsoluteFill>
   );
 };

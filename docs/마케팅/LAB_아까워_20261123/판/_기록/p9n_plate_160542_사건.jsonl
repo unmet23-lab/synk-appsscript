@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20739-90ec-79c0-a982-147d75888ed0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll remove Mongle and restore the griddle rim, rice, and background while preserving the rest of the photograph.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle removed, with the griddle rim, rice, apron, and background restored."}}
+{"type":"turn.completed","usage":{"input_tokens":84571,"cached_input_tokens":68352,"cache_write_input_tokens":0,"output_tokens":642,"reasoning_output_tokens":54}}

@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Edit the attached photograph. Return the SAME photograph with exactly one thing removed: the small coral-pink needle-felted ghost-shaped blob (Mongle) clinging to the near rim of the lifted griddle, its face over the rim and its round body hanging below.
+
+Where it was, show what was behind it: the same thick charcoal-grey felt rim of the griddle continuing straight and unbroken where Mongle was clinging to it, and the same table, apron and background continuing below the griddle where Mongle's body was.
+
+Keep everything else exactly as it is: the same tall 2:3 framing and size, the same camera position, the same lighting, colors, wool fibers and depth of field. Every remaining object and person stays in exactly the same place, pose and size. Do not add any new object, character, text, letter or symbol. The result must look like the same photograph with that one thing simply not there.

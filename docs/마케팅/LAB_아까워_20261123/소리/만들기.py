@@ -89,6 +89,30 @@ def 굳음():
 매달림()
 굳음()
 
+
+# 2단계(15시 회차) — 볶음밥 한 국자가 철판에 털썩 떨어지는 소리(부드러운 낮은 툭 + 짧은 바스락), 0.35초
+def 털썩():
+    t = 판(0.35)
+    thud = np.sin(2 * np.pi * (120 - 40 * t) * t) * np.exp(-t / 0.06)
+    rustle = 띠(600, 3500, rng.standard_normal(len(t))) * np.exp(-t / 0.05) * 0.5
+    쓰기('plop.wav', thud + rustle, 0.7)
+
+
+# 몽글이 밥에 얼굴을 묻고 먹는 소리 — 펠트가 눌리는 작은 꾹 세 번(0.22초 간격), 0.8초
+def 냠():
+    t = 판(0.8)
+    x = np.zeros_like(t)
+    for k, at in enumerate((0.0, 0.22, 0.44)):
+        i = int(at * SR)
+        tt = np.arange(int(0.18 * SR)) / SR
+        f = 180 + 30 * k
+        x[i:i + len(tt)] += (np.sin(2 * np.pi * f * tt) * 0.8 + 띠(500, 2500, rng.standard_normal(len(tt))) * 0.35) * np.exp(-tt / 0.04)
+    쓰기('munch.wav', x, 0.6)
+
+
+털썩()
+냠()
+
 # E58이 가져온 짧은 효과음(E48이 만든 것)
 전편 = os.path.join(여기, '..', '..', 'LAB_동결건조_20261121', 'remotion', 'public', 'sfx')
 for f in ('whoosh.wav', 'squish.wav', 'pop.wav', 'sparkle.wav'):

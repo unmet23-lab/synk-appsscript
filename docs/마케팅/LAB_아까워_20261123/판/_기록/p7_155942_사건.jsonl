@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20734-1292-7543-81c9-fe7b14c3f25c"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one felt diorama panel with the matching ajumma, a fresh scoop of rice, and Mongle’s star-shaped eyes.\n"}}
+{"type":"error","message":"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 8:26 PM."}
+{"type":"turn.failed","error":{"message":"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 8:26 PM."}}

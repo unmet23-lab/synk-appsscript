@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "아까워~",
+ "dur": 0.915,
+ "words": [
+  {
+   "text": "아까워~",
+   "start": 0.02,
+   "end": 0.915
+  }
+ ],
+ "source": {
+  "key": "30cd1766c7343a92fe700b5c1d7723c2",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "아주머니가 볶음밥을 한가득 더 얹어 준 철판을, 작은 친구가 다시 꼭 끌어안고 매달려 행복에 녹아내리듯 사랑스럽게 말한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 480
+ }
+}

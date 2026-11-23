@@ -15,7 +15,7 @@
   "seed": 1123,
   "lufs": -16
  },
- "made": "2026-11-22T23:36:08.975Z",
+ "made": "2026-11-23T07:40:44.680Z",
  "lines": [
   {
    "id": "a1",
@@ -33,6 +33,42 @@
    "syllablesPerSec": 3.42,
    "src": "m1.wav",
    "key": "bc8d480631f9ebc4d9a6fe166e709cea",
+   "words": 1
+  },
+  {
+   "id": "a0",
+   "text": "호호호~",
+   "dur": 1.186,
+   "syllablesPerSec": 2.53,
+   "src": "a0.wav",
+   "key": "314370d0e0aacd933443677c74662a20",
+   "words": 1
+  },
+  {
+   "id": "a2",
+   "text": "더 줄게~",
+   "dur": 1.315,
+   "syllablesPerSec": 2.28,
+   "src": "a2.wav",
+   "key": "478539a6e681e2ae2b72b1fd54944421",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "아까워~",
+   "dur": 0.915,
+   "syllablesPerSec": 3.28,
+   "src": "m2.wav",
+   "key": "30cd1766c7343a92fe700b5c1d7723c2",
+   "words": 1
+  },
+  {
+   "id": "a3",
+   "text": "아하하~",
+   "dur": 0.878,
+   "syllablesPerSec": 3.42,
+   "src": "a3.wav",
+   "key": "6287289ea452248bb506a0e9ace11cbf",
    "words": 1
   }
  ]
