@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>솔리오 · 원클릭</title>
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+@font-face{font-family:'DM Mono';font-weight:400;font-display:swap;src:url(../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf) format('truetype');}
+
+/* 짜임: 검정 구 클라이언트의 솔리오 방 하나(사무실 시안과 같은 검정 방). 「백업」 오브제 자리가 「원클릭」이 됐다.
+   한 문장: 다시 만들 수 있는 것은 바로, 하나뿐인 것은 백업이 확인된 뒤에만 비운다.
+   강조 순위: ① 남은 자리 큰 숫자와 막대 ② 맨 위 문장과 흰 알약 ③ 네 차례 줄 ④ 끝난 뒤 접힌 세 줄.
+   글자: 문장 · 이름 · 단추와 큰 숫자는 SUIT, 재어 볼 작은 값(크기 · 개수 · 퍼센트)은 DM Mono(한글은 SUIT가 받는다).
+   색: 검정은 방, 종이색은 글, 청금석은 솔리오가 짚은 곳(지금 하는 차례 · 비울 자리), 메도우는 비워서 되찾은 자리,
+   흰 알약은 결정 단추. 회색은 시각 · 단위 같은 물러설 말에만 쓴다. 알림은 색 없이 느낌표만(사무실 시안 규칙). */
+:root{
+  color-scheme:dark;
+  --void:#000;
+  --paper:#F3F1EC;
+  --soft:rgba(243,241,236,.74);
+  --dim:rgba(243,241,236,.46);
+  --hair:rgba(243,241,236,.10);
+  --hair-strong:rgba(243,241,236,.22);
+  --ring:rgba(243,241,236,.55);
+  --pit:#0C0C0B;
+  --lapis:#C5D6F5;
+  --meadow:#8FC46B;
+  --meta-bg:rgba(10,10,10,.84);
+  --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --mono:'DM Mono','SUIT Variable','Malgun Gothic',sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+button{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none !important}
+:focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+
+#stage{position:relative;min-height:100vh;width:var(--sw,100%);margin:0 auto;container-type:inline-size;container-name:stage;padding:0 clamp(20px,8vw,150px) 110px}
+body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
+
+/* 왼쪽 위의 구와 솔리오의 프로그램(사무실 시안 .here · .rail) */
+.here{display:flex;align-items:center;gap:6px;margin-left:-9px;padding-top:clamp(12px,3vh,34px)}
+#orb{width:44px;height:44px;flex:none}
+#here-name{padding:10px 8px 10px 0;display:inline-flex;align-items:center;gap:9px;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7)}
+#here-name svg{width:8px;height:5px;flex:none;opacity:.7}
+.rail{display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-left:10px;min-width:0}
+.here{flex-wrap:wrap}
+.obj{appearance:none;position:relative;background:none;border:0;margin:0;padding:10px 8px;display:inline-flex;align-items:center;color:var(--dim);cursor:pointer;border-radius:2px;transition:color .25s ease}
+.obj svg{width:19px;height:19px;flex:none}
+/* 1판 맹검: 그림만 있는 오브제는 무엇인지 맞힐 수 없다 → 이름을 늘 붙인다(좁은 창에서는 지금 방만) */
+.obj-n{margin-left:7px;white-space:nowrap;font:400 13px/1.3 var(--sans);letter-spacing:.02em}
+.obj[aria-current="true"],.obj:hover,.obj:focus-visible{color:var(--paper)}
+.obj[aria-current="true"] .obj-n{font-weight:600}
+.obj.news::after{content:'!';position:absolute;left:26px;top:4px;font:700 11px/1 var(--sans);color:var(--paper);animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+
+/* 맨 위 문장: 흰 줄은 결론, 둘째 줄은 다음에 할 일(물러서지 않게 회색보다 밝다) */
+.room{margin-top:clamp(40px,10vh,110px)}
+.say{margin:0;font:300 clamp(26px,3.2cqw,46px)/1.3 var(--sans);letter-spacing:-.018em;max-width:22em;text-wrap:balance}
+.say .then{display:block;color:var(--soft)}
+.say.swap{animation:swap .5s var(--ease)}
+@keyframes swap{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.acts{display:flex;align-items:center;flex-wrap:wrap;gap:12px 22px;margin-top:clamp(20px,3.4vh,32px)}
+
+.go{appearance:none;height:46px;margin:0;padding:0 26px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);font:600 15px/1 var(--sans);color:var(--paper);cursor:pointer;white-space:nowrap;transition:background-color .25s ease,border-color .25s ease,color .25s ease,opacity .25s ease}
+.go:hover{border-color:var(--paper)}
+.go.main{background:var(--paper);border-color:var(--paper);color:var(--void)}
+.go.main:hover{background:#fff}
+.go:disabled{cursor:default}
+.go.main:disabled,.go:disabled{background:var(--pit);border-color:var(--hair-strong);color:var(--dim)}
+.go.sm{height:34px;padding:0 16px;font-size:13px;font-weight:500}
+.quiet{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;margin:0;padding:0 0 4px;font:400 13px/1.3 var(--sans);color:rgba(243,241,236,.82);cursor:pointer;white-space:nowrap;transition:color .25s ease,border-color .25s ease}
+.quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
+.quiet:disabled{border-bottom-color:transparent;color:var(--dim);cursor:default}
+.quiet[aria-pressed="true"]{color:var(--paper);border-bottom-color:var(--paper)}
+
+/* ── 판: 왼쪽은 드라이브, 오른쪽은 네 차례 ── */
+.board{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,1fr);gap:clamp(30px,5.4cqw,96px);margin-top:clamp(34px,6vh,70px);align-items:start}
+/* 오른쪽 줄을 내려 읽는 동안에도 큰 숫자가 보이게 왼쪽은 붙어 있다(고른 것을 비울 때 숫자가 오르는 것을 본다) */
+.drive{position:sticky;top:28px}
+@container stage (max-width:820px){.board{grid-template-columns:minmax(0,1fr)}.drive{position:static}}
+
+.d-lab{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:0;font:500 13px/1.3 var(--sans);letter-spacing:.06em;color:var(--soft)}
+.d-lab span{font-weight:400;letter-spacing:0;color:var(--dim)}
+.big{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 16px;margin:18px 0 0}
+/* 1판 맹검: 정수와 작은 소수가 두 서체처럼 찢어져 보였다 → 한 서체 한 크기로 */
+#free{font:200 clamp(72px,9.2cqw,144px)/.9 var(--sans);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.unit{font:400 19px/1.2 var(--sans);color:var(--soft)}
+#gain{font:400 20px/1 var(--mono);color:var(--meadow);opacity:0;transform:translateY(6px);transition:opacity .4s ease,transform .5s var(--ease)}
+#gain.on{opacity:1;transform:none}
+
+/* 남은 자리 막대: 0에서 200GB. 흰 칸은 처음 남아 있던 자리, 메도우는 비워서 되찾은 자리, 청금석 칸은 비우면 닿을 자리 */
+.bar{position:relative;height:12px;margin-top:46px;background:var(--hair)}
+.bar i{position:absolute;top:0;bottom:0;display:block}
+.b-free{left:0;background:rgba(243,241,236,.82)}
+.b-won{background:var(--meadow)}
+.b-can{background:var(--lapis);opacity:.6;transition:opacity .4s ease}
+.b-line{position:absolute;top:-9px;bottom:-9px;width:1px;background:var(--paper)}
+.b-tag{position:absolute;bottom:22px;transform:translateX(-50%);font:400 12px/1 var(--mono);color:var(--lapis);white-space:nowrap;transition:opacity .4s ease}
+.b-tag.off{opacity:0}
+.ticks{position:relative;height:30px;margin-top:10px;font:400 12px/1.3 var(--mono);color:var(--dim)}
+.ticks span{position:absolute;top:6px;white-space:nowrap}
+.ticks .t0{left:0}
+.ticks .t2{right:0}
+.ticks .tl{transform:translateX(-50%);color:var(--soft);font-family:var(--sans)}
+.pred{margin:18px 0 0;font:400 16px/1.5 var(--sans);color:var(--soft)}
+.pred b{font:400 17px/1 var(--mono);color:var(--paper)}
+.pace{margin:6px 0 0;font:400 13px/1.45 var(--sans);color:var(--dim)}
+
+/* 네 차례. 작은 구(솔리오의 분신)가 지금 하는 줄의 번호 자리에 앉아 차례대로 한 번씩 내려간다 */
+.flow{position:relative}
+#helper{position:absolute;left:-7px;top:0;width:28px;height:28px;transition:transform .55s var(--ease),opacity .3s ease;pointer-events:none}
+#helper.off{opacity:0}
+.steps{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--hair)}
+.step{position:relative;display:grid;grid-template-columns:30px minmax(92px,auto) minmax(0,1fr) auto;column-gap:12px;align-items:baseline;padding:17px 0;border-top:1px solid var(--hair)}
+.steps.deal .step{animation:deal .6s var(--ease) both;animation-delay:calc(var(--n) * 90ms + 150ms)}
+@keyframes deal{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.s-no{font:400 12px/1 var(--mono);color:var(--dim);font-variant-numeric:tabular-nums;transition:opacity .25s ease}
+.step.at .s-no,.sum.at .s-no{opacity:0}
+.step.done .s-no{font-size:0}
+.step.done .s-no::before{content:'✓';font:600 13px/1 var(--sans);color:var(--paper)}
+/* 비우는 동안 지운 것이 03 줄 안에 하나씩 떨어진다(무엇을 지우는지 숨기지 않는다) */
+.s-list{grid-column:2 / -1;list-style:none;margin:10px 0 0;padding:0}
+.s-list li{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font:400 13px/1.4 var(--sans);color:var(--soft);animation:deal .5s var(--ease) both}
+.s-list li b{font-weight:400;font-family:var(--mono);color:var(--meadow);white-space:nowrap}
+.s-list li.doing{color:var(--paper)}
+.s-list li.doing b{color:var(--meadow)}
+/* 다 끝나면 네 줄을 한 줄로 접는다 */
+.sum{appearance:none;width:100%;margin:0;padding:17px 0;background:none;border:0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);display:grid;grid-template-columns:30px minmax(0,auto) minmax(0,1fr) 18px;column-gap:12px;align-items:baseline;text-align:left;color:var(--paper);cursor:pointer}
+.sum .s-nm{color:var(--paper)}
+.sum .s-mid{color:var(--soft)}
+.sum .g-ch{transform:rotate(45deg)}
+.flow.folded .sum .g-ch{transform:rotate(-45deg)}
+.flow.folded .steps{display:none}
+.flow:not(.folded) .sum{border-bottom:0}
+.s-nm{font:500 16px/1.3 var(--sans);color:var(--soft);white-space:nowrap;transition:color .3s ease}
+.s-mid{min-width:0;font:400 13px/1.45 var(--sans);color:var(--dim);transition:color .3s ease}
+.s-val{font:500 13px/1.3 var(--sans);text-align:right;white-space:nowrap;color:var(--dim);font-variant-numeric:tabular-nums}
+.s-val.can{color:var(--lapis)}
+.step.now .s-nm,.step.done .s-nm,.step.fail .s-nm{color:var(--paper)}
+.step.now .s-mid,.step.done .s-mid,.step.fail .s-mid{color:var(--soft)}
+.step.now .s-val{color:var(--lapis)}
+.step.done .s-val{color:var(--soft)}
+.step .s-val.won,.step.now .s-val.won,.step.done .s-val.won{color:var(--meadow)}
+.step.skip .s-nm{color:var(--dim)}
+.step.fail .s-nm::after{content:'!';margin-left:7px;font-weight:700;display:inline-block;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.step .s-bar{position:absolute;left:42px;right:0;bottom:-1px;height:2px;background:var(--lapis);}
+.step[data-k="free"] .s-bar{background:var(--meadow);}
+.step .s-bar{transform-origin:left;transform:scaleX(var(--p,0));opacity:0}
+.step.now .s-bar{opacity:1}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+/* 좁은 창: 설명은 이름 아래 줄로 내린다 */
+@container stage (max-width:560px){
+  .step{grid-template-columns:30px minmax(0,1fr) auto;row-gap:5px}
+  .step .s-mid{grid-column:2 / -1;grid-row:2}
+  .s-list{grid-column:1 / -1}
+  .sum{grid-template-columns:30px minmax(0,1fr) 18px;row-gap:5px}
+  .sum .s-mid{grid-column:2 / -1;grid-row:2}
+  .g .g-h{grid-template-columns:minmax(0,1fr) auto 18px;row-gap:4px}
+  .g .g-mid{grid-column:1 / -1;grid-row:2}
+  .rail{flex-basis:100%;margin-left:0;column-gap:4px}
+}
+
+/* 끝난 뒤의 세 줄. 누르면 그 자리에서 열린다(사무실 시안의 줄과 같은 움직임) */
+.after{margin-top:34px}
+.flow.folded .after{margin-top:0}
+.flow.folded .after .g:first-child{border-top:0}
+.g{border-top:1px solid var(--hair)}
+.g:last-child{border-bottom:1px solid var(--hair)}
+.g-h{appearance:none;width:100%;margin:0;padding:16px 0;background:none;border:0;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr) auto 18px;column-gap:14px;align-items:baseline;text-align:left;cursor:pointer;color:var(--soft)}
+.g-h:hover,.g.open .g-h{color:var(--paper)}
+.g-h:focus-visible{outline-offset:-1px}
+.g-nm{font:500 15px/1.3 var(--sans);white-space:nowrap}
+.g-mid{font:400 13px/1.4 var(--sans);color:var(--dim)}
+.g-val{font:400 14px/1 var(--mono);white-space:nowrap}
+.g-val.won{color:var(--meadow)}
+.g-val.can{color:var(--lapis)}
+.g-val.keep{color:var(--dim)}
+.g-ch{width:8px;height:8px;justify-self:end;align-self:center;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(-45deg);transition:transform .35s var(--ease);opacity:.7}
+.g.open .g-ch{transform:rotate(45deg)}
+.g-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .46s var(--ease)}
+.g.open .g-b{grid-template-rows:1fr}
+.g-in{min-height:0;overflow:hidden}
+.g-in > *{opacity:0;transform:translateY(-7px);transition:opacity .14s ease,transform .14s ease}
+.g.open .g-in > *{opacity:1;transform:none;transition:opacity .34s ease calc(70ms + var(--j,0) * 50ms),transform .46s var(--ease) calc(70ms + var(--j,0) * 50ms)}
+.g.snap .g-b,.g.snap .g-in > *{transition:none !important}
+.it{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:14px;align-items:start;padding:11px 32px 11px 0}
+.g-acts{padding-right:32px}
+.it + .it{border-top:1px solid rgba(243,241,236,.06)}
+.it-t b{font:500 14px/1.4 var(--sans);color:var(--paper)}
+.it-t .cnt{margin-left:8px;font:400 12px/1 var(--mono);color:var(--dim)}
+.it-t small{display:block;margin-top:4px;font:400 13px/1.5 var(--sans);color:var(--soft)}
+.it-t small.back{color:var(--dim)}
+.it-t small.back em{font-style:normal;color:var(--soft);margin-right:6px}
+.it-t small.lock{color:var(--paper)}
+.it-v{font:400 14px/1.4 var(--mono);white-space:nowrap;text-align:right}
+.it-v.won{color:var(--meadow)}
+.it-v.can{color:var(--lapis)}
+.it-v.keep{color:var(--dim)}
+.it-v.warn{color:var(--paper)}
+.it.plain{grid-template-columns:minmax(0,1fr) auto}
+/* 1판 맹검: 밑줄 글자 「고르기」가 꺼진 글처럼 보였다 → 네모 고르기 칸. 줄 전체를 눌러도 고른다 */
+.it.pick{cursor:pointer;grid-template-columns:22px minmax(0,1fr) auto}
+.it.pick:hover .it-t b{text-decoration:none;color:#fff}
+.ck{width:20px;height:20px;margin-top:1px;border:1px solid rgba(243,241,236,.55);border-radius:5px;display:grid;place-items:center;transition:background-color .2s ease,border-color .2s ease}
+.ck svg{width:12px;height:12px;opacity:0;transform:scale(.4);transition:opacity .2s ease,transform .3s cubic-bezier(.2,1.6,.4,1)}
+.it.pick[aria-checked="true"] .ck{background:var(--paper);border-color:var(--paper)}
+.it.pick[aria-checked="true"] .ck svg{opacity:1;transform:none}
+.it.pick[aria-disabled="true"]{cursor:default}
+.it.pick[aria-disabled="true"] .ck{border-style:solid;opacity:.3}
+.it.pick:focus-visible{outline-offset:2px}
+.it-t small.warn{color:var(--paper);font-weight:500}
+.g-acts{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:8px 0 18px}
+.g-acts p{margin:0;flex:1 1 100%;font:400 13px/1.5 var(--sans);color:var(--soft)}
+.how{display:block;margin-top:6px;font:400 13px/1.5 var(--sans);color:var(--paper)}
+
+/* 처음 한 번 묻기 */
+.consent{margin-top:clamp(30px,5vh,56px);max-width:820px}
+.c-list{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--hair)}
+.c-list li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;column-gap:14px;align-items:baseline;padding:16px 0;border-top:1px solid var(--hair);opacity:0;transform:translateY(-8px)}
+.consent.in .c-list li{opacity:1;transform:none;transition:opacity .34s ease calc(var(--n) * 70ms + 80ms),transform .5s var(--ease) calc(var(--n) * 70ms + 80ms)}
+.c-list b{display:block;font:500 16px/1.35 var(--sans)}
+.c-list small{display:block;margin-top:5px;font:400 13px/1.55 var(--sans);color:var(--soft)}
+.c-list code{font:400 12px/1 var(--mono);color:var(--paper)}
+.c-list .s-val{color:var(--lapis)}
+.c-note{margin:18px 0 0;font:400 14px/1.6 var(--sans);color:var(--soft);max-width:44em}
+
+/* 시안 조작(디자인의 일부가 아니다) */
+#meta{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9;display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--meta-bg);border:1px solid var(--hair);max-width:calc(100% - 32px);overflow-x:auto;scrollbar-width:none}
+#meta button{appearance:none;border:0;background:none;color:rgba(243,241,236,.7);font:400 12px/1 var(--sans);padding:9px 13px;border-radius:999px;white-space:nowrap;cursor:pointer}
+#meta button:hover,#meta button:focus-visible{color:var(--paper);background:rgba(243,241,236,.08);outline:none}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <header class="here">
+    <canvas id="orb" aria-label="SYNK 구" role="img"></canvas>
+    <span id="here-name">SOLIO<svg viewBox="0 0 8 5" aria-hidden="true"><path d="M.5.5 4 4 7.5.5" fill="none" stroke="currentColor"/></svg></span>
+    <nav class="rail" aria-label="솔리오의 프로그램">
+      <button class="obj" type="button" style="--k:0"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg><span class="obj-n">구독</span></button>
+      <button class="obj" type="button" style="--k:1" aria-current="true" id="obj-one"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.2 3.6v11l3-2.8 2 4.4 2-.9-2-4.3h4.1Z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg><span class="obj-n">원클릭</span></button>
+      <button class="obj" type="button" style="--k:2"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="14.7" cy="5.3" r="1.9" fill="currentColor"/></svg><span class="obj-n">방문자 분석</span></button>
+      <button class="obj" type="button" style="--k:3"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 10.5h3.2l1.8-4.5 3 8 2-5.5 1.2 2h3.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="obj-n">계정 건강</span></button>
+      <button class="obj" type="button" style="--k:4"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3.4" y="5" width="13.2" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="7.6" cy="10" r="1.2" fill="currentColor"/><circle cx="12.4" cy="10" r="1.2" fill="currentColor"/></svg><span class="obj-n">사무실</span></button>
+    </nav>
+  </header>
+
+  <main class="room">
+    <p class="say" id="say" aria-live="polite"></p>
+    <div class="acts" id="acts">
+      <button class="go main" type="button" id="go">백업하고 비우기</button>
+      <button class="quiet" type="button" id="again" hidden>처음부터 다시 하기</button>
+    </div>
+
+    <div class="board" id="board">
+      <section class="drive" aria-label="C: 드라이브의 남은 자리">
+        <p class="d-lab">C: 드라이브 953GB <span id="scanned">어젯밤 11시에 잰 값</span></p>
+        <p class="big"><span id="free">118.2</span><span class="unit">GB 남음</span><span id="gain"></span></p>
+        <div class="bar" id="bar" role="img" aria-label="">
+          <i class="b-free"></i><i class="b-won"></i><i class="b-can"></i>
+          <span class="b-line" style="left:50%"></span>
+          <span class="b-tag" id="btag"></span>
+        </div>
+        <div class="ticks"><span class="t0">0</span><span class="tl" style="left:50%">정한 선 100GB</span><span class="t2">200GB</span></div>
+        <p class="pred" id="pred"></p>
+        <p class="pace">지난 14일 동안 하루에 2.1GB씩 찼습니다.</p>
+      </section>
+
+      <section class="flow" aria-label="원클릭이 하는 일">
+        <canvas id="helper" class="off" aria-hidden="true"></canvas>
+        <button class="sum" type="button" id="sum" hidden aria-expanded="false"><span class="s-no">✓</span><span class="s-nm">백업과 정리를 마쳤습니다</span><span class="s-mid" id="sum-mid"></span><span class="g-ch"></span></button>
+        <ol class="steps deal" id="steps">
+          <li class="step" data-k="backup" style="--n:0"><span class="s-no">01</span><span class="s-nm">백업</span><span class="s-mid"></span><span class="s-val"></span><i class="s-bar"></i></li>
+          <li class="step" data-k="check" style="--n:1"><span class="s-no">02</span><span class="s-nm">되살리기 확인</span><span class="s-mid"></span><span class="s-val"></span><i class="s-bar"></i></li>
+          <li class="step" data-k="free" style="--n:2"><span class="s-no">03</span><span class="s-nm">공간 비우기</span><span class="s-mid"></span><span class="s-val"></span><i class="s-bar"></i><ul class="s-list" id="flist" hidden></ul></li>
+          <li class="step" data-k="update" style="--n:3"><span class="s-no">04</span><span class="s-nm">업데이트 확인</span><span class="s-mid"></span><span class="s-val"></span><i class="s-bar"></i></li>
+        </ol>
+        <div class="after" id="after" hidden></div>
+      </section>
+    </div>
+
+    <section class="consent" id="consent" hidden aria-label="원클릭이 묻지 않고 지울 것">
+      <ol class="c-list">
+        <li style="--n:0"><span class="s-no">01</span><div><b>이틀 넘은 Windows 임시 파일</b><small>프로그램이 필요할 때 다시 만드는 파일입니다. 열려 있는 파일은 건너뜁니다.</small></div><span class="s-val">12.1GB</span></li>
+        <li style="--n:1"><span class="s-no">02</span><div><b>쉬고 있는 프로젝트의 빌드 폴더</b><small>14일 동안 고치지 않았고, 잠금 파일이 있어 같은 판으로 다시 받을 수 있는 것만 지웁니다. <code>node_modules</code>, <code>target</code> 같은 폴더입니다.</small></div><span class="s-val">7.8GB</span></li>
+        <li style="--n:2"><span class="s-no">03</span><div><b>끝난 git 작업 사본</b><small>커밋하지 않은 변경이 없고, 모든 커밋이 원격에 올라간 것만 지웁니다.</small></div><span class="s-val">2.9GB</span></li>
+        <li style="--n:3"><span class="s-no">04</span><div><b>브라우저 자동화가 남긴 임시 프로필</b><small>쓰는 프로그램이 없는 것만 지웁니다.</small></div><span class="s-val">0.6GB</span></li>
+      </ol>
+      <p class="c-note">지운 것마다 무엇을 왜 지웠는지와 다시 만드는 법을 남깁니다. 휴지통과 하나뿐인 파일은 묻지 않고 지우지 않습니다.</p>
+      <div class="acts">
+        <button class="go main" type="button" id="agree">동의하고 시작</button>
+        <button class="quiet" type="button" id="cancel">그만두기</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="meta" role="toolbar" aria-label="시안 조작">
+  <button type="button" id="m-again">처음부터</button>
+  <button type="button" id="m-net">인터넷 끊기</button>
+  <button type="button" id="m-size">좁은 창</button>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const INK = '243,241,236', ink = a => `rgba(${INK},${a})`;
+const SCALE = 200, LINE = 100, PER_DAY = 2.1, F0 = 118.2;
+
+/* 원클릭이 묻지 않고 지우는 것(공간 비우기 설계의 가 등급). 둘째 회차부터는 그사이 새로 쌓인 것만 */
+const AUTO = [
+  {name:'Windows 임시 파일', cnt:'54,565개', gb:12.1, doing:'Windows 임시 파일을 지우는 중입니다', why:'이틀 넘게 그대로인 것만 지웠습니다. 열려 있던 파일은 건너뛰었습니다.', back:'프로그램이 필요할 때 다시 만듭니다.'},
+  {name:'빌드 폴더', cnt:'프로젝트 6곳', gb:7.8, doing:'쉬고 있는 프로젝트의 빌드 폴더를 지우는 중입니다', why:'14일 동안 고치지 않은 프로젝트에서, 잠금 파일이 있는 것만 지웠습니다.', back:'그 폴더에서 npm ci를 하면 같은 판으로 다시 받습니다.'},
+  {name:'끝난 git 작업 사본', cnt:'2개', gb:2.9, doing:'끝난 git 작업 사본을 지우는 중입니다', why:'커밋하지 않은 변경이 없고, 모든 커밋이 원격에 있습니다.', back:'git worktree add로 다시 만듭니다.'},
+  {name:'브라우저 자동화 임시 프로필', cnt:'31개', gb:0.6, doing:'브라우저 자동화의 임시 프로필을 지우는 중입니다', why:'쓰는 프로그램이 없고 3시간 넘게 그대로였습니다.', back:'자동화가 다음에 돌 때 새로 만듭니다.'},
+];
+const AUTO2 = [
+  {name:'Windows 임시 파일', cnt:'1,906개', gb:0.4, doing:'그사이 쌓인 임시 파일을 지우는 중입니다', why:'이틀 넘게 그대로인 것만 지웠습니다.', back:'프로그램이 필요할 때 다시 만듭니다.'},
+];
+/* 손님이 골라야 비우는 것. 영상 원본은 백업이 확인된 동안만 고를 수 있다 */
+const MORE0 = [
+  {id:'video', name:'90일 넘게 열지 않은 영상 원본', cnt:'4개', gb:38.2, why:'백업에서 내려받아 내용까지 맞춰 봤습니다. PC 사본만 지우고, 열면 다시 받습니다.', back:'솔리오의 「클라우드에만 있는 것」에서 누르면 다시 받습니다.', needsBackup:true},
+  {id:'model', name:'다시 받을 수 있는 AI 모델 파일', cnt:'2개', gb:14.0, why:'처음 받아 온 곳에 같은 파일이 그대로 있습니다. 쓸 때 다시 받습니다.', back:'쓸 때 처음 받아 온 곳에서 다시 받습니다.'},
+  {id:'trash', name:'30일 넘은 휴지통 파일', cnt:'212개', gb:5.3, why:'휴지통 파일은 백업에 없어서, 비우면 되살릴 수 없습니다.', back:'되살릴 수 없습니다.', warn:true},
+];
+/* 솔리오가 지우지 않는 것. 그 앱의 정리 기능을 안내한다 */
+const KEEP = [
+  {name:'Claude 앱의 작업 사본', cnt:'37개', gb:303.1, why:'Claude 앱이 관리하는 폴더라 솔리오가 지우지 않습니다.', how:'Claude 앱의 설정에서 「비활성 세션 정리」를 누르면 정리됩니다.'},
+  {name:'AI 대화 기록', cnt:'', gb:47.4, why:'지우면 지난 대화를 잃습니다. 그대로 둡니다.'},
+];
+
+const S = {autoLeft:null, backed:false, phase:'idle', stop:false, stopped:false, openedMore:false, consent:false, online:true, run:0, shown:F0, cleared:[], more:MORE0.map(m => ({...m})), picked:new Set(), confirm:false, backupOk:null, lastFreed:0, only:'', open:new Set(), how:false};
+S.autoLeft = AUTO.slice();
+const autoList = () => (S.autoLeft.length ? S.autoLeft : AUTO2);
+let fast = false;
+const sum = a => a.reduce((t, x) => t + x.gb, 0);
+const gb = x => (Math.round(x * 10) / 10).toFixed(1) + 'GB';
+const fmt = n => n.toLocaleString('ko-KR');
+const wait = ms => (fast ? Promise.resolve() : new Promise(r => setTimeout(r, still ? ms * .4 : ms)));
+function progress(ms, onP) {
+  if (fast) { onP(1); return Promise.resolve(); }
+  const t0 = performance.now(), d = still ? ms * .4 : ms;
+  return new Promise(res => { const tick = now => { const p = Math.min(1, (now - t0) / d); onP(p); if (p < 1) requestAnimationFrame(tick); else res(); }; requestAnimationFrame(tick); });
+}
+
+/* ── 맨 위 문장 ── */
+const sayEl = $('#say');
+function say(a, b) {
+  const key = a + '|' + b; if (sayEl.dataset.k === key) return; sayEl.dataset.k = key;
+  sayEl.textContent = a; const t = document.createElement('span'); t.className = 'then'; t.textContent = b; sayEl.append(t);
+  sayEl.classList.remove('swap'); void sayEl.offsetWidth; sayEl.classList.add('swap');
+}
+
+/* ── 드라이브: 큰 숫자, 막대, 예측 ── */
+function pendingAuto() { return S.phase === 'idle' || S.phase === 'consent' ? sum(autoList()) : 0; }
+function setShown(f) {
+  S.shown = f;
+  $('#free').textContent = f.toFixed(1);
+  const won = Math.max(0, f - F0), can = pendingAuto(), pct = v => Math.min(100, v / SCALE * 100) + '%';
+  $('.b-free').style.width = pct(Math.min(F0, f));
+  Object.assign($('.b-won').style, {left:pct(F0), width:pct(won)});
+  Object.assign($('.b-can').style, {left:pct(f), width:pct(can), opacity:can ? '' : '0'});
+  const tag = $('#btag'); tag.textContent = can ? '비우면 ' + (f + can).toFixed(1) + 'GB' : ''; tag.style.left = pct(f + can); tag.classList.toggle('off', !can);
+  const g = $('#gain'); g.textContent = '+' + gb(won); g.classList.toggle('on', won > .05);
+  const days = Math.max(0, Math.round((f - LINE) / PER_DAY));
+  const pred = $('#pred'); pred.textContent = '';
+  pred.append('이대로면 '); const b = document.createElement('b'); b.textContent = days; pred.append(b, '일 뒤 정한 선 아래로 내려갑니다.');
+  $('#bar').setAttribute('aria-label', `남은 자리 ${f.toFixed(1)}GB, 정한 선 100GB` + (can ? `, 비우면 ${(f + can).toFixed(1)}GB` : ''));
+}
+function tweenFree(to, ms) { const from = S.shown; return progress(ms, p => setShown(from + (to - from) * (1 - Math.pow(1 - p, 3)))); }
+
+/* ── 네 차례 ── */
+const stepEl = k => $(`.step[data-k="${k}"]`);
+function setStep(k, state, mid, val, valCls = '') {
+  const el = stepEl(k); el.className = 'step' + (state ? ' ' + state : '');
+  el.querySelector('.s-mid').textContent = mid;
+  const v = el.querySelector('.s-val'); v.textContent = val; v.className = 's-val' + (valCls ? ' ' + valCls : '');
+  if (state !== 'now') el.style.setProperty('--p', 0);
+}
+const setP = (k, p) => stepEl(k).style.setProperty('--p', p);
+function idleSteps() {
+  setStep('backup', '', '바뀐 파일을 클라우드에 올립니다', '6시간 전');
+  setStep('check', '', '파일 몇 개를 내려받아 맞춰 봅니다', '어제');
+  setStep('free', '', `다시 만들 수 있는 ${gb(sum(autoList()))}를 지웁니다`, '5일 전');
+  setStep('update', '', '솔리오와 백업 엔진의 새 판을 봅니다', '3일 전');
+}
+
+/* ── 작은 구(솔리오의 분신)와 왼쪽 위의 구 ── */
+const hc = $('#helper'), hx = hc.getContext('2d'), oc = $('#orb'), ox = oc.getContext('2d');
+const H = {mode:'idle', at:'backup', blink:0, next:0};
+const M = {blink:0, next:0};
+function placeHelper() {
+  const el = H.at === 'sum' ? $('#sum') : stepEl(H.at);
+  $$('.flow .at').forEach(e => e.classList.remove('at'));
+  hc.classList.toggle('off', H.mode === 'idle' || !el.offsetParent);
+  if (!el.offsetParent) return;
+  // 줄 첫 줄의 가운데(위 여백 17px + 이름 줄 높이의 절반)에 번호 대신 앉는다
+  hc.style.transform = `translateY(${el.offsetTop + 27 - 14}px)`;
+  if (H.mode !== 'idle') el.classList.add('at');
+}
+function helper(k, mode) { H.at = k; H.mode = mode; placeHelper(); }
+function sizeCanvas(c, x, w, h) { const d = Math.min(2, devicePixelRatio || 1); c.width = w * d; c.height = h * d; x.setTransform(d, 0, 0, d, 0, 0); }
+sizeCanvas(hc, hx, 28, 28); sizeCanvas(oc, ox, 44, 44);
+let px = -9999, py = -9999;
+addEventListener('pointermove', e => { px = e.clientX; py = e.clientY; });
+function blinkOf(o, now) { if (o.blink > 0) o.blink = Math.max(0, o.blink - .12); else if (now > o.next && !still) { o.blink = 1; o.next = now + 2600 + Math.random() * 4200; } return o.blink; }
+function gaze(c, x, y, R, reach) { const r = c.getBoundingClientRect(), dx = px - (r.left + x), dy = py - (r.top + y), m = Math.hypot(dx, dy) || 1, k = px < -9000 ? 0 : Math.min(1, m / 200) * R * reach; return [dx / m * k, dy / m * k]; }
+function drawOrb(c, x, y, R, o) {
+  c.beginPath(); c.arc(x, y, R, 0, Math.PI * 2); c.fillStyle = '#000'; c.fill();
+  const g = c.createRadialGradient(x - R * .3, y - R * .38, 0, x - R * .3, y - R * .38, R * 1.15);
+  g.addColorStop(0, ink(o.glow)); g.addColorStop(1, ink(0)); c.fillStyle = g; c.fill();
+  c.strokeStyle = ink(o.rim); c.lineWidth = 1; c.stroke();
+  const ex = .21 * R, ey = -.06 * R, er = Math.max(1.05, R * .085);
+  c.fillStyle = c.strokeStyle = ink(o.eye); c.lineWidth = Math.max(1, er * .95); c.lineCap = 'round';
+  for (const s of [-1, 1]) {
+    const cx = x + s * ex + o.gx, cy = y + ey + o.gy; c.beginPath();
+    if (o.mode === 'closed') { c.moveTo(cx - er * 1.4, cy + er); c.lineTo(cx + er * 1.4, cy + er); c.stroke(); }
+    else if (o.mode === 'smile') { c.arc(cx, cy + er * 1.3, er * 1.7, Math.PI * 1.18, Math.PI * 1.82); c.stroke(); }
+    else { c.ellipse(cx, cy, er, Math.max(.3, er * (1 - o.blink)), 0, 0, Math.PI * 2); c.fill(); }
+  }
+}
+function frame(now) {
+  requestAnimationFrame(frame);
+  ox.clearRect(0, 0, 44, 44);
+  { const [gx, gy] = gaze(oc, 22, 22, 11, .2); drawOrb(ox, 22, 22, 11, {glow:.1, rim:.55, eye:.95, gx, gy, blink:blinkOf(M, now), mode:'open'}); }
+  ox.beginPath(); ox.arc(22, 22, 8.4, -2.5, -1.5); ox.strokeStyle = ink(.34); ox.lineWidth = 1; ox.stroke();
+  hx.clearRect(0, 0, 28, 28);
+  const R = 9, m = H.mode;
+  // 일하는 동안은 테두리 밝기만 3.2초에 한 번 천천히 오가고, 눈은 지금 하는 줄의 글을 본다
+  const rim = m === 'work' ? (still ? .6 : .46 + .24 * (.5 + .5 * Math.sin(now * 2 * Math.PI / 3200))) : m === 'fail' ? .98 : m === 'done' ? .7 : .3;
+  let gx = 0, gy = 0;
+  if (m === 'work') { gx = R * .2; gy = R * .08; }
+  else if (m === 'fail') [gx, gy] = gaze(hc, 14, 14, R, .2);
+  drawOrb(hx, 14, 14, R, {glow:m === 'idle' ? .06 : .16, rim, eye:m === 'idle' ? .5 : .95, gx, gy, blink:blinkOf(H, now), mode:m === 'done' ? 'smile' : 'open'});
+}
+requestAnimationFrame(frame);
+
+/* ── 단추 ── */
+const go = $('#go'), again = $('#again'), flow = $('.flow'), sumEl = $('#sum'), flist = $('#flist');
+function setGo(label, main, disabled = false) { go.hidden = false; again.hidden = true; go.textContent = label; go.classList.toggle('main', main); go.disabled = disabled; }
+function idle() {
+  S.phase = 'idle';
+  say('한 번 누르면 백업하고, 다시 만들 수 있는 것을 비웁니다.', `지금 비울 수 있는 것은 ${gb(sum(autoList()))}입니다.`);
+  setGo('백업하고 비우기', true);
+  idleSteps(); helper('backup', 'idle'); setShown(S.shown); renderAfter();
+}
+go.addEventListener('click', () => {
+  // 도는 동안 단추는 「멈추기」다. 지금 하는 차례를 마치고 멈춘다
+  if (S.phase === 'run') { S.stop = true; setGo('멈추는 중', false, true); return; }
+  if (S.phase === 'done' && S.backupOk === false) { run('backup'); return; }
+  if (!S.consent) { askConsent(); return; }
+  run('');
+});
+
+/* ── 처음 한 번 묻기 ── */
+const consentEl = $('#consent'), board = $('#board'), acts = $('#acts');
+function askConsent() {
+  S.phase = 'consent';
+  say('처음 한 번만 여쭙니다.', '아래 네 가지는 앞으로 묻지 않고 지웁니다.');
+  board.hidden = true; acts.hidden = true; consentEl.hidden = false;
+  consentEl.classList.remove('in'); void consentEl.offsetWidth; consentEl.classList.add('in');
+  $('#agree').focus({preventScroll:true});
+}
+function closeConsent() { consentEl.hidden = true; board.hidden = false; acts.hidden = false; }
+$('#agree').addEventListener('click', () => { S.consent = true; closeConsent(); run(''); });
+again.addEventListener('click', () => run(''));
+sumEl.addEventListener('click', () => { const f = flow.classList.toggle('folded'); sumEl.setAttribute('aria-expanded', !f); placeHelper(); });
+$('#cancel').addEventListener('click', () => { closeConsent(); idle(); go.focus({preventScroll:true}); });
+
+/* ── 원클릭 한 번 ── */
+async function run(only) {
+  S.phase = 'run'; S.only = only; S.confirm = false; S.stop = false; S.stopped = false; renderAfter();
+  setGo('멈추기', false); $('#obj-one').classList.remove('news');
+  sumEl.hidden = true; flow.classList.remove('folded'); flist.hidden = true; flist.textContent = '';
+  $('#scanned').textContent = '지금 재는 중';
+  idleSteps(); setShown(S.shown);
+  for (const k of ['backup', 'check', 'free', 'update']) setStep(k, '', stepEl(k).querySelector('.s-mid').textContent, '');
+  if (only === 'backup') setStep('free', 'skip', '방금 비웠습니다', '—');
+
+  // 01 백업
+  helper('backup', 'work'); setStep('backup', 'now', '바뀐 파일을 올리는 중입니다', '0%');
+  say('백업하는 중입니다.', only === 'backup' ? '끝나면 백업을 확인합니다.' : '끝나면 백업을 확인하고 공간을 비웁니다.');
+  await wait(260);
+  if (!S.online) {
+    await progress(1300, p => { setP('backup', p * .3); stepEl('backup').querySelector('.s-val').textContent = Math.round(p * 18) + '%'; });
+    S.backupOk = false; setStep('backup', 'fail', '인터넷이 끊겨 올리지 못했습니다', '—'); helper('backup', 'fail');
+    await wait(700);
+  } else {
+    const n = S.backed ? 46 : 1284, size = S.backed ? '0.1GB' : '1.9GB';
+    setStep('backup', 'now', `바뀐 파일 ${fmt(n)}개를 올리는 중입니다`, '0%');
+    await progress(S.backed ? 1400 : 2600, p => { setP('backup', p); stepEl('backup').querySelector('.s-val').textContent = Math.round(p * 100) + '%'; });
+    S.backupOk = true; S.backed = true; setStep('backup', 'done', `바뀐 파일 ${fmt(n)}개를 올렸습니다`, size);
+  }
+  if (S.stop) return stopped();
+
+  // 02 되살리기 확인: 백업이 없으면 건너뛴다
+  await wait(300);
+  if (S.backupOk) {
+    helper('check', 'work'); setStep('check', 'now', '백업에서 파일 3개를 내려받아 맞춰 보는 중입니다', '0/3');
+    say('백업을 확인하는 중입니다.', '파일을 내려받아 내용이 같은지 봅니다.');
+    await progress(1500, p => { setP('check', p); stepEl('check').querySelector('.s-val').textContent = Math.min(3, Math.floor(p * 3.2)) + '/3'; });
+    setStep('check', 'done', '파일 3개가 내용까지 같습니다', '3/3');
+  } else setStep('check', 'skip', '백업이 없어 건너뜁니다', '—');
+  if (S.stop) return stopped();
+
+  // 03 공간 비우기: 다시 만들 수 있는 것은 백업과 상관없이 비운다
+  S.lastFreed = 0;
+  if (only !== 'backup') {
+    await wait(300);
+    const list = autoList().slice(); let done = 0;
+    helper('free', 'work');
+    say('다시 만들 수 있는 것을 비우는 중입니다.', S.backupOk ? '하나뿐인 파일은 건드리지 않습니다.' : '이것들은 백업 없이도 다시 만들 수 있어 그대로 비웁니다.');
+    flist.hidden = false;
+    for (const it of list) {
+      setStep('free', 'now', it.doing, gb(done), 'won');
+      // 지우는 것이 이 줄 안에 한 줄씩 떨어지고, 그 크기가 차오른다
+      const li = el('li', 'doing'), nb = el('b', '', gb(0)); li.append(it.name, nb); flist.append(li);
+      const to = S.shown + it.gb;
+      const from = S.shown;
+      await progress(760, p => { const e = 1 - Math.pow(1 - p, 3); setShown(from + (to - from) * e); setP('free', (done + it.gb * e) / sum(list)); stepEl('free').querySelector('.s-val').textContent = gb(done + it.gb * e); nb.textContent = gb(it.gb * e); });
+      li.classList.remove('doing'); nb.textContent = gb(it.gb);
+      done += it.gb; S.cleared.push({...it}); S.autoLeft = S.autoLeft.filter(x => x !== it);
+      if (S.stop) { S.lastFreed = done; setStep('free', 'done', `${flist.children.length}가지를 비우고 멈췄습니다`, gb(done), 'won'); return stopped(); }
+      await wait(120);
+    }
+    S.lastFreed = done;
+    setStep('free', 'done', `${list.length}가지를 비웠습니다`, gb(done), 'won');
+  }
+
+  // 04 업데이트 확인
+  await wait(300);
+  if (S.online) {
+    helper('update', 'work'); setStep('update', 'now', '새 판이 있는지 보는 중입니다', '');
+    say('업데이트를 확인하는 중입니다.', '솔리오와 백업 엔진의 새 판을 봅니다.');
+    await progress(900, p => setP('update', p));
+    setStep('update', 'done', '솔리오와 백업 엔진 모두 최신입니다', '');
+  } else setStep('update', 'skip', '인터넷이 이어지면 확인합니다', '—');
+
+  S.run++; finish();
+}
+function stopped() {
+  for (const k of ['backup', 'check', 'free', 'update']) if (!/done|fail|skip/.test(stepEl(k).className)) setStep(k, 'skip', '멈춰서 하지 않았습니다', '—');
+  S.run++; S.stopped = true; finish();
+}
+function finish() {
+  S.phase = 'done';
+  $('#scanned').textContent = '방금 잰 값';
+  $('#obj-one').classList.toggle('news', S.backupOk === false && !S.stopped);
+  if (S.stopped) {
+    helper('backup', 'idle');
+    say('멈췄습니다.', S.lastFreed ? `비운 ${gb(S.lastFreed)}는 그대로 두었습니다. 다시 누르면 처음부터 합니다.` : '다시 누르면 처음부터 합니다.');
+    setGo('다시 하기', true);
+  } else if (S.backupOk === false) {
+    helper('backup', 'fail');
+    say(`${gb(S.lastFreed)}를 비웠지만, 백업은 하지 못했습니다.`, '인터넷이 이어지면 백업만 다시 하세요.');
+    setGo('백업만 다시 하기', true);
+  } else {
+    // 다 끝나면 네 줄을 한 줄로 접고, 작은 구는 그 줄에서 웃는다. 다음 할 일(더 비울 것 고르기)이 위로 올라온다
+    const v = k => stepEl(k).querySelector('.s-val').textContent;
+    $('#sum-mid').textContent = [`${v('backup')} 백업`, '파일 3개 되살려 확인', S.only === 'backup' ? '' : `${v('free')} 비움`, '솔리오와 엔진 모두 최신'].filter(Boolean).join(', ');
+    sumEl.hidden = false; flow.classList.add('folded'); sumEl.setAttribute('aria-expanded', 'false');
+    helper('sum', 'done');
+    if (!S.openedMore && S.more.length) { S.open.add('more'); S.openedMore = true; }
+    if (S.only === 'backup') say('백업까지 마쳤습니다.', S.more.length ? `더 비울 수 있는 ${gb(sum(S.more))}는 직접 고르세요.` : '지금은 더 비울 것이 없습니다.');
+    else say(`C: 여유가 ${gb(S.lastFreed)} 늘었습니다.`, S.more.length ? `더 비울 수 있는 ${gb(sum(S.more))}는 직접 고르세요.` : '백업도 방금 확인했습니다.');
+    go.hidden = true; again.hidden = false;
+  }
+  setShown(S.shown); renderAfter(); requestAnimationFrame(placeHelper);
+}
+
+/* ── 끝난 뒤의 세 줄 ── */
+const afterEl = $('#after');
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function item(it, vcls, extra) {
+  const row = el('div', 'it' + (extra ? '' : ' plain'));
+  if (extra) row.append(extra);
+  const t = el('div', 'it-t'); t.append(el('b', '', it.name)); if (it.cnt) t.append(el('span', 'cnt', it.cnt));
+  if (it.why) t.append(el('small', '', it.why));
+  if (it.back && vcls === 'won') { const s = el('small', 'back'); s.append(el('em', '', '되살리는 법'), it.back); t.append(s); }
+  row.append(t, el('span', 'it-v ' + vcls, gb(it.gb)));
+  return row;
+}
+function group(id, name, mid, val, vcls, fill) {
+  const g = el('div', 'g snap' + (S.open.has(id) ? ' open' : '')); g.dataset.g = id;
+  const h = el('button', 'g-h'); h.type = 'button'; h.setAttribute('aria-expanded', S.open.has(id));
+  h.append(el('span', 'g-nm', name), el('span', 'g-mid', mid), el('span', 'g-val ' + vcls, val), el('span', 'g-ch'));
+  const b = el('div', 'g-b'), inn = el('div', 'g-in'); fill(inn); [...inn.children].forEach((c, i) => c.style.setProperty('--j', i));
+  b.append(inn); g.append(h, b);
+  h.addEventListener('click', () => {
+    g.classList.remove('snap'); const on = !g.classList.contains('open'); g.classList.toggle('open', on);
+    h.setAttribute('aria-expanded', on); on ? S.open.add(id) : S.open.delete(id);
+  });
+  return g;
+}
+function renderAfter() {
+  afterEl.hidden = S.phase !== 'done'; afterEl.textContent = ''; if (afterEl.hidden) return;
+  afterEl.append(group('more', '더 비울 수 있는 것', S.more.length ? '고르면 비웁니다' : '남은 것이 없습니다', gb(sum(S.more)), 'can', moreBody));
+  afterEl.append(group('cleared', '비운 것', `${S.cleared.length}가지`, gb(sum(S.cleared)), 'won', inn => S.cleared.forEach(it => inn.append(item(it, 'won')))));
+  afterEl.append(group('keep', '솔리오가 지우지 않는 것', '다른 앱이 관리합니다', gb(sum(KEEP)), 'keep', keepBody));
+}
+function moreBody(inn) {
+  for (const it of S.more) {
+    const locked = it.needsBackup && S.backupOk === false, on = S.picked.has(it.id);
+    const ck = el('span', 'ck'); ck.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2 5 8.6 9.6 3.6" fill="none" stroke="#000" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const row = item(it, 'can', ck);
+    row.classList.add('pick'); row.dataset.id = it.id; row.setAttribute('role', 'checkbox'); row.setAttribute('aria-checked', on); row.tabIndex = locked ? -1 : 0;
+    if (locked) row.setAttribute('aria-disabled', 'true');
+    if (it.warn) row.querySelector('.it-t small').className = 'warn';
+    const toggle = () => { if (locked) return; on ? S.picked.delete(it.id) : S.picked.add(it.id); S.confirm = false; renderAfter(); afterEl.querySelector(`[data-id="${it.id}"]`)?.focus({preventScroll:true}); };
+    row.addEventListener('click', toggle);
+    row.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+    if (locked) row.querySelector('.it-t').append(el('small', 'lock', '백업이 확인되면 고를 수 있습니다.'));
+    inn.append(row);
+  }
+  if (!S.more.length) return;
+  const picked = S.more.filter(m => S.picked.has(m.id)), tot = sum(picked);
+  const a = el('div', 'g-acts');
+  if (S.confirm && picked.length) {
+    const warn = picked.some(m => m.warn) ? ' 휴지통 파일은 되살릴 수 없습니다.' : '';
+    a.append(el('p', '', `고른 ${picked.length}가지, ${gb(tot)}를 비웁니다.${warn}`));
+    const yes = el('button', 'go main sm', '비우기'); yes.type = 'button'; yes.addEventListener('click', () => freePicked(picked));
+    const no = el('button', 'quiet', '그만두기'); no.type = 'button'; no.addEventListener('click', () => { S.confirm = false; renderAfter(); });
+    a.append(yes, no);
+  } else {
+    if (!picked.length) { a.append(el('p', '', '고르면 여기에 비우기 단추가 생깁니다. 비우기 전에 한 번 더 확인합니다.')); inn.append(a); return; }
+    const b = el('button', 'go sm main', `고른 것 비우기 ${gb(tot)}`); b.type = 'button';
+    b.addEventListener('click', () => { S.confirm = true; renderAfter(); afterEl.querySelector('[data-g="more"] .go.main')?.focus({preventScroll:true}); });
+    a.append(b);
+  }
+  inn.append(a);
+}
+async function freePicked(picked) {
+  const tot = sum(picked);
+  S.more = S.more.filter(m => !S.picked.has(m.id)); S.picked.clear(); S.confirm = false;
+  picked.forEach(m => S.cleared.push({...m}));
+  renderAfter();
+  say('고른 것을 비우는 중입니다.', picked.some(m => m.needsBackup) ? '영상 원본은 PC 사본만 지웁니다.' : '지운 것마다 되살리는 법을 남깁니다.');
+  await tweenFree(S.shown + tot, 1100);
+  say(`C: 여유가 ${gb(S.shown - F0)} 늘었습니다.`, '지운 것과 되살리는 법은 「비운 것」에 있습니다.');
+  setShown(S.shown); renderAfter();
+}
+function keepBody(inn) {
+  for (const it of KEEP) {
+    const row = item(it, 'keep');
+    if (it.how) {
+      const t = row.querySelector('.it-t'), q = el('button', 'quiet', '정리하는 법'); q.type = 'button'; q.style.marginTop = '8px';
+      q.setAttribute('aria-pressed', S.how);
+      q.addEventListener('click', () => { S.how = !S.how; renderAfter(); });
+      t.append(q); if (S.how) t.append(el('span', 'how', it.how));
+    }
+    inn.append(row);
+  }
+}
+
+/* ── 시안 조작 ── */
+$('#m-again').addEventListener('click', () => { location.hash = ''; location.reload(); });
+const mNet = $('#m-net');
+mNet.addEventListener('click', () => { S.online = !S.online; mNet.textContent = S.online ? '인터넷 끊기' : '인터넷 잇기'; });
+const mSize = $('#m-size');
+mSize.addEventListener('click', () => { const n = document.body.classList.toggle('narrow'); mSize.textContent = n ? '넓은 창' : '좁은 창'; requestAnimationFrame(placeHelper); });
+new ResizeObserver(() => placeHelper()).observe($('#steps'));
+
+/* 주소 끝: #consent 처음 묻기 · #run 동의한 채로 바로 돌기 · #done 끝난 판 · #more 끝난 판에서 「더 비울 수 있는 것」을 연 채 · #offline 인터넷이 끊긴 채 끝난 판 */
+idle();
+const h = location.hash.slice(1);
+if (h === 'consent') askConsent();
+else if (h === 'run') { S.consent = true; run(''); }
+else if (['done', 'more', 'offline'].includes(h)) {
+  S.consent = true; if (h === 'offline') { S.online = false; mNet.textContent = '인터넷 잇기'; }
+  if (h === 'more') { S.open.add('more'); S.picked.add('video'); S.picked.add('model'); }
+  fast = true; run('').then(() => { fast = false; $$('.g').forEach(g => g.classList.add('snap')); });
+}
+setTimeout(() => $('#steps').classList.remove('deal'), 1200);
+})();
+</script>
+</body>
+</html>
