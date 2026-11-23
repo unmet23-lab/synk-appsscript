@@ -1,0 +1,18 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photo, portrait 2:3, warm evening light from a low hanging lamp, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style, light and scale of the felt reference photo — NOT its café, NOT its barista).
+
+WORLD (real panels): a tiny felt Korean snack restaurant (bunsik-jip) in the evening — walls of plain soft mint-green felt tiles (large tiles, no pattern on them), a light honey-wood felt table, a small counter far behind with a felt water jug and a short stack of plain cream felt bowls, one warm felt pendant lamp. In the middle of the table sits a RECTANGULAR BLACK CAST-IRON GRIDDLE PAN (a flat dark iron tray with a low raised rim and one short loop handle on its left end and one on its right end). The griddle has been scraped almost clean: only ONE small mound — a single spoonful — of golden egg-and-vegetable fried rice is left near its centre (yellow egg bits, a few green peas, a few orange carrot cubes, NO meat at all), with a few crispy brown scorched rice flakes beside it.
+CHARACTERS (keep them identical in every panel they appear in):
+- THE AJUMMA: the restaurant owner, a Korean felt doll woman in her fifties with short wavy dark-brown felt hair under a plain solid tomato-red felt headscarf tied at the back, a round kind face, small black bead eyes, rosy cheeks and soft smile lines. She wears a mustard-yellow felt apron over a sage-green knit sweater, and thick quilted cream felt oven mitts on BOTH hands (she always holds the hot griddle by its two loop handles with the mitts).
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO neck and NO mouth, ever — its head and body are one soft dome. It moves by tilting, squashing, stretching and bouncing its whole body. Mongle is about as tall as the griddle is deep from front to back.
+
+Attached images in order: (1) the base restaurant panel — the ajumma must look exactly like in it (same face, red headscarf, mustard apron, sage sweater, cream oven mitts), (2) the hanging panel — the same griddle held up the same way.
+
+CAMERA: CLOSE-UP on THE AJUMMA, chest-up, at her eye level, from the LEFT side in a three-quarter view (a different side from the hanging panel):
+- Her face fills the upper-middle of the frame (centred at about 46% of the width, between 26% and 52% of the height). She is FROZEN in surprise, looking down toward the lower right: eyebrows raised high, bead eyes wide, lips pressed into a tiny "o". Her shoulders are stiff.
+- At the bottom of the frame her two oven mitts hold the griddle's rim, and at the bottom-right edge the soft out-of-focus top of Mongle's coral dome is draped over the griddle rim.
+- Behind her, soft blurred mint-green tiles and the warm pendant lamp glow.
+- The TOP 24% of the image is soft blurred mint-green wall with nothing sharp in it.
+
+Only the characters named in this panel, nobody else (no other customers). Absolutely no text, letters, numbers, symbols, question marks or watermarks anywhere — not on the walls, not on the menu, not on the counter, not on the apron. No real brand, no logos. No dense dotted or ring patterns anywhere.

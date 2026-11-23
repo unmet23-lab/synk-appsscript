@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20575-39fa-7652-b5bf-957b6f522c42"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"몽글의 형태와 펠트 질감을 살려, 찜질방에서 뜨거운 달걀을 살피는 세로 장면 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"몽글이 찜질방에서 두 친구와 함께 뜨거운 구운 달걀을 살피는 따뜻한 펠트 장면입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":162596,"cached_input_tokens":145280,"cache_write_input_tokens":0,"output_tokens":2053,"reasoning_output_tokens":314}}

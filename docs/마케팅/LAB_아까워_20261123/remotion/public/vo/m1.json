@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "아까워!",
+ "dur": 0.878,
+ "words": [
+  {
+   "text": "아까워!",
+   "start": 0.02,
+   "end": 0.806
+  }
+ ],
+ "source": {
+  "key": "bc8d480631f9ebc4d9a6fe166e709cea",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "다 드셨죠~? 아주머니가 볶음밥 한 숟갈이 남은 철판을 들어 올리자, 작은 친구가 철판 가장자리에 매달려 울먹이며 다급하게 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 455
+ }
+}

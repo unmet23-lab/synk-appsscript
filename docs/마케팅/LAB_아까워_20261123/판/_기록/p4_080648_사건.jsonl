@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20583-2a7c-7163-a1ed-21b49db8b005"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 도구로 몽글의 꽉 감은 눈과 철판에 매달린 둥근 몸을 극근접 구도로 담겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"눈을 꽉 감고 눈물을 맺은 채 철판에 매달린 몽글의 극근접 장면입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":131323,"cached_input_tokens":113920,"cache_write_input_tokens":0,"output_tokens":1709,"reasoning_output_tokens":132}}

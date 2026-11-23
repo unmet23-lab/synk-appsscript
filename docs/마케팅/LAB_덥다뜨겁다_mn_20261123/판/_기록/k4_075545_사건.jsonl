@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20579-0119-7692-aa99-7850b18731ee"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one image with the same framing, showing Mongle squashed after landing and the two friends laughing.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Teary Mongle lands squashed beside the steaming eggs as the two friends laugh in the warm felt sauna."}}
+{"type":"turn.completed","usage":{"input_tokens":51435,"cached_input_tokens":44032,"cache_write_input_tokens":0,"output_tokens":897,"reasoning_output_tokens":0}}

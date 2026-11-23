@@ -1,0 +1,22 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photo, portrait 2:3, warm evening light from a low hanging lamp, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style, light and scale of the felt reference photo — NOT its café, NOT its barista).
+
+WORLD (real panels): a tiny felt Korean snack restaurant (bunsik-jip) in the evening — walls of plain soft mint-green felt tiles (large tiles, no pattern on them), a light honey-wood felt table, a small counter far behind with a felt water jug and a short stack of plain cream felt bowls, one warm felt pendant lamp. In the middle of the table sits a RECTANGULAR BLACK CAST-IRON GRIDDLE PAN (a flat dark iron tray with a low raised rim and one short loop handle on its left end and one on its right end). The griddle has been scraped almost clean: only ONE small mound — a single spoonful — of golden egg-and-vegetable fried rice is left near its centre (yellow egg bits, a few green peas, a few orange carrot cubes, NO meat at all), with a few crispy brown scorched rice flakes beside it.
+CHARACTERS (keep them identical in every panel they appear in):
+- THE AJUMMA: the restaurant owner, a Korean felt doll woman in her fifties with short wavy dark-brown felt hair under a plain solid tomato-red felt headscarf tied at the back, a round kind face, small black bead eyes, rosy cheeks and soft smile lines. She wears a mustard-yellow felt apron over a sage-green knit sweater, and thick quilted cream felt oven mitts on BOTH hands (she always holds the hot griddle by its two loop handles with the mitts).
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO neck and NO mouth, ever — its head and body are one soft dome. It moves by tilting, squashing, stretching and bouncing its whole body. Mongle is about as tall as the griddle is deep from front to back.
+
+Attached images in order: (1) mascot reference — Mongle's shape and colour, (2) mascot reference — Mongle's teary longing bead eyes, (3) felt craft-style reference.
+
+- THE FRIEND: a Korean felt doll young man in his twenties with short messy black felt hair, a round face and small black bead eyes, wearing a navy felt duffel coat over a cream knit sweater.
+
+CAMERA: MEDIUM, eye level just above the table top, a little from the right, fixed. This is the BASE panel of the restaurant.
+- The TOP 24% of the image is plain mint-green felt tile wall with nothing in it — keep it empty for titles.
+- THE AJUMMA stands behind the table, centred at 40% of the image width, her head at about 28–38% of the image height, bending forward with a busy friendly smile; her two oven-mitted hands are just closing around the griddle's left and right loop handles, about to lift it away.
+- The table top fills the lower half. The griddle sits on it centred at 44% of the width, between 58% and 70% of the image height, seen a little from above so the last spoonful of fried rice on it is clearly visible.
+- MONGLE sits on the table top to the right of the griddle, centred at 76% of the width, its bottom hem at about 82% of the height, about 22% of the image width wide, leaning toward the griddle and staring at the last spoonful of fried rice with big round longing teary bead eyes (one tiny felt tear at the corner of an eye).
+- THE FRIEND stands in the soft-focus background at the right, behind Mongle, seen from the waist up, pushing one arm into the sleeve of his navy coat — ready to leave.
+- Keep every character between 12% and 88% of the image width.
+
+Only the characters named in this panel, nobody else (no other customers). Absolutely no text, letters, numbers, symbols, question marks or watermarks anywhere — not on the walls, not on the menu, not on the counter, not on the apron. No real brand, no logos. No dense dotted or ring patterns anywhere.

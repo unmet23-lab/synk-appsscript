@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20579-0115-7f10-b8c4-51db06852bbb"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 적용해, 몽글의 밑단이 뜨거운 달걀에 닿는 순간을 클로즈업 한 장으로 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"뜨거운 달걀에 밑단이 닿아 눈을 크게 뜬 몽글의 찜질방 클로즈업입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":196776,"cached_input_tokens":158080,"cache_write_input_tokens":0,"output_tokens":1884,"reasoning_output_tokens":366}}

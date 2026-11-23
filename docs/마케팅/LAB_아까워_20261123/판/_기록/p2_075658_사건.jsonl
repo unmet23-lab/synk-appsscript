@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a2057a-6520-74c2-aa5a-dffb414ea956"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one panel matching the reference, with the griddle lifted and Mongle squashed low, ready to spring.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle squashes low, ready to spring toward the last spoonful as the ajumma lifts the griddle."}}
+{"type":"turn.completed","usage":{"input_tokens":123378,"cached_input_tokens":107904,"cache_write_input_tokens":0,"output_tokens":1550,"reasoning_output_tokens":187}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20586-6990-7f60-9cda-2bb8fc939287"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create one close-up of Mongle’s startled contact with the hot egg.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle recoils in wide-eyed shock as its stitched hem touches a steaming roasted egg."}}
+{"type":"turn.completed","usage":{"input_tokens":231413,"cached_input_tokens":206720,"cache_write_input_tokens":0,"output_tokens":1840,"reasoning_output_tokens":343}}

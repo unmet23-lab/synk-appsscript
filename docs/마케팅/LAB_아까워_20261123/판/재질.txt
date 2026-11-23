@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Edit the attached photograph. Keep EXACTLY the same tall 2:3 composition, camera, framing, characters, poses, facial expressions, light and colours — every person and object stays in the same place and size. Change ONLY the MATERIALS so that everything is clearly handmade needle felt and wool, like a felt miniature diorama:
+(1) The griddle pan becomes a needle-felted dark charcoal-grey wool tray — a soft, matte, fuzzy wool surface with visible fibres. NO metal, NO shine, NO glossy highlights, NO scratches, NO reflections. Its low rim and its two loop handles are thick, rounded, felted charcoal wool.
+(2) The fried rice becomes a small mound of tiny matte felted wool balls in pale golden yellow, with a few felted wool green peas, orange carrot cubes and yellow egg bits — fuzzy wool, NO gloss, NO wet or real-food texture. The few scorched rice flakes become small flat brown felt flakes.
+(3) Any jug, cup or bowl becomes matte felt or wool too (no glass shine).
+Keep the coral-pink felt blob mascot (if present) exactly as it is — same shape, same eyes, same pose, same size. Do not add anything new. Absolutely no text, letters, numbers or symbols anywhere.

@@ -1,0 +1,39 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_65a8c7e1915a6295614f775b",
+  "name": "미선"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1123,
+  "lufs": -16
+ },
+ "made": "2026-11-22T23:36:08.975Z",
+ "lines": [
+  {
+   "id": "a1",
+   "text": "다 드셨죠~?",
+   "dur": 1.091,
+   "syllablesPerSec": 3.67,
+   "src": "a1.wav",
+   "key": "a5413a15b5c6644415a86a70d5211e3e",
+   "words": 2
+  },
+  {
+   "id": "m1",
+   "text": "아까워!",
+   "dur": 0.878,
+   "syllablesPerSec": 3.42,
+   "src": "m1.wav",
+   "key": "bc8d480631f9ebc4d9a6fe166e709cea",
+   "words": 1
+  }
+ ]
+}

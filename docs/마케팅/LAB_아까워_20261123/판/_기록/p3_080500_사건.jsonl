@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20581-78a9-7871-9212-ef42f102ea23"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"몽글이 철판 앞쪽 테두리에 매달리고 아주머니가 놀라는 장면을, 요청하신 펠트 질감과 구도로 한 장 생성하겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"철판 테두리에 필사적으로 매달린 몽글과 깜짝 놀란 아주머니의 따뜻한 펠트 장면입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":123356,"cached_input_tokens":108672,"cache_write_input_tokens":0,"output_tokens":1749,"reasoning_output_tokens":158}}
