@@ -55,3 +55,12 @@ test('real Git excludes literal tabs and CRLF from non-ASCII word runs', () => {
   assert.ok(result.글.includes('[-가-]{+각+}'));
   assert.doesNotMatch(result.글, /\[-[^\]]*[\t\r]|\{\+[^}]*[\t\r]/);
 });
+
+test('long Korean line whose word diff would split UTF-8 keeps the original unified diff', () => {
+  const before = '최종 소스와 검증한 기록을 보존했다. ' + '원래 문장을 함께 읽는다. '.repeat(70);
+  const after = before.replace('최종', '초기').replace('보존했다', '그대로 보존했다');
+  const result = 두판diff(Buffer.from(before + '\n'), Buffer.from(after + '\n'), 'README.md');
+  assert.equal(result.글.includes('\uFFFD'), false);
+  assert.ok(result.글.includes('초기'));
+  assert.ok(result.글.includes('최종'));
+});
