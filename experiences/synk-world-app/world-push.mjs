@@ -399,7 +399,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   else{guard(expected);if(fresh)emit({device:deviceOf(data)});if(seq>state.seenSeq&&comparable(data))emit({seenSeq:seq});reconcile(expected);}
   return fresh;
  }
- // 계정의 2단 상태를 다시 읽는다. 이 브라우저 구독이 이 계정 것인데 서버에 없으면(정리·404·다른 기기에서 로그아웃시킴) 이 브라우저 구독도 지운다.
+ // 계정의 2단 상태를 다시 읽는다. 이 브라우저 구독이 이 계정 것인데 서버에 없으면(정리·404·늦은 옛 응답) 새 구독으로 다시 잇는다(reconnect).
  // 이 브라우저가 받을 수 없어도(아이폰·푸시 없는 브라우저) 설정을 열 때와 1단이 띄우기 직전에는 계정 상태만 읽는다 — 다른 기기에서 켜 두었으면
  // 1단이 쉬고 설정에 그 기기로 간다고 적는다. 계정이 바뀐 직후(initial)에는 읽지 않는다(받을 수 없는 기기에서 열 때마다 부르지 않게).
  // tidy: 이 브라우저 구독 · 기기 기록을 정리하는 읽기인가. 화면 맞추기 읽기는 정리하지 않는다 — 읽기가 날아가는 동안 다른 탭이 이 브라우저 알림을 켜면,
@@ -420,10 +420,28 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    // 읽기가 날아가는 사이 같은 브라우저의 다른 탭이 기기 기록을 바꿨으면(켜기 · 끄기) 이 응답으로 정리하지 않는다 — 그 탭이 방금 켠 구독의
    // 기록을 지우고 서버에서 끄게 된다(r17 Fable 설계 검토: 화면은 「켜짐」인데 알림이 오지 않는다). 정리는 다음 평소 읽기가 한다.
    const next=snapshot(),record=readRecord();if(JSON.stringify(record)!==mark)return snapshot();
-   if(sub&&!next.device.subscribed&&record?.accountId===owner&&record.endpoint===sub.endpoint){await removeLocal(sub,reg);writeRecord(null);}
+   if(sub&&!next.device.subscribed&&record?.accountId===owner&&record.endpoint===sub.endpoint)return reconnect(sub,reg,expected);
    else if(!sub&&record?.accountId===owner){writeRecord(null);try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}
    return snapshot();
   }catch(error){if(current(expected))emit({phase:state.phase==='ready'?'ready':'error',error:error.code||'PUSH_UNAVAILABLE'});return snapshot();}
+ }
+ // 불변식(설계 주인 11-23): 이 브라우저에서 켠 동안에는 어떤 길도 이 브라우저 구독을 지운 채로 끝나지 않는다. 지우기만 하는 것은 끄기 · 로그아웃뿐이다.
+ // 상태 읽기가 이 브라우저 구독이 서버에 없다고 하면(만료 · 서버 정리 · 다른 탭이 같은 구독으로 다시 켜기 전에 보낸 늦은 옛 응답) 옛 구독을 지우고 새 구독으로
+ // 서버에 다시 올린다(켜기와 같은 길 — 설정은 1단 값, 요약은 1단이 지금 기록으로 짓는다). 그래서 낡은 응답이 와도 끝은 「켜짐 + 서버에 오른 구독」이다.
+ // 다시 올린 구독도 서버가 곧바로 없다고 하면 한 번만 더 해 보고 멈춘다 — 켜기가 남긴 오류와 꺼진 기기 칸이 설정 화면에 보여 학생이 다시 켠다.
+ // 알림 기능이 꺼졌거나(비상 스위치) 이 탭이 켜기 · 끄기 중이면 하지 않는다(지우지도 않는다).
+ async function reconnect(sub,reg,expected){
+  if(!current(expected)||closing||mutation||attempt||!state.enabled||worldPushSupport(env).permission!=='granted')return snapshot();
+  if(!registration)registration=reg;
+  for(let tries=0;tries<2;tries++){
+   if(sub){await removeLocal(sub,reg);sub=null;}
+   if(!current(expected))return snapshot();
+   let made=null;try{made=binding?.digest?.()||null;}catch{}
+   const value=await api.enable({settings:liveSettings(state.plan&&Number.isFinite(state.plan.frequency)?{frequency:state.plan.frequency,hour:Number.isFinite(state.plan.hour)?state.plan.hour:null,since:null}:null),
+    digest:made?.digest||undefined,handover:Array.isArray(made?.handover)?made.handover:[]});
+   if(!current(expected)||value.device?.subscribed)return value;
+  }
+  return snapshot();
  }
  // 실패한 켜기가 날아가는 동안 적은 편집을 지운다(r8 GA1 — 남기면 나중에 다른 기기가 켠 계획을 덮는다). 그 뒤에 적은 편집(다른 id)은 둔다. 그사이 로그아웃했거나
  // 계정을 바꿨으면 그 계정의 편집은 그때 이미 버렸다(dropEdits) — 지금 계정 키에는 이 켜기의 편집이 없다.
@@ -446,7 +464,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  }
  const onStorage=event=>{if(event&&(event.key===null||(event.key===versionKey()&&event.newValue==null)))showServer(true);};
  try{env.addEventListener?.('storage',onStorage);}catch{}
- return {
+ const api={
   snapshot,refresh,
   // 상태가 바뀔 때마다 부를 함수(설정 화면의 동의 상자 단추·안내 글). 떼는 함수를 돌려준다.
   subscribe(listener){listeners.add(listener);return ()=>listeners.delete(listener);},
@@ -520,7 +538,14 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      }
      guard(expected);
      if(data.device?.subscribed!==true)throw Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'});
-     writeRecord({accountId:owner,deviceId:data.device.deviceId,endpoint:sub.endpoint});
+     const mine={accountId:owner,deviceId:data.device.deviceId,endpoint:sub.endpoint};
+     // 요청이 날아가는 사이 이 브라우저 구독이 바뀌었는지 본다(r18). 다른 탭이 새 구독으로 다시 이었으면 그 탭이 기록을 쓴다 — 여기서 옛 주소로 덮으면
+     // 로그아웃 · 끄기가 옛 주소만 끄고 새 구독이 남는다. 구독이 아예 없어졌으면 「켜짐」으로 적지 않고 실패로 끝낸다(기록은 남겨 다음 평소 읽기가 서버의
+     // 그 기기를 끄게 한다). 구독을 읽지 못하면 그대로 간다.
+     let still=sub;try{still=await bounded(registration.pushManager.getSubscription());}catch{}
+     guard(expected);
+     if(!still){writeRecord(mine);throw Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'});}
+     if(still.endpoint===sub.endpoint)writeRecord(mine);else subscription=still;
      // 켜며 보낸 요약을 sync와 같은 표로 적는다 — 켠 바로 뒤 다시 잡기가 같은 요약을 또 보내지 않게(10-22 화면 검수).
      lastSync=digest?syncMark(item,stamp()):null;
      const applied=data.applied||{},rejected=based&&digest&&(applied.digest!==true||Array.isArray(digest.reviews)&&applied.reviews!==true);
@@ -562,7 +587,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const expected=epoch;if(!current(expected)||closing||mutation)return null;
    emit({busy:true,error:null});
    const run=(async()=>{
-    const reg=await existing(),sub=subscription||(reg?await bounded(reg.pushManager.getSubscription()).catch(()=>null):null),record=readRecord();
+    // 지금 브라우저 구독을 먼저 읽는다 — 다른 탭이 새 구독으로 다시 이었으면 이 탭이 기억한 옛 구독만 끄고 새 구독이 남는다(r18). 읽지 못하면 기억한 구독.
+    const reg=await existing(),fresh=reg?await bounded(reg.pushManager.getSubscription()).catch(()=>null):null,sub=fresh||subscription,record=readRecord();
     let result=null;
     if(sub){try{result=await request('unsubscribe',{endpoint:sub.endpoint});}catch{if(record?.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}}}
     const removed=await removeLocal(sub,reg);
@@ -674,4 +700,5 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   resume(){if(!closing)return Promise.resolve(snapshot());closing=false;holdPage();return owner?refresh():Promise.resolve(snapshot());},
   dispose(){disposed=true;epoch++;releasePageHold();try{env.removeEventListener?.('storage',onStorage);}catch{}clearTimeout(syncTimer);syncTimer=null;clearTimeout(retryTimer);retryTimer=null;jobs.clear();binding=null;if(attempt){attempt.stop();attempt=null;}mutation=null;},
  };
+ return api;
 }
