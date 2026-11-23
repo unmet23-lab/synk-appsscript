@@ -19,6 +19,8 @@ SRV = pathlib.Path('/srv/synk/workbackup')
 HA_NODE = pathlib.Path('/opt/synk/ha-runtime/node')
 UNIT_DIR = pathlib.Path('/etc/systemd/system')
 ROLES = {'api': 10771, 'keys': 10772, 'files': 10773}
+# systemd's User= needs the id in the user database: one system account per role, no login.
+ROLE_NAMES = {'api': 'synk-wb-api', 'keys': 'synk-wb-keys', 'files': 'synk-wb-files'}
 SERVICES = ('synk-wb-keys.service', 'synk-wb-files.service', 'synk-wb-api.service')
 OFFSITE = ('synk-wb-offsite.service', 'synk-wb-offsite.timer')
 PAIR_CHECK = 'synk-wb-pair-check.service'  # pulled in by the api on every start
@@ -176,6 +178,32 @@ def role_fd(role, sub=None, create=False):
         return child, made
     finally:
         os.close(fd)
+
+
+def role_accounts(create):
+    """The three role accounts: group and user with the role's id and name, no home, no shell.
+    An id or a name already used by something else is refused. Returns what was made."""
+    made = []
+    for role, uid in ROLES.items():
+        name = ROLE_NAMES[role]
+        group = run(['getent', 'group', str(uid)], check=False).stdout.strip()
+        if group:
+            need(group.split(':')[0] == name, 'GROUP_ID_TAKEN:' + str(uid))
+        else:
+            need(create, 'ROLE_ACCOUNT_MISSING:' + name + ' (files --실행 makes it)')
+            need(not run(['getent', 'group', name], check=False).stdout.strip(), 'GROUP_NAME_TAKEN:' + name)
+            run(['groupadd', '--system', '--gid', str(uid), name])
+            made.append('group ' + name)
+        user = run(['getent', 'passwd', str(uid)], check=False).stdout.strip().split(':')
+        if user != ['']:
+            need(user[0] == name and user[3] == str(uid) and user[6] in ('/usr/sbin/nologin', '/sbin/nologin', '/bin/false'), 'USER_ID_TAKEN:' + str(uid))
+        else:
+            need(create, 'ROLE_ACCOUNT_MISSING:' + name + ' (files --실행 makes it)')
+            need(not run(['getent', 'passwd', name], check=False).stdout.strip(), 'USER_NAME_TAKEN:' + name)
+            run(['useradd', '--system', '--uid', str(uid), '--gid', str(uid), '--no-create-home', '--home-dir', '/nonexistent',
+                 '--shell', '/usr/sbin/nologin', '--comment', 'SYNK work-backup ' + role, name])
+            made.append('user ' + name)
+    return made
 
 
 def folders():
@@ -482,7 +510,8 @@ def reachability():
 
 
 def installed(req):
-    """The content folders this payload maps to (they must already exist for probe/start)."""
+    """The content folders this payload maps to and the role accounts (they must already exist for probe/start)."""
+    role_accounts(create=False)
     app = ROOT / 'app' / manifest_digest(payload_files(req, 'app'))
     off = ROOT / 'offsite' / manifest_digest(payload_files(req, 'offsite'))
     node = ROOT / 'runtime' / ('node-' + file_sha(HA_NODE)[:16])
@@ -590,8 +619,10 @@ def act_files(req):
     need(resolv == b'nameserver 127.0.0.53\noptions edns0 trust-ad\n', 'RESOLV_CONTENT')
     write_root_file(ROOT / 'resolv.conf', resolv, 0o644)
     root_dir(ROOT / 'bin')
+    accounts = role_accounts(create=True)
     made = folders()
-    return {'node': str(node), 'nodeVersion': version, 'app': str(app), 'appNew': app_new, 'offsite': str(off), 'offsiteNew': off_new, 'madeFolders': made}
+    return {'node': str(node), 'nodeVersion': version, 'app': str(app), 'appNew': app_new, 'offsite': str(off), 'offsiteNew': off_new,
+            'madeAccounts': accounts, 'madeFolders': made}
 
 
 def act_probe(req):
