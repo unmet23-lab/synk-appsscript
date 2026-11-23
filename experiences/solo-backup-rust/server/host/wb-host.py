@@ -12,7 +12,7 @@ only through directory descriptors opened with O_NOFOLLOW, so a role user cannot
 for a link and make root change or write something outside its folder. Every action that
 changes something holds one host lock, so two runs never interleave.
 """
-import base64, hashlib, hmac, json, os, pathlib, re, shutil, signal, socket, stat, subprocess, tempfile, time, urllib.error, urllib.request
+import base64, hashlib, hmac, http.client, json, os, pathlib, re, shutil, signal, socket, stat, subprocess, tempfile, time, urllib.error, urllib.request
 
 ROOT = pathlib.Path('/opt/synk/workbackup')
 SRV = pathlib.Path('/srv/synk/workbackup')
@@ -42,6 +42,9 @@ SECRET_NAMES = {'api': ('wb-keys-rpc', 'wb-files-rpc'), 'keys': ('wb-keys-b2', '
 RPC_PAIRS = {'wb-keys-rpc': ('api', 'keys'), 'wb-files-rpc': ('api', 'files')}
 RPC_URLS = {'wb-keys-rpc': 'http://127.0.0.1:4211/rpc', 'wb-files-rpc': 'http://127.0.0.1:4212/rpc'}
 HEALTH = 'http://172.30.77.9:4210/backup-api/v1/health'
+# The host reaches the api from the bridge address itself: an unbound connection to 172.30.77.9
+# leaves from the node's VPC address, which the api's box refuses (10.0.0.0/8, measured 11-23).
+API_ADDR = ('172.30.77.9', 4210)
 APP_NAME = re.compile(r'^[a-z0-9-]+\.mjs$')
 # A box connect counts as blocked only with one of these answers. The unit's address filter
 # drops the SYN, so a blocked TCP connect most likely times out; EPERM is taken too. Anything
@@ -429,17 +432,27 @@ def company_identity():
     return sorted(line for line in out if line)
 
 
+def get_health(timeout=5):
+    conn = http.client.HTTPConnection(API_ADDR[0], API_ADDR[1], timeout=timeout, source_address=(API_ADDR[0], 0))
+    try:
+        conn.request('GET', '/backup-api/v1/health')
+        r = conn.getresponse()
+        return r.status, r.read()
+    finally:
+        conn.close()
+
+
 def health(timeout=45):
     deadline = time.time() + timeout
     last = None
     while time.time() < deadline:
         try:
-            with DIRECT.open(HEALTH, timeout=5) as r:
-                body = json.load(r)
-                if r.status == 200:
-                    return body
+            status, body = get_health()
+            if status == 200:
+                return json.loads(body)
+            last = 'HTTP_' + str(status)
         except Exception as e:
-            last = type(e).__name__
+            last = type(e).__name__ + ':' + str(e)[:80]
         time.sleep(2)
     raise Refused('HEALTH_NOT_READY:' + str(last))
 
@@ -875,6 +888,29 @@ def stale_services(before, app, node, units):
             or b64d(good['units'].get(n)) != units[n] or before['files'][n] != units[n]]
 
 
+def start_diagnosis():
+    """Read-only facts for a failed start: who listens on the three ports, whether the host
+    reaches them, the api address, the services' state and the host's INPUT rules."""
+    def reach(host, port):
+        try:
+            with socket.create_connection((host, port), timeout=3, source_address=(host, 0) if host == API_ADDR[0] else None):
+                return 'connected'
+        except OSError as e:
+            return type(e).__name__
+    def out(args):
+        try:
+            return run(args, check=False, timeout=20).stdout.strip().splitlines()[:25]
+        except Exception as e:
+            return [type(e).__name__]
+    return {'listen': out(['ss', '-ltnpH', '( sport = :4210 or sport = :4211 or sport = :4212 )']),
+            'reach': {'api': reach('172.30.77.9', 4210), 'keys': reach('127.0.0.1', 4211), 'files': reach('127.0.0.1', 4212)},
+            'address': out(['ip', '-4', '-o', 'addr', 'show', 'to', '172.30.77.9/32']),
+            'route': out(['ip', 'route', 'get', '172.30.77.9']),
+            'services': {n: service_show(n) for n in SERVICES},
+            'input': out(['iptables', '-S', 'INPUT']),
+            'raw': out(['sh', '-c', "iptables -t raw -S PREROUTING | grep -n '172.30.77' || true"])}
+
+
 def verify(company, app, node):
     checks = {'health': health(), 'steady': services_steady()}
     for n in SERVICES:
@@ -937,8 +973,12 @@ def act_start(req):
         root_dir(STATE_DIR, 0o700)
         write_root_file(GOOD, record, 0o600)
     except BaseException as e:
+        try:
+            diagnosis = json.dumps(start_diagnosis())
+        except Exception as d:
+            diagnosis = 'DIAGNOSIS_' + type(d).__name__
         undone = restore(before, done)
-        raise Refused((str(e) if isinstance(e, Refused) else 'UNEXPECTED_' + type(e).__name__) + ' · ' + undone)
+        raise Refused((str(e) if isinstance(e, Refused) else 'UNEXPECTED_' + type(e).__name__) + ' · ' + undone + ' · ' + diagnosis)
     return {'box': box, 'changedUnits': changed, 'restarted': restart, 'enabled': enable, 'timerStarted': timer, 'alsoChanged': rest, **checks,
             'active': active_states(), 'companyUnchanged': True, 'company': company}
 
