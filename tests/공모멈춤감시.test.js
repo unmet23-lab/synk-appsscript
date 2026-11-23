@@ -161,3 +161,57 @@ test('명령줄 --급한공고알림: 한 통 보내고 알린 단계를 적어,
   assert.match(둘째.out, /"보냄":0/);
   assert.strictEqual(fs.readdirSync(보낸곳).length, 1);
 });
+
+test('접수 여유: 마감 24시간 · 6시간 · 2시간 안쪽에 접수 준비 기록이 없으면 단계마다 한 번씩 낸다', () => {
+  const 볼 = 감시.볼것({ items: [
+    { id: 'c', name: '세라믹 공모', stage: '준비 중', deadline: '2026-11-23T17:00', owner_session: A },
+    { id: 'g', name: '광명역 공모', stage: '준비 중', deadline: '2026-11-24T18:00', owner_session: B },
+    { id: 'i', name: '아이돌 공모', stage: '준비 중', deadline: '2026-11-25T23:59', owner_session: A },
+  ] }, new Date('2026-11-23T11:30:00+09:00'));
+  const 상태 = { sessions: {} };
+  const 첫 = 감시.접수여유(볼, 상태, new Date('2026-11-23T11:30:00+09:00'));
+  assert.deepStrictEqual(첫.map(x => [x.이름, x.단계]), [['세라믹 공모', '6시간']], '광명역은 30.5시간, 아이돌은 60시간 남아 아직이다');
+  상태.sessions['접수:c'] = { 알린단계: '6시간' };
+  assert.strictEqual(감시.접수여유(볼, 상태, new Date('2026-11-23T12:30:00+09:00')).length, 0, '같은 단계는 다시 내지 않는다');
+  assert.deepStrictEqual(감시.접수여유(볼, 상태, new Date('2026-11-23T15:30:00+09:00')).map(x => x.단계), ['2시간']);
+  상태.sessions['접수:c'].준비끝 = '2026-11-23T15:40:00+09:00';
+  assert.strictEqual(감시.접수여유(볼, 상태, new Date('2026-11-23T16:00:00+09:00')).length, 0, '접수 준비가 끝났으면 내지 않는다');
+  assert.strictEqual(감시.접수여유(볼, { sessions: {} }, new Date('2026-11-23T17:10:00+09:00')).filter(x => x.id === 'c').length, 0, '마감이 지났으면 내지 않는다');
+});
+
+test('접수 여유 글: 마감 시각과 남은 시간을 쓰고, 세션 글은 유호님 칸을 마감 시각과 함께 여쭙게 한다', () => {
+  const [x] = 감시.접수여유(감시.볼것({ items: [{ id: 'c', name: '세라믹 공모', stage: '준비 중', deadline: '2026-11-23T17:00' }] }, new Date('2026-11-23T11:30:00+09:00')),
+    { sessions: {} }, new Date('2026-11-23T11:30:00+09:00'));
+  const 글 = 감시.접수글([x]);
+  assert.match(글, /11-23\(월\) 17:00 마감 · 5시간 남음/);
+  assert.match(글, /세라믹 공모 \(맡은 세션 없음\)/);
+  const 세션글 = 감시.접수세션글(x);
+  assert.match(세션글, /마감은 11-23\(월\) 17:00이고 5시간 남음입니다/);
+  assert.match(세션글, /남은 시간, 답을 받은 뒤 접수까지 드는 시간/);
+  assert.match(세션글, /--접수준비끝 c /);
+});
+
+test('명령줄 --접수여유알림 · --접수준비끝: 한 통 보내고 맡은 세션 글을 내며, 준비가 끝나면 더 내지 않는다', (t) => {
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), '공모접수-'));
+  const 보낸곳 = path.join(폴더, '텔레그램');
+  t.after(() => fs.rmSync(폴더, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(폴더, '신청현황.json'), JSON.stringify({ items: [{ id: 'g', name: '광명역 공모', stage: '준비 중', deadline: '2026-11-24T18:00', owner_session: B }] }));
+  const 돌림 = (...인자) => {
+    const 앞 = process.env.SYNK_TG_DRYRUN_DIR;
+    process.env.SYNK_TG_DRYRUN_DIR = 보낸곳;
+    const 찍음 = []; const 원래 = console.log; console.log = (s) => 찍음.push(String(s));
+    try { return { code: 감시.main([...인자, '--보관함', 폴더]), out: 찍음.join('\n') }; }
+    finally { console.log = 원래; if (앞 === undefined) delete process.env.SYNK_TG_DRYRUN_DIR; else process.env.SYNK_TG_DRYRUN_DIR = 앞; }
+  };
+  const 첫 = 돌림('--접수여유알림', '--지금', '2026-11-23T19:30:00+09:00');
+  assert.strictEqual(첫.code, 0, 첫.out);
+  const 결과 = JSON.parse(첫.out);
+  assert.strictEqual(결과.보냄, 1);
+  assert.deepStrictEqual(결과.세션글.map(x => x.session_id), [B]);
+  assert.match(fs.readFileSync(path.join(보낸곳, fs.readdirSync(보낸곳)[0]), 'utf8'), /광명역 공모/);
+  assert.match(돌림('--접수여유알림', '--지금', '2026-11-23T20:30:00+09:00').out, /"보냄":0/, '같은 단계는 다시 보내지 않는다');
+  assert.strictEqual(돌림('--접수준비끝', 'g', '--지금', '2026-11-24T09:00:00+09:00').code, 0);
+  assert.match(돌림('--접수여유알림', '--지금', '2026-11-24T13:00:00+09:00').out, /"보냄":0/, '준비가 끝났으면 6시간 단계에도 보내지 않는다');
+  assert.throws(() => 감시.main(['--접수준비끝', '없는id', '--보관함', 폴더]), /없습니다/);
+  assert.strictEqual(fs.readdirSync(보낸곳).length, 1);
+});

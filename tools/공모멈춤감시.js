@@ -182,6 +182,51 @@ function 급한글(목록, 지도주소 = '') {
   return 줄.join('\n');
 }
 
+/*
+ * 접수 여유(2026-11-23, 유호님 「응, 만들어」):
+ *   11-23에 세라믹(17:00 마감)과 국세청 숏폼(18:00 마감)은 영상을 다 만들고도 내지 못했다. 신청서에 유호님 손이 필요한 칸
+ *   (가입 · 로그인 · 성명 · 연락처 · 동의)이 마감 몇 분 전까지 남았고, 여쭐 때 마감까지 남은 시간을 함께 말씀드리지 않았다.
+ *   그래서 준비 중인 공모가 마감 24시간 · 6시간 · 2시간 안쪽에 들어설 때, 접수 준비가 끝났다는 기록이 없으면
+ *   유호님 텔레그램과 맡은 세션에 단계마다 한 번씩 알린다.
+ *   node tools/공모멈춤감시.js --접수여유알림        알릴 공모를 한 통으로 보내고, 맡은 세션에 보낼 글(세션글)을 낸다.
+ *   node tools/공모멈춤감시.js --접수준비끝 <공고 id>  유호님 칸까지 끝나 「내」만 남았거나 유호님 손이 필요 없으면 적는다.
+ */
+const 접수단계 = [['24시간', 24], ['6시간', 6], ['2시간', 2]];
+const 접수순위 = 이름 => 접수단계.findIndex(([n]) => n === 이름);
+
+/** 볼것() 가운데 접수 준비 기록 없이 마감 24시간 안쪽에 든 공모. 공모마다 24시간 · 6시간 · 2시간 단계에 한 번씩만 낸다. */
+function 접수여유(볼, 상태, 지금) {
+  const out = [];
+  for (const x of 볼) {
+    const 끝 = 마감시각(x.마감);
+    const 남은 = (끝 - +지금) / 36e5;
+    if (!(남은 > 0) || 남은 > 접수단계[0][1]) continue;
+    const s = 상태.sessions?.[`접수:${x.id}`] || {};
+    if (s.준비끝) continue;
+    const 단계 = [...접수단계].reverse().find(([, h]) => 남은 <= h)[0];
+    if (s.알린단계 && 접수순위(s.알린단계) >= 접수순위(단계)) continue;
+    out.push({ ...x, 남은시간: Math.round(남은 * 10) / 10, 마감시각: new Date(끝).toISOString(), 단계 });
+  }
+  return out.sort((a, b) => a.남은시간 - b.남은시간);
+}
+
+function 접수글(목록) {
+  const 줄 = [`마감이 다가온 공모 ${목록.length}건에 접수 준비가 끝났다는 기록이 없습니다.`,
+    '신청서의 가입 · 로그인 · 성명 · 연락처 · 동의 · 서명은 유호님이 직접 하시거나 입력을 맡겨 주셔야 합니다. 맡은 세션이 남은 칸을 여쭙니다.'];
+  for (const x of 목록) {
+    줄.push('', `• ${한국때(x.마감시각)} 마감 · ${남은글(x.남은시간)}`, `  ${x.이름}${x.주인세션.length ? '' : ' (맡은 세션 없음)'}`);
+  }
+  return 줄.join('\n');
+}
+
+function 접수세션글(x) {
+  return `공모 멈춤 감시입니다. 「${x.이름}」 마감은 ${한국때(x.마감시각)}이고 ${남은글(x.남은시간)}입니다. 그런데 접수 준비가 끝났다는 기록이 없습니다. `
+    + '지금 접수 화면이나 제출 서식을 열어 칸을 모두 확인하고, 유호님 손이 필요 없는 칸은 채워 두세요. '
+    + '가입 · 로그인 · 성명 · 연락처 · 동의 · 서명처럼 유호님 손이 필요한 칸은 한 번에 여쭙고, 질문에 마감 시각, 남은 시간, 답을 받은 뒤 접수까지 드는 시간을 넣어 주세요. '
+    + '마감 6시간 안쪽이면 다듬기보다 접수를 먼저 합니다. '
+    + `유호님 칸까지 끝나 「내」만 남았거나 유호님 손이 필요 없으면 node C:/Users/q1212/Documents/SYNK-appsscript/tools/공모멈춤감시.js --접수준비끝 ${x.id} 를 돌려 주세요.`;
+}
+
 function 값(argv, 옵션) {
   if (!argv.includes(옵션)) return '';
   const v = argv[argv.indexOf(옵션) + 1];
@@ -215,6 +260,26 @@ function main(argv) {
   }
   const 현황 = 읽기JSON(path.join(보관함, '신청현황.json'), { items: [] });
   const 볼 = 볼것(현황, 지금);
+  if (argv.includes('--접수준비끝')) {
+    const id = 값(argv, '--접수준비끝');
+    const o = (현황.items || []).find(x => x.id === id);
+    if (!o) throw Error(`신청현황에 id 「${id}」가 없습니다.`);
+    Object.assign(상태.sessions[`접수:${id}`] ||= {}, { 준비끝: 지금.toISOString(), 이름: o.name });
+    쓰기JSON(상태경로, 상태);
+    console.log(`${o.name} 접수 준비 끝 ${지금.toISOString()}`);
+    return 0;
+  }
+  if (argv.includes('--접수여유알림')) {
+    const 낼것 = 접수여유(볼, 상태, 지금);
+    if (!낼것.length) { console.log(JSON.stringify({ 보냄: 0, 세션글: [] })); return 0; }
+    const 결과 = require('./텔레그램승인.js').예약알림보내기(접수글(낼것), process.env, { 한도ms: 150000 });
+    if (!결과.ok) { console.log(JSON.stringify({ 보냄: 0, 오류: 결과.error || '텔레그램을 보내지 못했다', 공모: 낼것.map(x => x.이름) })); return 1; }
+    for (const x of 낼것) Object.assign(상태.sessions[`접수:${x.id}`] ||= {}, { 알린단계: x.단계, 알린때: 지금.toISOString(), 이름: x.이름 });
+    쓰기JSON(상태경로, 상태);
+    console.log(JSON.stringify({ 보냄: 낼것.length, method: 결과.method, 공모: 낼것.map(x => `${x.이름} (${x.단계} 안쪽)`),
+      세션글: 낼것.flatMap(x => x.주인세션.map(session_id => ({ session_id, 공모: x.이름, 글: 접수세션글(x) }))) }, null, 1));
+    return 0;
+  }
   for (const [옵션, 칸] of [['--깨움', '깨운때'], ['--알림', '알린때']]) {
     if (!argv.includes(옵션)) continue;
     const sid = 값(argv, 옵션);
@@ -236,8 +301,9 @@ function main(argv) {
   let 급한 = [], 급한공고오류 = '';
   try { 급한 = 급한공고(열린목록(보관함, 지금).열린, 상태, 지금).map(x => `${x.이름} (${x.단계} 안쪽, ${남은글(x.남은시간)})`); }
   catch (e) { 급한공고오류 = String(e.message || e).slice(0, 300); }
+  const 접수 = 접수여유(볼, 상태, 지금).map(x => `${x.이름} (${x.단계} 안쪽, ${남은글(x.남은시간)})`);
   console.log(JSON.stringify({ 지금: 지금.toISOString(), 볼것: 볼, 볼세션: 세션들, 주인없음: 볼.filter(x => !x.주인세션.length).map(x => x.이름), 급한공고: 급한,
-    ...(급한공고오류 && { 급한공고오류 }) }, null, 1));
+    접수여유: 접수, ...(급한공고오류 && { 급한공고오류 }) }, null, 1));
   return 0;
 }
 
@@ -245,4 +311,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (e) { console.error(e.message); process.exitCode = 1; }
 }
 
-module.exports = { 마감시각, 볼것, 판정, 문턱분, 급한공고, 급한글, 열린마감시각, main };
+module.exports = { 마감시각, 볼것, 판정, 문턱분, 급한공고, 급한글, 열린마감시각, 접수여유, 접수글, 접수세션글, main };
