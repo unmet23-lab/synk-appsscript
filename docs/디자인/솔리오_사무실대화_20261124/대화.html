@@ -102,9 +102,9 @@ body.sized #app{outline:1px solid var(--hair)}
 .back svg{width:16px;height:16px}
 .who{margin:0;font:300 clamp(28px,2.7cqw,40px)/1.1 var(--sans);letter-spacing:-.02em;min-width:0}
 .who small{display:block;margin-bottom:10px;font:500 12px/1 var(--sans);letter-spacing:.08em;color:var(--dim)}
-.state{margin:0;font:300 clamp(16px,1.4cqw,20px)/1.5 var(--sans);color:var(--paper);max-width:26em;text-wrap:pretty}
+.state{margin:0;font:300 clamp(15px,1.3cqw,19px)/1.5 var(--sans);color:var(--paper);max-width:26em;text-wrap:pretty}
 .state .then{display:block;color:var(--dim)}
-.floor{position:relative;height:100%;aspect-ratio:1.72;max-width:calc((100cqw - clamp(256px,22cqw,312px) - clamp(264px,21cqw,300px)) * .62);min-height:0}
+.floor{position:relative;height:100%;aspect-ratio:1.72;max-width:calc((100cqw - clamp(256px,22cqw,312px) - clamp(264px,21cqw,300px)) * .55);min-height:0}
 .floor canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 .talk{display:grid;grid-template-rows:minmax(0,1fr) auto auto auto;min-height:0;min-width:0}
@@ -142,6 +142,22 @@ body.sized #app{outline:1px solid var(--hair)}
 .askbox .note{margin:0;font:400 13px/1.55 var(--sans);color:var(--dim)}
 .pill{appearance:none;height:38px;margin:10px 0 0;padding:0 20px;border-radius:999px;border:1px solid var(--paper);background:var(--paper);color:var(--void);font:600 14px/1 var(--sans);cursor:pointer}
 .pill:hover{background:#FFFFFF}
+.verb{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin:10px 0 0;font:400 12px/1.5 var(--sans);color:var(--faint)}
+.verb .jump{font-size:12px}
+.long .mb{margin-top:8px}
+.shot{display:block;margin:12px 0 0;width:min(340px,100%);border-radius:8px;overflow:hidden;background:#FFFFFF;box-shadow:0 14px 30px -12px rgba(0,0,0,.9)}
+.shot .bar{display:block;padding:6px 10px;background:#EEECE8;font:400 10px/1 var(--mono);color:#77746E}
+.shot .site{display:block;padding:16px 18px 18px;color:#151514}
+.shot .logo{display:block;font:600 11px/1 var(--sans);letter-spacing:.06em}
+.shot .h{display:block;margin:18px 0 8px;font:600 21px/1.25 var(--serif)}
+.shot .s{display:block;margin:0 0 14px;font:400 11px/1.45 var(--sans);color:#5D5B57}
+.shot .btn{display:inline-block;padding:8px 13px;border-radius:999px;background:#151514;color:#FFFFFF;font:500 11px/1 var(--sans)}
+.shot.phone{width:180px}
+.shot.phone .h{font-size:17px}
+.shotcap{margin:6px 0 0;font:400 12px/1.4 var(--sans);color:var(--faint)}
+.ways{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.ways li{position:relative;padding-left:14px;font:400 12px/1.5 var(--sans);color:var(--text)}
+.ways li::before{content:"";position:absolute;left:0;top:.75em;width:7px;height:1px;background:var(--faint)}
 .resolved{margin:6px 0 0;font:400 13px/1.5 var(--sans);color:var(--dim)}
 /* 손님의 문서: 흰 종이 한 장. 누르면 그 자리에서 펼쳐진다 */
 .doc{appearance:none;border:0;margin:12px 0 0;display:block;width:min(330px,100%);padding:15px 17px 13px;text-align:left;background:var(--sheet);color:var(--sheet-ink);border-radius:3px;box-shadow:0 14px 30px -12px rgba(0,0,0,.9);cursor:pointer;font:inherit}
@@ -331,7 +347,7 @@ import { createOfficeFloor } from '../../../desktop/renderer/office-floor.mjs';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const INK = '243,241,236', RIM = '255,221,182';
+const INK = '243,241,236', RIM = INK;
 const ink = a => `rgba(${INK},${a})`;
 const app = $('#app'), threadEl = $('#thread'), sideEl = $('#side'), chatsEl = $('#chats'), msgEl = $('#msg'), composeEl = $('#compose');
 
@@ -350,14 +366,14 @@ const firstSentence = t => (String(t).match(/^.*?[.!?](\s|$)/) || [t])[0].trim()
 
 /* ── 자료(이름, 일, 숫자는 모두 예시) ── */
 const DEPTS0 = [
-  {key:'plan', name:'기획부', role:'사업계획서와 지원사업 공고를 회사 자료에 맞춰 읽습니다.', dir:'문서\\기획', tool:'Claude Code', chips:['사업계획서 다시 읽어 줘', '지원사업 공고 찾아 줘']},
-  {key:'mkt', name:'마케팅부', role:'블로그와 SNS 글을 쓰고, 반응과 경쟁사를 살핍니다.', dir:'문서\\마케팅', tool:'Claude Code', chips:['경쟁사 다시 읽어 줘', '블로그 글 써 줘', 'SNS 반응 정리해 줘']},
-  {key:'law', name:'법무부', role:'계약서와 약관을 읽고 위험한 조항을 짚습니다.', dir:'문서\\계약', tool:'Claude Code', chips:['계약서 검토해 줘', '약관 바뀐 곳 찾아 줘']},
-  {key:'dev', name:'개발부', role:'가게 코드를 고치고 시험을 돌립니다.', dir:'코드\\shop', tool:'Codex', chips:['시험 돌려 줘', '오류 원인 찾아 줘']},
-  {key:'acc', name:'회계부', role:'영수증과 세금계산서를 정리합니다.', dir:'문서\\회계', tool:'Claude Code', chips:['11월 영수증 정리해 줘', '이번 달 합계 알려 줘']},
-  {key:'cs', name:'고객지원부', role:'문의 메일을 읽고 답장 초안을 씁니다.', dir:'문서\\문의', tool:'Claude Code', chips:['안 읽은 문의 답장 써 줘', '견적 문의 찾아 줘']},
+  {key:'plan', name:'기획부', role:'사업계획서와 지원사업 공고를 회사 자료에 맞춰 읽습니다.', dir:'문서\\기획', tool:'Claude Code', ways:['공고의 평가 항목마다 계획서가 답하는지 봅니다', '숫자는 회계부 자료와 맞춥니다', '원본은 두고 새 판으로 저장합니다'], chips:['사업계획서 다시 읽어 줘', '지원사업 공고 찾아 줘']},
+  {key:'mkt', name:'마케팅부', role:'블로그와 SNS 글을 쓰고, 반응과 경쟁사를 살핍니다.', dir:'문서\\마케팅', tool:'Claude Code', ways:['경쟁사는 누구나 볼 수 있는 쪽만 읽고, 읽은 곳과 때를 적습니다', '지난번과 달라진 것만 말합니다', '글은 회사 말투 장부를 따릅니다'], chips:['경쟁사 다시 읽어 줘', '블로그 글 써 줘', 'SNS 반응 정리해 줘']},
+  {key:'law', name:'법무부', role:'계약서와 약관을 읽고 위험한 조항을 짚습니다.', dir:'문서\\계약', tool:'Claude Code', ways:['손해배상, 자동 연장, 해지, 관할은 꼭 봅니다', '고친 글을 원문 옆에 나란히 적습니다', '원문 파일은 고치지 않습니다'], chips:['계약서 검토해 줘', '약관 바뀐 곳 찾아 줘']},
+  {key:'dev', name:'개발부', role:'가게 홈페이지와 코드를 짓고 고칩니다.', dir:'코드\\shop', tool:'Codex', run:'짓기 Claude · 검수 GPT', ways:['Claude가 짓고 GPT가 한 번 더 봅니다', '고친 뒤 시험을 돌리고 화면을 찍어 보입니다', '검수는 두 번까지 돌고, 그래도 남으면 여쭙니다'], chips:['가게 홈페이지 만들어 줘', '시험 돌려 줘', '오류 원인 찾아 줘']},
+  {key:'acc', name:'회계부', role:'영수증과 세금계산서를 정리합니다.', dir:'문서\\회계', tool:'Claude Code', ways:['세금계산서가 없는 영수증을 따로 셉니다', '합계는 지난달과 견줍니다'], chips:['11월 영수증 정리해 줘', '이번 달 합계 알려 줘']},
+  {key:'cs', name:'고객지원부', role:'문의 메일을 읽고 답장 초안을 씁니다.', dir:'문서\\문의', tool:'Claude Code', ways:['값은 지난달 견적표를 따릅니다', '메일은 보내지 않고 초안만 남깁니다'], chips:['안 읽은 문의 답장 써 줘', '견적 문의 찾아 줘']},
 ];
-const LEAD_CHIPS = ['견적 문의 답장 써 줘', '경쟁사 다시 읽어 줘', '11월 영수증 정리해 줘'];
+const LEAD_CHIPS = ['가게 홈페이지 만들어 줘', '견적 문의 답장 써 줘', '경쟁사 다시 읽어 줘'];
 const MADE0 = {
   plan:[['사업계획서_v4.docx', '지난주 목'], ['공고문_새싹창업.pdf', '지난주 목']],
   mkt:[['경쟁사_1123.md', '어제'], ['블로그_10월.md', '10월 31일']],
@@ -393,7 +409,8 @@ function cast(sc) {
   ];
 }
 /* 직원이 남긴 말. 보낸 사람의 이름과 도구는 그때의 것으로 적어 둔다 */
-const said = (sid, text, at, extra = {}) => { const s = byId(sid) || {}; return {t:'staff', sid, name:s.name, by:s.lead ? '팀장' : '', text, at, ...extra}; };
+const brand = s => s?.tool === 'Codex' ? 'GPT' : 'Claude';
+const said = (sid, text, at, extra = {}) => { const s = byId(sid) || {}; return {t:'staff', sid, name:s.name, by:(s.lead ? '팀장 · ' : '') + brand(s), text, at, ...extra}; };
 function seed(sc) {
   const ask = sc === 'ask', rest = sc === 'rest', T = m => hhmm(Date.now() - m * 60000);
   const th = {
@@ -550,10 +567,10 @@ function hat(c, x, y, R, kind) {
 }
 function orb(c, x, y, R, s) {
   const L = LOOK[s.status] || LOOK.resting;
-  // 일하는 동안은 등빛이 뒤에서 번진다(사무실의 탁상 등과 같은 빛 = 지금 일하는 중)
+  // 일하는 동안은 뒤에서 흐린 빛이 번진다(지금 일하는 중)
   if (s.status === 'working' || s.status === 'asked') {
     const g = c.createRadialGradient(x - R * .3, y - R * .3, 0, x, y, R * 2.1);
-    g.addColorStop(0, 'rgba(255,196,128,.34)'); g.addColorStop(1, 'rgba(255,196,128,0)');
+    g.addColorStop(0, ink(.16)); g.addColorStop(1, ink(0));
     c.fillStyle = g; c.fillRect(x - R * 2.2, y - R * 2.2, R * 4.4, R * 4.4);
   }
   c.beginPath(); c.arc(x, y, R, 0, Math.PI * 2); c.fillStyle = '#000'; c.fill();
@@ -623,7 +640,7 @@ const toFloor = s => ({id:s.id, zone:s.zone, status:s.status, alert:staffAlert(s
 function sceneOf() {
   const zones = DEPTS.map(d => ({key:d.key, kind:'dept', name:d.name, staff:inZone(d.key).map(toFloor)}));
   const lob = inZone('lobby'); if (lob.length) zones.push({key:'lobby', kind:'lobby', name:'부서 없는 일', staff:lob.map(toFloor)});
-  return {view:'tilted', viewSeq:0, seats:SEATS, skin:'walnut', skinSeq:0, zones};
+  return {view:'tilted', viewSeq:0, seats:SEATS, skin:'black', skinSeq:0, zones};
 }
 const markHot = k => chatsEl.querySelectorAll('.chat').forEach(b => b.classList.toggle('hot', b.dataset.chat === k));
 const floor = createOfficeFloor($('#floor'), {
@@ -666,6 +683,10 @@ function renderCap() {
   else { who.innerHTML = `<small>부서</small>${esc(nameOf(sel))}`; lines = deptSay(sel); }
   st.innerHTML = esc(lines[0]) + (lines[1] ? `<span class="then">${esc(lines[1])}</span>` : '');
 }
+function shotHTML(kind) {
+  const site = '<span class="logo">그래놀라 아침</span><span class="h">아침 5분,<br>그래놀라 한 그릇</span><span class="s">굽는 날마다 문 앞으로 보냅니다 · 월 29,000원</span><span class="btn">정기배송 신청</span>';
+  return `<figure class="shot ${kind}"><span class="bar">localhost:3000</span><span class="site">${site}</span></figure><p class="shotcap">${kind === 'phone' ? '휴대폰 너비 390px에서 찍은 화면' : '넓은 화면 1280px에서 찍은 화면'}</p>`;
+}
 function docHTML(m) {
   const d = m.doc, open = !!m.open;
   return `<button class="doc" type="button" data-doc="${m.id}" aria-expanded="${open}"><span class="fn">${esc(d.fn)}</span><span class="dh">${esc(d.h)}</span>`
@@ -690,7 +711,10 @@ function msgHTML(m) {
   else body = `<p class="mb">${esc(m.text)}</p>`;
   return `<article class="msg${fresh}"><canvas class="av" data-av="staff:${m.sid}" aria-hidden="true"></canvas><div class="mc">`
     + `<header class="mh"><b>${esc(m.name)}</b>${m.by ? `<span class="by">${esc(m.by)}</span>` : ''}<time>${esc(m.at)}</time></header>${body}`
+    + (m.long ? `<div class="long"${m.more ? '' : ' hidden'}>${m.long.map(p => `<p class="mb">${esc(p)}</p>`).join('')}</div>` : '')
     + (m.src ? `<p class="src">${esc(m.src)}</p>` : '') + (m.rest ? `<p class="rest">${esc(m.rest)}</p>` : '')
+    + (m.shot ? shotHTML(m.shot) : '')
+    + (m.verb || m.long || m.win ? `<p class="verb">${m.verb ? `<span>${esc(m.verb)}</span>` : ''}${m.long ? `<button class="jump" type="button" data-more="${m.id}">${m.more ? '줄여 보기' : '전체 답 보기'}</button>` : ''}${m.win ? `<button class="jump" type="button" data-win="${m.sid}">${esc(m.name)}의 창에서 이어 말하기</button>` : ''}</p>` : '')
     + (m.doc ? docHTML(m) : '') + (m.go ? `<p class="mgo"><button class="jump" type="button" data-go="${m.go}">${esc(nameOf(m.go))} 대화 보기</button></p>` : '')
     + '</div></article>';
 }
@@ -707,7 +731,7 @@ function doing(s) {
 }
 function nowRows(k, only) {
   return inZone(k).filter(only || (() => true)).sort((a, b) => RANK[a.status] - RANK[b.status]).map(s => `<div class="nrow ${s.status}"><canvas data-av="staff:${s.id}" aria-hidden="true"></canvas>`
-    + `<div><b>${esc(s.name)}</b>${s.lead ? '<span class="tool">팀장</span>' : ''}<span class="doing">${esc(doing(s))}</span>`
+    + `<div><b>${esc(s.name)}</b><span class="tool">${s.lead ? '팀장 · ' : ''}${brand(s)}</span><span class="doing">${esc(doing(s))}</span>`
     + `</div><time data-t0="${s.t0}" data-st="${s.status}">${esc(since(s))}</time></div>`).join('');
 }
 function typingHTML(k) {
@@ -769,7 +793,7 @@ function renderSide() {
   let h = '';
   if (sel === 'lead') {
     h += '<section class="sec"><h3>맡긴 일</h3>' + (tasks.length ? tasks.slice().reverse().map(t => `<div class="trow"><b>${esc(nameOf(t.dept))}</b><small>${esc(t.state)}</small><span>${esc(t.text)}</span></div>`).join('') : '<p>아직 맡긴 일이 없습니다.</p>') + '</section>';
-    h += `<section class="sec"><h3>팀장</h3><p>할 일을 받아 부서에 나누고, 끝난 결과를 모아 알려 드립니다. 직원을 띄우고 지켜보는 일은 솔리오가 합니다.</p><dl class="cfg"><dt>실행</dt><dd>Claude Code · Opus</dd><dt>자리</dt><dd>기획부</dd></dl></section>`;
+    h += `<section class="sec"><h3>팀장</h3><p>할 일을 받아 부서에 나누고, 끝난 결과를 모아 알려 드립니다. 직원을 띄우고 지켜보는 일은 솔리오가 합니다.</p><ul class="ways"><li>일을 받으면 맡길 부서와 까닭을 먼저 말합니다</li><li>끝난 일은 한 줄로 모아 알립니다</li></ul><dl class="cfg"><dt>실행</dt><dd>Claude Code · Opus</dd><dt>자리</dt><dd>기획부</dd></dl></section>`;
   } else if (sel === 'lobby') {
     h += '<section class="sec"><h3>읽는 것</h3><p>이 PC의 Claude Code와 Codex가 남긴 기록 파일만 읽습니다. 설정 파일은 고치지 않습니다.</p></section>';
   } else {
@@ -778,7 +802,7 @@ function renderSide() {
     const made = MADE[sel] || [];
     const docOf = f => (threads[sel] || []).find(m => m.doc?.fn === f);
     h += `<section class="sec"><h3>만든 것</h3>${made.length ? made.map(([f, w]) => { const m = docOf(f); return m ? `<button class="frow" type="button" data-open="${m.id}"><span>${esc(f)}</span><small>${esc(w)}</small></button>` : `<div class="frow"><span>${esc(f)}</span><small>${esc(w)}</small></div>`; }).join('') : '<p>아직 만든 것이 없습니다.</p>'}</section>`;
-    h += `<section class="sec"><h3>이 부서</h3><p>${esc(d.role)}</p><dl class="cfg"><dt>실행</dt><dd>${esc(d.tool)}</dd><dt>폴더</dt><dd>${esc(d.dir)}</dd><dt>자리</dt><dd>${esc(수(SEATS))}</dd></dl></section>`;
+    h += `<section class="sec"><h3>이 부서</h3><p>${esc(d.role)}</p>${d.ways?.length ? `<ul class="ways">${d.ways.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : ''}<dl class="cfg"><dt>실행</dt><dd>${esc(d.run || d.tool)}</dd><dt>폴더</dt><dd>${esc(d.dir)}</dd><dt>자리</dt><dd>${esc(수(SEATS))}</dd></dl></section>`;
   }
   sideEl.innerHTML = h;
   paintAll(sideEl);
@@ -837,8 +861,59 @@ function jobFor(k, text) {
   };
   return J[k] || {act:'일하는 중', verb:'일하는 중', ms:5000, made:`${deptOf(k).name}_메모.md`, reply:() => ({text:'맡기신 일을 마쳤습니다. 결과를 부서 폴더에 적었습니다.', doc:{fn:`${deptOf(k).name}_메모.md`, h:q, p:['처음 맡은 일이라 부서 폴더의 파일부터 읽었습니다.']}})};
 }
+/* 홈페이지 짓기(개발부): 팀장이 Claude 직원에게 짓게 하고, 끝나면 GPT 직원에게 보게 한다. 고칠 것이 나오면 다시 짓게 하고, 검수는 두 번까지다.
+   직원의 말은 그 직원 세션의 공식 기록에 남은 마지막 답을 그대로 싣는다(줄인 것은 「전체 답 보기」로 펼친다). 이어 말하려면 그 직원의 창을 연다 */
+const WEB = /홈페이지|웹사이트|사이트|랜딩/;
+function seatFor(k, tool) {
+  const list = inZone(k).filter(s => !s.lead);
+  const s = list.find(x => x.tool === tool && (x.status === 'resting' || x.status === 'done'));
+  if (s) return s;
+  if (list.length >= SEATS) return null;
+  const n = S('s-n' + (++uid), k, NEWNAMES.find(x => !staff.some(o => o.name === x)), tool, tool === 'Codex' ? 'GPT' : 'Sonnet', null, 'resting', '쉬는 중');
+  staff.push(n);
+  return n;
+}
+function webBuild(text, onDone) {
+  const k = 'dev', b = seatFor(k, 'Claude Code');
+  if (!b) { push(k, {t:'act', icon:'wait', text:'세 자리가 모두 일하고 있습니다. 자리가 비면 이 일부터 시작합니다.', at:hhmm()}); refresh(); return null; }
+  const r = inZone(k).find(x => x.tool === 'Codex' && x !== b && x.status !== 'asked');
+  const go = (s, verb) => { Object.assign(s, {status:'working', act:verb, t0:Date.now(), news:false, subagents:0}); typing[k] = {sid:s.id, verb, t0:Date.now()}; refresh(); };
+  const fin = (s, msg, extra) => { delete typing[k]; Object.assign(s, {status:'done', act:'일을 끝냄', t0:Date.now(), news:sel !== k}); push(k, said(s.id, msg, hhmm(), extra)); if (sel === k) settle(s); };
+  const T = ms => still ? 700 : ms;
+  push(k, {t:'act', text:r ? `${이가(b.name)} 짓고, ${이가(r.name)} 한 번 더 봅니다` : `${이가(b.name)} 짓습니다`, at:hhmm()});
+  go(b, '홈페이지를 짓는 중');
+  later(T(6400), () => {
+    fin(b, '한 장짜리 가게 홈페이지를 만들었습니다. 소개, 메뉴 셋, 정기배송 신청 버튼을 넣었고, 이 PC에서 열어 화면을 찍었습니다.', {
+      long:['바꾼 파일은 index.html, style.css 둘이고, 사진 자리 하나는 비워 두었습니다.', '소개 글은 기획부의 사업계획서 4판에서, 정기배송 값(월 29,000원)은 회계부 자료에서 가져왔습니다.', '아직 하지 않은 것: 결제는 붙이지 않았습니다. 신청 버튼은 신청 양식으로 갑니다.'],
+      shot:'wide', verb:'Claude가 남긴 답 그대로 · 바꾼 파일 둘', win:true});
+    (MADE[k] ||= []).unshift(['index.html', '방금']);
+    if (!r) { onDone?.(b, {text:'홈페이지를 지었습니다.'}); refresh(); return; }
+    if (r.status === 'working') { push(k, said(r.id, '결제 화면의 시험을 모두 통과했습니다. 도우미 둘이 나눠 돌렸습니다.', hhmm(), {src:'시험 42개 · 21분'})); push(k, {t:'act', text:`${이가(r.name)} 하던 시험을 끝내고 검수를 맡았습니다`, at:hhmm()}); }
+    go(r, `${이가(b.name)} 바꾼 곳을 보는 중`);
+    later(T(5200), () => {
+      fin(r, '바꾼 곳 둘을 봤습니다. 고칠 것이 하나 있습니다. 휴대폰 너비(390px)에서 정기배송 신청 버튼이 화면 오른쪽 밖으로 밀립니다. 나머지는 그대로 두어도 됩니다.', {verb:'GPT가 남긴 답 그대로 · 본 파일 둘', win:true});
+      push(k, {t:'act', text:`고칠 것을 ${b.name}에게 다시 맡겼습니다 · 검수 1번째`, at:hhmm()});
+      go(b, '버튼 자리를 고치는 중');
+      later(T(4200), () => {
+        fin(b, '휴대폰 너비에서 버튼이 화면 안에 들어오게 고쳤습니다. 390px에서 다시 찍은 화면입니다.', {shot:'phone', verb:'Claude가 남긴 답 그대로 · 바꾼 파일 하나', win:true});
+        go(r, '다시 보는 중');
+        later(T(3600), () => {
+          fin(r, '다시 봤습니다. 고칠 것이 없습니다.', {verb:'GPT가 남긴 답 그대로'});
+          push(k, {t:'act', icon:'ok', text:'검수를 마쳤습니다 · 2번째에 통과', at:hhmm()});
+          onDone?.(b, {text:'가게 홈페이지를 지었습니다.', lead:'가게 홈페이지를 지었고, GPT 검수 2번째에 통과했습니다.'});
+          refresh();
+        });
+        refresh();
+      });
+      refresh();
+    });
+    refresh();
+  });
+  return b;
+}
 /* 부서가 일을 받는다. 쉬던 직원이 깨어나거나 빈 자리에 새 직원이 앉고, 끝나면 그 대화에 결과를 남긴다 */
 function take(k, text, onDone) {
+  if (k === 'dev' && WEB.test(text)) return webBuild(text, onDone);
   const s = freeStaff(k);
   if (!s) { push(k, {t:'act', icon:'wait', text:`세 자리가 모두 일하고 있습니다. 자리가 비면 이 일부터 시작합니다.`, at:hhmm()}); refresh(); return null; }
   const job = jobFor(k, text);
@@ -860,7 +935,7 @@ const ROUTES = [
   ['cs', /문의|답장|고객|견적|손님/, '손님 문의는 고객지원부가 답합니다.'],
   ['mkt', /블로그|SNS|인스타|경쟁사|홍보|광고|반응|게시물/i, '글과 SNS, 경쟁사는 마케팅부가 봅니다.'],
   ['law', /계약|약관|조항|법/, '계약과 약관은 법무부가 읽습니다.'],
-  ['dev', /코드|오류|버그|화면|앱|시험|테스트|배포|사이트|로그인/, '코드와 오류는 개발부가 고칩니다.'],
+  ['dev', /홈페이지|웹사이트|사이트|랜딩|코드|오류|버그|화면|앱|시험|테스트|배포|로그인/, '홈페이지와 코드는 개발부가 짓고 고칩니다.'],
   ['acc', /영수증|세금|회계|정산|매출|합계|비용/, '돈과 영수증은 회계부가 정리합니다.'],
   ['plan', /계획서|공고|지원사업|사업|기획/, '계획서와 공고는 기획부가 읽습니다.'],
 ];
@@ -884,7 +959,7 @@ function leadTake(text) {
     const task = {dept:k, text:short(text, 34), state:'일하는 중'};
     const s = take(k, text, (st, r) => {
       task.state = '끝냄';
-      push('lead', said(L.id, `${이가(d.name)} 끝냈습니다. ${firstSentence(r.text)}`, hhmm(), {go:k}));
+      push('lead', said(L.id, `${이가(d.name)} 끝냈습니다. ${r.lead || firstSentence(r.text)}`, hhmm(), {go:k}));
     });
     if (!s) task.state = '기다림';
     tasks.push(task);
@@ -963,13 +1038,21 @@ function addDept(name) {
 
 /* ── 손 ── */
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-chat],[data-go],[data-approve],[data-wake],[data-doc],[data-chip],[data-move],[data-open]');
+  const t = e.target.closest('[data-chat],[data-go],[data-approve],[data-wake],[data-doc],[data-chip],[data-move],[data-open],[data-more],[data-win]');
   if (!t) return;
   if (t.dataset.chat) select(t.dataset.chat);
   else if (t.dataset.go) select(t.dataset.go);
   else if (t.dataset.approve) approve(t.dataset.approve);
   else if (t.dataset.wake) wake(t.dataset.wake);
   else if (t.dataset.chip) send(sel, t.dataset.chip);
+  else if (t.dataset.more) {
+    const m = (threads[sel] || []).find(x => String(x.id) === t.dataset.more); if (!m) return;
+    m.more = !m.more; const box = t.closest('.mc')?.querySelector('.long'); if (box) box.hidden = !m.more; t.textContent = m.more ? '줄여 보기' : '전체 답 보기';
+  }
+  else if (t.dataset.win) {
+    const s = byId(t.dataset.win); if (!s) return;
+    push(sel, {t:'act', icon:'ok', text:`${s.name}의 창을 열었습니다. 거기서 이어 말한 것도 이 대화에 이어집니다`, at:hhmm()}); refresh({toEnd:true});
+  }
   else if (t.dataset.open) {
     const m = (threads[sel] || []).find(x => String(x.id) === t.dataset.open), card = threadEl.querySelector(`[data-doc="${t.dataset.open}"]`); if (!m || !card) return;
     m.open = true; card.setAttribute('aria-expanded', 'true'); card.querySelector('.dfoot').textContent = '접기';

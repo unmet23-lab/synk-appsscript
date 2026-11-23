@@ -29,6 +29,8 @@ const 장면 = [
   ['6_회계부_새결과', 1440, 900, '#acc'],
   ['7_부서없는일', 1440, 900, '#lobby'],
   ['8_좁은창_1024', 1024, 720, '#dev'],
+  ['11_개발부_홈페이지_검수', 1440, 900, '#dev', async p => { await p.click('[data-chip="가게 홈페이지 만들어 줘"]'); await 쉼(13000); }],
+  ['12_개발부_홈페이지_통과', 1440, 900, '#dev', async p => { await p.click('[data-chip="가게 홈페이지 만들어 줘"]'); await 쉼(22500); await p.evaluate(() => { const t = document.getElementById('thread'); const b = [...t.querySelectorAll('.msg')].find(m => m.querySelector('.shot')); if (b) t.scrollTop += b.getBoundingClientRect().top - t.getBoundingClientRect().top - 16; }); }],
   ['9_휴대폰_목록', 420, 800, '#list'],
   ['10_휴대폰_방', 420, 800, '#law'],
 ];
