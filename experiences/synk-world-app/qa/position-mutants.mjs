@@ -876,15 +876,10 @@ export const POSITION_MUTANTS = [
     '      const stored = fresherOf(keptFor(key), answers.read(owner, { revision, day }));\n',
     '      const stored = answers.read(owner, { revision, day });\n',
   ],
-  // `if (!storage)` 줄만 빼는 변형은 아래 try가 TypeError를 잡아 같은 false를 돌려주는 같은 꼴이라 살아남았다(11-16 밤). 되돌아갈 수 있는
-  // 회귀는 고치기 전처럼 없는 저장소를 건너뛰고 참을 돌려주는 꼴이다.
-  [
-    'monthAnswer',
-    '학습일 답 다시 보기',
-    '저장소가 없어도 적었다고 한다 — 없는 저장소를 건너뛰고 참을 돌려준다(Fable 다시 보기 FA1 · 고치기 전의 꼴)',
-    '      if (!storage) return false;\n      const value = { v: VERSION, revision, day, ...kind.shape(answer) };\n      try {\n        storage.setItem(keyOf(kind, account), JSON.stringify(value));\n',
-    '      const value = { v: VERSION, revision, day, ...kind.shape(answer) };\n      try {\n        storage?.setItem(keyOf(kind, account), JSON.stringify(value));\n',
-  ],
+  // `if (!storage)` 줄만 빼는 변형은 아래 try가 TypeError를 잡아 같은 false를 돌려주는 같은 꼴이라 살아남았다(11-16 밤). 「없는 저장소를
+  // 건너뛰고 참을 돌려준다」(Fable 다시 보기 FA1 · 고치기 전의 꼴)도 검수 s3e1 GC1 뒤로 같은 꼴이라 뺐다(11-23 4c 전체 실행에서 홀로 살아남음).
+  // 저장소가 없으면 지우기 표지를 읽지 못해 물음의 표지가 「…|」로 끝나고, write는 그 줄(표지 없는 물음)에서 먼저 false를 돌려준다.
+  // 표지 없는 물음을 적지 않는 것은 아래 「지우기 표지」 갈래(용량 초과 장면)가 잡는다.
   [
     'monthAnswer',
     '학습일 답 다시 보기',
