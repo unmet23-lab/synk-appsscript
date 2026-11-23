@@ -244,8 +244,8 @@ test('Fable 6: the space report gives sums only — no field of it, path or not,
   const text = JSON.stringify([answers, said]);
   assert.ok(!text.includes('sentinel') && !text.includes('비밀 고객'), text.slice(0, 400));
   const space = answers[0].space;
-  assert.deepEqual(space.drive, { letter: 'C', size: 1022880641024, free: 126916279910, growthPerDay: 2254857830, startLineGb: 100, daysToStartLine: 9 });
-  assert.equal(space.otherDrives, 1, 'the bad drive letter is dropped');
+  assert.deepEqual(space.drives, [{ letter: 'C', size: 1022880641024, free: 126916279910, growthPerDay: 2254857830, startLineGb: 100, daysToStartLine: 9 },
+    { letter: 'D', size: 2048407130112, free: 1296023822336, growthPerDay: null, startLineGb: 150, daysToStartLine: null }], 'every drive, the bad drive letter dropped');
   assert.deepEqual(space.groups.map(g => `${g.grade}|${g.group}|${g.count}`), ['auto|temp|1', 'auto|build|1', 'suggest|worktree|1', 'view|ai-app-copy|1', 'view|other|1']);
   assert.ok(space.groups.every(g => O.GROUPS.includes(g.group) && O.GRADES.includes(g.grade)));
   assert.deepEqual(answers[3].space, { missing: false, invalid: true }, 'a broken report is one word');
@@ -280,7 +280,15 @@ test('the first scan still running is told apart from 「nothing to free」', ()
   const s = O.summarizeSpace({ v: 1, createdAt: new Date().toISOString(), lap: null, scanning: { startedAt: new Date().toISOString(), days: 1 }, drives: [], candidates: [] });
   assert.equal(s.lapFinishedAt, null);
   assert.equal(s.scanningDays, 1);
-  assert.equal(s.drive, null);
+  assert.deepEqual(s.drives, []);
+});
+
+test('all drives (PC 진단 설계 5.1): small recovery partitions and mirrored letters are not shown; below the line first, then the nearest day, then the letter', () => {
+  const G = 1024 ** 3;
+  const d = (drive, sizeGb, freeGb, line, days) => ({ drive, size: Math.round(sizeGb * G), free: Math.round(freeGb * G), growthPerDay: null, startLineGb: line, daysToStartLine: days });
+  const s = O.summarizeSpace({ v: 1, createdAt: new Date().toISOString(), lap: null, candidates: [], drives: [
+    d('C', 953, 97, 143, 30), d('D', 1907, 299, 150, null), d('E', 20, 1, 3, 0), d('G', 953, 97, 143, 30), d('F', 476, 40, 71, 0), d('H', 238, 60, 35, 12)] });
+  assert.deepEqual(s.drives.map(x => x.letter), ['F', 'C', 'H', 'D'], 'F and C are below their lines (F reaches it sooner), then H by days, then D; E is a 20GB recovery partition; G mirrors C (Google Drive)');
 });
 
 test('the snapshot carries the PC app update words only, and a press asks the updater to check without waiting', async () => {
@@ -605,6 +613,38 @@ test('2판 room (카본 A1 · A2 · A3 · A4): before consent a refused pick spe
   assert.equal(v.board.busy, false, 'no fast polling for a lost answer');
   v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(FREE_PATIENCE + 60000, { ...old, free: free({ stage: 'claimed' }) }) }), NOW);
   assert.deepEqual([v.board.main.label, v.board.main.disabled], [ONECLICK_LABEL, false]);
+});
+
+test('all drives on the board (PC 진단 설계 5.1): the tightest is the big card, the rest are one-line bars, from four the third on fold; the below-line sentence names the drives', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const drive = (letter, sizeGb, freeGb, line, days) => ({ letter, size: Math.round(sizeGb * GBy), free: Math.round(freeGb * GBy), growthPerDay: null, startLineGb: line, daysToStartLine: days });
+  const C = drive('C', 953, 118.2, 100, 9), D = drive('D', 1907, 299, 150, null), E = drive('E', 476, 300, 71, null), F = drive('F', 238, 20, 35, 0);
+  const board = drives => solioBackupView(SNAP({ space: { ...SPACE, drive: undefined, drives } }), NOW).board.drive;
+  let b = board([C]);
+  assert.deepEqual([b.label, b.rows, b.folded, b.foldLabel], ['C: 드라이브 953GB', [], [], ''], 'one drive keeps its card');
+  b = board([C, D]);
+  assert.deepEqual(b.rows.map(r => [r.label, r.size, r.free, r.below]), [['D:', '1.9TB', '299.0GB 남음', false]]);
+  assert.ok(Number.isFinite(b.rows[0].linePct) && b.rows[0].freePct > 0 && /D: 드라이브 1\.9TB/.test(b.rows[0].aria));
+  assert.doesNotMatch(JSON.stringify(b), /다른 드라이브/, 'the old 「다른 드라이브 n개」 line is gone');
+  b = board([C, D, E]);
+  assert.deepEqual([b.rows.length, b.folded.length, b.foldLabel], [2, 0, '']);
+  b = board([F, C, D, E]);
+  assert.deepEqual([b.label, b.below, b.rows.map(r => r.label), b.folded.map(r => r.label), b.foldLabel], ['F: 드라이브 238GB', true, ['C:'], ['D:', 'E:'], '드라이브 2개 더']);
+  // 큰 칸의 「선 아래」는 남은 공간과 정한 선으로 본다. 정한 선이 없으면 그렇다고 쓴다
+  assert.match(board([drive('C', 953, 80, 100, null)]).pred, /정한 선\(100GB\)보다 적습니다/);
+  assert.equal(board([drive('C', 953, 80, null, null)]).pred, '정한 선을 아직 받지 못했습니다.');
+  // 접힌 뒤 문장이 선 아래 드라이브의 글자를 말한다
+  const answered = { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() };
+  const v = solioBackupView(SNAP({ space: { ...SPACE, drive: undefined, drives: [F, drive('H', 476, 30, 71, 0), C] }, oneclick: PRESS(120000, answered) }), NOW);
+  assert.match(v.then, /^다만 F: · H:의 남은 공간이 정한 선보다 적습니다/);
+});
+
+test('2판 room (Fable 다시 검수 r2 P2): a lost free answer on a PC that turned it on is said on the top line too, with the engine window to look', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const answered = { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() };
+  const v = solioBackupView(SNAP({ status: { ...STATUS, spaceFree: 'on' }, oneclick: PRESS(120000, { ...answered, free: { stage: 'gone', result: null, reason: null, answeredAt: new Date(NOW - 1000).toISOString() } }) }), NOW);
+  assert.equal(v.then, '다만 비우기 결과를 확인하지 못했습니다. 엔진 창의 공간 비우기에서 봐 주세요.');
+  assert.deepEqual([v.note, v.acts[0].label, v.acts[0].arg], ['확인 필요', '엔진 창에서 보기', 'space']);
 });
 
 test('2판 room (Fable 최종 P1-1 · P2-1 · P2-2): a lead that opens the engine drops only 「엔진 창 열기」; a count answered after turning on says it is on; a lost free answer is said', async () => {

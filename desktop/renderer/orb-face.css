@@ -1033,6 +1033,19 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .one-board .d-pred{margin:18px 0 0;font:400 16px/1.5 var(--orb-sans);color:var(--soft)}
 #portal-entry .one-board .d-pred.below{color:var(--paper);font-weight:500}
 #portal-entry .one-board .d-pace{margin:6px 0 0;font:400 13px/1.45 var(--orb-sans);color:var(--dim)}
+#portal-entry .one-board .d-rows{display:grid;gap:14px;margin:24px 0 0;padding-top:16px;border-top:1px solid var(--hair)}
+#portal-entry .one-board .d-row-h{display:flex;align-items:baseline;gap:10px;margin:0;font:400 13px/1.3 var(--orb-sans);color:var(--dim);font-variant-numeric:tabular-nums}
+#portal-entry .one-board .d-row-h b{font-weight:500;letter-spacing:.04em;color:var(--soft)}
+#portal-entry .one-board .d-row-h .d-row-free{margin-left:auto;color:var(--soft)}
+#portal-entry .one-board .d-row.below .d-row-h .d-row-free{color:var(--paper);font-weight:500}
+#portal-entry .one-board .d-mini{position:relative;height:4px;margin-top:8px;background:var(--hair)}
+#portal-entry .one-board .d-mini .f{position:absolute;left:0;top:0;bottom:0;display:block;background:rgba(243,241,236,.6)}
+#portal-entry .one-board .d-mini .l{position:absolute;top:-4px;bottom:-4px;width:1px;display:block;background:var(--paper)}
+#portal-entry .one-board .d-more{display:grid;gap:14px}
+#portal-entry .one-board .d-more summary{cursor:pointer;list-style:none;font:400 13px/1.4 var(--orb-sans);color:var(--soft)}
+#portal-entry .one-board .d-more summary::-webkit-details-marker{display:none}
+#portal-entry .one-board .d-more summary:focus-visible{outline:1px solid var(--paper);outline-offset:4px}
+#portal-entry .one-board .d-more[open] summary{color:var(--dim)}
 #portal-entry .one-board .d-empty{margin:14px 0 0;font:400 15px/1.5 var(--orb-sans);color:var(--soft)}
 /* 오른쪽: 네 줄. 작은 구(솔리오의 분신)가 지금 일하는 줄의 번호 자리에 앉는다(움직임의 일: 지금 어디인지) */
 #portal-entry .one-flow{position:relative;min-width:0}

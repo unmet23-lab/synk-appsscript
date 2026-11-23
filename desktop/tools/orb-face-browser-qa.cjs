@@ -698,6 +698,23 @@ if(!process.versions.electron){
           const fb4o=await board(w);
           check('21 2판: the opened line 03 says what was kept in use',/1개는 쓰는 중이라 남겼습니다/.test(fb4o.steps[2])&&!fb4o.overflow,fb4o);
           await capture(w,'oneclick-freed-open');
+          // 드라이브를 모두 보이기(PC 진단 설계 5.1): 가장 빠듯한 드라이브가 큰 칸, 나머지는 한 줄 막대, 넷부터는 셋째부터 접는다
+          const dv=(letter,sizeGb,freeGb,line,days)=>({letter,size:Math.round(sizeGb*GBy),free:Math.round(freeGb*GBy),growthPerDay:null,startLineGb:line,daysToStartLine:days});
+          const drv=w=>w.js("(()=>{const b=document.querySelector('#portal-entry [data-room=solio-backup] [data-bak-board]');const m=b.querySelector('.d-more');return {lab:b.querySelector('.d-lab')?.childNodes[0]?.textContent||'',rows:[...b.querySelectorAll('.d-rows > .d-row')].map(x=>x.querySelector('.d-row-h').textContent),folded:m?[...m.querySelectorAll('.d-row')].map(x=>x.querySelector('b').textContent):[],fold:m?m.querySelector('summary').textContent:'',open:!!m&&m.open,bars:[...b.querySelectorAll('.d-mini')].map(x=>x.getAttribute('aria-label'))};})()");
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({space:{...space,drive:undefined,drives:[dv('C',953,118.2,100,9),dv('D',1907,299,150,null)]}}))+')');
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
+          const dr2=await drv(w),db2=await board(w);
+          check('21 drives: two drives show C: as the big card and D: as a one-line bar, and nothing overflows',/^C: 드라이브 953GB/.test(dr2.lab)&&dr2.rows.length===1&&/^D:1\.9TB299\.0GB 남음$/.test(dr2.rows[0])&&!dr2.fold&&/D: 드라이브 1\.9TB/.test(dr2.bars[0])&&!db2.overflow,{dr2,db2:db2.wide});
+          await captureSizes(w,'oneclick-drives-two');
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({space:{...space,drive:undefined,drives:[dv('F',238,20,35,0),dv('C',953,118.2,100,9),dv('D',1907,299,150,null),dv('E',476,300,71,null)]}}))+')');
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
+          const dr4=await drv(w),db4=await board(w);
+          check('21 drives: from four drives the tightest (below its line) leads, one bar shows and the rest fold under 「드라이브 2개 더」',/^F: 드라이브 238GB/.test(dr4.lab)&&/적습니다/.test(db4.pred)&&dr4.rows.length===1&&/^C:/.test(dr4.rows[0])&&dr4.fold==='드라이브 2개 더'&&!dr4.open&&!db4.overflow,{dr4,db4:db4.wide});
+          await captureSizes(w,'oneclick-drives-four');
+          await click(w,'#portal-entry [data-room=solio-backup] .d-more summary');await wait(400);
+          const dr4o=await drv(w),db4o=await board(w);
+          check('21 drives: opening the fold shows D: and E: and still nothing overflows',dr4o.open&&dr4o.folded.join(',')==='D:,E:'&&!db4o.overflow,{dr4o,db4o:db4o.wide});
+          await capture(w,'oneclick-drives-four-open');
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,state:'attention',attention:['signin']}}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
           const r4=await room(w);

@@ -23,6 +23,8 @@ const REASONS = Object.freeze(['invalid', 'version', 'expired', 'set-up', 'moved
 /* 솔리오가 공간 후보를 접는 낱말(설계 표). 엔진 space.rs의 kind와 reason에서 정한다. 모르는 kind는 other다 */
 const GROUPS = Object.freeze(['temp', 'temp-profile', 'build', 'cache', 'worktree', 'ai-app-copy', 'project-temp', 'ai-history', 'models', 'cloud-drive', 'vm-disk', 'big-old-file', 'trash', 'other']);
 const GRADES = Object.freeze(['auto', 'suggest', 'view']);
+/* 이보다 작은 드라이브는 칸으로 세우지 않는다: 제조사 복구 파티션(20GB쯤, 늘 거의 참)이 맨 앞 칸이 되지 않게(PC 진단 설계 3절) */
+const DRIVE_MIN = 32 * 1024 ** 3;
 /* 2판이 비우는 종류(엔진 solio.cjs FREE_KINDS와 같다). 이 밖의 번호는 넘기지 않는다 */
 const FREE_KINDS = Object.freeze(['node_modules', 'target', 'venv', 'pycache', 'temp', 'temp-profile']);
 const FREE_ITEMS_MAX = 100;
@@ -174,8 +176,13 @@ function summarizeSpace(value) {
       startLineGb: Number.isSafeInteger(d.startLineGb) && d.startLineGb > 0 ? d.startLineGb : null,
       daysToStartLine: Number.isSafeInteger(d.daysToStartLine) && d.daysToStartLine >= 0 ? d.daysToStartLine : null,
     }));
-  const margin = d => d.free - (d.startLineGb || 0) * 1024 ** 3;
-  const drive = drives.length ? drives.reduce((a, b) => (margin(b) < margin(a) ? b : a)) : null;
+  // 보이는 드라이브(PC 진단 설계 3절 · 5.1): 32GB 아래와, 앞 드라이브와 크기 · 남은 공간이 같은 것(같은 볼륨을 비추는 가상 드라이브 · subst 글자)은 뺀다.
+  // 차례는 정한 선 아래 → 선에 닿는 날이 가까운 것 → 글자다. 남은 바이트로 견주면 작은 드라이브가 늘 앞에 온다
+  const seen = new Set();
+  const shown = drives.filter(d => d.size >= DRIVE_MIN).filter(d => { const k = `${d.size}:${d.free}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  const below = d => d.startLineGb !== null && d.free < d.startLineGb * 1024 ** 3;
+  const soon = d => (Number.isSafeInteger(d.daysToStartLine) ? d.daysToStartLine : Number.MAX_SAFE_INTEGER);
+  shown.sort((a, b) => Number(below(b)) - Number(below(a)) || soon(a) - soon(b) || a.letter.localeCompare(b.letter));
   const totals = new Map();
   for (const c of (Array.isArray(value.candidates) ? value.candidates : []).slice(0, 1000)) {
     if (!isObject(c) || !GRADES.includes(c.grade) || typeof c.kind !== 'string' || bytes(c.bytes) === null) continue;
@@ -193,7 +200,7 @@ function summarizeSpace(value) {
     createdAt: iso(value.createdAt),
     lapFinishedAt: isObject(value.lap) ? iso(value.lap.finishedAt) : null,
     scanningDays,
-    drive, otherDrives: Math.max(0, drives.length - 1), groups,
+    drives: shown, groups,
   };
 }
 /* 2판 pick free에 넘길 것: 24시간 안의 보고서 번호와, 그 보고서의 2판 종류 가 등급 후보 번호(많아야 100개). 없으면 null.

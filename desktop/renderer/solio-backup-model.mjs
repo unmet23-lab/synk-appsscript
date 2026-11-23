@@ -335,29 +335,44 @@ const cmpVersion = (a, b) => {
   return 0;
 };
 
-/* 드라이브 판: 정한 선에 가장 가까운 드라이브 하나(본체 summarizeSpace가 고른 것) */
+/* 보고서의 드라이브들(본체 summarizeSpace가 걸러 빠듯한 차례로 둔 것). 옛 꼴(drive 하나)도 읽는다 */
+const driveList = space => (Array.isArray(space?.drives) ? space.drives : space?.drive ? [space.drive] : []);
+const belowLine = d => !!d.startLineGb && d.free < d.startLineGb * GB;
+/* 1000GB부터는 TB로 쓴다(「1907GB」가 아니라 「1.9TB」) */
+const sizeWords = n => (n >= 1000 * GB ? `${(n / 1024 ** 4).toFixed(1)}TB` : `${Math.round(n / GB)}GB`);
+/* 둘째 드라이브부터의 한 줄 막대 */
+function driveRow(d) {
+  const line = d.startLineGb ? d.startLineGb * GB : null;
+  const scale = Math.max(line ? line * 2 : d.size, d.free * 1.15, 1);
+  const pct = v => Math.max(0, Math.min(100, (v / scale) * 100));
+  return { letter: d.letter, label: `${d.letter}:`, size: sizeWords(d.size), free: `${gb(d.free)} 남음`, freePct: pct(d.free), linePct: line ? pct(line) : null, below: belowLine(d),
+    aria: `${d.letter}: 드라이브 ${sizeWords(d.size)}, 남은 공간 ${gb(d.free)}${line ? `, 정한 선 ${d.startLineGb}GB${belowLine(d) ? '보다 적음' : ''}` : ''}` };
+}
+/* 드라이브 판(PC 진단 설계 5.1): 첫 칸은 가장 빠듯한 드라이브, 나머지는 그 아래 한 줄 막대. 넷 이상이면 셋째부터 접는다 */
 function driveCard(space, now) {
-  if (!space || space.missing || space.invalid || !space.drive) {
+  const list = driveList(space);
+  if (!space || space.missing || space.invalid || !list.length) {
     const empty = space?.invalid ? '엔진이 남긴 공간 보고서를 읽지 못했습니다.' : '엔진이 아직 공간을 재지 않았습니다. 하루 한 번 잽니다.';
     return { empty };
   }
-  const d = space.drive, line = d.startLineGb ? d.startLineGb * GB : null;
+  const d = list[0], line = d.startLineGb ? d.startLineGb * GB : null;
   const scale = Math.max(line ? line * 2 : d.size, d.free * 1.15, 1);
   const pct = v => Math.max(0, Math.min(100, (v / scale) * 100));
   const g = d.growthPerDay;
   // 엔진은 증가 속도를 모를 때도(보호 첫날 따위) daysToStartLine을 null로 준다. 「내려가지 않습니다」는 속도가 0 이하로 재였을 때만 쓴다(Fable F2)
-  const pred = line === null ? '' : d.daysToStartLine === 0 ? `남은 공간이 정한 선(${d.startLineGb}GB)보다 적습니다.`
+  const pred = line === null ? '정한 선을 아직 받지 못했습니다.' : belowLine(d) ? `남은 공간이 정한 선(${d.startLineGb}GB)보다 적습니다.`
     : Number.isSafeInteger(d.daysToStartLine) ? `이대로면 ${d.daysToStartLine}일 뒤 정한 선 아래로 내려갑니다.`
       : !Number.isSafeInteger(g) ? '며칠 더 재어야 언제 정한 선에 닿는지 알 수 있습니다.' : g <= 0 ? '지금 속도로는 정한 선 아래로 내려가지 않습니다.' : '';
   const pace = Number.isSafeInteger(g) && g !== 0 ? `지난 14일 동안 하루에 ${gb(Math.abs(g))}씩 ${g > 0 ? '찼' : '비었'}습니다.` : '';
-  const more = space.otherDrives > 0 ? `다른 드라이브 ${space.otherDrives}개는 정한 선보다 넉넉합니다.` : '';
   const at = backupDay(space.createdAt);
+  const rows = list.slice(1).map(driveRow), shownRows = list.length >= 4 ? 1 : rows.length;
   return {
-    label: `${d.letter}: 드라이브 ${Math.round(d.size / GB)}GB`, at: at ? `${at}에 잰 값` : '',
+    label: `${d.letter}: 드라이브 ${sizeWords(d.size)}`, at: at ? `${at}에 잰 값` : '',
     free: (d.free / GB).toFixed(1), unit: 'GB 남음', freePct: pct(d.free), linePct: line ? pct(line) : null,
-    lineLabel: line ? `정한 선 ${d.startLineGb}GB` : '', max: `${Math.round(scale / GB)}GB`, pred, pace, more,
-    aria: `남은 공간 ${(d.free / GB).toFixed(1)}GB${line ? `, 정한 선 ${d.startLineGb}GB` : ''}`,
-    below: d.daysToStartLine === 0,
+    lineLabel: line ? `정한 선 ${d.startLineGb}GB` : '', max: `${Math.round(scale / GB)}GB`, pred, pace,
+    aria: `${d.letter}: 남은 공간 ${(d.free / GB).toFixed(1)}GB${line ? `, 정한 선 ${d.startLineGb}GB` : ''}`,
+    below: belowLine(d),
+    rows: rows.slice(0, shownRows), folded: rows.slice(shownRows), foldLabel: rows.length > shownRows ? `드라이브 ${rows.length - shownRows}개 더` : '',
   };
 }
 function spaceGroups(space, spaceFree = 'unavailable') {
@@ -493,16 +508,21 @@ export function oneClickBoard(snap, now = Date.now()) {
     const news = [appWords, enginePart].filter(w => /새 판/.test(w)).join(' · ');
     // 둘째 줄은 지금 확인할 일(엔진의 주의 낱말 · 소식 없음 · 되살리기 실패)부터 말한다(Fable F1)
     const topics = topicList(s.attention || []);
+    const lows = driveList(space).filter(belowLine).map(x => `${x.letter}:`);
+    // 켠 PC에서 비우기 답을 잃었으면 접힌 줄 안에만 두지 않고 맨 위에서도 말한다(Fable 다시 검수 r2 P2)
+    const freeLost = freeOn && !!f && !f.result && ['gone', 'expired'].includes(f.stage);
     const then = topics ? `다만 엔진 창에서 확인할 일이 있습니다: ${topics}.`
       : snap.view === 'checking' ? '다만 예정된 백업 소식이 2시간 넘게 없습니다. 엔진 창을 열어 확인해 주세요.'
         : pr.state === 'fail' ? '다만 마지막 되살리기 확인이 실패했습니다. 엔진 창에서 확인해 주세요.'
+          : freeLost ? '다만 비우기 결과를 확인하지 못했습니다. 엔진 창의 공간 비우기에서 봐 주세요.'
           // 2판 미리 보기: 지금 켜면 비울 수 있는 양과 켜는 곳(엔진 창)을 말한다. 솔리오는 켜지 못한다
           : canFree ? `엔진 창에서 「누를 때 비우기」를 켜면 다음 누름부터 ${gb(canFree)}쯤 비웁니다.`
             : turnedOn ? `「누를 때 비우기」를 켰습니다. 다음 누름부터 ${gb(turnedOn)}쯤 비웁니다.`
-            : driveCard(space).below ? '다만 남은 공간이 정한 선보다 적습니다. 아래에서 비울 수 있는 것을 봐 주세요.'
+            : lows.length ? `다만 ${lows.join(' · ')}의 남은 공간이 정한 선보다 적습니다. 아래에서 비울 수 있는 것을 봐 주세요.`
               : fresh ? `${news}.` : next ? `다음 백업은 ${next}입니다.` : '';
-    const attention = !!topics || snap.view === 'checking' || pr.state === 'fail';
+    const attention = !!topics || snap.view === 'checking' || pr.state === 'fail' || freeLost;
     const leadAct = topics ? act('엔진 창에서 확인', 'backup-open', knownTopics(s.attention)[0], { primary: false })
+      : freeLost ? act('엔진 창에서 보기', 'backup-open', 'space', { primary: false })
       : canFree && !attention ? act('엔진 창에서 켜기', 'backup-open', 'space', { primary: false }) : null;
     lead = { say: freed ? `백업하고 ${gb(freed)}를 비웠습니다.` : '백업을 마쳤습니다.', then, note: attention ? '확인 필요' : '끝남', ...(leadAct ? { act: leadAct } : {}) };
   } else if (working && (!lead || job)) {

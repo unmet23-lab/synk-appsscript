@@ -1049,8 +1049,32 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     }
     const parts = [lab, big, bar, ticks];
     if (d.pred) parts.push(el('p', d.below ? 'd-pred below' : 'd-pred', d.pred));
-    const pace = [d.pace, d.more].filter(Boolean).join(' ');
-    if (pace) parts.push(el('p', 'd-pace', pace));
+    if (d.pace) parts.push(el('p', 'd-pace', d.pace));
+    // 둘째 드라이브부터는 한 줄 막대. 넷 이상이면 셋째부터 접는다(PC 진단 설계 5.1)
+    const row = r => {
+      const box2 = el('div', r.below ? 'd-row below' : 'd-row');
+      const head = el('p', 'd-row-h');
+      head.append(el('b', '', r.label), el('span', 'd-row-size', r.size), el('span', 'd-row-free', r.free));
+      const mini = el('div', 'd-mini');
+      mini.setAttribute('role', 'img');
+      mini.setAttribute('aria-label', r.aria || '');
+      const f = el('i', 'f');
+      f.style.width = `${Number(r.freePct) || 0}%`;
+      mini.append(f);
+      if (Number.isFinite(r.linePct)) { const l = el('i', 'l'); l.style.left = `${r.linePct}%`; mini.append(l); }
+      box2.append(head, mini);
+      return box2;
+    };
+    if (d.rows?.length) {
+      const rows = el('div', 'd-rows');
+      rows.append(...d.rows.map(row));
+      if (d.folded?.length) {
+        const more = el('details', 'd-more');
+        more.append(el('summary', '', d.foldLabel), ...d.folded.map(row));
+        rows.append(more);
+      }
+      parts.push(rows);
+    }
     box.replaceChildren(...parts);
   }
   function stepCells(r, sumRow = false) {
