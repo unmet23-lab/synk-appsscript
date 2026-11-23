@@ -197,59 +197,60 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 /* 팀 세 가지. 글은 AI를 처음 쓰는 분이 읽는 말로 쓴다. 기술 이름(OAuth · CLI · MCP)은 화면에 쓰지 않는다 */
 const TEAMS = {
   claude: {
-    no:'01', name:'Claude + GPT', obj:'Claude + GPT를', with:'Claude + GPT로', lead:'Claude', maker:'Anthropic의 Claude와 OpenAI의 ChatGPT', tag:'Claude가 팀장, GPT가 함께 일합니다',
-    ease:3, crew:'Claude(팀장), GPT', off:'PC가 켜져 있을 때 일함', cost:'구독 두 개(Claude, ChatGPT)',
+    no:'01', name:'팀장 Claude', obj:'팀장 Claude를', with:'팀장 Claude로', maker:'Anthropic의 Claude, OpenAI의 ChatGPT, Google의 Gemini', tag:'Claude가 팀장, GPT와 Gemini가 함께 일합니다',
+    ease:3, crew:'Claude(팀장), GPT, Gemini', off:'PC가 켜져 있을 때 일함', cost:'구독 두 개(Claude, ChatGPT) + Gemini는 쓴 만큼',
     good:[
-      ['팀장 Claude가 일을 나누고, 끝난 결과를 확인합니다.','GPT에게 맡길 일과 직접 할 일을 스스로 정합니다.'],
-      ['문서, 코드, 디자인처럼 손이 많이 가는 일을 맡깁니다.',''],
+      ['팀장 Claude가 일을 나누고, 끝난 결과를 확인합니다.','누구에게 맡길지 팀장이 스스로 정합니다.'],
+      ['문서와 코드는 Claude와 GPT가 나눠 만들고 서로 검토합니다.',''],
+      ['긴 자료는 Gemini가 읽고 요약해 줍니다.','회의 녹음, 긴 보고서, 영상 같은 자료입니다.'],
       ['내 PC의 폴더에서 파일을 직접 읽고 고칩니다.','회사 자료를 따로 올리지 않아도 됩니다.'],
-      ['둘이 서로의 결과를 검토해 실수를 줄입니다.','하나가 만들고 다른 하나가 봅니다.'],
     ],
     bad:[
-      ['프로그램 둘을 설치하고 각각 로그인합니다.','솔리오가 한 단계씩 안내합니다.'],
+      ['프로그램 둘을 설치하고 Gemini 키를 따로 만듭니다.','솔리오가 한 단계씩 안내합니다.'],
       ['PC가 켜져 있어야 일합니다.',''],
-      ['구독 두 개의 값이 듭니다.',''],
-      ['중요한 일 앞에서는 「해도 될까요?」 하고 기다립니다.','파일을 지우거나 명령을 실행하기 전에 묻습니다.'],
+      ['구독 두 개의 값에 Gemini를 쓴 만큼 더 냅니다.',''],
+      ['무료 Gemini 키로 보낸 글은 Google이 학습에 쓸 수 있습니다.','회사 자료에는 유료 키를 권합니다.'],
     ],
-    fit:'AI에게 회사 일을 처음 맡겨 보는 분',
+    fit:'Claude를 주로 써 왔거나, AI에게 회사 일을 처음 맡겨 보는 분',
     steps:[
       {t:'Claude Code 설치하고 로그인', s:'팀장 Claude가 내 PC의 파일로 일하게 하는 프로그램입니다. 사용량은 내 Claude 구독에서 나갑니다.', btn:'설치하기', ok:'팀장 Claude가 준비됐습니다. 쓰시던 Claude 구독으로 일합니다.'},
       {t:'Codex 설치하고 로그인', s:'GPT가 내 PC의 파일로 일하게 하는 프로그램입니다. 사용량은 내 ChatGPT 구독에서 나갑니다.', btn:'설치하기', ok:'GPT가 준비됐습니다. 쓰시던 ChatGPT 구독으로 일합니다.'},
-      {t:'솔리오와 연결', s:'팀장이 사무실의 일감을 받아 GPT와 나눠 하게 합니다.', btn:'연결', ok:'두 직원이 사무실의 일감을 받습니다.'},
+      {t:'Gemini 키 넣기', s:'Google AI Studio에서 만든 키를 붙여 넣습니다. 쓴 만큼 요금이 나갑니다.', btn:'키 넣기', ok:'Gemini가 준비됐습니다.'},
+      {t:'솔리오와 연결', s:'팀장이 사무실의 일감을 받아 GPT와 Gemini에게 나눠 주게 합니다.', btn:'연결', ok:'세 직원이 사무실의 일감을 받습니다.'},
     ],
     /* 연결 장면: 몇 번째 차례에서 입구에 나타나고(come), 눈을 뜨고(wake), 자리로 가는지(sit). lead는 팀장이다 */
-    staff:[{who:'Claude', dept:'plan', come:0, wake:0, sit:2, lead:true}, {who:'GPT', dept:'dev', come:1, wake:1, sit:2}],
-    seat:'팀장 Claude가 기획부에, GPT가 개발부에 앉았습니다.',
-    why:'팀장 Claude가 일을 나누고,\nGPT와 서로 검토하며 문서와 코드를 만듭니다.',
+    staff:[{who:'Claude', dept:'plan', come:0, wake:0, sit:3, lead:true}, {who:'GPT', dept:'dev', come:1, wake:1, sit:3}, {who:'Gemini', dept:'mkt', come:2, wake:2, sit:3}],
+    seat:'팀장 Claude가 기획부에, GPT가 개발부에, Gemini가 마케팅부에 앉았습니다.',
+    why:'팀장 Claude가 일을 나누고,\nGPT와 Gemini가 함께 만들고 검토합니다.',
   },
-  gemini: {
-    no:'02', name:'Gemini + Claude + GPT', obj:'Gemini + Claude + GPT를', with:'Gemini + Claude + GPT로', lead:'Gemini', maker:'Google의 Gemini, Anthropic의 Claude, OpenAI의 ChatGPT', tag:'Gemini가 팀장, Claude와 GPT가 함께 일합니다',
-    ease:2, crew:'Gemini(팀장), Claude, GPT', off:'PC가 켜져 있을 때 일함', cost:'구독 세 개(Google AI, Claude, ChatGPT)',
+  gpt: {
+    no:'02', name:'팀장 GPT', obj:'팀장 GPT를', with:'팀장 GPT로', maker:'OpenAI의 ChatGPT, Anthropic의 Claude, Google의 Gemini', tag:'GPT가 팀장, Claude와 Gemini가 함께 일합니다',
+    ease:3, crew:'GPT(팀장), Claude, Gemini', off:'PC가 켜져 있을 때 일함', cost:'구독 두 개(ChatGPT, Claude) + Gemini는 쓴 만큼',
     good:[
-      ['팀장 Gemini가 긴 자료를 한 번에 읽고 일을 나눕니다.','회의 녹음, 긴 문서, 영상처럼 큰 자료에 강합니다.'],
-      ['문서와 코드는 Claude와 GPT가 나눠 만듭니다.',''],
-      ['셋이 서로의 결과를 검토합니다.','한 AI가 놓친 것을 다른 AI가 짚습니다.'],
-      ['Google 계정으로 쓰던 Gemini를 그대로 팀장으로 씁니다.',''],
+      ['팀장 GPT가 일을 나누고, 끝난 결과를 확인합니다.','쓰던 ChatGPT 구독이 팀장이 됩니다.'],
+      ['문서와 코드는 GPT와 Claude가 나눠 만들고 서로 검토합니다.',''],
+      ['긴 자료는 Gemini가 읽고 요약해 줍니다.','회의 녹음, 긴 보고서, 영상 같은 자료입니다.'],
+      ['내 PC의 폴더에서 파일을 직접 읽고 고칩니다.','회사 자료를 따로 올리지 않아도 됩니다.'],
     ],
     bad:[
-      ['프로그램 셋을 설치하고 각각 로그인합니다.','솔리오가 한 단계씩 안내합니다.'],
+      ['프로그램 둘을 설치하고 Gemini 키를 따로 만듭니다.','솔리오가 한 단계씩 안내합니다.'],
       ['PC가 켜져 있어야 일합니다.',''],
-      ['구독 세 개의 값이 듭니다.',''],
-      ['직원이 셋이라 한 번에 쓰는 사용량이 많습니다.',''],
+      ['구독 두 개의 값에 Gemini를 쓴 만큼 더 냅니다.',''],
+      ['무료 Gemini 키로 보낸 글은 Google이 학습에 쓸 수 있습니다.','회사 자료에는 유료 키를 권합니다.'],
     ],
-    fit:'긴 자료를 자주 다루고, AI 셋의 눈으로 확인받고 싶은 분',
+    fit:'ChatGPT를 주로 써 온 분',
     steps:[
-      {t:'Antigravity 설치하고 Google 계정으로 로그인', s:'팀장 Gemini가 내 PC의 파일로 일하게 하는 Google의 프로그램입니다. 사용량은 내 Google AI 구독에서 나갑니다.', btn:'설치하기', ok:'팀장 Gemini가 준비됐습니다. 쓰시던 Google AI 구독으로 일합니다.'},
-      {t:'Claude Code 설치하고 로그인', s:'Claude가 내 PC의 파일로 일하게 하는 프로그램입니다. 사용량은 내 Claude 구독에서 나갑니다.', btn:'설치하기', ok:'Claude가 준비됐습니다.'},
-      {t:'Codex 설치하고 로그인', s:'GPT가 내 PC의 파일로 일하게 하는 프로그램입니다. 사용량은 내 ChatGPT 구독에서 나갑니다.', btn:'설치하기', ok:'GPT가 준비됐습니다.'},
-      {t:'솔리오와 연결', s:'팀장이 사무실의 일감을 받아 Claude와 GPT에게 나눠 주게 합니다.', btn:'연결', ok:'세 직원이 사무실의 일감을 받습니다.'},
+      {t:'Codex 설치하고 로그인', s:'팀장 GPT가 내 PC의 파일로 일하게 하는 프로그램입니다. 사용량은 내 ChatGPT 구독에서 나갑니다.', btn:'설치하기', ok:'팀장 GPT가 준비됐습니다. 쓰시던 ChatGPT 구독으로 일합니다.'},
+      {t:'Claude Code 설치하고 로그인', s:'Claude가 내 PC의 파일로 일하게 하는 프로그램입니다. 사용량은 내 Claude 구독에서 나갑니다.', btn:'설치하기', ok:'Claude가 준비됐습니다. 쓰시던 Claude 구독으로 일합니다.'},
+      {t:'Gemini 키 넣기', s:'Google AI Studio에서 만든 키를 붙여 넣습니다. 쓴 만큼 요금이 나갑니다.', btn:'키 넣기', ok:'Gemini가 준비됐습니다.'},
+      {t:'솔리오와 연결', s:'팀장이 사무실의 일감을 받아 Claude와 Gemini에게 나눠 주게 합니다.', btn:'연결', ok:'세 직원이 사무실의 일감을 받습니다.'},
     ],
-    staff:[{who:'Gemini', dept:'plan', come:0, wake:0, sit:3, lead:true}, {who:'Claude', dept:'dev', come:1, wake:1, sit:3}, {who:'GPT', dept:'des', come:2, wake:2, sit:3}],
-    seat:'팀장 Gemini가 기획부에, Claude가 개발부에, GPT가 디자인부에 앉았습니다.',
-    why:'팀장 Gemini가 긴 자료를 읽고 나누면,\nClaude와 GPT가 만들고 서로 검토합니다.',
+    staff:[{who:'GPT', dept:'plan', come:0, wake:0, sit:3, lead:true}, {who:'Claude', dept:'dev', come:1, wake:1, sit:3}, {who:'Gemini', dept:'mkt', come:2, wake:2, sit:3}],
+    seat:'팀장 GPT가 기획부에, Claude가 개발부에, Gemini가 마케팅부에 앉았습니다.',
+    why:'팀장 GPT가 일을 나누고,\nClaude와 Gemini가 함께 만들고 검토합니다.',
   },
   custom: {
-    no:'03', name:'커스텀', obj:'커스텀을', with:'커스텀으로', lead:'', maker:'여러 회사의 AI를 섞어 씁니다', tag:'부서마다 내가 고르는 팀',
+    no:'03', name:'커스텀', obj:'커스텀을', with:'커스텀으로', maker:'여러 회사의 AI를 섞어 씁니다', tag:'부서마다 내가 고르는 팀',
     ease:1, crew:'내가 고른 AI', off:'고르기 나름', cost:'고른 만큼',
     good:[
       ['부서마다 다른 AI를 앉힙니다.','예: 마케팅부는 Gemini, 개발부는 Claude.'],
@@ -264,7 +265,7 @@ const TEAMS = {
     ],
     fit:'AI 도구를 이미 여럿 써 본 분',
     steps:[
-      {t:'부서마다 AI 고르기', s:'정하지 않은 부서는 Claude + GPT 팀이 맡습니다.', btn:'고르기', ok:'마케팅부 Gemini, 개발부 Claude, 기획부 GPT'},
+      {t:'부서마다 AI 고르기', s:'정하지 않은 부서는 팀장 Claude 팀이 맡습니다.', btn:'고르기', ok:'마케팅부 Gemini, 개발부 Claude, 기획부 GPT'},
       {t:'계정 로그인 또는 API 키 넣기', s:'구독이 있으면 로그인, 없으면 API 키를 넣습니다.', btn:'넣기', ok:'세 곳을 이었습니다.'},
       {t:'업무 도구 잇기', s:'직원이 메일함과 노션을 읽고 쓸 수 있게 합니다.', btn:'잇기', ok:'메일함과 노션을 이었습니다.'},
     ],
@@ -273,24 +274,24 @@ const TEAMS = {
     why:'부서마다 잘하는 AI를 따로 앉히고,\n쓰던 도구도 이어 줍니다.',
   },
 };
-const ORDER = ['claude','gemini','custom'];
+const ORDER = ['claude','gpt','custom'];
 
-/* 추천받기: 카드 세 장. 고른 카드마다 팀에 점수가 간다. 같으면 둘째 물음(맡길 일)의 팀이 이긴다 */
+/* 추천받기: 카드 세 장. 고른 카드마다 팀에 점수가 간다. 같으면 둘째 물음(쓰는 구독)이 가리키는 팀이 이긴다 */
 const QUIZ = [
   {q:'AI를 써 본 적이 있나요?', opts:[
-    {ic:'sprout', b:'처음이에요', s:'이름만 들어 봤어요.', p:{claude:2,gemini:1}},
-    {ic:'bubble', b:'채팅은 써 봤어요', s:'ChatGPT, Claude, Gemini에게 물어본 적이 있어요.', p:{claude:2,gemini:1}},
-    {ic:'layers', b:'여러 도구를 써 봤어요', s:'API 키나 연결 설정도 해 봤어요.', p:{custom:2,gemini:1}},
-  ]},
-  {q:'가장 먼저 맡기고 싶은 일은?', opts:[
-    {ic:'code', b:'문서, 코드, 디자인', s:'계획서 쓰기, 홈페이지 고치기', p:{claude:2}, lead:'claude'},
-    {ic:'news', b:'긴 자료 읽고 정리하기', s:'회의 녹음, 긴 보고서, 영상 요약', p:{gemini:2}, lead:'gemini'},
-    {ic:'branch', b:'부서마다 다르게', s:'일마다 잘하는 AI를 따로 쓰고 싶어요.', p:{custom:2}, lead:'custom'},
+    {ic:'sprout', b:'처음이에요', s:'이름만 들어 봤어요.', p:{claude:1,gpt:1}},
+    {ic:'bubble', b:'채팅은 써 봤어요', s:'ChatGPT나 Claude에게 물어본 적이 있어요.', p:{claude:1,gpt:1}},
+    {ic:'layers', b:'여러 도구를 써 봤어요', s:'API 키나 연결 설정도 해 봤어요.', p:{custom:2}},
   ]},
   {q:'이미 쓰고 있는 구독이 있나요?', opts:[
-    {ic:'bubble', b:'Claude나 ChatGPT', s:'둘 중 하나나 둘 다 쓰고 있어요.', p:{claude:2,gemini:1}},
-    {ic:'monitor', b:'Google의 Gemini', s:'Google 계정으로 Gemini를 써요.', p:{gemini:2}},
-    {ic:'wave', b:'아직 없어요', s:'', p:{claude:1,custom:1}},
+    {ic:'bubble', b:'Claude', s:'Claude를 주로 써요.', p:{claude:2}, lead:'claude'},
+    {ic:'code', b:'ChatGPT', s:'ChatGPT를 주로 써요.', p:{gpt:2}, lead:'gpt'},
+    {ic:'wave', b:'둘 다 쓰거나, 아직 없어요', s:'', p:{claude:1,gpt:1}, lead:'claude'},
+  ]},
+  {q:'일을 어떻게 맡기고 싶나요?', opts:[
+    {ic:'monitor', b:'팀장 하나에게 맡기고 싶어요', s:'팀장이 알아서 나눠 주면 좋겠어요.', p:{claude:1,gpt:1}},
+    {ic:'branch', b:'부서마다 다르게', s:'일마다 잘하는 AI를 따로 쓰고 싶어요.', p:{custom:2}},
+    {ic:'moon', b:'잘 모르겠어요', s:'', p:{claude:1,gpt:1}},
   ]},
 ];
 
@@ -310,8 +311,8 @@ const icon = k => `<svg class="ic" viewBox="0 0 32 32" fill="none" stroke="curre
 
 /* 장면은 같은 구 직원으로 구운 3D 그림이다(판/지시문). 글을 가려도 팀이 갈리게 장면을 나눴다 */
 const ART = {
-  claude:['그림/claude.jpg','팀장 구 직원이 노트북 앞의 다른 구 직원에게 종이를 건네는 장면'],
-  gemini:['그림/gemini.jpg','긴 책상 끝의 팀장 구 직원이 양옆의 두 구 직원에게 일을 나눠 주는 장면'],
+  claude:['그림/claude.jpg','긴 책상 끝의 팀장 구 직원이 양옆의 두 구 직원에게 일을 나눠 주는 장면'],
+  gpt:['그림/gpt.jpg','계획판 옆의 팀장 구 직원이 둥근 탁자의 두 구 직원에게 일을 설명하는 장면'],
   custom:['그림/custom.jpg','높이가 다른 자리에 앉은 검은 구 직원 셋과 그들을 잇는 조절 다이얼'],
 };
 
@@ -400,7 +401,7 @@ function pickOpt(i) {
   }, 520);
 }
 function finishQuiz() {
-  const score = {claude:0, gemini:0, custom:0};
+  const score = {claude:0, gpt:0, custom:0};
   picks.forEach((p, q) => Object.entries(QUIZ[q].opts[p].p).forEach(([k, v]) => score[k] += v));
   const lead = QUIZ[1].opts[picks[1]].lead;
   rec = ORDER.slice().sort((a, b) => (score[b] - score[a]) || ((b === lead) - (a === lead)))[0];
@@ -571,9 +572,9 @@ function reset() { focus = 'claude'; rec = null; recWhy = ''; mode = 'pick'; qi 
 document.getElementById('m-reset').onclick = reset;
 document.getElementById('m-narrow').onclick = e => { const on = document.body.classList.toggle('narrow'); e.target.textContent = on ? '넓은 창' : '좁은 창'; sceneW = 0; };
 
-/* 주소 끝 #claude · #gemini · #custom 은 그 팀을 무대에, #quiz 는 추천받기로, #start-gemini 처럼 쓰면 연결로 연다.
-   #start-gemini-3 처럼 숫자를 붙이면 그 차례까지 이은 채로, #start-gemini-open 은 사무실을 연 뒤로 연다(캡처용) */
-const h = location.hash.slice(1), hs = h.match(/^start-(claude|gemini|custom)(?:-(\d+|open))?$/);
+/* 주소 끝 #claude · #gpt · #custom 은 그 팀을 무대에, #quiz 는 추천받기로, #start-gpt 처럼 쓰면 연결로 연다.
+   #start-gpt-3 처럼 숫자를 붙이면 그 차례까지 이은 채로, #start-gpt-open 은 사무실을 연 뒤로 연다(캡처용) */
+const h = location.hash.slice(1), hs = h.match(/^start-(claude|gpt|custom)(?:-(\d+|open))?$/);
 if (TEAMS[h]) { focus = h; renderPick(true); }
 else if (h === 'quiz') { mode = 'quiz'; renderQuiz(); }
 else if (hs) {
