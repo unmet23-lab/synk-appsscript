@@ -143,19 +143,9 @@ for (const [src, rel] of MOD) {
   if (cand === pub) continue;
   write('base', rel, pub); write('new', rel, cand); items.push('world/' + rel);
 }
-// 다리가 레슨 글을 읽는 world/life-content.mjs를 이미 공개된 생활 묶음(brand-opening/content/life-standalone.mjs)과 같은 원천으로 맞춘다.
-// 11-20 LAB 공개(사이트 f6a4872e)가 인사 레슨 고침(af2247630 · f646d63e1)을 생활 묶음에만 실어, 공개본 life-content.mjs에는 「저는 몽글이에요.」가
-// 남았고 앞면이 첫 레슨의 세 문장을 숨겼다(마스코트 이름이 든 문장은 보이지 않는다). 그 뒤 원천이 또 바뀌었으면(공개되지 않은 다른 일일 수 있다) 멈춘다.
-// 앱의 레슨 화면(world/life-ui.mjs)은 이 파일과 번역 표 life-content-lang.mjs를 함께 읽고, 번역은 표의 한국어 사본이 원문과 같을 때만 나온다 —
-// 둘을 같은 판으로 함께 맞춘다(한쪽만 올리면 몽골어 · 영어 화면이 한국어로 떨어진다, Fable 11-20).
-const SYNCED = 'f646d63e10';
-for (const rel of ['life-content.mjs', 'life-content-lang.mjs']) {
-  const src = `experiences/synk-world-app/${rel}`;
-  const after = git('log', '--format=%h', `${SYNCED}..${END}`, '--', src).toString().trim();
-  if (after) throw Error(`${rel}가 ${SYNCED} 뒤에 바뀌었다(${after.split('\n').join(' ')}) — 공개된 생활 묶음과 같은 내용인지 다시 본다`);
-  const pub = await live(rel), cand = rw(lf(git('show', `${END}:${src}`).toString()), rel);
-  if (cand !== pub) { write('base', rel, pub); write('new', rel, cand); items.push('world/' + rel); }
-}
+// 레슨 글(world/life-content.mjs · life-content-lang.mjs)은 싣지 않는다. 11-20에 한 번 맞춰 올렸고(사이트 1f634d9e),
+// 11-23부터는 생활 원고 2단이 레슨 화면 묶음과 함께 따로 공개한다. 앞면은 그 글의 첫 레슨 세 문장을 읽을 뿐이라
+// 이 도구는 앞면 갈고리와 앞면 파일만 대조한다(레슨 글 후보를 얹은 앞면은 qa/흐름.mjs --후보로 본다).
 // 새 파일: 다리 + 틀 폴더(시험 · 설계 문서 · 견줌 자료는 빼고 — 빌드의 거름과 같다). 공개본에 이미 같은 바이트로 있으면 뺀다(공개 뒤 다시 돌릴 때).
 const liveBytes = async rel => { const r = await fetch(`https://synk.im/world/${rel}?probe=${Date.now()}`, {cache: 'no-store'}); return r.ok ? Buffer.from(await r.arrayBuffer()) : null; };
 async function addNew(rel, data) {
