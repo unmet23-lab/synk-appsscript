@@ -138,6 +138,24 @@ test('단계 꼬리표 차례 → 장면 끝 기록', () => {
  const seen=new Set();assert.deepEqual(stepsDone(STEP_TAGS.scene,STEP_TAGS.transfer,seen),[]);
 });
 
+test('손님 1화(11-23): 로그인 판 없이 열고, 끝 띠에 체험 끝 안내와 사전예약 단추를 둔다', () => {
+ // 1화 앞에서 로그인을 부르지 않는다
+ assert.match(entrySource,/function prepareEpisode\(\)\{return \{status:'ok'\};\}/);
+ assert.doesNotMatch(entrySource,/signIn\(/);
+ // 사전예약 주소: from과 화면 언어(ko · en · mn 밖이면 en)
+ const reserveUrl=new Function(`${entrySource.match(/export (function reserveUrl\(lang\)\{[^\n]+\})/)[1]};return reserveUrl;`)();
+ for(const lang of ['ko','en','mn'])assert.equal(reserveUrl(lang),`https://synk.im/reserve/?from=world-ep1&lang=${lang}`);
+ assert.equal(reserveUrl('vi'),'https://synk.im/reserve/?from=world-ep1&lang=en');
+ // 세 언어 글이 다 있다
+ for(const key of ['trialEnd','trialMore','reserve','toCrowd'])for(const lang of ['ko','en','mn'])assert.match(entrySource,new RegExp(`\\n ${key}:\\{ko:'[^']+',en:'[^']+',mn:'[^']+'\\}`),`${key} ${lang}`);
+ // 손님 띠만 사전예약을 싣고, 새 탭으로 연다(이야기는 이 탭에서 이어진다). 계정 띠는 예전 그대로 단추 하나다.
+ const band=entrySource.slice(entrySource.indexOf(' function showBand('),entrySource.indexOf(' let finish='));
+ assert.match(band,/guest=!client\(\)\.snapshot/);
+ assert.match(band,/<a class="felt-button" href="\$\{escape\(reserveUrl\(lang\)\)\}" target="_blank" rel="noopener">/);
+ assert.match(band,/:`<button type="button" class="felt-button">\$\{say\('toCrowd'\)\}<\/button>`/);
+ assert.match(read('experiences/synk-world-app/app-shell.css'),/#panel-content:has\(>\.seoul-cta\.is-trial\)>\.game-frame\{flex:1 1 auto;height:auto;min-height:0\}/);
+});
+
 test('화면 글: 쓰는 글이 모두 영어 · 몽골어 표에 있다', () => {
  const app=['app.mjs','name-trace.mjs','name-coach.mjs'].map(f=>read('experiences/seoul-arrival/'+f)).join(String.fromCharCode(10)),html=read('experiences/seoul-arrival/index.html');
  const code=app.replace(/\/\*[\s\S]*?\*\//g,'').split('\n').filter(l=>!/^\s*\/\//.test(l)).join('\n');

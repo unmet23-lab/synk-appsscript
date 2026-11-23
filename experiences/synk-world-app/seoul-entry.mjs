@@ -16,7 +16,9 @@ const FRAME_WAIT_MS=15000;
 const TEXT={
  road:{ko:'내 길',en:'My road',mn:'Миний зам'},
  toCrowd:{ko:'내 객석으로',en:'To my audience',mn:'Үзэгчид рүүгээ'},
- signIn:{ko:'학생증을 계정에 저장하고 1화를 시작해요',en:'Save your student ID to your account and start Episode 1',mn:'Оюутны үнэмлэхээ бүртгэлдээ хадгалаад 1-р ангийг эхлүүлээрэй'},
+ trialEnd:{ko:'체험은 여기까지예요',en:'This is where the trial ends',mn:'Туршилтын хэсэг үүгээр дууслаа'},
+ trialMore:{ko:'더 많은 이야기는 2027년 2월에 열려요. 사전예약하면 가장 먼저 알려 드려요.',en:'More episodes open in February 2027. Pre-register and we’ll tell you first.',mn:'Дараагийн ангиуд 2027 оны 2-р сард гарна. Урьдчилан бүртгүүлбэл танд хамгийн түрүүнд мэдэгдэнэ.'},
+ reserve:{ko:'사전예약하기',en:'Pre-register',mn:'Урьдчилан бүртгүүлэх'},
  dramaTitle:{ko:'1화 · 개강 첫날',en:'Episode 1 · First day of class',mn:'1-р анги · Хичээлийн эхний өдөр'},
  moveTitle:{ko:'학생증 저장',en:'Save student ID',mn:'Оюутны үнэмлэх хадгалах'},
  moveLead:{ko:'이 기기에서 만든 학생증이 있어요. 이 계정에 저장할까요?',en:'There’s a student ID made on this device. Save it to this account?',mn:'Энэ төхөөрөмж дээр хийсэн оюутны үнэмлэх байна. Энэ бүртгэлд хадгалах уу?'},
@@ -26,12 +28,13 @@ const TEXT={
  dreamIdol:{ko:'아이돌의 꿈',en:'An idol’s dream',mn:'Айдолын мөрөөдөл'},
  dreamActor:{ko:'배우의 꿈',en:'An actor’s dream',mn:'Жүжигчний мөрөөдөл'},
  failed:{ko:'잠시 뒤 다시 열어 주세요.',en:'Please try again in a moment.',mn:'Түр хүлээгээд дахин нээнэ үү.'},
- backRoad:{ko:'내 길로 돌아가기',en:'Back to my road',mn:'Зам руугаа буцах'},
  unsaved:{ko:'이번 이야기는 계정에 저장하지 못했어요.',en:'We couldn’t save this story to your account.',mn:'Энэ түүхийг бүртгэлдээ хадгалж чадсангүй.'},
 };
 export const seoulText=(key,lang=currentLang())=>TEXT[key]?.[lang]??TEXT[key]?.ko??key;
 const t=key=>seoulText(key);
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// 손님 1화 끝의 사전예약 주소(11-23 유호님 「링크같은거 넣어서 등록하기 편하게」). 사전예약 쪽이 from · lang을 읽는다(experiences/synk-reserve).
+export function reserveUrl(lang){return `https://synk.im/reserve/?${new URLSearchParams({from:'world-ep1',lang:['ko','en','mn'].includes(lang)?lang:'en'})}`;}
 
 // 주소의 바로가기는 그 길 그대로 간다(bypass — 손님 사본이 있어도 서울행 · 저장 묻기로 가로채지 않는다). ?seoul=1은 스위치와 상관없이 연다.
 export function seoulMode({search='',feature=false,dramaPending=false}={}){
@@ -54,7 +57,7 @@ export function seoulDecision({mode=null,owner='guest',arrival=null,guest=null,t
  return {run:true,at:'title',fresh:true};
 }
 
-export function createSeoulEntry({dramaPending,restored,operating,client,life,home,worldUrl,launchGame,signIn,show,close,selectLanguage,tutorStatus,native,frontOn=()=>false}){
+export function createSeoulEntry({dramaPending,restored,client,life,home,worldUrl,launchGame,show,close,selectLanguage,tutorStatus,native,frontOn=()=>false}){
  const owner=()=>client().snapshot?.accountId||'guest';
  const mode=()=>seoulMode({search:location.search,feature:autoOn(),dramaPending:dramaPending()});
  let session=null,decision=null,moveAnswer=null;
@@ -115,7 +118,7 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
  function reveal(d){d.inert=false;d.classList.remove('is-waiting');}
  function raise(){const d=session?.dialog;if(!d)return;session.raised=true;reveal(d);try{if(d.open)d.close();d.showModal();}catch{/* 이미 모달 */}}
  const insets=()=>{const probe=document.createElement('div');probe.style.cssText='position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)';document.body.append(probe);const c=getComputedStyle(probe),out={sat:parseFloat(c.paddingTop)||0,sab:parseFloat(c.paddingBottom)||0};probe.remove();return out;};
- onLang(code=>{try{session?.api?.setLang(code);}catch{}const door=document.querySelector('#my-road-button');if(door)door.textContent=seoulText('road',code);});
+ onLang(code=>{try{session?.api?.setLang(code);}catch{}const door=document.querySelector('#my-road-button');if(door)door.textContent=seoulText('road',code);const band=document.querySelector('#panel-content>.seoul-cta');if(band){band.remove();showBand(code);}});
 
  /* ── 부모 통로 ── 틀(같은 출처)이 부른다. 저장은 그때의 주인에게만 쓴다. 다시 보기 중에는 틀이 부르지 않는다(app.mjs save · state.replayOf) */
  function save(patch){
@@ -126,10 +129,9 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
   if(who==='guest'){const value=readArrival({...(readGuest()||{}),...merged,version:1,updatedAt:Date.now()});if(value)writeGuest(value);s.pending={};return;}
   try{if(!life.progress?.setArrival?.(merged)){s.pending=merged;return;}s.pending={};}catch{s.pending=merged;/* 끊김 · 불러오는 중 · 기록을 다시 세우는 중: 다음 저장이 함께 쓴다. 충돌은 관문의 복구 창이 맡는다 */}
  }
- function prepareEpisode(){
-  if(operating&&!client().snapshot){signIn(undefined,t('signIn'),t('backRoad'));return {status:'signin'};}
-  return {status:'ok'};
- }
+ // 손님도 로그인 없이 1화를 끝까지 한다(11-23 유호님 「1화까지는 열어두는거」). 받아쓰기(talk · 외부 AI 비용)는 계정만 부르고,
+ // 손님 판은 녹음을 들어 보고 스스로 확인하는 길로 간다(app-shell mountDramaHost guest). 저장은 이 기기의 손님 사본이다.
+ function prepareEpisode(){return {status:'ok'};}
  async function openEpisode({onScene=()=>{}}={}){
   const panel=document.querySelector('#world-panel');
   return new Promise(resolve=>{
@@ -146,10 +148,15 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
    }).catch(()=>{if(!panel.open)done();});
   });
  }
- // 오늘 기록 아래 띠. 시범판 단추를 가리지 않게 틀 높이를 그만큼 줄인다
- function showBand(){
+ // 오늘 기록 아래 띠. 시범판 단추를 가리지 않게 틀 높이를 그만큼 줄인다.
+ // 손님에게는 체험 끝 안내와 사전예약 단추를 함께 둔다(11-23 유호님 「1화가 마치면 체험은 여기까지 … 궁금하면 이쪽에 등록해달라고」). 사전예약은 새 탭이라 이야기는 이 탭에서 이어진다.
+ function showBand(lang=currentLang()){
   const content=document.querySelector('#panel-content');if(!content||content.querySelector('.seoul-cta'))return;
-  const band=document.createElement('div');band.className='seoul-cta';band.innerHTML=`<button type="button" class="felt-button">${escape(t('toCrowd'))}</button>`;
+  const say=key=>escape(seoulText(key,lang)),guest=!client().snapshot;
+  const band=document.createElement('div');band.className=guest?'seoul-cta is-trial':'seoul-cta';
+  band.innerHTML=guest
+   ?`<div class="seoul-trial" lang="${escape(lang)}"><strong>${say('trialEnd')}</strong><span>${say('trialMore')}</span></div><div class="seoul-cta-row"><a class="felt-button" href="${escape(reserveUrl(lang))}" target="_blank" rel="noopener">${say('reserve')}<span aria-hidden="true">↗</span></a><button type="button" class="plain-button">${say('toCrowd')}</button></div>`
+   :`<button type="button" class="felt-button">${say('toCrowd')}</button>`;
   band.querySelector('button').addEventListener('click',()=>{try{session?.api?.wake();}catch{}close();});
   content.append(band);
  }

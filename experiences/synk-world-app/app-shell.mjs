@@ -1051,7 +1051,10 @@ const games={runner:{get title(){return t('game.runner.title');},path:'korean-ru
  drama:{get title(){return currentLang()==='ko'?'드라마 말하기 · 1화':'Korean drama · Episode 1';},path:'drama/',microphone:true}};
 // 드라마 말하기의 받아쓰기 통로: 게임 틀(같은 출처 iframe)은 계정 토큰을 모르므로, 그 틀이 열린 동안만 부모 창에 talk world-speaking 동작 둘(status · take)을 둔다.
 // 만든 때의 계정(owner · generation)과 지금이 다르면 던지고, PC 앱처럼 말하기 자동 피드백을 못 쓰는 곳에서는 두지 않는다(화면은 스스로 확인으로 간다).
-function mountDramaHost(){
+// guest: 서울행 내 길에서 1화를 여는 손님(11-23 유호님 「1화까지는 열어두는거」). talk(외부 받아쓰기 AI · 계정 하루 횟수)를 부르지 않는다 —
+// status가 받아쓰기 꺼짐을 알려 시범판이 녹음을 들어 보고 스스로 확인하는 길로 끝까지 간다. take는 오지 않지만 오면 꺼짐으로 답한다.
+function mountDramaHost({guest=false}={}){
+ if(guest){const host=Object.freeze({status:async()=>({ok:true,guest:true,dramaEnabled:false}),take:async()=>({ok:true,status:'off'})});window.SYNKDramaHost=host;return {dispose(){if(window.SYNKDramaHost===host)delete window.SYNKDramaHost;}};}
  if(!operating||!account?.supportsSpeaking||!client.snapshot)return null;
  const owner=client.snapshot.accountId,generation=client.generation;
  const check=()=>{if(client.snapshot?.accountId!==owner||client.generation!==generation||window.SYNKDramaHost!==host)throw Object.assign(Error('로그인한 계정이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
@@ -1078,7 +1081,9 @@ async function launchGame(id,{seoul:fromSeoul=false}={}){
  if(!fromSeoul&&!front?.free()&&home.ensureTutor&&!home.tutor()?.tutor)return await home.ensureTutor(()=>launchGame(id));
  // 손님의 한글 만나기는 계정 놀이 기록 없이 기기 진도로, 바람길·리듬은 체험이 남아 있으면 한 판 체험으로 연다(계정 호스트를 설치하지 않는다).
  const guest=operating&&!client.snapshot,trial=guest&&guestTrials.open().includes(id);
- if(operating&&!(guest&&(GUEST_GAMES.has(id)||trial))){
+ // 서울행 내 길의 1화는 손님도 로그인 없이 연다(받아쓰기 없는 통로 — mountDramaHost guest). 다른 입구(?drama=1 · 놀이)의 드라마는 그대로 로그인부터다.
+ const seoulGuest=guest&&fromSeoul&&id==='drama';
+ if(operating&&!(guest&&(GUEST_GAMES.has(id)||trial||seoulGuest))){
   if(!client.snapshot)return signIn(id);
   const accountId=client.snapshot.accountId;
   show(game.title,`<p class="panel-description" role="status">${t('account.gameLoading')}</p>`,'world-game-loading');loadingShown=true;
@@ -1095,7 +1100,7 @@ async function launchGame(id,{seoul:fromSeoul=false}={}){
  // 체험 판의 틀은 메모리 호스트를 받는다: 판이 끝나면 그 게임의 체험을 닫고 추천을 다시 고르며, 결과의 로그인 단추는 계정 연결을 연다.
  if(trial){trialHost=createGuestTrialPlayHost({game:id,onRound:()=>{guestTrials.finish(id);life.education?.refresh();},signIn:()=>setTimeout(()=>{if(client.snapshot)return;close();signIn(id);},0)});window.SYNKPlayHost=trialHost;}
  // 드라마 통로는 틀보다 먼저 둔다 — 틀 안 화면이 처음 읽을 때 있어야 한다.
- dramaHost=id==='drama'?mountDramaHost():null;
+ dramaHost=id==='drama'?mountDramaHost({guest:seoulGuest}):null;
  show(game.title,`<iframe class="game-frame" title="${game.title}" src="${worldUrl(game.path)}" allow="autoplay; fullscreen${game.microphone?'; microphone':''}" allowfullscreen></iframe>`,'game');
  launchTicket=gameLaunch;
  companion=home.mountGameTutor?.(id,{frame:document.querySelector('.game-frame')});
@@ -1199,7 +1204,7 @@ const deviceRecords=createDeviceRecordsOffer({storage:localStorage,learningStatu
 commands['seoul-move']=button=>seoul.moveChoice(button.dataset.choice);
 commands['device-records']=button=>{const line=document.querySelector('[data-device-records-status]');return deviceRecords.choose(button.dataset.choice,{owner:client.snapshot?.accountId||'guest',
  status:(text,busy)=>{if(line)line.textContent=text;document.querySelectorAll('[data-world="device-records"]').forEach(node=>{node.disabled=busy;});}});};
-seoul=createSeoulEntry({dramaPending:()=>dramaRequested||me2Requested,restored:initialRestoreReady,operating,client:()=>client,life,home,worldUrl,launchGame,signIn,show,close,selectLanguage,tutorStatus,native:()=>operating&&account?.supportsSpeaking===false,frontOn:()=>!!front?.soon()});
+seoul=createSeoulEntry({dramaPending:()=>dramaRequested||me2Requested,restored:initialRestoreReady,client:()=>client,life,home,worldUrl,launchGame,show,close,selectLanguage,tutorStatus,native:()=>operating&&account?.supportsSpeaking===false,frontOn:()=>!!front?.soon()});
 // 첫날 끝 · 맞춤 앞면(1차, 결정 11-19): 서울행을 끝낸 학생은 튜터 고르기 · 펠트 동네 대신 앞면을 홈으로 쓴다. 스위치(FRONT_AUTO)를 끄면 지금 길 그대로다.
 front=createFrontEntry({client:()=>client,life,home,worldUrl,launchGame,openLife:(...v)=>openLife(...v),signIn,profile,openStory:()=>seoul.openRoad(),native:()=>operating&&account?.supportsSpeaking===false,
  guestArrival:()=>seoul.arrival?.('guest')||null,newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),bypass:()=>!!(dramaRequested||me2Requested||wardrobeRequested||examRequested),

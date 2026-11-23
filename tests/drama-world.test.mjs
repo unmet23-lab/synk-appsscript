@@ -108,15 +108,33 @@ test('WORLD 통로: 드라마 틀에만 마이크 · 통로를 두고, 패널을
   const shell = read('experiences/synk-world-app/app-shell.mjs');
   assert.match(shell, /drama:\{get title\(\)\{[^}]+\},path:'drama\/',microphone:true\}/);
   assert.match(shell, /allow="autoplay; fullscreen\$\{game\.microphone\?'; microphone':''\}"/);
-  assert.match(shell, /dramaHost=id==='drama'\?mountDramaHost\(\):null;\n show\(game\.title/, '틀보다 먼저 둔다');
+  assert.match(shell, /dramaHost=id==='drama'\?mountDramaHost\(\{guest:seoulGuest\}\):null;\n show\(game\.title/, '틀보다 먼저 둔다');
   assert.equal((shell.match(/dramaHost\?\.dispose\(\)/g) || []).length, 2, '패널 닫기 · 실패 둘 다');
-  assert.match(shell, /function mountDramaHost\(\)\{\n if\(!operating\|\|!account\?\.supportsSpeaking\|\|!client\.snapshot\)return null;/);
+  assert.match(shell, /function mountDramaHost\(\{guest=false\}=\{\}\)\{\n if\(guest\)\{[^\n]*\}\n if\(!operating\|\|!account\?\.supportsSpeaking\|\|!client\.snapshot\)return null;/);
   assert.match(shell, /payload\.action!=='take'/, '통로로는 take만');
   // 로그인은 전체 페이지 이동이라 바로가기를 이 탭에 남기고, 로그인한 상태로 들어왔을 때 비우며 연다.
   assert.match(shell, /get\('drama'\)==='1'\)sessionStorage\.setItem\(DRAMA_PENDING/);
   const route = shell.slice(shell.indexOf('else if(dramaRequested)'), shell.indexOf('else if(me2Requested)'));
   assert.match(route, /if\(client\.snapshot\)\s*\{[\s\S]*?else try\{sessionStorage\.removeItem\(DRAMA_PENDING\);\}/, '기존 드라마 링크는 로그인 뒤에만 지운다');
   assert.match(route, /void launchGame\('drama'\)/, '두 입구 모두 원래 드라마를 연다');
+});
+
+test('서울행 손님 1화(11-23): 로그인 없이 열고, 손님 통로는 talk를 부르지 않고 받아쓰기 꺼짐을 알린다', async () => {
+  const shell = read('experiences/synk-world-app/app-shell.mjs');
+  assert.match(shell, /const seoulGuest=guest&&fromSeoul&&id==='drama';\n if\(operating&&!\(guest&&\(GUEST_GAMES\.has\(id\)\|\|trial\|\|seoulGuest\)\)\)\{/);
+  const guestHost = shell.match(/\n if\(guest\)\{(const host=[^\n]*)\}\n if\(!operating/)?.[1];
+  assert.ok(guestHost, '손님 통로 줄');
+  assert.doesNotMatch(guestHost, /account|speakingRequest|fetch|client|request/, '서버를 부르지 않는다');
+  const window = {};
+  const mounted = new Function('window', `${guestHost}`)(window);
+  assert.equal(mounted.dispose.name, 'dispose');
+  const host = window.SYNKDramaHost;
+  assert.equal((await host.status()).dramaEnabled, false);
+  assert.equal((await host.take({ action: 'take' })).status, 'off');
+  mounted.dispose();
+  assert.equal(window.SYNKDramaHost, undefined, '패널을 닫으면 지운다');
+  // 시범판은 dramaEnabled가 참일 때만 받아쓰기를 연다 — 손님 판은 녹음 · 스스로 확인으로 끝까지 간다
+  assert.match(read('experiences/drama/pilot/pilot.mjs'), /const analysis = !!status && status\.dramaEnabled === true/);
 });
 
 test('화면: WORLD 통로는 같은 출처 부모에서만 찾고, 받아쓰기 끄기는 판 바뀜(409)에만', () => {

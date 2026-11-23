@@ -1,7 +1,7 @@
 // 서울행 실제 앱 흐름 시험: 새 손님이 타이틀부터 1화 끝 쪽지 · 우리 동네까지 지나간다(운영 계정 · talk를 건드리지 않는다).
 //   node experiences/seoul-arrival/qa/흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--꿈 idol|actor] [--찍기] [--끝 road] [--완주]
 // --꺼짐: 스위치를 끈 판(seoul-entry.mjs의 SEOUL_AUTO만 false로 바꿔 내줌)에서 새 손님 길이 서울행 전과 같은지만 본다(틀을 받지 않는다). 켠 뒤에도 끄면 돌아가는 길을 지킨다.
-// --후보 <폴더>: synk.im/world의 후보 파일만 그 폴더에서 내주고 나머지는 지금 공개본을 받는다(공개본은 안 바꾼다). 로그인 없이 갈 수 있는 데까지 — 1화는 로컬 시험 몫.
+// --후보 <폴더>: synk.im/world의 후보 파일만 그 폴더에서 내주고 나머지는 지금 공개본을 받는다(공개본은 안 바꾼다). 라이브(계정 모드) 손님으로 1화를 끝까지 하고(받아쓰기 없이 녹음 · 스스로 확인, talk를 부르지 않는다) 끝 띠의 사전예약 단추 · 객석 · 쪽지까지 본다(11-23).
 // --언어판: 언어를 고른 적 없는 한국어 밖 기기 — 타이틀을 누르면 지금의 언어 판이 먼저 뜨고, 고르면 이야기가 이어진다.
 // --완주: 프롤로그를 건너뛰지 않는다. 「가」는 실제 획으로 쓰고, 입국심사는 일부러 한 번 틀리고, 첫 아침의 누를 자리는 개찰구만 누른다.
 // · 로컬 WORLD 서버(리허설)를 직접 띄운다. /drama/는 공개 빌드처럼 data-drama="world"를 단 실제 시범판 파일을 내주고, 드라마 통로는 talk와 같은 판정기로 흉내 낸다(틀시험.mjs와 같다).
@@ -70,6 +70,9 @@ await page.addInitScript(({linesVersion})=>{if(window!==window.top)return;
 },{linesVersion:lesson.linesVersion});
 // /drama/: 실제 시범판 파일(공개 빌드처럼 표시를 단다), 재생 사본은 공용 작업본에서
 const frameAsked=[];page.on('request',q=>{if(/\/seoul-arrival\//.test(q.url()))frameAsked.push(q.url());});
+// 손님 1화는 받아쓰기 서버(talk world-speaking)를 부르지 않는다. 사전예약 새 탭은 실제 쪽을 받지 않고 주소만 본다.
+const talkAsked=[];page.on('request',q=>{if(/\/world-speaking(?:[?#/]|$)/.test(q.url()))talkAsked.push(q.url());});
+await context.route(/^https:\/\/synk\.im\/reserve\//,route=>route.fulfill({status:200,headers:{'content-type':'text/html; charset=utf-8'},body:'<!doctype html><title>reserve</title>'}));
 const switchOff=text=>{if(!/export const SEOUL_AUTO=(true|false);/.test(text)){console.log('실패 seoul-entry.mjs에서 스위치 줄을 못 찾았다(--꺼짐은 끈 판을 만들 수 없다)');process.exit(1);}return text.replace(/export const SEOUL_AUTO=true;/,'export const SEOUL_AUTO=false;');};
 const frontOff=text=>FRONT?text:text.replace(/export const FRONT_AUTO=(true|false);/,'export const FRONT_AUTO=false;');
 if(!CAND)await page.route(/\/world-front-entry\.mjs(\?|$)/,async route=>{const r=await route.fetch();return route.fulfill({response:r,body:frontOff(await r.text())});});
@@ -237,27 +240,12 @@ await until('새로고침 뒤 내 길',async()=>!!F()&&await inF(()=>document.qu
 check(true,'새로고침 뒤 내 길로 이어짐');
 await sleep(800);await shot('15-이어짐');
 }
-if(CAND){
- // 라이브는 계정 모드라 1화 앞에서 로그인 판이 뜬다. 닫으면 내 길에 그대로 있다
- await F().click('#startEp');
- await until('로그인 판',()=>page.evaluate(()=>document.querySelector('#world-panel')?.open&&!!document.querySelector('#panel-content .ws-lead')),8000);
- await sleep(500);await shot('16-로그인판');
- const lead=await page.evaluate(()=>document.querySelector('#panel-content .ws-lead')?.textContent||'');
- check(/학생증|student ID|үнэмлэх/.test(lead),'로그인 판에 학생증 저장 안내',lead);
- await page.evaluate(()=>document.querySelector('#world-panel').close());await sleep(500);
- check(await inF(()=>document.querySelector('#s-path').classList.contains('on')),'로그인 판을 닫으면 내 길');
- await F().click('#goHome');
- await until('서울행 층이 닫힘',()=>page.evaluate(()=>!document.querySelector('#seoul-layer')),6000);
- await until('입장 관문이 이어짐',()=>page.evaluate(()=>document.querySelector('#world-panel')?.open),12000);
- await sleep(500);await shot('17-관문');
- check(await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.arrival.v1:guest')||'null')?.stage)==='left','기록이 끝남으로');
- await finish();
-}
 if(END==='road'){await finish();}
 
-// ── 1화 ──
+// ── 1화 ── 라이브(계정 모드)의 손님도 로그인 판 없이 바로 장면으로 간다(11-23 유호님 「1화까지는 열어두는거」)
 await F().click('#startEp');
 await until('장면 카드',()=>inF(()=>document.querySelector('#s-scene').classList.contains('on')),4000);
+check(!await page.evaluate(()=>!!document.querySelector('#world-panel')?.open&&!!document.querySelector('#panel-content .ws-signin')),'1화 앞에 로그인 판이 없음');
 await sleep(700);await shot('16-장면카드');
 await until('드라마 틀',()=>page.evaluate(()=>!!document.querySelector('#panel-content .game-frame')),12000);
 await sleep(1500);await shot('17-드라마');
@@ -282,6 +270,12 @@ await until('오늘 기록 띠',()=>page.evaluate(()=>!!document.querySelector('
 await sleep(400);await shot('18-오늘기록');
 const hidden=await page.evaluate(()=>{const f=document.querySelector('#panel-content .game-frame').getBoundingClientRect(),b=document.querySelector('.seoul-cta').getBoundingClientRect();return f.bottom-b.top;});
 check(hidden<=1,'띠가 틀을 가리지 않음',String(hidden));
+// 손님의 끝 띠: 체험 끝 안내와 사전예약 단추(새 탭, from · 화면 언어). 띠가 패널 안에 다 들어온다
+const cta=await page.evaluate(()=>{const a=document.querySelector('#panel-content .seoul-cta.is-trial a.felt-button'),band=document.querySelector('.seoul-cta')?.getBoundingClientRect(),panel=document.querySelector('#panel-content').getBoundingClientRect();return a&&{href:a.href,target:a.target,text:document.querySelector('.seoul-trial')?.innerText.replace(/\s+/g,' '),inside:band.bottom<=panel.bottom+1&&band.top>=panel.top,lines:[...document.querySelectorAll('.seoul-cta-row>*')].map(b=>Math.round(b.getBoundingClientRect().height))};});
+check(cta?.href===`https://synk.im/reserve/?from=world-ep1&lang=${LANG}`&&cta.target==='_blank'&&cta.inside,'손님 끝 띠에 사전예약 단추',JSON.stringify(cta));
+if(CAND)check(talkAsked.length===0,'손님 1화가 받아쓰기 서버를 부르지 않음',talkAsked.slice(0,3).join(' '));
+{const [tab]=await Promise.all([context.waitForEvent('page',{timeout:10000}),page.click('#panel-content .seoul-cta a.felt-button')]);
+ check(tab.url().startsWith('https://synk.im/reserve/?from=world-ep1'),'사전예약 쪽이 새 탭으로 열림',tab.url());await tab.close();await page.bringToFront();}
 const scenes=await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.arrival.v1:guest')||'null')?.scenes?.map(s=>s.id));
 check(scenes?.includes('s1e01.scene')&&scenes?.includes('s1e01.wrap'),'장면 끝 기록',JSON.stringify(scenes));
 await page.click('#panel-content .seoul-cta button');
@@ -309,6 +303,15 @@ await sleep(800);await shot('23-내길끝');
 const rec=await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.arrival.v1:guest')||'null'));
 check(rec?.momAnswer==='fix'&&!!rec?.momAt,'쪽지 답 저장');
 check(await inF(()=>!!document.querySelector('#goHome')&&document.querySelector('#goHome').classList.contains('go-btn')),'1화 끝난 뒤 첫 단추는 우리 동네로');
+if(CAND){
+ // 라이브 손님은 여기까지 본다. 동네로 가면 서울행이 닫히고 지금의 입장 관문이 이어진다(관문 뒤는 계정 모드 손님 길이라 이 시험 몫이 아니다)
+ await F().click('#goHome');
+ await until('서울행 층이 닫힘',()=>page.evaluate(()=>!document.querySelector('#seoul-layer')),6000);
+ await until('입장 관문이 이어짐',()=>page.evaluate(()=>document.querySelector('#world-panel')?.open),12000);
+ await sleep(500);await shot('24-관문');
+ check(await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.arrival.v1:guest')||'null')?.stage)==='left','기록이 끝남으로');
+ await finish();
+}
 if(FRONT){
  // 앞면을 켠 판: 첫 단추가 「오늘 마무리하기」이고, 누르면 서울행이 닫히고 튜터 고르기 · 동네 대신 첫날 끝 앞면이 뜬다
  if(LANG==='ko')check(await inF(()=>document.querySelector('#goHome')?.textContent.trim()==='오늘 마무리하기'),'앞면 학생의 첫 단추는 「오늘 마무리하기」');
