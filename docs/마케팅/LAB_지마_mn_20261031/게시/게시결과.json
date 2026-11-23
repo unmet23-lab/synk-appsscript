@@ -476,16 +476,16 @@
     },
     {
       "계정": "lab-mx-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-21T13:00:00-06:00",
       "지문": "9e02d48400815a18b73c83779a0b6bb572d287424f1afaf92491571e510c9817",
       "게시글지문": "69002e4c9f0a859fb3da2418de9bdfed32db6fd14c370d5396ab7e030e5e527c",
       "방법": "ego",
       "게시물ID": "7709387488523062535",
       "주소": "https://www.tiktok.com/@synklab.mx/video/7709387488523062535",
-      "확인": "예약 한국 시각 2026-11-22 04:00 · TikTok Studio 콘텐츠 목록(@synklab.mx, Profile 12) 줄 「Nov 22, 4:00 AM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「Para decir “no hagas…” en coreano informal, pega -지 마 (-ji ma) a la raíz del verbo.」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 22, 2026 04:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 5.8, 첫 장면과 24.9) · 누르기 전 표지 유지 true",
+      "확인": "로그인 없이 영상 쪽 statusCode 0 · createTime 2026-11-22 04:00 KST · 글 「Para decir “no hagas…” en coreano informal, pega -지 마 (-ji m」 · 2026-11-23 15:12 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-18T06:24:33.820Z"
+      "기록시각": "2026-11-23T06:12:27.040Z"
     },
     {
       "계정": "lab-lk-facebook",

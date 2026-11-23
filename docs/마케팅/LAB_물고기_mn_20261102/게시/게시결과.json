@@ -297,16 +297,16 @@
     },
     {
       "계정": "lab-vn-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-22T13:00:00+07:00",
       "지문": "ebdde5e76d849b07a6691a6a5a657b88632cf4892242046aa0d11c606bcc962a",
       "게시글지문": "856215bb4f7038cb3d5310a083211bc9248a2bc663807ffbba07d268d07d7509",
       "방법": "ego",
       "게시물ID": "7709385450632318216",
       "주소": "https://www.tiktok.com/@synklab.vn/video/7709385450632318216",
-      "확인": "예약 한국 시각 2026-11-22 15:00 · TikTok Studio 콘텐츠 목록(@synklab.vn, Profile 11) 줄 「Nov 22, 3:00 PM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「Tiếng Hàn ghép các từ ngắn thành từ mới: 물 (mul) nước + 고기 (go-gi) thịt = 물고기 (mul-go-gi), cá.」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 22, 2026 15:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 5.3, 첫 장면과 42) · 누르기 전 표지 유지 true",
+      "확인": "로그인 없이 영상 쪽 statusCode 0 · createTime 2026-11-22 15:00 KST · 글 「Tiếng Hàn ghép các từ ngắn thành từ mới: 물 (mul) nước + 고기 (」 · 2026-11-23 15:12 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-18T06:24:33.222Z"
+      "기록시각": "2026-11-23T06:12:25.002Z"
     },
     {
       "계정": "lab-kz-tiktok",
@@ -349,16 +349,16 @@
     },
     {
       "계정": "lab-id-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-21T13:00:00+07:00",
       "지문": "3eecf73e3703200e25e7bbc39a2779fb58d245fcbc92fcd416bd0a0370013342",
       "게시글지문": "07864ab96513183b9f7334c112a5b2e42b60d0777442e1eccf142091074bb055",
       "방법": "ego",
       "게시물ID": "en8HltO4JXg",
       "주소": "https://youtube.com/shorts/en8HltO4JXg",
-      "확인": "예약 한국 시각 2026-11-21 15:00 = 현지 13:00(2026-11-21) · 스튜디오 예약 창 「2026. 11. 21. 오후 3:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Indonesia | Serunya Bahasa Korea」 목록 「예약됨 2026. 11. 21.」 · 글 첫 줄 「Dalam bahasa Korea, ikan itu “daging air” 🐟 #belajarkorea」 · 동영상 언어 인도네시아어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "로그인 없이 oEmbed 200 · 채널 「SYNK LAB Indonesia | Serunya Bahasa Korea」 · 제목 「Dalam bahasa Korea, ikan itu “daging air” 🐟 #belajarkorea」 · 2026-11-23 15:12 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-18T05:50:23.082Z"
+      "기록시각": "2026-11-23T06:12:25.071Z"
     },
     {
       "계정": "lab-th-tiktok",
@@ -388,16 +388,16 @@
     },
     {
       "계정": "lab-id-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-21T13:00:00+07:00",
       "지문": "3eecf73e3703200e25e7bbc39a2779fb58d245fcbc92fcd416bd0a0370013342",
       "게시글지문": "782db930461eff357c6dc742e8c1d316ebd409c49d46dacc668d733cba8135f3",
       "방법": "ego-browser · Profile 15 · 공간 「틱톡 synklab.id 1119-1900」(262) · TikTok Studio 업로드(파일 docs/마케팅/LAB_물고기_mn_20261102/게시/판본/ID/video.mp4, 판 지문 일치) → 표지(Edit cover → Upload cover → Save) → 예약 · AI 표시 끔 · 스크립트 C:/Users/q1212/ego/tiktok-20261119-1900/run-id-1121-15.mjs",
       "게시물ID": "7709823645903834388",
       "주소": "https://www.tiktok.com/@synklab.id/video/7709823645903834388",
-      "확인": "TikTok Studio 콘텐츠 목록(@synklab.id, Profile 15) 줄 「Nov 21, 3:00 PM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「Bahasa Korea suka gabungin kata-kata pendek jadi kata baru: 물 (mul) air + 고기 (go-gi) daging = 물고기 (mul-go-gi), ikan.」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 21, 2026 15:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 5.3, 첫 장면과 41) · 누르기 전 표지 유지 true",
+      "확인": "로그인 없이 영상 쪽 statusCode 0 · createTime 2026-11-21 15:00 KST · 글 「Bahasa Korea suka gabungin kata-kata pendek jadi kata baru: 」 · 2026-11-23 15:12 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-19 18시 회차 — 8장 띠 · 음량 · 게시글 대조 · 링크 200 · 올리기 전 검사 고칠 것 0)",
-      "기록시각": "2026-11-19T10:53:04.402Z"
+      "기록시각": "2026-11-23T06:12:25.142Z"
     },
     {
       "계정": "lab-lk-facebook",

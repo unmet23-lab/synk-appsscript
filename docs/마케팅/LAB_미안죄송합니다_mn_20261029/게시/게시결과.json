@@ -317,7 +317,7 @@
     },
     {
       "계정": "lab-vn-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-21T13:00:00+07:00",
       "지문": "64d351dfcac17df8065eb79e0aa34913c0623650643b91dad07ed8a245cc88f5",
       "게시글지문": "ed3acca32876d56d6c27a0400bee329163f64c54fd3afe011ca627f7263d4a21",
@@ -343,9 +343,9 @@
       ],
       "게시물ID": "7710016055778741556",
       "주소": "https://www.tiktok.com/@synklab.vn/video/7710016055778741556",
-      "확인": "예약 한국 시각 2026-11-21 15:00 · TikTok Studio 콘텐츠 목록(@synklab.vn, Profile 11) 줄 「Nov 21, 3:00 PM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「Xin lỗi bằng tiếng Hàn có 3 cấp:」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 21, 2026 15:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 7.1, 첫 장면과 14.5) · 영상 undefined(새 색 판, 준비.json 지문과 같음) · 11-20 KST",
+      "확인": "로그인 없이 영상 쪽 statusCode 0 · createTime 2026-11-21 15:00 KST · 글 「Xin lỗi bằng tiếng Hàn có 3 cấp: 미안 (mi-an) = với bạn bè · 미」 · 2026-11-23 15:12 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 11-20 「응, 점검해」(바뀐 판본으로 다시 걸기) · 자체검수 통과",
-      "기록시각": "2026-11-19T22:40:32.727Z"
+      "기록시각": "2026-11-23T06:12:25.218Z"
     },
     {
       "계정": "lab-kz-tiktok",
@@ -569,7 +569,7 @@
     },
     {
       "계정": "lab-id-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-22T13:00:00+07:00",
       "지문": "fe2960b1b8c1227dd374dcbad6c0577b91c56686534e3d135adc91df90d63d5c",
       "게시글지문": "8cf3307a60405db19f8a52a697396451d365e2c018bde43be9d952a71993866a",
@@ -590,9 +590,9 @@
       ],
       "게시물ID": "7710017481657961736",
       "주소": "https://www.tiktok.com/@synklab.id/video/7710017481657961736",
-      "확인": "예약 한국 시각 2026-11-22 15:00 · TikTok Studio 콘텐츠 목록(@synklab.id, Profile 15) 줄 「Nov 22, 3:00 PM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「“Maaf” dalam bahasa Korea tergantung kamu ngomong ke siapa: 미안 (mi-an) ke teman, 죄송합니다 (joe-song-ham-ni-da) ke guru dan 」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 22, 2026 15:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 7.1, 첫 장면과 14.9) · 영상 undefined(새 색 판, 준비.json 지문과 같음) · 11-20 KST",
+      "확인": "로그인 없이 영상 쪽 statusCode 0 · createTime 2026-11-22 15:00 KST · 글 「“Maaf” dalam bahasa Korea tergantung kamu ngomong ke siapa: 」 · 2026-11-23 15:12 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 11-20 「응, 점검해」(바뀐 판본으로 다시 걸기) · 자체검수 통과",
-      "기록시각": "2026-11-19T22:46:05.748Z"
+      "기록시각": "2026-11-23T06:12:25.289Z"
     },
     {
       "계정": "lab-uz-instagram",
