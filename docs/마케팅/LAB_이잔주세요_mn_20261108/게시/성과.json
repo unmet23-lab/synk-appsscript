@@ -323,6 +323,28 @@
         ]
       },
       {
+        "계정": "lab-ca-youtube",
+        "채널": "유튜브 @synklabcanada",
+        "주소": "https://www.youtube.com/watch?v=1wppaTCS2Ps",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-23T18:00:24.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
+        "계정": "lab-br-youtube",
+        "채널": "유튜브 SYNK LAB Brasil | Coreano divertido",
+        "주소": "https://www.youtube.com/watch?v=B4T8NbOFNhE",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-23T16:00:01.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-tw-youtube",
         "채널": "유튜브 @synklabtaiwan",
         "주소": "https://www.youtube.com/watch?v=fr108Om7Zx4",
