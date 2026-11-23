@@ -4,35 +4,135 @@
     "sha256": "6708b9296df9c0e019715a548c55979b36d8fb42bd88536f52c660d7e9b113cb"
   },
   "reserve/app.js": {
-    "bytes": 12847,
-    "sha256": "469d49abc66246497686caa4e6c51cc0530397f8f037b53f9298f5a507c2f8b4"
+    "bytes": 16284,
+    "sha256": "8a234fc74d4f1f6d1fdf8f7d76887e3786fd56c89810d4bf6864b5daaafde69f"
+  },
+  "reserve/art/stage-land.webp": {
+    "bytes": 131726,
+    "sha256": "37a4e7f44d4820d9eb695f90618d81982ea2c477a2ecc96df281b3e1d3850fa5"
+  },
+  "reserve/art/stage-port.webp": {
+    "bytes": 103208,
+    "sha256": "699c0896d51c5a54904584e302a30c56c0c60f781497bdb893a6492d39e8c6dd"
+  },
+  "reserve/assets/reserve-inter-400.woff2": {
+    "bytes": 28652,
+    "sha256": "1cf136de11bccd8339fa7209856b98c65b4cfb5257e2cab90f808f6c65f982f7"
   },
   "reserve/assets/reserve-inter-500.woff2": {
-    "bytes": 29328,
-    "sha256": "8c3f7fa89fd44f67d44c3cc142b3f665a7b87f8811ddf3506837387c55ca5ace"
+    "bytes": 29560,
+    "sha256": "f336f52afb3d41ae30a1faf9f18fef8d137e3b0a4f3065658f048a4ed1c31bfd"
   },
   "reserve/assets/reserve-inter-700.woff2": {
-    "bytes": 29464,
-    "sha256": "c0cecdae962e44b76dc4fa358d78e867dd8f685adedeac08100bf71417b7549a"
+    "bytes": 29740,
+    "sha256": "27e0264fe7d1ddaff844ccba5cc9d00cddd18a8353a76935ffeafc665091c7f4"
+  },
+  "reserve/assets/reserve-mono.woff2": {
+    "bytes": 1600,
+    "sha256": "e6e5d743add85f189b9986a902ed912d5f34a876b7c136365ffae8da73254821"
   },
   "reserve/assets/reserve-sans.woff2": {
-    "bytes": 82788,
-    "sha256": "0e9e0eeb9849f562c2303b0bccd885c97572cfabfafaa51b2a7c35aeb8e7dcf9"
+    "bytes": 99896,
+    "sha256": "3e50b04de3c1a123fff5f14d379288488628c971ab519b733e13fe8a0852e60f"
   },
   "reserve/copy.js": {
-    "bytes": 12412,
-    "sha256": "b5a670ed97040ba2dc37c0842e081323c1423007d70411ae275ae6cd4f538751"
+    "bytes": 21988,
+    "sha256": "017be6e37538718cd63ac7542c99b16d492413087bf5338a11312c5bd979f11c"
   },
   "reserve/index.html": {
-    "bytes": 7168,
-    "sha256": "8b5568b4eccde3085129def473b6c4ade4dcc430a0408817ba50268ae502581c"
+    "bytes": 9057,
+    "sha256": "6bb8792295c21eee8ff44297725ce4cc0233134fd45950c16fab8e67b8807d1b"
   },
   "reserve/og.jpg": {
-    "bytes": 95001,
-    "sha256": "144ca4b63d22d0fd06865dc0f6002147bdfffcac6720494f7bce5bb10008ba73"
+    "bytes": 64714,
+    "sha256": "92caf10e0c34ea5322967558322b27b0187934915a930d810eceacede7c557bf"
   },
   "reserve/reserve.css": {
-    "bytes": 8442,
-    "sha256": "b6424ef908a9ee8f3e2e74ef0d1e25c48bd4cc38f5c683b5e890d051a0edc66e"
+    "bytes": 13839,
+    "sha256": "6619653a65ba85716c746bdadea10ec9c3fa369f978f8e36c910872fe6410bdf"
+  },
+  "reserve/shots/en/card.webp": {
+    "bytes": 26072,
+    "sha256": "cd06ad9e1b214324fd6502051326676d5ac8f29096fa23998f2b17d0f84d2793"
+  },
+  "reserve/shots/en/face.webp": {
+    "bytes": 70140,
+    "sha256": "a9adcc27f328e00acfafe2974a83e1b5e19ec543446224fac5b5ece40d5c55c1"
+  },
+  "reserve/shots/en/immigration.webp": {
+    "bytes": 32218,
+    "sha256": "41a571dca9b39e3bc37eb96fe6264ee39c71e6b13a09488e236aabf2e81f4817"
+  },
+  "reserve/shots/en/name.webp": {
+    "bytes": 23036,
+    "sha256": "0c1653d2c05be38a172d35baeaf2496af0a81ad930e12c6680c3c594572dc995"
+  },
+  "reserve/shots/en/road.webp": {
+    "bytes": 34422,
+    "sha256": "980fb0c3a740bd73bc2dcfd2b08472fb306db82a9f38bd5e5e9e874a4568c6c5"
+  },
+  "reserve/shots/en/station.webp": {
+    "bytes": 30950,
+    "sha256": "614b7010dd00bc6f474b4d631cb311f24552365d5c17a8a1035bdb252240b585"
+  },
+  "reserve/shots/en/title.webp": {
+    "bytes": 52630,
+    "sha256": "0522d4c1879e8ce405da741225c4e4db2970e8d3093ff0e92579dfdfb7dd66ca"
+  },
+  "reserve/shots/ko/card.webp": {
+    "bytes": 23490,
+    "sha256": "ff5419cf0353b8444ea1d6b8f51b9d7c0a9dcebe7472a1df788d341c0cf2ccf2"
+  },
+  "reserve/shots/ko/face.webp": {
+    "bytes": 63236,
+    "sha256": "d771bb19e7323fb5407a8554f6e5b7f5a0b350f96b22277ebaa5a832d4bf1472"
+  },
+  "reserve/shots/ko/immigration.webp": {
+    "bytes": 28096,
+    "sha256": "d8860a9bb24c7a1edb4d969aeecb40b5de1512a6b39f992166134bf455fe1de8"
+  },
+  "reserve/shots/ko/name.webp": {
+    "bytes": 22008,
+    "sha256": "f6fdeb40d417c2772fe7c508ab153386a11f4abff75d86c3039d4161e52df1f5"
+  },
+  "reserve/shots/ko/road.webp": {
+    "bytes": 29188,
+    "sha256": "a7b426e2a991980cb64075187a581081a2e6c8822eefc8c76e7addff3e8571ed"
+  },
+  "reserve/shots/ko/station.webp": {
+    "bytes": 30032,
+    "sha256": "d921574c80877ea9094344a2c56d3e487c51e9ad00dc18bf0c525efa8e816b27"
+  },
+  "reserve/shots/ko/title.webp": {
+    "bytes": 52064,
+    "sha256": "ff17f07ea4021ece5d0a2d53425b70d8860b5d54bf00b6e2ec781c9677d81628"
+  },
+  "reserve/shots/mn/card.webp": {
+    "bytes": 26682,
+    "sha256": "3bbfbb53290a4c176e7b5358df1a034050259d169a4200cdd049c21e4125f33d"
+  },
+  "reserve/shots/mn/face.webp": {
+    "bytes": 65198,
+    "sha256": "7f3bcbb3216f6e97822fb1398625f6be2095e0dd224b06f95341f5d130e91259"
+  },
+  "reserve/shots/mn/immigration.webp": {
+    "bytes": 33298,
+    "sha256": "d01af407a2e8a453c497dad6a8884e9a62c52cc63ef12d986a9a9bda5c792665"
+  },
+  "reserve/shots/mn/name.webp": {
+    "bytes": 24018,
+    "sha256": "02b507e3e0eeb070d714ee08f26b804a8c56fbe407a57b39ba4bbdbdb24571ec"
+  },
+  "reserve/shots/mn/road.webp": {
+    "bytes": 36042,
+    "sha256": "ad17ce6435dda008344d46880f233c1f0126915807dc03ea47188c8efc9d4a8b"
+  },
+  "reserve/shots/mn/station.webp": {
+    "bytes": 31734,
+    "sha256": "2f481cdf5e8d04002e41cc677313548a51bcda014d188a62b78d3d814b16b7c2"
+  },
+  "reserve/shots/mn/title.webp": {
+    "bytes": 52664,
+    "sha256": "b70baef5259d1017fee3b92ae96232295592f409a5786bf602d051fe434abe2e"
   }
 }

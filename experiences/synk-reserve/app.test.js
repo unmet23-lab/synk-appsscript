@@ -26,6 +26,28 @@ test('폼 고정 값은 구글 폼 선택지 글과 같고, 질문 번호는 같
   for (const k of ['action', 'email', 'type', 'body', 'consent', 'consentValue']) assert.equal(C.FORM[k], T4.FORM[k], k);
 });
 
+test('서울행 장면: 세 언어 글이 다 있고 화면 캡처 파일이 언어마다 있다', () => {
+  assert.ok(C.SCENES.length >= 4);
+  const ids = new Set();
+  for (const s of C.SCENES) {
+    assert.match(s.id, /^[a-z]+$/);
+    assert.ok(!ids.has(s.id), `장면 이름 겹침: ${s.id}`);
+    ids.add(s.id);
+    for (const l of C.LANGS) for (const f of ['name', 'body', 'alt']) assert.ok(typeof s[l][f] === 'string' && s[l][f].trim(), `${s.id}.${l}.${f}`);
+  }
+  for (const l of C.LANGS) for (const id of ['title', ...ids]) {
+    const f = path.join(__dirname, 'src/shots', l, `${id}.webp`);
+    assert.ok(fs.existsSync(f), `shots/${l}/${id}.webp`);
+    const b = fs.readFileSync(f);
+    assert.equal(b.toString('ascii', 0, 4) + b.toString('ascii', 8, 12), 'RIFFWEBP', `${l}/${id}는 webp`);
+  }
+  // 쪽 글은 지금 있는 것만 말한다: 출시는 2027년 2월, 지금은 사전예약.
+  assert.match(C.ko.tag, /2027년 2월 출시/);
+  assert.match(C.ko.tag, /사전예약/);
+  assert.match(C.en.tag, /February 2027/);
+  assert.match(C.mn.tag, /2027 оны 2-р сард/);
+});
+
 test('세 언어의 글 키가 같고 빈 글이 없다', () => {
   const keys = Object.keys(C.ko).sort();
   for (const l of C.LANGS) {
