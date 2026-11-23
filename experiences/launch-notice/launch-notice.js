@@ -34,6 +34,9 @@
   };
   // 사전예약 쪽(/reserve/)은 en · ko · mn만 있다. 스페인어 띠는 영어 쪽으로 보낸다.
   const RESERVE_LANG = { ko: 'ko', en: 'en', mn: 'mn', es: 'en' };
+  // SYNK 데스크톱 앱 창(preload가 synkDesktop · synkProduct를 둔다)은 /reserve/로 가는 이동을 막고 바깥 브라우저로도 넘기지 않는다.
+  // 그 창에서는 눌러도 아무 일이 없으니 링크를 보이지 않는다(11-23 검수). 데스크톱이 /reserve/를 바깥 브라우저로 열게 되면 이 줄을 뺀다.
+  const inDesktopApp = () => { try { return !!(window.synkDesktop || window.synkProduct); } catch (_) { return false; } };
   const fromKey = () => {
     const slug = location.pathname.toLowerCase().replace(/index\.html$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     return ('bar-' + (slug || 'home')).slice(0, 40).replace(/-+$/, '');
@@ -106,9 +109,10 @@ button:focus-visible{outline:2px solid #fff;outline-offset:2px}
       const l = lang(), t = TEXT[l];
       bar.lang = l;
       bar.setAttribute('aria-label', t.label);
-      text.nodeValue = t.body + ' ';
       linkText.nodeValue = t.cta;
       link.href = '/reserve/?lang=' + RESERVE_LANG[l] + '&from=' + fromKey();
+      link.hidden = inDesktopApp();
+      text.nodeValue = link.hidden ? t.body : t.body + ' ';
       if (btn) btn.setAttribute('aria-label', t.close);
     };
     render();

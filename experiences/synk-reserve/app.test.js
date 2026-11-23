@@ -53,7 +53,7 @@ test('들어온 곳: 짧은 영소문자 이름만, 아니면 direct', () => {
 
 test('이메일 미리 보기', () => {
   for (const ok of ['a@b.co', 'name.last+tag@example.mn']) assert.ok(A.validEmail(ok), ok);
-  for (const bad of ['', 'a@b', 'a@@b.co', '.a@b.co', 'a..b@c.co', 'a@-b.co', 'a b@c.co', 'a@b.c']) assert.ok(!A.validEmail(bad), bad);
+  for (const bad of ['', 'a@b', 'a@@b.co', '.a@b.co', 'a..b@c.co', 'a@-b.co', 'a b@c.co', 'a@b.c', '홍길동@naver.com', 'kimㅎ@gmail.com', 'аbc@gmail.com']) assert.ok(!A.validEmail(bad), bad);
   assert.deepEqual(A.validate({ email: 'a@b.co', consent: true }), {});
   assert.deepEqual(A.validate({ email: 'x', consent: false }), { email: 'errEmail', consent: 'errConsent' });
 });
@@ -63,9 +63,10 @@ test('문의 내용: 표식 · 관심 · 들어온 곳 줄(받는 쪽 약속)', 
     '[SYNK 사전예약]\n관심: 한국어 · 취업\n들어온 곳: synk-mn · 화면 언어 몽골어');
   assert.equal(A.buildBody({ interests: [], from: '', lang: 'en' }),
     '[SYNK 사전예약]\n관심: (안 고름)\n들어온 곳: direct · 화면 언어 영어');
-  const again = A.buildBody({ interests: ['study'], from: 'friend', lang: 'ko', resubmit: true }).split('\n');
+  const again = A.buildBody({ email: 'right@example.com', prevEmail: 'wrnog@example.com', interests: ['study'], from: 'friend', lang: 'ko', resubmit: true }).split('\n');
   assert.equal(again[1], '관심: 유학');
-  assert.match(again[3], /^다시 등록: /);
+  assert.equal(again[3], '다시 등록: 앞서 wrnog@example.com로 보낸 사전예약을 고쳐 다시 보냄(앞 등록은 버림)', '앞 응답과 짝지을 수 있게 앞 이메일을 적는다');
+  assert.match(A.buildBody({ email: 'a@b.co', prevEmail: 'A@B.co', interests: [], lang: 'ko', resubmit: true }), /다시 등록: 앞서 같은 이메일로/);
   const p = A.buildPayload({ email: ' a@b.co ', interests: [], from: 'direct', lang: 'ko' });
   assert.equal(p.get('emailAddress'), 'a@b.co');
   assert.equal(p.get(C.FORM.type), '출시 소식 문의');
@@ -119,4 +120,7 @@ test('출시 안내 띠: 링크가 /reserve/로 가고 들어온 곳을 bar-<경
   assert.ok(key('/' + 'x'.repeat(80) + '/').length <= 40);
   assert.match(src, /link\.href = '\/reserve\/\?lang=' \+ RESERVE_LANG\[l\] \+ '&from=' \+ fromKey\(\);/);
   for (const l of ['ko', 'en', 'mn', 'es']) assert.match(src, new RegExp(`${l}: \\{ body: '[^']+', cta: '[^']+'`), l);
+  // 데스크톱 앱 창은 /reserve/ 이동을 막으므로 그 창에서는 링크를 숨긴다.
+  assert.match(src, /window\.synkDesktop \|\| window\.synkProduct/);
+  assert.match(src, /link\.hidden = inDesktopApp\(\);/);
 });

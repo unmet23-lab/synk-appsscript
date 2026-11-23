@@ -41,7 +41,8 @@ fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(ASSETS, { recursive: true });
 
 // 1) 글 · 코드 · 꼴. css · js는 ?v=<내용 지문 12자>로 부른다.
-for (const f of ['index.html', 'copy.js', 'app.js', 'reserve.css']) fs.copyFileSync(path.join(SRC, f), path.join(OUT, f));
+// 공용 작업본은 core.autocrlf라 원고가 CRLF일 수 있다 — 공개본과 같은 LF로 쓴다.
+for (const f of ['index.html', 'copy.js', 'app.js', 'reserve.css']) fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(SRC, f), 'utf8').replace(/\r\n/g, '\n'), 'utf8');
 {
   const html = path.join(OUT, 'index.html');
   let s = fs.readFileSync(html, 'utf8');
@@ -66,7 +67,7 @@ subset(path.join(FONTS, 'InterTight/InterTight-Bold.ttf'), ascii() + EXTRA + CYR
 
 // 3) 철수한 TOPIK 4급 반 주소 → 사전예약으로 넘기는 쪽.
 fs.mkdirSync(path.join(DIST, 'lab/topik4'), { recursive: true });
-fs.copyFileSync(path.join(SRC, 'lab-topik4.html'), path.join(DIST, 'lab/topik4/index.html'));
+fs.writeFileSync(path.join(DIST, 'lab/topik4/index.html'), fs.readFileSync(path.join(SRC, 'lab-topik4.html'), 'utf8').replace(/\r\n/g, '\n'), 'utf8');
 
 // 4) 링크 미리보기 og.jpg(1200×630). 공개본의 town-road.webp를 꺼내 og.html 옆에 두고 찍는다.
 if (CHROME) {

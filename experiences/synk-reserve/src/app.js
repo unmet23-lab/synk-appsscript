@@ -17,8 +17,8 @@
   'use strict';
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  // 몽골어 서수 「2-р」 · 「4-р」가 하이픈에서 갈리지 않게 묶는다.
-  const keep = s => esc(s).replace(/\d+-р/g, m => `<span class="nw">${m}</span>`);
+  // 몽골어 서수 「2-р」와 「TOPIK-ийн」처럼 숫자 · 라틴 낱말에 붙은 키릴 어미가 하이픈에서 갈리지 않게 묶는다.
+  const keep = s => esc(s).replace(/(?:\d+|[A-Za-z]+)-[а-яёөүА-ЯЁӨҮ]+/g, m => `<span class="nw">${m}</span>`);
 
   /** 화면 언어: ?lang이 먼저, 없으면 기기 언어(몽골어 → 몽골어, 한국어 → 한국어), 아니면 영어. */
   function pickLang(search, navLangs) {
@@ -38,10 +38,11 @@
     return /^[a-z0-9][a-z0-9-]{0,39}$/.test(raw) ? raw : 'direct';
   }
 
-  /** 이메일: 구글 폼이 거절할 꼴(연속 점 · 쉼표 · 하이픈으로 시작하거나 끝나는 도메인 칸 등)을 미리 막는다. */
+  /** 이메일: 구글 폼과 <input type="email">이 거절할 꼴을 미리 막는다. @ 앞은 브라우저와 같은 ASCII 글자만 받는다
+   * (한글 · 키릴이 섞이면 checkValidity와 판정이 어긋나 오류 줄이 사라졌다 다시 뜬다 — 11-23 검수). */
   function validEmail(s) {
     const v = String(s || '').trim();
-    const m = /^([^\s@,;:"<>()[\]\\]{1,64})@((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24})$/i.exec(v);
+    const m = /^([a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64})@((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24})$/i.exec(v);
     if (!m || v.length > 254) return false;
     return !/^\.|\.$|\.\./.test(m[1]);
   }
@@ -66,7 +67,12 @@
       `관심: ${interestRecord(v.interests)}`,
       `들어온 곳: ${v.from || 'direct'} · 화면 언어 ${(C[v.lang] || C.en).record}`,
     ];
-    if (v.resubmit) lines.push('다시 등록: 앞서 보낸 사전예약의 이메일을 고쳐 다시 보냄(앞 등록은 버림)');
+    // 앞 응답과 짝지을 수 있게 앞서 보낸 이메일을 적는다(/ub/와 같은 꼴). 셀 때와 출시 안내 때 앞 등록을 버린다.
+    if (v.resubmit) {
+      const prev = String(v.prevEmail || '').trim();
+      const same = !prev || prev.toLowerCase() === String(v.email || '').trim().toLowerCase();
+      lines.push(`다시 등록: 앞서 ${same ? '같은 이메일' : prev}로 보낸 사전예약을 고쳐 다시 보냄(앞 등록은 버림)`);
+    }
     return lines.join('\n');
   }
 
@@ -113,6 +119,7 @@
     share: null,
     done: null,
     resubmit: false,
+    prevEmail: '',
   };
   const T = () => C[state.lang];
   const live = msg => { const el = $('#live'); if (el) { el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 40); } };
@@ -147,7 +154,7 @@
       email: f.elements.email.value,
       interests: $$('input[name="interest"]:checked', f).map(i => i.value),
       consent: f.elements.consent.checked,
-      from: state.from, lang: state.lang, resubmit: state.resubmit,
+      from: state.from, lang: state.lang, resubmit: state.resubmit, prevEmail: state.prevEmail,
     };
   }
 
@@ -216,6 +223,7 @@
 
   /** 완료 판 → 다시 적기(이메일을 잘못 적었을 때). 고른 관심은 그대로 두고 이메일 칸으로 간다. */
   function again() {
+    if (state.done) state.prevEmail = String(state.done.email || '').trim();
     state.done = null;
     state.share = null;
     state.resubmit = true;

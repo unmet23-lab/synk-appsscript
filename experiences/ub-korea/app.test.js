@@ -177,7 +177,7 @@ test('꼭 고를 칸은 fieldset의 aria-required로 알리고, 입력에 requir
   assert.deepEqual([...order].sort((a, b) => a - b), order);
 });
 
-test('친구에게 보낼 주소는 from=friend, TOPIK 4급 반 연결은 from=ub-page로 화면 언어를 지킨다', () => {
+test('친구에게 보낼 주소는 from=friend, 한국 대학 재학생 안내는 SYNK WORLD TOPIK II 연습으로 화면 언어를 지킨다', () => {
   assert.equal(A.shareUrl('https://synk.im/ub/?from=ub-msue&lang=mn#signup', 'ko'), 'https://synk.im/ub/?from=friend&lang=ko');
   assert.equal(A.topikUrl('mn'), 'https://synk.im/world/?exam=topik2&lang=mn');
   assert.equal(A.topikUrl('ko'), 'https://synk.im/world/?exam=topik2&lang=ko');
