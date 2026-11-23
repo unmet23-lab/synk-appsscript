@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE 시안 C · 스튜디오 레일</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./공통.css">
+<style>
+:root{--bg:#f2efe9;--wall:#f6f4ef;--ink:#141311;--dim:rgba(20,19,17,.6);--faint:rgba(20,19,17,.4);--line:rgba(20,19,17,.12);--paper:#fbfaf7}
+body{background:var(--bg);color:var(--ink);overflow:hidden}
+.logo{height:22px;width:auto;flex:none;align-self:flex-start}
+.go{display:inline-flex;align-items:center;gap:14px;min-height:50px;padding:0 24px;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:650;font-size:16px;letter-spacing:-.02em;transition:transform .2s var(--ease)}
+.go:hover{transform:translateY(-1px)}
+.go .icon{width:18px;height:18px}
+.go.ghost{background:transparent;color:var(--ink);border:1px solid rgba(20,19,17,.25)}
+.link{font-size:14px;color:var(--dim);text-decoration:none}
+.link:hover{color:var(--ink)}
+.small{font-size:13px;color:var(--faint)}
+.msg{min-height:1.4em;margin:0;font-size:13px;color:var(--dim)}
+h1{margin:0;font-family:var(--serif);font-weight:300;letter-spacing:-.045em;line-height:1.12;font-size:clamp(40px,4.4vw,68px)}
+.lede{margin:0;font-size:17px;line-height:1.65;color:var(--dim);max-width:32em}
+.lede b{color:var(--ink);font-weight:650}
+.turn{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;color:var(--dim)}
+.turn i{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.turn.is-busy i{background:#3f8f2a}
+
+/* 레일 */
+.wall{position:relative;overflow:hidden;background:linear-gradient(#f9f8f4,var(--wall) 60%,#ebe7df)}
+.rail{position:absolute;left:0;right:0;height:3px;background:linear-gradient(#7d7a74,#3a3835);box-shadow:0 2px 3px rgba(0,0,0,.18)}
+.hang{position:absolute;left:0;display:flex;align-items:flex-start;gap:var(--hgap,34px);will-change:transform}
+.frame{position:relative;flex:none;padding-top:var(--drop,24px);cursor:pointer;transition:transform .5s var(--ease),opacity .6s var(--ease)}
+.frame::before{content:'';position:absolute;left:50%;top:0;width:1px;height:var(--drop,24px);background:rgba(20,19,17,.45)}
+.frame .clip{position:absolute;left:calc(50% - 7px);top:calc(var(--drop,24px) - 6px);width:14px;height:10px;background:#2b2a27;border-radius:1px;z-index:2}
+.print{position:relative;background:var(--paper);padding:7px;box-shadow:0 1px 1px rgba(0,0,0,.06),0 18px 34px -12px rgba(0,0,0,.22)}
+.print .pic{position:relative;overflow:hidden;background:#ddd}
+.print img,.print video{width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.print video{position:absolute;inset:0;opacity:0;transition:opacity .5s}
+.print video.is-ready{opacity:1}
+.cap{display:flex;justify-content:space-between;gap:8px;padding:7px 2px 0;font-size:12px;color:var(--dim);white-space:nowrap}
+.cap b{color:var(--ink);font-weight:600}
+.cap .latin{color:var(--faint)}
+.frame:hover{transform:translateY(-6px)}
+.frame.dim{opacity:.18}
+.frame.chosen{transform:translateY(-10px) scale(1.28);z-index:3}
+.ticket{position:absolute;left:calc(100% + 18px);top:34%;width:210px;transform:rotateY(80deg);transform-origin:left;padding:12px 14px;background:#fff7d6;box-shadow:0 10px 24px -10px rgba(0,0,0,.3);font-size:13px;line-height:1.45;opacity:0;transition:.7s var(--ease)}
+.ticket b{display:block;font-family:var(--serif);font-weight:300;font-size:19px;letter-spacing:-.03em}
+.ticket .mono{font-size:11px;color:var(--dim)}
+.frame.chosen .ticket{transform:none;opacity:1;transition-delay:.4s}
+.frame.chosen .ticket::before{content:'';position:absolute;left:-18px;top:18px;width:18px;height:1px;background:rgba(20,19,17,.45)}
+.badge{position:absolute;left:12px;top:12px;z-index:2;padding:3px 8px;background:var(--paper);font-size:11px;border-radius:999px}
+
+/* 입장 */
+.entry{display:grid;grid-template-rows:auto 1fr auto;height:100dvh}
+.entry-top{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;padding:34px 48px 0}
+.entry-top h1{max-width:9.5em;font-size:clamp(32px,3.2vw,50px)}
+.entry .wall{min-height:300px}
+.entry-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;padding:22px 48px 30px;border-top:1px solid var(--line);background:var(--bg)}
+.login{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px}
+.field span{font-size:13px;color:var(--dim)}
+.field input{width:min(340px,80vw);background:transparent;border:0;border-bottom:1px solid rgba(20,19,17,.35);padding:10px 0;font-size:18px;outline:none;border-radius:0}
+.field input:focus{border-color:var(--ink)}
+.field input[name=code]{font-family:var(--mono);font-size:24px;letter-spacing:.3em}
+.newbie{display:flex;align-items:center;gap:14px}
+
+/* 방 */
+.top{display:flex;align-items:center;gap:20px;height:64px;padding:0 28px 0 40px;border-bottom:1px solid var(--line);background:var(--bg)}
+.top .proj{display:flex;align-items:baseline;gap:10px;min-width:0}
+.top .proj b{font-weight:650;font-size:15px;white-space:nowrap}
+.top .proj span{font-size:12px;color:var(--faint)}
+.ruler{display:flex;align-items:center;gap:12px;margin-left:auto;font-size:13px;color:var(--dim)}
+.ticks{display:flex;align-items:flex-end;gap:5px;height:16px}
+.ticks i{width:2px;height:8px;background:rgba(20,19,17,.2)}
+.ticks i.done{background:var(--ink)}
+.ticks i.now{height:16px;background:var(--ink)}
+.ibtn{position:relative;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border-radius:999px;font-size:13px;color:var(--dim)}
+.ibtn:hover{background:rgba(20,19,17,.06);color:var(--ink)}
+.ibtn .dot{width:7px;height:7px;border-radius:50%;background:var(--new)}
+.room{display:grid;grid-template-columns:minmax(380px,40%) 1fr;height:calc(100dvh - 64px)}
+.col{display:flex;flex-direction:column;justify-content:center;gap:24px;padding:40px 48px;overflow:auto}
+.due{display:flex;gap:10px;align-items:baseline;font-size:14px;color:var(--dim);padding-top:18px;border-top:1px solid var(--line)}
+.due .mono{color:var(--ink)}
+.folds{display:flex;gap:8px;flex-wrap:wrap}
+.fold{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:4px 16px 4px 4px;border-radius:999px;background:var(--paper);box-shadow:0 0 0 1px var(--line);text-align:left;transition:.2s}
+.fold:hover,.fold[aria-expanded=true]{box-shadow:0 0 0 1px var(--ink)}
+.fold .ico{display:grid;place-items:center;width:40px;height:40px;border-radius:999px;background:var(--bg);overflow:hidden}
+.fold .ico img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.fold .t{display:flex;flex-direction:column;line-height:1.2}
+.fold .t small{font-size:11px;color:var(--faint)}
+.fold .t span{font-size:13px}
+.fold.is-rec .t small::after{content:' · 추천'}
+.fold.is-set .t small::after{content:' · 고름';color:var(--ink)}
+.fold.is-done{background:transparent}
+.big{position:absolute;left:50%;top:7%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.big .print{padding:10px}
+.big .pic{width:var(--bw);height:var(--bh)}
+.big .info{display:grid;grid-template-columns:1fr auto;gap:8px 20px;align-items:start;width:var(--bw);padding-top:14px}
+.big .info .mono{font-size:12px;color:var(--dim)}
+.big .info p{margin:2px 0 0;font-size:16px}
+.acts{display:flex;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;box-shadow:0 0 0 1px var(--line);background:var(--paper);font-size:14px}
+.chip:hover{box-shadow:0 0 0 1px var(--ink)}
+.chip[aria-pressed=true]{box-shadow:0 0 0 1.5px var(--ink);font-weight:600}
+.note{grid-column:1/-1;display:flex;gap:8px}
+.note textarea{flex:1;min-height:44px;background:var(--paper);border:1px solid var(--line);padding:10px 12px;resize:vertical;outline:none;border-radius:6px}
+.mini{position:absolute;left:0;right:0;bottom:0;height:var(--mh,170px);overflow-y:hidden;scrollbar-width:none}
+.mini::-webkit-scrollbar{display:none}
+.mini .rail{top:22px}
+.mini .hang{top:22px;padding:0 40px}
+.mini .frame{--drop:16px}
+.mini .frame.on .print{box-shadow:0 0 0 2px var(--ink),0 18px 34px -12px rgba(0,0,0,.22)}
+.mini .mark{position:absolute;right:4px;top:4px;display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:var(--ink);color:var(--paper)}
+.mini .mark .icon{width:12px;height:12px}
+.sheet{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;gap:16px;padding:34px 40px;background:rgba(246,244,239,.97);animation:sheet .45s var(--ease)}
+@keyframes sheet{from{opacity:0;transform:translateY(12px)}}
+.sheet-head{display:flex;justify-content:space-between;align-items:baseline}
+.sheet-head h2{margin:0;font-family:var(--serif);font-weight:300;font-size:32px;letter-spacing:-.04em}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.card{display:flex;flex-direction:column;gap:8px;padding:16px;background:var(--paper);box-shadow:0 0 0 1px var(--line);text-align:left;border-radius:4px}
+.card:hover,.card[aria-pressed=true]{box-shadow:0 0 0 2px var(--ink)}
+.card h3{margin:0;font-family:var(--serif);font-weight:300;font-size:24px;letter-spacing:-.03em}
+.card p{margin:0;color:var(--dim);font-size:14px}
+.card img{aspect-ratio:3/4;object-fit:cover;object-position:50% 15%}
+.card .rec{font-size:12px;color:var(--faint)}
+.drawer{position:fixed;top:64px;right:0;bottom:0;z-index:20;width:min(400px,100vw);display:flex;flex-direction:column;background:var(--paper);box-shadow:-20px 0 40px -20px rgba(0,0,0,.25);animation:drawer .4s var(--ease)}
+@keyframes drawer{from{transform:translateX(24px);opacity:0}}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+.talk{flex:1;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:20px}
+.say{max-width:86%;display:flex;flex-direction:column;gap:4px}
+.say .who{font-size:12px;color:var(--faint)}
+.say p{margin:0}
+.say.staff{align-self:flex-start;padding:12px 14px;background:var(--bg);border-radius:4px}
+.say.me{align-self:flex-end;text-align:right}
+.say.news .who::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--new);margin-right:6px;vertical-align:1px}
+.send{display:flex;gap:8px;padding:14px 20px 20px;border-top:1px solid var(--line)}
+.send input{flex:1;background:transparent;border:0;border-bottom:1px solid rgba(20,19,17,.3);padding:10px 0;outline:none}
+.q{display:flex;flex-direction:column;gap:8px}
+.q .qn{display:flex;gap:8px;align-items:baseline;font-size:14px}
+.q .qn .mono{font-size:12px;color:var(--faint)}
+.drop{display:flex;align-items:center;gap:14px;min-height:62px;padding:10px 16px;border:1px dashed rgba(20,19,17,.3);border-radius:8px;text-align:left;background:var(--paper)}
+.drop:hover{border-color:var(--ink)}
+.drop .thumbs{display:flex;gap:6px}
+.drop .thumbs img{width:44px;height:44px;object-fit:cover;border-radius:4px}
+.chans{display:flex;gap:6px;flex-wrap:wrap}
+.chans button{min-height:38px;padding:0 14px;border-radius:999px;box-shadow:0 0 0 1px var(--line);background:var(--paper);font-size:14px}
+.chans button[aria-pressed=true]{box-shadow:0 0 0 1.5px var(--ink);font-weight:600}
+.chans button[aria-pressed=true]::before{content:'✓ '}
+.brief{margin:0;padding:20px;display:flex;flex-direction:column}
+.brief div{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.brief dt{color:var(--faint)}.brief dd{margin:0}
+.fold.is-done,.fold.is-status{cursor:default}
+.consent{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--dim)}
+.consent input{accent-color:#141311;width:16px;height:16px}
+.mock-later{position:absolute;right:20px;bottom:20px;z-index:3;font-size:12px;color:var(--dim);border:1px dashed rgba(20,19,17,.3);padding:6px 10px;border-radius:999px}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  .entry{height:auto;min-height:100dvh;grid-template-rows:auto 46dvh auto}
+  .entry-top{padding:22px 20px 0;flex-direction:column;align-items:flex-start;gap:14px}
+  .entry-foot{flex-direction:column;align-items:stretch;padding:18px 20px 80px}
+  .field input{width:100%}
+  .login{flex-direction:column;align-items:stretch}
+  h1{font-size:36px}
+  .top{padding:0 12px 0 16px;gap:8px}
+  .top .proj span,.ruler{display:none}
+  .top .proj{flex:1;overflow:hidden}
+  .top .proj b{overflow:hidden;text-overflow:ellipsis}
+  .room{grid-template-columns:1fr;grid-template-rows:70dvh auto;height:auto}
+  .room .wall{order:-1}
+  .col{padding:26px 20px;justify-content:flex-start}
+  .ibtn span.t{display:none}
+  .sheet{position:fixed;inset:auto 0 0 0;z-index:30;max-height:80dvh;overflow:auto;padding:20px 16px 24px;border-radius:16px 16px 0 0;box-shadow:0 -20px 40px rgba(0,0,0,.18)}
+  .sheet .mini{flex:none!important;height:300px}
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script type="module">
+import { MODELS, FILMS, PROJECT, STAGES, DIRECTIONS, OFFER, KEEP, LOOKS, HAIRS, CUTS, TALK, CHANNELS, FOLDED, PACKAGES, CHECK_COPY, briefHTML, mixedRow, modelById, icon, video, playNow, stopNow, reduced, sound, router, mockBar, bindLogin, bindFolds, $, $$, wait } from './공통.js';
+
+const LOGO = '../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/brand-pulse.webp'; // 밝은 바탕용
+const app = $('#app');
+const isPhone = () => matchMedia('(max-width:900px)').matches;
+const state = { pick: { model: 'F02', dir: 'poster', look: KEEP, hair: KEEP }, notes: {}, liked: {}, cut: 0, talk: 'pick' };
+let stopAll = () => {};
+
+/* ── 레일: 걸린 액자 줄. drift면 천천히 흐르고, 손을 올리면 멈춘다. ── */
+function rail(host, items, { y = 0.18, h = 300, drift = true, size = i => 1, onPick, caps = true, drop = null, autoplay = false } = {}) {
+  host.style.setProperty('--rail-y', `${y * 100}%`);
+  const bar = document.createElement('div'); bar.className = 'rail'; bar.style.top = `calc(${y * 100}% )`;
+  const hang = document.createElement('div'); hang.className = 'hang'; hang.style.top = `calc(${y * 100}%)`;
+  const loops = drift ? 3 : 1, list = Array.from({ length: loops }, () => items).flat();
+  const frames = list.map((it, i) => {
+    const f = document.createElement('div'); f.className = 'frame'; f.tabIndex = 0; f.setAttribute('role', 'button');
+    const tall = it.kind === 'film' ? it.tall : true, ratio = it.kind === 'cut' ? 16 / 9 : it.kind === 'film' ? (tall ? 9 / 16 : 16 / 9) : 3 / 4;
+    const ph = h * size(it, i % items.length), pw = ph * ratio;
+    f.style.setProperty('--drop', `${drop ?? [24, 46, 30, 58, 36][i % 5]}px`);
+    f.setAttribute('aria-label', it.kind === 'model' ? `${it.name}, ${it.line}` : it.kind === 'film' ? `완성 광고 ${it.name}` : `컷 ${it.no}`);
+    const src = it.kind === 'model' ? it.face : it.kind === 'film' ? it.poster : it.src;
+    f.innerHTML = `<span class="clip"></span><div class="print"><div class="pic" style="width:${pw}px;height:${ph}px"><img src="${src}" alt="" loading="lazy"></div>${caps ? `<div class="cap">${it.kind === 'model' ? `<b>${it.name}</b><span class="latin">${it.en}</span>` : it.kind === 'film' ? `<b>${it.name.length > 12 ? it.name.slice(0, 12) + '…' : it.name}</b><span class="mono">${it.len}</span>` : `<span class="mono">${it.no}</span><span class="mono">${it.sec}초</span>`}</div>` : ''}</div>`;
+    let v = null;
+    const on = () => { if (it.kind === 'cut' || reduced) return; if (!v) { v = video(it.video, '', { auto: false }); v.addEventListener('playing', () => v.classList.add('is-ready'), { once: true }); f.querySelector('.pic').append(v); } playNow(v); };
+    const off = () => stopNow(v);
+    f.addEventListener('mouseenter', () => { on(); speed = 0; });
+    f.addEventListener('mouseleave', () => { off(); speed = base; });
+    f.addEventListener('click', () => { on(); onPick?.(it, f, i % items.length); });
+    f.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick?.(it, f, i % items.length); } });
+    f._on = on; f._off = off; f._it = it;
+    hang.append(f);
+    return f;
+  });
+  host.append(bar, hang);
+  const base = drift && !reduced ? 22 : 0; let speed = base, x = 0, last = performance.now(), raf, setW = 0, tween = null;
+  const measure = () => { setW = drift ? hang.scrollWidth / 3 : 0; };
+  requestAnimationFrame(measure);
+  function frame(t) {
+    const dt = Math.min(64, t - last) / 1000; last = t;
+    if (tween) { const k = Math.min(1, (t - tween.t0) / tween.d), e = 1 - Math.pow(1 - k, 3); x = tween.from + (tween.to - tween.from) * e; if (k >= 1) { tween.done?.(); tween = null; } }
+    else if (speed) { x -= speed * dt; if (setW && x < -setW * 2) x += setW; }
+    if (drift && setW && x > -setW * 0.5 && !tween) x -= setW;
+    hang.style.transform = `translateX(${x}px)`;
+    raf = requestAnimationFrame(frame);
+  }
+  if (drift) { x = -1; raf = requestAnimationFrame(t => { measure(); x = -setW; last = t; frame(t); }); }
+  // 손을 대지 않아도 가운데 가까운 사람이 걷는다(휴대폰 포함). 4초마다 가운데의 다음 사람으로.
+  let auto = null, playing = null;
+  const playCenter = () => {
+    const hr = host.getBoundingClientRect(), cx = hr.left + hr.width / 2;
+    const f = frames.filter(x => x._it.kind === 'model').sort((a, b) => { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); return Math.abs(ra.left + ra.width / 2 - cx) - Math.abs(rb.left + rb.width / 2 - cx); })[0];
+    if (f && f !== playing) { playing?._off(); playing = f; f._on(); }
+  };
+  if (autoplay && !reduced) { setTimeout(playCenter, 600); auto = setInterval(playCenter, 4000); }
+  else {
+    hang.style.paddingLeft = '40px'; hang.style.paddingRight = '40px'; host.style.overflowX = 'auto';
+    host.addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { host.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
+  }
+  return {
+    frames,
+    centerOn(f, d = 1400) { return new Promise(res => { const r = f.getBoundingClientRect(), hr = host.getBoundingClientRect(); const to = x + (hr.left + hr.width / 2) - (r.left + r.width / 2); speed = 0; tween = { from: x, to, t0: performance.now(), d: reduced ? 1 : d, done: res }; if (!drift) { host.scrollTo?.({ left: f.offsetLeft - host.clientWidth / 2 + f.offsetWidth / 2, behavior: reduced ? 'auto' : 'smooth' }); res(); } }); },
+    // 흐르는 레일은 셋으로 이어 붙였다 — 가운데 벌에서만 고르면 감싸기가 고른 액자를 밖으로 밀지 않는다.
+    nearest(id) { const hr = host.getBoundingClientRect(), cx = hr.left + hr.width / 2, n = items.length; return frames.filter((f, i) => f._it.id === id && (!drift || (i >= n && i < n * 2))).sort((a, b) => Math.abs(a.getBoundingClientRect().left - cx) - Math.abs(b.getBoundingClientRect().left - cx))[0]; },
+    stop() { cancelAnimationFrame(raf); clearInterval(auto); frames.forEach(f => f._off()); },
+    hold() { clearInterval(auto); },
+  };
+}
+
+/* ── 입장 ── */
+let entryRail = null;
+function viewEntry() {
+  stopAll(); $('.drawer')?.remove();
+  app.innerHTML = `
+  <section class="entry">
+    <div class="entry-top">
+      <div style="display:flex;flex-direction:column;gap:26px"><img class="logo" src="${LOGO}" alt="synk PULSE"><h1>AI 모델 21명과<br>광고를 만드는 방</h1></div>
+      <p class="lede" style="max-width:22em">가운데 액자의 사람이 걸어요. 사이사이에 걸린 것은 저희가 끝까지 만든 광고예요.</p>
+    </div>
+    <div class="wall" aria-label="AI 모델과 완성 광고"></div>
+    <div class="entry-foot">
+      <form class="login" data-login novalidate>
+        <div class="field" data-step="email"><span>내 광고 방 열기 · 의뢰서에 적은 메일</span><input name="email" type="email" autocomplete="email" placeholder="name@company.com"></div>
+        <div class="field" data-step="code" hidden><span>메일로 온 여섯 자리</span><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div>
+        <button class="go" type="submit"><span data-go-label>코드 받기</span>${icon('arrow')}</button>
+        <button type="button" class="link" data-back data-step="code" hidden>다른 메일</button>
+        <p class="msg" data-msg aria-live="polite" style="flex-basis:100%"></p>
+      </form>
+      <form class="login" data-linkform hidden novalidate><div class="field"><span>접수증이나 담당자에게 받은 링크</span><input name="invite" inputmode="url" placeholder="https://workspace.synk.im/pulse-app/#invite=…"></div><button class="go ghost">열기 ${icon('arrow')}</button><p class="msg" data-linkmsg style="flex-basis:100%"></p></form>
+      <div class="newbie"><button type="button" class="link" data-linkopen>받은 링크로 열기</button><span class="small">처음이세요?</span><button class="go ghost" data-go="request">광고 의뢰하기 ${icon('arrow')}</button></div>
+    </div>
+  </section>`;
+  const wall = $('.wall', app);
+  entryRail = rail(wall, mixedRow(), { y: 0.08, h: Math.max(180, Math.min(380, wall.clientHeight * 0.74)), size: it => it.kind === 'film' ? 1.05 : 1, autoplay: true });
+  stopAll = () => { entryRail?.stop(); entryRail = null; };
+  bindLogin($('[data-login]', app), () => go('moment'));
+  // 받은 링크로 열기: 메일 칸 대신 링크 칸을 보인다.
+  const lf = $('[data-linkform]', app);
+  $('[data-linkopen]', app).onclick = () => { const open = lf.hidden; lf.hidden = !open; $('[data-login]', app).hidden = open; if (open) lf.querySelector('input').focus(); };
+  lf.onsubmit = e => { e.preventDefault(); const v = lf.querySelector('input').value.trim(); if (!/invite=|^https?:\/\//.test(v)) { $('[data-linkmsg]', lf).textContent = '받으신 링크를 그대로 붙여 넣어 주세요.'; return; } sound.shutter(); go('moment'); };
+}
+
+/* ── 들어가는 순간: 하린 액자가 멈추고 앞으로, 꼬리표가 내려온다 ── */
+async function viewMoment() {
+  if (!entryRail) viewEntry();
+  const r = entryRail, f = r.nearest(PROJECT.cast);
+  $('.entry-foot', app).style.visibility = 'hidden';
+  $('.entry-top h1', app).innerHTML = `${PROJECT.brand}<br>${PROJECT.title}`;
+  $('.entry-top .lede', app).innerHTML = '저희가 추천하는 얼굴은 <b>하린</b>이에요. 방향 두 안과 함께 기다리고 있어요.';
+  r.hold(); r.frames.forEach(x => x._off());
+  await r.centerOn(f, 1500);
+  r.frames.forEach(x => { if (x !== f) x.classList.add('dim'); });
+  f.insertAdjacentHTML('beforeend', `<div class="ticket"><span class="mono">${PROJECT.no}</span><b>${PROJECT.title}</b>추천 모델 하린 · 방향 두 안 도착</div>`);
+  f.classList.add('chosen'); f._on(); sound.soft();
+  await wait(2600);
+  go('pick');
+}
+
+/* ── 방 머리 ── */
+function roomTop(check, step = 2) {
+  const ticks = STAGES.map((_, i) => `<i class="${i < step ? 'done' : i === step ? 'now' : ''}"></i>`).join('');
+  return `<header class="top"><img class="logo" style="height:18px;align-self:center" src="${LOGO}" alt="synk PULSE"><div class="proj"><b>${PROJECT.brand} · ${PROJECT.title}</b><span class="mono">${PROJECT.no}</span></div>
+    <div class="ruler"><span class="ticks" aria-hidden="true">${ticks}</span><span class="lab">${STAGES[step]}${step === 2 ? ` <span class="mono">${check}/3</span>` : ''}</span></div>
+    <button class="ibtn" data-act="brief">${icon('script')}<span class="t">의뢰서</span></button>
+    <button class="ibtn" data-act="talk">${icon('chat')}<span class="t">대화</span><span class="dot"></span></button></header>`;
+}
+function bindTop() {
+  $('.top', app).onclick = e => { const b = e.target.closest('[data-act]'); if (b?.dataset.act === 'talk') toggleTalk(); if (b?.dataset.act === 'brief') toggleBrief(); };
+}
+function toggleBrief() {
+  const old = $('.drawer'); const was = old?.dataset.kind; old?.remove(); if (was === 'brief') return;
+  const d = document.createElement('aside'); d.className = 'drawer'; d.dataset.kind = 'brief'; d.setAttribute('aria-label', '보낸 의뢰서');
+  d.innerHTML = `<div class="drawer-head"><b>보낸 의뢰서</b><button aria-label="닫기">${icon('close')}</button></div>${briefHTML()}`;
+  d.querySelector('.drawer-head button').onclick = () => d.remove(); document.body.append(d); sound.tick();
+}
+function toggleTalk() {
+  const old = $('.drawer'); const was = old?.dataset.kind; old?.remove(); if (was === 'talk') return;
+  const d = document.createElement('aside'); d.className = 'drawer'; d.dataset.kind = 'talk'; d.setAttribute('aria-label', '담당자와 대화');
+  d.innerHTML = `<div class="drawer-head"><b>${PROJECT.staff} 담당자</b><button aria-label="닫기">${icon('close')}</button></div>
+    <div class="talk">${TALK[state.talk].map(t => `<div class="say ${t.who}${t.news ? ' news' : ''}"><span class="who">${t.who === 'staff' ? PROJECT.staff : '나'} · <span class="mono">${t.at}</span></span><p>${t.text}</p></div>`).join('')}</div>
+    <form class="send"><input placeholder="담당자에게 물어보세요" aria-label="보낼 말"><button class="go ghost" style="min-height:40px;padding:0 14px" aria-label="보내기">${icon('arrow')}</button></form>`;
+  d.querySelector('.drawer-head button').onclick = () => d.remove();
+  d.querySelector('form').onsubmit = e => { e.preventDefault(); const i = d.querySelector('input'); if (!i.value.trim()) return; d.querySelector('.talk').insertAdjacentHTML('beforeend', `<div class="say me"><span class="who">나 · <span class="mono">방금</span></span><p>${i.value.replace(/</g, '&lt;')}</p></div>`); i.value = ''; sound.tick(); };
+  document.body.append(d); $('.top .dot')?.remove();
+}
+// 끝난 결정 · 진행 표시는 누를 것이 아니라 표시라서 span으로 그린다.
+const foldBtn = (id, ico, label, val, cls = '') => /is-done|is-status/.test(cls)
+  ? `<span class="fold ${cls}"><span class="ico">${ico}</span><span class="t"><small>${label}</small><span>${val}</span></span></span>`
+  : `<button class="fold ${cls}" data-fold="${id}" aria-expanded="false"><span class="ico">${ico}</span><span class="t"><small>${label}</small><span data-val>${val}</span></span></button>`;
+const keepCard = cur => `<button class="card" data-choose="${KEEP}" aria-pressed="${cur === KEEP}"><span class="rec">추천</span><h3>담당자에게 맡기기</h3><p>장면에 맞는 것으로 저희가 골라요.</p></button>`;
+const faceIco = id => `<img src="${modelById(id).face}" alt="">`;
+
+// 벽 위 큰 인화 한 장 + 아래 작은 레일. 모델 고르기와 장면 이미지가 같은 짜임이다.
+function bigPrint(wall, { ratio, html }) {
+  const mh = isPhone() ? 130 : 170, W = wall.clientWidth, H = wall.clientHeight - mh - 40;
+  let bh = H * 0.8, bw = bh * ratio; if (bw > W * 0.84) { bw = W * 0.84; bh = bw / ratio; }
+  const b = document.createElement('div'); b.className = 'big'; b.style.setProperty('--bw', `${bw}px`); b.style.setProperty('--bh', `${bh}px`);
+  b.innerHTML = html; wall.append(b); wall.style.setProperty('--mh', `${mh}px`);
+  return b;
+}
+
+/* ── 방 · 고르기 ── */
+function viewPick() {
+  stopAll(); $('.drawer')?.remove(); state.talk = 'pick';
+  const m = modelById(state.pick.model), dir = DIRECTIONS.find(d => d.id === state.pick.dir);
+  app.innerHTML = `${roomTop(1)}
+  <section class="room">
+    <div class="col">
+      <p class="turn"><i></i>내 차례 · 영상 전 확인 <span class="mono">1/3</span></p>
+      <h1>추천대로<br>맡기시겠어요?</h1>
+      <p class="lede" data-lede><b>${m.name}</b>이 나오는 「${dir.name}」으로 추천드려요. 바꾸고 싶은 것만 눌러 고르세요.</p>
+      <div class="folds">${foldBtn('model', faceIco(m.id), '모델', m.name, 'is-rec')}${foldBtn('dir', icon('compass'), '방향', dir.name, 'is-rec')}${foldBtn('look', icon('shirt'), '옷', state.pick.look, 'is-rec')}${foldBtn('hair', icon('hair'), '머리', state.pick.hair, 'is-rec')}</div>
+      <div><button class="go" data-act="ok">추천대로 맡기기 ${icon('arrow')}</button></div>
+      <div class="due">받으실 날 <span>${PROJECT.dueBefore}</span></div>
+    </div>
+    <div class="wall" data-wall>
+      <div class="mini"></div>
+      <div class="sheet" data-sheet="dir" hidden><div class="sheet-head"><h2>방향 두 안</h2><button class="link" data-sheet-close>닫기</button></div><div class="cards">${DIRECTIONS.map(d => `<button class="card" data-choose="${d.name}" aria-pressed="${d.id === state.pick.dir}"><span class="rec">${d.pick ? '추천' : '다른 안'}</span><h3>${d.name}</h3><p>${d.line}</p><span class="rec">${OFFER}</span></button>`).join('')}</div></div>
+      <div class="sheet" data-sheet="look" hidden><div class="sheet-head"><h2>옷</h2><button class="link" data-sheet-close>닫기</button></div><div class="cards">${keepCard(state.pick.look)}${LOOKS.map(l => `<button class="card" data-choose="${l.name}" aria-pressed="${l.name === state.pick.look}"><img src="${l.src}" alt=""><span>${l.name}</span></button>`).join('')}</div></div>
+      <div class="sheet" data-sheet="hair" hidden><div class="sheet-head"><h2>머리</h2><button class="link" data-sheet-close>닫기</button></div><div class="cards">${keepCard(state.pick.hair)}${HAIRS.map(l => `<button class="card" data-choose="${l.name}" aria-pressed="${l.name === state.pick.hair}"><img src="${l.src}" alt=""><span>${l.name}</span></button>`).join('')}</div></div>
+    </div>
+  </section>`;
+  bindTop();
+  const wall = $('[data-wall]', app), ok = $('[data-act=ok]', app);
+  let big, bv;
+  const showModel = id => {
+    big?.remove(); stopNow(bv);
+    const it = modelById(id);
+    big = bigPrint(wall, { ratio: 3 / 4, html: `<span class="clip" style="position:relative;display:block;width:14px;height:10px;background:#2b2a27;margin-bottom:-4px;z-index:2"></span><div class="print"><span class="badge">${id === 'F02' ? '추천' : '고름'}</span><div class="pic"><img src="${it.face}" alt=""></div><div class="cap"><b>${it.name}</b><span>${it.line} · ${it.meta}</span></div></div>` });
+    bv = video(it.video, it.face, { auto: false }); bv.addEventListener('playing', () => bv.classList.add('is-ready'), { once: true }); $('.pic', big).append(bv); playNow(bv);
+    mini.frames.forEach(f => f.classList.toggle('on', f._it.id === id));
+  };
+  const changed = () => { ok.firstChild.textContent = '이대로 정하기 '; $('h1', app).innerHTML = '고르신 대로<br>정할까요?'; $('[data-lede]', app).innerHTML = `<b>${modelById(state.pick.model).name}</b>, 「${DIRECTIONS.find(d => d.id === state.pick.dir).name}」으로 정해요.`; };
+  const mini = rail($('.mini', app), MODELS, { y: 0, h: isPhone() ? 66 : 84, drift: false, caps: false, drop: 14, onPick: it => {
+    if (it.id === state.pick.model) return; state.pick.model = it.id; showModel(it.id); sound.tick();
+    const f = $('[data-fold=model]', app); f.classList.remove('is-rec'); f.classList.add('is-set'); f.querySelector('.ico').innerHTML = faceIco(it.id); f.querySelector('[data-val]').textContent = it.name; changed();
+  } });
+  showModel(state.pick.model);
+  bindFolds(app, { onChange: (id, v) => { if (id === 'dir') state.pick.dir = DIRECTIONS.find(d => d.name === v).id; if (id === 'look') state.pick.look = v; if (id === 'hair') state.pick.hair = v; changed(); } });
+  $('[data-fold=model]', app).addEventListener('click', () => { const f = mini.frames.find(x => x._it.id === state.pick.model); f?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); f?.animate?.([{ transform: 'translateY(-10px)' }, { transform: 'none' }], { duration: 500 }); });
+  ok.addEventListener('click', () => { sound.shutter(); go('wait'); });
+  stopAll = () => { stopNow(bv); mini.stop(); };
+}
+
+/* ── 방 · 저희 차례 ── */
+function viewWait() {
+  stopAll(); $('.drawer')?.remove(); state.talk = 'pick';
+  const m = modelById(state.pick.model), dir = DIRECTIONS.find(d => d.id === state.pick.dir);
+  app.innerHTML = `${roomTop(2)}
+  <section class="room">
+    <div class="col">
+      <p class="turn is-busy"><i></i>저희 차례</p>
+      <h1>글 콘티를<br>쓰고 있어요</h1>
+      <p class="lede">광고가 남길 한 문장과 컷마다 들어갈 내용을 글로 먼저 보내 드려요. 도착하면 메일로 알려 드려요.</p>
+      <div class="folds">${foldBtn('m', faceIco(m.id), '모델', m.name, 'is-done')}${foldBtn('d', icon('check'), '방향', dir.name, 'is-done')}${foldBtn('s', icon('script'), '글 콘티', '쓰는 중', 'is-status')}${foldBtn('i', icon('image'), '장면 이미지', '다음', 'is-status')}</div>
+      <div class="due">받으실 날 <span>${PROJECT.dueBefore}</span></div>
+    </div>
+    <div class="wall" data-wall><button class="mock-later" data-go="images">시안: 글 콘티 확인 · 결제 뒤로 넘기기</button></div>
+  </section>`;
+  bindTop();
+  const wall = $('[data-wall]', app);
+  const big = bigPrint(wall, { ratio: 3 / 4, html: `<div class="print"><div class="pic"><img src="${m.face}" alt=""></div><div class="cap"><b>${m.name}</b><span>${dir.name}</span></div></div>` });
+  const v = video(m.video, m.face, { auto: false }); v.addEventListener('playing', () => v.classList.add('is-ready'), { once: true }); $('.pic', big).append(v); playNow(v);
+  big.style.top = '12%';
+  stopAll = () => stopNow(v);
+}
+
+/* ── 방 · 장면 이미지 도착 ── */
+function viewImages() {
+  stopAll(); $('.drawer')?.remove(); state.talk = 'images';
+  const m = modelById(state.pick.model);
+  app.innerHTML = `${roomTop(3)}
+  <section class="room">
+    <div class="col">
+      <p class="turn"><i></i>내 차례 · 영상 전 확인 <span class="mono">3/3</span></p>
+      <h1>장면 이미지가<br>도착했어요</h1>
+      <p class="lede">컷마다 보고 의견을 남겨 주세요. 괜찮으면 그대로 제작을 시작해요.</p>
+      <div class="folds">${foldBtn('m', faceIco(m.id), '모델', m.name, 'is-done')}${foldBtn('d', icon('check'), '방향', '포스터를 보고 온 손님', 'is-done')}${foldBtn('s', icon('script'), '글 콘티', '확인함', 'is-done')}${foldBtn('p', icon('check'), '결제', '확인됨', 'is-done')}</div>
+      <div data-makerow><button class="go" data-act="make"><span data-make>이대로 제작 시작</span> ${icon('arrow')}</button></div>
+      <div class="due">받으실 날 <span class="mono">${PROJECT.due}</span></div>
+    </div>
+    <div class="wall" data-wall aria-label="장면 이미지 여섯 컷"><div class="mini"></div></div>
+  </section>`;
+  bindTop();
+  const wall = $('[data-wall]', app);
+  const cuts = CUTS.map(c => ({ ...c, kind: 'cut', id: c.no }));
+  const mini = rail($('.mini', app), cuts, { y: 0, h: isPhone() ? 54 : 70, drift: false, drop: 14, onPick: (it, f, i) => show(i) });
+  let big;
+  function show(i, quiet) {
+    state.cut = (i + CUTS.length) % CUTS.length;
+    const c = CUTS[state.cut], note = state.notes[c.no] || '', liked = state.liked[c.no];
+    big?.remove();
+    big = bigPrint(wall, { ratio: 16 / 9, html: `<div class="print"><div class="pic"><img src="${c.src}" alt="컷 ${c.no}"></div></div>
+      <div class="info"><div><span class="mono">컷 ${c.no} · ${c.sec}초 · ${state.cut + 1}/${CUTS.length}</span><p>${c.what}</p></div>
+      <div class="acts"><button class="chip" data-like aria-pressed="${!!liked}">${icon('check')}좋아요</button><button class="chip" data-fix aria-pressed="${!!note}">${icon('pen')}고칠 곳</button></div>
+      <form class="note" ${note ? '' : 'hidden'}><textarea aria-label="이 컷에서 고칠 곳" placeholder="예) 포스터 속 하린이 조금 더 웃었으면 해요">${note}</textarea><button class="go ghost" style="min-height:44px">남기기</button></form></div>` });
+    if (!quiet && !reduced) big.animate([{ opacity: 0, transform: 'translateX(-50%) translateY(10px)' }, { opacity: 1, transform: 'translateX(-50%)' }], { duration: 380, easing: 'cubic-bezier(.16,1,.3,1)' });
+    mini.frames.forEach((f, k) => f.classList.toggle('on', k === state.cut));
+    big.addEventListener('click', e => {
+      const no = c.no;
+      if (e.target.closest('[data-like]')) { state.liked[no] = !state.liked[no]; if (state.liked[no]) delete state.notes[no]; marks(); sound.tick(); if (state.liked[no]) setTimeout(() => show(state.cut + 1), reduced ? 0 : 240); else show(state.cut, true); }
+      if (e.target.closest('[data-fix]')) { const n = $('.note', big); n.hidden = false; n.querySelector('textarea').focus(); }
+    });
+    big.addEventListener('submit', e => { e.preventDefault(); const v = $('textarea', big).value.trim(); state.notes[c.no] = v; if (v) delete state.liked[c.no]; marks(); sound.tick(); show(state.cut + 1); });
+    if (!quiet) sound.tick();
+  }
+  function marks() {
+    mini.frames.forEach((f, k) => { const no = CUTS[k].no; f.querySelector('.mark')?.remove(); if (state.notes[no] || state.liked[no]) f.querySelector('.print').insertAdjacentHTML('beforeend', `<span class="mark">${icon(state.notes[no] ? 'pen' : 'check')}</span>`); });
+    const n = Object.values(state.notes).filter(Boolean).length;
+    const mk = $('[data-make]', app); if (mk) mk.textContent = n ? `고칠 곳 ${n}개 보내기` : '이대로 제작 시작';
+  }
+  show(state.cut, true); marks();
+  const key = e => { if (document.documentElement.dataset.screen !== 'images' || e.target.closest('textarea,input')) return; if (e.key === 'ArrowRight') show(state.cut + 1); if (e.key === 'ArrowLeft') show(state.cut - 1); };
+  addEventListener('keydown', key);
+  $('[data-act=make]', app).addEventListener('click', () => { sound.shutter(); const fix = Object.values(state.notes).some(Boolean); $('.col h1', app).innerHTML = fix ? '의견을<br>보냈어요' : '제작을<br>시작해요'; $('.col .lede', app).textContent = fix ? '고칠 곳을 반영해서 다시 올려 드려요.' : '목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요.'; $('.turn', app).className = 'turn is-busy'; $('.turn', app).innerHTML = '<i></i>저희 차례'; $('[data-makerow]', app)?.remove(); if (!fix) { $('.top', app).outerHTML = roomTop(3, 3); bindTop(); } });
+  stopAll = () => { removeEventListener('keydown', key); mini.stop(); };
+}
+
+/* ── 새 의뢰 ── */
+function viewRequest() {
+  stopAll(); $('.drawer')?.remove();
+  app.innerHTML = `
+  <header class="top"><img class="logo" style="height:18px;align-self:center" src="${LOGO}" alt="synk PULSE"><div class="proj"><b>새 광고 의뢰</b></div><span style="margin-left:auto"></span><button class="ibtn" data-go="entry">${icon('close')}<span class="t">닫기</span></button></header>
+  <section class="room">
+    <div class="col" style="justify-content:flex-start">
+      <h1 style="font-size:clamp(36px,3.6vw,54px)">세 가지만<br>알려 주세요</h1>
+      <div class="q"><label class="qn" for="what"><span class="mono">01</span>무엇을 광고하나요</label><div class="field"><input id="what" placeholder="예) 딸기 라떼 신메뉴" style="width:100%"></div></div>
+      <div class="q"><span class="qn"><span class="mono">02</span>제품 사진</span><button class="drop" data-photo>${icon('upload')}<span>사진 고르기<br><span class="small">정면 한 장이면 시작할 수 있어요</span></span><span class="thumbs"></span></button></div>
+      <div class="q"><span class="qn"><span class="mono">03</span>올릴 곳</span><div class="chans">${CHANNELS.map(c => `<button aria-pressed="false">${c}</button>`).join('')}</div></div>
+      <div class="q"><span class="small">나머지는 저희가 추천대로 채워요. 바꾸고 싶은 것만 누르세요.</span><div class="folds">${FOLDED.map(f => foldBtn(f.id, icon(f.icon), f.name, f.rec, 'is-rec')).join('')}</div></div>
+      <div class="q"><label class="qn" for="mail">답을 받을 메일</label><div class="field"><input id="mail" type="email" autocomplete="email" placeholder="name@company.com" style="width:100%"></div>
+        <label class="consent"><input type="checkbox" id="agree">연락과 제작에 필요한 정보 수집 · 이용에 동의해요(필수)</label></div>
+      <p class="msg" data-sendmsg aria-live="polite"></p>
+      <div><button class="go" data-send>추천대로 보내기 ${icon('arrow')}</button></div>
+    </div>
+    <div class="wall" data-wall>
+      <div class="sheet" data-sheet="model" hidden><div class="sheet-head"><h2>모델</h2><button class="link" data-sheet-close>닫기</button></div><p class="small" style="margin:0">액자에 손을 올리면 걸어요. 누르면 그 사람으로 정해요.</p><div class="mini" style="position:relative;flex:1;--mh:auto"></div><div><button class="link" data-choose="추천해 주세요">저희 추천에 맡기기</button></div></div>
+      <div class="sheet" data-sheet="length" hidden><div class="sheet-head"><h2>길이</h2><button class="link" data-sheet-close>닫기</button></div><div class="cards"><button class="card" data-choose="저희가 제안해요" aria-pressed="true"><span class="rec">추천</span><h3>제안해 주세요</h3><p>올릴 곳에 맞춰 저희가 길이를 골라요.</p></button>${PACKAGES.map(([a, b]) => `<button class="card" data-choose="${a}" aria-pressed="false"><h3>${a}</h3><p>${b}</p></button>`).join('')}</div></div>
+      ${['mood', 'text', 'avoid', 'files'].map(id => { const f = FOLDED.find(x => x.id === id); return `<div class="sheet" data-sheet="${id}" hidden><div class="sheet-head"><h2>${f.name}</h2><button class="link" data-sheet-close>닫기</button></div><div class="field"><span>비워 두면 「${f.rec}」로 해요</span><input style="width:100%" placeholder="${{ mood: '예) 홈쇼핑 같은 느낌은 피하고 차분하게', text: '예) 딸기 라떼 5,800원', avoid: '예) 경쟁사 이름', files: '로고, 상세페이지, 지난 광고' }[id]}"></div><div><button class="go ghost" data-choose="적었어요">적기 ${icon('check')}</button></div></div>`; }).join('')}
+    </div>
+  </section>`;
+  const wall = $('[data-wall]', app);
+  const r = rail(wall, FILMS.filter(f => f.tall).concat(FILMS.filter(f => f.tall)), { y: 0.08, h: Math.min(360, innerHeight * 0.42) });
+  let picker = null;
+  bindFolds(app);
+  $('[data-fold=model]', app).addEventListener('click', () => setTimeout(() => { if (!picker) picker = rail($('[data-sheet=model] .mini', app), MODELS, { y: 0.06, h: 220, drift: false, onPick: it => { const f = $('[data-fold=model]', app); f.classList.remove('is-rec'); f.classList.add('is-set'); f.querySelector('.ico').innerHTML = faceIco(it.id); f.querySelector('[data-val]').textContent = it.name; $('[data-sheet=model]', app).hidden = true; sound.tick(); } }); }, 0));
+  $$('.chans button', app).forEach(b => b.addEventListener('click', () => { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); sound.tick(); }));
+  $('[data-photo]', app).addEventListener('click', () => { const t = $('.thumbs', app); if (t.children.length < 3) t.insertAdjacentHTML('beforeend', `<img src="./assets/cut-05.webp" alt="">`); sound.tick(); });
+  $('[data-send]', app).addEventListener('click', () => {
+    const msg = $('[data-sendmsg]', app), mail = $('#mail', app).value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(mail)) { msg.textContent = '답을 받을 메일을 넣어 주세요. 이 메일로 방을 열어요.'; $('#mail', app).focus(); return; }
+    if (!$('#agree', app).checked) { msg.textContent = '정보 수집 · 이용 동의가 있어야 보낼 수 있어요.'; return; }
+    sound.shutter();
+    $('.col', app).innerHTML = `<p class="turn is-busy"><i></i>접수했어요 · 저희 차례</p><h1>지금은<br>저희 차례예요</h1><p class="lede">${CHECK_COPY.text}</p><div><button class="mock-later" style="position:static" data-go="moment">시안: 방향 두 안이 도착한 날로</button></div>`;
+  });
+  stopAll = () => { r.stop(); picker?.stop(); };
+}
+
+const go = router({ entry: viewEntry, moment: viewMoment, pick: viewPick, wait: viewWait, images: viewImages, request: viewRequest });
+mockBar('C 스튜디오 레일');
+</script>
+</body>
+</html>

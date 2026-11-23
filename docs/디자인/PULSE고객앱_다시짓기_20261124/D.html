@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE 시안 D · 먼저 말 거는 방</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./공통.css">
+<style>
+:root{--bg:#0b0a09;--panel:#121110;--ink:#f4f1ea;--dim:rgba(244,241,234,.6);--faint:rgba(244,241,234,.38);--line:rgba(244,241,234,.12);--staff:rgba(255,255,255,.065)}
+body{background:var(--bg);color:var(--ink);overflow:hidden}
+.logo{height:20px;width:auto;flex:none;align-self:flex-start}
+.go{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:48px;padding:0 20px;border-radius:12px;background:var(--ink);color:#0b0a09;font-weight:650;font-size:15px;letter-spacing:-.02em;transition:transform .2s var(--ease)}
+.go:hover{transform:translateY(-1px)}
+.go .icon{width:18px;height:18px}
+.go.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(244,241,234,.28)}
+.small{font-size:13px;color:var(--faint)}
+.link{color:var(--dim);font-size:14px}
+.link:hover{color:var(--ink)}
+.serif{font-family:var(--serif);font-weight:300;letter-spacing:-.04em}
+
+/* 입장 */
+.entry{display:grid;grid-template-columns:58% 42%;height:100dvh}
+.screen{position:relative;overflow:hidden;background:#000}
+.screen video,.screen img.poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 25%;transition:transform .9s var(--ease)}
+.screen .who{position:absolute;left:28px;bottom:24px;z-index:2;display:flex;align-items:baseline;gap:10px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.screen .who b{font-family:var(--serif);font-weight:300;font-size:30px;letter-spacing:-.04em}
+.screen .who span{font-size:13px;color:var(--dim)}
+.screen .ai{position:absolute;right:20px;top:18px;z-index:2;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.6);font-size:12px;color:var(--dim)}
+.screen::after{content:'';position:absolute;inset:auto 0 0;height:30%;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none}
+/* 띠(둘째 화면) */
+.row{position:absolute;inset:0;display:flex;gap:5px;transition:transform 1.1s var(--ease)}
+.row .s{position:relative;flex:none;width:46px;height:100%;overflow:hidden;filter:brightness(.55) saturate(.6);transition:width 1.1s var(--ease),filter .6s}
+.row .s img,.row .s video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.row .s.on{filter:none}
+
+.chat{display:flex;flex-direction:column;min-height:0;background:var(--panel);border-left:1px solid var(--line)}
+.chat-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 26px;border-bottom:1px solid var(--line)}
+.thread{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:26px}
+.msg{display:flex;flex-direction:column;gap:5px;max-width:88%;animation:pop .45s var(--ease) both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.msg .by{font-size:12px;color:var(--faint)}
+.msg .by .mono{font-size:11px}
+.msg .b{padding:12px 15px;border-radius:14px 14px 14px 4px;background:var(--staff);font-size:15px;line-height:1.55}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.msg.me .b{background:transparent;box-shadow:inset 0 0 0 1px rgba(244,241,234,.22);border-radius:14px 14px 4px 14px}
+.msg.news .by::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--new);margin-right:6px;vertical-align:1px}
+.typing{display:flex;gap:4px;padding:14px 16px;border-radius:14px;background:var(--staff);align-self:flex-start}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--dim);animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{50%{opacity:.25}}
+.quick{display:flex;gap:6px;flex-wrap:wrap;animation:pop .45s var(--ease) both}
+.quick button{min-height:38px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(244,241,234,.25);font-size:14px}
+.quick button:hover{box-shadow:inset 0 0 0 1px rgba(244,241,234,.6)}
+.quick button[aria-pressed=true]{box-shadow:inset 0 0 0 1.5px var(--ink);background:rgba(244,241,234,.08)}
+.quick button[aria-pressed=true]::before{content:'✓ '}
+.compose{display:flex;gap:8px;align-items:center;padding:14px 18px 18px;border-top:1px solid var(--line)}
+.compose input{flex:1;min-width:0;background:rgba(255,255,255,.05);border:0;border-radius:12px;padding:13px 16px;font-size:16px;outline:none}
+.compose input:focus{box-shadow:inset 0 0 0 1px rgba(244,241,234,.45)}
+.compose input[name=code]{font-family:var(--mono);letter-spacing:.32em;font-size:20px}
+.compose .go{min-height:46px;width:46px;padding:0;background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(244,241,234,.3)}
+.day{align-self:center;font-size:12px;color:var(--faint);padding:4px 0}
+
+/* 방 */
+.room{display:grid;grid-template-columns:1fr 360px;height:100dvh}
+.room .chat{border-left:0;background:var(--bg)}
+.room .thread{padding:28px max(28px,calc((100% - 760px)/2))}
+.room .chat-head{padding:16px max(28px,calc((100% - 760px)/2))}
+.proj{display:flex;flex-direction:column;line-height:1.3}
+.proj b{font-size:15px;font-weight:650}
+.proj span{font-size:12px;color:var(--faint)}
+.side{display:flex;flex-direction:column;gap:20px;padding:26px 26px;background:var(--panel);border-left:1px solid var(--line);overflow:auto}
+.turn{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;color:var(--dim)}
+.turn i{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.turn.is-busy i{background:var(--busy)}
+.side h2{margin:0;font-family:var(--serif);font-weight:300;font-size:34px;line-height:1.15;letter-spacing:-.045em}
+.side .lede{margin:0;color:var(--dim);font-size:14px}
+.bars{display:flex;gap:3px;align-items:center}
+.bars i{flex:1;height:3px;background:rgba(244,241,234,.16)}
+.bars i.done{background:rgba(244,241,234,.6)}
+.bars i.now{background:var(--ink)}
+.stagelab{display:flex;justify-content:space-between;font-size:12px;color:var(--faint)}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:20;width:min(400px,100vw);display:flex;flex-direction:column;background:#151413;border-left:1px solid var(--line);animation:pop .35s var(--ease)}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+.brief{margin:0;padding:20px;display:flex;flex-direction:column}
+.brief div{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.brief dt{color:var(--faint)}.brief dd{margin:0}
+.stages{display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.stages li{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--faint)}
+.stages li.done{color:var(--dim)}
+.stages li.now{color:var(--ink);font-weight:600}
+.stages .mono{font-size:12px}
+.stages .icon{width:15px;height:15px}
+.due{display:flex;justify-content:space-between;font-size:14px;color:var(--dim)}
+.due .mono{color:var(--ink)}
+.tools{display:flex;gap:6px;margin-top:auto}
+.tool{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;color:var(--dim)}
+.tool:hover{color:var(--ink);box-shadow:inset 0 0 0 1px rgba(244,241,234,.4)}
+
+/* 대화 안의 결정 카드 */
+.card{display:grid;grid-template-columns:220px 1fr;gap:18px;padding:14px;border-radius:16px;background:var(--staff);max-width:100%;animation:pop .45s var(--ease) both}
+.card .face{position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:10px;background:#000}
+.card .face img,.card .face video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.card .rec{font-size:12px;color:var(--faint)}
+.card h3{margin:2px 0 6px;font-family:var(--serif);font-weight:300;font-size:26px;letter-spacing:-.04em;line-height:1.2}
+.card p{margin:0;color:var(--dim);font-size:14px}
+.card .body{display:flex;flex-direction:column;gap:12px;min-width:0}
+.folds{display:flex;gap:6px;flex-wrap:wrap}
+.fold{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:3px 12px 3px 3px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;text-align:left}
+.fold:hover,.fold[aria-expanded=true]{box-shadow:inset 0 0 0 1px rgba(244,241,234,.5)}
+.fold .ico{display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.fold .ico img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.fold .ico .icon{width:18px;height:18px}
+.fold .t{display:flex;flex-direction:column;line-height:1.2}
+.fold .t small{font-size:10.5px;color:var(--faint)}
+.fold.is-rec .t small::after{content:' · 추천'}
+.fold.is-set .t small::after{content:' · 고름';color:var(--ink)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.sheet{grid-column:1/-1;padding:14px;border-radius:12px;background:rgba(0,0,0,.35);animation:pop .4s var(--ease) both}
+.sheet-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font-size:14px}
+.picks{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.picks button{position:relative;flex:none;width:58px;height:150px;overflow:hidden;border-radius:6px;filter:brightness(.6) saturate(.7);transition:width .6s var(--ease),filter .3s}
+.picks button img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.picks button:hover{filter:none}
+.picks button[aria-pressed=true]{width:112px;filter:none}
+.picks button span{position:absolute;left:6px;bottom:5px;font-size:12px;text-shadow:0 1px 4px #000}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.opt{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);text-align:left;font-size:14px}
+.opt img{aspect-ratio:3/4;object-fit:cover;object-position:50% 15%;border-radius:6px}
+.opt small{color:var(--faint);font-size:12px}
+.opt[aria-pressed=true]{box-shadow:inset 0 0 0 1.5px var(--ink)}
+/* 장면 이미지 카드 */
+.viewer{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:16px;background:var(--staff);animation:pop .45s var(--ease) both}
+.viewer .big{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:10px;background:#000}
+.viewer .big img{width:100%;height:100%;object-fit:cover}
+.viewer .nav{position:absolute;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:40px;height:40px;border-radius:999px;background:rgba(0,0,0,.5)}
+.viewer .nav.l{left:10px}.viewer .nav.r{right:10px}
+.viewer .info{display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:start}
+.viewer .info .mono{font-size:12px;color:var(--dim)}
+.viewer .info p{margin:2px 0 0;font-size:15px}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);font-size:13.5px}
+.chip:hover{box-shadow:inset 0 0 0 1px rgba(244,241,234,.5)}
+.chip[aria-pressed=true]{box-shadow:inset 0 0 0 1.5px var(--ink);background:rgba(244,241,234,.08)}
+.thumbs{display:flex;gap:5px}
+.thumbs button{position:relative;flex:1;height:54px;overflow:hidden;border-radius:6px;filter:brightness(.5);transition:filter .2s}
+.thumbs button img{width:100%;height:100%;object-fit:cover}
+.thumbs button.on{filter:none;box-shadow:0 0 0 1.5px var(--ink)}
+.thumbs .mark{position:absolute;right:3px;top:3px;display:grid;place-items:center;width:18px;height:18px;border-radius:999px;background:var(--ink);color:#000}
+.thumbs .mark .icon{width:11px;height:11px}
+.note{grid-column:1/-1;display:flex;gap:8px}
+.note textarea{flex:1;min-height:44px;background:rgba(255,255,255,.05);border:0;border-radius:10px;padding:10px 12px;resize:vertical;outline:none}
+.drop{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;text-align:left;border:1px dashed rgba(244,241,234,.3);align-self:flex-start}
+.drop .th{display:flex;gap:5px}
+.drop .th img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+.mock-later{align-self:center;font-size:12px;color:var(--dim);border:1px dashed rgba(244,241,234,.3);padding:6px 12px;border-radius:999px}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  .entry{grid-template-columns:1fr;grid-template-rows:50dvh auto;height:auto;min-height:100dvh}
+  .chat{min-height:50dvh}
+  .room{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;min-height:100dvh}
+  .side{order:2;gap:8px;padding:12px 16px 14px;border-left:0;border-top:1px solid var(--line);position:sticky;bottom:0;z-index:4}
+  .side .due,.side .bars,.side .stagelab{display:none}
+  .side h2{font-size:24px}
+  .side .stages,.side .tools,.side .lede{display:none}
+  .room .thread{padding:18px 14px 90px}
+  .room .chat-head{display:none}
+  .side .turn{font-size:12px}
+  .card{grid-template-columns:1fr}
+  .card .face{aspect-ratio:4/3}
+  .thread{padding:18px 16px}
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script type="module">
+import { MODELS, PROJECT, STAGES, DIRECTIONS, OFFER, KEEP, LOOKS, HAIRS, CUTS, TALK, CHANNELS, FOLDED, PACKAGES, CODE_SENT, CHECK_COPY, briefHTML, modelById, icon, video, playNow, stopNow, reduced, sound, router, mockBar, bindFolds, $, $$, wait } from './공통.js';
+
+const LOGO = '../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/request/logo-paper.webp';
+const app = $('#app');
+const state = { pick: { model: 'F02', dir: 'poster', look: KEEP, hair: KEEP }, notes: {}, liked: {}, cut: 0, seen: new Set([0]) };
+let cleanup = () => {};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// 대화 한 줄 넣기. 담당자 · PULSE의 말은 잠깐 입력 중 표시 뒤에 온다.
+// gen: 이 대화가 다른 흐름으로 바뀌면(입장 → 새 의뢰) 늦게 도착한 옛 말은 버린다.
+async function say(thread, { who = 'pulse', html, at = '', news = false, delay = 700, gen }) {
+  const stale = () => gen && thread.dataset.gen !== gen;
+  if (stale()) return null;
+  if (who !== 'me' && delay && !reduced) { const t = document.createElement('div'); t.className = 'typing'; t.innerHTML = '<i></i><i></i><i></i>'; thread.append(t); thread.scrollTop = thread.scrollHeight; await wait(delay); t.remove(); if (stale()) return null; }
+  const name = who === 'me' ? '나' : who === 'staff' ? `${PROJECT.staff} 담당자` : 'SYNK PULSE';
+  const m = document.createElement('div'); m.className = `msg ${who === 'me' ? 'me' : ''}${news ? ' news' : ''}`;
+  m.innerHTML = `<span class="by">${name}${at ? ` · <span class="mono">${at}</span>` : ''}</span><div class="b">${html}</div>`;
+  thread.append(m); thread.scrollTop = thread.scrollHeight; if (who !== 'me') sound.soft();
+  return m;
+}
+const put = (thread, el) => { thread.append(el); thread.scrollTop = thread.scrollHeight; return el; };
+const node = html => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstElementChild; };
+
+/* ── 입장: 한 사람이 화면을 채워 걷고, 로그인은 대화로 묻는다 ── */
+function viewEntry() {
+  cleanup();
+  app.innerHTML = `
+  <section class="entry">
+    <div class="screen" aria-label="AI 모델이 걷는 영상"><span class="ai">AI로 만든 가상 인물이에요</span><div class="who"><b></b><span></span></div></div>
+    <div class="chat">
+      <div class="chat-head"><img class="logo" src="${LOGO}" alt="synk PULSE"><span class="small">가입 · 비밀번호 없이 열려요</span></div>
+      <div class="thread" aria-live="polite"></div>
+      <form class="compose" novalidate><input name="email" type="email" autocomplete="email" placeholder="의뢰서에 적은 메일" aria-label="메일"><button class="go" aria-label="보내기">${icon('arrow')}</button></form>
+    </div>
+  </section>`;
+  // 왼쪽: 4초마다 다음 사람으로 겹쳐 넘긴다.
+  const screen = $('.screen', app), who = $('.who', screen), order = ['F02', 'M02', 'F07', 'M01', 'F09', 'M04', 'F05', 'M07'];
+  let k = 0, cur = null, timer;
+  const next = () => {
+    const m = modelById(order[k++ % order.length]);
+    const v = video(m.video, m.tall, { auto: false }); if (cur) v.style.transform = 'translateX(100%)'; screen.insertBefore(v, screen.querySelector('.ai')); playNow(v);
+    requestAnimationFrame(() => requestAnimationFrame(() => { v.style.transform = ''; if (cur) { const old = cur; old.style.transform = 'translateX(-30%)'; setTimeout(() => { stopNow(old); old.remove(); }, 950); } cur = v; }));
+    who.querySelector('b').textContent = m.name; who.querySelector('span').textContent = `${m.line} · ${m.meta}`;
+  };
+  next(); if (!reduced) timer = setInterval(next, 4000);
+  // 오른쪽: 대화로 로그인
+  const thread = $('.thread', app), form = $('.compose', app);
+  let step = 'email', mail = '';
+  const g = thread.dataset.gen = 'entry' + Date.now();
+  (async () => {
+    await say(thread, { html: '안녕하세요. 광고 방을 열어 드릴게요.', delay: 500, gen: g });
+    if (!await say(thread, { html: '의뢰서에 적은 메일을 알려 주세요.', delay: 600, gen: g })) return;
+    put(thread, node(`<div class="quick"><button data-go="request">처음이에요, 광고 의뢰할래요</button><button data-q="link">담당자에게 링크를 받았어요</button></div>`));
+    form.querySelector('input').focus();
+  })();
+  const asEmail = input => { input.name = 'email'; input.type = 'email'; input.inputMode = 'email'; input.placeholder = '의뢰서에 적은 메일'; input.removeAttribute('maxlength'); input.autocomplete = 'email'; input.setAttribute('aria-label', '메일'); };
+  thread.addEventListener('click', async e => {
+    if (!e.target.closest('[data-q=link]')) return;
+    e.target.closest('.quick').remove(); step = 'link';
+    await say(thread, { who: 'me', html: '링크를 받았어요' });
+    const input = form.querySelector('input'); input.name = 'invite'; input.type = 'text'; input.inputMode = 'url'; input.placeholder = 'https://workspace.synk.im/pulse-app/#invite=…'; input.setAttribute('aria-label', '받은 링크');
+    await say(thread, { html: '접수증이나 담당자에게 받은 링크를 그대로 붙여 넣어 주세요.' }); input.focus();
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const input = form.querySelector('input');
+    if (step === 'link') {
+      const v = input.value.trim(); if (!v) return;
+      if (!/invite=|^https?:\/\//.test(v)) { await say(thread, { html: '받으신 링크를 그대로 붙여 넣어 주세요. 주소 전체가 필요해요.' }); input.focus(); return; }
+      sound.shutter(); await say(thread, { who: 'me', html: '링크를 붙여 넣었어요' }); input.value = ''; input.disabled = true;
+      await say(thread, { html: `열렸어요. ${PROJECT.brand}의 방이에요.` }); go('moment'); return;
+    }
+    if (step === 'email') {
+      if (!/^\S+@\S+\.\S+$/.test(input.value.trim())) { if (input.value.trim()) await say(thread, { html: '메일 주소 꼴이 아니에요. 의뢰서에 적은 메일을 그대로 넣어 주세요.' }); input.focus(); return; }
+      mail = input.value.trim(); $('.quick', thread)?.remove(); sound.tick();
+      await say(thread, { who: 'me', html: esc(mail) });
+      input.value = ''; input.name = 'code'; input.type = 'text'; input.inputMode = 'numeric'; input.maxLength = 6; input.autocomplete = 'one-time-code'; input.placeholder = '000000'; input.setAttribute('aria-label', '여섯 자리 코드');
+      step = 'code';
+      await say(thread, { html: CODE_SENT });
+      put(thread, node(`<div class="quick"><button data-q="again">다른 메일로 받을게요</button></div>`)).querySelector('button').onclick = ev => { ev.target.closest('.quick').remove(); step = 'email'; asEmail(input); input.value = ''; input.focus(); };
+      input.focus();
+    } else {
+      const v = input.value.replace(/\D/g, '');
+      if (v.length !== 6) { await say(thread, { html: '메일에 온 숫자 여섯 자리를 모두 넣어 주세요.' }); input.focus(); return; }
+      sound.shutter(); $('.quick', thread)?.remove();
+      await say(thread, { who: 'me', html: '<span class="mono">••••••</span>' });
+      input.value = ''; input.disabled = true;
+      await say(thread, { html: `열렸어요. ${PROJECT.brand}의 방이에요.` });
+      go('moment');
+    }
+  });
+  form.querySelector('input').addEventListener('input', e => { if (step === 'code') { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); if (e.target.value.length === 6) form.requestSubmit(); } });
+  cleanup = () => { clearInterval(timer); $$('video', app).forEach(stopNow); };
+}
+
+/* ── 들어가는 순간: 왼쪽이 모델 띠로 바뀌고 추천 모델에 멈춘다 ── */
+async function viewMoment() {
+  if (!$('.entry', app)) viewEntry();
+  const screen = $('.screen', app), thread = $('.thread', app);
+  cleanup();
+  $$('video', screen).forEach(v => { stopNow(v); v.remove(); });
+  $('.who', screen).remove();
+  const row = node(`<div class="row">${MODELS.map(m => `<div class="s" data-id="${m.id}"><img src="${m.tall}" alt=""></div>`).join('')}</div>`);
+  screen.append(row);
+  const strips = $$('.s', row), i = strips.findIndex(s => s.dataset.id === PROJECT.cast), on = strips[i];
+  const W = screen.clientWidth, H = screen.clientHeight, w1 = Math.min(H * 9 / 16, W * 0.6);
+  row.style.transform = `translateX(${W * 0.62}px)`;
+  await wait(60);
+  on.classList.add('on'); on.style.width = `${w1}px`;
+  row.style.transform = `translateX(${(W - w1) / 2 - i * 51}px)`;
+  const v = video(modelById(PROJECT.cast).video, '', { auto: false }); on.append(v); playNow(v);
+  await say(thread, { html: '저희가 추천하는 얼굴은 <b>하린</b>이에요. 방향 두 안과 함께 기다리고 있어요.', delay: 900 });
+  await wait(1800);
+  stopNow(v);
+  go('pick');
+}
+
+/* ── 방 공통 ── */
+function roomShell() {
+  cleanup();
+  app.innerHTML = `
+  <section class="room">
+    <div class="chat">
+      <div class="chat-head"><div class="proj"><b>${PROJECT.brand} · ${PROJECT.title}</b><span>${PROJECT.staff} 담당자 · <span class="mono">${PROJECT.no}</span></span></div><img class="logo" style="align-self:center" src="${LOGO}" alt="synk PULSE"></div>
+      <div class="thread" aria-live="polite"></div>
+      <form class="compose"><input placeholder="${PROJECT.staff} 담당자에게 물어보세요" aria-label="보낼 말"><button class="go" aria-label="보내기">${icon('arrow')}</button></form>
+    </div>
+    <aside class="side"></aside>
+  </section>`;
+  const thread = $('.thread', app);
+  $('.compose', app).addEventListener('submit', e => { e.preventDefault(); const i = e.target.querySelector('input'); if (!i.value.trim()) return; say(thread, { who: 'me', html: esc(i.value), at: '방금' }); i.value = ''; sound.tick(); });
+  return thread;
+}
+function side({ busy = false, title, lede, check, action = '', extra = '', step = 2, paid = false }) {
+  const s = $('.side', app);
+  s.innerHTML = `<p class="turn ${busy ? 'is-busy' : ''}"><i></i>${busy ? '저희 차례' : '내 차례'}${check && step === 2 ? ` · 영상 전 확인 <span class="mono">${check}/3</span>` : ''}</p>
+    <h2>${title}</h2><p class="lede">${lede}</p>${action}${extra}
+    <div class="due">받으실 날 ${paid ? `<span class="mono">${PROJECT.due}</span>` : `<span>${PROJECT.dueBefore}</span>`}</div>
+    <div class="bars" aria-hidden="true">${STAGES.map((_, i) => `<i class="${i < step ? 'done' : i === step ? 'now' : ''}"></i>`).join('')}</div>
+    <div class="stagelab"><span>${STAGES[step]}</span><span>${step + 1}/5</span></div>
+    <div class="tools"><button class="tool" data-brief>${icon('script')}보낸 의뢰서</button></div>`;
+  s.querySelector('[data-brief]').onclick = () => {
+    const old = $('.drawer'); old?.remove(); if (old) return;
+    const d = document.createElement('aside'); d.className = 'drawer'; d.setAttribute('aria-label', '보낸 의뢰서');
+    d.innerHTML = `<div class="drawer-head"><b>보낸 의뢰서</b><button aria-label="닫기">${icon('close')}</button></div>${briefHTML()}`;
+    d.querySelector('button').onclick = () => d.remove(); document.body.append(d); sound.tick();
+  };
+  return s;
+}
+const foldBtn = (id, ico, label, val, cls = '') => `<button class="fold ${cls}" data-fold="${id}" aria-expanded="false"><span class="ico">${ico}</span><span class="t"><small>${label}</small><span data-val>${val}</span></span></button>`;
+const keepOpt = cur => `<button class="opt" data-choose="${KEEP}" aria-pressed="${cur === KEEP}"><small>추천</small><b>담당자에게 맡기기</b><span class="small">장면에 맞는 것으로 저희가 골라요.</span></button>`;
+const bubble = t => `<div class="msg ${t.who === 'me' ? 'me' : ''}${t.news ? ' news' : ''}"><span class="by">${t.who === 'me' ? '나' : PROJECT.staff + ' 담당자'} · <span class="mono">${t.at.replace(/^\d+월 \d+일 /, '').replace('오늘 ', '')}</span></span><div class="b">${t.text}</div></div>`;
+const faceIco = id => `<img src="${modelById(id).face}" alt="">`;
+// 그 방의 지난 말을 날짜 구분과 함께 그린다. 마지막(오늘의 새 소식)은 입력 중 표시 뒤에 따로 온다.
+function pastTalk(thread, key) {
+  let day = '';
+  TALK[key].slice(0, -1).forEach(t => { const d = t.at.startsWith('오늘') ? '오늘' : t.at.split(' ').slice(0, 2).join(' '); if (d !== day) { day = d; thread.append(node(`<div class="day">${d}</div>`)); } thread.append(node(bubble(t))); });
+  if (day !== '오늘') thread.append(node(`<div class="day">오늘</div>`));
+  return TALK[key].at(-1);
+}
+
+/* ── 방 · 고르기: 결정이 대화 안에 카드로 온다 ── */
+async function viewPick() {
+  const thread = roomShell();
+  const m = modelById(state.pick.model), dir = DIRECTIONS.find(d => d.id === state.pick.dir);
+  side({ title: '방향과 모델<br>고르기', lede: '대화 속 카드에서 추천대로 맡기거나, 바꾸고 싶은 것만 눌러 고르세요.', check: 1 });
+  const last = pastTalk(thread, 'pick');
+  await say(thread, { who: 'staff', at: '09:05', news: true, html: last.text, delay: 300 });
+  const card = put(thread, node(`<div class="card">
+    <div class="face"><img src="${m.face}" alt=""></div>
+    <div class="body"><span class="rec">추천</span><h3><span data-mname>${m.name}</span> · 「<span data-dname>${dir.name}</span>」</h3><p data-dline>${dir.line}</p><p class="small">${OFFER}</p>
+      <div class="folds">${foldBtn('model', faceIco(m.id), '모델', m.name, 'is-rec')}${foldBtn('dir', icon('compass'), '방향', dir.name, 'is-rec')}${foldBtn('look', icon('shirt'), '옷', state.pick.look, 'is-rec')}${foldBtn('hair', icon('hair'), '머리', state.pick.hair, 'is-rec')}</div>
+      <div class="acts"><button class="go" data-ok>추천대로 맡기기 ${icon('arrow')}</button></div></div>
+    <div class="sheet" data-sheet="model" hidden><div class="sheet-head"><span>모델 · 누르면 그 사람으로 바뀌어요</span><button class="link" data-sheet-close>닫기</button></div><div class="picks">${MODELS.map(x => `<button data-choose="${x.name}" data-id="${x.id}" aria-pressed="${x.id === m.id}"><img src="${x.tall}" alt=""><span>${x.name}</span></button>`).join('')}</div></div>
+    <div class="sheet" data-sheet="dir" hidden><div class="sheet-head"><span>방향 두 안</span><button class="link" data-sheet-close>닫기</button></div><div class="opts">${DIRECTIONS.map(d => `<button class="opt" data-choose="${d.name}" aria-pressed="${d.id === dir.id}"><small>${d.pick ? '추천' : '다른 안'}</small><b>${d.name}</b><span class="small">${d.line}</span><small>${OFFER}</small></button>`).join('')}</div></div>
+    <div class="sheet" data-sheet="look" hidden><div class="sheet-head"><span>옷</span><button class="link" data-sheet-close>닫기</button></div><div class="opts">${keepOpt(state.pick.look)}${LOOKS.map(l => `<button class="opt" data-choose="${l.name}" aria-pressed="${l.name === state.pick.look}"><img src="${l.src}" alt="">${l.name}</button>`).join('')}</div></div>
+    <div class="sheet" data-sheet="hair" hidden><div class="sheet-head"><span>머리</span><button class="link" data-sheet-close>닫기</button></div><div class="opts">${keepOpt(state.pick.hair)}${HAIRS.map(l => `<button class="opt" data-choose="${l.name}" aria-pressed="${l.name === state.pick.hair}"><img src="${l.src}" alt="">${l.name}</button>`).join('')}</div></div>
+  </div>`));
+  let fv = video(m.video, m.face, { auto: false }); $('.face', card).append(fv); playNow(fv);
+  const changed = () => { $$('[data-ok]', app).forEach(b => { b.firstChild.textContent = '이대로 정하기 '; }); $('.rec', card).textContent = '고르신 것'; };
+  bindFolds(card, { onChange: (id, v, el) => {
+    if (id === 'model') { state.pick.model = el.dataset.id; const x = modelById(el.dataset.id); $('[data-mname]', card).textContent = x.name; $('[data-fold=model] .ico', card).innerHTML = faceIco(x.id); stopNow(fv); fv.remove(); $('.face img', card).src = x.face; fv = video(x.video, x.face, { auto: false }); $('.face', card).append(fv); playNow(fv); }
+    if (id === 'dir') { const d = DIRECTIONS.find(d => d.name === v); state.pick.dir = d.id; $('[data-dname]', card).textContent = d.name; $('[data-dline]', card).textContent = d.line; }
+    if (id === 'look') state.pick.look = v; if (id === 'hair') state.pick.hair = v;
+    changed();
+  } });
+  const decide = async () => {
+    $$('[data-ok]', app).forEach(b => b.disabled = true); sound.shutter();
+    const mm = modelById(state.pick.model), dd = DIRECTIONS.find(d => d.id === state.pick.dir);
+    $('.acts', card).remove(); $$('.fold', card).forEach(f => { f.disabled = true; });
+    await say(thread, { who: 'me', at: '방금', html: $('.rec', card).textContent === '추천' ? '추천대로 맡길게요.' : `${mm.name}, 「${dd.name}」으로 할게요.` });
+    side({ busy: true, title: '글 콘티를<br>쓰고 있어요', lede: '광고가 남길 한 문장과 컷마다 들어갈 내용을 글로 먼저 보내 드려요.', check: 2 });
+    await say(thread, { who: 'staff', at: '방금', html: `좋아요. ${mm.name}, 「${dd.name}」으로 정했어요. 글 콘티를 써서 이 방으로 보내 드릴게요. 도착하면 메일로도 알려 드려요.`, delay: 1000 });
+    put(thread, node(`<button class="mock-later" data-go="images">시안: 글 콘티 확인 · 결제 뒤로 넘기기</button>`));
+  };
+  const onClick = e => { if (e.target.closest('[data-ok]')) decide(); };
+  app.addEventListener('click', onClick);
+  cleanup = () => { stopNow(fv); app.removeEventListener('click', onClick); };
+}
+
+/* ── 방 · 장면 이미지: 담당자 글 안에 크게 온다 ── */
+async function viewImages() {
+  const thread = roomShell();
+  const make = () => `<button class="go" data-make style="width:100%"><span data-make-l>이대로 제작 시작</span> ${icon('arrow')}</button>`;
+  const s = side({ title: '장면 이미지<br>확인하기', lede: `여섯 컷을 보고 의견을 남겨 주세요. <span class="mono" data-seen>1/6</span> 봤어요.`, check: 3, action: make(), paid: true });
+  const last = pastTalk(thread, 'images');
+  await say(thread, { who: 'staff', at: '09:05', news: true, html: last.text, delay: 300 });
+  const v = put(thread, node(`<div class="viewer" aria-label="장면 이미지 여섯 컷"><div class="big"><img alt=""><button class="nav l" aria-label="앞 컷">${icon('back')}</button><button class="nav r" aria-label="다음 컷">${icon('arrow')}</button></div><div class="info"></div><div class="thumbs">${CUTS.map((c, i) => `<button data-i="${i}" aria-label="컷 ${c.no}"><img src="${c.src}" alt=""></button>`).join('')}</div></div>`));
+  function show(i, quiet) {
+    state.cut = (i + CUTS.length) % CUTS.length; state.seen.add(state.cut);
+    const c = CUTS[state.cut], note = state.notes[c.no] || '', liked = state.liked[c.no];
+    const img = $('.big img', v); img.src = c.src; img.alt = `컷 ${c.no}`;
+    if (!quiet && !reduced) img.animate([{ opacity: .3 }, { opacity: 1 }], { duration: 300 });
+    $('.info', v).innerHTML = `<div><span class="mono">컷 ${c.no} · ${c.sec}초</span><p>${c.what}</p></div><div class="acts"><button class="chip" data-like aria-pressed="${!!liked}">${icon('check')}좋아요</button><button class="chip" data-fix aria-pressed="${!!note}">${icon('pen')}고칠 곳</button></div><form class="note" ${note ? '' : 'hidden'}><textarea aria-label="이 컷에서 고칠 곳" placeholder="예) 포스터 속 하린이 조금 더 웃었으면 해요">${esc(note)}</textarea><button class="go ghost">남기기</button></form>`;
+    $$('.thumbs button', v).forEach((b, k) => b.classList.toggle('on', k === state.cut));
+    const seen = $('[data-seen]', app); if (seen) seen.textContent = `${state.seen.size}/6`;
+    if (!quiet) sound.tick();
+  }
+  function marks() {
+    $$('.thumbs button', v).forEach((b, k) => { const no = CUTS[k].no; b.querySelector('.mark')?.remove(); if (state.notes[no] || state.liked[no]) b.insertAdjacentHTML('beforeend', `<span class="mark">${icon(state.notes[no] ? 'pen' : 'check')}</span>`); });
+    const n = Object.values(state.notes).filter(Boolean).length;
+    const mk = $('[data-make-l]', app); if (mk) mk.textContent = n ? `고칠 곳 ${n}개 보내기` : '이대로 제작 시작';
+  }
+  v.addEventListener('click', e => {
+    const no = CUTS[state.cut].no;
+    if (e.target.closest('.nav.l')) show(state.cut - 1);
+    else if (e.target.closest('.nav.r')) show(state.cut + 1);
+    else if (e.target.closest('.thumbs button')) show(+e.target.closest('.thumbs button').dataset.i);
+    else if (e.target.closest('[data-like]')) { state.liked[no] = !state.liked[no]; if (state.liked[no]) delete state.notes[no]; marks(); sound.tick(); if (state.liked[no]) setTimeout(() => show(state.cut + 1), reduced ? 0 : 240); else show(state.cut, true); }
+    else if (e.target.closest('[data-fix]')) { const n = $('.note', v); n.hidden = false; n.querySelector('textarea').focus(); }
+  });
+  v.addEventListener('submit', e => { e.preventDefault(); const t = $('textarea', v).value.trim(); state.notes[CUTS[state.cut].no] = t; if (t) delete state.liked[CUTS[state.cut].no]; marks(); sound.tick(); show(state.cut + 1); });
+  show(state.cut, true); marks();
+  // 그림이 다 온 뒤 다시 맨 아래로 — 늦게 온 그림이 썸네일과 단추를 입력창 뒤로 밀지 않게.
+  Promise.all($$('img', v).map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => { thread.scrollTop = thread.scrollHeight; });
+  const onMake = async e => {
+    if (!e.target.closest('[data-make]')) return;
+    sound.shutter(); const fix = Object.values(state.notes).filter(Boolean);
+    await say(thread, { who: 'me', at: '방금', html: fix.length ? `고칠 곳 ${fix.length}개 남겼어요.` : '이대로 제작해 주세요.' });
+    side({ busy: true, title: fix.length ? '의견을<br>반영하고 있어요' : '제작을<br>시작했어요', lede: fix.length ? '고칠 곳을 반영해서 다시 올려 드려요.' : '목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요.', check: 3, step: fix.length ? 2 : 3, paid: true });
+    await say(thread, { who: 'staff', at: '방금', html: fix.length ? '확인했어요. 고친 컷만 다시 올려 드릴게요.' : '좋아요. 목소리와 음악부터 만들어서 첫 영상이 나오면 바로 알려 드릴게요.', delay: 1000 });
+  };
+  app.addEventListener('click', onMake);
+  cleanup = () => app.removeEventListener('click', onMake);
+}
+
+/* ── 새 의뢰: 셋만 묻고, 나머지는 아이콘 · 추천대로 ── */
+async function viewRequest() {
+  cleanup();
+  if (!$('.entry', app)) viewEntry();
+  const thread = $('.thread', app), form = $('.compose', app), input = form.querySelector('input');
+  thread.dataset.gen = 'request' + Date.now(); thread.innerHTML = ''; input.disabled = false; input.value = ''; input.type = 'text'; input.name = 'what'; input.placeholder = '예) 딸기 라떼 신메뉴'; input.removeAttribute('maxlength');
+  const fresh = form.cloneNode(true); form.replaceWith(fresh);
+  const box = fresh.querySelector('input');
+  let step = 'what';
+  await say(thread, { html: '반가워요. 세 가지만 여쭐게요. 나머지는 저희가 추천대로 채워요.', delay: 400 });
+  await say(thread, { html: '<span class="mono">01</span> 무엇을 광고하나요?', delay: 500 });
+  box.focus();
+  fresh.addEventListener('submit', async e => {
+    e.preventDefault(); if (step !== 'what' || !box.value.trim()) return;
+    step = 'photo'; await say(thread, { who: 'me', html: esc(box.value) }); box.value = ''; box.disabled = true; box.placeholder = '아래에서 골라 주세요';
+    await say(thread, { html: '<span class="mono">02</span> 제품 사진을 보내 주세요. 정면 한 장이면 시작할 수 있어요.' });
+    const d = put(thread, node(`<button class="drop">${icon('upload')}<span>사진 고르기</span><span class="th"></span></button>`));
+    d.onclick = async () => {
+      if (step !== 'photo') return; step = 'where'; d.querySelector('.th').innerHTML = `<img src="./assets/cut-05.webp" alt="">`; sound.tick();
+      await say(thread, { html: '<span class="mono">03</span> 어디에 올리세요? 여럿 골라도 돼요.' });
+      const q = put(thread, node(`<div class="quick">${CHANNELS.map(c => `<button aria-pressed="false">${c}</button>`).join('')}<button data-done style="box-shadow:none;text-decoration:underline">다 골랐어요</button></div>`));
+      q.addEventListener('click', async ev => {
+        const b = ev.target.closest('button'); if (!b || step !== 'where') return;
+        if (!b.hasAttribute('data-done')) { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); sound.tick(); return; }
+        step = 'rest'; const picked = $$('[aria-pressed=true]', q).map(x => x.textContent); q.remove();
+        await say(thread, { who: 'me', html: picked.length ? picked.join(', ') : '아직 모르겠어요' });
+        await say(thread, { html: '나머지는 저희가 추천대로 채울게요. 바꾸고 싶은 것만 눌러 주세요.' });
+        const rest = put(thread, node(`<div class="card" style="grid-template-columns:1fr"><div class="folds">${FOLDED.map(f => foldBtn(f.id, icon(f.icon), f.name, f.rec, 'is-rec')).join('')}</div>
+          <div class="sheet" data-sheet="model" hidden><div class="sheet-head"><span>모델 · 누르면 그 사람으로 정해요</span><button class="link" data-sheet-close>닫기</button></div><div class="picks">${MODELS.map(x => `<button data-choose="${x.name}" aria-pressed="false"><img src="${x.tall}" alt=""><span>${x.name}</span></button>`).join('')}</div></div>
+          <div class="sheet" data-sheet="length" hidden><div class="sheet-head"><span>길이</span><button class="link" data-sheet-close>닫기</button></div><div class="opts"><button class="opt" data-choose="저희가 제안해요" aria-pressed="true"><small>추천</small><b>제안해 주세요</b><span class="small">올릴 곳에 맞춰 저희가 골라요.</span></button>${PACKAGES.map(([a, b2]) => `<button class="opt" data-choose="${a}" aria-pressed="false"><b>${a}</b><small>${b2}</small></button>`).join('')}</div></div>
+          ${['mood', 'text', 'avoid', 'files'].map(id => { const f = FOLDED.find(x => x.id === id); return `<div class="sheet" data-sheet="${id}" hidden><div class="sheet-head"><span>${f.name} · 비워 두면 「${f.rec}」</span><button class="link" data-sheet-close>닫기</button></div><div class="compose" style="padding:0;border:0"><input placeholder="${{ mood: '예) 홈쇼핑 같은 느낌은 피하고 차분하게', text: '예) 딸기 라떼 5,800원', avoid: '예) 경쟁사 이름', files: '로고, 상세페이지, 지난 광고' }[id]}"><button class="go ghost" data-choose="적었어요" aria-label="적기">${icon('check')}</button></div></div>`; }).join('')}
+          <div class="acts"><button class="go" data-send>추천대로 보내기 ${icon('arrow')}</button></div></div>`));
+        bindFolds(rest);
+        $('[data-send]', rest).onclick = async () => {
+          $('.acts', rest).remove(); step = 'mail';
+          await say(thread, { who: 'me', html: '나머지는 추천대로 해 주세요.' });
+          await say(thread, { html: '답을 받을 메일을 알려 주세요. 이 메일로 광고 방을 열어요.' });
+          box.disabled = false; box.type = 'email'; box.inputMode = 'email'; box.placeholder = 'name@company.com'; box.setAttribute('aria-label', '답을 받을 메일'); box.focus();
+        };
+      });
+    };
+  });
+  // 메일 → 동의 → 접수(저희 차례)
+  fresh.addEventListener('submit', async e => {
+    e.preventDefault(); if (step !== 'mail') return;
+    const mail = box.value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(mail)) { await say(thread, { html: '메일 주소 꼴이 아니에요. 다시 적어 주세요.' }); box.focus(); return; }
+    step = 'agree'; box.value = ''; box.disabled = true; await say(thread, { who: 'me', html: esc(mail) });
+    await say(thread, { html: '마지막으로, 연락과 제작에 필요한 정보 수집 · 이용에 동의해 주세요(필수).' });
+    const q = put(thread, node(`<div class="quick"><button data-agree>동의하고 보내기</button></div>`));
+    q.querySelector('button').onclick = async () => {
+      q.remove(); sound.shutter(); await say(thread, { who: 'me', html: '동의하고 보낼게요.' });
+      await say(thread, { html: `접수했어요. ${CHECK_COPY.text}`, delay: 900 });
+      put(thread, node(`<button class="mock-later" data-go="moment">시안: 방향 두 안이 도착한 날로</button>`));
+    };
+  });
+}
+
+const go = router({ entry: viewEntry, moment: viewMoment, pick: viewPick, wait: viewPick, images: viewImages, request: viewRequest });
+mockBar('D 먼저 말 거는 방');
+</script>
+</body>
+</html>

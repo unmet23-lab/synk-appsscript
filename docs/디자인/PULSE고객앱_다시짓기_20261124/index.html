@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE 고객 앱 시안</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./공통.css">
+<style>
+body{background:#0b0a09;color:#f4f1ea;overflow:auto}
+main{max-width:1240px;margin:0 auto;padding:56px 32px 80px}
+h1{margin:0 0 10px;font-family:var(--serif);font-weight:300;font-size:clamp(34px,4vw,56px);letter-spacing:-.045em}
+.lede{margin:0 0 40px;color:rgba(244,241,234,.6);max-width:40em}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+a.card{display:flex;flex-direction:column;gap:12px;color:inherit;text-decoration:none}
+a.card img{aspect-ratio:16/10;object-fit:cover;width:100%;border:1px solid rgba(244,241,234,.12);transition:transform .4s var(--ease)}
+a.card:hover img{transform:translateY(-3px)}
+a.card b{font-family:var(--serif);font-weight:300;font-size:26px;letter-spacing:-.04em}
+a.card p{margin:0;font-size:14px;color:rgba(244,241,234,.6)}
+.how{margin-top:44px;padding-top:22px;border-top:1px solid rgba(244,241,234,.12);font-size:14px;color:rgba(244,241,234,.6)}
+@media (max-width:900px){.grid{grid-template-columns:1fr}main{padding:32px 16px 60px}}
+</style>
+</head>
+<body>
+<main>
+  <h1>PULSE 고객 앱 다시 짓기</h1>
+  <p class="lede">세 시안 모두 입장, 들어가는 순간, 내 방(모델 고르기 · 장면 이미지 확인), 새 의뢰까지 눌러서 넘어가요. 선택은 아이콘으로 접혀 있고, 고르는 자리마다 「추천대로」 단추가 있어요.</p>
+  <div class="grid">
+    <a class="card" href="./A.html"><img src="./assets/thumb-A.jpg" alt=""><b>A 캐스팅 복도</b><p>모델과 광고가 세로 띠로 늘어선 복도. 띠 하나가 모든 화면의 문법이에요.</p></a>
+    <a class="card" href="./C.html"><img src="./assets/thumb-C.jpg" alt=""><b>C 스튜디오 레일</b><p>밝은 작업실 벽의 레일에 액자가 걸려 지나가요. 고른 것만 앞으로 나와요.</p></a>
+    <a class="card" href="./D.html"><img src="./assets/thumb-D.jpg" alt=""><b>D 먼저 말 거는 방</b><p>로그인부터 결정까지 담당자와의 대화 안에서 끝나요.</p></a>
+  </div>
+  <p class="how">메일 칸에 아무 주소, 코드 칸에 숫자 여섯 자리를 넣으면 다음으로 넘어가요. 화면 위 가운데 작은 띠에 손을 올리면 화면을 바로 고를 수 있어요.</p>
+</main>
+</body>
+</html>

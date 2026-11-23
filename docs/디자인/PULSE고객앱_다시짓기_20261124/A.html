@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE 시안 A · 캐스팅 복도</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./공통.css">
+<style>
+:root{--bg:#060606;--ink:#f4f1ea;--dim:rgba(244,241,234,.58);--faint:rgba(244,241,234,.36);--line:rgba(244,241,234,.14);--panel:420px;--w0:58px;--gap:6px}
+body{background:var(--bg);color:var(--ink);overflow:hidden}
+.app{display:grid;grid-template-columns:var(--panel) 1fr;height:100dvh}
+/* 왼쪽 판 */
+.side{position:relative;z-index:2;display:flex;flex-direction:column;padding:36px 40px 32px;background:var(--bg);border-right:1px solid var(--line);overflow:auto}
+.logo{height:20px;width:auto;align-self:flex-start;flex:none;opacity:.95}
+.side-body{margin:auto 0;display:flex;flex-direction:column;gap:22px;padding:28px 0}
+.turn{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim)}
+.turn i{width:7px;height:7px;border-radius:50%;background:var(--ink)}
+.turn.is-busy i{background:var(--busy)}
+h1{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(38px,3.4vw,52px);line-height:1.14;letter-spacing:-.045em}
+.lede{margin:0;font-size:16px;line-height:1.65;color:var(--dim);max-width:30em}
+.lede b{color:var(--ink);font-weight:600}
+.field{display:flex;flex-direction:column;gap:6px}
+.field span{font-size:13px;color:var(--dim)}
+.field input{background:transparent;border:0;border-bottom:1px solid rgba(244,241,234,.4);padding:10px 0;font-size:18px;outline:none;border-radius:0}
+.field input:focus{border-color:var(--ink)}
+.field input[name=code]{font-family:var(--mono);font-size:26px;letter-spacing:.32em}
+.go{display:inline-flex;align-items:center;justify-content:space-between;gap:18px;min-height:52px;padding:0 22px;background:var(--ink);color:#0b0b0b;font-weight:650;font-size:16px;letter-spacing:-.02em;border-radius:2px;transition:transform .2s var(--ease),opacity .2s}
+.go:hover{transform:translateY(-1px)}
+.go .icon{width:18px;height:18px}
+.go.ghost{background:transparent;color:var(--ink);border:1px solid rgba(244,241,234,.32)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.msg{min-height:1.4em;margin:0;font-size:13px;color:var(--dim)}
+.small{font-size:13px;color:var(--faint)}
+.link{color:var(--dim);font-size:14px;text-decoration:none;border-bottom:1px solid transparent}
+.link:hover{color:var(--ink);border-color:var(--line)}
+.side-foot{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:20px}
+.side-foot .row{justify-content:space-between}
+.due{display:flex;align-items:baseline;gap:10px;font-size:14px;color:var(--dim)}
+.due .mono{font-size:15px;color:var(--ink)}
+
+/* 복도: 세로 띠 */
+.hall{position:relative;overflow:hidden;background:#000}
+.track{position:absolute;inset:0 auto 0 0;display:flex;gap:var(--gap);height:100%;will-change:transform;transition:transform 1s var(--ease)}
+.strip{position:relative;flex:none;width:var(--w0);height:100%;overflow:hidden;background:#111;cursor:pointer;transition:width 1s var(--ease),margin 1s var(--ease),opacity .7s var(--ease),filter .7s}
+.strip img,.strip video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.strip video{opacity:0}
+.strip.live img{opacity:0}
+.strip.on{width:var(--w1)}
+.strip.on video.is-ready{opacity:1}
+.strip:not(.on){filter:saturate(.55) brightness(.62)}
+.strip:not(.on):hover{filter:saturate(.85) brightness(.85)}
+.strip.gone{width:0!important;margin-right:calc(var(--gap) * -1);opacity:0}
+.tag{position:absolute;left:0;right:0;bottom:0;text-align:left;padding:80px 22px 20px;background:linear-gradient(to top,rgba(0,0,0,.78),transparent);opacity:0;transform:translateY(8px);transition:.5s var(--ease)}
+.strip.on .tag{opacity:1;transform:none;transition-delay:.35s}
+.tag .nm{display:flex;align-items:baseline;gap:10px;font-family:var(--serif);font-weight:300;font-size:30px;letter-spacing:-.04em}
+.tag .en{font-family:var(--latin);font-size:13px;color:var(--dim);letter-spacing:.02em}
+.tag p{margin:4px 0 0;font-size:14px;color:var(--dim)}
+.tag .kind{font-size:12px;color:var(--faint)}
+.hall-note{position:absolute;right:20px;top:18px;margin:0;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.6);font-size:12px;color:var(--dim);z-index:3}
+
+/* 방 머리 */
+.top{position:absolute;left:0;right:0;top:0;height:64px;z-index:5;display:flex;align-items:center;gap:22px;padding:0 24px 0 40px;background:linear-gradient(var(--bg),rgba(6,6,6,.9));border-bottom:1px solid var(--line)}
+.top .proj{display:flex;align-items:baseline;gap:10px;min-width:0}
+.top .proj b{font-weight:600;font-size:15px;white-space:nowrap}
+.top .proj span{font-size:13px;color:var(--dim);white-space:nowrap}
+.steps{display:flex;align-items:center;gap:12px;margin-left:auto;font-size:13px;color:var(--dim)}
+.bars{display:flex;gap:3px}
+.bars i{width:22px;height:3px;background:rgba(244,241,234,.18)}
+.bars i.done{background:rgba(244,241,234,.7)}
+.bars i.now{background:linear-gradient(90deg,var(--ink) var(--p,33%),rgba(244,241,234,.18) 0)}
+.ibtn{position:relative;display:inline-flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--dim);padding:4px 8px}
+.ibtn:hover{color:var(--ink)}
+.ibtn .dot{position:absolute;top:2px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--new)}
+.is-room .app{padding-top:64px}
+.is-room .side{padding-top:28px}
+
+/* 접힌 결정: 아이콘 줄 */
+.folds{display:flex;gap:8px;flex-wrap:wrap}
+.fold{position:relative;display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 14px 6px 6px;border:1px solid var(--line);border-radius:2px;background:rgba(255,255,255,.02);text-align:left;transition:border-color .2s,background .2s}
+.fold:hover,.fold[aria-expanded=true]{border-color:rgba(244,241,234,.5);background:rgba(255,255,255,.05)}
+.fold .ico{display:grid;place-items:center;width:40px;height:40px;background:rgba(255,255,255,.06);overflow:hidden}
+.fold .ico img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.fold .t{display:flex;flex-direction:column;line-height:1.25}
+.fold .t small{font-size:11px;color:var(--faint)}
+.fold .t span{font-size:13px}
+.fold.is-rec .t small::after{content:' · 추천';color:var(--dim)}
+.fold.is-set .t small::after{content:' · 고름';color:var(--ink)}
+.fold.is-done .ico{color:var(--ink)}
+.fold.is-new::after{content:'';position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--new)}
+
+/* 오른쪽 무대 */
+.stage{position:relative;overflow:hidden;background:#000}
+.sheet{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;background:rgba(6,6,6,.96);padding:28px 32px;animation:sheet .45s var(--ease)}
+@keyframes sheet{from{opacity:0;transform:translateY(14px)}}
+.sheet-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px}
+.sheet-head h2{margin:0;font-family:var(--serif);font-weight:300;font-size:30px;letter-spacing:-.04em}
+.sheet .hall{flex:1;border:1px solid var(--line)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--line);text-align:left;transition:border-color .2s}
+.card:hover,.card[aria-pressed=true]{border-color:var(--ink)}
+.card h3{margin:0;font-family:var(--serif);font-weight:300;font-size:24px;letter-spacing:-.03em}
+.card p{margin:0;color:var(--dim);font-size:14px}
+.card img{aspect-ratio:3/4;object-fit:cover;object-position:50% 15%;width:100%}
+.card .rec{font-size:12px;color:var(--faint)}
+
+/* 장면 이미지: 컷 띠 */
+.cuts{position:absolute;inset:0;display:flex;flex-direction:column}
+.cut-hall{position:relative;flex:1;overflow:hidden}
+.cut-track{position:absolute;inset:24px auto 24px 0;display:flex;align-items:center;gap:6px;transition:transform .9s var(--ease)}
+.cut{position:relative;flex:none;width:72px;height:100%;transition:width .9s var(--ease),height .9s var(--ease),filter .5s;overflow:hidden;cursor:pointer;transition:width .9s var(--ease),filter .5s;filter:brightness(.55) saturate(.6)}
+.cut img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cut.on{filter:none;background:#000}
+
+.cut .no{position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:12px;color:#fff;text-shadow:0 1px 2px #000}
+.cut .mark{position:absolute;right:8px;top:8px;display:grid;place-items:center;width:24px;height:24px;background:var(--ink);color:#000}
+.cut .mark .icon{width:14px;height:14px}
+.cut-info{display:grid;grid-template-columns:1fr auto;gap:10px 24px;align-items:start;padding:18px 32px 24px;border-top:1px solid var(--line);min-height:128px}
+.cut-info .mono{font-size:13px;color:var(--dim)}
+.cut-info p{margin:4px 0 0;font-size:17px}
+.cut-acts{display:flex;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid var(--line);font-size:14px;transition:.2s}
+.chip:hover,.chip[aria-pressed=true]{border-color:var(--ink)}
+.chip[aria-pressed=true]{background:rgba(244,241,234,.1);border-color:var(--ink)}
+.note{grid-column:1/-1;display:flex;gap:10px}
+.note textarea{flex:1;min-height:44px;max-height:120px;background:transparent;border:1px solid var(--line);padding:10px 12px;resize:vertical;outline:none}
+.note textarea:focus{border-color:var(--ink)}
+
+/* 대화 서랍 */
+.drawer{position:fixed;top:64px;right:0;bottom:0;z-index:20;width:min(400px,100vw);display:flex;flex-direction:column;background:#0d0d0c;border-left:1px solid var(--line);animation:drawer .4s var(--ease)}
+@keyframes drawer{from{transform:translateX(30px);opacity:0}}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+.talk{flex:1;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:20px}
+.say{max-width:86%;display:flex;flex-direction:column;gap:4px}
+.say .who{font-size:12px;color:var(--faint)}
+.say .who .mono{font-size:12px}
+.say p{margin:0;font-size:15px;line-height:1.55}
+.say.staff{align-self:flex-start;padding:12px 14px;background:rgba(255,255,255,.06)}
+.say.me{align-self:flex-end;text-align:right}
+.say.news .who::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--new);margin-right:6px;vertical-align:1px}
+.send{display:flex;gap:8px;padding:14px 20px 20px;border-top:1px solid var(--line)}
+.send input{flex:1;background:transparent;border:0;border-bottom:1px solid rgba(244,241,234,.35);padding:10px 0;outline:none}
+
+/* 의뢰서 */
+.drop{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 14px;border:1px dashed rgba(244,241,234,.3);text-align:left}
+.drop:hover{border-color:var(--ink)}
+.drop .thumbs{display:flex;gap:6px}
+.drop .thumbs img{width:44px;height:44px;object-fit:cover}
+.chans{display:flex;gap:6px;flex-wrap:wrap}
+.chans button{min-height:38px;padding:0 12px;border:1px solid var(--line);font-size:14px}
+.chans button[aria-pressed=true]{background:rgba(244,241,234,.1);border-color:var(--ink)}
+.chans button[aria-pressed=true]::before{content:'✓ '}
+.q{display:flex;flex-direction:column;gap:8px}
+.q .qn{display:flex;gap:8px;align-items:baseline;font-size:14px}
+.q .qn .mono{font-size:12px;color:var(--faint)}
+.folds-head{font-size:13px;color:var(--dim)}
+
+.brief{margin:0;padding:20px;display:flex;flex-direction:column}
+.brief div{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.brief dt{color:var(--faint)}.brief dd{margin:0}
+.fold.is-done,.fold.is-status{cursor:default}
+.consent{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--dim)}
+.consent input{accent-color:#f4f1ea;width:16px;height:16px}
+.mock-later{position:absolute;right:20px;bottom:20px;z-index:3;font-size:12px;color:var(--dim);border:1px dashed rgba(244,241,234,.3);padding:6px 10px}
+.top .logo{align-self:center}
+
+/* 휴대폰 */
+@media (max-width:900px){
+  :root{--panel:1fr;--w0:30px;--gap:4px}
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto;min-height:100dvh}
+  .hall-wrap{order:-1;height:56dvh}
+  .side{padding:24px 20px 28px;border-right:0}
+  .side-body{margin:0;padding:12px 0}
+  h1{font-size:34px}
+  .top{padding:0 12px 0 16px;gap:10px}
+  .top .proj span,.steps{display:none}
+  .top .proj{flex:1;overflow:hidden}
+  .top .proj b{overflow:hidden;text-overflow:ellipsis}
+  .ibtn{white-space:nowrap}
+  .stage{height:62dvh;order:1}
+  .is-room .side{order:2}
+  .cut-info{padding:14px 16px 18px}
+  .sheet{position:fixed;inset:auto 0 0 0;z-index:30;max-height:80dvh;overflow:auto;padding:18px 16px 24px;border-top:1px solid var(--line);box-shadow:0 -20px 40px rgba(0,0,0,.5)}
+  .sheet .hall{flex:none;height:52dvh}
+  .fold{min-height:48px;padding-right:10px}
+  .fold .t span{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script type="module">
+import { MODELS, FILMS, PROJECT, STAGES, CHECKS, DIRECTIONS, OFFER, KEEP, LOOKS, HAIRS, CUTS, TALK, CHANNELS, FOLDED, PACKAGES, CHECK_COPY, briefHTML, mixedRow, modelById, icon, video, playNow, stopNow, reduced, sound, router, mockBar, bindLogin, bindFolds, $, $$, wait } from './공통.js';
+
+const LOGO = '../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/request/logo-paper.webp'; // 어두운 바탕용(고객 앱과 같은 파일)
+const app = $('#app');
+const isPhone = () => matchMedia('(max-width:900px)').matches;
+const state = { pick: { model: 'F02', dir: 'poster', look: KEEP, hair: KEEP }, notes: {}, liked: {}, cut: 0, talk: 'pick' };
+let offKeys = null;
+
+/* ── 복도: 세로 띠 한 줄. 가운데(앵커) 한 칸만 넓고 걷는다. ── */
+function corridor(host, items, { anchor = 0.32, autoplay = true, onPick, center = false, hover = true } = {}) {
+  const N = items.length, list = [...items, ...items, ...items];
+  const track = document.createElement('div'); track.className = 'track';
+  const strips = list.map((it, i) => {
+    const s = document.createElement('button');
+    s.className = 'strip'; s.type = 'button';
+    s.setAttribute('aria-label', it.kind === 'model' ? `${it.name}, ${it.line}` : `완성 광고 ${it.name}`);
+    const img = new Image(); img.src = it.kind === 'model' ? it.tall : it.poster; img.alt = ''; img.loading = i < N * 2 && i >= N - 6 ? 'eager' : 'lazy';
+    s.append(img);
+    const tag = document.createElement('div'); tag.className = 'tag';
+    tag.innerHTML = it.kind === 'model'
+      ? `<div class="nm">${it.name}<span class="en">${it.en}</span><span class="mono kind">${it.id}</span></div><p>${it.line} · ${it.meta}</p>`
+      : `<div class="kind">완성 광고 · <span class="mono">${it.len}</span></div><div class="nm" style="font-size:22px">${it.name}</div>`;
+    s.append(tag);
+    s.addEventListener('click', () => { set(i); hold(); onPick?.(it); });
+    s.addEventListener('mouseenter', () => { if (hover && !isPhone()) { set(i); hold(); } });
+    track.append(s);
+    return s;
+  });
+  host.append(track);
+  let cur = N, timer = null, pause = 0, vid = null, alone = false;
+  const w1 = () => Math.min(host.clientHeight * 9 / 16, host.clientWidth * (isPhone() ? 0.62 : 0.46));
+  const w0 = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--w0')) || 58;
+  const gap = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 6;
+  function place(animate = true) {
+    const W1 = alone ? Math.min(host.clientHeight * 9 / 16, host.clientWidth) : w1();
+    host.style.setProperty('--w1', `${W1}px`);
+    // 접힌 띠(gone)는 폭 0이라 자리를 차지하지 않는다 — 앞선 띠 가운데 살아 있는 것만 센다.
+    const before = alone ? 0 : cur;
+    const x = (alone || center ? (host.clientWidth - W1) / 2 : host.clientWidth * anchor) - before * (w0() + gap());
+    track.style.transition = animate ? '' : 'none';
+    track.style.transform = `translateX(${x}px)`;
+    if (!animate) { track.offsetWidth; track.style.transition = ''; }
+  }
+  function set(i, animate = true) {
+    if (i < N / 2) { cur = i + N; place(false); i += N; }
+    if (i >= N * 2 + N / 2) { cur = i - N; place(false); i -= N; }
+    strips[cur]?.classList.remove('on', 'live'); stopNow(vid); vid?.remove(); vid = null;
+    cur = i; const s = strips[cur], it = list[cur];
+    s.classList.add('on');
+    vid = video(it.video, '', { auto: false });
+    const mine = s; vid.addEventListener('playing', () => { vid?.classList.add('is-ready'); mine.classList.add('live'); }, { once: true });
+    s.insertBefore(vid, s.querySelector('.tag'));
+    playNow(vid);
+    place(animate);
+  }
+  const hold = () => { pause = Date.now() + 7000; };
+  function tick() { if (Date.now() > pause) set(cur + 1); }
+  set(cur, false);
+  if (autoplay && !reduced) timer = setInterval(tick, 4000);
+  addEventListener('resize', () => place(false));
+  return {
+    to(id) { // 가장 가까운 같은 사람으로
+      const near = list.map((it, i) => it.id === id ? i : -1).filter(i => i >= 0).sort((a, b) => Math.abs(a - cur) - Math.abs(b - cur))[0];
+      clearInterval(timer); timer = null; set(near); return strips[near];
+    },
+    focus(id) { // 그 사람만 남기고 접는다 — 한 장의 세로 초상으로 가운데에
+      const s = this.to(id);
+      strips.forEach(x => { if (x !== s) x.classList.add('gone'); });
+      alone = true; place(true);
+      return s;
+    },
+    refresh() { place(false); },
+    stop() { clearInterval(timer); stopNow(vid); },
+    get current() { return list[cur]; },
+  };
+}
+
+let hallCtl = null;
+const stopHall = () => { hallCtl?.stop(); hallCtl = null; };
+
+/* ── 입장 ── */
+function viewEntry() {
+  stopHall(); document.body.classList.remove('is-room'); $('.top')?.remove(); $('.drawer')?.remove();
+  app.innerHTML = `
+  <section class="side">
+    <img class="logo" src="${LOGO}" alt="synk PULSE">
+    <div class="side-body">
+      <h1>내 광고 방</h1>
+      <p class="lede">의뢰서에 적은 메일만 넣으면 열려요.<br>가입도 비밀번호도 없어요.</p>
+      <form data-login novalidate>
+        <div class="field" data-step="email"><span>메일</span><input name="email" type="email" autocomplete="email" placeholder="name@company.com"></div>
+        <div class="field" data-step="code" hidden><span>메일로 온 여섯 자리</span><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div>
+        <p class="msg" data-msg aria-live="polite"></p>
+        <div class="row"><button class="go" type="submit"><span data-go-label>코드 받기</span>${icon('arrow')}</button><button type="button" class="link" data-back data-step="code" hidden>다른 메일</button></div>
+      </form>
+      <button type="button" class="link" data-linkopen style="align-self:flex-start">담당자에게 받은 링크로 열기</button>
+      <form data-linkform hidden novalidate><div class="field"><span>접수증이나 담당자에게 받은 링크</span><input name="invite" inputmode="url" placeholder="https://workspace.synk.im/pulse-app/#invite=…"></div><p class="msg" data-linkmsg></p><button class="go ghost">열기 ${icon('arrow')}</button></form>
+    </div>
+    <div class="side-foot">
+      <div class="row"><span class="small">처음이세요?</span><button class="go ghost" data-go="request">광고 의뢰하기 ${icon('arrow')}</button></div>
+    </div>
+  </section>
+  <section class="hall hall-wrap" aria-label="AI 모델과 완성 광고"><span class="hall-note">AI로 만든 가상 인물이에요</span></section>`;
+  hallCtl = corridor($('.hall', app), mixedRow());
+  bindLogin($('[data-login]', app), () => go('moment'));
+  const lf = $('[data-linkform]', app);
+  $('[data-linkopen]', app).onclick = () => { lf.hidden = !lf.hidden; if (!lf.hidden) lf.querySelector('input').focus(); };
+  lf.onsubmit = e => { e.preventDefault(); const v = lf.querySelector('input').value.trim(); if (!/invite=|^https?:\/\//.test(v)) { $('[data-linkmsg]', lf).textContent = '받으신 링크를 그대로 붙여 넣어 주세요.'; return; } sound.shutter(); go('moment'); };
+}
+
+/* ── 들어가는 순간: 복도가 추천 모델에게 멈추고 나머지가 접힌다 ── */
+async function viewMoment(prev) {
+  if (!hallCtl) viewEntry();
+  const side = $('.side-body', app);
+  side.innerHTML = `<p class="turn"><i></i>열렸어요</p><h1>${PROJECT.brand}<br>${PROJECT.title}</h1><p class="lede">저희가 추천하는 얼굴은 <b>하린</b>이에요.<br>방향 두 안과 함께 기다리고 있어요.</p>`;
+  const sf = $('.side-foot', app); if (sf) sf.hidden = true;
+  hallCtl.to(PROJECT.cast);
+  await wait(1100);
+  hallCtl.focus(PROJECT.cast);
+  await wait(1700);
+  go('pick');
+}
+
+/* ── 방 공통 머리 ── */
+function roomTop(step, part, check = 1) {
+  document.body.classList.add('is-room');
+  let top = $('.top');
+  if (!top) { top = document.createElement('header'); top.className = 'top'; document.body.prepend(top); }
+  const bars = STAGES.map((_, i) => `<i class="${i < step ? 'done' : i === step ? 'now' : ''}"${i === step ? ` style="--p:${part}%"` : ''}></i>`).join('');
+  top.innerHTML = `<img class="logo" src="${LOGO}" alt="synk PULSE" style="height:16px"><div class="proj"><b>${PROJECT.brand} · ${PROJECT.title}</b><span class="mono">${PROJECT.no}</span></div>
+    <div class="steps"><span class="bars" aria-hidden="true">${bars}</span><span class="lab">${STAGES[step]}${step === 2 ? ` <span class="mono">${check}/3</span>` : ''}</span></div>
+    <button class="ibtn" data-act="brief" aria-label="보낸 의뢰서">${icon('script')}의뢰서</button>
+    <button class="ibtn" data-act="talk" aria-label="담당자와 대화, 새 말 하나">${icon('chat')}대화<span class="dot"></span></button>`;
+  top.onclick = e => { const b = e.target.closest('[data-act]'); if (b?.dataset.act === 'talk') toggleTalk(); if (b?.dataset.act === 'brief') toggleBrief(); };
+}
+function toggleBrief() {
+  const old = $('.drawer'); const was = old?.dataset.kind; old?.remove(); if (was === 'brief') return;
+  const d = document.createElement('aside'); d.className = 'drawer'; d.dataset.kind = 'brief'; d.setAttribute('aria-label', '보낸 의뢰서');
+  d.innerHTML = `<div class="drawer-head"><b>보낸 의뢰서</b><button aria-label="닫기">${icon('close')}</button></div>${briefHTML()}`;
+  d.querySelector('.drawer-head button').onclick = () => d.remove(); document.body.append(d); sound.tick();
+}
+function toggleTalk() {
+  const old = $('.drawer'); const was = old?.dataset.kind; old?.remove(); if (was === 'talk') return;
+  const d = document.createElement('aside'); d.className = 'drawer'; d.dataset.kind = 'talk'; d.setAttribute('aria-label', '담당자와 대화');
+  d.innerHTML = `<div class="drawer-head"><b>${PROJECT.staff} 담당자</b><button aria-label="닫기">${icon('close')}</button></div>
+    <div class="talk">${TALK[state.talk].map(t => `<div class="say ${t.who}${t.news ? ' news' : ''}"><span class="who">${t.who === 'staff' ? PROJECT.staff : '나'} · <span class="mono">${t.at}</span></span><p>${t.text}</p></div>`).join('')}</div>
+    <form class="send"><input placeholder="담당자에게 물어보세요" aria-label="보낼 말"><button class="go ghost" style="min-height:40px;padding:0 14px" aria-label="보내기">${icon('arrow')}</button></form>`;
+  d.querySelector('.drawer-head button').onclick = () => d.remove();
+  d.querySelector('form').onsubmit = e => { e.preventDefault(); const i = d.querySelector('input'); if (!i.value.trim()) return; d.querySelector('.talk').insertAdjacentHTML('beforeend', `<div class="say me"><span class="who">나 · <span class="mono">방금</span></span><p>${i.value.replace(/</g, '&lt;')}</p></div>`); i.value = ''; sound.tick(); };
+  document.body.append(d); $('.top .dot')?.remove();
+}
+
+// 끝난 결정 · 진행 표시는 누를 것이 아니라 표시라서 span으로 그린다.
+const foldBtn = (id, ico, label, val, cls = '') => /is-done|is-status/.test(cls)
+  ? `<span class="fold ${cls}"><span class="ico">${ico}</span><span class="t"><small>${label}</small><span>${val}</span></span></span>`
+  : `<button class="fold ${cls}" data-fold="${id}" aria-expanded="false"><span class="ico">${ico}</span><span class="t"><small>${label}</small><span data-val>${val}</span></span></button>`;
+const keepCard = cur => `<button class="card" data-choose="${KEEP}" aria-pressed="${cur === KEEP}"><span class="rec">추천</span><h3>담당자에게 맡기기</h3><p>장면에 맞는 것으로 저희가 골라요.</p></button>`;
+const faceIco = id => `<img src="${modelById(id).face}" alt="">`;
+
+/* ── 방 · 고르기(영상 전 확인 1/3): 추천 한 번, 아니면 아이콘을 눌러 직접 ── */
+function viewPick() {
+  stopHall(); $('.drawer')?.remove(); state.talk = 'pick'; roomTop(2, 12);
+  const m = modelById(state.pick.model), dir = DIRECTIONS.find(d => d.id === state.pick.dir);
+  app.innerHTML = `
+  <section class="side">
+    <div class="side-body">
+      <p class="turn"><i></i>내 차례 · 영상 전 확인 <span class="mono">1/3</span></p>
+      <h1>추천대로<br>맡기시겠어요?</h1>
+      <p class="lede"><b>${m.name}</b>이 나오는 「${dir.name}」으로 추천드려요. 바꾸고 싶은 것만 아래에서 눌러 고르세요.</p>
+      <div class="folds" id="folds">
+        ${foldBtn('model', faceIco(m.id), '모델', m.name, 'is-rec')}
+        ${foldBtn('dir', icon('compass'), '방향', dir.name, 'is-rec')}
+        ${foldBtn('look', icon('shirt'), '옷', state.pick.look, 'is-rec')}
+        ${foldBtn('hair', icon('hair'), '머리', state.pick.hair, 'is-rec')}
+      </div>
+      <div class="row"><button class="go" data-act="ok">추천대로 맡기기 ${icon('arrow')}</button></div>
+    </div>
+    <div class="side-foot"><div class="due">받으실 날 <span>${PROJECT.dueBefore}</span></div></div>
+  </section>
+  <section class="stage" aria-label="모델 고르기: 띠를 누르면 그 사람으로 바뀌어요">
+    <div class="hall" style="position:absolute;inset:0"></div>
+    <p class="hall-note" data-hint>띠를 누르면 그 사람으로 바뀌어요</p>
+    <div class="sheet" data-sheet="dir" hidden><div class="sheet-head"><h2>방향 두 안</h2><button class="link" data-sheet-close>닫기</button></div><div class="cards">${DIRECTIONS.map(d => `<button class="card" data-choose="${d.name}" aria-pressed="${d.id === state.pick.dir}"><span class="rec">${d.pick ? '추천' : '다른 안'}</span><h3>${d.name}</h3><p>${d.line}</p><span class="rec">${OFFER}</span></button>`).join('')}</div></div>
+    <div class="sheet" data-sheet="look" hidden><div class="sheet-head"><h2>옷</h2><button class="link" data-sheet-close>닫기</button></div><div class="cards">${keepCard(state.pick.look)}${LOOKS.map(l => `<button class="card" data-choose="${l.name}" aria-pressed="${l.name === state.pick.look}"><img src="${l.src}" alt=""><span>${l.name}</span></button>`).join('')}</div></div>
+    <div class="sheet" data-sheet="hair" hidden><div class="sheet-head"><h2>머리</h2><button class="link" data-sheet-close>닫기</button></div><div class="cards">${keepCard(state.pick.hair)}${HAIRS.map(l => `<button class="card" data-choose="${l.name}" aria-pressed="${l.name === state.pick.hair}"><img src="${l.src}" alt=""><span>${l.name}</span></button>`).join('')}</div></div>
+  </section>`;
+  const ok = $('[data-act=ok]', app);
+  const changed = () => {
+    ok.firstChild.textContent = '이대로 정하기 '; $('h1', app).innerHTML = '고르신 대로<br>정할까요?';
+    $('.lede', app).innerHTML = `<b>${modelById(state.pick.model).name}</b>, 「${DIRECTIONS.find(d => d.id === state.pick.dir).name}」으로 정해요. 다른 것도 바꾸려면 아이콘을 누르세요.`;
+  };
+  // 무대가 곧 모델 고르기: 추천 모델에 멈춘 복도. 띠를 누르면 그 사람으로 바뀐다.
+  hallCtl = corridor($('.stage > .hall', app), MODELS, { autoplay: false, center: true, hover: false, onPick: it => {
+    if (it.id === state.pick.model) return;
+    state.pick.model = it.id;
+    const f = $('[data-fold=model]', app); f.classList.remove('is-rec'); f.classList.add('is-set');
+    f.querySelector('.ico').innerHTML = faceIco(it.id); f.querySelector('[data-val]').textContent = it.name;
+    sound.tick(); changed();
+  } });
+  hallCtl.to(state.pick.model);
+  bindFolds(app, { onChange: (id, v) => { if (id === 'dir') state.pick.dir = DIRECTIONS.find(d => d.name === v).id; if (id === 'look') state.pick.look = v; if (id === 'hair') state.pick.hair = v; changed(); } });
+  $('[data-fold=model]', app).addEventListener('click', () => { hallCtl.to(state.pick.model); if (isPhone()) $('.stage', app).scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); const h = $('[data-hint]', app); h.animate?.([{ color: '#fff' }, { color: '' }], { duration: 900 }); });
+  ok.addEventListener('click', () => { sound.shutter(); go('wait'); });
+}
+
+/* ── 방 · 저희 차례 ── */
+function viewWait() {
+  $('.drawer')?.remove(); roomTop(2, 40, 2);
+  const m = modelById(state.pick.model), dir = DIRECTIONS.find(d => d.id === state.pick.dir);
+  stopHall();
+  app.innerHTML = `
+  <section class="side">
+    <div class="side-body">
+      <p class="turn is-busy"><i></i>저희 차례</p>
+      <h1>글 콘티를<br>쓰고 있어요</h1>
+      <p class="lede">광고가 남길 한 문장과 컷마다 들어갈 내용을 글로 먼저 보내 드려요. 도착하면 메일로 알려 드려요.</p>
+      <div class="folds">
+        ${foldBtn('m', faceIco(m.id), '모델', m.name, 'is-done')}
+        ${foldBtn('d', icon('check'), '방향', dir.name, 'is-done')}
+        ${foldBtn('s', icon('script'), '글 콘티', '쓰는 중', 'is-status')}
+        ${foldBtn('i', icon('image'), '장면 이미지', '다음', 'is-status')}
+      </div>
+    </div>
+    <div class="side-foot"><div class="due">받으실 날 <span>${PROJECT.dueBefore}</span></div></div>
+  </section>
+  <section class="stage"><div class="hall" style="position:absolute;inset:0"></div><button class="mock-later" data-go="images">시안: 글 콘티 확인 · 결제 뒤로 넘기기</button></section>`;
+  hallCtl = corridor($('.stage .hall', app), MODELS, { autoplay: false, hover: false });
+  hallCtl.focus(m.id);
+}
+
+/* ── 방 · 장면 이미지 도착(영상 전 확인 3/3) ── */
+function viewImages() {
+  stopHall(); $('.drawer')?.remove(); state.talk = 'images'; roomTop(2, 88, 3);
+  const m = modelById(state.pick.model);
+  app.innerHTML = `
+  <section class="side">
+    <div class="side-body">
+      <p class="turn"><i></i>내 차례 · 영상 전 확인 <span class="mono">3/3</span></p>
+      <h1>장면 이미지가<br>도착했어요</h1>
+      <p class="lede">컷마다 보고 의견을 남겨 주세요. 괜찮으면 그대로 제작을 시작해요.</p>
+      <div class="folds">
+        ${foldBtn('m', faceIco(m.id), '모델', m.name, 'is-done')}
+        ${foldBtn('d', icon('check'), '방향', '포스터를 보고 온 손님', 'is-done')}
+        ${foldBtn('s', icon('script'), '글 콘티', '확인함', 'is-done')}
+        ${foldBtn('p', icon('check'), '결제', '확인됨', 'is-done')}
+      </div>
+      <div class="row" data-makerow><button class="go" data-act="make"><span data-make>이대로 제작 시작</span> ${icon('arrow')}</button></div>
+    </div>
+    <div class="side-foot"><div class="due">받으실 날 <span class="mono">${PROJECT.due}</span></div></div>
+  </section>
+  <section class="stage" aria-label="장면 이미지 여섯 컷">
+    <div class="cuts">
+      <div class="cut-hall"><div class="cut-track">${CUTS.map((c, i) => `<button class="cut" data-i="${i}" aria-label="컷 ${c.no}"><img src="${c.src}" alt=""><span class="no">${c.no}</span></button>`).join('')}</div></div>
+      <div class="cut-info" aria-live="polite"></div>
+    </div>
+  </section>`;
+  const hall = $('.cut-hall', app), track = $('.cut-track', app), cuts = $$('.cut', app), info = $('.cut-info', app);
+  const W0 = () => isPhone() ? 34 : 72;
+  function show(i, animate = true) {
+    state.cut = (i + CUTS.length) % CUTS.length;
+    const W1 = Math.min((hall.clientHeight - 48) * 16 / 9, hall.clientWidth - W0() * 4.8);
+    cuts.forEach((c, k) => { c.classList.toggle('on', k === state.cut); c.style.width = `${k === state.cut ? W1 : W0()}px`; c.style.height = k === state.cut ? `${W1 * 9 / 16}px` : '100%'; });
+    const x = Math.max(16, (hall.clientWidth - W1) / 2) - state.cut * (W0() + 6);
+    track.style.transition = animate ? '' : 'none'; track.style.transform = `translateX(${x}px)`;
+    const c = CUTS[state.cut], note = state.notes[c.no] || '', liked = state.liked[c.no];
+    info.innerHTML = `<div><span class="mono">컷 ${c.no} · ${c.sec}초</span><p>${c.what}</p></div>
+      <div class="cut-acts"><button class="chip" data-like aria-pressed="${!!liked}">${icon('check')}좋아요</button><button class="chip" data-fix aria-pressed="${!!note}">${icon('pen')}고칠 곳</button></div>
+      <form class="note" ${note ? '' : 'hidden'}><textarea aria-label="이 컷에서 고칠 곳" placeholder="예) 포스터 속 하린이 조금 더 웃었으면 해요">${note}</textarea><button class="go ghost" style="min-height:44px">남기기</button></form>`;
+    if (animate) sound.tick();
+  }
+  function marks() {
+    cuts.forEach((c, k) => { const no = CUTS[k].no; c.querySelector('.mark')?.remove(); if (state.notes[no] || state.liked[no]) c.insertAdjacentHTML('beforeend', `<span class="mark">${icon(state.notes[no] ? 'pen' : 'check')}</span>`); });
+    const n = Object.values(state.notes).filter(Boolean).length;
+    const mk = $('[data-make]', app); if (mk) mk.textContent = n ? `고칠 곳 ${n}개 보내기` : '이대로 제작 시작';
+  }
+  track.addEventListener('click', e => { const c = e.target.closest('.cut'); if (c) show(+c.dataset.i); });
+  info.addEventListener('click', e => {
+    const no = CUTS[state.cut].no;
+    if (e.target.closest('[data-like]')) { state.liked[no] = !state.liked[no]; if (state.liked[no]) { delete state.notes[no]; marks(); sound.tick(); setTimeout(() => show(state.cut + 1), reduced ? 0 : 260); return; } marks(); show(state.cut, false); }
+    if (e.target.closest('[data-fix]')) { const f = $('.note', info); f.hidden = false; f.querySelector('textarea').focus(); }
+  });
+  info.addEventListener('submit', e => { e.preventDefault(); const v = $('textarea', info).value.trim(); const no = CUTS[state.cut].no; state.notes[no] = v; if (v) delete state.liked[no]; marks(); sound.tick(); show(state.cut + 1); });
+  offKeys?.();
+  const onKey = e => { if (document.documentElement.dataset.screen !== 'images' || e.target.closest('textarea,input')) return; if (e.key === 'ArrowRight') show(state.cut + 1); if (e.key === 'ArrowLeft') show(state.cut - 1); };
+  addEventListener('keydown', onKey); offKeys = () => removeEventListener('keydown', onKey);
+  addEventListener('resize', () => document.documentElement.dataset.screen === 'images' && show(state.cut, false));
+  $('[data-act=make]', app).addEventListener('click', () => { sound.shutter(); $('.side-body h1', app).innerHTML = Object.values(state.notes).some(Boolean) ? '의견을<br>보냈어요' : '제작을<br>시작해요'; $('.side-body .lede', app).textContent = Object.values(state.notes).some(Boolean) ? '고칠 곳을 반영해서 다시 올려 드려요.' : '목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요.'; $('.turn', app).className = 'turn is-busy'; $('.turn', app).innerHTML = '<i></i>저희 차례'; $('[data-makerow]', app)?.remove(); if (!Object.values(state.notes).some(Boolean)) roomTop(3, 8); });
+  requestAnimationFrame(() => { show(state.cut, false); marks(); });
+}
+
+/* ── 새 의뢰: 셋만 크게, 나머지는 아이콘으로 접고 추천대로 ── */
+function viewRequest() {
+  stopHall(); $('.top')?.remove(); $('.drawer')?.remove(); document.body.classList.remove('is-room');
+  app.innerHTML = `
+  <section class="side">
+    <div class="row" style="justify-content:space-between"><img class="logo" src="${LOGO}" alt="synk PULSE"><button class="link" data-go="entry">${'닫기'}</button></div>
+    <div class="side-body">
+      <h1>세 가지만<br>알려 주세요</h1>
+      <div class="q"><label class="qn" for="what"><span class="mono">01</span>무엇을 광고하나요</label><div class="field"><input id="what" placeholder="예) 딸기 라떼 신메뉴"></div></div>
+      <div class="q"><span class="qn"><span class="mono">02</span>제품 사진</span><button class="drop" data-photo>${icon('upload')}<span>사진 고르기<br><span class="small">정면 한 장이면 시작할 수 있어요</span></span><span class="thumbs"></span></button></div>
+      <div class="q"><span class="qn"><span class="mono">03</span>올릴 곳</span><div class="chans">${CHANNELS.map(c => `<button aria-pressed="false">${c}</button>`).join('')}</div></div>
+      <div class="q"><span class="folds-head">나머지는 저희가 추천대로 채워요. 바꾸고 싶은 것만 누르세요.</span>
+        <div class="folds">${FOLDED.map(f => foldBtn(f.id, icon(f.icon), f.name, f.rec, 'is-rec')).join('')}</div></div>
+      <div class="q"><label class="qn" for="mail">답을 받을 메일</label><div class="field"><input id="mail" type="email" autocomplete="email" placeholder="name@company.com"></div>
+        <label class="consent"><input type="checkbox" id="agree">연락과 제작에 필요한 정보 수집 · 이용에 동의해요(필수)</label></div>
+      <p class="msg" data-sendmsg aria-live="polite"></p>
+      <div class="row"><button class="go" data-send>추천대로 보내기 ${icon('arrow')}</button></div>
+    </div>
+  </section>
+  <section class="stage">
+    <div class="hall" style="position:absolute;inset:0"></div>
+    <div class="sheet" data-sheet="model" hidden><div class="sheet-head"><h2>모델</h2><button class="link" data-sheet-close>닫기</button></div><div class="hall" id="reqHall"></div><div class="row" style="margin-top:14px;justify-content:space-between"><button class="link" data-choose="추천해 주세요">저희 추천에 맡기기</button><button class="go ghost" data-choose-model>이 사람으로 ${icon('check')}</button></div></div>
+    <div class="sheet" data-sheet="length" hidden><div class="sheet-head"><h2>길이</h2><button class="link" data-sheet-close>닫기</button></div><div class="cards"><button class="card" data-choose="저희가 제안해요" aria-pressed="true"><span class="rec">추천</span><h3>제안해 주세요</h3><p>올릴 곳에 맞춰 저희가 길이를 골라요.</p></button>${PACKAGES.map(([a, b]) => `<button class="card" data-choose="${a}" aria-pressed="false"><h3>${a}</h3><p>${b}</p></button>`).join('')}</div></div>
+    ${['mood', 'text', 'avoid', 'files'].map(id => { const f = FOLDED.find(x => x.id === id); return `<div class="sheet" data-sheet="${id}" hidden><div class="sheet-head"><h2>${f.name}</h2><button class="link" data-sheet-close>닫기</button></div><div class="field"><span>비워 두면 「${f.rec}」로 해요</span><input placeholder="${{ mood: '예) 홈쇼핑 같은 느낌은 피하고 차분하게', text: '예) 딸기 라떼 5,800원', avoid: '예) 경쟁사 이름', files: '로고, 상세페이지, 지난 광고' }[id]}"></div><div class="row" style="margin-top:16px"><button class="go ghost" data-choose="적었어요">적기 ${icon('check')}</button></div></div>`; }).join('')}
+  </section>`;
+  hallCtl = corridor($('.stage > .hall', app), mixedRow());
+  bindFolds(app);
+  let picker = null;
+  $('[data-fold=model]', app).addEventListener('click', () => setTimeout(() => { if (!picker) picker = corridor($('#reqHall', app), MODELS, { autoplay: false, anchor: 0.3, hover: false }); else picker.refresh(); }, 0));
+  $('[data-choose-model]', app).addEventListener('click', () => { const it = picker.current; const f = $('[data-fold=model]', app); f.classList.replace('is-rec', 'is-set'); f.querySelector('.ico').innerHTML = faceIco(it.id); f.querySelector('[data-val]').textContent = it.name; $('[data-sheet=model]', app).hidden = true; sound.tick(); });
+  $$('.chans button', app).forEach(b => b.addEventListener('click', () => { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); sound.tick(); }));
+  $('[data-photo]', app).addEventListener('click', () => { const t = $('.thumbs', app); if (t.children.length < 3) t.insertAdjacentHTML('beforeend', `<img src="./assets/cut-05.webp" alt="">`); sound.tick(); });
+  $('[data-send]', app).addEventListener('click', () => {
+    const msg = $('[data-sendmsg]', app), mail = $('#mail', app).value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(mail)) { msg.textContent = '답을 받을 메일을 넣어 주세요. 이 메일로 방을 열어요.'; $('#mail', app).focus(); return; }
+    if (!$('#agree', app).checked) { msg.textContent = '정보 수집 · 이용 동의가 있어야 보낼 수 있어요.'; return; }
+    sound.shutter();
+    $('.side-body', app).innerHTML = `<p class="turn is-busy"><i></i>접수했어요 · 저희 차례</p><h1>지금은<br>저희 차례예요</h1><p class="lede">${CHECK_COPY.text}</p><button class="mock-later" style="position:static;align-self:flex-start" data-go="moment">시안: 방향 두 안이 도착한 날로</button>`;
+  });
+}
+
+const go = router({ entry: viewEntry, moment: viewMoment, pick: viewPick, wait: viewWait, images: viewImages, request: viewRequest });
+mockBar('A 캐스팅 복도');
+</script>
+</body>
+</html>
