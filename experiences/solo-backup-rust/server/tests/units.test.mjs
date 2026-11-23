@@ -19,6 +19,7 @@ import { createMailer, signRequest, SIGNED_TAG } from '../mail.mjs';
 import { cleanBatch, cleanBundle, KNOWN_ERROR_CODES } from '../telemetry.mjs';
 import { Store } from '../store.mjs';
 import { listenHost } from '../config.mjs';
+import { plan as bucketPlan, RULE as BUCKET_RULE } from '../tools/backup-bucket-rule.mjs';
 import { createJobs } from '../jobs.mjs';
 import { withSettings, secretFile } from '../config.mjs';
 import { FakeB2, fakeGoogle, clockAt, sessionOf } from './fakes.mjs';
@@ -958,5 +959,27 @@ test('listen host: unset is all addresses, a set value must be one IPv4 literal'
   assert.equal(listenHost({ WB_HOST: '' }), '0.0.0.0');
   assert.equal(listenHost({ WB_HOST: '172.30.77.9' }), '172.30.77.9');
   assert.equal(listenHost({ WB_HOST: '127.0.0.1' }), '127.0.0.1');
-  for (const bad of ['localhost', '256.0.0.1', '172.30.77.9 ', '::1', '1.2.3', '1.2.3.4.5']) assert.throws(() => listenHost({ WB_HOST: bad }), /CONFIG_INVALID:WB_HOST/);
+  for (const bad of ['localhost', '256.0.0.1', '172.30.77.9 ', '::1', '1.2.3', '1.2.3.4.5', '127.000.000.001']) assert.throws(() => listenHost({ WB_HOST: bad }), /CONFIG_INVALID:WB_HOST/);
+});
+
+test('bucket rule: added once, and refused when anything else keeps or removes the copies', () => {
+  const company = { action: { type: 'Delete' }, condition: { age: 30, matchesPrefix: ['company/production/'] } };
+  const base = { metageneration: '7', softDeletePolicy: { retentionDurationSeconds: '604800' }, lifecycle: { rule: [company] } };
+  const first = bucketPlan(base);
+  assert.equal(first.changed, true); assert.deepEqual(first.problems, []);
+  assert.deepEqual(first.after, [company, BUCKET_RULE]);
+  // The same rule read back with its keys in another order counts as present.
+  const reordered = { condition: { matchesPrefix: ['company/workbackup/'], age: 14 }, action: { type: 'Delete' } };
+  assert.equal(bucketPlan({ ...base, lifecycle: { rule: [company, reordered] } }).changed, false);
+  const refused = (extra) => bucketPlan({ ...base, ...extra }).problems;
+  for (const prefix of ['company/', 'company/workbackup/', 'company/workbackup/old/', 'c']) {
+    const other = { action: { type: 'Delete' }, condition: { age: 3, matchesPrefix: [prefix] } };
+    assert.equal(refused({ lifecycle: { rule: [company, other] } }).length, 1, prefix);
+  }
+  assert.equal(refused({ lifecycle: { rule: [{ action: { type: 'SetStorageClass', storageClass: 'COLDLINE' }, condition: { age: 1 } }] } }).length, 1);
+  assert.deepEqual(refused({ versioning: { enabled: true } }), ['VERSIONING_ON']);
+  assert.deepEqual(refused({ softDeletePolicy: { retentionDurationSeconds: String(8 * 86400) } }), ['SOFT_DELETE_LONGER_THAN_7_DAYS']);
+  assert.deepEqual(refused({ retentionPolicy: { retentionPeriod: '86400' } }), ['RETENTION_POLICY']);
+  assert.deepEqual(refused({ defaultEventBasedHold: true }), ['DEFAULT_EVENT_HOLD']);
+  assert.deepEqual(refused({ objectRetention: { mode: 'Enabled' } }), ['OBJECT_RETENTION']);
 });

@@ -22,10 +22,13 @@ class Offsite(unittest.TestCase):
         self.env = self.root / 'company.env'; self.env.write_text('A=1\nSYNK_BACKUP_GCS_DESTINATION=gs://private-bucket/company/production\n'); M.ENV_FILE = self.env
         M.API_UID = self.backups.stat().st_uid
         M.private_state = lambda: self.state.mkdir(exist_ok=True)
-        if not hasattr(os, 'geteuid'): os.geteuid = lambda: 0
+        self._geteuid = getattr(os, 'geteuid', None); os.geteuid = lambda: 0
         self.now = time.time() + 3600
         self.sent = []
-    def tearDown(self): self.tmp.cleanup()
+    def tearDown(self):
+        self.tmp.cleanup()
+        if self._geteuid: os.geteuid = self._geteuid
+        else: del os.geteuid
     def copy(self, day, age=3600, **kw):
         p = self.backups / f'workbackup-{day}.sqlite'; make_db(p, **kw); os.utime(p, (self.now - age, self.now - age)); return p
     def send(self, bucket, name, file, md5b64, size, token):
@@ -42,6 +45,8 @@ class Offsite(unittest.TestCase):
         self.assertEqual(self.sent[0][2], p.read_bytes()); self.assertFalse((self.state / 'stage').exists())
         self.assertEqual(json.loads((self.state / 'last.json').read_text())['name'], 'workbackup-2026-11-22.sqlite.gz')
         self.assertEqual(self.run_main()[0], 'ALREADY'); self.assertEqual(len(self.sent), 1)
+        os.utime(p, (self.now - 37 * 3600, self.now - 37 * 3600))
+        with self.assertRaisesRegex(M.Failed, 'COPY_STALE'): self.run_main()
     def test_not_writer_is_quiet(self):
         self.copy('2026-11-22')
         with self.assertRaises(M.Stop): self.run_main(writer=False)

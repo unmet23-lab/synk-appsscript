@@ -171,6 +171,8 @@ def main(now=None, run=subprocess.run, get_token=token, send=upload):
     last = json.loads(marker.read_text()) if marker.exists() else {}
     name = path.name + '.gz'
     if last.get('name') == name and last.get('result') == 'created':
+        # Already sent, but the api must still be writing new copies.
+        need(0 <= now - path.lstat().st_mtime <= MAX_AGE, 'COPY_STALE')
         return 'ALREADY', {'name': name}
     stage = STATE / 'stage'
     if stage.exists():
@@ -180,6 +182,8 @@ def main(now=None, run=subprocess.run, get_token=token, send=upload):
         copy = stage_copy(path, now, stage)
         check_database(copy)
         target, sha, md5b64, size = compress(copy)
+        if not writer_node(run):
+            raise Stop('NOT_WRITER')
         result = send(bucket_of(ENV_FILE.read_text()), name, target, md5b64, size, get_token())
     finally:
         shutil.rmtree(stage, ignore_errors=True)

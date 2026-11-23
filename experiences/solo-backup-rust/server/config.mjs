@@ -3,6 +3,7 @@
 // `docker inspect` and process listings do not show them. Bucket names and account
 // ids come from the settings file outside the repository (the repository is public).
 import fs from 'node:fs';
+import net from 'node:net';
 import path from 'node:path';
 
 // On the company host each service mounts only its own folder on the persistent disk
@@ -46,7 +47,7 @@ export function need(name, { env = process.env, pattern } = {}) {
 export function listenHost(env = process.env) {
   const v = env.WB_HOST;
   if (v === undefined || v === '') return '0.0.0.0';
-  if (!/^(?:\d{1,3}\.){3}\d{1,3}$/.test(v) || v.split('.').some((x) => Number(x) > 255)) throw new Error('CONFIG_INVALID:WB_HOST');
+  if (!net.isIPv4(v)) throw new Error('CONFIG_INVALID:WB_HOST');
   return v;
 }
 

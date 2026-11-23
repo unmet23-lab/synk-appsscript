@@ -74,6 +74,16 @@ async function main() {
     request.secrets = secretsFor(parts);
     request.settings = settingsFor(parts);
   }
+  if (action === 'start') {
+    // The daily copy goes on only when the bucket deletes it in time (privacy policy: 30 days).
+    const at = flags.indexOf('--버킷');
+    const bucket = at >= 0 ? flags[at + 1] : null;
+    if (!bucket) throw new Error('start needs --버킷 <company backup bucket> (the 14-day rule is checked first)');
+    const { check } = await import('./backup-bucket-rule.mjs');
+    const rule = await check(bucket);
+    if (!rule.ok) throw new Error('BUCKET_RULE_MISSING ' + (rule.changed ? 'add it with backup-bucket-rule.mjs --실행' : rule.problems.join(' ')));
+    request.bucketRuleChecked = true;
+  }
   const remote = createRequire(import.meta.url)(REMOTE);
   const answer = await remote('primary', script(request), 300000);
   const dir = path.resolve(process.env.WB_HOST_RECORD || path.join(server, '../../../.tmp/workbackup-host'));

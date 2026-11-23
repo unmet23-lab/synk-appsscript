@@ -3,6 +3,9 @@ Description=SYNK work-backup daily database copy off the host
 Documentation=https://github.com/unmet23-lab/synk-appsscript/blob/master/experiences/solo-backup-rust/server/README.md
 RequiresMountsFor=/srv/synk
 ConditionPathIsMountPoint=/srv/synk
+# A run in progress stops with the company stack (HA fencing, a release swap, a manual stop).
+PartOf=synk-company.service
+After=synk-company.service
 
 [Service]
 Type=oneshot
