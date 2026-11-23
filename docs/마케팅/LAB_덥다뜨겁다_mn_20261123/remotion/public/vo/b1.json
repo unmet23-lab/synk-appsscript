@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "더워!",
+ "dur": 0.788,
+ "words": [
+  {
+   "text": "더워!",
+   "start": 0.02,
+   "end": 0.788
+  }
+ ],
+ "source": {
+  "key": "d5a01347d1608815ff446cd521aa6bec",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 4821,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "찜질방 휴게 바닥에 앉은 친구가 땀을 뻘뻘 흘리며 부채질을 하다가 못 참고 외친다.",
+   "next": "계란이 더워!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 197
+ }
+}

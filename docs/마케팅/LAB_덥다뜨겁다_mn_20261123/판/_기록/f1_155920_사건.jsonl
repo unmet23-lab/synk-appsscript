@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20733-bee9-7840-8dfa-8b01fab7b9d0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"두 친구의 웃는 표정과 남자아이가 들어 보이는 뜨거운 달걀을 중심으로, 참고 이미지의 펠트 질감과 따뜻한 조명을 살려 한 장 생성하겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Two felt friends laugh in a glowing jjimjilbang as the boy holds up a steaming roasted egg."}}
+{"type":"turn.completed","usage":{"input_tokens":75116,"cached_input_tokens":59520,"cache_write_input_tokens":0,"output_tokens":1579,"reasoning_output_tokens":314}}

@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "뜨거워!!",
+ "dur": 0.576,
+ "words": [
+  {
+   "text": "뜨거워!!",
+   "start": 0.02,
+   "end": 0.576
+  }
+ ],
+ "source": {
+  "key": "301f38fb96609b34bc86c445ad1a28c4",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 4817,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "뒷걸음치던 몽글이 등 뒤 계란 그릇에 치맛자락이 닿아 아까보다 더 크게 펄쩍 뛰며 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 510
+ }
+}

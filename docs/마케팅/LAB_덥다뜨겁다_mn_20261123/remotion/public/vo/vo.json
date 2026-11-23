@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 4821,
+  "lufs": -16
+ },
+ "made": "2026-11-23T06:59:48.386Z",
+ "lines": [
+  {
+   "id": "b1",
+   "text": "더워!",
+   "dur": 0.788,
+   "syllablesPerSec": 2.54,
+   "src": "b1.wav",
+   "key": "d5a01347d1608815ff446cd521aa6bec",
+   "words": 1
+  },
+  {
+   "id": "m1",
+   "text": "계란이 더워!",
+   "dur": 1.218,
+   "syllablesPerSec": 4.11,
+   "src": "m1.wav",
+   "key": "7b3532926ca6d8cb1b982728bc75d859",
+   "words": 2
+  },
+  {
+   "id": "b2",
+   "text": "계란이 뜨거워!",
+   "dur": 1.306,
+   "syllablesPerSec": 4.59,
+   "src": "b2.wav",
+   "key": "c601ef904d41ceee21fd9b0a68620dba",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "뜨거워!",
+   "dur": 0.629,
+   "syllablesPerSec": 4.77,
+   "src": "m2.wav",
+   "key": "e4a390082b611c06bc3f69bddcd4ede6",
+   "words": 1
+  },
+  {
+   "id": "b3",
+   "text": "아, 더워~",
+   "dur": 1.819,
+   "syllablesPerSec": 1.65,
+   "src": "b3.wav",
+   "key": "74c6cee954d39cac29a32e8f7850a607",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "계란이… 뜨거워!",
+   "dur": 1.204,
+   "syllablesPerSec": 4.98,
+   "src": "m3.wav",
+   "key": "0b360f0819ee5c92aab673576b92985d",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "뜨거워!!",
+   "dur": 0.576,
+   "syllablesPerSec": 5.21,
+   "src": "m4.wav",
+   "key": "301f38fb96609b34bc86c445ad1a28c4",
+   "words": 1
+  }
+ ]
+}

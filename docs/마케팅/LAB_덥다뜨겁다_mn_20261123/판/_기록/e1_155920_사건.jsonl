@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20733-bf02-7361-bf17-3868a89c5e62"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one portrait daydream panel of the overheated felt egg, keeping the top area empty.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A flushed felt egg in a sheep-head towel sweats three blue drops against a dreamy amber glow."}}
+{"type":"turn.completed","usage":{"input_tokens":95747,"cached_input_tokens":76544,"cache_write_input_tokens":0,"output_tokens":1288,"reasoning_output_tokens":179}}

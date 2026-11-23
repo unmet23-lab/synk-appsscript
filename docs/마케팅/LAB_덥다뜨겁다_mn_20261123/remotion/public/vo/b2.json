@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "계란이 뜨거워!",
+ "dur": 1.306,
+ "words": [
+  {
+   "text": "계란이",
+   "start": 0.02,
+   "end": 0.426
+  },
+  {
+   "text": "뜨거워!",
+   "start": 0.507,
+   "end": 1.306
+  }
+ ],
+ "source": {
+  "key": "c601ef904d41ceee21fd9b0a68620dba",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 4822,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "친구가 웃으며 계란을 들어 보이고, 몽글의 말을 다정하게 고쳐 준다.",
+   "next": "뜨거워!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 309
+ }
+}
