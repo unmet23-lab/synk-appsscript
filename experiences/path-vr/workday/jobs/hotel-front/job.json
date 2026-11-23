@@ -2313,11 +2313,40 @@
             {
               "id": "visitor",
               "key": true,
-              "text": "오후에 한 남성분이 정은비 님의 가족이라며 방 번호를 물으셨고, 그 뒤에 정은비 님이 전화하셨어요.",
+              "when": {
+                "privacy": "tell"
+              },
+              "text": "오후에 정은비 님의 가족이라는 남성분께 제가 방 번호를 알려 드렸어요. 정은비 님이 전화하셔서 선배님이 사과드리고 지배인님께 알리셨어요.",
               "hint": {
-                "mn": "Үдээс хойш нэг эрэгтэй хүн өөрийгөө Жон Ынбигийн гэр бүлийн хүн гэж хэлээд өрөөний дугаарыг нь асуусан. Үүний дараа Жон Ынби утасдсан.",
-                "vi": "Buổi chiều có một người đàn ông nói là người nhà của khách Jeong Eun-bi và hỏi số phòng, sau đó khách Jeong Eun-bi đã gọi điện đến.",
-                "en": "This afternoon, a man asked for Ms. Jeong Eun-bi's room number, saying he was a member of her family, and after that Ms. Jeong Eun-bi phoned."
+                "mn": "Үдээс хойш Жон Ынбигийн гэр бүлийн хүн гэсэн эрэгтэйд би өрөөний дугаарыг нь хэлчихсэн. Жон Ынби утасдсан тул ахлах ажилтан уучлалт гуйж, менежерт мэдэгдсэн.",
+                "vi": "Buổi chiều, em đã cho một người đàn ông nói là người nhà của khách Jeong Eun-bi biết số phòng. Khách Jeong Eun-bi gọi điện xuống nên chị Ji-hyeon đã xin lỗi và báo cho quản lý trực.",
+                "en": "This afternoon I gave Ms. Jeong Eun-bi's room number to a man who said he was family. She phoned about it, so Ji-hyeon apologized and told the duty manager."
+              }
+            },
+            {
+              "id": "visitor",
+              "key": true,
+              "when": {
+                "privacy": "confirm"
+              },
+              "text": "오후에 정은비 님의 가족이라는 남성분께 정은비 님이 묵고 계신다고 말씀드렸어요. 정은비 님이 놀라서 전화하셔서 선배님이 사과드리고 지배인님께 알리셨어요.",
+              "hint": {
+                "mn": "Үдээс хойш Жон Ынбигийн гэр бүлийн хүн гэсэн эрэгтэйд Жон Ынбиг манайд буудаллаж байгаа гэж хэлсэн. Жон Ынби цочирдоод утасдсан тул ахлах ажилтан уучлалт гуйж, менежерт мэдэгдсэн.",
+                "vi": "Buổi chiều, em đã nói với một người đàn ông nói là người nhà của khách Jeong Eun-bi rằng khách đang ở khách sạn mình. Khách Jeong Eun-bi hoảng hốt gọi điện xuống nên chị Ji-hyeon đã xin lỗi và báo cho quản lý trực.",
+                "en": "This afternoon I told a man who said he was Ms. Jeong Eun-bi's family that she is staying with us. She was alarmed and phoned, so Ji-hyeon apologized and told the duty manager."
+              }
+            },
+            {
+              "id": "visitor",
+              "key": true,
+              "when": {
+                "privacy": "protect"
+              },
+              "text": "오후에 정은비 님의 가족이라는 남성분이 방 번호를 물으셨어요. 묵는지는 말하지 않고 메모를 받아 전해 드렸고, 정은비 님이 직접 연락하신대요.",
+              "hint": {
+                "mn": "Үдээс хойш Жон Ынбигийн гэр бүлийн хүн гэсэн эрэгтэй өрөөний дугаарыг нь асуусан. Буудалласан эсэхийг нь хэлээгүй, зурвас аваад дамжуулсан. Жон Ынби өөрөө холбогдоно гэсэн.",
+                "vi": "Buổi chiều có một người đàn ông nói là người nhà của khách Jeong Eun-bi đến hỏi số phòng. Em không nói khách có ở đây hay không, chỉ nhận lời nhắn rồi chuyển lại cho khách. Khách Jeong Eun-bi nói sẽ tự liên lạc.",
+                "en": "This afternoon a man who said he was Ms. Jeong Eun-bi's family asked for her room number. I didn't say whether she was staying here; I took a message and passed it on. She says she'll contact him herself."
               }
             },
             {
