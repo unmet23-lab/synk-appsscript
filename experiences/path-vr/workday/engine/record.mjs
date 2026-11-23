@@ -45,11 +45,14 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
   const ownEntries = answered.filter(({ id, entry }) => outward(id) && OWN[entry.produced]);
   const own = ownEntries.map(({ id, entry }) => `${steps.get(id).record} · ${ownHow(languageOf(id), entry.produced)}`);
   const ownForeign = ownEntries.some(({ id }) => languageOf(id));
-  const count = (mode) => entries.filter(({ entry }) => entry.produced === mode).length;
+  // A report sent with 「말하지 않고 보고하기」 is stored as example, but there is no example sentence in a report: it is its own tally.
+  const isReport = (id) => steps.get(id)?.type === 'report';
+  const count = (mode) => entries.filter(({ id, entry }) => entry.produced === mode && !(mode === 'example' && isReport(id))).length;
+  const reported = entries.filter(({ id, entry }) => entry.produced === 'example' && isReport(id)).length;
   const direct = entries.filter(({ entry }) => entry.produced === 'voice' || entry.produced === 'text');
   const modes = new Set(direct.map(({ entry }) => entry.produced));
   const activeMs = done.reduce((sum, scene) => sum + (data.scenes[scene.id].activeMs || 0), 0);
-  const how = (id) => PRODUCED[data.says?.[id]?.produced] || '';
+  const how = (id) => (isReport(id) && data.says?.[id]?.produced === 'example' ? '말하지 않고 보고함' : PRODUCED[data.says?.[id]?.produced] || '');
   const choices = job.closing.forks.flatMap((fork) => {
     const chosen = data.forks?.[fork.id], step = steps.get(fork.id);
     if (!chosen || !step || data.scenes?.[data.forkScene?.[fork.id]]?.done !== true) return [];
@@ -68,7 +71,7 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
     view: VIEW[view] || VIEW.screen,
     speak: modes.size === 2 ? SPEAK.mixed : modes.has('voice') ? SPEAK.voice : modes.has('text') ? SPEAK.text : '',
     completed: { scenes: done.length, of: job.scenes.length, minutes: activeMs > 0 ? Math.max(1, Math.round(activeMs / 60000)) : 0, replayedScenes: done.filter((scene) => (data.scenes[scene.id].finishes ?? 1) > 1).length },
-    korean: { voice: count('voice'), text: count('text'), example: count('example'), unaided: direct.filter(({ entry }) => !entry.helped).length, replays: films ? data.counts?.replays || 0 : null, hints: data.counts?.hints || 0, turns },
+    korean: { voice: count('voice'), text: count('text'), example: count('example'), reported, unaided: direct.filter(({ entry }) => !entry.helped).length, replays: films ? data.counts?.replays || 0 : null, hints: data.counts?.hints || 0, turns },
     choices, tools, own, ownForeign,
     reflection: { hard: trim(hard, RECORD_LIMITS.hard), decision: decisionLabel },
     ladder: job.closing.ladder.items.map((item) => ({ label: item.label, value: trim(ladder[item.id], RECORD_LIMITS.ladder) })).filter((item) => item.value),
@@ -80,7 +83,7 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
  * Counts are plain tallies of what happened — never "N out of M". */
 export function recordLines(record) {
   const { completed, korean } = record;
-  const answered = [korean.voice ? `말로 답한 것 ${korean.voice}번` : '', korean.text ? `글로 답한 것 ${korean.text}번` : '', korean.example ? `예시 문장으로 답한 것 ${korean.example}번` : ''].filter(Boolean);
+  const answered = [korean.voice ? `말로 답한 것 ${korean.voice}번` : '', korean.text ? `글로 답한 것 ${korean.text}번` : '', korean.example ? `예시 문장으로 답한 것 ${korean.example}번` : '', korean.reported ? `말하지 않고 보고한 것 ${korean.reported}번` : ''].filter(Boolean);
   const sections = [
     { title: '끝까지 했는가', rows: [[
       `마친 장면 ${completed.scenes}개(모두 ${completed.of}개)`,

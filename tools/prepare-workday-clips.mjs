@@ -93,14 +93,20 @@ export function stillness(reference, frame, live, { width = PROBE.width, height 
     }
     return count ? sum / count : 0;
   };
-  const still = difference(0, 0);
-  let best = still, shift = 0;
-  for (let dy = -reach; dy <= reach; dy++) for (let dx = -reach; dx <= reach; dx++) {
-    const value = difference(dx, dy);
-    // A moved frame must explain the difference clearly better than the unmoved one.
-    if (value < best - 0.15) { best = value; shift = Math.hypot(dx, dy); }
+  const still = difference(0, 0), candidates = [];
+  for (let dy = -reach; dy <= reach; dy++) for (let dx = -reach; dx <= reach; dx++) candidates.push({ dx, dy, value: difference(dx, dy) });
+  return { outside: still, shift: pickShift(still, candidates) * (WIDTH / width) };
+}
+
+/** The offset that explains the difference best over the whole search (a tie goes to the shorter move), taken only when it
+ * is clearly better than not moving at all. Probe pixels; 0 when nothing beats the unmoved frame by 0.15. */
+export function pickShift(still, candidates) {
+  let best = null;
+  for (const item of candidates) {
+    const distance = Math.hypot(item.dx, item.dy);
+    if (!best || item.value < best.value || (item.value === best.value && distance < best.distance)) best = { value: item.value, distance };
   }
-  return { outside: still, shift: shift * (WIDTH / width) };
+  return best && best.value < still - 0.15 ? best.distance : 0;
 }
 
 /** How much brighter the clip is than the photograph outside the live rectangle (mean, signed, 0~255).
@@ -188,8 +194,7 @@ function main() {
   const anyReviewed = ordered.some((clip) => clip.reviewed);
   const output = {
     schemaVersion: 1, id: `workday-${jobId}`, status: anyReviewed ? 'ready' : 'making', title: job.title, projection: 'rectilinear-mono', stereo: false,
-    source: { status: anyReviewed ? 'verified' : 'making', provider: 'Google Flow', model: option('--model') || manifest.source?.model || '', generationDate: manifest.source?.generationDate || new Date().toISOString().slice(0, 10),
-      reviewScope: '영상마다 길이와 소리 줄기, 대사 받아쓰기 대조, 시작과 끝 프레임, 배경 고정(still)을 봤다. 헤드셋과 실제 휴대폰 확인은 아직이다.' },
+    source: { status: anyReviewed ? 'verified' : 'making', provider: 'Google Flow', model: option('--model') || manifest.source?.model || '', generationDate: manifest.source?.generationDate || new Date().toISOString().slice(0, 10) },
     notice: manifest.notice || '인물과 장소는 AI로 만든 그림과 영상이에요. 실제 사람이나 시설이 아니에요.',
     clips: ordered,
   };

@@ -323,14 +323,16 @@ test('speech the device could not make out moves on without counting against the
   session.submitSay({ mode: 'unheard' });
   session.advance(); session.finishTour();
   playScene(session, 'handover', { handover: 'confirm' }, 'unheard');
-  // A report sent without speaking counts as one example answer.
+  // A report sent without speaking is its own tally: a report has no example sentence (Fable F3).
   playScene(session, 'morning'); playScene(session, 'afternoon');
   playScene(session, 'evening', { report: ['stumble'] }, 'example');
   const data = session.serialize();
   assert.equal(data.says.intro.produced, 'unheard');
   assert.equal(data.counts.examples, 1);
   const record = buildRecord(careHome, data, { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30) });
-  assert.deepEqual({ voice: record.korean.voice, text: record.korean.text, example: record.korean.example }, { voice: 0, text: 4, example: 1 });
+  assert.deepEqual({ voice: record.korean.voice, text: record.korean.text, example: record.korean.example, reported: record.korean.reported }, { voice: 0, text: 4, example: 0, reported: 1 });
+  assert.equal(record.choices.at(-1).how, '말하지 않고 보고함');
+  assert.ok(JSON.stringify(recordLines(record).sections[1].rows).includes('말하지 않고 보고한 것 1번'));
   assert.deepEqual(record.korean.turns, ['비틀거리신 어르신께 말을 건네는 차례 · 글로 답함'], 'an unheard turn is not listed at all');
   assert.equal(record.choices[0].text, '들은 것을 다시 말해 확인한다');
   assert.equal(record.choices[0].how, '', 'the choice is kept; how it was said is left blank');
@@ -499,7 +501,7 @@ test('a second occupation runs on data alone', async () => {
   assert.equal(asked.submitSay({ mode: 'example' }).line.clip, 'lead-again');
   assert.equal(asked.advance().phase, 'scene-end');
   // Nothing in the engine or the pages names an occupation.
-  const sources = ['engine/job-schema.mjs', 'engine/session.mjs', 'engine/record.mjs', 'engine/record-sheet.mjs', 'engine/pdf.mjs', 'engine/hud.mjs', 'engine/place-stage.mjs', 'engine/comfort.mjs', 'play.mjs', 'play.html', 'hub.mjs', 'index.html'];
+  const sources = ['engine/job-schema.mjs', 'engine/session.mjs', 'engine/record.mjs', 'engine/record-sheet.mjs', 'engine/pdf.mjs', 'engine/hud.mjs', 'engine/place-stage.mjs', 'engine/comfort.mjs', 'play.mjs', 'play.html', 'hub.mjs', 'closing-steps.mjs', 'index.html'];
   for (const file of sources) assert.ok(!/어르신|요양|돌봄|간호|공장/.test(await readFile(path.join(WORKDAY, file), 'utf8')), `${file} holds no occupation word`);
 });
 
@@ -540,10 +542,10 @@ test('only files the catalogue points at are served, and the styles keep still',
   const jobFilesServed = await workdayJobFiles();
   assert.ok(jobFilesServed.includes('workday/jobs/care-home/job.json') && jobFilesServed.includes('workday/jobs/care-home/places/office-senior.jpg'));
   assert.ok(jobFilesServed.every((file) => !/\/production\//.test(file) && !/\.txt$/.test(file)), 'working notes are never public');
-  for (const file of ['workday/index.html', 'workday/play.html', 'workday/play.mjs', 'workday/engine/comfort.mjs', 'workday/jobs/index.json']) assert.ok(served.has(file), `${file} is served`);
+  for (const file of ['workday/index.html', 'workday/play.html', 'workday/play.mjs', 'workday/closing-steps.mjs', 'workday/engine/comfort.mjs', 'workday/jobs/index.json']) assert.ok(served.has(file), `${file} is served`);
   assert.ok(![...served].some((file) => file.startsWith('workday/docs/') || file.includes('/production/')));
   // Every module the pages import is on the allow-list.
-  for (const page of ['play.mjs', 'hub.mjs', ...(await readdir(path.join(WORKDAY, 'engine'))).map((name) => `engine/${name}`)]) {
+  for (const page of ['play.mjs', 'hub.mjs', 'closing-steps.mjs', ...(await readdir(path.join(WORKDAY, 'engine'))).map((name) => `engine/${name}`)]) {
     const source = await readFile(path.join(WORKDAY, page), 'utf8');
     for (const [, target] of source.matchAll(/from '(\.{1,2}\/[^']+)'/g)) {
       const resolved = path.posix.normalize(path.posix.join('workday', path.posix.dirname(page), target));
@@ -555,7 +557,7 @@ test('only files the catalogue points at are served, and the styles keep still',
   assert.ok(!/@keyframes|animation\s*:/.test(css), 'no keyframe animation');
   assert.ok(!/border-radius:\s*50%[^}]*background:\s*(?:transparent|none)/.test(css), 'no hollow circle');
   // Learner-facing words of the pages themselves.
-  for (const file of ['index.html', 'play.html', 'play.mjs', 'hub.mjs']) {
+  for (const file of ['index.html', 'play.html', 'play.mjs', 'hub.mjs', 'closing-steps.mjs']) {
     const source = await readFile(path.join(WORKDAY, file), 'utf8');
     for (const word of FORBIDDEN_RECORD_WORDS.filter((item) => !['점수', '등급'].includes(item))) assert.ok(!source.includes(word), `${file} avoids 「${word}」`);
   }
@@ -836,6 +838,32 @@ test('a tool pick off the mark comes back for another try, and closing items car
     const result = validateJob(copy);
     assert.ok(result.errors.some((error) => expected.test(error)), `${name}: ${result.errors.join(' | ')}`);
   }
+});
+
+test('a tour sets its home as the place, a replay counts only a clip, a retry pick is not a later choice, and the stillness shift is the best one', async () => {
+  // A tour whose home is not where the previous step left the stage: the place follows the tour home before its points are drawn.
+  const toured = factoryJob(); toured.scenes[0].steps.splice(1, 0, { type: 'move', place: 'line' });
+  const touring = createWorkdaySession(toured);
+  let state = touring.startScene('gate');
+  state = touring.advance();
+  assert.equal(state.phase, 'tour');
+  assert.equal(state.place, 'gate', 'the tour starts at its home');
+  // A line without a clip has nothing to hear again, so it is not counted as a replay.
+  const quiet = factoryJob(); delete quiet.scenes[0].steps[0].clip;
+  const listening = createWorkdaySession(quiet); listening.startScene('gate');
+  assert.equal(listening.replay(), null);
+  assert.equal(listening.serialize().counts.replays, 0);
+  // A later when that names a retry pick can never match, so the check refuses it.
+  const retrying = factoryJob();
+  retrying.scenes[0].steps.splice(1, 0, { type: 'work', id: 'check', prompt: '표지를 봐요.', hint: { en: 'hint' }, tool: { kind: 'paper', title: '표지', lines: ['안전모'] }, options: [
+    { id: 'off', label: '다른 곳을 본다', hint: { en: 'hint' }, retry: true, then: [] }, { id: 'on', label: '안전모 표지를 본다', hint: { en: 'hint' }, then: [] }] });
+  retrying.scenes[0].steps.push({ type: 'note', id: 'late', when: { check: 'off' }, title: '다시 봐요', body: ['다시 봐요.'] });
+  assert.ok(validateJob(retrying).errors.some((error) => /check=off/.test(error)), validateJob(retrying).errors.join(' | '));
+  // The reviewer's case: the nearer offset lowers the running best first, but the true best is the farther one.
+  const { pickShift } = await import('../../../tools/prepare-workday-clips.mjs');
+  const line = [-6, -4, -2, 0, 2, 4, 6].map((dx) => ({ dx, dy: 0, value: dx === 0 ? 2.98 : 2.66 + 0.02 * (dx - 4) ** 2 }));
+  assert.equal(pickShift(2.98, line), 4);
+  assert.equal(pickShift(2.98, [{ dx: 0, dy: 0, value: 2.98 }, { dx: 1, dy: 0, value: 2.9 }]), 0, 'a shift must beat standing still by 0.15');
 });
 
 test('a job still being made, or one that fails the check, is not served', async () => {

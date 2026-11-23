@@ -267,7 +267,7 @@ export async function buildWorkdayStage({ mount, getFrameState = () => [], getSt
   const closeButton = document.createElement('button'); closeButton.type = 'button'; closeButton.textContent = '닫기'; closeButton.className = 'preview-close'; closeButton.hidden = true;
   closeButton.addEventListener('click', onClosePreview); mount.append(closeButton);
   const previewHint = document.createElement('p'); previewHint.className = 'preview-hint'; previewHint.hidden = true; previewHint.textContent = '좌우 30도씩 · Home 정면 · Esc 닫기'; mount.append(previewHint);
-  const previewControls = document.createElement('div'); previewControls.className = 'preview-controls'; previewControls.hidden = true; previewControls.setAttribute('aria-label', '둘러보기 조작'); mount.append(previewControls);
+  const previewControls = document.createElement('div'); previewControls.className = 'preview-controls'; previewControls.hidden = true; previewControls.setAttribute('role', 'group'); previewControls.setAttribute('aria-label', '둘러보기 조작'); mount.append(previewControls);
   const applyLook = (next) => { look = next; camera.rotation.set(look.pitch, look.yaw, 0, 'YXZ'); };
   const turn = (direction) => { if (previewing) { drag = null; applyLook(previewLookAfter(look, { type: 'turn', direction })); } };
   const resetLook = () => { if (previewing) { drag = null; applyLook(previewLookAfter(look, { type: 'reset' })); } };
@@ -302,6 +302,8 @@ export async function buildWorkdayStage({ mount, getFrameState = () => [], getSt
   const keydown = (event) => {
     if (!previewing) return;
     if (event.key === 'Escape') { onClosePreview(); return; }
+    // Browser and system shortcuts (Alt+← back, Cmd+→ forward, Alt+Home) stay theirs.
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(event.target?.tagName) || !['ArrowLeft', 'ArrowRight', 'Home'].includes(event.key)) return;
     event.preventDefault(); if (event.repeat) return;
     if (event.key === 'Home') resetLook(); else turn(event.key === 'ArrowLeft' ? 1 : -1);

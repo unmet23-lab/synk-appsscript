@@ -60,7 +60,8 @@ export function createWorkdaySession(job, { saved = null } = {}) {
       current = step;
       if (step.type === 'line') { if (step.place && step.place !== place) setPlace(step.place, ''); lastLine = step; phase = 'line'; return; }
       if (step.type === 'note') { phase = 'note'; return; }
-      if (step.type === 'tour') { tour = { current: step.home, openPoint: null }; phase = 'tour'; return; }
+      // A tour starts where its points are: the stage and the place serial follow its home even without a move step.
+      if (step.type === 'tour') { if (step.home !== place) setPlace(step.home, ''); tour = { current: step.home, openPoint: null }; phase = 'tour'; return; }
       say = { chosen: null, exampleOpen: false, hintOpen: false, selected: new Set() };
       phase = 'say'; return;
     }
@@ -134,7 +135,8 @@ export function createWorkdaySession(job, { saved = null } = {}) {
   }
   /** The page replays the returned clip; the session only counts the request. */
   function replay() {
-    if (paused || !['line', 'say'].includes(phase) || !lastLine) return null;
+    // Only a spoken line with a clip can be heard again; an action, a chat line or a line without a clip is not counted.
+    if (paused || !['line', 'say'].includes(phase) || !lastLine || !lastLine.clip || lastLine.action || lastLine.channel === 'chat') return null;
     data.counts.replays++;
     return lastLine.clip;
   }

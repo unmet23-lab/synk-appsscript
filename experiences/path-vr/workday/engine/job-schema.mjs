@@ -205,7 +205,8 @@ function check(job, manifest, fail) {
         branch(`${at}.then`, option?.then);
       }
       if (options.length && options.every((option) => option?.retry === true)) fail(where, 'retry가 없는 보기가 하나 이상 있어야 해요.');
-      workOptions.set(step.id, ids); forkScene.set(step.id, visiting);
+      // A retry pick always comes back to the tool, so only the other picks can be what a later when or report sees.
+      workOptions.set(step.id, new Set(options.filter((option) => option?.retry !== true).map((option) => option?.id))); forkScene.set(step.id, visiting);
     } else if (step.type === 'relay') {
       // The learner's own language at work (상향판 기준 2): a guest's words in the learner's language, said on in Korean.
       if (!ID.test(step.id || '') || sayIds.has(step.id)) fail(where, '잇기 걸음 id가 잘못됐거나 겹쳐요.');
