@@ -132,7 +132,7 @@ test('주인 기록: 서버에 없는 이 계정 구독은 지우고, 다른 계
  // 서버에서 지워진 이 계정 구독(정리·404) → 지우기만 하지 않고 새 구독으로 다시 잇는다(설계 주인 11-23 불변식 — 아래 「다시 잇기」 시험들).
  let storage=memory();storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:'https://fcm.googleapis.com/fcm/send/old'}));
  let b=browser({registered:true,subscribed:'https://fcm.googleapis.com/fcm/send/old',permission:'granted'}),s=server({device:false}),push=make(b,s,{storage});
- await push.setAccount('acc-1');await settled();
+ push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await settled();
  assert.equal(b.current?.endpoint,'https://fcm.googleapis.com/fcm/send/new');assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).endpoint,'https://fcm.googleapis.com/fcm/send/new');
  // 브라우저가 구독을 잃었는데(사이트 데이터 지움) 서버에 남았을 수 있으면 → 로그인 없이 기기 식별자로 지운다.
  storage=memory();storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:'https://fcm.googleapis.com/fcm/send/lost'}));
@@ -438,6 +438,8 @@ function reminderSettings(start={frequency:2,hour:null,since:null}){
  return {read:()=>({...value}),adopt:next=>{adopted.push(next);value={...value,...next};},set:patch=>{value={...value,...patch};},get value(){return value;},adopted};
 }
 const fault=(status,code)=>Object.assign(Error(code),{code,status});
+// 다시 잇기가 쓰는 1단 묶음 — 설정에 더해 지금 기록으로 지은 요약을 준다(world-reminder-device의 digest()와 같은 꼴).
+const withDigest=rem=>Object.assign(rem,{digest:()=>({digest:DIGEST('2026-10-21')})});
 const settled=()=>new Promise(resolve=>setTimeout(resolve,5));
 const KEY_V='synk.world.push.versions.v1.acc-1';
 const EDIT_OF=storage=>JSON.parse(storage.getItem(KEY_V)||'null')?.settings??null;
@@ -2045,6 +2047,7 @@ const reEnableTabs=()=>{
  const requestA=(action,body,options)=>{if(action==='subscribe'&&netA.holdSubscribe){netA.holdSubscribe=false;const reply=s.request(action,body,options);return new Promise(resolve=>netA.held.push(()=>resolve(reply)));}return s.request(action,body,options);};
  const a=makeV(shared,s,{now:()=>V0,storage,request:requestA});
  const b=makeV(shared,s,{now:()=>V0,storage,request:requestB,anonymous:(action,body)=>{anonB.push([action,body.endpoint]);return Promise.resolve({ok:true,removed:true});}});
+ const rem=withDigest(reminderSettings({frequency:2,hour:9,since:null}));a.bindSettings(rem);b.bindSettings(rem);
  // 끝: 이 브라우저에 구독이 있고, 기록이 그 구독을 가리키고, 서버에 그 구독이 올랐고, 두 탭이 켜짐이다(설계 주인 11-23 불변식).
  const onAndRegistered=(why)=>{
   assert.ok(shared.current,'이 브라우저 구독이 있다 — '+why);
@@ -2053,7 +2056,7 @@ const reEnableTabs=()=>{
   assert.equal(a.snapshot().device.subscribed,true);assert.equal(b.snapshot().device.subscribed,true);
   assert.deepEqual(anonB,[],'로그인 없이 끄지 않는다 — '+why);
  };
- return {s,storage,bus,net,netA,anonB,shared,a,b,onAndRegistered};
+ return {s,storage,bus,net,netA,anonB,shared,a,b,rem,onAndRegistered};
 };
 test('판: 같은 브라우저의 다른 탭이 같은 구독으로 다시 켜는 요청이 날아가는 사이 늦게 온 평소 읽기도, 끝은 켜짐과 서버에 오른 구독이다(설계 주인 11-23 불변식)',async()=>{
  const {net,netA,a,b,onAndRegistered}=reEnableTabs();
@@ -2068,8 +2071,7 @@ test('판: 같은 브라우저의 다른 탭이 같은 구독으로 다시 켜�
  a.dispose();b.dispose();
 });
 test('판: 같은 브라우저의 다른 탭이 같은 구독으로 다시 켜고 시각을 저장한 사이 늦게 온 평소 읽기도, 끝은 켜짐과 서버에 오른 구독이다(GPT push-versions-world-r17 GA1)',async()=>{
- const {storage,bus,net,a,b,onAndRegistered}=reEnableTabs(),rem=reminderSettings({frequency:2,hour:9,since:null});
- a.bindSettings(rem);b.bindSettings(rem);
+ const {storage,bus,net,a,b,rem,onAndRegistered}=reEnableTabs();
  await a.setAccount('acc-1');await b.setAccount('acc-1');await a.ready();await b.refresh();await settled();
  net.holdNext=true;const ordinary=b.refresh();await settled();   // B의 평소 읽기는 「이 기기 없음」을 받아 두고 늦다
  assert.equal(net.held.length,1);
@@ -2094,10 +2096,51 @@ test('판: 같은 브라우저의 다른 탭이 같은 구독으로 다시 켠 �
  assert.equal(off.removed,true);assert.equal(shared.current,null,'다른 탭이 이은 새 구독도 끈다');assert.equal(storage.getItem(PUSH_RECORD_KEY),null);
  a.dispose();b.dispose();
 });
+test('다시 잇기: 다른 탭이 새 구독으로 다시 이은 뒤 이 탭의 옛 주소 켜기 요청이 서버에 늦게 닿아도, 서버에는 지금 구독이 남는다(GPT push-versions-world-r18 GA2 · GA6)',async()=>{
+ // 서버는 한 로그인 세션에 주소 하나를 두고 마지막 subscribe로 덮는다(SYNK-talk world-push-store subscribe).
+ const s=versionedServer({settings:{frequency:2,hour:9,since:null}}),storage=memory(),locks=fakeLocks();let onServer=SUB;
+ const serve=(action,body,options)=>s.request(action,body,options).then(data=>{
+  if(action==='subscribe')onServer=body.subscription.endpoint;
+  return action==='status'||action==='subscribe'?{...data,device:action==='subscribe'||body.endpoint&&body.endpoint===onServer?{subscribed:true,deviceId:'dev-1'}:{subscribed:false}}:data;
+ });
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const shared=browser({registered:true,subscribed:SUB,permission:'granted',locks}),late=[];
+ const requestA=(action,body,options)=>action==='subscribe'&&!late.done?new Promise(resolve=>late.push(()=>resolve(serve(action,body,options)))):serve(action,body,options);
+ const a=makeV(shared,s,{now:()=>V0,storage,request:requestA}),b=makeV(shared,s,{now:()=>V0,storage,request:serve});
+ const rem=withDigest(reminderSettings({frequency:2,hour:9,since:null}));a.bindSettings(rem);b.bindSettings(rem);
+ await a.setAccount('acc-1');await b.setAccount('acc-1');await a.ready();await settled();
+ onServer=null;   // 서버가 이 브라우저 기기를 잃었다(만료 정리)
+ const enabling=a.enable({settings:{frequency:2,hour:9,since:null}});await settled();   // A가 옛 주소로 켜는 요청이 서버에 아직 닿지 않았다
+ assert.equal(late.length,1);
+ await b.refresh();await settled();   // B의 평소 읽기가 「없음」을 보고 새 구독으로 다시 잇는다
+ assert.notEqual(shared.current.endpoint,SUB);assert.equal(onServer,shared.current.endpoint);
+ late.done=true;late.shift()();const on=await enabling;await settled();   // A의 옛 주소 요청이 뒤에 닿아 서버 주소를 덮는다
+ assert.equal(on.error,null);
+ assert.equal(onServer,shared.current.endpoint,'서버에 남은 주소가 지금 구독이다');
+ assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).endpoint,shared.current.endpoint,'기록이 지금 구독을 가리킨다');
+ a.dispose();b.dispose();
+});
+test('끄기: 같은 브라우저의 다른 탭이 다른 계정으로 이 구독을 가져간 뒤 이 탭에서 끄면, 그 계정의 서버 구독 · 브라우저 구독 · 기록을 건드리지 않는다(GPT push-versions-world-r18 GA1)',async()=>{
+ const storage=memory(),shared=browser({registered:true,subscribed:SUB,permission:'granted'});
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const s1=server({device:true,active:true}),s2=server(),a=make(shared,s1,{storage}),b=make(shared,s2,{storage});
+ await a.setAccount('acc-1');await a.ready();await settled();   // A는 이 구독을 기억한다
+ await b.setAccount('acc-2');await b.ready();
+ const taken=await b.enable({settings:{frequency:2,hour:null,since:null},digest:null});   // B가 다른 계정으로 같은 구독을 가져간다
+ assert.equal(taken.device.subscribed,true);
+ const record=JSON.stringify({accountId:'acc-2',deviceId:'dev-1',endpoint:SUB});storage.setItem(PUSH_RECORD_KEY,record);   // 가짜 서버는 늘 acc-1을 주어 기록 계정을 바로 맞춘다
+ const before=s1.calls.length+s2.calls.length;
+ const off=await a.disable();await settled();
+ assert.equal(off.removed,true,'이 계정 구독은 이 브라우저에 없다');
+ assert.equal(shared.current?.endpoint,SUB,'다른 계정의 브라우저 구독이 남는다');
+ assert.equal(storage.getItem(PUSH_RECORD_KEY),record,'다른 계정의 기록이 남는다');
+ assert.deepEqual([...s1.calls,...s2.calls].slice(before).filter(c=>c.action==='unsubscribe'),[],'다른 계정의 서버 구독을 끄지 않는다');
+ a.dispose();b.dispose();
+});
 test('다시 잇기: 상태 읽기가 이 브라우저 구독이 서버에 없다고 하면, 지우기만 하지 않고 새 구독으로 다시 올려 켜짐으로 끝난다(설계 주인 11-23 불변식)',async()=>{
  const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:false}),storage=memory();
  storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
- const push=make(b,s,{storage});await push.setAccount('acc-1');await push.ready();await settled();
+ const push=make(b,s,{storage});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await push.ready();await settled();
  assert.ok(b.current,'구독이 남아 있다');assert.notEqual(b.current.endpoint,SUB,'만료됐을 수 있는 옛 주소 대신 새 구독이다');
  assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).endpoint,b.current.endpoint);
  assert.equal(s.calls.filter(c=>c.action==='subscribe').length,1,'서버에 한 번 다시 올렸다');
@@ -2110,7 +2153,7 @@ test('다시 잇기: 다시 올린 구독도 서버가 곧바로 없다고 하�
  storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
  let subscribes=0;
  const request=(action,body,options)=>action==='subscribe'?(subscribes++,base.request(action,body,options).then(data=>({...data,device:{subscribed:false}}))):base.request(action,body,options);
- const push=make(b,base,{storage,request});await push.setAccount('acc-1');await settled();   // 계정을 정한 읽기가 다시 잇기를 두 번 해 본다
+ const push=make(b,base,{storage,request});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await settled();   // 계정을 정한 읽기가 다시 잇기를 두 번 해 본다
  assert.equal(subscribes,2,'한 번만 더 해 보고 멈춘다');
  const view=push.snapshot();
  assert.equal(view.device.subscribed,false,'설정 화면은 꺼짐이다');assert.ok(view.error,'다시 켜 달라는 오류가 보인다');
@@ -2118,10 +2161,22 @@ test('다시 잇기: 다시 올린 구독도 서버가 곧바로 없다고 하�
  assert.equal(subscribes,2,'다음 읽기가 다시 잇기를 되풀이하지 않는다');
  push.dispose();
 });
+test('다시 잇기: 1단 설정 묶음이 붙기 전에는 다시 잇지 않고 구독도 지우지 않으며, 붙은 뒤의 평소 읽기가 다시 잇는다(GPT push-versions-world-r18 GA4)',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:false}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const push=make(b,s,{storage});await push.setAccount('acc-1');await settled();   // 앱을 열면 계정 상태 읽기가 1단 묶음보다 먼저 끝난다
+ assert.equal(b.current?.endpoint,SUB,'구독을 지우지 않는다');
+ assert.equal(s.calls.filter(c=>c.action==='subscribe').length,0,'빈 설정으로 다시 올리지 않는다');
+ push.bindSettings(withDigest(reminderSettings()));await push.refresh();await settled();
+ assert.ok(b.current&&b.current.endpoint!==SUB,'묶음이 붙은 뒤 새 구독으로 다시 이었다');
+ assert.equal(s.calls.filter(c=>c.action==='subscribe').length,1);
+ assert.equal(push.snapshot().device.subscribed,true);
+ push.dispose();
+});
 test('다시 잇기: 알림 권한이 허용이 아니면 다시 잇지 않고 구독도 지우지 않는다(설계 주인 11-23 불변식)',async()=>{
  const b=browser({registered:true,subscribed:SUB,permission:'denied'}),s=server({device:false}),storage=memory();
  storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
- const push=make(b,s,{storage});await push.setAccount('acc-1');await settled();
+ const push=make(b,s,{storage});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await settled();
  assert.equal(b.current?.endpoint,SUB,'구독을 지우지 않는다');
  assert.equal(s.calls.filter(c=>c.action==='subscribe').length,0,'다시 올리지 않는다');
  assert.equal(push.snapshot().device.subscribed,false,'설정 화면은 꺼짐이다');

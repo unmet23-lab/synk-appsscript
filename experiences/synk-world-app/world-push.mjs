@@ -429,16 +429,18 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 상태 읽기가 이 브라우저 구독이 서버에 없다고 하면(만료 · 서버 정리 · 다른 탭이 같은 구독으로 다시 켜기 전에 보낸 늦은 옛 응답) 옛 구독을 지우고 새 구독으로
  // 서버에 다시 올린다(켜기와 같은 길 — 설정은 1단 값, 요약은 1단이 지금 기록으로 짓는다). 그래서 낡은 응답이 와도 끝은 「켜짐 + 서버에 오른 구독」이다.
  // 다시 올린 구독도 서버가 곧바로 없다고 하면 한 번만 더 해 보고 멈춘다 — 켜기가 남긴 오류와 꺼진 기기 칸이 설정 화면에 보여 학생이 다시 켠다.
- // 알림 기능이 꺼졌거나(비상 스위치) 이 탭이 켜기 · 끄기 중이면 하지 않는다(지우지도 않는다).
+ // 알림 기능이 꺼졌거나(비상 스위치) 권한이 허용이 아니거나 이 탭이 켜기 · 끄기 중이면 하지 않는다(지우지도 않는다). 1단 설정 묶음이 아직 붙지 않아 보낼
+ // 설정 · 요약이 없을 때도 하지 않는다 — 서버가 빈 설정을 거절해 두 번 다 실패하고 구독만 지운다(GPT r18 GA4). 묶음이 붙은 뒤의 평소 읽기가 다시 잇는다.
  async function reconnect(sub,reg,expected){
   if(!current(expected)||closing||mutation||attempt||!state.enabled||worldPushSupport(env).permission!=='granted')return snapshot();
+  const settings=liveSettings(null);let made=null;try{made=binding?.digest?.()||null;}catch{}
+  if(!settings||!made?.digest)return snapshot();
   if(!registration)registration=reg;
   for(let tries=0;tries<2;tries++){
    if(sub){await removeLocal(sub,reg);sub=null;}
    if(!current(expected))return snapshot();
-   let made=null;try{made=binding?.digest?.()||null;}catch{}
-   const value=await api.enable({settings:liveSettings(state.plan&&Number.isFinite(state.plan.frequency)?{frequency:state.plan.frequency,hour:Number.isFinite(state.plan.hour)?state.plan.hour:null,since:null}:null),
-    digest:made?.digest||undefined,handover:Array.isArray(made?.handover)?made.handover:[]});
+   if(tries){try{made=binding?.digest?.()||made;}catch{}}
+   const value=await api.enable({settings,digest:made.digest,handover:Array.isArray(made.handover)?made.handover:[]});
    if(!current(expected)||value.device?.subscribed)return value;
   }
   return snapshot();
@@ -545,7 +547,16 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      let still=sub;try{still=await bounded(registration.pushManager.getSubscription());}catch{}
      guard(expected);
      if(!still){writeRecord(mine);throw Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'});}
-     if(still.endpoint===sub.endpoint)writeRecord(mine);else subscription=still;
+     if(still.endpoint===sub.endpoint)writeRecord(mine);
+     else{
+      // 서버는 한 로그인 세션에 주소 하나를 두고 마지막 subscribe로 덮는다. 이 요청이 그 탭의 새 주소 등록 뒤에 닿았으면 서버에는 옛 주소만 남는다(GPT r18
+      // GA2 · GA6). 지금 구독으로 한 번 더 올리고 그 주소로 기록을 쓴다. 실패하면 그 탭의 기록을 둔다.
+      subscription=still;
+      const now=still.toJSON?still.toJSON():{endpoint:still.endpoint,keys:still.keys};
+      try{const again=await request('subscribe',{...payload,subscription:{endpoint:now.endpoint,keys:{p256dh:now.keys?.p256dh,auth:now.keys?.auth}},...(based&&versions?{versions}:{})});
+       guard(expected);if(again.device?.subscribed===true)writeRecord({accountId:owner,deviceId:again.device.deviceId,endpoint:still.endpoint});}
+      catch(error){if(error?.code==='ACCOUNT_CHANGED')throw error;}
+     }
      // 켜며 보낸 요약을 sync와 같은 표로 적는다 — 켠 바로 뒤 다시 잡기가 같은 요약을 또 보내지 않게(10-22 화면 검수).
      lastSync=digest?syncMark(item,stamp()):null;
      const applied=data.applied||{},rejected=based&&digest&&(applied.digest!==true||Array.isArray(digest.reviews)&&applied.reviews!==true);
@@ -588,11 +599,14 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    emit({busy:true,error:null});
    const run=(async()=>{
     // 지금 브라우저 구독을 먼저 읽는다 — 다른 탭이 새 구독으로 다시 이었으면 이 탭이 기억한 옛 구독만 끄고 새 구독이 남는다(r18). 읽지 못하면 기억한 구독.
-    const reg=await existing(),fresh=reg?await bounded(reg.pushManager.getSubscription()).catch(()=>null):null,sub=fresh||subscription,record=readRecord();
+    // 기록이 다른 계정 것이면(다른 탭이 다른 계정으로 이 브라우저 구독을 켰다) 그 구독과 기록은 건드리지 않는다. 이 계정이 끌 것은 이 탭이 기억한 다른 주소뿐이고,
+    // 이 브라우저에는 이 계정 구독이 없다(GPT r18 GA1 — 그 탭의 서버 구독 · 브라우저 구독 · 기록을 지웠다).
+    const reg=await existing(),fresh=reg?await bounded(reg.pushManager.getSubscription()).catch(()=>null):null,record=readRecord(),theirs=!!record&&record.accountId!==owner;
+    const sub=theirs?(subscription&&subscription.endpoint!==record.endpoint?subscription:null):fresh||subscription;
     let result=null;
-    if(sub){try{result=await request('unsubscribe',{endpoint:sub.endpoint});}catch{if(record?.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}}}
-    const removed=await removeLocal(sub,reg);
-    if(removed)writeRecord(null);
+    if(sub){try{result=await request('unsubscribe',{endpoint:sub.endpoint});}catch{if(!theirs&&record?.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}}}
+    const removed=theirs?true:await removeLocal(sub,reg);
+    if(removed&&!theirs)writeRecord(null);
     let keep=false;
     if(current(expected)){
      settled();
