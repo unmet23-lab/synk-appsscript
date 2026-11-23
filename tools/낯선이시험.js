@@ -390,7 +390,10 @@ function 화면글먼저(video, brand, options = {}, { 검사 = null, 찍기 = c
   if (Object.keys(options).some((k) => k.startsWith('첫컷')) || path.basename(path.dirname(path.resolve(video))) === '장면') return { 막음: false };
   const 관문 = require('./lib/화면글관문.js');
   const r = (검사 || 관문.시험전검사)(video, { 언어: 화면글언어[brand] || null, 알림: () => 찍기('  ㉓ 화면 글 시간을 먼저 잰다(LAB 새 편 · 원본을 다시 렌더해 1~3분)') });
-  if (!r.대상) return { 막음: false };
+  if (!r.대상) {
+    if (r.까닭) 찍기(`㉓ 화면 글 — ${r.까닭}`); // .tmp로 렌더한 새 편이 소리 없이 빠지지 않게(Fable 설계 검토 11-24)
+    return { 막음: false };
+  }
   const { FIX } = require('./lib/게시글규칙.js');
   const 고칠 = r.줄.filter((x) => x.level === FIX);
   const 나머지 = r.줄.filter((x) => x.level !== FIX);

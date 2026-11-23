@@ -261,7 +261,9 @@ test('이해 시험 전 — 11-24 앞 LAB 편 · synkbrief · yuhobuilds · 편 
   }
   const 밖 = path.join(기록폴더(t), 'clip.mp4');
   fs.writeFileSync(밖, 'video');
-  assert.equal(시험전검사(밖, { run: 시험전가짜({ 걸림 }, 셈), 기록폴더: 기록폴더(t) }).대상, false);
+  const 밖결과 = 시험전검사(밖, { run: 시험전가짜({ 걸림 }, 셈), 기록폴더: 기록폴더(t) });
+  assert.equal(밖결과.대상, false);
+  assert.match(밖결과.까닭, /편 폴더.* 밖 영상이라 재지 않았다/);
   assert.equal(셈.n, 0);
 });
 

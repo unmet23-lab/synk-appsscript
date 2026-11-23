@@ -229,8 +229,9 @@ function 편폴더(file) {
 // → { 대상: false } 이거나 { 대상: true, 편, 줄: [{ level, code, where, message }] } — 던지지 않는다(못 잰 것은 확인할 것 한 줄)
 function 시험전검사(file, { 언어 = null, run = runTool, 기록폴더 = 시험전기록, 알림 = () => {} } = {}) {
   const 편 = 편폴더(file);
-  const name = 편 ? path.basename(편) : '';
-  if (!편 || !/^LAB_/.test(name) || (편날짜(name) || '') < FIX_FROM) return { 대상: false };
+  if (!편) return { 대상: false, 까닭: '편 폴더(docs/마케팅/<편>) 밖 영상이라 재지 않았다 — 올리기 전 검사 ㉓이 다시 본다' };
+  const name = path.basename(편);
+  if (!/^LAB_/.test(name) || (편날짜(name) || '') < FIX_FROM) return { 대상: false };
   const where = `화면 글 ${path.basename(path.dirname(file))}/${path.basename(file)}`;
   try {
     let prep = {};

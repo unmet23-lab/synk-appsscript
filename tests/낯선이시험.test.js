@@ -345,4 +345,8 @@ test('㉓ 화면 글 먼저(11-23 유호님 「2번: 렌더 직후 먼저」) �
   for (const [v, brand, opts] of [[영상, 'synkbrief', {}], [영상, 'pulse', {}], [영상, 'lab-mn', { 첫컷시작: '0' }], [path.join('docs', '마케팅', 'LAB_시험_mn_20261124', '장면', 'a.mp4'), 'lab-mn', {}]]) {
     assert.equal(화면글먼저(v, brand, opts, { 검사: () => { throw new Error('부르면 안 된다'); }, 찍기 }).막음, false);
   }
+  // 편 폴더 밖 영상은 막지 않되 한 줄 알린다(Fable 설계 검토 11-24)
+  const 밖줄 = [];
+  assert.equal(화면글먼저(path.join(os.tmpdir(), 'final.mp4'), 'lab-mn', {}, { 찍기: (x) => 밖줄.push(x) }).막음, false);
+  assert.ok(밖줄.some((x) => /편 폴더\(docs\/마케팅\/<편>\) 밖 영상이라 재지 않았다/.test(x)));
 });
