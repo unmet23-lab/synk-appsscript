@@ -20,7 +20,9 @@ const FORM_PAGE_OPTIONS = {
 test('폼 고정 값은 구글 폼 선택지 글과 같고, 질문 번호는 같은 폼을 쓰는 쪽과 같다', () => {
   assert.ok(FORM_PAGE_OPTIONS.type.includes(C.FORM.typeValue));
   assert.ok(FORM_PAGE_OPTIONS.consent.includes(C.FORM.consentValue));
-  assert.equal(C.ko.consent, C.FORM.consentValue, '한국어 화면의 동의 글은 기록되는 동의 글과 같아야 한다');
+  // 화면 동의 글은 이 쪽의 목적(출시 안내)을 밝히고, 기록은 폼의 고정 선택지 글이다.
+  assert.match(C.ko.consent, /출시 안내를 위한 개인정보 수집·이용에 동의합니다/);
+  assert.ok(!/문의 답변/.test(C.ko.consent));
   for (const k of ['action', 'email', 'type', 'body', 'consent', 'consentValue']) assert.equal(C.FORM[k], T4.FORM[k], k);
 });
 
@@ -122,5 +124,14 @@ test('출시 안내 띠: 링크가 /reserve/로 가고 들어온 곳을 bar-<경
   for (const l of ['ko', 'en', 'mn', 'es']) assert.match(src, new RegExp(`${l}: \\{ body: '[^']+', cta: '[^']+'`), l);
   // 데스크톱 앱 창은 /reserve/ 이동을 막으므로 그 창에서는 링크를 숨긴다.
   assert.match(src, /window\.synkDesktop \|\| window\.synkProduct/);
-  assert.match(src, /link\.hidden = inDesktopApp\(\);/);
+  assert.match(src, /link\.hidden = inDesktopApp\(\) \|\| hasOwnSignup\(\);/);
+  // 자기 등록 폼이 있는 /ub/에서는 링크를 숨긴다.
+  const own = new Function('location', 'return (' + src.match(/const hasOwnSignup = (\(\) => [^;]+);/)[1] + ')();');
+  assert.equal(own({ pathname: '/ub/' }), true);
+  assert.equal(own({ pathname: '/try/entry-check/' }), false);
+});
+
+test('폼은 스크립트가 붙기 전에 보내져도 이메일을 주소에 싣지 않는다(method=post)', () => {
+  const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
+  assert.match(html, /<form id="form" method="post" action="#"/);
 });

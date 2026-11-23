@@ -144,7 +144,7 @@
     const se = $('#send-error');
     se.textContent = state.sendErr ? t[state.sendErr] : '';
     se.hidden = !state.sendErr;
-    $('#share-state').textContent = state.share ? (state.share.key ? t[state.share.key] : state.share.url) : '';
+    showShare();
     if (state.done) renderDone();
   }
 
@@ -177,7 +177,9 @@
   }
 
   function renderDone() {
-    $('#done-body').textContent = T().doneBody.replace('{email}', String(state.done.email || '').trim());
+    // 함수로 끼운다 — 문자열로 넘기면 이메일 속 $&·$$ 같은 글자가 치환 패턴으로 읽힌다(11-23 검수).
+    const email = String(state.done.email || '').trim();
+    $('#done-body').textContent = T().doneBody.replace('{email}', () => email);
   }
 
   async function submit(e) {
@@ -249,7 +251,15 @@
     } catch (x) {
       state.share = { url };
     }
-    $('#share-state').textContent = state.share.key ? t[state.share.key] : state.share.url;
+    showShare();
+  }
+
+  /** 친구에게 보내기 결과 줄. 빈 줄은 숨겨 완료 판 아래에 빈 칸이 생기지 않게 한다(11-23 검수). */
+  function showShare() {
+    const el = $('#share-state');
+    const t = T();
+    el.textContent = state.share ? (state.share.key ? t[state.share.key] : state.share.url) : '';
+    el.hidden = !el.textContent;
   }
 
   function setLang(lang) {

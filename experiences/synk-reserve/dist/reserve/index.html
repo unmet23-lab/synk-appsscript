@@ -19,8 +19,8 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-synk-20260919-32.png">
 <link rel="preload" href="/reserve/assets/reserve-sans.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="reserve.css?v=6c93211a887a">
-<script src="copy.js?v=a6ae3a53a652" defer></script>
-<script src="app.js?v=7dd407395213" defer></script>
+<script src="copy.js?v=e5baa7b24b84" defer></script>
+<script src="app.js?v=b00671a20192" defer></script>
 </head>
 <body>
 <header class="rs-bar">
@@ -42,7 +42,7 @@
       <p class="rs-lead" data-t="lead">한국어 공부부터 한국 유학과 취업 준비까지, SYNK가 2027년 2월에 정식으로 문을 엽니다. 이메일을 남기시면 출시 때 가장 먼저 알려 드립니다.</p>
 
       <div class="rs-card" id="signup">
-        <form id="form" novalidate aria-labelledby="form-title">
+        <form id="form" method="post" action="#" novalidate aria-labelledby="form-title">
           <h2 class="rs-card-title" id="form-title" data-t="formTitle">이메일로 사전예약</h2>
           <div class="rs-field" data-field="email">
             <label for="f-email" data-t="emailLabel">이메일</label>
@@ -56,11 +56,11 @@
           </fieldset>
           <div class="rs-field rs-consent" data-field="consent">
             <p class="rs-privacy"><span data-t="privacy">모으는 것은 이메일과 고른 관심입니다. 출시 안내 메일을 보내는 데만 쓰고, 안내를 보낸 뒤 지웁니다. 그 전에 지워 달라고 하시면 바로 지웁니다.</span> <a href="https://synk.im/privacy/#website-contact" target="_blank" rel="noopener" data-t="privacyLink">개인정보 처리방침</a></p>
-            <label class="rs-check"><input id="f-consent" name="consent" type="checkbox" required aria-describedby="err-consent"><span data-t="consent">위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.</span></label>
+            <label class="rs-check"><input id="f-consent" name="consent" type="checkbox" required aria-describedby="err-consent"><span data-t="consent">위 안내를 읽고, 출시 안내를 위한 개인정보 수집·이용에 동의합니다.</span></label>
             <p class="rs-err" id="err-consent" hidden></p>
           </div>
           <button class="rs-submit" id="f-submit" type="submit" data-t="submit">사전예약하기</button>
-          <p class="rs-err rs-send-err" id="send-error" role="alert" hidden></p>
+          <p class="rs-err rs-send-err" id="send-error" hidden></p>
           <p class="rs-note" data-t="note">확인 메일은 따로 보내지 않습니다. 광고 메일도 보내지 않습니다.</p>
           <noscript><p class="rs-note">이 화면은 JavaScript가 필요합니다. hello@synk.im으로 「SYNK 사전예약」이라고 메일을 보내 주셔도 됩니다.</p></noscript>
         </form>
@@ -71,7 +71,7 @@
             <button class="rs-pill" id="share" type="button" data-t="share">친구에게 보내기</button>
             <button class="rs-text" id="again" type="button" data-t="again">이메일을 잘못 적었다면 다시 적기</button>
           </div>
-          <p class="rs-note" id="share-state" aria-live="polite"></p>
+          <p class="rs-note" id="share-state" aria-live="polite" hidden></p>
         </div>
       </div>
     </div>

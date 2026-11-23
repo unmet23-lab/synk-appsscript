@@ -37,6 +37,8 @@
   // SYNK 데스크톱 앱 창(preload가 synkDesktop · synkProduct를 둔다)은 /reserve/로 가는 이동을 막고 바깥 브라우저로도 넘기지 않는다.
   // 그 창에서는 눌러도 아무 일이 없으니 링크를 보이지 않는다(11-23 검수). 데스크톱이 /reserve/를 바깥 브라우저로 열게 되면 이 줄을 뺀다.
   const inDesktopApp = () => { try { return !!(window.synkDesktop || window.synkProduct); } catch (_) { return false; } };
+  // 자기 관심 등록 폼이 있는 쪽(/ub/)은 그 폼 단추와 띠 링크의 몽골어가 같아(「Урьдчилан бүртгүүлэх」) 두 등록을 하나로 여길 수 있다 — 그 쪽에서는 링크를 숨긴다(11-23 검수).
+  const hasOwnSignup = () => /^\/ub\//.test(location.pathname);
   const fromKey = () => {
     const slug = location.pathname.toLowerCase().replace(/index\.html$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     return ('bar-' + (slug || 'home')).slice(0, 40).replace(/-+$/, '');
@@ -111,7 +113,7 @@ button:focus-visible{outline:2px solid #fff;outline-offset:2px}
       bar.setAttribute('aria-label', t.label);
       linkText.nodeValue = t.cta;
       link.href = '/reserve/?lang=' + RESERVE_LANG[l] + '&from=' + fromKey();
-      link.hidden = inDesktopApp();
+      link.hidden = inDesktopApp() || hasOwnSignup();
       text.nodeValue = link.hidden ? t.body : t.body + ' ';
       if (btn) btn.setAttribute('aria-label', t.close);
     };
