@@ -792,7 +792,7 @@
           "clip": "nurse-phone-tea",
           "who": "nurse",
           "channel": "phone",
-          "text": "알려 줘서 고마워요. 우유가 들어갔으면 피검사, 복부 초음파, 위내시경은 오전에 못 해요. 과장님께 말씀드리고 다시 전화할게요.",
+          "text": "알려 주셔서 고마워요. 우유가 들어갔으면 피검사, 복부 초음파, 위내시경은 오전에 못 해요. 과장님께 말씀드리고 다시 전화할게요.",
           "hint": {
             "mn": "Хэлж өгсөнд баярлалаа. Сүүтэй юм уусан бол цусны шинжилгээ, хэвлийн хэт авиан шинжилгээ, ходоодны дуранг үдээс өмнө хийх боломжгүй. Эмчид хэлээд эргээд залгая.",
             "vi": "Cảm ơn em đã báo. Đã uống trà có sữa thì không làm được xét nghiệm máu, siêu âm bụng và nội soi dạ dày vào buổi sáng. Chị sẽ báo bác sĩ phụ trách rồi gọi lại cho em.",
@@ -892,11 +892,11 @@
           },
           "clip": "nurse-delay",
           "who": "nurse",
-          "text": "아, 벌써 뽑은 피검사는 다시 해야 할 수도 있어요. 내시경은 과장님께 말씀드려 오후 끝으로 옮길게요.",
+          "text": "아, 이미 한 피검사는 다시 해야 할 수도 있어요. 내시경은 과장님께 말씀드려 오후로 옮길게요.",
           "hint": {
-            "mn": "Аа, түрүүн авсан цусны шинжилгээг дахин хийх шаардлагатай байж магадгүй. Эмчид мэдэгдээд, дурангийн шинжилгээг үдээс хойших хамгийн сүүлийн ээлжид шилжүүлье.",
-            "vi": "À, máu đã lấy rồi thì có thể phải lấy lại. Nội soi thì chị sẽ báo bác sĩ phụ trách để dời sang cuối buổi chiều.",
-            "en": "Oh, we may have to do the blood test again. I'll tell the doctor and move the endoscopy to the end of the afternoon."
+            "mn": "Аа, түрүүн хийсэн цусны шинжилгээг дахин хийх шаардлагатай байж магадгүй. Эмчид хэлээд дурангийн шинжилгээг үдээс хойших цаг руу шилжүүлье.",
+            "vi": "À, xét nghiệm máu lúc nãy có thể phải làm lại. Nội soi thì chị sẽ báo bác sĩ phụ trách để dời sang buổi chiều.",
+            "en": "Oh, we may have to redo the blood test. I'll tell the doctor and move the endoscopy to the afternoon."
           }
         },
         {
@@ -906,11 +906,11 @@
           },
           "clip": "nurse-reorder",
           "who": "nurse",
-          "text": "미리 알려 줘서 갑상선 초음파부터 해요. 금식이 필요한 검사는 과장님과 오후로 옮겼어요.",
+          "text": "미리 알려 주셔서 갑상선 초음파부터 해요. 금식이 필요한 검사는 과장님께 말씀드려 오후로 옮겼어요.",
           "hint": {
-            "mn": "Чи урьдчилан хэлж өгсөн болохоор бамбай булчирхайн хэт авиан шинжилгээнээс эхэлнэ. Өлөн байх шаардлагатай шинжилгээнүүдийг эмчтэй ярилцаад үдээс хойших цаг руу шилжүүлсэн.",
-            "vi": "Nhờ em báo sớm nên mình làm siêu âm tuyến giáp trước. Các xét nghiệm cần nhịn ăn thì chị đã trao đổi với bác sĩ phụ trách và chuyển sang buổi chiều rồi.",
-            "en": "Since you told me in advance, we'll start with the thyroid ultrasound. The doctor and I moved the tests that require fasting to the afternoon."
+            "mn": "Та урьдчилан хэлж өгсөн болохоор бамбай булчирхайн хэт авиан шинжилгээнээс эхэлнэ. Өлөн байх шаардлагатай шинжилгээнүүдийг эмчид хэлээд үдээс хойших цаг руу шилжүүлсэн.",
+            "vi": "Nhờ em báo sớm nên mình làm siêu âm tuyến giáp trước. Các xét nghiệm cần nhịn ăn thì chị đã báo bác sĩ phụ trách và chuyển sang buổi chiều rồi.",
+            "en": "Since you let me know in advance, we'll start with the thyroid ultrasound. I told the doctor and moved the tests that need fasting to the afternoon."
           }
         },
         {

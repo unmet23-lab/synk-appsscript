@@ -286,27 +286,27 @@
       "kind": "speaking",
       "audio": "native",
       "reviewed": true,
-      "dialogue": "아, 벌써 뽑은 피검사는 다시 해야 할 수도 있어요. 내시경은 과장님께 말씀드려 오후 끝으로 옮길게요.",
+      "dialogue": "아, 이미 한 피검사는 다시 해야 할 수도 있어요. 내시경은 과장님께 말씀드려 오후로 옮길게요.",
       "place": "exam-nurse",
       "loop": false,
       "durationSeconds": 9.02,
       "width": 1280,
       "height": 720,
       "fps": "24/1",
-      "bytes": 783386,
-      "sha256": "545aec7d7565cc3b33c3203a19a2b85bbbfc37642d9b59646ae3ecef8ce9ef8f",
-      "speechEndSeconds": 8.27,
-      "answerStartSeconds": 8.62,
+      "bytes": 804433,
+      "sha256": "ff3f1ba3ab1a3e63cff44145f5b4a9e54d8db6ac1c4a2b47976b86f5f276edae",
+      "speechEndSeconds": 7.64,
+      "answerStartSeconds": 7.99,
       "transition": {
-        "headHoldMs": 506,
-        "tailHoldMs": 752,
+        "headHoldMs": 483,
+        "tailHoldMs": 1383,
         "validated": true
       },
       "still": {
-        "outside": 3.36,
+        "outside": 3.57,
         "shift": 0
       },
-      "brightnessTakenOut": 1.8
+      "brightnessTakenOut": 2
     },
     {
       "id": "nurse-reorder",
@@ -316,27 +316,27 @@
       "kind": "speaking",
       "audio": "native",
       "reviewed": true,
-      "dialogue": "미리 알려 줘서 갑상선 초음파부터 해요. 금식이 필요한 검사는 과장님과 오후로 옮겼어요.",
+      "dialogue": "미리 알려 주셔서 갑상선 초음파부터 해요. 금식이 필요한 검사는 과장님께 말씀드려 오후로 옮겼어요.",
       "place": "exam-nurse",
       "loop": false,
       "durationSeconds": 9.02,
       "width": 1280,
       "height": 720,
       "fps": "24/1",
-      "bytes": 811587,
-      "sha256": "a2924c99774d611859eb871d99c27e57314012a847d887c1decdd7c949ab6ac2",
-      "speechEndSeconds": 8.24,
-      "answerStartSeconds": 8.59,
+      "bytes": 778464,
+      "sha256": "1d7b1bc8e735d090c52bb660633583229f3ac3bdddf264d80134643adbb83ec8",
+      "speechEndSeconds": 8.32,
+      "answerStartSeconds": 8.67,
       "transition": {
-        "headHoldMs": 439,
-        "tailHoldMs": 789,
+        "headHoldMs": 572,
+        "tailHoldMs": 703,
         "validated": true
       },
       "still": {
-        "outside": 4.22,
+        "outside": 3.63,
         "shift": 0
       },
-      "brightnessTakenOut": 1.6
+      "brightnessTakenOut": 1.5
     },
     {
       "id": "nurse-consent",
@@ -501,20 +501,20 @@
       "width": 1280,
       "height": 720,
       "fps": "24/1",
-      "bytes": 1003400,
-      "sha256": "7db3ab6f58103e179ab2c233123f28744917b4e91019cefd9794a8d79f4f3438",
-      "speechEndSeconds": 8.14,
-      "answerStartSeconds": 8.49,
+      "bytes": 973520,
+      "sha256": "00dc21c176c5ba5ef1d132f32b8f9ec4e06611d152fcb9d3f0b8dd453832db75",
+      "speechEndSeconds": 8.56,
+      "answerStartSeconds": 8.87,
       "transition": {
-        "headHoldMs": 423,
-        "tailHoldMs": 884,
+        "headHoldMs": 1378,
+        "tailHoldMs": 461,
         "validated": true
       },
       "still": {
-        "outside": 4.92,
+        "outside": 5.07,
         "shift": 0
       },
-      "brightnessTakenOut": 2.9
+      "brightnessTakenOut": 2.7
     },
     {
       "id": "doctor-answer",
@@ -663,6 +663,152 @@
         "shift": 0
       },
       "brightnessTakenOut": 1.6
+    },
+    {
+      "id": "senior-listen-billing",
+      "src": "clips/senior-listen-billing.mp4",
+      "file": "clips/senior-listen-billing.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "billing-senior",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 397898,
+      "sha256": "7b847744c949b281cc42536b72cb39d1a2ed261eb9ba779010c6a9b792e3f9a7",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.44,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.3
+    },
+    {
+      "id": "senior-official",
+      "src": "clips/senior-official.mp4",
+      "file": "clips/senior-official.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "비용과 할인은 병원이 정해서 미리 알린 대로만 안내해요.",
+      "place": "billing-senior",
+      "loop": false,
+      "durationSeconds": 6.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 602286,
+      "sha256": "26f713dce71b9450bdb9ffbd4036bd03a9e558aae516f6b05436bf04d9d6167d",
+      "speechEndSeconds": 5.09,
+      "answerStartSeconds": 5.44,
+      "transition": {
+        "headHoldMs": 876,
+        "tailHoldMs": 951,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.68,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.4
+    },
+    {
+      "id": "senior-promise",
+      "src": "clips/senior-promise.mp4",
+      "file": "clips/senior-promise.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "할인은 우리가 정하는 게 아니에요. 소개비도 유치업 등록을 한 곳에만 줄 수 있어요. 제가 다시 말씀드릴게요.",
+      "place": "billing-senior",
+      "loop": false,
+      "durationSeconds": 10.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 941682,
+      "sha256": "4624255770755d6e9f79d39cf0159aa21ba48ff490f65d1f8e8fc9491a68538d",
+      "speechEndSeconds": 8.86,
+      "answerStartSeconds": 9.21,
+      "transition": {
+        "headHoldMs": 673,
+        "tailHoldMs": 1166,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.56,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.2
+    },
+    {
+      "id": "two-listen-billing",
+      "src": "clips/two-listen-billing.mp4",
+      "file": "clips/two-listen-billing.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "billing-two",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 505527,
+      "sha256": "64e94955d2442888d41d94502054f52dba30b587361d1a92920b226a11c9e9e8",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.78,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.1
+    },
+    {
+      "id": "senior-contract-stop",
+      "src": "clips/senior-contract-stop.mp4",
+      "file": "clips/senior-contract-stop.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "오늘은 서명을 미루셔야 해요. 수면 내시경 하신 날이에요. 다시 설명해 드리고, 따님께 데리러 오시라고 해요.",
+      "place": "billing-two",
+      "loop": false,
+      "durationSeconds": 10.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 1137033,
+      "sha256": "639a84d0fec96c2492b8c1df847bd44f07754f2f9ea63d0cd164796718aa91ed",
+      "speechEndSeconds": 9.33,
+      "answerStartSeconds": 9.68,
+      "transition": {
+        "headHoldMs": 842,
+        "tailHoldMs": 700,
+        "validated": true
+      },
+      "still": {
+        "outside": 2.3,
+        "shift": 0
+      },
+      "brightnessTakenOut": 0
     }
   ]
 }
