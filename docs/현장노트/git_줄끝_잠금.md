@@ -1291,3 +1291,10 @@ ode_modules`)에만 있어서 `esbuild`를 못 찾는다. 바쁜 PC에서는 관
 - 11-21 덧붙임(Claude): 문서 한 개를 올리는데 두 번 다시 돌려도 같은 자리에서 멈췄다. 그때 `git rev-list --objects --no-object-names origin/master`를 직접 재니 121초였다(제한 120초, 객체 26만 4천 개). git 프로세스 25개와 node 68개가 돌고 있었다. 이렇게 바쁜 동안은 다시 돌려도 넘지 못한다. 같은 조회가 80초 안에 끝날 때까지 뒤에서 기다렸다가 올린다: `until timeout 80 git rev-list --objects --no-object-names origin/master >/dev/null; do sleep 180; done` 다음에 바로올리기.
 - 11-23 덧붙임(Claude): 위 기다림 명령이 바로 통과했는데도 바로올리기가 네 번 연달아 같은 자리에서 멈췄다. 검사 도구(`git-storage-check.cjs`의 `knownIds`)는 `--missing=print`를 붙여 조회하는데, 이 조회는 같은 때 46초로 붙이지 않은 조회(15초)의 세 배였다. 기다림도 같은 조회로 잰다: `until GIT_NO_LAZY_FETCH=1 timeout 80 git --no-optional-locks rev-list --objects --no-object-names --missing=print origin/master >/dev/null; do sleep 120; done` 다음에 바로올리기(이번 f501957f5).
 
+
+### 공용 작업본의 내 미커밋 줄을 HEAD 판으로 되돌려 두고 워크트리에서 올리면, 따라가기 뒤에도 옛 줄이 「미커밋 변경」으로 남아 내 커밋을 되돌릴 수 있다 (2026-11-23 Claude)
+
+- 증상: 11-23 검수 도구 판 8을 워크트리에서 올리기 전에, 공용 작업본의 트랙 · 결정 줄을 HEAD 판으로 되돌려 내 흔적을 걷었다. 올라간 뒤 공용 작업본이 origin을 따라왔는데도 트랙의 그 줄만 옛 판으로 남았고, `git diff`에서 내 커밋을 되돌리는 변경으로 보였다. 누가 그 조각을 `--조각`으로 올리면 내 기록이 지워질 판이었다.
+- 원인: 따라가기는 미커밋 변경을 보존한다. HEAD 판으로 되돌린 줄은 그 순간에는 변경이 아니지만, HEAD가 내 커밋으로 움직이면 「옛 판으로 고친 줄」이 된다. 남의 미커밋 변경이 많은 파일이라 통째로 갱신되지도 않는다.
+- 고침: 올린 뒤 그 줄을 origin 판으로 다시 맞춘다. 걷을 때부터 줄을 지우지 말고, 다른 작업본에서 올린 뒤 공용 작업본의 그 줄을 origin 판으로 맞추는 쪽이 안전하다.
+- 다시 확인: `git diff <파일> | grep "^-"`에 내 커밋이 더한 줄이 나오지 않는다.
