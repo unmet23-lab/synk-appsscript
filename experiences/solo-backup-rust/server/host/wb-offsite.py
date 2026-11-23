@@ -5,7 +5,8 @@ Runs as root from synk-wb-offsite.service on the company writer node. It takes t
 `workbackup-YYYY-MM-DD.sqlite` the api wrote into its backups folder (a UTC date, jobs.mjs),
 copies it through one no-follow file descriptor into a root-only stage, checks that copy
 read-only, gzips it and creates `company/workbackup/<name>.gz` in the company backup bucket
-with the node's own token (create-only, never overwrite). A bucket rule deletes these objects
+with the node's own token (create-only, never overwrite), and only to the bucket whose rule
+host-install checked when it turned the timer on. That bucket rule deletes these objects
 after 14 days; with soft delete (7 days) and the rule's lag every copy is gone well inside
 the 30 days the privacy policy promises. Each run prints one line `SYNK_WB_OFFSITE <WORD> {json}`.
 No secret, bucket name or customer value is printed.
@@ -149,6 +150,15 @@ def upload(bucket, name, file, md5b64, size, access_token, opener=urllib.request
     return 'created'
 
 
+def checked_bucket(bucket):
+    """Send only to the bucket whose 14-day rule host-install checked at start (wb-host.py keeps its SHA-256 here)."""
+    try:
+        want = (STATE / 'checked-bucket').read_text().strip()
+    except FileNotFoundError:
+        raise Failed('BUCKET_NOT_CHECKED')
+    need(hashlib.sha256(bucket.encode()).hexdigest() == want, 'BUCKET_NOT_CHECKED')
+
+
 def writer_node(run=subprocess.run):
     r = run(['systemctl', 'is-active', '--quiet', 'synk-company.service'], timeout=15)
     return r.returncode == 0 and os.path.ismount('/srv/synk')
@@ -167,6 +177,8 @@ def main(now=None, run=subprocess.run, get_token=token, send=upload):
         raise Stop('NOT_WRITER')
     path = pick(BACKUPS)
     private_state()
+    bucket = bucket_of(ENV_FILE.read_text())
+    checked_bucket(bucket)
     marker = STATE / 'last.json'
     last = json.loads(marker.read_text()) if marker.exists() else {}
     name = path.name + '.gz'
@@ -184,7 +196,7 @@ def main(now=None, run=subprocess.run, get_token=token, send=upload):
         target, sha, md5b64, size = compress(copy)
         if not writer_node(run):
             raise Stop('NOT_WRITER')
-        result = send(bucket_of(ENV_FILE.read_text()), name, target, md5b64, size, get_token())
+        result = send(bucket, name, target, md5b64, size, get_token())
     finally:
         shutil.rmtree(stage, ignore_errors=True)
     need(result == 'created', 'OBJECT_EXISTS_UNVERIFIED')

@@ -1,5 +1,5 @@
 """python wb-offsite.test.py — no network, no root (runs on the operator PC and on Linux)."""
-import gzip, importlib.util, io, json, os, pathlib, sqlite3, tempfile, time, unittest, urllib.error
+import gzip, hashlib, importlib.util, io, json, os, pathlib, sqlite3, tempfile, time, unittest, urllib.error
 
 spec = importlib.util.spec_from_file_location('wb_offsite', pathlib.Path(__file__).with_name('wb-offsite.py'))
 M = importlib.util.module_from_spec(spec); spec.loader.exec_module(M)
@@ -22,6 +22,7 @@ class Offsite(unittest.TestCase):
         self.env = self.root / 'company.env'; self.env.write_text('A=1\nSYNK_BACKUP_GCS_DESTINATION=gs://private-bucket/company/production\n'); M.ENV_FILE = self.env
         M.API_UID = self.backups.stat().st_uid
         M.private_state = lambda: self.state.mkdir(exist_ok=True)
+        self.state.mkdir(); (self.state / 'checked-bucket').write_text(hashlib.sha256(b'private-bucket').hexdigest() + '\n')
         self._geteuid = getattr(os, 'geteuid', None); os.geteuid = lambda: 0
         self.now = time.time() + 3600
         self.sent = []
@@ -86,6 +87,13 @@ class Offsite(unittest.TestCase):
         self.copy('2026-11-22')
         with self.assertRaisesRegex(M.Failed, 'OBJECT_EXISTS_UNVERIFIED'): self.run_main(send=lambda *a: 'exists')
         self.assertFalse((self.state / 'last.json').exists())
+    def test_only_the_checked_bucket(self):
+        self.copy('2026-11-22')
+        (self.state / 'checked-bucket').write_text(hashlib.sha256(b'another-bucket').hexdigest())
+        with self.assertRaisesRegex(M.Failed, 'BUCKET_NOT_CHECKED'): self.run_main()
+        (self.state / 'checked-bucket').unlink()
+        with self.assertRaisesRegex(M.Failed, 'BUCKET_NOT_CHECKED'): self.run_main()
+        self.assertEqual(self.sent, [])
     def test_destination_parsing(self):
         self.assertEqual(M.bucket_of('SYNK_BACKUP_GCS_DESTINATION="gs://abc-def/company/production"\n'), 'abc-def')
         for bad in ('', 'SYNK_BACKUP_GCS_DESTINATION=s3://x/y\n', 'SYNK_BACKUP_GCS_DESTINATION=gs://a/b\nSYNK_BACKUP_GCS_DESTINATION=gs://c/d\n'):

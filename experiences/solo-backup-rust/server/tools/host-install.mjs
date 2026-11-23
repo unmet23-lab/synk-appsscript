@@ -4,9 +4,11 @@
 // travel only inside the SSH standard input; nothing here prints a secret, a bucket name or an address.
 //
 //   node tools/host-install.mjs plan|status|probe
-//   node tools/host-install.mjs files|start|stop --실행
-//   node tools/host-install.mjs secrets --실행 [--바꿈]     (yuho's go-ahead first: it puts the B2 keys on the server)
-//   node tools/host-install.mjs start --실행 --다시          (restart the three services onto new files)
+//   node tools/host-install.mjs files|stop --실행
+//   node tools/host-install.mjs secrets --실행 [--바꿈]                  (yuho's go-ahead first: it puts the B2 keys on the server)
+//   node tools/host-install.mjs start --실행 --버킷 <bucket> [--다시]     (--다시 restarts services already running on the same files)
+// start reads the daily copy's bucket rule first (backup-bucket-rule.mjs) and sends only its SHA-256:
+// the server compares it with the bucket company.env sends to, and the copy job checks it again.
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -82,7 +84,7 @@ async function main() {
     const { check } = await import('./backup-bucket-rule.mjs');
     const rule = await check(bucket);
     if (!rule.ok) throw new Error('BUCKET_RULE_MISSING ' + (rule.changed ? 'add it with backup-bucket-rule.mjs --실행' : rule.problems.join(' ')));
-    request.bucketRuleChecked = true;
+    request.checkedBucketSha256 = crypto.createHash('sha256').update(bucket).digest('hex');
   }
   const remote = createRequire(import.meta.url)(REMOTE);
   const answer = await remote('primary', script(request), 300000);

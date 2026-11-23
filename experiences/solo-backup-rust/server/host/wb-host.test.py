@@ -37,9 +37,24 @@ class Units(unittest.TestCase):
         self.assertIn('User=10771', props); self.assertIn('IPAddressAllow=127.0.0.1/32 127.0.0.53/32 172.30.77.8/29', props)
         for skipped in M.RUN_SKIP: self.assertFalse(any(p.startswith(skipped + '=') for p in props), skipped)
         self.assertTrue(all('=' in p for p in props))
+        # The transient runs keep the company dependencies, so wb-admin starts only beside the company and stops with it.
+        for line in ('Requisite=synk-company.service', 'PartOf=synk-company.service', 'RequiresMountsFor=/srv/synk'): self.assertIn(line, props)
+        self.assertTrue(any(p.startswith('After=synk-company.service') for p in props))
+        for absent in ('WantedBy=', 'ConditionPathIsMountPoint=', 'StartLimitBurst=', 'Description='): self.assertFalse(any(p.startswith(absent) for p in props), absent)
+    def test_rpc_signature_is_the_workers(self):
+        js = "import crypto from 'node:crypto'; const [s,ts,id,m,b]=process.argv.slice(1); const sha=crypto.createHash('sha256').update(b).digest('hex'); console.log(crypto.createHmac('sha256', s).update(`wb-rpc/v1\n${ts}\n${id}\n${m}\n${sha}`).digest('base64url'))"
+        body = '{"method":"wb.handshake","params":{}}'
+        want = subprocess.run(['node', '--input-type=module', '-e', js, 'a' * 64, '1795400000000', 'AbCdEfGhIjKlMnOpQrStUvWx', 'wb.handshake', body], capture_output=True, text=True, check=True).stdout.strip()
+        self.assertEqual(M.rpc_sign('a' * 64, '1795400000000', 'AbCdEfGhIjKlMnOpQrStUvWx', 'wb.handshake', body.encode()), want)
+    def test_destination_bucket(self):
+        import hashlib
+        self.assertEqual(M.bucket_sha('A=1\nSYNK_BACKUP_GCS_DESTINATION="gs://abc-def/company/production"\n'), hashlib.sha256(b'abc-def').hexdigest())
+        for bad in ('', 'SYNK_BACKUP_GCS_DESTINATION=gs://a/x\nSYNK_BACKUP_GCS_DESTINATION=gs://b/x\n', 'SYNK_BACKUP_GCS_DESTINATION=s3://abc/x\n'):
+            with self.assertRaises(M.Refused): M.bucket_sha(bad)
     def test_admin_wrapper_uses_the_api_box(self):
         w = M.wb_admin(self.req, pathlib.PurePosixPath('/opt/synk/workbackup/app/aaaa'), pathlib.PurePosixPath('/opt/synk/workbackup/runtime/node-bbbb')).decode()
         self.assertIn("-p 'User=10771'", w); self.assertIn("-p 'TemporaryFileSystem=/srv/synk:ro'", w)
+        self.assertIn("-p 'Requisite=synk-company.service'", w); self.assertIn("-p 'PartOf=synk-company.service'", w)
         self.assertTrue(w.rstrip().endswith('/opt/synk/workbackup/app/aaaa/admin.mjs "$@"'))
         self.assertIn('--pipe', w)
 

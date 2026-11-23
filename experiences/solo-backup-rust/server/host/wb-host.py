@@ -9,9 +9,10 @@ changed. Actions: plan, files, probe, secrets, start, status, stop.
 
 The role folders under /srv/synk/workbackup belong to the role users. Inside them root works
 only through directory descriptors opened with O_NOFOLLOW, so a role user cannot swap a name
-for a link and make root change or write something outside its folder.
+for a link and make root change or write something outside its folder. Every action that
+changes something holds one host lock, so two runs never interleave.
 """
-import base64, hashlib, json, os, pathlib, re, shutil, socket, stat, subprocess, tempfile, time, urllib.request
+import base64, hashlib, hmac, json, os, pathlib, re, shutil, socket, stat, subprocess, tempfile, time, urllib.error, urllib.request
 
 ROOT = pathlib.Path('/opt/synk/workbackup')
 SRV = pathlib.Path('/srv/synk/workbackup')
@@ -20,18 +21,26 @@ UNIT_DIR = pathlib.Path('/etc/systemd/system')
 ROLES = {'api': 10771, 'keys': 10772, 'files': 10773}
 SERVICES = ('synk-wb-keys.service', 'synk-wb-files.service', 'synk-wb-api.service')
 OFFSITE = ('synk-wb-offsite.service', 'synk-wb-offsite.timer')
+UNIT_NAMES = (*SERVICES, *OFFSITE)
+OFFSITE_STATE = pathlib.Path('/var/lib/synk-wb-offsite')
+COMPANY_ENV = pathlib.Path('/etc/synk/company.env')
+LOCK = '/run/lock/synk-wb-host.lock'
 LISTEN = {'synk-wb-api.service': '172.30.77.9:4210', 'synk-wb-keys.service': '127.0.0.1:4211', 'synk-wb-files.service': '127.0.0.1:4212'}
 COMPANY = ('synk-company-company-1', 'synk-company-https-1', 'synk-spaceship-spaceship-1')
 SUBDIRS = {'api': ('secrets', 'data', 'backups'), 'keys': ('secrets', 'state'), 'files': ('secrets', 'state')}
 SECRET_NAMES = {'api': ('wb-keys-rpc', 'wb-files-rpc'), 'keys': ('wb-keys-b2', 'wb-keys-rpc'), 'files': ('wb-files-b2', 'wb-files-rpc')}
 RPC_PAIRS = {'wb-keys-rpc': ('api', 'keys'), 'wb-files-rpc': ('api', 'files')}
+RPC_URLS = {'wb-keys-rpc': 'http://127.0.0.1:4211/rpc', 'wb-files-rpc': 'http://127.0.0.1:4212/rpc'}
 HEALTH = 'http://172.30.77.9:4210/backup-api/v1/health'
 APP_NAME = re.compile(r'^[a-z0-9-]+\.mjs$')
-# Targets the box must not reach. Each is first reached from the host itself, so a closed port
-# cannot pass for a working filter; a target the host cannot reach is reported as untested.
-BLOCK_TARGETS = {'metadata': ('169.254.169.254', 80), 'company': ('172.30.77.2', 4191), 'vpc': ('10.77.0.3', 22)}
-# Properties systemd-run may not take, or that only make sense for the long-running unit.
+# A box connect counts as blocked only with one of these answers (the unit's address filter
+# answers EPERM; a silent drop times out). Anything else, a refusal included, is a reach.
+BLOCKED = ('EPERM', 'EACCES', 'timeout')
+# [Service] properties systemd-run may not take, or that only make sense for the long-running unit.
 RUN_SKIP = {'Type', 'ExecStart', 'Restart', 'RestartSec', 'TimeoutStopSec', 'KillMode', 'WorkingDirectory'}
+# [Unit] lines a transient run keeps, so it starts only beside the company stack and stops with it.
+UNIT_RUN_KEYS = {'Requisite', 'PartOf', 'After', 'RequiresMountsFor'}
+DIRECT = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 DIR_FLAGS = os.O_RDONLY | getattr(os, 'O_DIRECTORY', 0) | getattr(os, 'O_NOFOLLOW', 0)  # Linux only; the getattr lets the render tests load elsewhere
 
 
@@ -168,14 +177,17 @@ def folders():
 
 
 def read_in(dfd, name):
-    """A regular file directly in dfd (no link), or None. Returns (bytes, stat)."""
+    """A regular file directly in dfd (no link), or None. Returns (bytes, stat). Opened first
+    (no-follow, non-blocking, so a FIFO cannot hold the run), then checked by its descriptor."""
     try:
-        s = os.stat(name, dir_fd=dfd, follow_symlinks=False)
+        fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=dfd)
     except FileNotFoundError:
         return None, None
-    need(stat.S_ISREG(s.st_mode) and s.st_nlink == 1, 'UNSAFE_FILE:' + name)
-    fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=dfd)
+    except OSError:
+        raise Refused('UNSAFE_FILE:' + name)
     with os.fdopen(fd, 'rb') as f:
+        s = os.fstat(f.fileno())
+        need(stat.S_ISREG(s.st_mode) and s.st_nlink == 1, 'UNSAFE_FILE:' + name)
         return f.read(), s
 
 
@@ -268,7 +280,8 @@ def render_unit(req, name, app, node, offsite=None):
 
 
 def service_props(unit_text):
-    """The [Service] lines of a rendered unit as 'Key=Value' strings for systemd-run -p (minus RUN_SKIP)."""
+    """A rendered unit as 'Key=Value' strings for systemd-run -p: its company dependencies
+    (UNIT_RUN_KEYS) and its [Service] lines minus RUN_SKIP."""
     out, section = [], None
     for line in unit_text.decode().splitlines():
         line = line.strip()
@@ -277,13 +290,14 @@ def service_props(unit_text):
         if line.startswith('['):
             section = line
             continue
-        if section == '[Service]' and line.split('=', 1)[0] not in RUN_SKIP:
+        key = line.split('=', 1)[0]
+        if (section == '[Service]' and key not in RUN_SKIP) or (section == '[Unit]' and key in UNIT_RUN_KEYS):
             out.append(line)
     return out
 
 
 PROBE_JS = r"""
-const dns=require('node:dns').promises,net=require('node:net'),fs=require('node:fs');
+const dns=require('node:dns').promises,net=require('node:net'),fs=require('node:fs'),crypto=require('node:crypto');
 const role=process.argv[1],own='/srv/synk/workbackup/'+role,targets=JSON.parse(process.argv[2]);
 const reach=(host,port)=>new Promise(ok=>{const s=net.connect({host,port,timeout:4000});s.on('connect',()=>{s.destroy();ok('connected');});s.on('timeout',()=>{s.destroy();ok('timeout');});s.on('error',e=>ok(e.code||'error'));});
 const hidden=p=>{try{fs.readdirSync(p);return false;}catch{return true;}};
@@ -295,7 +309,7 @@ const hidden=p=>{try{fs.readdirSync(p);return false;}catch{return true;}};
  r.companyDataHidden=hidden('/srv/synk/company');
  r.othersHidden=['api','keys','files'].filter(x=>x!==role).every(x=>hidden('/srv/synk/workbackup/'+x));
  r.etcSynkHidden=hidden('/etc/synk');
- try{const p=own+'/.box-probe';fs.writeFileSync(p,'x');fs.unlinkSync(p);r.ownWritable=true;}catch{r.ownWritable=false;}
+ try{const p=own+'/.box-probe-'+crypto.randomBytes(8).toString('hex');fs.writeFileSync(p,'x',{flag:'wx'});fs.unlinkSync(p);r.ownWritable=true;}catch{r.ownWritable=false;}
  try{fs.writeFileSync('/opt/synk/x','x');r.systemReadOnly=false;}catch{r.systemReadOnly=true;}
  console.log(JSON.stringify(r));})();
 """
@@ -309,33 +323,38 @@ def host_reaches(host, port):
         return False
 
 
+def block_targets():
+    """What the box must not reach: the metadata server, the company container, and this
+    node's own VPC address on its SSH port (the host always reaches that one)."""
+    vpc = re.findall(r'\binet (10\.\d{1,3}\.\d{1,3}\.\d{1,3})/', run(['ip', '-4', '-o', 'addr', 'show', 'scope', 'global']).stdout)
+    need(vpc, 'NO_VPC_ADDRESS')
+    return {'metadata': ('169.254.169.254', 80), 'company': ('172.30.77.2', 4191), 'vpc': (vpc[0], 22)}
+
+
 def probe(req, app, node):
-    """Run each role's box (the unit's own [Service] lines) once with a check script.
-    A target counts as blocked only when the host reaches it and the box does not connect."""
-    control = {k: host_reaches(*v) for k, v in BLOCK_TARGETS.items()}
-    need(control['metadata'] and control['company'], 'PROBE_CONTROL_UNREACHABLE:' + json.dumps(control))
+    """Run each role's box (the unit's own properties) once with a check script. Every target
+    is first reached from the host, so a closed port cannot pass for a working filter."""
+    targets = block_targets()
+    control = {k: host_reaches(*v) for k, v in targets.items()}
+    need(all(control.values()), 'PROBE_CONTROL_UNREACHABLE:' + ','.join(k for k, ok in control.items() if not ok))
     results = {}
     for name in SERVICES:
         role = name[len('synk-wb-'):-len('.service')]
         args = ['systemd-run', '--quiet', '--wait', '--pipe', '--collect', '--service-type=exec']
         for prop in service_props(render_unit(req, name, app, node)):
             args += ['-p', prop]
-        args += ['--', str(node), '-e', PROBE_JS, role, json.dumps(BLOCK_TARGETS)]
+        args += ['--', str(node), '-e', PROBE_JS, role, json.dumps(targets)]
         p = run(args, timeout=120, check=False)
         try:
             r = json.loads(p.stdout.strip().splitlines()[-1])
         except Exception:
-            raise Refused('BOX_PROBE_NO_ANSWER:' + role + ':' + str(p.returncode))
+            raise Refused('BOX_PROBE_NO_ANSWER:' + role + ':' + str(p.returncode) + ':' + p.stderr.strip()[-300:])
         flags = {'uid': r.get('uid') == ROLES[role]}
         for k in ('dnsB2', 'dnsGoogle', 'internet', 'companyDataHidden', 'othersHidden', 'etcSynkHidden', 'ownWritable', 'systemReadOnly'):
             flags[k] = r.get(k) is True
-        untested = []
-        for k, ok in control.items():
-            if ok:
-                flags[k + 'Blocked'] = r['reach'].get(k) not in ('connected', 'ECONNREFUSED')
-            else:
-                untested.append(k)
-        results[role] = {'checks': flags, 'reach': r['reach'], 'untested': untested}
+        for k in targets:
+            flags[k + 'Blocked'] = r['reach'].get(k) in BLOCKED
+        results[role] = {'checks': flags, 'reach': r['reach']}
         need(all(flags.values()), 'BOX_PROBE_FAILED:' + role + ':' + ','.join(k for k, v in flags.items() if not v))
     return {'control': control, 'roles': results}
 
@@ -350,7 +369,7 @@ def health(timeout=45):
     last = None
     while time.time() < deadline:
         try:
-            with urllib.request.urlopen(HEALTH, timeout=5) as r:
+            with DIRECT.open(HEALTH, timeout=5) as r:
                 body = json.load(r)
                 if r.status == 200:
                     return body
@@ -360,18 +379,59 @@ def health(timeout=45):
     raise Refused('HEALTH_NOT_READY:' + str(last))
 
 
-def services_steady():
-    """Each service active and running with no restart, and listening where its unit says."""
-    time.sleep(5)
-    state = {}
+def service_show(name):
+    return dict(line.split('=', 1) for line in run(['systemctl', 'show', name, '-p', 'ActiveState,SubState,NRestarts,MainPID']).stdout.split('\n') if '=' in line)
+
+
+def services_steady(watch=10):
+    """Each service running as the same process through the watch, and listening where its
+    unit says. Restarts from before the watch (an old crash) do not count."""
+    first = {}
     for name in SERVICES:
-        props = dict(line.split('=', 1) for line in run(['systemctl', 'show', name, '-p', 'ActiveState,SubState,NRestarts']).stdout.split('\n') if '=' in line)
-        state[name] = props
-        need(props.get('ActiveState') == 'active' and props.get('SubState') == 'running' and props.get('NRestarts') == '0', 'SERVICE_NOT_STEADY:' + name)
+        p = service_show(name)
+        need(p.get('ActiveState') == 'active' and p.get('SubState') == 'running' and p.get('MainPID', '0') != '0', 'SERVICE_NOT_RUNNING:' + name)
+        first[name] = p
+    time.sleep(watch)
+    for name in SERVICES:
+        p = service_show(name)
+        need(p.get('SubState') == 'running' and p.get('MainPID') == first[name]['MainPID'] and p.get('NRestarts') == first[name]['NRestarts'], 'SERVICE_NOT_STEADY:' + name)
     listening = run(['ss', '-ltnH']).stdout
     for name, where in LISTEN.items():
         need(re.search(r'\s' + re.escape(where) + r'\s', listening), 'NOT_LISTENING:' + name)
-    return state
+    return {name: {'restartsBefore': p.get('NRestarts')} for name, p in first.items()}
+
+
+def rpc_sign(secret, ts, rid, method, body):
+    """rpc.mjs sign(): HMAC-SHA256 over the version, time, id, method and body hash, base64url."""
+    text = 'wb-rpc/v1\n' + ts + '\n' + rid + '\n' + method + '\n' + hashlib.sha256(body).hexdigest()
+    return base64.urlsafe_b64encode(hmac.new(secret.encode(), text.encode(), hashlib.sha256).digest()).decode().rstrip('=')
+
+
+def rpc_handshake():
+    """One signed call per worker with the api's own copy of the secret and a method no worker
+    has: a matching secret answers NO_METHOD (nothing runs), a split pair RPC_AUTH."""
+    fd, _ = role_fd('api', 'secrets')
+    try:
+        secrets = {name: read_in(fd, name)[0] for name in RPC_URLS}
+    finally:
+        os.close(fd)
+    out = {}
+    for name, url in RPC_URLS.items():
+        need(secrets[name], 'NOT_PROVISIONED:api:' + name)
+        body = b'{"method":"wb.handshake","params":{}}'
+        ts, rid = str(int(time.time() * 1000)), base64.urlsafe_b64encode(os.urandom(18)).decode()
+        sig = rpc_sign(secrets[name].decode().strip(), ts, rid, 'wb.handshake', body)
+        request = urllib.request.Request(url, data=body, method='POST', headers={'content-type': 'application/json', 'x-wb-ts': ts, 'x-wb-id': rid, 'x-wb-sig': sig})
+        try:
+            with DIRECT.open(request, timeout=10) as r:
+                status, code = r.status, json.load(r).get('code')
+        except urllib.error.HTTPError as e:
+            status, code = e.code, (json.loads(e.read() or b'{}') or {}).get('code')
+        except OSError as e:
+            status, code = None, type(e).__name__
+        out[name] = code
+        need(status == 404 and code == 'NO_METHOD', 'RPC_HANDSHAKE:' + name + ':' + str(code) + (' (secrets changed since the start? start --다시)' if code == 'RPC_AUTH' else ''))
+    return out
 
 
 def reachability():
@@ -395,8 +455,9 @@ def installed(req):
 
 
 def wb_admin(req, app, node):
-    """bin/wb-admin: admin.mjs as the api user inside the api's box, stdin passed through,
-    and only while this node runs the company stack (the api's own start condition)."""
+    """bin/wb-admin: admin.mjs as the api user inside the api's box, stdin passed through.
+    It starts only while this node runs the company stack, and the company's stop stops it
+    (the transient unit carries the api's Requisite, PartOf and After lines)."""
     props = service_props(render_unit(req, 'synk-wb-api.service', app, node))
     lines = ['#!/bin/sh', '# Generated by wb-host.py: admin.mjs as uid 10771 in the api box (server/README.md 「운영 명령」).', 'set -eu',
              "mountpoint -q /srv/synk || { echo 'wb-admin: the data disk is not mounted on this node' >&2; exit 3; }",
@@ -449,8 +510,8 @@ def act_probe(req):
 
 def act_secrets(req):
     """Secret files 0600 owned by the role's uid. An existing different value is replaced only
-    with --바꿈. The two RPC values are written to both sides together: an existing pair that
-    agrees is kept; a split or half-written pair needs --바꿈, which writes a new pair."""
+    with --바꿈. An RPC pair that agrees is kept; a split or half-written pair needs --바꿈, which
+    writes a new pair (start checks both halves match, and the running workers with --다시)."""
     writer_node()
     folders()
     sent = req['secrets']
@@ -476,7 +537,7 @@ def act_secrets(req):
                     if old == value:
                         result[role + '/' + name] = 'kept'
                         continue
-                    need(req.get('replace') or name in RPC_PAIRS, 'SECRET_DIFFERS:' + role + ':' + name)
+                    need(req.get('replace'), 'SECRET_DIFFERS:' + role + ':' + name)
                 write_in(fds[role], name, value, 0o600, ROLES[role])
                 result[role + '/' + name] = 'written'
     finally:
@@ -495,12 +556,15 @@ def act_secrets(req):
 
 
 def provisioned():
+    """Every secret file in place with its owner and mode, both halves of each RPC pair equal, settings written."""
+    values = {}
     for role in ROLES:
         fd, _ = role_fd(role, 'secrets')
         try:
             for name in SECRET_NAMES[role]:
                 data, s = read_in(fd, name)
                 need(data is not None and s.st_uid == ROLES[role] and stat.S_IMODE(s.st_mode) == 0o600, 'NOT_PROVISIONED:' + role + ':' + name)
+                values[role, name] = data
         finally:
             os.close(fd)
         fd, _ = role_fd(role)
@@ -509,39 +573,95 @@ def provisioned():
             need(data is not None and s.st_uid == ROLES[role], 'NOT_PROVISIONED:' + role + ':settings.env')
         finally:
             os.close(fd)
+    for pair, (a, b) in RPC_PAIRS.items():
+        need(values[a, pair] == values[b, pair], 'RPC_SECRET_SPLIT:' + pair + ' (secrets --바꿈 writes a new pair)')
+
+
+def bucket_sha(env_text):
+    """SHA-256 of the bucket in SYNK_BACKUP_GCS_DESTINATION (gs://bucket/prefix) — where the daily copy goes."""
+    values = [line.split('=', 1)[1].strip().strip('"\'') for line in env_text.splitlines() if line.startswith('SYNK_BACKUP_GCS_DESTINATION=')]
+    need(len(values) == 1, 'DESTINATION_NOT_ONE')
+    m = re.fullmatch(r'gs://([a-z0-9][a-z0-9._-]{1,61}[a-z0-9])/[A-Za-z0-9._/-]+', values[0])
+    need(m, 'DESTINATION_INVALID')
+    return sha(m.group(1).encode())
+
+
+def mark_checked_bucket(digest):
+    """wb-offsite.py sends only to the bucket whose rule was checked (it compares this hash first)."""
+    root_dir(OFFSITE_STATE, 0o700)
+    need(stat.S_IMODE(OFFSITE_STATE.lstat().st_mode) == 0o700, 'UNSAFE_DIRECTORY:' + str(OFFSITE_STATE))
+    write_root_file(OFFSITE_STATE / 'checked-bucket', (digest + '\n').encode(), 0o600)
+
+
+def unit_state():
+    files = {n: (UNIT_DIR / n).read_bytes() if (UNIT_DIR / n).exists() else None for n in UNIT_NAMES}
+    active = {n: run(['systemctl', 'is-active', n], check=False).stdout.strip() for n in UNIT_NAMES}
+    enabled = {n: run(['systemctl', 'is-enabled', n], check=False).stdout.strip() for n in UNIT_NAMES}
+    return {'files': files, 'active': active, 'enabled': enabled}
+
+
+def restore(before):
+    """Put the units back as they were before this start: files, enablement and what ran."""
+    run(['systemctl', 'stop', *UNIT_NAMES], timeout=120, check=False)
+    for n in UNIT_NAMES:
+        if before['files'][n] is None:
+            run(['systemctl', 'disable', n], check=False)
+            try:
+                (UNIT_DIR / n).unlink()
+            except FileNotFoundError:
+                pass
+        else:
+            write_root_file(UNIT_DIR / n, before['files'][n], 0o644)
+    run(['systemctl', 'daemon-reload'], check=False)
+    for n in UNIT_NAMES:
+        if before['files'][n] is not None:
+            run(['systemctl', 'enable' if before['enabled'][n] == 'enabled' else 'disable', n], check=False)
+    again = [n for n in (*SERVICES, 'synk-wb-offsite.timer') if before['active'][n] == 'active']
+    if again:
+        run(['systemctl', 'start', *again], timeout=120, check=False)
+    if all(v is None for v in before['files'].values()):
+        return 'units removed'
+    return 'previous units back' + (', running again: ' + ','.join(again) if again else '')
+
+
+def verify(company):
+    checks = {'health': health(), 'steady': services_steady(), 'rpc': rpc_handshake(), 'reach': reachability()}
+    need(company_identity() == company, 'COMPANY_CONTAINERS_CHANGED')
+    return checks
 
 
 def act_start(req):
-    """Box check first, then units, then start; any failure after the units are enabled takes
-    them down again (files stay). The company containers must be the same before and after."""
+    """Every check that needs nothing new comes first: files, secrets, the bucket, the box.
+    Units already in place and running are only checked, unless --다시 restarts them.
+    Otherwise: units, restart, the same checks, then the timer; any failure puts the units
+    back exactly as they were. The company containers must be the same throughout."""
     writer_node()
     app, node, off = installed(req)
     provisioned()
-    need(req.get('bucketRuleChecked') is True, 'BUCKET_RULE_NOT_CHECKED')
+    bucket = bucket_sha(COMPANY_ENV.read_text())
+    need(req.get('checkedBucketSha256') == bucket, 'BUCKET_NOT_CHECKED (host-install checks the rule on the bucket company.env sends to)')
     box = probe(req, app, node)
-    before = company_identity()
-    units = {n: render_unit(req, n, app, node, off) for n in (*SERVICES, *OFFSITE)}
-    changed = []
-    for name, text in units.items():
-        p = UNIT_DIR / name
-        if not p.exists() or p.read_bytes() != text:
-            write_root_file(p, text, 0o644)
-            changed.append(name)
-    run(['systemctl', 'daemon-reload'])
+    company = company_identity()
+    units = {n: render_unit(req, n, app, node, off) for n in UNIT_NAMES}
+    before = unit_state()
+    changed = [n for n in UNIT_NAMES if before['files'][n] != units[n]]
+    running = all(before['active'][n] == 'active' for n in (*SERVICES, 'synk-wb-offsite.timer'))
+    if not changed and running and not req.get('restart'):
+        return {'box': box, 'alreadyRunning': True, **verify(company), 'active': active_states(), 'companyUnchanged': True}
     try:
+        for n in changed:
+            write_root_file(UNIT_DIR / n, units[n], 0o644)
+        run(['systemctl', 'daemon-reload'])
         run(['systemctl', 'enable', *SERVICES])
-        run(['systemctl', 'restart' if req.get('restart') else 'start', *SERVICES], timeout=120)
-        body = health()
-        steady = services_steady()
-        reach = reachability()
+        run(['systemctl', 'restart', *SERVICES], timeout=120)
+        checks = verify(company)
+        mark_checked_bucket(bucket)
         run(['systemctl', 'enable', '--now', 'synk-wb-offsite.timer'])
-    except BaseException:
-        run(['systemctl', 'disable', '--now', 'synk-wb-offsite.timer', *SERVICES], timeout=120, check=False)
-        raise
-    after = company_identity()
-    need(before == after, 'COMPANY_CONTAINERS_CHANGED')
-    return {'box': box, 'changedUnits': changed, 'health': body, 'steady': steady, 'reach': reach, 'active': active_states(),
-            'companyUnchanged': True, 'company': after}
+        need(company_identity() == company, 'COMPANY_CONTAINERS_CHANGED')
+    except BaseException as e:
+        undone = restore(before)
+        raise Refused((str(e) if isinstance(e, Refused) else 'UNEXPECTED_' + type(e).__name__) + ' · ' + undone)
+    return {'box': box, 'changedUnits': changed, **checks, 'active': active_states(), 'companyUnchanged': True, 'company': company}
 
 
 def act_status(req):
@@ -567,12 +687,29 @@ def act_stop(req):
 ACTIONS = {'plan': act_plan, 'files': act_files, 'probe': act_probe, 'secrets': act_secrets, 'start': act_start, 'status': act_status, 'stop': act_stop}
 
 
+def host_lock():
+    """One run at a time for everything that changes the host (files, secrets, units, the box runs)."""
+    import fcntl
+    fd = os.open(LOCK, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        os.close(fd)
+        raise Refused('ANOTHER_RUN_HOLDS_THE_LOCK')
+    return fd
+
+
 def main():
     need(os.geteuid() == 0, 'ROOT_REQUIRED')
     need(hasattr(os, 'O_DIRECTORY') and hasattr(os, 'O_NOFOLLOW'), 'LINUX_REQUIRED')
     req = globals().get('REQUEST')
     need(isinstance(req, dict) and req.get('action') in ACTIONS, 'REQUEST_INVALID')
-    return {'action': req['action'], 'result': ACTIONS[req['action']](req)}
+    lock = host_lock() if req['action'] not in ('plan', 'status') else None
+    try:
+        return {'action': req['action'], 'result': ACTIONS[req['action']](req)}
+    finally:
+        if lock is not None:
+            os.close(lock)
 
 
 if __name__ == '__main__':

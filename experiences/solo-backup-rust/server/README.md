@@ -28,14 +28,15 @@ node experiences/solo-backup-rust/server/tools/host-install.mjs plan
 node experiences/solo-backup-rust/server/tools/host-install.mjs files --실행
 node experiences/solo-backup-rust/server/tools/host-install.mjs probe
 node experiences/solo-backup-rust/server/tools/host-install.mjs secrets --실행
-node experiences/solo-backup-rust/server/tools/host-install.mjs start --실행
+node experiences/solo-backup-rust/server/tools/host-install.mjs start --실행 --버킷 <회사 백업 버킷>
 node experiences/solo-backup-rust/server/tools/host-install.mjs status
 ```
 
 - `files`: 런타임 · 앱 · 매일 사본 스크립트를 내용 해시 폴더에 넣고, 데이터 폴더를 만든다. 비밀값은 넣지 않는다.
-- `probe`: 세 역할마다 유닛과 같은 상자 속성으로 `systemd-run`을 돌린다. 이름 풀이와 인터넷은 되고, 메타데이터 · 회사 컨테이너 · VPC는 막히고, 남의 폴더와 회사 데이터가 안 보여야 통과다. 통과하지 않으면 유닛을 켜지 않는다.
-- `secrets`: 출입증 둘을 이 PC의 DPAPI 저장소에서 읽어 넣고, RPC 비밀값 둘을 새로 만들고, settings.env를 쓴다. 출입증을 회사 서버에 넣는 일이라 유호님께 먼저 여쭙는다. 이미 다른 값이 있으면 `--바꿈` 없이는 덮지 않는다.
-- `start`: 유닛을 쓰고 켠다. 회사 · Caddy · 우주선 컨테이너의 ID와 시작 시각이 그대로인지, Caddy에서는 api가 닿고 회사 컨테이너에서는 막히는지 본다. 새 판을 깔았으면 `start --실행 --다시`로 다시 띄운다.
+- `probe`: 세 역할마다 유닛과 같은 상자 속성으로 `systemd-run`을 돌린다. 이름 풀이와 인터넷은 되고, 메타데이터 · 회사 컨테이너 · 이 노드의 VPC 주소는 막히고, 남의 폴더와 회사 데이터가 안 보여야 통과다. 막힘은 호스트에서 먼저 닿는 것을 확인한 대상만 센다.
+- `secrets`: 출입증 둘을 이 PC의 DPAPI 저장소에서 읽어 넣고, RPC 비밀값 둘을 새로 만들고, settings.env를 쓴다. 출입증을 회사 서버에 넣는 일이라 유호님께 먼저 여쭙는다. 이미 다른 값이 있으면 `--바꿈` 없이는 덮지 않는다. RPC 짝이 어긋났으면 `--바꿈`이 새 짝을 쓴다.
+- `start`: 먼저 버킷의 14일 규칙을 읽고(`--버킷`), 그 버킷이 company.env의 사본 목적지인지, 비밀값 짝이 맞는지, 상자 시험이 통과하는지 본다. 그다음 유닛을 쓰고 켠 뒤 상태 응답, 세 서비스가 같은 프로세스로 도는지, api의 비밀값으로 두 일꾼에 서명한 호출이 통하는지, Caddy에서는 api가 닿고 회사 컨테이너에서는 막히는지, 회사 · Caddy · 우주선 컨테이너가 그대로인지 본다. 하나라도 어긋나면 유닛을 켜기 전 상태로 되돌린다. 같은 판이 이미 돌고 있으면 확인만 한다. 비밀값을 바꿨거나 같은 판을 다시 띄울 때는 `--다시`를 붙인다.
+- 설치 도구는 한 번에 하나만 돈다(호스트 잠금).
 - 되돌리기: `stop --실행`(세 유닛과 타이머를 끄고 멈춘다). 회사에는 영향이 없다.
 
 ## 디스크의 자리
@@ -86,7 +87,8 @@ sudo /opt/synk/workbackup/bin/wb-admin invites
 
 - api가 매일 03시 KST 뒤 `backups/workbackup-<UTC 날짜>.sqlite`를 만든다(30일 뒤 지움, `jobs.mjs`).
 - `synk-wb-offsite.timer`가 매일 05:40 KST(± 10분)에 가장 새 사본을 회사 백업 버킷의 `company/workbackup/<이름>.gz`로 보낸다([`host/wb-offsite.py`](host/wb-offsite.py)). 링크를 따라가지 않고 열고, 연 파일이 일반 파일 · 링크 수 1 · 소유자 10771인지 본 뒤, root 전용 자리로 복사해 그 복사본만 검사하고 압축한다. 노드 서비스 계정의 만들기 권한으로 덮어쓰지 않고 올린다.
-- 버킷 규칙이 그 자리의 객체를 14일 뒤 지운다(`tools/backup-bucket-rule.mjs`). 소프트 삭제 7일과 처리 지연 하루를 더해도 22일이라, 처리방침의 「서버의 매일 사본은 30일이 지나면 지운다」 안이다.
+- 버킷 규칙이 그 자리의 객체를 14일 뒤 지운다(`tools/backup-bucket-rule.mjs`). 소프트 삭제 7일과 처리 지연 하루를 더해도 22일이라, 처리방침의 「서버의 매일 사본은 30일이 지나면 지운다」 안이다. 이 자리에 닿는 다른 규칙, 버전 관리, 7일이 넘는 소프트 삭제, 보존 정책, 보류가 있으면 도구가 거절한다.
+- 사본은 `start`가 규칙을 확인한 버킷으로만 간다. `start`가 그 버킷 이름의 해시를 `/var/lib/synk-wb-offsite/checked-bucket`에 두고, 매일 사본은 company.env의 목적지가 그 해시와 같을 때만 올린다. 목적지가 바뀌면 `FAILED BUCKET_NOT_CHECKED`로 멈추고, 새 버킷에 규칙을 넣은 뒤 `start`를 다시 돌린다.
 - 결과는 저널에 `SYNK_WB_OFFSITE OK|SKIPPED|FAILED` 한 줄과 `/var/lib/synk-wb-offsite/last.json`으로 남는다. 실패 경보는 아직 없다(남은 것).
 - 재해 복구 묶음과 서버 독립 백업(Drive 금고)에는 싣지 않는다. 그 둘은 30일보다 오래 보관한다.
 
