@@ -858,10 +858,10 @@ async function lookPart(r){
   await say(r,'seoha','학생증에 들어갈 사진이니까 제일 멋지게 찍어 봐요!');
   const lk=await pickLook();guard(r);state.look=lk;saveLook(lk);
   if(lk?.mine&&!PHOTO.url){
-    // 내 사진이 아직 현상 중이면 찍는 시늉 없이 학생증을 먼저 뽑는다 — 사진 칸은 「사진 현상 중」이고, 사진이 오면 저절로 바뀐다.
-    // 찍을 때처럼 레일 · 단추는 걷고 인화지만 남긴 채 지호 선배가 말한다(카본 A2). 고르기 판은 revealCard가 닫는다.
+    // 내 사진이 아직 현상 중이면 찍는 시늉 없이 학생증을 먼저 뽑는다 — 사진 칸은 「사진 현상 중」이고, 사진이 나오면 학생이 한 장을 골라야 들어간다.
+    // 찍을 때처럼 레일 · 단추는 걷고 인화지만 남긴 채 지호 선배가 말한다. 고르기 판은 revealCard가 닫는다.
     $('#look').classList.add('shoot');
-    await say(r,'jiho','사진이 나오면 학생증에 바로 넣어 줄게요.');
+    await say(r,'jiho','사진이 나오면 한 장 골라서 학생증에 넣으면 돼요.');
     $('#vn').classList.remove('on');
     await revealCard(r,null);
   }else if(lk){
@@ -894,9 +894,11 @@ function askPhoto(maxAge=60000){
   const job=photoJob=Promise.resolve().then(()=>HOST.photo()).then(v=>{if(job===photoJob)setPhoto(v);return PHOTO;},()=>PHOTO);
   return job;
 }
+// 부모 답: {on:false}(초대 안 됨 · 손님) · {on,state,url}(url = 학생이 고른 기준 사진) · null(답을 못 받음 — 보이던 사진을 그대로 두고 다시 묻기만 잇는다).
 function setPhoto(v){
-  const url=v?.on&&v.state==='ready'&&typeof v.url==='string'&&SAFE_URL.test(v.url)?v.url:null;
-  const next=v?.on?{on:true,state:String(v.state||'none'),url}:{on:false,state:null,url:null};
+  if(v==null){schedulePhoto();return;}
+  const url=v.on&&typeof v.url==='string'&&SAFE_URL.test(v.url)?v.url:null;
+  const next=v.on?{on:true,state:String(v.state||'none'),url}:{on:false,state:null,url:null};
   const changed=next.on!==PHOTO.on||next.state!==PHOTO.state||!!next.url!==!!PHOTO.url;
   PHOTO=next;ME.src=url||'';
   if(url){const im=new Image();im.decoding='async';im.onload=()=>{if(im.naturalWidth&&ME.src===url){ME.w=im.naturalWidth;ME.h=im.naturalHeight;}};im.src=url;}
@@ -904,17 +906,18 @@ function setPhoto(v){
   schedulePhoto();
 }
 // 현상 중이면 1분마다 다시 묻는다(학생증을 들고 있거나 고르는 중일 때만). 사진이 오면 학생증이 저절로 바뀐다.
-// 답이 올 때 · 고르기 판을 열 때 · 내 사진을 고를 때 다시 건다 — 미리 받은 답이 고르기 판보다 먼저 와도 빠지지 않게(카본 A3).
+// 답이 올 때 · 고르기 판을 열 때 · 내 사진을 고를 때 다시 건다 — 미리 받은 답이 고르기 판보다 먼저 와도 빠지지 않게.
 function schedulePhoto(){
   clearTimeout(photoPoll);photoPoll=0;
   if(photoBusy()&&(state.look?.mine||pickMe))photoPoll=setTimeout(()=>{if(document.visibilityState==='visible')askPhoto(0);else schedulePhoto();},60000);
 }
 function saveLook(lk){save(lk?.mine?{look:null,photo:'me'}:{look:lk?lk.id:null,photo:null});schedulePhoto();}
 // 레일 맨 앞 칸. 사진이 있으면 얼굴, 현상 중이면 인화지, 아직이면 사람 표시와 「내 사진으로」. 얼굴 원과 다른 알약 꼴이라 「만드는 칸」으로 읽힌다.
+// 새 사진이 나와 고를 차례(choose)면 「사진 나왔어요」이고 누르면 제2의 나 판에서 고른다(앞서 고른 사진이 있으면 그 얼굴을 둔 채).
 const ME_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="8.5" r="3.6" fill="currentColor"/><path d="M3.8 20c.6-3.9 3.5-6 7.2-6 1.4 0 2.6.3 3.7.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 14.5v6M15.5 17.5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 function meTile(){
   if(!PHOTO.on)return '';
-  const ready=!!PHOTO.url,dev=photoBusy(),label=ready?'내 사진':dev?'사진 현상 중':PHOTO.state==='choose'?'사진 나왔어요':'내 사진으로';
+  const ready=!!PHOTO.url,dev=!ready&&photoBusy(),label=PHOTO.state==='choose'?'사진 나왔어요':ready?'내 사진':dev?'사진 현상 중':'내 사진으로';
   return `<button class="lk-me${dev?' dev':''}" type="button" data-me aria-pressed="false"><span class="lk-me-face">${ready?faceTile(ME,60,60,.62):dev?'':ME_ICON}</span><span class="lk-me-label">${esc(L(label))}</span></button>`;
 }
 const LOOK_FACES=LOOK_FACES_DATA;
@@ -969,28 +972,30 @@ function pickLook({change=false}={}){return new Promise(res=>{
     showFace(l.src,im=>place(l,im));hint.textContent=L('마음에 들면 셔터를 눌러요');setTimeout(()=>{if(cur===i)SND.felt('focus');},300);
     const t=rail.querySelector(`[data-i="${i}"]`);press(t);t.scrollIntoView({inline:'center',block:'nearest',behavior:reduce?'auto':'smooth'});
   }
-  // 내 사진 칸: 사진이 있으면 그 얼굴을, 현상 중이면 인화지를 칸에 띄우고 셔터로 정한다. 아직이면 제2의 나 판을 연다.
+  // 내 사진 칸: 사진이 있으면 그 얼굴을, 현상 중이면 인화지를 칸에 띄우고 셔터로 정한다. 아직이거나 새 사진을 고를 차례면 제2의 나 판을 연다.
+  // 판은 학생이 칸을 누를 때만 연다 — 상태가 바뀌어 칸을 다시 그릴 때는 띄우기(showMine)만 한다.
   function clearMine(){if(cur!=='me')return;cur=-1;vf.querySelectorAll('img,.lk-dev').forEach(x=>x.remove());vf.classList.remove('has');af.classList.remove('go');shoot.disabled=true;press(null);hint.textContent=L('마음이 바뀌면 나중에 다시 고를 수 있어요');}
-  function goMe(){
-    const t=rail.querySelector('[data-me]');if(!t)return;
+  function showMine(){
+    const t=rail.querySelector('[data-me]');if(!t)return false;
     if(PHOTO.url){
-      if(cur==='me'&&vf.querySelector('img'))return;cur='me';
-      showFace(ME.src,im=>{place(ME,im);im.addEventListener('load',()=>{if(cur==='me'&&im.isConnected)place(ME,im);},{once:true});});
-      hint.textContent=L('마음에 들면 셔터를 눌러요');setTimeout(()=>{if(cur==='me')SND.felt('focus');},300);
+      if(!(cur==='me'&&vf.querySelector('img'))){cur='me';
+        showFace(ME.src,im=>{place(ME,im);im.addEventListener('load',()=>{if(cur==='me'&&im.isConnected)place(ME,im);},{once:true});});
+        hint.textContent=L('마음에 들면 셔터를 눌러요');setTimeout(()=>{if(cur==='me')SND.felt('focus');},300);}
     }else if(photoBusy()){
-      if(cur==='me'&&vf.querySelector('.lk-dev'))return;cur='me';
-      vf.querySelectorAll('img,.lk-dev').forEach(x=>x.remove());
-      const d=document.createElement('div');d.className='lk-dev';d.innerHTML=`<i class="lk-dev-print" aria-hidden="true"></i><b>${esc(L('사진 현상 중'))}</b><span>${esc(L('사진이 나오면 학생증 사진이 저절로 바뀌어요'))}</span>`;
-      vf.insertBefore(d,af);vf.classList.add('has');af.classList.remove('go');shoot.disabled=false;hint.textContent=L('마음에 들면 셔터를 눌러요');
-    }else{void openMine();return;}
-    press(t);t.scrollIntoView({inline:'center',block:'nearest',behavior:reduce?'auto':'smooth'});
+      if(!(cur==='me'&&vf.querySelector('.lk-dev'))){cur='me';
+        vf.querySelectorAll('img,.lk-dev').forEach(x=>x.remove());
+        const d=document.createElement('div');d.className='lk-dev';d.innerHTML=`<i class="lk-dev-print" aria-hidden="true"></i><b>${esc(L('사진 현상 중'))}</b><span>${esc(L('사진이 나오면 한 장을 골라 학생증에 넣어요'))}</span>`;
+        vf.insertBefore(d,af);vf.classList.add('has');af.classList.remove('go');shoot.disabled=false;hint.textContent=L('마음에 들면 셔터를 눌러요');}
+    }else return false;
+    press(t);t.scrollIntoView({inline:'center',block:'nearest',behavior:reduce?'auto':'smooth'});return true;
   }
+  function goMe(){if(PHOTO.state==='choose'||!showMine())void openMine();}
   async function openMine(){
     if(opening||!HOST?.openPhoto)return;opening=true;SND.felt('tap');
     let v=null;try{v=await HOST.openPhoto();}catch{}
     opening=false;if(pickMe!==repaintMe)return;
     photoAt=Date.now();photoJob=Promise.resolve().then(()=>PHOTO);setPhoto(v);
-    if(PHOTO.url||photoBusy())goMe();
+    showMine();
   }
   // 사진 상태가 바뀌면(판을 닫고 돌아옴 · 현상이 끝남) 맨 앞 칸만 다시 그린다. 다른 칸의 번호와 스크롤은 그대로 둔다.
   function repaintMe(){
@@ -998,7 +1003,7 @@ function pickLook({change=false}={}){return new Promise(res=>{
     if(!html){old?.remove();clearMine();return;}
     const box2=document.createElement('div');box2.innerHTML=html;const tile=box2.firstElementChild;
     if(old)old.replaceWith(tile);else{const sl=rail.scrollLeft;rail.prepend(tile);if(sl>0)rail.scrollLeft=sl+tile.offsetWidth+10;}
-    if(cur==='me'){if(PHOTO.url||photoBusy()){cur=-1;goMe();}else clearMine();}
+    if(cur==='me'){cur=-1;if(!showMine()){cur='me';clearMine();}}
   }
   pickMe=repaintMe;schedulePhoto();void askPhoto(240000);
   rail.onclick=e=>{if(e.target.closest('[data-me]')){goMe();return;}const t=e.target.closest('.lk-th');if(!t)return;go(+t.dataset.i);};
@@ -1134,12 +1139,14 @@ function placeSign(tries=0){
 }
 addEventListener('resize',()=>{if($('#s-card').classList.contains('on'))placeSign();});
 // 사진은 카드의 배치 크기로 자른다(움직이는 중의 화면 크기가 아니라)
-// 내 사진은 기준 사진이 오기 전에는 「사진 현상 중」(고를 판이 왔으면 「사진 나왔어요」)이고, 지웠거나 시범 밖이면 빈 사진 칸이다.
+// 내 사진은 고른 기준 사진이 생기기 전에는 「사진 현상 중」이고, 사진이 나오면 「사진 나왔어요 · 눌러서 고르기」 단추가 된다(누르면 제2의 나 판에서 한 장을 고른다).
+// 지웠거나 시범 밖이면 빈 사진 칸이다.
 function putPhoto(){
   if(!state.look)return;const p=$('#idPhoto'),l=state.look;
   if(l.mine&&!PHOTO.url){
-    const wait=photoBusy()||PHOTO.state==='choose';
-    if(wait)p.innerHTML=`<div class="id-dev"><span>${esc(L(PHOTO.state==='choose'?'사진 나왔어요':'사진 현상 중'))}</span></div>`;else p.replaceChildren();
+    if(PHOTO.on&&PHOTO.state==='choose')p.innerHTML=`<button type="button" class="id-dev is-ready" data-pick-photo><span>${esc(L('사진 나왔어요'))}<small>${esc(L('눌러서 고르기'))}</small></span></button>`;
+    else if(photoBusy())p.innerHTML=`<div class="id-dev"><span>${esc(L('사진 현상 중'))}</span></div>`;
+    else p.replaceChildren();
     return;
   }
   const im=new Image();im.alt='';im.src=l.src;
@@ -1149,6 +1156,15 @@ function putPhoto(){
   if(shown?.complete&&shown.naturalWidth>0)im.decode().then(()=>{if(state.look===l){fit();p.replaceChildren(im);}},()=>{});
   else{fit();p.replaceChildren(im);if(l.mine)im.addEventListener('load',()=>{if(im.isConnected&&state.look===l)fit();},{once:true});}
 }
+// 학생증의 「사진 나왔어요」 단추: 제2의 나 판을 서울행 틀 위에 열고, 고르고 돌아오면 바로 학생증 · 내 길 머리에 붙인다.
+let cardPicking=false;
+$('#idPhoto').addEventListener('click',async e=>{
+  if(!e.target.closest('[data-pick-photo]')||cardPicking||!HOST?.openPhoto)return;
+  cardPicking=true;SND.felt('tap');
+  let v=null;try{v=await HOST.openPhoto();}catch{}
+  cardPicking=false;photoAt=Date.now();photoJob=Promise.resolve().then(()=>PHOTO);setPhoto(v);
+  if(state.look?.mine){if($('#s-card').classList.contains('on'))putPhoto();paintBadge();}
+});
 function cardEnd(){$('#cardHead').classList.add('on');setTimeout(()=>$('#cardFoot').classList.add('on'),reduce?0:240);}
 /* 학생증 다시 보기 · 모습 다시 고르기: 내 길의 내 사진을 누르면 온다 */
 function openCardView(){const rig=$('#cardRig');for(const x of [$('#cardSwing'),$('#printer')])x.getAnimations().forEach(a=>a.cancel());$('#cardSwing').style.transform='';$('#cardBox').classList.remove('feeding');$('#printer').classList.remove('busy','on');cardAskDone();if(!state.issuedAt){state.issuedAt=Date.now();save({issuedAt:state.issuedAt});}fillCard();CardFX.setup();rig.classList.add('down');show('s-card');putPhoto();$('#s-card').classList.add('view');$('#cardHead span').textContent=L('내 학생증');cardEnd();CardFX.live(true);SND.felt('open');
@@ -1264,6 +1280,8 @@ function buildRoad(){
   $('#lightNum').textContent=state.lights;$('#lightIcon').setAttribute('href',state.dream==='actor'?'#seat':'#stick');
   $('#dreamChip').textContent=L(D.chip);const wn=$('#whoName'),gr=document.createElement('i');gr.className='gr';gr.textContent=L('{n}급 과정',{n:roadGrade()});wn.textContent=(state.name||L('유학생'))+'\u00a0· ';wn.append(gr);
   paintBadge();
+  // 내 사진 주소는 5분이면 만료된다 — 4분 넘게 지났으면(1화를 하고 돌아옴 등) 새 주소를 받아 머리를 다시 그린다
+  if(state.look?.mine&&HOST?.photo&&Date.now()-photoAt>240000){const was=ME.src;void askPhoto(0).then(()=>{if(state.look?.mine&&ME.src!==was)paintBadge();});}
   let side=0,g=0;const rows=[],G=roadGrade();
   ROAD.forEach((r,i)=>{
     if(r.lv){g=Number(r.lv.slice(-1));rows.push(`<div class="lv"><span>${r.lv}</span>${g>G?`<em class="lv-lock">${LOCK_SVG}${L('{n}급 오디션에 붙으면 열려요',{n:g-1})}</em>`:''}</div>`);return;}

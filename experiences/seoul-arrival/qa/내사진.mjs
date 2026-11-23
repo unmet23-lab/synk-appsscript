@@ -39,7 +39,7 @@ window.__h=async function({owner=null,arrival=null,me2=null}={}){
  const life={ensure:async()=>{},progress};
  const show=(title,html,type)=>{content.innerHTML=html;content.dataset.type=type;if(!panel.open)panel.showModal();};
  const close=()=>{if(panel.open)panel.close();content.innerHTML='';};
- const fake=st.me2===null?null:{status:async()=>{st.statusCalls++;return st.me2;},open:async()=>{st.opens++;show('내 모습','<div class="fake-me2"><button id="fakeClose" type="button">닫기</button></div>','world-me2');document.querySelector('#fakeClose').addEventListener('click',close);}};
+ const fake=st.me2===null?null:{status:async()=>{st.statusCalls++;if(st.fail)throw Error('연결 끊김');return st.me2;},open:async()=>{st.opens++;show('내 모습','<div class="fake-me2"><button id="fakeClose" type="button">닫기</button></div>','world-me2');document.querySelector('#fakeClose').addEventListener('click',close);}};
  const seoul=createSeoulEntry({dramaPending:()=>false,restored:Promise.resolve({failed:false}),client,life,home:{tutor:()=>({tutor:null}),state:{reduced:true},toast(){}},
   worldUrl:p=>new URL('/'+p,location.origin).href,launchGame:async()=>{},show,close,selectLanguage(){},tutorStatus:()=>({blocked:false}),native:()=>false,me2:fake});
  window.__seoul=seoul;window.__st=st;window.__panel=panel;
@@ -116,11 +116,24 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  const dev=await t.inF(()=>{const s=document.querySelector('#idPhoto .id-dev span');const r=s.getBoundingClientRect(),p=document.querySelector('#idPhoto').getBoundingClientRect();return {text:s.textContent,inside:r.left>=p.left-1&&r.right<=p.right+1&&r.top>=p.top-1&&r.bottom<=p.bottom+1};});
  check(dev.inside,`${lang} 학생증 「사진 현상 중」 글이 칸 안`,JSON.stringify(dev));
  await sleep(400);await shot(t,`${lang}-4-학생증현상중`);
- // 사진이 나왔다
- await t.page.evaluate(u=>{window.__st.me2={status:'ok',consent:{given:true},me:{state:'ready',chosen_url:u}};},PHOTO_URL);
+ // 사진이 나왔다 — 처음 사진은 학생이 한 장을 골라야 학생증에 들어간다(choose). 학생증 칸이 「사진 나왔어요 · 눌러서 고르기」 단추가 된다
+ await t.page.evaluate(()=>{window.__st.me2={status:'ok',consent:{given:true},me:{state:'choose'}};});
  await t.inF(()=>window.__seoulQA.photo());
- check(await until('학생증 사진',()=>t.inF(u=>{const im=document.querySelector('#idPhoto img');return im&&im.src===u&&im.complete&&im.naturalWidth>0;},PHOTO_URL)),`${lang} 사진이 오면 학생증 사진이 바뀜`,JSON.stringify(await t.inF(()=>{const im=document.querySelector('#idPhoto img');return {card:document.querySelector('#s-card').classList.contains('on'),html:document.querySelector('#idPhoto').innerHTML.slice(0,160),complete:im?.complete,nw:im?.naturalWidth};})));
+ check(await until('고르기 단추',()=>t.inF(()=>!!document.querySelector('#idPhoto [data-pick-photo]'))),`${lang} 사진이 나오면 학생증에 「사진 나왔어요」 단추`,await t.inF(()=>document.querySelector('#idPhoto').textContent));
+ const pick=await t.inF(()=>{const b=document.querySelector('#idPhoto [data-pick-photo] span'),p=document.querySelector('#idPhoto').getBoundingClientRect(),r=b.getBoundingClientRect();return {text:b.textContent,inside:r.left>=p.left-1&&r.right<=p.right+1&&r.top>=p.top-1&&r.bottom<=p.bottom+1};});
+ check(pick.inside,`${lang} 「사진 나왔어요」 글이 칸 안`,JSON.stringify(pick));
+ check(await t.inF(()=>!window.__seoulQA.photoWaiting()),`${lang} 고를 차례에는 다시 묻기를 멈춤`);
+ await sleep(400);await shot(t,`${lang}-4b-사진나왔어요`);
+ await t.F().click('#idPhoto [data-pick-photo]');
+ check(await until('판 다시 열림',()=>t.page.evaluate(()=>window.__st.opens===2&&window.__panel.open)),`${lang} 단추를 누르면 제2의 나 판(틀 위)`);
+ await t.page.evaluate(u=>{window.__st.me2={status:'ok',consent:{given:true},me:{state:'ready',chosen_url:u}};},PHOTO_URL);
+ await t.page.click('#fakeClose');
+ check(await until('학생증 사진',()=>t.inF(u=>{const im=document.querySelector('#idPhoto img');return im&&im.src===u&&im.complete&&im.naturalWidth>0;},PHOTO_URL)),`${lang} 판에서 고르고 오면 학생증 사진이 바뀜`,JSON.stringify(await t.inF(()=>{const im=document.querySelector('#idPhoto img');return {card:document.querySelector('#s-card').classList.contains('on'),html:document.querySelector('#idPhoto').innerHTML.slice(0,160),complete:im?.complete,nw:im?.naturalWidth};})));
  await sleep(400);await shot(t,`${lang}-5-학생증사진`);
+ // 연결이 잠깐 끊겨도 보이던 사진은 그대로
+ await t.page.evaluate(()=>{window.__st.fail=true;});await t.inF(()=>window.__seoulQA.photo());await sleep(300);
+ check(await t.inF(u=>document.querySelector('#idPhoto img')?.src===u,PHOTO_URL),`${lang} 상태 요청이 실패해도 학생증 사진이 남음`);
+ await t.page.evaluate(()=>{window.__st.fail=false;});
  await t.inF(()=>{window.__seoulQA.buildRoad();window.__seoulQA.show('s-path');});
  check(await t.inF(u=>document.querySelector('#meBadge').classList.contains('face')&&document.querySelector('#meBadge i')?.style.backgroundImage.includes(u),PHOTO_URL),`${lang} 내 길 머리에 내 사진`);
  // 사진이 있으면 칸이 얼굴이 되고, 누르면 칸에 그 얼굴
@@ -128,7 +141,7 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  check(await until('얼굴 칸',()=>t.inF(()=>document.querySelector('[data-me] .lk-me-face i')!==null)),`${lang} 사진이 있으면 칸에 내 얼굴`);
  await t.F().click('[data-me]');
  check(await until('칸에 사진',()=>t.inF(u=>[...document.querySelectorAll('#lkVf img')].some(i=>i.src===u),PHOTO_URL)),`${lang} 내 얼굴을 칸에 띄움`);
- check(await t.page.evaluate(()=>window.__st.opens===1),`${lang} 사진이 있으면 판을 다시 열지 않음`);
+ check(await t.page.evaluate(()=>window.__st.opens===2),`${lang} 사진이 있으면 판을 다시 열지 않음(칸 한 번 · 학생증 단추 한 번뿐)`);
  check(await until('칸에 띄운 얼굴',()=>t.inF(()=>{const vf=document.querySelector('#lkVf'),im=vf.querySelector('img:last-of-type');return vf.classList.contains('has')&&im?.classList.contains('in')&&im.naturalWidth>0&&document.querySelector('[data-me]').getAttribute('aria-pressed')==='true'&&!document.querySelector('#lkShoot').disabled;})),`${lang} 내 얼굴이 칸에 보이고 셔터가 켜짐`);await sleep(400);
  await shot(t,`${lang}-6-내얼굴`);
  await t.F().click('.lk-th[data-i="0"]');await sleep(300);await t.F().click('#lkShoot');
@@ -141,12 +154,12 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  t.inF(()=>window.__seoulQA.lookPart()).catch(()=>{});
  for(let i=0;i<40;i++){if(await t.inF(()=>document.querySelector('#look').classList.contains('on')))break;await t.inF(()=>document.querySelector('#vn')?.click());await sleep(200);}
  check(await until('칸',()=>t.inF(()=>!!document.querySelector('[data-me].dev'))),'정문: 현상 중 칸');
- check(await t.inF(()=>window.__seoulQA.photoWaiting()),'정문: 미리 받은 답 뒤에도 고르기 판에서 1분 다시 묻기가 걸림(카본 A3)');
+ check(await t.inF(()=>window.__seoulQA.photoWaiting()),'정문: 미리 받은 답 뒤에도 고르기 판에서 1분 다시 묻기가 걸림');
  await t.F().click('[data-me]');await sleep(300);await t.F().click('#lkShoot');
- check(await until('대사 동안 레일 걷힘',()=>t.inF(()=>document.querySelector('#look').classList.contains('shoot')&&document.querySelector('#vn').classList.contains('on'))),'정문: 지호 선배가 말할 때 레일 · 단추를 걷음(카본 A2)');
+ check(await until('대사 동안 레일 걷힘',()=>t.inF(()=>document.querySelector('#look').classList.contains('shoot')&&document.querySelector('#vn').classList.contains('on'))),'정문: 지호 선배가 말할 때 레일 · 단추를 걷음');
  check(await t.inF(()=>window.__seoulQA.photoWaiting()),'정문: 내 사진을 고른 뒤에도 다시 묻기가 걸려 있음');
  const said=[];for(let i=0;i<30;i++){const s=await t.inF(()=>document.querySelector('#vnText')?.textContent||'');if(s&&!said.includes(s))said.push(s);if(await t.inF(()=>document.querySelector('#cardHint').classList.contains('on')))break;await t.inF(()=>document.querySelector('#vn')?.click());await sleep(250);}
- check(said.some(s=>s.includes('사진이 나오면 학생증에 바로 넣어 줄게요')),'정문: 지호 선배 한 줄',JSON.stringify(said));
+ check(said.some(s=>s.includes('사진이 나오면 한 장 골라서 학생증에 넣으면 돼요')),'정문: 지호 선배 한 줄',JSON.stringify(said));
  check(!said.some(s=>s.includes('하나, 둘, 셋')),'정문: 찍는 시늉 없음');
  check(await until('학생증 현상 중',()=>t.inF(()=>!!document.querySelector('#idPhoto .id-dev'))),'정문: 학생증 「사진 현상 중」');
  check(await t.inF(()=>!document.querySelector('#look').classList.contains('on')),'정문: 학생증이 나오면 고르기 판이 닫힘');
@@ -157,6 +170,18 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  check(await until('머리 사진',()=>t.inF(u=>document.querySelector('#meBadge i')?.style.backgroundImage.includes(u),PHOTO_URL)),'다시 열기: 내 길 머리에 내 사진(사진관 쉼)');
  await t.F().click('#meBadge');
  check(await until('학생증 사진',()=>t.inF(u=>document.querySelector('#idPhoto img')?.src===u,PHOTO_URL)),'다시 열기: 학생증에 내 사진');
+ await t.page.context().close();}
+
+// 5b. 다른 사진으로 새 판이 나와 고를 차례여도, 앞서 고른 사진은 머리 · 학생증에 그대로 두고 칸만 「사진 나왔어요」(누르면 판)
+{const t=await open({arrival:{...ROAD,look:null,photo:'me'},me2:{status:'ok',consent:{given:true},me:{state:'choose',chosen_url:PHOTO_URL}}});
+ check(await until('머리 사진',()=>t.inF(u=>document.querySelector('#meBadge i')?.style.backgroundImage.includes(u),PHOTO_URL)),'새 판 고를 차례: 내 길 머리에 지금 사진');
+ await toPick(t);
+ check(await t.inF(u=>document.querySelector('#idPhoto img')?.src===u,PHOTO_URL),'새 판 고를 차례: 학생증에 지금 사진');
+ check(await until('칸 글',()=>t.inF(()=>document.querySelector('[data-me] .lk-me-label')?.textContent==='사진 나왔어요'&&!!document.querySelector('[data-me] .lk-me-face i'))),'새 판 고를 차례: 칸은 지금 얼굴 + 「사진 나왔어요」');
+ await t.F().click('[data-me]');
+ check(await until('판',()=>t.page.evaluate(()=>window.__st.opens===1&&window.__panel.open)),'새 판 고를 차례: 칸을 누르면 판');
+ await t.page.click('#fakeClose');await sleep(500);
+ check(await t.page.evaluate(()=>window.__st.opens===1),'판을 그냥 닫으면 다시 열리지 않음');
  await t.page.context().close();}
 
 // 6. 사진을 지웠거나 초대가 풀리면 빈 사진 칸 · 이름 첫 글자(깨진 그림 없음)

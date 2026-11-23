@@ -1205,8 +1205,9 @@ commands['seoul-move']=button=>seoul.moveChoice(button.dataset.choice);
 commands['device-records']=button=>{const line=document.querySelector('[data-device-records-status]');return deviceRecords.choose(button.dataset.choice,{owner:client.snapshot?.accountId||'guest',
  status:(text,busy)=>{if(line)line.textContent=text;document.querySelectorAll('[data-world="device-records"]').forEach(node=>{node.disabled=busy;});}});};
 seoul=createSeoulEntry({dramaPending:()=>dramaRequested||me2Requested,restored:initialRestoreReady,client:()=>client,life,home,worldUrl,launchGame,show,close,selectLanguage,tutorStatus,native:()=>operating&&account?.supportsSpeaking===false,frontOn:()=>!!front?.soon(),
- // 서울행 얼굴 고르기의 「내 사진으로」 칸(설계 seoul-arrival 5절 「사진」): 내 정보 시트의 제2의 나 줄과 같은 조건 · 같은 판을 쓴다. 다른 계정의 응답은 버린다.
- me2:{status:async()=>{if(!me2Allowed())return null;const owner=client.snapshot?.accountId,out=await account.me2Request({action:'status'});return client.snapshot?.accountId===owner&&!(out?.accountId&&out.accountId!==owner)?out:null;},open:()=>openMe2()}});
+ // 서울행 얼굴 고르기의 「내 사진으로」 칸(설계 seoul-arrival 5절 「사진」): 내 정보 시트의 제2의 나 줄과 같은 조건 · 같은 판을 쓴다.
+ // 시범 밖(계정 모드 아님 · PC 창)은 정해진 「아님」, 다른 계정의 응답은 버려 모름(null)으로 돌려준다.
+ me2:{status:async()=>{if(!me2Allowed())return {status:'not_invited'};const owner=client.snapshot?.accountId,out=await account.me2Request({action:'status'});return client.snapshot?.accountId===owner&&!(out?.accountId&&out.accountId!==owner)?out:null;},open:()=>openMe2()}});
 // 첫날 끝 · 맞춤 앞면(1차, 결정 11-19): 서울행을 끝낸 학생은 튜터 고르기 · 펠트 동네 대신 앞면을 홈으로 쓴다. 스위치(FRONT_AUTO)를 끄면 지금 길 그대로다.
 front=createFrontEntry({client:()=>client,life,home,worldUrl,launchGame,openLife:(...v)=>openLife(...v),signIn,profile,openStory:()=>seoul.openRoad(),native:()=>operating&&account?.supportsSpeaking===false,
  guestArrival:()=>seoul.arrival?.('guest')||null,newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),bypass:()=>!!(dramaRequested||me2Requested||wardrobeRequested||examRequested),

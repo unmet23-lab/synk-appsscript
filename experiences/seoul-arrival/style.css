@@ -617,6 +617,11 @@ p{text-wrap:pretty}
 .lk-dev span{max-width:280px;font-size:14px;line-height:1.5;color:var(--ink2);word-break:keep-all;text-wrap:pretty}
 .id-dev{position:absolute;inset:0;display:grid;place-items:center;padding:6px;text-align:center}
 .id-dev::before{content:"";position:absolute;inset:0}
+button.id-dev{width:100%;border:0;margin:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.id-dev.is-ready::before{animation:none;filter:none;background:linear-gradient(165deg,#efe9dc,#c9c0ae 60%,#a49a87)}
+.id-dev.is-ready span{box-shadow:0 2px 8px rgba(40,30,10,.18)}
+.id-dev small{display:block;margin-top:2px;font-size:13px;font-weight:600;color:#5a5243;text-decoration:underline;text-underline-offset:2px}
+button.id-dev:focus-visible{outline:2.5px solid #fff;outline-offset:-3px}
 .id-dev span{position:relative;padding:3px 7px;border-radius:7px;background:rgba(250,248,243,.94);font-size:13px;font-weight:700;line-height:1.25;letter-spacing:-.02em;color:#2a261f;word-break:keep-all;text-wrap:balance}
 @media (prefers-reduced-motion:reduce){.lk-me.dev .lk-me-face,.lk-dev-print,.id-dev::before{animation:none}}
 .lk-vf.mine{touch-action:none;cursor:grab}

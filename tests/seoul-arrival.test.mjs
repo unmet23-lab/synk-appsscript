@@ -85,14 +85,16 @@ test('학생 칸: 이상한 값은 그 칸만 없는 것으로 읽는다', () =>
 
 test('내 사진 칸: 초대받은 학생에게만 켜고, 주소는 고른 기준 사진만 받는다', () => {
  const {photoView}=pure,url='https://abc.supabase.co/storage/v1/object/sign/me2-media/u/base.jpg?token=t.k-n_1';
- assert.deepEqual(photoView(null),{on:false});
+ assert.equal(photoView(null),null);   // 답을 못 받음 = 모름(틀은 보이던 사진을 둔다)
+ assert.equal(photoView({status:'error'}),null);
  assert.deepEqual(photoView({status:'not_invited'}),{on:false});
- assert.deepEqual(photoView({status:'error'}),{on:false});
  assert.deepEqual(photoView({status:'ok',consent:{given:false},me:{state:'none'}}),{on:true,state:'none',url:null,paused:false});
  assert.deepEqual(photoView({status:'ok',consent:{given:true},me:{state:'developing'}}),{on:true,state:'developing',url:null,paused:false});
  assert.deepEqual(photoView({status:'ok',consent:{given:true},me:{state:'ready',chosen_url:url}}),{on:true,state:'ready',url,paused:false});
  assert.equal(photoView({status:'ok',me:{state:'ready',chosen_url:'javascript:alert(1)'}}).url,null);
- assert.equal(photoView({status:'ok',me:{state:'choose',chosen_url:url}}).url,null);
+ // 새 사진을 고를 차례여도 앞서 고른 사진은 계속 보인다
+ assert.deepEqual(photoView({status:'ok',consent:{given:true},me:{state:'choose',chosen_url:url}}),{on:true,state:'choose',url,paused:false});
+ assert.deepEqual(photoView({status:'ok',consent:{given:true},me:{state:'choose'}}),{on:true,state:'choose',url:null,paused:false});
  assert.equal(photoView({status:'ok',me:{state:'이상한 값'}}).state,'none');
  // 사진관이 쉬면 동의했고 만든(만드는) 사진이 있을 때만 칸을 둔다 — 새로 맡길 수 없어서다
  assert.deepEqual(photoView({status:'off',consent:{given:false},me:{state:'ready',chosen_url:url}}),{on:false});
@@ -108,7 +110,7 @@ test('내 사진 칸: 손님 · 다른 주인은 서버에 묻지 않고, 사진
  assert.match(entrySource,/const photoOwner=\(\)=>\{const s=session,who=owner\(\);return s&&who!=='guest'&&who===s\.owner&&me2\?who:null;\};/);
  assert.match(entrySource,/if\(panel\?\.open\)\{close\(\);if\(panel\.open\)panel\.close\(\);\}\r?\n  try\{await me2\.open\(\);\}catch\{\}/);
  assert.match(entrySource,/photo,openPhoto,\r?\n  leave\(\)\{finish\(\);\},/);
- assert.match(read('experiences/synk-world-app/app-shell.mjs'),/me2:\{status:async\(\)=>\{if\(!me2Allowed\(\)\)return null;const owner=client\.snapshot\?\.accountId,out=await account\.me2Request\(\{action:'status'\}\);/);
+ assert.match(read('experiences/synk-world-app/app-shell.mjs'),/me2:\{status:async\(\)=>\{if\(!me2Allowed\(\)\)return \{status:'not_invited'\};const owner=client\.snapshot\?\.accountId,out=await account\.me2Request\(\{action:'status'\}\);/);
  const app=read('experiences/seoul-arrival/app.mjs').replace(/\r\n/g,'\n');
  assert.match(app,/function meTile\(\)\{\n  if\(!PHOTO\.on\)return '';/);
  assert.match(app,/rail\.innerHTML=meTile\(\)\+order\.map/);

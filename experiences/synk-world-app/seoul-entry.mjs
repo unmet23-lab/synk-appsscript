@@ -60,14 +60,17 @@ export function seoulDecision({mode=null,owner='guest',arrival=null,guest=null,t
 
 // 「내 사진으로」(설계 5절 「사진」 · 제2의 나 사진 시범): 얼굴 고르기 레일 맨 앞 칸에 보일 것 — 순수 함수(시험이 표로 본다).
 // 초대받아 status가 ok인 학생, 또는 사진관이 쉬어도 동의했고 만든(만드는) 사진이 있는 학생만 켠다. 주소는 5분짜리 서명 주소라 기록에 넣지 않는다.
+// 답을 못 받았거나 서버 오류면 null(모름)이다 — 틀은 보이던 사진을 그대로 둔다. {on:false}는 초대 안 됨처럼 정해진 답에만 쓴다.
+// url은 학생이 고른 기준 사진이다. 새 사진이 나와 고르는 중(choose)이어도 앞서 고른 사진이 있으면 그것을 계속 보인다.
 const PHOTO_STATES=new Set(['none','uploading','developing','choose','ready','redo','refused']);
 export function photoView(out){
- const ok=out?.status==='ok',paused=out?.status==='off'&&!!out?.consent?.given;
+ if(!out||typeof out!=='object'||out.status==='error')return null;
+ const ok=out.status==='ok',paused=out.status==='off'&&!!out.consent?.given;
  if(!ok&&!paused)return {on:false};
  const me=out.me&&typeof out.me==='object'?out.me:{};
  const state=PHOTO_STATES.has(me.state)?me.state:'none';
- const url=state==='ready'&&typeof me.chosen_url==='string'&&/^https:\/\//.test(me.chosen_url)?me.chosen_url:null;
- if(paused&&!['ready','developing','uploading','choose'].includes(state))return {on:false};
+ const url=typeof me.chosen_url==='string'&&/^https:\/\//.test(me.chosen_url)?me.chosen_url:null;
+ if(paused&&!url&&!['developing','uploading','choose'].includes(state))return {on:false};
  return {on:true,state,url,paused};
 }
 
@@ -174,12 +177,12 @@ export function createSeoulEntry({dramaPending,restored,client,life,home,worldUr
   band.querySelector('button').addEventListener('click',()=>{try{session?.api?.wake();}catch{}close();});
   content.append(band);
  }
- // 내 사진: 틀이 묻고 연다. 손님 · 다른 주인 · 시범 밖이면 서버에 묻지 않고 끈다.
+ // 내 사진: 틀이 묻고 연다. 손님 · 다른 주인 · 시범 밖이면 서버에 묻지 않고 끈다. 요청이 실패하면 null(모름 — 틀이 앞 상태를 둔다).
  const photoOwner=()=>{const s=session,who=owner();return s&&who!=='guest'&&who===s.owner&&me2?who:null;};
  async function photo(){
   const who=photoOwner();if(!who)return {on:false};
-  let out=null;try{out=await me2.status();}catch{}
-  return out&&photoOwner()===who?photoView(out):{on:false};
+  let out;try{out=await me2.status();}catch{return null;}
+  return photoOwner()===who?photoView(out):null;
  }
  // 서울행 틀은 모달 <dialog>다. 사진 판(#world-panel)은 닫힌 채에서 showModal로 열려야 틀 위 맨 윗겹에 선다 —
  // 이미 열려 있거나 닫히는 중(0.16초)이면 틀 아래에 깔리므로 먼저 바로 닫는다. 판이 닫히면 새 상태를 틀에 돌려준다.
