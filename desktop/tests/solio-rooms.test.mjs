@@ -34,12 +34,12 @@ test('cost line: no price yet says so and stays dim', () => {
 test('cost line: the total, bills due in 7 days, unknown prices and the next bill', () => {
   const rows = [weekly('w', 'claude', 20, NOW + 3 * D, { price: 290000, currency: 'KRW', billDay: 20 }), weekly('g', 'gpt', 20, NOW + 3 * D, { price: 145000, currency: 'KRW', billDay: 30 }), weekly('u', 'gemini', 20, NOW + 3 * D)];
   const row = costRow(snap(rows), st(), NOW);
-  assert.equal(row.mid, '한 달 435,000원 · 7일 안 결제 1건 · 요금을 모르는 1개 빼고');
+  assert.equal(row.mid, '한 달 435,000원 · 7일 안 결제 1건 · 요금을 아는 구독만 더함');
   assert.equal(row.when, '다음 결제 11월 20일 Claude');
   assert.equal(row.more[0][1], '한 달에 435,000원을 냅니다. 7일 안에 Claude가 결제됩니다.');
   // 구독과 요금제마다 한 줄, 그 아래 7일 안에 결제되는 계정만 이름과 함께(11-20 유호님 「난잡해」, 솔리오 구독 비서 설계 3.6)
   const lines = kinds(row.more, 'row');
-  assert.deepEqual(lines.filter(r => !/월 \d+일$/.test(r[1])).map(b => [b[1], b[2], b[3], b[4]]), [['Claude Pro', 'w', '290,000원', '다음 결제 11월 20일'], ['Codex Pro 200', 'g', '145,000원', '다음 결제 11월 30일']], 'an account with no price and no bill day stays only in 「요금을 모르는 1개 빼고」');
+  assert.deepEqual(lines.filter(r => !/월 \d+일$/.test(r[1])).map(b => [b[1], b[2], b[3], b[4]]), [['Claude Pro', 'w', '290,000원', '다음 결제 11월 20일'], ['Codex Pro 200', 'g', '145,000원', '다음 결제 11월 30일']], 'an account with no price and no bill day is left out of the total (「요금을 아는 구독만 더함」)');
   assert.ok(kinds(row.more, 'note').some(n => n[1] === '7일 안에 결제되는 계정입니다.'));
   assert.deepEqual(lines.filter(r => /월 \d+일$/.test(r[1])).map(b => [b[1], b[2], b[3], b[4], b[5]]), [['11월 20일', 'Claude · w', '290,000원', '2일 뒤', true]]);
 });

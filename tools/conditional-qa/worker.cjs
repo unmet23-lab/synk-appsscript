@@ -65,8 +65,7 @@ const due = (row, now = Date.now()) => ['queued', 'running', 'publish-pending'].
 // the oldest ready entry, so a stream of new pushes cannot starve the backlog.
 // Selection never deletes or passes an older commit.
 function nextItem(queue, head, attempted = new Set(), now = Date.now(), requestedCommit = null) {
-  // A commit waiting on its parent's result needs no run of its own, so the turn goes to the commit that does. A requested commit is always measured itself.
-  const ready = queue.items.filter(row => due(row, now) && !attempted.has(row.commit) && (requestedCommit !== null || !row.awaitsParent));
+  const ready = queue.items.filter(row => due(row, now) && !attempted.has(row.commit));
   if (requestedCommit !== null) {
     const matches = queue.items.filter(row => row.commit === requestedCommit);
     if (matches.length !== 1) throw Error('Choose one commit already registered in the local queue');
@@ -74,7 +73,8 @@ function nextItem(queue, head, attempted = new Set(), now = Date.now(), requeste
     return ready.find(row => row.commit === requestedCommit);
   }
   const oldest = queue.nextTurn === undefined ? attempted.size % 2 === 1 : queue.nextTurn === 'oldest';
-  return ready.find(row => row.status === 'publish-pending') ||
+  // The scheduled full run of the newest master goes before both turns (README #run-criterion).
+  return ready.find(row => row.status === 'publish-pending') || ready.find(row => row.fullRun) ||
     (oldest ? ready[0] : ready.find(row => row.commit === head) || ready.at(-1));
 }
 function advanceTurn(queue) {
@@ -214,33 +214,70 @@ function checkSavedReceipt(root, item, runGit = git) {
   const expected = savedManifest.cases.filter(row => row.route === 'local'), digest = sha256(JSON.stringify(savedManifest));
   if (item.digest !== digest || item.count !== expected.length || !receipt.inputsUnchanged || !coverage(receipt, { commit: item.commit, digest, cases: expected })) throw Error('Saved local proof is incomplete');
 }
-// A commit that changed nothing under test runs on exactly the bytes of its first parent, so the parent's complete pass is its pass too, and its receipt says which run proved it.
-// Only a pass carries: a failed parent proves nothing about a later attempt, so such a commit is verified itself, and a deliberate retry always runs.
-// One still waiting on its parent needs no turn of its own. A receipt that cannot be read costs a real run, never a pass.
-// Each carried commit wakes its waiting hosted run, so a long backlog goes a tick's worth at a time and the account's job limit stays free for Pages deploys (11-04).
-const CARRY_PER_TICK = 60;
-function carryUnchanged(queue, root, head, stateDir, { runGit = git, now = Date.now(), limit = CARRY_PER_TICK } = {}) {
-  for (const row of queue.items) delete row.awaitsParent;
-  const open = row => row.status === 'queued' || (row.status === 'retry' && !row.retryRequest), start = queue.items.findIndex(open);
-  if (start < 0) return 0;
-  let changes, carried = 0;
-  try { changes = testedChanges(root, start ? queue.items[start - 1].commit : `${queue.items[0].commit}^`, head, runGit); }
-  catch (error) { console.error(`Nothing carried this time: ${error.message}`); return 0; }
-  // The first item of all has no parent in the queue, so it is always verified itself.
-  for (let n = Math.max(start, 1); n < queue.items.length; n++) {
-    const item = queue.items[n], parent = queue.items[n - 1], change = changes.get(item.commit);
-    if (!open(item) || change?.unchanged !== true || change.parent !== parent.commit || parent.status === 'failed') continue;
-    if (carried >= limit || (parent.status !== 'passed' && !(parent.status === 'publish-pending' && parent.carriedFrom))) { item.awaitsParent = true; continue; }
-    try {
-      checkSavedReceipt(root, parent, runGit);
-      const { phases, sourceBefore, ...proof } = read(path.join(parent.output, 'result.json')), origin = parent.carriedFrom || parent.commit;
-      const output = path.join(stateDir, 'runs', `${item.commit}-${now}`), at = new Date(now).toISOString();
-      write(path.join(output, 'result.json'), { ...proof, commit: item.commit, carriedFrom: { origin, parent: parent.commit, parentOutput: parent.output, at } });
-      Object.assign(item, { output, count: parent.count, digest: parent.digest, carriedFrom: origin, status: 'publish-pending', startedAt: at });
-      delete item.error; delete item.carryError; delete item.retryAt; carried++;
-    } catch (error) { item.carryError = error.message.slice(0, 300); }
+// The criterion since 11-24 (README #run-criterion): only commits that touched the tested paths are measured, and the newest master is measured in full a few times a day.
+// The tested paths are the checkout itself (tested-tree.json), which every run re-proves with its trace. Everything else is "not run": a pending status that names itself,
+// never a pass and never a failure. A commit only ever gets "not run" before any run of its own, so it never covers a result.
+const NOT_RUN = 'NOT RUN:';
+// Four full runs a day: the queue never holds more than about six hours of code commits, far inside local-status's 72 hours, for 4 of the 115-212 runs a day (11-16~23).
+const FULL_RUN_EVERY_MS = 6 * 3600_000;
+// Not-run statuses wake no hosted run, but each is one GitHub write. 60 a round keeps under the secondary limit on content creation.
+const NOT_RUN_PER_ROUND = 60;
+const notRunText = ({ reason, by }) => reason === 'superseded' ? `${NOT_RUN} later master ${by.slice(0, 12)} passed in full; not a pass` : `${NOT_RUN} tested paths unchanged; not a pass`;
+const notRunYet = row => ['not-run', 'not-run-pending'].includes(row.status);
+function markNotRun(item, notRun) {
+  Object.assign(item, { status: 'not-run-pending', notRun });
+  for (const key of ['awaitsParent', 'carriedFrom', 'carryError', 'retryAt', 'error']) delete item[key];
+}
+// A commit that changed nothing under test is not run. A carried pass that a stopped tick left unpublished (the criterion before 11-24) is not published any more.
+// A full-run target is measured even when it changed nothing. A history that cannot be read marks nothing, so its commits are simply measured.
+function markUntouched(queue, root, head, { runGit = git, now = Date.now() } = {}) {
+  let marked = 0;
+  for (const row of queue.items) {
+    delete row.awaitsParent;
+    if (row.status === 'publish-pending' && row.carriedFrom) { markNotRun(row, { reason: 'untouched', at: new Date(now).toISOString() }); marked++; }
   }
-  return carried;
+  const open = row => row.status === 'queued' && !row.fullRun, start = queue.items.findIndex(open);
+  if (start < 0) return marked;
+  let changes;
+  try { changes = testedChanges(root, start ? queue.items[start - 1].commit : `${queue.items[0].commit}^`, head, runGit); }
+  catch (error) { console.error(`Nothing marked not run this time: ${error.message}`); return marked; }
+  // The first item of all has no parent in the queue, so it is always measured.
+  for (let n = Math.max(start, 1); n < queue.items.length; n++) {
+    const item = queue.items[n], change = changes.get(item.commit);
+    if (!open(item) || change?.unchanged !== true || change.parent !== queue.items[n - 1].commit) continue;
+    markNotRun(item, { reason: 'untouched', at: new Date(now).toISOString() }); marked++;
+  }
+  return marked;
+}
+// After a full run of the newest master passed, the code commits before it that no run reached are not run. One that ran, failed, or was asked for again keeps its own result.
+function supersede(queue, proof, now = Date.now()) {
+  let marked = 0;
+  for (const row of queue.items.slice(0, queue.items.indexOf(proof))) {
+    if (row.status !== 'queued') continue;
+    delete row.fullRun; markNotRun(row, { reason: 'superseded', by: proof.commit, at: new Date(now).toISOString() }); marked++;
+  }
+  return marked;
+}
+// Each slot measures the newest master once, ahead of every other turn. A stale target that never ran goes back to the ordinary rules.
+function scheduleFullRun(queue, head, now = Date.now(), everyMs = FULL_RUN_EVERY_MS) {
+  const slot = Math.floor(now / everyMs) * everyMs, item = queue.items.findLast(row => row.commit === head);
+  if (!item || (queue.fullRunSlot !== undefined && Date.parse(queue.fullRunSlot) >= slot)) return null;
+  for (const row of queue.items) if (row !== item && row.fullRun && row.status === 'queued') delete row.fullRun;
+  queue.fullRunSlot = new Date(slot).toISOString(); item.fullRun = queue.fullRunSlot;
+  if (notRunYet(item)) { item.status = 'queued'; delete item.notRun; }
+  if (item.status === 'passed') supersede(queue, item, now);
+  return item;
+}
+// Oldest first, so the oldest commit waiting in local-status settles first. A failed call stops the round and is tried again at the next.
+function publishNotRun(queue, publish = github.publish, limit = NOT_RUN_PER_ROUND) {
+  let published = 0;
+  for (const row of queue.items) {
+    if (row.status !== 'not-run-pending') continue;
+    if (published >= limit) break;
+    try { publish(row.commit, 'pending', notRunText(row.notRun), undefined, row.notRun.by || row.commit); row.status = 'not-run'; delete row.notRunError; published++; }
+    catch (error) { row.notRunError = error.message.slice(0, 300); break; }
+  }
+  return published;
 }
 // A passed run keeps its receipt, TAP and events. Its screens, database and temp files are 70 MB a run: at 300 runs a day that outgrows this disk
 // before a daily sweep comes round, and nothing reads them again. A failed or unfinished run keeps everything; the space guard sweeps what a crash left behind.
@@ -294,13 +331,11 @@ async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAno
   }
   if (fatal) throw fatal;
 }
-async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, waitForRoom = false, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, first = roomForFirst, room = roomForAnother, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS, calmMs = CALM_MS, holdTickMs = HOLD_TICK_MS, statfs = fs.statfsSync } = {}) {
+async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, waitForRoom = false, fullRunEveryMs = null, notRunPerRound = NOT_RUN_PER_ROUND, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, first = roomForFirst, room = roomForAnother, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS, calmMs = CALM_MS, holdTickMs = HOLD_TICK_MS, statfs = fs.statfsSync } = {}) {
   if (requestedCommit !== null) github.validCommit(requestedCommit);
   const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
-    const root = cloneRoot(config), queue = read(queueFile); let head;
-    // What a stopped tick left to publish wakes hosted runs too, so it counts against this tick's share.
-    let carried = queue.items.filter(row => row.status === 'publish-pending' && row.carriedFrom).length;
+    const root = cloneRoot(config), queue = read(queueFile); let head, notRunPublished = 0;
     if (queue.version !== 1 || !Array.isArray(queue.items)) throw Error('Invalid local queue');
     // Upgrade an existing queue once. Its next turn then survives every tick/restart.
     if (queue.nextTurn === undefined) queue.nextTurn = 'recent';
@@ -316,11 +351,15 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       github.validCommit(queue.seen); runGit(root, ['merge-base', '--is-ancestor', queue.seen, head]);
       const commits = runGit(root, ['rev-list', '--reverse', '--first-parent', `${queue.seen}..${head}`]).split(/\r?\n/).filter(Boolean);
       extendQueue(queue, head, commits);
-      if (requestedCommit === null) carried += carryUnchanged(queue, root, head, stateDir, { runGit, limit: CARRY_PER_TICK - carried });
+      if (requestedCommit === null) {
+        markUntouched(queue, root, head, { runGit });
+        // Off unless the scheduled entry asks for it (main below), so a requested verification never moves the schedule.
+        if (fullRunEveryMs) scheduleFullRun(queue, head, Date.now(), fullRunEveryMs);
+      }
       save();
     };
     // Between verifications too: one tick can last two hours while a finished commit's run stays unresolved.
-    const settle = () => { republishFailures(queue, hub.publish); resumeFinished(queue, hub.resumeWaitingWorkflow); save(); };
+    const settle = () => { republishFailures(queue, hub.publish); resumeFinished(queue, hub.resumeWaitingWorkflow); notRunPublished += publishNotRun(queue, hub.publish, notRunPerRound); save(); };
     refresh();
     try { markCancelledRuns(queue, hub.cancelledRuns()); } catch (error) { console.error(`Cancelled runs were not listed: ${error.message}`); }
     settle();
@@ -355,9 +394,11 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
         // Re-read the receipt after a process restart, rather than trusting queue.json's success flag.
         checkSavedReceipt(root, item, runGit);
         // A timed-out call says nothing about the tests (11-05: gh at 100% CPU put a failure on a commit that had passed, and local-status alerted). The result stays saved for the next tick.
-        try { hub.publish(item.commit, 'success', github.description(item.count, item.digest), undefined, item.carriedFrom || item.commit); }
+        try { hub.publish(item.commit, 'success', github.description(item.count, item.digest)); }
         catch (error) { item.error = `Not published yet: ${error.message}`.slice(0, 1000); save(); return {}; }
-        item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; delete item.publicationError; save();
+        item.status = 'passed'; item.endedAt = new Date().toISOString(); item.resumePending = true; delete item.error; delete item.publicationError;
+        if (item.fullRun && requestedCommit === null) supersede(queue, item);
+        save();
       } catch (error) {
         item.error = error.message.slice(0, 1000);
         let publicationState = 'failure', description = INCOMPLETE, retireSlot = false;
@@ -408,7 +449,9 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
       try { if (newest) { hub.publish(newest.commit, 'pending', HOLDING); queue.heldNoticeAt = Date.now(); save(); } }
       catch (error) { console.error(`The hold notice was not published: ${error.message}`); }
     }
-    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(holdingSince !== null && { holdingAtCpu: busy }), ...(diskWait && { diskWait }), ...(queueNotSaved && { queueNotSaved }), queued: queue.items.filter(row => row.status === 'queued').length, awaitingParent: queue.items.filter(row => row.awaitsParent).length, carried,
+    const fullRun = queue.fullRunSlot && queue.items.findLast(row => row.fullRun === queue.fullRunSlot);
+    const summary = { checkedAt: new Date().toISOString(), head, slots: checkouts.length, roomHeld: held, ...(holdingSince !== null && { holdingAtCpu: busy }), ...(diskWait && { diskWait }), ...(queueNotSaved && { queueNotSaved }), queued: queue.items.filter(row => row.status === 'queued').length,
+      notRun: queue.items.filter(notRunYet).length, notRunPublished, ...(fullRun && { fullRun: { slot: fullRun.fullRun, commit: fullRun.commit, status: fullRun.status } }),
       incomplete: queue.items.filter(row => row.status !== 'passed').length,
       passed: queue.items.filter(row => row.status === 'passed').length, failed: queue.items.filter(row => row.status === 'failed').length,
       items: queue.items.slice(-5).map(({ commit, status, error }) => ({ commit, status, error })) };
@@ -431,9 +474,9 @@ if (require.main === module) {
   const requestedCommit = targetIndex >= 0 ? args[targetIndex + 1] || '' : null;
   const waitForRoom = args.includes('--wait-for-room');
   if (waitForRoom && requestedCommit === null) throw Error('--wait-for-room requires --registered-commit');
-  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir, { requestedCommit, waitForRoom });
+  const promise = args.includes('--initialize') ? Promise.resolve(initialize(stateDir, args[args.indexOf('--initialize') + 1])) : tick(stateDir, { requestedCommit, waitForRoom, fullRunEveryMs: FULL_RUN_EVERY_MS });
   promise.then(summary => {
     if (requestedCommit !== null && summary.requested.status !== 'passed') process.exitCode = summary.requested.status === 'failed' ? 1 : 2;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
-module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, failureText, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun, carryUnchanged };
+module.exports = { extendQueue, nextItem, advanceTurn, acquire, initialize, verify, tick, defaultState, sleptDuring, failureDisposition, failureText, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun, markUntouched, supersede, scheduleFullRun, publishNotRun, notRunText, NOT_RUN, FULL_RUN_EVERY_MS };

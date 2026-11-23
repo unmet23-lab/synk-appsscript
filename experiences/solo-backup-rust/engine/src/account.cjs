@@ -20,7 +20,7 @@ const { ProvisionClient } = require('./provision-client.cjs');
 const { EnvelopeV3 } = require('./recovery-service.cjs');
 
 // This app's version as the provisioning server and its measurements see it.
-const APP_VERSION = '0.7.0';
+const APP_VERSION = '0.7.1';
 const DEVICE = /^[a-z0-9]{12}$/;
 const JOB = /^[A-Za-z0-9_-]{1,64}$/;
 const CODE = /^[A-Z][A-Z_]{1,31}$/;

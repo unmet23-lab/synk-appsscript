@@ -57,8 +57,11 @@ export function publicIndex(index, published) {
     : entry)) };
 }
 
-/** jobs: the ids approved for synk.im. Nothing is published without naming them. */
-export async function prepareWorkdayPages({ jobs } = {}) {
+/**
+ * jobs: the ids approved for synk.im. Nothing is published without naming them.
+ * output: where the bundle goes. Tests pass their own folder: the default is the candidate a job session reviewed and publishes.
+ */
+export async function prepareWorkdayPages({ jobs, output = WORKDAY_OUTPUT } = {}) {
   if (!Array.isArray(jobs) || !jobs.length || jobs.some((id) => !ID.test(id || ''))) throw new Error('Name the jobs to publish: --jobs care-home[,…]');
   const published = new Set(jobs);
   const index = JSON.parse(await readFile(path.join(SOURCE, INDEX), 'utf8'));
@@ -87,10 +90,10 @@ export async function prepareWorkdayPages({ jobs } = {}) {
   }
   // What the pages borrow from the interview room must already be approved for publishing there.
   for (const target of outside) if (target !== 'interview/film/rehearsal.html' && !approved.has(target)) throw new Error(`Outside reference is not an approved public file: ${target}`);
-  try { if ((await lstat(WORKDAY_OUTPUT)).isSymbolicLink()) throw new Error('Refusing a symlink output'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
-  await rm(WORKDAY_OUTPUT, { recursive: true, force: true });
+  try { if ((await lstat(output)).isSymbolicLink()) throw new Error('Refusing a symlink output'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  await rm(output, { recursive: true, force: true });
   for (const row of rows) {
-    const destination = path.join(WORKDAY_OUTPUT, 'public/path', row.file);
+    const destination = path.join(output, 'public/path', row.file);
     await mkdir(path.dirname(destination), { recursive: true });
     await writeFile(destination, row.bytes);
   }
@@ -100,8 +103,8 @@ export async function prepareWorkdayPages({ jobs } = {}) {
     outside: [...outside].sort(),
     files: rows.map((row) => ({ file: row.file, bytes: row.bytes.length, sha256: sha256(row.bytes) })),
   };
-  await writeFile(path.join(WORKDAY_OUTPUT, MANIFEST), JSON.stringify(report, null, 2) + '\n');
-  return { directory: WORKDAY_OUTPUT, publicDirectory: path.join(WORKDAY_OUTPUT, 'public/path/workday'), jobs: report.jobs, files: rows.length, payloadBytes: rows.reduce((sum, row) => sum + row.bytes.length, 0), outside: report.outside };
+  await writeFile(path.join(output, MANIFEST), JSON.stringify(report, null, 2) + '\n');
+  return { directory: output, publicDirectory: path.join(output, 'public/path/workday'), jobs: report.jobs, files: rows.length, payloadBytes: rows.reduce((sum, row) => sum + row.bytes.length, 0), outside: report.outside };
 }
 
 async function filesUnder(directory, prefix = '') {
@@ -113,13 +116,13 @@ async function filesUnder(directory, prefix = '') {
   return out;
 }
 
-export async function verifyWorkdayPages({ live = false, fetchImpl = globalThis.fetch } = {}) {
-  const report = JSON.parse(await readFile(path.join(WORKDAY_OUTPUT, MANIFEST), 'utf8'));
+export async function verifyWorkdayPages({ live = false, fetchImpl = globalThis.fetch, output = WORKDAY_OUTPUT } = {}) {
+  const report = JSON.parse(await readFile(path.join(output, MANIFEST), 'utf8'));
   if (report.generatedBy !== GENERATOR) throw new Error('Unrecognized workday manifest');
-  const actual = (await filesUnder(path.join(WORKDAY_OUTPUT, 'public/path'))).sort(), expected = report.files.map((row) => row.file).sort();
+  const actual = (await filesUnder(path.join(output, 'public/path'))).sort(), expected = report.files.map((row) => row.file).sort();
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error('Workday output holds files the manifest does not list');
   for (const row of report.files) {
-    const bytes = await readFile(path.join(WORKDAY_OUTPUT, 'public/path', row.file));
+    const bytes = await readFile(path.join(output, 'public/path', row.file));
     if (bytes.length !== row.bytes || sha256(bytes) !== row.sha256) throw new Error(`Changed bytes: ${row.file}`);
     if (row.file.endsWith('.html') && !bytes.toString('utf8').includes(`content="${PAGES_CSP}"`)) throw new Error(`Missing CSP: ${row.file}`);
     if (/(?:^|\/)(?:production|docs)\//.test(row.file) || /\.(?:txt|md|py|png)$/.test(row.file)) throw new Error(`Working file in the bundle: ${row.file}`);

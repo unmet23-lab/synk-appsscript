@@ -937,34 +937,43 @@ test('the desk panel cuts by whole letters and the cut row with its mark still f
 
 test('the publish bundle holds only approved workday files, with the page policy written in', async () => {
   const { prepareWorkdayPages, verifyWorkdayPages, references, publicIndex, WORKDAY_OUTPUT } = await import('../../../tools/package-path-workday.mjs');
-  // Only the jobs named for publishing ship; another open job (open for a local test) becomes a card.
-  await assert.rejects(prepareWorkdayPages(), /Name the jobs to publish/);
-  await assert.rejects(prepareWorkdayPages({ jobs: ['no-such-job'] }), /Not an open job: no-such-job/);
-  const index = { schemaVersion: 1, jobs: [{ id: 'care-home', status: 'open', title: 'A', role: 'B', minutes: 15, poster: 'care-home/x.jpg' }, { id: 'hotel-front', status: 'open', title: 'C', role: 'D', summary: 'E', minutes: 15, poster: 'hotel-front/y.jpg', posterAlt: 'Y' }, { id: 'duty-free', status: 'making', title: 'F', role: 'G', summary: 'H' }] };
-  assert.deepEqual(publicIndex(index, new Set(['care-home'])).jobs, [index.jobs[0], { id: 'hotel-front', status: 'making', title: 'C', role: 'D', summary: 'E', poster: 'hotel-front/y.jpg', posterAlt: 'Y' }, index.jobs[2]]);
-  assert.deepEqual(references('workday/play.mjs', "import a from './engine/a.mjs'; import('../interview/b.mjs'); new URL('./jobs/index.json', import.meta.url);").sort(), ['interview/b.mjs', 'workday/engine/a.mjs', 'workday/jobs/index.json']);
-  assert.deepEqual(references('workday/index.html', '<a href="../">x</a><link href="./workday.css?v=1"><img src="../assets/logo.webp">').sort(), ['./', 'assets/logo.webp', 'workday/workday.css']);
-  // Films are outside git (*.mp4). Where the reviewed ones are not on this computer (a new copy, CI), the bundle
-  // must refuse rather than ship a page that silently falls back to photographs; the rest is checked where they are.
-  const careManifest = JSON.parse(await readFile(path.join(JOBS, 'care-home', 'manifest.json'), 'utf8'));
-  const films = careManifest.clips.filter((clip) => clip.reviewed === true).map((clip) => path.join(JOBS, 'care-home', clip.file));
-  const present = await Promise.all(films.map((file) => stat(file).then(() => true, () => false)));
-  if (present.includes(false)) {
-    await assert.rejects(prepareWorkdayPages({ jobs: ['care-home'] }), /Reviewed film is missing from the bundle/);
-    return;
+  // Its own folder: .tmp/path-workday-pages may hold the candidate a job session reviewed and is about to publish.
+  const output = await mkdtemp(path.join(tmpdir(), 'workday-pages-'));
+  const candidate = await stat(path.join(WORKDAY_OUTPUT, 'workday-pages-manifest.json')).then((info) => info.mtimeMs, () => null);
+  try {
+    // Only the jobs named for publishing ship; another open job (open for a local test) becomes a card.
+    await assert.rejects(prepareWorkdayPages({ output }), /Name the jobs to publish/);
+    await assert.rejects(prepareWorkdayPages({ jobs: ['no-such-job'], output }), /Not an open job: no-such-job/);
+    const index = { schemaVersion: 1, jobs: [{ id: 'care-home', status: 'open', title: 'A', role: 'B', minutes: 15, poster: 'care-home/x.jpg' }, { id: 'hotel-front', status: 'open', title: 'C', role: 'D', summary: 'E', minutes: 15, poster: 'hotel-front/y.jpg', posterAlt: 'Y' }, { id: 'duty-free', status: 'making', title: 'F', role: 'G', summary: 'H' }] };
+    assert.deepEqual(publicIndex(index, new Set(['care-home'])).jobs, [index.jobs[0], { id: 'hotel-front', status: 'making', title: 'C', role: 'D', summary: 'E', poster: 'hotel-front/y.jpg', posterAlt: 'Y' }, index.jobs[2]]);
+    assert.deepEqual(references('workday/play.mjs', "import a from './engine/a.mjs'; import('../interview/b.mjs'); new URL('./jobs/index.json', import.meta.url);").sort(), ['interview/b.mjs', 'workday/engine/a.mjs', 'workday/jobs/index.json']);
+    assert.deepEqual(references('workday/index.html', '<a href="../">x</a><link href="./workday.css?v=1"><img src="../assets/logo.webp">').sort(), ['./', 'assets/logo.webp', 'workday/workday.css']);
+    // Films are outside git (*.mp4). Where the reviewed ones are not on this computer (a new copy, CI), the bundle
+    // must refuse rather than ship a page that silently falls back to photographs; the rest is checked where they are.
+    const careManifest = JSON.parse(await readFile(path.join(JOBS, 'care-home', 'manifest.json'), 'utf8'));
+    const films = careManifest.clips.filter((clip) => clip.reviewed === true).map((clip) => path.join(JOBS, 'care-home', clip.file));
+    const present = await Promise.all(films.map((file) => stat(file).then(() => true, () => false)));
+    if (present.includes(false)) {
+      await assert.rejects(prepareWorkdayPages({ jobs: ['care-home'], output }), /Reviewed film is missing from the bundle/);
+      return;
+    }
+    const built = await prepareWorkdayPages({ jobs: ['care-home'], output });
+    assert.deepEqual(built.jobs, ['care-home']);
+    assert.ok(built.files >= 20);
+    assert.ok(built.outside.includes('interview/film-player.mjs') && built.outside.every((file) => !file.startsWith('workday/')));
+    assert.equal(built.directory, output);
+    assert.deepEqual(await verifyWorkdayPages({ output }), { files: built.files, outside: built.outside.length, live: false });
+    const report = JSON.parse(await readFile(path.join(output, 'workday-pages-manifest.json'), 'utf8'));
+    const names = report.files.map((row) => row.file);
+    assert.ok(names.includes('workday/index.html') && names.includes('workday/jobs/care-home/job.json') && names.includes('workday/engine/comfort.mjs'));
+    assert.ok(names.every((file) => file.startsWith('workday/') && !/production|docs|\.txt$|\.md$/.test(file)));
+    // A job still being made ships only its card photograph, never its scene table.
+    assert.ok(names.includes('workday/jobs/medical-coordinator/places/desk-senior.jpg') && !names.some((file) => file.startsWith('workday/jobs/medical-coordinator/') && !file.endsWith('/places/desk-senior.jpg')));
+    const page = await readFile(path.join(output, 'public/path/workday/play.html'), 'utf8');
+    assert.match(page, /<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self';/);
+    assert.match(page, /<meta name="referrer" content="no-referrer">/);
+  } finally {
+    await rm(output, { recursive: true, force: true });
   }
-  const built = await prepareWorkdayPages({ jobs: ['care-home'] });
-  assert.deepEqual(built.jobs, ['care-home']);
-  assert.ok(built.files >= 20);
-  assert.ok(built.outside.includes('interview/film-player.mjs') && built.outside.every((file) => !file.startsWith('workday/')));
-  assert.deepEqual(await verifyWorkdayPages(), { files: built.files, outside: built.outside.length, live: false });
-  const report = JSON.parse(await readFile(path.join(WORKDAY_OUTPUT, 'workday-pages-manifest.json'), 'utf8'));
-  const names = report.files.map((row) => row.file);
-  assert.ok(names.includes('workday/index.html') && names.includes('workday/jobs/care-home/job.json') && names.includes('workday/engine/comfort.mjs'));
-  assert.ok(names.every((file) => file.startsWith('workday/') && !/production|docs|\.txt$|\.md$/.test(file)));
-  // A job still being made ships only its card photograph, never its scene table.
-  assert.ok(names.includes('workday/jobs/medical-coordinator/places/desk-senior.jpg') && !names.some((file) => file.startsWith('workday/jobs/medical-coordinator/') && !file.endsWith('/places/desk-senior.jpg')));
-  const page = await readFile(path.join(WORKDAY_OUTPUT, 'public/path/workday/play.html'), 'utf8');
-  assert.match(page, /<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'self';/);
-  assert.match(page, /<meta name="referrer" content="no-referrer">/);
+  assert.equal(await stat(path.join(WORKDAY_OUTPUT, 'workday-pages-manifest.json')).then((info) => info.mtimeMs, () => null), candidate, 'the publish candidate is left as it was');
 });

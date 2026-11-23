@@ -1,11 +1,12 @@
 'use strict';
-// docs left out of the verification checkouts, and the pass a commit carries from its parent when nothing under test changed (README #tested-tree).
+// docs left out of the verification checkouts (README #tested-tree), and the run criterion since 11-24: only commits that touched the tested paths run, and the newest master runs in full each slot (README #run-criterion).
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), cp = require('node:child_process');
 const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa/contract.cjs');
 const { KEPT_DOCS, SPARSE_PATTERNS, outsideTestedTree, onTheWay, testedChanges, traceEnvironment, touchedOutside } = require('../tools/conditional-qa/tested-tree.cjs');
 const { write, git, ensureTestedTree } = require('../tools/conditional-qa/inputs.cjs');
-const { carryUnchanged, nextItem, tick, failureText, republishFailures } = require('../tools/conditional-qa/worker.cjs');
+const { markUntouched, supersede, scheduleFullRun, notRunText, FULL_RUN_EVERY_MS, nextItem, tick, failureText, republishFailures } = require('../tools/conditional-qa/worker.cjs');
+const localStatus = require('../tools/conditional-qa/local-status.cjs');
 const { accountLedger, s122TraceOnly } = require('../tools/conditional-qa/trace-diagnosis.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const manifest = c.readManifest(root), local = manifest.cases.filter(row => row.route === 'local');
@@ -170,7 +171,7 @@ test('the tracer writes down a probe of left-out docs at once, in a process that
   assert.deepEqual(touchedOutside(trace), ['docs', 'docs/_ops', 'docs/_ops/약속.md', 'docs/_ops/없는것.md', 'docs/_ops/읽힌것.md'].sort(), 'a listing of docs itself counts; asking whether it exists does not');
   assert.deepEqual(touchedOutside(path.join(dir, 'no-such-folder')), [], 'a clean run has no folder');
 });
-test('a name holding the log separator stops the whole range from carrying, whatever follows it', () => {
+test('a name holding the log separator stops the whole range from counting as unchanged, whatever follows it', () => {
   const a = hex(1), b = hex(2), c3 = hex(3), reading = (log, commits) => (cwd, args) => (args[0] === 'rev-list' ? String(commits) : log);
   const plain = `\u0001${a} ${b}\0\ndocs/x.md\0\u0001${b} ${c3}\0\ndocs/y.md\0`;
   assert.equal(testedChanges('root', c3, a, reading(plain, 2)).get(a).unchanged, true);
@@ -181,7 +182,7 @@ test('a name holding the log separator stops the whole range from carrying, what
   ]) assert.throws(() => testedChanges('root', c3, a, reading(log, 2)), /separator/);
 });
 // A Windows file name cannot hold a control character.
-if (process.platform !== 'win32') test('a real name holding the log separator stops carrying', t => {
+if (process.platform !== 'win32') test('a real name holding the log separator counts nothing as unchanged', t => {
   const g = repository(t);
   g.put('tools/a.js', '1'); const base = g.commit('base');
   g.put('\u0001' + 'f'.repeat(40), 'code'); const head = g.commit('named');
@@ -199,14 +200,6 @@ test('capitals, a failed require and a failed import of left-out docs are writte
   for (const name of ['docs/_ops/없는모듈.js', 'docs/_ops/없는이엠.mjs']) assert.ok(seen.includes(name), name);
   if (process.platform === 'win32') assert.ok(seen.includes('docs/_ops/대문자.md'));
 });
-test('what a stopped tick left to publish counts against the next tick\'s share', async t => {
-  const f = carryFixture(t, [CODE, ...Array(70).fill(DOC)], { statuses: { [hex(1)]: 'passed' } }), queue = JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json')));
-  assert.equal(carryUnchanged(queue, 'root', hex(71), f.state, { runGit: f.deps.runGit, limit: 60 }), 60);
-  write(path.join(f.state, 'queue.json'), queue);
-  const summary = await tick(f.state, { ...f.deps, first: () => false, room: () => false, verifyCommit: () => assert.fail('no run') });
-  assert.equal(f.published.filter(row => row.state === 'success').length, 60);
-  assert.equal(f.queue().filter(row => row.status === 'passed').length, 61); assert.equal(summary.carried, 60);
-});
 test('without the two variables the tracer stays out of the way', () => {
   const env = { ...process.env, NODE_OPTIONS: `--require "${path.join(root, 'tools/conditional-qa/read-trace.cjs').split(path.sep).join('/')}"` };
   delete env.CQA_TRACE_DIR; delete env.CQA_TRACE_ROOT;
@@ -215,7 +208,7 @@ test('without the two variables the tracer stays out of the way', () => {
 
 // The tick fixture of conditional-qa.test.cjs, with a first-parent log: each commit lists what it changed.
 const hex = n => n.toString(16).padStart(40, '0');
-function carryFixture(t, plan, { statuses = {} } = {}) {
+function queueFixture(t, plan, { statuses = {} } = {}) {
   const dir = scratch(t), state = path.join(dir, 'state'), commits = plan.map((_, n) => hex(n + 1)), parentOf = n => (n ? commits[n - 1] : hex(999)), head = commits.at(-1);
   write(path.join(state, 'owner.json'), { version: 1, purpose: 'synk-conditional-qa', state });
   write(path.join(state, 'config.json'), { version: 1, repo: github.REPO, state, root: path.join(state, 'workspace/SYNK-appsscript') });
@@ -231,100 +224,126 @@ function carryFixture(t, plan, { statuses = {} } = {}) {
   return { state, commits, published, woken, queue, receiptFor, deps: { hub, runGit, cloneRoot: config => config.root, first: () => true, room: () => true, meter: () => 10, recheckMs: 1, warmUpMs: 0, calmMs: 0, slept: () => false, statfs: () => ({ bavail: 200n * 1024n ** 3n, bsize: 1n }) } };
 }
 const DOC = ['docs/_ops/트랙.md'], CODE = ['tools/a.js', 'docs/_ops/트랙.md'];
-test('only the code commits run: docs commits carry the pass of the run that proved them, oldest first, whatever the turn', async t => {
-  const f = carryFixture(t, [CODE, DOC, DOC, CODE, DOC]), [a, b, c2, d, e] = f.commits, verified = [];
-  const summary = await tick(f.state, { ...f.deps, verifyCommit: async (config, commit, output) => { verified.push(commit); await turn(); write(path.join(output, 'result.json'), f.receiptFor(commit)); return { count: local.length, digest: manifest.digest }; } });
+const UNTOUCHED = notRunText({ reason: 'untouched' }), pass = async (f, verified, commit, output) => { verified.push(commit); await turn(); write(path.join(output, 'result.json'), f.receiptFor(commit)); return { count: local.length, digest: manifest.digest }; };
+const failing = (f, verified, red) => async (config, commit, output) => {
+  if (commit !== red) return pass(f, verified, commit, output);
+  verified.push(commit); await turn();
+  write(path.join(output, 'result.json'), { ...f.receiptFor(commit), ok: false, passed: local.length - 1, rows: local.map((row, n) => ({ ...row, status: n ? 'pass' : 'fail' })) });
+  throw Object.assign(Error('Local tests incomplete'), { code: 'TEST_FAILURE' });
+};
+test('only the commits that touched the tested paths run; a docs commit is marked not run, never passed', async t => {
+  const f = queueFixture(t, [CODE, DOC, DOC, CODE, DOC]), [a, b, c2, d, e] = f.commits, verified = [];
+  const summary = await tick(f.state, { ...f.deps, verifyCommit: (config, commit, output) => pass(f, verified, commit, output) });
   assert.deepEqual([...verified].sort(), [a, d].sort(), 'no docs commit ran');
-  assert.equal(verified[0], d, 'the newest turn lands on the newest commit that needs a run, not on a commit waiting for it');
   const items = Object.fromEntries(f.queue().map(row => [row.commit, row]));
-  assert.ok(Object.values(items).every(row => row.status === 'passed'));
-  assert.deepEqual([b, c2].map(commit => items[commit].carriedFrom), [a, a], 'a chain names the run at its start');
-  assert.equal(items[e].carriedFrom, d);
-  assert.deepEqual([a, d].map(commit => items[commit].carriedFrom), [undefined, undefined]);
-  for (const row of f.published.filter(row => row.state === 'success')) assert.equal(row.text, github.description(local.length, manifest.digest), 'the exact line an older commit\'s wait-local.cjs compares');
-  assert.deepEqual(f.published.filter(row => row.state === 'success' && row.commit === c2).map(row => row.proof), [a], 'the public link goes to the proving commit');
-  assert.deepEqual(f.published.filter(row => row.commit === b).map(row => row.state), ['success'], 'a carried commit never reads as running');
-  const receipt = JSON.parse(fs.readFileSync(path.join(items[c2].output, 'result.json')));
-  assert.equal(receipt.commit, c2); assert.equal(receipt.carriedFrom.origin, a); assert.equal(receipt.carriedFrom.parent, b);
-  assert.equal(receipt.phases, undefined, 'no run happened here'); assert.equal(summary.carried, 3); assert.equal(summary.awaitingParent, 0);
-  assert.deepEqual([...f.woken].sort(), [...f.commits].sort(), 'each commit\'s waiting run is woken, as after a real result');
+  assert.deepEqual([a, b, c2, d, e].map(commit => items[commit].status), ['passed', 'not-run', 'not-run', 'passed', 'not-run']);
+  for (const commit of [b, c2, e]) {
+    assert.deepEqual(f.published.filter(row => row.commit === commit).map(row => [row.state, row.text, row.proof]), [['pending', UNTOUCHED, commit]], 'one pending line that names itself, and no pass');
+    assert.equal(items[commit].output, undefined, 'no receipt is written for a commit that did not run');
+  }
+  assert.ok(UNTOUCHED.startsWith(localStatus.NOT_RUN_PREFIX));
+  assert.deepEqual([...f.woken].sort(), [a, d].sort(), 'a hosted run is woken only for a real result');
+  assert.deepEqual([summary.notRun, summary.notRunPublished, summary.fullRun], [3, 3, undefined]);
 });
-test('a commit whose parent already passed carries at once, holding no checkout and needing no quiet PC', async t => {
-  const f = carryFixture(t, [CODE, DOC, DOC], { statuses: { [hex(1)]: 'passed' } }), verifyCommit = t.mock.fn();
-  await tick(f.state, { ...f.deps, first: () => false, room: () => false, meter: () => 100, verifyCommit });
-  assert.equal(verifyCommit.mock.callCount(), 0);
-  assert.ok(f.queue().every(row => row.status === 'passed'));
-});
-test('a failure never carries: the next commit measures itself, and so does a deliberate retry', async t => {
-  const f = carryFixture(t, [CODE, DOC, DOC, DOC]), [red, child, grandchild, retried] = f.commits, verified = [];
+test('a failed parent no longer makes its docs children run, and a deliberate retry still runs', async t => {
+  const f = queueFixture(t, [CODE, DOC, DOC, DOC]), [red, child, grandchild, retried] = f.commits, verified = [];
   const queue = JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json')));
   Object.assign(queue.items[3], { status: 'retry', retryAt: 0, retryRequest: 'asked' });
   write(path.join(f.state, 'queue.json'), queue);
-  await tick(f.state, { ...f.deps, verifyCommit: async (config, commit, output) => {
-    verified.push(commit); await turn();
-    if (commit === red) { write(path.join(output, 'result.json'), { ...f.receiptFor(commit), ok: false, passed: local.length - 1, rows: local.map((row, n) => ({ ...row, status: n ? 'pass' : 'fail' })) }); throw Object.assign(Error('Local tests incomplete'), { code: 'TEST_FAILURE' }); }
-    write(path.join(output, 'result.json'), f.receiptFor(commit)); return { count: local.length, digest: manifest.digest };
-  } });
+  await tick(f.state, { ...f.deps, verifyCommit: failing(f, verified, red) });
   const items = Object.fromEntries(f.queue().map(row => [row.commit, row]));
-  assert.equal(items[red].status, 'failed');
-  assert.ok(verified.includes(child), 'the child of a failure runs'); assert.equal(items[child].carriedFrom, undefined);
-  assert.ok(verified.includes(retried), 'a retry that was asked for runs'); assert.equal(items[retried].carriedFrom, undefined);
-  assert.equal(items[grandchild].status, 'passed'); assert.equal(items[grandchild].carriedFrom, child, 'a real pass carries again');
+  assert.deepEqual([...verified].sort(), [red, retried].sort());
+  assert.deepEqual([red, child, grandchild, retried].map(commit => items[commit].status), ['failed', 'not-run', 'not-run', 'passed']);
 });
-test('a commit waits for its parent, and takes no turn meanwhile', t => {
-  const f = carryFixture(t, [CODE, CODE, DOC, DOC]), queue = JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json'))), [, b, c2, d] = f.commits;
-  queue.items[0].status = 'passed'; queue.items[1].status = 'running';
-  assert.equal(carryUnchanged(queue, 'root', d, f.state, { runGit: f.deps.runGit }), 0);
-  assert.deepEqual(queue.items.map(row => Boolean(row.awaitsParent)), [false, false, true, true]);
-  assert.equal(nextItem(queue, d, new Set([b])), undefined, 'the newest two wait for the run in progress: nothing else needs a turn');
-  queue.items[1].status = 'queued';
-  assert.equal(carryUnchanged(queue, 'root', d, f.state, { runGit: f.deps.runGit }), 0);
-  assert.equal(nextItem(queue, d).commit, b, 'head is waiting, so the turn takes the newest commit that is not');
-  assert.equal(nextItem(queue, d, new Set(), Date.now(), c2).commit, c2, 'a requested commit is measured itself');
+test('marking commits not run holds no checkout and needs no quiet PC', async t => {
+  const f = queueFixture(t, [CODE, DOC, DOC], { statuses: { [hex(1)]: 'passed' } }), verifyCommit = t.mock.fn();
+  await tick(f.state, { ...f.deps, first: () => false, room: () => false, meter: () => 100, verifyCommit });
+  assert.equal(verifyCommit.mock.callCount(), 0);
+  assert.deepEqual(f.queue().map(row => row.status), ['passed', 'not-run', 'not-run']);
+});
+test('a carried pass the old criterion left unpublished goes out as not run, not as a pass', async t => {
+  const f = queueFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), queue = JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json')));
+  Object.assign(queue.items[1], { status: 'publish-pending', carriedFrom: hex(1), count: local.length, digest: manifest.digest, output: queue.items[0].output });
+  write(path.join(f.state, 'queue.json'), queue);
+  await tick(f.state, { ...f.deps, verifyCommit: () => assert.fail('nothing to run') });
+  assert.deepEqual(f.published.map(row => [row.commit, row.state, row.text]), [[hex(2), 'pending', UNTOUCHED]]);
+  assert.equal(f.queue()[1].status, 'not-run'); assert.equal(f.queue()[1].carriedFrom, undefined);
+});
+test('a not-run line that could not be published is tried again, and the commit still never runs', async t => {
+  const f = queueFixture(t, [CODE, DOC, DOC], { statuses: { [hex(1)]: 'passed' } }), calls = [];
+  const down = { ...f.deps.hub, publish: commit => { calls.push(commit); throw Error('spawnSync gh ETIMEDOUT'); } };
+  await tick(f.state, { ...f.deps, hub: down, verifyCommit: () => assert.fail('a not-run commit never runs') });
+  assert.deepEqual(calls, [hex(2)], 'a failed call ends the round');
+  assert.deepEqual(f.queue().map(row => row.status), ['passed', 'not-run-pending', 'not-run-pending']); assert.match(f.queue()[1].notRunError, /ETIMEDOUT/);
+  await tick(f.state, { ...f.deps, verifyCommit: () => assert.fail('a not-run commit never runs') });
+  assert.deepEqual(f.published.map(row => row.commit), [hex(2), hex(3)]);
+  assert.deepEqual(f.queue().map(row => row.status), ['passed', 'not-run', 'not-run']); assert.equal(f.queue()[1].notRunError, undefined);
+});
+test('not-run lines go out a round of them at a time, oldest first', async t => {
+  const f = queueFixture(t, [CODE, DOC, DOC, DOC, DOC], { statuses: { [hex(1)]: 'passed' } });
+  await tick(f.state, { ...f.deps, notRunPerRound: 2, verifyCommit: () => assert.fail('nothing to run') });
+  assert.deepEqual(f.queue().map(row => row.status), ['passed', 'not-run', 'not-run', 'not-run-pending', 'not-run-pending']);
+});
+test('a history that cannot be read marks nothing, and the commits are simply measured', t => {
+  const f = queueFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), queue = JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json')));
+  const logged = t.mock.method(console, 'error', () => {});
+  assert.equal(markUntouched(queue, 'root', hex(2), { runGit: () => { throw Error('git log failed'); } }), 0);
+  assert.equal(logged.mock.callCount(), 1);
+  assert.equal(queue.items[1].status, 'queued');
+  assert.equal(nextItem(queue, hex(2)).commit, hex(2));
+});
+test('the newest master runs in full ahead of both turns, even a docs commit, and its pass leaves the unreached code commits not run', async t => {
+  const f = queueFixture(t, [CODE, CODE, DOC]), [a, b, head] = f.commits, verified = [];
+  const queue = JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json'))); queue.nextTurn = 'oldest'; write(path.join(f.state, 'queue.json'), queue);
+  const summary = await tick(f.state, { ...f.deps, fullRunEveryMs: FULL_RUN_EVERY_MS, verifyCommit: (config, commit, output) => pass(f, verified, commit, output) });
+  assert.deepEqual(verified, [head], 'the full run went first, and its pass settled the rest');
+  const items = Object.fromEntries(f.queue().map(row => [row.commit, row]));
+  assert.deepEqual([a, b, head].map(commit => items[commit].status), ['not-run', 'not-run', 'passed']);
+  const later = notRunText({ reason: 'superseded', by: head });
+  assert.equal(later, `${localStatus.NOT_RUN_PREFIX} later master ${head.slice(0, 12)} passed in full; not a pass`); assert.ok(later.length <= 140);
+  for (const commit of [a, b]) assert.deepEqual(f.published.filter(row => row.commit === commit).map(row => [row.state, row.text, row.proof]), [['pending', later, head]], 'the link goes to the run that passed');
+  assert.deepEqual(f.published.filter(row => row.commit === head).map(row => row.state), ['pending', 'success']);
+  assert.equal(summary.fullRun.commit, head); assert.equal(summary.fullRun.status, 'passed');
+  assert.equal(Date.parse(summary.fullRun.slot) % FULL_RUN_EVERY_MS, 0);
+});
+test('a failed full run settles nothing: the code commits before it still run', async t => {
+  const f = queueFixture(t, [CODE, CODE, DOC]), [a, b, head] = f.commits, verified = [];
+  await tick(f.state, { ...f.deps, fullRunEveryMs: FULL_RUN_EVERY_MS, verifyCommit: failing(f, verified, head) });
+  assert.equal(verified[0], head); assert.deepEqual([...verified].sort(), [a, b, head].sort());
+  assert.deepEqual(f.queue().map(row => row.status), ['passed', 'passed', 'failed']);
+  assert.ok(!f.published.some(row => row.text.startsWith(localStatus.NOT_RUN_PREFIX)));
+});
+test('a passed full run leaves alone every commit that ran, failed, waits for a retry or runs now', () => {
+  const rows = ['passed', 'failed', 'retry', 'running', 'publish-pending', 'queued', 'queued'].map((status, n) => ({ commit: hex(n + 1), status }));
+  const queue = { items: rows }; rows[6].status = 'passed';
+  assert.equal(supersede(queue, rows[6], 0), 1);
+  assert.deepEqual(rows.map(row => row.status), ['passed', 'failed', 'retry', 'running', 'publish-pending', 'not-run-pending', 'passed']);
+  assert.deepEqual(rows[5].notRun, { reason: 'superseded', by: hex(7), at: new Date(0).toISOString() });
+});
+test('each slot takes the newest master once; a stale target goes back to the ordinary rules', () => {
+  const every = FULL_RUN_EVERY_MS, slot = 10 * every, rows = [{ commit: hex(1), status: 'queued', fullRun: 'old' }, { commit: hex(2), status: 'not-run', notRun: { reason: 'untouched' } }], queue = { items: rows };
+  assert.equal(scheduleFullRun(queue, hex(2), slot + 5, every), rows[1]);
+  assert.deepEqual([rows[1].status, rows[1].notRun, rows[1].fullRun, queue.fullRunSlot], ['queued', undefined, new Date(slot).toISOString(), new Date(slot).toISOString()], 'a docs head is measured after all');
+  assert.equal(rows[0].fullRun, undefined, 'the stale target keeps no priority');
+  assert.equal(scheduleFullRun(queue, hex(2), slot + every - 1, every), null, 'once a slot');
+  assert.equal(nextItem({ ...queue, nextTurn: 'oldest' }, hex(2)), rows[1], 'ahead of the oldest turn');
+  rows[1].status = 'passed'; rows.push({ commit: hex(3), status: 'queued' });
+  assert.equal(scheduleFullRun(queue, hex(3), slot + every, every), rows[2]);
+  assert.equal(scheduleFullRun({ items: rows }, hex(9), slot, every), null, 'a head outside the queue schedules nothing');
+  const settled = { items: [{ commit: hex(5), status: 'queued' }, { commit: hex(6), status: 'passed' }] };
+  scheduleFullRun(settled, hex(6), slot, every);
+  assert.equal(settled.items[0].status, 'not-run-pending', 'a newest master that already passed settles the older code commits at once');
+});
+test('a requested verification moves neither the marks nor the schedule', async t => {
+  const f = queueFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), [, b] = f.commits, verified = [];
+  await tick(f.state, { ...f.deps, requestedCommit: b, fullRunEveryMs: FULL_RUN_EVERY_MS, verifyCommit: (config, commit, output) => pass(f, verified, commit, output) });
+  assert.deepEqual(verified, [b]); assert.equal(f.queue()[1].status, 'passed');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json'))).fullRunSlot, undefined);
 });
 test('a list that changes reaches an existing checkout before its next commit is checked out', () => {
   const source = fs.readFileSync(path.join(root, 'tools/conditional-qa/inputs.cjs'), 'utf8');
   assert.ok(source.indexOf('ensureTestedTree(root);') < source.indexOf("git(root, ['checkout', '--detach', commit]"), 'the tree is narrowed first, so a checkout never writes docs it would then delete');
   assert.ok(source.indexOf('repairCheckout(root, state);') < source.indexOf('ensureTestedTree(root);'), 'on a clean tree');
-});
-test('a long backlog carries a tick\'s worth at a time, and the rest waits instead of running', t => {
-  const f = carryFixture(t, [CODE, DOC, DOC, DOC, DOC], { statuses: { [hex(1)]: 'passed' } }), queue = JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json')));
-  assert.equal(carryUnchanged(queue, 'root', hex(5), f.state, { runGit: f.deps.runGit, limit: 2 }), 2);
-  assert.deepEqual(queue.items.map(row => row.status), ['passed', 'publish-pending', 'publish-pending', 'queued', 'queued']);
-  assert.deepEqual(queue.items.map(row => Boolean(row.awaitsParent)), [false, false, false, true, true]);
-  assert.equal(carryUnchanged(queue, 'root', hex(5), f.state, { runGit: f.deps.runGit, limit: 0 }), 0, 'used up for this tick');
-  assert.deepEqual(queue.items.map(row => Boolean(row.awaitsParent)), [false, false, false, true, true]);
-});
-test('a pass that could not be published stays a pass to publish, and never reads as a failure', async t => {
-  const f = carryFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), [, b] = f.commits;
-  const down = { ...f.deps.hub, publish: (commit, state, text) => { f.published.push({ commit, state, text }); throw Error('spawnSync gh ETIMEDOUT'); } };
-  await tick(f.state, { ...f.deps, hub: down, verifyCommit: () => assert.fail('nothing to run') });
-  assert.deepEqual(f.published.map(row => row.state), ['success'], 'the failed call is not followed by a failure status');
-  assert.equal(f.queue()[1].status, 'publish-pending'); assert.match(f.queue()[1].error, /Not published yet: spawnSync gh ETIMEDOUT/);
-  f.published.length = 0;
-  await tick(f.state, { ...f.deps, verifyCommit: () => assert.fail('nothing to run') });
-  assert.deepEqual(f.published.map(row => [row.commit, row.state]), [[b, 'success']]);
-  assert.equal(f.queue()[1].status, 'passed'); assert.equal(f.queue()[1].error, undefined);
-});
-test('a parent receipt that cannot be read costs a real run, never a pass', async t => {
-  const f = carryFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), [a, b] = f.commits, verified = [];
-  const output = f.queue()[0].output; write(path.join(output, 'result.json'), { ...f.receiptFor(a), ok: false });
-  await tick(f.state, { ...f.deps, verifyCommit: async (config, commit, out) => { verified.push(commit); write(path.join(out, 'result.json'), f.receiptFor(commit)); return { count: local.length, digest: manifest.digest }; } });
-  assert.deepEqual(verified, [b]);
-  const item = f.queue()[1]; assert.equal(item.status, 'passed'); assert.equal(item.carriedFrom, undefined);
-  assert.equal(f.published.find(row => row.commit === b && row.state === 'success').proof, b);
-});
-test('a history that cannot be read carries nothing, and the commits are simply verified', t => {
-  const f = carryFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), queue = JSON.parse(fs.readFileSync(path.join(f.state, 'queue.json')));
-  const logged = t.mock.method(console, 'error', () => {});
-  assert.equal(carryUnchanged(queue, 'root', hex(2), f.state, { runGit: () => { throw Error('git log failed'); } }), 0);
-  assert.equal(logged.mock.callCount(), 1);
-  assert.equal(queue.items[1].status, 'queued'); assert.equal(queue.items[1].awaitsParent, undefined);
-});
-test('a requested verification leaves carrying alone', async t => {
-  const f = carryFixture(t, [CODE, DOC], { statuses: { [hex(1)]: 'passed' } }), [, b] = f.commits, verified = [];
-  await tick(f.state, { ...f.deps, requestedCommit: b, verifyCommit: async (config, commit, out) => { verified.push(commit); write(path.join(out, 'result.json'), f.receiptFor(commit)); return { count: local.length, digest: manifest.digest }; } });
-  assert.deepEqual(verified, [b]); assert.equal(f.queue()[1].carriedFrom, undefined);
 });
 test('publish links the proving commit only when one is given', () => {
   const calls = [], api = (endpoint, body) => { calls.push([endpoint, body]); };

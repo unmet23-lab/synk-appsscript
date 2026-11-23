@@ -653,6 +653,29 @@ test('a stopped worker and an overdue backlog turn red; a queue that is still mo
   assert.match(localStatus.judge([statusRow('a', 'success', statusPass, '2026-11-04T00:29:00Z'), old], { now: statusNow }).problems.join(), /older than the limit/);
   assert.match(localStatus.judge([last], { now: statusNow, reachedFirst: false }).problems.join(), /window ended/);
 });
+test('a commit the worker did not run is neither passed nor waiting, and a worker that only marks commits turns red after a day', () => {
+  const untouched = 'NOT RUN: tested paths unchanged; not a pass', later = `NOT RUN: later master ${'a'.repeat(12)} passed in full; not a pass`;
+  const old = new Date(statusNow - localStatus.OVERDUE_MS - 1).toISOString();
+  const rows = [statusRow('a', 'success', statusPass, '2026-11-04T00:20:00Z'), statusRow('b', 'pending', untouched, '2026-11-04T00:10:00Z', old), statusRow('c', 'pending', later, '2026-11-04T00:10:00Z', old)];
+  const result = localStatus.judge(rows, { now: statusNow });
+  assert.deepEqual([result.ok, result.passed, result.notRun, result.waiting, result.oldest], [true, 1, 2, 0, null], 'an old not-run commit is no overdue backlog');
+  assert.match(localStatus.report(result), /1 passed, 2 not run, 0 waiting, 0 failed/);
+  for (const text of ['NOT RUN tested paths unchanged', 'not run: tested paths unchanged']) assert.equal(localStatus.judge([statusRow('b', 'pending', text, '2026-11-04T00:10:00Z', old)], { now: statusNow }).waiting, 1, 'only the exact prefix marks a commit not run');
+  assert.equal(localStatus.judge([statusRow('b', 'success', untouched)], { now: statusNow }).invalid, 1, 'a not-run line is never a pass');
+  const day = localStatus.VERDICT_MS, verdict = statusRow('a', 'success', statusPass, new Date(statusNow - day - 2).toISOString());
+  const marking = statusRow('b', 'pending', untouched, new Date(statusNow - 1).toISOString());
+  assert.match(localStatus.judge([marking, verdict], { now: statusNow }).problems.join(), /completed no verification within 24 hours/);
+  assert.equal(localStatus.judge([marking, { ...verdict, status: { ...verdict.status, createdAt: new Date(statusNow - day + 1).toISOString() } }], { now: statusNow }).ok, true);
+  const failedRecently = statusRow('a', 'failure', 'Local verification incomplete', new Date(statusNow - localStatus.FAILURE_RED_MS - 1).toISOString());
+  assert.equal(localStatus.judge([marking, failedRecently], { now: statusNow }).ok, true, 'a failure is a completed verification too');
+});
+test('the status read treats a not-run line as settled, so it can end past the alert horizon', () => {
+  const now = Date.parse('2026-11-08T00:00:00Z'), hour = 3600_000;
+  const nodes = Array.from({ length: 200 }, (_, n) => ({ oid: String(n).padStart(40, 'a'), committedDate: new Date(now - n * hour).toISOString(), parents: { nodes: [{ oid: String(n + 1).padStart(40, 'a') }] }, file: { oid: 'blob' },
+    status: { contexts: [{ context: 'conditional-qa/local', state: n % 2 ? 'PENDING' : 'SUCCESS', description: n % 2 ? 'NOT RUN: tested paths unchanged; not a pass' : 'PASS', createdAt: new Date(now - n * hour).toISOString() }] } }));
+  const query = (text, { after }) => { const from = Number(after || 0), end = from + Number(text.match(/history\(first:(\d+)/)[1]); return { data: { repository: { object: { history: { pageInfo: { hasNextPage: end < nodes.length, endCursor: String(end) }, nodes: nodes.slice(from, end) } } } } }; };
+  assert.deepEqual((({ complete, line }) => [complete, line.length])(localStatus.fetchHistory({ query, first: 'f'.repeat(40), now })), [true, 150]);
+});
 test('each new failure is named for the alert, and an old one stays listed without burying the next', () => {
   const failed = statusRow('a', 'failure', 'Local verification incomplete');
   const fresh = localStatus.judge([failed], { now: statusNow });

@@ -86,7 +86,7 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .show{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,1fr);gap:clamp(26px,4.4cqw,72px);margin-top:clamp(10px,2vh,24px);align-items:start}
 .hero-art{position:relative;aspect-ratio:3/2;margin:0 -2%}
 .hero-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.02);transition:opacity .55s ease,transform 1.1s var(--ease);
-  -webkit-mask-image:radial-gradient(ellipse 70% 68% at 50% 46%,#000 58%,transparent 100%),linear-gradient(to bottom,#000 74%,transparent 98%);-webkit-mask-composite:source-in;mask-image:radial-gradient(ellipse 70% 68% at 50% 46%,#000 58%,transparent 100%),linear-gradient(to bottom,#000 74%,transparent 98%);mask-composite:intersect}
+  -webkit-mask-image:radial-gradient(ellipse 62% 64% at 52% 46%,#000 50%,transparent 92%),linear-gradient(to bottom,#000 70%,transparent 96%);-webkit-mask-composite:source-in;mask-image:radial-gradient(ellipse 62% 64% at 52% 46%,#000 50%,transparent 92%),linear-gradient(to bottom,#000 70%,transparent 96%);mask-composite:intersect}
 .hero-art img.on{opacity:1;transform:none}
 /* 첫 화면의 솔리오: 블렌더로 구운 책상 장면(그림/무대/책상자리.json)의 구 위에 눈을 얹는다 */
 .hero-art{container-type:inline-size}
@@ -323,17 +323,15 @@ tr.more td{padding:4px 0 18px;text-align:left;font-family:var(--sans)}
 .endlist .mono{font-size:15px;color:var(--meadow-soft)}
 
 /* ── 마스코트: 솔리오의 검은 구 직원. 몸은 거의 움직이지 않고 눈과 빛으로만 표정을 낸다 ── */
-/* 구 몸은 블렌더로 구운 그림(그림/무대)이고, 눈 · 땀방울만 그 위에 얹어 표정을 낸다 */
+/* 구 몸은 블렌더로 구운 그림(그림/무대)이고, 눈만 그 위에 얹어 표정을 낸다 */
 .sprite{position:relative;display:block;width:100%;aspect-ratio:1}
 .sprite > img{position:absolute;inset:0;width:100%;height:100%;display:block}
 .sprite > .orb{position:absolute;left:19.7%;top:19.7%;width:60.6%;height:60.6%}
 .orb{display:block;overflow:visible}
-.orb .o-eyes{fill:var(--paper);stroke:var(--paper);stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 1.4px rgba(243,241,236,.55))}
+.orb .o-eyes{fill:#FFFAF3;stroke:#FFFAF3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 1.4px rgba(243,241,236,.55))}
 .orb .o-blink{transform-box:fill-box;transform-origin:50% 50%;transition:transform .07s ease}
 .orb.blink .o-blink{transform:scaleY(.12)}
 .orb .o-look{transition:transform .35s var(--ease)}
-.orb .o-sweat{opacity:0;transition:opacity .3s ease,transform .6s ease;transform:translateY(-3px)}
-.orb.sweat .o-sweat{opacity:.85;transform:none}
 .breath{animation:breathe 4s ease-in-out infinite}
 @keyframes breathe{50%{translate:0 -1.4%}}
 .hop{animation:hop .5s var(--ease)}
@@ -400,7 +398,7 @@ tr.more td{padding:4px 0 18px;text-align:left;font-family:var(--sans)}
 @keyframes dot{40%{opacity:1}}
 .pd{position:absolute;inset:0;opacity:0;transform:translateY(4%);transition:opacity .25s ease,transform .55s cubic-bezier(.2,1.5,.4,1)}
 .pd.on{opacity:1;transform:none}
-.pd-n{position:absolute;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 clamp(13px,3.1cqw,38px)/1 var(--mono);color:var(--sheet-ink);letter-spacing:-.02em}
+.pd-n{position:absolute;aspect-ratio:1;mix-blend-mode:multiply;display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 clamp(13px,3.1cqw,38px)/1 var(--mono);color:var(--sheet-ink);letter-spacing:-.02em}
 .pd-n small{margin-top:.35em;font:600 clamp(7px,.9cqw,11px)/1 var(--sans);letter-spacing:.12em;color:#6b6a66;text-transform:uppercase}
 .pd-n .up{margin-top:.3em;font:400 clamp(8px,1cqw,13px)/1 var(--mono);color:#4f8a32}
 .pd0 .pd-n{left:6.448%;top:33.36%;width:10.884%}
@@ -576,20 +574,25 @@ const NEED_NUM = [0, 2, 4, 6];
 
 /* ── 마스코트 구. front는 눈이 보이고, back은 뒷모습(고개를 돌리면 눈 하나가 가장자리에 보인다) ── */
 let orbSeq = 0;
-const EYES = {
-  open:'<ellipse cx="-14" cy="-6" rx="4.6" ry="4.6"/><ellipse cx="14" cy="-6" rx="4.6" ry="4.6"/>',
-  small:'<ellipse cx="-13" cy="-6" rx="3.2" ry="3.2"/><ellipse cx="13" cy="-6" rx="3.2" ry="3.2"/>',
-  big:'<ellipse cx="-14.5" cy="-7" rx="6" ry="6.4"/><ellipse cx="14.5" cy="-7" rx="6" ry="6.4"/>',
-  happy:'<path d="M-19.5 -4 Q-14 -12 -8.5 -4" fill="none" stroke-width="3.4"/><path d="M8.5 -4 Q14 -12 19.5 -4" fill="none" stroke-width="3.4"/>',
-  closed:'<path d="M-18.5 -5 H-9.5" fill="none" stroke-width="3"/><path d="M9.5 -5 H18.5" fill="none" stroke-width="3"/>',
-  firm:'<path d="M-18.8 -8 H-9.2 A4.8 4.8 0 0 1 -18.8 -8 Z"/><path d="M9.2 -8 H18.8 A4.8 4.8 0 0 1 9.2 -8 Z"/>',
-  sad:'<ellipse cx="-13" cy="-3" rx="3.8" ry="3.8"/><ellipse cx="13" cy="-3" rx="3.8" ry="3.8"/><path d="M-19 -12 L-9 -14.5" fill="none" stroke-width="2.2"/><path d="M9 -14.5 L19 -12" fill="none" stroke-width="2.2"/>',
-};
-/* 표정 이름 → [눈, 보는 곳, 땀] */
+/* 눈: 정본 「구 가」의 점 눈(desktop/renderer/orb-stage.mjs eyeSd)을 반지름 50의 판에 옮겼다.
+   평소는 세로로 선 알약(반폭 0.05R · 반높이 0.094R, 좌우 ±0.22R, 가운데보다 0.06R 위), 웃음 ∩, 잠 ∪, 문제 가로줄,
+   감을 때는 위아래에서 닫힌다. 입 · 눈썹 · 볼 · 다른 색은 넣지 않는다. 구가 작게 그려지면 앱처럼 눈을 키우고 조금 벌린다 */
+function eyesSVG(shape, k = 1, sk = 1) {
+  const R = 50, X = 0.22 * R * sk, f = n => +n.toFixed(2);
+  const pill = (cx, hh) => { const w = 0.05 * R * k, h = hh * k; return `<rect x="${f(cx - w)}" y="${f(-h)}" width="${f(2 * w)}" height="${f(2 * h)}" rx="${f(Math.min(w, h))}"/>`; };
+  const arc = (cx, up) => { const r = 0.1 * R * k, dx = f(0.894 * r), y0 = f((up ? 0.015 : -0.015) * R * k), sw = f(0.028 * R * k);
+    return `<path d="M${f(cx - dx)} ${y0} A${f(r)} ${f(r)} 0 0 ${up ? 1 : 0} ${f(cx + dx)} ${y0}" fill="none" stroke-width="${sw}"/>`; };
+  const dash = cx => { const w = 0.056 * R * k, h = 0.013 * R * k; return `<rect x="${f(cx - w)}" y="${f(-h)}" width="${f(2 * w)}" height="${f(2 * h)}" rx="${f(h)}"/>`; };
+  const one = cx => shape === 'smile' ? arc(cx, true) : shape === 'sleep' ? arc(cx, false) : shape === 'sorry' ? dash(cx)
+    : pill(cx, R * (shape === 'half' ? 0.057 : shape === 'shut' ? 0.012 : 0.094));
+  return one(-X) + one(X);
+}
+const EYE_SHAPES = ['calm', 'half', 'shut', 'smile', 'sleep', 'sorry'];
+/* 표정 이름 → [눈 모양, 보는 곳] */
 const MOOD = {
-  open:['open', 0, 0, 0], look:['open', 4, 7, 0], happy:['happy', 0, 0, 0], curious:['big', 5, -4, 0],
-  nervous:['small', -3, 2, 1], side:['open', 6, 1, 0], surprised:['big', 0, 0, 1], closed:['closed', 0, 2, 0], firm:['firm', 0, 0, 0], sad:['sad', 0, 4, 0],
-  judges:['open', 0, 3, 0],
+  open:['calm', 0, 0], look:['calm', 3, 4], happy:['smile', 0, 0], curious:['calm', 4, -3],
+  nervous:['half', -2, 2], side:['calm', 5, 1], surprised:['calm', 0, -2], closed:['shut', 0, 1], firm:['calm', 0, -2], sad:['sorry', 0, 2],
+  judges:['calm', 0, 2],
 };
 const IMG = {
   plate:'그림/무대/plate.webp', presenter:'그림/무대/presenter.webp', orb:'그림/무대/orb.webp',
@@ -600,19 +603,20 @@ const IMG = {
 function orbSVG(kind = 'front') {
   const id = 'o' + (++orbSeq), back = kind === 'back';
   return `<svg class="orb ${kind}" viewBox="-50 -50 100 100" aria-hidden="true"><defs><clipPath id="${id}c"><circle r="48.5"/></clipPath></defs>`
-    + `<g clip-path="url(#${id}c)"><g${back ? '' : ' transform="translate(-0.3 -2.9)"'}><g class="o-look"${back ? ' transform="translate(0 -72)"' : ''}><g class="o-blink"><g class="o-eyes">${EYES.open}</g></g></g></g></g>`
-    + `<path class="o-sweat" d="M37 -36 q6 9 0 12.5 q-6 -3.5 0 -12.5z" fill="#C5D6F5"/></svg>`;
+    + `<g clip-path="url(#${id}c)"><g${back ? '' : ' transform="translate(-0.3 -2.9)"'}><g class="o-look"${back ? ' transform="translate(0 -72)"' : ''}><g class="o-blink"><g class="o-eyes">${eyesSVG('calm')}</g></g></g></g></g>`
+    + `</svg>`;
 }
 const spriteHTML = () => `<span class="sprite"><img src="${IMG.orb}" alt="" decoding="async">${orbSVG()}</span>`;
 const orbs = new Set();
 function makeOrb(host) {
   const svg = host.querySelector('svg.orb'); if (!svg) return null;
-  const o = {host, svg, eyes:svg.querySelector('.o-eyes'), lookG:svg.querySelector('.o-look'), shape:'open', back:svg.classList.contains('back'),
+  const o = {host, svg, eyes:svg.querySelector('.o-eyes'), lookG:svg.querySelector('.o-look'), shape:'calm', key:'', back:svg.classList.contains('back'),
     mood(m) {
-      const [eye, dx, dy, sweat] = MOOD[m] || MOOD.open;
-      if (eye !== this.shape) { this.eyes.innerHTML = EYES[eye]; this.shape = eye; }
+      const [eye, dx, dy] = MOOD[m] || MOOD.open;
+      const ppx = (svg.getBoundingClientRect().width || 100) / 2, t = Math.min(1, Math.max(0, (ppx - 14) / 46));
+      const small = 1 - t * t * (3 - 2 * t), key = eye + ':' + small.toFixed(2);
+      if (key !== this.key) { this.eyes.innerHTML = eyesSVG(eye, 1 + 0.85 * small, 1 + 0.12 * small); this.key = key; this.shape = eye; }
       if (!this.back) this.lookG.setAttribute('transform', `translate(${dx} ${dy})`);
-      svg.classList.toggle('sweat', !!sweat);
       this.cur = m; return this;
     },
     turn(dir) { /* 뒷모습: dir -1 왼쪽, 1 오른쪽, 0 앞(눈 숨김) */
@@ -622,7 +626,7 @@ function makeOrb(host) {
   };
   const blink = () => {
     if (!svg.isConnected) { orbs.delete(o); return; }
-    if (!still && ['open', 'small', 'big'].includes(o.shape)) { svg.classList.add('blink'); setTimeout(() => svg.classList.remove('blink'), 130); }
+    if (!still && ['calm', 'half'].includes(o.shape)) { svg.classList.add('blink'); setTimeout(() => svg.classList.remove('blink'), 130); }
     setTimeout(blink, 2400 + Math.random() * 3600);
   };
   setTimeout(blink, 1200 + Math.random() * 2000);
@@ -727,7 +731,7 @@ function renderIntro(anim) {
   let j = 0; const c = (tag, cls, inner) => `<${tag} class="cas ${cls}" style="--j:${j++}">${inner}</${tag}>`;
   room.innerHTML = `<div class="top"><div>${say('먼저 회사 이야기를 들려주세요.', '일곱 물음에 답하면 사업계획서 초안이 됩니다.\n솔리오의 AI 직원들이 이 글을 읽고 회사를 이해합니다.', anim)}</div></div>`
     + `<section class="show"><div class="hero-art" role="img" aria-label="${esc(ART.write[1])}"><img class="on" src="${ART.write[0]}" alt="" decoding="async">`
-    + `<div class="hero-eyes" id="heyes">${orbSVG()}</div><div class="hb"><p>안녕하세요, 대표님! 저는 <b>솔리오</b>예요.</p><p class="hb-sub">회사 이야기를 들려주시면 AI 직원들이 그걸 읽고 일해요.</p></div></div>`
+    + `<div class="hero-eyes" id="heyes">${orbSVG()}</div><div class="hb"><p>안녕하세요, 대표님! 저는 <b>솔리오</b>예요.</p><p class="hb-sub">물음마다 왜 필요한지 옆에서 알려 드릴게요.</p></div></div>`
     + `<div class="info" id="info">`
     + c('p', 'i-no', '처음 시작 · 사업계획서')
     + c('h2', 'i-name', '사업계획서 초안')

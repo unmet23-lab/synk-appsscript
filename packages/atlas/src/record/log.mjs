@@ -22,13 +22,14 @@
 //   청하는 곳은 차례 밖에서 시작된 손님 요약 저장 하나뿐이고(exclusive), 호스트가 「차례 안」으로 둔 동안에는 다시 청하지 않는다
 //   (Web Locks는 다시 들어갈 수 없다 — 단계 4 §18-5-1 R1 · s8).
 import { overlay } from '../fold/device.mjs';
-import { deviceKey, EMPTY_INDEX, groupsOf } from './adapt.mjs';
+import { deviceKey, EMPTY_INDEX } from './adapt.mjs';
 import { carriedList } from './carry.mjs';
 import { createClock } from './clock.mjs';
 import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, isId, parentOf } from './events.mjs';
-import { familySkillsOf, ownFoldEvents, touchesOf, WAIT } from './own.mjs';
+import { foldLines } from './fold-local.mjs';
+import { createGroupIndex } from './groups.mjs';
+import { ownFoldEvents, touchesOf, WAIT } from './own.mjs';
 import { genOf } from './port.mjs';
-import { linesOfGroups, rowsOfGroup } from './rows.mjs';
 import { foldEdition, ISSUED_KEEP_MS } from './server.mjs';
 import {
   applyDelta,
@@ -82,6 +83,8 @@ function createState(guest, now) {
   return {
     guest,
     held: new Map(), // id → { event, touches, key(포트 열쇠), position }
+    groups: null, // held의 묶음 색인(groups.mjs — createRecord가 단다)
+    folding: null, // 손님 접기의 지난 접기(fold-local.mjs — 바뀐 묶음만 다시 접는다)
     acks: new Map(), // id → 서버 차례
     clamped: new Set(),
     dropped: new Set(),
@@ -124,6 +127,7 @@ function createState(guest, now) {
 function resetRead(state) {
   state.readRound += 1; // 이 차례 전에 시작한 꼬리 읽기는 낡았다(readTail)
   state.held = new Map();
+  state.groups.reset();
   state.acks = new Map();
   state.clamped = new Set();
   state.dropped = new Set();
@@ -147,15 +151,18 @@ function takeEvent(state, value, key) {
     // 같은 번호가 두 열쇠에 섰다(차례 없이 겹쳐 옮긴 옛 기록 — R10에서 받아들인 것). 더 작은 열쇠(포트 차례)로 맞춰 어느 탭 · 새로 연
     // 기록부가 읽어도 같은 열쇠로 든다 — 표지가 두 열쇠 사이에 서면 탭마다 옮길 옛 꼴이 갈렸다(Fable 5.2 끝 판 넘친 #11). 자리는 그대로.
     if (key < held.key) held.key = key;
+    state.groups.lowerKey(value.event.id, held.key);
     return;
   }
   state.positions += 1;
-  state.held.set(value.event.id, {
+  const item = {
     event: value.event,
     touches: value.touches ?? null,
     key,
     position: state.positions,
-  });
+  };
+  state.held.set(value.event.id, item);
+  state.groups.add(entryOf(item), key);
   state.clock.know(Date.parse(value.event.at));
 }
 
@@ -191,6 +198,8 @@ function takeSummary(state, value, key) {
 // 손님 요약 기록 — 판 묶음이 다른 것(다른 판 엔진의 탭이 쓴 것)은 받지도 지우지도 않는다. 보기의 바탕은 늘 내 판 묶음으로 접은
 // 요약이다(§18-5-1 R3 — 없으면 refoldGuest가 그 자리에서 메모리로 접는다).
 function takeLocal(state, value, key, edition) {
+  // 지금 든 요약을 담은 기록을 꼬리에서 다시 읽었다(내가 쓴 요약) — 풀지도 바꾸지도 않는다(설계 ③ 덧붙임).
+  if (state.local?.key === key) return;
   const summary = unpackSummary(value.summary);
   if (summary?.edition !== edition) return;
   state.localRows.add(key);
@@ -275,9 +284,9 @@ const setOfSource = event =>
   event.type === EVENT_TYPES.presented && isCurrent(event) && typeof event.setId === 'string'
     ? event.setId
     : null;
-function addMeetRows(group, index, families, sets) {
+function addMeetRows(group, rows, families, sets) {
   const setId = setOfSource(group.source.event);
-  for (const row of rowsOfGroup(group, index)) {
+  for (const row of rows) {
     if (row.kind !== 'meet' && row.kind !== 'carry') continue;
     if (!families.has(row.family)) families.set(row.family, []);
     families.get(row.family).push(row);
@@ -311,12 +320,27 @@ function remember(state, event) {
 }
 
 // 아직 요약에 안 든 내 사건 → overlay의 입력. 누른 사건이 아직 요약에 안 들었으면 요약 값만.
+// 밀린 사건이 든 묶음만 색인으로 모은다(머리가 든 차례) — 어느 묶음에도 들지 않은 밀린 사건은 든 차례로 따로.
 function ownOf(state, index) {
   const pending = pendingIds(state);
   if ([...pending].some(id => state.clamped.has(id))) return [WAIT];
-  const entries = [...state.held.values()].map(entryOf);
-  const keys = new Set(entries.filter(entry => pending.has(entry.event.id)).map(e => e.key));
-  return ownFoldEvents(entries, keys, { index, memo: id => state.held.get(id)?.touches ?? null });
+  const groups = state.groups;
+  const keys = new Set();
+  const sources = new Set();
+  const loose = [];
+  for (const id of pending) {
+    const entry = groups.entry(id);
+    keys.add(entry.key);
+    const of = groups.sourcesOf(id);
+    if (!of) loose.push(entry);
+    else for (const source of of) sources.add(source);
+  }
+  const ordered = [...sources].sort((a, b) => groups.seq(a) - groups.seq(b)).map(groups.get);
+  return ownFoldEvents(ordered, loose, keys, {
+    index,
+    memo: id => state.held.get(id)?.touches ?? null,
+    find: groups.entry,
+  });
 }
 
 // 서버의 답에 실린 요약 — 얹을 수 없는 부분 답(null) · 늦은 옛 답 · 옛 머리의 답(지금 요약 그대로)이면 null(요약 기록을 새로 쓰지
@@ -345,7 +369,7 @@ function answerValues({ accepted, clamped, rejected, serverTime, next }, now) {
 // 기기에 없는 자식 · 제외)은 얹을 사건의 부모만 남긴다.
 function keptIds(state, pending) {
   const keep = new Set();
-  for (const group of groupsOf([...state.held.values()].map(entryOf)).values()) {
+  for (const group of state.groups.all().values()) {
     const members = [group.source, ...group.children, ...group.exclusions].map(e => e.event.id);
     // 서버가 버린 제시에는 답이 달려도 서버가 받지 않는다 — 답을 기다리며 남기지 않는다(Fable 5.2 끝 판 넘친 #12).
     const open =
@@ -534,6 +558,7 @@ export function createRecord({
 }) {
   const state = createState(guest, now);
   const edition = () => foldEdition(params, index);
+  state.groups = createGroupIndex(index, edition);
   const accept = row => take(state, row, now, edition());
 
   // 막이 쓰기(단계 4 계획 §22-4 「늦게 쓰는 탭의 막이」) — 이 기록부가 읽은 세대를 포트에 넘겨(append의 expect) 같은 트랜잭션에서 대조하며
@@ -653,7 +678,12 @@ export function createRecord({
       if (state.local.key == null) void saveLocal();
       return;
     }
-    const lines = linesOfGroups(groupsOf(items.map(entryOf)), { memory, params, index });
+    // 바뀐 묶음만 다시 접는다(fold-local.mjs). 접다가 던지면 다음 접기가 처음부터 짓는다.
+    const prev = state.folding;
+    state.folding = null;
+    const fold = foldLines(prev, state.groups, until, { memory, params });
+    state.folding = fold.folding;
+    const lines = fold.lines;
     const floor = now() - ISSUED_KEEP_MS;
     const issued = items
       .map(item => item.event)
@@ -806,7 +836,7 @@ export function createRecord({
   function valueOf(type, event, nothingTouched = false) {
     const touches =
       type === EVENT_TYPES.excluded
-        ? (touchesOf([...state.held.values()].map(entryOf), event.targetId, index) ??
+        ? (touchesOf(state.groups.touching(event.targetId), event.targetId, index) ??
           (nothingTouched ? { units: [], skills: [] } : null))
         : null;
     return { kind: 'event', event, ...(touches ? { touches } : {}) };
@@ -1006,9 +1036,8 @@ export function createRecord({
     view() {
       const base = baseOf(state);
       const own = base && base.edition === edition() ? ownOf(state, index) : [WAIT];
-      const events = [...state.held.values()].map(item => item.event);
       const result = overlay(viewOf(base), own, memory, params, {
-        familySkills: familySkillsOf(base, index, events),
+        familySkills: state.groups.familySkills(base),
         lookup: () => null,
       });
       for (const [family, at] of state.failed)
@@ -1056,6 +1085,8 @@ export function createRecord({
     heldEvent: id => state.held.get(id)?.event ?? null,
     heldEvents: () =>
       [...state.held.values()].sort((a, b) => a.key - b.key).map(item => item.event),
+    // 든 사건(든 차례 — { event, touches, key, position }) — 대조 시험이 처음부터 지은 값과 견줄 때만 읽는다. 고치지 않는다.
+    heldItems: () => [...state.held.values()],
     // 단위마다의 근거 줄 전부(30일째 문장 — 단계 4 계획 §21-7). 든 사건 전부(저장이 끝난 사건 — 아직 요약에 접히지 않은 내 답 포함)를 요약
     // 접기와 같은 어댑터 · 근거 줄(rowsOfGroup)로 짓고, 단위 줄과 본인 말 줄만 서버 저장소와 같은 근거 줄 꼴로 단위마다 모은다(세기는
     // record/lookback.mjs의 unitLookback이 서버 읽기와 같이 한다 — §21-22). 저장 중인 사건은
@@ -1063,8 +1094,8 @@ export function createRecord({
     // 기기는 이틀 치만 들어 코치가 부르지 않는다(서버 길은 서버의 돌아보기 읽기).
     unitRows() {
       const byUnit = new Map();
-      for (const group of groupsOf([...state.held.values()].map(entryOf)).values())
-        for (const row of rowsOfGroup(group, index)) {
+      for (const id of state.groups.all().keys())
+        for (const row of state.groups.rows(id)) {
           if (row.kind !== 'unit' && row.kind !== 'say') continue;
           if (!byUnit.has(row.unit)) byUnit.set(row.unit, []);
           byUnit.get(row.unit).push(row);
@@ -1078,11 +1109,15 @@ export function createRecord({
     meetRows() {
       const families = new Map();
       const sets = new Map();
-      for (const group of groupsOf([...state.held.values()].map(entryOf)).values())
-        addMeetRows(group, index, families, sets);
+      for (const [id, group] of state.groups.all())
+        addMeetRows(group, state.groups.rows(id), families, sets);
       return { families, setOf: key => sets.get(key) ?? null };
     },
     acked: id => state.acks.get(id),
+    // 코치가 읽는 묶음(읽기 전용 — 자식 · 제외는 포트 열쇠 차례, coach/record.mjs의 측정 · 놓침 기록 · 소리 전달). 고치지 않는다.
+    familyGroups: family => state.groups.familyGroups(family),
+    groups: () => state.groups.keyedGroups(),
+    group: id => state.groups.keyedGroup(id),
 
     // 오래되고 서버가 접은 사건 · 지난 표지 기록을 치운다. 답이 아직 안 달린 제시와 얹을 사건의 부모는 둔다.
     // 먼저 남길 표지 · 요약을 한 기록으로 덧붙이고 나서 앞 기록을 지운다(그 사이 끊겨도 겹친 표지는 해가 없다).
@@ -1118,6 +1153,7 @@ export function createRecord({
         (row.value.kind === 'ack' || (row.value.kind === 'event' && gone.has(row.value.event.id)));
       await port.remove((await port.read()).filter(isStale).map(row => row.key));
       for (const id of gone) state.held.delete(id);
+      if (gone.size) state.groups.rebuild(state.held.values(), entryOf);
       return gone.size;
     },
 

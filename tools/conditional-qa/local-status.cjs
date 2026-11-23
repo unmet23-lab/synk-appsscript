@@ -10,6 +10,11 @@ const STALL_MS = 155 * 60_000; // Current verification, one backlog turn, one ne
 const OVERDUE_MS = 72 * 3600_000; // The backlog may not outlast this: half the worker's turns go to the oldest commit.
 const FAILURE_RED_MS = 24 * 3600_000; // A failure stays listed until retried; red only while new, so a later failure is not buried.
 const WAITING_PREFIX = 'WAIT '; // Written by local-coverage, not by the worker.
+// Written by the worker for a commit it does not measure (README #run-criterion). Pending, so it never passes; settled, so it never waits.
+const NOT_RUN_PREFIX = 'NOT RUN:';
+const notRunStatus = value => value?.state === 'pending' && value.description.startsWith(NOT_RUN_PREFIX);
+// A worker that keeps marking commits not run must still measure the newest master: four full runs a day, so a day without one is red.
+const VERDICT_MS = 24 * 3600_000;
 // The line since activation outgrew the first 1000-commit window on 11-06 00:28 and every run turned red; at 200-300 pushes a day a larger
 // fixed window only moves that date. Every alert needs a young commit or a fresh status: a waiting commit turns red at 72 h and a failure stays
 // red for 24 h. So the read may end once a page's worth of the oldest commits read are older than both together and settled
@@ -19,7 +24,8 @@ const HORIZON_MS = OVERDUE_MS + FAILURE_RED_MS, SETTLED_RUN = 50;
 function settledLongAgo(node, now) {
   const found = (node.status?.contexts || []).find(row => row.context === CONTEXT);
   if (!found || (found.description || '').startsWith(WAITING_PREFIX)) return false;
-  return found.state === 'SUCCESS' || (['FAILURE', 'ERROR'].includes(found.state) && now - Date.parse(found.createdAt) >= FAILURE_RED_MS);
+  return found.state === 'SUCCESS' || (found.state === 'PENDING' && (found.description || '').startsWith(NOT_RUN_PREFIX))
+    || (['FAILURE', 'ERROR'].includes(found.state) && now - Date.parse(found.createdAt) >= FAILURE_RED_MS);
 }
 const historyQuery = size => `query($owner:String!,$name:String!,$ref:String!,$after:String){repository(owner:$owner,name:$name){object(expression:$ref){... on Commit{history(first:${size},after:$after){pageInfo{hasNextPage endCursor}
   nodes{oid committedDate parents(first:1){nodes{oid}} file(path:"tools/conditional-qa/cases.json"){oid} status{contexts{id context state description createdAt}}}}}}}}`;
@@ -141,15 +147,16 @@ function failureLine(row, manifestCases) {
   const first = manifestCases.get(named.ids[0]), label = named.ids.length === 1 && named.complete && first ? `${named.ids[0]} ${first.name}` : `${named.ids.join(' ')}${named.complete ? '' : ' and more'}`;
   return { text: `${text}: ${label}`, location: first?.file, cases: named.ids };
 }
-// Every state other than an exact PASS of that commit's own manifest stays unfinished. Pending, absent or offline never passes.
+// Every state other than an exact PASS of that commit's own manifest stays unfinished. Pending, absent, offline or not run never passes.
 function judge(rows, { now = Date.now(), reachedFirst = true, truncated = false, diagnosed = [], manifestCases = new Map() } = {}) {
-  const passed = [], waiting = [], failed = [], invalid = [], explained = [], details = new Map(); let activityAt = 0;
+  const passed = [], notRun = [], waiting = [], failed = [], invalid = [], explained = [], details = new Map(); let activityAt = 0, verdictAt = 0, notRunAt = 0;
   for (const row of rows) {
-    const { status: value, manifest } = row;
-    if (value && !value.description.startsWith(WAITING_PREFIX)) activityAt = Math.max(activityAt, Date.parse(value.createdAt));
-    if (accepted(value, manifest.count, manifest.digest)) passed.push(row);
-    else if (value?.state === 'failure' || value?.state === 'error') failed.push(row);
+    const { status: value, manifest } = row, at = value ? Date.parse(value.createdAt) : 0;
+    if (value && !value.description.startsWith(WAITING_PREFIX)) activityAt = Math.max(activityAt, at);
+    if (accepted(value, manifest.count, manifest.digest)) { passed.push(row); verdictAt = Math.max(verdictAt, at); }
+    else if (value?.state === 'failure' || value?.state === 'error') { failed.push(row); verdictAt = Math.max(verdictAt, at); }
     else if (value?.state === 'success') invalid.push(row);
+    else if (notRunStatus(value)) { notRun.push(row); notRunAt = Math.max(notRunAt, at); }
     else waiting.push(row);
   }
   const oldest = waiting.at(-1), problems = [], placed = placeRanges(rows, diagnosed, { truncated });
@@ -164,13 +171,14 @@ function judge(rows, { now = Date.now(), reachedFirst = true, truncated = false,
   for (const row of invalid) problems.push(`local success does not match the manifest of ${row.commit}`);
   if (waiting.length && now - activityAt > STALL_MS) problems.push('local worker published no new result within the limit');
   if (oldest && now - Date.parse(oldest.committedAt) > OVERDUE_MS) problems.push('local backlog is older than the limit');
+  if (notRunAt && notRunAt - verdictAt > VERDICT_MS) problems.push('local worker marked commits not run but completed no verification within 24 hours');
   // reachedFirst is fetchHistory's `complete`: the activation commit, or a settled run past the horizon.
   if (!reachedFirst) problems.push('the status window ended before the first queued commit or a settled run past the alert horizon');
-  return { ok: problems.length === 0, problems, details, explained, failedCases: new Map(failed.map(row => [row.commit, failedCases(row.status.description)?.ids || []])), passed: passed.length, waiting: waiting.length, failed: failed.map(row => row.commit), invalid: invalid.length, oldest: oldest?.commit || null, oldestAt: oldest?.committedAt || null, activityAt: activityAt ? new Date(activityAt).toISOString() : null };
+  return { ok: problems.length === 0, problems, details, explained, failedCases: new Map(failed.map(row => [row.commit, failedCases(row.status.description)?.ids || []])), passed: passed.length, notRun: notRun.length, waiting: waiting.length, failed: failed.map(row => row.commit), invalid: invalid.length, oldest: oldest?.commit || null, oldestAt: oldest?.committedAt || null, activityAt: activityAt ? new Date(activityAt).toISOString() : null };
 }
 // TAP lines: tools/ci빨간불.js names each problem from them, so only a new failure sends a new alert.
 function report(result) {
-  const lines = [`local statuses: ${result.passed} passed, ${result.waiting} waiting, ${result.failed.length} failed`, `newest worker result: ${result.activityAt || 'none'}`];
+  const lines = [`local statuses: ${result.passed} passed, ${result.notRun} not run, ${result.waiting} waiting, ${result.failed.length} failed`, `newest worker result: ${result.activityAt || 'none'}`];
   if (result.oldest) lines.push(`oldest waiting: ${result.oldest} committed ${result.oldestAt}`);
   for (const commit of result.failed) lines.push(`failed, kept until a retry passes: ${commit}${(result.failedCases?.get(commit) || []).map(id => ` ${id}`).join('')}`);
   for (const row of result.explained || []) lines.push(`diagnosed, no alert: ${row.commit} ${row.cases.join(' ')} — ${row.ranges.map(range => `${range.cause} (fixed by ${range.fixedBy.slice(0, 12)})`).join(' · ')}`);
@@ -196,4 +204,4 @@ if (require.main === module) {
     if (!result.ok) process.exitCode = 1;
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
-module.exports = { fetchHistory, manifestAt, toRow, judge, report, check, readDiagnosed, FIRST_COMMIT, STALL_MS, OVERDUE_MS, FAILURE_RED_MS };
+module.exports = { fetchHistory, manifestAt, toRow, judge, report, check, readDiagnosed, FIRST_COMMIT, STALL_MS, OVERDUE_MS, FAILURE_RED_MS, VERDICT_MS, NOT_RUN_PREFIX };

@@ -81,8 +81,10 @@ await sleep(2500); await shot('2-동아리장');
 await waitPress('「조금 해요」', '.cl-rp', '조금 해요');
 await until('튜터 고르기 판', () => inClub(() => !!document.querySelector('.cl-host')?.shadowRoot?.querySelector('.cl-pick.on')), 20000);
 await sleep(700); await shot('3-튜터고르기');
-await inClub(t => document.querySelector('.cl-host').shadowRoot.querySelector(`.cl-pick .tabs [data-t="${t}"]`)?.click(), TUTOR);
-await sleep(900);
+// 고르기 전에는 단추가 잠겨 있고 미리 골라진 장이 없다(이야기 지도 3-5 선배 고르기 규칙)
+check(await inClub(() => { const r = document.querySelector('.cl-host').shadowRoot; return r.querySelector('[data-go]').disabled && !r.querySelector('.cl-pick .tc[aria-checked="true"]'); }), '튜터 고르기 — 미리 골라진 장 없음 · 단추 잠김');
+await inClub(t => document.querySelector('.cl-host').shadowRoot.querySelector(`.cl-pick .tc[data-t="${t}"]`)?.click(), TUTOR);
+await sleep(900); await shot('3b-튜터고른뒤');
 await waitPress('튜터 고르기 단추', '[data-go]');
 await waitPress('「시작」', '.cl-rp.solid', '', 30000);
 

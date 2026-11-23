@@ -266,7 +266,7 @@ export function costRow(snapshot, st = {}, now = Date.now()) {
   const usdIn = cost.usd > 0;
   const total = (usdIn ? '약 ' : '') + won(cost.count ? cost.approx : 0);
   const mid = cost.count
-    ? ['한 달 ' + total, cost.soon ? '7일 안 결제 ' + cost.soon + '건' : '', cost.unknown ? '요금을 모르는 ' + cost.unknown + '개 빼고' : '', awayCounted ? '이 PC에 없는 계정 포함' : ''].filter(Boolean).join(' · ')
+    ? ['한 달 ' + total, cost.soon ? '7일 안 결제 ' + cost.soon + '건' : '', cost.unknown ? '요금을 아는 구독만 더함' : '', awayCounted ? '이 PC에 없는 계정 포함' : ''].filter(Boolean).join(' · ')
     : '아직 넣은 요금이 없습니다';
   const soonNames = [...new Set(rows.filter(r => r.cycle !== 'annual' && (d => d !== null && d <= 6)(nextBill(r.billDay, now))).map(svcName))];
   const more = [];
@@ -1215,7 +1215,7 @@ export function settingsRoom(s = {}, st = {}, now = Date.now()) {
   // 업데이트 상태를 아직 받지 못한 동안(다리는 있음)에는 「받을 수 없다」고 하지 않는다. 방을 열면 낭독기가 맨 위 문장을 먼저 읽는다(검수)
   const loading = s.loading === true && !s.update;
   const desk = s.desktop?.ok === true ? s.desktop : null, p = desk?.preferences || {}, cap = desk?.capabilities || {};
-  const rows = [loading ? null : updateRow(u, env, st), s.pc === undefined ? null : pcSettingsRow(s.pc, st), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), chatgptRow(s, st, now), draftRow(s, st)].filter(Boolean);
+  const rows = [loading ? null : updateRow(u, env, st), s.pc === undefined ? null : pcSettingsRow(s.pc, st, s.pcFeatures), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), chatgptRow(s, st, now), draftRow(s, st)].filter(Boolean);
   // 둘째 줄은 켜지는 방식이다(시안 세 갈래). 자동 시작을 바꿀 수 없는 판이면 비운다
   const then = cap.launchAtLogin ? (!p.launchAtLogin ? '컴퓨터를 켤 때 함께 켜지 않습니다.' : p.startHidden && cap.tray ? '컴퓨터를 켜면 창 없이 함께 켜집니다.' : '컴퓨터를 켜면 창과 함께 켜집니다.') : '';
   const version = verOf(u.currentVersion) || verOf(env.version);
