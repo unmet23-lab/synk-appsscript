@@ -15,7 +15,8 @@ import {serverReady} from './server-ready.mjs';
 // B. 같은 기기에서 같은 주소를 다시 열면 목표 창 없이 이번 주 계획. C. 「아직 못 읽어요」를 고른 기기, D. 주소 값이 없는 기기는 목표 창을 열지 않는다.
 // E. 한국어 1280 첫 실행도 같은 창. 운영 계정·서버를 쓰지 않는다(손님 = 이 기기 기록, 바깥 주소는 막는다).
 // 쓰기 한 칸(10-22): 375·1280 × 한국어·몽골어 모두 저장 뒤 이번 주 계획에 쓰기 칸과 그 칸의 「TOPIK II 쓰기 연습」(첫 화면) → 쓰기 목록,
-// 배우기 판에서는 쓰기 줄이 생활 팩 위(EXAM)에 하나. 목표를 정하지 않은 학생은 지금처럼 아래(MORE)에.
+// 배우기 판에서는 쓰기 줄이 생활 팩 위(시험 준비 줄)에 하나. 목표를 정하지 않은 학생은 지금처럼 아래(더 보기)에.
+// 11-23 종이 겉부터 그 줄의 머리는 영문 「EXAM」이 아니라 화면 언어 글(goal.reason.exam — aria-label과 같은 글)이다.
 // 캡처와 result.json은 SYNK_EXAM_LINK_QA_OUT(기본 qa/world-exam-link-20261022/)에 쓴다(그림은 git 밖).
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const require=createRequire(import.meta.url);let playwright;try{playwright=require('playwright');if(!playwright.chromium)throw Error('no chromium');}catch{playwright=require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}
@@ -107,7 +108,7 @@ test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜�
    for(let n=el.parentElement;n;n=n.parentElement)if(/auto|scroll/.test(getComputedStyle(n).overflowY)){const box=n.getBoundingClientRect();top=Math.max(top,box.top);bottom=Math.min(bottom,box.bottom);}
    return r.top>=top&&r.bottom<=bottom;},selector);
   // 10-22 쓰기 한 칸: 이번 주 계획에 쓰기 칸과 그 칸의 「TOPIK II 쓰기 연습」 단추(첫 화면) → 누르면 쓰기 연습 목록(51~54) →
-  // 배우기 판에서는 쓰기 줄이 생활 팩 위(EXAM)에 하나만. tag는 캡처·측정 이름(375-mn 등).
+  // 배우기 판에서는 쓰기 줄이 생활 팩 위(시험 준비 줄)에 하나만. tag는 캡처·측정 이름(375-mn 등).
   async function writingFlow(page,tag){
    const plan=await page.evaluate(()=>{const board=document.querySelector('#panel-content [data-plan-board]'),button=board.querySelector('li[data-area="writing"] [data-plan-writing="writing"]');
     return {areas:[...board.querySelectorAll('.wplan-areas li')].map(li=>[li.dataset.area,li.querySelector('.wplan-area-count')?.textContent]),button:button?.textContent.replace('→','').trim()||null,height:button?Math.round(button.getBoundingClientRect().height):0};});
@@ -125,7 +126,8 @@ test('WORLD ?exam=topik2: 첫 실행 뒤 TOPIK II를 채운 목표 창 → 켜�
    await page.waitForSelector('#panel-content .life-hub .life-lead-rows [data-world="writing"]');
    checks[`${tag}-learn`]=await page.evaluate(()=>{const hub=document.querySelector('#panel-content .life-hub'),lead=hub.querySelector('.life-lead-rows'),packs=hub.querySelector('.life-pack-section');
     return {leadAbovePacks:!!(lead.compareDocumentPosition(packs)&Node.DOCUMENT_POSITION_FOLLOWING),writingRows:hub.querySelectorAll('[data-world="writing"]').length,label:lead.querySelector('.life-section-label')?.textContent,aria:lead.getAttribute('aria-label')};});
-   assert.deepEqual({...checks[`${tag}-learn`],aria:undefined},{leadAbovePacks:true,writingRows:1,label:'EXAM',aria:undefined},`${tag}: 배우기 판 쓰기 줄은 생활 팩 위에 하나`);
+   assert.deepEqual({...checks[`${tag}-learn`],label:undefined,aria:undefined},{leadAbovePacks:true,writingRows:1,label:undefined,aria:undefined},`${tag}: 배우기 판 쓰기 줄은 생활 팩 위에 하나`);
+   assert.ok(checks[`${tag}-learn`].aria&&checks[`${tag}-learn`].label===checks[`${tag}-learn`].aria,`${tag}: 시험 준비 줄 머리는 화면 언어 글(${checks[`${tag}-learn`].label} · ${checks[`${tag}-learn`].aria})`);
    checks[`${tag}-learn`].firstView=await inFirstView(page,'#panel-content .life-lead-rows [data-world="writing"]');
    assert.equal(checks[`${tag}-learn`].firstView,true,`${tag}: 배우기 판 쓰기 줄이 첫 화면에`);
    measures[`${tag}-learn`]=await measure(page,'#panel-content .life-hub .life-lead-rows');await shoot(page,`${tag}-learn`);

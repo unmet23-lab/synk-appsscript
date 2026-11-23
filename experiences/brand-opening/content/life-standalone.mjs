@@ -17890,11 +17890,13 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       tutor?.dispose();
       if (companion === tutor) companion = null;
       if (!rendering) {
+        shown = false;
+        flight++;
+        for (const ghost of panel.querySelectorAll?.(".life-ghost") || []) ghost.remove();
         speech.stop();
         story.stop();
         signClip?.pause();
         signClip = null;
-        shown = false;
         generation2++;
         try {
           void getProgress().flush().catch(() => {
@@ -18129,7 +18131,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const p = getProgress(), s = summary(), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt) || s.dueState === "checking" && Object.keys(p.exportSnapshot().reviews || {}).length > 0, activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
     const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
     const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="${t("life.cafeAlt")}" width="1600" height="900"><div><small class="life-section-label is-text">${t("life.visitN", { n: nextVisit.number })}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${t(p.lessonState(nextVisit.id).status === "started" ? "life.continue" : nextVisit.number === 1 ? "life.cafeEnter" : "life.cafeNext")} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label is-text">${t("life.cafeVisits")}</p><small class="life-library-note">${visited ? t("life.visited", { done: visited, total: CAFE_VISITS.length }) : t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
-    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${meter(done, value.lessons.length)}</section></div>`;
+    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label is-text">${t("life.lessonsLabel")}</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${meter(done, value.lessons.length)}</section></div>`;
     const nowId = id === "cafe" ? null : nowIn(lessons);
     reviewMark = reviewSign(s);
     paint(packTitle(value), `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>${t("life.toPacks")}</button>${hasReviews ? `<button class="quiet-button" data-life-review>${t("life.seeReviews")}</button>` : ""}</div>`, { screen: `pack:${id}`, ...again ? { keepScroll: true, focus: null, keepFocus: focusedKey() } : {} });
@@ -18300,7 +18302,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }).join("")}</section>`;
   }
   function showLearn({ line, animate } = {}) {
-    if (rendering || context?.phase !== "story") return;
+    if (rendering || !shown || context?.phase !== "story") return;
     const box = content.querySelector(".life-learn");
     if (!box || !box.hidden) return;
     const rows2 = [...box.querySelectorAll("[data-learn-row]")];

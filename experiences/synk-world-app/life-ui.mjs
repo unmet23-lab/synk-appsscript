@@ -241,7 +241,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   companion=tutor;
   // 이야기 장면에서는 튜터 띠를 사진 위 작은 「표현 도움」 알약으로 접는다(장면이 주인공). 문제·결과 화면은 그대로 띠.
   if(tutorSlot&&tutor?.element){const slot=content.querySelector(tutorSlot);if(slot){tutor.element.dataset.layout='scene';slot.append(tutor.element);}}
-  home.attachPanelResource({dispose(){tutor?.dispose();if(companion===tutor)companion=null;if(!rendering){speech.stop();story.stop();signClip?.pause();signClip=null;shown=false;generation++;try{void getProgress().flush().catch(()=>{});}catch{}context=null;reviewRun=null;lastFeedback=null;}}});
+  home.attachPanelResource({dispose(){tutor?.dispose();if(companion===tutor)companion=null;if(!rendering){shown=false;flight++;for(const ghost of panel.querySelectorAll?.('.life-ghost')||[])ghost.remove();speech.stop();story.stop();signClip?.pause();signClip=null;generation++;try{void getProgress().flush().catch(()=>{});}catch{}context=null;reviewRun=null;lastFeedback=null;}}});
   rendering=false;shown=true;content.scrollTop=scroll;content.dataset.reduced=String(!!home.state?.reduced);if(focus)content.querySelector(focus)?.focus({preventScroll:true});else if(keepFocus)refocus(keepFocus);updateHome();
   decorate(type,keepScroll);
  }
@@ -403,7 +403,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const p=getProgress(),s=summary(),hasReviews=s.dueCount>0||Number.isFinite(s.nextReviewAt)||s.dueState==='checking'&&Object.keys(p.exportSnapshot().reviews||{}).length>0,activeId=p.exportSnapshot().activeLessonId,nextVisit=CAFE_VISITS.find(v=>v.id===activeId)||CAFE_VISITS.find(v=>p.lessonState(v.id).status==='started')||CAFE_VISITS.find(v=>p.lessonState(v.id).status!=='completed')||CAFE_VISITS[0],visited=CAFE_VISITS.filter(v=>p.lessonState(v.id).status==='completed').length;
   const lessons=value.lessons.filter(l=>id!=='cafe'||!isCafeLesson(l.id)),index=PACKS.findIndex(p=>p.id===id),[word,label]=packWords[id]||[value.title,id.toUpperCase()],done=packDone(value);
   const cafe=id==='cafe'?`<section class="cafe-pack-preview"><img src="${asset('home/cafe-room-v1.webp')}" alt="${t('life.cafeAlt')}" width="1600" height="900"><div><small class="life-section-label is-text">${t('life.visitN',{n:nextVisit.number})}</small><h3>${escape(nextVisit.title)}</h3><p>${escape(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${t(p.lessonState(nextVisit.id).status==='started'?'life.continue':nextVisit.number===1?'life.cafeEnter':'life.cafeNext')} <span aria-hidden="true">→</span></button></div></section><section class="life-list" aria-label="${t('life.cafeVisits')}"><div class="life-section-head"><p class="life-section-label is-text">${t('life.cafeVisits')}</p><small class="life-library-note">${visited?t('life.visited',{done:visited,total:CAFE_VISITS.length}):t('life.visitsCount',{n:CAFE_VISITS.length})}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>`:'';
-  const heading=id==='cafe'?`<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t('life.cafeBefore')}</small></div><p class="life-pack-description">${escape(packSub(value))}</p></div>`
+  const heading=id==='cafe'?`<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label is-text">${t('life.lessonsLabel')}</p><small class="life-library-note">${t('life.cafeBefore')}</small></div><p class="life-pack-description">${escape(packSub(value))}</p></div>`
    :`<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index+1)} · ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape(word)}</strong><span class="life-poster-sub life-pack-description">${escape(packTitle(value))} · ${escape(packSub(value))}</span>${meter(done,value.lessons.length)}</section></div>`;
   const nowId=id==='cafe'?null:nowIn(lessons);
   reviewMark=reviewSign(s);paint(packTitle(value),`${cafe}${heading}<div class="life-lesson-list">${lessons.map((l,i)=>lessonRow(l,i+1,{nowId})).join('')}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>${t('life.toPacks')}</button>${hasReviews?`<button class="quiet-button" data-life-review>${t('life.seeReviews')}</button>`:''}</div>`,{screen:`pack:${id}`,...(again?{keepScroll:true,focus:null,keepFocus:focusedKey()}:{})});}
@@ -494,7 +494,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 대사가 다 나타나면(life-story onLine) 배울 말 판을 연다. 움직임이 켜져 있으면 대사 속 배울 말이 판의 제 줄로 날아와 앉으며 붉은 흙빛에서 먹색이 되고,
  // 뜻과 쓰임은 앉은 뒤에 뜬다. 말이 나는 동안 「다음」은 물러나 있다(무엇을 배우는지 보는 틈). 움직임 줄이기면 판만 바로 연다.
  function showLearn({line,animate}={}){
-  if(rendering||context?.phase!=='story')return;
+  // 닫는 중(dispose가 shown을 먼저 내린다)에 멈춘 타자는 판을 열지 않는다 — 닫히는 판 위로 말이 날지 않게.
+  if(rendering||!shown||context?.phase!=='story')return;
   const box=content.querySelector('.life-learn');if(!box||!box.hidden)return;
   const rows=[...box.querySelectorAll('[data-learn-row]')];
   if(!animate||!line||!rows.length||!motionOn()||home.state?.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches||typeof box.animate!=='function'){box.hidden=false;return;}

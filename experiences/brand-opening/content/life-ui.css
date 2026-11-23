@@ -1130,7 +1130,7 @@ html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label){font-family:
   .life-feedback,.life-result.is-arriving{animation:none}
 }
 
-/* ══ 종이 겉(2026-11-23 유호님 승인 「종이」 · 「학생 시트만」 — 보기 페이지 https://claude.ai/artifact/NRDv7e4iTuLgevDRHBz62d) ══
+/* ══ 종이 겉(2026-11-23 유호님 승인 「종이」 · 「학생 시트만」 — 정본 docs/디자인/월드_시그널/README.md 「학생 레슨 시트는 종이 겉」) ══
  * 레슨 소개 · 이야기 장면 · 문제 · 배우기(허브 · 팩 · 이야기 모음)만. 판의 토큰은 world-ui.css #world-panel.is-paper가 바꾸고, 여기서는 글자 · 색 역할과 짜임을 맞춘다.
  * 글자: 대사 · 배울 말 SUIT 700~800 · 해설 · 레슨 제목 · 문제 상황 World Story Serif · 내 말 뜻 Inter Tight(키릴 포함) 500 · 숫자 DM Mono · 작은 머리 SUIT 600(영문 대문자 모노 꼬리표 없음).
  * 색: 붉은 흙빛 = 대사 속 배울 말(과 배울 말 판의 옅은 바탕) · 인물 색 = 말하는 사람 · 남색 = 나 · 뒤집힌 짙은 띠 = 판정 · 따뜻한 먹 = 먼저 누를 단추 하나. */
@@ -1263,6 +1263,8 @@ html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label){font-family:
 
 /* ── 배우기(허브 · 팩 · 이야기 모음): 코랄 포스터 대신 종이 위 한 장 — 인화지 · 큰 한국어 · 진행선 · 따뜻한 먹 단추 하나 ── */
 #world-panel.is-paper .life-poster{padding:0 0 22px;border-radius:0;background:none;color:var(--w-ink);overflow:visible;border-bottom:1px solid var(--w-line)}
+/* 기울인 사진이 내용 칸 오른쪽 끝을 넘지 않게 안쪽으로 들인다(카드 틀을 벗기며 overflow를 풀어 390에서 6px 가로 넘침 — world-push-browser 시험). */
+#world-panel.is-paper .life-poster>.w-print{margin-right:6px}
 #world-panel.is-paper .life-poster::before,#world-panel.is-paper .life-poster::after{display:none}
 #world-panel.is-paper .life-poster-label{display:none}
 #world-panel.is-paper .life-poster>.life-poster-kicker{display:block;grid-area:label;align-self:start;font-size:13px;line-height:1.4;font-weight:600;color:var(--w-ink-3)}

@@ -18,10 +18,13 @@ const RANGES='U+0020-007E,U+00B7,U+2010-2027';
 
 export async function storyCharacters(){
  const {LESSONS}=await import(pathToFileURL(path.join(root,'experiences/synk-world-app/life-content.mjs')).href);
+ const {default:strings}=await import(pathToFileURL(path.join(root,'experiences/brand-opening/world-strings.mjs')).href);
  const chars=new Set();
  const add=text=>{for(const ch of String(text||''))if(ch.codePointAt(0)>=0x80)chars.add(ch);};
  // 이야기 해설에 더해, 종이 겉 학생 시트(11-23 「종이」 · 「학생 시트만」)의 레슨 제목과 문제 상황 글(복습 상황 포함)도 같은 명조로 쓴다.
  for(const lesson of LESSONS){for(const scene of lesson.scenes||[])add(scene.text);add(lesson.title);for(const q of lesson.questions||[]){add(q.context);add(q.review?.context);}}
+ // 복습 문제 시트(type life-question)의 제목도 종이 시트 제목이라 명조다.
+ add(strings['life.reviewTitle']?.ko);
  return [...chars].sort();
 }
 export function missingCharacters(chars,list=JSON.parse(fs.readFileSync(listPath,'utf8'))){const have=new Set(list.chars);return chars.filter(ch=>!have.has(ch));}
