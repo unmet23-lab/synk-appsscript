@@ -183,15 +183,17 @@ export function pcRoom(snap = null, st = {}, now = Date.now()) {
 }
 
 /* 설정 방의 줄 하나. 누르면 「이 PC에 이렇게 맞췄습니다」 판을 연다. 읽는 중과 읽지 못함을 판과 같은 말로 쓴다(Fable 최종 P2-4) */
-export function pcSettingsRow(snap = null, st = {}) {
+/* features는 판과 같다. 맞춰 주는 기능(원클릭 · 사무실)이 없는 계정에게는 잰 값만 모았다고 쓴다(Fable 다시 검수 FA1) */
+export function pcSettingsRow(snap = null, st = {}, features = null) {
+  const fits = !!(features && (features.backup || features.office));
   if (snap && snap.ok === true && snap.available === false) return null;
   const p = snap?.ok === true ? snap.profile : null, cores = coresOf(p), mem = memOf(p), n = shownDrives(p).length;
   const mid = p ? [cores ? `논리 코어 ${cores}개` : '', mem != null ? `메모리 ${mem}GB` : '', n ? `드라이브 ${countWord(n)}` : ''].filter(Boolean).join(' · ') || '읽지 못한 값이 있습니다'
     : snap && snap.ok === false ? '읽지 못했습니다' : snap?.ok === true ? '아직 재지 않았습니다' : '읽는 중입니다';
   const val = Array.isArray(snap?.changed) && snap.changed.length ? '바뀜' : '';
   return { key: 'pc', nm: '이 PC', mid, val, when: '', label: rowLabel(['이 PC', mid, val]), more: [
-    ['note', '솔리오가 이 PC를 어떻게 보고 기능마다 무엇을 맞췄는지 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.'],
-    ['acts', [['이 PC에 맞춘 것 보기', 'pc-open', '', '']]],
+    ['note', fits ? '솔리오가 이 PC를 어떻게 보고 기능마다 무엇을 맞췄는지 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.' : '솔리오가 잰 이 PC의 사양을 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.'],
+    ['acts', [[fits ? '이 PC에 맞춘 것 보기' : '이 PC 사양 보기', 'pc-open', '', '']]],
     ['live', st.notes?.get?.('pc') || ''],
   ] };
 }

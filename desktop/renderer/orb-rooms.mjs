@@ -1076,7 +1076,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         // 구독 팁 켜고 끄기는 회원의 구독 자료가 있을 때만 둔다(저장 자리가 구독 판의 settings.tipsOff다, 설계 검토 D7)
         const snap = snapshot(), tipsOff = member && snap && snap.ok !== false && snap.settings ? snap.settings.tipsOff === true : null;
         sets.member = !!member;
-        const room = settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, care: sets.care, chatgpt: sets.chatgpt, notices: noticesNow(), env: envNow(), member: !!member, tipsOff, pc: dev.pcProfile ? pcs.snap : undefined }, view(), now());
+        const room = settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, care: sets.care, chatgpt: sets.chatgpt, notices: noticesNow(), env: envNow(), member: !!member, tipsOff, pc: dev.pcProfile ? pcs.snap : undefined, pcFeatures: features || {} }, view(), now());
         return { settings: { ...room, ...req } };
       }
       if (aside === 'pc') return { pc: { ...pcRoom(pcs.snap, { ...view(), changedShown: pcs.changedShown, features: features || {} }, now()), ...req } };

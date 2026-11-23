@@ -583,7 +583,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       fan: mode === 'portal' ? null : { ...appSwitchScene(state), open: switchOpen, pin: fanPin },
       room: mode === 'portal' ? null : roomScene(state),
       aside: mode === 'portal' ? null : aside,
-      rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking, name: roomName(), accountKey: state.accountKey || '', member: memberShown(state), features: aside === 'pc' ? pcFeatures(state) : null }),
+      rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking, name: roomName(), accountKey: state.accountKey || '', member: memberShown(state), features: aside === 'pc' || aside === 'settings' ? pcFeatures(state) : null }),
       legacy: legacyKind,
       band: bandOn() ? space : null,
       bandClose: bandOn() && !!slotOf(space)?.open && !slotOf(space).closing && !switchOpen && !aside && !share && typeof slotOf(space).embed.close === 'function',
@@ -1683,6 +1683,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     asideParent = parent && parent.name !== name && ASIDE_ROOMS.includes(parent.name) ? parent : null;
     aside = name;
     rooms.open(name, { svc, back });
+    if (name === 'pc' || name === 'settings') { syncRead('backup', { anywhere: true }); syncRead('office', { anywhere: true }); }
     // 다른 방에서 돌아왔으면 방이 그 방을 연 단추에 초점을 둔다(rooms.open의 back). 그 전까지 초점이 숨은 방에 남지 않게만 한다
     focus(back ? 'root' : 'aside');
     render();
@@ -1902,14 +1903,15 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   /* 지금 회원의 요약을 읽는다. 솔리오를 열 때 한 번 읽고, again이면 그 프로그램을 열 때 다시 읽는다.
    * 본체는 로그인한 회원에게만 답하고, 볼 계정이 아니면 available:false로 답한다. 방문자 분석은 그때 이 계정을 대기 목록에 남기고(site-visits.cjs),
    * 계정 건강도 그 목록으로 볼 계정을 정한다. 그래서 솔리오를 열 때 방문자 분석을 묻는 호출은 계정 건강과 상관없이 그대로 둔다(계정건강 설계 7절의 전제) */
-  function syncRead(key, { again = false } = {}) {
+  /* anywhere: 솔리오 밖에서 연 「이 PC에 맞춘 것」 · 설정 방도 원클릭 · 사무실을 볼 계정인지 알게 한 번 읽는다(Fable 다시 검수 FA2) */
+  function syncRead(key, { again = false, anywhere = false } = {}) {
     const r = reads[key], api = readApi[key];
     const state = machine.read();
     const account = memberShown(state) && state.accountKey ? state.accountKey : null;
     if (r.account !== account) { stopRead(key); r.account = account; }
     // 읽는 중에 다시 읽기 부탁이 오면 표시만 남기고, 그 읽기가 끝난 뒤 한 번 더 읽는다(백업 방에서 누른 직후의 다시 읽기가 주기 읽기에 묻히지 않게, Fable 최종 검수 F5)
     if (r.loading && again) { r.again = true; return; }
-    if (!api || !account || state.phase !== 'entered' || space !== 'solio' || !solioReadable(state) || r.loading) return;
+    if (!api || !account || state.phase !== 'entered' || (space !== 'solio' && !anywhere) || !solioReadable(state) || r.loading) return;
     if (r.done && !again) return;
     const my = ++r.seq;
     r.loading = true;
