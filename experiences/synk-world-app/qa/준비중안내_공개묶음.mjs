@@ -4,6 +4,9 @@
 // · app-shell.mjs: 바탕 판(이 일의 첫 커밋 바로 앞)에 이 일의 커밋(제목이 「WORLD 배우기 준비 중 안내」)만 얹은 「내 판」을
 //   공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 겹치면 멈춘다(조용히 버리지 않는다).
 // · world-learn-soon.mjs: 새 파일이라 끝 판 그대로(같은 경로 고쳐 쓰기).
+//   첫 공개(11-24) 전용이다. 공개된 뒤 이 파일을 다시 올릴 때(LEARN_SOON을 false로)는 기준 판이 없어 tools/공개.js가 「새로 만든 파일인데
+//   공개본에 같은 이름의 다른 파일이 있다」로 멈춘다. 그때는 지금 공개본의 world-learn-soon.mjs를 받아 base에도 써서 기준으로 준다
+//   (공개된 뒤에는 그 주소가 200이라 받아도 404가 묶이지 않는다, 11-24 Fable FA1).
 // · server.mjs · tools/build-world-app-public.mjs · qa는 공개본에 싣지 않는다.
 // 출력: .tmp/learn-soon-pub/base(지금 공개본) · new(후보 원천) · 항목.txt, 그리고 tools/공개.js 미리 보기 명령.
 import fs from 'node:fs';
