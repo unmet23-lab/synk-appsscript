@@ -215,6 +215,15 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
   const press=async key=>{await card.locator(`[data-homework-key="${key}"]`).click();};
   const task=(week,kind)=>card.locator(`.ws-hw-week[data-week="${week}"] .ws-hw-task[data-kind="${kind}"]`).first();
   const open=async(week,kind)=>press(`open:${C}:${week}:${kind}`);
+  // 다시 불러와 상태가 ready가 되면 정답을 받고, 다 받으면 칸을 한 번 더 그린다. 그 다시 그림이 누름과 겹치면 누름이 사라지거나,
+  // 펼친 지난 주가 접힌 채 다시 그려진다(S072 456행, 2026-11-23). 그래서 정답 받기가 끝난 뒤에 누른다. 정답 요청을 잡아 둔 1~3은 settle('ready')만 쓴다.
+  const ready=async()=>{await settle('ready');await page.waitForFunction(()=>document.querySelector('#world-classroom-homework .ws-hw')?.dataset.keyState!=='loading');};
+  // 지난 주는 지금 펼침 상태를 확인하고 누른 뒤, 바뀐 것을 보고 다음 단추로 간다.
+  const pastWeek=async(week,open=true)=>{
+   const key=`past:${C}:${week}`;
+   assert.equal(await card.locator(`[data-homework-key="${key}"]`).evaluate(el=>el.parentElement.open),!open,`${week}주차가 ${open?'접힌':'펼친'} 채로 누른다`);
+   await press(key);await page.waitForFunction(([key,open])=>document.querySelector(`#world-classroom-homework [data-homework-key="${key}"]`)?.parentElement.open===open,[key,open]);
+  };
   const posts=()=>homeworkCalls.filter(c=>c.method==='POST');
 
   for(const {tag,size} of VIEWPORTS){
@@ -319,7 +328,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    assert.equal(posts().at(-1).body.expectedRevision,4);assert.equal(writing4().revision,5);assert.equal(writing4().answers['W4-1.1'],fixed);
    // 고치지 않은 채 응답이 끊긴 글은 새로고침하면 쓰던 글을 지운다(서버에 같은 글이 있다).
    await later();await press(`edit:${C}:4:writing`);await area.fill(fixed+' 끝');await later();fake.dropNextReply();await press(`send:${C}:4:writing`);await noticeIs('내지 못했어요. 쓴 글은');
-   await later();await press('refresh');await settle('ready');
+   await later();await press('refresh');await ready();
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),`synk.world.homework.v1:${A}:${C}:W4`),null,'서버 낸 시각보다 오래된 쓰던 글은 지운다');
    assert.equal(writing4().answers['W4-1.1'],fixed+' 끝');
    checks[`${tag}-lost-reply`]=true;
@@ -339,7 +348,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    await open(4,'writing');checks[`${tag}-kept-rewrite`]=true;
    // (새로고침으로 펼친 칸은 이미 닫혔다)
    // 5) 지난 과제: 3주차 쓰기 첨삭(학생 글 위 기호 표시 · 기호 목록 · 한마디 세 줄 · 예시답)
-   await card.locator(`[data-homework-key="past:${C}:3"]`).click();await open(3,'writing');await card.locator('.ws-hw-feedback').waitFor();
+   await pastWeek(3);await open(3,'writing');await card.locator('.ws-hw-feedback').waitFor();
    await card.locator('.ws-hw-feedback .ws-hw-model summary').click();
    const fb=await card.locator('.ws-hw-feedback').evaluate(el=>({marks:[...el.querySelectorAll('.ws-hw-mine mark')].map(m=>[m.textContent,m.dataset.code]),
     list:[...el.querySelectorAll('.ws-hw-marks li')].map(li=>li.textContent),comment:[...el.querySelectorAll('.ws-hw-comment dt')].map(dt=>dt.textContent),
@@ -359,26 +368,26 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    };
    await repaint();assert.equal(await model().evaluate(el=>el.open),true,'다시 그린 뒤에도 펼친 예시답');
    assert.equal(await page.evaluate(()=>document.activeElement?.dataset.homeworkKey),`model:${C}:3:W3-1`,'초점도 예시답 줄로 돌아온다');
-   await press('refresh');await settle('ready');await open(3,'writing');await model().waitFor();
+   await press('refresh');await ready();await open(3,'writing');await model().waitFor();
    assert.equal(await model().evaluate(el=>el.open),true,'새로고침 뒤 첨삭을 다시 열어도 펼친 예시답');
    await model().locator('summary').click();await repaint();assert.equal(await model().evaluate(el=>el.open),false,'접은 예시답은 다시 그려도 접힌 채');
    checks[`${tag}-model-open-kept`]=true;
    // 6) 2주차 쓰기 첨삭: 빈칸·바꿔 쓰기 판정(인정·부분·다시)
-   await open(3,'writing');await card.locator(`[data-homework-key="past:${C}:3"]`).click();
-   await card.locator(`[data-homework-key="past:${C}:2"]`).click();await open(2,'writing');await card.locator('.ws-hw-feedback').waitFor();
+   await open(3,'writing');await pastWeek(3,false);
+   await pastWeek(2);await open(2,'writing');await card.locator('.ws-hw-feedback').waitFor();
    const verdicts=await card.locator('.ws-hw-feedback').evaluate(el=>[...el.querySelectorAll('.ws-hw-verdict')].map(n=>n.dataset.verdict));
    assert.deepEqual(verdicts,['인정','인정','인정','인정','다시','부분']);
    assert.match(await card.locator('.ws-hw-feedback').innerText(),/다시 쓴 문장\n+51번 문제 2 · 편하신 시간을 알려 주시면 그 시간에 찾아뵙겠습니다\./);
    await record(tag,'feedback-blanks');
-   await open(2,'writing');await card.locator(`[data-homework-key="past:${C}:2"]`).click();
+   await open(2,'writing');await pastWeek(2,false);
    // 1주 읽기는 지금 자료보다 앞선 판으로 냈다: 정답은 지금 판으로 받고(서버가 막지 않는다) 「자료가 고쳐졌어요」를 함께 보인다.
-   await card.locator(`[data-homework-key="past:${C}:1"]`).click();await open(1,'reading');await card.locator('.ws-hw-reading .ws-hw-judge').first().waitFor();
+   await pastWeek(1);await open(1,'reading');await card.locator('.ws-hw-reading .ws-hw-judge').first().waitFor();
    const changed=await card.locator('.ws-hw-reading').evaluate(el=>({judges:el.querySelectorAll('.ws-hw-judge').length,notes:[...el.querySelectorAll('.ws-hw-help')].map(n=>n.textContent)}));
    assert.equal(changed.judges,5,'앞선 판으로 낸 읽기도 정답·근거를 본다');assert.ok(changed.notes.includes('이 과제를 낸 뒤 수업 자료가 고쳐졌어요. 지금 자료로 보여 줘요.'),JSON.stringify(changed.notes));
-   await open(1,'reading');await card.locator(`[data-homework-key="past:${C}:1"]`).click();
+   await open(1,'reading');await pastWeek(1,false);
    checks[`${tag}-old-version-key`]=true;
    // 7) 마감이 지난 뒤(목요일): 안 낸 과제는 「늦게 내도 괜찮아요」 — 4주 읽기·쓰기를 낸 상태라 5주차 전 날로 다시 연다
-   fake.reset();await setClock(CLOCK.overdue);await openProfile();await settle('ready');
+   fake.reset();await setClock(CLOCK.overdue);await openProfile();await ready();
    assert.deepEqual(await card.evaluate(el=>[...el.querySelectorAll('.ws-hw-room>.ws-hw-week>.ws-hw-task .ws-hw-meta')].map(n=>[n.textContent,n.querySelector('.ws-led').dataset.tone])),
     [['마감이 지났어요 · 늦게 내도 괜찮아요','check'],['마감이 지났어요 · 늦게 내도 괜찮아요','check']]);
    await record(tag,'overdue');
@@ -395,7 +404,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    assert.deepEqual(local,{title:'이 기기에 남은 초안',lines:['01 · ②','02 · ①','03 · ③','04 · ④','05 · ②']});
    assert.doesNotMatch(await card.innerText(),/이력|수정 과제/,'어려운 말(이력)·내부 이름(수정 과제)을 쓰지 않는다');
    await record(tag,'read-only');
-   fake.setMode('ok');await press('refresh');await settle('ready');checks[`${tag}-read-only-refused`]=true;
+   fake.setMode('ok');await press('refresh');await ready();checks[`${tag}-read-only-refused`]=true;
    await open(4,'writing');await card.locator('.ws-hw-write textarea[data-kind="text"]').fill(essay);await press(`send:${C}:4:writing`);await card.locator('.ws-hw-write .ws-hw-again').waitFor();
    assert.equal(fake.submissions.find(s=>s.week===4&&s.kind==='writing').late,true);assert.match(await task(4,'writing').locator('.ws-hw-meta').textContent(),/늦게 냈어요/);
    checks[`${tag}-late`]=true;
@@ -407,22 +416,22 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    assert.equal(await task(4,'writing').locator('.ws-hw-kept').count(),0);assert.equal(await page.evaluate(key=>localStorage.getItem(key),w4Key),null);
    // 썼다가 다 지운 빈 초안(빈 칸·빈 다시 써 볼 곳)은 「내지 못한 고친 글」로 남기지 않고 지운다.
    await page.evaluate(key=>localStorage.setItem(key,JSON.stringify({v:1,answers:{'W4-1.1':'  '},retry:{'W3-1':''},savedAt:Date.now()+600000})),w4Key);
-   await press('refresh');await settle('ready');
+   await press('refresh');await ready();
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),w4Key),null,'빈 초안은 지운다');
    assert.equal(await task(4,'writing').locator('.ws-hw-meta').textContent(),'첨삭이 왔어요');
    checks[`${tag}-locked-unchanged`]=true;
    // 8) 시작 전 · 9) 8주를 마친 뒤
-   fake.reset();await setClock(CLOCK.before);await openProfile();await settle('ready');
+   fake.reset();await setClock(CLOCK.before);await openProfile();await ready();
    assert.equal(await card.locator('.ws-hw-when').textContent(),'첫 과제는 3월 6일 (토) 수업 뒤에 열려요.');assert.equal(await card.locator('.ws-hw-task').count(),0);
    await record(tag,'before');
-   await setClock(CLOCK.done);await openProfile();await settle('ready');
+   await setClock(CLOCK.done);await openProfile();await ready();
    assert.match(await card.locator('.ws-hw-room>.ws-hw-when').textContent(),/8주 과정을 마쳤어요/);assert.equal(await card.locator('.ws-hw-past-week').count(),8);
    await record(tag,'done');
    // 10) 서버 오류 → 다시 불러오기 · 11) 새로고침 중
    await setClock(CLOCK.week);fake.setMode('error');await openProfile();await settle('error');
    assert.equal(await card.locator('.ws-hw-alert p').textContent(),'과제를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.');
    await record(tag,'error');
-   fake.setMode('ok');await press('retry');await settle('ready');checks[`${tag}-retry-after-error`]=true;
+   fake.setMode('ok');await press('retry');await ready();checks[`${tag}-retry-after-error`]=true;
    // 느린 이미지 합성 동안 합성 서버의 응답을 붙잡아 두어도 실제 앱의 12초 요청 제한을 소비하지 않는다.
    // 앱의 제한은 그대로 두고 이 로딩 화면 캡처 동안만 브라우저 시계를 멈춘다.
    const gate=deferred();await context.clock.pauseAt(clock);
@@ -434,30 +443,30 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
     assert.equal(await page.evaluate(()=>window.__qaCaptureTimer),false,'실제 캡처 동안 브라우저 타이머가 멈춰 있다');
     assert.equal(await cardState(),'loading');
    }finally{gate.resolve();await context.clock.resume();}
-   await settle('ready');await page.waitForFunction(()=>window.__qaCaptureTimer===true);checks[`${tag}-loading-capture-clock`]=true;
+   await ready();await page.waitForFunction(()=>window.__qaCaptureTimer===true);checks[`${tag}-loading-capture-clock`]=true;
    // 정말 응답이 12초를 넘기면 오류를 보이고 다시 불러오기로 복구해야 한다(캡처 수정이 시간 제한을 숨기지 않음).
    const timeoutGate=deferred();fake.hold(timeoutGate);await press('refresh');await settle('loading');
    try{
     await context.clock.fastForward(12001);await settle('error');
     assert.equal(await card.locator('.ws-hw-alert p').textContent(),'과제를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.');
    }finally{timeoutGate.resolve();}
-   await press('retry');await settle('ready');checks[`${tag}-request-timeout-recovers`]=true;
+   await press('retry');await ready();checks[`${tag}-request-timeout-recovers`]=true;
    // 정답 서버가 실패하면 쓰기 예시답 자리에도 사실대로 알리고, 새로고침으로 다시 받는다.
-   fake.setKeyMode('error');await openProfile();await settle('ready');
-   await card.locator(`[data-homework-key="past:${C}:3"]`).click();await open(3,'writing');
+   fake.setKeyMode('error');await openProfile();await ready();
+   await pastWeek(3);await open(3,'writing');
    await page.waitForFunction(()=>[...document.querySelectorAll('#world-classroom-homework .ws-hw-feedback .ws-hw-help')].some(n=>n.textContent==='예시답을 불러오지 못했어요. 새로고침을 눌러 주세요.'));
    assert.equal(await card.locator('.ws-hw-feedback .ws-hw-model').count(),0);
    // 새로고침은 펼친 지난 주를 그대로 두고 연 칸만 닫는다.
-   fake.setKeyMode('ok');await press('refresh');await settle('ready');
+   fake.setKeyMode('ok');await press('refresh');await ready();
    await open(3,'writing');await card.locator('.ws-hw-feedback .ws-hw-model').waitFor();
    await open(3,'writing');checks[`${tag}-key-error`]=true;
    // 정답 판이 화면 자료 판과 다르면(자료를 막 고친 때) 자료를 한 번 새로 읽어 맞춰 보고, 그래도 다르면 「자료를 고치는 중」으로 알린다.
-   fake.setKeyMode('other-version');const loadsBefore=contentLoads.length;await openProfile();await settle('ready');
-   await card.locator(`[data-homework-key="past:${C}:3"]`).click();await open(3,'reading');
+   fake.setKeyMode('other-version');const loadsBefore=contentLoads.length;await openProfile();await ready();
+   await pastWeek(3);await open(3,'reading');
    await page.waitForFunction(()=>(document.querySelector('#world-classroom-homework .ws-hw-reading .ws-hw-summary')?.textContent||'').startsWith('수업 자료를 고치는 중이라'));
    assert.equal(contentLoads.length-loadsBefore,2,'열 때 한 번과 정답 판을 맞추려고 한 번');
    await record(tag,'key-stale');
-   fake.setKeyMode('ok');await press('refresh');await settle('ready');
+   fake.setKeyMode('ok');await press('refresh');await ready();
    await open(3,'reading');await card.locator('.ws-hw-reading .ws-hw-judge').first().waitFor();
    checks[`${tag}-key-stale`]=true;
    // 다른 탭에서 돌아와 조용히 다시 묻다가 서버가 잠깐 실패해도 보던 화면을 그대로 둔다.
@@ -466,7 +475,7 @@ test('계정 모드 WORLD 내 계정 시트의 「이번 주 과제」: 주차·
    for(let i=0;i<50&&homeworkCalls.filter(c=>c.method==='GET').length===getsBefore;i++)await page.waitForTimeout(100);
    assert.ok(homeworkCalls.filter(c=>c.method==='GET').length>getsBefore,'돌아오면 조용히 다시 묻는다');await page.waitForTimeout(300);
    assert.equal(await cardState(),'ready');assert.equal(await card.locator('.ws-hw-reading .ws-hw-judge').count(),5,'보던 정답 화면이 그대로');
-   fake.setMode('ok');await open(3,'reading');await card.locator(`[data-homework-key="past:${C}:3"]`).click();
+   fake.setMode('ok');await open(3,'reading');await pastWeek(3,false);
    checks[`${tag}-quiet-error-keeps`]=true;
    // 시트 맥락: 우리 반 수업 바로 아래의 이번 주 과제(그 크기 그대로의 화면 한 장)
    await card.evaluate(el=>el.scrollIntoView({block:'start'}));await page.waitForTimeout(150);const sheetFile=path.join(out,`${tag}-sheet.png`);await page.screenshot({path:sheetFile});shots.push(path.relative(out,sheetFile));

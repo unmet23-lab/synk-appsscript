@@ -544,6 +544,8 @@ export function mountClassroomHomework({container,load,submit,loadContent,loadKe
   const focused=doc.activeElement,focusKey=focused&&root.contains(focused)?focused.dataset.homeworkKey:null;
   const caret=focusKey&&typeof focused.selectionStart==='number'?[focused.selectionStart,focused.selectionEnd]:null;
   root.dataset.state=model.phase;
+  // 정답 받기 상태(idle · loading · ready · error · stale). 받기가 끝나면 칸을 한 번 더 그리므로, 브라우저 시험은 loading이 끝난 뒤에 누른다.
+  root.dataset.keyState=model.keyState;
   root.hidden=model.phase==='hidden'||(model.phase==='loading'&&!model.seen);
   status.hidden=model.phase!=='loading';status.replaceChildren(...(model.phase==='loading'?[led('idle'),doc.createTextNode(T.loading)]:[]));
   alert.hidden=model.phase!=='error';alert.replaceChildren(...(model.phase==='error'?[node('p','',T.error),button(T.retry,'plain-button','retry',()=>start())]:[]));
