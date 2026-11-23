@@ -7,13 +7,15 @@
   "summary": "호텔 프런트에서 체크인과 체크아웃을 맡아 하루를 보내요. 손님의 말에 답하고, 업무 화면과 서류를 보고, 갈림길에서 골라요.",
   "minutes": 20,
   "reviewNote": "장면과 대사는 호텔 현장 전문가의 검토를 받기 전입니다.",
+  "reviewNoteScreen": "장면과 대사는 호텔 현장 전문가의 검토를 받기 전이에요.",
   "hintLanguages": [
     "mn",
     "vi",
     "en"
   ],
   "allowedTerms": [
-    "고용추천"
+    "고용추천",
+    "호텔업 등급결정 요령"
   ],
   "cast": {
     "senior": {
@@ -53,8 +55,8 @@
       "role": "투숙객"
     },
     "room1208": {
-      "name": "1208호 투숙객",
-      "role": "외국인 손님"
+      "name": "1208호 손님",
+      "role": "외국인 투숙객"
     },
     "traveler": {
       "name": "에마",
@@ -866,7 +868,7 @@
                   "hint": {
                     "mn": "Тэр автобус ч нэг цагаас өмнө хүрнэ. Гэхдээ арван нэгэн цаг тавин минутын автобусанд суусан ч амжина.",
                     "vi": "Chuyến đó cũng đến trước một giờ. Nhưng khách có thể đi muộn nhất là chuyến mười một giờ năm mươi.",
-                    "en": "That bus gets there before one too. But she can take a bus as late as the 11:50."
+                    "en": "That bus gets there before one too. But he can take a bus as late as the 11:50."
                   }
                 }
               ]
@@ -910,7 +912,7 @@
                   "hint": {
                     "mn": "Тэр автобус нэг цаг арван минутын үед хүрнэ. Хамгийн оройдоо арван нэгэн цаг тавин минутын автобусанд суух ёстой.",
                     "vi": "Chuyến đó khoảng một giờ mười mới tới. Khách phải đi muộn nhất là chuyến mười một giờ năm mươi.",
-                    "en": "That one arrives around 1:10. She has to take the 11:50 bus at the latest."
+                    "en": "That one arrives around 1:10. He has to take the 11:50 bus at the latest."
                   }
                 }
               ]
@@ -986,7 +988,7 @@
           "who": "traveler",
           "record": "외국인 손님께 영어로 짐 맡기는 곳을 안내하는 차례",
           "prompt": "손님께 영어로 안내해요. 짐을 맡기는 곳과 짐표를 말해요.",
-          "meaning": "네, 저쪽 벨 데스크에서 저녁까지 짐을 맡아 드립니다. 짐표를 드리니, 찾으실 때 보여 주세요.",
+          "meaning": "네, 저쪽 벨 데스크에서 저녁까지 짐을 맡아 드립니다. 벨 데스크에서 짐표를 드리니, 찾으실 때 보여 주십시오.",
           "foreign": {
             "en": "Of course. Our bell desk over there can keep your bags until this evening. They'll give you a tag, so please show it when you pick them up."
           },
@@ -1463,14 +1465,14 @@
               "rule"
             ]
           },
-          "prompt": "등록카드에 서명과 보증용 카드를 부탁하고, 카드키를 드리며 안내해요.",
-          "example": "여기 서명 부탁드립니다. 보증용 카드도 한 장 부탁드립니다. 방 번호는 카드키 봉투에 적어 두었습니다.",
+          "prompt": "등록카드에 서명과 보증용 카드를 부탁해요.",
+          "example": "여기 서명 부탁드립니다. 보증용 카드도 한 장 부탁드립니다.",
           "hint": {
-            "mn": "Бүртгэлийн карт дээр гарын үсэг зуруулж, барьцаа болгох төлбөрийн картыг нь аваад, картан түлхүүрийг өгөхдөө хэрэгтэй зүйлийг нь хэлж өг.",
-            "vi": "Hãy nhờ khách ký vào phiếu đăng ký và xuất trình thẻ bảo đảm thanh toán, rồi trao thẻ khóa phòng và hướng dẫn khách.",
-            "en": "Ask her to sign the registration card and provide a card as a guarantee. Then hand her the key card and tell her what she needs to know."
+            "mn": "Бүртгэлийн карт дээр гарын үсэг зуруулж, барьцаа болгох төлбөрийн картыг нь гуй.",
+            "vi": "Hãy nhờ khách ký vào phiếu đăng ký và đưa thẻ bảo đảm thanh toán.",
+            "en": "Ask her to sign the registration card and to hand over a card as a guarantee."
           },
-          "record": "카드키를 드리며 안내하는 차례"
+          "record": "서명과 보증용 카드를 부탁하는 차례"
         },
         {
           "type": "line",
@@ -1482,12 +1484,31 @@
               "rule"
             ]
           },
-          "text": "네, 카드 여기요. 고마워요.",
+          "text": "네, 서명했어요. 카드도 여기요.",
           "hint": {
-            "mn": "За, карт энэ байна. Баярлалаа.",
-            "vi": "Vâng, thẻ đây. Cảm ơn nhé.",
-            "en": "Sure, here's my card. Thank you."
+            "mn": "За, гарын үсэг зурчихлаа. Карт маань ч энэ байна.",
+            "vi": "Vâng, tôi ký rồi đây. Thẻ đây.",
+            "en": "There, I've signed it. And here's my card."
           }
+        },
+        {
+          "type": "say",
+          "id": "key-hand",
+          "listen": "misuk-listen",
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          },
+          "prompt": "카드를 돌려드리고, 카드키를 드리며 안내해요.",
+          "example": "카드 돌려드립니다. 방 번호는 카드키 봉투에 적어 두었습니다. 결혼식 잘 다녀오십시오.",
+          "hint": {
+            "mn": "Картыг нь буцааж өгөөд, картан түлхүүрийг өгөхдөө хэрэгтэй зүйлийг нь хэлж өг.",
+            "vi": "Hãy trả lại thẻ cho khách, rồi trao thẻ khóa phòng và hướng dẫn khách.",
+            "en": "Give her card back, then hand her the key card and tell her what she needs to know."
+          },
+          "record": "카드를 돌려드리고 카드키를 드리는 차례"
         }
       ]
     },
@@ -1547,18 +1568,48 @@
         {
           "type": "say",
           "id": "late-sorry",
-          "listen": "misuk-listen",
+          "listen": "misuk-back-listen",
           "when": {
             "early": "guess"
           },
-          "prompt": "손님께 사과하고, 서명과 보증용 카드를 부탁한 뒤 카드키를 드려요.",
-          "example": "오래 기다리시게 해서 정말 죄송합니다. 여기 서명과 보증용 카드 부탁드립니다. 방 번호는 카드키 봉투에 적어 두었습니다.",
+          "prompt": "손님께 사과하고, 서명과 보증용 카드를 부탁해요.",
+          "example": "오래 기다리시게 해서 정말 죄송합니다. 여기 서명과 보증용 카드 부탁드립니다.",
           "hint": {
-            "mn": "Зочноос уучлалт гуйгаад, гарын үсэг зуруулж, барьцаа болгох төлбөрийн картыг нь авсны дараа картан түлхүүрийг өг.",
-            "vi": "Hãy xin lỗi khách, nhờ khách ký tên và xuất trình thẻ bảo đảm thanh toán, rồi trao thẻ khóa phòng cho khách.",
-            "en": "Apologize to her, ask for a signature and a card for extra charges, then hand over the key card."
+            "mn": "Зочноос уучлалт гуйгаад, гарын үсэг зуруулж, барьцаа болгох төлбөрийн картыг нь гуй.",
+            "vi": "Hãy xin lỗi khách, rồi nhờ khách ký tên và đưa thẻ bảo đảm thanh toán.",
+            "en": "Apologize to her, then ask her to sign and to hand over a card as a guarantee."
           },
           "record": "오래 기다리신 손님께 사과하는 차례"
+        },
+        {
+          "type": "line",
+          "clip": "misuk-back-card",
+          "who": "misuk",
+          "when": {
+            "early": "guess"
+          },
+          "text": "여기 서명했어요. 카드도요. 빨리 부탁해요.",
+          "hint": {
+            "mn": "Энд гарын үсэг зурлаа. Карт ч энэ байна. Хурдан болгож өгөөч.",
+            "vi": "Tôi ký đây rồi. Thẻ đây. Làm nhanh giúp tôi nhé.",
+            "en": "I've signed here. Here's my card too. Please be quick."
+          }
+        },
+        {
+          "type": "say",
+          "id": "late-key",
+          "listen": "misuk-back-listen",
+          "when": {
+            "early": "guess"
+          },
+          "prompt": "카드를 돌려드리고 카드키를 드려요.",
+          "example": "카드 돌려드립니다. 방 번호는 카드키 봉투에 적어 두었습니다. 늦지 않게 다녀오십시오.",
+          "hint": {
+            "mn": "Картыг нь буцааж өгөөд, картан түлхүүрийг нь өг.",
+            "vi": "Hãy trả lại thẻ cho khách rồi trao thẻ khóa phòng.",
+            "en": "Give her card back and hand her the key card."
+          },
+          "record": "카드를 돌려드리고 카드키를 드리는 차례"
         },
         {
           "type": "move",
@@ -1819,16 +1870,28 @@
                   "type": "line",
                   "clip": "floor9-904",
                   "who": "senior",
-                  "text": "같이 다시 봐요. 904호는 빈 방이에요. 손님이 있는 옆방은 902호예요.",
+                  "text": "같이 다시 봐요. 904호는 빈 방이에요. 손님이 있는 옆방은 902호예요. 그 방엔 제가 전화할게요.",
                   "hint": {
-                    "mn": "Хамт дахиад харъя. 904 тоот сул өрөө. Зочинтой хажуу өрөө нь 902 тоот.",
-                    "vi": "Mình cùng xem lại nhé. Phòng 904 đang trống. Phòng bên cạnh có khách ở là phòng 902.",
-                    "en": "Let's look again together. 904 is empty. The occupied room next door is 902."
+                    "mn": "Хамт дахиад харъя. 904 тоот сул өрөө. Зочинтой хажуу өрөө нь 902 тоот. Тэр өрөө рүү би залгая.",
+                    "vi": "Mình cùng xem lại nhé. Phòng 904 đang trống. Phòng bên cạnh có khách ở là phòng 902. Chị sẽ gọi cho phòng đó.",
+                    "en": "Let's look again together. 904 is empty. The occupied room next door is 902. I'll call that room."
                   }
                 }
               ]
             }
           ]
+        },
+        {
+          "type": "line",
+          "who": "room903",
+          "channel": "phone",
+          "action": true,
+          "text": "선배가 902호에 전화했지만 아무도 받지 않는다. 몇 분 뒤, 903호에서 다시 전화가 온다.",
+          "hint": {
+            "mn": "Ахлах ажилтан 902 тоот руу залгасан ч хэн ч утсаа авсангүй. Хэдэн минутын дараа 903 тоотоос дахин залгав.",
+            "vi": "Chị Ji-hyeon gọi cho phòng 902 nhưng không ai nghe máy. Vài phút sau, phòng 903 lại gọi xuống.",
+            "en": "Ji-hyeon calls 902, but nobody answers. A few minutes later, 903 calls again."
+          }
         },
         {
           "type": "line",
@@ -2030,11 +2093,11 @@
           "clip": "senior-phone",
           "who": "senior",
           "place": "front-senior-side",
-          "text": "네, 프런트입니다. …잠시만요. 외국 손님 전화예요. 들어 보고 무슨 일인지 한국어로 알려 줄래요?",
+          "text": "네, 프런트입니다. …잠시만 기다려 주십시오. 외국 손님이에요. 듣고 무슨 일인지 한국어로 알려 줄래요?",
           "hint": {
-            "mn": "Байна уу, ресепшн байна. …Түр хүлээгээрэй. Гадаад зочин утасдаж байна. Чи сонсоод юу болсныг солонгосоор хэлж өгөхгүй юү?",
-            "vi": "Vâng, lễ tân xin nghe. …Xin chờ một chút. Có khách nước ngoài gọi điện. Em nghe thử rồi nói lại cho chị bằng tiếng Hàn xem có chuyện gì được không?",
-            "en": "Hello, front desk. …One moment, please. It's a call from a foreign guest. Can you listen and tell me in Korean what it's about?"
+            "mn": "Байна уу, ресепшн байна. …Түр хүлээнэ үү. Гадаад зочин байна. Сонсоод юу болсныг солонгосоор хэлж өгөхгүй юү?",
+            "vi": "Vâng, lễ tân xin nghe. …Xin quý khách vui lòng chờ một chút. Là khách nước ngoài. Em nghe rồi nói lại cho chị bằng tiếng Hàn xem có chuyện gì được không?",
+            "en": "Hello, front desk. …One moment, please. It's a foreign guest. Can you listen and tell me in Korean what it's about?"
           }
         },
         {
@@ -2106,7 +2169,7 @@
                 "맥주 요금을 1150호로 옮김 · 끝"
               ],
               [
-                "1602호 일찍 온 손님",
+                "오미숙 님(일찍 오신 손님)",
                 "입실 · 끝"
               ],
               [
@@ -2121,9 +2184,9 @@
           },
           "prompt": "저녁 근무자가 이어서 챙길 일을 찾아요. 아직 끝나지 않은 일은 무엇인가요?",
           "hint": {
-            "mn": "Оройн ээлжийнхэн үргэлжлүүлэн анхаарах ажлыг ол. Хараахан дуусаагүй ажил аль нь вэ? (Ээлж хүлээлцэх дэвтэр (로그북), өдрийн ээлж: 1105 тоотын тооцоо – шар айргийн төлбөрийг 1150 тоот руу шилжүүлсэн, дууссан; 1602 тоотын эрт ирсэн зочин – өрөөндөө орсон, дууссан; 903 тоотын чимээ шуугианы гомдол – менежер өөр өрөө рүү шилжүүлсэн, дууссан; 1208 тоотын халаалтын эвдрэл – засварынханд хэлсэн, хөнжил явуулсан.)",
-            "vi": "Hãy tìm việc ca tối cần theo dõi tiếp. Việc nào chưa xong? (Sổ bàn giao ca (로그북), ca ngày: hóa đơn phòng 1105 – đã chuyển tiền bia sang phòng 1150, xong; phòng 1602, khách đến sớm – đã vào phòng, xong; phòng 903 phàn nàn về tiếng ồn – quản lý đã đổi phòng cho khách, xong; phòng 1208 hỏng máy sưởi – đã nhờ đội kỹ thuật, đã mang chăn lên.)",
-            "en": "Find what the evening shift needs to follow up on. Which item isn't finished yet? (Handover logbook (로그북), day shift: room 1105 bill – beer charge moved to 1150, done; early guest for 1602 – checked in, done; noise complaint from 903 – the duty manager moved the guest, done; heating broken in 1208 – asked maintenance to look at it, sent a blanket.)"
+            "mn": "Оройн ээлжийнхэн үргэлжлүүлэн анхаарах ажлыг ол. Хараахан дуусаагүй ажил аль нь вэ? (Ээлж хүлээлцэх дэвтэр (로그북), өдрийн ээлж: 1105 тоотын тооцоо – шар айргийн төлбөрийг 1150 тоот руу шилжүүлсэн, дууссан; О Мисүк (эрт ирсэн зочин) – өрөөндөө орсон, дууссан; 903 тоотын чимээ шуугианы гомдол – менежер өөр өрөө рүү шилжүүлсэн, дууссан; 1208 тоотын халаалтын эвдрэл – засварынханд хэлсэн, хөнжил явуулсан.)",
+            "vi": "Hãy tìm việc ca tối cần theo dõi tiếp. Việc nào chưa xong? (Sổ bàn giao ca (로그북), ca ngày: hóa đơn phòng 1105 – đã chuyển tiền bia sang phòng 1150, xong; khách Oh Mi-suk (đến sớm) – đã vào phòng, xong; phòng 903 phàn nàn về tiếng ồn – quản lý đã đổi phòng cho khách, xong; phòng 1208 hỏng máy sưởi – đã nhờ đội kỹ thuật, đã mang chăn lên.)",
+            "en": "Find what the evening shift needs to follow up on. Which item isn't finished yet? (Handover logbook (로그북), day shift: room 1105 bill – beer charge moved to 1150, done; Ms. Oh Mi-suk (the early guest) – checked in, done; noise complaint from 903 – the duty manager moved the guest, done; heating broken in 1208 – asked maintenance to look at it, sent a blanket.)"
           },
           "options": [
             {
@@ -2150,11 +2213,11 @@
             },
             {
               "id": "early",
-              "label": "1602호 일찍 온 손님",
+              "label": "오미숙 님(일찍 오신 손님)",
               "hint": {
-                "mn": "1602 тоотын эрт ирсэн зочин",
-                "vi": "Phòng 1602, khách đến sớm",
-                "en": "Early guest for 1602"
+                "mn": "О Мисүк (эрт ирсэн зочин)",
+                "vi": "Khách Oh Mi-suk (đến sớm)",
+                "en": "Ms. Oh Mi-suk (the early guest)"
               },
               "then": [
                 {
@@ -2489,12 +2552,12 @@
       "items": [
         {
           "title": "교대 근무",
-          "body": "프런트는 하루 내내 열려 있어요. 아침, 저녁, 밤 근무를 근무표에 따라 돌아가며 해요. 주말과 공휴일, 명절에도 일해요. 밤에도 프런트를 비우지 않아요.",
-          "source": "한국고용정보원 임금직업포털(숙박시설 서비스 종사원 업무환경), 호텔 프런트 채용공고 (2026-11-22 대조)",
+          "body": "프런트는 하루 내내 열려 있어요. 아침, 저녁, 밤 근무를 근무표에 따라 돌아가며 해요. 주말과 공휴일, 명절에도 일해요. 4~5성 호텔은 밤에도 프런트를 비워 두지 않아요.",
+          "source": "한국고용정보원 임금직업포털(숙박시설 서비스 종사원 업무환경), 문화체육관광부 고시 제2026-28호(호텔업 등급결정 요령), 호텔 프런트 채용공고",
           "hint": {
-            "mn": "Ээлжийн ажил. Ресепшн өдөр шөнөгүй ажилладаг. Өглөө, орой, шөнийн ээлжид хуваарийн дагуу сэлгэж ажиллана. Амралтын өдөр, нийтээр амрах өдөр, уламжлалт том баяраар ч ажиллана. Шөнө ч ресепшнийг эзэнгүй орхихгүй.",
-            "vi": "Làm theo ca. Quầy lễ tân mở cả ngày lẫn đêm. Làm luân phiên ca sáng, ca tối, ca đêm theo bảng phân ca. Vẫn làm vào cuối tuần, ngày lễ và các dịp Tết. Ban đêm cũng không để trống quầy lễ tân.",
-            "en": "Shift work. The front desk is open around the clock. You rotate through morning, evening and night shifts according to the roster. You work weekends, public holidays and major traditional holidays too. The desk is never left empty, even at night."
+            "mn": "Ээлжийн ажил. Ресепшн өдөр шөнөгүй ажилладаг. Өглөө, орой, шөнийн ээлжид хуваарийн дагуу сэлгэж ажиллана. Амралтын өдөр, нийтээр амрах өдөр, уламжлалт том баяраар ч ажиллана. 4–5 одтой зочид буудлууд шөнө ч ресепшнийг эзэнгүй орхидоггүй.",
+            "vi": "Làm theo ca. Quầy lễ tân mở cả ngày lẫn đêm. Làm luân phiên ca sáng, ca tối, ca đêm theo bảng phân ca. Vẫn làm vào cuối tuần, ngày lễ và các dịp Tết. Ở khách sạn 4–5 sao, ban đêm cũng không để trống quầy lễ tân.",
+            "en": "Shift work. The front desk is open around the clock. You rotate through morning, evening and night shifts according to the roster. You work weekends, public holidays and major traditional holidays too. At 4- and 5-star hotels, the desk is never left empty, even at night."
           }
         },
         {
@@ -2508,18 +2571,18 @@
         },
         {
           "title": "불만과 폭언",
-          "body": "화가 난 손님을 맞는 날이 있어요. 폭언으로 몸이나 마음이 상했거나 상할 걱정이 크면, 법은 회사가 그 직원의 일을 잠시 멈추게 하거나 바꿔 주고, 쉬는 시간을 늘려 주게 해요. 직원은 회사에 그렇게 해 달라고 요구할 수 있어요. 바쁜 시간에는 오 분도 쉬기 어려운 날이 있어요.",
+          "body": "화가 난 손님을 맞는 날이 있어요. 폭언으로 몸이나 마음이 상했거나 상할 걱정이 크면, 법은 회사가 필요한 조치를 하게 해요. 직원이 하던 일을 잠시 멈추게 하거나 바꿔 주는 것, 쉬는 시간을 늘려 주는 것 같은 조치예요. 직원은 회사에 그렇게 해 달라고 요구할 수 있어요. 바쁜 시간에는 오 분도 쉬기 어려운 날이 있어요.",
           "source": "산업안전보건법 제41조, 같은 법 시행령 제41조",
           "hint": {
-            "mn": "Гомдол ба доромжлол. Уурласан зочинтой таарах өдөр байдаг. Хэл амаар доромжлуулснаас болж бие, сэтгэл санаагаараа хохирсон эсвэл хохирох эрсдэл өндөр бол хуулийн дагуу компани тухайн ажилтны ажлыг түр зогсоох эсвэл өөр ажилд шилжүүлэх, мөн амрах цагийг нь уртасгах үүрэгтэй. Ажилтан компаниасаа ийм арга хэмжээ авахыг шаардаж болно. Ачаалалтай үед таван минут ч амрахад хэцүү өдөр байдаг.",
-            "vi": "Phàn nàn và lời lẽ xúc phạm. Có những ngày phải tiếp khách đang giận. Nếu lời lẽ xúc phạm đã làm nhân viên bị tổn hại về thể chất hoặc tinh thần, hoặc có nguy cơ cao gây tổn hại như vậy, thì theo luật, công ty phải cho nhân viên đó tạm dừng hoặc đổi việc đang làm và kéo dài thời gian nghỉ giải lao. Nhân viên có thể yêu cầu công ty làm như vậy. Vào giờ cao điểm, có hôm đến năm phút nghỉ cũng khó.",
-            "en": "Complaints and abuse. Some days you will face angry guests. If verbal abuse has harmed an employee physically or mentally, or is very likely to, the law requires the company to let that employee pause their work for a while or switch to other work, and to give them longer breaks. The employee can ask the company to do this. Some days, when it's busy, it's hard to take even a five-minute break."
+            "mn": "Гомдол ба доромжлол. Уурласан зочинтой таарах өдөр байдаг. Хэл амаар доромжлуулснаас болж бие, сэтгэл санаагаараа хохирсон эсвэл хохирох эрсдэл өндөр бол хуулийн дагуу компани ажлыг нь түр зогсоох эсвэл өөр ажилд шилжүүлэх, амрах цагийг нь уртасгах зэрэг шаардлагатай арга хэмжээ авах үүрэгтэй. Ажилтан компаниасаа ийм арга хэмжээ авахыг шаардаж болно. Ачаалалтай үед таван минут ч амрахад хэцүү өдөр байдаг.",
+            "vi": "Phàn nàn và lời lẽ xúc phạm. Có những ngày phải tiếp khách đang giận. Nếu lời lẽ xúc phạm đã làm nhân viên bị tổn hại về thể chất hoặc tinh thần, hoặc có nguy cơ cao gây tổn hại như vậy, thì theo luật, công ty phải áp dụng biện pháp cần thiết, chẳng hạn cho nhân viên tạm dừng hoặc đổi việc đang làm, hay kéo dài thời gian nghỉ giải lao. Nhân viên có thể yêu cầu công ty làm như vậy. Vào giờ cao điểm, có hôm đến năm phút nghỉ cũng khó.",
+            "en": "Complaints and abuse. Some days you will face angry guests. If verbal abuse has harmed an employee physically or mentally, or is very likely to, the law requires the company to take the steps needed, such as letting that employee pause their work for a while or switch to other work, or giving them longer breaks. The employee can ask the company to do this. Some days, when it's busy, it's hard to take even a five-minute break."
           }
         },
         {
           "title": "손님 정보",
           "body": "일하며 알게 된 손님 정보를 남에게 알리면 법을 어기게 돼요. 5년 이하 징역이나 5천만 원 이하 벌금을 받을 수 있어요.",
-          "source": "개인정보 보호법 제59조, 제71조 (2026-11-22 대조)",
+          "source": "개인정보 보호법 제59조, 제71조",
           "hint": {
             "mn": "Зочны мэдээлэл. Ажлын явцад мэдсэн зочны мэдээллийг бусдад задруулбал хууль зөрчсөн болно. 5 жил хүртэлх хорих ял эсвэл 50 сая вон хүртэлх торгуулийн шийтгэл хүлээж болзошгүй.",
             "vi": "Thông tin của khách. Tiết lộ cho người khác thông tin của khách mà mình biết trong lúc làm việc là vi phạm pháp luật. Có thể bị phạt tù đến 5 năm hoặc phạt tiền đến 50 triệu won.",
@@ -2539,7 +2602,7 @@
         {
           "title": "이 일로 가는 비자",
           "body": "호텔 접수사무원은 E-7-2 비자예요. 일할 호텔이 문화체육관광부 장관의 고용추천을 받아야 해요. 국내 4년제를 졸업했으면 전공과 관계없이, 국내 전문대를 졸업했으면 관광·호텔 전공일 때 경력 없이 신청할 수 있어요.",
-          "source": "법무부 취업비자(E-7) 안내 길잡이 2026년 11월, 문화체육관광부 관광숙박업 외국인 고용추천서 발급신청 안내 2025년 11월 (2026-11-22 대조)",
+          "source": "법무부 취업비자(E-7) 안내 길잡이 2026년 11월, 문화체육관광부 관광숙박업 외국인 고용추천서 발급신청 안내 2025년 11월",
           "hint": {
             "mn": "Энэ ажилд орох виз. Зочид буудлын ресепшний ажилтан E-7-2 визээр ажиллана. Ажиллах зочид буудал нь Соёл, спорт, аялал жуулчлалын сайдын ажилд авах зөвлөмж (고용추천) авсан байх ёстой. Солонгост 4 жилийн их сургууль төгссөн бол мэргэжил харгалзахгүйгээр, харин Солонгост коллеж (전문대) төгссөн бол аялал жуулчлал, зочид буудлын мэргэжилтэй тохиолдолд ажлын туршлагагүйгээр виз мэдүүлж болно.",
             "vi": "Visa cho công việc này. Lễ tân khách sạn làm việc theo visa E-7-2. Khách sạn nơi mình sẽ làm phải được Bộ trưởng Bộ Văn hóa, Thể thao và Du lịch cấp giấy giới thiệu tuyển dụng (고용추천). Có thể nộp hồ sơ mà không cần kinh nghiệm làm việc nếu tốt nghiệp đại học 4 năm ở Hàn Quốc (ngành nào cũng được), hoặc tốt nghiệp cao đẳng (전문대) ở Hàn Quốc với chuyên ngành du lịch, khách sạn.",
@@ -2548,18 +2611,18 @@
         },
         {
           "title": "뽑을 수 있는 호텔과 한도",
-          "body": "관광호텔업, 수상관광호텔업, 한국전통호텔업, 가족호텔업만 뽑을 수 있어요. 호스텔, 소형호텔, 모텔, 게스트하우스는 이 비자로 뽑지 못해요. 보통은 외국인 손님이 30%를 넘는 호텔(수도권 밖 15%, 인구감소지역 10%)이 호텔마다 5명, 전국 400명까지 뽑아요. 관광·호텔 전공 유학생을 뽑을 때는 이 비율과 인원 한도를 적용하지 않아요.",
-          "source": "법무부 취업비자(E-7) 안내 길잡이 2026년 11월, 문화체육관광부 고용추천서 발급신청 안내 (2026-11-22 대조)",
+          "body": "관광호텔업, 수상관광호텔업, 한국전통호텔업, 가족호텔업만 뽑을 수 있어요. 호스텔, 소형호텔, 모텔, 게스트하우스는 이 비자로 뽑지 못해요. 보통은 외국인 손님이 30%를 넘는 호텔(수도권 밖 15%, 인구감소지역 10%)이 호텔마다 5명, 전국 400명까지 뽑아요. 국내 대학에서 관광·호텔 관련 전문학사 이상 학위를 받은 유학생을 뽑을 때는 이 비율과 인원 한도를 적용하지 않아요.",
+          "source": "법무부 취업비자(E-7) 안내 길잡이 2026년 11월, 문화체육관광부 관광숙박업 외국인 고용추천서 발급신청 안내 2025년 11월",
           "hint": {
-            "mn": "Ажилтан авч болох зочид буудал, авах хязгаар. Зөвхөн жуулчны зочид буудал (관광호텔업), усан дээрх жуулчны зочид буудал (수상관광호텔업), Солонгосын уламжлалт зочид буудал (한국전통호텔업), гэр бүлийн зочид буудал (가족호텔업) л ажилтан авч болно. Хостел, жижиг зочид буудал, мотель, гэст хаус энэ визээр ажилтан авч чадахгүй. Ердийн тохиолдолд гадаад зочдын эзлэх хувь 30%-иас (нийслэлийн бүсээс гадна 15%, хүн ам нь цөөрч буй бүсэд 10%) давсан зочид буудал тус бүр 5 хүн, улсын хэмжээнд 400 хүн хүртэл авдаг. Аялал жуулчлал, зочид буудлын мэргэжлийн гадаад оюутныг ажилд авахад энэ хувь, тооны хязгаар хамаарахгүй.",
-            "vi": "Loại khách sạn được phép tuyển và hạn mức. Chỉ khách sạn du lịch (관광호텔업), khách sạn du lịch trên mặt nước (수상관광호텔업), khách sạn truyền thống Hàn Quốc (한국전통호텔업) và khách sạn gia đình (가족호텔업) mới được phép tuyển. Hostel, khách sạn nhỏ, nhà nghỉ (모텔) và guesthouse không được tuyển người theo visa này. Thông thường, khách sạn có tỷ lệ khách nước ngoài trên 30% (ngoài vùng thủ đô là 15%, vùng dân số giảm là 10%) được tuyển tối đa 5 người mỗi khách sạn và tổng cộng 400 người trên cả nước. Khi tuyển du học sinh ngành du lịch, khách sạn thì không áp dụng tỷ lệ và giới hạn số người này.",
-            "en": "Which hotels can hire, and the limits. Only tourist hotels (관광호텔업), floating tourist hotels (수상관광호텔업), traditional Korean hotels (한국전통호텔업) and family hotels (가족호텔업) can hire. Hostels, small hotels, motels and guesthouses cannot hire on this visa. Usually, hotels where foreign guests are over 30% (over 15% outside the capital region, over 10% in depopulating areas) can hire up to 5 people per hotel, up to 400 nationwide. When a hotel hires international students with a tourism or hotel major, this guest ratio and these hiring limits do not apply."
+            "mn": "Ажилтан авч болох зочид буудал, авах хязгаар. Зөвхөн жуулчны зочид буудал (관광호텔업), усан дээрх жуулчны зочид буудал (수상관광호텔업), Солонгосын уламжлалт зочид буудал (한국전통호텔업), гэр бүлийн зочид буудал (가족호텔업) л ажилтан авч болно. Хостел, жижиг зочид буудал, мотель, гэст хаус энэ визээр ажилтан авч чадахгүй. Ердийн тохиолдолд гадаад зочдын эзлэх хувь 30%-иас (нийслэлийн бүсээс гадна 15%, хүн ам нь цөөрч буй бүсэд 10%) давсан зочид буудал тус бүр 5 хүн, улсын хэмжээнд 400 хүн хүртэл авдаг. Солонгосын их, дээд сургуульд аялал жуулчлал, зочид буудлын чиглэлээр дипломын (전문학사) буюу түүнээс дээш зэрэг авсан гадаад оюутныг ажилд авахад энэ хувь, тооны хязгаар хамаарахгүй.",
+            "vi": "Loại khách sạn được phép tuyển và hạn mức. Chỉ khách sạn du lịch (관광호텔업), khách sạn du lịch trên mặt nước (수상관광호텔업), khách sạn truyền thống Hàn Quốc (한국전통호텔업) và khách sạn gia đình (가족호텔업) mới được phép tuyển. Hostel, khách sạn nhỏ, nhà nghỉ (모텔) và guesthouse không được tuyển người theo visa này. Thông thường, khách sạn có tỷ lệ khách nước ngoài trên 30% (ngoài vùng thủ đô là 15%, vùng dân số giảm là 10%) được tuyển tối đa 5 người mỗi khách sạn và tổng cộng 400 người trên cả nước. Khi tuyển du học sinh đã lấy bằng cao đẳng (전문학사) trở lên ngành du lịch, khách sạn tại một trường ở Hàn Quốc thì không áp dụng tỷ lệ và giới hạn số người này.",
+            "en": "Which hotels can hire, and the limits. Only tourist hotels (관광호텔업), floating tourist hotels (수상관광호텔업), traditional Korean hotels (한국전통호텔업) and family hotels (가족호텔업) can hire. Hostels, small hotels, motels and guesthouses cannot hire on this visa. Usually, hotels where foreign guests are over 30% (over 15% outside the capital region, over 10% in depopulating areas) can hire up to 5 people per hotel, up to 400 nationwide. When a hotel hires international students who earned an associate degree (전문학사) or higher in tourism or hotel studies at a Korean university or college, this guest ratio and these hiring limits do not apply."
           }
         },
         {
           "title": "임금 하한",
           "body": "E-7-2로 일하려면 연봉이 2,589만 원 이상이어야 해요. 한 달로 나누면 약 216만 원이에요.",
-          "source": "법무부 공고 제2025-406호, 2026년 2월~12월 적용 (2026-11-22 대조)",
+          "source": "법무부 공고 제2025-406호, 2026년 2월~12월 적용",
           "hint": {
             "mn": "Цалингийн доод хэмжээ. E-7-2 визээр ажиллахын тулд жилийн цалин 25.89 сая воноос багагүй байх ёстой. Сараар хуваавал 2.16 сая вон орчим.",
             "vi": "Mức lương tối thiểu. Để làm việc theo visa E-7-2, lương năm phải từ 25,89 triệu won trở lên. Chia theo tháng là khoảng 2,16 triệu won.",
