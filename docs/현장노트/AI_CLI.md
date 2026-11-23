@@ -2223,6 +2223,8 @@ Claude Code의 입력 대기 알림은 사용자가 키를 누르면 늦어진�
 
 게시 호출 뒤 CLI가 끊기고 웹에 이전 판이 남으면 예약 로그에 원문 확인 실패가 남는다. 이때 CLI의 시간 초과와 연결 종료도 구분해 남기는 일은 다음 로그 개선에 포함한다.
 
+11월 23일 09:30 예약은 웹 지도를 게시한 뒤 임시 폴더 삭제 단계에서 `EPERM`으로 종료했다. Claude Code가 결과를 출력한 시점에 프로세스는 아직 작업 폴더를 사용하고 있었다. 종료까지 기다린 뒤 폴더를 정리하고, 정리에 실패하면 로그에 남긴다. 실제 게시 결과는 소유 계정의 원문으로 확인한다. 시험에서 결과 출력과 종료 사이에 작업 파일이 남아 있음을 확인했다.
+
 ## OpenAI 실시간 음성(GPT-Live · Realtime)
 
 판: `gpt-live-1`(`wss://api.openai.com/v1/live/sessions`) · `gpt-realtime-2.1`(`wss://api.openai.com/v1/realtime?model=…`) · Node 24 내장 WebSocket(`new WebSocket(주소, { headers })`로 Authorization을 실을 수 있어 `ws` 패키지가 필요 없다). 쓰는 곳: [듣기 시험 녹음 도구](../../experiences/synk-world-app/qa/realtime-roleplay-20261029/듣기시험/녹음.mjs).

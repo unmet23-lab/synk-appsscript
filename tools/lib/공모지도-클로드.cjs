@@ -170,22 +170,37 @@ function Claude결과(cli, args, env, cwd, timeout, input) {
   child.stdin.on('error', () => { /* 실행기가 먼저 끝나면 종료 이벤트가 결과를 전한다. */ });
   child.stdin.end(input);
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
+    let result;
+    let exitTimer;
+    const responseTimer = setTimeout(() => {
       child.kill();
       reject(Error('Claude Code 결과 응답 시간이 초과됐습니다.'));
     }, timeout);
+    const complete = () => {
+      clearTimeout(responseTimer);
+      clearTimeout(exitTimer);
+      lines.close();
+      if (result) resolve({ parsed: result, ok: !result.is_error });
+      else reject(Error('Claude Code가 결과를 보내기 전에 종료됐습니다.'));
+    };
     lines.on('line', (line) => {
       let message;
       try { message = JSON.parse(line); } catch { return; }
-      if (message?.type !== 'result') return;
-      resolve({ parsed: message, ok: !message.is_error });
+      if (message?.type !== 'result' || result) return;
+      result = message;
+      clearTimeout(responseTimer);
+      // Windows는 실행 중인 CLI의 작업 폴더를 지울 수 없다. 응답은 받고도 종료가 밀릴 수 있다.
+      exitTimer = setTimeout(() => { child.kill(); complete(); }, 3000);
     });
-    child.on('error', (error) => reject(Error('Claude Code 실행에 실패했습니다. ' + error.code)));
-    child.on('close', () => {
-      clearTimeout(timer);
-      lines.close();
-      reject(Error('Claude Code가 결과를 보내기 전에 종료됐습니다.'));
+    child.on('error', (error) => {
+      if (result) complete();
+      else {
+        clearTimeout(responseTimer);
+        lines.close();
+        reject(Error('Claude Code 실행에 실패했습니다. ' + error.code));
+      }
     });
+    child.on('close', complete);
   });
 }
 
@@ -332,7 +347,8 @@ async function 예약게시(cli, env, url, bytes, expected, role) {
     const publishedVersion = fs.existsSync(receipt) ? fs.readFileSync(receipt, 'utf8') : null;
     return { attempted, publishedVersion, deferred: limit ? { status: 'deferred', reset: limit[1] } : null };
   } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
+    try { await fs.promises.rm(dir, { recursive: true, force: true, maxRetries: 4, retryDelay: 250 }); }
+    catch (error) { console.warn('Claude 공모 지도 임시 파일 정리 실패: ' + error.code); }
   }
 }
 

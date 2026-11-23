@@ -336,6 +336,7 @@ test('소유자 한도 대기 뒤 지정 편집자로 게시하고 다시 소유
   fs.writeFileSync(map, source); fs.writeFileSync(remote, '<title>공모 지도</title>');
   const id = '12345678-1234-4321-8765-123456789012', calls = [];
   let version = '123-abcd', limited = true, publication = 'confirmed';
+  let stoppedAfterResult = false;
   let pinned;
   const tomorrow = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'Asia/Seoul' }).format(Date.now() + 86400000);
   t.mock.method(childProcess, 'spawnSync', (_cli, args, { env }) => {
@@ -350,7 +351,10 @@ test('소유자 한도 대기 뒤 지정 편집자로 게시하고 다시 소유
     const child = Object.assign(new EventEmitter(), { stdin: new PassThrough(), stdout: new PassThrough(), stderr: new PassThrough() });
     const identity = env.CLAUDE_CONFIG_DIR === profile ? 'owner' : 'writer';
     const send = (response) => child.stdout.write(JSON.stringify(response) + '\n');
-    child.kill = () => { child.stdout.end(); child.stderr.end(); child.emit('close', 0); };
+    child.kill = () => {
+      if (limited && args.includes('/usage')) stoppedAfterResult = true;
+      child.stdout.end(); child.stderr.end(); child.emit('close', 0);
+    };
     if (args[0] === 'mcp') {
       child.stdin.on('data', chunk => {
         const msg = JSON.parse(chunk);
@@ -409,7 +413,13 @@ test('소유자 한도 대기 뒤 지정 편집자로 게시하고 다시 소유
           if (publication === 'another-newer') version = '125-abcd';
           result = 'weekly usage limit reached; resets ' + tomorrow + ', 12pm (Asia/Seoul)';
         }
-        send({ type: 'result', is_error: !usage, result }); child.kill();
+        if (!usage && publication === 'conflict') result = 'The native publish tool reported a version conflict.';
+        send({ type: 'result', is_error: !usage && publication !== 'conflict', result });
+        if (usage && limited) return; // 결과를 보낸 구독 CLI가 스스로 종료하지 않는 경우.
+        setTimeout(() => {
+          if (!usage) assert(fs.existsSync(pinned), '실행기가 종료될 때까지 작업 폴더를 둔다.');
+          child.kill();
+        }, 20);
       });
     }
     return child;
@@ -419,6 +429,7 @@ test('소유자 한도 대기 뒤 지정 편집자로 게시하고 다시 소유
   t.after(() => { require.cache[modulePath] = original; });
   const { 클로드지도갱신 } = require(modulePath);
   assert.equal((await 클로드지도갱신(config, map)).status, 'deferred');
+  assert.equal(stoppedAfterResult, true);
   const cache = JSON.parse(fs.readFileSync(path.join(folder, '그록공모전', '웹게시한도.json')));
   assert.equal(cache.key, createHash('sha256').update(JSON.stringify([config.artifact_url, profile, config.artifact_sync.owner])).digest('hex'));
   assert.deepStrictEqual(calls.splice(0), [['owner', 'auth'], ['owner', 'read'], ['owner', 'usage']]);
