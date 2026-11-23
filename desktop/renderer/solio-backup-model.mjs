@@ -361,7 +361,9 @@ function driveCard(space, now) {
   const g = d.growthPerDay;
   // 엔진은 증가 속도를 모를 때도(보호 첫날 따위) daysToStartLine을 null로 준다. 「내려가지 않습니다」는 속도가 0 이하로 재였을 때만 쓴다(Fable F2)
   const pred = line === null ? '정한 선을 아직 받지 못했습니다.' : belowLine(d) ? `남은 공간이 정한 선(${d.startLineGb}GB)보다 적습니다.`
-    : Number.isSafeInteger(d.daysToStartLine) ? `이대로면 ${d.daysToStartLine}일 뒤 정한 선 아래로 내려갑니다.`
+    // 아직 선 위인데 하루 안에 닿으면 「0일 뒤」가 아니라 「오늘 안에」(카본 A3)
+    : d.daysToStartLine === 0 ? '이대로면 오늘 안에 정한 선 아래로 내려갑니다.'
+      : Number.isSafeInteger(d.daysToStartLine) ? `이대로면 ${d.daysToStartLine}일 뒤 정한 선 아래로 내려갑니다.`
       : !Number.isSafeInteger(g) ? '며칠 더 재어야 언제 정한 선에 닿는지 알 수 있습니다.' : g <= 0 ? '지금 속도로는 정한 선 아래로 내려가지 않습니다.' : '';
   const pace = Number.isSafeInteger(g) && g !== 0 ? `지난 14일 동안 하루에 ${gb(Math.abs(g))}씩 ${g > 0 ? '찼' : '비었'}습니다.` : '';
   const at = backupDay(space.createdAt);
@@ -522,7 +524,8 @@ export function oneClickBoard(snap, now = Date.now()) {
               : fresh ? `${news}.` : next ? `다음 백업은 ${next}입니다.` : '';
     const attention = !!topics || snap.view === 'checking' || pr.state === 'fail' || freeLost;
     const leadAct = topics ? act('엔진 창에서 확인', 'backup-open', knownTopics(s.attention)[0], { primary: false })
-      : freeLost ? act('엔진 창에서 보기', 'backup-open', 'space', { primary: false })
+      // 단추도 문장과 같은 차례로 고른다: 소식 없음 · 되살리기 실패를 말하는 동안에는 비우기 쪽 단추를 내지 않는다(카본 A1)
+      : freeLost && snap.view !== 'checking' && pr.state !== 'fail' ? act('엔진 창에서 보기', 'backup-open', 'space', { primary: false })
       : canFree && !attention ? act('엔진 창에서 켜기', 'backup-open', 'space', { primary: false }) : null;
     lead = { say: freed ? `백업하고 ${gb(freed)}를 비웠습니다.` : '백업을 마쳤습니다.', then, note: attention ? '확인 필요' : '끝남', ...(leadAct ? { act: leadAct } : {}) };
   } else if (working && (!lead || job)) {

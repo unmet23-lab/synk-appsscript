@@ -1073,7 +1073,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const rows = el('div', 'd-rows');
       rows.append(...d.rows.map(row));
       if (d.folded?.length) {
+        // 다시 그려도 손님이 펼쳐 둔 목록은 펼친 채로 둔다(카본 A2)
+        const wasOpen = !!box.querySelector('.d-more')?.open;
         const more = el('details', 'd-more');
+        more.open = wasOpen;
         more.append(el('summary', '', d.foldLabel), ...d.folded.map(row));
         rows.append(more);
       }

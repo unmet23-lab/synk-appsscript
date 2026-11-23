@@ -633,6 +633,7 @@ test('all drives on the board (PC 진단 설계 5.1): the tightest is the big ca
   // 큰 칸의 「선 아래」는 남은 공간과 정한 선으로 본다. 정한 선이 없으면 그렇다고 쓴다
   assert.match(board([drive('C', 953, 80, 100, null)]).pred, /정한 선\(100GB\)보다 적습니다/);
   assert.equal(board([drive('C', 953, 80, null, null)]).pred, '정한 선을 아직 받지 못했습니다.');
+  assert.equal(board([drive('C', 953, 101, 100, 0)]).pred, '이대로면 오늘 안에 정한 선 아래로 내려갑니다.', 'above the line but reaching it today (카본 A3)');
   // 접힌 뒤 문장이 선 아래 드라이브의 글자를 말한다
   const answered = { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() };
   const v = solioBackupView(SNAP({ space: { ...SPACE, drive: undefined, drives: [F, drive('H', 476, 30, 71, 0), C] }, oneclick: PRESS(120000, answered) }), NOW);
@@ -645,6 +646,10 @@ test('2판 room (Fable 다시 검수 r2 P2): a lost free answer on a PC that tur
   const v = solioBackupView(SNAP({ status: { ...STATUS, spaceFree: 'on' }, oneclick: PRESS(120000, { ...answered, free: { stage: 'gone', result: null, reason: null, answeredAt: new Date(NOW - 1000).toISOString() } }) }), NOW);
   assert.equal(v.then, '다만 비우기 결과를 확인하지 못했습니다. 엔진 창의 공간 비우기에서 봐 주세요.');
   assert.deepEqual([v.note, v.acts[0].label, v.acts[0].arg], ['확인 필요', '엔진 창에서 보기', 'space']);
+  // 소식 없음을 말하는 동안에는 비우기 쪽 단추를 내지 않는다(카본 A1)
+  const late = solioBackupView(SNAP({ view: 'checking', status: { ...STATUS, spaceFree: 'on' }, oneclick: PRESS(120000, { ...answered, free: { stage: 'gone', result: null, reason: null, answeredAt: new Date(NOW - 1000).toISOString() } }) }), NOW);
+  assert.match(late.then, /소식이 2시간 넘게 없습니다/);
+  assert.ok(!late.acts.some(a => a.label === '엔진 창에서 보기'), JSON.stringify(late.acts.map(a => a.label)));
 });
 
 test('2판 room (Fable 최종 P1-1 · P2-1 · P2-2): a lead that opens the engine drops only 「엔진 창 열기」; a count answered after turning on says it is on; a lost free answer is said', async () => {

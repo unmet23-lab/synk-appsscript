@@ -714,6 +714,10 @@ if(!process.versions.electron){
           await click(w,'#portal-entry [data-room=solio-backup] .d-more summary');await wait(400);
           const dr4o=await drv(w),db4o=await board(w);
           check('21 drives: opening the fold shows D: and E: and still nothing overflows',dr4o.open&&dr4o.folded.join(',')==='D:,E:'&&!db4o.overflow,{dr4o,db4o:db4o.wide});
+          // 새 스냅샷으로 다시 그려도 펼친 목록은 펼친 채로(카본 A2)
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({space:{...space,createdAt:new Date(Date.now()-3600e3).toISOString(),drive:undefined,drives:[dv('F',238,19,35,0),dv('C',953,118.2,100,9),dv('D',1907,299,150,null),dv('E',476,300,71,null)]}}))+')');await wait(900);
+          const dr4r=await drv(w);
+          check('21 drives: a repaint keeps the opened fold open',dr4r.open&&dr4r.folded.join(',')==='D:,E:',dr4r);
           await capture(w,'oneclick-drives-four-open');
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,state:'attention',attention:['signin']}}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
