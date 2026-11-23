@@ -139,6 +139,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - **지울 때:** junction을 먼저 `cmd /c rmdir <임시 작업본>
 ode_modules`로 끊고 공용 `node_modules`가 남았는지 본 뒤, 커밋이 origin에 있는지 확인하고 `git worktree remove --force`로 지운다. 릴리스 도구는 검수 판정을 `ready` 때 한 번만 내므로 그 뒤에는 임시 작업본이 필요 없다.
 - **다시 확인:** 올린 뒤 공용 작업본의 `git diff HEAD -- server.mjs`에 내 줄이 없고 남의 줄만 남는다. 공용 작업본이 「남김」으로 옛 바이트를 둔 공용 문서(트랙)는 내 줄만 HEAD 판으로 맞춘다.
+- **11-23 덧붙임(Claude) — 남김 판에 없는 내 줄을 고칠 때:** 공용 작업본의 트랙이 다른 세션 때문에 남김으로 묶였고, 그 바탕 판에는 내가 앞서 올린 줄이 없었다. 그 줄을 고쳐 `--조각`으로 올리면 도구가 새 줄로 보고 「원격에 같은 머리의 다른 판 줄이 있다」로 멈춘다. 위와 같이 origin 판 임시 작업본에서 그 줄만 고쳐 바로올리기로 올렸다(`9b0ffd6c9`). Git Bash에서 `sparse-checkout set`에 `/tools/` 같은 무늬를 인자로 주면 `C:/Program Files/Git/tools/`로 바뀌어 아무것도 내려받지 않는다. 무늬는 `--stdin`으로 준다. `MSYS_NO_PATHCONV=1`은 `/c/…` 경로도 그대로 넘겨 `C:\c\…`에 작업본을 만든다. `--no-checkout`으로 만든 작업본은 무늬를 건 뒤 `git read-tree -mu HEAD`로 파일을 꺼낸다.
 
 ## 줄끝(CRLF·LF)
 
