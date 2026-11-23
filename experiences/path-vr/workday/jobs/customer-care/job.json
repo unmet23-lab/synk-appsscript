@@ -12,12 +12,12 @@
   "cast": {
     "lead": { "name": "윤정아", "role": "해외 고객 상담팀 팀장" },
     "buddy": { "name": "박지훈", "role": "선배 상담사" },
-    "wife": { "name": "고객", "role": "가입자의 가족이라고 하신 분" },
-    "husband": { "name": "고객", "role": "가입자 본인이라고 하신 분" },
-    "app": { "name": "고객", "role": "앱 화면 오류 문의" },
+    "wife": { "name": "고객님", "role": "가입자의 가족이라고 하신 분" },
+    "husband": { "name": "고객님", "role": "가입자 본인이라고 하신 분" },
+    "app": { "name": "고객님", "role": "앱 화면 오류 문의" },
     "chat": { "name": "채팅 고객", "role": "연간 구독 문의" },
-    "foreign": { "name": "고객", "role": "모국어 상담을 원하신 분" },
-    "angry": { "name": "고객", "role": "결제 이의" }
+    "foreign": { "name": "고객님", "role": "모국어 상담을 원하신 분" },
+    "angry": { "name": "고객님", "role": "결제 이의" }
   },
   "places": {
     "entrance": {
@@ -135,7 +135,7 @@
       "title": "오늘의 공지",
       "lead": "조회에서 받은 공지예요. 시간은 모두 한국 시간이에요. 시간과 순서는 센터마다 달라요.",
       "rows": [
-        ["우리 팀 고객", "해외에 사는 이용자. 한국어로 묻는 분도, 같은 나라 말로 묻는 분(언어별 대기열)도 있음"],
+        ["우리 팀 고객", "해외에 사는 이용자. 한국어로 묻는 분도, 자기 나라 말로 묻는 분(언어별 대기열)도 있음"],
         ["08:50", "조회"],
         ["09:00", "상담 시작. 어제 월 구독료가 결제돼서 결제 문의가 많을 수 있음"],
         ["10:00~12:00", "카드 결제 점검. 이 시간에는 카드로 결제할 수 없음. 간편결제는 됨"],
@@ -303,18 +303,32 @@
               "then": [
                 { "type": "line", "clip": "buddy-ask", "who": "buddy",
                   "text": "가입자 본인이 아니면 가족이어도 금액은 말하지 않아요.",
-                  "hint": { "mn": "Бүртгэл эзэмшигч өөрөө биш бол гэр бүлийн хүн нь байсан ч төлбөрийн дүнг хэлдэггүй.", "vi": "Không phải chính chủ tài khoản thì dù là người nhà cũng không được báo số tiền.", "en": "If the caller isn't the account owner, we don't share the amount, even with family." } },
-                { "type": "line", "who": "wife", "channel": "phone",
-                  "text": "오래 걸리네요. 가족인데도 안 돼요? …알겠어요. 남편한테 직접 연락하라고 할게요.",
-                  "hint": { "mn": "Удаж байна шүү. Гэр бүлийнх нь хүн байхад ч болохгүй гэж үү? …За ойлголоо. Нөхөртөө өөрөө залгаарай гэж хэлье.", "vi": "Lâu thế. Là người nhà mà cũng không được à? …Thôi được. Chị sẽ bảo chồng chị liên lạc trực tiếp.", "en": "That took a while. Not even for family? …All right. I'll tell my husband to contact you himself." } }
+                  "hint": { "mn": "Бүртгэл эзэмшигч өөрөө биш бол гэр бүлийн хүн нь байсан ч төлбөрийн дүнг хэлдэггүй.", "vi": "Không phải chính chủ tài khoản thì dù là người nhà cũng không được báo số tiền.", "en": "If the caller isn't the account owner, we don't share the amount, even with family." } }
               ] }
           ] },
+        { "type": "say", "id": "hold-back", "listen": "buddy-listen-desk", "when": { "family": "ask" },
+          "prompt": "보류를 풀고, 결제 금액은 가입자 본인께만 안내할 수 있다고 말씀드려요.",
+          "example": "기다려 주셔서 감사합니다, 고객님. 죄송하지만 결제 내역은 가입자 본인께만 안내해 드릴 수 있습니다.",
+          "hint": { "mn": "Дуудлагыг хүлээлгийн горимоос гаргаад, төлбөрийн мэдээллийг зөвхөн бүртгүүлсэн хүнд өөрт нь хэлж болно гэж тайлбарла.", "vi": "Bỏ giữ máy, rồi giải thích rằng chi tiết thanh toán chỉ được báo cho chính người đăng ký.", "en": "Take the call off hold and explain that payment details can only be given to the subscriber themselves." },
+          "record": "보류를 풀고 다시 안내하는 차례" },
+        { "type": "line", "who": "wife", "channel": "phone", "when": { "family": "ask" },
+          "text": "오래 걸리네요. 가족인데도 안 돼요? …알겠어요. 남편한테 직접 연락하라고 할게요.",
+          "hint": { "mn": "Удаж байна шүү. Гэр бүлийнх нь хүн байхад ч болохгүй гэж үү? …За ойлголоо. Нөхөртөө өөрөө залгаарай гэж хэлье.", "vi": "Lâu thế. Là người nhà mà cũng không được à? …Thôi được. Chị sẽ bảo chồng chị liên lạc trực tiếp.", "en": "That took a while. Not even for family? …All right. I'll tell my husband to contact you himself." } },
         { "type": "say", "id": "bye", "listen": "buddy-listen-desk",
           "prompt": "통화를 마무리해요. 끝인사를 해 보세요.",
           "example": "더 궁금하신 점은 없으십니까? 지금까지 상담사 (이름)이었습니다. 감사합니다.",
           "hint": { "mn": "Дуудлагыг дуусга. Өөр асуух зүйл байгаа эсэхийг асуугаад, нэрээ хэлж баярлалаа гэж хэл.", "vi": "Kết thúc cuộc gọi. Hỏi khách còn thắc mắc gì không, nhắc lại tên mình và cảm ơn.", "en": "Close the call. Ask if there's anything else, say your name again and thank her." },
           "record": "끝인사 차례" },
-        { "type": "line", "clip": "buddy-wrap", "who": "buddy",
+        { "type": "move", "place": "lead-seat", "caption": "통화를 마치고 팀장 자리로", "when": { "family": "tell" } },
+        { "type": "say", "id": "report-now", "listen": "lead-listen-seat", "when": { "family": "tell" },
+          "prompt": "팀장님께 방금 일을 바로 말씀드려요.",
+          "example": "팀장님, 방금 가입자의 가족이라고 하신 분께 본인 확인 없이 이번 달 결제 금액을 알려 드렸습니다. 죄송합니다.",
+          "hint": { "mn": "Саяын болсон явдлыг багийн ахлагчид даруй хэлээрэй.", "vi": "Hãy báo ngay cho trưởng nhóm chuyện vừa xảy ra.", "en": "Tell the team leader right away what just happened." },
+          "record": "실수를 바로 보고하는 차례" },
+        { "type": "line", "clip": "lead-tell-heard", "who": "lead", "when": { "family": "tell" },
+          "text": "바로 알려 줘서 고마워요. 가입자 본인이 연락하시면 제가 같이 받을게요.",
+          "hint": { "mn": "Даруй хэлсэнд баярлалаа. Бүртгүүлсэн хүн өөрөө залгавал дуудлагыг нь чамтай хамт хүлээж авъя.", "vi": "Cảm ơn em đã báo ngay. Nếu chính người đăng ký gọi đến, chị sẽ cùng nghe máy với em.", "en": "Thank you for telling me right away. If the subscriber himself calls, I’ll take the call with you." } },
+        { "type": "line", "clip": "buddy-wrap", "who": "buddy", "place": "desk-buddy",
           "text": "첫 전화 끝났어요. 수고했어요. 다음 전화도 제가 옆에 있을게요. 이번에는 먼저 해 봐요.",
           "hint": { "mn": "Эхний дуудлага дууслаа. Сайн ажиллалаа. Дараагийн дуудлагын үеэр ч би хажууд чинь байна. Энэ удаа чи өөрөө эхлээд үз.", "vi": "Xong cuộc gọi đầu tiên rồi. Em làm tốt lắm. Cuộc sau anh vẫn ở bên cạnh. Lần này em thử tự làm trước nhé.", "en": "That's your first call done. Nice work. I'll still be next to you on the next one. This time, you lead." } }
       ]
@@ -380,10 +394,10 @@
         { "type": "move", "place": "desk", "caption": "오전 11시 10분, 채팅 상담" },
         { "type": "work", "id": "pay", "record": "채팅 창에서 결제 문의에 답을 고르는 차례",
           "tool": { "kind": "chat", "title": "채팅 상담",
-            "lines": ["고객: 안녕하세요. 구독료를 카드로 내려고 하는데 계속 안 돼요.", "고객: 카드는 문제없어요. 다른 데서는 잘 써요."],
+            "lines": ["고객: 안녕하세요. 친구한테 한 달 구독권을 선물하려고 카드로 결제하는데 계속 안 돼요.", "고객: 카드는 문제없어요. 다른 데서는 잘 써요."],
             "note": "오늘의 공지: 한국 시간 10:00~12:00 카드 결제 점검. 간편결제는 됨" },
           "prompt": "어떻게 답할까요?",
-          "hint": { "mn": "Чатаар үйлчлүүлэгч захиалгын төлбөрөө картаар төлөх гэсэн ч болохгүй байна гэж бичсэн. Карт нь өөр газар ажиллаж байгаа. Өнөөдрийн мэдэгдэлд Солонгосын цагаар 10:00-12:00 цагийн хооронд картын төлбөрийн системд засвар үйлчилгээ хийнэ, гар утсаар төлбөр хийх апп, цахим түрийвчээр төлж болно гэж байна. Хариултаа сонго.", "vi": "Khách chat nói muốn trả phí thuê bao bằng thẻ nhưng không được, dù thẻ vẫn dùng được ở chỗ khác. Thông báo hôm nay ghi 10:00-12:00 giờ Hàn Quốc bảo trì thanh toán thẻ, nhưng vẫn thanh toán được bằng ứng dụng thanh toán trên điện thoại hoặc ví điện tử. Chọn câu trả lời.", "en": "In the chat, the customer says their card payment for the subscription keeps failing, though the card works elsewhere. Today's notice says the card payment system is under maintenance from 10:00 to 12:00 Korean time, but phone payment apps and e-wallets still work. Choose your reply." },
+          "hint": { "mn": "Чатаар үйлчлүүлэгч найздаа нэг сарын захиалга бэлэглэх гээд картаар төлөх гэсэн ч болохгүй байна гэж бичсэн. Карт нь өөр газар ажиллаж байгаа. Өнөөдрийн мэдэгдэлд Солонгосын цагаар 10:00-12:00 цагийн хооронд картын төлбөрийн системд засвар үйлчилгээ хийнэ, харин гар утсаар төлбөр хийх апп, цахим түрийвчээр төлж болно гэж байна. Хариултаа сонго.", "vi": "Khách chat nói muốn mua một tháng thuê bao để tặng một người bạn, nhưng thanh toán bằng thẻ không được, dù thẻ vẫn dùng được ở chỗ khác. Thông báo hôm nay ghi 10:00-12:00 giờ Hàn Quốc bảo trì thanh toán thẻ, nhưng vẫn thanh toán được bằng ứng dụng thanh toán trên điện thoại hoặc ví điện tử. Chọn câu trả lời.", "en": "In the chat, the customer says their card payment for a one-month gift subscription for a friend keeps failing, though the card works elsewhere. Today's notice says the card payment system is under maintenance from 10:00 to 12:00 Korean time, but phone payment apps and e-wallets still work. Choose your reply." },
           "options": [
             { "id": "card-again", "retry": true, "label": "카드 정보를 다시 넣어 보라고 답한다",
               "hint": { "mn": "Картын мэдээллээ дахин оруулж үзээрэй гэж хариулах.", "vi": "Hướng dẫn khách nhập lại thông tin thẻ.", "en": "Reply that they should enter the card details again." },
@@ -527,7 +541,7 @@
           "text": "본인 확인부터 해요. 휴대폰을 잃어버리셨으니 문자 인증은 못 해요. 생년월일과 가입한 휴대폰 끝 번호를 여쭤봐 줄래요?",
           "hint": { "mn": "Эхлээд тухайн хүн мөн эсэхийг шалгая. Үйлчлүүлэгч утсаа гээсэн тул мессежээр баталгаажуулах боломжгүй. Төрсөн огноо болон бүртгэлтэй утасны дугаарын сүүлийн дөрвөн орныг асуугаад өгөх үү?", "vi": "Xác minh chính chủ trước đã. Khách bị mất điện thoại nên không xác thực qua tin nhắn được. Em hỏi giúp chị ngày sinh và bốn số cuối của số điện thoại đã đăng ký nhé?", "en": "Identity check first. They’ve lost their phone, so a text code won’t work. Could you ask for the date of birth and the last four digits of the registered phone number?" } },
         { "type": "relay", "id": "ask-native", "direction": "out", "who": "foreign", "channel": "phone", "listen": "lead-listen-seat",
-          "record": "본인 확인을 고객님 말로 여쭙는 차례",
+          "record": "본인 확인을 고객님 모국어로 여쭙는 차례",
           "foreign": {
             "mn": "Таны хувийн мэдээллийг баталгаажуулахын тулд төрсөн огноо, бүртгүүлсэн утасны дугаарын сүүлийн дөрвөн орныг хэлж өгнө үү?",
             "vi": "Để xác minh chính chủ, quý khách vui lòng cho biết ngày sinh và bốn số cuối của số điện thoại đã đăng ký được không ạ?",
@@ -544,9 +558,9 @@
             "en": "My date of birth is May 14, 2003. The phone number on my account ends in 4417."
           },
           "meaning": "생년월일은 2003년 5월 14일이고, 가입한 휴대폰 끝 번호는 4417이라고 하십니다.",
-          "prompt": "고객님께 끝 번호를 한 번 더 읽어 확인하고, 팀장님께 한국어로 전해요.",
+          "prompt": "고객님이 말씀하신 생년월일과 끝 번호를 팀장님께 한국어로 전해요.",
           "example": "생년월일은 2003년 5월 14일이고, 가입한 휴대폰 끝 번호는 4417(사사일칠)이라고 하십니다.",
-          "hint": { "mn": "Үйлчлүүлэгчид сүүлийн дөрвөн орныг дахин хэлж баталгаажуулаад, үйлчлүүлэгчийн хэлсэн төрсөн огноо болон утасны дугаарын сүүлийн дөрвөн орныг багийн ахлагчид солонгос хэлээр хэлээрэй. Тоо бүрийг тод дуудаарай.", "vi": "Đọc lại bốn số cuối cho khách để kiểm tra, rồi nói lại cho trưởng nhóm bằng tiếng Hàn ngày sinh và bốn số cuối khách vừa nói. Đọc từng chữ số cho rõ.", "en": "Read the last four digits back to the customer to confirm, then tell the team leader in Korean the date of birth and last four digits they gave. Say each digit clearly." } },
+          "hint": { "mn": "Үйлчлүүлэгчийн хэлсэн төрсөн огноо болон утасны дугаарын сүүлийн дөрвөн орныг багийн ахлагчид солонгос хэлээр хэлээрэй. Тоо бүрийг тод дуудаарай.", "vi": "Nói lại cho trưởng nhóm bằng tiếng Hàn ngày sinh và bốn số cuối của số điện thoại mà khách vừa nói. Đọc từng chữ số cho rõ.", "en": "In Korean, tell the team leader the date of birth and the last four digits of the phone number that the customer gave. Say each digit clearly." } },
         { "type": "line", "clip": "lead-verify", "who": "lead",
           "text": "생년월일은 맞아요. 그런데 이 고객님 계정이 두 개예요. 잠글 계정을 골라 줘요.",
           "hint": { "mn": "Төрсөн огноо нь таарч байна. Гэхдээ энэ үйлчлүүлэгч хоёр бүртгэлтэй юм байна. Түгжих бүртгэлийг нь сонгоорой.", "vi": "Ngày sinh khớp rồi. Nhưng khách này có hai tài khoản. Em chọn tài khoản cần khóa nhé.", "en": "The date of birth matches. But this customer has two accounts. Pick the account to lock." } },
@@ -586,7 +600,7 @@
           "text": "새 휴대폰에서 본인 인증을 하시면 잠금을 풀어 드린다고 전해 줘요. 통신사에 분실 신고도 먼저 하시라고요.",
           "hint": { "mn": "Шинэ утсан дээрээ хувийн мэдээллээ баталгаажуулбал түгжээг тайлж өгнө гэж хэлээрэй. Утсаа гээснээ эхлээд үүрэн холбооны операторт мэдэгдээрэй гэж бас хэлээрэй.", "vi": "Em nói với khách là xác thực chính chủ trên điện thoại mới thì sẽ được mở khóa. Và bảo khách báo mất máy với nhà mạng trước nhé.", "en": "Tell them that once they verify their identity on the new phone, we’ll unlock the account. And tell them to report the lost phone to their mobile carrier first." } },
         { "type": "relay", "id": "tell-native", "direction": "out", "who": "foreign", "channel": "phone", "listen": "lead-listen-seat",
-          "record": "팀장님 답을 고객님 말로 전하는 차례",
+          "record": "팀장님 답을 고객님 모국어로 전하는 차례",
           "foreign": {
             "mn": "Та шинэ утсан дээрээ хувийн мэдээллээ баталгаажуулбал түгжээг тайлж өгнө. Утсаа гээснээ эхлээд үүрэн холбооны операторт мэдэгдэнэ үү.",
             "vi": "Khi quý khách xác thực chính chủ trên điện thoại mới, chúng tôi sẽ mở khóa tài khoản. Quý khách cũng vui lòng báo mất máy với nhà mạng trước ạ.",
@@ -623,7 +637,7 @@
           "text": "결제팀에 같이 물어봐요. 답이 오면 그대로 전해요.",
           "hint": { "mn": "Төлбөрийн багаас хамт асууя. Хариу ирвэл яг хэвээр нь дамжуулна.", "vi": "Mình cùng hỏi nhóm thanh toán nhé. Có câu trả lời thì chuyển nguyên văn cho khách.", "en": "Let's ask billing together. When they reply, pass their answer on exactly as it is." } },
         { "type": "note", "note": "billing-reply", "when": { "unknown": "guess" } },
-        { "type": "say", "id": "refund-guess", "when": { "unknown": "guess" },
+        { "type": "say", "id": "refund-guess", "listen": "buddy-listen-desk", "when": { "unknown": "guess" },
           "prompt": "먼저 사과하고, 결제팀 답을 채팅으로 전해요.",
           "example": "죄송합니다. 제가 확인하지 않고 안내해 드렸습니다. 확인해 보니, 쓰신 석 달은 할인 없는 월 요금으로 계산해 빼고 33달러를 돌려드립니다.",
           "hint": { "mn": "Эхлээд уучлалт гуйгаад, төлбөрийн багийн хариуг чатаар дамжуул.", "vi": "Xin lỗi trước, rồi chuyển câu trả lời của nhóm thanh toán qua chat.", "en": "Apologise first, then pass on the billing team's answer in the chat." },
@@ -670,8 +684,8 @@
                   "hint": { "mn": "Тугийг чинь харлаа. Энэ дуудлагыг би авъя. 10 минут амраад ир.", "vi": "Chị thấy cờ rồi. Cuộc gọi này để chị nhận. Em đi nghỉ 10 phút rồi quay lại nhé.", "en": "I saw your flag. I'll take this call. Go and take ten minutes." } }
               ] },
             { "id": "stop", "label": "정해진 안내를 하고, 계속되면 통화를 끝낸 뒤 팀장님께 알린다",
-              "example": "고객님, 욕설을 계속하시면 상담을 종료하겠습니다.",
-              "hint": { "mn": "Журмын дагуу анхааруулга өгч, үйлчлүүлэгч хараал хэлсээр байвал дуудлагыг дуусгаад багийн ахлагчид мэдэгдэх. «Та хараалын үг хэлсээр байвал яриаг дуусгана.»", "vi": "Đọc lời cảnh báo theo quy định; nếu khách vẫn tiếp tục thì kết thúc cuộc gọi rồi báo trưởng nhóm. “Nếu quý khách tiếp tục có lời lẽ xúc phạm, em xin phép kết thúc cuộc gọi.”", "en": "Give the standard warning, and if it continues, end the call and tell the team leader. \"If the swearing continues, I will end this call.\"" },
+              "example": "고객님, 욕설은 삼가 주시기 바랍니다. 계속하시면 상담을 종료하겠습니다.",
+              "hint": { "mn": "Журмын дагуу анхааруулга өгч, үйлчлүүлэгч хараал хэлсээр байвал дуудлагыг дуусгаад багийн ахлагчид мэдэгдэх. «Танаас хараалын үг хэлэхгүй байхыг хүсье. Хараал хэлсээр байвал дуудлагыг дуусгана.»", "vi": "Đọc lời cảnh báo theo quy định; nếu khách vẫn tiếp tục thì kết thúc cuộc gọi rồi báo trưởng nhóm. “Xin quý khách vui lòng không dùng lời lẽ xúc phạm. Nếu quý khách vẫn tiếp tục như vậy, em xin phép kết thúc cuộc gọi.”", "en": "Give the standard warning, and if it continues, end the call and tell the team leader. \"Please refrain from swearing. If the swearing continues, I will end this call.\"" },
               "then": [
                 { "type": "line", "who": "angry", "channel": "phone",
                   "text": "뭐요? 끊겠다고요? 어디 끊어 봐요!",
@@ -787,7 +801,7 @@
               "text": "연간 구독 해지 문의에 확인하지 않고 답했다가, 결제팀 답으로 바로잡아 다시 안내했습니다.",
               "hint": { "mn": "Жилийн захиалга цуцлах тухай асуултад шалгалгүй хариулаад, төлбөрийн багаас ирсэн хариугаар буруу мэдээллээ засаж дахин мэдэгдсэн.", "vi": "Về việc khách hỏi hủy gói năm, em đã trả lời khi chưa kiểm tra, rồi đính chính lại với khách theo câu trả lời của nhóm thanh toán.", "en": "I answered the yearly-plan question without checking, then gave the customer the correct information based on the billing team's answer." } },
             { "id": "lost",
-              "text": "모국어 고객님의 분실 휴대폰 건은 결제를 막고 계정보호팀에 넘겼습니다.",
+              "text": "모국어로 문의하신 고객님의 휴대폰 분실 건은 결제를 막고 계정보호팀에 넘겼습니다.",
               "hint": { "mn": "Миний эх хэлээрх зөвлөгөө өгөх шугам руу залгасан үйлчлүүлэгч утсаа гээсэн тул төлбөрийг нь зогсоож, хүсэлтийг хэрэглэгчийн бүртгэл хамгаалах багт шилжүүлсэн.", "vi": "Khách bị mất điện thoại (gọi qua kênh tiếng mẹ đẻ): đã chặn thanh toán và chuyển cho nhóm bảo vệ tài khoản.", "en": "A customer from my language queue lost their phone, so we blocked payments and passed the case to the account protection team." } },
             { "id": "abuse-record",
               "text": "오후 3시 12분 욕설 전화는 상담 이력에 적어 두었습니다.",
@@ -820,8 +834,8 @@
           "hint": { "mn": "Зөвхөн бүртгүүлсэн хүнд өөрт нь хэлнэ. Төлбөр, хэрэглээний талаарх мэдээллийг зөвхөн бүртгүүлсэн хүнд өөрт нь өгнө. Гэр бүлийн гишүүн байсан ч бүртгэлгүй бол хэлэхгүй. Эхлээд тухайн хүн мөн эсэхийг шалгана.", "vi": "Chỉ cung cấp thông tin cho chính người đăng ký. Chi tiết thanh toán và lịch sử sử dụng chỉ được thông báo cho chính người đăng ký. Dù là người nhà, nếu chưa được đăng ký ủy quyền trước thì cũng không được cung cấp thông tin. Trước tiên phải xác minh có đúng là chính chủ không.", "en": "Share details only with the subscriber. Payment and usage details can be shared only with the subscriber. Do not share them with family members unless they are registered. Check the caller’s identity first." } },
       { "id": "check", "title": "모르면 확인하고 다시 연락한다", "body": "정해진 답이 없는 질문에 짐작으로 답하지 않아요. 확인할 곳을 찾고, 언제 어떻게 다시 알려 드릴지 말해요.",
           "hint": { "mn": "Мэдэхгүй бол шалгаад эргэж холбогдоно. Тогтсон хариугүй асуултад таамаглаж хариулахгүй. Хаанаас тодруулахаа олж, хэзээ, яаж хариу өгөхөө хэлнэ.", "vi": "Không biết thì kiểm tra rồi liên lạc lại. Với câu hỏi chưa có câu trả lời sẵn, không trả lời theo phỏng đoán. Hãy tìm bộ phận có thể xác nhận, rồi nói rõ cho khách biết khi nào sẽ báo lại và báo lại bằng cách nào.", "en": "If you don’t know, check and get back to them. When there is no set answer, don’t guess. Find out who can confirm the answer, and tell the customer when and how you will reply." } },
-      { "id": "next", "title": "넘길 때는 다음을 알려 드린다", "body": "다른 팀으로 이관할 때는 누가, 언제 연락하는지 고객님 계신 곳 시간으로 말씀드려요. 고객이 같은 말을 처음부터 다시 하지 않게요.",
-          "hint": { "mn": "Шилжүүлэхдээ дараа нь юу болохыг хэлнэ. Өөр багт шилжүүлэхдээ хэн, хэзээ холбогдохыг үйлчлүүлэгчийн байгаа газрын цагаар хэлнэ. Ингэснээр үйлчлүүлэгч бүгдийг эхнээс нь дахин ярих шаардлагагүй болно.", "vi": "Khi chuyển yêu cầu đi, hãy cho khách biết việc gì sẽ diễn ra sau đó. Khi chuyển cho bộ phận khác, hãy nói rõ ai sẽ liên lạc với khách và vào lúc nào theo giờ nơi khách đang ở. Như vậy khách sẽ không phải kể lại mọi chuyện từ đầu.", "en": "When you pass a case on, say what happens next. When you transfer a case to another team, tell the customer who will contact them and when, in their local time. That way, they won’t have to explain everything again from the start." } },
+      { "id": "next", "title": "넘길 때는 다음을 알려 드린다", "body": "다른 팀으로 이관할 때는 확인한 내용을 이관 메모에 적어 넘기고, 누가 언제 연락하는지 고객님 계신 곳 시간으로 말씀드려요. 그래야 고객이 같은 말을 처음부터 다시 하지 않고, 언제 답을 받는지 알고 기다려요.",
+          "hint": { "mn": "Шилжүүлэхдээ дараа нь юу болохыг хэлнэ. Өөр багт шилжүүлэхдээ шалгасан зүйлээ хүлээлгэн өгөх тэмдэглэлд бичиж дамжуулаад, хэн, хэзээ холбогдохыг үйлчлүүлэгчийн байгаа газрын цагаар хэлнэ. Ингэснээр үйлчлүүлэгч бүгдийг эхнээс нь дахин ярихгүй, хариугаа хэзээ авахаа мэдэж хүлээнэ.", "vi": "Khi chuyển yêu cầu đi, hãy cho khách biết việc gì sẽ diễn ra sau đó. Khi chuyển cho bộ phận khác, hãy ghi những gì đã xác nhận vào ghi chú bàn giao, rồi nói rõ ai sẽ liên lạc với khách và vào lúc nào theo giờ nơi khách đang ở. Như vậy khách sẽ không phải kể lại mọi chuyện từ đầu và biết khi nào họ sẽ nhận được câu trả lời.", "en": "When you pass a case on, say what happens next. When you transfer a case to another team, add what you have already checked to the transfer note, and tell the customer who will contact them and when, in the customer’s local time. That way, they won’t have to explain everything again from the start, and they’ll know when to expect an answer." } },
       { "id": "alone", "title": "폭언과 힘든 마음은 혼자 견디지 않는다", "body": "욕설과 막말이 이어지면 정해진 안내를 하고 통화를 끝낼 수 있어요. 팀장에게 알리고, 힘들었던 마음도 말해요.",
           "hint": { "mn": "Доромжлол, сэтгэлийн дарамтыг ганцаараа тэвчих хэрэггүй. Хараал, доромжлол үргэлжилбэл тогтоосон анхааруулгыг өгөөд дуудлагыг дуусгаж болно. Багийн ахлагчдаа мэдэгдээд, хэр хэцүү байснаа ч хуваалцаарай.", "vi": "Đừng một mình gánh chịu lời lẽ xúc phạm và nỗi mệt mỏi trong lòng. Nếu khách tiếp tục chửi bới, xúc phạm, em có thể cảnh báo theo quy định rồi kết thúc cuộc gọi. Hãy báo cho trưởng nhóm và chia sẻ cả cảm giác mệt mỏi của mình.", "en": "Don’t deal with abuse or painful feelings alone. If swearing and insults continue, you can give the standard warnings and end the call. Tell the team leader, and tell them how it made you feel too." } },
       { "id": "record", "title": "들은 것과 한 일만 적는다", "body": "상담 이력에는 고객이 한 말과 내가 한 일을 적어요. 짐작은 적지 않아요. 다음 사람이 그 기록으로 일을 이어 가요.",
@@ -847,16 +861,16 @@
     "conditions": {
       "lead": "좋게만 보여 주지 않아요. 지원하기 전에 알아 둘 것들이에요.",
       "items": [
+        { "title": "이 일로 가는 비자", "body": "E-7-2 고객상담 사무원이에요. 국내 대학 전문학사 이상이고, TOPIK 2급 이상, 사회통합프로그램 2단계 이상, TOEIC 730점 이상 가운데 하나가 있어야 해요. 회사는 상시근로자 500명 이상, 국제용역 매출 50억 원 이상이고 직접 고용해야 해요. 체류기간은 한 번에 1년이고, 회사를 옮기기가 원칙적으로 어려워요.",
+          "hint": { "mn": "Энэ ажилд хамаарах виз. Энэ нь E-7-2 буюу харилцагчийн үйлчилгээний ажилтны виз юм. Солонгосын коллежийн (2–3 жилийн дээд сургууль) диплом буюу түүнээс дээш боловсролтой байх ёстой. Мөн TOPIK 2-р түвшин буюу түүнээс дээш, Нийгэмд нэгтгэх хөтөлбөрийн (KIIP) 2-р шат буюу түүнээс дээш, эсвэл TOEIC 730 буюу түүнээс дээш оноо гэсэн шаардлагуудын аль нэгийг хангасан байх ёстой. Компани нь байнгын 500-гаас доошгүй ажилтантай, олон улсын үйлчилгээний борлуулалт нь 5 тэрбум воноос доошгүй байх ёстой. Мөн ажилтныг шууд ажилд авах ёстой. Оршин суух хугацааг нэг удаад 1 жилээр олгодог бөгөөд зарчмын хувьд компани солиход хязгаарлалттай.", "vi": "Visa cho công việc này là E-7-2, dành cho nhân viên tư vấn khách hàng. Em cần có bằng cao đẳng (2–3 năm) trở lên của một trường ở Hàn Quốc, và đáp ứng một trong các điều kiện sau: TOPIK cấp 2 trở lên, Chương trình hội nhập xã hội (KIIP) cấp độ 2 trở lên, hoặc TOEIC từ 730 điểm trở lên. Công ty phải có từ 500 lao động thường xuyên trở lên, doanh thu dịch vụ quốc tế từ 5 tỷ won trở lên và phải tuyển dụng trực tiếp. Thời hạn lưu trú được cấp mỗi lần 1 năm, và về nguyên tắc, việc chuyển sang công ty khác bị hạn chế.", "en": "This job requires the E-7-2 visa for customer service clerks. You need at least an associate degree (2–3 years) from a college in Korea, plus one of the following: TOPIK level 2 or higher, KIIP (Korea Immigration and Integration Program) level 2 or higher, or a TOEIC score of 730 or higher. The company must have at least 500 regular employees and at least 5 billion won in international service sales, and must hire you directly. Stays are granted for one year at a time, and as a rule, changing companies is difficult." }, "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판, 2026-11-22 대조" },
         { "title": "고객은 해외에 있어요", "body": "이 비자로 하는 고객상담은 해외에 있는 외국인 고객을 상대하는 일로 정해져 있어요. 전화로 물건을 파는 텔레마케터와 판촉원은 들지 않아요. 회사에 따로 마련된 사무실에서 일하고, 집에서 일할 수 없어요.",
           "hint": { "mn": "Үйлчлүүлэгчид гадаадад байна. Энэ визээр зөвхөн гадаадад байгаа гадаад үйлчлүүлэгчдийн асуултад хариулах ёстой. Утсаар бараа зардаг телемаркетер, сурталчлагч үүнд хамаарахгүй. Компанийн тусгайлан бэлтгэсэн оффист ажиллах бөгөөд гэрээсээ ажиллах боломжгүй.", "vi": "Khách hàng ở nước ngoài. Công việc tư vấn khách hàng theo visa này chỉ giới hạn ở việc phục vụ khách nước ngoài đang ở nước ngoài. Nhân viên bán hàng qua điện thoại và nhân viên xúc tiến bán hàng không thuộc diện này. Em làm việc tại văn phòng riêng của công ty, không được làm ở nhà.", "en": "Customers are overseas. Customer service on this visa is limited to helping foreign customers who are overseas. Telemarketers and sales promoters who sell by phone are not included. You work in an office set up by the company, not from home." }, "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판, 2026-11-22 대조" },
         { "title": "감정노동", "body": "콜센터 상담원 1,996명에게 물은 국가인권위원회 조사에서, 상담원은 고객 폭언을 한 달에 평균 12번 들었다고 답했어요. 화장실을 자유롭게 가지 못한다는 답도 25.3%였어요. 법은 회사가 업무를 잠시 멈추게 하고, 쉬는 시간을 늘리고, 상담을 지원하게 정해요. 외국인 상담사만 따로 조사한 자료는 찾지 못했어요.",
           "hint": { "mn": "Сэтгэл хөдлөлийн хөдөлмөр. Солонгосын Хүний эрхийн үндэсний комиссоос дуудлагын төвийн 1,996 ажилтныг хамруулан хийсэн судалгаагаар ажилтнууд үйлчлүүлэгчийн доромжлолд сард дунджаар 12 удаа өртдөг гэж хариулсан бөгөөд 25.3% нь бие засах газарт чөлөөтэй орж чаддаггүй гэжээ. Хуулиар компани ажилтанд ажлаа түр зогсоох боломж олгож, амралтын цагийг уртасгаж, сэтгэл зүйн зөвлөгөө авахад нь дэмжлэг үзүүлэх ёстой. Гадаад ажилтнуудыг тусад нь судалсан мэдээлэл олдсонгүй.", "vi": "Lao động cảm xúc. Trong khảo sát của Ủy ban Nhân quyền Quốc gia Hàn Quốc với 1.996 nhân viên tổng đài, họ cho biết trung bình mỗi tháng nghe khách chửi mắng 12 lần, và 25,3% nói không được đi vệ sinh tự do. Luật quy định công ty phải cho tạm dừng công việc, kéo dài giờ nghỉ và hỗ trợ tư vấn tâm lý. Chúng tôi chưa tìm thấy số liệu riêng về nhân viên tư vấn người nước ngoài.", "en": "Emotional labour. In a National Human Rights Commission of Korea survey of 1,996 call-centre agents, respondents said they faced verbal abuse from customers 12 times a month on average, and 25.3% said they could not go to the toilet freely. The law requires companies to let agents pause their work, give them longer breaks and provide counselling support. We found no separate data on agents from abroad." }, "source": "국가인권위원회 콜센터 노동자 인권상황 실태조사(2021년 조사), 2022-03-30 보도. 산업안전보건법 제41조와 시행령 제41조" },
         { "title": "실적과 모니터링", "body": "응답률, 대기 시간, 포기율 같은 숫자를 관리해요. 관리자가 상담 품질을 재고, 그 결과로 스크립트와 교육을 고쳐요. 오래 앉아 전화로 말하는 일이에요.",
           "hint": { "mn": "Гүйцэтгэл ба хяналт. Хариулсан хувь, хүлээлгийн хугацаа, хүлээж байгаад тасалсан дуудлагын хувь зэрэг үзүүлэлтийг хянадаг. Менежер зөвлөгөөний чанарыг үнэлж, үр дүнгээр нь скрипт, сургалтаа сайжруулдаг. Удаан сууж утсаар ярьдаг ажил.", "vi": "Chỉ tiêu và giám sát. Công ty theo dõi các chỉ số như tỷ lệ trả lời, thời gian chờ và tỷ lệ khách cúp máy khi đang chờ. Quản lý đánh giá chất lượng tư vấn và dựa vào kết quả để sửa kịch bản và đào tạo. Công việc này đòi hỏi phải ngồi lâu và nói chuyện qua điện thoại.", "en": "Targets and monitoring. Numbers such as answer rate, waiting time and abandoned calls are tracked. Managers measure the quality of your calls and use the results to change scripts and training. It is a job where you sit for long hours and talk on the phone." }, "source": "NCS 통신판매 성과관리 · 시스템 운용, 한국고용정보원 직업정보" },
-        { "title": "임금", "body": "고객상담원 재직자 조사에서 연봉 가운데값은 3,750만 원이었어요(하위 25%는 3,045만 원, 상위 25%는 4,525만 원). 이 비자로 일하려면 같은 회사에서 같은 일을 하는 한국인 평균임금 이상, 연 2,589만 원 이상을 받아야 해요. 외국인 상담사 임금만 따로 낸 공식 숫자는 찾지 못했어요.",
-          "hint": { "mn": "Цалин. Харилцагчийн үйлчилгээний ажилтнуудын дунд хийсэн судалгаагаар жилийн цалингийн медиан (голч утга) 37.5 сая вон байв (доод 25%: 30.45 сая, дээд 25%: 45.25 сая). Энэ визээр ажиллахын тулд тухайн компанид ижил ажил хийдэг солонгос хүмүүсийн дундаж цалингаас багагүй, жилд 25.89 сая воноос доошгүй цалин авах ёстой. Гадаад ажилтны цалинг тусад нь гаргасан албан ёсны тоо баримт олдсонгүй.", "vi": "Lương. Theo khảo sát đối với những người đang làm nhân viên tư vấn khách hàng, mức lương năm trung vị là 37,5 triệu won (25% thấp nhất: 30,45 triệu; 25% cao nhất: 45,25 triệu). Để làm việc theo visa này, lương phải bằng hoặc cao hơn mức trung bình của người Hàn làm cùng việc ở cùng công ty, và ít nhất 25,89 triệu won một năm. Chúng tôi chưa tìm thấy số liệu chính thức riêng về lương của nhân viên tư vấn người nước ngoài.", "en": "Pay. In a survey of people working as customer service agents, the median annual salary was 37.5 million won (lower 25%: 30.45 million; upper 25%: 45.25 million). To work on this visa, you must be paid at least the average for Koreans doing the same job at the same company, and at least 25.89 million won a year. We found no official figure for foreign agents alone." }, "source": "한국고용정보원 임금직업포털 2025년 조사. 법무부 취업비자 안내 길잡이(2026.11.)" },
-        { "title": "이 일로 가는 비자", "body": "E-7-2 고객상담 사무원이에요. 국내 대학 전문학사 이상이고, TOPIK 2급, 사회통합프로그램 2단계, TOEIC 730점 가운데 하나가 있어야 해요. 회사는 상시근로자 500명 이상, 국제용역 매출 50억 원 이상이고 직접 고용해야 해요. 체류기간은 한 번에 1년이고, 회사를 옮기기가 원칙적으로 어려워요.",
-          "hint": { "mn": "Энэ ажилд хамаарах виз. Энэ нь E-7-2 буюу харилцагчийн үйлчилгээний ажилтны виз юм. Солонгосын коллежийн (2–3 жилийн дээд сургууль) диплом буюу түүнээс дээш боловсролтой байх ёстой. Мөн TOPIK 2-р түвшин, Нийгэмд нэгтгэх хөтөлбөрийн (KIIP) 2-р шат, TOEIC 730 онооны аль нэгийг хангасан байх ёстой. Компани нь байнгын 500-гаас доошгүй ажилтантай, олон улсын үйлчилгээний борлуулалт нь 5 тэрбум воноос доошгүй байх ёстой. Мөн ажилтныг шууд ажилд авах ёстой. Оршин суух хугацааг нэг удаад 1 жилээр олгодог бөгөөд компани солих нь зарчмын хувьд хэцүү.", "vi": "Visa cho công việc này là E-7-2, dành cho nhân viên tư vấn khách hàng. Em cần có bằng cao đẳng (2–3 năm) trở lên của một trường ở Hàn Quốc, và đáp ứng một trong các điều kiện sau: TOPIK cấp 2, Chương trình hội nhập xã hội (KIIP) cấp độ 2, hoặc TOEIC 730 điểm. Công ty phải có từ 500 lao động thường xuyên trở lên, doanh thu dịch vụ quốc tế từ 5 tỷ won trở lên và phải tuyển dụng trực tiếp. Thời hạn lưu trú được cấp mỗi lần 1 năm, và về nguyên tắc, em không được tự do chuyển sang công ty khác.", "en": "About the visa for this job: it is the E-7-2 visa for customer service clerks. You need at least an associate degree (2–3 years) from a college in Korea, plus one of the following: TOPIK level 2, KIIP (Korea Immigration and Integration Program) level 2, or a TOEIC score of 730. The company must have at least 500 regular employees and at least 5 billion won in international service sales, and must hire you directly. Stays are granted for one year at a time, and as a rule, changing companies is difficult." }, "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판, 2026-11-22 대조" }
+        { "title": "임금", "body": "고객상담원 재직자 조사에서 연봉 가운데값은 3,750만 원이었어요(하위 25%는 3,045만 원, 상위 25%는 4,525만 원). 지금 일하는 사람들이 답한 값이에요. 채용공고에 적힌 임금은 2025년 월 220만 원이었어요. 이 비자로 일하려면 같은 회사에서 같은 일을 하는 한국인 평균임금 이상, 연 2,589만 원 이상을 받아야 해요. 외국인 상담사 임금만 따로 낸 공식 숫자는 찾지 못했어요.",
+          "hint": { "mn": "Цалин. Харилцагчийн үйлчилгээний ажилтнуудын дунд хийсэн судалгаагаар жилийн цалингийн медиан (голч утга) 37.5 сая вон байв (доод 25%: 30.45 сая, дээд 25%: 45.25 сая). Энэ нь одоо энэ ажлыг хийж байгаа хүмүүсийн хариултад үндэслэсэн дүн юм. 2025 онд ажлын зард заасан цалин сард 2.2 сая вон байв. Энэ визээр ажиллахын тулд тухайн компанид ижил ажил хийдэг солонгос хүмүүсийн дундаж цалингаас багагүй, жилд 25.89 сая воноос доошгүй цалин авах ёстой. Гадаад ажилтны цалинг тусад нь гаргасан албан ёсны тоо баримт олдсонгүй.", "vi": "Lương. Theo khảo sát đối với những người đang làm nhân viên tư vấn khách hàng, mức lương năm trung vị là 37,5 triệu won (25% thấp nhất: 30,45 triệu; 25% cao nhất: 45,25 triệu). Đây là số liệu do chính những người đang làm nghề này cung cấp. Mức lương ghi trong tin tuyển dụng năm 2025 là 2,2 triệu won một tháng. Để làm việc theo visa này, lương phải bằng hoặc cao hơn mức trung bình của người Hàn làm cùng việc ở cùng công ty, và ít nhất 25,89 triệu won một năm. Chúng tôi chưa tìm thấy số liệu chính thức riêng về lương của nhân viên tư vấn người nước ngoài.", "en": "Pay. In a survey of people working as customer service agents, the median annual salary was 37.5 million won (25th percentile: 30.45 million; 75th percentile: 45.25 million). These are figures given by people already in the job. The pay listed in 2025 job ads was 2.2 million won a month. To work on this visa, you must be paid at least the average for Koreans doing the same job at the same company, and at least 25.89 million won a year. We found no separate official figure for agents from abroad." }, "source": "한국고용정보원 임금직업포털 2025년 조사(재직자 설문, 고용24 채용공고 제시임금). 법무부 취업비자 안내 길잡이(2026.11.)" }
       ]
     },
     "reflection": {
@@ -878,8 +892,8 @@
       "items": [
         { "id": "degree", "label": "학위 (국내 대학 전문학사 이상)", "placeholder": "예: 전문학사 2027년 2월 졸업 예정",
           "hint": { "mn": "Боловсрол (Солонгосын коллежийн диплом буюу түүнээс дээш). Боловсролын зэрэг, төгссөн эсвэл төгсөх огноогоо бичнэ үү.", "vi": "Bằng cấp (bằng cao đẳng trở lên của trường ở Hàn Quốc). Ghi loại bằng em đang có hoặc thời gian dự kiến tốt nghiệp.", "en": "Degree (associate degree or higher from a college in Korea). Write the degree you have or when you expect to graduate." } },
-        { "id": "language", "label": "한국어나 영어 (TOPIK 2급, 사회통합프로그램 2단계, TOEIC 730점 가운데 하나)", "placeholder": "예: TOPIK 3급, 2026년 10월",
-          "hint": { "mn": "Солонгос эсвэл англи хэл (TOPIK 2-р түвшин, KIIP-ийн 2-р шат, TOEIC 730-ийн аль нэг). Түвшин, шалгалт өгсөн огноогоо бичнэ үү.", "vi": "Tiếng Hàn hoặc tiếng Anh (một trong các chứng chỉ sau: TOPIK cấp 2, KIIP cấp độ 2, TOEIC 730). Ghi cấp độ hoặc điểm và ngày thi.", "en": "Korean or English (one of the following: TOPIK level 2, KIIP level 2 or TOEIC 730). Write your level or score and the test date." } },
+        { "id": "language", "label": "한국어나 영어 (TOPIK 2급 이상, 사회통합프로그램 2단계 이상, TOEIC 730점 이상 가운데 하나)", "placeholder": "예: TOPIK 3급, 2026년 10월",
+          "hint": { "mn": "Солонгос эсвэл англи хэл (TOPIK 2-р түвшин буюу түүнээс дээш, KIIP-ийн 2-р шат буюу түүнээс дээш, эсвэл TOEIC 730 буюу түүнээс дээш оноо). Түвшин эсвэл оноо, шалгалт өгсөн огноогоо бичнэ үү.", "vi": "Tiếng Hàn hoặc tiếng Anh (một trong các chứng chỉ sau: TOPIK cấp 2 trở lên, KIIP cấp độ 2 trở lên, TOEIC từ 730 điểm trở lên). Ghi cấp độ hoặc điểm và ngày thi.", "en": "Korean or English (one of the following: TOPIK level 2 or higher, KIIP level 2 or higher, or TOEIC 730 or higher). Write your level or score and the test date." } },
         { "id": "languages", "label": "상담할 수 있는 언어", "placeholder": "예: 몽골어, 한국어, 영어",
           "hint": { "mn": "Үйлчлүүлэгчтэй харилцаж чадах хэл.", "vi": "Những ngôn ngữ em có thể dùng để tư vấn cho khách.", "en": "Languages you can help customers in." } },
         { "id": "experience", "label": "상담이나 손님 응대 경험", "placeholder": "예: 편의점 아르바이트 1년",
