@@ -63,11 +63,16 @@ def split_media(pack, b):   # 크레딧내기와 같은 차례 — 시작 · 끝
     end = [f for f in files if "끝" in f and f.lower().endswith(PIC)]
     refs = [f for f in files if f.lower().endswith(PIC) and f not in start + end]
     audio = [f for f in files if f.lower().endswith((".mp3", ".wav"))]
-    return start, end, refs, audio
+    video = [f for f in files if f.lower().endswith(".mp4")]   # 동작 참고 영상(11-23 AI IDOL 마네킹 프리비즈) — 지시문에서 @영상 N
+    return start, end, refs, audio, video
 
 
-def mode_of(start, end, refs, audio):
-    return "m2v" if (audio or refs or not start) else "first_last_frame"
+def 판상한(b):   # 동작 참고 영상이 든 판은 서버 견적이 초당 값보다 크다(11-23 480p 5초 + 5초 mp4 = 140) — _순서.json 판의 "상한"이 있으면 그 값
+    return int(b.get("상한") or PER_SEC * b["길이"])
+
+
+def mode_of(start, end, refs, audio, video=()):
+    return "m2v" if (audio or refs or video or not start) else "first_last_frame"
 
 
 def upload(pack, b, name):
@@ -75,15 +80,15 @@ def upload(pack, b, name):
     return made["data"]["resourceId"]
 
 
-def build_prompt(pack, b, images, audios):
+def build_prompt(pack, b, images, audios, videos=()):
     t = open(os.path.join(pack, b["폴더"], "지시문.txt"), encoding="utf-8").read().replace("\r\n", "\n").strip()
     def sub(m):
-        kinds = {"이미지": images, "오디오": audios}.get(m.group(1))
+        kinds = {"이미지": images, "오디오": audios, "영상": videos}.get(m.group(1))
         n = int(m.group(2))
         if not kinds or n > len(kinds):
             raise RuntimeError(f"{b['id']} 지시문의 {m.group(0)}에 맞는 파일이 없다")
         return "{{res:%s}}" % kinds[n - 1]
-    return re.sub(r"@\s*(이미지|오디오)\s*(\d+)", sub, t)
+    return re.sub(r"@\s*(이미지|오디오|영상)\s*(\d+)", sub, t)
 
 
 def have(out, pan):
@@ -183,18 +188,19 @@ def result_of(data):   # 정상 답은 data.node · data.submission, 끊긴 답�
 def run_one(pack, out, b):
     t0 = time.time()
     소스 = 판소스(pack, b)   # 내기 직전 지시문 · 참고 지문 — 첫 컷 검사가 받은 영상을 이 지시문으로 판정한다(11-18)
-    start, end, refs, audio = split_media(pack, b)
-    mode = mode_of(start, end, refs, audio)
-    ceiling = PER_SEC * b["길이"]
+    start, end, refs, audio, video = split_media(pack, b)
+    mode = mode_of(start, end, refs, audio, video)
+    ceiling = 판상한(b)
     with lock:
         print(f"냄 {b['id']:<14} {mode} {b['길이']}초 상한 {ceiling}", flush=True)
     for k_try in range(3):   # 올린 그림의 크기를 서버가 아직 못 읽으면 견적 단계에서 끝난다(11-05 p7-1-32-새로 VIDEO_FIRST_FRAME_UNAVAILABLE, 차감 없음) — 잠시 뒤 다시 올려 다시 낸다
         image_ids = [upload(pack, b, f) for f in start + end + refs]
         audio_ids = [upload(pack, b, f) for f in audio]
-        prompt = build_prompt(pack, b, image_ids, audio_ids)
+        video_ids = [upload(pack, b, f) for f in video]
+        prompt = build_prompt(pack, b, image_ids, audio_ids, video_ids)
         if 판소스(pack, b) != 소스:   # 지문을 잰 뒤 올리고 읽는 사이에 바뀌었으면 기록과 실제 요청이 어긋난다 — 내지 않는다
             raise RuntimeError("내는 동안 지시문이나 참고 파일이 바뀌었다. 이 판은 내지 않았다 — 다시 돌린다")
-        ref_args = [x for i in image_ids + audio_ids for x in ("--ref", f"res:{i}")]
+        ref_args = [x for i in image_ids + video_ids + audio_ids for x in ("--ref", f"res:{i}")]
         made = cli("node", "create", "video", "--model", MODEL, "--mode", mode, *ref_args, "--prompt", prompt, "--ratio", b["비율"],
                    "--resolution", RES, "--duration", str(b["길이"]), "--title", b["id"], "--project-id", PROJECT,
                    "--run", "--credit-ceiling", str(ceiling), "--wait", "--timeout", "45m", check=False)
@@ -244,7 +250,7 @@ def run_one(pack, out, b):
     row["파일"], row["걸린초"] = name, round(time.time() - t0)
     save(out, key, row)
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    save(out, key, {"판": b["id"], "순서": b.get("순서", 0), "파일": name, "만든때": now, "받은때": now, "길이": b["길이"], "비율": b["비율"], "화질": "720p",
+    save(out, key, {"판": b["id"], "순서": b.get("순서", 0), "파일": name, "만든때": now, "받은때": now, "길이": b["길이"], "비율": b["비율"], "화질": RES,
                     "소리": True, "모델": f"dreamina {MODEL}", "길": f"드리미나 CLI({PROFILE or '기본'})", "지시문": prompt, "소스": 소스}, "_받음.json")
     mark = row["표시"]
     warn = f"  ⚠ 표시가 남음({mark}) — 계정 설정 「워터마크 삭제」를 보고 같은 resourceId로 다시 받는다" if not isinstance(mark, float) or mark >= MARK_AT else ""
@@ -321,12 +327,12 @@ def 실행(정리):
             if 첫판:
                 첫시험.append(첫판)
         todo = 낼판
-    total = sum(PER_SEC * b["길이"] for _, b in todo)
+    total = sum(판상한(b) for _, b in todo)
     bal = balance()
     print(f"잔액 {bal} · 칸 {PROFILE or '기본'} · {RES} · 받을곳 {out}")
     for p, b in todo:
-        s, e, r, au = split_media(p, b)
-        print(f"  {b['id']:<18} {b['길이']}초 {b['비율']} · {PER_SEC * b['길이']}크레딧 · {mode_of(s, e, r, au)} · 시작 {len(s)} 끝 {len(e)} 참고 {len(r)} 소리 {len(au)} · {os.path.basename(p)}")
+        s, e, r, au, vd = split_media(p, b)
+        print(f"  {b['id']:<18} {b['길이']}초 {b['비율']} · {판상한(b)}크레딧 · {mode_of(s, e, r, au, vd)} · 시작 {len(s)} 끝 {len(e)} 참고 {len(r)} 영상 {len(vd)} 소리 {len(au)} · {os.path.basename(p)}")
     print(f"낼 것 {len(todo)}판 · {sum(b['길이'] for _, b in todo)}초 · {total}크레딧" + (f" · 건너뜀 {len(held)}: {' · '.join(held)}" if held else ""))
     if todo:   # 지시문 검사 — 미리 보기에서도 찍고, 걸림이면 --실행이어도 여기서 멈춘다(--걸림무시 "<판 id>,…: <까닭>"이면 그 판만 지나가고 장부에 남는다)
         IGNORED.update(굽기전(todo, ignore, table))
