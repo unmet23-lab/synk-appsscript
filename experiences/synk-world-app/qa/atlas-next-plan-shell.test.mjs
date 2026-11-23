@@ -1043,3 +1043,59 @@ test('앱이 셸에 넘기는 홈 입구에 판 기록(planLog)이 있고, 입�
   assert.ok(home[0].includes('planLog:coach=>atlasNext.planLog(coach)'), '홈 입구가 판 기록을 넘긴다');
   assert.ok(shellSource.includes('planLog:coach=>made&&!disposed?made.planLog?.(coach)??null:null'), '입구 감싸기가 입구의 planLog로 잇는다(입구를 받기 전 · 닫은 뒤는 null)');
 });
+
+// 검수 s3d G3: 기기 기록부(손님 · 동의를 끈 계정)에서 새 길 짧은 진단을 도중에 그만두면 판이 그 답으로 다시 접힌다. 접힌 뒤 홈(세 줄 · 이번 주 계획)을
+// 한 번 더 그린다 — 엔진의 watch는 같은 문서 안의 접기를 알리지 않아, 그대로면 다른 계기 전까지 홈이 접기 전 요약에 머문다.
+test('새 길 짧은 진단을 도중에 그만두면 판이 그 답으로 다시 접힌 뒤 홈을 한 번 더 그린다(검수 s3d G3)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  let held = 0;
+  const app = shell({
+    wrap: made => ({
+      ...made,
+      finishSet(options) {
+        const out = made.finishSet(options);
+        if (!out?.folded) return out;
+        held += 1;
+        return { ...out, folded: hold.then(() => out.folded) };
+      },
+    }),
+  });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await app.education.position({ start: true });
+    await until(() => app.box()?.html.includes('data-position-run'), '진단 문항');
+    assert.equal(await answerItems(app, 1), 1, '한 문항 답한다');
+    app.box().press('data-position-stop');
+    await tick(20);
+    assert.equal(held, 1, '판을 닫으며 다시 접기를 기다린다');
+    const before = app.drawn();
+    await tick(20);
+    assert.equal(app.drawn(), before, '접기 전에는 더 그리지 않는다');
+    release();
+    await until(() => app.drawn() > before, '접힌 뒤 홈을 다시 그린다');
+  } finally {
+    release();
+    app.dispose();
+  }
+});
+
+test('확인 중에 연 계획 열기는 기다린 사이 학생이 누른 다른 학습(같은 카드의 「짧은 진단 시작하기」)을 덮지 않는다 — 판이 아직 서지 않은 열기는 판 종류로 가릴 수 없다(검수 s3e1 GB4)', async () => {
+  let release = null;
+  const app = shell({ planner: () => new Promise(resolve => (release = () => resolve(PLANNER))) });
+  try {
+    const opening = app.education.plan();
+    await tick(20);
+    const starting = app.education.position({ start: true });
+    release();
+    assert.equal(await opening, 'skipped', '나중에 누른 학습을 덮지 않는다');
+    await starting;
+    assert.ok(!app.shown.some(html => /data-plan-board/.test(html)), '계획 판을 그리지 않는다');
+    await until(() => app.box()?.html.includes('data-position-run'), '나중에 누른 진단이 시작된다');
+  } finally {
+    app.dispose();
+  }
+});

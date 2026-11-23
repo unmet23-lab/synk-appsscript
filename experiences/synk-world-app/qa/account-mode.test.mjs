@@ -372,3 +372,19 @@ test('Atlas 나르개(trail GET · POST · 옛 POST)는 진짜 인증 실패(401
  await assert.rejects(line.transport(2).get(null),{code:'AUTH_REQUIRED'});
  assert.equal(f.invalidations(),1,'401은 세션을 닫는다');
 });
+test('Atlas 나르개의 비우기만 긴 기다림(160초)의 클라이언트로 보낸다 — 읽기 · 올리기는 기본 기다림 그대로, 같은 세션 토큰이고 그 클라이언트는 한 번만 만든다(설계 주인 11-20 밤 · 계획 §24-8)',async()=>{
+ const sent=[];let factories=0;
+ const f=fixture({accountFactory:options=>{factories++;return {
+  load:async()=>({ok:true,account:{synk_user_id:A,status:'active'},sessions:[{id:'session-a',current:true,revoked:false}],learning:{enabled:true,revision:2},capabilities:{learningSync:true}}),
+  revokeSession:async()=>({refreshRevoked:true}),
+  trail:{get:async()=>{sent.push(['get',options.timeoutMs]);return {ok:true};},post:async()=>{sent.push(['post',options.timeoutMs]);return {ok:true};},
+   clear:async input=>{sent.push(['clear',options.timeoutMs,input.revision,options.getAccessToken()]);return {ok:true,revision:3};}}};}});
+ assert.equal(await f.client.restore(),true);
+ const line=await f.account.prepareAtlasTrail();
+ const carrier=line.transport(2),before=factories;
+ await carrier.get(null);await carrier.post([],null);
+ assert.equal(factories,before,'읽기 · 올리기는 새 클라이언트를 만들지 않는다');
+ await carrier.clear();await carrier.clear();
+ assert.equal(factories,before+1,'비우기 클라이언트는 처음 비울 때 한 번 만든다');
+ assert.deepEqual(sent,[['get',undefined],['post',undefined],['clear',160000,2,'token-a'],['clear',160000,2,'token-a']]);
+});

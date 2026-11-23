@@ -1233,6 +1233,33 @@ test('4-3 허브 — 포스터가 홈의 단추가 열 줄을 따른다: 레슨 
   }
 });
 
+test('4-3 허브 — 쓰기 · 말하기 줄의 포스터 꼬리표는 그 일이다(UP NEXT · WRITING · SPEAKING — 허브 꼬리표는 모든 언어에서 영어 대문자, 검수 s3d GD4)', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const progress = freshProgress();
+  engine(progress);
+  let day = null;
+  const w = lifeOn({ progress, today: () => day });
+  try {
+    const row = modality => ({
+      kind: 'check',
+      activityId: `world.check.${modality}`,
+      route: modality,
+      title: '이번 주 연습',
+      why: { text: '이번 주 계획이에요.' },
+      minutes: 8,
+      open: { id: `check.${modality}`, route: modality, label: '이번 주 연습', modality },
+    });
+    for (const [modality, label] of [['writing', 'WRITING'], ['speaking', 'SPEAKING'], ['listening', 'LISTENING'], ['reading', 'READING']]) {
+      day = dayOf([row(modality)]);
+      w.ui.packs();
+      assert.equal(posterLabel(last(w)), `UP NEXT · ${label}`, `${modality} 줄의 꼬리표`);
+      assert.ok(felt(last(w)) && 'data-life-next' in felt(last(w)), '큰 단추는 홈과 같은 길(education.next)');
+    }
+  } finally {
+    w.ui.dispose();
+  }
+});
+
 test('4-3 허브 — 상한 날(§20-3): 복습 줄은 수 대신 상한 문장 · 학생이 고른 복습 화면은 그대로 · 줄이 없는 날은 복습 수 포스터를 세우지 않는다', t0 => {
   t0.mock.timers.enable({ apis: ['Date'], now: START });
   const progress = freshProgress();
@@ -1278,4 +1305,77 @@ test('4-3 허브 — 상한 날(§20-3): 복습 줄은 수 대신 상한 문장 
   } finally {
     w.ui.dispose();
   }
+});
+
+// 검수 s3d GD3: 레슨 결과의 「새 장면으로 다시 보기」 등으로 연 복습 판을 답을 남긴 채 나간 학생이, 판정을 확인하는 중에 배우기 허브를 연다.
+// 돌아온 수는 0이지만 하던 판은 이어 할 수 있다(startReview가 하던 판을 그대로 연다) — 포스터 「이어 하기」가 그 판을 열고, 복습 화면에도 이어 하기 단추가 있다.
+test('확인 중에 하던 복습 — 허브 포스터는 「이어 하기」로 하던 판을 열고 복습 화면에도 이어 하기 단추가 있다(「0개가 돌아왔어요」로 막히지 않는다 · 검수 s3d GD3)', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const progress = freshProgress();
+  engine(progress);
+  let day = null;
+  const w = lifeOn({ progress, today: () => day });
+  try {
+    const lesson = lessonById('greetings-expressions');
+    playLesson(w, lesson, { wrong: [0] });
+    goHome(w);
+    t0.mock.timers.tick(MINUTE);
+    w.ui.reviewStart();
+    assert.equal(w.ui.metrics().phase, 'review', '복습 판을 열었다');
+    const run = progress.exportSnapshot().activeReview;
+    assert.ok(run && run.ids.some(id => !run.answers[id]), '답하지 않은 문항이 남은 판');
+    // 판정 확인 중 — 돌아온 수는 0이다
+    checking(progress);
+    assert.equal(w.ui.summary().dueCount, 0);
+    day = dayOf([{ kind: 'review', activityId: 'world.life.review', route: 'review', title: '복습', why: { text: '돌아온 표현이에요.' }, minutes: 3, open: { id: 'world.life.review', route: 'review', label: '복습' } }]);
+    w.ui.packs();
+    let html = last(w);
+    assert.equal(posterLabel(html), 'CONTINUE · REVIEW', '하던 판은 이어 하기 포스터');
+    assert.ok(!html.includes(t('life.backSub', { n: 0 })), '「0개가 돌아왔어요」가 아니다');
+    assert.ok(felt(html) && 'data-life-review-start' in felt(html), '큰 단추는 하던 판을 잇는다');
+    press(felt(html));
+    assert.equal(w.ui.metrics().phase, 'review', '하던 판이 열린다');
+    assert.equal(progress.exportSnapshot().activeReview.id, run.id, '같은 판');
+    // 복습 화면 — 확인 중 글은 그대로 두고 이어 하기 단추를 둔다
+    w.ui.review();
+    html = last(w);
+    assert.ok(html.includes(t('life.reviewChecking')), '확인 중 글');
+    assert.ok(felt(html) && 'data-life-review-start' in felt(html), '복습 화면에도 이어 하기 단추');
+    assert.ok(html.includes(t('life.continue')), '이어 하기 글(이미 있는 문구)');
+    // 판을 끝까지 풀면 이어 할 판이 없다 — 허브가 「이어 하기」를 그리지 않는다(다 푼 판을 하던 판으로 보지 않는다).
+    w.ui.reviewStart();
+    playReview(w);
+    w.ui.packs();
+    assert.notEqual(posterLabel(last(w)), 'CONTINUE · REVIEW', '다 푼 판은 이어 하기가 아니다');
+  } finally {
+    w.ui.dispose();
+  }
+});
+
+// 검수 s3e1(GPT): 복습 결과의 표현 합치기 · 「내일쯤」 · 자정 넘김 · 다시 그린 뒤 초점.
+test('복습 결과는 같은 표현의 장면을 합칠 때 「곧 다시」도 합친다 — 장면 순서와 상관없이 같은 안내(검수 s3e1)', async () => {
+  const { reviewRowsByExpression } = await import('../life-ui.mjs');
+  const first = { korean: '안녕하세요', soon: false, again: false }, second = { korean: '안녕하세요', soon: false, again: true };
+  for (const rows of [[first, second], [second, first]]) {
+    const [row] = reviewRowsByExpression(rows.map(r => ({ ...r })));
+    assert.equal(row.scenes, 2);
+    assert.equal(row.again, true, '한 장면이라도 곧 다시 돌아오면 그 표현은 곧 다시다');
+    assert.equal(row.soon, false);
+  }
+  const [only] = reviewRowsByExpression([{ korean: '네', soon: false, again: false }, { korean: '네', soon: true, again: false }]);
+  assert.equal(only.soon, true, 'soon은 앞과 같이 합친다');
+});
+
+test('새 길 생활 화면 원문 — 「내일쯤」은 달력의 다음 날, 복습 화면 표지에는 오늘 날짜, 다시 그린 뒤 초점은 「내 위치」(data-view)도 되돌린다(검수 s3e1)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const source = readFileSync(new URL('../life-ui.mjs', import.meta.url), 'utf8');
+  // 24시간 뒤로 재면 하루가 23시간인 날(일광 절약 시간 시작)에 이틀 뒤를 내일이라 했다.
+  assert.match(source, /const next=new Date\(now\);next\.setDate\(next\.getDate\(\)\+1\);\r?\n if\(day\(at\)===day\(next\.getTime\(\)\)\)return t\('life\.when\.tomorrowDay'\);/);
+  const dayOnly = source.slice(source.indexOf('const dayOnly=at=>{'), source.indexOf('const whenOf='));
+  assert.ok(dayOnly.length > 50, '새 길 날 셈을 찾았다');
+  assert.doesNotMatch(dayOnly, /now\+86400000/, '새 길 날 셈은 24시간 뒤로 재지 않는다');
+  // 자정이 지나면 「내일쯤」이 「오늘 중」이 된다 — 표지가 같으면 열린 복습 화면을 다시 그리지 않았다.
+  assert.ok(source.includes("const reviewSign=s=>[s.dueState??'',s.dueCount,(s.dueIds||[]).join(','),s.nextReviewAt??'',new Date().toDateString()].join('|');"), '복습 화면 표지에 오늘 날짜');
+  // 허브의 「내 위치」 단추는 data-view만 있다 — 빠지면 초점이 닫기 단추로 가서 엔터가 허브를 닫았다.
+  assert.match(source, /find\(a=>a\.name\.startsWith\('data-life-'\)\|\|a\.name==='data-view'\)/);
 });

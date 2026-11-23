@@ -31,6 +31,10 @@ const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKE
 // 그 밖은 멈추고 셸이 계정을 다시 읽음 — 계획 §18-5-2 표)에 맡긴다(끝 판 넘친 #6).
 const trailAuthErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED']);
 const trailAuthFailed=error=>trailAuthErrors.has(error?.code)||error?.status===401;
+// 연습 기록 비우기의 기다림(설계 주인 11-20 밤 · 결정 표 「#25 비우기 시간 목표」 · 계획 §24-8). 비우기는 끝에서 끝까지 보통 몇 초지만(리허설 극단
+// 장면 2.7~3.6초) 함수 한도 안이면 받는다. Supabase 함수는 150초 안에 답하지 않으면 504로 끊으므로, 기기는 그 답을 받을 만큼 기다린다. 다른 요청의
+// 기다림(계정 클라이언트 기본 12초)은 그대로다.
+const TRAIL_CLEAR_WAIT_MS=160000;
 // 반 연결(classId)이 붙지 않는 타운 경로: 입장 조회·입장 확인·첫 장면 배치는 계정 하나의 일이다.
 const TOWN_ACCOUNT_ROUTES=new Set(['town/entry','town/check','town/placement']);
 const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['town/pulse','POST'],['town/boundary','POST'],['town/check','POST'],['town/placement','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST'],['writing','POST'],['speaking','POST'],['me2','POST']]);
@@ -48,7 +52,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const controllers=new Set();
  const guard=expected=>{if(closed||expected!==epoch)throw changed();if(!native&&session&&storage.getItem(key)!==rawSession){clear();throw changed();}};
  const forgetSession=()=>{if(!native)storage.removeItem(key);};
- const clientFor=expected=>native?createDesktopAccountClient({bridge,product:'world',guard:()=>guard(expected)}):accountFactory({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product:'world',getAccessToken:()=>session?.access_token,refresh:()=>renew(expected),guard:()=>guard(expected),fetch:fetcher});
+ const clientFor=(expected,timeoutMs=null)=>native?createDesktopAccountClient({bridge,product:'world',guard:()=>guard(expected)}):accountFactory({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product:'world',getAccessToken:()=>session?.access_token,refresh:()=>renew(expected),guard:()=>guard(expected),fetch:fetcher,...(timeoutMs?{timeoutMs}:{})});
  const gameBinding=data=>JSON.stringify([data?.account?.synk_user_id,data?.account?.status,data?.learning?.enabled,data?.learning?.revision,data?.capabilities?.learningSync]);
  function stopGames(){gameHost?.dispose();gameHost=null;}
  function clear(){epoch++;gameLaunch++;lifeLaunch++;hangulLaunch++;verification++;stopGames();lifeHost?.dispose();lifeHost=null;hangulHost?.dispose();hangulHost=null;session=null;owner=null;currentSessionId=null;currentAccount=null;verifiedClient=null;townBinding=null;townStateRevision=-1;townVerifiedAt=-Infinity;nativeIdentity=null;nativeAccountId=null;for(const c of controllers)c.abort();onInvalidate();}
@@ -214,7 +218,10 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const firstAnswers=typeof client.trail.firstAnswers==='function'?wrap(input=>client.trail.firstAnswers(input)):null;
   // 연습 기록 비우기 · 판 응답 읽기 · 마지막 비우기 읽기(4-5 — §22-4 · §22-5) — 같은 감싸개. 비우기는 이 파일의 세션 닫기(clear)와 이름이 겹쳐
   // clearTrail로 둔다. 마지막 비우기 읽기는 판을 묻지 않아 줄에 싣는다(비우기의 결과를 모르는 기기는 앞 판을 들고 있다).
-  const clearTrail=typeof client.trail.clear==='function'?wrap(input=>client.trail.clear(input)):null;
+  // 비우기만 긴 기다림(TRAIL_CLEAR_WAIT_MS)의 클라이언트로 보낸다 — 같은 세션 · 같은 새로 고침으로 처음 비울 때 만든다. 그 클라이언트에 비우기가 없으면
+  // 확인한 클라이언트로 보낸다.
+  let clearClient=null;const clearer=()=>{clearClient??=clientFor(expected,TRAIL_CLEAR_WAIT_MS);return typeof clearClient?.trail?.clear==='function'?clearClient:client;};
+  const clearTrail=typeof client.trail.clear==='function'?wrap(input=>clearer().trail.clear(input)):null;
   const responses=typeof client.trail.responses==='function'?wrap(input=>client.trail.responses(input)):null;
   const lastClear=typeof client.trail.lastClear==='function'?wrap(input=>client.trail.lastClear(input)):null;
   // account: 이 줄의 주인 — 입구(world-atlas-next.mjs readLine)가 제 주인과 견준다(세션이 바뀐 뒤 앞 계정 입구가 읽어도 새 계정 줄을 쓰지 않게).

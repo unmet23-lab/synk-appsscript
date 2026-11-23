@@ -124,13 +124,83 @@ const shapeOf = ({ askedFrom, at, windows, month }) => ({
 let generation = 0;
 const keyOf = (kind, account) => `${kind.prefix}${account}`;
 
+// 지우기 표지(검수 s3d GH2) — 세대 수는 문서마다 따로라, 다른 탭의 지우는 길이 이 문서의 묻는 중인 물음을 늦은 답으로 만들지 못했다(그 늦은 답이
+// 지운 뒤에 학습일 답 · 근거를 다시 적었다). 그래서 새 길이 물을 때 계정마다 표지 하나를 저장소에 두고(없을 때만 만든다), 지우는 길은 두 열쇠와 함께
+// 그 표지도 지운다. 물을 때 든 표지가 들일 때 · 적을 때와 다르면 들이지도 적지도 않는다. 묻지 않는 문서(꺼진 판)는 표지를 만들지 않으므로 지우는 길은
+// 지우기만 한다(쓰기 0). 값은 { id, floor }다 — 개인 기록이 아니다. id는 고유한 글자 하나로 물음의 표지(stamp)에 든다. floor는 연습 기록 비우기가
+// 올린 판이다 — 비우기는 표지를 지우지 않고 floor만 올려 그보다 앞선 판의 물음만 늦은 답으로 만든다. 예전에는 비우기가 표지를 통째로 지워(표지 값에
+// 판이 없어 판을 읽을 수 없는 값으로 지웠다) 새 판에서 다른 탭이 물은 답까지 버렸다(검수 s3e1 GC2).
+export const CLEAR_KIND = Object.freeze({ prefix: 'synk:world:month-clear:' });
+let marks = 0;
+const markOf = (storage, account) => {
+  let raw = null;
+  try {
+    raw = storage?.getItem(keyOf(CLEAR_KIND, account)) ?? null;
+  } catch {
+    return null;
+  }
+  if (typeof raw !== 'string' || !raw) return null;
+  let value = null;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    value = null;
+  }
+  // 꼴이 아닌 값은 그 글자를 id로 본다(바닥 없음).
+  return plain(value) && typeof value.id === 'string' && value.id
+    ? { id: value.id, floor: Number.isSafeInteger(value.floor) ? value.floor : null }
+    : { id: raw, floor: null };
+};
+const makeMark = (storage, account) => {
+  if (markOf(storage, account) !== null) return;
+  marks += 1;
+  const id = `${Date.now().toString(36)}.${marks.toString(36)}.${Math.random().toString(36).slice(2, 10)}`;
+  try {
+    storage?.setItem(keyOf(CLEAR_KIND, account), JSON.stringify({ id, floor: null }));
+  } catch {
+    // 막힌 저장소 — 이 문서의 세대 수만 남는다(이 물음의 답은 저장소에 적지 않는다 — GC1)
+  }
+};
+// 이 계정의 판 바닥 — 표지의 floor(없으면 null).
+const floorOf = (storage, account) => markOf(storage, account)?.floor ?? null;
+// 표지의 floor를 올린다. 표지가 없으면 묻는 중인 새 길 물음도 없다(물음은 표지를 만든다 — 만들지 못한 물음은 저장소에 적지 않는다). floor를 적지
+// 못하면 표지를 지운다 — 어느 탭의 앞 판 물음도 그 답을 적지 않게(새 판의 물음도 함께 다시 묻는다).
+const raiseFloor = (storage, account, before) => {
+  const mark = markOf(storage, account);
+  if (!mark || (mark.floor !== null && mark.floor >= before)) return;
+  try {
+    storage.setItem(keyOf(CLEAR_KIND, account), JSON.stringify({ id: mark.id, floor: before }));
+  } catch {
+    try {
+      storage.removeItem(keyOf(CLEAR_KIND, account));
+    } catch {
+      // 막힌 저장소 — 표지를 지우지도 못하면 저장소에 적는 물음도 없다(적기는 같은 저장소의 표지를 다시 읽는다)
+    }
+  }
+};
+// 물음의 판이 판 바닥 위인가(바닥이 없으면 참).
+const aboveFloor = (floor, revision) => floor === null || (Number.isSafeInteger(revision) && revision >= floor);
+
 // 지우는 길(로그아웃 · 동의 끔 · 계정 바꿈 · 연습 기록 비우기) — 그 계정의 두 열쇠(학습일 답 · 근거)를 지우고 세대 수를 올린다(물은 뒤의 늦은
 // 답을 적지 않게). 한 열쇠를 지우다 저장소가 던져도 다른 열쇠는 지운다. before(연습 기록 비우기가 올린 새 판)를 주면 그보다 앞선 판의 답만
-// 지운다 — 늦게 끝난 앞 비우기가 새 판에서 적은 답을 지웠다(4-5 입구 다시 검수 GA1 · GB6). 판을 읽을 수 없는 값은 지운다.
+// 지운다 — 늦게 끝난 앞 비우기가 새 판에서 적은 답을 지웠다(4-5 입구 다시 검수 GA1 · GB6). 판을 읽을 수 없는 값은 지운다. 그때는 세대 수와
+// 표지 id를 그대로 두고 판 바닥만 올린다 — 앞 판의 물음만 늦은 답이 되고, 새 판에서 물은 답은 산다(검수 s3e1 GC2).
 export function clearMonthAnswer(storage, account, { before = null } = {}) {
+  if (Number.isSafeInteger(before)) {
+    if (!account) return;
+    raiseFloor(storage, account, before);
+    const older = keepNewer(storage, before);
+    for (const kind of KINDS) {
+      try {
+        older?.removeItem(keyOf(kind, account));
+      } catch {
+        // 저장소가 막혀도 판 바닥은 올렸다 — 다음 읽기는 판 · 학습일로 다시 거른다
+      }
+    }
+    return;
+  }
   generation += 1;
-  if (Number.isSafeInteger(before)) storage = keepNewer(storage, before);
-  for (const kind of KINDS) {
+  for (const kind of [...KINDS, CLEAR_KIND]) {
     try {
       if (account) storage?.removeItem(keyOf(kind, account));
     } catch {
@@ -156,8 +226,16 @@ const keepNewer = (storage, before) =>
 
 // 저장소 — 계정마다 열쇠 하나(종류마다). storage는 localStorage 꼴(getItem · setItem · removeItem). kind는 상자의 종류(없으면 학습일 답).
 export function createMonthAnswers({ storage = globalThis.localStorage, kind = MONTH_KIND } = {}) {
+  // 물음의 표지 — 이 문서의 세대 수와 계정의 지우기 표지. ensure면 표지가 없을 때 만든다(새 길이 물을 때만).
+  const stampOf = (account, ensure = false) => {
+    if (ensure && account) makeMark(storage, account);
+    return `${generation}|${(account && markOf(storage, account)?.id) ?? ''}`;
+  };
   return {
     generation: () => generation,
+    stamp: (account, { ensure = false } = {}) => stampOf(account, ensure),
+    // 판 바닥 — 연습 기록 비우기가 올린 판(없으면 null). 그보다 앞선 판의 물음은 늦은 답이다(GC2).
+    floor: account => (account ? floorOf(storage, account) : null),
     // 적어 둔 답 — 계정 · 동의 판 · 학습일이 맞고 꼴이 맞을 때만. 아니면 null(다시 묻는다). 늘 저장소에서 바로 읽는다(다른 탭이 덮었으면 그 값).
     read(account, { revision, day }) {
       let value = null;
@@ -172,9 +250,14 @@ export function createMonthAnswers({ storage = globalThis.localStorage, kind = M
       if (!askedFrom || !at || !kind.valid(value)) return null;
       return { askedFrom, at, ...kind.body(value) };
     },
-    // 답을 적는다 — 물을 때의 세대 수가 지금과 같고 저장소가 있을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
+    // 답을 적는다 — 물을 때의 표지(세대 수 · 지우기 표지 — stamp)가 지금과 같고 저장소가 있을 때만(이 문서나 다른 탭의 지우는 길이 그 사이에
+    // 돌았으면 적지 않는다). 적었나를 돌려준다.
     write(account, { revision, day, since, ...answer }) {
-      if (since !== generation) return false;
+      if (since !== stampOf(account)) return false;
+      // 표지가 없는 물음(표지를 만들지 못했다 — 용량 초과 · 막힌 저장소)의 답은 적지 않는다. 다른 탭의 지우는 길이 돌았는지 가릴 수 없다 — 다른
+      // 탭이 동의를 끄며 공간을 비운 뒤 그 앞에 물은 답이 다시 적혔다(검수 s3e1 GC1). 그 답은 이 문서의 답(kept)으로만 남는다.
+      if (typeof since !== 'string' || since.endsWith('|')) return false;
+      if (!aboveFloor(floorOf(storage, account), revision)) return false;
       if (!storage) return false;
       const value = { v: VERSION, revision, day, ...kind.shape(answer) };
       try {
@@ -303,7 +386,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
   // 계정이 바뀌었거나 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 세대 수를 올렸으면 상자를 비운다 — 앞 계정 · 앞 세대의 상한과 받은 자리가 다시
   // 들어온 같은 계정의 물음과 받기를 막지 않게(다시 보기 A1).
   const follow = owner => {
-    const now = answers.generation();
+    const now = answers.stamp(owner);
     if (state.owner === owner && state.generation === now) return;
     reset();
     state.owner = owner;
@@ -360,7 +443,11 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     // 오늘 답을 덮으면 다시 그리기에서 오늘 답이 사라져 같은 자리에서 다시 묻고, 옛 판 물음의 실패가 새 코치의 상한을 덮는다(4-4c 끝 판 B2).
     const token = {};
     state.asking = { key, token };
-    const since = answers.generation();
+    // 물을 때 계정의 지우기 표지를 둔다(없을 때만 — 검수 s3d GH2). 이 문서가 표지를 만든 것뿐이면 상자를 비우지 않는다(follow가 표지가 생긴 것을
+    // 지우는 길로 읽지 않게).
+    const before = answers.stamp(owner);
+    const since = answers.stamp(owner, { ensure: true });
+    if (state.owner === owner && state.generation === before) state.generation = since;
     // 이 물음이 지금 물음이면 「묻는 중」을 비우고 참을 낸다.
     const settle = () => {
       if (state.asking?.token !== token) return false;
@@ -370,7 +457,8 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     // 답이 왔을 때 아직 그 계정 · 문서 · 세대 · 학습일인가. 물은 사이 학습일이 넘어갔으면 어제 열쇠의 답은 쓸 데가 없고, 적으면 다른 탭이 적은
     // 오늘 답을 덮는다(B2). 동의 판은 코치마다 하나라(판이 바뀌면 새 코치가 새 열쇠로 묻는다) 표지가 가린다.
     const still = () => {
-      if (!alive(owner) || since !== answers.generation()) return false;
+      if (!alive(owner) || since !== answers.stamp(owner)) return false;
+      if (!aboveFloor(answers.floor?.(owner) ?? null, revision)) return false; // 연습 기록 비우기가 앞 판을 지웠다(GC2)
       try {
         return dayOf() === day;
       } catch {
@@ -404,6 +492,8 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       if (state.ahead?.key === key) state.ahead = null;
       const holder = holderOf(coach, line);
       const storage = holder.storage;
+      // 들일 코치가 이제 계정 기록이 아니면(물은 사이 동의를 껐다 — 코치가 기기 기록으로 바뀜) 들지도 적지도 다시 그리지도 않는다(검수 s3e1 GC1).
+      if (storage && storage.guest !== false) return;
       if (got?.complete !== true) {
         missed(kind.code(got?.reason));
         // 열린 코치가 없다(물은 코치가 닫혔고 같은 판의 새 코치를 아직 그리지 않았다) — 닫힌 코치로 받지 않는다(받은 자리를 먼저 채우면 뒤 코치의

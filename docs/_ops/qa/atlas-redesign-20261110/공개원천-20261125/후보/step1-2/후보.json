@@ -1,0 +1,45 @@
+{
+ "판": 1,
+ "종류": "synk.im",
+ "항목": [
+  {
+   "경로": "world/app-shell.mjs",
+   "종류": "바꿈",
+   "sha256": "f1c8f43e696b494dde7f2126e961fc38f4ce2ac0b0817c079f69a2cd4a2b7835",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/brand-opening/home.css",
+   "종류": "바꿈",
+   "sha256": "d53106d06e5e9711cdc330655e2d7bd3227207c71094643448a33f48182bcd83",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/desktop.html",
+   "종류": "토큰",
+   "sha256": "debe0f231cd83de9be0c0cf465ab22c8cdeb8ce6a54fe6f3435a89872d40169d",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/index.html",
+   "종류": "토큰",
+   "sha256": "debe0f231cd83de9be0c0cf465ab22c8cdeb8ce6a54fe6f3435a89872d40169d",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/mobile.html",
+   "종류": "토큰",
+   "sha256": "debe0f231cd83de9be0c0cf465ab22c8cdeb8ce6a54fe6f3435a89872d40169d",
+   "모드": "100644"
+  }
+ ],
+ "위": "f63a9e38f0f5fc3cf160103e36fcd86213d691d6",
+ "계획": "13c0fea1ecaa",
+ "앞판": {
+  "world/app-shell.mjs": "2c4afd8c030debf4c783e2f88e5bed39c20c0c5b",
+  "world/brand-opening/home.css": "40ee30ca871d2d1e1e0d8972969dab2b874d528a",
+  "world/desktop.html": "4006300ca4a53cc4e445dec6406d5f80a9028e5b",
+  "world/index.html": "4006300ca4a53cc4e445dec6406d5f80a9028e5b",
+  "world/mobile.html": "4006300ca4a53cc4e445dec6406d5f80a9028e5b"
+ }
+}
