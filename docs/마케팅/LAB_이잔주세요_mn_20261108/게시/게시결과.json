@@ -239,12 +239,16 @@
     },
     {
       "계정": "lab-id-youtube",
-      "상태": "거는 중",
-      "거는중": "2026-11-23T05:55:26.319Z",
+      "상태": "예약됨",
       "시각": "2026-11-25T13:00:00+07:00",
       "지문": "b27e074b207059f5103d86ac9f5c2d295d21d303c2a8bf45efe3e1f448ce64dd",
       "게시글지문": "e7086b98622c903d9fd8fd8d27a401f59d82d95bd6f42e995eed866e6b3603b2",
-      "방법": "ego"
+      "방법": "ego",
+      "게시물ID": "WTgYQTRAcnc",
+      "주소": "https://youtube.com/shorts/WTgYQTRAcnc",
+      "확인": "예약 한국 시각 2026-11-25 15:00 · 예약 한국 시각 2026-11-25 15:00 = 현지 13:00 · Pesan dua kopi pakai bahasa Korea, malah dapat mug raksasa ☕ #belajarkorea · 쇼츠 목록(SYNK LAB Indonesia | Serunya Bahasa Korea): 「Pesan dua kopi pakai bahasa Korea, malah dapat mug raksasa ☕ #belajarkorea」 · 예약됨 · 2026. 11. 25. 예약 날짜 · 예약 창 2026. 11. 25. 오후 3:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 인도네시아어로 저장됨 · 동영상 언어: 인도네시아어",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-23 14시 회차)",
+      "기록시각": "2026-11-23T07:25:43.563Z"
     },
     {
       "계정": "lab-id-tiktok",
