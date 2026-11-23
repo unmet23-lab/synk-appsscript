@@ -21,6 +21,8 @@
  *      모두 이미 받은 원본(돌림표 received)은 뺀다 — 받은 원본의 판본이 뒤에 낡아도 그 계정의 빈 칸은 못 채운다(지적 4, 돌림.js의 unseen 거름과 같다).
  *      이미 구워 검수만 남은 판본(「뜻 검수 전」 …)을 글부터 써야 하는 판본(「판본 없음」)보다 앞에 둔다 — 덜 들고 칸을 먼저 채운다.
  *   ④ 같은 키를 기다리는 계정은 한 줄로 묶고(가장 앞선 계정의 갈래 · 빈 칸), 한 키가 상한을 다 쓰지 않게 키 차례로 하나씩 돌아가며 고른다.
+ *   ⑤ 새 원본이 필요한 계정(11-23): 안 받은 이야기 원본 가운데 그 키 판본이 「고칠 것」에서 멈추지 않은 것이 세 편 아래인 나라 계정 —
+ *      「돌 원본이 없는 계정」과 함께 밤 판본 회차가 새 원본을 옮기는 신호다(제작 절차 「새 원본 올리기」).
  * 씨앗 계정(rotationSeed)의 빈 칸은 줄 편(영어 · 몽골 · 두 채널)이 채우는 칸이라 세지 않는다.
  * 종료 코드: 0 = 셈함(할 일이 없어도 0) · 2 = 사용법 · 실행 오류.  시험: node --test tests/판본할일.test.js
  */
@@ -157,10 +159,35 @@ function 할일({ 표, 원장, 원본들, 상한 = 6 }) {
     줄: order.slice(0, cap),
     남은: Math.max(0, order.length - cap),
     원본없음,
+    재고모자람: 재고셈({ 표, 원장, story }),
     첫판전: waiting.filter((w) => w.갈래 === '첫판').map((w) => w.계정),
     키없음,
     기다림,
   };
+}
+
+// 새 원본이 필요한 계정(11-23 — 「돌 원본이 없는 계정」만 보면 늦다): 나라 계정마다 안 받은 이야기 원본 가운데 그 키 판본이 「고칠 것」에서
+// 멈추지 않은 것(통과 · 검수 전 · 판본 없음)을 재고로 센다. 재고가 사흘 치(하루 한 편 — 3편) 아래면 밤 판본 회차가 새 원본을 옮길 차례다.
+// 11-23에 계정 대부분이 원본 12편 가운데 7~9편을 받았고, 남은 다섯 편 가운데 수고하세요 · 와요한낱말이 열 곳 넘게 「고칠 것」에서 멈췄는데
+// 계정마다 「안 받은 원본」이 남아 있어 「돌 원본이 없는 계정」은 대만 하나였다 — 새 원본이 들어오지 않았다.
+const 재고문턱 = 3;
+function 재고셈({ 표, 원장, story }) {
+  const accounts = (원장 && 원장.accounts) || {};
+  const versions = (표 && 표.versions) || {};
+  const received = (표 && 표.received) || null;
+  if (!received) return [];
+  const out = [];
+  for (const [account, got] of Object.entries(received)) {
+    const row = accounts[account] || {};
+    if (row.rotationSeed || row.dailyBlocked) continue;
+    const key = String(row.rotationVersion || row.countryCode || '').toUpperCase();
+    if (!key) continue;
+    const unseen = story.filter((p) => !(got || []).includes(p));
+    const 멈춤 = unseen.filter((p) => /고칠 것/.test(String(versions[p]?.[key]?.why || '')));
+    const 재고 = unseen.length - 멈춤.length;
+    if (재고 < 재고문턱) out.push({ 계정: account, 키: key, 재고, 멈춤 });
+  }
+  return out.sort((a, b) => a.재고 - b.재고 || a.계정.localeCompare(b.계정));
 }
 
 function 돌림표부르기({ 일수, 폴더, 지금 }) {
@@ -204,6 +231,7 @@ function main(argv) {
   if (out.남은) console.log(`상한 밖에 남은 줄 ${out.남은}`);
   if (out.첫판전.length) console.log(`첫 판 확인 전 계정 ${out.첫판전.length}(14시 회차가 공개를 확인하면 열린다): ${out.첫판전.join(' · ')}`);
   if (out.원본없음.length) console.log(`돌 원본이 없는 계정 ${out.원본없음.length}(판본으로는 못 푼다 — 판본 틀이 든 새 원본이 있어야 한다): ${out.원본없음.map((r) => `${r.계정} ${r.한국}`).join(' · ')}`);
+  if (out.재고모자람.length) console.log(`새 원본이 필요한 계정 ${out.재고모자람.length}(쓸 수 있는 안 받은 이야기 원본이 ${재고문턱}편 아래 — 「고칠 것」에서 멈춘 판본은 세지 않는다. 밤 회차가 새 원본을 옮길 차례): ${out.재고모자람.map((r) => `${r.계정} ${r.재고}편${r.멈춤.length ? `(멈춤 ${r.멈춤.map((p) => p.replace(/^LAB_|_mn_\d+$|_\d{8}$/g, '')).join(' · ')})` : ''}`).join(' · ')}`);
   if (out.기다림.length) console.log(`판본과 상관없이 기다리는 계정 ${out.기다림.length}(안 받은 원본의 그 키 판본은 다 있는데 씨앗 대기 · 연재 · 같은 언어 묶음 · 겹침 · 원본 모자람 · 쓸날 전 · 원본 없음으로 빈다 — 판본을 만들어도 칸이 안 찬다): ${out.기다림.map((r) => `${r.계정} ${r.한국} ${r.까닭}`).join(' · ')}`);
   if (out.키없음.length) console.log(`판본 키가 없는 계정 ${out.키없음.length}(원장 rotationVersion · countryCode): ${out.키없음.join(' · ')}`);
   return 0;

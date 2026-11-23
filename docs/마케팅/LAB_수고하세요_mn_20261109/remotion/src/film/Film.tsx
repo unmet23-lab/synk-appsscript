@@ -20,6 +20,7 @@ const FELT = '#F6E0BC';
 const OK = '#0A9A66';
 const NG = '#D92D20';
 const MASTER = 0.8;
+const SOUND_END = Math.min(T.total, 23.0); // sfx/bgm.wav · air.wav 길이(23.0초)
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 const FULL: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, objectFit: 'cover' };
@@ -391,8 +392,9 @@ const Sfx: React.FC<{ file: string; at: number; vol: number }> = ({ file, at, vo
 const Sound: React.FC = () => (
   <>
     {/* 음악은 얼음일 때도 멎지 않게 절반 위로만 낮추고 그 밑에 바람을 깐다(제작 절차 「만들기」 · 검사 ⑲) */}
-    <Audio src={staticFile('sfx/bgm.wav')} volume={(f) => MASTER * interpolate(f / FPS, [0, T.freeze, T.frozen, T.rewind, T.a2, T.total - 0.5, T.total], [0.19, 0.19, 0.17, 0.17, 0.2, 0.2, 0], clamp)} />
-    <Audio src={staticFile('sfx/air.wav')} volume={(f) => 0.16 * MASTER * interpolate(f / FPS, [0, T.total - 0.4, T.total], [1, 1, 0], clamp)} />
+    {/* bgm · air 파일은 23.0초다 — 11-23 장난 띠 늘림으로 영상이 23.4초가 되어, 파일 끝(SOUND_END) 전에 잦아들게 한다 */}
+    <Audio src={staticFile('sfx/bgm.wav')} volume={(f) => MASTER * interpolate(f / FPS, [0, T.freeze, T.frozen, T.rewind, T.a2, SOUND_END - 0.5, SOUND_END], [0.19, 0.19, 0.17, 0.17, 0.2, 0.2, 0], clamp)} />
+    <Audio src={staticFile('sfx/air.wav')} volume={(f) => 0.16 * MASTER * interpolate(f / FPS, [0, SOUND_END - 0.4, SOUND_END], [1, 1, 0], clamp)} />
     <Sfx file="wind.wav" at={T.frozen - 0.4} vol={0.42} />
     <Vo id="a1" at={T.a1} />
     <Sfx file="freeze.wav" at={T.freeze} vol={0.55} />

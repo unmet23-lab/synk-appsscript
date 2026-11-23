@@ -1374,3 +1374,22 @@ test('돌림표 명령 — 기다리는 노래 원본(쓸날 없음 · 빈 문�
   assert.match(미정.err, /! 쓸날 「미정」인 원본 1 — 판을 받지 않는다: /);
   쓸날적기(N, 이야기쓸날);
 });
+
+test('끝 줄 겹침(⑧ · 11-23) — 끝 줄이 같은 두 원본은 한 계정에서 사이에 다른 이야기 두 편이 나간 뒤에만 잇는다', () => {
+  const accounts = { tt: acct('tiktok', 'C1', 'Asia/Ulaanbaatar'), 'seed-ig': acct('instagram', 'MN', 'Asia/Ulaanbaatar', { seed: true, dailyFrom: '2099-01-01' }) };
+  const { originals, existing } = seeded(['a', 'b', 'c', 'd'], '이야기', ['C1']);
+  existing.push({ original: 'a', account: 'tt', time: '2026-11-19T13:00:00+08:00' });
+  const endClash = (x, y) => [x, y].sort().join() === 'a,b';
+  const r = 돌림.plan({ accounts, originals, existing, from: '2026-11-20', days: 3, endClash });
+  const got = r.range.map((day) => r.cells.find((c) => c.account === 'tt' && c.day === day && c.format === '이야기').original);
+  assert.ok(!got.slice(0, 2).includes('b'), `a 바로 뒤 두 칸에 b가 오지 않는다: ${got}`);
+  assert.equal(got[2], 'b', `사이에 두 편이 나간 뒤 b: ${got}`);
+  // 받을 수 있는 원본이 겹치는 것뿐이면 칸을 비우고 까닭 코드를 단다
+  const only = 돌림.plan({ accounts, originals: originals.slice(0, 2), existing: [existing[0], existing[1], existing[4]], from: '2026-11-20', days: 1, endClash });
+  const cell = only.cells.find((c) => c.account === 'tt' && c.format === '이야기');
+  assert.equal(cell.original, null);
+  assert.equal(cell.whyCode, 돌림.WHY_CODES.ENDING);
+  // endClash를 안 주면 옛 셈 그대로 — b가 바로 다음 칸에 올 수 있다
+  const old = 돌림.plan({ accounts, originals: originals.slice(0, 2), existing: [existing[0], existing[1], existing[4]], from: '2026-11-20', days: 1 });
+  assert.equal(old.cells.find((c) => c.account === 'tt' && c.format === '이야기').original, 'b');
+});

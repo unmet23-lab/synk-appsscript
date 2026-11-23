@@ -293,11 +293,13 @@ const Small: React.FC<{ pk: LocPack; t: number; from: number; until: number; lef
 };
 
 // 문자 — 깔끔한 알림 꼴(앱 화면을 그리지 않는다)
+// 11-23: 위 끝 250 → 290. 보낸 사람 줄(40px)이 위 머리 자리(안전선 y 269)를 20px쯤 넘어 브라질 · 중국 판본이 렌더 뒤 글자 검사 「단추가림」에 걸렸다
+// (판본 회차 11-22 밤). 그림 · 박자는 그대로이고 문자 칸 자리만 내린다.
 const Message: React.FC<{ pk: LocPack; t: number }> = ({ pk, t }) => {
   if (t < MSG_AT || t >= UP_AT) return null;
   const p = interpolate(t, [MSG_AT, MSG_AT + 0.22], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.5)) });
   return (
-    <div style={{ position: 'absolute', left: 150, width: 780, top: 250, transform: `translateY(${(1 - p) * -40}px) scale(${0.9 + 0.1 * p})`, opacity: p, transformOrigin: '50% 0%' }}>
+    <div style={{ position: 'absolute', left: 150, width: 780, top: 290, transform: `translateY(${(1 - p) * -40}px) scale(${0.9 + 0.1 * p})`, opacity: p, transformOrigin: '50% 0%' }}>
       <div style={{ fontFamily: pk.font, fontWeight: 700, fontSize: 40, color: DIM, marginBottom: 10, marginLeft: 12, textShadow: SH }}>{pk.msgFrom}</div>
       <div style={{ background: 'rgba(255,250,240,0.96)', borderRadius: '12px 44px 44px 44px', padding: '14px 30px 20px', boxShadow: '0 10px 26px rgba(16,8,4,0.4)' }}>
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 92, color: INK, lineHeight: 1.16, whiteSpace: 'nowrap' }}>{KO_LINES.msg}</div>

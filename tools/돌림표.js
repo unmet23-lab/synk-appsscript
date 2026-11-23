@@ -376,7 +376,7 @@ function holdsOf() {
 // 판의 파일 · 지문이 지금 판본과 같고, 그 칸을 다른 편이 게시 장부 표에 잡고 있지 않고, 같은 칸에 다른 편의 나가는 판(손으로 단 안 건 판 · 작업실 판처럼
 // 표에 줄이 없는 것까지 — shared = cellOwners)이 없다. now가 없으면(--지금 없이 lib로 부름) 시각은 보지 않는다.
 const slashed = (x) => String(x || '').split(String.fromCharCode(92)).join('/');
-function staleWhy(piece, plate, { rotation = {}, now = null, cells = new Map(), shared = new Map() } = {}) {
+function staleWhy(piece, plate, { rotation = {}, now = null, cells = new Map(), shared = new Map(), ends = null } = {}) {
   const at = Date.parse(plate.시각 || '');
   if (!Number.isFinite(at)) return '판 시각을 읽을 수 없다';
   if (Number.isFinite(now) && at <= now) return '판 시각이 지났다';
@@ -401,7 +401,32 @@ function staleWhy(piece, plate, { rotation = {}, now = null, cells = new Map(), 
   // 같은 칸 두 번 — 칸 표에 줄이 없는 상대(손으로 단 안 건 판 · 작업실 판 · 칸 표 전에 걸린 판)도 --장부와 같은 기준으로 본다(cellOwners)
   const also = [...(shared.get(`${plate.계정}|${day}|${slot.time}`) || [])].filter((n) => n !== piece.name);
   if (also.length) return `같은 칸에 ${also.join(' · ')}의 판이 있다(같은 칸 두 번)`;
+  // 끝 줄 겹침(돌림 ⑧ · 11-23) — 그 계정의 앞 두 이야기 판, 또는 뒤 두 이야기 판 가운데 이미 걸린 판과 끝 줄이 같으면 무효다.
+  // 뒤의 안 건 판은 그 판 쪽에서 이 판을 「앞」으로 보고 빠진다 — 짝 둘이 함께 빠지지 않게.
+  if (ends && piece.original.형식 === '이야기') {
+    const mine = (ends.story.get(plate.계정) || []).filter((x) => x.name !== piece.name);
+    const before = mine.filter((x) => x.ms < at).sort((x, y) => y.ms - x.ms).slice(0, 2);
+    const after = mine.filter((x) => x.ms > at).sort((x, y) => x.ms - y.ms).slice(0, 2).filter((x) => x.booked);
+    const hit = [...before, ...after].find((x) => ends.clash(piece.name, x.name, a.versionKey));
+    if (hit) return `끝 줄이 이 계정의 ${hit.ms < at ? '앞' : '뒤'} 이야기 판 ${hit.name}과 겹친다(올리기 전 검사 ⑯)`;
+  }
   return null;
+}
+
+// 돌림 계정마다 이야기 원본 판(시각 · 편 · 걸렸는지) — staleWhy의 끝 줄 겹침(⑧)이 본다. 나가지 않는 판 · 버린 편은 뺀다.
+function storyPlates(pieces, rotation) {
+  const out = new Map();
+  for (const piece of pieces) {
+    if (piece.dead || piece.original?.형식 !== '이야기') continue;
+    for (const plate of piece.prep.판 || []) {
+      const ms = Date.parse(plate.시각 || '');
+      const row = piece.stateOf(plate);
+      if (!rotation[plate.계정] || !Number.isFinite(ms) || GONE.has(row?.상태)) continue;
+      if (!out.has(plate.계정)) out.set(plate.계정, []);
+      out.get(plate.계정).push({ ms, name: piece.name, booked: 장부.held(row) });
+    }
+  }
+  return out;
 }
 
 /** 칸마다 그 칸에 나가는 판을 둔 편들 — `계정|현지 날짜|칸` → Set<편 이름>. 버린 편 · 나가지 않는 판(보류 · 취소됨 · 지움)은 뺀다(--장부의
@@ -530,6 +555,46 @@ function plateFor(cell, piece, account, versionKey) {
 
 function todayKst(now) { return T.localDate(now, 'Asia/Seoul'); }
 
+// 끝 줄 겹침(돌림 ⑧ · 11-23) — 두 이야기 원본의 그 키 판본 끝 줄이 올리기 전 검사 ⑯(tools/무대반복.js)의 셈으로 「같음」(0.6 이상)인가.
+// 끝 줄은 ⑯과 같은 셋: 준비.json 「끝줄」 · 나레이션 마지막 줄 · 판본 글의 끝 장면 줄. 판본 글이 없거나 못 읽는 쪽이 있으면 모른다(거짓 — 14시 검사가 본다).
+// 「돌림」.끝줄되부름에 적은 짝은 일부러 되부르는 것이라 겹침으로 세지 않는다.
+function endClashOf(pieces) {
+  const 무대 = require('./무대반복.js');
+  const byName = new Map(pieces.filter((p) => p.original && !p.dead).map((p) => [p.name, p]));
+  const narr = new Map();
+  const ends = new Map();
+  const endingOf = (p, key) => {
+    const id = `${p.name}|${key}`;
+    if (ends.has(id)) return ends.get(id);
+    let lines = null;
+    try {
+      const v = p.original.판본?.[key];
+      const file = v?.글 ? resolveIn(p.dir, v.글) : null;
+      lines = file && fs.existsSync(file) ? 무대.versionEnding(readJson(file)) : null;
+    } catch { lines = null; }
+    if (lines) {
+      if (!narr.has(p.name)) narr.set(p.name, 무대.narrationEnding(p.dir));
+      lines = [...[].concat(p.prep.끝줄 || []).filter((x) => typeof x === 'string' && x.trim()), ...narr.get(p.name), ...lines];
+    }
+    ends.set(id, lines);
+    return lines;
+  };
+  const called = (x, y) => [].concat(x.original.끝줄되부름 || []).some((c) => (typeof c === 'string' ? c : c?.편) === y.name);
+  const memo = new Map();
+  return (a, b, key) => {
+    const id = [a, b].sort().join('|') + `|${key}`;
+    if (memo.has(id)) return memo.get(id);
+    const x = byName.get(a), y = byName.get(b);
+    let hit = false;
+    if (x && y && key && !called(x, y) && !called(y, x)) {
+      const ex = endingOf(x, key), ey = endingOf(y, key);
+      hit = Boolean(ex && ey && 무대.closestEnding(ex, ey).score >= 무대.LINE_SAME);
+    }
+    memo.set(id, hit);
+    return hit;
+  };
+}
+
 function runPlan(opts) {
   const { accounts, cfg } = loadLedger();
   checkLedgerShape(accounts);
@@ -539,9 +604,11 @@ function runPlan(opts) {
   const stopped = new Set(originals.filter((o) => o.stopped).map((o) => o.id));
   const holds = holdsOf();
   const shared = cellOwners(pieces, rotation);
-  const stale = opts.replanAll ? null : (piece, plate) => staleWhy(piece, plate, { rotation, now: opts.now, cells: holds.byCell, shared });
+  const endClash = endClashOf(pieces);
+  const ends = { clash: endClash, story: storyPlates(pieces, rotation) };
+  const stale = opts.replanAll ? null : (piece, plate) => staleWhy(piece, plate, { rotation, now: opts.now, cells: holds.byCell, shared, ends });
   const existing = existingPlates(pieces, { replan: opts.replan, stopped, holds: holds.byPlate, stale });
-  const result = 돌림.plan({ accounts: rotation, originals, existing, from: opts.from, days: opts.days, cfg: cfg.셈 || {}, useSpares: opts.useSpares, now: opts.now });
+  const result = 돌림.plan({ accounts: rotation, originals, existing, from: opts.from, days: opts.days, cfg: cfg.셈 || {}, useSpares: opts.useSpares, now: opts.now, endClash });
   saveShaCache();
   const waiting = pieces.filter((p) => p.waiting).map((p) => ({ piece: p.name, why: p.waiting }));
   return { accounts, rotation, notReady, closedStory, holds, pieces, originals, existing, result, cfg, shared, waiting };

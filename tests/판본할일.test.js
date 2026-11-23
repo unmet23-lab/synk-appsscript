@@ -267,3 +267,26 @@ test('돌림 received — 걸지 않은 돌림 판의 원본은 받은 원본에
   const r = 돌림.plan({ accounts, originals, existing, from: '2026-11-20', days: 3 });
   assert.deepEqual(r.received['yt-br'], ['LAB_가_mn_20261031', 'LAB_다_mn_20261102']);
 });
+
+test('새 원본이 필요한 계정(11-23) — 「고칠 것」에서 멈춘 판본은 재고로 세지 않고, 재고가 세 편 아래인 나라 계정만 낸다', () => {
+  const 표 = {
+    cells: [],
+    versions: {
+      'LAB_가_mn_20261031': { BR: { ready: false, why: '뜻 검수 고칠 것' }, MY: { ready: true, why: null } },
+      'LAB_나_mn_20261101': { BR: { ready: false, why: '뜻 검수 전' }, MY: { ready: false, why: '글자 검수 고칠 것' } },
+      'LAB_다_mn_20261102': { MY: { ready: true, why: null } },
+    },
+    received: { 'lab-br-youtube': [], 'lab-my-youtube': [], 'lab-instagram': [] },
+  };
+  const out = 할일({ 표, 원장, 원본들 });
+  // BR: 안 받은 셋 가운데 가(고칠 것)를 빼면 둘 — 모자람. MY: 나(글자 고칠 것)를 빼면 둘 — 모자람. 씨앗(lab-instagram)은 세지 않는다
+  assert.deepEqual(out.재고모자람.map((r) => [r.계정, r.재고, r.멈춤]), [
+    ['lab-br-youtube', 2, ['LAB_가_mn_20261031']],
+    ['lab-my-youtube', 2, ['LAB_나_mn_20261101']],
+  ]);
+  // 멈춘 판본이 없고 셋이 남으면 낼 것이 없다
+  const 넉넉 = 할일({ 표: { ...표, versions: { 'LAB_가_mn_20261031': {}, 'LAB_나_mn_20261101': {}, 'LAB_다_mn_20261102': {} } }, 원장, 원본들 });
+  assert.deepEqual(넉넉.재고모자람.filter((r) => r.계정 === 'lab-br-youtube'), []);
+  // received를 모르는 옛 출력에서는 세지 않는다
+  assert.deepEqual(할일({ 표: { cells: [], versions: 표.versions }, 원장, 원본들 }).재고모자람, []);
+});
