@@ -1,0 +1,12 @@
+Edit Image 1 with your image tool. Output one image, landscape 3:2, the same size and framing as Image 1.
+
+Image 1 is an approved scene. Keep the camera, the composition, every object (table, stools, laptop, papers, boards, dial, floor), the lighting, the shadows and the dark background exactly as they are in Image 1. Change only the round orb characters.
+
+Give every orb the body and the eyes of Image 2 (the approved mascot):
+- Body: black machined metal, not satin and not rubber. It is turned on a lathe around a slanted axis, with grain so fine that it cannot be seen. The light gathers into one thin, bright, slightly curved streak that starts at a point on the upper part of the orb and runs toward its left edge, plus a thin warm rim of light along the edge. The rest of the orb stays deep black. Keep each orb exactly the same size, position, contact shadow and seat as in Image 1.
+- Eyes: exactly two small vertical pill shapes (rounded capsules about twice as tall as wide), warm white and softly glowing, set wide apart and only slightly above the middle of the face. Each orb keeps looking in the same direction as in Image 1.
+- No mouth, no eyebrows, no cheeks, no pupils, no round dot eyes.
+
+Never draw visible rings, concentric circles, stripes, dot grids, holes or perforations on the orbs or anywhere else. Never draw text, letters, numbers, logos or UI.
+
+Scene notes: a long walnut table; the team lead orb at the far end hands out work to two orbs on either side (one with a laptop, one with a paper stack). Keep that exactly.
