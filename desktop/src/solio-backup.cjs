@@ -556,7 +556,8 @@ function createSolioBackup({
     if (stage === 'sent' || stage === 'claimed') { r.stage = stage; r.missing = 0; }
     else if (stage === 'gone') {
       const answer = await oneclickFiles.takeResult({ paths, name: r.name, fsImpl: fsImpl.promises });
-      if (oneclick !== c) return;
+      // 겹친 읽기 가운데 다른 쪽이 먼저 결과 파일을 가져가 답을 적었으면 덮지 않는다(카본 끝판 A3)
+      if (oneclick !== c || r.result) return;
       if (answer) Object.assign(r, { result: answer.result, reason: answer.reason, answeredAt: now(), stage: 'answered', missing: 0, ...(answer.free ? { numbers: answer.free } : {}) });
       // 사라짐 · 만료를 정한 때를 answeredAt에 적는다. 화면은 그때부터 30분 뒤 이 누름을 판에서 내린다(Fable F1)
       else { r.missing = (r.missing || 0) + 1; if (r.missing >= 2) { r.stage = 'gone'; r.answeredAt = now(); } else r.stage = 'unseen'; }
@@ -617,18 +618,17 @@ function createSolioBackup({
       if (!oneClickReady(view, read.format === 'ok' ? read.status : null)) return { ok: false, code: 'NOT_NEEDED' };
       let name;
       const pressedAt = now();
+      // 공간 비우기 2판: 엔진이 열어 둔 PC(spaceFree off · on)에서만 run-now 다음 이름으로 pick free를 쓴다. 비울 번호가 없거나 쓰지 못해도
+      // 백업 누름은 그대로 간다(비우기는 덤이다). 보고서는 run-now를 쓰기 전에 읽는다: 두 요청 사이에 기다림이 끼면 이미 돌던 회차가
+      // run-now만 가져가고 pick free는 다음 매시 회차로 밀린다(카본 끝판 A2)
+      const pick = ['off', 'on'].includes(read.status.spaceFree) ? await oneclickFiles.readFreePick({ paths, now: pressedAt, fsImpl: fsImpl.promises }).catch(() => null) : null;
       try { name = oneclickFiles.writeRunNow({ paths, now: pressedAt, owner: me, fsSync: fsImpl }); }
       catch { return { ok: false, code: 'REQUEST_FAILED' }; }
       // run-now는 setup 요청의 수명(written · live · .owner 표)에 넣지 않는다. 넣으면 치우기가 취소 표식을 세워 엔진이 cancelled로 거절한다(Fable 설계 검토 7)
       const c = { name, account: account.synk_user_id, at: pressedAt, wokeAt: null, woke: 'waking', stage: 'sent', missing: 0, result: null, reason: null, answeredAt: null, free: null };
-      // 공간 비우기 2판: 엔진이 열어 둔 PC(spaceFree off · on)에서만 run-now 다음 이름으로 pick free를 쓴다. 비울 번호가 없거나 쓰지 못해도
-      // 백업 누름은 그대로 간다(비우기는 덤이다)
-      if (['off', 'on'].includes(read.status.spaceFree)) {
-        const pick = await oneclickFiles.readFreePick({ paths, now: pressedAt, fsImpl: fsImpl.promises }).catch(() => null);
-        if (pick) {
-          try { c.free = { name: oneclickFiles.writePickFree({ paths, now: pressedAt + 1, owner: me, fsSync: fsImpl, pick }), stage: 'sent', missing: 0, result: null, reason: null, answeredAt: null }; }
-          catch { c.free = null; }
-        }
+      if (pick) {
+        try { c.free = { name: oneclickFiles.writePickFree({ paths, now: pressedAt + 1, owner: me, fsSync: fsImpl, pick }), stage: 'sent', missing: 0, result: null, reason: null, answeredAt: null }; }
+        catch { c.free = null; }
       }
       oneclick = c;
       // 깨우기와 두 업데이트 확인은 기다리지 않는다. 방은 다시 읽어 단계를 보인다. 업데이터가 다른 일 중이라 거절해도 답을 삼킨다

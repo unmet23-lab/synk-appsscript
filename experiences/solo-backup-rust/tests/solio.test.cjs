@@ -456,6 +456,11 @@ test('2판 engine window: consent and lines are set only from the window; the su
   fs.writeFileSync(path.join(root, 'space', 'freed.jsonl'), ledger.map(l => JSON.stringify(l)).join('\n') + '\n');
   const sum = await solio.readFreeSummary(root);
   assert.deepEqual([sum.preview, sum.bytes, sum.count, sum.items.length], [true, 350, 5, 2]);
+  // 한 누름은 100개까지 다룬다: 합계는 펼침 목록(50줄)으로 자르기 전의 모든 줄이다(카본 끝판 A1)
+  const many = Array.from({ length: 70 }, (_, i) => ({ at: '2026-11-26T01:00:00.000Z', report: 'space-3-aaaaaaaa', preview: false, kind: '__pycache__', stage: 'freed', path: `C:\\p\\${i}\\__pycache__`, bytes: 10 }));
+  fs.appendFileSync(path.join(root, 'space', 'freed.jsonl'), many.map(l => JSON.stringify(l)).join('\n') + '\n');
+  const big = await solio.readFreeSummary(root);
+  assert.deepEqual([big.preview, big.bytes, big.count, big.items.length], [false, 700, 70, 50]);
 });
 
 test('contract samples in contract/solio are what the engine writes and accepts', () => {

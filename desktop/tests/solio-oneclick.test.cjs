@@ -510,7 +510,9 @@ test('2판: on a PC the engine opened (spaceFree off · on) a press writes run-n
   // 엔진이 run-now에 이어 pick을 「미리 보기」로 답하면 수 다섯이 판까지 온다
   const files = new engineSolio.SolioFiles({ root: a.root });
   await files.process({ wants: v => v.ok, handle: async v => (v.kind === 'run-now' ? { result: 'done' } : { result: 'done', preview: true, freed: 3e9, items: 6, kept: 2, busy: 1 }) });
-  const snap = await s.snapshot(ME);
+  // 방이 겹쳐 읽어도(두 창 · 빠른 다시 읽기) 먼저 가져간 쪽의 답을 뒤의 읽기가 덮지 않는다(카본 끝판 A3)
+  const [snap] = await Promise.all([s.snapshot(ME), s.snapshot(ME), s.snapshot(ME)]);
+  assert.equal((await s.snapshot(ME)).oneclick.free.result, 'done');
   assert.equal(snap.oneclick.result, 'done');
   assert.deepEqual([snap.oneclick.free.result, snap.oneclick.free.numbers], ['done', { preview: true, freed: 3e9, items: 6, kept: 2, busy: 1 }]);
   assert.ok(!JSON.stringify(snap).includes('sentinel') && !JSON.stringify(snap).includes('abcd1234'), 'no path and no report id reach the room');
@@ -562,6 +564,45 @@ test('2판 room: the label follows consent, line 03 says the preview, the freein
   v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, result: 'failed', reason: 'error' }) }) }), NOW);
   assert.equal(v.board.steps[2].state, 'fail');
   // 「다시 만들 수 있는 것」 묶음의 설명도 켜고 끈 것을 따른다
-  assert.equal(solioBackupView(SNAP({ status: st('off') }), NOW).board.groups.find(g => g.k === 'auto').mid, '엔진 창에서 켜면 원클릭이 비웁니다');
-  assert.equal(solioBackupView(SNAP({ status: st('on') }), NOW).board.groups.find(g => g.k === 'auto').mid, '원클릭을 누를 때 비웁니다');
+  assert.equal(solioBackupView(SNAP({ status: st('off') }), NOW).board.groups.find(g => g.k === 'auto').mid, '엔진 창에서 켜면 원클릭이 임시 파일 · 빌드 폴더를 비웁니다');
+  assert.equal(solioBackupView(SNAP({ status: st('on') }), NOW).board.groups.find(g => g.k === 'auto').mid, '임시 파일 · 빌드 폴더는 원클릭을 누를 때 비웁니다');
+});
+
+test('2판 room (카본 A1 · A2 · A3 · A4): before consent a refused pick speaks of counting; only 2판 kinds are summed; the top line stays on the press; a lost free answer unlocks the button', async () => {
+  const { solioBackupView, FREE_PATIENCE, ONECLICK_FREE_LABEL, ONECLICK_LABEL } = await import('../renderer/solio-backup-model.mjs');
+  const st = sf => ({ ...STATUS, spaceFree: sf });
+  const answered = { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() };
+  const free = patch => ({ stage: 'sent', result: null, reason: null, answeredAt: null, ...patch });
+  // A1: 켜지 않은 PC의 거절 답은 「비웁니다」라고 말하지 않는다
+  for (const reason of ['old-report', 'no-report', 'expired', 'not-available']) {
+    const v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, result: 'rejected', reason }) }) }), NOW);
+    assert.doesNotMatch(v.board.steps[2].mid, /비웁니다|비우지 않았습니다/, reason);
+  }
+  assert.match(solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, result: 'failed', reason: 'error' }) }) }), NOW).board.steps[2].mid, /세지 못했습니다/);
+  assert.match(solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, result: 'rejected', reason: 'old-report' }) }) }), NOW).board.steps[2].mid, /비우지 않았습니다/);
+  // A2: 「많게는」은 2판 종류(임시 · 자동화 프로필 · 빌드)만 더하고, 캐시는 「아직 비우지 않습니다」로 따로 보인다
+  const mixed = { ...SPACE, groups: [{ grade: 'auto', group: 'temp', bytes: 2 * GBy, count: 1 }, { grade: 'auto', group: 'build', bytes: 3 * GBy, count: 4 }, { grade: 'auto', group: 'cache', bytes: 20 * GBy, count: 2 }] };
+  let v = solioBackupView(SNAP({ status: st('on'), space: mixed }), NOW);
+  assert.equal(v.board.steps[2].mid, '많게는 5.0GB를 비울 수 있습니다');
+  const autoItems = v.board.groups.find(g => g.k === 'auto').items;
+  assert.deepEqual(autoItems.map(x => [x.nm, x.how]), [['Windows 임시 파일', ''], ['Node 패키지 · 빌드 폴더', ''], ['다시 받을 수 있는 패키지', '원클릭이 아직 비우지 않습니다']]);
+  v = solioBackupView(SNAP({ status: st('on'), space: { ...mixed, groups: [mixed.groups[2]] } }), NOW);
+  assert.match(v.board.steps[2].mid, /^다시 만들 수 있는 것 20\.0GB를 찾았습니다$/, 'only caches: no 「많게는」 promise');
+  assert.equal(solioBackupView(SNAP({ status: st('unavailable'), space: mixed }), NOW).board.groups.find(g => g.k === 'auto').items[2].how, '', '0.7.0 keeps its words');
+  // A3: 백업은 끝났고 비우기 답을 기다리는 동안 맨 위 문장은 그 누름을 말한다. 켜지 않은 PC의 free 일은 「세는 중」
+  v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ stage: 'claimed' }) }) }), NOW);
+  assert.deepEqual([v.say, v.board.main.label, v.board.main.disabled], ['백업을 마쳤습니다.', '비우는 중', true]);
+  assert.match(v.then, /이어서 다시 만들 수 있는 것을 비우는 중입니다/);
+  assert.doesNotMatch(v.board.steps[2].mid, /백업 뒤에/);
+  v = solioBackupView(SNAP({ status: { ...st('off'), job: { stage: 'free', percent: null } }, oneclick: PRESS(120000, { ...answered, free: free({ stage: 'claimed' }) }) }), NOW);
+  assert.equal(v.board.main.label, '세는 중');
+  assert.match(v.say, /켜면 비울 것을 세는 중입니다/);
+  // A4: 백업 답 뒤 FREE_PATIENCE가 지나도 비우기 답이 없으면 단추를 풀고 기다리는 중으로 둔다
+  const old = { ...answered, answeredAt: new Date(NOW - FREE_PATIENCE - 1000).toISOString() };
+  v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(FREE_PATIENCE + 60000, { ...old, free: free({ stage: 'claimed' }) }) }), NOW);
+  assert.deepEqual([v.board.main.label, v.board.main.disabled, v.board.steps[2].state], [ONECLICK_FREE_LABEL, false, 'wait']);
+  assert.match(v.board.steps[2].mid, /기다리는 중입니다/);
+  assert.equal(v.board.busy, false, 'no fast polling for a lost answer');
+  v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(FREE_PATIENCE + 60000, { ...old, free: free({ stage: 'claimed' }) }) }), NOW);
+  assert.deepEqual([v.board.main.label, v.board.main.disabled], [ONECLICK_LABEL, false]);
 });

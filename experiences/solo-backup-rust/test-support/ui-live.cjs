@@ -367,9 +367,12 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     x = await look();
     check('「열기」로 공간 비우기 화면이 열리면 spaceFreeState로 지난 누름을 다시 읽고, 켜기 전이라 「켜면 비울 것」과 경로를 보인다',
       x.screen === 'space-free' && x.calls.includes('spaceFreeState') && /켜면 비울 것/.test(x.text) && /landing-2025/.test(x.text) && /Windows 임시 파일/.test(x.text) && /비우지 않는 것/.test(x.text), JSON.stringify(x).slice(0, 400));
-    await click(pg, '#room [data-act="press-on"]');
-    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setPressFree').map((a) => a.input), text: document.getElementById('room').innerText, note: document.getElementById('note').textContent, off: !!document.querySelector('#room [data-act="press-off"]') }));
+    // 키보드로 누른다: 단추가 「끄기」로 바뀐 뒤에도 포커스가 그 단추에 있어야 한다(카본 A7)
+    await pg.focus('#room [data-act="press-on"]'); await pg.keyboard.press('Enter'); await pg.waitForTimeout(900);
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setPressFree').map((a) => a.input), text: document.getElementById('room').innerText, note: document.getElementById('note').textContent, off: !!document.querySelector('#room [data-act="press-off"]'), focus: document.activeElement?.getAttribute('data-act') || '' }));
     check('「누를 때 비우기 켜기」는 setPressFree(true)를 부르고, 화면이 「원클릭을 누르면」과 「끄기」로 바뀐다', JSON.stringify(x.args) === JSON.stringify([true]) && /원클릭을 누르면/.test(x.text) && x.off && /켰습니다/.test(x.note), JSON.stringify(x).slice(0, 300));
+    check('켠 뒤 키보드 포커스는 「끄기」에 있고, 오른쪽은 「켜기 전에 센 것」 · 「이제 원클릭을 누를 때 실제로 비웁니다」로 왼쪽과 같은 말을 한다(카본 A6 · A7)',
+      x.focus === 'press-off' && /켜기 전에 센 것/.test(x.text) && /이제 원클릭을 누를 때 실제로 비웁니다/.test(x.text) && !/켜면 비울 것/.test(x.text), JSON.stringify(x).slice(0, 400));
     await pg.fill('#line-C', '450'); await click(pg, '#room [data-act="line-save"][data-drive="C"]');
     x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setStartLine').map((a) => a.input), note: document.getElementById('note').textContent }));
     check('정한 선 「바꾸기」는 그 드라이브와 GB 숫자로 setStartLine을 부른다', JSON.stringify(x.args) === JSON.stringify([{ drive: 'C', gb: 450 }]) && /450GB로 바꿨습니다/.test(x.note), JSON.stringify(x));

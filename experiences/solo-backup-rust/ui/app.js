@@ -431,7 +431,10 @@ async function loadSpaceFree() {
 }
 function pressFree(on) {
   return solioSave('setPressFree', on, on ? '켰습니다. 이제 솔리오 원클릭을 누르면 다시 만들 수 있는 것만 비웁니다.' : '껐습니다. 이제 누를 때마다 무엇을 비울지 미리 보기만 합니다.',
-    () => { ui = { ...ui, spaceFree: undefined }; });
+    // 켜고 끄면 단추가 서로 바뀌므로, 키보드로 누른 손님의 포커스를 새 단추로 옮긴다(카본 A7)
+    // 창 상태는 push가 닿은 뒤에야 바뀌므로, 바뀐 켬 · 끔을 먼저 그리고 엔진의 값을 다시 읽는다. 그래야 새 단추로 포커스를 옮길 수 있다
+    () => { ui = { ...ui, spaceFree: { ...(ui.spaceFree || state()?.solio?.spaceFree || {}), on, since: on ? new Date().toISOString() : null } }; void loadSpaceFree(); },
+    on ? '[data-act="press-off"]' : '[data-act="press-on"]');
 }
 function lineSave(drive) {
   const raw = String(room.querySelector(`#line-${CSS.escape(drive || '')}`)?.value ?? '').trim();

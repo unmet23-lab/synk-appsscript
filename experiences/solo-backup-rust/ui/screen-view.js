@@ -1222,8 +1222,13 @@ function spaceFreeScreen(s, ui, acct, now) {
   const lineRows = lines.length ? lines.map((d) => row(`${h(d.drive)}:`, `<span class="meta">남은 공간 ${h(size(d.free))} / ${h(size(d.size))}</span>`,
       `<input id="line-${h(d.drive)}" class="gb" type="number" min="1" step="1" inputmode="numeric" value="${h(d.gb)}" aria-label="${h(`${d.drive}: 정한 선(GB)`)}"${run ? ' readonly' : ''}> GB <button class="lnk sm" type="button" data-act="line-save" data-drive="${h(d.drive)}"${dis} aria-label="${h(`${d.drive}: 정한 선 바꾸기`)}">바꾸기</button>`)).join('')
     : '<p class="empty">드라이브를 아직 훑지 않았습니다. 하루 한 번 훑은 뒤에 보입니다.</p>';
-  const r = panel(last?.preview === false ? '지난 누름에 비운 것' : '켜면 비울 것', lastMeta, `<div class="rows">${lastRows}</div>
-    <p class="foot">${last?.preview === false ? '지운 것과 다시 만드는 법은 이 PC의 장부에 남깁니다.' : '켜기 전에는 누를 때마다 무엇을 비울지 세기만 하고 지우지 않습니다. 지금 쓰는 중인 것은 실제로 비울 때 한 번 더 걸러지므로, 비우는 양은 이보다 적을 수 있습니다.'}</p>`)
+  // 제목과 바닥글은 왼쪽 단추(켬 · 끔)와 같은 말을 한다. 켠 뒤 아직 실제로 비우지 않았으면 지난 셈은 「켜기 전에 센 것」이다(카본 A6)
+  const lastTitle = last?.preview === false ? '지난 누름에 비운 것' : !sf.on ? '켜면 비울 것' : last ? '켜기 전에 센 것' : '지난 누름';
+  const lastFoot = last?.preview === false ? '지운 것과 다시 만드는 법은 이 PC의 장부에 남깁니다.'
+    : sf.on ? '이제 원클릭을 누를 때 실제로 비웁니다. 지금 쓰는 중인 것은 비울 때 한 번 더 걸러 남깁니다.'
+      : '켜기 전에는 누를 때마다 무엇을 비울지 세기만 하고 지우지 않습니다. 지금 쓰는 중인 것은 실제로 비울 때 한 번 더 걸러지므로, 비우는 양은 이보다 적을 수 있습니다.';
+  const r = panel(lastTitle, lastMeta, `<div class="rows">${lastRows}</div>
+    <p class="foot">${lastFoot}</p>`)
     + panel('드라이브마다 정한 선', '', `<div class="rows">${lineRows}</div>
     <p class="foot">남은 공간이 이 선보다 적은 드라이브에서만 빌드 폴더를 비우고, 선을 넉넉히 넘으면 멈춥니다. 선을 올리면 더 자주 비웁니다.</p>`);
   return { kind: 'flow', tone: 'setup', here: '공간 비우기', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { drawer: { id: 'drawer', drawer: true } } };

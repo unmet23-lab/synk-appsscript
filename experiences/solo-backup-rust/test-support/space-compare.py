@@ -51,18 +51,23 @@ def last_preview(state):
             text = f.read().decode('utf-8', 'replace')
     except OSError:
         return None
-    rows = []
+    presses, rows = [], []
     for line in text.splitlines():
         try:
             r = json.loads(line)
         except ValueError:
             continue
-        if isinstance(r, dict) and r.get('stage') == 'would' and isinstance(r.get('at'), str) and isinstance(r.get('report'), str):
-            rows.append(r)
-    if not rows:
+        if isinstance(r, dict) and isinstance(r.get('at'), str) and isinstance(r.get('report'), str):
+            presses.append(r)
+            if r.get('stage') == 'would':
+                rows.append(r)
+    # 마지막 누름이 미리 보기가 아니거나(B 기간) 그 누름에 지울 것이 없으면 옛 누름의 목록을 쓰지 않는다
+    if not presses or presses[-1].get('preview') is not True:
         return None
-    last = rows[-1]
+    last = presses[-1]
     same = [r for r in rows if r['at'] == last['at'] and r['report'] == last['report']]
+    if not same:
+        return {'at': last['at'], 'build': [], 'profiles': [], 'temp': []}
     temp = []
     for r in same:
         if r.get('kind') == 'temp' and isinstance(r.get('list'), str):

@@ -277,6 +277,9 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
 /// given in SWB_SPACE_ROOTS (never this PC's drives), with SWB_SPACE_TEMP as its temp folder and SWB_SPACE_BUDGET_MS.
 fn space_places(test: bool) -> Option<(space::Places, Duration)> {
     if !test { return Some((space::Places::from_env(schedule::current_sid().ok()), space::BUDGET)); }
+    // 단위 시험은 자기 스레드의 자리만 쓴다: 프로세스 전역 환경 변수를 다른 시험과 나눠 쓰지 않는다(카본 끝판 A4).
+    #[cfg(test)]
+    if let Some(p) = tests::PLACES.with(|c| c.borrow().clone()) { return Some((p, space::BUDGET)); }
     if !cfg!(debug_assertions) { return None; }
     let roots = std::env::var("SWB_SPACE_ROOTS").ok()?;
     let mut places = space::Places::from_env(None);
@@ -707,8 +710,10 @@ fn main() { std::process::exit(run()); }
         assert_eq!(out["profiles"], json!({"local": {"kind": "backup", "stage": "작업 파일 백업 중", "percent": 42.5}, "b2": null}));
         assert_eq!(out["pid"], std::process::id());
     }
+    // 단위 시험이 쓰는 공간 자리(스레드마다 따로).
+    thread_local! { pub(super) static PLACES: std::cell::RefCell<Option<space::Places>> = const { std::cell::RefCell::new(None) }; }
     /// 공간 비우기 2판의 host 호출(SPACE_DESIGN.md 12장): 워커가 넘긴 번호로 미리 보기는 세기만 하고, 동의한 비우기는 지운다.
-    /// 시험 판은 SWB_SPACE_ROOTS · SWB_SPACE_TEMP로 준 자리만 다룬다.
+    /// 시험 판은 준 자리만 다룬다(회차는 SWB_SPACE_ROOTS · SWB_SPACE_TEMP, 단위 시험은 이 스레드의 PLACES).
     #[test] fn the_space_free_host_call_previews_then_frees_only_in_the_given_places() {
         use std::os::windows::fs::{FileTimesExt, OpenOptionsExt};
         let base = std::env::temp_dir().join(format!("swb-run-free-{}", std::process::id()));
@@ -727,8 +732,10 @@ fn main() { std::process::exit(run()); }
         fs::write(state.join("space").join(space_free::GATE), "").unwrap();
         fs::create_dir_all(state.join("solio")).unwrap();
         fs::write(state.join("solio").join("space.json"), json!({"v": 1, "report": "space-1-abcdef12", "candidates": [{"n": 1, "grade": "auto", "kind": "temp", "path": temp.to_string_lossy()}]}).to_string()).unwrap();
-        std::env::set_var("SWB_SPACE_ROOTS", &scan);
-        std::env::set_var("SWB_SPACE_TEMP", &temp);
+        let mut places = space::Places::from_env(None);
+        (places.roots, places.temp, places.local, places.profile) = (vec![scan.clone()], Some(temp.clone()), None, None);
+        places.cloud_drives.clear();
+        PLACES.with(|c| *c.borrow_mut() = Some(places));
         let ask = |preview: bool| json!([{"report": "space-1-abcdef12", "items": [1], "folders": [], "preview": preview}]);
         let v = host(&state, true, "space.free", ask(true)).unwrap();
         assert_eq!((v["preview"].as_bool(), v["items"].as_u64(), v["freed"].as_u64()), (Some(true), Some(1), Some(700)), "{v}");

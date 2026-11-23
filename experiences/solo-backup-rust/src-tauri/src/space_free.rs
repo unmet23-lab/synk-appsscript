@@ -85,7 +85,8 @@ pub fn free_with(root: &Path, places: &Places, ask: &Ask, world: &dyn World) -> 
     // 시간 초과로 남긴 적이 있는 후보는 뒤로(12.2 시간).
     let slow = ledger.slow();
     picks.sort_by_key(|(_, p)| slow.contains(&space::key(Path::new(p))));
-    let mut run = Press { root, places, ask, world, at, started, ledger: &mut ledger, tally: Tally::default(), procs: None, refs: None, idle: HashMap::new(), why: HashMap::new(), temp_list: Vec::new() };
+    let mut run = Press { root, places, ask, world, at, started, ledger: &mut ledger, tally: Tally::default(), procs: None, refs: None, idle: HashMap::new(), why: HashMap::new(), temp_list: Vec::new(),
+        seen: HashSet::new(), drives: HashMap::new() };
     let procs = match world.processes() {
         Ok(p) => p,
         Err(_) => {
@@ -110,6 +111,10 @@ pub fn free_with(root: &Path, places: &Places, ask: &Ask, world: &dyn World) -> 
 struct Press<'a> {
     root: &'a Path, places: &'a Places, ask: &'a Ask, world: &'a dyn World, at: u64, started: Instant, ledger: &'a mut Ledger, tally: Tally,
     procs: Option<Procs>, refs: Option<Result<Refs, String>>, idle: HashMap<String, Idle>, why: HashMap<&'static str, u32>, temp_list: Vec<(String, u64)>,
+    /// 이 누름에서 이미 다룬 임시 항목. %TEMP% 후보와 자동화 프로필 후보가 같은 항목을 두 번 세지 않게 한다(카본 끝판 B2).
+    seen: HashSet<String>,
+    /// 드라이브마다 (누름에서 처음 볼 때 시작선 아래였는지, 목표선, 미리 보기에서 셈한 크기)(카본 끝판 B1).
+    drives: HashMap<String, (bool, u64, u64)>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -118,10 +123,16 @@ enum Idle { Yes, Recent, Slow, Unreadable }
 enum Kind { Temp, Profile, Build(&'static str) }
 
 impl Press<'_> {
-    fn keep(&mut self, why: &'static str) { self.tally.kept += 1; *self.why.entry(why).or_default() += 1; }
+    fn keep(&mut self, why: &'static str) {
+        self.tally.kept += 1; *self.why.entry(why).or_default() += 1;
+        // 프로세스가 쓰고 있어 남긴 것도 「쓰는 중이라 남긴 수」로 센다(12.4 busy, 카본 끝판 B7). 이름 바꾸기 거절은 take_and_delete의 Busy가 센다.
+        if why == "running" { self.tally.busy += 1; }
+    }
     fn over(&self) -> bool { self.started.elapsed() >= PRESS }
 
     fn one(&mut self, n: u32, path: &Path) {
+        // %TEMP%를 훑다가 이미 다룬 자동화 프로필은 다시 세지 않는다(카본 끝판 B2).
+        if self.seen.contains(&space::key(path)) { return; }
         if self.over() { return self.keep("later"); }
         let Some(kind) = self.kind_of(path) else { return self.keep("kind") };
         if let Some(why) = self.common(path) { return self.keep(why); }
@@ -174,11 +185,16 @@ impl Press<'_> {
 
     /// %TEMP% 맨 위 항목 하나. (비웠거나 비울 것인지, 남긴 까닭)
     fn temp_item(&mut self, item: &Path, age: u64) -> (bool, Option<&'static str>) {
+        if !self.seen.insert(space::key(item)) { return (false, None); }
         let why = self.temp_check(item, age);
         if let Some(w) = why { if w != "recent" { self.keep(w); } return (false, Some(w)); }
         let name = item.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
         let path_text = item.to_string_lossy().into_owned();
-        let (bytes, files) = match count(item, self.started + PRESS) { Some(c) => c, None => { self.keep("slow"); return (false, Some("slow")); } };
+        let (bytes, files) = match count(item, (Instant::now() + WALK).min(self.started + PRESS)) { Some(c) => c, None => { self.keep("slow"); return (false, Some("slow")); } };
+        // 빌드 산출물과 같이 지우는 시간을 어림한다(12.3-4, 카본 끝판 B9).
+        let estimate = Duration::from_secs(files / DELETE_RATE + 1);
+        if estimate > PRESS { self.keep("too-big"); return (false, Some("too-big")); }
+        if self.started.elapsed() + estimate > PRESS { self.keep("later"); return (false, Some("later")); }
         if self.ask.preview {
             self.tally.items += 1; self.tally.freed += bytes; self.temp_list.push((path_text, bytes));
             return (true, None);
@@ -187,6 +203,7 @@ impl Press<'_> {
             Taken::Freed(b) => { self.tally.items += 1; self.tally.freed += b; self.temp_list.push((path_text, b)); (true, None) }
             Taken::Busy => { self.tally.busy += 1; self.keep("busy"); (false, Some("busy")) }
             Taken::Stopped => { self.keep("stopped"); (false, Some("stopped")) }
+            Taken::NoLedger => { self.keep("ledger"); (false, Some("ledger")) }
         }
     }
 
@@ -240,7 +257,7 @@ impl Press<'_> {
         if !space::plain_below_root(&self.places.roots, &top) { return self.keep("place"); }
         match fs::symlink_metadata(top.join(".git")) { Ok(m) if m.is_dir() && m.file_attributes() & REPARSE == 0 => {}, Ok(_) => return self.keep("worktree"), Err(_) => return self.keep("not-in-git") }
         match space::git(&parent, &["check-ignore", "-q", &name], check_by) { Some((0, _)) => {}, Some((1, _)) => return self.keep("tracked"), _ => return self.keep("unchecked") }
-        let rel = path.strip_prefix(&top).map(|r| r.to_string_lossy().replace('\\', "/")).unwrap_or_default();
+        let rel = relative(path, &top).unwrap_or_default();
         if rel.is_empty() { return self.keep("place"); }
         match space::git(&top, &["ls-files", "-z", "--", &rel], check_by) { Some((0, out)) if out.is_empty() => {}, Some((0, _)) => return self.keep("tracked"), _ => return self.keep("unchecked") }
         let top_key = space::key(&top);
@@ -254,10 +271,15 @@ impl Press<'_> {
         let Some(drive) = drive_root(path) else { return self.keep("place") };
         let Some((size, free)) = space::drive_space(&drive) else { return self.keep("place") };
         let letter = drive.to_string_lossy().chars().next().map(|c| c.to_ascii_uppercase().to_string()).unwrap_or_default();
-        let start = space::start_lines(self.root).get(&letter).copied().unwrap_or_else(|| space::default_start_line(size)).saturating_mul(GB);
-        let target = start.saturating_add((size / 10).min(100 * GB));
-        let counted = if self.ask.preview { free.saturating_add(self.tally.freed) } else { free };
-        if free >= start || counted >= target { return self.keep("space-ok"); }
+        // 시작선 아래인지는 그 누름에서 그 드라이브를 처음 볼 때 한 번 정한다. 비우는 동안 시작선을 넘어도 목표선까지 간다(6장, 카본 끝판 B1).
+        let root = self.root;
+        let &mut (below, target, would) = self.drives.entry(letter.clone()).or_insert_with(|| {
+            let start = space::start_lines(root).get(&letter).copied().unwrap_or_else(|| space::default_start_line(size)).saturating_mul(GB);
+            (free < start, start.saturating_add((size / 10).min(100 * GB)), 0)
+        });
+        // 미리 보기는 지우지 않으므로 남은 공간에 이 드라이브에서 셈한 크기를 더해 목표선과 견준다.
+        let counted = if self.ask.preview { free.saturating_add(would) } else { free };
+        if !below || counted >= target { return self.keep("space-ok"); }
         let Some((bytes, files)) = count(path, Instant::now() + WALK) else { self.slow_line(path); return self.keep("slow") };
         let estimate = Duration::from_secs(files / DELETE_RATE + 1);
         if estimate > PRESS { return self.keep("too-big"); }
@@ -265,6 +287,7 @@ impl Press<'_> {
         let how = match kind { "node_modules" => "npm ci (또는 잠금 파일에 맞는 pnpm · yarn 설치)", "target" => "cargo build", "venv" => "uv sync 또는 pip install -r", _ => "저절로 다시 생김" };
         if self.ask.preview {
             self.tally.items += 1; self.tally.freed += bytes;
+            if let Some(d) = self.drives.get_mut(&letter) { d.2 = d.2.saturating_add(bytes); }
             self.ledger.line(json!({"at": space::iso(self.at), "report": self.ask.report, "n": n, "preview": true, "kind": kind, "stage": "would", "path": path.to_string_lossy(), "bytes": bytes, "files": files, "how": how}));
             return;
         }
@@ -273,6 +296,7 @@ impl Press<'_> {
             Taken::Freed(b) => { self.tally.items += 1; self.tally.freed += b; }
             Taken::Busy => { self.tally.busy += 1; self.keep("busy"); }
             Taken::Stopped => self.keep("stopped"),
+            Taken::NoLedger => self.keep("ledger"),
         }
     }
 
@@ -288,7 +312,10 @@ impl Press<'_> {
         let taken = path.with_file_name(format!("{name}{MARK}{:08x}", space::random32()));
         let drive = drive_root(path);
         let before = drive.as_deref().and_then(space::drive_space).map(|(_, f)| f);
-        self.ledger.line(json!({"at": space::iso(self.at), "report": self.ask.report, "preview": false, "kind": kind, "stage": "staged", "path": path.to_string_lossy(), "as": taken.to_string_lossy(), "id": id, "bytes": bytes, "files": files}));
+        // 장부에 「떼어 낼 것」을 먼저 적지 못하면 떼어 내지 않는다. 끊겼을 때 이을 길이 없어진다(12.3-1, 카본 끝판 B8).
+        if !self.ledger.line(json!({"at": space::iso(self.at), "report": self.ask.report, "preview": false, "kind": kind, "stage": "staged", "path": path.to_string_lossy(), "as": taken.to_string_lossy(), "id": id, "bytes": bytes, "files": files})) {
+            return Taken::NoLedger;
+        }
         if !move_plain(path, &taken) {
             self.ledger.line(json!({"at": space::iso(self.at), "stage": "closed", "path": path.to_string_lossy(), "as": taken.to_string_lossy(), "why": "busy"}));
             return Taken::Busy;
@@ -311,7 +338,7 @@ impl Press<'_> {
     }
 }
 
-enum Taken { Freed(u64), Busy, Stopped }
+enum Taken { Freed(u64), Busy, Stopped, NoLedger }
 
 fn how_of(kind: &str) -> &'static str {
     match kind { "node_modules" => "npm ci (또는 잠금 파일에 맞는 pnpm · yarn 설치)", "target" => "cargo build", "venv" => "uv sync 또는 pip install -r", _ => "저절로 다시 생김" }
@@ -336,7 +363,7 @@ pub fn resume(root: &Path, places: &Places, folders: &[String]) -> Result<Value,
         }
         // 쓰는 프로세스가 생겨 못 되돌린 것은 지우지 않는다. 원래 자리가 비어 있으면 되돌린다.
         if s.stuck {
-            let back = !path.exists() && file_id(&taken).as_deref() == Some(s.id.as_str()) && move_plain(&taken, &path);
+            let back = !path.exists() && taken_shape(&s, &path, &taken, places) && move_plain(&taken, &path);
             if back || !s.checked { ledger.line(json!({"at": space::iso(space::epoch_ms()), "stage": if back { "returned" } else { "check" }, "path": s.path, "as": s.taken, "resumed": true})); }
             if !back { odd += 1; }
             continue;
@@ -350,13 +377,17 @@ pub fn resume(root: &Path, places: &Places, folders: &[String]) -> Result<Value,
     Ok(json!({"freed": freed, "items": items, "check": odd}))
 }
 
-fn resume_ok(s: &Staged, path: &Path, taken: &Path, places: &Places, folders: &[String]) -> bool {
+/// 떼어 낸 이름이 정해진 꼴이고, 부모 자리가 원래 경로와 같고, 뿌리부터 연결점이 없고, 파일 번호가 장부와 같다(12.3-6).
+fn taken_shape(s: &Staged, path: &Path, taken: &Path, places: &Places) -> bool {
     let (Some(name), Some(taken_name)) = (path.file_name().map(|n| n.to_string_lossy().into_owned()), taken.file_name().map(|n| n.to_string_lossy().into_owned())) else { return false };
-    // 떼어 낸 이름은 정해진 꼴이고, 부모 자리가 원래 경로와 같다.
     let Some(tail) = taken_name.strip_prefix(&format!("{name}{MARK}")) else { return false };
     if tail.len() != 8 || !tail.bytes().all(|b| b.is_ascii_hexdigit()) || path.parent() != taken.parent() { return false; }
-    if !space::plain_below_root(&places.roots, taken) { return false; }
-    if file_id(taken).as_deref() != Some(s.id.as_str()) { return false; }
+    space::plain_below_root(&places.roots, taken) && file_id(taken).as_deref() == Some(s.id.as_str())
+}
+
+fn resume_ok(s: &Staged, path: &Path, taken: &Path, places: &Places, folders: &[String]) -> bool {
+    let Some(name) = path.file_name().map(|n| n.to_string_lossy().into_owned()) else { return false };
+    if !taken_shape(s, path, taken, places) { return false; }
     let k = space::key(taken);
     let o = space::key(path);
     if folders.iter().any(|f| { let f = space::key(Path::new(f)); !f.is_empty() && (f == k || f == o || inside(&k, &f) || inside(&o, &f) || inside(&f, &k) || inside(&f, &o)) }) { return false; }
@@ -480,6 +511,17 @@ fn git_top(dir: &Path, deadline: Instant) -> Option<PathBuf> {
     (code == 0 && !line.is_empty()).then(|| PathBuf::from(line.replace('/', "\\")))
 }
 
+/// `path`가 `top` 안이면 top 아래의 상대 경로(`/` 구분). 대소문자와 짧은 이름(8.3)이 달라도 같은 자리로 본다(카본 끝판 B11).
+fn relative(path: &Path, top: &Path) -> Option<String> {
+    let long = |p: &Path| fs::canonicalize(p).ok().map(|c| { let t = c.to_string_lossy().into_owned(); t.strip_prefix(r"\\?\").map(str::to_string).unwrap_or(t) });
+    let (p, t) = (long(path).unwrap_or_else(|| path.to_string_lossy().into_owned()), long(top).unwrap_or_else(|| top.to_string_lossy().into_owned()));
+    let t = t.trim_end_matches('\\');
+    let head = p.get(..t.len())?;
+    if !head.eq_ignore_ascii_case(t) && head.to_lowercase() != t.to_lowercase() { return None; }
+    let rest = p.get(t.len()..)?.strip_prefix('\\')?;
+    (!rest.is_empty()).then(|| rest.replace('\\', "/"))
+}
+
 fn verbatim(p: &Path) -> Vec<u16> {
     let text = p.to_string_lossy();
     let full = if text.starts_with(r"\\?\") { text.into_owned() } else { format!(r"\\?\{text}") };
@@ -507,7 +549,10 @@ fn file_id(p: &Path) -> Option<String> {
 fn delete_tree(path: &Path, deadline: Instant) -> (u64, u64, bool) {
     let (mut bytes, mut files, mut failed) = (0u64, 0u64, 0u64);
     let Ok(meta) = fs::symlink_metadata(path) else { return (0, 0, true) };
-    let unlink = |p: &Path, m: &fs::Metadata| if m.file_attributes() & 0x10 != 0 { fs::remove_dir(p) } else { fs::remove_file(p) };
+    // 읽기 전용 표시가 있는 폴더 · 링크는 RemoveDirectoryW가 거절하므로 표시를 풀고 한 번 더 한다(카본 끝판 B3).
+    let writable = |p: &Path| { if let Ok(m) = fs::symlink_metadata(p) { if m.permissions().readonly() { let mut pm = m.permissions(); pm.set_readonly(false); let _ = fs::set_permissions(p, pm); } } };
+    let rmdir = |p: &Path| fs::remove_dir(p).or_else(|_| { writable(p); fs::remove_dir(p) });
+    let unlink = |p: &Path, m: &fs::Metadata| if m.file_attributes() & 0x10 != 0 { rmdir(p) } else { fs::remove_file(p).or_else(|_| { writable(p); fs::remove_file(p) }) };
     if meta.file_attributes() & REPARSE != 0 { let ok = unlink(path, &meta).is_ok(); return (0, u64::from(ok), ok); }
     if !meta.is_dir() {
         if meta.permissions().readonly() { let mut pm = meta.permissions(); pm.set_readonly(false); let _ = fs::set_permissions(path, pm); }
@@ -517,7 +562,7 @@ fn delete_tree(path: &Path, deadline: Instant) -> (u64, u64, bool) {
     let mut stack = vec![(path.to_path_buf(), false)];
     while let Some((d, visited)) = stack.pop() {
         if Instant::now() >= deadline { return (bytes, files, false); }
-        if visited { if fs::remove_dir(&d).is_err() { failed += 1; } continue; }
+        if visited { if rmdir(&d).is_err() { failed += 1; } continue; }
         stack.push((d.clone(), true));
         let Ok(list) = fs::read_dir(&d) else { failed += 1; continue };
         for e in list {
@@ -560,7 +605,7 @@ impl Procs {
         for p in &self.list {
             if p.image.as_deref().is_some_and(hit) || p.cwd.as_deref().is_some_and(hit) { return Touch::InUse; }
             if let Some(cmd) = p.cmd.as_deref() {
-                if cmd.contains(dir) { return Touch::InUse; }
+                if norm(cmd).contains(dir) { return Touch::InUse; }
                 let base = p.cwd.as_deref().unwrap_or("");
                 for t in tokens(cmd) {
                     let resolved = if t.len() > 1 && t.as_bytes()[1] == b':' || t.starts_with("\\\\") { t.clone() } else if !base.is_empty() { format!("{}\\{}", base.trim_end_matches('\\'), t) } else { continue };
@@ -572,14 +617,15 @@ impl Procs {
     }
 }
 
-/// 명령줄의 경로처럼 보이는 낱말(따옴표를 풀고 `=` 뒤도 본다).
+/// 명령줄의 낱말(따옴표를 풀고 `=` 뒤도 본다). 옵션(`-`로 시작)만 뺀다: `pnpm -C my-app`의 `my-app`처럼 구분자가 없는
+/// 상대 경로도 작업 폴더에 붙여 본다(카본 끝판 B4). 경로가 아닌 낱말은 붙여도 그 자리가 아니므로 남길 뿐이다.
 fn tokens(cmd: &str) -> Vec<String> {
     let (mut out, mut cur, mut quoted) = (Vec::new(), String::new(), false);
     for ch in cmd.chars() {
         match ch { '"' => quoted = !quoted, c if c.is_whitespace() && !quoted => { if !cur.is_empty() { out.push(std::mem::take(&mut cur)); } }, c => cur.push(c) }
     }
     if !cur.is_empty() { out.push(cur); }
-    out.into_iter().flat_map(|t| t.split('=').map(str::to_string).collect::<Vec<_>>()).filter(|t| t.contains('\\') || t.starts_with('.')).collect()
+    out.into_iter().flat_map(|t| t.split('=').map(str::to_string).collect::<Vec<_>>()).filter(|t| !t.is_empty() && !t.starts_with('-')).collect()
 }
 
 /// `a\b\..\c` 같은 길을 푼 소문자 key.
@@ -808,10 +854,14 @@ mod refs {
         fs::read(p).ok()
     }
     /// 바로 가기 같은 이진 파일에서 글을 꺼낸다: UTF-16 꼴과 바이트 꼴을 함께.
-    fn binary_text(bytes: &[u8]) -> String {
-        let wide: Vec<u16> = bytes.chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).collect();
-        let mut s = String::from_utf16_lossy(&wide);
-        s.push('\n');
+    pub(super) fn binary_text(bytes: &[u8]) -> String {
+        // .lnk의 글 칸은 덧붙임 없이 이어져 홀수 바이트에서 시작할 수 있다. 짝수 · 홀수 자리 둘 다 UTF-16으로 읽는다(카본 끝판 B6).
+        let mut s = String::new();
+        for skip in [0usize, 1] {
+            let wide: Vec<u16> = bytes.get(skip..).unwrap_or_default().chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).collect();
+            s.push_str(&String::from_utf16_lossy(&wide));
+            s.push('\n');
+        }
         s.push_str(&String::from_utf8_lossy(bytes));
         s
     }
@@ -827,6 +877,13 @@ mod refs {
     /// 작업 XML의 `<Command>` · `<Arguments>`에서 스크립트 파일처럼 보이는 경로.
     pub(super) fn scripts_of(xml: &str) -> Vec<String> {
         let mut out = Vec::new();
+        let tag_value = |tag: &str| -> Option<String> {
+            let (open, close) = (format!("<{tag}>"), format!("</{tag}>"));
+            let a = xml.find(&open)? + open.len();
+            let b = xml[a..].find(&close)?;
+            Some(expand(xml[a..a + b].replace("&quot;", "\"").replace("&amp;", "&").trim().trim_matches('"')))
+        };
+        let work = tag_value("WorkingDirectory").filter(|w| !w.is_empty());
         for tag in ["Command", "Arguments"] {
             let (open, close) = (format!("<{tag}>"), format!("</{tag}>"));
             let mut rest = xml;
@@ -835,8 +892,10 @@ mod refs {
                 let Some(b) = after.find(&close) else { break };
                 let value = after[..b].replace("&quot;", "\"").replace("&amp;", "&");
                 for t in super::tokens(&expand(&value)).into_iter().chain(std::iter::once(expand(value.trim().trim_matches('"')))) {
-                    let t = t.trim_matches('"').to_string();
-                    if SCRIPTS.iter().any(|x| t.to_lowercase().ends_with(x)) { out.push(t); }
+                    let t = t.trim_matches('"').replace('/', "\\");
+                    if !SCRIPTS.iter().any(|x| t.to_lowercase().ends_with(x)) { continue; }
+                    let absolute = t.len() > 1 && t.as_bytes()[1] == b':' || t.starts_with("\\\\");
+                    match (&work, absolute) { (Some(w), false) => out.push(format!("{}\\{}", w.trim_end_matches('\\'), t)), _ => out.push(t) }
                 }
                 rest = &after[b + close.len()..];
             }
@@ -1084,6 +1143,7 @@ mod tests {
         let p = places(&root, &temp);
         let v = free_with(&state, &p, &ask(&[1, 2, 3, 4], false), &world).unwrap();
         assert_eq!(v["items"].as_u64(), Some(1), "{v}");
+        assert_eq!(v["busy"].as_u64(), Some(1), "the one a running process uses counts as 「쓰는 중이라 남김」(카본 끝판 B7): {v}");
         assert!(!nm.exists(), "the idle one goes");
         assert!(repo.join("package-lock.json").exists() && repo.join(".git").exists(), "only node_modules");
         for kept in [&used_nm, &refd_nm, &recent_nm] { assert!(kept.exists(), "{kept:?} stays"); }
@@ -1171,6 +1231,15 @@ mod tests {
         assert_eq!(v["items"].as_u64(), Some(0), "{v}");
         assert!(item.join("f").exists() && !taken.exists(), "the stuck take goes back to its own name");
         assert!(Ledger::open(&state.join("space")).unwrap().open_staged().is_empty(), "and the line is closed");
+        // 꼴이 맞지 않는 줄(위조 · 다른 자리)은 되돌리기로도 옮기지 않는다(카본 끝판 B10)
+        let docs = root.join("docs"); write_old(&docs.join("notes.txt"), 10, 9);
+        let mut l = Ledger::open(&state.join("space")).unwrap();
+        let elsewhere = temp.join("elsewhere");
+        l.line(json!({"stage": "staged", "kind": "temp", "path": elsewhere.to_string_lossy(), "as": docs.to_string_lossy(), "id": file_id(&docs).unwrap()}));
+        l.line(json!({"stage": "stuck", "path": elsewhere.to_string_lossy(), "as": docs.to_string_lossy()}));
+        let v = resume(&state, &places(&root, &temp), &[]).unwrap();
+        assert_eq!(v["check"].as_u64(), Some(1), "{v}");
+        assert!(docs.join("notes.txt").exists() && !elsewhere.exists());
         let _ = fs::remove_dir_all(&root); let _ = fs::remove_dir_all(&state);
     }
 
@@ -1185,6 +1254,57 @@ mod tests {
     #[test] fn task_scripts_are_found_in_commands_and_arguments() {
         let xml = r#"<Exec><Command>C:\tools\run.cmd</Command><Arguments>-File "C:\x\job.ps1" --y</Arguments></Exec>"#;
         assert_eq!(refs::scripts_of(xml), vec![r"C:\tools\run.cmd".to_string(), r"C:\x\job.ps1".to_string()]);
+        // `/` 구분과 작업 폴더에 붙은 상대 경로(카본 끝판 B5)
+        let xml = r#"<Exec><Command>node</Command><Arguments>C:/tools/job.mjs --prod</Arguments><WorkingDirectory>C:\scheduler\</WorkingDirectory></Exec><Exec><Command>py</Command><Arguments>run.py</Arguments></Exec>"#;
+        assert_eq!(refs::scripts_of(xml), vec![r"C:\scheduler\run.py".to_string(), r"C:\tools\job.mjs".to_string()]);
+    }
+
+    #[test] fn a_shortcuts_text_is_read_at_odd_and_even_offsets() {
+        let wide: Vec<u8> = r"C:\dev\shop".encode_utf16().flat_map(u16::to_le_bytes).collect();
+        for pad in [0usize, 1] {
+            let mut bytes = vec![0u8; pad]; bytes.extend(&wide);
+            assert!(refs::binary_text(&bytes).contains(r"C:\dev\shop"), "pad {pad}");
+        }
+    }
+
+    #[test] fn a_bare_folder_name_in_a_command_line_is_resolved_against_the_working_folder() {
+        let procs = Procs::judge(vec![Proc { image: Some(r"c:\program files\nodejs\node.exe".into()), cwd: Some(r"c:\dev".into()), cmd: Some(r"pnpm -C my-app dev".into()) },
+            Proc { image: Some(r"c:\x\uv.exe".into()), cwd: Some(r"c:\work".into()), cmd: Some(r"uv --directory=api run app.py".into()) },
+            Proc { image: Some(r"c:\x\tool.exe".into()), cwd: Some(r"c:\x".into()), cmd: Some(r"tool.exe C:/Repos/Site/build.mjs".into()) }]);
+        assert!(procs.touches(r"c:\dev\my-app") == Touch::InUse, "pnpm -C my-app (카본 끝판 B4)");
+        assert!(procs.touches(r"c:\work\api") == Touch::InUse, "--directory=api");
+        assert!(procs.touches(r"c:\repos\site") == Touch::InUse, "a forward-slash path in another case");
+        assert!(procs.touches(r"c:\dev\other") == Touch::Free);
+    }
+
+    #[test] fn the_path_below_the_git_top_ignores_case() {
+        let root = tree("rel");
+        fs::create_dir_all(root.join("Repo").join("node_modules")).unwrap();
+        assert_eq!(relative(&root.join("REPO").join("node_modules"), &root.join("repo")).as_deref(), Some("node_modules"), "카본 끝판 B11");
+        assert_eq!(relative(&root.join("Repo"), &root.join("Repo")), None);
+        assert_eq!(relative(&root.join("Repo2"), &root.join("Repo")), None);
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test] fn a_profile_under_temp_is_counted_once_and_a_read_only_folder_still_goes() {
+        let (root, state) = (tree("root"), tree("state"));
+        let temp = root.join("temp");
+        let prof = temp.join(format!("{PROFILE_PREFIX}{:08x}", space::random32()));
+        write_old(&prof.join("Default").join("x"), 400, 3);
+        old(&prof.join("Default"), 3); old(&prof, 3);
+        // 읽기 전용 표시가 있는 폴더(desktop.ini를 품은 폴더 따위)도 지운다(카본 끝판 B3)
+        let ro = temp.join(format!("ro-{:08x}", space::random32()));
+        write_old(&ro.join("inner").join("f"), 100, 5);
+        for d in [ro.join("inner"), ro.clone()] { let mut pm = fs::metadata(&d).unwrap().permissions(); pm.set_readonly(true); fs::set_permissions(&d, pm).unwrap(); old(&d, 5); }
+        gate(&state);
+        report(&state, &[(1, &temp, "temp"), (2, &prof, "temp-profile")]);
+        let p = places(&root, &temp);
+        let v = free_with(&state, &p, &ask(&[1, 2], true), &quiet()).unwrap();
+        assert_eq!((v["items"].as_u64(), v["freed"].as_u64()), (Some(2), Some(500)), "the profile once, not twice (카본 끝판 B2): {v}");
+        let v = free_with(&state, &p, &ask(&[1, 2], false), &quiet()).unwrap();
+        assert_eq!((v["items"].as_u64(), v["freed"].as_u64(), v["kept"].as_u64()), (Some(2), Some(500), Some(0)), "{v}");
+        assert!(!prof.exists() && !ro.exists(), "both go, the read-only one too");
+        let _ = fs::remove_dir_all(&root); let _ = fs::remove_dir_all(&state);
     }
 
     /// 이 PC에서 재 보기: `cargo test --bin WorkBackupRun probe_this_pc -- --ignored --nocapture`. 경로는 찍지 않는다.

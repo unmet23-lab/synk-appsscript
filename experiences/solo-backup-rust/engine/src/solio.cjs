@@ -442,8 +442,9 @@ async function readFreeSummary(root) {
   if (!done.length) return null;
   const last = done[done.length - 1];
   const same = done.filter(r => r.at === last.at && r.report === last.report);
-  const items = same.map(r => ({ kind: typeof r.kind === 'string' ? r.kind : 'other', path: typeof r.path === 'string' ? r.path : null, n: Number.isSafeInteger(r.n) ? r.n : 1, bytes: Number.isSafeInteger(r.bytes) ? r.bytes : 0 })).slice(0, 50);
-  return { at: iso(last.at), preview: last.preview === true, bytes: items.reduce((a, b) => a + b.bytes, 0), count: items.reduce((a, b) => a + (b.kind === 'temp' ? b.n : 1), 0), items };
+  const all = same.map(r => ({ kind: typeof r.kind === 'string' ? r.kind : 'other', path: typeof r.path === 'string' ? r.path : null, n: Number.isSafeInteger(r.n) ? r.n : 1, bytes: Number.isSafeInteger(r.bytes) ? r.bytes : 0 }));
+  // 합계는 모든 줄로, 펼쳐 보이는 목록만 50줄로 자른다(한 누름은 100개까지 다룬다, 카본 끝판 A1)
+  return { at: iso(last.at), preview: last.preview === true, bytes: all.reduce((a, b) => a + b.bytes, 0), count: all.reduce((a, b) => a + (b.kind === 'temp' ? b.n : 1), 0), items: all.slice(0, 50) };
 }
 /** 기본 시작선: 드라이브 크기의 15%와 150GB 가운데 작은 쪽(SPACE_DESIGN.md 6장), GB 정수로. */
 const defaultStartLine = sizeBytes => Math.max(1, Math.floor(Math.min(sizeBytes * 0.15, 150 * GB) / GB));
