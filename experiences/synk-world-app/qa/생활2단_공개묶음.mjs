@@ -28,7 +28,9 @@ const live = async rel => { const r = await fetch(`https://synk.im/world/${rel}?
 const mine = git('log', '--reverse', '--format=%H', `--grep=${TITLE}`, END).toString().trim().split('\n').filter(Boolean);
 if (!mine.length) throw Error(`이 일의 커밋이 ${END}에 없다(${TITLE})`);
 const BASE = git('rev-parse', `${mine[0]}^`).toString().trim();
-fs.rmSync(OUT, {recursive: true, force: true}); fs.mkdirSync(OUT, {recursive: true});
+// 기준 · 새 판 · 항목만 지운다. 후보 폴더(cand*)는 검수 사슬이 바이트를 묶고 있어 남긴다 — 다시 검수는 앞 검수의 후보를 읽는다(11-23).
+for (const name of ['base', 'new', '항목.txt']) fs.rmSync(path.join(OUT, name), {recursive: true, force: true});
+fs.mkdirSync(OUT, {recursive: true});
 const srcOf = rel => rel.startsWith('brand-opening/') ? `experiences/${rel}` : `experiences/synk-world-app/${rel}`;
 // 바탕 판에 이 일의 커밋만 얹는다(그 파일의 diff를 차례로). 남의 커밋은 싣지 않는다.
 function mineOnly(src) {
