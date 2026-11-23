@@ -319,7 +319,6 @@ const CondScene: React.FC<{ t: number }> = ({ t }) => {
   const rows: { at: number; main: React.ReactNode; sub: string; dim?: boolean }[] = [
     { at: T.c1, main: '휴대폰 · 웹 클로드는 안 돼요', sub: '내 컴퓨터의 프로그램을 못 돌려요', dim: true },
     { at: T.c2, main: <>컴퓨터의 <Gold>클로드 코드</Gold></>, sub: '데스크톱 앱 「코드」 탭 · 프로 요금제부터' },
-    { at: T.c3, main: '처음 한 번 내려받기', sub: '받아쓰기 프로그램과 모델 1.6GB' },
   ];
   const push = settle(t, T.cond) * (1 + 0.04 * interpolate(t, [T.cond, T.end], [0, 1], clamp));
   return (

@@ -203,5 +203,10 @@
       }
     ],
     "기록": ".tmp/올리기전검사/yuhobuilds_방문1039_20261118"
+  },
+  "프롬프트": {
+    "id": "site-visits-real",
+    "주소": "https://synk.im/prompts/#site-visits-real",
+    "본문": "docs/마케팅/맞춤도구/prompts/프롬프트.json"
   }
 }
