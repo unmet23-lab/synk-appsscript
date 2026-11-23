@@ -107,8 +107,11 @@ img{display:block;max-width:100%}
 .rs-chapter{min-height:64vh;display:flex;align-items:center}
 /* 넓은 화면에서는 옆 휴대폰이 그림을 보이므로 장면 속 휴대폰은 눈에서만 숨긴다(화면 읽기는 대체 글을 읽는다). */
 .rs-chapter .rs-chapter-phone{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);box-shadow:none}
-.rs-chapter-say{display:grid;gap:12px;max-width:440px;opacity:.55;transition:opacity .4s var(--ease)}
-.rs-chapter.on .rs-chapter-say{opacity:1}
+/* 지금 보지 않는 장면은 글만 옅게 — 장면 번호는 .8까지만 내려 밤 바탕에서 4.5:1을 지킨다(검수 reserve-fix-20261124 카본 A1). */
+.rs-chapter-say{display:grid;gap:12px;max-width:440px}
+.rs-chapter-say>*{opacity:.55;transition:opacity .4s var(--ease)}
+.rs-chapter-say>.rs-num{opacity:.8}
+.rs-chapter.on .rs-chapter-say>*{opacity:1}
 .rs-num{font:500 14px/1 var(--mono);letter-spacing:.02em;color:var(--acc-night)}
 .rs-chapter h3{font:700 clamp(24px,2.4vw,34px)/1.2 var(--sans);letter-spacing:-.03em}
 :lang(mn) .rs-chapter h3{letter-spacing:-.01em}
@@ -144,7 +147,7 @@ img{display:block;max-width:100%}
   #chapters::-webkit-scrollbar{display:none}
   .rs-chapter{min-height:0;display:grid;gap:22px;align-content:start;scroll-snap-align:start}
   .rs-chapter .rs-chapter-phone{position:relative;width:100%;height:auto;padding:8px;margin:0;overflow:visible;clip:auto;box-shadow:0 40px 70px -40px rgba(20,14,40,.55),0 0 0 1px rgba(255,255,255,.08) inset}
-  .rs-chapter-say{opacity:1}
+  .rs-chapter-say>*,.rs-chapter-say>.rs-num{opacity:1}
   .rs-chapter h3{font-size:22px}
   .rs-chapter p{font-size:15.5px}
   .rs-now-end{display:none}

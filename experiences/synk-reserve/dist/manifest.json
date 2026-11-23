@@ -29,15 +29,15 @@
   },
   "reserve/index.html": {
     "bytes": 7735,
-    "sha256": "1733f480b9ed6ed9e9b019b11b86679b4a648fe236743a70561f451f8e36b838"
+    "sha256": "0fcbd45615e6da5b3ed27e25f2f4713a1647b2a1e93cfd826f357a770c9b0bcc"
   },
   "reserve/og.jpg": {
     "bytes": 95001,
     "sha256": "144ca4b63d22d0fd06865dc0f6002147bdfffcac6720494f7bce5bb10008ba73"
   },
   "reserve/reserve.css": {
-    "bytes": 12383,
-    "sha256": "90a652a1e34a8c0bc9aa229079183e2b7aa0396ead029070e9f4a0032d92526a"
+    "bytes": 12633,
+    "sha256": "13132f9c7b93f05375166b289d4c615e443b61a473bd37ef93157fb3386ff775"
   },
   "reserve/shots/en/card.webp": {
     "bytes": 25472,
