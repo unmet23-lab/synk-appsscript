@@ -60,6 +60,15 @@ body{background:var(--bg);color:var(--ink);overflow:hidden}
 .compose input[name=code]{font-family:var(--mono);letter-spacing:.32em;font-size:20px}
 .compose .go{min-height:46px;width:46px;padding:0;background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(244,241,234,.3)}
 .day{align-self:center;font-size:12px;color:var(--faint);padding:4px 0}
+.entry .thread{justify-content:flex-end;padding-bottom:18px}
+.door{margin:0;padding:clamp(28px,7vh,72px) 26px 0;font-family:var(--serif);font-weight:300;font-size:clamp(40px,4.4vw,64px);letter-spacing:-.045em;line-height:1.1}
+.room .compose{padding-left:max(18px,calc((100% - 760px)/2));padding-right:max(18px,calc((100% - 760px)/2))}
+.entry .chat-head{border-bottom:0}
+.quick button{display:inline-flex;align-items:center;gap:6px}
+.quick button::after{content:'→';opacity:.7}
+.quick button[aria-pressed]::after{content:''}
+.room .thread{-webkit-mask-image:linear-gradient(transparent 12px,#000 72px);mask-image:linear-gradient(transparent 12px,#000 72px)}
+.chip.main{background:var(--ink);color:#0b0a09;box-shadow:none}
 
 /* 방 */
 .room{display:grid;grid-template-columns:1fr 360px;height:100dvh}
@@ -130,10 +139,12 @@ body{background:var(--bg);color:var(--ink);overflow:hidden}
 .opt small{color:var(--faint);font-size:12px}
 .opt[aria-pressed=true]{box-shadow:inset 0 0 0 1.5px var(--ink)}
 /* 장면 이미지 카드 */
-.viewer{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:16px;background:var(--staff);animation:pop .45s var(--ease) both}
-.viewer .big{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:10px;background:#000}
+.viewer{display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:8px;background:var(--staff);animation:pop .45s var(--ease) both}
+.viewer .big{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:#000}
 .viewer .big img{width:100%;height:100%;object-fit:cover}
-.viewer .nav{position:absolute;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:40px;height:40px;border-radius:999px;background:rgba(0,0,0,.5)}
+.viewer .nav{position:absolute;top:0;bottom:0;display:grid;place-items:center;width:56px;background:linear-gradient(90deg,rgba(0,0,0,.35),transparent);opacity:.75}
+.viewer .nav.r{background:linear-gradient(270deg,rgba(0,0,0,.35),transparent)}
+.viewer .nav:hover{opacity:1}
 .viewer .nav.l{left:10px}.viewer .nav.r{right:10px}
 .viewer .info{display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:start}
 .viewer .info .mono{font-size:12px;color:var(--dim)}
@@ -175,7 +186,7 @@ body{background:var(--bg);color:var(--ink);overflow:hidden}
 <body>
 <main id="app"></main>
 <script type="module">
-import { MODELS, PROJECT, STAGES, DIRECTIONS, OFFER, KEEP, LOOKS, HAIRS, CUTS, TALK, CHANNELS, FOLDED, PACKAGES, CODE_SENT, CHECK_COPY, briefHTML, modelById, icon, video, playNow, stopNow, reduced, sound, router, mockBar, bindFolds, $, $$, wait } from './공통.js';
+import { thumb, CHECKS, MODELS, PROJECT, STAGES, DIRECTIONS, OFFER, KEEP, LOOKS, HAIRS, CUTS, TALK, CHANNELS, FOLDED, PACKAGES, CODE_SENT, CHECK_COPY, briefHTML, modelById, icon, video, playNow, stopNow, reduced, sound, router, mockBar, bindFolds, $, $$, wait } from './공통.js';
 
 const LOGO = '../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/request/logo-paper.webp';
 const app = $('#app');
@@ -206,6 +217,7 @@ function viewEntry() {
     <div class="screen" aria-label="AI 모델이 걷는 영상"><span class="ai">AI로 만든 가상 인물이에요</span><div class="who"><b></b><span></span></div></div>
     <div class="chat">
       <div class="chat-head"><img class="logo" src="${LOGO}" alt="synk PULSE"><span class="small">가입 · 비밀번호 없이 열려요</span></div>
+      <h1 class="door">내 광고 방</h1>
       <div class="thread" aria-live="polite"></div>
       <form class="compose" novalidate><input name="email" type="email" autocomplete="email" placeholder="의뢰서에 적은 메일" aria-label="메일"><button class="go" aria-label="보내기">${icon('arrow')}</button></form>
     </div>
@@ -216,7 +228,7 @@ function viewEntry() {
   const next = () => {
     const m = modelById(order[k++ % order.length]);
     const v = video(m.video, m.tall, { auto: false }); if (cur) v.style.transform = 'translateX(100%)'; screen.insertBefore(v, screen.querySelector('.ai')); playNow(v);
-    requestAnimationFrame(() => requestAnimationFrame(() => { v.style.transform = ''; if (cur) { const old = cur; old.style.transform = 'translateX(-30%)'; setTimeout(() => { stopNow(old); old.remove(); }, 950); } cur = v; }));
+    requestAnimationFrame(() => requestAnimationFrame(() => { v.style.transform = ''; if (cur) { const old = cur; old.style.transform = 'translateX(-100%)'; setTimeout(() => { stopNow(old); old.remove(); }, 950); } cur = v; }));
     who.querySelector('b').textContent = m.name; who.querySelector('span').textContent = `${m.line} · ${m.meta}`;
   };
   next(); if (!reduced) timer = setInterval(next, 4000);
@@ -298,7 +310,7 @@ function roomShell() {
   app.innerHTML = `
   <section class="room">
     <div class="chat">
-      <div class="chat-head"><div class="proj"><b>${PROJECT.brand} · ${PROJECT.title}</b><span>${PROJECT.staff} 담당자 · <span class="mono">${PROJECT.no}</span></span></div><img class="logo" style="align-self:center" src="${LOGO}" alt="synk PULSE"></div>
+      <div class="chat-head"><div class="proj"><b>${PROJECT.brand} · ${PROJECT.title}</b><span>${PROJECT.staff} 담당자</span></div><img class="logo" style="align-self:center" src="${LOGO}" alt="synk PULSE"></div>
       <div class="thread" aria-live="polite"></div>
       <form class="compose"><input placeholder="${PROJECT.staff} 담당자에게 물어보세요" aria-label="보낼 말"><button class="go" aria-label="보내기">${icon('arrow')}</button></form>
     </div>
@@ -310,11 +322,10 @@ function roomShell() {
 }
 function side({ busy = false, title, lede, check, action = '', extra = '', step = 2, paid = false }) {
   const s = $('.side', app);
-  s.innerHTML = `<p class="turn ${busy ? 'is-busy' : ''}"><i></i>${busy ? '저희 차례' : '내 차례'}${check && step === 2 ? ` · 영상 전 확인 <span class="mono">${check}/3</span>` : ''}</p>
+  s.innerHTML = `<p class="turn ${busy ? 'is-busy' : ''}"><i></i>${busy ? '저희 차례' : '내 차례'}${check && step === 2 ? ` · ${CHECKS[check - 1]} 확인` : ''}</p>
     <h2>${title}</h2><p class="lede">${lede}</p>${action}${extra}
     <div class="due">받으실 날 ${paid ? `<span class="mono">${PROJECT.due}</span>` : `<span>${PROJECT.dueBefore}</span>`}</div>
-    <div class="bars" aria-hidden="true">${STAGES.map((_, i) => `<i class="${i < step ? 'done' : i === step ? 'now' : ''}"></i>`).join('')}</div>
-    <div class="stagelab"><span>${STAGES[step]}</span><span>${step + 1}/5</span></div>
+    <ol class="stages">${STAGES.map((n, i) => `<li class="${i < step ? 'done' : i === step ? 'now' : ''}"><span>${n}</span><span>${i < step ? '끝' : i === step ? '지금' : ''}</span></li>`).join('')}</ol>
     <div class="tools"><button class="tool" data-brief>${icon('script')}보낸 의뢰서</button></div>`;
   s.querySelector('[data-brief]').onclick = () => {
     const old = $('.drawer'); old?.remove(); if (old) return;
@@ -346,7 +357,7 @@ async function viewPick() {
   const card = put(thread, node(`<div class="card">
     <div class="face"><img src="${m.face}" alt=""></div>
     <div class="body"><span class="rec">추천</span><h3><span data-mname>${m.name}</span> · 「<span data-dname>${dir.name}</span>」</h3><p data-dline>${dir.line}</p><p class="small">${OFFER}</p>
-      <div class="folds">${foldBtn('model', faceIco(m.id), '모델', m.name, 'is-rec')}${foldBtn('dir', icon('compass'), '방향', dir.name, 'is-rec')}${foldBtn('look', icon('shirt'), '옷', state.pick.look, 'is-rec')}${foldBtn('hair', icon('hair'), '머리', state.pick.hair, 'is-rec')}</div>
+      <div class="folds">${foldBtn('model', faceIco(m.id), '모델', m.name, 'is-rec')}${foldBtn('dir', thumb('dir', dir.name), '방향', dir.name, 'is-rec')}${foldBtn('look', thumb('look', state.pick.look), '옷', state.pick.look, 'is-rec')}${foldBtn('hair', thumb('hair', state.pick.hair), '머리', state.pick.hair, 'is-rec')}</div>
       <div class="acts"><button class="go" data-ok>추천대로 맡기기 ${icon('arrow')}</button></div></div>
     <div class="sheet" data-sheet="model" hidden><div class="sheet-head"><span>모델 · 누르면 그 사람으로 바뀌어요</span><button class="link" data-sheet-close>닫기</button></div><div class="picks">${MODELS.map(x => `<button data-choose="${x.name}" data-id="${x.id}" aria-pressed="${x.id === m.id}"><img src="${x.tall}" alt=""><span>${x.name}</span></button>`).join('')}</div></div>
     <div class="sheet" data-sheet="dir" hidden><div class="sheet-head"><span>방향 두 안</span><button class="link" data-sheet-close>닫기</button></div><div class="opts">${DIRECTIONS.map(d => `<button class="opt" data-choose="${d.name}" aria-pressed="${d.id === dir.id}"><small>${d.pick ? '추천' : '다른 안'}</small><b>${d.name}</b><span class="small">${d.line}</span><small>${OFFER}</small></button>`).join('')}</div></div>
@@ -388,15 +399,16 @@ async function viewImages() {
     const c = CUTS[state.cut], note = state.notes[c.no] || '', liked = state.liked[c.no];
     const img = $('.big img', v); img.src = c.src; img.alt = `컷 ${c.no}`;
     if (!quiet && !reduced) img.animate([{ opacity: .3 }, { opacity: 1 }], { duration: 300 });
-    $('.info', v).innerHTML = `<div><span class="mono">컷 ${c.no} · ${c.sec}초</span><p>${c.what}</p></div><div class="acts"><button class="chip" data-like aria-pressed="${!!liked}">${icon('check')}좋아요</button><button class="chip" data-fix aria-pressed="${!!note}">${icon('pen')}고칠 곳</button></div><form class="note" ${note ? '' : 'hidden'}><textarea aria-label="이 컷에서 고칠 곳" placeholder="예) 포스터 속 하린이 조금 더 웃었으면 해요">${esc(note)}</textarea><button class="go ghost">남기기</button></form>`;
+    $('.info', v).innerHTML = `<div><span class="mono">컷 ${c.no} · ${c.sec}초</span><p>${c.what}</p></div><div class="acts"><button class="chip${!liked && !allDone() ? ' main' : ''}" data-like aria-pressed="${!!liked}">${icon('check')}좋아요</button><button class="chip" data-fix aria-pressed="${!!note}">${icon('pen')}고칠 곳</button></div><form class="note" ${note ? '' : 'hidden'}><textarea aria-label="이 컷에서 고칠 곳" placeholder="예) 포스터 속 하린이 조금 더 웃었으면 해요">${esc(note)}</textarea><button class="go ghost">남기기</button></form>`;
     $$('.thumbs button', v).forEach((b, k) => b.classList.toggle('on', k === state.cut));
     const seen = $('[data-seen]', app); if (seen) seen.textContent = `${state.seen.size}/6`;
     if (!quiet) sound.tick();
   }
+  function allDone() { return CUTS.every(c => state.liked[c.no] || state.notes[c.no]); }
   function marks() {
     $$('.thumbs button', v).forEach((b, k) => { const no = CUTS[k].no; b.querySelector('.mark')?.remove(); if (state.notes[no] || state.liked[no]) b.insertAdjacentHTML('beforeend', `<span class="mark">${icon(state.notes[no] ? 'pen' : 'check')}</span>`); });
     const n = Object.values(state.notes).filter(Boolean).length;
-    const mk = $('[data-make-l]', app); if (mk) mk.textContent = n ? `고칠 곳 ${n}개 보내기` : '이대로 제작 시작';
+    const mk = $('[data-make-l]', app); if (mk) { mk.textContent = n ? `고칠 곳 ${n}개 보내기` : '이대로 제작 시작'; mk.closest('.go').classList.toggle('ghost', !allDone()); }
   }
   v.addEventListener('click', e => {
     const no = CUTS[state.cut].no;

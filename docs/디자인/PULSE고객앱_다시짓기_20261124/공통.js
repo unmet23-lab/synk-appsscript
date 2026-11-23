@@ -85,6 +85,16 @@ export const HAIRS = [
   { id: 'hair3', name: '긴 웨이브', src: `${CAST}img/F02/hair-3-s.webp` },
 ];
 
+// 접힌 결정의 아이콘 자리에 그 값의 그림을 둔다(선 아이콘만으로는 「방향」 · 「머리」가 안 읽힌다 — GPT 맹검 11-24).
+const DIR_THUMB = { '포스터를 보고 온 손님': './assets/cut-03.webp', '따르는 순간 하나': './assets/cut-05.webp' };
+export function thumbFor(id, v) {
+  if (id === 'dir') return DIR_THUMB[v];
+  if (id === 'look') return (LOOKS.find(l => l.name === v) || LOOKS[0]).src;
+  if (id === 'hair') return (HAIRS.find(l => l.name === v) || HAIRS[0]).src;
+  return '';
+}
+export const thumb = (id, v) => `<img src="${thumbFor(id, v)}" alt="">`;
+
 // 장면 이미지 여섯 컷(15초 · 6컷).
 export const CUTS = [
   { no: '01', sec: 2, src: './assets/cut-01.webp', what: '아침, 손님 없는 카페. 사장님이 휴대폰을 본다.' },
@@ -101,7 +111,7 @@ const T_REQ = [
   { who: 'staff', at: '11월 21일 10:40', text: '네, 방향 안을 만들 때 반영할게요.' },
 ];
 export const TALK = {
-  pick: [...T_REQ, { who: 'staff', at: '오늘 09:05', text: '방향 두 안과 추천 모델이에요. 그대로 맡기셔도 되고, 바꾸고 싶은 것만 눌러 고르셔도 돼요.', news: true }],
+  pick: [...T_REQ, { who: 'staff', at: '오늘 09:05', text: '추천하는 방향과 모델이에요. 다른 방향 한 안은 「방향」을 누르면 보여요. 그대로 맡기셔도 되고, 바꾸고 싶은 것만 눌러 고르셔도 돼요.', news: true }],
   images: [...T_REQ,
     { who: 'staff', at: '11월 22일 15:20', text: '글 콘티 확인해 주셔서 고마워요. 결제가 확인되면 장면 이미지를 만들게요.' },
     { who: 'staff', at: '오늘 09:05', text: '장면 이미지 여섯 컷 올렸어요. 3번 창문 포스터는 말씀하신 대로 창 안쪽에 붙였어요.', news: true }],
@@ -290,6 +300,7 @@ export function bindFolds(root, { onChange } = {}) {
       const fold = $(`[data-fold="${id}"]`, root);
       fold?.classList.add('is-set'); fold?.classList.remove('is-rec');
       const val = $(`[data-fold="${id}"] [data-val]`, root); if (val) val.textContent = c.dataset.choose;
+      const im = fold?.querySelector('.ico img'), src = thumbFor(id, c.dataset.choose); if (im && src) im.src = src;
       sound.tick(); onChange?.(id, c.dataset.choose, c);
       setTimeout(close, reduced ? 0 : 220);
       return;

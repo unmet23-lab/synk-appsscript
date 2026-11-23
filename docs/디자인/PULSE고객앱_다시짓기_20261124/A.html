@@ -7,7 +7,7 @@
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="./공통.css">
 <style>
-:root{--bg:#060606;--ink:#f4f1ea;--dim:rgba(244,241,234,.58);--faint:rgba(244,241,234,.36);--line:rgba(244,241,234,.14);--panel:420px;--w0:58px;--gap:6px}
+:root{--bg:#060606;--ink:#f4f1ea;--dim:rgba(244,241,234,.58);--faint:rgba(244,241,234,.36);--line:rgba(244,241,234,.14);--panel:420px;--w0:84px;--gap:3px}
 body{background:var(--bg);color:var(--ink);overflow:hidden}
 .app{display:grid;grid-template-columns:var(--panel) 1fr;height:100dvh}
 /* 왼쪽 판 */
@@ -48,7 +48,7 @@ h1{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(38px,3.4vw,
 .strip.live img{opacity:0}
 .strip.on{width:var(--w1)}
 .strip.on video.is-ready{opacity:1}
-.strip:not(.on){filter:saturate(.55) brightness(.62)}
+.strip:not(.on){filter:saturate(.8) brightness(.8)}
 .strip:not(.on):hover{filter:saturate(.85) brightness(.85)}
 .strip.gone{width:0!important;margin-right:calc(var(--gap) * -1);opacity:0}
 .tag{position:absolute;left:0;right:0;bottom:0;text-align:left;padding:80px 22px 20px;background:linear-gradient(to top,rgba(0,0,0,.78),transparent);opacity:0;transform:translateY(8px);transition:.5s var(--ease)}
@@ -105,14 +105,14 @@ h1{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(38px,3.4vw,
 .card .rec{font-size:12px;color:var(--faint)}
 
 /* 장면 이미지: 컷 띠 */
-.cuts{position:absolute;inset:0;display:flex;flex-direction:column}
+.cuts{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center}
 .cut-hall{position:relative;flex:1;overflow:hidden}
 .cut-track{position:absolute;inset:24px auto 24px 0;display:flex;align-items:center;gap:6px;transition:transform .9s var(--ease)}
 .cut{position:relative;flex:none;width:72px;height:100%;transition:width .9s var(--ease),height .9s var(--ease),filter .5s;overflow:hidden;cursor:pointer;transition:width .9s var(--ease),filter .5s;filter:brightness(.55) saturate(.6)}
 .cut img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cut.on{filter:none;background:#000}
 
-.cut .no{position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:12px;color:#fff;text-shadow:0 1px 2px #000}
+.cut .no{position:absolute;left:10px;top:8px;font-family:var(--latin);font-weight:600;font-size:15px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .cut .mark{position:absolute;right:8px;top:8px;display:grid;place-items:center;width:24px;height:24px;background:var(--ink);color:#000}
 .cut .mark .icon{width:14px;height:14px}
 .cut-info{display:grid;grid-template-columns:1fr auto;gap:10px 24px;align-items:start;padding:18px 32px 24px;border-top:1px solid var(--line);min-height:128px}
@@ -122,6 +122,7 @@ h1{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(38px,3.4vw,
 .chip{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid var(--line);font-size:14px;transition:.2s}
 .chip:hover,.chip[aria-pressed=true]{border-color:var(--ink)}
 .chip[aria-pressed=true]{background:rgba(244,241,234,.1);border-color:var(--ink)}
+.chip.main{background:var(--ink);color:#0b0b0b;border-color:var(--ink)}
 .note{grid-column:1/-1;display:flex;gap:10px}
 .note textarea{flex:1;min-height:44px;max-height:120px;background:transparent;border:1px solid var(--line);padding:10px 12px;resize:vertical;outline:none}
 .note textarea:focus{border-color:var(--ink)}
@@ -166,7 +167,7 @@ h1{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(38px,3.4vw,
 
 /* 휴대폰 */
 @media (max-width:900px){
-  :root{--panel:1fr;--w0:30px;--gap:4px}
+  :root{--panel:1fr;--w0:36px;--gap:2px}
   body{overflow:auto}
   .app{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto;min-height:100dvh}
   .hall-wrap{order:-1;height:56dvh}
@@ -191,7 +192,7 @@ h1{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(38px,3.4vw,
 <body>
 <div class="app" id="app"></div>
 <script type="module">
-import { MODELS, FILMS, PROJECT, STAGES, CHECKS, DIRECTIONS, OFFER, KEEP, LOOKS, HAIRS, CUTS, TALK, CHANNELS, FOLDED, PACKAGES, CHECK_COPY, briefHTML, mixedRow, modelById, icon, video, playNow, stopNow, reduced, sound, router, mockBar, bindLogin, bindFolds, $, $$, wait } from './공통.js';
+import { thumb, MODELS, FILMS, PROJECT, STAGES, CHECKS, DIRECTIONS, OFFER, KEEP, LOOKS, HAIRS, CUTS, TALK, CHANNELS, FOLDED, PACKAGES, CHECK_COPY, briefHTML, mixedRow, modelById, icon, video, playNow, stopNow, reduced, sound, router, mockBar, bindLogin, bindFolds, $, $$, wait } from './공통.js';
 
 const LOGO = '../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/request/logo-paper.webp'; // 어두운 바탕용(고객 앱과 같은 파일)
 const app = $('#app');
@@ -211,7 +212,7 @@ function corridor(host, items, { anchor = 0.32, autoplay = true, onPick, center 
     s.append(img);
     const tag = document.createElement('div'); tag.className = 'tag';
     tag.innerHTML = it.kind === 'model'
-      ? `<div class="nm">${it.name}<span class="en">${it.en}</span><span class="mono kind">${it.id}</span></div><p>${it.line} · ${it.meta}</p>`
+      ? `<div class="nm">${it.name}<span class="en">${it.en}</span></div><p>${it.line} · ${it.meta}</p>`
       : `<div class="kind">완성 광고 · <span class="mono">${it.len}</span></div><div class="nm" style="font-size:22px">${it.name}</div>`;
     s.append(tag);
     s.addEventListener('click', () => { set(i); hold(); onPick?.(it); });
@@ -286,7 +287,7 @@ function viewEntry() {
         <p class="msg" data-msg aria-live="polite"></p>
         <div class="row"><button class="go" type="submit"><span data-go-label>코드 받기</span>${icon('arrow')}</button><button type="button" class="link" data-back data-step="code" hidden>다른 메일</button></div>
       </form>
-      <button type="button" class="link" data-linkopen style="align-self:flex-start">담당자에게 받은 링크로 열기</button>
+      <button type="button" class="go ghost" data-linkopen style="align-self:flex-start;min-height:40px;font-size:14px">${icon('clip')}담당자에게 받은 링크로 열기</button>
       <form data-linkform hidden novalidate><div class="field"><span>접수증이나 담당자에게 받은 링크</span><input name="invite" inputmode="url" placeholder="https://workspace.synk.im/pulse-app/#invite=…"></div><p class="msg" data-linkmsg></p><button class="go ghost">열기 ${icon('arrow')}</button></form>
     </div>
     <div class="side-foot">
@@ -320,8 +321,8 @@ function roomTop(step, part, check = 1) {
   let top = $('.top');
   if (!top) { top = document.createElement('header'); top.className = 'top'; document.body.prepend(top); }
   const bars = STAGES.map((_, i) => `<i class="${i < step ? 'done' : i === step ? 'now' : ''}"${i === step ? ` style="--p:${part}%"` : ''}></i>`).join('');
-  top.innerHTML = `<img class="logo" src="${LOGO}" alt="synk PULSE" style="height:16px"><div class="proj"><b>${PROJECT.brand} · ${PROJECT.title}</b><span class="mono">${PROJECT.no}</span></div>
-    <div class="steps"><span class="bars" aria-hidden="true">${bars}</span><span class="lab">${STAGES[step]}${step === 2 ? ` <span class="mono">${check}/3</span>` : ''}</span></div>
+  top.innerHTML = `<img class="logo" src="${LOGO}" alt="synk PULSE" style="height:16px"><div class="proj"><b>${PROJECT.brand} · ${PROJECT.title}</b></div>
+    <div class="steps"><span class="bars" aria-hidden="true">${bars}</span><span class="lab">${STAGES[step]}</span></div>
     <button class="ibtn" data-act="brief" aria-label="보낸 의뢰서">${icon('script')}의뢰서</button>
     <button class="ibtn" data-act="talk" aria-label="담당자와 대화, 새 말 하나">${icon('chat')}대화<span class="dot"></span></button>`;
   top.onclick = e => { const b = e.target.closest('[data-act]'); if (b?.dataset.act === 'talk') toggleTalk(); if (b?.dataset.act === 'brief') toggleBrief(); };
@@ -357,14 +358,14 @@ function viewPick() {
   app.innerHTML = `
   <section class="side">
     <div class="side-body">
-      <p class="turn"><i></i>내 차례 · 영상 전 확인 <span class="mono">1/3</span></p>
+      <p class="turn"><i></i>내 차례 · 방향과 모델 확인</p>
       <h1>추천대로<br>맡기시겠어요?</h1>
       <p class="lede"><b>${m.name}</b>이 나오는 「${dir.name}」으로 추천드려요. 바꾸고 싶은 것만 아래에서 눌러 고르세요.</p>
       <div class="folds" id="folds">
         ${foldBtn('model', faceIco(m.id), '모델', m.name, 'is-rec')}
-        ${foldBtn('dir', icon('compass'), '방향', dir.name, 'is-rec')}
-        ${foldBtn('look', icon('shirt'), '옷', state.pick.look, 'is-rec')}
-        ${foldBtn('hair', icon('hair'), '머리', state.pick.hair, 'is-rec')}
+        ${foldBtn('dir', thumb('dir', dir.name), '방향', dir.name, 'is-rec')}
+        ${foldBtn('look', thumb('look', state.pick.look), '옷', state.pick.look, 'is-rec')}
+        ${foldBtn('hair', thumb('hair', state.pick.hair), '머리', state.pick.hair, 'is-rec')}
       </div>
       <div class="row"><button class="go" data-act="ok">추천대로 맡기기 ${icon('arrow')}</button></div>
     </div>
@@ -409,7 +410,7 @@ function viewWait() {
       <p class="lede">광고가 남길 한 문장과 컷마다 들어갈 내용을 글로 먼저 보내 드려요. 도착하면 메일로 알려 드려요.</p>
       <div class="folds">
         ${foldBtn('m', faceIco(m.id), '모델', m.name, 'is-done')}
-        ${foldBtn('d', icon('check'), '방향', dir.name, 'is-done')}
+        ${foldBtn('d', thumb('dir', dir.name), '방향', dir.name, 'is-done')}
         ${foldBtn('s', icon('script'), '글 콘티', '쓰는 중', 'is-status')}
         ${foldBtn('i', icon('image'), '장면 이미지', '다음', 'is-status')}
       </div>
@@ -428,12 +429,12 @@ function viewImages() {
   app.innerHTML = `
   <section class="side">
     <div class="side-body">
-      <p class="turn"><i></i>내 차례 · 영상 전 확인 <span class="mono">3/3</span></p>
+      <p class="turn"><i></i>내 차례 · 장면 이미지 확인</p>
       <h1>장면 이미지가<br>도착했어요</h1>
       <p class="lede">컷마다 보고 의견을 남겨 주세요. 괜찮으면 그대로 제작을 시작해요.</p>
       <div class="folds">
         ${foldBtn('m', faceIco(m.id), '모델', m.name, 'is-done')}
-        ${foldBtn('d', icon('check'), '방향', '포스터를 보고 온 손님', 'is-done')}
+        ${foldBtn('d', thumb('dir', '포스터를 보고 온 손님'), '방향', '포스터를 보고 온 손님', 'is-done')}
         ${foldBtn('s', icon('script'), '글 콘티', '확인함', 'is-done')}
         ${foldBtn('p', icon('check'), '결제', '확인됨', 'is-done')}
       </div>
@@ -448,23 +449,27 @@ function viewImages() {
     </div>
   </section>`;
   const hall = $('.cut-hall', app), track = $('.cut-track', app), cuts = $$('.cut', app), info = $('.cut-info', app);
-  const W0 = () => isPhone() ? 34 : 72;
+  const W0 = () => isPhone() ? 40 : 150;
   function show(i, animate = true) {
     state.cut = (i + CUTS.length) % CUTS.length;
-    const W1 = Math.min((hall.clientHeight - 48) * 16 / 9, hall.clientWidth - W0() * 4.8);
-    cuts.forEach((c, k) => { c.classList.toggle('on', k === state.cut); c.style.width = `${k === state.cut ? W1 : W0()}px`; c.style.height = k === state.cut ? `${W1 * 9 / 16}px` : '100%'; });
-    const x = Math.max(16, (hall.clientWidth - W1) / 2) - state.cut * (W0() + 6);
+    const lead = isPhone() ? 12 : 24, step = W0() + 6;
+    const room = isPhone() ? hall.clientHeight - 48 : $('.cuts', app).clientHeight - 200;
+    const W1 = Math.min(room * 16 / 9, hall.clientWidth - lead * 2 - step * (isPhone() ? 1.5 : 2)), H = W1 * 9 / 16;
+    if (!isPhone()) { hall.style.flex = '0 0 auto'; hall.style.height = `${H + 48}px`; }
+    cuts.forEach((c, k) => { c.classList.toggle('on', k === state.cut); c.style.width = `${k === state.cut ? W1 : W0()}px`; c.style.height = `${H}px`; });
+    const x = lead + (state.cut ? step : 0) - state.cut * step; // 고른 컷은 왼쪽에, 앞 컷 하나와 뒤 컷들이 양옆에
     track.style.transition = animate ? '' : 'none'; track.style.transform = `translateX(${x}px)`;
     const c = CUTS[state.cut], note = state.notes[c.no] || '', liked = state.liked[c.no];
     info.innerHTML = `<div><span class="mono">컷 ${c.no} · ${c.sec}초</span><p>${c.what}</p></div>
-      <div class="cut-acts"><button class="chip" data-like aria-pressed="${!!liked}">${icon('check')}좋아요</button><button class="chip" data-fix aria-pressed="${!!note}">${icon('pen')}고칠 곳</button></div>
+      <div class="cut-acts"><button class="chip${!liked && !allDone() ? ' main' : ''}" data-like aria-pressed="${!!liked}">${icon('check')}좋아요</button><button class="chip" data-fix aria-pressed="${!!note}">${icon('pen')}고칠 곳</button></div>
       <form class="note" ${note ? '' : 'hidden'}><textarea aria-label="이 컷에서 고칠 곳" placeholder="예) 포스터 속 하린이 조금 더 웃었으면 해요">${note}</textarea><button class="go ghost" style="min-height:44px">남기기</button></form>`;
     if (animate) sound.tick();
   }
+  function allDone() { return CUTS.every(c => state.liked[c.no] || state.notes[c.no]); }
   function marks() {
     cuts.forEach((c, k) => { const no = CUTS[k].no; c.querySelector('.mark')?.remove(); if (state.notes[no] || state.liked[no]) c.insertAdjacentHTML('beforeend', `<span class="mark">${icon(state.notes[no] ? 'pen' : 'check')}</span>`); });
     const n = Object.values(state.notes).filter(Boolean).length;
-    const mk = $('[data-make]', app); if (mk) mk.textContent = n ? `고칠 곳 ${n}개 보내기` : '이대로 제작 시작';
+    const mk = $('[data-make]', app); if (mk) { mk.textContent = n ? `고칠 곳 ${n}개 보내기` : '이대로 제작 시작'; mk.closest('.go').classList.toggle('ghost', !allDone()); }
   }
   track.addEventListener('click', e => { const c = e.target.closest('.cut'); if (c) show(+c.dataset.i); });
   info.addEventListener('click', e => {
