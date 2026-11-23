@@ -5,6 +5,9 @@
 
   python -X utf8 test-support/space-compare.py [--보고서 <space.json>] [--지킴이 <폴더>] [--결과 <폴더>] [--작업사본]
 
+누르지 않은 날은 먼저 `node test-support/space-preview.cjs --실행`으로 미리 보기를 받는다. 엔진 장부(spacereed.jsonl)에
+미리 보기 누름이 있으면 그 「지울 것」도 지킴이와 견준다(빌드 폴더는 경로로, 임시는 맨 위 항목으로).
+
 --작업사본을 주면 지킴이의 작업 사본 판단도 센다(git을 사본마다 불러 오래 걸린다).
 """
 import importlib
@@ -38,6 +41,53 @@ def load_report(file):
     except (OSError, ValueError):
         return None
     return v if isinstance(v, dict) and isinstance(v.get('candidates'), list) else None
+
+
+def last_preview(state):
+    """장부의 마지막 미리 보기 누름의 「지울 것」. 없으면 None"""
+    try:
+        with open(state / 'space' / 'freed.jsonl', 'rb') as f:
+            f.seek(0, 2); size = f.tell(); f.seek(max(0, size - 1048576))
+            text = f.read().decode('utf-8', 'replace')
+    except OSError:
+        return None
+    rows = []
+    for line in text.splitlines():
+        try:
+            r = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(r, dict) and r.get('stage') == 'would' and isinstance(r.get('at'), str) and isinstance(r.get('report'), str):
+            rows.append(r)
+    if not rows:
+        return None
+    last = rows[-1]
+    same = [r for r in rows if r['at'] == last['at'] and r['report'] == last['report']]
+    temp = []
+    for r in same:
+        if r.get('kind') == 'temp' and isinstance(r.get('list'), str):
+            try:
+                for line in (state / 'space' / r['list']).read_text(encoding='utf-8').splitlines():
+                    b, _, p = line.partition('\t')
+                    if p:
+                        temp.append({'path': p, 'bytes': int(b or 0)})
+            except (OSError, ValueError):
+                pass
+    return {'at': last['at'], 'build': [r for r in same if r.get('kind') in BUILD_KINDS],
+            'profiles': [r for r in same if r.get('kind') == 'temp-profile'], 'temp': temp}
+
+
+def compare_preview(prev, guard):
+    e_build = {key(r['path']): r for r in prev['build'] if isinstance(r.get('path'), str)}
+    g_build = {key(r['path']): r for r in guard['modules']}
+    e_temp = {key(r['path']): r for r in prev['temp'] + [x for x in prev['profiles'] if isinstance(x.get('path'), str)]}
+    g_temp = {key(r['path']): r for r in guard['temp']}
+    def split(e, g):
+        both, e_only, g_only = sorted(set(e) & set(g)), sorted(set(e) - set(g)), sorted(set(g) - set(e))
+        size = lambda d, ks: sum(int(d[k].get('bytes') or 0) for k in ks)
+        return {'both': {'n': len(both), 'bytes': size(e, both)}, 'engineOnly': {'n': len(e_only), 'bytes': size(e, e_only)},
+                'guardOnly': {'n': len(g_only), 'bytes': size(g, g_only)}, 'paths': {'both': both, 'engineOnly': e_only, 'guardOnly': g_only}}
+    return {'at': prev['at'], 'build': split(e_build, g_build), 'temp': split(e_temp, g_temp)}
 
 
 def guard_rows(folder, now):
@@ -108,7 +158,10 @@ def main():
     if not report.get('lap'):
         print('엔진이 아직 드라이브를 한 바퀴 다 훑지 않아 후보가 없습니다. 다 훑은 다음 날 다시 돌려 주세요.')
         return 2
-    result = compare(report, guard_rows(guard_dir, now))
+    guard = guard_rows(guard_dir, now)
+    result = compare(report, guard)
+    prev = last_preview(report_file.parent.parent)
+    result['preview'] = compare_preview(prev, guard) if prev else None
     out_dir.mkdir(parents=True, exist_ok=True)
     day = time.strftime('%Y-%m-%d', time.localtime(now))
     (out_dir / f'{day}.json').write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding='utf-8')
@@ -121,6 +174,14 @@ def main():
           f'{"" if t["commandsRead"] else " · 명령줄을 못 읽어 지킴이는 오늘 임시를 지우지 않는 날"}')
     print(f'지킴이만 다루는 것: 작업 사본 {o["worktrees"]["n"]}개 {gb(o["worktrees"]["bytes"])} · 릴리스 사본 {o["releaseCopies"]["n"]}개 · '
           f'캐시 {", ".join(o["caches"]["names"]) or "없음"} {gb(o["caches"]["bytes"])}')
+    pv = result['preview']
+    if pv:
+        pb, pt = pv['build'], pv['temp']
+        print(f'미리 보기({pv["at"]})의 지울 것: 빌드 폴더 둘 다 {pb["both"]["n"]} · 엔진만 {pb["engineOnly"]["n"]}개 {gb(pb["engineOnly"]["bytes"])} · 지킴이만 {pb["guardOnly"]["n"]} / '
+              f'임시 둘 다 {pt["both"]["n"]} · 엔진만 {pt["engineOnly"]["n"]}개 {gb(pt["engineOnly"]["bytes"])} · 지킴이만 {pt["guardOnly"]["n"]}')
+        print('「엔진만」은 하나씩 읽어 정말 쉬는 것인지 판정한다(12.6).')
+    else:
+        print('장부에 미리 보기 누름이 아직 없습니다. 누르지 않은 날은 space-preview.cjs --실행을 먼저 돌립니다.')
     if result['engineAutoOutside2']:
         print(f'엔진 가 등급이지만 2판이 비우지 않는 종류: {", ".join(result["engineAutoOutside2"])}')
     print(f'자세한 경로: {out_dir / (day + ".json")}')
