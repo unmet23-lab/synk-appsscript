@@ -136,8 +136,8 @@
 /* 종이 판의 단추: 글이 있으면 알약, 그림만 있으면 동그라미. 먼저 누를 단추 하나만 따뜻한 먹으로 채운다. */
 #world-panel.is-paper{background:var(--w-panel);color:var(--w-ink);box-shadow:0 -20px 60px rgba(20,12,4,.28)}
 #world-panel.is-paper .sheet-handle{background:var(--w-ink-4)}
-#world-panel.is-paper .close-button{background:rgba(22,21,19,.07);color:var(--w-ink);box-shadow:none}
-#world-panel.is-paper .close-button:hover{background:rgba(22,21,19,.12)}
+#world-panel.is-paper .close-button:not(dialog dialog *){background:rgba(22,21,19,.07);color:var(--w-ink);box-shadow:none}
+#world-panel.is-paper .close-button:hover:not(dialog dialog *){background:rgba(22,21,19,.12)}
 /* 판 머리의 영문 대문자 모노 꼬리표(LIFE IN KOREA · PLAY · ACCOUNT)는 종이 판에서 두지 않는다 — 제목이 그 판을 말한다 */
 #world-panel.is-paper #panel-eyebrow{display:none}
 #world-panel.is-paper .panel-header h2{margin-top:2px}
@@ -149,14 +149,14 @@
 #world-panel.is-paper .game-tutor:not(dialog dialog *){box-shadow:none}
 #world-panel.is-paper .game-tutor-portrait:not(dialog dialog *){box-shadow:0 0 0 1.5px rgba(22,21,19,.08),0 6px 14px rgba(30,20,10,.18)}
 #world-panel.is-paper .panel-header h2{font-weight:700;letter-spacing:-.02em}
-#world-panel.is-paper .felt-button{border-radius:999px;background:var(--paper-btn);color:var(--paper-btn-fg);box-shadow:0 10px 24px rgba(30,20,10,.14)}
-#world-panel.is-paper .felt-button:hover{box-shadow:0 0 0 4px rgba(42,36,32,.12),0 10px 24px rgba(30,20,10,.14)}
-#world-panel.is-paper .plain-button{border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1.5px rgba(42,36,32,.32)}
-#world-panel.is-paper .plain-button:hover{background:rgba(22,21,19,.05)}
-#world-panel.is-paper .quiet-button{color:var(--w-ink-2);text-decoration:none;font-weight:600}
-#world-panel.is-paper .quiet-button:hover{color:var(--w-ink)}
-#world-panel.is-paper :focus-visible{outline-color:var(--w-ink)}
-#world-panel.is-paper .w-print{box-shadow:0 1px 0 rgba(0,0,0,.04),0 12px 26px rgba(30,20,10,.18),0 2px 6px rgba(30,20,10,.12)}
+#world-panel.is-paper .felt-button:not(dialog dialog *){border-radius:999px;background:var(--paper-btn);color:var(--paper-btn-fg);box-shadow:0 10px 24px rgba(30,20,10,.14)}
+#world-panel.is-paper .felt-button:hover:not(dialog dialog *){box-shadow:0 0 0 4px rgba(42,36,32,.12),0 10px 24px rgba(30,20,10,.14)}
+#world-panel.is-paper .plain-button:not(dialog dialog *){border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1.5px rgba(42,36,32,.32)}
+#world-panel.is-paper .plain-button:hover:not(dialog dialog *){background:rgba(22,21,19,.05)}
+#world-panel.is-paper .quiet-button:not(dialog dialog *){color:var(--w-ink-2);text-decoration:none;font-weight:600}
+#world-panel.is-paper .quiet-button:hover:not(dialog dialog *){color:var(--w-ink)}
+#world-panel.is-paper :focus-visible:not(dialog dialog *){outline-color:var(--w-ink)}
+#world-panel.is-paper .w-print:not(dialog dialog *){box-shadow:0 1px 0 rgba(0,0,0,.04),0 12px 26px rgba(30,20,10,.18),0 2px 6px rgba(30,20,10,.12)}
 
 /* ── 공통 부품: 새 화면은 .w-* 를 쓰고, 기존 화면의 클래스는 각 CSS에서 같은 토큰으로 맞춘다 ── */
 .w-label{display:inline-flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;line-height:1.4;letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3)}
