@@ -36,16 +36,16 @@ export const T = {
   look: 4.1, // 몽글 쪽으로
   say: 4.9, // 「계란이 더워!」
   wrong: 5.4, // 상상 칸 ✗
-  laugh: 7.2, // 상상 칸 끝 — 친구들 웃음은 고쳐 줌 칸(f1 — 둘이 웃는 그림)이 맡는다(v2: 상상 칸을 1.8초로 늘리고 웃음 칸을 줄임)
-  fix: 7.25, // 「계란이 뜨거워!」 ✓ + 상자 뜨거워
+  laugh: 7.3, // 생각 칸 끝(v4: 1.9초 — 이해 시험 v3 s · h 「작고 잠깐이라 뜻을 못 잡음」. 원본 박자 6.8초와 0.6초 안) — 친구들 웃음은 고쳐 줌 칸이 맡는다
+  fix: 7.35, // 「계란이 뜨거워!」 ✓ + 상자 뜨거워
   a: 8.8, // 핵심 장면 — 다가감
   touch: 10.4, // 치맛자락이 계란에 닿음(반전)
   jump: 11.4, // 펄쩍
-  land: 12.3, // 착지 · 웃음
+  land: 12.0, // 착지 · 웃음(v4: 미학 맹검 04 「중력감 없이 0.5초 넘게 떠 있음」 — 펄쩍을 0.6초로)
   rest: 13.4, // 새 구도 — 둘러앉아 「아, 더워~」
-  offer: 15.3, // 계란을 내밂
-  no: 15.6, // 「계란이… 뜨거워!」 ✓ · 끝 두 줄
-  end: 17.0, // 등 뒤 그릇에 닿아 더 크게 펄쩍
+  offer: 14.9, // 계란을 내밂(v3: 「14~16초 반복으로 늘어짐」 — 내밂 칸을 당김)
+  no: 15.2, // 「계란이… 뜨거워!」 ✓
+  end: 16.4, // 등 뒤 그릇에 닿음 → 더 크게 펄쩍(끝 상자 둘은 17.0부터 — 「뜨거워!!」 말풍선은 그 전에 사라진다, 미학 맹검 05)
 } as const;
 
 const C = { ink: '#2A1A12', paper: '#FFF9F0', amber: '#B86A00', navy: '#24356E', ok: '#0A9A66', ng: '#D92D20' };
@@ -57,7 +57,6 @@ const CAM_CLOSE = 100;
 const FOOT = { h: [401, 1639], a: [404, 1632], c: [506, 1299], d: [312, 1629] } as const;
 const TOUCH_PT = [625, 1375] as const;
 const D_SHIFT = 66;
-const D_SCALE = 0.96;
 
 const Plate: React.FC<{ src: string; cam: number; dy?: number }> = ({ src, cam, dy = 0 }) => (
   <Img src={staticFile(`img/${src}`)} style={{ position: 'absolute', left: -cam, top: dy, width: 1280, height: 1920 }} />
@@ -81,21 +80,20 @@ const ShotHook: React.FC<{ t: number }> = ({ t }) => {
   const pant = Math.sin(t * Math.PI * 2 * 1.7);
   const sy = 1 - 0.04 + 0.085 * pant - lerp(t, 0, 1.7, 0, 0.06);
   const z = lerp(t, 0, T.b1, 1.0, 1.12);
-  // 땀방울(불투명한 펠트 물방울) — 몽글 머리에서 양옆으로 튀어 떨어진다
-  const drop = (at: number, x0: number, y0: number, vx: number) => {
-    const u = (t - at) / 0.6;
-    if (u < 0 || u > 1) return null;
-    const x = x0 + vx * u;
-    const y = y0 - 90 * Math.sin(Math.PI * Math.min(1, u * 1.4)) + 260 * u * u;
-    return <div key={at} style={{ position: 'absolute', left: x - 22, top: y - 30, width: 44, height: 60, background: '#A9D8F2', border: '4px solid #6FA9CC', borderRadius: '50% 50% 50% 50% / 62% 62% 38% 38%', transform: `rotate(${vx > 0 ? 25 : -25}deg)`, opacity: 1 - u * 0.4 }} />;
+  // 땀방울(불투명한 펠트 물방울) — 몸 옆에 붙어 천천히 미끄러져 내려오다 떨어진다(뜨고 지는 깜박임 없이, 미학 맹검 01)
+  const drop = (key: string, at: number, x0: number, y0: number, x1: number, y1: number) => {
+    const u = interpolate(t, [at, at + 1.3], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
+    const x = x0 + (x1 - x0) * u;
+    const y = y0 + (y1 - y0) * u;
+    const o = interpolate(t, [at - 0.15, at, at + 1.15, at + 1.3], [0, 1, 1, 0], clamp);
+    return <div key={key} style={{ position: 'absolute', left: x - 20, top: y - 28, width: 40, height: 56, background: '#A9D8F2', border: '4px solid #6FA9CC', borderRadius: '50% 50% 50% 50% / 62% 62% 38% 38%', opacity: o }} />;
   };
   return (
-    <Cam z={z} ox={400} oy={1520} sx={6 * Math.sin(t * 2.1)}>
+    <Cam z={z} ox={400} oy={1520}>
       <Plate src="h_bg.jpg" cam={CAM_WIDE} />
       <Layer src="h_m.png" cam={CAM_WIDE} foot={FOOT.h} sx={1 / Math.sqrt(Math.max(0.8, sy))} sy={sy} rot={3 * Math.sin(t * Math.PI * 1.7)} />
-      {drop(0.2, 150, 1120, -150)}
-      {drop(0.75, 580, 1100, 160)}
-      {drop(1.25, 170, 1130, -130)}
+      {drop('l', 0.1, 120, 1200, 70, 1520)}
+      {drop('r', 0.45, 610, 1190, 660, 1500)}
     </Cam>
   );
 };
@@ -117,28 +115,17 @@ const ShotB2: React.FC<{ t: number }> = ({ t }) => {
   const ox = 820 + (300 - 820) * toM;
   const oy = 820 + (1320 - 820) * toM;
   const z = 1.12 + 0.18 * toM + 0.03 * punchAt(t, [T.say]);
+  const zz = z + (1.0 - z) * (t >= T.wrong ? interpolate(t, [T.wrong, T.wrong + 0.25], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) }) : 0);
   const toss = t < T.look ? 7 * Math.abs(Math.sin(u * Math.PI * 2 * 1.6)) : 0; // 받을 때마다 톡톡
+  const dim = interpolate(t, [T.wrong, T.wrong + 0.2], [1, 0.78], clamp);
+  const back = interpolate(t, [T.wrong, T.wrong + 0.25], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const shiver = t >= T.wrong ? 2 * Math.sin(t * 40) : 0;
   return (
-    <Cam z={z} ox={ox} oy={oy} sy={-toss}>
-      <Plate src="p_b2.jpg" cam={CAM_WIDE} />
+    <Cam z={zz} ox={ox} oy={oy + 380 * back} sx={shiver} sy={-toss}>
+      <div style={{ position: 'absolute', inset: 0, filter: `brightness(${dim})` }}>
+        <Plate src="p_b2.jpg" cam={CAM_WIDE} />
+      </div>
     </Cam>
-  );
-};
-// 상상 칸 — 양머리 수건을 쓰고 땀 흘리는 계란(틀린 말 그대로의 그림), 둘레를 흰 꿈 테로 지금 장면과 가른다(교훈 L07)
-const ShotDream: React.FC<{ t: number }> = ({ t }) => {
-  const u = t - T.wrong;
-  const z = interpolate(u, [0, 0.12, 0.9], [1.12, 1.0, 1.03], { ...clamp, easing: Easing.out(Easing.cubic) });
-  const wob = (3 + 3 * Math.min(1, u)) * Math.sin(u * Math.PI * 2 * 2.2); // 1.8초 동안 점점 더 덜덜
-  return (
-    <AbsoluteFill style={{ backgroundColor: '#E37210' }}>
-      <Cam z={z} ox={540} oy={1500}>
-        <div style={{ position: 'absolute', inset: 0, transformOrigin: '540px 1700px', transform: `rotate(${wob}deg)` }}>
-          <Plate src="p_e1.jpg" cam={CAM_WIDE + 40} dy={130} />
-        </div>
-      </Cam>
-      <AbsoluteFill style={{ boxShadow: 'inset 0 0 120px 60px rgba(255,248,236,0.92)' }} />
-      <div style={{ position: 'absolute', left: 80, top: 1300, fontSize: 110 }}>💭</div>
-    </AbsoluteFill>
   );
 };
 // 친구들 웃음(6.3) → 남자 친구가 계란을 들어 보이며 고쳐 줌(6.8)
@@ -198,17 +185,19 @@ const ShotB: React.FC<{ t: number }> = ({ t }) => {
     </Cam>
   );
 };
-// 펄쩍(0.9초) — 그릇 곁에서 몸을 떼며 솟는 자세로 이어 받아(가까운 칸의 끝) 꼭대기를 지나 왼쪽으로 떨어진다. 눈은 > < (장면 심사 v2 ②)
+// 펄쩍(0.6초) — 그릇 곁에서 몸을 떼며 솟는 자세로 이어 받아(가까운 칸의 끝) 꼭대기를 지나 왼쪽으로 떨어진다. 눈은 > < (장면 심사 v2 ②)
+//   v4: 꼭대기에서 머물지 않게 — 오름은 감속(quad), 내림은 가속(quad)인 포물선, 꼭대기는 0.19초(미학 맹검 04)
+const PK = 0.32;
 const ShotC: React.FC<{ t: number }> = ({ t }) => {
   const p = (t - T.jump) / (T.land - T.jump);
   const groundA = FOOT.a[1] - FOOT.c[1];
   const groundD = FOOT.d[1] - FOOT.c[1];
-  const up = interpolate(p, [0, 0.42], [groundA - 90, -24], { ...clamp, easing: Easing.out(Easing.cubic) });
-  const down = interpolate(p, [0.42, 1], [-24, groundD], { ...clamp, easing: Easing.in(Easing.quad) });
-  const dy = p < 0.42 ? up : down;
-  const dx = interpolate(p, [0, 0.42, 1], [FOOT.a[0] - FOOT.c[0] + 30, -120, FOOT.d[0] + D_SHIFT - FOOT.c[0]], clamp);
-  const stretch = interpolate(p, [0, 0.3, 0.5, 0.85, 1], [1.16, 1.06, 1.0, 1.08, 1.1], clamp);
-  const rot = interpolate(p, [0, 0.42, 1], [-9, -5, -2], clamp);
+  const up = interpolate(p, [0, PK], [groundA - 90, -24], { ...clamp, easing: Easing.out(Easing.quad) });
+  const down = interpolate(p, [PK, 1], [-24, groundD], { ...clamp, easing: Easing.in(Easing.quad) });
+  const dy = p < PK ? up : down;
+  const dx = interpolate(p, [0, 1], [FOOT.a[0] - FOOT.c[0] + 30, FOOT.d[0] + D_SHIFT - FOOT.c[0]], clamp);
+  const stretch = interpolate(p, [0, 0.2, PK, 0.75, 1], [1.16, 1.06, 1.0, 1.1, 1.14], clamp);
+  const rot = interpolate(p, [0, PK, 1], [-9, -5, -2], clamp);
   return (
     <AbsoluteFill>
       <Plate src="cx_bg.jpg" cam={CAM_WIDE} />
@@ -226,7 +215,8 @@ const ShotD: React.FC<{ t: number }> = ({ t }) => {
   return (
     <Cam z={lerp(u, 0, 1.1, 1.0, 1.025)} ox={380} oy={1530}>
       <Plate src={laughB ? 'd_bg2.jpg' : 'd_bg.jpg'} cam={CAM_WIDE} />
-      <Layer src="d_m.png" cam={CAM_WIDE} foot={FOOT.d} dx={D_SHIFT} dy={hop} sx={D_SCALE / Math.sqrt(sy)} sy={D_SCALE * sy} rot={shiver} />
+      <div style={{ position: 'absolute', left: FOOT.d[0] + D_SHIFT - CAM_WIDE - 230, top: FOOT.d[1] - 26, width: 460, height: 52, borderRadius: '50%', background: 'radial-gradient(ellipse at center, rgba(60,25,5,0.42), rgba(60,25,5,0) 70%)', opacity: 1 + hop / 240 }} />
+      <Layer src="cx_m.png" cam={CAM_WIDE} foot={FOOT.c} dx={FOOT.d[0] + D_SHIFT - FOOT.c[0]} dy={FOOT.d[1] - FOOT.c[1] + hop} sx={0.92 / Math.sqrt(sy)} sy={0.92 * sy} rot={shiver - 2} />
     </Cam>
   );
 };
@@ -254,16 +244,16 @@ const ShotOffer: React.FC<{ t: number }> = ({ t }) => {
 //   꼭대기에 떨며 떠 있고 그릇에서 김이 피어오른다(0.4~2.6초). 카메라는 핵심 장면 때보다 조금 가깝다.
 const ShotEnd: React.FC<{ t: number }> = ({ t }) => {
   const u = t - T.end;
-  if (u < 0.4) {
+  if (u < 0.5) {
     const HIT = 0.08;
     const slide = interpolate(u, [0, HIT], [-120, 0], { ...clamp, easing: Easing.in(Easing.quad) });
-    const press = interpolate(u, [HIT, HIT + 0.05, 0.24], [1, 0.84, 0.9], clamp);
-    const pull = interpolate(u, [0.24, 0.4], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
-    const tremble = u >= HIT && u < 0.24 ? Math.sin(u * 120) * 7 : 0;
+    const press = interpolate(u, [HIT, HIT + 0.05, 0.3], [1, 0.84, 0.9], clamp);
+    const pull = interpolate(u, [0.3, 0.5], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
+    const tremble = u >= HIT && u < 0.3 ? Math.sin(u * 120) * 7 : 0;
     const sx0 = TOUCH_PT[0] - CAM_CLOSE;
-    const splash = interpolate(u, [HIT, HIT + 0.04, 0.4], [0, 1, 1], clamp);
+    const splash = interpolate(u, [HIT, HIT + 0.04, 0.5], [0, 1, 1], clamp);
     const splashS = interpolate(u, [HIT, HIT + 0.2], [0.8, 1.7], clamp);
-    const glow = interpolate(u, [HIT, HIT + 0.05, 0.4], [0, 0.9, 0.6], clamp);
+    const glow = interpolate(u, [HIT, HIT + 0.05, 0.5], [0, 0.9, 0.6], clamp);
     const flash = interpolate(u, [HIT, HIT + 0.03, HIT + 0.14], [0, 0.5, 0], clamp);
     return (
       <AbsoluteFill>
@@ -279,7 +269,7 @@ const ShotEnd: React.FC<{ t: number }> = ({ t }) => {
       </AbsoluteFill>
     );
   }
-  const w = u - 0.4;
+  const w = u - 0.5;
   const groundA = FOOT.a[1] - FOOT.c[1];
   const dy = interpolate(w, [0, 0.3], [groundA - 90, 20], { ...clamp, easing: Easing.out(Easing.cubic) }) - 12 * Math.sin(Math.max(0, w - 0.3) * Math.PI * 2 * 1.1);
   const dx = interpolate(w, [0, 0.3], [FOOT.a[0] - FOOT.c[0] + 30, -110], { ...clamp, easing: Easing.out(Easing.cubic) });
@@ -304,8 +294,7 @@ const ShotEnd: React.FC<{ t: number }> = ({ t }) => {
 const Shots: React.FC<{ t: number }> = ({ t }) => {
   if (t < T.b1) return <ShotHook t={t} />;
   if (t < T.jug) return <ShotB1 t={t} />;
-  if (t < T.wrong) return <ShotB2 t={t} />;
-  if (t < T.laugh) return <ShotDream t={t} />;
+  if (t < T.laugh) return <ShotB2 t={t} />;
   if (t < T.a) return <ShotF1 t={t} />;
   if (t < T.touch) return <ShotA t={t} />;
   if (t < T.jump) return <ShotB t={t} />;
@@ -384,13 +373,29 @@ const TopBand: React.FC<{ t: number; from: number; until: number; text: string; 
     </div>
   );
 };
-// 첫 물음 팻말 — 찜질방 나무 팻말(짙은 나무색 · 크림 글 · 살짝 기울임). 지난 두 편 머리 글(흰 이름표)과 꼴 · 색을 달리한다(이해 시험 v1 haiku 9번)
-const SignBoard: React.FC<{ t: number; from: number; until: number; text: string; font: string }> = ({ t, from, until, text, font }) => {
+// 생각 구름 — 몽글 머리에서 나온 생각(지난 편들의 흰 이름표 · 머리 글과 다른 꼴, 이해 시험 v2 haiku 9번).
+// 둥글게 부푼 흰 구름 + 몽글 머리로 휘어 내려가는 꼬리 하나(점 · 고리를 줄지어 그리지 않는다 — 유호님 11-20 「고리 · 빽빽한 점」).
+const Thought: React.FC<{ t: number; from: number; until: number; x: number; y: number; w: number; h: number; tail: [number, number] | null; base?: number; children: React.ReactNode }> = ({ t, from, until, x, y, w, h, tail, base = -0.25, children }) => {
   if (t < from || t >= until) return null;
-  const a = fade(t, from, 0.22);
+  const a = pop(t, from);
+  const bx = x + w * base;
+  const by = y + h / 2 - 10;
+  const dx0 = tail ? tail[0] - bx : 0;
+  const dy0 = tail ? tail[1] - by : 1;
+  const len = Math.hypot(dx0, dy0) || 1;
+  const k = Math.min(1, 150 / len); // 꼬리는 150px까지 — 몽글 쪽을 가리키기만 한다
+  const tx = bx + dx0 * k;
+  const ty = by + dy0 * k;
+  const mx = (bx + tx) / 2 + 20;
+  const my = (by + ty) / 2;
   return (
-    <div style={{ position: 'absolute', left: 65, width: 855, top: 280, display: 'flex', justifyContent: 'center', opacity: a, transform: `translateY(${(1 - a) * -20}px) rotate(-1.6deg)` }}>
-      <div style={{ background: '#6E3B1C', border: '7px solid #3F1F0D', borderRadius: 22, padding: '16px 34px 20px', boxShadow: 'inset 0 0 0 4px rgba(255,220,170,0.25), 0 12px 26px rgba(40,10,0,0.4)', fontFamily: font, fontWeight: 800, fontSize: 54, lineHeight: 1.16, color: '#FFF1D6', textAlign: 'center', maxWidth: 855 }}>{text}</div>
+    <div style={{ position: 'absolute', inset: 0, opacity: Math.min(1, a * 1.4) }}>
+      {tail && <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, overflow: 'visible' }}>
+        <path d={`M ${bx - 46} ${by} Q ${mx - 30} ${my} ${tx} ${ty} Q ${mx + 20} ${my} ${bx + 46} ${by} Z`} fill="#FFFDF8" stroke="#8FB7D6" strokeWidth={5} strokeLinejoin="round" />
+      </svg>}
+      <div style={{ position: 'absolute', left: x - w / 2, top: y - h / 2, width: w, height: h, transform: `scale(${0.85 + 0.15 * a})`, transformOrigin: '30% 100%', background: '#FFFDF8', border: '6px solid #8FB7D6', borderRadius: '46% 54% 48% 52% / 58% 52% 48% 42%', boxShadow: '0 0 0 10px rgba(255,253,248,0.55), 0 12px 30px rgba(40,60,90,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        {children}
+      </div>
     </div>
   );
 };
@@ -414,20 +419,20 @@ const WordBox: React.FC<{ t: number; from: number; until: number; ko: string; re
 
 // 끝 — 앞에서 쓴 낱말 상자 둘을 나란히: 왼쪽 「더워」 아래 «Өрөө халуун», 오른쪽 「뜨거워」 아래 «Хүрэхэд халуун»(15.6 · 16.4)
 const EndBoxes: React.FC<{ t: number; L: LocPack }> = ({ t, L }) => {
-  if (t < T.no) return null;
+  if (t < 17.0) return null;
   const box = (at: number, ko: string, mn: string) => {
     const a = fade(t, at, 0.2);
     return (
-      <div style={{ opacity: a, transform: `translateY(${(1 - a) * 16}px)`, background: 'rgba(255,249,240,0.97)', borderRadius: 36, padding: '12px 26px 18px', boxShadow: '0 10px 26px rgba(60,20,0,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 330 }}>
-        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 86, lineHeight: 1.0, color: C.amber }}>{ko}</div>
-        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: 48, lineHeight: 1.15, color: C.navy, marginTop: 6 }}>{mn}</div>
+      <div style={{ opacity: a, transform: `translateY(${(1 - a) * 16}px)`, background: 'rgba(255,249,240,0.97)', borderRadius: 36, padding: '14px 18px 20px', boxShadow: '0 10px 26px rgba(60,20,0,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 360 }}>
+        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 112, lineHeight: 1.0, color: C.amber }}>{ko}</div>
+        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: 50, lineHeight: 1.15, color: C.navy, marginTop: 8 }}>{mn}</div>
       </div>
     );
   };
   return (
-    <div style={{ position: 'absolute', left: 65, width: 855, top: 280, display: 'flex', justifyContent: 'center', gap: 30 }}>
-      {box(T.no, '더워', L.endA)}
-      {box(T.no + 0.8, '뜨거워', L.endB)}
+    <div style={{ position: 'absolute', left: 65, width: 855, top: 275, display: 'flex', justifyContent: 'center', gap: 24 }}>
+      {box(17.0, '더워', L.endA)}
+      {box(17.05, '뜨거워', L.endB)}
     </div>
   );
 };
@@ -436,18 +441,25 @@ const Texts: React.FC<{ t: number; L: LocPack }> = ({ t, L }) => {
   const f = L.font;
   return (
     <>
-      <SignBoard t={t} from={0} until={3.45} text={L.head} font={f} />
-      <Bubble t={t} from={0} until={T.b1} x={400} y={1060} ko="" mean={L.hook} font={f} mnOnly tail={[380, 1200]} />
+      <Thought t={t} from={0} until={3.55} x={500} y={372} w={800} h={190} base={0.03} tail={t < T.b1 ? [430, 1000] : null}>
+        <div style={{ fontFamily: f, fontWeight: 800, fontSize: 52, lineHeight: 1.16, color: C.ink, textAlign: 'center', padding: '0 40px' }}>{L.head}</div>
+      </Thought>
+      <Bubble t={t} from={0} until={T.b1} x={660} y={1010} ko="" mean={L.hook} font={f} mnOnly tail={[520, 1140]} />
       <Bubble t={t} from={T.b1 + 0.03} until={T.jug} x={300} y={1200} ko="더워!" mean={L.means[0]} font={f} koSize={96} tail={[520, 1330]} />
-      <WordBox t={t} from={T.b1 + 0.86} until={T.b1 + 3.36} ko="더워" read={L.reads[0]} sub={L.boxSubs[0]} font={f} top={505} />
-      <Bubble t={t} from={T.say} until={T.fix} x={500} y={835} ko="계란이 더워!" hot="더워" mean={L.means[1]} font={f} mark="ng" markAt={T.wrong} tail={t < T.wrong ? [300, 1020] : undefined} />
-      <TopBand t={t} from={T.wrong + 0.32} until={T.fix} text={L.wrong} font={f} />
+      <WordBox t={t} from={T.b1 + 0.03} until={T.say - 0.02} ko="더워" read={L.reads[0]} sub={L.boxSubs[0]} font={f} top={505} />
+      <Bubble t={t} from={T.say} until={T.fix} x={682} y={1300} ko="계란이 더워!" hot="더워" mean={L.means[1]} font={f} koSize={66} meanSize={40} mark="ng" markAt={T.wrong} tail={[520, 1262]} />
+      <TopBand t={t} from={T.say + 0.85} until={T.laugh} text={L.wrong} font={f} />
+      <Thought t={t} from={T.wrong} until={T.laugh} x={500} y={760} w={840} h={640} tail={[250, 1120]}>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+          <Img src={staticFile('img/p_e1.jpg')} style={{ position: 'absolute', width: 1280 * 0.85, height: 1920 * 0.85, left: -146 * 0.85, top: -860 * 0.85 }} />
+        </div>
+      </Thought>
       <Bubble t={t} from={T.fix} until={T.a} x={470} y={1240} ko="계란이 뜨거워!" hot="뜨거워" mean={L.means[2]} font={f} mark="ok" markAt={T.fix + 0.35} tail={[880, 960]} />
-      <WordBox t={t} from={T.fix + 0.85} until={T.fix + 3.35} ko="뜨거워" read={L.reads[1]} sub={L.boxSubs[1]} font={f} />
-      <Bubble t={t} from={T.touch + 0.48} until={T.rest + 0.05} x={460} y={600} ko="뜨거워!" hot="뜨거워" mean={L.means[3]} font={f} koSize={96} mark="ok" markAt={T.touch + 0.5} />
+      <WordBox t={t} from={T.fix} until={T.touch} ko="뜨거워" read={L.reads[1]} sub={L.boxSubs[1]} font={f} />
+      <Bubble t={t} from={T.touch + 0.48} until={T.rest + 0.05} x={540} y={430} ko="뜨거워!" hot="뜨거워" mean={L.means[3]} font={f} koSize={96} mark="ok" markAt={T.touch + 0.5} />
       <Bubble t={t} from={T.rest + 0.08} until={T.offer + 0.1} x={600} y={620} ko="아, 더워~" hot="더워" mean={L.means[4]} font={f} tail={[880, 800]} />
       <Bubble t={t} from={T.no} until={T.end} x={470} y={940} ko="계란이… 뜨거워!" hot="뜨거워" mean={L.means[5]} font={f} koSize={80} mark="ok" markAt={T.no + 0.6} tail={[400, 1150]} />
-      <Bubble t={t} from={T.end + 0.05} until={TOTAL} x={640} y={1335} ko="뜨거워!!" hot="뜨거워" mean={L.means[6]} font={f} koSize={100} />
+      <Bubble t={t} from={T.end + 0.05} until={16.98} x={620} y={1300} ko="뜨거워!!" hot="뜨거워" mean={L.means[6]} font={f} koSize={100} />
       <EndBoxes t={t} L={L} />
     </>
   );
@@ -457,7 +469,7 @@ const Texts: React.FC<{ t: number; L: LocPack }> = ({ t, L }) => {
 const VO: [string, number][] = [
   ['b1', T.b1 + 0.05],
   ['m1', T.say + 0.03],
-  ['b2', T.fix + 0.05],
+  ['b2', T.fix], // 도현 줄은 1.45초 — 다가감 컷(8.8) 전에 끝나게 말풍선과 함께 시작
   ['m2', T.touch + 0.56],
   ['b3', T.rest + 0.08],
   ['m3', T.no + 0.03],
@@ -497,13 +509,15 @@ const SFX: [number, string, number][] = [
   [T.end + 0.03, 'puff.wav', 0.3],
   [T.end + 0.05, 'whoosh_up.wav', 0.34],
   [T.end + 0.4, 'shiver.wav', 0.2],
-  [T.end + 1.5, 'whoosh_down.wav', 0.2],
-  [T.end + 1.85, 'thud.wav', 0.42],
-  [T.end + 2.0, 'boing.wav', 0.16],
+  [T.end + 1.15, 'shiver.wav', 0.4], // 떠 있는 몽글이 떤다 — 꼬리를 말보다 9dB 넘게 낮추지 않게(최종본검사 말 — v5 도현 줄이 커져 9.4dB가 되어 끝 소리를 올림)
+  [T.end + 1.6, 'puff.wav', 0.38],
+  [T.end + 1.95, 'shiver.wav', 0.38],
+  [T.end + 2.3, 'sparkle.wav', 0.42], // 끝 소리 한 방 — 몽글은 떠 있는 채 끝난다(떨어지는 소리를 두지 않음)
+  [17.0, 'pop.wav', 0.14],
 ];
 const Sound: React.FC = () => (
   <>
-    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.17 * MASTER * interpolate(i, [0, 8, TOTAL_FRAMES - 15, TOTAL_FRAMES], [0, 1, 1, 0], clamp)} />
+    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.17 * MASTER * interpolate(i, [0, 8, fr(17.1), fr(17.6), TOTAL_FRAMES - 15, TOTAL_FRAMES], [0, 1, 1, 1.5, 1.5, 0], clamp)} />
     <Audio src={staticFile('sfx/room.wav')} volume={0.1 * MASTER} endAt={TOTAL_FRAMES} />
     {VO.map(([v, t]) => (
       <Sequence key={v} from={fr(t)} layout="none">

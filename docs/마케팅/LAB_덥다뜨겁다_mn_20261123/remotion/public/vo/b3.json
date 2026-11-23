@@ -2,24 +2,24 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "b3",
  "text": "아, 더워~",
- "dur": 1.819,
+ "dur": 0.97,
  "words": [
   {
    "text": "아,",
-   "start": 0.02,
-   "end": 0.04
+   "start": 0.24,
+   "end": 0.256
   },
   {
    "text": "더워~",
-   "start": 0.727,
-   "end": 1.758
+   "start": 0.353,
+   "end": 0.97
   }
  ],
  "source": {
-  "key": "74c6cee954d39cac29a32e8f7850a607",
+  "key": "d2a7631ffff028c2ab990e6709b3fa42",
   "voice": {
-   "id": "tc_5c3c52cb5827e00008dd7f3b",
-   "name": "범수"
+   "id": "tc_66d000ee0742c43c93a0ada1",
+   "name": "도현"
   },
   "settings": {
    "model": "ssfm-v30",
@@ -29,11 +29,11 @@
    "tempo": 1,
    "seed": 4823,
    "lufs": -16,
-   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "voiceId": "tc_66d000ee0742c43c93a0ada1",
    "prev": "셋이 둘러앉아 쉬는데 친구가 부채질을 하며 늘어지게 말한다.",
    "next": "계란이… 뜨거워!"
   },
-  "speed": 1,
+  "speed": 1.25,
   "cut": null
  },
  "level": {
@@ -42,6 +42,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 161
+  "topPitchHz": null
  }
 }
