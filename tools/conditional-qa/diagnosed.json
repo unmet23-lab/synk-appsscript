@@ -2,6 +2,14 @@
   "version": 1,
   "ranges": [
     {
+      "cases": ["S094", "S095", "S096"],
+      "exactCases": true,
+      "from": "82c2f7779b7fabda9a5c9c16a3e731a7cdf5d262",
+      "fixedBy": "78246ecf1cb6bd151026bf039210c7795bd18fce",
+      "cause": "학생 시트를 종이 겉으로 바꾸면서 390 폭의 알림 시트가 6px 가로로 넘쳤고, 시험 준비 줄 머리가 영문 EXAM에서 화면 언어 글로 바뀌었다. 넘침을 고치고 머리 글 기대값을 바꾼 커밋이 85개를 통과했다",
+      "evidence": "tools/conditional-qa/README.md#diagnosed-failures"
+    },
+    {
       "cases": ["S070"],
       "exactCases": true,
       "from": "560faed480a460e7d52eee01d1c42221ab4b6477",
