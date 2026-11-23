@@ -1,0 +1,543 @@
+<title>내 팬 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500&display=swap">
+<style>
+/* 짜임: 바깥은 고르는 판(테마를 따름), 안은 서울행 앱과 같은 밤 화면 한 대. 팬은 객석에 실제로 앉은 얼굴 몇 개와 숫자로만 보이고, 점 무늬는 쓰지 않는다. */
+@font-face{font-family:'World SUIT';src:url(fonts/SUIT.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'World Mono';src:url(fonts/DMMono.woff2) format('woff2');font-weight:400 600;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
+:root{
+  /* 바깥 판 */
+  --page:#EEF0F4; --pageInk:#14161C; --pageInk2:#4A5060; --pageLine:rgba(20,22,28,.12); --seg:#FFFFFF; --segOn:#14161C; --segOnInk:#FFFFFF;
+  /* 앱 안(서울행 토큰) */
+  --sky:#050b1a; --ink:#FAFAF9; --ink2:rgba(250,250,249,.78); --ink3:rgba(250,250,249,.56); --line:rgba(255,255,255,.09); --seat:rgba(255,255,255,.07);
+  --fan:#A77CFF;      /* 팬의 불빛: 팬 수 · 앉은 자리 · 앙코르 */
+  --voice:#F3DFA6;    /* 팬이 하는 말 */
+  --pass:#7EE0B5;     /* 판정: 해냄 */
+  --rec:#FF4FA8;      /* 내 차례: 녹음 중 */
+  --paper:#F7F5F0; --paperInk:#1B1D22;
+  --sans:'World SUIT','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --mono:'World Mono',ui-monospace,'SFMono-Regular',monospace;
+  --serif:'Noto Serif KR','Nanum Myeongjo',serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#0B0D12;--pageInk:#EEF0F4;--pageInk2:#A3A9B8;--pageLine:rgba(238,240,244,.12);--seg:#161922;--segOn:#EEF0F4;--segOnInk:#0B0D12;color-scheme:dark}}
+:root[data-theme="dark"]{--page:#0B0D12;--pageInk:#EEF0F4;--pageInk2:#A3A9B8;--pageLine:rgba(238,240,244,.12);--seg:#161922;--segOn:#EEF0F4;--segOnInk:#0B0D12;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--page);color:var(--pageInk);font-family:var(--sans);letter-spacing:-.015em;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;letter-spacing:inherit;padding:0}
+button:focus-visible{outline:2px solid var(--fan);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:40px;align-items:start}
+.side{min-width:0;display:grid;gap:22px;position:sticky;top:20px}
+.side h1{margin:0;font-size:28px;font-weight:760;letter-spacing:-.03em}
+.side .lead{margin:6px 0 0;font-size:15px;line-height:1.6;color:var(--pageInk2);max-width:52ch}
+.ctl{display:grid;gap:10px}
+.ctl .lab{font-size:12.5px;font-weight:650;color:var(--pageInk2)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{background:var(--seg);border:1px solid var(--pageLine);border-radius:999px;padding:9px 14px;font-size:14px;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--segOn);color:var(--segOnInk);border-color:var(--segOn)}
+.note{font-size:14px;line-height:1.65;color:var(--pageInk2);max-width:56ch;margin:0}
+.note b{color:var(--pageInk);font-weight:650}
+.why{border-top:1px solid var(--pageLine);padding-top:14px;display:grid;gap:6px}
+.why p{margin:0;font-size:13.5px;line-height:1.6;color:var(--pageInk2)}
+.why p b{color:var(--pageInk)}
+
+/* ── 휴대폰 ── */
+.phone{position:relative;width:390px;height:844px;border-radius:44px;background:var(--sky);color:var(--ink);overflow:hidden;box-shadow:0 30px 80px rgba(5,11,26,.35),0 0 0 10px #0E1018,0 0 0 11px rgba(255,255,255,.08);isolation:isolate}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}
+.scr.on{opacity:1;visibility:visible;transition:opacity .35s ease}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.bar{display:flex;align-items:center;gap:12px;padding:54px 18px 8px}
+.bar .back{font-size:15px;color:var(--ink2);display:flex;gap:6px;align-items:center;min-height:44px}
+.bar .t{font-size:16px;font-weight:700;margin-left:auto;margin-right:auto;transform:translateX(-30px)}
+.k{font-weight:780;color:#fff}                /* 배울 한국어 */
+.say{color:var(--voice);font-weight:520}      /* 팬의 말 */
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ev{display:block;font-size:12.5px;line-height:1.45;color:var(--ink3);font-weight:550}   /* 근거: 어느 기록을 보고 한 말인가 */
+.ev::before{content:"근거  ";color:rgba(250,250,249,.38);font-weight:650}
+.ev .same{color:var(--ink2)}
+.face{width:44px;height:44px;border-radius:12px;object-fit:cover;flex:none;background:#111}
+.pill{display:flex;align-items:center;justify-content:center;height:54px;border-radius:999px;background:#fff;color:#050b1a;font-size:16.5px;font-weight:720;width:100%}
+.ghost{display:flex;align-items:center;justify-content:center;height:48px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:var(--ink);font-size:15px;font-weight:620;width:100%}
+.foot{padding:12px 18px max(26px,env(safe-area-inset-bottom,0px));display:grid;gap:10px;background:linear-gradient(180deg,rgba(5,11,26,0),var(--sky) 30%)}
+.eyebrow{font-size:12.5px;font-weight:650;letter-spacing:.06em;color:var(--ink3)}
+/* 튜터 선배의 말: 상자 없이, 가르치는 목소리 */
+.tutor{margin:0 22px;padding:14px 0 0;border-top:1px solid var(--line);display:grid;gap:6px}
+.tutor .who{font-size:12.5px;font-weight:700;color:var(--ink3)}
+.tutor p{margin:0;font-size:15px;line-height:1.55;color:var(--ink)}
+
+/* 장면 끝 공통 머리 */
+.endHead{padding:58px 22px 18px;display:grid;gap:8px}
+.endHead b{font-size:24px;font-weight:740;letter-spacing:-.035em;line-height:1.25}
+.endHead p{margin:0;font-size:14.5px;line-height:1.55;color:var(--ink2)}
+/* A 팬 댓글 */
+.cmts{display:grid;padding:6px 22px 4px}
+.cmts h3{margin:6px 0 2px;font-size:12.5px;font-weight:700;color:var(--ink3)}
+.cmt{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line);opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s cubic-bezier(.2,.9,.3,1)}
+.cmt:last-child{border-bottom:0}
+.cmt.in{opacity:1;transform:none}
+.cmt .n{font-size:13px;font-weight:700;color:var(--ink2)}
+.cmt p{margin:3px 0 6px;font-size:15.5px;line-height:1.55}
+.still{margin:8px 22px 0;font-size:14px;line-height:1.55;color:var(--ink2)}
+.still b{color:#fff;font-weight:700}
+/* B 최애 팬 한 명 */
+.top .pic{height:318px;background:url(img/fan1-scene.webp) 30% 40%/cover no-repeat;-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent);mask-image:linear-gradient(180deg,#000 72%,transparent)}
+.top .msg{margin:-34px 22px 0;display:grid;gap:12px;position:relative;opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.9,.3,1)}
+.top .msg.in{opacity:1;transform:none}
+.top .msg .who b{font-size:22px;font-weight:740}
+.top .msg .who span{display:block;margin-top:3px;font-size:13px;color:var(--ink3)}
+.top .msg p{margin:0;font-size:16.5px;line-height:1.6}
+/* C 객석에서 */
+.hall{position:relative;flex:1;overflow:hidden}
+.hall .img{position:absolute;left:0;right:0;top:-150px;aspect-ratio:720/1203;background:url(img/crowd4.webp) 0 0/100% 100% no-repeat}
+@property --sx{syntax:'<percentage>';inherits:false;initial-value:26%}
+@property --sy{syntax:'<percentage>';inherits:false;initial-value:67%}
+.hall .spot{position:absolute;inset:0;background:radial-gradient(130px 130px at var(--sx) var(--sy),rgba(5,11,26,0) 0,rgba(5,11,26,0) 45%,rgba(5,11,26,.6) 100%);transition:--sx .9s cubic-bezier(.4,0,.2,1),--sy .9s cubic-bezier(.4,0,.2,1)}
+.hall .top2{position:absolute;left:0;right:0;top:0;padding:58px 22px 40px;display:grid;gap:6px;background:linear-gradient(180deg,rgba(5,11,26,.85),rgba(5,11,26,0))}
+.hall .top2 b{font-size:24px;font-weight:740;letter-spacing:-.035em}
+.hall .top2 span{font-size:14px;color:var(--ink2)}
+.hall .cap{position:absolute;left:0;right:0;bottom:0;padding:60px 22px 14px;background:linear-gradient(180deg,rgba(5,11,26,0),rgba(5,11,26,.92) 34%);display:grid;gap:8px}
+.hall .cap .n{font-size:13px;font-weight:700;color:var(--ink2)}
+.hall .cap p{margin:0;font-size:17px;line-height:1.55;text-shadow:0 1px 10px rgba(0,0,0,.8);min-height:53px}
+.hall .cap .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:2px}
+.nextBtn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.22);font-size:14px;font-weight:650;color:#fff;flex:none}
+.nextBtn .num{font-size:12.5px;color:var(--ink3)}
+.capin{transition:opacity .3s ease}
+
+/* 내 길 */
+.pbar{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:54px 18px 14px;border-bottom:1px solid var(--line)}
+.me{width:44px;height:44px;border-radius:50%;background:#2a2550;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.who2 b{display:block;font-size:16px;font-weight:700}
+.who2 span{font-size:13px;color:var(--fan)}
+.fans{display:grid;justify-items:end;gap:4px;min-height:44px;padding:2px 0}
+.fans small{font-size:13px;font-weight:600;color:var(--ink3)}
+.fans .row{display:flex;align-items:center;gap:8px}
+.stack{display:flex}
+.stack img{width:22px;height:22px;border-radius:7px;object-fit:cover;box-shadow:0 0 0 2px var(--sky)}
+.stack img+img{margin-left:-6px}
+.fans .num{font-size:22px;font-weight:500}
+.notice{margin:14px 18px 0;padding:14px;border-radius:18px;background:rgba(167,124,255,.12);display:grid;gap:10px;opacity:0;transform:translateY(-6px);transition:opacity .4s ease,transform .4s ease}
+.notice.in{opacity:1;transform:none}
+.notice .top3{display:flex;gap:12px;align-items:flex-start}
+.notice .top3 .t{display:grid;gap:3px;min-width:0}
+.notice .top3 .t b{font-size:14px;font-weight:700}
+.notice .top3 .t p{margin:0;font-size:15px;line-height:1.5}
+.notice .acts{display:grid;grid-template-columns:1fr auto;gap:8px}
+.notice .acts .pill{height:44px;font-size:15px}
+.notice .acts .ghost{height:44px;width:auto;padding:0 16px;font-size:14px}
+.notice .mini{font-size:12.5px;color:var(--ink3)}
+.thumbCrowd{width:44px;height:44px;border-radius:12px;background:url(img/crowd4.webp) 50% 62%/220% auto no-repeat;flex:none}
+.road{padding:18px 18px 10px;display:grid;gap:12px}
+.goal{border-radius:20px;overflow:hidden;position:relative;height:150px;background:url(img/crowd4.webp) 50% 58%/cover no-repeat}
+.goal::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,11,26,.92),rgba(5,11,26,.2))}
+.goal div{position:absolute;left:16px;bottom:14px;z-index:1;display:grid;gap:4px}
+.goal i{font-style:normal;font-size:12px;font-weight:650;color:var(--ink3)}
+.goal b{font-size:19px}
+.goal span{font-size:13px;color:var(--ink2)}
+.node{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.05)}
+.node small{font-size:12.5px;color:var(--ink3);font-weight:600}
+.node b{display:block;font-size:15.5px;margin-top:3px}
+.node .tag{font-size:12px;font-weight:650;color:var(--pass)}
+.node.lock{opacity:.55}
+
+/* 내 팬 */
+.hero{padding:4px 22px 6px;display:flex;align-items:baseline;gap:10px}
+.hero .num{font-size:72px;line-height:.95;font-weight:500;color:#fff}
+.hero span{font-size:18px;font-weight:650;color:var(--ink2)}
+.heroSub{margin:4px 22px 16px;font-size:14.5px;line-height:1.55;color:var(--ink2)}
+/* 앞줄 열 자리: 앉은 자리는 그 팬의 얼굴, 빈 자리는 어두운 네모 */
+.row10{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;padding:0 22px}
+.row10 i{display:block;aspect-ratio:3/4;border-radius:8px;background:var(--seat);background-size:cover;background-position:50% 30%}
+.row10 i.on{box-shadow:inset 0 -3px 0 var(--fan)}
+.rowNote{margin:10px 22px 22px;font-size:13.5px;line-height:1.55;color:var(--ink2)}
+.rowNote b{color:#fff}
+.sec{padding:0 22px 22px;display:grid;gap:10px}
+.sec h3{margin:0;font-size:12.5px;font-weight:700;color:var(--ink3);letter-spacing:.02em}
+.enc{display:grid;gap:10px;padding:16px;border-radius:20px;background:rgba(167,124,255,.1)}
+.enc .encWho{padding:0}
+.enc .line{font-size:17px;line-height:1.5}
+.enc .why2{font-size:13.5px;color:var(--ink2);line-height:1.5}
+.enc.done{opacity:.6}
+.enc.done .acts{display:none}
+.enc .ok{display:none;color:var(--pass);font-size:13px;font-weight:700}
+.enc.done .ok{display:block}
+.encMore{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 2px 0;font-size:14px;color:var(--ink2)}
+.encMore button{font-weight:650;color:#fff;min-height:44px;padding:0 4px}
+.fav{display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:center}
+.fav img{width:72px;height:72px;border-radius:16px;object-fit:cover}
+.fav b{font-size:17px}
+.fav .s{font-size:12.5px;color:var(--ink3);margin-top:2px}
+.fav p{margin:6px 0 0;font-size:14.5px;line-height:1.5}
+.seen{display:grid}
+.seen div{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink2)}
+.seen div:last-child{border-bottom:0}
+.seen .num{font-size:16px;color:#fff}
+.seen .up{color:var(--pass)}
+.lt{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.lt b{font-size:15.5px}
+.lt span{font-size:13px;color:var(--ink3)}
+.lt button{font-size:14px;font-weight:650;color:var(--ink);padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);min-height:44px}
+.lt button:disabled{opacity:.4;cursor:default}
+.honest{padding:0 22px 26px;font-size:12.5px;line-height:1.55;color:var(--ink3)}
+
+/* 앙코르 */
+.encWho{display:flex;gap:10px;align-items:center;padding:0 22px;font-size:14px;color:var(--ink2)}
+.encWho img{width:32px;height:32px;border-radius:9px;object-fit:cover}
+.encLine{padding:26px 22px 0;font-size:25px;line-height:1.45;font-weight:600;letter-spacing:-.03em}
+.encLine .k{font-weight:820}
+.encSit{padding:22px 22px 0;font-size:17px;line-height:1.6;color:var(--ink2)}
+.encTip{margin:22px 22px 0}
+.mic{height:60px;border-radius:999px;background:#fff;color:#050b1a;font-size:16.5px;font-weight:720;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;transition:background .25s ease,color .25s ease}
+.mic svg{width:20px;height:20px}
+.mic.rec{background:var(--rec);color:#fff}
+.lvl{display:none;gap:3px;align-items:center;height:20px}
+.mic.rec .lvl{display:flex}
+.lvl i{width:3px;border-radius:2px;background:#fff;height:6px;animation:lv .5s ease-in-out infinite alternate}
+.lvl i:nth-child(2){animation-delay:.12s}.lvl i:nth-child(3){animation-delay:.24s}.lvl i:nth-child(4){animation-delay:.08s}.lvl i:nth-child(5){animation-delay:.2s}
+@keyframes lv{to{height:18px}}
+.result{margin:20px 22px 0;display:grid;gap:12px;opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s cubic-bezier(.2,.9,.3,1)}
+.result.in{opacity:1;transform:none}
+.result .pass{display:inline-flex;align-items:center;gap:8px;color:var(--pass);font-weight:700;font-size:15px}
+.result .cmt{opacity:1;transform:none;padding:0;border:0}
+
+/* 팬레터 */
+.letter{margin:6px 18px 24px;padding:24px 22px;border-radius:6px;background:var(--paper);color:var(--paperInk);display:grid;gap:16px;box-shadow:0 18px 40px rgba(0,0,0,.4)}
+.letter h2{margin:0;font-family:var(--serif);font-weight:500;font-size:24px;letter-spacing:-.02em}
+.letter .p{font-size:15px;line-height:1.7}
+.letter .tbl{display:grid;border-top:1px solid rgba(27,29,34,.15)}
+.letter .tbl div{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid rgba(27,29,34,.1);font-size:14.5px}
+.letter .tbl .num{font-size:15.5px}
+.letter .tbl .gain{color:#1F7A55}
+.letter .chal{padding:12px 14px;border-radius:10px;background:rgba(167,124,255,.14);font-size:14.5px;line-height:1.55}
+.letter .sig{display:flex;gap:10px;align-items:center;font-family:var(--serif);font-size:15px}
+.letter .sig img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+  .side{position:static}
+  .side .lead,.why{display:none}
+  .phone{width:100%;max-width:390px;height:min(844px,calc(100dvh - 40px));margin:0 auto;border-radius:32px}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <aside class="side" aria-label="시안 고르기">
+    <div>
+      <h1>내 팬</h1>
+      <p class="lead">말한 줄마다 팬이 한 명씩 앉습니다. 팬은 내 연습 기록만 보고 말합니다. 잘한 것 하나와 고칠 것 하나를 짚고, 쉬는 날에는 기다립니다. 장면 끝에서 팬이 말하는 방식을 셋 가운데 골라 주세요.</p>
+    </div>
+    <div class="ctl">
+      <span class="lab">장면 끝에서 팬이 말하는 방식</span>
+      <div class="seg" id="vSeg">
+        <button type="button" data-v="A" aria-pressed="true">A · 팬 댓글</button>
+        <button type="button" data-v="B" aria-pressed="false">B · 최애 팬 한 명</button>
+        <button type="button" data-v="C" aria-pressed="false">C · 객석에서</button>
+      </div>
+      <p class="note" id="vNote"></p>
+    </div>
+    <div class="ctl">
+      <span class="lab">시간 넘기기</span>
+      <div class="seg" id="tSeg">
+        <button type="button" data-t="0" aria-pressed="true">1화 끝</button>
+        <button type="button" data-t="3" aria-pressed="false">사흘 뒤</button>
+        <button type="button" data-t="7" aria-pressed="false">일주일 뒤</button>
+      </div>
+    </div>
+    <div class="why">
+      <p><b>예시 학생:</b> 아누, 울란바토르, 아이돌의 꿈. 1화에서 대사 세 줄과 「한 번 더」를 해서 팬은 4명입니다. 「처음 보는 말」은 건너뛰었습니다.</p>
+      <p><b>팬이 읽는 기록:</b> 대사마다 한 번에 통과했는지, 끝맺음 · 길이 · 빠진 말 가운데 무엇을 고쳤는지, 잘 안 들린 적이 있는지, 「한 번 더」와 「처음 보는 말」을 했는지, 며칠 쉬었는지입니다. 튜터 선배도 같은 기록을 읽습니다.</p>
+      <p><b>아직 못 재는 것:</b> 「ㄹ」 같은 낱소리 발음은 지금 기록에 없습니다. 발음 판정을 더해야 팬이 말할 수 있습니다.</p>
+    </div>
+  </aside>
+
+  <div class="phone" id="phone">
+
+    <!-- 장면 끝 · A 팬 댓글 -->
+    <section class="scr" id="endA" aria-label="1화 끝 · 팬 댓글">
+      <div class="scroll">
+        <div class="endHead"><span class="eyebrow">1화 끝</span><b>팬 4명이 봤어요</b><p>대사 세 줄을 말했고 「한 번 더」도 했어요. 「처음 보는 말」은 아직이에요.</p></div>
+        <div class="tutor"><span class="who">튜터 선배</span><p>「알아?」는 친구에게 묻는 말이에요. 처음 만난 선배에게는 <span class="k">「아세요?」</span>로 물어요.</p><span class="ev">대사 2 · 높임 끝맺음</span></div>
+        <div class="cmts"><h3 style="margin-top:18px">팬 3명이 한마디 남겼어요</h3><div id="cmtsA"></div></div>
+        <p class="still"><b>「처음 보는 말」</b>을 하면 앞줄에 한 자리가 더 켜져요.</p>
+        <div style="height:16px"></div>
+      </div>
+      <div class="foot"><button class="pill" type="button" data-go="path">내 길로</button></div>
+    </section>
+
+    <!-- 장면 끝 · B 최애 팬 한 명 -->
+    <section class="scr" id="endB" aria-label="1화 끝 · 최애 팬">
+      <div class="scroll">
+        <div class="top">
+          <div class="pic" role="img" aria-label="응원봉을 든 최애 팬 나랑"></div>
+          <div class="msg" id="msgB">
+            <div class="who"><span class="eyebrow">1화 끝 · 최애 팬이 남긴 말</span><br><b>나랑</b><span>울란바토르 · 1화 첫 줄부터 봤어요</span></div>
+            <p class="say">「길을 잃어서 한참 헤맸어요」를 한 번에 해냈어요. 처음 듣는 사람도 다 알아들었을 거예요.</p>
+            <p class="say">「아세요?」는 두 번째에 고쳤죠? 다음엔 처음부터 그렇게 가요.</p>
+            <span class="ev">대사 1 · 한 번에 통과 / <span class="same">대사 2 · 높임 끝맺음, 튜터와 같은 근거</span></span>
+          </div>
+        </div>
+        <div class="tutor" style="margin-top:18px"><span class="who">튜터 선배</span><p>「알아?」는 친구에게 묻는 말이에요. 처음 만난 선배에게는 <span class="k">「아세요?」</span>로 물어요.</p></div>
+        <p class="still"><b>「처음 보는 말」</b>은 아직이에요. 하면 나랑 옆자리에 한 명이 더 와요.</p>
+        <div style="height:16px"></div>
+      </div>
+      <div class="foot"><button class="pill" type="button" data-go="path">내 길로</button></div>
+    </section>
+
+    <!-- 장면 끝 · C 객석에서 -->
+    <section class="scr" id="endC" aria-label="1화 끝 · 객석에서">
+      <div class="hall">
+        <div class="img" aria-hidden="true"><div class="spot" id="spot"></div></div>
+        <div class="top2"><span class="eyebrow">1화 끝</span><b>팬 4명이 봤어요</b><span>그 가운데 3명이 한마디 남겼어요</span></div>
+        <div class="cap" aria-live="polite">
+          <div class="capin" id="capC">
+            <span class="n" id="capWho"></span>
+            <p class="say" id="capSay"></p>
+            <span class="ev" id="capWhy"></span>
+          </div>
+          <div class="row"><span></span><button type="button" class="nextBtn" id="capNext">다음 한마디 <span class="num" id="capIdx">1/3</span> ›</button></div>
+        </div>
+      </div>
+      <div class="foot" style="padding-top:6px">
+        <div class="tutor" style="margin:0 4px"><span class="who">튜터 선배</span><p>처음 만난 선배에게는 <span class="k">「아세요?」</span>로 물어요.</p></div>
+        <button class="pill" type="button" data-go="path">내 길로</button>
+      </div>
+    </section>
+
+    <!-- 내 길 -->
+    <section class="scr" id="path" aria-label="내 길">
+      <header class="pbar">
+        <span class="me" aria-hidden="true">아</span>
+        <div class="who2"><b>아누 · 1급</b><span>아이돌의 꿈</span></div>
+        <button class="fans" type="button" data-go="fans" aria-label="내 팬 보기">
+          <small>내 팬</small>
+          <span class="row"><span class="stack"><img src="img/fan1.webp" alt=""><img src="img/fan2.webp" alt=""><img src="img/fan3.webp" alt=""></span><span class="num" data-fans>4</span></span>
+        </button>
+      </header>
+      <div class="scroll">
+        <div class="notice" id="notice" hidden></div>
+        <div class="road">
+          <div class="goal"><div><i>목표</i><b>데뷔 무대</b><span>객석이 전부 내 불빛으로 차는 날</span></div></div>
+          <div class="node lock"><div><small>2화 · 곧 열려요</small><b>동아리 박람회 · 동갑 친구와 말 놓기</b></div></div>
+          <div class="node"><div><small>1화 · 개강 첫날</small><b>학생 식당에서 길 묻기</b></div><span class="tag">1화 끝</span></div>
+        </div>
+      </div>
+      <div class="foot"><button class="ghost" type="button" data-go="endX">1화 끝 화면 다시 보기</button></div>
+    </section>
+
+    <!-- 내 팬 -->
+    <section class="scr" id="fans" aria-label="내 팬">
+      <div class="bar"><button class="back" type="button" data-go="path">‹ 내 길</button><span class="t">내 팬</span></div>
+      <div class="scroll">
+        <div class="hero"><span class="num" data-fans>4</span><span>명</span></div>
+        <p class="heroSub">대사 한 줄마다 한 명씩 와요. 쉬어도 줄지 않아요.</p>
+        <div class="row10" id="row10" aria-label="앞줄 열 자리"></div>
+        <p class="rowNote">앞줄 10석 가운데 <b class="num" data-fans>4</b>석. 앞줄이 다 차면 <b>버스킹 무대</b>가 열려요. 35석이면 소극장, 70석이면 데뷔 무대예요.</p>
+
+        <div class="sec"><h3>앙코르 요청</h3>
+          <div class="enc" id="enc1">
+            <div class="encWho"><img src="img/fan2.webp" alt=""><span>하린이 다시 듣고 싶대요</span></div>
+            <div class="line">네, 선배님! 그런데 혹시 도서관이 어디에 있는지 <span class="k">아세요?</span></div>
+            <div class="why2">두 번째에 고쳐서 해냈어요. 이번엔 처음부터 한 번에.</div>
+            <div class="acts"><button class="pill" type="button" data-enc="1">앙코르 하기</button></div>
+            <span class="ok">앙코르 해냄 · 한 번에 통과</span>
+          </div>
+          <div class="encMore" id="enc2"><span id="enc2T">도윤은 「처음 보는 말」을 기다려요</span><button type="button" data-enc="2" id="enc2B">해 보기 ›</button></div>
+        </div>
+
+        <div class="sec"><h3>최애 팬</h3>
+          <div class="fav"><img src="img/fan1.webp" alt="최애 팬 나랑"><div><b>나랑</b><div class="s">울란바토르 · 1화 첫 줄부터 봤어요</div><p class="say" id="favSay">「길을 잃어서 한참 헤맸어요」 처음 해낸 날을 기억해요.</p></div></div>
+        </div>
+
+        <div class="sec"><h3>팬이 본 것</h3>
+          <div class="seen">
+            <div><span>한 번에 해낸 대사</span><span class="num" id="stOne">1</span></div>
+            <div><span>고쳐서 해낸 대사</span><span class="num">1</span></div>
+            <div><span>잘 안 들린 적</span><span class="num">1</span></div>
+            <div><span>처음 보는 말</span><span id="stTr">안 함</span></div>
+            <div><span>마지막 연습</span><span id="stLast">오늘</span></div>
+          </div>
+        </div>
+
+        <div class="sec"><h3>팬레터</h3>
+          <div class="lt"><div><b>이번 주 팬레터</b><br><span id="ltWhen">일요일 저녁에 와요</span></div><button type="button" id="ltBtn" data-go="letter" disabled>읽기</button></div>
+        </div>
+        <p class="honest">팬은 이야기 속 사람들이에요. 내가 말한 대사와 연습 기록만 보고 말해요.</p>
+      </div>
+    </section>
+
+    <!-- 앙코르 -->
+    <section class="scr" id="encore" aria-label="앙코르">
+      <div class="bar"><button class="back" type="button" id="encBack">‹ 내 팬</button><span class="t" id="encT">앙코르</span></div>
+      <div class="scroll">
+        <div class="encWho" id="encWho"></div>
+        <div id="encBody"></div>
+        <div class="result" id="result" aria-live="polite"></div>
+      </div>
+      <div class="foot">
+        <button class="mic" type="button" id="mic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg><span id="micT">눌러서 말하기</span><span class="lvl"><i></i><i></i><i></i><i></i><i></i></span></button>
+        <button class="pill" type="button" id="encDone" hidden>내 팬으로</button>
+      </div>
+    </section>
+
+    <!-- 팬레터 -->
+    <section class="scr" id="letter" aria-label="이번 주 팬레터">
+      <div class="bar"><button class="back" type="button" data-go="fans">‹ 내 팬</button><span class="t">팬레터</span></div>
+      <div class="scroll">
+        <article class="letter">
+          <h2>아누에게</h2>
+          <div class="p">이번 주에 본 것을 적었어요. 좋아진 것도, 아직인 것도 그대로요.</div>
+          <div class="tbl">
+            <div><span>말한 횟수</span><span class="num">7번</span></div>
+            <div><span>한 번에 해낸 대사</span><span class="num gain" id="lOne">1 → 2</span></div>
+            <div><span>잘 안 들린 적</span><span class="num gain">1 → 0</span></div>
+            <div><span>쉰 날</span><span class="num">3일</span></div>
+            <div><span>처음 보는 말</span><span id="lTr">아직</span></div>
+          </div>
+          <div class="p">가장 좋았던 건 「선배님 덕분에 살았어요」예요. 처음엔 잘 안 들렸는데 이번 주엔 한 번에 또렷했어요.</div>
+          <div class="chal" id="lChal"></div>
+          <div class="sig"><img src="img/fan1.webp" alt="">나랑과 팬 <span class="num" data-fans>4</span>명</div>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const S = { v: 'A', t: 0, fans: 4, one: 1, enc: { 1: false, 2: false }, noticeGone: false, from: 'fans' };
+  const NOTES = {
+    A: '<b>A · 팬 댓글</b> 대사마다 다른 팬이 한마디씩 합니다. 튜터 선배가 고친 것을 팬도 같은 근거로 짚습니다. 말마다 어느 기록을 보고 한 말인지 적혀 있습니다.',
+    B: '<b>B · 최애 팬 한 명</b> 처음 앉은 팬 하나가 오늘 본 것을 두 문장으로 말합니다. 같은 고향 팬을 최애로 둡니다. 말이 적고 가깝습니다.',
+    C: '<b>C · 객석에서</b> 1화 끝 객석 그림 그대로, 말하는 팬 자리에 빛이 갑니다. 한마디씩 넘겨 봅니다. 이미 고르신 객석 화면을 잇습니다.'
+  };
+  const CMTS = [
+    { img: 'fan1', n: '나랑 · 최애 팬', say: '「길을 잃어서 한참 헤맸어요」 한 번에 했어요. 처음 듣는 사람도 다 알아들었을 거예요.', why: '대사 1 · 한 번에 통과', x: '26%', y: '67%' },
+    { img: 'fan2', n: '하린', say: '「아세요?」 두 번째엔 딱 맞게 바꿨어요. 다음엔 처음부터 그렇게 가요.', why: '<span class="same">대사 2 · 높임 끝맺음, 튜터와 같은 근거</span>', x: '49%', y: '54%' },
+    { img: 'fan3', n: '도윤', say: '「덕분에 살았어요」 처음엔 잘 안 들렸는데, 다시 할 땐 또렷했어요.', why: '대사 3 · 한 번 잘 안 들림', x: '77%', y: '53%' }
+  ];
+  const SEATS = ['fan1', 'fan2', 'fan3', 'fan4', 'fan5'];
+  const snd = {};
+  const play = (k, v = .5) => { try { const a = snd[k] || (snd[k] = new Audio(`snd/${k}.mp3`)); a.volume = v; a.currentTime = 0; a.play().catch(() => {}); } catch (e) {} };
+  const timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const clear = () => { while (timers.length) clearTimeout(timers.pop()); };
+
+  function show(id) {
+    clear();
+    $$('.scr').forEach(s => s.classList.toggle('on', s.id === id));
+    const sc = $('#' + id + ' .scroll'); if (sc) sc.scrollTop = 0;
+    if (id === 'endA') runA();
+    if (id === 'endB') { const m = $('#msgB'); m.classList.remove('in'); later(() => m.classList.add('in'), 350); }
+    if (id === 'endC') runC(0);
+    if (id === 'path') renderNotice();
+    if (id === 'fans') renderFans();
+    if (id === 'letter') renderFans();
+  }
+  function runA() {
+    const box = $('#cmtsA');
+    box.innerHTML = CMTS.map(c => `<div class="cmt"><img class="face" src="img/${c.img}.webp" alt=""><div><span class="n">${c.n}</span><p class="say">${c.say}</p><span class="ev">${c.why}</span></div></div>`).join('');
+    $$('.cmt', box).forEach((el, i) => later(() => { el.classList.add('in'); if (i === 0) play('pix_notification', .25); }, 300 + i * 700));
+  }
+  function runC(i) {
+    const c = CMTS[i], cap = $('#capC'), spot = $('#spot');
+    spot.style.setProperty('--sx', c.x); spot.style.setProperty('--sy', c.y);
+    cap.style.opacity = 0;
+    later(() => {
+      $('#capWho').textContent = c.n; $('#capSay').textContent = c.say; $('#capWhy').innerHTML = c.why;
+      $('#capIdx').textContent = `${i + 1}/${CMTS.length}`; cap.style.opacity = 1;
+    }, 320);
+    $('#capNext').onclick = () => runC((i + 1) % CMTS.length);
+  }
+
+  function renderNotice() {
+    const n = $('#notice');
+    if (S.t === 0 || S.noticeGone) { n.hidden = true; n.classList.remove('in'); return; }
+    if (S.t === 7) {
+      n.innerHTML = `<div class="top3"><img class="face" src="img/fan1.webp" alt=""><div class="t"><b>나랑</b><p class="say">이번 주 팬레터를 썼어요.</p></div></div><div class="acts"><button class="pill" type="button" data-go="letter">읽기</button><button class="ghost" type="button" data-x>나중에</button></div>`;
+    } else {
+      const head = {
+        A: `<span class="stack" style="flex:none"><img src="img/fan1.webp" alt=""><img src="img/fan2.webp" alt=""><img src="img/fan3.webp" alt=""></span><div class="t"><b>팬 3명이 기다리는 중</b><p class="say">사흘째 안 보여서요. 오늘은 한 줄만 들려줘도 좋아요.</p></div>`,
+        B: `<img class="face" src="img/fan1.webp" alt=""><div class="t"><b>나랑</b><p class="say">사흘째 기다리는 중이에요. 오늘은 한 줄만 들려줘도 좋아요.</p></div>`,
+        C: `<span class="thumbCrowd" aria-hidden="true"></span><div class="t"><b>객석이 그대로예요</b><p class="say">팬 ${S.fans}명이 자리를 지키고 있어요. 한 줄이면 다시 불이 켜져요.</p></div>`
+      }[S.v];
+      n.innerHTML = `<div class="top3">${head}</div><div class="acts"><button class="pill" type="button" data-enc="${S.enc[1] ? 2 : 1}">한 줄 하기</button><button class="ghost" type="button" data-x>다음에</button></div><span class="mini">쉬어도 팬은 줄지 않아요. 알림은 사흘째와 이레째 두 번만 와요.</span>`;
+    }
+    n.hidden = false; n.classList.remove('in'); later(() => { n.classList.add('in'); play('pix_notification', .3); }, 250);
+  }
+
+  function renderFans() {
+    $$('[data-fans]').forEach(e => { e.textContent = S.fans; });
+    $('#row10').innerHTML = Array.from({ length: 10 }, (_, i) => i < S.fans ? `<i class="on" style="background-image:url(img/${SEATS[i]}.webp)"></i>` : '<i></i>').join('');
+    $('#stOne').innerHTML = S.one > 1 ? `<span class="up">1 → ${S.one}</span>` : S.one;
+    $('#stTr').textContent = S.enc[2] ? '해냄' : '안 함';
+    $('#stLast').textContent = S.t === 3 ? '사흘 전' : '오늘';
+    $('#enc1').classList.toggle('done', S.enc[1]);
+    $('#enc2T').textContent = S.enc[2] ? '도윤이 기다리던 「처음 보는 말」을 해냈어요' : '도윤은 「처음 보는 말」을 기다려요';
+    $('#enc2B').hidden = S.enc[2];
+    $('#favSay').textContent = S.t === 3 ? '사흘째 기다리는 중이에요. 「길을 잃어서 한참 헤맸어요」 처음 해낸 날을 기억해요.' : '「길을 잃어서 한참 헤맸어요」 처음 해낸 날을 기억해요.';
+    $('#ltBtn').disabled = S.t !== 7; $('#ltWhen').textContent = S.t === 7 ? '나랑이 썼어요' : '일요일 저녁에 와요';
+    $('#lOne').textContent = `1 → ${Math.max(2, S.one)}`;
+    $('#lTr').textContent = S.enc[2] ? '해냄' : '아직';
+    $('#lChal').innerHTML = S.enc[2] ? '<b>이번 주 도전 하나</b><br>「도서관이 어디에 있는지 아세요?」를 처음부터 한 번에.' : '<b>이번 주 도전 하나</b><br>「처음 보는 말」 한 번. 하면 앞줄에 한 자리가 켜져요.';
+  }
+
+  // 앙코르
+  let encK = 1, recOn = false;
+  function openEncore(k) {
+    encK = k; S.from = $('.scr.on') ? $('.scr.on').id : 'fans';
+    $('#encT').textContent = k === 1 ? '앙코르 · 대사 2' : '처음 보는 말';
+    $('#encWho').innerHTML = k === 1 ? '<img src="img/fan2.webp" alt="">하린이 다시 듣고 싶대요' : '<img src="img/fan3.webp" alt="">도윤이 기다리던 장면이에요';
+    $('#encBody').innerHTML = k === 1
+      ? '<div class="encLine">네, 선배님! 그런데 혹시 도서관이 어디에 있는지 <span class="k">아세요?</span></div><div class="tutor encTip"><span class="who">튜터 선배</span><p>처음 만난 선배에게는 「알아?」 대신 <span class="k">「아세요?」</span>로 물어요.</p></div>'
+      : '<div class="encSit">다음 수업 전에 마실 것을 사고 싶은데, 그 가게를 못 찾았어요. 오늘 처음 인사한 같은 과 선배께 공손하게 여쭤보세요.</div><div class="tutor encTip"><span class="who">튜터 선배</span><p>한국어 답은 말한 뒤에 보여요. 1화에서 쓴 말로 해 봐요.</p></div>';
+    const r = $('#result'); r.classList.remove('in'); r.innerHTML = '';
+    $('#mic').hidden = false; $('#mic').classList.remove('rec'); $('#micT').textContent = '눌러서 말하기'; $('#encDone').hidden = true; recOn = false;
+    show('encore');
+  }
+  $('#mic').onclick = () => {
+    if (recOn) return; recOn = true;
+    const m = $('#mic'); m.classList.add('rec'); $('#micT').textContent = '듣고 있어요';
+    later(() => {
+      m.classList.remove('rec'); m.hidden = true;
+      const first = !S.enc[encK]; S.enc[encK] = true;
+      if (encK === 1 && first) S.one = 2;
+      if (encK === 2 && first) S.fans = 5;
+      S.noticeGone = true;
+      const r = $('#result');
+      r.innerHTML = encK === 1
+        ? '<span class="pass">✓ 한 번에 해냈어요</span><div class="cmt in"><img class="face" src="img/fan2.webp" alt=""><div><span class="n">하린</span><p class="say">「아세요?」 완벽해요. 이제 진짜 선배한테 물어봐도 되겠어요.</p><span class="ev"><span class="same">대사 2 · 높임 끝맺음 · 이번엔 한 번에</span></span></div></div>'
+        : '<span class="pass">✓ 해냈어요 · 팬 한 명 더</span><div class="encSit" style="padding:0;font-size:15px">모범 답: <span class="k">선배님, 혹시 매점이 어디에 있는지 아세요?</span></div><div class="cmt in"><img class="face" src="img/fan3.webp" alt=""><div><span class="n">도윤</span><p class="say">처음 보는 말도 해냈어요! 앞줄에 한 자리 더 켜졌어요.</p><span class="ev">처음 보는 말 · 해냄</span></div></div>';
+      later(() => r.classList.add('in'), 30);
+      $('#encDone').hidden = false; play('pix_sparkle', .45);
+      if (encK === 2) $$('.hall .img,.goal,.thumbCrowd').forEach(e => { e.style.backgroundImage = 'url(img/crowd5.webp)'; });
+    }, 1800);
+  };
+  $('#encDone').onclick = () => show('fans');
+  $('#encBack').onclick = () => show(S.from === 'path' ? 'path' : 'fans');
+
+  // 이동
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.go) { const g = b.dataset.go; show(g === 'endX' ? 'end' + S.v : g); }
+    if (b.dataset.enc) openEncore(+b.dataset.enc);
+    if ('x' in b.dataset) { S.noticeGone = true; const n = $('#notice'); n.classList.remove('in'); later(() => { n.hidden = true; }, 300); }
+  });
+  $$('#vSeg button').forEach(b => { b.onclick = () => {
+    S.v = b.dataset.v; $$('#vSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    $('#vNote').innerHTML = NOTES[S.v]; S.t = 0; S.noticeGone = false; $$('#tSeg button').forEach(x => x.setAttribute('aria-pressed', x.dataset.t === '0'));
+    show('end' + S.v);
+  }; });
+  $$('#tSeg button').forEach(b => { b.onclick = () => {
+    S.t = +b.dataset.t; S.noticeGone = false; $$('#tSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    show(S.t === 0 ? 'end' + S.v : 'path');
+  }; });
+  $('#vNote').innerHTML = NOTES.A;
+  show('endA');
+})();
+</script>

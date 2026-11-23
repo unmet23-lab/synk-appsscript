@@ -1188,7 +1188,7 @@ async function crowdScene({n=0,t2=false,tr=false}={}){
   state.best={...state.best,[EP]:next};state.lights=litCount();save({best:state.best,lights:state.lights});
   $('#nextWhat').textContent=L('{x}까지',{x:L(D.scenes[0])});$('#nextLeft').textContent=L('2화 다음');
   $('#goalLine').textContent=L('목표까지 늘어나요',{goal:L(D.goal)});
-  $('#crowdWhy').textContent=state.dream==='actor'?L('말한 줄마다 내 객석에 한 사람씩 앉아요.'):L('말한 줄마다 내 객석에 불이 하나씩 켜져요.');
+  $('#crowdWhy').textContent=state.dream==='actor'?L('말한 줄마다 내 팬이 한 사람씩 자리에 앉아요.'):L('말한 줄마다 내 팬의 불빛이 하나씩 켜져요.');
   const plus=$('#plus'),count=$('#crowdCount'),foot=$('#crowdFoot'),lab=$('#crowdLab');
   plus.classList.remove('on');plus.textContent='';foot.classList.remove('on');show('s-crowd');
   SND.play('bgm_anthem',{at:ANTHEM_DROP[0]-1.2,vol:.4,fade:1.2});SND.muffle('bgm_anthem',false,3,{from:true});
