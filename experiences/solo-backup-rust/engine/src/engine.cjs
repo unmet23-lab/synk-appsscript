@@ -363,6 +363,10 @@ const OWN_ERROR = { restore: 'lastRestoreError', move: 'lastMoveError' };
 // 옮겨 오기 writes into a temporary file beside its final name (move-restore.cjs): one left by a move that stopped is
 // never backed up (4.6 — the next move removes it).
 const MOVE_TEMP = '~synk-*.part';
+// AI 도구의 구독 로그인 파일은 어떤 백업에도 담지 않는다. Anthropic과 OpenAI 약관은 다른 앱이 사용자의 구독 로그인 정보를
+// 모으거나 저장하는 것을 막는다(2026-11-24 결정). Claude는 계정 폴더가 여럿일 수 있어 파일 이름으로 어디서든 뺀다.
+const AI_LOGIN_FILES = Object.freeze(['.credentials.json', '.codex/auth.json', '.gemini/oauth_creds.json']);
+const AI_LOGIN_EXCLUDES = Object.freeze(AI_LOGIN_FILES.flatMap(p => ['--iexclude', p]));
 async function sha256File(file) {
   const hash = crypto.createHash('sha256');
   const handle = await fs.open(file, 'r');
@@ -1037,7 +1041,7 @@ class BackupEngine extends EventEmitter {
         if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true;
       };
       try {
-        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
+        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, ...AI_LOGIN_EXCLUDES, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
           { onErrorItem });
       } catch (e) {
         if (e.exitCode !== 3 || !unreadable.length) throw e;
@@ -1431,7 +1435,7 @@ class BackupEngine extends EventEmitter {
     // Each path ends in NUL, the last one too: restic 0.19.1 refuses a list without the trailing zero byte (exit 1).
     await fs.writeFile(listFile, targets.map(t => t + '\0').join(''), { flag: 'wx' });
     try {
-      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, '--files-from-raw', listFile, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`],
+      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, ...AI_LOGIN_EXCLUDES, '--files-from-raw', listFile, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`],
         { onErrorItem: item => { if (item !== null && failedAt.length < UNREADABLE_MAX) failedAt.push(item); else failedCut = true; } });
     } catch (e) { if (e.exitCode !== 3) throw e; }
     finally { await fs.rm(listFile, { force: true }).catch(() => {}); }
@@ -2708,4 +2712,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, customerVault, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, oddName, walkOdd, stillThere, oddReads, topMost, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };
+module.exports = { BackupEngine, customerVault, AI_LOGIN_EXCLUDES, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, oddName, walkOdd, stillThere, oddReads, topMost, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };

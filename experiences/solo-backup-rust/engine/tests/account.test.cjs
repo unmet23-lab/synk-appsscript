@@ -934,6 +934,9 @@ test('a backup leaves out what an unfinished move left; a move that fails is the
   const backup = f.repo.calls.find((c) => c.args[0] === 'backup' && !c.args.includes('--stdin'));
   assert.ok(backup, 'a backup ran');
   assert.equal(backup.args[backup.args.indexOf('--exclude') + 1], '~synk-*.part');
+  // AI 도구의 구독 로그인 파일은 어떤 백업에도 담지 않는다(2026-11-24 결정)
+  const leftOut = backup.args.flatMap((a, i) => a === '--iexclude' ? [backup.args[i + 1]] : []);
+  assert.deepEqual(leftOut, ['.credentials.json', '.codex/auth.json', '.gemini/oauth_creds.json']);
   e.config.lastError = '지난 백업 실패';
   await assert.rejects(e.operation('move', async () => { throw Object.assign(new Error('gone'), { code: 'MOVE_KIT_SIZE' }); }));
   assert.equal(e.config.lastError, '지난 백업 실패');
