@@ -97,7 +97,7 @@ if(!process.versions.electron){
       // 11-20부터 구독 줄은 「상세내역」 안에 접혀 있다(솔리오 구독 비서 설계 3.5). 줄을 누르는 앞 흐름은 상세내역을 한 번 펼친 채로 본다.
       // 자바스크립트 click이라 초점은 옮기지 않는다. 접힌 판 자체는 20번이 fold:true로 본다
       // 앞 흐름은 줄의 자리(포인터 사건을 보내는 좌표)를 옛 판 그대로 재므로, 비서 판은 그 흐름에서만 감춘다
-      if(!fold)await w.js("(()=>{if(window.__detailsAuto)return true;window.__detailsAuto=1;const st=document.createElement('style');st.textContent='#portal-entry [data-brief],#portal-entry [data-details-top],#portal-entry [data-dial]{display:none!important}#portal-entry .room.dialed:not([hidden]){display:block!important}#portal-entry .room.dialed .say{font:var(--display)!important;letter-spacing:-.018em!important;max-width:21em!important}#portal-entry .room.dialed .say .then{margin-top:0!important;font:inherit!important}';document.head.appendChild(st);const t=setInterval(()=>{const b=document.querySelector('#portal-entry [data-details]');if(b&&!b.hidden&&b.getAttribute('aria-expanded')!=='true'){b.click();clearInterval(t);}},25);setTimeout(()=>clearInterval(t),30000);return true;})()");
+      if(!fold)await w.js("(()=>{if(window.__detailsAuto)return true;window.__detailsAuto=1;const st=document.createElement('style');st.textContent='#portal-entry [data-brief],#portal-entry [data-details-top],#portal-entry [data-board],#portal-entry [data-rep-h],#portal-entry [data-say-tag]{display:none!important}#portal-entry .room.boarded{display:block!important}#portal-entry .room.boarded .say{display:block!important;font:var(--display)!important;letter-spacing:-.018em!important;max-width:21em!important}#portal-entry .room.boarded .say .then{margin-top:0!important;font:inherit!important;color:var(--dim)!important}';document.head.appendChild(st);const t=setInterval(()=>{const b=document.querySelector('#portal-entry [data-details]');if(b&&!b.hidden&&b.getAttribute('aria-expanded')!=='true'){b.click();clearInterval(t);}},25);setTimeout(()=>clearInterval(t),30000);return true;})()");
       if(restore){if(restoreAfter)setTimeout(()=>{w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')').catch(()=>{});},restoreAfter);else await w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')');}
       return t0;
     }
@@ -536,55 +536,92 @@ if(!process.versions.electron){
           await capture(v,'health-only-1440');
           v.win.destroy();
         }
-        // 20. 솔리오 구독 비서(11-20, docs/디자인/솔리오_구독비서_20261120/설계.md 3절): 맨 위 한 가지, 다가오는 일, 지금 출력, 오늘 진단이 보이고
-        //     줄은 상세내역 안에 접혀 있다. 펼치고 접을 때 초점이 body로 빠지지 않는다(설계 검토 D9). 앱에서 닿는 크기에서 찍는다
+        // 20. 솔리오 구독 방(11-24 계정판과 보고, docs/디자인/솔리오_구독비서_20261120/설계.md 11절): 맨 위에 계정판(서비스마다 지금 쓸 수 있는 계정 수와 계정 줄),
+        //     그 아래 솔리오 보고(첫 줄과 셋까지). 줄은 상세내역 안에 접혀 있다. 다 쓴 계정 접기와 상세내역을 펼치고 접을 때 초점이 body로 빠지지 않는다(설계 검토 D9). 앱에서 닿는 크기에서 찍는다
         if(only('20')&&mode==='main'){
-          const w=await open();await boot(w,{subs:subsRich},{restore:signedIn('none'),fold:true});
+          // 다 쓴 계정이 있는 자료: Claude 넷(하나 남음, 둘 다 씀, 하나 다시 로그인), Codex 둘(하나는 5시간 한도)
+          const subsFold={...subsRich,rows:[row('f-c1','claude',20,now+5*D,{email:'open@example.com'}),row('f-c2','claude',100,now+20*H,{email:'spent1@example.com'}),row('f-c3','claude',100,now+2*D,{email:'spent2@example.com'}),row('f-c4','claude',0,now+3*D,{email:'relog@example.com',state:'needs-login'}),
+            row('f-g1','gpt',100,now+3*D,{email:'gpro@example.com'}),{...row('f-g2','gpt',33,now+6*D,{email:'gplus@example.com',plan:'plus'}),live:{readAt:now-5*60e3,session:{usedPercent:100,resetsAt:now+2*H},weekly:{usedPercent:33,resetsAt:now+6*D}}}],
+            usage:{accounts:{'f-c1':{rate3:5},'f-c2':{rate3:5},'f-c3':{rate3:5},'f-g1':{rate3:5},'f-g2':{rate3:5}}}};
+          const w=await open();await boot(w,{subs:subsFold},{restore:signedIn('none'),fold:true});
           await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
-          const look=()=>w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);const det=q('[data-details]');return {brief:!q('[data-brief]').hidden,say:q('[data-say]').textContent,then:q('[data-then]').textContent,soon:[...q('[data-soon]').children].map(li=>li.textContent),live:q('[data-live]').hidden?null:q('[data-live]').textContent,diag:q('[data-diag]').hidden?null:q('[data-diag]').textContent,det:det&&!det.hidden?det.getAttribute('aria-expanded'):null,rows:!q('[data-rows]').hidden,top:!q('[data-details-top]').hidden,active:document.activeElement?.dataset?.details!==undefined?'details':document.activeElement===document.body?'body':(document.activeElement?.className||'')};})()");
-          const f0=await look();
-          check('20 the subscriptions room opens folded: one thing on top, coming up, live output and today’s diagnosis, rows under 상세내역',f0.brief&&f0.say.length>0&&f0.det==='false'&&!f0.rows&&!f0.top&&f0.live!==null&&f0.diag!==null&&/오늘 진단/.test(f0.diag)&&f0.soon.length>=1&&f0.soon.length<=3,f0);
-          check('20 the top never says plenty while an account is used up',!/넉넉/.test(f0.say+f0.then),f0);
-          // 문자판(11-20 유호님이 고르신 A): 계정마다 칸 하나, 낭독 이름, 가운데 큰 숫자, 지금 출력은 구 위
-          const dl=await w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);const d=q('[data-dial]'),svg=q('[data-dial-svg]'),live=q('[data-live]').getBoundingClientRect(),orb=q('.dial-orb').getBoundingClientRect();return {shown:!d.hidden,dialed:q('[data-room=\"solio\"]').classList.contains('dialed'),cells:svg.querySelectorAll('.d-cell').length,ticks:svg.querySelectorAll('.d-t').length,label:svg.getAttribute('aria-label')||'',hero:q('[data-dial-value]').textContent+q('[data-dial-unit]').textContent,liveState:q('[data-live]').dataset.state||'',liveIn:q('[data-live]').parentElement===d?'dial':q('[data-live]').parentElement===q('[data-brief]')?'brief':'',liveAbove:live.bottom<=orb.top+1&&live.left>=d.getBoundingClientRect().left};})()");
-          check('20 the dial: a cell per account, three days of hourly ticks, a spoken label and the share in the middle',dl.shown&&dl.dialed&&dl.cells===(subsRich.rows||[]).filter(r=>r.source==='auto'&&r.state!=='elsewhere').length&&dl.ticks===72&&dl.label.length>0&&/^\d+%$|^\d+\/\d+$/.test(dl.hero),dl);
-          // 숫자가 있을 때(켜짐)만 구 위에 둔다. 꺼짐의 안내와 「켜기」는 구를 덮지 않게 오른쪽 비서 판에 둔다(화면 검수 dial A3)
-          check('20 live output sits above the orb only while counting; the off notice and 켜기 stay in the brief',dl.liveState==='on'?dl.liveIn==='dial'&&dl.liveAbove:dl.liveIn==='brief',dl);
+          const look=()=>w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);const det=q('[data-details]'),a=document.activeElement;return {brief:!q('[data-brief]').hidden,board:!q('[data-board]').hidden,repH:!q('[data-rep-h]').hidden,tag:q('[data-say-tag]').hidden?null:q('[data-say-tag]').textContent,say:q('[data-say]').textContent,then:q('[data-then]').textContent,report:[...q('[data-report]').children].map(li=>li.textContent),repMore:q('[data-rep-more]').hidden?null:q('[data-rep-more]').textContent,soonShown:!q('[data-soon]').hidden,diagShown:!q('[data-diag]').hidden,live:q('[data-live]').hidden?null:q('[data-live]').textContent,det:det&&!det.hidden?det.getAttribute('aria-expanded'):null,rows:!q('[data-rows]').hidden,top:!q('[data-details-top]').hidden,active:a?.dataset?.details!==undefined?'details':a?.dataset?.boardFold!==undefined?'fold:'+a.dataset.boardFold:a===document.body?'body':(a?.className||a?.tagName||'')};})()");
+          const cols=()=>w.js("(()=>[...document.querySelectorAll('#portal-entry [data-board-cols] > .b-col')].map(c=>({svc:c.querySelector('.b-svc').textContent,big:c.querySelector('.b-big').textContent,cap:c.querySelector('.b-cap').textContent,sub:c.querySelector('.b-sub').textContent,label:c.getAttribute('aria-label'),rows:[...c.querySelectorAll(':scope > .b-rows:not(.b-more) > li')].map(li=>[li.className.replace('b-row ',''),li.querySelector('.b-name').textContent,li.querySelector('.b-pct').textContent,li.querySelector('.b-note').textContent,getComputedStyle(li.querySelector('.b-bar')).display==='none'?'':getComputedStyle(li.querySelector('.b-bar i')||li).backgroundColor].join('|')),fold:c.querySelector('.b-fold')?.textContent||'',foldOpen:c.querySelector('.b-fold')?.getAttribute('aria-expanded')||null,more:c.querySelector('.b-more')?(c.querySelector('.b-more').hidden?0:c.querySelectorAll('.b-more > li').length):null})))()");
+          const f0=await look(),c0=await cols();
+          check('20 the subscriptions room opens folded: the account board on top, the report under it, rows under 상세내역',f0.brief&&f0.board&&f0.repH&&f0.tag&&f0.say.length>0&&f0.det==='false'&&!f0.rows&&!f0.top&&f0.live!==null&&!f0.soonShown&&!f0.diagShown,f0);
+          check('20 the top never says plenty while an account is used up',!/넉넉/.test(f0.say+f0.then+f0.report.join(' ')),f0);
+          // 계정판: 서비스마다 한 칸. 쓸 수 있는 계정은 금색 막대, 5시간 한도 계정은 흐린 막대와 붉은 때, 다 쓴 계정은 한 줄로 접힌다
+          const gold='rgb(217, 194, 154)';
+          const cl=c0.find(c=>c.svc==='Claude'),cx=c0.find(c=>c.svc==='Codex');
+          check('20 the board: Claude counts 1 of 4 open, shows the open account in gold and the one to sign in again, and folds the two used up',Boolean(cl)&&cl.big==='1/4'&&cl.cap==='지금 쓸 수 있는 계정'&&cl.rows.length===2&&cl.rows[0].startsWith('b-open|open|80%|')&&cl.rows[0].endsWith('|'+gold)&&cl.rows[1]==='b-fix|relog||다시 로그인해야 합니다|'&&/^다 쓴 2개 · .+에 .+부터 열림$/.test(cl.fold)&&cl.foldOpen==='false'&&cl.more===0,{c0});
+          check('20 the board: Codex all shut shows the 5-hour block as a dim weekly share with its time, never gold',Boolean(cx)&&cx.big==='0/2'&&/지금 모두 막힘/.test(cx.sub)&&cx.rows[0].startsWith('b-held|gplus|주간 67%|5시간 한도 · ')&&!cx.rows[0].endsWith(gold)&&cx.rows[1].startsWith('b-out|gpro||다 씀 · ')&&cx.rows[1].endsWith('|'),{c0});
+          // 보고 첫 줄은 계정판이 말하는 「모두 막힘」을 되풀이하지 않고 할 일을 말한다(설계 검토 6)
+          check('20 the report leads with what to do while Codex is shut',f0.tag==='지금'&&/^Codex는 .+에 다시 열립니다\.$/.test(f0.say)&&f0.then==='그동안은 Claude open으로 일하세요.',f0);
+          // 다 쓴 계정 접기: 그 자리에서 펼치고 접는다. 초점은 단추에 남는다
+          await w.js("document.querySelector('#portal-entry [data-board-fold=\"claude\"]').focus()");
+          await key(w,'Return');await wait(250);
+          const c1=await cols(),f1=await look();
+          check('20 the fold opens in place with Enter and keeps the focus on its button',c1.find(c=>c.svc==='Claude').foldOpen==='true'&&c1.find(c=>c.svc==='Claude').more===2&&f1.active==='fold:claude',{c1,active:f1.active});
+          await capture(w,'board-fold-open');
+          await key(w,'Return');await wait(250);
+          const c2=await cols(),f2b=await look();
+          check('20 the fold closes again and keeps the focus on its button',c2.find(c=>c.svc==='Claude').foldOpen==='false'&&c2.find(c=>c.svc==='Claude').more===0&&f2b.active==='fold:claude',{c2,active:f2b.active});
           // 앱 최소 창(960×680)에서도 맨 위부터 「다시 읽기」까지 한 화면에 든다(Fable 최종 F2와 같은 기준)
           w.win.setContentSize(960,680);await wait(450);
           // 방은 아래 30px을 흐리는 스크롤 칸이다. 창 높이가 아니라 방의 보이는 아래와 견주고, 스크롤이 생기지 않았는지도 본다(화면 검수 dial A7)
           const fit=await w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),b=s=>q(s).getBoundingClientRect().bottom,room=q('[data-room=\"solio\"]');return {details:Math.round(b('[data-details]')),reread:Math.round(b('[data-orb-act=\"reread\"]')),visible:Math.round(room.getBoundingClientRect().bottom-30),scroll:room.scrollHeight-room.clientHeight};})()");
           check('20 at 960×680 the folded room fits down to 다시 읽기 inside the room’s visible area, without scrolling',fit.details<=fit.visible&&fit.reread<=fit.visible&&fit.scroll<=1,fit);
+          // 보고가 셋까지 차고 「보고 n개가 상세내역에 더 있습니다」 줄이 서도 「다시 읽기」까지 든다. 보고 줄을 복제해 셋을 채우고 잰 뒤 되돌린다(Fable 다시 검수 FA4)
+          const fillAt=()=>w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),rep=q('[data-report]'),more=q('[data-rep-more]'),room=q('[data-room=\"solio\"]');const added=[];while(rep.children.length<3){const c=rep.children[rep.children.length-1].cloneNode(true);rep.append(c);added.push(c);}const was=[more.hidden,more.textContent];more.hidden=false;more.textContent='보고 2개가 상세내역에 더 있습니다.';const b=s=>q(s).getBoundingClientRect().bottom;const r={h:innerHeight,items:rep.children.length,more:getComputedStyle(more).display!=='none',reread:Math.round(b('[data-orb-act=\"reread\"]')),visible:Math.round(room.getBoundingClientRect().bottom-30),scroll:room.scrollHeight-room.clientHeight};for(const c of added)c.remove();more.hidden=was[0];more.textContent=was[1];return r;})()");
+          const full=await fillAt();
+          check('20 at 960×680 three report lines and the 「보고 n개가 더」 line still fit down to 다시 읽기',full.h===680&&full.items===3&&full.more&&full.reread<=full.visible&&full.scroll<=1,full);
+          // 낮은 창 규칙(높이 760 이하) 바로 위의 높이에서도 잰다(Fable 다시 검수 -c P3)
+          // 보이지 않는 시험 창은 크기 바뀜이 늦게 닿는다. 폭과 높이가 모두 맞을 때까지 기다린 뒤 잰다(Fable 다시 검수 -d). 낮은 창 규칙 경계 둘레의 761 · 800 · 901
+          const sizeWH=async(W,Hh)=>{w.win.setContentSize(W,Hh);for(let i=0;i<60&&((await w.js('innerWidth'))!==W||(await w.js('innerHeight'))!==Hh);i++){w.win.webContents.invalidate();if(i===20)await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await wait(50);}await wait(120);};
+          for(const Hh of [761,800,901]){await sizeWH(960,Hh);const fh=await fillAt();check('20 at 960×'+Hh+' three report lines and the 「보고 n개가 더」 line still fit down to 다시 읽기',fh.h===Hh&&fh.items===3&&fh.more&&fh.reread<=fh.visible&&fh.scroll<=1,fh);}
           w.win.setContentSize(1440,900);await wait(300);
           await captureSizes(w,'brief-folded');
           await click(w,'#portal-entry [data-details]');await wait(200);
-          const f1=await look();
-          check('20 상세내역 opens the rows and says so',f1.det==='true'&&f1.rows,f1);
+          const f3=await look();
+          check('20 상세내역 opens the rows and says so',f3.det==='true'&&f3.rows,f3);
           await captureWide(w,'brief-open');
           await w.js("document.querySelector('#portal-entry button.row[data-svc]').focus()");await wait(120);
           await key(w,'Tab');await wait(60);
           // 포인터로 누르면 누르는 순간 단추가 초점을 가져가 이 검사가 늘 통과한다. 초점을 줄 안에 둔 채 스크립트로 누른다(화면 검수 r2 B1)
           await w.js("document.querySelector('#portal-entry [data-details]').click()");await wait(200);
-          const f2=await look();
-          check('20 folding with the focus inside moves it to 상세내역, not to the page',f2.det==='false'&&!f2.rows&&f2.active==='details',f2);
-          // 「켜기」 뒤 곧바로 숫자가 서면(이미 센 기록) 지금 출력이 문자판으로 옮겨 가고 단추가 사라진다. 초점은 상세내역으로 간다(0.5.0 공개 후보 카본 D1)
+          const f4=await look();
+          check('20 folding with the focus inside moves it to 상세내역, not to the page',f4.det==='false'&&!f4.rows&&f4.active==='details',f4);
+          // 「켜기」 뒤 곧바로 숫자가 서면(이미 센 기록) 단추가 사라지고 초점은 상세내역으로 간다(0.5.0 공개 후보 카본 D1)
           const TOKON='#portal-entry [data-live] [data-orb-act="tok-on"]';
           const tk0=await w.js(`(()=>{const b=document.querySelector(${JSON.stringify(TOKON)});if(!b||b.hidden)return null;b.focus();return document.activeElement===b;})()`);
           const tdy=(d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'))(new Date(now));
           await w.js('window.__orbFixture.setTokens('+JSON.stringify({enabled:true,scanning:false,progress:null,scannedAt:now,since:tdy,sinceBy:{claude:tdy},tools:{claude:1},failed:0,error:null,cells:[[tdy,'claude','claude-opus-5-5',900,61000,0,0,0,40]]})+')');await wait(1400);
-          const tk1=await w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),a=document.activeElement;return {state:q('[data-live]').dataset.state||'',inDial:q('[data-live]').parentElement===q('[data-dial]'),active:a?.dataset?.details!==undefined?'details':a===document.body?'body':(a?.className||a?.tagName||'')};})()");
-          check('20 switching on from the brief, when the count is already there, moves live output into the dial and focus to 상세내역',tk0===true&&tk1.state==='on'&&tk1.inDial&&tk1.active==='details',{tk0,tk1});
+          const tk1=await w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),a=document.activeElement;return {state:q('[data-live]').dataset.state||'',active:a?.dataset?.details!==undefined?'details':a===document.body?'body':(a?.className||a?.tagName||'')};})()");
+          check('20 switching on from the brief, when the count is already there, hides 켜기 and moves focus to 상세내역',tk0===true&&tk1.state==='on'&&tk1.active==='details',{tk0,tk1});
           w.win.destroy();
           // ORB_QA_REAL=<스냅숏 JSON>: 이 PC의 실제 구독 자료({subs, tokens})로 같은 화면을 찍는다. 자료와 캡처는 git 밖에 둔다(공개 저장소)
           const real=process.env.ORB_QA_REAL?JSON.parse(fs.readFileSync(process.env.ORB_QA_REAL,'utf8')):null;
           if(real){
             const r=await open();await boot(r,{subs:real.subs,tokens:real.tokens},{restore:signedIn('none'),fold:true});
             await until(r,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(2200);
-            const lk=await r.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);return {say:q('[data-say]').textContent,then:q('[data-then]').textContent,soon:[...q('[data-soon]').children].map(li=>li.textContent),live:q('[data-live]').textContent,diag:q('[data-diag]').textContent};})()");
-            check('20 real data renders the folded room',lk.say.length>0,lk);
+            const lk=await r.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);return {board:!q('[data-board]').hidden,repH:!q('[data-rep-h]').hidden,tag:!q('[data-say-tag]').hidden,say:q('[data-say]').textContent,then:q('[data-then]').textContent,report:[...q('[data-report]').children].map(li=>li.textContent),live:q('[data-live]').textContent};})()");
+            // 다 읽은 자료면 보고 머리와 첫 줄 꼬리표가 함께 서고, 오래된 자료면 둘 다 숨는다(카본 C6)
+            check('20 real data renders the board, and the report head and the first-line tag stand or hide together',lk.board&&lk.say.length>0&&lk.repH===lk.tag,lk);
             await captureSizes(r,'real-folded');
-            await click(r,'#portal-entry [data-details]');await wait(300);
-            await captureWide(r,'real-open');
+            // 두 칸 짜임이 시작하는 폭(1100)도 한 장(Fable 다시 검수 FA4)
+            r.win.setContentSize(1100,760);await wait(380);await capture(r,'real-folded-1100');r.win.setContentSize(1440,900);await wait(300);
+            for(const b of await r.js("[...document.querySelectorAll('#portal-entry [data-board-fold]')].map(b=>b.dataset.boardFold)"))await click(r,'#portal-entry [data-board-fold="'+b+'"]');
+            await wait(300);
+            await captureWide(r,'real-fold-open');
+            // 상세내역은 크기마다 그 창에서 연다. 큰 창에서 열고 줄이면 스크롤 자리가 남아 머리가 위로 넘어간 채 찍혔다(Fable 최종 F2).
+            // 보이지 않는 시험 창에서는 부드러운 스크롤이 나아가지 않는다. 이 확인 동안만 움직임 줄이기로 두어 옮길 자리를 바로 잰다
+            await r.js("document.documentElement.dataset.motion='reduced'");
+            for(const [W,Hh] of [[1440,900],[960,680]]){r.win.setContentSize(W,Hh);await wait(380);await click(r,'#portal-entry [data-details]');await wait(800);
+              const vis=await r.js("(()=>{const room=document.querySelector('#portal-entry .room[data-room=\"solio\"]'),t=document.querySelector('#portal-entry [data-details-top]'),f=!t.hidden?t:document.querySelector('#portal-entry [data-rows]');const a=room.getBoundingClientRect(),b=f.getBoundingClientRect();return {open:document.querySelector('#portal-entry [data-details]').getAttribute('aria-expanded'),top:Math.round(b.top-a.top),h:Math.round(a.height),st:Math.round(room.scrollTop),off:f.offsetTop,par:f.offsetParent?.className||''};})()");
+              check('20 opening 상세내역 at '+W+' brings its head into view (Fable 최종 F2)',vis.open==='true'&&vis.top>=0&&vis.top<vis.h-40,vis);
+              await capture(r,`real-open-${W}`);await click(r,'#portal-entry [data-details]');await wait(300);}
+            await r.js("delete document.documentElement.dataset.motion");
+            r.win.setContentSize(1440,900);await wait(300);
             r.win.destroy();
           }
         }

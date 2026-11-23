@@ -129,6 +129,8 @@ function rowOf(snapshot, g, fact, now, checking) {
       Object.assign(row, { val: best.left + '% 남음', gauge: best.left, when: at ? shortWhen(at, now) + ' 초기화' : '', urgent: fact?.kind === 'pace' || best.state === 'low' });
       row.spoken = at ? spokenWhen(at, now) + ' 초기화' : '';
     } else if (g.projected.length) {
+      // 다시 찼을 계정이 있어도 다 쓴 계정 수는 작은 글에 함께 쓴다. 계정판의 「다 쓴 n개」와 같은 사실이다(Fable 최종 solio-subs-accounts-20261124 F4)
+      if (count >= 2 && g.out.length) row.sub = '계정 ' + count + '개 · ' + g.out.length + (g.out.some(a => a.focus === 'session') ? '개 막힘' : '개 다 씀');
       Object.assign(row, { val: '다시 찼을 것', when: checking ? '다시 읽고 있습니다' : '다시 읽으면 확인됩니다' });
     } else if (g.login.length) {
       Object.assign(row, { val: '다시 로그인', when: '계정 관리에서 다시 로그인합니다' });

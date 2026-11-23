@@ -1,7 +1,7 @@
 // 솔리오 구독 방의 비서 판(2026-11-20, docs/디자인/솔리오_구독비서_20261120/설계.md 3절과 7절 설계 검토 반영). DOM이 없다.
 // 유호님 11-20 「딱 하나만 봤으면 좋겠어」, 「급한것 중요한것 위주로 맨 위로」, 「토큰 출력량이 실시간으로」, 「하루에 한번씩 총 사용량 진단」.
 // 맨 위 한 가지(briefHead), 다가오는 일(briefSoon), 지금 출력(briefLive), 오늘 진단(briefDiag), 줄 안쪽 결론(poolSay)을 만든다.
-import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, DAY_MS } from './subscriptions-model.mjs';
+import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, planName, passTip, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, DAY_MS } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, whenWords, josa, joinNames } from './solio-today.mjs';
 import { tokenDay, tokenText } from './subscriptions-tokens.mjs';
 /* 풀 모의와 계정 사실은 subscriptions-model.mjs 한 곳에 있다(구조 다시 보기 5절). 시험과 옛 호출을 위해 이름을 그대로 내보낸다 */
@@ -98,7 +98,7 @@ export function briefHead(snapshot, groups, now, fallback = null) {
   const runs = new Map(weekly.map(g => [g, poolTimeline(snapshot, g, now)])), facts = new Map(weekly.map(g => [g, serviceFacts(g, snapshot?.prices)]));
   // 0. 쓸 계정은 없고 다시 로그인하거나 연결을 볼 계정이 남은 서비스: 로그인하면 바로 쓸 수 있으니 그 할 일이 맨 위다(Fable 최종 F1)
   const fixable = weekly.find(g => facts.get(g).kind === 'fixable' && (facts.get(g).login.length || facts.get(g).error.length));
-  if (fixable) { const f = facts.get(fixable); return { say: fixSay(fixable, f), then: f.login.length ? '계정 관리에서 다시 로그인합니다.' : '계정 관리에서 연결을 확인합니다.', covers: [], service: fixable.service }; }
+  if (fixable) { const f = facts.get(fixable); return { say: fixSay(fixable, f), then: f.login.length ? '계정 관리에서 다시 로그인합니다.' : '계정 관리에서 연결을 확인합니다.', covers: [], service: fixable.service, kind: 'fix' }; }
   // 1. 한 서비스의 이 PC 계정이 모두 막힘. 다시 열리는 때가 가장 늦은 것부터. 아직 읽지 않은 계정만 남은 서비스도 사람이 할 일이 없으니 여기서
   //    다시 열리는 때를 둘째 줄에 쓴다. 0번에 두면 둘째 줄이 비고 다시 열리는 때가 첫 화면 어디에도 없었다(최종 검수 solio-struct-20261120 F2)
   //    모든 계정이 막힌 서비스를 아직 읽지 않은 계정이 남은 서비스보다 먼저 세운다. 읽기 전 계정은 쓸 수 있을지도 모른다(최종 검수 solio-pub-p2-20261120 F4)
@@ -108,7 +108,8 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     const g = allOut[0], first = g.out[0], name = svcName(g), one = here(g).length === 1;
     const say = facts.get(g).kind === 'fixable' ? fixSay(g, facts.get(g)) : one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out);
     const then = first.unblock ? spoken(first.unblock, now) + '에 ' + (one ? '' : reopensFirst(g, first)) + '다시 열립니다.' : '';
-    return { say, then, covers: first.unblock ? ['unblock:' + first.row.id] : [], service: g.service };
+    // 아직 읽지 않은 계정이 남은 서비스(fixable)는 막힘이 아니라 손볼 일로 센다. 보고 첫 줄이 「다른 서비스로 일하세요」로 덮지 않게(카본 solio-subs-accounts-20261124 B2)
+    return { say, then, covers: first.unblock ? ['unblock:' + first.row.id] : [], service: g.service, kind: facts.get(g).kind === 'fixable' ? 'fix' : 'allOut' };
   }
   // 2. 지금 속도면 48시간 안에 모두 막힘. 막히는 때가 가장 이른 것부터. 30분 안에 다시 열리면 말하지 않는다
   const soonRun = weekly.map(g => ({ g, fc: runs.get(g)?.forecast })).filter(({ fc }) => fc && fc.at <= now + SOON_MS).sort((a, b) => a.fc.at - b.fc.at)[0];
@@ -120,7 +121,7 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     const then = said
       ? spoken(nx.t, now) + '에 ' + (one ? '' : ga(nx.a.name) + ' ') + (nx.type === 'reopen' ? '다시 열릴' : '초기화될') + ' 때까지 ' + spanWords(nx.t - fc.at) + '쯤 막힙니다.'
       : '일주일 안에는 다시 열리는 계정이 없습니다.';
-    return { say, then, covers: ['runout:' + g.service, ...(said ? [(nx.type === 'reopen' ? 'unblock:' : 'reset:') + nx.a.row.id] : [])], service: g.service };
+    return { say, then, covers: ['runout:' + g.service, ...(said ? [(nx.type === 'reopen' ? 'unblock:' : 'reset:') + nx.a.row.id] : [])], service: g.service, kind: 'runout' };
   }
   // 3. 계정 둘 이상인 서비스에서 절반 이상이 막힘. 막힌 몫이 큰 것부터
   const many = weekly.filter(g => here(g).length >= 2 && g.out.length * 2 >= here(g).length).sort((a, b) => b.out.length / here(b).length - a.out.length / here(a).length)[0];
@@ -130,7 +131,7 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     let then = '', covers = [];
     if (p) then = p.forecast ? '지금 속도면 ' + whenWords(p.forecast.untilAt, now, { withTime: true }) + '까지는 막히지 않습니다.' : '지금 속도면 이번 주는 모두 막히지는 않습니다.';
     else if (first.unblock) { then = spoken(first.unblock, now) + '에 ' + reopensFirst(many, first) + '다시 열립니다.'; covers = ['unblock:' + first.row.id]; }
-    return { say, then, covers, service: many.service };
+    return { say, then, covers, service: many.service, kind: 'many' };
   }
   // 4. 다시 로그인하거나 읽지 못한 계정. 할 일을 그대로 말한다
   const trouble = groups.filter(g => g.service && (g.login.length || g.error.length));
@@ -138,22 +139,23 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     const g = trouble[0], a = g.login[0] || g.error[0], name = svcName(g);
     const what = g.login.length ? '다시 로그인해야 합니다' : '읽지 못했습니다';
     const others = trouble.length > 1 || g.login.length + g.error.length > 1 ? ' 손볼 계정이 더 있으면 상세내역에서 보입니다.' : '';
-    return { say: name + ' ' + (a.name ? a.name + ' 계정은 ' : '계정 하나는 ') + what + '.', then: '계정 관리에서 ' + (g.login.length ? '다시 로그인합니다.' : '연결을 확인합니다.') + others, covers: [], service: g.service };
+    return { say: name + ' ' + (a.name ? a.name + ' 계정은 ' : '계정 하나는 ') + what + '.', then: '계정 관리에서 ' + (g.login.length ? '다시 로그인합니다.' : '연결을 확인합니다.') + others, covers: [], service: g.service, kind: 'trouble' };
   }
   // 5. 오늘은 이 계정부터: 24시간 안에 초기화되는데 20% 넘게 남은 계정(serviceGroups의 g.today)
   const today = weekly.filter(g => g.today).sort((a, b) => a.today.g.weekly.resetsAt - b.today.g.weekly.resetsAt)[0];
   if (today) {
     const a = today.today;
-    return { say: '오늘은 ' + svcName(today) + ' ' + a.name + '부터 쓰세요.', then: spoken(a.g.weekly.resetsAt, now) + '에 초기화되는데 ' + a.g.weekly.left + '%가 남았습니다.', covers: ['reset:' + a.row.id], service: today.service };
+    return { say: '오늘은 ' + svcName(today) + ' ' + a.name + '부터 쓰세요.', then: spoken(a.g.weekly.resetsAt, now) + '에 초기화되는데 ' + a.g.weekly.left + '%가 남았습니다.', covers: ['reset:' + a.row.id], service: today.service, kind: 'today' };
   }
   // 6. 거의 다 씀(주간 한도 10% 이하만 남은 서비스, 크레딧 부족)
   const low = groups.find(g => g.best && g.best.state === 'low' && !g.usable.some(a => a.state === 'ok'));
   if (low) {
     const name = svcName(low), b = low.best;
-    if (low.kind === 'weekly') return { say: neun(name) + ' ' + b.left + '%만 남았습니다.', then: b.g?.resetsAt ? spoken(b.g.resetsAt, now) + '에 초기화됩니다.' : '', covers: [], service: low.service };
+    // 5시간 창이 더 적게 남았으면 어느 한도인지 밝힌다. 계정판의 주간 남은 양과 맞서지 않게(Fable 최종 F1)
+    if (low.kind === 'weekly') return { say: neun(name) + ' ' + (b.focus === 'session' ? '5시간 한도가 ' : '') + b.left + '%만 남았습니다.', then: b.g?.resetsAt ? spoken(b.g.resetsAt, now) + '에 초기화됩니다.' : '', covers: [], service: low.service, kind: 'low' };
     // 충전일은 결제일이 아니라 지난 충전에서 센다(Higgsfield 30일, Typecast 한 달). 상세내역 줄과 같은 규칙(화면 검수 r2 A4)
     const refill = nextRefill(low.service, b.row, snapshot?.usage?.accounts?.[b.row.id]?.refillAt || null, now);
-    return { say: name + ' 크레딧이 얼마 남지 않았습니다.', then: refill === null ? '' : (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일에 다시 찹니다.')(new Date(refill)), covers: [], service: low.service };
+    return { say: name + ' 크레딧이 얼마 남지 않았습니다.', then: refill === null ? '' : (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일에 다시 찹니다.')(new Date(refill)), covers: [], service: low.service, kind: 'low' };
   }
   // 7. 48시간 안 결제
   const bills = upcoming(snapshot?.rows || [], now, snapshot?.check?.at || null, snapshot?.prices || null).filter(i => i.type === 'bill' && i.days <= 1);
@@ -162,12 +164,12 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     const names = [...new Set(same.map(b => SOLIO_TODAY_NAMES[b.row.service] || String(b.row.label || '').trim()))];
     const krw = same.reduce((n, b) => { const p = monthPrice(snapshot, b.row, now); return p && n !== null ? n + p.krw : null; }, 0);
     const svcs = [...new Set(same.map(b => b.row.service).filter(Boolean))];
-    return { say: day + ' ' + joinNames(names) + ' 결제가 있습니다.', then: krw ? '모두 약 ' + fmt(krw) + '원입니다.' : '', covers: same.map(b => 'bill:' + b.row.id), service: svcs.length === 1 ? svcs[0] : undefined };
+    return { say: day + ' ' + joinNames(names) + ' 결제가 있습니다.', then: krw ? '모두 약 ' + fmt(krw) + '원입니다.' : '', covers: same.map(b => 'bill:' + b.row.id), service: svcs.length === 1 ? svcs[0] : undefined, kind: 'bill', day };
   }
   // 8. 다 쓴 계정이 있지만 급하지 않음. 「넉넉」은 쓰지 않는다(설계 4절 1). 둘째 줄은 다가오는 일의 첫 줄이 맡는다
-  if (weekly.some(g => g.out.length)) return { say: '지금은 급한 일이 없습니다.', then: '', covers: [], pull: true };
+  if (weekly.some(g => g.out.length)) return { say: '지금은 급한 일이 없습니다.', then: '', covers: [], pull: true, kind: 'calm' };
   // 9. 그 밖(모두 넉넉, 기록 부족, 직접 넣은 구독만)은 지금 문장이 근거를 갖추고 있다(solio-today allSure · young)
-  return fallback ? { say: fallback.say, then: fallback.then, covers: [] } : { say: '지금은 급한 일이 없습니다.', then: '', covers: [], pull: true };
+  return fallback ? { say: fallback.say, then: fallback.then, covers: [], kind: 'calm' } : { say: '지금은 급한 일이 없습니다.', then: '', covers: [], pull: true, kind: 'calm' };
 }
 
 /* 다가오는 일 한 줄의 글(설계 3.2, 설계 검토 D6) */
@@ -330,7 +332,8 @@ export function briefDiag(snapshot, groups, now) {
 /* 한 달 구독료 한 줄. 진단과 달리 하루 한 번 기억하지 않고 늘 지금 요금과 환율로 센다(상세내역 요금 줄과 같은 값, GPT 검수 GA12) */
 export function costLine(snapshot, now) {
   const rows = snapshot?.rows || [], cost = rows.length ? costOf(snapshot, rows, now) : null;
-  return cost && cost.count ? '한 달 구독료 ' + (cost.usd > 0 ? '약 ' : '') + fmt(cost.approx) + '원' + (cost.unknown ? ' · 요금을 모르는 ' + cost.unknown + '개 빼고' : '') : '';
+  // 요금을 모르는 구독이 있으면 무엇을 더했는지 문장으로 말한다. 「요금을 모르는 n개 빼고」는 메모처럼 읽혔다(미학 맹검 11-24 2차)
+  return cost && cost.count ? (cost.unknown ? '요금을 아는 구독만 더하면 한 달에 ' : '한 달 구독료는 ') + (cost.usd > 0 ? '약 ' : '') + fmt(cost.approx) + '원입니다.' : '';
 }
 /* 진단을 다시 셀지 정하는 열쇠: 계정과 요금제, 넣은 요금, 목표(설계 검토 D10) */
 /* 계정의 상태(다시 로그인, 못 읽음, 처음 읽기 전)가 풀리면 그날 안에서도 다시 센다(화면 검수 A9) */
@@ -400,10 +403,12 @@ export function briefLive(tokens, samples, now) {
   if (!tokens.scannedAt && tokens.error) return { state: 'error', big: '', unit: '', small: '세다가 멈췄습니다.' };
   const t = todayOut(tokens, now), r = recentOut(samples, now);
   const top = Object.entries(t.by).sort((a, b) => b[1] - a[1])[0];
-  const share = top && t.out > 0 ? (TOOL_NAME[top[0]] || top[0]) + ' ' + Math.round((top[1] / t.out) * 100) + '%' : '';
+  // 「Claude Code 100%」만으로는 무엇의 몫인지 몰랐다. 어디서 쓴 몫인지 말한다(미학 맹검 11-24 3차)
+  const share = top && t.out > 0 ? (TOOL_NAME[top[0]] || top[0]) + '에서 ' + Math.round((top[1] / t.out) * 100) + '%' : '';
   // 기억한 지 10분이 안 됐으면 「방금부터」다. 10분 넘게 늘지 않았으면 쉬는 중이다
   const recent = !r ? '' : r.partial ? (r.delta > 0 ? '방금부터 ' + tokenText(r.delta) : '') : r.delta > 0 ? '최근 10분 ' + tokenText(r.delta) : '최근 10분은 쉬는 중';
-  return { state: 'on', big: tokenText(t.out), unit: '오늘 출력 토큰', small: [recent, share].filter(Boolean).join(' · '), out: t.out };
+  // 「출력 토큰」은 낯선 말이다. AI가 답으로 쓴 양이라고 쓴다(상세내역 「모델별 토큰 · AI가 답으로 쓴 글의 양」과 같은 말)
+  return { state: 'on', big: tokenText(t.out), unit: '오늘 AI가 답으로 쓴 토큰', small: [recent, share].filter(Boolean).join(' · '), out: t.out };
 }
 
 /* ── 문자판(11-20 유호님이 고르신 A, 설계 10절) ──
@@ -476,13 +481,189 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   return { span: DIAL_MS, focus: focus.service, hero, rings, arcs, ticks, days, events, label };
 }
 
+/* ── 계정판(11-24 유호님 「어떤 계정이 남아있는지 먼저」, 설계 11절 · 설계 검토 11.8) ──
+   자동으로 읽는 한도형 서비스(Claude, Codex)마다 머리(쓸 수 있는 계정 수 / 이 PC 계정 수)와 계정 줄을 만든다.
+   계정 줄의 막대는 그 계정의 주간 남은 양(shareOf)이다. 금색은 지금 쓸 수 있는 계정에만 쓴다(tone open).
+   쓸 수 있는 계정과 손볼 계정은 접지 않는다. 접는 것은 다 쓴 계정 한 가지다(설계 검토 9) */
+export const BOARD_ROWS = 4;
+const BOARD_SUB = Object.freeze({ gpt: 'ChatGPT 구독' });
+const ORDER_OF = g => ['claude', 'gpt', 'gemini'].indexOf(g.service);
+// 막대: 주간 초기화가 지나 다시 찼을 계정은 100이다. shareOf는 어림 주간을 버리고 5시간 창으로 떨어진다(Fable 최종 F5)
+const barOf = (a, prices) => (a.projected && a.g?.weekly?.guess ? 100 : shareOf(a, prices) ?? 0);
+function boardRow(a, g, prices, now) {
+  const base = { id: a.row.id, name: a.name || '이름 모름' };
+  const week = a.g?.weekly && !a.g.weekly.guess ? a.g.weekly : null;
+  if (a.state === 'login') return { ...base, tone: 'fix', bar: null, pct: '', note: '다시 로그인해야 합니다' };
+  if (a.state === 'error') return { ...base, tone: 'fix', bar: null, pct: '', note: '읽지 못했습니다' };
+  if (a.state === 'unknown') return { ...base, tone: 'idle', bar: null, pct: '', note: '아직 읽지 않았습니다' };
+  if (a.state === 'out') {
+    const when = a.unblock ? soonWhen(a.unblock, now) : '';
+    // 5시간 한도로 잠깐 막힌 계정은 주간 남은 양을 흐린 막대와 「주간 n%」로 둔다. 쓸 수 있는 양으로 읽히지 않게 %를 흐리게 쓴다(설계 검토 10)
+    if (a.focus === 'session') return { ...base, tone: 'held', bar: week ? week.left : null, pct: week ? '주간 ' + week.left + '%' : '', note: '5시간 한도' + (when ? ' · ' + when + ' 풀림' : '') };
+    return { ...base, tone: 'out', bar: null, pct: '', note: '다 씀' + (when ? ' · ' + when + ' 열림' : '') };
+  }
+  const v = barOf(a, prices), first = g.today?.row?.id === a.row.id;
+  let note;
+  // 다시 찼을 것(projected): 초기화 때가 지난 사실만 쓴다(설계 검토 1, Fable 최종 F5, 미학 맹검 2차).
+  // 주간이 지났으면 「주간 초기화됨」(5시간 창이 덜 남았으면 그 양도), 5시간 창만 지났으면 읽을 때 막혀 있던 계정만 「5시간 한도 풀림」
+  if (a.projected) {
+    const s = a.g?.session;
+    note = a.g?.weekly?.guess ? '주간 초기화됨 · ' + (s && !s.guess && s.left < 100 ? '5시간 창 ' + s.left + '% 남음' : '다시 읽으면 확인')
+      : Number(a.row.live?.session?.usedPercent) >= 100 ? '5시간 한도 풀림' : '5시간 창 초기화됨';
+  } else if (a.focus === 'session' && a.g?.session) note = '5시간 창 ' + a.g.session.left + '% 남음' + (a.g.session.resetsAt ? ' · ' + soonWhen(a.g.session.resetsAt, now) + ' 초기화' : '');
+  else note = week?.resetsAt ? soonWhen(week.resetsAt, now) + ' 초기화' : week && week.used === 0 ? '이번 주 아직 쓰지 않음' : '';
+  return { ...base, tone: 'open', bar: v, pct: v + '%', note, first };
+}
+/* 서비스 머리의 붉은 말. serviceFacts의 판정 하나만 읽는다(설계 검토 4) */
+function boardAlarm(f) {
+  if (f.kind === 'allOut') return '지금 모두 막힘';
+  // 붉은 말은 막힘과 손볼 일에만. 아직 읽지 않은 계정은 할 일이 아니라 줄의 중립 글로만 보인다(카본 B4)
+  if (f.kind === 'fixable') return [f.out.length ? f.out.length + '개 ' + (blocked(f.out) ? '막힘' : '다 씀') : '', f.login.length ? f.login.length + '개 다시 로그인' : '', f.error.length ? f.error.length + '개 못 읽음' : ''].filter(Boolean).join(' · ');
+  if (f.kind === 'login') return '다시 로그인 필요';
+  if (f.kind === 'error') return '읽지 못함';
+  return '';
+}
+export function briefBoard(snapshot, groups, now, focus = null) {
+  const prices = snapshot?.prices || null;
+  const cols = [];
+  for (const g of groups) {
+    if (g.kind !== 'weekly' || !g.service) continue;
+    const f = serviceFacts(g, prices), list = f.list;
+    if (!list.length) continue;
+    const mine = a => !a.away && a.row.source === 'auto';
+    // 쓸 수 있는 계정(f.open과 같은 묶음): 남은 양이 큰 것부터, 같으면 확인한 값을 먼저
+    const open = [...g.usable, ...g.projected].filter(mine).map(a => ({ a, v: barOf(a, prices) })).sort((x, y) => y.v - x.v || Boolean(x.a.projected) - Boolean(y.a.projected)).map(x => x.a);
+    const fix = [...g.login, ...g.error, ...g.pending].filter(mine), out = g.out.filter(mine);
+    const row = a => boardRow(a, g, prices, now);
+    let rows, folded, foldLabel = '';
+    if (open.length) {
+      rows = [...open, ...fix]; folded = out;
+      const first = out.find(a => a.unblock);
+      // 다시 열리는 때를 문장으로: 「다 쓴 7개 · 오늘 07:00에 kai부터 열림」. 계정 이름은 접힌 계정이 둘 이상일 때만(카본 B5, 미학 맹검 2차)
+      foldLabel = out.length ? (blocked(out) ? '막힌 ' : '다 쓴 ') + out.length + '개' + (first ? ' · ' + soonWhen(first.unblock, now) + '에 ' + (out.length > 1 ? who(first) + '부터 ' : '') + '열림' : '') : '';
+    } else {
+      const room = Math.max(1, BOARD_ROWS - fix.length);
+      rows = [...fix, ...out.slice(0, room)]; folded = out.slice(room);
+      foldLabel = folded.length ? (blocked(folded) ? '막힌 ' : '다 쓴 ') + folded.length + '개 더' : '';
+    }
+    const one = list.length === 1, name = svcName(g);
+    // 요금제 이름은 모든 계정의 요금제가 같을 때만(serviceFacts.countable), 「합쳐서」는 합칠 수 있을 때만(share)
+    // 「Ultra 10개」만으로는 무엇이 열 개인지 몰랐다. 요금제 이름 뒤에 「계정」을 붙인다(쌍 맹검 11-24)
+    const plan = f.countable && list[0].row.plan ? planName(list[0].row.plan, g.service) + ' 계정 ' + list.length + '개' : '계정 ' + list.length + '개';
+    const share = !one && f.share !== null ? '합쳐서 ' + f.share + '% 남음' : '';
+    // 계정 하나면 큰 글과 그 이름표가 상태를 말한다. 머리의 붉은 말을 겹쳐 쓰지 않는다(카본 B4)
+    const alarm = one ? '' : boardAlarm(f);
+    let big, label;
+    if (one) {
+      // 계정 하나: 상태를 먼저 가른다. 막혔으면 큰 글이 「막힘」이고 주간 남은 양은 작은 글이다(설계 검토 3)
+      const r = row(rows[0]);
+      big = r.tone === 'open' ? { value: String(r.bar), unit: '%', label: '남음' }
+        : r.tone === 'held' ? { value: '막힘', unit: '', label: r.pct ? r.pct + ' 남음' : '' }
+        : r.tone === 'out' ? { value: '다 씀', unit: '', label: '' }
+        : { value: '–', unit: '', label: r.note };
+      // 큰 글과 작은 글이 같은 말로 시작하면 작은 글만 읽는다(「다 씀, 다 씀 · …」가 되지 않게, Fable 최종 F6)
+      const dup = big.value === '–' || String(r.note || '').startsWith(big.value);
+      label = name + ' ' + [r.tone === 'open' ? r.pct + ' 남음' : dup ? '' : big.value, r.note].filter(Boolean).join(', ') + '.';
+    } else {
+      big = { value: String(open.length), unit: '/' + list.length, label: '지금 쓸 수 있는 계정' };
+      label = name + ' 계정 ' + list.length + '개 가운데 ' + open.length + '개를 지금 쓸 수 있습니다.' + (share ? ' ' + share + '.' : '') + (alarm ? ' ' + alarm + '.' : '');
+    }
+    // 펼친 다 쓴 계정 줄에는 「다 씀 · 」을 되풀이하지 않는다. 접은 줄이 이미 「다 쓴 n개」라고 말한다(미학 맹검 11-24 3차).
+    // 쓸 계정이 없어 다 쓴 계정 넷이 바로 보이는 칸에서는 빼지 않는다. 같은 칸에서 같은 상태가 두 꼴로 서지 않게(Fable 다시 검수 P2)
+    const foldRows = folded.map(row).map(r => (r.tone === 'out' && open.length > 0 && foldLabel.startsWith('다 쓴') && r.note.startsWith('다 씀 · ') ? { ...r, note: r.note.replace('다 씀 · ', '') } : r));
+    cols.push({ key: g.service, name, sub: [BOARD_SUB[g.service], plan, share].filter(Boolean).join(' · '), alarm, big, label, urgent: g.service === focus,
+      rows: rows.map(row), fold: folded.length ? { label: foldLabel, rows: foldRows } : null });
+  }
+  return cols.length ? { cols } : null;
+}
+
+/* ── 솔리오 보고(설계 11.3 · 설계 검토 6 · 7 · 8): 할 일을 중요한 차례로 ──
+   첫 줄(lead)은 계정판이 이미 말하는 사실(모두 막힘, 절반 이상 막힘)을 되풀이하지 않고 할 일로 바꾼다.
+   다시 열림과 초기화는 계정판의 작은 글에 있어 넣지 않는다. 첫 화면에는 첫 줄과 셋까지, 나머지는 상세내역 맨 위 */
+export const REPORT_SHOWN = 3;
+const HEAD_TAG = Object.freeze({ fix: ['지금', 'now'], allOut: ['지금', 'now'], trouble: ['지금', 'now'], runout: ['곧', 'now'], low: ['곧', 'now'], today: ['오늘', 'plan'], many: ['지금', 'info'], calm: ['지금', 'info'] });
+/* 계정 이름이 비면(메일 · 키 끝자리 · 넣은 이름이 모두 없을 때) 문장에 빈칸을 두지 않는다(카본 B3) */
+const who = a => a?.name || '이름 없는 계정';
+/* 「…으로/로」: ㄹ 받침(한글 끝 글자, 1 · 7 · 8, 영문 l)은 「로」다(「fresh1로」, 「mail로」) */
+const rieul = w => { const t = String(w || '').trim(), ch = t.slice(-1), c = ch.charCodeAt(0); if (c >= 0xac00 && c <= 0xd7a3) return (c - 0xac00) % 28 === 8; return /[178]$/.test(t) || /l$/i.test(t); };
+const ro = w => (rieul(w) ? w + '로' : josa(w, ['으로', '로']));
+export function briefReport(snapshot, groups, now, head, skip = []) {
+  const prices = snapshot?.prices || null, said = new Set([...(head?.covers || []), ...skip]);
+  const weekly = groups.filter(g => g.kind === 'weekly' && g.service);
+  const [tag, tone] = head?.kind === 'bill' ? [head.day || '오늘', 'info'] : HEAD_TAG[head?.kind] || ['지금', 'info'];
+  // 「손볼 계정이 더 있으면 상세내역에서 보입니다」는 옛 판의 말이다. 계정판에서는 손볼 계정이 모두 첫 화면에 보인다(카본 B7)
+  let lead = { say: head?.say || '', then: String(head?.then || '').replace(' 손볼 계정이 더 있으면 상세내역에서 보입니다.', ''), tag, tone };
+  const leadIds = new Set();
+  const headG = weekly.find(g => g.service === head?.service) || null;
+  const open = g => [...g.usable, ...g.projected].filter(a => !a.away);
+  // 모두 막힌 서비스: 다른 서비스에 쓸 계정이 있으면 그 계정으로 일하라고 말한다
+  if (head?.kind === 'allOut' && headG && serviceFacts(headG, prices).kind === 'allOut') {
+    const first = headG.out[0], other = weekly.filter(g => g !== headG && open(g).length).sort((x, y) => ORDER_OF(x) - ORDER_OF(y))[0];
+    if (other && first?.unblock) {
+      const best = other.today || open(other).map(a => ({ a, v: shareOf(a, prices) ?? 0 })).sort((x, y) => y.v - x.v)[0].a;
+      lead = { say: neun(svcName(headG)) + ' ' + spoken(first.unblock, now) + '에 다시 열립니다.', then: '그동안은 ' + svcName(other) + ' ' + ro(who(best)) + ' 일하세요.', tag: '지금', tone: 'now' };
+      leadIds.add(best.row.id);
+    }
+  }
+  // 절반 이상 막힌 서비스: 개수는 계정판에 있으니 이번 주 전망을 첫 줄로
+  if (head?.kind === 'many' && headG) {
+    const p = poolTimeline(snapshot, headG, now);
+    // 결론을 에두르지 않는다. 「모두 막히지는 않습니다」 대신 「쓸 계정이 남습니다」(미학 맹검 11-24 3차)
+    if (p) lead = { say: '지금 속도면 ' + neun(svcName(headG)) + ' ' + (p.forecast ? whenWords(p.forecast.untilAt, now, { withTime: true }) + '까지는 막히지 않습니다.' : '이번 주 내내 쓸 계정이 남습니다.'), then: '', tag: '이번 주', tone: 'info' };
+  }
+  const items = [];
+  // 초기화권을 쓰면 지금 풀리는 서비스(모두 막혔고 하루 넘게 기다려야 할 때, passTip mode now, 설계 검토 7)
+  for (const g of weekly) {
+    const t = passTip(g, now);
+    if (t?.mode !== 'now') continue;
+    items.push({ key: 'pass-now:' + g.service, tag: '지금', tone: 'now', say: svcName(g) + ' 초기화권 ' + t.total + '장이 있습니다. 쓰면 지금 다시 열립니다.', then: t.release ? '쓰지 않으면 ' + spoken(t.release, now) + '까지 막혀 있습니다.' : '' });
+  }
+  // 맨 위가 말하지 않은 손볼 계정(다시 로그인, 못 읽음). 서비스마다 한 줄
+  const headFix = ['fix', 'trouble'].includes(head?.kind) ? head.service : null;
+  for (const g of groups) {
+    if (!g.service || g.service === headFix) continue;
+    const login = g.login.filter(a => !a.away), error = g.error.filter(a => !a.away);
+    if (!login.length && !error.length) continue;
+    // 다시 로그인과 못 읽음이 섞이면 둘을 나눠 말한다. 계정판 줄과 같은 말이다(카본 B1)
+    const a = login[0] || error[0], n = login.length + error.length;
+    const say = login.length && error.length ? svcName(g) + ' 계정 ' + login.length + '개는 다시 로그인해야 하고 ' + error.length + '개는 읽지 못했습니다.'
+      : svcName(g) + ' ' + (n > 1 ? '계정 ' + n + '개는 ' : (a.name ? a.name + ' 계정은 ' : '계정 하나는 ')) + (login.length ? '다시 로그인해야 합니다' : '읽지 못했습니다') + '.';
+    const then = '계정 관리에서 ' + (login.length && error.length ? '다시 로그인하고 연결을 확인합니다.' : login.length ? '다시 로그인합니다.' : '연결을 확인합니다.');
+    items.push({ key: 'fix:' + g.service, tag: '지금', tone: 'now', say, then });
+  }
+  // 오늘 먼저 쓸 계정(24시간 안에 초기화되는데 20% 넘게 남은 계정). 맨 위나 첫 줄이 말한 계정은 빼고
+  for (const g of groups) {
+    const a = g.today;
+    if (!a || said.has('reset:' + a.row.id) || leadIds.has(a.row.id)) continue;
+    items.push({ key: 'today:' + a.row.id, tag: '오늘', tone: 'plan', say: '오늘은 ' + svcName(g) + ' ' + who(a) + '부터 쓰세요.', then: spoken(a.g.weekly.resetsAt, now) + '에 초기화되는데 ' + a.g.weekly.left + '%가 남았습니다.' });
+  }
+  // 계정판에 없는 일: 바닥 예측은 일주일 안이면, 결제 · 초기화권 · API 크레딧 만료 · Flow는 48시간 안이면. 종류를 먼저 거르고 기간을 자른다(설계 검토 8)
+  const run = new Set();
+  for (const s of briefSoon(snapshot, groups, now, [...said], 7 * DAY_MS).all) {
+    if (said.has(s.key) || /^(unblock|reset):/.test(s.key)) continue;
+    const isRun = s.key.startsWith('runout:');
+    if (!isRun && s.at > now + SOON_MS) continue;
+    if (isRun) { const svc = s.key.slice(7); if (svc === head?.service && ['runout', 'many'].includes(head?.kind)) continue; run.add(svc); }
+    items.push({ key: s.key, tag: s.when, tone: isRun ? 'now' : 'info', say: s.say, then: '' });
+  }
+  // 다 쓴 계정이 있는데 일주일 안에 모두 막히지는 않는 서비스: 안심해도 된다고 한 줄
+  for (const g of weekly) {
+    if (run.has(g.service) || (g.service === head?.service && ['runout', 'many', 'allOut', 'fix'].includes(head?.kind))) continue;
+    if (serviceFacts(g, prices).kind !== 'someOut') continue;
+    const p = poolTimeline(snapshot, g, now);
+    if (p && !p.forecast) items.push({ key: 'outlook:' + g.service, tag: '이번 주', tone: 'info', say: '지금 속도면 ' + neun(svcName(g)) + ' 이번 주 내내 쓸 계정이 남습니다.', then: '' });
+  }
+  return { lead, items };
+}
+
 /* 스냅숏에서 나오는 판(맨 위, 다가오는 일, 진단, 줄 안쪽 결론). 지금 출력은 따로 붙인다(briefLive).
    today는 solioToday의 결과다. ready일 때만 맨 위를 바꾼다. 줄을 접을지(fold)는 상태로 정한다(설계 검토 D9) */
 const FOLD = new Set(['ready', 'stale', 'rereading', 'projected', 'first']);
 export function solioBrief({ today, snapshot, memo = null } = {}, now = Date.now()) {
   if (!today || !snapshot || !FOLD.has(today.state) || !(today.rows && today.rows.length)) return null;
-  if (today.state !== 'ready') return { fold: true, head: null, soon: null, diag: null, says: {}, memo };
   const groups = briefGroups(snapshot, now);
+  // 계정판은 스냅숏이 있으면 읽기 상태와 관계없이 선다(다시 찼을 것, 6시간 넘음, 다시 읽는 중, 처음 읽는 중). 보고는 다 읽었을 때만(설계 검토 2)
+  if (today.state !== 'ready') return { fold: true, head: null, soon: null, diag: null, board: briefBoard(snapshot, groups, now), report: null, says: {}, memo };
   // 직접 넣은 구독만 있으면 읽을 것이 없고 맨 위 문장이 「아래 줄」을 가리킨다. 접지 않고 줄을 그대로 보인다(Fable 최종 F4)
   if (!groups.some(g => g.service)) return null;
   const head = briefHead(snapshot, groups, now, today);
@@ -490,14 +671,31 @@ export function solioBrief({ today, snapshot, memo = null } = {}, now = Date.now
   const next = dailyDiag(memo, snapshot, groups, now);
   // 할 일이 없는 맨 위(「지금은 급한 일이 없습니다」)만 둘째 줄을 다가오는 일의 첫 줄로 채운다. 그 줄은 다가오는 일에서 뺀다.
   // 다른 갈래의 빈 둘째 줄에 다른 구독의 일정을 섞지 않는다(화면 검수 r2 A7)
-  let then = head.then, list = soon;
+  let then = head.then, list = soon, pulled = [];
   if (!then && head.pull && soon.all.length) {
     // 표 조각이 아니라 문장으로 쓴다(화면 검수 A7). 「지금 속도면」으로 시작하는 줄에는 「가장 먼저」를 붙이지 않는다
     const first = soon.all[0];
     then = first.key.startsWith('runout:') ? first.say : '가장 먼저 ' + first.say;
+    pulled = [first.key];
     const rest = soon.all.slice(1);
     list = { all: rest, shown: rest.slice(0, SOON_SHOWN), more: Math.max(0, rest.length - SOON_SHOWN) };
   }
   const says = Object.fromEntries(groups.filter(g => g.service).map(g => [g.key, poolSay(snapshot, g, now)]).filter(([, s]) => s));
-  return { fold: true, head: { say: head.say, then }, soon: list, diag: { ...next.diag, cost: costLine(snapshot, now), when: diagWhen(next.at, now) }, dial: briefDial(snapshot, groups, now, head.service || null), says, memo: next };
+  const diag = { ...next.diag, cost: costLine(snapshot, now), when: diagWhen(next.at, now) };
+  // 첫 화면은 계정판과 솔리오 보고다(11-24 유호님, 설계 11절). 문자판(briefDial)은 그리지 않는다. 셈과 시안은 남긴다.
+  // 보고 첫 줄(lead)이 맨 위 한 가지를 대신한다. 계정판이 없으면(한도형 구독이 없음) 맨 위 한 가지 그대로다
+  const board = briefBoard(snapshot, groups, now, head.service || null);
+  const r = briefReport(snapshot, groups, now, { ...head, then }, pulled);
+  const top = diag.items?.[0];
+  // 오늘 진단의 가장 무거운 판정 한 줄. 「아직 모름」은 첫 화면에 두지 않는다
+  // 「모자람」은 근거(4주 동안 몇 번 바닥났나)를 먼저 쓰고 값은 그다음 줄에. 근거 없이 값만 서면 붙인 권고처럼 읽혔다(쌍 맹검 11-24)
+  // 꼬리표는 「4주 진단」이다. 지금 막혔다는 경보가 아니라 4주 기록의 판정이다(미학 맹검 11-24 3차)
+  if (top && top.verdict !== 'young') r.items.push({ key: 'diag:' + top.key, tag: '4주 진단', tone: 'plan', name: top.name, word: top.word, say: top.verdict === 'short' && top.more ? top.say : '', then: [top.line || top.say, top.scope ? '(' + top.scope + ')' : ''].filter(Boolean).join(' ') });
+  // 급한 줄(지금 · 곧)이 먼저, 그다음 오늘 할 일, 알림, 진단은 맨 끝이다. 넘친 줄이 급한 줄이 되지 않게(Fable 최종 F3)
+  const rank = i => (i.key.startsWith('diag:') ? 3 : { now: 0, plan: 1 }[i.tone] ?? 2);
+  r.items.sort((x, y) => rank(x) - rank(y));
+  // 보고는 계정판과 한 짝이다. 계정판이 없으면(한도형 구독이 없음) 지금 판(맨 위 · 다가오는 일 · 진단)을 그대로 쓴다(카본 B8)
+  const report = board ? { tag: r.lead.tag, tone: r.lead.tone, items: r.items, shown: r.items.slice(0, REPORT_SHOWN), more: Math.max(0, r.items.length - REPORT_SHOWN) } : null;
+  const shownHead = board ? { say: r.lead.say, then: r.lead.then } : { say: head.say, then };
+  return { fold: true, head: shownHead, soon: list, diag, board, report, says, memo: next };
 }

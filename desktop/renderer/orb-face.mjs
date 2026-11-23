@@ -454,7 +454,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const extra = signedIn && sol.snapshot ? [today.rows?.length ? rooms.costRow() : null, rooms.tokRow()].filter(Boolean) : [];
     // 팁은 그 구독 줄 안쪽에 작은 글 한 줄과 반응 단추 둘로 선다(설계 검토 D7). 고르는 일은 모델(pickUsageTips)이 한다
     const tips = signedIn && sol.snapshot && today.rows?.length ? rooms.subTips() : null;
-    // 비서 판(11-20 솔리오 구독 비서 설계 3절): 맨 위 한 가지, 다가오는 일, 지금 출력, 오늘 진단. 줄은 상세내역 안으로 접는다.
+    // 비서 판(11-20 솔리오 구독 비서 설계 3절, 11-24 계정판과 보고는 11절): 계정판, 솔리오 보고, 지금 출력. 줄은 상세내역 안으로 접는다.
     // 스냅숏에서 나오는 판은 스냅숏이나 분이 바뀔 때만 다시 센다(설계 검토 D7). 진단은 하루 한 번 기억한다(D10)
     const brief = signedIn && sol.snapshot ? briefOf(today) : null;
     const says = brief?.says || {};
@@ -466,7 +466,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 확인할 구독(check)은 줄이 곧 할 일이라 접지 않고, 지금 출력만 위에 둔다(설계 검토 D9)
     const showLive = Boolean(brief) || (signedIn && sol.snapshot && today.state === 'check' && today.rows?.length > 0);
     const live = showLive ? rooms.tokLive() : null;
-    const box = brief ? { fold: true, soon: brief.soon, diag: brief.diag, dial: brief.dial || null, live } : showLive ? { fold: false, soon: null, diag: null, dial: null, live } : null;
+    const box = brief ? { fold: true, soon: brief.soon, diag: brief.diag, board: brief.board || null, report: brief.report || null, live } : showLive ? { fold: false, soon: null, diag: null, board: null, report: null, live } : null;
     return { ...today, ...head, rows, extra, rereading: sol.checking || Boolean(sol.snapshot?.checking), brief: box };
   }
   function briefOf(today) {

@@ -266,7 +266,7 @@ export function costRow(snapshot, st = {}, now = Date.now()) {
   const usdIn = cost.usd > 0;
   const total = (usdIn ? '약 ' : '') + won(cost.count ? cost.approx : 0);
   const mid = cost.count
-    ? ['한 달 ' + total, cost.soon ? '7일 안 결제 ' + cost.soon + '건' : '', cost.unknown ? '요금을 모르는 ' + cost.unknown + '개 빼고' : '', awayCounted ? '이 PC에 없는 계정 포함' : ''].filter(Boolean).join(' · ')
+    ? ['한 달 ' + total, cost.soon ? '7일 안 결제 ' + cost.soon + '건' : '', cost.unknown ? '요금을 아는 구독만 더함' : '', awayCounted ? '이 PC에 없는 계정 포함' : ''].filter(Boolean).join(' · ')
     : '아직 넣은 요금이 없습니다';
   const soonNames = [...new Set(rows.filter(r => r.cycle !== 'annual' && (d => d !== null && d <= 6)(nextBill(r.billDay, now))).map(svcName))];
   const more = [];

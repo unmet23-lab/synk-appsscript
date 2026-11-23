@@ -4,7 +4,7 @@
 // 무작위 맞대기처럼 갈래를 나눠야 하면 갈래마다 걸린 수도 단언한다(구조 다시 보기 4절 P2-6).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { solioBrief, briefHead, briefSoon, briefDiag, briefDial, briefGroups, poolRunout, poolSay, dailyDiag, diagWhen, briefLive, tokSample, todayOut, recentOut, soonWhen, SOON_SHOWN, RECENT_MS, DIAL_MS } from '../renderer/solio-brief.mjs';
+import { solioBrief, briefHead, briefSoon, briefDiag, briefDial, briefBoard, briefGroups, REPORT_SHOWN, poolRunout, poolSay, dailyDiag, diagWhen, briefLive, tokSample, todayOut, recentOut, soonWhen, SOON_SHOWN, RECENT_MS, DIAL_MS } from '../renderer/solio-brief.mjs';
 import { tokenSummary } from '../renderer/subscriptions-tokens.mjs';
 import { solioToday } from '../renderer/solio-today.mjs';
 import { serviceFacts, poolTimeline, POOL_SHORT } from '../renderer/subscriptions-model.mjs';
@@ -21,6 +21,8 @@ const snap = (rows, stats = {}, { checkAt = NOW - 5 * 60e3, goal = null, prices 
 });
 const brief = (s, now = NOW) => solioBrief({ today: solioToday({ snapshot: s }, now), snapshot: s }, now);
 const sentences = text => (String(text).match(/[^.]+\./g) || []).length;
+/* 문자판은 11-24부터 화면에 그리지 않는다(설계 11절). 셈은 남아 있어 맨 위가 말한 구독으로 직접 부른다 */
+const dialOf = (s, now = NOW) => { const g = briefGroups(s, now); return briefDial(s, g, now, briefHead(s, g, now).service || null); };
 
 /* 유호님 모양: 열 계정 가운데 일곱이 다 썼고 셋이 남았다. 서비스 전체가 하루 계정 세 개 몫(300%p)을 쓴다 */
 function sevenOfTen() {
@@ -60,9 +62,12 @@ test('the old next-run formula used only the accounts left, so the pool must use
 test('a pool that lasts past the week says how many are used up, never 「넉넉」 (설계 4절 1, 설계 검토 D5)', () => {
   const { rows, stats } = sevenOfTen();
   for (const id of Object.keys(stats)) stats[id] = 2;
-  const s = snap(rows, stats), b = brief(s);
-  assert.equal(b.head.say, 'Claude 10개 가운데 7개를 다 썼습니다.');
-  assert.equal(b.head.then, '지금 속도면 이번 주는 모두 막히지는 않습니다.');
+  const s = snap(rows, stats), b = brief(s), h = briefHead(s, briefGroups(s, NOW), NOW);
+  assert.equal(h.say, 'Claude 10개 가운데 7개를 다 썼습니다.');
+  assert.equal(h.then, '지금 속도면 이번 주는 모두 막히지는 않습니다.');
+  // 화면의 첫 줄은 계정판이 이미 말하는 개수(3 / 10) 대신 이번 주 전망이다(11-24 설계 검토 6)
+  assert.deepEqual([b.head.say, b.head.then], ['지금 속도면 Claude는 이번 주 내내 쓸 계정이 남습니다.', '']);
+  assert.deepEqual(b.board.cols[0].big, { value: '3', unit: '/10', label: '지금 쓸 수 있는 계정' });
   const today = solioToday({ snapshot: s }, NOW), claude = today.rows.find(x => x.name === 'Claude');
   // 줄도 가장 좋은 계정 하나가 아니라 합친 몫이다(「100% 남음」이 일곱 개 다 쓴 것을 가렸다)
   assert.deepEqual([claude.sub, claude.val], ['계정 10개 · 7개 다 씀', '합쳐서 29% 남음']);
@@ -387,7 +392,7 @@ test('diagnosis order follows the goal; manual subscriptions of any kind are lis
   const save = snap(rows, stats, { goal: 'save' }), d = briefDiag(save, briefGroups(save, NOW), NOW);
   assert.deepEqual(d.items.map(i => i.word), ['남음', '모자람']);
   assert.equal(d.manual, 'Grok Ultra는 쓴 양을 읽지 못해 진단에서 뺐습니다(월 295,000원).');
-  assert.equal(d.cost, '한 달 구독료 약 911,000원 · 요금을 모르는 2개 빼고');
+  assert.equal(d.cost, '요금을 아는 구독만 더하면 한 달에 약 911,000원입니다.');
 });
 
 test('diagnosis once a day: kept through the day, counted again on a new day read or a changed plan (설계 검토 D10)', () => {
@@ -425,12 +430,12 @@ test('live output: off, first count, and today with the last ten minutes (설계
   const t0 = { enabled: true, scannedAt: NOW - H, cells: cells(30_000_000) };
   let samples = tokSample([], t0, null, NOW);
   let live = briefLive(t0, samples, NOW, NOW);
-  assert.deepEqual([live.big, live.unit, live.small], ['3,000만', '오늘 출력 토큰', 'Claude Code 70%']);
+  assert.deepEqual([live.big, live.unit, live.small], ['3,000만', '오늘 AI가 답으로 쓴 토큰', 'Claude Code에서 70%']);
   const t1 = { ...t0, cells: cells(30_500_000) };
   samples = tokSample(samples, t1, t0, NOW + 3 * 60e3);
-  assert.equal(briefLive(t1, samples, NOW + 3 * 60e3, NOW).small, '방금부터 50만 · Claude Code 70%');
+  assert.equal(briefLive(t1, samples, NOW + 3 * 60e3, NOW).small, '방금부터 50만 · Claude Code에서 70%');
   // 10분이 지나도록 더 늘지 않았으면 쉬는 중이다
-  assert.equal(briefLive(t1, samples, NOW + 3 * 60e3 + RECENT_MS + 1, NOW).small, '최근 10분은 쉬는 중 · Claude Code 70%');
+  assert.equal(briefLive(t1, samples, NOW + 3 * 60e3 + RECENT_MS + 1, NOW).small, '최근 10분은 쉬는 중 · Claude Code에서 70%');
   // 다 훑은 셈이 바뀐 알림(밀린 몫이 섞인다)은 기억을 비우지 않고 앞 값을 그만큼 올려 잇는다. 밀린 몫은 최근 10분에 들지 않는다(화면 검수 A4)
   const t2 = { ...t1, scannedAt: NOW + 4 * 60e3, cells: cells(40_000_000) };
   samples = tokSample(samples, t2, t1, NOW + 4 * 60e3);
@@ -532,7 +537,7 @@ test('bills of one service on one day keep the API credit that disappears (화�
 /* ── 문자판(11-20 유호님이 고르신 A, 설계 10절) ── */
 test('the dial: the service on top in the middle, its pooled share, every account as a cell, three days of ticks', () => {
   const { rows, stats, out } = sevenOfTen();
-  const s = snap(rows, stats), d = brief(s).dial;
+  const s = snap(rows, stats), d = dialOf(s);
   assert.equal(d.focus, 'claude');
   assert.deepEqual(d.hero, { value: '29', unit: '%', label: 'Claude 남은 몫' });
   assert.equal(d.rings.length, 1);
@@ -595,7 +600,7 @@ test('the dial centres the service whose bill or credits the top speaks of (화�
   const g = weekly('gpt', 10, NOW + 5 * D, { plan: 'plus', billDay: 21 });
   const s = snap([c1, c2, g], { [c1.id]: 1, [c2.id]: 1, [g.id]: 1 }), b = brief(s);
   assert.equal(b.head.say, '내일 Codex 결제가 있습니다.');
-  assert.equal(b.dial.focus, 'gpt');
+  assert.equal(dialOf(s).focus, 'gpt');
 });
 
 /* ── Fable 최종(solio-dial-20261120) ── */
@@ -642,7 +647,7 @@ test('cross-check: a 5-hour block counts its weekly share in the row and on the 
   const b = weekly('claude', 20, NOW + 5 * D, { plan: 'pro', email: 'b@example.com' });
   const s = snap([a, b], { [a.id]: 10, [b.id]: 10 }), today = solioToday({ snapshot: s }, NOW);
   assert.equal(today.rows.find(x => x.name === 'Claude').val, '합쳐서 70% 남음');
-  assert.deepEqual(brief(s).dial.hero, { value: '70', unit: '%', label: 'Claude 남은 몫' });
+  assert.deepEqual(dialOf(s).hero, { value: '70', unit: '%', label: 'Claude 남은 몫' });
 });
 
 test('cross-check: a plan changed within three days gives one runout time to the top, the row, coming-up and the dial (Opus 재현 2, GPT 검수 GA3)', () => {
@@ -652,7 +657,7 @@ test('cross-check: a plan changed within three days gives one runout time to the
   assert.equal(poolTimeline(s, g, NOW).forecast.at, NOW + 60 * H);
   assert.equal(b.head.say, 'Claude가 모레 오후에 바닥납니다.');
   assert.equal(b.says.claude, '지금 속도면 모레 오후 3시쯤 바닥납니다.');
-  assert.match(b.dial.label, / 지금 속도면 모레 오후 3시쯤 바닥납니다\.$/);
+  assert.match(dialOf(s).label, / 지금 속도면 모레 오후 3시쯤 바닥납니다\.$/);
   assert.deepEqual(b.soon.all.filter(i => i.key === 'runout:claude').map(i => i.at), [NOW + 60 * H]);
 });
 
@@ -766,7 +771,7 @@ test('a pool that runs dry within a minute is a forecast, not 「now」, so the 
   assert.equal(p.forecast.at, NOW + 30e3);
   const b = brief(s);
   assert.equal(b.head.say, '지금 속도면 Claude는 10분 뒤쯤 모두 막힙니다.');
-  assert.match(b.dial.label, / 지금 속도면 10분 뒤쯤 모두 막힙니다\.$/);
+  assert.match(dialOf(s).label, / 지금 속도면 10분 뒤쯤 모두 막힙니다\.$/);
 });
 
 test('without a pool count, an account that moved to a smaller plan is judged by its weighted pace (카본 solio-struct-20261120 A2)', () => {
@@ -848,4 +853,232 @@ test('a service with every account shut comes before one that still has an unrea
   assert.equal(head.service, 'gpt');
   assert.equal(head.say, 'Codex는 지금 모든 계정을 다 썼습니다.');
   assert.equal(head.then, '내일 새벽 3시에 c1이 먼저 다시 열립니다.');
+});
+
+/* ── 계정판과 솔리오 보고(11-24 유호님 「어떤 계정이 남아있는지 먼저」, 설계 11절과 설계 검토 11.8) ── */
+const codexShut = () => {
+  // Codex 셋: Pro 둘은 다 썼고, Plus 하나는 주간 33%를 썼는데 5시간 한도로 두 시간 막혀 있다
+  const p1 = weekly('gpt', 100, NOW + 3 * D, { plan: 'pro', email: 'gp1@example.com' }), p2 = weekly('gpt', 100, NOW + 4 * D, { plan: 'pro', email: 'gp2@example.com' });
+  const held = row({ service: 'gpt', label: 'gpt', plan: 'plus', email: 'gheld@example.com', live: { readAt: NOW - 5 * 60e3, session: { usedPercent: 100, resetsAt: NOW + 2 * H }, weekly: { usedPercent: 33, resetsAt: NOW + 6 * D } } });
+  return [p1, p2, held];
+};
+test('board: every Claude account with room is a gold row, the used-up seven fold under one line, the head counts open of all', () => {
+  const { rows, stats } = sevenOfTen();
+  const b = brief(snap(rows, stats)), c = b.board.cols[0];
+  assert.equal(b.board.cols.length, 1);
+  assert.deepEqual([c.key, c.name, c.sub, c.alarm], ['claude', 'Claude', 'Ultra 계정 10개 · 합쳐서 29% 남음', '']);
+  assert.deepEqual(c.big, { value: '3', unit: '/10', label: '지금 쓸 수 있는 계정' });
+  assert.deepEqual(c.rows.map(r => [r.name, r.tone, r.pct]), [['fresh1', 'open', '100%'], ['fresh3', 'open', '100%'], ['fresh2', 'open', '99%']]);
+  assert.equal(c.rows[0].note, '수요일 03:00 초기화');
+  assert.equal(c.fold.label, '다 쓴 7개 · 오늘 09:00에 out0부터 열림');
+  assert.deepEqual(c.fold.rows.map(r => [r.name, r.tone, r.bar, r.note]).slice(0, 2), [['out0', 'out', null, '오늘 09:00 열림'], ['out1', 'out', null, '내일 19:00 열림']]);
+  assert.equal(c.label, 'Claude 계정 10개 가운데 3개를 지금 쓸 수 있습니다. 합쳐서 29% 남음.');
+});
+
+test('board: a 5-hour block is a dim weekly share with a red when, mixed Codex plans never pool, all shut is said in red', () => {
+  const rows = codexShut(), s = snap(rows, Object.fromEntries(rows.map(r => [r.id, 10]))), c = brief(s).board.cols[0];
+  assert.deepEqual([c.name, c.sub, c.alarm], ['Codex', 'ChatGPT 구독 · 계정 3개', '지금 모두 막힘']);
+  assert.deepEqual(c.big, { value: '0', unit: '/3', label: '지금 쓸 수 있는 계정' });
+  // 쓸 계정이 없으면 막힌 계정을 접지 않고 바로 보인다. 5시간 한도로 막힌 계정이 가장 먼저 풀린다
+  assert.equal(c.fold, null);
+  assert.deepEqual(c.rows.map(r => [r.name, r.tone, r.bar, r.pct, r.note]), [
+    ['gheld', 'held', 67, '주간 67%', '5시간 한도 · 오늘 05:00 풀림'], ['gp1', 'out', null, '', '다 씀 · 월요일 03:00 열림'], ['gp2', 'out', null, '', '다 씀 · 화요일 03:00 열림']]);
+});
+
+test('board: a service of one account says its state before a number (설계 검토 3)', () => {
+  const one = r => brief(snap([r], { [r.id]: 5 })).board.cols[0];
+  assert.deepEqual(one(weekly('claude', 38, NOW + 5 * D)).big, { value: '62', unit: '%', label: '남음' });
+  const held = row({ live: { readAt: NOW - 5 * 60e3, session: { usedPercent: 100, resetsAt: NOW + 2 * H }, weekly: { usedPercent: 33, resetsAt: NOW + 5 * D } } });
+  const h = one(held);
+  assert.deepEqual(h.big, { value: '막힘', unit: '', label: '주간 67% 남음' });
+  assert.equal(h.sub, 'Ultra 계정 1개');
+  assert.equal(h.label, 'Claude 막힘, 5시간 한도 · 오늘 05:00 풀림.');
+  assert.deepEqual(one(weekly('claude', 100, NOW + 2 * D)).big, { value: '다 씀', unit: '', label: '' });
+});
+
+test('board: an account read before a reset is 100% only when the weekly window passed; a passed 5-hour window keeps the weekly share (설계 검토 1)', () => {
+  const read = NOW - 3 * H;
+  const fiveOnly = row({ email: 'five@example.com', live: { readAt: read, session: { usedPercent: 90, resetsAt: NOW - H }, weekly: { usedPercent: 70, resetsAt: NOW + 4 * D } } });
+  const weekPassed = row({ email: 'week@example.com', live: { readAt: read, weekly: { usedPercent: 80, resetsAt: NOW - H } } });
+  const other = weekly('claude', 50, NOW + 5 * D, { email: 'other@example.com' });
+  const s = snap([fiveOnly, weekPassed, other]), b = briefBoard(s, briefGroups(s, NOW), NOW);
+  const byName = Object.fromEntries(b.cols[0].rows.map(r => [r.name, [r.bar, r.note]]));
+  // 읽을 때 5시간 창이 막혀 있지 않았으면 「풀림」이 아니라 「초기화됨」이다(Fable 최종 F5)
+  assert.deepEqual(byName.five, [30, '5시간 창 초기화됨']);
+  assert.deepEqual(byName.week, [100, '주간 초기화됨 · 다시 읽으면 확인']);
+  assert.deepEqual(byName.other, [50, '수요일 03:00 초기화']);
+});
+
+test('board: a passed 5-hour block says 「풀림」, and a passed week with a tight 5-hour window is still a full bar with that window in the note (Fable 최종 F5)', () => {
+  const read = NOW - 2 * H;
+  const freed = row({ email: 'freed@example.com', live: { readAt: read, session: { usedPercent: 100, resetsAt: NOW - H }, weekly: { usedPercent: 40, resetsAt: NOW + 4 * D } } });
+  // 주간 초기화는 지났고 5시간 창(30% 남음)은 아직이다. 주간이 다시 찼으니 막대는 100이다
+  const week = row({ email: 'week@example.com', live: { readAt: read, session: { usedPercent: 70, resetsAt: NOW + 2 * H }, weekly: { usedPercent: 90, resetsAt: NOW - H } } });
+  const s = snap([freed, week]), c = briefBoard(s, briefGroups(s, NOW), NOW).cols[0];
+  const byName = Object.fromEntries(c.rows.map(r => [r.name, [r.tone, r.bar, r.note]]));
+  assert.deepEqual(byName.freed, ['open', 60, '5시간 한도 풀림']);
+  assert.deepEqual(byName.week, ['open', 100, '주간 초기화됨 · 5시간 창 30% 남음']);
+  assert.deepEqual(c.rows.map(r => r.name), ['week', 'freed']);
+});
+
+test('report: a low 5-hour window names its limit, so it never fights the weekly share on the board (Fable 최종 F1)', () => {
+  const a = row({ email: 'tight@example.com', live: { readAt: NOW - 5 * 60e3, session: { usedPercent: 92, resetsAt: NOW + 2 * H }, weekly: { usedPercent: 40, resetsAt: NOW + 4 * D } } });
+  const s = snap([a], { [a.id]: 5 }), b = brief(s);
+  assert.equal(briefHead(s, briefGroups(s, NOW), NOW).kind, 'low');
+  assert.deepEqual(b.board.cols[0].big, { value: '60', unit: '%', label: '남음' });
+  assert.equal(b.head.say, 'Claude는 5시간 한도가 8%만 남았습니다.');
+  const w = weekly('claude', 93, NOW + 2 * D, { email: 'week@example.com' }), s2 = snap([w]);
+  assert.equal(brief(s2).head.say, 'Claude는 7%만 남았습니다.');
+});
+
+test('report: urgent lines come first and the overflow is counted for the screen (Fable 최종 F3)', () => {
+  // Claude 다시 로그인 1 · 오늘 먼저 쓸 계정 1, Codex 못 읽음 1 · 오늘 먼저 쓸 계정 1 · 일주일 안 바닥 예측
+  const cToday = weekly('claude', 30, NOW + 10 * H, { email: 'ctoday@example.com' }), cLog = row({ email: 'clog@example.com', state: 'needs-login' });
+  const gToday = weekly('gpt', 30, NOW + 12 * H, { plan: 'pro', email: 'gtoday@example.com' }), gErr = row({ service: 'gpt', label: 'gpt', plan: 'pro', email: 'gerr@example.com', state: 'error' });
+  const gRun = weekly('gpt', 80, NOW + 6 * D, { plan: 'pro', email: 'grun@example.com' });
+  const s = snap([cToday, cLog, gToday, gErr, gRun], { [cToday.id]: 5, [gToday.id]: 30, [gRun.id]: 30 }), b = brief(s);
+  const tones = b.report.items.map(i => i.tone);
+  assert.ok(b.report.items.length > REPORT_SHOWN, JSON.stringify(b.report.items.map(i => i.key)));
+  assert.deepEqual(tones, [...tones].sort((x, y) => ({ now: 0, plan: 1 }[x] ?? 2) - ({ now: 0, plan: 1 }[y] ?? 2)), JSON.stringify(b.report.items.map(i => [i.key, i.tone])));
+  assert.equal(b.report.shown[0].tone, 'now');
+  assert.equal(b.report.more, b.report.items.length - REPORT_SHOWN);
+});
+
+test('board: one used-up account is read once, not 「다 씀, 다 씀」 (Fable 최종 F6)', () => {
+  const a = weekly('claude', 100, NOW + 2 * D, { email: 'solo@example.com' }), s = snap([a]);
+  assert.equal(briefBoard(s, briefGroups(s, NOW), NOW).cols[0].label, 'Claude 다 씀 · 모레 03:00 열림.');
+});
+
+test('board: accounts with room and accounts to fix never fold; only the used-up ones do, and with none open the first four show', () => {
+  const open = [0, 10, 20, 30, 40, 50].map((u, i) => weekly('claude', u, NOW + 5 * D, { email: 'o' + i + '@example.com' }));
+  const out = [1, 2].map(i => weekly('claude', 100, NOW + i * D, { email: 'x' + i + '@example.com' }));
+  const login = row({ email: 'relog@example.com', state: 'needs-login' });
+  const s = snap([...open, ...out, login]), c = briefBoard(s, briefGroups(s, NOW), NOW).cols[0];
+  assert.deepEqual(c.rows.map(r => r.name), ['o0', 'o1', 'o2', 'o3', 'o4', 'o5', 'relog']);
+  assert.equal(c.rows.at(-1).note, '다시 로그인해야 합니다');
+  assert.deepEqual([c.fold.label, c.fold.rows.length], ['다 쓴 2개 · 내일 03:00에 x1부터 열림', 2]);
+  const six = [1, 2, 3, 4, 5, 6].map(i => weekly('claude', 100, NOW + i * D, { email: 'y' + i + '@example.com' }));
+  const s2 = snap(six), c2 = briefBoard(s2, briefGroups(s2, NOW), NOW).cols[0];
+  assert.deepEqual([c2.rows.length, c2.fold.label, c2.fold.rows.length], [4, '다 쓴 2개 더', 2]);
+  // 쓸 계정이 없는 칸은 보이는 줄과 펼친 줄이 같은 꼴이다(Fable 다시 검수 FA1)
+  assert.deepEqual([...c2.rows, ...c2.fold.rows].map(r => r.note.startsWith('다 씀 · ')), [true, true, true, true, true, true]);
+});
+
+test('board: shut plus one to sign in again is not 「모두 막힘」 but says both (설계 검토 4)', () => {
+  const a = weekly('claude', 100, NOW + D, { email: 'a@example.com' }), b = weekly('claude', 100, NOW + 2 * D, { email: 'b@example.com' });
+  const c = row({ email: 'c@example.com', state: 'needs-login' });
+  const s = snap([a, b, c], { [a.id]: 5, [b.id]: 5 }), col = briefBoard(s, briefGroups(s, NOW), NOW).cols[0];
+  assert.equal(col.alarm, '2개 다 씀 · 1개 다시 로그인');
+  assert.deepEqual(col.big, { value: '0', unit: '/3', label: '지금 쓸 수 있는 계정' });
+});
+
+test('board: stands while values are old; the report waits for a full read (설계 검토 2)', () => {
+  const { rows, stats } = sevenOfTen();
+  const stale = snap(rows, stats, { checkAt: NOW - 7 * H });
+  const sb = solioBrief({ today: solioToday({ snapshot: stale }, NOW), snapshot: stale }, NOW);
+  assert.equal(sb.report, null);
+  assert.deepEqual(sb.board.cols[0].big, { value: '3', unit: '/10', label: '지금 쓸 수 있는 계정' });
+});
+
+test('report: with one service shut and another open, the first line says what to do instead of repeating the board (설계 검토 6)', () => {
+  const { rows, stats } = sevenOfTen(), cx = codexShut();
+  for (const r of cx) stats[r.id] = 10;
+  const b = brief(snap([...rows, ...cx], stats));
+  assert.deepEqual(b.board.cols.map(c => [c.key, c.urgent]), [['claude', false], ['gpt', true]]);
+  assert.equal(b.head.say, 'Codex는 오늘 새벽 5시에 다시 열립니다.');
+  assert.equal(b.head.then, '그동안은 Claude fresh1로 일하세요.');
+  assert.deepEqual([b.report.tag, b.report.tone], ['지금', 'now']);
+  // 다시 열림과 초기화는 계정판의 작은 글에 있다. 보고에 다시 쓰지 않는다
+  assert.equal(b.report.items.filter(i => /^(unblock|reset):/.test(i.key)).length, 0);
+  assert.ok(b.report.shown.length <= REPORT_SHOWN);
+});
+
+test('report: a runout three days away is still said when the top speaks of another service, and a 「아직 모름」 diagnosis is not (설계 검토 8)', () => {
+  // Codex는 모두 막혔고(맨 위), Claude 한 계정은 하루 25%p씩 써서 75%가 남아 사흘 뒤 바닥난다. 다음 초기화는 닷새 뒤
+  const cx = codexShut(), a = weekly('claude', 25, NOW + 5 * D, { email: 'solo@example.com' });
+  const stats = { [a.id]: 25 };
+  for (const r of cx) stats[r.id] = 10;
+  const b = brief(snap([a, ...cx], stats));
+  assert.match(b.head.say, /^Codex는 /);
+  assert.deepEqual(b.report.items.filter(i => i.key === 'runout:claude').map(i => [i.tone, i.say]), [['now', '지금 속도면 월요일 새벽 3시쯤 Claude가 바닥납니다.']]);
+  // 이 자료의 진단은 모두 「아직 모름」이다(기록이 없다). 그 판정은 보고에 서지 않는다(카본 C2)
+  assert.ok(b.diag.items.length > 0 && b.diag.items.every(i => i.verdict === 'young'), JSON.stringify(b.diag.items.map(i => i.verdict)));
+  assert.equal(b.report.items.filter(i => i.key.startsWith('diag:')).length, 0);
+});
+
+test('report: a pass that opens a shut service now comes before everything else (설계 검토 7)', () => {
+  // 내일 결제(보고에 서는 다른 일)와 함께 둔다. 초기화권이 그보다 앞이다(카본 C3)
+  const a = row({ service: 'gpt', label: 'gpt', plan: 'pro', email: 'pa@example.com', billDay: 21, live: { readAt: NOW - 5 * 60e3, weekly: { usedPercent: 100, resetsAt: NOW + 3 * D }, resets: { count: 2, until: [NOW + 9 * D, NOW + 9 * D] } } });
+  const s = snap([a], { [a.id]: 5 }), b = brief(s);
+  assert.deepEqual(b.report.items.map(i => i.key.split(':')[0]), ['pass-now', 'bill'], JSON.stringify(b.report.items.map(i => i.key)));
+  assert.equal(b.report.items[0].key, 'pass-now:gpt');
+  assert.equal(b.report.items[0].say, 'Codex 초기화권 2장이 있습니다. 쓰면 지금 다시 열립니다.');
+});
+
+/* ── 카본 화면 검수(solio-subs-accounts-20261124) 재현 ── */
+test('report: an account to sign in again and one not read in the same service are said apart (카본 B1)', () => {
+  const { rows, stats } = sevenOfTen();
+  const g1 = weekly('gpt', 10, NOW + 5 * D, { plan: 'pro', email: 'gok@example.com' });
+  const g2 = row({ service: 'gpt', label: 'gpt', plan: 'pro', email: 'glog@example.com', state: 'needs-login' }), g3 = row({ service: 'gpt', label: 'gpt', plan: 'pro', email: 'gerr@example.com', state: 'error' });
+  stats[g1.id] = 5;
+  const b = brief(snap([...rows, g1, g2, g3], stats)), fix = b.report.items.filter(i => i.key === 'fix:gpt');
+  assert.deepEqual(fix.map(i => [i.say, i.then]), [['Codex 계정 1개는 다시 로그인해야 하고 1개는 읽지 못했습니다.', '계정 관리에서 다시 로그인하고 연결을 확인합니다.']]);
+});
+
+test('report: a service with shut and unread accounts is a thing to fix, not 「work elsewhere」 (카본 B2)', () => {
+  const { rows, stats } = sevenOfTen();
+  const out = weekly('gpt', 100, NOW + 2 * D, { plan: 'pro', email: 'gout@example.com' }), unread = row({ service: 'gpt', label: 'gpt', plan: 'pro', email: 'gnew@example.com', live: null });
+  stats[out.id] = 5;
+  const s = snap([...rows, out, unread], stats), h = briefHead(s, briefGroups(s, NOW), NOW), b = brief(s);
+  assert.equal(h.kind, 'fix');
+  assert.equal(b.head.say, h.say);
+  assert.doesNotMatch(b.head.then, /그동안은/);
+});
+
+test('board: one account never repeats its state in red, and an unread service is not red (카본 B4)', () => {
+  const one = weekly('claude', 100, NOW + 2 * D);
+  const s1 = snap([one], { [one.id]: 5 });
+  assert.equal(briefBoard(s1, briefGroups(s1, NOW), NOW).cols[0].alarm, '');
+  const a = row({ email: 'n1@example.com', live: null }), b = row({ email: 'n2@example.com', live: null });
+  const s2 = snap([a, b]);
+  assert.equal(briefBoard(s2, briefGroups(s2, NOW), NOW).cols[0].alarm, '');
+});
+
+test('board: the fold line names the first account only with two or more folded, and 5-hour blocks fold as 「막힌」 (카본 B5)', () => {
+  const o = weekly('claude', 10, NOW + 5 * D, { email: 'open@example.com' }), x = weekly('claude', 100, NOW + 6 * H, { email: 'one@example.com' });
+  const s = snap([o, x]), c = briefBoard(s, briefGroups(s, NOW), NOW).cols[0];
+  assert.equal(c.fold.label, '다 쓴 1개 · 오늘 09:00에 열림');
+  const held = i => row({ email: 'h' + i + '@example.com', live: { readAt: NOW - 5 * 60e3, session: { usedPercent: 100, resetsAt: NOW + i * H }, weekly: { usedPercent: 30, resetsAt: NOW + 5 * D } } });
+  const hs = [1, 2, 3, 4, 5, 6].map(held), s2 = snap(hs), c2 = briefBoard(s2, briefGroups(s2, NOW), NOW).cols[0];
+  assert.equal(c2.fold.label, '막힌 2개 더');
+});
+
+test('report: half shut without a pool count keeps the top with 「지금」, and the old 「상세내역에서 보입니다」 is dropped (카본 B6 · B7)', () => {
+  // 속도 기록이 없어 풀 셈이 없다(rate3 없음)
+  const a = weekly('claude', 100, NOW + 6 * H, { email: 'a@example.com' }), b = weekly('claude', 20, NOW + 5 * D, { email: 'b@example.com' });
+  const r = brief(snap([a, b])).report;
+  assert.equal(r.tag, '지금');
+  const ok = weekly('claude', 10, NOW + 5 * D, { email: 'ok@example.com' });
+  const l1 = row({ email: 'l1@example.com', state: 'needs-login' }), l2 = row({ email: 'l2@example.com', state: 'needs-login' });
+  const s = snap([ok, l1, l2], { [ok.id]: 5 }), h = briefHead(s, briefGroups(s, NOW), NOW), bb = brief(s);
+  assert.equal(h.kind, 'trouble');
+  assert.match(h.then, /상세내역에서 보입니다/);
+  assert.equal(bb.head.then, '계정 관리에서 다시 로그인합니다.');
+});
+
+test('report: without a board (credit services only) there is no report and the old top stays (카본 B8)', () => {
+  const hf = { id: 'hf1', service: 'higgsfield', source: 'auto', label: 'Higgsfield', kind: 'credit', state: 'ok', plan: 'plus', live: { readAt: NOW - 60e3, credits: 1200, planCredits: 3000 } };
+  const b = brief(snap([hf]));
+  assert.ok(!b || (b.board === null && b.report === null), JSON.stringify(b && { board: b.board, report: b.report }));
+});
+
+test('report: the 「모자람」 diagnosis gives its reason before the price (쌍 맹검 11-24)', () => {
+  const short = [0, 1].map(i => weekly('claude', 100, NOW + 2 * D, { email: 'short' + i + '@example.com' }));
+  const stats = {};
+  for (const r of short) stats[r.id] = { rate3: 50, weeks4: { ...fourWeeks(120, 100), windows: windowsOf([true, true, true, true]) } };
+  const b = brief(snap(short, stats)), d = b.report.items.find(i => i.key.startsWith('diag:'));
+  assert.ok(d, JSON.stringify(b.report.items.map(i => i.key)));
+  assert.equal(d.word, '모자람');
+  assert.equal(d.say, '지난 4주 동안 주간 한도 8번 가운데 8번이 초기화 하루 넘게 전에 바닥났습니다.');
+  assert.match(d.then, /계정을 하나 더하면 월 약 [\d,]+원입니다\.$/);
 });

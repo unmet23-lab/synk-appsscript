@@ -403,3 +403,10 @@ test('row inside: with no fact at all it gives one reason instead of an empty bo
   const priced = moreOf([row({ service: null, source: 'manual', label: '사내 도구', kind: 'weekly', live: null, price: 10000, currency: 'KRW' })])[0].more;
   assert.deepEqual([priced.cost.val, priced.empty], ['월 10,000원', '']);
 });
+
+test('a refilled service row still counts its used-up accounts, like the account board (Fable 최종 solio-subs-accounts-20261124 F4)', () => {
+  const refilled = row({ service: 'gpt', label: 'gpt', plan: 'pro', email: 'home@example.com', live: { readAt: NOW - 3 * H, session: { usedPercent: 100, resetsAt: NOW - H }, weekly: { usedPercent: 40, resetsAt: NOW + 3 * D } } });
+  const out1 = weekly('gpt', 100, NOW + 2 * D, { email: 'o1@example.com' }), out2 = weekly('gpt', 100, NOW + 3 * D, { email: 'o2@example.com' });
+  const r = solioToday({ snapshot: snap([refilled, out1, out2], {}, { checkAt: NOW - 3 * H }) }, NOW).rows.find(x => x.name === 'Codex');
+  assert.deepEqual([r.sub, r.val], ['계정 3개 · 2개 다 씀', '다시 찼을 것']);
+});
