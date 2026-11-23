@@ -321,6 +321,17 @@
           "평균 시청",
           "완주율"
         ]
+      },
+      {
+        "계정": "lab-tw-youtube",
+        "채널": "유튜브 @synklabtaiwan",
+        "주소": "https://www.youtube.com/watch?v=fr108Om7Zx4",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-23T05:00:28.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
       }
     ]
   }
