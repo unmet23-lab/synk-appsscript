@@ -103,6 +103,11 @@ test('closed rows show no path: a folder other than the department\'s reads 「�
   const suggest = row => row.more.find(m => m[0] === 'grp' && m[1] === 'mk-sess-wtl-0001')[2][0][2];
   assert.equal(suggest(wtLobby([])), 'shop', 'a worktree session suggests its repository name');
   assert.equal(suggest(wtLobby([{ id: 'dshop', name: 'Shop', folder: 'D:\\other' }])), 'vigilant-jackson-a5f', 'a taken name falls back to the last folder name, cut to 20 characters');
+  // 긴 폴더 이름은 20자로 자른 이름으로 견준다(Fable -b FA1)
+  const LONG = 'D:\\worktrees\\a-very-long-repository-name\\vigilant-jackson-a5f00e';
+  const longLobby = departments => rowOf(officeRoom(snapOf({ state: stateOf([hook('PostToolUse', 'sess-wtl-0001', LONG, NOW - 20 * S, { toolName: 'Read', toolDetail: 'a.md' })]), departments }), {}, NOW, { subs: SUBS }), 'lobby');
+  assert.equal(suggest(longLobby([])), 'a-very-long-reposito');
+  assert.equal(suggest(longLobby([{ id: 'dlong', name: 'a-very-long-reposito', folder: 'D:\\other' }])), 'vigilant-jackson-a5f', 'the cut name is already taken');
   // 하는 일을 모르는 일하는 직원은 오른쪽 칸을 되풀이하지 않고 어느 AI인지 쓴다
   const bare = officeRoom(snapOf({ state: stateOf([record('sess-bar-0001', MKT, 'codex', NOW - 20 * S)]) }), {}, NOW, { subs: SUBS });
   assert.deepEqual([rowOf(bare, 'd:dmkt').mid, rowOf(bare, 'd:dmkt').val], ['Codex', '하나 일하는 중']);

@@ -326,6 +326,12 @@ function departmentRow(d, staff, ui, tasking, tasks = []) {
   return { key, nm: d.name, flag: alert, mid, val, when: '', now: staff.some(v => v.status === 'asked'), watch: true, label: rowLabel([d.name, alert && '새 소식', mid, val]), more };
 }
 
+/* 「이 폴더로 부서 만들기」의 첫 이름: 읽히는 폴더 이름을 20자로 자른 것, 그 이름의 부서가 있으면 끝 폴더 이름을 자른 것 */
+function suggestName(v, departments) {
+  const cut = s => String(s || '').slice(0, NAME_MAX), first = cut(v.folder);
+  return first && !departments.some(d => nameKey(d.name) === nameKey(first)) ? first : cut(lastPart(v.cwd));
+}
+
 /* 「부서 없는 일」: 솔리오 밖에서 연 일 가운데 부서 폴더 밖의 것(5절). 세션마다 그 작업 폴더로 부서를 만들거나 보낼 부서를 고른다 */
 function lobbyRow(staff, departments, ui, tasking) {
   const lead = officeLead(staff), alert = staff.some(v => v.alert);
@@ -338,8 +344,9 @@ function lobbyRow(staff, departments, ui, tasking) {
       const grp = 'mk-' + v.id, open = !!ui.grps?.has?.('lobby:' + grp);
       more.push(['acts', [['이 폴더로 부서 만들기', 'grp', grp, open ? 'on' : '']]]);
       more.push(['grp', grp, [
-        // 첫 제안은 읽히는 폴더 이름(작업 사본이면 저장소 이름)이다. 같은 이름의 부서가 이미 있으면 끝 폴더 이름으로 돌아간다(Fable solio-room-content F2)
-        ['fld', '부서 이름', (v.folder && !departments.some(d => nameKey(d.name) === nameKey(v.folder)) ? v.folder : lastPart(v.cwd)).slice(0, NAME_MAX), NAME_MAX + '자까지', 'nm-' + v.id, 'text'],
+        // 첫 제안은 읽히는 폴더 이름(작업 사본이면 저장소 이름)이다. 같은 이름의 부서가 이미 있으면 끝 폴더 이름으로 돌아간다(Fable solio-room-content F2).
+        // 견주기는 20자로 자른 뒤의 이름으로 한다. 자르기 전으로 견주면 긴 폴더 이름에서 이미 쓰인 이름이 그대로 제안됐다(Fable -b FA1)
+        ['fld', '부서 이름', suggestName(v, departments), NAME_MAX + '자까지', 'nm-' + v.id, 'text'],
         ['acts', [['만들기', 'dept-from', v.id, flags('enter', ui.busy && 'off')], ['닫기', 'grp', grp]]],
       ], !open]);
     }
