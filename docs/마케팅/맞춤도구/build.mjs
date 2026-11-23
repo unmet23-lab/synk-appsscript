@@ -66,6 +66,8 @@ const STATIC = {
   // profile-photo = synk.im/brief/profile-photo(11-22, synkbrief 「셀카 한 장으로 프로필 사진」 나눔 자료) — page.js가 편의 자료 원고(.md)를 글 그대로 읽어 한 쪽을 그린다.
   // 인스타 앱 안 브라우저에서 가볍게 열리도록 화면 양식은 쪽 안에 두고 app.css(시그널 68KB)를 싣지 않는다(theme 'none'). PDF 없음. shots = 실험 사진 일곱 장(webp, 메타데이터 없음), brand-shift-sm = 머리 로고를 표시 크기의 3배(264×72)로 줄인 사본(원본 142KB → 10KB).
   'profile-photo': { out: 'brief/profile-photo', render: 'page.js', files: [], assets: ['favicon-32.png'], keep: ['brand-shift-sm.webp'], keepDirs: ['shots'], theme: 'none' },
+  // privacy-check = synk.im/brief/privacy-check(11-23, synkbrief 「인터넷에 드러난 내 정보를 ChatGPT로 찾고 지우기」 나눔 자료) — profile-photo와 같은 짜임. shots = 실험 화면 세 장(가린 판, webp).
+  'privacy-check': { out: 'brief/privacy-check', render: 'page.js', files: [], assets: ['favicon-32.png'], keep: ['brand-shift-sm.webp'], keepDirs: ['shots'], theme: 'none' },
 };
 
 async function buildStatic(name) {

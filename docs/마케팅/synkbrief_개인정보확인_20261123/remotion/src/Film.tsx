@@ -44,9 +44,11 @@ const Pic: React.FC<{ n: string; x: number; y: number; w: number; opacity?: numb
 };
 
 // ── 민감정보 카드 — 실제 카드의 네 줄을 이름 조각 · 판정 조각으로 잘라 크게 다시 짠다(글 · 색은 받은 화면 그대로)
-// 줄 k: 이름은 왼쪽(x 70), 판정 알약은 오른쪽 끝(x 1010)에 맞춘다. rows = 줄마다 켜지는 정도(0~1)
-const RS = 1.3;
-const MS = 1.4;
+// 줄 k: 이름은 왼쪽(x 70), 판정 알약은 오른쪽 끝(x 915)에 맞춘다. rows = 줄마다 켜지는 정도(0~1)
+// r14: 1010 → 915 · 이름 1.3 → 1.16배 · 알약 1.4 → 1.25배 — 올리기 전 검사 「오른쪽 단추 자리」: 알약이 릴스 · 쇼츠 오른쪽 단추(좋아요 · 댓글) 자리(x 920 밖)에 걸렸다
+const RIGHT = 915;
+const RS = 1.16;
+const MS = 1.25;
 const MARK_LIFT = 'brightness(1.35)'; // 판정 알약 — 받은 화면 그대로면 검은 바탕과 밝기 차가 약하다(v3 · v4 첫컷검사 흠). 색과 글은 그대로 두고 밝기만 올린다 // 판정 알약 배율 — 이름보다 조금 크게(v3 첫컷검사 흠: 초록 · 주황 글자가 이름보다 작고 어둡다)
 // 줄 배율(가장 긴 둘째 줄 이름 560px × 1.3 = 728 — 판정 알약과 35px 띄움)
 const bsz = (n: string) => (badgeSizes as Record<string, number[]>)[n];
@@ -55,21 +57,24 @@ const BadgeRow: React.FC<{ k: number; y: number; s?: number; o?: number }> = ({ 
   const [mw, mh] = bsz(`badge_mark${k}`);
   return (
     <div style={{ position: 'absolute', left: 0, top: y, width: 1080, height: lh * s, opacity: o, transform: `translateY(${(1 - o) * 26}px)` }}>
-      <Img src={img(`badge_label${k}`)} style={{ position: 'absolute', left: 70, top: 0, width: lw * s, height: lh * s }} />
-      <Img src={img(`badge_mark${k}`)} style={{ position: 'absolute', left: 1010 - mw * MS * (s / RS), top: (lh * s - mh * MS * (s / RS)) / 2, width: mw * MS * (s / RS), height: mh * MS * (s / RS), filter: MARK_LIFT }} />
+      <Img src={img(`badge_label${k}`)} style={{ position: 'absolute', left: 70, top: 0, width: lw * s, height: lh * s, mixBlendMode: 'lighten' }} />
+      <Img src={img(`badge_mark${k}`)} style={{ position: 'absolute', left: RIGHT - mw * MS * (s / RS), top: (lh * s - mh * MS * (s / RS)) / 2, width: mw * MS * (s / RS), height: mh * MS * (s / RS), filter: MARK_LIFT, mixBlendMode: 'lighten' }} />
     </div>
   );
 };
-const ROW_GAP = 160;
+const ROW_GAP = 150; // r14: 160 → 150 — 마지막 줄을 앱 글자 자리(y 1428) 위에
+// 줄 차례 — 노출 확인 셋(2 · 3 · 4)을 위에, 확인되지 않음(1)을 맨 아래에(장면 심사 v11: 초록 「확인되지 않음」을 먼저 보이면 김이 빠진다). 글 · 색은 받은 화면 그대로
+const ORDER = [2, 3, 4, 1];
 const BadgeRows: React.FC<{ y: number; rows: number[] }> = ({ y, rows }) => (
   <>
-    {[1, 2, 3, 4].map((k) => <BadgeRow key={k} k={k} y={y + (k - 1) * ROW_GAP} o={rows[k - 1]} />)}
+    {ORDER.map((k, i) => <BadgeRow key={k} k={k} y={y + i * ROW_GAP} o={rows[i]} />)}
     {/* 줄 사이 가는 선 — 받은 카드의 칸 선과 같은 결 */}
-    {[1, 2, 3].map((k) => <div key={`l${k}`} style={{ position: 'absolute', left: 70, top: y + k * ROW_GAP - 25, width: 940, height: 2, background: 'rgba(255,255,255,0.08)', opacity: Math.min(rows[k - 1], rows[k]) }} />)}
+    {[1, 2, 3].map((i) => <div key={`l${i}`} style={{ position: 'absolute', left: 70, top: y + i * ROW_GAP - 25, width: RIGHT - 70, height: 2, background: 'rgba(255,255,255,0.08)', opacity: Math.min(rows[i - 1], rows[i]) }} />)}
   </>
 );
 
-// ── 0 훅: 첫 프레임은 표지와 같은 화면(제목 + 민감정보 카드). 0.45초부터 보낸 요청문에 답이 써지는 실제 녹화로 바뀐다 ──
+// ── 0 훅: 첫 프레임은 표지와 같은 화면(제목 + 민감정보 네 줄). 2초에 실제 답 화면(제목 · 조사 기준일)으로 바뀐다 ──
+// v12: 장면 심사 v11 「첫 1.5초가 움직임 없는 긴 글 상자와 생각 중뿐」 — 말풍선은 훅에서 빼고(요청문은 10.7초부터 크게) 결과 네 줄로 연다
 const Hook: React.FC<{ bare?: boolean }> = ({ bare }) => {
   const f = useCurrentFrame();
   const t = f / FPS;
@@ -80,28 +85,44 @@ const Hook: React.FC<{ bare?: boolean }> = ({ bare }) => {
   const H = 1920 - top;
   const scale = 1080 / SHOT_W;
   // 답 화면(rec2)에서는 제목 · 조사 기준일 · 첫 문장(화면 y 600~900)만 남기고 아래를 녹인다 — v3 첫컷검사 #66(본문 여러 문단이 읽히기 전에 넘어간다)
-  const ans = idx >= 1 ? interpolate(t, [REC[1].at, REC[1].at + 0.2], [0, 1], clamp) : 0;
-  const cut = (905 - REC[1].y) * scale * 1.06;
-  const keep = ans > 0 ? `linear-gradient(to bottom, #000 0px, #000 ${cut}px, rgba(0,0,0,${1 - ans}) ${cut + 90}px)` : undefined;
+  const ans = idx >= REC.length - 1 && idx >= 0 ? 1 : 0; // 답 화면은 첫 장부터 아래를 녹인 채 뜬다(v13 첫컷검사 — 첫 장에 본문이 보였다가 어두워졌다)
+  // 답 화면은 제목이 아래 판의 가운데쯤 오게 둔다(v12 장면 심사 — 위에 붙여 두면 아래가 까맣게 빈다). 심사용(bare)은 위 머리줄(「임시」)까지 보인다
+  const ry = (r: { y: number; img: string }) => (r.img === 'rec2' ? (bare ? -60 : 241) : r.y);
+  const cut = (722 - ry(REC[REC.length - 1])) * scale; // r7: 답 화면을 키우지 않으므로 1.06을 뺐다 // v16: 답 제목 두 줄만 — 경계를 좁혀 「조사 기준일」이 비치지 않게(v15 첫컷검사 흠) // 제목 두 줄과 조사 기준일만(v8 첫컷검사 #66 — 첫 문장까지 다섯 줄은 1.65초에 다 못 읽는다)
+  const keep = ans > 0 ? `linear-gradient(to bottom, #000 0px, #000 ${cut}px, rgba(0,0,0,${1 - ans}) ${cut + 20}px)` : undefined;
   return (
     <AbsoluteFill style={{ background: INK }}>
       <div style={{ position: 'absolute', left: 0, top, width: 1080, height: H, overflow: 'hidden', WebkitMaskImage: keep, maskImage: keep }}>
         {/* 장마다 제 자리(y)에 둔다 — 말풍선 장은 내내 이름 · 아이디가 보이게 움직이지 않고(v4 첫컷검사 #5), 답 장으로 겹쳐 바뀐다 */}
         {REC.map((r, k) => {
           if (k > idx || k < idx - 1) return null;
-          const o = k === idx ? interpolate(t, [r.at, r.at + 0.12], [0, 1], clamp) : 1;
-          const zz = 1.06 + Math.max(0, t - r.at) * 0.012;
+          if (k < idx) return null; // 장 사이는 끊어 바꾼다(v10 첫컷검사 #5 — 0.12초 겹쳐 바꾸면 말풍선과 답 글이 겹쳐 읽히지 않는다)
+          const o = 1;
+          const zz = r.img === 'rec2' ? 1 + Math.max(0, t - r.at) * 0.03 : 1.06 + Math.max(0, t - r.at) * 0.012; // v20: 답 화면이 1.8초로 길어져 멈춰 보이지 않게 아주 천천히 — 왼쪽 끝(제목 첫 글자)과 제목 높이를 고정점으로 // r7: 답 화면은 키우지 않는다 — 1.06배면 제목 첫 글자가 왼쪽 끝에 붙어 잘려 보였다(이해 시험 2회 볼 이유 심사)
           return (
-            <div key={r.img} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 2330 * scale, opacity: o, transform: `translateY(${-r.y * scale}px) scale(${zz})`, transformOrigin: `50% ${((r.y + 300) / 2330) * 100}%` }}>
+            <div key={r.img} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 2330 * scale, opacity: o, transform: `translateY(${-ry(r) * scale}px) scale(${zz})`, transformOrigin: r.img === 'rec2' ? `3.7% ${(650 / 2330) * 100}%` : `50% ${((ry(r) + 300) / 2330) * 100}%` }}>
               <Img src={img(r.img)} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 2330 * scale }} />
+              {r.img === 'rec0' ? (
+                // 말풍선은 첫 문장 네 줄(이름 · 아이디 · 「이 두 가지로 … 찾아 줘.」)만 또렷하게 — v5 첫컷검사 #66: 아홉 줄을 1.5초에 다 읽을 수 없다(v8 #61: 두 줄에서 끊으면 「인터넷을」 낱말 가운데서 끊긴다). 전문은 10.7초부터 크게 다시 나온다
+                <div style={{ position: 'absolute', left: 330 * scale, top: 568 * scale, width: 720 * scale, height: (1190 - 568) * scale, background: 'rgba(14,14,14,0.58)', borderRadius: 30 }} />
+              ) : r.img === 'rec2' ? (
+                // v16 첫컷검사 #66 — 답 화면 1.25초에 요청문 끝 다섯 줄까지 읽을 수 없다 → 말풍선은 어둡게, 제목 두 줄만 또렷하게
+                <>
+                  <div style={{ position: 'absolute', left: 336 * scale, top: 86 * scale, width: 704 * scale, height: (474 - 86) * scale, background: INK, borderRadius: 30 }} />
+                  {/* v19: 심사용(bare)도 본편처럼 머리줄을 가린다 — 본편은 위 큰 글 자리라 머리줄이 안 보인다. v18 첫컷검사 #66 「머리줄까지 1.25초에 읽을 글이 많다」 */}
+                  {bare ? <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 100 * scale, background: INK }} /> : null}
+                  {/* v20: 오른쪽 끝의 ChatGPT 스크롤 막대(가는 회색 선)도 지운다 — v19 첫컷검사 흠 */}
+                  <div style={{ position: 'absolute', left: 1046 * scale, top: 0, width: 40 * scale, height: 2330 * scale, background: INK }} />
+                </> // r6: 이해 시험 1회 sonnet · haiku 「3초 흐린 대화 칸이 무엇인지 모름」 → 흐리게가 아니라 지운다
+              ) : null}
             </div>
           );
         })}
         <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 70, background: 'linear-gradient(to bottom, rgba(14,14,14,1), rgba(14,14,14,0))' }} />
       </div>
       {card > 0 ? (
-        <div style={{ position: 'absolute', inset: 0, background: INK, opacity: card }}>
-          <BadgeRows y={bare ? 760 : 920} rows={[1, 1, 1, 1]} />
+        <div style={{ position: 'absolute', inset: 0, background: INK, opacity: card, transform: `scale(${1 + Math.min(t, COVER_OUT) * 0.02})`, transformOrigin: '50% 62%' }}>
+          <BadgeRows y={bare ? 760 : 870} rows={[1, 1, 1, 1]} />
         </div>
       ) : null}
     </AbsoluteFill>
@@ -125,61 +146,87 @@ const HookTitle: React.FC = () => {
 // ── 1 민감정보 카드 — 줄이 말에 맞춰 켜진다(전화번호 · 집 주소 · 생년월일 「확인되지 않음」 → 사진 · 근무처 · 실명 연결 「노출 확인」) ──
 const Badge: React.FC<{ bare?: boolean }> = ({ bare }) => {
   const f = useCurrentFrame();
-  const y0 = bare ? 760 : 920;
-  const shrink = interpolate(f, [sec(BADGE_ROWS[1]) - 6, sec(BADGE_ROWS[1]) + 3], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
-  const first = 1; // 첫 줄은 구성 첫 프레임부터 선다(v2 — 넘어오는 0.25초가 까맣게 비었다)
-  const rows = BADGE_ROWS.map((a, k) => interpolate(f, [sec(a) + (k ? 3 : 0), sec(a) + (k ? 9 : 6)], [0, 1], { ...clamp, easing: EASE_OUT }));
-  // 첫 줄 — 크게(이름 1.9배, 알약은 그 아래 왼쪽) → 네 줄의 첫 자리(1.3배 한 줄)로
-  const [lw, lh] = bsz('badge_label1');
-  const [mw, mh] = bsz('badge_mark1');
-  const BIG = 1.9;
+  const y0 = bare ? 760 : 870;
+  const [A, B3, B4, G] = BADGE_ROWS; // 큰 줄이 줄어드는 때 · 근무처 · 실명 연결 · 초록 줄
+  const shrink = interpolate(f, [sec(A) - 6, sec(A) + 3], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const pop = (t: number) => interpolate(f, [sec(t), sec(t) + 6], [0, 1], { ...clamp, easing: EASE_OUT });
+  // 첫 줄(인물 사진 및 얼굴 관련 이미지 · 노출 확인) — 크게(1.6배, 알약은 그 아래 왼쪽) → 목록 첫 자리(1.3배 한 줄)로
+  const [lw, lh] = bsz('badge_label2');
+  const [mw, mh] = bsz('badge_mark2');
+  const BIG = 1.45; // r14: 1.6이면 큰 「인물 사진」 줄이 x 966까지 가 오른쪽 단추 자리에 걸린다
   const s = BIG + (RS - BIG) * shrink;
   const lx = 70, ly = (y0 + 120) + (y0 - (y0 + 120)) * shrink;
   const mxBig = 70, myBig = y0 + 120 + lh * BIG + 26;
-  const mxSmall = 1010 - mw * MS, mySmall = y0 + (lh * RS - mh * MS) / 2;
-  const mx = mxBig + (mxSmall - mxBig) * shrink, my = myBig + (mySmall - myBig) * shrink;
-  const ms = BIG + (MS - BIG) * shrink;
+  const mxSmall = RIGHT - mw * MS, mySmall = y0 + (lh * RS - mh * MS) / 2;
   const z = 1 + (f / FPS) * 0.01;
+  const rows = [1, pop(B3), pop(B4), pop(G)];
   return (
     <AbsoluteFill style={{ background: INK }}>
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: '50% 62%' }}>
-        {[2, 3, 4].map((k) => <BadgeRow key={k} k={k} y={y0 + (k - 1) * ROW_GAP} o={rows[k - 1]} />)}
-        {[1, 2, 3].map((k) => <div key={`l${k}`} style={{ position: 'absolute', left: 70, top: y0 + k * ROW_GAP - 25, width: 940, height: 2, background: 'rgba(255,255,255,0.08)', opacity: rows[k] }} />)}
-        <div style={{ position: 'absolute', left: 0, top: 0, opacity: first, transform: `translateY(${(1 - first) * 26}px)` }}>
-          <Img src={img('badge_label1')} style={{ position: 'absolute', left: lx, top: ly, width: lw * s, height: lh * s }} />
-          <Img src={img('badge_mark1')} style={{ position: 'absolute', left: mx, top: my, width: mw * ms, height: mh * ms, filter: MARK_LIFT }} />
-        </div>
+        {ORDER.slice(1).map((k, i) => <BadgeRow key={k} k={k} y={y0 + (i + 1) * ROW_GAP} o={rows[i + 1]} />)}
+        {[1, 2, 3].map((i) => <div key={`l${i}`} style={{ position: 'absolute', left: 70, top: y0 + i * ROW_GAP - 25, width: RIGHT - 70, height: 2, background: 'rgba(255,255,255,0.08)', opacity: rows[i] }} />)}
+        <Img src={img('badge_label2')} style={{ position: 'absolute', left: lx, top: ly, width: lw * s, height: lh * s, mixBlendMode: 'lighten' }} />
+        {/* 판정 알약은 옮겨 가지 않고 큰 자리에서 사라졌다가 작은 자리에 뜬다 — 옮겨 가면 줄어드는 이름 위를 지나간다(v6) */}
+        <Img src={img('badge_mark2')} style={{ position: 'absolute', left: mxBig, top: myBig, width: mw * BIG, height: mh * BIG, filter: MARK_LIFT, mixBlendMode: 'lighten', opacity: 1 - Math.min(1, shrink * 2) }} />
+        <Img src={img('badge_mark2')} style={{ position: 'absolute', left: mxSmall, top: mySmall, width: mw * MS, height: mh * MS, filter: MARK_LIFT, mixBlendMode: 'lighten', opacity: Math.max(0, (shrink - 0.82) / 0.18) }} />
       </div>
     </AbsoluteFill>
   );
 };
 
 // ── 2 위험도순 표 — 실제 표(둘째 줄 정보 칸은 가림). 위에서 아래로 한 줄씩 내려가며 보인다 ──
+// r6: 이해 시험 1회 sonnet · GPT 「8~10초 표 글자가 작아 못 읽음」 → 머리줄과 위 네 줄(높음 둘 · 중간 둘)만, 판단 칸을 빼고 1.22배로
+const TB = { x0: 0, y0: 110, x1: 855, y1: 900 };
 const Table: React.FC = () => {
   const f = useCurrentFrame();
-  const reveal = interpolate(f, [2, sec(1.2)], [180, 1260], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const k = 1040 / (TB.x1 - TB.x0);
+  const h = (TB.y1 - TB.y0) * k;
+  const reveal = interpolate(f, [2, sec(1.2)], [140, h + 40], { ...clamp, easing: Easing.out(Easing.cubic) });
   const mask = `linear-gradient(to bottom, #000 ${reveal - 40}px, transparent ${reveal + 40}px)`;
   return (
     <AbsoluteFill style={{ background: INK }}>
-      <Bleed top={744} drift={0.016} origin="40% 20%">
-        <div style={{ position: 'absolute', left: 30, top: 20, width: 1020, height: 1260, WebkitMaskImage: mask, maskImage: mask }}>
-          <Pic n="table" x={0} y={0} w={1020} />
+      <Bleed top={744} drift={0.012} origin="40% 20%">
+        <div style={{ position: 'absolute', left: 20, top: 36, width: 1040, height: h, overflow: 'hidden', WebkitMaskImage: mask, maskImage: mask }}>
+          <Img src={img('table')} style={{ position: 'absolute', left: -TB.x0 * k, top: -TB.y0 * k, width: 1020 * k, height: 1260 * k }} />
         </div>
       </Bleed>
     </AbsoluteFill>
   );
 };
 
+// 보낸 말풍선의 몇 줄만 잘라 크게 — 잘린 자리가 보이지 않게 같은 바탕색 · 점선 테두리의 상자에 담는다(r6: 이해 시험 1회 haiku · GPT · opus 「긴 요청문이 작고 아래가 잘린다」)
+const BUB = '#2D2D2D';
+const BubbleCrop: React.FC<{ y0: number; y1: number; top: number; k?: number; opacity?: number }> = ({ y0, y1, top, k = 1.5, opacity = 1 }) => {
+  const x0 = 40, x1 = 682, pad = 34; // r12: 682 — 690이면 원래 말풍선 오른쪽 위 둥근 모서리 밖 검정 점이 잡혔다
+  const w = (x1 - x0) * k, h = (y1 - y0) * k;
+  return (
+    <div style={{ position: 'absolute', left: (1080 - w - pad * 2) / 2, top, width: w + pad * 2, height: h + pad * 2, background: BUB, borderRadius: 52, border: '3px dashed rgba(255,255,255,0.32)', boxSizing: 'border-box', overflow: 'hidden', opacity }}>
+      <div style={{ position: 'absolute', left: pad - 3, top: pad - 3, width: w, height: h, overflow: 'hidden' }}>
+        <Img src={img('bubble')} style={{ position: 'absolute', left: -x0 * k, top: -y0 * k, width: 720 * k, height: 990 * k }} />
+      </div>
+    </div>
+  );
+};
+
 // ── 3 보낸 요청문 — 실제로 보낸 말풍선을 크게 ──
-const Ask: React.FC = () => (
+// 말로 읽는 첫 문장(이름 · 아이디 · 「이 두 가지로 … 찾아 줘」) 네 줄만 크게. 번호 1~3 줄은 아래 글에 있다
+// r10: 말에 맞춰 줄이 늘어난다 — 두 줄(이름 · 아이디) → 「인터넷을」(12.99)에 셋째 줄 → 「드러난」(15.07)에 넷째 줄. 올리기 전 검사 ⑬ 한 구성 5.5초를 나눈다
+const ASK_LINES = [{ at: 0, y1: 168 }, { at: 12.99, y1: 233 }, { at: 15.07, y1: 300 }];
+const Ask: React.FC = () => {
+  const f = useCurrentFrame();
+  const t = S.ask + f / FPS;
+  const y1 = ASK_LINES.filter((l) => t >= l.at).slice(-1)[0].y1;
+  return (
   <AbsoluteFill style={{ background: INK }}>
-    <Bleed top={760} drift={0.01} origin="50% 10%">
-      <Pic n="bubble" x={90} y={40} w={900} />
+    {/* r9: 다가감 0.01 → 0.024(올리기 전 검사 ② 11.5~16초가 멈춤으로 잡힘 · ⑬ 한 구성 5.5초). 끝까지 다가가도 글이 안 잘리게 1.4배로 */}
+    <Bleed top={760} drift={0.035} origin="50% 33%" fade={20}>
+      <BubbleCrop y0={32} y1={y1} top={170} k={1.28} />
     </Bleed>
   </AbsoluteFill>
-);
+  );
+};
 
-// ── 4 꼭 붙일 한 줄 — 말풍선 끝 두 줄로 다가간 뒤(16.5), 실제로 뺀 목록(18.22 · 목록은 가림) ──
+// ── 4 꼭 붙일 한 줄 — 말풍선 끝 두 줄로 다가간 뒤(16.35), 실제로 뺀 목록(18.07 · 목록은 가림) ──
 const Line: React.FC = () => {
   const f = useCurrentFrame();
   const ex = sec(S.lineEx - S.line);
@@ -187,17 +234,17 @@ const Line: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: INK }}>
       {f < ex ? (
-        <Bleed top={760} drift={0.012} origin="50% 40%">
-          <div style={{ position: 'absolute', left: 40, top: 120, width: 1000, height: 431, opacity: zin }}>
-            <Pic n="bubble_end" x={0} y={0} w={1000} />
-            {/* 앞 두 줄(「3. 지우고 싶을 때 …」)은 옅게 — 꼭 붙일 끝 두 줄만 또렷하게 */}
-            <div style={{ position: 'absolute', left: 0, top: 0, width: 1000, height: 205, background: 'linear-gradient(to bottom, rgba(14,14,14,0.62) 0px, rgba(14,14,14,0.62) 170px, rgba(14,14,14,0) 205px)' }} />
-          </div>
+        <Bleed top={760} drift={0.045} origin="50% 29%" fade={20}>
+          {/* 꼭 붙일 마지막 두 줄만 같은 상자에 크게 · r9 다가감 0.035 */}
+          <BubbleCrop y0={822} y1={950} top={200} opacity={zin} />
         </Bleed>
       ) : (
         <Sequence from={ex} layout="none">
-          <Bleed top={744} drift={0.014} origin="50% 10%">
-            <Pic n="excluded" x={30} y={30} w={1020} />
+          {/* r6: 이해 시험 1회 haiku · GPT 「흐린 목록을 못 읽음」 → 가린 목록은 빼고 답의 제목과 첫 문장만 */}
+          <Bleed top={744} drift={0.042} origin="50% 29%" fade={20}>
+            <div style={{ position: 'absolute', left: 55, top: 238, width: 970, height: 202, overflow: 'hidden' }}>
+              <Pic n="excluded" x={0} y={0} w={970} />
+            </div>
           </Bleed>
         </Sequence>
       )}
@@ -205,22 +252,21 @@ const Line: React.FC = () => {
   );
 };
 
-// ── 5 지우는 곳 — 실제 창구 표(20.75), 그다음 원본부터라는 답의 문단을 크게(22.1) ──
+// ── 5 지우는 곳 — 실제 창구 표(20.35), 그다음 원본부터라는 답의 문단을 크게(21.7) ──
 const Del: React.FC = () => {
   const f = useCurrentFrame();
   const ord = sec(S.delOrder - S.del);
   return (
     <AbsoluteFill style={{ background: INK }}>
-      {f < ord ? (
-        <Bleed top={744} drift={0.016} origin="50% 10%">
-          <Pic n="del_head" x={30} y={30} w={1020} />
-          <Pic n="del_rows1" x={30} y={230} w={1020} />
-        </Bleed>
-      ) : (
-        <Sequence from={ord} layout="none">
-          <Bleed top={760} drift={0.02} origin="50% 40%" fade={20}>
-            <Pic n="order" x={30} y={150} w={1020} />
-            <Pic n="del_rows2" x={30} y={470} w={1020} opacity={0.9} />
+      {/* r7: 창구 표는 뺐다 — 이해 시험 2회 셋 모두 「21초 표 글자가 작고 빨리 지나간다」. 지우는 곳 다섯은 끝 화면에 크게 보인다 */}
+      {ord < 0 ? null : (
+        <Sequence from={0} layout="none">
+          <Bleed top={760} drift={0.03} origin="50% 34%" fade={20}>
+            {/* 원본부터라는 문단만 — 끝의 출처 칩(「Google Sear… +2」)은 덮는다(이해 시험 1회 haiku 「잘려 못 읽음」) */}
+            <div style={{ position: 'absolute', left: 70, top: 270, width: 940, height: 258 }}>
+              <Pic n="order" x={0} y={0} w={940} />
+              <div style={{ position: 'absolute', left: 459, top: 184, width: 258, height: 65, background: INK }} />
+            </div>
           </Bleed>
         </Sequence>
       )}
@@ -228,14 +274,32 @@ const Del: React.FC = () => {
   );
 };
 
-// ── 끝: 민감정보 카드를 다시 크게(이 편에서 가장 센 결과) ──
+// ── 끝: 지우는 곳 다섯(자료의 3단계 그대로) — r6: 이해 시험 1회 셋 모두 「처음 표로 돌아가 안내로 끝나 흐지부지」, haiku · GPT 「끝 카드가 지난 편과 같다」 ──
+// r7: 이름마다 하는 일을 한 줄 — 이해 시험 2회 sonnet · GPT 「구글 두 곳의 차이를 모름」, haiku · GPT 「118이 무엇인지 모름」
+const END_LIST: [string, string][] = [
+  ['원본 사이트 관리자', '올라간 쪽에서 먼저 지워요'],
+  ['구글 「결과 삭제」', '검색 결과 하나를 빼요'],
+  ['구글 「나와 관련된 검색 결과」', '내 연락처가 검색되는지 알려 줘요'],
+  ['네이버 권리보호센터', '사진 · 사생활 게시물을 신고해요'],
+  ['개인정보침해 신고센터 118', '안 지워 주면 신고해요'],
+];
 const End: React.FC = () => {
   const f = useCurrentFrame();
-  const z = interpolate(f, [0, 8], [1.04, 1], { ...clamp, easing: EASE_OUT }) * (1 + (f / FPS) * 0.02);
+  const z = interpolate(f, [0, 8], [1.03, 1], { ...clamp, easing: EASE_OUT }) * (1 + (f / FPS) * 0.012);
+  const o = interpolate(f, [0, 6], [0, 1], { ...clamp, easing: EASE_OUT });
   return (
     <AbsoluteFill style={{ background: INK }}>
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: '50% 62%' }}>
-        <BadgeRows y={940} rows={[1, 1, 1, 1]} />
+      <div style={{ position: 'absolute', left: X, top: 700, transform: `scale(${z})`, transformOrigin: '0% 30%', opacity: o, fontFamily: KO, letterSpacing: '-0.035em', color: '#fff', whiteSpace: 'nowrap' }}>
+        {END_LIST.map(([t, d], i) => (
+          // r8: SNS 안전 영역(x 920 · y 1428 안) — 다섯 줄을 1428 위에, 가장 긴 셋째 줄을 920 안에
+          <div key={i} style={{ height: 144, display: 'flex', alignItems: 'flex-start' }}>
+            <span style={{ width: 58, opacity: 0.5, fontWeight: 600, fontSize: 56, lineHeight: 1.1 }}>{i + 1}</span>
+            <span>
+              <div style={{ fontWeight: 700, fontSize: 56, lineHeight: 1.1 }}>{t}</div>
+              <div style={{ fontWeight: 500, fontSize: 38, lineHeight: 1.3, opacity: 0.62, marginTop: 6 }}>{d}</div>
+            </span>
+          </div>
+        ))}
       </div>
     </AbsoluteFill>
   );
