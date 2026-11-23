@@ -633,7 +633,8 @@ p{text-wrap:pretty}
 .me{color:var(--dream2);width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--dream) 55%,#000),#0b0f24);box-shadow:0 0 0 1.5px var(--dream),0 0 16px color-mix(in srgb,var(--dream) 60%,transparent)}
 .me svg{width:22px;height:22px}
 .who{flex:1;min-width:0}
-.who b{display:block;font-size:16px;font-weight:650}
+.who b{display:block;font-size:16px;font-weight:650;word-break:keep-all;overflow-wrap:anywhere}
+.who b .gr{font-style:normal;white-space:nowrap}
 .who span{display:inline-flex;align-items:center;gap:6px;margin-top:3px;font-size:13px;font-weight:550;color:var(--dream2)}
 .who button{margin-left:2px;padding:14px 6px;margin-block:-14px;font-size:13.5px;font-weight:600;color:var(--ink2);text-decoration:underline;text-decoration-color:var(--ink4);text-underline-offset:3px}
 .lights{text-align:right}

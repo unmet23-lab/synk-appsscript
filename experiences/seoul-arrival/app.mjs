@@ -1160,7 +1160,7 @@ function examCard(r,D,locked){
 function buildRoad(){
   const D=DREAM[state.dream];
   $('#lightNum').textContent=state.lights;$('#lightIcon').setAttribute('href',state.dream==='actor'?'#seat':'#stick');
-  $('#dreamChip').textContent=L(D.chip);$('#whoName').textContent=(state.name||L('유학생'))+' · '+L('{n}급 과정',{n:roadGrade()});
+  $('#dreamChip').textContent=L(D.chip);const wn=$('#whoName'),gr=document.createElement('i');gr.className='gr';gr.textContent=L('{n}급 과정',{n:roadGrade()});wn.textContent=(state.name||L('유학생'))+'\u00a0· ';wn.append(gr);
   $('#meBadge').classList.toggle('face',!!state.look);
   $('#meBadge').innerHTML=state.look?faceTile(state.look,44,44,.66):state.name&&/[가-힣]/.test(state.name[0])?`<span style="font-size:19px;font-weight:680;color:#fff">${esc(state.name[0])}</span>`:`<svg viewBox="0 0 24 24"><use href="#${state.dream==='actor'?'seat':'stick'}"/></svg>`;
   let side=0,g=0;const rows=[],G=roadGrade();
