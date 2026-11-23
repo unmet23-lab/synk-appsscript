@@ -1067,7 +1067,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     /* 옛 내 계정 화면에서 돌아올 때 컨트롤러가 부른다. 내 계정 방이 열려 있으면 보이던 자료를 둔 채 조용히 다시 읽는다(검수) */
     reloadAccount() { if (current === 'account') void accLoad({ quiet: true }); },
     /* ctx: { checking, name(로그인 정보의 이름), accountKey, member(회원으로 보이는가) } */
-    scene({ aside = null, checking = false, name = '', accountKey = '', member = false } = {}) {
+    /* features: 「이 PC에 맞춘 것」 판이 말해도 되는 기능(원클릭 · 사무실이 이 계정에 보이는가, 사무실에서 직접 정한 수) — Fable 최종 P1 · P2-3 */
+    scene({ aside = null, checking = false, name = '', accountKey = '', member = false, features = null } = {}) {
       const req = { focus: focusReq, opening: openReq, closing: closeReq };
       if (aside === 'manage') return { manage: { ...manageRoom(snapshot(), view(), now(), { checking, sentence }), ...req } };
       if (aside === 'account') return { account: { ...accountRoom(acc, view(), now(), { name, accountKey }), ...req } };
@@ -1078,7 +1079,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         const room = settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, care: sets.care, chatgpt: sets.chatgpt, notices: noticesNow(), env: envNow(), member: !!member, tipsOff, pc: dev.pcProfile ? pcs.snap : undefined }, view(), now());
         return { settings: { ...room, ...req } };
       }
-      if (aside === 'pc') return { pc: { ...pcRoom(pcs.snap, { ...view(), changedShown: pcs.changedShown }, now()), ...req } };
+      if (aside === 'pc') return { pc: { ...pcRoom(pcs.snap, { ...view(), changedShown: pcs.changedShown, features: features || {} }, now()), ...req } };
       return null;
     },
   };

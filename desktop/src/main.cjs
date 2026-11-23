@@ -271,10 +271,12 @@ function snsHealthCall(){if(runtime.clientId!=='platform'||smoke)return {ok:fals
 let solioBackupService=null;
 // 원클릭(11-23)의 04 업데이트 확인: PC 앱 업데이터의 상태를 읽고 확인을 부탁한다(받지는 않는다). platformUpdate는 부를 때 읽는다
 const solioAppUpdate=Object.freeze({snapshot:()=>platformUpdate?.snapshot(),checkForUpdate:()=>platformUpdate?.checkForUpdate()});
-function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),pcDrives:()=>pcProfile()?.spaceDrives()||null,appUpdate:solioAppUpdate});return solioBackupService;}
+function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),pcDrives:pcSpaceDrives,appUpdate:solioAppUpdate});return solioBackupService;}
 // 솔리오 「내 PC 진단」(11-24, docs/디자인/솔리오_PC진단_20261123/설계.md): 이 PC의 사양을 읽어 앱 자료 폴더에만 둔다. 계정과 상관없이 PC마다 하나이고, 서버 · 로그로 보내지 않는다
 let pcProfileService=null;
 function pcProfile(){if(runtime.clientId!=='platform'||smoke)return null;if(!pcProfileService)pcProfileService=createPcProfile({userData:app.getPath('userData'),display:()=>{const d=screen.getPrimaryDisplay();return {width:d.size.width,height:d.size.height,scale:d.scaleFactor,workWidth:d.workAreaSize.width};}});return pcProfileService;}
+// 원클릭 판이 엔진 보고서 전에 빌려 쓰는 드라이브. 10분 넘은 값이면 뒤에서 다시 읽고 지금 값을 준다(Fable 최종 P2-2)
+function pcSpaceDrives(){const service=pcProfile();if(!service)return null;void service.refresh().catch(()=>{});return service.spaceDrives();}
 function pcProfileCall(work){const service=pcProfile();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};return work(service);}
 // 앱을 켜면 첫 화면을 막지 않게 조금 뒤에 가벼운 값을 읽는다(설계 6절). 그래픽 값은 하루 한 번이다
 function pcProfileWarm(){if(!pcProfile())return;const timer=setTimeout(()=>{void pcProfile()?.refresh().catch(()=>{});},8000);timer.unref?.();}

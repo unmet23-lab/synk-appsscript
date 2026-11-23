@@ -129,12 +129,13 @@ function parseLight(text) {
     : { kind: n.wwan === true ? 'cellular' : n.wlan === true ? 'wifi' : 'wired', metered: n.cost === 'Unrestricted' ? false : n.cost === 'Fixed' || n.cost === 'Variable' ? true : null };
   return { drives: sortDrives(drives), power: { laptop, battery: battery == null ? null : battery > 0 }, os: osInfo, wsl: count(v.wsl) == null ? null : v.wsl > 0, net };
 }
-/* SLOW_SCRIPT의 답: 그래픽 장치 수와 가장 큰 그래픽 메모리(GB, 반올림). 메모리 값이 없으면 memGb는 null이다 */
+/* SLOW_SCRIPT의 답: 그래픽 장치 수와 가장 큰 그래픽 메모리(MB, 반올림). 1GB 아래 내장 그래픽도 0이 되지 않게 MB로 둔다(Fable 최종 P2-5).
+   메모리 값이 없으면 memMb는 null이다 */
 function parseSlow(text) {
   const v = parse(text);
   if (!v) return null;
   const mem = (Array.isArray(v.memory) ? v.memory : []).map(bytes).filter(b => b !== null && b > 0);
-  return { adapters: count(v.adapters) ?? 0, memGb: mem.length ? Math.round(Math.max(...mem) / GB) : null };
+  return { adapters: count(v.adapters) ?? 0, memMb: mem.length ? Math.max(1, Math.round(Math.max(...mem) / 1024 ** 2)) : null };
 }
 /* 도구가 있는지와 로그인 흔적. 경로는 돌려주지 않는다 */
 function findTools({ platform, env, home, isFile }) {
@@ -155,12 +156,12 @@ function readDisplay(display) {
   return { width: Math.round(w * s), height: Math.round(h * s), scale: Math.round(s * 100), narrow: Number.isFinite(work) && work > 0 ? work <= 1100 : w <= 1100 };
 }
 /* 다시 진단할 때 알릴 바뀜(설계 6절): 메모리 · 그래픽 메모리. 드라이브가 늘고 빠지는 것은 외장 하드와 가를 수 없어 지금은 알리지 않는다(엔진 연결 값이 들어오면 넣는다) */
-const marks = p => ({ memGb: p?.mem?.totalGb != null ? Math.round(p.mem.totalGb) : null, gpuGb: p?.gpu?.memGb ?? null });
+const marks = p => ({ memGb: p?.mem?.totalGb != null ? Math.round(p.mem.totalGb) : null, gpuMb: p?.gpu?.memMb ?? null });
 function diffMarks(base, now) {
   const out = [];
   if (!base) return out;
   if (base.memGb != null && now.memGb != null && base.memGb !== now.memGb) out.push({ what: 'memory', from: base.memGb, to: now.memGb });
-  if (base.gpuGb != null && now.gpuGb != null && base.gpuGb !== now.gpuGb) out.push({ what: 'gpu', from: base.gpuGb, to: now.gpuGb });
+  if (base.gpuMb != null && now.gpuMb != null && base.gpuMb !== now.gpuMb) out.push({ what: 'gpu', from: base.gpuMb, to: now.gpuMb });
   return out;
 }
 /* 저장 파일을 믿을 수 있는 꼴로만 받는다. 깨졌으면 처음부터 다시 잰다 */
@@ -168,7 +169,7 @@ function validStore(v) {
   if (!isObject(v) || v.v !== FORMAT || !isObject(v.profile)) return null;
   const p = v.profile;
   if (!Number.isFinite(Date.parse(p.readAt || ''))) return null;
-  return { profile: p, base: isObject(v.base) ? { memGb: count(v.base.memGb), gpuGb: count(v.base.gpuGb) } : null, changed: Array.isArray(v.changed) ? v.changed.filter(c => isObject(c) && ['memory', 'gpu'].includes(c.what) && count(c.from) !== null && count(c.to) !== null).slice(0, 4) : [] };
+  return { profile: p, base: isObject(v.base) ? { memGb: count(v.base.memGb), gpuMb: count(v.base.gpuMb) } : null, changed: Array.isArray(v.changed) ? v.changed.filter(c => isObject(c) && ['memory', 'gpu'].includes(c.what) && count(c.from) !== null && count(c.to) !== null).slice(0, 4) : [] };
 }
 
 function createPcProfile({
@@ -225,11 +226,11 @@ function createPcProfile({
       tools: { ...findTools({ platform, env, home, isFile }), wsl: light ? light.wsl : null },
       failed,
     };
-    const mark = { ...marks(profile), gpuGb: slow ? marks(profile).gpuGb : null };
+    const mark = { ...marks(profile), gpuMb: slow ? marks(profile).gpuMb : null };
     // 처음 잰 값이 기준이다. 기준과 다르면 판을 열어 볼 때까지 「이 PC가 바뀌었습니다」를 둔다. 그래픽을 이번에 읽지 않았으면 그래픽은 견주지 않는다.
     // 기준에 아직 없는 값(처음에 그래픽을 못 읽은 따위)은 처음 읽은 값으로 채운다
     const old = store?.base || {};
-    const base = { memGb: old.memGb ?? mark.memGb, gpuGb: old.gpuGb ?? mark.gpuGb };
+    const base = { memGb: old.memGb ?? mark.memGb, gpuMb: old.gpuMb ?? mark.gpuMb };
     const changed = diffMarks(old, mark);
     const merged = [...(store?.changed || []).filter(c => !changed.some(x => x.what === c.what)), ...changed];
     store = { profile, base, changed: merged };

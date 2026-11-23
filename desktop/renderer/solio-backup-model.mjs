@@ -390,7 +390,8 @@ function driveCardFrom(space, now, fromPc) {
   // 칸으로 세우지 않은 드라이브를 말없이 빼지 않는다(Fable 최종 P2-4). 조사는 「E: 드라이브는」으로 글자에 붙이지 않는다(Fable 다시 검수 FA1)
   const hidden = hiddenSentence(space.hiddenDrives);
   return {
-    label: `${d.letter}: 드라이브 ${sizeWords(d.size)}`, at: fromPc ? 'PC 앱이 잰 값' : at ? `${at}에 잰 값` : '',
+    // PC 앱 값은 잰 때를 함께 쓴다. 오래된 값인지 알 수 있게(Fable 최종 P2-2). 원클릭 판을 읽을 때 10분 넘은 값은 본체가 다시 잰다(main.cjs pcDrives)
+    label: `${d.letter}: 드라이브 ${sizeWords(d.size)}`, at: fromPc ? (backupWhen(space.createdAt, now) ? `PC 앱이 ${backupWhen(space.createdAt, now)}에 잰 값` : 'PC 앱이 잰 값') : at ? `${at}에 잰 값` : '',
     free: (d.free / GB).toFixed(1), unit: 'GB 남음', freePct: pct(d.free), linePct: line ? pct(line) : null,
     lineLabel: line ? `정한 선 ${d.startLineGb}GB` : '', max: `${Math.round(scale / GB)}GB`, pred, pace,
     aria: `${d.letter}: 남은 공간 ${(d.free / GB).toFixed(1)}GB${line ? `, 정한 선 ${d.startLineGb}GB` : ''}`,

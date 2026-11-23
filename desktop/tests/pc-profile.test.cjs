@@ -53,9 +53,10 @@ test('only small drives on a PC: the small one is still shown (eMMC tablet)', ()
   assert.deepEqual([v.drives.shown.map(d => d.letter), v.drives.hidden], [['C'], []]);
 });
 
-test('the slow answer keeps the largest graphics memory in GB and the adapter count; no names', () => {
-  assert.deepEqual(P.parseSlow(slow()), { adapters: 2, memGb: 8 });
-  assert.deepEqual(P.parseSlow(slow({ adapters: 1, memory: [] })), { adapters: 1, memGb: null });
+test('the slow answer keeps the largest graphics memory in MB and the adapter count; no names', () => {
+  assert.deepEqual(P.parseSlow(slow()), { adapters: 2, memMb: 8192 });
+  assert.deepEqual(P.parseSlow(slow({ adapters: 1, memory: [] })), { adapters: 1, memMb: null });
+  assert.deepEqual(P.parseSlow(slow({ adapters: 1, memory: [128 * 1024 ** 2] })), { adapters: 1, memMb: 128 }, 'a small integrated graphics memory is not 0 (Fable 최종 P2-5)');
   assert.equal(P.parseSlow('{'), null);
 });
 
@@ -76,7 +77,7 @@ test('a read stores the profile in the app data folder only, and a second read i
   assert.equal(first.ok, true);
   assert.deepEqual(calls, ['light', 'slow'], 'the first read takes the slow values too');
   const p = first.profile;
-  assert.deepEqual([p.cpu.cores, p.mem.totalGb, p.gpu.memGb, p.screen], [16, 31.7, 8, { width: 2561, height: 1601, scale: 150, narrow: false }]);
+  assert.deepEqual([p.cpu.cores, p.mem.totalGb, p.gpu.memMb, p.screen], [16, 31.7, 8192, { width: 2561, height: 1601, scale: 150, narrow: false }]);
   const stored = JSON.parse(fs.readFileSync(path.join(userData, 'solio', 'pc-profile.json'), 'utf8'));
   assert.equal(stored.v, 1);
   assert.deepEqual(stored.profile.drives.shown.map(d => d.letter), ['C', 'D']);
@@ -86,7 +87,7 @@ test('a read stores the profile in the app data folder only, and a second read i
   clock.t += 6 * 60000;
   await s.refresh();
   assert.deepEqual(calls, ['light', 'slow', 'light'], 'after ten minutes only the light values are read; graphics wait a day');
-  assert.equal(s.snapshot().profile.gpu.memGb, 8, 'the light read keeps the earlier graphics value');
+  assert.equal(s.snapshot().profile.gpu.memMb, 8192, 'the light read keeps the earlier graphics value');
   clock.t += 24 * 3600000;
   await s.refresh();
   assert.deepEqual(calls.slice(-2), ['light', 'slow'], 'a day later graphics are read again');
@@ -118,7 +119,7 @@ test('memory or graphics that changed since the last look is kept until the boar
   mem = 31.7; gpu = 12;
   s = make();
   await s.refresh({ full: true });
-  assert.deepEqual(s.snapshot().changed, [{ what: 'memory', from: 16, to: 32 }, { what: 'gpu', from: 8, to: 12 }]);
+  assert.deepEqual(s.snapshot().changed, [{ what: 'memory', from: 16, to: 32 }, { what: 'gpu', from: 8192, to: 12288 }]);
   clock.t += 11 * 60000;
   await s.refresh();
   assert.equal(s.snapshot().changed.length, 2, 'a later light read does not forget the change');

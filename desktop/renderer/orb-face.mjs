@@ -489,6 +489,13 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     return scene;
   }
   function readScenes(state) { return Object.fromEntries(READ_PROGRAMS.map(key => [key, readScene(key, state)])); }
+  /* 「이 PC에 맞춘 것」 판이 말해도 되는 기능. 원클릭 · 사무실은 본체가 볼 계정에만 available:true로 답한다(Fable 최종 P1).
+     사무실에서 직접 정한 수가 있으면 판도 그 수를 쓴다(P2-3) */
+  function pcFeatures(state) {
+    const mine = key => memberShown(state) && !!state.accountKey && reads[key].account === state.accountKey && reads[key].result?.available === true;
+    const cap = mine('office') ? reads.office.result?.settings?.manualCap : null;
+    return { backup: mine('backup'), office: mine('office'), officeCap: Number.isInteger(cap) ? cap : null };
+  }
   /* 오브제 줄. 읽기 프로그램을 하나라도 볼 계정에게만 있고, 프로그램마다 자기가 보일 때만 선다(계정건강 PC앱_구현설계 10절 「새로 정한 것」).
    * 볼 계정인지는 솔리오가 열릴 때 한 번 읽어 정하고, 답이 오기 전에는 줄을 두지 않는다 */
   function programsFor(state, scenes) {
@@ -576,7 +583,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       fan: mode === 'portal' ? null : { ...appSwitchScene(state), open: switchOpen, pin: fanPin },
       room: mode === 'portal' ? null : roomScene(state),
       aside: mode === 'portal' ? null : aside,
-      rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking, name: roomName(), accountKey: state.accountKey || '', member: memberShown(state) }),
+      rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking, name: roomName(), accountKey: state.accountKey || '', member: memberShown(state), features: aside === 'pc' ? pcFeatures(state) : null }),
       legacy: legacyKind,
       band: bandOn() ? space : null,
       bandClose: bandOn() && !!slotOf(space)?.open && !slotOf(space).closing && !switchOpen && !aside && !share && typeof slotOf(space).embed.close === 'function',
