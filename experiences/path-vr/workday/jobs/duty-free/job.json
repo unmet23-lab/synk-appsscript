@@ -7,6 +7,7 @@
   "summary": "서울 시내면세점 화장품 매장에서 하루를 보내요. 여권과 출국 정보를 맞춰 보고, 같은 말을 쓰는 손님의 말을 선배에게 전하고, 면세 규칙과 손님 사이에서 골라요.",
   "minutes": 19,
   "reviewNote": "장면과 대사는 면세점 현직자의 검토를 받기 전입니다.",
+  "reviewNoteScreen": "장면과 대사는 면세점 현직자의 검토를 받기 전이에요.",
   "hintLanguages": [
     "mn",
     "vi",
@@ -35,7 +36,7 @@
       }
     },
     "kyunghee": {
-      "name": "이경희 손님",
+      "name": "이경희",
       "role": "여행을 앞둔 손님"
     },
     "caller": {
@@ -53,7 +54,7 @@
         0.74,
         1
       ],
-      "alt": "직원 대기실 게시판 앞에 매장 매니저와 선배 판매사원이 나란히 서 있다.",
+      "alt": "직원 대기실 게시판 앞에 층 매니저와 선배 판매사원이 나란히 서 있다.",
       "points": [
         {
           "id": "shift",
@@ -354,14 +355,14 @@
         0.94,
         1
       ],
-      "alt": "저녁에 매장 매니저가 직원 대기실에 서 있다.",
+      "alt": "저녁에 층 매니저가 직원 대기실에 서 있다.",
       "points": []
     }
   },
   "notes": {
     "shift": {
       "title": "판매사원의 하루",
-      "lead": "서울 시내면세점의 하루예요. 판매사원은 조를 나눠 일해요(예: 이른 조 09:00~18:00, 늦은 조 11:00~20:00). 오늘 체험은 두 조의 일을 이어서 봐요.",
+      "lead": "서울 시내면세점의 하루예요. 판매사원은 조를 나눠 일해요(예: 이른 조 09:00~18:00, 늦은 조 11:00~20:00, 마감 조 12:00~21:00). 오늘 체험은 여러 조의 일을 이어서 봐요.",
       "rows": [
         [
           "09:00",
@@ -380,6 +381,10 @@
           "늦은 조 출근"
         ],
         [
+          "12:00",
+          "마감 조 출근"
+        ],
+        [
           "12:00~14:00",
           "점심(두 번에 나눠 돌아가며)"
         ],
@@ -393,17 +398,21 @@
         ],
         [
           "20:00",
-          "문을 닫음. 매출 정산"
+          "문을 닫음. 늦은 조 퇴근"
         ],
         [
-          "20:30",
-          "늦은 조 퇴근"
+          "20:00~20:30",
+          "마지막 손님 배웅과 매출 정산(마감 조)"
+        ],
+        [
+          "21:00",
+          "마감 조 퇴근"
         ]
       ],
       "hint": {
-        "mn": "Сөүл хотын төв дэх татваргүй дэлгүүрийн нэг өдөр. Худалдагчид ээлжээр ажилладаг (жишээ нь өглөөний ээлж 09:00~18:00, оройн ээлж 11:00~20:00). Өнөөдөр хоёр ээлжийн ажлыг дараалан үзнэ. 09:00 цагт өглөөний ээлжийнхэн ирж, ажлын хувцсаа өмсөнө. 09:00~09:30 цагт өглөөний хурал (ханш, тооны хязгаар, анхаарах зүйл), нээлтийн бэлтгэл (цэвэрлэгээ, туршилтын бүтээгдэхүүн, үнийн шошго). 09:30 цагт нээж, үйлчлүүлэгчид үйлчилж, тооцоо хийнэ. 11:00 цагт оройн ээлжийнхэн ирнэ. 12:00~14:00 цагт өдрийн хоол (хоёр ээлжээр). 14:00 цагт ирсэн барааг шалгаж, савлана. 18:00 цагт өглөөний ээлжийнхэн тарна. 20:00 цагт хааж, борлуулалтын тооцоо хийнэ. 20:30 цагт оройн ээлжийнхэн тарна.",
-        "vi": "Một ngày ở cửa hàng miễn thuế trong thành phố Seoul. Nhân viên bán hàng làm theo ca (ví dụ ca sớm 09:00~18:00, ca muộn 11:00~20:00). Hôm nay em sẽ lần lượt xem công việc của cả hai ca. 09:00 ca sớm đến làm, thay đồng phục. 09:00~09:30 họp buổi sáng (tỷ giá, giới hạn số lượng, điều cần chú ý) và chuẩn bị mở cửa (dọn dẹp, sản phẩm dùng thử, bảng giá). 09:30 mở cửa, tiếp khách và thanh toán. 11:00 ca muộn đến làm. 12:00~14:00 ăn trưa (chia hai lượt). 14:00 kiểm tra hàng mới về, đóng gói. 18:00 ca sớm tan làm. 20:00 đóng cửa, chốt doanh thu. 20:30 ca muộn tan làm.",
-        "en": "A day at a downtown duty-free store in Seoul. Salespeople work in shifts (for example, early shift 09:00-18:00, late shift 11:00-20:00). Today you'll follow the work of both shifts, one after the other. 09:00 early shift arrives and changes into uniform. 09:00-09:30 morning meeting (exchange rate, quantity limits, things to watch for) and getting ready to open (cleaning, testers, price tags). 09:30 open, serve customers and take payments. 11:00 late shift arrives. 12:00-14:00 lunch in two groups, taking turns. 14:00 check and pack incoming goods. 18:00 early shift goes home. 20:00 close and settle the day's sales. 20:30 late shift goes home."
+        "mn": "Сөүл хотын төв дэх татваргүй дэлгүүрийн нэг өдөр. Худалдагчид ээлжээр ажилладаг (жишээ нь өглөөний ээлж 09:00~18:00, өдрийн ээлж 11:00~20:00, оройн ээлж 12:00~21:00). Өнөөдөр хэд хэдэн ээлжийн ажлыг дараалан үзнэ. 09:00 цагт өглөөний ээлжийнхэн ирж, ажлын хувцсаа өмсөнө. 09:00~09:30 цагт өглөөний хурал (ханш, тооны хязгаар, анхаарах зүйл), дэлгүүр нээх бэлтгэл (цэвэрлэгээ, туршилтын бүтээгдэхүүн, үнийн шошго). 09:30 цагт нээж, үйлчлүүлэгчид үйлчилж, тооцоо хийнэ. 11:00 цагт өдрийн ээлжийнхэн ирнэ. 12:00 цагт оройн ээлжийнхэн ирнэ. 12:00~14:00 цагт өдрийн хоол (хоёр ээлжээр). 14:00 цагт ирсэн барааг шалгаж, савлана. 18:00 цагт өглөөний ээлжийнхэн тарна. 20:00 цагт дэлгүүрээ хааж, өдрийн ээлжийнхэн тарна. 20:00~20:30 цагт оройн ээлжийнхэн сүүлчийн үйлчлүүлэгчдийг үдэж, борлуулалтын тооцоо хийнэ. 21:00 цагт оройн ээлжийнхэн тарна.",
+        "vi": "Một ngày ở cửa hàng miễn thuế trong thành phố Seoul. Nhân viên bán hàng làm theo ca (ví dụ ca sớm 09:00~18:00, ca muộn 11:00~20:00, ca đóng cửa 12:00~21:00). Hôm nay em sẽ lần lượt tìm hiểu công việc của từng ca. 09:00 ca sớm vào làm, thay đồng phục. 09:00~09:30 họp buổi sáng (tỷ giá, giới hạn số lượng, điều cần chú ý) và chuẩn bị mở cửa (dọn dẹp, sản phẩm dùng thử, bảng giá). 09:30 mở cửa, tiếp khách và thanh toán. 11:00 ca muộn vào làm. 12:00 ca đóng cửa vào làm. 12:00~14:00 ăn trưa (chia hai lượt). 14:00 kiểm tra hàng mới về, đóng gói. 18:00 ca sớm tan làm. 20:00 đóng cửa, ca muộn tan làm. 20:00~20:30 tiễn những vị khách cuối cùng và chốt doanh thu (ca đóng cửa). 21:00 ca đóng cửa tan làm.",
+        "en": "A day at a downtown duty-free store in Seoul. Salespeople work in shifts (for example, early shift 09:00-18:00, mid shift 11:00-20:00, closing shift 12:00-21:00). Today you'll follow the work of several shifts, one after the other. At 09:00, the early shift arrives and changes into uniform. From 09:00 to 09:30, there's a morning meeting (exchange rate, quantity limits, things to watch for), and the store gets ready to open (cleaning, testers, price tags). At 09:30, the store opens, and staff serve customers and take payments. At 11:00, the mid shift arrives. At 12:00, the closing shift arrives. From 12:00 to 14:00, staff take lunch in two groups. At 14:00, they check and pack incoming goods. At 18:00, the early shift goes home. At 20:00, the store closes and the mid shift goes home. From 20:00 to 20:30, the closing shift sees the last customers out and closes out the registers. At 21:00, the closing shift goes home."
       }
     }
   },
@@ -522,16 +531,16 @@
               ],
               [
                 "사은품",
-                "300달러 넘게 사시면 파우치 하나"
+                "우리 매장에서 300달러 넘게 사시면 파우치 하나"
               ]
             ],
             "note": "계산대 옆에 붙여 둔 메모"
           },
           "prompt": "계산대 옆 조회 메모를 봐요. 이 손님께 수분 크림을 몇 개까지 팔 수 있어요?",
           "hint": {
-            "mn": "Кассын хажууд наасан өглөөний хурлын тэмдэглэлийг хар. Өнөөдрийн зорилт: борлуулалт 3,500 доллар (өчигдөр 3,120 доллар). Ханш: 1 доллар = 1,385 вон. Чийгшүүлэх тос: нэг хүнд хоёр ширхэг хүртэл (өнөөдрөөс эхлэн; дахин зарахаар их хэмжээгээр авахаас сэргийлэх зорилгоор). Дууссан: нарны тос 50ml. Бэлэг: 300 доллараас дээш худалдан авалт хийвэл нэг жижиг цүнх бэлэглэнэ. Энэ үйлчлүүлэгчид дээд тал нь хэдэн ширхэг чийгшүүлэх тос зарж болох вэ?",
-            "vi": "Hãy xem tờ ghi chú buổi họp sáng dán cạnh quầy thu ngân. Mục tiêu hôm nay: doanh thu 3.500 đô la (hôm qua 3.120 đô la). Tỷ giá: 1 đô la = 1.385 won. Kem dưỡng ẩm: tối đa hai hộp cho mỗi khách (từ hôm nay, để ngăn việc mua số lượng lớn để bán lại). Hết hàng: kem chống nắng 50ml. Quà tặng: mua trên 300 đô la được một chiếc túi nhỏ. Em có thể bán cho vị khách này tối đa mấy hộp kem dưỡng ẩm?",
-            "en": "Look at the morning-meeting memo by the register. Today's target: 3,500 dollars in sales (yesterday 3,120 dollars). Exchange rate: 1 dollar = 1,385 won. Moisturizing cream: up to two per customer (from today, to stop people buying in bulk to resell). Sold out: sunscreen 50ml. Gift: a pouch for purchases over 300 dollars. How many moisturizing creams can you sell to this customer?"
+            "mn": "Кассын хажууд наасан өглөөний хурлын тэмдэглэлийг хар. Өнөөдрийн зорилт: борлуулалт 3,500 доллар (өчигдөр 3,120 доллар). Ханш: 1 доллар = 1,385 вон. Чийгшүүлэх тос: нэг хүнд хоёр ширхэг хүртэл (өнөөдрөөс эхлэн; дахин зарахаар их хэмжээгээр авахаас сэргийлэх зорилгоор). Дууссан: нарны тос 50ml. Бэлэг: манай лангуунаас 300 доллараас дээш худалдан авалт хийвэл нэг жижиг цүнх бэлэглэнэ. Энэ үйлчлүүлэгчид дээд тал нь хэдэн ширхэг чийгшүүлэх тос зарж болох вэ?",
+            "vi": "Hãy xem tờ ghi chú buổi họp sáng dán cạnh quầy thu ngân. Mục tiêu hôm nay: doanh thu 3.500 đô la (hôm qua 3.120 đô la). Tỷ giá: 1 đô la = 1.385 won. Kem dưỡng ẩm: tối đa hai hộp cho mỗi khách (từ hôm nay, để ngăn việc mua số lượng lớn để bán lại). Hết hàng: kem chống nắng 50ml. Quà tặng: mua trên 300 đô la tại quầy mình được một chiếc túi nhỏ. Em có thể bán cho vị khách này tối đa mấy hộp kem dưỡng ẩm?",
+            "en": "Look at the morning-meeting memo by the register. Today's target: 3,500 dollars in sales (yesterday 3,120 dollars). Exchange rate: 1 dollar = 1,385 won. Moisturizing cream: up to two per customer (from today, to stop people buying in bulk to resell). Sold out: sunscreen 50ml. Gift: a pouch for purchases over 300 dollars at our counter. How many moisturizing creams can you sell to this customer?"
           },
           "options": [
             {
@@ -1099,7 +1108,7 @@
                   "hint": {
                     "mn": "Өө, түрхээд үзэхэд чийглэг юм байна. Үүнээс хоёрыг өгөөч.",
                     "vi": "Ôi, bôi thử thấy da ẩm mịn thật. Lấy cho tôi hai hộp loại này.",
-                    "en": "Oh, it really does feel soft and hydrated. I'll take two of these."
+                    "en": "Oh, it really does feel soft and hydrated. I'll get two of these."
                   }
                 }
               ]
@@ -1155,7 +1164,7 @@
                   "hint": {
                     "mn": "Өө, түрхээд үзэхэд чийглэг юм байна. Үүнээс хоёрыг өгөөч.",
                     "vi": "Ôi, bôi thử thấy da ẩm mịn thật. Lấy cho tôi hai hộp loại này.",
-                    "en": "Oh, it really does feel soft and hydrated. I'll take two of these."
+                    "en": "Oh, it really does feel soft and hydrated. I'll get two of these."
                   }
                 }
               ]
@@ -1197,7 +1206,7 @@
           "record": "영수증 합계와 면세 범위를 보는 차례",
           "tool": {
             "kind": "paper",
-            "title": "손님이 꺼내 놓으신 영수증",
+            "title": "오늘 사신 것 (받은 영수증과 지금 계산할 크림)",
             "rows": [
               [
                 "1층 가방",
@@ -1208,7 +1217,7 @@
                 "189달러"
               ],
               [
-                "우리 매장 수분 크림 2개",
+                "우리 매장 수분 크림 2개 (지금 계산)",
                 "136달러"
               ]
             ],
@@ -1254,11 +1263,11 @@
                 {
                   "type": "line",
                   "who": "senior",
-                  "text": "우리 매장 영수증은요? 면세점에서 산 국산품도 면세 범위에 함께 들어가요. 다시 더해 볼래요?",
+                  "text": "지금 계산하는 우리 크림은요? 면세점에서 산 국산품도 면세 범위에 함께 들어가요. 다시 더해 볼래요?",
                   "hint": {
-                    "mn": "Манай лангууны баримтыг тооцсон уу? Татваргүй дэлгүүрээс авсан Солонгос бараа ч хилээр татваргүй нэвтрүүлэх дээд хэмжээнд хамт тооцогддог. Нийт дүнг дахин бодож үзэх үү?",
-                    "vi": "Còn hóa đơn ở quầy mình thì sao? Hàng Hàn Quốc mua ở cửa hàng miễn thuế cũng được tính chung vào hạn mức miễn thuế. Em cộng lại thử nhé?",
-                    "en": "What about the receipt from our counter? Korean-made goods from a duty-free store count toward the allowance too. Want to add it up again?"
+                    "mn": "Манай лангуунаас одоо худалдаж авч буй тосыг тооцсон уу? Татваргүй дэлгүүрээс авсан Солонгос бараа ч хилээр татваргүй нэвтрүүлэх дээд хэмжээнд хамт тооцогддог. Нийт дүнг дахин бодож үзэх үү?",
+                    "vi": "Còn kem của quầy mình mà khách đang thanh toán thì sao? Hàng Hàn Quốc mua ở cửa hàng miễn thuế cũng được tính chung vào hạn mức miễn thuế. Em cộng lại thử nhé?",
+                    "en": "What about the cream she's paying for at our counter now? Korean-made goods from a duty-free store count toward the allowance too. Want to add it up again?"
                   }
                 }
               ],
@@ -1377,11 +1386,11 @@
             {
               "id": "skip",
               "label": "여행 기분을 깨지 않게 따로 말하지 않는다",
-              "example": "네, 즐거운 여행 되세요.",
+              "example": "네, 바로 계산해 드릴게요.",
               "hint": {
-                "mn": "Аялалд гарах гэж буй хүний урмыг хугалахгүйн тулд энэ тухай ярихгүй байх. «За, сайхан аялаарай.»",
-                "vi": "Không nói gì thêm để khách giữ được tâm trạng vui vẻ khi đi du lịch. “Vâng, chúc chị đi du lịch vui vẻ ạ.”",
-                "en": "Don't mention it, because you don't want to spoil her holiday mood. \"All right, have a lovely trip.\""
+                "mn": "Аялалд гарах гэж буй хүний урмыг хугалахгүйн тулд энэ тухай ярихгүй байх. «За, одоо шууд тооцоог тань хийж өгье.»",
+                "vi": "Không nói gì thêm để khách giữ được tâm trạng vui vẻ khi đi du lịch. “Vâng, em tính tiền cho chị ngay ạ.”",
+                "en": "Don't mention it, because you don't want to spoil her holiday mood. \"All right, I'll ring that up for you right away.\""
               },
               "then": [
                 {
@@ -1502,6 +1511,16 @@
           "channel": "phone"
         },
         {
+          "type": "line",
+          "who": "senior",
+          "text": "통화 끝났어요. 이제 문을 닫고 마감 정산을 해요. 서랍 돈을 같이 세어 봐요.",
+          "hint": {
+            "mn": "Утсаар ярьж дууслаа. Одоо дэлгүүрээ хааж, өдрийн эцсийн тооцоогоо хийнэ. Касс дахь мөнгөө хамт тоолъё.",
+            "vi": "Nghe điện thoại xong rồi. Giờ mình đóng cửa và kết toán cuối ngày. Cùng đếm tiền trong ngăn kéo nhé.",
+            "en": "The call's done. Now we close up and do the end-of-day settlement. Let's count the drawer together."
+          }
+        },
+        {
           "type": "work",
           "id": "settle",
           "record": "마감 정산 차례",
@@ -1524,7 +1543,7 @@
             ],
             "note": "센 돈: 계산대 서랍의 현금을 통화마다 센 것"
           },
-          "prompt": "판매 화면이 받아야 한다고 보이는 돈과 서랍에서 센 돈을 칸마다 맞춰 봐요.",
+          "prompt": "판매 화면에 찍힌 금액과 서랍에서 센 돈을 칸마다 맞춰 봐요.",
           "hint": {
             "mn": "Борлуулалтын дэлгэц дээр харагдах дүнг касс дахь бэлэн мөнгөний тоолсон дүнтэй мөр бүрээр тулга. Карт: 3,980 доллар. Бэлэн доллар: дэлгэц дээр 200, тоолсон нь 200. Бэлэн вон: дэлгэц дээр 193,900, тоолсон нь 183,900.",
             "vi": "Hãy đối chiếu từng ô: số tiền trên màn hình bán hàng và số tiền đếm được trong ngăn kéo. Thẻ 3.980 đô la. Tiền mặt đô la: màn hình 200, đếm được 200. Tiền mặt won: màn hình 193.900, đếm được 183.900.",
@@ -1653,20 +1672,6 @@
         },
         {
           "type": "line",
-          "clip": "manager-heard",
-          "who": "manager",
-          "when": {
-            "limit": "split"
-          },
-          "text": "서영 씨한테 들었어요. 아침에 친구 여권으로 나눠서 결제할 뻔했다면서요. 처음엔 헷갈릴 수 있어요.",
-          "hint": {
-            "mn": "Сөёноос сонслоо. Өглөө чи нэг үйлчлүүлэгчийн найзуудын паспортоор хувааж тооцоо хийх шахсан гэсэн. Эхэндээ андуурч болно.",
-            "vi": "Anh nghe Seo-young kể rồi. Sáng nay có khách đưa cả xấp hộ chiếu của bạn bè, suýt nữa em tách hóa đơn theo từng cuốn hả? Lúc đầu thì dễ nhầm lắm.",
-            "en": "Seo-young told me. This morning you nearly rang up a customer's purchase on her friends' passports. It's easy to get confused at first."
-          }
-        },
-        {
-          "type": "line",
           "clip": "manager-ask",
           "who": "manager",
           "text": "오늘 수고 많았어요. 목표는 넘겼어요. 오늘 있었던 일 가운데 알려 줄 게 있어요?",
@@ -1792,6 +1797,20 @@
                   "vi": "Cảm ơn em đã báo. Người đó cũng có thể làm vậy ở cửa hàng khác. Anh sẽ báo ngay cho các tầng khác.",
                   "en": "Thanks for telling me. The same person may try this at other counters. I'll let the other floors know right away."
                 }
+              },
+              {
+                "type": "line",
+                "clip": "manager-heard",
+                "who": "manager",
+                "when": {
+                  "limit": "split"
+                },
+                "text": "서영 씨한테 들었어요. 아침에 친구 여권으로 나눠서 결제할 뻔했다면서요. 처음엔 헷갈릴 수 있어요.",
+                "hint": {
+                  "mn": "Сөёноос сонслоо. Өглөө чи нэг үйлчлүүлэгчийн найзуудын паспортоор хувааж тооцоо хийх шахсан гэсэн. Эхэндээ андуурч болно.",
+                  "vi": "Anh nghe Seo-young kể rồi. Sáng nay có khách đưa cả xấp hộ chiếu của bạn bè, suýt nữa em tách hóa đơn theo từng cuốn hả? Lúc đầu thì dễ nhầm lắm.",
+                  "en": "Seo-young told me. This morning you nearly rang up a customer's purchase on his friends' passports. It's easy to get confused at first."
+                }
               }
             ],
             "omitted": [
@@ -1803,7 +1822,40 @@
                 "hint": {
                   "mn": "Сөёноос сонслоо. Үдээс өмнө найзуудынхаа паспортоор олон ширхэг тос авах гэсэн үйлчлүүлэгч байсан гэнэ. Ийм зүйлийг заавал мэдэгдээрэй. Бусад давхарт ч ийм юм болж магадгүй.",
                   "vi": "Anh nghe Seo-young kể là sáng nay có vị khách định dùng hộ chiếu của bạn để mua nhiều kem dưỡng. Những chuyện như vậy em nhất định phải báo nhé. Chuyện này cũng có thể xảy ra ở các tầng khác.",
-                  "en": "Seo-young told me a customer tried to buy a lot of cream with his friends' passports this morning. Always tell me about things like that. It can happen on other floors too."
+                  "en": "Seo-young told me a customer tried to buy a lot of cream with his friends' passports this morning. Always tell me about things like that. That can happen on other floors too."
+                },
+                "when": {
+                  "limit": [
+                    "rule",
+                    "ask"
+                  ]
+                }
+              },
+              {
+                "type": "line",
+                "clip": "manager-heard",
+                "who": "manager",
+                "when": {
+                  "limit": "split"
+                },
+                "text": "서영 씨한테 들었어요. 아침에 친구 여권으로 나눠서 결제할 뻔했다면서요. 처음엔 헷갈릴 수 있어요.",
+                "hint": {
+                  "mn": "Сөёноос сонслоо. Өглөө чи нэг үйлчлүүлэгчийн найзуудын паспортоор хувааж тооцоо хийх шахсан гэсэн. Эхэндээ андуурч болно.",
+                  "vi": "Anh nghe Seo-young kể rồi. Sáng nay có khách đưa cả xấp hộ chiếu của bạn bè, suýt nữa em tách hóa đơn theo từng cuốn hả? Lúc đầu thì dễ nhầm lắm.",
+                  "en": "Seo-young told me. This morning you nearly rang up a customer's purchase on his friends' passports. It's easy to get confused at first."
+                }
+              },
+              {
+                "type": "line",
+                "who": "manager",
+                "when": {
+                  "limit": "split"
+                },
+                "text": "그런 일은 꼭 알려 줘요. 다른 층에서도 그럴 수 있어요.",
+                "hint": {
+                  "mn": "Ийм зүйлийг заавал мэдэгдээрэй. Бусад давхарт ч ийм юм болж магадгүй.",
+                  "vi": "Những chuyện như vậy em nhất định phải báo nhé. Chuyện này cũng có thể xảy ra ở các tầng khác.",
+                  "en": "Always tell me about things like that. That can happen on other floors too."
                 }
               }
             ]
@@ -1814,7 +1866,7 @@
   ],
   "closing": {
     "place": "briefing",
-    "lead": "맞고 틀린 답을 가리는 자리가 아니에요. 내가 고른 것과 면세점 판매사원이 지키는 것을 나란히 봐요.",
+    "lead": "맞고 틀린 답을 가리는 자리가 아니에요. 내가 고른 것과 면세점 판매사원(비자 직종명은 면세점 판매사무원)이 지키는 것을 나란히 봐요.",
     "principles": [
       {
         "id": "same",
@@ -1936,12 +1988,12 @@
         },
         {
           "title": "조를 나눠 일하는 시간",
-          "body": "시내점은 문 여는 때부터 닫는 때까지 조를 나눠요. 공항점은 아침 6시 30분에 시작하는 조와 밤 9시 30분에 끝나는 조가 있어요. 늦은 조 다음 날 이른 조로 나오는 날도 있어요.",
-          "source": "국가인권위원회 유통업 종사자 실태조사(2015), 2026년 채용 공고",
+          "body": "시내점은 문 여는 때부터 닫는 때까지 조를 나눠요. 공항점은 아침 6시 30분에 시작하는 조와 밤 9시 30분에 끝나는 조가 있어요. 마감 조 다음 날 이른 조로 나오는 날도 있어요.",
+          "source": "국가인권위원회 유통업 종사자 실태조사(2015), 보건사회연구 43권 3호(2023), 2026년 채용 공고",
           "hint": {
             "mn": "Ээлжээр ажиллах цаг. Хотын төвийн дэлгүүрт нээхээс хаах хүртэл ээлжээр ажилладаг. Онгоцны буудлын дэлгүүрт өглөө 6:30-д эхэлдэг ээлж, орой 9:30-д дуусдаг ээлж байдаг. Оройн ээлжийн маргааш нь өглөөний ээлжид гарах тохиолдол ч бий.",
-            "vi": "Giờ làm chia ca. Cửa hàng trong thành phố chia ca từ lúc mở cửa đến lúc đóng cửa. Cửa hàng ở sân bay có ca bắt đầu lúc 6 giờ 30 sáng và ca kết thúc lúc 9 giờ 30 tối. Cũng có hôm vừa làm ca muộn xong, hôm sau lại làm ca sớm.",
-            "en": "Working in shifts. Downtown stores split the day into shifts from opening to closing. Airport stores have a shift that starts at 6:30 a.m. and one that ends at 9:30 p.m. Some days you work an early shift the day after a late one."
+            "vi": "Giờ làm chia ca. Cửa hàng trong thành phố chia ca từ lúc mở cửa đến lúc đóng cửa. Cửa hàng ở sân bay có ca bắt đầu lúc 6 giờ 30 sáng và ca kết thúc lúc 9 giờ 30 tối. Cũng có hôm vừa làm ca đóng cửa xong, hôm sau lại làm ca sớm.",
+            "en": "Working in shifts. Downtown stores split the day into shifts from opening to closing. Airport stores have a shift that starts at 6:30 a.m. and one that ends at 9:30 p.m. Some days you work an early shift the day after a closing shift."
           }
         },
         {
@@ -2006,8 +2058,8 @@
         },
         {
           "title": "이 일로 가는 길",
-          "body": "국내 전문대학 이상을 졸업했거나 졸업할 예정이면 전공과 경력을 묻지 않고 E-7-2(면세점 판매사무원)를 신청할 수 있어요. 허가는 출입국이 심사해요. 졸업 뒤 구직(D-10)으로 바꿔 일자리를 찾을 수도 있어요. 임금은 한 해 2,589만 원 이상이어야 해요. 고용하는 회사는 면세판매장 지정이나 보세판매장 특허, 한 해 매출 2억 4천만 원 이상, 면적 200㎡ 이상, 내국인 2명 이상 고용을 갖춰야 해요. 브랜드나 협력업체에 고용되는 자리라면, 그 회사가 이 요건을 갖췄는지 지원할 때 먼저 물어봐요.",
-          "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판(2026-11-22 원문 대조), 법무부 공고 2025-406호",
+          "body": "국내 전문대학 이상을 졸업했거나 졸업할 예정이면 전공과 경력을 묻지 않고 E-7-2(면세점 판매사무원)를 신청할 수 있어요. 허가는 출입국·외국인청(사무소)이 심사해요. 졸업 뒤 구직(D-10)으로 바꿔 일자리를 찾을 수도 있어요. 임금은 한 해 2,589만 원 이상이어야 해요. 고용하는 회사는 면세판매장 지정이나 보세판매장 특허, 한 해 매출 2억 4천만 원 이상, 면적 200㎡ 이상, 내국인 2명 이상 고용을 갖춰야 해요. 브랜드나 협력업체에 고용되는 자리라면, 그 회사가 이 요건을 갖췄는지 지원할 때 먼저 물어봐요.",
+          "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판, 법무부 공고 2025-406호",
           "hint": {
             "mn": "Энэ ажилд орох зам. Солонгосын коллеж болон түүнээс дээш шатны сургууль төгссөн эсвэл төгсөх гэж байгаа бол мэргэжил, ажлын туршлагаас үл хамааран E-7-2 (татваргүй дэлгүүрийн худалдааны ажилтан) визэд хүсэлт гаргаж болно. Визийн хүсэлтийг цагаачлалын алба хянаж шийднэ. Төгссөний дараа ажил хайх D-10 виз рүү шилжиж ажил хайж ч болно. Жилийн цалин 25.89 сая вон ба түүнээс дээш байх ёстой. Ажилд авах компани нь татвар буцаан олгох эрх авсан дэлгүүр эсвэл гаалийн баталгаат татваргүй дэлгүүрийн тусгай зөвшөөрөлтэй байх, жилийн борлуулалт 240 сая вон ба түүнээс дээш, талбай 200㎡ ба түүнээс дээш, 2 ба түүнээс дээш Солонгос иргэн ажиллуулдаг байх ёстой. Брэнд эсвэл гэрээт компанид ажилд орох бол тэр компани эдгээр шаардлагыг хангасан эсэхийг өргөдөл өгөхөөсөө өмнө асуугаарай.",
             "vi": "Con đường đến với công việc này. Nếu đã tốt nghiệp hoặc sắp tốt nghiệp cao đẳng trở lên tại Hàn Quốc, em có thể nộp đơn xin visa E-7-2 (nhân viên bán hàng miễn thuế) mà không cần đúng chuyên ngành hay có kinh nghiệm. Việc cấp phép do cơ quan xuất nhập cảnh xét duyệt. Sau khi tốt nghiệp, em cũng có thể chuyển sang visa tìm việc (D-10) trong lúc tìm chỗ làm. Lương phải từ 25,89 triệu won mỗi năm trở lên. Công ty tuyển dụng phải là cửa hàng hoàn thuế được chỉ định hoặc có giấy phép cửa hàng miễn thuế, có doanh thu từ 240 triệu won mỗi năm, diện tích từ 200㎡ và có từ 2 nhân viên người Hàn Quốc trở lên. Nếu là vị trí do thương hiệu hoặc công ty đối tác tuyển, trước khi nộp đơn, hãy hỏi xem công ty đó có đáp ứng các điều kiện này không.",
@@ -2056,7 +2108,7 @@
       "items": [
         {
           "id": "degree",
-          "label": "학위 (국내 전문학사 이상, 전공은 묻지 않음)",
+          "label": "학위 (국내 전문학사 이상, 전공은 묻지 않아요)",
           "placeholder": "예: 전문학사 2027년 2월 졸업 예정",
           "hint": {
             "mn": "Боловсролын зэрэг (Солонгосын дэд бакалавр (전문학사) буюу түүнээс дээш, мэргэжил хамаарахгүй). Жишээ: дэд бакалавр (전문학사), 2027 оны 2-р сард төгсөнө.",
