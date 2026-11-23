@@ -227,10 +227,11 @@ function withBoard(scene, snap, now) {
   if (!oneClickReady(snap)) return scene;
   const board = oneClickBoard(snap, now), lead = board.lead;
   const quiet = scene.acts.map(a => ({ ...a, primary: false }));
-  const acts = lead?.act ? [lead.act, ...quiet.filter(a => !(a.act === lead.act.act && a.arg === lead.act.arg))] : quiet;
+  // 이끄는 단추와 같은 동작 · 낱말이거나 이름이 같은 단추는 뺀다. 주제가 달라도 「엔진 창 열기」가 둘 서지 않는다(카본 A2)
+  const acts = lead?.act ? [lead.act, ...quiet.filter(a => !(a.act === lead.act.act && (a.arg === lead.act.arg || a.label === lead.act.label)))] : quiet;
   // 줄(다음 백업 · 매시간)이 빠지므로 자동 백업이 도는 것은 아래 범위 칸에 한 줄로 남긴다
-  const next = backupWhen(snap.status?.nextRunAt, now);
-  const scope = next ? `로그인해 있는 동안 매시간 저절로 백업합니다. 다음은 ${next}입니다.` : '';
+  const next = nextWords(snap.status?.nextRunAt, now);
+  const scope = `로그인해 있는 동안 매시간 저절로 백업합니다.${next ? ` 다음은 ${next}입니다.` : ''}`;
   return { ...scene, say: lead?.say || scene.say, then: lead ? lead.then || '' : scene.then, note: lead?.note || scene.note, rows: [], acts, busy: board.busy, scope, board };
 }
 
@@ -246,7 +247,15 @@ export function oneClickReady(snap) {
 /* 깨운 뒤 이만큼 엔진이 요청을 가져가지 않으면 「다른 일 중」으로 바꾸고 천천히 다시 읽는다(Fable 설계 검토 1) */
 export const ONECLICK_PATIENCE = 60000;
 const GB = 1024 ** 3;
-const gb = n => `${(n / GB).toFixed(1)}GB`;
+/* 1GB보다 작은 크기는 MB로 쓴다. 20MB가 「0.0GB」로 보이지 않게 한다(카본 A6) */
+const gb = n => (n >= GB ? `${(n / GB).toFixed(1)}GB` : backupBytes(n));
+/* 판 번호 뒤 조사. 끝 숫자를 읽은 소리에 받침이 있으면(영 · 일 · 삼 · 육 · 칠 · 팔) 이/을, 없으면 가/를(카본 A8) */
+const josa = (v, [withBatchim, without]) => `${v}${'013678'.includes(String(v).slice(-1)) ? withBatchim : without}`;
+/* 예정 시각이 아직 오지 않았을 때만 「다음」이라고 쓴다(카본 A5) */
+function nextWords(value, now) {
+  const at = Date.parse(value || '');
+  return Number.isFinite(at) && at > now ? backupWhen(value, now) : '';
+}
 const GROUP_NAMES = Object.freeze({
   temp: 'Windows 임시 파일', 'temp-profile': '브라우저 자동화 임시 프로필', build: 'Node 패키지 · 빌드 폴더', cache: '다시 받을 수 있는 패키지',
   worktree: '작업 사본', 'ai-app-copy': 'AI 앱 작업 사본', 'project-temp': '프로젝트 임시 폴더', 'ai-history': 'AI 대화 기록', models: 'AI 모델',
@@ -385,7 +394,8 @@ export function oneClickBoard(snap, now = Date.now()) {
   if (job?.stage === 'proof') pr = { ...pr, mid: '엔진이 지금 되살려 맞춰 보는 중입니다', val: Number.isFinite(job.percent) ? `${job.percent}%` : '', state: 'now', p: Number.isFinite(job.percent) ? job.percent / 100 : null };
   else if (!proof) pr = { ...pr, mid: '첫 확인은 엔진이 정한 때 합니다', val: '아직 없음' };
   else if (proof.result === 'passed') pr = { ...pr, val: `${backupDay(proof.at)} 통과`, ok: true };
-  else pr = { ...pr, mid: `마지막 확인이 「${PROOF_WORDS[proof.result] || '알 수 없음'}」이었습니다. 엔진 창에서 확인해 주세요`, val: backupDay(proof.at), state: proof.result === 'skipped' ? '' : 'fail' };
+  // 결과 낱말은 오른쪽 칸에도 넣는다. 접힌 한 줄이 날짜만 보여 통과로 읽히지 않게 한다(카본 A1)
+  else pr = { ...pr, mid: `마지막 확인이 「${PROOF_WORDS[proof.result] || '알 수 없음'}」이었습니다. 엔진 창에서 확인해 주세요`, val: `${backupDay(proof.at)} ${PROOF_WORDS[proof.result] || '알 수 없음'}`, state: proof.result === 'skipped' ? '' : 'fail' };
   steps.push(pr);
 
   // 03 공간: 엔진이 하루 한 번 잰 보고서의 합계다. 지우기는 엔진 2판부터다
@@ -401,9 +411,9 @@ export function oneClickBoard(snap, now = Date.now()) {
   // 04 업데이트: 누른 뒤 PC 앱 업데이터와 엔진 피드를 다시 본다. 판은 받지 않는다
   const engineVer = snap.engine?.version || s.engine || '';
   const feedVer = snap.feed?.version || '';
-  const enginePart = feedVer && engineVer && cmpVersion(feedVer, engineVer) > 0 ? `엔진 새 판 ${feedVer}이 있습니다(엔진이 매시 백업 때 알립니다)` : engineVer ? `엔진 ${engineVer}${feedVer ? ' 최신' : ''}` : '';
-  const appWords = !app ? '' : app.state === 'checking' ? 'PC 앱 새 판을 확인하는 중' : app.state === 'available' && app.latest ? `PC 앱 새 판 ${app.latest}이 있습니다(설정에서 받습니다)`
-    : app.state === 'ready' && app.latest ? `PC 앱 새 판 ${app.latest}을 받아 두었습니다` : app.state === 'downloading' ? 'PC 앱 새 판을 받는 중' : app.current ? `PC 앱 ${app.current}${app.state === 'current' ? ' 최신' : ''}` : '';
+  const enginePart = feedVer && engineVer && cmpVersion(feedVer, engineVer) > 0 ? `엔진 새 판 ${josa(feedVer, ['이', '가'])} 있습니다(엔진이 매시 백업 때 알립니다)` : engineVer ? `엔진 ${engineVer}${feedVer ? ' 최신' : ''}` : '';
+  const appWords = !app ? '' : app.state === 'checking' ? 'PC 앱 새 판을 확인하는 중' : app.state === 'available' && app.latest ? `PC 앱 새 판 ${josa(app.latest, ['이', '가'])} 있습니다(설정에서 받습니다)`
+    : app.state === 'ready' && app.latest ? `PC 앱 새 판 ${josa(app.latest, ['을', '를'])} 받아 두었습니다` : app.state === 'downloading' ? 'PC 앱 새 판을 받는 중' : app.current ? `PC 앱 ${app.current}${app.state === 'current' ? ' 최신' : ''}` : '';
   const checking = app?.state === 'checking' && !!c;
   const fresh = (app && ['available', 'ready'].includes(app.state)) || /새 판/.test(enginePart);
   steps.push({ k: 'update', no: '04', nm: '업데이트 확인', mid: [appWords, enginePart].filter(Boolean).join(' · ') || '솔리오와 백업 엔진의 새 판을 봅니다', val: '', state: checking ? 'now' : fresh ? 'news' : '', p: null });
@@ -414,12 +424,15 @@ export function oneClickBoard(snap, now = Date.now()) {
   const finished = !!c && !pending && !job && !checking && c.result === 'done';
   const sum = finished ? { nm: '백업을 마쳤습니다', mid: [pr.val && `되살리기 확인 ${pr.val}`, fresh ? '새 판 있음' : ''].filter(Boolean).join(' · '), val: b.val } : null;
   if (finished && !lead) {
-    const next = backupWhen(s.nextRunAt, now);
+    const next = nextWords(s.nextRunAt, now);
+    // 네 줄은 접히므로 04 줄을 가리키지 않고 새 판을 이 문장에서 말한다(카본 A3)
+    const news = [appWords, enginePart].filter(w => /새 판/.test(w)).join(' · ');
     const then = pr.state === 'fail' ? '다만 마지막 되살리기 확인이 실패했습니다. 엔진 창에서 확인해 주세요.'
       : driveCard(space).below ? '다만 남은 공간이 정한 선보다 적습니다. 아래에서 비울 수 있는 것을 봐 주세요.'
-        : fresh ? '새 판이 있습니다. 아래 04 줄을 봐 주세요.' : next ? `다음 백업은 ${next}입니다.` : '';
+        : fresh ? `${news}.` : next ? `다음 백업은 ${next}입니다.` : '';
     lead = { say: '백업을 마쳤습니다.', then, note: '끝남' };
-  } else if (working && !lead) {
+  } else if (working && (!lead || job)) {
+    // 엔진이 지금 일하면(되살리기 확인 · 파일 되살리기 따위) 지난 누름의 답보다 그 일이 맨 위다(카본 A4)
     lead = { say: job ? `지금 ${STAGE_WORDS[job.stage] || STAGE_WORDS.other} 중입니다${Number.isFinite(job.percent) ? `(${job.percent}%)` : ''}.` : '지금 백업을 시작합니다.', then: '창을 닫아도 엔진이 이어서 합니다.', note: '하는 중' };
   }
   const main = job ? { label: JOB_LABEL[job.stage] || JOB_LABEL.other, disabled: true }

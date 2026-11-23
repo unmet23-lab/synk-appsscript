@@ -1059,7 +1059,9 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .one-after .g.open .g-ch{transform:rotate(45deg)}
 #portal-entry .one-after .g-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .46s var(--one-ease)}
 #portal-entry .one-after .g.open .g-b{grid-template-rows:1fr}
-#portal-entry .one-after .g-in{min-height:0;overflow:hidden}
+/* 접힌 속은 닫힘 움직임이 끝난 뒤 보이지 않게 해 쪽 안 찾기에도 걸리지 않는다(카본 A9) */
+#portal-entry .one-after .g-in{min-height:0;overflow:hidden;visibility:hidden;transition:visibility 0s linear .46s}
+#portal-entry .one-after .g.open .g-in{visibility:visible;transition:visibility 0s}
 #portal-entry .one-after .g-in > *{opacity:0;transform:translateY(-7px);transition:opacity .14s ease,transform .14s ease}
 #portal-entry .one-after .g.open .g-in > *{opacity:1;transform:none;transition:opacity .34s ease calc(70ms + var(--j,0) * 50ms),transform .46s var(--one-ease) calc(70ms + var(--j,0) * 50ms)}
 #portal-entry .one-after .it{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;align-items:start;padding:11px 32px 11px 0}

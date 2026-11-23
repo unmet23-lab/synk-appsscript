@@ -403,3 +403,44 @@ test('a finished 원클릭 folds into one line and says the next thing; an updat
   const off = solioBackupView(SNAP({ status: { ...STATUS, state: 'off' } }), NOW);
   assert.equal(off.board, undefined, 'off has no board');
 });
+
+test('카본 A1 · A2 · A3 · A4 · A5 · A6 · A8: result words reach the folded line, one engine button, news said in place, live work first, no past 「next」, MB below 1GB, right particles', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const doneAt = { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() };
+  // A1: 통과가 아닌 되살리기 확인은 접힌 한 줄에도 결과 낱말이 있다
+  const skipped = solioBackupView(SNAP({ oneclick: PRESS(300000, doneAt), status: { ...STATUS, proof: { at: '2026-11-20T03:00:00Z', result: 'skipped' } } }), NOW);
+  assert.match(skipped.board.sum.mid, /건너뜀/);
+  const failed = solioBackupView(SNAP({ oneclick: PRESS(300000, doneAt), status: { ...STATUS, proof: { at: '2026-11-20T03:00:00Z', result: 'failed' } } }), NOW);
+  assert.match(failed.board.sum.mid, /실패/);
+  assert.match(failed.then, /실패했습니다/);
+  // A2: 주의 주제가 있어도 「엔진 창 열기」는 하나다
+  const rested = solioBackupView(SNAP({ oneclick: PRESS(300000, { stage: 'answered', result: 'rested', reason: 'battery' }), status: { ...STATUS, attention: ['folders'] } }), NOW);
+  assert.equal(rested.acts.filter(a => a.label === '엔진 창 열기').length, 1, JSON.stringify(rested.acts));
+  assert.equal(rested.acts[0].arg, 'folders');
+  // A3: 끝난 뒤 새 판이 있으면 접힌 04 줄을 가리키지 않고 그 자리에서 말한다
+  const news = solioBackupView(SNAP({ oneclick: PRESS(300000, doneAt), app: { state: 'available', current: '0.5.8', latest: '0.5.9' } }), NOW);
+  assert.ok(news.board.sum);
+  assert.doesNotMatch(news.then, /04 줄/);
+  assert.match(news.then, /PC 앱 새 판 0\.5\.9가 있습니다/);
+  // A4: 지난 누름의 답이 있어도 엔진이 지금 하는 일이 맨 위다
+  const live = solioBackupView(SNAP({ oneclick: PRESS(300000, { stage: 'answered', result: 'failed', reason: 'busy' }), status: { ...STATUS, job: { stage: 'restore', percent: 10 } } }), NOW);
+  assert.match(live.say, /파일을 되살리는 중입니다/);
+  // A5: 지난 예정 시각은 「다음」이라고 쓰지 않는다
+  const past = solioBackupView(SNAP({ oneclick: PRESS(300000, doneAt), status: { ...STATUS, nextRunAt: new Date(NOW - 3 * 3600e3).toISOString() } }), NOW);
+  assert.doesNotMatch(past.then, /다음 백업은/);
+  assert.equal(past.scope, '로그인해 있는 동안 매시간 저절로 백업합니다.');
+  const future = solioBackupView(SNAP(), NOW);
+  assert.match(future.scope, /다음은 오늘 오후/);
+  // A6: 1GB보다 작은 크기는 MB로 쓴다
+  const small = solioBackupView(SNAP({ space: { ...SPACE, drive: { ...SPACE.drive, growthPerDay: 20 * 1024 ** 2 }, groups: [{ grade: 'auto', group: 'temp', bytes: 30 * 1024 ** 2, count: 1 }] } }), NOW);
+  assert.match(small.board.drive.pace, /하루에 20\.0MB씩/);
+  assert.match(small.board.steps[2].mid, /30\.0MB를 찾았습니다/);
+  assert.doesNotMatch(JSON.stringify(small.board), /0\.0GB/);
+  // A8: 판 번호 뒤 조사
+  for (const [v, want] of [['0.5.9', '0.5.9가'], ['0.6.0', '0.6.0이'], ['0.5.2', '0.5.2가'], ['0.7.1', '0.7.1이'], ['0.7.3', '0.7.3이'], ['0.5.4', '0.5.4가']]) {
+    const w = solioBackupView(SNAP({ app: { state: 'available', current: '0.5.8', latest: v } }), NOW);
+    assert.match(w.board.steps[3].mid, new RegExp(`새 판 ${want.replace(/\./g, '\\.')} 있습니다`), v);
+  }
+  const ready = solioBackupView(SNAP({ app: { state: 'ready', current: '0.5.8', latest: '0.5.9' } }), NOW);
+  assert.match(ready.board.steps[3].mid, /0\.5\.9를 받아 두었습니다/);
+});

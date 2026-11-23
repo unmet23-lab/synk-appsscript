@@ -1037,9 +1037,12 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const line = el('i', 'd-line');
       line.style.left = `${d.linePct}%`;
       bar.append(line);
+      // 정한 선 글자는 막대 안쪽에 머물게 하고, 양 끝 글자와 겹치면 그 끝 글자를 뺀다(카본 A7)
       const tl = el('span', 'tl', d.lineLabel);
-      tl.style.left = `${d.linePct}%`;
+      tl.style.left = `${Math.max(8, Math.min(92, d.linePct))}%`;
       ticks.append(tl);
+      if (d.linePct < 18) ticks.querySelector('.t0')?.remove();
+      if (d.linePct > 82) ticks.querySelector('.t2')?.remove();
     }
     const parts = [lab, big, bar, ticks];
     if (d.pred) parts.push(el('p', d.below ? 'd-pred below' : 'd-pred', d.pred));
@@ -1082,6 +1085,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       head.setAttribute('aria-expanded', String(board.open.has(g.k)));
       head.append(el('span', 'g-nm', g.nm), el('span', 'g-mid', g.mid), el('span', `g-val gr-${g.k}`, g.val), el('i', 'g-ch'));
       const body = el('div', 'g-b'), inner = el('div', 'g-in');
+      // 접힌 속은 화면 낭독기와 Tab이 지나간다(카본 A9)
+      body.inert = !board.open.has(g.k);
+      body.setAttribute('aria-hidden', String(!board.open.has(g.k)));
       (Array.isArray(g.items) ? g.items : []).forEach((it, j) => {
         const row = el('div', 'it');
         row.style.setProperty('--j', String(j));
@@ -1103,6 +1109,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const g = app.bakGroups.querySelector(`.g[data-g="${k}"]`);
     g?.classList.toggle('open', on);
     g?.querySelector('.g-h')?.setAttribute('aria-expanded', String(on));
+    const body = g?.querySelector('.g-b');
+    if (body) { body.inert = !on; body.setAttribute('aria-hidden', String(!on)); }
   }
   /* 작은 구(솔리오의 분신)가 지금 일하는 줄의 번호 자리에 앉는다. 일하는 줄이 없으면 숨는다 */
   function placeHelper(at) {
