@@ -58,7 +58,20 @@ export function seoulDecision({mode=null,owner='guest',arrival=null,guest=null,t
  return {run:true,at:'title',fresh:true};
 }
 
-export function createSeoulEntry({dramaPending,restored,client,life,home,worldUrl,launchGame,show,close,selectLanguage,tutorStatus,native,frontOn=()=>false}){
+// 「내 사진으로」(설계 5절 「사진」 · 제2의 나 사진 시범): 얼굴 고르기 레일 맨 앞 칸에 보일 것 — 순수 함수(시험이 표로 본다).
+// 초대받아 status가 ok인 학생, 또는 사진관이 쉬어도 동의했고 만든(만드는) 사진이 있는 학생만 켠다. 주소는 5분짜리 서명 주소라 기록에 넣지 않는다.
+const PHOTO_STATES=new Set(['none','uploading','developing','choose','ready','redo','refused']);
+export function photoView(out){
+ const ok=out?.status==='ok',paused=out?.status==='off'&&!!out?.consent?.given;
+ if(!ok&&!paused)return {on:false};
+ const me=out.me&&typeof out.me==='object'?out.me:{};
+ const state=PHOTO_STATES.has(me.state)?me.state:'none';
+ const url=state==='ready'&&typeof me.chosen_url==='string'&&/^https:\/\//.test(me.chosen_url)?me.chosen_url:null;
+ if(paused&&!['ready','developing','uploading','choose'].includes(state))return {on:false};
+ return {on:true,state,url,paused};
+}
+
+export function createSeoulEntry({dramaPending,restored,client,life,home,worldUrl,launchGame,show,close,selectLanguage,tutorStatus,native,frontOn=()=>false,me2=null}){
  const owner=()=>client().snapshot?.accountId||'guest';
  const mode=()=>seoulMode({search:location.search,feature:autoOn(),dramaPending:dramaPending()});
  let session=null,decision=null,moveAnswer=null;
@@ -161,12 +174,30 @@ export function createSeoulEntry({dramaPending,restored,client,life,home,worldUr
   band.querySelector('button').addEventListener('click',()=>{try{session?.api?.wake();}catch{}close();});
   content.append(band);
  }
+ // 내 사진: 틀이 묻고 연다. 손님 · 다른 주인 · 시범 밖이면 서버에 묻지 않고 끈다.
+ const photoOwner=()=>{const s=session,who=owner();return s&&who!=='guest'&&who===s.owner&&me2?who:null;};
+ async function photo(){
+  const who=photoOwner();if(!who)return {on:false};
+  let out=null;try{out=await me2.status();}catch{}
+  return out&&photoOwner()===who?photoView(out):{on:false};
+ }
+ // 서울행 틀은 모달 <dialog>다. 사진 판(#world-panel)은 닫힌 채에서 showModal로 열려야 틀 위 맨 윗겹에 선다 —
+ // 이미 열려 있거나 닫히는 중(0.16초)이면 틀 아래에 깔리므로 먼저 바로 닫는다. 판이 닫히면 새 상태를 틀에 돌려준다.
+ async function openPhoto(){
+  const who=photoOwner();if(!who)return {on:false};
+  const panel=document.querySelector('#world-panel');
+  if(panel?.open){close();if(panel.open)panel.close();}
+  try{await me2.open();}catch{}
+  if(panel?.open)await new Promise(res=>{const onClose=()=>setTimeout(()=>{if(!panel.open){panel.removeEventListener('close',onClose);res();}},0);panel.addEventListener('close',onClose);});
+  return photo();
+ }
  let finish=()=>{};
  const host=Object.freeze({
   ready(api){const s=session;if(!s)return;s.api=api;try{api.setLang(currentLang());}catch{}s.markReady?.(api);},
   reduced:()=>!!home.state?.reduced,insets,save,prepareEpisode,openEpisode,
   // 첫날 끝 · 맞춤 앞면(world-front-entry.mjs)이 켜졌나 — 켜졌으면 내 길 끝 단추가 「오늘 마무리하기」다.
   front:()=>{try{return !!frontOn();}catch{return false;}},
+  photo,openPhoto,
   leave(){finish();},
  });
  function installHost(){window.SYNKSeoulHost=host;}

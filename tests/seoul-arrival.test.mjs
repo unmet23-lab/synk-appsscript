@@ -23,7 +23,7 @@ test('스위치 상수는 값 하나로 남아 있다', () => {
 // seoul-entry.mjs는 world-lang(브라우저 전역)을 불러서, 순수 함수만 글에서 꺼내 시험한다.
 const pure=(()=>{
  const body=entrySource.slice(entrySource.indexOf('export function seoulMode'),entrySource.indexOf('export function createSeoulEntry')).replace(/export function /g,'function ');
- return new Function(`${body};return {seoulMode,seoulDecision};`)();
+ return new Function(`${body};return {seoulMode,seoulDecision,photoView};`)();
 })();
 
 test('주소의 바로가기는 서울행을 띄우지 않는다', () => {
@@ -81,6 +81,44 @@ test('학생 칸: 이상한 값은 그 칸만 없는 것으로 읽는다', () =>
  assert.equal(readArrival({version:1,issuedAt:1795400000000}).issuedAt,1795400000000);
  assert.equal(readArrival({version:1,issuedAt:'2026-11-23'}).issuedAt,null);
  assert.equal(readArrival({version:1}).issuedAt,null);
+});
+
+test('내 사진 칸: 초대받은 학생에게만 켜고, 주소는 고른 기준 사진만 받는다', () => {
+ const {photoView}=pure,url='https://abc.supabase.co/storage/v1/object/sign/me2-media/u/base.jpg?token=t.k-n_1';
+ assert.deepEqual(photoView(null),{on:false});
+ assert.deepEqual(photoView({status:'not_invited'}),{on:false});
+ assert.deepEqual(photoView({status:'error'}),{on:false});
+ assert.deepEqual(photoView({status:'ok',consent:{given:false},me:{state:'none'}}),{on:true,state:'none',url:null,paused:false});
+ assert.deepEqual(photoView({status:'ok',consent:{given:true},me:{state:'developing'}}),{on:true,state:'developing',url:null,paused:false});
+ assert.deepEqual(photoView({status:'ok',consent:{given:true},me:{state:'ready',chosen_url:url}}),{on:true,state:'ready',url,paused:false});
+ assert.equal(photoView({status:'ok',me:{state:'ready',chosen_url:'javascript:alert(1)'}}).url,null);
+ assert.equal(photoView({status:'ok',me:{state:'choose',chosen_url:url}}).url,null);
+ assert.equal(photoView({status:'ok',me:{state:'이상한 값'}}).state,'none');
+ // 사진관이 쉬면 동의했고 만든(만드는) 사진이 있을 때만 칸을 둔다 — 새로 맡길 수 없어서다
+ assert.deepEqual(photoView({status:'off',consent:{given:false},me:{state:'ready',chosen_url:url}}),{on:false});
+ assert.deepEqual(photoView({status:'off',consent:{given:true},me:{state:'none'}}),{on:false});
+ assert.deepEqual(photoView({status:'off',consent:{given:true},me:{state:'ready',chosen_url:url}}),{on:true,state:'ready',url,paused:true});
+ // 기록에는 「내 사진」 표시만 남는다(사진 · 주소는 넣지 않는다)
+ assert.equal(readArrival({version:1,photo:'me',look:'mn_f'}).photo,'me');
+ assert.equal(readArrival({version:1,photo:url}).photo,null);
+ assert.equal(readArrival({version:1,look:'me'}).look,null);
+});
+
+test('내 사진 칸: 손님 · 다른 주인은 서버에 묻지 않고, 사진 판은 서울행 틀 위 맨 윗겹에 연다', () => {
+ assert.match(entrySource,/const photoOwner=\(\)=>\{const s=session,who=owner\(\);return s&&who!=='guest'&&who===s\.owner&&me2\?who:null;\};/);
+ assert.match(entrySource,/if\(panel\?\.open\)\{close\(\);if\(panel\.open\)panel\.close\(\);\}\r?\n  try\{await me2\.open\(\);\}catch\{\}/);
+ assert.match(entrySource,/photo,openPhoto,\r?\n  leave\(\)\{finish\(\);\},/);
+ assert.match(read('experiences/synk-world-app/app-shell.mjs'),/me2:\{status:async\(\)=>\{if\(!me2Allowed\(\)\)return null;const owner=client\.snapshot\?\.accountId,out=await account\.me2Request\(\{action:'status'\}\);/);
+ const app=read('experiences/seoul-arrival/app.mjs').replace(/\r\n/g,'\n');
+ assert.match(app,/function meTile\(\)\{\n  if\(!PHOTO\.on\)return '';/);
+ assert.match(app,/rail\.innerHTML=meTile\(\)\+order\.map/);
+ assert.match(app,/function saveLook\(lk\)\{save\(lk\?\.mine\?\{look:null,photo:'me'\}:\{look:lk\?lk\.id:null,photo:null\}\);\}/);
+ assert.match(app,/const lookOf=a=>a\?\.photo==='me'\?ME:a\?\.look\?lookById\(a\.look\):null;/);
+ // 틀의 CSP는 사진 저장소 한 곳만 더 연다(와일드카드 · https: 전체를 열지 않는다)
+ const csp=read('experiences/seoul-arrival/index.html').match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
+ assert.match(csp,/img-src 'self' data: blob: https:\/\/qiwxeddwwnzkwalpsuty\.supabase\.co;/);
+ assert.doesNotMatch(csp,/\*|https:(?!\/\/)/);
+ assert.match(csp,/connect-src 'self';/);
 });
 
 function memoryStorage(){const m=new Map();return {getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),key:i=>[...m.keys()][i]??null,get length(){return m.size;}};}

@@ -853,10 +853,16 @@ async function gate(r){
   await lookPart(r);
 }
 async function lookPart(r){
+  void askPhoto();   // 레일을 열기 전에 내 사진 칸을 알아 둔다(초대받은 학생만 켜진다)
   await say(r,'jiho','자, 학생증은 여기서 바로 뽑아 줄게요. 사진만 하나 찍으면 돼요.');
   await say(r,'seoha','학생증에 들어갈 사진이니까 제일 멋지게 찍어 봐요!');
-  const lk=await pickLook();guard(r);state.look=lk;save({look:lk?lk.id:null});
-  if(lk){
+  const lk=await pickLook();guard(r);state.look=lk;saveLook(lk);
+  if(lk?.mine&&!PHOTO.url){
+    // 내 사진이 아직 현상 중이면 찍는 시늉 없이 학생증을 먼저 뽑는다 — 사진 칸은 「사진 현상 중」이고, 사진이 오면 저절로 바뀐다.
+    await say(r,'jiho','사진이 나오면 학생증에 바로 넣어 줄게요.');
+    $('#vn').classList.remove('on');
+    await revealCard(r,null);
+  }else if(lk){
     await shootLook(r);
     await say(r,'seoha','오, 잘 나왔다!');
     $('#vn').classList.remove('on');
@@ -871,7 +877,40 @@ async function lookPart(r){
 
 /* ══ 내 모습 고르기 ══
  * 얼굴 조각을 태블릿 카메라 화면에서 고르고 셔터로 정한다. 시작부터 골라 둔 얼굴은 없다(기본값이 곧 「이 앱의 주인공」으로 읽힌 시험 결과).
- * 순서만 앞서 말한 나라 · 부르는 말(누나 · 언니)에 맞춘다 — 사진을 올리는 길은 열지 않는다. 얼굴 재기는 얼굴재기.py. */
+ * 순서만 앞서 말한 나라 · 부르는 말(누나 · 언니)에 맞춘다. 얼굴 재기는 얼굴재기.py.
+ * 「내 사진으로」(설계 5절 「사진」 · 11-23 유호님 「여기에 내 얼굴로 등록하는것도 있어야지」): 제2의 나 사진 시범에 초대받은 로그인 학생에게만 레일 맨 앞 칸이 생긴다.
+ * 동의 · 올리기 · 「이게 나?」 고르기 · 지우기는 부모의 제2의 나 판(HOST.openPhoto)이 그대로 맡고, 이 틀은 기준 사진을 학생증에 쓴다.
+ * 기록에는 photo:'me' 표시만 남긴다. 사진 주소는 5분짜리 서명 주소라 쓸 때마다 부모에게 새로 받는다(HOST.photo). */
+const ME={id:'me',mine:true,src:'',w:1152,h:1536,fx:.5,fy:.36,fw:.34};   // 기준 사진 지시문: 세로 3:4 · 가슴 위 · 얼굴 폭 약 1/3 · 살짝 비낌
+let PHOTO={on:false},photoJob=null,photoAt=0,photoPoll=0,pickMe=null;
+const photoBusy=()=>PHOTO.on&&(PHOTO.state==='developing'||PHOTO.state==='uploading');
+const SAFE_URL=/^https:\/\/[^\s'"()<>\\]+$/;
+function askPhoto(maxAge=60000){
+  if(!HOST?.photo)return Promise.resolve(PHOTO);
+  if(photoJob&&Date.now()-photoAt<maxAge)return photoJob;
+  photoAt=Date.now();
+  const job=photoJob=Promise.resolve().then(()=>HOST.photo()).then(v=>{if(job===photoJob)setPhoto(v);return PHOTO;},()=>PHOTO);
+  return job;
+}
+function setPhoto(v){
+  const url=v?.on&&v.state==='ready'&&typeof v.url==='string'&&SAFE_URL.test(v.url)?v.url:null;
+  const next=v?.on?{on:true,state:String(v.state||'none'),url}:{on:false,state:null,url:null};
+  const changed=next.on!==PHOTO.on||next.state!==PHOTO.state||!!next.url!==!!PHOTO.url;
+  PHOTO=next;ME.src=url||'';
+  if(url){const im=new Image();im.decoding='async';im.onload=()=>{if(im.naturalWidth&&ME.src===url){ME.w=im.naturalWidth;ME.h=im.naturalHeight;}};im.src=url;}
+  if(changed){pickMe?.();if(state.look?.mine){if($('#s-card').classList.contains('on'))putPhoto();paintBadge();}}
+  clearTimeout(photoPoll);
+  // 현상 중이면 1분마다 다시 묻는다(학생증을 들고 있거나 고르는 중일 때만). 사진이 오면 학생증이 저절로 바뀐다.
+  if(photoBusy()&&(state.look?.mine||pickMe))photoPoll=setTimeout(()=>{if(document.visibilityState==='visible')askPhoto(0);else setPhoto(PHOTO);},60000);
+}
+function saveLook(lk){save(lk?.mine?{look:null,photo:'me'}:{look:lk?lk.id:null,photo:null});}
+// 레일 맨 앞 칸. 사진이 있으면 얼굴, 현상 중이면 인화지, 아직이면 사람 표시와 「내 사진으로」. 얼굴 원과 다른 알약 꼴이라 「만드는 칸」으로 읽힌다.
+const ME_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="8.5" r="3.6" fill="currentColor"/><path d="M3.8 20c.6-3.9 3.5-6 7.2-6 1.4 0 2.6.3 3.7.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 14.5v6M15.5 17.5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+function meTile(){
+  if(!PHOTO.on)return '';
+  const ready=!!PHOTO.url,dev=photoBusy(),label=ready?'내 사진':dev?'사진 현상 중':PHOTO.state==='choose'?'사진 나왔어요':'내 사진으로';
+  return `<button class="lk-me${dev?' dev':''}" type="button" data-me aria-pressed="false"><span class="lk-me-face">${ready?faceTile(ME,60,60,.62):dev?'':ME_ICON}</span><span class="lk-me-label">${esc(L(label))}</span></button>`;
+}
 const LOOK_FACES=LOOK_FACES_DATA;
 const LOOKS=[
   {id:'mn_m',c:'몽골',g:'m',src:A('look-mn-m')},{id:'mn_f',c:'몽골',g:'f',src:A('look-mn-f')},
@@ -883,6 +922,7 @@ const LOOKS=[
 ].map(x=>Object.assign(x,LOOK_FACES[x.id]));
 const warmLooks=()=>LOOKS.forEach(l=>{const i=new Image();i.decoding='async';i.src=l.src;});
 const lookById=id=>LOOKS.find(l=>l.id===id)||null;
+const lookOf=a=>a?.photo==='me'?ME:a?.look?lookById(a.look):null;
 function lookOrder(){
   const g=state.call==='누나'?'m':state.call==='언니'?'f':null;
   return LOOKS.map(x=>[x,(x.c===state.from?2:0)+(g&&x.g===g?1:0)+Math.random()*.5]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
@@ -895,7 +935,7 @@ const lookRects={
   vf(){const b=$('#lkVf').getBoundingClientRect(),a=$('#app').getBoundingClientRect();return {left:b.left-a.left,top:b.top-a.top,width:b.width,height:b.height};}
 };
 const px=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,v+'px']));
-function faceTile(l,w,h,share){const r=lookRects.crop(l,w,h,share);return `<i style="left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;background-image:url(${l.src});background-size:100% 100%"></i>`;}
+function faceTile(l,w,h,share){const r=lookRects.crop(l,w,h,share);return `<i style="left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;background-image:url('${l.src}');background-size:100% 100%"></i>`;}
 let lookFit=null;
 addEventListener('resize',()=>{lookFit?.();});
 const lkWhyClose=()=>{const w=$('#lkWhy');if(!w.classList.contains('on'))return;w.classList.remove('on');$('#lkQ').setAttribute('aria-expanded','false');setTimeout(()=>{if(!w.classList.contains('on'))w.hidden=true;},260);};
@@ -904,17 +944,18 @@ $('#lkQ').onclick=e=>{e.stopPropagation();const w=$('#lkWhy'),q=$('#lkQ');if(w.c
 $('#look').addEventListener('pointerdown',e=>{if(!e.target.closest('#lkWhy,#lkQ'))lkWhyClose();});
 function pickLook({change=false}={}){return new Promise(res=>{
   const box=$('#look'),vf=$('#lkVf'),rail=$('#lkRail'),shoot=$('#lkShoot'),hint=$('#lkHint'),af=$('#lkAf'),order=lookOrder();
-  let cur=-1;
+  let cur=-1,opening=false;   // cur: 레일 번호, 또는 'me'(내 사진)
   warmLooks();
   $('#lkBlank').style.backgroundImage=`url(${IMG.gate})`;
   $('#lkLater').textContent=change?L('그대로 둘래요'):L('나중에 찍을래요');
-  $('#vn').classList.remove('on');box.classList.remove('shoot');vf.classList.remove('has');vf.querySelectorAll('img').forEach(x=>x.remove());af.classList.remove('go');shoot.disabled=true;hint.textContent=L('마음이 바뀌면 나중에 다시 고를 수 있어요');
-  rail.innerHTML=order.map((l,i)=>`<button class="lk-th" type="button" data-i="${i}" aria-label="${L('모습 번호',{n:i+1})}" aria-pressed="false">${faceTile(l,60,60,.62)}</button>`).join('');
-  const press=sel=>rail.querySelectorAll('.lk-th').forEach(t=>t.setAttribute('aria-pressed',t===sel?'true':'false'));
+  $('#vn').classList.remove('on');box.classList.remove('shoot');vf.classList.remove('has');vf.querySelectorAll('img,.lk-dev').forEach(x=>x.remove());af.classList.remove('go');shoot.disabled=true;hint.textContent=L('마음이 바뀌면 나중에 다시 고를 수 있어요');
+  rail.innerHTML=meTile()+order.map((l,i)=>`<button class="lk-th" type="button" data-i="${i}" aria-label="${L('모습 번호',{n:i+1})}" aria-pressed="false">${faceTile(l,60,60,.62)}</button>`).join('');
+  const press=sel=>rail.querySelectorAll('.lk-th,.lk-me').forEach(t=>t.setAttribute('aria-pressed',t===sel?'true':'false'));
   function place(l,im){const b=vf.getBoundingClientRect(),r=lookRects.cover(l,b.width,b.height);Object.assign(im.style,px(r));
     const side=l.fw*r.width*1.3;Object.assign(af.style,px({left:r.left+l.fx*r.width-side/2,top:r.top+l.fy*r.height-side*.56,width:side,height:side*1.16}));}
-  lookFit=()=>{const im=vf.querySelector('img:last-of-type');if(cur>=0&&im)place(order[cur],im);};
-  function showFace(src,after){const old=[...vf.querySelectorAll('img')],im=new Image();im.alt='';im.src=src;vf.insertBefore(im,af);after(im);
+  const curLook=()=>cur==='me'?(PHOTO.url?ME:null):order[cur]||null;
+  lookFit=()=>{const im=vf.querySelector('img:last-of-type'),l=curLook();if(l&&im)place(l,im);};
+  function showFace(src,after){vf.querySelector('.lk-dev')?.remove();const old=[...vf.querySelectorAll('img')],im=new Image();im.alt='';im.src=src;vf.insertBefore(im,af);after(im);
     requestAnimationFrame(()=>requestAnimationFrame(()=>im.classList.add('in')));setTimeout(()=>old.forEach(x=>x.remove()),460);
     vf.classList.add('has');shoot.disabled=false;af.classList.remove('go');void af.offsetWidth;af.classList.add('go');}
   function go(i){
@@ -922,14 +963,46 @@ function pickLook({change=false}={}){return new Promise(res=>{
     showFace(l.src,im=>place(l,im));hint.textContent=L('마음에 들면 셔터를 눌러요');setTimeout(()=>{if(cur===i)SND.felt('focus');},300);
     const t=rail.querySelector(`[data-i="${i}"]`);press(t);t.scrollIntoView({inline:'center',block:'nearest',behavior:reduce?'auto':'smooth'});
   }
-  rail.onclick=e=>{const t=e.target.closest('.lk-th');if(!t)return;go(+t.dataset.i);};
+  // 내 사진 칸: 사진이 있으면 그 얼굴을, 현상 중이면 인화지를 칸에 띄우고 셔터로 정한다. 아직이면 제2의 나 판을 연다.
+  function clearMine(){if(cur!=='me')return;cur=-1;vf.querySelectorAll('img,.lk-dev').forEach(x=>x.remove());vf.classList.remove('has');af.classList.remove('go');shoot.disabled=true;press(null);hint.textContent=L('마음이 바뀌면 나중에 다시 고를 수 있어요');}
+  function goMe(){
+    const t=rail.querySelector('[data-me]');if(!t)return;
+    if(PHOTO.url){
+      if(cur==='me'&&vf.querySelector('img'))return;cur='me';
+      showFace(ME.src,im=>{place(ME,im);im.addEventListener('load',()=>{if(cur==='me'&&im.isConnected)place(ME,im);},{once:true});});
+      hint.textContent=L('마음에 들면 셔터를 눌러요');setTimeout(()=>{if(cur==='me')SND.felt('focus');},300);
+    }else if(photoBusy()){
+      if(cur==='me'&&vf.querySelector('.lk-dev'))return;cur='me';
+      vf.querySelectorAll('img,.lk-dev').forEach(x=>x.remove());
+      const d=document.createElement('div');d.className='lk-dev';d.innerHTML=`<i class="lk-dev-print" aria-hidden="true"></i><b>${esc(L('사진 현상 중'))}</b><span>${esc(L('사진이 나오면 학생증 사진이 저절로 바뀌어요'))}</span>`;
+      vf.insertBefore(d,af);vf.classList.add('has');af.classList.remove('go');shoot.disabled=false;hint.textContent=L('마음에 들면 셔터를 눌러요');
+    }else{void openMine();return;}
+    press(t);t.scrollIntoView({inline:'center',block:'nearest',behavior:reduce?'auto':'smooth'});
+  }
+  async function openMine(){
+    if(opening||!HOST?.openPhoto)return;opening=true;SND.felt('tap');
+    let v=null;try{v=await HOST.openPhoto();}catch{}
+    opening=false;if(pickMe!==repaintMe)return;
+    photoAt=Date.now();photoJob=Promise.resolve().then(()=>PHOTO);setPhoto(v);
+    if(PHOTO.url||photoBusy())goMe();
+  }
+  // 사진 상태가 바뀌면(판을 닫고 돌아옴 · 현상이 끝남) 맨 앞 칸만 다시 그린다. 다른 칸의 번호와 스크롤은 그대로 둔다.
+  function repaintMe(){
+    const old=rail.querySelector('[data-me]'),html=meTile();
+    if(!html){old?.remove();clearMine();return;}
+    const box2=document.createElement('div');box2.innerHTML=html;const tile=box2.firstElementChild;
+    if(old)old.replaceWith(tile);else{const sl=rail.scrollLeft;rail.prepend(tile);if(sl>0)rail.scrollLeft=sl+tile.offsetWidth+10;}
+    if(cur==='me'){if(PHOTO.url||photoBusy()){cur=-1;goMe();}else clearMine();}
+  }
+  pickMe=repaintMe;void askPhoto(240000);
+  rail.onclick=e=>{if(e.target.closest('[data-me]')){goMe();return;}const t=e.target.closest('.lk-th');if(!t)return;go(+t.dataset.i);};
   // 칸 위에서 좌우로 넘기기
   let x0=null;
   vf.onpointerdown=e=>{if(e.target.closest('button'))return;x0=e.clientX;};
-  vf.onpointerup=e=>{if(x0==null)return;const d=e.clientX-x0;x0=null;if(Math.abs(d)<36)return;SND.felt('tap');go(cur<0?0:(cur+(d<0?1:-1)+order.length)%order.length);};
+  vf.onpointerup=e=>{if(x0==null)return;const d=e.clientX-x0;x0=null;if(Math.abs(d)<36)return;SND.felt('tap');const n=typeof cur==='number'?cur:-1;go(n<0?0:(n+(d<0?1:-1)+order.length)%order.length);};
   vf.onpointercancel=()=>{x0=null;};
-  const done=v=>{lkWhyClose();lookFit=null;shoot.onclick=$('#lkLater').onclick=rail.onclick=vf.onpointerdown=vf.onpointerup=null;res(v);};
-  shoot.onclick=()=>{if(cur>=0)done(order[cur]);};
+  const done=v=>{lkWhyClose();lookFit=null;pickMe=null;shoot.onclick=$('#lkLater').onclick=rail.onclick=vf.onpointerdown=vf.onpointerup=null;res(v);};
+  shoot.onclick=()=>{if(opening)return;const l=cur==='me'?ME:typeof cur==='number'&&cur>=0?order[cur]:null;if(l)done(l);};
   $('#lkLater').onclick=()=>{box.classList.remove('on');done(null);};
   rail.scrollLeft=0;box.classList.add('on');SND.sfx('pix_whoosh_short',.4);
 });}
@@ -1055,11 +1128,23 @@ function placeSign(tries=0){
 }
 addEventListener('resize',()=>{if($('#s-card').classList.contains('on'))placeSign();});
 // 사진은 카드의 배치 크기로 자른다(움직이는 중의 화면 크기가 아니라)
-function putPhoto(){if(!state.look)return;const p=$('#idPhoto'),r=lookRects.crop(state.look,p.clientWidth,p.clientHeight,.6),im=new Image();im.alt='';im.src=state.look.src;Object.assign(im.style,px(r));p.replaceChildren(im);}
+// 내 사진은 기준 사진이 오기 전에는 「사진 현상 중」(고를 판이 왔으면 「사진 나왔어요」)이고, 지웠거나 시범 밖이면 빈 사진 칸이다.
+function putPhoto(){
+  if(!state.look)return;const p=$('#idPhoto'),l=state.look;
+  if(l.mine&&!PHOTO.url){
+    const wait=photoBusy()||PHOTO.state==='choose';
+    if(wait)p.innerHTML=`<div class="id-dev"><span>${esc(L(PHOTO.state==='choose'?'사진 나왔어요':'사진 현상 중'))}</span></div>`;else p.replaceChildren();
+    return;
+  }
+  const r=lookRects.crop(l,p.clientWidth,p.clientHeight,.6),im=new Image();im.alt='';im.src=l.src;Object.assign(im.style,px(r));p.replaceChildren(im);
+  if(l.mine)im.addEventListener('load',()=>{if(im.isConnected&&state.look===ME)Object.assign(im.style,px(lookRects.crop(ME,p.clientWidth,p.clientHeight,.6)));},{once:true});
+}
 function cardEnd(){$('#cardHead').classList.add('on');setTimeout(()=>$('#cardFoot').classList.add('on'),reduce?0:240);}
 /* 학생증 다시 보기 · 모습 다시 고르기: 내 길의 내 사진을 누르면 온다 */
-function openCardView(){const rig=$('#cardRig');for(const x of [$('#cardSwing'),$('#printer')])x.getAnimations().forEach(a=>a.cancel());$('#cardSwing').style.transform='';$('#cardBox').classList.remove('feeding');$('#printer').classList.remove('busy','on');cardAskDone();if(!state.issuedAt){state.issuedAt=Date.now();save({issuedAt:state.issuedAt});}fillCard();CardFX.setup();rig.classList.add('down');show('s-card');putPhoto();$('#s-card').classList.add('view');$('#cardHead span').textContent=L('내 학생증');cardEnd();CardFX.live(true);SND.felt('open');}
-$('#reLook').onclick=async()=>{const lk=await pickLook({change:true});$('#look').classList.remove('on');if(!lk)return;state.look=lk;save({look:lk.id});SND.felt('shutter');putPhoto();buildRoad();};
+function openCardView(){const rig=$('#cardRig');for(const x of [$('#cardSwing'),$('#printer')])x.getAnimations().forEach(a=>a.cancel());$('#cardSwing').style.transform='';$('#cardBox').classList.remove('feeding');$('#printer').classList.remove('busy','on');cardAskDone();if(!state.issuedAt){state.issuedAt=Date.now();save({issuedAt:state.issuedAt});}fillCard();CardFX.setup();rig.classList.add('down');show('s-card');putPhoto();$('#s-card').classList.add('view');$('#cardHead span').textContent=L('내 학생증');cardEnd();CardFX.live(true);SND.felt('open');
+  // 내 사진은 주소가 5분이면 만료되므로 학생증을 열 때 새 주소로 다시 붙인다(현상이 끝났으면 사진이 이때 들어간다).
+  if(state.look?.mine){const was=ME.src;void askPhoto(0).then(()=>{if(state.look?.mine&&$('#s-card').classList.contains('on')&&ME.src!==was)putPhoto();});}}
+$('#reLook').onclick=async()=>{const lk=await pickLook({change:true});$('#look').classList.remove('on');if(!lk)return;state.look=lk;saveLook(lk);SND.felt('shutter');putPhoto();buildRoad();};
 // 카드에 손을 대야 이어지는 순간: 안내 한 줄과 키보드 초점(Enter · 스페이스)
 function cardAsk(text,label){const h=$('#cardHint'),rig=$('#cardRig');h.textContent=L(text);h.classList.add('on');rig.tabIndex=0;rig.setAttribute('role','button');rig.setAttribute('aria-label',L(label));}
 function cardAskDone(){const rig=$('#cardRig');$('#cardHint').classList.remove('on');rig.removeAttribute('tabindex');rig.removeAttribute('role');rig.removeAttribute('aria-label');}
@@ -1158,12 +1243,17 @@ function examCard(r,D,locked){
   const soon=!locked&&r.exam===1;   // 2화가 아직 없어 1급 오디션도 곧 열린다
   return `<div class="exam${locked?' locked':''}"><div class="ex-card"><span class="ph" style="background-image:url(${IMG[state.dream]});background-size:${crop[0]}%;background-position:${crop[1]}"></span><span class="ex-txt"><small>${L('{n}급 승급 오디션',{n:r.exam})}</small><b>${title}</b><em>${L(r.goal)}</em>${soon?`<span class="town">${L('곧 열려요')}</span>`:''}</span></div></div>`;
 }
+// 내 길 머리의 내 사진. 내 사진이 아직 없으면(현상 중 · 지움) 이름 첫 글자로 둔다.
+function paintBadge(){
+  const b=$('#meBadge'),face=state.look&&(!state.look.mine||PHOTO.url)?state.look:null;
+  b.classList.toggle('face',!!face);
+  b.innerHTML=face?faceTile(face,44,44,.66):state.name&&/[가-힣]/.test(state.name[0])?`<span style="font-size:19px;font-weight:680;color:#fff">${esc(state.name[0])}</span>`:`<svg viewBox="0 0 24 24"><use href="#${state.dream==='actor'?'seat':'stick'}"/></svg>`;
+}
 function buildRoad(){
   const D=DREAM[state.dream];
   $('#lightNum').textContent=state.lights;$('#lightIcon').setAttribute('href',state.dream==='actor'?'#seat':'#stick');
   $('#dreamChip').textContent=L(D.chip);const wn=$('#whoName'),gr=document.createElement('i');gr.className='gr';gr.textContent=L('{n}급 과정',{n:roadGrade()});wn.textContent=(state.name||L('유학생'))+'\u00a0· ';wn.append(gr);
-  $('#meBadge').classList.toggle('face',!!state.look);
-  $('#meBadge').innerHTML=state.look?faceTile(state.look,44,44,.66):state.name&&/[가-힣]/.test(state.name[0])?`<span style="font-size:19px;font-weight:680;color:#fff">${esc(state.name[0])}</span>`:`<svg viewBox="0 0 24 24"><use href="#${state.dream==='actor'?'seat':'stick'}"/></svg>`;
+  paintBadge();
   let side=0,g=0;const rows=[],G=roadGrade();
   ROAD.forEach((r,i)=>{
     if(r.lv){g=Number(r.lv.slice(-1));rows.push(`<div class="lv"><span>${r.lv}</span>${g>G?`<em class="lv-lock">${LOCK_SVG}${L('{n}급 오디션에 붙으면 열려요',{n:g-1})}</em>`:''}</div>`);return;}
@@ -1401,8 +1491,9 @@ function applyStatic(){
 }
 function loadState(a){
   if(!a)return;
-  Object.assign(state,{dream:a.dream||state.dream,name:a.name??null,nameEn:a.nameEn??null,sign:a.sign??null,from:a.from??null,call:a.call??null,look:a.look?lookById(a.look):null,lights:a.lights||0,best:a.best||{},scenes:a.scenes||[],momSeen:!!a.momAt,momAnswer:a.momAnswer||null,issuedAt:a.issuedAt||null,dreamPicked:!!a.dream});
+  Object.assign(state,{dream:a.dream||state.dream,name:a.name??null,nameEn:a.nameEn??null,sign:a.sign??null,from:a.from??null,call:a.call??null,look:lookOf(a),lights:a.lights||0,best:a.best||{},scenes:a.scenes||[],momSeen:!!a.momAt,momAnswer:a.momAnswer||null,issuedAt:a.issuedAt||null,dreamPicked:!!a.dream});
   document.body.dataset.dream=state.dream;
+  if(state.look?.mine)void askPhoto(0);   // 내 사진 학생은 바로 새 주소를 받아 내 길 머리 · 학생증에 붙인다
 }
 if(location.hash!=='#road')warm(WARM.first);
 const insets=()=>{const s=HOST?.insets?.();if(!s)return;for(const [k,v] of Object.entries(s))document.documentElement.style.setProperty('--'+k,v+'px');};
@@ -1425,7 +1516,9 @@ window.__seoulFrame=Object.freeze({
     $('#titleSkip').hidden=!state.dreamPicked;
   },
 });
-window.__seoulQA={state,show,get SND(){return SND;},traceGa,nameTrace,buildRoad,crowdScene,momNote};
+window.__seoulQA={state,show,get SND(){return SND;},traceGa,nameTrace,buildRoad,crowdScene,momNote,
+  // 내 사진 시험(qa/내사진.mjs): 사진 상태를 바로 다시 묻고, 정문의 얼굴 고르기 마디만 따로 돌린다
+  photo:()=>askPhoto(0).then(()=>({...PHOTO})),lookPart:()=>{const r=++RUN;show('s-gate');$('#vn').classList.add('on');return lookPart(r).then(()=>true,e=>{if(e!==SKIP)throw e;return false;});}};
 if(!HOST){
   if(['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).has('qa')){window.__seoulFrame.start({at:new URLSearchParams(location.search).get('qa')==='road'?'road':'title'});}
   else outside();

@@ -16098,6 +16098,7 @@ function readArrival(value) {
     from: text(value.from),
     call: CALLS.has(value.call) ? value.call : null,
     look: typeof value.look === "string" && /^[a-z]{2}_[mf]$/.test(value.look) ? value.look : null,
+    photo: value.photo === "me" ? "me" : null,
     lights: Number.isSafeInteger(value.lights) && value.lights >= 0 && value.lights <= 1e5 ? value.lights : 0,
     best,
     scenes,
