@@ -66,9 +66,9 @@
     },
     {
       id: 'road',
-      ko: { name: '내 길', body: '8화와 꿈 장면 일곱이 TOPIK 1급부터 4급까지 이어집니다. 장면마다 상대가 먼저 말을 걸고, 나는 한국어로 답합니다.', alt: '「내 길」 화면. TOPIK 1에서 1화 학생 식당에서 길 묻기, 2화 동아리 박람회, 1급 승급 오디션(쇼케이스 오디션)이 차례로 이어지고, TOPIK 2는 「1급 오디션에 붙으면 열려요」로 잠겨 있다. 아래에 「1화 시작」 단추가 있다.' },
-      en: { name: 'My road', body: '8 episodes and 7 dream scenes run from TOPIK Level 1 to Level 4. In every scene someone speaks to you first, and you answer in Korean.', alt: 'The My road screen: from TOPIK 1, Ep. 1 (asking the way in the student cafeteria), Ep. 2 (the club fair) and the Level 1 audition (a student film festival audition) follow in order. A Start Ep. 1 button is below.' },
-      mn: { name: 'Миний зам', body: '8 анги, мөрөөдлийн 7 хэсэг TOPIK-ийн 1-р түвшнээс 4-р түвшин хүртэл үргэлжилнэ. Хэсэг бүрд нөгөө хүн эхэлж ярьж, та солонгосоор хариулна.', alt: '«Миний зам» дэлгэц. TOPIK 1 хэсэгт 1-р анги, 2-р анги, 1-р түвшний шалгаруулалт дараалан байрлаж, TOPIK 2 түгжээтэй байна. Доор нь «1-р ангийг эхлэх» товч байна.' },
+      ko: { name: '내 길', body: '8화와 꿈 장면 일곱이 TOPIK 1급부터 4급까지 이어집니다. 지금은 1화가 열려 있습니다. 장면마다 상대가 먼저 말을 걸고, 나는 한국어로 답합니다.', alt: '「내 길」 화면. TOPIK 1에서 1화 학생 식당에서 길 묻기, 2화 동아리 박람회, 1급 승급 오디션(쇼케이스 오디션)이 차례로 이어지고, TOPIK 2는 「1급 오디션에 붙으면 열려요」로 잠겨 있다. 아래에 「1화 시작」 단추가 있다.' },
+      en: { name: 'My road', body: '8 episodes and 7 dream scenes run from TOPIK Level 1 to Level 4. Episode 1 is open now. In every scene someone speaks to you first, and you answer in Korean.', alt: 'The My road screen: from TOPIK 1, Ep. 1 (asking the way in the student cafeteria), Ep. 2 (the club fair) and the Level 1 audition (a student film festival audition) follow in order. A Start Ep. 1 button is below.' },
+      mn: { name: 'Миний зам', body: '8 анги болон мөрөөдлийн 7 хэсэг нь TOPIK-ийн 1-ээс 4-р түвшнийг хамарна. Одоогоор 1-р анги нээлттэй байна. Хэсэг бүрд ярилцагч тань эхэлж ярьж, та солонгосоор хариулна.', alt: '«Миний зам» дэлгэц. TOPIK 1 хэсэгт 1-р анги, 2-р анги, 1-р түвшний шалгаруулалт дараалан байрлаж, TOPIK 2 түгжээтэй байна. Доор нь «1-р ангийг эхлэх» товч байна.' },
     },
   ];
 

@@ -24,12 +24,12 @@
     "sha256": "c11436da932bcb73e6997db85b0078c0432428b5b90554723148652dc9206597"
   },
   "reserve/copy.js": {
-    "bytes": 20429,
-    "sha256": "161543eaaaea4b788073f3041ab0b2fc490978343b4ab9c1a5022e94020f3c00"
+    "bytes": 20546,
+    "sha256": "09604f43f0aced3d9138b774a90199ea111962829bf30d5d2702bb6f11e68a0a"
   },
   "reserve/index.html": {
     "bytes": 7735,
-    "sha256": "0fcbd45615e6da5b3ed27e25f2f4713a1647b2a1e93cfd826f357a770c9b0bcc"
+    "sha256": "46921ce69821d71ee20ccdbe70e01a3609c2fdc19261ccd6af0feae927c8933c"
   },
   "reserve/og.jpg": {
     "bytes": 95001,
