@@ -33,13 +33,18 @@ RPC_PAIRS = {'wb-keys-rpc': ('api', 'keys'), 'wb-files-rpc': ('api', 'files')}
 RPC_URLS = {'wb-keys-rpc': 'http://127.0.0.1:4211/rpc', 'wb-files-rpc': 'http://127.0.0.1:4212/rpc'}
 HEALTH = 'http://172.30.77.9:4210/backup-api/v1/health'
 APP_NAME = re.compile(r'^[a-z0-9-]+\.mjs$')
-# A box connect counts as blocked only with one of these answers (the unit's address filter
-# answers EPERM; a silent drop times out). Anything else, a refusal included, is a reach.
+# A box connect counts as blocked only with one of these answers. The unit's address filter
+# drops the SYN, so a blocked TCP connect most likely times out; EPERM is taken too. Anything
+# else, a refusal included, is a reach.
 BLOCKED = ('EPERM', 'EACCES', 'timeout')
 # [Service] properties systemd-run may not take, or that only make sense for the long-running unit.
-RUN_SKIP = {'Type', 'ExecStart', 'Restart', 'RestartSec', 'TimeoutStopSec', 'KillMode', 'WorkingDirectory'}
+# TimeoutStopSec and KillMode stay: a transient run is PartOf the company stack, and its stop must fit
+# node-host.py's 150-second budget the same way the services do.
+RUN_SKIP = {'Type', 'ExecStart', 'Restart', 'RestartSec', 'WorkingDirectory'}
 # [Unit] lines a transient run keeps, so it starts only beside the company stack and stops with it.
+# PartOf becomes StopPropagatedFrom: a company restart must stop a wb-admin command, never run it again.
 UNIT_RUN_KEYS = {'Requisite', 'PartOf', 'After', 'RequiresMountsFor'}
+MIN_SYSTEMD = 249  # StopPropagatedFrom
 DIRECT = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 DIR_FLAGS = os.O_RDONLY | getattr(os, 'O_DIRECTORY', 0) | getattr(os, 'O_NOFOLLOW', 0)  # Linux only; the getattr lets the render tests load elsewhere
 
@@ -191,8 +196,8 @@ def read_in(dfd, name):
         return f.read(), s
 
 
-def write_in(dfd, name, data, mode, uid):
-    """Atomic write of one file directly in dfd, owner and mode set through the descriptor."""
+def stage_in(dfd, data, mode, uid):
+    """A new file in dfd under a temporary name, owner and mode set through its descriptor, synced."""
     tmp = '.wb-' + os.urandom(8).hex()
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=dfd)
     try:
@@ -202,12 +207,26 @@ def write_in(dfd, name, data, mode, uid):
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
+    except BaseException:
+        drop_in(dfd, tmp)
+        raise
+    return tmp
+
+
+def drop_in(dfd, tmp):
+    try:
+        os.unlink(tmp, dir_fd=dfd)
+    except FileNotFoundError:
+        pass
+
+
+def write_in(dfd, name, data, mode, uid):
+    """Atomic write of one file directly in dfd."""
+    tmp = stage_in(dfd, data, mode, uid)
+    try:
         os.replace(tmp, name, src_dir_fd=dfd, dst_dir_fd=dfd)
     except BaseException:
-        try:
-            os.unlink(tmp, dir_fd=dfd)
-        except FileNotFoundError:
-            pass
+        drop_in(dfd, tmp)
         raise
 
 
@@ -281,7 +300,7 @@ def render_unit(req, name, app, node, offsite=None):
 
 def service_props(unit_text):
     """A rendered unit as 'Key=Value' strings for systemd-run -p: its company dependencies
-    (UNIT_RUN_KEYS) and its [Service] lines minus RUN_SKIP."""
+    (UNIT_RUN_KEYS, PartOf as StopPropagatedFrom) and its [Service] lines minus RUN_SKIP."""
     out, section = [], None
     for line in unit_text.decode().splitlines():
         line = line.strip()
@@ -290,9 +309,11 @@ def service_props(unit_text):
         if line.startswith('['):
             section = line
             continue
-        key = line.split('=', 1)[0]
-        if (section == '[Service]' and key not in RUN_SKIP) or (section == '[Unit]' and key in UNIT_RUN_KEYS):
+        key, _, value = line.partition('=')
+        if section == '[Service]' and key not in RUN_SKIP:
             out.append(line)
+        elif section == '[Unit]' and key in UNIT_RUN_KEYS:
+            out.append('StopPropagatedFrom=' + value if key == 'PartOf' else line)
     return out
 
 
@@ -331,9 +352,15 @@ def block_targets():
     return {'metadata': ('169.254.169.254', 80), 'company': ('172.30.77.2', 4191), 'vpc': (vpc[0], 22)}
 
 
+def systemd_version():
+    m = re.match(r'systemd (\d+)', run(['systemctl', '--version']).stdout)
+    return int(m.group(1)) if m else 0
+
+
 def probe(req, app, node):
     """Run each role's box (the unit's own properties) once with a check script. Every target
     is first reached from the host, so a closed port cannot pass for a working filter."""
+    need(systemd_version() >= MIN_SYSTEMD, 'SYSTEMD_TOO_OLD')
     targets = block_targets()
     control = {k: host_reaches(*v) for k, v in targets.items()}
     need(all(control.values()), 'PROBE_CONTROL_UNREACHABLE:' + ','.join(k for k, ok in control.items() if not ok))
@@ -472,6 +499,12 @@ def active_states():
     return {n: run(['systemctl', 'is-active', n], check=False).stdout.strip() for n in (*SERVICES, *OFFSITE)}
 
 
+def sudo_logs_input():
+    """True when sudo keeps what it reads on standard input (log_input): host-install sends secrets that way."""
+    p = run(['sh', '-c', "grep -rhsE '^[^#]*(log_input|log_stdin)' /etc/sudoers /etc/sudoers.d"], check=False)
+    return bool(p.stdout.strip())
+
+
 # ── actions
 
 def act_plan(req):
@@ -479,7 +512,8 @@ def act_plan(req):
             'haNodeSha': file_sha(HA_NODE), 'root': sorted(str(p.relative_to(ROOT)) for p in ROOT.rglob('*')) if ROOT.exists() else None,
             'units': {n: run(['systemctl', 'show', n, '-p', 'LoadState,ActiveState,UnitFileState'], check=False).stdout.split() for n in (*SERVICES, *OFFSITE)},
             'company': company_identity(), 'mta': run(['ss', '-ltnpH', 'sport = :25'], check=False).stdout.strip(),
-            'exim': run(['sh', '-c', "grep -h '^dc_eximconfig_configtype\\|^dc_local_interfaces\\|^dc_relay' /etc/exim4/update-exim4.conf.conf"], check=False).stdout.strip()}
+            'exim': run(['sh', '-c', "grep -h '^dc_eximconfig_configtype\\|^dc_local_interfaces\\|^dc_relay' /etc/exim4/update-exim4.conf.conf"], check=False).stdout.strip(),
+            'sudoInputLog': sudo_logs_input()}
 
 
 def act_files(req):
@@ -497,7 +531,6 @@ def act_files(req):
     need(resolv == b'nameserver 127.0.0.53\noptions edns0 trust-ad\n', 'RESOLV_CONTENT')
     write_root_file(ROOT / 'resolv.conf', resolv, 0o644)
     root_dir(ROOT / 'bin')
-    write_root_file(ROOT / 'bin' / 'wb-admin', wb_admin(req, app, node), 0o755)
     made = folders()
     return {'node': str(node), 'nodeVersion': version, 'app': str(app), 'appNew': app_new, 'offsite': str(off), 'offsiteNew': off_new, 'madeFolders': made}
 
@@ -509,50 +542,72 @@ def act_probe(req):
 
 
 def act_secrets(req):
-    """Secret files 0600 owned by the role's uid. An existing different value is replaced only
-    with --바꿈. An RPC pair that agrees is kept; a split or half-written pair needs --바꿈, which
-    writes a new pair (start checks both halves match, and the running workers with --다시)."""
+    """Secret files 0600 owned by the role's uid, and each role's settings.env. Every value and
+    every existing file is checked before anything is written. An existing different value is
+    replaced only with --바꿈. An RPC pair that agrees is kept; a split or half-written pair
+    needs --바꿈, which writes a new pair: the workers' halves first, the api's last. Services
+    already running keep their old values until the next start, which restarts them."""
     writer_node()
+    need(not sudo_logs_input(), 'SUDO_LOGS_INPUT (the secrets would stay in the sudo I/O log)')
     folders()
     sent = req['secrets']
     for role, names in SECRET_NAMES.items():
         need(sorted(sent.get(role, {})) == sorted(names), 'SECRET_SET:' + role)
-    result = {}
+    for role in ROLES:
+        settings = req['settings'][role]
+        need(all(re.fullmatch(r'WB_[A-Z0-9_]+=[^\n]*', line) and not line.startswith('WB_SECRET') for line in settings.splitlines() if line and not line.startswith('#')), 'SETTINGS_SHAPE:' + role)
+    replace = bool(req.get('replace'))
     fds = {role: role_fd(role, 'secrets')[0] for role in ROLES}
     try:
+        old = {}
+        for role, names in SECRET_NAMES.items():
+            for name in names:
+                data, s = read_in(fds[role], name)
+                if data is not None:
+                    need(s.st_uid == ROLES[role] and stat.S_IMODE(s.st_mode) == 0o600, 'SECRET_FILE_UNSAFE:' + role + ':' + name)
+                old[role, name] = data
         for pair, (a, b) in RPC_PAIRS.items():
-            va, _ = read_in(fds[a], pair)
-            vb, _ = read_in(fds[b], pair)
-            if va is not None and va == vb and not req.get('replace'):
+            va, vb = old[a, pair], old[b, pair]
+            if va is not None and va == vb and not replace:
                 sent[a][pair] = sent[b][pair] = va.decode()
-            elif (va is not None or vb is not None) and not req.get('replace'):
+            elif (va is not None or vb is not None) and not replace:
                 raise Refused('RPC_SECRET_SPLIT:' + pair + ' (--바꿈 writes a new pair)')
+        plan = []
         for role, names in SECRET_NAMES.items():
             for name in names:
                 value = sent[role][name].encode()
                 need(len(value) >= 32 and b'\n' not in value.strip(), 'SECRET_SHAPE:' + role + ':' + name)
-                old, s = read_in(fds[role], name)
-                if old is not None:
-                    need(s.st_uid == ROLES[role] and stat.S_IMODE(s.st_mode) == 0o600, 'SECRET_FILE_UNSAFE:' + role + ':' + name)
-                    if old == value:
-                        result[role + '/' + name] = 'kept'
-                        continue
-                    need(req.get('replace'), 'SECRET_DIFFERS:' + role + ':' + name)
-                write_in(fds[role], name, value, 0o600, ROLES[role])
+                if old[role, name] == value:
+                    continue
+                need(old[role, name] is None or replace, 'SECRET_DIFFERS:' + role + ':' + name)
+                plan.append((role, name, value))
+        result = {role + '/' + name: 'kept' for role, names in SECRET_NAMES.items() for name in names}
+        # Every new file is written and synced under a temporary name first; only then are they
+        # renamed, the workers' halves before the api's, so a stop mid-way leaves at most a split
+        # between two renames (start then refuses it, and secrets --바꿈 writes a new pair).
+        staged = []
+        try:
+            for role, name, value in sorted(plan, key=lambda x: x[0] == 'api'):
+                staged.append((role, name, stage_in(fds[role], value, 0o600, ROLES[role])))
+            for role, name, tmp in staged:
+                os.replace(tmp, name, src_dir_fd=fds[role], dst_dir_fd=fds[role])
                 result[role + '/' + name] = 'written'
+        except BaseException:
+            for role, name, tmp in staged:
+                drop_in(fds[role], tmp)
+            raise
     finally:
         for fd in fds.values():
             os.close(fd)
     for role in ROLES:
-        settings = req['settings'][role].encode()
-        need(all(re.fullmatch(r'WB_[A-Z0-9_]+=[^\n]*', line) and not line.startswith('WB_SECRET') for line in settings.decode().splitlines() if line and not line.startswith('#')), 'SETTINGS_SHAPE:' + role)
         fd, _ = role_fd(role)
         try:
-            write_in(fd, 'settings.env', settings, 0o600, ROLES[role])
+            write_in(fd, 'settings.env', req['settings'][role].encode(), 0o600, ROLES[role])
         finally:
             os.close(fd)
         result[role + '/settings.env'] = 'written'
-    return {'files': result}
+    running = [n for n in SERVICES if run(['systemctl', 'is-active', n], check=False).stdout.strip() == 'active']
+    return {'files': result, 'note': ('running services keep their old values until the next start restarts them: ' + ','.join(running)) if running else None}
 
 
 def provisioned():
@@ -593,35 +648,93 @@ def mark_checked_bucket(digest):
     write_root_file(OFFSITE_STATE / 'checked-bucket', (digest + '\n').encode(), 0o600)
 
 
+ADMIN = ROOT / 'bin' / 'wb-admin'
+TIMER = 'synk-wb-offsite.timer'
+CHECKED = OFFSITE_STATE / 'checked-bucket'
+
+
 def unit_state():
     files = {n: (UNIT_DIR / n).read_bytes() if (UNIT_DIR / n).exists() else None for n in UNIT_NAMES}
     active = {n: run(['systemctl', 'is-active', n], check=False).stdout.strip() for n in UNIT_NAMES}
     enabled = {n: run(['systemctl', 'is-enabled', n], check=False).stdout.strip() for n in UNIT_NAMES}
-    return {'files': files, 'active': active, 'enabled': enabled}
+    admin = ADMIN.read_bytes() if ADMIN.exists() else None
+    checked = CHECKED.read_bytes() if CHECKED.exists() else None
+    return {'files': files, 'active': active, 'enabled': enabled, 'admin': admin, 'checked': checked}
+
+
+def put_back(path, data, mode):
+    if data is None:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+    else:
+        write_root_file(path, data, mode)
 
 
 def restore(before):
-    """Put the units back as they were before this start: files, enablement and what ran."""
-    run(['systemctl', 'stop', *UNIT_NAMES], timeout=120, check=False)
+    """Put the three services, the timer, wb-admin and the checked-bucket record back as they
+    were before this start (files, enablement, what ran), then read what is really there.
+    A daily copy already running is left alone: it does not depend on the services."""
+    managed = (*SERVICES, TIMER)
+    run(['systemctl', 'stop', *managed], timeout=120, check=False)
     for n in UNIT_NAMES:
         if before['files'][n] is None:
             run(['systemctl', 'disable', n], check=False)
-            try:
-                (UNIT_DIR / n).unlink()
-            except FileNotFoundError:
-                pass
-        else:
-            write_root_file(UNIT_DIR / n, before['files'][n], 0o644)
+        put_back(UNIT_DIR / n, before['files'][n], 0o644)
+    put_back(ADMIN, before['admin'], 0o755)
+    if before['checked'] is not None or CHECKED.exists():
+        put_back(CHECKED, before['checked'], 0o600)
     run(['systemctl', 'daemon-reload'], check=False)
-    for n in UNIT_NAMES:
+    for n in managed:
         if before['files'][n] is not None:
             run(['systemctl', 'enable' if before['enabled'][n] == 'enabled' else 'disable', n], check=False)
-    again = [n for n in (*SERVICES, 'synk-wb-offsite.timer') if before['active'][n] == 'active']
+    again = [n for n in managed if before['active'][n] == 'active']
     if again:
         run(['systemctl', 'start', *again], timeout=120, check=False)
-    if all(v is None for v in before['files'].values()):
-        return 'units removed'
-    return 'previous units back' + (', running again: ' + ','.join(again) if again else '')
+    now = unit_state()
+    off = [n for n in managed if (now['active'][n] == 'active') != (before['active'][n] == 'active') or (now['enabled'][n] == 'enabled') != (before['enabled'][n] == 'enabled')]
+    said = 'units removed' if all(v is None for v in before['files'].values()) else 'previous units back'
+    return said + ('' if not off else ' · RESTORE_INCOMPLETE:' + ','.join(n + '=' + now['active'][n] + '/' + now['enabled'][n] for n in off))
+
+
+def started_at(name):
+    """When the running process of a unit became active (unix seconds), or None."""
+    out = run(['systemctl', 'show', name, '-p', 'ActiveEnterTimestamp', '--timestamp=unix'], check=False).stdout.strip()
+    m = re.fullmatch(r'ActiveEnterTimestamp=@(\d+)', out)
+    return int(m.group(1)) if m else None
+
+
+def config_written():
+    """Per role, the newest change time of its secret files and settings.env."""
+    out = {}
+    for role in ROLES:
+        times = []
+        fd, _ = role_fd(role, 'secrets')
+        try:
+            times += [read_in(fd, name)[1].st_mtime for name in SECRET_NAMES[role]]
+        finally:
+            os.close(fd)
+        fd, _ = role_fd(role)
+        try:
+            times.append(read_in(fd, 'settings.env')[1].st_mtime)
+        finally:
+            os.close(fd)
+        out[role] = max(times)
+    return out
+
+
+def stale_services(before):
+    """Services whose running process predates its current secrets or settings (it holds the
+    values it read at its start), or that are not running."""
+    written = config_written()
+    out = []
+    for role in ROLES:
+        name = 'synk-wb-' + role + '.service'
+        at = started_at(name) if before['active'][name] == 'active' else None
+        if at is None or at <= written[role]:
+            out.append(name)
+    return out
 
 
 def verify(company):
@@ -632,9 +745,11 @@ def verify(company):
 
 def act_start(req):
     """Every check that needs nothing new comes first: files, secrets, the bucket, the box.
-    Units already in place and running are only checked, unless --다시 restarts them.
-    Otherwise: units, restart, the same checks, then the timer; any failure puts the units
-    back exactly as they were. The company containers must be the same throughout."""
+    Then only what differs changes: unit files that differ are written; a service restarts when
+    its unit changed, it is not running, its process predates its secrets or settings, or with
+    --다시. The checks run on the result; only then are the services enabled, wb-admin written,
+    the checked bucket recorded and the timer started. Any failure puts everything back as it was.
+    The company containers stay the same throughout."""
     writer_node()
     app, node, off = installed(req)
     provisioned()
@@ -643,25 +758,35 @@ def act_start(req):
     box = probe(req, app, node)
     company = company_identity()
     units = {n: render_unit(req, n, app, node, off) for n in UNIT_NAMES}
+    admin = wb_admin(req, app, node)
+    marked = (bucket + '\n').encode()
     before = unit_state()
     changed = [n for n in UNIT_NAMES if before['files'][n] != units[n]]
-    running = all(before['active'][n] == 'active' for n in (*SERVICES, 'synk-wb-offsite.timer'))
-    if not changed and running and not req.get('restart'):
+    restart = list(SERVICES) if req.get('restart') else sorted(set(n for n in SERVICES if n in changed) | set(stale_services(before)), key=SERVICES.index)
+    rest = [x for x, same in (('wb-admin', before['admin'] == admin), ('checked-bucket', before['checked'] == marked)) if not same]
+    rest += [n + ':disabled' for n in (*SERVICES, TIMER) if before['enabled'][n] != 'enabled']
+    if before['active'][TIMER] != 'active':
+        rest.append(TIMER + ':inactive')
+    if not changed and not restart and not rest:
         return {'box': box, 'alreadyRunning': True, **verify(company), 'active': active_states(), 'companyUnchanged': True}
     try:
         for n in changed:
             write_root_file(UNIT_DIR / n, units[n], 0o644)
-        run(['systemctl', 'daemon-reload'])
-        run(['systemctl', 'enable', *SERVICES])
-        run(['systemctl', 'restart', *SERVICES], timeout=120)
+        if changed:
+            run(['systemctl', 'daemon-reload'])
+        if restart:
+            run(['systemctl', 'restart', *restart], timeout=120)
         checks = verify(company)
+        run(['systemctl', 'enable', *SERVICES])
+        root_dir(ROOT / 'bin')
+        write_root_file(ADMIN, admin, 0o755)
         mark_checked_bucket(bucket)
-        run(['systemctl', 'enable', '--now', 'synk-wb-offsite.timer'])
+        run(['systemctl', 'enable', '--now', TIMER])
         need(company_identity() == company, 'COMPANY_CONTAINERS_CHANGED')
     except BaseException as e:
         undone = restore(before)
         raise Refused((str(e) if isinstance(e, Refused) else 'UNEXPECTED_' + type(e).__name__) + ' · ' + undone)
-    return {'box': box, 'changedUnits': changed, **checks, 'active': active_states(), 'companyUnchanged': True, 'company': company}
+    return {'box': box, 'changedUnits': changed, 'restarted': restart, 'alsoChanged': rest, **checks, 'active': active_states(), 'companyUnchanged': True, 'company': company}
 
 
 def act_status(req):

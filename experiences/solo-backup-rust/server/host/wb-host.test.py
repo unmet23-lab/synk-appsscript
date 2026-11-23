@@ -20,7 +20,7 @@ class Units(unittest.TestCase):
             self.assertIn(f'User={uid}\n', u); self.assertIn(f'Group={uid}\n', u)
             self.assertIn(f'WB_PORT={port} WB_HOST={host}', u)
             self.assertIn(f'BindPaths=/srv/synk/workbackup/{role}\n', u); self.assertIn(f'ReadWritePaths=/srv/synk/workbackup/{role}\n', u)
-            self.assertIn('TemporaryFileSystem=/srv/synk:ro', u); self.assertIn('IPAddressDeny=169.254.0.0/16', u)
+            self.assertIn('TemporaryFileSystem=/srv/synk:ro', u); self.assertIn('IPAddressDeny=127.0.0.0/8 ::1/128 169.254.0.0/16', u)
             self.assertIn('ExecStart=/opt/synk/workbackup/runtime/node-bbbb /opt/synk/workbackup/app/aaaa/main.mjs ' + role, u)
             for line in ('Requisite=synk-company.service', 'PartOf=synk-company.service', 'WantedBy=synk-company.service', 'TimeoutStopSec=10', 'KillMode=control-group', 'Restart=on-failure'):
                 self.assertIn(line + '\n', u)
@@ -30,7 +30,7 @@ class Units(unittest.TestCase):
         for role in ('keys', 'files'): self.assertIn('IPAddressAllow=127.0.0.1/32 127.0.0.53/32\n', self.unit(f'synk-wb-{role}.service'))
     def test_offsite_unit_and_timer(self):
         u = self.unit('synk-wb-offsite.service'); self.assertIn('ExecStart=/usr/bin/python3 -I -B /opt/synk/workbackup/offsite/cccc/wb-offsite.py', u)
-        self.assertIn('CapabilityBoundingSet=CAP_DAC_READ_SEARCH', u)
+        self.assertIn('CapabilityBoundingSet=CAP_DAC_READ_SEARCH', u); self.assertIn('TimeoutStopSec=10' + chr(10), u)
         t = self.unit('synk-wb-offsite.timer'); self.assertIn('OnCalendar=*-*-* 20:40:00 UTC', t)
     def test_run_properties_match_the_unit(self):
         props = M.service_props(self.unit('synk-wb-api.service').encode())
@@ -38,8 +38,10 @@ class Units(unittest.TestCase):
         for skipped in M.RUN_SKIP: self.assertFalse(any(p.startswith(skipped + '=') for p in props), skipped)
         self.assertTrue(all('=' in p for p in props))
         # The transient runs keep the company dependencies, so wb-admin starts only beside the company and stops with it.
-        for line in ('Requisite=synk-company.service', 'PartOf=synk-company.service', 'RequiresMountsFor=/srv/synk'): self.assertIn(line, props)
+        for line in ('Requisite=synk-company.service', 'StopPropagatedFrom=synk-company.service', 'RequiresMountsFor=/srv/synk'): self.assertIn(line, props)
+        self.assertFalse(any(p.startswith('PartOf=') for p in props))
         self.assertTrue(any(p.startswith('After=synk-company.service') for p in props))
+        for line in ('TimeoutStopSec=10', 'KillMode=control-group'): self.assertIn(line, props)
         for absent in ('WantedBy=', 'ConditionPathIsMountPoint=', 'StartLimitBurst=', 'Description='): self.assertFalse(any(p.startswith(absent) for p in props), absent)
     def test_rpc_signature_is_the_workers(self):
         js = "import crypto from 'node:crypto'; const [s,ts,id,m,b]=process.argv.slice(1); const sha=crypto.createHash('sha256').update(b).digest('hex'); console.log(crypto.createHmac('sha256', s).update(`wb-rpc/v1\n${ts}\n${id}\n${m}\n${sha}`).digest('base64url'))"
@@ -54,7 +56,7 @@ class Units(unittest.TestCase):
     def test_admin_wrapper_uses_the_api_box(self):
         w = M.wb_admin(self.req, pathlib.PurePosixPath('/opt/synk/workbackup/app/aaaa'), pathlib.PurePosixPath('/opt/synk/workbackup/runtime/node-bbbb')).decode()
         self.assertIn("-p 'User=10771'", w); self.assertIn("-p 'TemporaryFileSystem=/srv/synk:ro'", w)
-        self.assertIn("-p 'Requisite=synk-company.service'", w); self.assertIn("-p 'PartOf=synk-company.service'", w)
+        self.assertIn("-p 'Requisite=synk-company.service'", w); self.assertIn("-p 'StopPropagatedFrom=synk-company.service'", w); self.assertNotIn('PartOf=', w)
         self.assertTrue(w.rstrip().endswith('/opt/synk/workbackup/app/aaaa/admin.mjs "$@"'))
         self.assertIn('--pipe', w)
 

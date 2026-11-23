@@ -31,7 +31,8 @@ BindPaths=/srv/synk/workbackup/@ROLE@
 ReadWritePaths=/srv/synk/workbackup/@ROLE@
 BindReadOnlyPaths=/opt/synk/workbackup/resolv.conf:/etc/resolv.conf
 InaccessiblePaths=-/etc/synk -/etc/synk-server-backup -/var/lib/synk-server-backup -/var/lib/synk-company-ops -/var/lib/synk-wb-offsite -/opt/synk/ha -/opt/synk/ha-runtime -/opt/synk/ha-maintenance -/opt/synk/disaster-recovery -/opt/synk/releases -/opt/synk/spaceship -/mnt
-IPAddressDeny=169.254.0.0/16 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 100.64.0.0/10 fc00::/7 fe80::/10
+# Loopback is closed too except what each unit allows (127.0.0.1 stays open on every port there).
+IPAddressDeny=127.0.0.0/8 ::1/128 169.254.0.0/16 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 100.64.0.0/10 fc00::/7 fe80::/10
 MemoryMax=256M
 MemorySwapMax=0
 CPUQuota=50%

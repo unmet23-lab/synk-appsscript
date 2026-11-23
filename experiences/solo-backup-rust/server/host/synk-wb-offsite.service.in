@@ -25,3 +25,6 @@ ProtectControlGroups=yes
 RestrictSUIDSGID=yes
 InaccessiblePaths=-/srv/synk/company -/srv/synk/backups -/srv/synk/backup-archives -/srv/synk/caddy-data -/srv/synk/caddy-config -/srv/synk/workbackup/keys -/srv/synk/workbackup/files -/srv/synk/workbackup/api/secrets -/srv/synk/workbackup/api/data
 TimeoutStartSec=15min
+# A stop with the company stack must fit node-host.py's 150-second budget.
+TimeoutStopSec=10
+KillMode=control-group
