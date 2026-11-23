@@ -18,6 +18,13 @@ const EASE = { io: easeIO, ioq: easeIOQ, out: easeOut };
 const NON_HOST_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'LINK', 'META', 'NOSCRIPT']);
 const FOCUSABLE = 'button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])';
 const MARK_SVG = '<svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱크"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>';
+/* 연결한 구독이 없을 때 「구독 연결하기」 아래에 서는 예시 계정판(11-24 짜임 쌍 맹검에서 지금 판 · 빈 계정판을 모두 이김, 유호님 「둘 다 옮겨」,
+   docs/디자인/솔리오_방짜임_20261124). 연결한 뒤의 계정 명단(구독비서 설계 11절)과 같은 꼴이고 값은 예시라 낭독하지 않는다 */
+const PEEK_ACCT = (nm, v, when) => `<div class="peek-acct${v ? '' : ' used'}"><span class="peek-nm">${nm}</span><span class="peek-bar"><i style="width:${v}%"></i></span><span class="peek-pc">${v ? v + '%' : ''}</span><span class="peek-when">${when}</span></div>`;
+const PEEK_COL = (svc, sub, open, total, accts) => `<div class="peek-col"><div class="peek-col-h"><span><b>${svc}</b><small>${sub}</small></span><span class="peek-num"><strong>${open}<em>/${total}</em></strong>지금 쓸 수 있는 계정</span></div>${accts}</div>`;
+const SUB_PEEK = `<section class="sub-peek rise" style="--i:3" data-sub-peek hidden aria-label="연결하면 보이는 모습"><p class="peek-h"><span class="peek-tag">예시</span>연결하면 계정마다 이렇게 보입니다</p><div class="peek-cols" aria-hidden="true">${
+  PEEK_COL('Claude', '구독 3개 · 합쳐서 54% 남음', 2, 3, PEEK_ACCT('업무 계정', 100, '월요일 12:00 초기화') + PEEK_ACCT('개인 계정', 62, '일요일 19:59 초기화') + PEEK_ACCT('팀 계정', 0, '다 씀 · 오늘 21:00 열림'))
+}${PEEK_COL('Codex', 'ChatGPT 구독 2개', 1, 2, PEEK_ACCT('업무 계정', 81, '토요일 09:00 초기화') + PEEK_ACCT('개인 계정', 0, '다 씀 · 내일 07:30 열림'))}</div></section>`;
 /* 솔리오 안의 프로그램 오브제(시안 .rail의 그림). 이름은 컨트롤러가 장면으로 넘긴다. 백업은 방이 생길 때 구독 다음 자리에 넣는다 */
 const PROGRAM_ICON = Object.freeze({
   subs: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg>',
@@ -30,6 +37,8 @@ const PROGRAM_ICON = Object.freeze({
   office: '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3.4" y="5" width="13.2" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="7.6" cy="10" r="1.2" fill="currentColor"/><circle cx="12.4" cy="10" r="1.2" fill="currentColor"/></svg>',
 });
 /* 다가가서 잠깐 머물러야 열리고, 벗어나서 잠깐 지나야 닫힌다(시안 NEAR). pad는 오브제 줄에 다가갔다고 보는 거리(px) */
+/* 사무실 줄 묶음에서 한 줄의 알약으로 서는 줄(orb-face.css의 .rows.off 알약과 같은 셋) */
+const OFF_PILLS = new Set(['cfg', 'look', 'add']);
 const NEAR = Object.freeze({ row: 120, prog: 180, close: 400, pad: 64, open: 150, fast: 260, orb: 18, name: 10, zone: 44 });
 /* 오브제 이름이 다 펼쳐지는 데 걸리는 시간. 이름 하나가 0.46초에 펼쳐지고 보이는 오브제마다 70ms씩 늦게 시작한다(CSS .obj-n의 --k는 보이는 차례다).
  * 이름이 펼쳐지는 동안에는 그 위에 머물러도 프로그램을 열지 않는다. 셋이면 620ms(시안 railSettle), 둘이면 550ms, 넷이면 690ms다
@@ -103,6 +112,7 @@ function markup() {
       <p class="rep-h rise" style="--i:2" data-rep-h hidden>솔리오 보고</p>
       <p class="say rise" style="--i:1"><em class="rep-tag" data-say-tag hidden></em><span data-say></span><span class="then" data-then></span></p>
       <p class="sub-start rise" style="--i:2" data-sub-start hidden><button class="sub-go" type="button" data-orb-act="connect">구독 연결하기</button><span>Claude · Codex 계정을 연결할 수 있습니다.</span></p>
+      ${SUB_PEEK}
       <div class="brief rise" style="--i:2" data-brief hidden>
         <ol class="report" aria-label="솔리오 보고" data-report hidden></ol>
         <p class="rep-more" data-rep-more hidden></p>
@@ -208,7 +218,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     brief: $('[data-brief]'), soon: $('[data-soon]'), soonMore: $('[data-soon-more]'), live: $('[data-live]'), liveBig: $('[data-live-big]'), liveUnit: $('[data-live-unit]'), liveSmall: $('[data-live-small]'), tokOn: $('[data-orb-act="tok-on"]'),
     board: $('[data-board]'), boardCols: $('[data-board-cols]'), repH: $('[data-rep-h]'), sayTag: $('[data-say-tag]'), report: $('[data-report]'), repMore: $('[data-rep-more]'), repCost: $('[data-rep-cost]'),
     diag: $('[data-diag]'), diagWhen: $('[data-diag-when]'), diagName: $('[data-diag-name]'), diagWord: $('[data-diag-word]'), diagSay: $('[data-diag-say]'), diagCost: $('[data-diag-cost]'), details: $('[data-details]'), detailsTop: $('[data-details-top]'),
-    reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), fanLead: $('[data-fan-lead]'), connect: $('.read [data-orb-act="connect"]'), subStart: $('[data-sub-start]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
+    reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), fanLead: $('[data-fan-lead]'), connect: $('.read [data-orb-act="connect"]'), subStart: $('[data-sub-start]'), subPeek: $('[data-sub-peek]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
     space: $('[data-room="space"]'), spaceSay: $('[data-space-say]'), spaceThen: $('[data-space-then]'), spaceError: $('[data-space-error]'), reopen: $('[data-orb-act="reopen-space"]'),
     share: $('[data-share]'), shareScreens: $('[data-share-screens]'), shareWindows: $('[data-share-windows]'), shareScreensH: $('[data-share-screens-h]'), shareWindowsH: $('[data-share-windows-h]'),
     rail: $('[data-orb-rail]'), objs: [...root.querySelectorAll('[data-orb-prog]')],
@@ -775,6 +785,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       // 연결한 구독이 없으면 먼저 할 일 하나(「구독 연결하기」)를 문장 바로 아래 꽉 찬 단추로 둔다. 맨 아래의 글 단추는 그동안 숨긴다(11-23 맹검)
       const start = t.state === 'none' && t.action === 'connect';
       app.subStart.hidden = !start;
+      // 예시 계정판도 같은 때만 선다. 그동안 맨 위 문장을 한 단계 줄여 예시까지 한 화면에 든다
+      app.subPeek.hidden = !start;
+      app.solio.classList.toggle('peeking', start);
       app.connect.hidden = t.action !== 'connect' || start;
       app.recheck.hidden = t.action !== 'recheck-auth';
       // 계정 확인을 기다리는 문장은 낭독기에도 알린다(단추가 「사용할 수 없음」으로 바뀐 것만 읽히지 않게, 다시 검수 -e)
@@ -1285,11 +1298,18 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       setTimeout(() => { if (!disposed) onAction('room', { room, key, act: on ? 'row-open' : 'row-fold' }); }, 0);
     }
   }
-  /* 한 줄을 펼치면 그 아래에 열려 있던 줄은 접는다. 위쪽 줄은 접지 않는다(접으면 손 밑의 줄이 위로 달아난다) */
+  /* 한 줄을 펼치면 그 아래에 열려 있던 줄은 접는다. 위쪽 줄은 접지 않는다(접으면 손 밑의 줄이 위로 달아난다).
+     사무실의 알약(설정 · 꾸미기 · 부서 더하기)은 한 줄에 나란히 서고 판은 모두 그 아래에 열린다. 접어도 알약이 움직이지 않으므로
+     알약을 열면 다른 알약의 판을 접는다. 눌러서 열면 고정한 판도 접는다(검수 solio-room-layout-20261124 대체 최종 F4) */
   function openVis(b, pin = false) {
     const box = b.parentElement, rows = box ? [...box.querySelectorAll(':scope > button.row')] : [], i = rows.indexOf(b);
     if (i < 0) return;
-    rows.forEach((r, k) => { if (k > i && !r.classList.contains('pin')) setMore(r, false); });
+    const pill = r => box.classList.contains('off') && OFF_PILLS.has(r.dataset.key);
+    rows.forEach((r, k) => {
+      if (r === b) return;
+      if (pill(b) && pill(r)) { if (pin || !r.classList.contains('pin')) setMore(r, false); }
+      else if (k > i && !r.classList.contains('pin')) setMore(r, false);
+    });
     if (pin) b.classList.add('pin');
     setMore(b, true);
   }

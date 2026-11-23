@@ -22,6 +22,7 @@ export const FLOOR_MOTION = Object.freeze({
   blinkMin: 2400, blinkSpan: 5200, blinkMs: 120,
   gazePeriod: 9000, gaze: 0.08, look: 0.2,
   rimPeriod: 3200, rimLow: 0.38, rimHigh: 0.62,
+  screenPeriod: 4200, screenLow: 0.86,
   bangPeriod: 1600, bangPx: 2.5, popMs: 420,
   fadeMs: 300, viewTau: 230, frameMs: 33,
   skinMs: 380, skinStep: 60, lampTau: 450,
@@ -43,8 +44,10 @@ const LOOK = Object.freeze({
 });
 const lookOf = s => LOOK[s] || LOOK.quiet;
 /* 스킨마다의 재질(시안 스킨.html의 SK, 미학 맹검 세 번으로 고친 값). rim은 직원 테두리의 빛, label은 부서 이름의 색이다 */
+/* 11-24 검정은 「불 켜진 자리」다(솔리오 방 짜임 시안, 맹검 세 번 「공간감과 생동감이 없다」). 바닥은 가장자리로 갈수록 어둠에 묻히고,
+   일하는 부서의 책상에만 위에서 빛이 떨어진다. 일하는 직원 앞에는 노트북이 열려 있고 그 화면 빛이 직원 얼굴 아래를 비춘다(첫 팀 고르기 6판의 구운 장면) */
 const SKIN = Object.freeze({
-  black: { slab: SLAB, rim: INK, label: INK, boost: 1 },
+  black: { slab: 0.16, rim: INK, label: INK, boost: 1.3, shadow: 0.62, lit: true },
   walnut: {
     slab: 0.12, boost: 1.25, rim: '255,221,182', label: '255,232,206', shadow: 0.55, mat: 'rgba(0,0,0,.26)',
     floor: { thick: 0.16, top: ['#1b120b', '#2a1c12'], front: '#120b06', left: '#0b0703', edge: 'rgba(255,214,170,.16)', seam: 'rgba(0,0,0,.6)', grain: 'rgba(255,212,168,.05)', tone: 'rgba(255,196,140,.028)' },
@@ -53,7 +56,7 @@ const SKIN = Object.freeze({
 });
 export const FLOOR_SKINS = Object.freeze(Object.keys(SKIN));
 const LAMP_ON = new Set(['working', 'asked', 'silent']);
-const FLOOR_PAD = 0.45;
+const FLOOR_PAD = 0.45, LABEL_FRONT = 0.36;
 const PLANE_MIN_S = 40, PLANE_PX = 29, PLANE_FONT = `500 ${PLANE_PX}px SUIT, "Malgun Gothic", sans-serif`;
 const rng = seed => () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const mixRGB = (a, b, k) => { if (a === b || k <= 0) return a; if (k >= 1) return b; const x = a.split(',').map(Number), y = b.split(',').map(Number); return x.map((v, i) => Math.round(v + (y[i] - v) * k)).join(','); };
@@ -164,7 +167,9 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   function fit(fl = null, hatOn = false) {
     let a = 1e9, b = -1e9, c = 1e9, e = -1e9;
     const take = (x, y, zz) => { const p = P0(x, y, zz); a = Math.min(a, p[0]); b = Math.max(b, p[0]); c = Math.min(c, p[1]); e = Math.max(e, p[1]); };
-    for (const z of layout) for (const x of [z.rect.x0, z.rect.x1]) for (const zz of [z.rect.z0, z.rect.z1]) for (const y of [0, hatOn ? 1.45 : 1.05]) take(x, y, zz);
+    // 검정의 띠 이름은 띠 앞 바닥에 서므로 그 자리까지 잰다
+    const ahead = z => (skinTo === 'black' && z.kind !== 'dept' ? LABEL_FRONT + 0.12 : 0);
+    for (const z of layout) for (const x of [z.rect.x0, z.rect.x1]) for (const zz of [z.rect.z0, z.rect.z1 + ahead(z)]) for (const y of [0, hatOn ? 1.45 : 1.05]) take(x, y, zz);
     if (fl) for (const x of [fl.x0, fl.x1]) for (const zz of [fl.z0, fl.z1]) for (const y of [0, -SKIN.walnut.floor.thick]) take(x, y, zz);
     if (!(b > a) || !(e > c)) return false;
     const pad = 10;
@@ -198,15 +203,22 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       }
     }
   }
-  /* 직원 위의 느낌표. 막대 하나와 점 하나다 */
+  /* 직원 위의 느낌표. 꽉 찬 밝은 원 안에 검은 느낌표다(줄 이름 옆의 표와 같은 꼴). 맨 글자 하나는 맹검이 「조형 없이 띡 얹었다」고 했다(11-24) */
   function bang(x, y, R, s, life1, now, still) {
     const k = still || first ? 1 : Math.min(1, (now - (life1.popAt ?? -1e9)) / M.popMs);
     const e = 1 + 2.70158 * Math.pow(k - 1, 3) + 1.70158 * Math.pow(k - 1, 2);
-    const h = Math.max(8, R * 0.95) * e, lw = Math.max(1.5, R * 0.16);
-    const by = y - R - 6 - (s.status === 'asked' && !still ? Math.abs(Math.sin(now * Math.PI / M.bangPeriod)) * M.bangPx : 0);
-    ctx.strokeStyle = ctx.fillStyle = ink(0.95); ctx.lineWidth = lw; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(x, by - h); ctx.lineTo(x, by - h * 0.38); ctx.stroke();
-    ctx.beginPath(); ctx.arc(x, by - lw * 0.2, lw * 0.62 * Math.min(1, e), 0, Math.PI * 2); ctx.fill();
+    const r = Math.max(6.5, R * 0.42) * e;
+    const cy = y - R - 4 - r - (s.status === 'asked' && !still ? Math.abs(Math.sin(now * Math.PI / M.bangPeriod)) * M.bangPx : 0);
+    if (r < 1) return;
+    ctx.save();
+    const g = ctx.createRadialGradient(x, cy, r * 0.6, x, cy, r * 2.6); g.addColorStop(0, ink(0.22)); g.addColorStop(1, ink(0));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, cy, r * 2.6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = ink(0.97); ctx.beginPath(); ctx.arc(x, cy, r, 0, Math.PI * 2); ctx.fill();
+    const lw = Math.max(1.4, r * 0.2);
+    ctx.strokeStyle = ctx.fillStyle = '#0b0b0a'; ctx.lineWidth = lw; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x, cy - r * 0.5); ctx.lineTo(x, cy + r * 0.12); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, cy + r * 0.48, lw * 0.6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
   }
   /* rimInk · boost: 스킨의 테두리 빛과 그 세기. 꾸미기 줄에서 고른 직원(picked)은 테두리가 밝고 눈웃음을 짓는다 */
   function orb(x, y, R, s, now, t3, still, rimInk = INK, boost = 1) {
@@ -262,13 +274,30 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   function seg(a, b, color, w = 1) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.stroke(); }
   function wpath(pts, y) { ctx.beginPath(); pts.forEach(([x, z], i) => { const p = P(x, y, z); if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); }
   /* 바닥 위에 퍼지는 둥근 빛이나 그림자. 바닥의 원이 비스듬히 보이는 만큼 납작하게 그린다 */
-  function pool(x, y, z, rad, rgb, alpha, op) {
+  /* soft: 가장자리로 갈수록 천천히 사라진다(곧게 줄면 넓고 짙은 그림자의 끝이 둥근 선처럼 보였다, 11-24 시안) */
+  const SOFT = [[0.3, 0.82], [0.55, 0.45], [0.78, 0.14], [0.92, 0.03]];
+  function pool(x, y, z, rad, rgb, alpha, op, soft = false) {
     const p = P(x, y, z), R = rad * cam.S * p[3];
     if (R < 1 || alpha < 0.003) return;
     ctx.save(); if (op) ctx.globalCompositeOperation = op;
     ctx.translate(p[0], p[1]); ctx.scale(1, Math.max(0.22, cam.sa));
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, `rgba(${rgb},${alpha})`); g.addColorStop(1, `rgba(${rgb},0)`);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, `rgba(${rgb},${alpha})`);
+    if (soft) for (const [t, k] of SOFT) g.addColorStop(t, `rgba(${rgb},${alpha * k})`);
+    g.addColorStop(1, `rgba(${rgb},0)`);
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  /* 책상이 바닥에 놓인 그림자: 바닥 위의 타원이고 폭과 깊이의 반지름을 따로 둔다. 둘 중 큰 값으로 둥글게 그리면
+     긴 띠(부서 없는 일)의 그림자가 뒤로 뻗어 먼저 그린 부서 책상과 이름을 덮었다(검수 solio-room-layout-20261124 대체 최종 F1) */
+  function shade(cx, cz, rx, rz, alpha) {
+    if (alpha < 0.003) return;
+    const o = P(cx, 0, cz), ex = P(cx + rx, 0, cz), ez = P(cx, 0, cz + rz);
+    const a = ex[0] - o[0], b = ex[1] - o[1], c = ez[0] - o[0], d = ez[1] - o[1];
+    if (Math.abs(a * d - b * c) < 1) return;
+    ctx.save(); ctx.transform(a, b, c, d, o[0], o[1]);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, `rgba(0,0,0,${alpha})`);
+    for (const [t, k] of SOFT) g.addColorStop(t, `rgba(0,0,0,${alpha * k})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
   }
   /* 재질의 결: 나뭇결, 마루의 널과 이음매. 세계 좌표로 한 번 만들어 두고, 배치가 바뀌면 비운다(설계 검토 11) */
   function tex(id, part, q) {
@@ -374,19 +403,65 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   }
   /* 기본 「검정」의 자리: 검은 판과 가는 선. 11-23부터 부서 좌대는 옆면을 칠하고 윗면이 뒤에서 앞으로 어두워져 두께 있는 판으로 보인다
      (선만 있던 판은 맹검이 「얇은 회색 선 사각형」 · 「와이어프레임」이라 했다) */
-  function zoneBlack(a, z, q, slab, hotZ) {
+  function zoneBlack(a, z, q, slab, hotZ, t3 = 1) {
     ctx.save(); ctx.globalAlpha *= a;
-    const y = z.kind === 'dept' ? slab : 0, topF = HQ(q, y);
-    if (z.kind === 'dept' && slab > 0.004) {
-      for (const fc of faces(q, 0, slab)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? 'rgb(13,13,12)' : 'rgb(8,8,8)'; ctx.fill(); }
-      const base = HQ(q, 0);
-      poly(base); ctx.strokeStyle = ink(hotZ ? 0.2 : 0.07); ctx.lineWidth = 1; ctx.stroke();
-      ctx.beginPath(); for (let i = 0; i < 4; i++) { ctx.moveTo(base[i][0], base[i][1]); ctx.lineTo(topF[i][0], topF[i][1]); } ctx.stroke();
-    }
+    const dept = z.kind === 'dept', y = dept ? slab : 0.012 * t3, topF = HQ(q, y), lk = lampK.get(z.key) || 0;
+    const cx = (q.x0 + q.x1) / 2, cz = (q.z0 + q.z1) / 2;
+    // 책상이 바닥에 놓인 그림자. 바닥에 닿은 둘레가 어두워야 판이 떠 보이지 않는다
+    shade(cx, cz + 0.15, (q.x1 - q.x0) * 0.62, Math.max(0.5, (q.z1 - q.z0) * 0.62), dept ? 0.7 : 0.5);
+    if (y > 0.004 && t3 > 0.02) for (const fc of faces(q, 0, y)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? `rgb(${dept ? '30,30,28' : '19,19,18'})` : 'rgb(12,12,11)'; ctx.fill(); }
     poly(topF);
-    ctx.fillStyle = hotZ ? 'rgb(20,20,19)' : z.kind === 'dept' ? depthGrad(topF, 'rgb(17,17,16)', 'rgb(7,7,7)') : 'rgb(5,5,5)'; ctx.fill();
-    ctx.strokeStyle = ink(hotZ ? 0.5 : z.urgent ? 0.3 : z.kind === 'dept' ? 0.13 : 0.09); ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = dept ? depthGrad(topF, hotZ ? 'rgb(48,48,45)' : 'rgb(40,40,37)', hotZ ? 'rgb(26,26,24)' : 'rgb(19,19,18)') : depthGrad(topF, 'rgb(24,24,23)', 'rgb(14,14,13)'); ctx.fill();
+    // 일하는 직원이 있는 자리에만 위에서 빛이 떨어진다. 빛은 책상 윗면 안에서만 퍼진다
+    ctx.save(); poly(topF); ctx.clip();
+    if (dept && lk > 0.01) pool(cx, y, cz - 0.1, Math.max(q.x1 - q.x0, q.z1 - q.z0) * 0.62, '255,236,212', 0.16 * lk, 'lighter', true);
+    if (!dept) for (let i = 0; i < Math.min(z.staff.length, z.spots.length); i++) if (LAMP_ON.has(z.staff[i].status)) pool(z.spots[i].x, y, z.spots[i].z - 0.05, 0.62, '255,236,212', 0.07, 'lighter', true);
     ctx.restore();
+    // 둘레는 아주 흐리게, 빛을 받는 앞 모서리만 밝다(두께 있는 판의 모서리에 빛이 맺힌다).
+    // 길을 다시 잡는다. 빛과 그림자를 그린 동그라미 길이 남아 있으면 그 둘레가 고리로 그어진다(11-24 시안 첫 캡처)
+    poly(topF); ctx.strokeStyle = ink(hotZ ? 0.42 : z.urgent ? 0.3 : dept ? 0.07 : 0.05); ctx.lineWidth = 1; ctx.stroke();
+    seg(topF[3], topF[2], ink(hotZ ? 0.62 : dept ? 0.2 + 0.18 * lk : 0.1));
+    if (dept && lk > 0.01 && t3 > 0.02) pool(cx, 0, q.z1 + 0.35, (q.x1 - q.x0) * 0.42, '255,236,212', 0.035 * lk * t3, 'lighter', true); // 앞 바닥에 번진 빛
+    ctx.restore();
+  }
+  /* 검정의 바닥: 자리를 모두 덮는 넓은 판이 가장자리로 갈수록 어둠에 묻힌다. 경계선을 긋지 않는다 */
+  function floorBlack(a, t3) {
+    if (a < 0.003 || !layout.length) return;
+    const q = floorRect(1.6), top = HQ(q, 0);
+    ctx.save(); ctx.globalAlpha *= a;
+    poly(top); ctx.fillStyle = depthGrad(top, 'rgb(9,9,9)', `rgb(${Math.round(16 + 6 * t3)},${Math.round(16 + 6 * t3)},${Math.round(15 + 6 * t3)})`); ctx.fill();
+    // 사무실 위에서 내리는 넓은 빛 한 겹(바닥의 가운데가 가장 밝다)
+    pool((q.x0 + q.x1) / 2, 0, (q.z0 + q.z1) / 2, Math.max(q.x1 - q.x0, q.z1 - q.z0) * 0.42, '243,241,236', 0.05, 'lighter', true);
+    // 판의 둘레를 어둠으로 지운다(바닥에 그린 것만 있는 때에 그린다)
+    const c = P((q.x0 + q.x1) / 2, 0, (q.z0 + q.z1) / 2), e = P(q.x1, 0, (q.z0 + q.z1) / 2), f = P((q.x0 + q.x1) / 2, 0, q.z1);
+    // 지우는 타원은 그림판 안에 둔다. 판이 그림판 밖까지 넓으면 둘레가 덜 지워져 바닥이 그림판 끝에서 곧게 잘렸다(대체 최종 F3)
+    const rx = Math.max(10, Math.min(Math.hypot(e[0] - c[0], e[1] - c[1]), c[0] - 8, W - c[0] - 8)), ry = Math.max(6, Math.min(Math.hypot(f[0] - c[0], f[1] - c[1]), c[1] - 8, H - c[1] - 8));
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.translate(c[0], c[1]); ctx.scale(1, ry / rx);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+    g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.5, 'rgba(0,0,0,.95)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(-W * 4, -H * 8, W * 8, H * 16);
+    ctx.restore();
+  }
+  /* 일하는 직원 앞의 노트북. 화면은 직원 쪽을 보고, 화면 빛이 직원 얼굴 아래와 책상에 번진다. 빛의 세기만 4.2초에 한 번 숨쉬듯 오간다.
+     자판은 직원 쪽(zh~zf)에 놓이고, 경첩은 보는 사람 쪽(zf)에 있어 뚜껑은 그쪽으로 조금 기운다. 보는 사람은 뚜껑 뒷면을 본다(대체 최종 F5) */
+  function laptop(c, base, s, now, still, t3) {
+    if (!LAMP_ON.has(s.status)) return;
+    const one = life.get(s.id), br = still ? 1 : M.screenLow + (1 - M.screenLow) * (0.5 + 0.5 * Math.sin(now * 2 * Math.PI / M.screenPeriod + (one?.phase || 0)));
+    const x0 = c.x - 0.02, x1 = c.x + 0.34, zf = c.z + 0.42, zh = c.z + 0.24, lidH = 0.21 * (0.35 + 0.65 * t3);
+    const glowAt = P((x0 + x1) / 2, base + lidH * 0.55, zf - 0.1), gr = 0.62 * cam.S * glowAt[3];
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(glowAt[0], glowAt[1], 0, glowAt[0], glowAt[1], gr);
+    g.addColorStop(0, `rgba(226,234,255,${0.26 * br})`); g.addColorStop(0.45, `rgba(226,234,255,${0.08 * br})`); g.addColorStop(1, 'rgba(226,234,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(glowAt[0], glowAt[1], gr, 0, Math.PI * 2); ctx.fill();
+    pool((x0 + x1) / 2, base, zh - 0.12, 0.42, '226,234,255', 0.12 * br, 'lighter', true); // 화면 빛이 책상에 닿는 자리
+    ctx.restore();
+    const b = [P(x0, base + 0.012, zh), P(x1, base + 0.012, zh), P(x1, base + 0.012, zf), P(x0, base + 0.012, zf)];
+    poly(b); ctx.fillStyle = 'rgb(30,30,29)'; ctx.fill();
+    seg(b[0], b[1], ink(0.22)); // 화면 빛을 받는 자판의 직원 쪽 모서리
+    const lid = [P(x0, base + 0.012, zf), P(x1, base + 0.012, zf), P(x1, base + lidH, zf + 0.06), P(x0, base + lidH, zf + 0.06)];
+    poly(lid); ctx.fillStyle = 'rgb(22,22,21)'; ctx.fill();
+    seg(lid[3], lid[2], `rgba(226,234,255,${0.5 * br})`); // 화면 빛이 뚜껑 위 모서리로 새어 나온다
   }
   /* 바닥 위의 글: 그 자리의 바닥 축(세계의 x, z)대로 눕혀 쓴다. 화면에서 12.5px쯤으로 보이게 키를 맞춘다. 위에서 보면 그대로 똑바르다.
      스킨에서만 쓴다. 똑바른 글은 비스듬한 책상의 앞 모서리를 가로질렀다(미학 맹검 11-23 C014, 시안도 같은 지적으로 눕혔다) */
@@ -406,12 +481,15 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   function zoneText(id, a, z, q, y, hotZ, labelFits, shortForm) {
     const lc = SKIN[id].label, dark = id === 'black';
     ctx.save(); ctx.globalAlpha *= a;
-    const lp = P(q.x0 + 0.2, y, q.z1 - 0.2), lr = P(q.x1 - 0.2, y, q.z1 - 0.2);
-    ctx.fillStyle = `rgba(${lc},${hotZ || z.urgent ? 0.95 : dark ? 0.5 : 0.72})`;
+    // 검정의 좁은 띠(부서 없는 일 · 그 밖)는 이름을 띠 앞 바닥에 쓴다. 띠 안에 쓰면 노트북이 글을 덮었다(11-24 시안)
+    const front = dark && z.kind !== 'dept', ly = front ? 0 : y, lz = front ? q.z1 + LABEL_FRONT : q.z1 - 0.2;
+    const lp = P(q.x0 + 0.2, ly, lz), lr = P(q.x1 - 0.2, ly, lz);
+    ctx.fillStyle = `rgba(${lc},${hotZ || z.urgent ? 0.95 : dark ? 0.62 : 0.72})`;
     const room = Math.max(24, lr[0] - lp[0]), label = floorZoneLabel(z, labelFits(z), shortForm);
-    // 그림이 작으면(좁은 창) 눕힌 글이 뭉개져 똑바로 쓴다(미학 맹검 2회차)
-    if (dark || cam.S < PLANE_MIN_S) ctx.fillText(label.clip ? clipText(label.text, room) : label.text, lp[0], lp[1]);
-    else planeText(label.text, q.x0 + 0.2, y, q.z1 - 0.2, q.x1 - q.x0 - 0.4);
+    // 그림이 작으면(좁은 창) 눕힌 글이 뭉개져 똑바로 쓴다(미학 맹검 2회차). 검정도 11-24부터 판 위에 눕힌다 —
+    // 두께 있는 책상과 띠가 서자 똑바른 글이 판 모서리를 가로질렀다(맹검 「수평 글자가 판 테두리를 침범」)
+    if (cam.S < PLANE_MIN_S) ctx.fillText(label.clip ? clipText(label.text, room) : label.text, lp[0], lp[1]);
+    else planeText(label.text, q.x0 + 0.2, ly, lz, q.x1 - q.x0 - 0.4);
     // 빈 자리는 가는 짧은 선 하나다
     for (let i = z.staff.length; i < z.spots.length; i++) {
       const c = z.spots[i], s0 = P(c.x - 0.17, y, c.z + 0.3), s1 = P(c.x + 0.17, y, c.z + 0.3);
@@ -422,7 +500,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   /* 직원 아래: 자리에 지는 그림자(스킨에만) */
   function underOrb(id, a, c, base, y, t3) {
     const k = SKIN[id];
-    if (!k.floor || a < 0.003) return;
+    if (!(k.floor || k.lit) || a < 0.003) return;
     const h = Math.max(0, y - R0 - base), sp = P(c.x, base, c.z), sr = R0 * (1.25 + h * 1.6) * cam.S * sp[3], al = Math.min(0.85, k.shadow * 1.25 * (1 - Math.min(0.5, h * 1.6)) * t3) * a;
     if (sr <= 1 || al <= 0.003) return;
     ctx.save(); ctx.translate(sp[0], sp[1]); ctx.scale(1, Math.max(0.22, cam.sa));
@@ -486,10 +564,10 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     return k * k * (3 - 2 * k);
   };
   /* 바닥 한 판: 배치한 자리를 모두 덮고 둘레에 조금 남긴다 */
-  function floorRect() {
+  function floorRect(pad = FLOOR_PAD) {
     let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
     for (const z of layout) { x0 = Math.min(x0, z.rect.x0); x1 = Math.max(x1, z.rect.x1); z0 = Math.min(z0, z.rect.z0); z1 = Math.max(z1, z.rect.z1); }
-    return { x0: x0 - FLOOR_PAD, x1: x1 + FLOOR_PAD, z0: z0 - FLOOR_PAD, z1: z1 + FLOOR_PAD };
+    return { x0: x0 - pad, x1: x1 + pad, z0: z0 - pad, z1: z1 + pad };
   }
 
   function draw(now = clock()) {
@@ -520,22 +598,10 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     const slabB = SKIN[B].slab * t3;
     const labelFits = z => { const q = z.rect, y = z.kind === 'dept' ? slabB : 0, room = Math.max(24, P(q.x1 - 0.2, y, q.z1 - 0.2)[0] - P(q.x0 + 0.2, y, q.z1 - 0.2)[0]); return t => ctx.measureText(t).width <= room; };
     const shortForm = floorShortForm(layout, labelFits);
-    if (fl) { const k0 = skinK(0, now, still); for (const [id, a] of mix(k0)) paintFloor(id, a, fl, t3); }
-    // 검정 스킨: 사무실 위에서 내리는 흐린 빛 한 겹. 순검정 바탕에 좌대와 직원이 묻히지 않게 한다(11-23 맹검 「배경과 같은 순검정 톤에 묻혀」)
+    // 검정 스킨: 가장자리로 갈수록 어둠에 묻히는 바닥 한 판(11-24 「불 켜진 자리」). 다른 스킨의 바닥보다 먼저 그려야 둘레 지우기가 그것만 지운다
     const blackK = mix(skinK(0, now, still)).reduce((n, [id, a]) => n + (id === 'black' ? a : 0), 0);
-    if (blackK > 0.01 && layout.length) {
-      let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
-      for (const z of layout) { x0 = Math.min(x0, z.rect.x0); x1 = Math.max(x1, z.rect.x1); z0 = Math.min(z0, z.rect.z0); z1 = Math.max(z1, z.rect.z1); }
-      // 화면 좌표로 그리고 그림판 가장자리에 닿기 전에 0이 되게 한다. 가장자리까지 빛이 닿으면 그림판이 밝은 네모로 보였다
-      const c = P((x0 + x1) / 2, 0, (z0 + z1) / 2), sy = Math.max(0.22, cam.sa);
-      const R = Math.min(c[0], W - c[0], c[1] / sy, (H - c[1]) / sy) * 0.94;
-      if (R > 8) {
-        ctx.save(); ctx.translate(c[0], c[1]); ctx.scale(1, sy);
-        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
-        g.addColorStop(0, ink(0.075 * blackK * (0.4 + 0.6 * t3))); g.addColorStop(0.55, ink(0.03 * blackK)); g.addColorStop(1, ink(0));
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-      }
-    }
+    if (blackK > 0.01) floorBlack(blackK, t3);
+    if (fl) { const k0 = skinK(0, now, still); for (const [id, a] of mix(k0)) paintFloor(id, a, fl, t3); }
     const kZ = new Map(), yZ = new Map();
     order.forEach((z, i) => {
       const q = z.rect, hotZ = hot.zone === z.key || over.zone === z.key || isOpen(z.key) || z.staff.some(s => s.picked);
@@ -543,7 +609,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       kZ.set(z.key, k); yZ.set(z.key, y);
       for (const [id, a] of mix(k)) {
         if (a < 0.003) continue;
-        if (id === 'black') zoneBlack(a, z, q, sl, hotZ);
+        if (id === 'black') zoneBlack(a, z, q, sl, hotZ, t3);
         else if (z.kind === 'dept') paintPed(id, a, z, q, sl, hotZ, t3);
         else paintMat(id, a, z, q, hotZ);
         zoneText(id, a, z, q, y, hotZ, labelFits, shortForm);
@@ -569,11 +635,11 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       const alpha = still || first || !one ? 1 : Math.min(1, (now - one.bornAt) / M.fadeMs);
       ctx.save(); ctx.globalAlpha = alpha;
       for (const [id, a] of mix(k)) underOrb(id, a, c, base, y, t3);
-      // 기본 「검정」에서는 직원과 자리를 가는 선 하나로 잇는다
-      const lineA = (A === 'black' ? 1 - k : 0) + (B === 'black' ? k : 0);
-      if (lineA > 0.01 && t3 > 0.02 && y - R0 - base > 0.02) { const b = P(c.x, base, c.z), a = P(c.x, y - R0, c.z); ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(a[0], a[1]); ctx.strokeStyle = ink(0.16 * t3 * lineA); ctx.lineWidth = 1; ctx.stroke(); }
       if (s.subagents > 0) helpers(p[0], p[1], R, s.subagents);
       orb(p[0], p[1], R, s, now, t3, still, mixRGB(SKIN[A].rim, SKIN[B].rim, k), SKIN[near].boost || 1);
+      // 검정에서는 일하는 직원 앞에 노트북이 열려 있다(직원보다 앞이라 직원 뒤에 그린다)
+      const lapA = (A === 'black' ? 1 - k : 0) + (B === 'black' ? k : 0);
+      if (lapA > 0.01) { ctx.save(); ctx.globalAlpha *= lapA; laptop(c, base, s, now, still, t3); ctx.restore(); }
       ctx.restore();
       staffOnScreen.push({ id: s.id, zone: s.zone, x: p[0], y: p[1], r: R });
     }

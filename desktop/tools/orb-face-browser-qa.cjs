@@ -910,6 +910,12 @@ if(!process.versions.electron){
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(500);
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"] + .more [data-pv="tilted"]');await wait(1200);
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(400);
+          // 알약은 판을 하나만 연다: 설정에 머문 뒤 부서 더하기에 머물면 설정 판이 접힌다(검수 solio-room-layout-20261124 대체 최종 F4)
+          const pillOver=(k,from)=>w.js("(()=>{const q=k=>k&&document.querySelector('#portal-entry [data-off-rows] button.row[data-key=\"'+k+'\"]');q("+JSON.stringify(k)+").dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',pointerId:1,isPrimary:true,relatedTarget:q("+JSON.stringify(from)+")||null}));return true;})()");
+          await pillOver('cfg',null);await wait(500);await pillOver('add','cfg');await wait(500);
+          const pills=await w.js("[...document.querySelectorAll('#portal-entry [data-off-rows] > button.row.opened')].map(b=>b.dataset.key).join(' ')");
+          check('22 resting on 설정 then on 부서 더하기 leaves only the 부서 더하기 panel open',pills==='add',{pills});
+          await w.js("document.querySelector('#portal-entry [data-off-rows]').dispatchEvent(new PointerEvent('pointerleave',{pointerType:'mouse',pointerId:1,isPrimary:true})),true");await wait(800);
           // 마케팅부 줄을 열었다 닫으면 끝냄 알림이 지워진다
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="d:qmkt"]');await wait(700);
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="d:qmkt"]');await wait(1200);

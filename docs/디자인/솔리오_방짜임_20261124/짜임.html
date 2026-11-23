@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>솔리오 방 짜임</title>
+<style>
+@font-face{font-family:SUIT;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2');font-weight:100 900;font-display:block}
+:root{
+  --void:#000;--paper:#F3F1EC;--dim:rgba(243,241,236,.5);--soft:rgba(243,241,236,.72);
+  --hair:rgba(243,241,236,.10);--hair-strong:rgba(243,241,236,.20);--ring:rgba(243,241,236,.55);
+  --gold:#E3C9A0;
+  --sans:SUIT,'Malgun Gothic',system-ui,sans-serif;
+  --display:300 clamp(25px,min(3.5vw,5.6vh),54px)/1.3 var(--sans);
+  --body:400 16px/1.25 var(--sans);--small:400 13px/1.3 var(--sans);
+  --gut:clamp(20px,9.5vw,168px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--void);color:var(--paper);font-family:var(--sans);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow:hidden}
+button{font:inherit;color:inherit;letter-spacing:inherit}
+.app{position:fixed;inset:0;overflow:hidden;background:#000}
+/* 앱 겉(e27a72afd): 구 쪽에서 오는 흐린 빛 한 겹 */
+.app::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse 62% 52% at 10% -6%,rgba(197,214,245,.13),rgba(197,214,245,0) 72%),radial-gradient(ellipse 55% 45% at 104% 108%,rgba(243,241,236,.055),rgba(243,241,236,0) 70%)}
+.win{position:absolute;top:0;right:0;display:flex;z-index:6}
+.win i{width:52px;height:44px;display:grid;place-items:center;color:rgba(243,241,236,.8)}
+.win svg{width:11px;height:11px}
+.here{position:absolute;z-index:5;left:calc(var(--gut) - 9px);top:clamp(12px,3.4vh,38px);display:flex;align-items:center;gap:6px}
+.here-orb{width:44px;height:44px;border-radius:50%;position:relative;background:radial-gradient(circle at 36% 30%,rgba(243,241,236,.16),rgba(243,241,236,.02) 58%,#000 74%);box-shadow:inset 0 0 0 1px rgba(243,241,236,.34)}
+.here-orb::before,.here-orb::after{content:"";position:absolute;top:24px;width:3px;height:3px;border-radius:50%;background:rgba(243,241,236,.9)}
+.here-orb::before{left:19px}.here-orb::after{left:24px}
+.here-name{display:inline-flex;align-items:center;gap:9px;padding:10px 8px 10px 0;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7)}
+.here-name svg{width:8px;height:5px;opacity:.7}
+.rail{display:flex;align-items:center;gap:4px;margin-left:26px}
+.obj{display:inline-flex;align-items:center;padding:8px 10px;color:rgba(243,241,236,.5);font:400 13px/1.3 var(--sans);letter-spacing:.03em;white-space:nowrap}
+.obj svg{width:18px;height:18px;flex:none;margin-right:8px}
+.obj[aria-current="true"]{color:var(--paper);font-weight:500}
+.room{position:absolute;left:var(--gut);right:var(--gut);top:clamp(92px,21vh,196px);bottom:40px}
+.say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance}
+.say .then{display:block;color:var(--dim)}
+.small{font:var(--small);color:var(--dim)}
+.link{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer}
+
+/* ── 누르는 것과 보이는 것(맹검 세 번 「상태 줄과 누르는 줄이 같아 보인다」) ──
+   보이는 사실: 테두리도 화살도 없는 글. 이름은 흐리고 값은 밝다.
+   여는 줄: 끝에 「›」가 있고, 다가가면 판이 한 겹 밝아진다.
+   하는 일: 알약 단추. 꽉 찬 단추는 그 순간 먼저 할 일 하나뿐이다. */
+.pill{appearance:none;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border:1px solid var(--hair-strong);border-radius:999px;background:rgba(243,241,236,.03);font:500 14px/1 var(--sans);color:var(--paper);cursor:pointer;white-space:nowrap;transition:background-color .2s,border-color .2s}
+.pill:hover{background:rgba(243,241,236,.08);border-color:rgba(243,241,236,.36)}
+.pill svg{width:15px;height:15px;flex:none;opacity:.82}
+.pill.go{height:54px;padding:0 34px;border-color:var(--paper);background:var(--paper);color:#000;font:600 16px/1 var(--sans)}
+.pill.go:hover{background:#fff}
+.fact{display:flex;align-items:baseline;gap:12px;font:var(--small);color:var(--dim)}
+.fact b{font:500 15px/1.2 var(--sans);color:var(--paper)}
+.chev{width:16px;height:16px;flex:none;color:rgba(243,241,236,.55)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#F3F1EC;box-shadow:0 0 8px rgba(255,236,212,.7);flex:none;transform:translateY(-1px)}
+.dot.off{background:rgba(243,241,236,.28);box-shadow:none}
+
+/* ── 사무실 A: 큰 무대 ── */
+.oa-head{display:flex;align-items:flex-start;justify-content:space-between;gap:28px}
+.oa .say{font:300 clamp(24px,min(2.6vw,4.3vh),40px)/1.3 var(--sans);letter-spacing:-.02em;max-width:24em}
+.oa-acts{display:flex;gap:10px;flex:none;padding-top:6px}
+.oa-stage{position:relative;height:calc(100% - 252px);min-height:280px;margin:14px -4% 0}
+.oa-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.oa-depts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) minmax(200px,.8fr);gap:14px;margin-top:6px}
+.dcard{appearance:none;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 14px;padding:16px 18px;border:1px solid var(--hair);border-radius:14px;background:rgba(243,241,236,.025);text-align:left;cursor:pointer;transition:background-color .2s,border-color .2s}
+.dcard:hover{background:rgba(243,241,236,.06);border-color:var(--hair-strong)}
+.dcard .nm{display:flex;align-items:center;gap:10px;font:500 16px/1.25 var(--sans)}
+.dcard .sub{grid-column:1;font:var(--small);color:var(--dim)}
+.dcard .chev{grid-row:1 / span 2;grid-column:2}
+.oa-facts{display:flex;flex-direction:column;justify-content:center;gap:10px;padding:0 4px 0 18px;border-left:1px solid var(--hair)}
+
+/* ── 사무실 B: 부서 카드 ── */
+.ob .say{max-width:19em}
+.ob-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:clamp(26px,4.6vh,44px)}
+.ob-bar .tools{display:flex;gap:10px}
+.ob-cards{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(150px,.62fr);gap:16px;margin-top:16px;height:clamp(250px,40vh,380px)}
+.room-card{appearance:none;position:relative;display:flex;flex-direction:column;padding:0;border:1px solid var(--hair);border-radius:18px;overflow:hidden;background:radial-gradient(ellipse 80% 70% at 50% 34%,rgba(243,241,236,.035),rgba(0,0,0,0) 70%),#050505;text-align:left;cursor:pointer;transition:border-color .2s}
+.room-card:hover{border-color:var(--hair-strong)}
+.room-card .scene{position:relative;flex:1;min-height:0}
+.room-card canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.room-card .cap{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px 12px;padding:14px 18px 16px;border-top:1px solid var(--hair);background:rgba(0,0,0,.5)}
+.room-card .cap b{display:flex;align-items:center;gap:10px;font:500 16px/1.25 var(--sans)}
+.room-card .cap span{grid-column:1;font:var(--small);color:var(--dim)}
+.room-card .cap .chev{grid-row:1 / span 2;grid-column:2}
+.add-card{appearance:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:8px;padding:18px;border:1px solid var(--hair);border-radius:18px;background:none;text-align:left;cursor:pointer;color:var(--paper)}
+.add-card:hover{background:rgba(243,241,236,.04)}
+.add-card .plus{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--paper);color:#000;margin-bottom:auto}
+.add-card .plus svg{width:16px;height:16px}
+.add-card b{font:500 16px/1.25 var(--sans)}
+.add-card span{font:var(--small);color:var(--dim)}
+
+/* ── 사무실 C: 지금 짜임(왼쪽 그림 · 오른쪽 줄)에 새 바닥과 줄 구분만 ── */
+.oc-body{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);column-gap:clamp(22px,3.6vw,60px);align-items:start;margin-top:clamp(22px,4.6vh,52px)}
+.oc-slot{position:relative;height:clamp(230px,50vh,500px)}
+.oc-slot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.oc-h{margin:0 0 6px;font:500 12px/1 var(--sans);letter-spacing:.08em;color:var(--dim)}
+.orow{appearance:none;display:grid;grid-template-columns:minmax(84px,auto) minmax(0,1fr) auto;align-items:center;column-gap:18px;width:100%;padding:16px 4px 16px 0;margin:0;background:none;border:0;border-top:1px solid var(--hair);text-align:left;color:var(--paper);cursor:pointer}
+.orow:hover{background:rgba(243,241,236,.04)}
+.orow .nm{display:flex;align-items:center;gap:10px;font:var(--body)}
+.orow .mid{font:var(--small);color:var(--dim)}
+.oc-group + .oc-group{margin-top:26px}
+.oc-group .orow:last-child{border-bottom:1px solid var(--hair)}
+.oc-facts{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--hair)}
+.oc-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+/* 줄 끝 오른쪽 칸(상태)과 느낌표 표. 느낌표 표는 바닥 그림의 것과 같은 꼴이다 */
+.orow .val{font:var(--small);color:var(--soft);white-space:nowrap}
+.orow{grid-template-columns:minmax(84px,auto) minmax(0,1fr) auto auto}
+.bang{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--paper);color:#0b0b0a;font:800 11px/1 var(--sans);box-shadow:0 0 10px rgba(243,241,236,.25)}
+/* 하는 일의 무게: 먼저 할 일은 꽉 찬 알약, 나머지는 옅은 알약 */
+.pill.ghost{border-color:transparent;background:rgba(243,241,236,.06)}
+.pill.ghost:hover{background:rgba(243,241,236,.1)}
+.pill.lead{border-color:var(--paper);background:var(--paper);color:#000}
+.pill.lead:hover{background:#fff}
+
+/* ── 구독 A: 미리 보는 명단 ── */
+.sa .say,.sb .say{font:300 clamp(24px,min(2.6vw,4.3vh),40px)/1.3 var(--sans);letter-spacing:-.02em}
+.start{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;margin-top:clamp(22px,3.6vh,34px)}
+.peek{position:relative;margin-top:clamp(26px,4.4vh,40px);padding-top:16px;border-top:1px solid var(--hair)}
+.peek-h{display:flex;align-items:center;gap:12px;font:var(--small);color:var(--dim)}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 10px;border:1px solid var(--hair-strong);border-radius:999px;font:500 11px/1 var(--sans);letter-spacing:.06em;color:var(--soft)}
+.roster{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,64px);margin-top:16px}
+.peek .roster{opacity:.42;-webkit-mask-image:linear-gradient(#000 70%,rgba(0,0,0,.35));mask-image:linear-gradient(#000 70%,rgba(0,0,0,.35));pointer-events:none;filter:saturate(.7)}
+/* 예시는 움푹 들어간 판 안에 둔다. 판 밖의 실제 단추 · 설정과 같은 밝기로 서면 이미 연결된 화면처럼 읽혔다(맹검 11-24) */
+.sa .peek{border:0;padding:16px 22px 4px;border-radius:16px;background:rgba(243,241,236,.025);box-shadow:inset 0 0 0 1px rgba(243,241,236,.06)}
+.sa .peek-h{color:var(--soft)}
+.col-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--hair-strong)}
+.col-h b{font:700 20px/1.2 var(--sans)}
+.col-h small{display:block;margin-top:6px;font:var(--small);color:var(--dim)}
+.col-h .num{text-align:right;font:var(--small);color:var(--dim)}
+.col-h .num strong{display:block;font:300 44px/1 var(--sans);letter-spacing:-.02em;color:var(--paper)}
+.col-h .num strong em{font-style:normal;font-size:20px;color:var(--dim)}
+.acct{display:grid;grid-template-columns:minmax(70px,120px) minmax(0,1fr) 52px;align-items:center;gap:4px 18px;padding:10px 0;border-bottom:1px solid var(--hair)}
+.pill.big{height:54px;padding:0 30px;font:500 16px/1 var(--sans)}
+.acct .nm{font:var(--body)}
+.acct .bar{position:relative;height:6px;background:rgba(243,241,236,.10)}
+.acct .bar i{position:absolute;inset:0 auto 0 0;width:var(--v);background:var(--gold)}
+.acct .pc{font:600 15px/1 var(--sans);text-align:right;font-variant-numeric:tabular-nums}
+.acct .when{grid-column:2 / -1;font:var(--small);color:var(--dim)}
+.acct.used .nm{color:var(--dim)}
+.acct.used .bar i{background:rgba(243,241,236,.3)}
+.setting{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.setting b{display:block;font:var(--body)}
+.setting small{display:block;margin-top:5px;font:var(--small);color:var(--dim)}
+.switch{appearance:none;display:inline-flex;align-items:center;gap:12px;background:none;border:0;padding:0;cursor:pointer;font:var(--small);color:var(--dim)}
+.switch i{position:relative;width:42px;height:24px;border-radius:999px;background:rgba(243,241,236,.14);transition:background-color .2s}
+.switch i::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:rgba(243,241,236,.7)}
+.sa-foot{margin-top:18px}
+
+/* ── 구독 B: 빈 명단 ── */
+.sb .say{max-width:17em}
+.sb .roster{margin-top:clamp(30px,5.4vh,52px)}
+.slot{display:grid;grid-template-columns:minmax(70px,120px) minmax(0,1fr);align-items:center;gap:18px;padding:16px 0;border-bottom:1px solid var(--hair)}
+.slot .ph{height:6px;background:rgba(243,241,236,.07)}
+.slot .ph.short{width:62%}
+.slot .nm{font:var(--small);color:rgba(243,241,236,.34)}
+.col-go{display:flex;align-items:center;gap:16px;margin-top:20px}
+.col-go .small{max-width:18em}
+.sb .setting{margin-top:clamp(26px,4.4vh,40px)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="win" aria-hidden="true"><i><svg viewBox="0 0 11 11"><path d="M0 5.5h11" stroke="currentColor"/></svg></i><i><svg viewBox="0 0 11 11"><rect x=".5" y=".5" width="10" height="10" fill="none" stroke="currentColor"/></svg></i><i><svg viewBox="0 0 11 11"><path d="M.5.5l10 10M10.5.5l-10 10" stroke="currentColor"/></svg></i></div>
+  <div class="here">
+    <span class="here-orb" aria-hidden="true"></span>
+    <span class="here-name">SOLIO<svg viewBox="0 0 8 5"><path d="M.5.5 4 4 7.5.5" fill="none" stroke="currentColor"/></svg></span>
+    <nav class="rail" aria-label="이 공간의 프로그램">
+      <span class="obj" data-p="subs"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg>구독</span>
+      <span class="obj" data-p="backup"><svg viewBox="0 0 20 20"><path d="M6.2 3.6v11l3-2.8 2 4.4 2-.9-2-4.3h4.1Z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>원클릭 <span style="opacity:.6;margin-left:6px">시작 전</span></span>
+      <span class="obj" data-p="visits"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="14.7" cy="5.3" r="1.9" fill="currentColor"/></svg>방문자 분석</span>
+      <span class="obj" data-p="health"><svg viewBox="0 0 20 20"><path d="M2.5 10.5h3.2l1.8-4.5 3 8 2-5.5 1.2 2h3.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>계정 건강</span>
+      <span class="obj" data-p="office"><svg viewBox="0 0 20 20"><rect x="3.4" y="5" width="13.2" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="7.6" cy="10" r="1.2" fill="currentColor"/><circle cx="12.4" cy="10" r="1.2" fill="currentColor"/></svg>사무실</span>
+    </nav>
+  </div>
+  <div class="room" id="room"></div>
+</div>
+<script type="module">
+import { createOfficeFloor } from '../../../desktop/renderer/office-floor.mjs';
+
+const CHEV = '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const GEAR = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h11M2.5 11.5h11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="10.5" cy="4.5" r="1.8" fill="#000" stroke="currentColor" stroke-width="1.2"/><circle cx="5.5" cy="11.5" r="1.8" fill="#000" stroke="currentColor" stroke-width="1.2"/></svg>';
+const BRUSH = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 2.5l3 3-6 6-3-3Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.5 8.5l-2 5 5-2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+const PLUS = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+
+// 지금 판 캡처(맹검 솔리오_방내용_고침2)와 같은 자료: 개발부 한 명, 부서 없는 일 서른둘 가운데 아홉이 일한다
+const st = (id, status, extra = {}) => ({ id, status, ...extra });
+const lobbyStaff = [
+  ...Array.from({ length: 8 }, (_, i) => st('l' + i, i === 3 ? 'asked' : 'working', i === 3 ? { alert: true } : i === 6 ? { subagents: 2 } : {})),
+  st('l8', 'working'),
+  ...Array.from({ length: 23 }, (_, i) => st('q' + i, i % 3 ? 'resting' : 'done')),
+];
+const DEV = { key: 'd:1', kind: 'dept', name: '개발부', urgent: false, staff: [st('a', 'working')] };
+const LOBBY = { key: 'lobby', kind: 'lobby', name: '부서 없는 일', urgent: true, staff: lobbyStaff };
+const scene = zones => ({ view: 'tilted', viewSeq: 0, skin: 'black', skinSeq: 0, seats: 3, zones });
+
+const HEAD = '<p class="say"><span>직원 열이 일하고 있습니다.</span><span class="then">승인 요청은 Claude Code 창에서 확인해 주세요.</span></p>';
+const floors = [];
+function mount(canvas, zones) {
+  const f = createOfficeFloor(canvas, { reduced: () => location.search.includes('still') });
+  f.setScene(scene(zones)); f.show(true); floors.push(f);
+}
+
+const VIEWS = {
+  'office-a'() {
+    room.className = 'room oa';
+    room.innerHTML = `
+      <div class="oa-head">${HEAD}
+        <div class="oa-acts"><button class="pill" type="button">${GEAR}설정</button><button class="pill" type="button">${BRUSH}꾸미기</button><button class="pill" type="button">${PLUS}부서 더하기</button></div>
+      </div>
+      <div class="oa-stage"><canvas></canvas></div>
+      <div class="oa-depts">
+        <button class="dcard" type="button"><span class="nm"><i class="dot"></i>개발부</span>${CHEV}<span class="sub">Claude Code · 하나 일하는 중</span></button>
+        <button class="dcard" type="button"><span class="nm"><i class="dot"></i>부서 없는 일</span>${CHEV}<span class="sub">SYNK-appsscript 폴더 · 아홉 일하는 중 · 하나 승인 기다림</span></button>
+        <div class="oa-facts"><span class="fact">수용 인원 <b>열둘까지</b></span><span class="small">이 PC 24코어 · 63GB 기준</span></div>
+      </div>`;
+    mount(room.querySelector('canvas'), [DEV, LOBBY]);
+  },
+  'office-b'() {
+    room.className = 'room ob';
+    room.innerHTML = `${HEAD}
+      <div class="ob-bar"><span class="fact">수용 인원 <b>열둘까지</b> <span>이 PC 24코어 · 63GB 기준</span></span>
+        <div class="tools"><button class="pill" type="button">${GEAR}설정</button><button class="pill" type="button">${BRUSH}꾸미기</button></div></div>
+      <div class="ob-cards">
+        <button class="room-card" type="button"><div class="scene"><canvas></canvas></div><div class="cap"><b><i class="dot"></i>개발부</b>${CHEV}<span>Claude Code · 하나 일하는 중</span></div></button>
+        <button class="room-card" type="button"><div class="scene"><canvas></canvas></div><div class="cap"><b><i class="dot"></i>부서 없는 일</b>${CHEV}<span>SYNK-appsscript 폴더 · 아홉 일하는 중 · 하나 승인 기다림</span></div></button>
+        <button class="add-card" type="button"><span class="plus">${PLUS}</span><b>부서 더하기</b><span>이름을 적고 폴더를 고릅니다</span></button>
+      </div>`;
+    const cs = room.querySelectorAll('canvas');
+    mount(cs[0], [DEV]); mount(cs[1], [LOBBY]);
+  },
+  'office-c'() {
+    room.className = 'room oc';
+    const row = (nm, mid, val, bang) => `<button class="orow" type="button"><span class="nm">${nm}${bang ? '<i class="bang" aria-label="새 소식">!</i>' : ''}</span><span class="mid">${mid}</span><span class="val">${val}</span>${CHEV}</button>`;
+    room.innerHTML = `${HEAD}
+      <div class="oc-body">
+        <div class="oc-slot"><canvas></canvas></div>
+        <div>
+          <div class="oc-group"><p class="oc-h">부서</p>${row('개발부', 'Claude Code', '하나 일하는 중')}${row('부서 없는 일', 'SYNK-appsscript 폴더', '하나가 승인을 기다림', true)}</div>
+          <div class="oc-group"><div class="oc-facts"><span class="fact">수용 인원 <b>열둘까지</b></span><span class="small">24코어 · 63GB</span></div>
+            <div class="oc-acts"><button class="pill lead" type="button">${PLUS}부서 더하기</button><button class="pill ghost" type="button">${GEAR}설정</button><button class="pill ghost" type="button">${BRUSH}꾸미기</button></div></div>
+        </div>
+      </div>`;
+    mount(room.querySelector('canvas'), [DEV, LOBBY]);
+  },
+  'subs-a'() {
+    room.className = 'room sa';
+    const acct = (nm, v, when, used) => `<div class="acct${used ? ' used' : ''}"><span class="nm">${nm}</span><span class="bar"><i style="--v:${v}%"></i></span><span class="pc">${used ? '' : v + '%'}</span><span class="when">${when}</span></div>`;
+    room.innerHTML = `<p class="say"><span>아직 연결한 AI 구독이 없습니다.</span><span class="then">연결하면 계정마다 남은 양을 보여 드립니다.</span></p>
+      <div class="start"><button class="pill go" type="button">구독 연결하기</button><span class="small">Claude · Codex 계정을 연결할 수 있습니다.</span></div>
+      <section class="peek" aria-label="연결하면 보이는 모습(예시)">
+        <p class="peek-h"><span class="tag">예시</span>연결하면 계정마다 이렇게 보입니다</p>
+        <div class="roster">
+          <div><div class="col-h"><span><b>Claude</b><small>구독 3개 · 합쳐서 54% 남음</small></span><span class="num"><strong>2<em>/3</em></strong>지금 쓸 수 있는 계정</span></div>
+            ${acct('업무 계정', 100, '월요일 12:00 초기화')}${acct('개인 계정', 62, '일요일 19:59 초기화')}${acct('팀 계정', 0, '다 씀 · 오늘 21:00 열림', true)}</div>
+          <div><div class="col-h"><span><b>Codex</b><small>ChatGPT 구독 2개</small></span><span class="num"><strong>1<em>/2</em></strong>지금 쓸 수 있는 계정</span></div>
+            ${acct('업무 계정', 81, '토요일 09:00 초기화')}${acct('개인 계정', 0, '다 씀 · 내일 07:30 열림', true)}</div>
+        </div>
+      </section>
+      <div class="setting"><span><b>모델별 토큰</b><small>AI가 답으로 쓴 글의 양을 모델마다 셉니다</small></span><button class="switch" type="button" role="switch" aria-checked="false">꺼짐<i></i></button></div>
+      <p class="sa-foot"><button class="link" type="button">견적 비서 열기</button></p>`;
+  },
+  'subs-b'() {
+    room.className = 'room sb';
+    const slots = `<div class="slot"><span class="nm">계정</span><span class="ph"></span></div><div class="slot"><span class="nm">계정</span><span class="ph short"></span></div>`;
+    room.innerHTML = `<p class="say"><span>아직 연결한 AI 구독이 없습니다.</span><span class="then">연결하면 계정마다 남은 양이 여기에 섭니다.</span></p>
+      <div class="roster">
+        <div><div class="col-h"><span><b>Claude</b><small>Anthropic의 Claude 구독(Pro · Max)</small></span><span class="num"><strong>0</strong>연결한 계정</span></div>${slots}
+          <div class="col-go"><button class="pill go" type="button">Claude 연결하기</button><span class="small">로그인하면 계정이 이 줄에 섭니다.</span></div></div>
+        <div><div class="col-h"><span><b>Codex</b><small>OpenAI의 ChatGPT 구독(Plus · Pro)</small></span><span class="num"><strong>0</strong>연결한 계정</span></div>${slots}
+          <div class="col-go"><button class="pill big" type="button">Codex 연결하기</button><span class="small">ChatGPT 계정으로 로그인합니다.</span></div></div>
+      </div>
+      <div class="setting"><span><b>모델별 토큰</b><small>AI가 답으로 쓴 글의 양을 모델마다 셉니다</small></span><button class="switch" type="button" role="switch" aria-checked="false">꺼짐<i></i></button></div>
+      <p class="sa-foot"><button class="link" type="button">견적 비서 열기</button></p>`;
+  },
+};
+const room = document.getElementById('room');
+function render() {
+  for (const f of floors.splice(0)) f.dispose();
+  const v = (location.hash || '#office-a').slice(1);
+  (VIEWS[v] || VIEWS['office-a'])();
+  const prog = v.startsWith('subs') ? 'subs' : 'office';
+  for (const o of document.querySelectorAll('.obj')) o.setAttribute('aria-current', String(o.dataset.p === prog));
+}
+addEventListener('hashchange', render);
+document.fonts.ready.then(render);
+</script>
+</body>
+</html>
