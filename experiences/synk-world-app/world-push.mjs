@@ -420,7 +420,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    // 읽기가 날아가는 사이 같은 브라우저의 다른 탭이 기기 기록을 바꿨으면(켜기 · 끄기) 이 응답으로 정리하지 않는다 — 그 탭이 방금 켠 구독의
    // 기록을 지우고 서버에서 끄게 된다(r17 Fable 설계 검토: 화면은 「켜짐」인데 알림이 오지 않는다). 정리는 다음 평소 읽기가 한다.
    const next=snapshot(),record=readRecord();if(JSON.stringify(record)!==mark)return snapshot();
-   if(sub&&!next.device.subscribed&&record?.accountId===owner&&record.endpoint===sub.endpoint)return reconnect(sub,reg,expected);
+   // 이 브라우저 구독의 주인 기록이 이 계정이면, 기록의 주소가 지금 구독과 달라도(다른 탭의 늦은 등록이 옛 주소를 남겼다) 다시 잇는다 — 다음 평소 읽기가 늘
+   // 바로잡는다(GPT r19 GA2, 설계 주인 11-23 불변식 1). 다른 계정 기록이면 그 계정 구독이라 두지 않는다.
+   if(sub&&!next.device.subscribed&&record?.accountId===owner)return reconnect(sub,reg,expected);
    else if(!sub&&record?.accountId===owner){writeRecord(null);try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}
    return snapshot();
   }catch(error){if(current(expected))emit({phase:state.phase==='ready'?'ready':'error',error:error.code||'PUSH_UNAVAILABLE'});return snapshot();}
@@ -439,7 +441,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   for(let tries=0;tries<2;tries++){
    if(sub){await removeLocal(sub,reg);sub=null;}
    if(!current(expected))return snapshot();
-   if(tries){try{made=binding?.digest?.()||made;}catch{}}
+   // 요약은 켜기를 부르기 바로 앞에 다시 짓는다 — 옛 구독을 지우는 동안 sync가 더 새 요약을 저장했으면, 앞서 지은 옛 요약이 그 뒤의 판을 바탕으로
+   // 실려 서버 판 검사를 지나 요약을 되돌린다(GPT r19 GA3). 켜기는 부른 그때의 판을 바탕으로 잡는다.
+   try{made=binding?.digest?.()||made;}catch{}
    const value=await api.enable({settings,digest:made.digest,handover:Array.isArray(made.handover)?made.handover:[]});
    if(!current(expected)||value.device?.subscribed)return value;
   }
@@ -554,7 +558,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
       subscription=still;
       const now=still.toJSON?still.toJSON():{endpoint:still.endpoint,keys:still.keys};
       try{const again=await request('subscribe',{...payload,subscription:{endpoint:now.endpoint,keys:{p256dh:now.keys?.p256dh,auth:now.keys?.auth}},...(based&&versions?{versions}:{})});
-       guard(expected);if(again.device?.subscribed===true)writeRecord({accountId:owner,deviceId:again.device.deviceId,endpoint:still.endpoint});}
+       let cur=still;try{cur=await bounded(registration.pushManager.getSubscription());}catch{}
+       guard(expected);if(again.device?.subscribed===true&&cur?.endpoint===still.endpoint)writeRecord({accountId:owner,deviceId:again.device.deviceId,endpoint:still.endpoint});}
       catch(error){if(error?.code==='ACCOUNT_CHANGED')throw error;}
      }
      // 켜며 보낸 요약을 sync와 같은 표로 적는다 — 켠 바로 뒤 다시 잡기가 같은 요약을 또 보내지 않게(10-22 화면 검수).
@@ -605,8 +610,10 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
     const sub=theirs?(subscription&&subscription.endpoint!==record.endpoint?subscription:null):fresh||subscription;
     let result=null;
     if(sub){try{result=await request('unsubscribe',{endpoint:sub.endpoint});}catch{if(!theirs&&record?.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}}}
-    const removed=theirs?true:await removeLocal(sub,reg);
-    if(removed&&!theirs)writeRecord(null);
+    // 끄기 요청이 날아가는 사이 다른 계정 탭이 이 브라우저 구독을 가져갔으면(기록이 그 계정 것으로 바뀌었다) 그 구독과 기록을 지우지 않는다(GPT r19 GA1).
+    const after=readRecord(),taken=!theirs&&!!after&&after.accountId!==owner;
+    const removed=theirs||taken?true:await removeLocal(sub,reg);
+    if(removed&&!theirs&&!taken)writeRecord(null);
     let keep=false;
     if(current(expected)){
      settled();

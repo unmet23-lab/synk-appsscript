@@ -26,14 +26,14 @@ const SCOPE='https://synk.im/world/';
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 
 // 가짜 브라우저: 서비스 워커 등록 하나, 브라우저 구독 하나(있으면). subscribe는 부른 순간을 센다(누른 동작 안에서 불렀는지).
-function browser({userAgent=DESKTOP,permission='default',answer='granted',registered=false,subscribed=null,secure=true,locks=null,extra={}}={}){
+function browser({userAgent=DESKTOP,permission='default',answer='granted',registered=false,subscribed=null,secure=true,locks=null,extra={},endpoints=null}={}){
  const log=[];let current=subscribed,perm=permission,pendingPrompt=null;
  const subscription=endpoint=>({endpoint,toJSON(){return {endpoint,expirationTime:null,keys:{p256dh:KEY,auth:'A'.repeat(22)}};},async unsubscribe(){log.push(['unsubscribe',endpoint]);if(current?.endpoint===endpoint)current=null;return true;}});
  if(current)current=subscription(current);
  const pushManager={async getSubscription(){return current;},subscribe(options){log.push(['subscribe',options.userVisibleOnly]);
   if(answer==='hang')return new Promise(resolve=>{pendingPrompt=()=>{perm='granted';current=subscription('https://fcm.googleapis.com/fcm/send/late');resolve(current);};});
   if(answer==='denied'){perm='denied';return Promise.reject(Object.assign(new Error('denied'),{name:'NotAllowedError'}));}
-  perm='granted';current=current||subscription('https://fcm.googleapis.com/fcm/send/new');return Promise.resolve(current);}};
+  perm='granted';current=current||subscription(endpoints?.shift()||'https://fcm.googleapis.com/fcm/send/new');return Promise.resolve(current);}};   // endpoints: 새 구독마다 다른 주소(차례대로)
  const registration={scope:SCOPE,active:{},pushManager};
  const env={navigator:{userAgent,maxTouchPoints:0,...(locks?{locks}:{}),serviceWorker:{async register(url,options){log.push(['register',url,options.scope]);registered=true;return registration;},async getRegistration(scope){return registered&&scope===SCOPE?registration:undefined;}}},
   PushManager:function(){},Notification:{get permission(){return perm;}},isSecureContext:secure,atob:value=>Buffer.from(value,'base64').toString('binary'),...extra};
@@ -2129,13 +2129,83 @@ test('끄기: 같은 브라우저의 다른 탭이 다른 계정으로 이 구�
  const taken=await b.enable({settings:{frequency:2,hour:null,since:null},digest:null});   // B가 다른 계정으로 같은 구독을 가져간다
  assert.equal(taken.device.subscribed,true);
  const record=JSON.stringify({accountId:'acc-2',deviceId:'dev-1',endpoint:SUB});storage.setItem(PUSH_RECORD_KEY,record);   // 가짜 서버는 늘 acc-1을 주어 기록 계정을 바로 맞춘다
- const before=s1.calls.length+s2.calls.length;
+ const before=[s1.calls.length,s2.calls.length];
  const off=await a.disable();await settled();
  assert.equal(off.removed,true,'이 계정 구독은 이 브라우저에 없다');
  assert.equal(shared.current?.endpoint,SUB,'다른 계정의 브라우저 구독이 남는다');
  assert.equal(storage.getItem(PUSH_RECORD_KEY),record,'다른 계정의 기록이 남는다');
- assert.deepEqual([...s1.calls,...s2.calls].slice(before).filter(c=>c.action==='unsubscribe'),[],'다른 계정의 서버 구독을 끄지 않는다');
+ assert.deepEqual([...s1.calls.slice(before[0]),...s2.calls.slice(before[1])].filter(c=>c.action==='unsubscribe'),[],'다른 계정의 서버 구독을 끄지 않는다(GPT r19 GA4 — 두 서버의 새 호출을 따로 자른다)');
  a.dispose();b.dispose();
+});
+test('끄기: 끄기 응답이 늦는 사이 다른 계정 탭이 같은 브라우저 구독을 켜 기록을 가져가면, 늦은 응답은 그 구독과 기록을 지우지 않는다(GPT push-versions-world-r19 GA1)',async()=>{
+ const storage=memory(),shared=browser({registered:true,subscribed:SUB,permission:'granted'});
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const s1=server({device:true,active:true}),s2=server(),held=[];
+ const request1=(action,body,options)=>action==='unsubscribe'?new Promise(resolve=>held.push(()=>resolve(s1.request(action,body,options)))):s1.request(action,body,options);
+ const a=make(shared,s1,{storage,request:request1}),b=make(shared,s2,{storage});
+ await a.setAccount('acc-1');await a.ready();await b.setAccount('acc-2');await b.ready();await settled();
+ const off=a.disable();await settled();   // A의 서버 해제는 닿았고 응답만 늦다
+ assert.equal(held.length,1);
+ const taken=await b.enable({settings:{frequency:2,hour:null,since:null},digest:null});await settled();   // 그사이 B가 다른 계정으로 같은 구독을 켠다
+ assert.equal(taken.device.subscribed,true);assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).accountId,'acc-2');
+ held.shift()();const done=await off;await settled();
+ assert.equal(done.removed,true);
+ assert.equal(shared.current?.endpoint,SUB,'다른 계정의 브라우저 구독이 남는다');
+ assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)||'null')?.accountId,'acc-2','다른 계정의 기록이 남는다');
+ a.dispose();b.dispose();
+});
+test('다시 잇기: 주인 기록이 이 계정인데 그 주소가 지금 구독과 달라도, 지금 구독이 서버에 없으면 다시 잇는다(GPT push-versions-world-r19 GA2 — 다음 평소 읽기가 늘 바로잡는다)',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:false}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:'https://fcm.googleapis.com/fcm/send/stale'}));   // 다른 탭의 늦은 등록이 옛 주소를 남겼다
+ const push=make(b,s,{storage});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await settled();
+ assert.ok(b.current&&b.current.endpoint!==SUB,'새 구독으로 다시 이었다');
+ assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).endpoint,b.current.endpoint);
+ assert.equal(push.snapshot().device.subscribed,true);
+ push.dispose();
+});
+test('다시 잇기: 다른 탭이 이은 구독으로 한 번 더 올리는 요청이 늦는 사이 또 다시 이으면, 늦은 요청은 기록을 옛 주소로 덮지 않고 다음 평소 읽기가 서버를 지금 구독에 맞춘다(GPT push-versions-world-r19 GA2)',async()=>{
+ const s=versionedServer({settings:{frequency:2,hour:9,since:null}}),storage=memory(),locks=fakeLocks();let onServer=SUB;
+ const serve=(action,body,options)=>s.request(action,body,options).then(data=>{
+  if(action==='subscribe')onServer=body.subscription.endpoint;
+  return action==='status'||action==='subscribe'?{...data,device:action==='subscribe'||body.endpoint&&body.endpoint===onServer?{subscribed:true,deviceId:'dev-1'}:{subscribed:false}}:data;
+ });
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const shared=browser({registered:true,subscribed:SUB,permission:'granted',locks,endpoints:['https://fcm.googleapis.com/fcm/send/y','https://fcm.googleapis.com/fcm/send/z','https://fcm.googleapis.com/fcm/send/w']}),late=[];let holdA=0;
+ const requestA=(action,body,options)=>action==='subscribe'&&holdA>0?(holdA--,new Promise(resolve=>late.push(()=>resolve(serve(action,body,options))))):serve(action,body,options);
+ const a=makeV(shared,s,{now:()=>V0,storage,request:requestA}),b=makeV(shared,s,{now:()=>V0,storage,request:serve});
+ const rem=withDigest(reminderSettings({frequency:2,hour:9,since:null}));a.bindSettings(rem);b.bindSettings(rem);
+ await a.setAccount('acc-1');await b.setAccount('acc-1');await a.ready();await settled();
+ onServer=null;holdA=2;   // 서버가 이 브라우저 기기를 잃었다. A의 subscribe 둘(옛 주소 X · 한 번 더 올리는 Y)이 늦다
+ const enabling=a.enable({settings:{frequency:2,hour:9,since:null}});await settled();
+ await b.refresh();await settled();const y=shared.current.endpoint;   // B가 Y로 다시 잇는다
+ late.shift()();await settled();await settled();   // A의 옛 주소 X가 뒤에 닿아 Y를 밀어낸다 — A는 Y로 한 번 더 올리는 요청을 낸다(늦다)
+ assert.equal(late.length,1);assert.equal(onServer,SUB);
+ await b.refresh();await settled();const z=shared.current.endpoint;   // B가 Y도 서버에 없다고 보고 Z로 다시 잇는다
+ assert.notEqual(z,y);assert.equal(onServer,z);
+ late.shift()();await enabling;await settled();   // A의 늦은 Y 등록이 서버를 Y로 덮는다
+ assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).endpoint,shared.current.endpoint,'늦은 요청이 기록을 옛 주소로 덮지 않는다');
+ await b.refresh();await settled();   // 다음 평소 읽기
+ assert.equal(onServer,shared.current.endpoint,'서버에 지금 구독이 있다');
+ assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).endpoint,shared.current.endpoint);
+ assert.equal(a.snapshot().device.subscribed,true);assert.equal(b.snapshot().device.subscribed,true);
+ a.dispose();b.dispose();
+});
+test('다시 잇기: 옛 구독을 지우는 사이 sync가 더 새 학습 요약을 저장해도, 다시 잇기는 지운 뒤 지은 요약을 보내 서버 요약을 되돌리지 않는다(GPT push-versions-world-r19 GA3)',async()=>{
+ const s=versionedServer({settings:{frequency:2,hour:9,since:null}}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),held=[];let day='2026-11-22',lost=true;
+ const old=b.current,unsubscribe=old.unsubscribe.bind(old);old.unsubscribe=()=>new Promise(resolve=>held.push(()=>resolve(unsubscribe())));   // 구독 지우기가 늦다
+ const request=(action,body,options)=>s.request(action,body,options).then(data=>action==='status'&&lost?{...data,device:{subscribed:false}}:data);   // 다른 기기가 켠 계정에서 이 기기만 만료됐다
+ const rem=reminderSettings({frequency:2,hour:9,since:null});rem.digest=()=>({digest:DIGEST(day)});
+ const push=makeV(b,s,{storage,now:()=>V0,request});push.bindSettings(rem);
+ const starting=push.setAccount('acc-1');await settled();
+ assert.equal(held.length,1,'다시 잇기가 옛 구독을 지우는 중이다');
+ day='2026-11-23';push.sync({digest:DIGEST(day)});await settled();await settled();   // 그사이 새 학습 요약이 서버에 저장된다
+ assert.equal(s.stored.digest?.lastStudyDay,'2026-11-23');
+ lost=false;held.shift()();await starting;await settled();await settled();
+ assert.equal(s.stored.digest?.lastStudyDay,'2026-11-23','서버 요약이 앞 날로 돌아가지 않는다');
+ assert.ok(b.current,'다시 이었다');
+ push.dispose();
 });
 test('다시 잇기: 상태 읽기가 이 브라우저 구독이 서버에 없다고 하면, 지우기만 하지 않고 새 구독으로 다시 올려 켜짐으로 끝난다(설계 주인 11-23 불변식)',async()=>{
  const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:false}),storage=memory();
