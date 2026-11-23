@@ -275,6 +275,8 @@ S079~S081은 10월 27일에 보관한 WORLD 화면에서 도움말을 따라 복
 |---|---|---|---|
 | S070 | `b5bd21079` ~ `76586f0f0` 앞 | `experiences/brand-opening/play-unlocks.mjs`의 `playOrder`가 레슨 하나를 마치면 `runner`를 목록에서 빼고 `subway`를 넣는다. 그 구간 `qa/account-browser.test.mjs:256`은 레슨을 마친 뒤 `button[data-game="runner"]`를 20초 기다린다 | `playOrder`를 커밋별로 불러 레슨 1개에서 `subway,rhythm`이 나오는 것, `b81eef130`·`5425edd70` 영수증의 같은 시간 초과, [GitHub의 같은 실패](https://github.com/unmet23-lab/synk-appsscript/actions/runs/41795766747) |
 | S072 | `a745a1f70` ~ `f577e04d1` 앞 | `experiences/synk-town/day-app.mjs`가 시간 초과된 GET을 모두 한 번 더 물어 과제 화면의 12초 오류가 24초로 늦어졌다. `qa/classroom-homework-browser.test.mjs:178`의 대기는 25초다 | `64c7ad63d` 영수증의 시간 초과, `f577e04d1`의 범위 축소 뒤 같은 시험 통과 |
+| S070 · S095 | `8538890e81` ~ `0c2197d5f5` 앞 | `8538890e81`이 WORLD 화면에 `/assets/launch-notice.js`를 붙였는데 `experiences/synk-world-app/server.mjs`와 공개 묶음 시험 서버에는 그 경로가 없었다. 계정 · 알림 브라우저 시험이 500 응답과 `application/json` 형식 거절을 오류로 셌다 | 구간 75커밋의 영수증이 모두 같은 500으로 실패했다(73개는 83/85, 2개는 S072도 실패). 앞 커밋에는 그 참조가 없고, 경로를 이은 `0c2197d5f5`는 85/85로 통과했다 |
+| S070 | `560faed480` ~ `7d049dc119` 앞 | `560faed480`이 인사 표현 레슨(`greetings-expressions`)의 이야기 장면을 3개에서 0개로 뺐다. `qa/account-browser.test.mjs:271`은 그 레슨에서도 이야기 사진이 뜨기를 20초 기다렸다 | 두 커밋의 `life-content.mjs`를 불러 장면 수 3 → 0을 확인했다. 두 영수증 모두 271행의 같은 시간 초과다. 장면이 있을 때만 기다리게 고친 `7d049dc119`는 85/85로 통과했다 |
 
 <a id="git-bundle-header-path"></a>
 
