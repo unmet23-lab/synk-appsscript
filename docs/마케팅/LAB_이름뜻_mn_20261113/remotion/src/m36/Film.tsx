@@ -2,10 +2,13 @@
 // 「볼드 씨?」에는 강철 빔이 볼드 책상에 쾅 떨어진다(웃음 반전). 끝은 해 아래 웃는 나란 — 「네 이름은 한국어로?」 댓글로 이름.
 // 장면은 GPT 이미지(구독 경로)로 같은 카메라에서 구운 판 다섯(판/*.png, 지시문 판/*.txt — 맨 위 민무늬 벽만 세로로 늘려 글자 자리를 냈다).
 // 화면 글은 상자 · 띠 없이 위쪽 밝은 벽의 짙은 글자(옅은 빛 테), 말은 말한 이 곁의 글자. 전부 useCurrentFrame()으로만 움직인다.
+// 11-24 판본 틀: 그 나라 글(머리 물음 · 「교수:」 · 이름 셋 · 「누구?」 · 「씨」 풀이 · 읽는 법 넷 · 뜻 넷 · 「몽글 = 한국어 낱말」 · 끝 세 줄)과 글꼴 · 글자 크기 · 줄 높이 하한은
+// 판본 꾸러미 p(./판본/<KEY>.json — ./판본.ts)에서 받는다. 그림 · 한국어 · 소리 · 박자 · 카메라는 그대로다(옛 data.ts TEXT · READ는 판본 MN.json으로 옮겼다).
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { FONT, KO, READ, TEXT } from './data';
+import { FONT, KO } from './data';
 import { fr, T } from './timeline';
+import { LocPack } from './판본';
 
 // cloud는 맹검(v10) 「탁한 청회색」 · 밝은 창빛 위 몽글 꼬리표가 안 읽힘 — 짙고 맑은 푸른빛으로, askSmall용 sunDeep은 「댓글에!」 줄이 해 후광과 겹쳐 흐림
 const C = { ink: '#2A2140', inkDim: 'rgba(42,33,64,0.82)', sun: '#D9730B', sunDeep: '#B35400', moon: '#3F5F96', steel: '#46525F', cloud: '#3F5BA6' };
@@ -180,60 +183,60 @@ const Plate: React.FC<{ t: number; scene?: boolean }> = ({ t, scene }) => {
 };
 
 // 화면 글 — 판 없이 위쪽 밝은 벽에: 작은 줄(옅게) + 큰 줄(굵게), 짙은 글자 + 옅은 빛 테
-const Title: React.FC<{ t: number; at: number; until: number; small?: string; big: string; size?: number; top?: number; color?: string }> = ({ t, at, until, small, big, size = 84, top = 300, color }) => {
+const Title: React.FC<{ p: LocPack; t: number; at: number; until: number; small?: string; big: string; size?: number; top?: number; color?: string }> = ({ p, t, at, until, small, big, size = 84, top = 300, color }) => {
   if (t < at || t >= until) return null;
   const a = interpolate(t, [at, at + 0.2], [0, 1], { ...clamp, easing: EASE_OUT });
   const out = interpolate(t, [until - 0.12, until], [1, 0], clamp);
   return (
     <div style={{ position: 'absolute', left: SAFE_L, width: SAFE_W, top, textAlign: 'center', opacity: a * out, transform: `translateY(${(1 - a) * 16}px)`, textShadow: GLOW }}>
-      {small ? <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 52, lineHeight: 1.2, color: C.inkDim }}>{small}</div> : null}
-      <div style={{ fontFamily: /[가-힣]/.test(big) ? KO : FONT, fontWeight: 800, fontSize: size, lineHeight: 1.12, color: color ?? C.ink, marginTop: small ? 4 : 0, whiteSpace: 'pre-line' }}>{big}</div>
+      {small ? <div style={{ fontFamily: p.font, fontWeight: 700, fontSize: 52, lineHeight: Math.max(1.2, p.lineH), color: C.inkDim }}>{small}</div> : null}
+      <div style={{ fontFamily: /[가-힣]/.test(big) ? KO : p.font, fontWeight: 800, fontSize: size, lineHeight: Math.max(1.12, p.lineH), color: color ?? C.ink, marginTop: small ? 4 : 0, whiteSpace: 'pre-line' }}>{big}</div>
     </div>
   );
 };
 
 // 끝 — 「몽골 이름은 다 뜻이 있다」(작게) → 「네 이름은?」(크게) → 「댓글에!」(해 빛깔) — 이해 시험 v5 셋이 「작은 안내 줄을 못 읽음」이라 짧고 크게
-const Ask: React.FC<{ t: number }> = ({ t }) => {
+const Ask: React.FC<{ p: LocPack; t: number }> = ({ p, t }) => {
   if (t < T.ask) return null;
   const a = interpolate(t, [T.ask, T.ask + 0.2], [0, 1], { ...clamp, easing: EASE_OUT });
   const b = pop(t, T.ask + 0.3);
   const c = pop(t, T.ask + 0.75);
   return (
     <div style={{ position: 'absolute', left: SAFE_L, width: SAFE_W, top: 278, textAlign: 'center', textShadow: GLOW }}>
-      <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 54, lineHeight: 1.2, color: C.ink, opacity: a }}>{TEXT.askTop}</div>
-      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 118, lineHeight: 1.08, color: C.ink, transform: `scale(${b})`, transformOrigin: '50% 60%' }}>{TEXT.ask}</div>
-      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 64, lineHeight: 1.2, color: C.sunDeep, transform: `scale(${c})`, marginTop: 4 }}>{TEXT.askSmall}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.askTopSize, lineHeight: Math.max(1.2, p.lineH), color: C.ink, opacity: a }}>{p.askTop}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 900, fontSize: p.askSize, lineHeight: Math.max(1.08, p.lineH), color: C.ink, transform: `scale(${b})`, transformOrigin: '50% 60%' }}>{p.ask}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 900, fontSize: p.askSmallSize, lineHeight: Math.max(1.2, p.lineH), color: C.sunDeep, transform: `scale(${c})`, marginTop: 4 }}>{p.askSmall}</div>
     </div>
   );
 };
 
-// 낱말 한 칸 — 한글(크게) · 키릴 읽기 · 몽골 뜻 세 줄
-const Word: React.FC<{ t: number; at: number; until: number; name: string; ko: string; read: string; mean: string; color: string; size?: number; top?: number }> = ({ t, at, until, name, ko, read, mean, color, size = 118, top = 276 }) => {
+// 낱말 한 칸 — 이름 줄 · 한글(크게) · 읽는 법 · 그 나라 뜻(이름 줄 · 읽는 법 · 뜻은 판본 글)
+const Word: React.FC<{ p: LocPack; t: number; at: number; until: number; name: string; ko: string; read: string; mean: string; color: string; size?: number; top?: number }> = ({ p, t, at, until, name, ko, read, mean, color, size = 118, top = 276 }) => {
   if (t < at || t >= until) return null;
   const a = pop(t, at);
   const out = interpolate(t, [until - 0.12, until], [1, 0], clamp);
   return (
     <div style={{ position: 'absolute', left: SAFE_L, width: SAFE_W, top, textAlign: 'center', opacity: out, transform: `scale(${a})`, transformOrigin: '50% 60%', textShadow: GLOW }}>
       {/* 이름 줄은 빛 테가 획보다 굵어 올리기 전 검사 ⑤-2가 「흰 기본 글자」로 읽었다(v10 · 58px로 키운 v11도) — 58px · 900 + 얇은 빛 테 */}
-      <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 58, lineHeight: 1.2, color: C.ink, textShadow: GLOW_THIN }}>{name}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 900, fontSize: p.nameSize, lineHeight: Math.max(1.2, p.lineH), color: C.ink, textShadow: GLOW_THIN }}>{name}</div>
       <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.0, color }}>{ko}</div>
-      <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 58, lineHeight: 1.2, color: C.ink }}>[{read}]</div>
-      <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 58, lineHeight: 1.1, color: C.ink }}>{mean}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.readSize, lineHeight: Math.max(1.2, p.lineH), color: C.ink }}>[{read}]</div>
+      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.meanSize, lineHeight: Math.max(1.1, p.lineH), color: C.ink }}>{mean}</div>
     </div>
   );
 };
 
-// 말 — 말한 이 곁에 글자만(상자 · 테두리 없음). sub는 그 이름의 키릴
-const Say: React.FC<{ t: number; from: number; until: number; x: number; y: number; text: string; size?: number; rot?: number; sub?: string; gloss?: string; who?: string; color?: string }> = ({ t, from, until, x, y, text, size = 96, rot = -4, sub, gloss, who, color }) => {
+// 말 — 말한 이 곁에 글자만(상자 · 테두리 없음). sub는 그 이름(판본 names — 몽골판은 키릴), who · gloss도 판본 글
+const Say: React.FC<{ p: LocPack; t: number; from: number; until: number; x: number; y: number; text: string; size?: number; rot?: number; sub?: string; gloss?: string; who?: string; color?: string }> = ({ p, t, from, until, x, y, text, size = 96, rot = -4, sub, gloss, who, color }) => {
   if (t < from || t >= until) return null;
   const a = pop(t, from);
   const out = interpolate(t, [until - 0.1, until], [1, 0], clamp);
   return (
     <div style={{ position: 'absolute', left: x, top: y, transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${a})`, opacity: out, textAlign: 'center', whiteSpace: 'nowrap', textShadow: GLOW }}>
-      {who ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 44, lineHeight: 1.2, color: C.inkDim }}>{who}</div> : null}
+      {who ? <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.teacherSize, lineHeight: Math.max(1.2, p.lineH), color: C.inkDim }}>{who}</div> : null}
       <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.08, color: color ?? C.ink }}>{text}</div>
-      {sub ? <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 58, lineHeight: 1.2, color: C.ink }}>{sub}</div> : null}
-      {gloss ? <div style={{ fontFamily: FONT, fontWeight: 900, fontSize: 66, lineHeight: 1.15, color: C.sun, margin: '8px auto 0', width: 820, whiteSpace: 'normal' }}>{gloss}</div> : null}
+      {sub ? <div style={{ fontFamily: p.font, fontWeight: 900, fontSize: p.nameSize, lineHeight: Math.max(1.2, p.lineH), color: C.ink }}>{sub}</div> : null}
+      {gloss ? <div style={{ fontFamily: p.font, fontWeight: 900, fontSize: p.ssiSize, lineHeight: Math.max(1.15, p.lineH), color: C.sun, margin: '8px auto 0', width: 820, whiteSpace: 'normal' }}>{gloss}</div> : null}
     </div>
   );
 };
@@ -298,8 +301,8 @@ const Sound: React.FC = () => (
   </>
 );
 
-// 장면 심사용(scene)에는 화면 글을 빼고 장면의 말 · 소리만 남긴다
-export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
+// 장면 심사용(scene)에는 화면 글을 빼고 장면의 말 · 소리만 남긴다. p = 판본 글(./판본/<KEY>.json)
+export const Film: React.FC<{ p: LocPack; scene?: boolean }> = ({ p, scene }) => {
   const frame = useCurrentFrame();
   const t = frame / 30;
   return (
@@ -307,17 +310,17 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       <Plate t={t} scene={scene} />
       {!scene ? (
         <>
-          <Title t={t} at={-1} until={T.hookTo} big={TEXT.hook} size={68} top={292} />
+          <Title p={p} t={t} at={-1} until={T.hookTo} big={p.hook} size={p.hookSize} top={292} />
           {/* 첫 부름 글은 해가 솟을 자리에 — 해가 올라오며 글을 밀어낸다 */}
-          <Say t={t} from={T.p1} until={T.rise1 + 0.1} x={436} y={760} text="나란 씨?" sub={TEXT.naran} who={TEXT.teacher} rot={-3} />
-          <Word t={t} at={T.w1} until={T.p2 - 0.05} name={`${TEXT.naran} → 나란`} ko="해" read={READ.hae} mean={TEXT.sun} color={C.sun} />
-          <Say t={t} from={T.p2} until={T.w2} x={492} y={445} text="사라 씨?" sub={TEXT.saraa} gloss={TEXT.ssi} who={TEXT.teacher} rot={-2} />
-          <Word t={t} at={T.w2} until={T.p3 - 0.05} name={`${TEXT.saraa} → 사라`} ko="달" read={READ.dal} mean={TEXT.moon} color={C.moon} />
-          <Say t={t} from={T.p3} until={T.hit} x={492} y={420} text="볼드 씨?" sub={TEXT.bold} who={TEXT.teacher} rot={-3} />
-          <Word t={t} at={T.w3} until={T.p4 - 0.05} name={`${TEXT.bold} → 볼드`} ko="강철" read={READ.gangcheol} mean={TEXT.steel} color={C.steel} />
-          <Say t={t} from={T.p4} until={T.w4} x={492} y={420} text="몽글 씨?" sub={TEXT.mongleAsk} who={TEXT.teacher} rot={-3} />
-          <Word t={t} at={T.w4} until={T.end} name={TEXT.mongleName} ko="몽글몽글" read={READ.mongle} mean={TEXT.fluffy} color={C.cloud} />
-          <Ask t={t} />
+          <Say p={p} t={t} from={T.p1} until={T.rise1 + 0.1} x={436} y={760} text="나란 씨?" sub={p.names[0]} who={p.teacher} rot={-3} />
+          <Word p={p} t={t} at={T.w1} until={T.p2 - 0.05} name={`${p.names[0]} → 나란`} ko="해" read={p.reads[0]} mean={p.means[0]} color={C.sun} />
+          <Say p={p} t={t} from={T.p2} until={T.w2} x={492} y={445} text="사라 씨?" sub={p.names[1]} gloss={p.ssi} who={p.teacher} rot={-2} />
+          <Word p={p} t={t} at={T.w2} until={T.p3 - 0.05} name={`${p.names[1]} → 사라`} ko="달" read={p.reads[1]} mean={p.means[1]} color={C.moon} />
+          <Say p={p} t={t} from={T.p3} until={T.hit} x={492} y={420} text="볼드 씨?" sub={p.names[2]} who={p.teacher} rot={-3} />
+          <Word p={p} t={t} at={T.w3} until={T.p4 - 0.05} name={`${p.names[2]} → 볼드`} ko="강철" read={p.reads[2]} mean={p.means[2]} color={C.steel} />
+          <Say p={p} t={t} from={T.p4} until={T.w4} x={492} y={420} text="몽글 씨?" sub={p.mongleAsk} who={p.teacher} rot={-3} />
+          <Word p={p} t={t} at={T.w4} until={T.end} name={p.mongleName} ko="몽글몽글" read={p.reads[3]} mean={p.means[3]} color={C.cloud} />
+          <Ask p={p} t={t} />
         </>
       ) : null}
       <Sound />
