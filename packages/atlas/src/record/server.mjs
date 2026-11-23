@@ -1,6 +1,7 @@
 // 서버 접기의 순서(설계 §5-3 · 단계 3 계획 §4-3 · §4-5). 어느 근거 줄 · 단위 · 계열 · 능력을 다시 접나를 여기서 정하고,
-// 계산 자체는 단계 2의 src/fold(foldUnit · skillRowsOf · foldSkill · firstMeeting)를 부른다. 서버에는 이어 붙이는 길이 없다 —
-// 닿은 묶음의 근거 줄을 통째로 다시 짓고, 닿은 단위 · 계열 · 능력을 그 근거 줄에서 처음부터 다시 접는다.
+// 계산 자체는 단계 2의 src/fold(foldUnit · skillRowsOf · foldSkill · firstMeeting)를 부른다. 닿은 묶음의 근거 줄을 통째로 다시 짓고,
+// 닿은 단위 · 계열을 그 근거 줄에서 처음부터 다시 접는다. 능력 줄 · 칸 줄은 새 만남이 제 차례로만 붙었으면 저장된 줄에 이어 접고,
+// 가운데 끼면 그 능력만 처음부터 접는다(설계 주인 11-23 (가) — 아래 appendPlan).
 //
 // 저장소(store)는 한 계정 · 한 판 묶음의 작은 비동기 포트다 — 패키지 시험은 메모리로, SYNK-talk은 SQL로 꽂는다.
 //   head()                         { foldedUntil, floorSeq, lineSeq, issued } (없으면 null) — floorSeq는 계정의 비운 바닥(판 묶음과 무관)
@@ -28,6 +29,9 @@
 // 4-4d(단계 4 계획 §21-23의 2 — 예상 급수의 근거 셈, record/first.mjs firstAnswersOfStore)에서 더한 포트:
 //   meetRows()                     Map<family, rows> — 이 계정 · 이 판 묶음의 만남 · 장부 줄(kind 'meet' · 'carry') 전부
 //   eventsByIds(ids)               Map<id, { seq, receivedMs, event }> — 그 사건 번호들의 사건(바닥 위, 없는 번호는 빠진다)
+import { EMPTY_SKILL, stepSkill } from '../ability/index.mjs';
+import { sortByTime } from '../fold/order.mjs';
+import { firstMeeting, skillRowsOf } from '../fold/server.mjs';
 import { firstLedgerCells } from './carry.mjs';
 import { EVENT_FORM, EVENT_TYPES } from './events.mjs';
 import { EMPTY_INDEX, serverKey, sourcesOf } from './adapt.mjs';
@@ -39,6 +43,7 @@ import {
   rowsOfGroup,
   skillLine,
   skillRowsFor,
+  toMark,
   unitLine,
 } from './rows.mjs';
 
@@ -137,6 +142,21 @@ const canonical = value =>
   );
 const same = (a, b) => canonical(a) === canonical(b);
 
+// 만남 · 장부 줄의 견주기 — 능력 · 칸 줄이 읽는 칸(toMark)만 본다. 묶음 비트(bits)와 문항(item)은 계열 · 문항 줄만 읽어, 답 뒤 풀이 보기가
+// 다음 접기에 와도 이어 접는다(Fable 5.2 설계 검토 S4). 새 줄은 touched.added에, 지운 줄 · 바뀐 줄이 있으면 touched.rewritten.
+const isMark = row => row.kind === 'meet' || row.kind === 'carry';
+const markId = row => `${row.kind}\u0000${row.family}\u0000${row.key}`;
+function diffMarks(before, after, touched) {
+  const old = new Map(before.filter(isMark).map(row => [markId(row), canonical(toMark(row))]));
+  for (const row of after.filter(isMark)) {
+    const id = markId(row);
+    if (!old.has(id)) touched.added.add(id);
+    else if (old.get(id) !== canonical(toMark(row))) touched.rewritten = true;
+    old.delete(id);
+  }
+  if (old.size) touched.rewritten = true;
+}
+
 async function rebuildGroups(store, sources, { index, until }, touched) {
   for (const sourceId of sources) {
     const before = await store.rowsOf(sourceId);
@@ -144,6 +164,7 @@ async function rebuildGroups(store, sources, { index, until }, touched) {
     const after = group ? rowsOfGroup(group, index) : [];
     collect(before, touched);
     collect(after, touched);
+    diffMarks(before, after, touched);
     if (!same(before, after)) await store.replaceRows(sourceId, after);
   }
 }
@@ -162,10 +183,8 @@ async function familyRowsMap(store, families) {
   return out;
 }
 
-// 능력이 닿으면 그 능력에 만남이 있는 계열 전부를 읽는다(첫 만남 lead는 계열마다, 능력 줄은 그 계열들의 답 줄에서).
-async function skillValues(store, skills, params) {
-  const skillOut = new Map();
-  const cellOut = new Map();
+// 처음부터 — 그 능력에 만남이 있는 계열 전부를 읽는다(첫 만남 lead는 계열마다, 능력 줄은 그 계열들의 답 줄에서).
+async function refoldSkills(store, skills, params, { skillOut, cellOut }) {
   for (const skill of skills) {
     const families = await familyRowsMap(store, await store.familiesOfSkill(skill));
     const rows = skillRowsFor(skill, families.values());
@@ -178,10 +197,103 @@ async function skillValues(store, skills, params) {
       const key = `${skill}|${difficulty}`;
       if (!cellOut.has(key)) cellOut.set(key, null);
     }
-  return { skillOut, cellOut };
 }
 
-async function refold(store, touched, { memory, params }) {
+// 이어 접기(설계 주인 11-23 (가) · Fable 5.2 설계 검토 S1~S3). 새 만남이 앞 줄 뒤에만 붙었으면 그 능력의 새 답 줄(도움 줄 포함)을 저장된
+// 능력 줄에 stepSkill로 잇고, 새 첫 만남 줄의 셈을 저장된 칸에 더한다 — 처음부터 접은 값과 같은 글자다. 아래 가운데 하나면 처음부터 접는다.
+//   접기 전체(canAppend): 새 머리 · 이번 사건에 제외 · 본인 말 · 장부 · 근거 줄에서 지운 만남이나 능력 · 칸이 읽는 칸이 바뀐 만남
+//   계열(blocked): 앞 줄이 있는 계열에 든 새 만남 · 장부 줄(능력 줄에 서지 않는 것 포함)이 앞 첫 만남보다 엄격히 뒤가 아니다 — 첫 만남이
+//     바뀔 수 있어(같은 시각은 번호 차례) 그 계열에 만남이 있는 능력 전부를 처음부터 접는다
+//   능력: 새 답 줄이 저장된 lastAt보다 엄격히 뒤가 아니다(같은 시각은 번호 차례라 처음부터)
+// 앞 줄이 없던 계열은 그 계열의 줄 전부에 skillRowsOf를 돌려 첫 만남을 정한다(firstExposure false 제시의 장부 만남이 첫 만남이면 그 답은
+// 측정 답이 아니다). 저장된 줄은 접은 값 그대로 믿는다 — 줄 꼴을 바꾸면 판 묶음(foldEdition)을 올린다.
+function appendPlan(familyRows, added) {
+  const plan = { rows: new Map(), blocked: new Set() };
+  for (const [family, list] of familyRows) planFamily(plan, family, list, added);
+  return plan;
+}
+
+const laterThan = (rows, first) => rows.every(row => toMark(row).at > first);
+
+// 한 계열 — 새 만남이 없으면 그대로, 앞 첫 만남보다 엄격히 뒤가 아닌 새 줄이 있으면 그 계열의 능력 전부를 막고, 아니면 새 답 줄을 능력마다 모은다.
+function planFamily(plan, family, list, added) {
+  const fresh = list.filter(row => added.has(markId(row)));
+  if (!fresh.length) return;
+  const old = list.filter(row => !added.has(markId(row))).map(toMark);
+  if (old.length && !laterThan(fresh, firstMeeting(old))) {
+    for (const row of list) if (row.skill) plan.blocked.add(row.skill);
+    return;
+  }
+  for (const row of skillRowsOf(list.map(toMark))) {
+    if (!added.has(markId({ kind: 'meet', family, key: row.id }))) continue;
+    if (!plan.rows.has(row.skillId)) plan.rows.set(row.skillId, []);
+    plan.rows.get(row.skillId).push(row);
+  }
+}
+
+// 한 능력 — 이을 수 없으면 null, 이으면 { line, cells }(새 답 줄이 없으면 line 없이 — 줄 값이 그대로다).
+function appendSkill(plan, skill, stored, params) {
+  if (plan.blocked.has(skill)) return null;
+  const rows = plan.rows.get(skill) ?? [];
+  if (!rows.length) return { cells: new Map() };
+  const lastAt = stored?.lastAt ?? Number.NEGATIVE_INFINITY;
+  if (!rows.every(row => row.at > lastAt)) return null;
+  // 열쇠 차례는 처음부터 접은 줄(EMPTY_SKILL의 차례)과 같게 — jsonb가 바꿔 돌려준 차례로 이으면 글자가 달라진다.
+  const start = stored ? { ...EMPTY_SKILL, ...stored } : EMPTY_SKILL;
+  const line = sortByTime(rows).reduce((value, row) => stepSkill(value, row, params), start);
+  return { line, cells: cellLines(skill, rows) };
+}
+
+// 칸은 첫 만남 줄의 누적 셈(cellLines)이다 — 새 첫 만남 줄의 셈을 저장된 칸에 더하면 처음부터 센 칸과 같다(열쇠 차례도 cellLines와 같게).
+// 이어 접는 길에서는 칸이 없어지지 않는다(없어지는 칸은 지운 줄 · 바뀐 줄 · 첫 만남이 바뀐 때뿐 — 처음부터 접는 길).
+const addCell = (cell, more) =>
+  cell
+    ? {
+        skillId: more.skillId,
+        difficulty: more.difficulty,
+        independent: cell.independent + more.independent,
+        correct: cell.correct + more.correct,
+        helped: cell.helped + more.helped,
+        lastAt: Math.max(cell.lastAt, more.lastAt),
+      }
+    : more;
+
+// 이을 수 있는 능력은 잇고, 처음부터 접을 능력을 돌려준다.
+async function appendSkills(store, touched, familyRows, params, { skillOut, cellOut }) {
+  const plan = appendPlan(familyRows, touched.added);
+  const stored = await store.lines('skill', [...touched.skills]);
+  const full = [];
+  const cells = new Map();
+  for (const skill of touched.skills) {
+    const next = appendSkill(plan, skill, stored.get(skill) ?? null, params);
+    if (!next) full.push(skill);
+    else if (next.line) skillOut.set(skill, next.line);
+    for (const [key, cell] of next?.cells ?? []) cells.set(key, cell);
+  }
+  const current = await store.lines('cell', [...cells.keys()]);
+  for (const [key, cell] of cells) cellOut.set(key, addCell(current.get(key) ?? null, cell));
+  return full;
+}
+
+// 처음부터 접는 접기(설계 주인 11-23 (가)) — 새 머리(판 묶음을 옆에 짓기 시작했거나 비운 뒤: 접은 표지가 아직 바닥 위로 오르지 않았다) ·
+// 제외 · 본인 말 · 장부 사건이 든 접기 · 근거 줄에서 만남이 지워지거나 바뀐 접기. append: false면 늘 처음부터(대조 시험 · 되돌릴 스위치).
+const WHOLE = new Set([EVENT_TYPES.excluded, EVENT_TYPES.stated, EVENT_TYPES.carried]);
+const canAppend = (head, records, touched, append) =>
+  append !== false &&
+  head.foldedUntil > head.floorSeq &&
+  !records.some(record => WHOLE.has(record.event.type)) &&
+  !touched.rewritten;
+
+async function skillValues(store, touched, familyRows, { params, appendable }) {
+  const out = { skillOut: new Map(), cellOut: new Map() };
+  const full = appendable
+    ? await appendSkills(store, touched, familyRows, params, out)
+    : [...touched.skills];
+  await refoldSkills(store, full, params, out);
+  return { ...out, skills: { appended: touched.skills.size - full.length, refolded: full.length } };
+}
+
+async function refold(store, touched, { memory, params, appendable }) {
   const units = new Map();
   for (const unit of touched.units) units.set(unit, unitLine(await store.unitRows(unit), memory));
   const familyRows = await familyRowsMap(store, touched.families);
@@ -197,14 +309,18 @@ async function refold(store, touched, { memory, params }) {
     row => row.item,
   );
   const items = new Map([...touched.items].map(item => [item, itemLine(itemRows.get(item) ?? [])]));
-  const { skillOut, cellOut } = await skillValues(store, touched.skills, params);
-  return [
+  const { skillOut, cellOut, skills } = await skillValues(store, touched, familyRows, {
+    params,
+    appendable,
+  });
+  const changes = [
     ...(await changedLines(store, 'unit', units)),
     ...(await changedLines(store, 'family', families)),
     ...(await changedLines(store, 'item', items)),
     ...(await changedLines(store, 'skill', skillOut)),
     ...(await changedLines(store, 'cell', cellOut)),
   ];
+  return { changes, skills };
 }
 
 // 「낸 것」 — 최근 이틀의 2판 제시(설계 §5-4 한도 세기). 접기 재료가 아니다.
@@ -245,9 +361,10 @@ async function settleCarried(store, head, until, records) {
 
 // 「어디까지 접었나」 뒤의 사건 전부에서(이번 요청이 가져온 것만이 아니다) 상한만큼 접는다.
 // 표지는 접은 데까지만 올린다 — 던지면 아무것도 올리지 않는다(부르는 쪽이 세이브포인트로 되돌린다).
+// skills = 이번 접기에서 이어 접은 능력 수(appended) · 처음부터 접은 능력 수(refolded) — 운영 기록 · 재기용이다.
 export async function foldPending(
   store,
-  { memory, params, index = EMPTY_INDEX, nowMs, cap = FOLD_CAP },
+  { memory, params, index = EMPTY_INDEX, nowMs, cap = FOLD_CAP, append = true },
 ) {
   const head = await store.head();
   const start = Math.max(head.foldedUntil, head.floorSeq);
@@ -255,13 +372,27 @@ export async function foldPending(
   if (!records.length) {
     // 접을 사건이 없어도 아직 안 지은 칸은 짓는다 — 이 칸 전에 접힌 계정이 새 답 없이 읽어도 칸을 받는다(§21-22).
     await settleCarried(store, head, start, null);
-    return { folded: 0, until: start, changed: 0, done: true };
+    return {
+      folded: 0,
+      until: start,
+      changed: 0,
+      done: true,
+      skills: { appended: 0, refolded: 0 },
+    };
   }
-  const touched = { units: new Set(), families: new Set(), items: new Set(), skills: new Set() };
+  const touched = {
+    units: new Set(),
+    families: new Set(),
+    items: new Set(),
+    skills: new Set(),
+    added: new Set(),
+    rewritten: false,
+  };
   const until = records.at(-1).seq;
   const sources = await sourcesOfBatch(store, records, until);
   await rebuildGroups(store, sources, { index, until }, touched);
-  const changes = await refold(store, touched, { memory, params });
+  const appendable = canAppend(head, records, touched, append);
+  const { changes, skills } = await refold(store, touched, { memory, params, appendable });
   if (changes.length) await store.writeLines(changes);
   await store.writeHead({ foldedUntil: until, issued: issuedAfter(head.issued, records, nowMs) });
   await settleCarried(store, head, until, records);
@@ -270,6 +401,7 @@ export async function foldPending(
     until,
     changed: changes.length,
     done: until >= (await store.maxSeq()),
+    skills,
   };
 }
 
