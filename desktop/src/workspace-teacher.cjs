@@ -73,6 +73,8 @@ function createWorkspaceTeacher({config,directory,scope,safeStorage,openExternal
       ticket=0;
       if(!usable())return {ok:true,status:NONE};
       if(!firstPass){if(!saved())return {ok:true,status:IDLE};const service=make();await service.initialize();if(disposed)return {ok:false,status:NONE};}
+      // 켠 따라가기의 첫 차례(저장된 로그인 되살리기)가 끝난 뒤 끊는다. 되살리기 전에 끊으면 서버 로그아웃이 빠진다(Fable pc-retire-ws-publish-20261123 F2)
+      else{await firstPass;if(disposed)return {ok:false,status:NONE};}
       return auth.signOut();
     },
     async accountRequest(operation,params){

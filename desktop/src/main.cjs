@@ -637,8 +637,9 @@ function ensureWorkspaceTeacher(){
   let config=null;try{config=configuration(runtime.auth,'teacher',runtime.mode);}catch{return null;}
   const signInReturn=createSignInReturn();
   workspaceTeacher=createWorkspaceTeacher({config,directory:path.join(app.getPath('userData'),'WorkspaceTeacher'),scope:current.sessionScope+'.workspace-teacher',safeStorage,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),getDevice:()=>suiteDeviceId,
-    // 교사 로그인은 지금 플랫폼 계정의 것만 보이고 쓰인다(GPT pc-retire-workspace-20261123 GA1)
-    getPlatformAccount:()=>{const state=accountStatus();return state?.signedIn===true&&state.status==='signed-in'?state.account?.synk_user_id||null:null;},
+    // 교사 로그인은 지금 플랫폼 계정의 것만 보이고 쓰인다(GPT pc-retire-workspace-20261123 GA1). 플랫폼이 같은 계정의 토큰을 갱신하는 동안은
+    // 그 계정으로 본다(officeAccountOf와 같은 꼴, Fable pc-retire-ws-publish-20261123 F1)
+    getPlatformAccount:()=>{const state=accountStatus();return state?.signedIn===true&&state.status==='signed-in'?state.account?.synk_user_id||null:renewingAccount();},
     onChange:state=>{workspaceApp?.publishTeacherAuth(state);if(signInReturn(state))bringToFront(window,{app});},suiteStore,createTokenStore,createAuthService,createSuiteFollower});
   return workspaceTeacher;
 }

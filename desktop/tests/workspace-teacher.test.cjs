@@ -80,6 +80,14 @@ test('GA2: a company logout with a saved login never ends in a browser sign-in, 
   const idle=fixture();idle.teacher.follow();assert.equal(made(idle.log),0);assert.equal(idle.log.includes('refresh'),false);
 });
 
+test('Fable F2: a sign-out right after the status that started following waits for the restore, so the server sign-out is not skipped',async()=>{
+  let release;const f=fixture({saved:true,followerStart:()=>new Promise(resolve=>{release=resolve;})});
+  f.teacher.status();const out=f.teacher.signOut();await settle();
+  assert.equal(f.log.includes('signOut'),false,'it does not sign out before the first pass ends');
+  f.state=signedIn(A);release();
+  assert.equal((await out).serverRevoked,true);assert.ok(f.log.includes('signOut'));assert.equal(browser(f.log),0);
+});
+
 test('GA3: after signing out of 내 수업, a new platform sign-in does not open the browser on its own',async()=>{
   const f=fixture({follower:'none'});
   assert.equal((await f.teacher.signIn()).signedIn,true);assert.equal(browser(f.log),1,'the press opened the browser once');
@@ -112,7 +120,8 @@ test('-b GA1: a press is spent by a sign-out or cancel while it waits, and a pre
   // 따라가기의 첫 차례를 기다리는 동안 회사 로그아웃이 오면, 그 뒤에 브라우저를 열지 않는다
   let release;const waiting=fixture({follower:'none',followerStart:()=>new Promise(resolve=>{release=resolve;})});
   const pressed=waiting.teacher.signIn();await settle();
-  await waiting.teacher.signOut();release();
+  // 로그아웃은 누른 차례를 바로 지우고, 끊기는 첫 차례가 끝난 뒤에 한다(Fable F2)
+  const out=waiting.teacher.signOut();release();await out;
   assert.equal((await pressed).signedIn,false);assert.equal(browser(waiting.log),0,'no browser after the logout');
   // 따라가기가 그 차례로 브라우저를 열었는데 사람이 취소했으면, 한 번 더 열지 않는다
   let finish;const cancelled=fixture({follower:'none',followerStart:wrapped=>new Promise(resolve=>{finish=async()=>{await wrapped.signIn();resolve();};})});

@@ -587,7 +587,7 @@ test('main wiring: a zoom change lays out the Workspace view too, and company re
   assert.match(main,/retryLogin:\(\)=>\{ensureWorkspaceAuth\(\);return workspaceFollower\?\.retry\?\.\(\);\}/);
   assert.match(main,/function followWorkspaceNow\(\)\{try\{void workspaceFollower\?\.refresh\(\);\}catch\{\}\}\r?\nfunction publishAuthState\(state\)\{[^}\n]*followWorkspaceNow\(\);workspaceApp\?\.syncContext\(state\);/,'the Workspace login is bound to the new platform record before the views hear of it (설계 검토 R2)');
   // 「내 수업」 교사 로그인(14.3): 지금 플랫폼 계정만 보고, 뷰에 teacher 연결을 준다(GPT pc-retire-workspace-20261123 GA1)
-  assert.ok(main.includes("getPlatformAccount:()=>{const state=accountStatus();return state?.signedIn===true&&state.status==='signed-in'?state.account?.synk_user_id||null:null;},"),'the teacher login sees only the current platform account');
+  assert.ok(main.includes("getPlatformAccount:()=>{const state=accountStatus();return state?.signedIn===true&&state.status==='signed-in'?state.account?.synk_user_id||null:renewingAccount();},"),'the teacher login sees only the current platform account, and the same account while it renews (Fable F1)');
   assert.match(main,/directory:path\.join\(app\.getPath\('userData'\),'WorkspaceTeacher'\)/);assert.match(main,/\n    teacher:\{follow:\(\)=>\{try\{workspaceTeacher\?\.follow\(\);\}catch\{\}\},\r?\n      environment:/);
   assert.ok(main.includes("current:()=>{try{return typeof current!=='function'||current()===true;}catch{return false;}}"),'the Workspace jar hands its current check to the request module for the moment right before sending (d GA1)');
 });
