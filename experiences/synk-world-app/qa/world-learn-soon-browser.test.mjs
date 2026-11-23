@@ -87,6 +87,22 @@ test('WORLD 배우기 · 놀이: 들어가는 단추는 「준비 중 · 2027년
     assert.match(String(state.focus),/learn-soon-reserve/,`${tag} ${name}: 열면 초점이 사전예약 단추로`);assert.equal(state.art,true,`${tag} ${name}: 펠트 그림`);
     assert.equal(after.panelOpen,true,`${tag} ${name}: 닫아도 판은 열려 있다`);assert.equal(after.panelTitle,before,`${tag} ${name}: 닫은 뒤 같은 판`);assert.equal(after.refocused,true,`${tag} ${name}: 초점이 누른 단추로`);
    }
+   // 우리 동네 홈 카드(11-24 「홈도 막기」): 「내 위치 보기」와 (가로 화면에 보이는) 「복습」 줄임 단추는 판을 열지 않고 안내를 띄운다.
+   // 「맞춤 연습 시작」은 튜터 세션 몫이라 안내 없이 지나간다.
+   async function pressHome(selector,name){
+    const target=page.locator(selector).first();await target.evaluate(el=>el.setAttribute('data-qa-pressed',''));
+    await target.click();await page.waitForSelector('dialog.learn-soon[open]');
+    const state=await page.evaluate(()=>({title:document.querySelector('dialog.learn-soon[open] .learn-soon-title')?.textContent,panel:!!document.querySelector('#world-panel[open]')}));
+    if(name==='home-position')await shoot(name);
+    await page.locator('dialog.learn-soon [data-learn-soon-close]').click();await page.waitForFunction(()=>!document.querySelector('dialog.learn-soon[open]'));
+    const after=await page.evaluate(()=>{const p=document.querySelector('[data-qa-pressed]'),v={panel:!!document.querySelector('#world-panel[open]'),refocused:!!p&&document.activeElement===p};p?.removeAttribute('data-qa-pressed');return v;});
+    seen.blocked.push({name,...state,after});
+    assert.equal(state.title,text.title,`${tag} ${name}: 안내`);assert.equal(state.panel,false,`${tag} ${name}: 판이 열리지 않음`);
+    assert.equal(after.panel,false,`${tag} ${name}: 닫아도 판 없음`);assert.equal(after.refocused,true,`${tag} ${name}: 초점이 누른 단추로`);
+   }
+   await pressHome('.life-home-board [data-view="position"]','home-position');
+   if(await page.locator('.life-home-shortcuts [data-view="review"]').isVisible())await pressHome('.life-home-shortcuts [data-view="review"]','home-review');
+   seen.homeReviewShown=await page.locator('.life-home-shortcuts [data-view="review"]').isVisible();
    // 배우기 판(아래 메뉴 「배우기」).
    await page.locator('nav [data-view="packs"]').click();
    await page.waitForSelector('#panel-content .life-hub .life-pack-card');

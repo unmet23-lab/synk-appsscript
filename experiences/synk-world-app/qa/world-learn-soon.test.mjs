@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
-import {LEARN_SOON,SOON_TEXT,SOON_SCREENS,SOON_ENTRIES,reserveHref,soonMarkup,soonTarget,installLearnSoon} from '../world-learn-soon.mjs';
+import {LEARN_SOON,SOON_TEXT,SOON_SCREENS,SOON_ENTRIES,SOON_HOME,SOON_HOME_ENTRIES,reserveHref,soonMarkup,soonTarget,installLearnSoon} from '../world-learn-soon.mjs';
 
 const read=rel=>fs.readFileSync(new URL(`../../../${rel}`,import.meta.url),'utf8');
 
@@ -47,6 +47,28 @@ test('꺼져 있으면 듣지 않고, 아무 단추도 막지 않는다',()=>{
  const fake={closest:()=>({closest:()=>({querySelector:()=>true}),matches:()=>true})};
  assert.equal(soonTarget(fake,{on:false}),null);
  assert.ok(soonTarget(fake,{on:true}),'켜져 있으면 같은 단추를 막는다');
+});
+
+// 홈 카드 단추의 가짜 요소: 속성 선택자([이름] · [이름="값"])만 맞춰 본다.
+function homeButton(attrs,{home=true}={}){
+ const one=part=>{const m=/^\[([a-z-]+)(?:="([^"]*)")?\]$/.exec(part.trim());return !!m&&Object.hasOwn(attrs,m[1])&&(m[2]===undefined||attrs[m[1]]===m[2]);};
+ const el={closest:sel=>sel==='button,a[href]'?el:sel===SOON_HOME&&home?{}:null,matches:sel=>sel.split(',').some(one)};
+ return el;
+}
+
+test('우리 동네 홈 카드: 복습 · 내 위치 보기는 막고, 맞춤 연습 시작 · 카페 · 생활 팩 · 이야기는 지나간다(11-24 「홈도 막기」)',()=>{
+ assert.equal(SOON_HOME,'.life-home-board');
+ assert.ok(soonTarget(homeButton({'data-view':'position'})),'내 위치 보기');
+ assert.ok(soonTarget(homeButton({'data-view':'review','data-life-review':''})),'복습 줄임 단추');
+ assert.equal(soonTarget(homeButton({'data-view':'learn','data-life-next':''})),null,'맞춤 연습 시작(튜터 세션 몫)');
+ for(const view of ['cafe','packs','stories','home','plan'])assert.equal(soonTarget(homeButton({'data-view':view})),null,view);
+ assert.equal(soonTarget(homeButton({'data-view':'position'},{home:false})),null,'홈 카드 밖의 내 위치 단추');
+ assert.equal(soonTarget(homeButton({'data-view':'position'}),{on:false}),null,'꺼져 있으면');
+ const home=fs.readFileSync(new URL('../../brand-opening/home.html',import.meta.url),'utf8');
+ const board=home.slice(home.indexOf('class="lobby-action life-home-board"'),home.indexOf('</main>'));
+ assert.match(board,/data-view="position"/);assert.match(board,/data-view="review" data-life-review/);assert.match(board,/id="life-next-button" data-view="learn" data-life-next/);
+ assert.ok(SOON_HOME_ENTRIES.split(',').includes('[data-view="position"]')&&SOON_HOME_ENTRIES.split(',').includes('[data-view="review"]'),'홈 막는 단추 목록');
+ assert.ok(!SOON_HOME_ENTRIES.includes('learn')&&!SOON_HOME_ENTRIES.includes('data-life-next'),'맞춤 연습 시작은 목록에 없다');
 });
 
 test('막는 판과 단추 목록: 배우기 · 놀이 판의 들어가는 단추만, 돌아가기 · 닫기 · 학습 알림은 빼고',()=>{

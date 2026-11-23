@@ -3,13 +3,14 @@
 // master 전체 공개는 몽골 시범 뒤라(결정 11-20 Atlas 선택 공개), 지금 공개본 위에 이 일의 변경만 얹는다.
 // · app-shell.mjs: 바탕 판(이 일의 첫 커밋 바로 앞)에 이 일의 커밋(제목이 「WORLD 배우기 준비 중 안내」)만 얹은 「내 판」을
 //   공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 겹치면 멈춘다(조용히 버리지 않는다).
-// · world-learn-soon.mjs: 새 파일이라 끝 판 그대로(같은 경로 고쳐 쓰기).
-//   첫 공개(11-24) 전용이다. 공개된 뒤 이 파일을 다시 올릴 때(LEARN_SOON을 false로)는 기준 판이 없어 tools/공개.js가 「새로 만든 파일인데
-//   공개본에 같은 이름의 다른 파일이 있다」로 멈춘다. 그때는 지금 공개본의 world-learn-soon.mjs를 받아 base에도 써서 기준으로 준다
-//   (공개된 뒤에는 그 주소가 200이라 받아도 404가 묶이지 않는다, 11-24 Fable FA1).
+// · world-learn-soon.mjs: 끝 판 그대로(같은 경로 고쳐 쓰기). 이미 공개된 판이 있으면(11-24 첫 공개 synk-policy 44ae5f98 뒤) 그 판을 기준에 둔다.
+//   기준 판은 공개 도구의 git 사본(~/Documents/synk-vendor/synk-policy-publish.git HEAD)에서 꺼낸다. synk.im 주소는 부르지 않는다 —
+//   공개 전에 없는 주소를 부르면 그 404가 쿼리와 상관없이 CDN에 묶인다(11-24 Fable F1). 기준이 없으면 tools/공개.js가 새 파일로 올리고,
+//   공개된 파일인데 기준이 없으면 「새로 만든 파일인데 공개본에 같은 이름의 다른 파일」로 멈춘다(Fable FA1).
 // · server.mjs · tools/build-world-app-public.mjs · qa는 공개본에 싣지 않는다.
 // 출력: .tmp/learn-soon-pub/base(지금 공개본) · new(후보 원천) · 항목.txt, 그리고 tools/공개.js 미리 보기 명령.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
@@ -27,6 +28,8 @@ function rw(text, rel) {
   if (!rel.includes('/')) text = text.replaceAll('../brand-opening/', './brand-opening/');
   return text.replace(/(["'`])\/(scene-assets|[a-zA-Z0-9_-]+\.mjs|engine|korean-runner|korean-rhythm|hangul-stage|brand-opening|world-town-client\.mjs)(?=[/"'`])/g, (_, q, f) => `${q}/world/${f}`);
 }
+const PUB_GIT = path.join(os.homedir(), 'Documents', 'synk-vendor', 'synk-policy-publish.git');
+const published = rel => { try { return execFileSync('git', ['--git-dir', PUB_GIT, 'show', `HEAD:world/${rel}`], {maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore']}); } catch { return null; } };
 const live = async rel => { const r = await fetch(`https://synk.im/world/${rel}?probe=${Date.now()}`, {cache: 'no-store'}); if (!r.ok) throw Error(`공개본을 못 받음 ${r.status} ${rel}`); return lf(await r.text()); };
 const mine = git('log', '--reverse', '--format=%H', `--grep=${TITLE}`, END).toString().trim().split('\n').filter(Boolean);
 if (!mine.length) throw Error(`이 일의 커밋이 ${END}에 없다(${TITLE})`);
@@ -71,9 +74,11 @@ for (const rel of MERGED) {
 for (const rel of NEW) {
   const src = srcOf(rel);
   if (!changed.has(src)) continue;
-  // 새 파일은 공개본 주소를 부르지 않는다 — 공개 전에 없는 주소를 부르면 그 404가 쿼리와 상관없이 CDN에 묶여, 공개 직후 셸이 이 모듈을 못 받는다
-  // (11-24 Fable F1). 기준이 없으면 tools/공개.js가 공개본 git 사본으로 새 파일인지 본다.
+  // synk.im 주소는 부르지 않는다(머리 주석). 공개 도구의 git 사본에 이미 있으면 그 판을 기준에 둔다.
   write('new', rel, rw(lf(git('show', `${END}:${src}`).toString()), rel)); items.push(`world/${rel}`);
+  const was = published(rel);
+  if (was) write('base', rel, was);
+  console.log(`${rel}: ${was ? '공개된 판을 기준으로' : '공개본에 없음 — 새 파일로'}`);
 }
 // 공개본의 app-shell.mjs가 새 모듈을 부르는지, 새 모듈의 스위치가 켜져 있는지
 const shell = fs.readFileSync(path.join(OUT, 'new', 'world', 'app-shell.mjs'), 'utf8');
