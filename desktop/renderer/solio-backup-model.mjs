@@ -230,8 +230,9 @@ function withBoard(scene, snap, now) {
   // 이끄는 단추와 같은 동작 · 낱말이거나 이름이 같은 단추는 뺀다. 주제가 달라도 「엔진 창 열기」가 둘 서지 않는다(카본 A2)
   const acts = lead?.act ? [lead.act, ...quiet.filter(a => !(a.act === lead.act.act && (a.arg === lead.act.arg || a.label === lead.act.label)))] : quiet;
   // 줄(다음 백업 · 매시간)이 빠지므로 자동 백업이 도는 것은 아래 범위 칸에 한 줄로 남긴다
+  // 「매시간 저절로」는 정상(status · safe)일 때만 쓴다. 소식 없음 · 확인할 일 · 첫 백업 준비 중에는 위 문장과 어긋난다(Fable F4)
   const next = nextWords(snap.status?.nextRunAt, now);
-  const scope = `로그인해 있는 동안 매시간 저절로 백업합니다.${next ? ` 다음은 ${next}입니다.` : ''}`;
+  const scope = snap.view === 'status' && snap.status?.state === 'safe' ? `로그인해 있는 동안 매시간 저절로 백업합니다.${next ? ` 다음은 ${next}입니다.` : ''}` : '';
   return { ...scene, say: lead?.say || scene.say, then: lead ? lead.then || '' : scene.then, note: lead?.note || scene.note, rows: [], acts, busy: board.busy, scope, board };
 }
 
@@ -318,9 +319,11 @@ function driveCard(space, now) {
   const d = space.drive, line = d.startLineGb ? d.startLineGb * GB : null;
   const scale = Math.max(line ? line * 2 : d.size, d.free * 1.15, 1);
   const pct = v => Math.max(0, Math.min(100, (v / scale) * 100));
-  const pred = line === null ? '' : d.daysToStartLine === 0 ? `남은 공간이 정한 선(${d.startLineGb}GB)보다 적습니다.`
-    : Number.isSafeInteger(d.daysToStartLine) ? `이대로면 ${d.daysToStartLine}일 뒤 정한 선 아래로 내려갑니다.` : '지금 속도로는 정한 선 아래로 내려가지 않습니다.';
   const g = d.growthPerDay;
+  // 엔진은 증가 속도를 모를 때도(보호 첫날 따위) daysToStartLine을 null로 준다. 「내려가지 않습니다」는 속도가 0 이하로 재였을 때만 쓴다(Fable F2)
+  const pred = line === null ? '' : d.daysToStartLine === 0 ? `남은 공간이 정한 선(${d.startLineGb}GB)보다 적습니다.`
+    : Number.isSafeInteger(d.daysToStartLine) ? `이대로면 ${d.daysToStartLine}일 뒤 정한 선 아래로 내려갑니다.`
+      : !Number.isSafeInteger(g) ? '며칠 더 재어야 언제 정한 선에 닿는지 알 수 있습니다.' : g <= 0 ? '지금 속도로는 정한 선 아래로 내려가지 않습니다.' : '';
   const pace = Number.isSafeInteger(g) && g !== 0 ? `지난 14일 동안 하루에 ${gb(Math.abs(g))}씩 ${g > 0 ? '찼' : '비었'}습니다.` : '';
   const more = space.otherDrives > 0 ? `다른 드라이브 ${space.otherDrives}개는 정한 선보다 넉넉합니다.` : '';
   const at = backupDay(space.createdAt);
@@ -352,8 +355,13 @@ function agoWords(value, now) {
   const h = Math.round(m / 60);
   return h < 24 ? `${h}시간 전` : backupDay(value);
 }
+/* 누름의 답(했음 · 쉼 · 거절 · 사라짐 · 만료)을 맨 위에 두는 시간. 그 뒤에는 지난 누름으로 보고 판에 쓰지 않는다.
+   엔진은 매시 회차를 돌므로, 그보다 오래 두면 지금 상태(확인할 일 · 소식 없음)를 덮는다(Fable F1) */
+export const ONECLICK_FRESH = 30 * 60000;
 export function oneClickBoard(snap, now = Date.now()) {
-  const s = snap.status || {}, c = snap.oneclick || null, space = snap.space || null, app = snap.app || null;
+  const s = snap.status || {}, space = snap.space || null, app = snap.app || null, raw = snap.oneclick || null;
+  const settled = raw && !(['sent', 'claimed'].includes(raw.stage) && !raw.result) ? Date.parse(raw.answeredAt || '') : NaN;
+  const c = Number.isFinite(settled) && now - settled > ONECLICK_FRESH ? null : raw;
   const pending = !!c && ['sent', 'claimed'].includes(c.stage) && !c.result;
   const since = c ? Math.max(Date.parse(c.at || '') || 0, Date.parse(c.wokeAt || '') || 0) : 0;
   const late = pending && c.stage === 'sent' && (now - since >= ONECLICK_PATIENCE || c.woke === 'no-task' || c.woke === 'failed');
@@ -427,10 +435,15 @@ export function oneClickBoard(snap, now = Date.now()) {
     const next = nextWords(s.nextRunAt, now);
     // 네 줄은 접히므로 04 줄을 가리키지 않고 새 판을 이 문장에서 말한다(카본 A3)
     const news = [appWords, enginePart].filter(w => /새 판/.test(w)).join(' · ');
-    const then = pr.state === 'fail' ? '다만 마지막 되살리기 확인이 실패했습니다. 엔진 창에서 확인해 주세요.'
-      : driveCard(space).below ? '다만 남은 공간이 정한 선보다 적습니다. 아래에서 비울 수 있는 것을 봐 주세요.'
-        : fresh ? `${news}.` : next ? `다음 백업은 ${next}입니다.` : '';
-    lead = { say: '백업을 마쳤습니다.', then, note: '끝남' };
+    // 둘째 줄은 지금 확인할 일(엔진의 주의 낱말 · 소식 없음 · 되살리기 실패)부터 말한다(Fable F1)
+    const topics = topicList(s.attention || []);
+    const then = topics ? `다만 엔진 창에서 확인할 일이 있습니다: ${topics}.`
+      : snap.view === 'checking' ? '다만 예정된 백업 소식이 2시간 넘게 없습니다. 엔진 창을 열어 확인해 주세요.'
+        : pr.state === 'fail' ? '다만 마지막 되살리기 확인이 실패했습니다. 엔진 창에서 확인해 주세요.'
+          : driveCard(space).below ? '다만 남은 공간이 정한 선보다 적습니다. 아래에서 비울 수 있는 것을 봐 주세요.'
+            : fresh ? `${news}.` : next ? `다음 백업은 ${next}입니다.` : '';
+    const attention = !!topics || snap.view === 'checking' || pr.state === 'fail';
+    lead = { say: '백업을 마쳤습니다.', then, note: attention ? '확인 필요' : '끝남', ...(topics ? { act: act('엔진 창에서 확인', 'backup-open', knownTopics(s.attention)[0], { primary: false }) } : {}) };
   } else if (working && (!lead || job)) {
     // 엔진이 지금 일하면(되살리기 확인 · 파일 되살리기 따위) 지난 누름의 답보다 그 일이 맨 위다(카본 A4)
     lead = { say: job ? `지금 ${STAGE_WORDS[job.stage] || STAGE_WORDS.other} 중입니다${Number.isFinite(job.percent) ? `(${job.percent}%)` : ''}.` : '지금 백업을 시작합니다.', then: '창을 닫아도 엔진이 이어서 합니다.', note: '하는 중' };

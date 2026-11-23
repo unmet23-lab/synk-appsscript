@@ -629,13 +629,20 @@ if(!process.versions.electron){
           await click(w,'#portal-entry [data-room=solio-backup] [data-bak-g="view"]');await wait(700);
           const b3g=await board(w);
           check('21 a group opens in place without asking the main process, and closed groups stay out of reach (카본 A9)',b3g.groups.includes('view:open')&&b3g.closedHidden&&b3g.openShown&&!(await calls(w)).some(c=>c.startsWith('backup-open')),b3g);
+          // 연 묶음의 속이 창 아래에 가리지 않게 그 묶음을 보이는 곳으로 내린 뒤 찍는다(Fable F6)
+          await w.js("document.querySelector('#portal-entry .one-after .g.open')?.scrollIntoView({block:'center'})");await wait(300);
           await capture(w,'oneclick-group');
+          await w.js("document.querySelector('#portal-entry [data-room=solio-backup]').scrollTop=0");
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,job:{stage:'backup',percent:57}},oneclick:OC(5000,'claimed')}))+')');
           await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-oneclick"]');await wait(900);
           check('21 the big button asks the main process for 원클릭 with no word',(await calls(w)).includes('backup-oneclick'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
           const r5=await room(w),b5=await board(w);
           check('21 while the engine backs up the button says so and cannot be pressed, and the helper sits on line 01',/지금 백업하는 중입니다\(57%\)/.test(r5.say)&&r5.acts[0]==='백업하는 중|backup-oneclick||true'&&/^backup\|now/.test(b5.steps[0])&&!!b5.helper,{r5,b5});
           await captureSizes(w,'oneclick-running');
+          // Fable F3: 다른 방에 있다 들어와도 작은 구가 일하는 줄 높이에 앉는다(가려진 방에서 그린 판은 줄 위치가 0이다)
+          await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(700);await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
+          const b5b=await board(w),ty=Number((String(b5b.helper).match(/translateY\(([-\d.]+)px\)/)||[])[1]);
+          check('21 entering the room while the engine works puts the helper on its line (Fable F3)',ty>0,{...b5b,ty});
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({oneclick:OC(120000,'sent')}))+')');await wait(2600);
           const r6=await room(w),b6=await board(w);
           check('21 a request the engine has not taken for a minute says it waits and lets the person press again',/부탁해 두었습니다/.test(r6.say)&&/다음 매시 백업/.test(r6.then)&&r6.acts[0]==='백업하고 상태 보기|backup-oneclick||'&&/^backup\|wait/.test(b6.steps[0])&&!b6.helper,{r6,b6});
@@ -645,6 +652,9 @@ if(!process.versions.electron){
           const r7=await room(w),b7=await board(w);
           check('21 a finished 원클릭 folds the four lines into one and says what comes next',/백업을 마쳤습니다/.test(r7.say)&&/다음 백업/.test(r7.then)&&b7.folded&&/백업을 마쳤습니다/.test(b7.sum)&&/통과/.test(b7.sum),{r7,b7});
           await captureSizes(w,'oneclick-done');
+          // 좁은 창에서는 판이 한 칸으로 쌓인다. 네 줄 · 접힌 한 줄 · 묶음이 보이게 내려 찍는다(Fable F6)
+          for(const [W,Hh] of [[960,680],[768,544],[640,453]]){w.win.setContentSize(W,Hh);await wait(380);await w.js("document.querySelector('#portal-entry [data-bak-flow]')?.scrollIntoView({block:'start'})");await wait(300);await capture(w,`oneclick-done-flow-${W}`);}
+          w.win.setContentSize(1440,900);await wait(300);await w.js("document.querySelector('#portal-entry [data-room=solio-backup]').scrollTop=0");
           await click(w,'#portal-entry [data-room=solio-backup] [data-bak-sum]');await wait(500);
           const b7o=await board(w);
           check('21 pressing the folded line opens the four lines again',!b7o.folded&&/^backup\|done/.test(b7o.steps[0]),b7o);

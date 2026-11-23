@@ -550,9 +550,10 @@ function createSolioBackup({
       const answer = await oneclickFiles.takeResult({ paths, name: c.name, fsImpl: fsImpl.promises });
       if (oneclick !== c) return;
       if (answer) Object.assign(c, { result: answer.result, reason: answer.reason, answeredAt: now(), stage: 'answered', missing: 0 });
-      else { c.missing = (c.missing || 0) + 1; if (c.missing >= 2) c.stage = 'gone'; else c.stage = 'unseen'; }
+      // 사라짐 · 만료를 정한 때를 answeredAt에 적는다. 화면은 그때부터 30분 뒤 이 누름을 판에서 내린다(Fable F1)
+      else { c.missing = (c.missing || 0) + 1; if (c.missing >= 2) { c.stage = 'gone'; c.answeredAt = now(); } else c.stage = 'unseen'; }
     }
-    if (!c.result && ONECLICK_OPEN.includes(c.stage) && now() - c.at >= ONECLICK_WAIT) c.stage = 'expired';
+    if (!c.result && ONECLICK_OPEN.includes(c.stage) && now() - c.at >= ONECLICK_WAIT) { c.stage = 'expired'; c.answeredAt = now(); }
   }
   async function oneClickSnapshot(account) {
     const c = oneclick;

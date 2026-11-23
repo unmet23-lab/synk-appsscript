@@ -444,3 +444,46 @@ test('카본 A1 · A2 · A3 · A4 · A5 · A6 · A8: result words reach the fold
   const ready = solioBackupView(SNAP({ app: { state: 'ready', current: '0.5.8', latest: '0.5.9' } }), NOW);
   assert.match(ready.board.steps[3].mid, /0\.5\.9를 받아 두었습니다/);
 });
+
+test('Fable F1 · F2 · F4: an old answer leaves the top after 30 minutes, the done line names what needs a look, unknown speed is said as unknown, 「매시간」 only when safe', async () => {
+  const { solioBackupView, ONECLICK_FRESH } = await import('../renderer/solio-backup-model.mjs');
+  const answered = (ago, patch) => PRESS(ago + 60000, { stage: 'answered', answeredAt: new Date(NOW - ago).toISOString(), ...patch });
+  // F1: 30분이 지난 「했음」은 지금의 확인할 일을 덮지 않는다
+  const stale = solioBackupView(SNAP({ oneclick: answered(ONECLICK_FRESH + 60000, { result: 'done' }), status: { ...STATUS, state: 'attention', attention: ['signin'] } }), NOW);
+  assert.match(stale.say, /확인할 일이 있습니다: Google 로그인/);
+  assert.equal(stale.note, '확인 필요');
+  assert.equal(stale.board.sum, null, 'no folded line from an old press');
+  assert.equal(stale.board.steps[0].state, '');
+  const staleRest = solioBackupView(SNAP({ oneclick: answered(6 * 3600e3, { result: 'rested', reason: 'battery' }) }), NOW);
+  assert.doesNotMatch(staleRest.say + staleRest.board.steps[0].mid, /배터리/);
+  const staleGone = solioBackupView(SNAP({ oneclick: answered(ONECLICK_FRESH + 1000, { stage: 'gone', result: null }) }), NOW);
+  assert.doesNotMatch(staleGone.say, /확인하지 못했습니다/);
+  // F1: 방금 끝났어도 주의 낱말 · 소식 없음 · 되살리기 실패를 둘째 줄이 말한다
+  const fresh = (patch) => solioBackupView(SNAP({ oneclick: answered(60000, { result: 'done' }), ...patch }), NOW);
+  const changes = fresh({ status: { ...STATUS, attention: ['changes'] } });
+  assert.equal(changes.say, '백업을 마쳤습니다.');
+  assert.match(changes.then, /확인할 일이 있습니다: 많이 바뀐 파일/);
+  assert.equal(changes.note, '확인 필요');
+  assert.equal(changes.acts[0].arg, 'changes');
+  const quiet = fresh({ view: 'checking', status: { ...STATUS, nextRunAt: new Date(NOW - 3 * 3600e3).toISOString() } });
+  assert.match(quiet.then, /2시간 넘게 없습니다/);
+  // F2: 속도를 모르면 「내려가지 않습니다」라고 하지 않는다
+  const unknown = solioBackupView(SNAP({ space: { ...SPACE, drive: { ...SPACE.drive, growthPerDay: null, daysToStartLine: null } } }), NOW);
+  assert.match(unknown.board.drive.pred, /며칠 더 재어야/);
+  assert.equal(unknown.board.drive.pace, '');
+  // F4: 「매시간 저절로」는 정상일 때만
+  assert.match(solioBackupView(SNAP(), NOW).scope, /매시간 저절로/);
+  for (const patch of [{ view: 'checking' }, { status: { ...STATUS, state: 'attention', attention: ['signin'] } }, { status: { ...STATUS, state: 'starting' } }]) {
+    assert.equal(solioBackupView(SNAP(patch), NOW).scope, '', JSON.stringify(patch));
+  }
+});
+
+test('Fable F1: the main process stamps when it gave up on a request, so the room can let it go', async () => {
+  const a = appdata(), { s } = service(a);
+  await s.oneClick(ME);
+  fs.rmSync(path.join(a.paths.requests, requests(a)[0]));
+  await s.snapshot(ME);
+  const snap = await s.snapshot(ME);
+  assert.equal(snap.oneclick.stage, 'gone');
+  assert.ok(Number.isFinite(Date.parse(snap.oneclick.answeredAt)), 'gone carries the time it was decided');
+});

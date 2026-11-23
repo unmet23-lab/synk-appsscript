@@ -708,6 +708,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     app.space.hidden = solio || !!asideName;
     renderRail(s, solio ? room.programs || [] : [], prog);
     for (const [name, r] of Object.entries(readRooms)) renderRead(r, solio ? room[name] : null);
+    // 가려진 방에서 그린 판은 줄 위치가 0이다. 원클릭 방이 보이면 작은 구를 그 자리에서 다시 놓는다(Fable F3)
+    if (!app.backup.hidden) placeHelper(board.at);
     renderOffice(solio ? room.office : null, solio && prog === 'office' && !asideName && s.layer === 'app' && s.mode === 'app');
     if (prog !== lastProg) {
       closeMores(true);
@@ -998,7 +1000,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   /* ── 원클릭 판(11-23, docs/디자인/솔리오_원클릭_20261123). 왼쪽은 드라이브 하나, 오른쪽은 네 줄과 묶음 셋이다.
      부분마다 마지막으로 그린 글을 열쇠로 두어 2초마다 오는 판에서 바뀐 곳만 다시 그린다. 사람이 연 묶음과 다시 편 네 줄은 다시 그려도 지킨다 ── */
-  const board = { keys: {}, open: new Set(), unfold: '', key: '', sum: false };
+  const board = { keys: {}, open: new Set(), unfold: '', key: '', sum: false, at: null };
   function paintPart(name, value, paint) {
     const k = JSON.stringify(value ?? null);
     if (board.keys[name] === k) return;
@@ -1014,8 +1016,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     paintPart('sum', v.sum, () => paintSum(v.sum));
     paintPart('groups', v.groups, () => paintGroups(Array.isArray(v.groups) ? v.groups : []));
     board.sum = !!v.sum;
+    board.at = v.at || null;
     applyFold();
-    placeHelper(v.at);
+    placeHelper(board.at);
   }
   function paintDrive(d) {
     const box = app.bakDrive;
@@ -2273,7 +2276,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onPageShow = event => { onAction('pageshow', event?.persisted === true); };
   const onPageHide = () => { if (ask.input) ask.input.value = ''; stage.pause(); };
   const onQaGuest = () => { onAction('qa-guest'); };
-  const resizeObserver = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => { if (scene?.layer === 'switch') layoutSwitch(); if (fanShown()) layoutFan(); if (scene?.mode === 'app' || scene?.mode === 'legacy') syncDragGap(scene.mode === 'legacy'); }) : null;
+  const resizeObserver = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => { if (!app.backup.hidden) placeHelper(board.at); if (scene?.layer === 'switch') layoutSwitch(); if (fanShown()) layoutFan(); if (scene?.mode === 'app' || scene?.mode === 'legacy') syncDragGap(scene.mode === 'legacy'); }) : null;
 
   root.addEventListener('click', onClick);
   root.addEventListener('scroll', onRoomScroll, true);
