@@ -55,7 +55,13 @@ class Units(unittest.TestCase):
             with self.assertRaises(M.Refused): M.bucket_sha(bad)
     def test_api_checks_its_pairs_before_every_start(self):
         u = self.unit('synk-wb-api.service')
-        self.assertIn('ExecStartPre=+/usr/bin/python3 -I -B /opt/synk/workbackup/offsite/cccc/wb-pair-check.py' + chr(10), u)
+        self.assertIn('Requires=synk-wb-pair-check.service' + chr(10), u); self.assertNotIn('ExecStartPre', u)
+        self.assertIn('synk-wb-pair-check.service' + chr(10), [line + chr(10) for line in u.splitlines() if line.startswith('After=')][0])
+        c = self.unit('synk-wb-pair-check.service')
+        self.assertIn('ExecStart=/usr/bin/python3 -I -B /opt/synk/workbackup/offsite/cccc/wb-pair-check.py' + chr(10), c)
+        self.assertIn('Type=oneshot' + chr(10), c); self.assertIn('PrivateNetwork=yes' + chr(10), c)
+        self.assertNotIn('TemporaryFileSystem', c); self.assertNotIn('[Install]', c)
+        self.assertIn(M.PAIR_CHECK, M.UNIT_NAMES)
         self.assertEqual(sorted(self.req['payload']['offsite']), sorted(M.ROOT_TOOLS))
     def test_sudo_input_logging_is_read_conservatively(self):
         self.assertFalse(M.sudoers_log_input('Defaults env_reset\nDefaults !log_input\n# Defaults log_input\n@includedir /etc/sudoers.d\nsynk ALL=(ALL) NOPASSWD: NOLOG_INPUT: ALL\n'))
@@ -70,6 +76,6 @@ class Units(unittest.TestCase):
         self.assertTrue(w.rstrip().endswith('/opt/synk/workbackup/app/aaaa/admin.mjs "$@"'))
         self.assertIn('--pipe', w)
         self.assertIn("-p 'ExecStartPre=+/usr/bin/systemctl is-active --quiet synk-company.service'", w)
-        self.assertIn("-p 'ExecStartPre=+/usr/bin/mountpoint -q /srv/synk'", w)
+        self.assertNotIn('mountpoint -q /srv/synk\'', w)
 
 if __name__ == '__main__': unittest.main()

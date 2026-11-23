@@ -17,6 +17,7 @@
 | `synk-wb-keys.service` | 10772 | `127.0.0.1:4211` | 출입증 만들기 · 지우기 |
 | `synk-wb-files.service` | 10773 | `127.0.0.1:4212` | 판 목록 요약 · 되살리기 |
 | `synk-wb-offsite.timer` → `.service` | root | — | 매일 05:40 KST, DB 사본을 회사 밖으로(아래 「매일 사본」) |
+| `synk-wb-pair-check.service` | root | — | api가 뜰 때마다 먼저 한 번 돈다. RPC 짝이 갈라졌으면 실패해 api가 뜨지 않는다 |
 
 - **회사를 따라간다.** 세 유닛은 `Requisite` · `PartOf` · `After` · `WantedBy=synk-company.service`다. 회사 쓰기 노드가 회사 스택을 시작하면 따라 뜨고, 멈추면(HA 펜싱, 판 교체, 손 정지) 따라 멈춘다. 재부팅 뒤에는 HA가 데이터 디스크를 붙이고 회사를 시작할 때 뜬다. 판 교체 동안 몇 분 멈춘다. 멈춤은 10초 안에 끝난다(`node-host.py`의 150초 멈춤 예산 안).
 - **실행 파일.** HA 런타임의 Node(v24)를 `/opt/synk/workbackup/runtime/node-<해시>`로 복사해 고정한다. 코드는 이 폴더 맨 위의 `*.mjs`를 `/opt/synk/workbackup/app/<해시>/`에 둔다. 이미지 빌드는 없다. `Dockerfile`은 PC에서 시험할 때만 쓴다.
@@ -36,7 +37,7 @@ node experiences/solo-backup-rust/server/tools/host-install.mjs status
 - `probe`: 세 역할마다 유닛과 같은 상자 속성으로 `systemd-run`을 돌린다. 이름 풀이와 인터넷은 되고, 메타데이터 · 회사 컨테이너 · 이 노드의 VPC 주소는 막히고, 남의 폴더와 회사 데이터가 안 보여야 통과다. 막힘은 호스트에서 먼저 닿는 것을 확인한 대상만 센다.
 - `secrets`: 출입증 둘을 이 PC의 DPAPI 저장소에서 읽어 넣고, RPC 비밀값 둘을 새로 만들고, settings.env를 쓴다. 출입증을 회사 서버에 넣는 일이라 유호님께 먼저 여쭙는다. 이미 다른 값이 있으면 `--바꿈` 없이는 덮지 않는다. RPC 짝이 어긋났으면 `--바꿈`이 새 짝을 쓴다.
 - `start`: 먼저 버킷의 14일 규칙을 읽고(`--버킷`), 그 버킷이 company.env의 사본 목적지인지, 비밀값 짝이 맞는지, 상자 시험이 통과하는지 본다. 그다음 유닛을 쓰고 켠 뒤 상태 응답, 세 서비스가 같은 프로세스로 도는지, api의 비밀값으로 두 일꾼에 서명한 호출이 통하는지, Caddy에서는 api가 닿고 회사 컨테이너에서는 막히는지, 회사 · Caddy · 우주선 컨테이너가 그대로인지 본다. 확인을 다 통과하면 그 상태(설정 세대, 유닛 파일, `wb-admin`, 버킷 기록)를 `/opt/synk/workbackup/state/good.json`에 남긴다. 하나라도 어긋나면 이 마지막으로 확인된 상태로 돌아가고, 확인된 적이 없으면 유닛을 걷는다. 바뀐 것만 바꾼다. 서비스는 돌지 않거나, 도는 프로세스가 다른 앱 · 런타임이거나, 유닛이 마지막 확인 때와 다르거나, `secrets`가 그 뒤 설정 세대를 새로 만들었을 때만 다시 띄운다(시각은 쓰지 않는다). 같은 판이 이미 그대로 돌고 있으면 확인만 한다. `--다시`는 셋 모두를 다시 띄운다. 자동 시작 등록은 확인을 통과한 뒤에 한다.
-- api는 뜰 때마다(설치 도구, 회사와 함께, 재시작) 먼저 root로 RPC 짝 두 개가 같은지 본다(`host/wb-pair-check.py`, `ExecStartPre=+`). 갈라져 있으면 뜨지 않고 저널에 `SYNK_WB_PAIR_SPLIT`을 남긴다. `secrets --실행 --바꿈`이 새 짝을 쓴다.
+- api는 뜰 때마다(설치 도구, 회사와 함께, 재시작) 먼저 root로 RPC 짝 두 개가 같은지 본다(`synk-wb-pair-check.service`가 상자 밖에서 `host/wb-pair-check.py`를 돌리고, api 유닛이 `Requires=`로 건다). 갈라져 있으면 뜨지 않고 저널에 `SYNK_WB_PAIR_SPLIT`을 남긴다. `secrets --실행 --바꿈`이 새 짝을 쓴다.
 - 설치 도구는 한 번에 하나만 돈다(호스트 잠금). 바꾸는 실행은 SSH가 끊겨도 끝까지 돈다. `secrets`는 먼저 `plan`으로 sudo가 표준 입력을 기록하지 않는지 보고, 기록하면 비밀값을 보내지 않는다.
 - 되돌리기: `stop --실행`(세 유닛과 타이머를 끄고 멈춘다). 회사에는 영향이 없다.
 

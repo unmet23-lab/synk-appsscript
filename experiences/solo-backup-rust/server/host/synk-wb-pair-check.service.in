@@ -1,0 +1,24 @@
+[Unit]
+Description=SYNK work-backup RPC pair check before the api starts
+Documentation=https://github.com/unmet23-lab/synk-appsscript/blob/master/experiences/solo-backup-rust/server/README.md
+# Pulled in by synk-wb-api.service (Requires= · After=) on every api start. It runs outside the
+# api's box, so it sees all three role folders; a split pair fails it and the api does not start.
+RequiresMountsFor=/srv/synk
+ConditionPathIsMountPoint=/srv/synk
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -I -B @OFFSITE@/wb-pair-check.py
+# Root only to read the three 0700 role folders; no other privilege, no network.
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+TimeoutStartSec=30

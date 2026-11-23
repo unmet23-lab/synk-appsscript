@@ -21,7 +21,7 @@ const host = path.join(server, 'host');
 const REMOTE = process.env.SYNK_REMOTE_TOOL || 'C:/Users/q1212/Documents/SYNK-appsscript/.tmp/platform-ha-20261011/remote-app-current-v1.cjs';
 const ACTIONS = new Set(['plan', 'status', 'probe', 'files', 'secrets', 'start', 'stop']);
 const WRITES = new Set(['files', 'secrets', 'start', 'stop']);
-const HOST_FILES = ['box.conf.in', 'synk-wb-api.service.in', 'synk-wb-keys.service.in', 'synk-wb-files.service.in', 'synk-wb-offsite.service.in', 'synk-wb-offsite.timer', 'resolv.conf'];
+const HOST_FILES = ['box.conf.in', 'synk-wb-api.service.in', 'synk-wb-keys.service.in', 'synk-wb-files.service.in', 'synk-wb-pair-check.service.in', 'synk-wb-offsite.service.in', 'synk-wb-offsite.timer', 'resolv.conf'];
 const OPERATOR = 'founder@synk.im';
 const AUDIT_RUNS = 'https://api.github.com/repos/unmet23-lab/synk-appsscript/actions/workflows/workbackup-audit.yml/runs?per_page=5';
 
@@ -34,7 +34,7 @@ export function payload() {
   const app = {};
   for (const name of fs.readdirSync(server).filter((n) => /^[a-z0-9-]+\.mjs$/.test(n)).sort()) app[name] = b64(path.join(server, name));
   const hostFiles = Object.fromEntries(HOST_FILES.map((n) => [n, b64(path.join(host, n))]));
-  // Root tools: the daily copy and the api's pair check (ExecStartPre=+), installed side by side.
+  // Root tools: the daily copy and the api's pair check (synk-wb-pair-check.service), installed side by side.
   const offsite = Object.fromEntries(['wb-offsite.py', 'wb-pair-check.py'].map((n) => [n, b64(path.join(host, n))]));
   return { app, offsite, host: hostFiles };
 }

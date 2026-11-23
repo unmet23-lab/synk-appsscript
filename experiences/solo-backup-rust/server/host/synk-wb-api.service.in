@@ -5,7 +5,9 @@ Documentation=https://github.com/unmet23-lab/synk-appsscript/blob/master/experie
 # with it (HA fencing, a release swap, a manual stop) and starts again when it starts.
 Requisite=synk-company.service
 PartOf=synk-company.service
-After=synk-company.service synk-wb-keys.service synk-wb-files.service
+# Every api start first runs the RPC pair check (outside the box); a split pair keeps the api down.
+Requires=synk-wb-pair-check.service
+After=synk-company.service synk-wb-keys.service synk-wb-files.service synk-wb-pair-check.service
 RequiresMountsFor=/srv/synk
 ConditionPathIsMountPoint=/srv/synk
 StartLimitIntervalSec=600
@@ -16,9 +18,6 @@ Type=simple
 User=10771
 Group=10771
 WorkingDirectory=@APP@
-# Every start (host-install, the company stack, a restart) first checks, as root, that both halves
-# of each RPC pair are equal; a split pair keeps the api down and says so in the journal.
-ExecStartPre=+/usr/bin/python3 -I -B @OFFSITE@/wb-pair-check.py
 ExecStart=@NODE@ @APP@/main.mjs api
 Restart=on-failure
 RestartSec=5

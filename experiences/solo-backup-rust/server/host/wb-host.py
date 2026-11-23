@@ -21,7 +21,8 @@ UNIT_DIR = pathlib.Path('/etc/systemd/system')
 ROLES = {'api': 10771, 'keys': 10772, 'files': 10773}
 SERVICES = ('synk-wb-keys.service', 'synk-wb-files.service', 'synk-wb-api.service')
 OFFSITE = ('synk-wb-offsite.service', 'synk-wb-offsite.timer')
-UNIT_NAMES = (*SERVICES, *OFFSITE)
+PAIR_CHECK = 'synk-wb-pair-check.service'  # pulled in by the api on every start
+UNIT_NAMES = (*SERVICES, *OFFSITE, PAIR_CHECK)
 OFFSITE_STATE = pathlib.Path('/var/lib/synk-wb-offsite')
 COMPANY_ENV = pathlib.Path('/etc/synk/company.env')
 LOCK = '/run/lock/synk-wb-host.lock'
@@ -500,7 +501,6 @@ def wb_admin(req, app, node):
              "systemctl is-active --quiet synk-company.service || { echo 'wb-admin: the company stack is not running on this node' >&2; exit 3; }",
              'exec systemd-run --quiet --wait --pipe --collect --service-type=exec \\',
              # Checked again inside the unit, after it is registered: a company stop from then on reaches it.
-             "  -p 'ExecStartPre=+/usr/bin/mountpoint -q /srv/synk' \\",
              "  -p 'ExecStartPre=+/usr/bin/systemctl is-active --quiet synk-company.service' \\"]
     lines += ["  -p '" + p.replace("'", "'\\''") + "' \\" for p in props]
     lines += ['  -- ' + str(node) + ' ' + str(app) + '/admin.mjs "$@"', '']
@@ -840,7 +840,8 @@ def stale_services(before, app, node, units):
     good = before['good']
     if good is None or good.get('generation') != before['generation']:
         return list(SERVICES)
-    return [n for n in SERVICES if before['active'][n] != 'active' or running_argv(n) != expected_argv(app, node, n) or b64d(good['units'].get(n)) != units[n]]
+    return [n for n in SERVICES if before['active'][n] != 'active' or running_argv(n) != expected_argv(app, node, n)
+            or b64d(good['units'].get(n)) != units[n] or before['files'][n] != units[n]]
 
 
 def verify(company, app, node):
