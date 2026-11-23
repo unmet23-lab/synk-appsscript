@@ -504,8 +504,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   box.hidden=false;
   const ticket=++flight,next=content.querySelector('[data-life-scene-next]');
   keepLearnInView(box,line);
-  next?.classList.add('is-holding');
-  const release=()=>{if(ticket===flight)next?.classList.remove('is-holding');},safety=setTimeout(release,2400);
+  next?.classList.add('is-holding');next?.setAttribute('aria-disabled','true');
+  const release=()=>{if(ticket===flight){next?.classList.remove('is-holding');next?.removeAttribute('aria-disabled');}},safety=setTimeout(release,2400);
   let left=rows.length;
   box.animate([{backgroundColor:'rgba(0,0,0,0)'},{}],{duration:520,easing:'ease-out',fill:'backwards'});
   box.querySelector('.life-learn-head')?.animate([{opacity:0},{opacity:0,offset:.62},{opacity:1}],{duration:1000,easing:'ease-out',fill:'backwards'});
@@ -558,7 +558,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    // 종이 겉: 말하는 사람은 인물 색 네모 + 이름(.life-speaker), 대사는 사진 아래 큰 글(말풍선 카드 없음), 배울 말은 대사가 끝난 뒤 아래 판으로 옮겨 앉는다.
    // 목소리(녹음 + 낱말 시각)가 생기면 .life-speaker 줄 오른쪽에 「다시 듣기」를 두고, 타자 대신 목소리가 지나간 낱말을 채운 뒤 onLine을 부른다(life-story.mjs).
    const line=storyLineMarkup(scene.text,l.expressions);
-   paint(l.title,`${header}<div class="life-story-stage" data-speaker="${speaker}">${photo?`<figure class="life-story-photo"><img src="${asset(people?people.file:storyPhotoFile(l.packId,speaker))}" alt="${people?`${person&&speaker!=='me'?`${person.name} 차례 · `:''}${people.alt}`:`${friend?`${friend.name} 차례 · `:''}몽글·까몽·마린이 함께 있는 이야기 장면${signs.length?` · ${escape(signs.map(s=>s.text).join(', '))}`:''}`}" width="768" height="512" decoding="async">${signs.map(s=>`<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t('life.signListen',{text:escape(s.text)})}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2]-s.box[0]}%;--h:${s.box[3]-s.box[1]}%">${escape(s.text)}</button>`).join('')}</figure>`:`<div class="life-cast">${Object.keys(friends).map(f=>`<div class="${f===scene.speaker?'is-speaking':''}">${cut(f)}<small>${friends[f].name}</small></div>`).join('')}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"${at!=null?` data-at style="--life-at:${at}%"`:''}><small class="life-speaker" data-who="${speaker}">${who?who.name:'이야기'}</small><p>${line}</p></div>${learnBox(l,line)}</div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last?'life.toQuestions':'life.next')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>${t('life.later')}</button></div>`,{type:'life-story',tutorSlot:photo?'.life-story-photo':null});story.enter({who:speaker,previousSrc,first:context.sceneIndex===0,signs});return;
+   paint(l.title,`${header}<div class="life-story-stage" data-speaker="${speaker}">${photo?`<figure class="life-story-photo"><img src="${asset(people?people.file:storyPhotoFile(l.packId,speaker))}" alt="${people?`${person&&speaker!=='me'?`${person.name} 차례 · `:''}${people.alt}`:`${friend?`${friend.name} 차례 · `:''}몽글·까몽·마린이 함께 있는 이야기 장면${signs.length?` · ${escape(signs.map(s=>s.text).join(', '))}`:''}`}" width="768" height="512" decoding="async">${signs.map(s=>`<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t('life.signListen',{text:escape(s.text)})}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2]-s.box[0]}%;--h:${s.box[3]-s.box[1]}%">${escape(s.text)}</button>`).join('')}</figure>`:`<div class="life-cast">${Object.keys(friends).map(f=>`<div class="${f===scene.speaker?'is-speaking':''}">${cut(f)}<small>${friends[f].name}</small></div>`).join('')}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"${at!=null?` data-at style="--life-at:${at}%"`:''}><small class="life-speaker" data-who="${speaker}">${who?who.name:t('life.narration')}</small><p>${line}</p></div>${learnBox(l,line)}</div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last?'life.toQuestions':'life.next')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>${t('life.later')}</button></div>`,{type:'life-story',tutorSlot:photo?'.life-story-photo':null});story.enter({who:speaker,previousSrc,first:context.sceneIndex===0,signs});return;
   }
   renderQuestion();
  }
@@ -702,7 +702,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  const handlers={
   packs,stories,review,next,home:()=>{home.closePanel();home.goTown?.();updateHome();},pack:el=>pack(el.dataset.lifePack),lesson:el=>start(el.dataset.lifeLesson),
   begin:()=>{context.phase='story';context.sceneIndex=0;persistStage();renderLesson();},
-  'scene-next':()=>turnScene(1),
+  'scene-next':el=>{if(el?.classList?.contains('is-holding'))return;turnScene(1);},
   choice:el=>context.phase==='review'?chooseReview(el.dataset.lifeChoice):choose(el.dataset.lifeChoice),
   notes:el=>{content.querySelectorAll('.life-choice:not(.is-correct) .life-choice-note[hidden]').forEach(n=>{n.hidden=false;drawer(n,{delay:0});});el.remove();},
   'question-next':()=>{if(context.phase==='review'){lastFeedback=null;helped=false;helpBy=null;renderReview();}else{context.questionIndex++;lastFeedback=null;helped=false;helpBy=null;persistStage();renderLesson();}},

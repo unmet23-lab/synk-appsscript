@@ -52,10 +52,14 @@ test('이야기 장면을 닫는 중에는 배울 말 판을 열지 않고 날�
   assert.ok(at(".life-ghost')") < at('story.stop()'), '날던 글자를 거둔다');
   const show = life.slice(life.indexOf('function showLearn('));
   const guard = show.split('\n').find(l => l.trim().startsWith('if(rendering'));
-  assert.match(guard, /rendering\|\|!shown\|\|/, '그리는 중 · 닫는 중에는 열지 않는다');
+  assert.match(guard, /rendering\|\|!shown\|\|/, '그리는 중 · 닫는 중에는 열지 않는다');  // 말이 나는 동안 「다음」은 키보드(Enter)로도 넘기지 않고, 화면 읽기에는 쉬는 단추로 읽힌다(카본 world-sheet-paper-pub A3).
+  assert.match(show, /classList\.add\('is-holding'\);next\?\.setAttribute\('aria-disabled','true'\)/);
+  assert.match(life, /'scene-next':el=>\{if\(el\?\.classList\?\.contains\('is-holding'\)\)return;turnScene\(1\);\}/);
 });
 
 test('종이 시트에 영문 대문자 꼬리표를 두지 않는다', () => {
   assert.doesNotMatch(home, /<p class="eyebrow">MORE<\/p>/);
   assert.doesNotMatch(life, /<p class="life-section-label">LESSONS<\/p>/);
+  // 해설 장면의 머리도 화면 언어다(카본 A5).
+  assert.doesNotMatch(life, /who\.name:'이야기'/);
 });

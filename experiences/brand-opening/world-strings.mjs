@@ -987,6 +987,7 @@ export default {
  'life.cafeNext':{ko:'다음 방문 시작하기',en:'Start the next visit',mn:'Кафед дахин очих'},
  'life.cafeBefore':{ko:'주문 전에 먼저 봐도 좋아요',en:'Good to look at before you order',mn:'Захиалахаасаа өмнө үзэж болно'},
  'life.lessonsLabel':{ko:'레슨',en:'Lessons',mn:'Хичээлүүд'},
+ 'life.narration':{ko:'이야기',en:'Story',mn:'Түүх'},
  'life.toPacks':{ko:'팩 목록으로',en:'Back to packs',mn:'Багцын жагсаалт руу'},
  'life.seeReviews':{ko:'복습 보기',en:'See reviews',mn:'Давтлага харах'},
  'life.expressionsNow':{ko:'이번에 배울 표현',en:'Expressions in this lesson',mn:'Энэ хичээлийн хэллэг'},

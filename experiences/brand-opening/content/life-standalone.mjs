@@ -18315,8 +18315,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const ticket = ++flight, next2 = content.querySelector("[data-life-scene-next]");
     keepLearnInView(box, line);
     next2?.classList.add("is-holding");
+    next2?.setAttribute("aria-disabled", "true");
     const release = () => {
-      if (ticket === flight) next2?.classList.remove("is-holding");
+      if (ticket === flight) {
+        next2?.classList.remove("is-holding");
+        next2?.removeAttribute("aria-disabled");
+      }
     }, safety = setTimeout(release, 2400);
     let left = rows2.length;
     box.animate([{ backgroundColor: "rgba(0,0,0,0)" }, {}], { duration: 520, easing: "ease-out", fill: "backwards" });
@@ -18398,7 +18402,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       const photo2 = Boolean(people) || hasStoryPhoto(l.packId), signs = photo2 && !people ? storySigns(l.packId) : [];
       const previousSrc = content.querySelector(".life-session-meta")?.dataset.lifeLessonId === l.id ? content.querySelector(".life-story-photo>img")?.src || null : null;
       const line = storyLineMarkup(scene2.text, l.expressions);
-      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(people ? people.file : storyPhotoFile(l.packId, speaker))}" alt="${people ? `${person && speaker !== "me" ? `${person.name} \uCC28\uB840 \xB7 ` : ""}${people.alt}` : `${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape2(signs.map((s) => s.text).join(", "))}` : ""}`}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t("life.signListen", { text: escape2(s.text) })}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape2(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"${at != null ? ` data-at style="--life-at:${at}%"` : ""}><small class="life-speaker" data-who="${speaker}">${who ? who.name : "\uC774\uC57C\uAE30"}</small><p>${line}</p></div>${learnBox(l, line)}</div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last ? "life.toQuestions" : "life.next")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>${t("life.later")}</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
+      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(people ? people.file : storyPhotoFile(l.packId, speaker))}" alt="${people ? `${person && speaker !== "me" ? `${person.name} \uCC28\uB840 \xB7 ` : ""}${people.alt}` : `${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape2(signs.map((s) => s.text).join(", "))}` : ""}`}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t("life.signListen", { text: escape2(s.text) })}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape2(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"${at != null ? ` data-at style="--life-at:${at}%"` : ""}><small class="life-speaker" data-who="${speaker}">${who ? who.name : t("life.narration")}</small><p>${line}</p></div>${learnBox(l, line)}</div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last ? "life.toQuestions" : "life.next")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>${t("life.later")}</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
       story.enter({ who: speaker, previousSrc, first: context.sceneIndex === 0, signs });
       return;
     }
@@ -18627,7 +18631,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       persistStage();
       renderLesson();
     },
-    "scene-next": () => turnScene(1),
+    "scene-next": (el) => {
+      if (el?.classList?.contains("is-holding")) return;
+      turnScene(1);
+    },
     choice: (el) => context.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
     notes: (el) => {
       content.querySelectorAll(".life-choice:not(.is-correct) .life-choice-note[hidden]").forEach((n2) => {

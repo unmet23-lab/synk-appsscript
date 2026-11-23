@@ -50,30 +50,76 @@ function merge3(tag, liveText, baseText, mineText) {
   const dir = fs.mkdtempSync(path.join(OUT, 'g-')), a = path.join(dir, 'live'), b = path.join(dir, 'base'), c = path.join(dir, 'mine');
   fs.writeFileSync(a, liveText); fs.writeFileSync(b, baseText); fs.writeFileSync(c, mineText);
   let out, conflicts = 0;
-  try { out = execFileSync('git', ['merge-file', '-p', a, b, c]).toString(); } catch (e) { out = e.stdout.toString(); conflicts = e.status; }
+  try { out = execFileSync('git', ['merge-file', '-p', '--diff3', a, b, c]).toString(); } catch (e) { out = e.stdout.toString(); conflicts = e.status; }
   fs.rmSync(dir, {recursive: true, force: true});
-  if (conflicts && RESOLVE[tag]) { const fixed = RESOLVE[tag](out); if (!/^<<<<<<< |^=======$|^>>>>>>> /m.test(fixed)) { console.log(`${tag}: 공개본과 겹친 ${conflicts}곳을 공개본 쪽 + 이 일의 글자 바꿈으로 풀었다`); return fixed; } }
+  // 겹친 원문(공개본 · 바탕 · 내 판 세 쪽)을 남긴다 — 풀이가 무엇을 버렸는지 사람이 대조할 수 있게(11-23 카본 C1: 겹친 덩어리의 F1 고침이 빠졌다).
+  if (conflicts) fs.writeFileSync(path.join(OUT, `겹침원문-${tag.replaceAll('/', '_')}.txt`), out);
+  if (conflicts && RESOLVE[tag]) { const fixed = RESOLVE[tag](out, tag); if (!/^<<<<<<< |^\|\|\|\|\|\|\| |^=======$|^>>>>>>> /m.test(fixed)) { console.log(`${tag}: 공개본과 겹친 ${conflicts}곳을 바뀐 줄 묶음마다 공개본 위에 얹어 풀었다`); return fixed; } }
   if (conflicts) { fs.writeFileSync(path.join(OUT, `겹침-${tag.replaceAll('/', '_')}.txt`), out); throw Error(`${tag}: 공개본과 겹침 ${conflicts}곳 — ${OUT}`); }
   return out;
 }
-// 겹침 풀기: 공개본의 life-ui.mjs는 master보다 앞 판이라(Atlas 새 길 포스터 등이 아직 없다) 이 일이 같은 줄에 낸 글자 바꿈이 겹친다.
-// 겹친 덩어리는 공개본 쪽을 두고 이 일의 바꿈(영문 대문자 꼬리표 → 화면 언어 머리, 포스터 머리 kicker)만 그대로 다시 얹는다.
+// 겹침 풀기: 공개본의 life-ui.mjs는 master보다 앞 판이라(Atlas 새 길 포스터 등이 아직 없다) 이 일이 같은 덩어리에 낸 바꿈이 겹친다.
+// 덩어리(공개본 L · 바탕 B · 내 판 M)마다 B→M의 바뀐 줄 묶음을 하나씩 공개본 위에 얹는다(11-23 카본 C1 — 덩어리째 공개본 쪽을 두면 그 안의 F1 고침이 빠졌다).
+//  ① 바뀐 B 줄이 공개본에 그대로 있으면 M 줄로 바꾼다. 줄만 더한 묶음은 앞(없으면 뒤) B 줄을 공개본에서 찾아 그 옆에 넣는다.
+//  ② 공개본이 그 줄을 따로 고쳤고 이 일의 바꿈이 꼬리표뿐이면(영문 대문자 꼬리표 → 화면 언어 머리, 포스터 머리 kicker) 아래 LABELS로 공개본 줄에 다시 얹는다.
+//  ③ 그 묶음의 B 줄이 공개본에 하나도 없으면(공개본에 아직 없는 코드 — Atlas 새 길 포스터) 건너뛴다.
+//  그 밖은 멈춘다(조용히 버리지 않는다).
 const LABELS = [
   ['class="life-section-label">EXAM</p>', 'class="life-section-label is-text">${t(\'goal.reason.exam\')}</p>'],
   ['class="life-section-label">LIFE PACKS</p>', 'class="life-section-label is-text">${t(\'life.packsSection\')}</p>'],
   ['class="life-section-label">MORE</p>', 'class="life-section-label is-text">${t(\'life.more\')}</p>'],
   ['class="life-section-label">EPISODES</p>', 'class="life-section-label is-text">${t(\'life.stories\')}</p>'],
+  ['class="life-section-label">CAFE VISITS</p>', 'class="life-section-label is-text">${t(\'life.cafeVisits\')}</p>'],
 ];
+const labelled = x => LABELS.reduce((y, [a, b]) => y.replaceAll(a, b), x);
+const KICKED = x => x.replaceAll('</small><strong class="life-poster-word"', '</small>${kicker()}<strong class="life-poster-word"');
 const KICKER = " // 종이 겉의 포스터 머리: 영문 모노 라벨(밤 겉 그대로 둔다) 대신 화면 언어 한 줄.\n const kicker=()=>`<span class=\"life-poster-kicker\">${t('life.upNext')}</span>`;\n";
+// 줄 차이(LCS) — 덩어리는 작아 단순 표로 충분하다.
+function hunks(B, M) {
+  const n = B.length, m = M.length, d = Array.from({length: n + 1}, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) d[i][j] = B[i] === M[j] ? d[i + 1][j + 1] + 1 : Math.max(d[i + 1][j], d[i][j + 1]);
+  const out = []; let i = 0, j = 0, cur = null;
+  const flush = () => { if (cur) { out.push(cur); cur = null; } };
+  while (i < n || j < m) {
+    if (i < n && j < m && B[i] === M[j]) { flush(); i++; j++; continue; }
+    cur ??= {b0: i, b: [], m: []};
+    if (j < m && (i >= n || d[i][j + 1] >= d[i + 1][j])) cur.m.push(M[j++]); else cur.b.push(B[i++]);
+  }
+  flush(); return out;
+}
+function resolveBlock(L, B, M, log) {
+  L = [...L];
+  for (const h of hunks(B, M).reverse()) {
+    if (h.b.length) {
+      const at = L.findIndex((_, k) => h.b.every((x, q) => L[k + q] === x));
+      if (at >= 0) { L.splice(at, h.b.length, ...h.m); continue; }
+      if (h.b.length === h.m.length && h.b.every((x, q) => KICKED(labelled(x)) === h.m[q] || labelled(x) === h.m[q])) { log.push('꼬리표만 — 공개본 줄에 LABELS'); continue; }
+      if (h.b.every(x => !L.includes(x))) { log.push(`공개본에 없는 코드 ${h.b.length}줄 — 건너뜀`); continue; }
+      throw Error(`겹친 덩어리를 풀 수 없다(바탕 ${h.b0 + 1}줄째부터 ${h.b.length}줄): ${h.b[0].slice(0, 120)}`);
+    }
+    const before = B[h.b0 - 1], after = B[h.b0];
+    const ai = before !== undefined ? L.indexOf(before) : -1, bi = ai < 0 && after !== undefined ? L.indexOf(after) : -1;
+    if (ai >= 0) L.splice(ai + 1, 0, ...h.m); else if (bi >= 0) L.splice(bi, 0, ...h.m);
+    else if ((before === undefined || !L.length) && (after === undefined || !L.includes(after))) log.push(`공개본에 없는 자리에 더한 ${h.m.length}줄 — 건너뜀`);
+    else throw Error(`더한 줄의 자리를 공개본에서 못 찾는다: ${h.m[0].slice(0, 120)}`);
+  }
+  return L.map(labelled);
+}
 const RESOLVE = {
-  'life-ui.mjs': out => {
-    let t = out.replace(/^<<<<<<< [^\n]*\n([\s\S]*?)^=======\n[\s\S]*?^>>>>>>> [^\n]*\n/gm, (_, live) => LABELS.reduce((x, [a, b]) => x.replaceAll(a, b), live));
+  'life-ui.mjs': (out, tag) => {
+    const log = [];
+    let t = out.replace(/^<<<<<<< [^\n]*\n([\s\S]*?)^\|\|\|\|\|\|\| [^\n]*\n([\s\S]*?)^=======\n([\s\S]*?)^>>>>>>> [^\n]*\n/gm, (_, l, b, m) => {
+      const lines = x => x ? x.replace(/\n$/, '').split('\n') : [];
+      const r = resolveBlock(lines(l), lines(b), lines(m), log);
+      return r.length ? r.join('\n') + '\n' : '';
+    });
+    if (log.length) console.log(`${tag} 겹침 풀이: ${log.join(' · ')}`);
     // 공개본의 「지금 할 일」 포스터(nowPoster) 세 꼴에도 포스터 머리를 얹는다.
     const at = t.indexOf(' function nowPoster(s){'), stop = t.indexOf(' function reviewRow(', at);
     if (at < 0 || stop < 0) return out;
     if (!/const kicker=/.test(t)) { t = t.slice(0, at) + KICKER + t.slice(at); }
     const a2 = t.indexOf(' function nowPoster(s){'), s2 = t.indexOf(' function reviewRow(', a2);
-    t = t.slice(0, a2) + t.slice(a2, s2).replaceAll('</small><strong class="life-poster-word"', '</small>${kicker()}<strong class="life-poster-word"') + t.slice(s2);
+    t = t.slice(0, a2) + KICKED(t.slice(a2, s2)).replaceAll('${kicker()}${kicker()}', '${kicker()}') + t.slice(s2);
     return t;
   },
 };
