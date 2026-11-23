@@ -71,6 +71,9 @@ async function main() {
   if (WRITES.has(action) && !flags.includes('--실행')) throw new Error(`${action} changes the server: add --실행`);
   const request = { action, payload: payload(), replace: flags.includes('--바꿈'), restart: flags.includes('--다시') };
   if (action === 'secrets') {
+    // sudo keeps what it reads on standard input when log_input is on: check that before any secret goes.
+    const first = await createRequire(import.meta.url)(REMOTE)('primary', script({ action: 'plan', payload: request.payload }), 300000);
+    if (first?.result?.sudoInputLog !== false) throw new Error('SUDO_INPUT_LOG ' + JSON.stringify(first?.result?.sudoInputLog ?? first?.error ?? null) + ' (secrets not sent)');
     const secrets = await import('./secret-store.mjs');
     const parts = { bucket: secrets.get('custBucket'), audit: secrets.get('custAudit'), keysKey: secrets.get('custServerKeys'), filesKey: secrets.get('custServerFiles'), client: secrets.get('googleClient').installed };
     request.secrets = secretsFor(parts);

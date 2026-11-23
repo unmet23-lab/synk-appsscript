@@ -38,8 +38,8 @@ class Units(unittest.TestCase):
         for skipped in M.RUN_SKIP: self.assertFalse(any(p.startswith(skipped + '=') for p in props), skipped)
         self.assertTrue(all('=' in p for p in props))
         # The transient runs keep the company dependencies, so wb-admin starts only beside the company and stops with it.
-        for line in ('Requisite=synk-company.service', 'StopPropagatedFrom=synk-company.service', 'RequiresMountsFor=/srv/synk'): self.assertIn(line, props)
-        self.assertFalse(any(p.startswith('PartOf=') for p in props))
+        for line in ('StopPropagatedFrom=synk-company.service', 'RequiresMountsFor=/srv/synk'): self.assertIn(line, props)
+        self.assertFalse(any(p.startswith(('PartOf=', 'Requisite=')) for p in props))
         self.assertTrue(any(p.startswith('After=synk-company.service') for p in props))
         for line in ('TimeoutStopSec=10', 'KillMode=control-group'): self.assertIn(line, props)
         for absent in ('WantedBy=', 'ConditionPathIsMountPoint=', 'StartLimitBurst=', 'Description='): self.assertFalse(any(p.startswith(absent) for p in props), absent)
@@ -56,7 +56,7 @@ class Units(unittest.TestCase):
     def test_admin_wrapper_uses_the_api_box(self):
         w = M.wb_admin(self.req, pathlib.PurePosixPath('/opt/synk/workbackup/app/aaaa'), pathlib.PurePosixPath('/opt/synk/workbackup/runtime/node-bbbb')).decode()
         self.assertIn("-p 'User=10771'", w); self.assertIn("-p 'TemporaryFileSystem=/srv/synk:ro'", w)
-        self.assertIn("-p 'Requisite=synk-company.service'", w); self.assertIn("-p 'StopPropagatedFrom=synk-company.service'", w); self.assertNotIn('PartOf=', w)
+        self.assertNotIn('Requisite=', w); self.assertIn("-p 'StopPropagatedFrom=synk-company.service'", w); self.assertNotIn('PartOf=', w)
         self.assertTrue(w.rstrip().endswith('/opt/synk/workbackup/app/aaaa/admin.mjs "$@"'))
         self.assertIn('--pipe', w)
 
