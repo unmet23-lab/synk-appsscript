@@ -53,7 +53,7 @@ test('들어온 곳: 짧은 영소문자 이름만, 아니면 direct', () => {
 
 test('이메일 미리 보기', () => {
   for (const ok of ['a@b.co', 'name.last+tag@example.mn']) assert.ok(A.validEmail(ok), ok);
-  for (const bad of ['', 'a@b', 'a@@b.co', '.a@b.co', 'a..b@c.co', 'a@-b.co', 'a b@c.co', 'a@b.c', '홍길동@naver.com', 'kimㅎ@gmail.com', 'аbc@gmail.com']) assert.ok(!A.validEmail(bad), bad);
+  for (const bad of ['', 'a@b', 'a@@b.co', '.a@b.co', 'a..b@c.co', 'a@-b.co', 'a b@c.co', 'a@b.c', '홍길동@example.com', 'kimㅎ@example.com', 'аbc@example.com']) assert.ok(!A.validEmail(bad), bad);
   assert.deepEqual(A.validate({ email: 'a@b.co', consent: true }), {});
   assert.deepEqual(A.validate({ email: 'x', consent: false }), { email: 'errEmail', consent: 'errConsent' });
 });
