@@ -1099,6 +1099,7 @@ test('번역 초안: 한도 · 쉼 · 대조 실패를 알리고, 계정이 바�
   app.click('trSend');
   await settle();
   assert.match(pageText(app), /오늘 만들 수 있는 10장을 다 썼어요/);
+  assert.match(pageText(app).split('한국어 초안 만들기')[1] || '', /오늘 만들 수 있는 10장을 다 썼어요/, '실패 알림은 보내기 단추 바로 아래에 그린다');
   assert.equal(app.root.querySelector('#tr-text').value, PASTE, '붙여 넣은 글은 남긴다');
   const off = await openTranslate(t, { signedIn: true });
   off.click('trOpen', '[data-id="wku-ug-grad"]');
@@ -1112,7 +1113,7 @@ test('번역 초안: 한도 · 쉼 · 대조 실패를 알리고, 계정이 바�
   fillTranslate(third);
   third.click('trSend');
   await settle();
-  assert.match(pageText(third), /다시 옮겨 견주지 못했어요\. 초안은 그대로 쓸 수 있어요/);
+  assert.match(pageText(third), /다시 옮겨 견주지 못했어요\. 초안은 이 화면에 남아 있으니 원문과 직접 견줘 보세요/);
   assert.match(pageText(third), /번역 초안 — 번역본이 아니에요/);
   third.switchOwner('other-account');
   await settle();

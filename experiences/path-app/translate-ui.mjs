@@ -51,7 +51,10 @@ const M = {
   notice3: ['비자 서류의 공식 접수는 본인이 KVAC에 하거나 등록 행정사에게 맡겨요.', 'For the visa, you file the official documents yourself at KVAC or through a registered administrative agent.', 'Визийн бичиг баримтыг KVAC-д өөрөө, эсвэл бүртгэлтэй захиргааны төлөөлөгчөөр (행정사) дамжуулан албан ёсоор өгнө.'],
   checkNote: ['대조는 뜻이 크게 달라진 곳만 찾아요. 이름, 학교 이름, 숫자는 직접 보세요.', 'The check only finds lines whose meaning changed a lot. Check names, school names and numbers yourself.', 'Тулгалт зөвхөн утга нь их өөрчлөгдсөн мөрийг олно. Нэр, сургуулийн нэр, тоог өөрөө шалгана уу.'],
   notCompared: ['자동 대조를 하지 못했어요. 원문과 다시 옮긴 몽골어를 직접 견줘 보세요.', 'The automatic check did not run. Compare the original and the back-translation yourself.', 'Автомат тулгалт хийгдсэнгүй. Эх хувь болон буцаан орчуулгыг өөрөө тулгана уу.'],
-  noBack: ['다시 옮겨 견주지 못했어요. 초안은 그대로 쓸 수 있어요.', 'The back-translation check did not finish. You can still use the draft.', 'Буцаан орчуулгаар тулгаж чадсангүй. Ноорог хэвээр ашиглах боломжтой.'],
+  noBack: ['다시 옮겨 견주지 못했어요. 초안은 이 화면에 남아 있으니 원문과 직접 견줘 보세요.', 'The back-translation check did not finish. The draft stays on this screen; compare it with the original yourself.', 'Буцаан орчуулгаар тулгаж чадсангүй. Ноорог энэ дэлгэц дээр үлдсэн тул эх бичвэртэй өөрөө тулгана уу.'],
+  noDiff: ['뜻이 크게 달라진 줄은 찾지 못했어요', 'No line with a large change in meaning was found', 'Утга нь их өөрчлөгдсөн мөр олдсонгүй'],
+  copied: ['초안을 복사했어요. 맨 위와 맨 아래에 「번역 초안」 표시가 함께 들어가요.', 'Copied the draft. The “translation draft” label is included at the top and bottom.', 'Ноорог хуулагдлаа. Эхэнд болон төгсгөлд «орчуулгын ноорог» гэсэн тэмдэглэгээ хамт орсон.'],
+  copyFail: ['복사하지 못했어요. 「초안 내려받기」를 써 주세요.', 'Could not copy. Use “Download draft”.', 'Хуулж чадсангүй. «Ноорог татах»-ыг ашиглана уу.'],
   source: ['원문', 'Original', 'Эх бичвэр'],
   draft: ['한국어 초안', 'Korean draft', 'Солонгос хэл дээрх ноорог'],
   back: ['다시 옮긴 몽골어', 'Back-translation', 'Буцаан орчуулга'],
@@ -126,16 +129,21 @@ export function renderTranslate(view) {
 ${tr.age === 'under14' ? both(en, M.under14Note, 'p', 'sx-store is-warn') : ''}
 ${tr.age === 'teen' ? `<label class="sx-check"><input type="checkbox" id="tr-guardian" data-action="trGuardian"${tr.guardian ? ' checked' : ''}${busy ? ' disabled' : ''}><span><span>${esc(P(M.guardian))}</span>${mnLine(M.guardian)}</span></label>` : ''}
 ${tr.age && tr.age !== 'under14' ? `<label class="sx-check"><input type="checkbox" id="tr-agree" data-action="trAgree"${tr.agree ? ' checked' : ''}${busy ? ' disabled' : ''}><span><span>${esc(P(M.agree))}</span>${mnLine(M.agree)}</span></label>` : ''}</section>`;
-  return `<div class="sx sx-tr">${back}${head}${notice}
+  // 보내기 실패 알림은 단추 바로 아래에 둔다(초점이 단추로 돌아오므로 쪽 맨 위에 두면 화면 밖이다).
+  return `<div class="sx sx-tr">${back}${head}
 ${rules}
 <section class="sx-tr-how" aria-labelledby="sx-tr-how-h"><h2 class="sx-h" id="sx-tr-how-h">${esc(P(M.howTitle))}</h2>${both(en, M.how1, 'p', 'sx-fine')}${both(en, M.how2, 'p', 'sx-fine')}</section>
 <div class="sx-field"><label for="tr-text">${esc(P(M.textLabel))}</label><textarea id="tr-text" class="sx-tr-text" lang="mn" rows="10" spellcheck="false" autocomplete="off" data-action="trText"${tr.error ? ' aria-invalid="true" aria-describedby="tr-err tr-count"' : ' aria-describedby="tr-count"'}${busy ? ' readonly' : ''}>${esc(tr.text || '')}</textarea><p class="sx-fine" id="tr-count">${esc(countText(tr.text, en))}</p>${err}</div>
 ${consent}
 <button type="button" class="sx-cta" data-action="trSend"${canSend ? '' : ' disabled'}>${esc(P(M.send))}</button>
-${busy ? `<p class="sx-note is-box" role="status"><span>${esc(P(M.waiting))}</span>${mnLine(M.waiting)}</p>` : ''}
-${both(en, M.quota, 'p', 'sx-fine')}${tr.remaining !== null && tr.remaining !== undefined ? `<p class="sx-fine">${L(`오늘 ${tr.remaining}장 더 만들 수 있어요.`, `${tr.remaining} left today.`)}</p>` : ''}
+${busy ? `<p class="sx-note is-box" role="status"><span>${esc(P(M.waiting))}</span>${mnLine(M.waiting)}</p>` : notice}
+${both(en, M.quota, 'p', 'sx-fine')}${leftLine(tr, en)}
 ${both(en, M.fine, 'p', 'sx-fine')}</div>`;
 }
+
+/** 오늘 남은 장(초안 연산). 값이 없으면 그리지 않는다. */
+const leftLine = (tr, en) => (Number.isInteger(tr.remaining)
+  ? both(en, [`오늘 ${tr.remaining}장 더 만들 수 있어요.`, `${tr.remaining} left today.`, `Өнөөдөр дахиад ${tr.remaining} хуудас гаргаж болно.`], 'p', 'sx-fine') : '');
 
 export function countText(text, en) {
   const lines = String(text || '').split(/\r\n?|\n/).filter((l) => l.trim()).length, n = [...String(text || '')].length;
@@ -151,10 +159,10 @@ function renderDraft(tr, en, rules) {
   const notices = `<ul class="sx-tr-notices">${[M.notice1, M.notice3].map((a) => `<li><span>${esc(P(a))}</span>${mnLine(a)}</li>`).join('')}</ul>`;
   let checkLine = '';
   if (tr.check === 'checking') checkLine = `<p class="sx-note" role="status"><span>${esc(P(M.checking))}</span>${mnLine(M.checking)}</p>`;
-  else if (tr.check === 'failed') checkLine = `<div class="sx-note is-box" role="status">${both(en, M.noBack)}<button type="button" class="sx-btn2 sm" data-action="trRecheck">${esc(P(M.recheck))}</button></div>`;
+  else if (tr.check === 'failed') checkLine = `<div class="sx-note is-box" role="status">${both(en, M.noBack)}<button type="button" class="sx-btn2 sm line" data-action="trRecheck">${esc(P(M.recheck))}</button></div>`;
   else if (tr.check === 'done') {
-    const summary = L(meaning ? `뜻이 달라 보이는 줄 ${meaning}곳` : '뜻이 크게 달라진 줄은 찾지 못했어요', meaning ? `${meaning} line${meaning === 1 ? '' : 's'} may differ in meaning` : 'No line with a large change in meaning was found');
-    checkLine = `<div class="sx-note" role="status">${tr.compared ? `<p><b>${esc(summary)}</b></p>` : both(en, M.notCompared)}${both(en, M.checkNote)}</div>`;
+    const summary = meaning ? [`뜻이 달라 보이는 줄 ${meaning}곳`, `${meaning} line${meaning === 1 ? '' : 's'} may differ in meaning`, `Утга нь өөр байж болзошгүй ${meaning} мөр байна`] : M.noDiff;
+    checkLine = `<div class="sx-note" role="status">${tr.compared ? `<p><b>${esc(P(summary))}</b></p>${mnLine(summary)}` : both(en, M.notCompared)}${both(en, M.checkNote)}</div>`;
   }
   // 걸린 줄이 없으면 「확인할 줄만 보기」를 두지 않고 모든 줄을 보인다(빈 목록이 되지 않게).
   const only = tr.onlyFlagged === true && flagged > 0;
@@ -167,7 +175,7 @@ function renderDraft(tr, en, rules) {
 <div class="sx-row2"><button type="button" class="sx-btn2 line" data-action="trEdit">${esc(P(M.edit))}</button><button type="button" class="sx-btn2 line" data-action="trFresh">${esc(P(M.fresh))}</button></div>`;
   const toggle = flagged === 0 ? '' : `<button type="button" class="sx-btn2 sm" aria-pressed="${only}" data-action="trFlagged"><span class="sx-on">${ON}</span>${esc(P(M.onlyFlagged))} (${flagged})</button>`;
   return `<section class="sx-tr-draft" aria-labelledby="sx-tr-draft-h"><h2 class="sx-h sr-only" id="sx-tr-draft-h">${esc(P(M.draft))}</h2>${band}${notices}${rules}${checkLine}${toggle}
-<ol class="sx-tr-rows">${list}</ol>${tools}${tr.remaining !== null && tr.remaining !== undefined ? `<p class="sx-fine">${L(`오늘 ${tr.remaining}장 더 만들 수 있어요.`, `${tr.remaining} left today.`)}</p>` : ''}</section>`;
+<ol class="sx-tr-rows">${list}</ol>${tools}${tr.copied === 'copied' || tr.copied === 'copyFail' ? `<p class="sx-note" role="status"><span>${esc(P(M[tr.copied]))}</span>${mnLine(M[tr.copied])}</p>` : ''}${leftLine(tr, en)}</section>`;
 }
 
 /** 내려받기 · 복사할 글. 첫 줄과 끝 줄에 「번역 초안」을 한국어와 몽골어로, 확인할 줄에는 까닭을 단다. */

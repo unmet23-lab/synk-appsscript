@@ -667,7 +667,7 @@ async function trRunCheck(tr) {
   } catch (err) { failed = err; }
   if (trStale(tr, seq)) return;
   // 대조는 원장의 다른 연산(path.translate.check)이라 남은 장(초안 연산)을 바꾸지 않는다.
-  if (failed || reply.status !== 'done') { tr.check = 'failed'; render(false); say(accL('다시 옮겨 견주지 못했어요. 초안은 그대로 쓸 수 있어요.', 'The back-translation check did not finish. You can still use the draft.')); return; }
+  if (failed || reply.status !== 'done') { tr.check = 'failed'; render(false); say(accL('다시 옮겨 견주지 못했어요. 초안은 이 화면에 남아 있으니 원문과 직접 견줘 보세요.', 'The back-translation check did not finish. The draft stays on this screen; compare it with the original yourself.')); return; }
   Object.assign(tr, { check: 'done', compared: reply.compared, rows: draftRows(tr.sent.lines, tr.drafts, reply.lines, tr.sent.slots, trHidden()) });
   render(false);
   const n = tr.rows.filter((r) => r.verdict === 'differs' || r.verdict === 'unsure').length;
@@ -683,7 +683,11 @@ function render(focus = true) {
   if (!STUDY_ON && (S.page === 'univ' || UNIV_PAGES.includes(S.page))) S.page = 'today';
   if (!CHANNEL_ON && (S.page === 'channels' || S.page === 'post')) S.page = 'today';
   // 번역 초안: 계정이 바뀌었거나 로그아웃했으면 메모리의 원문과 초안을 지운다. 고른 서류가 없으면 내 길로.
-  if (S.tr && S.tr.owner !== ownerKey()) { const had = S.tr.phase !== 'edit' || S.tr.text; S.tr = null; if (had && S.page === 'translate') S.flash = esc(trMsg('account')); }
+  // 글도 초안도 없는 빈 쪽이면(손님이 이 쪽에서 로그인한 경우) 지우지 않고 새 계정의 빈 쪽으로 남긴다. 고른 나이 · 동의는 넘기지 않는다.
+  if (S.tr && S.tr.owner !== ownerKey()) {
+    const had = S.tr.phase !== 'edit' || S.tr.text;
+    if (had) { S.tr = null; if (S.page === 'translate') S.flash = esc(trMsg('account')); } else S.tr = newTr(S.tr.docId);
+  }
   if (S.page === 'translate' && (!S.tr || !trDoc())) { S.tr = null; S.page = STUDY_ON ? 'path' : 'today'; }
   const accSt = session.status();
   const ae = document.activeElement;
@@ -888,9 +892,13 @@ const ACT = {
   async trCopy() {
     const found = trDoc();
     if (!S.tr?.rows || !found) return;
-    try { await navigator.clipboard.writeText(draftText(S.tr.rows, found.doc.name)); S.flash = esc(accL('초안을 복사했어요. 맨 위와 맨 아래에 「번역 초안」 표시가 함께 들어가요.', 'Copied the draft. The “translation draft” label is included at the top and bottom.')); }
-    catch { S.flash = esc(accL('복사하지 못했어요. 「초안 내려받기」를 써 주세요.', 'Could not copy. Use “Download draft”.')); }
-    render(false); root.querySelector('[data-action="trCopy"]')?.focus(); say(S.flash);
+    // 결과 글은 단추 줄 바로 아래에 그린다(쪽 맨 위 알림 줄은 이 자리에서 보이지 않는다).
+    const tr = S.tr;
+    try { await navigator.clipboard.writeText(draftText(tr.rows, found.doc.name)); tr.copied = 'copied'; }
+    catch { tr.copied = 'copyFail'; }
+    if (S.tr !== tr) return;
+    render(false); root.querySelector('[data-action="trCopy"]')?.focus();
+    say(tr.copied === 'copied' ? accL('초안을 복사했어요. 맨 위와 맨 아래에 「번역 초안」 표시가 함께 들어가요.', 'Copied the draft. The “translation draft” label is included at the top and bottom.') : accL('복사하지 못했어요. 「초안 내려받기」를 써 주세요.', 'Could not copy. Use “Download draft”.'));
   },
   trDownload() {
     const found = trDoc();
