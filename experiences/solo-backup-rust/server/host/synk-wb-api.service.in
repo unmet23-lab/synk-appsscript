@@ -16,6 +16,9 @@ Type=simple
 User=10771
 Group=10771
 WorkingDirectory=@APP@
+# Every start (host-install, the company stack, a restart) first checks, as root, that both halves
+# of each RPC pair are equal; a split pair keeps the api down and says so in the journal.
+ExecStartPre=+/usr/bin/python3 -I -B @OFFSITE@/wb-pair-check.py
 ExecStart=@NODE@ @APP@/main.mjs api
 Restart=on-failure
 RestartSec=5

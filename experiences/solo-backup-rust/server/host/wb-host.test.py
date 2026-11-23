@@ -53,11 +53,22 @@ class Units(unittest.TestCase):
         self.assertEqual(M.bucket_sha('A=1\nSYNK_BACKUP_GCS_DESTINATION="gs://abc-def/company/production"\n'), hashlib.sha256(b'abc-def').hexdigest())
         for bad in ('', 'SYNK_BACKUP_GCS_DESTINATION=gs://a/x\nSYNK_BACKUP_GCS_DESTINATION=gs://b/x\n', 'SYNK_BACKUP_GCS_DESTINATION=s3://abc/x\n'):
             with self.assertRaises(M.Refused): M.bucket_sha(bad)
+    def test_api_checks_its_pairs_before_every_start(self):
+        u = self.unit('synk-wb-api.service')
+        self.assertIn('ExecStartPre=+/usr/bin/python3 -I -B /opt/synk/workbackup/offsite/cccc/wb-pair-check.py' + chr(10), u)
+        self.assertEqual(sorted(self.req['payload']['offsite']), sorted(M.ROOT_TOOLS))
+    def test_sudo_input_logging_is_read_conservatively(self):
+        self.assertFalse(M.sudoers_log_input('Defaults env_reset\nDefaults !log_input\n# Defaults log_input\n'))
+        for on in ('Defaults log_input', 'Defaults:synk log_input', 'Defaults>root log_stdin', 'Defaults!/usr/bin/python3 log_input',
+                   'Defaults log_input\nDefaults:root !log_input', 'Defaults   env_reset,log_input'):
+            self.assertTrue(M.sudoers_log_input(on), on)
     def test_admin_wrapper_uses_the_api_box(self):
         w = M.wb_admin(self.req, pathlib.PurePosixPath('/opt/synk/workbackup/app/aaaa'), pathlib.PurePosixPath('/opt/synk/workbackup/runtime/node-bbbb')).decode()
         self.assertIn("-p 'User=10771'", w); self.assertIn("-p 'TemporaryFileSystem=/srv/synk:ro'", w)
         self.assertNotIn('Requisite=', w); self.assertIn("-p 'StopPropagatedFrom=synk-company.service'", w); self.assertNotIn('PartOf=', w)
         self.assertTrue(w.rstrip().endswith('/opt/synk/workbackup/app/aaaa/admin.mjs "$@"'))
         self.assertIn('--pipe', w)
+        self.assertIn("-p 'ExecStartPre=+/usr/bin/systemctl is-active --quiet synk-company.service'", w)
+        self.assertIn("-p 'ExecStartPre=+/usr/bin/mountpoint -q /srv/synk'", w)
 
 if __name__ == '__main__': unittest.main()

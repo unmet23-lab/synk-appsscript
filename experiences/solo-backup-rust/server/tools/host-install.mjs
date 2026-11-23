@@ -34,7 +34,9 @@ export function payload() {
   const app = {};
   for (const name of fs.readdirSync(server).filter((n) => /^[a-z0-9-]+\.mjs$/.test(n)).sort()) app[name] = b64(path.join(server, name));
   const hostFiles = Object.fromEntries(HOST_FILES.map((n) => [n, b64(path.join(host, n))]));
-  return { app, offsite: { 'wb-offsite.py': b64(path.join(host, 'wb-offsite.py')) }, host: hostFiles };
+  // Root tools: the daily copy and the api's pair check (ExecStartPre=+), installed side by side.
+  const offsite = Object.fromEntries(['wb-offsite.py', 'wb-pair-check.py'].map((n) => [n, b64(path.join(host, n))]));
+  return { app, offsite, host: hostFiles };
 }
 
 // settings.env per role: non-secret values only (config.mjs refuses WB_SECRET names).
