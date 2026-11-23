@@ -268,6 +268,28 @@ button.frow:hover span{color:var(--paper);text-decoration-color:var(--paper)}
   .stage{height:180px}
 }
 
+/* 직원의 공식 창(모형). 솔리오가 그 직원 세션의 이름표로 열어, 하던 대화가 위에 그대로 있다 */
+.win{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:24px 16px;background:rgba(0,0,0,.62)}
+.win-box{width:min(720px,100%);height:min(560px,100%);display:grid;grid-template-rows:auto auto 1fr auto;background:var(--pit);border:1px solid var(--hair-strong);border-radius:10px;box-shadow:0 30px 60px -20px rgba(0,0,0,.9);overflow:hidden}
+.win-head{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 16px;border-bottom:1px solid var(--hair)}
+.win-head b{font:600 13px/1.3 var(--sans);color:var(--text)}
+.win-tag{font:400 11px/1 var(--mono);color:var(--dim);padding:4px 8px;border:1px solid var(--hair-strong);border-radius:999px}
+.win-x{margin-left:auto;display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:6px;background:none;color:var(--dim);cursor:pointer}
+.win-x:hover{background:var(--lift);color:var(--text)}
+.win-x svg{width:12px;height:12px}
+.win-cmd{margin:0;padding:12px 16px 2px;font:400 12px/1.5 var(--mono);color:var(--faint);overflow-wrap:anywhere}
+.win-log{overflow:auto;padding:6px 16px 16px;font:400 13px/1.62 var(--mono);color:var(--text)}
+.win-log p{margin:0 0 4px;overflow-wrap:anywhere}
+.win-log .u{margin-top:14px;color:var(--dim)}
+.win-log .u::before{content:'› '}
+.win-log .u i{font-style:normal;color:var(--faint);margin-right:8px}
+.win-log .wait{color:var(--faint)}
+.win-in{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--hair)}
+.win-in:focus-within{box-shadow:inset 0 1px 0 var(--ring)}
+.win-in>span{font:400 14px/1 var(--mono);color:var(--dim)}
+.win-in input{flex:1;min-width:0;padding:4px 0;border:0;background:none;color:var(--text);font:400 13px/1.5 var(--mono);outline:none}
+.win-in input::placeholder{color:var(--faint)}
+
 /* 시안 조작 막대. 디자인의 일부가 아니다 */
 #meta{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:max(12px,env(safe-area-inset-top,0px));z-index:9;display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--meta-bg);border:1px solid var(--hair);max-width:calc(100% - 32px);overflow-x:auto;scrollbar-width:none;transition:opacity .4s ease}
 #meta.away{opacity:0;pointer-events:none}
@@ -330,6 +352,14 @@ button.frow:hover span{color:var(--paper);text-decoration-color:var(--paper)}
       </div>
       <aside class="side" id="side" aria-label="이 부서"></aside>
     </main>
+  </div>
+</div>
+<div class="win" id="win" hidden>
+  <div class="win-box" role="dialog" aria-modal="true" aria-labelledby="win-title">
+    <header class="win-head"><b id="win-title"></b><span class="win-tag" id="win-tag"></span><button class="win-x" type="button" id="win-x" aria-label="창 닫기"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2 2 12" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button></header>
+    <p class="win-cmd" id="win-cmd"></p>
+    <div class="win-log" id="win-log" aria-live="polite"></div>
+    <form class="win-in" id="win-form"><span aria-hidden="true">›</span><label class="sr" for="win-msg">이어서 말하기</label><input id="win-msg" autocomplete="off" placeholder="여기에 이어서 말하면 됩니다"></form>
   </div>
 </div>
 <div id="meta" role="toolbar" aria-label="시안 조작">
@@ -698,7 +728,7 @@ let paintedAt = {};
 function msgHTML(m) {
   const fresh = m.born && m.born > (paintedAt[sel] || 0) && !still ? ' fresh' : '';
   if (m.t === 'day') return `<p class="day">${esc(m.text)}</p>`;
-  if (m.t === 'me') return `<div class="me${fresh}"><p>${esc(m.text)}</p><time>${esc(m.at)}</time></div>`;
+  if (m.t === 'me') return `<div class="me${fresh}"><p>${esc(m.text)}</p><time>${m.via ? esc(m.via) + ' · ' : ''}${esc(m.at)}</time></div>`;
   if (m.t === 'act') {
     const s = m.wake && byId(m.wake);
     return `<div class="act${m.warn ? ' warn' : ''}${fresh}">${ICON[m.icon || 'to']}<span>${esc(m.text)}</span>${m.quote ? `<q>${esc(m.quote)}</q>` : ''}<time>${esc(m.at)}</time>`
@@ -885,20 +915,20 @@ function webBuild(text, onDone) {
   later(T(6400), () => {
     fin(b, '한 장짜리 가게 홈페이지를 만들었습니다. 소개, 메뉴 셋, 정기배송 신청 버튼을 넣었고, 이 PC에서 열어 화면을 찍었습니다.', {
       long:['바꾼 파일은 index.html, style.css 둘이고, 사진 자리 하나는 비워 두었습니다.', '소개 글은 기획부의 사업계획서 4판에서, 정기배송 값(월 29,000원)은 회계부 자료에서 가져왔습니다.', '아직 하지 않은 것: 결제는 붙이지 않았습니다. 신청 버튼은 신청 양식으로 갑니다.'],
-      shot:'wide', verb:'Claude가 남긴 답 그대로 · 바꾼 파일 둘', win:true});
+      shot:'wide', verb:'Claude가 남긴 답 그대로 · 바꾼 파일 둘', win:true, prompt:text});
     (MADE[k] ||= []).unshift(['index.html', '방금']);
     if (!r) { onDone?.(b, {text:'홈페이지를 지었습니다.'}); refresh(); return; }
     if (r.status === 'working') { push(k, said(r.id, '결제 화면의 시험을 모두 통과했습니다. 도우미 둘이 나눠 돌렸습니다.', hhmm(), {src:'시험 42개 · 21분'})); push(k, {t:'act', text:`${이가(r.name)} 하던 시험을 끝내고 검수를 맡았습니다`, at:hhmm()}); }
     go(r, `${이가(b.name)} 바꾼 곳을 보는 중`);
     later(T(5200), () => {
-      fin(r, '바꾼 곳 둘을 봤습니다. 고칠 것이 하나 있습니다. 휴대폰 너비(390px)에서 정기배송 신청 버튼이 화면 오른쪽 밖으로 밀립니다. 나머지는 그대로 두어도 됩니다.', {verb:'GPT가 남긴 답 그대로 · 본 파일 둘', win:true});
+      fin(r, '바꾼 곳 둘을 봤습니다. 고칠 것이 하나 있습니다. 휴대폰 너비(390px)에서 정기배송 신청 버튼이 화면 오른쪽 밖으로 밀립니다. 나머지는 그대로 두어도 됩니다.', {verb:'GPT가 남긴 답 그대로 · 본 파일 둘', win:true, relay:true, prompt:`${이가(b.name)} 바꾼 곳을 봐 주세요. ${b.name}의 답과 바꾼 파일을 함께 보냅니다.`});
       push(k, {t:'act', text:`고칠 것을 ${b.name}에게 다시 맡겼습니다 · 검수 1번째`, at:hhmm()});
       go(b, '버튼 자리를 고치는 중');
       later(T(4200), () => {
-        fin(b, '휴대폰 너비에서 버튼이 화면 안에 들어오게 고쳤습니다. 390px에서 다시 찍은 화면입니다.', {shot:'phone', verb:'Claude가 남긴 답 그대로 · 바꾼 파일 하나', win:true});
+        fin(b, '휴대폰 너비에서 버튼이 화면 안에 들어오게 고쳤습니다. 390px에서 다시 찍은 화면입니다.', {shot:'phone', verb:'Claude가 남긴 답 그대로 · 바꾼 파일 하나', win:true, relay:true, prompt:`${r.name}의 검수: 휴대폰 너비(390px)에서 정기배송 신청 버튼이 화면 오른쪽 밖으로 밀립니다.`});
         go(r, '다시 보는 중');
         later(T(3600), () => {
-          fin(r, '다시 봤습니다. 고칠 것이 없습니다.', {verb:'GPT가 남긴 답 그대로'});
+          fin(r, '다시 봤습니다. 고칠 것이 없습니다.', {verb:'GPT가 남긴 답 그대로', win:true, relay:true, prompt:`${이가(b.name)} 고쳤습니다. 다시 봐 주세요.`});
           push(k, {t:'act', icon:'ok', text:'검수를 마쳤습니다 · 2번째에 통과', at:hhmm()});
           onDone?.(b, {text:'가게 홈페이지를 지었습니다.', lead:'가게 홈페이지를 지었고, GPT 검수 2번째에 통과했습니다.'});
           refresh();
@@ -1036,6 +1066,65 @@ function addDept(name) {
   select(key);
 }
 
+/* 「창에서 이어 말하기」: 솔리오는 직원 세션을 띄울 때 받은 이름표로 그 직원의 공식 창을 연다. 처음부터가 아니라 하던 대화가 위에 그대로 있고, 입력칸이 바로 아래다.
+   Claude는 부서 폴더에서 claude --resume <이름>, GPT는 codex resume <ID>로 연다. 창에서 나눈 말은 같은 세션 기록에 남으므로 이 대화에도 붙는다 */
+const winEl = $('#win'), winLog = $('#win-log'), winMsg = $('#win-msg'), winX = $('#win-x');
+let winSid = null, winBack = null;
+const fakeId = s => {
+  const k = s.id + s.name; let h = 2166136261, x = '';
+  for (let i = 0; i < 32; i++) { h = Math.imul(h ^ k.charCodeAt(i % k.length) ^ i, 16777619) >>> 0; x += (h >>> 7 & 15).toString(16); }
+  return `019a${x.slice(4, 8)}-${x.slice(8, 12)}-7${x.slice(13, 16)}-${x.slice(16, 20)}-${x.slice(20, 32)}`;
+};
+/* 그 직원 세션에 오간 말: 직원에게 보낸 말(유호님이 적은 것, 솔리오가 전한 것)과 직원의 답 */
+function winTurns(s) {
+  const out = []; let ask = null;
+  for (const m of threads[s.zone] || []) {
+    if (m.t === 'me') ask = {text:m.text};
+    else if (m.t === 'staff' && m.sid === s.id) { out.push({u:m.prompt ? {text:m.prompt, relay:m.relay} : ask, a:[m.text, ...(m.long || [])]}); ask = null; }
+    else if (m.t === 'staff') ask = null;
+  }
+  return out;
+}
+function renderWin(s) {
+  const d = deptOf(s.zone) || {};
+  $('#win-title').textContent = `${d.name || ''} · ${s.name}`;
+  $('#win-tag').textContent = `${brand(s)} 공식 창`;
+  $('#win-cmd').textContent = `${d.dir || ''}> ` + (s.tool === 'Codex' ? `codex resume ${fakeId(s)}` : `claude --resume "${d.name || ''} ${s.name}"`);
+  winLog.innerHTML = winTurns(s).map(t => (t.u ? `<p class="u">${t.u.relay ? '<i>솔리오가 전함</i>' : ''}${esc(t.u.text)}</p>` : '') + t.a.map(p => `<p>${esc(p)}</p>`).join('')).join('');
+  winLog.scrollTop = winLog.scrollHeight;
+}
+function openWin(s) {
+  winSid = s.id; winBack = document.activeElement;
+  renderWin(s); winEl.hidden = false; winMsg.value = ''; winMsg.focus();
+  winLog.scrollTop = winLog.scrollHeight;
+}
+function closeWin() {
+  if (!winSid) return;
+  winEl.hidden = true; winSid = null;
+  if (winBack && winBack.isConnected) winBack.focus(); else msgEl.focus();
+}
+$('#win-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const s = byId(winSid), text = winMsg.value.trim(); if (!s || !text) return;
+  winMsg.value = '';
+  push(s.zone, {t:'me', text, at:hhmm(), via:'창에서'});
+  winLog.insertAdjacentHTML('beforeend', `<p class="u">${esc(text)}</p><p class="wait">답하는 중</p>`); winLog.scrollTop = winLog.scrollHeight;
+  refresh({toEnd:true});
+  later(still ? 500 : 1600, () => {
+    const reply = s.tool === 'Codex' ? '네, 앞에서 본 곳에 이어서 보겠습니다.' : s.zone === 'dev' ? '네, 앞에서 만든 홈페이지에 이어서 하겠습니다. 바꾼 뒤 휴대폰 너비 화면을 다시 찍어 두겠습니다.' : '네, 앞의 대화에 이어서 하겠습니다.';
+    push(s.zone, said(s.id, reply, hhmm(), {prompt:text, verb:`${brand(s)} 창에서 나눈 말 그대로`, win:true}));
+    winLog.querySelector('.wait')?.remove();
+    if (winSid === s.id) { winLog.insertAdjacentHTML('beforeend', `<p>${esc(reply)}</p>`); winLog.scrollTop = winLog.scrollHeight; }
+    refresh({toEnd:true});
+  });
+});
+winEl.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); closeWin(); }
+  else if (e.key === 'Tab') { const f = [winX, winMsg], i = f.indexOf(document.activeElement); e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); }
+});
+winEl.addEventListener('click', e => { if (e.target === winEl) closeWin(); });
+winX.addEventListener('click', closeWin);
+
 /* ── 손 ── */
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-chat],[data-go],[data-approve],[data-wake],[data-doc],[data-chip],[data-move],[data-open],[data-more],[data-win]');
@@ -1049,10 +1138,7 @@ document.addEventListener('click', e => {
     const m = (threads[sel] || []).find(x => String(x.id) === t.dataset.more); if (!m) return;
     m.more = !m.more; const box = t.closest('.mc')?.querySelector('.long'); if (box) box.hidden = !m.more; t.textContent = m.more ? '줄여 보기' : '전체 답 보기';
   }
-  else if (t.dataset.win) {
-    const s = byId(t.dataset.win); if (!s) return;
-    push(sel, {t:'act', icon:'ok', text:`${s.name}의 창을 열었습니다. 거기서 이어 말한 것도 이 대화에 이어집니다`, at:hhmm()}); refresh({toEnd:true});
-  }
+  else if (t.dataset.win) { const s = byId(t.dataset.win); if (s) openWin(s); }
   else if (t.dataset.open) {
     const m = (threads[sel] || []).find(x => String(x.id) === t.dataset.open), card = threadEl.querySelector(`[data-doc="${t.dataset.open}"]`); if (!m || !card) return;
     m.open = true; card.setAttribute('aria-expanded', 'true'); card.querySelector('.dfoot').textContent = '접기';

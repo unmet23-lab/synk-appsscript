@@ -31,6 +31,8 @@ const 장면 = [
   ['8_좁은창_1024', 1024, 720, '#dev'],
   ['11_개발부_홈페이지_검수', 1440, 900, '#dev', async p => { await p.click('[data-chip="가게 홈페이지 만들어 줘"]'); await 쉼(13000); }],
   ['12_개발부_홈페이지_통과', 1440, 900, '#dev', async p => { await p.click('[data-chip="가게 홈페이지 만들어 줘"]'); await 쉼(22500); await p.evaluate(() => { const t = document.getElementById('thread'); const b = [...t.querySelectorAll('.msg')].find(m => m.querySelector('.shot')); if (b) t.scrollTop += b.getBoundingClientRect().top - t.getBoundingClientRect().top - 16; }); }],
+  ['13_개발부_창에서_이어말하기', 1440, 900, '#dev', async p => { await p.click('[data-chip="가게 홈페이지 만들어 줘"]'); await 쉼(22500); await p.click('[data-win]'); await 쉼(400); await p.fill('#win-msg', '메뉴에 계절 한정 하나 더 넣어 줘'); await p.press('#win-msg', 'Enter'); await 쉼(2400); }],
+  ['14_개발부_창에서_나눈말', 1440, 900, '#dev', async p => { await p.click('[data-chip="가게 홈페이지 만들어 줘"]'); await 쉼(22500); await p.click('[data-win]'); await 쉼(400); await p.fill('#win-msg', '메뉴에 계절 한정 하나 더 넣어 줘'); await p.press('#win-msg', 'Enter'); await 쉼(2400); await p.keyboard.press('Escape'); await 쉼(600); }],
   ['9_휴대폰_목록', 420, 800, '#list'],
   ['10_휴대폰_방', 420, 800, '#law'],
 ];
