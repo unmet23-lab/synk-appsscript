@@ -463,6 +463,13 @@ html[data-motion="reduced"] #portal-entry .dial .d-sweep,html[data-motion="reduc
 /* 구독 방에서 맨 아래 글이 비면(구독이 없어 모델별 토큰 줄만 선 때) 단추 하나가 문장 아래 왼쪽에 선다 */
 #portal-entry .room[data-room="solio"] .read:has(> [data-read]:empty){justify-content:flex-start}
 #portal-entry .room[data-room="solio"] .read > [data-read]:empty{display:none}
+/* 연결한 구독이 없을 때 먼저 할 일 하나(11-23 맹검: 작은 글 단추라 할 일이 안 보였다). 꽉 찬 단추는 이 방에서 이것 하나다(DESIGN 11-23 「꽉 찬 단추는 먼저 할 일 하나」) */
+#portal-entry .sub-start{margin:clamp(28px,5.4vh,52px) 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px}
+#portal-entry .sub-start[hidden]{display:none}
+#portal-entry .sub-go{appearance:none;height:54px;margin:0;padding:0 34px;border:1px solid var(--paper);border-radius:999px;background:var(--paper);font:600 16px/1 var(--orb-sans);color:var(--void);cursor:pointer;white-space:nowrap;transition:background-color .25s ease,border-color .25s ease}
+#portal-entry .sub-go:hover{background:#FFFFFF;border-color:#FFFFFF}
+#portal-entry .sub-go:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
+#portal-entry .sub-start span{font:var(--small);color:var(--dim)}
 
 /* 사무실에서 직접 맡긴 일과 답변 */
 #portal-entry .off-task-panel,

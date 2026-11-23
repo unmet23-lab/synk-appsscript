@@ -482,6 +482,10 @@ test('token line: switched off says so dimly, explains what it reads and offers 
   assert.equal(tokRow({ ok: false, code: 'SIGN_IN_REQUIRED' }, tokSt(), NOW), null);
   const row = tokRow({ ok: true, enabled: false }, tokSt(), NOW);
   assert.deepEqual([row.key, row.nm, row.mid, row.unread, row.watch], ['tok', '모델별 토큰', '꺼져 있습니다', true, true]);
+  // 이름 아래 한 줄이 「토큰」을 풀어 준다(11-23 맹검: 설명 없이 나온 기술 낱말)
+  assert.equal(row.sub, 'AI가 답으로 쓴 글의 양');
+  assert.ok(row.label.startsWith('모델별 토큰, AI가 답으로 쓴 글의 양, 꺼져 있습니다'));
+  assert.equal(tokRow(tokOn(), tokSt(), NOW).sub, 'AI가 답으로 쓴 글의 양', 'the counted line keeps the same explanation');
   assert.equal(row.more[0][1], '모델마다 AI가 답으로 쓴 토큰을 셉니다. 토큰은 AI가 읽고 쓴 글의 양입니다.');
   assert.ok(kinds(row.more, 'note').some(n => /끄면 모두 지웁니다\.$/.test(n[1])), 'what stays on this PC and that switching off clears it');
   assert.deepEqual(actsOf(row.more).map(a => a[1]), ['tok-on']);

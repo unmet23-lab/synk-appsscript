@@ -1,7 +1,7 @@
 // 솔리오 「사무실」의 상태 규칙 · 맨 위 문장 · 부서 · 수용 인원(구현설계.md 4~7절, 14.1). 소식은 합성이고 때는 고정값이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { officeState, officeReduce, officeSessions, officePrune, officeDepartmentOf, officeIgnoredCwd, officeActivity, officeHeadline, officeCapacity, officeSeats, countWord, OFFICE_TIMES } from '../renderer/office-model.mjs';
+import { officeState, officeReduce, officeSessions, officePrune, officeDepartmentOf, officeIgnoredCwd, officeActivity, officeFolderName, officeHeadline, officeCapacity, officeSeats, countWord, OFFICE_TIMES } from '../renderer/office-model.mjs';
 
 const S = 1e3, M = 60e3, H = 3600e3;
 const T0 = new Date(2026, 10, 20, 9, 0).getTime(); // 2026-11-20 09:00
@@ -13,6 +13,16 @@ const idle = (at, extra = {}) => hook('Notification', at, { notificationType: 'i
 const fold = (events, ctx, from = officeState()) => events.reduce((st, e) => officeReduce(st, e, ctx), from);
 const one = (state, now, ctx) => officeSessions(state, now, ctx)[0] ?? null;
 const shape = v => (v ? [v.status, v.say, v.alert] : null);
+
+test('folder names: a Claude Code worktree folder reads as its repository, other folders keep their last part (11-23 blind review)', () => {
+  assert.equal(officeFolderName('D:\\SYNK-worktrees\\SYNK-appsscript\\peaceful-rhodes-e8e7dc'), 'SYNK-appsscript');
+  assert.equal(officeFolderName('C:\\code\\shop\\.claude\\worktrees\\vigilant-jackson-a5f00e\\'), 'shop');
+  assert.equal(officeFolderName('C:/code/shop/.claude/worktrees/vigilant-jackson-a5f00e'), 'shop');
+  assert.equal(officeFolderName('C:\\work\\shop'), 'shop');
+  assert.equal(officeFolderName('C:\\work\\peaceful-rhodes-e8e7dc'), 'peaceful-rhodes-e8e7dc', 'the worktree look alone is not enough');
+  assert.equal(officeFolderName('C:\\Users\\a\\.codex\\worktrees\\1a2b\\shop'), 'shop', 'Codex worktrees already end in the repository name');
+  assert.equal(officeActivity({ cwd: 'D:\\SYNK-worktrees\\SYNK-appsscript\\peaceful-rhodes-e8e7dc', lastTool: { name: 'Read', detail: 'a.md' } }), 'SYNK-appsscript · 읽기 · a.md');
+});
 
 test('the 4.1 table walked as events: working, asked, no news, done, resting', () => {
   let st = fold([hook('SessionStart', T0, { model: 'claude-opus-5-5' }), hook('PostToolUse', T0 + 10 * S, { toolName: 'Read', toolDetail: 'auth.ts' })]);
@@ -165,13 +175,13 @@ test('a session that asked for approval stays up to 12 hours, then comes back fr
   assert.equal(one(st, T0 + M + 12 * H), null);
   // 12시간 뒤에 기록만 바뀌면 옛 물음을 끌고 오지 않고 훅 소식이 없는 세션으로 선다
   const back = one(officeReduce(st, rec(T0 + 13 * H)), T0 + 13 * H + S);
-  assert.deepEqual([back.status, back.hooked, back.alert, back.note], ['working', false, false, '승인 물음은 모릅니다']);
+  assert.deepEqual([back.status, back.hooked, back.alert, back.note], ['working', false, false, '승인 요청은 여기에 뜨지 않습니다']);
 });
 
 test('a session without hook news says working within 90 seconds, quiet up to 30 minutes, then is not shown', () => {
   const st = fold([rec(T0)]);
   const v = one(st, T0 + 90 * S - 1);
-  assert.deepEqual([...shape(v), v.hooked, v.note, v.activity], ['working', '일하는 중', false, false, '승인 물음은 모릅니다', 'shop']);
+  assert.deepEqual([...shape(v), v.hooked, v.note, v.activity], ['working', '일하는 중', false, false, '승인 요청은 여기에 뜨지 않습니다', 'shop']);
   assert.deepEqual(shape(one(st, T0 + 90 * S)), ['quiet', '1분째 조용합니다', false]);
   assert.deepEqual(shape(one(st, T0 + 30 * M - 1)), ['quiet', '29분째 조용합니다', false]);
   assert.equal(one(st, T0 + 30 * M), null);
@@ -261,7 +271,7 @@ test('a session without hook news never says approval or done and never gets an 
     const v = one(st, t);
     assert.ok(['working', 'quiet'].includes(v.status), String(t - T0));
     assert.equal(v.alert, false);
-    assert.equal(v.note, '승인 물음은 모릅니다');
+    assert.equal(v.note, '승인 요청은 여기에 뜨지 않습니다');
   }
   assert.deepEqual([one(st, T0).tool, one(st, T0).activity], ['codex', 'pay']);
 });
@@ -357,14 +367,14 @@ test('headline: an approval question comes first with the right particle', () =>
 
 test('headline: working counts, no news, and over capacity', () => {
   const work = n => Array.from({ length: n }, (_, i) => hook('PostToolUse', T0, at('w' + i, 'C:\\dev')));
-  assert.deepEqual(Object.values(headOf(work(3), T0 + M)).slice(0, 2), ['셋이 일하고 있습니다.', '']);
-  assert.deepEqual(Object.values(headOf(work(3), T0 + 13 * M)).slice(0, 2), ['셋이 일하고 있습니다.', '개발부가 13분째 소식이 없습니다.']);
+  assert.deepEqual(Object.values(headOf(work(3), T0 + M)).slice(0, 2), ['직원 셋이 일하고 있습니다.', '']);
+  assert.deepEqual(Object.values(headOf(work(3), T0 + 13 * M)).slice(0, 2), ['직원 셋이 일하고 있습니다.', '개발부가 13분째 소식이 없습니다.']);
   const over = headOf(work(10), T0 + M, { cap: 8 });
-  assert.deepEqual([over.say, over.active], ['여덟까지인데 지금 열이 일하고 있습니다.', 10]);
-  assert.equal(headOf(work(8), T0 + M, { cap: 8 }).say, '여덟이 일하고 있습니다.');
+  assert.deepEqual([over.say, over.active], ['여덟까지인데 지금 직원 열이 일하고 있습니다.', 10]);
+  assert.equal(headOf(work(8), T0 + M, { cap: 8 }).say, '직원 여덟이 일하고 있습니다.');
   // 승인을 물은 직원도 수용 인원에 센다
   const withAsk = headOf([...work(8), ask(T0, at('l', 'C:\\law'))], T0 + M, { cap: 8 });
-  assert.deepEqual([withAsk.say, withAsk.then], ['법무부가 1분 전에 승인을 물었습니다.', '여덟까지인데 지금 아홉이 일하고 있습니다.']);
+  assert.deepEqual([withAsk.say, withAsk.then], ['법무부가 1분 전에 승인을 물었습니다.', '여덟까지인데 지금 직원 아홉이 일하고 있습니다.']);
 });
 
 test('headline: all resting only when every shown session is known to rest', () => {
@@ -378,16 +388,18 @@ test('headline: all resting only when every shown session is known to rest', () 
 test('headline: sessions without hook news, Codex included, are counted as unknown, never as fine', () => {
   const mixed = [rec(T0, at('u1', 'C:\\dev')), rec(T0, at('u2', 'C:\\dev')), hook('PostToolUse', T0, at('h', 'C:\\law'))];
   const h = headOf(mixed, T0 + 30 * S);
-  assert.deepEqual([h.say, h.then, h.unknown], ['셋이 일하고 있습니다.', '둘은 승인 물음을 모릅니다.', 2]);
+  assert.deepEqual([h.say, h.then, h.unknown], ['직원 셋이 일하고 있습니다.', '둘은 승인 요청이 여기에 뜨지 않습니다.', 2]);
   // 쉬는 Claude 직원과 조용한 Codex 직원: 「모두 쉬고 있습니다」라고 하지 않는다
   const codex = [hook('PostToolUse', T0, at('h', 'C:\\law')), hook('Stop', T0 + 30 * S, at('h', 'C:\\law')), rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })];
   const c = headOf(codex, T0 + 5 * M);
-  assert.deepEqual([c.say, c.then, c.unknown], ['지금 일하는 중으로 보이는 직원은 없습니다.', '하나는 승인 물음을 모릅니다.', 1]);
+  assert.deepEqual([c.say, c.then, c.unknown], ['지금 일하는 중으로 보이는 직원은 없습니다.', '하나는 승인 요청이 여기에 뜨지 않습니다.', 1]);
   // 승인을 물은 직원이 있어도 둘째 줄은 모르는 수를 말한다
-  assert.equal(headOf([ask(T0, at('l', 'C:\\law')), rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + M).then, '하나는 승인 물음을 모릅니다.');
-  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev')), rec(T0, at('u2', 'C:\\dev'))], T0 + 5 * M).then, '모두 승인 물음을 모릅니다.');
-  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev'))], T0 + 5 * M).then, '승인 물음은 모릅니다.');
-  assert.equal(headOf([], T0, { hooksOn: false }).hint, '승인 물음은 설정에서 켜면 봅니다.');
+  assert.equal(headOf([ask(T0, at('l', 'C:\\law')), rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + M).then, '하나는 승인 요청이 여기에 뜨지 않습니다.');
+  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev')), rec(T0, at('u2', 'C:\\dev'))], T0 + 5 * M).then, '승인 요청은 Claude Code 창에서 확인해 주세요.');
+  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev'))], T0 + 5 * M).then, '승인 요청은 Claude Code 창에서 확인해 주세요.');
+  assert.equal(headOf([rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + 5 * M).then, '승인 요청은 Codex 창에서 확인해 주세요.');
+  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev')), rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + 5 * M).then, '승인 요청은 Claude Code와 Codex 창에서 확인해 주세요.');
+  assert.equal(headOf([], T0, { hooksOn: false }).hint, '승인 요청은 설정에서 켜면 여기에 뜹니다.');
   assert.equal(headOf([], T0, { hooksOn: true }).hint, '');
 });
 

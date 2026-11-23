@@ -778,14 +778,14 @@ if(!process.versions.electron){
           await capture(w,'office-rail-alert');
           await click(w,'#portal-entry [data-orb-prog="office"]');await wait(1200);
           const l1=await look(w);
-          check('22 entering 사무실: the question first, how many cannot tell, one row per department, the lobby, capacity, settings and 부서 더하기, and the floor',!l1.hidden&&l1.say==='개발부가 3분 전에 승인을 물었습니다.'&&l1.then==='하나는 승인 물음을 모릅니다.'&&JSON.stringify(l1.rows)===JSON.stringify(['d:qmkt|마케팅부|!','d:qdev|개발부|!','lobby|부서 없는 일|','cap|수용 인원|','cfg|설정|','add|부서 더하기|'])&&l1.zones==='d:qmkt d:qdev lobby'&&l1.view==='tilted'&&l1.slot,l1);
+          check('22 entering 사무실: the question first, how many cannot tell, one row per department, the lobby, capacity, settings and 부서 더하기, and the floor',!l1.hidden&&l1.say==='개발부가 3분 전에 승인을 물었습니다.'&&l1.then==='하나는 승인 요청이 여기에 뜨지 않습니다.'&&JSON.stringify(l1.rows)===JSON.stringify(['d:qmkt|마케팅부|!','d:qdev|개발부|!','lobby|부서 없는 일|','cap|수용 인원|','cfg|설정|','look|꾸미기|','add|부서 더하기|'])&&l1.zones==='d:qmkt d:qdev lobby'&&l1.view==='tilted'&&l1.slot,l1);
           check('22 entering turns the record watch on',(await calls(w)).includes('office-watch:true'));
           const motion=await w.js("(async()=>{const c="+ROOM+".querySelector('[data-off-floor]'),x=c.getContext('2d');const a=x.getImageData(0,0,c.width,c.height).data;await new Promise(r=>setTimeout(r,1200));const b=x.getImageData(0,0,c.width,c.height).data;let n=0,lit=0;for(let i=0;i<a.length;i+=4){if(a[i]>20||b[i]>20)lit++;if(Math.abs(a[i]-b[i])>24||Math.abs(a[i+3]-b[i+3])>24)n++;}return {w:c.width,h:c.height,changed:n,lit,share:Math.round(n/(a.length/4)*1e4)/1e4};})()");
           check('22 the floor is drawn and only small parts change in 1.2 s (blink, rim, the bouncing mark), no body or camera moves',motion.lit>500&&motion.share<0.01,motion);
           // 직원 줄: 승인 물음을 모르는 Codex 세션, 도우미 둘
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"]');await click(w,'#portal-entry [data-off-rows] button.row[data-key="lobby"]');await wait(800);
           const staff=await w.js("[..."+ROOM+".querySelectorAll('.row.staff')].map(r=>r.dataset.staff+'|'+r.querySelector('.nm').firstChild.textContent+'|'+r.querySelector('.mid b').textContent+'|'+(r.querySelector('.mid small')?.textContent||''))");
-          check('22 staff lines say the state, the folder and tool, the helpers, and that a Codex session cannot tell about questions',staff.includes('sess-qa-dev-01|Claude Code|3분 전에 승인을 물었습니다|shop · 명령 · npm')&&staff.includes('sess-qa-cdx-01|Codex|일하는 중|api · 승인 물음은 모릅니다')&&staff.includes('sess-qa-lob-01|Claude Code|일하는 중|회의록 · 읽기 · 회의록_1118.txt · 도우미 둘과 함께'),{staff});
+          check('22 staff lines say the state, the folder and tool, the helpers, and that a Codex session cannot tell about questions',staff.includes('sess-qa-dev-01|Claude Code|3분 전에 승인을 물었습니다|shop · 명령 · npm')&&staff.includes('sess-qa-cdx-01|Codex|일하는 중|api · 승인 요청은 여기에 뜨지 않습니다')&&staff.includes('sess-qa-lob-01|Claude Code|일하는 중|회의록 · 읽기 · 회의록_1118.txt · 도우미 둘과 함께'),{staff});
           await capture(w,'office-rows-open');
           await key(w,'Escape');await wait(600);
           await shoot(w,'office-tilted');
@@ -842,7 +842,7 @@ if(!process.versions.electron){
           const busy=[1,2,3,4].map(i=>({id:'sess-qa-busy-0'+i,cwd:i<3?MKT:SHOP,kind:'work',ago:15e3*i,toolName:'Read',detail:'파일'+i+'.md'}));
           await setBoard(w,board({sessions:busy,settings:{view:'tilted',manualCap:2}}));
           const l7=await look(w);
-          check('22 over capacity the headline says how many may work and how many do',l7.say==='둘까지인데 지금 넷이 일하고 있습니다.',l7);
+          check('22 over capacity the headline says how many may work and how many do',l7.say==='둘까지인데 지금 직원 넷이 일하고 있습니다.',l7);
           await shoot(w,'office-over',[[1440,900],[720,760]]);
           // 부서 여섯과 일곱: 일곱째부터는 그림에서 「그 밖」 한 구역으로 묶는다
           const six=['마케팅부','법무부','개발부','디자인부','회계부','고객지원부'].map((name,i)=>({id:'qd6'+i,name,folder:'C:\\qa\\부서'+i}));
@@ -859,7 +859,7 @@ if(!process.versions.electron){
           const recs=[{id:'sess-qa-rec-01',cwd:MKT,kind:'work',ago:20e3,hooked:false},{id:'sess-qa-rec-02',cwd:SHOP,kind:'work',ago:240e3,hooked:false},{id:'sess-qa-rec-03',tool:'codex',cwd:SHOP+'\\api',kind:'work',ago:30e3}];
           await setBoard(w,board({sessions:recs}));
           const lr=await look(w);
-          check('22 records only (the first piece): no ! on the object or any row, and the headline says once that it cannot tell about questions',lr.say==='둘이 일하고 있습니다.'&&lr.then==='모두 승인 물음을 모릅니다.'&&!lr.news&&!lr.rows.some(r=>r.endsWith('|!')),lr);
+          check('22 records only (the first piece): no ! on the object or any row, and the headline says once that it cannot tell about questions',lr.say==='직원 둘이 일하고 있습니다.'&&lr.then==='승인 요청은 Claude Code와 Codex 창에서 확인해 주세요.'&&!lr.news&&!lr.rows.some(r=>r.endsWith('|!')),lr);
           await shoot(w,'office-records-only',[[1440,900],[720,760]]);
           // 더했지만 지금 보지 않는 폴더(구독 방 계정 폴더이거나 2초 안에 답하지 않음)도 설정 줄에 남고 뺄 수 있다(설계 검토 be7 고칠 것 1)
           const resting='\\\\qa-share\\team\\.claude';
@@ -876,7 +876,7 @@ if(!process.versions.electron){
           // 세션이 하나도 없을 때
           await setBoard(w,board({departments:[],sessions:[]}));
           const l10=await look(w);
-          check('22 with no sessions the headline says nothing runs and no empty floor is drawn',l10.say==='지금 이 PC에서 도는 일이 없습니다.'&&l10.then==='Claude Code나 Codex에서 일을 시작하면 여기에 섭니다.'&&!l10.slot&&!l10.news&&JSON.stringify(l10.rows)===JSON.stringify(['cap|수용 인원|','cfg|설정|','add|부서 더하기|']),l10);
+          check('22 with no sessions the headline says nothing runs and no empty floor is drawn',l10.say==='지금 이 PC에서 도는 일이 없습니다.'&&l10.then==='Claude Code나 Codex에서 일을 시작하면 여기에 섭니다.'&&!l10.slot&&!l10.news&&JSON.stringify(l10.rows)===JSON.stringify(['cap|수용 인원|','cfg|설정|','look|꾸미기|','add|부서 더하기|']),l10);
           await shoot(w,'office-empty');
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(700);
           check('22 leaving the room at the end stops the record watch',(await calls(w)).filter(c=>c.startsWith('office-watch:')).at(-1)==='office-watch:false');

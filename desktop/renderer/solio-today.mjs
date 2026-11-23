@@ -360,7 +360,7 @@ export function solioToday({ native = true, signedIn = true, waiting = null, aut
   if (!snapshot) return { ...empty, state: 'loading', say: '', then: '' };
   const rows = snapshot.rows || [], checkAt = snapshot.check?.at || null, busy = checking || !!snapshot.checking;
   const groups = serviceGroups(rows, now, checkAt).filter(g => here(g).length > 0);
-  if (!groups.length) return { ...empty, state: 'none', say: '아직 연결한 AI 구독이 없습니다.', then: '구독을 연결하면 남은 양과 다시 차는 때를 여기에서 알려 드립니다.', action: 'connect' };
+  if (!groups.length) return { ...empty, state: 'none', say: '아직 연결한 AI 구독이 없습니다.', then: '연결하면 남은 양과 다시\u00a0차는\u00a0때를 알려 드립니다.', action: 'connect' };
   const facts = groups.filter(g => g.kind === 'weekly' && g.service).map(g => ({ g, name: groupName(g), fact: weeklyFact(snapshot, g, now) }));
   const factOf = g => facts.find(f => f.g === g)?.fact || null;
   const lines = groups.map(g => rowOf(snapshot, g, factOf(g), now, busy));

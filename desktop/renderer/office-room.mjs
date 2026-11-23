@@ -5,7 +5,7 @@
 //   ['item', 이름, 한 문장, 열림, 묶음 이름, 오른쪽] — 부서의 기능 줄(담은 것 16). 누르면 바로 아래 묶음(grp)이 열린다
 // 「꾸미기」 줄(솔리오_사무실스킨_20261123/PC앱_설계.md): 스킨과 자리마다의 모자 · 이름. 모두 무료다. 모습은 세션이 아니라 자리(부서마다 시작 시각 차례)에 붙는다.
 // 줄의 flag가 참이면 이름 옆에 느낌표가 붙는다(7절). 부서 줄과 「부서 없는 일」은 watch 줄이라, 열었다 닫으면 seen을 부른다(4.1 끝냄).
-import { officeSessions, officeHeadline, officeCapacity, officeSeats, countWord } from './office-model.mjs';
+import { officeSessions, officeHeadline, officeCapacity, officeSeats, countWord, officeFolderName } from './office-model.mjs';
 import { createOfficeTaskRoom, officeTaskHeadline } from './office-task-room.mjs';
 import { createBizplanRoom } from './office-bizplan-room.mjs';
 import { bizplanLine, attachesBizplan } from './office-bizplan-model.mjs';
@@ -52,8 +52,6 @@ const TOOL_NAME = Object.freeze({ claude: 'Claude Code', codex: 'Codex' });
 const flags = (...xs) => xs.filter(Boolean).join(' ');
 const pad = n => String(n).padStart(2, '0');
 const hm = t => (d => pad(d.getHours()) + ':' + pad(d.getMinutes()))(new Date(t));
-/* 경로의 끝 두 마디(「문서\마케팅」). 줄에는 짧게 쓰고 온전한 경로는 부서 설정 안에 둔다 */
-export const folderTail = p => String(p ?? '').replace(/[\\/]+$/, '').split(/[\\/]+/).filter(Boolean).slice(-2).join('\\');
 const lastPart = p => String(p ?? '').replace(/[\\/]+$/, '').split(/[\\/]+/).filter(Boolean).pop() || '';
 /* 모델 이름은 계열만 보인다(시안의 「Opus」 · 「Sonnet」). 모르는 이름은 그대로, 길면 줄인다 */
 export function modelWord(model) {
@@ -115,6 +113,18 @@ function staffItems(v, tasking) {
   return rows;
 }
 const rowLabel = parts => parts.filter(Boolean).join(', ');
+/* 닫힌 줄 가운데 칸의 「하는 일」. officeActivity(「shop · 읽기 · auth.ts」)의 맨 앞 폴더 이름을, 부서 줄에서는 그 부서의 폴더면 빼고
+   그 밖에는 「shop 폴더」로 쓴다. 폴더 이름이 덩그러니 놓이면 처음 보는 사람은 그것이 무엇인지 모른다(11-23 맹검) */
+const samePath = (a, b) => { const n = p => String(p ?? '').trim().replace(/[\\/]+/g, '\\').replace(/\\$/, '').toLowerCase(); return n(a) === n(b); };
+function rowActivity(v, deptFolder = null) {
+  const act = String(v.activity || ''), folder = String(v.folder || '');
+  const rest = folder && (act === folder || act.startsWith(folder + ' · ')) ? act.slice(folder.length).replace(/^ · /, '') : act;
+  // 부서 폴더 안의 작업 사본(「shop/.claude/worktrees/…」)은 이름이 부서 폴더와 같게 읽히므로 그것도 자기 폴더다(카본 solio-room-content A1)
+  const mine = folder && deptFolder != null && (samePath(v.cwd, deptFolder) || folder.toLowerCase() === officeFolderName(deptFolder).toLowerCase());
+  // 하는 일을 모르면 오른쪽 칸(「하나 일하는 중」 · 「승인을 물었습니다」)과 겹치지 않게 어느 AI인지 쓴다(「Claude Code · Opus」, Fable solio-room-content F3)
+  const who = [TOOL_NAME[v.tool] || '', modelWord(v.model)].filter(Boolean).join(' · ');
+  return [folder && !mine ? folder + ' 폴더' : '', rest].filter(Boolean).join(' · ') || who || v.say;
+}
 
 /* ── 꾸미기(PC앱_설계.md 2~3절 · 6절) ── 값의 꼴은 본체(office-store.cjs)와 같다 */
 export const OFFICE_SKINS = Object.freeze([['black', '검정'], ['walnut', '호두나무 서재']]);
@@ -267,7 +277,8 @@ export function officeSettingsRow({ view = 'tilted', roots = {}, ui = {} } = {})
     ['note', 'Claude Code의 기본 설정 폴더와 Codex의 기록 폴더는 늘 봅니다. 다른 설정 폴더를 쓰면 더해 주세요.'],
     ['live', note],
   ];
-  const mid = `보기 · ${shown} · 보는 폴더 ${countWord(count)}`;
+  // 「보기 · 비스듬히 · 보는 폴더 둘」은 처음 보는 사람이 읽지 못했다(11-23 맹검). 무엇을 고른 것인지 말로 쓴다
+  const mid = `${shown} 보기 · 기록을 읽는 폴더 ${countWord(count)}`;
   return { key: 'cfg', nm: '설정', mid, val: '', when: '', label: rowLabel(['설정', mid]), more };
 }
 
@@ -291,7 +302,8 @@ function featureTask(tasks, feature, departmentId) {
 }
 function departmentRow(d, staff, ui, tasking, tasks = []) {
   const key = 'd:' + d.id, lead = officeLead(staff), alert = staff.some(v => v.alert);
-  const mid = lead ? lead.activity || lead.say : folderTail(d.folder);
+  // 닫힌 줄에는 경로를 쓰지 않는다(11-23 맹검이 「inapp\기획부」를 짚었다). 빈 부서는 직원이 서는 길을 말하고, 온전한 경로는 부서 설정의 「폴더」 줄에 있다
+  const mid = lead ? rowActivity(lead, d.folder) : tasking ? '일을 맡기면 직원이 자리에 앉습니다' : '이 부서 폴더에서 일을 시작하면 직원이 섭니다';
   const val = officeGroupStatus(staff);
   const more = staff.flatMap(v => staffItems(v, tasking));
   if (tasking) more.push(['acts', [['이 부서에 일 맡기기', 'task-open', '']]]);
@@ -302,7 +314,7 @@ function departmentRow(d, staff, ui, tasking, tasks = []) {
     more.push(['item', '사업계획서', l.line, false, 'bizplan', l.when, 'feature']);
   }
   const open = !!ui.grps?.has?.(key + ':set'), asking = ui.asking === d.id;
-  more.push(['item', '부서 설정', folderTail(d.folder), open, 'set', '']);
+  more.push(['item', '부서 설정', '이름 · 폴더 · 빼기', open, 'set', '']);
   const inner = [
     ['fld', '부서 이름', d.name, NAME_MAX + '자까지', 'name', 'text'],
     ['acts', [['이름 저장', 'dept-rename', d.id, flags('enter', ui.busy && 'off')], ['폴더 바꾸기', 'dept-folder', d.id, ui.busy ? 'off' : ''], ['부서 빼기', 'dept-remove-ask', d.id, flags('toggle', asking && 'on', 'far')]]],
@@ -317,7 +329,7 @@ function departmentRow(d, staff, ui, tasking, tasks = []) {
 /* 「부서 없는 일」: 솔리오 밖에서 연 일 가운데 부서 폴더 밖의 것(5절). 세션마다 그 작업 폴더로 부서를 만들거나 보낼 부서를 고른다 */
 function lobbyRow(staff, departments, ui, tasking) {
   const lead = officeLead(staff), alert = staff.some(v => v.alert);
-  const mid = lead.activity || lead.say, val = officeGroupStatus(staff);
+  const mid = rowActivity(lead), val = officeGroupStatus(staff);
   const more = [];
   for (const v of staff) {
     more.push(...staffItems(v, tasking));
@@ -326,7 +338,8 @@ function lobbyRow(staff, departments, ui, tasking) {
       const grp = 'mk-' + v.id, open = !!ui.grps?.has?.('lobby:' + grp);
       more.push(['acts', [['이 폴더로 부서 만들기', 'grp', grp, open ? 'on' : '']]]);
       more.push(['grp', grp, [
-        ['fld', '부서 이름', lastPart(v.cwd).slice(0, NAME_MAX), NAME_MAX + '자까지', 'nm-' + v.id, 'text'],
+        // 첫 제안은 읽히는 폴더 이름(작업 사본이면 저장소 이름)이다. 같은 이름의 부서가 이미 있으면 끝 폴더 이름으로 돌아간다(Fable solio-room-content F2)
+        ['fld', '부서 이름', (v.folder && !departments.some(d => nameKey(d.name) === nameKey(v.folder)) ? v.folder : lastPart(v.cwd)).slice(0, NAME_MAX), NAME_MAX + '자까지', 'nm-' + v.id, 'text'],
         ['acts', [['만들기', 'dept-from', v.id, flags('enter', ui.busy && 'off')], ['닫기', 'grp', grp]]],
       ], !open]);
     }

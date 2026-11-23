@@ -101,6 +101,7 @@ function markup() {
       <p class="sr" role="status" aria-live="polite" data-solio-status></p>
       <div class="dial rise" style="--i:1" data-dial hidden><svg class="dial-sweep" viewBox="-360 -360 720 720" aria-hidden="true"><defs><linearGradient id="orb-dial-sweep" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3F1EC" stop-opacity="0"/><stop offset=".5" stop-color="#F3F1EC" stop-opacity=".5"/><stop offset="1" stop-color="#F3F1EC" stop-opacity="0"/></linearGradient></defs><g class="d-sweep"><circle r="318" class="d-sweep-c" stroke="url(#orb-dial-sweep)"/></g></svg><svg viewBox="-360 -360 720 720" role="img" data-dial-svg></svg><span class="dial-orb" aria-hidden="true"></span><p class="dial-hero" aria-hidden="true"><b data-dial-value></b><small data-dial-unit></small><span data-dial-label></span></p></div>
       <p class="say rise" style="--i:1"><span data-say></span><span class="then" data-then></span></p>
+      <p class="sub-start rise" style="--i:2" data-sub-start hidden><button class="sub-go" type="button" data-orb-act="connect">구독 연결하기</button><span>Claude · Codex 계정을 연결할 수 있습니다.</span></p>
       <div class="brief rise" style="--i:2" data-brief hidden>
         <ol class="soon" aria-label="다가오는 일" data-soon></ol>
         <p class="soon-more" data-soon-more hidden></p>
@@ -203,7 +204,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     brief: $('[data-brief]'), soon: $('[data-soon]'), soonMore: $('[data-soon-more]'), live: $('[data-live]'), liveBig: $('[data-live-big]'), liveUnit: $('[data-live-unit]'), liveSmall: $('[data-live-small]'), tokOn: $('[data-orb-act="tok-on"]'),
     dial: $('[data-dial]'), dialSvg: $('[data-dial-svg]'), dialValue: $('[data-dial-value]'), dialUnit: $('[data-dial-unit]'), dialLabel: $('[data-dial-label]'),
     diag: $('[data-diag]'), diagWhen: $('[data-diag-when]'), diagName: $('[data-diag-name]'), diagWord: $('[data-diag-word]'), diagSay: $('[data-diag-say]'), diagCost: $('[data-diag-cost]'), details: $('[data-details]'), detailsTop: $('[data-details-top]'),
-    reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), fanLead: $('[data-fan-lead]'), connect: $('[data-orb-act="connect"]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
+    reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), fanLead: $('[data-fan-lead]'), connect: $('.read [data-orb-act="connect"]'), subStart: $('[data-sub-start]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
     space: $('[data-room="space"]'), spaceSay: $('[data-space-say]'), spaceThen: $('[data-space-then]'), spaceError: $('[data-space-error]'), reopen: $('[data-orb-act="reopen-space"]'),
     share: $('[data-share]'), shareScreens: $('[data-share-screens]'), shareWindows: $('[data-share-windows]'), shareScreensH: $('[data-share-screens-h]'), shareWindowsH: $('[data-share-windows-h]'),
     rail: $('[data-orb-rail]'), objs: [...root.querySelectorAll('[data-orb-prog]')],
@@ -737,7 +738,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       app.reread.hidden = t.action !== 'reread';
       // 「구독 관리 열기」는 구독 줄이 있어 「다시 읽기」가 보일 때만 그 옆에 둔다(설계 검토 2차 4)
       app.subsManage.hidden = t.action !== 'reread' || !(t.rows && t.rows.length);
-      app.connect.hidden = t.action !== 'connect';
+      // 연결한 구독이 없으면 먼저 할 일 하나(「구독 연결하기」)를 문장 바로 아래 꽉 찬 단추로 둔다. 맨 아래의 글 단추는 그동안 숨긴다(11-23 맹검)
+      const start = t.state === 'none' && t.action === 'connect';
+      app.subStart.hidden = !start;
+      app.connect.hidden = t.action !== 'connect' || start;
       app.recheck.hidden = t.action !== 'recheck-auth';
       // 계정 확인을 기다리는 문장은 낭독기에도 알린다(단추가 「사용할 수 없음」으로 바뀐 것만 읽히지 않게, 다시 검수 -e)
       // 앱 층이 보일 때에만 넣는다. 들어가는 움직임 동안(층이 inert) 먼저 넣으면 층이 보인 뒤 알릴 변화가 없다(다시 검수 -f)
@@ -745,7 +749,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       // 누를 수 없는 동안에도 disabled를 쓰지 않는다. 눌러 둔 단추가 disabled가 되면 브라우저가 초점을 body로 옮긴다(다시 검수 -d)
       setUnavailable(app.reread, Boolean(t.rereading) || s.busy);
       setUnavailable(app.recheck, Boolean(t.checking) || s.busy);
-      app.reread.closest('.read').hidden = !t.read && !t.action;
+      app.reread.closest('.read').hidden = !t.read && (!t.action || start);
     } else {
       setText(app.spaceSay, room.say);
       setText(app.spaceThen, room.then);

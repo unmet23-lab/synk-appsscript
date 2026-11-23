@@ -847,6 +847,7 @@ function loginSteps(snapshot, svc, st, key, ctx, { relogin = null } = {}) {
 export const TOK_SHOWN = 6;
 // 오른쪽 칸의 프로그램 이름. 본체가 기록을 읽는 도구 셋이다
 const TOK_TOOLS = Object.freeze({ claude: 'Claude Code', gpt: 'Codex', grok: 'Grok CLI' });
+export const TOK_SUB = 'AI가 답으로 쓴 글의 양';
 const TOK_SPAN = Object.freeze({ today: '오늘', week: '지난 7일', month: '지난 30일' });
 const tokDay = (key, now) => (Number(key.slice(0, 4)) !== new Date(now).getFullYear() ? Number(key.slice(0, 4)) + '년 ' : '') + Number(key.slice(5, 7)) + '월 ' + Number(key.slice(8, 10)) + '일';
 const tokShare = m => { const p = Math.round((m.share || 0) * 100); return p === 0 && m.out > 0 ? '1% 미만' : p + '%'; };
@@ -855,9 +856,10 @@ export function tokRow(tokens, st = {}, now = Date.now()) {
   if (!tokens || tokens.ok !== true) return null;
   const off = act => (st.busy === 'tok:' + act ? 'off' : '');
   const note = ['live', st.notes?.get?.('tok') || ''];
-  const base = { key: 'tok', nm: '모델별 토큰', watch: true };
+  // 이름 아래에 「토큰」이 무엇인지 한 줄로 단다. 처음 보는 사람은 이름만으로 알아듣지 못했다(11-23 맹검)
+  const base = { key: 'tok', nm: '모델별 토큰', sub: TOK_SUB, watch: true };
   if (!tokens.enabled) {
-    return { ...base, mid: '꺼져 있습니다', val: '', when: '', unread: true, label: rowLabel(['모델별 토큰', '꺼져 있습니다']), more: [
+    return { ...base, mid: '꺼져 있습니다', val: '', when: '', unread: true, label: rowLabel(['모델별 토큰', TOK_SUB, '꺼져 있습니다']), more: [
       ['say', '모델마다 AI가 답으로 쓴 토큰을 셉니다. 토큰은 AI가 읽고 쓴 글의 양입니다.'],
       ['note', '켜면 이 PC에 남은 대화 기록에서 모델 이름과 토큰 수만 꺼내 더합니다. 대화 내용은 꺼내 두지 않고 밖으로 보내지 않습니다. 로그인 정보 파일은 열지 않습니다.'],
       ['note', '이 PC에 남기는 것은 날짜와 모델별 숫자, 어느 기록 파일을 어디까지 읽었는지입니다. 끄면 모두 지웁니다.'],
@@ -872,13 +874,13 @@ export function tokRow(tokens, st = {}, now = Date.now()) {
   const p = tokens.progress, progress = p && p.total ? fmt(p.done) + '/' + fmt(p.total) : '';
   if (!tokens.scannedAt) {
     if (tokens.scanning) {
-      return { ...base, mid: '처음 세는 중입니다', val: progress, when: '', label: rowLabel(['모델별 토큰', '처음 세는 중입니다', progress && '기록 파일 ' + progress]), more: [
+      return { ...base, mid: '처음 세는 중입니다', val: progress, when: '', label: rowLabel(['모델별 토큰', TOK_SUB, '처음 세는 중입니다', progress && '기록 파일 ' + progress]), more: [
         ['say', '처음이라 이 PC의 기록 파일을 모두 세고 있습니다.'],
         ['note', '기록이 많으면 몇 분 걸립니다. 다른 화면을 봐도 계속 셉니다.'],
         ['acts', [offBtn]], live] };
     }
     const mid = tokens.error ? '세다가 멈췄습니다' : '아직 세지 않았습니다';
-    return { ...base, mid, val: '', when: '', unread: true, label: rowLabel(['모델별 토큰', mid]), more: [
+    return { ...base, mid, val: '', when: '', unread: true, label: rowLabel(['모델별 토큰', TOK_SUB, mid]), more: [
       ['say', tokens.error ? '기록 파일을 세다가 멈췄습니다.' : '아직 기록 파일을 세지 않았습니다.'],
       ['acts', [['다시 세기', 'tok-scan', '', off('tok-scan')], offBtn]], live] };
   }
@@ -906,7 +908,7 @@ export function tokRow(tokens, st = {}, now = Date.now()) {
   if (tokens.error) facts.push('지난번에는 끝까지 세지 못했습니다.');
   if (facts.length) more.push(['note', facts.join(' ')]);
   more.push(['acts', [['토큰 다시 세기', 'tok-scan', '', flags(tokens.scanning && 'off', off('tok-scan'))], offBtn]], live);
-  return { ...base, mid, val, when, unread: !top, label: rowLabel(['모델별 토큰', mid, val && val + ' 토큰', when]), more };
+  return { ...base, mid, val, when, unread: !top, label: rowLabel(['모델별 토큰', TOK_SUB, mid, val && val + ' 토큰', when]), more };
 }
 
 /* ── 내 계정 방(설계 5절, 설계 검토 D1 · D4 · D5 · D11 · D12). 자료는 accountView와 accountIdentity다 ── */

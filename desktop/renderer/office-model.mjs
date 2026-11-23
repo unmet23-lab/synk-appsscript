@@ -17,7 +17,7 @@ export const OFFICE_TIMES = Object.freeze({
 const T = OFFICE_TIMES;
 const TOOLS = ['claude', 'codex'];
 const HOOK_EVENTS = new Set(['SessionStart', 'PostToolUse', 'Notification', 'Stop', 'SubagentStart', 'SubagentStop', 'SessionEnd']);
-const UNKNOWN_NOTE = '승인 물음은 모릅니다';
+const UNKNOWN_NOTE = '승인 요청은 여기에 뜨지 않습니다';
 const RECORD_TURNS = new Set(['ended', 'waiting', 'working']);
 const timeOrNull = v => (v != null && v !== '' && Number.isFinite(Number(v)) ? Number(v) : null);
 
@@ -40,7 +40,19 @@ function normPath(p) {
   const unc = /^[\\/]{2}/.test(s);
   return ((unc ? '\\' : '') + s.replace(/[\\/]+/g, '\\').replace(/\\+$/, '')).toLowerCase();
 }
-const folderName = cwd => String(cwd ?? '').trim().replace(/[\\/]+$/, '').split(/[\\/]/).pop() || '';
+/* 작업 폴더의 이름. Claude Code가 만든 작업 사본(워크트리) 폴더는 무작위 이름이라(「peaceful-rhodes-e8e7dc」) 처음 보는 사람이 무엇인지 모른다.
+   그 폴더는 저장소 이름으로 쓴다: 「저장소\.claude\worktrees\이름」과 「…worktrees\저장소\이름」(11-23 맹검이 닫힌 줄의 폴더 이름을 짚음) */
+const WORKTREE_NAME = /^[a-z]+-[a-z]+-[0-9a-f]{6}$/;
+export function officeFolderName(cwd) {
+  const parts = String(cwd ?? '').trim().replace(/[\\/]+$/, '').split(/[\\/]/);
+  const last = parts.at(-1) || '', up = parts.length - 2;
+  if (WORKTREE_NAME.test(last) && up >= 1) {
+    if (/^worktrees$/i.test(parts[up]) && /^\.claude$/i.test(parts[up - 1] || '') && parts[up - 2]) return parts[up - 2];
+    if (/worktrees$/i.test(parts[up - 1] || '') && parts[up]) return parts[up];
+  }
+  return last;
+}
+const folderName = officeFolderName;
 
 /* 앱이 남은 양을 읽으려고 스스로 돌리는 Claude Code는 직원이 아니다. userData가 셋이라 끝이 AiSubscriptions\run인 꼴로 거른다(4.4) */
 export function officeIgnoredCwd(cwd) {
@@ -342,17 +354,25 @@ export function officeSessions(state, now, { departments = [], assignments = {} 
    차례: 승인을 물은 세션 · 수용 인원을 넘음 · 일하는 수 · 모두 쉼. 훅 소식이 없는 세션(Codex 포함)이 있으면 둘째 줄이 그 수를 말한다.
    input: officeSessions의 값, { cap 수용 인원, hooksOn 「승인 물음도 보기」를 켰는지 }. 돌려주는 값: { say, then, hint, active, unknown } */
 const whoOf = v => v.departmentName || (v.folder ? v.folder + ' 폴더의 일' : '부서 없는 일');
+/* 승인을 하는 창의 이름: 화면에 선 직원의 도구들(「Claude Code」, 「Claude Code와 Codex」). 모르는 도구가 섞이면 「각 프로그램」 */
+const TOOL_WINDOW = Object.freeze({ claude: 'Claude Code', codex: 'Codex' });
+function toolWindows(list) {
+  const tools = [...new Set(list.map(v => v.tool))];
+  if (!tools.length || tools.some(t => !own(TOOL_WINDOW, t))) return '각 프로그램';
+  return TOOLS.filter(t => tools.includes(t)).map(t => TOOL_WINDOW[t]).join('와 ');
+}
 export function officeHeadline(list, { cap = null, hooksOn = true } = {}) {
   const shown = Array.isArray(list) ? list : [];
   const asks = shown.filter(v => v.status === 'asked').sort((a, b) => a.askedAt - b.askedAt);
   const busy = shown.filter(v => v.status === 'working' || v.status === 'silent');
   const active = busy.length + asks.length; // 수용 인원에 세는 것은 일하는 직원과 승인을 물은 직원이다(6절)
   const unknown = shown.filter(v => !v.hooked).length;
-  const over = Number.isFinite(cap) && cap >= 1 && active > cap ? countWord(cap) + '까지인데 지금 ' + ga(countWord(active)) + ' 일하고 있습니다.' : '';
-  const unknownSay = !unknown ? '' : unknown < shown.length ? neun(countWord(unknown)) + ' 승인 물음을 모릅니다.' : shown.length === 1 ? '승인 물음은 모릅니다.' : '모두 승인 물음을 모릅니다.';
+  const over = Number.isFinite(cap) && cap >= 1 && active > cap ? countWord(cap) + '까지인데 지금 직원 ' + ga(countWord(active)) + ' 일하고 있습니다.' : '';
+  // 모두가 모르면 어디서 승인하는지를 말한다(11-23 맹검 「모두 승인 물음을 모릅니다」가 어색하다). 일부만 모르면 그 수를 말한다
+  const unknownSay = !unknown ? '' : unknown < shown.length ? neun(countWord(unknown)) + ' 승인 요청이 여기에 뜨지 않습니다.' : '승인 요청은 ' + toolWindows(shown) + ' 창에서 확인해 주세요.';
   const silent = shown.find(v => v.status === 'silent'), done = shown.find(v => v.status === 'done' && v.alert);
   const news = silent ? ga(whoOf(silent)) + ' ' + silent.say + '.' : done ? ga(whoOf(done)) + ' 일을 하나 끝냈습니다.' : '';
-  const hint = hooksOn === false ? '승인 물음은 설정에서 켜면 봅니다.' : '';
+  const hint = hooksOn === false ? '승인 요청은 설정에서 켜면 여기에 뜹니다.' : '';
   let say, then;
   if (asks.length) {
     say = ga(whoOf(asks[0])) + ' ' + asks[0].say + '.';
@@ -360,7 +380,8 @@ export function officeHeadline(list, { cap = null, hooksOn = true } = {}) {
       || (busy.length ? '그 밖에 ' + ga(countWord(busy.length)) + ' 일하고 있습니다.' : '')
       || (shown.some(v => v.status === 'quiet') ? '' : '다른 일은 없습니다.');
   } else if (busy.length) {
-    say = over || ga(countWord(busy.length)) + ' 일하고 있습니다.';
+    // 「아홉이 일하고 있습니다」는 누가 일하는지 몰랐다(11-23 맹검). 사무실의 낱말 「직원」을 붙인다
+    say = over || '직원 ' + ga(countWord(busy.length)) + ' 일하고 있습니다.';
     then = unknownSay || news;
   } else if (!shown.length) {
     say = '지금 이 PC에서 도는 일이 없습니다.';
