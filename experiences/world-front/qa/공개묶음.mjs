@@ -45,16 +45,26 @@ function merge3(liveText, baseText, mineText, tag) {
   const [a, b, c] = ['live', 'base', 'mine'].map(n => path.join(dir, n));
   fs.writeFileSync(a, liveText); fs.writeFileSync(b, baseText); fs.writeFileSync(c, mineText);
   let out;
-  try { out = execFileSync('git', ['merge-file', '-p', a, b, c]).toString(); } catch (e) { out = e.stdout.toString(); }
+  try { out = execFileSync('git', ['merge-file', '-p', '--diff3', a, b, c]).toString(); } catch (e) { out = e.stdout.toString(); }
   fs.rmSync(dir, {recursive: true, force: true});
   fs.writeFileSync(path.join(OUT, `합침-${tag.replaceAll('/', '_')}.txt`), out);   // 풀기 전 합침(겹침 표식 포함) — 풀기 표를 고칠 때 본다
   return resolve(out, tag);
 }
 // 고친 파일 넷(서울행 · 홈)은 공개본과 겹치지 않는다. 겹치면 손으로 풀어야 하니 멈춘다(app-shell은 아래 shellRecipe가 맡는다).
+// 낱말 덩이(공백 · 쉼표 · 괄호로 가름)와 덩이 모음의 뺄셈(같은 낱말이 여럿이면 그 수만큼)
+const toks = s => s.match(/[^\s,(){}[\];]+/g) || [];
+const minus = (a, b) => { const m = new Map(); for (const t of b) m.set(t, (m.get(t) || 0) + 1); return a.filter(t => { const n = m.get(t) || 0; if (n) { m.set(t, n - 1); return false; } return true; }); };
+// 이 일이 바탕에 더한 낱말이 공개본 쪽에 다 있고 이 일이 뺀 낱말이 공개본 쪽에 없으면, 이 일의 변경은 이미 공개됐고 남은 차이는
+// 공개본에 먼저 오른 남의 고침이다 → 공개본 쪽을 쓴다(11-24 손님 1화가 createSeoulEntry 머리에서 operating · signIn을 뺀 공개).
+function alreadyLive(liveSide, baseSide, mineSide) {
+  const L = toks(liveSide), add = minus(toks(mineSide), toks(baseSide)), del = minus(toks(baseSide), toks(mineSide));
+  return add.length > 0 && minus(add, L).length === 0 && del.every(t => !L.includes(t));
+}
 function resolve(text, tag) {
   // 공개 뒤 다시 돌릴 때: 공개본 쪽에서 공개 때 덧붙인 글(homeExtra의 planLabel 한 토막)만 빼면 내 쪽과 같을 때만 공개본 쪽을 쓴다. 내 쪽이 비었으면(줄 삭제) 그대로 멈춘다.
   const ADDED = 'planLabel:next=>planLabel(next), ';
-  text = text.replace(/<<<<<<< [^\n]*\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> [^\n]*\n/g, (all, liveSide, mineSide) => mineSide.trim() && liveSide.replace(ADDED, '') === mineSide ? liveSide : all);
+  text = text.replace(/<<<<<<< [^\n]*\n([\s\S]*?)\|\|\|\|\|\|\| [^\n]*\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> [^\n]*\n/g,
+    (all, liveSide, baseSide, mineSide) => mineSide.trim() && (liveSide.replace(ADDED, '') === mineSide || alreadyLive(liveSide, baseSide, mineSide)) ? liveSide : all);
   if (/^<<<<<<< /m.test(text)) throw Error(`${tag}: 공개본과 겹친다 — 합침-${tag.replaceAll('/', '_')}.txt를 보고 갈고리 표로 옮긴다`);
   return text;
 }
