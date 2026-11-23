@@ -242,7 +242,8 @@ function channelIdentity(platform,rule,live,account,ownHost){
     ownerIs:value=>!!ownSegment&&typeof value==='string'&&(exactOwner?value===ownSegment:value.toLowerCase()===ownSegment.toLowerCase()),
     registered:(link,count,exact=[])=>link.segments.length>=count&&urls.some(own=>own.host===hostKey(link.host)&&own.segments.length===count&&own.segments.every((segment,index)=>exact.includes(index)?segment===link.segments[index]:segment.toLowerCase()===link.segments[index].toLowerCase()))};
 }
-function screenRoute(platform,link,ctx){
+// sourceType은 creator-screen 또는 official-export다. 로그인 화면이지만 내보내기 파일이 아닌 경로는 creator-screen에서만 받는다.
+function screenRoute(platform,link,ctx,sourceType){
   const s=link.segments,low=s.map(value=>value.toLowerCase()),h=link.host,at=(...parts)=>parts.every((part,index)=>low[index]===part);
   const known=value=>ctx.ownsId(value),mine=value=>ctx.ownsName(value);
   const insights=check=>['business.facebook.com','www.facebook.com'].includes(h)&&at('latest','insights')&&(!check||!link.rawQuery.get('asset_id')||ctx.externalIds.has(link.rawQuery.get('asset_id')));
@@ -258,7 +259,10 @@ function screenRoute(platform,link,ctx){
     case 'telegram':return s.length<=1&&(!s.length||['a','k','z'].includes(low[0]));
     case 'behance':return low[0]==='insights'||mine(s[0])&&low[1]==='insights';
     case 'naver-clip':return h==='creator-advisor.naver.com';
-    case 'naver-blog':return h==='creator-advisor.naver.com'||h==='admin.blog.naver.com'&&ctx.ownerIs(s[0])&&low[1]==='stat';
+    // 주인이 로그인해 연 자기 블로그 글 목록(blog.naver.com/<등록 주소의 첫 칸>)도 받는다(11-23). 글별 누적 조회수(readCount)는 주인 세션에만 차고 로그인 없이는 빈칸이라
+    // 공개 화면이 아니고 내보내기 파일도 아니어서 creator-screen으로만 받는다. 글 하나의 주소, 글 번호(logNo)를 쿼리에 단 옛 글 링크, 다른 블로그의 목록은 받지 않는다.
+    case 'naver-blog':return h==='creator-advisor.naver.com'||(h==='admin.blog.naver.com'&&ctx.ownerIs(s[0])&&low[1]==='stat')
+      ||(sourceType==='creator-screen'&&h==='blog.naver.com'&&s.length===1&&ctx.ownerIs(s[0])&&![...link.rawQuery.keys()].some(key=>key.toLowerCase()==='logno'));
     case 'tistory':return h===ctx.ownHost&&at('manage','statistics');
     case 'pinterest':return h==='analytics.pinterest.com'||at('business','hub')||at('analytics');
     case 'kakao-channel':return h==='business.kakao.com'&&at('space')&&low[2]==='channel'&&ctx.ownerIs(s[3])&&low[4]==='statistics';
@@ -461,7 +465,7 @@ export function createExternalObservations({store,clock=()=>new Date().toISOStri
 
 
     if(publicPage&&!publicRoute(platform,source,ctx))throw invalid('공개 화면 주소가 이 계정의 공개 프로필이나 이 계정의 게시물 주소가 아니에요. 로그인해야 보이는 통계 화면이라면 creator-screen으로 기록해 주세요.','SYNK_EXTERNAL_SOURCE');
-    if(!publicPage&&!screenRoute(platform,source,ctx))throw invalid('통계 화면 주소가 이 플랫폼의 로그인 통계나 내보내기 화면 경로가 아니거나, 주소에 든 계정 번호나 이름이 이 채널과 달라요.','SYNK_EXTERNAL_SOURCE');
+    if(!publicPage&&!screenRoute(platform,source,ctx,sourceType))throw invalid('통계 화면 주소가 이 플랫폼의 로그인 통계나 내보내기 화면 경로가 아니거나, 주소에 든 계정 번호나 이름이 이 채널과 달라요.','SYNK_EXTERNAL_SOURCE');
     const identity=bindIdentity(input.identity,live,account,ctx.catalog);
     let exportFormat=null;
     if(input.exportFormat!==undefined&&input.exportFormat!==null){
@@ -482,6 +486,13 @@ export function createExternalObservations({store,clock=()=>new Date().toISOStri
     if(vkClips&&posts.some(row=>!row.post.externalId.toLowerCase().startsWith('clip')))throw invalid('VK 공개 클립 목록에서 읽은 게시물은 클립(clip-…)이어야 해요.','SYNK_EXTERNAL_POST');
     if(vkWall&&posts.some(row=>row.post.externalId.toLowerCase().startsWith('clip')))throw invalid('VK 커뮤니티 첫 화면에서 읽은 게시물은 벽 글(wall-…)이어야 해요. 클립은 공개 클립 목록 주소로 적어 주세요.','SYNK_EXTERNAL_POST');
     if(vkClips&&rows.some(row=>row.kind!=='post-lifetime'))throw invalid('게시물 목록에서는 게시물 누적값(post-lifetime)만 기록해요.','SYNK_EXTERNAL_METRIC_GRAIN');
+    // ③ 네이버 블로그 글의 숫자는 주인이 로그인해 연 글 목록에서만 받는다(11-23). 글별 조회수는 로그인 없이 빈칸이라 공개 화면(public-page)의 글 관측은 받지 않고,
+    //    다른 통계 화면이나 내보내기의 글 관측도 받지 않는다. 조회수 없는 글 관측이 같은 날 목록의 조회수를 빈칸으로 덮지 않게 한다(GPT GA1). 계정 값은 그대로 받는다.
+    //    주인 글 목록은 게시물 목록이라 글 누적값만 받고, 글마다 조회수가 숫자로 있어야 한다. 조회수가 빈 줄은 주인 화면이 아니라는 뜻이다.
+    const naverList=platform==='naver-blog'&&!publicPage&&source.host==='blog.naver.com'&&seg.length===1;
+    if(platform==='naver-blog'&&!naverList&&posts.length)throw invalid('네이버 블로그 글의 숫자는 블로그 주인이 로그인해 연 글 목록(https://blog.naver.com/<아이디>, creator-screen)에서만 받아요.','SYNK_EXTERNAL_SOURCE');
+    if(naverList&&rows.some(row=>row.kind!=='post-lifetime'))throw invalid('게시물 목록에서는 게시물 누적값(post-lifetime)만 기록해요.','SYNK_EXTERNAL_METRIC_GRAIN');
+    if(naverList&&posts.some(row=>typeof row.metrics.views!=='number'))throw invalid('네이버 블로그 주인 글 목록의 글마다 조회수(views)가 있어야 해요. 조회수가 비었다면 주인으로 로그인한 화면이 아니에요.','SYNK_EXTERNAL_SOURCE');
     const recordedAt=new Date(nowMs).toISOString();
     const drafts=rows.map(row=>({
       id:'xmo_'+sha(JSON.stringify(['v1',live.id,row.kind,row.period?`${row.period.start}..${row.period.end}`:'',row.post?.externalId||'',evidenceSha256])).slice(0,40),

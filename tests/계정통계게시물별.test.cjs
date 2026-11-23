@@ -293,7 +293,7 @@ test('네이버 블로그: 빈 조회수(주인 세션 아님) · 덜 읽은 목
   assert.throws(()=>parseNaverBlogPosts(naver([blog('224400000001','3')],t),NB),code('NO_ROWS'));
 });
 
-test('VK 봉투는 바뀐 서버 기록 규칙(external-observations.mjs)을 메모리 미리 보기에서 통과하고, 네이버 글 목록 봉투는 서버 규칙이 실리기 전이라 출처에서 걸린다',async t=>{
+test('VK 봉투와 네이버 블로그 주인 글 목록 봉투가 바뀐 서버 기록 규칙(external-observations.mjs)을 메모리 미리 보기에서 통과한다',async t=>{
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-post-lifetime-vk-'));
   t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
   const recent=new Date(Date.now()-60000).toISOString(),day=new Date(Date.now()-2*86400000);
@@ -307,8 +307,8 @@ test('VK 봉투는 바뀐 서버 기록 규칙(external-observations.mjs)을 메
   }
   const manifestPath=path.join(dir,'manifest.json');fs.writeFileSync(manifestPath,JSON.stringify({version:1,batches}));
   const report=await 수집.run({manifestPath,env:{},logDir:dir,connect:()=>{throw new Error('미리 보기에서 로그인하면 안 된다');}});
-  // 네이버 블로그 주인 글 목록(blog.naver.com/<아이디>)을 받는 서버 규칙은 운영 데이터 확인 뒤 따로 싣는다(11-19). 그 전에는 수집기의 네이버 길도 꺼 둔다.
-  assert.deepEqual(report.results.map(r=>[r.accountId,r.status,r.code]),[['lab-ru-vk','ready',null],['shift-naverblog','invalid','SYNK_EXTERNAL_SOURCE']]);
+  // 네이버 블로그 주인 글 목록(blog.naver.com/<아이디>, creator-screen)을 받는 서버 규칙이 이 저장소에 실렸다(11-23). 수집기의 네이버 길은 그 판이 운영에 오른 뒤 켠다.
+  assert.deepEqual(report.results.map(r=>[r.accountId,r.status,r.code]),[['lab-ru-vk','ready',null],['shift-naverblog','ready',null]]);
 });
 
 test('VK 페이지 함수: 목록의 이 커뮤니티 클립만 골라 클립 화면 응답에 박힌 수치와 게시 시각을 읽는다',async()=>{
