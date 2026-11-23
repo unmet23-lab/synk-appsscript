@@ -140,6 +140,11 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .shop-tabs{display:flex;flex-wrap:wrap;gap:6px 20px}
 .pick-row{grid-column:1 / -1;margin:0;padding:0 0 10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
 .pick-row .lab{font:var(--small);color:var(--dim)}
+.name-form{grid-column:1 / -1;padding:0 0 14px}
+.name-form .lab{flex:none;font:var(--small);color:var(--dim)}
+/* 「바꾸기」는 글을 바꿨을 때만 흰 알약이 된다 */
+.give.name-form:has(input:not(:placeholder-shown)) .go{background:var(--pit);border-color:rgba(243,241,236,.42);color:var(--paper)}
+.give.name-form.dirty:has(input) .go{background:var(--paper);border-color:var(--paper);color:var(--void)}
 .pick-note{grid-column:1 / -1;margin:0;padding:0 0 16px;font:var(--small);color:var(--dim)}
 .row.skin .nm{display:inline-flex;align-items:center}
 #stage.shopping .room{top:calc(clamp(76px,12cqh,118px) - 22px);max-height:calc(100% - clamp(76px,12cqh,118px) + 22px);padding-top:22px;-webkit-mask-image:linear-gradient(transparent,#000 22px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(transparent,#000 22px,#000 calc(100% - 30px),transparent)}
@@ -516,7 +521,7 @@ const open = new Set(); let pinned = null, hotDept = null, hotStaff = null;
 function moreHTML(d, st) {
   let j = 0, h = '';
   for (const s of st) {
-    h += `<div class="row sub${s.state === 'ask' ? ' now' : ''}${alerting(s) ? ' news' : ''}" data-s="${s.id}" style="--j:${j++}"><span class="nm">${esc(s.tool)}${alerting(s) ? flag(s.newsT0 || -1e9) : ''}<small>${esc(s.model)}</small></span><span class="mid"><b>${esc(s.say)}</b><small>${esc(s.act)}</small></span><span class="when">${esc(s.when)}</span></div>`;
+    h += `<div class="row sub${s.state === 'ask' ? ' now' : ''}${alerting(s) ? ' news' : ''}" data-s="${s.id}" style="--j:${j++}"><span class="nm">${esc(nameFor(s) || s.tool)}${alerting(s) ? flag(s.newsT0 || -1e9) : ''}<small>${esc(nameFor(s) ? s.tool + ' · ' + s.model : s.model)}</small></span><span class="mid"><b>${esc(s.say)}</b><small>${esc(s.act)}</small></span><span class="when">${esc(s.when)}</span></div>`;
     if (s.state === 'ask') h += `<p class="more-acts" style="--j:${j++}"><button class="quiet warn" type="button" data-term="${s.id}">터미널 열기</button><span class="lab">승인은 그 도구의 창에서 합니다.</span></p>`;
   }
   if (d.lobby) {
@@ -708,7 +713,7 @@ function render(snap) {
   if (shopView) {
     rowsEl.innerHTML = shopHTML(snap); drawSwatches(); drawAccSwatches();
     officeEl.hidden = false; workEl.hidden = true; stage.classList.remove('planning'); stage.classList.add('shopping');
-    if (keep) { const el = document.getElementById(keep.id); if (el) el.focus(); }
+    if (keep) { const el = document.getElementById(keep.id); if (el) { el.value = keep.v || ''; el.focus(); try { el.setSelectionRange(keep.a, keep.a); } catch (e) {} } }
     requestAnimationFrame(() => rowsEl.querySelectorAll('.snap').forEach(m => m.classList.remove('snap')));
     return;
   }
@@ -801,8 +806,10 @@ function diagnose() {
     dT2 = setTimeout(() => { sayHold = null; render(true); }, 3400);
   }, 1500);
 }
+rowsEl.addEventListener('input', e => { if (e.target.id === 'char-name') e.target.closest('form').classList.toggle('dirty', e.target.value.trim() !== (charNames[pick] || '')); });
 rowsEl.addEventListener('submit', e => {
   e.preventDefault();
+  if (e.target.closest('form[data-name]')) { rename(e.target.querySelector('input').value); return; }
   const f = e.target.closest('form[data-give]'); if (!f) return;
   const id = f.dataset.give, inp = f.querySelector('input'), txt = inp.value.trim();
   if (!txt) { inp.focus(); return; }
@@ -1173,8 +1180,12 @@ let shopTab = 'room', accOwned = new Set(['none']), charAcc = {}, tryAcc = null,
 const keyOf = s => s.dept + ':' + s.seat;
 const trialOn = () => shopView && shopTab === 'staff';
 /* 직원 이름: 부서와 자리 번호(「마케팅부 1」) */
-const charName = k => { const [d, n] = k.split(':'); return `${deptOf(d).name} ${+n + 1}`; };
-const nameOf = () => charName(pick) + '번 직원';
+const defName = k => { const [d, n] = k.split(':'); return `${deptOf(d).name} ${+n + 1}`; };
+/* 직원 이름(유호님 11-23 「직원 이름도 바꿀수있게」): 바꾸지 않았으면 「마케팅부 2」, 바꿨으면 그 이름. 무료이고 12자까지 */
+let charNames = {};
+const charName = k => charNames[k] || defName(k);
+const nameOf = () => charNames[pick] || defName(pick) + '번 직원';
+const nameFor = s => charNames[keyOf(s)] || '';
 const staffInOrder = () => DEPTS.flatMap(d => staff.filter(s => s.dept === d.id).sort((a, b) => a.seat - b.seat));
 const fixPick = () => { if (!pick || !staff.some(s => keyOf(s) === pick)) { const f = staffInOrder()[0]; pick = f ? keyOf(f) : null; } };
 /* 그 직원이 지금 쓰는 모자: 가게에서 고른 직원이 써 보는 중이면 그것, 아니면 씌워 둔 것 */
@@ -1277,7 +1288,7 @@ function accMore(a) {
   let j = 0;
   let h = '';
   if (!pick) return `<p class="more-note" style="--j:0">꾸밀 직원이 없습니다.</p>`;
-  if (a.id === 'none') h += charAcc[pick] ? `<p class="more-acts" style="--j:${j++}"><button class="buy" type="button" data-wearacc="none">벗기기</button><button class="quiet" type="button" data-untry>원래대로</button></p>` : `<p class="more-note" style="--j:${j++}">${esc(nameOf())}은 모자를 쓰지 않았습니다.</p>`;
+  if (a.id === 'none') h += charAcc[pick] ? `<p class="more-acts" style="--j:${j++}"><button class="buy" type="button" data-wearacc="none">벗기기</button><button class="quiet" type="button" data-untry>원래대로</button></p>` : `<p class="more-note" style="--j:${j++}">${esc(은는(nameOf()))} 모자를 쓰지 않았습니다.</p>`;
   else if (accOwned.has(a.id)) h += `<p class="more-acts" style="--j:${j++}"><button class="buy" type="button" data-wearacc="${a.id}">씌우기</button><button class="quiet" type="button" data-untry>원래대로</button></p>`;
   else if (paying === 'acc:' + a.id) h += payingHTML(j++);
   else h += `<p class="more-acts" style="--j:${j++}"><button class="buy" type="button" data-buyacc="${a.id}">${won(a.price)}에 사기</button><button class="quiet" type="button" data-untry>원래대로</button></p>`
@@ -1290,6 +1301,7 @@ function shopHTML(snap) {
   if (shopTab === 'staff') {
     fixPick();
     h += `<p class="pick-row"><span class="lab">꾸밀 직원</span>${staffInOrder().map(s => { const k = keyOf(s); return `<button class="quiet" type="button" data-pick="${k}" aria-pressed="${pick === k}">${esc(charName(k))}</button>`; }).join('')}</p>`;
+    if (pick) h += `<form class="give name-form" data-name><label class="lab" for="char-name">이름</label><input id="char-name" type="text" maxlength="12" value="${esc(charNames[pick] || '')}" placeholder="${esc(defName(pick))}" autocomplete="off"><button class="go" type="submit">바꾸기</button></form>`;
     h += `<p class="pick-note">사무실 그림에서 직원을 눌러도 고릅니다. 직원은 자리마다 한 명이고, 그 자리에서 일하는 세션이 이 모습을 이어받습니다.</p>`;
     for (const a of ACCS) {
       const on = tryAcc === a.id, n = Object.values(charAcc).filter(x => x === a.id).length;
@@ -1323,6 +1335,13 @@ function buy(id) {
 }
 function wear(id) { worn = id; hold([`사무실을 ${으로(skinOf(id).name)} 바꿨습니다.`, '다른 PC에서도 같은 모습으로 열립니다.'], 3600); }
 /* 씌우기: 고른 곳(모든 부서이면 부서 없는 일까지)의 직원이 계속 쓴다. 「모자 없음」이면 벗는다 */
+function rename(v) {
+  if (!pick) return;
+  const t = v.trim().slice(0, 12);
+  if (!t || t === defName(pick)) { delete charNames[pick]; hold([`이름을 ${으로(defName(pick))} 되돌렸습니다.`, '부서 줄과 가게에서 처음 이름으로 부릅니다.'], 3600); }
+  else { charNames[pick] = t; hold([`이름을 ${으로(t)} 바꿨습니다.`, '부서 줄과 가게에서 이 이름으로 부릅니다.'], 3600); }
+  document.activeElement && document.activeElement.blur();
+}
 function putAcc(id) { if (!pick) return; if (id === 'none') delete charAcc[pick]; else charAcc[pick] = id; }
 function buyAcc(id) {
   paying = 'acc:' + id; render(true);
@@ -1554,7 +1573,7 @@ $('#m-ping').onclick = () => {
 };
 const SIZES = [['꽉 참'], ['1080×700', 1080, 700], ['720×760', 720, 760], ['420×760', 420, 760], ['380×250', 380, 250]];
 let si = 0; $('#m-size').onclick = e => { si = (si + 1) % SIZES.length; const z = SIZES[si]; document.body.classList.toggle('sized', !!z[1]); stage.style.setProperty('--sw', z[1] ? z[1] + 'px' : '100%'); stage.style.setProperty('--sh', z[1] ? z[2] + 'px' : '100%'); e.currentTarget.textContent = '창 크기 · ' + z[0]; };
-$('#m-again').onclick = () => { clearTimeout(payT); paying = null; owned = new Set(['black']); worn = 'black'; trying = null; accOwned = new Set(['none']); charAcc = {}; tryAcc = null; pick = null; setCase(ci); diagnose(); };
+$('#m-again').onclick = () => { clearTimeout(payT); paying = null; owned = new Set(['black']); worn = 'black'; trying = null; accOwned = new Set(['none']); charAcc = {}; charNames = {}; tryAcc = null; pick = null; setCase(ci); diagnose(); };
 $('#m-shop').onclick = () => shopView ? exitShop() : enterShop();
 const pcName = () => `PC · ${PCS[pi].cores}코어 ${PCS[pi].ram}GB`;
 $('#m-pc').onclick = e => { pi = (pi + 1) % PCS.length; e.currentTarget.textContent = pcName(); setCase(ci); diagnose(); };
@@ -1569,6 +1588,7 @@ const h0 = CASES.findIndex(c => location.hash.includes(c[0])); if (h0 > 0) ci = 
 /* 주소에 아무것도 없으면 스킨 가게에서 호두나무 서재를 입혀 본 채로 연다(이 시안의 첫 화면) */
 if (!location.hash.replace('#', '')) { shopView = true; trying = 'walnut'; ci = 1; }
 { const m = location.hash.match(/pick-([a-z]+)-(\d)/); if (m) pick = m[1] + ':' + m[2]; }
+if (/named/.test(location.hash)) Object.assign(charNames, {'plan:0':'서진', 'mkt:0':'민지', 'mkt:1':'도윤', 'dev:0':'하람', 'dev:1':'Max', 'acc:0':'보람'});
 if (/hats/.test(location.hash)) { Object.assign(charAcc, {'plan:0':'gat', 'mkt:0':'beanie', 'mkt:1':'sprout', 'law:0':'beret', 'dev:0':'phones', 'dev:1':'beanie', 'acc:0':'sprout'}); ['gat', 'beanie', 'phones', 'beret', 'sprout'].forEach(a => accOwned.add(a)); }
 { const m = location.hash.match(/shop-staff(?:-([a-z]+))?/); if (m) { shopView = true; shopTab = 'staff'; if (m[1] && accOf(m[1])) tryAcc = m[1]; } }
 if (/shop/.test(location.hash)) { shopView = true; const m = location.hash.match(/shop-([a-z]+)/); if (m && SK[m[1]]) trying = m[1]; }
