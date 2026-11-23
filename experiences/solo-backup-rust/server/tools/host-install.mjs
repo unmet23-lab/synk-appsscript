@@ -23,7 +23,9 @@ const HOST_FILES = ['box.conf.in', 'synk-wb-api.service.in', 'synk-wb-keys.servi
 const OPERATOR = 'founder@synk.im';
 const AUDIT_RUNS = 'https://api.github.com/repos/unmet23-lab/synk-appsscript/actions/workflows/workbackup-audit.yml/runs?per_page=5';
 
-const b64 = (file) => fs.readFileSync(file).toString('base64');
+// Text as git stores it (LF): a Windows checkout may hold CRLF, and a \r would end up inside unit values.
+const text = (file) => fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+const b64 = (file) => Buffer.from(text(file)).toString('base64');
 
 // The app is exactly what the image copied: the top-level *.mjs of server/ (Dockerfile COPY *.mjs).
 export function payload() {
@@ -58,7 +60,7 @@ export function secretsFor({ keysKey, filesKey }, random = () => crypto.randomBy
 
 export function script(request) {
   const encoded = Buffer.from(JSON.stringify(request)).toString('base64');
-  return `import json, base64\nREQUEST = json.loads(base64.b64decode('${encoded}').decode())\n` + fs.readFileSync(path.join(host, 'wb-host.py'), 'utf8');
+  return `import json, base64\nREQUEST = json.loads(base64.b64decode('${encoded}').decode())\n` + text(path.join(host, 'wb-host.py'));
 }
 
 async function main() {
