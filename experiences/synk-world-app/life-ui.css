@@ -22,7 +22,6 @@
 #world-panel[class*="life-"] #panel-content>.life-tutor{margin:0 0 18px}
 #world-panel[class*="life-"] .close-button{width:44px;height:44px}
 #panel-content[data-reduced=true] *{transition:none!important;animation:none!important}
-@property --life-mk{syntax:'<color>';inherits:false;initial-value:rgba(249,104,89,.5)}
 /* 흰 알약·선 알약의 화살표는 글자 대신 선 아이콘 */
 #world-panel[class*="life-"] :is(.felt-button,.plain-button)>span[aria-hidden],.study-form .felt-button>span[aria-hidden]{display:inline-block;flex-shrink:0;width:17px;height:17px;font-size:0;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 .life-heading{outline:none}
@@ -230,8 +229,10 @@ button.life-sign:active{transform:scale(.96)}
 button.life-sign:focus-visible{outline:2px solid #FAFAF9;outline-offset:2px;border-radius:4px}
 button.life-sign:is([data-kind=tag],[data-kind=board]):hover{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
 .life-sign[data-kind=led]{font-size:max(13px,3.2cqw);border-radius:4px;background:rgba(18,14,10,.88);color:#FFB547;font-weight:650;letter-spacing:.02em;text-shadow:0 0 6px rgba(255,170,60,.7);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 4px 10px rgba(0,0,0,.25)}
-/* 이 레슨에서 배우는 한국어(‘…’)는 코랄 형광펜 */
-mark.life-say{--life-mk:rgba(249,104,89,.5);background:linear-gradient(transparent 60%,var(--life-mk) 60%);color:inherit;font-weight:650;padding:0 .06em;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:--life-mk .3s ease}
+/* 이 레슨에서 배우는 한국어(‘…’)는 굵게, 배울 말 색으로 세운다. 형광펜은 긋지 않는다(DESIGN 머리 11-23).
+   말풍선은 판과 반대 색이라 밤 판은 짙은 코랄, 낮 판은 옅은 코랄, 해설 칸은 판 글씨 쪽 코랄이다. */
+mark.life-say{--life-say:var(--w-face-deep);background:none;color:var(--life-say);font-weight:650;border-radius:2px;transition:color .3s ease}
+:root[data-world-theme=day] .life-dialogue:not([data-speaker=narrator]) mark.life-say{--life-say:#FFB4A9}
 .life-dialogue>small.w-name{display:inline-flex;margin-bottom:10px;font-weight:650;line-height:1}
 /* 사진 속 자리(왼쪽부터 몽글·까몽·마린)를 말풍선 꼬리가 가리킨다 */
 .life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=mongle]::before{left:21%}
@@ -269,9 +270,9 @@ mark.life-say{--life-mk:rgba(249,104,89,.5);background:linear-gradient(transpare
 .life-dialogue>p[data-typing] .life-c{opacity:0;transition:opacity .07s linear}
 .life-dialogue>p[data-typing] .life-c.is-on{opacity:1}
 .life-story-stage .life-dialogue:has(>p[data-typing]){cursor:pointer}
-/* ⑧ 형광펜은 글이 다 나타난 뒤 0.3초 동안 칠해진다. 레슨 표현과 맞는 형광펜은 누르면 표현 도움이 그 표현에 맞춰 열린다. */
-.life-dialogue[data-speaker=narrator] mark.life-say{--life-mk:rgba(249,104,89,.42)}
-.life-dialogue>p[data-typing] mark.life-say,mark.life-say.is-fresh{--life-mk:transparent}
+/* ⑧ 배울 말은 글이 다 나타난 뒤 0.3초 동안 제 색이 차오른다(이 말이 이번에 배울 말이라는 것). 레슨 표현과 맞는 배울 말은 누르면 표현 도움이 그 표현에 맞춰 열린다. */
+.life-dialogue[data-speaker=narrator] mark.life-say{--life-say:var(--w-face-text)}
+.life-dialogue>p[data-typing] mark.life-say,mark.life-say.is-fresh{color:inherit}
 mark.life-say[data-life-mark]{cursor:pointer}
 mark.life-say[data-life-mark]:focus-visible{outline:2px solid var(--w-face);outline-offset:2px}
 /* ⑦ 넘기는 손맛: 사진 오른쪽 70%를 누르거나 밀면 다음, 왼쪽 30%는 이전. 말하는 친구가 바뀌면 앞 사진이 0.18초 동안 투명하게 사라진다. */

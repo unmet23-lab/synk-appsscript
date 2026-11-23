@@ -1,7 +1,9 @@
 // WORLD 이야기 해설 글꼴(본명조 · Noto Serif KR, OFL)을 이야기 장면에 쓰인 글자만 잘라 만든다(10-15 이야기 화면 디테일 ⑥).
-// 해설은 책 글씨(본명조 450), 친구 대사는 말 글씨(SUIT). 굵기는 해설 450과 형광펜 650만 쓰므로 가변 축을 450–650으로 줄인다.
+// 해설은 책 글씨(본명조 450), 친구 대사는 말 글씨(SUIT). 굵기는 해설 450과 배울 말 650만 쓰므로 가변 축을 450–650으로 줄인다.
 //   node tools/build-world-story-font.mjs [--source <NotoSerifKR-VF.ttf>]   → assets/NotoSerifKR-story.woff2 + .json(담긴 글자)
 //   node tools/build-world-story-font.mjs --check                          → 이야기 글자가 모두 담겼는지(파이썬 없이)
+//   … --also <앞 판 NotoSerifKR-story.json>   그 판의 글자도 함께 담는다. 원고를 바꿔 선택 공개할 때, 아직 옛 이야기를 싣고 있는
+//     공개 묶음(홈을 혼자 여는 판)과 캐시에 남은 옛 원고가 새 글꼴로 빠진 글자 없이 보이게 한다(11-23).
 // 만들 때는 fontTools(pyftsubset·varLib.instancer)와 brotli가 필요하다. 원본은 Windows에 깔린 가변 글꼴을 기본으로 쓴다.
 import fs from 'node:fs';
 import os from 'node:os';
@@ -31,6 +33,8 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  }else{
   const at=process.argv.indexOf('--source'),source=at>0?process.argv[at+1]:'C:/Windows/Fonts/NotoSerifKR-VF.ttf';
   if(!fs.existsSync(source))throw Error(`원본 글꼴이 없어요: ${source}`);
+  const also=process.argv.indexOf('--also');
+  if(also>0){const all=new Set([...chars,...JSON.parse(fs.readFileSync(process.argv[also+1],'utf8')).chars]);chars.length=0;chars.push(...[...all].sort());}
   const work=fs.mkdtempSync(path.join(os.tmpdir(),'world-story-font-')),text=path.join(work,'chars.txt'),limited=path.join(work,'limited.ttf');
   fs.writeFileSync(text,chars.join(''),'utf8');
   execFileSync('python',['-X','utf8','-m','fontTools.varLib.instancer',source,'wght=450:650','-o',limited],{stdio:'inherit'});
