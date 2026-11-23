@@ -56,7 +56,7 @@ export function createWorkdaySession(job, { saved = null } = {}) {
       const step = pending.shift();
       // A step can depend on an earlier choice; one that does not match is simply not there.
       if (!matches(step.when)) continue;
-      if (step.type === 'move') { setPlace(step.place, step.caption || ''); continue; }
+      if (step.type === 'move') { setPlace(step.place, step.caption || ''); lastLine = null; continue; }
       current = step;
       if (step.type === 'line') { if (step.place && step.place !== place) setPlace(step.place, ''); lastLine = step; phase = 'line'; return; }
       if (step.type === 'note') { phase = 'note'; return; }

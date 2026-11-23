@@ -52,7 +52,7 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
   const direct = entries.filter(({ entry }) => entry.produced === 'voice' || entry.produced === 'text');
   const modes = new Set(direct.map(({ entry }) => entry.produced));
   const activeMs = done.reduce((sum, scene) => sum + (data.scenes[scene.id].activeMs || 0), 0);
-  const how = (id) => (isReport(id) && data.says?.[id]?.produced === 'example' ? '말하지 않고 보고함' : PRODUCED[data.says?.[id]?.produced] || '');
+  const how = (id) => (isReport(id) && data.says?.[id]?.produced === 'example' ? '고른 일만 보고함' : PRODUCED[data.says?.[id]?.produced] || '');
   const choices = job.closing.forks.flatMap((fork) => {
     const chosen = data.forks?.[fork.id], step = steps.get(fork.id);
     if (!chosen || !step || data.scenes?.[data.forkScene?.[fork.id]]?.done !== true) return [];
@@ -83,7 +83,7 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
  * Counts are plain tallies of what happened — never "N out of M". */
 export function recordLines(record) {
   const { completed, korean } = record;
-  const answered = [korean.voice ? `말로 답한 것 ${korean.voice}번` : '', korean.text ? `글로 답한 것 ${korean.text}번` : '', korean.example ? `예시 문장으로 답한 것 ${korean.example}번` : '', korean.reported ? `말하지 않고 보고한 것 ${korean.reported}번` : ''].filter(Boolean);
+  const answered = [korean.voice ? `말로 답한 것 ${korean.voice}번` : '', korean.text ? `글로 답한 것 ${korean.text}번` : '', korean.example ? `예시 문장으로 답한 것 ${korean.example}번` : '', korean.reported ? `고른 일만 보고한 것 ${korean.reported}번` : ''].filter(Boolean);
   const sections = [
     { title: '끝까지 했는가', rows: [[
       `마친 장면 ${completed.scenes}개(모두 ${completed.of}개)`,

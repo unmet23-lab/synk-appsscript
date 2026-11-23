@@ -331,8 +331,8 @@ test('speech the device could not make out moves on without counting against the
   assert.equal(data.counts.examples, 1);
   const record = buildRecord(careHome, data, { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30) });
   assert.deepEqual({ voice: record.korean.voice, text: record.korean.text, example: record.korean.example, reported: record.korean.reported }, { voice: 0, text: 4, example: 0, reported: 1 });
-  assert.equal(record.choices.at(-1).how, '말하지 않고 보고함');
-  assert.ok(JSON.stringify(recordLines(record).sections[1].rows).includes('말하지 않고 보고한 것 1번'));
+  assert.equal(record.choices.at(-1).how, '고른 일만 보고함');
+  assert.ok(JSON.stringify(recordLines(record).sections[1].rows).includes('고른 일만 보고한 것 1번'));
   assert.deepEqual(record.korean.turns, ['비틀거리신 어르신께 말을 건네는 차례 · 글로 답함'], 'an unheard turn is not listed at all');
   assert.equal(record.choices[0].text, '들은 것을 다시 말해 확인한다');
   assert.equal(record.choices[0].how, '', 'the choice is kept; how it was said is left blank');
@@ -848,6 +848,13 @@ test('a tour sets its home as the place, a replay counts only a clip, a retry pi
   state = touring.advance();
   assert.equal(state.phase, 'tour');
   assert.equal(state.place, 'gate', 'the tour starts at its home');
+  // A move leaves the line behind: at the next place no speaker or words stay on the stage, and nothing is heard again.
+  const moved = factoryJob(); moved.scenes[0].steps.splice(1, 1, { type: 'move', place: 'line', caption: '오전 11시, 조립 라인' }, { type: 'say', id: 'ready', prompt: '준비됐다고 말해요.', hint: { en: 'hint' } });
+  const walking = createWorkdaySession(moved); walking.startScene('gate');
+  state = walking.advance();
+  assert.equal(state.phase, 'say');
+  assert.equal(state.line, null);
+  assert.equal(walking.replay(), null);
   // A line without a clip has nothing to hear again, so it is not counted as a replay.
   const quiet = factoryJob(); delete quiet.scenes[0].steps[0].clip;
   const listening = createWorkdaySession(quiet); listening.startScene('gate');
