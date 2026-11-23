@@ -13,27 +13,27 @@
   },
   {
     "id": "cafe-expressions",
-    "sha256": "4ac1fd4ed6e0bc3fd5be9bcfb800a3d9f1a3e6b2169921ee03d49e98d8d6ecc9"
+    "sha256": "d903d8413216530f19c846c956561770b7103c3a4137b0705234cfc4a955c314"
   },
   {
     "id": "cafe-story",
-    "sha256": "d9547d22c1d9a09899a841e12cab0462652796b91f1652b5d377ac42940a2192"
+    "sha256": "3e2851069c81d9f3e44c9b87b39ab713521f0fc98a0a39f03cabfbaeb12ae35a"
   },
   {
     "id": "cafe-apply",
-    "sha256": "4332423a9459191b895606a3481fe95939180bb74a2d6d0a0619804c300413ea"
+    "sha256": "52b3ccafcb07b6ea4c80dfd1cb49e76db71a9be3985e66b48eaa7d1bfd7ca117"
   },
   {
     "id": "cafe-visit-taste",
-    "sha256": "ddc8a03077c334e71e8485534a828b3e3b4ead189430635b9be6bfbf2c47312b"
+    "sha256": "207445830f0884bf658b201bbe70e1414b32b5fcad605c8d2bda595bbfb46424"
   },
   {
     "id": "cafe-visit-soldout",
-    "sha256": "9979e562758c82a0975c82a8dce27c9fb8245cdfa920a32287a7dd026c075ae8"
+    "sha256": "7ad9939d8ad9d2e3b22a9fa596351f8e1d6abcd263ce205ca9832b1bb6a205a8"
   },
   {
     "id": "cafe-visit-change",
-    "sha256": "d4c4654d1a709e5dab43c66db3065157a5669450f39a11ab50ff8fb2530d2494"
+    "sha256": "aa174c02dfa0cb661065276d3e1cf966e601e5c15b0b7c556f5f5a42c43b13c3"
   },
   {
     "id": "store-expressions",

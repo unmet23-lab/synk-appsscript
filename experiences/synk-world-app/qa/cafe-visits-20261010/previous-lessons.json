@@ -13,15 +13,15 @@
   },
   {
     "id": "cafe-expressions",
-    "sha256": "4ac1fd4ed6e0bc3fd5be9bcfb800a3d9f1a3e6b2169921ee03d49e98d8d6ecc9"
+    "sha256": "d903d8413216530f19c846c956561770b7103c3a4137b0705234cfc4a955c314"
   },
   {
     "id": "cafe-story",
-    "sha256": "d9547d22c1d9a09899a841e12cab0462652796b91f1652b5d377ac42940a2192"
+    "sha256": "3e2851069c81d9f3e44c9b87b39ab713521f0fc98a0a39f03cabfbaeb12ae35a"
   },
   {
     "id": "cafe-apply",
-    "sha256": "4332423a9459191b895606a3481fe95939180bb74a2d6d0a0619804c300413ea"
+    "sha256": "52b3ccafcb07b6ea4c80dfd1cb49e76db71a9be3985e66b48eaa7d1bfd7ca117"
   },
   {
     "id": "store-expressions",

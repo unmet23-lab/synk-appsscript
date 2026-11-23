@@ -1,9 +1,9 @@
-// 생활 원고 2단 · 인사 팩(답 판정의 쓰임 줄 · 움직임, 서하 · 지호 · 태오 이야기)의 synk.im/world 선택 공개 재료(2026-11-22).
+// 생활 원고 2단 · 인사 팩 · 카페 팩(답 판정의 쓰임 줄 · 움직임, 서하 · 지호 · 태오 이야기와 카페 방문)의 synk.im/world 선택 공개 재료(2026-11-22 · 11-24).
 //   node experiences/synk-world-app/qa/생활2단_공개묶음.mjs [--끝 <커밋=origin/master>]
 // master 전체 공개는 몽골 시범 뒤라(결정 11-20 Atlas 선택 공개), 지금 공개본 위에 이 일의 변경만 얹는다(앞면 공개묶음.mjs와 같은 꼴).
-// · 고친 원천: 바탕 판(이 일의 첫 커밋 바로 앞)에 이 일의 커밋(제목이 「WORLD 생활 원고 2단 · 인사 팩」)만 얹은 「내 판」을
+// · 고친 원천: 바탕 판(이 일의 첫 커밋 바로 앞)에 이 일의 커밋(제목이 「WORLD 생활 원고 2단 · <팩 이름> 팩」)만 얹은 「내 판」을
 //   공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 겹치면 멈춘다.
-// · 새 그림(brand-opening/assets/life-people/)과 이야기 해설 글꼴 조각(NotoSerifKR-story): 끝 판 그대로.
+// · 새 그림(brand-opening/assets/life-people/, 카페 방문 배경 tutor-photos/cafe/*-people.webp)과 이야기 해설 글꼴 조각(NotoSerifKR-story): 끝 판 그대로.
 // · 앱(mobile.html)은 life-ui.mjs를 바로 읽는다. 홈을 혼자 여는 판의 묶음(content/life-standalone.mjs)은 이번에 바꾸지 않는다.
 // 출력: .tmp/life2-pub/base(지금 공개본) · new(후보 원천) · 항목.txt, 그리고 tools/공개.js 미리 보기 명령.
 import fs from 'node:fs';
@@ -14,7 +14,7 @@ import {fileURLToPath} from 'node:url';
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const args = process.argv.slice(2), opt = (n, d) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; };
 const END = opt('--끝', 'origin/master');
-const TITLE = '^WORLD 생활 원고 2단 · 인사 팩';
+const TITLE = '^WORLD 생활 원고 2단 · [^ ]* 팩';
 const OUT = path.join(ROOT, '.tmp', 'life2-pub');
 const git = (...a) => execFileSync('git', ['-C', ROOT, '-c', 'core.autocrlf=false', ...a], {maxBuffer: 1 << 30});
 const lf = s => s.replace(/\r\n/g, '\n');
@@ -57,7 +57,7 @@ function merge3(tag, liveText, baseText, mineText) {
 }
 const write = (dir, rel, data) => { const f = path.join(OUT, dir, 'world', rel); fs.mkdirSync(path.dirname(f), {recursive: true}); fs.writeFileSync(f, data); };
 const changed = new Set(mine.flatMap(c => git('diff-tree', '--no-commit-id', '--name-only', '-r', c).toString().trim().split('\n')).filter(Boolean));
-const SOURCES = ['life-ui.mjs', 'life-ui.css', 'life-content.mjs', 'life-content-lang.mjs', 'brand-opening/world-motion.mjs', 'brand-opening/world-strings.mjs'];
+const SOURCES = ['life-ui.mjs', 'life-ui.css', 'life-content.mjs', 'life-content-lang.mjs', 'cafe-activity.mjs', 'cafe-ui.mjs', 'brand-opening/world-motion.mjs', 'brand-opening/world-strings.mjs', 'brand-opening/tutor-photos-data.mjs'];
 const items = [];
 for (const rel of SOURCES) {
   const src = srcOf(rel);
@@ -67,7 +67,7 @@ for (const rel of SOURCES) {
   write('base', rel, pub); write('new', rel, text); items.push(`world/${rel}`);
 }
 // 새 그림과 이야기 해설 글꼴(이야기 글자로 다시 자른 조각): 끝 판 그대로
-const ASSETS = f => f.startsWith('experiences/brand-opening/assets/life-people/') || /^experiences\/brand-opening\/assets\/NotoSerifKR-story\.(woff2|json)$/.test(f);
+const ASSETS = f => f.startsWith('experiences/brand-opening/assets/life-people/') || /^experiences\/brand-opening\/assets\/tutor-photos\/cafe\/[a-z]+-people\.webp$/.test(f) || /^experiences\/brand-opening\/assets\/NotoSerifKR-story\.(woff2|json)$/.test(f);
 for (const src of [...changed].filter(ASSETS)) {
   const rel = src.replace('experiences/', '');
   write('new', rel, git('show', `${END}:${src}`)); items.push(`world/${rel}`);

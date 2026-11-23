@@ -430,7 +430,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   if(q&&!first&&['choose','repair','response'].includes(cafeRun.phase))trail.shown(currentSlot(),engineItem(lessonById(context.lessonId),q),{helped});
   // 같은 단계에서 낱말·자리·도움을 고를 때는 보던 자리를 지킨다.
   const view=`${context.lessonId}:${cafeRun.step}:${['welcome','break'].includes(cafeRun.phase)?cafeRun.phase:'talk'}`,keepScroll=view===cafeView;cafeView=view;
-  paint('구름 한 잔, 카페',cafeMarkup(cafeRun,{photo,print,helped,firstAnswer:first,retryButton,lessonId:context.lessonId,speechAvailable:speech.available(),speechPhase:speech.metrics().phase}),{type:'life-cafe',focus:'.cafe-focus',eyebrow:'LIFE IN KOREA · CAFE',keepScroll});
+  paint(t('life.packTitle.cafe'),cafeMarkup(cafeRun,{photo,print,helped,firstAnswer:first,retryButton,lessonId:context.lessonId,speechAvailable:speech.available(),speechPhase:speech.metrics().phase}),{type:'life-cafe',focus:'.cafe-focus',eyebrow:'LIFE IN KOREA · CAFE',keepScroll});
  }
  function ensureHeard(){if(cafeRun.listen?.mode==='listen'&&!cafeRun.listen.heard&&!cafeRun.listen.textShown)throw Error('직원 말을 끝까지 듣거나 「글자로 보기」를 눌러 주세요.');}
  function cafeChoose(choiceId){

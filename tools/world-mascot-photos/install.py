@@ -64,6 +64,9 @@ for s in STORIES:
         if v:
             life['story'].setdefault(s, {})[sp] = v
 for kind in ['counter', 'window', 'garden']:
+    # 11-24 카페 방문 배경은 서하 · 지호 · 태오 사진(cafe/<자리>-people.webp, 생활 원고 2단)으로 바꿨다. 펠트 판으로 되돌리지 않는다.
+    if (OLD.get('LIFE_PHOTOS') or {}).get('cafe', {}).get(kind, '').startswith(f'cafe/{kind}-people'):
+        continue
     v = save(os.path.join(ROOT, 'boards', f'cafe_{kind}.png'), os.path.join(DEST, 'cafe', kind + '.webp'), 1200)
     if v:
         life['cafe'][kind] = v
