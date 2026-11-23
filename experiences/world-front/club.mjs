@@ -6,10 +6,11 @@
  *   mountNote({state, sfx, calm, onOpen, onDrop, docked}) — 위에서 내려오는 알림(4초 뒤 작은 얼굴과 빨간 1로 접힘) */
 
 const A = new URL('./assets/club/', import.meta.url).href;
+const PH = new URL('./assets/ph/', import.meta.url).href;   // 오늘 할 일 사진(앞면 app.mjs의 assets/ph와 같은 자리)
 export const CLUB_TUTORS = Object.freeze(['seoha', 'taeo', 'yuna']);
 // 얼굴 동그라미: 사진에서 얼굴 가운데 · 얼굴 폭을 재어 얼굴이 지름의 2/3쯤 차게(배경 위치 = (가운데 × 크기 − 0.5) / (크기 − 1))
 const FACE = {head: ['57% 25%', '230%'], seoha: ['50% 24%', '280%'], taeo: ['61% 20%', '340%'], yuna: ['53% 24%', '340%']};
-const NAME = {head: {ko: '민우', en: 'Minu', mn: 'Мину'}, seoha: {ko: '서하', en: 'Seoha', mn: 'Сэоха'}, taeo: {ko: '태오', en: 'Taeo', mn: 'Тэо'}, yuna: {ko: '유나', en: 'Yuna', mn: 'Юна'}};
+const NAME = {head: {ko: '민우', en: 'Minu', mn: 'Мину'}, seoha: {ko: '서하', en: 'Seoha', mn: 'Сөха'}, taeo: {ko: '태오', en: 'Taeo', mn: 'Тэо'}, yuna: {ko: '유나', en: 'Yuna', mn: 'Юна'}};
 // 맞춤 화면의 말하는 사람: 서하는 학생이 부르는 말(누나 · 언니 · 선배) 그대로, 태오 · 유나는 선배
 export const tutorLabel = (t, call = '') => t === 'seoha' || !CLUB_TUTORS.includes(t) ? '서하' + (call ? ' ' + call : '') : `${NAME[t].ko} 선배`;
 export const tutorFace = t => FACE[t] ? {url: `${A}${t}.webp`, pos: FACE[t][0], size: FACE[t][1]} : null;
@@ -20,18 +21,18 @@ const UI = {
   typing: {ko: '입력 중…', en: 'typing…', mn: 'бичиж байна…'},
   head: {ko: '동아리장', en: 'Club president', mn: 'Клубын тэргүүн'},
   whoLine: {ko: '새솔대 한국어 동아리 · 동아리장 · 4학년', en: 'Saesol Univ. Korean Club · President · 4th year', mn: 'Сэсол их сургууль · Солонгос хэлний клуб · Тэргүүн · 4-р курс'},
-  tutorSub: {ko: '한국어 동아리 튜터', en: 'Korean club tutor', mn: 'Солонгос хэлний клубын туслах'},
+  tutorSub: {ko: '한국어 동아리 튜터', en: 'Korean club tutor', mn: 'Солонгос хэлний клубийн туслах'},
   joined: {ko: '{n} 선배가 대화에 들어왔어요', en: '{n} joined the chat', mn: '{n} ярианд нэгдлээ'},
-  pickSmall: {ko: '한국어 동아리 튜터', en: 'Korean club tutors', mn: 'Солонгос хэлний клубын туслахууд'},
+  pickSmall: {ko: '한국어 동아리 튜터', en: 'Korean club tutors', mn: 'Солонгос хэлний клубийн туслахууд'},
   pickTitle: {ko: '마음에 드는 선배를 골라요', en: 'Pick the senior you like', mn: 'Таалагдсан ахлах оюутнаа сонгоорой'},
   pickGo: {ko: '{n} 선배로 할게요', en: 'Go with {n}', mn: '{n}-г сонгоё'},
   pickNote: {ko: '나중에 바꿀 수 있어요', en: 'You can change this later', mn: 'Дараа нь сольж болно'},
-  same: {ko: '같은 실수, 이렇게 고쳐 줘요', en: 'Same mistake, how they fix it', mn: 'Ижил алдааг ингэж засна'},
+  same: {ko: '같은 실수, 이렇게 고쳐 줘요', en: 'Same mistake, how they fix it', mn: 'Ижил алдааг ингэж засаж өгнө'},
   start: {ko: '시작', en: 'Start', mn: 'Эхлэх'},
   notyet: {ko: '아직 못 읽어요', en: 'I can’t read it yet', mn: 'Одоохондоо уншиж чадахгүй'},
   listen: {ko: '듣기', en: 'Listen', mn: 'Сонсох'},
   again: {ko: '다시 듣기', en: 'Listen again', mn: 'Дахин сонсох'},
-  listenFirst: {ko: '끝까지 들은 뒤에 고를 수 있어요', en: 'Listen to the end, then choose', mn: 'Эцэс хүртэл сонсоод сонгоно'},
+  listenFirst: {ko: '끝까지 들은 뒤에 고를 수 있어요', en: 'Listen to the end, then choose', mn: 'Дуустал нь сонсоод сонгож болно'},
   audioOff: {ko: '소리를 틀지 못했어요. 다시 눌러 주세요', en: 'Couldn’t play the sound. Tap again', mn: 'Дуу тоглуулж чадсангүй. Дахин дарна уу'},
   next: {ko: '다음 문제', en: 'Next', mn: 'Дараагийнх'},
   done: {ko: '결과 보기', en: 'See result', mn: 'Үр дүнг харах'},
@@ -39,14 +40,14 @@ const UI = {
   right: {ko: '맞아요', en: 'Correct', mn: 'Зөв'},
   wrong: {ko: '아니에요', en: 'Not quite', mn: 'Буруу'},
   here: {ko: '지금 여기', en: 'You are here', mn: 'Та одоо энд'},
-  topik: {ko: 'TOPIK I 시험이 보는 {t}가지 실력 가운데', en: 'Out of the {t} skills TOPIK I tests', mn: 'TOPIK I-ийн {t} чадвараас'},
+  topik: {ko: 'TOPIK I 시험이 보는 {t}가지 실력 가운데', en: 'Out of the {t} skills TOPIK I tests', mn: 'TOPIK I шалгалт нийт {t} чадвар шалгадаг'},
   count: {ko: '{t}칸 중 {n}칸', en: '{n} / {t}', mn: '{n} / {t}'},
-  checked: {ko: '{t}칸 중 {c}칸을 봤어요', en: 'Checked {c} of {t}', mn: '{t}-аас {c}-г шалгалаа'},
+  checked: {ko: '{t}칸 중 {c}칸을 봤어요', en: 'Checked {c} of {t}', mn: '{t} чадвараас {c} чадварыг шалгалаа'},
   got: {ko: '맞힘', en: 'Got it', mn: 'Зөв'},
   hangul: {ko: '한글', en: 'Hangul', mn: 'Солонгос үсэг'},
   lis: {ko: '듣기', en: 'Listening', mn: 'Сонсох'},
   rea: {ko: '읽기', en: 'Reading', mn: 'Унших'},
-  nxt: {ko: '연습할 곳', en: 'To practise', mn: 'Дадлага хийх'},
+  nxt: {ko: '연습할 곳', en: 'To practise', mn: 'Дасгал хийх'},
   go: {ko: '맞춤 연습 시작', en: 'Start my practice', mn: 'Дасгалаа эхлэх'},
   board: {ko: '문제 보러 가기', en: 'Go to the questions', mn: 'Асуулт руу очих'},
   later: {ko: '맞춤 화면으로', en: 'Back to My practice', mn: '«Миний дасгал» руу буцах'},
@@ -55,7 +56,7 @@ const UI = {
   level: {ko: '내 위치', en: 'Where I stand', mn: 'Миний ахиц'},
   today: {ko: '오늘', en: 'Today', mn: 'Өнөөдөр'},
   practice: {ko: '짧은 연습 시작', en: 'Start a short practice', mn: 'Богино дасгал эхлэх'},
-  hangulGo: {ko: '한글 이어 하기', en: 'Keep going with Hangul', mn: 'Солонгос үсгээ үргэлжлүүлэх'},
+  hangulGo: {ko: '한글 이어 하기', en: 'Keep going with Hangul', mn: 'Солонгос үсгийн дасгалаа үргэлжлүүлэх'},
   levelGo: {ko: '내 위치 보기', en: 'See where I stand', mn: 'Ахицаа харах'},
   todayGo: {ko: '시작하기', en: 'Start', mn: 'Эхлэх'},
   minutes: {ko: '{n}분', en: '{n} min', mn: '{n} мин'},
@@ -63,68 +64,68 @@ const UI = {
 };
 // 사람이 하는 말 — 한국어 그대로 보이고, 영어 · 몽골어 화면에서는 아래에 뜻이 붙는다
 const S = {
-  m1: {ko: '안녕, 나는 한국어 동아리장 민우야.', en: 'Hi, I’m Minu, president of the Korean language club.', mn: 'Сайн уу, би Солонгос хэлний клубын тэргүүн Мину байна.'},
+  m1: {ko: '안녕, 나는 한국어 동아리장 민우야.', en: 'Hi, I’m Minu, president of the Korean language club.', mn: 'Сайн уу, би солонгос хэлний клубийн тэргүүн Мину байна.'},
   m2: {ko: '혹시 한국어 잘해?', en: 'Do you speak Korean well, by any chance?', mn: 'Чи солонгосоор сайн ярьдаг уу?'},
   r_some: {ko: '조금 해요', en: 'A little', mn: 'Жаахан'},
   r_none: {ko: '아직 한글도 몰라요', en: 'I can’t even read Hangul yet', mn: 'Солонгос үсэг ч одоохондоо мэдэхгүй'},
-  r_good: {ko: '꽤 해요', en: 'Pretty well', mn: 'Нэлээн сайн'},
+  r_good: {ko: '꽤 해요', en: 'Pretty well', mn: 'Нэлээд сайн'},
   m3_some: {ko: '좋아! 딱 맞는 선배를 붙여 줄게.', en: 'Great! I’ll match you with the right senior.', mn: 'Сайн байна! Чамд тохирох ахлах оюутныг холбож өгье.'},
   m3_none: {ko: '괜찮아, 다들 거기서 시작해. 딱 맞는 선배를 붙여 줄게.', en: 'That’s fine, everyone starts there. I’ll match you with the right senior.', mn: 'Зүгээр ээ, бүгд тэндээс эхэлдэг. Чамд тохирох ахлах оюутныг холбож өгье.'},
-  m3_good: {ko: '오, 멋진데? 제대로 봐 줄 선배를 붙여 줄게.', en: 'Oh, nice! I’ll match you with a senior who’ll check properly.', mn: 'Өө, гоё шүү! Чамайг сайн шалгаж өгөх ахлах оюутныг холбож өгье.'},
-  m4: {ko: '우리 동아리 튜터들이야. 마음에 드는 스타일로 한 명 골라 봐.', en: 'These are our club’s tutors. Pick one whose style you like.', mn: 'Эд манай клубын туслахууд. Өөрт таалагдсан арга барилтай нэгийг сонго.'},
+  m3_good: {ko: '오, 멋진데? 제대로 봐 줄 선배를 붙여 줄게.', en: 'Oh, nice! I’ll match you with a senior who’ll check properly.', mn: 'Өө, гоё шүү! Түвшнийг чинь сайн харж өгөх ахлах оюутантай холбож өгье.'},
+  m4: {ko: '우리 동아리 튜터들이야. 마음에 드는 스타일로 한 명 골라 봐.', en: 'These are our club’s tutors. Pick one whose style you like.', mn: 'Эд нар манай клубийн туслахууд. Таалагдсан арга барилтай нэгийг нь сонго.'},
   m5: {ko: '좋아, {n} 선배한테 말해 둘게. 곧 연락 올 거야!', en: 'OK, I’ll tell {n}. You’ll hear from them soon!', mn: 'За, {n}-д хэлчихье. Удахгүй чам руу бичнэ!'},
   pick: {ko: '{n} 선배요!', en: '{n}, please!', mn: '{n}!'},
-  t1: {ko: '반가워요, 저는 {n}예요.', en: 'Nice to meet you, I’m {n}.', mn: 'Танилцсандаа баяртай байна, би {n} байна.'},
-  t2: {ko: '지금 어디쯤인지 같이 볼게요. 한글 하나, 문제 넷이면 돼요.', en: 'Let’s see where you are: one Hangul word and four questions.', mn: 'Одоо хаана явааг тань хамт харъя: солонгос үсгийн нэг үг, дөрвөн асуулт.'},
+  t1: {ko: '반가워요, 저는 {n}예요.', en: 'Nice to meet you, I’m {n}.', mn: 'Танилцсандаа таатай байна, намайг {n} гэдэг.'},
+  t2: {ko: '지금 어디쯤인지 같이 볼게요. 한글 하나, 문제 넷이면 돼요.', en: 'Let’s see where you are: one Hangul word and four questions.', mn: 'Таны одоогийн түвшнийг хамт харъя. Солонгос үсгээр бичсэн нэг үг, дөрвөн асуулт л байна.'},
   t2n: {ko: '한글부터 같이 봐요. 낱말 하나면 돼요.', en: 'Let’s start with Hangul. Just one word.', mn: 'Солонгос үсгээс эхэлье. Ганцхан үг.'},
   q1: {ko: '이 글자, 읽을 수 있어요?', en: 'Can you read this?', mn: 'Үүнийг уншиж чадах уу?'},
   more: {ko: '이제 문제 넷을 볼게요.', en: 'Now four questions.', mn: 'Одоо дөрвөн асуулт.'},
   hear: {ko: '잘 듣고 골라 봐요.', en: 'Listen carefully and choose.', mn: 'Сайн сонсоод сонгоорой.'},
-  board: {ko: '문제는 「내 위치」에서 이어서 볼게요.', en: 'We’ll do the questions in “Where I stand”.', mn: 'Асуултыг «Миний ахиц» хэсэгт үргэлжлүүлье.'},
-  noDiag: {ko: '지금은 더 볼 문제가 없어요. 맞춤 연습에서 같이 봐요.', en: 'No more questions right now. We’ll see in your practice.', mn: 'Одоогоор өөр асуулт алга. Дасгал дээр хамт харъя.'},
+  board: {ko: '문제는 「내 위치」에서 이어서 볼게요.', en: 'We’ll do the questions in “Where I stand”.', mn: 'Үлдсэн асуултуудад «Миний ахиц» хэсэгт хариулъя.'},
+  noDiag: {ko: '지금은 더 볼 문제가 없어요. 맞춤 연습에서 같이 봐요.', en: 'No more questions right now. We’ll see in your practice.', mn: 'Одоогоор өөр асуулт алга. «Миний дасгал» хэсэгт хамт харъя.'},
   fin: {ko: '다 봤어요. 고마워요!', en: 'All done. Thank you!', mn: 'Бүгд дууслаа. Баярлалаа!'},
-  bell: {ko: '다음 할 일은 이 알림으로 알려 줄게요. 하루에 한 번만요.', en: 'I’ll send your next step as a notification. Once a day.', mn: 'Дараагийн алхмыг энэ мэдэгдлээр илгээнэ. Өдөрт нэг л удаа.'},
-  lineHangul: {ko: '한글부터 같이 해요. 소리 듣고 글자 고르기예요.', en: 'Let’s start with Hangul: hear a sound, pick the letter.', mn: 'Солонгос үсгээс эхэлье: авиа сонсож, үсгээ сонгоно.'},
+  bell: {ko: '다음 할 일은 이 알림으로 알려 줄게요. 하루에 한 번만요.', en: 'I’ll send your next step as a notification. Once a day.', mn: 'Дараа юу хийхийг ийм мэдэгдлээр хэлж өгнө. Өдөрт нэг л удаа.'},
+  lineHangul: {ko: '한글부터 같이 해요. 소리 듣고 글자 고르기예요.', en: 'Let’s start with Hangul: hear a sound, pick the letter.', mn: 'Солонгос үсгээс хамт эхэлье: авиаг сонсоод үсгийг нь сонгоно.'},
   lineAll: {ko: '다 맞혔어요! 오늘 할 일로 이어 갈게요.', en: 'All correct! Let’s go on to today’s practice.', mn: 'Бүгд зөв! Одоо өнөөдрийн дасгалаа эхэлье.'},
   lineNext: {ko: '잘 봤어요. 다음은 「{s}」{j}. 그 연습부터 같이 해요.', en: 'Nice work. Next up: {s}. Let’s start with that practice.', mn: 'Сайн байна. Дараагийнх нь «{s}». Тэр дасгалаас эхэлье.'},
 };
 // 알림 글(다리가 code · slots만 주고 글은 여기서 세 언어로 짓는다 — 팬 세션과 맞춘 알림 꼴)
 const NOTE = {
-  'club.hello': {ko: '안녕, 나는 한국어 동아리장 민우야. 혹시 한국어 잘해?', en: 'Hi, I’m Minu, president of the Korean language club. Do you speak Korean well?', mn: 'Сайн уу, би Солонгос хэлний клубын тэргүүн Мину байна. Чи солонгосоор сайн ярьдаг уу?'},
-  'tutor.review.hangul': {ko: '어제 「커피」 읽었죠? 오늘은 「택시」도 읽어 봐요.', en: 'You read 커피 yesterday, right? Let’s read 택시 today too.', mn: 'Өчигдөр «커피» гэж уншсан биз дээ? Өнөөдөр «택시» гэдгийг ч бас уншаад үзье.'},
-  'tutor.review.skill': {ko: '지난번 「{skill}」에서 하나 놓쳤죠? 오늘 같은 종류로 짧게 연습해 봐요.', en: 'Last time you missed one question in {skillUi}. Let’s do a short practice of the same kind today.', mn: 'Өмнөх удаа «{skillUi}» дээр нэгийг алдсан шүү дээ. Өнөөдөр ижил төрлөөр богино дасгал хийе.'},
-  'tutor.level': {ko: '지난번엔 {t}칸 중 {n}칸을 맞혔어요. 지금은 어디쯤인지 같이 볼까요?', en: 'Last time you got {n} of {t} right. Shall we see where you are now?', mn: 'Өмнөх удаа {t}-аас {n}-г зөв хийсэн. Одоо хаана явааг тань хамт харах уу?'},
-  'tutor.today': {ko: '오늘은 「{title}」 해 볼까요? {m}분이면 돼요.', en: 'How about “{title}” today? It takes {m} minutes.', mn: 'Өнөөдөр «{title}» хийх үү? {m} минут л болно.'},
-  'tutor.today.nomin': {ko: '오늘은 「{title}」 해 볼까요?', en: 'How about “{title}” today?', mn: 'Өнөөдөр «{title}» хийх үү?'},
+  'club.hello': {ko: '안녕, 나는 한국어 동아리장 민우야. 혹시 한국어 잘해?', en: 'Hi, I’m Minu, president of the Korean language club. Do you speak Korean well?', mn: 'Сайн уу, би солонгос хэлний клубийн тэргүүн Мину байна. Чи солонгосоор сайн ярьдаг уу?'},
+  'tutor.review.hangul': {ko: '어제 「커피」 읽었죠? 오늘은 「택시」도 읽어 봐요.', en: 'You read 커피 yesterday, right? Let’s read 택시 today too.', mn: 'Өчигдөр «커피» гэдгийг уншсан биз дээ? Өнөөдөр «택시» гэдгийг бас уншаад үзье.'},
+  'tutor.review.skill': {ko: '지난번 「{skill}」에서 하나 놓쳤죠? 오늘 같은 종류로 짧게 연습해 봐요.', en: 'Last time you missed one question in {skillUi}. Let’s do a short practice of the same kind today.', mn: 'Өмнөх удаа «{skillUi}» хэсэгт нэг асуулт алдсан биз дээ? Өнөөдөр ижил төрлийн богино дасгал хийгээд үзье.'},
+  'tutor.level': {ko: '지난번엔 {t}칸 중 {n}칸을 맞혔어요. 지금은 어디쯤인지 같이 볼까요?', en: 'Last time you got {n} of {t} right. Shall we see where you are now?', mn: 'Өмнөх удаа нийт {t} чадвараас {n} чадвар дээр зөв хариулсан. Одоогийн түвшнийг тань хамт харах уу?'},
+  'tutor.today': {ko: '오늘은 「{title}」 해 볼까요? {m}분이면 돼요.', en: 'How about “{title}” today? It takes {m} minutes.', mn: 'Өнөөдөр «{title}» хийж үзэх үү? {m} минут л болно.'},
+  'tutor.today.nomin': {ko: '오늘은 「{title}」 해 볼까요?', en: 'How about “{title}” today?', mn: 'Өнөөдөр «{title}» хийж үзэх үү?'},
 };
 // 튜터 셋 — 스타일은 학습 설정(도움 방식 · 설명 길이)으로 다리가 저장한다(world-front-club.mjs TUTOR_SETTINGS와 같은 값)
 const TUT = {
   seoha: {min: 10, detailed: true,
-    sty: {ko: '천천히, 내 말로 풀어서', en: 'Slowly, explained in your language', mn: 'Удаан, таны хэлээр тайлбарлана'},
+    sty: {ko: '천천히, 내 말로 풀어서', en: 'Slowly, explained in your language', mn: 'Эх хэлээр тань аажмаар тайлбарлана'},
     how: [{ko: '한 번에 하나씩', en: 'One thing at a time', mn: 'Нэг удаад нэгийг'}, {ko: '설명은 자세히', en: 'Detailed explanations', mn: 'Дэлгэрэнгүй тайлбар'}],
-    fix: {ko: '괜찮아요. 먹는 것에는 ‘을’을 붙여요. 빵을 먹어요.', en: 'That’s okay. What you eat takes 을: 빵을 먹어요.', mn: 'Зүгээр ээ. Идэж буй зүйлд 을 залгана: 빵을 먹어요.'},
+    fix: {ko: '괜찮아요. 먹는 것에는 ‘을’을 붙여요. 빵을 먹어요.', en: 'That’s okay. What you eat takes 을: 빵을 먹어요.', mn: 'Зүгээр ээ. Идэх зүйлийн ард «을» залгана: «빵을 먹어요».'},
     ok: '맞아요!', no: '괜찮아요.'},
   taeo: {min: 5,
-    sty: {ko: '일단 말해 보고, 같이 고쳐요', en: 'Say it first, fix it together', mn: 'Эхлээд ярь, дараа нь хамт засна'},
+    sty: {ko: '일단 말해 보고, 같이 고쳐요', en: 'Say it first, fix it together', mn: 'Эхлээд хэлж үзээд, хамт засъя'},
     how: [{ko: '바로 말해 보기', en: 'Speak right away', mn: 'Шууд ярих'}, {ko: '설명은 짧게', en: 'Short explanations', mn: 'Богино тайлбар'}],
-    fix: {ko: '아깝다! ‘빵을’! 한 번 더 말해 봐요!', en: 'So close! 빵을! Say it once more!', mn: 'Бараг л зөв! 빵을! Дахиад нэг хэлээд үз!'},
+    fix: {ko: '아깝다! ‘빵을’! 한 번 더 말해 봐요!', en: 'So close! 빵을! Say it once more!', mn: 'Бараг л зөв! «빵을»! Дахиад нэг хэлээд үзээрэй!'},
     ok: '오, 맞아요!', no: '아깝다!'},
   yuna: {min: 5,
     sty: {ko: '짧고 정확하게', en: 'Short and precise', mn: 'Богино, оновчтой'},
     how: [{ko: '세 문제씩', en: 'Three at a time', mn: 'Гурав гурваар'}, {ko: '틀린 곳만 짚기', en: 'Only what you missed', mn: 'Зөвхөн алдсаныг нь'}],
-    fix: {ko: '‘에’ 말고 ‘을’. 빵을 먹어요. 다음.', en: 'Not 에 — 을. 빵을 먹어요. Next.', mn: '에 биш, 을. 빵을 먹어요. Дараагийнх.'},
+    fix: {ko: '‘에’ 말고 ‘을’. 빵을 먹어요. 다음.', en: 'Not 에 — 을. 빵을 먹어요. Next.', mn: '«에» биш, «을». «빵을 먹어요». Дараагийнх.'},
     ok: '맞아요.', no: '아니에요.'},
 };
 // 한글 한 문제 — 외래어라 낱말 뜻을 몰라도 한글을 읽으면 맞힌다. 처음 만남은 「커피」(답은 한글 답 저장으로), 다음 날 복습은 「택시」(기록 없음)
 const HANGUL = {
-  coffee: {word: '커피', ok: 'coffee', more: {ko: '받침 없는 글자는 왼쪽 소리와 오른쪽 소리를 이어 읽어요. 커 = ㅋ + ㅓ.', en: 'A block without a final consonant joins the left and right sounds: 커 = ㅋ + ㅓ.', mn: 'Доод гийгүүлэгчгүй үеийг зүүн, баруун авиаг нийлүүлж уншина: 커 = ㅋ + ㅓ.'},
-    ex: {coffee: {ko: '「커피」는 coffee랑 소리가 같아요.', en: '커피 sounds just like “coffee”.', mn: '«커피» нь «кофе» гэж сонсогддог.'},
-      banana: {ko: '그건 「바나나」예요. 「커피」의 ㅋ은 k 소리예요.', en: 'That’s 바나나, banana. The ㅋ in 커피 is a “k” sound.', mn: 'Энэ бол «바나나». «커피» үгийн ㅋ нь «к» авиа.'},
-      taxi: {ko: '그건 「택시」예요. 「커피」의 ㅋ은 k 소리예요.', en: 'That’s 택시, taxi. The ㅋ in 커피 is a “k” sound.', mn: 'Энэ бол «택시». «커피» үгийн ㅋ нь «к» авиа.'}}},
-  taxi: {word: '택시', ok: 'taxi', more: {ko: '받침은 글자 아래에 붙어요. 택 = ㅌ + ㅐ + ㄱ.', en: 'A final consonant sits under the block: 택 = ㅌ + ㅐ + ㄱ.', mn: 'Доод гийгүүлэгч үеийн доор байрлана: 택 = ㅌ + ㅐ + ㄱ.'},
-    ex: {taxi: {ko: '「택시」는 taxi랑 소리가 같아요.', en: '택시 sounds just like “taxi”.', mn: '«택시» нь «такси» гэж сонсогддог.'},
-      coffee: {ko: '그건 「커피」예요. 「택시」의 ㅌ은 t 소리예요.', en: 'That’s 커피, coffee. The ㅌ in 택시 is a “t” sound.', mn: 'Энэ бол «커피». «택시» үгийн ㅌ нь «т» авиа.'},
-      banana: {ko: '그건 「바나나」예요. 「택시」의 ㅌ은 t 소리예요.', en: 'That’s 바나나, banana. The ㅌ in 택시 is a “t” sound.', mn: 'Энэ бол «바나나». «택시» үгийн ㅌ нь «т» авиа.'}}},
+  coffee: {word: '커피', ok: 'coffee', more: {ko: '받침 없는 글자는 왼쪽 소리와 오른쪽 소리를 이어 읽어요. 커 = ㅋ + ㅓ.', en: 'A block without a final consonant joins the left and right sounds: 커 = ㅋ + ㅓ.', mn: 'Дэвсгэр үсэггүй үед зүүн, баруун үсгийн авиаг нийлүүлж уншина: 커 = ㅋ + ㅓ.'},
+    ex: {coffee: {ko: '「커피」는 coffee랑 소리가 같아요.', en: '커피 sounds just like “coffee”.', mn: '«커피» нь «кофе» гэдэгтэй төстэй сонсогддог.'},
+      banana: {ko: '그건 「바나나」예요. 「커피」의 ㅋ은 k 소리예요.', en: 'That’s 바나나, banana. The ㅋ in 커피 is a “k” sound.', mn: 'Тэр бол «바나나». «커피» гэдэг үгийн ㅋ үсэг «к» гэж дуудагдана.'},
+      taxi: {ko: '그건 「택시」예요. 「커피」의 ㅋ은 k 소리예요.', en: 'That’s 택시, taxi. The ㅋ in 커피 is a “k” sound.', mn: 'Тэр бол «택시». «커피» гэдэг үгийн ㅋ үсэг «к» гэж дуудагдана.'}}},
+  taxi: {word: '택시', ok: 'taxi', more: {ko: '받침은 글자 아래에 붙어요. 택 = ㅌ + ㅐ + ㄱ.', en: 'A final consonant sits under the block: 택 = ㅌ + ㅐ + ㄱ.', mn: 'Дэвсгэр үсгийг үеийн доод талд бичнэ: 택 = ㅌ + ㅐ + ㄱ.'},
+    ex: {taxi: {ko: '「택시」는 taxi랑 소리가 같아요.', en: '택시 sounds just like “taxi”.', mn: '«택시» нь «такси» гэдэгтэй төстэй сонсогддог.'},
+      coffee: {ko: '그건 「커피」예요. 「택시」의 ㅌ은 t 소리예요.', en: 'That’s 커피, coffee. The ㅌ in 택시 is a “t” sound.', mn: 'Тэр бол «커피». «택시» гэдэг үгийн ㅌ үсэг «т» гэж дуудагдана.'},
+      banana: {ko: '그건 「바나나」예요. 「택시」의 ㅌ은 t 소리예요.', en: 'That’s 바나나, banana. The ㅌ in 택시 is a “t” sound.', mn: 'Тэр бол «바나나». «택시» гэдэг үгийн ㅌ үсэг «т» гэж дуудагдана.'}}},
   order: {coffee: ['coffee', 'banana', 'taxi'], taxi: ['banana', 'taxi', 'coffee']},
   notyet: {ko: '괜찮아요. 그럼 한글부터 같이 해요.', en: 'That’s okay. Then let’s start with Hangul.', mn: 'Зүгээр ээ. Тэгвэл солонгос үсгээс хамт эхэлье.'},
 };
@@ -417,7 +418,7 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
       C.add(card); label = K.L(UI.levelGo); mins = 0;
     } else if (note.kind === 'today' && note.slots?.photo) {
       const card = document.createElement('section'); card.className = 'cl-card plan';
-      card.innerHTML = `<div class="pp" style="background-image:url(assets/${esc(note.slots.photo)}.webp)"></div><div class="pb"><p class="k"><b>${esc(K.L(UI.today))}</b></p><p class="pt" lang="ko">${esc(note.slots.title)}</p></div>`;
+      card.innerHTML = `<div class="pp" style="background-image:url(${PH}${esc(note.slots.photo)}.webp)"></div><div class="pb"><p class="k"><b>${esc(K.L(UI.today))}</b></p><p class="pt" lang="ko">${esc(note.slots.title)}</p></div>`;
       C.add(card);
     }
     const go = ctaButton(K, label, mins); C.add(go); go.focus?.({preventScroll: true});
@@ -512,7 +513,7 @@ const CSS = `
 .cl-root .strip{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;margin-top:16px}.cl-root .strip .lb{font-size:13.5px;font-weight:750;color:rgba(23,22,15,.66)}
 .cl-root .cells{display:grid;grid-template-columns:repeat(var(--n,8),1fr);gap:4px}.cl-root .cells i{height:22px;border-radius:5px;background:rgba(23,22,15,.07)}.cl-root .cells i.done{background:#17160f}.cl-root .cells i.next{background:#fffdf8;box-shadow:inset 0 0 0 2px #c2412d}
 .hg{display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:999px;font-size:13.5px;font-weight:750}.hg.done{background:#17160f;color:#fbf8f1}.hg.next{box-shadow:inset 0 0 0 2px #c2412d;color:#c2412d}
-.cl-root .legend{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;padding:0;list-style:none}.cl-root .legend li{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:650}.cl-root .legend li i{width:12px;height:12px;border-radius:3px;flex:none}.cl-root .legend li i.done{background:#17160f}.cl-root .legend li i.next{box-shadow:inset 0 0 0 2px #c2412d}.cl-root .legend li small{margin-left:auto;font-size:12.5px;color:rgba(23,22,15,.5)}
+.cl-root .legend{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;padding:0;list-style:none}.cl-root .legend li{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:650}.cl-root .legend li i{width:12px;height:12px;border-radius:3px;flex:none}.cl-root .legend li i.done{background:#17160f}.cl-root .legend li i.next{box-shadow:inset 0 0 0 2px #c2412d}.cl-root .legend li small{margin-left:auto;flex:none;white-space:nowrap;padding-left:8px;font-size:12.5px;color:rgba(23,22,15,.5)}
 .cl-card.plan{padding:0;overflow:hidden}.cl-card.plan .pp{height:150px;background:#ddd center/cover}.cl-card.plan .pb{padding:14px 16px 16px}.cl-card.plan .pt{margin:6px 0 0;font-size:20px;font-weight:850}
 .cl-cta{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;padding:0 20px;border:0;border-radius:999px;background:#17160f;color:#fbf8f1;font-size:16.5px;font-weight:800;cursor:pointer;flex-shrink:0}
 .cl-cta.center{justify-content:center}.cl-cta .mn{margin-left:auto;font-size:13px;font-weight:600;color:rgba(251,248,241,.6);font-variant-numeric:tabular-nums}.cl-cta svg{width:16px;height:16px;flex:none}.cl-cta:not(.center) svg{margin-left:auto}.cl-cta .mn+svg{margin-left:0}
