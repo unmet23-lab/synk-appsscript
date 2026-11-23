@@ -5,6 +5,7 @@ import {THEATER,ARENA,LOOK_FACES as LOOK_FACES_DATA} from './data.mjs';
 import {LANG,L,sub,setLang} from './strings.mjs';
 import {hangulName,calledName} from './name-hangul.mjs';
 import {createNameTrace,nameSyllables,signSvg} from './name-trace.mjs';
+import {clubCall,clubWanted} from './club-call.mjs';
 const HOST=(()=>{try{if(window.parent!==window&&window.parent.location.origin===location.origin)return window.parent.SYNKSeoulHost||null;}catch{}return null;})();
 const A=name=>new URL(`./assets/img/${name}.webp`,import.meta.url).href;
 const CONCERT=new URL('../brand-opening/assets/world-title-concert-port-v2.webp',import.meta.url).href;
@@ -1127,33 +1128,45 @@ const ROAD=[
   {lv:'TOPIK 1'},
   {t:'1화 · 개강 첫날',b:'학생 식당에서 길 묻기',goal:'위치 묻기'},
   {t:'2화 · 동아리 박람회',b:'동갑 친구와 말 놓기',goal:'반말로 바꾸기'},
-  {dream:0,goal:'자기소개 하기'},
+  {dream:0,goal:'자기소개 하기',exam:1},
   {lv:'TOPIK 2'},
   {t:'3화 · 첫 당번',b:'동아리 카페에서 주문 받기',goal:'부탁하기',town:true},
   {t:'4화 · 아픈 날',b:'시험 전날, 병원에 가기',goal:'아픈 곳 말하기'},
-  {dream:1,goal:'일정 맞추기'},
+  {dream:1,goal:'일정 맞추기',exam:2},
   {lv:'TOPIK 3'},
   {dream:2,goal:'의견 말하기'},
   {t:'5화 · 봄 축제',b:'고향 음식 부스 열고, 입구에서 표 확인하기',goal:'내 나라 설명하기'},
   {t:'6화 · 여름 MT',b:'소나기, 자전거, 숙소 앞 평상',goal:'제안하고 거절하기'},
+  {shoot:true,goal:'경험 말하고 되묻기',exam:3},
   {lv:'TOPIK 4'},
   {t:'7화 · 가을',b:'사유서를 처음 쓰기',goal:'사정 설명하기'},
   {dream:3,goal:'격식 자리에서 나를 소개하기'},
   {dream:4,goal:'일정 변경 보고하기'},
   {t:'8화 · 가을 축제',b:'국제처에서 내 입으로 말하기',goal:'격식 있게 설득하기'},
   {dream:5,goal:'질문에 답하기'},
-  {dream:6,goal:'무대 인사 3분'}
+  {dream:6,goal:'무대 인사 3분',exam:4}
 ];
 const DOT_CROP=[[190,'50% 55%'],[280,'30% 42%'],[240,'72% 60%'],[320,'50% 30%'],[220,'20% 70%'],[300,'78% 38%'],[170,'50% 50%']];
+/* 급마다 끝에 승급 오디션이 선다(설계 docs/WORLD_승급오디션_설계_20261123.md). 붙기 전에는 다음 급이 잠긴다.
+ * 오디션은 아직 없어 지금 급은 늘 1이다 — 오디션 기록이 생기면 여기서 읽는다. 3급 오디션은 6화 뒤 촬영하는 날(11-24 유호님 「가 · 촬영하는 날」). */
+const roadGrade=()=>1;
+const SHOOT={actor:()=>L('촬영하는 날'),idol:()=>L('티저 찍는 날')},SHOOT_CROP=[260,'40% 40%'];
+const LOCK_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
+function examCard(r,D,locked){
+  const title=r.shoot?SHOOT[state.dream]():L(D.scenes[r.dream]),crop=r.shoot?SHOOT_CROP:DOT_CROP[r.dream];
+  const soon=!locked&&r.exam===1;   // 2화가 아직 없어 1급 오디션도 곧 열린다
+  return `<div class="exam${locked?' locked':''}"><div class="ex-card"><span class="ph" style="background-image:url(${IMG[state.dream]});background-size:${crop[0]}%;background-position:${crop[1]}"></span><span class="ex-txt"><small>${L('{n}급 승급 오디션',{n:r.exam})}</small><b>${title}</b><em>${L(r.goal)}</em>${soon?`<span class="town">${L('곧 열려요')}</span>`:''}</span></div></div>`;
+}
 function buildRoad(){
   const D=DREAM[state.dream];
   $('#lightNum').textContent=state.lights;$('#lightIcon').setAttribute('href',state.dream==='actor'?'#seat':'#stick');
-  $('#dreamChip').textContent=L(D.chip);$('#whoName').textContent=(state.name||L('유학생'))+' · '+L('1급');
+  $('#dreamChip').textContent=L(D.chip);$('#whoName').textContent=(state.name||L('유학생'))+' · '+L('{n}급 과정',{n:roadGrade()});
   $('#meBadge').classList.toggle('face',!!state.look);
   $('#meBadge').innerHTML=state.look?faceTile(state.look,44,44,.66):state.name&&/[가-힣]/.test(state.name[0])?`<span style="font-size:19px;font-weight:680;color:#fff">${esc(state.name[0])}</span>`:`<svg viewBox="0 0 24 24"><use href="#${state.dream==='actor'?'seat':'stick'}"/></svg>`;
-  let side=0;const rows=[];
+  let side=0,g=0;const rows=[],G=roadGrade();
   ROAD.forEach((r,i)=>{
-    if(r.lv){rows.push(`<div class="lv"><span>${r.lv}</span></div>`);return;}
+    if(r.lv){g=Number(r.lv.slice(-1));rows.push(`<div class="lv"><span>${r.lv}</span>${g>G?`<em class="lv-lock">${LOCK_SVG}${L('{n}급 오디션에 붙으면 열려요',{n:g-1})}</em>`:''}</div>`);return;}
+    if(r.exam){rows.push(examCard(r,D,g>G));return;}
     const now=i===1,lock=i>1,cls=['node',side++%2?'l':'r'],soon=r.t&&r.t.startsWith('2화');
     if(r.dream!=null)cls.push('dn');if(now)cls.push('now');if(lock)cls.push('locked');
     const title=r.dream!=null?L('꿈 장면'):L(r.t),body=r.dream!=null?L(D.scenes[r.dream]):L(r.b);
@@ -1163,8 +1176,8 @@ function buildRoad(){
   });
   $('#road').innerHTML=`<div class="goal"><img src="${IMG[state.dream+'Goal']}" alt=""><div class="goal-copy"><i>${L(D.goalEn)}</i><b>${L(D.goal)}</b><span>${L(D.goalSub)}</span><span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>${L('4급에서 열려요')}</span></div></div>`
     +`<div class="steps">${rows.reverse().join('')}</div>`
-    +`<div class="start">${episodeDone()?`<button class="go-btn" id="goHome" type="button">${L(HOST?.front?.()?'오늘 마무리하기':'우리 동네로')}</button><button class="back-btn" id="startEp" type="button">${L('1화 다시 하기')}</button>`:`<button class="go-btn" id="startEp" type="button">${L('1화 시작')}</button><p>${L('한 장면 5분 남짓 · 상대가 먼저 말을 걸어요')}</p><button class="back-btn" id="goHome" type="button">${L(HOST?.front?.()?'오늘은 여기까지':'우리 동네 먼저 둘러보기')}</button>`}</div>`;
-  $('#startEp').onclick=playScene;$('#goHome').onclick=leave;
+    +`<div class="start">${episodeDone()?`<button class="go-btn" id="goHome" type="button">${L(HOST?.front?.()?'오늘 마무리하기':'우리 동네로')}</button><button class="back-btn" id="startEp" type="button">${L('1화 다시 하기')}</button>`:`<button class="go-btn" id="startEp" type="button">${L('1화 시작')}</button><p>${L('한 장면 5분 남짓 · 상대가 먼저 말을 걸어요')}</p>${HOST?.front?.()&&clubWanted()?'':`<button class="back-btn" id="goHome" type="button">${L(HOST?.front?.()?'오늘은 여기까지':'우리 동네 먼저 둘러보기')}</button>`}`}</div>`;
+  $('#startEp').onclick=playScene;const goHome=$('#goHome');if(goHome)goHome.onclick=leave;else clubCall({lang:LANG,felt:k=>SND.felt(k),calm:()=>reduce,leave});   // 동아리장 알림(club-call.mjs, 11-24)
   $('#road').classList.toggle('calm',!!state.ringShown);state.ringShown=true;
 }
 function leave(){if(leaving2)return;leaving2=true;SND.stopAll(.5);save({stage:'left'});HOST?.leave?.();}
