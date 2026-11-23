@@ -3,6 +3,7 @@
 // 들어가는 단추를 누르면, 들어가는 대신 「준비 중 · 2027년 2월」 판과 사전예약 단추를 띄운다.
 // 막는 것은 그 판들 안의 단추뿐이다. 서울행 이야기 · 내 길 · 1화 · 맞춤 앞면 · 우리 동네 홈 · 아래 메뉴 · 닫기 · 학습 알림 묻기는 지나간다.
 // 다시 짠 배우기가 준비되면 아래 한 줄을 false로 바꾼다. 판은 그대로 보이고, 누르면 예전처럼 열린다.
+// 로컬 시험 서버(server.mjs)는 기존 레슨 · 게임 시험이 돌도록 <html data-learn-soon="off">로 연다. 그 문서에서는 막지 않는다. 공개본에는 이 표시가 없다.
 export const LEARN_SOON=true;
 
 // 배우기 · 놀이 판의 표시: 패널 내용이 이 가운데 하나를 품으면 막는 판이다.
@@ -88,6 +89,7 @@ export function installLearnSoon({win=globalThis.window,lang=()=>'ko',art='',des
  }
  function close(){if(dialog?.open)dialog.close();}
  function click(event){
+  if(doc.documentElement?.dataset?.learnSoon==='off')return;
   const button=soonTarget(event.target,{on});if(!button)return;
   event.preventDefault();event.stopImmediatePropagation();open(button);
  }

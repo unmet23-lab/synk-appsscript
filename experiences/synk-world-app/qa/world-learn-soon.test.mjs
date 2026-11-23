@@ -56,6 +56,13 @@ test('막는 판과 단추 목록: 배우기 · 놀이 판의 들어가는 단�
  assert.doesNotMatch(SOON_ENTRIES,/data-life-packs|data-close/);
 });
 
+test('로컬 시험 서버는 기본으로 끄고(data-learn-soon="off") SYNK_WORLD_LEARN_SOON=1이면 켠다, 공개본에는 끄는 표시가 없다',()=>{
+ const server=read('experiences/synk-world-app/server.mjs'),source=read('experiences/synk-world-app/world-learn-soon.mjs');
+ assert.ok(server.includes(`process.env.SYNK_WORLD_LEARN_SOON==='1'?'<html':'<html data-learn-soon="off"'`),'로컬 서버의 끄는 표시');
+ assert.ok(source.includes(`if(doc.documentElement?.dataset?.learnSoon==='off')return;`),'모듈이 끄는 표시를 읽는다');
+ for(const page of ['experiences/brand-opening/home.html','experiences/synk-world-app/document.mjs','tools/build-world-app-public.mjs'])assert.doesNotMatch(read(page),/data-learn-soon/,page);
+});
+
 test('셸이 켜고, 공개 빌드가 모듈을 싣는다',()=>{
  const shell=read('experiences/synk-world-app/app-shell.mjs');
  assert.match(shell,/^import \{installLearnSoon\} from '\.\/world-learn-soon\.mjs';$/m);

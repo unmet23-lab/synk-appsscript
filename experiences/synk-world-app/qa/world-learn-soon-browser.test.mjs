@@ -13,7 +13,7 @@ import {serverReady} from './server-ready.mjs';
 // 배우기 · 놀이 「준비 중」 안내(유호님 11-24) 실제 브라우저 확인 — 계정 모드 WORLD(헤드리스 Edge)의 손님, 첫 실행을 마친 기기.
 // 배우기 판의 팩 카드 · 지금 할 일 · 「더 보기」 줄(이야기 · 내 위치)과 놀이 판의 게임 카드 · 「더 둘러보기」를 누르면
 // 레슨 · 게임 대신 안내 판(제목 · 2027년 2월 · 사전예약 단추 · 닫기)이 뜨고, 닫으면 같은 판과 누른 단추로 돌아온다. Esc · 바깥 누름도 닫는다.
-// 390 · 1280 × 한국어 · 영어 · 몽골어. 캡처와 result.json은 SYNK_LEARN_SOON_QA_OUT(기본 qa/world-learn-soon-20261124/)에 쓴다(그림은 git 밖).
+// 390 · 1280 · 1440 × 한국어 · 영어 · 몽골어. 로컬 서버는 기본으로 안내를 꺼서 SYNK_WORLD_LEARN_SOON=1로 띄운다. 캡처와 result.json은 SYNK_LEARN_SOON_QA_OUT(기본 qa/world-learn-soon-20261124/)에 쓴다(그림은 git 밖).
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const require=createRequire(import.meta.url);let playwright;try{playwright=require('playwright');if(!playwright.chromium)throw Error('no chromium');}catch{playwright=null;}
 const talkRoot=[process.env.SYNK_TALK_ROOT,path.resolve(root,'../SYNK-talk'),path.resolve(root.split(/[\\/]\.claude[\\/]worktrees[\\/]/)[0],'../SYNK-talk')]
@@ -21,7 +21,7 @@ const talkRoot=[process.env.SYNK_TALK_ROOT,path.resolve(root,'../SYNK-talk'),pat
 const out=path.resolve(process.env.SYNK_LEARN_SOON_QA_OUT||path.join(root,'experiences/synk-world-app/qa/world-learn-soon-20261124'));
 const config={version:1,supabaseUrl:'https://identity.example.test',supabasePublishableKey:'sb_publishable_browser_fixture',accountApiUrl:'https://identity.example.test',portalUrl:'https://identity.example.test/',
  clients:{world:{clientId:'world-browser',redirectUri:'https://world.example.test/world/'}}};
-const CASES=[{lang:'mn',viewport:{width:390,height:844}},{lang:'ko',viewport:{width:390,height:844}},{lang:'en',viewport:{width:390,height:844}},{lang:'mn',viewport:{width:1280,height:800}},{lang:'ko',viewport:{width:1280,height:800}}];
+const CASES=[{lang:'mn',viewport:{width:390,height:844}},{lang:'ko',viewport:{width:390,height:844}},{lang:'en',viewport:{width:390,height:844}},{lang:'mn',viewport:{width:1280,height:800}},{lang:'ko',viewport:{width:1440,height:900}}];
 
 // 첫 실행을 마친 손님 기기의 생활 진도: 한글 답과 튜터만 골라 두었다.
 function seeded(){
@@ -31,12 +31,12 @@ function seeded(){
  return Object.fromEntries(values);
 }
 
-test('WORLD 배우기 · 놀이: 들어가는 단추는 「준비 중 · 2027년 2월」 안내를 띄우고, 닫으면 같은 판으로 (390 · 1280 × 한국어 · 영어 · 몽골어)',{timeout:600000,skip:(!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 알려 준다)')||(!playwright&&'playwright가 없다')},async t=>{
+test('WORLD 배우기 · 놀이: 들어가는 단추는 「준비 중 · 2027년 2월」 안내를 띄우고, 닫으면 같은 판으로 (390 · 1280 · 1440 × 한국어 · 영어 · 몽골어)',{timeout:600000,skip:(!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 알려 준다)')||(!playwright&&'playwright가 없다')},async t=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-learn-soon-'));fs.writeFileSync(path.join(directory,'config.json'),JSON.stringify(config));
  fs.mkdirSync(out,{recursive:true});for(const name of fs.readdirSync(out))if(/\.png$/.test(name))fs.rmSync(path.join(out,name));
  const socket=net.createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));
  const server=spawn(process.execPath,[path.join(root,'experiences/synk-world-app/server.mjs')],{cwd:root,stdio:'pipe',env:{...process.env,SYNK_TALK_ROOT:talkRoot,SYNK_WORLD_PORT:String(port),
-  SYNK_WORLD_MODE:'account',SYNK_WORLD_BASE_PATH:'/world/',SYNK_WORLD_ACCOUNT_CONFIG:path.join(directory,'config.json'),SYNK_WORLD_DATA_DIR:path.join(directory,'must-not-create')}});
+  SYNK_WORLD_LEARN_SOON:'1',SYNK_WORLD_MODE:'account',SYNK_WORLD_BASE_PATH:'/world/',SYNK_WORLD_ACCOUNT_CONFIG:path.join(directory,'config.json'),SYNK_WORLD_DATA_DIR:path.join(directory,'must-not-create')}});
  let serverOutput='';server.stderr.on('data',c=>serverOutput+=c);server.stdout.on('data',c=>serverOutput+=c);
  const url=`http://127.0.0.1:${port}`,errors=[],shots=[],checks={};
  let browser;

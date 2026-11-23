@@ -147,7 +147,9 @@ const server=http.createServer(async(req,res)=>{
    }else if(!/^\/(?:(?:day-app\.mjs|day-style\.css|day-scene\.mjs|day-character\.mjs|day-residents\.mjs|day-environment\.mjs|day-materials\.mjs|day-rendering\.mjs|day-district\.mjs|day-light\.mjs|day-mood\.mjs|day-cards\.mjs|day-notebook\.mjs|day-stay\.mjs|day-stay\.css|day-ask\.mjs|day-ask\.css|day-meanwhile\.mjs|day-meanwhile\.css|day-sound\.mjs|day-tea\.mjs|day-tea\.css|day-gather\.mjs|day-gather\.css|day-sfx\.mjs|day-observation\.mjs|walk\.mjs|walk-controls\.mjs|walk-packets\.mjs|town-layout\.mjs|town\/(?:activities\/)?[a-z0-9-]+(?:\.gen)?\.mjs)$|rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise|GLTFLoader|KTX2Loader|WorkerPool|ColorSpaces|BufferGeometryUtils)\.js$|rendering\/(?:meshopt_decoder|ktx-parse|zstddec)\.module\.js$|rendering\/basis\/basis_transcoder\.(?:js|wasm)$|assets\/)/.test(pathname)){res.writeHead(404).end();return;}
   }
   else if(['/','/mobile.html','/desktop.html'].includes(pathname)){
-   const html=renderWorldDocument(fs.readFileSync(path.join(brandOpening,'home.html'),'utf8'),publicConfig);
+   // 배우기 · 놀이 「준비 중」 안내(world-learn-soon.mjs)는 공개본에서 켜져 있다. 이 로컬 서버는 레슨 · 게임 · 싱크타운을 여는 기존 시험이 돌도록
+   // 기본으로 끄고(<html data-learn-soon="off">), SYNK_WORLD_LEARN_SOON=1이면 공개본처럼 켠다(qa/world-learn-soon-browser.test.mjs).
+   const html=renderWorldDocument(fs.readFileSync(path.join(brandOpening,'home.html'),'utf8'),publicConfig).replace(/<html(?=[\s>])/,process.env.SYNK_WORLD_LEARN_SOON==='1'?'<html':'<html data-learn-soon="off"');
    res.writeHead(200,{'Content-Type':mime['.html'],'Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:html);return;
   }
   if(pathname.endsWith('/'))pathname+='index.html';const target=path.resolve(base,'.'+pathname);const rel=path.relative(base,target);
