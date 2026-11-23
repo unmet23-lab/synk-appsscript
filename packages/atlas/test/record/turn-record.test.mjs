@@ -193,6 +193,7 @@ test('손님 요약 사본은 접은 뒤 든 사건이 없으면 다시 접지 �
 test('손님 요약 저장이 실패했으면 새 사건이 없어도 refold가 저장을 한 번 더 건다 — 다시 접지는 않는다(Fable 5.2 끝 판 둘째 F4 · 설계 주인 조건 · 합친 끝 판 넘친 #15 ③)', async () => {
   const inner = memoryPort();
   let fail = false;
+  let hold = null;
   let locals = 0;
   const port = {
     ...inner,
@@ -201,6 +202,11 @@ test('손님 요약 저장이 실패했으면 새 사건이 없어도 refold가 
         if (fail) {
           fail = false;
           throw new Error('quota');
+        }
+        if (hold) {
+          const wait = hold;
+          hold = null;
+          await wait;
         }
         locals += 1;
       }
@@ -218,7 +224,14 @@ test('손님 요약 저장이 실패했으면 새 사건이 없어도 refold가 
   await rec.localSaved();
   assert.equal(locals, before, '실패한 저장');
   const folds = lookups;
+  // 바뀐 묶음만 다시 접으면(③ fold-local.mjs) 다시 접어도 색인을 읽지 않는다 — 요약이 같은 객체인지도 본다. 저장이 끝나면 기록에서 요약을
+  // 다시 풀어 객체가 바뀌므로, 다시 건 저장을 붙잡아 둔 채 견준다.
+  const kept = rec.summary;
+  let open;
+  hold = new Promise(resolve => (open = resolve));
   await rec.refold(); // 새 사건 없음 — 접지는 않고 저장만 다시
+  assert.equal(rec.summary, kept, '다시 접지는 않는다 — 요약을 새로 짓지 않았다');
+  open();
   await rec.localSaved();
   assert.equal(locals, before + 1, '실패한 저장을 refold가 다시 건다');
   assert.equal(lookups, folds, '다시 접지는 않는다 — 색인을 읽지 않았다');
