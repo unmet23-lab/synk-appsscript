@@ -122,7 +122,7 @@ test('a long name in 내 계정 is cut short instead of covering the next cell, 
   assert.match(css, /#portal-entry \.room\[data-room="solio"\] \.read:has\(> \[data-read\]:empty\)\{justify-content:flex-start\}/);
   assert.match(css, /#portal-entry \.room\[data-room="solio"\] \.read > \[data-read\]:empty\{display:none\}/);
   const view = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
-  assert.match(view, /const ASIDE_NAMES = Object\.freeze\(\['manage', 'account', 'settings'\]\);/, 'the account and settings rooms share the top room markup');
+  assert.match(view, /const ASIDE_NAMES = Object\.freeze\(\['manage', 'account', 'settings', 'pc'\]\);/, 'the account, settings and 「이 PC에 맞춘 것」 rooms share the top room markup');
 });
 
 test('0.5.2 공개 검수 B2: below 640px the office rows keep the 16px gap between name and status, as the other rows do', () => {

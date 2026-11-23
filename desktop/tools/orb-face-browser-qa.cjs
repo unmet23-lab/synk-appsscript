@@ -721,9 +721,17 @@ if(!process.versions.electron){
           // 펼친 줄 사이에도 간격이 있다(Fable 최종 P2-1)
           const gapFold=await w.js("(()=>{const r=[...document.querySelectorAll('#portal-entry [data-room=solio-backup] .d-more .d-row')];return r.length>1?Math.round(r[1].getBoundingClientRect().top-r[0].getBoundingClientRect().bottom):-1;})()");
           check('21 drives: the opened rows keep a gap between them',gapFold>=10,{gapFold});
+          // 스크롤 앞 화면을 먼저 찍고, 접혀 있던 줄이 보이게 스크롤해 한 번 더 찍는다(Fable 다시 검수 FA2)
+          await capture(w,'oneclick-drives-four-open');
           await w.js("document.querySelector('#portal-entry [data-room=solio-backup] .d-more').scrollIntoView({block:'center'})");await wait(300);
           await capture(w,'oneclick-drives-four-open-scrolled');
-          await capture(w,'oneclick-drives-four-open');
+          // 엔진이 첫 공간 훑기를 마치기 전: PC 앱이 잰 드라이브로 칸을 세우고 정한 선과 예측은 비운다(PC 진단 설계 5.1)
+          const pcDrives={readAt:new Date(Date.now()-60e3).toISOString(),drives:[dv('C',953,118.2,null,null),dv('D',1907,299,null,null)],hiddenDrives:[{letter:'G',why:'virtual'}]};
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({space:{missing:true,invalid:false,pc:pcDrives}}))+')');
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
+          const drp=await drv(w),dbp=await board(w),atp=await w.js("[...document.querySelectorAll('#portal-entry [data-room=solio-backup] [data-bak-board] .d-pace')].map(x=>x.textContent).join(' | ')");
+          check('21 drives: before the engine measures, the PC app drives fill the card with no line and no prediction',/^C: 드라이브 953GB/.test(drp.lab)&&drp.rows.length===1&&/^D:/.test(drp.rows[0])&&/엔진이 첫 공간 훑기를 마치면/.test(dbp.pred)&&/G: 드라이브는 Google Drive 같은 가상 드라이브로 보여 뺐습니다/.test(atp)&&!dbp.overflow,{drp,pred:dbp.pred,atp});
+          await capture(w,'oneclick-drives-from-pc');
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,state:'attention',attention:['signin']}}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
           const r4=await room(w);
@@ -737,6 +745,54 @@ if(!process.versions.electron){
           const o2=await objs(v);
           check('21 an account without the real entry has no backup object',!o2.includes('backup')&&o2.includes('visits'),{objs:o2});
           v.win.destroy();
+        }
+        // 「이 PC에 맞춘 것」 판(PC 진단 설계 5.2): 설정 방의 「이 PC」 줄에서 열고, 갈래 여덟 줄, C:가 빠듯할 때의 권함과 Windows 설정 열기,
+        // 다시 진단, Esc는 설정 방의 그 단추로 돌아온다. 좁은 창에서도 넘치지 않는다
+        if(only('pc')&&mode==='main'){
+          const G=1024**3,t=new Date(Date.now()-60e3).toISOString();
+          const dMain={ok:true,available:true,reading:false,changed:[{what:'memory',from:8,to:16}],profile:{readAt:t,slowAt:t,cpu:{cores:8},mem:{totalGb:15.7,freeGb:5.2},gpu:{adapters:2,memGb:6},drives:{shown:[{letter:'C',size:128*G,free:9*G},{letter:'D',size:1000*G,free:640*G}],hidden:[{letter:'E',why:'small'},{letter:'G',why:'virtual'}],unread:0,removable:1,network:0},power:{laptop:true,battery:true},net:{kind:'wifi',metered:false},os:{build:26100,version:'Windows 11 24H2',arm:false},screen:{width:1920,height:1080,scale:125,narrow:false},tools:{claude:{installed:true,signedIn:true},codex:{installed:false,signedIn:false},gemini:{installed:false,signedIn:false},vscode:true,cursor:false,node:true,python:false,git:true,wsl:false},failed:[]}};
+          const w=await open();await boot(w,{subs:subsReady},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1200);
+          await w.js('window.__orbFixture.setPc('+JSON.stringify(dMain)+')');
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await w.js("document.querySelector('.fan [data-foot=settings]').focus()");await click(w,'.fan [data-foot="settings"]');await wait(900);
+          const SR='#portal-entry [data-room=settings] ',PR='#portal-entry [data-room=pc] ';
+          const rowSel=(room,key)=>JSON.stringify(room+'button.row[data-key="'+key+'"]');
+          const prow=await w.js(`(()=>{const b=document.querySelector(${rowSel(SR,'pc')});return b?{mid:b.querySelector('.mid').textContent,val:b.querySelector('.val').textContent}:null;})()`);
+          check('pc the settings room has an 「이 PC」 row with cores, memory, drives and 바뀜',!!prow&&prow.mid==='논리 코어 8개 · 메모리 16GB · 드라이브 둘'&&prow.val==='바뀜',prow);
+          await w.js(`(()=>{const b=document.querySelector(${rowSel(SR,'pc')});if(!b.classList.contains('opened'))b.click();return true;})()`);await wait(400);
+          await capture(w,'pc-settings-row');
+          await w.js(`(()=>{const b=[...document.querySelector(${rowSel(SR,'pc')}).nextElementSibling.querySelectorAll('[data-room-act]')].find(x=>x.dataset.roomAct==='pc-open');b.focus();b.click();return true;})()`);await wait(900);
+          const pcr=()=>w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=pc]');return {shown:!!r&&!r.hidden,settings:!document.querySelector('#portal-entry [data-room=settings]').hidden,heading:document.querySelector('#portal-entry [data-orb-heading]').textContent,onSay:document.activeElement===r.querySelector('[data-aside-say]'),say:r.querySelector('[data-aside-text]').textContent,then:r.querySelector('[data-aside-then]').textContent,foot:r.querySelector('[data-aside-foot]').textContent,act:r.querySelector('.read [data-room-act]').textContent,rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key+'|'+b.querySelector('.mid').textContent+'|'+b.querySelector('.val').textContent),overflow:document.documentElement.scrollWidth>innerWidth+1};})()");
+          const p1=await pcr();
+          check('pc 「이 PC에 맞춘 것 보기」 opens the board: heading, the PC sentence, the change, the drives, eight rows and 다시 진단',p1.shown&&!p1.settings&&p1.heading==='이 PC에 맞춘 것'&&p1.onSay&&p1.say==='이 PC는 논리 코어 8개 · 메모리 16GB 노트북입니다.'&&/^이 PC의 메모리가 8GB에서 16GB로 바뀌었습니다\. 드라이브/.test(p1.then)&&/드라이브 둘\(C: 128GB, D: 1\.0TB\)을 씁니다\.$/.test(p1.then)&&JSON.stringify(p1.rows.map(r=>r.split('|')[0]))==='["disk","cpu","gpu","power","net","screen","os","tools"]'&&p1.rows[0]==='disk|드라이브 둘 · C:가 거의 참|권할 것 하나'&&p1.rows[1]==='cpu|논리 코어 8개 · 메모리 16GB|사무실 넷까지'&&p1.act==='다시 진단'&&/에 쟀습니다\. 이 PC 밖으로 보내지 않습니다\.$/.test(p1.foot)&&!p1.overflow,p1);
+          const pcCalls=async()=>(await calls(w)).filter(c=>c.startsWith('pc-'));
+          check('pc opening the board reads the values and tells the app the change was seen',(await pcCalls()).includes('pc-snapshot')&&(await pcCalls()).includes('pc-seen'),{calls:await pcCalls()});
+          await captureSizes(w,'pc-board');
+          await w.js(`document.querySelector(${rowSel(PR,'disk')}).click()`);await wait(500);
+          const disk=await w.js(`(()=>{const m=document.querySelector(${rowSel(PR,'disk')}).nextElementSibling;return {gauges:[...m.querySelectorAll('.gauge')].length,notes:[...m.querySelectorAll('.more-note')].map(x=>x.textContent),btn:[...m.querySelectorAll('[data-room-act]')].map(b=>b.textContent+'|'+b.dataset.roomAct)};})()`);
+          check('pc the storage row shows each drive as a gauge, names the hidden drives, does not measure USB, and offers the Windows save-locations page',disk.gauges===2&&disk.notes.some(n=>n.includes('G: 드라이브는 Google Drive 같은 가상 드라이브로 보여 뺐습니다.')&&n.includes('E: 드라이브는 32GB보다 작아'))&&disk.notes.includes('USB 메모리 · SD 카드 1개는 재지 않습니다.')&&disk.notes.some(n=>n.includes('새 프로젝트와 다운로드는 D:에 두면 C:가 덜 찹니다'))&&JSON.stringify(disk.btn)==='["Windows 저장 위치 열기|pc-storage"]',disk);
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`document.querySelector(${rowSel(PR,'disk')}).scrollIntoView({block:'start'})`);await wait(150);await capture(w,`pc-board-disk-${W}`);}
+          w.win.setContentSize(1440,900);await wait(300);
+          const wide=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=pc]');return document.documentElement.scrollWidth>innerWidth+1||[...r.querySelectorAll('.more-in')].some(x=>x.scrollWidth>x.clientWidth+1);})()");
+          check('pc nothing in the opened storage row runs wider than the window',!wide,{wide});
+          await w.js(`(()=>{const b=[...document.querySelector(${rowSel(PR,'disk')}).nextElementSibling.querySelectorAll('[data-room-act]')].find(x=>x.dataset.roomAct==='pc-storage');b.focus();b.click();return true;})()`);await wait(500);
+          const live=await w.js(`(document.querySelector(${rowSel(PR,'disk')}).nextElementSibling.querySelector('[role=status]')||{}).textContent||''`);
+          check('pc the button asks the main process to open the Windows page and says so in the row',(await pcCalls()).includes('pc-storage')&&live==='Windows 설정을 열었습니다. 「새 콘텐츠를 저장할 위치」에서 고릅니다.',{live});
+          await w.js(`document.querySelector(${rowSel(PR,'tools')}).click()`);await wait(500);
+          const tools=await w.js(`[...document.querySelector(${rowSel(PR,'tools')}).nextElementSibling.querySelectorAll('.more-note')].map(x=>x.textContent)`);
+          check('pc the tools row says office works with Claude Code and that Codex must be installed from 구독 방',tools.includes('사무실 직원은 이 PC의 Claude Code로 일합니다.')&&tools.some(n=>n.startsWith('Codex가 이 PC에 없습니다.')),tools);
+          await w.js(`document.querySelector(${rowSel(PR,'tools')}).scrollIntoView({block:'start'})`);await wait(200);
+          await capture(w,'pc-board-tools');
+          await w.js(`(()=>{const b=document.querySelector(${JSON.stringify(PR+'.read [data-room-act]')});b.focus();b.click();return true;})()`);await wait(600);
+          check('pc 다시 진단 reads everything again',(await pcCalls()).includes('pc-again'),{calls:await pcCalls()});
+          // 펼친 줄이 있으면 Esc는 줄부터 접는다. 판이 닫힐 때까지 누른다(많아야 세 번)
+          for(let i=0;i<3&&await w.js("!document.querySelector('#portal-entry [data-room=pc]').hidden");i++){await key(w,'Escape');await wait(600);}
+          const back=await w.js(`(()=>{const a=document.activeElement;return {pc:!document.querySelector('#portal-entry [data-room=pc]').hidden,settings:!document.querySelector('#portal-entry [data-room=settings]').hidden,heading:document.querySelector('#portal-entry [data-orb-heading]').textContent,onBtn:a?.dataset?.roomAct==='pc-open',active:(a?.textContent||'').slice(0,30)};})()`);
+          check('pc Esc returns to the settings room with the focus on 「이 PC에 맞춘 것 보기」',!back.pc&&back.settings&&back.heading==='설정'&&back.onBtn,back);
+          for(let i=0;i<2&&await w.js("!document.querySelector('#portal-entry [data-room=settings]').hidden");i++){await key(w,'Escape');await wait(500);}
+          const out=await w.js("(()=>({settings:!document.querySelector('#portal-entry [data-room=settings]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden}))()");
+          check('pc a second Esc leaves settings back to Solio',!out.settings&&out.solio,out);
+          w.win.destroy();
         }
         if(only('office-looks')&&mode==='main'){
           await require('./office-looks-browser-qa.cjs')({open,boot,signedIn,subsNone,until,wait,click,capture,check,calls});
@@ -1330,7 +1386,7 @@ if(!process.versions.electron){
           const capRow=async(name,key)=>{for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js('window.__sq('+JSON.stringify(key)+').scrollIntoView({block:"start"})');await wait(150);await capture(w,`${name}-${W}`);}w.win.setContentSize(1440,900);await wait(300);};
           const s0=await w.js(`(()=>{const r=document.querySelector('#portal-entry [data-room=settings]');return {shown:!!r&&!r.hidden,mode:document.documentElement.dataset.orbClient,solioHidden:document.querySelector('#portal-entry [data-room=solio]').hidden,say:r.querySelector('[data-aside-text]').textContent,then:r.querySelector('[data-aside-then]').textContent,foot:r.querySelector('[data-aside-foot]').textContent,act:r.querySelector('.read [data-room-act]').textContent,heading:document.querySelector('#portal-entry [data-orb-heading]').textContent,onSay:document.activeElement===r.querySelector('[data-aside-say]'),rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key)};})()`);
           const c0=await calls(w);
-          check('18-12 「설정」 opens the settings room in the face with the update sentence, how it starts, and the version',s0.shown&&s0.mode==='app'&&s0.solioHidden&&s0.onSay&&s0.heading==='설정'&&s0.say==='이 PC의 SYNK는 최신 판입니다.'&&s0.then==='컴퓨터를 켤 때 함께 켜지 않습니다.'&&s0.foot==='SYNK Platform 0.4.97 · 시험판 · Windows'&&s0.act==='문제 알리기용 정보 복사'&&JSON.stringify(s0.rows)==='["update","start","key","view","notice"]'&&['prefs-get','care-status','update-status'].every(c=>c0.includes(c)),s0);
+          check('18-12 「설정」 opens the settings room in the face with the update sentence, how it starts, and the version',s0.shown&&s0.mode==='app'&&s0.solioHidden&&s0.onSay&&s0.heading==='설정'&&s0.say==='이 PC의 SYNK는 최신 판입니다.'&&s0.then==='컴퓨터를 켤 때 함께 켜지 않습니다.'&&s0.foot==='SYNK Platform 0.4.97 · 시험판 · Windows'&&s0.act==='문제 알리기용 정보 복사'&&JSON.stringify(s0.rows)==='["update","pc","start","key","view","notice"]'&&['prefs-get','care-status','update-status'].every(c=>c0.includes(c)),s0);
           await captureSizes(w,'settings-room');
           // 업데이트: 지금 확인 → 확인 중 → 최신. 새 판이 나오면 받기와 받는 몫, 다 받으면 쓰던 글 확인 뒤 설치 파일 열기, 실패 문장
           await sopen('update');await wait(300);await sact('update','update-check');await wait(80);

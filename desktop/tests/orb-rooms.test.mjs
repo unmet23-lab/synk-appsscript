@@ -92,7 +92,7 @@ test('saved Gemini accounts accept manual records and ignore old read and login 
 });
 
 test('the rooms opened from the fan are listed, and the guard values are the reviewed ones (설계 검토 D1)', () => {
-  assert.deepEqual(ASIDE_ROOMS, ['manage', 'account', 'settings']);
+  assert.deepEqual(ASIDE_ROOMS, ['manage', 'account', 'settings', 'pc']);
   assert.deepEqual(ROOM_TIMING, { armGuard: 600, armExpire: 10000, account: 15000, tokLive: 60000, tokPaint: 1000 });
 });
 

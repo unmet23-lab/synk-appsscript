@@ -474,7 +474,7 @@ function createSolioBackup({
   platform = process.platform, env = process.env, cacheRoot, now = Date.now,
   run = runPowerShell, request = requestHttps, hold = holdSetup, openExternal = async () => {},
   fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, packaged = false, inRelease = IN_RELEASE, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
-  tag = runTag(), appUpdate = null,
+  tag = runTag(), appUpdate = null, pcDrives = () => null,
 } = {}) {
   const paths = statusPaths(env);
   // 엔진이 있는지는 어디에도 기억해 두지 않는다. 방의 표시 · 누르기 · 열기 · 설치기 띄우기가 모두 그때마다 새로 확인하고 제 답만 쓴다.
@@ -580,7 +580,11 @@ function createSolioBackup({
   async function readSpaceSummary() {
     if (platform !== 'win32' || !paths) return null;
     const read = await oneclickFiles.readSpace({ paths, fsImpl: fsImpl.promises, cache: spaceCache });
-    return read.format === 'ok' ? read.space : { missing: read.format === 'missing', invalid: read.format === 'invalid' };
+    if (read.format === 'ok') return read.space;
+    // 엔진이 첫 공간 훑기를 마치기 전에는 PC 앱 진단(pc-profile.cjs)이 잰 드라이브를 싣는다. 정한 선과 예측은 없다(PC 진단 설계 5.1)
+    let pc = null;
+    if (read.format === 'missing') { try { pc = pcDrives() || null; } catch { pc = null; } }
+    return { missing: read.format === 'missing', invalid: read.format === 'invalid', ...(pc ? { pc } : {}) };
   }
   function wake(c) {
     c.woke = 'waking';

@@ -335,6 +335,17 @@ const cmpVersion = (a, b) => {
   return 0;
 };
 
+/* 칸으로 세우지 않은 드라이브를 한 줄로 알린다(원클릭 판과 「이 PC에 맞춘 것」 판이 같이 쓴다).
+   조사가 드라이브 글자에 붙지 않게 「E: 드라이브는」으로 쓴다(Fable 다시 검수 FA1 — 「M:는」이 나오지 않게) */
+const HIDE_WHY = Object.freeze([
+  ['virtual', 'Google Drive 같은 가상 드라이브로 보여'],
+  ['same', '다른 드라이브와 크기 · 남은 공간이 같아 같은 디스크로 보고'],
+  ['small', '32GB보다 작아(복구 파티션 따위)'],
+]);
+export function hiddenSentence(hidden) {
+  const list = Array.isArray(hidden) ? hidden.filter(x => x && typeof x.letter === 'string' && /^[A-Z]$/.test(x.letter)) : [];
+  return HIDE_WHY.map(([why, words]) => { const of = list.filter(x => x.why === why); return of.length ? `${of.map(x => `${x.letter}:`).join(' · ')} 드라이브는 ${words} 뺐습니다.` : ''; }).filter(Boolean).join(' ');
+}
 /* 보고서의 드라이브들(본체 summarizeSpace가 걸러 빠듯한 차례로 둔 것). 옛 꼴(drive 하나)도 읽는다 */
 const driveList = space => (Array.isArray(space?.drives) ? space.drives : space?.drive ? [space.drive] : []);
 const belowLine = d => !!d.startLineGb && d.free < d.startLineGb * GB;
@@ -350,31 +361,36 @@ function driveRow(d) {
 }
 /* 드라이브 판(PC 진단 설계 5.1): 첫 칸은 가장 빠듯한 드라이브, 나머지는 그 아래 한 줄 막대. 넷 이상이면 셋째부터 접는다 */
 function driveCard(space, now) {
+  // 엔진 보고서가 아직 없으면 PC 앱이 잰 드라이브(space.pc)로 세운다. 정한 선과 예측은 비운다(PC 진단 설계 5.1)
+  const fromPc = !!space?.missing && Array.isArray(space.pc?.drives) && space.pc.drives.length > 0;
+  if (fromPc) return driveCardFrom({ ...space.pc, createdAt: space.pc.readAt }, now, true);
   const list = driveList(space);
   if (!space || space.missing || space.invalid || !list.length) {
     const empty = space?.invalid ? '엔진이 남긴 공간 보고서를 읽지 못했습니다.' : '엔진이 아직 공간을 재지 않았습니다. 하루 한 번 잽니다.';
     return { empty };
   }
+  return driveCardFrom(space, now, false);
+}
+function driveCardFrom(space, now, fromPc) {
+  const list = driveList(space);
   const d = list[0], line = d.startLineGb ? d.startLineGb * GB : null;
   const scale = Math.max(line ? line * 2 : d.size, d.free * 1.15, 1);
   const pct = v => Math.max(0, Math.min(100, (v / scale) * 100));
   const g = d.growthPerDay;
   // 엔진은 증가 속도를 모를 때도(보호 첫날 따위) daysToStartLine을 null로 준다. 「내려가지 않습니다」는 속도가 0 이하로 재였을 때만 쓴다(Fable F2)
-  const pred = line === null ? '정한 선을 아직 받지 못했습니다.' : belowLine(d) ? `남은 공간이 정한 선(${d.startLineGb}GB)보다 적습니다.`
+  const pred = fromPc ? '엔진이 첫 공간 훑기를 마치면 정한 선과 언제 닿을지를 보입니다.' : line === null ? '정한 선을 아직 받지 못했습니다.' : belowLine(d) ? `남은 공간이 정한 선(${d.startLineGb}GB)보다 적습니다.`
     // 아직 선 위인데 하루 안에 닿으면 「0일 뒤」가 아니라 「오늘 안에」(카본 A3)
     : d.daysToStartLine === 0 ? '이대로면 오늘 안에 정한 선 아래로 내려갑니다.'
       : Number.isSafeInteger(d.daysToStartLine) ? `이대로면 ${d.daysToStartLine}일 뒤 정한 선 아래로 내려갑니다.`
       : !Number.isSafeInteger(g) ? '며칠 더 재어야 언제 정한 선에 닿는지 알 수 있습니다.' : g <= 0 ? '지금 속도로는 정한 선 아래로 내려가지 않습니다.' : '';
   const pace = Number.isSafeInteger(g) && g !== 0 ? `지난 14일 동안 하루에 ${gb(Math.abs(g))}씩 ${g > 0 ? '찼' : '비었'}습니다.` : '';
-  const at = backupDay(space.createdAt);
+  const at = fromPc ? '' : backupDay(space.createdAt);
   // 넷 이상이면 선 위 드라이브만 접는다. 선 아래 드라이브는 늘 보인다(Fable 최종 P2-3)
   const rows = list.slice(1).map(driveRow), shownRows = list.length >= 4 ? Math.max(1, rows.filter(r => r.below).length) : rows.length;
-  // 칸으로 세우지 않은 드라이브를 말없이 빼지 않는다(Fable 최종 P2-4)
-  const hid = Array.isArray(space.hiddenDrives) ? space.hiddenDrives : [];
-  const hidWords = [hid.filter(x => x.why === 'same').map(x => `${x.letter}:`).join(' · '), hid.filter(x => x.why === 'small').map(x => `${x.letter}:`).join(' · ')];
-  const hidden = [hidWords[0] && `${hidWords[0]}는 다른 드라이브와 크기 · 남은 공간이 같아 같은 디스크로 보고 뺐습니다.`, hidWords[1] && `${hidWords[1]}는 32GB보다 작아(복구 파티션 따위) 뺐습니다.`].filter(Boolean).join(' ');
+  // 칸으로 세우지 않은 드라이브를 말없이 빼지 않는다(Fable 최종 P2-4). 조사는 「E: 드라이브는」으로 글자에 붙이지 않는다(Fable 다시 검수 FA1)
+  const hidden = hiddenSentence(space.hiddenDrives);
   return {
-    label: `${d.letter}: 드라이브 ${sizeWords(d.size)}`, at: at ? `${at}에 잰 값` : '',
+    label: `${d.letter}: 드라이브 ${sizeWords(d.size)}`, at: fromPc ? 'PC 앱이 잰 값' : at ? `${at}에 잰 값` : '',
     free: (d.free / GB).toFixed(1), unit: 'GB 남음', freePct: pct(d.free), linePct: line ? pct(line) : null,
     lineLabel: line ? `정한 선 ${d.startLineGb}GB` : '', max: `${Math.round(scale / GB)}GB`, pred, pace,
     aria: `${d.letter}: 남은 공간 ${(d.free / GB).toFixed(1)}GB${line ? `, 정한 선 ${d.startLineGb}GB` : ''}`,

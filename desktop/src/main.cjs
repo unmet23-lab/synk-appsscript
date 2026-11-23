@@ -48,6 +48,7 @@ const {yieldToUpdatingInstaller}=require('./platform-update-marker.cjs');
 const {createSiteVisits}=require('./site-visits.cjs');
 const {createSnsHealth}=require('./sns-health.cjs');
 const {createSolioBackup}=require('./solio-backup.cjs');
+const {createPcProfile}=require('./pc-profile.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
 const {createEstimateWindow}=require('./estimate-window.cjs');
@@ -270,7 +271,13 @@ function snsHealthCall(){if(runtime.clientId!=='platform'||smoke)return {ok:fals
 let solioBackupService=null;
 // 원클릭(11-23)의 04 업데이트 확인: PC 앱 업데이터의 상태를 읽고 확인을 부탁한다(받지는 않는다). platformUpdate는 부를 때 읽는다
 const solioAppUpdate=Object.freeze({snapshot:()=>platformUpdate?.snapshot(),checkForUpdate:()=>platformUpdate?.checkForUpdate()});
-function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),appUpdate:solioAppUpdate});return solioBackupService;}
+function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),pcDrives:()=>pcProfile()?.spaceDrives()||null,appUpdate:solioAppUpdate});return solioBackupService;}
+// 솔리오 「내 PC 진단」(11-24, docs/디자인/솔리오_PC진단_20261123/설계.md): 이 PC의 사양을 읽어 앱 자료 폴더에만 둔다. 계정과 상관없이 PC마다 하나이고, 서버 · 로그로 보내지 않는다
+let pcProfileService=null;
+function pcProfile(){if(runtime.clientId!=='platform'||smoke)return null;if(!pcProfileService)pcProfileService=createPcProfile({userData:app.getPath('userData'),display:()=>{const d=screen.getPrimaryDisplay();return {width:d.size.width,height:d.size.height,scale:d.scaleFactor,workWidth:d.workAreaSize.width};}});return pcProfileService;}
+function pcProfileCall(work){const service=pcProfile();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};return work(service);}
+// 앱을 켜면 첫 화면을 막지 않게 조금 뒤에 가벼운 값을 읽는다(설계 6절). 그래픽 값은 하루 한 번이다
+function pcProfileWarm(){if(!pcProfile())return;const timer=setTimeout(()=>{void pcProfile()?.refresh().catch(()=>{});},8000);timer.unref?.();}
 // 로그인 알림마다 남은 setup 요청을 치운다. 방을 아직 열지 않았어도 서비스를 만들어 치우므로, 앱을 다시 켠 뒤 첫 알림이 앞 실행의 요청을 지운다(Fable 요청 수명 확인 P2)
 function solioBackupSweep(){if(runtime.clientId!=='platform'||smoke)return;try{solioBackup().accountChanged();}catch{}}
 function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};return work(solioBackup(),status.account);}
@@ -783,6 +790,7 @@ function initializeAccountServices(){
     const signInReturn=createSignInReturn();
     auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),device:suiteDeviceId,onChange:state=>{suitePublisher?.publish(state);publishAuthState(projectAuth(state));if(signInReturn(state))bringToFront(window,{app});}});
     solioBackupSweep();
+    pcProfileWarm();
     if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
   }
   if(runtime.clientId==='platform'&&!careNotifications){
@@ -1003,6 +1011,11 @@ function createWindow(){
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
     // 원클릭(11-23): run-now 요청을 쓰고 엔진의 요청 작업을 깨운다. 본체가 계정 · 엔진 · 보호 상태를 다시 확인한다
     'synk:solio-backup-oneclick':()=>solioBackupCall((service,account)=>service.oneClick(account)),
+    // 「이 PC에 이렇게 맞췄습니다」(PC 진단 설계 5.2): 넘기는 값은 없다. 저장 위치 열기는 Windows 설정의 정해진 화면 하나만 연다
+    'synk:pc-profile':()=>pcProfileCall(service=>service.refresh()),
+    'synk:pc-profile-again':()=>pcProfileCall(service=>service.refresh({full:true})),
+    'synk:pc-profile-seen':()=>pcProfileCall(service=>service.seen()),
+    'synk:pc-open-storage':()=>pcProfileCall(()=>process.platform!=='win32'?{ok:false,code:'NOT_AVAILABLE'}:Promise.resolve().then(()=>shell.openExternal('ms-settings:savelocations')).then(()=>({ok:true}),()=>({ok:false,code:'OPEN_FAILED'}))),
     // 솔리오 「사무실」(구현설계.md 13절): 모두 officeCall을 거친다. 폴더는 본체가 고르기 창이나 지금 선 세션에서 받는다
     'synk:office-snapshot':()=>officeCall(officeWithTasks),
     'synk:chatgpt-status':()=>chatgptCall('status'),

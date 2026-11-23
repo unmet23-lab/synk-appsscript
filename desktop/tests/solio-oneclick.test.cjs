@@ -640,7 +640,7 @@ test('all drives on the board (PC 진단 설계 5.1): the tightest is the big ca
   assert.deepEqual([b.rows.map(r => r.label), b.folded.map(r => r.label), b.foldLabel], [['G:', 'H:'], ['C:', 'D:'], '드라이브 2개 더']);
   // 뺀 드라이브는 한 줄로 알린다(Fable 최종 P2-4)
   const hiddenCard = solioBackupView(SNAP({ space: { ...SPACE, drive: undefined, drives: [C, D], hiddenDrives: [{ letter: 'E', why: 'small' }, { letter: 'G', why: 'same' }] } }), NOW).board.drive;
-  assert.equal(hiddenCard.hidden, 'G:는 다른 드라이브와 크기 · 남은 공간이 같아 같은 디스크로 보고 뺐습니다. E:는 32GB보다 작아(복구 파티션 따위) 뺐습니다.');
+  assert.equal(hiddenCard.hidden, 'G: 드라이브는 다른 드라이브와 크기 · 남은 공간이 같아 같은 디스크로 보고 뺐습니다. E: 드라이브는 32GB보다 작아(복구 파티션 따위) 뺐습니다.');
   assert.equal(board([C, D]).hidden, '');
   // 큰 칸의 「선 아래」는 남은 공간과 정한 선으로 본다. 정한 선이 없으면 그렇다고 쓴다
   assert.match(board([drive('C', 953, 80, 100, null)]).pred, /정한 선\(100GB\)보다 적습니다/);

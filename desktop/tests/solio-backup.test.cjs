@@ -995,7 +995,7 @@ test('a packaged build with the switch off hides the room and the calls say NOT_
   assert.equal((await shipped.snapshot(ME)).available, true, 'the default is the switch');
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
   const call = main.match(/createSolioBackup\(\{[^}]*\}\)/g) || [];
-  assert.deepEqual(call, ["createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),appUpdate:solioAppUpdate})"], 'main makes the service once, with the packaged flag and nothing that turns it back on');
+  assert.deepEqual(call, ["createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),pcDrives:()=>pcProfile()?.spaceDrives()||null,appUpdate:solioAppUpdate})"], 'main makes the service once, with the packaged flag and nothing that turns it back on');
   assert.doesNotMatch(main, /inRelease/, 'only the IN_RELEASE line in solio-backup.cjs turns the room on');
 });
 

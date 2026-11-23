@@ -200,6 +200,13 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     dismiss:()=>ipcRenderer.invoke('synk:solio-backup-dismiss'),
     oneClick:()=>ipcRenderer.invoke('synk:solio-backup-oneclick'),
   }),
+  // 솔리오 「내 PC 진단」(11-24): 이 PC의 사양(수와 종류)만 받는다. 넘기는 값은 없다.
+  pcProfile:Object.freeze({
+    snapshot:()=>ipcRenderer.invoke('synk:pc-profile'),
+    again:()=>ipcRenderer.invoke('synk:pc-profile-again'),
+    seen:()=>ipcRenderer.invoke('synk:pc-profile-seen'),
+    openStorage:()=>ipcRenderer.invoke('synk:pc-open-storage'),
+  }),
   // 솔리오 「사무실」(11-20): 세션 모음의 모습을 받고, 부서 · 보낼 부서 · 설정 · 보는 폴더를 고친다. 인자는 위의 꼴로 다시 만든 것만 건너간다.
   chatgptConnection:Object.freeze({
     status:()=>ipcRenderer.invoke('synk:chatgpt-status'),

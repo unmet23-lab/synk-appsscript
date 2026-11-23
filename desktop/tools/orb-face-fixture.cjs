@@ -10,6 +10,9 @@ let auth={configured:true,status:'restoring',signedIn:false,sessionGeneration:0,
 let env={platform:'win32',arch:'x64',version:'0.4.95',mode:'development',publicAppsAvailable:[],qaGuestEntry:false};
 let assignmentHold=null,assignmentRelease=null;
 let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[],visits=null,health=null,backup=null,backupOneClick=null;
+// 「이 PC에 맞춘 것」 판(main.cjs synk:pc-profile*). 정하지 않으면 두 드라이브 노트북 견본이다(값은 꾸민 것)
+const pcSample=()=>{const G=1024**3,t=new Date(Date.now()-60e3).toISOString();return {ok:true,available:true,reading:false,changed:[],profile:{readAt:t,slowAt:t,cpu:{cores:16},mem:{totalGb:31.7,freeGb:12.3},gpu:{adapters:1,memGb:8},drives:{shown:[{letter:'C',size:953*G,free:118*G},{letter:'D',size:1907*G,free:299*G}],hidden:[{letter:'G',why:'virtual'}],unread:0,removable:0,network:0},power:{laptop:true,battery:true},net:{kind:'wifi',metered:false},os:{build:26100,version:'Windows 11 24H2',arm:false},screen:{width:2560,height:1600,scale:150,narrow:false},tools:{claude:{installed:true,signedIn:true},codex:{installed:true,signedIn:true},gemini:{installed:false,signedIn:false},vscode:true,cursor:false,node:true,python:true,git:true,wsl:false},failed:[]}};};
+let pcSnap=null;
 const listeners=new Set(),subsListeners=new Set(),calls=[];
 // 계정 관리 방(2단계 둘째 조각)이 부르는 구독 다리. 부른 것을 적고, 저장은 이 창의 합성 자료에만 고쳐 넣는다(실제 로그인 · 설치 · 브라우저 열기는 없다)
 let subsSeq=100;
@@ -204,6 +207,13 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     dismiss:async()=>{calls.push('backup-dismiss');return {ok:true};},
     oneClick:async()=>{calls.push('backup-oneclick');return backupOneClick?backupOneClick():{ok:true};},
   }),
+  // 「이 PC에 맞춘 것」 판(main.cjs synk:pc-profile*). 로그인과 상관없이 PC마다 답한다. 본 것으로 알리면 바뀜을 지운다
+  pcProfile:Object.freeze({
+    snapshot:async()=>{calls.push('pc-snapshot');return pcSnap||pcSample();},
+    again:async()=>{calls.push('pc-again');return pcSnap||pcSample();},
+    seen:async()=>{calls.push('pc-seen');if(pcSnap)pcSnap={...pcSnap,changed:[]};return {ok:true};},
+    openStorage:async()=>{calls.push('pc-storage');return {ok:true};},
+  }),
   // 솔리오 「사무실」(main.cjs synk:office-*). 로그인한 회원에게만 답하고, 정하지 않으면 볼 계정이 아닌 답이다
   office:Object.freeze({
     snapshot:async()=>{calls.push('office-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return officeSnap();},
@@ -377,6 +387,8 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   setHealth:value=>{health=value||null;},
   // 솔리오 백업의 답을 바꾼다(다음 읽기부터)
   setBackup:value=>{backup=value||null;},
+  // 「이 PC에 맞춘 것」 판의 답을 바꾼다(다음 읽기부터). null이면 견본이다
+  setPc:value=>{pcSnap=value||null;},
   // 원클릭(11-23): 누름의 답을 바꾸려면 시험이 setBackupOneClick으로 함수 대신 답 하나를 준다
   setBackupOneClick:value=>{backupOneClick=value?()=>value:null;},
   // 설정 방: 업데이트 판을 바꿔 알리고, 데스크톱 설정 · 쓰던 글 되살리기 · 복사한 진단 정보를 읽는다

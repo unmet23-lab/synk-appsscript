@@ -40,8 +40,8 @@ export function railSettleMs(count) {
 const CHEVRON = '<svg viewBox="0 0 8 5" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="M1 1l3 3 3-3"/></svg>';
 
 /* 펼침이나 구독 방에서 여는 방(2단계 둘째 조각 설계 1.3절, 시안 data-room="manage" · "account" · "settings"). 맨 위 「돌아가기」, 결론 문장, 줄 묶음, 맨 아래 줄과 글 단추 하나다 */
-const ASIDE_NAMES = Object.freeze(['manage', 'account', 'settings']);
-const ASIDE_LABEL = Object.freeze({ manage: '연결한 계정', account: '내 계정', settings: '설정' });
+const ASIDE_NAMES = Object.freeze(['manage', 'account', 'settings', 'pc']);
+const ASIDE_LABEL = Object.freeze({ manage: '연결한 계정', account: '내 계정', settings: '설정', pc: '이 PC에 맞춘 것' });
 function asideMarkup(name) {
   return `<div class="room room-top room-aside" data-room="${name}" hidden>
       <button class="quiet up" type="button" data-orb-act="aside-back">돌아가기</button>
@@ -1870,6 +1870,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (s.layer === 'app' && s.aside === 'manage') return '계정 관리';
     if (s.layer === 'app' && s.aside === 'account') return '내 계정';
     if (s.layer === 'app' && s.aside === 'settings') return '설정';
+    if (s.layer === 'app' && s.aside === 'pc') return '이 PC에 맞춘 것';
     if (s.layer === 'app') return s.space === 'solio' ? '솔리오' : s.space === 'workspace' ? 'Workspace' : 'PULSE';
     if (s.phase === 'welcome') return 'SYNK Platform';
     return '';

@@ -16,6 +16,7 @@ import { ORDER, num, nameOf, planName, planKey, accountState, passesOf, passPlan
 import { SOLIO_TODAY_NAMES, josa, joinNames, whenWords, korDate, benefitInfo } from './solio-today.mjs';
 import { TOKEN_RANGES, tokenSummary, tokenText } from './subscriptions-tokens.mjs';
 import { NAME_MAX, nameProblem, pendingDeletion, membershipLines, sessionRows, signInMethods } from './account-page.mjs';
+import { pcSettingsRow } from './pc-fit-model.mjs';
 
 /* ── 오류 코드의 글. 옛 구독 판의 CODE_TEXT를 합니다체로 다시 썼다. 표에 없으면 DEFAULT_SAY다 ── */
 export const CODE_SAY = Object.freeze({
@@ -1206,14 +1207,15 @@ export const DRAFT_SAY = '쓰던 글 되살리기를 바꾸지 못했습니다. 
 export const careOn = c => c?.ok === true && c.available === true && c.signedIn === true;
 export const CARE_SAY = Object.freeze({ CARE_DATA_REQUIRED: '플레저에 저장한 일정이 아직 없어 켜지 못했습니다. synk.im/care에서 로그인하고 일정을 저장한 뒤 다시 켜 주세요.', AUTH_CHANGED: '그사이 계정이 바뀌어 바꾸지 않았습니다. 다시 눌러 주세요.', no: '플레저 PC 알림을 바꾸지 못했습니다. 로그인 상태와 인터넷 연결을 보고 다시 해 주세요.' });
 
-/* s: { update(본체 판, 없으면 받을 수 없음), desktop(데스크톱 설정 판), drafts(쓰던 글 되살리기 상태), care(플레저 PC 알림 상태), notices(알림 설정), env(판 정보), member(회원으로 보이는가), tipsOff(구독 팁을 껐는가, 구독 자료가 없으면 null) }
+/* s: { update(본체 판, 없으면 받을 수 없음), desktop(데스크톱 설정 판), drafts(쓰던 글 되살리기 상태), care(플레저 PC 알림 상태), notices(알림 설정), env(판 정보), member(회원으로 보이는가), tipsOff(구독 팁을 껐는가, 구독 자료가 없으면 null),
+   pc(PC 진단 판의 본체 답, 다리가 없으면 undefined라 줄을 세우지 않는다 — PC 진단 설계 5.2) }
    st: 방 상태(busy · notes · grps · roomNote · restChoice). 바꿀 수 없는 칸은 줄에서 뺀다(편의 79행과 같다) */
 export function settingsRoom(s = {}, st = {}, now = Date.now()) {
   const env = s.env || {}, u = updateOf(s.update) || { state: 'disabled' };
   // 업데이트 상태를 아직 받지 못한 동안(다리는 있음)에는 「받을 수 없다」고 하지 않는다. 방을 열면 낭독기가 맨 위 문장을 먼저 읽는다(검수)
   const loading = s.loading === true && !s.update;
   const desk = s.desktop?.ok === true ? s.desktop : null, p = desk?.preferences || {}, cap = desk?.capabilities || {};
-  const rows = [loading ? null : updateRow(u, env, st), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), chatgptRow(s, st, now), draftRow(s, st)].filter(Boolean);
+  const rows = [loading ? null : updateRow(u, env, st), s.pc === undefined ? null : pcSettingsRow(s.pc, st), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), chatgptRow(s, st, now), draftRow(s, st)].filter(Boolean);
   // 둘째 줄은 켜지는 방식이다(시안 세 갈래). 자동 시작을 바꿀 수 없는 판이면 비운다
   const then = cap.launchAtLogin ? (!p.launchAtLogin ? '컴퓨터를 켤 때 함께 켜지 않습니다.' : p.startHidden && cap.tray ? '컴퓨터를 켜면 창 없이 함께 켜집니다.' : '컴퓨터를 켜면 창과 함께 켜집니다.') : '';
   const version = verOf(u.currentVersion) || verOf(env.version);

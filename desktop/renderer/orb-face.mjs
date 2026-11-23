@@ -250,6 +250,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   /* 펼침이나 구독 방에서 여는 방(2단계 둘째 조각 설계 1.3절). aside는 그 방의 이름이고, 방마다의 상태와 동작은 orb-rooms.mjs가 가진다.
    * 방은 어느 공간에서든 열리고 닫으면 있던 방으로 돌아간다. 옛 화면이 열린 동안에도 aside를 지켜 옛 화면에서 돌아오면 그 방이다 */
   let aside = null;
+  // 다른 방에서 연 방(설정 → 이 PC에 맞춘 것)의 「돌아가기」 · Esc는 연 방으로 돌아가고, 초점은 그 방을 연 단추로 간다. 다른 길로 방이 닫히면 잊는다.
+  // { name: 돌아갈 방, key: 그 방의 줄, act: 연 단추 }
+  let asideParent = null;
   /* 방이 쓰는 런처 쪽 다리(설계 1.3절 「자료 어댑터」). account는 내 계정의 요청 · 신원 · 로그인과 보안, confirmLeave는 쓰던 글 확인이다.
    * bind로 런처에 손잡이를 넘겨, 계정 생명주기가 바뀔 때 내 계정 자료를 버리게 한다. 런처가 넘기지 않으면 「계정」은 옛 화면을 연다 */
   /* 창 안의 공간 뷰(PULSE는 3단계 구현 설계 4절, Workspace는 4단계 6절). 본체가 공간마다 뷰를 만들고, 보일지는 이 컨트롤러가 정해 place로 알린다.
@@ -290,6 +293,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       // 플레저 PC 알림 켜고 끄기(PC 0.5.0 설계 4.5 R7). 옛 설정 화면에만 있던 칸이다
       care: roomPart('care', ['status', 'configure']),
       updates: roomPart('updates', ['status', 'check', 'download', 'install']),
+      // 「이 PC에 이렇게 맞췄습니다」 판(PC 진단 설계 5.2). 본체 pc-profile.cjs가 잰 값을 읽고 다시 재게 한다
+      pcProfile: roomPart('pcProfile', ['snapshot', 'again', 'seen', 'openStorage']),
       environment: typeof roomOptions.environment === 'function' ? () => roomOptions.environment() : null,
       copyDiagnostics: typeof roomOptions.copyDiagnostics === 'function' ? () => roomOptions.copyDiagnostics() : null,
     },
@@ -1660,7 +1665,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   }
 
   /* 방을 연다(설계 9.3). 펼침이 열려 있으면 닫고, 옛 화면이 열려 있으면 조용히 닫는다. 초점은 방 맨 위 문장에 둔다 */
-  function openAside(name, { svc = null } = {}) {
+  function openAside(name, { svc = null, parent = null, back = null } = {}) {
     if (disposed || clientMode() === 'portal' || busyAction !== null || !ASIDE_ROOMS.includes(name)) return;
     // 내 계정 방은 회원에게만 있다(손님의 펼침에는 「계정」이 없다)
     if (name === 'account' && (!rooms.hasAccount() || !memberShown(machine.read()))) return;
@@ -1668,14 +1673,18 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     fanPin = false;
     feedback.switch = '';
     if (legacyKind) closeLegacy({ silent: true });
+    asideParent = parent && parent.name !== name && ASIDE_ROOMS.includes(parent.name) ? parent : null;
     aside = name;
-    rooms.open(name, { svc });
-    focus('aside');
+    rooms.open(name, { svc, back });
+    // 다른 방에서 돌아왔으면 방이 그 방을 연 단추에 초점을 둔다(rooms.open의 back). 그 전까지 초점이 숨은 방에 남지 않게만 한다
+    focus(back ? 'root' : 'aside');
     render();
   }
   /* 방을 닫으면 있던 방으로 돌아가고, 초점은 방을 연 자리로 간다. 그 자리가 보이지 않으면 구 단추다 */
   function closeAside({ focusBack = true } = {}) {
     if (!aside) return false;
+    if (asideParent && aside !== asideParent.name) { const p = asideParent; asideParent = null; openAside(p.name, { back: { key: p.key, act: p.act } }); if (aside === p.name) return true; }
+    asideParent = null;
     aside = null;
     rooms.close();
     if (focusBack) focus('aside-return');
@@ -2101,6 +2110,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
           return true;
         }
         if (!aside && payload.room !== 'solio') return false;
+        // 설정 방의 「이 PC에 맞춘 것 보기」는 PC 판을 연다. 판의 「돌아가기」는 설정 방으로 온다
+        if (payload.act === 'pc-open') { if (aside === 'settings') openAside('pc', { parent: { name: 'settings', key: String(payload.key || 'pc'), act: 'pc-open' } }); return true; }
         void rooms.handle(payload);
         return true;
       case 'open-estimate': {

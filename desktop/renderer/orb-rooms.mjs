@@ -9,12 +9,13 @@ import { isUsedUp, num, nameOf } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, josa } from './solio-today.mjs';
 import { profileChange, pendingDeletion } from './account-page.mjs';
 import { briefLive, tokSample } from './solio-brief.mjs';
+import { pcRoom } from './pc-fit-model.mjs';
 
 /* 두 번 누르기의 막이(설계 8.2, 설계 검토 D1). 묻고 0.6초 안의 두 번째 누름은 받지 않고(더블클릭 · Enter 되풀이), 10초가 지나면 물음을 거둔다.
    account는 계정 요청 하나를 기다리는 한도(옛 내 계정과 같다), tokLive는 모델별 토큰 줄이 열린 동안 실시간을 다시 부탁하는 사이다(옛 구독 판과 같다) */
 export const ROOM_TIMING = Object.freeze({ armGuard: 600, armExpire: 10000, account: 15000, tokLive: 60000, tokPaint: 1000 });
 /* 펼침이나 구독 방에서 여는 방 */
-export const ASIDE_ROOMS = Object.freeze(['manage', 'account', 'settings']);
+export const ASIDE_ROOMS = Object.freeze(['manage', 'account', 'settings', 'pc']);
 const UPDATE_METHOD = Object.freeze({ 'update-check': 'check', 'update-download': 'download', 'update-install': 'install' });
 const PREF_KEYS = Object.freeze(['launchAtLogin', 'startHidden', 'closeToTray', 'uiSound']);
 /* 알림 잠시 쉬기(옛 설정과 같은 30분 · 1시간 · 쉬지 않음) */
@@ -58,6 +59,40 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
      member는 방을 그릴 때 받은 「회원으로 보이는가」다. 손님에게 잠긴 칸(쓰던 글 되살리기, 구독 팁)은 동작도 받지 않는다 */
   const freshSet = () => ({ desktop: null, drafts: null, care: null, chatgpt: null, chatgptRead: 0, chatgptAction: null, closed: false, update: null, rev: 0, unsubs: [], member: false });
   let sets = freshSet();
+  /* 「이 PC에 이렇게 맞췄습니다」(PC 진단 설계 5.2). 설정 방과 이 판을 열 때 본체가 잰 값을 읽는다(10분 넘은 값은 본체가 다시 잰다).
+     판을 열어 「이 PC가 바뀌었습니다」를 보였으면 본체에 본 것으로 알리고, 판이 열린 동안은 그 글을 그대로 둔다(changedShown) */
+  const freshPc = () => ({ snap: null, changedShown: null });
+  let pcs = freshPc();
+  function pcRead({ again = false, opened = false } = {}) {
+    const api = dev.pcProfile, my = gen, box = pcs;
+    if (!api) { box.snap = { ok: false }; changed(); return Promise.resolve(null); }
+    return Promise.resolve().then(() => (again ? api.again() : api.snapshot())).then(v => {
+      if (my !== gen || box !== pcs) return null;
+      box.snap = v && typeof v === 'object' ? v : { ok: false };
+      if (opened && current === 'pc' && Array.isArray(v?.changed) && v.changed.length) { box.changedShown = v.changed; Promise.resolve().then(() => api.seen()).catch(() => {}); }
+      changed();
+      return v;
+    }, () => { if (my === gen && box === pcs) { box.snap = { ok: false }; changed(); } return null; });
+  }
+  async function pcAct(key, act) {
+    const api = dev.pcProfile;
+    if (!api) return true;
+    if (st.busy) { if (key) refuseBusy(key); return true; }
+    if (act === 'pc-again') {
+      st.busy = 'pc:pc-again'; st.roomNote = ''; changed();
+      await pcRead({ again: true });
+      st.busy = null; changed();
+      return true;
+    }
+    if (act === 'pc-storage') {
+      let res = null;
+      try { res = await api.openStorage(); } catch { res = null; }
+      note(key, res?.ok === true ? 'Windows 설정을 열었습니다. 「새 콘텐츠를 저장할 위치」에서 고릅니다.' : '설정을 열지 못했습니다. Windows 설정의 시스템 → 저장소 → 고급 저장소 설정 → 「새 콘텐츠를 저장할 위치」에서 바꿉니다.');
+      changed();
+      return true;
+    }
+    return false;
+  }
 
   const note = (key, text) => { if (text) st.notes.set(key, text); else st.notes.delete(key); };
   // 다른 일이 도는 동안 누른 단추는 보내지 않고 그 줄에 알린다. 그 줄 자신의 일이 도는 중이면(그 단추가 흐려져 있다) 알리지 않는다(검수)
@@ -488,6 +523,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     const rowUsageOff = Boolean(row && (isGeminiSvc(row.service) || row.usageDisabled));
     const addGemini = isGeminiSvc(arg || (key === 'add' ? st.add.svc : ''));
     if (act !== 'grp' && act !== 'kind-pick') note(key, '');
+    if (act === 'pc-again' || act === 'pc-storage') return pcAct(key, act);
     switch (act) {
       case 'add-pick': {
         if (st.add.svc !== arg) { st.add = { svc: addInfo(arg) ? arg : '' }; delete st.kinds.add; st.ended = null; }
@@ -963,9 +999,11 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   }
 
   /* 방을 열 때: 구독 줄에서 왔으면 그 구독의 첫 계정 줄, 손볼 계정이 있으면 그 계정 줄, 계정이 없으면 계정 더하기를 연 채 연다(설계 9.3) */
-  function open(name, { svc = null } = {}) {
+  /* back: 다른 방(이 PC에 맞춘 것)에서 돌아왔으면 그 방을 연 단추 { key, act }에 초점을 둔다 */
+  function open(name, { svc = null, back = null } = {}) {
     close();
     current = name;
+    if (back && typeof back.key === 'string' && typeof back.act === 'string') focusReq = ask({ key: back.key, act: back.act });
     if (name === 'manage') {
       const key = manageOpenKey(snapshot(), svc, now());
       openReq = key ? ask({ key }) : null;
@@ -973,7 +1011,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     // 내 계정은 열 때마다 읽는다. 앞에 읽은 자료가 있으면 그것을 보이며 조용히 읽는다
     if (name === 'account') void accLoad({ quiet: !!acc.data });
     // 설정은 열 때 읽고, 열린 동안 바뀜 알림을 듣는다(설계 6.4)
-    if (name === 'settings') setStart();
+    if (name === 'settings') { setStart(); void pcRead(); }
+    if (name === 'pc') { pcs.changedShown = null; void pcRead({ opened: true }); }
   }
   function close() {
     disarm();
@@ -984,6 +1023,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     if (!loginNow()) st.relogin = null;
     acc.askDelete = false;
     if (current === 'settings') setStop();
+    if (current === 'pc') pcs.changedShown = null;
     focusReq = null; openReq = null; closeReq = null; current = null;
   }
   function reset() {
@@ -998,6 +1038,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     lastLogin = undefined; loginEmail = undefined;
     tokReset();
     acc = freshAcc(); deleteRequestId = null;
+    pcs = freshPc();
   }
 
   return {
@@ -1031,9 +1072,10 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         // 구독 팁 켜고 끄기는 회원의 구독 자료가 있을 때만 둔다(저장 자리가 구독 판의 settings.tipsOff다, 설계 검토 D7)
         const snap = snapshot(), tipsOff = member && snap && snap.ok !== false && snap.settings ? snap.settings.tipsOff === true : null;
         sets.member = !!member;
-        const room = settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, care: sets.care, chatgpt: sets.chatgpt, notices: noticesNow(), env: envNow(), member: !!member, tipsOff }, view(), now());
+        const room = settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, care: sets.care, chatgpt: sets.chatgpt, notices: noticesNow(), env: envNow(), member: !!member, tipsOff, pc: dev.pcProfile ? pcs.snap : undefined }, view(), now());
         return { settings: { ...room, ...req } };
       }
+      if (aside === 'pc') return { pc: { ...pcRoom(pcs.snap, { ...view(), changedShown: pcs.changedShown }, now()), ...req } };
       return null;
     },
   };
