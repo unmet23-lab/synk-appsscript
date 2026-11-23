@@ -58,12 +58,12 @@ export const CAFE_VISITS=[
    {name:'한 잔 더',staff:'따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?',speaker:'seoha',friend:'지호도 같이 마셔요! 두 잔에 한 잔 더하면 세 잔이에요!',hint:'두 잔에 한 잔을 추가해요. 한 잔 더 주세요.',next:'가져갈 곳 바꾸기',menu:true,before:order('tea',2,'따뜻한 차 두 잔','추가 전 주문'),options:{
     a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔을 빼면 한 잔만 남아요. 세 잔이 필요하시면 두 잔 더 추가할까요?',friend:'어? 컵이 줄었어요! 우리는 세 사람이에요!'},
     b:{...order('tea',3,'따뜻한 차 세 잔'),response:'한 잔 추가해서 따뜻한 차 세 잔으로 준비할게요.',friend:'좋아요! 지호 컵도 생겼어요!'},
-    c:{...order('tea',2,'따뜻한 차 두 잔'),response:'두 잔을 유지할게요. 세 분이 드시면 한 잔 더 추가할 수 있어요.',friend:'지호 컵도 필요해요! 한 잔 더 주세요!'}}},
+    c:{...order('tea',2,'따뜻한 차 두 잔'),response:'두 잔을 유지할게요. 세 분이 드시면 한 잔 더 추가할 수 있어요.',friend:'지호 컵도 필요해요! 한 잔이 더 필요해요!'}}},
    {name:'포장으로 변경',staff:'세 잔 모두 매장에서 드실 건가요?',speaker:'jiho',friend:'우리는 공원으로 가요. 포장 컵이 세 개 필요해요.',hint:'주문은 유지하고 마실 곳을 바꿔요. 포장으로 바꿔 주세요.',next:'세 사람의 컵 받아 출발하기',before:order('tea',3,'따뜻한 차 세 잔','매장 이용'),options:{
     a:{...order('tea',3,'따뜻한 차 세 잔'),response:'매장 컵 세 잔으로 드릴게요. 공원에 가져가실 거면 포장으로 바꿀 수 있어요.',friend:'우리는 공원에서 마셔요. 가지고 갈 컵이 필요해요.'},
     b:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'세 잔 모두 취소하시겠어요? 음료는 유지하고 포장만 바꿀 수 있어요.',friend:'음료는 그대로예요. 마실 곳만 바꿔요.'},
     c:{...order('takeout',3,'따뜻한 차 세 잔','포장 · 공원으로'),response:'네, 세 잔 모두 포장으로 바꿨어요. 컵을 받아 가세요.',friend:'좋아요. 세 잔 모두 가지고 가요.'}}}],
-  ending:{title:'셋의 컵을 모두 챙겼어요.',text:'주스를 따뜻한 차로 바꾸고, 한 잔을 더해 세 잔을 포장해 받았어요.',orders:[order('takeout',3,'따뜻한 차 세 잔','세 친구와 공원으로')],lines:[{speaker:'taeo',text:'제 주문을 같이 바꿔 줘서 고마워요.'},{speaker:'seoha',text:'우리 컵이 다 있어요! 같이 가요!'},{speaker:'jiho',text:'세 잔 모두 받았어요. 이번에는 제 컵도 있어요.'}]}}
+  ending:{title:'셋의 컵을 모두 챙겼어요.',text:'주스를 따뜻한 차로 바꾸고, 한 잔을 더해 세 잔을 포장해 받았어요.',orders:[order('takeout',3,'따뜻한 차 세 잔','세 사람 · 공원으로')],lines:[{speaker:'taeo',text:'제 주문을 같이 바꿔 줘서 고마워요.'},{speaker:'seoha',text:'우리 컵이 다 있어요! 같이 가요!'},{speaker:'jiho',text:'세 잔 모두 받았어요. 이번에는 제 컵도 있어요.'}]}}
  ,{id:CAFE_COMPOSE_ID,number:5,title:'내 말로 주문해요',caption:'다섯 번째 방문 · 직접 만드는 주문',description:'음료·온도·잔 수를 골라 나의 주문 문장을 만들고 친구와 쉬어요.',seatStep:2,
   steps:[
    {name:'내 주문 만들기',staff:'어서 오세요. 어떤 음료를 몇 잔 준비할까요?',speaker:'seoha',friend:'태오와 한 잔씩, 따뜻한 차 두 잔을 주문해 봐요!',hint:'차를 고르고, 따뜻하게, 두 잔을 골라요. 세 정보를 합쳐 주문해요.',next:'직원과 수량 확인하기',compose:true,options:{}},
