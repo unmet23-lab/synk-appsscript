@@ -221,8 +221,12 @@ test('the clean-Windows workflow keeps secrets and keys to this repository and i
     assert.match(body, /if: \$\{\{ github\.repository == 'unmet23-lab\/synk-appsscript' \}\}/, job);
     assert.match(body, /WORKBACKUP_CI_SEED: \$\{\{ secrets\.WORKBACKUP_CI_SEED \}\}/, job);
   }
-  // Only the CI seed reaches a job; no other secret, and the throwaway keys are never uploaded.
-  assert.deepEqual([...new Set(flow.match(/secrets\.[A-Z_]+/g))], ['secrets.WORKBACKUP_CI_SEED']);
+  // Only the CI seed reaches the backup and restore jobs, and the Google sign-in settings only the build step (they go inside
+  // the installer and are no secret there, design 4.10); no other secret, and the throwaway keys are never uploaded.
+  assert.deepEqual([...new Set(flow.match(/secrets\.[A-Z_]+/g))].sort(), ['secrets.WORKBACKUP_CI_SEED', 'secrets.WORKBACKUP_GOOGLE_CLIENT']);
+  const build = flow.slice(flow.indexOf('\n  build:\n'), flow.indexOf('\n  install:\n'));
+  assert.equal(flow.match(/secrets\.WORKBACKUP_GOOGLE_CLIENT/g).length, 1);
+  assert.match(build, /\n        env:\n(?:          #[^\n]*\n)*          SWB_GOOGLE_CLIENT: \$\{\{ secrets\.WORKBACKUP_GOOGLE_CLIENT \}\}\n/);
   for (const upload of flow.split('actions/upload-artifact').slice(1)) assert.doesNotMatch(upload.split('\n      - ')[0], /keys|\.key\b/);
   assert.match(flow, /name: workbackup-carry\n\s+retention-days: 1\n/);
 });

@@ -88,5 +88,5 @@ Copy-Item -LiteralPath $built[0].FullName -Destination (Join-Path $outputRoot $s
 $setupHash = (Get-FileHash -LiteralPath (Join-Path $outputRoot $setupName) -Algorithm SHA256).Hash.ToLowerInvariant()
 $exeHash = (Get-FileHash -LiteralPath (Join-Path $outputRoot 'WorkBackup.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
 $runHash = (Get-FileHash -LiteralPath (Join-Path $outputRoot 'WorkBackupRun.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
-@{ version=$version; exeSha256=$exeHash; runExeSha256=$runHash; setup=$setupName; setupSha256=$setupHash; resourceManifestSha256=$resourceResult.manifestSha256; resourceFiles=$resourceResult.files } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputRoot 'build-receipt.json') -Encoding utf8
+@{ version=$version; exeSha256=$exeHash; runExeSha256=$runHash; setup=$setupName; setupSha256=$setupHash; resourceManifestSha256=$resourceResult.manifestSha256; resourceFiles=$resourceResult.files; googleClient=[bool]$PublicOAuthClient } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputRoot 'build-receipt.json') -Encoding utf8
 Write-Output "Built $outputRoot"

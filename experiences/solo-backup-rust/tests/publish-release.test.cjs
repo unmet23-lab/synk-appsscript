@@ -26,11 +26,28 @@ test('only a green run of the clean-Windows workflow on master, every job includ
 
 test('the build receipt must name this version, this installer and its SHA-256', () => {
   const bytes = Buffer.from('MZ installer');
-  const receipt = { version: '0.7.1', setup: 'SynkWorkBackup-0.7.1-setup.exe', setupSha256: sha(bytes) };
+  const receipt = { version: '0.7.1', setup: 'SynkWorkBackup-0.7.1-setup.exe', setupSha256: sha(bytes), googleClient: true };
   assert.doesNotThrow(() => P.checkReceipt(receipt, '0.7.1', bytes));
   assert.throws(() => P.checkReceipt({ ...receipt, version: '0.7.0' }, '0.7.1', bytes), /receipt says 0.7.0/);
   assert.throws(() => P.checkReceipt({ ...receipt, setup: 'other.exe' }, '0.7.1', bytes), /names other.exe/);
   assert.throws(() => P.checkReceipt(receipt, '0.7.1', Buffer.from('MZ other')), /not the one/);
+});
+
+test('a build without the Google sign-in settings is refused unless --without-google says so', async (t) => {
+  const bytes = Buffer.from('MZ installer');
+  const receipt = { version: '0.7.1', setup: 'SynkWorkBackup-0.7.1-setup.exe', setupSha256: sha(bytes) };
+  // The 0.7.0 receipts have no googleClient field, and a false or a string is not a yes.
+  for (const value of [undefined, false, 'true', 1]) {
+    assert.throws(() => P.checkReceipt({ ...receipt, googleClient: value }, '0.7.1', bytes), /no Google sign-in settings/, String(value));
+    assert.doesNotThrow(() => P.checkReceipt({ ...receipt, googleClient: value }, '0.7.1', bytes, true));
+  }
+  // Through publish: nothing is signed for such a build, and the same folder goes on with --without-google.
+  const w = world(t, { google: false });
+  await assert.rejects(P.publish('7', { work: w.work, deps: w.deps }), /no Google sign-in settings/);
+  assert.ok(!fs.existsSync(path.join(w.work, 'build', `${w.name}.sig`)), 'not signed');
+  const r = await P.publish('7', { work: w.work, deps: w.deps, withoutGoogle: true });
+  assert.equal(r.version, '0.7.1'); assert.equal(r.live, 'new');
+  assert.ok(fs.existsSync(path.join(w.work, 'build', `${w.name}.sig`)), 'signed where the refused run would have signed');
 });
 
 test('the live feed allows only a newer version, or the very same installer again', () => {
@@ -64,7 +81,7 @@ function signature(version, file) {
 const ASSET = 'https://release-assets.githubusercontent.com/github-production-release-asset/1/x';
 const headers = values => ({ get: key => values[key.toLowerCase()] ?? null });
 
-function world(t, { live = null, release = null, served = null, version = '0.7.1', redirect = ASSET, tag = false, onMain = 'identical', tagOnMain = 'identical', builds = 1, attempt = 1, secondNoLocation = false } = {}) {
+function world(t, { live = null, release = null, served = null, version = '0.7.1', redirect = ASSET, tag = false, onMain = 'identical', tagOnMain = 'identical', builds = 1, attempt = 1, secondNoLocation = false, google = true } = {}) {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-publish-')); t.after(() => fs.rmSync(work, { recursive: true, force: true }));
   const folder = path.join(work, 'release');
   const name = P.setupName(version), bytes = Buffer.from(`MZ installer ${version}`);
@@ -95,7 +112,7 @@ function world(t, { live = null, release = null, served = null, version = '0.7.1
       if (args[0] === 'run' && args[1] === 'download') {
         const dir = args[args.indexOf('--dir') + 1]; fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(path.join(dir, name), bytes);
-        fs.writeFileSync(path.join(dir, 'build-receipt.json'), JSON.stringify({ version, setup: name, setupSha256: sha(bytes) }));
+        fs.writeFileSync(path.join(dir, 'build-receipt.json'), JSON.stringify({ version, setup: name, setupSha256: sha(bytes), ...(google ? { googleClient: true } : {}) }));
         return '';
       }
       if (args[0] === 'release' && args[1] === 'view') { if (!state.release) throw Object.assign(Error('release not found'), { stderr: 'release not found' }); return JSON.stringify(state.release); }
@@ -257,7 +274,7 @@ test('the folder\'s installer and receipt must be the ones downloaded from the r
   // Another installer of the same version, with a receipt that names it, put in the folder afterwards (GPT publish-feed GA2).
   const other = Buffer.from('MZ another 0.7.1');
   fs.writeFileSync(path.join(w.work, 'build', w.name), other);
-  fs.writeFileSync(path.join(w.work, 'build', 'build-receipt.json'), JSON.stringify({ version: '0.7.1', setup: w.name, setupSha256: sha(other) }));
+  fs.writeFileSync(path.join(w.work, 'build', 'build-receipt.json'), JSON.stringify({ version: '0.7.1', setup: w.name, setupSha256: sha(other), googleClient: true }));
   await assert.rejects(P.publish('7', { apply: true, work: w.work, deps: w.deps }), /not what was downloaded/);
   assert.ok(!w.calls.some(c => c[2] === 'create' || c[2] === 'upload'));
   // A folder marked before the digests were kept is not taken either.

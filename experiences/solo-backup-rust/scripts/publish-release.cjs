@@ -1,11 +1,12 @@
 'use strict';
 // Publishes one release of SYNK 업무 백업 (STAGE1_DESIGN.md 4.10 「게시 도구」 — 0.7.0 went out by hand on 11-22, these are
 // the same steps in their order):
-//   node publish-release.cjs <workbackup-clean-windows run id> [--apply] [--work <folder>]
+//   node publish-release.cjs <workbackup-clean-windows run id> [--apply] [--work <folder>] [--without-google]
 // Without --apply nothing outside this PC changes: it checks the run (that workflow, on master, every job green), downloads
 // its build, checks the build receipt, signs the installer on this PC (update-keys.cjs), makes the feed (update-feed.cjs)
 // and checks both the way SYNK 솔리오's 「백업」 room does (desktop/src/solio-backup.cjs). It also refuses a version that is
-// not newer than the live feed's.
+// not newer than the live feed's, and a build without the Google sign-in settings (the receipt's googleClient, which CI sets
+// from the WORKBACKUP_GOOGLE_CLIENT secret) unless --without-google says that build is meant to ship without them.
 // With --apply it then puts the installer in synk-policy Releases (workbackup-<version>, a prerelease), publishes the
 // release and checks the bytes the public address serves. The feed itself goes to synk.im through tools/공개.js with its
 // own review; the tool prints those steps. A run again with the same work folder takes up where it stopped: it keeps the
@@ -52,11 +53,13 @@ function checkRun(run, jobs, onMaster) {
   if (!onMaster) fail(`run ${run.id}'s commit ${run.head_sha} is not on origin/master`);
 }
 
-/** The receipt CI wrote beside the installer names this version and this installer's SHA-256. */
-function checkReceipt(receipt, version, bytes) {
+/** The receipt CI wrote beside the installer names this version and this installer's SHA-256, and says the build carries the
+ *  Google sign-in settings: without them 「Google로 시작」 cannot work, and a published version cannot be taken back (11-23). */
+function checkReceipt(receipt, version, bytes, withoutGoogle = false) {
   if (receipt?.version !== version) fail(`build receipt says ${receipt?.version}, the sources say ${version}`);
   if (receipt.setup !== setupName(version)) fail(`build receipt names ${receipt.setup}`);
   if (receipt.setupSha256 !== sha256(bytes)) fail('the installer is not the one the build receipt names');
+  if (receipt.googleClient !== true && !withoutGoogle) fail('this build has no Google sign-in settings (CI secret WORKBACKUP_GOOGLE_CLIENT); pass --without-google only for a build meant to ship without them');
 }
 
 /** What the live feed allows: a newer version, or the very same installer again (nothing to do). */
@@ -155,7 +158,7 @@ function onSiteMain(d, ref) {
 
 async function publish(runId, options = {}) {
   const d = { ...defaults(), ...options.deps };
-  if (!/^\d{1,20}$/.test(String(runId))) fail('usage: publish-release <run id> [--apply] [--work <folder>]');
+  if (!/^\d{1,20}$/.test(String(runId))) fail('usage: publish-release <run id> [--apply] [--work <folder>] [--without-google]');
   let keys = null;
   if (!d.lockFile) { try { keys = fs.realpathSync.native(d.keys.KEY_DIRECTORY); } catch { fail(`the signing key folder is not on this PC: ${d.keys.KEY_DIRECTORY}`); } }
   // Inside the key folder as it really is, so two spellings of one folder take one lock (11-23 설계 검토 GA4).
@@ -163,7 +166,7 @@ async function publish(runId, options = {}) {
   try { return await publishHeld(runId, options, d); } finally { unlock(); }
 }
 
-async function publishHeld(runId, { apply = false, work }, d) {
+async function publishHeld(runId, { apply = false, work, withoutGoogle = false }, d) {
   // 1. The run, and the version its commit carries.
   const run = JSON.parse(d.gh(['api', `repos/${SOURCE}/actions/runs/${runId}`]));
   const jobs = JSON.parse(d.gh(['api', `repos/${SOURCE}/actions/runs/${runId}/jobs?per_page=50`])).jobs.map(j => ({ name: j.name, conclusion: j.conclusion }));
@@ -207,7 +210,7 @@ async function publishHeld(runId, { apply = false, work }, d) {
   // The installer and receipt as they came from the run's artifact: one put in the folder since is not signed (GPT
   // publish-feed GA2). A folder from before this check has no digests and is not taken.
   if (had.setup !== digest || had.receipt !== sha256(receipt)) fail(`${folder}'s installer or receipt is not what was downloaded from run ${runId}; use a new work folder`);
-  checkReceipt(JSON.parse(receipt.toString('utf8')), version, bytes);
+  checkReceipt(JSON.parse(receipt.toString('utf8')), version, bytes, withoutGoogle === true);
   // 3. The live feed allows this version, and so does the release as it stands: a version published with another installer
   // gets no second signature (11-23 설계 검토 P2).
   const state = againstLive(await liveFeed(d), version, digest);
@@ -282,6 +285,6 @@ async function publishHeld(runId, { apply = false, work }, d) {
 module.exports = { publish, newer, checkRun, checkReceipt, againstLive, releasePlan, setupName, releaseUrl, JOBS, WORKFLOW };
 if (require.main === module) {
   const args = process.argv.slice(2), at = args.indexOf('--work');
-  publish(args.find(a => /^\d+$/.test(a)), { apply: args.includes('--apply'), work: at >= 0 ? args[at + 1] : undefined })
+  publish(args.find(a => /^\d+$/.test(a)), { apply: args.includes('--apply'), work: at >= 0 ? args[at + 1] : undefined, withoutGoogle: args.includes('--without-google') })
     .catch(error => { console.error(error.message); process.exitCode = 1; });
 }

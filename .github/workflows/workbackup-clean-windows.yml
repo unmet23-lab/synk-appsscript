@@ -61,9 +61,19 @@ jobs:
         uses: ./experiences/solo-backup-rust/test-support/build-tools
       - name: build the release and its installer from these sources
         shell: pwsh
+        env:
+          # 배포 판의 Google 데스크톱 로그인 설정(설계 4.10 「Google 로그인 설정」). 설치 파일에 그대로 들어가는 공개 클라이언트다.
+          # 비밀값이 없으면 Google 없이 빌드하고, 영수증의 googleClient가 false라 게시 도구가 그 판을 막는다.
+          SWB_GOOGLE_CLIENT: ${{ secrets.WORKBACKUP_GOOGLE_CLIENT }}
         run: |
+          $google = @{}
+          if ($env:SWB_GOOGLE_CLIENT) {
+            $file = Join-Path $env:RUNNER_TEMP 'google-client.json'
+            [IO.File]::WriteAllText($file, $env:SWB_GOOGLE_CLIENT, [Text.UTF8Encoding]::new($false))
+            $google.PublicOAuthClient = $file
+          }
           & (Join-Path $env:SWB_APP 'scripts/build.ps1') -ResticPath $env:SWB_RESTIC -OutputDirectory (Join-Path $env:RUNNER_TEMP 'wb-out') `
-            -InventoryBinDirectory (Join-Path $env:RUNNER_TEMP 'wb-inventory/release') -TargetDirectory (Join-Path $env:RUNNER_TEMP 'wb-target')
+            -InventoryBinDirectory (Join-Path $env:RUNNER_TEMP 'wb-inventory/release') -TargetDirectory (Join-Path $env:RUNNER_TEMP 'wb-target') @google
       - name: build the schedule probe (registers a user's runs the way the app does)
         shell: pwsh
         run: |
