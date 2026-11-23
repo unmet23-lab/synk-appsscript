@@ -7,6 +7,8 @@ const COMPOSE = 'src/map/compose.mjs';
 const READ = 'src/map/index.mjs';
 const AUDIT = 'src/map/audit.mjs';
 const SENSES = 'src/map/senses.mjs';
+// 지도를 판 폴더로 내는 도구 — tools/mutants.mjs의 TOOL_SUBJECTS라 사본에 든다(시험은 subjectTool로 부른다).
+const MAP_SHIP = 'tools/map-ship.mjs';
 
 export const MAP_MUTANTS = [
   [
@@ -136,5 +138,13 @@ export const MAP_MUTANTS = [
     SENSES,
     'if (same.some(row => !row[4]))',
     'if (false)',
+  ],
+  [
+    U,
+    '조각',
+    '이름 붙인 조각이 문항 거름을 잃는다 — 진단 조각이 레이싱 은행 조각 전체가 된다(단계 4 계획 §25-4, 진짜 빌드는 크기 도구도 잡는다)',
+    MAP_SHIP,
+    "  const picked = row => !named || listed.has(row[at('itemKey')]);",
+    '  const picked = () => true;',
   ],
 ];

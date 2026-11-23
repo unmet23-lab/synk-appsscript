@@ -12,7 +12,9 @@ import {
   maskStrings,
   nameOf,
   printed,
-  SCRIPT_SRC,
+  htmlTraps,
+  scriptSrcs,
+  urlText,
 } from '../support/game-closure.mjs';
 import { Flow } from '../flow/legacy.mjs';
 
@@ -60,10 +62,16 @@ function* sources(dir) {
 // 열한 게임 입구에서 따라간 파일 가운데 FLOW_를 적고 내보내는 모듈을 불러 내보낸 FLOW_ 값을 모은다.
 async function gameContents() {
   const { games, files } = await gameClosure();
-  const found = { games, files, contents: [], skipped: new Set(), unloaded: [] };
+  const found = { games, files, contents: [], values: [], skipped: new Set(), unloaded: [] };
   for (const name of files) await loadOne(name, found);
   return found;
 }
+
+// 손잡이 배열 · 값 목록 · items까지 모두 얼었는가.
+const deepFrozen = value =>
+  value === null ||
+  typeof value !== 'object' ||
+  (Object.isFrozen(value) && Object.values(value).every(deepFrozen));
 
 async function loadOne(name, found) {
   const code = printed(name);
@@ -78,6 +86,7 @@ async function loadOne(name, found) {
   }
   for (const [key, value] of Object.entries(module)) {
     if (!key.startsWith('FLOW_')) continue;
+    found.values.push({ file: name, key, value });
     if (Object.hasOwn(NOT_CONTENT, key)) found.skipped.add(key);
     else found.contents.push({ file: name, key, value });
   }
@@ -95,7 +104,7 @@ function itemLiterals() {
 }
 
 test('제품 내용은 모두 막기를 지나 정의된다 — 셸의 게임 표에 든 게임의 모듈을 실제로 불러 본다', async t => {
-  const { games, contents, skipped, unloaded } = await gameContents();
+  const { games, contents, values, skipped, unloaded } = await gameContents();
   assert.equal(
     games.length,
     11,
@@ -119,6 +128,15 @@ test('제품 내용은 모두 막기를 지나 정의된다 — 셸의 게임 �
   );
   for (const { file, key, value } of contents)
     assert.doesNotThrow(() => Flow.defineContent(value), `${file} ${key}`);
+  // 실행 중에 고쳐 넘기지 못하게 FLOW_ 값은 모두 모듈에서 깊게 얼린다(4-6e-2 — 위 정의와 아래 호출 자리 검사가 보는 값이 실행 때의 값이다).
+  const loose = values
+    .filter(({ value }) => !deepFrozen(value))
+    .map(({ file, key }) => `${file} ${key}`);
+  assert.deepEqual(
+    loose,
+    [],
+    '깊게 얼리지 않은 FLOW_ 값 — 게임 모듈에서 손잡이 · 값 목록까지 얼린다',
+  );
   // 글자 그대로 쓴 문항 난도는 모두 위에서 정의한 내용이거나, 까닭을 적어 막기 밖에 둔 곳이다.
   const literals = itemLiterals();
   for (const [file, { count, text }] of literals) {
@@ -156,9 +174,13 @@ test('제품 내용은 모두 막기를 지나 정의된다 — 셸의 게임 �
 //   - 부르지 않고 읽기(`const open = coach.live`), 허용한 typeof 옆자리의 읽기, 대괄호 이름(`coach['live']`), 풀어 받기(`{ live } = coach`)
 //   - 작은따옴표 · 따옴표 없는 `<script src>`로 싣는 게임 모듈, data-src가 앞에 선 입구(따라가기)
 //   - 원문에서 `\u` 꼴로 쓴 이름(다시 찍은 글로 검사할 파일을 고른다)
-// 빠짐없음은 이 검사가 아니라 4-6e-2의 실행 시험이 지킨다 — 진입 시험의 가짜 live가 받은 인자를 진짜 defineContent에 넘기고, 순간 맞춤이
-// 켜져야 하는 판에서 adaptive를 단정한다. 이 검사에 새 우회 꼴이 나오면 엔진 묶음의 P1이 아니라 4-6e-2 시험 항목으로 넘긴다.
-// 남는 한계: 실행 중에 FLOW_ 값을 고치는 꼴은 찾지 못한다. 지금 FLOW_ 값은 FLOW_VOICE 말고는 얼어 있지 않다(4-6e-2가 깊게 얼린다).
+// 지나가는 꼴: 같은 파일 맨 위의 `export const X = …`, 맨 위의 `const X = …`를 별칭 없이 `export { X }`로 내보낸 것(r5 GA2 — 4-6e-2),
+// 그 이름을 내보내는 모듈에서 별칭 없이 들인 것. 별칭으로만 내보낸 이름 · `let` · 다시 대입 · 인자 · 풀어 받기로 가린 이름은 멈춘다.
+// 빠짐없음은 이 검사가 아니라 4-6e-2의 실행 시험이 지킨다 — 게임 폴더마다 「순간 맞춤 진입」 시험이 게임의 원문 토막을 문을 거쳐 돌리고,
+// 가짜 live가 받은 인자를 진짜 엔진 코치의 live(안에서 defineContent)에 넘겨, 순간 맞춤이 켜져야 하는 판에서 adaptive를 단정한다. 이
+// 검사에 새 우회 꼴이 나오면 엔진 묶음의 P1이 아니라 4-6e-2 시험 항목으로 넘긴다.
+// 실행 중에 FLOW_ 값을 고치는 꼴은 이 검사가 찾지 않는다 — 게임 모듈이 FLOW_ 값을 깊게 얼리고, 첫 시험이 불러 본 FLOW_ 값이 모두 깊게
+// 얼어 있는지 본다(4-6e-2).
 const METHOD = /(\??\.)(live|declaredFrom)\b(\?\.)?(\()?/g;
 const FIRST = /^\s*(\.\.\.)?([A-Za-z_$][\w$]*)\s*[,)]/;
 const BRACKETS = /\[\s*(["'`])(live|declaredFrom)\1\s*\]/g;
@@ -238,27 +260,31 @@ function importedFrom(file, raw, name) {
   return null;
 }
 
+// 그 파일이 맨 위에서 제 이름 그대로 내보내는 선언인가 — `export const X =`이거나, 맨 위의 `const X =`를 별칭 없이 `export { X }`로
+// 내보낸 것(r5 GA2). 다시 찍은 글에서 맨 위 선언은 줄 첫머리에 있다(안쪽 선언은 들여 쓰고, 같은 이름이면 esbuild가 이름을 바꾼다).
+// `export { X } from '…'`(다시 내보내기)는 지역 이름을 만들지 않아 같은 파일의 지역 `const X`를 내보낸 것이 아니다 — 세지 않는다.
+const exportedHere = (raw, name) =>
+  new RegExp(`^export const ${name}\\s*=`, 'm').test(raw) ||
+  (new RegExp(`^const ${name}\\s*=`, 'm').test(raw) &&
+    [...raw.matchAll(/^export\s*\{([^}]*)\}(?!\s*from\b)/gm)].some(match =>
+      match[1].split(',').some(one => one.trim() === name),
+    ));
+
 // 첫 인자 이름이 불러 본 FLOW_ 내용 그 자체인가 — 그 파일이 맨 위에서 한 번 내보내는 이름이거나, 그 이름을 내보내는 모듈에서 별칭 없이
-// 들이고 다시 선언 · 대입 · 인자 · 풀어 받기로 가리지 않은 이름이다(r4 GPT GA3 — 같은 이름의 지역 사본).
+// 들이고 다시 선언 · 대입 · 인자 · 풀어 받기로 가리지 않은 이름이다(r4 GA3 — 같은 이름의 지역 사본).
 function contentOf(file, { raw, masked }, name, owners) {
   const from = owners.get(name);
   if (!from) return false;
-  if (from.has(file))
-    return (
-      /^export const /m.test(raw) &&
-      new RegExp(`^export const ${name}\\s*=`, 'm').test(raw) &&
-      assignments(masked, name) === 1 &&
-      !paramOf(masked, name) &&
-      !destructuredIn(masked, name)
-    );
+  const untouched = !paramOf(masked, name) && !destructuredIn(masked, name);
+  if (from.has(file) && exportedHere(raw, name))
+    return assignments(masked, name) === 1 && untouched;
   const source = importedFrom(file, raw, name);
   return (
     source != null &&
     from.has(source) &&
     !assignedIn(masked, name) &&
     !declaredIn(masked, name) &&
-    !paramOf(masked, name) &&
-    !destructuredIn(masked, name)
+    untouched
   );
 }
 
@@ -406,15 +432,178 @@ test('호출 자리 검사가 닫는 꼴 — 띄어 쓴 호출은 지나가고, 
   for (const code of strays) assert.ok(scan(code).stray.length > 0, code);
 });
 
+test('호출 자리 검사 — 같은 파일 맨 위의 const를 별칭 없이 export { X }로 내보내 넘기는 꼴은 지나가고, 별칭 · let · 다시 대입 · 인자로 가린 이름은 멈춘다(r5 GA2)', () => {
+  const FILE = 'korean-racing/app.js';
+  const owners = ownersOf([
+    { file: FILE, key: 'FLOW_RACE' },
+    { file: FILE, key: 'FLOW_OTHER' },
+  ]);
+  const scan = code => {
+    const found = { used: new Set(), stray: [] };
+    scanCode(FILE, readCode(code), owners, found);
+    return found;
+  };
+  const SPEC =
+    '{ id: "korean-racing.race", knobs: [{ id: "cruise", kind: "pace", values: [1, 2] }] }';
+  for (const code of [
+    `const FLOW_RACE = ${SPEC};\nexport { FLOW_RACE };\ncoach.live(FLOW_RACE, {});`,
+    `const FLOW_OTHER = ${SPEC};\nconst FLOW_RACE = ${SPEC};\nexport {\n  FLOW_OTHER,\n  FLOW_RACE\n};\ncoach . live (FLOW_RACE, {});`,
+    `export const FLOW_RACE = ${SPEC};\ncoach.live(FLOW_RACE, {});`,
+  ]) {
+    const found = scan(code);
+    assert.deepEqual(found.stray, [], code);
+    assert.ok(found.used.has('content'), code);
+  }
+  const strays = [
+    // 별칭으로만 내보낸 지역 이름 — 넘기는 이름은 불러 본 내용의 이름이 아니다.
+    `const BASE = ${SPEC};\nexport { BASE as FLOW_RACE };\ncoach.live(BASE, {});`,
+    // 맨 위의 let은 다시 대입할 수 있다.
+    `let FLOW_RACE = ${SPEC};\nexport { FLOW_RACE };\nFLOW_RACE = { ...FLOW_RACE, items: { levels: [1, 2] } };\ncoach.live(FLOW_RACE, {});`,
+    `let FLOW_RACE = ${SPEC};\nexport { FLOW_RACE };\ncoach.live(FLOW_RACE, {});`,
+    // 내보낸 이름을 인자로 가린 함수 안의 호출.
+    `const FLOW_RACE = ${SPEC};\nexport { FLOW_RACE };\nfunction open(FLOW_RACE) { return coach.live(FLOW_RACE, {}); }`,
+    // 별칭 내보내기는 그 이름을 제 이름으로 내보낸 것이 아니다.
+    `const FLOW_RACE = ${SPEC};\nexport { FLOW_RACE as FLOW_OTHER };\ncoach.live(FLOW_RACE, {});`,
+    // 다시 내보내기는 지역 const를 내보낸 것이 아니다 — 불러 본 값은 다른 모듈의 것이고 넘기는 것은 지역 사본이다.
+    `const FLOW_RACE = { ...${SPEC}, items: { levels: [1, 2] } };\nexport { FLOW_RACE } from './learning.mjs';\ncoach.live(FLOW_RACE, {});`,
+  ];
+  for (const code of strays) assert.ok(scan(code).stray.length > 0, code);
+});
+
 test('따라가기의 입구와 검사할 파일 고르기 — 속성 이름이 바로 src인 것만 읽고, 고를 때도 다시 찍은 글을 본다(r5 GPT GA3 · GA4)', () => {
-  const srcs = html =>
-    [...html.matchAll(SCRIPT_SRC)].map(match => match[1] ?? match[2] ?? match[3]);
+  const srcs = scriptSrcs;
   assert.deepEqual(
     srcs(
       '<script type="module" data-src="https://example.invalid/x.mjs" src="./flow.mjs"></script>',
     ),
     ['./flow.mjs'],
   );
+  // 주석 안의 <script와 짝 없는 따옴표가 뒤의 진짜 스크립트를 삼키지 않는다(다시 검수 GA2). 주석 안의 스크립트는 싣지 않는다.
+  assert.deepEqual(
+    srcs(
+      "<!-- <script data-note=\" -->\n<script type=module src='./app.mjs' data-note='\" src=https://example.invalid/x.mjs'></script>",
+    ),
+    ['./app.mjs'],
+  );
+  assert.deepEqual(
+    srcs('<!-- <script src="./old.mjs"></script> --><script src="./new.mjs"></script>'),
+    ['./new.mjs'],
+  );
+  // 따옴표 안의 <!--는 주석이 아니고, --!>도 주석을 닫는다(r3 GA1 · GA2 — HTML5 파서와 같다).
+  assert.deepEqual(srcs('<script data-note="<!--" type="module" src="./app.mjs"></script>'), [
+    './app.mjs',
+  ]);
+  assert.deepEqual(
+    srcs("<!-- <script data-note=\" --!>\n<script type=module src='./app.mjs'></script>"),
+    ['./app.mjs'],
+  );
+  // 곧 닫히는 주석(<!--> · <!--->)과 닫히지 않은 주석 · template · noscript 안의 스크립트, 원문 글 안의 <script는 싣지 않는다.
+  assert.deepEqual(
+    srcs('<!--><script src="./a.mjs"></script><!---><script src="./b.mjs"></script>'),
+    ['./a.mjs', './b.mjs'],
+  );
+  assert.deepEqual(srcs('<script src="./a.mjs"></script><!-- <script src="./b.mjs"></script>'), [
+    './a.mjs',
+  ]);
+  assert.deepEqual(
+    srcs('<template><script src="./t.mjs"></script></template><script src="./a.mjs"></script>'),
+    ['./a.mjs'],
+  );
+  assert.deepEqual(srcs('<noscript><script src="./n.mjs"></script></noscript>'), []);
+  assert.deepEqual(
+    srcs('<script>const s = \'<script src="./x.mjs">\';</script><script src="./a.mjs"></script>'),
+    ['./a.mjs'],
+  );
+  // 같은 이름의 속성은 첫째 · 앞뒤 공백은 뺀다 · 빈 값은 싣지 않는다.
+  assert.deepEqual(
+    srcs(
+      '<script src="./a.mjs" src="./b.mjs"></script><script src="  ./c.mjs "></script><script src=""></script>',
+    ),
+    ['./a.mjs', './c.mjs'],
+  );
+  // 입구를 조용히 빠뜨리는 꼴은 함정으로 잡는다(설계 검토 11-23 조건) — 게임 HTML에 있으면 따라가기(entriesOf)가 실패한다.
+  const trap = html => htmlTraps(html).length;
+  assert.equal(
+    trap('<script type="module">import "./flow.mjs";</script>'),
+    1,
+    'src 없는 module 스크립트',
+  );
+  assert.equal(trap('<script>import("./flow.mjs")</script>'), 1, 'type 없는 스크립트');
+  assert.equal(
+    trap('<script type=" Text/JavaScript ">x()</script>'),
+    1,
+    'JavaScript MIME 이름은 대소문자 · 공백 무시',
+  );
+  assert.equal(trap('<base href="../other/"><script src="./a.mjs"></script>'), 1, '<base href>');
+  assert.equal(trap('<svg><script href="./a.mjs"></script></svg>'), 1, 'SVG script');
+  assert.equal(
+    trap('<div><template shadowrootmode="open"><script src="./a.mjs"></script></template></div>'),
+    1,
+    '선언형 섀도 루트',
+  );
+  // 빈 인라인 · src가 있는 스크립트 · 주소를 바꾸지 않는 importmap(앞뒤 ASCII 공백은 뺀다) · 섀도 루트가 아닌 template · href 없는 base는
+  // 함정이 아니다.
+  assert.equal(trap('<script type="importmap">{"imports":{"three":"/three.mjs"}}</script>'), 0);
+  assert.equal(trap('<script type=" ImportMap ">{"imports":{"three":"/three.mjs"}}</script>'), 0);
+  assert.equal(trap('<script>  </script><script src="./a.mjs">ignored()</script>'), 0);
+  assert.equal(trap('<template><script>x()</script></template><base target="_blank">'), 0);
+  // 중첩 문서 · 속성으로 도는 코드 · 주소를 바꾸는 importmap도 함정이다(r4 GA1).
+  assert.equal(
+    trap("<iframe srcdoc=\"<script type='module' src='./frame.mjs'></script>\"></iframe>"),
+    1,
+    'iframe srcdoc',
+  );
+  for (const tag of [
+    '<iframe src="./f.html"></iframe>',
+    '<object data="./o.html"></object>',
+    '<embed src="./e.html">',
+  ])
+    assert.equal(trap(tag), 1, tag);
+  assert.equal(trap('<body onload="import(\'./x.mjs\')"></body>'), 1, '인라인 이벤트 속성');
+  assert.equal(
+    trap('<a href=" java\nscript:import(1)">a</a>'),
+    1,
+    'javascript: 주소(URL 파서처럼 공백 · 줄바꿈을 지운다)',
+  );
+  assert.equal(
+    trap('<script type="importmap">{"imports":{"./learning.mjs":"./other.mjs"}}</script>'),
+    1,
+    '주소 키',
+  );
+  assert.equal(
+    trap('<script type="importmap">{"imports":{},"scopes":{"/":{}}}</script>'),
+    1,
+    'scopes',
+  );
+  assert.equal(trap('<script type="importmap">{not json</script>'), 1, '읽지 못하는 표');
+  assert.equal(trap('<math><script>x()</script></math>'), 1, 'MathML script');
+  // src 없이 글이 있는 script는 importmap 말고는 type을 가리지 않고 막는다 — 도는지 흉내 내지 않는다(r5 GA1 · 설계 주인 잣대 ㄷ). 실제 재료에
+  // 없는 데이터 스크립트 · 공백뿐인 type도 실패하는 것은 한계다(잣대 ㄴ, r4 GA3의 장면).
+  for (const html of [
+    '<script type="\u3000text/javascript">import("./lesson.mjs")</script>',
+    '<script type="\u00a0module">x()</script>',
+    '<script type="\u3000importmap">{"imports":{}}</script>',
+    '<script type=" ">placeholder()</script>',
+    '<script type="text/javascript; charset=utf-8">x()</script>',
+    '<script type="application/ld+json">{}</script>',
+    '<script language="vbscript">x()</script>',
+    '<script language="javascript">x()</script>',
+    '<script type="">x()</script>',
+    '<script type=" Module ">x()</script>',
+  ])
+    assert.equal(trap(html), 1, html);
+  // 모든 속성의 javascript: 값을 막는다 — 입력칸 value 같은 글도 실패하는 한계(잣대 ㄴ, r5 GA2).
+  assert.equal(trap('<input value="javascript: text example">'), 1);
+  // 주소는 URL 파서처럼 앞뒤 C0 · 공백만 뺀다 — U+00A0은 이름의 일부다(r4 GA2).
+  assert.equal(urlText(' \t./a.mjs\n'), './a.mjs');
+  assert.equal(urlText('\u00a0app.mjs'), '\u00a0app.mjs');
+  assert.deepEqual(srcs('<script src="\u00a0app.mjs"></script>'), ['\u00a0app.mjs']);
+  assert.deepEqual(srcs('<script src="./a\n.mjs"></script>'), ['./a.mjs'], '안의 줄바꿈은 지운다');
+  // 따옴표 안의 >는 태그 끝이 아니다 — 뒤의 진짜 src를 읽는다.
+  assert.deepEqual(srcs('<script data-title="3 > 2" type="module" src="./app.mjs"></script>'), [
+    './app.mjs',
+  ]);
+  assert.deepEqual(srcs("<script data-note='a > b' src=./c.mjs></script>"), ['./c.mjs']);
   assert.deepEqual(srcs("<script src='./a.mjs'></script><SCRIPT SRC=./b.mjs></SCRIPT>"), [
     './a.mjs',
     './b.mjs',

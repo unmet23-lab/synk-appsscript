@@ -41,19 +41,21 @@ export function orderAnswer(result,ticket){
  * easiest first; Atlas turns one knob by one step after a response. Values never become a score.
  * Order levels describe the order, not the person: 1 one plain cup, 2 a "without/instead" condition,
  * 3 two cups. The person can switch this off (fixed speed) in the lobby. */
-export const FLOW_RUSH={id:'order-rush.rush',version:1,target:0.75,items:{levels:[1,2,3],weight:2},knobs:[
+// FLOW_ 값은 손잡이 · 값 목록 · items까지 깊게 얼린다 — 실행 중에 고쳐 넘기면 엔진의 내용 정의 막기를 비켜 간다(4-6e-2).
+const deepFrozen=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(deepFrozen);Object.freeze(value);}return value;};
+export const FLOW_RUSH=deepFrozen({id:'order-rush.rush',version:1,target:0.75,items:{levels:[1,2,3],weight:2},knobs:[
  {id:'patience',kind:'pace',label:'손님이 기다리는 시간',values:[60,54,48,42,36,30],start:3},
  {id:'spawnEvery',kind:'pace',label:'손님이 오는 간격',values:[15,13,11,10,8,7],start:3},
- {id:'queueMax',kind:'pace',label:'한 번에 기다리는 손님',values:[2,3,4],start:1,weight:1.5}]};
-export const FLOW_PRACTICE={id:'order-rush.practice',version:1,target:0.8,items:{levels:[1,2,3],weight:2}};
-export const FLOW_SKILLS=['ko.listening.detail','ko.listening.negation','ko.listening.condition'];
+ {id:'queueMax',kind:'pace',label:'한 번에 기다리는 손님',values:[2,3,4],start:1,weight:1.5}]});
+export const FLOW_PRACTICE=deepFrozen({id:'order-rush.practice',version:1,target:0.8,items:{levels:[1,2,3],weight:2}});
+export const FLOW_SKILLS=deepFrozen(['ko.listening.detail','ko.listening.negation','ko.listening.condition']);
 // The same changes said inside the cafe (Vellum line keys).
-export const FLOW_WORDS={
+export const FLOW_WORDS=deepFrozen({
  'raise.pace':'손님이 조금 더 바빠져요.','ease.pace':'손님이 조금 더 여유 있게 기다려요.',
  'raise.content':'조금 더 까다로운 주문도 들어와요.','ease.content':'간단한 주문부터 다시 받아요.',
  'start.memory':'지난번 영업에 맞춰 문을 열어요.','start.prior':'다른 게임 기록에 맞춰 문을 열어요.',
  'start.returning':'오늘은 가볍게 문을 열어요.','start.tired':'오늘은 더 바빠지지 않게 영업해요.',
- 'start.fixed':'정해진 속도로 영업해요.','start.baseline':'이번 영업은 기본 속도로 해요.'};
+ 'start.fixed':'정해진 속도로 영업해요.','start.baseline':'이번 영업은 기본 속도로 해요.'});
 export const LEVEL_WORDS={1:'한 잔 기본 주문',2:'빼기·바꾸기가 있는 주문',3:'두 잔 주문'};
 // The rush kept easing (or had no easier step left) and the shift was mostly missed: point to the calmer mode.
 export function easierSuggestion(spec,end,stats){

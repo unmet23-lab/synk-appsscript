@@ -435,6 +435,8 @@ test('판을 다시 정하면 이번 판은 기록 없이 잇고, 다음 판은 
   coach.dispose();
 });
 
+// 순간 맞춤 진입(4-6e-2): 이 게임은 live를 쓰지 않고 FLOW_VOICE를 페이지의 Flow.declaredFrom에만 넘긴다. voiceDefault는 그 던짐을 삼키고
+// 기본값(스스로 읽음)으로 가므로, 「혼자 하기 → 누를 때만」이 진짜 대응 함수가 그 내용을 받아들였다는 단정이다.
 test('자동 읽기의 처음 값 — 새 코치의 표시 설정(셸 · 혼자 뜨는 길의 prefs)을 같은 대응으로 읽는다', async () => {
   const withChoice = async (presentation, options) => {
     const { coach } = await engineCoach({ prefs: { presentation: () => presentation } });

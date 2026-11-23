@@ -1618,6 +1618,13 @@ export const POSITION_MUTANTS = [
     "      firstAnswers: async query => {\n        const to = await ready();\n",
     "      firstAnswers_: async query => {\n        const to = await ready();\n",
   ],
+  [
+    "entry",
+    "홈 플래너 문장",
+    "say가 셋째 인자(단위 → 이름)를 버린다 — 게임 줄이 맡은 단위의 이름을 못 그린다(4-6e-1 GB2 결정)",
+    "          render(why, { lang: language, label: typeof names === 'function' ? id => names(id) ?? label(id) : label }),\n",
+    "          render(why, { lang: language, label }),\n",
+  ],
   // ── 4-5 연습 기록 비우기의 입구 몫(단계4_계획 §22-4 · 22-1의 4) ──
   // 「저장소가 없는 기기에서도 계정을 비운다」 줄은 뺐다 — 스위치 먼저 묻기(§6 「1단계 켜기」 4) 뒤로 저장소가 없는 기기의 계정은 지금 판으로
   // 열려 clearAccount의 그 막이에 닿지 않는다(막이는 판 정하기가 바뀔 때를 위한 것이다). 저장소 없음은 「스위치 먼저 묻기」 갈래가 잡는다.

@@ -3,9 +3,10 @@
 // 첫 화면 · 계정 묶음 · 생활 단독 묶음에는 실리지 않는다(설계 주인 11-15 · 설계 검토 H19).
 // 홈의 추천은 드라마 「오늘」 한 장과 같은 세 줄(복습 again · 오늘 공부 new · 점검 check)이다. 엔진의 plan()이 낸 차례를 바꾸지 않고
 // 활동마다 칸 하나를 정해, 칸마다 맨 앞 활동 하나만 줄로 세운다(§20-2). 줄의 글은 그 활동의 기록에서만 나온다(설계 주인 판단 3).
-// 4-3에서 넘기는 활동은 다섯이다 — 하던 것 · 생활 복습 하나 · 다음 생활 레슨 하나 · 한글 먼저 · 짧은 연습(돌아온 단위가 든 문항만). 게임과
-// 시험 형식 연습은 엔진에 옮기기 전이라 후보가 아니다. 4-4b에서 시험을 고른 학생의 이번 주 계획(world-plan-next.mjs — 새 칸으로 지음)이
-// 들어온다 — 숙제 연습(오늘 공부 칸)과 짧은 진단(점검 칸)이 활동이 되고, 계획은 examPlan에 실린다(§21-6 · §20-7).
+// 4-3에서 넘기는 활동은 다섯이다 — 하던 것 · 생활 복습 하나 · 다음 생활 레슨 하나 · 한글 먼저 · 짧은 연습(돌아온 단위가 든 문항만). 4-4b에서
+// 시험을 고른 학생의 이번 주 계획(world-plan-next.mjs — 새 칸으로 지음)이 들어온다 — 숙제 연습(오늘 공부 칸)과 짧은 진단(점검 칸)이 활동이
+// 되고, 계획은 examPlan에 실린다(§21-6 · §20-7). 4-6e-1에서 게임 셋(바람길 · 리듬 · 환승 — world-home-games.mjs)이 복습 칸에만 다시
+// 들어온다(§25-1) — 생활 복습과 짧은 연습이 싣지 않은 돌아온 단위마다 문항 하나다. 오늘 공부 칸에는 자유 게임 줄을 세우지 않는다.
 import { LESSONS, PACKS } from './life-content.mjs';
 import {
   answersOf,
@@ -16,6 +17,7 @@ import {
   withAnswers,
   worldLearningSettings,
 } from './world-account.bundle.mjs';
+import { homeGames } from './world-home-games.mjs';
 // ↑ world-learning-plan.mjs의 것을 셸과 같은 주소의 계정 묶음에서 받는다 — 그 원천은 묶음 안에만 있고 따로 나가지 않는다(서버 · 공개 빌드).
 //   묶음은 tools/build-world-account.mjs가 짓고 CI가 낡은 묶음을 잡는다.
 
@@ -150,6 +152,60 @@ function practiceActivities({ pool, dueUnits, itemUnits, settings, labels, lengt
       return activity('again', open, {}, items.map(item => ({ itemKey: item.itemKey })), settings);
     });
 }
+
+// 게임(4-6e-1 — §25-1). 복습 칸에만 선다 — 게임마다 활동 하나(kind again)이고, 후보는 돌아온 단위마다 그 게임의 문항 하나다(짧은 연습과
+// 같은 줄이기). 돌아온 단위 하나는 한 활동만 센다 — 맡는 차례는 생활 복습 · 짧은 연습 · 게임이다. 그래서 그날 생활 복습 후보 문항의 단위
+// (taken.life — lifeReviewCandidate의 targets, 생활 은행 전체가 아니다)와 그 학생의 짧은 연습 풀에 든 단위(taken.practice)는 게임 후보에 넣지
+// 않는다. 같은 단위를 두 활동이 함께 세면 그 단위의 복습을 두 줄이 다툰다. 목표는 넘기지 않는다 — 게임 후보는 exam · listening · travel 같은
+// 목표를 실어, 넘기면 맞춘 목표 수가 할 것의 수보다 먼저 갈라 목표가 없는 생활 복습을 앞지른다. 맡을 단위가 없는 게임은 활동을 넘기지 않는다.
+// 소리를 끈 날은 짧은 연습처럼 잠근다(blockedBy의 소리 거름). 게임 사이에서도 돌아온 단위 하나는 한 활동만 맡는다 — 목록 차례(바람길 · 리듬 ·
+// 환승)로 앞 게임이 맡는다. 두뇌는 문항의 모든 단위로 이유를 지으므로, 다른 활동(생활 복습 · 짧은 연습 · 앞 게임)이 맡은 돌아온 단위를 함께 실은
+// 문항보다 그런 단위가 없는 문항을 먼저 고른다(두 번 훑기). 같은 게임이 이 앞에서 맡은 단위는 다른 활동 몫이 아니다 — 짧은 연습처럼 그 단위를
+// 함께 실은 문항도 첫 훑기에서 고른다. 그런 문항이 없는 단위만 다른 활동 몫을 함께 실은 문항으로 맡는다 — 그 문항도 그 단위를 실제로 낸다.
+// 활동은 맡은 단위(assigned — 맡은 차례대로 { unit, label }, label은 코치 itemUnits의 이름)를 함께 든다. 줄의 이유는 이것으로 짓는다(gameWhy).
+function gameActivities({ games, dueUnits, itemUnits, settings, taken }) {
+  if (!Array.isArray(games) || !dueUnits?.size || typeof itemUnits !== 'function') return [];
+  const out = [];
+  const covered = new Set(); // 게임들이 맡은 돌아온 단위(모든 게임이 함께 본다)
+  const owned = unit => taken.life.has(unit) || taken.practice.has(unit);
+  for (const game of games) {
+    if (!game?.open || !Array.isArray(game.items)) continue;
+    const rows = game.items
+      .filter(item => typeof item?.itemKey === 'string')
+      .map(item => {
+        const units = (quiet(() => itemUnits(item.itemKey)) ?? []).filter(row => dueUnits.has(row?.unit));
+        return { itemKey: item.itemKey, due: units.map(row => row.unit), labels: new Map(units.map(row => [row.unit, row.label ?? null])) };
+      });
+    const picked = new Set();
+    const items = [];
+    const assigned = [];
+    const earlier = new Set(covered); // 앞 게임들이 맡은 단위
+    for (const pure of [true, false])
+      for (const row of rows) {
+        if (picked.has(row.itemKey)) continue;
+        if (pure && row.due.some(unit => owned(unit) || earlier.has(unit))) continue;
+        const fresh = row.due.filter(unit => !covered.has(unit) && !owned(unit));
+        if (!fresh.length) continue;
+        for (const unit of fresh) {
+          covered.add(unit);
+          assigned.push(Object.freeze({ unit, label: row.labels.get(unit) }));
+        }
+        picked.add(row.itemKey);
+        items.push({ itemKey: row.itemKey });
+      }
+    if (items.length) out.push({ ...activity('again', game.open, {}, items, settings), assigned: Object.freeze(assigned) });
+  }
+  return out;
+}
+// 문항들의 단위(Set).
+const unitsOfItems = (items, itemUnits) =>
+  new Set(
+    typeof itemUnits === 'function'
+      ? (items ?? []).flatMap(item =>
+          typeof item?.itemKey === 'string' ? (quiet(() => itemUnits(item.itemKey)) ?? []).map(row => row?.unit) : [],
+        )
+      : [],
+  );
 
 // 숙제 연습(§21-6 · 검토 D3) — 이번 주 계획의 숙제 항목마다 하나(오늘 공부 칸). 후보는 그 항목의 처음 보는 짧은 연습 문항 가운데 돌아온 단위가
 // 든 문항을 뺀 것이다 — 그 단위는 복습 칸의 짧은 연습이 맡는다(다음 레슨과 같은 거름, 20-13). 목표는 숙제 하나 { kind: homework, skill, status? }다 —
@@ -362,6 +418,8 @@ export function todayActivities({
   engine = false,
   // 이번 주 계획(4-4b) — { examPlan(world-plan-next buildPlanNext), fresh(item), diagnostic: { ready } }. 시험을 고르지 않았거나 확인 중이면 null.
   week = null,
+  // 홈의 게임 목록(4-6e-1 — world-home-games.mjs homeGames의 값). 없으면 게임 줄이 없다.
+  games = null,
 } = {}) {
   const values = settings ?? {};
   const normalized = worldLearningSettings(values);
@@ -377,13 +435,17 @@ export function todayActivities({
   const resumedLesson = resumes.find(open => open.route === 'lesson')?.lessonId ?? null;
   // 생활 복습 — lifeDue가 낸 복습 모두를 한 활동으로(차례 그대로, M8 · 설계 검토 H21). 엔진 판정이 선 때만.
   const items = engine && judged?.state === 'engine' && Array.isArray(judged.items) ? judged.items : [];
+  // 그날 생활 복습 후보 — 그 문항의 단위는 게임이 맡지 않는다(아래 gameActivities). 하던 복습이 있어 생활 복습 줄을 넘기지 않는 날도 그 복습이 맡는다.
+  const lifeOpen = items.length
+    ? lifeReviewCandidate(
+        items.map(item => item.id),
+        snapshot,
+        values,
+        now,
+      )
+    : null;
   if (items.length && !resumingReview) {
-    const open = lifeReviewCandidate(
-      items.map(item => item.id),
-      snapshot,
-      values,
-      now,
-    );
+    const open = lifeOpen;
     const fact = reviewFact(items);
     if (open)
       out.push(
@@ -433,6 +495,17 @@ export function todayActivities({
         settings: normalized,
         labels,
         length: Number.isInteger(practiceLength) && practiceLength > 0 ? practiceLength : 5,
+      }),
+    );
+  // 게임 — 복습 칸에만, 생활 복습과 짧은 연습이 싣지 않은 돌아온 단위로(§25-1).
+  if (engine)
+    out.push(
+      ...gameActivities({
+        games,
+        dueUnits,
+        itemUnits,
+        settings: normalized,
+        taken: { life: unitsOfItems(itemsOf(lifeOpen?.targets), itemUnits), practice: unitsOfItems(pool, itemUnits) },
       }),
     );
   // 이번 주 계획(4-4b): 숙제 연습(오늘 공부)과 점검 칸의 짧은 진단 — 엔진 판정이 선 때만(계획은 새 칸으로 짓는다).
@@ -505,8 +578,37 @@ const NEXT_WHY = Object.freeze({
   evidence: Object.freeze({ fact: 'describe', describe: 'next' }),
 });
 
+// 게임 줄의 이유(4-6e-1 — 설계 주인 11-23 GB2 결정). 두뇌는 후보 문항의 모든 단위로 이유를 지으므로, 다른 활동 몫(짧은 연습 · 생활 복습 · 앞
+// 게임)의 단위를 함께 실은 문항이면 그 단위의 이름을 말한다. 줄의 말은 그 줄이 맡은 단위(act.assigned)로만 짓는다 — 두뇌의 이유가 맡은 단위를
+// 가리키면 그대로 쓰고, 아니면 맡은 단위 가운데 이름이 있는 첫 단위로 두뇌 dueReason과 같은 꼴(놓친 적이 있으면 unit.shaky, 없으면 unit.due)을
+// 코치 due()의 값으로 다시 짓는다. 이름은 코치 itemUnits의 이름을 say의 둘째 인자(단위 → 이름)로 넘긴다. 이름 있는 맡은 단위가 없거나 문장을 짓지
+// 못하면 단위 이름 없는 게임 줄이다 — 다른 활동 몫의 이름을 빌리지 않는다. 두뇌와 문항 고르기는 그대로다.
+const GAME_NAMELESS = Object.freeze({
+  ko: '게임에서 만난 말이 돌아왔어요. 잊기 전에 한 번 더 만나요.',
+  en: 'Something you met in a game is back. Let’s review it once more before it fades.',
+  mn: 'Тоглоомд үзсэн үг хэллэг эргэн ирлээ. Мартахаасаа өмнө дахин нэг давтъя.',
+});
+const dueWhy = row => {
+  const evidence = { sittings: row.sittings ?? 0, lapses: row.lapses ?? 0 };
+  return row.lapses > 0
+    ? { code: 'unit.shaky', slots: { unit: row.unit, misses: row.lapses, reviews: row.sittings, days: row.days }, evidence }
+    : { code: 'unit.due', slots: { unit: row.unit, days: row.days }, evidence };
+};
+function gameWhy(entry, act, { say, due, lang }) {
+  // 손으로 지은 활동(맡은 단위를 들지 않음 — todayRows만 부르는 시험)은 두뇌의 이유 그대로다. 홈의 게임 활동은 늘 맡은 단위를 든다.
+  if (!Array.isArray(act.assigned)) return entry.why;
+  if (entry.why?.line && act.assigned.some(row => row.unit === entry.why.slots?.unit)) return entry.why;
+  const rows = due instanceof Map ? due : new Map();
+  const mine = act.assigned.filter(row => rows.has(row.unit));
+  if (!mine.length) return null;
+  const named = mine.find(row => typeof row.label === 'string' && row.label.trim());
+  const why = dueWhy(rows.get((named ?? mine[0]).unit));
+  const line = named ? quiet(() => say(why, id => (id === named.unit ? named.label : null))) : null;
+  return { ...why, line: line || (Object.hasOwn(GAME_NAMELESS, lang) ? GAME_NAMELESS[lang] : GAME_NAMELESS.ko) };
+}
+
 // 한 줄 — 그 활동이 줄이 되는가, 되면 그 이유(§20-2 · §20-3). 이유 문장이 없으면 줄이 아니다.
-function rowWhy(entry, act, { capped, say }) {
+function rowWhy(entry, act, { capped, say, due, lang }) {
   const open = act.open;
   if (entry.locked) return null;
   if (open.resume || open.id === HANGUL_ID) return entry.why;
@@ -525,6 +627,8 @@ function rowWhy(entry, act, { capped, say }) {
   if (capped || entry.none) return null;
   if (open.id === LIFE_REVIEW_ID) return entry.fact >= 0 || entry.tier <= 2 ? entry.why : null;
   if (open.route === 'practice') return entry.tier === 1 ? entry.why : null;
+  // 숙제가 아닌 게임은 짧은 연습과 같다 — 맨 앞 층이 1일 때만 줄이고, 이유는 맡은 단위의 문장(unit.due 등 — gameWhy)이라 자리를 말하지 않는다(§25-1).
+  if (open.route === 'game') return entry.tier === 1 ? gameWhy(entry, act, { say, due, lang }) : null;
   return null;
 }
 
@@ -587,9 +691,37 @@ function checkShift(week, now) {
   return Math.max(0, day - 1 - done);
 }
 
-export function todayRows({ entries = [], activities = [], opened = new Set(), say = () => null, dayCapped, shift = 0 } = {}) {
+// 복습 칸의 게임 뒤로 보내기(4-6e-1 — §25-1). 두뇌는 잠김 · 사실 · 층 · 목표 수 · 할 것의 수가 같으면 활동 id의 사전 순으로 가르는데,
+// world.play.*가 world.practice.* · world.review.life보다 앞이라 그 차례에는 뜻이 없다. 할 것의 수도 겨룸이 되지 못한다 — 두뇌는 문항을 세고,
+// 짧은 연습은 항목마다 활동이 나뉘지만 게임은 활동 하나에 맡은 단위를 모두 싣는다. 그래서 복습 칸 항목 가운데 잠김 · 사실 · 층이 같은 것 안에서
+// 게임 항목을 생활 복습과 짧은 연습 뒤로 보낸다(목표 수와 할 것의 수는 보지 않는다). checkOrdered와 같은 짜임으로, 그 항목들이 앉은 자리
+// 안에서만 차례를 바꾼다 — 생활 복습과 짧은 연습 사이의 차례는 두뇌 차례 그대로다(4-3의 장면 값).
+function gamesBehind(entries, byId) {
+  const isGame = entry => byId.get(entry?.id)?.open?.route === 'game';
+  const groups = new Map();
+  entries.forEach((entry, at) => {
+    if (byId.get(entry?.id)?.kind !== 'again') return;
+    const [locked, fact, tier] = brainKey(entry);
+    const key = `${locked}|${fact}|${tier}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(at);
+  });
+  const out = [...entries];
+  for (const places of groups.values()) {
+    const members = places.map(at => entries[at]);
+    if (!members.some(isGame)) continue;
+    const ordered = [...members.filter(entry => !isGame(entry)), ...members.filter(isGame)];
+    places.forEach((at, i) => {
+      out[at] = ordered[i];
+    });
+  }
+  return out;
+}
+
+// due: 코치 due()의 줄(단위 → 줄, Map) · lang: 화면 언어 — 게임 줄의 이유를 맡은 단위로 지을 때 쓴다(gameWhy).
+export function todayRows({ entries = [], activities = [], opened = new Set(), say = () => null, dayCapped, shift = 0, due = null, lang = 'ko' } = {}) {
   const byId = new Map(activities.map(act => [act.plan.id, act]));
-  entries = checkOrdered(Array.isArray(entries) ? entries : [], byId, shift);
+  entries = gamesBehind(checkOrdered(Array.isArray(entries) ? entries : [], byId, shift), byId);
   // 하루 복습 상한(§20-3): plan 쪽 칸(dayCapped — plan 머리에서 한 번 센 엔진 전체의 값)을 먼저 읽는다(설계 주인 11-15, §20-14). 그 칸이 없는
   // 옛 엔진이면 어느 항목의 capped로든 읽는다. 생활 복습 항목만 보면 생활 복습 없이 짧은 연습이나 다음 레슨만 있는 상한 날을 「다 만났어요」로
   // 잘못 말한다(끝 판 GB1).
@@ -599,7 +731,7 @@ export function todayRows({ entries = [], activities = [], opened = new Set(), s
   for (const entry of entries) {
     const act = byId.get(entry.id);
     if (!act || taken.has(act.kind)) continue;
-    const why = rowWhy(entry, act, { capped, say });
+    const why = rowWhy(entry, act, { capped, say, due, lang });
     if (!why?.line) continue;
     taken.add(act.kind);
     rows.push({
@@ -624,7 +756,8 @@ export function pickRow(rows, opened = new Set()) {
 }
 
 // 홈 계획 한 번 — 지금 판의 꼴(selected · reason · resume · status · candidates · examPlan)에 today를 더한다(§20-1 · §20-9).
-//   coach — 자리를 잡은 홈 코치(엔진) 또는 null(확인 중) · progress — 생활 진도 · say(why) — 화면 언어의 Vellum 문장
+//   coach — 자리를 잡은 홈 코치(엔진) 또는 null(확인 중) · progress — 생활 진도 · say(why, label?) — 화면 언어의 Vellum 문장(label은 단위 → 이름 —
+//   셸 이름표보다 먼저 쓴다, 게임 줄의 이유가 맡은 단위의 이름을 넘긴다)
 export function createWorldTodayPlan({
   coach = null,
   progress = null,
@@ -640,6 +773,9 @@ export function createWorldTodayPlan({
   lang = 'ko',
   say = () => null,
   week = null,
+  // 홈의 게임 목록(4-6e-1). 주지 않으면 지금 값으로 짓는다(homeGames — gameStorage는 저장한 환승 난도를 읽을 저장소로, 시험이 넘긴다).
+  games,
+  gameStorage,
 } = {}) {
   // 생활 판정이 아직 확인 중이면 홈도 확인 중이다 — 홈 코치가 섰어도 엔진에 기대는 줄을 그리지 않는다(설계 검토 H12).
   const engine = Boolean(coach) && typeof coach.plan === 'function' && judged?.state === 'engine';
@@ -662,6 +798,12 @@ export function createWorldTodayPlan({
     itemUnits: engine ? key => coach.itemUnits(key) : null,
     engine,
     week: engine ? week : null,
+    games: engine
+      ? (games ??
+        quiet(() =>
+          homeGames({ progress: snapshot, settings, now, openGames, ...(gameStorage !== undefined ? { storage: gameStorage } : {}) }),
+        ))
+      : null,
   });
   // 엔진 판에서 plan()이 실패하면(가정한 장애) 확인 중 판으로 내려 제품 사실 줄만 그린다 — 빈 목록으로 읽으면 다음 레슨이 남았는데 다 한 날이
   // 된다(엔진급 끝 판 F3).
@@ -669,7 +811,8 @@ export function createWorldTodayPlan({
   const live = engine && Array.isArray(planned);
   const entries = live ? planned : checkingEntries(activities, say);
   const shift = live && week ? checkShift(week, now) : 0;
-  const { rows, capped } = todayRows({ entries, activities, opened, say, dayCapped: live ? planned.capped : undefined, shift });
+  const dueRows = Array.isArray(due) ? new Map(due.filter(row => typeof row?.unit === 'string').map(row => [row.unit, row])) : null;
+  const { rows, capped } = todayRows({ entries, activities, opened, say, dayCapped: live ? planned.capped : undefined, shift, due: dueRows, lang });
   const selected = pickRow(rows, opened);
   const checking = !live;
   const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;

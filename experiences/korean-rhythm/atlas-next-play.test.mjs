@@ -457,6 +457,66 @@ test('순간 맞춤 — 판정 폭(박자)만 움직이고, 박자는 제시 없
   assert.throws(() => live.observe({ outcome: 'timeout' }), { code: 'RUN_ENDED' }, '닫힌 손잡이 — app.mjs는 잡아서 순간 맞춤 없이 잇는다');
 });
 
+/* ── 순간 맞춤 진입(4-6e-2 — 설계 주인 11-21) ── */
+// app.mjs의 startTiming을 원문 그대로 돌린다. 셸 코치의 live는 가짜다 — 문이 옮겨 온 인자(spec, options)를 적고 진짜 엔진 코치의 live에
+// 넘긴다(엔진은 거기서 내용을 정의하고, 막기에 걸리면 던진다). 엔진이 던지면 적어 두고 그대로 던진다. startTiming은 그 던짐을 삼키고
+// 순간 맞춤만 끄므로, 시험은 적힌 던짐과 adaptive로 본다.
+function liveSpy(coach) {
+  const got = [];
+  const shell = {};
+  for (const name of Object.keys(coach)) if (typeof coach[name] === 'function') shell[name] = (...args) => coach[name](...args);
+  shell.live = (spec, options) => {
+    const row = { spec, options, error: null, adaptive: null };
+    got.push(row);
+    try {
+      const handle = coach.live(spec, options);
+      row.adaptive = handle.settings().adaptive;
+      return handle;
+    } catch (error) {
+      row.error = error;
+      throw error;
+    }
+  };
+  return { shell, got };
+}
+function timingStarter() {
+  const text = fs.readFileSync(new URL('./app.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const from = text.indexOf('const TIMING_KEY = ');
+  const to = text.indexOf('function followTiming(', from);
+  assert.ok(from >= 0 && to > from, 'app.mjs의 판정 폭 맞춤 열기 토막');
+  return new Function('env', `with (env) {\n${text.slice(from, to)}\nreturn () => { startTiming(); return { live, timingStart }; };\n}`);
+}
+
+test('순간 맞춤 진입 — app.mjs가 곡마다 넘긴 내용을 진짜 엔진이 정의하고 판정 폭의 순간 맞춤이 켜진다, 「판정 폭 맞춤 꺼짐」이면 꺼진다', async () => {
+  const clock = clockAt();
+  const coach = await realCoach({ clock });
+  const { shell, got } = liveSpy(coach);
+  const door = createGameDoor({ entry: entryOf(() => shell), gameId: GAME_ID, later: fn => fn() });
+  const play = await openRhythm({ win: frameOf(door) });
+  const kept = new Map();
+  const scaled = [];
+  const env = { store: { get: key => kept.get(key) ?? null }, coach: play.coach, learningAvailable: true, state: { round: { scaleTiming: value => scaled.push(value) } }, FLOW_RHYTHM };
+  const startTiming = timingStarter()(env);
+
+  const auto = startTiming();
+  assert.equal(got.length, 1);
+  assert.equal(got[0].spec.id, FLOW_RHYTHM.id);
+  assert.equal(got[0].error, null, `진짜 엔진이 받지 않은 내용 — 게임은 삼키고 순간 맞춤만 꺼진다: ${got[0].error?.message}`);
+  assert.equal(got[0].adaptive, true, '곡은 판정 폭의 순간 맞춤이 켜진다');
+  assert.ok(auto.live, '게임이 순간 맞춤 겉을 쥔다');
+  assert.deepEqual(scaled, [auto.timingStart], '판정 폭을 순간 맞춤의 처음 값으로 둔다');
+
+  kept.set('synk.korean-rhythm.timing-mode', 'fixed');
+  const fixed = startTiming();
+  assert.equal(got.length, 2);
+  assert.deepEqual(got[1].options, { declared: { mode: 'fixed' } });
+  assert.equal(got[1].error, null, got[1].error?.message);
+  assert.equal(got[1].adaptive, false, '「판정 폭 맞춤 꺼짐」은 순간 맞춤만 끈다');
+  assert.ok(fixed.live);
+  play.end();
+  door.dispose();
+});
+
 test('며칠 뒤 다시 확인 — due()의 단위가 든, 아직 듣지 않은 며칠 뒤 확인 대화(옛 followups 대신)', async () => {
   const { play, coach, clock, door } = await opened();
   assert.deepEqual(play.dueItems(), [], '돌아온 단위가 없으면 없다');

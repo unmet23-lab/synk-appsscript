@@ -5,6 +5,7 @@
 // 엔진이 준비되지 못하면(입구 · 묶음 · 지도 · 저장소) null을 돌려주고 셸은 지금 판으로 간다 — 학습이 막히지 않는다.
 import { createPracticeNextSession } from './world-practice-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from './world-today.mjs';
+import { HOME_GAME_BANKS, homeGames } from './world-home-games.mjs';
 import { buildPositionNext, estimateNext, examSkills, recheckCards, unitRoutes, unseenFamilies } from './world-position-next.mjs';
 import { createDiagnosticNextSession, selectDiagnosticNext, withheldItem } from './world-diagnostic-next.mjs';
 import { createMockNextSession, selectMockNext, todayPractice } from './world-mock-next.mjs';
@@ -78,7 +79,9 @@ const MOVE_BANKS = ['topik-items'];
 const LIFE_BANKS = ['world-life'];
 // 홈 코치의 은행(4-3 — §20-4): 생활과 짧은 연습 문항 풀 전체(학생의 수준으로 거르기 전)의 은행을 고정 묶음으로 — 설정이 바뀌어도 코치와
 // 지도가 하나 더 열리지 않게(설계 검토 H24). 경험 이름은 world-home이다(다른 면과 같은 호스트라 기억은 문서 안에서 하나).
-export const homeBanksOf = pool => [...new Set([...LIFE_BANKS, ...banksOf(pool)])].sort();
+// 4-6e-1(§25-1): 홈 후보 게임 셋의 은행(바람길 · 리듬 · 환승)을 고정으로 더한다 — 코치는 지도에 없는 후보를 지우므로 그 조각을 홈 코치가 열어야
+// 게임 줄이 선다. 리듬은 보충 연습 문항이 짧은 연습 풀에 있어 지금도 들지만, 보충 연습이 풀에서 빠져도 남게 적는다.
+export const homeBanksOf = pool => [...new Set([...LIFE_BANKS, ...HOME_GAME_BANKS, ...banksOf(pool)])].sort();
 
 // 옛 기기 기록 읽개(계획 §1 #22 — 손님 호스트가 열 때마다 부른다). 옛 로그(events)와 접힌 장부(ledger)를 그대로 넘기고, 옮길 것을
 // 고르는 일(아직 안 옮긴 옛 꼴 사건 · 새로 든 장부)은 엔진(record/carry.mjs)이 한다. 못 읽으면 null — 새 길은 그대로 연다.
@@ -1777,11 +1780,15 @@ export function createAtlasNext({
         createWorldTodayPlan,
         watchHomePlan,
         todayKey,
-        say: (why, language = lang()) => render(why, { lang: language, label }),
+        // names(id): 단위 → 이름(홈 게임 줄이 맡은 단위의 이름 — world-today.mjs gameWhy). 셸 이름표(능력 이름)보다 먼저 쓴다.
+        say: (why, language = lang(), names = null) =>
+          render(why, { lang: language, label: typeof names === 'function' ? id => names(id) ?? label(id) : label }),
         // 내 위치 새 판(4-4a) — 홈과 같은 판 셋 · 같은 홈 코치로 그린다(셸 world-learning-ui.mjs openPosition).
         position: positionPlanner,
         // 이번 주 계획 새 판(4-4b) — 홈과 같은 홈 코치 · 내 위치와 같은 묶음 만남으로 짓는다(셸 world-learning-ui.mjs weekNext).
         plan: planPlanner,
+        // 홈의 게임 목록(4-6e-1 — world-home-games.mjs). 홈 세 줄은 world-today.mjs가 같은 함수로 짓는다. 셸은 이 모듈을 직접 부르지 않는다.
+        games: homeGames,
       });
     },
     // 30일째 문장의 돌아보기 읽기(4-4c 둘째 묶음 — 단계4_계획 §21-22). 그 코치를 연 판이 올리는 길이면 그 판의 동의 판과 묻는 함수를 준다.

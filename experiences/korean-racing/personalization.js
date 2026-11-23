@@ -67,16 +67,18 @@ export const RACING_CANDIDATES = CAMPAIGN.flatMap(stage=>stage.items.map(item=>{
 // personalized five draw from (a course the person picks keeps its own sentences), and the speed the car
 // cruises at. The number of choices and the road between gates stay as authored: the gates, their lane
 // narration and the course length are built for three lanes and this spacing.
-export const FLOW_RACE={id:'korean-racing.race',version:1,target:0.8,items:{levels:[1,2,3],weight:2},
-  knobs:[{id:'cruise',kind:'pace',label:'달리는 속도',values:[20,23,26,29,32],start:2}]};
+// FLOW_ 값은 손잡이 · 값 목록 · items까지 깊게 얼린다 — 실행 중에 고쳐 넘기면 엔진의 내용 정의 막기를 비켜 간다(4-6e-2).
+const deepFrozen=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(deepFrozen);Object.freeze(value);}return value;};
+export const FLOW_RACE=deepFrozen({id:'korean-racing.race',version:1,target:0.8,items:{levels:[1,2,3],weight:2},
+  knobs:[{id:'cruise',kind:'pace',label:'달리는 속도',values:[20,23,26,29,32],start:2}]});
 export const BASE_CRUISE=26;
 // The road from where a question is announced (220 before the gate) to the line where a sentence course
 // stops the car and waits for a choice (65).
 export const APPROACH=155;
-export const FLOW_WORDS={'raise.pace':'차가 조금 빨라져요.','ease.pace':'차가 조금 느긋하게 달려요.',
+export const FLOW_WORDS=deepFrozen({'raise.pace':'차가 조금 빨라져요.','ease.pace':'차가 조금 느긋하게 달려요.',
   // A changed item level shows in the next personalized five, so the results screen tells it.
   'raise.content':'','ease.content':'',
-  'start.memory':'','start.prior':'','start.returning':'오랜만이라 조금 느긋하게 달려요.','start.tired':'오늘은 차가 더 빨라지지 않아요.'};
+  'start.memory':'','start.prior':'','start.returning':'오랜만이라 조금 느긋하게 달려요.','start.tired':'오늘은 차가 더 빨라지지 않아요.'});
 /* 재방문 맞춤 연습: 같은 능력 이름 안에서도 코스마다 다른 것을 연습하므로 코스 묶음으로 나눈다. 문항이 셋뿐인 묶음은 서로 다른 두 문제에서
  * 두 번 놓치면 말한다. 한 문항뿐인 능력(이유·순서·읽기 부정)은 묶음이 없고, 결승 문항은 맞춤에 다시 쓰지 않으며(위 FINALE 규칙),
  * 어휘 코스는 「틀린 단어부터 복습」이 따로 있어 여기서 다루지 않는다. 답은 말하지 않는다. */

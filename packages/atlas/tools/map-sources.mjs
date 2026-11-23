@@ -1,4 +1,5 @@
-// 지도 원천 읽기(단계 1 계획 §1 · §4): 저장소의 strata 원천(단위 · 능력)과 제품 문항 은행(문항 메타). 패키지 밖을 읽는 곳은
+// 지도 원천 읽기(단계 1 계획 §1 · §4): 저장소의 strata 원천(단위 · 능력)과 제품 문항 은행(문항 메타), 이름 붙인 조각의 원천 표
+// (단계 4 계획 §25-4 — 진단 풀 표). 패키지 밖을 읽는 곳은
 // 이 파일 하나다. 제품의 문항 메타 함수(지금 엔진에 넘기는 그 값)를 그대로 부른다 — 제품 코드를 복사하지 않는다.
 // 엔진 묶음 · unit 시험은 이 파일을 부르지 않는다(제품 모듈을 읽으므로). tools/map-build.mjs와 build 시험만 쓴다.
 import fs from 'node:fs';
@@ -354,4 +355,30 @@ export async function readBanks(root = REPO_ROOT, names = Object.keys(BANKS)) {
   for (const [bank, read] of Object.entries(TEMPLATE_BANKS))
     banks.push({ bank, template: true, items: await read(root) });
   return banks;
+}
+
+// ── 이름 붙인 조각 ──────────────────────────────────────────────────────────────────────────
+// 은행 하나에서 고른 문항만 싣는 조각(tools/map-ship.mjs — map/items/<이름>.json). 조각마다 { bank, keys: [문항 열쇠] }이고 keys는 원천 차례다.
+// 지도 빌드가 이것으로 map/slices.json을 짓는다. 전체 색인에는 들지 않는다 — 색인 바이트 · 판 표지가 조각 때문에 바뀌지 않는다.
+export const SLICE_SOURCES = Object.freeze({
+  // 진단의 레이싱 조각(단계 4 계획 §25-4): 「내 위치」 짧은 진단이 쓰는 레이싱 낱말 13개. 진단 풀 표는 아무것도 import하지 않는 낱말 표이고,
+  // 문항 열쇠는 레이싱 은행과 같은 제품 함수(racingItem)로 짓는다 — 열쇠 꼴을 여기 옮겨 적지 않는다.
+  'korean-racing-diagnostic': async root => {
+    const { DIAG_RACING_WORDS } = await load(
+      root,
+      'experiences/synk-world-app/world-diagnostic-racing.mjs',
+    );
+    const personal = await load(root, 'experiences/korean-racing/personalization.js');
+    return {
+      bank: 'korean-racing',
+      keys: DIAG_RACING_WORDS.map(([id]) => personal.racingItem({ answer: id }).itemKey),
+    };
+  },
+});
+
+export async function readSliceSources(root = REPO_ROOT) {
+  const slices = [];
+  for (const [name, read] of Object.entries(SLICE_SOURCES))
+    slices.push({ name, ...(await read(root)) });
+  return slices;
 }

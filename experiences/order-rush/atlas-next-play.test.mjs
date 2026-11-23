@@ -706,6 +706,74 @@ test('순간 맞춤 — FLOW_PRACTICE는 새 길에서 맞춤이 없고, 끄기 
   coach.dispose();
 });
 
+/* ── 순간 맞춤 진입(4-6e-2 — 설계 주인 11-21) ── */
+// app.mjs의 startLive를 원문 그대로 돌린다. 셸 코치의 live는 가짜다 — 문이 옮겨 온 인자(spec, options)를 적고 진짜 엔진 코치의 live에
+// 넘긴다(엔진은 거기서 내용을 정의하고, 막기에 걸리면 던진다). 엔진이 던지면 적어 두고 그대로 던진다. startLive는 그 던짐을 삼키고
+// 순간 맞춤만 끄므로, 시험은 적힌 던짐과 adaptive로 본다.
+function liveSpy(coach) {
+  const got = [];
+  const shell = {};
+  for (const name of Object.keys(coach)) if (typeof coach[name] === 'function') shell[name] = (...args) => coach[name](...args);
+  shell.live = (spec, options) => {
+    const row = { spec, options, error: null, adaptive: null };
+    got.push(row);
+    try {
+      const handle = coach.live(spec, options);
+      row.adaptive = handle.settings().adaptive;
+      return handle;
+    } catch (error) {
+      row.error = error;
+      throw error;
+    }
+  };
+  return { shell, got };
+}
+// 셸 코치에 닿은 순간 맞춤 하나 — 진짜 엔진이 내용을 받아들였는가, 순간 맞춤이 켜졌는가.
+function assertOpened(row, id, adaptive) {
+  assert.ok(row, '순간 맞춤을 열었다');
+  assert.equal(row.spec.id, id);
+  assert.equal(row.error, null, `진짜 엔진이 받지 않은 내용 — 게임은 삼키고 순간 맞춤만 꺼진다: ${row.error?.message}`);
+  assert.equal(row.adaptive, adaptive);
+}
+function liveStarter() {
+  const body = between(source('./app.mjs'), 'const FLOW_KEY = ', 'function applyFlow(');
+  return new Function('env', `with (env) {\n${body}\nreturn isReview => { startLive(isReview); return { live, flowStart, flowSpec }; };\n}`);
+}
+
+test('순간 맞춤 진입 — app.mjs startLive가 넘긴 내용을 진짜 엔진이 정의한다: 점심 러시는 순간 맞춤이 켜지고, 끄기 단추(fixed)는 꺼지며, 한가한 오픈 · 새 주문 연습은 열지 않는다', async () => {
+  const { coach } = await realCoach();
+  const { shell, got } = liveSpy(coach);
+  const { frame } = doorFor({ gameCoach: async () => shell, retired: () => () => {} });
+  const play = await openCafe({ win: frame });
+  const kept = new Map();
+  const progressStorage = { getItem: key => kept.get(key) ?? null, setItem: (key, value) => kept.set(key, String(value)) };
+  const env = { coach: play, learningFailed: false, atlasNext: play, state: { mode: 'rush' }, progressStorage, FLOW_RUSH, FLOW_PRACTICE, FLOW_SKILLS, FLOW_WORDS };
+  const startLive = liveStarter()(env);
+
+  play.begin('rush');
+  const rush = startLive(false);
+  assert.equal(got.length, 1);
+  assertOpened(got[0], FLOW_RUSH.id, true);
+  assert.ok(rush.live, '게임이 순간 맞춤 겉을 쥔다');
+  assert.deepEqual(Object.keys(rush.flowStart).sort(), ['patience', 'queueMax', 'spawnEvery'], '손님 속도로 연다');
+
+  kept.set('synk.order-rush.flow-mode', 'fixed');
+  play.begin('rush');
+  const fixed = startLive(false);
+  assert.equal(got.length, 2);
+  assertOpened(got[1], FLOW_RUSH.id, false);
+  assert.ok(fixed.live, '끄기 단추는 순간 맞춤만 끈다 — 겉은 그대로 연다');
+
+  env.state.mode = 'practice';
+  play.begin('open');
+  assert.equal(startLive(false).live, null);
+  play.begin('review');
+  assert.equal(startLive(true).live, null);
+  assert.equal(got.length, 2, '새 길의 한가한 오픈(FLOW_PRACTICE)과 새 주문 연습은 순간 맞춤을 열지 않는다');
+  play.end();
+  coach.dispose();
+});
+
 test('며칠 뒤 주문 — 돌아온 단위(due())가 든 처음 듣는 주문 하나로 판 길이 1', async () => {
   const { coach, clock } = await realCoach();
   const calls = [];

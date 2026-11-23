@@ -1,0 +1,20 @@
+{
+  "_": "이름 붙인 조각 — map-build --write만 짓는다(원천: tools/map-sources.mjs SLICE_SOURCES). 손으로 고치지 않는다.",
+  "format": "atlas-map-slices/1",
+  "fields": ["slice","bank","itemKey"],
+  "items": [
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0001:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0008:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0012:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0018:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0025:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0028:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0035:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0036:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0042:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0050:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0051:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0056:v1"],
+    ["korean-racing-diagnostic","korean-racing","korean-racing:w0061:v1"]
+  ]
+}

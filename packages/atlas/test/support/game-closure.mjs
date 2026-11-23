@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as esbuild from 'esbuild';
+import { parse } from 'parse5';
 import { PACKAGE_ROOT } from './subject.mjs';
 
 export const EXPERIENCES = path.resolve(PACKAGE_ROOT, '..', '..', 'experiences');
@@ -16,17 +17,116 @@ const TEST = /\.test\.m?js$/;
 // 이 스크립트는 공개할 때만 /assets/로 옮긴다.
 const publishedScripts = new Map([['/assets/launch-notice.js', 'launch-notice/launch-notice.js']]);
 
-// `<script … src=…>` — 큰따옴표 · 작은따옴표 · 따옴표 없는 값을 모두 받는다(r4 GPT GA2 · GA6). 대소문자를 가리지 않는다. 속성 이름이
-// 바로 src인 것만 읽는다 — data-src 같은 이름은 브라우저가 싣지 않는다(r5 GPT GA3).
-export const SCRIPT_SRC = /<script\b[^>]*?[\s/]src\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+// 게임 HTML은 브라우저와 같은 HTML5 파서(parse5, 이 꾸러미의 개발 의존성 — 잠긴 판 8.0.1)로 읽는다. 파서를 못 불러오면 이 모듈째 실패한다 —
+// 정규식으로 물러서거나 건너뛰지 않는다(test/build/closure-parser.test.mjs가 본다). 정규식은 주석 · 따옴표 · 태그 끝의 규칙을 하나씩 흉내 내다
+// 빠뜨렸다(4-6e 첫 묶음 GB4 · 다시 검수 GA2 · r3 GA1 · GA2 — 같은 파일 세 회차라 파서로 바꿨다, 설계 검토 11-23).
+// 이 도우미는 실수를 막는 장치이고 악의를 막는 장치가 아니다(설계 주인 11-23). 실제 게임 HTML에 나오는 꼴은 바르게 읽고, 나오지 않는 꼴은
+// 브라우저 동작을 흉내 내지 않고 감지해 실패한다(아래 htmlTraps). 실제 열한 곳의 꼴은 .tmp/검수/게임HTML_훑기_20261123.txt에 훑어 두었다.
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const HTML_NS = 'http://www.w3.org/1999/xhtml';
+const attrOf = (node, name) => node.attrs?.find(row => row.name === name)?.value;
+const ASCII_SPACE = /^[\t\n\f\r ]+|[\t\n\f\r ]+$/g;
+// 주소 글 — URL 파서처럼 앞뒤의 C0 제어 문자와 공백(U+0000~U+0020)만 빼고 안의 탭 · 줄바꿈을 지운다. U+00A0 같은 글자는 그대로다.
+export function urlText(value) {
+  let start = 0;
+  let end = value.length;
+  while (start < end && value.charCodeAt(start) <= 0x20) start += 1;
+  while (end > start && value.charCodeAt(end - 1) <= 0x20) end -= 1;
+  return value.slice(start, end).replace(/[\t\n\r]/g, '');
+}
+
+// 한 HTML 글이 싣는 스크립트 주소들 — HTML 이름공간의 script 요소에서 속성 이름이 바로 src인 것만 읽는다(이름은 파서가 소문자로 맞춘다 —
+// data-src는 브라우저가 싣지 않는다, r5 GPT GA3). 같은 이름의 속성이 둘이면 첫째다(파서가 뒤를 버린다). 빈 src는 싣지 않는다(브라우저도 오류로
+// 끝낸다). 돌지 않는 종류(type="text/plain" 등)도 읽는다 — 더 따라가도 해가 없다. template 안의 스크립트는 돌지 않으므로 따라가지 않는다(파서는
+// 그 자식을 content에 둔다 — childNodes만 걷는다).
+export const scriptSrcs = html => {
+  const out = [];
+  const walk = node => {
+    const src =
+      node.nodeName === 'script' && node.namespaceURI === HTML_NS ? attrOf(node, 'src') : undefined;
+    if (src && urlText(src)) out.push(urlText(src));
+    for (const child of node.childNodes ?? []) walk(child);
+  };
+  walk(parse(String(html)));
+  return out;
+};
+
+// 브라우저는 싣거나 돌리는데 src만 읽어서는 입구 목록에서 빠지는 꼴(설계 검토 11-23 조건 · r4 GA1). 게임 HTML에 있으면 따라가기 전에 실패한다 —
+// 조용히 입구를 빠뜨리지 않게. 지금 게임 HTML에는 하나도 없다.
+const NESTED = new Set(['iframe', 'frame', 'frameset', 'object', 'embed', 'portal', 'fencedframe']);
+const hasText = node =>
+  node.childNodes.some(child => child.nodeName === '#text' && child.value.trim());
+// 주소를 바꾸는 가져오기 표 — 키가 맨 이름(three 등)이 아니라 주소 꼴(/ · ./ · ../ · 스킴)이거나 scopes가 있으면 esbuild가 따라가는 파일과
+// 브라우저가 싣는 파일이 달라진다. 읽지 못하는 표도 막는다.
+function remapsUrls(node) {
+  let map;
+  try {
+    map = JSON.parse(node.childNodes.map(child => child.value ?? '').join(''));
+  } catch {
+    return true;
+  }
+  const urlish = key => /^(\/|\.\.?\/|[a-z][a-z0-9+.-]*:)/i.test(key);
+  return map?.scopes !== undefined || Object.keys(map?.imports ?? {}).some(urlish);
+}
+// src 없이 글이 있는 script는 주소를 바꾸지 않는 importmap(type이 앞뒤 ASCII 공백을 뺀 importmap)만 받는다. 그 밖에는 type · language를
+// 가리지 않고 막는다 — 도는지는 브라우저마다 다를 수 있다(예: Chromium은 type 앞뒤의 유니코드 공백을 지우고 돌린다, r5 GA1). 실제 재료의 src
+// 없는 script는 korean-racing의 importmap 하나뿐이다. 그래서 공백뿐인 type · ld+json 같은 데이터 스크립트도 실패한다 — 재료에 없는 꼴의 한계다
+// (설계 주인 잣대 ㄴ · ㄷ, r4 GA3의 장면).
+function scriptTrap(node) {
+  if (node.namespaceURI !== HTML_NS) return '<svg> · <math>의 script — href로 싣는다';
+  if (attrOf(node, 'src') !== undefined) return null;
+  // importmap은 본문이 비어도 읽어 본다 — 빈 · 읽지 못한 표는 맨 이름(three)을 못 풀어 게임이 서지 않는데, 따라갈 파일은 같아 조용히 지나갔다
+  // (r6 GA1 · 설계 주인 잣대 ㄷ — 실제 재료의 importmap은 본문이 있다). 감지와 멈춤만 넣는다.
+  if ((attrOf(node, 'type') ?? '').replace(ASCII_SPACE, '').toLowerCase() === 'importmap')
+    return remapsUrls(node)
+      ? '주소를 바꾸거나 읽지 못하는 importmap — 따라가는 파일이 달라지거나 맨 이름을 못 푼다'
+      : null;
+  return hasText(node) ? 'src 없는 script — 주소를 바꾸지 않는 importmap 말고는 받지 않는다' : null;
+}
+function elementTrap(node) {
+  if (node.nodeName === 'base' && attrOf(node, 'href') !== undefined)
+    return '<base href> — 상대 주소가 게임 폴더가 아니게 풀린다';
+  if (NESTED.has(node.nodeName))
+    return `<${node.nodeName}> — 중첩 문서의 스크립트를 따라가지 않는다`;
+  if (
+    node.nodeName === 'template' &&
+    (attrOf(node, 'shadowrootmode') ?? attrOf(node, 'shadowroot')) !== undefined
+  )
+    return '선언형 섀도 루트 template — 안의 스크립트가 돈다';
+  return node.nodeName === 'script' ? scriptTrap(node) : null;
+}
+// 속성으로 도는 코드 — 인라인 이벤트 속성(on…)과 javascript: 주소. javascript: 값은 모든 속성에서 막는다 — 입력칸 value 같은 글도 실패하는
+// 한계가 있지만 실제 재료에는 javascript: 값이 없다(설계 주인 잣대 ㄴ, r5 GA2).
+function attrTraps(node) {
+  return (node.attrs ?? []).flatMap(row => {
+    if (/^on/i.test(row.name) && row.value.trim())
+      return [`인라인 이벤트 속성 ${row.name} — 그 코드의 import를 따라가지 않는다`];
+    return /^javascript:/i.test(urlText(row.value))
+      ? [`javascript: 주소(${row.name}) — 그 코드를 따라가지 않는다`]
+      : [];
+  });
+}
+export function htmlTraps(html) {
+  const traps = [];
+  const walk = node => {
+    const trap = elementTrap(node);
+    if (trap) traps.push(trap);
+    traps.push(...attrTraps(node));
+    for (const child of node.childNodes ?? []) walk(child);
+  };
+  walk(parse(String(html)));
+  return traps;
+}
 
 // 게임 하나의 입구 — 그 폴더의 HTML이 싣는 제 스크립트들.
 function entriesOf(dir) {
   const entries = new Set();
   for (const html of fs.readdirSync(dir).filter(file => file.endsWith('.html'))) {
     const text = fs.readFileSync(path.join(dir, html), 'utf8');
-    for (const match of text.matchAll(SCRIPT_SRC)) {
-      const src = (match[1] ?? match[2] ?? match[3]).split(/[?#]/, 1)[0];
+    const traps = htmlTraps(text);
+    if (traps.length) throw new Error(`${nameOf(path.join(dir, html))}: ${traps.join(' · ')}`);
+    for (const found of scriptSrcs(text)) {
+      const src = found.split(/[?#]/, 1)[0];
       if (/^(https?:)?\/\//.test(src)) continue;
       const file = src.startsWith('/')
         ? path.join(EXPERIENCES, publishedScripts.get(src) ?? src)

@@ -1,6 +1,6 @@
 // 지도 빌드(단계 1 계획 §2~§7): 원천(strata · 제품 은행 · 태그 자료 · 번호 장부) → 지도 생성물(map/index.json · units.json ·
-// words.json · audit.json)과 장부 · 판 목록. 생성물은 커밋한다 — 패키지 빌드(tools/build.mjs)는 커밋된 생성물만 판 폴더로
-// 내고 제품 코드를 부르지 않는다.
+// words.json · audit.json)과 장부 · 판 목록, 이름 붙인 조각 표(map/slices.json — 단계 4 계획 §25-4). 생성물은 커밋한다 — 패키지
+// 빌드(tools/build.mjs)는 커밋된 생성물만 판 폴더로 내고 제품 코드를 부르지 않는다.
 //   node packages/atlas/tools/map-build.mjs            대조만(기본) — 제품 은행 · 원천에서 다시 만든 값이 커밋된 것과 같은가
 //   node packages/atlas/tools/map-build.mjs --write    다시 만들어 쓴다(장부는 덧붙이기만, 색인 내용이 바뀌면 판 +1)
 // 대조가 어긋나면(drift) 끝 코드 1이다. 패키지 check는 단계 4 전까지 이 대조를 알림으로만 본다(계획 §7).
@@ -19,7 +19,15 @@ import {
 } from '../src/map/compose.mjs';
 import { appendOnly, currentName } from '../src/map/ledger.mjs';
 import { MAP_FORMAT, UNITS_FORMAT, WORDS_FORMAT } from '../src/map/index.mjs';
-import { readBanks, readUnits, REPO_ROOT } from './map-sources.mjs';
+import {
+  banksOf,
+  mapFileNames,
+  namedSlices,
+  SLICE_FIELDS,
+  SLICES_FORMAT,
+  sliceOf,
+} from './map-ship.mjs';
+import { readBanks, readSliceSources, readUnits, REPO_ROOT } from './map-sources.mjs';
 
 export const MAP_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'map');
 // 사람이 올리는 능력 분류 판(능력 분류가 바뀔 때만 — 설계 §4 「판 이름」). 색인 판(edition)은 빌드가 올린다 — 태그를 고치면
@@ -32,6 +40,7 @@ export const GENERATED = Object.freeze([
   'audit.json',
   'numbers.json',
   'revisions.json',
+  'slices.json',
 ]);
 export const REVIEWED = new Set(['pass', 'fixed']);
 const TWO_REVIEWS = new Set(['pass', 'fix']);
@@ -178,6 +187,27 @@ function unitFiles(units, words) {
   };
 }
 
+// 이름 붙인 조각 표(map/slices.json): 한 줄에 [조각 이름, 은행, 문항 열쇠], 원천 차례 그대로다. 새 색인 몸통(body)에 견줘, 조각의 은행이
+// 색인에 없거나 고른 문항이 그 은행에 없거나 조각 이름이 은행 이름과 겹치면 멈춘다 — 조각을 내는 빌드(map-ship.mjs)가 같은 까닭으로
+// 멈추기 전에 여기서 먼저 알린다. 원천 표가 바뀌면 이 파일이 바뀌어 어긋남 대조가 잡는다.
+export function slicesBody(sources, body) {
+  const table = {
+    _: '이름 붙인 조각 — map-build --write만 짓는다(원천: tools/map-sources.mjs SLICE_SOURCES). 손으로 고치지 않는다.',
+    format: SLICES_FORMAT,
+    fields: SLICE_FIELDS,
+    items: sources.flatMap(({ name, bank, keys }) => keys.map(key => [name, bank, key])),
+  };
+  const slices = namedSlices(table);
+  const banks = new Set(banksOf(body));
+  for (const [name, slice] of slices) {
+    if (!banks.has(slice.bank))
+      throw new Error(`Atlas map: 이름 붙인 조각 ${name}의 은행 ${slice.bank}이 색인에 없다`);
+    sliceOf(body, name, null, slices);
+  }
+  mapFileNames(body, slices);
+  return table;
+}
+
 // 원천에서 지도 생성물 전부를 만든다(쓰지 않는다). dir의 장부 · 판 목록 · 앞 색인을 읽는다.
 export async function buildMap({ root = REPO_ROOT, dir = MAP_DIR } = {}) {
   const { units, words, skills } = await readUnits(root, { mapDir: dir });
@@ -227,6 +257,7 @@ export async function buildMap({ root = REPO_ROOT, dir = MAP_DIR } = {}) {
         ...composed.ledger,
       }),
       'revisions.json': `${JSON.stringify({ revisions }, null, 2)}\n`,
+      'slices.json': serialize(slicesBody(await readSliceSources(root), body)),
     },
     audit,
     familyRenames,

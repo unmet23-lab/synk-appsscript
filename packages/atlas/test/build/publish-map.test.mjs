@@ -8,7 +8,7 @@ import { build } from '../../tools/build.mjs';
 import { subjectTool } from '../support/subject.mjs';
 import { tempDir } from '../support/temp.mjs';
 
-const { publishItems, mapProblems } = await subjectTool('publish.mjs');
+const { checkPublish, publishItems, mapProblems } = await subjectTool('publish.mjs');
 const { mapFileNames } = await subjectTool('map-ship.mjs');
 const built = await build({
   out: tempDir('atlas-publish-map-'),
@@ -42,4 +42,25 @@ test('빌드한 지도가 공개 전 확인의 지도 검사를 문제 없이 �
   // 틀 줄에만 있는 은행(드라마 시범 · 한글 무대)의 조각 — 문항 줄만 읽던 검사가 놓친 갈래(GPT GA3)
   for (const bank of ['drama-pilot', 'hangul-stage'])
     assert.ok(Object.hasOwn(table, `items/${bank}.json`), bank);
+});
+
+// 진단의 레이싱 조각(단계 4 계획 §25-4)은 은행 조각이 아니라 이름 붙인 조각이다 — 올리기 목록 · 해시 검사 · 조각 다시 세우기에 함께 든다.
+test('진단의 레이싱 조각이 올리기 목록에 들고, 바이트가 바뀌면 해시 검사와 조각 다시 세우기가 잡는다', async () => {
+  const name = 'items/korean-racing-diagnostic.json';
+  const items = publishItems(built.manifest, built.edition);
+  assert.ok(items.includes(`atlas/${built.edition}/map/${name}`));
+  const copy = tempDir('atlas-publish-diag-');
+  fs.cpSync(path.join(built.out, 'atlas'), path.join(copy, 'atlas'), { recursive: true });
+  const file = path.join(copy, 'atlas', built.edition, 'map', name);
+  const slice = JSON.parse(fs.readFileSync(file, 'utf8'));
+  fs.writeFileSync(file, JSON.stringify({ ...slice, items: slice.items.slice(1) }));
+  const { problems } = await checkPublish({
+    out: copy,
+    fetcher: async () => assert.fail('받지 않는다'),
+  });
+  assert.ok(problems.includes(`map/${name}이 manifest와 다르다`), problems.join('\n'));
+  assert.ok(
+    problems.includes(`map/${name}이 map/index.json · words.json에서 나온 조각과 다르다`),
+    problems.join('\n'),
+  );
 });

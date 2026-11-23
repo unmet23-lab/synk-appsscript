@@ -94,8 +94,10 @@ export function returnLine(plan,{chosenTrack=null}={}){
 /* Atlas moment-level challenge for the beat (Core flow.js). Only the timing windows move, within the
  * level the person chose; notes, songs and the O/X listening answers never change. 1 is the level's own
  * window; larger is more forgiving. Rhythm results are not evidence of Korean ability. */
-export const FLOW_RHYTHM={id:'korean-rhythm.timing',version:1,target:0.8,knobs:[
- {id:'window',kind:'pace',label:'판정 폭',values:[1.35,1.22,1.1,1,0.92,0.85],start:3}]};
+// FLOW_ 값은 손잡이 · 값 목록까지 깊게 얼린다 — 실행 중에 고쳐 넘기면 엔진의 내용 정의 막기를 비켜 간다(4-6e-2).
+const deepFrozen=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(deepFrozen);Object.freeze(value);}return value;};
+export const FLOW_RHYTHM=deepFrozen({id:'korean-rhythm.timing',version:1,target:0.8,knobs:[
+ {id:'window',kind:'pace',label:'판정 폭',values:[1.35,1.22,1.1,1,0.92,0.85],start:3}]});
 // A beat event as a challenge observation. Perfect timing is comfortable; an edge hit is tight.
 // Letting go of a held note early (or holding through a pause) is not about the window, so it says nothing.
 export function timingObservation(event){

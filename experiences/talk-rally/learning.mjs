@@ -86,10 +86,12 @@ export function createExchange(coach, item) {
  * 값은 쉬운 것(공이 천천히 옴 = ‘빠르게!’를 받을 시간이 김)부터, 처음은 원래 게임(1배). 맞는 칸으로 받아치면 성공(공이 날기 시작한 뒤
  * 고르기까지 쓴 시간의 비율이 압박, 몽글이 말하는 중에 고르면 0, 공이 기다린 뒤에 고르면 1보다 큼), 다른 칸이면 실수다. 공은 기다려 주므로
  * 시간 부족(timeout)은 없다. 다시 듣기·글로 보기를 쓴 답은 도움으로 넘겨 빨라지지 않게 한다. 받아치기는 듣기 근거가 아니다(createExchange가 맡는다). */
-export const FLOW_RALLY = { id: 'talk-rally.flight', version: 1, target: 0.8, knobs: [
-  { id: 'flight', kind: 'pace', label: '공이 오는 시간', values: [1.3, 1.2, 1.1, 1, 0.95, 0.9], start: 3 }] };
-export const FLOW_WORDS = { 'raise.pace': '공이 조금 빨라져요.', 'ease.pace': '공이 조금 천천히 와요.', 'start.memory': '', 'start.prior': '',
-  'start.tired': '오늘은 공이 빨라지지 않아요.', 'start.returning': '오랜만이라 공을 천천히 쳐요.' };
+// FLOW_ 값은 손잡이 · 값 목록까지 깊게 얼린다 — 실행 중에 고쳐 넘기면 엔진의 내용 정의 막기를 비켜 간다(4-6e-2).
+const deepFrozen = (value) => { if (value && typeof value === 'object') { Object.values(value).forEach(deepFrozen); Object.freeze(value); } return value; };
+export const FLOW_RALLY = deepFrozen({ id: 'talk-rally.flight', version: 1, target: 0.8, knobs: [
+  { id: 'flight', kind: 'pace', label: '공이 오는 시간', values: [1.3, 1.2, 1.1, 1, 0.95, 0.9], start: 3 }] });
+export const FLOW_WORDS = deepFrozen({ 'raise.pace': '공이 조금 빨라져요.', 'ease.pace': '공이 조금 천천히 와요.', 'start.memory': '', 'start.prior': '',
+  'start.tired': '오늘은 공이 빨라지지 않아요.', 'start.returning': '오랜만이라 공을 천천히 쳐요.' });
 /** 한 번 주고받은 결과를 순간 맞춤의 관측으로. used: 공이 오는 시간 중 고르기까지 쓴 비율(기다린 뒤면 1보다 큼). choice가 null이면 놓침(만일의 길). */
 export function rallyObservation({ choice, answer, used = null, assisted = false }) {
   if (choice == null) return { outcome: 'timeout' };

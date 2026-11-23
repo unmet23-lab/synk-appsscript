@@ -61,6 +61,22 @@ function fakeLoader(make=()=>fakeCoach(),{health=null}={}){
 }
 function recorder(){const notes=[];return {notes,note:(kind,outcome)=>notes.push([kind,outcome]),snapshot:()=>({notes:notes.length})};}
 
+test('홈 플래너의 say는 셋째 인자(단위 → 이름)를 셸 이름표보다 먼저 쓴다 — 게임 줄이 맡은 단위의 이름을 넘긴다(4-6e-1 GB2 결정)',async()=>{
+ const load=async()=>({coach:()=>fakeCoach(),SynkAtlas:{load:async()=>({storeName:atlas.storeName,renderReason:atlas.renderReason})}});
+ const next=createAtlasNext({owner:'guest',storage:null,load,health:recorder(),label:id=>(id==='topik1.reading.x'?'읽기':null)});
+ const planner=await next.homePlanner();
+ const why={code:'unit.due',slots:{unit:'ko.word.w0609',days:3}};
+ assert.equal(planner.say(why,'ko'),null,'셸 이름표는 단위 이름을 모른다');
+ const names=id=>(id==='ko.word.w0609'?'왼쪽':null);
+ assert.equal(planner.say(why,'ko',names),atlas.renderReason(why,{lang:'ko',label:names}));
+ assert.ok(planner.say(why,'ko',names).includes('「왼쪽」'));
+ assert.ok(planner.say(why,'en',names).includes('왼쪽'),'화면 언어를 따른다');
+ // 이름표가 모르는 것은 셸 이름표로 물러선다(능력 이름).
+ const skill={code:'skill.ease',slots:{skill:'topik1.reading.x',unit:'topik1.reading.x',from:3,to:2}};
+ assert.equal(planner.say(skill,'ko',names),atlas.renderReason(skill,{lang:'ko',label:()=>'읽기'}));
+ next.dispose();
+});
+
 test('처음인 기기 — 첫 받기가 요약(빈 요약 포함)을 받으면 새 길이고 「새 길 간 적 있음」을 남긴다, 다음 연습은 연 코치를 다시 쓴다',async()=>{
  const storage=memoryStorage(),line=accountLine(),{opened,load}=fakeLoader(),health=recorder();
  const next=createAtlasNext({owner:'acct-1',storage,trail:line.trail,load,health});

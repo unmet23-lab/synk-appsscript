@@ -19507,6 +19507,25 @@ function instructionMetadata(item) {
     confounded: true
   };
 }
+var deepFrozen = (value) => {
+  if (value && typeof value === "object") {
+    Object.values(value).forEach(deepFrozen);
+    Object.freeze(value);
+  }
+  return value;
+};
+var FLOW_RUN = deepFrozen({ id: "korean-runner.run", version: 1, target: 0.8, knobs: [
+  { id: "speed", kind: "pace", label: "\uCC98\uC74C \uB2EC\uB9AC\uB294 \uC18D\uB3C4", values: [11, 12, 13, 14, 15], start: 2 },
+  { id: "ramp", kind: "pace", label: "\uAC08\uC218\uB85D \uBE68\uB77C\uC9C0\uB294 \uC815\uB3C4", values: [0, 0.025, 0.04, 0.055, 0.07], start: 3, weight: 0.5 }
+] });
+var FLOW_WORDS = deepFrozen({
+  "raise.pace": "\uBC14\uB78C\uC774 \uC870\uAE08 \uBE68\uB77C\uC838\uC694.",
+  "ease.pace": "\uBC14\uB78C\uC774 \uC870\uAE08 \uB290\uAE0B\uD574\uC838\uC694.",
+  "start.memory": "",
+  "start.prior": "",
+  "start.tired": "\uC624\uB298\uC740 \uBC14\uB78C\uC774 \uBE68\uB77C\uC9C0\uC9C0 \uC54A\uC544\uC694.",
+  "start.returning": "\uC624\uB79C\uB9CC\uC774\uB77C \uBC14\uB78C\uC774 \uB290\uAE0B\uD558\uAC8C \uBD88\uC5B4\uC694."
+});
 
 // experiences/korean-runner/listening-check.mjs
 var lane = (target) => ({ action: "lane", target });
@@ -23058,6 +23077,16 @@ var SONG_ROWS = TRACKS.flatMap((track) => track.questions.map((_, sourceIndex) =
 var SUPPLY_ROWS = supplementalItems({ purpose: "practice" });
 var FAMILY_SKILL = new Map([...SONG_ROWS.map((row) => [row.meta.familyKey, row.meta.skillId]), ...SUPPLY_ROWS.map((row) => [row.familyKey, row.skillId])]);
 var SONG_FAMILIES = new Set(SONG_ROWS.map((row) => row.meta.familyKey));
+var deepFrozen2 = (value) => {
+  if (value && typeof value === "object") {
+    Object.values(value).forEach(deepFrozen2);
+    Object.freeze(value);
+  }
+  return value;
+};
+var FLOW_RHYTHM = deepFrozen2({ id: "korean-rhythm.timing", version: 1, target: 0.8, knobs: [
+  { id: "window", kind: "pace", label: "\uD310\uC815 \uD3ED", values: [1.35, 1.22, 1.1, 1, 0.92, 0.85], start: 3 }
+] });
 
 // experiences/synk-world-app/world-exam-plan.mjs
 var world_exam_plan_exports = {};
@@ -24917,6 +24946,22 @@ var VENUES = [
 // experiences/entry-check/learning.mjs
 var GAME_ID2 = "entry-check";
 var FORMAT2 = "single-choice";
+var deepFrozen3 = (value) => {
+  if (value && typeof value === "object") {
+    Object.values(value).forEach(deepFrozen3);
+    Object.freeze(value);
+  }
+  return value;
+};
+var FLOW_ENTRY = deepFrozen3({ id: "entry-check.magnifier", version: 1, target: 0.8, knobs: [
+  { id: "magnifier", kind: "support", label: "\uB3CB\uBCF4\uAE30 \uB3C4\uC6C0", values: ["\uBC14\uB85C", "\uBA38\uBB47\uAC70\uB9AC\uBA74", "\uB204\uB974\uBA74"], start: 2 }
+] });
+var FLOW_WORDS2 = deepFrozen3({
+  "ease.support": "\uB2E4\uC74C \uC190\uB2D8\uBD80\uD130\uB294 \uB3CB\uBCF4\uAE30\uB97C \uC870\uAE08 \uB354 \uC77C\uCC0D \uBCF4\uC5EC \uC904\uAC8C\uC694.",
+  "accepted-less-help": "\uB9D0\uD55C \uB300\uB85C \uB3CB\uBCF4\uAE30\uB97C \uC870\uAE08 \uB2A6\uAC8C \uBCF4\uC5EC \uC904\uAC8C\uC694.",
+  "start.memory": "",
+  "start.prior": ""
+});
 var RULE_GRAMMAR = Object.freeze({
   "pool.cap": ["G403"],
   "pool.food": ["G402"],
@@ -26663,7 +26708,7 @@ function createWorldEducation({
       labels: (id) => skillLabel(id),
       opened: opened.kinds,
       lang,
-      say: (why) => homePlanner.say(why, lang),
+      say: (why, names) => homePlanner.say(why, lang, names),
       week
     });
     homeWatch.redrawAt(plan.today.redrawAt);
@@ -30510,6 +30555,24 @@ var RETURN_PATTERNS5 = Object.freeze({
 var PATTERN_OF_KIND = Object.freeze({ particle: "particle", ending: "ending", connector: "connector", noun: "noun", verb: "predicate", adjective: "predicate" });
 var ITEM_OF_FAMILY = new Map(ITEMS2.map((x) => [itemMetadata(x).familyKey, x]));
 var LEVELS = Object.fromEntries(Object.keys(SKILL_LABEL2).map((id) => [id, [...new Set(ITEMS2.filter((x) => x.skill === id).map((x) => x.difficulty))].sort((a, b) => a - b)]));
+var deepFrozen4 = (value) => {
+  if (value && typeof value === "object") {
+    Object.values(value).forEach(deepFrozen4);
+    Object.freeze(value);
+  }
+  return value;
+};
+var FLOW_SLICE = deepFrozen4({ id: "blank-slice.hang", version: 1, target: 0.8, knobs: [
+  { id: "hang", kind: "pace", label: "\uC870\uAC01\uC774 \uB5A0 \uC788\uB294 \uC2DC\uAC04", values: [1.3, 1.2, 1.1, 1, 0.95, 0.9], start: 3 }
+] });
+var FLOW_WORDS3 = deepFrozen4({
+  "raise.pace": "\uC870\uAC01\uC774 \uC870\uAE08 \uBE68\uB77C\uC838\uC694.",
+  "ease.pace": "\uC870\uAC01\uC774 \uC870\uAE08 \uB354 \uC624\uB798 \uB5A0 \uC788\uC5B4\uC694.",
+  "start.memory": "",
+  "start.prior": "",
+  "start.tired": "\uC624\uB298\uC740 \uC870\uAC01\uC774 \uBE68\uB77C\uC9C0\uC9C0 \uC54A\uC544\uC694.",
+  "start.returning": "\uC624\uB79C\uB9CC\uC774\uB77C \uC870\uAC01\uC744 \uCC9C\uCC9C\uD788 \uB358\uC838\uC694."
+});
 
 // experiences/synk-town/understanding.mjs
 var READING_CHECKS = Object.freeze([

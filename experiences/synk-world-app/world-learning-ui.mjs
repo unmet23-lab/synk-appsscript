@@ -516,7 +516,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 이번 주 계획(4-4b): 시험을 고른 학생만 — 못 지으면 계획 없이 세 줄을 그린다(4-3과 같다).
   let week=null;if(coachNow){try{week=weekNext(coachNow,values,now);}catch{week=null;}}
   const plan=homePlanner.createWorldTodayPlan({coach:coachNow,progress,judged,settings:values,now,answers,openGames,pool:practiceFor(values),practiceLength:practiceLength(),
-   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:why=>homePlanner.say(why,lang),week});
+   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:(why,names)=>homePlanner.say(why,lang,names),week});
   homeWatch.redrawAt(plan.today.redrawAt);
   return plan;
  }

@@ -16,7 +16,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const PLAN_SOURCES = Object.freeze({
   exam: { file: 'world-exam-plan.mjs', env: 'SYNK_EXAM_PLAN_MODULE', scenes: ['atlas-next-plan.test.mjs', 'world-exam-plan-reader.test.mjs'] },
   next: { file: 'world-plan-next.mjs', env: 'SYNK_PLAN_NEXT_MODULE', scenes: ['atlas-next-plan.test.mjs'] },
-  shell: { file: 'world-learning-ui.mjs', env: 'SYNK_LEARNING_UI_MODULE', scenes: ['atlas-next-plan-shell.test.mjs', 'atlas-next-practice-shell.test.mjs'] },
+  shell: { file: 'world-learning-ui.mjs', env: 'SYNK_LEARNING_UI_MODULE', scenes: ['atlas-next-plan-shell.test.mjs', 'atlas-next-practice-shell.test.mjs', 'atlas-next-home-shell.test.mjs'] },
   // 같은 셸을 이레 측정(4-4d — 진짜 엔진과 셸로 첫 이레를 날마다 연다)으로만 본다. 하루씩 옮기는 장면이라 느려서 shell 갈래와 나눴다.
   week: { file: 'world-learning-ui.mjs', env: 'SYNK_LEARNING_UI_MODULE', scenes: ['atlas-next-check-week.test.mjs'] },
 });
@@ -76,7 +76,8 @@ export const PLAN_MUTANTS = [
   ['shell', '다시 그릴 때마다 묶음 만남을 묻는다 — 홈이 그릴 때마다 풀 전체를 훑는다', '  if(weekMet.coach!==coachNow||weekMet.key!==key)weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice,...mockPool])};\n', '  weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice,...mockPool])};\n'],
   ['shell', '판 기록을 열지 않고 계획을 짓는다 — 이번 주에 한 판을 세지 못한다', '  const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:homeNext?.planLog?.(coachNow)??null,', '  const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:null,'],
   ['shell', '진단이 낼 문항이 있어도 홈에 알리지 않는다 — 점검 칸이 빈다', '  return {examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready},mock,mockDone,writing,speaking:speakingNow};\n', '  return {examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready:false},mock,mockDone,writing,speaking:speakingNow};\n'],
-  ['shell', '새 길 홈에 이번 주 계획을 넘기지 않는다 — 계획 입구 · 허브 줄 · 알림이 읽을 계획이 없다', '   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:why=>homePlanner.say(why,lang),week});\n', '   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:why=>homePlanner.say(why,lang)});\n'],
+  ['shell', '세 줄 계획의 say 둘째 인자(단위 → 이름)를 버린다 — 게임 줄이 맡은 단위의 이름을 못 그린다(4-6e-1 GB2 결정)', 'say:(why,names)=>homePlanner.say(why,lang,names),week});', 'say:why=>homePlanner.say(why,lang),week});'],
+  ['shell', '새 길 홈에 이번 주 계획을 넘기지 않는다 — 계획 입구 · 허브 줄 · 알림이 읽을 계획이 없다', '   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:(why,names)=>homePlanner.say(why,lang,names),week});\n', '   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:(why,names)=>homePlanner.say(why,lang,names)});\n'],
   ['shell', '건너뛴 문항뿐인 판도 판 기록에 센다', "   if(!(Array.isArray(results)?results:[]).some(row=>row&&!row.skipped&&(row.verdict==='correct'||row.verdict==='incorrect')))return;\n", ''],
   // 판 기록의 「한 판에 한 번」 막이(planOnce의 done)를 빼는 변형은 두지 않는다 — 판 끝은 그만둔 판에서(ended), 그만두기는 끝난 판에서(ended)
   // 이미 그치므로 화면으로는 두 번째 부름에 닿지 않는다(같은 동작 변형 · 11-16 4c 실측). 막이는 판 끝과 그만두기가 바뀌어도 두 번 세지 않게 둔 것이다.

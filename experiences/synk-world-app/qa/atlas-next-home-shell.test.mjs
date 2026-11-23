@@ -6,7 +6,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createWorldEducation} from '../world-learning-ui.mjs';
+import {pathToFileURL} from 'node:url';
+// 변형 시험(qa/plan-mutants.mjs의 shell)은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
+const {createWorldEducation}=await import(process.env.SYNK_LEARNING_UI_MODULE?pathToFileURL(process.env.SYNK_LEARNING_UI_MODULE).href:'../world-learning-ui.mjs');
 import {worldPosition} from '../world-position-kit.mjs';
 import {worldLearning} from '../world-learning-map.mjs';
 import * as homeToday from '../world-today.mjs';
@@ -39,6 +41,17 @@ function enginePlanner(){
   createWorldTodayPlan:()=>({status:'empty',selected:null,selectedKind:null,reason:'',resume:null,candidates:[],examPlan:null,today}),
   watchHomePlan:()=>({phase:()=>'engine',coach:()=>null,redrawAt(){},dispose(){}})};
 }
+
+test('셸은 세 줄 계획의 say 둘째 인자(단위 → 이름)를 홈 플래너 say에 넘긴다 — 게임 줄이 맡은 단위의 이름(4-6e-1 GB2 결정)',async()=>{
+ const seen=[];
+ const planner={...enginePlanner(),say:(why,lang,names)=>{seen.push({lang,name:typeof names==='function'?names('ko.word.w0609'):null});return null;},
+  createWorldTodayPlan:args=>{args.say({code:'unit.due',slots:{unit:'ko.word.w0609',days:3}},id=>(id==='ko.word.w0609'?'왼쪽':null));return enginePlanner().createWorldTodayPlan();}};
+ const w=world({planner:async()=>planner,life:()=>'engine'});
+ await until(()=>seen.length>0,'세 줄 계획');
+ assert.equal(seen[0].name,'왼쪽','셸이 이름표를 버리지 않는다');
+ assert.equal(typeof seen[0].lang,'string');
+ w.education.dispose();
+});
 
 test('플래너를 못 받아 지금 판으로 내려오면 지금 판으로 다시 그리고 열린 배우기 허브도 맞춘다 — 확인 중 포스터에 굳지 않는다(카본 엔진급 끝 판 B3)',async()=>{
  const w=world({planner:async()=>null,life:()=>'engine'});

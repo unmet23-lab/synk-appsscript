@@ -486,6 +486,60 @@ test('순간 맞춤 — 돋보기 시점 · stuck · 도움 줄이기 권함을 
   coach.dispose();
 });
 
+/* ── 순간 맞춤 진입(4-6e-2 — 설계 주인 11-21) ── */
+// app.mjs가 근무를 열 때 순간 맞춤을 여는 원문 토막을 그대로 돌린다(atlas 감싸기 한 줄과 함께). 셸 코치의 live는 가짜다 — 문이 옮겨 온
+// 인자(spec, options)를 적고 진짜 엔진 코치의 live에 넘긴다(엔진은 거기서 내용을 정의하고, 막기에 걸리면 던진다). 엔진이 던지면 적어 두고
+// 그대로 던진다. atlas 감싸기는 그 던짐을 삼키고 순간 맞춤만 끄므로, 시험은 적힌 던짐과 adaptive로 본다.
+function liveSpy(coach) {
+  const got = [];
+  const shell = {};
+  for (const name of Object.keys(coach)) if (typeof coach[name] === 'function') shell[name] = (...args) => coach[name](...args);
+  shell.live = (spec, options) => {
+    const row = { spec, options, error: null, adaptive: null };
+    got.push(row);
+    try {
+      const handle = coach.live(spec, options);
+      row.adaptive = handle.settings().adaptive;
+      return handle;
+    } catch (error) {
+      row.error = error;
+      throw error;
+    }
+  };
+  return { shell, got };
+}
+function flowStarter() {
+  const text = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const wrap = text.indexOf('const atlas = (fn, fallback = null) =>');
+  const from = text.indexOf('  // 순간 맞춤: 돋보기가 스스로 나오는 때만 맞춘다');
+  const to = text.indexOf('  sound.preloadVoices(', from);
+  assert.ok(wrap >= 0 && from >= 0 && to > from && text.slice(from, to).includes('c.live?.('), 'app.mjs의 순간 맞춤 열기 토막');
+  const body = `${text.slice(wrap, text.indexOf('\n', wrap))}\n${text.slice(from, to)}`;
+  return new Function('env', `with (env) {\nreturn () => {\n${body}\nreturn { flow: state.flow, line: state.flowLine };\n};\n}`);
+}
+
+test('순간 맞춤 진입 — app.mjs가 근무마다 넘긴 내용을 진짜 엔진이 정의하고 돋보기 도움의 순간 맞춤이 켜진다, 연수 근무는 열지 않는다', async () => {
+  const { coach } = await engineCoach();
+  const { shell, got } = liveSpy(coach);
+  const { shifts } = await throughDoor(shell);
+  const tut = { on: false };
+  const env = { coach: shifts.coach, state: {}, tut, clearTimeout, FLOW_ENTRY, FLOW_WORDS };
+  const openShift = flowStarter()(env);
+
+  const opened = openShift();
+  assert.equal(got.length, 1, '근무마다 순간 맞춤 하나');
+  assert.equal(got[0].spec.id, FLOW_ENTRY.id);
+  assert.equal(got[0].error, null, `진짜 엔진이 받지 않은 내용 — 게임은 삼키고 순간 맞춤만 꺼진다: ${got[0].error?.message}`);
+  assert.equal(got[0].adaptive, true, '근무는 돋보기 도움의 순간 맞춤이 켜진다');
+  assert.ok(opened.flow, '게임이 순간 맞춤 겉을 쥔다');
+  assert.equal(opened.flow.settings().values.magnifier, '누르면', '처음 값은 지금 방식(누르면 나옴)');
+
+  tut.on = true;
+  assert.equal(openShift().flow, null);
+  assert.equal(got.length, 1, '연수 근무는 정해진 대로 — 순간 맞춤을 열지 않는다');
+  coach.dispose();
+});
+
 test('판을 다시 정하면 이번 근무는 기록 없이 게임 차례로 잇고, 다음 근무는 문을 다시 열어 새 겉을 받는다', async () => {
   const { coach, time } = await engineCoach();
   const spy = traced(coach);

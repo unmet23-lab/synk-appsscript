@@ -15,7 +15,7 @@ import { CAMPAIGN, recommendedStage } from '../campaign.js';
 import { FINALES } from '../finales.js';
 import { STAGES, WORD_BY_ID, emptyProgress, makeQuestions, reviewStage } from '../learning.js';
 import { loadGarage } from '../garage.js';
-import { FLOW_RACE, FLOW_WORDS, describeRace, racingItem } from '../personalization.js';
+import { BASE_CRUISE, FLOW_RACE, FLOW_WORDS, describeRace, racingItem } from '../personalization.js';
 import { createRaceController } from '../race-controller.js';
 import { LANES, RIDE_TRACK } from '../lane-core.js';
 import { BANKS, GAME_ID, GATE_REASONS, gameOrder, openRace, personalStage, raceLabel } from '../atlas-next-play.mjs';
@@ -430,6 +430,59 @@ test('순간 맞춤 — 속도만 손잡이(문항 단계는 관찰만), 오늘�
   const end = live.end();
   assert.ok(end.settings.values.cruise <= start.cruise, '피곤한 날은 빨라지지 않는다');
   assert.ok(describeRace(start, end.settings.values).every((text) => !/맞춤 5문항/.test(text)), '문항 단계 안내 줄은 나오지 않는다');
+  coach.dispose();
+});
+
+/* ── 순간 맞춤 진입(4-6e-2 — 설계 주인 11-21) ── */
+// app.js의 순간 맞춤 열기(flowOf · startLive)를 원문 그대로 돌린다. 셸 코치의 live는 가짜다 — 문이 옮겨 온 인자(spec, options)를 적고 진짜
+// 엔진 코치의 live에 넘긴다(엔진은 거기서 내용을 정의하고, 막기에 걸리면 던진다). 엔진이 던지면 적어 두고 그대로 던진다. flowOf는 그
+// 던짐을 삼키고 순간 맞춤만 끄므로, 시험은 적힌 던짐과 adaptive로 본다.
+function liveSpy(coach) {
+  const got = [];
+  const shell = {};
+  for (const name of Object.keys(coach)) if (typeof coach[name] === 'function') shell[name] = (...args) => coach[name](...args);
+  shell.live = (spec, options) => {
+    const row = { spec, options, error: null, adaptive: null };
+    got.push(row);
+    try {
+      const handle = coach.live(spec, options);
+      row.adaptive = handle.settings().adaptive;
+      return handle;
+    } catch (error) {
+      row.error = error;
+      throw error;
+    }
+  };
+  return { shell, got };
+}
+function liveStarter() {
+  const text = readFileSync(new URL('../app.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const from = text.indexOf('let live = null;\nfunction flowOf()');
+  const to = text.indexOf('function endLive()', from);
+  assert.ok(from >= 0 && to > from, 'app.js의 순간 맞춤 열기 토막');
+  return new Function('env', `with (env) {\n${text.slice(from, to)}\nreturn () => { const line = startLive(); return { live, line }; };\n}`);
+}
+
+test('순간 맞춤 진입 — app.js가 레이스마다 넘긴 내용을 진짜 엔진이 정의하고 달리는 속도의 순간 맞춤이 켜진다, 시연에는 열지 않는다', async () => {
+  const { coach } = await engineCoach();
+  const { shell, got } = liveSpy(coach);
+  const { race } = await throughDoor(shell);
+  const round = { roundWasDemo: false };
+  const env = { coach: race.coach, learningAvailable: true, round, rivals: [], FLOW_RACE, FLOW_WORDS, BASE_CRUISE };
+  const startLive = liveStarter()(env);
+
+  const opened = startLive();
+  assert.equal(got.length, 1);
+  assert.equal(got[0].spec.id, FLOW_RACE.id);
+  assert.equal(got[0].error, null, `진짜 엔진이 받지 않은 내용 — 게임은 삼키고 순간 맞춤만 꺼진다: ${got[0].error?.message}`);
+  assert.equal(got[0].adaptive, true, '레이스는 순간 맞춤이 켜진다');
+  assert.ok(opened.live, '게임이 순간 맞춤 겉을 쥔다');
+  assert.deepEqual(Object.keys(round.flowStart), ['cruise']);
+  assert.equal(round.cruise, round.flowStart.cruise, '달리는 속도를 순간 맞춤의 처음 값으로 둔다');
+
+  round.roundWasDemo = true;
+  assert.equal(startLive().live, null);
+  assert.equal(got.length, 1, '시연은 순간 맞춤을 열지 않는다');
   coach.dispose();
 });
 
