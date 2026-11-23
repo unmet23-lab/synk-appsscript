@@ -352,8 +352,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 쓰기 후보의 한국어 이름(홈이 화면 언어로 바꾼다 · home.mjs planLabel).
  const writingLabel=route=>{const type=String(route||'').split(':')[1],key=type==='mock'?'writing.mock.title':`writing.type.${type}`;return hasString(key)?`${t('writing.title',undefined,'ko')} · ${t(key,undefined,'ko')}`:String(route||'');};
  const skillLabel=id=>hasString(`position.skill.${id}`)?t(`position.skill.${id}`,undefined,'ko'):id;
- // 말하기 연습(10-21): 호스트 함수가 없거나 던지면 말하기를 없는 것으로 본다(시험 정보·계획이 지금과 같다).
- const speakingCall=(name,...args)=>{try{return typeof speakingPractice?.[name]==='function'?speakingPractice[name](...args):null;}catch{return null;}};
+ // 읽기 실패는 이용 불가로 보되, 선택 저장 실패는 목표 창이 성공으로 닫히지 않게 전한다.
+ const speakingCall=(name,...args)=>{try{return typeof speakingPractice?.[name]==='function'?speakingPractice[name](...args):null;}catch(error){if(name==='choose')throw error;return null;}};
  const speakingType=route=>{const type=Number(String(route||'').split(':')[1]);return Number.isInteger(type)?type:null;};
  // 시험 유형 후보만(route 'speaking:N') — 카페 역할극은 이번 주 계획에 넣지 않는다.
  const speakingList=()=>{const value=speakingCall('candidates');return Array.isArray(value)?value.filter(row=>row&&typeof row.id==='string'&&speakingType(row.route)&&Number.isFinite(row.minutes)):[];};
@@ -398,9 +398,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const mock=exam&&summary.evidenceComplete?mockPlan({coachNow,values}):null;
   if(mock?.status==='ready')extra.push({id:'world.mock',label:'시험 형식 연습',route:'mock',minutes:mock.minutes,minutesEstimated:false,targets:[],goals:['exam','prepare'],
    audioRequired:mock.sections.some(row=>row.section==='listening'&&row.status==='ready'),modality:'reading'});
-  // 쓰기 연습(③ world-writing-practice.mjs WRITING_CANDIDATES): TOPIK II를 고른 사람만. 쓰기 항목(ko2.writing.*)은 아직 WORLD의 Core 지도에 없어
-  // 학습 항목을 겨누지 않는 후보로 넘긴다(관측하지 않은 쓰기를 약점으로 세지 않는다). 여는 길은 호스트의 openWriting(route)다.
-  const writing=exam?.type==='topik2'?writingList().map(row=>({id:row.id,label:writingLabel(row.route),route:'writing',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:[],goals:['exam','prepare','writing'],audioRequired:false,modality:'writing'})):[];
+  // 쓰기 연습(③ world-writing-practice.mjs writingCandidates): TOPIK II를 고른 사람만. 쓰기 시도는 Trail에 「채점 안 함」으로만 남아(코치 지도의
+  // ko2.writing.*) 능력 근거가 없으므로 학습 항목을 겨누지 않는 후보로 넘긴다. 여는 길은 호스트의 openWriting(route)다.
+  // 「한 가지 고치기」(10-27)가 열려 있으면 53번 후보에 호스트 사실 practiceNeed가 온다 — Core가 급한 줄로 올린다. 계획 시각보다 늦은 사실은 넘기지 않는다(Core가 거절한다).
+  const need=row=>row.practiceNeed&&Date.parse(row.practiceNeed.at)<=now?{practiceNeed:row.practiceNeed}:{};
+  const writing=exam?.type==='topik2'?writingList().map(row=>({id:row.id,label:writingLabel(row.route),route:'writing',routeId:row.route,minutes:row.minutes,minutesEstimated:true,targets:[],goals:['exam','prepare','writing'],audioRequired:false,modality:'writing',...need(row)})):[];
   extra.push(...writing);
   // 말하기 연습(10-21): TOPIK I·II를 고르고 시험 정보에서 「말하기 평가도 준비해요」를 켠 학생만(이 기기 선택, 계정·손님마다). 말하기 시도는 Trail에
   // 「채점 안 함」으로만 남아 능력 근거가 없다(Atlas × WORLD E) — 후보는 문항 열쇠만 Core에 넘기고(소리가 필요하다 — 소리를 끈 날은 Core가 뺀다),
@@ -420,7 +422,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 쓰기 과제마다 겨누는 항목(숙제는 그 항목을 겨누는 과제만)과, 다음 확인 간격을 잴 지난 다시 확인 시각.
   const writingAvailable=exam.type==='topik2'?writingList().map(row=>({id:row.id,routeId:row.route,skillIds:(Array.isArray(row.targets)?row.targets:[]).filter(id=>typeof id==='string')})):[];
   let lastCheckAt=null;try{lastCheckAt=position.exam.lastRecheck?.({events,before:week.start})??null;}catch{lastCheckAt=null;}
-  // 쓰기 연습은 아직 Trail에 남지 않아 기기 기록의 규칙 점검 시각으로 센다(③ readWritingSummary times).
+  // 쓰기 연습은 Trail에 「채점 안 함」으로만 남고 게스트·지도 밖 기록도 있어, 기기 기록의 규칙 점검 시각으로 센다(③ readWritingSummary times).
   let writingTimes=[];if(exam.type==='topik2'&&typeof writingPractice?.attempts==='function'){try{const times=writingPractice.attempts();writingTimes=Array.isArray(times)?times:[];}catch{writingTimes=[];}}
   // 말하기를 고른 학생만 시험 정보에 speaking:true · 말하기 후보 · 필요 · 이번 주 시각이 더해진다(고르지 않은 학생의 계획 입력은 그대로다).
   // 시작점(짧은 진단부터)은 생활 거울이 아닌 연습의 답으로만 가린다(world-exam-plan examEvidenceSkills · 11-08 프론트 검수). 옛 묶음에 없으면 예전 그대로.
@@ -603,7 +605,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   form.addEventListener('change',event=>{if(['reason','examType','examMonth'].includes(event.target?.name))sync();});sync();
   const valid=()=>{check();if(progress!==getProgress()||!form.isConnected)throw Error('설정을 다시 열어 주세요.');};
   // after: 저장한 뒤 갈 곳(주소로 연 창의 「저장하고 시작하기」만 넘긴다). 없으면 처음 실행은 다음 연습, 그 밖에는 저장 알림.
-  const run=async(operation,after=null)=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();operation();boardExam=null;revision=progress.learningProfile().profile.revision;await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');}refresh();home.closePanel();if(after)await after();else if(continueAfter)await next();else home.toast(t('goal.saved'));}catch(error){if(form.isConnected)status.textContent=tMessage(error.message)||t('goal.retry');}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
+  const run=async(operation,after=null)=>{if(busy)return;busy=true;form.querySelectorAll('button').forEach(b=>b.disabled=true);try{valid();const afterWrite=operation();boardExam=null;revision=progress.learningProfile().profile.revision;let afterWriteFailure;try{if(typeof afterWrite==='function')afterWrite();}catch(error){afterWriteFailure={error};}await progress.flush();valid();if(progress.learningProfile().profile.status!=='skipped'){await prepare();valid();try{await target.SYNKLearningHost?.ready?.();}catch{/* the save still goes to this device */}valid();if(applyPreferences({explicit:true})===false)throw Error('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');}refresh();if(afterWriteFailure)throw afterWriteFailure.error;home.closePanel();if(after)await after();else if(continueAfter)await next();else home.toast(t('goal.saved'));}catch(error){if(form.isConnected)status.textContent=tMessage(error.message)||t('goal.retry');}finally{busy=false;if(form.isConnected)form.querySelectorAll('button').forEach(b=>b.disabled=false);}};
   // 고른 시험 정보: 시험을 고르지 않았으면 모두 지운다(다른 이유로 바꾸면 시험 계획도 끝난다). 날은 그 달에 있는 날만.
   const examValues=reason=>{
    if(reason!=='exam'||!exam)return {examType:null,targetGrade:null,examDate:null,examMode:null,weeklyMinutes:null};
@@ -618,7 +620,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 저장 스위치가 둘(말하기 평가 · 기억하기)이라 이름으로 찾는다.
   form.addEventListener('submit',event=>{event.preventDefault();if(!form.elements.consent.checked){status.textContent=t('goal.needConsent',{name:consentName});form.elements.consent?.focus?.();return;}
    const reason=form.elements.reason.value,minutes=Number(form.elements.minutes.value);
-   void run(()=>{progress.updateLearningProfile({consent:true,expectedRevision:revision,values:{reasons:reason?[reason]:null,primaryReason:reason||null,goal:null,support:form.elements.support.value,explanation:form.elements.explanation.value,...examValues(reason)},today:{...(minutes?{minutes}:{}),audio:form.elements.audio.value}});saveSpeaking(reason);},
+   void run(()=>{progress.updateLearningProfile({consent:true,expectedRevision:revision,values:{reasons:reason?[reason]:null,primaryReason:reason||null,goal:null,support:form.elements.support.value,explanation:form.elements.explanation.value,...examValues(reason)},today:{...(minutes?{minutes}:{}),audio:form.elements.audio.value}});return()=>saveSpeaking(reason);},
     // 주소로 연 창의 「저장하고 시작하기」: 시험을 고른 채 저장했으면 이번 주 계획, 학생이 이유를 시험 밖으로 바꿨으면 첫 실행처럼 다음 연습.
     // 계획을 띄우지 못하면(그사이 다른 판을 열었거나 계획이 없음) 저장 알림만, 그사이 계정이 바뀌어 이 화면이 닫혔으면 아무것도.
     preset?async()=>{if(!position.exam.examInfo(progress.learningProfileValues()))return next();
@@ -628,7 +630,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 처음 온 사람의 「건너뛰기」: 주소로 연 창도 단추가 「저장하고 시작하기」라 첫 실행 창처럼 건너뛴 뒤 다음 연습을 연다.
   form.querySelector('[data-study-skip]').addEventListener('click',()=>{if(profile.status==='new')void run(()=>progress.clearLearningProfile({mode:'skip',expectedRevision:revision}),preset?next:null);else home.closePanel();});
   // 목표를 지우면 이 기기의 말하기 선택도 끈다(끄기만 하면 다시 켤 때 그대로 둔다).
-  form.querySelectorAll('[data-study-clear]').forEach(button=>button.addEventListener('click',()=>void run(()=>{progress.clearLearningProfile({mode:button.dataset.studyClear,expectedRevision:revision});if(button.dataset.studyClear==='delete'&&speakingChosen())speakingCall('choose',owner,false);})));
+  form.querySelectorAll('[data-study-clear]').forEach(button=>button.addEventListener('click',()=>void run(()=>{progress.clearLearningProfile({mode:button.dataset.studyClear,expectedRevision:revision});return()=>{if(button.dataset.studyClear==='delete'&&speakingChosen())speakingCall('choose',owner,false);};})));
  }
  // 주소의 ?exam=topik1|topik2(10-22, 메일·신청 페이지의 무료 연습 링크 — 앱 셸이 첫 실행을 마치고 들어온 뒤 한 번 부른다):
  // 그 시험을 이미 목표로 저장한 사람은 이번 주 계획(계획을 세우지 못하면 목표 창), 아니면 그 시험을 채워 둔 학습 목표 창. 묻지 않고 저장하지 않는다.
@@ -1232,17 +1234,27 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  async function openPosition({start=false}={}){
   if(!position)return;
   check();const ticket=++positionOpen;
+  openPosition.pending=ticket;
+  try{
+  // 기다리는 동안 판을 닫거나 다른 판을 열면 이 표만 무효로 한다. 정상으로 그리기 직전에 settled가 되어 showPanel의 정리는 무시된다.
+  let settled=false;
+  home.attachPanelResource?.({dispose(){if(!settled&&ticket===positionOpen){positionOpen++;if(openPosition.pending===ticket)openPosition.pending=0;}}});
   // 계정의 학습 호스트를 먼저 세운다(다음 연습과 같다). 세우지 못해도 판은 열고, 기록이 덜 왔다고 알린다.
   try{await prepare();}catch{/* the board shows the records as incomplete */}
-  check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still shows */}
-  check();try{await bankReady();}catch{/* the board opens with the reviewed game items */}
+  check();if(ticket!==positionOpen)return;
+  try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still shows */}
+  check();if(ticket!==positionOpen)return;
+  try{await bankReady();}catch{/* the board opens with the reviewed game items */}
   check();if(ticket!==positionOpen)return;
   let coachNow=null;try{coachNow=readCoach();}catch{coachNow=null;}
   let reading=null;try{reading=getProgress().hangulReading?.()||null;}catch{reading=null;}
   const stage=hangulStage(coachNow);
+  check();if(ticket!==positionOpen)return;
+  settled=true;
   if(position.showsHangulBoard({reading,stage})){showHangul(stage);return;}
   const shown=showBoard(coachNow);
   if(start&&shown.plan?.status==='ready'&&shown.plan.items.length)startDiagnostic(shown.coachNow,shown.plan,shown.map);
+  }finally{if(openPosition.pending===ticket)openPosition.pending=0;}
  }
  // 새 길 「내 위치」 열기(4-4a — 단계4_계획 §21-2): 지금 판 열기(openPosition — 손대지 않는다)와 같은 차례(학습 호스트 · 은행 · 한글 갈림)를 따르되
  // 옛 코치를 열지 않는다. 한글 열쇠는 이미 든 옛 코치만 빌리고(heldCoach), 판은 홈 코치로 그린다(showNext). 엔진 판이면 홈 코치의 첫 받기 답을 한도
@@ -1282,7 +1294,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const set=finishSet(coachNow,'diagnostic');
    // 끝 화면의 「이 항목 연습하기」는 새 추천(refresh) 뒤의 후보로 고른다 — 방금 푼 진단 문항은 이제 본 문항이다.
    refresh();const routes=practiceRoutes(coachNow);
-   let after=map;try{after=position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,prefer:id=>routes.has(id)});}catch{after=map;}
+   let after=map;try{after=position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,prefer:id=>routes.has(id),exam:map.exam});}catch{after=map;}
    box.innerHTML=view.renderDiagnosticDone({map:after,results,items:position.itemsById,practice:id=>routes.get(id)||null,response:responseView(set,'diagnostic')});
    bindPractice(box,routes);bindResponse({box,coachNow,set,kind:'diagnostic'});
    box.querySelector('[data-position-done]')?.focus?.({preventScroll:true});
@@ -1441,17 +1453,17 @@ async function townSend(coachNow,{wait=true}={}){
  async function startPractice(skillId,{followupId=null,more=false,only=null}={}){
   if(!position?.practice)return;
   check();const ticket=++practiceOpen;asked+=1;
-  // 새 길(atlasNext)의 열기는 연습 코치를 기다리는 동안 판을 닫거나 다른 판을 열면 이 열기만 무효로 한다 — 다시 확인을 누른 뒤 판을 닫고 복습을
-  // 열면 늦게 선 짧은 연습이 복습을 덮었다(검수 s3e1 GB3). master 2a3a74e85a와 같은 판 자원 막이이고, 꺼진 판 동작이 지금 라이브와 같게 새 길에만 둔다.
-  let launching=Boolean(atlasNext&&!followupId);
-  if(launching)home.attachPanelResource?.({dispose(){if(launching&&ticket===practiceOpen)practiceOpen++;}});
+  let launching=true;
+  home.attachPanelResource?.({dispose(){if(launching&&ticket===practiceOpen)practiceOpen++;}});
+  const active=()=>{check();return ticket===practiceOpen;};
   try{await prepare();}catch{/* device-local practice still runs */}
-  check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local practice still runs */}
-  check();try{await bankReady();}catch{/* reviewed game items still run */}
-  if(followupId){await Promise.race([loadFollowupBank(),new Promise(resolve=>setTimeout(resolve,4000))]);check();}
-  check();if(ticket!==practiceOpen)return;
+  if(!active())return;try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local practice still runs */}
+  if(!active())return;try{await bankReady();}catch{/* reviewed game items still run */}
+  if(!active())return;
+  if(followupId){await Promise.race([loadFollowupBank(),new Promise(resolve=>setTimeout(resolve,4000))]);if(!active())return;}
+  if(!active())return;
   // Atlas 새 길(재설계 단계 4-1, 기능 atlasNext — 리허설만): 엔진이 다음 문항을 고르는 판. 엔진이 준비되지 못하면 지금 판으로 간다.
-  if(atlasNext&&!followupId){let next=null;try{next=await atlasNext.practiceCoach(position.practice.pool);}catch{next=null;}check();if(ticket!==practiceOpen)return;launching=false;if(next)return runPracticeNext({next,skillId,more,only});}
+  if(atlasNext&&!followupId){let next=null;try{next=await atlasNext.practiceCoach(position.practice.pool);}catch{next=null;}if(!active())return;if(next){launching=false;return runPracticeNext({next,skillId,more,only});}}
   if(only){home.toast(t('practice.unavailable'));return;}
   const coachNow=readPracticeCoach();if(!coachNow){home.toast(t('practice.unavailable'));return;}
   let audioAvailable=true;try{audioAvailable=getProgress().learningProfileValues().audio!=='off';}catch{}
@@ -1468,7 +1480,7 @@ async function townSend(coachNow,{wait=true}={}){
   // 아직 못 들은 문항의 재생 실패는 듣기 칸 한 줄(listenNote)이 알린다 — 상태 줄에는 이미 들은 뒤 다시 듣기가 실패했을 때만.
   const player=soundPlayer({session,url:audioUrl,onChange:state=>{if(ended)return;notice=state==='failed'&&session.current?.heard?t('position.diagnostic.audioFailed'):'';paint(state==='completed'?'.wpos-choice:not([disabled])':'[data-practice-listen]');}});
   const stop=()=>{if(ended)return;ended=true;player.silence();try{session.stop();}catch{}try{coachNow.flush?.();}catch{}queueMicrotask(()=>refresh());};
-  home.showPanel(t(listening?'practice.title.listening':'practice.title'),'<div class="wpos-stage" data-practice-stage></div>',{...PANEL,eyebrow:'PRACTICE'});
+  launching=false;home.showPanel(t(listening?'practice.title.listening':'practice.title'),'<div class="wpos-stage" data-practice-stage></div>',{...PANEL,eyebrow:'PRACTICE'});
   home.attachPanelResource?.({dispose:stop});
   const box=panelNode('[data-practice-stage]');if(!box){stop();return;}
   const skill={id:skillId,label:skillLabel(skillId)};
