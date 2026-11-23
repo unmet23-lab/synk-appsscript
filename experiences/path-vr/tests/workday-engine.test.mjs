@@ -889,6 +889,37 @@ test('a job still being made, or one that fails the check, is not served', async
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
+test('a report key may be alternatives under one id, one per option of a fork, and the id decides the report', () => {
+  const job = factoryJob();
+  const report = job.scenes[1].steps[0];
+  report.items = [
+    { id: 'jam', key: true, when: { order: 'ask' }, text: '기계가 멈춰서 한 번 더 여쭸습니다.', hint: { en: 'hint' } },
+    { id: 'jam', key: true, when: { order: 'nod' }, text: '기계가 멈췄는데 지시는 다 못 알아들었습니다.', hint: { en: 'hint' } },
+    { id: 'shift', text: '교대 시간을 지켰습니다.', hint: { en: 'hint' } },
+  ];
+  assert.deepEqual(validateJob(job).errors, []);
+  for (const [order, picked, outcome, clip] of [['ask', ['jam'], 'included', 'lead-thanks'], ['nod', ['shift'], 'omitted', 'lead-jam']]) {
+    const session = createWorkdaySession(job);
+    playScene(session, 'gate', { order });
+    let state = session.startScene('wrap');
+    assert.equal(state.say.items.filter((item) => item.id === 'jam').length, 1, 'one alternative is shown');
+    for (const id of picked) session.toggleItem(id);
+    state = session.submitSay({ mode: 'text', text: '보고합니다.' });
+    assert.equal(session.serialize().forks.report, outcome);
+    assert.equal(state.line.clip, clip);
+  }
+  const broken = factoryJob();
+  broken.scenes[1].steps[0].items = [
+    { id: 'jam', key: true, when: { order: 'ask' }, text: '기계가 멈췄습니다.', hint: { en: 'hint' } },
+    { id: 'jam', when: { order: 'nod' }, text: '기계가 멈췄습니다.', hint: { en: 'hint' } },
+    { id: 'shift', text: '교대 시간을 지켰습니다.', hint: { en: 'hint' } },
+  ];
+  assert.ok(validateJob(broken).errors.some((error) => /모두 key/.test(error.message || error)), 'a key group is key throughout');
+  const lone = factoryJob();
+  lone.scenes[1].steps[0].items[0].when = { order: 'ask' };
+  assert.ok(validateJob(lone).errors.some((error) => /늘 보여야/.test(error.message || error)), 'a lone key with a condition can be missing');
+});
+
 test('the desk panel cuts by whole letters and the cut row with its mark still fits', () => {
   const graphemes = (value) => Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(value), (part) => part.segment);
   const context = { measureText: (value) => ({ width: graphemes(value).length * 10 }) };

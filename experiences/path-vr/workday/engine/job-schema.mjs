@@ -232,7 +232,13 @@ function check(job, manifest, fail) {
       if (step.listen !== undefined) clipCheck(where, step.listen, 'listening');
       const items = list(step.items);
       if (items.length < 2) fail(where, '보고할 일이 둘 이상 필요해요.');
-      if (items.filter((item) => item?.key === true && item.when === undefined).length !== 1) fail(where, '조건 없이 늘 보이는 key 항목이 하나 있어야 해요.');
+      // The key item is one id that is always on the list: one item without a condition, or alternatives under that id, one for each
+      // option of a fork (checked with the other alternatives below), so the report can say what happened on each path.
+      const keyIds = new Set(items.filter((item) => item?.key === true).map((item) => item?.id));
+      const keyGroup = keyIds.size === 1 ? items.filter((item) => item?.id === [...keyIds][0]) : [];
+      if (keyIds.size !== 1) fail(where, 'key 항목은 id 하나예요.');
+      else if (keyGroup.some((item) => item?.key !== true)) fail(where, 'key 항목과 같은 id의 항목은 모두 key예요.');
+      else if (keyGroup.length === 1 && keyGroup[0].when !== undefined) fail(where, 'key 항목은 늘 보여야 해요. 조건 없이 두거나 갈림길의 보기마다 하나씩 둬요.');
       for (const item of items) {
         const at = `${where}.items.${item?.id}`;
         if (!ID.test(item?.id || '') || !text(item?.text)) fail(at, 'id와 문장이 필요해요.');

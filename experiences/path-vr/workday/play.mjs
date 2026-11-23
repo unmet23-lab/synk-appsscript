@@ -333,7 +333,7 @@ async function toggleMic() {
       await getVoice().start();
       // Paused, left or wiped while the microphone was starting: close it again instead of listening.
       if (!current(token) || !micWanted || session.snapshot().paused) { void voice?.stop().catch(() => {}); throw abortError(); }
-      silence.reset(); gateState = 'waiting'; micActive = true;
+      silence.reset(); gateState = 'waiting'; micActive = true; textAfterExit = false;
     } catch (error) { if (current(token) && micWanted && error?.name !== 'AbortError') micNote = micFailed(error); }
     // A call that was overtaken (left, wiped, a new scene) must not unlock the newer one.
     if (current(token)) busy = false;
@@ -979,6 +979,8 @@ function hudView(state) {
   return finishHud(view, state, system);
 }
 /** The seated window on a screen and a headset leave in different words. */
+/** Back on the page after the microphone failed in the headset or the preview: the scene goes on in writing, as the message said. */
+function backOnPage() { if (!textAfterExit) return; textAfterExit = false; mode = 'text'; micNote = ''; save(); }
 function leaveWords() { return vr?.previewing ? { button: '화면으로 돌아가기', place: '화면으로 돌아가' } : { button: 'VR에서 나가기', place: 'VR에서 나가 화면에서' }; }
 /** The parts every desk card shares: the place note and the system row. */
 function finishHud(view, state, system) {
@@ -1006,8 +1008,11 @@ function initVR() {
   vr = createStrictVR({
     mount: $('vr-stage'), getFrameState: () => film?.getVideos() || [], getState: stageState,
     onAction: (name) => action(name),
-    onExit() { vrEnteredAt = 0; if (textAfterExit) { textAfterExit = false; mode = 'text'; micNote = ''; save(); } pause(); render(); },
+    onExit() { vrEnteredAt = 0; backOnPage(); pause(); render(); },
     onStatus(event) {
+      // The PC preview closes without onExit (its button, Esc). Entering the headset from the preview closes it too, but sets
+      // pending in the same turn, so the check waits for that before turning the scene to writing.
+      if (textAfterExit && (event.status === 'ready' || event.status === 'unsupported')) queueMicrotask(() => { if (!vr?.active && !vr?.pending && !vr?.previewing) { backOnPage(); render(); } });
       $('vr-status').textContent = VR_STATUS[event.status] || VR_STATUS.unsupported;
       if (event.status === 'active') { vrEnteredAt = performance.now(); vrScenes = 0; questFirstVisit = !questSeen(); }
       render();

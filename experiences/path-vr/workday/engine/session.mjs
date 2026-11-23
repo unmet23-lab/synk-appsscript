@@ -156,7 +156,8 @@ export function createWorkdaySession(job, { saved = null } = {}) {
     const id = current.id, owner = scene().id;
     let branch = [];
     if (current.type === 'report') {
-      const key = current.items.find((item) => item.key === true && !item.when).id;
+      // The key may be alternatives under one id (one per earlier choice): the id is what the learner picked.
+      const key = current.items.find((item) => item.key === true).id;
       const outcome = say.selected.has(key) ? 'included' : 'omitted';
       data.forks[id] = outcome; data.forkScene[id] = owner;
       branch = current.then[outcome];
