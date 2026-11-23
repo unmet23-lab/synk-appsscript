@@ -90,6 +90,7 @@ for (const rel of SOURCES) {
   if (!changed.has(src)) continue;
   const pub = await live(rel);
   const text = merge3(rel, pub, rw(lf(git('show', `${BASE}:${src}`).toString()), rel), rw(mineOnly(src), rel));
+  if (text === pub) continue; // 이 일의 커밋이 고쳤다가 되돌린 파일(공개본과 같음)은 싣지 않는다
   write('base', rel, pub); write('new', rel, text); items.push(`world/${rel}`);
 }
 // 새 그림과 이야기 해설 글꼴(이야기 글자로 다시 자른 조각): 끝 판 그대로
