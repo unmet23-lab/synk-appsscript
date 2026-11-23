@@ -13,7 +13,7 @@ import {serverReady} from './server-ready.mjs';
 // 배우기 · 놀이 「준비 중」 안내(유호님 11-24) 실제 브라우저 확인 — 계정 모드 WORLD(헤드리스 Edge)의 손님, 첫 실행을 마친 기기.
 // 배우기 판의 팩 카드 · 지금 할 일 · 「더 보기」 줄(이야기 · 내 위치)과 놀이 판의 게임 카드 · 「더 둘러보기」를 누르면
 // 레슨 · 게임 대신 안내 판(제목 · 2027년 2월 · 사전예약 단추 · 닫기)이 뜨고, 닫으면 같은 판과 누른 단추로 돌아온다. Esc · 바깥 누름도 닫는다.
-// 390 · 1280 · 1440 × 한국어 · 영어 · 몽골어. 로컬 서버는 기본으로 안내를 꺼서 SYNK_WORLD_LEARN_SOON=1로 띄운다. 캡처와 result.json은 SYNK_LEARN_SOON_QA_OUT(기본 qa/world-learn-soon-20261124/)에 쓴다(그림은 git 밖).
+// 다섯 판: 390 × 몽골어 · 한국어 · 영어, 1280 × 몽골어, 1440 × 한국어. 로컬 서버는 기본으로 안내를 꺼서 SYNK_WORLD_LEARN_SOON=1로 띄운다. 캡처와 result.json은 SYNK_LEARN_SOON_QA_OUT(기본 qa/world-learn-soon-20261124/)에 쓴다(그림은 git 밖).
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const require=createRequire(import.meta.url);let playwright;try{playwright=require('playwright');if(!playwright.chromium)throw Error('no chromium');}catch{playwright=null;}
 const talkRoot=[process.env.SYNK_TALK_ROOT,path.resolve(root,'../SYNK-talk'),path.resolve(root.split(/[\\/]\.claude[\\/]worktrees[\\/]/)[0],'../SYNK-talk')]
@@ -31,7 +31,7 @@ function seeded(){
  return Object.fromEntries(values);
 }
 
-test('WORLD 배우기 · 놀이: 들어가는 단추는 「준비 중 · 2027년 2월」 안내를 띄우고, 닫으면 같은 판으로 (390 · 1280 · 1440 × 한국어 · 영어 · 몽골어)',{timeout:600000,skip:(!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 알려 준다)')||(!playwright&&'playwright가 없다')},async t=>{
+test('WORLD 배우기 · 놀이: 들어가는 단추는 「준비 중 · 2027년 2월」 안내를 띄우고, 닫으면 같은 판으로 (390 × 몽골어 · 한국어 · 영어, 1280 × 몽골어, 1440 × 한국어)',{timeout:600000,skip:(!talkRoot&&'형제 저장소 SYNK-talk이 없다(SYNK_TALK_ROOT로 알려 준다)')||(!playwright&&'playwright가 없다')},async t=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-world-learn-soon-'));fs.writeFileSync(path.join(directory,'config.json'),JSON.stringify(config));
  fs.mkdirSync(out,{recursive:true});for(const name of fs.readdirSync(out))if(/\.png$/.test(name))fs.rmSync(path.join(out,name));
  const socket=net.createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));

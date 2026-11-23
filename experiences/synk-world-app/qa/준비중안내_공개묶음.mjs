@@ -68,9 +68,9 @@ for (const rel of MERGED) {
 for (const rel of NEW) {
   const src = srcOf(rel);
   if (!changed.has(src)) continue;
+  // 새 파일은 공개본 주소를 부르지 않는다 — 공개 전에 없는 주소를 부르면 그 404가 쿼리와 상관없이 CDN에 묶여, 공개 직후 셸이 이 모듈을 못 받는다
+  // (11-24 Fable F1). 기준이 없으면 tools/공개.js가 공개본 git 사본으로 새 파일인지 본다.
   write('new', rel, rw(lf(git('show', `${END}:${src}`).toString()), rel)); items.push(`world/${rel}`);
-  const r = await fetch(`https://synk.im/world/${rel}?probe=${Date.now()}`, {cache: 'no-store'});
-  if (r.ok) write('base', rel, Buffer.from(await r.arrayBuffer()));
 }
 // 공개본의 app-shell.mjs가 새 모듈을 부르는지, 새 모듈의 스위치가 켜져 있는지
 const shell = fs.readFileSync(path.join(OUT, 'new', 'world', 'app-shell.mjs'), 'utf8');

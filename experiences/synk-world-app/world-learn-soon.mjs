@@ -19,7 +19,7 @@ const RESERVE_FROM='world-learn';
 export const SOON_TEXT={
  ko:{title:'준비 중이에요',lead:'2027년 2월에 만나요.',note:'사전예약하면 문을 여는 날 알려 드려요.',reserve:'사전예약하기',close:'닫기'},
  en:{title:'Coming soon',lead:'See you in February 2027.',note:'Pre-register and we’ll let you know the day it opens.',reserve:'Pre-register',close:'Close'},
- mn:{title:'Бэлтгэл ажил хийгдэж байна',lead:'2027 оны 2-р сард уулзъя.',note:'Урьдчилан бүртгүүлбэл нээгдэх өдөр танд мэдэгдэнэ.',reserve:'Урьдчилан бүртгүүлэх',close:'Хаах'},
+ mn:{title:'Удахгүй нээгдэнэ',lead:'2027 оны 2-р сард уулзъя.',note:'Урьдчилан бүртгүүлбэл нээгдэх өдөр бид танд мэдэгдэнэ.',reserve:'Урьдчилан бүртгүүлэх',close:'Хаах'},
 };
 
 const pickLang=value=>Object.hasOwn(SOON_TEXT,value)?value:'ko';

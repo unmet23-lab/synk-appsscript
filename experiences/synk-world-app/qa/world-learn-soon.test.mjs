@@ -32,7 +32,7 @@ test('사전예약 주소는 화면 언어와 들어온 곳(world-learn)을 단�
 
 test('안내 판: 사전예약 단추와 닫기, 데스크톱 앱 창은 사전예약 단추를 뺀다',()=>{
  const web=soonMarkup('mn',{art:'x.webp'});
- assert.match(web,/lang="mn"/);assert.match(web,/Бэлтгэл ажил хийгдэж байна/);assert.match(web,/href="https:\/\/synk\.im\/reserve\/\?from=world-learn&amp;lang=mn"/);
+ assert.match(web,/lang="mn"/);assert.match(web,/Удахгүй нээгдэнэ/);assert.match(web,/href="https:\/\/synk\.im\/reserve\/\?from=world-learn&amp;lang=mn"/);
  assert.match(web,/data-learn-soon-close/);assert.match(web,/<img class="learn-soon-art" src="x\.webp" alt=""/);
  const desk=soonMarkup('ko',{desktop:true});
  assert.doesNotMatch(desk,/learn-soon-reserve|learn-soon-note/);assert.match(desk,/learn-soon-close is-only/);
