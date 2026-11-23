@@ -24,6 +24,7 @@ import {t,tMessage,currentLang,setLang,hasString,situationName,meText} from '../
 import {restoreDisplayLanguage,commitDisplayLanguage} from './display-language-sync.mjs';
 import {createSeoulEntry,seoulText} from './seoul-entry.mjs';
 import {createFrontEntry} from './world-front-entry.mjs';
+import {installLearnSoon} from './world-learn-soon.mjs';
 const $=s=>document.querySelector(s);
 // pagehide closes this capability object; a restored document must reverify it.
 // 첫 await보다 먼저 듣는다: 입장(세션 복원·학습 준비·오프닝)이 끝나기 전에 떠났다가 돌아온 문서도 다시 불러야 한다(10-19).
@@ -89,6 +90,8 @@ const GUEST_GAMES=new Set(['hangul']);
 const guestTrials=createGuestTrials({storage:(()=>{try{return localStorage;}catch{return null;}})()});
 const guestGames=()=>[...GUEST_GAMES,...guestTrials.open()];
 const worldUrl=path=>new URL(connection.basePath+path,location.origin).href;
+// 배우기 · 놀이 판의 레슨 · 게임 단추는 「준비 중 · 2027년 2월」 안내를 띄운다(유호님 11-24). 켜고 끄는 한 줄은 world-learn-soon.mjs의 LEARN_SOON이다.
+installLearnSoon({lang:currentLang,art:worldUrl('brand-opening/assets/world-felt/plans.webp')});
 // 자원 수명은 두 갈래다(world-session.mjs). 계정 수명 — life: 지금 주인·세대의 생활 진도 통로·진도·학습 호스트·「내 성향」 답·배우기 화면(생활·학습·알림).
 // 시트 수명 — sheet: 지금 시트 하나에 딸린 자원(내 계정의 우리 반 수업·과제·반 연결, 싱크타운 호스트). 시트를 바꾸거나 닫으면 버린다(attachSheet·releaseSheet).
 let client,sheet=null,writing=null,writingOwner=null;
