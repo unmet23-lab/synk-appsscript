@@ -173,6 +173,8 @@ impl Press<'_> {
     /// 모두에 거는 확인(12.2 「모두」): 고정 드라이브, 뿌리부터 연결점 없는 보통 폴더, 후보 자체도 연결점 아님, 백업 폴더와 겹치지 않음.
     fn common(&self, path: &Path) -> Option<&'static str> {
         if !path.is_absolute() || !space::plain_below_root(&self.places.roots, path) { return Some("place"); }
+        // 외장 · USB · 가상 드라이브(Google Drive 따위)에서는 비우지 않는다. 이 PC 안 디스크의 NTFS · ReFS만(SPACE_DESIGN 10장 「외장 드라이브의 파일을 지우지 않는다」, PC 진단 설계 Fable 1 · 2).
+        if !drive_root(path).is_some_and(|d| freeable_drive(&d)) { return Some("external"); }
         let k = space::key(path);
         let overlaps = |f: &String| { let f = space::key(Path::new(f)); !f.is_empty() && (f == k || inside(&k, &f) || inside(&f, &k)) };
         if self.ask.folders.iter().any(overlaps) { return Some("backup"); }
@@ -522,6 +524,11 @@ fn git_top(dir: &Path, deadline: Instant) -> Option<PathBuf> {
     let (code, out) = space::git(dir, &["rev-parse", "--show-toplevel"], deadline)?;
     let line = out.lines().next()?.trim();
     (code == 0 && !line.is_empty()).then(|| PathBuf::from(line.replace('/', "\\")))
+}
+
+/// 비울 수 있는 드라이브: 이 PC 안의 디스크이고 파일 시스템이 NTFS · ReFS다. 읽지 못하면 비우지 않는다.
+fn freeable_drive(root: &Path) -> bool {
+    space::file_system(root).is_some_and(|f| matches!(f.to_ascii_uppercase().as_str(), "NTFS" | "REFS")) && space::internal_disk(root) == Some(true)
 }
 
 /// `path`가 `top` 안이면 top 아래의 상대 경로(`/` 구분). 대소문자와 짧은 이름(8.3)이 달라도 같은 자리로 본다(카본 끝판 B11).
@@ -1291,6 +1298,20 @@ mod tests {
         assert!(procs.touches(r"c:\work\api") == Touch::InUse, "--directory=api");
         assert!(procs.touches(r"c:\repos\site") == Touch::InUse, "a forward-slash path in another case");
         assert!(procs.touches(r"c:\dev\other") == Touch::Free);
+    }
+
+    #[test] fn only_an_internal_ntfs_or_refs_disk_is_freed() {
+        // 연결 종류: PC 안의 디스크만
+        for bus in [1, 3, 10, 11, 17] { assert!(space::internal_bus(bus, false), "bus {bus}"); }
+        for bus in [0, 4, 6, 7, 9, 12, 13] { assert!(!space::internal_bus(bus, false), "bus {bus}"); }
+        assert!(!space::internal_bus(17, true), "removable media");
+        // 파일 시스템: 훑기는 디스크의 셋, 가상 드라이브(FAT32로 보이는 Google Drive)는 뺀다
+        assert!(space::scanned_file_system("NTFS") && space::scanned_file_system("ReFS") && space::scanned_file_system("exFAT"));
+        assert!(!space::scanned_file_system("FAT32") && !space::scanned_file_system(""));
+        // 시험을 돌리는 PC의 임시 폴더 드라이브는 읽힌다
+        let drive = drive_root(&std::env::temp_dir()).unwrap();
+        assert!(space::internal_disk(&drive).is_some(), "the system drive's bus type can be read without admin rights");
+        assert!(space::file_system(&drive).is_some());
     }
 
     #[test] fn the_path_below_the_git_top_ignores_case() {

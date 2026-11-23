@@ -82,8 +82,43 @@ pub fn fixed_drives() -> Vec<PathBuf> {
     (0..26u32).filter(|i| mask & (1 << i) != 0).map(|i| format!("{}:\\", (b'A' + i as u8) as char)).filter(|root| {
         let wide: Vec<u16> = root.encode_utf16().chain([0]).collect();
         unsafe { GetDriveTypeW(wide.as_ptr()) == 3 } // DRIVE_FIXED
-    }).map(PathBuf::from).collect()
+    })
+    // Google Drive 같은 가상 드라이브도 고정 드라이브로 알린다(FAT32로 보이고 크기는 C:를 비춘다). 디스크의 파일 시스템만 훑는다(PC 진단 설계 Fable 1).
+    .filter(|root| file_system(Path::new(root)).is_some_and(|f| scanned_file_system(&f)))
+    .map(PathBuf::from).collect()
 }
+/// 드라이브의 파일 시스템 이름(NTFS · ReFS · exFAT · FAT32 …). 읽지 못하면 None.
+pub fn file_system(root: &Path) -> Option<String> {
+    use windows_sys::Win32::Storage::FileSystem::GetVolumeInformationW;
+    let wide: Vec<u16> = root.as_os_str().to_string_lossy().encode_utf16().chain([0]).collect();
+    let mut name = [0u16; 64];
+    let ok = unsafe { GetVolumeInformationW(wide.as_ptr(), std::ptr::null_mut(), 0, std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(), name.as_mut_ptr(), name.len() as u32) } != 0;
+    ok.then(|| String::from_utf16_lossy(&name[..name.iter().position(|&c| c == 0).unwrap_or(name.len())]))
+}
+/// 공간 훑기가 다루는 파일 시스템: 디스크의 NTFS · ReFS · exFAT.
+pub fn scanned_file_system(name: &str) -> bool { matches!(name.to_ascii_uppercase().as_str(), "NTFS" | "REFS" | "EXFAT") }
+/// 그 드라이브가 이 PC 안의 디스크인지. USB · 1394 · SD · MMC 같은 떼어 낼 수 있는 연결, 이동식 매체, 연결 종류를 모르는 것은 false다.
+/// `\\.\C:`를 접근 권한 없이 열어 IOCTL_STORAGE_QUERY_PROPERTY로 읽는다(관리자 권한 없이 된다). 읽지 못하면 None.
+pub fn internal_disk(root: &Path) -> Option<bool> {
+    use std::os::windows::{fs::OpenOptionsExt, io::AsRawHandle};
+    use windows_sys::Win32::System::IO::DeviceIoControl;
+    const IOCTL_STORAGE_QUERY_PROPERTY: u32 = 0x002D_1400;
+    let letter = root.to_string_lossy().chars().next().filter(|c| c.is_ascii_alphabetic())?;
+    let device = fs::OpenOptions::new().access_mode(0).share_mode(3).open(format!(r"\\.\{letter}:")).ok()?;
+    // STORAGE_PROPERTY_QUERY { PropertyId: StorageDeviceProperty(0), QueryType: PropertyStandardQuery(0), AdditionalParameters[1] }
+    let query = [0u32; 3];
+    let mut out = [0u8; 1024];
+    let mut got = 0u32;
+    let ok = unsafe { DeviceIoControl(device.as_raw_handle() as _, IOCTL_STORAGE_QUERY_PROPERTY, query.as_ptr().cast(), 12, out.as_mut_ptr().cast(), out.len() as u32, &mut got, std::ptr::null_mut()) } != 0;
+    if !ok || got < 32 { return None; }
+    // STORAGE_DEVICE_DESCRIPTOR: RemovableMedia는 10번째 바이트, BusType은 28번째 바이트의 u32
+    let removable = out[10] != 0;
+    let bus = u32::from_le_bytes([out[28], out[29], out[30], out[31]]);
+    Some(internal_bus(bus, removable))
+}
+/// STORAGE_BUS_TYPE 가운데 PC 안의 디스크: SCSI 1 · ATAPI 2 · ATA 3 · RAID 8 · SAS 10 · SATA 11 · 가상 14 · 파일 가상(VHD, Dev Drive) 15 · 저장소 공간 16 · NVMe 17 · SCM 18 · UFS 19.
+/// USB 7 · 1394 4 · SD 12 · MMC 13 · iSCSI 9 · 광 채널 6 · 모름 0은 떼어 내거나 PC 밖에 있을 수 있어 뺀다.
+pub fn internal_bus(bus: u32, removable: bool) -> bool { !removable && matches!(bus, 1 | 2 | 3 | 8 | 10 | 11 | 14 | 15 | 16 | 17 | 18 | 19) }
 /// 드라이브 하나의 크기와 남은 공간(바이트).
 pub fn drive_space(root: &Path) -> Option<(u64, u64)> {
     use windows_sys::Win32::Storage::FileSystem::GetDiskFreeSpaceExW;
