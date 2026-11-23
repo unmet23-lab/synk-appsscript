@@ -20,7 +20,7 @@ const depts = [{ id: 'plan01', name: '기획부' }, { id: 'dev001', name: '개�
 
 test('맨 위 두 줄: 넣기 전, 기다림, 읽는 중, 메모 있음, 다 고름, 저장함, 메모 없음, 실패, 멈춤', () => {
   assert.deepEqual(bizplanScene(snap({ read: null, list: list({ plan: null, data: [] }) }), null, {}).head, ['사업계획서 파일을 넣어 주세요.', '회사 자료와 견주어 다른 숫자와 빠진 내용을 짚고, 고친 문장을 새 파일로 저장합니다.']);
-  assert.deepEqual(bizplanScene(snap({ read: null }), null, {}).head, ['「읽기 시작」을 누르면 읽습니다.', '계획서를 회사 자료 하나와 견주어 읽습니다. 몇 분 걸립니다.'], '계획서를 고른 뒤에는 다음에 누를 것을 말한다');
+  assert.deepEqual(bizplanScene(snap({ read: null }), null, {}).head, ['준비가 끝났습니다.', '직원이 계획서를 회사 자료 하나와 견주어 다른 숫자와 빠진 내용을 찾습니다. 몇 분 걸립니다.'], '계획서를 고른 뒤에는 다음에 누를 것을 말한다');
   assert.match(bizplanScene(snap({ read: null, list: list({ data: [] }) }), null, {}).head[0], /회사 자료를 더하면/);
   assert.match(bizplanScene(snap({ read: null, list: list({ data: [{ name: 'a.csv' }, { name: 'b.csv' }] }) }), null, {}).head[1], /회사 자료 둘과 견주어/);
   assert.equal(bizplanScene(snap({ read: null }), { id: 't', status: 'queued', updatedAt: 2 }, {}, { deptName: '기획부' }).head[1], '앞에 맡긴 일이 끝나면 기획부 직원이 읽기 시작합니다.');
@@ -31,7 +31,7 @@ test('맨 위 두 줄: 넣기 전, 기다림, 읽는 중, 메모 있음, 다 고
   assert.deepEqual(notes.head, ['고칠 곳이 셋 있습니다.', '메모를 하나씩 보고 고치면 새 파일로 저장할 수 있습니다.']);
   assert.equal(notes.sel, 'n0');
   assert.deepEqual(notes.notes[0].acts.map(a => a[0]), ['고친 문장으로 바꾸기', '직접 고치기', '그대로 두기']);
-  assert.deepEqual(notes.notes[1].acts.map(a => a[0]), ['직접 고치기', '만들어서 사실로 맡기기', '그대로 두기']);
+  assert.deepEqual(notes.notes[1].acts.map(a => a[0]), ['직접 고치기', '개발부에 만들어 달라기', '그대로 두기']);
   assert.equal(notes.notes[2].kind, 'thin');
   const r = read();
   r.notes[0].choice = { kind: 'fix' }; r.notes[1].choice = { kind: 'keep' };
@@ -54,8 +54,9 @@ test('맨 위 두 줄: 넣기 전, 기다림, 읽는 중, 메모 있음, 다 고
 test('까닭 글, 개인정보 줄, 조사, 부서 줄', () => {
   assert.match(reasonText('PLAN_FORMAT'), /한글과 PDF는 아직 읽지 못합니다/);
   assert.match(reasonText('LIMIT'), /구독 사용량이 다 차서/);
-  assert.match(privacyLine('codex'), /OpenAI로 가고 .* ChatGPT 구독/);
-  assert.match(privacyLine('claude'), /SYNK로는 보내지 않습니다/);
+  assert.match(privacyLine('codex'), /ChatGPT를 만든 회사로 가고, 사용량은 그 구독/);
+  assert.match(privacyLine('claude'), /솔리오 서버로는 보내지 않습니다/);
+  assert.doesNotMatch(privacyLine('claude') + privacyLine('codex'), /Claude Code|Anthropic|OpenAI|SYNK/);
   assert.deepEqual([countWord(1), countWord(3), countWord(12)], ['하나', '셋', '열둘']);
   assert.deepEqual([iga('기획부'), iga('기획팀')], ['기획부가', '기획팀이']);
   assert.equal(attachesBizplan({ name: '기획부' }), true);
@@ -122,4 +123,15 @@ test('앱 창 확인: 근거 없는 문장도 고친 문장이 있으면 넣는 
   assert.deepEqual(n.acts.map(a => a[0]), ['고친 문장으로 바꾸기', '직접 고치기', '그대로 두기']);
   const two = bizplanScene(snap({ read: r }), null, { departmentId: 'plan01' }, { departments: depts });
   assert.ok(two.notes.find(x => x.key === 'n1').acts.some(a => a[1] === 'biz-hand'));
+});
+
+test('앱 창 확인: 빈약한 평가 항목이 걸린 절도 종이에 짚고, 그 항목을 고르면 절에 막대를 세운다', () => {
+  const r = read();
+  r.items = [{ item: '성장 전략', secs: [r.sections[0].id], thin: true, why: '방법이 빠졌습니다.', asks: [] }];
+  const sc = bizplanScene(snap({ read: r }), null, { sel: 'i:성장 전략' }, { departments: depts });
+  const sec = sc.paper.secs.find(s => s.id === r.sections[0].id);
+  assert.equal(sec.has, true);
+  assert.equal(sec.pick, true);
+  const other = bizplanScene(snap({ read: r }), null, { sel: 'n0' }, { departments: depts });
+  assert.equal(other.paper.secs.find(s => s.id === r.sections[0].id).pick, false);
 });

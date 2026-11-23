@@ -34,9 +34,10 @@ export function reasonText(reason, { provider = 'claude', failedChunks = 0, tota
 }
 
 export function privacyLine(provider) {
+  // 기술 이름(Claude Code, Anthropic, SYNK)을 빼고 쉬운 말로. 자료가 어디로 가는지는 그대로 말한다(11-23 미학 맹검 2차 「이해」)
   return provider === 'codex'
-    ? '이 PC의 GPT(Codex)로 읽습니다. 계획서와 고른 자료는 OpenAI로 가고 사용량은 내 ChatGPT 구독에서 나갑니다. SYNK로는 보내지 않습니다.'
-    : '이 PC의 Claude Code로 읽습니다. 계획서와 고른 자료는 Anthropic으로 가고 사용량은 내 Claude 구독에서 나갑니다. SYNK로는 보내지 않습니다.';
+    ? '내 ChatGPT 구독으로 읽습니다. 계획서와 고른 자료는 ChatGPT를 만든 회사로 가고, 사용량은 그 구독에서 나갑니다. 솔리오 서버로는 보내지 않습니다.'
+    : '내 Claude 구독으로 읽습니다. 계획서와 고른 자료는 Claude를 만든 회사로 가고, 사용량은 그 구독에서 나갑니다. 솔리오 서버로는 보내지 않습니다.';
 }
 
 /* 메모 하나의 글과 단추 */
@@ -49,13 +50,15 @@ function noteView(n, ui, depts) {
   if (state === 'open') {
     // 근거 없는 문장도 고친 문장이 있으면 넣을 수 있다. 보이기만 하고 단추가 없던 것(11-23 앱 창 확인)
     if (n.fix && n.canReplace) acts.push(['고친 문장으로 바꾸기', 'biz-choose', n.key + '|fix', 'main']);
-    if (n.canReplace) acts.push(['직접 고치기', 'biz-edit', n.key, '']);
-    if (n.kind === 'unsupported' && depts.length) acts.push(['만들어서 사실로 맡기기', 'biz-hand', n.key, '']);
+    if (n.canReplace) acts.push(['직접 고치기', 'biz-edit', n.key, 'ghost']);
+    // 「만들어서 사실로 맡기기」는 뜻이 안 읽혔다(11-23 미학 맹검 2차 「이해」). 맡을 부서 이름과 할 일로 말한다
+    const handTo = depts.find(d => /개발/.test(d.name)) || depts[0];
+    if (n.kind === 'unsupported' && handTo) acts.push([`${handTo.name}에 만들어 달라기`, 'biz-hand', n.key, 'ghost']);
     acts.push(['그대로 두기', 'biz-choose', n.key + '|keep', 'quiet']);
   } else if (state !== 'handed') acts.push(['되돌리기', 'biz-choose', n.key + '|undo', 'quiet']);
   return {
     key: n.key, kind: n.kind, label: kindLabel[n.kind], what: n.why, quote: n.quote, fix: n.fix,
-    evidence: n.evidence ? { text: n.evidence, from: n.sourceName } : null,
+    evidence: n.evidence ? { text: n.evidence.replace(/\s*(?:,(?!\d)|(?<!\d),)\s*|\s*[|\t]\s*/g, ' · ').trim(), from: n.sourceName } : null,
     locked: !n.canReplace ? '이 문장은 표나 필드에 걸쳐 있어 Word에서 직접 고쳐 주세요.' : '',
     state, done, acts, sel: ui.sel === n.key,
     editing: ui.edit === n.key ? { text: ui.editText ?? (c?.kind === 'edit' ? c.text : n.fix || n.quote) } : null,
@@ -83,7 +86,7 @@ function itemView(it, ui, drafts) {
 }
 
 /* 종이 위 문단: 고른 고침을 그 자리에 넣어 보인다 */
-function paperOf(read, notes, drafts, progress, reading) {
+function paperOf(read, notes, drafts, progress, reading, sel = null) {
   const byPara = new Map();
   for (const n of read.notes) { if (!byPara.has(n.para)) byPara.set(n.para, []); byPara.get(n.para).push(n); }
   const lit = reading && progress ? Math.max(0, (progress.part || 1) - 1) : null;
@@ -102,7 +105,10 @@ function paperOf(read, notes, drafts, progress, reading) {
     });
     const item = read.items.find(it => it.secs.includes(s.id) && drafts[it.item]);
     const last = item && Math.max(...read.sections.filter(x => item.secs.includes(x.id)).map(x => x.id)) === s.id;
-    return { id: s.id, title: s.title, paras, draft: last ? drafts[item.item].text : '', has: paras.some(p => p.notes.length), dim: lit != null && si > lit, on: lit != null && si === lit };
+    // 빈약한 평가 항목이 걸린 절도 고칠 곳이다. 그 항목을 고르면 절에 막대를 세운다(11-23 앱 창 확인)
+    const thin = read.items.filter(it => it.thin && it.secs.includes(s.id));
+    return { id: s.id, title: s.title, paras, draft: last ? drafts[item.item].text : '', has: paras.some(p => p.notes.length) || thin.length > 0,
+      pick: !!sel && thin.some(it => sel === 'i:' + it.item), dim: lit != null && si > lit, on: lit != null && si === lit };
   });
   return { secs };
 }
@@ -145,8 +151,8 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
     // 계획서를 고른 뒤에도 「넣어 주세요」가 남던 것(11-23 앱 창 확인). 고른 뒤에는 다음에 누를 것을 말한다
     const dataCount = snap.list.data?.length || 0;
     const head = !snap.list.plan ? ['사업계획서 파일을 넣어 주세요.', '회사 자료와 견주어 다른 숫자와 빠진 내용을 짚고, 고친 문장을 새 파일로 저장합니다.']
-      : dataCount ? ['「읽기 시작」을 누르면 읽습니다.', `계획서를 회사 자료 ${wa(countWord(dataCount))} 견주어 읽습니다. 몇 분 걸립니다.`]
-      : ['회사 자료를 더하면 숫자까지 견줍니다.', '자료 없이 읽으면 근거 없는 문장과 빈약한 평가 항목만 짚습니다.'];
+      : dataCount ? ['준비가 끝났습니다.', `직원이 계획서를 회사 자료 ${wa(countWord(dataCount))} 견주어 다른 숫자와 빠진 내용을 찾습니다. 몇 분 걸립니다.`]
+      : ['회사 자료를 더하면 숫자까지 견줍니다.', '자료 없이도 근거 없는 문장과 빈약한 평가 항목은 찾습니다.'];
     return { ...base, stage: 'start', head, paper: null };
   }
   if (read.status === 'failed') {
@@ -172,7 +178,7 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
   return {
     ...base, stage: 'notes', head, notes: all, sel, items, changes, saved: snap.saved || null,
     planName: read.plan.name, samePlan: read.plan.samePlan, dataNames: read.dataNames,
-    paper: paperOf(read, notes, drafts, null, false),
+    paper: paperOf(read, notes, drafts, null, false, sel),
   };
 }
 

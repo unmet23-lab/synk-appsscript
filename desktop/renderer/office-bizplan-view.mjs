@@ -39,7 +39,18 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const blankStage = ['start', 'failed', 'stopped', 'loading', 'error'].includes(sc.stage) || !sc.paper;
     if (blankStage) {
       const s = el('div', 'sheet blank'), inner = el('div', 'blank-in');
-      if (sc.stage === 'start') {
+      // 실패 · 멈춤도 처음 화면처럼 고른 계획서만 보인다. 까닭은 맨 위 두 줄에 있고, 다시 읽기는 오른쪽 「읽기 시작」 하나다(11-23 앱 창 확인)
+      if ((sc.stage === 'start' || sc.stage === 'failed' || sc.stage === 'stopped') && sc.list?.plan?.outline?.length) {
+        // 고른 계획서를 빈 상자 대신 목차가 보이는 종이로 보인다(11-23 미학 맹검 「파일 이름 하나만 든 빈 흰 상자」)
+        const pv = el('article', 'sheet preview'), h = el('header', 'sheet-h');
+        h.append(el('small', '', sc.list.plan.name), el('h3', '', sc.list.plan.name.replace(/\.(docx|md|txt)$/i, '')), el('p', '', `읽기 전 · 목차 ${sc.list.plan.outline.length}개`));
+        pv.append(h);
+        const ol = el('ol', 'toc');
+        for (const t of sc.list.plan.outline) ol.append(el('li', '', t));
+        pv.append(ol, acts([['다른 파일 고르기', 'biz-pick-plan', '', 'quiet', !!sc.busy]]));
+        return pv;
+      }
+      if (sc.stage === 'start' || sc.stage === 'failed' || sc.stage === 'stopped') {
         if (sc.list?.plan) {
           inner.append(el('small', '', '고른 계획서'), el('b', '', sc.list.plan.name), btn('다른 파일 고르기', 'biz-pick-plan', '', 'dark', !!sc.busy));
         } else {
@@ -47,9 +58,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
             btn('계획서 파일 고르기', 'biz-pick-plan', '', 'dark', !!sc.busy));
         }
       } else if (sc.stage === 'loading') inner.append(el('small', '', sc.head?.[0] || ''));
-      else if (sc.stage === 'error') inner.append(el('b', '', sc.head[0]), el('small', '', sc.head[1]));
       else if (sc.stage === 'waiting' || sc.stage === 'reading') { inner.append(el('b', '', sc.planName || '')); if (sc.stage === 'reading') inner.append(el('small', '', '다 읽으면 고칠 곳이 문단 옆에 붙습니다.')); }
-      else inner.append(el('b', '', sc.head[0]), el('small', '', sc.head[1]), btn('다시 읽기', 'biz-start', '', 'dark', !!sc.busy || !sc.list?.plan));
       s.append(inner);
       return s;
     }
@@ -57,9 +66,15 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const h = el('header', 'sheet-h');
     h.append(el('small', '', sc.planName), el('h3', '', (sc.planName || '').replace(/\.(docx|md|txt)$/i, '')));
     if (sc.stage === 'notes') h.append(el('p', '', sc.dataNames?.length ? '견준 자료 · ' + sc.dataNames.join(', ') : '회사 자료 없이 읽었습니다'));
+    // 평가 항목 요약은 문서 전체 이야기라 오른쪽 메모 줄이 아니라 종이 머리에 둔다(11-23 미학 맹검 「층위가 다른 것이 한 줄에」)
+    if (sc.stage === 'notes' && sc.items?.length) {
+      const ul = el('ul', 'items'); ul.setAttribute('aria-label', '평가 항목');
+      for (const it of sc.items) { const li = el('li', it.state === '약함' ? 'weak' : ''); const dot = el('i'); dot.setAttribute('aria-hidden', 'true'); li.append(dot, el('span', '', it.item), el('small', '', it.state)); ul.append(li); }
+      h.append(ul);
+    }
     s.append(h);
     for (const sec of sc.paper.secs) {
-      const box = el('section', 'sec' + (sec.has ? ' has' : '') + (sec.dim ? ' unread' : '') + (sec.on ? ' on' : ''));
+      const box = el('section', 'sec' + (sec.has ? ' has' : '') + (sec.pick ? ' pick' : '') + (sec.dim ? ' unread' : '') + (sec.on ? ' on' : ''));
       box.append(el('span', 'pg', sec.title));
       for (const p of sec.paras) {
         const node = el('p', p.changed ? 'changed' : '', p.text);
@@ -90,7 +105,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     if (n.quote) box.append(el('p', 'quote', '「' + n.quote + '」'));
     if (n.evidence) box.append(el('p', 'why', `근거 「${n.evidence.text}」 · ${n.evidence.from}`));
     // 맡길 부서가 있을 때만 말한다. 근거가 없다는 말은 메모 제목과 겹쳐 뺐다(11-23 앱 창 확인)
-    if (n.kind === 'unsupported' && n.state === 'open' && n.acts.some(a => a[1] === 'biz-hand')) box.append(el('p', 'why', '만들면 사실이 되는 일이면 다른 부서에 맡길 수 있습니다.'));
+    if (n.kind === 'unsupported' && n.state === 'open' && n.acts.some(a => a[1] === 'biz-hand')) box.append(el('p', 'why', '아직 없는 것이면 다른 부서 직원에게 만들어 달라고 맡길 수 있습니다.'));
     if (n.fix && n.state === 'open' && !n.editing) { const pr = el('div', 'prop'); pr.append(el('small', '', '고친 문장'), el('p', '', n.fix)); box.append(pr); }
     if (n.locked && n.state === 'open') box.append(el('p', 'why', n.locked));
     if (n.editing) {
@@ -151,18 +166,9 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
       const list = el('div', 'notes');
       for (const n of sc.notes) list.append(noteNode(n, sc));
       side.append(list);
-      if (sc.items?.length) {
-        const ul = el('ul', 'items'); ul.setAttribute('aria-label', '평가 항목');
-        for (const it of sc.items) { const li = el('li', it.state === '약함' ? 'weak' : ''); const dot = el('i'); dot.setAttribute('aria-hidden', 'true'); li.append(dot, el('span', '', it.item), el('small', '', it.state)); ul.append(li); }
-        side.append(ul);
-      }
-      const end = el('div', 'biz-block biz-end');
-      if (sc.saved) end.append(el('p', 'biz-saved', sc.saved.name), acts([['폴더에서 보기', 'biz-reveal', '', 'ghost', !!sc.busy]]));
-      end.append(acts([['새 파일로 저장', 'biz-save', '', 'main', !sc.changes || !!sc.busy || sc.planChanged], ['다시 읽기', 'biz-start', '', 'quiet', !!sc.busy]]));
-      side.append(end);
+      if (sc.saved) side.append(el('p', 'biz-saved', '저장한 파일 · ' + sc.saved.name));
     }
     if (sc.stage !== 'loading' && sc.stage !== 'reading' && sc.stage !== 'waiting' && (sc.stage !== 'start' || sc.broken)) {
-      if (sc.stage === 'error') side.append(el('p', 'why', sc.head[1]));
       side.append(sc.clearAsk ? (() => { const c = el('div', 'biz-block'); c.append(el('p', 'why', '읽은 결과와 고른 것을 지웁니다. 계획서와 회사 자료 파일은 그대로 둡니다.'), acts([['지우기', 'biz-clear', '', 'ghost', !!sc.busy], ['그만두기', 'biz-clear-ask', '', 'quiet']])); return c; })()
         : acts([['기록 지우기', 'biz-clear-ask', '', 'quiet']]));
     }
@@ -181,6 +187,16 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const sel = focus && 'selectionStart' in focus ? [focus.selectionStart, focus.selectionEnd] : null;
     const root = el('div', 'biz');
     const top = el('div', 'biz-top'); top.append(btn(sc.back, 'biz-close', '', 'quiet'));
+    // 저장은 첫 화면에 보이게 맨 위 줄에 둔다. 저장할 것이 없으면 단추를 두지 않는다(11-23 미학 맹검 「저장 단추가 안 보이고, 꺼진 단추는 고장처럼」)
+    if (sc.stage === 'notes') {
+      const docActs = [];
+      // 고를 메모가 남아 있으면 메모의 「바꾸기」가 주 단추다. 저장은 다 고른 뒤에 알약이 된다(11-23 미학 맹검 2차 「주 단추가 둘」)
+      const left = sc.notes?.some(n => n.state === 'open');
+      if (sc.changes) docActs.push(['새 파일로 저장', 'biz-save', '', left ? 'ghost' : 'main', !!sc.busy || sc.planChanged]);
+      if (sc.saved) docActs.push(['폴더에서 보기', 'biz-reveal', '', 'ghost', !!sc.busy]);
+      docActs.push(['다시 읽기', 'biz-start', '', 'quiet', !!sc.busy]);
+      const d = acts(docActs); d.classList.add('biz-doc'); top.append(d);
+    }
     root.append(top);
     const head = el('p', 'say biz-say'); head.tabIndex = -1; head.dataset.bizHead = '';
     head.append(el('span', '', sc.head[0]), el('span', 'then', sc.head[1]));
@@ -202,8 +218,10 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     }
     const key = sc.stage + ':' + (sc.sel || '');
     if (key !== lastKey) {
+      // 처음 열 때는 맨 위 두 줄부터 보이게 내려가지 않는다. 좁은 창에서 열자마자 메모로 내려가던 것(11-23 앱 창 확인)
+      const first = lastKey === '' || lastKey.startsWith('loading:');
       lastKey = key;
-      host.querySelector('.note.sel')?.scrollIntoView?.({ block: 'nearest' });
+      if (!first) host.querySelector('.note.sel')?.scrollIntoView?.({ block: 'nearest' });
     }
   }
   return { render, focusHead: () => host.querySelector('[data-biz-head]')?.focus() };

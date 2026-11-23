@@ -889,6 +889,8 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .biz-host .sec p[data-biz-note]::before{content:"";position:absolute;left:-17px;top:.75em;width:6px;height:6px;border-radius:50%;background:var(--lapis)}
 #portal-entry .biz-host .sec p[data-biz-note].sel::before{top:.2em;bottom:.2em;left:-16px;width:3px;height:auto;border-radius:0}
 #portal-entry .biz-host .sec p[data-biz-note]:focus-visible{outline:1px solid var(--lapis);outline-offset:4px}
+#portal-entry .biz-host .sec.pick p{position:relative}
+#portal-entry .biz-host .sec.pick p::before{content:"";position:absolute;left:-16px;top:.2em;bottom:.2em;width:3px;background:var(--lapis)}
 #portal-entry .biz-host .sec p.changed{animation:biz-settle .9s cubic-bezier(.2,.8,.2,1)}
 #portal-entry .biz-host .sec p.draft{color:var(--sheet-ink);border-left:2px solid var(--meadow);padding-left:12px;margin-left:-14px}
 #portal-entry .biz-host .sec.unread{opacity:.2}
@@ -926,7 +928,6 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .biz-fld textarea:focus{outline:none;border-color:var(--paper)}
 #portal-entry .biz-privacy{margin:14px 0 0;font:400 12.5px/1.55 var(--orb-sans);color:rgba(243,241,236,.5)}
 #portal-entry .biz-step{margin:4px 0 0;font:500 15px/1.5 var(--orb-sans);color:var(--paper)}
-#portal-entry .biz-saved{margin:0;font:500 14px/1.5 var(--orb-sans);color:var(--paper);word-break:break-all}
 #portal-entry .biz-live{min-height:1.3em;margin-top:14px}
 #portal-entry .biz-host .notes{display:grid}
 #portal-entry .biz-host .note{padding:12px 0 14px;border-top:1px solid var(--hair-strong)}
@@ -955,6 +956,34 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .biz-host .items li.weak{color:var(--lapis-soft)}
 #portal-entry .biz-host .items li.weak i{width:10px;height:2px;border-radius:0;background:var(--lapis-soft)}
 #portal-entry .row.sub.item.feature .val{color:rgba(243,241,236,.62)}
+
+/* 11-23 미학 맹검 반영 */
+/* 작업 화면이 열렸을 때는 방의 위아래 흐림을 끈다. 흰 종이 위에 검은 흐림이 덮여 그을린 것처럼 보였다 */
+#portal-entry .room-top:has(.biz-host:not([hidden])){-webkit-mask-image:none;mask-image:none}
+#portal-entry .biz-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 18px}
+#portal-entry .biz-top .biz-doc{margin-top:0}
+/* 맨 위 두 줄은 작업 화면에서는 한 단계 작게. 세 줄로 화면 절반을 차지했다 */
+#portal-entry .biz-say{font:300 clamp(22px,2.1vw,32px)/1.32 var(--orb-sans);max-width:34em}
+/* 글자 단추는 설명 글과 갈리게 밝은 글자와 밑줄로 */
+#portal-entry .biz-host .quiet{color:var(--paper);border-bottom-color:rgba(243,241,236,.55)}
+#portal-entry .biz-host .quiet:hover:not(:disabled){border-bottom-color:var(--paper)}
+#portal-entry .biz-host .sheet .quiet{color:var(--sheet-ink);border-bottom-color:rgba(21,21,20,.4)}
+/* 고르기(평가 항목, 읽을 직원)는 테두리 있는 작은 알약 */
+#portal-entry .biz-pick .quiet,#portal-entry .biz-pick .quiet[aria-pressed]{height:32px;padding:0 14px;border:1px solid rgba(243,241,236,.34);border-radius:999px;color:var(--paper);font:400 13.5px/30px var(--orb-sans)}
+#portal-entry .biz-pick .quiet[aria-pressed=true]{background:rgba(243,241,236,.14);border-color:var(--paper);color:var(--paper);font-weight:500}
+#portal-entry .biz-pick .quiet[aria-pressed=false]:hover:not(:disabled){border-color:var(--paper)}
+/* 종이 머리의 평가 항목 요약 */
+#portal-entry .biz-host .sheet-h .items{margin:12px 0 0;padding:0;border-top:0}
+#portal-entry .biz-host .sheet-h .items li{color:var(--sheet-ink);font:400 13px/1.4 var(--orb-sans)}
+#portal-entry .biz-host .sheet-h .items li small{color:var(--sheet-dim)}
+#portal-entry .biz-host .sheet-h .items li.weak{color:var(--lapis)}
+#portal-entry .biz-host .sheet-h .items li.weak i{background:var(--lapis)}
+/* 고른 계획서 미리 보기(목차) */
+#portal-entry .biz-host .sheet.preview .toc{margin:4px 0 18px;padding:0;list-style:none;border-top:1px solid var(--sheet-rule)}
+#portal-entry .biz-host .sheet.preview .toc li{padding:13px 0;border-bottom:1px solid var(--sheet-rule);font:600 15px/1.45 var(--serif);color:var(--sheet-ink)}
+#portal-entry .biz-saved{margin:14px 0 0;font:400 13px/1.5 var(--orb-sans);color:rgba(243,241,236,.7);word-break:break-all}
+/* 좁은 창에서는 메모를 종이보다 먼저 둔다. 메모와 단추가 시야 밖으로 밀렸다 */
+@media (max-width:860px){#portal-entry .biz-side{order:-1}}
 
 /* ── 솔리오 원클릭 방(11-23, docs/디자인/솔리오_원클릭_20261123 · PC앱_옮기기.md). 시안의 판 짜임을 옮긴다.
    글자는 PC 앱의 SUIT 하나이고, 재어 볼 작은 값은 고정폭 숫자로 쓴다(앱에 DM Mono가 없다).
@@ -1050,3 +1079,36 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 }
 @media (prefers-reduced-motion:reduce){#portal-entry .one-board *,#portal-entry .one-board *::before{transition:none !important}}
 html[data-motion="reduced"] #portal-entry .one-board *,html[data-motion="reduced"] #portal-entry .one-board *::before{transition:none !important}
+
+/* 11-23 미학 맹검 2차 반영 */
+/* 작업 화면에서는 방을 위로 올려 맨 위 두 줄과 저장 단추가 첫 화면에 든다 */
+@media (min-width:641px){#portal-entry .room-top:has(.biz-host:not([hidden])){top:clamp(76px,12vh,128px);max-height:calc(100% - clamp(76px,12vh,128px) - 24px)}}
+/* 오른쪽 메모 줄만 창 아래에서 흐린다. 흰 종이에는 흐림을 얹지 않는다(종이는 창 아래로 이어지는 문서로 보인다) */
+#portal-entry .biz-side::after{content:"";position:sticky;bottom:0;display:block;height:36px;background:linear-gradient(rgba(0,0,0,0),#000);pointer-events:none}
+@media (max-width:860px){#portal-entry .biz-side::after{display:none}}
+/* 고른 보기 칩은 실행 단추(흰 알약)와 갈리게 옅은 채움과 밝은 테두리 */
+#portal-entry .biz-host .pill.ghost[aria-pressed=true]{background:rgba(243,241,236,.14);border-color:var(--paper);color:var(--paper);font-weight:500}
+/* 메모 안의 둘째 단추(직접 고치기, 맡기기)는 작은 테두리 알약, 셋째(그대로 두기)는 글자 */
+#portal-entry .biz-host .note .acts .pill.ghost{height:34px;padding:0 14px;font-weight:400}
+/* 접힌 메모는 줄 전체가 눌리는 곳으로 보이게: 오른쪽 끝 화살표와 올렸을 때 옅은 바탕 */
+#portal-entry .biz-host .note button.what{display:flex;align-items:flex-start;justify-content:flex-start;gap:0;width:100%;margin-left:-8px;margin-right:-8px;padding:4px 8px;border-radius:4px;box-sizing:content-box}
+#portal-entry .biz-host .note button.what:hover{background:rgba(243,241,236,.06)}
+#portal-entry .biz-host .note.done button.what::before{flex:none;margin-top:.5em;vertical-align:0}
+#portal-entry .biz-host .note button.what .arw{flex:none;margin-left:auto;padding-left:14px;font-size:18px;line-height:1.1;color:rgba(243,241,236,.6)}
+/* 11-23 미학 맹검 3차 반영 */
+/* 흐림이 창 아래 끝에 붙게 방의 아래 여백을 뺀다(여백만큼 위에서 멈춰 잘린 글이 보였다). 끝에 닿는 여백은 작업 화면이 가진다 */
+#portal-entry .room-top:has(.biz-host:not([hidden])){padding-bottom:0}
+#portal-entry .biz{padding-bottom:28px}
+/* 고친 문장과 초안은 계획서에 들어갈 글이라 종이 조각에 명조로 보인다. 회색 테두리 상자를 걷었다 */
+#portal-entry .biz-host .prop:not(:has(.pre)){border:0;border-radius:3px;background:var(--paper);padding:13px 16px 14px}
+#portal-entry .biz-host .prop:not(:has(.pre)) small{color:#6B6A66}
+#portal-entry .biz-host .prop:not(:has(.pre)) p{color:#151514}
+/* 메모 사이 가는 줄을 걷고, 고른 메모는 살짝 떠 있는 바탕으로 */
+#portal-entry .biz-host .note{border-top:0;padding:12px 0}
+#portal-entry .biz-host .note.sel{margin:6px -16px;padding:16px;border-radius:6px;background:rgba(243,241,236,.055)}
+/* 고른 보기는 정리된 것의 색(메도우) 테두리와 점으로. 실행 단추(흰 알약)와도, 안 고른 보기와도 갈린다 */
+#portal-entry .biz-host .pill.ghost[aria-pressed=true],#portal-entry .biz-pick .quiet[aria-pressed=true]{background:rgba(125,180,90,.14);border-color:var(--meadow);color:var(--paper)}
+#portal-entry .biz-host .pill.ghost[aria-pressed=true]::before,#portal-entry .biz-pick .quiet[aria-pressed=true]::before{content:"";display:inline-block;width:6px;height:6px;margin-right:8px;border-radius:50%;background:var(--meadow);vertical-align:1px}
+#portal-entry .biz-host .pill.ghost[aria-pressed=false],#portal-entry .biz-pick .quiet[aria-pressed=false]{color:rgba(243,241,236,.7);border-color:rgba(243,241,236,.22)}
+/* 처음 화면 오른쪽 칸도 가는 줄 대신 간격으로 묶는다 */
+#portal-entry .biz-side .biz-block{border-top:0;padding:4px 0 22px}

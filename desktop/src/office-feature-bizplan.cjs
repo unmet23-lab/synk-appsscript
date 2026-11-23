@@ -110,7 +110,7 @@ async function snapshot({store,member,dept,io}){
   }
   return {
     broken,
-    list:{plan:list.plan?{name:path.basename(list.plan.path)}:null,data:list.data.map(x=>({name:path.basename(x.path)})),criteria:list.criteria,items:itemsOf(list)},
+    list:{plan:list.plan?{name:path.basename(list.plan.path),outline:Array.isArray(list.plan.outline)?list.plan.outline.filter(x=>typeof x==='string').slice(0,12):[]}:null,data:list.data.map(x=>({name:path.basename(x.path)})),criteria:list.criteria,items:itemsOf(list)},
     read:read?{id:read.id,at:read.at,status:read.status,reason:read.reason||null,provider:read.provider,failedChunks:read.failedChunks||0,totalChunks:read.totalChunks||0,dataName:read.dataName||'',
       // 계획서를 열지 못한 실패 기록은 plan이 없다(코드 검수 P1-1)
       plan:{name:read.plan?.name||'',kind:read.plan?.kind||'',samePlan:!!list.plan&&!!read.plan&&read.plan.path===list.plan.path},dataNames:(read.data||[]).map(d=>d.name),
@@ -141,7 +141,11 @@ async function act(ctx){
         if(plan){
           const file=picked[0],ext=path.extname(file).toLowerCase();
           if(LOCKED_EXT.has(ext)||!PLAN_EXT.has(ext))return {ok:false,code:'PLAN_FORMAT'};
-          list.plan={path:file};
+          // 고를 때 목차를 미리 읽어 처음 화면의 종이에 보인다. 열리지 않는 파일은 여기서 알린다(11-23 미학 맹검 「빈 흰 상자」)
+          let outline=[];
+          try{const p=await readPlan(io,file);outline=p.paragraphs.filter(x=>x.level!=null&&!x.toc&&x.text.trim()).slice(0,12).map(x=>x.text.trim().slice(0,80));}
+          catch(e){if(['PLAN_FORMAT','PLAN_LOCKED'].includes(e.code))return {ok:false,code:e.code};}
+          list.plan={path:file,outline};
         }else{
           for(const file of picked){
             if(!DATA_EXT.has(path.extname(file).toLowerCase()))return {ok:false,code:'DATA_FORMAT'};

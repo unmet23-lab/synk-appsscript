@@ -301,3 +301,11 @@ test('코드 검수: 한자어 수와 어림수, 200자 넘는 근거', () => {
   const r=ck.checkNotes({notes:[note({evidence:long})]},{...ctx,files:[{...files[0],lines:[long],text:long}]});
   assert.equal(r.notes.length,0,'긴 근거는 잘라 쓰지 않고 버린다');
 });
+
+test('미학 맹검 반영: 계획서를 고를 때 목차를 읽어 처음 화면에 보인다', async () => {
+  const s=await setup();
+  await s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action:'pick-plan',args:{}});
+  const snap=await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  assert.deepEqual(snap.list.plan.outline,[P[0],P[3]]);
+  assert.equal('path' in snap.list.plan,false,'화면에는 경로를 보내지 않는다');
+});
