@@ -79,6 +79,7 @@ export function createDevHost(search = location.search) {
     note: ['club', 'hangul', 'review', 'level', 'today'].includes(Q.get('note')) ? Q.get('note') : '', diag: ['board', 'none'].includes(Q.get('diag')) ? Q.get('diag') : '', di: -1
   };
   if (D.club === '1') { D.v = 'more'; D.note = 'club'; }
+  if (D.club === 'done' && !Q.get('v')) D.v = 'more';   // 맞춤 화면 위 알림을 여는 주소(5줄 주석)는 v 없이도 맞춤 화면으로
   if (D.v === 'day2') D.after = false;   // 「첫날 연습 → 둘째 날」은 시안이 재지 않은 조합(측정 K)
   const ST = STUDENTS[D.dream], me = `저는 ${ST.name}${josa(ST.name, '이에요', '예요')}.`;
   let api = null;
@@ -163,7 +164,7 @@ export function createDevHost(search = location.search) {
     async signIn() { note('signIn'); return null; },
     async seen(key) { note('seen', key); return null; },
     // 동아리(club.mjs): 실제 다리(world-front-club.mjs)와 같은 꼴로 답한다. 기록은 남기지 않는다
-    async clubTutor(t) { D.tutor = t; note('clubTutor', t); return {tutor: t, saved: false}; },
+    async clubTutor(t, o = {}) { D.tutor = t; note('clubTutor', t); return o.change ? {tutor: t, saved: false, state: state()} : {tutor: t, saved: false}; },
     async clubDiag() { if (D.diag) return {status: D.diag}; D.di = 0; return {status: 'ready', total: DEV_ITEMS.length, item: viewOf(0)}; },
     async clubReplay() { return 'first'; },
     async clubAudio(status) { note('clubAudio', status); return true; },

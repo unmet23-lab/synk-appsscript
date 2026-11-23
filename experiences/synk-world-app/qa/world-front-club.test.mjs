@@ -133,3 +133,22 @@ test('알림 기록: 동아리 · 튜터 알림만 갈아 끼우고 다른 알�
   assert.equal(h.marks.guest.inbox.find(r => r.from === 'club').read, true);
   assert.equal(h.marks.guest.inbox.find(r => r.from === 'fan').read, false);
 });
+
+test('튜터 바꾸기: 동아리장에게 한 답은 두고 다시 그릴 state를 준다', async () => {
+  const h = harness();
+  await h.club.host.clubTutor('taeo', {answer: 'some'});
+  const r = await h.club.host.clubTutor('yuna', {change: true});
+  assert.equal(h.marks.guest.club.tutor, 'yuna');
+  assert.equal(h.marks.guest.club.answer, 'some');
+  assert.deepEqual(r.state, {view: 'more'});
+});
+
+test('날이 바뀌면 같은 꼴의 알림도 새로 내려온다', () => {
+  const h = harness(), day = 864e5, now = Date.now();
+  h.marks.guest = {club: {tutor: 'seoha', done: true, at: now - 2 * day, results: [{skillId: 'ko.reading.vocabulary', label: 'Reading words', ok: false}]},
+    inbox: [{from: 'tutor', who: 'seoha', kind: 'review', code: 'tutor.review.skill', slots: {skillId: 'ko.reading.vocabulary'}, at: now - day, read: true}]};
+  const n = h.club.noteOf('guest', null, 'reads');
+  assert.equal(n.code, 'tutor.review.skill');
+  assert.equal(n.read, false);
+  assert.equal(n.drop, true);
+});

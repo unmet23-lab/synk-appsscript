@@ -141,10 +141,12 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  const viewAfter=who=>{const mark=readMark(who);let v=frontView({arrival:arrivalOf(who),mark,native:!!native()});if(v==='day2'&&!mark.goal&&accountGoal())v='front';return v;};
  const club=createFrontClub({same:()=>same(),owner,readMark,writeMark,education,progress:()=>life.progress,lang:currentLang,openPlan:token=>host.open(token),
   plan:()=>{const raw=currentPlan(),{plan:main}=planState(raw,{label:entry=>home.planLabel?.(entry)||entry?.label||''});return main?{...main,route:raw?.selected?.route||null}:null;},
-  stateOf:async()=>{const v=viewAfter(owner());if(session)session.view=v;return withClub(await stateOf(v));}});
+  stateOf:async()=>{const v=viewAfter(owner());if(session)session.view=v;return await stateOf(v);}});
  const withClub=state=>state&&({...state,club:{tutor:club.tutorOf(owner()),note:['more','front'].includes(state.view)?club.noteOf(owner(),state.plan,state.hangul):null}});
  if(typeof window!=='undefined')window.SYNKFrontClub=Object.freeze({needed:()=>{try{return !!on()&&!club.doneOf(owner());}catch{return false;}},ask:()=>{asked='club';}});
- async function stateOf(view){
+ // 앞면에 주는 state는 모두 여기를 거쳐 동아리 · 튜터 줄(club)을 얹는다(맞춤 화면으로 가는 길이 여럿이라 한 곳에서)
+ async function stateOf(view){return withClub(await stateBase(view));}
+ async function stateBase(view){
   const who=owner(),arrival=arrivalOf(who),guest=who==='guest',pc=!!native();
   let hangul='ask';try{const answer=await hangulReading(who);hangul=answer?.answer==='new'?'new':answer?.answer==='reads'?'reads':'ask';}catch{hangul='ask';}
   const mark=readMark(who);
@@ -179,7 +181,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  async function show(view){
   const s=session;if(!s?.api)return;
   const who=owner();s.view=view;
-  try{const next=withClub(await stateOf(view));if(session===s&&s.view===view&&owner()===who&&s.owner===who)s.api.show(next);}catch(error){console.warn('Front state failed',error);}
+  try{const next=await stateOf(view);if(session===s&&s.view===view&&owner()===who&&s.owner===who)s.api.show(next);}catch(error){console.warn('Front state failed',error);}
  }
 
  /* ── 틀 ── 서울행과 같은 전체 화면 dialog. 레슨 · 게임 시트(#world-panel)는 그 위에 모달로 뜨고, 닫히면 앞면을 다시 그린다 */
@@ -291,7 +293,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    const s=session,who=owner();s.pending=null;
    try{await openStory?.();}catch{}
    if(session!==s||owner()!==who)return null;
-   if(asked==='club'&&!club.doneOf(who)){asked=null;s.view='club';return withClub(await stateOf('club'));}asked=null;
+   if(asked==='club'&&!club.doneOf(who)){asked=null;s.view='club';return await stateOf('club');}asked=null;
    return stateOf(s.view);
   },
   async openTab(tab){if(!same())return null;session.pending=null;if(tab==='learn')return openLife('packs');if(tab==='play')return home.showPlay?.();return null;},

@@ -87,24 +87,29 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
  }
  function noteOf(who,planNow,hangul){
   const club=clubOf(who),note=clubNote({club,plan:planNow,hangul});
+  // 항목 이름은 저장한 글이 아니라 지금 화면 언어로 다시 찾는다(첫날 뒤 언어를 바꿔도 섞이지 않게)
+  if(note?.slots?.skillId){const id=note.slots.skillId,ko=skillLabel(id,'ko'),ui=skillLabel(id,lang());if(ko!==id)note.slots.skill=ko;if(ui!==id)note.slots.skillUi=ui;}
   const was=(readMark(who).inbox||[]).find?.(row=>row?.from==='club'||row?.from==='tutor');
   if(!note){if(was)inbox(who,null);return null;}
-  if(!was||was.code!==note.code||was.slots?.token!==note.slots?.token||was.slots?.skillId!==note.slots?.skillId)inbox(who,note);
+  // 날이 바뀌면 같은 꼴의 알림이라도 새 알림이다(어제 읽은 표시를 이어 쓰지 않는다)
+  if(!was||was.code!==note.code||was.slots?.token!==note.slots?.token||was.slots?.skillId!==note.slots?.skillId||dayKey(was.at||0)!==dayKey(Date.now()))inbox(who,note);
   const row=(readMark(who).inbox||[]).find(r=>r?.from===note.from&&r.code===note.code);
   return {...note,read:!!row?.read,drop:!row?.read&&club.last?.dropped!==dayKey(Date.now())};
  }
  const host={
   // 튜터를 고르면 스타일을 학습 설정에 저장한다(이미 학습 목표 저장에 동의한 학생만 — 동의는 앞면이 따로 묻지 않는다). 아니면 이 기기 표에만.
-  async clubTutor(tutor,{answer=null}={}){
+  // change: 다음 날 튜터 대화의 「튜터 바꾸기」 — 동아리장에게 한 답은 그대로 두고, 바꾼 튜터로 다시 그릴 state를 함께 준다.
+  async clubTutor(tutor,{answer=null,change=false}={}){
    if(!same()||!CLUB_TUTORS.includes(tutor))return null;
-   const who=owner(),set=TUTOR_SETTINGS[tutor];
-   setClub(who,{tutor,answer:['some','none','good'].includes(answer)?answer:null,pickedAt:Date.now()});
+   const who=owner(),set=TUTOR_SETTINGS[tutor],had=clubOf(who).answer??null;
+   setClub(who,{tutor,answer:['some','none','good'].includes(answer)?answer:change?had:null,pickedAt:Date.now()});
    let saved=false;
    try{
     const p=progress()?.learningProfile?.()?.profile||null;
     if(p?.consent){progress().updateLearningProfile({consent:true,expectedRevision:p.revision,values:{...(p.values||{}),support:set.support,explanation:set.explanation}});saved=true;}
    }catch{saved=false;}
    try{education()?.applyPreferences?.();}catch{}
+   if(change){let state=null;try{state=same()?await stateOf():null;}catch{state=null;}return {tutor,saved,state};}
    return {tutor,saved};
   },
   // 문항 넷을 고르고 첫 문항을 낸다. 새 길(엔진 판)이거나 대화로 낼 문항이 없으면 판으로 연다(status board · none).
@@ -122,6 +127,8 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
   },
   async clubReplay(){if(!same()||!run)return null;try{return run.session.replay();}catch{return null;}},
   async clubAudio(status){if(!same()||!run)return null;try{return run.session.delivery(status);}catch{return null;}},
+  // 소리를 끝내 못 틀면 그 문항은 건너뛴 것으로 남긴다(엔진 skip — 답하지 않은 문항을 틀렸다고 하지 않는다)
+  async clubSkip(){if(!same()||!run)return null;try{return run.session.skip();}catch{return null;}},
   async clubAnswer(choiceId){
    if(!same()||!run||!item)return null;
    const now=item;let row=null;try{row=run.session.answer(choiceId);}catch{row=null;}

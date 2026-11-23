@@ -53,6 +53,7 @@ const UI = {
   go: {ko: '맞춤 연습 시작', en: 'Start my practice', mn: 'Дасгалаа эхлэх'},
   board: {ko: '문제 보러 가기', en: 'Go to the questions', mn: 'Асуулт руу очих'},
   later: {ko: '맞춤 화면으로', en: 'Back to My practice', mn: '«Миний дасгал» руу буцах'},
+  change: {ko: '튜터 바꾸기', en: 'Change tutor', mn: 'Туслахаа солих'},
   todayDiv: {ko: '오늘', en: 'Today', mn: 'Өнөөдөр'},
   review: {ko: '복습', en: 'Review', mn: 'Давтлага'},
   level: {ko: '내 위치', en: 'Where I stand', mn: 'Миний ахиц'},
@@ -94,9 +95,9 @@ const S = {
 // 알림 글(다리가 code · slots만 주고 글은 여기서 세 언어로 짓는다 — 팬 세션과 맞춘 알림 꼴)
 const NOTE = {
   'club.hello': {ko: '안녕, 나는 한국어 동아리장 민우야. 혹시 한국어 잘해?', en: 'Hi, I’m Minu, president of the Korean language club. Do you speak Korean well?', mn: 'Сайн уу, би солонгос хэлний клубийн тэргүүн Мину байна. Чи солонгосоор сайн ярьдаг уу?'},
-  'tutor.review.hangul': {ko: '어제 「커피」 읽었죠? 오늘은 「택시」도 읽어 봐요.', en: 'You read 커피 yesterday, right? Let’s read 택시 today too.', mn: 'Өчигдөр «커피» гэдгийг уншсан биз дээ? Өнөөдөр «택시» гэдгийг бас уншаад үзье.'},
+  'tutor.review.hangul': {ko: '어제 한글을 처음 만났죠? 오늘은 「택시」 한 장만 같이 읽어 봐요.', en: 'You met Hangul yesterday. Let’s read just one word today: 택시.', mn: 'Өчигдөр солонгос үсэгтэй анх танилцсан биз дээ? Өнөөдөр «택시» гэдэг ганц үгийг хамт уншаад үзье.'},
   'tutor.review.skill': {ko: '지난번 「{skill}」에서 하나 놓쳤죠? 오늘 같은 종류로 짧게 연습해 봐요.', en: 'Last time you missed one question in {skillUi}. Let’s do a short practice of the same kind today.', mn: 'Өмнөх удаа «{skillUi}» хэсэгт нэг асуулт алдсан биз дээ? Өнөөдөр ижил төрлийн богино дасгал хийгээд үзье.'},
-  'tutor.level': {ko: '지난번엔 {t}칸 중 {n}칸을 맞혔어요. 지금은 어디쯤인지 같이 볼까요?', en: 'Last time you got {n} of {t} right. Shall we see where you are now?', mn: 'Өмнөх удаагийн дүн: {n}/{t}. Одоогийн түвшнийг тань хамт харах уу?'},
+  'tutor.level': {ko: '지난번엔 {t}칸 중 {n}칸이 채워졌어요. 지금은 어디쯤인지 같이 볼까요?', en: 'Last time {n} of {t} squares were filled. Shall we see where you are now?', mn: 'Өмнөх удаагийн дүн: {n}/{t}. Одоогийн түвшнийг тань хамт харах уу?'},
   'tutor.today': {ko: '오늘은 「{title}」 해 볼까요? {m}분이면 돼요.', en: 'How about “{title}” today? It takes {m} minutes.', mn: 'Өнөөдөр «{title}» хийж үзэх үү? {m} минут л болно.'},
   'tutor.today.nomin': {ko: '오늘은 「{title}」 해 볼까요?', en: 'How about “{title}” today?', mn: 'Өнөөдөр «{title}» хийж үзэх үү?'},
 };
@@ -119,6 +120,7 @@ const TUT = {
     ok: '맞아요.', no: '아니에요.'},
 };
 // 한글 한 문제 — 외래어라 낱말 뜻을 몰라도 한글을 읽으면 맞힌다. 처음 만남은 「커피」(답은 한글 답 저장으로), 다음 날 복습은 「택시」(기록 없음)
+const OBJ = {coffee: {ko: '커피', en: 'coffee', mn: 'кофе'}, banana: {ko: '바나나', en: 'banana', mn: 'банана'}, taxi: {ko: '택시', en: 'taxi', mn: 'такси'}};
 const HANGUL = {
   coffee: {word: '커피', ok: 'coffee', more: {ko: '받침 없는 글자는 왼쪽 소리와 오른쪽 소리를 이어 읽어요. 커 = ㅋ + ㅓ.', en: 'A block without a final consonant joins the left and right sounds: 커 = ㅋ + ㅓ.', mn: 'Дэвсгэр үсэггүй үед зүүн, баруун үсгийн авиаг нийлүүлж уншина: 커 = ㅋ + ㅓ.'},
     ex: {coffee: {ko: '「커피」는 coffee랑 소리가 같아요.', en: '커피 sounds just like “coffee”.', mn: '«커피» нь «кофе» гэдэгтэй төстэй сонсогддог.'},
@@ -234,7 +236,7 @@ async function hangulCard(K, C, key, {n = 1, tutor, skip = true, last = false, l
   const H = HANGUL[key], T = TUT[tutor];
   const card = document.createElement('section'); card.className = 'cl-card';
   card.innerHTML = `<p class="k">${n} · <b>${esc(K.L(UI.hangul))}</b></p><p class="word" lang="ko">${esc(H.word)}</p>
-    <div class="chs pic">${HANGUL.order[key].map(v => `<button class="cl-ch" type="button" data-v="${v}" aria-label="${esc(v)}"><span class="ob" style="background-image:url(${A}obj-${v}.webp)"></span>${CK}</button>`).join('')}</div>
+    <div class="chs pic">${HANGUL.order[key].map(v => `<button class="cl-ch" type="button" data-v="${v}" aria-label="${esc(K.L(OBJ[v]))}"><span class="ob" style="background-image:url(${A}obj-${v}.webp)"></span>${CK}</button>`).join('')}</div>
     ${skip ? `<button class="cl-skip" type="button" data-v="notyet"><span lang="ko">${esc(UI.notyet.ko)}</span>${K.mean(UI.notyet)}</button>` : ''}<div class="cl-fb"><div class="in"></div></div>`;
   C.add(card);
   const v = await new Promise(res => { card.querySelectorAll('.cl-ch,.cl-skip').forEach(b => b.onclick = () => res(b.dataset.v)); });
@@ -277,7 +279,7 @@ export function mountClub({host, state, sfx, calm = () => false, onDone}) {
     const res = await diagnose({host, C, K, t, live}); if (!live()) return;
     await result({host, C, K, t, res, live, onDone, root});
   })().catch(e => { console.warn('[club]', e); });
-  return {root, stop: () => { alive = false; try { host.clubStop?.(); } catch {} root.kill(); }};
+  return {root, stop: () => { alive = false; try { C.audio?.pause(); } catch {} try { host.clubStop?.(); } catch {} root.kill(); }};
 }
 
 /* 튜터 고르기(11-24 유호님 「튜터 고를때 성격같은거 골라줘. 원하는 스타일(티칭) 마다 고를수있도록」): 가르치는 방식 · 성격 글이 먼저고 얼굴은 작다.
@@ -298,7 +300,8 @@ function pickTutor(root, K) {
     let picked = null;
     const sync = () => { cards.forEach(c => c.setAttribute('aria-checked', String(c.dataset.t === picked))); go.disabled = !picked; go.textContent = picked ? fill(K.L(UI.pickGo), {n: K.nm(picked)}) : K.L(UI.pickFirst); };
     cards.forEach(c => { K.face(c.querySelector('.cl-av'), c.dataset.t); c.onclick = () => { if (picked === c.dataset.t) return; picked = c.dataset.t; sync(); K.snd('switch'); requestAnimationFrame(() => c.scrollIntoView?.({block: 'nearest', behavior: K.calm() ? 'auto' : 'smooth'})); }; });
-    sync(); requestAnimationFrame(() => sh.classList.add('on')); K.snd('flick');
+    sh.querySelector('.list').addEventListener('keydown', e => { const i = cards.indexOf(e.target.closest?.('.tc')); if (i < 0 || !['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(e.key)) return; e.preventDefault(); cards[(i + (e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : cards.length - 1)) % cards.length].focus(); });
+    sync(); requestAnimationFrame(() => { sh.classList.add('on'); cards[0]?.focus?.({preventScroll: true}); }); K.snd('flick');
     go.onclick = () => { if (!picked) return; root.getRootNode().activeElement?.blur?.(); sh.classList.remove('on'); setTimeout(() => sh.remove(), 520); res(picked); };
   });
 }
@@ -325,7 +328,7 @@ async function diagnose({host, C, K, t, live}) {
   const total = d.total || 1;
   while (item && live()) {
     i += 1;
-    rows.push(await engineItem({host, C, K, t, item, n: i + 1, last: i >= total}));
+    const row = await engineItem({host, C, K, t, item, n: i + 1, last: i >= total}); if (row) rows.push(row);
     if (i >= total) break;
     item = await host.clubNext?.();
   }
@@ -339,32 +342,38 @@ async function engineItem({host, C, K, t, item, n, last}) {
   if (listening) body += `<button class="cl-listen" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span class="lt">${esc(K.L(UI.listen))}</span><span class="bar"><i></i></span></button><p class="cl-note">${esc(K.L(UI.listenFirst))}</p>`;
   if (item.prompt) body += `<p class="pass" lang="ko">${esc(item.prompt)}</p>`;
   if (item.question) body += `<p class="qline" lang="ko">${esc(item.question)}</p>`;
-  const two = item.choices.length === 2 || item.choices.length === 4;
+  const two = (item.choices.length === 2 || item.choices.length === 4) && item.choices.every(c => String(c.label || '').length <= 5);
+  if (listening) body += `<button class="cl-back cl-pass" type="button" hidden>${esc(K.L(UI.next))}</button>`;
   body += `<div class="chs${two ? ' two' : ''}" lang="ko">${item.choices.map(c => `<button class="cl-ch" type="button" data-v="${esc(c.id)}"${listening ? ' disabled' : ''}><span>${esc(c.label)}</span>${CK}</button>`).join('')}</div><div class="cl-fb"><div class="in"></div></div>`;
   card.innerHTML = `<p class="k">${n} · <b>${esc(item.label || '')}</b></p>${body}`;
   C.add(card);
-  const btns = [...card.querySelectorAll('.cl-ch')];
-  let audio = null;
+  const btns = [...card.querySelectorAll('.cl-ch')], pass = card.querySelector('.cl-pass');
+  let audio = null, answered = false;
   const lb = card.querySelector('.cl-listen');
   if (lb) {
     const bar = lb.querySelector('i'), note = card.querySelector('.cl-note');
     let playing = false;
+    const failed = () => { if (note?.isConnected) note.textContent = K.L(UI.audioOff); if (pass && !answered) pass.hidden = false; };
     lb.onclick = async () => {
-      if (playing) return; K.snd('tap');
-      const kind = await host.clubReplay?.(); if (!kind) return;
-      try { audio = new Audio(item.audio); } catch { void host.clubAudio?.('failed'); if (note) note.textContent = K.L(UI.audioOff); return; }
+      if (playing || answered) return; K.snd('tap');
+      const kind = await host.clubReplay?.(); if (!kind) { failed(); return; }
+      try { audio = new Audio(item.audio); C.audio = audio; } catch { void host.clubAudio?.('failed'); failed(); return; }
       playing = true; bar.style.width = '0%';
       const end = status => { if (!playing) return; playing = false; void host.clubAudio?.(status);
-        if (status === 'completed') { bar.style.width = '100%'; btns.forEach(b => b.disabled = false); lb.querySelector('.lt').textContent = K.L(UI.again); note?.remove(); btns[0]?.focus?.({preventScroll: true}); }
-        else if (note?.isConnected) note.textContent = K.L(UI.audioOff); };
+        if (answered) return;
+        if (status === 'completed') { bar.style.width = '100%'; btns.forEach(b => b.disabled = false); if (pass) pass.hidden = true; lb.querySelector('.lt').textContent = K.L(UI.again); note?.remove(); btns[0]?.focus?.({preventScroll: true}); }
+        else failed(); };
       audio.ontimeupdate = () => { if (audio.duration) bar.style.width = (audio.currentTime / audio.duration * 100) + '%'; };
       audio.addEventListener('ended', () => end('completed'), {once: true});
       audio.addEventListener('error', () => end('failed'), {once: true});
       Promise.resolve(audio.play()).catch(() => end('failed'));
     };
   }
-  const v = await new Promise(res => btns.forEach(b => b.onclick = () => res(b.dataset.v)));
-  try { audio?.pause(); } catch {}
+  const v = await new Promise(res => { btns.forEach(b => b.onclick = () => res(b.dataset.v)); if (pass) pass.onclick = () => res(null); });
+  answered = true; try { audio?.pause(); } catch {}
+  if (lb) lb.disabled = true;
+  if (v === null) { pass.disabled = true; btns.forEach(b => b.disabled = true); K.snd('tap'); await host.clubSkip?.(); return null; }
+  if (pass) pass.remove();
   const out = await host.clubAnswer?.(v) || {};
   const good = !!out.correct;
   await judge(K, C, card, {chosen: v, correct: out.correctId, good, head: verdict(K, T, good), lines: [out.explanation || ''], last});
@@ -391,7 +400,7 @@ async function result({host, C, K, t, res, live, onDone, root}) {
   if (!live()) return;
   const miss = tested.find(r => !r.ok);
   const line = !hg?.ok ? S.lineHangul : miss ? {...fillAll(S.lineNext, {s: miss.label}), ko: fill(S.lineNext.ko, {s: miss.labelKo, j: josaYe(miss.labelKo)})} : S.lineAll;
-  await C.say(t, line, 850); if (!live()) return;
+  if (tested.length || !hg?.ok) { await C.say(t, line, 850); if (!live()) return; }
   await C.say(t, S.bell, 750); if (!live()) return;
   const go = ctaButton(K, K.L(UI.go), fin.minutes || 0); C.add(go); go.focus?.({preventScroll: true});
   go.onclick = async () => { go.disabled = true; K.snd('paper'); const next = await host.clubDone?.(); root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(next); };
@@ -404,7 +413,7 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
   const C = chatShell(root, K);
   let alive = true;
   const live = () => alive && root.isConnected;
-  const close = () => { root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(null); };
+  const close = (next = null) => { root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(next); };
   (async () => {
     C.header(t, K.L(UI.tutorSub));
     const d = document.createElement('p'); d.className = 'cl-day'; d.textContent = K.L(UI.todayDiv); C.th.append(d);
@@ -412,7 +421,7 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
     await C.say(t, text, 650); if (!live()) return;
     let label = K.L(UI.todayGo), mins = note.slots?.m || 0;
     if (note.code === 'tutor.review.hangul') {
-      const h = await hangulCard(K, C, 'taxi', {n: 1, tutor: t, skip: false, label: UI.cont}); await h.next; if (!live()) return;
+      const h = await hangulCard(K, C, 'taxi', {n: 1, tutor: t, label: UI.cont}); await h.next; if (!live()) return;
       label = K.L(UI.hangulGo); mins = 0;
     } else if (note.kind === 'review') { label = K.L(UI.practice); mins = 0; }
     else if (note.kind === 'level') {
@@ -429,6 +438,8 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
     const go = ctaButton(K, label, mins); C.add(go); go.focus?.({preventScroll: true});
     const back = document.createElement('button'); back.type = 'button'; back.className = 'cl-back'; back.textContent = K.L(UI.later); C.add(back);
     back.onclick = () => { K.snd('tap'); close(); };
+    const change = document.createElement('button'); change.type = 'button'; change.className = 'cl-back'; change.textContent = K.L(UI.change); C.add(change);
+    change.onclick = async () => { K.snd('tap'); const nt = await pickTutor(root, K); if (!live()) return; const r = nt !== t ? await host.clubTutor?.(nt, {change: true}) : null; close(r?.state || null); };
     go.onclick = async () => { go.disabled = true; back.disabled = true; K.snd('paper'); close(); await host.clubAct?.(note.kind, note.slots || {}); };
   })().catch(e => console.warn('[club day]', e));
   return {root, stop: () => { alive = false; root.kill(); }};
@@ -447,16 +458,18 @@ export function mountNote({state, sfx, calm = () => false, onOpen, onDrop, docke
   isl.setAttribute('aria-label', `${K.nm(who)} · ${tag} · ${text[lang] || text.ko}`);
   isl.innerHTML = `<span class="row"><span class="fc"></span><span class="tx"><span class="nm">${esc(K.nm(who))}<span class="tag">${esc(tag)}</span><span class="tm">${esc(K.L(UI.now))}</span></span><span class="ms" lang="ko">${esc(text.ko)}</span>${lang !== 'ko' && text[lang] ? `<span class="mn">${esc(text[lang])}</span>` : ''}<span class="ft"><span>${esc(K.L(UI.open))} ›</span></span></span></span>${note.read ? '' : '<span class="badge">1</span>'}`;
   K.face(isl.querySelector('.fc'), who); box.sr.append(isl);
-  const row = isl.querySelector('.row'); isl.style.setProperty('--h', Math.max(84, Math.ceil(row.scrollHeight)) + 'px');
+  const row = isl.querySelector('.row'), fc = isl.querySelector('.fc');
+  const measure = () => { fc.style.transition = 'none'; fc.style.width = fc.style.height = '56px'; isl.style.setProperty('--h', Math.max(84, Math.ceil(row.scrollHeight)) + 'px'); fc.style.width = fc.style.height = ''; void fc.offsetWidth; fc.style.transition = ''; };
+  measure(); document.fonts?.ready?.then(() => { if (box.host.isConnected) measure(); });
   let opened = false;
   isl.onclick = () => { if (opened) return; opened = true; K.snd('paper'); box.host.remove(); onOpen?.(); };
   const dock = () => { isl.classList.add('docked'); isl.classList.remove('open'); dim.classList.remove('on'); };
   const dispose = () => { opened = true; box.host.remove(); }, alive = () => box.host.isConnected;
   if (docked || calm()) { isl.classList.add('in', 'docked'); return {dispose, alive}; }
   (async () => {
-    await wait(700); if (opened) return; K.snd('chime880'); isl.classList.add('in');
-    await wait(420); if (opened) return; K.snd('tap'); isl.classList.add('open'); dim.classList.add('on'); onDrop?.();
-    await wait(4200); if (opened) return; isl.classList.remove('open'); dim.classList.remove('on'); await wait(560); if (!opened) { dock(); K.snd('switch'); }
+    await wait(700); if (opened || !alive()) return; K.snd('chime880'); isl.classList.add('in');
+    await wait(420); if (opened || !alive()) return; K.snd('tap'); isl.classList.add('open'); dim.classList.add('on'); onDrop?.();
+    await wait(4200); if (opened || !alive()) return; isl.classList.remove('open'); dim.classList.remove('on'); await wait(560); if (!opened && alive()) { dock(); K.snd('switch'); }
   })();
   return {dispose, alive};
 }
@@ -473,7 +486,7 @@ const CSS = `
 .cl-msg{position:absolute;inset:0;display:flex;flex-direction:column;max-width:560px;margin:0 auto}
 .cl-hd{flex:none;display:flex;align-items:center;gap:11px;padding:calc(16px + var(--sat,env(safe-area-inset-top,0px))) 16px 12px;box-shadow:0 1px 0 rgba(23,22,15,.1)}
 .cl-av{position:relative;width:40px;height:40px;flex:none;border-radius:50%;background:#ddd center/cover no-repeat}
-.cl-nm{min-width:0;flex:1}.cl-nm b{display:block;font-size:16px;font-weight:800}.cl-nm span{display:block;margin-top:1px;font-size:12.5px;font-weight:600;color:rgba(23,22,15,.5)}.cl-nm span.typing{color:#2f7d4f}
+.cl-nm{min-width:0;flex:1}.cl-nm b{display:block;font-size:16px;font-weight:800}.cl-nm span{display:block;margin-top:1px;font-size:12.5px;font-weight:600;color:rgba(23,22,15,.62)}.cl-nm span.typing{color:#2f7d4f}
 .cl-th{flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:12px 16px 18px;display:flex;flex-direction:column;gap:8px;-webkit-mask-image:linear-gradient(transparent 0,#000 14px);mask-image:linear-gradient(transparent 0,#000 14px)}
 .cl-th>*{flex-shrink:0}.cl-th::-webkit-scrollbar{display:none}
 .cl-who{align-self:stretch;margin:4px 0 10px;border-radius:22px;overflow:hidden;background:#fffdf8;box-shadow:0 1px 0 rgba(23,22,15,.04),0 10px 24px rgba(23,22,15,.06)}
@@ -484,21 +497,21 @@ const CSS = `
 .cl-dots{display:inline-flex;gap:4px;padding:13px 14px;border-radius:20px 20px 20px 6px;background:#fffdf8}.cl-dots i{width:7px;height:7px;border-radius:50%;background:rgba(23,22,15,.35);animation:clDot 1s infinite}.cl-dots i:nth-child(2){animation-delay:.15s}.cl-dots i:nth-child(3){animation-delay:.3s}
 @keyframes clDot{40%{transform:translateY(-4px);background:rgba(23,22,15,.6)}}
 .cl-sys{align-self:center;display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12.5px;font-weight:650;color:rgba(23,22,15,.66)}.cl-sys .cl-av{width:24px;height:24px}
-.cl-day{align-self:center;margin:6px 0;padding:4px 11px;border-radius:999px;background:rgba(23,22,15,.06);font-size:12px;font-weight:700;color:rgba(23,22,15,.5)}
+.cl-day{align-self:center;margin:6px 0;padding:4px 11px;border-radius:999px;background:rgba(23,22,15,.06);font-size:12px;font-weight:700;color:rgba(23,22,15,.62)}
 .cl-ft{flex:none;padding:12px 12px calc(16px + var(--sab,env(safe-area-inset-bottom,0px)));display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;min-height:76px;box-sizing:border-box;box-shadow:0 -1px 0 rgba(23,22,15,.1)}.cl-ft:empty{box-shadow:none}
 .cl-rp{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;min-height:46px;padding:8px 16px;border:0;border-radius:22px;background:rgba(29,37,71,.09);color:#1d2547;font-size:15.5px;font-weight:750;text-align:right;cursor:pointer}
 .cl-rp .mean{color:rgba(29,37,71,.7);font-size:12.5px}.cl-rp.solid{min-width:120px;align-items:center;background:#1d2547;color:#f5f6fb}
 .cl-card{align-self:stretch;margin-left:38px;padding:16px;border-radius:22px;background:#fffdf8;box-shadow:0 1px 0 rgba(23,22,15,.04),0 10px 24px rgba(23,22,15,.06)}
-.cl-card .k{display:flex;align-items:center;gap:8px;margin:0;font-size:12.5px;font-weight:600;color:rgba(23,22,15,.5);font-variant-numeric:tabular-nums}.cl-card .k b{font-weight:700;color:rgba(23,22,15,.66)}
+.cl-card .k{display:flex;align-items:center;gap:8px;margin:0;font-size:12.5px;font-weight:600;color:rgba(23,22,15,.62);font-variant-numeric:tabular-nums}.cl-card .k b{font-weight:700;color:rgba(23,22,15,.66)}
 .cl-card .word{margin:14px 0 4px;font-size:44px;font-weight:800;letter-spacing:-.02em;text-align:center}
 .cl-card .pass{margin:12px 0 2px;padding:12px 14px;border-radius:14px;background:rgba(23,22,15,.045);font-size:16px;line-height:1.6;font-weight:600;white-space:pre-wrap}
 .cl-card .qline{margin:12px 0 0;font-size:16.5px;font-weight:800}
 .cl-listen{display:flex;align-items:center;gap:10px;margin:14px 0 2px;min-height:52px;width:100%;padding:0 16px;border:0;border-radius:16px;background:rgba(23,22,15,.05);font-size:15.5px;font-weight:750;color:inherit;cursor:pointer}
 .cl-listen svg{width:22px;height:22px;flex:none}.cl-listen .bar{flex:1;height:4px;border-radius:2px;background:rgba(23,22,15,.1);overflow:hidden}.cl-listen .bar i{display:block;height:100%;width:0;background:#17160f}
-.cl-note{margin:6px 0 0;font-size:13px;font-weight:600;color:rgba(23,22,15,.5)}
+.cl-note{margin:6px 0 0;font-size:13px;font-weight:600;color:rgba(23,22,15,.62)}
 .cl-root .chs{display:grid;gap:8px;margin-top:14px}.cl-root .chs.pic{grid-template-columns:repeat(3,1fr)}.cl-root .chs.two{grid-template-columns:1fr 1fr}
-.cl-ch{position:relative;min-height:52px;padding:10px 14px;border:0;border-radius:14px;background:#fffdf8;box-shadow:inset 0 0 0 1.5px rgba(23,22,15,.12);font-size:16.5px;font-weight:750;line-height:1.35;color:inherit;text-align:left;display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .2s,box-shadow .2s,color .2s,opacity .2s}
-.chs.pic .cl-ch{justify-content:center;padding:6px}.chs.two .cl-ch{justify-content:center;text-align:center;padding:10px 30px}
+.cl-ch{position:relative;min-width:0;overflow-wrap:anywhere;min-height:52px;padding:10px 14px;border:0;border-radius:14px;background:#fffdf8;box-shadow:inset 0 0 0 1.5px rgba(23,22,15,.12);font-size:16.5px;font-weight:750;line-height:1.35;color:inherit;text-align:left;display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .2s,box-shadow .2s,color .2s,opacity .2s}
+.chs.pic .cl-ch{justify-content:center;padding:6px}.chs.two .cl-ch{justify-content:center;text-align:center;padding:10px 28px}
 .cl-ch .ob{display:block;width:100%;aspect-ratio:1;border-radius:10px;background:#e9e6dc center/cover no-repeat}
 .cl-ch .ck,.cl-ch .xx{width:22px;height:22px;flex:none;opacity:0}.chs.pic .ck,.chs.pic .xx{position:absolute;right:7px;top:7px;z-index:1;background:#fffdf8;border-radius:50%;padding:2px}
 .chs:not(.pic) .ck,.chs:not(.pic) .xx{margin-left:auto}.chs.two .ck,.chs.two .xx{position:absolute;right:8px}
@@ -514,18 +527,18 @@ const CSS = `
 .cl-fb .v{margin:0;font-size:15px;font-weight:800}.cl-fb .v.ok{color:#2f7d4f}.cl-fb .v.no{color:#c2412d}.cl-fb p{margin:5px 0 0;font-size:15px;line-height:1.55;font-weight:600}
 .cl-nx{margin-top:12px;min-height:44px;width:100%;border:0;border-radius:999px;background:#17160f;color:#fbf8f1;font-size:15px;font-weight:750;cursor:pointer}
 .cl-card.res h3{margin:10px 0 0;font-size:30px;font-weight:850;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
-.cl-card.res .sub{margin:4px 0 0;font-size:13px;font-weight:500;color:rgba(23,22,15,.5)}
+.cl-card.res .sub{margin:4px 0 0;font-size:13px;font-weight:500;color:rgba(23,22,15,.62)}
 .cl-root .strip{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;margin-top:16px}.cl-root .strip .lb{font-size:13.5px;font-weight:750;color:rgba(23,22,15,.66)}
 .cl-root .cells{display:grid;grid-template-columns:repeat(var(--n,8),1fr);gap:4px}.cl-root .cells i{height:22px;border-radius:5px;background:rgba(23,22,15,.07)}.cl-root .cells i.done{background:#17160f}.cl-root .cells i.next{background:#fffdf8;box-shadow:inset 0 0 0 2px #c2412d}
 .hg{display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:999px;font-size:13.5px;font-weight:750}.hg.done{background:#17160f;color:#fbf8f1}.hg.next{box-shadow:inset 0 0 0 2px #c2412d;color:#c2412d}
-.cl-root .legend{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;padding:0;list-style:none}.cl-root .legend li{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:650}.cl-root .legend li i{width:12px;height:12px;border-radius:3px;flex:none}.cl-root .legend li i.done{background:#17160f}.cl-root .legend li i.next{box-shadow:inset 0 0 0 2px #c2412d}.cl-root .legend li small{margin-left:auto;flex:none;white-space:nowrap;padding-left:8px;font-size:12.5px;color:rgba(23,22,15,.5)}
+.cl-root .legend{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;padding:0;list-style:none}.cl-root .legend li{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:650}.cl-root .legend li i{width:12px;height:12px;border-radius:3px;flex:none}.cl-root .legend li i.done{background:#17160f}.cl-root .legend li i.next{box-shadow:inset 0 0 0 2px #c2412d}.cl-root .legend li small{margin-left:auto;flex:none;white-space:nowrap;padding-left:8px;font-size:12.5px;color:rgba(23,22,15,.62)}
 .cl-card.plan{padding:0;overflow:hidden}.cl-card.plan .pp{height:150px;background:#ddd center/cover}.cl-card.plan .pb{padding:14px 16px 16px}.cl-card.plan .pt{margin:6px 0 0;font-size:20px;font-weight:850}
 .cl-cta{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;padding:0 20px;border:0;border-radius:999px;background:#17160f;color:#fbf8f1;font-size:16.5px;font-weight:800;cursor:pointer;flex-shrink:0}
 .cl-cta.center{justify-content:center}.cl-cta .mn{margin-left:auto;font-size:13px;font-weight:600;color:rgba(251,248,241,.6);font-variant-numeric:tabular-nums}.cl-cta svg{width:16px;height:16px;flex:none}.cl-cta:not(.center) svg{margin-left:auto}.cl-cta .mn+svg{margin-left:0}
 .cl-back{align-self:center;min-height:44px;padding:0 16px;border:0;background:none;font-size:14.5px;font-weight:700;color:rgba(23,22,15,.6);cursor:pointer}
 .cl-pick{position:absolute;inset:0;z-index:5;max-width:560px;margin:0 auto;background:#efece5;transform:translateY(100%);visibility:hidden;transition:transform .5s cubic-bezier(.2,.9,.2,1),visibility 0s .5s;display:flex;flex-direction:column}
 .cl-pick.on{transform:none;visibility:visible;transition:transform .5s cubic-bezier(.2,.9,.2,1)}
-.cl-pick .top{padding:calc(20px + var(--sat,env(safe-area-inset-top,0px))) 20px 10px}.cl-pick .top small{display:block;font-size:13px;font-weight:700;color:rgba(23,22,15,.5)}.cl-pick .top h3{margin:4px 0 0;font-size:24px;font-weight:850;letter-spacing:-.02em}
+.cl-pick .top{padding:calc(20px + var(--sat,env(safe-area-inset-top,0px))) 20px 10px}.cl-pick .top small{display:block;font-size:13px;font-weight:700;color:rgba(23,22,15,.62)}.cl-pick .top h3{margin:4px 0 0;font-size:24px;font-weight:850;letter-spacing:-.02em}
 .cl-pick .top .sub{margin:6px 0 0;font-size:14px;font-weight:600;color:rgba(23,22,15,.6)}
 .cl-pick .list{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:6px 20px 8px;scrollbar-width:none}
 .cl-pick .list::-webkit-scrollbar{display:none}
@@ -544,11 +557,11 @@ const CSS = `
 .cl-pick .tc .how span{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:999px;background:rgba(23,22,15,.055);font-size:12.5px;font-weight:700;color:rgba(23,22,15,.66)}
 .cl-pick .tc .ex{display:none;flex-direction:column;gap:6px;margin-top:4px;padding-top:10px;border-top:1px solid rgba(23,22,15,.1)}
 .cl-pick .tc[aria-checked="true"] .ex{display:flex}
-.cl-pick .tc .ex small{font-size:12px;font-weight:700;color:rgba(23,22,15,.5)}
+.cl-pick .tc .ex small{font-size:12px;font-weight:700;color:rgba(23,22,15,.62)}
 .cl-pick .tc .ex .mine{align-self:flex-end;padding:7px 12px;border-radius:16px 16px 5px 16px;background:#1d2547;color:#f5f6fb;font-size:14px;font-weight:700}
 .cl-pick .tc .ex .his{align-self:flex-start;max-width:92%;padding:9px 12px;border-radius:16px 16px 16px 5px;background:rgba(23,22,15,.055);font-size:14.5px;font-weight:700;line-height:1.4}
-.cl-cta:disabled{background:rgba(23,22,15,.14);color:rgba(23,22,15,.5);cursor:default}
-.cl-pick .bot{flex:none;padding:12px 20px calc(16px + var(--sab,env(safe-area-inset-bottom,0px)))}.cl-pick .bot small{display:block;margin-top:8px;text-align:center;font-size:12.5px;font-weight:650;color:rgba(23,22,15,.5)}
+.cl-cta:disabled{background:rgba(23,22,15,.14);color:rgba(23,22,15,.62);cursor:default}
+.cl-pick .bot{flex:none;padding:12px 20px calc(16px + var(--sab,env(safe-area-inset-bottom,0px)))}.cl-pick .bot small{display:block;margin-top:8px;text-align:center;font-size:12.5px;font-weight:650;color:rgba(23,22,15,.62)}
 .cl-dim{position:fixed;inset:0;z-index:58;background:rgba(243,238,230,.3);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .5s}.cl-dim.on{opacity:1}
 .cl-isl{position:fixed;z-index:59;left:50%;top:calc(10px + var(--sat,env(safe-area-inset-top,0px)));width:52px;height:52px;margin-left:-26px;padding:0;border:0;border-radius:28px;background:#060709;color:#FAFAF9;font-family:var(--sans,system-ui,sans-serif);letter-spacing:-.015em;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.08),0 18px 44px rgba(0,0,0,.35);overflow:hidden;transform:scale(0);transition:transform .38s cubic-bezier(.3,1.5,.5,1),width .6s cubic-bezier(.3,1.2,.5,1),height .6s cubic-bezier(.3,1.2,.5,1),margin-left .6s cubic-bezier(.3,1.2,.5,1),border-radius .6s}

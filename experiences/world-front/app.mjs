@@ -837,7 +837,7 @@ function openClub(next) {
 }
 function clubNote() {
   const note = CLUB.note, want = !!note && !clubOpen && !P.pc && (P.v === 'more' || (P.front && !P.step));
-  const key = want ? [note.code, note.who, note.slots?.token || '', note.slots?.skillId || ''].join('|') : '';
+  const key = want ? [note.code, note.who, note.slots?.token || '', note.slots?.skillId || '', LANG].join('|') : '';
   if (key && key === clubNoteKey && clubNoteNow?.alive?.()) return;   // 같은 알림이면 다시 그려도 그대로(내려오는 중이면 마저 내려온다)
   clubNoteNow?.dispose(); clubNoteNow = null; clubNoteKey = key;
   if (!want) return;
@@ -846,14 +846,14 @@ function clubNote() {
       clubNoteNow = null; call('clubSeen', {opened: true});
       if (note.kind === 'club') { openClub({...state, view: 'club'}); return; }
       CLUB = {...CLUB, note: null};
-      clubOpen = mountTutorDay({host, state: {lang: LANG, note}, sfx, calm, onDone: () => { clubOpen = null; }});
+      clubOpen = mountTutorDay({host, state: {lang: LANG, note}, sfx, calm, onDone: n => { clubOpen = null; if (n) show(n); }});
     }});
 }
 /* ── host와 주고받기(HOST.md) ── */
 function flush() { if (PENDING && !TRANS) { const n = PENDING; PENDING = null; show(n); } }
 function show(next) {
   if (!next || typeof next !== 'object') return;
-  if (next.view === 'club') { openClub(next); return; }   // 동아리장 처음 만남(club.mjs)
+  if (next.view === 'club') { if (['ko', 'en', 'mn'].includes(next.lang)) LANG = next.lang; if ('reduced' in next) P.still = !!next.reduced; openClub(next); return; }   // 동아리장 처음 만남(club.mjs)
   if (TRANS) { PENDING = next; return; }
   const prev = state;
   if (!prev) { take(next); syncP(); render(); return; }
