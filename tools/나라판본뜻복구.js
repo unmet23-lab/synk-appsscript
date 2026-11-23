@@ -44,29 +44,19 @@ function config() {
       !Number.isFinite(Date.parse(c.enabledAt))) throw Error('승인된 검수 계정 설정이 필요합니다.');
   return c;
 }
-function verifyInput(tree, folder, retryMuse = false) {
+// 회차는 시험지 지문으로 묶는다. 11-23부터 뜻검사 재료가 「시험지」에 적고, 그 전에 만든 회차는 「뮤즈1차」 칸의 같은 값을 읽는다.
+function 질문지문(m) {
+  return m?.시험지?.질문지문 || m?.뮤즈1차?.질문지문;
+}
+function verifyInput(tree, folder) {
   const m = readJson(path.join(folder, '재료.json'));
   if (!m.편폴더 || !m.글 || !m.만든곳 || path.relative(tree, m.만든곳) ||
       !inside(path.join(tree, 'docs', '마케팅'), fs.realpathSync(m.편폴더)) ||
       !inside(fs.realpathSync(m.편폴더), fs.realpathSync(m.글)) || sha256(m.글) !== m.지문) throw Error('재료와 현재 예약 사본의 원고가 다릅니다.');
   if (!safeName(m.편) || !safeName(m.판본) || path.basename(m.편폴더) !== m.편) throw Error('예약 판본 이름을 확인할 수 없습니다.');
   if (!Array.isArray(m.시험관) || !m.시험관.length || !m.시험관.every(s => s === 'gpt' || Object.hasOwn(models, s))) throw Error('시험관 배정을 확인할 수 없습니다.');
-  if (retryMuse && m.뮤즈1차?.상태 === '미완료') {
-    const questionHash = sha256(path.join(folder, '질문.md'));
-    if (questionHash !== m.뮤즈1차.질문지문) throw Error('뮤즈 재시도 전에 시험지가 바뀌었습니다.');
-    const plan = path.join(m.편폴더, '기획.md');
-    const source = (fs.existsSync(plan) ? fs.readFileSync(plan, 'utf8') : '별도 기획 원문 없음') + '\n\n판본 글\n' + fs.readFileSync(m.글, 'utf8');
-    const original = require(path.join(tree, 'tools/lib/뮤즈1차.js')).review('콘텐츠', source);
-    if (!original) throw Error('뮤즈 1차 검수가 아직 끝나지 않았습니다.');
-    if (readJson(path.join(folder, '재료.json')).시각 !== m.시각 || sha256(m.글) !== m.지문 || sha256(path.join(folder, '질문.md')) !== questionHash) throw Error('뮤즈 재시도 중 재료가 바뀌었습니다.');
-    m.뮤즈1차 = { 모델: 'muse-spark-1.3', 원답: path.basename(original), 원답지문: sha256(original),
-      질문지문: sha256(path.join(folder, '질문.md')), 확인시각: new Date().toISOString() };
-    atomic(path.join(folder, '재료.json'), m);
-  }
-  const file = m.뮤즈1차?.원답;
-  const report = typeof file === 'string' && /^[0-9a-f]{64}\.txt$/.test(file) && path.join(tree, '.tmp', '뮤즈1차', file);
-  if (m.뮤즈1차?.모델 !== 'muse-spark-1.3' || !report || !fs.existsSync(report) || sha256(report) !== m.뮤즈1차.원답지문 ||
-      sha256(path.join(folder, '질문.md')) !== m.뮤즈1차.질문지문) throw Error('뮤즈 원답과 현재 시험지의 연결을 확인할 수 없습니다.');
+  const 지문 = 질문지문(m);
+  if (!/^[0-9a-f]{64}$/.test(String(지문 || '')) || sha256(path.join(folder, '질문.md')) !== 지문) throw Error('재료와 현재 시험지의 연결을 확인할 수 없습니다.');
   return m;
 }
 function validAnswer(text, m) {
@@ -79,14 +69,14 @@ async function examine(tree, folder, c, only, check = () => {}, journal = folder
   check();
   const unlock = 잠그기(path.join(folder, '.검수크레딧.lock'), Infinity);
   try {
-    const m = verifyInput(tree, folder, true);
+    const m = verifyInput(tree, folder);
     if (only && !m.시험관.includes(only)) throw Error('배정되지 않은 시험관입니다.');
     const question = fs.readFileSync(path.join(folder, '질문.md'), 'utf8');
     const secret = path.join(os.homedir(), 'SYNK_보안');
     for (const judge of only ? [only] : m.시험관) {
       check();
       const dest = path.join(folder, '답_' + judge + '.md');
-      const generation = crypto.createHash('sha256').update(JSON.stringify([path.resolve(folder),m.시각,m.지문,m.뮤즈1차.질문지문])).digest('hex');
+      const generation = crypto.createHash('sha256').update(JSON.stringify([path.resolve(folder),m.시각,m.지문,질문지문(m)])).digest('hex');
       const callFile = path.join(journal, '.검수크레딧', generation, judge + '.json');
       const previous = fs.existsSync(callFile) ? readJson(callFile) : null;
       if (fs.existsSync(dest)) {
@@ -96,7 +86,7 @@ async function examine(tree, folder, c, only, check = () => {}, journal = folder
         if (previous?.상태 === '받음' && previous.답 === answer && previous.응답) {
           const receiptFile = path.join(folder,'호출_' + judge + '.json');
           if (!fs.existsSync(receiptFile) || readJson(receiptFile).답지문 !== sha256(dest)) {
-            atomic(receiptFile,{...previous.응답,질문지문:m.뮤즈1차.질문지문,답지문:sha256(dest),받은시각:fs.statSync(dest).mtime.toISOString()});
+            atomic(receiptFile,{...previous.응답,질문지문:질문지문(m),답지문:sha256(dest),받은시각:fs.statSync(dest).mtime.toISOString()});
           }
         }
         continue;
@@ -155,11 +145,11 @@ async function examine(tree, folder, c, only, check = () => {}, journal = folder
         }
         validAnswer(fs.readFileSync(answerFile, 'utf8'), m);
         const current = verifyInput(tree, folder);
-        if (current.시각 !== m.시각 || current.뮤즈1차.질문지문 !== m.뮤즈1차.질문지문) throw Error('시험 도중 회차가 바뀌었습니다.');
+        if (current.시각 !== m.시각 || 질문지문(current) !== 질문지문(m)) throw Error('시험 도중 회차가 바뀌었습니다.');
         check();
         if (!fs.existsSync(dest)) {
           nodeTool(tree, '뜻검사.js', ['답넣기', folder, judge, answerFile]);
-          atomic(path.join(folder, '호출_' + judge + '.json'), { ...data, 질문지문: m.뮤즈1차.질문지문,
+          atomic(path.join(folder, '호출_' + judge + '.json'), { ...data, 질문지문: 질문지문(m),
             답지문: sha256(dest), 받은시각: new Date().toISOString() });
         }
       } finally { fs.rmSync(blind, { recursive: true, force: true }); }
@@ -192,7 +182,7 @@ function judgeQuota(dir, m, judge) {
   if (!fs.existsSync(dir) || !Object.hasOwn(models, judge)) return false;
   for (const file of fs.readdirSync(dir).filter(name => /^agent-[a-z0-9-]+\.meta\.json$/i.test(name))) {
     const meta = readJson(path.join(dir,file));
-    if (![judge, models[judge]].includes(meta.model) || !String(meta.description).includes(m.뮤즈1차.질문지문.slice(0,16))) continue;
+    if (![judge, models[judge]].includes(meta.model) || !String(meta.description).includes(질문지문(m).slice(0,16))) continue;
     const log = path.join(dir,file.replace('.meta.json','.jsonl'));
     if (!fs.existsSync(log)) continue;
     const last = require('../.claude/skills/이어서/세션고르기.cjs').원문끝메시지(log, 1).at(-1);

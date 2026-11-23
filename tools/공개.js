@@ -1831,17 +1831,13 @@ function 결과요약(후보) {
 
 // 판정기 허용 줄 「Gated synk.im publish」의 앞머리 git diff는 이 파일만 본다. 이 파일이 믿는 검수 · 점검 모듈도 올라간 판이어야
 // 어느 세션의 미커밋 · 안 올린 고침이 관문을 타고 나가지 않는다(2026-11-09). 잣대는 앞머리와 같다(origin/master와 같은가).
-const 관문모듈 = ['tools/lib/뮤즈1차.js', 'tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/lib/검수캡처.mjs', 'tools/lib/공개전점검.js', 'tools/lib/크롬조종.js', 'tools/접근성검사.js',
+const 관문모듈 = ['tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/lib/검수캡처.mjs', 'tools/lib/공개전점검.js', 'tools/lib/크롬조종.js', 'tools/접근성검사.js',
   'tools/lib/import엇갈림.js', 'tools/lib/importmap-csp.cjs', 'tools/lib/올림장부.cjs', 'tools/lib/GPT검수모델.js', 'tools/lib/거둔말.json'];
 function 관문모듈다름(돌리기 = (인자) => spawnSync('git', 인자, { cwd: path.resolve(__dirname, '..'), encoding: 'utf8', windowsHide: true })) {
   // :/ = 저장소 뿌리 기준(도구를 다른 자리에 복사해 돌려도 빈 결과로 통과하지 않게)
   const r = 돌리기(['diff', '--name-only', '-z', 'origin/master', '--', ...관문모듈.map((p) => `:/${p}`)]);
   if (r.status !== 0) throw new 멈춤(`관문 모듈을 origin/master와 견주지 못했다 — ${String(r.stderr || r.error || `종료 ${r.status}`).trim().split('\n').pop()}`);
-  const changed = String(r.stdout || '').split('\0').filter(Boolean);
-  const modulePath = 'tools/lib/뮤즈1차.js';
-  if (!changed.includes(modulePath) && (돌리기(['cat-file', '-e', 'origin/master:' + modulePath]).status !== 0 ||
-      돌리기(['ls-files', '--error-unmatch', '--', ':/' + modulePath]).status !== 0)) changed.push(modulePath);
-  return changed;
+  return String(r.stdout || '').split('\0').filter(Boolean);
 }
 
 /** 올리기. 옵션: 항목[]·원본·공개폴더·지움[]·기준·기준폴더·전부·줄끝도·토큰·토큰안함·허용[]·후보폴더·위에·실행·계획·메시지·사본·새사본·원격주소·주소… */

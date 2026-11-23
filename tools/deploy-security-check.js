@@ -270,9 +270,7 @@ async function 검수반영({ root = ROOT, 검수, deployment, description }) {
     if (!git(['ls-tree', 'origin/master', '--', x.경로]).toString().startsWith('100644 ') || !git(['ls-files', '--stage', '--', x.경로]).toString().startsWith('100644 ')) throw new Error(`배포 파일 모드가 검수 후보와 다르다: ${x.경로}`);
     if (!git(['cat-file', '--filters', `origin/master:${x.경로}`]).equals(x.버퍼)) throw new Error(`배포 파일이 origin/master와 다르다: ${x.경로}`);
   }
-  git(['cat-file', '-e', 'origin/master:tools/lib/뮤즈1차.js']);
-  git(['ls-files', '--error-unmatch', '--', 'tools/lib/뮤즈1차.js']);
-  git(['diff', '--quiet', 'origin/master', '--', 'tools/deploy-security-check.js', 'tools/lib/뮤즈1차.js', 'tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/배포판점검.js', '.claude/hooks/lib/clasp-project.js']);
+  git(['diff', '--quiet', 'origin/master', '--', 'tools/deploy-security-check.js', 'tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/배포판점검.js', '.claude/hooks/lib/clasp-project.js']);
   const 임시기준 = fs.realpathSync(os.tmpdir());
   const snapshot = fs.mkdtempSync(path.join(임시기준, 'synk-reviewed-deploy-'));
   const 상태 = { 단계: '준비', 검수, deployment, versionNumber: null, 설명: description, ...(사슬 ? { 사슬 } : {}) };

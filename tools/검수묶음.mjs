@@ -2862,20 +2862,6 @@ async function main(argv) {
   const 알리기 = m => 틀림(`… ${m}`);
   if (o.명령 === '준비') {
     const { 폴더, 목록 } = await 준비하기(o, { 알리기 });
-    const { review } = require('./lib/뮤즈1차.js');
-    for (const bundle of 목록.묶음) {
-      const captures = [];
-      for (const set of [목록.화면, 목록.가져온캡처].filter(Boolean)) {
-        set.화면들.forEach((screen, index) => {
-          const id = 'S' + String(index + 1).padStart(2, '0') + (set.가져옴 ? 'g' : '');
-          if (bundle.항목.some(item => item.startsWith(id + '-'))) {
-            captures.push(...set.장들.filter(frame => frame.이름 === screen.이름 && frame.판 === '후').map(frame => path.join(폴더, frame.그림)));
-          }
-        });
-      }
-      const packet = fs.readFileSync(path.join(폴더, bundle.파일), 'utf8');
-      review(목록.종류 === '화면' ? '화면' : '코드', packet.slice(packet.indexOf('## 이번 변경')), captures);
-    }
     찍기(`${폴더}`);
     찍기(`${목록.종류} 검수 · 바탕 ${목록.바탕.커밋.slice(0, 9)} → ${목록.끝 === '작업본' ? '작업본' : 목록.끝.커밋.slice(0, 9)} · 파일 ${목록.파일.length}개(뺌 ${목록.파일.filter(f => f.뺀까닭).length})`);
     for (const b of 목록.묶음) 찍기(`  묶음 ${b.이름}: ${Math.round(b.바이트 / 1024)}KB · 항목 ${b.항목.length}개 · ${b.갈래} · sha ${b.sha256.slice(0, 12)} · 끝 표식 ${b.표식}${b.바이트 > 목록.최대바이트 ? ` · 주의: ${목록.최대바이트}바이트를 넘었다(파일 목록이 길다)` : ''}`);

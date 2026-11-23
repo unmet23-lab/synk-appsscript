@@ -35,14 +35,18 @@ test('영상·현지어·글자의 통과 지문이 같은 대기 판본만 고�
   assert.deepEqual(readyVersions(root,root,[row,{...row,상태:'뜻 검수 고칠 것'}]),[row]);
   fs.writeFileSync(video,'new');assert.deepEqual(readyVersions(root,root,[row]),[]);
 });
-test('시험지와 뮤즈 원답 지문을 확인하고 잘린 답과 빈 요약을 거절한다',t=>{
+test('시험지 지문을 확인하고 잘린 답과 빈 요약을 거절한다 — 11-23 전 회차의 뮤즈1차 칸도 읽는다',t=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'lab-paper-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
-  const ep=path.join(root,'docs','마케팅','LAB_편'), out=path.join(root,'exam'), cache=path.join(root,'.tmp','뮤즈1차');
-  for (const p of [ep,out,cache])fs.mkdirSync(p,{recursive:true});
-  const report='1'.repeat(64)+'.txt', src=path.join(ep,'글.json'), q=path.join(out,'질문.md');
-  fs.writeFileSync(src,'{}');fs.writeFileSync(q,'question');fs.writeFileSync(path.join(cache,report),'review');
-  const m={편:'LAB_편',판본:'UZ',만든곳:root,편폴더:ep,글:src,지문:sha256(src),시험관:['sonnet','haiku'],뮤즈1차:{모델:'muse-spark-1.3',원답:report,원답지문:sha256(path.join(cache,report)),질문지문:sha256(q)}};
+  const ep=path.join(root,'docs','마케팅','LAB_편'), out=path.join(root,'exam');
+  for (const p of [ep,out])fs.mkdirSync(p,{recursive:true});
+  const src=path.join(ep,'글.json'), q=path.join(out,'질문.md');
+  fs.writeFileSync(src,'{}');fs.writeFileSync(q,'question');
+  const m={편:'LAB_편',판본:'UZ',만든곳:root,편폴더:ep,글:src,지문:sha256(src),시험관:['sonnet','haiku'],시험지:{질문지문:sha256(q)}};
   fs.writeFileSync(path.join(out,'재료.json'),JSON.stringify(m));assert.equal(verifyInput(root,out).지문,m.지문);
+  const {시험지,...옛}=m;
+  fs.writeFileSync(path.join(out,'재료.json'),JSON.stringify({...옛,뮤즈1차:{상태:'미완료',질문지문:시험지.질문지문}}));assert.equal(verifyInput(root,out).지문,m.지문);
+  fs.writeFileSync(path.join(out,'재료.json'),JSON.stringify(옛));assert.throws(()=>verifyInput(root,out),/현재 시험지/);
+  fs.writeFileSync(path.join(out,'재료.json'),JSON.stringify(m));
   fs.appendFileSync(q,'replacement');assert.throws(()=>verifyInput(root,out),/현재 시험지/);
   assert.throws(()=>validAnswer('{}',m));assert.throws(()=>validAnswer('{"요약":',m));
 });
@@ -69,14 +73,15 @@ test('현재 시험지에 배정된 시험관의 실제 구독 한도 응답만 
   const dir = fs.mkdtempSync(path.join(os.tmpdir(),'lab-agent-quota-'));
   t.after(() => fs.rmSync(dir,{recursive:true,force:true}));
   const stamp = new Date(slot + 2000).toISOString();
-  const m = { 시각: new Date(slot).toISOString(), 뮤즈1차:{질문지문:'1'.repeat(64)} };
+  const m = { 시각: new Date(slot).toISOString(), 시험지:{질문지문:'1'.repeat(64)} };
   const log = path.join(dir,'agent-001.jsonl');
   fs.writeFileSync(path.join(dir,'agent-001.meta.json'),JSON.stringify({model:'sonnet',description:'뜻검사 '+'1'.repeat(16)}));
   const row={type:'assistant',timestamp:stamp,isApiErrorMessage:true,apiError:'usage_limit_reached',message:{role:'assistant',content:'error'}};
   fs.writeFileSync(log,JSON.stringify(row)+'\n');
   assert.ok(judgeQuota(dir,m,'sonnet'));
   assert.ok(!judgeQuota(dir,m,'haiku'));
-  assert.ok(!judgeQuota(dir,{...m,뮤즈1차:{질문지문:'2'.repeat(64)}},'sonnet'));
+  assert.ok(!judgeQuota(dir,{...m,시험지:{질문지문:'2'.repeat(64)}},'sonnet'));
+  assert.ok(judgeQuota(dir,{시각:m.시각,뮤즈1차:{질문지문:'1'.repeat(64)}},'sonnet'), '11-23 전 회차의 뮤즈1차 칸도 읽는다');
   fs.appendFileSync(log,JSON.stringify({...row,isApiErrorMessage:false})+'\n');
   assert.ok(!judgeQuota(dir,m,'sonnet'));
 });
