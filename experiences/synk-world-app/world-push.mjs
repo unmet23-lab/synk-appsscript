@@ -415,9 +415,11 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   try{
    const reg=install?await register(expected):await existing();guard(expected);
    const sub=reg?await bounded(reg.pushManager.getSubscription()):null;guard(expected);subscription=sub;
-   const seq=++order,data=await request('status',sub?{endpoint:sub.endpoint}:{});
+   const seq=++order,mark=JSON.stringify(readRecord()),data=await request('status',sub?{endpoint:sub.endpoint}:{});
    if(!applyRead(seq,data,expected,'ready',tidy))return snapshot();   // 화면 맞추기 읽기는 기기 응답이 아니라 여기서 멈춘다(정리하지 않는다)
-   const next=snapshot(),record=readRecord();
+   // 읽기가 날아가는 사이 같은 브라우저의 다른 탭이 기기 기록을 바꿨으면(켜기 · 끄기) 이 응답으로 정리하지 않는다 — 그 탭이 방금 켠 구독의
+   // 기록을 지우고 서버에서 끄게 된다(r17 Fable 설계 검토: 화면은 「켜짐」인데 알림이 오지 않는다). 정리는 다음 평소 읽기가 한다.
+   const next=snapshot(),record=readRecord();if(JSON.stringify(record)!==mark)return snapshot();
    if(sub&&!next.device.subscribed&&record?.accountId===owner&&record.endpoint===sub.endpoint){await removeLocal(sub,reg);writeRecord(null);}
    else if(!sub&&record?.accountId===owner){writeRecord(null);try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}
    return snapshot();

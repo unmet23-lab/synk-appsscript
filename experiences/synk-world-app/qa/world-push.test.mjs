@@ -2032,6 +2032,26 @@ test('판: 화면 맞추기 읽기가 망이 끊겨 실패하면, 망이 돌아�
  a.dispose();b.dispose();c.dispose();
 });
 
+test('판: 같은 브라우저의 다른 탭이 알림을 켜는 사이 늦게 온 평소 읽기는 그 탭이 방금 쓴 기기 기록을 지우지 않는다(r17 Fable 설계 검토 — world-push.mjs:422)',async()=>{
+ const s=server(),storage=memory(),shared=browser({registered:false});
+ const net={holdNext:false,held:[]},anonB=[];
+ const requestB=(action,body,options)=>{if(action==='status'&&net.holdNext){net.holdNext=false;const reply=s.request(action,body,options);return new Promise(resolve=>net.held.push(()=>resolve(reply)));}return s.request(action,body,options);};
+ const a=makeV(shared,s,{storage});
+ const b=makeV(shared,{request:requestB,anonymous:(action,body)=>{anonB.push([action,body.endpoint]);return Promise.resolve({ok:true,removed:true});}},{storage});
+ await a.setAccount('acc-1');await b.setAccount('acc-1');await a.ready();await settled();
+ assert.equal(storage.getItem(PUSH_RECORD_KEY),null,'처음에는 이 브라우저 구독도 기기 기록도 없다');
+ net.holdNext=true;const ordinary=b.ready();await settled();   // B가 설정을 열어 평소 읽기를 보냈고 응답이 늦다(그때 구독은 없었다)
+ assert.equal(net.held.length,1);
+ const on=await a.enable({settings:{frequency:2,hour:null}});await settled();   // 그사이 A가 알림을 켠다
+ assert.equal(on.device.subscribed,true);
+ const record=storage.getItem(PUSH_RECORD_KEY);assert.ok(record,'A가 기기 기록을 썼다');
+ net.held.shift()();await ordinary;await settled();   // 늦은 B 응답
+ assert.equal(storage.getItem(PUSH_RECORD_KEY),record,'늦은 평소 읽기는 다른 탭이 방금 쓴 기기 기록을 지우지 않는다');
+ assert.deepEqual(anonB,[],'A의 새 구독을 서버에서 끄지 않는다');
+ assert.ok(shared.current,'브라우저 구독도 남는다');
+ a.dispose();b.dispose();
+});
+
 test('판: 화면 맞추기 읽기가 늦은 평소 읽기보다 먼저 끝나도, 평소 읽기는 사라진 구독의 기기 기록을 정리한다(GPT push-versions-world-r16 GA1)',async()=>{
  const s=versionedServer({settings:{frequency:2,hour:9,since:null}}),storage=memory(),locks=fakeLocks(),rem=reminderSettings({frequency:2,hour:9,since:null}),bus=storageBus();
  const net={holdNext:false,held:[]},anonB=[];
@@ -2230,6 +2250,26 @@ test('판: 켜기 전에 시작한 status가 켜기 뒤에 와도 방금 켠 이
  assert.equal(push.snapshot().device.subscribed,true);
  hold.shift()();hold=null;await reading;await settled();
  assert.ok(storage.getItem('synk.world.push.v1'),'주인 기록이 남는다');
+ assert.equal(anonymous.length,0,'로그인 없이 끄지 않았다');
+ assert.equal(push.snapshot().device.subscribed,true);
+});
+
+test('판: 이미 있던 이 브라우저 구독으로 다시 켜 기기 기록이 그대로여도, 켜기 전에 시작한 status는 그 구독과 기록을 지우지 않는다(설계 검토 7 · r17)',async()=>{
+ const s=versionedServer(),storage=memory(),anonymous=[],b=browser({registered:true,subscribed:SUB});let hold=null;
+ const record=JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB});storage.setItem(PUSH_RECORD_KEY,record);   // 서버는 이 기기를 잃었고 브라우저 구독과 기록은 남았다
+ const request=(action,body={},options={})=>{
+  if(action==='status'&&hold){const reply=s.request(action,body,options).then(data=>({...data,device:{subscribed:false}}));return new Promise(resolve=>hold.push(()=>resolve(reply)));}
+  return s.request(action,body,options);
+ };
+ const push=makeV(b,s,{storage,now:()=>V0,request,anonymous:(action,body)=>{anonymous.push([action,body]);return Promise.resolve({ok:true,removed:true});}});
+ await push.setAccount('acc-1');await push.ready();
+ hold=[];const reading=push.refresh();await flush();await flush();
+ assert.equal(hold.length,1,'status가 붙잡혔다');
+ await push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});
+ assert.equal(storage.getItem(PUSH_RECORD_KEY),record,'같은 구독으로 다시 켜 기록이 바이트까지 같다');
+ hold.shift()();hold=null;await reading;await settled();
+ assert.equal(b.current?.endpoint,SUB,'브라우저 구독이 남는다');
+ assert.equal(storage.getItem(PUSH_RECORD_KEY),record,'주인 기록이 남는다');
  assert.equal(anonymous.length,0,'로그인 없이 끄지 않았다');
  assert.equal(push.snapshot().device.subscribed,true);
 });
