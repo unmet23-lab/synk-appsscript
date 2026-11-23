@@ -1,5 +1,8 @@
 // WORLD 학생 레슨 시트 종이 겉(유호님 11-23 「종이」 · 「학생 시트만」)의 synk.im/world 선택 공개 재료(2026-11-23). 본보기: 생활2단_공개묶음.mjs.
-//   node experiences/synk-world-app/qa/시트종이_공개묶음.mjs [--끝 <커밋=origin/master>]
+//   node experiences/synk-world-app/qa/시트종이_공개묶음.mjs [--끝 <커밋=origin/master>] [--앞끝 <지난번 공개한 원천 커밋>]
+// --앞끝: 이 일을 이미 한 번 공개한 뒤 고침만 다시 올릴 때. 3방향 합침의 바탕을 「바탕 판 + 앞끝까지의 이 일 커밋」으로 두어,
+//   공개본 위에 앞끝 → 끝 사이의 바꿈만 얹는다(11-24 — 바탕 커밋 기준으로 다시 합치면 이미 공개한 포스터 머리 줄과 부딪힌다).
+//   항목도 앞끝 뒤 커밋이 바꾼 파일만이다.
 // master 전체 공개는 몽골 시범 뒤라(결정 11-20 Atlas 선택 공개), 지금 공개본 위에 이 일의 변경만 얹는다(앞면 공개묶음.mjs와 같은 꼴).
 // · 고친 원천: 바탕 판(이 일의 첫 커밋 바로 앞)에 이 일의 커밋(제목이 「WORLD 레슨 시트 종이 겉」)만 얹은 「내 판」을
 //   공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 겹치면 멈춘다.
@@ -28,16 +31,20 @@ const live = async rel => { const r = await fetch(`https://synk.im/world/${rel}?
 const mine = git('log', '--reverse', '--format=%H', `--grep=${TITLE}`, END).toString().trim().split('\n').filter(Boolean);
 if (!mine.length) throw Error(`이 일의 커밋이 ${END}에 없다(${TITLE})`);
 const BASE = git('rev-parse', `${mine[0]}^`).toString().trim();
+const PREV = opt('--앞끝', null);
+const isAncestor = (a, b) => { try { execFileSync('git', ['-C', ROOT, 'merge-base', '--is-ancestor', a, b]); return true; } catch { return false; } };
+const before = PREV ? mine.filter(c => isAncestor(c, PREV)) : [], newer = PREV ? mine.filter(c => !isAncestor(c, PREV)) : mine;
+if (PREV && !newer.length) throw Error(`앞끝 ${PREV} 뒤에 이 일의 커밋이 없다`);
 // 기준 · 새 판 · 항목만 지운다. 후보 폴더(cand*)는 검수 사슬이 바이트를 묶고 있어 남긴다 — 다시 검수는 앞 검수의 후보를 읽는다(11-23).
 for (const name of ['base', 'new', '항목.txt']) fs.rmSync(path.join(OUT, name), {recursive: true, force: true});
 fs.mkdirSync(OUT, {recursive: true});
 const srcOf = rel => rel.startsWith('brand-opening/') ? `experiences/${rel}` : `experiences/synk-world-app/${rel}`;
 // 바탕 판에 이 일의 커밋만 얹는다(그 파일의 diff를 차례로). 남의 커밋은 싣지 않는다.
-function mineOnly(src) {
+function mineOnly(src, commits = mine) {
   const tmp = fs.mkdtempSync(path.join(OUT, 'm-'));
   const file = path.join(tmp, 'f');
   fs.writeFileSync(file, lf(git('show', `${BASE}:${src}`).toString()));
-  for (const c of mine) {
+  for (const c of commits) {
     const d = lf(git('diff', `${c}^`, c, '--', src).toString());
     if (!d.trim()) continue;
     const patch = path.join(tmp, 'p.diff');
@@ -124,14 +131,15 @@ const RESOLVE = {
   },
 };
 const write = (dir, rel, data) => { const f = path.join(OUT, dir, 'world', rel); fs.mkdirSync(path.dirname(f), {recursive: true}); fs.writeFileSync(f, data); };
-const changed = new Set(mine.flatMap(c => git('diff-tree', '--no-commit-id', '--name-only', '-r', c).toString().trim().split('\n')).filter(Boolean));
+const changed = new Set(newer.flatMap(c => git('diff-tree', '--no-commit-id', '--name-only', '-r', c).toString().trim().split('\n')).filter(Boolean));
 const SOURCES = ['life-ui.mjs', 'life-ui.css', 'life-story.mjs', 'app-shell.css', 'brand-opening/home.mjs', 'brand-opening/home.css', 'brand-opening/world-ui.css', 'brand-opening/world-strings.mjs'];
 const items = [];
 for (const rel of SOURCES) {
   const src = srcOf(rel);
   if (!changed.has(src)) continue;
   const pub = await live(rel);
-  const text = merge3(rel, pub, rw(lf(git('show', `${BASE}:${src}`).toString()), rel), rw(mineOnly(src), rel));
+  const mergeBase = PREV ? mineOnly(src, before) : lf(git('show', `${BASE}:${src}`).toString());
+  const text = merge3(rel, pub, rw(mergeBase, rel), rw(mineOnly(src), rel));
   write('base', rel, pub); write('new', rel, text); items.push(`world/${rel}`);
 }
 // 새 그림과 이야기 해설 글꼴(이야기 글자로 다시 자른 조각): 끝 판 그대로
@@ -148,5 +156,5 @@ const outside = [...changed].filter(f => f.startsWith('experiences/') && !SOURCE
 if (outside.length) console.log('공개하지 않는 원천(확인):', outside.join(' '));
 fs.writeFileSync(path.join(OUT, '항목.txt'), items.join('\n') + '\n');
 const posix = p => p.replaceAll('\\', '/');
-console.log(`끝 ${git('rev-parse', '--short', END).toString().trim()} · 바탕 ${BASE.slice(0, 9)} · 이 일의 커밋 ${mine.length}개 · 항목 ${items.length}개`);
+console.log(`끝 ${git('rev-parse', '--short', END).toString().trim()} · 바탕 ${BASE.slice(0, 9)} · 이 일의 커밋 ${mine.length}개${PREV ? ` (앞끝 ${PREV.slice(0, 9)} 뒤 ${newer.length}개)` : ""} · 항목 ${items.length}개`);
 console.log(['node tools/공개.js 올리기', '--원본', posix(path.join(OUT, 'new')), '--기준폴더', posix(path.join(OUT, 'base')), ...items, '--후보폴더', posix(path.join(OUT, 'cand'))].join(' '));

@@ -694,7 +694,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 이야기 넘기기: 다음 단추·사진 누르기·밀기·←/→가 모두 여기로 온다. 첫 장면에서 이전은 알림만.
  function turnScene(delta){
   if(context?.phase!=='story')return;
-  // 배울 말이 나는 동안(「다음」 is-holding)은 앞으로 넘기지 않는다 — 단추 · → 키 · 사진 누르기 · 밀기가 모두 여기로 온다(Fable world-sheet-paper-pub F2). 뒤로는 연다.
+  // 배울 말이 나는 동안(「다음」 is-holding)은 앞으로 넘기지 않는다 — 단추 · → 키 · 사진 누르기 · 밀기가 모두 여기로 온다(11-24 공개 후보 검수). 뒤로는 연다.
   if(delta>0&&content.querySelector('[data-life-scene-next].is-holding'))return;const l=lessonById(context.lessonId),target=context.sceneIndex+delta;
   if(target<0){play('tap');home.toast(t('life.firstScene'));return;}
   play('page');haptic('tap');

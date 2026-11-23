@@ -528,6 +528,6 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
 #world-panel.world-signin-panel.is-paper .world-notice span{padding-left:26px;font-size:14.5px;line-height:1.6;color:var(--w-ink-2)}
 #world-panel.world-signin-panel.is-paper .world-actions{gap:8px;margin-top:22px}
 #world-panel.world-signin-panel.is-paper .dialog-note{text-align:center;color:var(--w-ink-3)}
-/* 좁거나 낮은 휴대폰에서는 큰 물음을 줄이고 사이를 좁혀 로그인 단추 둘이 첫 화면에 든다(Fable world-sheet-paper-pub F1 — 몽골어 360×640에서 물음 7줄, 단추가 반쯤 아래로). 390×844는 승인한 24px 그대로. */
+/* 좁거나 낮은 휴대폰에서는 큰 물음을 줄이고 사이를 좁혀 로그인 단추 둘이 첫 화면에 든다(11-24 공개 후보 검수 — 몽골어 360×640에서 물음 7줄, 단추가 반쯤 아래로). 390×844는 승인한 24px 그대로. */
 @media(max-width:379px),(max-height:700px){#world-panel.world-signin-panel.is-paper .ws-lead{font-size:20px;line-height:1.38}#world-panel.world-signin-panel.is-paper .world-notice{margin-top:16px;padding:12px 2px 13px}#world-panel.world-signin-panel.is-paper .world-actions{margin-top:16px}}
 @media(max-width:359px){#world-panel.world-signin-panel.is-paper .ws-lead{font-size:18px}}
