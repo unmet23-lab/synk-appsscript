@@ -65,6 +65,12 @@
  *      11-19 유호님 「맞았을때 표현이랑 틀렸을때 표현이랑 글씨 색이 똑같아서 외국인 입장에서 보면 많이 헷갈리거든」
  *      그 앞에 만든 옛 편(11-20 넓힘 — 유호님 「네, 넓혀 줘」)은 칸을 적지 않아도 되지만, 화면 코드에 그대로 적혔거나 판본 글 값에 든 틀림 글자(✗ ✕ ✖ ❌)가 있는데
  *      두 색이 다 없으면 고칠 것이다. 색을 맞추거나, 틀린 말 표시가 아니면 칸에 「없음(그 글자가 무엇인지)」을 적는다. 칸을 적은 옛 편은 새 편과 같이 본다.
+ *   ㉓ 화면 글 머묾 · 새 낱말(11-23, tools/화면글검사.js · 판정 tools/lib/화면글판정.js · 관문 tools/lib/화면글관문.js) — LAB · synkbrief · yuhobuilds 편(슬롯 11-24부터)의
+ *      원본 영상마다 그 영상을 만든 Remotion 원본을 다시 그려(그린 그림과 영상을 견줘 같은 원본인지 확인) 화면 글 시간표를 읽는다. 새 글이 1.2초 넘게 있지 않음 ·
+ *      제 글자 수를 읽을 시간이 모자람 · 새 글이 앞 글 5/6초 안에 또 뜸(LAB만) · 답 · 뜻풀이가 2.5초 넘게 있지 않음 · 가르치는 한국어 낱말이 넷 넘음을 잰다.
+ *      LAB 편(폴더 날짜 11-24부터)의 심한 걸림(새 글 5/6초 아래 · 답 1.5초 아래 · 낱말 일곱 넘음)은 고칠 것, 나머지와 못 잰 영상은 확인할 것.
+ *      일부러 둔 자리는 준비.json 「화면글판단」에 까닭(고칠 것 → 확인할 것). 규칙은 제작 절차 「화면 글은 읽을 만큼」 — 11-15 유호님 「물개 게시물 나쁘지않은데
+ *      너무 전환이 빨라서 이해가 어려운데」(물개 v8: 17.8초에 낱말 아홉 · 0.5초마다 바뀌는 글 · 1.1초짜리 답)
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -89,6 +95,7 @@ const { musicLayerFindings } = require('./lib/음악층관문.js');
 const { finalCutFindings } = require('./lib/최종본관문.js');
 const { mnPickFindings } = require('./lib/몽골고르기관문.js');
 const { rightWrongFindings } = require('./lib/맞음틀림관문.js');
+const { screenTextFindings } = require('./lib/화면글관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
 const 장부 = require('./게시장부.js');
@@ -1156,6 +1163,7 @@ async function run(dir, opts = {}) {
   findings.push(...aestheticFindings(bundle, [...videos.keys()], { 판본영상 }));
   findings.push(...musicLayerFindings(bundle, [...videos.keys()]));
   findings.push(...finalCutFindings(bundle, [...videos.keys()], { save: !opts.noSave }));
+  findings.push(...screenTextFindings(bundle, [...videos.keys()], { save: !opts.noSave }));
   let repeat = { findings: [], summary: null };
   try { repeat = 반복.repeatFindings(bundle, plates, { skipOcr: opts.skipOcr, work: out }); } catch (error) {
     add(LOOK, 'repeat-failed', '지난 편', `지난 편 되풀이를 못 봤다(${error.message}) — 첫 · 끝 장면과 끝 줄을 지난 두 편과 눈으로 견준다`);
