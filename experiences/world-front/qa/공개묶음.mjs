@@ -65,7 +65,7 @@ const MOD = [
   ['experiences/brand-opening/home.mjs', 'brand-opening/home.mjs'],
   ['experiences/seoul-arrival/app.mjs', 'seoul-arrival/app.mjs'],
   ['experiences/seoul-arrival/strings.mjs', 'seoul-arrival/strings.mjs'],
-  // 동아리장 알림(11-24): 앞면 대화 카드가 부르는 짧은 진단 문(clubCheck) 한 토막만 공개본 위에 3방향으로 얹는다
+  // 동아리장 알림(11-24): 앞면 대화 카드가 부르는 짧은 진단 문(clubCheck) — 아래 learningRecipe가 얹는다
   ['experiences/synk-world-app/world-learning-ui.mjs', 'world-learning-ui.mjs']
 ];
 for (const dir of ['base', 'new']) fs.rmSync(path.join(OUT, dir), {recursive: true, force: true});
@@ -118,6 +118,39 @@ function shellRecipe(pub) {
   if (/atlasNext(Guest)?On/.test(text) && !/atlasNext(Guest)?On/.test(pub)) throw Error('app-shell.mjs: 공개본에 없는 atlasNextOn을 부른다');
   return text;
 }
+// world-learning-ui.mjs도 공개본(Atlas 선택 공개 전 판)과 master의 내보내기 줄이 달라 3방향 합침이 겹친다. 동아리장 알림의
+// 짧은 진단 문(clubCheck) 한 토막과 내보내기 이름 하나만 「공개본의 이 글 → 이렇게」로 얹는다. 공개본에 Atlas 새 길(homePhase)이 없으면 그 줄을 뺀다.
+function learningRecipe(pub) {
+  if (pub.includes('async function clubCheck(')) return pub;
+  const endText = lf(git('show', `${END}:experiences/synk-world-app/world-learning-ui.mjs`).toString());
+  const b0 = endText.indexOf(' // 동아리 튜터의 첫 실력 파악'), b1 = endText.indexOf(' // 진단 판 한 바퀴(', b0);
+  if (b0 < 0 || b1 < 0) throw Error('world-learning-ui.mjs: 끝 판에서 clubCheck 토막을 못 찾음');
+  let block = endText.slice(b0, b1);
+  const phase = "  if(homePhase()!=='old')return {status:'board'};\n";
+  if (!/\bfunction homePhase\(/.test(pub)) { if (block.split(phase).length !== 2) throw Error('world-learning-ui.mjs: clubCheck의 새 길 줄이 바뀜'); block = block.replace(phase, ''); }
+  for (const name of ['readCoach', 'positionData', 'finishSet', 'evidenced', 'bankReady', 'diagnosed', 'refresh', 'audioUrl', 'prepare'])
+    if (!new RegExp(`\\b(?:function|const|let)\\s+${name}\\b|[,{(]\\s*${name}\\s*=`).test(pub)) throw Error(`world-learning-ui.mjs: 공개본에 clubCheck가 부르는 ${name}이 없다`);
+  const at = ' // 진단 판 한 바퀴(', exp = 'practice:startPractice,';
+  if (pub.split(at).length !== 2) throw Error('world-learning-ui.mjs: 공개본에서 진단 판 머리 주석을 못 찾음');
+  const ret = pub.lastIndexOf('\n return {'), e = pub.indexOf(exp, ret);
+  if (ret < 0 || e < 0 || pub.indexOf(exp, e + 1) >= 0) throw Error('world-learning-ui.mjs: 공개본 내보내기 줄에서 practice:startPractice를 못 찾음');
+  const text = pub.replace(at, block + at);
+  const r2 = text.lastIndexOf('\n return {'), e2 = text.indexOf(exp, r2);
+  return text.slice(0, e2 + exp.length) + 'clubCheck,' + text.slice(e2 + exp.length);
+}
+// 서울행 내 길의 동아리장 알림 갈고리(11-24)는 다른 일의 커밋(f69a3b9e2 승급 오디션 자리)에 함께 실려 「WORLD 첫날 끝」 커밋으로는 못 집는다.
+// import 한 줄과 1화 전 시작 단추 묶음만 「공개본의 이 글 → 끝 판의 글」로 얹는다.
+function roadRecipe(text) {
+  if (text.includes('clubWanted')) return text;
+  const endText = lf(git('show', `${END}:experiences/seoul-arrival/app.mjs`).toString());
+  const imp = "import {createNameTrace,nameSyllables,signSvg} from './name-trace.mjs';\n", add = "import {clubCall,clubWanted} from './club-call.mjs';\n";
+  if (!endText.includes(imp + add) || text.split(imp).length !== 2) throw Error('seoul-arrival/app.mjs: import 줄을 못 맞춤');
+  const from = "<button class=\"back-btn\" id=\"goHome\" type=\"button\">${L(HOST?.front?.()?'오늘은 여기까지':'우리 동네 먼저 둘러보기')}</button>`}</div>`;\n  $('#startEp').onclick=playScene;$('#goHome').onclick=leave;\n";
+  const t0 = endText.indexOf("${HOST?.front?.()&&clubWanted()?'':`<button class=\"back-btn\" id=\"goHome\""), t1 = endText.indexOf("  $('#road').classList.toggle('calm'", t0);
+  if (t0 < 0 || t1 < 0) throw Error('seoul-arrival/app.mjs: 끝 판에서 동아리장 알림 갈고리를 못 찾음');
+  if (text.split(from).length !== 2) throw Error('seoul-arrival/app.mjs: 공개본에서 1화 전 시작 단추 묶음을 못 찾음');
+  return text.replace(imp, imp + add).replace(from, endText.slice(t0, t1));
+}
 // 다리가 활동 이름을 화면 언어로 바꿀 때 부르는 home.planLabel은 master(Atlas 커밋)에서만 내보낸다. 공개본에 함수는 있으니 내보내기 한 줄만 얹는다(Fable P2-1).
 // 그리고 다리 · 앱 셸 앞면 묶음이 부르는 home 이름이 후보 home 객체에 다 있는지 본다(import 이름 대조는 속성 부르기를 보지 않는다).
 function homeExtra(text) {
@@ -140,8 +173,9 @@ function homeExtra(text) {
 }
 for (const [src, rel] of MOD) {
   const pub = await live(rel);
-  let cand = rel === 'app-shell.mjs' ? shellRecipe(pub) : merge3(pub, rw(lf(git('show', `${BASE}:${src}`).toString()), rel), rw(mineOnly(src), rel), rel);
+  let cand = rel === 'app-shell.mjs' ? shellRecipe(pub) : rel === 'world-learning-ui.mjs' ? learningRecipe(pub) : merge3(pub, rw(lf(git('show', `${BASE}:${src}`).toString()), rel), rw(mineOnly(src), rel), rel);
   if (rel === 'brand-opening/home.mjs') cand = homeExtra(cand);
+  if (rel === 'seoul-arrival/app.mjs') cand = roadRecipe(cand);
   if (cand === pub) continue;
   write('base', rel, pub); write('new', rel, cand); items.push('world/' + rel);
 }
