@@ -306,6 +306,22 @@ export function TAP요약(tap) {
   return { 시험: 수('tests'), 통과: 수('pass'), 실패: 수('fail'), 건너뜀: 수('skipped'), 취소: 수('cancelled'), 할일: 수('todo'), 실패목록: 실패 };
 }
 
+/** 시험 항목의 실패 줄. 실패 수가 0일 때만 「실패 없음」이다 — 셈을 못 읽었거나 실패 이름을 못 찾았으면 그렇게 적는다(11-23 spec 꼴 결과가 「실패 없음」으로 적힘). */
+export function 실패줄들(t) {
+  if (t.실패목록?.length) return ['실패:', ...t.실패목록.slice(0, 30).map(x => `- ${x.이름}${x.위치 ? ` (${x.위치})` : ''}: ${x.오류}`)];
+  if (t.실패 === 0) return ['실패 없음'];
+  if (t.실패 > 0) return [`실패 ${t.실패}건 — 실패한 시험 이름을 TAP에서 읽지 못했다. TAP 원문을 본다`];
+  return ['실패 수를 읽지 못했다 — 시험 결과에 TAP 셈 줄(# fail N)이 없다'];
+}
+
+/** --시험결과로 받은 파일을 시험.tap으로 옮기고 요약한다. node --test TAP의 셈 줄(# tests N · # fail N)이 없으면 멈춘다 — spec 꼴 결과를 「실패 없음」으로 읽지 않게(11-23). */
+export function 받은시험결과(파일, 폴더) {
+  const 요약 = TAP요약(fs.readFileSync(파일, 'utf8'));
+  if (요약.시험 == null || 요약.실패 == null) throw new Error(`받은 시험 결과 ${path.basename(파일)}에 TAP 셈 줄(# tests N · # fail N)이 없다 — node --test --test-reporter=tap으로 받은 결과를 준다`);
+  fs.copyFileSync(파일, path.join(폴더, '시험.tap'));
+  return { 명령: `(받은 TAP ${path.basename(파일)})`, 종료: null, tap: '시험.tap', 없는파일: [], ...요약 };
+}
+
 export function 시험돌리기(대상, { cwd, 폴더, 이름 = '시험' }) {
   const tap = path.join(폴더, `${이름}.tap`);
   fs.mkdirSync(폴더, { recursive: true });
@@ -689,7 +705,7 @@ async function 자료모으기(설정, 폴더, { 시험 = true, 캡처 = true, �
   });
   if (설정.배경파일) 자료.배경 = fs.readFileSync(path.resolve(설정.배경파일), 'utf8');
   if (시험 && 설정.시험.length) { 알리기(`시험: node --test ${설정.시험.join(' ')}`); 자료.시험 = 시험돌리기(설정.시험, { cwd: 설정.저장소, 폴더 }); }
-  else if (설정.시험결과) { fs.copyFileSync(path.resolve(설정.시험결과), path.join(폴더, '시험.tap')); 자료.시험 = { 명령: `(받은 TAP ${path.basename(설정.시험결과)})`, 종료: null, tap: '시험.tap', 없는파일: [], ...TAP요약(fs.readFileSync(path.join(폴더, '시험.tap'), 'utf8')) }; }
+  else if (설정.시험결과) 자료.시험 = 받은시험결과(path.resolve(설정.시험결과), 폴더);
   if (캡처 && (설정.화면.length || 설정.장면)) { 알리기(`화면 ${설정.화면.length || '장면'} × 1440·390 × ${캡처판.join('·')} 캡처`); 자료.화면 = await 화면찍기(설정, 폴더, { 판들: 캡처판, 하위: 캡처하위, 앞장들, 후보: 앞후보, 후보앞판, 앞판씀, 알리기 }); }
   if (캡처 && 설정.캡처) 자료.가져온캡처 = await 캡처가져오기(설정.캡처, 폴더);
   const 뒤파일 = 바뀐파일들({ 바탕: 설정.바탕.커밋, 끝: 설정.끝 === '작업본' ? '작업본' : 설정.끝.커밋, 경로: 설정.경로, cwd: 설정.저장소 });
@@ -790,7 +806,7 @@ function 항목만들기(자료, 설정, 폴더, 정책, 앞판) {
   if (자료.시험) {
     const t = 자료.시험;
     const 몸 = [시험한줄(t), ...(t.없는파일?.length ? [`- 없는 시험 파일(돌지 않음): ${t.없는파일.join(', ')}`] : []),
-      ...(t.실패목록.length ? ['실패:', ...t.실패목록.slice(0, 30).map(x => `- ${x.이름}${x.위치 ? ` (${x.위치})` : ''}: ${x.오류}`)] : ['실패 없음'])].join('\n');
+      ...실패줄들(t)].join('\n');
     항목들.push(항목('T01', '시험 결과', 몸));
   }
   설정.곁.forEach((spec, i) => {
@@ -2589,17 +2605,14 @@ export async function 다시하기(o, { 알리기 = () => {} } = {}) {
   fs.mkdirSync(폴더, { recursive: true });
   let 시험 = null;
   if (설정.시험.length) { 알리기(`시험: node --test ${설정.시험.join(' ')}`); 시험 = 시험돌리기(설정.시험, { cwd: 저장소, 폴더 }); }
-  else if (설정.시험결과) {
-    fs.copyFileSync(설정.시험결과, path.join(폴더, '시험.tap'));
-    시험 = { 명령: `(받은 TAP ${path.basename(설정.시험결과)})`, 종료: null, tap: '시험.tap', 없는파일: [], ...TAP요약(fs.readFileSync(path.join(폴더, '시험.tap'), 'utf8')) };
-  }
+  else if (설정.시험결과) 시험 = 받은시험결과(설정.시험결과, 폴더);
   if (정규해시(잼) !== 정규해시(재기())) throw new Error('다시 검수 준비 중 소스·배포 후보가 바뀌었다 — 다시 한다');
   const 검수자들 = 다시검수자들(정책, 대상, { 끝판: Boolean(o.끝판) });
   const 항목들 = [], diff글 = [], 파일목록 = [];
   if (대상.length) 항목들.push(항목('Q01', `다시 볼 지적 ${대상.length}건 — 앞 검수 「${끝고리.이름}」에서 나와 고친 것`, 대상.map(t => [`- [${t.아이디}] ${t.출처} ${t.번호} · ${t.등급} · ${t.위치}`,
     `  인용: ${t.인용}`, `  문제: ${t.문제}`, `  고칠 방향: ${t.방향}`, `  Claude의 처리: ${t.처리}${t.이유 ? ` — ${t.이유}` : ''}`].join('\n')).join('\n')));
   if (시험) 항목들.push(항목('T01', '시험 결과', [시험한줄(시험), ...(시험.없는파일?.length ? [`- 없는 시험 파일(돌지 않음): ${시험.없는파일.join(', ')}`] : []),
-    ...(시험.실패목록.length ? ['실패:', ...시험.실패목록.slice(0, 30).map(x => `- ${x.이름}${x.위치 ? ` (${x.위치})` : ''}: ${x.오류}`)] : ['실패 없음'])].join('\n')));
+    ...실패줄들(시험)].join('\n')));
   const 앞맵 = new Map(본판.map(f => [f.경로, f])), 지금맵 = new Map(지금판.map(f => [f.경로, f]));
   let k = 0;
   for (const 경로 of 본바뀐.소스) {

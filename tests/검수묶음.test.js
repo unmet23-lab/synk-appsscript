@@ -90,6 +90,28 @@ test('TAP 요약: 하위 시험 실패만 알리는 부모 줄은 빼고, 실패
   assert.equal(s.실패목록[0].위치, 'tests/a.test.js:5:3');
 });
 
+test('받은 시험 결과(11-23): TAP 셈 줄이 없는 spec 꼴 결과는 멈추고, 실패 수가 0일 때만 「실패 없음」이라 적는다', async t => {
+  const { 받은시험결과, 실패줄들 } = await tool();
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-review-tap-'));
+  t.after(() => fs.rmSync(폴더, { recursive: true, force: true, maxRetries: 5 }));
+  const spec = path.join(폴더, 'spec.txt');
+  fs.writeFileSync(spec, ['✔ 더하기 (1.2ms)', '✖ 빼기 (0.8ms)', 'ℹ tests 2', 'ℹ pass 1', 'ℹ fail 1'].join('\n'));
+  assert.throws(() => 받은시험결과(spec, 폴더), /TAP 셈 줄.*--test-reporter=tap/);
+  assert.equal(fs.existsSync(path.join(폴더, '시험.tap')), false);
+  const 잘림 = path.join(폴더, 'cut.tap');
+  fs.writeFileSync(잘림, ['TAP version 13', '# Subtest: 더하기', 'ok 1 - 더하기'].join('\n'));
+  assert.throws(() => 받은시험결과(잘림, 폴더), /TAP 셈 줄/);
+  const tap = path.join(폴더, 'ok.tap');
+  fs.writeFileSync(tap, ['TAP version 13', 'ok 1 - 더하기', '# tests 1', '# pass 1', '# fail 0'].join('\n'));
+  const s = 받은시험결과(tap, 폴더);
+  assert.deepEqual([s.시험, s.통과, s.실패, s.tap], [1, 1, 0, '시험.tap']);
+  assert.deepEqual(fs.readFileSync(path.join(폴더, '시험.tap')), fs.readFileSync(tap));
+  assert.deepEqual(실패줄들(s), ['실패 없음']);
+  assert.deepEqual(실패줄들({ 실패: 2, 실패목록: [] }), ['실패 2건 — 실패한 시험 이름을 TAP에서 읽지 못했다. TAP 원문을 본다']);
+  assert.match(실패줄들({ 실패: null, 실패목록: [] })[0], /실패 수를 읽지 못했다/);
+  assert.deepEqual(실패줄들({ 실패: 1, 실패목록: [{ 이름: 'a › b', 위치: 'a.js:1:1', 오류: 'x' }] }), ['실패:', '- a › b (a.js:1:1): x']);
+});
+
 test('묶기: 한도를 넘는 항목은 @@ 덩이 경계로 조각(a·b…), 모든 묶음이 한도 안, 코드와 화면은 갈린다', async () => {
   const { 묶기 } = await tool();
   const 항목 = (앞, 몸, 갈래 = '코드') => ({ id: `${앞}-0000`, 앞, 제목: 앞, 몸, 갈래, 파일: `${앞}.js`, 글: `### [${앞}-0000] ${앞}\n${몸}\n` });
