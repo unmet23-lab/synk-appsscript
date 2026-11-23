@@ -72,7 +72,7 @@ function checkCut(w, label) {
     );
   }
   assert.deepEqual(
-    w.groups.rowsUntil(until),
+    [...w.groups.all().keys()].flatMap(id => w.groups.rowsAt(id, until).rows),
     [...want.values()].flatMap(group => rowsOfGroup(group, w.index)),
     `${label}: 열쇠 ≤ ${until}의 근거 줄 전부`,
   );

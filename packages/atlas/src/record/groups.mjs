@@ -231,11 +231,6 @@ export function createGroupIndex(index, edition) {
     seq: id => s.meta.get(id).seq,
     rows,
     rowsAt,
-    rowsUntil(until) {
-      const out = [];
-      for (const id of s.meta.keys()) out.push(...rowsAt(id, until).rows);
-      return out;
-    },
     // 제외가 겨눈 사건이 머리 · 자식으로 든 묶음과, 그 번호를 결정으로 든 제시 묶음(touchesOf가 다시 거른다).
     touching: id =>
       [...(s.of.get(id) ?? []), ...(s.decisions.get(id)?.shown ?? [])].map(source =>

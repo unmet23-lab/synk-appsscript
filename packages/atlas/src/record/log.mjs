@@ -26,10 +26,10 @@ import { deviceKey, EMPTY_INDEX } from './adapt.mjs';
 import { carriedList } from './carry.mjs';
 import { createClock } from './clock.mjs';
 import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, isId, parentOf } from './events.mjs';
+import { foldLines } from './fold-local.mjs';
 import { createGroupIndex } from './groups.mjs';
 import { ownFoldEvents, touchesOf, WAIT } from './own.mjs';
 import { genOf } from './port.mjs';
-import { linesOfRows } from './rows.mjs';
 import { foldEdition, ISSUED_KEEP_MS } from './server.mjs';
 import {
   applyDelta,
@@ -84,6 +84,7 @@ function createState(guest, now) {
     guest,
     held: new Map(), // id → { event, touches, key(포트 열쇠), position }
     groups: null, // held의 묶음 색인(groups.mjs — createRecord가 단다)
+    folding: null, // 손님 접기의 지난 접기(fold-local.mjs — 바뀐 묶음만 다시 접는다)
     acks: new Map(), // id → 서버 차례
     clamped: new Set(),
     dropped: new Set(),
@@ -197,6 +198,8 @@ function takeSummary(state, value, key) {
 // 손님 요약 기록 — 판 묶음이 다른 것(다른 판 엔진의 탭이 쓴 것)은 받지도 지우지도 않는다. 보기의 바탕은 늘 내 판 묶음으로 접은
 // 요약이다(§18-5-1 R3 — 없으면 refoldGuest가 그 자리에서 메모리로 접는다).
 function takeLocal(state, value, key, edition) {
+  // 지금 든 요약을 담은 기록을 꼬리에서 다시 읽었다(내가 쓴 요약) — 풀지도 바꾸지도 않는다(설계 ③ 덧붙임).
+  if (state.local?.key === key) return;
   const summary = unpackSummary(value.summary);
   if (summary?.edition !== edition) return;
   state.localRows.add(key);
@@ -675,7 +678,12 @@ export function createRecord({
       if (state.local.key == null) void saveLocal();
       return;
     }
-    const lines = linesOfRows(state.groups.rowsUntil(until), { memory, params });
+    // 바뀐 묶음만 다시 접는다(fold-local.mjs). 접다가 던지면 다음 접기가 처음부터 짓는다.
+    const prev = state.folding;
+    state.folding = null;
+    const fold = foldLines(prev, state.groups, until, { memory, params });
+    state.folding = fold.folding;
+    const lines = fold.lines;
     const floor = now() - ISSUED_KEEP_MS;
     const issued = items
       .map(item => item.event)
