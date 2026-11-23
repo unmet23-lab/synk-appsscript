@@ -189,8 +189,8 @@
   "lang": "ja",
   "font": "'Inter Tight', 'Yu Gothic', 'SUIT', sans-serif",
   "lineH": 1.2,
-  "title": "日本語は動詞が色々、韓国語は1つ",
-  "titleSize": 37,
+  "title": "日本語は動詞がバラバラ、韓国語は1つだけ",
+  "titleSize": 34,
   "lines": [
     "友達が来てる",
     "雨が降ってる",
@@ -226,11 +226,11 @@
   "nouns": [
     "友達",
     "雨・雪",
-    "眠気",
+    "私",
     "電話"
   ],
   "nounSize": 32,
-  "endKo": "韓国語：1つ",
+  "endKo": "韓国語は1つ",
   "endKoSize": 44,
   "wayoRead": "wa-yo",
   "wayoReadSize": 44,
@@ -241,7 +241,7 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "title": "일본어는 동사가 여러 가지, 한국어는 하나",
+    "title": "일본어는 동사가 제각각, 한국어는 하나뿐",
     "lines.0": "친구가 와 있어(왔어)",
     "lines.1": "비가 내리고 있어",
     "lines.2": "눈이 내리고 있어",
@@ -254,8 +254,8 @@
     "verbs.3": "울리다",
     "nouns.0": "친구",
     "nouns.1": "비 · 눈",
-    "nouns.2": "졸음(잠)",
+    "nouns.2": "나(眠くなる — 「내가 졸려진다」의 주어)",
     "nouns.3": "전화",
-    "endKo": "한국어: 1개"
+    "endKo": "한국어는 하나"
   }
 }
