@@ -1,0 +1,221 @@
+{
+ "판": 1,
+ "설명": "WORLD 선택 공개 2단계 (2-2) — 계정 묶음 · 생활 묶음 · 생활 묶음 css. 원천은 ③ 원천 가지(e28f907a33)와 origin master 1b9fedd5bb를 합친 af2f513640 위에 라이브 꼴 원천을 둔 커밋이다. 되돌림 대본이 「아직 라이브가 아닌 변경」을 걷어 묶는 원천 파일을 맞춘다(설계 주인 11-24 둘째 잣대 — 모듈 파일은 「라이브 모듈 + ③」, 묶음 입력은 「라이브 묶음 + ③」이라 라이브 묶음에 지금 있는 줄은 빼지 않는다. 묶음에만 실리는 입력은 앞 명세와 같다). 되돌림 목록은 대본이 커밋 단위로 걷는 열넷이다. 대본은 그 밖에 판정 목록 · 생활 층 지도를 3f1fc5c667 판으로 두고(인사 팩 560faed480의 그 몫은 라이브 묶음에 없다), 라이브 사본이 있는 여섯 파일을 라이브 꼴로 덮는다(원천 쪽 줄이 라이브 묶음에 없는 덩이만 — 줄 단위 판정은 원천 커밋의 2-2-라이브꼴/README.md). 생활 묶음 짝커밋 맨 앞 e404478276은 인사 팩 560faed480 바로 앞 커밋이다.",
+ "원천": "7a69ebcffb4d372c08ef7adde745885b25f22ae9",
+ "꺼냄": [
+  "experiences",
+  "atlas",
+  "strata",
+  "tools",
+  "packages/atlas",
+  "package.json"
+ ],
+ "잇기": [
+  {
+   "경로": "node_modules",
+   "원본": "C:/Users/q1212/Documents/SYNK-appsscript/node_modules"
+  },
+  {
+   "경로": "experiences/synk-account/node_modules",
+   "원본": "C:/Users/q1212/Documents/SYNK-appsscript/experiences/synk-account/node_modules"
+  }
+ ],
+ "되돌림": {
+  "대본": "revert-2-2.cjs",
+  "목록": [
+   "d87e1538b71a2162c99e702ef76528bdd17e97c1",
+   "a6c10caf789b0038b02fba36bea1f516ee4be050",
+   "a13be5a30c9ec20a83d45db835abac61cbff1b21",
+   "ffd91f4b8f3091ac707ab9186aa24dbe225487a1",
+   "bb8b9c91740610e87880f575bf570c4f76310b40",
+   "11ba15b632f9004a77122f2dd79b82d65787dab0",
+   "5bccbe8ad602329aa59f02f528122613c4081e20",
+   "a3c193891a6e97dde7e028174427196c5e74c3ff",
+   "a556b16bd0a6ba55b6af2b12cedd0872f9ecd8e7",
+   "5bc81e898f2f6ab57f053651570114b47b9c7883",
+   "9e3f7045dfd05df841190493aac9cc2ade949e13",
+   "e3b0fdd375b26113369dcbe165b1ee42d1a08761",
+   "32ec228cc68120c4a083ed06e7653f27f532c471",
+   "af224763038badc930185ca5b67eda492212b9e0"
+  ]
+ },
+ "준비": [
+  "prep-ignored.cjs"
+ ],
+ "빌더": [
+  [
+   "tools/build-world-account.mjs"
+  ],
+  [
+   "tools/build-world-life.mjs"
+  ],
+  {
+   "명령": [
+    "tools/build-world-app-public.mjs",
+    "--config",
+    "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/world-redesign-20261014/tools/account-config.json",
+    "--out",
+    ".tmp/world-public-repro"
+   ],
+   "실패해도": true,
+   "까닭": "공개 빌드는 묶음 세 파일과 상관없는 것(world 밖 /assets/launch-notice.js와 초대 쪽 mailto를 부르는 html · 없는 폴더 vendor/face-api · assets/club · assets/ph · today/screen.mjs · drama/pilot.mjs의 도구 이름)으로 ok:false를 내지만 파일은 모두 쓴다. 견주는 것은 꺼낸 세 파일의 sha256이다"
+  }
+ ],
+ "항목": [
+  {
+   "경로": "world/world-account.bundle.mjs",
+   "만든곳": ".tmp/world-public-repro/world/world-account.bundle.mjs",
+   "바탕": "cef7c745e3bcef2f5c9266d32c2dc4882807bf08",
+   "원천경로": [
+    "atlas/ask.js",
+    "atlas/education.js",
+    "atlas/engine.js",
+    "atlas/flow.js",
+    "atlas/game-browser.js",
+    "atlas/game-flow.js",
+    "atlas/game-learning.js",
+    "atlas/learning-ledger.js",
+    "atlas/learning-pages.js",
+    "atlas/learning-sync.js",
+    "atlas/learning.js",
+    "atlas/memory-sync.js",
+    "atlas/temper-flow.js",
+    "atlas/temper.js",
+    "atlas/trail.js",
+    "atlas/vellum-flow.js",
+    "atlas/vellum.js",
+    "experiences/blank-slice/content.mjs",
+    "experiences/blank-slice/kit/return-practice.mjs",
+    "experiences/blank-slice/learning.mjs",
+    "experiences/brand-opening/play-unlocks.mjs",
+    "experiences/entry-check/content.mjs",
+    "experiences/entry-check/core.mjs",
+    "experiences/entry-check/kit/return-practice.mjs",
+    "experiences/entry-check/learning.mjs",
+    "experiences/hangul-stage/learning.mjs",
+    "experiences/hangul-stage/progress-data.mjs",
+    "experiences/korean-racing/beginner-catalog.js",
+    "experiences/korean-racing/garage-core.js",
+    "experiences/korean-racing/play-catalog.js",
+    "experiences/korean-rhythm/core.mjs",
+    "experiences/korean-rhythm/kit/josa.mjs",
+    "experiences/korean-rhythm/kit/return-practice.mjs",
+    "experiences/korean-rhythm/listening.mjs",
+    "experiences/korean-rhythm/narration.mjs",
+    "experiences/korean-rhythm/personalization.mjs",
+    "experiences/korean-rhythm/suno-tracks.mjs",
+    "experiences/korean-rhythm/supplemental.json",
+    "experiences/korean-rhythm/supplemental.mjs",
+    "experiences/korean-runner/kit/return-practice.mjs",
+    "experiences/korean-runner/learning.mjs",
+    "experiences/korean-runner/listening-check.mjs",
+    "experiences/play-common/account-host.mjs",
+    "experiences/play-common/play-data.mjs",
+    "experiences/subway-rush/journeys.mjs",
+    "experiences/subway-rush/kit/return-practice.mjs",
+    "experiences/subway-rush/learning.mjs",
+    "experiences/subway-rush/lines.mjs",
+    "experiences/subway-rush/plan-items.mjs",
+    "experiences/synk-account/src/classroom-client.mjs",
+    "experiences/synk-account/src/core.mjs",
+    "experiences/synk-account/src/desktop-account.mjs",
+    "experiences/synk-account/src/generated/account-client.cjs",
+    "experiences/synk-account/src/generated/world-learning-host.cjs",
+    "experiences/synk-account/src/platform-entry.mjs",
+    "experiences/synk-town/understanding.mjs",
+    "experiences/synk-world-app/classroom-client.mjs",
+    "experiences/synk-world-app/course-writing-entry.mjs",
+    "experiences/synk-world-app/device-records.mjs",
+    "experiences/synk-world-app/guest-trial.mjs",
+    "experiences/synk-world-app/hangul-progress-port.mjs",
+    "experiences/synk-world-app/homework-client.mjs",
+    "experiences/synk-world-app/life-items.mjs",
+    "experiences/synk-world-app/life-plan.mjs",
+    "experiences/synk-world-app/life-progress-port.mjs",
+    "experiences/synk-world-app/life-trail.mjs",
+    "experiences/synk-world-app/operating-mode.mjs",
+    "experiences/synk-world-app/world-account.mjs",
+    "experiences/synk-world-app/world-diagnostic-items.mjs",
+    "experiences/synk-world-app/world-diagnostic-racing.mjs",
+    "experiences/synk-world-app/world-exam-form.mjs",
+    "experiences/synk-world-app/world-exam-plan.mjs",
+    "experiences/synk-world-app/world-game-host.mjs",
+    "experiences/synk-world-app/world-learning-map.mjs",
+    "experiences/synk-world-app/world-learning-plan.mjs",
+    "experiences/synk-world-app/world-life-next.mjs",
+    "experiences/synk-world-app/world-position-kit.mjs",
+    "experiences/synk-world-app/world-position-ui.mjs",
+    "experiences/synk-world-app/world-position.mjs",
+    "experiences/synk-world-app/world-reading-practice.mjs",
+    "experiences/synk-world-app/world-topik-items.mjs",
+    "experiences/synk-world-app/world-town-check.mjs",
+    "experiences/teacher-world/course-writing-ui.mjs",
+    "experiences/topik-items/holdout.mjs",
+    "experiences/topik-items/review/existing-verdicts.json",
+    "experiences/topik-items/review/holdout-20261028.json",
+    "strata/hangul.json",
+    "strata/index.js",
+    "strata/maps/topik-i.json",
+    "strata/maps/topik-ii.json",
+    "strata/maps/topik-speaking.json",
+    "strata/maps/world-life.json",
+    "strata/topik-i.js",
+    "strata/topik-i.words.json",
+    "strata/topik-speaking.js",
+    "strata/world-coach.js",
+    "strata/world-life.js",
+    "strata/world-map.js"
+   ],
+   "대조": "문자열",
+   "까닭": "reasons-acct.json",
+   "머리곳": "experiences/synk-world-app/world-account.bundle.mjs",
+   "머리바꿈": [
+    [
+     "SUNO_RECORDINGS",
+     "RECORDINGS"
+    ],
+    [
+     "suno-tracks.mjs",
+     "recording-tracks.mjs"
+    ]
+   ]
+  },
+  {
+   "경로": "world/brand-opening/content/life-standalone.mjs",
+   "만든곳": ".tmp/world-public-repro/world/brand-opening/content/life-standalone.mjs",
+   "바탕": "944ce5201fcb1f42d193b5eb04f1b35f5246bb65",
+   "원천경로": [
+    "experiences/synk-world-app/life-standalone-entry.mjs",
+    "strata",
+    "atlas"
+   ],
+   "대조": "모듈",
+   "짝커밋": [
+    "e4044782769e7cc83d49cf6044ec6a1afabbc4c4",
+    "241a2ba49bd16f14878f1aaef96fa4f0e30190e2",
+    "c1de5ec55eddbdc3c7ba6f248f8708e7f44dc5db"
+   ],
+   "짝빌더": [
+    [
+     "tools/build-world-learning-profile.mjs"
+    ],
+    [
+     "tools/build-world-life.mjs"
+    ]
+   ],
+   "짝만든곳": "experiences/brand-opening/content/life-standalone.mjs",
+   "까닭": "reasons-life.json"
+  },
+  {
+   "경로": "world/brand-opening/content/life-ui.css",
+   "만든곳": ".tmp/world-public-repro/world/brand-opening/content/life-ui.css",
+   "바탕": "944ce5201fcb1f42d193b5eb04f1b35f5246bb65",
+   "원천경로": [
+    "experiences/synk-world-app/life-ui.css"
+   ]
+  }
+ ],
+ "입력": [
+  "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/world-redesign-20261014/tools/account-config.json"
+ ]
+}

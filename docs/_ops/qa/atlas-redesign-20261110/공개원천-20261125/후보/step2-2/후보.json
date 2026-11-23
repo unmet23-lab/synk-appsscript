@@ -1,0 +1,31 @@
+{
+ "판": 1,
+ "종류": "synk.im",
+ "항목": [
+  {
+   "경로": "world/brand-opening/content/life-standalone.mjs",
+   "종류": "바꿈",
+   "sha256": "8850d7607916e80c85b3f80e11245d6ff4191d1ea3bcd1ed124e95cc37e05f08",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/brand-opening/content/life-ui.css",
+   "종류": "바꿈",
+   "sha256": "45ef676cbb72a77abd776716ad456cb3bd0cfcbb608b019d1d33633dfbbb3cd5",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/world-account.bundle.mjs",
+   "종류": "바꿈",
+   "sha256": "aecbdfbec20b1c02ba2e01194a06f8c6a4527bf9bd17ef387d8e816f8643c185",
+   "모드": "100644"
+  }
+ ],
+ "위": "7513ddd52973cb90cc8c848d22b1aed7af56ce9d",
+ "계획": "5fdab4013593",
+ "앞판": {
+  "world/brand-opening/content/life-standalone.mjs": "a2451114e8caf46d50219d2f9cb6809f618ea923",
+  "world/brand-opening/content/life-ui.css": "6b2b687cbca65a17e9bf2d2a9fe194822c11a316",
+  "world/world-account.bundle.mjs": "52336a911b32d34c4917f2d4bf923e9801ea93c0"
+ }
+}
