@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>솔리오 사무실 대화</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&amp;display=swap">
+<style>
+@font-face{font-family:'SUIT';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+@font-face{font-family:'DM Mono';font-weight:400;font-display:swap;src:url(../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf) format('truetype');}
+
+/* 짜임: 왼쪽은 대화 상대(팀장과 부서) 목록, 가운데 위는 사무실 무대, 그 아래는 고른 상대와의 대화, 넓은 창에서는 오른쪽에 「이 부서」 칸.
+   색은 역할마다 하나다. 검정은 방, 종이색 글과 흰 알약은 말과 결정, 호두나무와 등빛은 사무실(등빛 = 지금 일하는 중), 흰 종이와 먹은 손님의 문서다.
+   글자는 SUIT(방과 직원의 말), DM Mono(때 · 파일 이름 · 주소), Noto Serif KR(손님의 문서)로 나눈다. */
+:root{
+  color-scheme:dark;
+  --void:#000000;
+  --paper:#F3F1EC;
+  --text:rgba(243,241,236,.9);
+  --dim:rgba(243,241,236,.54);
+  --faint:rgba(243,241,236,.36);
+  --hair:rgba(243,241,236,.1);
+  --hair-strong:rgba(243,241,236,.2);
+  --ring:rgba(243,241,236,.55);
+  --lift:rgba(243,241,236,.065);
+  --bubble:rgba(243,241,236,.095);
+  --pit:#0C0C0B;
+  --sheet:#FFFFFF;
+  --sheet-ink:#151514;
+  --sheet-body:#3B3A37;
+  --sheet-dim:#6B6A66;
+  --meta-bg:rgba(10,10,10,.86);
+  --sans:'SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --mono:'DM Mono','SUIT','Malgun Gothic',ui-monospace,monospace;
+  --serif:'Noto Serif KR','Nanum Myeongjo','Batang',serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);overflow:hidden;display:grid;place-items:center;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;word-break:keep-all;overflow-wrap:break-word}
+button,input,textarea{font:inherit;color:inherit}
+[hidden]{display:none !important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 창 하나가 곧 앱이다. 안의 것은 창의 크기를 보고 놓인다 */
+#app{position:relative;width:var(--aw,100%);height:var(--ah,100%);max-width:100%;max-height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);background:var(--void);overflow:hidden;container-type:size;container-name:app}
+body.sized #app{outline:1px solid var(--hair)}
+
+/* 맨 위: 구와 솔리오의 프로그램(검정 구 시안 그대로) */
+.top{display:flex;align-items:center;gap:6px;height:64px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#orb-btn{width:44px;height:44px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer;display:grid;place-items:center}
+#orb-cv{width:44px;height:44px;display:block}
+#here-name{padding:10px 8px 10px 0;display:inline-flex;align-items:center;gap:9px;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7)}
+#here-name svg{width:8px;height:5px;flex:none;opacity:.7}
+.rail{display:flex;align-items:center;gap:2px;margin-left:18px;min-width:0}
+.obj{appearance:none;background:none;border:0;margin:0;padding:10px 8px;display:inline-flex;align-items:center;color:rgba(243,241,236,.46);cursor:pointer;border-radius:2px;transition:color .25s ease}
+.obj svg{width:18px;height:18px;flex:none}
+.obj-n{max-width:0;margin-left:0;opacity:0;overflow:hidden;white-space:nowrap;font:400 13px/1.3 var(--sans);letter-spacing:.03em;transition:max-width .46s cubic-bezier(.2,.8,.2,1) calc(var(--k) * 70ms),margin-left .46s cubic-bezier(.2,.8,.2,1) calc(var(--k) * 70ms),opacity .3s ease calc(var(--k) * 70ms)}
+.rail:hover .obj-n,.obj[aria-current="true"] .obj-n,.obj:focus-visible .obj-n{max-width:9em;margin-left:9px;opacity:1}
+.obj[aria-current="true"],.obj:hover,.obj:focus-visible{color:var(--paper)}
+:is(.obj,#orb-btn,.icon,.chat,.jump,.chip,.go,.pill,.doc,.back,.mv):focus-visible{outline:1px solid var(--ring);outline-offset:2px}
+
+/* 몸: 대화 상대 목록 | 방 */
+.body{display:grid;grid-template-columns:clamp(256px,22cqw,312px) minmax(0,1fr);min-height:0}
+
+/* ── 왼쪽: 대화 상대 ── */
+.list{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;min-height:0;border-right:1px solid var(--hair);padding:2px 10px 14px max(10px,env(safe-area-inset-left,0px))}
+.list-h{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 8px 12px}
+.list-h h2{margin:0;font:500 12px/1 var(--sans);letter-spacing:.08em;color:var(--dim)}
+.icon{appearance:none;width:32px;height:32px;border-radius:50%;border:0;background:none;color:var(--dim);display:grid;place-items:center;cursor:pointer;transition:color .2s ease,background-color .2s ease}
+.icon svg{width:14px;height:14px}
+.icon:hover,.icon[aria-expanded="true"]{color:var(--paper);background:var(--lift)}
+.add{display:flex;gap:8px;align-items:center;padding:2px 4px 12px 12px}
+.add input{flex:1;min-width:0;height:34px;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);outline:0;padding:0 2px;font:400 14px/1 var(--sans);color:var(--paper)}
+.add input:focus{border-bottom-color:var(--paper)}
+.add input::placeholder{color:var(--faint)}
+.chats{overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:2px;min-height:0;padding-bottom:6px}
+.chat{appearance:none;border:0;background:none;width:100%;margin:0;text-align:left;display:grid;grid-template-columns:44px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:12px;row-gap:4px;align-items:center;padding:10px 10px 10px 8px;border-radius:14px;cursor:pointer;color:var(--paper);transition:background-color .2s ease}
+.chat:hover,.chat.hot{background:rgba(243,241,236,.035)}
+.chat[aria-current="true"]{background:var(--lift)}
+.chat canvas{grid-row:1 / span 2;width:44px;height:44px;display:block}
+.cn{min-width:0;font:600 15px/1.25 var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs{font:400 12px/1.25 var(--sans);color:var(--dim);white-space:nowrap;justify-self:end}
+.cp{grid-column:2 / 4;min-width:0;font:400 13px/1.4 var(--sans);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat.alert .cp{color:var(--text)}
+.chat.alert .cs{color:var(--paper);font-weight:500}
+.flag{display:inline-block;margin-left:6px;font:700 14px/1 var(--sans);color:var(--paper);font-style:normal}
+.flag.pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.2);opacity:0}to{transform:none;opacity:1}}
+.chat.lead{grid-template-columns:52px minmax(0,1fr) auto;padding:12px 10px 12px 6px}
+.chat.lead canvas{width:52px;height:52px}
+.chat.lead .cn small{font:500 12px/1 var(--sans);letter-spacing:.04em;color:var(--dim);margin-right:7px}
+.group{margin:14px 12px 6px;font:500 12px/1 var(--sans);letter-spacing:.08em;color:var(--faint)}
+.list-f{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 6px 0 12px;border-top:1px solid var(--hair);font:400 12px/1.4 var(--sans);color:var(--dim)}
+.list-f b{font-weight:500;color:var(--text)}
+
+/* ── 방: 사무실 무대와 대화 ── */
+.room{display:grid;grid-template-columns:minmax(0,1fr) clamp(264px,21cqw,300px);min-height:0;min-width:0}
+.center{display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0;min-width:0}
+.stage{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;height:clamp(220px,37cqh,350px)}
+.cap{padding:clamp(16px,3.2cqh,34px) 12px 16px clamp(20px,3cqw,44px);display:flex;flex-direction:column;gap:14px;min-width:0}
+.back{display:none;appearance:none;flex:none;width:36px;height:36px;margin:-4px 0 0 -8px;border:0;border-radius:50%;background:none;color:var(--paper);place-items:center;cursor:pointer}
+.back svg{width:16px;height:16px}
+.who{margin:0;font:300 clamp(28px,2.7cqw,40px)/1.1 var(--sans);letter-spacing:-.02em;min-width:0}
+.who small{display:block;margin-bottom:10px;font:500 12px/1 var(--sans);letter-spacing:.08em;color:var(--dim)}
+.state{margin:0;font:300 clamp(16px,1.4cqw,20px)/1.5 var(--sans);color:var(--paper);max-width:26em;text-wrap:pretty}
+.state .then{display:block;color:var(--dim)}
+.floor{position:relative;height:100%;aspect-ratio:1.72;max-width:calc((100cqw - clamp(256px,22cqw,312px) - clamp(264px,21cqw,300px)) * .62);min-height:0}
+.floor canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+.talk{display:grid;grid-template-rows:minmax(0,1fr) auto auto auto;min-height:0;min-width:0}
+.thread{overflow-y:auto;padding:24px clamp(20px,3cqw,44px) 10px;-webkit-mask-image:linear-gradient(transparent,#000 12px);mask-image:linear-gradient(transparent,#000 12px);scrollbar-width:thin;scrollbar-color:rgba(243,241,236,.16) transparent;user-select:text;-webkit-user-select:text;min-height:0}
+.thread-in{max-width:720px;display:flex;flex-direction:column;gap:18px}
+
+/* 대화의 낱개 */
+.day{margin:6px 0 0;align-self:center;font:400 12px/1 var(--sans);letter-spacing:.04em;color:var(--faint)}
+.newline{display:flex;align-items:center;gap:12px;font:500 12px/1 var(--sans);letter-spacing:.04em;color:var(--paper)}
+.newline::before,.newline::after{content:"";flex:1;height:1px;background:var(--hair-strong)}
+.msg{display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:12px;align-items:start}
+.msg .av{width:30px;height:30px;display:block}
+.mc{min-width:0}
+.mh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:5px 0 6px}
+.mh b{font:600 14px/1.2 var(--sans);color:var(--paper)}
+.mh .by{font:400 12px/1.2 var(--sans);color:var(--dim)}
+.mh time{font:400 12px/1 var(--mono);color:var(--faint)}
+.mb{margin:0;font:400 15px/1.65 var(--sans);color:var(--text);max-width:36em}
+.src{margin:8px 0 0;font:400 12px/1.5 var(--sans);color:var(--dim);font-variant-numeric:tabular-nums}
+.rest{margin:4px 0 0;font:400 13px/1.6 var(--sans);color:var(--dim);max-width:38em}
+.mgo{margin:10px 0 0}
+.me{align-self:flex-end;max-width:min(74%,480px);display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.me p{margin:0;padding:10px 16px;border-radius:18px 18px 6px 18px;background:var(--bubble);font:400 15px/1.55 var(--sans);color:var(--paper)}
+.me time{font:400 11px/1 var(--mono);color:var(--faint)}
+.act{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font:400 13px/1.45 var(--sans);color:var(--dim);padding-left:42px}
+.act svg{width:14px;height:14px;flex:none;color:var(--faint)}
+.act q{color:var(--text);quotes:"「" "」"}
+.act time{font:400 12px/1 var(--mono);color:var(--faint)}
+.act.warn{color:var(--text)}
+.jump{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;margin:0;padding:0 0 2px;font:400 13px/1.2 var(--sans);color:var(--text);cursor:pointer;white-space:nowrap;transition:color .2s ease,border-color .2s ease}
+.jump:hover{color:var(--paper);border-bottom-color:var(--paper)}
+/* 승인 물음: 이 순간 손님이 할 일 하나라 꽉 찬 알약이 여기에만 있다 */
+.askbox{margin-top:2px;padding:16px 18px 18px;border:1px solid rgba(243,241,236,.34);border-radius:16px;max-width:30em;display:grid;gap:6px;justify-items:start}
+.askbox .q{margin:0;font:500 16px/1.5 var(--sans);color:var(--paper)}
+.askbox .note{margin:0;font:400 13px/1.55 var(--sans);color:var(--dim)}
+.pill{appearance:none;height:38px;margin:10px 0 0;padding:0 20px;border-radius:999px;border:1px solid var(--paper);background:var(--paper);color:var(--void);font:600 14px/1 var(--sans);cursor:pointer}
+.pill:hover{background:#FFFFFF}
+.resolved{margin:6px 0 0;font:400 13px/1.5 var(--sans);color:var(--dim)}
+/* 손님의 문서: 흰 종이 한 장. 누르면 그 자리에서 펼쳐진다 */
+.doc{appearance:none;border:0;margin:12px 0 0;display:block;width:min(330px,100%);padding:15px 17px 13px;text-align:left;background:var(--sheet);color:var(--sheet-ink);border-radius:3px;box-shadow:0 14px 30px -12px rgba(0,0,0,.9);cursor:pointer;font:inherit}
+.doc .fn{display:block;margin-bottom:10px;font:400 11px/1 var(--mono);color:var(--sheet-dim)}
+.doc .dh{display:block;margin-bottom:7px;font:600 15px/1.45 var(--serif);color:var(--sheet-ink)}
+.doc .dl{display:block;font:400 13px/1.65 var(--serif);color:var(--sheet-body)}
+.doc .dmore{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.2,.8,.2,1)}
+.doc .dmore > span{min-height:0;overflow:hidden}
+.doc[aria-expanded="true"] .dmore{grid-template-rows:1fr}
+.doc .dfoot{display:block;margin-top:10px;padding-top:9px;border-top:1px dashed #DDDAD3;font:500 12px/1 var(--sans);color:var(--sheet-dim)}
+.doc:hover .dfoot{color:var(--sheet-ink)}
+/* 일하는 중: 그 직원과 걸린 시간 */
+.typing{display:flex;align-items:center;gap:10px;font:400 13px/1.4 var(--sans);color:var(--dim)}
+.typing canvas{width:30px;height:30px;flex:none;display:block}
+.typing b{font-weight:600;color:var(--text)}
+.typing time{font:400 12px/1 var(--mono);color:var(--faint)}
+.fresh{animation:rise .36s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+
+/* 부서 없는 일: 솔리오 밖에서 연 세션 */
+.out{display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:12px;align-items:start;padding:14px 0;border-top:1px solid var(--hair)}
+.out .av{width:30px;height:30px;display:block}
+.out b{font:600 14px/1.3 var(--sans);color:var(--paper)}
+.out .by{display:block;margin-top:4px;font:400 12px/1.4 var(--sans);color:var(--dim)}
+.out .doing{display:block;margin-top:2px;font:400 13px/1.5 var(--sans);color:var(--text)}
+.moves{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.lobby-note{margin:0;font:400 14px/1.65 var(--sans);color:var(--dim);max-width:34em}
+
+/* 맡길 일 고르기와 적는 칸 */
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:8px clamp(20px,3cqw,44px) 0;max-width:calc(720px + 2 * clamp(20px,3cqw,44px))}
+.chip,.mv{appearance:none;height:32px;margin:0;padding:0 14px;border-radius:999px;border:1px solid var(--hair-strong);background:none;color:var(--text);font:400 13px/1 var(--sans);cursor:pointer;white-space:nowrap;transition:border-color .2s ease,color .2s ease}
+.chip:hover,.mv:hover{border-color:rgba(243,241,236,.55);color:var(--paper)}
+.compose{margin:10px clamp(20px,3cqw,44px) 16px;max-width:720px;display:flex;align-items:flex-end;gap:10px;padding:7px 7px 7px 16px;border:1px solid var(--hair-strong);border-radius:22px;background:var(--pit);transition:border-color .2s ease}
+.compose:focus-within{border-color:rgba(243,241,236,.46)}
+.compose textarea{flex:1;min-width:0;height:38px;max-height:140px;resize:none;border:0;outline:0;background:none;padding:8px 0;font:400 15px/1.45 var(--sans);color:var(--paper);user-select:text;-webkit-user-select:text}
+.compose textarea::placeholder{color:var(--faint)}
+.go{appearance:none;flex:none;height:38px;margin:0;padding:0 18px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);font:500 14px/1 var(--sans);color:var(--paper);cursor:pointer;transition:background-color .25s ease,border-color .25s ease,color .25s ease}
+.go:hover{border-color:var(--paper)}
+.compose.ready .go{background:var(--paper);border-color:var(--paper);color:var(--void)}
+.closed{margin:12px clamp(20px,3cqw,44px) 18px;max-width:720px;font:400 13px/1.55 var(--sans);color:var(--dim)}
+
+/* ── 오른쪽: 이 부서 ── */
+.side{border-left:1px solid var(--hair);overflow-y:auto;scrollbar-width:none;padding:clamp(18px,3.2cqh,34px) 20px 28px;display:flex;flex-direction:column;gap:28px;min-width:0;min-height:0}
+.sec h3{margin:0 0 8px;font:500 12px/1 var(--sans);letter-spacing:.08em;color:var(--faint)}
+.nrow{display:grid;grid-template-columns:26px minmax(0,1fr) auto;column-gap:10px;align-items:start;padding:10px 0;border-top:1px solid var(--hair)}
+.sec h3 + .nrow{border-top:0}
+.nrow canvas{width:26px;height:26px;display:block}
+.nrow b{font:600 13px/1.35 var(--sans);color:var(--paper)}
+.nrow .tool{font:400 12px/1.35 var(--sans);color:var(--dim);margin-left:6px}
+.nrow .doing{display:block;margin-top:3px;font:400 12px/1.5 var(--sans);color:var(--dim)}
+.nrow.asked .doing,.nrow.silent .doing{color:var(--paper)}
+.nrow .jump{margin-top:7px;font-size:12px}
+.nrow time{padding-top:2px;font:400 12px/1.3 var(--mono);color:var(--faint);white-space:nowrap}
+.frow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;width:100%;margin:0;padding:8px 0;border:0;border-top:1px solid var(--hair);background:none;text-align:left;font:inherit;color:inherit}
+button.frow{cursor:pointer}
+button.frow span{text-decoration:underline;text-decoration-color:rgba(243,241,236,.34);text-underline-offset:4px}
+button.frow:hover span{color:var(--paper);text-decoration-color:var(--paper)}
+.sec h3 + .frow{border-top:0}
+.frow span{min-width:0;font:400 12px/1.4 var(--mono);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow small{flex:none;font:400 12px/1.4 var(--sans);color:var(--faint)}
+.trow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:9px 0;border-top:1px solid var(--hair)}
+.sec h3 + .trow{border-top:0}
+.trow b{font:500 13px/1.35 var(--sans);color:var(--paper)}
+.trow small{font:400 12px/1.35 var(--sans);color:var(--dim);text-align:right}
+.trow span{grid-column:1 / -1;font:400 12px/1.5 var(--sans);color:var(--dim)}
+.sec p{margin:0;font:400 13px/1.6 var(--sans);color:var(--dim)}
+.cfg{margin:12px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;font:400 12px/1.5 var(--sans)}
+.cfg dt{color:var(--faint)}
+.cfg dd{margin:0;color:var(--text);min-width:0;overflow-wrap:anywhere}
+/* 좁은 창에서 오른쪽 칸 대신 대화 끝에 서는 「지금」 */
+.nowbox{display:none;padding:2px 0 0 42px}
+.nowbox h3{margin:0 0 2px;font:500 12px/1 var(--sans);letter-spacing:.08em;color:var(--faint)}
+.nowbox h3 + .nrow{border-top:0}
+
+/* 창이 좁아지면: 오른쪽 칸을 접고 「지금」을 대화 끝에 둔다 */
+@container app (max-width:1180px){
+  .room{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .floor{max-width:calc((100cqw - clamp(256px,22cqw,312px)) * .62)}
+  .nowbox{display:block}
+}
+@container app (max-width:900px){
+  .who{font-size:28px}
+  .state{font-size:16px}
+}
+/* 휴대폰 너비: 목록과 방을 번갈아 본다 */
+@container app (max-width:760px){
+  .body{grid-template-columns:minmax(0,1fr)}
+  .room{display:none}
+  #app.in-room .list{display:none}
+  #app.in-room .room{display:grid}
+  .list{border-right:0;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+  .stage{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:clamp(230px,38cqh,290px)}
+  .floor{height:auto;width:100%;aspect-ratio:auto;max-width:none}
+  .cap{flex-direction:row;align-items:flex-start;gap:10px;padding:10px 16px 0}
+  .back{display:grid}
+  .who{font-size:24px}
+  .who small{margin-bottom:6px}
+  .state{margin-top:8px;font-size:14px}
+  .cap-t{min-width:0}
+  .thread{padding-left:16px;padding-right:16px}
+  .chips{padding-left:16px;padding-right:16px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .compose{margin-left:16px;margin-right:16px}
+  .act,.nowbox{padding-left:0}
+  .me{max-width:86%}
+}
+@container app (max-height:560px){
+  .stage{height:180px}
+}
+
+/* 시안 조작 막대. 디자인의 일부가 아니다 */
+#meta{position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:max(12px,env(safe-area-inset-top,0px));z-index:9;display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--meta-bg);border:1px solid var(--hair);max-width:calc(100% - 32px);overflow-x:auto;scrollbar-width:none;transition:opacity .4s ease}
+#meta.away{opacity:0;pointer-events:none}
+#meta button{appearance:none;border:0;background:none;color:rgba(243,241,236,.7);font:400 12px/1 var(--sans);padding:9px 13px;border-radius:999px;white-space:nowrap;cursor:pointer}
+#meta button:hover,#meta button:focus-visible{color:var(--paper);background:rgba(243,241,236,.08);outline:none}
+@media (prefers-reduced-motion:reduce){
+  .obj-n,.doc .dmore{transition:none !important}
+  .flag.pop,.fresh{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <button id="orb-btn" type="button" aria-label="SYNK 구"><canvas id="orb-cv" aria-hidden="true"></canvas></button>
+    <span id="here-name">SOLIO<svg viewBox="0 0 8 5" aria-hidden="true"><path d="M.5.5 4 4 7.5.5" fill="none" stroke="currentColor"/></svg></span>
+    <nav class="rail" aria-label="솔리오의 프로그램">
+      <button class="obj" type="button" style="--k:0"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 9V2.5A6.5 6.5 0 0 1 15.5 9z" fill="currentColor" stroke="none"/></svg><span class="obj-n">구독</span></button>
+      <button class="obj" type="button" style="--k:1"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><circle cx="9" cy="9" r="2.6"/></svg><span class="obj-n">백업</span></button>
+      <button class="obj" type="button" style="--k:2"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M14.6 12.3A6.5 6.5 0 1 1 15.5 9"/></svg><span class="obj-n">방문자 분석</span></button>
+      <button class="obj" type="button" style="--k:3" aria-current="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="2.5" y="4" width="13" height="10" rx="1"/><circle cx="6.6" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="11.4" cy="9" r="1.2" fill="currentColor" stroke="none"/></svg><span class="obj-n">사무실</span></button>
+    </nav>
+  </header>
+  <div class="body">
+    <aside class="list" aria-label="대화 상대">
+      <div class="list-h">
+        <h2>사무실</h2>
+        <button class="icon" type="button" id="add-btn" aria-label="부서 더하기" aria-expanded="false" aria-controls="add-form"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+      </div>
+      <form class="add" id="add-form" hidden>
+        <label class="sr" for="add-name">새 부서 이름</label>
+        <input id="add-name" maxlength="8" placeholder="새 부서 이름" autocomplete="off">
+        <button class="go" type="submit">만들기</button>
+      </form>
+      <div class="chats" id="chats"></div>
+      <footer class="list-f" id="list-f"></footer>
+    </aside>
+    <main class="room" id="room">
+      <div class="center">
+      <section class="stage" aria-label="사무실">
+        <div class="cap">
+          <button class="back" type="button" id="back" aria-label="대화 상대 목록으로"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 2 4 8l6 6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
+          <div class="cap-t">
+            <h1 class="who" id="who"></h1>
+            <p class="state" id="state" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="floor" role="img" aria-label="부서마다 직원이 앉아 있는 사무실 그림. 같은 내용이 대화와 「지금」 줄에 글로 있습니다."><canvas id="floor"></canvas></div>
+      </section>
+        <section class="talk" aria-label="대화">
+          <div class="thread" id="thread"></div>
+          <div class="chips" id="chips"></div>
+          <form class="compose" id="compose">
+            <label class="sr" for="msg">맡길 일</label>
+            <textarea id="msg" rows="1"></textarea>
+            <button class="go" type="submit">맡기기</button>
+          </form>
+          <p class="closed" id="closed" hidden></p>
+        </section>
+      </div>
+      <aside class="side" id="side" aria-label="이 부서"></aside>
+    </main>
+  </div>
+</div>
+<div id="meta" role="toolbar" aria-label="시안 조작">
+  <button type="button" id="m-case">상황 · 승인 물음</button>
+  <button type="button" id="m-ping">알림 받기</button>
+  <button type="button" id="m-size">창 크기 · 꽉 참</button>
+  <button type="button" id="m-hat">모자 · 씀</button>
+  <button type="button" id="m-again">처음부터</button>
+</div>
+
+<script type="module">
+/* 사무실 그림은 PC 앱의 그리기 모듈을 그대로 부른다(desktop/renderer/office-floor.mjs). 시안과 앱의 사무실이 같은 모습이다 */
+import { createOfficeFloor } from '../../../desktop/renderer/office-floor.mjs';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const INK = '243,241,236', RIM = '255,221,182';
+const ink = a => `rgba(${INK},${a})`;
+const app = $('#app'), threadEl = $('#thread'), sideEl = $('#side'), chatsEl = $('#chats'), msgEl = $('#msg'), composeEl = $('#compose');
+
+/* ── 말 다듬기 ── */
+const 받침 = w => { const l = String(w).trim().slice(-1), c = l.charCodeAt(0); if (/[0-9]/.test(l)) return /[013678]/.test(l); return c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 > 0 : false; };
+const 이가 = w => w + (받침(w) ? '이' : '가');
+const 와과 = w => w + (받침(w) ? '과' : '와');
+const 을를 = w => w + (받침(w) ? '을' : '를');
+const 로 = w => { const c = String(w).trim().slice(-1).charCodeAt(0); const j = c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : 0; return w + (j === 0 || j === 8 ? '로' : '으로'); };
+const 수 = n => ['영', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '열하나', '열둘'][n] ?? String(n);
+const pad = n => String(n).padStart(2, '0');
+const hhmm = (t = Date.now()) => { const d = new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const minsSince = t => Math.max(0, Math.floor((Date.now() - t) / 60000));
+const short = (t, n = 22) => { const s = String(t).replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+const firstSentence = t => (String(t).match(/^.*?[.!?](\s|$)/) || [t])[0].trim();
+
+/* ── 자료(이름, 일, 숫자는 모두 예시) ── */
+const DEPTS0 = [
+  {key:'plan', name:'기획부', role:'사업계획서와 지원사업 공고를 회사 자료에 맞춰 읽습니다.', dir:'문서\\기획', tool:'Claude Code', chips:['사업계획서 다시 읽어 줘', '지원사업 공고 찾아 줘']},
+  {key:'mkt', name:'마케팅부', role:'블로그와 SNS 글을 쓰고, 반응과 경쟁사를 살핍니다.', dir:'문서\\마케팅', tool:'Claude Code', chips:['경쟁사 다시 읽어 줘', '블로그 글 써 줘', 'SNS 반응 정리해 줘']},
+  {key:'law', name:'법무부', role:'계약서와 약관을 읽고 위험한 조항을 짚습니다.', dir:'문서\\계약', tool:'Claude Code', chips:['계약서 검토해 줘', '약관 바뀐 곳 찾아 줘']},
+  {key:'dev', name:'개발부', role:'가게 코드를 고치고 시험을 돌립니다.', dir:'코드\\shop', tool:'Codex', chips:['시험 돌려 줘', '오류 원인 찾아 줘']},
+  {key:'acc', name:'회계부', role:'영수증과 세금계산서를 정리합니다.', dir:'문서\\회계', tool:'Claude Code', chips:['11월 영수증 정리해 줘', '이번 달 합계 알려 줘']},
+  {key:'cs', name:'고객지원부', role:'문의 메일을 읽고 답장 초안을 씁니다.', dir:'문서\\문의', tool:'Claude Code', chips:['안 읽은 문의 답장 써 줘', '견적 문의 찾아 줘']},
+];
+const LEAD_CHIPS = ['견적 문의 답장 써 줘', '경쟁사 다시 읽어 줘', '11월 영수증 정리해 줘'];
+const MADE0 = {
+  plan:[['사업계획서_v4.docx', '지난주 목'], ['공고문_새싹창업.pdf', '지난주 목']],
+  mkt:[['경쟁사_1123.md', '어제'], ['블로그_10월.md', '10월 31일']],
+  law:[['용역계약_v3_검토.md', '어제']],
+  dev:[['결제화면_시험기록.txt', '어제']],
+  acc:[['영수증_10월.xlsx', '방금'], ['영수증_9월.xlsx', '10월 2일']],
+  cs:[['답장_초안_견적3.md', '어제']],
+};
+const SEATS = 3;
+const NEWNAMES = ['소율', '태오', '하윤', '이든', '라온', '도하', '서우', '나린'];
+let DEPTS = [], MADE = {}, staff = [], threads = {}, seen = {}, newFrom = {}, typing = {}, tasks = [], sel = 'lead', scene = 'ask', hatsOn = true, uid = 0, mid = 0, deptSeq = 0;
+const deptOf = k => DEPTS.find(d => d.key === k);
+const byId = id => staff.find(s => s.id === id);
+const lead = () => staff.find(s => s.lead);
+const nameOf = k => k === 'lead' ? '팀장' : k === 'lobby' ? '부서 없는 일' : deptOf(k)?.name || '';
+
+const S = (id, zone, name, tool, model, hat, status, act, mins = 0, extra = {}) => ({id, zone, name, tool, model, hat, status, act, t0:Date.now() - mins * 60000, blink:0, nextBlink:performance.now() + 1200 + Math.random() * 5000, ...extra});
+function cast(sc) {
+  const ask = sc === 'ask', rest = sc === 'rest', W = st => rest ? 'resting' : st, A = t => rest ? '쉬는 중' : t;
+  return [
+    S('s-seojin', 'plan', '서진', 'Claude Code', 'Opus', 'gat', 'resting', '맡길 일을 기다립니다', 0, {lead:true}),
+    S('s-yuna', 'plan', '유나', 'Claude Code', 'Opus', null, 'resting', '쉬는 중'),
+    S('s-minji', 'mkt', '민지', 'Claude Code', 'Sonnet', 'beanie', W('working'), A('11월 블로그 글을 쓰는 중'), 14),
+    S('s-doyun', 'mkt', '도윤', 'Claude Code', 'Sonnet', 'sprout', W('working'), A('지난주 반응 표를 읽는 중'), 6),
+    ask ? S('s-jian', 'law', '지안', 'Claude Code', 'Opus', 'beret', 'asked', '폴더 「계약_옛판」을 지워도 될지 물었습니다', 3)
+        : S('s-jian', 'law', '지안', 'Claude Code', 'Opus', 'beret', W('working'), A('용역 계약서를 읽는 중'), 9),
+    S('s-haram', 'dev', '하람', 'Codex', 'GPT', 'phones', W('working'), A('결제 화면 시험을 돌리는 중 · 도우미 둘과 함께'), 21, {subagents:rest ? 0 : 2}),
+    ask ? S('s-max', 'dev', 'Max', 'Claude Code', 'Opus', null, 'silent', '로그인 기록을 읽는 중', 31, {quiet:12})
+        : S('s-max', 'dev', 'Max', 'Claude Code', 'Opus', null, W('working'), A('로그인 기록을 읽는 중'), 4),
+    S('s-boram', 'acc', '보람', 'Claude Code', 'Sonnet', null, rest ? 'resting' : 'done', rest ? '쉬는 중' : '10월 영수증 정리를 끝냄', 0, {news:!rest}),
+    S('s-daon', 'cs', '다온', 'Claude Code', 'Sonnet', null, 'resting', '쉬는 중'),
+    ...(rest ? [] : [S('s-wiles', 'lobby', '회의 폴더의 일', 'Claude Code', 'Sonnet', null, 'working', '회의록을 요약하는 중', 2, {outside:true})]),
+  ];
+}
+/* 직원이 남긴 말. 보낸 사람의 이름과 도구는 그때의 것으로 적어 둔다 */
+const said = (sid, text, at, extra = {}) => { const s = byId(sid) || {}; return {t:'staff', sid, name:s.name, by:s.lead ? '팀장' : '', text, at, ...extra}; };
+function seed(sc) {
+  const ask = sc === 'ask', rest = sc === 'rest', T = m => hhmm(Date.now() - m * 60000);
+  const th = {
+    lead:[
+      {t:'day', text:'어제'},
+      {t:'me', text:'이번 주 안에 견적 문의 답장이랑 11월 블로그 글 끝내 줘', at:'18:01'},
+      said('s-seojin', '둘로 나눠 맡기겠습니다. 견적 문의 답장은 고객지원부가, 11월 블로그 글은 마케팅부가 합니다.', '18:02'),
+      {t:'act', text:'고객지원부 다온에게 맡겼습니다', at:'18:02', go:'cs'},
+      {t:'act', text:'마케팅부 민지에게 맡겼습니다', at:'18:03', go:'mkt'},
+      said('s-seojin', '고객지원부가 견적 문의 셋에 답장 초안을 남겼습니다. 보내기 전에 값을 한 번 봐 주세요. 블로그 글은 마케팅부가 내일 아침까지 씁니다.', '21:47', {go:'cs'}),
+      ...(!rest ? [{t:'day', text:'오늘'}, said('s-seojin', '회계부가 10월 영수증 정리를 끝냈습니다. 세금계산서가 없는 영수증이 셋입니다.', T(1), {go:'acc'})]
+        : rest ? [{t:'day', text:'오늘'}, said('s-seojin', '맡긴 일이 모두 끝났습니다. 모두 쉬고 있습니다.', T(40))] : []),
+    ],
+    plan:[
+      {t:'day', text:'지난주'},
+      {t:'me', text:'새싹창업 계획서 3판 읽고 고칠 곳 짚어 줘', at:'목 14:02'},
+      said('s-yuna', '계획서와 공고를 견주어 읽었습니다. 고칠 곳 셋을 고쳐 4판으로 저장했습니다. 원본 3판은 그대로 두었습니다.', '목 14:40', {doc:{fn:'사업계획서_v4.docx', h:'수제 그래놀라 정기배송', p:['신청서 · 4판', '3쪽: 다시 산 손님 수를 회계부 영수증대로 112명으로 고쳤습니다.'], more:['4쪽: 휴대폰 주문은 「2027년 3월에 엽니다」로 고쳤습니다.', '5쪽: 성장 전략을 세 문장으로 채웠습니다.']}}),
+    ],
+    mkt:[
+      {t:'day', text:'어제'},
+      said('s-minji', '경쟁사 세 곳을 다시 읽었습니다. 온결상점이 기본 묶음을 39,000원에서 29,000원으로 내렸습니다.', '09:02', {src:'온결상점 가격 쪽 · 09:02에 읽음', rest:'한뼘상점과 두루상점은 지난번과 같습니다. 한뼘상점의 후기는 로그인이 필요해 읽지 않았습니다.'}),
+      {t:'act', text:'팀장 서진이 맡겼습니다', quote:'11월 블로그 글', at:'18:03', go:'lead'},
+      said('s-minji', '지난주 반응이 좋았던 글 셋을 먼저 보겠습니다. 반응 표는 도윤이 정리합니다.', '18:05'),
+      ...(rest ? [said('s-minji', '11월 블로그 글 초안을 다 썼습니다. 제목 후보 셋을 맨 위에 적었습니다.', '23:40', {doc:{fn:'블로그_11월.md', h:'아침을 거르는 직장인에게', p:['제목 후보: 아침 5분, 그래놀라 한 그릇', '바쁜 아침에도 거르지 않는 방법을 셋으로 나눴습니다.'], more:['본문 1,240자 · 사진 자리 셋', '맺음: 정기배송 첫 달 할인 안내']}})] : []),
+    ],
+    law:[
+      {t:'day', text:'어제'},
+      {t:'me', text:'용역 계약서 3판에서 위험한 조항 짚어 줘', at:'21:10'},
+      said('s-jian', '7조 손해배상에 상한이 없습니다. 받은 돈의 한 배까지로 고쳐 적었습니다. 12조 자동 연장은 한 달 전에 알리면 끝낼 수 있게 했습니다.', '21:40', {doc:{fn:'용역계약_v3_검토.md', h:'용역 계약서 3판 검토', p:['7조 손해배상: 상한 없음 → 받은 돈의 한 배까지', '12조 자동 연장: 한 달 전에 알리면 끝낼 수 있게'], more:['그 밖의 조항은 2판과 같습니다.', '원문 파일은 고치지 않았습니다.']}}),
+      ...(ask ? [{t:'day', text:'오늘'}, said('s-jian', '', T(3), {ask:'폴더 「계약_옛판」을 지워도 될지 물었습니다.', note:'지우면 되돌릴 수 없습니다. 허락할지는 지안이 일하는 창에서 고릅니다.'})] : []),
+    ],
+    dev:[
+      {t:'day', text:'어제'},
+      said('s-haram', '결제 화면의 버튼 자리를 고쳤습니다. 시험 42개가 모두 통과했습니다.', '16:20', {src:'시험 42개 · 1분 8초'}),
+      ...(rest ? [] : [
+        {t:'day', text:'오늘'},
+        {t:'me', text:'로그인할 때 가끔 튕기는 오류 원인 찾아 줘', at:T(32)},
+        said('s-max', '로그인 기록부터 읽겠습니다.', T(31)),
+        ...(ask ? [{t:'act', icon:'wait', warn:true, text:'Max가 12분째 소식이 없습니다. 마지막으로 auth.ts를 읽고 있었습니다.', at:T(12), wake:'s-max'}] : []),
+      ]),
+    ],
+    acc:[
+      {t:'day', text:'어제'},
+      {t:'me', text:'10월 영수증 정리해 줘', at:'22:10'},
+      said('s-boram', '영수증 폴더에서 10월 것만 골라 읽겠습니다.', '22:11'),
+      ...(rest ? [] : [{t:'day', text:'오늘'}, said('s-boram', '10월 영수증 42장을 정리했습니다. 합계는 1,284,000원이고, 세금계산서가 없는 영수증이 셋입니다.', T(0), {doc:{fn:'영수증_10월.xlsx', h:'10월 영수증 정리', p:['42장 · 합계 1,284,000원', '세금계산서 없음 3장: 10월 2일 포장재 외 둘'], more:['카드 31장 · 현금 11장', '지난달보다 96,000원 줄었습니다.']}})]),
+    ],
+    cs:[
+      {t:'day', text:'어제'},
+      {t:'act', text:'팀장 서진이 맡겼습니다', quote:'견적 문의 답장', at:'18:02', go:'lead'},
+      said('s-daon', '답하지 않은 견적 문의 셋에 답장 초안을 남겼습니다. 값은 지난달 견적표를 따랐습니다. 보내기 전에 확인해 주세요.', '21:45', {doc:{fn:'답장_초안_견적3.md', h:'견적 문의 답장 초안 셋', p:['1. 카페 단체 주문 40개 — 개당 6,500원, 12월 1일 발송', '2. 회사 선물 세트 25개 — 개당 18,000원'], more:['3. 정기배송 3개월 — 첫 달 10% 할인', '메일은 보내지 않았습니다. 메일함에서 확인한 뒤 보내 주세요.']}}),
+    ],
+    lobby:[],
+  };
+  for (const k in th) th[k].forEach(m => { m.id = ++mid; m.born = 0; });
+  return th;
+}
+
+/* ── 상태 ── */
+const LOOK = {
+  working:{rim:.5, glow:.16, eye:.9, mode:'open'},
+  asked:{rim:.98, glow:.34, eye:1, mode:'open'},
+  silent:{rim:.3, glow:.08, eye:.6, mode:'open'},
+  done:{rim:.62, glow:.15, eye:.9, mode:'smile'},
+  resting:{rim:.24, glow:.06, eye:.42, mode:'closed'},
+};
+const RANK = {asked:0, silent:1, done:2, working:3, resting:4};
+const staffAlert = s => s.status === 'asked' || s.status === 'silent' || (s.status === 'done' && !!s.news);
+const inZone = k => staff.filter(s => s.zone === k);
+const busy = s => s.status === 'working' || s.status === 'silent';
+const unseen = k => Math.max(0, (threads[k] || []).length - (seen[k] || 0));
+/* 부서의 느낌표: 승인 물음, 소식 없음, 아직 안 본 결과. 결과를 낸 직원이 곧바로 새 일을 받아도, 그 결과를 열어 보기 전까지 느낌표가 남는다 */
+const unseenSaid = k => (threads[k] || []).slice(seen[k] || 0).some(m => m.t === 'staff');
+const alertOf = k => k === 'lead' ? unseen('lead') > 0 : k === 'lobby' ? false : inZone(k).some(staffAlert) || unseenSaid(k);
+function names(list) {
+  if (list.length === 1) return 이가(list[0].name);
+  if (list.length === 2) return 와과(list[0].name) + ' ' + 이가(list[1].name);
+  return 이가(수(list.length));
+}
+function stateWord(k) {
+  if (k === 'lead') return typing.lead ? '나누는 중' : '';
+  if (k === 'lobby') { const n = inZone('lobby').length; return n ? `${수(n)} 일하는 중` : ''; }
+  const ss = inZone(k);
+  if (ss.some(s => s.status === 'asked')) return '승인 물음';
+  if (ss.some(s => s.status === 'silent')) return '소식 없음';
+  if (ss.some(s => s.status === 'done' && s.news) || unseenSaid(k)) return '새 결과';
+  const w = ss.filter(s => s.status === 'working').length;
+  if (w) return w > 1 ? `${수(w)} 일하는 중` : '일하는 중';
+  if (ss.some(s => s.status === 'done')) return '끝냄';
+  return ss.length ? '쉬는 중' : '빈 자리';
+}
+const lineOf = m => m.t === 'me' ? '나: ' + m.text : m.t === 'act' ? m.text : m.ask ? m.ask : m.text;
+function preview(k) {
+  if (k === 'lobby') { const o = inZone('lobby')[0]; return o ? `${o.name} · ${o.act}` : '솔리오 밖에서 연 일이 없습니다'; }
+  if (k !== 'lead') {
+    const ss = inZone(k), a = ss.find(s => s.status === 'asked'), q = ss.find(s => s.status === 'silent');
+    if (a) return a.act;
+    if (q) return `${이가(q.name)} ${q.quiet}분째 소식이 없습니다`;
+  }
+  const ty = typing[k]; if (ty) return `${byId(ty.sid)?.name || ''} · ${ty.verb}`;
+  const last = [...(threads[k] || [])].reverse().find(m => m.t !== 'day');
+  return last ? lineOf(last) : '아직 대화가 없습니다';
+}
+function deptSay(k) {
+  const ss = inZone(k), a = ss.find(s => s.status === 'asked'), q = ss.find(s => s.status === 'silent');
+  const w = ss.filter(s => s.status === 'working'), d = ss.filter(s => s.status === 'done');
+  const also = w.length ? `${names(w)} 일하고 있습니다.` : '';
+  if (a) return [`${이가(a.name)} ${Math.max(1, minsSince(a.t0))}분 전에 승인을 물었습니다.`, also || '답할 때까지 이 일은 멈춰 있습니다.'];
+  if (q) return [`${이가(q.name)} ${q.quiet}분째 소식이 없습니다.`, also || '창을 열면 어디서 멈췄는지 봅니다.'];
+  if (d.length) return [`${이가(d[0].name)} 일을 끝냈습니다.`, also || '새 일을 맡길 수 있습니다.'];
+  if (w.length) return [`${names(w)} 일하고 있습니다.`, ss.length > w.length ? `${names(ss.filter(s => !busy(s)))} 쉬고 있습니다.` : ''];
+  if (!ss.length) return ['아직 직원이 없습니다.', '일을 맡기면 첫 직원이 빈 자리에 앉습니다.'];
+  return ['모두 쉬고 있습니다.', '일을 맡기면 쉬던 직원이 깨어납니다.'];
+}
+function leadSay() {
+  const asks = staff.filter(s => s.status === 'asked'), w = staff.filter(s => !s.lead && busy(s) && s.status !== 'asked');
+  if (typing.lead) return ['나눌 부서를 고르고 있습니다.', w.length ? `${이가(수(w.length))} 일하고 있습니다.` : ''];
+  if (asks.length) return [`${이가(deptOf(asks[0].zone).name)} ${Math.max(1, minsSince(asks[0].t0))}분 전에 승인을 물었습니다.`, w.length ? `그 밖에 ${이가(수(w.length))} 일하고 있습니다.` : ''];
+  if (w.length) return [`${이가(수(w.length))} 일하고 있습니다.`, '맡길 일을 적으면 알맞은 부서에 나눕니다.'];
+  return ['모두 쉬고 있습니다.', '맡길 일을 적으면 알맞은 부서에 나눕니다.'];
+}
+
+/* ── 그리기: 대화 상대와 직원의 작은 구. PC 앱의 구(왼쪽 위에서 빛을 받은 검은 구, 작게 빛나는 눈)와 모자를 작게 옮겼다 ── */
+function rr(c, x, y, w, h, r) { c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); }
+function hat(c, x, y, R, kind) {
+  if (!kind || !hatsOn) return;
+  c.save(); c.lineCap = 'round'; c.lineJoin = 'round';
+  if (kind === 'beanie') {
+    c.beginPath(); c.ellipse(x, y - R * .44, R, R * .8, 0, Math.PI, Math.PI * 2); c.closePath();
+    const g = c.createLinearGradient(x - R, y - R * 1.2, x + R, y - R * .3); g.addColorStop(0, '#FFE08A'); g.addColorStop(1, '#D9A42C'); c.fillStyle = g; c.fill();
+    rr(c, x - R * 1.05, y - R * .6, R * 2.1, R * .3, R * .12); c.fillStyle = '#E3AE33'; c.fill();
+    c.beginPath(); c.arc(x, y - R * 1.28, R * .2, 0, Math.PI * 2); c.fillStyle = '#F5C445'; c.fill();
+  } else if (kind === 'beret') {
+    c.translate(x + R * .14, y - R * .8); c.rotate(-.2);
+    c.beginPath(); c.ellipse(0, 0, R * 1.02, R * .36, 0, 0, Math.PI * 2);
+    const g = c.createLinearGradient(0, -R * .36, 0, R * .36); g.addColorStop(0, '#D4554A'); g.addColorStop(1, '#8E2620'); c.fillStyle = g; c.fill();
+    c.beginPath(); c.moveTo(-R * .04, -R * .32); c.lineTo(0, -R * .56); c.strokeStyle = '#8E2620'; c.lineWidth = Math.max(1, R * .11); c.stroke();
+  } else if (kind === 'gat') {
+    const by = y - R * .84;
+    c.strokeStyle = 'rgba(236,226,206,.36)'; c.lineWidth = Math.max(.7, R * .05);
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(x + s * R * .64, by + R * .06); c.quadraticCurveTo(x + s * R * .8, y + R * .4, x + s * R * .3, y + R * .94); c.stroke(); }
+    c.beginPath(); c.ellipse(x, by, R * 1.75, R * .42, 0, 0, Math.PI * 2); c.fillStyle = 'rgba(22,19,16,.78)'; c.fill();
+    c.beginPath(); c.ellipse(x, by, R * 1.75, R * .42, 0, Math.PI * 1.06, Math.PI * 1.94); c.strokeStyle = 'rgba(236,226,206,.5)'; c.lineWidth = 1; c.stroke();
+    rr(c, x - R * .46, by - R * .8, R * .92, R * .82, R * .18); c.fillStyle = '#16130F'; c.fill(); c.strokeStyle = 'rgba(236,226,206,.45)'; c.stroke();
+  } else if (kind === 'phones') {
+    c.beginPath(); c.arc(x, y - R * .06, R * 1.14, Math.PI * 1.1, Math.PI * 1.9); c.strokeStyle = '#3D6BC9'; c.lineWidth = Math.max(1.4, R * .17); c.stroke();
+    for (const s of [-1, 1]) { rr(c, x + s * R * 1.02 - R * .21, y - R * .42, R * .42, R * .7, R * .19); c.fillStyle = '#3D6BC9'; c.fill(); }
+  } else if (kind === 'sprout') {
+    const b0 = y - R * .98, b1 = y - R * 1.44;
+    c.beginPath(); c.moveTo(x, b0); c.quadraticCurveTo(x + R * .06, (b0 + b1) / 2, x, b1); c.strokeStyle = '#3F6B2E'; c.lineWidth = Math.max(1, R * .09); c.stroke();
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(x, b1); c.quadraticCurveTo(x + s * R * .24, b1 - R * .52, x + s * R * .66, b1 - R * .3); c.quadraticCurveTo(x + s * R * .34, b1 + R * .06, x, b1); c.fillStyle = s < 0 ? '#7DB45A' : '#8FC46A'; c.fill(); }
+  }
+  c.restore();
+}
+function orb(c, x, y, R, s) {
+  const L = LOOK[s.status] || LOOK.resting;
+  // 일하는 동안은 등빛이 뒤에서 번진다(사무실의 탁상 등과 같은 빛 = 지금 일하는 중)
+  if (s.status === 'working' || s.status === 'asked') {
+    const g = c.createRadialGradient(x - R * .3, y - R * .3, 0, x, y, R * 2.1);
+    g.addColorStop(0, 'rgba(255,196,128,.34)'); g.addColorStop(1, 'rgba(255,196,128,0)');
+    c.fillStyle = g; c.fillRect(x - R * 2.2, y - R * 2.2, R * 4.4, R * 4.4);
+  }
+  c.beginPath(); c.arc(x, y, R, 0, Math.PI * 2); c.fillStyle = '#000'; c.fill();
+  const g = c.createRadialGradient(x - R * .36, y - R * .44, R * .04, x - R * .12, y - R * .14, R * 1.2);
+  g.addColorStop(0, `rgba(${RIM},${Math.min(.5, .22 + L.glow * .8)})`); g.addColorStop(.42, `rgba(${RIM},${.06 + L.glow * .22})`); g.addColorStop(1, `rgba(${RIM},.012)`);
+  c.fillStyle = g; c.fill();
+  const edge = Math.min(1, L.rim * 1.25), e = c.createLinearGradient(x - R * .8, y - R * .9, x + R * .7, y + R * .8);
+  e.addColorStop(0, `rgba(${RIM},${edge})`); e.addColorStop(.5, `rgba(${RIM},${edge * .28})`); e.addColorStop(1, `rgba(${RIM},0)`);
+  c.strokeStyle = e; c.lineWidth = s.status === 'asked' ? 1.3 : 1; c.stroke();
+  // 눈: 꽉 찬 작은 점 둘(감으면 짧은 선, 끝내면 웃음)
+  const ex = R * .24, ey = -R * .02, er = Math.max(1.25, R * .1);
+  c.fillStyle = c.strokeStyle = ink(L.eye); c.lineWidth = Math.max(1, er * .9); c.lineCap = 'round';
+  for (const d of [-1, 1]) {
+    const cx = x + d * ex, cy = y + ey + (L.mode === 'open' ? R * .1 : 0);
+    c.beginPath();
+    if (L.mode === 'closed') { c.moveTo(cx - er * 1.3, cy + er * .6); c.lineTo(cx + er * 1.3, cy + er * .6); c.stroke(); }
+    else if (L.mode === 'smile') { c.arc(cx, cy + er * 1.2, er * 1.6, Math.PI * 1.18, Math.PI * 1.82); c.stroke(); }
+    else {
+      const gl = c.createRadialGradient(cx, cy, 0, cx, cy, er * 3); gl.addColorStop(0, ink(L.eye * .3)); gl.addColorStop(1, ink(0));
+      c.fillStyle = gl; c.fillRect(cx - er * 3, cy - er * 3, er * 6, er * 6); c.fillStyle = ink(L.eye);
+      c.beginPath(); c.ellipse(cx, cy, er, Math.max(.3, er * (1 - (s.blink || 0))), 0, 0, Math.PI * 2); c.fill();
+    }
+  }
+  hat(c, x, y, R, s.hat);
+}
+/* data-av: 「staff:<직원>」은 그 직원 하나, 「chat:<상대>」는 그 부서의 직원(앞에 선 둘까지), 팀장은 팀장 하나 */
+function paintAv(cv) {
+  const dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  const [kind, key] = cv.dataset.av.split(':');
+  let list = kind === 'staff' ? [byId(key) || {status:'resting'}] : key === 'lead' ? [lead()] : inZone(key).filter(s => !s.lead);
+  list = list.filter(Boolean).sort((a, b) => RANK[a.status] - RANK[b.status]).slice(0, 2);
+  if (!list.length) { c.strokeStyle = ink(.26); c.lineWidth = 1; c.beginPath(); c.moveTo(w * .36, h * .6); c.lineTo(w * .64, h * .6); c.stroke(); return; }
+  const lift = hatsOn && list.some(s => s.hat) ? .06 : 0;
+  if (list.length > 1) {
+    const R = w * .23;
+    orb(c, w * .66, h * (.44 + lift), R, list[1]);
+    orb(c, w * .38, h * (.58 + lift), R * 1.06, list[0]);
+  } else {
+    const s = list[0], gat = hatsOn && s.hat === 'gat', R = w * (gat ? .22 : hatsOn && s.hat ? .29 : .32);
+    orb(c, w * .5, h * (gat ? .64 : .53 + (hatsOn && s.hat ? .08 : 0)), R, s);
+  }
+}
+const paintAll = root => root.querySelectorAll('canvas[data-av]').forEach(paintAv);
+
+/* 왼쪽 위의 구(검정 구 시안 그대로): 손을 바라본다 */
+const orbCv = $('#orb-cv'); let px = -1e4, py = -1e4, mb = 0, mbNext = performance.now() + 3000;
+function paintMainOrb(now) {
+  const dpr = Math.min(2, devicePixelRatio || 1), w = 44;
+  if (orbCv.width !== w * dpr) { orbCv.width = orbCv.height = w * dpr; }
+  const c = orbCv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, w);
+  const x = 22, y = 22, R = 11;
+  c.beginPath(); c.arc(x, y, R, 0, Math.PI * 2); c.fillStyle = '#000'; c.fill(); c.strokeStyle = ink(.55); c.lineWidth = 1; c.stroke();
+  c.beginPath(); c.arc(x, y, R - 2.6, -2.5, -1.5); c.strokeStyle = ink(.34); c.stroke();
+  if (mb > 0) mb = Math.max(0, mb - .12); else if (now > mbNext && !still) { mb = 1; mbNext = now + 2600 + Math.random() * 4200; }
+  const b = orbCv.getBoundingClientRect(), dx = px - (b.left + x), dy = py - (b.top + y), m = Math.hypot(dx, dy) || 1, k = px < -9000 ? 0 : Math.min(1, m / 200) * 2.2;
+  const ex = .21 * R, er = Math.max(1.05, R * .085);
+  c.fillStyle = ink(.95);
+  for (const s of [-1, 1]) { c.beginPath(); c.ellipse(x + s * ex + dx / m * k, y - .06 * R + dy / m * k, er, Math.max(.3, er * (1 - mb)), 0, 0, Math.PI * 2); c.fill(); }
+}
+addEventListener('pointermove', e => { px = e.clientX; py = e.clientY; });
+
+/* ── 사무실 무대: PC 앱의 그리기 그대로(호두나무 서재, 모자) ── */
+const toFloor = s => ({id:s.id, zone:s.zone, status:s.status, alert:staffAlert(s), hat:hatsOn ? s.hat || null : null, subagents:s.status === 'working' ? s.subagents || 0 : 0});
+function sceneOf() {
+  const zones = DEPTS.map(d => ({key:d.key, kind:'dept', name:d.name, staff:inZone(d.key).map(toFloor)}));
+  const lob = inZone('lobby'); if (lob.length) zones.push({key:'lobby', kind:'lobby', name:'부서 없는 일', staff:lob.map(toFloor)});
+  return {view:'tilted', viewSeq:0, seats:SEATS, skin:'walnut', skinSeq:0, zones};
+}
+const markHot = k => chatsEl.querySelectorAll('.chat').forEach(b => b.classList.toggle('hot', b.dataset.chat === k));
+const floor = createOfficeFloor($('#floor'), {
+  reduced:() => still,
+  isOpen:k => k === sel,
+  onHover:k => markHot(k),
+  onPress:k => { if (k) select(k); },
+});
+
+/* ── 그리기: 목록 · 무대 글 · 대화 · 오른쪽 칸 ── */
+const ICON = {
+  to:'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7h9M8 3.5 11.5 7 8 10.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>',
+  ok:'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.4 5.6 10.2 11.5 3.8" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>',
+  wait:'<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 2h7M3.5 12h7M4.5 2c0 3 5 3.2 5 5s-5 2-5 5M9.5 2c0 3-5 3.2-5 5s5 2 5 5" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>',
+};
+let wasAlert = new Set();
+function chatHTML(k) {
+  const a = alertOf(k), cur = k === sel, pop = a && !wasAlert.has(k) ? ' pop' : '';
+  const title = k === 'lead' ? `<small>팀장</small>${esc(lead().name)}` : esc(nameOf(k));
+  return `<button class="chat${k === 'lead' ? ' lead' : ''}${a ? ' alert' : ''}" type="button" data-chat="${k}" aria-current="${cur}">`
+    + `<canvas data-av="chat:${k}" aria-hidden="true"></canvas>`
+    + `<span class="cn">${title}${a ? `<i class="flag${pop}" aria-label="새 소식">!</i>` : ''}</span>`
+    + `<span class="cs">${esc(stateWord(k))}</span><span class="cp">${esc(preview(k))}</span></button>`;
+}
+function renderList() {
+  let h = chatHTML('lead') + '<p class="group">부서</p>';
+  for (const d of DEPTS) h += chatHTML(d.key);
+  if (inZone('lobby').length || threads.lobby.length) h += chatHTML('lobby');
+  chatsEl.innerHTML = h;
+  wasAlert = new Set(['lead', 'lobby', ...DEPTS.map(d => d.key)].filter(alertOf));
+  const work = staff.filter(s => busy(s) || s.status === 'asked').length;
+  $('#list-f').innerHTML = `<span title="24코어 · 64GB를 보고 정했습니다">이 PC · 동시에 <b>열둘</b>까지</span><span>지금 ${esc(수(work))}</span>`;
+  paintAll(chatsEl);
+}
+function renderCap() {
+  const who = $('#who'), st = $('#state');
+  let lines;
+  if (sel === 'lead') { who.innerHTML = `<small>팀장</small>${esc(lead().name)}`; lines = leadSay(); }
+  else if (sel === 'lobby') { const n = inZone('lobby').length; who.innerHTML = '<small>솔리오 밖</small>부서 없는 일'; lines = n ? [`솔리오 밖에서 연 일이 ${수(n)} 있습니다.`, '부서로 보내면 그 부서의 자리에 앉고, 결과가 그 부서의 대화로 이어집니다.'] : ['솔리오 밖에서 연 일이 없습니다.', '']; }
+  else { who.innerHTML = `<small>부서</small>${esc(nameOf(sel))}`; lines = deptSay(sel); }
+  st.innerHTML = esc(lines[0]) + (lines[1] ? `<span class="then">${esc(lines[1])}</span>` : '');
+}
+function docHTML(m) {
+  const d = m.doc, open = !!m.open;
+  return `<button class="doc" type="button" data-doc="${m.id}" aria-expanded="${open}"><span class="fn">${esc(d.fn)}</span><span class="dh">${esc(d.h)}</span>`
+    + d.p.map(l => `<span class="dl">${esc(l)}</span>`).join('')
+    + (d.more?.length ? `<span class="dmore"><span>${d.more.map(l => `<span class="dl">${esc(l)}</span>`).join('')}</span></span>` : '')
+    + `<span class="dfoot">${open ? '접기' : '펼쳐 보기'}</span></button>`;
+}
+let paintedAt = {};
+function msgHTML(m) {
+  const fresh = m.born && m.born > (paintedAt[sel] || 0) && !still ? ' fresh' : '';
+  if (m.t === 'day') return `<p class="day">${esc(m.text)}</p>`;
+  if (m.t === 'me') return `<div class="me${fresh}"><p>${esc(m.text)}</p><time>${esc(m.at)}</time></div>`;
+  if (m.t === 'act') {
+    const s = m.wake && byId(m.wake);
+    return `<div class="act${m.warn ? ' warn' : ''}${fresh}">${ICON[m.icon || 'to']}<span>${esc(m.text)}</span>${m.quote ? `<q>${esc(m.quote)}</q>` : ''}<time>${esc(m.at)}</time>`
+      + (m.go ? `<button class="jump" type="button" data-go="${m.go}">${esc(nameOf(m.go))} 대화 보기</button>` : '')
+      + (s && s.status === 'silent' ? `<button class="jump" type="button" data-wake="${s.id}">${esc(s.name)}의 창 열기</button>` : '') + '</div>';
+  }
+  let body;
+  if (m.ask) body = m.resolved ? `<p class="mb">${esc(m.ask)}</p><p class="resolved">${esc(m.resolved)}</p>`
+    : `<div class="askbox"><p class="q">${esc(m.ask)}</p><p class="note">${esc(m.note)}</p><button class="pill" type="button" data-approve="${m.sid}">${esc(m.name)}의 창 열기</button></div>`;
+  else body = `<p class="mb">${esc(m.text)}</p>`;
+  return `<article class="msg${fresh}"><canvas class="av" data-av="staff:${m.sid}" aria-hidden="true"></canvas><div class="mc">`
+    + `<header class="mh"><b>${esc(m.name)}</b>${m.by ? `<span class="by">${esc(m.by)}</span>` : ''}<time>${esc(m.at)}</time></header>${body}`
+    + (m.src ? `<p class="src">${esc(m.src)}</p>` : '') + (m.rest ? `<p class="rest">${esc(m.rest)}</p>` : '')
+    + (m.doc ? docHTML(m) : '') + (m.go ? `<p class="mgo"><button class="jump" type="button" data-go="${m.go}">${esc(nameOf(m.go))} 대화 보기</button></p>` : '')
+    + '</div></article>';
+}
+function since(s) {
+  const m = minsSince(s.t0);
+  if (s.status === 'working' || s.status === 'silent') return m < 1 ? '방금' : `${m}분째`;
+  if (s.status === 'asked' || s.status === 'done') return m < 1 ? '방금' : `${m}분 전`;
+  return '';
+}
+function doing(s) {
+  if (s.status === 'asked') return '허락을 기다립니다';
+  if (s.status === 'silent') return `${s.quiet}분째 소식이 없습니다`;
+  return s.act;
+}
+function nowRows(k, only) {
+  return inZone(k).filter(only || (() => true)).sort((a, b) => RANK[a.status] - RANK[b.status]).map(s => `<div class="nrow ${s.status}"><canvas data-av="staff:${s.id}" aria-hidden="true"></canvas>`
+    + `<div><b>${esc(s.name)}</b>${s.lead ? '<span class="tool">팀장</span>' : ''}<span class="doing">${esc(doing(s))}</span>`
+    + `</div><time data-t0="${s.t0}" data-st="${s.status}">${esc(since(s))}</time></div>`).join('');
+}
+function typingHTML(k) {
+  const ty = typing[k]; if (!ty) return '';
+  const s = byId(ty.sid);
+  return `<div class="typing"><canvas data-av="staff:${ty.sid}" aria-hidden="true"></canvas><span><b>${esc(s?.name || '')}</b> · ${esc(ty.verb)}</span><time data-clock="${ty.t0}">0:00</time></div>`;
+}
+function lobbyHTML() {
+  const list = inZone('lobby');
+  let h = list.length ? '' : '<p class="lobby-note">솔리오 밖에서 연 일이 생기면 여기에 섭니다.</p>';
+  for (const s of list) {
+    h += `<div class="out"><canvas class="av" data-av="staff:${s.id}" aria-hidden="true"></canvas><div><b>${esc(s.name)}</b><span class="by">이 PC에서 직접 연 창 · ${esc(since(s))}</span><span class="doing">${esc(s.act)}</span>`
+      + `<div class="moves" role="group" aria-label="보낼 부서">${DEPTS.map(d => `<button class="mv" type="button" data-move="${s.id}:${d.key}">${esc(로(d.name))} 보내기</button>`).join('')}</div></div></div>`;
+  }
+  return h + (threads.lobby || []).map(msgHTML).join('');
+}
+function renderThread(toEnd) {
+  const atEnd = threadEl.scrollHeight - threadEl.scrollTop - threadEl.clientHeight < 48;
+  const keep = threadEl.scrollTop;
+  let h = '<div class="thread-in">';
+  if (sel === 'lobby') h += lobbyHTML();
+  else (threads[sel] || []).forEach((m, i) => { if (i === newFrom[sel]) h += '<div class="newline" role="separator"><span>새 소식</span></div>'; h += msgHTML(m); });
+  // 좁은 창의 「지금」에는 대화에 이미 선 것(승인 물음, 소식 없음, 일하는 중 표시)을 다시 쓰지 않는다
+  if (sel !== 'lead' && sel !== 'lobby') {
+    const rows = nowRows(sel, s => s.status === 'working' && typing[sel]?.sid !== s.id);
+    h += typingHTML(sel) + (rows ? `<div class="nowbox"><h3>지금</h3>${rows}</div>` : '');
+  }
+  else if (sel === 'lead') h += typingHTML('lead');
+  threadEl.innerHTML = h + '</div>';
+  paintedAt[sel] = Date.now();
+  paintAll(threadEl);
+  tick();
+  const nl = toEnd === 'new' && threadEl.querySelector('.newline');
+  pin = nl ? 'new' : toEnd || atEnd ? 'end' : null;
+  place(keep);
+  threadRO.disconnect(); threadRO.observe(threadEl.firstElementChild);
+}
+/* 대화 끝에 붙어 있으면 글꼴이나 종이가 늦게 차려져 길이가 바뀌어도 끝에 붙어 있다. 손님이 위로 올려 읽으면 놓는다 */
+let pin = 'end';
+function place(keep) {
+  if (pin === 'new') { const nl = threadEl.querySelector('.newline'); if (nl) { threadEl.scrollTop = Math.max(0, nl.offsetTop - 24); return; } }
+  if (pin) threadEl.scrollTop = threadEl.scrollHeight; else if (keep !== undefined) threadEl.scrollTop = keep;
+}
+const threadRO = new ResizeObserver(() => { if (pin) place(); });
+threadEl.addEventListener('wheel', () => { pin = null; }, {passive:true});
+threadEl.addEventListener('touchmove', () => { pin = null; }, {passive:true});
+threadEl.addEventListener('scroll', () => { if (pin !== 'new' && threadEl.scrollHeight - threadEl.scrollTop - threadEl.clientHeight < 8) pin = 'end'; }, {passive:true});
+threadEl.addEventListener('keydown', e => { if (/^(PageUp|ArrowUp|Home)$/.test(e.key)) pin = null; });
+function renderChips() {
+  const el = $('#chips'), d = deptOf(sel), list = sel === 'lead' ? LEAD_CHIPS : d?.chips || [];
+  el.innerHTML = list.map(t => `<button class="chip" type="button" data-chip="${esc(t)}">${esc(t)}</button>`).join('');
+  el.hidden = !list.length;
+  const lobby = sel === 'lobby';
+  composeEl.hidden = lobby; $('#closed').hidden = !lobby;
+  $('#closed').textContent = lobby ? '여기서는 일을 맡기지 않습니다. 부서로 보낸 뒤 그 부서의 대화에서 맡깁니다.' : '';
+  msgEl.placeholder = sel === 'lead' ? '팀장에게 맡길 일을 적어 주세요. 알맞은 부서에 나눠 맡깁니다.' : `${nameOf(sel)}에 맡길 일을 적어 주세요`;
+}
+function renderSide() {
+  let h = '';
+  if (sel === 'lead') {
+    h += '<section class="sec"><h3>맡긴 일</h3>' + (tasks.length ? tasks.slice().reverse().map(t => `<div class="trow"><b>${esc(nameOf(t.dept))}</b><small>${esc(t.state)}</small><span>${esc(t.text)}</span></div>`).join('') : '<p>아직 맡긴 일이 없습니다.</p>') + '</section>';
+    h += `<section class="sec"><h3>팀장</h3><p>할 일을 받아 부서에 나누고, 끝난 결과를 모아 알려 드립니다. 직원을 띄우고 지켜보는 일은 솔리오가 합니다.</p><dl class="cfg"><dt>실행</dt><dd>Claude Code · Opus</dd><dt>자리</dt><dd>기획부</dd></dl></section>`;
+  } else if (sel === 'lobby') {
+    h += '<section class="sec"><h3>읽는 것</h3><p>이 PC의 Claude Code와 Codex가 남긴 기록 파일만 읽습니다. 설정 파일은 고치지 않습니다.</p></section>';
+  } else {
+    const d = deptOf(sel);
+    h += `<section class="sec"><h3>지금</h3>${nowRows(sel) || '<p>아직 직원이 없습니다.</p>'}</section>`;
+    const made = MADE[sel] || [];
+    const docOf = f => (threads[sel] || []).find(m => m.doc?.fn === f);
+    h += `<section class="sec"><h3>만든 것</h3>${made.length ? made.map(([f, w]) => { const m = docOf(f); return m ? `<button class="frow" type="button" data-open="${m.id}"><span>${esc(f)}</span><small>${esc(w)}</small></button>` : `<div class="frow"><span>${esc(f)}</span><small>${esc(w)}</small></div>`; }).join('') : '<p>아직 만든 것이 없습니다.</p>'}</section>`;
+    h += `<section class="sec"><h3>이 부서</h3><p>${esc(d.role)}</p><dl class="cfg"><dt>실행</dt><dd>${esc(d.tool)}</dd><dt>폴더</dt><dd>${esc(d.dir)}</dd><dt>자리</dt><dd>${esc(수(SEATS))}</dd></dl></section>`;
+  }
+  sideEl.innerHTML = h;
+  paintAll(sideEl);
+}
+let floorKey = '';
+function refresh(opts = {}) {
+  renderList(); renderCap(); renderThread(opts.toEnd); renderChips(); renderSide();
+  const sc = sceneOf(), key = JSON.stringify(sc);
+  if (key !== floorKey) { floorKey = key; floor.setScene(sc); }
+}
+/* 새 말이 오면 그 대화에 쌓는다. 보고 있는 대화가 아니면 목록에 느낌표가 붙는다 */
+function push(k, m) {
+  m.id = ++mid; m.born = Date.now();
+  (threads[k] ||= []).push(m);
+  if (k === sel) seen[k] = threads[k].length;
+}
+function select(k, how) {
+  if (!k || (k !== 'lead' && k !== 'lobby' && !deptOf(k))) return;
+  sel = k;
+  const total = (threads[k] || []).length, s0 = seen[k] || 0;
+  newFrom = {}; if (total > s0 && s0 > 0) newFrom[k] = s0;
+  seen[k] = total;
+  // 그 부서의 끝낸 일을 열어 보았으니 알림을 지운다. 잠시 뒤 쉬러 간다
+  for (const s of inZone(k)) if (s.status === 'done' && s.news) { s.news = false; settle(s); }
+  app.classList.add('in-room');
+  try { history.replaceState(null, '', '#' + k); } catch {}
+  refresh({toEnd:'new'});
+  floor.redraw();
+}
+
+/* ── 일이 흐르는 길(시안: 정해 둔 시간 뒤에 끝난 것으로 친다) ── */
+const timers = new Set();
+const later = (ms, fn) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); return t; };
+function settle(s) { later(5200, () => { if (s.status === 'done' && !s.news) { s.status = 'resting'; s.act = '쉬는 중'; s.t0 = Date.now(); refresh(); } }); }
+function freeStaff(k) {
+  const list = inZone(k).filter(s => !s.lead);
+  const s = list.find(x => x.status === 'resting') || list.find(x => x.status === 'done');
+  if (s) return s;
+  if (list.length >= SEATS) return null;
+  const d = deptOf(k), n = S('s-n' + (++uid), k, NEWNAMES.find(x => !staff.some(o => o.name === x)) || `${d.name} ${list.length + 1}`, d.tool, d.tool === 'Codex' ? 'GPT' : 'Sonnet', null, 'resting', '쉬는 중');
+  staff.push(n);
+  return n;
+}
+function jobFor(k, text) {
+  const q = short(text, 30);
+  if (k === 'mkt' && /경쟁사/.test(text)) return {act:'읽기 · 경쟁사 세 곳', verb:'경쟁사 세 곳을 읽는 중', ms:6200, made:'경쟁사_1124.md', reply:() => ({text:'경쟁사 세 곳을 다시 읽었습니다. 두루상점이 무료 배송 기준을 5만 원에서 3만 원으로 낮췄습니다.', src:`두루상점 배송 안내 쪽 · ${hhmm()}에 읽음`, rest:'온결상점과 한뼘상점은 지난번과 같습니다. 한뼘상점의 후기는 로그인이 필요해 이번에도 읽지 않았습니다.'})};
+  if (k === 'mkt' && /반응|SNS|인스타/i.test(text)) return {act:'읽기 · 반응_47주.csv', verb:'반응을 정리하는 중', ms:5200, made:'반응_47주.csv', reply:() => ({text:'지난주 인스타그램 반응을 표로 정리했습니다. 저장이 가장 많은 글은 「그래놀라 굽는 날」입니다.', doc:{fn:'반응_47주.csv', h:'47주 인스타그램 반응', p:['저장 312 · 「그래놀라 굽는 날」', '댓글 48 · 「아침 5분 레시피」'], more:['공유 27 · 「포장하는 손」', '팔로워 64명 늘었습니다.']}})};
+  if (k === 'dev' && /시험|테스트/.test(text)) return {act:'명령 · npm test', verb:'시험을 돌리는 중', ms:5200, reply:() => ({text:'시험 42개를 돌렸습니다. 모두 통과했습니다.', src:'시험 42개 · 1분 12초'})};
+  const J = {
+    plan:{act:'읽기 · 사업계획서_v4.docx', verb:'계획서를 읽는 중', ms:6000, made:'사업계획서_메모.md', reply:() => ({text:'계획서와 공고를 견주어 읽었습니다. 고칠 곳이 둘 남았습니다.', doc:{fn:'사업계획서_메모.md', h:'사업계획서 4판 메모', p:['3쪽: 다시 산 손님 수의 기준 달을 적어 주세요.', '5쪽: 2년째 매출의 근거가 한 줄 더 필요합니다.'], more:['공고의 평가 항목 넷에 모두 답하고 있습니다.']}})},
+    mkt:{act:'쓰기 · 블로그_초안.md', verb:'초안을 쓰는 중', ms:5600, made:'블로그_초안.md', reply:() => ({text:'초안을 썼습니다. 제목 후보 셋을 맨 위에 적었습니다.', doc:{fn:'블로그_초안.md', h:q, p:['제목 후보: 아침 5분, 그래놀라 한 그릇', '바쁜 아침에도 거르지 않는 방법을 셋으로 나눴습니다.'], more:['본문 1,240자 · 사진 자리 셋', '맺음: 정기배송 첫 달 할인 안내']}})},
+    law:{act:'읽기 · 계약서', verb:'계약서를 읽는 중', ms:5800, made:'검토_메모.md', reply:() => ({text:'읽고 고칠 조항을 짚었습니다. 고친 글을 원문 옆에 나란히 적었습니다.', doc:{fn:'검토_메모.md', h:q, p:['3조 대금 지급: 날짜가 없습니다 → 납품 뒤 14일 안으로', '9조 해지: 한쪽만 해지할 수 있습니다 → 양쪽 모두 30일 전에 알리면'], more:['그 밖의 조항은 지난 판과 같습니다.']}})},
+    dev:{act:'읽기 · 코드', verb:'원인을 찾는 중', ms:6400, reply:() => ({text:'원인을 찾아 고쳤습니다. 바꾼 파일은 둘이고, 시험 42개가 모두 통과했습니다.', src:'고친 파일 둘 · auth.ts, session.ts'})},
+    acc:{act:'읽기 · 영수증_11월', verb:'영수증을 정리하는 중', ms:5400, made:'영수증_11월.xlsx', reply:() => ({text:'정리했습니다. 11월 합계는 1,512,000원이고, 세금계산서가 없는 영수증이 둘입니다.', doc:{fn:'영수증_11월.xlsx', h:'11월 영수증 정리', p:['38장 · 합계 1,512,000원', '세금계산서 없음: 11월 3일 포장재, 11월 17일 택배'], more:['지난달보다 228,000원 늘었습니다.']}})},
+    cs:{act:'읽기 · 받은편지함', verb:'문의를 읽는 중', ms:5600, made:'답장_초안.md', reply:() => ({text:'답하지 않은 문의 둘에 답장 초안을 남겼습니다. 보내기 전에 값과 날짜를 확인해 주세요.', doc:{fn:'답장_초안.md', h:'문의 답장 초안 둘', p:['1. 정기배송 날짜 바꾸기 — 다음 배송부터 화요일로', '2. 회사 단체 주문 30개 — 개당 6,500원, 12월 2일 발송'], more:['메일은 보내지 않았습니다. 메일함에서 확인한 뒤 보내 주세요.']}})},
+  };
+  return J[k] || {act:'일하는 중', verb:'일하는 중', ms:5000, made:`${deptOf(k).name}_메모.md`, reply:() => ({text:'맡기신 일을 마쳤습니다. 결과를 부서 폴더에 적었습니다.', doc:{fn:`${deptOf(k).name}_메모.md`, h:q, p:['처음 맡은 일이라 부서 폴더의 파일부터 읽었습니다.']}})};
+}
+/* 부서가 일을 받는다. 쉬던 직원이 깨어나거나 빈 자리에 새 직원이 앉고, 끝나면 그 대화에 결과를 남긴다 */
+function take(k, text, onDone) {
+  const s = freeStaff(k);
+  if (!s) { push(k, {t:'act', icon:'wait', text:`세 자리가 모두 일하고 있습니다. 자리가 비면 이 일부터 시작합니다.`, at:hhmm()}); refresh(); return null; }
+  const job = jobFor(k, text);
+  Object.assign(s, {status:'working', act:job.verb, t0:Date.now(), news:false});
+  typing[k] = {sid:s.id, verb:job.verb, t0:Date.now()};
+  later(still ? 900 : job.ms, () => {
+    delete typing[k];
+    const r = job.reply();
+    Object.assign(s, {status:'done', act:'일을 끝냄', t0:Date.now(), news:sel !== k});
+    push(k, said(s.id, r.text, hhmm(), r));
+    if (job.made) (MADE[k] ||= []).unshift([job.made, '방금']);
+    if (sel === k) settle(s);
+    onDone?.(s, r);
+    refresh();
+  });
+  return s;
+}
+const ROUTES = [
+  ['cs', /문의|답장|고객|견적|손님/, '손님 문의는 고객지원부가 답합니다.'],
+  ['mkt', /블로그|SNS|인스타|경쟁사|홍보|광고|반응|게시물/i, '글과 SNS, 경쟁사는 마케팅부가 봅니다.'],
+  ['law', /계약|약관|조항|법/, '계약과 약관은 법무부가 읽습니다.'],
+  ['dev', /코드|오류|버그|화면|앱|시험|테스트|배포|사이트|로그인/, '코드와 오류는 개발부가 고칩니다.'],
+  ['acc', /영수증|세금|회계|정산|매출|합계|비용/, '돈과 영수증은 회계부가 정리합니다.'],
+  ['plan', /계획서|공고|지원사업|사업|기획/, '계획서와 공고는 기획부가 읽습니다.'],
+];
+function route(text) {
+  for (const [k, re, why] of ROUTES) if (deptOf(k) && re.test(text)) return {k, why};
+  const free = DEPTS.find(d => inZone(d.key).some(s => !s.lead && s.status === 'resting')) || DEPTS[0];
+  return {k:free.key, why:`어느 부서의 일인지 분명하지 않아, 지금 쉬고 있는 ${free.name}에 먼저 맡깁니다. 다른 부서가 맞으면 말씀해 주세요.`};
+}
+/* 팀장이 받는다: 나눌 부서를 고르고, 맡기고, 끝나면 모아 알린다 */
+function leadTake(text) {
+  const L = lead();
+  Object.assign(L, {status:'working', act:'나눌 부서를 고르는 중', t0:Date.now()});
+  typing.lead = {sid:L.id, verb:'나눌 부서를 고르는 중', t0:Date.now()};
+  refresh({toEnd:true});
+  later(still ? 400 : 1700, () => {
+    delete typing.lead;
+    const {k, why} = route(text), d = deptOf(k);
+    Object.assign(L, {status:'resting', act:'맡길 일을 기다립니다', t0:Date.now()});
+    push('lead', said(L.id, `이 일은 ${d.name}에 맡기겠습니다. ${why}`, hhmm()));
+    push(k, {t:'act', text:`팀장 ${이가(L.name)} 맡겼습니다`, quote:short(text, 30), at:hhmm(), go:'lead'});
+    const task = {dept:k, text:short(text, 34), state:'일하는 중'};
+    const s = take(k, text, (st, r) => {
+      task.state = '끝냄';
+      push('lead', said(L.id, `${이가(d.name)} 끝냈습니다. ${firstSentence(r.text)}`, hhmm(), {go:k}));
+    });
+    if (!s) task.state = '기다림';
+    tasks.push(task);
+    push('lead', {t:'act', text:s ? `${d.name} ${s.name}에게 맡겼습니다` : `${d.name}의 자리가 비기를 기다립니다`, at:hhmm(), go:k});
+    refresh();
+  });
+}
+function send(k, raw) {
+  const text = String(raw || '').trim(); if (!text || k === 'lobby') return;
+  push(k, {t:'me', text, at:hhmm()});
+  if (k === 'lead') { leadTake(text); return; }
+  take(k, text);
+  refresh({toEnd:true});
+}
+function approve(sid) {
+  const s = byId(sid); if (!s || s.status !== 'asked') return;
+  const m = (threads[s.zone] || []).find(x => x.ask && x.sid === sid && !x.resolved);
+  if (m) m.resolved = `창에서 허락했습니다 · ${hhmm()}`;
+  Object.assign(s, {status:'working', act:'폴더를 지우는 중', t0:Date.now()});
+  typing[s.zone] = {sid, verb:'폴더를 지우는 중', t0:Date.now()};
+  refresh();
+  later(still ? 900 : 4200, () => {
+    delete typing[s.zone];
+    Object.assign(s, {status:'done', act:'폴더를 지움', t0:Date.now(), news:sel !== s.zone});
+    push(s.zone, said(sid, '폴더 「계약_옛판」을 지웠습니다. 남은 계약 폴더는 「계약」과 「계약_서명본」 둘입니다.', hhmm()));
+    if (sel === s.zone) settle(s);
+    refresh();
+  });
+}
+function wake(sid) {
+  const s = byId(sid); if (!s || s.status !== 'silent') return;
+  push(s.zone, {t:'act', icon:'ok', text:`${s.name}의 창을 열었습니다. 다시 일합니다`, at:hhmm()});
+  Object.assign(s, {status:'working', act:'원인을 찾는 중', t0:Date.now(), quiet:0});
+  typing[s.zone] = {sid, verb:'원인을 찾는 중', t0:Date.now()};
+  refresh({toEnd:true});
+  later(still ? 900 : 5200, () => {
+    delete typing[s.zone];
+    Object.assign(s, {status:'done', act:'원인을 찾음', t0:Date.now(), news:sel !== s.zone});
+    push(s.zone, said(sid, '원인을 찾았습니다. 로그인 기록이 30분마다 지워지고 있었습니다. auth.ts 한 곳을 고치면 됩니다.', hhmm(), {src:'읽은 파일 · auth.ts, session.ts'}));
+    if (sel === s.zone) settle(s);
+    refresh();
+  });
+}
+function moveTo(sid, k) {
+  const s = byId(sid), d = deptOf(k); if (!s || !d) return;
+  if (inZone(k).filter(x => !x.lead).length >= SEATS) { push('lobby', {t:'act', icon:'wait', text:`${d.name}의 세 자리가 다 찼습니다. 다른 부서로 보내 주세요.`, at:hhmm()}); refresh(); return; }
+  s.zone = k; s.outside = false;
+  push(k, {t:'act', text:`솔리오 밖에서 연 일 ${을를(s.name)} 이 부서로 옮겼습니다`, at:hhmm()});
+  push('lobby', {t:'act', icon:'ok', text:`${을를(s.name)} ${로(d.name)} 옮겼습니다`, at:hhmm(), go:k});
+  refresh();
+}
+/* 시안 막대 「알림 받기」: 보고 있지 않은 부서의 직원 하나가 일을 끝낸다 */
+const FIN = {
+  's-minji':{text:'11월 블로그 글 초안을 다 썼습니다. 제목 후보 셋을 맨 위에 적었습니다.', doc:{fn:'블로그_11월.md', h:'아침을 거르는 직장인에게', p:['제목 후보: 아침 5분, 그래놀라 한 그릇', '바쁜 아침에도 거르지 않는 방법을 셋으로 나눴습니다.'], more:['본문 1,240자 · 사진 자리 셋', '맺음: 정기배송 첫 달 할인 안내']}},
+  's-doyun':{text:'지난주 인스타그램 반응을 표로 정리했습니다.', doc:{fn:'반응_46주.csv', h:'46주 인스타그램 반응', p:['저장 288 · 「포장하는 손」', '댓글 41 · 「아침 5분 레시피」']}},
+  's-haram':{text:'결제 화면의 시험을 모두 통과했습니다. 도우미 둘이 나눠 돌렸습니다.', src:'시험 42개 · 21분'},
+  's-jian':{text:'용역 계약서 7조를 다 읽었습니다. 손해배상 상한을 받은 돈의 한 배로 적었습니다.'},
+  's-max':{text:'로그인 오류의 원인을 찾았습니다. auth.ts 한 곳을 고치면 됩니다.'},
+  's-wiles':{text:'회의록 요약을 끝냈습니다.'},
+};
+function ping() {
+  const c = staff.filter(s => s.status === 'working' && s.zone !== sel && s.zone !== 'lobby' && !typing[s.zone]);
+  const s = c[0]; if (!s) return;
+  const f = FIN[s.id] || {text:'맡은 일을 끝냈습니다.'};
+  Object.assign(s, {status:'done', act:'일을 끝냄', t0:Date.now(), news:true, subagents:0});
+  push(s.zone, said(s.id, f.text, hhmm(), f));
+  refresh();
+}
+function addDept(name) {
+  const n = String(name || '').trim().slice(0, 8); if (!n) return;
+  const key = 'd' + (++deptSeq);
+  DEPTS.push({key, name:n, role:'역할을 아직 적지 않았습니다. 처음 맡긴 일로 직원이 부서 폴더를 읽습니다.', dir:'문서\\' + n, tool:'Claude Code', chips:[]});
+  threads[key] = []; push(key, {t:'act', icon:'ok', text:`${을를(n)} 만들었습니다. 일을 맡기면 첫 직원이 빈 자리에 앉습니다`, at:hhmm()});
+  select(key);
+}
+
+/* ── 손 ── */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-chat],[data-go],[data-approve],[data-wake],[data-doc],[data-chip],[data-move],[data-open]');
+  if (!t) return;
+  if (t.dataset.chat) select(t.dataset.chat);
+  else if (t.dataset.go) select(t.dataset.go);
+  else if (t.dataset.approve) approve(t.dataset.approve);
+  else if (t.dataset.wake) wake(t.dataset.wake);
+  else if (t.dataset.chip) send(sel, t.dataset.chip);
+  else if (t.dataset.open) {
+    const m = (threads[sel] || []).find(x => String(x.id) === t.dataset.open), card = threadEl.querySelector(`[data-doc="${t.dataset.open}"]`); if (!m || !card) return;
+    m.open = true; card.setAttribute('aria-expanded', 'true'); card.querySelector('.dfoot').textContent = '접기';
+    pin = null; card.scrollIntoView({block:'center', behavior:still ? 'auto' : 'smooth'}); card.focus({preventScroll:true});
+  }
+  else if (t.dataset.move) { const [sid, k] = t.dataset.move.split(':'); moveTo(sid, k); }
+  else if (t.dataset.doc) {
+    const m = Object.values(threads).flat().find(x => String(x.id) === t.dataset.doc); if (!m) return;
+    m.open = !m.open; t.setAttribute('aria-expanded', m.open); t.querySelector('.dfoot').textContent = m.open ? '접기' : '펼쳐 보기';
+  }
+});
+chatsEl.addEventListener('pointerover', e => { const b = e.target.closest('.chat'); floor.setHot({zone:b && b.dataset.chat !== 'lead' ? b.dataset.chat : null}); });
+chatsEl.addEventListener('pointerleave', () => floor.setHot(null));
+$('#back').addEventListener('click', () => app.classList.remove('in-room'));
+const fitMsg = () => { msgEl.style.height = 'auto'; msgEl.style.height = Math.min(140, Math.max(38, msgEl.scrollHeight)) + 'px'; composeEl.classList.toggle('ready', !!msgEl.value.trim()); };
+msgEl.addEventListener('input', fitMsg);
+msgEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); composeEl.requestSubmit(); } });
+composeEl.addEventListener('submit', e => { e.preventDefault(); const v = msgEl.value; msgEl.value = ''; fitMsg(); send(sel, v); });
+$('#add-btn').addEventListener('click', e => { const f = $('#add-form'), open = f.hidden; f.hidden = !open; e.currentTarget.setAttribute('aria-expanded', open); if (open) $('#add-name').focus(); });
+$('#add-form').addEventListener('submit', e => { e.preventDefault(); const v = $('#add-name').value; $('#add-name').value = ''; $('#add-form').hidden = true; $('#add-btn').setAttribute('aria-expanded', 'false'); addDept(v); });
+
+/* ── 시계: 걸린 시간과 깜빡임 ── */
+function tick() {
+  document.querySelectorAll('time[data-clock]').forEach(el => { const s = Math.max(0, Math.floor((Date.now() - +el.dataset.clock) / 1000)); el.textContent = `${Math.floor(s / 60)}:${pad(s % 60)}`; });
+  document.querySelectorAll('time[data-t0]').forEach(el => { const m = minsSince(+el.dataset.t0), st = el.dataset.st; el.textContent = st === 'working' || st === 'silent' ? (m < 1 ? '방금' : `${m}분째`) : st === 'asked' || st === 'done' ? (m < 1 ? '방금' : `${m}분 전`) : ''; });
+}
+setInterval(tick, 1000);
+setInterval(() => { renderCap(); }, 20000);
+/* 그려지지 않은 작은 구(감춰져 있다가 창이 넓어져 보이게 된 칸 등)는 다음 틈에 그린다 */
+let sweepAt = 0;
+function sweep() { document.querySelectorAll('canvas[data-av]').forEach(cv => { if (cv.clientWidth && cv.width !== Math.round(cv.clientWidth * Math.min(2, devicePixelRatio || 1))) paintAv(cv); }); }
+new ResizeObserver(() => requestAnimationFrame(sweep)).observe(app);
+function blinkLoop(now) {
+  requestAnimationFrame(blinkLoop);
+  paintMainOrb(now);
+  if (now - sweepAt > 1500) { sweepAt = now; sweep(); }
+  if (still) return;
+  for (const s of staff) {
+    const was = s.blink;
+    if (s.blink > 0) s.blink = Math.max(0, s.blink - .14);
+    else if (now > s.nextBlink && LOOK[s.status]?.mode === 'open') { s.blink = 1; s.nextBlink = now + 2400 + Math.random() * 5200; }
+    if (s.blink !== was) document.querySelectorAll(`canvas[data-av="staff:${s.id}"],canvas[data-av="chat:${s.lead ? 'lead' : s.zone}"]`).forEach(paintAv);
+  }
+}
+
+/* ── 시안 조작 막대 ── */
+const meta = $('#meta'); let awayT = 0;
+function wakeMeta() { meta.classList.remove('away'); clearTimeout(awayT); awayT = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('away'); }, 4000); }
+addEventListener('pointermove', wakeMeta); addEventListener('keydown', wakeMeta); wakeMeta();
+const CASES = [['ask', '승인 물음'], ['calm', '평소'], ['rest', '모두 쉼']];
+let ci = 0;
+function start(sc, k) {
+  timers.forEach(clearTimeout); timers.clear();
+  scene = sc; uid = 0; mid = 0; deptSeq = 0; typing = {}; newFrom = {}; paintedAt = {};
+  DEPTS = DEPTS0.map(d => ({...d, chips:[...d.chips]}));
+  MADE = Object.fromEntries(Object.entries(MADE0).map(([a, b]) => [a, b.map(x => [...x])]));
+  staff = cast(sc); threads = seed(sc);
+  tasks = sc === 'rest' ? [{dept:'cs', text:'견적 문의 답장', state:'끝냄'}, {dept:'mkt', text:'11월 블로그 글', state:'끝냄'}] : [{dept:'cs', text:'견적 문의 답장', state:'끝냄'}, {dept:'mkt', text:'11월 블로그 글', state:'일하는 중'}];
+  seen = {}; for (const key in threads) seen[key] = threads[key].length;
+  // 처음 여는 순간 아직 안 본 것: 팀장의 오늘 말과 회계부의 결과
+  if (sc !== 'rest') seen.lead = threads.lead.length - 1;
+  if (sc !== 'rest') seen.acc = threads.acc.length - 1;
+  $('#m-case').textContent = '상황 · ' + CASES[ci][1];
+  floorKey = '';
+  select(k || 'lead');
+}
+$('#m-case').onclick = () => { ci = (ci + 1) % CASES.length; start(CASES[ci][0], sel === 'lobby' && CASES[ci][0] === 'rest' ? 'lead' : (deptOf(sel) || sel === 'lead' ? sel : 'lead')); };
+$('#m-ping').onclick = ping;
+$('#m-again').onclick = () => { ci = 0; start('ask', 'lead'); };
+$('#m-hat').onclick = e => { hatsOn = !hatsOn; e.currentTarget.textContent = '모자 · ' + (hatsOn ? '씀' : '벗음'); refresh(); };
+const SIZES = [['꽉 참'], ['1280×800', 1280, 800], ['1024×720', 1024, 720], ['420×760', 420, 760]];
+let si = 0;
+function setSize(i) { si = i; const z = SIZES[i]; document.body.classList.toggle('sized', !!z[1]); app.style.setProperty('--aw', z[1] ? z[1] + 'px' : '100%'); app.style.setProperty('--ah', z[1] ? z[2] + 'px' : '100%'); $('#m-size').textContent = '창 크기 · ' + z[0]; }
+$('#m-size').onclick = () => setSize((si + 1) % SIZES.length);
+
+/* 주소 끝으로 바로 연다(화면 확인용): #mkt · #law · #dev · #acc · #cs · #plan · #lobby, #calm · #rest, #w1280 · #w1024 · #w420, #nohat, #list(좁은 창에서 목록) */
+const H = location.hash.slice(1).split(/[-,&]/);
+if (H.includes('calm')) ci = 1; if (H.includes('rest')) ci = 2;
+if (H.includes('nohat')) { hatsOn = false; $('#m-hat').textContent = '모자 · 벗음'; }
+const sz = H.map(x => SIZES.findIndex(z => z[1] && 'w' + z[1] === x)).find(i => i > 0); if (sz) setSize(sz);
+const first = H.find(x => ['lead', 'lobby', ...DEPTS0.map(d => d.key)].includes(x));
+start(CASES[ci][0], first || 'lead');
+if (H.includes('list')) app.classList.remove('in-room');
+floor.show(true);
+requestAnimationFrame(blinkLoop);
+if (document.fonts?.ready) document.fonts.ready.then(() => { paintAll(document); floor.redraw(); });
+</script>
+</body>
+</html>
