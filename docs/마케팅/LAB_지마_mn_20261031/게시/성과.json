@@ -3,6 +3,17 @@
     "설명": "tools/게시성과.js가 회사 서버 기록으로 다시 쓴다(AI 없음). 판정 규칙과 칸 뜻은 docs/마케팅/게시성과.md",
     "판": [
       {
+        "계정": "lab-lk-facebook",
+        "채널": "페북 SYNK LAB Sri Lanka",
+        "주소": "https://www.facebook.com/reel/1411775287409864/",
+        "형식": "facebook-reels",
+        "게시": "2026-11-23T07:30:49.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-kh-facebook",
         "채널": "페북 SYNK LAB Cambodia",
         "주소": "https://www.facebook.com/reel/1146268611436486/",
