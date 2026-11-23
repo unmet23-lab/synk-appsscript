@@ -143,9 +143,9 @@ test('the settings room gets an 「이 PC」 row only when the bridge exists', (
   const r = pcSettingsRow(snap(SAMPLES.twoDrive), {});
   assert.deepEqual([r.key, r.nm, r.mid, r.val], ['pc', '이 PC', '논리 코어 8개 · 메모리 16GB · 드라이브 둘', '']);
   // 맞춰 주는 기능이 없는 계정에게는 잰 값만 모았다고 쓴다(Fable 다시 검수 FA1)
-  assert.deepEqual([r.more[0][1], r.more.find(m => m[0] === 'acts')[1][0].slice(0, 2)], ['솔리오가 잰 이 PC의 사양을 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.', ['이 PC 사양 보기', 'pc-open']]);
+  assert.deepEqual([r.more[0][1], r.more.find(m => m[0] === 'acts')[1][0].slice(0, 2)], ['솔리오가 잰 이 PC의 사양을 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.', ['내 PC 진단 보기', 'pc-open']]);
   const fit = pcSettingsRow(snap(SAMPLES.twoDrive), {}, { backup: true });
-  assert.deepEqual([fit.more[0][1], fit.more.find(m => m[0] === 'acts')[1][0][0]], ['솔리오가 이 PC를 어떻게 보고 기능마다 무엇을 맞췄는지 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.', '이 PC에 맞춘 것 보기']);
+  assert.deepEqual([fit.more[0][1], fit.more.find(m => m[0] === 'acts')[1][0][0]], ['솔리오가 이 PC를 어떻게 보고 기능마다 무엇을 맞췄는지 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.', '내 PC 진단 보기']);
   assert.equal(pcSettingsRow(snap(SAMPLES.twoDrive, { changed: [{ what: 'memory', from: 8, to: 16 }] }), {}).val, '바뀜');
   // 읽는 중 · 읽지 못함은 판과 같은 말로(Fable 최종 P2-4)
   assert.deepEqual([pcSettingsRow(null, {}).mid, pcSettingsRow({ ok: false }, {}).mid, pcSettingsRow({ ok: true, available: true, profile: null }, {}).mid], ['읽는 중입니다', '읽지 못했습니다', '아직 재지 않았습니다']);

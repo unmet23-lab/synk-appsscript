@@ -489,7 +489,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     return scene;
   }
   function readScenes(state) { return Object.fromEntries(READ_PROGRAMS.map(key => [key, readScene(key, state)])); }
-  /* 「이 PC에 맞춘 것」 판이 말해도 되는 기능. 원클릭 · 사무실은 본체가 볼 계정에만 available:true로 답한다(Fable 최종 P1).
+  /* 「내 PC 진단」 판이 말해도 되는 기능. 원클릭 · 사무실은 본체가 볼 계정에만 available:true로 답한다(Fable 최종 P1).
+     답이 오기 전에는 「볼 계정 아님」과 같이 둔다. 답이 오면 그 계정의 문장으로 한 번 바뀐다(r3 FA3, 받아들임).
      사무실에서 직접 정한 수가 있으면 판도 그 수를 쓴다(P2-3) */
   function pcFeatures(state) {
     const mine = key => memberShown(state) && !!state.accountKey && reads[key].account === state.accountKey && reads[key].result?.available === true;
@@ -1929,7 +1930,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       if (!res || typeof res !== 'object' || (res.ok === false && res.code === 'SIGN_IN_REQUIRED')) {
         if (!r.result) {
           r.done = false;
-          if (!r.retried && r.timer === null && solioReadable(machine.read())) { r.retried = true; r.timer = setTimer(() => { r.timer = null; syncRead(key); }, ORB_TIMING.busyRetry); }
+          if (!r.retried && r.timer === null && solioReadable(machine.read())) { r.retried = true; r.timer = setTimer(() => { r.timer = null; syncRead(key, { anywhere }); }, ORB_TIMING.busyRetry); }
         }
         render();
         return;

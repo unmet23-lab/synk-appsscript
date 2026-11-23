@@ -193,7 +193,7 @@ export function pcSettingsRow(snap = null, st = {}, features = null) {
   const val = Array.isArray(snap?.changed) && snap.changed.length ? '바뀜' : '';
   return { key: 'pc', nm: '이 PC', mid, val, when: '', label: rowLabel(['이 PC', mid, val]), more: [
     ['note', fits ? '솔리오가 이 PC를 어떻게 보고 기능마다 무엇을 맞췄는지 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.' : '솔리오가 잰 이 PC의 사양을 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.'],
-    ['acts', [[fits ? '이 PC에 맞춘 것 보기' : '이 PC 사양 보기', 'pc-open', '', '']]],
+    ['acts', [['내 PC 진단 보기', 'pc-open', '', '']]],
     ['live', st.notes?.get?.('pc') || ''],
   ] };
 }
