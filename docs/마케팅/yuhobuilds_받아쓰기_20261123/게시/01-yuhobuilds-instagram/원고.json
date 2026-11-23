@@ -15,5 +15,21 @@
     "문구": "「받아쓰기」 남겨 주셔서 고마워요! 녹음 파일을 내 컴퓨터에서 글로 바꾸는 자료예요.\n클로드 코드에 그대로 붙여 넣을 요청문, 멈춘 것처럼 보일 때 한마디, 받아쓴 글 확인하는 법이 있어요.\nhttps://synk.im/prompts/#audio-to-text-local\n자동으로 보낸 메시지예요. 그만 받으려면 '중단'이라고 보내 주세요.",
     "자료주소": "https://synk.im/prompts/#audio-to-text-local",
     "등록": "설정 전 — 자료 공개 뒤 sns-DM준비.js로 dm 칸을 넣고, 게시 뒤 댓글DM_제작게시연결.md 「이미 게시된 글에 나중에 걸 때」로 등록한다"
+  },
+  "dm": {
+    "account_id": "17841431575383549",
+    "title": "녹음 파일을 내 컴퓨터에서 글로 바꾸는 자료",
+    "keyword": "받아쓰기",
+    "message": "「받아쓰기」 남겨 주셔서 고마워요! 녹음 파일을 내 컴퓨터에서 글로 바꾸는 자료예요.\n클로드 코드에 그대로 붙여 넣을 요청문, 멈춘 것처럼 보일 때 한마디, 받아쓴 글 확인하는 법이 있어요.\nhttps://synk.im/prompts/#audio-to-text-local\n자동으로 보낸 메시지예요. 그만 받으려면 '중단'이라고 보내 주세요.",
+    "duration_mode": "evergreen",
+    "ends_at": null,
+    "resource": {
+      "kind": "url",
+      "folder_id": "1a_7-bLI1v0r9kFnMFe8yRUiZJrDvLjfo",
+      "library_root": "1aavZGSCHjV1dOgM_z5NUgq2V_rMQJkph",
+      "url": "https://synk.im/prompts/"
+    },
+    "opening_mode": "resource",
+    "public_reply_text": "DM으로 자료 보내 드렸어요 🙌 안 보이면 메시지 요청함을 확인해 주세요!"
   }
 }
