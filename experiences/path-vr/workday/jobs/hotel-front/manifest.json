@@ -9,8 +9,8 @@
     "status": "making",
     "provider": "Google Flow",
     "model": "Omni 1.2 Flash",
-    "reviewScope": "영상은 아직 만들지 않았다. 사진과 자막으로 진행한다."
+    "reviewScope": "유호님이 11-23에 Flow를 멈추기로 하셔서 영상 없이 사진과 자막으로 공개한다."
   },
-  "notice": "인물과 장소는 AI로 만든 그림과 영상이에요. 실제 사람이나 시설이 아니에요.",
+  "notice": "인물과 장소는 AI로 만든 그림이에요. 실제 사람이나 시설이 아니에요.",
   "clips": []
 }
