@@ -103,3 +103,19 @@ test('--맹검 결과.json에서 눈 · 고름 · 순위를 읽는다 — 쌍이
   assert.equal(r.status, 1);
   assert.match(r.stderr, /맹검 결과의 화면 1장과 후보 2개의 수가 다르다/);
 });
+
+test('닫기: 고르심 없이 지나간 묶음은 목록과 집계에서 빠지고, 고르심이 있는 묶음과 까닭 없는 닫기는 받지 않는다', () => {
+  const 장부 = 임시장부();
+  assert.equal(예측(장부, 'old', '아르곤', 'A', ['--때', '2026-11-11T01:00:00.000Z']).status, 0);
+  assert.equal(예측(장부, 'live', '아르곤', 'B', ['--때', '2026-11-11T01:00:00.000Z']).status, 0);
+  assert.match(돌리기(장부, '닫기', '--묶음', 'old').stderr, /--까닭이 없다/);
+  const r = 돌리기(장부, '닫기', '--묶음', 'old', '--까닭', '편을 이미 제출했다', '--근거', 'abc1234');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /닫음 — old/);
+  const 목록 = 돌리기(장부, '목록').stdout;
+  assert.ok(!목록.includes('old ·') && 목록.includes('live ·'), 목록);
+  const 집계 = JSON.parse(돌리기(장부, '집계', '--json').stdout);
+  assert.deepEqual([집계.닫힌, 집계.지나감, 집계.기다림], [0, 1, ['live']]);
+  assert.equal(돌리기(장부, '고르심', '--묶음', 'live', '--고름', 'B', '--말씀', 'B로').status, 0);
+  assert.match(돌리기(장부, '닫기', '--묶음', 'live', '--까닭', 'x').stderr, /고르심이 이미 적혀 있다/);
+});

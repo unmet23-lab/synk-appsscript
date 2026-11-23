@@ -14,6 +14,9 @@
  *   node tools/고르심장부.js 고르심 --묶음 <id> (--고름 <이름>[,<이름>] | --고름 없음) --말씀 "<유호님 말씀 그대로>"
  *   node tools/고르심장부.js 집계 [--누가 <눈>] [--단계 <단계>] [--장르 <장르>] [--json]
  *   node tools/고르심장부.js 목록                 고르심을 기다리는 묶음
+ *   node tools/고르심장부.js 닫기 --묶음 <id> --까닭 "<…>" [--근거 <경로 · 커밋>]
+ *        고르심 없이 지나간 묶음(편이 제출 · 게시 · 폐기됐거나 뒤 판 묶음이 이었다)을 목록에서 뺀다. 집계에는 넣지 않는다.
+ *        유호님이 실제로 고르신 근거가 있으면 닫지 말고 「고르심」에 그 말씀을 적는다.
  *
  * 규칙:
  *   · 예측은 보이기 전에 적는다. 그 묶음에 고르심이 이미 있으면 예측을 받지 않는다 — --뒤늦게를 붙이면 적되 집계에서 뺀다.
@@ -75,7 +78,7 @@ function 묶음들(사건들) {
     const m = 모음.get(e.묶음) || { 묶음: e.묶음, 편: '', 단계: '', 장르: '', 후보: [], 예측: [], 고르심: [] };
     for (const k of ['편', '단계', '장르']) if (!m[k] && e[k]) m[k] = e[k];
     if (!m.후보.length && Array.isArray(e.후보)) m.후보 = e.후보;
-    if (e.종류 === '예측') m.예측.push(e); else if (e.종류 === '고르심') m.고르심.push(e);
+    if (e.종류 === '예측') m.예측.push(e); else if (e.종류 === '고르심') m.고르심.push(e); else if (e.종류 === '닫음') m.닫음 = e;
     모음.set(e.묶음, m);
   }
   return 모음;
@@ -145,6 +148,17 @@ function 고르심(o, 장부) {
   return `고르심 적음 — ${o.묶음} → ${고름.length ? 고름.join(', ') : '없음'} · ${줄.join(' · ') || '센 예측 없음'}`;
 }
 
+/** 고르심 없이 지나간 묶음(편이 제출 · 게시 · 폐기됐거나 뒤 판 묶음이 같은 자리를 이었다)을 목록에서 닫는다. 집계에는 넣지 않는다. */
+function 닫기(o, 장부) {
+  if (!o.묶음) throw new 받지않음('--묶음이 없다');
+  const 지금 = 묶음들(읽기(장부)).get(o.묶음);
+  if (!지금) throw new 받지않음(`묶음 ${o.묶음}이 장부에 없다`);
+  if (지금.고르심.length) throw new 받지않음(`묶음 ${o.묶음}에는 고르심이 이미 적혀 있다 — 닫을 것이 없다`);
+  if (!o.까닭 || !o.까닭.trim()) throw new 받지않음('--까닭이 없다(왜 다시 여쭐 일이 없는지 적는다)');
+  덧붙이기(장부, { 때: o.때 || new Date().toISOString(), 묶음: o.묶음, 종류: '닫음', 까닭: o.까닭.trim(), ...(o.근거 ? { 근거: o.근거 } : {}) });
+  return `닫음 — ${o.묶음}(집계에서 빠진다)`;
+}
+
 /** 한 묶음 → 눈마다 {누가, 예측: [고름], 맞힘, 둘안} — 첫 고르심보다 먼저 적힌 마지막 예측만 */
 function 맞힘표(m) {
   if (!m || !m.고르심.length) return [];
@@ -161,11 +175,11 @@ function 맞힘표(m) {
 function 집계(사건들, { 누가, 단계, 장르 } = {}) {
   const 줄 = new Map();
   const 넣기 = (열쇠, x) => { const v = 줄.get(열쇠) || { 묶음: 0, 맞힘: 0, 둘안: 0 }; v.묶음++; if (x.맞힘) v.맞힘++; if (x.둘안) v.둘안++; 줄.set(열쇠, v); };
-  let 닫힌 = 0; const 기다림 = [];
+  let 닫힌 = 0; let 지나감 = 0; const 기다림 = [];
   for (const m of 묶음들(사건들).values()) {
     if (단계 && m.단계 !== 단계) continue;
     if (장르 && m.장르 !== 장르) continue;
-    if (!m.고르심.length) { 기다림.push(m.묶음); continue; }
+    if (!m.고르심.length) { if (m.닫음) 지나감++; else 기다림.push(m.묶음); continue; }
     닫힌++;
     for (const x of 맞힘표(m)) {
       if (누가 && x.누가 !== 누가) continue;
@@ -175,11 +189,11 @@ function 집계(사건들, { 누가, 단계, 장르 } = {}) {
   }
   const 표 = [...줄.entries()].map(([k, v]) => { const [눈, 갈래, 값] = k.split('\t'); return { 눈, 갈래, 값, ...v, 비율: Math.round((v.맞힘 / v.묶음) * 100) }; })
     .sort((a, b) => a.눈.localeCompare(b.눈) || ['전체', '단계', '장르'].indexOf(a.갈래) - ['전체', '단계', '장르'].indexOf(b.갈래) || b.묶음 - a.묶음);
-  return { 닫힌, 기다림, 표 };
+  return { 닫힌, 지나감, 기다림, 표 };
 }
 
-function 집계글({ 닫힌, 기다림, 표 }) {
-  const 줄 = [`고르심이 적힌 묶음 ${닫힌} · 고르심을 기다리는 묶음 ${기다림.length}`];
+function 집계글({ 닫힌, 지나감 = 0, 기다림, 표 }) {
+  const 줄 = [`고르심이 적힌 묶음 ${닫힌} · 고르심을 기다리는 묶음 ${기다림.length}${지나감 ? ` · 고르심 없이 닫은 묶음 ${지나감}` : ''}`];
   if (!표.length) 줄.push('아직 견줄 예측이 없다 — 후보를 보이기 전에 「예측」부터 적는다.');
   for (const x of 표) 줄.push(`  ${x.눈} · ${x.갈래 === '전체' ? '전체' : `${x.갈래} ${x.값}`}: ${x.맞힘}/${x.묶음} 맞힘(${x.비율}%) · 앞 둘 안 ${x.둘안}/${x.묶음}`);
   if (표.some((x) => x.갈래 === '전체' && x.묶음 < 10)) 줄.push('묶음이 열 개 아래인 눈은 비율을 근거로 쓰지 않는다(표본이 작다).');
@@ -193,12 +207,12 @@ async function main(argv) {
     const 장부 = o.장부 ? path.resolve(o.장부) : 기본장부;
     if (o.명령 === '집계') { const r = 집계(읽기(장부), o); console.log(o.json ? JSON.stringify(r, null, 1) : 집계글(r)); return 0; }
     if (o.명령 === '목록') {
-      const 열린 = [...묶음들(읽기(장부)).values()].filter((m) => !m.고르심.length);
+      const 열린 = [...묶음들(읽기(장부)).values()].filter((m) => !m.고르심.length && !m.닫음);
       console.log(열린.length ? 열린.map((m) => `${m.묶음} · ${m.편} · ${m.단계} · 후보 ${m.후보.map((c) => c.이름).join(', ')} · 예측 ${[...new Set(m.예측.map((e) => e.누가))].join(', ')}`).join('\n') : '고르심을 기다리는 묶음 없음');
       return 0;
     }
-    if (o.명령 !== '예측' && o.명령 !== '고르심') { console.log(fs.readFileSync(__filename, 'utf8').split('*/')[0].split('\n').slice(2).join('\n')); return o.명령 ? 1 : 0; }
-    console.log(o.명령 === '예측' ? 예측(o, 장부) : 고르심(o, 장부));
+    if (!['예측', '고르심', '닫기'].includes(o.명령)) { console.log(fs.readFileSync(__filename, 'utf8').split('*/')[0].split('\n').slice(2).join('\n')); return o.명령 ? 1 : 0; }
+    console.log(o.명령 === '예측' ? 예측(o, 장부) : o.명령 === '고르심' ? 고르심(o, 장부) : 닫기(o, 장부));
     if (!o.장부) {   // 정본 장부에 썼을 때만 — 공용 작업본이면 그 파일만 바로 올린다(워크트리는 그 세션의 커밋에 같이 올린다)
       const { 장부올리기, 장부올리기글 } = require('./lib/장부올리기.js');
       const 글 = 장부올리기글(await 장부올리기(['docs/_ops/고르심기록.jsonl'], `chore(장부): 고르심 기록 — ${o.묶음} ${o.명령}`), '고르심 장부');
