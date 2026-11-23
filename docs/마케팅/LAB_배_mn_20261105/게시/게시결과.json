@@ -395,6 +395,18 @@
       "확인": "커뮤니티 vk.ru/synklab_ru 제목 「SYNK LAB Russia | Корейский с нуля」 · 브라우저 시간대 Asia/Seoul. 걸기 전 예약 클립 목록(vk.ru/clips/postponed/club243082040)은 「22 Nov at 7:00 pm」(456239023) 한 줄뿐. 클립 창 게시 주체 「SYNK LAB Russia | Корейский с нуля」. 누르기 전 칸: 달력 「Monday, November 23」 · 시 19 · 분 00 · 라벨 「Tomorrow at 7:00」(오늘 11-22) · 설명이 원고_vk.json caption과 글자까지 같음(360자) · 표지 cover.png(첫 칸 체크). 「Schedule publication」 한 번 뒤 목록: Scheduled 2 — 「22 Nov at 7:00 pm」(456239023) · 「23 Nov at 7:00 pm」(456239024). 새 클립 창: 작성자 「SYNK LAB Russia | Корейский с нуля」, 설명 첫 줄 「По-русски это три разных слова: живот, груша, лодка. А по-корейски — одно: 배 (bae).」 · 방법 ego Profile 5 · 공간 「게시 1122-1400 misc P5 더우인」(234, 더우인과 같은 공간) · 커뮤니티 Create → Clip → 영상(판본/RU/video.mp4, sha256 eb859e6d80… 판 지문과 같음) → 설명 · 표지 cover.png(Select thumbnail) → Posting time → Schedule publication 한 번 · AI 표시 칸 없음(판 false) · 스크립트 C:/Users/q1212/ego/publish-20261122-1400/misc/vk-02~06.mjs, 기록 vk.txt",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-22 14시 회차 — 띠 · 음량 · 올리기 전 검사)",
       "기록시각": "2026-11-22T05:51:27.993Z"
+    },
+    {
+      "계정": "lab-uz-instagram",
+      "상태": "승인 대기",
+      "시각": "2026-11-25T13:00:00+05:00",
+      "방법": "작업실",
+      "작업": "36bea4ec3cd0c27b79ad81f82da03e0c9ba891505a58c368174d5004bf327906",
+      "지문": "2c1ff5e7cb73b011be278782f399a1ec9ed8de5407125c04cd5a02a30f15a8aa",
+      "후속": [
+        "인스타 표지는 「표지시각」(영상 안 초)이 없어 첫 장면 — 따로 만든 표지 그림은 서버가 못 올린다"
+      ],
+      "편ID": "LAB_배_mn_20261105"
     }
   ]
 }
