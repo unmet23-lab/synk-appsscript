@@ -1288,6 +1288,12 @@
 - 덧(2026-11-22 읽기 시험, Claude): 새 세션에는 `mcp__meta-ads__*` 도구가 떴다. `ads_get_ad_accounts`는 975907755191445 하나를 돌려줬다(ACTIVE, USD, 결제 수단 없음, 소유 비즈니스 없음). `ads_get_ig_accounts`는 빈 목록이었다. 광고 계정에 인스타 계정이 이어져 있지 않거나 instagram_basic 권한이 없어서다. `ads_library_search`는 결제 수단 없이도 됐지만 광고 ID, 페이지 이름, 시작 시각, 링크 제목, 스냅샷 주소만 주고 본문과 노출은 주지 않는다. 결과는 최신순이고 낱말이 느슨하게 맞는다. KR 「AI 광고 제작」 첫 줄은 컴퓨터 학원 광고였고, MN 「한국어 수업」은 한국어로 쓴 해외 앱 광고, MN 「солонгос хэл」은 건강식품 광고였다. `ads_insights_industry_benchmark`는 「No industry benchmark data available for the given criteria.」였다. 게재한 광고가 없어서다. 쓰기 도구는 부르지 않았다. 쓸 자리는 경쟁사나 몽골 학원의 페이지 ID를 `page_ids`로 넣어 새 광고를 지켜보는 일이다. 낱말로 광고를 찾고 문구를 나누는 일은 업종 브리핑의 ego 수집(노출순, 본문 포함)이 계속 맡는다.
 - 덧(2026-11-23, Claude): 유호님이 Meta를 접어 `claude mcp remove meta-ads -s local`로 연결을 뺐다. 다시 쓰려면 위 절차로 등록과 로그인부터 새로 한다.
 
+### 예약 회차에서 GitHub 도구를 `uv tool install`로 깔면 판정기가 막는다 (2026-11-24 Claude)
+- 증상: 참고 카드 시안 예약 회차(`synk-card-apply` 23:30)가 EarShot을 `uv tool install --python 3.12 "earshot[listen,mcp] @ git+https://github.com/Leonxlnx/earshot@<커밋>"`로 깔려 하자 「[Undermining Oversight]」로 거절됐다. 커밋을 고정했고, 깔기 전에 저장소 정보와 의존성을 읽었다.
+- 원인(추정): 사람이 없는 예약 회차가 남의 코드를 받아 이 PC에 까는 일 자체를 막는다. 11-07 그록 설치 스크립트 막힘([위](#자동-모드-판정기가-xai-설치-스크립트-실행을-막는다--유호님이-부탁해도-같다-2026-11-07-claude))과 같은 갈래다.
+- 고침: 다른 설치 길(pip · venv · 터미널 탭)로 돌아가지 않는다. 예약 회차는 그 카드를 「보류」로 닫고, 설치는 유호님이 계신 대화 세션에서 한다.
+- 다시 확인: 대화 세션에서 같은 명령을 허락받아 돌린 뒤 `earshot doctor`가 판과 모델 자리를 찍는다.
+
 ## Claude 앱 세션
 
 ### 스스로 보관한 세션이 부모 세션에는 「끝나기 전에 사용자가 보관했다」로 온다 (2026-10-20 Claude)
