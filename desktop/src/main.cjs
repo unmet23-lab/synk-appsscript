@@ -289,9 +289,17 @@ const officeTaskSource=officeTasksEnabled({packaged,mode:runtime.mode,clientId:r
 let officeEmployeeTasks=null;
 function officeTasks(){
   if(!officeTaskSource)return null;
-  if(!officeEmployeeTasks)officeEmployeeTasks=createTaskRuntime({userData:app.getPath('userData'),current:()=>officeLoginOf(accountStatus()),office,model:loadOfficeModel,changed:()=>sendDesktop('synk:office-changed'),mailOptions:{secrets:subscriptionSecrets,openExternal:url=>shell.openExternal(url)}});
+  if(!officeEmployeeTasks)officeEmployeeTasks=createTaskRuntime({userData:app.getPath('userData'),current:()=>officeLoginOf(accountStatus()),office,model:loadOfficeModel,changed:()=>sendDesktop('synk:office-changed'),mailOptions:{secrets:subscriptionSecrets,openExternal:url=>shell.openExternal(url)},featureOptions:{pick:officePickFiles,reveal:officeReveal}});
   return officeEmployeeTasks;
 }
+// 기능(사업계획서 등)의 파일은 본체가 고르기 창으로 받는다. 화면은 경로를 보내지 않는다(사업계획서_설계.md 2절)
+async function officePickFiles({multi=false,filters=[]}={}){
+  if(!window||window.isDestroyed())return [];
+  const result=await dialog.showOpenDialog(window,{properties:multi?['openFile','multiSelections']:['openFile'],filters});
+  return result&&!result.canceled&&Array.isArray(result.filePaths)?result.filePaths.filter(p=>typeof p==='string'&&path.isAbsolute(p)):[];
+}
+function officeReveal(file){if(typeof file!=='string'||!path.isAbsolute(file))return {ok:false,code:'VALUE'};shell.showItemInFolder(file);return {ok:true};}
+const officeSameLogin=account=>{const now=officeLoginOf(accountStatus());return !!now&&now.synk_user_id===account?.synk_user_id&&now.sessionGeneration===account?.sessionGeneration;};
 async function officeWithTasks(service,account){
   const view=await service.snapshot(account);
   const tasks=view?.available&&officeTasks();
@@ -989,6 +997,8 @@ function createWindow(){
     'synk:office-mail-open':(task,item)=>officeCall((_s,a)=>officeTasks()?.mail?.openResult(a,task,item)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-mail-more':(task,provider,page)=>officeCall((_s,a)=>officeTasks()?.mail?.moreMail(a,task,provider,page)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-task-action':(id,action,text)=>officeCall((_service,account)=>officeTasks()?.action(account,id,action,text)??{ok:false,code:'NOT_AVAILABLE'}),
+    'synk:office-feature-snapshot':(feature,departmentId)=>officeCall((_service,account)=>officeTasks()?.features?.snapshot(account,{feature,departmentId})??{ok:false,code:'NOT_AVAILABLE'}),
+    'synk:office-feature-action':(feature,departmentId,action,args)=>officeCall((_service,account)=>officeTasks()?.features?.act(account,{feature,departmentId,action,args},()=>officeSameLogin(account))??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-watch':on=>officeCall((service,account)=>service.watch(on===true,account)),
     'synk:office-department-save':input=>officeCall((service,account)=>officeSaveDepartment(service,account,input)),
     'synk:office-department-remove':id=>officeCall((service,account)=>service.removeDepartment(id,account)),

@@ -17,6 +17,13 @@ const inside=(child,parent)=>{const rel=path.relative(parent,child);return !path
 function enabled({packaged,mode,clientId,platform,smoke}) {
   return packaged===false && mode==='development' && clientId==='platform' && platform==='win32' && !smoke;
 }
+// 기능 업무의 Claude 무인 실행은 --json-schema와 --tools ""를 함께 받는 판에서만 돈다(11-23 2.1.323 실측)
+function supportsSchema(version){
+  const match=/^(\d+)\.(\d+)\.(\d+)(?:\s|$)/.exec(String(version).trim());
+  if(!match)return false;
+  const [major,minor,patch]=match.slice(1).map(Number);
+  return major>2 || major===2 && (minor>1 || minor===1 && patch>=323);
+}
 function supportsPromptGuard(version){
   const match=/^(\d+)\.(\d+)\.(\d+)(?:\s|$)/.exec(version.trim());
   if(!match)return false;
@@ -111,12 +118,21 @@ async function ownsWorkers(userData,service,member,localAppData=process.env.LOCA
     return await readOwner(file);
   }catch{return false;}
 }
-function createTaskRuntime({userData,current,office,model,changed,mailOptions}){
-  async function context(a,departmentId){
+function createTaskRuntime({userData,current,office,model,changed,mailOptions,featureOptions={}}){
+  let tasks=null;
+  const features=require('./office-features.cjs').createOfficeFeatures({userData,tasks:()=>tasks,pick:featureOptions.pick,reveal:featureOptions.reveal,
+    departments:async a=>{const s=await (await office()).snapshot(a);return s?.available&&Array.isArray(s.departments)?s.departments:[];}});
+  async function context(a,departmentId,{folder=true}={}){
     const s=await (await office()).snapshot(a);
     if(!s?.available)return {ok:false,code:'NOT_ALLOWED'};
     const dept=departmentId===null?null:s.departments.find(d=>d.id===departmentId);
     if(departmentId!==null && !dept)return {ok:false,code:'FOLDER'};
+    if(!folder){
+      // 기능 업무: 부서가 있는지와 수용 인원만 본다. 부서 폴더를 쓰지 않는다(설계 검토 11)
+      if(!dept)return {ok:false,code:'FOLDER'};
+      const {cap,toolCaps}=(await model()).officeCapacity({...s.pc,manual:s.settings?.manualCap});
+      return {ok:true,cwd:'',name:dept.name,role:'',cap,toolCaps};
+    }
     let cwd;
     try {cwd=await taskDirectory(userData,a.synk_user_id,dept);}catch{return {ok:false,code:'FOLDER'};}
     const {cap,toolCaps}=(await model()).officeCapacity({...s.pc,manual:s.settings?.manualCap});
@@ -126,6 +142,7 @@ function createTaskRuntime({userData,current,office,model,changed,mailOptions}){
     const env=employeeEnv(process.env), base=path.join(userData,'OfficeTaskRuns');
     await fs.mkdir(base,{recursive:true,mode:0o700});
     const file=await native(spec.provider,env);
+    if(spec.feature)return runFeature(spec,hooks,{file,env});
     if(spec.mailSearch){
       if(spec.provider!=='codex')throw fail('MAIL_PLAN');
       return require('./office-mail-plan.cjs').planMail(spec,hooks,{file,env,spawn});
@@ -141,8 +158,30 @@ function createTaskRuntime({userData,current,office,model,changed,mailOptions}){
     };
     return spec.provider==='claude'?runClaude(spec,hooks,tools):require('./office-task-codex.cjs').runCodex(spec,hooks,tools);
   }
+  /* 기능 업무: 도구 없는 차례를 기능의 run에 건넨다(사업계획서_설계.md 5절). 작업 폴더는 비어 있는 고정 폴더 하나다 */
+  async function runFeature(spec,hooks,{file,env}){
+    const cwd=path.join(userData,'OfficeFeatureRun');
+    await fs.mkdir(cwd,{recursive:true,mode:0o700});
+    if((await fs.readdir(cwd)).length)throw fail('FOLDER');
+    const codes={ai:'PROVIDER',timeout:'PROVIDER'};
+    const {claudeSchemaTurn,claudeAccount}=require('./office-schema-turn.cjs');
+    if(spec.provider==='codex'){
+      return require('./office-task-codex.cjs').withSchemaAccount({...spec,cwd},hooks,{file,env,spawn},
+        ask=>features.run(spec,hooks,{turn:(prompt,schema,options)=>ask(prompt,schema,options)}),codes);
+    }
+    const {stdout}=await exec(file,['--version'],{env,signal:hooks.signal,timeout:10000,maxBuffer:8192,windowsHide:true,shell:false});
+    if(!supportsSchema(stdout))throw fail('NO_CLI');
+    const first=await claudeAccount({file,cwd,env,signal:hooks.signal});
+    if(!first)throw fail('LOGIN');
+    const turn=async(prompt,schema,options={})=>{
+      if(await claudeAccount({file,cwd,env,signal:hooks.signal})!==first)throw fail('LOGIN');
+      return claudeSchemaTurn({file,env,spawn,cwd,prompt,schema,signal:hooks.signal,timeoutMs:options.timeoutMs,codes});
+    };
+    return features.run(spec,hooks,{turn});
+  }
   const authorized=async a=>{const service=await office();return await service.allowed(a)&&await ownsWorkers(userData,service,a.synk_user_id);};
   const mail=mailOptions?require('./office-mail.cjs').createOfficeMail({...mailOptions,userData,current,authorized,changed}):null;
-  return createOfficeTasks({userData,current,authorized,context,run,mail,changed});
+  tasks=createOfficeTasks({userData,current,authorized,context,run,mail,changed});
+  return Object.assign(tasks,{features});
 }
-module.exports={enabled,createTaskRuntime,employeeEnv,claudeSubscriber,native,taskDirectory,ownsWorkers,supportsPromptGuard};
+module.exports={enabled,createTaskRuntime,employeeEnv,claudeSubscriber,native,taskDirectory,ownsWorkers,supportsPromptGuard,supportsSchema};

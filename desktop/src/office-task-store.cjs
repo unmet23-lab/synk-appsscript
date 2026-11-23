@@ -59,7 +59,8 @@ function baseTask(row) {
       answer:'',reason:'MANUAL_RESULT',createdAt,updatedAt,viaTerminal:true,...(row.mailSearch===false?{mailSearch:false}:{})};
   }
   const visibleAnswer=provider==='codex' && row.viaTerminal===true && reason!=='MEMBER_RESULT'?'':answer;
-  return { id, provider, departmentId, departmentName, prompt, previousId, status, answer:visibleAnswer, reason, createdAt, updatedAt, viaTerminal:row.viaTerminal===true,...(row.mailSearch===false?{mailSearch:false}:{}) };
+  return { id, provider, departmentId, departmentName, prompt, previousId, status, answer:visibleAnswer, reason, createdAt, updatedAt, viaTerminal:row.viaTerminal===true,...(row.mailSearch===false?{mailSearch:false}:{}),
+    ...(typeof row.feature==='string'?{feature:row.feature,featureRef:typeof row.featureRef==='string'?row.featureRef:null,featureAlert:row.featureAlert===true}:{}) };
 }
 
 function publicTask(row){

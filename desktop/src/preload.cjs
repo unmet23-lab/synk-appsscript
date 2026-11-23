@@ -52,6 +52,21 @@ function officeTaskInput(input){
   if(input.mailRetry!=null&&(typeof input.mailRetry!=='boolean'||input.mailRetry&&(!input.mailSearch||!input.previousId)))return null;
   return {id:input.id,provider:input.provider,departmentId:input.departmentId??null,prompt:input.prompt,previousId:input.previousId??null,...(typeof input.mailSearch==='boolean'?{mailSearch:input.mailSearch}:{}),...(input.mailRetry===true?{mailRetry:true}:{}),...(input.quoteHandoff===true?{quoteHandoff:true}:{}),...(input.quoteResumeOf?{quoteResumeOf:input.quoteResumeOf}:{})};
 }
+// 기능(사업계획서_설계.md 9절): 기능 이름, 부서 번호, 정해 둔 동작과 그 동작의 칸만 건너간다. 경로는 건너가지 않는다(파일은 본체가 고르기 창으로 받는다)
+const OFFICE_FEATURE=/^[a-z][a-z0-9-]{1,31}$/;
+const OFFICE_FEATURE_ACTIONS=['pick-plan','pick-data','remove-data','criteria','start','choose','draft','save','reveal','handoff','clear'];
+const officeText=(v,max)=>typeof v==='string'&&v.length<=max&&!/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(v);
+function officeFeatureArgs(action,a){
+  if(a==null)a={};
+  if(typeof a!=='object'||Array.isArray(a))return null;
+  const out={};
+  const take=(k,ok)=>{if(a[k]===undefined)return true;if(!ok(a[k]))return false;out[k]=a[k];return true;};
+  const ok=take('index',v=>Number.isInteger(v)&&v>=0&&v<100)&&take('mode',v=>['default','pasted'].includes(v))&&take('text',v=>officeText(v,4000))&&
+    take('provider',v=>['claude','codex'].includes(v))&&take('key',v=>typeof v==='string'&&/^n\d{1,3}$/.test(v))&&take('kind',v=>['fix','edit','keep','undo'].includes(v))&&
+    take('item',v=>officeText(v,40))&&take('answers',v=>Array.isArray(v)&&v.length<=3&&v.every(x=>Number.isInteger(x)&&x>=0&&x<4))&&take('remove',v=>typeof v==='boolean')&&
+    take('departmentId',officeId)&&take('extra',v=>officeText(v,2000))&&take('confirm',v=>typeof v==='boolean');
+  return ok&&Object.keys(a).every(k=>k in out)&&OFFICE_FEATURE_ACTIONS.includes(action)?out:null;
+}
 // 번호가 있는 부서는 이름이나 폴더 가운데 하나만 건너갈 수 있다. 뺀 칸은 본체가 저장된 값으로 채운다(GPT 검수 GA3)
 const officeDepartment=input=>{if(!input||typeof input!=='object'||(input.id!==undefined&&input.id!==null&&!officeId(input.id)))return null;const id=officeId(input.id);if(typeof input.name!=='string'&&!(input.name===undefined&&id))return null;const value={...(id?{id:input.id}:{}),...(typeof input.name==='string'?{name:input.name.slice(0,200)}:{})},folder=input.folder;if(folder==='choose')value.folder='choose';else if(folder&&typeof folder==='object'&&officeSession(folder.fromSession))value.folder={fromSession:folder.fromSession};else if(folder!==undefined||!value.id||value.name===undefined)return null;return value;};
 const officeSettings=input=>{if(!input||typeof input!=='object')return null;const value={};if(input.view!==undefined){if(!OFFICE_VIEWS.includes(input.view))return null;value.view=input.view;}if(input.manualCap!==undefined){if(input.manualCap!==null&&!Number.isInteger(input.manualCap))return null;value.manualCap=input.manualCap;}return 'view' in value||'manualCap' in value?value:null;};
@@ -218,6 +233,8 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
       }
       return ['cancel','resume','terminal'].includes(action)?ipcRenderer.invoke('synk:office-task-action',id,action):officeInvalid();
     },
+    featureSnapshot:(feature,departmentId)=>OFFICE_FEATURE.test(feature||'')&&officeId(departmentId)?ipcRenderer.invoke('synk:office-feature-snapshot',feature,departmentId):officeInvalid(),
+    featureAction:(feature,departmentId,action,args)=>{const value=OFFICE_FEATURE.test(feature||'')&&officeId(departmentId)?officeFeatureArgs(action,args):null;return value?ipcRenderer.invoke('synk:office-feature-action',feature,departmentId,action,value):officeInvalid();},
     watch:on=>ipcRenderer.invoke('synk:office-watch',on===true),
     saveDepartment:input=>{const value=officeDepartment(input);return value?ipcRenderer.invoke('synk:office-department-save',value):officeInvalid();},
     removeDepartment:id=>officeId(id)?ipcRenderer.invoke('synk:office-department-remove',id):officeInvalid(),

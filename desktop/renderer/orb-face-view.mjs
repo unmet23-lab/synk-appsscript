@@ -9,6 +9,7 @@ import { createOrbSignature } from './orb-signature.mjs';
 import { rowSpeech } from './site-visits-model.mjs';
 import { createOfficeFloor } from './office-floor.mjs';
 import { createOfficeTaskView } from './office-task-view.mjs';
+import { createBizplanView } from './office-bizplan-view.mjs';
 
 export const PORTAL_STATE_EVENT = 'synk:portal-state';
 export const QA_GUEST_EVENT = 'synk:qa-guest-entry';
@@ -140,6 +141,7 @@ function markup() {
         <div class="rows off" role="group" aria-label="사무실의 부서" data-off-rows></div>
       </div>
       <p class="read rise" style="--i:5"><span data-off-foot></span></p>
+      <div class="biz-host" data-off-feature hidden></div>
     </div>
     ${ASIDE_NAMES.map(asideMarkup).join('')}
     <div class="room" data-room="space">
@@ -843,6 +845,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   let offTimer = 0, offLeave = 0, assignmentFloor = null;
   const markOfficeStaff = id => { for (const r of app.offRows.querySelectorAll('.row.staff')) r.classList.toggle('hot', !!id && r.dataset.staff === id); };
   const taskHost = $('[data-off-tasks]'), drawing = app.offSlot.parentElement;
+  // 기획부 「사업계획서」 작업 화면(사업계획서_설계.md 6절). 열려 있는 동안 사무실의 다른 자리는 감춘다
+  const featureHost = $('[data-off-feature]');
+  const bizView = createBizplanView(featureHost, payload => onAction('room', { room: 'solio-office', key: 'd:' + (featureHost.dataset.dept || ''), ...payload }), doc);
+  let featureWas = '';
   const officeTasks = createOfficeTaskView(taskHost, payload => onAction('room', { room: 'solio-office', ...payload }));
   const officeFloor = createOfficeFloor(app.offFloor, {
     win,
@@ -886,6 +892,14 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onOfficeLeave = () => { officeFloor.setHot(null); markOfficeStaff(null); };
   function renderOffice(v, shown) {
     const on = !!(v && v.visible);
+    const feature = on && v.feature ? v.feature : null;
+    featureHost.dataset.dept = feature?.departmentId || '';
+    for (const n of [app.offHead, taskHost, drawing, app.offFoot.parentElement]) n.hidden = !!feature;
+    if (feature) app.offHint.hidden = true;
+    bizView.render(feature);
+    const fkey = feature ? feature.departmentId : '';
+    if (fkey !== featureWas) { featureWas = fkey; if (feature) bizView.focusHead(); }
+    if (feature) { officeFloor.show(false); return; }
     assignmentFloor = shown && on && v.tasking ? v.floor : null;
     officeTasks.render(on ? v.tasking : null);
     setText(app.offSay, on ? v.say : '');
@@ -1609,11 +1623,12 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
         out.push(r);
       } else if (kind === 'item') {
         // 부서의 기능 줄(사무실 시안 「담은 것」 16): 누르면 바로 아래 묶음이 그 자리에서 열린다. 다가가기만 해서는 열리지 않는다
-        const q = el('button', 'row sub item' + (c ? ' opened' : ''));
+        const q = el('button', 'row sub item' + (c ? ' opened' : '') + (g === 'feature' ? ' feature' : ''));
         q.type = 'button';
-        q.dataset.roomAct = 'grp';
+        // 셋째 조각의 기능 줄(g 'feature')은 묶음 대신 그 기능의 작업 화면을 연다
+        q.dataset.roomAct = g === 'feature' ? 'feature-open' : 'grp';
         q.dataset.roomArg = String(d ?? '');
-        q.setAttribute('aria-expanded', String(!!c));
+        if (g !== 'feature') q.setAttribute('aria-expanded', String(!!c));
         q.append(el('span', 'nm', a || ''), el('span', 'mid', b || ''), el('span', 'val', e || ''));
         out.push(q);
       }

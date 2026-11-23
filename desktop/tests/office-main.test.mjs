@@ -22,7 +22,7 @@ function source(start) {
   return lines.slice(i, end + 1).join('\n');
 }
 
-const CHANNELS = ['snapshot', 'task-submit', 'mail-connect', 'mail-disconnect', 'mail-open', 'mail-more', 'task-action', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
+const CHANNELS = ['snapshot', 'task-submit', 'mail-connect', 'mail-disconnect', 'mail-open', 'mail-more', 'task-action', 'feature-snapshot', 'feature-action', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
 const YUHO = { synk_user_id: 'owner-1234567890', display_name: '유호' };
 const OTHER = { synk_user_id: 'tester-1234567890', display_name: '시험 계정' };
 const S1 = '00000001-0000-4000-8000-000000000001';
@@ -313,7 +313,7 @@ function bridge() {
 test('preload exposes exactly the office bridge, frozen, and rebuilds every argument', async () => {
   const { office, calls, listeners } = bridge();
   assert.ok(Object.isFrozen(office));
-  assert.deepEqual(Object.keys(office), ['snapshot','connectMail','disconnectMail','openMailResult','moreMail','submitTask', 'taskAction', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
+  assert.deepEqual(Object.keys(office), ['snapshot','connectMail','disconnectMail','openMailResult','moreMail','submitTask', 'taskAction', 'featureSnapshot', 'featureAction', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
   const last = () => calls.at(-1);
   const refused = async (p, why) => { const before = calls.length; assert.deepEqual(plain(await p), { ok: false, code: 'VALUE' }, why); assert.equal(calls.length, before, `${why}: nothing crosses`); };
 
@@ -523,8 +523,30 @@ test('the office ships on (officeShipped), and a packaged build with the switch 
   assert.equal(room.scene({ ok: false, code: 'NOT_AVAILABLE' }, Date.now(), null).visible, false);
   for (const [label, options] of [['source run', { packaged: false, shipped: false }], ['packaged, office shipped', { packaged: true, shipped: true }]]) {
     const on = wired(options);
-    for (const channel of CHANNELS) assert.equal((await ask(on, channel)).ok, !/^synk:office-(task|mail)-/.test(channel), `${label}: ${channel}`);
+    for (const channel of CHANNELS) assert.equal((await ask(on, channel)).ok, !/^synk:office-(task|mail|feature)-/.test(channel), `${label}: ${channel}`);
     assert.deepEqual([on.loads, on.offices.length], [1, 1], `${label}: one office`);
     assert.deepEqual(on.calls, ['snapshot', 'watch', 'officeSaveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'officeAddRoot', 'officeRemoveRoot', 'seen'], label);
   }
+});
+
+test('preload: the feature bridge passes only the feature name, department, an agreed action and its typed fields (no paths)', async () => {
+  const { office, calls } = bridge();
+  const last = () => calls.at(-1);
+  const refused = async (p, why) => { const before = calls.length; assert.deepEqual(plain(await p), { ok: false, code: 'VALUE' }, why); assert.equal(calls.length, before, `${why}: nothing crosses`); };
+  await office.featureSnapshot('bizplan', 'plan01');
+  assert.deepEqual(last(), ['synk:office-feature-snapshot', 'bizplan', 'plan01']);
+  await office.featureAction('bizplan', 'plan01', 'choose', { key: 'n2', kind: 'edit', text: '고친 문장' });
+  assert.deepEqual(last(), ['synk:office-feature-action', 'bizplan', 'plan01', 'choose', { key: 'n2', kind: 'edit', text: '고친 문장' }]);
+  await office.featureAction('bizplan', 'plan01', 'pick-plan');
+  assert.deepEqual(last(), ['synk:office-feature-action', 'bizplan', 'plan01', 'pick-plan', {}]);
+  await office.featureAction('bizplan', 'plan01', 'handoff', { key: 'n1', departmentId: 'dev001', provider: 'claude', extra: '급하지 않아요' });
+  assert.deepEqual(last()[4], { key: 'n1', departmentId: 'dev001', provider: 'claude', extra: '급하지 않아요' });
+  await refused(office.featureAction('bizplan', 'plan01', 'pick-plan', { path: 'C:\Users\a\plan.docx' }), 'a path field');
+  await refused(office.featureAction('bizplan', 'plan01', 'delete-all', {}), 'an unknown action');
+  await refused(office.featureAction('Biz Plan', 'plan01', 'save', {}), 'a bad feature name');
+  await refused(office.featureAction('bizplan', '../x', 'save', {}), 'a bad department');
+  await refused(office.featureAction('bizplan', 'plan01', 'choose', { key: 'n1', kind: 'edit', text: 'a\u0001b' }), 'a control character');
+  await refused(office.featureAction('bizplan', 'plan01', 'draft', { item: '성장 전략', answers: [0, 9] }), 'an answer out of range');
+  await refused(office.featureAction('bizplan', 'plan01', 'criteria', { mode: 'pasted', text: 'x'.repeat(4001) }), 'criteria too long');
+  await refused(office.featureSnapshot('bizplan', 'x'), 'a short department id');
 });

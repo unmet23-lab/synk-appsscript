@@ -198,7 +198,8 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
         }
         if(t.status==='paused')continue;
         const manual=t.provider==='codex' && t.reason==='MANUAL_RESULT';
-        t.status = t.status === 'queued' ? 'paused' : 'interrupted';
+        // 기능 줄은 이어 붙이지 않는다. 손님이 작업 화면에서 다시 읽는다(사업계획서_설계.md 4.2)
+        t.status = t.status === 'queued' && !t.feature ? 'paused' : 'interrupted';
         t.reason = manual?'MANUAL_RESULT':'RESTART';
         if(t.status==='interrupted' && t.provisional){
           t.reason='UNCONFIRMED';t.answer=t.provisional;
@@ -244,6 +245,38 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
         }
         return task;
       })};
+    });
+  }
+  /* 셋째 조각의 기능 업무(기능줄_경쟁사_설계.md 2.3, 사업계획서_설계.md 4.2).
+     부서 폴더를 쓰지 않고(cwd 빈칸, 옛 빌드는 FOLDER로 멈춘다), 한 부서에 같은 기능은 하나씩, 끝난 기능 줄은 여섯만 남긴다 */
+  const FEATURE_PROMPT={bizplan:'사업계획서를 회사 자료와 견주어 읽습니다'};
+  function submitFeature(a,input){
+    const feature=input?.feature,departmentId=input?.departmentId,provider=input?.provider;
+    if(!goodId(input?.id)||!Object.hasOwn(FEATURE_PROMPT,feature)||!['claude','codex'].includes(provider)||typeof departmentId!=='string'||!/^[A-Za-z0-9_-]{4,32}$/.test(departmentId))return Promise.resolve(problem('VALUE'));
+    const id=input.id.toLowerCase();
+    return safe(async()=>{
+      if (!await allowed(a)) return problem('NOT_ALLOWED');
+      const member=owner(a);
+      let tasks=await rows(a);
+      const existing=tasks.find(t=>t.id===id);
+      if(existing)return existing.feature===feature&&existing.departmentId===departmentId&&existing.provider===provider?{ok:true,id}:problem('ID_CONFLICT');
+      if(tasks.some(t=>t.feature===feature&&t.departmentId===departmentId&&['queued','running','terminal','paused'].includes(t.status)))return problem('BUSY');
+      const finished=tasks.filter(t=>t.feature===feature&&t.departmentId===departmentId&&!['queued','running','terminal','paused'].includes(t.status)).sort((x,y)=>y.updatedAt-x.updatedAt);
+      const drop=new Set(finished.slice(5).map(t=>t.id));
+      if(drop.size)tasks=tasks.filter(t=>!drop.has(t.id));
+      if(tasks.length>=MAX_TASKS)return problem('STORAGE_FULL');
+      const ctx=await context(a,departmentId,{folder:false});
+      if(!ctx?.ok)return problem(ctx?.code||'FOLDER');
+      if(!await allowed(a))return problem('AUTH_CHANGED');
+      const at=now();
+      tasks.push({id,provider,departmentId,prompt:FEATURE_PROMPT[feature],previousId:null,feature,trigger:'manual',requestMode:'ordinary',mailSearch:false,
+        departmentName:ctx.name,cwd:'',sessionId:null,providerSalt:id,providerTag:null,createdAt:at,updatedAt:at,status:'queued',reason:null,answer:''});
+      permits.set(key(member,id),a);
+      try{await store.write(member,tasks,()=>present(a));}
+      catch(e){permits.delete(key(member,id));if(!present(a))return problem('AUTH_CHANGED');throw e;}
+      if (!present(a)) { schedulePark(a); return problem('AUTH_CHANGED'); }
+      notify(); schedule(a);
+      return {ok:true,id};
     });
   }
   function submit(a,input) {
@@ -433,7 +466,7 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
     const index=await store.read(member,{metadataOnly:true});
     for (const entry of index) {
       if (entry.status!=='queued' || !same(a,permits.get(key(member,entry.id)))) continue;
-      const ctx = await context(a,entry.departmentId);
+      const ctx = await context(a,entry.departmentId,entry.feature?{folder:false}:undefined);
       if (!await allowed(a)) return;
       if (!ctx?.ok || entry.cwd!==ctx.cwd) {
         const fresh=await store.read(member,{metadataOnly:true}),row=fresh.find(r=>r.id===entry.id);
@@ -543,8 +576,11 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
           ? update(null,null,null,null,answer) : Promise.resolve(false),
       };
       const sharesHistory=priorTask&&Boolean(priorTask.mailSearch)===Boolean(t.mailSearch);
-      const spec = {id:t.id,provider:t.provider,cwd:ctx.cwd,role:ctx.role,prompt:t.prompt,sessionId:t.sessionId,
+      // 기능 줄은 세션을 남기지 않고 계정 번호로 기능의 파일을 찾는다(설계 검토 11)
+      const spec = t.feature ? {id:t.id,provider:t.provider,feature:t.feature,trigger:t.trigger||'manual',departmentId:t.departmentId,member,cwd:''} :
+        {id:t.id,provider:t.provider,cwd:ctx.cwd,role:ctx.role,prompt:t.prompt,sessionId:t.sessionId,
         previousId:sharesHistory?t.previousId:null,providerTag:t.providerTag,providerSalt:t.providerSalt ?? t.id};
+      if(t.feature)hooks.changed=notify;
       const prepared=t.mailSearch?preparedPlans.get(k):null;
       if(t.mailSearch){
         const previous=t.mailInherited!==false&&t.previousId&&tasks.find(row=>row.id===t.previousId&&row.mailSearch);
@@ -617,6 +653,16 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
               else{final.status='completed';final.reason=null;final.mailReceipt=result.mailReceipt;final.sessionId=result.sessionId;
                 if(t.quoteOrigin)final.quoteState=result.mailReceipt.quoteOutcome;}
               final.answer='';
+            }
+            else if(t.feature){
+              // 영수증의 원본은 기능의 파일이고, 업무 줄의 답은 그 한 문장 사본이다. 까닭 코드는 REASONS 안의 것만 쓴다
+              final.sessionId=null;
+              if(code){final.status='failed';final.reason=code;final.answer='';}
+              else if(typeof result?.summary==='string'&&result.summary.trim()&&result.summary.length<=400){
+                final.status='completed';final.reason=null;final.answer=result.summary;
+                if(typeof result.ref==='string'&&/^\d{8}T\d{6}Z-[0-9a-f-]{36}$/.test(result.ref))final.featureRef=result.ref;
+                final.featureAlert=result.alert===true;
+              }else{final.status='failed';final.reason='NO_ANSWER';final.answer='';}
             }
             else if(t.provider==='codex' && (code==='MANUAL_RESULT' || result?.viaTerminal===true)){
               final.status='interrupted';final.reason='MANUAL_RESULT';final.answer='';final.viaTerminal=true;
@@ -751,6 +797,7 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
       if (!present(a)) return problem('AUTH_CHANGED');
       if (!row) return problem('NOT_FOUND');
       if((row.quoteOrigin||row.quoteHandoff)&&['terminal','saveAnswer'].includes(actionName))return problem('SESSION');
+      if(row.feature&&actionName!=='cancel')return problem('SESSION');
       if(reviewAction)return actOnMailReview(a,row,tasks,actionName,answer,plan);
       if(actionName==='saveAnswer'){
         if(row.provider!=='codex')return problem('SESSION');
@@ -800,7 +847,7 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
       for (const row of tasks) {
         const k=key(member,row.id);
         if (!same(permits.get(k),a) && !same(live.get(k)?.account,a)) continue;
-        if (row.status==='queued') { row.status='paused'; dirty=true; }
+        if (row.status==='queued') { row.status=row.feature?'interrupted':'paused'; dirty=true; }
         else if (['running','terminal'].includes(row.status)) { row.status='interrupted'; dirty=true; }
         else continue;
         row.reason=same(a,closingAccount) && row.reason==='MANUAL_RESULT'?'MANUAL_RESULT':'AUTH_CHANGED';
@@ -831,6 +878,6 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
     closingAccount=present(a)?a:null;
     closed=true;preparedPlans.clear();accountChanged(null);
   }
-  return {snapshot,submit,action,accountChanged,close,mail};
+  return {snapshot,submit,submitFeature,action,accountChanged,close,mail};
 }
 module.exports = {createOfficeTasks};

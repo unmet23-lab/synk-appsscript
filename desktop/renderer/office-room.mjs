@@ -6,6 +6,8 @@
 // 줄의 flag가 참이면 이름 옆에 느낌표가 붙는다(7절). 부서 줄과 「부서 없는 일」은 watch 줄이라, 열었다 닫으면 seen을 부른다(4.1 끝냄).
 import { officeSessions, officeHeadline, officeCapacity, officeSeats, countWord } from './office-model.mjs';
 import { createOfficeTaskRoom, officeTaskHeadline } from './office-task-room.mjs';
+import { createBizplanRoom } from './office-bizplan-room.mjs';
+import { bizplanLine, attachesBizplan } from './office-bizplan-model.mjs';
 import { limitGauge } from './subscriptions-model.mjs';
 import { josa, whenWords } from './solio-today.mjs';
 
@@ -203,14 +205,22 @@ export function officeAddRow({ ui = {} } = {}) {
   ] };
 }
 
-/* 부서 하나의 줄. 안쪽은 직원 줄, 그다음 기능 줄(첫 조각은 「부서 설정」 하나)이다 */
-function departmentRow(d, staff, ui, tasking) {
+/* 부서 하나의 줄. 안쪽은 직원 줄, 그다음 기능 줄(셋째 조각: 기획부의 「사업계획서」), 맨 아래 「부서 설정」이다 */
+function featureTask(tasks, feature, departmentId) {
+  return (Array.isArray(tasks) ? tasks : []).filter(t => t?.feature === feature && t.departmentId === departmentId).sort((a, b) => b.updatedAt - a.updatedAt)[0] || null;
+}
+function departmentRow(d, staff, ui, tasking, tasks = []) {
   const key = 'd:' + d.id, lead = officeLead(staff), alert = staff.some(v => v.alert);
   const mid = lead ? lead.activity || lead.say : folderTail(d.folder);
   const val = officeGroupStatus(staff);
   const more = staff.flatMap(v => staffItems(v, tasking));
   if (tasking) more.push(['acts', [['이 부서에 일 맡기기', 'task-open', '']]]);
   else if (!staff.length) more.push(['note', '이 폴더에서 Claude Code나 Codex를 켜면 여기에 섭니다.']);
+  // 기능 줄은 누르면 작업 화면이 열린다(사업계획서_설계.md 2절). 일 맡기기가 켜진 판에서만 선다
+  if (tasking && attachesBizplan(d)) {
+    const l = bizplanLine(featureTask(tasks, 'bizplan', d.id));
+    more.push(['item', '사업계획서', l.line, false, 'bizplan', l.when, 'feature']);
+  }
   const open = !!ui.grps?.has?.(key + ':set'), asking = ui.asking === d.id;
   more.push(['item', '부서 설정', folderTail(d.folder), open, 'set', '']);
   const inner = [
@@ -286,7 +296,7 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
   const head = officeTaskHeadline(officeHeadline(list, { cap }), list, snap.tasking);
   const view = ui.view || (settings.view === 'top' ? 'top' : 'tilted');
   const tasking = Array.isArray(snap.tasking?.tasks);
-  const rows = departments.map(d => departmentRow(d, list.filter(v => v.departmentId === d.id), ui, tasking));
+  const rows = departments.map(d => departmentRow(d, list.filter(v => v.departmentId === d.id), ui, tasking, snap.tasking?.tasks));
   const lobby = list.filter(v => v.departmentId == null);
   if (lobby.length) rows.push(lobbyRow(lobby, departments, ui, tasking));
   // 종류가 다른 줄 앞의 틈은 위에 부서 줄이 있을 때만 둔다(세션도 부서도 없으면 수용 인원이 첫 줄이다)
@@ -309,6 +319,7 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
    한 번에 한 일만 보낸다(orb-rooms.mjs의 run과 같다). 계정이 바뀌면(reset) 늦게 온 답을 버린다 */
 export function createOfficeRoom({ api = null, snapshot = () => null, reread = () => {}, changed = () => {} } = {}) {
   const tasks = createOfficeTaskRoom({ api, reread, changed });
+  const biz = createBizplanRoom({ api, changed });
   const fresh = () => ({ grps: new Set(), asking: null, notes: new Map(), busy: null, addName: '', addSeq: 0, view: null, viewSeq: 0, roomNote: '' });
   let st = fresh(), gen = 0, seq = 0, focusReq = null, openReq = null;
   const ask = req => ({ ...req, seq: ++seq });
@@ -347,6 +358,10 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
 
   async function handle(p = {}) {
     if (typeof p.act === 'string' && p.act.startsWith('task-')) { await tasks.handle(p); return true; }
+    // 기능의 작업 화면: 부서 줄의 기능 줄을 누르면 열리고, 「← 사무실」로 닫는다
+    if (p.act === 'feature-open' && String(p.key || '').startsWith('d:') && p.arg === 'bizplan') { biz.open(String(p.key).slice(2)); changed(); return true; }
+    if (p.act === 'biz-close') { const back = biz.departmentId; biz.close(); if (back) openReq = ask({ key: 'd:' + back }); changed(); return true; }
+    if (typeof p.act === 'string' && p.act.startsWith('biz-')) { await biz.handle(p); return true; }
     const key = String(p.key || ''), act = String(p.act || ''), arg = p.arg == null ? '' : String(p.arg), fields = p.fields && typeof p.fields === 'object' ? p.fields : {};
     if (act === 'disarm') return true;
     // 부서 줄을 열었다 닫으면 그 부서의 끝냄 느낌표를 지운다(4.1). 닫힌 부서는 다음에 열 때 기능이 접힌 채로 열린다(시안 sync)
@@ -456,12 +471,17 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     scene(snap, now, subs) {
       const room = officeRoom(snap, st, now, { subs });
       const tasking = tasks.scene(room.visible ? snap.tasking : null, snap?.departments);
-      return room.visible ? { ...room, ...(tasking ? {tasking} : {}), focus: focusReq, opening: openReq } : room;
+      const deptId = biz.departmentId, depts = Array.isArray(snap?.departments) ? snap.departments : [];
+      const dept = deptId && depts.find(d => d.id === deptId);
+      // 작업 화면은 일 맡기기가 켜진 판에서 부서가 남아 있을 때만 선다. 부서를 빼면 사무실로 돌아간다
+      if (deptId && (!room.visible || !dept || !Array.isArray(snap?.tasking?.tasks))) biz.close();
+      const feature = biz.departmentId ? biz.scene(featureTask(snap.tasking.tasks, 'bizplan', deptId), { departments: depts, deptName: dept.name }) : null;
+      return room.visible ? { ...room, ...(tasking ? {tasking} : {}), ...(feature ? { feature } : {}), focus: focusReq, opening: openReq } : room;
     },
     /* 방을 떠날 때: 열어 둔 묶음과 물음, 알림 줄을 지운다(보기 고른 것은 남긴다) */
-    close() { st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; focusReq = null; openReq = null; },
+    close() { st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; focusReq = null; openReq = null; biz.close(); },
     /* 계정이 바뀌면 다 비운다 */
-    reset() { gen += 1; tasks.reset(); st = fresh(); focusReq = null; openReq = null; },
+    reset() { gen += 1; tasks.reset(); biz.reset(); st = fresh(); focusReq = null; openReq = null; },
     busy: () => st.busy,
   };
 }
