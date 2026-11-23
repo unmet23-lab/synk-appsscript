@@ -12,7 +12,7 @@ import { planRestore, applyPlan } from './restore-hidden.mjs';
 import { summarize } from './detect.mjs';
 import { rpcServer } from './rpc.mjs';
 import { lazySession } from './keys-worker.mjs';
-import { PREFIX, BUCKET_ID, need, secretFile } from './config.mjs';
+import { PREFIX, BUCKET_ID, listenHost, need, secretFile } from './config.mjs';
 
 export const RESTORES_PER_DAY = 3;
 export const MAX_ROUNDS = 4;
@@ -245,5 +245,5 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
 export function startFilesWorker({ env = process.env } = {}) {
   const handlers = fileHandlers({ withSession: lazySession(secretFile('WB_FILES_B2', { env, json: true })), bucketId: need('WB_BUCKET_ID', { env, pattern: BUCKET_ID }), stateDir: need('WB_STATE_DIR', { env }) });
   return rpcServer({ secret: secretFile('WB_FILES_RPC', { env }), handlers, log: (e) => console.log(JSON.stringify({ at: new Date().toISOString(), service: 'files', ...e })) })
-    .listen(Number(env.WB_PORT || 4191), '0.0.0.0');
+    .listen(Number(env.WB_PORT || 4191), listenHost(env));
 }

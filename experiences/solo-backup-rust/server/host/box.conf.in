@@ -1,0 +1,41 @@
+# The box every work-backup service runs in (server/README.md 「회사 서버에서」). wb-host.py puts
+# these lines into each unit's [Service] and gives the same lines to `systemd-run` for the box
+# check and for wb-admin, so the three can never drift apart. @ROLE@ is api, keys or files.
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+UMask=0077
+TemporaryFileSystem=/srv/synk:ro
+BindPaths=/srv/synk/workbackup/@ROLE@
+ReadWritePaths=/srv/synk/workbackup/@ROLE@
+BindReadOnlyPaths=/opt/synk/workbackup/resolv.conf:/etc/resolv.conf
+InaccessiblePaths=-/etc/synk -/etc/synk-server-backup -/var/lib/synk-server-backup -/var/lib/synk-company-ops -/var/lib/synk-wb-offsite -/opt/synk/ha -/opt/synk/ha-runtime -/opt/synk/ha-maintenance -/opt/synk/disaster-recovery -/opt/synk/releases -/opt/synk/spaceship -/mnt
+IPAddressDeny=169.254.0.0/16 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 100.64.0.0/10 fc00::/7 fe80::/10
+MemoryMax=256M
+MemorySwapMax=0
+CPUQuota=50%
+TasksMax=64
+LimitNOFILE=4096
+Environment=NODE_ENV=production
+Environment="NODE_OPTIONS=--disable-warning=ExperimentalWarning --max-old-space-size=160"

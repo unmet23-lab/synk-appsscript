@@ -47,7 +47,7 @@ test('Caddy adapter advertises only reachable TCP protocols and clears cached al
   assert.deepEqual(clear[0].response.set['Alt-Svc'], ['clear']);
   assert.equal(clear[0].response.deferred, true, 'clear must be applied when response headers are written');
   assert.deepEqual(handlers.filter(value => value.handler === 'reverse_proxy').flatMap(value => value.upstreams.map(upstream => upstream.dial)).sort(),
-    ['company:4191', 'wb-api:4210']);
+    ['172.30.77.9:4210', 'company:4191']);
 });
 
 test('Caddy runtime proxy error redacts a synthetic media capability URI', {skip:caddy?false:'Set SYNK_QA_CADDY to an existing Caddy binary.'}, async t=>{

@@ -1,0 +1,32 @@
+[Unit]
+Description=SYNK work-backup provisioning server — keys worker
+Documentation=https://github.com/unmet23-lab/synk-appsscript/blob/master/experiences/solo-backup-rust/server/README.md
+# Follows the company writer: starts only while the company stack is up on this node, stops
+# with it (HA fencing, a release swap, a manual stop) and starts again when it starts.
+Requisite=synk-company.service
+PartOf=synk-company.service
+After=synk-company.service
+RequiresMountsFor=/srv/synk
+ConditionPathIsMountPoint=/srv/synk
+StartLimitIntervalSec=600
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=10772
+Group=10772
+WorkingDirectory=@APP@
+ExecStart=@NODE@ @APP@/main.mjs keys
+Restart=on-failure
+RestartSec=5
+# The company unit waits for this stop inside node-host.py's 150-second stop budget.
+TimeoutStopSec=10
+KillMode=control-group
+Environment=WB_PORT=4211 WB_HOST=127.0.0.1
+Environment=WB_SETTINGS=/srv/synk/workbackup/keys/settings.env WB_SECRETS_DIR=/srv/synk/workbackup/keys/secrets WB_STATE_DIR=/srv/synk/workbackup/keys/state
+# Only the api (loopback) and the DNS stub; the worker reaches B2 on the internet.
+IPAddressAllow=127.0.0.1/32 127.0.0.53/32
+@BOX@
+
+[Install]
+WantedBy=synk-company.service

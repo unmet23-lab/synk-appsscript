@@ -41,6 +41,15 @@ export function need(name, { env = process.env, pattern } = {}) {
   return v;
 }
 
+// The address a role listens on. Unset keeps all addresses (the container case). On the
+// company host the api takes the wb-front bridge address and the two workers loopback.
+export function listenHost(env = process.env) {
+  const v = env.WB_HOST;
+  if (v === undefined || v === '') return '0.0.0.0';
+  if (!/^(?:\d{1,3}\.){3}\d{1,3}$/.test(v) || v.split('.').some((x) => Number(x) > 255)) throw new Error('CONFIG_INVALID:WB_HOST');
+  return v;
+}
+
 export const PREFIX = /^c\/[a-z0-9]{16}\/$/;
 export const BUCKET_ID = /^[a-f0-9]{8,64}$/;
 export const KEY_ID = /^[A-Za-z0-9_-]{8,256}$/;

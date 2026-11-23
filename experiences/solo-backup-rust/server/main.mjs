@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { apiFromEnv } from './boot.mjs';
-import { withSettings } from './config.mjs';
+import { listenHost, withSettings } from './config.mjs';
 import { startKeysWorker } from './keys-worker.mjs';
 import { startFilesWorker } from './files-worker.mjs';
 
@@ -11,7 +11,7 @@ const role = process.argv[2];
 const env = role ? withSettings(process.env) : process.env;
 if (role === 'api') {
   const { api, jobs } = apiFromEnv(env);
-  api.server().listen(Number(env.WB_PORT || 4191), '0.0.0.0');
+  api.server().listen(Number(env.WB_PORT || 4191), listenHost(env));
   jobs.start();
 } else if (role === 'keys') startKeysWorker({ env });
 else if (role === 'files') startFilesWorker({ env });

@@ -1,0 +1,34 @@
+[Unit]
+Description=SYNK work-backup provisioning server — api
+Documentation=https://github.com/unmet23-lab/synk-appsscript/blob/master/experiences/solo-backup-rust/server/README.md
+# Follows the company writer: starts only while the company stack is up on this node, stops
+# with it (HA fencing, a release swap, a manual stop) and starts again when it starts.
+Requisite=synk-company.service
+PartOf=synk-company.service
+After=synk-company.service synk-wb-keys.service synk-wb-files.service
+RequiresMountsFor=/srv/synk
+ConditionPathIsMountPoint=/srv/synk
+StartLimitIntervalSec=600
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=10771
+Group=10771
+WorkingDirectory=@APP@
+ExecStart=@NODE@ @APP@/main.mjs api
+Restart=on-failure
+RestartSec=5
+# The company unit waits for this stop inside node-host.py's 150-second stop budget.
+TimeoutStopSec=10
+KillMode=control-group
+Environment=WB_PORT=4210 WB_HOST=172.30.77.9
+Environment=WB_SETTINGS=/srv/synk/workbackup/api/settings.env WB_SECRETS_DIR=/srv/synk/workbackup/api/secrets
+Environment=WB_DB=/srv/synk/workbackup/api/data/wb.sqlite WB_BACKUP_DIR=/srv/synk/workbackup/api/backups
+Environment=WB_KEYS_URL=http://127.0.0.1:4211/rpc WB_FILES_URL=http://127.0.0.1:4212/rpc WB_TRUSTED_PROXIES=172.30.77.11
+# Caddy (172.30.77.11 on wb-front) reaches the api; loopback for the workers and the DNS stub.
+IPAddressAllow=127.0.0.1/32 127.0.0.53/32 172.30.77.8/29
+@BOX@
+
+[Install]
+WantedBy=synk-company.service

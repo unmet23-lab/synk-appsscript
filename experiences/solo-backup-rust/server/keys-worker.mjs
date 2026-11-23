@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { authorize, B2Error } from './b2-native.mjs';
 import { rpcServer } from './rpc.mjs';
-import { PREFIX, BUCKET_ID, KEY_ID, need, secretFile } from './config.mjs';
+import { PREFIX, BUCKET_ID, KEY_ID, listenHost, need, secretFile } from './config.mjs';
 
 export const WRITE_CAPS = ['listBuckets', 'listFiles', 'readFiles', 'writeFiles'];
 export const READ_CAPS = ['listBuckets', 'listFiles', 'readFiles'];
@@ -101,5 +101,5 @@ export function startKeysWorker({ env = process.env } = {}) {
     protectedKeyIds: (env.WB_PROTECTED_KEY_IDS || '').split(',').map((s) => s.trim()).filter(Boolean), stateDir: need('WB_STATE_DIR', { env }),
   });
   return rpcServer({ secret: secretFile('WB_KEYS_RPC', { env }), handlers, log: (e) => console.log(JSON.stringify({ at: new Date().toISOString(), service: 'keys', ...e })) })
-    .listen(Number(env.WB_PORT || 4191), '0.0.0.0');
+    .listen(Number(env.WB_PORT || 4191), listenHost(env));
 }

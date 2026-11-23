@@ -18,6 +18,7 @@ import { createVerifier } from '../google-token.mjs';
 import { createMailer, signRequest, SIGNED_TAG } from '../mail.mjs';
 import { cleanBatch, cleanBundle, KNOWN_ERROR_CODES } from '../telemetry.mjs';
 import { Store } from '../store.mjs';
+import { listenHost } from '../config.mjs';
 import { createJobs } from '../jobs.mjs';
 import { withSettings, secretFile } from '../config.mjs';
 import { FakeB2, fakeGoogle, clockAt, sessionOf } from './fakes.mjs';
@@ -950,4 +951,12 @@ test('카본 끝판2 C3: an undo that finished here but whose answer was lost, a
   assert.equal(again.replayed, true);
   assert.equal(b2.versions.length, versions, 'nothing copied or hidden again');
   assert.equal(ledgerOf(dir).counts[P], 1, 'one restore; its undo free, once');
+});
+
+test('listen host: unset is all addresses, a set value must be one IPv4 literal', () => {
+  assert.equal(listenHost({}), '0.0.0.0');
+  assert.equal(listenHost({ WB_HOST: '' }), '0.0.0.0');
+  assert.equal(listenHost({ WB_HOST: '172.30.77.9' }), '172.30.77.9');
+  assert.equal(listenHost({ WB_HOST: '127.0.0.1' }), '127.0.0.1');
+  for (const bad of ['localhost', '256.0.0.1', '172.30.77.9 ', '::1', '1.2.3', '1.2.3.4.5']) assert.throws(() => listenHost({ WB_HOST: bad }), /CONFIG_INVALID:WB_HOST/);
 });

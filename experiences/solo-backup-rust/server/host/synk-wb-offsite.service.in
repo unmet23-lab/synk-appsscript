@@ -1,0 +1,24 @@
+[Unit]
+Description=SYNK work-backup daily database copy off the host
+Documentation=https://github.com/unmet23-lab/synk-appsscript/blob/master/experiences/solo-backup-rust/server/README.md
+RequiresMountsFor=/srv/synk
+ConditionPathIsMountPoint=/srv/synk
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -I -B @OFFSITE@/wb-offsite.py
+StateDirectory=synk-wb-offsite
+StateDirectoryMode=0700
+# Root only to read the api's 0700 backups folder; no other privilege.
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+InaccessiblePaths=-/srv/synk/company -/srv/synk/backups -/srv/synk/backup-archives -/srv/synk/caddy-data -/srv/synk/caddy-config -/srv/synk/workbackup/keys -/srv/synk/workbackup/files
+TimeoutStartSec=15min
