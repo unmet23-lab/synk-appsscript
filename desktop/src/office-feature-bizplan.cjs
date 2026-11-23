@@ -334,7 +334,9 @@ async function saveCopy({read,state,io,fallbackDir,now=Date.now()}){
     for(const e of edits)raw=raw.slice(0,e.at)+e.text+raw.slice(e.end);
     out=Buffer.from(raw,'utf8');
   }
-  const ext=path.extname(read.plan.path),base=path.basename(read.plan.path,ext)+'_솔리오고침_'+new Date(now).toISOString().slice(0,16).replace(/[-:]/g,'').replace('T','-');
+  // 파일 이름의 시각은 이 PC의 시각으로 쓴다. 세계 표준시로 찍혀 아홉 시간 어긋나던 것(11-23 앱 창 확인)
+  const t=new Date(now),two=n=>String(n).padStart(2,'0');
+  const ext=path.extname(read.plan.path),base=path.basename(read.plan.path,ext)+'_솔리오고침_'+t.getFullYear()+two(t.getMonth()+1)+two(t.getDate())+'-'+two(t.getHours())+two(t.getMinutes());
   for(const dir of [path.dirname(read.plan.path),fallbackDir].filter(Boolean)){
     const temp=path.join(dir,'.solio-'+randomUUID()+'.tmp');
     try{

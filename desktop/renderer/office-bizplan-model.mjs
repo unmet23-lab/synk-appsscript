@@ -47,7 +47,8 @@ function noteView(n, ui, depts) {
     (c?.kind === 'handed' ? `${eseo(depts.find(d => d.id === c.departmentId)?.name || '다른 부서')} 맡겼습니다.` : '');
   const acts = [];
   if (state === 'open') {
-    if (n.kind === 'mismatch' && n.fix && n.canReplace) acts.push(['고친 문장으로 바꾸기', 'biz-choose', n.key + '|fix', 'main']);
+    // 근거 없는 문장도 고친 문장이 있으면 넣을 수 있다. 보이기만 하고 단추가 없던 것(11-23 앱 창 확인)
+    if (n.fix && n.canReplace) acts.push(['고친 문장으로 바꾸기', 'biz-choose', n.key + '|fix', 'main']);
     if (n.canReplace) acts.push(['직접 고치기', 'biz-edit', n.key, '']);
     if (n.kind === 'unsupported' && depts.length) acts.push(['만들어서 사실로 맡기기', 'biz-hand', n.key, '']);
     acts.push(['그대로 두기', 'biz-choose', n.key + '|keep', 'quiet']);

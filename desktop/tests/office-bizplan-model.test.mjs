@@ -113,3 +113,13 @@ test('코드 검수: 저장 안 한 평가 항목을 먼저 저장하고 읽으�
   assert.equal(sc.stage, 'error');
   assert.match(sc.head[1], /기록 지우기/);
 });
+
+test('앱 창 확인: 근거 없는 문장도 고친 문장이 있으면 넣는 단추가 있고, 맡길 부서가 없으면 맡기기를 숨긴다', () => {
+  const r = read();
+  r.notes[1] = { ...r.notes[1], fix: '홈페이지에서 판매하고 있습니다.' };
+  const only = bizplanScene(snap({ read: r }), null, { departmentId: 'plan01', sel: 'n1' }, { departments: [depts[0]] });
+  const n = only.notes.find(x => x.key === 'n1');
+  assert.deepEqual(n.acts.map(a => a[0]), ['고친 문장으로 바꾸기', '직접 고치기', '그대로 두기']);
+  const two = bizplanScene(snap({ read: r }), null, { departmentId: 'plan01' }, { departments: depts });
+  assert.ok(two.notes.find(x => x.key === 'n1').acts.some(a => a[1] === 'biz-hand'));
+});

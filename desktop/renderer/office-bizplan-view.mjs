@@ -48,7 +48,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
         }
       } else if (sc.stage === 'loading') inner.append(el('small', '', sc.head?.[0] || ''));
       else if (sc.stage === 'error') inner.append(el('b', '', sc.head[0]), el('small', '', sc.head[1]));
-      else if (sc.stage === 'waiting' || sc.stage === 'reading') inner.append(el('small', '', sc.planName || ''), el('b', '', sc.stage === 'reading' ? '읽는 중입니다' : '자리를 기다리는 중입니다'));
+      else if (sc.stage === 'waiting' || sc.stage === 'reading') { inner.append(el('b', '', sc.planName || '')); if (sc.stage === 'reading') inner.append(el('small', '', '다 읽으면 고칠 곳이 문단 옆에 붙습니다.')); }
       else inner.append(el('b', '', sc.head[0]), el('small', '', sc.head[1]), btn('다시 읽기', 'biz-start', '', 'dark', !!sc.busy || !sc.list?.plan));
       s.append(inner);
       return s;
@@ -89,7 +89,8 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     box.append(el('p', 'what', n.state !== 'open' ? n.done : n.what));
     if (n.quote) box.append(el('p', 'quote', '「' + n.quote + '」'));
     if (n.evidence) box.append(el('p', 'why', `근거 「${n.evidence.text}」 · ${n.evidence.from}`));
-    if (n.kind === 'unsupported' && n.state === 'open') box.append(el('p', 'why', '건넨 자료에서 이 문장의 근거를 찾지 못했습니다. 만들면 사실이 되는 일이면 다른 부서에 맡길 수 있습니다.'));
+    // 맡길 부서가 있을 때만 말한다. 근거가 없다는 말은 메모 제목과 겹쳐 뺐다(11-23 앱 창 확인)
+    if (n.kind === 'unsupported' && n.state === 'open' && n.acts.some(a => a[1] === 'biz-hand')) box.append(el('p', 'why', '만들면 사실이 되는 일이면 다른 부서에 맡길 수 있습니다.'));
     if (n.fix && n.state === 'open' && !n.editing) { const pr = el('div', 'prop'); pr.append(el('small', '', '고친 문장'), el('p', '', n.fix)); box.append(pr); }
     if (n.locked && n.state === 'open') box.append(el('p', 'why', n.locked));
     if (n.editing) {
@@ -142,8 +143,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
       side.append(data, crit, who, acts([['읽기 시작', 'biz-start', '', 'main', !sc.list?.plan || !!sc.busy]]), el('p', 'biz-privacy', sc.privacy));
     } else if (sc.stage === 'waiting' || sc.stage === 'reading') {
       const b = el('div', 'biz-block');
-      b.append(el('h4', '', sc.stage === 'reading' ? '읽는 중' : '기다림'));
-      if (sc.progress) b.append(el('p', 'biz-step', `${sc.progress.total}번 가운데 ${sc.progress.part}번째 · ${sc.progress.title}`));
+      // 몇 번째인지는 맨 위 둘째 줄에 있다. 여기서는 되풀이하지 않는다(11-23 앱 창 확인)
       b.append(el('p', 'why', '읽는 동안 다른 일을 해도 됩니다. 끝나면 사무실 맨 위 문장과 이 화면이 알려 드립니다.'));
       if (sc.taskId) b.append(acts([['멈추기', 'biz-cancel', sc.taskId, 'quiet', !!sc.busy]]));
       side.append(b, el('p', 'biz-privacy', sc.privacy));
