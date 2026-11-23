@@ -1,6 +1,7 @@
 // 첫날 끝 · 맞춤 앞면(1차) 다리의 순수 함수 — 판별 · 날 · 기록 · 할 일 바꾸기(구현 계획 docs/WORLD_첫날끝_1차_구현계획_20261119.md 5절).
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {FRONT_AUTO,frontMode,frontEligible,dayKey,dayIndex,firstOf,frontView,recordOf,studentOf,itemOf,reasonOf,planState,GOAL_REASONS,goalPatch} from '../experiences/synk-world-app/world-front-entry.mjs';
 
 const left={version:1,stage:'left',dream:'idol',name:'볼로르',nameEn:'Bolor',call:'언니',from:'몽골',look:'mn_f',best:{s1e01:{n:3,t2:true,tr:false}},
@@ -58,12 +59,18 @@ test('화면: 첫날 끝 → 다시 오면 첫날 맞춤 → 둘째 날 아침 �
   assert.equal(frontView({arrival: first(night), mark: {}, now: nextDay, native: true}), 'front', 'PC 창 다음 날은 아침 없이 맞춤');
 });
 
-test('기록: 있는 사실만, 손님은 1화 기록 없음', () => {
+test('기록: 있는 사실만, 손님 사본의 1화 기록도 센다(11-23 손님 1화)', () => {
   assert.deepEqual(recordOf(left), {spoke: 4, n: 3, t2: true, tr: false, mom: true, momAnswer: 'fix', wrap: true});
   assert.equal(recordOf({...left, momAnswer: 'ok'}).momAnswer, 'ok');
   assert.deepEqual(recordOf({...left, momAnswer: 'later'}).mom, false);
-  assert.deepEqual(recordOf(left, {guest: true}), {spoke: 0, n: 0, t2: false, tr: false, mom: false, momAnswer: null, wrap: false});
   assert.deepEqual(recordOf(null), {spoke: 0, n: 0, t2: false, tr: false, mom: false, momAnswer: null, wrap: false});
+  // 손님 첫날 끝: 로그인 판을 부르지 않고 내 길(이야기)의 1화로 보낸다. 1화를 봤으면 「1화 다시 보기」
+  const app = fs.readFileSync(new URL('../experiences/world-front/app.mjs', import.meta.url), 'utf8');
+  const acts = app.slice(app.indexOf('  const acts = P.hangul'), app.indexOf("  const nm = nameUI();"));
+  assert.doesNotMatch(acts, /data-act="login"/);
+  assert.match(acts, /data-act="story">\$\{esc\(ui\('1화 보기'\)\)\}/);
+  assert.match(acts, /data-act="story">\$\{esc\(ui\('1화 다시 보기'\)\)\}/);
+  assert.match(app, /mine = !P\.pc/, '손님 기록도 센다');
 });
 
 test('학생: 얼굴 그림과 자르기 값', () => {

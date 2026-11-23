@@ -62,8 +62,9 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
 /* ── 기록(있는 사실만). PC 창은 서울행이 없다 ── */
 const R = () => {
-  const rec = (state && state.record) || {}, login = P.who === 'login' && !P.pc, spoke = login ? Math.max(0, Math.min(5, Number(rec.spoke) || 0)) : 0;
-  return {login, guest: P.who === 'guest' && !P.pc, wrap: login && !!rec.wrap, spoke, n: login ? Math.min(3, Number(rec.n ?? spoke) || 0) : 0, t2: login && !!rec.t2, tr: login && !!rec.tr, mom: login && !!rec.mom, seoul: !P.pc};
+  // 손님도 1화를 로그인 없이 한다(11-23) — 이 기기 손님 기록도 로그인 학생과 같게 센다. PC 창만 기록이 없다.
+  const rec = (state && state.record) || {}, login = P.who === 'login' && !P.pc, mine = !P.pc, spoke = mine ? Math.max(0, Math.min(5, Number(rec.spoke) || 0)) : 0;
+  return {login, guest: P.who === 'guest' && !P.pc, wrap: mine && !!rec.wrap, spoke, n: mine ? Math.min(3, Number(rec.n ?? spoke) || 0) : 0, t2: mine && !!rec.t2, tr: mine && !!rec.tr, mom: mine && !!rec.mom, seoul: !P.pc};
 };
 
 /* ── 글 ── */
@@ -188,7 +189,7 @@ function nightView({off = false} = {}) {
   const r = R(), plan = state.plan;
   const w = (txt, open, label) => `<button class="w" type="button" data-open="${open}" aria-haspopup="dialog" aria-label="${esc(label.includes(txt) ? label : `${txt} · ${label}`)}">${esc(txt)}</button>`;
   const rows = [];   // [보이는 줄(html), 번역 열쇠, 줄 꼴, 번역 값]
-  if (r.guest || (!r.wrap && r.spoke === 0)) {   // 1화를 아직 안 본 로그인 학생도 그날 한 일은 학생증과 한글 이름이다
+  if (!r.wrap && r.spoke === 0) {   // 1화를 아직 안 본 학생(손님 포함)도 그날 한 일은 학생증과 한글 이름이다
     rows.push([esc('서울에서 첫날'), '서울에서 첫날', 'lead']);
     rows.push([esc('학생증 받고'), '학생증 받고']);
     rows.push([esc('이름은 한글로'), '이름은 한글로']);
@@ -198,16 +199,19 @@ function nightView({off = false} = {}) {
     else rows.push([esc('1화를 끝까지 듣고'), '1화를 끝까지 듣고']);
     if (r.mom) rows.push([`엄마한테 ${w('한 줄', 'mom', ui('엄마 쪽지와 내 답'))}`, '엄마한테 한 줄']);
   }
-  if (!r.guest && !r.wrap && r.spoke === 0 && r.mom) rows.push([`엄마한테 ${w('한 줄', 'mom', ui('엄마 쪽지와 내 답'))}`, '엄마한테 한 줄']);
-  const rec = P.hangul === 'ask' && !r.guest && rows.length > 1, plain = h => h.replace(/<[^>]+>/g, '');   // 10z: 질문 동안은 두 줄 기록
+  if (!r.wrap && r.spoke === 0 && r.mom) rows.push([`엄마한테 ${w('한 줄', 'mom', ui('엄마 쪽지와 내 답'))}`, '엄마한테 한 줄']);
+  const rec = P.hangul === 'ask' && rows.length > 1, plain = h => h.replace(/<[^>]+>/g, '');   // 10z: 질문 동안은 두 줄 기록
   const recT = rec && P.lang !== 'ko' ? `${tr(rows[0][1])} ${rows.slice(1).map(x => tr(x[1], x[3] || {})).join(' · ')}` : '';
   const poem = rec ? `<span class="ln rc"><span class="rl">${esc(ui('오늘 한 일'))}</span><span class="ko">${plain(rows[0][0])} ${rows.slice(1).map(x => plain(x[0])).join(' · ')}</span>${recT ? `<small>${esc(recT)}</small>` : ''}</span>` : rows.map(([html, key, cls, v]) => `<span class="ln ${cls || ''}"><span class="ko">${html}</span>${sub(key, v)}</span>`).join('');
-  const tag = r.guest || !r.wrap ? '기숙사 들어가는 날 · 밤' : '개강 첫날 · 밤';   // 개강 첫날 = 1화 장면
+  const tag = !r.wrap ? '기숙사 들어가는 날 · 밤' : '개강 첫날 · 밤';   // 개강 첫날 = 1화 장면
   const spot = r.wrap && P.hangul !== 'ask' ? spotTag() : '';   // 사진 속 자리 이름표: 1화를 본 학생에게만, 한글 질문 동안은 뺀다
   const bye = '오늘은 여기까지';
+  // 손님: 1화는 로그인 없이 내 길에서 한다(11-23 유호님 「1화까지는 열어두는거」). 체험은 1화까지라 「지금 더 연습하기」 대신 1화로 보낸다.
   const acts = P.hangul === 'ask' ? '' : r.guest
-    ? `<div class="acts"><button class="go" type="button" data-act="login">${esc(ui('로그인하고 1화 보기'))}</button><button class="tx" type="button" data-act="bye">${esc(ui(bye))}</button></div>`
-    : `<div class="acts"><button class="go" type="button" data-act="bye">${esc(ui(bye))}</button><button class="tx" type="button" data-act="more">${esc(ui('지금 더 연습하기'))}<span class="arw" aria-hidden="true">→</span></button></div>`;
+    ? (r.wrap
+      ? `<div class="acts"><button class="go" type="button" data-act="bye">${esc(ui(bye))}</button><button class="tx" type="button" data-act="story">${esc(ui('1화 다시 보기'))}<span class="arw" aria-hidden="true">→</span></button></div>`
+      : `<div class="acts"><button class="go" type="button" data-act="story">${esc(ui('1화 보기'))}</button><button class="tx" type="button" data-act="bye">${esc(ui(bye))}</button></div>`)
+    :`<div class="acts"><button class="go" type="button" data-act="bye">${esc(ui(bye))}</button><button class="tx" type="button" data-act="more">${esc(ui('지금 더 연습하기'))}<span class="arw" aria-hidden="true">→</span></button></div>`;
   const nm = nameUI();
   return `<section class="view night ${P.still || QUIET ? '' : 'enter'} ${off ? 'off' : ''} ${P.hangul === 'ask' ? 'asking' : ''}" aria-label="${esc(ui(tag))}">
     <div class="ph"><img class="on" src="assets/night.webp" alt=""><img class="off" src="assets/night-off.webp" alt=""><i class="lamp" aria-hidden="true"></i>${spot}</div>
@@ -345,7 +349,7 @@ function sidePanel(r) {
 }
 function tagFor(r, day2) {
   if (day2 && P.day > 2) return '오늘';   // 셋째 날부터
-  const noEp = r.guest || !r.wrap;   // 1화(개강 첫날 장면)를 안 본 학생은 「개강」 꼬리표를 쓰지 않는다 — 밤 화면과 같은 이름
+  const noEp = !r.wrap;   // 1화(개강 첫날 장면)를 안 본 학생은 「개강」 꼬리표를 쓰지 않는다 — 밤 화면과 같은 이름
   return P.pc ? (day2 ? '둘째 날' : '첫날') : noEp ? (day2 ? '둘째 날 · 아침' : '기숙사 들어가는 날 · 밤') : day2 ? '개강 둘째 날 · 아침' : '개강 첫날 · 밤';
 }   // 셋째 날부터는 「오늘」
 
@@ -407,7 +411,7 @@ function askView({r, tag, time}) {
 // 1. 새벽 창가(사진): 어제 일을 받는 서하 한 줄은 1화를 마치고 한 줄이라도 말한 학생에게만. PC는 이 판 없이 종이 질문부터.
 function dawnView() {
   const r = R(), yesterday = r.wrap && r.spoke > 0;
-  const tag = r.guest || !r.wrap ? '둘째 날 · 아침' : '개강 둘째 날 · 아침';   // 밤 꼬리표 · tagFor와 같게: 1화를 안 본 학생은 「개강」을 뺀다
+  const tag = !r.wrap ? '둘째 날 · 아침' : '개강 둘째 날 · 아침';   // 밤 꼬리표 · tagFor와 같게: 1화를 안 본 학생은 「개강」을 뺀다
   const top = yesterday
     ? `<p class="who"><span class="face" style="background-image:url(assets/seoha.webp)" aria-hidden="true"></span><b>${esc(SEOHA)}</b></p><p class="big">${esc('어제 식당에서 선배한테 길 물어봤죠')}${sub('어제 식당에서 선배한테 길 물어봤죠')}</p>`
     : `<p class="big plain">${esc(ui('둘째 날 아침이에요'))}</p>`;

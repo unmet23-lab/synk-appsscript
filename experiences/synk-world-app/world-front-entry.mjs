@@ -50,11 +50,12 @@ export function frontView({arrival=null,mark={},now=Date.now(),native=false}={})
  if(sameDay)return mark.ended?'more':'end';
  return mark.day2?'front':'day2';
 }
-export function recordOf(arrival,{guest=false}={}){
- const b=guest?null:arrival?.best?.s1e01||null,n=Math.min(3,b?.n||0),t2=!!b?.t2,tr=!!b?.tr;
+// 손님도 1화를 로그인 없이 한다(11-23 유호님 「1화까지는 열어두는거」) — 이 기기 손님 사본의 1화 기록도 그대로 센다.
+export function recordOf(arrival){
+ const b=arrival?.best?.s1e01||null,n=Math.min(3,b?.n||0),t2=!!b?.t2,tr=!!b?.tr;
  const scenes=Array.isArray(arrival?.scenes)?arrival.scenes:[];
- const mom=!guest&&!!arrival?.momAnswer&&arrival.momAnswer!=='later';
- return {spoke:n+(t2?1:0)+(tr?1:0),n,t2,tr,mom,momAnswer:mom?(arrival.momAnswer==='ok'?'ok':'fix'):null,wrap:!guest&&scenes.some(s=>s.id==='s1e01.wrap')};
+ const mom=!!arrival?.momAnswer&&arrival.momAnswer!=='later';
+ return {spoke:n+(t2?1:0)+(tr?1:0),n,t2,tr,mom,momAnswer:mom?(arrival.momAnswer==='ok'?'ok':'fix'):null,wrap:scenes.some(s=>s.id==='s1e01.wrap')};
 }
 export function studentOf(arrival){
  const look=arrival?.look||null,crop=look?LOOK_FACES[look]:null;
@@ -151,7 +152,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   let consent={needed:true,label:'',note:''};try{consent={...consent,...(goalConsent()||{})};}catch{}
   // 이미 학습 목표 저장에 동의한 학생에게는 체크 상자를 다시 그리지 않는다(학습 목표 창과 같다).
   if(profileOf()?.consent)consent={...consent,needed:false};
-  return {view,lang:currentLang(),who:pc?'pc':guest?'guest':'login',dream:arrival?.dream||'idol',student:studentOf(arrival),record:recordOf(arrival,{guest}),
+  return {view,lang:currentLang(),who:pc?'pc':guest?'guest':'login',dream:arrival?.dream||'idol',student:studentOf(arrival),record:recordOf(arrival),
    day:dayIndex(arrival,Date.now(),firstOf(arrival,mark)),recordToday:wrapToday(arrival),hangul,after:!!mark.after,goal:view==='front'?(accountGoal()||mark.goal||''):'',step:'',plan,alts,today:todayOf(arrival,mark,{guest,pc,view}),position:null,consent,reduced:!!home.state?.reduced};
  }
  // 「오늘 한 것」: 있는 사실만. card · lines · heard · mom은 틀이 세 언어 글로 쓰고, practice는 그 활동의 화면 언어 이름을 그대로 쓴다.
@@ -160,7 +161,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  function todayOf(arrival,mark,{guest,pc,view}){
   const rows=[];
   if(arrival?.name&&!pc)rows.push({key:'card',label:'학생증'});
-  const r=recordOf(arrival,{guest});
+  const r=recordOf(arrival);
   if(r.spoke>0)rows.push({key:'lines',label:`1화 · ${r.spoke}줄`});
   else if(r.wrap)rows.push({key:'heard',label:'1화 끝까지 들음'});
   if(r.mom)rows.push({key:'mom',label:'엄마에게 답장'});

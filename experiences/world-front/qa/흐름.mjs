@@ -137,6 +137,25 @@ if (reads) {
   check(!/몽글|까몽|마린/.test(tomorrow), '내일 할 일 줄에 마스코트 이름이 안 보임');
   if (LOGIN && LANG === 'ko' && !NO_EP) check(/1화에서/.test(tomorrow) && /엄마/.test(tomorrow), '로그인 학생은 1화에서 말한 줄과 엄마 답이 보임', tomorrow.slice(0, 80).replace(/\s+/g, ' '));
   if (NO_EP && LANG === 'ko') check(!/1화를 끝까지|개강 첫날/.test(tomorrow) && /학생증/.test(tomorrow), '1화를 안 본 학생에게 「1화를 끝까지 · 개강 첫날」이 없고 학생증이 보임', tomorrow.slice(0, 80).replace(/\s+/g, ' '));
+  // 손님(11-23 손님 1화): 로그인 판을 부르지 않고 내 길의 1화로 보낸다. 1화를 본 손님은 그 기록이 보이고 단추가 「1화 다시 보기」다
+  if (!LOGIN) {
+    const acts = await inF(() => [...document.querySelectorAll('.view .acts [data-act]')].map(b => `${b.dataset.act}:${b.textContent.trim()}`));
+    check(!acts.some(a => a.startsWith('login')) && acts.some(a => a.startsWith('story')), '손님 첫날 끝: 로그인 대신 1화로', acts.join(' | '));
+    if (LANG === 'ko') check(NO_EP ? acts.includes('story:1화 보기') : acts.some(a => a.startsWith('story:1화 다시 보기')), NO_EP ? '1화를 안 본 손님은 「1화 보기」' : '1화를 본 손님은 「1화 다시 보기」', acts.join(' | '));
+    if (LANG === 'ko' && !NO_EP) check(/1화에서/.test(tomorrow), '1화를 본 손님도 1화에서 말한 줄이 보임', tomorrow.slice(0, 80).replace(/\s+/g, ' '));
+  }
+  // 누르면 서울행 내 길이 앞면 위에 뜨고, 「오늘 마무리하기」로 닫으면 앞면으로 돌아온다.
+  // 1화를 본 손님만 누른다 — 1화 전 내 길의 「오늘은 여기까지」는 동아리장 알림으로 바뀌어(11-24 동아리장 알림, experiences/world-front/qa/동아리흐름.mjs가 본다) 닫는 단추가 다르다
+  if (!LOGIN && !NO_EP) {
+    await F().click('.view .acts [data-act="story"]');
+    const S = () => page.frames().find(x => x.url().includes('/seoul-arrival/'));
+    await until('내 길이 앞면 위에 뜸', async () => (await page.evaluate(() => !!document.querySelector('#seoul-layer')?.matches(':modal'))) && !!S() && await S().evaluate(() => document.querySelector('#s-path')?.classList.contains('on')), 20000);
+    await sleep(1200); await shot('1c-손님내길');
+    check(await S().evaluate(() => !!document.querySelector('#startEp')), '내 길에 1화 단추가 있음');
+    await S().click('#goHome');
+    await until('앞면으로 돌아옴', () => page.evaluate(() => !document.querySelector('#seoul-layer') && !!document.querySelector('#front-layer')?.open), 10000);
+    await until('첫날 끝 화면 다시', () => inF(() => !!document.querySelector('.view.night:not(.off) .acts')), 10000);
+  }
 }
 
 // ── 로그인: 「지금 더 연습하기」 → 첫날 맞춤 / 손님: 「오늘은 여기까지」 → 불 끔 → 다시 열기 ──

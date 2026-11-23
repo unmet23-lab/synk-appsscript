@@ -15,9 +15,10 @@ const FRAME_WAIT_MS=15000;
 // 앱 쪽 글(화면 언어). world-strings.mjs에 넣으면 드라마 시범판 학습 묶음까지 다시 만들어야 해서 여기 둔다. 틀 안 글은 seoul-arrival/strings.mjs.
 const TEXT={
  road:{ko:'내 길',en:'My road',mn:'Миний зам'},
- toCrowd:{ko:'내 객석으로',en:'To my audience',mn:'Үзэгчид рүүгээ'},
+ // 「내 객석」을 「내 팬」으로 부른다(유호님 11-23 「객석이라기보다 내 팬이라고 적는게 더 좋을것같아」).
+ toCrowd:{ko:'내 팬 보기',en:'See my fans',mn:'Фэнүүдээ харах'},
  trialEnd:{ko:'체험은 여기까지예요',en:'This is where the trial ends',mn:'Туршилтын хэсэг үүгээр дууслаа'},
- trialMore:{ko:'더 많은 이야기는 2027년 2월에 열려요. 사전예약하면 가장 먼저 알려 드려요.',en:'More episodes open in February 2027. Pre-register and we’ll tell you first.',mn:'Дараагийн ангиуд 2027 оны 2-р сард гарна. Урьдчилан бүртгүүлбэл танд хамгийн түрүүнд мэдэгдэнэ.'},
+ trialMore:{ko:'더 많은 이야기는 2027년 2월에 열려요. 사전예약하면 가장 먼저 알려 드려요.',en:'More episodes open in February 2027. Pre-register and we’ll tell you first.',mn:'Дараагийн ангиуд 2027 оны 2‑р сард гарна. Урьдчилан бүртгүүлбэл танд хамгийн түрүүнд мэдэгдэнэ.'},
  reserve:{ko:'사전예약하기',en:'Pre-register',mn:'Урьдчилан бүртгүүлэх'},
  dramaTitle:{ko:'1화 · 개강 첫날',en:'Episode 1 · First day of class',mn:'1-р анги · Хичээлийн эхний өдөр'},
  moveTitle:{ko:'학생증 저장',en:'Save student ID',mn:'Оюутны үнэмлэх хадгалах'},

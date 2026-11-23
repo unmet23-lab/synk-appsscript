@@ -147,7 +147,11 @@ await until('건너뛰기 단추',()=>inF(()=>!document.querySelector('#skipBtn'
 await overflow('내 방');
 
 // ── 거울 앞 ──
-if(!FULL)await F().click('#skipBtn');
+if(!FULL){
+ await F().click('#skipBtn');
+ // 처음 건너뛰기는 확인 판을 한 번 띄운다(11-24 건너뛰기 확인 판) — 「건너뛰기」를 고른다
+ await sleep(600);if(await inF(()=>!document.querySelector('#skipAsk')?.hidden).catch(()=>false))await F().click('#skipGo');
+}
 await until('거울 앞',()=>inF(()=>document.querySelector('#mirror').classList.contains('on')),FULL?90000:8000);stamp('거울 앞');
 await sleep(500);await shot('03-거울');
 await F().click(`.mr-pick[data-dream="${DREAM}"]`);
