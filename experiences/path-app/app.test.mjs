@@ -19,6 +19,8 @@ import * as docsData from './docs-data.mjs';
 import * as studyAccount from './study-account.mjs';
 import * as consentUi from './consent-ui.mjs';
 import * as studyShape from './study-shape.mjs';
+import * as translateUi from './translate-ui.mjs';
+import * as translateShape from './translate-shape.mjs';
 
 // The real app runs unchanged apart from its static ESM imports. This small DOM
 // provides only element parsing, selectors, live input values and event bubbling;
@@ -126,7 +128,7 @@ function fixture() {
   }, '2026-11-09T10:01:00.000Z');
 }
 
-async function boot(t, { failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null } = {}) {
+async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null } = {}) {
   const initial = raw ?? JSON.stringify(legacy ? fixture() : { ...createPathDocument('ko'), state: fixture() });
   const originalKey = legacy ? LEGACY_KEY : GUEST_KEY;
   const records = new Map([[originalKey, initial]]);
@@ -185,6 +187,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
         updatedAt: '2026-11-10T00:00:00.000Z', state: structuredClone(remote) };
     },
     signOut: async () => { providerSignOuts++; },
+    requestTranslate: async body => { if (!translateServer) throw Object.assign(new Error('off'), { code: 'PATH_TRANSLATE_UNAVAILABLE' }); return translateServer(body, owner); },
     dispose() {},
   }) : undefined;
   const root = new Element('div', { id: 'app' });
@@ -211,6 +214,10 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
     ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi, ...channelData, ...channelUi, ...pathUi, ...docsData, ...studyAccount, ...consentUi, normalizeStudyProfile: studyProfile.normalizeProfile,
     // 기본은 예시 묶음이다. 실제 과정이 자료에 들어와도 아래 흐름 시험은 같은 묶음으로 돈다.
     PROGRAMS: programs ?? studyData.PROGRAMS.filter(program => program.example),
+    renderTranslate: translateUi.renderTranslate, draftText: translateUi.draftText, trCountText: translateUi.countText, ERROR_TEXT: translateUi.ERROR_TEXT,
+    splitPasted: translateShape.splitPasted, maskLines: translateShape.maskLines, validateTranslateRequest: translateShape.validateTranslateRequest,
+    validateTranslateReply: translateShape.validateTranslateReply, validateCheckReply: translateShape.validateCheckReply, draftRows: translateShape.draftRows,
+    TRANSLATE_CONSENT_VERSION: translateShape.TRANSLATE_CONSENT_VERSION, crypto: globalThis.crypto,
     createPathSession: options => {
       sessionOptions = options;
       session = createPathSession({ ...options, storage, fetcher, lang: 'ko', ...(accountFactory ? { accountFactory } : {}),
@@ -974,3 +981,139 @@ test('다른 곳에서 이미 지워진 오래된 탭에서 「지우기」를 �
   assert.equal(app.studyRow.state, null);
 });
 
+
+// ── 서류 번역 초안(2026-11-24). 이름 · 번호는 지어낸 값이다. ──
+function fakeTranslateServer({ translateStatus = 'done', checkStatus = 'done', compared = true } = {}) {
+  const calls = [];
+  const server = async (body, owner) => {
+    calls.push(structuredClone(body));
+    const head = { ok: true, scope: 'synk-path', action: body.action, prompt: 'path-translate-v1', accountId: owner, remaining: 8 };
+    if (body.action === 'translate') {
+      if (translateStatus !== 'done') return { ...head, status: translateStatus, remaining: translateStatus === 'limit' ? 0 : 8, lines: [] };
+      return { ...head, status: 'done', lines: body.lines.map((line, i) => ({ i, ko: i === 0 ? '<script>alert(1)</script> 졸업증명서' : i === 1 ? '성명: 바타인 테무렌(Батын Тэмүүлэн)' : line.includes('⟦R1⟧') ? '등록번호: ⟦R1⟧' : '졸업 연도: 2026년 6월 16일', flag: i === 1 ? 'name' : 'none' })) };
+    }
+    if (checkStatus !== 'done') return { ...head, status: checkStatus, lines: [] };
+    return { ...head, status: 'done', compared, lines: body.lines.map((_, i) => ({ i, back: i === 3 ? 'Төгссөн он: 2026 оны 6 сарын 16' : 'Тест мөр', verdict: i === 3 ? 'differs' : 'same', reason: i === 3 ? 'meaning' : 'none' })) };
+  };
+  return { server, calls };
+}
+async function openTranslate(t, options = {}) {
+  const real = studyData.programsFor(studyData.PROGRAMS, true);
+  const app = await boot(t, { raw: studyGoalDocument(), programs: real, ...options });
+  app.click('nav', '[data-page="univ"]');
+  app.click('univOpen', '[data-id="wku-ug"]');
+  app.click('pathPick', '[data-id="wku-ug"]');
+  app.click('nav', '[data-page="path"]');
+  return app;
+}
+const PASTE = 'БҮРЭН ДУНД БОЛОВСРОЛЫН ГЭРЧИЛГЭЭ\nОвог нэр: Батын Тэмүүлэн\nРегистрийн дугаар: УБ01234567\nТөгссөн он: 2026 оны 6 сарын 15';
+function fillTranslate(app, { age = 'adult', agree = true, text = PASTE } = {}) {
+  const area = app.root.querySelector('#tr-text');
+  area.value = text; app.event('input', area);
+  const radio = app.root.querySelector(`input[data-action="trAge"][value="${age}"]`);
+  radio.checked = true; app.event('change', radio);
+  if (age === 'teen') { const g = app.root.querySelector('#tr-guardian'); g.checked = true; app.event('change', g); }
+  if (agree && age !== 'under14') { const a = app.root.querySelector('#tr-agree'); a.checked = true; app.event('change', a); }
+}
+
+test('번역 초안: 졸업 · 성적증명서 줄에만 단추가 있고, 손님은 로그인 안내만 본다', async t => {
+  const app = await openTranslate(t);
+  const ids = app.root.querySelectorAll('button[data-action="trOpen"]').map(b => b.getAttribute('data-id'));
+  assert.deepEqual(ids.sort(), ['visa-d2-school', 'wku-ug-grad', 'wku-ug-transcript']);
+  app.click('trOpen', '[data-id="wku-ug-grad"]');
+  assert.match(app.root.querySelector('h1').textContent, /졸업\(예정\)증명서/);
+  assert.match(pageText(app), /SYNK ID로 로그인하면 번역 초안을 만들 수 있어요/);
+  assert.equal(app.root.querySelector('#tr-text'), null, '손님에게는 붙여 넣기 칸이 없다');
+  app.click('trLeave');
+  assert.match(app.root.querySelector('h1').textContent, /원광대학교 학부/);
+});
+
+test('번역 초안: 나이 · 동의 전에는 보내지 않고, 만 14세 미만은 막는다', async t => {
+  const { server, calls } = fakeTranslateServer();
+  const app = await openTranslate(t, { signedIn: true, translateServer: server });
+  app.click('trOpen', '[data-id="wku-ug-grad"]');
+  assert.match(pageText(app), /Anthropic\(미국\)/);
+  assert.match(pageText(app), /Google\(미국\)/);
+  assert.match(pageText(app), /SYNK는 보낸 글과 초안을 저장하지 않아요/);
+  assert.equal(app.root.querySelector('button[data-action="trSend"]').disabled, true);
+  fillTranslate(app, { age: 'under14', agree: false });
+  assert.match(pageText(app), /만 14세 미만은 이 기능을 쓸 수 없어요/);
+  assert.equal(app.root.querySelector('#tr-agree'), null);
+  assert.equal(app.root.querySelector('button[data-action="trSend"]').disabled, true);
+  const teen = app.root.querySelector('input[data-action="trAge"][value="teen"]');
+  teen.checked = true; app.event('change', teen);
+  const agree = app.root.querySelector('#tr-agree'); agree.checked = true; app.event('change', agree);
+  assert.equal(app.root.querySelector('button[data-action="trSend"]').disabled, true, '보호자 확인 전');
+  const g = app.root.querySelector('#tr-guardian'); g.checked = true; app.event('change', g);
+  assert.equal(app.root.querySelector('button[data-action="trSend"]').disabled, false);
+  assert.equal(calls.length, 0);
+});
+
+test('번역 초안: 보내면 등록번호를 가리고, 초안 띠 · 안내 · 걸린 줄의 까닭을 보이며, 모델 글은 글로만 보인다', async t => {
+  const { server, calls } = fakeTranslateServer();
+  const app = await openTranslate(t, { signedIn: true, translateServer: server });
+  app.click('trOpen', '[data-id="wku-ug-grad"]');
+  fillTranslate(app);
+  app.click('trSend');
+  await settle();
+  assert.equal(calls.length, 2, '번역 뒤 대조를 이어서 보낸다');
+  assert.equal(calls[0].action, 'translate');
+  assert.ok(!JSON.stringify(calls).includes('УБ01234567'), '등록번호는 앱에서 가려 보낸다');
+  assert.equal(calls[0].lines[2], 'Регистрийн дугаар: ⟦R1⟧');
+  assert.deepEqual(calls[0].consent, { v: 1, age: 'adult', guardian: false, lang: 'ko' });
+  assert.equal(calls[1].action, 'check');
+  assert.deepEqual(calls[1].drafts.slice(2, 3), ['등록번호: ⟦R1⟧'], '대조에는 가린 초안을 보낸다');
+  const text = pageText(app);
+  assert.match(text, /번역 초안 — 번역본이 아니에요/);
+  assert.match(text, /Орчуулгын төсөл — албан ёсны орчуулга биш/);
+  assert.match(text, /번역자가 원문과 대조해 고치고 번역자 확인서를 붙여 내요/);
+  assert.match(text, /비자 서류의 공식 접수는 본인이 KVAC에 하거나 등록 행정사에게 맡겨요/);
+  assert.match(text, /이 서류를 내는 곳의 번역 규칙/);
+  assert.match(text, /Регистрийн дугаар: УБ01234567/, '원문 칸은 되돌려 보인다');
+  assert.match(text, /등록번호: УБ01234567/, '초안 칸도 되돌린다');
+  assert.match(text, /이름은 여권의 영문 철자로 맞추세요/);
+  assert.match(text, /다시 옮긴 글의 뜻이 원문과 달라요/);
+  assert.match(text, /숫자가 원문과 달라요/);
+  assert.match(text, /뜻이 달라 보이는 줄 1곳/);
+  assert.match(text, /<script>alert\(1\)<\/script> 졸업증명서/, '모델 글은 글자로 보인다');
+  assert.equal(app.root.querySelectorAll('script').length, 0);
+  assert.match(text, /오늘 남은 장: 8/);
+  app.click('trFlagged');
+  assert.equal(app.root.querySelectorAll('li.sx-tr-row').length, 3, '확인할 줄만 보기(원문에 없는 숫자 1 · 이름 줄 · 숫자와 뜻이 다른 줄)');
+  app.click('trDownload');
+  assert.match(app.downloads.at(-1).filename, /^번역초안_졸업증명서_\d{4}-\d{2}-\d{2}\.txt$/);
+  app.setConfirmation(true);
+  app.click('trLeave');
+  assert.match(app.confirmations.at(-1), /초안이 지워져요/);
+  app.click('trOpen', '[data-id="wku-ug-grad"]');
+  assert.equal(app.root.querySelector('#tr-text').value, '', '떠나면 원문과 초안을 지운다');
+});
+
+test('번역 초안: 한도 · 쉼 · 대조 실패를 알리고, 계정이 바뀌면 지운다', async t => {
+  const limit = fakeTranslateServer({ translateStatus: 'limit' });
+  const app = await openTranslate(t, { signedIn: true, translateServer: limit.server });
+  app.click('trOpen', '[data-id="wku-ug-transcript"]');
+  fillTranslate(app);
+  app.click('trSend');
+  await settle();
+  assert.match(pageText(app), /오늘 만들 수 있는 10장을 다 썼어요/);
+  assert.equal(app.root.querySelector('#tr-text').value, PASTE, '붙여 넣은 글은 남긴다');
+  const off = await openTranslate(t, { signedIn: true });
+  off.click('trOpen', '[data-id="wku-ug-grad"]');
+  fillTranslate(off);
+  off.click('trSend');
+  await settle();
+  assert.match(pageText(off), /번역 초안은 잠시 쉬어요/);
+  const checkFail = fakeTranslateServer({ checkStatus: 'unavailable' });
+  const third = await openTranslate(t, { signedIn: true, translateServer: checkFail.server });
+  third.click('trOpen', '[data-id="wku-ug-grad"]');
+  fillTranslate(third);
+  third.click('trSend');
+  await settle();
+  assert.match(pageText(third), /다시 옮겨 견주지 못했어요\. 초안은 그대로 쓸 수 있어요/);
+  assert.match(pageText(third), /번역 초안 — 번역본이 아니에요/);
+  third.switchOwner('other-account');
+  await settle();
+  third.notifyStatus();
+  assert.doesNotMatch(pageText(third), /번역 초안 — 번역본이 아니에요/, '계정이 바뀌면 초안을 지운다');
+});

@@ -48,6 +48,7 @@ import { validateStudyDocument, STUDY_RESOURCE } from './study-shape.mjs';
  *     chooseRecovery(id)-> Promise<boolean>; document-sync.selectLocalDraft
  *     clearGuest()      -> boolean; explicit clear: persists a verified empty document under the new key as a tombstone (legacy raw untouched, never revived)
  *     studyRequest(operation, values) -> Promise<reply>; 같은 로그인으로 유학 준비 문서(path-study)를 요청한다(study-account.mjs가 쓴다)
+ *     translate(body)   -> Promise<reply>; 서류 번역 초안(translate · check). 계정 엔진의 requestTranslate(125초 기다림)를 쓴다
  *     dispose()
  *   No resolveLocal / forced overwrite / account deletion is exposed.
  */
@@ -627,10 +628,18 @@ export function createPathSession(options = {}) {
     return acc.request(operation, values, { resource: STUDY_RESOURCE });
   }
 
+  /** 서류 번역 초안 요청(translate · check). 같은 로그인 세션을 쓰고, 글은 어디에도 저장하지 않는다. */
+  async function translate(body) {
+    if (disposed) throw fault('PATH_SESSION_DISPOSED', 'disposed');
+    const acc = account || await startAccount();
+    if (!acc || typeof acc.requestTranslate !== 'function') throw fault('TRANSLATE_UNSUPPORTED', '번역 초안을 만들 수 없어요.');
+    return acc.requestTranslate(body);
+  }
+
   return Object.freeze({
     document: () => clone(currentDoc()),
     status: snapshot,
-    init, signIn, signOut, updateState, saveJob, removeJob, importGuest, studyRequest,
+    init, signIn, signOut, updateState, saveJob, removeJob, importGuest, studyRequest, translate,
     exportGuest, exportCurrent, confirmBackup, exportRemote, exportRecovery,
     retry, useRemote, chooseRecovery, clearGuest, dispose,
   });

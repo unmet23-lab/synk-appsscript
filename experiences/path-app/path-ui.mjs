@@ -1,6 +1,6 @@
 // PATH 3단계 「내 길」 화면. 상태를 받아 HTML 글을 내는 순수 함수만 둔다(창, DOM, 저장소를 쓰지 않는다).
 // 결: 시안 2판(.sx). 공개 CSP(style-src 'self')라 인라인 스타일을 쓰지 않는다(진행 줄은 <progress>).
-import { docsFor, visaFor } from './docs-data.mjs';
+import { docsFor, visaFor, translateKindOf } from './docs-data.mjs';
 import { programById } from './study-data.mjs';
 import { programImage } from './study-ui.mjs';
 import { renderDates } from './channel-ui.mjs';
@@ -66,7 +66,7 @@ function docRow(d, T, done) {
   const unclear = !d.unclear ? '' : visa
     ? `<div class="sx-unclear"><p><b>${T.L('KVAC에 확인할 것', 'Check with KVAC')}</b> ${esc(T.pick(d.unclear))}</p></div>`
     : `<div class="sx-unclear"><p><b>${T.L('요강에서 두 가지로 읽혀요', 'The guide can be read two ways')}</b> ${esc(T.pick(d.unclear))}</p><p>${T.L('대학에 먼저 물어보세요.', 'Ask the university first.')}</p></div>`;
-  return `<li class="sx-docrow"><div class="sx-doc-main"><b class="sx-doc-name">${esc(T.pick(d.name))}</b>${T.en ? `<small class="sx-doc-ko" lang="ko">${esc(d.name.ko)}</small>` : ''}${d.only ? `<p class="sx-doc-line"><b>${T.L('해당자', 'Who')}</b> ${esc(T.pick(d.only.cond))}</p>` : ''}${line(T.L('구하는 곳', 'Where to get it'), d.from)}${line(T.L('날짜 조건', 'Date rule'), d.when)}${d.note ? `<p class="sx-doc-note">${esc(T.pick(d.note))}</p>` : ''}${unclear}</div><button type="button" class="sx-btn2 sm sx-docbtn" aria-pressed="${on}" data-action="docToggle" data-id="${esc(d.id)}"><span class="sx-on">${ON}</span>${T.L('준비했어요', 'Ready')}<span class="sr-only"> ${esc(T.pick(d.name))}</span></button></li>`;
+  return `<li class="sx-docrow"><div class="sx-doc-main"><b class="sx-doc-name">${esc(T.pick(d.name))}</b>${T.en ? `<small class="sx-doc-ko" lang="ko">${esc(d.name.ko)}</small>` : ''}${d.only ? `<p class="sx-doc-line"><b>${T.L('해당자', 'Who')}</b> ${esc(T.pick(d.only.cond))}</p>` : ''}${line(T.L('구하는 곳', 'Where to get it'), d.from)}${line(T.L('날짜 조건', 'Date rule'), d.when)}${d.note ? `<p class="sx-doc-note">${esc(T.pick(d.note))}</p>` : ''}${unclear}${translateKindOf(d.id) ? `<button type="button" class="sx-link sx-trlink" data-action="trOpen" data-id="${esc(d.id)}">${T.L('몽골어 서류의 번역 초안 만들기', 'Make a translation draft of the Mongolian document')}<span class="sr-only"> · ${esc(T.pick(d.name))}</span>${GO}</button>` : ''}</div><button type="button" class="sx-btn2 sm sx-docbtn" aria-pressed="${on}" data-action="docToggle" data-id="${esc(d.id)}"><span class="sx-on">${ON}</span>${T.L('준비했어요', 'Ready')}<span class="sr-only"> ${esc(T.pick(d.name))}</span></button></li>`;
 }
 
 function stageBlock(stage, t, T, done, counts) {

@@ -67,8 +67,8 @@ export function createProductAccount({
       try { return JSON.parse(text); } catch { return null; }
     } finally { reader.releaseLock(); }
   }
-  async function send(url, token, body, { logout = false } = {}) {
-    const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 12000); controllers.add(abort);
+  async function send(url, token, body, { logout = false, timeoutMs = 12000 } = {}) {
+    const abort = new AbortController(), timer = setTimeout(() => abort.abort(), timeoutMs); controllers.add(abort);
     try {
       const response = await fetcher(url, { method: body === undefined ? 'GET' : 'POST', signal: abort.signal, credentials: 'omit', cache: 'no-store', redirect: 'error',
         headers: { apikey: config.supabasePublishableKey, Authorization: `Bearer ${token}`, 'X-SYNK-Product': 'platform', 'X-SYNK-Contract': '1', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
@@ -349,6 +349,33 @@ export function createProductAccount({
       return { ok: true, scope: data.scope, accountId: ownerId, enabled: data.enabled, hour: data.hour, minute: data.minute, timeZone: data.timeZone, publicKey: data.publicKey, ...(typeof data.deviceId === 'string' ? { deviceId: data.deviceId } : {}) };
     } catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }
+  // PATH 「서류 번역 초안」 — 웹 PATH 앱만 여는 고정 요청 하나(translate · check). 서버가 모델을 부르느라 1분 가까이 걸려
+  // 이 요청만 125초를 기다린다(서버 마감 110초 뒤). 다시 보내기는 401 토큰 갱신 한 번뿐이고 같은 몸(같은 request_id)이다.
+  async function requestTranslate(body) {
+    if (!pathApp || native) throw fault('TRANSLATE_UNSUPPORTED', '번역 초안은 PATH 웹에서만 만들 수 있어요.');
+    if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 번역 초안을 만들어 주세요.');
+    if (!body || typeof body !== 'object' || Array.isArray(body) || !['translate', 'check'].includes(body.action)) throw fault('INVALID_REQUEST', '번역 요청 형식이 맞지 않아요.');
+    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 65536) throw fault('INVALID_REQUEST', '번역할 글이 너무 길어요.');
+    const expected = epoch, ownerId = snapshot.accountId, wait = { timeoutMs: 125000 };
+    try {
+      guard(expected);
+      let token = session?.access_token;
+      if (!token) throw fault('AUTH_REQUIRED', 'SYNK ID로 다시 로그인해 주세요.');
+      if (session.expires_at <= now() + 30000) token = await refresh(expected);
+      guard(expected);
+      const url = `${config.accountApiUrl.replace(/\/$/, '')}/functions/v1/synk-path`;
+      let result = await send(url, token, body, wait); guard(expected);
+      if (result.response.status === 401 && session?.refresh_token) {
+        token = session.access_token !== token ? session.access_token : await refresh(expected); guard(expected);
+        result = await send(url, token, body, wait); guard(expected);
+      }
+      const data = result.data;
+      if (!result.response.ok || data?.ok !== true) throw fault(data?.error?.code || (result.response.status === 401 ? 'AUTH_REQUIRED' : 'TRANSLATE_UNAVAILABLE'), '번역 초안을 만들지 못했어요.', { status: result.response.status, retryable: false });
+      if (data.accountId !== ownerId) throw fault('ACCOUNT_CHANGED', '계정이 바뀌어 번역 초안을 보이지 않았어요.');
+      if (data.scope !== 'synk-path' || data.action !== body.action) throw fault('INVALID_RESPONSE', '번역 초안의 형식을 확인하지 못했어요.');
+      return data;
+    } catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
+  }
   function dispose() { disposed = true; epoch++; loginIntent++; session = null; pendingExchange = null; nativeIdentity = null; unsubscribe?.(); stopRequests(); }
-  return Object.freeze({ start, status, signIn, signOut, request, requestPush, dispose });
+  return Object.freeze({ start, status, signIn, signOut, request, requestPush, requestTranslate, dispose });
 }

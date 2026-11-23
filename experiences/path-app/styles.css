@@ -807,3 +807,49 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
   .sx-facts dd{font-size:14.5px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* ── 서류 번역 초안(2026-11-24): 몽골어 문장은 화면 글 아래 작은 줄, 「초안」 띠는 모델 글과 떨어진 버터색 띠, 줄은 원문 · 초안 · 역번역을 쌓은 카드 ── */
+.sx-mn{display:block;margin-top:2px;font-size:13px;font-weight:500;line-height:1.5;color:var(--gray)}
+.sx-trlink{margin-top:2px;font-size:14px;text-align:left}
+.sx-tr fieldset{min-width:0;margin:26px 0 0;padding:0;border:0}
+.sx-tr legend{margin:0 0 8px;padding:0;font-size:15.5px;font-weight:700}
+.sx-choice{display:inline-flex;align-items:flex-start;gap:10px;min-height:44px;margin:0 8px 8px 0;padding:10px 16px;border:1px solid var(--line-2);border-radius:14px;background:#fff;font-size:15px;font-weight:650;line-height:1.4;cursor:pointer}
+.sx-choice:has(input:checked){border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.sx-choice:has(input:focus-visible),.sx-check:has(input:focus-visible){outline:2px solid var(--lapis);outline-offset:2px}
+.sx-choice input,.sx-check input{flex:none;width:20px;height:20px;margin:1px 0 0;accent-color:var(--ink)}
+.sx-check{display:flex;align-items:flex-start;gap:12px;margin-top:12px;padding:14px 16px;border:1px solid var(--line-2);border-radius:14px;background:#fff;font-size:15px;font-weight:650;line-height:1.5;cursor:pointer}
+.sx-check:has(input:checked){border-color:var(--ink)}
+.sx-tr-how p{margin-top:6px}
+.sx-tr-text{display:block;box-sizing:border-box;width:100%;min-height:220px;padding:14px 16px;border:2px solid transparent;border-radius:18px;background:var(--soft);font:500 15.5px/1.6 var(--font);color:var(--ink);resize:vertical}
+.sx-tr-text:focus{border-color:var(--ink);background:#fff;outline:none}
+.sx-tr-text[aria-invalid=true]{border-color:var(--coral-ink)}
+.sx-err{margin:8px 4px 0;font-size:14px;font-weight:650;line-height:1.5;color:var(--coral-ink)}
+.sx-err .sx-mn{color:var(--coral-ink);opacity:.85}
+.sx-tr-consent{margin-top:28px}
+.sx-tr-consent .sx-h{display:block;margin-top:0}
+.sx-tr-items{margin:0;border-top:1px solid var(--line)}
+.sx-tr-item{display:grid;grid-template-columns:112px minmax(0,1fr);gap:4px 18px;padding:12px 0;border-bottom:1px solid var(--line)}
+.sx-tr-item dt{font:700 14.5px/1.6 var(--kr);color:var(--ink)}
+.sx-tr-item dd{margin:0;font-size:14.5px;line-height:1.65;color:var(--ink-2)}
+.sx-tr-item a{color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:4px}
+.sx-tr-band{margin-top:8px;padding:14px 16px;border:1px solid var(--butter);border-radius:14px;background:var(--butter-wash)}
+.sx-tr-band b{display:block;font:700 16.5px/1.4 var(--kr);color:var(--ink)}
+.sx-tr-band .sx-mn{color:var(--butter-deep)}
+.sx-tr-notices{margin:14px 0 0;padding:0 0 0 20px;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
+.sx-tr-notices li+li{margin-top:8px}
+.sx-tr-draft .sx-rules{margin-top:12px}
+.sx-tr-rows{margin:16px 0 0;padding:0;list-style:none}
+.sx-tr-row{position:relative;padding:14px 0 14px 40px;border-bottom:1px solid var(--line)}
+.sx-tr-n{position:absolute;top:14px;left:0;margin:0;font:500 13px/1.6 var(--mono);color:var(--gray)}
+.sx-tr-row dl{display:grid;gap:6px;margin:0}
+.sx-tr-row dl>div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:2px 14px}
+.sx-tr-row dt{font-size:12.5px;font-weight:650;line-height:1.7;color:var(--gray)}
+.sx-tr-row dd{margin:0;font-size:15px;line-height:1.55;color:var(--ink-2);overflow-wrap:anywhere}
+.sx-tr-row dd[lang=ko]{font-weight:650;color:var(--ink)}
+.sx-tr-why{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--butter-wash);list-style:none;font-size:14px;font-weight:600;line-height:1.5;color:var(--butter-deep)}
+.sx-tr-why li+li{margin-top:6px}
+.sx-tr-why .sx-mn{color:var(--butter-deep)}
+@media (max-width:560px){
+  .sx-tr-item,.sx-tr-row dl>div{grid-template-columns:minmax(0,1fr)}
+  .sx-tr-row{padding-left:30px}
+  .sx-choice{display:flex;margin-right:0}
+}
