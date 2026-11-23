@@ -8,7 +8,9 @@ import { createRequire } from 'node:module';
 const require_ = createRequire(import.meta.url);
 const PROJECT = 'synk-bake-unmet27';
 export const RULE = { action: { type: 'Delete' }, condition: { age: 14, matchesPrefix: ['company/workbackup/'] } };
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+// Compare by content, not key order (GCS may answer the same rule with its fields reordered).
+const canon = (v) => Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canon(v[k])])) : v;
+const same = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
 
 export function plan(bucket) {
   const rules = bucket.lifecycle?.rule || [];
