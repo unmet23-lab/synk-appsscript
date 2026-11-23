@@ -72,14 +72,19 @@ export function restoreTokens(text, slots, hidden) {
 }
 
 /* ── 숫자 대조 ── 원문의 몽골어 서수 · 로마 숫자를 숫자로 바꾼 뒤, 두 줄의 숫자 모음이 같은지 본다(차례 · 앞의 0은 보지 않는다). */
-const MN_ORDINALS = [
-  ['арван нэгдүгээр', 11], ['арван хоёрдугаар', 12], ['нэгдүгээр', 1], ['хоёрдугаар', 2], ['гуравдугаар', 3], ['дөрөвдүгээр', 4],
-  ['тавдугаар', 5], ['зургадугаар', 6], ['долдугаар', 7], ['наймдугаар', 8], ['есдүгээр', 9], ['аравдугаар', 10]
+const MN_UNIT_ORDINALS = [
+  ['нэгдүгээр', 1], ['хоёрдугаар', 2], ['гуравдугаар', 3], ['дөрөвдүгээр', 4], ['тавдугаар', 5], ['зургаадугаар', 6], ['зургадугаар', 6],
+  ['долоодугаар', 7], ['долдугаар', 7], ['наймдугаар', 8], ['есдүгээр', 9]
 ];
+const MN_TENS = { арван: 10, хорин: 20, гучин: 30, дөчин: 40, тавин: 50, жаран: 60, далан: 70, наян: 80, ерэн: 90 };
+const MN_TEN_ORDINALS = [['аравдугаар', 10], ['хорьдугаар', 20], ['гучдугаар', 30]];
+const MN_COMPOUND_RE = new RegExp(`(${Object.keys(MN_TENS).join('|')})\\s+(${MN_UNIT_ORDINALS.map(([w]) => w).join('|')})`, 'gu');
 const ROMAN = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12 };
 function numberize(text) {
   let s = String(text ?? '').replace(TOKEN_RE(), ' ').toLowerCase();
-  for (const [word, n] of MN_ORDINALS) s = s.split(word).join(` ${n} `);
+  // 「хорин гуравдугаар」(스물셋째)처럼 십 단위 + 서수를 먼저 합친다. 그 밖의 수 낱말은 숫자 대조에서 보지 않는다.
+  s = s.replace(MN_COMPOUND_RE, (m, tens, unit) => ` ${MN_TENS[tens] + MN_UNIT_ORDINALS.find(([w]) => w === unit)[1]} `);
+  for (const [word, n] of [...MN_TEN_ORDINALS, ...MN_UNIT_ORDINALS]) s = s.split(word).join(` ${n} `);
   return s.replace(/(?<![\p{L}\p{N}])(XII|XI|IX|X|VIII|VII|VI|IV|V|III|II|I)(?![\p{L}\p{N}])/giu, (m) => ` ${ROMAN[m.toUpperCase()]} `);
 }
 export function digitSet(text) {
@@ -97,14 +102,17 @@ export const stripOriginals = (text) => String(text ?? '').replace(/\s*[(（][^(
 /** 붙여 넣은 글을 줄 배열로. 빈 줄은 뺀다. 한도를 넘거나 몽골어가 아니면 { error }(던지지 않는다 — 화면이 안내한다). */
 export function splitPasted(text) {
   const raw = String(text ?? '').normalize('NFC').replace(/\r\n?/g, '\n');
-  const lines = raw.split('\n').map((l) => l.replace(new RegExp(HIDDEN_SRC, 'g'), '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  // 탭 · 세로 탭 · 쪽 넘김은 칸 사이 빈칸이다(성적표 표를 복사하면 칸이 탭으로 온다). 지우면 「72」와 「96」이 「7296」으로 붙는다.
+  const lines = raw.split('\n').map((l) => l.replace(/[\t\v\f]/g, ' ').replace(new RegExp(HIDDEN_SRC, 'g'), '').replace(/\s+/g, ' ').trim()).filter(Boolean);
   if (!lines.length) return { error: 'empty', lines: [] };
   if (lines.length > MAX_LINES) return { error: 'lines', lines };
-  if (lines.some((l) => chars(l) > MAX_LINE_CHARS)) return { error: 'line', lines };
-  const total = lines.reduce((n, l) => n + chars(l), 0);
+  // 길이와 언어는 서버가 받는 꼴(등록번호를 가린 줄)로 잰다. 여기서 통과한 글이 서버에서 400이 되지 않게.
+  const sent = maskLines(lines).lines;
+  if (sent.some((l) => chars(l) > MAX_LINE_CHARS)) return { error: 'line', lines };
+  const total = sent.reduce((n, l) => n + chars(l), 0);
   if (total > MAX_TOTAL_CHARS) return { error: 'total', lines };
   if (total < MIN_TOTAL_CHARS) return { error: 'short', lines };
-  if (!mongolianEnough(lines)) return { error: 'language', lines };
+  if (!mongolianEnough(sent)) return { error: 'language', lines };
   return { error: null, lines };
 }
 /** 글자(토큰 밖) 가운데 키릴의 몫이 40% 이상인가. 번역 창구를 일반 모델 창구로 쓰는 것을 줄인다. */
@@ -227,7 +235,7 @@ export function draftRows(source, drafts, checks, slots, hidden) {
     return {
       i, source: restoreTokens(source[i], slots, hidden),
       ko: idOk ? restoreTokens(d.ko, slots, hidden) : restoreTokens(d.ko, [], hidden),
-      back: c ? restoreTokens(c.back, slots, hidden) : null,
+      back: c ? restoreTokens(c.back, sameTokens(source[i], c.back) ? slots : [], hidden) : null,
       flag: d.flag, verdict: c ? c.verdict : null, reason: c ? c.reason : null, reasons
     };
   });

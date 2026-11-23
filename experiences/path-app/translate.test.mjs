@@ -37,6 +37,9 @@ test('숫자 대조: 앞의 0, 몽골어 서수, 로마 숫자, 차례를 견딘
   assert.ok(sameNumbers('15/06/2026', '2026년 6월 15일'));
   assert.ok(!sameNumbers('Математик 85', '수학 58'));
   assert.ok(!sameNumbers('Физик 92', '물리'));
+  assert.ok(sameNumbers('хорин гуравдугаар сургууль', '제23학교'), '십 단위 + 서수');
+  assert.ok(!sameNumbers('хорин гуравдугаар сургууль', '제3학교'));
+  assert.ok(sameNumbers('зургаадугаар сар, долоодугаар анги', '6월, 7학년'), '긴 모음 표기');
   assert.deepEqual([...digitSet(`${token(1)} 7`)], ['7'], '토큰 번호는 세지 않는다');
 });
 
@@ -56,6 +59,8 @@ test('붙여 넣기: 빈 줄 · 공백 정리, 한도와 언어', () => {
   assert.equal(splitPasted('Математик '.repeat(40)).error, 'line');
   assert.equal(splitPasted(Array.from({ length: 30 }, () => 'Монгол хэл ба уран зохиол '.repeat(6)).join('\n')).error, 'total');
   assert.ok(mongolianEnough(['Математик 85 A']));
+  assert.deepEqual(splitPasted('ДҮНГИЙН ХУУДАС\nМатематик\t72\t96\tА').lines, ['ДҮНГИЙН ХУУДАС', 'Математик 72 96 А'], '표의 탭은 빈칸이 된다');
+  assert.equal(splitPasted('Овог: Бат\nРД: УБ 01234567').error, 'short', '길이는 등록번호를 가린 꼴로 잰다(서버와 같게)');
 });
 
 test('요청 몸: 정한 꼴만, 동의 · 나이 · 보호자', () => {
@@ -114,4 +119,9 @@ test('답 검사와 화면 줄: 걸린 줄의 까닭, 토큰이 어긋난 줄은
   const noCheck = draftRows(masked, reply.lines, null, slots, '[가림]');
   assert.equal(noCheck[3].back, null);
   assert.deepEqual(noCheck[3].reasons, ['numbers']);
+  const two = maskLines(['РД: УБ01234567', 'Эцгийн РД: УБ76543210']);
+  const swapped = draftRows(two.lines, [{ i: 0, ko: `등록번호: ${token(1)}`, flag: 'none' }, { i: 1, ko: `부의 등록번호: ${token(2)}`, flag: 'none' }],
+    [{ i: 0, back: `РД: ${token(2)}`, verdict: 'same', reason: 'none' }, { i: 1, back: `Эцгийн РД: ${token(2)}`, verdict: 'same', reason: 'none' }], two.slots, '[가림]');
+  assert.equal(swapped[0].back, 'РД: [가림]', '역번역의 토큰이 원문과 어긋나면 다른 줄의 번호를 되돌리지 않는다');
+  assert.equal(swapped[1].back, 'Эцгийн РД: УБ76543210');
 });

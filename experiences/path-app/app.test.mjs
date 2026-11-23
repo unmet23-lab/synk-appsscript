@@ -992,8 +992,9 @@ function fakeTranslateServer({ translateStatus = 'done', checkStatus = 'done', c
       if (translateStatus !== 'done') return { ...head, status: translateStatus, remaining: translateStatus === 'limit' ? 0 : 8, lines: [] };
       return { ...head, status: 'done', lines: body.lines.map((line, i) => ({ i, ko: i === 0 ? '<script>alert(1)</script> 졸업증명서' : i === 1 ? '성명: 바타인 테무렌(Батын Тэмүүлэн)' : line.includes('⟦R1⟧') ? '등록번호: ⟦R1⟧' : '졸업 연도: 2026년 6월 16일', flag: i === 1 ? 'name' : 'none' })) };
     }
-    if (checkStatus !== 'done') return { ...head, status: checkStatus, lines: [] };
-    return { ...head, status: 'done', compared, lines: body.lines.map((_, i) => ({ i, back: i === 3 ? 'Төгссөн он: 2026 оны 6 сарын 16' : 'Тест мөр', verdict: i === 3 ? 'differs' : 'same', reason: i === 3 ? 'meaning' : 'none' })) };
+    if (checkStatus !== 'done') return { ...head, status: checkStatus, remaining: 3, lines: [] };
+    // 대조 원장은 따로 센다: 화면의 「오늘 남은 장」(초안 8)이 이 3으로 바뀌면 안 된다.
+    return { ...head, status: 'done', remaining: 3, compared, lines: body.lines.map((_, i) => ({ i, back: i === 3 ? 'Төгссөн он: 2026 оны 6 сарын 16' : 'Тест мөр', verdict: i === 3 ? 'differs' : 'same', reason: i === 3 ? 'meaning' : 'none' })) };
   };
   return { server, calls };
 }

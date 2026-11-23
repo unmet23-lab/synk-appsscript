@@ -666,7 +666,7 @@ async function trRunCheck(tr) {
     reply = validateCheckReply(await session.translate(body), tr.sent.lines.length);
   } catch (err) { failed = err; }
   if (trStale(tr, seq)) return;
-  if (reply && reply.remaining !== null) tr.remaining = reply.remaining;
+  // 대조는 원장의 다른 연산(path.translate.check)이라 남은 장(초안 연산)을 바꾸지 않는다.
   if (failed || reply.status !== 'done') { tr.check = 'failed'; render(false); say(accL('다시 옮겨 견주지 못했어요. 초안은 그대로 쓸 수 있어요.', 'The back-translation check did not finish. You can still use the draft.')); return; }
   Object.assign(tr, { check: 'done', compared: reply.compared, rows: draftRows(tr.sent.lines, tr.drafts, reply.lines, tr.sent.slots, trHidden()) });
   render(false);
