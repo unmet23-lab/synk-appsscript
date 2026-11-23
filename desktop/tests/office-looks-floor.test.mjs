@@ -70,6 +70,19 @@ test('a pick the user made (a new skinSeq) cross-fades, and the fade ends after 
   assert.deepEqual(h.floor.skin(), { from: 'walnut', to: 'walnut' });
 });
 
+test('최종 검수 F3: a scene with the same skinSeq that comes during the cross-fade does not cut it short', () => {
+  const h = setup();
+  h.floor.setScene(scene());
+  h.floor.show(true);
+  h.floor.setScene(scene({ skin: 'walnut', skinSeq: 1 }));
+  const busier = scene({ skin: 'walnut', skinSeq: 1 });
+  busier.zones[1].staff[0].status = 'working';
+  h.floor.setScene(busier);
+  assert.deepEqual(h.floor.skin(), { from: 'black', to: 'walnut' }, 'still crossing after a staff change');
+  h.floor.setScene(scene({ skin: 'black', skinSeq: 1 }));
+  assert.deepEqual(h.floor.skin(), { from: 'black', to: 'black' }, 'a board that says another skin wins at once');
+});
+
 test('with reduced motion a pick switches at once', () => {
   const h = setup({ still: true });
   h.floor.setScene(scene());

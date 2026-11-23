@@ -605,7 +605,9 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       layout = floorLayout(s, layout);
       // 스킨은 손님이 고른 때(skinSeq가 바뀜)만 겹쳐 넘어가고, 그 밖에는 바로 그 스킨이다(설계 검토 10)
       const skin = Object.hasOwn(SKIN, s.skin) ? s.skin : 'black';
-      if (skinSeq === null || s.skinSeq === skinSeq || reduced() || !shown) { skinFrom = skinTo = skin; skinT0 = -1e9; }
+      // 넘어가는 중에 같은 skinSeq의 다른 장면(직원 상태 바뀜)이 와도 넘어가기를 끊지 않는다. 스킨까지 다르면 판을 따라 바로 바꾼다(최종 검수 F3)
+      if (skinSeq === null || reduced() || !shown) { skinFrom = skinTo = skin; skinT0 = -1e9; }
+      else if (s.skinSeq === skinSeq) { if (skin !== skinTo) { skinFrom = skinTo = skin; skinT0 = -1e9; } }
       else if (skin !== skinTo) { skinFrom = skinTo; skinTo = skin; skinT0 = clock(); }
       skinSeq = s.skinSeq ?? 0;
       const rk = layout.map(z => [z.rect.x0, z.rect.x1, z.rect.z0, z.rect.z1].map(v => v.toFixed(2)).join(',')).join(';');

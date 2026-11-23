@@ -210,6 +210,20 @@ test('검수 A2: when the picked seat goes away and the pick moves on by itself,
   assert.equal(fieldOf(), 'lname-0-d:ddev:0');
 });
 
+test('최종 검수 F1: once the picked seat empties and the pick moves on, a new session in that seat does not take the pick back', () => {
+  let snap = snapOf();
+  const room = createOfficeRoom({ api: {}, snapshot: () => snap, reread() {}, changed() {} });
+  const field = () => room.scene(snap, NOW, null).rows.find(r => r.key === 'look').more.find(m => m[0] === 'fld')[3];
+  field(); // 그린 때로 자리를 센다
+  return room.handle({ key: 'look', act: 'look-pick', arg: 'd:dmkt:1' }).then(() => {
+    assert.equal(field(), '비우면 「마케팅부 2」 · 12자까지');
+    snap = snapOf({ state: stateOf(EVENTS.filter(e => e.sessionId !== 'sess-mkt-0002')) });
+    assert.equal(field(), '비우면 「마케팅부 1」 · 12자까지');
+    snap = snapOf({ state: stateOf([...EVENTS.filter(e => e.sessionId !== 'sess-mkt-0002'), work('sess-mkt-0009', MKT, 5)]) });
+    assert.equal(field(), '비우면 「마케팅부 1」 · 12자까지', 'the pick stays where it moved to');
+  });
+});
+
 test('the picked staff is lit only while the row is open; leaving the room or a reset forgets it', async () => {
   const h = harness();
   await h.room.handle({ key: 'look', act: 'look-pick', arg: 'd:ddev:0' });

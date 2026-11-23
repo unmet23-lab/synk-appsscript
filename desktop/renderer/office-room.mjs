@@ -392,7 +392,7 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
   const readAt = Number(snap.readAt);
   const foot = [Number.isFinite(readAt) ? (now - readAt < 2 * 60e3 ? '방금 읽었습니다.' : hm(readAt) + '에 읽었습니다.') : '', '이 방이 열려 있는 동안 15초마다 기록을 살핍니다.', ui.roomNote || ''].filter(Boolean).join(' ');
   return {
-    visible: true, alert: list.some(v => v.alert), say: head.say, then: head.then, hint: head.hint, rows, foot,
+    visible: true, alert: list.some(v => v.alert), say: head.say, then: head.then, hint: head.hint, rows, foot, lookPick: pick,
     floor: officeFloorScene({ departments, list, cap, view, viewSeq: ui.viewSeq || 0, skin, skinSeq: ui.skinSeq || 0, pick, picking: !!ui.lookOpen }),
     sessions: list.length,
   };
@@ -624,6 +624,8 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
       seenAt = now;
       settle(snap);
       const room = officeRoom(snap, st, now, { subs });
+      // 고른 직원의 자리가 비어 다른 직원으로 넘어갔으면 그 직원을 고른 것으로 둔다. 옛 자리에 새 세션이 서도 손님이 누르지 않은 고르기로 돌아가지 않는다(최종 검수 F1)
+      if (room.visible && st.pick && room.lookPick !== st.pick) st.pick = room.lookPick;
       // 기능 줄(사업계획서 읽기)은 부서 줄과 작업 화면에만 보이고 일 맡기기 카드에는 섞지 않는다(코드 검수 P2-5)
       const plain = room.visible && snap.tasking && Array.isArray(snap.tasking.tasks) ? { ...snap.tasking, tasks: snap.tasking.tasks.filter(t => !t.feature) } : (room.visible ? snap.tasking : null);
       const tasking = tasks.scene(plain, snap?.departments);

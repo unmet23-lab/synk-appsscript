@@ -55,7 +55,13 @@ module.exports = async function checkOfficeLooks({ open, boot, signedIn, subsNon
   const s2 = await saved(w), r2 = await lookRow(w);
   check('looks: hats go to the seat that was picked, one by one', JSON.stringify(s2?.looks) === JSON.stringify({ 'd:qmkt:0': { hat: 'beanie' }, 'd:qdev:0': { hat: 'gat' }, 'lobby:0': { hat: 'sprout' }, 'd:qmkt:1': { hat: 'phones' } }) && r2.mid === '호두나무 서재 · 모자 쓴 직원 넷', { looks: s2?.looks, r2 });
   check('looks: the hat line follows the picked staff and the say line names them', r2.picks.includes('모자:헤드폰') && r2.picks.includes('마케팅부:2번') && r2.live === '마케팅부 2에게 헤드폰을 씌웠습니다.', r2);
-  await capture(w, 'looks-row-open');
+  // 연 줄의 안쪽이 창 안에 들게 줄 머리를 위로 올려 찍는다. 좁은 창(420)에서도 찍는다(최종 검수 F2)
+  // 방(스크롤하는 조상)을 직접 내린다. scrollIntoView는 1440 배치에서 방을 내리지 않았다
+  const rowShot = async name => { await w.js(`(()=>{const b=document.querySelector(${JSON.stringify(LOOK)});let p=b?.parentElement;while(p&&!(p.scrollHeight>p.clientHeight+4&&/(auto|scroll)/.test(getComputedStyle(p).overflowY)))p=p.parentElement;const s=p||document.scrollingElement;s.scrollTop+=b.getBoundingClientRect().top-s.getBoundingClientRect().top-60;return s.scrollTop;})()`); await wait(300); await capture(w, name); };
+  await rowShot('looks-row-open-1440x900');
+  w.win.setContentSize(420, 760); for (let i = 0; i < 40 && (await w.js('innerWidth')) !== 420; i++) await wait(50); await wait(520);
+  await rowShot('looks-row-open-420x760');
+  w.win.setContentSize(1440, 900); await wait(400);
 
   // 이름: 마케팅부 1번을 「서진」으로. 줄의 칸은 비어 있고 처음 이름은 작은 글이다
   await press(w, LOOK + ' + .more [data-pv="d:qmkt:0"]'); await wait(700);
