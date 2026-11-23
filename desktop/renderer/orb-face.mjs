@@ -1683,7 +1683,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   /* 방을 닫으면 있던 방으로 돌아가고, 초점은 방을 연 자리로 간다. 그 자리가 보이지 않으면 구 단추다 */
   function closeAside({ focusBack = true } = {}) {
     if (!aside) return false;
-    if (asideParent && aside !== asideParent.name) { const p = asideParent; asideParent = null; openAside(p.name, { back: { key: p.key, act: p.act } }); if (aside === p.name) return true; }
+    // 연 방으로 돌아가는 것은 사람이 「돌아가기」 · Esc로 닫을 때뿐이다. 조용히 닫으면(focusBack 거짓) 그대로 닫는다(카본 A2)
+    if (focusBack && asideParent && aside !== asideParent.name) { const p = asideParent; asideParent = null; openAside(p.name, { back: { key: p.key, act: p.act } }); if (aside === p.name) return true; }
     asideParent = null;
     aside = null;
     rooms.close();

@@ -78,15 +78,18 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     const api = dev.pcProfile;
     if (!api) return true;
     if (st.busy) { if (key) refuseBusy(key); return true; }
+    // 끝난 뒤 계정이 바뀌었거나(reset) 판을 닫았으면 그 뒤에 시작된 일과 다른 방의 알림을 건드리지 않는다(카본 A3)
+    const my = gen, here = () => my === gen && current === 'pc';
     if (act === 'pc-again') {
       st.busy = 'pc:pc-again'; st.roomNote = ''; changed();
       await pcRead({ again: true });
-      st.busy = null; changed();
+      if (my === gen && st.busy === 'pc:pc-again') { st.busy = null; changed(); }
       return true;
     }
     if (act === 'pc-storage') {
       let res = null;
       try { res = await api.openStorage(); } catch { res = null; }
+      if (!here()) return true;
       note(key, res?.ok === true ? 'Windows 설정을 열었습니다. 「새 콘텐츠를 저장할 위치」에서 고릅니다.' : '설정을 열지 못했습니다. Windows 설정의 시스템 → 저장소 → 고급 저장소 설정 → 「새 콘텐츠를 저장할 위치」에서 바꿉니다.');
       changed();
       return true;

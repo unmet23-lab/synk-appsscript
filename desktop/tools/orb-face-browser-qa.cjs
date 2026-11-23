@@ -771,10 +771,12 @@ if(!process.versions.electron){
           await w.js(`document.querySelector(${rowSel(PR,'disk')}).click()`);await wait(500);
           const disk=await w.js(`(()=>{const m=document.querySelector(${rowSel(PR,'disk')}).nextElementSibling;return {gauges:[...m.querySelectorAll('.gauge')].length,notes:[...m.querySelectorAll('.more-note')].map(x=>x.textContent),btn:[...m.querySelectorAll('[data-room-act]')].map(b=>b.textContent+'|'+b.dataset.roomAct)};})()`);
           check('pc the storage row shows each drive as a gauge, names the hidden drives, does not measure USB, and offers the Windows save-locations page',disk.gauges===2&&disk.notes.some(n=>n.includes('G: 드라이브는 Google Drive 같은 가상 드라이브로 보여 뺐습니다.')&&n.includes('E: 드라이브는 32GB보다 작아'))&&disk.notes.includes('USB 메모리 · SD 카드 1개는 재지 않습니다.')&&disk.notes.some(n=>n.includes('새 프로젝트와 다운로드는 D:에 두면 C:가 덜 찹니다'))&&JSON.stringify(disk.btn)==='["Windows 저장 위치 열기|pc-storage"]',disk);
-          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`document.querySelector(${rowSel(PR,'disk')}).scrollIntoView({block:'start'})`);await wait(150);await capture(w,`pc-board-disk-${W}`);}
+          // 크기마다 찍고, 그 크기에서 펼친 줄이 창보다 넓어지지 않는지 잰다(카본 A5)
+          const wide=[];
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`document.querySelector(${rowSel(PR,'disk')}).scrollIntoView({block:'start'})`);await wait(150);await capture(w,`pc-board-disk-${W}`);
+            if(await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=pc]');return document.documentElement.scrollWidth>innerWidth+1||[...r.querySelectorAll('.more-in')].some(x=>x.scrollWidth>x.clientWidth+1);})()"))wide.push(W);}
           w.win.setContentSize(1440,900);await wait(300);
-          const wide=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=pc]');return document.documentElement.scrollWidth>innerWidth+1||[...r.querySelectorAll('.more-in')].some(x=>x.scrollWidth>x.clientWidth+1);})()");
-          check('pc nothing in the opened storage row runs wider than the window',!wide,{wide});
+          check('pc nothing in the opened storage row runs wider than the window at any size',!wide.length,{wide});
           await w.js(`(()=>{const b=[...document.querySelector(${rowSel(PR,'disk')}).nextElementSibling.querySelectorAll('[data-room-act]')].find(x=>x.dataset.roomAct==='pc-storage');b.focus();b.click();return true;})()`);await wait(500);
           const live=await w.js(`(document.querySelector(${rowSel(PR,'disk')}).nextElementSibling.querySelector('[role=status]')||{}).textContent||''`);
           check('pc the button asks the main process to open the Windows page and says so in the row',(await pcCalls()).includes('pc-storage')&&live==='Windows 설정을 열었습니다. 「새 콘텐츠를 저장할 위치」에서 고릅니다.',{live});

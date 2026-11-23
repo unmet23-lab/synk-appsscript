@@ -43,7 +43,17 @@ test('the two top sentences name the PC and its drives (설계 5.2)', () => {
   assert.deepEqual(pcSummary(SAMPLES.light), { say: '이 PC는 논리 코어 4개 · 메모리 8GB 노트북입니다.', drives: '드라이브 하나(C: 256GB)를 씁니다.' });
   assert.equal(pcSummary(SAMPLES.five).drives, '드라이브 넷(C: 953GB, D: 1.9TB, E: 476GB, F: 238GB)을 씁니다.');
   assert.equal(pcSummary(profile({ drives: null })).drives, '드라이브 목록을 읽지 못했습니다.');
-  assert.equal(pcSummary(profile({ cpu: { cores: null } })).say, '이 PC의 프로세서와 메모리를 읽지 못했습니다.');
+  // 한쪽만 읽혔으면 그쪽을 쓴다(카본 A4)
+  assert.equal(pcSummary(profile({ cpu: { cores: null } })).say, '이 PC는 메모리 32GB 노트북입니다. 프로세서는 읽지 못했습니다.');
+  assert.equal(pcSummary(profile({ mem: { totalGb: null } })).say, '이 PC는 논리 코어 16개 노트북입니다. 메모리는 읽지 못했습니다.');
+  assert.equal(pcSummary(profile({ cpu: { cores: null }, mem: { totalGb: null } })).say, '이 PC의 프로세서와 메모리를 읽지 못했습니다.');
+  // 펼치는 줄에는 늘 내용이 있다(카본 A1)
+  for (const p of [profile(), profile({ os: null }), profile({ os: { build: 26100, version: 'Windows 11 24H2', arm: true } })]) {
+    for (const r of pcRoom(snap(p), {}, NOW).rows) assert.ok(r.more.some(m => m[0] !== 'live'), r.key);
+  }
+  // 다른 방의 일이 도는 동안 「다시 진단」은 흐리고, 「다시 재는 중」은 쓰지 않는다(카본 A3)
+  const other = pcRoom(snap(SAMPLES.twoDrive), { busy: 'settings:diag-copy' }, NOW);
+  assert.deepEqual([other.act[2], /다시 재는 중/.test(other.foot)], ['off', false]);
 });
 
 test('the light laptop: office takes two because of memory, no graphics memory value, Claude Code and Codex are missing', () => {
@@ -168,6 +178,15 @@ test('the rooms controller: opening the board reads, shows a change once and tel
   await new Promise(r => setTimeout(r, 0)); await new Promise(r => setTimeout(r, 0));
   assert.doesNotMatch(rooms.scene({ aside: 'pc' }).pc.then, /바뀌었습니다/, 'seen once, not again');
   assert.ok(painted > 0);
+  // 판을 닫은 뒤에 끝난 저장 위치 열기는 알림을 남기지 않는다(카본 A3)
+  let release;
+  pcProfile.openStorage = () => new Promise(r => { release = () => r({ ok: true }); });
+  const late = rooms.handle({ room: 'pc', key: 'disk', act: 'pc-storage' });
+  rooms.close();
+  release(); await late;
+  rooms.open('pc');
+  await new Promise(r => setTimeout(r, 0)); await new Promise(r => setTimeout(r, 0));
+  assert.equal(rooms.scene({ aside: 'pc' }).pc.rows.find(r => r.key === 'disk').more.find(m => m[0] === 'live')[1], '');
   // 설정 방은 열 때 PC 값을 읽어 줄을 세운다. 돌아오면 그 방을 연 단추에 초점을 둔다
   rooms.close();
   rooms.open('settings', { back: { key: 'pc', act: 'pc-open' } });

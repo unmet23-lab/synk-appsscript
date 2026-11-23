@@ -24,7 +24,10 @@ const shownDrives = p => (Array.isArray(p?.drives?.shown) ? p.drives.shown : [])
 /* 맨 위 두 문장(설계 5.2): 「이 PC는 논리 코어 24개 · 메모리 64GB 노트북입니다.」 「드라이브 둘(C: 953GB, D: 1.9TB)을 씁니다.」 */
 export function pcSummary(p) {
   const cores = coresOf(p), mem = memOf(p), drives = shownDrives(p);
-  const say = cores && mem != null ? `이 PC는 논리 코어 ${cores}개 · 메모리 ${mem}GB ${PC_KIND(p)}입니다.` : '이 PC의 프로세서와 메모리를 읽지 못했습니다.';
+  // 한쪽만 읽혔으면 읽힌 쪽을 쓰고 못 읽은 쪽만 말한다. 아래 「처리」 줄과 어긋나지 않게(카본 A4)
+  const say = cores && mem != null ? `이 PC는 논리 코어 ${cores}개 · 메모리 ${mem}GB ${PC_KIND(p)}입니다.`
+    : cores ? `이 PC는 논리 코어 ${cores}개 ${PC_KIND(p)}입니다. 메모리는 읽지 못했습니다.`
+      : mem != null ? `이 PC는 메모리 ${mem}GB ${PC_KIND(p)}입니다. 프로세서는 읽지 못했습니다.` : '이 PC의 프로세서와 메모리를 읽지 못했습니다.';
   if (!drives.length) return { say, drives: p?.drives ? '판에 세울 드라이브를 찾지 못했습니다.' : '드라이브 목록을 읽지 못했습니다.' };
   const w = countWord(drives.length);
   return { say, drives: `드라이브 ${w}(${drives.map(d => `${d.letter}: ${sizeWords(d.size)}`).join(', ')})${particle(w, ['을', '를'])} 씁니다.` };
@@ -127,7 +130,9 @@ function screenRow(p) {
 function osRow(p) {
   const o = p.os;
   const mid = o ? `${o.version}${o.arm ? ' · ARM' : ''}` : '읽지 못했습니다';
-  const more = o?.arm ? [['note', 'ARM PC라 SYNK 앱과 업무 백업 엔진이 에뮬레이션으로 돕니다. 느릴 수 있습니다.']] : [];
+  // 펼치는 줄에는 늘 내용이 있다(카본 A1)
+  const more = [['note', !o ? '운영체제 판을 읽지 못했습니다. PowerShell이 막힌 PC에서는 읽지 못합니다.'
+    : o.arm ? 'ARM PC라 SYNK 앱과 업무 백업 엔진이 에뮬레이션으로 돕니다. 느릴 수 있습니다.' : 'SYNK 앱과 업무 백업 엔진은 64비트 Windows 10 · 11에서 돕니다.']];
   return { key: 'os', nm: '운영체제', mid, val: '', when: '', label: rowLabel(['운영체제', mid]), more };
 }
 
@@ -149,8 +154,9 @@ function toolsRow(p) {
 
 /* 판 하나(aside 'pc'). snap: 본체 pcProfile.snapshot()의 답 { ok, available, reading, profile, changed }. st: 방 상태(busy · notes) */
 export function pcRoom(snap = null, st = {}, now = Date.now()) {
+  // 다른 방의 일이 도는 동안에도 「다시 진단」은 흐리게 둔다. 「다시 재는 중」은 이 판의 일일 때만 쓴다(카본 A3)
   const busy = st.busy === 'pc:pc-again' || snap?.reading === true;
-  const act = ['다시 진단', 'pc-again', flags(busy && 'off')];
+  const act = ['다시 진단', 'pc-again', flags((busy || !!st.busy) && 'off')];
   if (snap && snap.ok === true && snap.available === false) return { say: '이 PC는 아직 진단하지 않습니다.', then: 'Windows PC에서만 잽니다.', rows: [], foot: '', act: null };
   const p = snap?.ok === true ? snap.profile : null;
   if (!p) {
