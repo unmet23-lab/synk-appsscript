@@ -210,3 +210,62 @@ test('사람이 넣은 「안 됨」은 같은 공고의 자동 「됨」보다 
   assert.strictEqual(자격.판정찾기(판정, '솔데스크 SAP 온라인 과정 영상 홍보 공모전').status, '안 됨');
   assert.strictEqual(자격.판정찾기(판정, '다른 공모전'), null);
 });
+// 11-23 SHOWVY NEXT는 「SHOWVY 회원」만이라 「안 됨」이 되어 알림에서 빠졌다. 가입은 Google 로그인과 만 18세 확인뿐이라 유호님이 같은 날 출품했다.
+// 누구나 무료로 가입하는 플랫폼의 회원 조건은 제한으로 세지 않고, 수강생처럼 실제로 소속이 필요한 조건만 「안 됨」이다.
+const 쇼비문구 = '참가 자격 AI로 만든 드라마 시리즈가 있는 만 18세 이상 SHOWVY 회원이라면 누구나 참가할 수 있습니다. 참가비와 인원 제한은 없습니다.';
+const 솔데스크문구 = '대상: 솔데스크 수강생 누구나!';
+const 소속조건 = { 만나이: 40, 사는곳: ['서울'], 학생: false, 직장인: false, 사업자: true, 법인: false, 가지않는곳: [] };
+
+test('무료로 가입하는 플랫폼 회원은 됨, 수강생은 안 됨, 가를 수 없으면 확인 필요(11-23 SHOWVY · 솔데스크)', () => {
+  const 쇼비 = { ...빈제한, 소속만: 'SHOWVY 회원', 최소나이: 18 };
+  const 솔데스크 = { ...빈제한, 소속만: '솔데스크 수강생' };
+  const 됨 = 자격.판정하기({ ...쇼비, 소속종류: '무료가입' }, 소속조건);
+  assert.strictEqual(됨.status, '됨');
+  assert.match(됨.reason, /SHOWVY 회원 가입이 필요하다/);
+  assert.deepStrictEqual(자격.판정하기({ ...솔데스크, 소속종류: '소속' }, 소속조건), { status: '안 됨', reason: '솔데스크 수강생만 응모할 수 있다' });
+  assert.strictEqual(자격.판정하기({ ...쇼비, 소속종류: '모름' }, 소속조건).status, '확인 필요');
+  assert.strictEqual(자격.판정하기({ ...쇼비, 소속종류: '무료가입', 최소나이: 50 }, 소속조건).status, '안 됨', '무료 가입이어도 나이 제한은 그대로다');
+  // 소속종류가 없는 옛 판정은 낱말로 가른다. 회원은 확인 필요, 수강생 · 단체 소속 · 유료 계정은 안 됨.
+  assert.strictEqual(자격.판정하기(쇼비, 소속조건).status, '확인 필요');
+  assert.strictEqual(자격.판정하기(솔데스크, 소속조건).status, '안 됨');
+  assert.strictEqual(자격.판정하기({ ...빈제한, 소속만: '경기도한의사회' }, 소속조건).status, '안 됨');
+  assert.strictEqual(자격.판정하기({ ...빈제한, 소속만: 'paid ZenCreator account' }, 소속조건).status, '안 됨');
+});
+
+test('저장된 SHOWVY 「안 됨」은 다시 맞대면 확인 필요가 되고, 소속종류는 카본 답에서 받는다', () => {
+  const 판정 = { items: {
+    showvy: { title: 'SHOWVY NEXT', status: '안 됨', reason: 'SHOWVY 회원만 응모할 수 있다', by: '카본', quote: 쇼비문구, 제한: { ...빈제한, 소속만: 'SHOWVY 회원', 최소나이: 18 } },
+  } };
+  assert.strictEqual(자격.다시판정(판정, 소속조건), 1);
+  assert.strictEqual(판정.items.showvy.status, '확인 필요');
+  // 신청자 소속에 들면 다음 맞댐에서 됨이 된다(확인 필요도 다시 맞댄다).
+  assert.strictEqual(자격.다시판정(판정, { ...소속조건, 소속: ['SHOWVY'] }), 1);
+  assert.strictEqual(판정.items.showvy.status, '됨');
+  const 답 = (원문, 소속만, 소속종류) => 자격.답읽기({ quote: 원문, 누구나: false, 지역: [], 소속만, 소속종류, 최소나이: -1, 최대나이: -1 }, 원문).제한;
+  assert.strictEqual(답(쇼비문구, 'SHOWVY 회원', '무료가입').소속종류, '무료가입');
+  assert.strictEqual(답(솔데스크문구, '솔데스크 수강생', '소속').소속종류, '소속');
+  assert.strictEqual(답(솔데스크문구, '솔데스크 수강생', '아무거나').소속종류, '', '모르는 값은 버린다');
+});
+
+test('자격확인은 두 문구의 카본 답을 받아 SHOWVY는 됨, 솔데스크는 안 됨으로 쌓는다', async () => {
+  const dir = 폴더();
+  fs.writeFileSync(path.join(dir, '신청자조건.json'), JSON.stringify({ schema: 'synk-applicant-v1', ...소속조건 }));
+  const 글 = { 'https://showvy.example.com/next': `<p>${쇼비문구}</p>`, 'https://soldesk.example.co.kr/n': `<p>${솔데스크문구}</p>` };
+  const 물은글 = [];
+  const carbon = async ({ prompt, schema }) => {
+    물은글.push(prompt);
+    assert.ok(schema.properties.cases.items.required.includes('소속종류'));
+    const cases = [];
+    if (prompt.includes('SHOWVY')) cases.push({ id: 자격.열쇠('SHOWVY NEXT AI 숏드라마 공모전'), quote: 'SHOWVY 회원이라면 누구나 참가할 수 있습니다.', 누구나: false, 지역: [], 학생만: false, 직장인만: false, 단체만: false, 소속만: 'SHOWVY 회원', 소속종류: '무료가입', 최소나이: 18, 최대나이: -1, 현장지역: [] });
+    if (prompt.includes('솔데스크')) cases.push({ id: 자격.열쇠('솔데스크 영상 홍보 공모전'), quote: 솔데스크문구, 누구나: false, 지역: [], 학생만: false, 직장인만: false, 단체만: false, 소속만: '솔데스크 수강생', 소속종류: '소속', 최소나이: -1, 최대나이: -1, 현장지역: [] });
+    return { selectedModel: 'gemini-4-carbon-high', text: JSON.stringify({ cases }) };
+  };
+  await 자격.자격확인(dir, [
+    { 제목: 'SHOWVY NEXT AI 숏드라마 공모전', 주소: 'https://showvy.example.com/next' },
+    { 제목: '솔데스크 영상 홍보 공모전', 주소: 'https://soldesk.example.co.kr/n' },
+  ], { fetchPage: async u => ({ 됨: true, 글: 글[u] }), carbon, budgetMs: 600000 });
+  const 판정 = 자격.판정읽기(dir);
+  assert.strictEqual(자격.판정찾기(판정, 'SHOWVY NEXT AI 숏드라마 공모전').status, '됨');
+  assert.strictEqual(자격.판정찾기(판정, '솔데스크 영상 홍보 공모전').status, '안 됨');
+  assert.ok(물은글.every(p => p.includes('무료가입') && p.includes('OO 수강생 누구나')), '지시문이 무료 가입 회원과 수강생을 가른다');
+});
