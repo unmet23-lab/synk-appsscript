@@ -112,7 +112,7 @@ test('내 사진 칸: 손님 · 다른 주인은 서버에 묻지 않고, 사진
  const app=read('experiences/seoul-arrival/app.mjs').replace(/\r\n/g,'\n');
  assert.match(app,/function meTile\(\)\{\n  if\(!PHOTO\.on\)return '';/);
  assert.match(app,/rail\.innerHTML=meTile\(\)\+order\.map/);
- assert.match(app,/function saveLook\(lk\)\{save\(lk\?\.mine\?\{look:null,photo:'me'\}:\{look:lk\?lk\.id:null,photo:null\}\);\}/);
+ assert.match(app,/function saveLook\(lk\)\{save\(lk\?\.mine\?\{look:null,photo:'me'\}:\{look:lk\?lk\.id:null,photo:null\}\);schedulePhoto\(\);\}/);
  assert.match(app,/const lookOf=a=>a\?\.photo==='me'\?ME:a\?\.look\?lookById\(a\.look\):null;/);
  // 틀의 CSP는 사진 저장소 한 곳만 더 연다(와일드카드 · https: 전체를 열지 않는다)
  const csp=read('experiences/seoul-arrival/index.html').match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
