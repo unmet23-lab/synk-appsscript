@@ -4,20 +4,8 @@
     "sha256": "6708b9296df9c0e019715a548c55979b36d8fb42bd88536f52c660d7e9b113cb"
   },
   "reserve/app.js": {
-    "bytes": 16284,
-    "sha256": "8a234fc74d4f1f6d1fdf8f7d76887e3786fd56c89810d4bf6864b5daaafde69f"
-  },
-  "reserve/art/stage-land.webp": {
-    "bytes": 131726,
-    "sha256": "37a4e7f44d4820d9eb695f90618d81982ea2c477a2ecc96df281b3e1d3850fa5"
-  },
-  "reserve/art/stage-port.webp": {
-    "bytes": 103208,
-    "sha256": "699c0896d51c5a54904584e302a30c56c0c60f781497bdb893a6492d39e8c6dd"
-  },
-  "reserve/assets/reserve-inter-400.woff2": {
-    "bytes": 28652,
-    "sha256": "1cf136de11bccd8339fa7209856b98c65b4cfb5257e2cab90f808f6c65f982f7"
+    "bytes": 16821,
+    "sha256": "9ddc59be249161aa2a3e4d1191c3b24d32a6bd441f38a53c29cc1c51a06c9275"
   },
   "reserve/assets/reserve-inter-500.woff2": {
     "bytes": 29560,
@@ -32,107 +20,95 @@
     "sha256": "e6e5d743add85f189b9986a902ed912d5f34a876b7c136365ffae8da73254821"
   },
   "reserve/assets/reserve-sans.woff2": {
-    "bytes": 99896,
-    "sha256": "3e50b04de3c1a123fff5f14d379288488628c971ab519b733e13fe8a0852e60f"
+    "bytes": 99912,
+    "sha256": "c11436da932bcb73e6997db85b0078c0432428b5b90554723148652dc9206597"
   },
   "reserve/copy.js": {
-    "bytes": 21988,
-    "sha256": "017be6e37538718cd63ac7542c99b16d492413087bf5338a11312c5bd979f11c"
+    "bytes": 20429,
+    "sha256": "161543eaaaea4b788073f3041ab0b2fc490978343b4ab9c1a5022e94020f3c00"
   },
   "reserve/index.html": {
-    "bytes": 9057,
-    "sha256": "6bb8792295c21eee8ff44297725ce4cc0233134fd45950c16fab8e67b8807d1b"
+    "bytes": 7735,
+    "sha256": "1733f480b9ed6ed9e9b019b11b86679b4a648fe236743a70561f451f8e36b838"
   },
   "reserve/og.jpg": {
-    "bytes": 64714,
-    "sha256": "92caf10e0c34ea5322967558322b27b0187934915a930d810eceacede7c557bf"
+    "bytes": 95001,
+    "sha256": "144ca4b63d22d0fd06865dc0f6002147bdfffcac6720494f7bce5bb10008ba73"
   },
   "reserve/reserve.css": {
-    "bytes": 13839,
-    "sha256": "6619653a65ba85716c746bdadea10ec9c3fa369f978f8e36c910872fe6410bdf"
+    "bytes": 12383,
+    "sha256": "90a652a1e34a8c0bc9aa229079183e2b7aa0396ead029070e9f4a0032d92526a"
   },
   "reserve/shots/en/card.webp": {
-    "bytes": 26072,
-    "sha256": "cd06ad9e1b214324fd6502051326676d5ac8f29096fa23998f2b17d0f84d2793"
+    "bytes": 25472,
+    "sha256": "ff826c624f12850dced983ce1016d13d8ec95dc441c42b281696359caa9197dd"
   },
   "reserve/shots/en/face.webp": {
-    "bytes": 70140,
-    "sha256": "a9adcc27f328e00acfafe2974a83e1b5e19ec543446224fac5b5ece40d5c55c1"
+    "bytes": 62188,
+    "sha256": "887016ad9de17b9d526f0be952a64b752b30be5b3d3b0d4e8d4008c9f2954d0d"
+  },
+  "reserve/shots/en/hello.webp": {
+    "bytes": 63964,
+    "sha256": "92faa5593588f678908b8f8edfb2ee2567fa6dac6a0c6911698e2f908c377563"
   },
   "reserve/shots/en/immigration.webp": {
-    "bytes": 32218,
-    "sha256": "41a571dca9b39e3bc37eb96fe6264ee39c71e6b13a09488e236aabf2e81f4817"
+    "bytes": 32380,
+    "sha256": "fbeb94048819dfd64d6f4fb1dcc29d1956947c5b7525313c27122084b038a013"
   },
   "reserve/shots/en/name.webp": {
-    "bytes": 23036,
-    "sha256": "0c1653d2c05be38a172d35baeaf2496af0a81ad930e12c6680c3c594572dc995"
+    "bytes": 23208,
+    "sha256": "2140e5d919f5d1f326369c6dd3d3ac64da6eea87c895f51d3a41ee576aee5afd"
   },
   "reserve/shots/en/road.webp": {
-    "bytes": 34422,
-    "sha256": "980fb0c3a740bd73bc2dcfd2b08472fb306db82a9f38bd5e5e9e874a4568c6c5"
-  },
-  "reserve/shots/en/station.webp": {
-    "bytes": 30950,
-    "sha256": "614b7010dd00bc6f474b4d631cb311f24552365d5c17a8a1035bdb252240b585"
-  },
-  "reserve/shots/en/title.webp": {
-    "bytes": 52630,
-    "sha256": "0522d4c1879e8ce405da741225c4e4db2970e8d3093ff0e92579dfdfb7dd66ca"
+    "bytes": 36466,
+    "sha256": "a1f973f426961af8116dfd188e8319953e251a114ee6ad67eee43366a90cada7"
   },
   "reserve/shots/ko/card.webp": {
-    "bytes": 23490,
-    "sha256": "ff5419cf0353b8444ea1d6b8f51b9d7c0a9dcebe7472a1df788d341c0cf2ccf2"
+    "bytes": 23468,
+    "sha256": "8e3a2498257241e3d0fa84ccf35c78e4b5974203f00cb92706242ea51dbabb61"
   },
   "reserve/shots/ko/face.webp": {
-    "bytes": 63236,
-    "sha256": "d771bb19e7323fb5407a8554f6e5b7f5a0b350f96b22277ebaa5a832d4bf1472"
+    "bytes": 62746,
+    "sha256": "9686ad219e951a297a9556447807f31529417cdae673f8f37d60c075e169e26d"
+  },
+  "reserve/shots/ko/hello.webp": {
+    "bytes": 63240,
+    "sha256": "22f3fdc302f34dd9721d9362e4639591eb60a0d56baeb78b07fda0660db41672"
   },
   "reserve/shots/ko/immigration.webp": {
-    "bytes": 28096,
-    "sha256": "d8860a9bb24c7a1edb4d969aeecb40b5de1512a6b39f992166134bf455fe1de8"
+    "bytes": 27998,
+    "sha256": "2faab1eed62b66a04c4f0ceb1bc3c54558f6fdac5be54ff9752383e172fdd1fb"
   },
   "reserve/shots/ko/name.webp": {
-    "bytes": 22008,
-    "sha256": "f6fdeb40d417c2772fe7c508ab153386a11f4abff75d86c3039d4161e52df1f5"
+    "bytes": 22218,
+    "sha256": "4393dcac2aa7172fdffd8408b2cf9cd2e5697c6ddcbfbea5cf42610eaef6546e"
   },
   "reserve/shots/ko/road.webp": {
-    "bytes": 29188,
-    "sha256": "a7b426e2a991980cb64075187a581081a2e6c8822eefc8c76e7addff3e8571ed"
-  },
-  "reserve/shots/ko/station.webp": {
-    "bytes": 30032,
-    "sha256": "d921574c80877ea9094344a2c56d3e487c51e9ad00dc18bf0c525efa8e816b27"
-  },
-  "reserve/shots/ko/title.webp": {
-    "bytes": 52064,
-    "sha256": "ff17f07ea4021ece5d0a2d53425b70d8860b5d54bf00b6e2ec781c9677d81628"
+    "bytes": 31648,
+    "sha256": "2cfc10f2f26877edd6b33ed407acd9abbf03dbad81b03839b868d8e66c361947"
   },
   "reserve/shots/mn/card.webp": {
-    "bytes": 26682,
-    "sha256": "3bbfbb53290a4c176e7b5358df1a034050259d169a4200cdd049c21e4125f33d"
+    "bytes": 27038,
+    "sha256": "6c555cf93ea2aa52be8cb0dcfe0ef4c7ace3322e6c49b13b28a6e875cfecd3cd"
   },
   "reserve/shots/mn/face.webp": {
-    "bytes": 65198,
-    "sha256": "7f3bcbb3216f6e97822fb1398625f6be2095e0dd224b06f95341f5d130e91259"
+    "bytes": 72628,
+    "sha256": "5a4ed944d99391e5c31773249dcce77a0ba83e6a46bf9986702704c215f5c7be"
+  },
+  "reserve/shots/mn/hello.webp": {
+    "bytes": 64670,
+    "sha256": "bdaa5dba94fe6540875a571d484b795718e360d9e4cac7ab390088501ec344df"
   },
   "reserve/shots/mn/immigration.webp": {
-    "bytes": 33298,
-    "sha256": "d01af407a2e8a453c497dad6a8884e9a62c52cc63ef12d986a9a9bda5c792665"
+    "bytes": 33304,
+    "sha256": "aacd1fe02cc5269e82f735ebda9bcef5c21edbdca47b054dd21e9e3118344b7e"
   },
   "reserve/shots/mn/name.webp": {
-    "bytes": 24018,
-    "sha256": "02b507e3e0eeb070d714ee08f26b804a8c56fbe407a57b39ba4bbdbdb24571ec"
+    "bytes": 24188,
+    "sha256": "6f975888842b74929621ab9de4ea5da2949ba7cb5f4f5605b479c4d23b2c2e11"
   },
   "reserve/shots/mn/road.webp": {
-    "bytes": 36042,
-    "sha256": "ad17ce6435dda008344d46880f233c1f0126915807dc03ea47188c8efc9d4a8b"
-  },
-  "reserve/shots/mn/station.webp": {
-    "bytes": 31734,
-    "sha256": "2f481cdf5e8d04002e41cc677313548a51bcda014d188a62b78d3d814b16b7c2"
-  },
-  "reserve/shots/mn/title.webp": {
-    "bytes": 52664,
-    "sha256": "b70baef5259d1017fee3b92ae96232295592f409a5786bf602d051fe434abe2e"
+    "bytes": 40906,
+    "sha256": "dea2394b1ca4ff35572013d5d63b87493520b818742c8f7483c83801a57c2130"
   }
 }

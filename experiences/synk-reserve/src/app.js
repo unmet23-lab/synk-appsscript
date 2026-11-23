@@ -1,7 +1,7 @@
 /* SYNK 사전예약 — 화면 동작.
  * 원본: SYNK-appsscript/experiences/synk-reserve/src/app.js
  * 하는 일: 화면 언어 고르기(?lang → 기기 언어 → 영어), 들어온 곳(?from), 철수한 TOPIK 4급 반에서 온 사람에게 안내(?notice=topik4), 사전예약 보내기,
- *   서울행 장면(넓은 화면: 장면 글이 화면 가운데를 지나면 옆 휴대폰 한 대가 그 장면으로 바뀜 · 좁은 화면: 장면마다 휴대폰 한 대를 옆으로 넘김).
+ *   아래 단락의 서울행 장면(넓은 화면: 장면 글이 화면 가운데를 지나면 옆 휴대폰 한 대가 그 장면으로 바뀜 · 좁은 화면: 장면마다 휴대폰 한 대를 옆으로 넘김).
  * 보내기: 홈페이지 문의 구글 폼(copy.js FORM)의 formResponse에 바로 보낸다(no-cors라 응답을 못 읽는다 — 요청이 끝나면 접수로 본다).
  *   그래서 이메일은 폼보다 깐깐하게 미리 보고, 완료 판에 「다시 적기」와 문의 주소를 둔다.
  * 문의 내용(받는 쪽 website-inquiry-registration.mjs의 app-reserve가 이 꼴만 「사전예약」으로 센다):
@@ -153,7 +153,7 @@
     if (state.done) renderDone();
   }
 
-  /* ───────── 서울행 장면 ───────── */
+  /* ───────── 아래 단락: 서울행 장면 ───────── */
   const shot = id => `shots/${state.lang}/${id}.webp`;
   let sceneAt = 0;
 
@@ -162,10 +162,18 @@
     if (!list) return;
     list.innerHTML = C.SCENES.map((s, i) => {
       const x = s[state.lang];
-      return `<li class="rs-chapter${i === sceneAt ? ' on' : ''}" data-i="${i}"><div class="rs-phone rs-chapter-phone"><img src="${shot(s.id)}" alt="${esc(x.alt)}" width="600" height="1301" loading="lazy"></div>`
+      return `<li class="rs-chapter${i === sceneAt ? ' on' : ''}" data-i="${i}"><div class="rs-phone rs-chapter-phone"><img src="${shot(s.id)}" alt="${esc(x.alt)}" width="600" height="1301" loading="lazy" decoding="async"></div>`
         + `<div class="rs-chapter-say"><span class="rs-num">${String(i + 1).padStart(2, '0')}</span><h3>${keep(x.name)}</h3><p>${keep(x.body)}</p></div></li>`;
     }).join('');
+    fitChapters();
     showScene(sceneAt, false);
+  }
+
+  /** 좁은 화면에서 장면 줄이 옆으로 넘어갈 때만 키보드로 들어가 넘길 수 있게 한다. */
+  function fitChapters() {
+    const list = $('#chapters');
+    if (!list) return;
+    if (list.scrollWidth > list.clientWidth + 1) list.setAttribute('tabindex', '0'); else list.removeAttribute('tabindex');
   }
 
   /** 넓은 화면의 옆 휴대폰에 i번째 장면을 띄운다. 새 그림이 옅게 겹쳐 들어온다.
@@ -181,15 +189,15 @@
     let img = [...stage.querySelectorAll('img')].find(o => o.dataset.key === want);
     if (!img) {
       img = new Image();
-      img.src = shot(s.id); img.width = 600; img.height = 1301; img.decoding = 'async';
+      img.src = shot(s.id); img.width = 600; img.height = 1301; img.decoding = 'async'; img.alt = '';
       img.dataset.key = want;
       stage.appendChild(img);
     }
-    img.alt = s[state.lang].alt;
     const swap = () => {
       if (stage.dataset.want !== want) return;
       img.classList.toggle('now', !animate);
-      requestAnimationFrame(() => img.classList.add('on'));
+      void img.offsetWidth; // 받아 둔 그림도 투명한 상태를 한 번 그린 뒤 옅게 들어오게
+      img.classList.add('on');
       [...stage.querySelectorAll('img')].forEach(o => {
         if (o === img) return;
         o.classList.remove('on');
@@ -335,12 +343,15 @@
     $('#share').addEventListener('click', share);
     $('#again').addEventListener('click', again);
     const list = $('#chapters');
-    if (list && 'IntersectionObserver' in window) {
-      // 화면 가운데 줄을 지나는 장면 글이 지금 장면이다. 언어를 바꾸면 줄을 다시 그리므로 다시 붙인다.
-      const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) showScene(Number(e.target.dataset.i)); }, { rootMargin: '-48% 0px -48% 0px' });
-      const watch = () => { io.disconnect(); $$('.rs-chapter').forEach(li => io.observe(li)); };
-      watch();
-      new MutationObserver(watch).observe(list, { childList: true });
+    if (list) {
+      addEventListener('resize', fitChapters);
+      if ('IntersectionObserver' in window) {
+        // 화면 가운데 줄을 지나는 장면 글이 지금 장면이다. 언어를 바꾸면 줄을 다시 그리므로 다시 붙인다.
+        const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) showScene(Number(e.target.dataset.i)); }, { rootMargin: '-48% 0px -48% 0px' });
+        const watch = () => { io.disconnect(); $$('.rs-chapter').forEach(li => io.observe(li)); };
+        watch();
+        new MutationObserver(watch).observe(list, { childList: true });
+      }
       // 옆 휴대폰이 보이는 넓은 화면이면 장면 그림을 미리 받아 둔다(넘길 때 빈 화면이 없게).
       const warm = () => { const st = $('#stage'); if (st && st.offsetParent) C.SCENES.forEach(s => { const im = new Image(); im.src = shot(s.id); }); };
       if (document.readyState === 'complete') warm(); else addEventListener('load', warm, { once: true });

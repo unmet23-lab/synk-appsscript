@@ -1,8 +1,7 @@
 /* SYNK 사전예약 — 화면 글(한국어 · 영어 · 몽골어)과 폼 고정 값.
  * 원본: SYNK-appsscript/experiences/synk-reserve/src/copy.js
  * 2026-11-23 유호님 「온라인 반 계획은 철수하자. 앱 오픈을 집중해서 사전예약 받자」.
- * 2026-11-24 유호님 「게임인지 아무도 모를것같아. 우리 앱 화면이든 뭐든 좀 솔깃하게」 — 첫 화면은 WORLD 타이틀 무대 그림(art/),
- *   아래는 실제 SYNK WORLD 서울행 화면(SCENES)을 휴대폰 틀에 보인다. 화면 캡처는 shots/<언어>/<id>.webp.
+ * 2026-11-24 유호님 정정 「게임으로 이동하는 단락 부분만 바꿔달란거였어」: 첫 화면과 폼은 11-23 판 그대로, 맨 아래 단락만 서울행 실제 화면(SCENES)으로.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -32,26 +31,26 @@
   ];
 
   // 서울행 장면 — 지금 synk.im/world에 있는 화면만 쓴다(아직 없는 기능을 보이지 않는다).
-  // 캡처: 라이브 synk.im/world 손님 길(experiences/seoul-arrival/qa/흐름.mjs --후보 <빈 폴더> --끝 road, ko 아이돌 · en 배우 · mn 아이돌), 11-24.
-  // 내 길(ROAD) · 학생증 화면이 바뀌면 다시 찍는다(README 「화면 캡처」).
+  // 캡처: 라이브 synk.im/world 손님 길(experiences/seoul-arrival/qa/흐름.mjs --후보 <빈 폴더> --끝 road, ko 아이돌 · en 배우 · mn 아이돌), 11-24 04:40.
+  // 서울역 개찰구 화면은 초록 고리가 크게 보여 「안녕, 서울.」 화면으로 바꿨다. 서울행 화면이 바뀌면 다시 찍는다(README 「화면 캡처」).
   const SCENES = [
     {
       id: 'immigration',
-      ko: { name: '입국심사', body: '공항에 내리면 심사관이 먼저 묻습니다. 알맞은 대답을 골라 한국어로 답해요.', alt: '공항 입국심사대. 심사관이 「한국에 무슨 일로 오셨어요?」라고 묻고, 아래에 「공부하러 왔어요.」 「여행하러 왔어요.」 「일하러 왔어요.」 세 대답이 있다.' },
+      ko: { name: '입국심사', body: '공항에 내리면 심사관이 먼저 묻습니다. 알맞은 대답을 골라 한국어로 답합니다.', alt: '공항 입국심사대. 심사관이 「한국에 무슨 일로 오셨어요?」라고 묻고, 아래에 「공부하러 왔어요.」 「여행하러 왔어요.」 「일하러 왔어요.」 세 대답이 있다.' },
       en: { name: 'Immigration', body: 'Land at the airport and the officer asks first. Pick the right reply and answer in Korean.', alt: 'The airport immigration desk. The officer asks 한국에 무슨 일로 오셨어요? (What brings you to Korea?), with three Korean answers below: I came to study, to travel, to work.' },
       mn: { name: 'Хилийн шалгалт', body: 'Нисэх буудал дээр шалгагч танаас асуулт асууна. Зөв хариултаа сонгож солонгосоор хариулна.', alt: 'Нисэх буудлын хилийн шалгалтын лангуу. Шалгагч «한국에 무슨 일로 오셨어요?» (Солонгост ямар зорилгоор ирсэн бэ?) гэж асууж, доор нь сурахаар, аялахаар, ажиллахаар ирсэн гэсэн гурван хариулт байна.' },
     },
     {
-      id: 'station',
-      ko: { name: '서울역의 첫 아침', body: '교통카드를 찍고 개찰구를 지나면 서울의 하루가 시작됩니다.', alt: '서울역 개찰구에 교통카드를 대는 손. 화면 아래에 「안녕, 서울.」이 떠 있다.' },
-      en: { name: 'First morning at Seoul Station', body: 'Tap your transit card at the gate, and your first day in Seoul begins.', alt: 'A hand tapping a transit card at a Seoul Station gate, with 안녕, 서울. (Hello, Seoul.) at the bottom.' },
-      mn: { name: 'Сөүл өртөөний анхны өглөө', body: 'Тээврийн картаа уншуулж хаалгаар гарахад Сөүл дэх анхны өдөр эхэлнэ.', alt: 'Сөүл өртөөний хаалганд тээврийн карт уншуулж буй гар. Доор нь «안녕, 서울.» (Сайн уу, Сөүл.) гэж бичсэн.' },
+      id: 'hello',
+      ko: { name: '안녕, 서울', body: '입국심사를 마치고 서울로 들어가는 길, 창밖으로 한강과 남산이 보입니다.', alt: '전철 창밖으로 한강과 남산타워가 보이고, 강가에 털실로 만든 「안녕」 글자가 서 있다. 아래에 「PROLOGUE 안녕, 서울.」이라고 적혀 있다.' },
+      en: { name: 'Hello, Seoul', body: 'After immigration, on your way into Seoul, the Han River and Namsan come into view through the window.', alt: 'Through a train window: the Han River and N Seoul Tower, with giant felt letters 안녕 (Hello) on the riverbank. Below: PROLOGUE, 안녕, 서울. (Hello, Seoul.)' },
+      mn: { name: 'Сайн уу, Сөүл', body: 'Хилийн шалгалтын дараа Сөүл рүү орох замд цонхоор Хан мөрөн, Намсан уул харагдана.', alt: 'Галт тэрэгний цонхоор Хан мөрөн, Намсан цамхаг харагдаж, эрэг дээр ноосоор хийсэн «안녕» (Сайн уу) гэсэн том үсэг байна. Доор нь «PROLOGUE 안녕, 서울.» (Сайн уу, Сөүл.) гэж бичсэн.' },
     },
     {
       id: 'name',
       ko: { name: '한글 이름 쓰기', body: '내 이름을 한글로 바꿔 획 순서대로 직접 씁니다.', alt: '학생증에 들어갈 이름 「볼로르」의 첫 글자 「볼」을 쓰는 칸. 획마다 순서 숫자가 붙어 있다.' },
       en: { name: 'Write your name in Hangul', body: 'Your name is turned into Hangul, and you write it yourself, stroke by stroke.', alt: 'The box for writing 볼, the first syllable of the name 볼로르 (Bolor), for the student ID. Each stroke has an order number.' },
-      mn: { name: 'Нэрээ солонгос үсгээр бичих', body: 'Нэрээ солонгос үсэг рүү хөрвүүлж, зурлагын дарааллаар өөрөө бичнэ.', alt: 'Оюутны үнэмлэх дээрх «볼로르» (Болор) нэрийн эхний үе «볼»-ыг бичих хэсэг. Зурлага бүрт дарааллын дугаар байна.' },
+      mn: { name: 'Нэрээ солонгос үсгээр бичих', body: 'Нэрээ солонгос үсэг рүү хөрвүүлж, зурлагын дарааллаар өөрөө бичнэ.', alt: 'Оюутны үнэмлэх дээрх «볼로르» (Болор) нэрийн эхний үе «볼»-ыг бичих хэсэг. Зурлага бүрд дарааллын дугаар байна.' },
     },
     {
       id: 'face',
@@ -67,32 +66,23 @@
     },
     {
       id: 'road',
-      ko: { name: '내 길', body: '8화와 꿈 장면 일곱이 TOPIK 1급부터 4급까지 이어집니다. 장면마다 상대가 먼저 말을 걸고, 나는 한국어로 답해요.', alt: '「내 길」 화면. 1화 학생 식당에서 길 묻기, 2화 동아리 박람회, 꿈 장면 쇼케이스 오디션이 TOPIK 1과 TOPIK 2 사이에 이어지고, 아래에 「1화 시작」 단추가 있다.' },
-      en: { name: 'My road', body: '8 episodes and 7 dream scenes run from TOPIK Level 1 to Level 4. In every scene someone speaks to you first, and you answer in Korean.', alt: 'The My road screen: Ep. 1, asking the way in the student cafeteria; Ep. 2, the club fair; and a dream scene, the student film festival audition. A Start Ep. 1 button is below.' },
-      mn: { name: 'Миний зам', body: '8 анги, мөрөөдлийн 7 хэсэг TOPIK-ийн 1-р түвшнээс 4-р түвшин хүртэл үргэлжилнэ. Хэсэг бүрд нөгөө хүн эхэлж ярьж, та солонгосоор хариулна.', alt: '«Миний зам» дэлгэц. 1-р анги, 2-р анги, мөрөөдлийн хэсэг TOPIK 1 ба TOPIK 2-ын хооронд үргэлжилж, доор нь «1-р ангийг эхлэх» товч байна.' },
+      ko: { name: '내 길', body: '8화와 꿈 장면 일곱이 TOPIK 1급부터 4급까지 이어집니다. 장면마다 상대가 먼저 말을 걸고, 나는 한국어로 답합니다.', alt: '「내 길」 화면. TOPIK 1에서 1화 학생 식당에서 길 묻기, 2화 동아리 박람회, 1급 승급 오디션(쇼케이스 오디션)이 차례로 이어지고, TOPIK 2는 「1급 오디션에 붙으면 열려요」로 잠겨 있다. 아래에 「1화 시작」 단추가 있다.' },
+      en: { name: 'My road', body: '8 episodes and 7 dream scenes run from TOPIK Level 1 to Level 4. In every scene someone speaks to you first, and you answer in Korean.', alt: 'The My road screen: from TOPIK 1, Ep. 1 (asking the way in the student cafeteria), Ep. 2 (the club fair) and the Level 1 audition (a student film festival audition) follow in order. A Start Ep. 1 button is below.' },
+      mn: { name: 'Миний зам', body: '8 анги, мөрөөдлийн 7 хэсэг TOPIK-ийн 1-р түвшнээс 4-р түвшин хүртэл үргэлжилнэ. Хэсэг бүрд нөгөө хүн эхэлж ярьж, та солонгосоор хариулна.', alt: '«Миний зам» дэлгэц. TOPIK 1 хэсэгт 1-р анги, 2-р анги, 1-р түвшний шалгаруулалт дараалан байрлаж, TOPIK 2 түгжээтэй байна. Доор нь «1-р ангийг эхлэх» товч байна.' },
     },
   ];
 
   const ko = {
     htmlLang: 'ko',
     record: '한국어',
-    title: 'SYNK WORLD 사전예약 — 한국 유학을 먼저 살아 보는 한국어 게임',
-    description: '공항 입국심사부터 학생증, 꿈의 무대까지. 한국어로 답하며 이어 가는 이야기 게임 SYNK WORLD가 2027년 2월에 출시합니다. 지금 사전예약하세요.',
+    title: 'SYNK 사전예약 — 2027년 2월 출시',
+    description: 'SYNK가 2027년 2월에 정식으로 문을 엽니다. 이메일을 남기시면 출시 때 가장 먼저 알려 드립니다.',
     langLabel: '화면 언어',
     logoLabel: 'SYNK 홈',
-    tag: '2027년 2월 출시 · 지금 사전예약',
-    h1a: '한국 유학을 먼저 살아 보는',
-    h1b: '한국어 이야기 게임',
-    lead: '공항에 내리면 입국심사관이 먼저 말을 겁니다. 한국어로 답하고, 내 이름을 한글로 써서 학생증을 받고, 화마다 한 장면씩 꿈의 무대까지 갑니다.',
-    heroGo: '사전예약하기',
-    heroTry: '첫 장면 해 보기',
-    heroArtAlt: 'SYNK WORLD 타이틀 무대. 서울 한강의 밤, 공연 무대에 털실로 만든 큰 글자 「안녕」이 서 있고 다섯 명이 춤추며 관객이 응원봉을 든다.',
-    storyTag: '서울행',
-    storyTitle: '첫날부터 내가 주인공입니다',
+    tag: '2027년 2월 정식 출시',
+    h1: 'SYNK 사전예약',
+    lead: '한국어 공부부터 한국 유학과 취업 준비까지, SYNK가 2027년 2월에 정식으로 문을 엽니다. 이메일을 남기시면 출시 때 가장 먼저 알려 드립니다.',
     notice: 'TOPIK 4급 온라인 반은 열지 않기로 했습니다. 관심을 보내 주셔서 감사합니다. 대신 SYNK가 2027년 2월에 정식으로 문을 엽니다.',
-    signupTag: '2027년 2월 출시',
-    signupTitle: '출시하면 가장 먼저 알려 드릴게요',
-    signupLead: '이메일을 남기시면 출시 때 안내 메일 한 통으로 알려 드립니다.',
     formTitle: '이메일로 사전예약',
     emailLabel: '이메일',
     interestLabel: '관심 있는 것',
@@ -113,36 +103,28 @@
     again: '이메일을 잘못 적었다면 다시 적기',
     share: '친구에게 보내기',
     copied: '주소를 복사했습니다.',
-    shareText: '한국 유학을 먼저 살아 보는 한국어 게임 SYNK WORLD가 2027년 2월에 출시합니다. 사전예약은 여기서 할 수 있어요.',
-    nowTag: '지금 해 볼 수 있어요',
-    nowTitle: '서울행은 지금 열려 있습니다',
-    nowBody: '출시 전이지만 SYNK WORLD에서 서울행 이야기와 1화를 무료로 해 볼 수 있습니다.',
+    shareText: 'SYNK가 2027년 2월에 출시합니다. 사전예약은 여기서 할 수 있어요.',
+    nowTag: '지금 해 볼 수 있는 것',
+    nowTitle: '한국 유학을 먼저 살아 보는 한국어 이야기 게임',
+    nowBody: '출시 전이지만 SYNK WORLD에서 서울행 이야기와 1화를 무료로 해 볼 수 있습니다. 공항에 내리면 입국심사관이 먼저 말을 겁니다.',
     nowGo: 'SYNK WORLD에서 해 보기',
     contact: '문의',
     privacyFoot: '개인정보 처리방침',
     terms: '이용약관',
+    imgAlt: '길 하나가 한 바퀴로 이어진 작은 마을. 길을 따라 집, 교실, 대학 정문, 회사, 카페가 차례로 서 있고 아침 해가 떠오른다. 3D로 그린 그림이다.',
   };
 
   const en = {
     htmlLang: 'en',
     record: '영어',
-    title: 'Pre-register for SYNK WORLD — live student life in Korea first, in a Korean story game',
-    description: 'From airport immigration to your student ID and the stage of your dreams. SYNK WORLD, a story game you play by answering in Korean, launches in February 2027. Pre-register now.',
+    title: 'Pre-register for SYNK — launching February 2027',
+    description: 'SYNK officially opens in February 2027. Leave your email and we’ll tell you first when it launches.',
     langLabel: 'Language',
     logoLabel: 'SYNK home',
-    tag: 'Launching February 2027 · Pre-register now',
-    h1a: 'Live student life in Korea first,',
-    h1b: 'in a Korean story game',
-    lead: 'Land at the airport and the immigration officer speaks to you first. Answer in Korean, write your name in Hangul to get your student ID, then play one scene per episode all the way to the stage of your dreams.',
-    heroGo: 'Pre-register',
-    heroTry: 'Play the first scene',
-    heroArtAlt: 'The SYNK WORLD title stage: on a Han River night in Seoul, giant felt letters spelling 안녕 (hello) stand on a concert stage while five performers dance and the crowd holds up light sticks.',
-    storyTag: 'The trip to Seoul',
-    storyTitle: 'You’re the lead from day one',
+    tag: 'Launching February 2027',
+    h1: 'Pre-register for SYNK',
+    lead: 'From learning Korean to getting ready to study and work in Korea, SYNK officially opens in February 2027. Leave your email and we’ll tell you first when it launches.',
     notice: 'We’ve decided not to open the TOPIK Level 4 online class. Thank you for your interest. Instead, SYNK officially opens in February 2027.',
-    signupTag: 'Launching February 2027',
-    signupTitle: 'Be the first to know when we launch',
-    signupLead: 'Leave your email and we’ll send you one email when SYNK launches.',
     formTitle: 'Pre-register with your email',
     emailLabel: 'Email',
     interestLabel: 'What interests you',
@@ -162,36 +144,28 @@
     again: 'Typed the wrong email? Enter it again',
     share: 'Send to a friend',
     copied: 'Link copied.',
-    shareText: 'SYNK WORLD, a Korean story game where you live student life in Korea first, launches in February 2027. You can pre-register here.',
+    shareText: 'SYNK launches in February 2027. You can pre-register here.',
     nowTag: 'Try it now',
-    nowTitle: 'The trip to Seoul is open now',
-    nowBody: 'Before launch, you can play the trip to Seoul and Episode 1 in SYNK WORLD for free.',
+    nowTitle: 'Live student life in Korea first, in a Korean story game',
+    nowBody: 'Before launch, you can play the trip to Seoul and Episode 1 in SYNK WORLD for free. Land at the airport and the immigration officer speaks to you first.',
     nowGo: 'Play in SYNK WORLD',
     contact: 'Contact',
     privacyFoot: 'Privacy',
     terms: 'Terms',
+    imgAlt: 'A small town where one road runs in a loop past a house, a classroom, a university gate, an office and a café, with the morning sun rising. A 3D illustration.',
   };
 
   const mn = {
     htmlLang: 'mn',
     record: '몽골어',
-    title: 'SYNK WORLD урьдчилсан бүртгэл — Солонгост оюутан болж үзэх солонгос хэлний тоглоом',
-    description: 'Нисэх буудлын хилийн шалгалтаас оюутны үнэмлэх, мөрөөдлийн тайз хүртэл. Солонгосоор хариулж түүхээ үргэлжлүүлдэг SYNK WORLD тоглоом 2027 оны 2-р сард гарна. Одоо урьдчилан бүртгүүлээрэй.',
+    title: 'SYNK урьдчилсан бүртгэл — 2027 оны 2-р сард нээгдэнэ',
+    description: 'SYNK 2027 оны 2-р сард албан ёсоор нээгдэнэ. Имэйлээ үлдээвэл нээгдэх үед хамгийн түрүүнд мэдэгдэнэ.',
     langLabel: 'Хэл',
     logoLabel: 'SYNK нүүр хуудас',
-    tag: '2027 оны 2-р сард нээгдэнэ · Одоо урьдчилан бүртгүүлээрэй',
-    h1a: 'Солонгост оюутан болж үзэх',
-    h1b: 'солонгос хэлний тоглоом',
-    lead: 'Нисэх буудал дээр буухад хилийн шалгагч танаас асуулт асууна. Солонгосоор хариулж, нэрээ солонгос үсгээр бичин оюутны үнэмлэхээ авна. Дараа нь анги бүрийг тоглож, мөрөөдлийн тайзандаа хүрнэ.',
-    heroGo: 'Урьдчилан бүртгүүлэх',
-    heroTry: 'Эхний хэсгийг тоглож үзэх',
-    heroArtAlt: 'SYNK WORLD-ийн эхний тайз. Шөнө Сөүлийн Хан мөрний эрэг дээрх тоглолтын тайзан дээр эсгийгээр хийсэн «안녕» (сайн уу) гэсэн том бичиг байна. Таван хүн бүжиглэж, үзэгчид гэрэлт саваа барьж байна.',
-    storyTag: 'Сөүл рүү хийх аялал',
-    storyTitle: 'Эхний өдрөөс та гол дүр',
+    tag: '2027 оны 2-р сард нээгдэнэ',
+    h1: 'SYNK урьдчилсан бүртгэл',
+    lead: 'Солонгос хэл сурахаас эхлээд Солонгост суралцах, ажиллах бэлтгэл хүртэл — SYNK 2027 оны 2-р сард албан ёсоор нээгдэнэ. Имэйлээ үлдээвэл нээгдэх үед хамгийн түрүүнд мэдэгдэнэ.',
     notice: 'TOPIK 4-р түвшний онлайн ангийг нээхгүй байхаар шийдлээ. Үүний оронд SYNK 2027 оны 2-р сард албан ёсоор нээгдэнэ. Сонирхсонд баярлалаа.',
-    signupTag: '2027 оны 2-р сард нээгдэнэ',
-    signupTitle: 'Нээгдэхэд хамгийн түрүүнд мэдэгдэнэ',
-    signupLead: 'Имэйлээ үлдээвэл SYNK нээгдэх үед танд нэг удаа имэйл илгээж мэдэгдэнэ.',
     formTitle: 'Имэйлээр урьдчилан бүртгүүлэх',
     emailLabel: 'Имэйл',
     interestLabel: 'Сонирхож буй зүйл',
@@ -211,14 +185,15 @@
     again: 'Имэйлээ буруу бичсэн бол дахин оруулах',
     share: 'Найздаа илгээх',
     copied: 'Холбоосыг хуулсан.',
-    shareText: 'Солонгост оюутан болж үзэх солонгос хэлний SYNK WORLD тоглоом 2027 оны 2-р сард гарна. Эндээс урьдчилан бүртгүүлж болно.',
-    nowTag: 'Одоо туршиж болно',
-    nowTitle: 'Сөүл рүү хийх аялал одоо нээлттэй',
-    nowBody: 'Албан ёсоор нээгдэхээс өмнө SYNK WORLD дээр «Сөүл рүү хийх аялал» болон 1-р ангийг үнэгүй тоглож болно.',
+    shareText: 'SYNK 2027 оны 2-р сард нээгдэнэ. Эндээс урьдчилан бүртгүүлж болно.',
+    nowTag: 'Одоо туршиж болох зүйл',
+    nowTitle: 'Солонгост оюутан болж үзэх солонгос хэлний тоглоом',
+    nowBody: 'Албан ёсоор нээгдэхээс өмнө SYNK WORLD дээр «Сөүл рүү хийх аялал» болон 1-р ангийг үнэгүй тоглож болно. Нисэх буудал дээр буухад хилийн шалгагч танаас асуулт асууна.',
     nowGo: 'SYNK WORLD дээр тоглох',
     contact: 'Холбоо барих',
     privacyFoot: 'Хувийн мэдээллийн бодлого',
     terms: 'Үйлчилгээний нөхцөл',
+    imgAlt: 'Жижиг тосгон. Тойрог хэлбэртэй нэг замын дагуу байшин, сургуулийн байр, их сургуулийн хаалга, оффис, кафе байрлана. Өглөөний нар мандаж байна. 3D зураг.',
   };
 
   return { FORM, INTERESTS, SCENES, ko, en, mn, LANGS: ['ko', 'en', 'mn'], LANG_NAMES: { ko: '한국어', en: 'English', mn: 'Монгол' } };

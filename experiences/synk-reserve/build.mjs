@@ -1,6 +1,8 @@
 // SYNK 사전예약 빌드 → dist/reserve/ · dist/lab/topik4/index.html
 //   node experiences/synk-reserve/build.mjs
-// 그림은 SYNK WORLD 서울행의 실제 화면 캡처(src/shots/<언어>/<장면>.webp, 11-24)다. 링크 미리보기(og.jpg)도 그 캡처로 굽는다.
+// 그림은 공개본에 이미 있는 synk.im 새 홈 그림(/assets/v11/town-road.webp)을 쓴다. 링크 미리보기(og.jpg)는 그 그림을
+// 공개본 git(SYNK_PUBLISH_GIT, 기본 ~/Documents/synk-vendor/synk-policy-publish.git의 origin/main)에서 꺼내 굽는다.
+// 아래 단락의 서울행 장면은 SYNK WORLD 실제 화면 캡처(src/shots/<언어>/<장면>.webp)다(11-24).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -15,6 +17,7 @@ const DIST = path.join(HERE, 'dist');
 const OUT = path.join(DIST, 'reserve');
 const ASSETS = path.join(OUT, 'assets');
 const FONTS = path.join(REPO, 'docs/브랜드_폰트');
+const PUBLISH_GIT = process.env.SYNK_PUBLISH_GIT || path.join(os.homedir(), 'Documents/synk-vendor/synk-policy-publish.git');
 const CHROME = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/google-chrome'].find(p => fs.existsSync(p));
 
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -38,34 +41,20 @@ for (let c = 0x0400; c <= 0x04ff; c += 1) CYRILLIC += String.fromCharCode(c);
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(ASSETS, { recursive: true });
 
-// 1) 글 · 코드 · 꼴. css · js는 ?v=<내용 지문 12자>로 부른다.
+// 1) 글 · 코드 · 꼴. 지문(?v=)은 글꼴을 구운 뒤 3)에서 단다.
 // 공용 작업본은 core.autocrlf라 원고가 CRLF일 수 있다 — 공개본과 같은 LF로 쓴다.
 for (const f of ['index.html', 'copy.js', 'app.js', 'reserve.css']) fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(SRC, f), 'utf8').replace(/\r\n/g, '\n'), 'utf8');
-{
-  const html = path.join(OUT, 'index.html');
-  let s = fs.readFileSync(html, 'utf8');
-  for (const f of ['reserve.css', 'copy.js', 'app.js']) {
-    const before = s;
-    s = s.replace(new RegExp(`(["'])${f.replace('.', '\\.')}\\1`), `$1${f}?v=${sha(path.join(OUT, f)).slice(0, 12)}$1`);
-    if (s === before) throw new Error(`index.html에서 ${f} 참조를 찾지 못했어요`);
-  }
-  fs.writeFileSync(html, s, 'utf8');
-}
-// 서울행 화면 캡처(언어마다 같은 장면 이름). copy.js의 SCENES와 타이틀이 모두 있어야 한다.
+// 아래 단락의 서울행 화면 캡처(언어마다 같은 장면 이름). copy.js의 SCENES가 모두 있어야 한다.
 {
   const C = (await import(pathToFileURL(path.join(SRC, 'copy.js')).href)).default;
-  const need = ['title', ...C.SCENES.map(s => s.id)];
   for (const lang of C.LANGS) {
     fs.mkdirSync(path.join(OUT, 'shots', lang), { recursive: true });
-    for (const id of need) {
+    for (const { id } of C.SCENES) {
       const from = path.join(SRC, 'shots', lang, `${id}.webp`);
       if (!fs.existsSync(from)) throw new Error(`화면 캡처가 없어요: shots/${lang}/${id}.webp`);
       fs.copyFileSync(from, path.join(OUT, 'shots', lang, `${id}.webp`));
     }
   }
-  // 첫 화면 바탕: SYNK WORLD 타이틀 무대 그림(experiences/brand-opening/assets의 world-title-concert-*-v2를 webp로 다시 저장한 판).
-  fs.mkdirSync(path.join(OUT, 'art'), { recursive: true });
-  for (const f of ['stage-land.webp', 'stage-port.webp']) fs.copyFileSync(path.join(SRC, 'art', f), path.join(OUT, 'art', f));
 }
 
 // 2) 글꼴. 키릴 밖 글자는 SUIT(빠진 한글이 있으면 멈춤), 몽골어 화면의 라틴 · 숫자 · 키릴은 Inter Tight 둘(500 · 700).
@@ -76,23 +65,43 @@ const sans = path.join(ASSETS, 'reserve-sans.woff2');
 subset(path.join(FONTS, 'SUIT/SUIT-Variable.woff2'), [...chars].join(''), sans);
 const miss = run('python', ['-c', 'import sys\nfrom fontTools.ttLib import TTFont\ncm=TTFont(sys.argv[1]).getBestCmap()\nt=open(sys.argv[2],encoding="utf-8").read()\nprint("".join(sorted({c for c in t if "\\uac00"<=c<="\\ud7a3" and ord(c) not in cm})))', sans, path.join(SRC, 'copy.js')]).stdout.trim();
 if (miss) throw new Error(`SUIT 서브셋에 한글이 빠졌어요: ${miss}`);
-subset(path.join(FONTS, 'InterTight/InterTight-Regular.ttf'), ascii() + EXTRA + CYRILLIC, path.join(ASSETS, 'reserve-inter-400.woff2'));
 subset(path.join(FONTS, 'InterTight/InterTight-Medium.ttf'), ascii() + EXTRA + CYRILLIC, path.join(ASSETS, 'reserve-inter-500.woff2'));
 subset(path.join(FONTS, 'InterTight/InterTight-Bold.ttf'), ascii() + EXTRA + CYRILLIC, path.join(ASSETS, 'reserve-inter-700.woff2'));
 // 장면 번호(01~06)만 DM Mono로 쓴다.
 subset(path.join(FONTS, 'DM_Mono/DMMono-Medium.ttf'), '0123456789', path.join(ASSETS, 'reserve-mono.woff2'));
 
-// 3) 철수한 TOPIK 4급 반 주소 → 사전예약으로 넘기는 쪽.
+// 3) 지문: 글꼴은 reserve.css와 index.html의 미리 받기에, css · js는 index.html에 ?v=<내용 지문 12자>로 단다.
+{
+  const css = path.join(OUT, 'reserve.css');
+  const html = path.join(OUT, 'index.html');
+  let c = fs.readFileSync(css, 'utf8');
+  let s = fs.readFileSync(html, 'utf8');
+  for (const f of fs.readdirSync(ASSETS).filter(n => n.endsWith('.woff2'))) {
+    const v = sha(path.join(ASSETS, f)).slice(0, 12);
+    if (!c.includes(`url(assets/${f})`)) throw new Error(`reserve.css에서 ${f} 참조를 찾지 못했어요`);
+    c = c.split(`url(assets/${f})`).join(`url(assets/${f}?v=${v})`);
+    s = s.split(`"/reserve/assets/${f}"`).join(`"/reserve/assets/${f}?v=${v}"`);
+  }
+  fs.writeFileSync(css, c, 'utf8');
+  for (const f of ['reserve.css', 'copy.js', 'app.js']) {
+    const before = s;
+    s = s.replace(new RegExp(`(["'])${f.replace('.', '\\.')}\\1`), `$1${f}?v=${sha(path.join(OUT, f)).slice(0, 12)}$1`);
+    if (s === before) throw new Error(`index.html에서 ${f} 참조를 찾지 못했어요`);
+  }
+  fs.writeFileSync(html, s, 'utf8');
+}
+
+// 4) 철수한 TOPIK 4급 반 주소 → 사전예약으로 넘기는 쪽.
 fs.mkdirSync(path.join(DIST, 'lab/topik4'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'lab/topik4/index.html'), fs.readFileSync(path.join(SRC, 'lab-topik4.html'), 'utf8').replace(/\r\n/g, '\n'), 'utf8');
 
-// 4) 링크 미리보기 og.jpg(1200×630). 한국어 타이틀 · 입국심사 캡처를 og.html 옆에 두고 찍는다.
+// 5) 링크 미리보기 og.jpg(1200×630). 공개본의 town-road.webp를 꺼내 og.html 옆에 두고 찍는다.
 if (CHROME) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-rsv-og-'));
   try {
+    const img = run('git', ['--git-dir', PUBLISH_GIT, 'show', 'origin/main:assets/v11/town-road.webp'], { encoding: 'buffer', maxBuffer: 1 << 24 }).stdout;
+    fs.writeFileSync(path.join(tmp, 'town-road.webp'), img);
     fs.mkdirSync(path.join(tmp, 'reserve/assets'), { recursive: true });
-    fs.mkdirSync(path.join(tmp, 'reserve/shots/ko'), { recursive: true });
-    for (const id of ['title', 'immigration']) fs.copyFileSync(path.join(SRC, 'shots/ko', `${id}.webp`), path.join(tmp, 'reserve/shots/ko', `${id}.webp`));
     fs.copyFileSync(sans, path.join(tmp, 'reserve/assets/reserve-sans.woff2'));
     fs.copyFileSync(path.join(SRC, 'og.html'), path.join(tmp, 'og.html'));
     const png = path.join(tmp, 'og.png');
@@ -101,7 +110,7 @@ if (CHROME) {
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
 } else throw new Error('Chrome을 찾지 못해 og.jpg를 굽지 못했어요');
 
-// 5) 지문 — 공개 뒤 라이브 바이트와 대조할 때 쓴다.
+// 6) 지문 — 공개 뒤 라이브 바이트와 대조할 때 쓴다.
 const files = [];
 const walk = d => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else files.push(p); } };
 walk(DIST);

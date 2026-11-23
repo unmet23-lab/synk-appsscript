@@ -1,111 +1,60 @@
-/* SYNK 사전예약 — 첫 화면은 SYNK WORLD 타이틀 무대 그림, 아래는 실제 게임 화면을 휴대폰 틀에(11-24).
+/* SYNK 사전예약 — synk.im 새 홈(v11, assets/v11/detail.css)의 값과 그림을 잇는다.
  * 원본: SYNK-appsscript/experiences/synk-reserve/src/reserve.css
- * 결: 휴대폰 틀은 synk.im 상세 쪽과 같은 값(검은 테 8px, 모서리 38px). 사전예약 칸은 synk.im 새 홈의 미색 판(#F6F4F1)과 먹색 알약.
- * 글자 역할: 큰 말 SUIT 400 + 굵은 구절 800 · 장면 이름 SUIT 700 · 장면 번호 DM Mono · 영어 · 몽골어 화면은 Inter Tight.
- * 색 역할: 먹 = 읽을 글 · 흰 글 = 밤 무대 위 글 · 코랄 = 장면 번호(밤 바탕 #ff8a70, 밝은 바탕 #C43A22) · 밤 남색 = 게임 화면과 이어지는 바탕 · 미색 = 사전예약 판.
- * 글꼴 파일은 build.mjs가 이 쪽 글자만 줄여 굽는다. 몽골어 화면은 SUIT에 키릴이 없어 키릴 · 라틴 · 숫자를 모두 Inter Tight로 쓴다. */
-@font-face{font-family:'Reserve Sans';src:url(assets/reserve-sans.woff2) format('woff2');font-weight:100 900;font-display:swap}
-@font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-400.woff2) format('woff2');font-weight:400;font-display:swap}
-@font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-500.woff2) format('woff2');font-weight:500;font-display:swap}
-@font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-700.woff2) format('woff2');font-weight:600 900;font-display:swap}
-@font-face{font-family:'Reserve Mono';src:url(assets/reserve-mono.woff2) format('woff2');font-weight:500;font-display:swap}
+ * 글꼴: 한글 · 라틴은 SUIT를 이 쪽 글자만 줄인 판(v11 홈과 같다). 몽골어 화면은 키릴 · 라틴 · 숫자를 모두 Inter Tight로 쓴다 —
+ *   SUIT에는 키릴이 없고, 「SYNK-д」처럼 라틴과 키릴이 붙는 자리에서 두 글꼴의 굵기가 달라 보이지 않게(11-23 미리 보기). build.mjs가 굽는다. */
+@font-face{font-family:'Reserve Sans';src:url(assets/reserve-sans.woff2?v=c11436da932b) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-500.woff2?v=f336f52afb3d) format('woff2');font-weight:400 500;font-display:swap}
+@font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-700.woff2?v=27e0264fe7d1) format('woff2');font-weight:600 900;font-display:swap}
+@font-face{font-family:'Reserve Mono';src:url(assets/reserve-mono.woff2?v=e6e5d743add8) format('woff2');font-weight:500;font-display:swap}
 
 :root{
-  --ink:#1d1d1f;--paper:#fff;--panel:#F6F4F1;--hair:#E2DED9;--cap:#5b5754;--bad:#B42318;
-  --acc:#C43A22; /* v11 코랄(#F2573F)을 밝은 바탕 글자에 쓸 만큼 짙게 */
-  --acc-night:#ff8a70; /* 밤 바탕 위 장면 번호 */
-  --night:#05091a;
-  --sans:'Reserve Sans','SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
-  --mono:'Reserve Mono',ui-monospace,monospace;
-  --gut:clamp(16px,5vw,72px);
-  --wide:max(var(--gut),calc((100vw - 1200px)/2));
+  --ink:#1d1d1f;--paper:#fff;--warm:#FAF1ED;--hair:#E2DED9;--cap:#4a4744;--bad:#B42318;
+  --acc:#C43A22; /* v11 코랄(#F2573F)을 글자에 쓸 만큼 짙게 — 따뜻한 바탕에서 4.75:1(공개 전 점검 axe color-contrast, 11-23) */
+  --sans:'Reserve Sans','Reserve Inter','SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --gut:clamp(20px,5vw,72px);
+  --wide:max(var(--gut),calc((100vw - 1240px)/2));
   --shadow:0 26px 52px -34px rgba(40,30,20,.36);
   --ease:cubic-bezier(.2,.7,.2,1);
+  --night:#05091a; /* 아래 단락의 밤 바탕 — 서울행 화면과 이어진다 */
+  --acc-night:#ff8a70; /* 밤 바탕 위 장면 번호 · 꼬리표 */
+  --mono:'Reserve Mono',ui-monospace,monospace;
 }
 *,*::before,*::after{box-sizing:border-box}
-html{background:var(--night);-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{margin:0;background:var(--night);color:var(--ink);font:500 clamp(16px,1.2vw,18px)/1.6 var(--sans);-webkit-font-smoothing:antialiased;letter-spacing:-.01em;word-break:keep-all;overflow-wrap:break-word;overflow-x:clip}
-html:lang(en),html:lang(mn){--sans:'Reserve Inter','Reserve Sans','SUIT','Pretendard','Malgun Gothic',system-ui,sans-serif}
-html:lang(en) body,html:lang(mn) body{letter-spacing:0}
+html{background:var(--paper);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:500 clamp(16px,1.25vw,18px)/1.6 var(--sans);-webkit-font-smoothing:antialiased;letter-spacing:-.012em;word-break:keep-all;overflow-wrap:break-word;overflow-x:clip}
+html:lang(mn){--sans:'Reserve Inter','Reserve Sans','SUIT','Pretendard','Malgun Gothic',system-ui,sans-serif}
+html:lang(mn) body{letter-spacing:0}
 a{color:inherit}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-h1,h2,h3,p,fieldset,legend,ol,ul{margin:0;padding:0}
-ol,ul{list-style:none}
+h1,h2,h3,p,fieldset,legend{margin:0;padding:0}
 fieldset{border:0;min-width:0}
 h1,h2{text-wrap:balance}
 p{text-wrap:pretty}
 img{display:block;max-width:100%}
-:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 [hidden]{display:none!important}
 .nw{white-space:nowrap}
 .sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* 위 줄: 로고와 화면 언어(밤 무대 위) */
-.rs-bar{position:absolute;z-index:3;inset:0 0 auto 0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px var(--wide);color:#fff}
-.rs-logo{font:800 28px/1 'Reserve Sans',var(--sans);letter-spacing:-.03em;text-decoration:none}
-.rs-langs{display:flex;gap:2px}
-.rs-langs button{height:32px;padding:0 10px;border-radius:999px;font:500 13.5px/1 var(--sans);color:rgba(255,255,255,.66)}
-.rs-langs button:hover{color:#fff}
-.rs-langs button[aria-pressed="true"]{color:#fff;font-weight:700}
+/* 위 줄: 로고와 화면 언어 */
+.rs-bar{position:absolute;z-index:3;inset:0 0 auto 0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px var(--wide)}
+.rs-logo{font:800 24px/1 var(--sans);letter-spacing:-.03em;text-decoration:none}
+.rs-langs{display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:saturate(160%) blur(14px);backdrop-filter:saturate(160%) blur(14px)}
+.rs-langs button{height:32px;padding:0 12px;border-radius:999px;font:600 14px/1 var(--sans);color:var(--cap)}
+.rs-langs button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 
-/* 큰 말 */
-.rs-tag{font:700 clamp(15px,1.15vw,17px)/1.3 var(--sans)}
-.rs-h1{font:400 clamp(40px,4.6vw,68px)/1.1 var(--sans);letter-spacing:-.035em}
-.rs-h1 b{display:block;font-weight:800}
-html:lang(en) .rs-h1,html:lang(mn) .rs-h1{letter-spacing:-.02em;font-size:clamp(36px,4.2vw,60px)}
-html:lang(mn) .rs-h1{font-size:clamp(32px,3.7vw,54px)}
-.rs-lead{font:500 clamp(17px,1.35vw,20px)/1.6 var(--sans)}
-.rs-acts{display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px}
-.rs-go{display:inline-flex;align-items:center;justify-content:center;height:56px;padding:0 30px;border-radius:999px;background:#fff;color:var(--ink);font:800 17px/1 var(--sans);text-decoration:none;transition:transform .2s var(--ease)}
-.rs-go:hover{transform:translateY(-2px)}
-.rs-try{display:inline-flex;align-items:center;gap:8px;font:700 16px/1.3 var(--sans);text-decoration:none;color:#fff}
-.rs-try span[aria-hidden]{transition:transform .2s var(--ease)}
-.rs-try:hover span[aria-hidden]{transform:translateX(3px)}
-.rs-notice{padding:14px 18px;border-radius:14px;background:var(--paper);color:var(--ink);font:500 15px/1.55 var(--sans)}
-.rs-num{font:500 14px/1 var(--mono);letter-spacing:.02em;color:var(--acc)}
+/* 첫 화면: 큰 그림 한 장 위에 문장 하나와 사전예약 칸 */
+.rs-hero{position:relative;isolation:isolate;min-height:100svh;display:flex;align-items:center;background:var(--warm);overflow:hidden}
+.rs-art{position:absolute;z-index:-2;inset:0;width:100%;height:100%;object-fit:cover;object-position:72% 50%}
+.rs-hero::before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,rgba(250,241,237,.97) 0%,rgba(250,241,237,.92) 30%,rgba(250,241,237,.45) 50%,rgba(250,241,237,0) 64%)}
+.rs-say{display:grid;gap:18px;justify-items:start;width:min(520px,100%);margin-left:var(--wide);padding:112px 0 64px}
+.rs-notice{padding:14px 18px;border-radius:14px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--hair);font:500 15px/1.55 var(--sans)}
+.rs-tag{font:700 clamp(16px,1.3vw,19px)/1.2 var(--sans);color:var(--acc)}
+.rs-hero h1{font:700 clamp(44px,5.6vw,80px)/1.04 var(--sans);letter-spacing:-.045em}
+:lang(mn) .rs-hero h1{font-size:clamp(36px,4.2vw,60px);letter-spacing:-.02em}
+.rs-lead{font:600 clamp(17px,1.4vw,20px)/1.55 var(--sans);letter-spacing:-.01em;max-width:30em}
 
-/* 첫 화면: 타이틀 무대 그림 한 장 위에 문장 하나와 단추 */
-.rs-hero{position:relative;isolation:isolate;overflow:hidden;min-height:clamp(640px,92svh,860px);display:flex;color:#fff;background:var(--night)}
-.rs-art,.rs-art img{position:absolute;inset:0;width:100%;height:100%}
-.rs-art{z-index:-2}
-.rs-art img{object-fit:cover;object-position:76% 50%}
-.rs-hero::before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,rgba(4,8,22,.86) 0%,rgba(4,8,22,.6) 32%,rgba(4,8,22,0) 56%),linear-gradient(0deg,rgba(4,8,22,.55) 0%,rgba(4,8,22,0) 30%)}
-.rs-hero-in{display:flex;flex-direction:column;justify-content:center;gap:30px;width:100%;padding:110px var(--wide) 72px}
-.rs-say{display:grid;gap:20px;justify-items:start;max-width:540px}
-.rs-hero .rs-tag{opacity:.8}
-.rs-hero .rs-h1{text-shadow:0 2px 24px rgba(0,0,0,.35)}
-.rs-hero .rs-lead{color:rgba(255,255,255,.9);max-width:27em}
-
-/* 서울행 장면: 넓은 화면은 글이 지나가는 대로 옆 휴대폰이 바뀐다 */
-.rs-story{color:#fff;background:linear-gradient(180deg,#05091a 0%,#0d0b22 50%,#05091a 100%);padding:clamp(88px,10vw,140px) 0 clamp(60px,6vw,96px)}
-.rs-story-head{max-width:calc(460px + 340px + clamp(48px,6vw,96px));margin:0 auto clamp(28px,4vw,56px)}
-.rs-story-head .rs-tag{opacity:.7}
-.rs-story-head h2{margin-top:10px;font:700 clamp(30px,3.4vw,48px)/1.15 var(--sans);letter-spacing:-.03em}
-.rs-story-body{display:grid;grid-template-columns:minmax(0,460px) minmax(0,340px);justify-content:center;column-gap:clamp(48px,6vw,96px);padding:0 var(--gut)}
-#chapters{display:grid}
-.rs-chapter{min-height:72vh;display:flex;align-items:center}
-.rs-chapter-phone{display:none}
-.rs-chapter-say{display:grid;gap:12px;max-width:440px;opacity:.32;transition:opacity .4s var(--ease)}
-.rs-chapter.on .rs-chapter-say{opacity:1}
-.rs-chapter .rs-num{color:var(--acc-night)}
-.rs-chapter h3{font:700 clamp(26px,2.6vw,38px)/1.2 var(--sans);letter-spacing:-.03em}
-.rs-chapter p{font:500 clamp(16px,1.25vw,19px)/1.6 var(--sans);color:rgba(255,255,255,.88)}
-.rs-stage-col{position:relative}
-.rs-phone{position:relative;padding:8px;border-radius:46px;background:#111;box-shadow:0 40px 70px -40px rgba(20,14,40,.55),0 0 0 1px rgba(255,255,255,.08) inset}
-.rs-phone img{width:100%;height:auto;aspect-ratio:600/1301;border-radius:38px;background:#0b0c18}
-#stage{position:sticky;top:calc(50vh - min(39vh,358px));width:min(100%,min(36vh,330px));margin:0 auto;padding:8px;border-radius:46px;background:#111;box-shadow:0 50px 90px -40px rgba(120,80,255,.35),0 0 0 1px rgba(255,255,255,.08) inset}
-#stage::before{content:"";display:block;aspect-ratio:600/1301}
-#stage img{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);border-radius:38px;object-fit:cover;opacity:0;transform:scale(1.015);transition:opacity .5s var(--ease),transform .6s var(--ease)}
-#stage img.on{opacity:1;transform:none}
-#stage img.now{transition:none}
-
-/* 사전예약 칸 */
-.rs-signup{padding:clamp(72px,8vw,120px) var(--gut);background:var(--panel)}
-.rs-signup-in{display:grid;gap:16px;justify-items:center;max-width:600px;margin:0 auto;text-align:center}
-.rs-signup .rs-tag{color:var(--acc)}
-.rs-signup h2{font:700 clamp(28px,3.2vw,44px)/1.2 var(--sans);letter-spacing:-.03em}
-.rs-signup-lead{font:500 17px/1.6 var(--sans)}
-.rs-card{width:100%;margin-top:16px;padding:clamp(22px,2.6vw,34px);border-radius:28px;background:var(--paper);box-shadow:var(--shadow),inset 0 0 0 1px rgba(29,29,31,.05);text-align:left}
+.rs-card{width:100%;margin-top:6px;padding:clamp(22px,2.4vw,30px);border-radius:24px;background:var(--paper);box-shadow:var(--shadow),inset 0 0 0 1px rgba(29,29,31,.06)}
 .rs-card form,.rs-done{display:grid;gap:18px}
 .rs-card-title{font:700 clamp(19px,1.6vw,22px)/1.3 var(--sans)}
 .rs-card-title:focus{outline:none}
@@ -117,11 +66,13 @@ html:lang(mn) .rs-h1{font-size:clamp(32px,3.7vw,54px)}
 #f-email::placeholder{color:#9a9590}
 #f-email:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(29,29,31,.1)}
 .bad #f-email{border-color:var(--bad)}
+
 .rs-chips{display:flex;flex-wrap:wrap;gap:8px}
 .rs-chip{position:relative;display:inline-flex;align-items:center;height:42px;padding:0 16px;border:1.5px solid var(--hair);border-radius:999px;background:var(--paper);font:600 15px/1 var(--sans);cursor:pointer;transition:background .15s,color .15s,border-color .15s}
 .rs-chip input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
 .rs-chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .rs-chip:has(input:focus-visible){outline:2px solid var(--ink);outline-offset:3px}
+
 .rs-privacy{font:500 14px/1.55 var(--sans);color:var(--cap)}
 .rs-privacy a{color:var(--ink);font-weight:600;text-underline-offset:3px}
 .rs-check{display:flex;align-items:flex-start;gap:10px;font:600 15px/1.5 var(--sans);cursor:pointer}
@@ -129,55 +80,78 @@ html:lang(mn) .rs-h1{font-size:clamp(32px,3.7vw,54px)}
 .bad .rs-check input{outline:2px solid var(--bad);outline-offset:2px}
 .rs-check input:focus-visible,.bad .rs-check input:focus-visible{outline:3px solid var(--ink);outline-offset:3px} /* 오류 테두리가 있어도 초점은 보이게(11-23 검수) */
 .rs-err{font:600 14px/1.45 var(--sans);color:var(--bad)}
+
 .rs-submit{width:100%;height:56px;border-radius:999px;background:var(--ink);color:var(--paper);font:700 17px/1 var(--sans);transition:transform .2s var(--ease),opacity .2s}
 .rs-submit:hover{transform:translateY(-1px)}
 .rs-submit:disabled{opacity:.6;cursor:progress;transform:none}
 .rs-note{font:500 13.5px/1.5 var(--sans);color:var(--cap)}
+
 .rs-done-body{font:600 17px/1.55 var(--sans);overflow-wrap:anywhere}
 .rs-done-acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
 .rs-pill{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px;border-radius:999px;background:var(--ink);color:var(--paper);font:600 16px/1 var(--sans);text-decoration:none;transition:transform .2s var(--ease)}
 .rs-pill:hover{transform:translateY(-2px)}
 .rs-text{padding-bottom:3px;border-bottom:1.5px solid currentColor;font:600 15px/1.3 var(--sans)}
-.rs-signup :focus-visible,.rs-now :focus-visible,.rs-foot :focus-visible{outline-color:var(--ink)}
 
-/* 지금 해 볼 수 있는 것 */
-.rs-now{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px 40px;padding:clamp(64px,7vw,104px) var(--wide);background:var(--paper)}
-.rs-now-tag{font:700 15px/1.2 var(--sans);color:var(--cap)}
-.rs-now h2{font:700 clamp(26px,2.8vw,38px)/1.2 var(--sans);letter-spacing:-.03em;margin:8px 0 10px}
-.rs-now p{max-width:34em}
+/* 지금 해 볼 수 있는 것: 서울행 실제 화면(11-24 유호님 정정 — 첫 화면과 폼은 그대로 두고 이 단락만).
+ * 넓은 화면: 장면 글이 화면 가운데를 지나면 옆 휴대폰 한 대가 그 장면으로 옅게 바뀐다. 좁은 화면: 장면마다 휴대폰 한 대를 옆으로 넘긴다. */
+.rs-now{color:#fff;background:linear-gradient(180deg,var(--night) 0%,#0d0b22 50%,var(--night) 100%);padding:clamp(80px,9vw,128px) var(--gut) clamp(72px,8vw,112px)}
+.rs-now-head,.rs-now-end{display:grid;gap:14px;justify-items:start;max-width:calc(460px + 340px + clamp(48px,6vw,96px));margin:0 auto}
+.rs-now-tag{font:700 clamp(15px,1.2vw,18px)/1.2 var(--sans);color:var(--acc-night)}
+.rs-now h2{font:700 clamp(30px,3.4vw,48px)/1.15 var(--sans);letter-spacing:-.03em;max-width:15em}
+:lang(mn) .rs-now h2{letter-spacing:-.01em}
+.rs-now-body{max-width:34em;color:rgba(255,255,255,.88)}
+.rs-now .rs-pill{margin-top:8px;background:#fff;color:var(--ink)}
+.rs-now :focus-visible{outline-color:#fff}
+.rs-story{display:grid;grid-template-columns:minmax(0,460px) minmax(0,340px);justify-content:center;column-gap:clamp(48px,6vw,96px);margin-top:clamp(8px,2vw,24px)}
+#chapters{display:grid;margin:0;padding:0;list-style:none}
+.rs-chapter{min-height:64vh;display:flex;align-items:center}
+/* 넓은 화면에서는 옆 휴대폰이 그림을 보이므로 장면 속 휴대폰은 눈에서만 숨긴다(화면 읽기는 대체 글을 읽는다). */
+.rs-chapter .rs-chapter-phone{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);box-shadow:none}
+.rs-chapter-say{display:grid;gap:12px;max-width:440px;opacity:.55;transition:opacity .4s var(--ease)}
+.rs-chapter.on .rs-chapter-say{opacity:1}
+.rs-num{font:500 14px/1 var(--mono);letter-spacing:.02em;color:var(--acc-night)}
+.rs-chapter h3{font:700 clamp(24px,2.4vw,34px)/1.2 var(--sans);letter-spacing:-.03em}
+:lang(mn) .rs-chapter h3{letter-spacing:-.01em}
+.rs-chapter p{font:500 clamp(16px,1.2vw,18px)/1.6 var(--sans);color:rgba(255,255,255,.88)}
+.rs-stage-col{position:relative}
+.rs-phone{position:relative;padding:8px;border-radius:46px;background:#111;box-shadow:0 40px 70px -40px rgba(20,14,40,.55),0 0 0 1px rgba(255,255,255,.08) inset}
+.rs-phone img{width:100%;height:auto;aspect-ratio:600/1301;border-radius:38px;background:#0b0c18}
+#stage{position:sticky;top:calc(50vh - min(39vh,358px));width:min(100%,min(36vh,330px));margin:0 auto;padding:8px;border-radius:46px;background:#111;box-shadow:0 50px 90px -40px rgba(120,80,255,.35),0 0 0 1px rgba(255,255,255,.08) inset}
+#stage::before{content:"";display:block;aspect-ratio:600/1301}
+#stage img{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);border-radius:38px;object-fit:cover;opacity:0;transform:scale(1.015);transition:opacity .5s var(--ease),transform .6s var(--ease)}
+#stage img.on{opacity:1;transform:none}
+#stage img.now{transition:none}
+.rs-now-end{margin-top:clamp(8px,2vw,24px)}
+#chapters:focus{outline:none}
+#chapters:focus-visible{outline:2px solid #fff;outline-offset:-2px;border-radius:12px}
 
-.rs-foot{padding:28px var(--wide) 44px;border-top:1px solid var(--hair);background:var(--paper);font:500 14px/1.6 var(--sans);color:var(--cap)}
+.rs-foot{padding:28px var(--wide) 44px;border-top:1px solid var(--hair);font:500 14px/1.6 var(--sans);color:var(--cap)}
 .rs-foot a{text-underline-offset:3px}
 
-/* 휴대폰 · 좁은 창: 세로 타이틀 무대 위에 글, 아래에 단추. 장면은 휴대폰 한 대씩 옆으로 넘긴다 */
+/* 휴대폰 · 좁은 창: 그림이 위, 글과 칸이 아래 */
 @media (max-width:899px){
-  .rs-hero{min-height:max(100svh,640px)}
-  .rs-art img{object-position:50% 40%}
-  .rs-hero::before{background:linear-gradient(180deg,rgba(4,8,22,.78) 0%,rgba(4,8,22,.45) 38%,rgba(4,8,22,0) 52%,rgba(4,8,22,0) 70%,rgba(4,8,22,.82) 100%)}
-  .rs-hero-in{justify-content:space-between;padding:76px var(--gut) 28px}
-  .rs-h1{font-size:clamp(32px,9vw,46px)}
-  html:lang(en) .rs-h1,html:lang(mn) .rs-h1{font-size:clamp(30px,8.4vw,42px)}
-  .rs-hero .rs-lead{font-size:16px}
-  .rs-story{padding-top:64px}
-  .rs-story-head{padding:0 var(--gut)}
-  .rs-story-body{grid-template-columns:1fr}
+  .rs-hero{display:block;min-height:0}
+  .rs-hero::before{display:none}
+  .rs-art{position:relative;z-index:0;inset:auto;height:auto;aspect-ratio:4/3;object-position:82% 58%}
+  .rs-say{width:auto;margin:0;padding:6px var(--gut) 44px;gap:14px}
+  .rs-hero h1{font-size:clamp(38px,10vw,56px)}
+  :lang(mn) .rs-hero h1{font-size:clamp(30px,8vw,44px)}
+  .rs-now{padding:64px var(--gut)}
+  .rs-now h2{font-size:clamp(26px,7vw,34px)}
+  .rs-story{grid-template-columns:1fr;margin-top:28px}
   .rs-stage-col{display:none}
   #chapters{grid-auto-flow:column;grid-auto-columns:min(62vw,250px);gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--gut);margin:0 calc(var(--gut) * -1);padding:4px var(--gut) 8px;scrollbar-width:none}
   #chapters::-webkit-scrollbar{display:none}
   .rs-chapter{min-height:0;display:grid;gap:22px;align-content:start;scroll-snap-align:start}
-  .rs-chapter-phone{display:block;width:100%}
+  .rs-chapter .rs-chapter-phone{position:relative;width:100%;height:auto;padding:8px;margin:0;overflow:visible;clip:auto;box-shadow:0 40px 70px -40px rgba(20,14,40,.55),0 0 0 1px rgba(255,255,255,.08) inset}
   .rs-chapter-say{opacity:1}
   .rs-chapter h3{font-size:22px}
   .rs-chapter p{font-size:15.5px}
-  .rs-now{grid-template-columns:1fr;padding:64px var(--gut)}
+  .rs-now-end{display:none}
 }
 @media (max-width:420px){
   .rs-bar{padding:14px 16px}
-  .rs-langs button{padding:0 8px;font-size:13px}
-  .rs-card{padding:20px 18px;border-radius:22px}
-  .rs-go{width:100%}
+  .rs-langs button{padding:0 9px;font-size:13px}
+  .rs-card{padding:20px 18px;border-radius:20px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
-/* 휴대폰 판의 장면 줄은 옆으로 넘기는 칸이라 키보드로도 들어가 ←→로 넘긴다(공개 전 점검 axe scrollable-region-focusable). */
-#chapters:focus{outline:none}
-#chapters:focus-visible{outline:2px solid #fff;outline-offset:6px;border-radius:12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

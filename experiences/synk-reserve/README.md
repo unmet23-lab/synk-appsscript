@@ -2,16 +2,15 @@
 
 2026-11-23 유호님 「온라인 반 계획은 철수하자. 앱 오픈을 집중해서 사전예약 받자」로 지은 쪽이다. SYNK는 2027년 2월에 정식 출시한다. 이 쪽은 출시 안내를 받을 이메일만 모은다. 돈은 받지 않고, 확인 메일과 광고 메일도 보내지 않는다.
 
-2026-11-24에 유호님 「게임인지 아무도 모를것같아. 우리 앱 화면이든 뭐든 좀 솔깃하게」로 다시 지었다. 첫 화면은 SYNK WORLD 타이틀 무대 그림 위에 「한국 유학을 먼저 살아 보는 한국어 이야기 게임」을 얹는다. 그 아래는 서울행의 실제 화면 여섯 장(입국심사 · 서울역 개찰구 · 한글 이름 쓰기 · 얼굴 고르기 · 학생증 · 내 길)을 휴대폰 틀에 보인다. 넓은 화면에서는 장면 글이 화면 가운데를 지나면 옆 휴대폰이 그 장면으로 바뀌고, 좁은 화면에서는 장면마다 휴대폰 한 대를 옆으로 넘긴다. 시안 셋 가운데 유호님이 C안을 고르셨다([시안 기록](../../docs/디자인/synk.im_사전예약_게임화면_20261124/README.md)).
+맨 아래 「지금 해 볼 수 있는 것」 단락은 11-24에 서울행 실제 화면 여섯 장(입국심사 · 서울역 개찰구 · 한글 이름 쓰기 · 얼굴 고르기 · 학생증 · 내 길)으로 바꿨다. 유호님 말씀은 「게임으로 이동하는 단락 부분만 바꿔달란거였어」다. 첫 화면, 폼, 링크 미리보기는 11-23 판 그대로 둔다. 넓은 화면에서는 장면 글이 화면 가운데를 지나면 옆 휴대폰이 그 장면으로 바뀌고, 좁은 화면에서는 장면마다 휴대폰을 옆으로 넘긴다. 이 과정은 [게임 화면 기록](../../docs/디자인/synk.im_사전예약_게임화면_20261124/README.md)에 있다.
 
 | 무엇 | 어디 |
 |---|---|
-| 화면 글(한국어 · 영어 · 몽골어), 서울행 장면 글(`SCENES`), 폼 질문 번호, 관심 선택지 | `src/copy.js` |
+| 화면 글(한국어 · 영어 · 몽골어), 아래 단락의 서울행 장면 글(`SCENES`), 폼 질문 번호, 관심 선택지 | `src/copy.js` |
 | 화면 동작(언어 · 들어온 곳 · TOPIK 안내 띠 · 장면 휴대폰 · 보내기 · 친구에게 보내기) | `src/app.js` |
-| 구조와 모양 | `src/index.html`, `src/reserve.css` (휴대폰 틀은 synk.im 상세 쪽과 같은 값, 사전예약 칸은 새 홈의 미색 판) |
-| 첫 화면 그림 | `src/art/stage-land.webp` · `stage-port.webp` — `experiences/brand-opening/assets`의 WORLD 타이틀 무대(`world-title-concert-*-v2`)를 다시 저장한 판 |
-| 게임 화면 캡처 | `src/shots/<ko·en·mn>/<title·immigration·station·name·face·card·road>.webp` (아래 「화면 캡처」) |
-| 링크 미리보기 원고 | `src/og.html` → `reserve/og.jpg` (한국어 타이틀 · 입국심사 캡처) |
+| 구조와 모양 | `src/index.html`, `src/reserve.css` (synk.im 새 홈 v11의 값과 마을 그림 `/assets/v11/town-road.webp`) |
+| 아래 단락의 게임 화면 캡처 | `src/shots/<ko·en·mn>/<immigration·station·name·face·card·road>.webp` (아래 「화면 캡처」) |
+| 링크 미리보기 원고 | `src/og.html` → `reserve/og.jpg` |
 | 철수한 `/lab/topik4/` 자리 | `src/lab-topik4.html` → `lab/topik4/index.html` |
 | 빌드 → `dist/` | `node experiences/synk-reserve/build.mjs` |
 | 시험 | `node --test experiences/synk-reserve/app.test.js` |
@@ -36,24 +35,23 @@
 - 개인정보: 모으는 것(이메일 · 고른 관심 · 들어온 링크 표시 · 화면 언어, 이메일을 고쳐 다시 보내면 앞 이메일), 쓰는 곳(출시 안내 메일), 보관(안내를 보낸 뒤 지움, 그 전에 요청하면 바로 지움), Google Forms로 접수 · 보관, 동의하지 않아도 된다는 것을 동의 위에 보인다(/ub/와 같은 항목). 화면의 동의 문장은 이 쪽의 목적(「출시 안내를 위한 …」)을 밝히고, 폼에는 폼에 고정된 동의 선택지 「위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.」가 기록된다(폼 선택지를 바꾸면 같은 폼을 쓰는 /ub/의 등록이 거절된다). 쓰는 곳은 화면이 밝힌 출시 안내뿐이다. 근거는 [처리방침 · 홈페이지 문의](https://synk.im/privacy/#website-contact)다. 이 기기에는 아무것도 저장하지 않는다.
 - 지우기 요청은 [TOPIK 4급 반 README의 「취소 · 삭제 요청」](../lab-topik4/README.md) 순서와 같다(Google Forms 응답을 먼저 지우고 Workspace에서 「문의 지우기」).
 
-## 화면 캡처
-
-캡처는 라이브 synk.im/world를 손님으로 지나가며 찍은 실제 화면이다. 아직 앱에 없는 화면(꿈 무대 영상 등)은 싣지 않는다.
-
-- 장면 화면: `node experiences/seoul-arrival/qa/흐름.mjs --폭 391x852 --언어 <ko|en|mn> --꿈 <idol|actor> --찍기 --끝 road --후보 <빈 폴더>`. 입국심사 · 서울역은 `--완주`를 붙인 판에서, 나머지는 건너뛴 판에서 고른다. 내 길에서 멈추므로 1화와 talk는 부르지 않는다. 한국어 · 몽골어는 아이돌 꿈, 영어는 배우 꿈이다.
-- 타이틀: 출시 안내 띠를 닫은 상태(`sessionStorage['synk-launch-notice']='closed'`)로 `synk.im/world/mobile.html?lang=<언어>`를 393×852 @2x로 찍는다.
-- 600px 폭 webp로 줄여 `src/shots/<언어>/`에 둔다(이번 판의 변환 스크립트는 공용 작업본 `.tmp/rsv-sian-20261124/shots.py`).
-- 내 길(ROAD) · 학생증 · 타이틀 화면이 바뀌면 다시 찍는다. 장면 글(`SCENES`)이 화면과 맞는지도 함께 본다.
-
 ## 출시 때
 
 출시 안내는 등록한 사람 모두에게 같은 날 한 통씩 보낸다(받는 사람끼리 주소가 보이지 않게). 등록의 「화면 언어」 줄대로 한국어 · 영어 · 몽골어로 쓴다. 보내기는 유호님 허락 뒤다. 보낸 뒤에는 그 등록들을 위 순서로 지운다. 쪽이 그렇게 약속했다.
+
+## 화면 캡처
+
+캡처는 라이브 synk.im/world를 손님으로 지나가며 찍은 실제 화면이다. 아직 앱에 없는 화면은 싣지 않는다.
+
+- `node experiences/seoul-arrival/qa/흐름.mjs --폭 <391|392>x852 --언어 <ko|en|mn> --꿈 <idol|actor> --찍기 --끝 road --후보 <빈 폴더>`로 찍는다. 입국심사 · 서울역은 `--완주`를 붙인 391 판에서, 나머지는 건너뛴 392 판에서 고른다. 내 길에서 멈추므로 talk는 부르지 않는다. 한국어 · 몽골어는 아이돌 꿈, 영어는 배우 꿈이다.
+- 600px 폭 webp로 줄여 `src/shots/<언어>/`에 둔다(변환 스크립트는 공용 작업본 `.tmp/rsv-fix-20261124/shots.py`).
+- 서울행 화면(특히 내 길 · 학생증)이 바뀌면 다시 찍는다. 장면 글(`SCENES`)의 대체 글이 화면과 맞는지도 함께 본다.
 
 ## 공개
 
 ```bash
 node experiences/synk-reserve/build.mjs
-node tools/공개.js 올리기 --원본 experiences/synk-reserve/dist reserve --전부 --후보폴더 <후보 폴더>
+node tools/공개.js 올리기 --원본 <공용 작업본 절대경로>/experiences/synk-reserve/dist reserve --전부 --후보폴더 <후보 폴더>
 ```
 
 `reserve/`는 이 빌드만 쓰는 폴더다. `lab/topik4/index.html`은 같은 빌드의 `dist/lab/topik4/index.html`을 한 파일로 올린다(`lab/topik4/`의 옛 그림 · 영상은 공개본에 남아 있고 아무 쪽도 부르지 않는다). 몽골어를 고치면 `tools/몽골어대조.js`를 다시 돌린다.

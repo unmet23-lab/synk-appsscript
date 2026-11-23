@@ -2,31 +2,27 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 링크 미리보기 og.jpg(1200×630) 원고. build.mjs가 reserve/shots/ko의 타이틀 · 입국심사 캡처를 옆에 두고 찍는다. -->
 <style>
 @font-face{font-family:'Reserve Sans';src:url(reserve/assets/reserve-sans.woff2) format('woff2');font-weight:100 900}
 html,body{margin:0;width:1200px;height:630px;overflow:hidden}
-body{position:relative;background:radial-gradient(60% 90% at 80% 30%,#2a1d55 0%,rgba(42,29,85,0) 65%),linear-gradient(180deg,#05091a 0%,#14102c 100%);font-family:'Reserve Sans',sans-serif;color:#fff;word-break:keep-all}
-.say{position:absolute;left:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:22px;width:620px}
-.logo{font:800 36px/1 'Reserve Sans';letter-spacing:-.03em}
-.tag{font:700 28px/1.2 'Reserve Sans';opacity:.8;margin-top:26px}
-h1{margin:0;font:400 54px/1.16 'Reserve Sans';letter-spacing:-.035em}
-h1 b{display:block;font-weight:800}
-.phones{position:absolute;right:70px;top:64px;display:flex;gap:26px;align-items:flex-start}
-.ph{width:200px;padding:7px;border-radius:38px;background:#111;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
-.ph img{display:block;width:100%;border-radius:31px}
-.ph.b{margin-top:64px}
+body{position:relative;background:#FAF1ED;font-family:'Reserve Sans',sans-serif;color:#1d1d1f;word-break:keep-all}
+img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:70% 50%}
+.fade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(250,241,237,.97) 0%,rgba(250,241,237,.9) 34%,rgba(250,241,237,0) 62%)}
+.say{position:absolute;left:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:18px;width:560px}
+.logo{font:800 34px/1 'Reserve Sans';letter-spacing:-.03em}
+.tag{font:700 30px/1.2 'Reserve Sans';color:#F2573F;margin-top:40px}
+h1{margin:0;font:700 92px/1.02 'Reserve Sans';letter-spacing:-.045em}
+p{margin:0;font:600 28px/1.45 'Reserve Sans';letter-spacing:-.01em}
 </style>
 </head>
 <body>
+<img src="town-road.webp" alt="">
+<div class="fade"></div>
 <div class="say">
   <div class="logo">synk</div>
-  <div class="tag">2027년 2월 출시 · 지금 사전예약</div>
-  <h1>한국 유학을 먼저 살아 보는<b>한국어 이야기 게임</b></h1>
-</div>
-<div class="phones">
-  <div class="ph"><img src="reserve/shots/ko/title.webp" alt=""></div>
-  <div class="ph b"><img src="reserve/shots/ko/immigration.webp" alt=""></div>
+  <div class="tag">2027년 2월 정식 출시</div>
+  <h1>SYNK 사전예약</h1>
+  <p>이메일을 남기시면 출시 때<br>가장 먼저 알려 드립니다.</p>
 </div>
 </body>
 </html>
