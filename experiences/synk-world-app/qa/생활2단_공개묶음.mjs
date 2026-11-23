@@ -1,5 +1,6 @@
 // 생활 원고 2단 · 인사 팩 · 카페 팩(답 판정의 쓰임 줄 · 움직임, 서하 · 지호 · 태오 이야기와 카페 방문)의 synk.im/world 선택 공개 재료(2026-11-22 · 11-24).
-//   node experiences/synk-world-app/qa/생활2단_공개묶음.mjs [--끝 <커밋=origin/master>]
+//   node experiences/synk-world-app/qa/생활2단_공개묶음.mjs [--끝 <커밋=origin/master>] [--팩 <인사|카페|…>]
+// --팩: 그 팩의 커밋만 얹는다. 앞 팩이 이미 공개본에 있으면 이것을 쓴다 — 앞 팩 변경까지 다시 얹으면 그 뒤 공개본에서 바뀐 자리(종이 겉 등)와 겹친다(11-24).
 // master 전체 공개는 몽골 시범 뒤라(결정 11-20 Atlas 선택 공개), 지금 공개본 위에 이 일의 변경만 얹는다(앞면 공개묶음.mjs와 같은 꼴).
 // · 고친 원천: 바탕 판(이 일의 첫 커밋 바로 앞)에 이 일의 커밋(제목이 「WORLD 생활 원고 2단 · <팩 이름> 팩」)만 얹은 「내 판」을
 //   공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 겹치면 멈춘다.
@@ -14,7 +15,7 @@ import {fileURLToPath} from 'node:url';
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const args = process.argv.slice(2), opt = (n, d) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; };
 const END = opt('--끝', 'origin/master');
-const TITLE = '^WORLD 생활 원고 2단 · [^ ]* 팩';
+const TITLE = `^WORLD 생활 원고 2단 · ${opt('--팩', '[^ ]*')} 팩`;
 const OUT = path.join(ROOT, '.tmp', 'life2-pub');
 const git = (...a) => execFileSync('git', ['-C', ROOT, '-c', 'core.autocrlf=false', ...a], {maxBuffer: 1 << 30});
 const lf = s => s.replace(/\r\n/g, '\n');
@@ -50,9 +51,34 @@ function merge3(tag, liveText, baseText, mineText) {
   const dir = fs.mkdtempSync(path.join(OUT, 'g-')), a = path.join(dir, 'live'), b = path.join(dir, 'base'), c = path.join(dir, 'mine');
   fs.writeFileSync(a, liveText); fs.writeFileSync(b, baseText); fs.writeFileSync(c, mineText);
   let out, conflicts = 0;
-  try { out = execFileSync('git', ['merge-file', '-p', a, b, c]).toString(); } catch (e) { out = e.stdout.toString(); conflicts = e.status; }
+  try { out = execFileSync('git', ['merge-file', '-p', '--diff3', a, b, c]).toString(); } catch (e) { out = e.stdout.toString(); conflicts = e.status; }
   fs.rmSync(dir, {recursive: true, force: true});
+  if (conflicts) ({out, conflicts} = lineWise(out));
   if (conflicts) { fs.writeFileSync(path.join(OUT, `겹침-${tag.replaceAll('/', '_')}.txt`), out); throw Error(`${tag}: 공개본과 겹침 ${conflicts}곳 — ${OUT}`); }
+  return out;
+}
+// 겹친 블록의 세 판(공개본 · 바탕 · 내 판) 줄 수가 같으면 줄마다 3방향으로 푼다: 한쪽만 바꾼 줄은 그쪽을, 둘 다 다르게 바꾼 줄이 있으면 겹침으로 남긴다.
+// 공개본이 master보다 옛 판이라 남의 고침(예: 카페 방문 직원 응답)이 내가 고친 줄 바로 옆에 있을 때, 남의 고침은 싣지 않고 내 줄만 얹는다(11-24).
+function lineWise(text) {
+  const re = /^<<<<<<< [^\n]*\n([\s\S]*?)^\|\|\|\|\|\|\| [^\n]*\n([\s\S]*?)^=======\n([\s\S]*?)^>>>>>>> [^\n]*\n/gm;
+  let conflicts = 0;
+  const out = text.replace(re, (whole, live, base, mine) => {
+    const [L, B, M] = [live, base, mine].map(t => t.split('\n').slice(0, -1));
+    if (L.length !== B.length || B.length !== M.length) { conflicts++; return whole; }
+    const lines = B.map((b, i) => L[i] === b ? M[i] : M[i] === b || M[i] === L[i] ? L[i] : wordWise(L[i], b, M[i]));
+    if (lines.includes(null)) { conflicts++; return whole; }
+    return lines.map(l => l + '\n').join('');
+  });
+  return {out, conflicts};
+}
+// 한 줄을 양쪽이 다 바꿨으면(한 줄에 직원 응답과 친구 대사가 같이 있다) 낱말 · 문장부호 단위로 다시 3방향으로 합친다. 겹치면 null.
+function wordWise(live, base, mine) {
+  const dir = fs.mkdtempSync(path.join(OUT, 'w-')), split = t => t.split(/(\s+|[,:{}()[\]'`.?!])/).filter(Boolean).map(w => w + '\n').join('');
+  const [a, b, c] = ['live', 'base', 'mine'].map(n => path.join(dir, n));
+  fs.writeFileSync(a, split(live)); fs.writeFileSync(b, split(base)); fs.writeFileSync(c, split(mine));
+  let out = null;
+  try { out = execFileSync('git', ['merge-file', '-p', a, b, c]).toString().split('\n').join(''); } catch { out = null; }
+  fs.rmSync(dir, {recursive: true, force: true});
   return out;
 }
 const write = (dir, rel, data) => { const f = path.join(OUT, dir, 'world', rel); fs.mkdirSync(path.dirname(f), {recursive: true}); fs.writeFileSync(f, data); };
