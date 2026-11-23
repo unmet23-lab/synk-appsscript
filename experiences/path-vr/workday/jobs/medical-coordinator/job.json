@@ -205,6 +205,12 @@
         }
       ]
     },
+    "exam-patient": {
+      "name": "내시경실 앞",
+      "photo": "places/exam-patient.jpg",
+      "alt": "내시경실 문 앞에서 환자분이 동의서를 끼운 판과 펜을 들고 이쪽을 본다. 뒤쪽 대기 의자에 기다리는 환자들이 앉아 있다.",
+      "points": []
+    },
     "consult": {
       "name": "상담실",
       "photo": "places/consult.jpg",
@@ -908,7 +914,7 @@
           "who": "nurse",
           "text": "미리 알려 주셔서 갑상선 초음파부터 해요. 금식이 필요한 검사는 과장님께 말씀드려 오후로 옮겼어요.",
           "hint": {
-            "mn": "Та урьдчилан хэлж өгсөн болохоор бамбай булчирхайн хэт авиан шинжилгээнээс эхэлнэ. Өлөн байх шаардлагатай шинжилгээнүүдийг эмчид хэлээд үдээс хойших цаг руу шилжүүлсэн.",
+            "mn": "Чи урьдчилан хэлж өгсөн болохоор бамбай булчирхайн хэт авиан шинжилгээнээс эхэлнэ. Өлөн байх шаардлагатай шинжилгээнүүдийг эмчид хэлээд үдээс хойших цаг руу шилжүүлсэн.",
             "vi": "Nhờ em báo sớm nên mình làm siêu âm tuyến giáp trước. Các xét nghiệm cần nhịn ăn thì chị đã báo bác sĩ phụ trách và chuyển sang buổi chiều rồi.",
             "en": "Since you let me know in advance, we'll start with the thyroid ultrasound. I told the doctor and moved the tests that need fasting to the afternoon."
           }
@@ -1010,6 +1016,18 @@
           "type": "move",
           "place": "exam-front",
           "caption": "내시경실 앞"
+        },
+        {
+          "type": "line",
+          "who": "patient",
+          "action": true,
+          "place": "exam-patient",
+          "text": "환자분이 동의서와 펜을 들고 다가오신다.",
+          "hint": {
+            "mn": "Өвчтөн зөвшөөрлийн хуудас, үзгээ барьсаар ойртож ирлээ.",
+            "vi": "Bệnh nhân cầm giấy đồng ý và bút, đi lại gần em.",
+            "en": "The patient comes over holding the consent form and a pen."
+          }
         },
         {
           "type": "say",
