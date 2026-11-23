@@ -141,8 +141,8 @@ ${both(en, M.quota, 'p', 'sx-fine')}${leftLine(tr, en)}
 ${both(en, M.fine, 'p', 'sx-fine')}</div>`;
 }
 
-/** 오늘 남은 장(초안 연산). 값이 없으면 그리지 않는다. */
-const leftLine = (tr, en) => (Number.isInteger(tr.remaining)
+/** 오늘 남은 장(초안 연산). 값이 없거나 0이면 그리지 않는다(0은 한도 알림이 말한다). */
+const leftLine = (tr, en) => (Number.isInteger(tr.remaining) && tr.remaining > 0
   ? both(en, [`오늘 ${tr.remaining}장 더 만들 수 있어요.`, `${tr.remaining} left today.`, `Өнөөдөр дахиад ${tr.remaining} хуудас гаргаж болно.`], 'p', 'sx-fine') : '');
 
 export function countText(text, en) {
