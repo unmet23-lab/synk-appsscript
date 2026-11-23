@@ -1088,7 +1088,8 @@ const CardFX=(()=>{
       wake();};
     s.addEventListener('pointerup',up);s.addEventListener('pointercancel',up);
     s.addEventListener('pointerleave',()=>{if(hover){hover=null;wake();}});
-    el.cardRig.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();if(pullFn&&pullFn.end(999,true))pullFn=null;});
+    // 카드 안의 단추(학생증의 「사진 나왔어요」)는 Enter · Space가 제 누름으로 가게 둔다
+    el.cardRig.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target!==el.cardRig&&e.target.closest?.('button'))return;e.preventDefault();if(pullFn&&pullFn.end(999,true))pullFn=null;});
     // 기울기 센서: 허락 창 없이 오는 기기(안드로이드)에서만 쓴다 — iOS의 권한 창을 첫 화면에 띄우지 않는다
     if(!reduce&&'DeviceOrientationEvent' in window&&typeof DeviceOrientationEvent.requestPermission!=='function')
       addEventListener('deviceorientation',e=>{if(e.beta==null||e.gamma==null||!live||!s.classList.contains('on'))return;if(!g0)g0={b:e.beta,g:e.gamma};

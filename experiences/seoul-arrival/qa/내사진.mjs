@@ -124,7 +124,8 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  check(pick.inside,`${lang} 「사진 나왔어요」 글이 칸 안`,JSON.stringify(pick));
  check(await t.inF(()=>!window.__seoulQA.photoWaiting()),`${lang} 고를 차례에는 다시 묻기를 멈춤`);
  await sleep(400);await shot(t,`${lang}-4b-사진나왔어요`);
- await t.F().click('#idPhoto [data-pick-photo]');
+ // 한국어 판은 누르기, 영어 · 몽골어 판은 키보드(Enter · Space)로 — 카드가 그 키를 막지 않아야 한다
+ if(lang==='ko')await t.F().click('#idPhoto [data-pick-photo]');else{await t.F().focus('#idPhoto [data-pick-photo]');await t.page.keyboard.press(lang==='en'?'Enter':' ');}
  check(await until('판 다시 열림',()=>t.page.evaluate(()=>window.__st.opens===2&&window.__panel.open)),`${lang} 단추를 누르면 제2의 나 판(틀 위)`);
  await t.page.evaluate(u=>{window.__st.me2={status:'ok',consent:{given:true},me:{state:'ready',chosen_url:u}};},PHOTO_URL);
  await t.page.click('#fakeClose');
