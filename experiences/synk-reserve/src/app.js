@@ -18,7 +18,10 @@
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   // 몽골어 서수 「2-р」와 「TOPIK-ийн」처럼 숫자 · 라틴 낱말에 붙은 키릴 어미가 하이픈에서 갈리지 않게 묶는다.
-  const keep = s => esc(s).replace(/(?:\d+|[A-Za-z]+)-[а-яёөүА-ЯЁӨҮ]+/g, m => `<span class="nw">${m}</span>`);
+  // 「수집·이용」처럼 「·」로 이은 말도 한 덩어리로(/ub/ keepDots와 같은 규칙, 11-23 검수).
+  const keep = s => esc(s)
+    .replace(/[^\s·]+(?:·[^\s·]+)+/g, m => `<span class="nw">${m}</span>`)
+    .replace(/(?:\d+|[A-Za-z]+)-[а-яёөүА-ЯЁӨҮ]+/g, m => `<span class="nw">${m}</span>`);
 
   /** 화면 언어: ?lang이 먼저, 없으면 기기 언어(몽골어 → 몽골어, 한국어 → 한국어), 아니면 영어. */
   function pickLang(search, navLangs) {
@@ -252,6 +255,8 @@
       state.share = { url };
     }
     showShare();
+    // 숨어 있던 결과 줄이 나타나면 화면 낭독기가 읽지 않을 수 있어 #live로도 알린다(11-23 검수).
+    live($('#share-state').textContent);
   }
 
   /** 친구에게 보내기 결과 줄. 빈 줄은 숨겨 완료 판 아래에 빈 칸이 생기지 않게 한다(11-23 검수). */

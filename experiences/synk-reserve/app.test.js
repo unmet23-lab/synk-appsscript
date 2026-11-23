@@ -135,3 +135,16 @@ test('폼은 스크립트가 붙기 전에 보내져도 이메일을 주소에 �
   const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
   assert.match(html, /<form id="form" method="post" action="#"/);
 });
+
+test('개인정보 안내가 실제로 보내는 항목(들어온 링크 · 화면 언어 · 앞 이메일)과 Google Forms 보관을 밝힌다', () => {
+  assert.match(C.ko.privacy, /들어온 링크 표시와 화면 언어/);
+  assert.match(C.ko.privacy, /앞서 적은 이메일/);
+  assert.match(C.ko.privacy, /Google Forms로 접수·보관/);
+  assert.match(C.ko.privacy, /동의하지 않으면/);
+  assert.match(C.en.privacy, /which link brought you/);
+  assert.match(C.en.privacy, /Google Forms/);
+  assert.match(C.mn.privacy, /орж ирсэн холбоос/);
+  assert.match(C.mn.privacy, /Google Forms/);
+  const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
+  assert.ok(html.includes(C.ko.privacy), '자바스크립트 없이 보이는 한국어 안내도 같다');
+});

@@ -18,9 +18,9 @@
 <meta name="theme-color" content="#FAF1ED">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-synk-20260919-32.png">
 <link rel="preload" href="/reserve/assets/reserve-sans.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="reserve.css?v=6c93211a887a">
-<script src="copy.js?v=e5baa7b24b84" defer></script>
-<script src="app.js?v=b00671a20192" defer></script>
+<link rel="stylesheet" href="reserve.css?v=b6424ef908a9">
+<script src="copy.js?v=b5a670ed9704" defer></script>
+<script src="app.js?v=469d49abc662" defer></script>
 </head>
 <body>
 <header class="rs-bar">
@@ -49,13 +49,13 @@
             <input id="f-email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="254" placeholder="name@example.com" aria-describedby="err-email">
             <p class="rs-err" id="err-email" hidden></p>
           </div>
-          <fieldset class="rs-field">
+          <fieldset class="rs-field" aria-describedby="interest-hint">
             <legend data-t="interestLabel">관심 있는 것</legend>
             <p class="rs-hint" id="interest-hint" data-t="interestHint">출시 안내를 준비할 때 참고합니다. 고르지 않아도 됩니다.</p>
-            <div class="rs-chips" id="opt-interest" aria-describedby="interest-hint"></div>
+            <div class="rs-chips" id="opt-interest"></div>
           </fieldset>
           <div class="rs-field rs-consent" data-field="consent">
-            <p class="rs-privacy"><span data-t="privacy">모으는 것은 이메일과 고른 관심입니다. 출시 안내 메일을 보내는 데만 쓰고, 안내를 보낸 뒤 지웁니다. 그 전에 지워 달라고 하시면 바로 지웁니다.</span> <a href="https://synk.im/privacy/#website-contact" target="_blank" rel="noopener" data-t="privacyLink">개인정보 처리방침</a></p>
+            <p class="rs-privacy"><span data-t="privacy">모으는 것은 이메일, 고른 관심, 이 쪽에 들어온 링크 표시와 화면 언어입니다(이메일을 고쳐 다시 보내면 앞서 적은 이메일도). 출시 안내 메일을 보내는 데만 쓰고, 안내를 보낸 뒤 지웁니다. 그 전에 지워 달라고 하시면 바로 지웁니다. Google Forms로 접수·보관됩니다. 동의하지 않으면 사전예약하지 않으셔도 됩니다.</span> <a href="https://synk.im/privacy/#website-contact" target="_blank" rel="noopener" data-t="privacyLink">개인정보 처리방침</a></p>
             <label class="rs-check"><input id="f-consent" name="consent" type="checkbox" required aria-describedby="err-consent"><span data-t="consent">위 안내를 읽고, 출시 안내를 위한 개인정보 수집·이용에 동의합니다.</span></label>
             <p class="rs-err" id="err-consent" hidden></p>
           </div>
@@ -71,7 +71,7 @@
             <button class="rs-pill" id="share" type="button" data-t="share">친구에게 보내기</button>
             <button class="rs-text" id="again" type="button" data-t="again">이메일을 잘못 적었다면 다시 적기</button>
           </div>
-          <p class="rs-note" id="share-state" aria-live="polite" hidden></p>
+          <p class="rs-note" id="share-state" hidden></p>
         </div>
       </div>
     </div>
