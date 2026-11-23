@@ -6,7 +6,8 @@
   "role": "고객상담 사무원",
   "summary": "한국 앱 회사의 해외 고객 상담팀에서 해외 이용자의 전화와 채팅을 받으며 하루를 보내요. 화면을 보고 고르고, 건네는 말에 답하고, 갈림길에서 골라요.",
   "minutes": 33,
-  "reviewNote": "장면과 대사는 고객상담 현장 전문가의 검토를 받기 전입니다. 회사와 앱, 요금과 규정은 체험을 위해 지어낸 예시예요. 실제 외국인 상담사는 같은 나라 말로 묻는 고객을 주로 받아요. 이 체험은 한국어를 연습하도록 한국어로 묻는 고객을 더 넣었어요.",
+  "reviewNote": "장면과 대사는 고객상담 현장 전문가의 검토를 받기 전입니다. 회사와 앱, 요금과 규정은 체험을 위해 지어낸 예시입니다. 실제 외국인 상담사는 같은 나라 말로 묻는 고객을 주로 받습니다. 이 체험은 한국어를 연습하도록 한국어로 묻는 고객을 더 넣었습니다.",
+  "reviewNoteScreen": "장면과 대사는 고객상담 현장 전문가의 검토를 받기 전이에요. 회사와 앱, 요금과 규정은 체험을 위해 지어낸 예시예요. 실제 외국인 상담사는 같은 나라 말로 묻는 고객을 주로 받아요. 이 체험은 한국어를 연습하도록 한국어로 묻는 고객을 더 넣었어요.",
   "hintLanguages": ["mn", "vi", "en"],
   "cast": {
     "lead": { "name": "윤정아", "role": "해외 고객 상담팀 팀장" },
@@ -26,7 +27,7 @@
       "alt": "상담실 입구에서 팀장과 선배 상담사가 서 있다. 뒤에 대기 콜 현황판, 공지 보드, 작은 보관함이 있다.",
       "points": [
         { "id": "queue-board", "x": 0.17, "y": 0.23, "label": "대기 콜 현황판",
-          "hint": { "mn": "Хүлээгдэж буй дуудлагын самбар. Хэдэн хүн зөвлөхтэй холбогдохыг хүлээж байгааг харуулдаг.", "vi": "Bảng cuộc gọi đang chờ. Cho biết có bao nhiêu khách đang chờ được nối máy.", "en": "Queue board. It shows how many customers are waiting to be connected." } },
+          "hint": { "mn": "Хүлээгдэж буй дуудлагын самбар. Хэдэн хүн зөвлөхтэй холбогдохоор хүлээж байгааг харуулдаг.", "vi": "Bảng cuộc gọi đang chờ. Cho biết có bao nhiêu khách đang chờ được nối máy.", "en": "Queue board. It shows how many customers are waiting to be connected." } },
         { "id": "notice-board", "x": 0.17, "y": 0.5, "label": "공지 보드", "note": "brief",
           "hint": { "mn": "Мэдэгдлийн самбар. Өнөөдрийн анхааруулга энд байдаг.", "vi": "Bảng thông báo. Những điều cần chú ý hôm nay được dán ở đây.", "en": "Notice board. Today's notices are posted here." } },
         { "id": "phone-lockers", "x": 0.82, "y": 0.59, "label": "휴대폰 보관함",
@@ -41,17 +42,17 @@
       "alt": "내 상담석. 모니터 두 대, 헤드셋, 전화기, 파란 파일, 작은 빨간 깃발이 책상 위에 있다.",
       "points": [
         { "id": "headset", "x": 0.19, "y": 0.67, "label": "헤드셋",
-          "hint": { "mn": "Чихэвч. Бүх дуудлагыг үүгээр сонсож ярьдаг.", "vi": "Tai nghe. Mọi cuộc gọi đều nghe và nói qua tai nghe này.", "en": "Headset. You hear and speak on every call through it." } },
+          "hint": { "mn": "Чихэвч. Бүх дуудлагыг үүгээр авч ярьдаг.", "vi": "Tai nghe. Nhân viên dùng tai nghe này để nghe và nói trong mọi cuộc gọi.", "en": "Headset. You use it to listen and talk on every call." } },
         { "id": "crm-screen", "x": 0.36, "y": 0.37, "label": "상담 화면",
           "hint": { "mn": "Зөвлөгөөний дэлгэц. Үйлчлүүлэгчийн мэдээлэл, өмнөх зөвлөгөөний бүртгэл гарч ирдэг.", "vi": "Màn hình tư vấn. Hiện thông tin khách hàng và lịch sử tư vấn trước đây.", "en": "Agent screen. It shows the customer's details and past contact history." } },
         { "id": "status-button", "x": 0.63, "y": 0.37, "label": "상태 버튼(대기 · 후처리 · 휴식)",
-          "hint": { "mn": "Төлөвийн товч. Дуудлага авахад бэлэн, бүртгэлээ бичиж байгаа, амарч байгаа гэдгээ үүгээр сонгодог.", "vi": "Nút trạng thái. Chọn sẵn sàng nghe máy, đang ghi chép sau cuộc gọi, hoặc đang nghỉ.", "en": "Status button. You set yourself as ready for calls, wrapping up notes, or on a break." } },
+          "hint": { "mn": "Төлөвийн товч. «Дуудлага авахад бэлэн», «Дуудлагын дараах ажил», «Завсарлага» гэсэн төлөвөөс үүгээр сонгодог.", "vi": "Nút trạng thái. Chọn sẵn sàng nghe máy, đang ghi chép sau cuộc gọi, hoặc đang nghỉ.", "en": "Status button. Use it to set your status: ready for calls, after-call work, or on a break." } },
         { "id": "hold-key", "x": 0.71, "y": 0.73, "label": "보류 버튼",
-          "hint": { "mn": "Түр хүлээлгэх товч. Дарвал үйлчлүүлэгч таны яриаг сонсохгүй, хүлээж байна.", "vi": "Nút giữ máy. Bấm vào thì khách sẽ chờ và không nghe thấy em nói.", "en": "Hold button. Press it and the customer waits without hearing you." } },
+          "hint": { "mn": "Түр хүлээлгэх товч. Дарвал үйлчлүүлэгч таны яриаг сонсохгүйгээр хүлээнэ.", "vi": "Nút giữ máy. Bấm vào thì khách sẽ chờ và không nghe thấy em nói.", "en": "Hold button. Press it to put the customer on hold so they can't hear you." } },
         { "id": "manual", "x": 0.76, "y": 0.84, "label": "스크립트(상담 매뉴얼)",
-          "hint": { "mn": "Скрипт буюу зөвлөгөөний гарын авлага. Тогтсон хариулт, журам бичигдсэн.", "vi": "Kịch bản tư vấn (sổ tay tư vấn). Có các câu trả lời và quy trình đã được quy định.", "en": "Script (agent manual). The set answers and procedures are written in it." } },
+          "hint": { "mn": "Скрипт буюу зөвлөгөө өгөх гарын авлага. Тогтсон хариулт, журам үүнд бичигдсэн байдаг.", "vi": "Kịch bản tư vấn (sổ tay tư vấn). Có các câu trả lời và quy trình đã được quy định.", "en": "Script (agent manual). It contains the standard answers and procedures." } },
         { "id": "help-flag", "x": 0.81, "y": 0.54, "label": "도움 요청 깃발",
-          "hint": { "mn": "Тусламж хүсэх туг. Дуудлагын үеэр тусламж хэрэгтэй бол өргөж багийн ахлагчийг дууддаг.", "vi": "Cờ xin hỗ trợ. Khi cần giúp trong lúc gọi, giơ cờ lên để gọi trưởng nhóm.", "en": "Help flag. Raise it during a call when you need the team leader." } }
+          "hint": { "mn": "Тусламж хүсэх туг. Дуудлагын үеэр тусламж хэрэгтэй бол өргөж багийн ахлагчийг дууддаг.", "vi": "Cờ xin hỗ trợ. Khi cần trợ giúp trong cuộc gọi, hãy giơ cờ lên để gọi trưởng nhóm.", "en": "Help flag. Raise it during a call when you need the team leader." } }
       ]
     },
     "desk-buddy": {
@@ -74,9 +75,9 @@
       "alt": "줄 끝의 팀장 책상. 큰 모니터, 걸어 둔 헤드셋, 칸막이에 붙인 근무표가 있다.",
       "points": [
         { "id": "live-board", "x": 0.29, "y": 0.46, "label": "실시간 상담 현황",
-          "hint": { "mn": "Шууд байдлын дэлгэц. Хэн ярьж байгаа, хэн амарч байгааг ахлагч хардаг.", "vi": "Màn hình tình hình tư vấn trực tiếp. Trưởng nhóm xem ai đang nghe máy, ai đang nghỉ.", "en": "Live status screen. The team leader sees who is on a call and who is on a break." } },
+          "hint": { "mn": "Бодит цагийн хяналтын дэлгэц. Хэн ярьж байгаа, хэн амарч байгааг ахлагч эндээс хардаг.", "vi": "Màn hình theo dõi tư vấn theo thời gian thực. Trên màn hình này, trưởng nhóm thấy ai đang nghe máy, ai đang nghỉ.", "en": "Live status screen. The team leader sees who is on a call and who is on a break." } },
         { "id": "monitor-headset", "x": 0.4, "y": 0.48, "label": "모니터링 헤드셋",
-          "hint": { "mn": "Хянах чихэвч. Ахлагч зөвлөхийн дуудлагыг зэрэг сонсож туслах боломжтой.", "vi": "Tai nghe giám sát. Trưởng nhóm có thể nghe cùng cuộc gọi để hỗ trợ.", "en": "Monitoring headset. The team leader can listen in on a call to help." } },
+          "hint": { "mn": "Хянах чихэвч. Ахлагч зөвлөхийн дуудлагыг зэрэг сонсож туслах боломжтой.", "vi": "Tai nghe giám sát. Trưởng nhóm có thể cùng nghe cuộc gọi để hỗ trợ.", "en": "Monitoring headset. The team leader can listen in on a call to help." } },
         { "id": "roster", "x": 0.58, "y": 0.39, "label": "근무표", "note": "roster",
           "hint": { "mn": "Ажлын хуваарь. Хэн хэзээ хооллох, амрахыг бичсэн.", "vi": "Bảng phân ca. Ghi ai ăn trưa và nghỉ giải lao lúc nào.", "en": "Shift roster. It shows who takes lunch and breaks when." } }
       ]
@@ -101,9 +102,9 @@
       "alt": "교육실. 앞에 큰 화면과 전화기를 올린 책상 두 개가 있고, 청록색 의자가 줄지어 있다. 오른쪽 벽 보드에 색 쪽지가 붙어 있다.",
       "points": [
         { "id": "screen", "x": 0.51, "y": 0.41, "label": "교육 화면",
-          "hint": { "mn": "Сургалтын дэлгэц. Үйлчилгээ, журам, системийг энд сурдаг.", "vi": "Màn hình đào tạo. Học về dịch vụ, quy trình và hệ thống ở đây.", "en": "Training screen. You learn the services, procedures and system here." } },
+          "hint": { "mn": "Сургалтын дэлгэц. Үйлчилгээ, журам, системийн талаар эндээс мэдэж авдаг.", "vi": "Màn hình đào tạo. Học về dịch vụ, quy trình và hệ thống ở đây.", "en": "Training screen. You learn the services, procedures and system here." } },
         { "id": "roleplay-phones", "x": 0.4, "y": 0.61, "label": "역할극(롤플레잉) 전화기",
-          "hint": { "mn": "Дүрд тоглох утас. Нэг нь үйлчлүүлэгч, нөгөө нь зөвлөх болж скриптээ дадлага хийдэг.", "vi": "Điện thoại tập đóng vai. Một người làm khách, một người làm nhân viên tư vấn để luyện kịch bản.", "en": "Role-play phones. One person plays the customer and the other the agent, to practise the script." } },
+          "hint": { "mn": "Дүрд тоглох утас. Нэг нь үйлчлүүлэгч, нөгөө нь зөвлөх болж ярианы загвараар дадлага хийдэг.", "vi": "Điện thoại tập đóng vai. Một người làm khách, một người làm nhân viên tư vấn để luyện kịch bản.", "en": "Role-play phones. One person plays the customer and the other the agent, to practise the script." } },
         { "id": "training-plan", "x": 0.9, "y": 0.43, "label": "신입 교육 일정", "note": "training",
           "hint": { "mn": "Шинэ ажилтны сургалтын хуваарь.", "vi": "Lịch đào tạo nhân viên mới.", "en": "New-hire training schedule." } }
       ]
@@ -114,11 +115,11 @@
       "alt": "창이 큰 휴게실. 벽에 헤드셋 그림이 있는 안내문이 붙어 있고, 정수기, 안마의자, 작은 탁자와 소파가 있다.",
       "points": [
         { "id": "water", "x": 0.46, "y": 0.5, "label": "정수기",
-          "hint": { "mn": "Ус цэвэршүүлэгч. Өдөржин ярьдаг ажил тул ус байнга уудаг.", "vi": "Máy lọc nước. Công việc nói cả ngày nên phải uống nước thường xuyên.", "en": "Water purifier. You talk all day in this job, so you drink water often." } },
+          "hint": { "mn": "Ус цэвэршүүлэгч. Өдөржин ярьдаг ажил тул ус байнга уудаг.", "vi": "Máy lọc nước. Vì công việc phải nói cả ngày nên cần uống nước thường xuyên.", "en": "Water dispenser. You talk all day in this job, so you drink water often." } },
         { "id": "massage-chair", "x": 0.59, "y": 0.56, "label": "안마의자",
-          "hint": { "mn": "Массажны сандал. Завсарлагаанаар амардаг.", "vi": "Ghế massage. Dùng để nghỉ ngơi trong giờ giải lao.", "en": "Massage chair. For resting during breaks." } },
+          "hint": { "mn": "Массажны сандал. Завсарлагаар сууж амардаг.", "vi": "Ghế massage. Dùng để nghỉ ngơi trong giờ giải lao.", "en": "Massage chair. For resting during breaks." } },
         { "id": "care-notice", "x": 0.37, "y": 0.34, "label": "상담사 보호 안내", "note": "protect",
-          "hint": { "mn": "Зөвлөхийг хамгаалах заавар. Хараал, доромжлол сонсвол юу хийхийг бичсэн.", "vi": "Hướng dẫn bảo vệ nhân viên tư vấn. Ghi phải làm gì khi bị chửi bới, xúc phạm.", "en": "Agent protection notice. It says what to do when a caller swears or insults you." } }
+          "hint": { "mn": "Зөвлөхийг хамгаалах заавар. Хараал, доромжлол сонсвол юу хийхийг бичсэн.", "vi": "Hướng dẫn bảo vệ nhân viên tư vấn. Trong đó ghi rõ cần làm gì khi bị khách chửi bới, xúc phạm.", "en": "Agent protection notice. It says what to do when a caller swears or insults you." } }
       ]
     },
     "lounge-buddy": {
@@ -138,14 +139,14 @@
         ["08:50", "조회"],
         ["09:00", "상담 시작. 어제 월 구독료가 결제돼서 결제 문의가 많을 수 있음"],
         ["10:00~12:00", "카드 결제 점검. 이 시간에는 카드로 결제할 수 없음. 간편결제는 됨"],
-        ["12:00~13:00", "점심. 조를 나눠서"],
+        ["11:30~13:30", "점심. 조를 나눠 한 시간씩"],
         ["15:00", "쉬는 시간 10분"],
         ["17:00", "미결 건 확인(회신 약속이 남은 건)"],
         ["17:30", "상담 마감, 팀장에게 하루 보고"],
         ["상담 이력", "통화가 끝나면 다음 전화를 받기 전에 씀"],
         ["본인 확인", "가입자 성함과 생년월일. 결제 내역은 가입 휴대폰으로 보낸 인증번호까지. 가족은 가족(대리인) 등록이 있을 때만. 확인 항목은 회사마다 다름"]
       ],
-      "hint": { "mn": "Өнөөдрийн мэдэгдэл. Бүх цаг Солонгосын цагаар. Манай багийн үйлчлүүлэгчид: гадаадад амьдардаг хэрэглэгчид; зарим нь солонгосоор, зарим нь өөрийн улсын хэлээр асуудаг (хэл бүр тусдаа дараалалтай). 08:50 өглөөний товч хурал. 09:00 зөвлөгөө эхэлнэ; өчигдөр сарын захиалгын төлбөр татагдсан тул төлбөрийн асуулт олон байж магадгүй. 10:00-12:00 картын төлбөрийн засвар; энэ хугацаанд картаар төлөх боломжгүй, харин хялбар төлбөр (утасны төлбөрийн апп, цахим түрийвч) ажиллана. 12:00-13:00 үдийн хоол, ээлжээр. 15:00 10 минутын завсарлага. 17:00 дуусаагүй асуудлуудыг шалгах (буцаж холбогдохоор амласан зүйлс). 17:30 зөвлөгөө дуусгаж, багийн ахлагчид өдрийн тайлан өгнө. Зөвлөгөөний бүртгэл: дуудлага дуусмагц, дараагийн дуудлагыг авахаас өмнө бичнэ. Хэн болохыг шалгах: бүртгүүлсэн хүний овог нэр, төрсөн огноо; төлбөрийн мэдээллийн хувьд бүртгэлтэй утас руу мессежээр илгээсэн баталгаажуулах кодыг ч шалгана. Гэр бүлийнхэнд зөвхөн гэр бүлийн (төлөөлөгчийн) бүртгэл байгаа үед хэлнэ. Юуг шалгах нь компаниас хамаарч өөр.", "vi": "Thông báo hôm nay. Tất cả là giờ Hàn Quốc. Khách của nhóm mình: người dùng sống ở nước ngoài; có người hỏi bằng tiếng Hàn, có người hỏi bằng tiếng nước mình (mỗi ngôn ngữ có hàng chờ riêng). 08:50 họp đầu ca. 09:00 bắt đầu tư vấn; hôm qua phí thuê bao tháng đã được trừ nên có thể nhiều người hỏi về thanh toán. 10:00-12:00 bảo trì thanh toán thẻ; trong giờ này không trả được bằng thẻ, nhưng thanh toán nhanh (ứng dụng thanh toán trên điện thoại, ví điện tử) vẫn dùng được. 12:00-13:00 ăn trưa, chia theo nhóm. 15:00 nghỉ 10 phút. 17:00 kiểm tra các việc chưa xong (những chỗ đã hẹn liên lạc lại). 17:30 kết thúc tư vấn, báo cáo cả ngày với trưởng nhóm. Lịch sử tư vấn: ghi ngay khi cuộc gọi kết thúc, trước khi nhận cuộc tiếp theo. Xác minh chính chủ: họ tên và ngày sinh của người đăng ký; với chi tiết thanh toán thì kiểm tra thêm mã xác thực gửi qua tin nhắn đến số điện thoại đã đăng ký. Người nhà chỉ được thông báo khi có đăng ký người nhà (người đại diện). Nội dung kiểm tra khác nhau tùy công ty.", "en": "Today's notices. All times are Korean time. Our customers: users living overseas; some ask in Korean, some in their own language (each language has its own queue). 08:50 morning briefing. 09:00 contacts start; monthly subscriptions were charged yesterday, so expect many payment questions. 10:00-12:00 card payment maintenance; no card payments during this time, but quick-pay (phone payment apps, e-wallets) works. 12:00-13:00 lunch, in groups. 15:00 ten-minute break. 17:00 check open cases (callbacks still promised). 17:30 contacts end; report the day to the team leader. Contact records: write them as soon as a call ends, before taking the next one. Identity check: the subscriber's name and date of birth; for payment details, also the code sent by text to the registered phone. Family members only if a family (representative) registration exists. What is checked differs by company." }
+      "hint": { "mn": "Өнөөдрийн мэдэгдэл. Бүх цаг Солонгосын цагаар. Цаг, дараалал нь дуудлагын төвөөс хамаарч өөр өөр байдаг. Манай багийн үйлчлүүлэгчид: гадаадад амьдардаг хэрэглэгчид; зарим нь солонгосоор, зарим нь өөрийн улсын хэлээр асуудаг (хэл бүр тусдаа дараалалтай). 08:50 өглөөний товч хурал. 09:00 дуудлага авч эхэлнэ; өчигдөр сарын захиалгын төлбөр татагдсан тул төлбөрийн асуулт олон байж магадгүй. 10:00-12:00 картын төлбөрийн системийн засвар үйлчилгээ; энэ хугацаанд картаар төлөх боломжгүй, харин гар утсаар төлбөр хийх апп, цахим түрийвчээр төлж болно. 11:30-13:30 үдийн хоол, бүлгээр ээлжлэн нэг цаг иднэ. 15:00 10 минутын завсарлага. 17:00 шийдэгдээгүй асуудлуудыг шалгах (буцаж холбогдохоор амласан зүйлс). 17:30 дуудлага авахаа зогсоож, багийн ахлагчид өдрийн тайлан өгнө. Зөвлөгөөний бүртгэл: дуудлага дуусмагц, дараагийн дуудлагыг авахаас өмнө бичнэ. Хэн болохыг шалгах: бүртгүүлсэн хүний овог нэр, төрсөн огноо; төлбөрийн мэдээллийн хувьд бүртгэлтэй утас руу мессежээр илгээсэн баталгаажуулах кодыг ч шалгана. Гэр бүлийн гишүүнд зөвхөн гэр бүлийн гишүүн (төлөөлөгч) гэж бүртгэгдсэн үед мэдээлэл өгнө. Юуг шалгах нь компаниас хамаарч өөр өөр байдаг.", "vi": "Thông báo hôm nay. Tất cả là giờ Hàn Quốc; giờ giấc và thứ tự mỗi trung tâm một khác. Khách của nhóm mình: người dùng sống ở nước ngoài; có người hỏi bằng tiếng Hàn, có người hỏi bằng tiếng mẹ đẻ của họ (mỗi ngôn ngữ có hàng chờ riêng). 08:50 họp đầu ca. 09:00 bắt đầu tư vấn; hôm qua hệ thống đã trừ phí thuê bao tháng nên có thể nhiều người hỏi về thanh toán. 10:00-12:00 bảo trì thanh toán thẻ; trong giờ này không trả được bằng thẻ, nhưng vẫn thanh toán được bằng ứng dụng thanh toán trên điện thoại hoặc ví điện tử. 11:30-13:30 ăn trưa, chia nhóm, mỗi nhóm một tiếng. 15:00 nghỉ 10 phút. 17:00 kiểm tra các việc chưa xong (những trường hợp đã hẹn liên lạc lại). 17:30 kết thúc tư vấn, báo cáo cuối ngày với trưởng nhóm. Lịch sử tư vấn: ghi ngay khi cuộc gọi kết thúc, trước khi nhận cuộc tiếp theo. Xác minh chính chủ: họ tên và ngày sinh của người đăng ký; với chi tiết thanh toán thì kiểm tra thêm mã xác thực gửi qua tin nhắn đến số điện thoại đã đăng ký. Chỉ cung cấp thông tin cho người nhà khi đã có đăng ký người nhà (người đại diện). Nội dung kiểm tra khác nhau tùy công ty.", "en": "Today's notices. All times are Korean time; times and order differ from centre to centre. Our customers: users living overseas. Some contact us in Korean, others in their own language (each language has its own queue). 08:50 morning briefing. 09:00 calls and chats start; monthly subscriptions were charged yesterday, so there may be many payment questions. 10:00-12:00 card payment maintenance: card payments are not possible during this time, but phone payment apps and e-wallets still work. 11:30-13:30 lunch, taken in groups, one hour each. 15:00 ten-minute break. 17:00 check open cases (callbacks you still owe). 17:30 calls and chats end; give the team leader your end-of-day report. Contact records: write them as soon as a call ends, before taking the next one. Identity check: the subscriber's name and date of birth; for payment details, also the code sent by text to the registered phone. Share details with family members only if they are registered as a family member or representative. The items checked differ from company to company." }
     },
     "roster": {
       "title": "근무표",
@@ -156,7 +157,7 @@
         ["쉬는 시간", "오전과 오후에 10분씩, 대기 콜을 보고 순서대로"],
         ["힘든 통화 뒤", "팀장에게 말하고 더 쉬기"]
       ],
-      "hint": { "mn": "Ажлын хуваарийн нэг жишээ. Үдийн хоолны 1-р бүлэг 11:30-12:30, 2-р бүлэг 12:30-13:30. Өглөө, үдээс хойш тус бүр 10 минут амарна; хүлээгдэж буй дуудлагыг харж ээлжээр. Хэцүү дуудлагын дараа ахлагчид хэлээд илүү амарна.", "vi": "Một ví dụ về bảng phân ca. Ăn trưa nhóm 1: 11:30-12:30, nhóm 2: 12:30-13:30. Sáng và chiều mỗi buổi nghỉ 10 phút, lần lượt theo số cuộc gọi đang chờ. Sau một cuộc gọi khó khăn, báo trưởng nhóm và nghỉ thêm.", "en": "One example of a shift roster. Lunch group 1: 11:30-12:30, group 2: 12:30-13:30. A ten-minute break in the morning and one in the afternoon, taken in turn depending on the queue. After a hard call, tell the team leader and take extra rest." }
+      "hint": { "mn": "Ажлын хуваарийн нэг жишээ. Бүлэг, цаг нь дуудлагын төв болгонд өөр өөр. Үдийн хоолны 1-р бүлэг 11:30-12:30, 2-р бүлэг 12:30-13:30. Өглөө, үдээс хойш тус бүр 10 минут амарна. Хүлээгдэж буй дуудлагыг харж ээлжээр амардаг. Хэцүү дуудлагын дараа ахлагчид хэлээд илүү амарна.", "vi": "Một ví dụ về bảng phân ca; nhóm và giờ giấc mỗi trung tâm một khác. Ăn trưa nhóm 1: 11:30-12:30, nhóm 2: 12:30-13:30. Sáng và chiều mỗi buổi nghỉ 10 phút, mọi người lần lượt nghỉ, tùy tình hình cuộc gọi đang chờ. Sau một cuộc gọi căng thẳng, có thể báo trưởng nhóm để được nghỉ thêm.", "en": "One example of a shift roster; groups and times differ from centre to centre. Lunch group 1: 11:30-12:30, group 2: 12:30-13:30. A ten-minute break in the morning and one in the afternoon, taken in turn depending on the queue. After a hard call, tell the team leader and take an extra break." }
     },
     "training": {
       "title": "신입 교육 일정",
@@ -167,7 +168,7 @@
         ["셋째 주", "선배 옆에서 같이 듣고 받기"],
         ["그다음", "혼자 전화와 채팅 받기. 처음 몇 주는 선배가 가까이 있음"]
       ],
-      "hint": { "mn": "Шинэ ажилтны сургалтын нэг жишээ. 1 дэх долоо хоног: апп, тарифын багц, зөвлөгөөний дэлгэц ашиглах арга. 2 дахь долоо хоног: хэн болохыг шалгах, хувийн мэдээлэл, өөр баг руу шилжүүлэх арга, дүрд тоглох дадлага. 3 дахь долоо хоног: ахлах ажилтны хажууд хамт сонсож, дуудлага авах. Дараа нь: ганцаараа утас, чат авна; эхний хэдэн долоо хоногт ахлах ажилтан ойрхон байна.", "vi": "Một ví dụ về lịch đào tạo nhân viên mới. Tuần 1: ứng dụng, gói cước, cách dùng màn hình tư vấn. Tuần 2: xác minh chính chủ, thông tin cá nhân, cách chuyển cho bộ phận khác, tập đóng vai. Tuần 3: ngồi cạnh người hướng dẫn, nghe và nhận cuộc gọi cùng. Sau đó: tự nhận điện thoại và chat; vài tuần đầu người hướng dẫn vẫn ở gần.", "en": "One example of new-hire training. Week 1: the app, plans, and how to use the agent screen. Week 2: identity checks, personal information, how to transfer to another team, role-play. Week 3: listening and taking calls next to a senior agent. After that: taking calls and chats on your own, with a senior nearby for the first few weeks." }
+      "hint": { "mn": "Шинэ ажилтны сургалтын нэг жишээ. Хугацаа, дараалал нь дуудлагын төв болгонд өөр өөр. 1 дэх долоо хоног: апп, тарифын багц, зөвлөгөөний дэлгэц ашиглах арга. 2 дахь долоо хоног: хэн болохыг шалгах, хувийн мэдээлэл, өөр баг руу шилжүүлэх арга, дүрд тоглох дадлага. 3 дахь долоо хоног: ахлах ажилтны хажууд хамт сонсож, дуудлага авах. Дараа нь: ганцаараа утсаар болон чатаар үйлчилнэ; эхний хэдэн долоо хоногт ахлах ажилтан ойрхон байна.", "vi": "Một ví dụ về lịch đào tạo nhân viên mới; thời gian và thứ tự mỗi trung tâm một khác. Tuần 1: ứng dụng, các gói thuê bao, cách dùng màn hình tư vấn. Tuần 2: xác minh chính chủ, thông tin cá nhân, cách chuyển yêu cầu của khách cho bộ phận khác, tập đóng vai. Tuần 3: ngồi cạnh người hướng dẫn, nghe và nhận cuộc gọi cùng. Sau đó: tự nghe điện thoại và trả lời chat; vài tuần đầu người hướng dẫn vẫn ở gần.", "en": "One example of new-hire training; length and order differ from centre to centre. Week 1: the app, plans, and how to use the agent screen. Week 2: identity checks, personal information, how to transfer to another team, role-play. Week 3: listening and taking calls next to a senior agent. After that: taking calls and chats on your own, with a senior nearby for the first few weeks." }
     },
     "protect": {
       "title": "상담사 보호 안내",
@@ -179,7 +180,7 @@
         "마음 상담이 필요하면 회사가 연결해 줘요.",
         "이렇게 해 달라고 말했다는 까닭으로 불이익을 주지 않아요. 산업안전보건법 제41조가 정한 일이에요."
       ],
-      "hint": { "mn": "Зөвлөхийг хамгаалах заавар. Үйлчлүүлэгч хараал урсгаж, доромжилвол тогтсон дарааллаар анхааруулаад дуудлагыг дуусгаж болно: эхлээд болихыг хүсэх, дараа нь дуусгана гэж урьдчилан хэлэх, тэгээд дуусгах. Хэдэн удаа анхааруулах нь компаниас хамаарна. Дуусгасан дуудлагын тухай багийн ахлагчид хэлнэ; дуудлагын үеэр тусламж хүсэх тугаа өргөж ч болно. Хэцүү дуудлагын дараа илүү амарч болно. Сэтгэл зүйн зөвлөгөө хэрэгтэй бол компани холбож өгнө. Ингэж хүссэний төлөө ажилтанд хохиролтой хандахгүй; энэ нь Солонгосын Үйлдвэрлэлийн аюулгүй байдал, эрүүл ахуйн тухай хуулийн 41-р зүйлд заасан зүйл.", "vi": "Hướng dẫn bảo vệ nhân viên tư vấn. Khi khách chửi bới hoặc nói lời xúc phạm, em có thể thông báo theo trình tự đã quy định rồi kết thúc cuộc gọi: trước tiên đề nghị khách dừng lại, sau đó báo trước sẽ kết thúc, rồi kết thúc cuộc gọi. Thông báo mấy lần thì tùy công ty. Cuộc gọi đã kết thúc thì báo cho trưởng nhóm; trong lúc gọi em cũng có thể giơ cờ xin hỗ trợ. Sau cuộc gọi khó khăn, em được nghỉ thêm. Nếu cần tư vấn tâm lý, công ty sẽ kết nối. Không ai bị đối xử bất lợi vì đã yêu cầu những điều này; đây là quy định tại Điều 41 Luật An toàn và Vệ sinh lao động Hàn Quốc.", "en": "Agent protection notice. If a customer swears or insults you, you can give the set warnings and end the call: first ask them to stop, then warn that you will end the call, then end it. How many warnings differs by company. Tell the team leader about any call you end. You can also raise the help flag during a call. After a hard call, you can take extra rest. If you need counselling, the company will arrange it. No one is treated unfairly for asking for these things; this is set out in Article 41 of Korea’s Occupational Safety and Health Act." }
+      "hint": { "mn": "Зөвлөхийг хамгаалах заавар. Үйлчлүүлэгч хараал урсгаж, доромжилбол журмын дагуу дарааллаар нь анхааруулаад дуудлагыг дуусгаж болно: эхлээд болихыг хүсэх, дараа нь дуусгана гэж урьдчилан хэлэх, тэгээд дуусгаж байгаагаа хэлэх. Хэдэн удаа анхааруулах нь компаниас хамаарна. Дуусгасан дуудлагын тухай багийн ахлагчид хэлнэ; дуудлагын үеэр тусламж хүсэх дохио өгч ч болно. Хэцүү дуудлагын дараа илүү амарч болно. Сэтгэл зүйн зөвлөгөө хэрэгтэй бол компани сэтгэл зүйчтэй холбож өгнө. Ийм хүсэлт гаргасны төлөө ажилтныг хохироохгүй; энэ тухай Солонгосын Үйлдвэрлэлийн аюулгүй байдал, эрүүл ахуйн тухай хуулийн 41-р зүйлд заасан байдаг.", "vi": "Hướng dẫn bảo vệ nhân viên tư vấn. Khi khách chửi bới hoặc nói lời xúc phạm, nhân viên có thể cảnh báo theo trình tự đã quy định rồi kết thúc cuộc gọi: trước tiên đề nghị khách dừng lại, sau đó báo trước sẽ kết thúc, rồi thông báo kết thúc cuộc gọi. Số lần cảnh báo tùy từng công ty. Sau khi kết thúc cuộc gọi thì báo cho trưởng nhóm; trong lúc gọi, nhân viên cũng có thể giơ cờ xin hỗ trợ. Sau cuộc gọi căng thẳng, nhân viên được nghỉ thêm. Nếu cần tư vấn tâm lý, công ty sẽ kết nối với chuyên gia. Không ai bị đối xử bất lợi vì đã yêu cầu những điều này; đây là quy định tại Điều 41 Luật An toàn và Vệ sinh lao động Hàn Quốc.", "en": "Agent protection notice. If a customer swears at or insults you, you can follow a set order of warnings and end the call: first ask them to stop, then warn them that you will end the call, then tell them you are ending it. The number of warnings differs from company to company. Tell the team leader about any call you end. You can also raise the help flag during a call. After a difficult call, you can take an extra break. If you need counselling, the company will arrange it. No one is treated unfairly for asking for these things; this is set out in Article 41 of Korea’s Occupational Safety and Health Act." }
     },
     "tech-full": {
       "title": "기술지원팀 처리 결과",
@@ -188,7 +189,7 @@
         "13:40 기술지원팀이 안내한 시간 안에 고객님께 연락함.",
         "앱 설정을 다시 맞춰 화면이 나옴."
       ],
-      "hint": { "mn": "Техникийн дэмжлэгийн багийн үр дүн. Өглөө шилжүүлсэн дэлгэцийн алдааны асуудал. 13:40-д техникийн баг хэлсэн хугацаандаа үйлчлүүлэгчтэй холбогдсон. Аппын тохиргоог дахин тааруулж, дэлгэц гарсан.", "vi": "Kết quả xử lý của nhóm hỗ trợ kỹ thuật cho lỗi màn hình đã chuyển buổi sáng. 13:40 nhóm kỹ thuật liên lạc với khách trong thời gian đã hẹn. Đã chỉnh lại cài đặt ứng dụng và màn hình hiện lên bình thường.", "en": "Result from technical support on the screen problem you transferred this morning. At 13:40 they contacted the customer within the time you gave. They reset the app settings and the picture works." }
+      "hint": { "mn": "Техникийн дэмжлэгийн багаас ирсэн хариу. Өглөө шилжүүлсэн дэлгэцийн алдааны асуудал. 13:40-д техникийн баг хэлсэн хугацаандаа үйлчлүүлэгчтэй холбогдсон. Аппын тохиргоог дахин тааруулсны дараа дэлгэц хэвийн ажиллаж байна.", "vi": "Nhóm hỗ trợ kỹ thuật báo kết quả xử lý lỗi màn hình mà em đã chuyển cho họ sáng nay. 13:40 nhóm kỹ thuật liên lạc với khách trong thời gian đã hẹn. Đã chỉnh lại cài đặt ứng dụng và màn hình hiện lên bình thường.", "en": "Update from technical support on the screen issue you escalated this morning. At 13:40, they contacted the customer within the time frame you had promised. They reset the app settings, and the screen now works." }
     },
     "tech-quick": {
       "title": "기술지원팀 처리 결과",
@@ -197,7 +198,7 @@
         "13:10 고객님이 다시 연락하심. 접수된 내용을 안내하고 기술지원팀에 다시 요청함.",
         "13:40 기술지원팀이 고객님께 연락함. 앱 설정을 다시 맞춰 화면이 나옴."
       ],
-      "hint": { "mn": "Техникийн дэмжлэгийн багийн үр дүн. Өглөө шилжүүлсэн дэлгэцийн алдааны асуудал. 13:10-д үйлчлүүлэгч дахин холбогдож, бүртгэгдсэн мэдээллийг тайлбарлаад техникийн багт дахин хүсэлт илгээсэн. 13:40-д техникийн баг холбогдож, аппын тохиргоог дахин тааруулснаар дэлгэц гарсан.", "vi": "Kết quả xử lý của nhóm hỗ trợ kỹ thuật cho lỗi màn hình đã chuyển buổi sáng. 13:10 khách liên lạc lại, đã giải thích nội dung đã được tiếp nhận và gửi lại yêu cầu cho nhóm kỹ thuật. 13:40 nhóm kỹ thuật liên lạc với khách, chỉnh lại cài đặt ứng dụng và màn hình hiện lên.", "en": "Result from technical support on the screen problem you transferred this morning. At 13:10 the customer contacted us again; they were told the case was logged, and the request was sent to technical support again. At 13:40 the technical team contacted them, reset the app settings, and the picture works." }
+      "hint": { "mn": "Техникийн дэмжлэгийн багийн хариу. Өглөө шилжүүлсэн дэлгэцийн алдааны асуудал. 13:10 цагт үйлчлүүлэгч дахин холбогдсон. Хүсэлт нь бүртгэгдсэн гэдгийг түүнд тайлбарлаад техникийн багт дахин хүсэлт илгээсэн. 13:40 цагт техникийн баг үйлчлүүлэгчтэй холбогдож, программын тохиргоог дахин тохируулсны дараа дэлгэц хэвийн болсон.", "vi": "Nhóm hỗ trợ kỹ thuật báo kết quả xử lý lỗi màn hình mà mình đã chuyển sang cho họ sáng nay. 13:10 khách liên lạc lại; nhân viên đã cho khách biết yêu cầu đã được tiếp nhận và gửi lại yêu cầu cho nhóm kỹ thuật. 13:40 nhóm kỹ thuật liên lạc với khách, chỉnh lại cài đặt ứng dụng và màn hình đã hiện lên.", "en": "Update from technical support on the screen-error case you escalated this morning. At 13:10 the customer contacted us again; we told them the case was logged and sent the request to technical support once more. At 13:40 technical support contacted the customer and readjusted the app settings, and the screen now works." }
     },
     "billing-reply": {
       "title": "결제팀 답장",
@@ -208,7 +209,7 @@
         "그래서 고객님이 생각하신 금액보다 적을 수 있어요.",
         "고객님께 오늘 안에 안내해 주세요."
       ],
-      "hint": { "mn": "Төлбөрийн багийн хариу. Өглөөний чатаар асуусан жилийн захиалга цуцлах тухай. Энэ компанийн жишээ. Хөнгөлөлттэй жилийн захиалгыг дундаас нь цуцалбал ашигласан саруудыг хөнгөлөлтгүй сарын үнээр тооцож хасаад, үлдсэнийг буцааж өгнө. Энэ үйлчлүүлэгч 60 доллараар аваад 3 сар ашигласан. Сард 9 доллараар 3 сар буюу 27 долларыг хасаад 33 долларыг буцааж өгнө. Тиймээс үйлчлүүлэгчийн бодсоноос бага байж магадгүй. Үйлчлүүлэгчид өнөөдөртөө багтааж мэдэгдээрэй.", "vi": "Thư trả lời của nhóm thanh toán về câu hỏi hủy gói năm trong buổi chat sáng nay. Đây là ví dụ của công ty này. Nếu hủy gói năm ưu đãi giữa chừng, những tháng đã dùng sẽ được tính theo giá tháng không giảm giá và trừ đi, phần còn lại được hoàn tiền. Khách này mua với giá 60 đô la và đã dùng 3 tháng, nên trừ 9 đô la mỗi tháng trong 3 tháng (27 đô la) và hoàn lại 33 đô la. Vì vậy số tiền có thể ít hơn khách nghĩ. Hãy báo cho khách trong hôm nay.", "en": "Reply from the billing team about this morning’s chat question on cancelling a yearly plan. This is this company’s example. If a discounted yearly plan is cancelled early, the months already used are charged at the full monthly price and taken off, and the rest is refunded. This customer paid 60 dollars and used it for 3 months, so 3 months at 9 dollars (27 dollars) are taken off and 33 dollars is refunded. So it may be less than the customer expects. Please tell the customer today." }
+      "hint": { "mn": "Төлбөрийн багийн хариу. Өглөөний чатаар асуусан жилийн захиалга цуцлах тухай. Энд бичсэн нь энэ компанийн журам бөгөөд нэг жишээ юм. Хөнгөлөлттэй жилийн захиалгыг дундаас нь цуцалбал ашигласан саруудыг хөнгөлөлтгүй сарын үнээр тооцож хасаад, үлдсэнийг буцааж өгнө. Энэ үйлчлүүлэгч 60 доллар төлж аваад 3 сар ашигласан. Сарын үнэ 9 доллар тул 3 сарын 27 долларыг хасаад 33 долларыг буцааж өгнө. Тиймээс үйлчлүүлэгчийн бодсоноос бага байж магадгүй. Үйлчлүүлэгчид өнөөдөртөө багтааж мэдэгдээрэй.", "vi": "Thư trả lời của nhóm thanh toán về câu hỏi hủy gói năm trong buổi chat sáng nay. Đây là quy định của công ty này, chỉ là một ví dụ. Nếu hủy gói năm ưu đãi giữa chừng, công ty sẽ tính các tháng đã dùng theo giá gốc hằng tháng, trừ khoản đó ra rồi hoàn lại phần còn lại. Khách này mua với giá 60 đô la và đã dùng 3 tháng, nên trừ 9 đô la mỗi tháng trong 3 tháng (27 đô la) và hoàn lại 33 đô la. Vì vậy số tiền có thể ít hơn khách nghĩ. Vui lòng báo cho khách trong hôm nay.", "en": "Reply from the billing team about this morning’s chat question on cancelling a yearly plan. The following example is based on this company’s policy. If a discounted yearly plan is cancelled partway through, each month already used is recalculated at the full monthly price and deducted, and the rest is refunded. This customer paid 60 dollars for the plan and used it for 3 months, so 27 dollars (3 months at 9 dollars) is deducted and 33 dollars is refunded. The refund may therefore be less than the customer expects. Please let the customer know today." }
     }
   },
   "scenes": [
@@ -220,19 +221,19 @@
       "steps": [
         { "type": "line", "clip": "lead-welcome", "who": "lead",
           "text": "좋은 아침이에요. 교육 끝나고 오늘 첫 상담이죠? 저는 팀장 윤정아예요. 오늘 잘 부탁해요.",
-          "hint": { "mn": "Өглөөний мэнд. Сургалтаа дуусгаад өнөөдөр анх удаа зөвлөгөө өгөх гэж байгаа биз дээ? Би багийн ахлагч Юн Жона. Өнөөдөр сайн хамтран ажиллая.", "vi": "Chào buổi sáng. Em học xong rồi, hôm nay là ngày đầu tiên tư vấn đúng không? Chị là Yun Jeong-a, trưởng nhóm. Hôm nay mong em làm tốt nhé.", "en": "Good morning. You've finished training, and today is your first day taking contacts, right? I'm Yun Jeong-a, the team leader. I'm counting on you today." } },
+          "hint": { "mn": "Өглөөний мэнд. Сургалтаа дуусгаад өнөөдөр анх удаа зөвлөгөө өгөх гэж байгаа биз дээ? Би багийн ахлагч Юн Жона. Өнөөдөр хамтдаа сайхан ажиллая.", "vi": "Chào buổi sáng. Em học xong rồi, hôm nay là ngày đầu tiên tư vấn đúng không? Chị là Yun Jeong-a, trưởng nhóm. Hôm nay mong em làm tốt nhé.", "en": "Good morning. You've finished training, and today is your first day taking calls, right? I'm Yun Jeong-a, the team leader. I look forward to working with you." } },
         { "type": "say", "id": "intro", "listen": "lead-listen-entrance",
           "prompt": "팀장님에게 자기소개를 해 보세요.",
           "example": "안녕하세요. 저는 (이름)입니다. 오늘부터 해외 고객 상담팀에서 일하게 됐습니다. 잘 부탁드립니다.",
-          "hint": { "mn": "Багийн ахлагчид өөрийгөө танилцуул. Нэрээ хэлээд, өнөөдрөөс гадаад үйлчлүүлэгчийн зөвлөгөөний багт ажиллах болсноо хэл.", "vi": "Hãy tự giới thiệu với trưởng nhóm. Nói tên của em và nói rằng từ hôm nay em làm ở nhóm tư vấn khách hàng nước ngoài.", "en": "Introduce yourself to the team leader. Say your name and that you start on the overseas customer team today." },
+          "hint": { "mn": "Багийн ахлагчид өөрийгөө танилцуул. Нэрээ хэлээд, өнөөдрөөс гадаад хэрэглэгчийн үйлчилгээний багт ажиллах болсноо хэл.", "vi": "Hãy tự giới thiệu với trưởng nhóm. Nói tên của em và nói rằng từ hôm nay em làm ở nhóm tư vấn khách hàng nước ngoài.", "en": "Introduce yourself to the team leader. Say your name and that you start on the overseas customer team today." },
           "record": "자기소개 차례" },
         { "type": "line", "clip": "lead-brief", "who": "lead",
           "text": "우리 팀 고객은 해외에 사는 이용자예요. 한국어로 묻는 분도 많아요. 오전에는 지훈 씨 옆에서 같이 받아요.",
-          "hint": { "mn": "Манай багийн үйлчлүүлэгчид гадаадад амьдардаг хэрэглэгчид. Солонгосоор асуудаг хүн ч олон. Өглөө Жихүний хажууд суугаад хамт ав.", "vi": "Khách của nhóm mình là người dùng sống ở nước ngoài. Nhiều người hỏi bằng tiếng Hàn. Buổi sáng em ngồi cạnh Ji-hun và nhận cùng anh ấy nhé.", "en": "Our customers are users living overseas. Many of them ask in Korean. This morning you’ll sit next to Ji-hun and take contacts together." } },
+          "hint": { "mn": "Манай багийн үйлчлүүлэгчид бол гадаадад амьдардаг хүмүүс юм. Солонгос хэлээр юм асуудаг хүн ч олон. Өглөө Жихүний хажууд суугаад түүнтэй хамт дуудлага аваарай.", "vi": "Khách của nhóm mình là người dùng sống ở nước ngoài. Nhiều người hỏi bằng tiếng Hàn. Buổi sáng em ngồi cạnh Ji-hun và cùng anh ấy nhận cuộc gọi nhé.", "en": "Our customers are users living overseas. Many of them contact us in Korean. This morning, sit next to Ji-hun and take calls with him." } },
         { "type": "note", "note": "brief" },
         { "type": "tour", "home": "entrance", "board": ["desk", "lead-desk", "training", "lounge"],
           "prompt": "상담을 시작하기 전에 한 바퀴 둘러봐요. 가고 싶은 자리를 고르고, 점을 눌러 이름을 확인해 보세요.",
-          "hint": { "mn": "Зөвлөгөө эхлэхээс өмнө нэг тойроод үз. Очих газраа сонгоод, цэг дээр дарж нэрийг нь хар.", "vi": "Trước khi bắt đầu tư vấn, hãy đi xem một vòng. Chọn nơi muốn đến và bấm vào dấu chấm để xem tên.", "en": "Look around before contacts start. Pick a place, then tap a dot to see what it is called." } }
+          "hint": { "mn": "Ажил эхлэхээс өмнө нэг тойроод үз. Очих газраа сонгоод, цэг дээр дарж нэрийг нь хар.", "vi": "Trước khi bắt đầu tư vấn, hãy đi xem một vòng. Chọn nơi muốn đến và bấm vào dấu chấm để xem tên.", "en": "Look around before you start taking calls. Pick a place, then tap the dots to see what each thing is called." } }
       ]
     },
     {
@@ -243,79 +244,79 @@
       "steps": [
         { "type": "line", "clip": "buddy-first", "who": "buddy",
           "text": "첫 전화는 제가 옆에서 같이 들을게요. 자, 전화 들어와요.",
-          "hint": { "mn": "Эхний дуудлагыг би хажууд чинь хамт сонсоно. За, дуудлага орж ирлээ.", "vi": "Cuộc gọi đầu tiên anh sẽ ngồi cạnh nghe cùng em. Nào, có cuộc gọi đến rồi.", "en": "I'll listen in next to you on your first call. Okay, here comes a call." } },
+          "hint": { "mn": "Эхний дуудлагыг би хажууд чинь хамт сонсоно. За, дуудлага орж ирлээ.", "vi": "Cuộc gọi đầu tiên anh sẽ ngồi cạnh nghe cùng em. Nào, có cuộc gọi đến rồi.", "en": "I'll sit next to you and listen in on your first call. Okay, here comes a call." } },
         { "type": "say", "id": "greet", "listen": "buddy-listen-desk",
           "prompt": "전화가 연결됐어요. 첫인사를 해 보세요.",
           "example": "반갑습니다. 윤슬플러스 고객센터 상담사 (이름)입니다. 무엇을 도와드릴까요?",
-          "hint": { "mn": "Дуудлага холбогдлоо. Мэндлээд, компанийн нэр, өөрийн нэрээ хэлж, юугаар туслахыг асуу. «Юнсыл Плас» бол энэ аппын нэр.", "vi": "Cuộc gọi đã kết nối. Hãy chào khách, nói tên công ty và tên của em, rồi hỏi khách cần giúp gì. “Yunseul Plus” là tên ứng dụng này.", "en": "The call is connected. Greet the customer, give the company name and your name, and ask how you can help. \"Yunseul Plus\" is the name of this app." },
+          "hint": { "mn": "Дуудлага холбогдлоо. Мэндлээд, компанийн нэр, өөрийн нэрээ хэлж, юугаар туслах вэ гэж асуу. «Юнсыл Плас» бол энэ аппын нэр.", "vi": "Cuộc gọi đã kết nối. Hãy chào khách, nói tên công ty và tên của em, rồi hỏi khách cần giúp gì. “Yunseul Plus” là tên ứng dụng này.", "en": "The call is connected. Greet the customer, give the company name and your name, and ask how you can help. \"Yunseul Plus\" is the name of this app." },
           "record": "첫인사 차례" },
-        { "type": "line", "clip": "call-wife-1", "who": "wife", "channel": "phone",
-          "text": "안녕하세요. 남편 이름으로 가입한 계정인데요, 이번 달 결제가 왜 이렇게 많이 됐는지 알려 주세요. 오늘까지 확인해야 해서 금액만 알면 돼요.",
-          "hint": { "mn": "Сайн байна уу. Энэ бол нөхрийн маань нэр дээр бүртгүүлсэн бүртгэл. Энэ сард яагаад ийм их мөнгө татагдсаныг хэлж өгөөч. Өнөөдөртөө шалгах ёстой болохоор дүнг нь л мэдэхэд болно.", "vi": "Chào em. Tài khoản này đăng ký bằng tên chồng chị. Em cho chị biết sao tháng này bị trừ nhiều tiền thế. Chị phải kiểm tra trong hôm nay nên chỉ cần biết số tiền thôi.", "en": "Hello. This account is registered in my husband's name. Can you tell me why so much was charged this month? I have to check it today, so I just need the amount." } },
+        { "type": "line", "who": "wife", "channel": "phone",
+          "text": "안녕하세요. 남편 이름으로 가입한 계정인데요, 이번 달 결제가 평소보다 많이 나온 것 같아요. 오늘까지 확인해야 해서 금액만 알면 돼요.",
+          "hint": { "mn": "Сайн байна уу. Энэ бол нөхрийн маань нэр дээрх бүртгэл юм. Энэ сард төлбөр ердийнхөөсөө их гарсан бололтой. Өнөөдөртөө шалгах ёстой болохоор дүнг нь л мэдэхэд болно.", "vi": "Chào em. Tài khoản này đăng ký bằng tên chồng chị. Tháng này hình như bị trừ nhiều hơn mọi khi. Chị phải kiểm tra trong hôm nay nên chỉ cần biết số tiền thôi.", "en": "Hello. This account is registered in my husband’s name. This month’s charge seems higher than usual. I have to check it today, so I just need the amount." } },
         { "type": "work", "id": "verify", "record": "상담 화면에서 안내해도 되는지 확인하는 차례",
           "tool": { "kind": "screen", "title": "고객 정보",
             "rows": [["계정 찾기", "고객님이 불러 준 가입 이메일로 찾음"], ["가입자", "정민호 · 1991. 03. 09 생"], ["가입 휴대폰", "끝 번호 5821"], ["지금 연락한 번호", "끝 번호 3307"], ["가족(대리인) 등록", "없음"]] },
           "prompt": "이분께 결제 내역을 안내할 수 있나요?",
-          "hint": { "mn": "Дэлгэцийн мэдээлэл. «Бүртгүүлсэн хүн» нь дансыг нээсэн хүн. «Гэр бүлийн (төлөөлөгчийн) бүртгэл» гэдэг нь бүртгүүлсэн хүний оронд мэдээлэл авч болох хүнийг урьдчилан бүртгэсэн эсэх. Энэ хүнд төлбөрийн мэдээллийг хэлж болох эсэхийг шалга.", "vi": "Thông tin trên màn hình. “Người đăng ký” là người đã mở tài khoản. “Đăng ký người nhà (người đại diện)” cho biết có người được đăng ký trước để nhận thông tin thay người đăng ký hay không. Hãy kiểm tra xem có được báo chi tiết thanh toán cho người này không.", "en": "The screen. The \"subscriber\" is the person who opened the account. \"Family (representative) registration\" shows whether someone has been registered in advance to get information on the subscriber’s behalf. Check whether you can give this caller the payment details." },
+          "hint": { "mn": "Дэлгэцийн мэдээлэл. «Бүртгүүлсэн хүн» нь бүртгэлийг үүсгэсэн хүн. «Гэр бүлийн (төлөөлөгчийн) бүртгэл» гэдэг нь бүртгүүлсэн хүний оронд мэдээлэл авч болох хүнийг урьдчилан бүртгэсэн эсэхийг харуулна. Одоо залгаж байгаа хүнд төлбөрийн мэдээллийг хэлж болох эсэхийг шалга.", "vi": "Thông tin trên màn hình. “Người đăng ký” là người đã mở tài khoản. “Đăng ký người nhà (người đại diện)” cho biết có người được đăng ký trước để nhận thông tin thay người đăng ký hay không. Hãy kiểm tra xem có được báo chi tiết thanh toán cho người đang gọi không.", "en": "On this screen, the \"subscriber\" is the person who opened the account. \"Family (representative) registration\" shows whether someone has been registered in advance to receive information on the subscriber’s behalf. Check whether you can give this caller the payment details." },
           "options": [
-            { "id": "can", "label": "안내할 수 있다. 가족이라고 하셨다",
-              "hint": { "mn": "Хэлж болно. Гэр бүлийнх нь гэж хэлсэн.", "vi": "Được. Chị ấy nói là người nhà.", "en": "Yes. She said she's family." },
+            { "id": "can", "retry": true, "label": "안내할 수 있다. 가족이라고 하셨다",
+              "hint": { "mn": "Хэлж болно. Өөрийгөө гэр бүлийнх нь хүн гэж хэлсэн.", "vi": "Được. Chị ấy đã nói mình là người nhà.", "en": "Yes. She said she's family." },
               "then": [
                 { "type": "line", "clip": "buddy-verify-again", "who": "buddy",
                   "text": "한 번 더 볼래요? 가족 등록 칸을 봐요.",
-                  "hint": { "mn": "Дахиад нэг харах уу? Гэр бүлийн бүртгэлийн мөрийг хар.", "vi": "Em xem lại nhé? Nhìn ô đăng ký người nhà.", "en": "Want to look again? Check the family registration row." } }
+                  "hint": { "mn": "Дахиад нэг харах уу? Гэр бүлийн бүртгэлийн мөрийг хар.", "vi": "Em xem lại một lần nữa nhé. Em nhìn ô đăng ký người nhà xem.", "en": "Want to look again? Check the family registration row." } }
               ] },
             { "id": "cannot", "label": "안내할 수 없다. 가족 등록이 없다",
-              "hint": { "mn": "Хэлж болохгүй. Гэр бүлийн бүртгэл байхгүй.", "vi": "Không được. Không có đăng ký người nhà.", "en": "No. There is no family registration." },
+              "hint": { "mn": "Хэлж болохгүй. Гэр бүлийн бүртгэл байхгүй.", "vi": "Không được. Chưa đăng ký thông tin người nhà.", "en": "No. There is no family registration." },
               "then": [
                 { "type": "line", "clip": "buddy-verify-right", "who": "buddy",
                   "text": "네, 가족 등록이 없어요. 그러면 가입자 본인께만 안내해요.",
-                  "hint": { "mn": "Тийм, гэр бүлийн бүртгэл байхгүй. Тэгвэл зөвхөн бүртгэлийн эзэнд өөрт нь хэлнэ.", "vi": "Đúng, không có đăng ký người nhà. Vậy chỉ thông báo cho chính chủ tài khoản thôi.", "en": "Right, there's no family registration. So we only give it to the account owner." } }
+                  "hint": { "mn": "Тийм, гэр бүлийн бүртгэл байхгүй. Тэгвэл зөвхөн бүртгэл эзэмшигчид өөрт нь хэлнэ.", "vi": "Đúng, chưa đăng ký thông tin người nhà. Vậy chỉ thông báo cho chính chủ tài khoản thôi.", "en": "Right, no family member is registered on this account. So we only share payment details with the account owner." } }
               ] }
           ] },
         { "type": "say", "id": "family", "listen": "buddy-listen-desk",
           "prompt": "가족이라는 분이 오늘까지라며 금액만 알려 달라고 해요. 어떻게 할까요?",
-          "hint": { "mn": "Гэр бүлийнх гэж хэлсэн хүн өнөөдөртөө мэдэх ёстой гээд дүнг л хэлж өгөөч гэж байна. Одоо яах вэ?", "vi": "Người nói là người nhà bảo phải biết trong hôm nay nên chỉ cần báo số tiền. Em sẽ làm gì?", "en": "The caller who says she's family needs it today and asks for just the amount. What will you do?" },
+          "hint": { "mn": "Өөрийгөө гэр бүлийнх нь хүн гэсэн үйлчлүүлэгч өнөөдөртөө мэдэх ёстой гээд төлбөрийн дүнг нь л хэлж өгөөч гэж байна. Одоо яах вэ?", "vi": "Người tự nhận là người nhà nói rằng cần biết trong hôm nay và chỉ nhờ em báo số tiền. Em sẽ làm gì?", "en": "The caller, who says she's family, needs to know today and asks for just the amount. What will you do?" },
           "options": [
             { "id": "tell", "label": "오늘까지라니 사정을 봐서, 이번 달 결제 금액만 알려 드린다",
               "example": "네, 고객님. 이번 달 결제 금액은 29달러(이십구 달러)입니다.",
-              "hint": { "mn": "Өнөөдөртөө гэсэн тул нөхцөл байдлыг нь бодоод, энэ сарын төлбөрийн дүнг л хэлж өгөх. «Тийм ээ. Энэ сард 29 доллар татагдсан.»", "vi": "Vì chị ấy cần trong hôm nay nên thông cảm, chỉ báo số tiền tháng này. “Dạ. Tháng này bị trừ 29 đô la ạ.”", "en": "She needs it today, so out of kindness tell her this month's total only. \"Yes. This month's charge is 29 dollars.\"" },
+              "hint": { "mn": "Өнөөдөртөө мэдэх ёстой гэсэн тул нөхцөл байдлыг нь бодоод, энэ сарын төлбөрийн дүнг л хэлж өгөх. «За. Энэ сарын төлбөрийн дүн 29 доллар.»", "vi": "Vì chị ấy cần biết trong hôm nay nên em thông cảm, chỉ báo số tiền tháng này. “Dạ, số tiền thanh toán tháng này là 29 đô la ạ.”", "en": "She needs to know today, so make an exception and tell her only this month's total. \"Yes. This month's charge is 29 dollars.\"" },
               "then": [
-                { "type": "line", "clip": "call-wife-2", "who": "wife", "channel": "phone",
+                { "type": "line", "who": "wife", "channel": "phone",
                   "text": "29달러요? 어머, 알겠어요. 고마워요.",
-                  "hint": { "mn": "29 доллар уу? Хөөх, ойлголоо. Баярлалаа.", "vi": "29 đô la à? Ôi, chị biết rồi. Cảm ơn em.", "en": "29 dollars? Oh my. All right, thank you." } },
+                  "hint": { "mn": "29 доллар уу? Хөөх, за ойлголоо. Баярлалаа.", "vi": "29 đô la à? Ôi, chị biết rồi. Cảm ơn em.", "en": "29 dollars? Oh my. All right, thank you." } },
                 { "type": "line", "clip": "buddy-tell", "who": "buddy",
                   "text": "금액은 가입자 본인이 아니면 가족에게도 말하지 않아요. 통화 끝나면 바로 팀장님께 같이 보고해요.",
-                  "hint": { "mn": "Бүртгүүлсэн хүн өөрөө биш бол гэр бүлийнхэнд нь ч дүнг хэлдэггүй. Дуудлага дуусмагц багийн ахлагчид хамт мэдэгдье.", "vi": "Nếu không phải chính người đăng ký thì dù là người nhà cũng không nói số tiền. Cuộc gọi xong là mình cùng báo trưởng nhóm ngay nhé.", "en": "Unless it’s the subscriber himself, we don’t give the amount, even to family. As soon as the call ends, let’s report it to the team leader together." } }
+                  "hint": { "mn": "Бүртгүүлсэн хүн өөрөө биш бол гэр бүлийнхэнд нь ч төлбөрийн дүнг хэлдэггүй. Дуудлага дуусмагц багийн ахлагчид хамт мэдэгдье.", "vi": "Nếu không phải chính người đăng ký thì dù là người nhà, mình cũng không được báo số tiền. Xong cuộc gọi là mình cùng báo trưởng nhóm ngay nhé.", "en": "Unless it’s the subscriber himself, we don’t tell anyone the amount, not even family. As soon as the call ends, let’s report it to the team leader together." } }
               ] },
             { "id": "holder-only", "label": "결제 내역은 가입자 본인에게만 안내한다고 말씀드리고, 방법을 알려 드린다",
               "example": "죄송합니다, 고객님. 결제 내역은 가입자 본인께만 안내해 드릴 수 있습니다. 남편분이 옆에 계시면 바꿔 주시겠습니까?",
-              "hint": { "mn": "Төлбөрийн мэдээллийг зөвхөн бүртгүүлсэн хүнд өөрт нь хэлдэг гэж тайлбарлаад, яах ёстойг зааж өгөх. «Уучлаарай. Төлбөрийн мэдээллийг зөвхөн бүртгүүлсэн хүнд өөрт нь хэлж өгөх боломжтой. Нөхөр тань хажууд байгаа бол утсаа өгөөч.»", "vi": "Nói rằng chi tiết thanh toán chỉ thông báo cho chính người đăng ký, rồi hướng dẫn cách làm. “Xin lỗi chị. Chi tiết thanh toán chỉ được thông báo cho chính người đăng ký. Nếu chồng chị đang ở bên cạnh, chị chuyển máy cho anh ấy được không ạ?”", "en": "Explain that payment details go only to the subscriber, and tell her what to do. \"I’m sorry. We can only give payment details to the subscriber himself. If your husband is with you, could you put him on, please?\"" },
+              "hint": { "mn": "Төлбөрийн мэдээллийг зөвхөн бүртгүүлсэн хүнд өөрт нь хэлдэг гэж тайлбарлаад, яах ёстойг зааж өгөх. «Уучлаарай. Төлбөрийн мэдээллийг зөвхөн бүртгүүлсэн хүнд өөрт нь хэлж өгөх боломжтой. Нөхөр тань хажууд байвал утсаа түүнд өгч болох уу?»", "vi": "Nói rằng chi tiết thanh toán chỉ được thông báo cho chính người đăng ký, rồi hướng dẫn khách nên làm gì. “Em xin lỗi chị. Chi tiết thanh toán chỉ được thông báo cho chính người đăng ký. Nếu chồng chị đang ở bên cạnh, chị chuyển máy cho anh ấy được không ạ?”", "en": "Explain that payment details can only be given to the subscriber, and tell her what to do. \"I’m sorry. We can only give payment details to the subscriber himself. If your husband is with you, could you put him on, please?\"" },
               "then": [
-                { "type": "line", "clip": "call-wife-3", "who": "wife", "channel": "phone",
+                { "type": "line", "who": "wife", "channel": "phone",
                   "text": "지금 옆에 없어요. 가족인데도 안 돼요? …알겠어요. 남편한테 직접 연락하라고 할게요.",
-                  "hint": { "mn": "Одоо хажууд алга. Гэр бүлийнх нь байхад ч болохгүй гэж үү? …За ойлголоо. Нөхрөөрөө өөрөөр нь холбогдуулъя.", "vi": "Giờ anh ấy không có ở đây. Là người nhà mà cũng không được à? …Thôi được. Chị sẽ bảo chồng chị liên lạc trực tiếp.", "en": "He’s not here right now. Not even for family? …All right. I’ll tell my husband to contact you himself." } }
+                  "hint": { "mn": "Одоо хажууд алга. Гэр бүлийн хүн нь байсан ч болохгүй гэж үү? …За, ойлголоо. Нөхөртөө өөрөө холбогдоорой гэж хэлье.", "vi": "Giờ anh ấy không có ở đây. Là người nhà mà cũng không được à? …Thôi được. Chị sẽ bảo chồng chị liên lạc trực tiếp.", "en": "He’s not here right now. Not even for family? …All right. I’ll tell my husband to contact you himself." } }
               ] },
             { "id": "ask", "label": "보류하고 선배에게 먼저 묻는다",
               "example": "정확히 확인해 드리겠습니다. 1분 정도 기다려 주시겠습니까?",
-              "hint": { "mn": "Түр хүлээлгээд, эхлээд ахлах ажилтнаас асуух. «Нарийн шалгаж өгье. Нэг минут орчим хүлээгээд өгөх үү?»", "vi": "Giữ máy rồi hỏi người hướng dẫn trước. “Em kiểm tra chính xác giúp chị. Chị vui lòng chờ khoảng một phút được không ạ?”", "en": "Put her on hold and ask your senior colleague first. \"Let me check that properly. Could you hold for about a minute, please?\"" },
+              "hint": { "mn": "Түр хүлээлгээд, эхлээд ахлах ажилтнаас асуух. «Нарийн шалгаж өгье. Нэг минут орчим хүлээнэ үү.»", "vi": "Bấm giữ cuộc gọi rồi hỏi người hướng dẫn trước. “Để em kiểm tra lại chính xác cho chị ạ. Chị vui lòng chờ khoảng một phút được không ạ?”", "en": "Put her on hold and ask your senior colleague first. \"Let me double-check that for you. Could you hold for about a minute, please?\"" },
               "then": [
                 { "type": "line", "clip": "buddy-ask", "who": "buddy",
                   "text": "가입자 본인이 아니면 가족이어도 금액은 말하지 않아요.",
-                  "hint": { "mn": "Бүртгэлийн эзэн өөрөө биш бол гэр бүлийнх нь байсан ч дүнг хэлдэггүй.", "vi": "Không phải chính chủ tài khoản thì dù là người nhà cũng không nói số tiền.", "en": "If it isn't the account owner, we don't give the amount, even to family." } },
-                { "type": "line", "clip": "call-wife-4", "who": "wife", "channel": "phone",
+                  "hint": { "mn": "Бүртгэл эзэмшигч өөрөө биш бол гэр бүлийн хүн нь байсан ч төлбөрийн дүнг хэлдэггүй.", "vi": "Không phải chính chủ tài khoản thì dù là người nhà cũng không được báo số tiền.", "en": "If the caller isn't the account owner, we don't share the amount, even with family." } },
+                { "type": "line", "who": "wife", "channel": "phone",
                   "text": "오래 걸리네요. 가족인데도 안 돼요? …알겠어요. 남편한테 직접 연락하라고 할게요.",
-                  "hint": { "mn": "Удаж байна шүү. Гэр бүлийнх нь байхад ч болохгүй гэж үү? …За ойлголоо. Нөхрөөрөө өөрөөр нь холбогдуулъя.", "vi": "Lâu thế. Là người nhà mà cũng không được à? …Thôi được. Chị sẽ bảo chồng chị liên lạc trực tiếp.", "en": "That took a while. Not even for family? …All right. I'll tell my husband to contact you himself." } }
+                  "hint": { "mn": "Удаж байна шүү. Гэр бүлийнх нь хүн байхад ч болохгүй гэж үү? …За ойлголоо. Нөхөртөө өөрөө залгаарай гэж хэлье.", "vi": "Lâu thế. Là người nhà mà cũng không được à? …Thôi được. Chị sẽ bảo chồng chị liên lạc trực tiếp.", "en": "That took a while. Not even for family? …All right. I'll tell my husband to contact you himself." } }
               ] }
           ] },
         { "type": "say", "id": "bye", "listen": "buddy-listen-desk",
           "prompt": "통화를 마무리해요. 끝인사를 해 보세요.",
           "example": "더 궁금하신 점은 없으십니까? 지금까지 상담사 (이름)이었습니다. 감사합니다.",
-          "hint": { "mn": "Дуудлагыг дуусга. Өөр асуух зүйл байгаа эсэхийг асуугаад, нэрээ хэлж баярлалаа гэж хэл.", "vi": "Kết thúc cuộc gọi. Hỏi khách còn thắc mắc gì không, nói lại tên em và cảm ơn.", "en": "Close the call. Ask if there's anything else, say your name again and thank her." },
+          "hint": { "mn": "Дуудлагыг дуусга. Өөр асуух зүйл байгаа эсэхийг асуугаад, нэрээ хэлж баярлалаа гэж хэл.", "vi": "Kết thúc cuộc gọi. Hỏi khách còn thắc mắc gì không, nhắc lại tên mình và cảm ơn.", "en": "Close the call. Ask if there's anything else, say your name again and thank her." },
           "record": "끝인사 차례" },
         { "type": "line", "clip": "buddy-wrap", "who": "buddy",
           "text": "첫 전화 끝났어요. 수고했어요. 다음 전화도 제가 옆에 있을게요. 이번에는 먼저 해 봐요.",
-          "hint": { "mn": "Эхний дуудлага дууслаа. Сайн ажиллалаа. Дараагийн дуудлагад ч би хажууд чинь байна. Энэ удаа чи өөрөө эхлээд үз.", "vi": "Xong cuộc gọi đầu tiên rồi. Em vất vả rồi. Cuộc sau anh vẫn ở bên cạnh. Lần này em thử tự làm trước nhé.", "en": "That's your first call done. Nice work. I'll still be next to you on the next one. This time, you lead." } }
+          "hint": { "mn": "Эхний дуудлага дууслаа. Сайн ажиллалаа. Дараагийн дуудлагын үеэр ч би хажууд чинь байна. Энэ удаа чи өөрөө эхлээд үз.", "vi": "Xong cuộc gọi đầu tiên rồi. Em làm tốt lắm. Cuộc sau anh vẫn ở bên cạnh. Lần này em thử tự làm trước nhé.", "en": "That's your first call done. Nice work. I'll still be next to you on the next one. This time, you lead." } }
       ]
     },
     {
@@ -324,54 +325,54 @@
       "minutes": 6,
       "place": "desk-buddy",
       "steps": [
-        { "type": "line", "clip": "call-app-1", "who": "app", "channel": "phone",
+        { "type": "line", "who": "app", "channel": "phone",
           "text": "안녕하세요. 어제 앱을 업데이트했는데요, 소리는 나오는데 화면이 까맣게 나와요. 앱을 지웠다 다시 깔아도 똑같아요.",
-          "hint": { "mn": "Сайн байна уу. Өчигдөр аппаа шинэчилсэн. Дуу нь гарч байгаа ч дэлгэц нь хар харагдаж байна. Аппаа устгаад дахин суулгасан ч адилхан.", "vi": "Chào bạn. Hôm qua tôi cập nhật ứng dụng, có tiếng nhưng màn hình thì đen. Xóa ứng dụng rồi cài lại cũng vậy.", "en": "Hello. I updated the app yesterday. The sound plays, but the screen stays black. I deleted and reinstalled the app, and it's the same." } },
+          "hint": { "mn": "Сайн байна уу. Өчигдөр аппаа шинэчилсэн. Дуу нь гарч байгаа ч дэлгэц нь хар байна. Аппаа устгаад дахин суулгасан ч адилхан.", "vi": "Chào bạn. Hôm qua tôi cập nhật ứng dụng, có tiếng nhưng màn hình thì đen. Xóa ứng dụng rồi cài lại cũng vậy.", "en": "Hello. I updated the app yesterday. The sound plays, but the screen stays black. I deleted and reinstalled the app, and it's the same." } },
         { "type": "work", "id": "route", "record": "이관 양식에서 담당 팀을 고르는 차례",
           "tool": { "kind": "paper", "title": "이관(넘김) 양식",
             "rows": [["본인 확인", "마침"], ["고객님 말", "어제 앱 업데이트 뒤 소리만 나오고 화면이 까맘"], ["해 본 것", "앱을 지우고 다시 설치함"], ["넘길 팀", "골라 주세요"]] },
           "prompt": "어느 팀으로 넘길까요?",
-          "hint": { "mn": "«Шилжүүлэх маягт» нь асуудлыг өөр багт дамжуулах хуудас. Үйлчлүүлэгч өчигдөр аппаа шинэчилснээс хойш дуу гарах ч дэлгэц хар байна, аппаа дахин суулгасан гэсэн. Аль багт шилжүүлэхээ сонго.", "vi": "“Mẫu chuyển tiếp” là phiếu để chuyển vụ việc cho bộ phận khác. Khách nói từ khi cập nhật hôm qua thì có tiếng nhưng màn hình đen, đã cài lại ứng dụng. Chọn bộ phận để chuyển.", "en": "The transfer form passes a case to another team. The customer says that since yesterday's update the sound plays but the screen is black, and reinstalling didn't help. Choose the team to transfer to." },
+          "hint": { "mn": "«Шилжүүлэх маягт» нь асуудлыг өөр багт дамжуулах хуудас. Үйлчлүүлэгч өчигдөр аппаа шинэчилснээс хойш дуу нь гарч байгаа ч дэлгэц нь хар хэвээр байна гэсэн. Аппаа дахин суулгасан ч өөрчлөгдөөгүй гэнэ. Аль багт шилжүүлэхээ сонго.", "vi": "“Mẫu chuyển tiếp” là phiếu để chuyển yêu cầu cho bộ phận khác. Khách nói từ khi cập nhật hôm qua thì có tiếng nhưng màn hình đen, và dù đã cài lại ứng dụng vẫn không được. Chọn bộ phận để chuyển.", "en": "The transfer form passes a case to another team. The customer says that since yesterday's update the sound plays but the screen is black, and reinstalling didn't help. Choose the team to transfer to." },
           "options": [
-            { "id": "billing", "label": "결제팀 (결제, 환불, 구독)",
+            { "id": "billing", "retry": true, "label": "결제팀 (결제, 환불, 구독)",
               "hint": { "mn": "Төлбөрийн баг (төлбөр, буцаан олголт, захиалга).", "vi": "Nhóm thanh toán (thanh toán, hoàn tiền, gói thuê bao).", "en": "Billing (payments, refunds, subscriptions)." },
               "then": [
                 { "type": "line", "clip": "buddy-route-again", "who": "buddy",
                   "text": "한 번 더 볼래요? 고객님은 업데이트한 뒤 화면이 안 나온다고 하셨어요.",
-                  "hint": { "mn": "Дахиад нэг харах уу? Үйлчлүүлэгч шинэчилсний дараа дэлгэц гарахгүй байна гэсэн.", "vi": "Em xem lại nhé? Khách nói sau khi cập nhật thì màn hình không hiện.", "en": "Want to look again? The customer said the picture stopped showing after the update." } }
+                  "hint": { "mn": "Дахиад нэг харах уу? Үйлчлүүлэгч аппаа шинэчилсний дараа дэлгэц дээр дүрс гарахгүй байна гэсэн.", "vi": "Em xem lại một lần nữa nhé. Khách nói sau khi cập nhật thì màn hình không hiển thị.", "en": "Want to look again? The customer said the screen went black after the update." } }
               ] },
             { "id": "tech", "label": "기술지원팀 (재생 오류, 앱 오류)",
-              "hint": { "mn": "Техникийн дэмжлэгийн баг (тоглуулах алдаа, аппын алдаа).", "vi": "Nhóm hỗ trợ kỹ thuật (lỗi phát video, lỗi ứng dụng).", "en": "Technical support (playback errors, app errors)." },
+              "hint": { "mn": "Техникийн дэмжлэгийн баг (тоглуулах үеийн алдаа, аппын алдаа).", "vi": "Nhóm hỗ trợ kỹ thuật (lỗi phát video, lỗi ứng dụng).", "en": "Technical support (playback errors, app errors)." },
               "then": [
                 { "type": "line", "clip": "buddy-route-right", "who": "buddy",
                   "text": "네, 화면이 안 나오는 건 기술지원팀이 봐요.",
-                  "hint": { "mn": "Тийм, дэлгэц гарахгүй асуудлыг техникийн баг хардаг.", "vi": "Đúng, màn hình không hiện thì nhóm kỹ thuật xử lý.", "en": "Yes, a picture that won't show goes to technical support." } }
+                  "hint": { "mn": "Тийм, дэлгэц дээр дүрс гарахгүй байгаа асуудлыг техникийн баг хариуцдаг.", "vi": "Đúng rồi, màn hình không hiển thị thì nhóm kỹ thuật xử lý.", "en": "Yes, a black screen is a job for technical support." } }
               ] },
-            { "id": "lock", "label": "계정보호팀 (분실, 해킹, 로그인 잠금)",
-              "hint": { "mn": "Бүртгэл хамгаалах баг (утсаа гээх, хакердуулах, нэвтрэлт түгжих).", "vi": "Nhóm bảo vệ tài khoản (mất máy, bị hack, khóa đăng nhập).", "en": "Account protection (lost phones, hacking, login locks)." },
+            { "id": "lock", "retry": true, "label": "계정보호팀 (분실, 해킹, 로그인 잠금)",
+              "hint": { "mn": "Бүртгэл хамгаалах баг (утсаа гээх, хакердуулах, нэвтрэх эрх түгжигдэх).", "vi": "Nhóm bảo vệ tài khoản (mất máy, bị hack, khóa đăng nhập).", "en": "Account protection (lost phones, hacking, account lockouts)." },
               "then": [
                 { "type": "line", "clip": "buddy-route-again", "who": "buddy",
                   "text": "한 번 더 볼래요? 고객님은 업데이트한 뒤 화면이 안 나온다고 하셨어요.",
-                  "hint": { "mn": "Дахиад нэг харах уу? Үйлчлүүлэгч шинэчилсний дараа дэлгэц гарахгүй байна гэсэн.", "vi": "Em xem lại nhé? Khách nói sau khi cập nhật thì màn hình không hiện.", "en": "Want to look again? The customer said the picture stopped showing after the update." } }
+                  "hint": { "mn": "Дахиад нэг харах уу? Үйлчлүүлэгч аппаа шинэчилсний дараа дэлгэц дээр дүрс гарахгүй байна гэсэн.", "vi": "Em xem lại một lần nữa nhé. Khách nói sau khi cập nhật thì màn hình không hiển thị.", "en": "Want to look again? The customer said the screen went black after the update." } }
               ] }
           ] },
         { "type": "say", "id": "handoff", "listen": "buddy-listen-desk",
           "prompt": "기술지원팀으로 이관했어요. 화면에 「회신: 한국 시간 오늘 16:00 전 · 고객님 계신 곳: 싱가포르, 한국보다 1시간 늦음 · 접수 번호는 문자로 자동 발송」이 떴어요. 대기 콜이 열두 통이에요. 고객님께 어떻게 안내할까요?",
-          "hint": { "mn": "Техникийн дэмжлэгийн багт шилжүүллээ. Дэлгэц дээр «Хариу: Солонгосын цагаар өнөөдөр 16:00-оос (үдээс хойш 4 цаг) өмнө · Үйлчлүүлэгчийн байгаа газар: Сингапур, Солонгосоос 1 цагаар хоцорно · Хүлээн авсан дугаарыг мессежээр автоматаар илгээнэ» гэж гарлаа. Хүлээгдэж буй дуудлага 12 байна. Үйлчлүүлэгчид юу гэж хэлэх вэ?", "vi": "Đã chuyển cho nhóm hỗ trợ kỹ thuật. Màn hình hiện: “Phản hồi: trước 16:00 (4 giờ chiều) hôm nay giờ Hàn Quốc · Khách đang ở: Singapore, chậm hơn Hàn Quốc 1 tiếng · Số tiếp nhận được gửi tự động qua tin nhắn”. Đang có 12 cuộc gọi chờ. Em sẽ báo khách thế nào?", "en": "You’ve transferred it to technical support. The screen shows: \"Reply: before 16:00 (4 p.m.) today, Korean time · Customer’s location: Singapore, 1 hour behind Korea · case number sent automatically by text.\" Twelve callers are waiting. What will you tell the customer?" },
+          "hint": { "mn": "Техникийн дэмжлэгийн багт шилжүүллээ. Дэлгэц дээр «Хариу: Солонгосын цагаар өнөөдөр 16:00-аас (үдээс хойш 4 цаг) өмнө · Үйлчлүүлэгчийн байгаа газар: Сингапур, Солонгосын цагаас 1 цагаар хоцордог · Хүсэлтийн дугаарыг мессежээр автоматаар илгээнэ» гэж гарлаа. Хүлээгдэж буй дуудлага 12 байна. Үйлчлүүлэгчид юу гэж хэлэх вэ?", "vi": "Đã chuyển cho nhóm hỗ trợ kỹ thuật. Màn hình hiện: “Phản hồi: trước 16:00 (4 giờ chiều) hôm nay giờ Hàn Quốc · Khách đang ở: Singapore, chậm hơn Hàn Quốc 1 tiếng · Số tiếp nhận được gửi tự động qua tin nhắn”. Đang có 12 cuộc gọi chờ. Em sẽ báo khách thế nào?", "en": "You’ve escalated the case to technical support. The screen shows: \"Reply: before 16:00 (4 p.m.) today, Korean time · Customer’s location: Singapore, 1 hour behind Korea · case number sent automatically by text.\" Twelve callers are waiting. What will you tell the customer?" },
           "options": [
             { "id": "quick", "label": "대기 콜이 많으니 넘겼다고만 말씀드리고 빨리 마친다",
               "example": "기술지원팀으로 넘겨 드렸습니다. 곧 연락드릴 겁니다. 감사합니다.",
-              "hint": { "mn": "Хүлээж буй дуудлага олон тул шилжүүлснээ л хэлээд хурдан дуусгах. «Техникийн дэмжлэгийн багт шилжүүллээ. Удахгүй холбогдоно. Баярлалаа.»", "vi": "Vì nhiều cuộc gọi đang chờ nên chỉ nói đã chuyển rồi kết thúc nhanh. “Tôi đã chuyển cho nhóm hỗ trợ kỹ thuật. Sẽ có người liên lạc sớm ạ. Cảm ơn bạn.”", "en": "Many callers are waiting, so just say it's been passed on and end quickly. \"I've passed this to technical support. They'll be in touch soon. Thank you.\"" },
+              "hint": { "mn": "Хүлээгдэж буй дуудлага олон тул шилжүүлснээ л хэлээд хурдан дуусгах. «Техникийн дэмжлэгийн багт шилжүүллээ. Удахгүй холбогдоно. Баярлалаа.»", "vi": "Vì nhiều cuộc gọi đang chờ nên chỉ nói đã chuyển rồi kết thúc nhanh. “Em đã chuyển cho nhóm hỗ trợ kỹ thuật. Sẽ có người liên lạc với quý khách sớm ạ. Cảm ơn quý khách.”", "en": "Many callers are waiting, so just say it's been passed on and end the call quickly. \"I've passed this to technical support. They'll be in touch soon. Thank you.\"" },
               "then": [
-                { "type": "line", "clip": "call-app-2", "who": "app", "channel": "phone",
+                { "type": "line", "who": "app", "channel": "phone",
                   "text": "아, 네… 언제쯤 연락이 오는 거예요? …네, 알겠어요.",
                   "hint": { "mn": "Аа, за… Хэзээ холбогдох юм бол? …За, ойлголоо.", "vi": "À, vâng… Khoảng khi nào thì có người liên lạc vậy? …Vâng, tôi hiểu rồi.", "en": "Oh, okay… When will they contact me, roughly? …Okay, fine." } }
               ] },
             { "id": "full", "label": "누가 언제 연락하는지(고객님 계신 곳 시간으로)와 접수 번호를 말씀드린다",
               "example": "기술지원팀으로 넘겨 드렸습니다. 싱가포르 시간으로 오늘 오후 세 시 전에 담당자가 연락드립니다. 접수 번호는 문자로 보내 드리겠습니다.",
-              "hint": { "mn": "Хэн, хэзээ холбогдохыг үйлчлүүлэгчийн байгаа газрын цагаар, мөн хүлээн авсан дугаарыг хэлэх. «Техникийн дэмжлэгийн багт шилжүүллээ. Сингапурын цагаар өнөөдөр үдээс хойш 3 цагаас өмнө хариуцсан ажилтан холбогдоно. Хүлээн авсан дугаарыг мессежээр илгээнэ.»", "vi": "Nói ai sẽ liên lạc, lúc nào theo giờ nơi khách đang ở, và số tiếp nhận. “Tôi đã chuyển cho nhóm hỗ trợ kỹ thuật. Trước 3 giờ chiều nay theo giờ Singapore, nhân viên phụ trách sẽ liên lạc với bạn. Số tiếp nhận sẽ được gửi qua tin nhắn ạ.”", "en": "Say who will contact them and when, in the customer’s local time, and about the case number. \"I’ve passed this to technical support. Someone will contact you before 3 p.m. today, Singapore time. I’ll text you the case number.\"" },
+              "hint": { "mn": "Хэн, хэзээ холбогдохыг үйлчлүүлэгчийн байгаа газрын цагаар хэлж, хүсэлтийн дугаарын талаар мэдэгдэх. «Техникийн дэмжлэгийн багт шилжүүллээ. Сингапурын цагаар өнөөдөр үдээс хойш 3 цагаас өмнө хариуцсан ажилтан холбогдоно. Хүсэлтийн дугаарыг мессежээр илгээнэ.»", "vi": "Cho khách biết ai sẽ liên lạc và vào lúc nào (theo giờ nơi khách đang ở), kèm theo số tiếp nhận. “Em đã chuyển yêu cầu cho nhóm hỗ trợ kỹ thuật. Trước 3 giờ chiều nay theo giờ Singapore, nhân viên phụ trách sẽ liên lạc với quý khách. Số tiếp nhận sẽ được gửi qua tin nhắn ạ.”", "en": "Say who will contact them and when, in the customer’s local time, and mention the case number. \"I’ve passed this to technical support. Someone will contact you before 3 p.m. today, Singapore time. We’ll text you the case number.\"" },
               "then": [
-                { "type": "line", "clip": "call-app-3", "who": "app", "channel": "phone",
+                { "type": "line", "who": "app", "channel": "phone",
                   "text": "오후 세 시 전이요? 네, 알겠어요. 감사합니다.",
                   "hint": { "mn": "Үдээс хойш 3 цагаас өмнө үү? За, ойлголоо. Баярлалаа.", "vi": "Trước 3 giờ chiều à? Vâng, tôi hiểu rồi. Cảm ơn.", "en": "Before 3 p.m.? Okay, got it. Thank you." } }
               ] }
@@ -382,41 +383,41 @@
             "lines": ["고객: 안녕하세요. 구독료를 카드로 내려고 하는데 계속 안 돼요.", "고객: 카드는 문제없어요. 다른 데서는 잘 써요."],
             "note": "오늘의 공지: 한국 시간 10:00~12:00 카드 결제 점검. 간편결제는 됨" },
           "prompt": "어떻게 답할까요?",
-          "hint": { "mn": "Чатаар үйлчлүүлэгч захиалгын төлбөрөө картаар төлөх гэсэн ч болохгүй байна гэж бичсэн. Карт нь өөр газар ажиллаж байгаа. Өнөөдрийн мэдэгдэлд Солонгосын цагаар 10:00-12:00 картын төлбөрийн засвар, хялбар төлбөр (утасны төлбөрийн апп, цахим түрийвч) ажиллана гэж байна. Хариултаа сонго.", "vi": "Khách chat nói muốn trả phí thuê bao bằng thẻ nhưng không được, dù thẻ vẫn dùng được ở chỗ khác. Thông báo hôm nay ghi 10:00-12:00 giờ Hàn Quốc bảo trì thanh toán thẻ, thanh toán nhanh (ứng dụng thanh toán trên điện thoại, ví điện tử) vẫn dùng được. Chọn câu trả lời.", "en": "In the chat, the customer says card payment for the subscription keeps failing, though the card works elsewhere. Today's notice says card payments are under maintenance 10:00-12:00 Korean time, and quick-pay (phone payment apps, e-wallets) works. Choose your reply." },
+          "hint": { "mn": "Чатаар үйлчлүүлэгч захиалгын төлбөрөө картаар төлөх гэсэн ч болохгүй байна гэж бичсэн. Карт нь өөр газар ажиллаж байгаа. Өнөөдрийн мэдэгдэлд Солонгосын цагаар 10:00-12:00 цагийн хооронд картын төлбөрийн системд засвар үйлчилгээ хийнэ, гар утсаар төлбөр хийх апп, цахим түрийвчээр төлж болно гэж байна. Хариултаа сонго.", "vi": "Khách chat nói muốn trả phí thuê bao bằng thẻ nhưng không được, dù thẻ vẫn dùng được ở chỗ khác. Thông báo hôm nay ghi 10:00-12:00 giờ Hàn Quốc bảo trì thanh toán thẻ, nhưng vẫn thanh toán được bằng ứng dụng thanh toán trên điện thoại hoặc ví điện tử. Chọn câu trả lời.", "en": "In the chat, the customer says their card payment for the subscription keeps failing, though the card works elsewhere. Today's notice says the card payment system is under maintenance from 10:00 to 12:00 Korean time, but phone payment apps and e-wallets still work. Choose your reply." },
           "options": [
-            { "id": "card-again", "label": "카드 정보를 다시 넣어 보라고 답한다",
-              "hint": { "mn": "Картын мэдээллээ дахин оруулж үзээрэй гэж хариулах.", "vi": "Trả lời rằng khách hãy nhập lại thông tin thẻ.", "en": "Reply that they should enter the card details again." },
+            { "id": "card-again", "retry": true, "label": "카드 정보를 다시 넣어 보라고 답한다",
+              "hint": { "mn": "Картын мэдээллээ дахин оруулж үзээрэй гэж хариулах.", "vi": "Hướng dẫn khách nhập lại thông tin thẻ.", "en": "Reply that they should enter the card details again." },
               "then": [
                 { "type": "line", "clip": "buddy-pay-again", "who": "buddy", "place": "desk-buddy",
                   "text": "한 번 더 볼래요? 오늘 공지에 카드 결제 점검 시간이 있어요.",
-                  "hint": { "mn": "Дахиад нэг харах уу? Өнөөдрийн мэдэгдэлд картын төлбөрийн засварын цаг бий.", "vi": "Em xem lại nhé? Trong thông báo hôm nay có giờ bảo trì thanh toán thẻ.", "en": "Want to look again? Today's notice has the card payment maintenance times." } }
+                  "hint": { "mn": "Дахиад нэг харах уу? Өнөөдрийн мэдэгдэлд картын төлбөрийн системийн засварын цаг бичсэн байгаа.", "vi": "Em xem lại một lần nữa nhé. Thông báo hôm nay có ghi thời gian bảo trì hệ thống thanh toán thẻ.", "en": "Want to look again? Today's notice has the card payment maintenance times." } }
               ] },
-            { "id": "after-noon", "label": "점검이 열두 시에 끝난다고 알리고, 급하면 간편결제도 된다고 답한다",
-              "hint": { "mn": "Засвар 12 цагт дуусна гэж мэдэгдээд, яаралтай бол хялбар төлбөр ажиллана гэж хариулах.", "vi": "Báo rằng bảo trì kết thúc lúc 12 giờ, nếu gấp thì có thể dùng thanh toán nhanh.", "en": "Say maintenance ends at 12, and quick-pay works if it's urgent." },
+            { "id": "after-noon", "label": "점검이 한국 시간 열두 시에 끝난다고 알리고, 급하면 간편결제도 된다고 답한다",
+              "hint": { "mn": "Картын төлбөрийн системийн засвар үйлчилгээ Солонгосын цагаар 12 цагт дуусна гэж мэдэгдээд, яаралтай бол гар утсаар төлбөр хийх апп, цахим түрийвчээр төлж болно гэж хариулах.", "vi": "Báo cho khách rằng việc bảo trì thanh toán thẻ kết thúc lúc 12 giờ theo giờ Hàn Quốc; nếu gấp thì vẫn có thể thanh toán bằng ứng dụng thanh toán trên điện thoại hoặc ví điện tử.", "en": "Tell the customer that card payment maintenance ends at 12:00 Korean time, and that phone payment apps and e-wallets still work if it’s urgent." },
               "then": [
                 { "type": "line", "clip": "buddy-pay-right", "who": "buddy", "place": "desk-buddy",
-                  "text": "맞아요. 열두 시까지는 카드 결제 점검이에요.",
-                  "hint": { "mn": "Зөв. 12 цаг хүртэл картын төлбөрийн засвар явагдаж байгаа.", "vi": "Đúng rồi. Đến 12 giờ vẫn đang bảo trì thanh toán thẻ.", "en": "That's right. Card payments are under maintenance until 12." } }
+                  "text": "맞아요. 한국 시간 열두 시까지는 카드 결제 점검이에요.",
+                  "hint": { "mn": "Зөв. Солонгосын цагаар 12 цаг хүртэл картын төлбөрийн системд засвар үйлчилгээ хийгдэж байгаа.", "vi": "Đúng rồi. Hệ thống thanh toán thẻ đang bảo trì đến 12 giờ theo giờ Hàn Quốc.", "en": "That’s right. The card payment system is down for maintenance until 12:00 Korean time." } }
               ] }
           ] },
         { "type": "line", "who": "chat", "channel": "chat", "place": "desk",
           "text": "하나 더요. 연간 구독권을 샀는데 다음 달부터는 못 볼 것 같아요. 지금 해지하면 남은 달만큼 돌려받을 수 있어요?",
-          "hint": { "mn": "Бас нэг юм асууя. Жилийн захиалга авсан ч дараа сараас үзэж чадахгүй байх. Одоо цуцалбал үлдсэн саруудын мөнгийг буцааж авч болох уу?", "vi": "Cho mình hỏi thêm. Mình đã mua gói năm nhưng từ tháng sau chắc không xem được nữa. Bây giờ hủy thì có được hoàn tiền cho những tháng còn lại không?", "en": "One more thing. I bought a yearly plan, but I don't think I can watch from next month. If I cancel now, can I get the remaining months back?" } },
+          "hint": { "mn": "Бас нэг юм асууя. Жилийн багц авсан ч дараа сараас үзэж чадахгүй байх. Одоо цуцалбал үлдсэн саруудын мөнгийг буцааж авч болох уу?", "vi": "Cho mình hỏi thêm. Mình đã mua gói năm nhưng từ tháng sau chắc không xem được nữa. Bây giờ hủy thì có được hoàn tiền cho những tháng còn lại không?", "en": "One more thing. I bought a yearly plan, but I probably won't be able to watch from next month on. If I cancel now, can I get a refund for the remaining months?" } },
         { "type": "say", "id": "unknown",
           "prompt": "스크립트(상담 매뉴얼)에서 이 경우를 찾지 못했어요. 채팅으로 어떻게 답할까요?",
-          "hint": { "mn": "Скрипт буюу зөвлөгөөний гарын авлагаас энэ тохиолдлыг олсонгүй. Чатаар юу гэж хариулах вэ?", "vi": "Em không tìm thấy trường hợp này trong kịch bản (sổ tay tư vấn). Em sẽ trả lời qua chat thế nào?", "en": "You couldn't find this case in the script (agent manual). How will you reply in the chat?" },
+          "hint": { "mn": "Скрипт буюу зөвлөгөө өгөх гарын авлагаас энэ тохиолдлыг олсонгүй. Чатаар юу гэж хариулах вэ?", "vi": "Em không tìm thấy trường hợp này trong kịch bản (sổ tay tư vấn). Em sẽ trả lời qua chat thế nào?", "en": "You couldn't find this case in the script (agent manual). How will you reply in the chat?" },
           "options": [
             { "id": "guess", "label": "보통 남은 달만큼 돌려준다고 들었으니, 그렇다고 답한다",
               "example": "네, 남은 달만큼 돌려받으실 수 있을 거예요. 걱정하지 마세요.",
-              "hint": { "mn": "Ихэвчлэн үлдсэн саруудын мөнгийг буцааж өгдөг гэж сонссон тул тийм гэж хариулах. «Тийм, үлдсэн саруудын мөнгөө буцааж авч болох байх. Санаа зовох хэрэггүй.»", "vi": "Vì từng nghe nói thường được hoàn tiền những tháng còn lại, nên trả lời là được. “Vâng, chắc bạn sẽ được hoàn tiền những tháng còn lại. Bạn đừng lo.”", "en": "You've heard the remaining months are usually refunded, so say yes. \"Yes, you should get the remaining months back. Don't worry.\"" },
+              "hint": { "mn": "Ихэвчлэн үлдсэн саруудын мөнгийг буцааж өгдөг гэж сонссон тул тийм гэж хариулах. «Тийм, үлдсэн саруудын мөнгөө буцааж авч болох байх. Санаа зовох хэрэггүй.»", "vi": "Vì từng nghe nói thường được hoàn tiền những tháng còn lại, nên trả lời là được. “Vâng, chắc quý khách sẽ được hoàn tiền những tháng còn lại. Quý khách đừng lo ạ.”", "en": "You've heard the remaining months are usually refunded, so say yes. \"Yes, you should get a refund for the remaining months. Don't worry.\"" },
               "then": [
                 { "type": "line", "who": "chat", "channel": "chat",
                   "text": "다행이다! 그럼 지금 해지해 볼게요.",
-                  "hint": { "mn": "Ямар сайн юм! Тэгвэл одоо цуцалж үзье.", "vi": "May quá! Vậy mình hủy luôn bây giờ.", "en": "What a relief! Then I'll cancel now." } }
+                  "hint": { "mn": "Ашгүй дээ! Тэгвэл одоо цуцалж үзье.", "vi": "May quá! Vậy mình hủy luôn bây giờ.", "en": "What a relief! Then I'll cancel now." } }
               ] },
             { "id": "check", "label": "결제팀에 확인해서, 오늘 안에 이 채팅으로 다시 알려 드린다고 답한다",
               "example": "정확히 확인해서 알려 드리겠습니다. 결제팀에 확인한 뒤 오늘 안에 이 채팅으로 답변드리겠습니다.",
-              "hint": { "mn": "Төлбөрийн багаас асууж, өнөөдөртөө багтааж энэ чатаар дахин хариулна гэж хэлэх. «Нарийн шалгаад хэлж өгье. Төлбөрийн багаас тодруулаад өнөөдөртөө багтааж энэ чатаар хариулъя.»", "vi": "Trả lời rằng sẽ hỏi nhóm thanh toán rồi trả lời lại qua khung chat này trong hôm nay. “Tôi sẽ kiểm tra chính xác rồi báo lại. Sau khi hỏi nhóm thanh toán, tôi sẽ trả lời bạn qua khung chat này trong hôm nay ạ.”", "en": "Reply that you’ll check with billing and answer in this chat today. \"Let me check that properly. I’ll ask the billing team and reply to you in this chat today.\"" },
+              "hint": { "mn": "Төлбөрийн багаас асууж, өнөөдөртөө багтааж энэ чатаар эргээд хариулна гэж хэлэх. «Нарийн шалгаад хэлж өгье. Төлбөрийн багаас тодруулаад өнөөдөртөө багтааж энэ чатаар хариулъя.»", "vi": "Trả lời rằng sẽ hỏi nhóm thanh toán rồi trả lời lại qua khung chat này trong hôm nay. “Em sẽ kiểm tra chính xác rồi báo lại. Sau khi hỏi nhóm thanh toán, em sẽ trả lời quý khách qua khung chat này trong hôm nay ạ.”", "en": "Reply that you’ll check with billing and get back to them in this chat today. \"Let me look into that for you. I’ll check with the billing team and get back to you here in this chat today.\"" },
               "then": [
                 { "type": "line", "who": "chat", "channel": "chat",
                   "text": "네, 기다릴게요. 감사합니다.",
@@ -432,142 +433,142 @@
       "place": "desk-buddy",
       "requires": ["first-call", "transfer"],
       "steps": [
-        { "type": "line", "clip": "call-husband-1", "who": "husband", "channel": "phone", "when": { "family": ["holder-only", "ask"] },
+        { "type": "line", "who": "husband", "channel": "phone", "when": { "family": ["holder-only", "ask"] },
           "text": "안녕하세요. 아까 아내가 연락했었죠? 제가 가입자예요. 이번 달 결제 내역 좀 알려 주세요.",
-          "hint": { "mn": "Сайн байна уу. Түрүүн эхнэр маань холбогдсон биз дээ? Би бүртгэлийн эзэн нь. Энэ сарын төлбөрийн мэдээллийг хэлж өгөөч.", "vi": "Chào bạn. Lúc nãy vợ tôi có liên lạc phải không? Tôi là chủ tài khoản. Cho tôi biết chi tiết thanh toán tháng này.", "en": "Hello. My wife contacted you earlier, didn't she? I'm the account owner. Please tell me this month's payment details." } },
+          "hint": { "mn": "Сайн байна уу. Түрүүн эхнэр маань холбогдсон биз дээ? Би бүртгэл эзэмшигч нь байна. Энэ сарын төлбөрийн мэдээллийг хэлж өгөөч.", "vi": "Chào bạn. Lúc nãy vợ tôi có liên lạc phải không? Tôi là chủ tài khoản. Cho tôi biết chi tiết thanh toán tháng này.", "en": "Hello. My wife contacted you earlier, didn't she? I'm the account owner. Could you give me this month's payment details?" } },
         { "type": "say", "id": "id-ask", "listen": "buddy-listen-desk", "when": { "family": ["holder-only", "ask"] },
           "prompt": "결제 내역을 말하기 전에 본인 확인부터 해요. 고객님께 여쭤보세요.",
           "example": "본인 확인을 위해 가입자 성함과 생년월일을 말씀해 주시겠습니까? 가입하신 휴대폰으로 인증번호도 보내 드리겠습니다.",
-          "hint": { "mn": "Төлбөрийн мэдээллийг хэлэхээс өмнө хэн болохыг шалга. Бүртгүүлсэн хүний овог нэр, төрсөн огноог асуугаад, бүртгэлтэй утас руу нь баталгаажуулах код илгээнэ гэж хэл.", "vi": "Trước khi nói chi tiết thanh toán, hãy xác minh chính chủ. Hỏi họ tên và ngày sinh của người đăng ký, rồi nói em sẽ gửi mã xác thực đến số điện thoại đã đăng ký.", "en": "Before giving payment details, check his identity. Ask for the subscriber’s name and date of birth, and say you’ll send a code to the registered phone." },
+          "hint": { "mn": "Төлбөрийн мэдээллийг өгөхөөс өмнө тухайн хүн мөн эсэхийг шалга. Бүртгүүлсэн хүний овог нэр, төрсөн огноог асуугаад, бүртгэлтэй утас руу нь баталгаажуулах код илгээнэ гэж хэл.", "vi": "Trước khi cung cấp chi tiết thanh toán, hãy xác minh chính chủ. Hỏi họ tên và ngày sinh của người đăng ký, rồi báo sẽ gửi mã xác thực đến số điện thoại đã đăng ký.", "en": "Before giving payment details, check his identity. Ask for the subscriber’s name and date of birth, and say you’ll send a code to the registered phone." },
           "record": "본인 확인을 여쭙는 차례" },
-        { "type": "line", "clip": "call-husband-2", "who": "husband", "channel": "phone", "when": { "family": ["holder-only", "ask"] },
+        { "type": "line", "who": "husband", "channel": "phone", "when": { "family": ["holder-only", "ask"] },
           "text": "이름은 정민호, 1991년 3월 9일생이에요. …아, 문자 왔네요. 인증번호는 4826이에요.",
-          "hint": { "mn": "Нэр маань Жон Минхо, 1991 оны 3-р сарын 9-нд төрсөн. …Аа, мессеж ирлээ. Баталгаажуулах код нь 4826.", "vi": "Tên tôi là Jeong Min-ho, sinh ngày 9 tháng 3 năm 1991. …À, có tin nhắn rồi. Mã xác thực là 4826.", "en": "My name is Jeong Min-ho, born March 9, 1991. …Oh, here’s the text. The code is 4826." } },
+          "hint": { "mn": "Нэр маань Жон Минхо, 1991 оны 3-р сарын 9-нд төрсөн. …Аа, мессеж ирлээ. Баталгаажуулах код нь 4826.", "vi": "Tên tôi là Jeong Min-ho, sinh ngày 9 tháng 3 năm 1991. …À, có tin nhắn rồi. Mã xác thực là 4826.", "en": "My name is Jeong Min-ho, and my date of birth is March 9, 1991. …Oh, here’s the text. The code is 4826." } },
         { "type": "work", "id": "holder-check", "record": "가입자 본인인지 상담 화면에서 확인하는 차례", "when": { "family": ["holder-only", "ask"] },
           "tool": { "kind": "screen", "title": "고객 정보",
             "rows": [["가입자", "정민호 · 1991. 03. 09 생"], ["가입 휴대폰", "끝 번호 5821"], ["보낸 인증번호", "4826"]],
             "note": "고객님이 말씀하신 것: 정민호, 1991년 3월 9일생, 인증번호 4826" },
           "prompt": "지금 연락한 분이 가입자 본인인가요?",
-          "hint": { "mn": "Дэлгэц дээрх мэдээллийг үйлчлүүлэгчийн хэлсэн нэр, төрсөн огноо, баталгаажуулах кодтой тулгаж үз.", "vi": "So sánh thông tin trên màn hình với họ tên, ngày sinh và mã xác thực khách vừa nói.", "en": "Compare the screen with the name, date of birth and code the caller gave." },
+          "hint": { "mn": "Одоо залгаж байгаа хүн бүртгүүлсэн хүн өөрөө мөн үү? Дэлгэц дээрх мэдээллийг үйлчлүүлэгчийн хэлсэн нэр, төрсөн огноо, баталгаажуулах кодтой тулгаж үз.", "vi": "Người đang gọi có phải chính người đăng ký không? So sánh thông tin trên màn hình với họ tên, ngày sinh và mã xác thực khách vừa nói.", "en": "Is the caller the subscriber? Check the name, date of birth and code the caller gave against the details on the screen." },
           "options": [
-            { "id": "not-holder", "label": "가입자 본인이 아니다",
-              "hint": { "mn": "Бүртгэлийн эзэн өөрөө биш.", "vi": "Không phải chính chủ tài khoản.", "en": "He is not the account owner." },
+            { "id": "not-holder", "retry": true, "label": "가입자 본인이 아니다",
+              "hint": { "mn": "Бүртгэл эзэмшигч өөрөө биш.", "vi": "Không phải chính chủ tài khoản.", "en": "He is not the account owner." },
               "then": [
-                { "type": "line", "clip": "call-husband-3", "who": "husband", "channel": "phone",
+                { "type": "line", "who": "husband", "channel": "phone",
                   "text": "네? 제가 가입자 본인이에요. 이름도 생년월일도 인증번호도 말씀드렸잖아요.",
-                  "hint": { "mn": "Юу? Би бүртгүүлсэн хүн өөрөө байна. Нэр, төрсөн огноо, кодоо ч хэлсэн шүү дээ.", "vi": "Hả? Tôi chính là người đăng ký mà. Tôi đã nói cả tên, ngày sinh lẫn mã xác thực rồi còn gì.", "en": "What? I am the subscriber. I gave you my name, my date of birth and the code." } }
+                  "hint": { "mn": "Юу? Бүртгүүлсэн хүн нь яг би өөрөө. Нэр, төрсөн огноо, кодоо ч хэлсэн шүү дээ.", "vi": "Hả? Tôi chính là người đăng ký mà. Tôi đã nói cả tên, ngày sinh lẫn mã xác thực rồi còn gì.", "en": "What? I am the subscriber. I gave you my name, my date of birth and the code." } }
               ] },
             { "id": "holder", "label": "가입자 본인이다",
-              "hint": { "mn": "Бүртгэлийн эзэн өөрөө мөн.", "vi": "Đúng là chính chủ tài khoản.", "en": "He is the account owner." },
+              "hint": { "mn": "Бүртгэл эзэмшигч өөрөө мөн.", "vi": "Đúng là chính chủ tài khoản.", "en": "He is the account owner." },
               "then": [
-                { "type": "line", "clip": "call-husband-4", "who": "husband", "channel": "phone",
+                { "type": "line", "who": "husband", "channel": "phone",
                   "text": "네, 맞아요. 그럼 결제 내역 좀 봐 주세요.",
-                  "hint": { "mn": "Тийм, зөв. Тэгвэл төлбөрийн мэдээллийг харж өгөөч.", "vi": "Vâng, đúng rồi. Vậy bạn xem chi tiết thanh toán giúp tôi.", "en": "Yes, that's right. So please look at the payment details." } }
+                  "hint": { "mn": "Тийм, зөв. Тэгвэл төлбөрийн мэдээллийг шалгаж өгөөч.", "vi": "Vâng, đúng rồi. Vậy bạn xem chi tiết thanh toán giúp tôi.", "en": "Yes, that's right. So please check the payment details." } }
               ] }
           ] },
         { "type": "work", "id": "bill", "record": "결제 내역에서 늘어난 까닭을 찾는 차례", "when": { "family": ["holder-only", "ask"] },
           "tool": { "kind": "screen", "title": "결제 내역",
             "rows": [["지난달", "구독료 9달러"], ["이번 달 구독료", "9달러"], ["이번 달 웹툰 코인", "20달러 (11월 14일, 이 계정의 휴대폰에서)"], ["이번 달 합계", "29달러"]] },
           "prompt": "이번 달 결제가 늘어난 까닭은 무엇인가요?",
-          "hint": { "mn": "Төлбөрийн задаргаа. «Вэбтүүн зоос» нь апп дотор комикс унших зориулалтаар худалдаж авдаг зоос. Энэ сарын төлбөр яагаад өссөнийг ол.", "vi": "Chi tiết thanh toán. “Xu webtoon” là xu mua trong ứng dụng để đọc truyện tranh. Tìm lý do vì sao tháng này bị trừ nhiều hơn.", "en": "Payment details. \"Webtoon coins\" are coins bought in the app to read comics. Find why this month's charge went up." },
+          "hint": { "mn": "Төлбөрийн задаргаа. «Вэбтүүн зоос» нь апп дотор комикс унших зориулалтаар худалдаж авдаг зоос. Энэ сарын төлбөр яагаад өссөнийг ол.", "vi": "Chi tiết thanh toán. “Xu webtoon” là xu mua trong ứng dụng để đọc truyện tranh. Tìm lý do vì sao tháng này bị trừ nhiều hơn.", "en": "Payment details. \"Webtoon coins\" are coins bought in the app to read comics. Find out why this month's charge went up." },
           "options": [
-            { "id": "fee-up", "label": "구독료가 올랐다",
+            { "id": "fee-up", "retry": true, "label": "구독료가 올랐다",
               "hint": { "mn": "Захиалгын төлбөр өссөн.", "vi": "Phí thuê bao đã tăng.", "en": "The subscription fee went up." },
               "then": [
-                { "type": "line", "clip": "call-husband-5", "who": "husband", "channel": "phone",
+                { "type": "line", "who": "husband", "channel": "phone",
                   "text": "구독료는 지난달이랑 같던데요? 다른 게 있지 않아요?",
-                  "hint": { "mn": "Захиалгын төлбөр өнгөрсөн сартай адилхан байсан шүү дээ? Өөр зүйл байгаа юм биш үү?", "vi": "Phí thuê bao giống tháng trước mà? Không có khoản nào khác à?", "en": "Isn't the subscription the same as last month? Isn't there something else?" } }
+                  "hint": { "mn": "Захиалгын төлбөр өнгөрсөн сартай адилхан байсан биз дээ? Өөр зүйл байгаа юм биш үү?", "vi": "Phí thuê bao giống tháng trước mà? Không có khoản nào khác à?", "en": "Isn't the subscription the same as last month? Isn't there something else?" } }
               ] },
             { "id": "coins", "label": "웹툰 코인을 따로 샀다",
-              "hint": { "mn": "Вэбтүүн зоосыг тусад нь худалдаж авсан.", "vi": "Đã mua thêm xu webtoon riêng.", "en": "Webtoon coins were bought separately." },
+              "hint": { "mn": "Вэбтүүн зоосыг тусад нь худалдаж авсан.", "vi": "Khách đã mua thêm xu webtoon.", "en": "Webtoon coins were bought separately." },
               "then": [
-                { "type": "line", "clip": "call-husband-6", "who": "husband", "channel": "phone",
+                { "type": "line", "who": "husband", "channel": "phone",
                   "text": "아, 코인이요? 아이가 샀나 보네요. 알겠어요, 고마워요.",
                   "hint": { "mn": "Аа, зоос уу? Хүүхэд маань авсан бололтой. Ойлголоо, баярлалаа.", "vi": "À, xu à? Chắc con tôi mua rồi. Tôi hiểu rồi, cảm ơn.", "en": "Oh, coins? My kid must have bought them. I see, thank you." } }
               ] }
           ] },
-        { "type": "line", "clip": "call-husband-7", "who": "husband", "channel": "phone", "when": { "family": "tell" },
+        { "type": "line", "who": "husband", "channel": "phone", "when": { "family": "tell" },
           "text": "아까 제 아내한테 제 결제 내역을 알려 주셨다면서요? 저한테 묻지도 않고요. 그래도 되는 거예요?",
-          "hint": { "mn": "Түрүүн эхнэрт маань миний төлбөрийн мэдээллийг хэлсэн гэсэн үү? Надаас асуухгүйгээр. Тэгж болох юм уу?", "vi": "Nghe nói lúc nãy bạn đã cho vợ tôi biết chi tiết thanh toán của tôi? Mà không hỏi tôi. Như thế có được không?", "en": "I hear you told my wife about my payments earlier? Without asking me. Is that allowed?" } },
+          "hint": { "mn": "Түрүүн эхнэрт маань миний төлбөрийн мэдээллийг хэлсэн гэсэн үү? Надаас асуухгүйгээр. Тэгж болох юм уу?", "vi": "Nghe nói lúc nãy bạn đã cho vợ tôi biết chi tiết thanh toán của tôi mà không hỏi tôi, phải không? Làm như thế sao được?", "en": "I hear you told my wife about my payments earlier? Without asking me. Is that allowed?" } },
         { "type": "say", "id": "sorry", "listen": "buddy-listen-desk", "when": { "family": "tell" },
           "prompt": "가입자 본인이 따져 물어요. 먼저 사과해 보세요.",
           "example": "죄송합니다, 고객님. 본인 확인 없이 안내해 드렸습니다.",
-          "hint": { "mn": "Бүртгэлийн эзэн шаардаж асууж байна. Эхлээд уучлалт гуй.", "vi": "Chủ tài khoản đang chất vấn. Hãy xin lỗi trước.", "en": "The account owner is demanding an explanation. Apologise first." },
+          "hint": { "mn": "Бүртгэл эзэмшигч тайлбар шаардаж байна. Эхлээд уучлалт гуй.", "vi": "Chủ tài khoản đang hỏi vặn. Hãy xin lỗi trước.", "en": "The account owner is demanding an explanation. Apologise first." },
           "record": "사과하는 차례" },
         { "type": "line", "clip": "lead-husband", "who": "lead", "place": "desk-lead", "when": { "family": "tell" },
           "text": "이 건은 제가 같이 받을게요. 고객님께 경위를 설명드릴게요.",
-          "hint": { "mn": "Энэ асуудлыг би хамт авъя. Үйлчлүүлэгчид юу болсныг тайлбарлаж өгье.", "vi": "Việc này để chị cùng nhận. Chị sẽ giải thích sự việc cho khách.", "en": "I'll take this one with you. I'll explain to the customer what happened." } },
-        { "type": "line", "clip": "call-app-4", "who": "app", "channel": "phone", "place": "desk-buddy", "when": { "handoff": "quick" },
+          "hint": { "mn": "Энэ дуудлагад би хамт оролцъё. Үйлчлүүлэгчид юу болсныг тайлбарлаж өгье.", "vi": "Việc này để chị xử lý cùng em. Chị sẽ giải thích sự việc cho khách.", "en": "I'll handle this one with you. I'll explain to the customer what happened." } },
+        { "type": "line", "who": "app", "channel": "phone", "place": "desk-buddy", "when": { "handoff": "quick" },
           "text": "오전에 연락했던 사람인데요. 넘겼다고만 하셔서 기다렸는데 아직 연락이 없어요. 처음부터 다시 말해야 해요?",
-          "hint": { "mn": "Өглөө холбогдсон хүн байна. Шилжүүлсэн гэж л хэлсэн болохоор хүлээсэн ч одоо болтол холбогдсонгүй. Бүгдийг эхнээс нь дахин ярих ёстой юу?", "vi": "Tôi là người liên lạc hồi sáng. Bạn chỉ nói là đã chuyển nên tôi chờ, nhưng đến giờ vẫn chưa có ai liên lạc. Tôi phải kể lại từ đầu à?", "en": "I contacted you this morning. You only said it had been passed on, so I waited, but no one has been in touch. Do I have to explain it all again?" } },
+          "hint": { "mn": "Өглөө холбогдсон хүн байна. Өөр баг руу шилжүүлсэн гэж л хэлсэн болохоор хүлээсэн ч одоо болтол надтай хэн ч холбогдсонгүй. Бүгдийг эхнээс нь дахин ярих ёстой юу?", "vi": "Hồi sáng tôi có gọi rồi. Bên bạn chỉ nói là đã chuyển yêu cầu đi nên tôi chờ, nhưng đến giờ vẫn chưa có ai liên lạc. Tôi phải kể lại từ đầu à?", "en": "I contacted you this morning. You only said it had been passed on, so I waited, but no one has been in touch. Do I have to explain it all again?" } },
         { "type": "say", "id": "recall", "listen": "buddy-listen-desk", "when": { "handoff": "quick" },
           "prompt": "오전 고객님이 다시 연락하셨고, 이번에도 내 자리로 연결됐어요. 화면에 오전 상담 이력과 「회신: 한국 시간 오늘 16:00 전」이 있어요. 고객님은 싱가포르에 계세요. 어떻게 안내할까요?",
           "example": "기다리시게 해서 죄송합니다, 고객님. 오전에 접수하신 내용이 여기 있으니 다시 말씀하지 않으셔도 됩니다. 기술지원팀에 한 번 더 요청해 두겠습니다. 싱가포르 시간으로 오늘 오후 세 시 전에 연락드립니다.",
-          "hint": { "mn": "Өглөөний үйлчлүүлэгч дахин холбогдож, энэ удаа ч чиний суудал руу холбогдлоо. Дэлгэц дээр өглөөний зөвлөгөөний бүртгэл болон «Хариу: Солонгосын цагаар өнөөдөр 16:00-оос өмнө» гэж байна. Үйлчлүүлэгч Сингапурт байгаа. Хүлээлгэсэнд уучлалт гуйж, бүртгэгдсэн гэдгийг болон түүний цагаар хэзээ холбогдохыг хэл.", "vi": "Khách buổi sáng liên lạc lại, và lần này cũng được nối đến chỗ em. Màn hình có lịch sử tư vấn buổi sáng và “Phản hồi: trước 16:00 hôm nay giờ Hàn Quốc”. Khách đang ở Singapore. Hãy xin lỗi vì đã để khách chờ, nói rằng đã được tiếp nhận và khi nào sẽ có người liên lạc theo giờ của khách.", "en": "This morning’s customer has contacted you again, and the call has come to you again. The screen shows this morning’s record and \"Reply: before 16:00 today, Korean time.\" The customer is in Singapore. Apologise for the wait, say the case is logged, and say when they’ll hear back in their local time." },
+          "hint": { "mn": "Өглөөний үйлчлүүлэгч дахин холбогдож, энэ удаа ч дуудлага чамд ирлээ. Дэлгэц дээр өглөөний зөвлөгөөний бүртгэл болон «Хариу: Солонгосын цагаар өнөөдөр 16:00-аас өмнө» гэсэн тэмдэглэл байна. Үйлчлүүлэгч Сингапурт байгаа. Хүлээлгэсэнд уучлалт гуйж, өглөөний хүсэлт бүртгэлтэй тул дахин ярих шаардлагагүй гэж хэл. Техникийн багт дахин хүсэлт илгээнэ гэдгээ болон Сингапурын цагаар хэзээ холбогдохыг хэл.", "vi": "Khách sáng nay liên lạc lại, và lần này cuộc gọi cũng được chuyển cho em. Trên màn hình hiển thị lịch sử tư vấn buổi sáng và dòng ghi chú “Phản hồi: trước 16:00 hôm nay theo giờ Hàn Quốc”. Khách đang ở Singapore. Hãy xin lỗi vì đã để khách chờ, rồi cho khách biết ba điều: yêu cầu buổi sáng đã được ghi lại nên khách không cần nói lại; em sẽ gửi yêu cầu cho nhóm kỹ thuật thêm một lần nữa; và thời điểm sẽ có người liên lạc, tính theo giờ Singapore.", "en": "This morning’s customer has called back, and the call has been routed to you again. The screen shows this morning’s contact record and the note \"Reply: before 16:00 today, Korean time.\" The customer is in Singapore. Apologise for the wait, say this morning’s case is on record so they don’t need to explain again, say you’ll ask technical support again, and tell them when they’ll hear back in their local time." },
           "record": "다시 연락한 고객께 안내하는 차례" },
         { "type": "note", "note": "tech-quick", "when": { "handoff": "quick" } },
         { "type": "note", "note": "tech-full", "when": { "handoff": "full" } },
         { "type": "move", "place": "lead-seat", "caption": "오후 두 시, 팀장님 자리" },
         { "type": "line", "clip": "lead-call", "who": "lead",
           "text": "모국어 대기열로 전화가 들어왔어요. 앞으로 직접 맡을 전화예요. 오늘은 제가 옆에서 같이 들을 테니, 고객님 말씀을 한국어로 전해 줘요.",
-          "hint": { "mn": "Эх хэлний дараалал руу дуудлага орж ирлээ. Цаашдаа чи өөрөө хариуцах дуудлага. Өнөөдөр би хажууд чинь хамт сонсох тул үйлчлүүлэгчийн хэлснийг надад солонгосоор дамжуулаарай.", "vi": "Có cuộc gọi vào hàng chờ tiếng mẹ đẻ. Sau này em sẽ tự phụ trách những cuộc gọi như thế này. Hôm nay chị ngồi cạnh nghe cùng, em chuyển lời khách cho chị bằng tiếng Hàn nhé.", "en": "A call has come into the queue for your language. These will be your calls from now on. Today I’ll listen in next to you, so pass on what the customer says to me in Korean." } },
+          "hint": { "mn": "Чиний эх хэлээрх зөвлөгөөний дараалалд дуудлага орж ирлээ. Цаашид ийм дуудлагыг чи өөрөө хариуцна. Өнөөдөр би хажууд чинь хамт сонсох тул үйлчлүүлэгчийн хэлснийг надад солонгосоор дамжуулаарай.", "vi": "Có cuộc gọi đến kênh hỗ trợ bằng tiếng mẹ đẻ của em. Sau này em sẽ tự phụ trách những cuộc gọi như thế này. Hôm nay chị ngồi cạnh nghe cùng, em dịch lời khách sang tiếng Hàn cho chị nhé.", "en": "A call has come into the queue for your language. Calls like this will be yours from now on. Today I’ll sit next to you and listen in, so tell me in Korean what the customer says." } },
         { "type": "relay", "id": "lost", "who": "foreign", "channel": "phone", "listen": "lead-listen-seat",
           "record": "고객님의 사정을 팀장님께 전하는 차례",
           "foreign": {
-            "mn": "Сайн байна уу? Монголоор ярьж болж байгаад их баярлалаа. Өчигдөр орой автобусанд утсаа гээчихлээ. Өөр хүн миний бүртгэлээр төлбөр төлөхгүйн тулд хааж өгөөч.",
-            "vi": "Alô, chào bạn. Cảm ơn bạn nhiều vì tôi được nói tiếng Việt. Tối qua tôi làm mất điện thoại trên xe buýt. Bạn chặn giúp tôi để người khác không dùng tài khoản của tôi thanh toán nhé.",
+            "mn": "Сайн байна уу? Монголоор ярьж болж байгаад их баярлалаа. Өчигдөр орой автобусанд утсаа гээчихлээ. Өөр хүн миний бүртгэлээр төлбөр төлөхөөс сэргийлж бүртгэлийг минь хааж өгөөч.",
+            "vi": "Alô, chào bạn. May quá, có người nói tiếng Việt. Tối qua tôi làm mất điện thoại trên xe buýt. Bạn khóa giúp tài khoản của tôi để người khác không thể dùng tài khoản đó thanh toán được nhé.",
             "en": "Hello? I'm so glad I can speak my own language. I lost my phone on the bus last night. Please block my account so nobody else can make payments with it."
           },
           "meaning": "어젯밤 버스에서 휴대폰을 잃어버리셨다고 합니다. 다른 사람이 계정으로 결제하지 못하게 막아 달라고 하십니다.",
           "prompt": "고객님의 말을 팀장님께 한국어로 전해요.",
           "example": "팀장님, 고객님이 어젯밤 버스에서 휴대폰을 잃어버리셨다고 합니다. 다른 사람이 계정으로 결제하지 못하게 막아 달라고 하십니다.",
-          "hint": { "mn": "Үйлчлүүлэгчийн хэлснийг багийн ахлагчид солонгосоор дамжуул: юу болсон, юу хүсч байгаа.", "vi": "Chuyển lời của khách cho trưởng nhóm bằng tiếng Hàn: chuyện gì đã xảy ra và khách muốn gì.", "en": "Pass on to the team leader in Korean what happened and what the customer wants." } },
+          "hint": { "mn": "Юу болсныг, үйлчлүүлэгч юу хүсэж байгааг багийн ахлагчид солонгосоор дамжуул.", "vi": "Chuyển lời của khách cho trưởng nhóm bằng tiếng Hàn: chuyện gì đã xảy ra và khách muốn gì.", "en": "In Korean, tell the team leader what happened and what the customer wants." } },
         { "type": "line", "clip": "lead-verify-ask", "who": "lead",
           "text": "본인 확인부터 해요. 휴대폰을 잃어버리셨으니 문자 인증은 못 해요. 생년월일과 가입한 휴대폰 끝 번호를 여쭤봐 줄래요?",
-          "hint": { "mn": "Эхлээд хэн болохыг шалгая. Утсаа гээсэн тул мессежээр баталгаажуулах боломжгүй. Төрсөн огноо, бүртгүүлсэн утасны сүүлийн оронг асуугаад өгөх үү?", "vi": "Xác minh chính chủ trước đã. Khách bị mất điện thoại nên không xác thực qua tin nhắn được. Em hỏi giúp chị ngày sinh và mấy số cuối của số điện thoại đã đăng ký nhé?", "en": "Identity check first. They’ve lost their phone, so a text code won’t work. Could you ask for the date of birth and the last digits of the registered phone number?" } },
+          "hint": { "mn": "Эхлээд тухайн хүн мөн эсэхийг шалгая. Үйлчлүүлэгч утсаа гээсэн тул мессежээр баталгаажуулах боломжгүй. Төрсөн огноо болон бүртгэлтэй утасны дугаарын сүүлийн дөрвөн орныг асуугаад өгөх үү?", "vi": "Xác minh chính chủ trước đã. Khách bị mất điện thoại nên không xác thực qua tin nhắn được. Em hỏi giúp chị ngày sinh và bốn số cuối của số điện thoại đã đăng ký nhé?", "en": "Identity check first. They’ve lost their phone, so a text code won’t work. Could you ask for the date of birth and the last four digits of the registered phone number?" } },
         { "type": "relay", "id": "ask-native", "direction": "out", "who": "foreign", "channel": "phone", "listen": "lead-listen-seat",
           "record": "본인 확인을 고객님 말로 여쭙는 차례",
           "foreign": {
-            "mn": "Хэн болохыг тань шалгахын тулд төрсөн огноо, бүртгүүлсэн утасны дугаарын сүүлийн дөрвөн оронг хэлж өгнө үү?",
+            "mn": "Таны хувийн мэдээллийг баталгаажуулахын тулд төрсөн огноо, бүртгүүлсэн утасны дугаарын сүүлийн дөрвөн орныг хэлж өгнө үү?",
             "vi": "Để xác minh chính chủ, quý khách vui lòng cho biết ngày sinh và bốn số cuối của số điện thoại đã đăng ký được không ạ?",
             "en": "To confirm your identity, could you tell me your date of birth and the last four digits of the phone number on your account?"
           },
           "meaning": "본인 확인을 위해 생년월일과 가입하신 휴대폰 끝 번호 네 자리를 말씀해 주시겠어요?",
           "prompt": "팀장님 말을 듣고, 고객님께 모국어로 여쭤봐요.",
-          "hint": { "mn": "Үйлчлүүлэгчээс эх хэлээрээ асуу: төрсөн огноо, бүртгүүлсэн утасны сүүлийн дөрвөн орон.", "vi": "Hỏi khách bằng tiếng mẹ đẻ: ngày sinh và bốn số cuối của số điện thoại đã đăng ký.", "en": "Ask the customer in your own language for their date of birth and the last four digits of the registered phone number." } },
+          "hint": { "mn": "Үйлчлүүлэгчээс төрсөн огноо болон бүртгэлтэй утасны дугаарын сүүлийн дөрвөн орныг эх хэлээрээ асуу.", "vi": "Hỏi khách bằng tiếng mẹ đẻ: ngày sinh và bốn số cuối của số điện thoại đã đăng ký.", "en": "Ask the customer in your own language for their date of birth and the last four digits of the registered phone number." } },
         { "type": "relay", "id": "digits", "who": "foreign", "channel": "phone", "listen": "lead-listen-seat",
           "record": "고객님이 말한 본인 확인 정보를 전하는 차례",
           "foreign": {
-            "mn": "Миний төрсөн өдөр 2003 оны 5-р сарын 14. Бүртгүүлсэн утасны дугаарын сүүлийн дөрвөн орон 4417.",
+            "mn": "Би 2003 оны 5-р сарын 14-нд төрсөн. Бүртгүүлсэн утасны дугаарын сүүлийн дөрвөн орон 4417.",
             "vi": "Tôi sinh ngày 14 tháng 5 năm 2003. Bốn số cuối của số điện thoại đã đăng ký là 4417.",
             "en": "My date of birth is May 14, 2003. The phone number on my account ends in 4417."
           },
           "meaning": "생년월일은 2003년 5월 14일이고, 가입한 휴대폰 끝 번호는 4417이라고 하십니다.",
           "prompt": "고객님께 끝 번호를 한 번 더 읽어 확인하고, 팀장님께 한국어로 전해요.",
           "example": "생년월일은 2003년 5월 14일이고, 가입한 휴대폰 끝 번호는 4417(사사일칠)이라고 하십니다.",
-          "hint": { "mn": "Үйлчлүүлэгчид сүүлийн оронг нэг дахин уншиж баталгаажуулаад, хэлсэн төрсөн огноо, утасны сүүлийн оронг багийн ахлагчид солонгосоор хэл. Тоог нэг нэгээр нь тод хэлээрэй.", "vi": "Đọc lại số cuối cho khách để kiểm tra, rồi nói lại cho trưởng nhóm bằng tiếng Hàn ngày sinh và số cuối khách vừa nói. Đọc từng chữ số cho rõ.", "en": "Read the last digits back to the customer to confirm, then tell the team leader in Korean the date of birth and last digits they gave. Say each digit clearly." } },
+          "hint": { "mn": "Үйлчлүүлэгчид сүүлийн дөрвөн орныг дахин хэлж баталгаажуулаад, үйлчлүүлэгчийн хэлсэн төрсөн огноо болон утасны дугаарын сүүлийн дөрвөн орныг багийн ахлагчид солонгос хэлээр хэлээрэй. Тоо бүрийг тод дуудаарай.", "vi": "Đọc lại bốn số cuối cho khách để kiểm tra, rồi nói lại cho trưởng nhóm bằng tiếng Hàn ngày sinh và bốn số cuối khách vừa nói. Đọc từng chữ số cho rõ.", "en": "Read the last four digits back to the customer to confirm, then tell the team leader in Korean the date of birth and last four digits they gave. Say each digit clearly." } },
         { "type": "line", "clip": "lead-verify", "who": "lead",
           "text": "생년월일은 맞아요. 그런데 이 고객님 계정이 두 개예요. 잠글 계정을 골라 줘요.",
-          "hint": { "mn": "Төрсөн огноо нь таарч байна. Гэхдээ энэ үйлчлүүлэгч хоёр бүртгэлтэй юм байна. Түгжих бүртгэлийг сонгоод өг.", "vi": "Ngày sinh khớp rồi. Nhưng khách này có hai tài khoản. Em chọn tài khoản cần khóa nhé.", "en": "The date of birth matches. But this customer has two accounts. Pick the account to lock." } },
+          "hint": { "mn": "Төрсөн огноо нь таарч байна. Гэхдээ энэ үйлчлүүлэгч хоёр бүртгэлтэй юм байна. Түгжих бүртгэлийг нь сонгоорой.", "vi": "Ngày sinh khớp rồi. Nhưng khách này có hai tài khoản. Em chọn tài khoản cần khóa nhé.", "en": "The date of birth matches. But this customer has two accounts. Pick the account to lock." } },
         { "type": "work", "id": "pick-account", "record": "잠글 계정을 고르는 차례",
           "tool": { "kind": "screen", "title": "고객 계정",
             "rows": [["고객", "2003. 05. 14 생"], ["계정 1", "가입 휴대폰 끝 번호 4471"], ["계정 2", "가입 휴대폰 끝 번호 4417"]] },
           "prompt": "잠글 계정은 어느 것인가요?",
-          "hint": { "mn": "Үйлчлүүлэгч бүртгүүлсэн утасны сүүлийн дөрвөн оронг 4417 гэж хэлсэн. Дэлгэц дээрх хоёр бүртгэлээс алийг нь түгжихээ сонго.", "vi": "Khách nói bốn số cuối của số điện thoại đã đăng ký là 4417. Chọn tài khoản cần khóa trong hai tài khoản trên màn hình.", "en": "The customer said the registered phone number ends in 4417. Choose which of the two accounts on the screen to lock." },
+          "hint": { "mn": "Үйлчлүүлэгч бүртгүүлсэн утасны дугаарын сүүлийн дөрвөн орныг 4417 гэж хэлсэн. Дэлгэц дээрх хоёр бүртгэлээс алийг нь түгжихээ сонго.", "vi": "Khách nói bốn số cuối của số điện thoại đã đăng ký là 4417. Chọn tài khoản cần khóa trong hai tài khoản trên màn hình.", "en": "The customer said the registered phone number ends in 4417. Choose which of the two accounts on the screen to lock." },
           "options": [
-            { "id": "end-4471", "label": "계정 1 · 끝 번호 4471",
-              "hint": { "mn": "1-р бүртгэл, сүүлийн орон 4471.", "vi": "Tài khoản 1, số cuối 4471.", "en": "Account 1, ending in 4471." },
+            { "id": "end-4471", "retry": true, "label": "계정 1 · 끝 번호 4471",
+              "hint": { "mn": "1-р бүртгэл, сүүлийн дөрвөн орон 4471.", "vi": "Tài khoản 1, bốn số cuối 4471.", "en": "Account 1, ending in 4471." },
               "then": [
                 { "type": "line", "clip": "lead-line-again", "who": "lead",
                   "text": "한 번 더 볼래요? 고객님은 끝 번호가 사사일칠이라고 하셨어요.",
-                  "hint": { "mn": "Дахиад нэг харах уу? Үйлчлүүлэгч сүүлийн оронг 4417 гэж хэлсэн.", "vi": "Em xem lại nhé? Khách nói số cuối là 4417.", "en": "Want to look again? The customer said the number ends in 4417." } }
+                  "hint": { "mn": "Дахиад нэг харах уу? Үйлчлүүлэгч сүүлийн дөрвөн орныг 4417 гэж хэлсэн.", "vi": "Em xem lại một lần nữa nhé. Khách nói bốn số cuối là 4417.", "en": "Want to look again? The customer said the number ends in 4417." } }
               ] },
             { "id": "end-4417", "label": "계정 2 · 끝 번호 4417",
-              "hint": { "mn": "2-р бүртгэл, сүүлийн орон 4417.", "vi": "Tài khoản 2, số cuối 4417.", "en": "Account 2, ending in 4417." },
+              "hint": { "mn": "2-р бүртгэл, сүүлийн дөрвөн орон 4417.", "vi": "Tài khoản 2, bốn số cuối 4417.", "en": "Account 2, ending in 4417." },
               "then": [
                 { "type": "line", "clip": "lead-line-right", "who": "lead",
                   "text": "네, 사사일칠이에요. 결제부터 바로 막고, 계정보호팀에 넘길게요.",
-                  "hint": { "mn": "Тийм, 4417. Эхлээд төлбөрийг нь шууд хааж, бүртгэл хамгаалах багт шилжүүлье.", "vi": "Đúng, 4417. Chị chặn thanh toán ngay rồi chuyển cho nhóm bảo vệ tài khoản.", "en": "Yes, 4417. I’ll block payments right away and pass it to account protection." } }
+                  "hint": { "mn": "Тийм, 4417. Эхлээд төлбөрийг нь шууд зогсоож, бүртгэл хамгаалах багт шилжүүлье.", "vi": "Đúng, 4417. Trước hết chị chặn thanh toán ngay, rồi chuyển cho nhóm bảo vệ tài khoản.", "en": "Yes, 4417. I’ll block payments on that account immediately, then pass the case to the account protection team." } }
               ] }
           ] },
         { "type": "relay", "id": "new-phone", "who": "foreign", "channel": "phone", "listen": "lead-listen-seat",
@@ -580,23 +581,23 @@
           "meaning": "새 휴대폰을 사면 이 계정으로 다시 볼 수 있는지 물으십니다.",
           "prompt": "고객님의 질문을 팀장님께 한국어로 전해요.",
           "example": "팀장님, 고객님이 새 휴대폰을 사면 이 계정으로 다시 볼 수 있는지 물으십니다.",
-          "hint": { "mn": "Үйлчлүүлэгчийн асуултыг багийн ахлагчид солонгосоор дамжуул.", "vi": "Chuyển câu hỏi của khách cho trưởng nhóm bằng tiếng Hàn.", "en": "Pass the customer's question on to the team leader in Korean." } },
+          "hint": { "mn": "Үйлчлүүлэгчийн асуултыг багийн ахлагчид солонгосоор дамжуул.", "vi": "Truyền đạt câu hỏi của khách cho trưởng nhóm bằng tiếng Hàn.", "en": "Pass the customer's question on to the team leader in Korean." } },
         { "type": "line", "clip": "lead-new-phone", "who": "lead",
           "text": "새 휴대폰에서 본인 인증을 하시면 잠금을 풀어 드린다고 전해 줘요. 통신사에 분실 신고도 먼저 하시라고요.",
-          "hint": { "mn": "Шинэ утсан дээрээ хэн болохоо баталгаажуулбал түгжээг тайлж өгнө гэж хэлээрэй. Харилцаа холбооны компанидаа утсаа гээснээ эхлээд мэдэгдээрэй гэж бас хэлээрэй.", "vi": "Em nói với khách là xác thực chính chủ trên điện thoại mới thì sẽ được mở khóa. Và bảo khách báo mất máy với nhà mạng trước nhé.", "en": "Tell them that once they verify their identity on the new phone, we’ll unlock the account. And tell them to report the lost phone to their mobile carrier first." } },
+          "hint": { "mn": "Шинэ утсан дээрээ хувийн мэдээллээ баталгаажуулбал түгжээг тайлж өгнө гэж хэлээрэй. Утсаа гээснээ эхлээд үүрэн холбооны операторт мэдэгдээрэй гэж бас хэлээрэй.", "vi": "Em nói với khách là xác thực chính chủ trên điện thoại mới thì sẽ được mở khóa. Và bảo khách báo mất máy với nhà mạng trước nhé.", "en": "Tell them that once they verify their identity on the new phone, we’ll unlock the account. And tell them to report the lost phone to their mobile carrier first." } },
         { "type": "relay", "id": "tell-native", "direction": "out", "who": "foreign", "channel": "phone", "listen": "lead-listen-seat",
           "record": "팀장님 답을 고객님 말로 전하는 차례",
           "foreign": {
-            "mn": "Шинэ утсан дээрээ хэн болохоо баталгаажуулбал түгжээг тайлж өгнө. Харилцаа холбооны компанидаа утсаа гээснээ эхлээд мэдэгдээрэй.",
-            "vi": "Khi quý khách xác thực chính chủ trên điện thoại mới, chúng tôi sẽ mở khóa tài khoản. Quý khách cũng vui lòng báo mất máy với nhà mạng trước nhé.",
-            "en": "Once you verify your identity on your new phone, we’ll unlock the account. Please also report the lost phone to your mobile carrier first."
+            "mn": "Та шинэ утсан дээрээ хувийн мэдээллээ баталгаажуулбал түгжээг тайлж өгнө. Утсаа гээснээ эхлээд үүрэн холбооны операторт мэдэгдэнэ үү.",
+            "vi": "Khi quý khách xác thực chính chủ trên điện thoại mới, chúng tôi sẽ mở khóa tài khoản. Quý khách cũng vui lòng báo mất máy với nhà mạng trước ạ.",
+            "en": "Once you verify your identity on your new phone, we’ll unlock the account. Please report the lost phone to your mobile carrier first."
           },
           "meaning": "새 휴대폰에서 본인 인증을 하시면 잠금을 풀어 드립니다. 통신사에 분실 신고도 먼저 해 주세요.",
           "prompt": "팀장님 답을 고객님께 모국어로 전해요.",
-          "hint": { "mn": "Багийн ахлагчийн хариуг үйлчлүүлэгчид эх хэлээрээ дамжуул.", "vi": "Chuyển câu trả lời của trưởng nhóm cho khách bằng tiếng mẹ đẻ.", "en": "Pass the team leader’s answer on to the customer in your own language." } },
+          "hint": { "mn": "Багийн ахлагчийн хариуг үйлчлүүлэгчид эх хэлээрээ дамжуул.", "vi": "Truyền đạt lại câu trả lời của trưởng nhóm cho khách bằng tiếng mẹ đẻ của mình.", "en": "Pass the team leader’s answer on to the customer in your native language." } },
         { "type": "line", "clip": "lead-thanks", "who": "lead",
           "text": "고마워요. 고객님이 모국어로 말하니까 훨씬 편해하셨어요. 우리 팀에 꼭 필요한 일이에요.",
-          "hint": { "mn": "Баярлалаа. Үйлчлүүлэгч эх хэлээрээ ярихаараа хамаагүй тайван байсан. Манай багт яг хэрэгтэй ажил шүү.", "vi": "Cảm ơn em. Được nói bằng tiếng mẹ đẻ nên khách thấy dễ chịu hơn hẳn. Đây là việc nhóm mình rất cần.", "en": "Thank you. Speaking their own language put the customer much more at ease. That's exactly what our team needs." } }
+          "hint": { "mn": "Баярлалаа. Үйлчлүүлэгч эх хэлээрээ ярьсан болохоор хамаагүй тайван байсан. Манай багт яг хэрэгтэй ажил шүү.", "vi": "Cảm ơn em. Được nói bằng tiếng mẹ đẻ nên khách thấy dễ chịu hơn hẳn. Đây là việc nhóm mình rất cần.", "en": "Thank you. The customer was much more at ease speaking in their own language. That's exactly what our team needs." } }
       ]
     },
     {
@@ -610,17 +611,17 @@
         { "type": "say", "id": "refund-check", "when": { "unknown": "check" },
           "prompt": "결제팀 답을 오전의 채팅 고객님께 전해요.",
           "example": "기다려 주셔서 감사합니다. 확인해 보니, 쓰신 석 달은 할인 없는 월 요금으로 계산해 빼고 33달러를 돌려드립니다.",
-          "hint": { "mn": "Төлбөрийн багийн хариуг өглөөний чатын үйлчлүүлэгчид дамжуул.", "vi": "Chuyển câu trả lời của nhóm thanh toán cho khách chat buổi sáng.", "en": "Pass the billing team's answer to this morning's chat customer." },
+          "hint": { "mn": "Төлбөрийн багийн хариуг өглөө чатаар холбогдсон үйлчлүүлэгчид дамжуул.", "vi": "Chuyển câu trả lời của nhóm thanh toán cho khách đã chat hồi sáng.", "en": "Pass on the billing team's answer to the customer from this morning's chat." },
           "record": "확인한 답을 전하는 차례" },
         { "type": "line", "who": "chat", "channel": "chat", "when": { "unknown": "check" },
-          "text": "알려 주셔서 고마워요. 생각해 보고 해지할게요.",
-          "hint": { "mn": "Мэдэгдсэнд баярлалаа. Бодож байгаад цуцалъя.", "vi": "Cảm ơn bạn đã cho biết. Mình sẽ suy nghĩ rồi mới hủy.", "en": "Thanks for letting me know. I'll think about it before cancelling." } },
+          "text": "알려 주셔서 고마워요. 해지할지 좀 더 생각해 볼게요.",
+          "hint": { "mn": "Мэдэгдсэнд баярлалаа. Цуцлах эсэхээ дахиад жаахан бодъё.", "vi": "Cảm ơn bạn đã cho biết. Mình sẽ suy nghĩ thêm xem có hủy hay không.", "en": "Thanks for letting me know. I’ll think a bit more about whether to cancel." } },
         { "type": "line", "who": "chat", "channel": "chat", "when": { "unknown": "guess" },
           "text": "아까 남은 달만큼 돌려받을 수 있다고 하셨잖아요. 그런데 해지하려고 보니 훨씬 적게 나와요. 어떻게 된 거예요?",
-          "hint": { "mn": "Түрүүн үлдсэн саруудын мөнгөө буцааж авна гэж хэлсэн биз дээ. Гэтэл цуцлах гэтэл хамаагүй бага гарч байна. Яаж байгаа юм бэ?", "vi": "Lúc nãy bạn nói mình được hoàn tiền những tháng còn lại mà. Nhưng lúc định hủy thì số tiền ít hơn nhiều. Là sao vậy?", "en": "Earlier you said I'd get the remaining months back. But when I went to cancel, it shows much less. What happened?" } },
+          "hint": { "mn": "Түрүүн үлдсэн саруудын мөнгөө буцааж авна гэж хэлсэн биз дээ. Гэтэл цуцлах гэсэн чинь хамаагүй бага гарч байна. Яаж байгаа юм бэ?", "vi": "Lúc nãy bạn nói mình được hoàn tiền những tháng còn lại mà. Nhưng lúc định hủy thì số tiền ít hơn nhiều. Là sao vậy?", "en": "Earlier you said I'd get a refund for the remaining months. But when I tried to cancel, the refund amount was much lower. What happened?" } },
         { "type": "line", "clip": "buddy-refund", "who": "buddy", "place": "desk-buddy", "when": { "unknown": "guess" },
           "text": "결제팀에 같이 물어봐요. 답이 오면 그대로 전해요.",
-          "hint": { "mn": "Төлбөрийн багаас хамт асууя. Хариу ирвэл яг тэр чигт нь дамжуулна.", "vi": "Mình cùng hỏi nhóm thanh toán nhé. Có câu trả lời thì chuyển lại nguyên văn.", "en": "Let's ask billing together. When they answer, pass it on as it is." } },
+          "hint": { "mn": "Төлбөрийн багаас хамт асууя. Хариу ирвэл яг хэвээр нь дамжуулна.", "vi": "Mình cùng hỏi nhóm thanh toán nhé. Có câu trả lời thì chuyển nguyên văn cho khách.", "en": "Let's ask billing together. When they reply, pass their answer on exactly as it is." } },
         { "type": "note", "note": "billing-reply", "when": { "unknown": "guess" } },
         { "type": "say", "id": "refund-guess", "when": { "unknown": "guess" },
           "prompt": "먼저 사과하고, 결제팀 답을 채팅으로 전해요.",
@@ -629,40 +630,40 @@
           "record": "확인하지 않은 안내를 바로잡는 차례" },
         { "type": "line", "who": "chat", "channel": "chat", "when": { "unknown": "guess" },
           "text": "…알겠어요. 처음부터 그렇게 알려 주셨으면 좋았을 텐데요.",
-          "hint": { "mn": "…Ойлголоо. Эхнээсээ ингэж хэлсэн бол сайн байсан юм.", "vi": "…Mình hiểu rồi. Giá mà ngay từ đầu bạn nói như vậy thì tốt.", "en": "…I see. I wish you'd told me that from the start." } },
+          "hint": { "mn": "…Ойлголоо. Эхнээсээ ингэж хэлсэн бол сайн байх байсан юм.", "vi": "…Mình hiểu rồi. Giá mà ngay từ đầu bạn nói như vậy thì tốt biết mấy.", "en": "…I see. I wish you'd told me that from the start." } },
         { "type": "move", "place": "desk", "caption": "오후 3시 12분" },
-        { "type": "line", "clip": "call-angry-1", "who": "angry", "channel": "phone",
+        { "type": "line", "who": "angry", "channel": "phone",
           "text": "아니, 이번 달 구독료가 왜 두 번이나 빠졌냐고요! 9달러가 두 번이에요!",
-          "hint": { "mn": "Энэ сарын захиалгын төлбөр яагаад хоёр удаа татагдсан юм бэ гэж асууж байна! 9 доллар хоёр удаа!", "vi": "Tôi hỏi sao phí thuê bao tháng này bị trừ hai lần! 9 đô la hai lần đấy!", "en": "I'm asking why this month's subscription was charged twice! Nine dollars, twice!" } },
+          "hint": { "mn": "Энэ сарын захиалгын төлбөр яагаад хоёр удаа татагдсан юм бэ гэж асууж байна! 9 доллар хоёр удаа!", "vi": "Tôi hỏi sao phí thuê bao tháng này bị trừ hai lần! Hai lần 9 đô la đấy!", "en": "I'm asking why this month's subscription was charged twice! Nine dollars, twice!" } },
         { "type": "say", "id": "calm",
           "prompt": "화가 난 고객님이에요. 먼저 사과하고, 확인하겠다고 말해 보세요.",
           "example": "불편을 드려 죄송합니다, 고객님. 결제 내역을 바로 확인해 드리겠습니다.",
           "hint": { "mn": "Уурласан үйлчлүүлэгч байна. Эхлээд уучлалт гуйгаад, шалгаж өгнө гэж хэл.", "vi": "Khách đang tức giận. Hãy xin lỗi trước và nói sẽ kiểm tra ngay.", "en": "The customer is angry. Apologise first and say you'll check right away." },
           "record": "화난 고객님께 먼저 사과하는 차례" },
-        { "type": "line", "clip": "call-angry-2", "who": "angry", "channel": "phone",
+        { "type": "line", "who": "angry", "channel": "phone",
           "text": "확인은 무슨 확인이에요! 말귀를 못 알아들어요? 당신 말고 말 통하는 사람 바꿔요!",
-          "hint": { "mn": "Ямар шалгах вэ! Ойлгохгүй байна уу? Чамайг биш, үг ойлгодог хүнийг холбо!", "vi": "Kiểm tra cái gì nữa! Không hiểu tôi nói gì à? Không phải cô, đổi người nào hiểu chuyện cho tôi!", "en": "Check what? Can't you understand? Not you. Put me through to someone who gets it!" } },
-        { "type": "line", "clip": "act-angry-1", "who": "angry", "action": true,
+          "hint": { "mn": "Юуг нь шалгах юм бэ! Ойлгохгүй байна уу? Чамтай ярихгүй, үг ойлгодог хүнтэй холбож өг!", "vi": "Kiểm tra cái gì nữa! Nói mà không hiểu à? Cho tôi nói chuyện với người khác đi!", "en": "Check what? Don't you get it? Put me through to someone else, someone who actually understands!" } },
+        { "type": "line", "who": "angry", "action": true,
           "text": "고객이 욕설을 섞어 소리를 지른다. 결제 내역을 볼 틈이 없다.",
-          "hint": { "mn": "Үйлчлүүлэгч хараал урсгаж хашгирч байна. Төлбөрийн мэдээллийг харах завшаан алга.", "vi": "Khách vừa chửi bới vừa la hét. Không có lúc nào để xem chi tiết thanh toán.", "en": "The customer shouts, mixing in swear words. There's no chance to look at the payments." } },
+          "hint": { "mn": "Үйлчлүүлэгч хараал урсгаж хашхирч байна. Төлбөрийн мэдээллийг харах боломж алга.", "vi": "Khách vừa chửi bới vừa la hét. Không có thời gian để xem chi tiết thanh toán.", "en": "The customer is yelling and swearing. There's no chance to check the payment history." } },
         { "type": "say", "id": "abuse",
           "prompt": "고객이 욕설과 막말을 이어 가요. 어떻게 할까요?",
-          "hint": { "mn": "Үйлчлүүлэгч хараал, доромжилсон үгээ үргэлжлүүлж байна. Одоо яах вэ?", "vi": "Khách tiếp tục chửi bới và nói lời xúc phạm. Em sẽ làm gì?", "en": "The customer keeps swearing and insulting you. What will you do?" },
+          "hint": { "mn": "Үйлчлүүлэгч харааж доромжилсоор байна. Одоо яах вэ?", "vi": "Khách tiếp tục chửi bới và nói lời xúc phạm. Em sẽ làm gì?", "en": "The customer keeps swearing and insulting you. What will you do?" },
           "options": [
             { "id": "endure", "label": "고객님 화가 풀릴 때까지 사과하며 끝까지 듣는다",
               "example": "죄송합니다, 고객님. 많이 불편하셨죠. 말씀 끝까지 듣겠습니다.",
-              "hint": { "mn": "Үйлчлүүлэгчийн уур гартал уучлалт гуйж, эцэс хүртэл сонсох. «Уучлаарай. Их эвгүй байсан байх. Таны яриаг эцэс хүртэл сонсъё.»", "vi": "Xin lỗi và nghe đến cùng cho đến khi khách nguôi giận. “Tôi xin lỗi anh. Chắc anh đã rất khó chịu. Tôi sẽ nghe anh nói hết ạ.”", "en": "Keep apologising and listen to the end until the customer calms down. \"I'm sorry. That must have been very frustrating. I'll hear you out.\"" },
+              "hint": { "mn": "Үйлчлүүлэгчийн уур нь намдтал уучлалт гуйж, эцэс хүртэл сонсох. «Уучлаарай. Танд их таагүй байсан байх. Таны яриаг дуустал нь сонсъё.»", "vi": "Xin lỗi và kiên nhẫn lắng nghe cho đến khi khách nguôi giận. “Em xin lỗi quý khách. Chắc quý khách đã rất khó chịu. Em sẽ nghe quý khách nói hết ạ.”", "en": "Keep apologising and keep listening until the customer calms down. \"I'm sorry. That must have been very frustrating. I'll listen to everything you have to say.\"" },
               "then": [
-                { "type": "line", "clip": "act-angry-2", "who": "angry", "action": true,
+                { "type": "line", "who": "angry", "action": true,
                   "text": "고객이 십 분 넘게 소리를 지른다. 듣고 있던 팀장이 통화를 넘겨받는다.",
-                  "hint": { "mn": "Үйлчлүүлэгч арав гаруй минут хашгирав. Сонсож байсан багийн ахлагч дуудлагыг авав.", "vi": "Khách la hét hơn mười phút. Trưởng nhóm đang nghe cùng liền nhận lấy cuộc gọi.", "en": "The customer shouts for more than ten minutes. The team leader, who was listening in, takes over the call." } },
+                  "hint": { "mn": "Үйлчлүүлэгч арав гаруй минут хашхирав. Сонсож байсан багийн ахлагч дуудлагыг өөр дээрээ авав.", "vi": "Khách la hét hơn mười phút. Trưởng nhóm đang theo dõi cuộc gọi liền nghe máy thay.", "en": "The customer has been shouting for more than ten minutes. The team leader, who has been listening in, takes over the call." } },
                 { "type": "line", "clip": "lead-after", "who": "lead", "place": "desk-lead",
                   "text": "길어져서 듣고 있다가 제가 넘겨받았어요. 더 일찍 못 와서 미안해요. 십 분 쉬고 와요.",
-                  "hint": { "mn": "Удаан үргэлжлээд байхаар нь сонсож байгаад би авсан. Эрт ирж чадаагүйд уучлаарай. 10 минут амраад ир.", "vi": "Thấy kéo dài nên chị đã nghe rồi nhận lấy cuộc gọi. Xin lỗi vì không đến sớm hơn. Em đi nghỉ 10 phút rồi quay lại nhé.", "en": "It was running long, so I listened in and took it over. I’m sorry I didn’t come sooner. Go and take ten minutes." } }
+                  "hint": { "mn": "Удаан үргэлжлээд байхаар нь сонсож байгаад би өөр дээрээ авсан. Эрт ирж чадаагүйд уучлаарай. 10 минут амраад ир.", "vi": "Thấy cuộc gọi kéo dài, chị đã theo dõi rồi nghe máy thay em. Xin lỗi em vì chị không đến sớm hơn. Em đi nghỉ 10 phút rồi quay lại nhé.", "en": "It was running long, so I listened in and took it over. I’m sorry I didn’t come sooner. Go and take ten minutes." } }
               ] },
             { "id": "flag", "label": "보류하고 도움 요청 깃발을 들어 팀장님을 부른다",
               "example": "고객님, 결제 내역을 확인하겠습니다. 1분 정도 기다려 주시겠습니까?",
-              "hint": { "mn": "Түр хүлээлгээд, тусламж хүсэх тугаа өргөж багийн ахлагчийг дуудах. «Төлбөрийн мэдээллийг шалгая. Нэг минут орчим хүлээгээд өгөх үү?»", "vi": "Giữ máy rồi giơ cờ xin hỗ trợ để gọi trưởng nhóm. “Tôi sẽ kiểm tra chi tiết thanh toán. Anh vui lòng chờ khoảng một phút được không ạ?”", "en": "Put him on hold and raise the help flag for the team leader. \"I’ll check the payment details. Could you hold for about a minute, please?\"" },
+              "hint": { "mn": "Түр хүлээлгээд, тусламж хүсэх тугаар дохио өгч багийн ахлагчийг дуудах. «Төлбөрийн мэдээллийг шалгая. Нэг минут орчим хүлээнэ үү.»", "vi": "Bấm giữ cuộc gọi rồi giơ cờ xin hỗ trợ để gọi trưởng nhóm. “Em sẽ kiểm tra chi tiết thanh toán. Quý khách vui lòng chờ khoảng một phút được không ạ?”", "en": "Put the customer on hold and raise the help flag to call the team leader. \"I’ll check the payment details. Could you hold for about a minute, please?\"" },
               "then": [
                 { "type": "line", "clip": "lead-flag", "who": "lead", "place": "desk-lead",
                   "text": "깃발 봤어요. 이 전화는 제가 받을게요. 십 분 쉬고 와요.",
@@ -670,14 +671,14 @@
               ] },
             { "id": "stop", "label": "정해진 안내를 하고, 계속되면 통화를 끝낸 뒤 팀장님께 알린다",
               "example": "고객님, 욕설을 계속하시면 상담을 종료하겠습니다.",
-              "hint": { "mn": "Тогтсон анхааруулгыг хэлээд, үргэлжилбэл дуудлагыг дуусгаж багийн ахлагчид мэдэгдэх. «Та хараалаа үргэлжлүүлбэл зөвлөгөөг дуусгана.»", "vi": "Nói câu thông báo đã quy định, nếu khách vẫn tiếp tục thì kết thúc cuộc gọi rồi báo trưởng nhóm. “Nếu anh tiếp tục chửi bới, tôi sẽ kết thúc cuộc tư vấn.”", "en": "Give the set warning, and if it continues, end the call and tell the team leader. \"If the swearing continues, I will end this call.\"" },
+              "hint": { "mn": "Журмын дагуу анхааруулга өгч, үйлчлүүлэгч хараал хэлсээр байвал дуудлагыг дуусгаад багийн ахлагчид мэдэгдэх. «Та хараалын үг хэлсээр байвал яриаг дуусгана.»", "vi": "Đọc lời cảnh báo theo quy định; nếu khách vẫn tiếp tục thì kết thúc cuộc gọi rồi báo trưởng nhóm. “Nếu quý khách tiếp tục có lời lẽ xúc phạm, em xin phép kết thúc cuộc gọi.”", "en": "Give the standard warning, and if it continues, end the call and tell the team leader. \"If the swearing continues, I will end this call.\"" },
               "then": [
-                { "type": "line", "clip": "call-angry-3", "who": "angry", "channel": "phone",
+                { "type": "line", "who": "angry", "channel": "phone",
                   "text": "뭐요? 끊겠다고요? 어디 끊어 봐요!",
-                  "hint": { "mn": "Юу? Таслана гэнэ ээ? Тасалж л үз!", "vi": "Cái gì? Định cúp máy à? Cúp thử xem!", "en": "What? You’ll hang up on me? Go on, try it!" } },
-                { "type": "line", "clip": "act-angry-3", "who": "angry", "action": true,
+                  "hint": { "mn": "Юу? Тасална гэнэ ээ? Тасалж л үз!", "vi": "Cái gì? Định cúp máy à? Cúp thử xem!", "en": "What? You’re going to hang up on me? Go on, try it!" } },
+                { "type": "line", "who": "angry", "action": true,
                   "text": "욕설이 이어진다. 「욕설이 계속되어 상담을 종료하겠습니다」라고 말하고 통화를 끝낸다.",
-                  "hint": { "mn": "Хараал үргэлжилсээр. «Хараал үргэлжилсэн тул зөвлөгөөг дуусгалаа» гэж хэлээд дуудлагыг дуусгав.", "vi": "Khách vẫn tiếp tục chửi bới. Em nói “Vì anh tiếp tục chửi bới nên tôi xin kết thúc cuộc tư vấn” rồi kết thúc cuộc gọi.", "en": "The swearing goes on. You say, \"Because the swearing has continued, I am ending this call,\" and end the call." } },
+                  "hint": { "mn": "Үйлчлүүлэгч хараалын үг хэлсээр байна. «Та хараалын үг хэлсээр байгаа тул яриаг одоо дуусгана» гэж хэлээд дуудлагыг дуусгав.", "vi": "Khách vẫn tiếp tục chửi bới. Nhân viên tư vấn nói “Vì quý khách tiếp tục có lời lẽ xúc phạm nên em xin phép kết thúc cuộc gọi” rồi cúp máy.", "en": "The swearing goes on. You say, \"Because the swearing has continued, I am ending this call,\" and end the call." } },
                 { "type": "line", "clip": "lead-takeover", "who": "lead", "place": "desk-lead",
                   "text": "알려 줘서 고마워요. 이 고객님 결제 건은 제가 확인해서 회신할게요. 십 분 쉬고 와요.",
                   "hint": { "mn": "Мэдэгдсэнд баярлалаа. Энэ үйлчлүүлэгчийн төлбөрийн асуудлыг би шалгаад хариу өгье. 10 минут амраад ир.", "vi": "Cảm ơn em đã báo. Vụ thanh toán của khách này chị sẽ kiểm tra rồi phản hồi. Em đi nghỉ 10 phút rồi quay lại nhé.", "en": "Thanks for letting me know. I’ll check this customer’s payment and get back to them. Go and take ten minutes." } }
@@ -686,126 +687,126 @@
         { "type": "move", "place": "lounge-buddy", "caption": "휴게실, 십 분" },
         { "type": "line", "clip": "buddy-lounge", "who": "buddy",
           "text": "많이 놀랐죠? 저도 처음에는 퇴근하고도 그 목소리가 계속 생각났어요.",
-          "hint": { "mn": "Их цочсон биз? Би ч эхэндээ ажлаа тараад ч тэр дуу хоолой толгойноос гарахгүй байсан.", "vi": "Em giật mình lắm phải không? Hồi đầu anh cũng vậy, tan làm rồi mà giọng nói đó vẫn cứ vang trong đầu.", "en": "That was a shock, wasn't it? When I started, I kept hearing voices like that even after work." } },
+          "hint": { "mn": "Их цочсон биз? Эхэндээ ажлаа тарсны дараа ч тэр дуу хоолой миний санаанаас гардаггүй байсан.", "vi": "Em giật mình lắm phải không? Hồi đầu anh cũng vậy, tan làm rồi mà giọng nói đó vẫn cứ vang trong đầu.", "en": "That was a shock, wasn't it? When I started, voices like that stayed with me even after work." } },
         { "type": "say", "id": "feel", "listen": "buddy-listen-lounge",
           "prompt": "선배에게 지금 마음을 말해 보세요.",
           "example": "솔직히 좀 무서웠어요. 그래도 이렇게 말하니까 마음이 조금 놓여요.",
-          "hint": { "mn": "Ахлах ажилтанд одоо ямар сэтгэлтэй байгаагаа хэл. Эх хэлээрээ бодоод, солонгосоор богинохон хэлж болно.", "vi": "Hãy nói với anh hướng dẫn cảm xúc của em lúc này. Có thể nghĩ bằng tiếng mẹ đẻ rồi nói ngắn bằng tiếng Hàn.", "en": "Tell your senior colleague how you feel right now. You can think it in your own language and say it briefly in Korean." },
+          "hint": { "mn": "Ахлах ажилтанд одоо сэтгэл санаа чинь ямар байгааг хэл. Эх хэлээрээ бодоод, солонгосоор товчхон хэлж болно.", "vi": "Hãy nói cho anh Ji-hun biết lúc này em cảm thấy thế nào. Có thể nghĩ bằng tiếng mẹ đẻ rồi nói ngắn gọn bằng tiếng Hàn.", "en": "Tell your senior colleague how you feel right now. It's fine to think it through in your own language first, then say it in a few words in Korean." },
           "record": "쉬는 시간에 마음을 말하는 차례" },
         { "type": "line", "clip": "buddy-lounge-2", "who": "buddy",
           "text": "말해 줘서 다행이에요. 힘든 전화 뒤에는 이렇게 꼭 쉬어요. 혼자 참지 말고요.",
-          "hint": { "mn": "Хэлсэн чинь сайн байна. Хэцүү дуудлагын дараа заавал ингэж амраарай. Ганцаараа тэвчихгүйгээр.", "vi": "May là em đã nói ra. Sau cuộc gọi khó khăn thì nhất định phải nghỉ như thế này. Đừng chịu đựng một mình.", "en": "I'm glad you said it. After a hard call, always take a break like this. Don't hold it in alone." } },
+          "hint": { "mn": "Хэлсэн чинь сайн хэрэг. Хэцүү дуудлагын дараа заавал ингэж амраарай. Ганцаараа битгий тэвчээрэй.", "vi": "May là em đã nói ra. Sau những cuộc gọi căng thẳng thì nhất định phải nghỉ như thế này. Đừng chịu đựng một mình.", "en": "I'm glad you spoke up. After a hard call, always take a break like this. Don't keep it all to yourself." } },
         { "type": "move", "place": "desk-buddy", "caption": "오후 세 시 반, 상담석" },
         { "type": "work", "id": "record-stop", "record": "상담 이력의 메모를 고르는 차례", "when": { "abuse": "stop" },
           "tool": { "kind": "screen", "title": "상담 이력 · 오후 3시 12분 통화",
             "rows": [["문의", "이번 달 구독료가 두 번 결제됐다는 이의"], ["통화 중", "욕설과 막말이 이어짐"], ["한 일", "종료 예고 뒤 통화 종료, 팀장님께 보고"], ["다음 조치", "팀장님이 결제 내역을 확인해 회신"], ["메모", "골라 주세요"]] },
           "prompt": "쉬고 돌아왔어요. 다음 전화를 받기 전에 오후 3시 12분 통화의 상담 이력을 마무리해요. ‘메모’ 칸에 무엇을 적을까요?",
-          "hint": { "mn": "«Зөвлөгөөний бүртгэл» нь дуудлага бүрийн тэмдэглэл; дараагийн ажилтан үүгээр үргэлжлүүлдэг. «Дараагийн алхам» мөрөнд хэн юу хийхийг бичдэг. «Тэмдэглэл» хэсэгт юу бичих вэ?", "vi": "“Lịch sử tư vấn” là ghi chép của từng cuộc gọi; người sau dựa vào đó để làm tiếp. Dòng “Bước tiếp theo” ghi ai sẽ làm gì tiếp. Em sẽ ghi gì vào ô “Ghi chú”?", "en": "The contact record is the note for each call; the next agent carries on from it. The \"next step\" row shows who does what next. What will you write in the note field?" },
+          "hint": { "mn": "Чи амраад ирлээ. Дараагийн дуудлагыг авахаас өмнө үдээс хойш 3 цаг 12 минутад авсан дуудлагын бүртгэлийг бичиж дуусгаарай. «Зөвлөгөөний бүртгэл» гэдэг нь дуудлага бүрийн тэмдэглэл бөгөөд дараагийн ажилтан түүнийг харж ажлаа үргэлжлүүлдэг. «Дараагийн алхам» мөрөнд хэн юу хийхийг бичдэг. «Тэмдэглэл» хэсэгт юу бичих вэ?", "vi": "Em đã nghỉ xong và quay lại. Trước khi nhận cuộc gọi tiếp theo, hãy hoàn tất lịch sử tư vấn của cuộc gọi lúc 3 giờ 12 phút chiều. “Lịch sử tư vấn” là ghi chép của từng cuộc gọi; người sau dựa vào đó để làm tiếp. Dòng “Bước tiếp theo” ghi ai sẽ làm gì tiếp. Em sẽ ghi gì vào ô “Ghi chú”?", "en": "You’re back from your break. Before taking the next call, finish the contact record for the 3:12 p.m. call. A contact record is the note kept for each call, so the next agent can pick up where you left off. The \"next step\" row shows who does what next. What will you write in the note field?" },
           "options": [
-            { "id": "guessed", "label": "술에 취한 것 같음. 다음에도 화낼 고객.",
-              "hint": { "mn": "Согтуу юм шиг байна. Дараа ч уурлах үйлчлүүлэгч.", "vi": "Có vẻ say rượu. Là khách sẽ còn nổi giận lần sau.", "en": "Seems drunk. A customer who will get angry again." },
+            { "id": "guessed", "retry": true, "label": "술에 취한 것 같음. 다음에도 화낼 고객.",
+              "hint": { "mn": "Согтуу юм шиг байна. Дараа ч бас уурлаж магадгүй.", "vi": "Có vẻ say rượu. Khách này lần sau cũng sẽ nổi giận.", "en": "Seems drunk. Will likely get angry again." },
               "then": [
                 { "type": "line", "clip": "buddy-record-again", "who": "buddy",
                   "text": "취했는지는 우리가 본 게 아니에요. 들은 것과 한 일만 적어요.",
-                  "hint": { "mn": "Согтуу байсан эсэхийг бид хараагүй. Сонссон зүйл, хийсэн ажлаа л бичнэ.", "vi": "Có say hay không thì mình đâu có thấy. Chỉ ghi những gì đã nghe và việc đã làm thôi.", "en": "We didn't see whether he was drunk. Write only what you heard and what you did." } }
+                  "hint": { "mn": "Согтуу байсан эсэхийг нь бид нүдээрээ хараагүй. Сонссон зүйл, хийсэн ажлаа л бичнэ.", "vi": "Có say hay không thì mình đâu có thấy. Chỉ ghi những gì đã nghe và việc đã làm thôi.", "en": "We couldn't see whether he was drunk. Write only what you heard and what you did." } }
               ] },
             { "id": "heard", "label": "고객님 말: ‘9달러가 두 번 빠졌다.’ 결제 내역은 아직 확인하지 못함.",
-              "hint": { "mn": "Үйлчлүүлэгчийн үг: «9 доллар хоёр удаа татагдсан». Төлбөрийн мэдээллийг хараахан шалгаж амжаагүй.", "vi": "Lời khách: “Bị trừ 9 đô la hai lần.” Chưa kiểm tra được chi tiết thanh toán.", "en": "Customer said: \"Nine dollars was charged twice.\" Payments not yet checked." },
+              "hint": { "mn": "Үйлчлүүлэгч «9 доллар хоёр удаа татагдсан» гэсэн. Төлбөрийн мэдээллийг хараахан шалгаж амжаагүй.", "vi": "Khách nói: “Bị trừ 9 đô la hai lần.” Chưa kiểm tra được chi tiết thanh toán.", "en": "Customer said: \"I was charged nine dollars twice.\" Payments not yet checked." },
               "then": [
                 { "type": "line", "clip": "buddy-record-right", "who": "buddy",
                   "text": "네, 들은 것과 한 일만 적어요. 다음에 받는 사람이 이걸 보고 이어 가요.",
-                  "hint": { "mn": "Тийм, сонссон зүйл, хийсэн ажлаа л бичнэ. Дараа нь авах хүн үүнийг хараад үргэлжлүүлнэ.", "vi": "Đúng, chỉ ghi những gì đã nghe và việc đã làm. Người nhận sau sẽ xem cái này để làm tiếp.", "en": "Yes, write only what you heard and what you did. The next person carries on from this." } }
+                  "hint": { "mn": "Тийм, сонссон зүйл, хийсэн ажлаа л бичнэ. Дараа нь хүлээж авах ажилтан үүнийг хараад үргэлжлүүлнэ.", "vi": "Đúng, chỉ ghi những gì đã nghe và việc đã làm. Người tiếp nhận sau sẽ xem cái này để làm tiếp.", "en": "Yes, write only what you heard and what you did. The next person will pick up from here." } }
               ] }
           ] },
         { "type": "work", "id": "record-flag", "record": "상담 이력의 메모를 고르는 차례", "when": { "abuse": "flag" },
           "tool": { "kind": "screen", "title": "상담 이력 · 오후 3시 12분 통화",
             "rows": [["문의", "이번 달 구독료가 두 번 결제됐다는 이의"], ["통화 중", "욕설과 막말이 이어짐"], ["한 일", "보류 뒤 도움 요청, 팀장님이 통화를 이어받음"], ["다음 조치", "팀장님이 결제 내역을 확인해 회신"], ["메모", "골라 주세요"]] },
           "prompt": "쉬고 돌아왔어요. 다음 전화를 받기 전에 오후 3시 12분 통화의 상담 이력을 마무리해요. ‘메모’ 칸에 무엇을 적을까요?",
-          "hint": { "mn": "«Зөвлөгөөний бүртгэл» нь дуудлага бүрийн тэмдэглэл; дараагийн ажилтан үүгээр үргэлжлүүлдэг. «Дараагийн алхам» мөрөнд хэн юу хийхийг бичдэг. «Тэмдэглэл» хэсэгт юу бичих вэ?", "vi": "“Lịch sử tư vấn” là ghi chép của từng cuộc gọi; người sau dựa vào đó để làm tiếp. Dòng “Bước tiếp theo” ghi ai sẽ làm gì tiếp. Em sẽ ghi gì vào ô “Ghi chú”?", "en": "The contact record is the note for each call; the next agent carries on from it. The \"next step\" row shows who does what next. What will you write in the note field?" },
+          "hint": { "mn": "Чи амраад ирлээ. Дараагийн дуудлагыг авахаас өмнө үдээс хойш 3 цаг 12 минутад авсан дуудлагын бүртгэлийг бичиж дуусгаарай. «Зөвлөгөөний бүртгэл» гэдэг нь дуудлага бүрийн тэмдэглэл бөгөөд дараагийн ажилтан түүнийг харж ажлаа үргэлжлүүлдэг. «Дараагийн алхам» мөрөнд хэн юу хийхийг бичдэг. «Тэмдэглэл» хэсэгт юу бичих вэ?", "vi": "Em đã nghỉ xong và quay lại. Trước khi nhận cuộc gọi tiếp theo, hãy hoàn tất lịch sử tư vấn của cuộc gọi lúc 3 giờ 12 phút chiều. “Lịch sử tư vấn” là ghi chép của từng cuộc gọi; người sau dựa vào đó để làm tiếp. Dòng “Bước tiếp theo” ghi ai sẽ làm gì tiếp. Em sẽ ghi gì vào ô “Ghi chú”?", "en": "You’re back from your break. Before taking the next call, finish the contact record for the 3:12 p.m. call. A contact record is the note kept for each call, so the next agent can pick up where you left off. The \"next step\" row shows who does what next. What will you write in the note field?" },
           "options": [
-            { "id": "guessed", "label": "술에 취한 것 같음. 다음에도 화낼 고객.",
-              "hint": { "mn": "Согтуу юм шиг байна. Дараа ч уурлах үйлчлүүлэгч.", "vi": "Có vẻ say rượu. Là khách sẽ còn nổi giận lần sau.", "en": "Seems drunk. A customer who will get angry again." },
+            { "id": "guessed", "retry": true, "label": "술에 취한 것 같음. 다음에도 화낼 고객.",
+              "hint": { "mn": "Согтуу юм шиг байна. Дараа ч бас уурлаж магадгүй.", "vi": "Có vẻ say rượu. Khách này lần sau cũng sẽ nổi giận.", "en": "Seems drunk. Will likely get angry again." },
               "then": [
                 { "type": "line", "clip": "buddy-record-again", "who": "buddy",
                   "text": "취했는지는 우리가 본 게 아니에요. 들은 것과 한 일만 적어요.",
-                  "hint": { "mn": "Согтуу байсан эсэхийг бид хараагүй. Сонссон зүйл, хийсэн ажлаа л бичнэ.", "vi": "Có say hay không thì mình đâu có thấy. Chỉ ghi những gì đã nghe và việc đã làm thôi.", "en": "We didn't see whether he was drunk. Write only what you heard and what you did." } }
+                  "hint": { "mn": "Согтуу байсан эсэхийг нь бид нүдээрээ хараагүй. Сонссон зүйл, хийсэн ажлаа л бичнэ.", "vi": "Có say hay không thì mình đâu có thấy. Chỉ ghi những gì đã nghe và việc đã làm thôi.", "en": "We couldn't see whether he was drunk. Write only what you heard and what you did." } }
               ] },
             { "id": "heard", "label": "고객님 말: ‘9달러가 두 번 빠졌다.’ 결제 내역은 아직 확인하지 못함.",
-              "hint": { "mn": "Үйлчлүүлэгчийн үг: «9 доллар хоёр удаа татагдсан». Төлбөрийн мэдээллийг хараахан шалгаж амжаагүй.", "vi": "Lời khách: “Bị trừ 9 đô la hai lần.” Chưa kiểm tra được chi tiết thanh toán.", "en": "Customer said: \"Nine dollars was charged twice.\" Payments not yet checked." },
+              "hint": { "mn": "Үйлчлүүлэгч «9 доллар хоёр удаа татагдсан» гэсэн. Төлбөрийн мэдээллийг хараахан шалгаж амжаагүй.", "vi": "Khách nói: “Bị trừ 9 đô la hai lần.” Chưa kiểm tra được chi tiết thanh toán.", "en": "Customer said: \"I was charged nine dollars twice.\" Payments not yet checked." },
               "then": [
                 { "type": "line", "clip": "buddy-record-right", "who": "buddy",
                   "text": "네, 들은 것과 한 일만 적어요. 다음에 받는 사람이 이걸 보고 이어 가요.",
-                  "hint": { "mn": "Тийм, сонссон зүйл, хийсэн ажлаа л бичнэ. Дараа нь авах хүн үүнийг хараад үргэлжлүүлнэ.", "vi": "Đúng, chỉ ghi những gì đã nghe và việc đã làm. Người nhận sau sẽ xem cái này để làm tiếp.", "en": "Yes, write only what you heard and what you did. The next person carries on from this." } }
+                  "hint": { "mn": "Тийм, сонссон зүйл, хийсэн ажлаа л бичнэ. Дараа нь хүлээж авах ажилтан үүнийг хараад үргэлжлүүлнэ.", "vi": "Đúng, chỉ ghi những gì đã nghe và việc đã làm. Người tiếp nhận sau sẽ xem cái này để làm tiếp.", "en": "Yes, write only what you heard and what you did. The next person will pick up from here." } }
               ] }
           ] },
         { "type": "work", "id": "record-endure", "record": "상담 이력의 메모를 고르는 차례", "when": { "abuse": "endure" },
           "tool": { "kind": "screen", "title": "상담 이력 · 오후 3시 12분 통화",
             "rows": [["문의", "이번 달 구독료가 두 번 결제됐다는 이의"], ["통화 중", "욕설과 막말이 이어짐"], ["한 일", "사과하며 10분 넘게 들음, 팀장님이 통화를 넘겨받음"], ["다음 조치", "팀장님이 결제 내역을 확인해 회신"], ["메모", "골라 주세요"]] },
           "prompt": "쉬고 돌아왔어요. 다음 전화를 받기 전에 오후 3시 12분 통화의 상담 이력을 마무리해요. ‘메모’ 칸에 무엇을 적을까요?",
-          "hint": { "mn": "«Зөвлөгөөний бүртгэл» нь дуудлага бүрийн тэмдэглэл; дараагийн ажилтан үүгээр үргэлжлүүлдэг. «Дараагийн алхам» мөрөнд хэн юу хийхийг бичдэг. «Тэмдэглэл» хэсэгт юу бичих вэ?", "vi": "“Lịch sử tư vấn” là ghi chép của từng cuộc gọi; người sau dựa vào đó để làm tiếp. Dòng “Bước tiếp theo” ghi ai sẽ làm gì tiếp. Em sẽ ghi gì vào ô “Ghi chú”?", "en": "The contact record is the note for each call; the next agent carries on from it. The \"next step\" row shows who does what next. What will you write in the note field?" },
+          "hint": { "mn": "Чи амраад ирлээ. Дараагийн дуудлагыг авахаас өмнө үдээс хойш 3 цаг 12 минутад авсан дуудлагын бүртгэлийг бичиж дуусгаарай. «Зөвлөгөөний бүртгэл» гэдэг нь дуудлага бүрийн тэмдэглэл бөгөөд дараагийн ажилтан түүнийг харж ажлаа үргэлжлүүлдэг. «Дараагийн алхам» мөрөнд хэн юу хийхийг бичдэг. «Тэмдэглэл» хэсэгт юу бичих вэ?", "vi": "Em đã nghỉ xong và quay lại. Trước khi nhận cuộc gọi tiếp theo, hãy hoàn tất lịch sử tư vấn của cuộc gọi lúc 3 giờ 12 phút chiều. “Lịch sử tư vấn” là ghi chép của từng cuộc gọi; người sau dựa vào đó để làm tiếp. Dòng “Bước tiếp theo” ghi ai sẽ làm gì tiếp. Em sẽ ghi gì vào ô “Ghi chú”?", "en": "You’re back from your break. Before taking the next call, finish the contact record for the 3:12 p.m. call. A contact record is the note kept for each call, so the next agent can pick up where you left off. The \"next step\" row shows who does what next. What will you write in the note field?" },
           "options": [
-            { "id": "guessed", "label": "술에 취한 것 같음. 다음에도 화낼 고객.",
-              "hint": { "mn": "Согтуу юм шиг байна. Дараа ч уурлах үйлчлүүлэгч.", "vi": "Có vẻ say rượu. Là khách sẽ còn nổi giận lần sau.", "en": "Seems drunk. A customer who will get angry again." },
+            { "id": "guessed", "retry": true, "label": "술에 취한 것 같음. 다음에도 화낼 고객.",
+              "hint": { "mn": "Согтуу юм шиг байна. Дараа ч бас уурлаж магадгүй.", "vi": "Có vẻ say rượu. Khách này lần sau cũng sẽ nổi giận.", "en": "Seems drunk. Will likely get angry again." },
               "then": [
                 { "type": "line", "clip": "buddy-record-again", "who": "buddy",
                   "text": "취했는지는 우리가 본 게 아니에요. 들은 것과 한 일만 적어요.",
-                  "hint": { "mn": "Согтуу байсан эсэхийг бид хараагүй. Сонссон зүйл, хийсэн ажлаа л бичнэ.", "vi": "Có say hay không thì mình đâu có thấy. Chỉ ghi những gì đã nghe và việc đã làm thôi.", "en": "We didn't see whether he was drunk. Write only what you heard and what you did." } }
+                  "hint": { "mn": "Согтуу байсан эсэхийг нь бид нүдээрээ хараагүй. Сонссон зүйл, хийсэн ажлаа л бичнэ.", "vi": "Có say hay không thì mình đâu có thấy. Chỉ ghi những gì đã nghe và việc đã làm thôi.", "en": "We couldn't see whether he was drunk. Write only what you heard and what you did." } }
               ] },
             { "id": "heard", "label": "고객님 말: ‘9달러가 두 번 빠졌다.’ 결제 내역은 아직 확인하지 못함.",
-              "hint": { "mn": "Үйлчлүүлэгчийн үг: «9 доллар хоёр удаа татагдсан». Төлбөрийн мэдээллийг хараахан шалгаж амжаагүй.", "vi": "Lời khách: “Bị trừ 9 đô la hai lần.” Chưa kiểm tra được chi tiết thanh toán.", "en": "Customer said: \"Nine dollars was charged twice.\" Payments not yet checked." },
+              "hint": { "mn": "Үйлчлүүлэгч «9 доллар хоёр удаа татагдсан» гэсэн. Төлбөрийн мэдээллийг хараахан шалгаж амжаагүй.", "vi": "Khách nói: “Bị trừ 9 đô la hai lần.” Chưa kiểm tra được chi tiết thanh toán.", "en": "Customer said: \"I was charged nine dollars twice.\" Payments not yet checked." },
               "then": [
                 { "type": "line", "clip": "buddy-record-right", "who": "buddy",
                   "text": "네, 들은 것과 한 일만 적어요. 다음에 받는 사람이 이걸 보고 이어 가요.",
-                  "hint": { "mn": "Тийм, сонссон зүйл, хийсэн ажлаа л бичнэ. Дараа нь авах хүн үүнийг хараад үргэлжлүүлнэ.", "vi": "Đúng, chỉ ghi những gì đã nghe và việc đã làm. Người nhận sau sẽ xem cái này để làm tiếp.", "en": "Yes, write only what you heard and what you did. The next person carries on from this." } }
+                  "hint": { "mn": "Тийм, сонссон зүйл, хийсэн ажлаа л бичнэ. Дараа нь хүлээж авах ажилтан үүнийг хараад үргэлжлүүлнэ.", "vi": "Đúng, chỉ ghi những gì đã nghe và việc đã làm. Người tiếp nhận sau sẽ xem cái này để làm tiếp.", "en": "Yes, write only what you heard and what you did. The next person will pick up from here." } }
               ] }
           ] },
         { "type": "move", "place": "lead-evening", "caption": "오후 다섯 시 반, 상담 마감" },
         { "type": "line", "clip": "lead-ask", "who": "lead",
           "text": "오늘 수고 많았어요. 마감 전에, 오늘 있었던 일 가운데 저한테 말해 줄 게 있어요?",
-          "hint": { "mn": "Өнөөдөр их ажиллалаа. Ажлаа дуусгахаас өмнө өнөөдөр болсон зүйлсээс надад хэлэх зүйл байна уу?", "vi": "Hôm nay em vất vả rồi. Trước khi kết thúc, trong những việc hôm nay có gì em muốn nói với chị không?", "en": "Thanks for all your work today. Before we close, is there anything from today you should tell me?" } },
+          "hint": { "mn": "Өнөөдөр сайн ажиллалаа шүү. Ажлаа дуусгахаас өмнө өнөөдөр болсон зүйлсээс надад хэлэх зүйл байна уу?", "vi": "Hôm nay vất vả cho em quá. Trước khi kết thúc, về công việc hôm nay, có điều gì em muốn nói với chị không?", "en": "Thanks for all your work today. Before we close, is there anything from today you should tell me?" } },
         { "type": "report", "id": "report", "listen": "lead-listen-evening",
           "prompt": "오늘 있었던 일 가운데 팀장님께 말할 것을 고르고, 그대로 말해 보세요.",
-          "hint": { "mn": "Өнөөдөр болсон зүйлсээс багийн ахлагчид хэлэх зүйлээ сонгоод, яг байгаагаар нь хэлээрэй.", "vi": "Trong những việc hôm nay, hãy chọn điều cần báo với trưởng nhóm, rồi nói lại đúng như đã xảy ra.", "en": "Choose what to tell the team leader from today, and say it exactly as it happened." },
+          "hint": { "mn": "Өнөөдөр болсон зүйлсээс багийн ахлагчид хэлэх зүйлээ сонгоод, яг байгаагаар нь хэлээрэй.", "vi": "Trong những việc hôm nay, hãy chọn điều cần báo với trưởng nhóm, rồi kể lại đúng những gì đã xảy ra.", "en": "From today's events, choose what to report to the team leader, and describe it exactly as it happened." },
           "items": [
             { "id": "family", "when": { "family": ["holder-only", "ask"] },
               "text": "오전에 가입자의 가족이라고 하신 분이 결제 금액을 물으셔서, 가입자 본인이 직접 문의하시도록 안내했습니다.",
-              "hint": { "mn": "Өглөө бүртгэлийн эзний гэр бүлийнх гэсэн хүн төлбөрийн дүнг асуухад, эзэн өөрөө лавлахыг зааж өгсөн.", "vi": "Buổi sáng có người nói là người nhà của chủ tài khoản hỏi số tiền thanh toán, em đã hướng dẫn để chính chủ tự hỏi.", "en": "This morning someone who said they were the owner's family asked about the amount, and I told them the owner must ask directly." } },
+              "hint": { "mn": "Өглөө өөрийгөө бүртгэл эзэмшигчийн гэр бүлийн хүн гэсэн үйлчлүүлэгч төлбөрийн дүнг асуухад, бүртгэл эзэмшигч өөрөө холбогдож лавлах ёстой гэж тайлбарласан.", "vi": "Buổi sáng có người tự xưng là người nhà của chủ tài khoản hỏi số tiền thanh toán; em đã giải thích với người đó rằng chủ tài khoản cần trực tiếp liên hệ.", "en": "This morning, a caller who said she was a family member of the account owner asked about the charges, and I explained that the account owner needed to contact us directly." } },
             { "id": "family", "when": { "family": "tell" },
               "text": "오전에 가입자의 가족이라고 하신 분께 이번 달 결제 금액을 알려 드렸습니다.",
-              "hint": { "mn": "Өглөө бүртгэлийн эзний гэр бүлийнх гэсэн хүнд энэ сарын төлбөрийн дүнг хэлсэн.", "vi": "Buổi sáng em đã báo số tiền thanh toán tháng này cho người nói là người nhà của chủ tài khoản.", "en": "This morning I told someone who said they were the owner's family this month's amount." } },
+              "hint": { "mn": "Өглөө өөрийгөө бүртгэл эзэмшигчийн гэр бүлийн хүн гэсэн үйлчлүүлэгчид энэ сарын төлбөрийн дүнг хэлсэн.", "vi": "Buổi sáng em đã báo số tiền thanh toán tháng này cho người tự xưng là người nhà của chủ tài khoản.", "en": "This morning, I told a caller who said she was a family member of the account owner how much was charged this month." } },
             { "id": "handoff", "when": { "handoff": "full" },
               "text": "화면 오류 건은 기술지원팀으로 이관하고, 싱가포르 시간으로 오후 세 시 전 연락을 안내했습니다.",
-              "hint": { "mn": "Дэлгэцийн алдааны асуудлыг техникийн багт шилжүүлж, Сингапурын цагаар үдээс хойш 3 цагаас өмнө холбогдоно гэж хэлсэн.", "vi": "Vụ lỗi màn hình em đã chuyển cho nhóm kỹ thuật và báo khách sẽ được liên lạc trước 3 giờ chiều giờ Singapore.", "en": "I transferred the screen problem to technical support and told the customer they’d hear back before 3 p.m. Singapore time." } },
+              "hint": { "mn": "Дэлгэцийн алдааны асуудлыг техникийн багт шилжүүлж, Сингапурын цагаар үдээс хойш 3 цагаас өмнө холбогдоно гэж үйлчлүүлэгчид хэлсэн.", "vi": "Vụ lỗi màn hình, em đã chuyển cho nhóm kỹ thuật và báo khách rằng sẽ có người liên lạc trước 3 giờ chiều theo giờ Singapore.", "en": "I escalated the screen-error case to technical support and told the customer they’d hear back before 3 p.m. Singapore time." } },
             { "id": "handoff", "when": { "handoff": "quick" },
               "text": "화면 오류 건은 기술지원팀으로 이관했는데, 고객님이 연락을 기다리다 다시 연락하셨습니다.",
-              "hint": { "mn": "Дэлгэцийн алдааны асуудлыг техникийн багт шилжүүлсэн ч үйлчлүүлэгч хүлээгээд дахин холбогдсон.", "vi": "Vụ lỗi màn hình em đã chuyển cho nhóm kỹ thuật, nhưng khách chờ không thấy ai liên lạc nên đã liên lạc lại.", "en": "I transferred the screen problem to technical support, but the customer waited and then contacted us again." } },
+              "hint": { "mn": "Дэлгэцийн алдааны асуудлыг техникийн багт шилжүүлсэн ч үйлчлүүлэгч хүлээж байгаад дахин холбогдсон.", "vi": "Vụ lỗi màn hình em đã chuyển cho nhóm kỹ thuật, nhưng khách chờ không thấy ai liên lạc nên đã liên lạc lại.", "en": "I escalated the screen issue to technical support, but the customer contacted us again while waiting to hear back." } },
             { "id": "unknown", "when": { "unknown": "check" },
               "text": "연간 구독 해지 문의는 결제팀 답을 받아 고객님께 안내했습니다.",
-              "hint": { "mn": "Жилийн захиалга цуцлах асуултад төлбөрийн багийн хариуг аваад үйлчлүүлэгчид мэдэгдсэн.", "vi": "Câu hỏi hủy gói năm, em đã nhận câu trả lời của nhóm thanh toán và báo cho khách.", "en": "For the yearly-plan cancellation, I got billing's answer and passed it to the customer." } },
+              "hint": { "mn": "Жилийн захиалга цуцлах тухай асуултад төлбөрийн багаас хариу аваад үйлчлүүлэгчид мэдэгдсэн.", "vi": "Về việc khách hỏi hủy gói năm, em đã nhận câu trả lời của nhóm thanh toán và báo cho khách.", "en": "For the yearly-plan cancellation question, I got the billing team's answer and passed it on to the customer." } },
             { "id": "unknown", "when": { "unknown": "guess" },
               "text": "연간 구독 해지 문의에 확인하지 않고 답했다가, 결제팀 답으로 바로잡아 다시 안내했습니다.",
-              "hint": { "mn": "Жилийн захиалга цуцлах асуултад шалгалгүй хариулчихаад, төлбөрийн багийн хариугаар засаж дахин мэдэгдсэн.", "vi": "Câu hỏi hủy gói năm, em đã trả lời khi chưa kiểm tra, rồi sửa lại theo câu trả lời của nhóm thanh toán và báo lại cho khách.", "en": "I answered the yearly-plan question without checking, then corrected it with billing's answer and told the customer again." } },
+              "hint": { "mn": "Жилийн захиалга цуцлах тухай асуултад шалгалгүй хариулаад, төлбөрийн багаас ирсэн хариугаар буруу мэдээллээ засаж дахин мэдэгдсэн.", "vi": "Về việc khách hỏi hủy gói năm, em đã trả lời khi chưa kiểm tra, rồi đính chính lại với khách theo câu trả lời của nhóm thanh toán.", "en": "I answered the yearly-plan question without checking, then gave the customer the correct information based on the billing team's answer." } },
             { "id": "lost",
               "text": "모국어 고객님의 분실 휴대폰 건은 결제를 막고 계정보호팀에 넘겼습니다.",
-              "hint": { "mn": "Эх хэлээрээ ярьсан үйлчлүүлэгчийн гээсэн утасны асуудлаар төлбөрийг хааж, бүртгэл хамгаалах багт шилжүүлсэн.", "vi": "Vụ mất điện thoại của khách nói tiếng mẹ đẻ, đã chặn thanh toán và chuyển cho nhóm bảo vệ tài khoản.", "en": "For the customer who spoke our language, we blocked payments on the lost phone’s account and passed it to account protection." } },
+              "hint": { "mn": "Миний эх хэлээрх зөвлөгөө өгөх шугам руу залгасан үйлчлүүлэгч утсаа гээсэн тул төлбөрийг нь зогсоож, хүсэлтийг хэрэглэгчийн бүртгэл хамгаалах багт шилжүүлсэн.", "vi": "Khách bị mất điện thoại (gọi qua kênh tiếng mẹ đẻ): đã chặn thanh toán và chuyển cho nhóm bảo vệ tài khoản.", "en": "A customer from my language queue lost their phone, so we blocked payments and passed the case to the account protection team." } },
             { "id": "abuse-record",
               "text": "오후 3시 12분 욕설 전화는 상담 이력에 적어 두었습니다.",
-              "hint": { "mn": "Үдээс хойш 3:12-ын хараалтай дуудлагыг зөвлөгөөний бүртгэлд бичиж үлдээсэн.", "vi": "Cuộc gọi chửi bới lúc 3 giờ 12 chiều em đã ghi vào lịch sử tư vấn.", "en": "I've written up the 3:12 p.m. abusive call in the contact record." } },
+              "hint": { "mn": "Үдээс хойш 3:12-т үйлчлүүлэгч хараал урсгасан дуудлагын тухай зөвлөгөөний бүртгэлд тэмдэглэж үлдээсэн.", "vi": "Em đã ghi nhận cuộc gọi khách chửi bới lúc 3 giờ 12 phút chiều vào lịch sử tư vấn.", "en": "I've written up the 3:12 p.m. abusive call in the contact record." } },
             { "id": "tense", "key": true,
               "text": "오후 그 전화가 아직 마음에 남아 있습니다.",
-              "hint": { "mn": "Үдээс хойшх тэр дуудлага одоо ч сэтгэлд үлдсэн хэвээр байна.", "vi": "Cuộc gọi chiều nay vẫn còn đọng lại trong lòng em.", "en": "That afternoon call is still on my mind." } }
+              "hint": { "mn": "Үдээс хойших тэр дуудлага одоо ч санаанаас гарахгүй байна.", "vi": "Em vẫn còn nghĩ mãi về cuộc gọi chiều nay.", "en": "That afternoon call is still on my mind." } }
           ],
           "record": { "included": "힘들었던 마음을 팀장님께 말한다", "omitted": "힘들었던 마음은 팀장님께 말하지 않는다" },
           "then": {
             "included": [
               { "type": "line", "clip": "lead-report-thanks", "who": "lead",
                 "text": "말해 줘서 고마워요. 내일 첫 한 시간은 채팅만 받아요. 마음 상담도 연결해 줄게요.",
-                "hint": { "mn": "Хэлсэнд баярлалаа. Маргааш эхний нэг цагт зөвхөн чат ав. Сэтгэл зүйн зөвлөгөөнд ч холбож өгье.", "vi": "Cảm ơn em đã nói. Ngày mai giờ đầu tiên em chỉ nhận chat thôi. Chị cũng sẽ kết nối tư vấn tâm lý cho em.", "en": "Thank you for telling me. Tomorrow, take only chats for the first hour. I'll also set up counselling for you." } }
+                "hint": { "mn": "Хэлсэнд баярлалаа. Маргааш эхний нэг цаг зөвхөн чатаар ажиллаарай. Сэтгэл зүйчтэй ч холбож өгье.", "vi": "Cảm ơn em đã nói với chị. Ngày mai, trong một tiếng đầu em chỉ nhận chat thôi. Chị cũng sẽ sắp xếp cho em gặp chuyên viên tư vấn tâm lý.", "en": "Thank you for telling me. Tomorrow, take only chats for the first hour. I'll also set up counselling for you." } }
             ],
             "omitted": [
               { "type": "line", "clip": "lead-report-heard", "who": "lead",
                 "text": "오후 전화 뒤에 괜찮았어요? 힘들면 내일 아침에라도 꼭 말해 줘요.",
-                "hint": { "mn": "Үдээс хойшх дуудлагын дараа зүгээр байсан уу? Хэцүү байвал маргааш өглөө ч болов заавал хэлээрэй.", "vi": "Sau cuộc gọi buổi chiều em có ổn không? Nếu thấy khó khăn thì sáng mai cũng được, nhất định phải nói với chị nhé.", "en": "Were you all right after that afternoon call? If it's hard, tell me, even tomorrow morning." } }
+                "hint": { "mn": "Үдээс хойших дуудлагын дараа зүгээр байсан уу? Хэцүү байвал маргааш өглөө ч болов заавал хэлээрэй.", "vi": "Sau cuộc gọi lúc chiều em có ổn không? Nếu thấy áp lực quá thì nhất định phải nói với chị nhé, sáng mai nói cũng được.", "en": "Were you all right after that afternoon call? If you're having a hard time, please tell me, even if it's not until tomorrow morning." } }
             ]
           } }
       ]
@@ -815,11 +816,16 @@
     "place": "entrance",
     "lead": "맞고 틀린 답을 가리는 자리가 아니에요. 내가 고른 것과 고객상담 사무원이 지키는 것을 나란히 봐요.",
     "principles": [
-      { "id": "holder", "title": "본인에게만 말한다", "body": "결제와 이용 내역은 가입자 본인에게만 안내해요. 가족이라고 하셔도 등록이 없으면 말하지 않아요. 먼저 본인인지 확인해요." },
-      { "id": "check", "title": "모르면 확인하고 다시 연락한다", "body": "정해진 답이 없는 질문에 짐작으로 답하지 않아요. 확인할 곳을 찾고, 언제 어떻게 다시 알려 드릴지 말해요." },
-      { "id": "next", "title": "넘길 때는 다음을 알려 드린다", "body": "다른 팀으로 이관할 때는 누가, 언제 연락하는지 고객님 계신 곳 시간으로 말씀드려요. 고객이 같은 말을 처음부터 다시 하지 않게요." },
-      { "id": "alone", "title": "폭언과 힘든 마음은 혼자 견디지 않는다", "body": "욕설과 막말이 이어지면 정해진 안내를 하고 통화를 끝낼 수 있어요. 팀장에게 알리고, 힘들었던 마음도 말해요." },
-      { "id": "record", "title": "들은 것과 한 일만 적는다", "body": "상담 이력에는 고객이 한 말과 내가 한 일을 적어요. 짐작은 적지 않아요. 다음 사람이 그 기록으로 일을 이어 가요." }
+      { "id": "holder", "title": "본인에게만 말한다", "body": "결제와 이용 내역은 가입자 본인에게만 안내해요. 가족이라고 하셔도 등록이 없으면 말하지 않아요. 먼저 본인인지 확인해요.",
+          "hint": { "mn": "Зөвхөн бүртгүүлсэн хүнд өөрт нь хэлнэ. Төлбөр, хэрэглээний талаарх мэдээллийг зөвхөн бүртгүүлсэн хүнд өөрт нь өгнө. Гэр бүлийн гишүүн байсан ч бүртгэлгүй бол хэлэхгүй. Эхлээд тухайн хүн мөн эсэхийг шалгана.", "vi": "Chỉ cung cấp thông tin cho chính người đăng ký. Chi tiết thanh toán và lịch sử sử dụng chỉ được thông báo cho chính người đăng ký. Dù là người nhà, nếu chưa được đăng ký ủy quyền trước thì cũng không được cung cấp thông tin. Trước tiên phải xác minh có đúng là chính chủ không.", "en": "Share details only with the subscriber. Payment and usage details can be shared only with the subscriber. Do not share them with family members unless they are registered. Check the caller’s identity first." } },
+      { "id": "check", "title": "모르면 확인하고 다시 연락한다", "body": "정해진 답이 없는 질문에 짐작으로 답하지 않아요. 확인할 곳을 찾고, 언제 어떻게 다시 알려 드릴지 말해요.",
+          "hint": { "mn": "Мэдэхгүй бол шалгаад эргэж холбогдоно. Тогтсон хариугүй асуултад таамаглаж хариулахгүй. Хаанаас тодруулахаа олж, хэзээ, яаж хариу өгөхөө хэлнэ.", "vi": "Không biết thì kiểm tra rồi liên lạc lại. Với câu hỏi chưa có câu trả lời sẵn, không trả lời theo phỏng đoán. Hãy tìm bộ phận có thể xác nhận, rồi nói rõ cho khách biết khi nào sẽ báo lại và báo lại bằng cách nào.", "en": "If you don’t know, check and get back to them. When there is no set answer, don’t guess. Find out who can confirm the answer, and tell the customer when and how you will reply." } },
+      { "id": "next", "title": "넘길 때는 다음을 알려 드린다", "body": "다른 팀으로 이관할 때는 누가, 언제 연락하는지 고객님 계신 곳 시간으로 말씀드려요. 고객이 같은 말을 처음부터 다시 하지 않게요.",
+          "hint": { "mn": "Шилжүүлэхдээ дараа нь юу болохыг хэлнэ. Өөр багт шилжүүлэхдээ хэн, хэзээ холбогдохыг үйлчлүүлэгчийн байгаа газрын цагаар хэлнэ. Ингэснээр үйлчлүүлэгч бүгдийг эхнээс нь дахин ярих шаардлагагүй болно.", "vi": "Khi chuyển yêu cầu đi, hãy cho khách biết việc gì sẽ diễn ra sau đó. Khi chuyển cho bộ phận khác, hãy nói rõ ai sẽ liên lạc với khách và vào lúc nào theo giờ nơi khách đang ở. Như vậy khách sẽ không phải kể lại mọi chuyện từ đầu.", "en": "When you pass a case on, say what happens next. When you transfer a case to another team, tell the customer who will contact them and when, in their local time. That way, they won’t have to explain everything again from the start." } },
+      { "id": "alone", "title": "폭언과 힘든 마음은 혼자 견디지 않는다", "body": "욕설과 막말이 이어지면 정해진 안내를 하고 통화를 끝낼 수 있어요. 팀장에게 알리고, 힘들었던 마음도 말해요.",
+          "hint": { "mn": "Доромжлол, сэтгэлийн дарамтыг ганцаараа тэвчих хэрэггүй. Хараал, доромжлол үргэлжилбэл тогтоосон анхааруулгыг өгөөд дуудлагыг дуусгаж болно. Багийн ахлагчдаа мэдэгдээд, хэр хэцүү байснаа ч хуваалцаарай.", "vi": "Đừng một mình gánh chịu lời lẽ xúc phạm và nỗi mệt mỏi trong lòng. Nếu khách tiếp tục chửi bới, xúc phạm, em có thể cảnh báo theo quy định rồi kết thúc cuộc gọi. Hãy báo cho trưởng nhóm và chia sẻ cả cảm giác mệt mỏi của mình.", "en": "Don’t deal with abuse or painful feelings alone. If swearing and insults continue, you can give the standard warnings and end the call. Tell the team leader, and tell them how it made you feel too." } },
+      { "id": "record", "title": "들은 것과 한 일만 적는다", "body": "상담 이력에는 고객이 한 말과 내가 한 일을 적어요. 짐작은 적지 않아요. 다음 사람이 그 기록으로 일을 이어 가요.",
+          "hint": { "mn": "Сонссон зүйл, хийсэн ажлаа л бичнэ. Зөвлөгөөний бүртгэлд үйлчлүүлэгчийн хэлсэн үг, өөрийн хийсэн ажлыг бичнэ. Таамаг бичихгүй. Дараагийн хүн тэр бүртгэлээр ажлаа үргэлжлүүлнэ.", "vi": "Chỉ ghi những gì đã nghe và việc đã làm. Trong lịch sử tư vấn, ghi lời khách nói và việc em đã làm. Không ghi phỏng đoán. Người sau sẽ dựa vào ghi chép đó để làm tiếp.", "en": "Write down only what you heard and what you did. In the contact record, write what the customer said and what you did. Don’t write down guesses. The next person will pick up the case from that record." } }
     ],
     "forks": [
       { "id": "family", "scene": "첫 전화", "principle": "holder",
@@ -841,11 +847,16 @@
     "conditions": {
       "lead": "좋게만 보여 주지 않아요. 지원하기 전에 알아 둘 것들이에요.",
       "items": [
-        { "title": "고객은 해외에 있어요", "body": "이 비자로 하는 고객상담은 해외에 있는 외국인 고객을 상대하는 일로 정해져 있어요. 전화로 물건을 파는 텔레마케터와 판촉원은 들지 않아요. 회사에 따로 마련된 사무실에서 일하고, 집에서 일할 수 없어요.", "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판, 2026-11-22 대조" },
-        { "title": "감정노동", "body": "콜센터 상담원 1,996명에게 물은 국가인권위원회 조사에서, 상담원은 고객 폭언을 한 달에 평균 12번 들었다고 답했어요. 화장실을 자유롭게 가지 못한다는 답도 25.3%였어요. 법은 회사가 업무를 잠시 멈추게 하고, 쉬는 시간을 늘리고, 상담을 지원하게 정해요. 외국인 상담사만 따로 조사한 자료는 찾지 못했어요.", "source": "국가인권위원회 콜센터 노동자 인권상황 실태조사(2021년 조사), 2022-03-30 보도. 산업안전보건법 제41조와 시행령 제41조" },
-        { "title": "실적과 모니터링", "body": "응답률, 대기 시간, 포기율 같은 숫자를 관리해요. 관리자가 상담 품질을 재고, 그 결과로 스크립트와 교육을 고쳐요. 오래 앉아 전화로 말하는 일이에요.", "source": "NCS 통신판매 성과관리 · 시스템 운용, 한국고용정보원 직업정보" },
-        { "title": "임금", "body": "고객상담원 재직자 조사에서 연봉 가운데값은 3,750만 원이었어요(하위 25%는 3,045만 원, 상위 25%는 4,525만 원). 이 비자로 일하려면 같은 회사에서 같은 일을 하는 한국인 평균임금 이상, 연 2,589만 원 이상을 받아야 해요. 외국인 상담사 임금만 따로 낸 공식 숫자는 찾지 못했어요.", "source": "한국고용정보원 임금직업포털 2025년 조사. 법무부 취업비자 안내 길잡이(2026.11.)" },
-        { "title": "이 일로 가는 비자", "body": "E-7-2 고객상담 사무원이에요. 국내 대학 전문학사 이상이고, TOPIK 2급, 사회통합프로그램 2단계, TOEIC 730점 가운데 하나가 있어야 해요. 회사는 상시근로자 500명 이상, 국제용역 매출 50억 원 이상이고 직접 고용해야 해요. 체류기간은 한 번에 1년이고, 회사를 옮기기가 원칙적으로 어려워요.", "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판, 2026-11-22 대조" }
+        { "title": "고객은 해외에 있어요", "body": "이 비자로 하는 고객상담은 해외에 있는 외국인 고객을 상대하는 일로 정해져 있어요. 전화로 물건을 파는 텔레마케터와 판촉원은 들지 않아요. 회사에 따로 마련된 사무실에서 일하고, 집에서 일할 수 없어요.",
+          "hint": { "mn": "Үйлчлүүлэгчид гадаадад байна. Энэ визээр зөвхөн гадаадад байгаа гадаад үйлчлүүлэгчдийн асуултад хариулах ёстой. Утсаар бараа зардаг телемаркетер, сурталчлагч үүнд хамаарахгүй. Компанийн тусгайлан бэлтгэсэн оффист ажиллах бөгөөд гэрээсээ ажиллах боломжгүй.", "vi": "Khách hàng ở nước ngoài. Công việc tư vấn khách hàng theo visa này chỉ giới hạn ở việc phục vụ khách nước ngoài đang ở nước ngoài. Nhân viên bán hàng qua điện thoại và nhân viên xúc tiến bán hàng không thuộc diện này. Em làm việc tại văn phòng riêng của công ty, không được làm ở nhà.", "en": "Customers are overseas. Customer service on this visa is limited to helping foreign customers who are overseas. Telemarketers and sales promoters who sell by phone are not included. You work in an office set up by the company, not from home." }, "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판, 2026-11-22 대조" },
+        { "title": "감정노동", "body": "콜센터 상담원 1,996명에게 물은 국가인권위원회 조사에서, 상담원은 고객 폭언을 한 달에 평균 12번 들었다고 답했어요. 화장실을 자유롭게 가지 못한다는 답도 25.3%였어요. 법은 회사가 업무를 잠시 멈추게 하고, 쉬는 시간을 늘리고, 상담을 지원하게 정해요. 외국인 상담사만 따로 조사한 자료는 찾지 못했어요.",
+          "hint": { "mn": "Сэтгэл хөдлөлийн хөдөлмөр. Солонгосын Хүний эрхийн үндэсний комиссоос дуудлагын төвийн 1,996 ажилтныг хамруулан хийсэн судалгаагаар ажилтнууд үйлчлүүлэгчийн доромжлолд сард дунджаар 12 удаа өртдөг гэж хариулсан бөгөөд 25.3% нь бие засах газарт чөлөөтэй орж чаддаггүй гэжээ. Хуулиар компани ажилтанд ажлаа түр зогсоох боломж олгож, амралтын цагийг уртасгаж, сэтгэл зүйн зөвлөгөө авахад нь дэмжлэг үзүүлэх ёстой. Гадаад ажилтнуудыг тусад нь судалсан мэдээлэл олдсонгүй.", "vi": "Lao động cảm xúc. Trong khảo sát của Ủy ban Nhân quyền Quốc gia Hàn Quốc với 1.996 nhân viên tổng đài, họ cho biết trung bình mỗi tháng nghe khách chửi mắng 12 lần, và 25,3% nói không được đi vệ sinh tự do. Luật quy định công ty phải cho tạm dừng công việc, kéo dài giờ nghỉ và hỗ trợ tư vấn tâm lý. Chúng tôi chưa tìm thấy số liệu riêng về nhân viên tư vấn người nước ngoài.", "en": "Emotional labour. In a National Human Rights Commission of Korea survey of 1,996 call-centre agents, respondents said they faced verbal abuse from customers 12 times a month on average, and 25.3% said they could not go to the toilet freely. The law requires companies to let agents pause their work, give them longer breaks and provide counselling support. We found no separate data on agents from abroad." }, "source": "국가인권위원회 콜센터 노동자 인권상황 실태조사(2021년 조사), 2022-03-30 보도. 산업안전보건법 제41조와 시행령 제41조" },
+        { "title": "실적과 모니터링", "body": "응답률, 대기 시간, 포기율 같은 숫자를 관리해요. 관리자가 상담 품질을 재고, 그 결과로 스크립트와 교육을 고쳐요. 오래 앉아 전화로 말하는 일이에요.",
+          "hint": { "mn": "Гүйцэтгэл ба хяналт. Хариулсан хувь, хүлээлгийн хугацаа, хүлээж байгаад тасалсан дуудлагын хувь зэрэг үзүүлэлтийг хянадаг. Менежер зөвлөгөөний чанарыг үнэлж, үр дүнгээр нь скрипт, сургалтаа сайжруулдаг. Удаан сууж утсаар ярьдаг ажил.", "vi": "Chỉ tiêu và giám sát. Công ty theo dõi các chỉ số như tỷ lệ trả lời, thời gian chờ và tỷ lệ khách cúp máy khi đang chờ. Quản lý đánh giá chất lượng tư vấn và dựa vào kết quả để sửa kịch bản và đào tạo. Công việc này đòi hỏi phải ngồi lâu và nói chuyện qua điện thoại.", "en": "Targets and monitoring. Numbers such as answer rate, waiting time and abandoned calls are tracked. Managers measure the quality of your calls and use the results to change scripts and training. It is a job where you sit for long hours and talk on the phone." }, "source": "NCS 통신판매 성과관리 · 시스템 운용, 한국고용정보원 직업정보" },
+        { "title": "임금", "body": "고객상담원 재직자 조사에서 연봉 가운데값은 3,750만 원이었어요(하위 25%는 3,045만 원, 상위 25%는 4,525만 원). 이 비자로 일하려면 같은 회사에서 같은 일을 하는 한국인 평균임금 이상, 연 2,589만 원 이상을 받아야 해요. 외국인 상담사 임금만 따로 낸 공식 숫자는 찾지 못했어요.",
+          "hint": { "mn": "Цалин. Харилцагчийн үйлчилгээний ажилтнуудын дунд хийсэн судалгаагаар жилийн цалингийн медиан (голч утга) 37.5 сая вон байв (доод 25%: 30.45 сая, дээд 25%: 45.25 сая). Энэ визээр ажиллахын тулд тухайн компанид ижил ажил хийдэг солонгос хүмүүсийн дундаж цалингаас багагүй, жилд 25.89 сая воноос доошгүй цалин авах ёстой. Гадаад ажилтны цалинг тусад нь гаргасан албан ёсны тоо баримт олдсонгүй.", "vi": "Lương. Theo khảo sát đối với những người đang làm nhân viên tư vấn khách hàng, mức lương năm trung vị là 37,5 triệu won (25% thấp nhất: 30,45 triệu; 25% cao nhất: 45,25 triệu). Để làm việc theo visa này, lương phải bằng hoặc cao hơn mức trung bình của người Hàn làm cùng việc ở cùng công ty, và ít nhất 25,89 triệu won một năm. Chúng tôi chưa tìm thấy số liệu chính thức riêng về lương của nhân viên tư vấn người nước ngoài.", "en": "Pay. In a survey of people working as customer service agents, the median annual salary was 37.5 million won (lower 25%: 30.45 million; upper 25%: 45.25 million). To work on this visa, you must be paid at least the average for Koreans doing the same job at the same company, and at least 25.89 million won a year. We found no official figure for foreign agents alone." }, "source": "한국고용정보원 임금직업포털 2025년 조사. 법무부 취업비자 안내 길잡이(2026.11.)" },
+        { "title": "이 일로 가는 비자", "body": "E-7-2 고객상담 사무원이에요. 국내 대학 전문학사 이상이고, TOPIK 2급, 사회통합프로그램 2단계, TOEIC 730점 가운데 하나가 있어야 해요. 회사는 상시근로자 500명 이상, 국제용역 매출 50억 원 이상이고 직접 고용해야 해요. 체류기간은 한 번에 1년이고, 회사를 옮기기가 원칙적으로 어려워요.",
+          "hint": { "mn": "Энэ ажилд хамаарах виз. Энэ нь E-7-2 буюу харилцагчийн үйлчилгээний ажилтны виз юм. Солонгосын коллежийн (2–3 жилийн дээд сургууль) диплом буюу түүнээс дээш боловсролтой байх ёстой. Мөн TOPIK 2-р түвшин, Нийгэмд нэгтгэх хөтөлбөрийн (KIIP) 2-р шат, TOEIC 730 онооны аль нэгийг хангасан байх ёстой. Компани нь байнгын 500-гаас доошгүй ажилтантай, олон улсын үйлчилгээний борлуулалт нь 5 тэрбум воноос доошгүй байх ёстой. Мөн ажилтныг шууд ажилд авах ёстой. Оршин суух хугацааг нэг удаад 1 жилээр олгодог бөгөөд компани солих нь зарчмын хувьд хэцүү.", "vi": "Visa cho công việc này là E-7-2, dành cho nhân viên tư vấn khách hàng. Em cần có bằng cao đẳng (2–3 năm) trở lên của một trường ở Hàn Quốc, và đáp ứng một trong các điều kiện sau: TOPIK cấp 2, Chương trình hội nhập xã hội (KIIP) cấp độ 2, hoặc TOEIC 730 điểm. Công ty phải có từ 500 lao động thường xuyên trở lên, doanh thu dịch vụ quốc tế từ 5 tỷ won trở lên và phải tuyển dụng trực tiếp. Thời hạn lưu trú được cấp mỗi lần 1 năm, và về nguyên tắc, em không được tự do chuyển sang công ty khác.", "en": "About the visa for this job: it is the E-7-2 visa for customer service clerks. You need at least an associate degree (2–3 years) from a college in Korea, plus one of the following: TOPIK level 2, KIIP (Korea Immigration and Integration Program) level 2, or a TOEIC score of 730. The company must have at least 500 regular employees and at least 5 billion won in international service sales, and must hire you directly. Stays are granted for one year at a time, and as a rule, changing companies is difficult." }, "source": "법무부 체류민원 자격별 안내 매뉴얼 2026-11-16판, 2026-11-22 대조" }
       ]
     },
     "reflection": {
@@ -853,20 +864,28 @@
       "hardHelp": "한국어로 쓰기 어려우면 모국어로 써도 돼요.",
       "decisionLabel": "오늘 해 보니",
       "decisions": [
-        { "id": "more", "label": "이 일을 더 알아보겠다" },
-        { "id": "unsure", "label": "아직 모르겠다" },
-        { "id": "not-me", "label": "나와 맞지 않는다" }
+        { "id": "more", "label": "이 일을 더 알아보겠다",
+          "hint": { "mn": "Энэ ажлын талаар илүү судалмаар байна.", "vi": "Em muốn tìm hiểu thêm về công việc này.", "en": "I want to learn more about this job." } },
+        { "id": "unsure", "label": "아직 모르겠다",
+          "hint": { "mn": "Одоохондоо мэдэхгүй байна.", "vi": "Em vẫn chưa biết.", "en": "I’m not sure yet." } },
+        { "id": "not-me", "label": "나와 맞지 않는다",
+          "hint": { "mn": "Надад тохирохгүй.", "vi": "Công việc này không hợp với em.", "en": "It doesn’t suit me." } }
       ],
       "decisionNote": "「나와 맞지 않는다」도 좋은 결과예요. 미리 알고 고르려고 하는 체험이에요."
     },
     "ladder": {
       "lead": "이 일로 가는 길의 칸이에요. 준비한 것을 본인이 적어요. 증빙은 지원할 때 본인이 따로 내요.",
       "items": [
-        { "id": "degree", "label": "학위 (국내 대학 전문학사 이상)", "placeholder": "예: 전문학사 2027년 2월 졸업 예정" },
-        { "id": "language", "label": "한국어나 영어 (TOPIK 2급, 사회통합프로그램 2단계, TOEIC 730점 가운데 하나)", "placeholder": "예: TOPIK 3급, 2026년 10월" },
-        { "id": "languages", "label": "상담할 수 있는 언어", "placeholder": "예: 몽골어, 한국어, 영어" },
-        { "id": "experience", "label": "상담이나 손님 응대 경험", "placeholder": "예: 편의점 아르바이트 1년" },
-        { "id": "visa", "label": "체류자격", "placeholder": "예: D-2" }
+        { "id": "degree", "label": "학위 (국내 대학 전문학사 이상)", "placeholder": "예: 전문학사 2027년 2월 졸업 예정",
+          "hint": { "mn": "Боловсрол (Солонгосын коллежийн диплом буюу түүнээс дээш). Боловсролын зэрэг, төгссөн эсвэл төгсөх огноогоо бичнэ үү.", "vi": "Bằng cấp (bằng cao đẳng trở lên của trường ở Hàn Quốc). Ghi loại bằng em đang có hoặc thời gian dự kiến tốt nghiệp.", "en": "Degree (associate degree or higher from a college in Korea). Write the degree you have or when you expect to graduate." } },
+        { "id": "language", "label": "한국어나 영어 (TOPIK 2급, 사회통합프로그램 2단계, TOEIC 730점 가운데 하나)", "placeholder": "예: TOPIK 3급, 2026년 10월",
+          "hint": { "mn": "Солонгос эсвэл англи хэл (TOPIK 2-р түвшин, KIIP-ийн 2-р шат, TOEIC 730-ийн аль нэг). Түвшин, шалгалт өгсөн огноогоо бичнэ үү.", "vi": "Tiếng Hàn hoặc tiếng Anh (một trong các chứng chỉ sau: TOPIK cấp 2, KIIP cấp độ 2, TOEIC 730). Ghi cấp độ hoặc điểm và ngày thi.", "en": "Korean or English (one of the following: TOPIK level 2, KIIP level 2 or TOEIC 730). Write your level or score and the test date." } },
+        { "id": "languages", "label": "상담할 수 있는 언어", "placeholder": "예: 몽골어, 한국어, 영어",
+          "hint": { "mn": "Үйлчлүүлэгчтэй харилцаж чадах хэл.", "vi": "Những ngôn ngữ em có thể dùng để tư vấn cho khách.", "en": "Languages you can help customers in." } },
+        { "id": "experience", "label": "상담이나 손님 응대 경험", "placeholder": "예: 편의점 아르바이트 1년",
+          "hint": { "mn": "Үйлчлүүлэгчид зөвлөгөө өгсөн, үйлчилсэн туршлага (цагийн ажил ч орно).", "vi": "Kinh nghiệm tư vấn hoặc phục vụ khách (kể cả công việc làm thêm).", "en": "Experience helping customers or serving guests (part-time jobs count)." } },
+        { "id": "visa", "label": "체류자격", "placeholder": "예: D-2",
+          "hint": { "mn": "Одоогийн визийн ангилал (жишээ нь D-2).", "vi": "Tư cách lưu trú hiện tại (ví dụ D-2).", "en": "Your current visa status (for example D-2)." } }
       ]
     },
     "next": { "label": "다른 일터의 하루 보기", "body": "다른 일터도 하루씩 겪어 보고 나와 맞는 일을 비교해 봐요.", "href": "index.html" }

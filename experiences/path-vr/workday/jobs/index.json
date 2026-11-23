@@ -58,7 +58,7 @@
     },
     {
       "id": "customer-care",
-      "status": "making",
+      "status": "open",
       "title": "고객상담의 하루",
       "role": "고객상담 사무원",
       "minutes": 33,
