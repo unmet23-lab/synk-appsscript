@@ -324,7 +324,7 @@
           "prompt": "팀장님께 방금 일을 바로 말씀드려요.",
           "example": "팀장님, 방금 가입자의 가족이라고 하신 분께 본인 확인 없이 이번 달 결제 금액을 알려 드렸습니다. 죄송합니다.",
           "hint": { "mn": "Саяын болсон явдлыг багийн ахлагчид даруй хэлээрэй.", "vi": "Hãy báo ngay cho trưởng nhóm chuyện vừa xảy ra.", "en": "Tell the team leader right away what just happened." },
-          "record": "실수를 바로 보고하는 차례" },
+          "record": "금액을 알려 드린 일을 팀장님께 바로 말하는 차례" },
         { "type": "line", "clip": "lead-tell-heard", "who": "lead", "when": { "family": "tell" },
           "text": "바로 알려 줘서 고마워요. 가입자 본인이 연락하시면 제가 같이 받을게요.",
           "hint": { "mn": "Даруй хэлсэнд баярлалаа. Бүртгүүлсэн хүн өөрөө залгавал дуудлагыг нь чамтай хамт хүлээж авъя.", "vi": "Cảm ơn em đã báo ngay. Nếu chính người đăng ký gọi đến, chị sẽ cùng nghe máy với em.", "en": "Thank you for telling me right away. If the subscriber himself calls, I’ll take the call with you." } },
