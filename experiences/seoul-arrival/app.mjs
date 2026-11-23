@@ -859,6 +859,8 @@ async function lookPart(r){
   const lk=await pickLook();guard(r);state.look=lk;saveLook(lk);
   if(lk?.mine&&!PHOTO.url){
     // 내 사진이 아직 현상 중이면 찍는 시늉 없이 학생증을 먼저 뽑는다 — 사진 칸은 「사진 현상 중」이고, 사진이 오면 저절로 바뀐다.
+    // 찍을 때처럼 레일 · 단추는 걷고 인화지만 남긴 채 지호 선배가 말한다(카본 A2). 고르기 판은 revealCard가 닫는다.
+    $('#look').classList.add('shoot');
     await say(r,'jiho','사진이 나오면 학생증에 바로 넣어 줄게요.');
     $('#vn').classList.remove('on');
     await revealCard(r,null);
@@ -899,11 +901,15 @@ function setPhoto(v){
   PHOTO=next;ME.src=url||'';
   if(url){const im=new Image();im.decoding='async';im.onload=()=>{if(im.naturalWidth&&ME.src===url){ME.w=im.naturalWidth;ME.h=im.naturalHeight;}};im.src=url;}
   if(changed){pickMe?.();if(state.look?.mine){if($('#s-card').classList.contains('on'))putPhoto();paintBadge();}}
-  clearTimeout(photoPoll);
-  // 현상 중이면 1분마다 다시 묻는다(학생증을 들고 있거나 고르는 중일 때만). 사진이 오면 학생증이 저절로 바뀐다.
-  if(photoBusy()&&(state.look?.mine||pickMe))photoPoll=setTimeout(()=>{if(document.visibilityState==='visible')askPhoto(0);else setPhoto(PHOTO);},60000);
+  schedulePhoto();
 }
-function saveLook(lk){save(lk?.mine?{look:null,photo:'me'}:{look:lk?lk.id:null,photo:null});}
+// 현상 중이면 1분마다 다시 묻는다(학생증을 들고 있거나 고르는 중일 때만). 사진이 오면 학생증이 저절로 바뀐다.
+// 답이 올 때 · 고르기 판을 열 때 · 내 사진을 고를 때 다시 건다 — 미리 받은 답이 고르기 판보다 먼저 와도 빠지지 않게(카본 A3).
+function schedulePhoto(){
+  clearTimeout(photoPoll);photoPoll=0;
+  if(photoBusy()&&(state.look?.mine||pickMe))photoPoll=setTimeout(()=>{if(document.visibilityState==='visible')askPhoto(0);else schedulePhoto();},60000);
+}
+function saveLook(lk){save(lk?.mine?{look:null,photo:'me'}:{look:lk?lk.id:null,photo:null});schedulePhoto();}
 // 레일 맨 앞 칸. 사진이 있으면 얼굴, 현상 중이면 인화지, 아직이면 사람 표시와 「내 사진으로」. 얼굴 원과 다른 알약 꼴이라 「만드는 칸」으로 읽힌다.
 const ME_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="8.5" r="3.6" fill="currentColor"/><path d="M3.8 20c.6-3.9 3.5-6 7.2-6 1.4 0 2.6.3 3.7.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 14.5v6M15.5 17.5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 function meTile(){
@@ -994,7 +1000,7 @@ function pickLook({change=false}={}){return new Promise(res=>{
     if(old)old.replaceWith(tile);else{const sl=rail.scrollLeft;rail.prepend(tile);if(sl>0)rail.scrollLeft=sl+tile.offsetWidth+10;}
     if(cur==='me'){if(PHOTO.url||photoBusy()){cur=-1;goMe();}else clearMine();}
   }
-  pickMe=repaintMe;void askPhoto(240000);
+  pickMe=repaintMe;schedulePhoto();void askPhoto(240000);
   rail.onclick=e=>{if(e.target.closest('[data-me]')){goMe();return;}const t=e.target.closest('.lk-th');if(!t)return;go(+t.dataset.i);};
   // 칸 위에서 좌우로 넘기기
   let x0=null;
@@ -1136,8 +1142,12 @@ function putPhoto(){
     if(wait)p.innerHTML=`<div class="id-dev"><span>${esc(L(PHOTO.state==='choose'?'사진 나왔어요':'사진 현상 중'))}</span></div>`;else p.replaceChildren();
     return;
   }
-  const r=lookRects.crop(l,p.clientWidth,p.clientHeight,.6),im=new Image();im.alt='';im.src=l.src;Object.assign(im.style,px(r));p.replaceChildren(im);
-  if(l.mine)im.addEventListener('load',()=>{if(im.isConnected&&state.look===ME)Object.assign(im.style,px(lookRects.crop(ME,p.clientWidth,p.clientHeight,.6)));},{once:true});
+  const im=new Image();im.alt='';im.src=l.src;
+  const fit=()=>Object.assign(im.style,px(lookRects.crop(l,p.clientWidth,p.clientHeight,.6)));
+  // 내 사진을 새 주소로 다시 붙일 때는 새 그림이 풀린 뒤 바꾼다(그 사이 칸이 비어 깜빡이지 않게). 처음 붙일 때는 바로 넣고, 그림 크기를 알면 다시 맞춘다.
+  const shown=l.mine?p.querySelector('img'):null;
+  if(shown?.complete&&shown.naturalWidth>0)im.decode().then(()=>{if(state.look===l){fit();p.replaceChildren(im);}},()=>{});
+  else{fit();p.replaceChildren(im);if(l.mine)im.addEventListener('load',()=>{if(im.isConnected&&state.look===l)fit();},{once:true});}
 }
 function cardEnd(){$('#cardHead').classList.add('on');setTimeout(()=>$('#cardFoot').classList.add('on'),reduce?0:240);}
 /* 학생증 다시 보기 · 모습 다시 고르기: 내 길의 내 사진을 누르면 온다 */
@@ -1518,7 +1528,7 @@ window.__seoulFrame=Object.freeze({
 });
 window.__seoulQA={state,show,get SND(){return SND;},traceGa,nameTrace,buildRoad,crowdScene,momNote,
   // 내 사진 시험(qa/내사진.mjs): 사진 상태를 바로 다시 묻고, 정문의 얼굴 고르기 마디만 따로 돌린다
-  photo:()=>askPhoto(0).then(()=>({...PHOTO})),lookPart:()=>{const r=++RUN;show('s-gate');$('#vn').classList.add('on');return lookPart(r).then(()=>true,e=>{if(e!==SKIP)throw e;return false;});}};
+  photo:()=>askPhoto(0).then(()=>({...PHOTO})),photoWaiting:()=>!!photoPoll,lookPart:()=>{const r=++RUN;show('s-gate');$('#vn').classList.add('on');return lookPart(r).then(()=>true,e=>{if(e!==SKIP)throw e;return false;});}};
 if(!HOST){
   if(['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).has('qa')){window.__seoulFrame.start({at:new URLSearchParams(location.search).get('qa')==='road'?'road':'title'});}
   else outside();

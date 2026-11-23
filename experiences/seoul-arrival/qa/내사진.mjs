@@ -141,11 +141,15 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  t.inF(()=>window.__seoulQA.lookPart()).catch(()=>{});
  for(let i=0;i<40;i++){if(await t.inF(()=>document.querySelector('#look').classList.contains('on')))break;await t.inF(()=>document.querySelector('#vn')?.click());await sleep(200);}
  check(await until('칸',()=>t.inF(()=>!!document.querySelector('[data-me].dev'))),'정문: 현상 중 칸');
+ check(await t.inF(()=>window.__seoulQA.photoWaiting()),'정문: 미리 받은 답 뒤에도 고르기 판에서 1분 다시 묻기가 걸림(카본 A3)');
  await t.F().click('[data-me]');await sleep(300);await t.F().click('#lkShoot');
+ check(await until('대사 동안 레일 걷힘',()=>t.inF(()=>document.querySelector('#look').classList.contains('shoot')&&document.querySelector('#vn').classList.contains('on'))),'정문: 지호 선배가 말할 때 레일 · 단추를 걷음(카본 A2)');
+ check(await t.inF(()=>window.__seoulQA.photoWaiting()),'정문: 내 사진을 고른 뒤에도 다시 묻기가 걸려 있음');
  const said=[];for(let i=0;i<30;i++){const s=await t.inF(()=>document.querySelector('#vnText')?.textContent||'');if(s&&!said.includes(s))said.push(s);if(await t.inF(()=>document.querySelector('#cardHint').classList.contains('on')))break;await t.inF(()=>document.querySelector('#vn')?.click());await sleep(250);}
  check(said.some(s=>s.includes('사진이 나오면 학생증에 바로 넣어 줄게요')),'정문: 지호 선배 한 줄',JSON.stringify(said));
  check(!said.some(s=>s.includes('하나, 둘, 셋')),'정문: 찍는 시늉 없음');
  check(await until('학생증 현상 중',()=>t.inF(()=>!!document.querySelector('#idPhoto .id-dev'))),'정문: 학생증 「사진 현상 중」');
+ check(await t.inF(()=>!document.querySelector('#look').classList.contains('on')),'정문: 학생증이 나오면 고르기 판이 닫힘');
  await t.page.context().close();}
 
 // 5. 다시 열기: photo:'me' 기록이면 내 길 머리에 바로 내 사진, 사진관이 쉬어도 만든 사진은 그대로
