@@ -9,7 +9,7 @@ const GUEST_GEN='90000000-0000-4000-8000-000000000009';
 let auth={configured:true,status:'restoring',signedIn:false,sessionGeneration:0,accountGeneration:GUEST_GEN};
 let env={platform:'win32',arch:'x64',version:'0.4.95',mode:'development',publicAppsAvailable:[],qaGuestEntry:false};
 let assignmentHold=null,assignmentRelease=null;
-let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[],visits=null,health=null,backup=null;
+let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[],visits=null,health=null,backup=null,backupOneClick=null;
 const listeners=new Set(),subsListeners=new Set(),calls=[];
 // 계정 관리 방(2단계 둘째 조각)이 부르는 구독 다리. 부른 것을 적고, 저장은 이 창의 합성 자료에만 고쳐 넣는다(실제 로그인 · 설치 · 브라우저 열기는 없다)
 let subsSeq=100;
@@ -202,6 +202,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     start:async mode=>{calls.push('backup-start:'+mode);return {ok:true};},
     open:async topic=>{calls.push('backup-open:'+topic);return {ok:true};},
     dismiss:async()=>{calls.push('backup-dismiss');return {ok:true};},
+    oneClick:async()=>{calls.push('backup-oneclick');return backupOneClick?backupOneClick():{ok:true};},
   }),
   // 솔리오 「사무실」(main.cjs synk:office-*). 로그인한 회원에게만 답하고, 정하지 않으면 볼 계정이 아닌 답이다
   office:Object.freeze({
@@ -375,6 +376,8 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   setHealth:value=>{health=value||null;},
   // 솔리오 백업의 답을 바꾼다(다음 읽기부터)
   setBackup:value=>{backup=value||null;},
+  // 원클릭(11-23): 누름의 답을 바꾸려면 시험이 setBackupOneClick으로 함수 대신 답 하나를 준다
+  setBackupOneClick:value=>{backupOneClick=value?()=>value:null;},
   // 설정 방: 업데이트 판을 바꿔 알리고, 데스크톱 설정 · 쓰던 글 되살리기 · 복사한 진단 정보를 읽는다
   setUpdate:value=>setUpdate(value||{}),
   prefs:()=>({...prefs}),

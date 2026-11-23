@@ -268,7 +268,9 @@ function snsHealthCall(){if(runtime.clientId!=='platform'||smoke)return {ok:fals
 // 솔리오 「백업·복구」(11-20): 업무 백업 엔진의 입구. 플랫폼 창에서 로그인한 계정만 묻고, 실제 입구는 유호님 계정에만 보인다(solio-backup.cjs).
 // 힌트는 SYNK ID에 Google 로그인이 이어져 있고 그 주소를 알 때만 엔진의 setup 요청에 넘긴다(STAGE1_DESIGN 4.13 「로그인」).
 let solioBackupService=null;
-function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url)});return solioBackupService;}
+// 원클릭(11-23)의 04 업데이트 확인: PC 앱 업데이터의 상태를 읽고 확인을 부탁한다(받지는 않는다). platformUpdate는 부를 때 읽는다
+const solioAppUpdate=Object.freeze({snapshot:()=>platformUpdate?.snapshot(),checkForUpdate:()=>platformUpdate?.checkForUpdate()});
+function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),appUpdate:solioAppUpdate});return solioBackupService;}
 // 로그인 알림마다 남은 setup 요청을 치운다. 방을 아직 열지 않았어도 서비스를 만들어 치우므로, 앱을 다시 켠 뒤 첫 알림이 앞 실행의 요청을 지운다(Fable 요청 수명 확인 P2)
 function solioBackupSweep(){if(runtime.clientId!=='platform'||smoke)return;try{solioBackup().accountChanged();}catch{}}
 function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};return work(solioBackup(),status.account);}
@@ -999,6 +1001,8 @@ function createWindow(){
     'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>{const generation=accountStatus()?.sessionGeneration;return service.start(account,mode,{isCurrent:()=>{const now=accountStatus();return now?.signedIn===true&&now.account?.synk_user_id===account.synk_user_id&&now.sessionGeneration===generation;},isSameLogin:()=>{const now=accountStatus();if(now?.sessionGeneration!==generation)return false;return now?.signedIn===true?now.account?.synk_user_id===account.synk_user_id:renewingAccount()===account.synk_user_id;}});}),
     'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>service.open(account,topic)),
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
+    // 원클릭(11-23): run-now 요청을 쓰고 엔진의 요청 작업을 깨운다. 본체가 계정 · 엔진 · 보호 상태를 다시 확인한다
+    'synk:solio-backup-oneclick':()=>solioBackupCall((service,account)=>service.oneClick(account)),
     // 솔리오 「사무실」(구현설계.md 13절): 모두 officeCall을 거친다. 폴더는 본체가 고르기 창이나 지금 선 세션에서 받는다
     'synk:office-snapshot':()=>officeCall(officeWithTasks),
     'synk:chatgpt-status':()=>chatgptCall('status'),

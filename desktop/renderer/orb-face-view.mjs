@@ -22,8 +22,8 @@ const MARK_SVG = '<svg class="mark rise" style="--i:0" viewBox="0 0 560 328" rol
 const PROGRAM_ICON = Object.freeze({
   subs: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg>',
   visits: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="14.7" cy="5.3" r="1.9" fill="currentColor"/></svg>',
-  /* 백업: 둘레 안에서 되돌아오는 화살 하나(11-20 백업·복구 탭 세션) */
-  backup: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M7 11.2A3.2 3.2 0 1 0 7.9 7.6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M6.6 6.2l1.5 1.6-2 .6Z" fill="currentColor"/></svg>',
+  /* 원클릭: 누르는 화살표 하나(11-23 원클릭 시안의 오브제. 그 전은 둘레 안에서 되돌아오는 화살이었다) */
+  backup: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.2 3.6v11l3-2.8 2 4.4 2-.9-2-4.3h4.1Z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>',
   /* 계정 건강: 맥박 한 줄(솔리오 계정건강 시안의 오브제) */
   health: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 10.5h3.2l1.8-4.5 3 8 2-5.5 1.2 2h3.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   /* 사무실: 방 하나와 점 눈 둘(솔리오 사무실 시안의 오브제) */
@@ -125,7 +125,16 @@ function markup() {
     </div>
     <div class="room room-top" data-room="solio-backup" hidden>
       <p class="say rise" style="--i:1"><span data-bak-say></span><span class="then" data-bak-then></span></p>
-      <p class="read acts rise" style="--i:2" role="group" aria-label="백업 할 일" data-bak-acts></p>
+      <p class="read acts rise" style="--i:2" role="group" aria-label="원클릭 할 일" data-bak-acts></p>
+      <div class="one-board rise" style="--i:3" data-bak-board hidden>
+        <section class="one-drive" aria-label="남은 공간" data-bak-drive></section>
+        <section class="one-flow" aria-label="원클릭이 하는 일" data-bak-flow>
+          <span class="one-helper" aria-hidden="true" data-bak-helper hidden><i></i><i></i></span>
+          <button class="one-sum" type="button" aria-expanded="false" data-bak-sum hidden></button>
+          <ol class="one-steps" data-bak-steps></ol>
+          <div class="one-after" data-bak-groups></div>
+        </section>
+      </div>
       <div class="rows vis rise" style="--i:3" role="group" aria-label="업무 백업 상태" data-bak-rows></div>
       <p class="read rise" style="--i:5"><span data-bak-when></span><span data-bak-scope></span></p>
     </div>
@@ -200,6 +209,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     rail: $('[data-orb-rail]'), objs: [...root.querySelectorAll('[data-orb-prog]')],
     visits: $('[data-room="solio-visits"]'), visSay: $('[data-vis-say]'), visThen: $('[data-vis-then]'), visRows: $('[data-vis-rows]'), visWhen: $('[data-vis-when]'), visScope: $('[data-vis-scope]'),
     backup: $('[data-room="solio-backup"]'), bakSay: $('[data-bak-say]'), bakThen: $('[data-bak-then]'), bakActs: $('[data-bak-acts]'), bakRows: $('[data-bak-rows]'), bakWhen: $('[data-bak-when]'), bakScope: $('[data-bak-scope]'),
+    bakBoard: $('[data-bak-board]'), bakDrive: $('[data-bak-drive]'), bakFlow: $('[data-bak-flow]'), bakHelper: $('[data-bak-helper]'), bakSum: $('[data-bak-sum]'), bakSteps: $('[data-bak-steps]'), bakGroups: $('[data-bak-groups]'),
     health: $('[data-room="solio-health"]'), heaSay: $('[data-hea-say]'), heaThen: $('[data-hea-then]'), heaRows: $('[data-hea-rows]'), heaWhen: $('[data-hea-when]'), heaScope: $('[data-hea-scope]'),
     office: $('[data-room="solio-office"]'), offHead: $('[data-off-head]'), offSay: $('[data-off-say]'), offThen: $('[data-off-then]'), offHint: $('[data-off-hint]'), offSlot: $('[data-off-slot]'), offFloor: $('[data-off-floor]'), offRows: $('[data-off-rows]'), offFoot: $('[data-off-foot]'),
     asides: Object.fromEntries(ASIDE_NAMES.map(name => {
@@ -947,10 +957,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   /* 장면은 1분마다 새로 온다(상대 시각, 다시 읽은 요약). 줄의 차례가 같으면 그 자리의 줄을 고쳐 쓰고,
      차례가 달라 새로 지을 때도 펼친 줄, 눌러 고정한 줄, 자판 초점을 줄 이름(key)으로 되살린다(0.4.97 공개 후보 검수 A2) */
   function renderRead(box, v) {
-    const key = v && v.visible ? JSON.stringify([v.say, v.then, v.when, v.scope, v.rows, v.acts || null]) : '';
+    const key = v && v.visible ? JSON.stringify([v.say, v.then, v.when, v.scope, v.rows, v.acts || null, v.board || null]) : '';
     if (key === box.key) return;
     box.key = key;
-    if (box.acts) renderActs(box.acts, key && Array.isArray(v.acts) ? v.acts : []);
+    if (box.acts) renderActs(box.acts, key && Array.isArray(v.acts) ? v.acts : [], key && v.board ? v.board.main : null);
+    if (box === readRooms.backup) renderBoard(key && v.board ? v.board : null);
     clearTimeout(visTimer);
     if (!key) clearTimeout(visLeave);
     setText(box.say, key ? v.say : '');
@@ -973,15 +984,135 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     box.rows.hidden = !rows.length;
   }
   /* 백업 방의 할 일 단추. 다시 그려도 누르던 단추(같은 동작과 낱말)에 초점을 되돌린다 */
-  function renderActs(box, acts) {
+  function renderActs(box, acts, main = null) {
     const fa = doc.activeElement, had = fa && box.contains(fa) ? `${fa.dataset.orbAct}|${fa.dataset.orbArg || ''}` : null;
-    box.replaceChildren(...acts.slice(0, 4).map(a => {
+    // 원클릭 판의 큰 단추(흰 알약)가 맨 앞이다. 엔진이 일하는 동안은 누를 수 없고 이름이 하는 일을 말한다
+    const lead = main ? [button('go main', main.label, { 'data-orb-act': 'backup-oneclick', 'data-orb-arg': '', 'aria-disabled': main.disabled ? 'true' : null })] : [];
+    box.replaceChildren(...lead, ...acts.slice(0, 4).map(a => {
       const b = button(a.primary ? 'reread lead' : 'reread', a.label, { 'data-orb-act': a.act, 'data-orb-arg': a.arg || '' });
       if (a.disabled) b.setAttribute('aria-disabled', 'true');
       return b;
     }));
-    box.hidden = !acts.length;
+    box.hidden = !acts.length && !main;
     if (had) { const again = [...box.children].find(b => `${b.dataset.orbAct}|${b.dataset.orbArg || ''}` === had); try { (again || box.children[0])?.focus({ preventScroll: true }); } catch {} }
+  }
+  /* ── 원클릭 판(11-23, docs/디자인/솔리오_원클릭_20261123). 왼쪽은 드라이브 하나, 오른쪽은 네 줄과 묶음 셋이다.
+     부분마다 마지막으로 그린 글을 열쇠로 두어 2초마다 오는 판에서 바뀐 곳만 다시 그린다. 사람이 연 묶음과 다시 편 네 줄은 다시 그려도 지킨다 ── */
+  const board = { keys: {}, open: new Set(), unfold: '', key: '', sum: false };
+  function paintPart(name, value, paint) {
+    const k = JSON.stringify(value ?? null);
+    if (board.keys[name] === k) return;
+    board.keys[name] = k;
+    paint();
+  }
+  function renderBoard(v) {
+    app.bakBoard.hidden = !v;
+    if (!v) { board.keys = {}; app.bakHelper.hidden = true; return; }
+    board.key = v.key || '';
+    paintPart('drive', v.drive, () => paintDrive(v.drive || {}));
+    paintPart('steps', v.steps, () => paintSteps(Array.isArray(v.steps) ? v.steps : []));
+    paintPart('sum', v.sum, () => paintSum(v.sum));
+    paintPart('groups', v.groups, () => paintGroups(Array.isArray(v.groups) ? v.groups : []));
+    board.sum = !!v.sum;
+    applyFold();
+    placeHelper(v.at);
+  }
+  function paintDrive(d) {
+    const box = app.bakDrive;
+    if (d.empty) { box.replaceChildren(el('p', 'd-lab', '남은 공간'), el('p', 'd-empty', d.empty)); return; }
+    const lab = el('p', 'd-lab', d.label);
+    if (d.at) lab.append(el('span', '', d.at));
+    const big = el('p', 'd-big');
+    big.append(el('b', 'd-free', d.free), el('span', 'd-unit', d.unit));
+    const bar = el('div', 'd-bar');
+    bar.setAttribute('role', 'img');
+    bar.setAttribute('aria-label', d.aria || '');
+    const fill = el('i', 'd-fill');
+    fill.style.width = `${Number(d.freePct) || 0}%`;
+    bar.append(fill);
+    const ticks = el('div', 'd-ticks');
+    ticks.setAttribute('aria-hidden', 'true');
+    ticks.append(el('span', 't0', '0'), el('span', 't2', d.max));
+    if (Number.isFinite(d.linePct)) {
+      const line = el('i', 'd-line');
+      line.style.left = `${d.linePct}%`;
+      bar.append(line);
+      const tl = el('span', 'tl', d.lineLabel);
+      tl.style.left = `${d.linePct}%`;
+      ticks.append(tl);
+    }
+    const parts = [lab, big, bar, ticks];
+    if (d.pred) parts.push(el('p', d.below ? 'd-pred below' : 'd-pred', d.pred));
+    const pace = [d.pace, d.more].filter(Boolean).join(' ');
+    if (pace) parts.push(el('p', 'd-pace', pace));
+    box.replaceChildren(...parts);
+  }
+  function stepCells(r, sumRow = false) {
+    const cells = [el('span', 's-no', sumRow ? '' : r.no), el('span', 's-nm', r.nm), el('span', 's-mid', r.mid), el('span', 's-val', r.val)];
+    return cells;
+  }
+  function paintSteps(steps) {
+    app.bakSteps.replaceChildren(...steps.map(r => {
+      const li = el('li', `one-step${r.state ? ` ${r.state}` : ''}${r.can ? ' can' : ''}${r.ok ? ' ok' : ''}`);
+      li.dataset.k = r.k;
+      li.append(...stepCells(r));
+      if (Number.isFinite(r.p)) { const bar = el('i', 's-bar'); bar.style.setProperty('--p', String(Math.max(0, Math.min(1, r.p)))); li.append(bar); }
+      return li;
+    }));
+  }
+  function paintSum(sum) {
+    const b = app.bakSum;
+    b.hidden = !sum;
+    if (!sum) { b.replaceChildren(); return; }
+    b.replaceChildren(...stepCells(sum, true), el('i', 'g-ch'));
+  }
+  /* 끝나면 네 줄을 한 줄로 접는다. 사람이 다시 펴면 그 누름(열쇠)이 바뀔 때까지 편 채로 둔다 */
+  function applyFold() {
+    const folded = board.sum && board.unfold !== board.key;
+    app.bakFlow.classList.toggle('folded', folded);
+    app.bakSum.setAttribute('aria-expanded', String(!folded));
+  }
+  function paintGroups(groups) {
+    app.bakGroups.replaceChildren(...groups.map(g => {
+      const wrap = el('div', `g${board.open.has(g.k) ? ' open' : ''}`);
+      wrap.dataset.g = g.k;
+      const head = el('button', 'g-h');
+      head.type = 'button';
+      head.dataset.bakG = g.k;
+      head.setAttribute('aria-expanded', String(board.open.has(g.k)));
+      head.append(el('span', 'g-nm', g.nm), el('span', 'g-mid', g.mid), el('span', `g-val gr-${g.k}`, g.val), el('i', 'g-ch'));
+      const body = el('div', 'g-b'), inner = el('div', 'g-in');
+      (Array.isArray(g.items) ? g.items : []).forEach((it, j) => {
+        const row = el('div', 'it');
+        row.style.setProperty('--j', String(j));
+        const t = el('p', 'it-t');
+        t.append(el('b', '', it.nm));
+        if (it.cnt) t.append(el('span', 'cnt', it.cnt));
+        if (it.how) t.append(el('small', '', it.how));
+        row.append(t, el('span', `it-v gr-${g.k}`, it.val));
+        inner.append(row);
+      });
+      body.append(inner);
+      wrap.append(head, body);
+      return wrap;
+    }));
+  }
+  function toggleGroup(k) {
+    const on = !board.open.has(k);
+    if (on) board.open.add(k); else board.open.delete(k);
+    const g = app.bakGroups.querySelector(`.g[data-g="${k}"]`);
+    g?.classList.toggle('open', on);
+    g?.querySelector('.g-h')?.setAttribute('aria-expanded', String(on));
+  }
+  /* 작은 구(솔리오의 분신)가 지금 일하는 줄의 번호 자리에 앉는다. 일하는 줄이 없으면 숨는다 */
+  function placeHelper(at) {
+    const h = app.bakHelper;
+    const row = at && !app.bakFlow.classList.contains('folded') ? app.bakSteps.querySelector(`.one-step[data-k="${at}"]`) : null;
+    for (const r of app.bakSteps.querySelectorAll('.one-step.at')) if (r !== row) r.classList.remove('at');
+    if (!row) { h.hidden = true; return; }
+    row.classList.add('at');
+    h.hidden = false;
+    h.style.transform = `translateY(${row.offsetTop + row.offsetHeight / 2 - 11}px)`;
   }
   function visRow(r) {
     const b = el('button', 'row');
@@ -1958,6 +2089,16 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     // 물음을 누르면 답이 바로 아래에 나온다(시안 qa)
     const qa = target.closest?.('button[data-qa]');
     if (qa && root.contains(qa)) { event.preventDefault(); const n = qa.parentElement?.nextElementSibling; if (n) { n.hidden = !n.hidden; qa.setAttribute('aria-expanded', String(!n.hidden)); } return; }
+    // 원클릭 판의 묶음 머리와 접힌 한 줄은 그 자리에서 열고 닫는다(본체에 묻지 않는다)
+    const bakG = target.closest?.('[data-bak-g]');
+    if (bakG && root.contains(bakG)) { event.preventDefault(); toggleGroup(bakG.dataset.bakG); return; }
+    if (target.closest?.('[data-bak-sum]') && root.contains(app.bakSum)) {
+      event.preventDefault();
+      board.unfold = board.unfold === board.key ? '' : board.key;
+      applyFold();
+      placeHelper(null);
+      return;
+    }
     const act = target.closest?.('[data-orb-act]');
     if (act && root.contains(act)) {
       if (act.disabled || act.getAttribute('aria-disabled') === 'true') return;

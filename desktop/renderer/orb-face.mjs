@@ -796,7 +796,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function backupAction(name, arg) {
     const api = readApi.backup;
     if (!api || space !== 'solio' || prog !== 'backup' || clientMode() !== 'app') return false;
-    const call = name === 'backup-start' ? api.start?.(arg) : name === 'backup-open' ? api.open?.(arg) : api.dismiss?.();
+    const call = name === 'backup-start' ? api.start?.(arg) : name === 'backup-open' ? api.open?.(arg) : name === 'backup-oneclick' ? api.oneClick?.() : api.dismiss?.();
     backupNotice = null;
     Promise.resolve(call).catch(() => ({ ok: false })).then(result => {
       if (disposed) return;
@@ -2121,7 +2121,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         void rooms.handle({ room: 'solio', key: 'tok', act: 'tok-on', arg: '', fields: {} });
         return true;
       case 'prog': return showProgram(payload);
-      case 'backup-start': case 'backup-open': case 'backup-dismiss': return backupAction(action, typeof payload === 'string' ? payload : '');
+      case 'backup-start': case 'backup-open': case 'backup-dismiss': case 'backup-oneclick': return backupAction(action, typeof payload === 'string' ? payload : '');
       case 'recheck-auth': void recheckAuth(); return true;
       case 'reopen-space': void runOpenSpace(space, { reopen: true }); return true;
       case 'room-solio': go('solio'); return true;

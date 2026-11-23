@@ -324,8 +324,11 @@ test('the screen words: one urgent sentence first, safe only when safe, buttons 
   assert.match(views.removed.say, /지워져서/);
   assert.match(views.newer.then, /솔리오.*업데이트/);
   assert.match(views.checking.say, /확인하는 중/);
-  assert.deepEqual(views.attention.acts[0], { label: '엔진 창에서 확인', act: 'backup-open', arg: 'signin', primary: true });
+  // 보호 중이면 원클릭 판의 큰 단추가 결정 단추이고(11-23), 아래 단추 줄은 모두 조용하다
+  assert.deepEqual(views.attention.acts[0], { label: '엔진 창에서 확인', act: 'backup-open', arg: 'signin', primary: false });
+  assert.equal(views.attention.board.main.label, '백업하고 상태 보기');
   assert.deepEqual(views.safe.acts.map(a => a.arg), ['restore', 'move', 'status']);
+  assert.ok(views.safe.acts.every(a => !a.primary) && views.safe.board && views.checking.board, 'safe and checking show the board');
   assert.deepEqual(views.failed.acts[0], { label: '다시 받기', act: 'backup-start', arg: 'move', primary: true });
   assert.ok(views.admin.busy);
 });
@@ -519,7 +522,8 @@ test('A2 · A3 · A4 · A5: move opens the move screen, 「매시간」 only whi
   const done = solioBackupView({ ...base, view: 'no-engine', install: { phase: 'done', mode: 'move' } });
   assert.match(done.then, /옮겨 오기/);
   const st = B.normalizeStatus(sample()).status;
-  const notes = v => JSON.stringify(v.rows);
+  // 원클릭 판(11-23)에서는 줄 대신 범위 칸이 「매시간」을 말한다
+  const notes = v => JSON.stringify(v.rows) + (v.scope || '');
   assert.doesNotMatch(notes(solioBackupView({ ...base, view: 'status', status: { ...st, state: 'off' } })), /매시간/);
   assert.doesNotMatch(notes(solioBackupView({ ...base, view: 'status', status: { ...st, state: 'paused' } })), /매시간/);
   assert.doesNotMatch(notes(solioBackupView({ ...base, view: 'needs-setup', status: null })), /매시간/);
@@ -986,7 +990,7 @@ test('a packaged build with the switch off hides the room and the calls say NOT_
   assert.equal((await shipped.snapshot(ME)).available, true, 'the default is the switch');
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
   const call = main.match(/createSolioBackup\(\{[^}]*\}\)/g) || [];
-  assert.deepEqual(call, ["createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url)})"], 'main makes the service once, with the packaged flag and nothing that turns it back on');
+  assert.deepEqual(call, ["createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),appUpdate:solioAppUpdate})"], 'main makes the service once, with the packaged flag and nothing that turns it back on');
   assert.doesNotMatch(main, /inRelease/, 'only the IN_RELEASE line in solio-backup.cjs turns the room on');
 });
 

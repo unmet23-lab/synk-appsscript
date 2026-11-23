@@ -8,8 +8,9 @@
 //      확인한다. 그다음 setup 요청을 쓰고, 핸들을 쥔 채로 설치기를 관리자 권한으로 띄운다. 설치기가 끝날 때까지 핸들을 놓지 않는다.
 //   4. 엔진이 있는데 이 사용자가 보호를 시작하지 않았으면 setup 요청만 쓰고 엔진 창을 연다.
 //   5. 엔진 창은 열기 주소 synk-workbackup:open?topic=<낱말>로만 연다(고정 아홉 낱말).
-// 넣지 않는 것: 공간 보고서(space.json)는 후보의 경로가 들어 있어 이 모듈이 읽지 않는다. 화면에 넘기는 값과 오류에는 경로,
-// 파일 이름, 계정 주소를 넣지 않는다(4.13 「화면 쪽에 넘길 것」). 시험: desktop/tests/solio-backup.test.cjs.
+//   6. 원클릭(11-23): run-now 요청을 쓰고 엔진의 요청 작업을 깨운다. 요청이 어디까지 갔는지와 결과를 방에 넘긴다(solio-oneclick.cjs).
+// 넣지 않는 것: 공간 보고서(space.json)는 후보의 경로가 들어 있어 합계(드라이브 하나의 숫자와 묶음별 크기 · 개수)만 읽는다(solio-oneclick.cjs
+// readSpace). 화면에 넘기는 값과 오류에는 경로, 파일 이름, 계정 주소를 넣지 않는다(4.13 「화면 쪽에 넘길 것」). 시험: desktop/tests/solio-backup.test.cjs.
 // 실제 입구는 유호님 계정에만 보인다. 계정 번호 자체는 공개 저장소에 두지 않고 소금 친 SHA-256만 둔다.
 // 모두에게 여는 날(2단계 노트북 시험 시작일)에 PREVIEW_ACCOUNTS 대신 열림으로 바꾼다.
 const fs = require('node:fs');
@@ -20,6 +21,8 @@ const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 // Electron(BoringSSL)에는 BLAKE2b가 없다. minisign이 서명하는 BLAKE2b-512는 직접 셈한다(11-23 T30 실패의 원인)
 const { createBlake2b512 } = require('./blake2b.cjs');
+// 원클릭(11-23): run-now 요청 · 요청 작업 깨우기 · 결과 읽기 · 공간 보고서 합계(docs/디자인/솔리오_원클릭_20261123/PC앱_옮기기.md)
+const oneclickFiles = require('./solio-oneclick.cjs');
 
 const FORMAT = 1;
 const STATUS_MAX = 64 * 1024;
@@ -468,7 +471,7 @@ function createSolioBackup({
   platform = process.platform, env = process.env, cacheRoot, now = Date.now,
   run = runPowerShell, request = requestHttps, hold = holdSetup, openExternal = async () => {},
   fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, packaged = false, inRelease = IN_RELEASE, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
-  tag = runTag(),
+  tag = runTag(), appUpdate = null,
 } = {}) {
   const paths = statusPaths(env);
   // 엔진이 있는지는 어디에도 기억해 두지 않는다. 방의 표시 · 누르기 · 열기 · 설치기 띄우기가 모두 그때마다 새로 확인하고 제 답만 쓴다.
@@ -510,13 +513,108 @@ function createSolioBackup({
     sweepRequests();
     const { engine: eng, read, view } = await state();
     if ((view === 'no-engine' || view === 'engine-removed') && install.phase === 'idle') void refreshFeed();
+    const status = read.format === 'ok' ? read.status : null;
+    const ready = oneClickReady(view, status);
     return {
       ok: true, available: true, view, now: new Date(now()).toISOString(),
       engine: { installed: !!eng?.installed, version: eng?.version || null },
-      status: read.format === 'ok' ? read.status : null,
+      status,
       feed: { state: feedState.state, version: feedState.version },
       install: { ...install },
+      // 원클릭 판의 값. 보호 중일 때만 공간 보고서를 읽는다. 앞 누름은 누른 계정에만 보인다
+      oneclick: await oneClickSnapshot(account),
+      space: ready ? await readSpaceSummary() : null,
+      app: ready ? appUpdateWords() : null,
     };
+  }
+
+  /* ── 원클릭(11-23). 보호 중(상태 파일이 safe · starting · attention이고 이 PC가 백업을 쓰는 기기)일 때만 누를 수 있다.
+     엔진은 멈춤(paused) · 꺼짐 · 옮겨 감 상태의 run-now를 거절하므로 그때는 단추를 두지 않는다 ── */
+  const ONECLICK_STATES = Object.freeze(['safe', 'starting', 'attention']);
+  function oneClickReady(view, status) {
+    return (view === 'status' || view === 'checking') && !!status && ONECLICK_STATES.includes(status.state) && status.writer === true;
+  }
+  /* 이 실행이 마지막으로 쓴 run-now 요청 하나. 앱을 다시 켜면 잊는다(요청은 엔진이 처리한다). account는 누른 계정이다 */
+  let oneclick = null, pressing = false;
+  /* 엔진은 setup 밖의 요청을 24시간이 지나면 거절한다. 그때까지 답이 없으면 기다리기를 그만둔다(Fable 설계 검토 1) */
+  const ONECLICK_WAIT = 24 * 3600000 + 5 * 60000;
+  const ONECLICK_OPEN = ['sent', 'claimed', 'unseen'];
+  /* 요청이 어디까지 갔는지 본다. 엔진은 requests → claimed(옮긴 뒤 원래 이름을 지움) → 결과 쓰기 → claimed 지우기 차례로 움직이므로,
+     같은 차례(requests → claimed → results)로 봐야 처리 중인 요청을 「사라짐」으로 잘못 보지 않는다. 사라짐은 두 번 잇달아 볼 때만 세운다(Fable 설계 검토 2) */
+  async function followOneClick(c) {
+    if (c.result || !paths || !ONECLICK_OPEN.includes(c.stage)) return;
+    const stage = await oneclickFiles.requestStage({ paths, name: c.name, fsImpl: fsImpl.promises });
+    if (oneclick !== c) return;
+    if (stage === 'sent' || stage === 'claimed') { c.stage = stage; c.missing = 0; }
+    else if (stage === 'gone') {
+      const answer = await oneclickFiles.takeResult({ paths, name: c.name, fsImpl: fsImpl.promises });
+      if (oneclick !== c) return;
+      if (answer) Object.assign(c, { result: answer.result, reason: answer.reason, answeredAt: now(), stage: 'answered', missing: 0 });
+      else { c.missing = (c.missing || 0) + 1; if (c.missing >= 2) c.stage = 'gone'; else c.stage = 'unseen'; }
+    }
+    if (!c.result && ONECLICK_OPEN.includes(c.stage) && now() - c.at >= ONECLICK_WAIT) c.stage = 'expired';
+  }
+  async function oneClickSnapshot(account) {
+    const c = oneclick;
+    if (!c || c.account !== account?.synk_user_id) return null;
+    await followOneClick(c);
+    if (oneclick !== c) return oneClickSnapshot(account);
+    const at = t => (Number.isFinite(t) ? new Date(t).toISOString() : null);
+    // unseen(한 번 못 봄)은 밖으로는 claimed와 같다. 다음 읽기에서 답이나 사라짐으로 정해진다
+    return { at: at(c.at), wokeAt: at(c.wokeAt), woke: c.woke, stage: c.stage === 'unseen' ? 'claimed' : c.stage, result: c.result, reason: c.reason, answeredAt: at(c.answeredAt) };
+  }
+  const spaceCache = { key: null, read: null };
+  async function readSpaceSummary() {
+    if (platform !== 'win32' || !paths) return null;
+    const read = await oneclickFiles.readSpace({ paths, fsImpl: fsImpl.promises, cache: spaceCache });
+    return read.format === 'ok' ? read.space : { missing: read.format === 'missing', invalid: read.format === 'invalid' };
+  }
+  function wake(c) {
+    c.woke = 'waking';
+    c.wokeAt = now();
+    oneclickFiles.wakeRequestTask({ run }).then(word => { if (oneclick === c) c.woke = word; }, () => { if (oneclick === c) c.woke = 'failed'; });
+  }
+  /* PC 앱 업데이터의 지금 상태를 낱말과 판 번호로만 옮긴다 */
+  function appUpdateWords() {
+    let s = null;
+    try { s = appUpdate?.snapshot?.() || null; } catch { s = null; }
+    if (!s || typeof s !== 'object') return null;
+    const ver = v => (typeof v === 'string' && VERSION.test(v) ? v : null);
+    return { state: typeof s.state === 'string' && /^[a-z-]{1,24}$/.test(s.state) ? s.state : 'unknown', current: ver(s.currentVersion), latest: ver(s.latestVersion) };
+  }
+  async function oneClick(account) {
+    if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
+    if (platform !== 'win32' || !paths) return { ok: false, code: 'NOT_AVAILABLE' };
+    sweepRequests();
+    if (busy || pressing) return { ok: false, code: 'BUSY' };
+    // 앞 누름의 요청이 아직 답을 받지 않았으면 새로 쓰지 않는다. 엔진이 가져가기 전이면 요청 작업만 다시 깨운다(Fable 설계 검토 1).
+    // 엔진이 이미 가져가 처리 중이면 할 일이 없다
+    const prev = oneclick && oneclick.account === account.synk_user_id ? oneclick : null;
+    if (prev) await followOneClick(prev);
+    if (prev && oneclick === prev && !prev.result && ONECLICK_OPEN.includes(prev.stage)) {
+      if (prev.stage !== 'sent') return { ok: false, code: 'BUSY' };
+      if (prev.woke !== 'waking') wake(prev);
+      return { ok: true, again: true };
+    }
+    pressing = true;
+    try {
+      const fresh = await engineFresh();
+      if (fresh.error) return { ok: false, code: 'ENGINE_UNKNOWN' };
+      if (!fresh.installed) return { ok: false, code: 'NO_ENGINE' };
+      const { view, read } = await state(fresh);
+      if (!oneClickReady(view, read.format === 'ok' ? read.status : null)) return { ok: false, code: 'NOT_NEEDED' };
+      let name;
+      try { name = oneclickFiles.writeRunNow({ paths, now: now(), owner: me, fsSync: fsImpl }); }
+      catch { return { ok: false, code: 'REQUEST_FAILED' }; }
+      // run-now는 setup 요청의 수명(written · live · .owner 표)에 넣지 않는다. 넣으면 치우기가 취소 표식을 세워 엔진이 cancelled로 거절한다(Fable 설계 검토 7)
+      const c = { name, account: account.synk_user_id, at: now(), wokeAt: null, woke: 'waking', stage: 'sent', missing: 0, result: null, reason: null, answeredAt: null };
+      oneclick = c;
+      // 깨우기와 두 업데이트 확인은 기다리지 않는다. 방은 다시 읽어 단계를 보인다. 업데이터가 다른 일 중이라 거절해도 답을 삼킨다
+      wake(c);
+      try { Promise.resolve(appUpdate?.checkForUpdate?.()).catch(() => {}); } catch {}
+      void refreshFeed(true);
+      return { ok: true };
+    } finally { pressing = false; }
   }
 
   function setInstall(phase, extra = {}) { install = { phase, progress: extra.progress ?? 0, code: extra.code ?? null, mode }; }
@@ -875,7 +973,7 @@ function createSolioBackup({
   /* 끝난 설치 결과(오류 · 완료)를 지우고 처음 화면으로 */
   function dismiss(account) { if (allowed(account) && !busy) setInstall('idle'); return { ok: true }; }
 
-  return { snapshot, start, open, dismiss, accountChanged, whenIdle: () => busy || Promise.resolve() };
+  return { snapshot, start, open, dismiss, oneClick, accountChanged, whenIdle: () => busy || Promise.resolve() };
 }
 
 module.exports = {

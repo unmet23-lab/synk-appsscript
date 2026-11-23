@@ -588,19 +588,25 @@ if(!process.versions.electron){
             r.win.destroy();
           }
         }
-        // 21. 솔리오 「백업」(11-20, 1단계 설계 4.13 「화면 쪽 구현」). 실제 입구가 있는 계정은 구독 다음 자리에 백업 오브제가 서고, 방에 결론 · 할 일 단추 · 줄이 있다.
-        //     단추는 정해진 동작과 낱말만 넘기고, 엔진이 없을 때 · 관리자 확인 중 · 지키는 중 · 확인할 일을 찍는다. 입구가 없는 계정에는 오브제가 없다
+        // 21. 솔리오 「원클릭」(11-20 백업 방, 11-23 원클릭 방 — docs/디자인/솔리오_원클릭_20261123/PC앱_옮기기.md). 실제 입구가 있는 계정은 구독 다음 자리에 오브제가 서고,
+        //     방에 결론 · 할 일 단추 · 줄이 있다. 보호 중이면 줄 대신 원클릭 판(큰 단추 · 드라이브 판 · 네 줄 · 묶음 셋)이다.
+        //     단추는 정해진 동작과 낱말만 넘기고, 엔진이 없을 때 · 관리자 확인 중 · 지키는 중 · 누른 뒤 · 기다림 · 끝 · 쉼 · 확인할 일을 찍는다. 입구가 없는 계정에는 오브제가 없다
         if(only('21')&&mode==='main'){
           const T=new Date(now).toISOString(),later=new Date(now+50*60000).toISOString(),before=new Date(now-10*60000).toISOString();
           const status={engine:'0.7.0',state:'safe',lastBackupAt:before,proof:{at:new Date(now-3*D).toISOString(),result:'passed'},attention:[],job:null,folders:4,bytes:53687091200,writer:true,nextRunAt:later,writtenAt:before};
-          const snap=patch=>({ok:true,available:true,view:'status',now:T,engine:{installed:true,version:'0.7.0'},status,feed:{state:'unknown',version:null},install:{phase:'idle',progress:0,code:null,mode:null},...patch});
+          const GBy=1024**3;
+          const space={createdAt:new Date(now-8*3600e3).toISOString(),lapFinishedAt:new Date(now-D).toISOString(),scanningDays:null,drive:{letter:'C',size:Math.round(953*GBy),free:Math.round(118.2*GBy),growthPerDay:Math.round(2.1*GBy),startLineGb:100,daysToStartLine:9},otherDrives:1,
+            groups:[{grade:'auto',group:'temp',bytes:Math.round(12.1*GBy),count:1},{grade:'auto',group:'build',bytes:Math.round(11.3*GBy),count:4},{grade:'suggest',group:'worktree',bytes:Math.round(7*GBy),count:2},{grade:'view',group:'ai-app-copy',bytes:Math.round(302.7*GBy),count:30},{grade:'view',group:'ai-history',bytes:Math.round(47.4*GBy),count:1}]};
+          const snap=patch=>({ok:true,available:true,view:'status',now:T,engine:{installed:true,version:'0.7.0'},status,feed:{state:'unknown',version:null},install:{phase:'idle',progress:0,code:null,mode:null},oneclick:null,space,app:{state:'current',current:'0.5.8',latest:'0.5.8'},...patch});
+          const OC=(ago,stage,extra={})=>({at:new Date(Date.now()-ago).toISOString(),wokeAt:new Date(Date.now()-ago).toISOString(),woke:'started',stage,result:null,reason:null,answeredAt:null,...extra});
+          const board=w=>w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio-backup]');const b=r.querySelector('[data-bak-board]');const h=r.querySelector('[data-bak-helper]');const doc=document.documentElement;return {hidden:b.hidden,free:b.querySelector('.d-free')?.textContent||'',pred:b.querySelector('.d-pred')?.textContent||'',steps:[...b.querySelectorAll('.one-steps .one-step')].map(x=>x.dataset.k+'|'+x.className.replace(/^one-step ?/,'')+'|'+x.querySelector('.s-mid').textContent),folded:r.querySelector('[data-bak-flow]').classList.contains('folded'),sum:r.querySelector('[data-bak-sum]').hidden?'':r.querySelector('[data-bak-sum]').textContent,helper:h.hidden?'':h.style.transform,groups:[...b.querySelectorAll('.g')].map(g=>g.dataset.g+(g.classList.contains('open')?':open':'')),overflow:doc.scrollWidth>doc.clientWidth||r.scrollWidth>r.clientWidth+1,wide:(()=>{const R=r.getBoundingClientRect();return [...r.querySelectorAll('*')].filter(e=>e.getBoundingClientRect().right>R.right+1&&e.getClientRects().length).slice(0,6).map(e=>e.tagName+'.'+e.className+'|'+Math.round(e.getBoundingClientRect().right)+'/'+Math.round(R.right));})()};})()");
           const none=snap({view:'no-engine',engine:{installed:false,version:null},status:null,feed:{state:'available',version:'0.7.0'}});
           const objs=w=>w.js("[...document.querySelectorAll('#portal-entry [data-orb-prog]')].filter(o=>!o.hidden).map(o=>o.dataset.orbProg)");
           const room=w=>w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio-backup]');return {hidden:r.hidden,say:r.querySelector('[data-bak-say]').textContent,then:r.querySelector('[data-bak-then]').textContent,acts:[...r.querySelectorAll('[data-bak-acts] button')].map(b=>b.textContent+'|'+b.dataset.orbAct+'|'+b.dataset.orbArg+'|'+(b.getAttribute('aria-disabled')||'')),rows:r.querySelectorAll('button.row[data-vis]').length,subs:!document.querySelector('#portal-entry [data-room=solio]').hidden};})()");
           const w=await open();await boot(w,{subs:subsReady,backup:none},{restore:signedIn('none')});
           await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
           const o1=await objs(w);
-          check('21 an account with the real entry sees 구독 then 백업',JSON.stringify(o1)===JSON.stringify(['subs','backup']),{objs:o1});
+          check('21 an account with the real entry sees 구독 then 원클릭',JSON.stringify(o1)===JSON.stringify(['subs','backup']),{objs:o1});
           const first=await room(w);
           check('21 the first screen stays the subscriptions room (no backup line there)',first.hidden&&first.subs,first);
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(700);
@@ -616,12 +622,41 @@ if(!process.versions.electron){
           await capture(w,'backup-admin');
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({}))+')');await wait(2600);
           const r3=await room(w);
-          check('21 a safe status names the folders, the last check and the engine buttons',/업무 폴더 4개를 지키고 있습니다/.test(r3.say)&&/마지막 확인/.test(r3.then)&&r3.acts.map(a=>a.split('|')[2]).join()==='restore,move,status'&&r3.rows===5,r3);
-          await captureSizes(w,'backup-safe');
+          check('21 a safe status names the folders and the last check, leads with the 원클릭 button and keeps the engine buttons quiet',/업무 폴더 4개를 지키고 있습니다/.test(r3.say)&&/마지막 확인/.test(r3.then)&&r3.acts[0]==='백업하고 상태 보기|backup-oneclick||'&&r3.acts.slice(1).map(a=>a.split('|')[2]).join()==='restore,move,status'&&r3.rows===0,r3);
+          const b3=await board(w);
+          check('21 the 원클릭 board shows the drive, four lines read from the engine and three groups without the helper',!b3.hidden&&b3.free==='118.2'&&/9일 뒤/.test(b3.pred)&&b3.steps.map(x=>x.split('|')[0]).join()==='backup,proof,space,update'&&/23\.4GB를 찾았습니다/.test(b3.steps[2])&&b3.groups.join()==='auto,suggest,view'&&!b3.helper&&!b3.folded&&!b3.overflow,b3);
+          await captureSizes(w,'oneclick-ready');
+          await click(w,'#portal-entry [data-room=solio-backup] [data-bak-g="view"]');await wait(700);
+          const b3g=await board(w);
+          check('21 a group opens in place without asking the main process',b3g.groups.includes('view:open')&&!(await calls(w)).some(c=>c.startsWith('backup-open')),b3g);
+          await capture(w,'oneclick-group');
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,job:{stage:'backup',percent:57}},oneclick:OC(5000,'claimed')}))+')');
+          await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-oneclick"]');await wait(900);
+          check('21 the big button asks the main process for 원클릭 with no word',(await calls(w)).includes('backup-oneclick'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          const r5=await room(w),b5=await board(w);
+          check('21 while the engine backs up the button says so and cannot be pressed, and the helper sits on line 01',/지금 백업하는 중입니다\(57%\)/.test(r5.say)&&r5.acts[0]==='백업하는 중|backup-oneclick||true'&&/^backup\|now/.test(b5.steps[0])&&!!b5.helper,{r5,b5});
+          await captureSizes(w,'oneclick-running');
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({oneclick:OC(120000,'sent')}))+')');await wait(2600);
+          const r6=await room(w),b6=await board(w);
+          check('21 a request the engine has not taken for a minute says it waits and lets the person press again',/부탁해 두었습니다/.test(r6.say)&&/다음 매시 백업/.test(r6.then)&&r6.acts[0]==='백업하고 상태 보기|backup-oneclick||'&&/^backup\|wait/.test(b6.steps[0])&&!b6.helper,{r6,b6});
+          await capture(w,'oneclick-waiting');
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,lastBackupAt:new Date(Date.now()-60000).toISOString()},oneclick:OC(300000,'answered',{result:'done',answeredAt:new Date(Date.now()-60000).toISOString()})}))+')');
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
+          const r7=await room(w),b7=await board(w);
+          check('21 a finished 원클릭 folds the four lines into one and says what comes next',/백업을 마쳤습니다/.test(r7.say)&&/다음 백업/.test(r7.then)&&b7.folded&&/백업을 마쳤습니다/.test(b7.sum)&&/통과/.test(b7.sum),{r7,b7});
+          await captureSizes(w,'oneclick-done');
+          await click(w,'#portal-entry [data-room=solio-backup] [data-bak-sum]');await wait(500);
+          const b7o=await board(w);
+          check('21 pressing the folded line opens the four lines again',!b7o.folded&&/^backup\|done/.test(b7o.steps[0]),b7o);
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({oneclick:OC(300000,'answered',{result:'rested',reason:'battery',answeredAt:new Date(Date.now()-60000).toISOString()})}))+')');
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
+          const r8=await room(w);
+          check('21 a rested answer says why in words and leads with the engine window right after the big button',/배터리/.test(r8.say)&&/지금 백업/.test(r8.then)&&r8.acts[1]==='엔진 창 열기|backup-open|status|',r8);
+          await capture(w,'oneclick-rested');
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,state:'attention',attention:['signin']}}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
           const r4=await room(w);
-          check('21 an attention topic leads with its own engine screen',/Google 로그인/.test(r4.say)&&r4.acts[0]==='엔진 창에서 확인|backup-open|signin|',r4);
+          check('21 an attention topic leads with its own engine screen right after the 원클릭 button',/Google 로그인/.test(r4.say)&&r4.acts[1]==='엔진 창에서 확인|backup-open|signin|',r4);
           await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-open"]');await wait(300);
           check('21 the button opens the engine with the topic word only',(await calls(w)).includes('backup-open:signin'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
           await capture(w,'backup-attention');

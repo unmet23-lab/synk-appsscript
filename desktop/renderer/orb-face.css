@@ -955,3 +955,98 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .biz-host .items li.weak{color:var(--lapis-soft)}
 #portal-entry .biz-host .items li.weak i{width:10px;height:2px;border-radius:0;background:var(--lapis-soft)}
 #portal-entry .row.sub.item.feature .val{color:rgba(243,241,236,.62)}
+
+/* ── 솔리오 원클릭 방(11-23, docs/디자인/솔리오_원클릭_20261123 · PC앱_옮기기.md). 시안의 판 짜임을 옮긴다.
+   글자는 PC 앱의 SUIT 하나이고, 재어 볼 작은 값은 고정폭 숫자로 쓴다(앱에 DM Mono가 없다).
+   색 역할: 종이색은 글, 청금석(--one-lapis)은 솔리오가 짚은 곳(지금 일하는 줄 · 다시 만들 수 있는 크기), 풀빛(--one-meadow)은 끝남 · 통과,
+   흰 알약은 결정 단추. 회색은 시각 · 단위 · 번호처럼 물러설 말에만 쓴다. 알림은 색 없이 느낌표만 ── */
+#portal-entry [data-room="solio-backup"]{--soft:rgba(243,241,236,.74);--one-lapis:#C5D6F5;--one-meadow:#8FC46B;--one-ease:cubic-bezier(.2,.8,.2,1)}
+#portal-entry [data-room="solio-backup"] .go{appearance:none;height:46px;margin:0;padding:0 26px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);font:600 15px/1 var(--orb-sans);color:var(--paper);cursor:pointer;white-space:nowrap;transition:background-color .25s ease,border-color .25s ease,color .25s ease}
+#portal-entry [data-room="solio-backup"] .go.main{background:var(--paper);border-color:var(--paper);color:var(--void)}
+#portal-entry [data-room="solio-backup"] .go.main:hover:not([aria-disabled="true"]){background:#FFFFFF}
+#portal-entry [data-room="solio-backup"] .go[aria-disabled="true"]{background:var(--pit);border-color:var(--hair-strong);color:rgba(243,241,236,.62);cursor:default}
+#portal-entry .one-board{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,1fr);gap:clamp(30px,5vw,96px);margin-top:clamp(26px,5vh,56px);align-items:start}
+#portal-entry .one-board[hidden]{display:none}
+@media (max-width:900px){#portal-entry .one-board{grid-template-columns:minmax(0,1fr)}}
+/* 왼쪽: 드라이브 하나의 남은 공간(큰 숫자), 0부터 정한 선의 두 배까지의 막대, 이대로면 며칠 뒤인지 */
+#portal-entry .one-board .d-lab{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:0;font:500 13px/1.3 var(--orb-sans);letter-spacing:.06em;color:var(--soft)}
+#portal-entry .one-board .d-lab span{font-weight:400;letter-spacing:0;color:var(--dim)}
+#portal-entry .one-board .d-big{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 16px;margin:18px 0 0}
+#portal-entry .one-board .d-free{font:200 clamp(64px,8vw,132px)/.9 var(--orb-sans);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+#portal-entry .one-board .d-unit{font:400 19px/1.2 var(--orb-sans);color:var(--soft)}
+#portal-entry .one-board .d-bar{position:relative;height:12px;margin-top:40px;background:var(--hair)}
+#portal-entry .one-board .d-fill{position:absolute;left:0;top:0;bottom:0;display:block;background:rgba(243,241,236,.82);transition:width .6s var(--one-ease)}
+#portal-entry .one-board .d-line{position:absolute;top:-9px;bottom:-9px;width:1px;display:block;background:var(--paper)}
+#portal-entry .one-board .d-ticks{position:relative;height:30px;margin-top:10px;font:400 12px/1.3 var(--orb-sans);color:var(--dim);font-variant-numeric:tabular-nums}
+#portal-entry .one-board .d-ticks span{position:absolute;top:6px;white-space:nowrap}
+#portal-entry .one-board .d-ticks .t0{left:0}
+#portal-entry .one-board .d-ticks .t2{right:0}
+#portal-entry .one-board .d-ticks .tl{transform:translateX(-50%);color:var(--soft)}
+#portal-entry .one-board .d-pred{margin:18px 0 0;font:400 16px/1.5 var(--orb-sans);color:var(--soft)}
+#portal-entry .one-board .d-pred.below{color:var(--paper);font-weight:500}
+#portal-entry .one-board .d-pace{margin:6px 0 0;font:400 13px/1.45 var(--orb-sans);color:var(--dim)}
+#portal-entry .one-board .d-empty{margin:14px 0 0;font:400 15px/1.5 var(--orb-sans);color:var(--soft)}
+/* 오른쪽: 네 줄. 작은 구(솔리오의 분신)가 지금 일하는 줄의 번호 자리에 앉는다(움직임의 일: 지금 어디인지) */
+#portal-entry .one-flow{position:relative;min-width:0}
+#portal-entry .one-helper{position:absolute;left:-4px;top:0;z-index:1;width:22px;height:22px;border-radius:50%;background:var(--void);box-shadow:inset 0 0 0 1px rgba(243,241,236,.6);display:flex;align-items:center;justify-content:center;gap:4px;pointer-events:none;transition:transform .55s var(--one-ease)}
+#portal-entry .one-helper[hidden]{display:none}
+#portal-entry .one-helper i{width:3px;height:3px;border-radius:50%;background:var(--paper)}
+#portal-entry .one-steps{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--hair)}
+#portal-entry .one-steps .one-step,#portal-entry .one-flow .one-sum{position:relative;display:grid;grid-template-columns:30px minmax(92px,auto) minmax(0,1fr) auto;column-gap:12px;align-items:baseline;padding:17px 0;border-top:1px solid var(--hair)}
+#portal-entry .one-flow .one-sum{appearance:none;width:100%;margin:0;background:none;border:0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);grid-template-columns:30px minmax(0,auto) minmax(0,1fr) auto 18px;text-align:left;color:var(--paper);cursor:pointer}
+#portal-entry .one-flow .one-sum[hidden]{display:none}
+#portal-entry .one-flow.folded .one-steps{display:none}
+#portal-entry .one-flow:not(.folded) .one-sum{border-bottom:0}
+#portal-entry .one-flow .s-no{font:400 12px/1 var(--orb-sans);color:var(--dim);font-variant-numeric:tabular-nums;transition:opacity .25s ease}
+#portal-entry .one-steps .one-step.at .s-no{opacity:0}
+#portal-entry .one-steps .one-step.done .s-no,#portal-entry .one-flow .one-sum .s-no{font-size:0}
+#portal-entry .one-steps .one-step.done .s-no::before,#portal-entry .one-flow .one-sum .s-no::before{content:"\2713";font:600 13px/1 var(--orb-sans);color:var(--paper)}
+#portal-entry .one-flow .s-nm{font:500 16px/1.3 var(--orb-sans);color:var(--soft);white-space:nowrap}
+#portal-entry .one-flow .s-mid{min-width:0;font:400 13px/1.45 var(--orb-sans);color:var(--soft)}
+#portal-entry .one-flow .s-val{font:500 13px/1.3 var(--orb-sans);text-align:right;white-space:nowrap;color:var(--soft);font-variant-numeric:tabular-nums}
+#portal-entry .one-steps .one-step:is(.now,.done,.fail,.wait,.news) .s-nm,#portal-entry .one-flow .one-sum .s-nm{color:var(--paper)}
+#portal-entry .one-steps .one-step.now .s-val{color:var(--one-lapis)}
+#portal-entry .one-steps .one-step:is(.done,.ok) .s-val{color:var(--one-meadow)}
+#portal-entry .one-steps .one-step:is(.fail,.news) .s-nm::after{content:"!";margin-left:7px;font-weight:700}
+#portal-entry .one-steps .s-bar{position:absolute;left:42px;right:0;bottom:-1px;height:2px;display:block;background:var(--one-lapis);transform-origin:left;transform:scaleX(var(--p,0));transition:transform .6s var(--one-ease)}
+#portal-entry .one-flow .g-ch{width:8px;height:8px;margin-right:3px;justify-self:end;align-self:center;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(-45deg);transition:transform .35s var(--one-ease);opacity:.7}
+#portal-entry .one-flow .one-sum .g-ch{transform:rotate(45deg)}
+#portal-entry .one-flow.folded .one-sum .g-ch{transform:rotate(-45deg)}
+/* 묶음 셋(공간 보고서의 합계). 누르면 그 자리에서 열린다 */
+#portal-entry .one-after{margin-top:34px}
+#portal-entry .one-after:empty{display:none}
+#portal-entry .one-flow.folded .one-after{margin-top:0}
+#portal-entry .one-flow.folded .one-after .g:first-child{border-top:0}
+#portal-entry .one-after .g{border-top:1px solid var(--hair)}
+#portal-entry .one-after .g:last-child{border-bottom:1px solid var(--hair)}
+#portal-entry .one-after .g-h{appearance:none;width:100%;margin:0;padding:16px 0;background:none;border:0;display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr) auto 18px;column-gap:14px;align-items:baseline;text-align:left;cursor:pointer;color:var(--soft)}
+#portal-entry .one-after .g-h:hover,#portal-entry .one-after .g.open .g-h{color:var(--paper)}
+#portal-entry .one-after .g-h:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
+#portal-entry .one-after .g-nm{font:500 15px/1.3 var(--orb-sans);white-space:nowrap}
+#portal-entry .one-after .g-mid{min-width:0;font:400 13px/1.4 var(--orb-sans);color:var(--dim)}
+#portal-entry .one-after .g-val,#portal-entry .one-after .it-v{font:400 14px/1.4 var(--orb-sans);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums;color:var(--soft)}
+/* 등급 클래스에 gr- 를 붙인다. 옛 런처 CSS의 .view(좌우 여백)가 크기 칸에 붙었다 */
+#portal-entry .one-after :is(.g-val,.it-v).gr-auto{color:var(--one-lapis)}
+#portal-entry .one-after .g.open .g-ch{transform:rotate(45deg)}
+#portal-entry .one-after .g-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .46s var(--one-ease)}
+#portal-entry .one-after .g.open .g-b{grid-template-rows:1fr}
+#portal-entry .one-after .g-in{min-height:0;overflow:hidden}
+#portal-entry .one-after .g-in > *{opacity:0;transform:translateY(-7px);transition:opacity .14s ease,transform .14s ease}
+#portal-entry .one-after .g.open .g-in > *{opacity:1;transform:none;transition:opacity .34s ease calc(70ms + var(--j,0) * 50ms),transform .46s var(--one-ease) calc(70ms + var(--j,0) * 50ms)}
+#portal-entry .one-after .it{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;align-items:start;padding:11px 32px 11px 0}
+#portal-entry .one-after .it + .it{border-top:1px solid rgba(243,241,236,.06)}
+#portal-entry .one-after .it-t{margin:0;min-width:0}
+#portal-entry .one-after .it-t b{font:500 14px/1.4 var(--orb-sans);color:var(--paper)}
+#portal-entry .one-after .it-t .cnt{margin-left:8px;font:400 12px/1 var(--orb-sans);color:var(--dim);font-variant-numeric:tabular-nums}
+#portal-entry .one-after .it-t small{display:block;margin-top:4px;font:400 13px/1.5 var(--orb-sans);color:var(--soft)}
+/* 좁은 창: 설명은 이름 아래 줄로 내린다 */
+@media (max-width:640px){
+  #portal-entry .one-steps .one-step{grid-template-columns:30px minmax(0,1fr) auto;row-gap:5px}
+  #portal-entry .one-flow .one-sum{grid-template-columns:30px minmax(0,1fr) auto 18px;row-gap:5px}
+  #portal-entry .one-flow .s-mid{grid-column:2 / -1;grid-row:2}
+  #portal-entry .one-after .g-h{grid-template-columns:minmax(0,1fr) auto 18px;row-gap:4px}
+  #portal-entry .one-after .g-mid{grid-column:1 / -1;grid-row:2}
+  #portal-entry .one-after .it{padding-right:0}
+}
+@media (prefers-reduced-motion:reduce){#portal-entry .one-board *,#portal-entry .one-board *::before{transition:none !important}}
+html[data-motion="reduced"] #portal-entry .one-board *,html[data-motion="reduced"] #portal-entry .one-board *::before{transition:none !important}

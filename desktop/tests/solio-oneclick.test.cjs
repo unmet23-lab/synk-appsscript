@@ -1,0 +1,405 @@
+'use strict';
+// 솔리오 「원클릭」(11-23)의 본체 쪽(src/solio-oneclick.cjs, src/solio-backup.cjs의 oneClick · snapshot)과 판의 글(renderer/solio-backup-model.mjs) 시험.
+// 설계: docs/디자인/솔리오_원클릭_20261123/PC앱_옮기기.md(Fable 설계 검토 반영). 엔진 쪽 요청 처리기(engine/src/solio.cjs SolioFiles)로
+// 우리가 쓴 run-now 요청을 실제로 가져가 답하게 해 본다.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const B = require('../src/solio-backup.cjs');
+const O = require('../src/solio-oneclick.cjs');
+
+const ROOT = path.join(__dirname, '..', '..');
+const ENGINE = path.join(ROOT, 'experiences', 'solo-backup-rust');
+const engineSolio = require(path.join(ENGINE, 'engine', 'src', 'solio.cjs'));
+const ME = { synk_user_id: 'test-owner-0001' };
+const OTHER = { synk_user_id: 'someone-else-0002' };
+const MINE = [crypto.createHash('sha256').update(B.PREVIEW_SALT + ME.synk_user_id).digest('hex'), crypto.createHash('sha256').update(B.PREVIEW_SALT + OTHER.synk_user_id).digest('hex')];
+const MARK = 'C:\\Users\\sentinel\\비밀 고객 폴더';
+
+const temp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'solio-oneclick-'));
+const SAFE = { v: 1, engine: '0.7.0', state: 'safe', lastBackupAt: new Date(Date.now() - 3600e3).toISOString(), proof: { at: new Date(Date.now() - 3 * 86400e3).toISOString(), result: 'passed' }, attention: [], job: null, folders: 4, bytes: 53687091200, writer: true, nextRunAt: new Date(Date.now() + 1800e3).toISOString(), writtenAt: new Date().toISOString() };
+function appdata({ status = SAFE, space } = {}) {
+  const dir = temp(), solio = path.join(dir, 'SynkWorkBackup', 'solio');
+  fs.mkdirSync(path.join(solio, 'requests'), { recursive: true });
+  fs.mkdirSync(path.join(solio, 'results'), { recursive: true });
+  if (status) fs.writeFileSync(path.join(solio, 'status.json'), JSON.stringify(status));
+  if (space !== undefined) fs.writeFileSync(path.join(solio, 'space.json'), typeof space === 'string' ? space : JSON.stringify(space));
+  return { env: { APPDATA: dir }, paths: B.statusPaths({ APPDATA: dir }), root: path.join(dir, 'SynkWorkBackup') };
+}
+/* 엔진 설치 확인과 요청 작업 깨우기의 가짜. 깨우기는 부른 횟수만 센다 */
+function fakeRun(log = []) {
+  const exe = temp();
+  fs.writeFileSync(path.join(exe, 'WorkBackupRun.exe'), 'x');
+  return async (script, opts) => {
+    if (script === O.WAKE_SCRIPT) { log.push(opts.env); return log.answer ?? 'started'; }
+    return JSON.stringify({ loc: exe, ver: '0.7.0' });
+  };
+}
+function service(a, extra = {}) {
+  const log = extra.log || [];
+  return { log, s: B.createSolioBackup({ platform: 'win32', env: a.env, run: fakeRun(log), previewAccounts: MINE, request: async () => { throw Object.assign(new Error('no net'), { code: 'ENOTFOUND' }); }, ...extra }) };
+}
+const requests = a => fs.readdirSync(a.paths.requests).filter(n => n.endsWith('.json'));
+const marks = a => fs.readdirSync(a.paths.requests).filter(n => n.endsWith('.cancel'));
+const tick = () => new Promise(r => setImmediate(r));
+
+test('run-now is the engine contract exactly: the engine validates it, and no half-written file is left', () => {
+  const a = appdata(), now = Date.now();
+  const name = O.writeRunNow({ paths: a.paths, now, owner: 'abcd1234' });
+  assert.match(name, engineSolio.NAME);
+  const body = JSON.parse(fs.readFileSync(path.join(a.paths.requests, name), 'utf8'));
+  assert.deepEqual(body, { v: 1, kind: 'run-now' });
+  assert.deepEqual(engineSolio.validate(body, { at: now, now }), { ok: true, value: { kind: 'run-now', at: now } });
+  assert.deepEqual(fs.readdirSync(a.paths.requests).filter(n => n.endsWith('.tmp')), []);
+  assert.throws(() => O.writeRunNow({ paths: a.paths, now, owner: 'NOT A TAG' }), /INVALID/);
+});
+
+test('the result and reason words are the engine\'s own lists', () => {
+  assert.deepEqual([...O.RESULTS].sort(), [...engineSolio.RESULTS].sort());
+  assert.deepEqual([...O.REASONS].sort(), [...engineSolio.REASONS].sort());
+});
+
+test('the wake script finds the task the engine names and starts only its own run-request action; Korean words go by environment only', async () => {
+  const src = fs.readFileSync(path.join(ENGINE, 'src-tauri', 'src', 'schedule.rs'), 'utf8');
+  assert.equal(O.TASK_FOLDER, JSON.parse(src.match(/pub const FOLDER: &str = ("[^"]+");/)[1].replace(/\\\\/g, '\\\\')), 'same folder as schedule.rs FOLDER');
+  assert.match(src, /format!\("요청 - \{\} · \{\}"/, 'the request task name the engine makes');
+  assert.equal(O.TASK_PREFIX, '요청 - ');
+  assert.equal(O.TASK_JOIN, ' · ');
+  assert.doesNotMatch(O.WAKE_SCRIPT, /[^\x00-\x7F]/, 'no non-ASCII text on the command line');
+  assert.match(O.WAKE_SCRIPT, /--run request/);
+  assert.match(O.WAKE_SCRIPT, /WorkBackupRun\.exe/);
+  const seen = [];
+  const run = answer => async (script, opts) => { seen.push(opts.env); return answer; };
+  assert.equal(await O.wakeRequestTask({ run: run('started') }), 'started');
+  assert.equal(await O.wakeRequestTask({ run: run('no-task') }), 'no-task');
+  assert.equal(await O.wakeRequestTask({ run: run(null) }), 'failed');
+  assert.equal(await O.wakeRequestTask({ run: run('anything else') }), 'failed');
+  assert.deepEqual(seen[0], { SWB_TASK_FOLDER: O.TASK_FOLDER, SWB_TASK_PREFIX: O.TASK_PREFIX, SWB_TASK_JOIN: O.TASK_JOIN });
+});
+
+test('the SID tag the wake script computes is the engine\'s sid_tag (first 6 hex of SHA-256)', () => {
+  // schedule.rs: format!("{:x}", Sha256::digest(sid.as_bytes()))[..6]
+  const sid = 'S-1-5-21-1111111111-2222222222-3333333333-1001';
+  const tag = crypto.createHash('sha256').update(Buffer.from(sid, 'utf8')).digest('hex').slice(0, 6);
+  assert.match(O.WAKE_SCRIPT, /SHA256\]::Create\(\)\.ComputeHash\(\[Text\.Encoding\]::UTF8\.GetBytes\(\$sid\)\)/);
+  assert.match(O.WAKE_SCRIPT, /ToString\('x2'\).*Substring\(0,6\)/);
+  assert.equal(tag.length, 6);
+});
+
+test('a press writes one run-now, wakes the task, and the engine\'s own processor answers it; the room then reads and deletes the result', async () => {
+  const a = appdata(), { s, log } = service(a);
+  assert.deepEqual(await s.oneClick(ME), { ok: true });
+  await tick();
+  assert.equal(log.length, 1, 'woke once');
+  const [name] = requests(a);
+  let snap = await s.snapshot(ME);
+  assert.equal(snap.oneclick.stage, 'sent');
+  assert.equal(snap.oneclick.woke, 'started');
+  // 엔진의 요청 처리기가 가져가 「했음」으로 답한다
+  const files = new engineSolio.SolioFiles({ root: a.root });
+  const done = await files.process({ wants: v => v.ok && v.value.kind === 'run-now', handle: async () => ({ result: 'done' }) });
+  assert.deepEqual(done, [{ kind: 'run-now', result: 'done' }]);
+  snap = await s.snapshot(ME);
+  assert.equal(snap.oneclick.result, 'done');
+  assert.equal(snap.oneclick.stage, 'answered');
+  assert.ok(!fs.existsSync(path.join(a.paths.solio, 'results', name)), 'the result is read and deleted');
+  assert.deepEqual(marks(a), [], 'no cancel mark was ever made');
+});
+
+test('Fable 7: the setup-request sweep never withdraws or marks a run-now, through several snapshots and a sign-in notice', async () => {
+  const a = appdata(), { s } = service(a);
+  await s.oneClick(ME);
+  for (let i = 0; i < 3; i++) { await s.snapshot(ME); s.accountChanged(); await tick(); }
+  assert.equal(requests(a).length, 1, 'the request stays');
+  assert.deepEqual(marks(a), [], 'not marked');
+  assert.ok(!fs.readdirSync(a.paths.requests).some(n => n.startsWith('.owner-')), 'no owner file is held for run-now');
+});
+
+test('Fable 1: a press while the request waits re-wakes without writing again; while the engine works it is BUSY; after an answer a new press writes anew', async () => {
+  const a = appdata(), { s, log } = service(a);
+  await s.oneClick(ME); await tick();
+  assert.deepEqual(await s.oneClick(ME), { ok: true, again: true });
+  await tick();
+  assert.equal(requests(a).length, 1, 'still one request');
+  assert.equal(log.length, 2, 'woken again');
+  // 엔진이 가져가면(claimed) 다시 누를 것이 없다
+  const [name] = requests(a);
+  fs.mkdirSync(path.join(a.paths.requests, 'claimed'), { recursive: true });
+  fs.renameSync(path.join(a.paths.requests, name), path.join(a.paths.requests, 'claimed', name));
+  assert.deepEqual(await s.oneClick(ME), { ok: false, code: 'BUSY' });
+  // 답을 받은 뒤에는 새 요청을 쓴다
+  fs.rmSync(path.join(a.paths.requests, 'claimed', name));
+  fs.writeFileSync(path.join(a.paths.solio, 'results', name), JSON.stringify({ v: 1, result: 'rested', reason: 'battery', at: new Date().toISOString() }));
+  const snap = await s.snapshot(ME);
+  assert.deepEqual([snap.oneclick.result, snap.oneclick.reason], ['rested', 'battery']);
+  assert.deepEqual(await s.oneClick(ME), { ok: true });
+  assert.equal(requests(a).length, 1, 'a new request');
+  assert.notEqual(requests(a)[0], name);
+});
+
+test('Fable 2: requests are followed in the engine\'s own order, and 「gone」 needs two reads in a row', async () => {
+  const a = appdata(), { s } = service(a);
+  await s.oneClick(ME);
+  const [name] = requests(a);
+  // 엔진이 가져가 답을 쓰고 차지를 지운 사이(세 곳 모두 없음처럼 보이는 때)라도 답을 읽는다
+  fs.rmSync(path.join(a.paths.requests, name));
+  fs.writeFileSync(path.join(a.paths.solio, 'results', name), JSON.stringify({ v: 1, result: 'done', at: new Date().toISOString() }));
+  assert.equal((await s.snapshot(ME)).oneclick.result, 'done');
+  // 답 없이 사라진 요청은 한 번 못 봐서는 「가져감」이고, 두 번째에 「사라짐」이다
+  const b = appdata(), t = service(b).s;
+  await t.oneClick(ME);
+  fs.rmSync(path.join(b.paths.requests, requests(b)[0]));
+  assert.equal((await t.snapshot(ME)).oneclick.stage, 'claimed');
+  assert.equal((await t.snapshot(ME)).oneclick.stage, 'gone');
+  assert.deepEqual(await t.oneClick(ME), { ok: true }, 'gone lets the person press again');
+});
+
+test('Fable 1: a request still unanswered after 24 hours 5 minutes is folded as expired', async () => {
+  let clock = Date.now();
+  const a = appdata(), { s } = service(a, { now: () => clock });
+  await s.oneClick(ME);
+  clock += 24 * 3600e3 + 5 * 60e3;
+  const snap = await s.snapshot(ME);
+  assert.equal(snap.oneclick.stage, 'expired');
+  assert.deepEqual(await s.oneClick(ME), { ok: true });
+});
+
+test('only a protected PC can press: paused, off, moved, restore-only, not a writer, no engine and other accounts are refused', async () => {
+  for (const status of [{ ...SAFE, state: 'paused' }, { ...SAFE, state: 'off' }, { ...SAFE, state: 'moved' }, { ...SAFE, state: 'restore-only' }, { ...SAFE, writer: false }, { ...SAFE, state: 'not-set-up' }]) {
+    const a = appdata({ status }), { s } = service(a);
+    assert.deepEqual(await s.oneClick(ME), { ok: false, code: 'NOT_NEEDED' }, status.state);
+    assert.equal(requests(a).length, 0);
+  }
+  const a = appdata();
+  const none = B.createSolioBackup({ platform: 'win32', env: a.env, run: async () => '{}', previewAccounts: MINE });
+  assert.deepEqual(await none.oneClick(ME), { ok: false, code: 'NO_ENGINE' });
+  const unknown = B.createSolioBackup({ platform: 'win32', env: a.env, run: async () => null, previewAccounts: MINE });
+  assert.deepEqual(await unknown.oneClick(ME), { ok: false, code: 'ENGINE_UNKNOWN' });
+  const { s } = service(a, { previewAccounts: [] });
+  assert.deepEqual(await s.oneClick(ME), { ok: false, code: 'NOT_AVAILABLE' });
+  assert.equal(requests(a).length, 0);
+});
+
+test('a press is seen only by the account that pressed it', async () => {
+  const a = appdata(), { s } = service(a);
+  await s.oneClick(ME);
+  assert.ok((await s.snapshot(ME)).oneclick);
+  assert.equal((await s.snapshot(OTHER)).oneclick, null);
+});
+
+test('a requests folder that is a junction gets no request', { skip: process.platform !== 'win32' }, async () => {
+  const a = appdata(), elsewhere = temp();
+  fs.rmSync(a.paths.requests, { recursive: true });
+  fs.symlinkSync(elsewhere, a.paths.requests, 'junction');
+  const { s } = service(a);
+  assert.deepEqual(await s.oneClick(ME), { ok: false, code: 'REQUEST_FAILED' });
+  assert.deepEqual(fs.readdirSync(elsewhere), []);
+});
+
+test('a result that is not a plain file is left alone; a broken one is deleted and read as unknown', async () => {
+  const a = appdata(), name = `${Date.now()}-abcd1234ffffffffffffffff.json`;
+  fs.mkdirSync(path.join(a.paths.solio, 'results', name));
+  assert.equal(await O.takeResult({ paths: a.paths, name }), null);
+  assert.ok(fs.statSync(path.join(a.paths.solio, 'results', name)).isDirectory());
+  const other = `${Date.now()}-abcd1234eeeeeeeeeeeeeeee.json`;
+  fs.writeFileSync(path.join(a.paths.solio, 'results', other), '{not json');
+  assert.deepEqual(await O.takeResult({ paths: a.paths, name: other }), { result: 'unknown', reason: null, at: null });
+  assert.ok(!fs.existsSync(path.join(a.paths.solio, 'results', other)));
+  const odd = `${Date.now()}-abcd1234dddddddddddddddd.json`;
+  fs.writeFileSync(path.join(a.paths.solio, 'results', odd), JSON.stringify({ v: 1, result: 'exploded', reason: MARK }));
+  assert.deepEqual(await O.takeResult({ paths: a.paths, name: odd }), { result: 'unknown', reason: null, at: null });
+});
+
+/* 공간 보고서의 모든 칸에 표식을 넣은 판 */
+function markedSpace() {
+  const m = MARK;
+  return {
+    v: 1, report: m, createdAt: new Date().toISOString(), lap: { startedAt: m, finishedAt: new Date(Date.now() - 86400e3).toISOString(), days: 3 }, scanning: null, lastAccess: m,
+    drives: [{ drive: 'C', size: 1022880641024, free: 126916279910, growthPerDay: 2254857830, startLineGb: 100, startLine: m, daysToStartLine: 9 }, { drive: m, size: 1, free: 1 }, { drive: 'D', size: 2048407130112, free: 1296023822336, growthPerDay: null, startLineGb: 150, daysToStartLine: null }],
+    grewSince: m, grew: [{ path: m, name: m, grew: 1, bytes: 2 }],
+    candidates: [
+      { n: 1, grade: 'auto', kind: 'temp', bytes: 12992733184, reason: 'old-temp', name: m, path: m },
+      { n: 2, grade: 'suggest', kind: 'worktree', bytes: 7516192768, reason: 'worktree-clean', name: m, path: m },
+      { n: 3, grade: 'view', kind: 'worktree', bytes: 9, reason: 'ai-app-copy', name: m, path: m },
+      { n: 4, grade: m, kind: 'temp', bytes: 5, reason: 'x', name: m, path: m },
+      { n: 5, grade: 'view', kind: m, bytes: 7, reason: m, name: m, path: m },
+      { n: 6, grade: 'auto', kind: 'node_modules', bytes: 3, reason: m, name: m, path: m },
+    ],
+  };
+}
+
+test('Fable 6: the space report gives sums only — no field of it, path or not, reaches answers or the console', async () => {
+  const said = [], keep = { log: console.log, warn: console.warn, error: console.error, info: console.info };
+  for (const k of Object.keys(keep)) console[k] = (...args) => said.push(args.map(String).join(' '));
+  let answers = [];
+  try {
+    for (const space of [markedSpace(), `{"v":1,"candidates":[{"path":"${MARK.replace(/\\/g, '\\\\')}"`]) {
+      const a = appdata({ space }), { s } = service(a);
+      answers.push(await s.snapshot(ME), await s.oneClick(ME), await s.snapshot(ME));
+    }
+  } finally { Object.assign(console, keep); }
+  const text = JSON.stringify([answers, said]);
+  assert.ok(!text.includes('sentinel') && !text.includes('비밀 고객'), text.slice(0, 400));
+  const space = answers[0].space;
+  assert.deepEqual(space.drive, { letter: 'C', size: 1022880641024, free: 126916279910, growthPerDay: 2254857830, startLineGb: 100, daysToStartLine: 9 });
+  assert.equal(space.otherDrives, 1, 'the bad drive letter is dropped');
+  assert.deepEqual(space.groups.map(g => `${g.grade}|${g.group}|${g.count}`), ['auto|temp|1', 'auto|build|1', 'suggest|worktree|1', 'view|ai-app-copy|1', 'view|other|1']);
+  assert.ok(space.groups.every(g => O.GROUPS.includes(g.group) && O.GRADES.includes(g.grade)));
+  assert.deepEqual(answers[3].space, { missing: false, invalid: true }, 'a broken report is one word');
+  // 경로를 읽는 곳은 solio-oneclick.cjs 하나다. 서비스와 화면 글은 보고서 칸 이름을 다루지 않는다
+  for (const file of ['src/solio-backup.cjs', 'renderer/solio-backup-model.mjs']) {
+    const src = fs.readFileSync(path.join(__dirname, '..', file), 'utf8').split('\n').filter(l => !/^\s*\/\//.test(l)).join('\n');
+    assert.doesNotMatch(src, /space\.json|candidates|\.path\b/, file);
+  }
+});
+
+test('a space report over 1MB, behind a junction, or unchanged is not parsed again', async () => {
+  const a = appdata({ space: { ...markedSpace(), pad: 'x'.repeat(1024 * 1024) } });
+  assert.deepEqual(await O.readSpace({ paths: a.paths }), { format: 'invalid' });
+  const b = appdata({ space: markedSpace() }), cache = { key: null, read: null };
+  const first = await O.readSpace({ paths: b.paths, cache });
+  let opened = 0;
+  const io = { ...fs.promises, open: (...args) => { opened++; return fs.promises.open(...args); } };
+  const again = await O.readSpace({ paths: b.paths, fsImpl: io, cache });
+  assert.equal(opened, 0, 'same size and time: not opened again');
+  assert.deepEqual(again, first);
+  if (process.platform === 'win32') {
+    // 파일 링크는 관리자 권한이 들어 폴더 연결점(정션)으로 잰다: solio 폴더가 다른 곳을 가리키면 읽지 않는다
+    const c = appdata(), real = temp();
+    fs.writeFileSync(path.join(real, 'space.json'), JSON.stringify(markedSpace()));
+    fs.rmSync(c.paths.solio, { recursive: true });
+    fs.symlinkSync(real, c.paths.solio, 'junction');
+    assert.deepEqual(await O.readSpace({ paths: c.paths }), { format: 'invalid' });
+  }
+});
+
+test('the first scan still running is told apart from 「nothing to free」', () => {
+  const s = O.summarizeSpace({ v: 1, createdAt: new Date().toISOString(), lap: null, scanning: { startedAt: new Date().toISOString(), days: 1 }, drives: [], candidates: [] });
+  assert.equal(s.lapFinishedAt, null);
+  assert.equal(s.scanningDays, 1);
+  assert.equal(s.drive, null);
+});
+
+test('the snapshot carries the PC app update words only, and a press asks the updater to check without waiting', async () => {
+  let checks = 0;
+  const appUpdate = { snapshot: () => ({ state: 'available', currentVersion: '0.5.8', latestVersion: '0.5.9', releaseId: MARK }), checkForUpdate: async () => { checks++; throw new Error('busy'); } };
+  const a = appdata(), { s } = service(a, { appUpdate });
+  assert.deepEqual((await s.snapshot(ME)).app, { state: 'available', current: '0.5.8', latest: '0.5.9' });
+  assert.deepEqual(await s.oneClick(ME), { ok: true });
+  await tick();
+  assert.equal(checks, 1);
+  const paused = appdata({ status: { ...SAFE, state: 'paused' } });
+  const snap = await service(paused, { appUpdate }).s.snapshot(ME);
+  assert.equal(snap.app, null, 'no board, no update words');
+  assert.equal(snap.space, null);
+});
+
+/* ── 판의 글(renderer/solio-backup-model.mjs) ── */
+const NOW = Date.parse('2026-11-23T08:00:00Z');
+const GBy = 1024 ** 3;
+const SPACE = { createdAt: '2026-11-23T00:20:00Z', lapFinishedAt: '2026-11-22T00:19:00Z', scanningDays: null, drive: { letter: 'C', size: 953 * GBy, free: Math.round(118.2 * GBy), growthPerDay: Math.round(2.1 * GBy), startLineGb: 100, daysToStartLine: 9 }, otherDrives: 0,
+  groups: [{ grade: 'auto', group: 'temp', bytes: 12 * GBy, count: 1 }, { grade: 'suggest', group: 'worktree', bytes: 7 * GBy, count: 2 }, { grade: 'view', group: 'ai-app-copy', bytes: 300 * GBy, count: 30 }] };
+const STATUS = { engine: '0.7.0', state: 'safe', lastBackupAt: '2026-11-23T07:50:00Z', proof: { at: '2026-11-20T03:00:00Z', result: 'passed' }, attention: [], job: null, folders: 4, bytes: 50 * GBy, writer: true, nextRunAt: '2026-11-23T08:50:00Z', writtenAt: '2026-11-23T07:50:00Z' };
+const SNAP = (patch = {}) => ({ ok: true, available: true, view: 'status', engine: { installed: true, version: '0.7.0' }, feed: { state: 'available', version: '0.7.0' }, install: { phase: 'idle' }, status: STATUS, oneclick: null, space: SPACE, app: { state: 'current', current: '0.5.8', latest: '0.5.8' }, ...patch });
+const PRESS = (agoMs, patch = {}) => ({ at: new Date(NOW - agoMs).toISOString(), wokeAt: new Date(NOW - agoMs).toISOString(), woke: 'started', stage: 'sent', result: null, reason: null, answeredAt: null, ...patch });
+
+test('every engine answer pair has its own words, an unknown pair gets the fallback, and no words claim a deletion', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const said = new Set();
+  const pairs = [['done', null], ['rested', 'battery'], ['rested', 'saver'], ['rested', 'metered'], ['rested', 'network'], ['rejected', 'paused'], ['rejected', 'moved'], ['rejected', 'restore-only'], ['rejected', 'not-set-up'], ['rejected', 'expired'], ['rejected', 'cancelled'], ['rejected', 'busy'], ['rejected', 'invalid'], ['rejected', 'version'], ['failed', 'busy'], ['failed', 'clock'], ['failed', 'interrupted'], ['failed', 'network'], ['failed', 'error'], ['confirm-in-engine', null], ['unknown', null]];
+  for (const [result, reason] of pairs) {
+    const v = solioBackupView(SNAP({ oneclick: PRESS(300000, { stage: 'answered', result, reason, answeredAt: new Date(NOW - 60000).toISOString() }) }), NOW);
+    assert.ok(v.say && !/undefined|null/.test(v.say + v.then), `${result}|${reason}`);
+    assert.equal((v.say.match(/[.!?]\s/g) || []).length, 0, `${result}|${reason}: one sentence on top`);
+    said.add(v.say);
+    if (result !== 'done') assert.equal(v.acts[0].label, '엔진 창 열기', `${result}|${reason} leads with the engine window`);
+    assert.doesNotMatch(JSON.stringify(v), /비웠|지웠|비우는 중|지우는 중/, 'nothing says it freed space');
+  }
+  assert.ok(said.size >= 18, 'answers are told apart');
+  const busy = solioBackupView(SNAP({ oneclick: PRESS(300000, { stage: 'answered', result: 'rejected', reason: 'busy' }), status: { ...STATUS, attention: ['signin'] } }), NOW);
+  assert.doesNotMatch(busy.say, /바쁨|바빠/, 'rejected busy is not 「busy」');
+  assert.equal(busy.acts[0].arg, 'signin', 'an attention word picks the engine screen');
+});
+
+test('Fable 1: after a minute without the engine taking it, the room says it waits, slows its polling and lets the person press again', async () => {
+  const { solioBackupView, ONECLICK_PATIENCE } = await import('../renderer/solio-backup-model.mjs');
+  const fresh = solioBackupView(SNAP({ oneclick: PRESS(5000) }), NOW);
+  assert.ok(fresh.busy && fresh.board.main.disabled && fresh.board.at === 'backup');
+  const late = solioBackupView(SNAP({ oneclick: PRESS(ONECLICK_PATIENCE + 1000) }), NOW);
+  assert.ok(!late.busy && !late.board.main.disabled && late.board.at === null);
+  assert.match(late.say, /부탁해 두었습니다/);
+  assert.match(late.then, /다음 매시 백업/);
+  for (const woke of ['no-task', 'failed']) {
+    const v = solioBackupView(SNAP({ oneclick: PRESS(3000, { woke }) }), NOW);
+    assert.ok(!v.busy, woke);
+    assert.match(v.board.steps[0].mid, /다음 매시 백업 때 합니다/);
+  }
+  const gone = solioBackupView(SNAP({ oneclick: PRESS(300000, { stage: 'gone' }) }), NOW);
+  assert.match(gone.say, /확인하지 못했습니다/);
+  assert.ok(!gone.board.main.disabled);
+  const expired = solioBackupView(SNAP({ oneclick: PRESS(25 * 3600e3, { stage: 'expired' }) }), NOW);
+  assert.match(expired.say, /하루가 지나도록/);
+});
+
+test('Fable 5: lines 02 and 03 are read values; the helper sits only where the engine works, and the button never says 「점검」', async () => {
+  const { solioBackupView, ONECLICK_LABEL } = await import('../renderer/solio-backup-model.mjs');
+  const idle = solioBackupView(SNAP(), NOW);
+  assert.equal(ONECLICK_LABEL, '백업하고 상태 보기');
+  assert.doesNotMatch(ONECLICK_LABEL, /점검|비우기/);
+  assert.equal(idle.board.at, null);
+  assert.match(idle.board.steps[1].mid, /정해진 때 스스로/);
+  assert.equal(idle.board.steps[1].val, '11월 20일 통과');
+  assert.match(idle.board.steps[2].mid, /12\.0GB를 찾았습니다/);
+  assert.deepEqual(idle.board.groups.map(g => g.k), ['auto', 'suggest', 'view']);
+  assert.match(idle.board.groups[0].mid, /엔진 다음 판부터/);
+  assert.match(idle.board.groups[1].mid, /엔진 다음 판/);
+  const proof = solioBackupView(SNAP({ status: { ...STATUS, job: { stage: 'proof', percent: 40 } } }), NOW);
+  assert.equal(proof.board.at, 'proof');
+  assert.equal(proof.board.main.label, '되살리기 확인 중');
+  assert.ok(proof.board.main.disabled);
+  const running = solioBackupView(SNAP({ status: { ...STATUS, job: { stage: 'backup', percent: 57 } } }), NOW);
+  assert.equal(running.board.at, 'backup');
+  assert.equal(running.board.steps[0].p, 0.57);
+});
+
+test('the drive card and line 03 tell apart: no report, an unreadable report, the first scan, below the line, and a shrinking drive', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const none = solioBackupView(SNAP({ space: { missing: true, invalid: false } }), NOW);
+  assert.match(none.board.drive.empty, /아직 공간을 재지 않았습니다/);
+  assert.match(none.board.steps[2].mid, /아직 공간을 재지 않았습니다/);
+  const bad = solioBackupView(SNAP({ space: { missing: false, invalid: true } }), NOW);
+  assert.match(bad.board.drive.empty, /읽지 못했습니다/);
+  const scanning = solioBackupView(SNAP({ space: { ...SPACE, lapFinishedAt: null, scanningDays: 1, groups: [] } }), NOW);
+  assert.match(scanning.board.steps[2].mid, /처음 훑는 중입니다\(2일째\)/);
+  const nothing = solioBackupView(SNAP({ space: { ...SPACE, groups: [] } }), NOW);
+  assert.match(nothing.board.steps[2].mid, /찾지 못했습니다/);
+  const below = solioBackupView(SNAP({ space: { ...SPACE, drive: { ...SPACE.drive, free: 80 * GBy, daysToStartLine: 0 } } }), NOW);
+  assert.ok(below.board.drive.below);
+  assert.match(below.board.drive.pred, /정한 선\(100GB\)보다 적습니다/);
+  const shrinking = solioBackupView(SNAP({ space: { ...SPACE, drive: { ...SPACE.drive, growthPerDay: -GBy, daysToStartLine: null } } }), NOW);
+  assert.match(shrinking.board.drive.pace, /비었습니다/);
+  assert.match(shrinking.board.drive.pred, /내려가지 않습니다/);
+  const unknownGroup = solioBackupView(SNAP({ space: { ...SPACE, groups: [{ grade: 'view', group: 'not-a-group', bytes: 1, count: 1 }] } }), NOW);
+  assert.deepEqual(unknownGroup.board.groups, [], 'only group words from the table are shown');
+});
+
+test('a finished 원클릭 folds into one line and says the next thing; an update found shows on line 04', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const done = solioBackupView(SNAP({ oneclick: PRESS(300000, { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() }), status: { ...STATUS, lastBackupAt: new Date(NOW - 60000).toISOString() } }), NOW);
+  assert.equal(done.say, '백업을 마쳤습니다.');
+  assert.match(done.then, /다음 백업은/);
+  assert.equal(done.board.sum.nm, '백업을 마쳤습니다');
+  assert.match(done.board.sum.mid, /통과/);
+  assert.equal(done.board.steps[0].val, '1분 전');
+  const news = solioBackupView(SNAP({ app: { state: 'available', current: '0.5.8', latest: '0.5.9' }, feed: { state: 'available', version: '0.7.1' } }), NOW);
+  assert.equal(news.board.steps[3].state, 'news');
+  assert.match(news.board.steps[3].mid, /PC 앱 새 판 0\.5\.9/);
+  assert.match(news.board.steps[3].mid, /엔진 새 판 0\.7\.1/);
+  const paused = solioBackupView(SNAP({ status: { ...STATUS, state: 'paused' } }), NOW);
+  assert.equal(paused.board, undefined, 'paused has no board');
+  const off = solioBackupView(SNAP({ status: { ...STATUS, state: 'off' } }), NOW);
+  assert.equal(off.board, undefined, 'off has no board');
+});
