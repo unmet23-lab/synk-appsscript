@@ -71,9 +71,13 @@ function makerOf(scope) {
 function compositeIndex() {
   const maps = [];
   const familySkills = new Map();
+  let revision = 0; // 지도를 더할 때마다 오른다 — 기록부의 묶음 색인이 문항 찾기에 기댄 캐시를 버린다(record/groups.mjs)
   return {
     get edition() {
       return maps[0]?.editions.index ?? 'index-0';
+    },
+    get revision() {
+      return revision;
     },
     lookup: itemKey => {
       for (const map of maps) {
@@ -93,6 +97,7 @@ function compositeIndex() {
           },
         );
       maps.push(map);
+      revision += 1;
       for (const [family, skills] of map.familySkills)
         familySkills.set(family, [...new Set([...(familySkills.get(family) ?? []), ...skills])]);
     },

@@ -2,30 +2,13 @@
 // 바뀌면 이 파일만 고친다. 기록부는 저장이 끝난 사건만 근거로 보이고(add의 stored), 서버의 답을 받고(receive), 꼬리를 읽는다(refresh).
 // 서버의 답 꼴(learning?view=trail POST · GET) — { accepted, clamped, rejected, rejectedCode, summary, serverTime }(GET은 summary · serverTime).
 import { evidenceOf } from '../fold/evidence.mjs';
-import { audiosBefore, deviceKey, foldEventsOf, groupsOf, itemOf } from '../record/adapt.mjs';
-import { EVENT_FORM, EVENT_TYPES } from '../record/events.mjs';
+import { audiosBefore, foldEventsOf } from '../record/adapt.mjs';
 import { openRecord } from '../record/log.mjs';
 
-const isCurrent = event => event.schema === EVENT_FORM.current;
-
-// 기록부가 든 사건 → 어댑터의 기록(log.mjs와 같은 열쇠 — 2판은 사건 번호, 옛 꼴은 a.<적힌 시각>.l<든 차례>). 든 차례는 기록부가 든 차례 그대로다.
-const entriesOf = events =>
-  events.map((event, i) => ({
-    event,
-    key: isCurrent(event) ? event.id : deviceKey(i + 1, event),
-    atMs: Date.parse(event.at),
-  }));
-
-// 그 계열의 만남(답 · 도움 · 장부 만남)이 드는 묶음만 — 그 계열의 제시 묶음과 옮겨 온 장부. 묶음은 기록 전체로 짓는다(어댑터 groupsOf —
-// 전체 접기와 같은 근거): 계열 사건만 먼저 고르면 옛 꼴 결정과 그것을 겨눈 제외(그 결정의 제시들 답을 통째로 거둔다)가 빠져, 거둔 답이
-// 첫 혼자 답으로 섰다(GPT 끝 판 둘째 E).
-function familyGroups(entries, family, index) {
-  return [...groupsOf(entries)].filter(([, group]) => {
-    const event = group.source.event;
-    if (event.type === EVENT_TYPES.carried) return true;
-    return event.type === EVENT_TYPES.presented && itemOf(event, index)?.familyKey === family;
-  });
-}
+// 묶음은 기록부의 묶음 색인이 든다(record/groups.mjs — 든 사건 전부로 지은 groupsOf와 같은 묶음, 자식 · 제외는 포트 열쇠 차례). 계열의 만남은
+// 그 계열의 제시 묶음과 옮겨 온 장부만 접는다(record.familyGroups). 묶음은 기록 전체로 지은 것이라 옛 꼴 결정을 겨눈 제외(그 결정의 제시들 답을
+// 통째로 거둔다)도 든다(GPT 끝 판 둘째 E). 옛 꼴 사건의 기록 열쇠는 기록부와 같은 든 차례(position)다 — 옛 꼴 lead의 번호 글자만 열쇠 차례(i + 1)로
+// 짓던 앞 판과 다르고, 측정 · 놓침 기록은 2판 제시 · 2판 답 번호와만 견주므로 결과는 같다(설계 ① · 대조 시험 coach/record-index.test.mjs).
 
 // 묶음들([머리 번호, 묶음] 쌍)을 접은 계열마다의 만남(접기 차례)과, 접기 번호 → 그 만남이 든 묶음의 머리.
 function marksOf(groups, index) {
@@ -58,16 +41,16 @@ function leadOfMark(lead, sourceOf) {
     solo: lead.unaided === true && lead.grade != null,
   };
 }
-const leadAt = (record, family, at, index) =>
-  leadIn(marksOf(familyGroups(entriesOf(record.heldEvents()), family, index), index), family, at);
+export const leadAt = (record, family, at, index) =>
+  leadIn(marksOf(record.familyGroups(family), index), family, at);
 
 // 계열마다의 첫 만남을 한 번에(놓침 기록 answerLog — 단계 4 계획 §25-5). 든 사건 전부를 한 번 묶고 접어, 묻는 계열 · 시각마다 leadAt과 같은
 // 값을 낸다. 계열의 만남은 그 계열의 묶음과 장부만 접은 것과 같다 — 제외 접기는 답 번호를 겨누어 다른 계열에 닿지 않는다. 줄마다 leadAt을
 // 부르면 부를 때마다 든 사건 전체를 다시 묶고 접는다. 묶음(제시 번호 → { source, children, exclusions })도 함께 낸다.
 // 계열마다 시각 → 그 시각의 맨 앞 만남 표를 처음 물을 때 한 번 짓는다 — 첫 만남이 서버 요약에만 있는 계열도 줄마다 만남 목록을 끝까지
 // 훑지 않는다(GPT GA6).
-function meetsOf(record, index) {
-  const groups = groupsOf(entriesOf(record.heldEvents()));
+export function meetsOf(record, index) {
+  const groups = record.groups();
   const { marks, sourceOf } = marksOf(groups, index);
   const byFamily = new Map();
   const firstAt = family => {
@@ -85,8 +68,8 @@ function meetsOf(record, index) {
 // 저장 뒤 그 답의 소리 전달(evidence.delivered — 단계 4 계획 §25-3 불변식 나). 기록부에 든 사건으로 그 제시의 묶음을 짓고, 접기와 같은
 // 함수(audiosBefore)로 그 답 앞의 마지막 전달을 본다. 저장이 실패한 쓰기는 기록부에 없고, 제외된 전달 뒤의 소리는 「아직」이다. 소리가
 // 들지 않는 문항은 늘 전달된 것이다. 그 답이 기록부에 없으면 거짓이다.
-function deliveredAt(record, presentationId, answerId) {
-  const group = groupsOf(entriesOf(record.heldEvents())).get(presentationId);
+export function deliveredAt(record, presentationId, answerId) {
+  const group = record.group(presentationId);
   if (!group?.children.some(entry => entry.key === answerId)) return false;
   if (group.source.event.audioRequired !== true) return true;
   return audiosBefore(group).get(answerId) === 'completed';

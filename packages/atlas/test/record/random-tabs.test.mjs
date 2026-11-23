@@ -26,6 +26,11 @@ const { groupsOf } = await subject('record/adapt.mjs');
 const { entryOf } = await subject('record/server.mjs');
 const { EVENT_TYPES } = await subject('record/events.mjs');
 const { carriedFields, carriedSoFar, legacyToImport } = await subject('record/carry.mjs');
+const { ownFoldEvents, familySkillsOf } = await subject('record/own.mjs');
+const { rowsOfGroup } = await subject('record/rows.mjs');
+const { overlay } = await subject('fold/device.mjs');
+const { viewOf } = await subject('record/summary.mjs');
+const { entryOf: heldEntryOf, heldSkillsOf } = await import('../support/held-world.mjs');
 
 const hop = () => new Promise(resolve => setImmediate(resolve));
 const hops = async n => {
@@ -74,6 +79,60 @@ function sameMap(got, want, waiting, label) {
     if (!waiting.has(key)) assert.deepEqual(got.get(key) ?? null, line, `${label} ${key}`);
   for (const key of got.keys())
     if (!waiting.has(key) && !want.has(key)) assert.fail(`${label}: 없어야 할 줄 ${key}`);
+}
+
+// 대조 3(기기 답 저장 빠르게 하기 설계 2-5, 11-23) — 기록부의 보기 · 근거 줄 · 만남 줄 · 코치 묶음이 든 사건으로 처음부터 지은 값과 같다.
+// 처음부터 = 묶음 색인 앞의 길: groupsOf(든 것 전부) · 밀린 것이 든 묶음 · rowsOfGroup · familySkillsOf(든 사건). 이 세계에서는 서버가 시각을
+// 누르지 않고(기기 시계가 늦다) 저장이 실패하지 않는다.
+function scratchOwn(record, entries, index) {
+  const pending = record.pending();
+  const keys = new Set(entries.filter(e => pending.has(e.event.id)).map(e => e.key));
+  const covered = new Set();
+  const groups = [];
+  for (const group of groupsOf(entries).values()) {
+    const members = [group.source, ...group.children, ...group.exclusions];
+    if (!members.some(entry => keys.has(entry.key))) continue;
+    for (const entry of members) covered.add(entry.key);
+    groups.push(group);
+  }
+  const byId = new Map(entries.map(entry => [entry.event.id, entry]));
+  const loose = entries.filter(entry => keys.has(entry.key) && !covered.has(entry.key));
+  const touches = new Map(record.heldItems().map(item => [item.event.id, item.touches]));
+  return ownFoldEvents(groups, loose, keys, {
+    index,
+    memo: id => touches.get(id) ?? null,
+    find: id => byId.get(id),
+  });
+}
+function scratchView(record, entries, index) {
+  const base = record.summary;
+  const own =
+    base && base.edition === record.edition()
+      ? scratchOwn(record, entries, index)
+      : [{ kind: 'exclude', id: '#wait', at: Number.NEGATIVE_INFINITY, ref: '#unknown' }];
+  return overlay(viewOf(base), own, memory, PARAMS, {
+    familySkills: familySkillsOf(base, index, heldSkillsOf(entries.map(entry => entry.event))),
+    lookup: () => null,
+  });
+}
+function sameAsScratch(record, index, label) {
+  const items = record.heldItems();
+  const entries = items.map(heldEntryOf);
+  const groups = groupsOf(entries);
+  assert.deepEqual(record.view(), scratchView(record, entries, index), `${label}: 대조 3 보기`);
+  const units = new Map();
+  const families = new Map();
+  for (const group of groups.values())
+    for (const row of rowsOfGroup(group, index)) {
+      const [map, key] =
+        row.kind === 'unit' || row.kind === 'say' ? [units, row.unit] : [families, row.family];
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(row);
+    }
+  assert.deepEqual(record.unitRows(), units, `${label}: 대조 3 단위 근거 줄`);
+  assert.deepEqual(record.meetRows().families, families, `${label}: 대조 3 만남 줄`);
+  const byKey = [...items].sort((a, b) => a.key - b.key).map(heldEntryOf);
+  assert.deepEqual(record.groups(), groupsOf(byKey), `${label}: 대조 3 코치 묶음(포트 열쇠 차례)`);
 }
 
 // ── ② 계정 ──
@@ -225,6 +284,7 @@ async function accountMidCheck(w, step) {
   for (const t of w.tabs) {
     await t.record.refresh();
     checkView(t.record, w.server, w.index, `씨앗 ${w.seed} 걸음 ${step} 탭 ${t.i}`, w.lost === 0);
+    sameAsScratch(t.record, w.index, `씨앗 ${w.seed} 걸음 ${step} 탭 ${t.i}`);
     for (const event of t.record.unsent(Number.POSITIVE_INFINITY))
       assert.equal(acked.has(event.id), false, `씨앗 ${w.seed}: 받은 ${event.id}가 대기열에`);
   }
@@ -433,6 +493,7 @@ async function guestFinal(w) {
         tab.record.pending().has(row.value.event.id),
         `${label}: ${row.value.event.id}는 요약 또는 밀린 것 꼭 한쪽에만`,
       );
+    sameAsScratch(tab.record, w.index, label);
     const view = tab.record.view();
     const want = fresh.view();
     if (!view.waitAll && !want.waitAll) sameLines(view, want, label);
@@ -466,6 +527,9 @@ async function guestRun(seed, { tabsN = 2, steps = 60 } = {}) {
   for (let step = 0; step < steps; step += 1) {
     guestStep(w);
     if (w.random() < 0.5) await hops(Math.floor(w.random() * 4));
+    if (w.random() < 0.1)
+      for (const tab of w.tabs)
+        sameAsScratch(tab.record, w.index, `씨앗 ${w.seed} 걸음 ${step} 탭 ${tab.i}`);
   }
   for (const tab of w.tabs) w.all.push(...tab.flows.map(p => p.catch(error => ({ error }))));
   for (const outcome of await Promise.all(w.all)) if (outcome?.error) w.errors.push(outcome.error);
