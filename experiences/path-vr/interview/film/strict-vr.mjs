@@ -343,7 +343,7 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
     if (disposed) return false;
     if (stage && supported === true) return true;
     if (checkTask) return checkTask;
-    if (!secure || !xr?.isSessionSupported || !xr?.requestSession) { emit('unsupported', 'PC에서는 화면으로 연습해요. VR은 Quest 브라우저에서 이 페이지를 열면 쓸 수 있어요.'); return false; }
+    if (!secure || !xr?.isSessionSupported || !xr?.requestSession) { emit('unsupported', '이 기기에서는 화면으로 연습해요. VR은 Quest 브라우저에서 이 페이지를 열면 쓸 수 있어요.'); return false; }
     checkTask = (async () => {
       try {
         supported = await xr.isSessionSupported('immersive-vr');
