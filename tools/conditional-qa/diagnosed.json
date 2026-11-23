@@ -2,6 +2,14 @@
   "version": 1,
   "ranges": [
     {
+      "cases": ["S070", "S082", "S083", "S084", "S085", "S086", "S087", "S088", "S097", "S098"],
+      "exactCases": true,
+      "from": "df7fdd815f3f3dee3c3965e4c135099999c02bf7",
+      "fixedBy": "35a11860f12d72a2928683116499aa64e9f91709",
+      "cause": "WORLD 배우기 · 놀이 판에 「준비 중」 안내를 켜면서 로컬 시험 서버에도 켜져 마을 · 말하기 · 쓰기 판이 열리지 않았다. 로컬 시험 서버에서 기본으로 끈 커밋 뒤로 직접 잰 커밋과 최신 master 전체 검증이 85개를 통과했다",
+      "evidence": "tools/conditional-qa/README.md#diagnosed-failures"
+    },
+    {
       "cases": ["S094", "S095", "S096"],
       "exactCases": true,
       "from": "82c2f7779b7fabda9a5c9c16a3e731a7cdf5d262",
