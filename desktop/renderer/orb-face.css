@@ -1049,6 +1049,8 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .one-board .d-mini .f{position:absolute;left:0;top:0;bottom:0;display:block;background:rgba(243,241,236,.6)}
 #portal-entry .one-board .d-mini .l{position:absolute;top:-4px;bottom:-4px;width:1px;display:block;background:var(--paper)}
 #portal-entry .one-board .d-more{display:grid;gap:14px}
+/* details의 내용은 ::details-content 상자 하나로 묶여 gap이 줄 사이에 들지 않는다(Fable 최종 P2-1) */
+#portal-entry .one-board .d-more .d-row + .d-row{margin-top:14px}
 #portal-entry .one-board .d-more summary{cursor:pointer;list-style:none;font:400 13px/1.4 var(--orb-sans);color:var(--soft)}
 #portal-entry .one-board .d-more summary::-webkit-details-marker{display:none}
 #portal-entry .one-board .d-more summary:focus-visible{outline:1px solid var(--paper);outline-offset:4px}

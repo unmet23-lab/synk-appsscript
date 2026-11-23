@@ -367,14 +367,19 @@ function driveCard(space, now) {
       : !Number.isSafeInteger(g) ? '며칠 더 재어야 언제 정한 선에 닿는지 알 수 있습니다.' : g <= 0 ? '지금 속도로는 정한 선 아래로 내려가지 않습니다.' : '';
   const pace = Number.isSafeInteger(g) && g !== 0 ? `지난 14일 동안 하루에 ${gb(Math.abs(g))}씩 ${g > 0 ? '찼' : '비었'}습니다.` : '';
   const at = backupDay(space.createdAt);
-  const rows = list.slice(1).map(driveRow), shownRows = list.length >= 4 ? 1 : rows.length;
+  // 넷 이상이면 선 위 드라이브만 접는다. 선 아래 드라이브는 늘 보인다(Fable 최종 P2-3)
+  const rows = list.slice(1).map(driveRow), shownRows = list.length >= 4 ? Math.max(1, rows.filter(r => r.below).length) : rows.length;
+  // 칸으로 세우지 않은 드라이브를 말없이 빼지 않는다(Fable 최종 P2-4)
+  const hid = Array.isArray(space.hiddenDrives) ? space.hiddenDrives : [];
+  const hidWords = [hid.filter(x => x.why === 'same').map(x => `${x.letter}:`).join(' · '), hid.filter(x => x.why === 'small').map(x => `${x.letter}:`).join(' · ')];
+  const hidden = [hidWords[0] && `${hidWords[0]}는 다른 드라이브와 크기 · 남은 공간이 같아 같은 디스크로 보고 뺐습니다.`, hidWords[1] && `${hidWords[1]}는 32GB보다 작아(복구 파티션 따위) 뺐습니다.`].filter(Boolean).join(' ');
   return {
     label: `${d.letter}: 드라이브 ${sizeWords(d.size)}`, at: at ? `${at}에 잰 값` : '',
     free: (d.free / GB).toFixed(1), unit: 'GB 남음', freePct: pct(d.free), linePct: line ? pct(line) : null,
     lineLabel: line ? `정한 선 ${d.startLineGb}GB` : '', max: `${Math.round(scale / GB)}GB`, pred, pace,
     aria: `${d.letter}: 남은 공간 ${(d.free / GB).toFixed(1)}GB${line ? `, 정한 선 ${d.startLineGb}GB` : ''}`,
     below: belowLine(d),
-    rows: rows.slice(0, shownRows), folded: rows.slice(shownRows), foldLabel: rows.length > shownRows ? `드라이브 ${rows.length - shownRows}개 더` : '',
+    rows: rows.slice(0, shownRows), folded: rows.slice(shownRows), foldLabel: rows.length > shownRows ? `드라이브 ${rows.length - shownRows}개 더` : '', hidden,
   };
 }
 function spaceGroups(space, spaceFree = 'unavailable') {

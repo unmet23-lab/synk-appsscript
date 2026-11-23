@@ -289,6 +289,10 @@ test('all drives (PC 진단 설계 5.1): small recovery partitions and mirrored 
   const s = O.summarizeSpace({ v: 1, createdAt: new Date().toISOString(), lap: null, candidates: [], drives: [
     d('C', 953, 97, 143, 30), d('D', 1907, 299, 150, null), d('E', 20, 1, 3, 0), d('G', 953, 97, 143, 30), d('F', 476, 40, 71, 0), d('H', 238, 60, 35, 12)] });
   assert.deepEqual(s.drives.map(x => x.letter), ['F', 'C', 'H', 'D'], 'F and C are below their lines (F reaches it sooner), then H by days, then D; E is a 20GB recovery partition; G mirrors C (Google Drive)');
+  assert.deepEqual(s.hiddenDrives, [{ letter: 'E', why: 'small' }, { letter: 'G', why: 'same' }], 'what is left out is named, not dropped silently (Fable 최종 P2-4)');
+  // 32GB 아래 드라이브만 있는 PC는 그 드라이브를 그대로 보인다(Fable 최종 P2-2)
+  const tiny = O.summarizeSpace({ v: 1, createdAt: new Date().toISOString(), lap: null, candidates: [], drives: [d('C', 29, 3, 5, 2)] });
+  assert.deepEqual([tiny.drives.map(x => x.letter), tiny.hiddenDrives], [['C'], []]);
 });
 
 test('the snapshot carries the PC app update words only, and a press asks the updater to check without waiting', async () => {
@@ -630,6 +634,14 @@ test('all drives on the board (PC 진단 설계 5.1): the tightest is the big ca
   assert.deepEqual([b.rows.length, b.folded.length, b.foldLabel], [2, 0, '']);
   b = board([F, C, D, E]);
   assert.deepEqual([b.label, b.below, b.rows.map(r => r.label), b.folded.map(r => r.label), b.foldLabel], ['F: 드라이브 238GB', true, ['C:'], ['D:', 'E:'], '드라이브 2개 더']);
+  // 선 아래 드라이브는 접지 않는다(Fable 최종 P2-3)
+  const G2 = drive('G', 476, 20, 71, 0), H2 = drive('H', 476, 30, 71, 0);
+  b = board([F, G2, H2, C, D]);
+  assert.deepEqual([b.rows.map(r => r.label), b.folded.map(r => r.label), b.foldLabel], [['G:', 'H:'], ['C:', 'D:'], '드라이브 2개 더']);
+  // 뺀 드라이브는 한 줄로 알린다(Fable 최종 P2-4)
+  const hiddenCard = solioBackupView(SNAP({ space: { ...SPACE, drive: undefined, drives: [C, D], hiddenDrives: [{ letter: 'E', why: 'small' }, { letter: 'G', why: 'same' }] } }), NOW).board.drive;
+  assert.equal(hiddenCard.hidden, 'G:는 다른 드라이브와 크기 · 남은 공간이 같아 같은 디스크로 보고 뺐습니다. E:는 32GB보다 작아(복구 파티션 따위) 뺐습니다.');
+  assert.equal(board([C, D]).hidden, '');
   // 큰 칸의 「선 아래」는 남은 공간과 정한 선으로 본다. 정한 선이 없으면 그렇다고 쓴다
   assert.match(board([drive('C', 953, 80, 100, null)]).pred, /정한 선\(100GB\)보다 적습니다/);
   assert.equal(board([drive('C', 953, 80, null, null)]).pred, '정한 선을 아직 받지 못했습니다.');

@@ -1082,6 +1082,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       }
       parts.push(rows);
     }
+    if (d.hidden) parts.push(el('p', 'd-pace', d.hidden));
     box.replaceChildren(...parts);
   }
   function stepCells(r, sumRow = false) {

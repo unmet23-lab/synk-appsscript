@@ -178,8 +178,11 @@ function summarizeSpace(value) {
     }));
   // 보이는 드라이브(PC 진단 설계 3절 · 5.1): 32GB 아래와, 앞 드라이브와 크기 · 남은 공간이 같은 것(같은 볼륨을 비추는 가상 드라이브 · subst 글자)은 뺀다.
   // 차례는 정한 선 아래 → 선에 닿는 날이 가까운 것 → 글자다. 남은 바이트로 견주면 작은 드라이브가 늘 앞에 온다
+  // 32GB 아래만 있는 PC(eMMC 태블릿 · 작은 가상 PC)는 그 드라이브를 그대로 보인다(Fable 최종 P2-2). 뺀 드라이브는 글자를 넘겨 판이 한 줄로 알린다(P2-4)
+  const big = drives.filter(d => d.size >= DRIVE_MIN), pool = big.length ? big : drives;
+  const hidden = drives.filter(d => !pool.includes(d)).map(d => ({ letter: d.letter, why: 'small' }));
   const seen = new Set();
-  const shown = drives.filter(d => d.size >= DRIVE_MIN).filter(d => { const k = `${d.size}:${d.free}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  const shown = pool.filter(d => { const k = `${d.size}:${d.free}`; if (seen.has(k)) { hidden.push({ letter: d.letter, why: 'same' }); return false; } seen.add(k); return true; });
   const below = d => d.startLineGb !== null && d.free < d.startLineGb * 1024 ** 3;
   const soon = d => (Number.isSafeInteger(d.daysToStartLine) ? d.daysToStartLine : Number.MAX_SAFE_INTEGER);
   shown.sort((a, b) => Number(below(b)) - Number(below(a)) || soon(a) - soon(b) || a.letter.localeCompare(b.letter));
@@ -200,7 +203,7 @@ function summarizeSpace(value) {
     createdAt: iso(value.createdAt),
     lapFinishedAt: isObject(value.lap) ? iso(value.lap.finishedAt) : null,
     scanningDays,
-    drives: shown, groups,
+    drives: shown, hiddenDrives: hidden.sort((a, b) => a.letter.localeCompare(b.letter)), groups,
   };
 }
 /* 2판 pick free에 넘길 것: 24시간 안의 보고서 번호와, 그 보고서의 2판 종류 가 등급 후보 번호(많아야 100개). 없으면 null.

@@ -718,6 +718,11 @@ if(!process.versions.electron){
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({space:{...space,createdAt:new Date(Date.now()-3600e3).toISOString(),drive:undefined,drives:[dv('F',238,19,35,0),dv('C',953,118.2,100,9),dv('D',1907,299,150,null),dv('E',476,300,71,null)]}}))+')');await wait(900);
           const dr4r=await drv(w);
           check('21 drives: a repaint keeps the opened fold open',dr4r.open&&dr4r.folded.join(',')==='D:,E:',dr4r);
+          // 펼친 줄 사이에도 간격이 있다(Fable 최종 P2-1)
+          const gapFold=await w.js("(()=>{const r=[...document.querySelectorAll('#portal-entry [data-room=solio-backup] .d-more .d-row')];return r.length>1?Math.round(r[1].getBoundingClientRect().top-r[0].getBoundingClientRect().bottom):-1;})()");
+          check('21 drives: the opened rows keep a gap between them',gapFold>=10,{gapFold});
+          await w.js("document.querySelector('#portal-entry [data-room=solio-backup] .d-more').scrollIntoView({block:'center'})");await wait(300);
+          await capture(w,'oneclick-drives-four-open-scrolled');
           await capture(w,'oneclick-drives-four-open');
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,state:'attention',attention:['signin']}}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
