@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f96859">
+<title>바람길 · SYNK LAB PLAY</title>
+<meta name="description" content="바람이 한국어로 길을 알려 주면 들은 대로 몸을 움직이는 듣기 액션 게임. 방향·동작·하지 말라는 말·순서를 듣고 90초 동안 달려요. TOPIK I 듣기의 짧은 지시 이해를 연습합니다.">
+<script src="./world-host.js?v=atlas-20261017"></script>
+<link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
+<link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="kit/lab.css?v=atlas-20261017">
+<link rel="stylesheet" href="style.css?v=atlas-20261017">
+<link rel="stylesheet" href="world-skin.css?v=7505d7bd1721">
+<script src="./atlas-learning.js?v=404a24909985"></script>
+<script type="module" src="./app.mjs?v=192d4797ef21"></script>
+</head>
+<body>
+<p id="sr-live" class="sr" aria-live="polite"></p>
+
+<!-- 입구 -->
+<main id="lobby" class="screen lobby">
+  <header class="topbar on-field">
+    <a class="logo-tag" href="./" aria-label="바람길 처음으로"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
+    <span class="kicker">LAB · LISTEN &amp; MOVE</span>
+    <button id="sound" class="sound-toggle" type="button" aria-pressed="true" aria-label="소리 끄기" data-sound-toggle><span class="sr">소리</span></button>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="kicker">WIND RUN · AN ACTION GAME</span>
+      <h1>바람길</h1>
+      <p class="lede">들은 대로<br><span class="crayon-under">몸이 먼저</span> 움직여요!</p>
+      <p class="sub">바람이 한국어로 길을 알려 줘요. 옆 길로 옮기고, 울타리는 뛰어넘고, 표지판 아래는 숙여서 90초 동안 끝까지 달려요.</p>
+    </div>
+    <figure class="hero-art" aria-hidden="true">
+      <canvas class="hero-road" id="hero-road"></canvas>
+      <div class="hero-say paper"><span class="tag">바람</span><b>울타리를 뛰어넘으세요!</b></div>
+      <img class="hero-mongle diecut" src="kit/brand/mongle-cheer.webp" alt="">
+    </figure>
+  </section>
+
+  <section class="plan">
+    <article class="paper start-card">
+      <span class="tag">오늘의 달리기</span>
+      <h2><b>90초</b> 바람길</h2>
+      <p id="l-reason" class="reason">아직 안 들어 본 부탁부터 준비했어요.</p>
+      <button id="start" class="felt-cta coral" type="button"><span>바람길 달리기</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="start-options">
+        <button id="listening-check" class="chip-btn" type="button">듣기 확인 3문제</button>
+        <span class="fine" id="best-line" hidden></span>
+      </div>
+      <p id="sound-note" class="fine warn" hidden>듣기 게임이에요. 달리기를 시작하면 소리가 다시 켜져요.</p>
+      <p id="storage-note" class="fine" hidden></p>
+      <p class="synk-collection-line"><span data-collection-balance>코인을 불러오고 있어요.</span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
+    </article>
+    <section class="paper how" aria-labelledby="how-title">
+      <span class="tag" id="how-title">하는 방법</span>
+      <ol class="how-steps">
+        <li><b class="num">1</b><strong>부탁 듣기</strong><span>바람이 짧게 부탁해요. 글은 보이지 않아요. 꼭 필요하면 ‘글로 보기’를 눌러요.</span></li>
+        <li><b class="num">2</b><strong>들은 대로 움직이기</strong><span>왼쪽·오른쪽으로 길을 바꾸고, 울타리는 뛰어넘고, 표지판 아래에서는 몸을 숙여요. ‘하지 말라’는 말과 두 동작의 순서도 잘 들어요.</span></li>
+        <li><b class="num">3</b><strong>끝까지 달리기</strong><span>해낸 부탁마다 등불이 켜져요. 세 번 연속이면 바람막이 한 번 지켜 줘요. 90초를 다 달리면 도착!</span></li>
+      </ol>
+      <p class="fine lab-only">휴대폰에서는 아래 펠트 단추를 누르거나 화면을 밀어서, 컴퓨터에서는 방향키(또는 A·D·W·S, 점프는 Space)로 움직여요. Esc를 누르면 잠깐 멈춰요.</p>
+      <p class="fine world-only" hidden>휴대폰에서는 아래 단추를 누르거나 화면을 밀어서, 컴퓨터에서는 방향키(또는 A·D·W·S, 점프는 Space)로 움직여요. Esc를 누르면 잠깐 멈춰요.</p>
+    </section>
+  </section>
+
+  <footer class="lobby-foot">
+    <p>TOPIK I 듣기의 짧은 지시(방향·동작·하지 말라는 말·순서)를 알아듣는 힘을 몸으로 연습해요. 성공 수와 별은 TOPIK 급수와 상관없어요.</p>
+    <p>달리기의 동작은 장면을 보고도 할 수 있어서 듣기 실력 기록으로 쓰지 않아요. ‘듣기 확인’에서 끝까지 듣고 혼자 고른 답만 듣기 기록이 돼요.</p>
+    <p><span id="learning-scope">학습 기록은 이 브라우저에만 저장되고, 같은 주소에서 연 다른 SYNK 게임과 같이 써요.</span> <button id="learning-reset" class="text-link" type="button">이 브라우저의 모든 게임 학습 기록 지우기</button></p>
+  </footer>
+</main>
+
+<!-- 게임 -->
+<main id="game" class="screen game" hidden>
+  <header class="topbar game-bar">
+    <img class="logo-mini" src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
+    <strong class="game-title">바람길</strong>
+    <div class="hud" aria-live="off">
+      <span class="pill"><small>시간</small><b id="g-time">90</b></span>
+      <span class="pill"><small>성공</small><b id="g-done">0</b></span>
+      <span class="pill combo" id="g-combo-wrap"><small>연속</small><b id="g-combo">0</b></span>
+      <span class="pill guard" id="g-guard" role="img" aria-label="보호 3번"><small>보호</small><b class="hearts" id="g-hearts"><i></i><i></i><i></i></b></span>
+    </div>
+    <button id="pause-button" class="disc-btn" type="button" aria-label="잠깐 멈춤"><span aria-hidden="true">Ⅱ</span></button>
+  </header>
+
+  <section class="arena run" id="arena" aria-label="바람길: 세 칸 길을 달려요">
+    <div class="stage" id="stage">
+      <canvas id="world" class="world" aria-hidden="true"></canvas>
+      <section class="say paper" id="say" hidden data-phase="listening">
+        <div class="say-head">
+          <span class="tag" id="say-tag">바람</span>
+          <span class="say-ear" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="say-steps" id="say-steps" aria-hidden="true"></span>
+          <button id="say-text" class="chip-btn say-text" type="button">글로 보기</button>
+        </div>
+        <p class="say-line" id="say-line">잘 들어 보세요</p>
+        <p class="say-hint" id="say-hint"></p>
+        <span class="say-near" aria-hidden="true"><i id="say-near"></i></span>
+      </section>
+      <p class="tip" id="tip" hidden></p>
+      <p class="pop" id="pop" hidden aria-hidden="true"></p>
+    </div>
+    <div class="moves" id="moves" role="group" aria-label="움직이기 단추">
+      <button class="move" type="button" tabindex="-1" data-action="left" aria-label="왼쪽 길로 (← 키)"><i class="ico" aria-hidden="true"></i><span>왼쪽</span></button>
+      <button class="move" type="button" tabindex="-1" data-action="jump" aria-label="점프 (↑ 키)"><i class="ico" aria-hidden="true"></i><span>점프</span></button>
+      <button class="move" type="button" tabindex="-1" data-action="slide" aria-label="숙이기 (↓ 키)"><i class="ico" aria-hidden="true"></i><span>숙이기</span></button>
+      <button class="move" type="button" tabindex="-1" data-action="right" aria-label="오른쪽 길로 (→ 키)"><i class="ico" aria-hidden="true"></i><span>오른쪽</span></button>
+    </div>
+  </section>
+</main>
+
+<!-- 결과 -->
+<main id="results" class="screen results" hidden>
+  <header class="topbar on-field">
+    <span class="logo-tag"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
+    <span class="kicker">RUN COMPLETE</span>
+  </header>
+  <section class="res-hero">
+    <div>
+      <span class="kicker ko" id="r-kicker">바람길 · 90초</span>
+      <h1 id="r-title" tabindex="-1">도착!</h1>
+      <p class="big"><b id="r-correct">0</b><span>/ <i id="r-total">0</i></span></p>
+      <p class="r-label">해낸 부탁</p>
+      <p class="stars" id="r-stars" aria-label="별 3개 중 0개"></p>
+      <p class="r-note" id="r-note"></p>
+      <p class="synk-collection-line"><span id="r-coins" role="status"></span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
+    </div>
+    <img class="res-mongle diecut" id="r-mongle" src="kit/brand/mongle-cheer.webp" alt="">
+  </section>
+  <section class="res-grid">
+    <article class="paper log">
+      <span class="tag">이번 달리기의 부탁</span>
+      <ol id="r-log"></ol>
+      <p class="fine" id="r-log-note"></p>
+    </article>
+    <article class="paper skills">
+      <span class="tag">듣기 능력 기록</span>
+      <ul id="r-skills"></ul>
+      <p class="fine" id="r-learning">달리기의 동작은 장면을 보고도 할 수 있어서 듣기 실력 기록으로 쓰지 않아요. ‘듣기 확인’에서 끝까지 듣고 혼자 고른 답만 듣기 기록이 돼요. TOPIK 급수나 합격 여부와는 상관없어요.</p>
+    </article>
+    <article class="paper next">
+      <span class="tag">다음 달리기</span>
+      <p id="r-next-reason" class="reason"></p>
+      <button id="restart" class="felt-cta coral" type="button"><span>다시 달리기</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="r-actions">
+        <button id="result-listening-check" class="chip-btn" type="button">듣기 확인</button>
+        <button id="result-home" class="chip-btn" type="button">처음으로</button>
+      </div>
+    </article>
+  </section>
+</main>
+
+<!-- 멈춤 -->
+<dialog id="pause-dialog" class="paper lab-dialog" aria-labelledby="pause-title">
+  <span class="kicker">PAUSED</span>
+  <h2 id="pause-title">잠깐 쉬어요</h2>
+  <p id="pause-copy">바람과 목소리가 함께 멈췄어요. 이어 하면 멈춘 곳부터 다시 들려요.</p>
+  <div class="dialog-actions">
+    <button id="resume" class="felt-cta coral" type="button"><span>이어 하기</span><i class="disc" aria-hidden="true"></i></button>
+    <div class="dialog-toggles">
+      <button class="chip-btn" type="button" data-sound-toggle data-sound-label aria-pressed="true">소리 켜짐</button>
+    </div>
+    <button id="back-home" class="chip-btn wide" type="button">처음으로</button>
+  </div>
+</dialog>
+
+<!-- 목소리를 준비하지 못함: 달리기를 멈춘다(읽기로 바꾸지 않는다) -->
+<dialog id="audio-dialog" class="paper lab-dialog" aria-labelledby="audio-title">
+  <span class="kicker">LISTEN TO PLAY</span>
+  <h2 id="audio-title">목소리를 준비하지 못했어요</h2>
+  <p>바람길은 소리를 듣고 움직이는 게임이에요. 목소리를 다시 불러온 뒤 이어서 달려요.</p>
+  <div class="dialog-actions">
+    <button id="audio-retry" class="felt-cta coral" type="button"><span>소리 다시 준비하기</span><i class="disc" aria-hidden="true"></i></button>
+    <button id="audio-home" class="chip-btn wide" type="button">처음으로</button>
+  </div>
+</dialog>
+
+<!-- 듣기 확인: 달리지 않고 끝까지 듣고 들은 행동을 고른다(문장은 답한 뒤에 보인다) -->
+<dialog id="listening-check-dialog" class="paper lab-dialog check" aria-labelledby="check-title">
+  <div class="check-top">
+    <span class="kicker">LISTENING CHECK</span>
+    <span class="check-count" id="check-count"></span>
+    <button id="check-close" class="chip-btn check-close" type="button">닫기</button>
+  </div>
+  <h2 id="check-title">듣고, 들은 행동을 골라요</h2>
+  <p class="check-intro">달리지 않고 듣는 확인이에요. 목소리를 끝까지 들은 뒤 답을 골라요.</p>
+  <p id="check-plan" class="check-plan"></p>
+  <div class="check-q" id="check-q" data-phase="listening">
+    <div class="check-q-head"><span class="tag">바람</span><span class="say-ear" aria-hidden="true"><i></i><i></i><i></i></span><button id="check-replay" class="chip-btn" type="button">다시 듣기</button></div>
+    <p id="check-status" class="check-status" role="status"></p>
+  </div>
+  <div id="check-choices" class="check-choices" role="group" aria-label="들은 행동 고르기"></div>
+  <p id="check-feedback" class="check-feedback" role="status"></p>
+  <button id="check-next" class="felt-cta coral" type="button" hidden><span>다음 지시 듣기</span><i class="disc" aria-hidden="true"></i></button>
+</dialog>
+
+<p class="toast paper" id="toast" role="status" hidden></p>
+<script src="./collection.js?v=245a23cd396c"></script>
+</body>
+</html>

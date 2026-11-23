@@ -1,0 +1,45 @@
+{
+ "판": 1,
+ "종류": "synk.im",
+ "항목": [
+  {
+   "경로": "world/app-shell.mjs",
+   "종류": "바꿈",
+   "sha256": "b7df590af35f121aea8ec85a1e07c02c992aae2f2e84ee43882016d9f65c755d",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/brand-opening/home.css",
+   "종류": "바꿈",
+   "sha256": "2d08a6ee8cf997b1a9444e5b407baf11e359ef6d4ad9813774d6e24e3b7288c3",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/desktop.html",
+   "종류": "토큰",
+   "sha256": "42f7e92e9dddc31abc8e26578ef8c79ab18c53531e15b4a1e9b2b335b80f8f76",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/index.html",
+   "종류": "토큰",
+   "sha256": "42f7e92e9dddc31abc8e26578ef8c79ab18c53531e15b4a1e9b2b335b80f8f76",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/mobile.html",
+   "종류": "토큰",
+   "sha256": "42f7e92e9dddc31abc8e26578ef8c79ab18c53531e15b4a1e9b2b335b80f8f76",
+   "모드": "100644"
+  }
+ ],
+ "위": "7dd7a9bfdae20e13df0b4f5daf79adf8584cfba0",
+ "계획": "2232d5f78040",
+ "앞판": {
+  "world/app-shell.mjs": "f379fc4a9cc9b8500aefdee641b8ddd9ab52afc3",
+  "world/brand-opening/home.css": "a420da340d8c2f0db1e99e85c9f16bef34de7943",
+  "world/desktop.html": "807461d14f466ac1ddebba86c1528ba5c4146043",
+  "world/index.html": "807461d14f466ac1ddebba86c1528ba5c4146043",
+  "world/mobile.html": "807461d14f466ac1ddebba86c1528ba5c4146043"
+ }
+}

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f96859">
+<title>말의 리듬 · SYNK LAB PLAY</title>
+<meta name="description" content="우리가 만든 한국어 노래의 박자를 타며, 노래 중간에 나오는 짧은 한국어 문장을 듣고 O·X로 답하는 듣기 리듬 게임. TOPIK I 듣기의 내용 일치를 연습합니다.">
+<script src="./world-host.js?v=atlas-20261017"></script>
+<link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
+<link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="kit/lab.css?v=atlas-20261017">
+<link rel="stylesheet" href="style.css?v=eaab4707748a">
+<link rel="stylesheet" href="world-skin.css?v=6ef0bc3e773f">
+<script src="./atlas-learning.js?v=404a24909985"></script>
+<script type="module" src="./app.mjs?v=16a5a34091ce"></script>
+</head>
+<body>
+<p id="sr-live" class="sr" aria-live="polite"></p>
+
+<!-- 입구 -->
+<main id="lobby" class="screen lobby">
+  <header class="topbar on-field">
+    <a class="logo-tag" href="./" aria-label="말의 리듬 처음으로"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
+    <span class="kicker">LAB · LISTEN &amp; PLAY</span>
+    <button class="sound-toggle" type="button" aria-pressed="true" aria-label="배경 음악 끄기" data-sound-toggle><span class="sr">배경 음악</span></button>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="kicker">TALK RHYTHM · A MUSIC GAME</span>
+      <h1>말의 리듬</h1>
+      <p class="lede">노래를 타며 듣고,<br><span class="crayon-under">O·X로 박자</span>에 답해요!</p>
+      <p class="sub">SYNK가 만든 한국어 노래에 맞춰 두 단추로 박자를 쳐요. 노래가 잠깐 작아지면서 짧은 문장이 들리면, 들은 내용과 맞으면 O, 아니면 X를 박자에 맞춰 눌러요.</p>
+    </div>
+    <figure class="hero-art" aria-hidden="true">
+      <canvas class="hero-runway" id="hero-runway"></canvas>
+      <img class="hero-mongle diecut" src="kit/brand/mongle-cheer.webp" alt="">
+    </figure>
+  </section>
+
+  <section class="plan">
+    <article class="paper start-card">
+      <div class="card-head">
+        <span class="tag">오늘의 한 곡</span>
+        <h2><span id="l-song">초록</span> · 듣기 <b>5</b>문제</h2>
+      </div>
+      <div class="songs" id="track-grid" role="group" aria-label="곡 고르기"></div>
+      <p id="recommendation-reason" class="reason"></p>
+      <button id="start-button" class="felt-cta coral" type="button"><span>무대 열기</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="levels" role="group" aria-label="박자 난이도">
+        <span class="levels-label">박자</span>
+        <button class="chip-btn" type="button" data-level="easy" aria-pressed="true">편하게</button>
+        <button class="chip-btn" type="button" data-level="normal" aria-pressed="false">보통</button>
+        <button class="chip-btn" type="button" data-level="hard" aria-pressed="false">도전</button>
+      </div>
+      <div class="start-options">
+        <button id="settings-button" class="chip-btn" type="button">소리·박자 설정</button>
+        <span class="fine">이어폰을 쓰면 더 잘 들려요.</span>
+      </div>
+      <p class="synk-collection-line"><span data-collection-balance>코인을 불러오고 있어요.</span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
+      <section id="supplemental-ready" class="recall supplemental" aria-label="노래 전 듣기 준비"></section>
+    </article>
+    <section class="paper how" aria-labelledby="how-title">
+      <span class="tag" id="how-title">하는 방법</span>
+      <ol class="how-steps">
+        <li><b class="num">1</b><strong>박자 맞추기</strong><span>노트가 크림색 선에 닿을 때 아래 O·X 단추를 눌러요. 길게 이어진 노트는 끝까지 꾹 눌러요.</span></li>
+        <li><b class="num">2</b><strong>듣고 O·X</strong><span>노래가 작아지고 짧은 문장이 들려요. 끝까지 듣고 내용이 맞으면 O, 아니면 X를 박자에 맞춰 눌러요.</span></li>
+        <li><b class="num">3</b><strong>이어서 콤보</strong><span>놓치지 않고 이어 치면 콤보가 쌓여요. 곡이 끝나면 들은 문장을 다시 듣고 해설도 볼 수 있어요.</span></li>
+      </ol>
+      <p class="fine">컴퓨터에서는 F·J 키나 ←·→ 키로 쳐요. Space나 Esc를 누르면 잠깐 멈춰요. 문장은 글로 나오지 않지만, 꼭 필요하면 ‘글로 보기’를 눌러요.</p>
+    </section>
+  </section>
+
+  <footer class="lobby-foot">
+    <p>TOPIK I 듣기의 내용 일치(시간·장소·이유·조건을 담은 짧은 말 알아듣기)를 연습해요. 박자 점수와 별은 TOPIK 급수와 상관없어요.</p>
+    <p><span id="learning-scope">학습 기록은 이 브라우저에만 저장되고, 아직 학생 계정과는 이어지지 않아요.</span> <button id="reset-learning" class="text-link" type="button">이 브라우저의 모든 게임 학습 기록 지우기</button></p>
+  </footer>
+</main>
+
+<!-- 게임 -->
+<main id="game" class="screen game" hidden>
+  <header class="topbar game-bar">
+    <img class="logo-mini" src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
+    <strong class="game-title">말의 리듬</strong>
+    <div class="hud" aria-live="off">
+      <span class="pill"><small>점수</small><b id="score">0</b></span>
+      <span class="pill combo" id="combo-wrap"><small>콤보</small><b id="combo">0</b></span>
+      <span class="pill"><small>문제</small><b id="learning-count">0 / 5</b></span>
+    </div>
+    <button id="pause-button" class="disc-btn" type="button" aria-label="잠깐 멈춤"><span aria-hidden="true">Ⅱ</span></button>
+    <span class="song-line" aria-hidden="true"><i id="song-fill"></i></span>
+  </header>
+
+  <section class="arena" id="arena" aria-label="두 줄의 노트가 크림색 판정선으로 다가와요. 선에 닿을 때 아래 O 단추(F 키)나 X 단추(J 키)를 눌러요.">
+    <canvas id="stage" class="stage" aria-hidden="true"></canvas>
+    <p class="now paper" id="now"><b id="now-title">초록</b><span id="now-meta">편하게</span><span class="now-time" id="now-time">0:00</span></p>
+    <section class="qcard paper" id="phrase-card" hidden aria-live="polite">
+      <div class="q-head">
+        <span class="tag" id="q-tag">듣기 1 / 5</span>
+        <span class="q-ear" aria-hidden="true"><i></i><i></i><i></i></span>
+        <button id="q-text-btn" class="chip-btn q-text" type="button">글로 보기</button>
+      </div>
+      <p class="q-say" id="q-say" hidden></p>
+      <p class="q-ask" id="q-ask">잘 들어 보세요</p>
+      <p class="q-hint" id="q-hint">끝까지 들은 뒤에 답해요</p>
+    </section>
+    <div class="count" id="countdown" hidden aria-hidden="true"><b id="countdown-number">4</b></div>
+    <p class="tip" id="tip" hidden></p>
+    <p class="pop" id="pop-0" hidden aria-hidden="true"></p>
+    <p class="pop" id="pop-1" hidden aria-hidden="true"></p>
+    <img class="stage-mongle diecut" id="stage-mongle" src="kit/brand/mongle-smile.webp" alt="">
+    <div class="pads" id="lane-controls" role="group" aria-label="O·X 단추">
+      <button class="pad o" id="pad-0" data-lane="0" type="button" aria-label="O, 맞아요 (F 키)"><b class="glyph">O</b><span class="say" id="answer-0">맞아요</span><kbd>F</kbd></button>
+      <button class="pad x" id="pad-1" data-lane="1" type="button" aria-label="X, 아니에요 (J 키)"><b class="glyph">X</b><span class="say" id="answer-1">아니에요</span><kbd>J</kbd></button>
+    </div>
+  </section>
+</main>
+
+<!-- 결과 -->
+<main id="results" class="screen results" hidden>
+  <header class="topbar on-field">
+    <span class="logo-tag"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
+    <span class="kicker">SONG COMPLETE</span>
+  </header>
+  <section class="res-hero">
+    <div>
+      <span class="kicker ko" id="r-kicker">초록 · 편하게</span>
+      <h1 id="result-title" tabindex="-1">무대 끝!</h1>
+      <p class="big"><b id="r-correct">0</b><span>/ <i id="r-total">5</i></span></p>
+      <p class="r-label">들은 문장 맞힘</p>
+      <p class="stars" id="r-stars" aria-label="별 3개 중 0개"></p>
+      <div class="r-stats">
+        <span class="pill"><small>박자 점수</small><b id="result-score">0</b></span>
+        <span class="pill"><small>정확도</small><b id="result-accuracy">0%</b></span>
+        <span class="pill"><small>최대 콤보</small><b id="result-combo">0</b></span>
+      </div>
+      <p class="r-note" id="r-note"></p>
+      <p class="synk-collection-line"><span id="r-coins" role="status"></span><a data-collection-garage href="/try/racing/?garage=1">공통 차고 →</a></p>
+    </div>
+    <img class="res-mongle diecut" id="r-mongle" src="kit/brand/mongle-cheer.webp" alt="">
+  </section>
+  <section class="res-grid">
+    <article class="paper log">
+      <span class="tag">이번 곡의 문장</span>
+      <ol id="review-list"></ol>
+    </article>
+    <article class="paper skills">
+      <span class="tag">듣기 기록</span>
+      <ul id="r-skills"></ul>
+      <p class="fine" id="result-learning-note"></p>
+      <section id="supplemental-practice" class="recall supplemental" aria-label="듣기 보충 연습"></section>
+      <p class="fine" id="result-timing" hidden></p>
+      <section class="recall" aria-labelledby="recall-title">
+        <h3 id="recall-title">새 문장도 알아들을까요?</h3>
+        <p class="fine" id="recall-intro">조금 바꾼 새 문장을 먼저 소리로 듣고 O·X로 답해요.</p>
+        <div id="recall-content" hidden>
+          <p class="recall-q" id="recall-question">먼저 들어요</p>
+          <div class="recall-options" id="recall-options"></div>
+          <p class="recall-sentence" id="recall-sentence"></p>
+          <p class="recall-feedback" id="recall-feedback" role="status"></p>
+        </div>
+        <button id="recall-button" class="chip-btn" type="button">다른 문장 듣기</button>
+      </section>
+    </article>
+    <article class="paper next">
+      <span class="tag">다음 곡</span>
+      <p id="r-next-reason" class="reason"></p>
+      <button id="replay-button" class="felt-cta coral" type="button"><span>다시 하기</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="r-actions">
+        <button id="other-song" class="chip-btn" type="button">다른 곡 고르기</button>
+        <button id="back-button" class="chip-btn" type="button">처음으로</button>
+      </div>
+    </article>
+  </section>
+</main>
+
+<!-- 설정(입구) -->
+<dialog id="settings-dialog" class="paper lab-dialog" aria-labelledby="settings-title">
+  <span class="kicker">SETTINGS</span>
+  <h2 id="settings-title">소리와 박자</h2>
+  <p>문장 소리는 늘 들려요. 배경 음악만 끄거나 켤 수 있어요.</p>
+  <div class="dialog-actions">
+    <div class="dialog-toggles">
+      <button class="chip-btn" type="button" data-sound-toggle data-sound-label aria-pressed="true">배경 음악 켜짐</button>
+      <button class="chip-btn" type="button" data-timing-toggle aria-pressed="true">판정 폭 맞춤 켜짐</button>
+      <button class="chip-btn" type="button" data-effects-toggle aria-pressed="false">효과 줄이기</button>
+    </div>
+    <p class="fine">판정 폭 맞춤: 박자를 맞추는 모습에 따라 판정 폭이 조금씩 넓어지거나 좁아져요. 효과 줄이기: 빛 번짐과 반짝이를 줄여요.</p>
+    <div class="offset">
+      <span class="offset-label"><b>박자 보정</b><small>누른 박자가 자꾸 늦게 맞으면 + 쪽으로 조금씩 옮겨요. 블루투스 이어폰은 소리가 늦게 들릴 수 있어요.</small></span>
+      <span class="offset-ctl">
+        <button class="disc-btn" type="button" data-offset="-10" aria-label="박자 보정 10ms 줄이기">−</button>
+        <output data-offset-value>0ms</output>
+        <button class="disc-btn" type="button" data-offset="10" aria-label="박자 보정 10ms 늘리기">+</button>
+      </span>
+    </div>
+    <button id="settings-close" class="felt-cta cream" type="button"><span>설정 완료</span><i class="disc" aria-hidden="true"></i></button>
+  </div>
+</dialog>
+
+<!-- 멈춤 -->
+<dialog id="pause-dialog" class="paper lab-dialog" aria-labelledby="pause-title">
+  <span class="kicker">PAUSED</span>
+  <h2 id="pause-title">잠깐 쉬어요</h2>
+  <p>음악·문장·노트가 함께 멈췄어요. <span id="pause-where"></span></p>
+  <div class="dialog-actions">
+    <button id="resume-button" class="felt-cta coral" type="button"><span>이어 하기</span><i class="disc" aria-hidden="true"></i></button>
+    <div class="dialog-toggles">
+      <button class="chip-btn" type="button" data-sound-toggle data-sound-label aria-pressed="true">배경 음악 켜짐</button>
+      <button class="chip-btn" type="button" data-effects-toggle aria-pressed="false">효과 줄이기</button>
+    </div>
+    <div class="offset">
+      <span class="offset-label"><b>박자 보정</b><small>누른 박자가 자꾸 늦게 맞으면 + 쪽으로 옮겨요.</small></span>
+      <span class="offset-ctl">
+        <button class="disc-btn" type="button" data-offset="-10" aria-label="박자 보정 10ms 줄이기">−</button>
+        <output data-offset-value>0ms</output>
+        <button class="disc-btn" type="button" data-offset="10" aria-label="박자 보정 10ms 늘리기">+</button>
+      </span>
+    </div>
+    <button id="leave-button" class="chip-btn wide" type="button">처음으로</button>
+  </div>
+</dialog>
+
+<p class="toast paper" id="toast" role="status" hidden></p>
+<script src="./collection.js?v=245a23cd396c"></script>
+</body>
+</html>

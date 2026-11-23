@@ -114,6 +114,45 @@ test('첫 화면 · 생활 묶음에 실리는 모듈은 새 길을 부르지 �
  }
 });
 
+// 선택 공개 ③ (나)(설계 주인 11-23 조건 1): ③은 첫 화면 모듈 열 하나 · 새 파일 하나(world-month-answer) · 셸 · 글꼴표 둘 · HTML 셋만 싣는다. 엔진 다섯
+// (/atlas/0.1.0/ · /atlas/loader.*)과 새 길 모듈 열둘은 켜는 공개(5-3)에 싣는다. 남는 파일이 뺀 파일을 정적으로 부르면 ③ 뒤 첫 화면이 404로 서지
+// 못한다. 뺀 파일을 동적으로 부르는 곳은 셸의 입구 하나(lazyAtlasNext)다 — 꺼진 판은 부르지 않고, 깃발이 잘못 켜져 404면 부르는 곳이 지금 판으로 간다.
+const STEP3_KEPT=['app-shell.mjs','world-learning-ui.mjs','life-ui.mjs','life-progress.mjs','world-client.mjs','world-session.mjs','world-reminder-device.mjs','world-month-answer.mjs',
+ '../brand-opening/home.mjs','../brand-opening/home-tutor.mjs','../brand-opening/home-tutor-lines.mjs'];
+const STEP3_LEFT_OUT=['world-atlas-next','world-practice-next','world-today','world-position-next','world-diagnostic-next','world-mock-next','world-position-next-view',
+ 'world-plan-next','world-lookback-next','world-me-next','world-old-engine-doors','world-atlas-game'];
+test('선택 공개 ③ (나) — 남는 파일은 뺀 열일곱(엔진 다섯 · 새 길 모듈 열둘)을 정적으로 부르지 않고, 뺀 파일을 동적으로 부르는 곳은 셸의 입구 하나다(설계 주인 11-23 조건 1)',()=>{
+ const leftOut=specifier=>{
+  const bare=specifier.split(/[?#]/)[0];
+  if(/(^|\/)atlas\/(0\.1\.0\/|loader\.)/.test(bare)||bare.startsWith('/atlas/'))return true;
+  return STEP3_LEFT_OUT.some(name=>bare.split('/').pop()===`${name}.mjs`);
+ };
+ assert.equal(STEP3_LEFT_OUT.length,12);
+ const dynamic=[];
+ for(const file of STEP3_KEPT){
+  const source=read(file),stack=[parse(source)],found=[];
+  while(stack.length){
+   const node=stack.pop();
+   if(!node||typeof node.type!=='string')continue;
+   if(['ImportDeclaration','ExportAllDeclaration','ExportNamedDeclaration'].includes(node.type)&&node.source)found.push({kind:'static',specifier:String(node.source.value)});
+   if(node.type==='ImportExpression')found.push({kind:'dynamic',specifier:node.source.type==='Literal'?String(node.source.value):source.slice(node.source.start,node.source.end)});
+   for(const value of Object.values(node))if(value&&typeof value==='object')stack.push(...(Array.isArray(value)?value:[value]));
+  }
+  assert.deepEqual(found.filter(row=>row.kind==='static'&&leftOut(row.specifier)).map(row=>row.specifier),[],`${file}이 뺀 파일을 정적으로 부르지 않는다`);
+  // 부르는 파일이 지금 라이브 · 후보에 있는지와 이름이 맞는지는 공개 도구의 가져오는 이름 검사가 후보마다 본다(공개 때 옮겨 오는 파일이 있어 저장소로는 못 잰다).
+  for(const row of found.filter(row=>row.kind==='dynamic'))dynamic.push(`${file} ${row.specifier}`);
+ }
+ const toLeftOut=dynamic.filter(row=>leftOut(row.split(' ').slice(1).join(' ')));
+ assert.deepEqual(toLeftOut,['app-shell.mjs ./world-atlas-next.mjs'],'뺀 파일을 동적으로 부르는 곳은 셸의 입구 하나');
+ // 식으로 부르는 곳은 셸의 세 곳(홈 · 오프닝 · 게임 튜터 도움)뿐이다 — 뺀 파일 이름을 짓지 않는다
+ assert.deepEqual(dynamic.filter(row=>!/ \.{1,2}\//.test(row)).sort(),[
+  "app-shell.mjs worldUrl('brand-opening/game-tutor-support.mjs')",
+  "app-shell.mjs worldUrl('brand-opening/home.mjs')",
+  "app-shell.mjs worldUrl('brand-opening/opening.mjs')",
+ ]);
+ for(const css of ['life-ui.css','../brand-opening/home.css'])assert.doesNotMatch(read(css),/world-atlas|\/atlas\/|-next\.(css|mjs)/,`${css}은 새 길 파일을 부르지 않는다`);
+});
+
 // 4-3 홈의 세 줄(world-today.mjs)은 입구(world-atlas-next.mjs)만 정적으로 받는다 — 셸은 입구를 동적으로만 부르므로 꺼진 판에는 실리지 않는다
 // (설계 주인 11-15 · 설계 검토 H19). 앱 폴더 · 홈 폴더의 다른 모듈이 받으면 여기서 깨진다.
 test('홈 세 줄 모듈(world-today)은 입구만 받는다 — 셸과 첫 화면 · 홈 모듈은 부르지 않는다(설계 주인 11-15)',()=>{
@@ -317,9 +356,10 @@ test('꺼진 판의 이번 주 계획: 지금 판 계획(기기 표지 없음)�
 // localStorage를 함께 쓰므로, 그 열쇠가 다른 공개 원천의 저장 열쇠와 겹치면 남의 기록을 지운다(설계 주인 11-20 선택 공개 1단계 조건).
 // 11-20 라이브(synk-policy main ad9723d)에는 synk:world: 로 시작하는 열쇠가 하나도 없다 — 콜론 꼴 머리는 synk:tutor: 뿐이다.
 test('꺼진 판에서도 받는 학습일 답 모듈은 제 열쇠만 지우고, 그 열쇠 머리(synk:world:)를 짓는 다른 공개 원천이 없다(선택 공개 1단계)',async()=>{
- const {clearMonthAnswer,MONTH_KIND,FIRST_KIND}=await import('../world-month-answer.mjs');
- const prefixes=[MONTH_KIND.prefix,FIRST_KIND.prefix];
- assert.deepEqual(prefixes,['synk:world:month-answer:','synk:world:first-answers:']);
+ const {clearMonthAnswer,MONTH_KIND,FIRST_KIND,CLEAR_KIND}=await import('../world-month-answer.mjs');
+ // 셋째 머리는 지우기 표지(검수 s3d GH2) — 새 길이 물을 때만 두고, 지우는 길은 그 계정의 표지도 지운다.
+ const prefixes=[MONTH_KIND.prefix,FIRST_KIND.prefix,CLEAR_KIND.prefix];
+ assert.deepEqual(prefixes,['synk:world:month-answer:','synk:world:first-answers:','synk:world:month-clear:']);
  // 공개 원천(experiences/ 아래, 시험 qa/ 빼고)의 synk:world: 조각은 두 머리의 정의(prefix: '…')뿐이어야 한다 — 이 모듈과 이 모듈을 품은 생성 묶음.
  const root=new URL('../../../',import.meta.url);
  const files=execFileSync('git',['ls-files','-z','--','experiences/*.mjs','experiences/*.js','experiences/*.html'],{cwd:root,maxBuffer:1<<28})
@@ -335,8 +375,23 @@ test('꺼진 판에서도 받는 학습일 답 모듈은 제 열쇠만 지우고
  assert.deepEqual(stray,[],'synk:world: 열쇠를 짓는 다른 공개 원천이 없다 — 학습일 답의 지우는 길이 남의 열쇠를 지울 수 없다');
  // 지우는 길은 그 계정의 두 열쇠만 지운다 — 다른 계정 · 다른 머리(synk.world.* · synk:tutor:*)는 그대로다.
  const values=new Map([[`${MONTH_KIND.prefix}acct-a`,'1'],[`${FIRST_KIND.prefix}acct-a`,'1'],[`${MONTH_KIND.prefix}acct-b`,'1'],
+  [`${CLEAR_KIND.prefix}acct-a`,'m'],[`${CLEAR_KIND.prefix}acct-b`,'m'],
   ['synk.world.lang','ko'],['synk:tutor:acct-a','x'],['synk.world.month-answer.acct-a','keep']]);
- const storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};
+ let writes=0;
+ const storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>{writes+=1;values.set(key,String(value));},removeItem:key=>values.delete(key)};
  clearMonthAnswer(storage,'acct-a');
- assert.deepEqual([...values.keys()].sort(),[`${MONTH_KIND.prefix}acct-b`,'synk.world.lang','synk.world.month-answer.acct-a','synk:tutor:acct-a'].sort());
+ assert.deepEqual([...values.keys()].sort(),[`${MONTH_KIND.prefix}acct-b`,`${CLEAR_KIND.prefix}acct-b`,'synk.world.lang','synk.world.month-answer.acct-a','synk:tutor:acct-a'].sort());
+ assert.equal(writes,0,'지우는 길은 쓰지 않는다(꺼진 판의 로그아웃 · 동의 바꿈 — 쓰기 0)');
+});
+
+// 검수 s3e2 GA1: 학습 기록 동의를 바꾼 뒤 지우는 학습일 답은 누른 때의 계정 것이다 — 기다리는 사이 다른 계정으로 바뀌면 응답 때의 계정 열쇠를 지웠다.
+test('학습 기록 동의 바꾸기는 누른 때의 계정 열쇠만 지우고, 판을 다시 정하는 것도 그 계정의 생활 기록일 때만이다(검수 s3e2 GA1)',()=>{
+ const shell=read('app-shell.mjs');
+ const start=shell.indexOf("if(control.matches?.('[data-world-learning]'))"),end=shell.indexOf("if(!control.matches?.('[data-town-sharing]'))");
+ assert.ok(start>0&&end>start,'동의 토글 손잡이를 찾았다');
+ const handler=shell.slice(start,end);
+ assert.match(handler,/const enabled=control\.checked,owner=client\.snapshot\?\.accountId;/);
+ assert.equal(handler.match(/clearMonthAnswer\(localStorage,owner\)/g)?.length,2,'됨 · 실패 두 갈래 모두 누른 때의 계정');
+ assert.doesNotMatch(handler,/clearMonthAnswer\(localStorage,client\.snapshot/);
+ assert.equal(handler.match(/if\(life\.owner===\(owner\|\|'guest'\)\)life\.atlasNext\?\.redecide\?\.\('account'\)/g)?.length,2);
 });

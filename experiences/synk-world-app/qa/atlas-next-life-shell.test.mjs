@@ -154,13 +154,13 @@ test('셸 입구 겉(원문 lazyAtlasNext) — 입구 모듈을 한 번 못 받�
  assert.deepEqual(reopened,[]);
  assert.equal(await lazy.practiceCoach([]),'practice-coach','다음에 받으면 짧은 연습은 새 길');
  assert.deepEqual(reopened,[{reason:'loaded'}],'받기 실패로 지금 판을 준 뒤 받았으니 한 번 알린다(생활 판정이 다시 묻는다)');
- assert.deepEqual(seen.notes,[['save','LIFE_NO_COACH']],'받기 전의 계기를 흘려보낸다');
+ assert.deepEqual(seen.notes,[['save','LIFE_NO_COACH'],['load','ENTRY_IMPORT']],'받기 전의 계기를 흘려보낸다 — 입구 받기 실패도 계기에 한 번(설계 주인 11-23 조건 1)');
  assert.equal(await lazy.lifeCoach(),'life-coach');
  assert.equal(reopened.length,1,'한 번만');
  lazy.note('load',{ok:true});
- assert.equal(seen.notes.length,2,'받은 뒤에는 바로 넘긴다');
+ assert.equal(seen.notes.length,3,'받은 뒤에는 바로 넘긴다');
  lazy.dispose();lazy.note('save',{ok:false,code:'AFTER'});
- assert.equal(seen.notes.length,2,'닫은 뒤의 계기는 버린다');
+ assert.equal(seen.notes.length,3,'닫은 뒤의 계기는 버린다');
  // 처음부터 받으면 알리지 않는다
  const fine=fakeEntry(),quiet=lazyShell({loadEntry:()=>Promise.resolve(fine.module)})('acct-1'),heard=[];quiet.reopened(d=>heard.push(d));
  await quiet.lifeCoach();assert.deepEqual(heard,[],'받기 실패가 없었으면 알림도 없다');
@@ -168,6 +168,43 @@ test('셸 입구 겉(원문 lazyAtlasNext) — 입구 모듈을 한 번 못 받�
  const many=fakeEntry(),lots=lazyShell({loadEntry:()=>Promise.resolve(many.module)})('acct-1');
  for(let i=0;i<60;i+=1)lots.note('save',{ok:false,code:'EARLY'});
  await lots.lifeCoach();assert.equal(many.seen.notes.length,50);
+});
+
+// 설계 주인 11-23 조건 1: 깃발이 잘못 켜져 새 길 입구(world-atlas-next.mjs)가 없을 때(404). 부르는 곳(짧은 연습 · 시험 형식 · 게임 문 · 생활 판정 ·
+// 홈)은 이 실패를 받아 지금 판으로 간다(world-learning-ui · app-shell의 catch — 브라우저 측정은 ③ 사슬 배경). 셸은 첫 실패만 계기에 남긴다.
+test('셸 입구 겉(원문) — 입구가 없을 때(404) 부르는 곳마다 실패를 받아 지금 판으로 가고, 계기에는 첫 실패 한 번만 남는다(설계 주인 11-23 조건 1)',async()=>{
+ let tries=0;
+ const missing=()=>{tries+=1;return Promise.reject(new TypeError('Failed to fetch dynamically imported module'));};
+ for(const owner of ['guest','acct-1']){
+  tries=0;
+  const lazy=lazyShell({loadEntry:missing})(owner);
+  lazy.note('save',{ok:false,code:'EARLY'});
+  assert.deepEqual(lazy.health(),{early:[{kind:'save',ok:false,code:'EARLY'}]},`${owner}: 받기 전 계기는 셸이 입구와 같은 꼴로 준다`);
+  for(let round=0;round<3;round+=1){
+   await assert.rejects(lazy.practiceCoach([]),/Failed to fetch/,`${owner}: 짧은 연습은 실패를 받는다(부르는 곳이 지금 판으로 간다)`);
+   await assert.rejects(lazy.mockCoach([]),/Failed to fetch/);
+   await assert.rejects(lazy.gameDoor('hangul'),/Failed to fetch/);
+   await assert.rejects(lazy.lifeCoach(),/Failed to fetch/);
+   await assert.rejects(lazy.homeCoach([]),/Failed to fetch/);
+  }
+  assert.equal(tries,15,`${owner}: 부를 때마다 다시 받아 본다(브라우저는 실패한 모듈을 문서 안에서 다시 받지 않는다)`);
+  assert.deepEqual(lazy.health(),{early:[{kind:'save',ok:false,code:'EARLY'},{kind:'load',ok:false,code:'ENTRY_IMPORT'}]},`${owner}: 입구 실패는 계기에 한 번`);
+  // 입구가 없으면 받기를 기다리지 않는 겉은 비어 있다
+  assert.equal(lazy.planLog({}),null);assert.equal(lazy.lookbackOf({}),null);assert.equal(lazy.firstAnswersOf({}),null);
+  assert.equal(await lazy.readResponses({}),null);assert.equal(await lazy.noteLogout(),false);
+  const quit=lazy.retired({},()=>{});assert.equal(typeof quit,'function');lazy.redecide('account');
+  lazy.dispose();
+  assert.equal(await lazy.practiceCoach([]),null,`${owner}: 닫은 뒤에는 받지 않는다`);
+  assert.equal(tries,15);
+ }
+ // 받는 사이에 닫혔으면 실패를 남기지 않는다(떠난 주인의 계기다)
+ let fail;
+ const closing=lazyShell({loadEntry:()=>new Promise((resolve,reject)=>{fail=reject;})})('acct-1');
+ const pending=closing.lifeCoach();
+ await Promise.resolve();
+ closing.dispose();fail(new TypeError('Failed to fetch dynamically imported module'));
+ await assert.rejects(pending,/Failed to fetch/);
+ assert.deepEqual(closing.health(),{early:[]},'닫은 뒤의 받기 실패는 남기지 않는다');
 });
 
 test('셸 입구 겉(원문) — 리허설 나르개의 401은 그 나르개를 만든 로그인의 세대 · 주인일 때만 로그인으로 보낸다(Fable 5.2 합친 끝 판 넘친 #26 · #27 배선)',async()=>{
@@ -225,4 +262,35 @@ test('학습 기록 토글 실패 — 계정 다시 읽기가 끝날 때까지 �
  for(let i=0;i<5;i+=1)await Promise.resolve();
  assert.equal(control.disabled,false,'다시 읽은 뒤 푼다');
  assert.deepEqual(calls.slice(3),['profile'],'서버 값으로 프로필을 다시 그린다');
+});
+
+// 검수 s3e2 GA1 · GA2: 공개 직후의 옛 계정 묶음에는 refreshLearning이 없다 — 그때는 restore()로 다시 읽는다. 기다리는 사이 다른 계정으로 바뀌면
+// 누른 계정의 학습일 답만 지우고, 판을 다시 정하는 것은 생활 기록의 주인이 그 계정일 때만이다.
+test('학습 기록 토글 — refreshLearning이 없으면 restore()로 다시 읽고, 기다리는 사이 계정이 바뀌어도 누른 계정의 학습일 답만 지운다(검수 s3e2 GA1 · GA2)',async()=>{
+ const shell=fs.readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8');
+ const head="document.addEventListener('change',";
+ const start=shell.indexOf(head);
+ const end=shell.indexOf('\n',shell.indexOf("control.disabled=false;});});",start));
+ const body=shell.slice(start+head.length,shell.lastIndexOf(');',end));
+ let fail,release;
+ const restored=new Promise(resolve=>{release=resolve;});
+ const calls=[],cleared=[];
+ const account={setLearning:()=>new Promise((resolve,reject)=>{fail=reject;}),restore:()=>{calls.push('restore');return restored;}};
+ const client={snapshot:{accountId:'acct-1'}};
+ const life={owner:'acct-1',atlasNext:{redecide:()=>calls.push('redecide')}};
+ const control={checked:true,disabled:false,dataset:{revision:'3'},matches:selector=>selector==='[data-world-learning]'};
+ const listen=new Function('account','life','client','home','errorText','profile','town','screen','clearMonthAnswer','localStorage',`'use strict';return (${body});`)(
+  account,life,client,{toast:()=>calls.push('toast')},error=>error.message,()=>calls.push('profile'),()=>{},'world-profile',
+  (storage,accountId)=>cleared.push(accountId),'local-storage');
+ listen({target:control});
+ client.snapshot={accountId:'acct-2'};life.owner='acct-2';
+ fail(Object.assign(new Error('충돌'),{code:'REVISION_CONFLICT'}));
+ for(let i=0;i<8;i+=1)await Promise.resolve();
+ assert.deepEqual(cleared,['acct-1'],'누른 계정의 학습일 답만 지운다 — 바뀐 계정의 답은 남는다');
+ assert.deepEqual(calls,['toast','restore'],'생활 기록의 주인이 바뀌어 판은 다시 정하지 않고, refreshLearning이 없으니 restore로 다시 읽는다');
+ assert.equal(control.disabled,true,'다시 읽기가 끝나기 전에는 잠근 채');
+ release(true);
+ for(let i=0;i<8;i+=1)await Promise.resolve();
+ assert.equal(control.disabled,false,'다시 읽은 뒤 푼다');
+ assert.deepEqual(calls.slice(2),['profile'],'다시 읽은 값으로 프로필을 다시 그린다');
 });

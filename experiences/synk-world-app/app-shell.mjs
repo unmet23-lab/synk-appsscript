@@ -38,13 +38,14 @@ const atlasNextOn=connection.features?.atlasNext===true;
 // 손님 깃발(atlasNextGuest — operating-mode.mjs): 꺼져 있으면 손님 주인에게는 새 길 입구를 주지 않는다(손님은 지금 판 — 계정만 새 길).
 const atlasNextGuestOn=atlasNextOn&&connection.features?.atlasNextGuest===true;
 // 받기는 한 번(동시에 불러도 같은 약속), 받는 사이에 닫히면 받은 것을 바로 닫는다 — 주인이 바뀌어 생활 기록을 버릴 때(keep) 떠난 주인의
-// 새 길 코치 · 호스트가 남지 않게(11-12 화면 검수 A6). 받기가 실패하면 다음에 다시 받는다.
+// 새 길 코치 · 호스트가 남지 않게(11-12 화면 검수 A6). 받기가 실패하면 다음에 다시 받는다. 첫 실패는 계기에 한 번 남긴다(load · ENTRY_IMPORT —
+// 깃발이 잘못 켜져 입구가 없을 때(404)도 부르는 곳은 지금 판으로 가고, 브라우저는 실패한 모듈을 문서 안에서 다시 받지 않는다. 설계 주인 11-23 조건 1).
 // 계정 길(단계 4 ④ — 단계4_계획 §18-2 · §18-5): 운영은 계정을 다시 읽는 world-account의 prepareAtlasTrail, 리허설은 리허설 서버의 trail
 // (rehearsal-trail.mjs — WorldClient와 같은 세션 머리말). 판 정하기 · 옮기기 물음 · 로그아웃 표지는 입구(world-atlas-next.mjs)가 한다.
 function lazyAtlasNext(owner){
  // gaveOld: 입구 모듈을 못 받아 면(생활 판정 · 짧은 연습)에 지금 판을 줬다 — 다음에 받으면 판이 풀렸다고 알린다(입구는 제가 서기 전의 일을 몰라
  // 알리지 않아, 짧은 연습은 새 길인데 생활 판정 · 홈 칩 · 알림은 지금 판에 남았다 — 합친 끝 판 F9). early: 받기 전의 계기(50개까지 — 입구가 서면 흘려보낸다).
- let made=null,loading=null,disposed=false,gaveOld=false;const reopeners=new Set(),early=[];
+ let made=null,loading=null,disposed=false,gaveOld=false,entryFailed=false;const reopeners=new Set(),early=[];
  // 리허설 나르개의 401은 그 나르개를 만든 로그인의 세대에서만 로그인으로 보낸다 — 로그아웃 뒤 같은 합성 계정으로 다시 들어온 새 로그인을 앞 로그인의
  // 늦은 401이 로그인 화면으로 돌리지 않게(합친 끝 판 넘친 #26 — 계정 번호만 견주면 같은 계정의 새 세션을 못 가렸다).
  const trailOf=m=>{if(owner==='guest')return null;if(operating)return()=>account.prepareAtlasTrail();const generation=client.generation;return m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest',onAuth:()=>{if(client.generation===generation&&(client.snapshot?.accountId||'guest')===owner)client.expire?.();}});};
@@ -52,7 +53,7 @@ function lazyAtlasNext(owner){
  // 호스트)과 옛 손님 기록(옛 손님 코치를 열어 쓰기 임대 안에서 다시 판단해 비운다 — 4-5 코드 검수 GA1). 입구가 비우기에서만 부른다. 새 길이 꺼진
  // 셸은 입구 모듈을 받지 않으므로 이 문도 받지 않는다.
  const oldDoorsOf=m=>m.oldEngineDoors?.({openGame:()=>worldLearning.engine.createGame({gameId:'world-home',storage:window.localStorage}),host:()=>window.SYNKLearningHost||null});
- const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{if(String(id).startsWith('sit-'))return situationName(id);const key=`position.skill.${id}`;return hasString(key)?t(key):null;},presentation:()=>life.education?.presentation?.()??null,trail:trailOf(m),oldEngine:oldDoorsOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed){made.dispose();return made;}for(const [kind,outcome] of early.splice(0))try{made.note(kind,outcome);}catch{}if(gaveOld){gaveOld=false;for(const fn of [...reopeners])try{fn({reason:'loaded'});}catch{}}return made;},error=>{loading=null;gaveOld=true;throw error;});
+ const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{if(String(id).startsWith('sit-'))return situationName(id);const key=`position.skill.${id}`;return hasString(key)?t(key):null;},presentation:()=>life.education?.presentation?.()??null,trail:trailOf(m),oldEngine:oldDoorsOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed){made.dispose();return made;}for(const [kind,outcome] of early.splice(0))try{made.note(kind,outcome);}catch{}if(gaveOld){gaveOld=false;for(const fn of [...reopeners])try{fn({reason:'loaded'});}catch{}}return made;},error=>{loading=null;gaveOld=true;if(!entryFailed&&!disposed){entryFailed=true;early.push(['load',{ok:false,code:'ENTRY_IMPORT'}]);}throw error;});
  return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),
   // 생활 화면의 코치(4-2 — 은행 world-life, 단계4_계획 §19-1 ①). 지금 판이면 null.
   async lifeCoach(){if(disposed)return null;const entry=await load();return disposed?null:entry.lifeCoach();},
@@ -80,7 +81,8 @@ function lazyAtlasNext(owner){
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
   // 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 입구가 판을 다시 정한다(넘친 #18).
   redecide(reason){if(made&&!disposed)made.redecide(reason);},
-  health:()=>made?.health()??null,
+  // 계기 — 입구를 받기 전(못 받았을 때 포함)에는 모은 계기를 입구의 health()와 같은 꼴(early)로 준다.
+  health:()=>made?.health()??{early:early.map(([kind,outcome])=>({kind,...outcome}))},
   dispose(){disposed=true;reopeners.clear();made?.dispose();}};
 }
 // 10-19 결정 「WORLD 손님」(공개판 설계 §2): 손님(로그인 전)에게 한글 만나기를 연다 — 진도는 그 기기에 남는다.
@@ -498,8 +500,11 @@ function mountLifeLearning({owner,progress,keep}){
   make:source=>source?source.createGame({gameId:'world-reminders'},worldLearning.engine.createGame,worldLearning.createLearningSync)
    :owner==='guest'?worldLearning.engine.createGame({gameId:'world-reminders',storage:localStorage,followups:true}):null}));
  reminders=keep('reminders',createWorldReminders({owner,storage:localStorage,target:window,read:reminderInputs,open:openReminder,
-  // 시험 점검 카드의 판정(4-4d §21-23의 5): 셸이 낸 판정(새 길이면 홈 코치로 — 지금 판이면 입구가 있는가). 판정이 바뀌면 열린 카드에 단추를 더한다(panel).
-  canMock:()=>typeof education?.mockReady==='function'?education.mockReady()===true:typeof education?.mock==='function',panel:()=>home.openPanel?.()??null,
+  // 시험 점검 카드: 이름은 옛 뜻을 지키고 새 뜻에는 새 이름을 붙인다(③ 공개 직후 캐시에 남은 옛 알림 모듈과 섞일 때를 막는다).
+  // canMock은 옛 뜻(시험 형식 입구가 있는 화면인가 — 옛 알림 모듈이 주 단추 글을 이것으로 고른다), mockNow는 새 뜻(4-4d §21-23의 5 — 셸이 낸 판정,
+  // 새 길이면 홈 코치로 지금 열 수 있는가). mockNow를 넘기는 셸만 두 단추(exam-mock · exam-check)를 안다. 판정이 바뀌면 열린 카드에 단추를 더한다(panel).
+  canMock:()=>typeof education?.mock==='function',
+  mockNow:()=>typeof education?.mockReady==='function'?education.mockReady()===true:typeof education?.mock==='function',panel:()=>home.openPanel?.()??null,
   show:(title,html)=>show(title,html,'world-reminder'),toast:message=>home.toast(message),repaint:repaintReminderCard,push:owner==='guest'?null:worldPush,pushFeature:pushOn,close}),value=>{value.dispose();home.connectReminders?.(null);});
  home.connectReminders?.(reminders);window.__synkReminders=reminders;reminders.schedule();
  window.__synkLife=ui;
@@ -529,14 +534,16 @@ function studyTimes(snapshot){
  return times;
 }
 // 알림을 누르면 그 알림이 가리키는 자리로: 돌아온 복습은 나의 복습 화면, 이번 주 연습은 이번 주 계획, 시험 점검 카드의 주 단추는
-// 시험 형식 연습(미니 모의, ④ education.mock — 열 수 없으면 그쪽이 알리고 내 위치로 간다), 짧은 진단 단추는 짧은 진단. 두 단추는 그린 때 고른 대상을
-// 그대로 연다 — 누른 때 「education.mock이 있는가」로 다시 고르지 않는다(4-4d §21-23의 5 · 설계 다시 검수 A1 · A2).
+// 시험 형식 연습(미니 모의, ④ education.mock — 열 수 없으면 그쪽이 알리고 내 위치로 간다), 짧은 진단 단추(exam-check)는 짧은 진단. 두 단추는 그린 때 고른
+// 대상을 그대로 연다 — 누른 때 「education.mock이 있는가」로 다시 고르지 않는다(4-4d §21-23의 5 · 설계 다시 검수 A1 · A2). 옛 이름 exam-start는 옛 뜻
+// 그대로 남긴다 — ③ 공개 직후 캐시에 남은 옛 알림 모듈이 그린 주 단추이고, 누른 때 고른다.
 // (추천 「다음 연습」으로 바로 보내면 목표를 아직 정하지 않은 학생에게 목표 창이 먼저 떠서, 알림이 말한 자리와 달라진다.)
 function openReminder(kind){
  const run=task=>void Promise.resolve().then(task).catch(e=>home.toast(errorText(e)));
  if(kind==='plan')return run(()=>life.education?.plan?.());
  if(kind==='exam-mock')return run(()=>life.education?.mock?.());
- if(kind==='exam-start')return run(()=>life.education?.position?.({start:true}));
+ if(kind==='exam-check')return run(()=>life.education?.position?.({start:true}));
+ if(kind==='exam-start')return run(()=>{const education=life.education;return typeof education?.mock==='function'?education.mock():education?.position?.({start:true});});
  return run(()=>openLife('review'));
 }
 // 2단 알림으로 들어온 자리를 연다: 입구가 끝나고(튜터 고르기 등) 그 주인의 학습이 준비된 뒤에만. 손님이면 한 번 로그인 안내만 하고 기다린다.
@@ -898,21 +905,26 @@ function mountMe(){
 // 연습 기록 비우기(§22-4 셸): 정해진 글로 한 번 더 묻고, 확인하면 입구의 clearPractice를 부른다. 결과를 알린 뒤 계정 설정 스냅샷을 새로 받아 「내 계정」
 // 시트 전체를 다시 그린다(22-4의 5 — 동의 체크박스의 판 번호와 응답 목록). 아무것도 비우지 못했으면 「지금은 비우지 못했어요」 쪽으로 알린다.
 // 비우는 사이 단추를 다시 누르면 묻지 않는다 — 두 번째 확인이 첫 비우기가 연 새 판을 또 비웠다(4-5 끝 판 B3).
+// 비우는 동안 진행을 보인다(설계 주인 11-20 밤 — 끝에서 끝까지 함수 한도 안이면 받고 기기에 진행을 보인다, 계획 §24-8). 단추 글을 「비우고 있어요」로
+// 바꾸고 상태 알림(읽어 주는 칸)으로도 알린다. 한 번 부른 비우기가 CLEAR_SLOW_MS를 넘기면 한 번 더 알린다 — 계정 쪽은 비우기를 160초까지
+// 기다린다(world-account.mjs TRAIL_CLEAR_WAIT_MS).
 let clearingPractice=false;
+const CLEAR_SLOW_MS=10000;
 async function clearPracticeNow(){
  if(clearingPractice)return;
  const view=$('#panel-content .ws-me');
  if(!window.confirm(meText('me.clearAsk')))return;
- clearingPractice=true;const button=view?.querySelector('[data-me-clear]');if(button)button.disabled=true;
+ clearingPractice=true;const button=view?.querySelector('[data-me-clear]');if(button){button.disabled=true;button.textContent=meText('me.clearing');}
+ let slow=null;const waiting=()=>{clearTimeout(slow);home.toast(meText('me.clearing'));slow=setTimeout(()=>home.toast(meText('me.clearingSlow')),CLEAR_SLOW_MS);},waited=()=>{clearTimeout(slow);slow=null;};
  try{
  // 다시 묻고 다시 부르는 것은 처음 누른 로그인의 학습 화면에만 한다 — 기다리는 사이 계정이 바뀌었으면 묻지 않고 멈춘다(4-5 코드 다시 검수 -c GA1).
  const education=life.education,owner=client.snapshot?.accountId||'guest',same=()=>life.education===education&&(client.snapshot?.accountId||'guest')===owner;
- let result=null;try{result=await education?.clearPractice?.();}catch{result=null;}
+ let result=null;waiting();try{result=await education?.clearPractice?.();}catch{result=null;}waited();
  // 서버가 받지 않아 지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 묻는다 — 비우면 그 기록도 지워진다(4-5 대체 설계 검토 F4). 그사이 수가
  // 늘었으면 새 수로 다시 묻는다(GA4).
  for(let asks=0;asks<3&&result?.code==='UNSENT_SKIPPED'&&Number.isSafeInteger(result.skipped)&&result.skipped>0;asks+=1){
   if(!same()||!window.confirm(meText('me.clearSkippedAsk',{n:result.skipped}))||!same())return;
-  try{result=await education.clearPractice({allowSkipped:result.skipped});}catch{result=null;}
+  waiting();try{result=await education.clearPractice({allowSkipped:result.skipped});}catch{result=null;}waited();
  }
  home.toast(meText(result?.ok?(result.partial?'me.clearPartial':'me.clearDone'):result?.code==='UNSENT'?'me.clearUnsent':'me.clearFailed'));
  // 결과와 상관없이 계정 설정 스냅샷을 새로 받아 그린다 — 결과를 모르는 실패도 서버에서는 비워졌을 수 있다(동의 체크박스의 판 번호 — §22-4 · 4-5 대체 설계 검토 F8).
@@ -922,7 +934,7 @@ async function clearPracticeNow(){
  if(!sheetOpen(view))return;
  if(sheet?.hasDraft?.()){redrawMeParts();return;}
  profile();
- }finally{clearingPractice=false;if(button?.isConnected)button.disabled=false;}
+ }finally{waited();clearingPractice=false;if(button?.isConnected){button.disabled=false;button.textContent=meText('me.clearButton');}}
 }
 // 「내 계정」 시트가 그대로 열려 있는가(닫기 전환 중이면 시트가 아직 붙어 있어도 아니다).
 function sheetOpen(view){const kind=home.openPanel?.();return Boolean(view?.isConnected)&&(kind==null||kind==='world-profile');}
@@ -1124,7 +1136,7 @@ const commands={
  refresh:async()=>{try{await client.refresh();home.toast(t('account.reconnected'));}catch(e){home.toast(errorText(e));}},
  // 학습 알림 단추(world-reminder-device.mjs): 앱 안 묻기·멈춤 뒤 묻기·시험 점검 카드. 「알려 주세요」는 누른 그 자리에서 OS 권한을 청한다.
  // 2단(앱을 닫아도 받기): 휴대폰 묻는 카드 · 동의 상자의 「동의하고 켜기」(누른 그 동작 안에서 world-push가 권한을 청한다) · 「괜찮아요」.
- ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-mock','reminder-exam-plan','reminder-push-ask','reminder-push-yes','reminder-push-no'].map(name=>[name,()=>life.reminders?.command(name)])),
+ ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-mock','reminder-exam-check','reminder-exam-plan','reminder-push-ask','reminder-push-yes','reminder-push-no'].map(name=>[name,()=>life.reminders?.command(name)])),
  // 로그아웃: 이 뒤에 생긴 손님 기록만 다음 로그인에 옮길지 묻는다(device-records.mjs — 앞 사람의 손님 기록이 다음 사람에게 가지 않게).
  logout:async()=>{if(dramaInvite.language)finishDramaInvite();accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
    // Atlas 새 길의 로그아웃 표지(손님 저장소 — 되는 만큼만, 단계4_계획 §18-5-3): 이미 연 계정 코치가 있을 때만, 잠깐만 기다린다.
@@ -1149,12 +1161,14 @@ document.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();(action==='quickplay'?play:action==='profile'?profile:action==='about'?about:action==='photo'?photo:action==='town'||nav==='town'?town:wardrobe)();
  }
 },true);
-document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{clearMonthAnswer(localStorage,client.snapshot?.accountId);if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;clearMonthAnswer(localStorage,client.snapshot?.accountId);home.toast(errorText(error));if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');
- // 학습일 답은 실패한 갈래에서도 지운다 — 서버의 동의 판은 바뀌었을 수 있다(세대 수만 오르고 해가 없다 — 4-4c 끝 판 F3).
+document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked,owner=client.snapshot?.accountId;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{clearMonthAnswer(localStorage,owner);if(life.owner===(owner||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;clearMonthAnswer(localStorage,owner);home.toast(errorText(error));if(life.owner===(owner||'guest'))life.atlasNext?.redecide?.('account');
+ // 학습일 답은 실패한 갈래에서도 지운다 — 서버의 동의 판은 바뀌었을 수 있다(세대 수만 오르고 해가 없다 — 4-4c 끝 판 F3). 지우는 열쇠는 누른 때의
+ // 계정 것이다 — 기다리는 사이 다른 계정으로 바뀌어도 그 계정의 학습일 답은 그대로 둔다.
  // 서버는 바뀌었는데 뒤 확인만 실패했거나 · 다른 기기가 먼저 바꿨으면(REVISION_CONFLICT) 체크 · 판 번호가 서버와 어긋난 채 남아 다시 눌러도 계속 실패했다 —
  // 계정을 한 번 다시 읽어 시트를 서버 값으로 다시 그린다(합친 끝 판 넘친 #12). 다시 읽기도 못 하면 되돌린 값 그대로. 다시 읽기가 끝날 때까지
- // 토글은 잠근다 — 먼저 풀면 옛 체크 · 판 번호로 다시 눌러 또 실패했다(처리 다시 검수 A1).
- return account.refreshLearning?.().then(()=>{if(screen==='world-profile')profile();},()=>{});}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
+ // 토글은 잠근다 — 먼저 풀면 옛 체크 · 판 번호로 다시 눌러 또 실패했다(처리 다시 검수 A1). 계정 묶음에 refreshLearning이 없으면(공개 직후의
+ // 옛 묶음) 세션을 다시 확인하는 restore()로 읽는다 — 그대로 두면 다른 기기가 바꾼 판 번호로 같은 충돌이 되풀이됐다(검수 s3e2 GA2).
+ return Promise.resolve().then(()=>typeof account.refreshLearning==='function'?account.refreshLearning():account.restore?.()).then(()=>{if(screen==='world-profile')profile();},()=>{});}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
 // pagehide: 생활 세션을 닫고(그 뒤 계정 정리·늦은 준비가 생활 화면을 다시 세우지 않는다) 지금 시트의 자원을 버린 다음 계정을 멈춘다.
 window.addEventListener('pagehide',()=>{authBoundary++;worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
 window.addEventListener('online',()=>{if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});
@@ -1165,7 +1179,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&client.sn
 // A queued close event from sign-in must not clear a newly opened fitting room.
 const worldPanel=$('#world-panel')||$('#panel');
 worldPanel.addEventListener('close',()=>{if(!worldPanel.open){gameLaunch++;gameRecovery=null;screen='';hangerSignature='';renderHomeHanger(client.snapshot);releaseSheet();}});
-window.__synkWorld={client,screen:()=>screen,wardrobe:()=>wardrobeStudio?.metrics(),life:()=>life.ui?.metrics()};
+window.__synkWorld={client,screen:()=>screen,wardrobe:()=>wardrobeStudio?.metrics(),life:()=>life.ui?.metrics(),atlas:()=>life.atlasNext?.health?.()??null};
 home.connectHost?.({tutorFree:()=>!!front?.free(),road:()=>seoul.openRoad(),profile,wardrobe,play,town,about,photo,songs,launchGame,prepareTutor,selectTutor,selectLanguage,tutorStatus,hangulReading,setHangulReading,learn:()=>openLife('next'),packs:()=>openLife('packs'),stories:()=>openLife('stories'),review:()=>openLife('review'),cafe:()=>openLife('cafe'),pack:id=>openLife('pack',id),lesson:id=>openLife('start',id),replayOpening:()=>{close();return startOpening(true);}});
 // 공개판 설계 §2: 로그인할 때 이 기기의 손님 한글 기록(한글 만나기 진도·첫 실행 답)을 계정으로 옮길지 한 번 묻는다(device-records.mjs).
 // 계정 생활 진도와 학습 호스트가 준비된 뒤 입장 관문이 튜터 고르기 앞에서 연다. 다른 계정의 기록에는 쓰지 않는다.

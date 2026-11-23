@@ -1,0 +1,416 @@
+@import url('world-ui.css');
+@import url('tutor-onboarding.css');
+@import url('game-tutor.css');
+@import url('tutor-practice.css');
+@import url('tutor-review.css');
+@import url('life-tutor.css');
+@import url('home-town.css');
+@import url('world-motion.css');
+/* SYNK WORLD 홈 · 시그널 게임판 (2026-10-14)
+ * 3D 방이 화면 전체를 채우고, 그 위에는 어두운 유리 캡슐(위 막대·오늘 카드·탭 막대)만 띄운다.
+ * 창은 근사 검정 판 하나(시트). 주 행동은 흰 알약 하나. 펠트 판 그림은 단추·탭 바탕에 깔지 않는다. */
+:root{--sans:var(--w-sans);--ink:var(--w-ink);--muted:var(--w-ink-3);--shell-width:min(100vw,480px);--shell-height:100dvh;--safe-bottom:env(safe-area-inset-bottom,0px);--safe-top:env(safe-area-inset-top,0px);--dock-gap:12px}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+body{font-family:var(--w-sans);font-weight:var(--wt-body);color:var(--w-ink);background:radial-gradient(120% 80% at 50% 0%,#15171c 0%,var(--w-bg) 62%);display:grid;place-items:center;word-break:keep-all;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-synthesis:none;text-rendering:optimizeLegibility}
+button,a,input,select,summary{touch-action:manipulation}
+button{font:inherit;color:inherit;border:0;cursor:pointer;background:none;padding:0}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+h1,h2,h3,h4,p{margin:0}
+svg{width:24px;height:24px;flex-shrink:0}
+.skip-link{position:fixed;top:-80px;left:16px;padding:10px 16px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-weight:var(--wt-strong);z-index:100}
+.skip-link:focus{top:16px}
+.world-shell{position:relative;width:var(--shell-width);height:var(--shell-height);overflow:hidden;isolation:isolate;background:#e9e3d8}
+#home-main{position:absolute;inset:0;outline:none}
+
+/* ── 위 막대: 나의 방 캡슐 + 설정 ── */
+.world-topbar{position:absolute;z-index:4;top:calc(14px + var(--safe-top));left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.profile-control{display:flex;align-items:center;gap:10px;min-width:0;max-width:calc(100% - 60px);height:52px;padding:5px 18px 5px 5px;border-radius:999px;text-align:left;background:rgba(14,15,19,.72);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:transform .12s var(--w-ease)}
+.profile-control:active{transform:scale(.975)}
+.profile-portrait{display:grid;place-items:center;width:42px;height:42px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,#2a2c33,#16171b);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);overflow:hidden}
+.profile-portrait img{width:100%;height:100%;object-fit:cover}
+.profile-copy{display:grid;gap:1px;min-width:0}
+.profile-copy small{display:flex;align-items:center;gap:6px;font-size:13px;line-height:1.35;font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-copy small::before{content:'';width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--w-led-idle)}
+.profile-control[data-state=ready] small::before,.profile-control[data-state=connected] small::before,.profile-control[data-state=saved] small::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
+.profile-control[data-state=offline] small::before,.profile-control[data-state=conflict] small::before,.profile-control[data-state=pending] small::before{background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.profile-control[data-state=offline] small,.profile-control[data-state=conflict] small{color:var(--w-check-text)}
+.profile-copy strong{display:block;font-size:15.5px;font-weight:var(--wt-title);letter-spacing:var(--track-title);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-button,.close-button{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border-radius:50%;background:rgba(14,15,19,.72);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:transform .12s var(--w-ease),background .18s var(--w-ease)}
+.icon-button svg,.close-button svg{width:20px;height:20px}
+.icon-button:active,.close-button:active{transform:scale(.94)}
+
+/* ── 방 제목: 밝은 벽 위에 먹색 잡지 제목(넓은 화면). 휴대폰 세로에서는 방이 제목이다. ── */
+.place-heading{position:absolute;z-index:2;top:calc(84px + var(--safe-top));left:20px;right:20px;color:#121317;pointer-events:none}
+.place-kicker{display:flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);line-height:1.4;color:rgba(18,19,23,.56)}
+.place-kicker::after{content:'';width:28px;height:1px;background:rgba(18,19,23,.22)}
+.place-heading h1{margin-top:8px;font-size:28px;line-height:1.15;font-weight:var(--wt-display);letter-spacing:var(--track-display)}
+.place-heading>p:last-child{margin-top:6px;font-size:14px;line-height:1.5;font-weight:var(--wt-label);color:rgba(18,19,23,.62)}
+:root:not([data-layout=landscape]) .place-heading{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ── 오늘 카드: 튜터 한마디 + 흰 알약 하나 + 작은 줄(마무리·목표) ── */
+.lobby-action{position:absolute;z-index:3;left:12px;right:12px;bottom:calc(88px + var(--safe-bottom))}
+.life-home-board{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-height:calc(var(--shell-height) - 230px - var(--safe-top) - var(--safe-bottom));overflow-y:auto;scrollbar-width:none;padding:14px 14px 6px;border-radius:var(--w-r-xl);background:rgba(12,13,16,.9);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.07),0 18px 40px rgba(0,0,0,.28);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);color:var(--w-ink)}
+.life-home-board::-webkit-scrollbar{display:none}
+.adventure-button{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:60px;padding:8px 10px 8px 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);text-align:left;box-shadow:0 12px 28px rgba(0,0,0,.25);transition:transform .12s var(--w-ease)}
+.adventure-button svg{width:40px;height:40px;padding:10px;border-radius:50%;background:var(--w-on-ink);color:var(--w-ink);stroke-width:2.2}
+.adventure-button:active{transform:scale(.98)}
+.adventure-button:disabled{opacity:.6}
+.life-next-copy{min-width:0;display:grid;gap:1px}
+.life-next-copy small{font-size:13px;line-height:1.35;font-weight:var(--wt-label);color:rgba(8,9,12,.58)}
+.life-next-copy strong{display:block;font-size:17px;line-height:1.3;font-weight:var(--wt-title);letter-spacing:var(--track-title);overflow-wrap:anywhere}
+#life-progress-caption{flex-basis:100%;font-size:13px;line-height:1.5;color:var(--w-ink-3);text-align:center;font-weight:var(--wt-label)}
+/* 이유 문장은 튜터 카드 안의 한 줄(.home-tutor-context)이 보인다(10-20 검수 #6). 홈 줄의 #study-reason은 화면 읽기용으로만 남기고, 목표·도움·계획 바로가기를 둔다. */
+.study-home-note{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;column-gap:14px}
+.study-home-note p{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.study-home-note [hidden]{display:none}
+/* 영어 · 몽골어는 바로가기 글이 길어 한 줄에 하나씩 쌓이면 카드가 제목까지 올라간다 — 간격을 줄이고(글은 짧은 꼴) 셋이 한 줄에 앉게 한다. */
+html:is([lang=en],[lang=mn]) .study-home-note{column-gap:8px}
+html:is([lang=en],[lang=mn]) .study-home-note .quiet-button{padding:0 4px}
+.quiet-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 6px;font-size:13.5px;font-weight:var(--wt-strong);color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:5px}
+.quiet-button:hover{color:var(--w-ink)}
+.life-home-shortcuts{flex-basis:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.life-home-shortcuts button{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;column-gap:5px;row-gap:0;min-width:0;min-height:44px;padding:4px 8px;line-height:1.15;text-align:center;border-radius:999px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:13.5px;font-weight:var(--wt-strong);color:var(--w-ink)}
+/* 영어 · 몽골어는 복습 칩 글이 길어 네 칸을 똑같이 나누면 그 칩만 두 줄로 꺾인다 — 칸을 글 길이만큼 잡고 남는 폭을 고루 나눈다(11-09 미학 맹검). */
+html:is([lang=en],[lang=mn]) .life-home-shortcuts{grid-template-columns:repeat(4,auto)}
+/* 몽골어는 「복습」과 「일정」을 나란히 두면 격 어미 없는 낱말 둘이 붙어 말이 안 된다 — 돌아온 표현이 없을 때는 「복습」만(누르면 일정이 열린다, 화면 읽기 이름은 그대로). */
+html[lang=mn] #life-review-count[data-due=no]{display:none}
+.life-home-shortcuts small{font-family:var(--w-sans);font-size:13px;font-weight:var(--wt-label);color:var(--w-face-text)}
+
+/* 튜터 카드(홈) — game-tutor 부품을 홈 카드 안에 펼친다 */
+#home-tutor{display:contents;color:var(--w-ink);text-align:left}
+#home-tutor .home-tutor-companion{flex-basis:100%;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+#home-tutor .game-tutor-portrait{grid-row:1;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#2a2c33,#15161a);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);overflow:hidden}
+#home-tutor .game-tutor-portrait img{object-fit:cover}
+#home-tutor .game-tutor-message{grid-column:2;display:block;min-width:0;margin:0;padding:0;background:none;border:0;box-shadow:none}
+#home-tutor .game-tutor-message::before,#home-tutor .game-tutor-message::after{display:none}
+#home-tutor .game-tutor-message small{display:flex;align-items:center;gap:7px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+#home-tutor .game-tutor-message small b:not(.w-name){font-weight:var(--wt-strong);color:var(--w-ink-2)}
+#home-tutor .game-tutor-line{margin:3px 0 0;min-height:0;max-height:none;font-size:16px;line-height:1.5;font-weight:500;color:var(--w-ink);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#home-tutor .game-tutor-sound,#home-tutor .game-tutor-name{display:none}
+/* 추천 이유 한 줄(Core·Vellum이 고른 까닭, 10-20 검수 #6·#17): 튜터 말 아래 작게, 세 줄까지 — 두 줄 제한은 문장 끝을 잘랐다(10-22 몽골어 「…танд тааруулж өгнө.」,
+   11-09 360폭 이하 한국어 28문장 중 5개). 390폭 이상 한국어는 두 줄에 든다. */
+#home-tutor .home-tutor-context{margin:4px 0 0;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#home-tutor .home-tutor-context:empty{display:none}
+#home-tutor .game-tutor-help,#home-tutor .home-tutor-action,.home-tutor-choose{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin:4px 0 2px;padding:0 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
+#home-tutor .home-tutor-action::after,.home-tutor-choose::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+#home-tutor .home-tutor-action:active,.home-tutor-choose:active{transform:scale(.98)}
+/* 홈이 스크립트로 초점을 준 첫 행동 단추는 키보드를 쓰기 전(data-input이 keyboard가 아님)에는 초점 고리를 그리지 않는다(home.mjs focusHomeAction, 11-09). */
+html:not([data-input=keyboard]) :is(#home-tutor .home-tutor-action,#home-tutor .home-tutor-choose,#home-tutor .game-tutor-help,#life-next-button):focus-visible{outline:none}
+#home-tutor .game-tutor-help:disabled{opacity:.55;cursor:wait}
+.home-tutor-choose{flex-basis:100%}
+.home-tutor-choose span{display:none}
+.home-tutor-invitation{flex-basis:100%;font-size:13.5px;text-align:center;color:var(--w-ink-3)}
+.home-tutor-practice,.home-tutor-day{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 6px;background:transparent;color:var(--w-ink);font-size:13.5px;font-weight:var(--wt-strong);text-align:left}
+.home-tutor-practice::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.55)}
+.home-tutor-day::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+.home-tutor-practice[hidden],.home-tutor-day[hidden]{display:none}
+/* 하루 마무리 창 */
+.home-day-header small{font-size:13px;color:var(--w-ink-3)}.home-day-header h3{font-size:var(--t-title-l);font-weight:var(--wt-display);letter-spacing:var(--track-title);margin:6px 0 16px}
+.home-day-tutor .life-tutor{margin-bottom:12px}.home-day-tutor .game-tutor-help[hidden]{display:none}
+.home-day-overview{font-size:15px;line-height:1.6;color:var(--w-ink-2);padding:10px 0}
+.home-day-group{padding:16px 0;border-top:1px solid var(--w-line)}
+.home-day-group h4{margin:0 0 8px;font-size:16px;font-weight:var(--wt-title)}.home-day-group h4 span{font-size:13px;margin-left:6px;color:var(--w-ink-3);font-weight:var(--wt-label)}
+.home-day-group ul{margin:0;padding:0 0 0 18px;font-size:15px;line-height:1.75;color:var(--w-ink-2)}.home-day-group p{font-size:13px;line-height:1.6;color:var(--w-ink-3);margin-top:8px}
+.home-day-save{font-size:13px;line-height:1.6;margin:14px 0!important;color:var(--w-ink-3)}.home-day-empty{padding:18px 0;color:var(--w-ink-3)}
+.home-day-finish:disabled{opacity:.6;cursor:default}.life-expression-save{font-size:13px;margin-top:8px!important;color:var(--w-ink-3)}
+.home-day-recap[open]{display:block}.home-day-recap button{min-width:44px;min-height:44px}.home-day-group li{display:list-item}
+
+/* ── 아래 탭 막대: 떠 있는 유리 알약, 고른 탭은 바탕을 뒤집는다 ── */
+.world-nav{position:absolute;z-index:5;left:12px;right:12px;bottom:calc(12px + var(--safe-bottom));height:66px;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:5px;border-radius:999px;background:var(--w-glass-strong);box-shadow:var(--w-glass-edge),0 18px 40px rgba(0,0,0,.28);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+.world-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;border-radius:999px;color:var(--w-ink-3);font-size:13px;line-height:1.2;font-weight:var(--wt-label);transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.nav-object{display:grid;place-items:center;width:24px;height:24px}
+.nav-object svg{width:22px;height:22px}
+.world-nav button:hover{color:var(--w-ink)}
+.world-nav button[aria-current=page]{background:var(--w-ink);color:var(--w-on-ink);font-weight:var(--wt-strong)}
+.world-nav button:active{transform:scale(.96)}
+
+/* ── 시트: 근사 검정 판 하나 ── */
+.world-panel{position:fixed;inset:auto 0 max(0px,calc((100dvh - var(--shell-height))/2));margin:0 auto;border:0;width:var(--shell-width);max-width:none;max-height:calc(var(--shell-height) - 56px - var(--safe-top));padding:10px 20px calc(28px + var(--safe-bottom));border-radius:var(--w-r-xl) var(--w-r-xl) 0 0;background:var(--w-panel);color:var(--w-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -20px 60px rgba(0,0,0,.45);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--w-ink-4) transparent;font-family:var(--w-sans)}
+/* 시트 전환(유호님 10-14 B안): 열 때 200ms 투명·97%→원래, 닫을 때 160ms →투명·98%(home.mjs closePanel의 .is-closing). 바탕 막도 같은 시간. 위치는 움직이지 않는다. */
+.world-panel[open]{animation:sheet-enter .2s var(--w-ease);transform-origin:50% 100%}
+.world-panel[open]::backdrop{animation:backdrop-in .2s linear}
+.world-panel.is-closing{animation:sheet-exit .16s var(--w-ease) forwards;pointer-events:none}
+.world-panel.is-closing::backdrop{animation:backdrop-out .16s linear forwards}
+:root[data-motion=reduced] .world-panel,:root[data-motion=reduced] .world-panel::backdrop{animation:none!important}
+.world-panel::backdrop{background:rgba(4,5,7,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sheet-handle{width:36px;height:4px;border-radius:4px;background:var(--w-ink-4);margin:0 auto 14px}
+.panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
+.panel-header>div{min-width:0;padding-top:4px}
+.eyebrow{display:flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);text-transform:uppercase;line-height:1.4;color:var(--w-ink-3)}
+.eyebrow::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+.panel-header h2{margin-top:8px;font-size:var(--t-title-l);font-weight:var(--wt-display);line-height:1.25;letter-spacing:var(--track-display);text-wrap:balance}
+.close-button{width:44px;height:44px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);-webkit-backdrop-filter:none;backdrop-filter:none}
+.close-button:hover{background:var(--w-s3)}
+.close-button svg{width:18px;height:18px}
+
+/* 시트 안 공통 글·단추 */
+.panel-description{font-size:15.5px;line-height:1.7;color:var(--w-ink-2);text-wrap:pretty}
+.panel-art{display:block;width:150px;height:150px;object-fit:contain;margin:4px auto 18px;filter:var(--w-cut-shadow)}
+.panel-print{width:128px;margin:6px auto 24px}
+.panel-actions{display:grid;gap:10px;margin-top:24px}
+.felt-button,.plain-button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:999px;font-size:15.5px;font-weight:var(--wt-strong);letter-spacing:-.01em;line-height:1.3;text-align:center;transition:transform .12s var(--w-ease),background .18s var(--w-ease),box-shadow .2s var(--w-ease)}
+.felt-button{min-height:56px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.felt-button:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--w-glow) 30%,transparent)}
+.plain-button{background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.plain-button:hover{background:var(--w-s2)}
+.felt-button:active,.plain-button:active{transform:scale(.98)}
+.felt-button:disabled,.plain-button:disabled{opacity:.45;cursor:default;transform:none}
+.felt-button span[aria-hidden],.plain-button span[aria-hidden]{font-weight:400}
+.panel-note,.dialog-note{font-size:14px;line-height:1.65;color:var(--w-ink-3);margin-top:16px;text-wrap:pretty}
+.panel-note{text-align:center}
+.profile-view{text-align:center;padding:0 8px 18px}
+.profile-view>img{display:block;width:104px;margin:0 auto;filter:var(--w-cut-shadow)}
+.profile-view h3{font-size:var(--t-title-l);font-weight:var(--wt-display);letter-spacing:var(--track-title);margin:12px 0 8px}
+.profile-view p{font-size:15px;line-height:1.7;color:var(--w-ink-2)}
+.status-dot{display:inline-block;flex-shrink:0;width:7px;height:7px;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+.connected-destinations{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-top:18px;margin-top:18px;border-top:1px solid var(--w-line)}
+.connected-destinations .plain-button{min-height:48px;padding:0 10px;font-size:14px}
+.profile-copy{min-width:0}
+.home-toast{position:fixed;z-index:100;left:50%;bottom:calc(92px + var(--safe-bottom));transform:translateX(-50%);width:max-content;max-width:min(420px,calc(100vw - 32px));padding:12px 18px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:14px;font-weight:var(--wt-label);line-height:1.5;box-shadow:0 14px 36px rgba(0,0,0,.35);text-align:center;pointer-events:none}
+dialog .home-toast{position:sticky;bottom:12px;left:auto;transform:none;margin:16px auto 0;display:block}
+.home-toast[hidden]{display:none}
+.song-video{display:block;width:100%;max-height:62dvh;background:#000;border-radius:var(--w-r-md)}
+.audio-player{width:100%;margin-top:16px}
+.video-description{font-size:13px;line-height:1.7;color:var(--w-ink-3);margin-top:14px}
+
+/* 놀이 시트: 게임마다 코랄 포스터(그 게임을 설명하는 펠트 사진 한 장 + 큰 한글), 그 밖은 1px 선 목록 */
+.play-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.play-list button{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;min-height:206px;padding:16px;border-radius:var(--w-r-lg);text-align:left;background:var(--w-face);color:var(--w-on-face);transition:transform .14s var(--w-ease),box-shadow .2s var(--w-ease)}
+.play-list button::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--w-studio)}
+.play-list button::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
+.play-list button:hover{box-shadow:0 0 0 4px color-mix(in srgb,var(--w-glow) 28%,transparent)}
+.play-list button:active{transform:scale(.98)}
+.play-list button:first-child{grid-column:1/-1;min-height:220px}
+.play-art{position:absolute;z-index:-1;top:12px;right:12px;width:76px}
+.play-list button:first-child .play-art{top:18px;right:20px;width:142px}
+.play-copy{position:relative;display:grid;gap:4px;max-width:100%}
+.play-label{font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);text-transform:uppercase;color:rgba(30,14,10,.62)}
+.play-copy strong{display:block;font-size:27px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.06em;word-break:keep-all}
+.play-list button:first-child .play-copy strong{font-size:52px;letter-spacing:-.065em}
+.play-copy small:last-child{font-size:14px;line-height:1.45;font-weight:var(--wt-label);color:rgba(30,14,10,.74);text-wrap:balance}
+.play-list .arrow{position:absolute;top:14px;left:14px;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:0;background:rgba(30,14,10,.1);box-shadow:inset 0 0 0 1px rgba(30,14,10,.16)}
+.play-list .arrow::before{content:'';width:13px;height:13px;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
+/* 리듬(2차): 코랄 포스터는 첫 게임 하나. 나머지 게임은 어두운 카드 + 흰 인화지(기울기·자리를 달리한다) */
+.play-list button:not(:first-child){background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge);min-height:196px}
+.play-list button:not(:first-child)::before{display:none}
+.play-list button:not(:first-child)::after{opacity:.05}
+.play-list button:not(:first-child) .play-label{color:var(--w-ink-3)}
+.play-list button:not(:first-child) .play-copy strong{font-size:22px;line-height:1.15;font-weight:var(--wt-display);letter-spacing:var(--track-title)}
+.play-list button:not(:first-child) .play-copy small:last-child{color:var(--w-ink-3)}
+/* 작은 카드의 그림은 글과 같은 흐름(위·오른쪽)에 둔다 — 몽골어·영어 제목이 두세 줄이 되어도 머리글·제목이 그림 밑에 깔리지 않고 카드가 자란다(10-22). */
+.play-list button:not(:first-child) .play-art{position:relative;top:auto;right:auto;align-self:flex-end;margin:0 0 auto;width:70px}
+/* 큰 카드도 영어·몽골어 제목(Wind Run · Салхин зам)은 그림 모서리에 걸린다 — 한국어가 아니면 그림을 같은 흐름에 두어 제목이 그림 아래로 온다. 자리(위 18 · 오른쪽 20)는 그대로. */
+html:not([lang=ko]) .play-list button:first-child .play-art{position:relative;top:auto;right:auto;align-self:flex-end;margin:2px 4px auto 0}
+.play-list button:nth-child(3) .play-art{transform:rotate(3deg)}
+.play-list button:not(:first-child) .arrow{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line)}
+.play-list button:not(:first-child):hover{box-shadow:var(--w-card-edge),0 0 0 4px var(--w-line)}
+/* 해금(11-03, play-unlocks.mjs): 넷째 놀이부터 짝이 안 맞는 마지막 카드는 한 줄을 다 쓴다. 잠긴 놀이는 가라앉힌 카드 —
+   그림은 흐리게, 화살표 자리에 자물쇠, 설명 자리에 버터 LED와 「이야기에서 열려요 — 여는 자리」 */
+.play-list>button:last-child:nth-child(even){grid-column:1/-1}
+.play-list button[data-locked]{cursor:default}
+.play-list button[data-locked] .play-art{opacity:.45;filter:grayscale(.7)}
+.play-list button[data-locked] .play-copy strong{color:var(--w-ink-2)}
+.play-list button[data-locked] .arrow::before{width:14px;height:14px;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='3.5' y='7' width='9' height='6.5' rx='1.6' fill='black'/%3E%3Cpath d='M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='3.5' y='7' width='9' height='6.5' rx='1.6' fill='black'/%3E%3Cpath d='M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7' fill='none' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E")}
+.play-list button[data-locked]:hover{box-shadow:var(--w-card-edge)}
+.play-list button[data-locked]:active{transform:none}
+.play-lock{display:inline-flex;align-items:baseline;gap:8px;color:var(--w-check-text)}
+.play-lock::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-check);transform:translateY(-1px)}
+/* 열린 뒤 처음 한 번(data-new, home.mjs): 자물쇠 자리에 화살표가 튀어나오고(빠른 공간), 그림이 흑백에서 색으로(느린 효과), 빛이 한 번 훑는다.
+ * 그 뒤로는 다른 놀이와 똑같다. 움직임 줄이기면 「새로 열림」 글만 남는다. */
+.play-list button[data-new] .play-art{animation:playUnlockArt .3s cubic-bezier(.34,.88,.34,1) .32s both}
+@keyframes playUnlockArt{from{opacity:.45;filter:grayscale(.7)}to{opacity:1;filter:none}}
+.play-list button[data-new] .arrow{animation:playUnlockArrow .35s cubic-bezier(.42,1.67,.21,.9) .2s both}
+@keyframes playUnlockArrow{from{transform:scale(.55) rotate(-25deg)}to{transform:none}}
+.play-sheen{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;border-radius:inherit}
+.play-sheen::before{content:'';position:absolute;top:-20%;bottom:-20%;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.2) 45%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.2) 55%,transparent);
+  transform:translateX(0) skewX(-12deg);animation:playSheen .7s cubic-bezier(.34,.88,.34,1) .55s both}
+@keyframes playSheen{from{transform:translateX(0) skewX(-12deg)}to{transform:translateX(420%) skewX(-12deg)}}
+.play-new{display:inline-flex;align-items:center;margin-right:4px;padding:2px 8px 3px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-weight:650;font-size:12px;line-height:1.3;vertical-align:1px}
+@media (prefers-reduced-motion:reduce){.play-list button[data-new] :is(.play-art,.arrow),.play-sheen::before{animation:none}.play-sheen{display:none}}
+:root[data-motion=reduced] .play-list button[data-new] :is(.play-art,.arrow),:root[data-motion=reduced] .play-sheen::before{animation:none}
+:root[data-motion=reduced] .play-sheen{display:none}
+@container (min-width:600px){.play-list{grid-template-columns:1.3fr 1fr}.play-list button:first-child{grid-column:auto;grid-row:span 2;min-height:400px}.play-list button:first-child .play-art{width:190px}}
+.play-more{display:grid;margin-top:22px}
+.play-more .eyebrow{margin-bottom:6px}
+.play-more button{display:flex;align-items:center;gap:14px;min-height:72px;padding:10px 4px;border-bottom:1px solid var(--w-line);text-align:left;color:var(--w-ink)}
+.play-more button:first-of-type{border-top:1px solid var(--w-line)}
+.play-more img{width:48px;height:48px;flex-shrink:0;border-radius:10px;background:#fff;object-fit:cover;transform:rotate(-3deg);box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.play-more span{display:grid;gap:2px;min-width:0;flex:1}
+.play-more strong{font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.play-more small{font-size:14px;color:var(--w-ink-3)}
+.play-more button::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.play-more button:hover strong{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
+.life-menu-entry{display:none}
+
+/* 설정: 단추를 목록 줄로(흰 알약 없음) */
+.settings-panel .panel-actions{gap:0;margin-top:6px;border-top:1px solid var(--w-line)}
+.settings-panel .panel-actions>.felt-button,.settings-panel .panel-actions>.plain-button,.settings-panel .panel-actions>a{justify-content:space-between;min-height:62px;padding:0 4px;border-radius:0;background:none;color:var(--w-ink);box-shadow:none;border-bottom:1px solid var(--w-line);font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title);text-align:left}
+.settings-panel .panel-actions>.felt-button::after,.settings-panel .panel-actions>.plain-button::after,.settings-panel .panel-actions>a::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.settings-panel .panel-actions>[data-replay-opening]::after{-webkit-mask-image:var(--w-arrow-up-right);mask-image:var(--w-arrow-up-right)}
+.settings-panel .panel-actions span[aria-hidden]{display:none}
+.settings-panel .panel-actions>.felt-button:hover,.settings-panel .panel-actions>.plain-button:hover{background:none;box-shadow:none;color:var(--w-ink)}
+.settings-panel .panel-actions>.quiet-button{justify-content:flex-start;margin-top:10px;padding:0 4px}
+/* 설정 */
+.settings-row{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:16px 0;min-height:72px;border-top:1px solid var(--w-line)}
+.settings-row strong{display:block;font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.settings-row small{display:block;font-size:13.5px;color:var(--w-ink-3);margin-top:4px;line-height:1.5}
+.settings-row input[type=checkbox]{appearance:none;-webkit-appearance:none;position:relative;flex-shrink:0;width:50px;height:30px;margin:0;border-radius:999px;background:var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2);cursor:pointer;transition:background .18s var(--w-ease)}
+.settings-row input[type=checkbox]::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--w-ink-2);transition:transform .2s var(--w-ease),background .18s var(--w-ease)}
+.settings-row input[type=checkbox]:checked{background:var(--w-ink)}
+.settings-row input[type=checkbox]:checked::after{transform:translateX(20px);background:var(--w-on-ink)}
+.settings-row input[type=checkbox]:disabled{opacity:.5;cursor:default}
+.settings-group{margin:6px 0 4px}
+.settings-group>.eyebrow{margin:0 0 6px}
+.settings-group .settings-row:last-of-type{border-bottom:1px solid var(--w-line)}
+.orientation-settings{border:0;padding:0;margin:0 0 22px;min-width:0}
+.orientation-settings legend{font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title);margin-bottom:12px;padding:0}
+.orientation-options{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.orientation-options label{position:relative;cursor:pointer}
+.orientation-options input{position:absolute;width:1px;height:1px;opacity:0}
+.orientation-options span{display:grid;place-items:center;min-height:44px;border-radius:999px;font-size:15px;font-weight:var(--wt-strong);color:var(--w-ink-2);transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.orientation-options input:checked+span{background:var(--w-ink);color:var(--w-on-ink)}
+.orientation-options input:focus-visible+span{outline:2px solid var(--w-ink);outline-offset:2px}
+.orientation-help{font-size:13px;line-height:1.6;color:var(--w-ink-3);margin-top:10px;min-height:21px}
+/* 화면 언어(10-19 1판): 첫 실행의 언어 고르기 · 설정의 화면 언어. 언어 이름은 그 언어 글자로, 고른 줄은 흰 바탕으로 뒤집는다. */
+.lang-picker{display:grid;gap:18px;padding-top:4px}
+.lang-globe{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink)}
+.lang-globe svg{width:28px;height:28px}
+.lang-lead{margin:0;font-size:var(--t-body);line-height:1.65;color:var(--w-ink-2);text-wrap:pretty}
+.lang-options{display:grid;gap:10px}
+.lang-option{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;padding:0 20px;border:0;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font:inherit;text-align:left;cursor:pointer;transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.lang-option strong{font-size:20px;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.lang-check{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--w-line-2);color:transparent}
+.lang-check svg{width:18px;height:18px}
+.lang-option[aria-checked=true]{background:var(--w-ink);color:var(--w-on-ink)}
+.lang-option[aria-checked=true] .lang-check{background:var(--w-on-ink);box-shadow:none;color:var(--w-ink)}
+.lang-option:focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+.lang-picker .panel-actions{margin-top:6px}
+.lang-picker .panel-note{margin:0}
+.lang-settings{margin-bottom:22px}
+
+/* 놀이 화면(게임 iframe) */
+.game-panel{inset:0;margin:auto;width:var(--shell-width);height:var(--shell-height);max-height:none;border-radius:0;padding:calc(6px + var(--safe-top)) 0 0;overflow:hidden;animation:none!important;background:var(--w-panel)}
+.game-panel .sheet-handle{display:none}
+.game-panel .panel-header{align-items:center;height:52px;margin:0 0 6px;padding:0 12px 0 18px}
+.game-panel .panel-header>div{padding:0}
+.game-panel .panel-header .eyebrow{display:none}
+.game-panel .panel-header h2{font-size:17px;font-weight:var(--wt-title);letter-spacing:var(--track-title);margin:0}
+.game-panel #panel-content{position:relative;height:calc(100% - 58px);background:var(--w-bg)}
+.game-frame{display:block;border:0;width:100%;height:100%;background:var(--w-bg)}
+.frame-loader{position:absolute;inset:0;z-index:2;background:var(--w-panel);display:grid;place-content:center;text-align:center;gap:14px;padding:24px;font-size:15px;line-height:1.6;color:var(--w-ink-2)}
+.frame-loader a{text-decoration:underline;text-underline-offset:5px;font-size:14px;color:var(--w-ink)}
+noscript{position:fixed;inset:auto 20px 100px;background:var(--w-panel);color:var(--w-ink);padding:20px;border-radius:var(--w-r-md);z-index:10}
+@keyframes sheet-enter{from{transform:scale(.97);opacity:0}to{transform:none;opacity:1}}
+@keyframes sheet-exit{to{transform:scale(.98);opacity:0}}
+@keyframes backdrop-in{from{opacity:0}}
+@keyframes backdrop-out{to{opacity:0}}
+
+/* 옷장: 실제 피팅룸이 안쪽을 맡고, 둘레 창만 맞춘다 */
+#world-panel.wardrobe-dialog{inset:0;margin:auto;width:min(1140px,calc(100vw - 40px));height:fit-content;max-height:94dvh;border-radius:var(--w-r-xl);padding:20px 26px 0;overflow:auto}
+#world-panel.wardrobe-dialog .sheet-handle{display:none}
+#world-panel.wardrobe-dialog .panel-header{margin-bottom:12px}
+#world-panel.wardrobe-dialog #panel-content{min-width:0}
+@media(max-width:799px){#world-panel.wardrobe-dialog{width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding:calc(14px + var(--safe-top)) 16px 0}}
+
+/* 방향 안내 */
+.orientation-notice{position:absolute;z-index:6;top:calc(80px + var(--safe-top));left:16px;right:16px;max-width:380px;margin:auto;padding:14px 14px 14px 18px;display:flex;align-items:center;gap:12px;justify-content:space-between;border-radius:var(--w-r-lg);background:var(--w-glass-strong);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur)}
+.orientation-notice[hidden]{display:none}
+.orientation-notice strong{font-size:15px;font-weight:var(--wt-title);display:block}
+.orientation-notice small{font-size:13px;line-height:1.5;color:var(--w-ink-3);display:block;margin-top:3px}
+.orientation-notice button{flex-shrink:0;min-width:64px;min-height:48px;padding:0 14px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:13px;font-weight:var(--wt-strong);line-height:1.25}
+:root:has(.orientation-notice:not([hidden])) .place-heading{visibility:hidden}
+
+/* ── PC: 휴대폰 틀 또는 넓은 틀 ── */
+@media(min-width:600px) and (min-height:600px) and (pointer:fine){
+ :root{--shell-width:min(430px,calc((100dvh - 48px)*.5));--shell-height:min(932px,calc(100dvh - 48px));--safe-top:0px;--safe-bottom:0px}
+ .world-shell{border-radius:34px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 0 8px #0d0e11,0 0 0 9px rgba(255,255,255,.06),0 40px 100px rgba(0,0,0,.6)}
+ .world-panel{border-radius:var(--w-r-xl) var(--w-r-xl) 30px 30px}
+ .game-panel{border-radius:30px}
+}
+@media(max-width:359px){
+ .world-topbar{left:10px;right:10px}
+ .profile-control{height:48px;padding-right:14px}.profile-portrait{width:38px;height:38px}
+ .place-heading{left:16px}.place-heading h1{font-size:24px}
+ .lobby-action{left:8px;right:8px}
+ .world-nav{left:8px;right:8px;height:62px}
+ .world-panel{padding-left:16px;padding-right:16px}
+ .panel-header h2{font-size:21px}
+ .play-list button:first-child .play-copy strong{font-size:44px}.play-copy strong{font-size:26px}
+ .play-art{width:80px}.play-list button:first-child .play-art{width:116px}
+}
+@media(max-height:700px){
+ :root:not([data-layout=landscape]) .place-heading{top:calc(74px + var(--safe-top))}
+ :root:not([data-layout=landscape]) .place-heading h1{font-size:23px;margin-top:4px}
+ /* 세로 화면의 장소 제목은 통째로 화면 읽기 전용(위 .place-heading)이라 진도 수가 든 끝 줄을 여기서 지우지 않는다(11-10 화면 검수 F3). */
+ #home-tutor .game-tutor-line{font-size:14px}
+}
+
+/* ── 가로: 왼쪽 아래에 오늘 카드와 탭 막대를 모으고, 오른쪽 방을 비워 둔다 ── */
+:root[data-layout=landscape]{--shell-width:100vw;--shell-height:100dvh}
+[data-layout=landscape] .world-topbar{top:calc(12px + var(--safe-top));left:max(16px,env(safe-area-inset-left));right:max(16px,env(safe-area-inset-right))}
+[data-layout=landscape] .place-heading{top:calc(76px + var(--safe-top));left:max(22px,env(safe-area-inset-left))}
+[data-layout=landscape] .place-heading h1{font-size:26px}
+[data-layout=landscape] .place-heading-count{display:none}
+[data-layout=landscape] .lobby-action{left:max(12px,env(safe-area-inset-left));right:auto;width:min(380px,44vw);bottom:calc(84px + var(--safe-bottom))}
+[data-layout=landscape] .world-nav{left:max(12px,env(safe-area-inset-left));right:auto;width:min(380px,44vw);height:62px}
+[data-layout=landscape] .world-panel{width:min(520px,100vw);max-height:calc(var(--shell-height) - 16px)}
+[data-layout=landscape] .game-panel{width:var(--shell-width);max-height:none}
+[data-layout=landscape] .sheet-handle{margin-bottom:10px}
+[data-layout=landscape] .panel-header{margin-bottom:14px}
+@media(max-height:500px){
+ [data-layout=landscape] .place-heading{display:none}
+ [data-layout=landscape] .lobby-action{width:min(300px,38vw);bottom:calc(74px + var(--safe-bottom))}
+ [data-layout=landscape] .life-home-board{max-height:calc(var(--shell-height) - 150px)}
+ [data-layout=landscape] #home-tutor .game-tutor-line{-webkit-line-clamp:2}
+ [data-layout=landscape] .home-tutor-day,[data-layout=landscape] .home-tutor-practice,[data-layout=landscape] .study-home-note .quiet-button{min-height:44px;font-size:13px}
+ [data-layout=landscape] .world-nav{width:min(340px,42vw);height:56px;bottom:calc(10px + var(--safe-bottom))}
+ [data-layout=landscape] .world-nav button{font-size:13px}
+ [data-layout=landscape] .nav-object svg{width:20px;height:20px}
+ [data-layout=landscape] .life-home-board{padding:10px 10px 4px}
+ [data-layout=landscape] #home-tutor .game-tutor-line{font-size:14px}
+ [data-layout=landscape] #home-tutor .home-tutor-action{min-height:46px}
+}
+@media(min-width:600px) and (min-height:600px) and (pointer:fine){
+ :root[data-layout=landscape]{--shell-width:min(1280px,calc(100vw - 48px),calc((100dvh - 48px)*16/9));--shell-height:min(720px,calc(100dvh - 48px),calc((100vw - 48px)*9/16))}
+ [data-layout=landscape] .world-topbar{top:20px;left:22px;right:22px}
+ [data-layout=landscape] .place-heading{top:92px;left:30px}
+ [data-layout=landscape] .place-heading h1{font-size:34px}
+ [data-layout=landscape] .lobby-action{left:20px;bottom:98px;width:380px}
+ [data-layout=landscape] .world-nav{left:20px;bottom:20px;width:380px}
+ [data-layout=landscape] .world-panel{bottom:max(0px,calc((100dvh - var(--shell-height))/2));border-radius:var(--w-r-xl) var(--w-r-xl) 30px 30px}
+}
+/* ── PC 시트 계약(2차): 가로 틀이 넓으면 휴대폰 시트를 키우지 않고 PC 전용으로 둔다.
+ * 둘러보기 시트(놀이·설정·나·배우기 허브 등)는 방 오른쪽에 떠 있는 680px 패널 — 방이 왼쪽에 보인 채로 남는다.
+ * 집중 화면(home.mjs WIDE_PANEL: 레슨·문제·카페·결과·이야기·옷장·마을·보상)은 틀 가운데 최대 1120px.
+ * 안쪽 배치는 각 화면이 컨테이너 쿼리로 짠다(뷰포트 미디어 쿼리로 시트 폭을 추측하지 않는다).
+ * 게임(.game-panel)과 튜터 고르기(.tutor-panel)는 틀 전체를 그대로 쓴다. */
+@media(min-width:1100px) and (min-height:600px) and (pointer:fine){
+ [data-layout=landscape] #world-panel:not(.game-panel):not(.tutor-panel):not(.is-wide){inset:calc((100dvh - var(--shell-height))/2 + 12px) calc((100vw - var(--shell-width))/2 + 12px) auto auto;margin:0;width:min(680px,calc(var(--shell-width) - 24px));height:calc(var(--shell-height) - 24px);max-height:none;padding:24px 28px 28px;border-radius:var(--w-r-xl);container-type:inline-size}
+ [data-layout=landscape] #world-panel.is-wide:not(.game-panel):not(.tutor-panel){inset:0;margin:auto;width:min(1120px,calc(var(--shell-width) - 24px));height:calc(var(--shell-height) - 24px);max-height:none;border-radius:var(--w-r-xl)}
+ [data-layout=landscape] #world-panel:not(.game-panel) .sheet-handle{display:none}
+ [data-layout=landscape] #world-panel:not(.is-wide){transform-origin:100% 50%}
+ [data-layout=landscape] #world-panel.is-wide{transform-origin:50% 50%}
+ /* 오른쪽 패널이 열려 있는 동안 방이 보이도록 바탕은 가볍게만 덮는다. */
+ [data-layout=landscape] #world-panel:not(.is-wide):not(.game-panel):not(.tutor-panel)::backdrop{background:rgba(4,5,7,.28);-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}button:active{transform:none!important}}
+
+/* 내 반 연결(SYNK ID 학생 연결 코드) — 판 위의 카드 하나. 확인 전에는 흰 알약 하나, 확인 뒤 연결 단추가 주 행동이 된다. */
+.classroom-enrollment{display:grid;gap:12px;margin-top:20px;padding:18px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);text-align:left}
+.classroom-enrollment h3{font-size:var(--t-title);font-weight:var(--wt-title);letter-spacing:var(--track-title);line-height:1.3}
+.classroom-enrollment .help{font-size:14px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.classroom-enrollment form{display:grid;gap:10px}
+.classroom-enrollment label{display:grid;gap:8px;font-size:13px;font-weight:var(--wt-label);color:var(--w-ink-2)}
+.classroom-enrollment input{width:100%;min-height:50px;padding:0 16px;border:0;border-radius:var(--w-r-md);background:var(--w-panel);color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font:var(--wt-strong) 16px/1.2 var(--w-mono);letter-spacing:.06em}
+.classroom-enrollment input:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--w-ink)}
+.classroom-enrollment input:disabled{opacity:.5}
+.classroom-enrollment form .felt-button{background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);min-height:50px}
+.classroom-enrollment form .felt-button:hover{background:var(--w-s2)}
+.classroom-enrollment>div:not(:empty){padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s2);font-size:15.5px;font-weight:var(--wt-strong)}
+.classroom-enrollment .felt-button.primary{width:100%}
+.classroom-enrollment [role=status]:empty{display:none}
+.classroom-enrollment [role=status]{font-size:14px;line-height:1.6;color:var(--w-ink-2)}
+.classroom-enrollment .error{display:flex;gap:8px;align-items:baseline;color:var(--w-alert-text)}
+.classroom-enrollment .error::before{content:'';flex-shrink:0;width:7px;height:7px;border-radius:50%;background:var(--w-led-alert);transform:translateY(-1px)}

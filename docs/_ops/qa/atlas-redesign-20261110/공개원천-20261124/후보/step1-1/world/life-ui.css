@@ -1,0 +1,1131 @@
+/* SYNK WORLD 배우기 · 시그널 게임판 3차 (2026-10-14)
+ * 배우기 허브 · 팩 · 레슨 · 이야기 · 문제 · 복습 · 카페 · 결과 · 학습 목표.
+ * 껍데기는 무채색(근사 검정 판 · 면 · 1px 선), 따뜻함은 내용(펠트 사진 · 세 친구 · 카페 사진)이 낸다.
+ * 코랄 포스터는 한 화면에 하나(허브의 「지금 할 일」 · 팩 · 결과 한 장). 나머지는 어두운 카드 + 흰 인화지, 목록 줄, 큰 글자 한 줄로 리듬을 바꾼다.
+ * 둘러보기(허브·팩·이야기 모음)는 아래 시트(PC는 오른쪽 680px 패널), 레슨·문제·복습·카페·결과는 화면을 채우는 집중 판
+ * (위 진행 막대 → 내용 → 아래 고정: 판정 띠 + 흰 알약 하나). 넓은 판의 두 단은 컨테이너 쿼리(life-sheet)로만 짠다.
+ * 학습 표현은 22px 이상, 한글은 13px 밑으로 내리지 않는다. 움직임은 누를 때의 짧은 전환과 결과의 200ms 페이드뿐(스스로 움직이는 것 없음). */
+
+/* ── 공통 ── */
+#world-panel[class*="life-"],.world-study-panel{
+  --life-pad:20px;
+  --life-play:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8.2 5.6v12.8a.9.9 0 0 0 1.37.77l10.2-6.4a.9.9 0 0 0 0-1.54L9.57 4.83A.9.9 0 0 0 8.2 5.6z' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --life-pause:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 6v12M15 6v12' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --life-retry:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12a7 7 0 1 0 2.05-4.95M5 4.6v3.6h3.6' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --life-slow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 6.5V12l3.4 2M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0z' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+#world-panel[class*="life-"]{container:life-sheet / inline-size}
+#world-panel[class*="life-"] #panel-content{min-width:0}
+/* 누르는 곳은 44px 이상. 부품마다 높이를 따로 주므로 이 규칙은 가장 약하게 둔다. */
+:where(#world-panel[class*="life-"]) button{min-width:44px;min-height:44px}
+#world-panel[class*="life-"] button:disabled{cursor:default}
+#world-panel[class*="life-"] #panel-content>.life-tutor{margin:0 0 18px}
+#world-panel[class*="life-"] .close-button{width:44px;height:44px}
+#panel-content[data-reduced=true] *{transition:none!important;animation:none!important}
+/* 흰 알약·선 알약의 화살표는 글자 대신 선 아이콘 */
+#world-panel[class*="life-"] :is(.felt-button,.plain-button)>span[aria-hidden],.study-form .felt-button>span[aria-hidden]{display:inline-block;flex-shrink:0;width:17px;height:17px;font-size:0;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.life-heading{outline:none}
+.life-library-note{font-size:13px;line-height:1.5;font-weight:550;color:var(--w-ink-3)}
+/* 영문 모노 라벨 + 28px 선. 한글은 모노로 쓰지 않는다. */
+.life-section-label{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-family:var(--w-mono);font-size:11px;font-weight:500;line-height:1.4;letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+.life-section-label::after{content:'';width:28px;height:1px;background:var(--w-line-2)}
+/* 한국어 화면의 목록 머리(곧 돌아올 · 돌아온 표현, 11-09 — life-ui.mjs listHead): 위 규칙대로 모노 · 11px가 아니라 본문 글꼴 13px, 글자마다 찍는 타이핑도 없다. 영어 · 몽골어 화면은 위 라벨 그대로. */
+.life-section-label.is-text{font-family:var(--w-sans);font-size:13px;font-weight:var(--wt-label);letter-spacing:0;text-transform:none}
+.life-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+.life-section-head>.life-section-label{margin:0}
+.life-count{font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--w-ink-2);white-space:nowrap}
+
+/* ── 포스터: 코랄 면 + 촬영 조명 + 결 + 흰 인화지 펠트 사진 + 큰 한글 900 (한 화면에 하나) ── */
+.life-poster{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"label print" "word print" "sub sub" "meter meter" "action action";align-items:end;column-gap:14px;width:100%;margin:0;padding:18px;border-radius:var(--w-r-lg);background:var(--w-face);color:var(--w-on-face);text-align:left;word-break:keep-all}
+.life-poster::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--w-studio)}
+.life-poster::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
+.life-poster>.w-print{grid-area:print;align-self:start;width:112px;margin:-2px -2px 8px 0}
+.life-poster-label{font-family:var(--w-mono);font-size:11px;font-weight:500;line-height:1.4;letter-spacing:.08em;text-transform:uppercase;color:rgba(30,14,10,.62)}
+.life-poster-word{display:block;margin:14px 0 2px;font-size:34px;line-height:1.04;font-weight:var(--wt-poster);letter-spacing:-.05em;color:var(--w-on-face);text-wrap:balance}
+.life-poster-sub{margin:8px 0 0;font-size:15.5px;line-height:1.5;font-weight:var(--wt-label);color:rgba(30,14,10,.86);text-wrap:pretty}
+.life-poster>.life-poster-label{grid-area:label;align-self:start}
+.life-poster>.life-poster-word{grid-area:word}
+.life-poster>.life-poster-sub{grid-area:sub}
+/* 새 길의 「지금 할 일」 포스터(4-3 — §20-8): 홈의 그 줄과 같은 이유 한 줄을 부제 아래에 단다. 지금 판에는 없다. */
+.life-poster-why{display:block;margin-top:4px;font-size:14px;line-height:1.45;color:rgba(30,14,10,.72)}
+.life-poster>.life-meter,.life-poster>.life-poster-count{grid-area:meter;margin-top:14px}
+.life-poster-count{font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:rgba(30,14,10,.62)}
+.life-poster>.felt-button{grid-area:action;width:100%;margin-top:16px;box-shadow:0 10px 24px rgba(30,14,10,.22)}
+/* 1px 진행선 + 「n / m」 — 코랄 면 위는 먹색, 어두운 카드 위는 흰색 */
+.life-meter{display:flex;align-items:center;gap:10px;width:100%}
+.life-meter>span{position:relative;flex:1;height:1px;background:rgba(30,14,10,.22)}
+.life-meter>span>i{position:absolute;left:0;top:-.5px;height:2px;background:var(--w-on-face)}
+.life-meter>b{font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.06em;color:rgba(30,14,10,.72);white-space:nowrap}
+
+/* ── 배우기 허브 ── */
+.life-hub{display:grid;gap:26px}
+.life-now{min-height:236px}
+.life-now>.w-print{width:124px}
+/* 팩 카드: 어두운 카드 + 흰 인화지 + 큰 한 낱말 + 1px 진행선. 카드마다 사진 자리·크기를 바꿔 리듬을 낸다. */
+.life-pack-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.life-pack-card{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-rows:1fr auto;align-content:end;gap:14px;min-height:198px;padding:16px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);text-align:left;word-break:keep-all;transition:background .18s var(--w-ease),box-shadow .2s var(--w-ease),transform .14s var(--w-ease)}
+.life-pack-card::before{content:'';position:absolute;inset:0;z-index:-2;background:radial-gradient(90% 70% at 85% 0%,rgba(255,255,255,.05),transparent 62%);pointer-events:none}
+.life-pack-card:hover{background:var(--w-s2);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px var(--w-line-2)}
+.life-pack-card:active{transform:scale(.985)}
+.life-pack-card:focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+.life-pack-card>.w-print{position:absolute;z-index:-1;width:76px;top:14px;right:14px;transform:rotate(-4deg)}
+.life-pack-copy{display:grid;gap:4px;min-width:0;align-self:end}
+.life-pack-label{font-family:var(--w-mono);font-size:11px;font-weight:500;line-height:1.4;letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
+.life-pack-word{display:block;margin-top:2px;font-size:30px;line-height:1.08;font-weight:var(--wt-display);letter-spacing:-.04em;color:var(--w-ink)}
+.life-pack-title{font-size:14px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:balance}
+.life-pack-foot{display:flex;align-items:center;min-height:16px}
+.life-pack-count{white-space:nowrap;font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--w-ink-3)}
+.life-pack-done{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:var(--wt-label);color:var(--w-ok-text)}
+.life-pack-card .life-meter>span{background:var(--w-line-2)}
+.life-pack-card .life-meter>span>i{background:var(--w-ink)}
+.life-pack-card .life-meter>b{color:var(--w-ink-2)}
+/* 모양 1 · 넓은 카드: 두 칸을 차지하고 사진은 오른쪽에 크게 */
+.life-pack-card:is([data-shape=wide],[data-shape=wide-left]){grid-column:span 2;min-height:150px;grid-template-columns:minmax(0,1fr);padding-right:140px}
+.life-pack-card[data-shape=wide]>.w-print{width:108px;top:50%;right:18px;margin-top:-58px;transform:rotate(-4deg)}
+/* 모양 2 · 넓은 카드(사진 왼쪽, 반대로 기울임) */
+.life-pack-card[data-shape=wide-left]{padding-right:16px;padding-left:146px}
+.life-pack-card[data-shape=wide-left]>.w-print{width:104px;top:50%;left:20px;right:auto;margin-top:-56px;transform:rotate(3deg)}
+/* 모양 3 · 키 큰 카드: 사진은 위 왼쪽 작게, 반대로 기울여 */
+.life-pack-card[data-shape=tall]{min-height:226px}
+.life-pack-card[data-shape=tall]>.w-print{width:68px;left:16px;right:auto;transform:rotate(4deg)}
+/* 모양 4 · 키 큰 카드: 글과 진행은 위, 사진은 아래 오른쪽 모서리에 걸쳐 크게 */
+.life-pack-card[data-shape=low]{min-height:226px;align-content:start;grid-template-rows:auto auto 1fr}
+.life-pack-card[data-shape=low] .life-pack-copy{align-self:start}
+.life-pack-card[data-shape=low] .life-pack-foot{align-self:start}
+.life-pack-card[data-shape=low]>.w-print{width:88px;top:auto;bottom:-16px;right:-10px;transform:rotate(7deg)}
+/* 「지금 할 일」과 같은 팩: 사진 대신 「지금」 표시 */
+.life-pack-card[data-current=true]{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--w-face) 70%,transparent)}
+.life-pack-now{position:absolute;top:14px;left:16px;display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 11px;border-radius:999px;background:var(--w-s3);color:var(--w-ink);font-size:13px;font-weight:var(--wt-label)}
+.life-pack-card[data-current=true]:is([data-shape=wide],[data-shape=wide-left]){padding:56px 16px 16px}
+.life-pack-card[data-current=true][data-shape=low]{padding-top:56px}
+.life-pack-card[data-state=done] .life-pack-word{color:var(--w-ink-2)}
+/* 목록 줄: 흰 인화지 48px → 제목 16/650 + 설명 → 화살표 */
+.life-rows{display:grid}
+.life-row{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:12px 4px;border-bottom:1px solid var(--w-line);text-align:left;color:var(--w-ink)}
+.life-rows>.life-section-label+.life-row{border-top:1px solid var(--w-line)}
+.life-row::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.life-row:hover strong{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
+.w-print.life-row-print{width:48px;flex-shrink:0;padding:3px;border-radius:9px;transform:rotate(-3deg);box-shadow:0 6px 14px rgba(0,0,0,.32)}
+.w-print.life-row-print img{border-radius:6px}
+.life-row-copy{display:grid;gap:3px;flex:1;min-width:0}
+.life-row-copy strong{font-size:16px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.life-row-copy small{font-size:14px;line-height:1.45;color:var(--w-ink-3)}
+.life-row-state{display:inline-flex;align-items:center;gap:7px;flex-shrink:0;font-size:13px;font-weight:var(--wt-label);color:var(--w-check-text)}
+
+/* ── 팩 · 이야기 모음 · 카페 방문 목록 ── */
+#world-panel.life-library-panel #panel-content{display:grid;align-content:start;gap:24px}
+#world-panel.life-library-panel #panel-content>.life-tutor{margin:0}
+.life-pack-head{display:grid;gap:10px}
+.life-pack-poster{min-height:212px}
+.life-pack-poster .life-poster-word{font-size:56px;line-height:.95;letter-spacing:calc(-.085em + var(--len,3) * .01em)}
+.life-pack-description{font-size:15.5px;line-height:1.6;color:var(--w-ink-2)}
+.life-poster>.life-pack-description{color:rgba(30,14,10,.86);font-size:15.5px}
+.life-list{display:grid}
+.life-lesson-list{display:grid;border-top:1px solid var(--w-line)}
+.life-lesson-card{display:grid;grid-template-columns:40px minmax(0,1fr) 16px;grid-template-areas:"lead copy arrow" "lead state arrow";align-items:center;gap:6px 14px;width:100%;min-height:84px;padding:14px 4px;border-bottom:1px solid var(--w-line);text-align:left;color:var(--w-ink);transition:background .18s var(--w-ease)}
+.life-lesson-card::after{content:'';grid-area:arrow;width:16px;height:16px;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
+.life-lesson-card:hover strong{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
+.life-lesson-card>:first-child{grid-area:lead}
+.life-lesson-card>span:nth-child(2){grid-area:copy;display:grid;gap:3px;min-width:0}
+.life-lesson-card:not(:has(>em))>span:nth-child(2){grid-row:1 / span 2}
+.life-lesson-card small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.life-lesson-card strong{font-size:16px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.life-lesson-card>span:nth-child(2)>span{font-size:14px;line-height:1.5;color:var(--w-ink-3);text-wrap:pretty}
+.life-lesson-card>em{grid-area:state;display:inline-flex;align-items:center;gap:8px;font-style:normal;font-size:13px;line-height:1.4;font-weight:600;color:var(--w-ink-2)}
+.life-lesson-card>em::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-idle)}
+.life-lesson-card[data-state=completed]>em{color:var(--w-ok-text)}
+.life-lesson-card[data-state=completed]>em::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+.life-lesson-card[data-state=started]>em{color:var(--w-check-text)}
+.life-lesson-card[data-state=started]>em::before{background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.life-lesson-card[data-now]>em{color:var(--w-face-text)}
+.life-lesson-card[data-now]>em::before{background:var(--w-face);box-shadow:0 0 8px rgba(249,104,89,.6)}
+.life-step-number{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--w-line-2);font:500 12px/1 var(--w-mono);letter-spacing:.04em;color:var(--w-ink-2)}
+.life-lesson-card[data-state=completed] .life-step-number{background:var(--w-s3);box-shadow:none;color:var(--w-ink)}
+.life-lesson-card[data-now] .life-step-number{background:var(--w-face);box-shadow:none;color:var(--w-on-face)}
+.life-story-card{grid-template-columns:48px minmax(0,1fr) 16px}
+.life-library-footer{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 18px}
+/* 카페 입구: 카페 사진 + 다음 방문 + 흰 알약(이 화면의 주 행동) */
+.cafe-pack-preview{overflow:hidden;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.cafe-pack-preview>img{display:block;width:100%;height:176px;object-fit:cover;object-position:62% 62%}
+.cafe-pack-preview>div{display:grid;gap:6px;padding:16px 18px 18px}
+.cafe-pack-preview .life-section-label{margin-bottom:2px}
+.cafe-pack-preview h3{margin:0;font-size:24px;line-height:1.3;font-weight:var(--wt-display);letter-spacing:var(--track-display);text-wrap:balance}
+.cafe-pack-preview p{font-size:15.5px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.cafe-pack-preview .felt-button{width:100%;margin-top:10px}
+
+/* ── 집중 판: 레슨 · 이야기 · 문제 · 복습 · 카페 · 결과 ── */
+#world-panel[class*="life-"]:not(.life-library-panel){inset:0;margin:auto;width:var(--shell-width);height:var(--shell-height);max-width:100vw;max-height:100dvh;padding:calc(10px + var(--safe-top)) var(--life-pad) 0;border-radius:0;display:flex;flex-direction:column;overflow:hidden}
+#world-panel[class*="life-"]:not(.life-library-panel):not([open]){display:none}
+#world-panel[class*="life-"]:not(.life-library-panel) .sheet-handle{display:none}
+#world-panel[class*="life-"]:not(.life-library-panel) .panel-header{flex-shrink:0;align-items:center;min-height:48px;margin:0 0 4px}
+#world-panel[class*="life-"]:not(.life-library-panel) .panel-header>div{padding-top:0}
+#world-panel[class*="life-"]:not(.life-library-panel) #panel-eyebrow{display:none}
+#world-panel[class*="life-"]:not(.life-library-panel) .panel-header h2{margin:0;font-size:17px;line-height:1.3;font-weight:var(--wt-title);letter-spacing:var(--track-title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#world-panel:is(.life-complete-panel,.life-review-complete-panel,.life-cafe-complete-panel) .panel-header h2{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#world-panel:is(.life-complete-panel,.life-review-complete-panel,.life-cafe-complete-panel) .panel-header{justify-content:flex-end}
+#world-panel[class*="life-"]:not(.life-library-panel) #panel-content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin:0 calc(var(--life-pad) * -1);padding:0 var(--life-pad);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--w-ink-4) transparent;scroll-padding:64px 0 200px}
+#world-panel[class*="life-"]:not(.life-library-panel) #panel-content>*{flex-shrink:0}
+#world-panel[class*="life-"]:not(.life-library-panel)>.home-toast{position:absolute;left:50%;bottom:calc(132px + var(--safe-bottom));z-index:6;width:max-content;max-width:calc(100% - 32px);margin:0;transform:translateX(-50%)}
+/* 맨 위: 진행 막대 + 팩·단계 + 「2 / 9」 (스크롤해도 남는다) */
+.life-session-meta,.cafe-session-meta{order:-1;position:sticky;top:0;z-index:4;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px 14px;margin:0 calc(var(--life-pad,20px) * -1) 14px;padding:6px var(--life-pad,20px) 12px;background:var(--w-panel);font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.life-session-meta::after,.cafe-session-meta::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(var(--w-panel),transparent);pointer-events:none}
+.life-session-meta>.life-progress,.cafe-session-meta>.life-progress{grid-column:1/-1}
+.life-session-meta>span:not(.life-progress),.cafe-session-meta>span:not(.life-progress){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 위 1px 진행선(채운 부분만 2px로 또렷하게) */
+.life-progress{position:relative;display:block;height:1px;background:var(--w-line-2)}
+.life-progress>i{position:absolute;left:0;top:-.5px;height:2px;border-radius:2px;background:var(--w-ink)}
+/* 아래: (판정 띠) + 흰 알약 하나 + 조용한 링크 */
+.life-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 12px;margin-top:24px}
+.life-actions>.life-feedback{grid-column:1 / -1}
+.life-actions>.quiet-button{justify-self:end;padding:0 8px}
+#world-panel[class*="life-"]:not(.life-library-panel) .life-actions{position:sticky;bottom:0;z-index:4;margin:auto calc(var(--life-pad) * -1) 0;padding:18px var(--life-pad) 8px;background:linear-gradient(180deg,transparent,var(--w-panel) 18px)}
+#world-panel[class*="life-"]:not(.life-library-panel) .life-actions .felt-button{min-height:58px;font-size:16px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12),0 14px 34px rgba(0,0,0,.3)}
+#world-panel[class*="life-"] .life-actions .felt-button:disabled{opacity:1;background:transparent;color:var(--w-ink-3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+#world-panel[class*="life-"] .life-actions .felt-button:disabled>span[aria-hidden]{display:none}
+.life-save-status{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 0 0;font-size:13px;line-height:1.5;color:var(--w-ink-3);text-align:center}
+.life-save-status::before{content:'';width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.5)}
+/* 평소 상태(이 기기에 저장 · 계정에 저장 끝)는 말하지 않는다(11-09 미학 맹검 — 화면마다 붙는 시스템 문구). 저장 중 · 실패 · 충돌만 보인다. 자리는 남겨 글이 바뀌어도 화면이 들썩이지 않는다. */
+.life-save-status:is([data-save-phase=device],[data-save-phase=synced]){visibility:hidden}
+.life-save-status:is([data-save-phase=saving],[data-save-phase=pending],[data-save-phase=loading],[data-save-phase=offline])::before{background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.5)}
+.life-save-status:is([data-save-phase=unsaved],[data-save-phase=unreadable],[data-save-phase=conflict],[data-save-phase=stopped]){color:var(--w-alert-text)}
+.life-save-status:is([data-save-phase=unsaved],[data-save-phase=unreadable],[data-save-phase=conflict],[data-save-phase=stopped])::before{background:var(--w-led-alert);box-shadow:0 0 8px rgba(249,104,89,.55)}
+#world-panel[class*="life-"]:not(.life-library-panel) .life-save-status{margin:0;padding:2px 0 calc(14px + var(--safe-bottom))}
+#world-panel.life-library-panel .life-save-status{margin-top:0}
+/* 한 시간 넘게 했을 때 한 번만: 쉬어도 된다는 한 줄 */
+.life-rest{display:flex;align-items:baseline;gap:10px;margin:16px 0 0;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:14px;line-height:1.55;color:var(--w-ink-2);text-wrap:pretty}
+.life-rest::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.55);transform:translateY(-1px)}
+
+/* ── 레슨 소개: 팩 사진 + 목표 한 줄 → 이번에 배울 표현 ── */
+.life-intro{display:grid;gap:24px;align-content:start}
+.life-intro-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:18px}
+.w-print.life-intro-print{width:86px;transform:rotate(-4deg)}
+.life-intro-head .life-section-label{margin-bottom:8px}
+.life-goal{font-size:24px;line-height:1.35;font-weight:var(--wt-display);letter-spacing:var(--track-display);color:var(--w-ink);text-wrap:balance}
+.life-expression-list{display:grid}
+.life-expression-list article{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;padding:16px 0;border-top:1px solid var(--w-line)}
+.life-expression-list article:last-child{border-bottom:1px solid var(--w-line)}
+.life-expression-index{padding-top:11px;font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--w-ink-3)}
+.life-expression-list strong{display:block;font-size:24px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:-.02em;color:var(--w-ink)}
+.life-expression-list p{margin-top:4px;font-size:15.5px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+
+/* ── 이야기: 말하는 친구는 가운데 크게(정본 컷), 나머지 둘은 옆에 작게. 대사는 흰 말풍선, 넘기기는 단추 하나 ── */
+.life-story-stage{display:grid;gap:16px;align-content:start}
+.life-story-photo{display:block;margin:0;aspect-ratio:3/2;border-radius:var(--w-r-lg);overflow:hidden;background:var(--w-s2);box-shadow:var(--w-card-edge)}
+.life-story-photo>img{display:block;width:100%;height:100%;object-fit:cover}
+/* 장면이 주인공(10-14 시안 ①): 휴대폰에서는 사진을 화면 폭 가득(판 안쪽 여백 20px만큼 빼냄), 말풍선이 사진 아래에 걸친다. 튜터는 사진 위 알약(life-tutor.css). */
+.life-story-photo{position:relative;container-type:inline-size}
+.life-story-stage:has(>.life-story-photo){gap:0}
+.life-story-stage>.life-story-photo{margin:0 -20px;border-radius:0;box-shadow:none}
+.life-story-stage:has(>.life-story-photo)>.life-dialogue{position:relative;z-index:2;margin:-26px 8px 0}
+/* 사진 속 한글(story-signs.mjs): 이름표는 도장처럼, 안내판은 나무에 쓴 글씨, 버스 안내기는 주황 LED. 13px 밑으로 내리지 않는다. */
+.life-sign{position:absolute;left:var(--x);top:var(--y);width:var(--w);height:var(--h);display:grid;place-items:center;overflow:visible;font-family:var(--w-sans);font-weight:700;line-height:1;letter-spacing:-.01em;white-space:nowrap;pointer-events:none}
+.life-sign[data-kind=tag]{font-size:max(13px,3.3cqw);color:#3A2A22;mix-blend-mode:multiply}
+.life-sign[data-kind=board]{font-size:max(13px,3.6cqw);color:#43260F;mix-blend-mode:multiply;filter:blur(.2px)}
+button.life-sign{pointer-events:auto;min-width:0;min-height:0;margin:0;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s var(--w-ease)}
+/* 글자 상자는 사진 속 자리 크기 그대로 두고(44px 규칙이 키우면 글자가 아래로 밀린다), 누르는 곳만 가운데서 넓힌다. 안내판 둘은 위아래로 붙어 있어 덜 넓힌다. */
+button.life-sign::after{content:'';position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}
+button.life-sign[data-kind=board]::after{height:max(100%,28px)}
+button.life-sign:active{transform:scale(.96)}
+button.life-sign:focus-visible{outline:2px solid #FAFAF9;outline-offset:2px;border-radius:4px}
+button.life-sign:is([data-kind=tag],[data-kind=board]):hover{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
+.life-sign[data-kind=led]{font-size:max(13px,3.2cqw);border-radius:4px;background:rgba(18,14,10,.88);color:#FFB547;font-weight:650;letter-spacing:.02em;text-shadow:0 0 6px rgba(255,170,60,.7);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 4px 10px rgba(0,0,0,.25)}
+/* 이 레슨에서 배우는 한국어(‘…’)는 굵게, 배울 말 색으로 세운다. 형광펜은 긋지 않는다(DESIGN 머리 11-23).
+   말풍선은 판과 반대 색이라 밤 판은 짙은 코랄, 낮 판은 옅은 코랄, 해설 칸은 판 글씨 쪽 코랄이다. */
+mark.life-say{--life-say:var(--w-face-deep);background:none;color:var(--life-say);font-weight:650;border-radius:2px;transition:color .3s ease}
+:root[data-world-theme=day] .life-dialogue:not([data-speaker=narrator]) mark.life-say{--life-say:#FFB4A9}
+.life-dialogue>small.w-name{display:inline-flex;margin-bottom:10px;font-weight:650;line-height:1}
+/* 사진 속 자리(왼쪽부터 몽글·까몽·마린)를 말풍선 꼬리가 가리킨다 */
+.life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=mongle]::before{left:21%}
+.life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=kkamong]::before{left:45%}
+.life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=marine]::before{left:73%}
+.life-story-stage:has(.life-story-photo) .life-dialogue[data-at]::before{left:var(--life-at)}
+.life-dialogue[data-speaker=me]::before{display:none}
+.life-dialogue>small.w-name[data-who=person]{background:var(--w-ink);color:var(--w-on-ink)}
+.life-cast{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) minmax(0,.8fr);grid-template-areas:"a main b";align-items:end;gap:4px;min-height:236px;padding:18px 10px 14px;border-radius:var(--w-r-lg);background:radial-gradient(70% 80% at 50% 105%,rgba(255,255,255,.08),transparent 70%),var(--w-s1);box-shadow:var(--w-card-edge);overflow:hidden}
+.life-cast>div{grid-area:b;min-width:0;text-align:center;opacity:.5;transition:opacity .2s var(--w-ease)}
+.life-cast>div:first-child:not(.is-speaking),.life-cast>div.is-speaking:first-child+div{grid-area:a}
+.life-cast>div.is-speaking{grid-area:main;opacity:1}
+.life-friend{display:block;object-fit:contain;max-width:100%;height:auto}
+.life-cast .life-friend{width:100%;height:78px;margin:0 auto;filter:drop-shadow(0 12px 12px rgba(0,0,0,.4))}
+.life-cast .is-speaking .life-friend{height:178px;filter:drop-shadow(0 18px 18px rgba(0,0,0,.45))}
+.life-cast small{display:block;margin-top:6px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.life-cast .is-speaking small{color:var(--w-ink);font-weight:650}
+/* 해설 장면: 세 친구를 같은 크기로 */
+.life-story-stage[data-speaker=narrator] .life-cast{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:none;min-height:0}
+.life-story-stage[data-speaker=narrator] .life-cast>div{grid-area:auto;opacity:.82}
+.life-story-stage[data-speaker=narrator] .life-cast .life-friend{height:104px}
+.life-dialogue{position:relative;padding:16px 20px 18px;border-radius:22px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 14px 34px rgba(0,0,0,.3);outline:none}
+.life-dialogue::before{content:'';position:absolute;top:-6px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:3px;background:inherit;transform:rotate(45deg)}
+.life-dialogue>small{display:block;margin-bottom:6px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:color-mix(in srgb,var(--w-on-ink) 56%,transparent)}
+.life-dialogue>p{font-size:22px;line-height:1.55;font-weight:var(--wt-label);letter-spacing:-.015em;text-wrap:pretty}
+.life-dialogue[data-speaker=narrator]{background:var(--w-s2);color:var(--w-ink-2);box-shadow:var(--w-card-edge)}
+.life-dialogue[data-speaker=narrator]::before{display:none}
+.life-dialogue[data-speaker=narrator]>small{color:var(--w-ink-3)}
+.life-dialogue[data-speaker=narrator]>p{font-size:20px;font-weight:var(--wt-body)}
+/* 이야기 디테일(10-15 유호님 「시안 1~8번 모두 앱에」, life-story.mjs). 움직임은 투명도뿐이고 판의 움직임 줄이기(#panel-content[data-reduced=true])면 모두 멈춘다. */
+/* ⑥ 해설은 책 글씨(본명조), 친구 대사는 말 글씨(SUIT). 줄 끝 문장부호는 글 상자 밖으로 살짝(사파리). */
+.life-dialogue>p{hanging-punctuation:first allow-end last}
+.life-dialogue[data-speaker=narrator]>p{font-family:'World Story Serif',var(--w-sans);letter-spacing:-.01em;line-height:1.66}
+/* ② 글자 한 자씩: 자리는 그대로, 흐릿했다가 또렷해지기만 한다. 말풍선을 누르면 바로 다 보인다. */
+.life-dialogue>p[data-typing] .life-c{opacity:0;transition:opacity .07s linear}
+.life-dialogue>p[data-typing] .life-c.is-on{opacity:1}
+.life-story-stage .life-dialogue:has(>p[data-typing]){cursor:pointer}
+/* ⑧ 배울 말은 글이 다 나타난 뒤 0.3초 동안 제 색이 차오른다(이 말이 이번에 배울 말이라는 것). 레슨 표현과 맞는 배울 말은 누르면 표현 도움이 그 표현에 맞춰 열린다. */
+.life-dialogue[data-speaker=narrator] mark.life-say{--life-say:var(--w-face-text)}
+.life-dialogue>p[data-typing] mark.life-say,mark.life-say.is-fresh{color:inherit}
+mark.life-say[data-life-mark]{cursor:pointer}
+mark.life-say[data-life-mark]:focus-visible{outline:2px solid var(--w-face);outline-offset:2px}
+/* ⑦ 넘기는 손맛: 사진 오른쪽 70%를 누르거나 밀면 다음, 왼쪽 30%는 이전. 말하는 친구가 바뀌면 앞 사진이 0.18초 동안 투명하게 사라진다. */
+.life-story-photo[data-nav]{cursor:pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.life-story-photo-prev{position:absolute;inset:0;display:block;pointer-events:none;transition:opacity .18s ease}
+.life-story-photo-prev>img{display:block;width:100%;height:100%;object-fit:cover}
+.life-story-photo-prev.is-leaving{opacity:0}
+.life-story-hint{position:absolute;right:10px;top:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:rgba(8,9,12,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);color:#FAFAF9;font-size:13px;font-weight:var(--wt-label);line-height:1;pointer-events:none}
+/* 진행 칸: 이야기 장면 칸 + 문제 칸. 지난 칸은 흐린 흰색, 지금 칸은 코랄. */
+.life-session-meta>span.life-steps{grid-column:1/-1;display:flex;gap:8px;overflow:visible}
+.life-steps>span{display:flex;flex:var(--n) 1 0;gap:3px;min-width:0}
+.life-steps i{flex:1;height:3px;border-radius:2px;background:var(--w-line-2);transition:background .2s}
+.life-steps i.is-done{background:var(--w-ink-2)}
+.life-steps i.is-now{background:var(--w-face)}
+
+/* ── 문제: 장면(팩 사진 + 상황) → 묻는 말 → 큰 선택지(고르면 흰 바탕). 판정은 아래 고정 띠 ── */
+.life-question-layout{display:grid;gap:18px;align-content:start}
+.life-question-copy{display:grid;gap:14px;min-width:0;align-content:start}
+.life-scene{display:flex;align-items:center;gap:16px;min-height:88px;padding:12px 16px 12px 14px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.w-print.life-scene-print{width:62px;flex-shrink:0;padding:4px;border-radius:9px;transform:rotate(-4deg)}
+.life-context{flex:1;min-width:0;font-size:15.5px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.life-question-title{outline:none}
+.life-question-title small{display:block;margin-bottom:8px;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-face-text)}
+.life-question-title h3{margin:0;font-size:24px;line-height:1.38;font-weight:var(--wt-display);letter-spacing:var(--track-display);text-wrap:balance}
+.life-help{justify-self:start;margin:-6px 0 -6px -6px}
+.life-help:disabled{opacity:.42}
+.life-hint{position:relative;padding:14px 16px 14px 36px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:15.5px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.life-hint::before{content:'';position:absolute;left:17px;top:22px;width:7px;height:7px;border-radius:50%;background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.55)}
+.life-hint[hidden]{display:none}
+/* 답한 뒤에는 판정 띠가 같은 이유를 말하므로 도움 상자는 접는다 */
+#panel-content:has(.life-feedback) .life-question-layout .life-hint{display:none}
+.life-answer-area{display:grid;gap:12px;min-width:0;align-content:start}
+.life-choices{display:grid;gap:10px}
+.life-choice{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:64px;padding:13px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font-size:24px;line-height:1.35;font-weight:var(--wt-strong);letter-spacing:-.022em;text-align:left;word-break:keep-all;transition:background .18s var(--w-ease),color .18s var(--w-ease),box-shadow .2s var(--w-ease),transform .12s var(--w-ease)}
+.life-choice>span{min-width:0;text-wrap:pretty}
+.life-choice:not(:disabled):hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.life-choice:not(:disabled):active{transform:scale(.985)}
+.life-choice:disabled{opacity:1}
+.life-choice:disabled:not(.is-chosen):not(.is-correct){color:var(--w-ink-q)}
+.life-choice.is-chosen{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+/* 판정 뒤: 맞는 표현이 흰 바탕 + 체크, 내가 고른 오답은 어두운 칸에 코랄 테와 점(밝은 칸 둘이 겹치지 않게) */
+.life-choice.is-correct{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+.life-choice.is-chosen:not(.is-correct){background:var(--w-s1);color:var(--w-ink);box-shadow:inset 0 0 0 1.5px rgba(249,104,89,.75)}
+.life-choice:is(.is-chosen,.is-correct)::after{content:'';flex-shrink:0;width:22px;height:22px;background:var(--w-on-ink);-webkit-mask:var(--w-check) center/18px no-repeat;mask:var(--w-check) center/18px no-repeat}
+.life-choice.is-chosen:not(.is-correct)::after{width:9px;height:9px;margin-right:6px;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6);-webkit-mask:none;mask:none}
+/* 판정 띠: 아래 흰 알약 위에 붙는 어두운 띠 하나(LED + 「맞아요 / 이렇게 말해요」 + 이유 한 줄). 화면을 초록·빨강으로 칠하지 않는다. */
+.life-choice-copy{display:grid;gap:6px;min-width:0}
+.life-choice-copy>span[lang=ko]{text-wrap:pretty}
+.life-choice-note{display:block;overflow:hidden;font-size:15px;line-height:1.5;font-weight:var(--wt-body,500);letter-spacing:0;color:var(--w-ink-2);text-wrap:pretty}
+.life-choice-note[hidden]{display:none}
+.life-choice.is-chosen:not(.is-correct) .life-choice-note{color:var(--w-ink)}
+.life-choice:disabled:not(.is-chosen):not(.is-correct) .life-choice-note{color:var(--w-ink-2)}
+.life-quote{font-weight:var(--wt-strong);color:var(--w-ink)}
+.life-other-notes{justify-self:start;min-height:40px;padding:0;font-size:14px}
+.life-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.life-feedback{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:2px;padding:14px 16px 6px;border-radius:18px;background:var(--w-s2);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px var(--w-line),0 -10px 30px rgba(0,0,0,.35);animation:life-band-in .18s var(--w-ease) both}
+.life-feedback>strong{display:flex;align-items:center;gap:10px;min-height:26px;font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.life-feedback>strong::before{content:'';width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
+.life-feedback[data-result=assisted]>strong::before{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.55)}
+.life-feedback[data-result=retry]>strong::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6)}
+/* 설정(한 단계씩)이 펼쳐 둔 도움과 함께 맞힘: 안내 점(청금석) — 도움이었지만 다시 볼 것은 아니다 */
+.life-feedback[data-result=guided]>strong::before{background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.55)}
+.life-feedback-answer{padding:2px 0 0 18px;font-size:22px;line-height:1.4;font-weight:var(--wt-strong);letter-spacing:-.02em;color:var(--w-ink)}
+.life-explanation>summary{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px;font-weight:var(--wt-strong);color:var(--w-ink-2);cursor:pointer;list-style:none}
+.life-explanation>summary::-webkit-details-marker{display:none}
+.life-explanation>summary::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-chevron) center/contain no-repeat;transition:transform .2s var(--w-ease)}
+.life-explanation[open]>summary::after{transform:rotate(180deg)}
+.life-explanation>summary:hover{color:var(--w-ink)}
+.life-explanation>p{padding:0 0 10px;font-size:15.5px;line-height:1.55;color:var(--w-ink-2);text-wrap:pretty}
+/* 틀렸거나 도움을 받았으면 이유는 늘 보인다(접는 줄 없이 한 줄) */
+.life-feedback:not([data-result=ok]) .life-explanation>summary{display:none}
+.life-feedback:not([data-result=ok]) .life-explanation>p{padding:6px 0 8px 18px}
+.life-feedback-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;padding:6px 0 8px 18px;border-top:1px solid var(--w-line)}
+/* 「뜻 보기」(10-19 화면 언어 1판): 답한 뒤 보기 아래에 접어 둔 줄. 누르면 보기마다 한국어 + 화면 언어 뜻 한 줄. */
+.life-meanings{border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.life-meanings>summary{display:flex;align-items:center;gap:8px;min-height:48px;padding:0 18px;font-size:14.5px;font-weight:var(--wt-strong);color:var(--w-ink-2);cursor:pointer;list-style:none}
+.life-meanings>summary::-webkit-details-marker{display:none}
+.life-meanings>summary::after{content:'';margin-left:auto;width:16px;height:16px;flex-shrink:0;background:var(--w-chevron) center/contain no-repeat;transition:transform .2s var(--w-ease)}
+.life-meanings[open]>summary::after{transform:rotate(180deg)}
+.life-meanings>summary:hover{color:var(--w-ink)}
+.life-meanings>ul{display:grid;gap:0;margin:0;padding:0 18px 8px;list-style:none}
+.life-meanings li{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--w-line)}
+.life-meanings li>span{font-size:17px;font-weight:var(--wt-strong);color:var(--w-ink)}
+.life-meanings li>small{font-size:14px;line-height:1.5;color:var(--w-ink-3);text-wrap:pretty}
+.life-feedback-foot>small{flex:1 1 160px;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+#world-panel .life-feedback-foot>.life-tutor-retry,#world-panel .cafe-conversation .life-tutor-retry{justify-self:start;display:inline-flex;align-items:center;min-height:44px;margin:0;padding:0 18px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);font:var(--wt-strong) 14px/1.3 var(--w-sans);color:var(--w-ink);text-align:left}
+#world-panel .life-feedback-foot>.life-tutor-retry:hover,#world-panel .cafe-conversation .life-tutor-retry:hover{background:var(--w-s3)}
+@keyframes life-band-in{from{opacity:0}to{opacity:1}}
+
+/* ── 결과 한 장: 큰 한 줄 + 이 레슨의 사진 → 배운 표현 → 다시 볼 표현 하나 → 얻은 것 ── */
+.life-complete,.life-review-summary{display:grid;gap:22px;align-content:start;outline:none}
+.life-result.is-arriving{animation:life-result-in .2s var(--w-ease) both}
+@keyframes life-result-in{from{opacity:0}to{opacity:1}}
+.life-complete-poster{min-height:200px;grid-template-areas:"label print" "word word" "sub sub"}
+.life-complete-poster>.w-print{width:92px}
+.life-complete-poster .life-poster-word{font-size:38px;line-height:1.04;margin-top:6px}
+.life-nowrap{white-space:nowrap}
+.life-result-learned ul,.life-review-list ul{display:grid;margin:0;padding:0;list-style:none;border-top:1px solid var(--w-line)}
+.life-result-learned li,.life-review-list li{display:grid;gap:4px;padding:13px 0;border-bottom:1px solid var(--w-line)}
+.life-result-learned strong,.life-review-list strong{font-size:22px;line-height:1.38;font-weight:var(--wt-title);letter-spacing:-.02em;color:var(--w-ink);text-wrap:pretty}
+.life-result-learned small,.life-review-list small{font-size:14px;line-height:1.5;color:var(--w-ink-3);text-wrap:pretty}
+.life-review-list small{color:var(--w-face-text);font-weight:var(--wt-label)}
+/* 줄마다 같은 때 · 곳을 목록 위 한 줄로 모은 것(life-ui.mjs review), 결과 줄의 불과 같은 설명 한 줄(learnedList). */
+.life-review-origin{margin:0 0 10px;font-size:14px;line-height:1.5;color:var(--w-face-text);font-weight:var(--wt-label)}
+.life-result-learned small>.w-led{margin-right:7px;vertical-align:.1em}
+.life-review-foot{margin:12px 0 0;font-size:14px;line-height:1.5;color:var(--w-ink-3);text-wrap:pretty}
+.life-result-again{display:grid;gap:2px;padding:14px 16px 4px 18px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.life-result-again .life-section-label{margin-bottom:4px}
+.life-result-again strong{font-size:24px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:-.022em;color:var(--w-ink)}
+.life-result-again>div{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 12px}
+.life-result-again small{font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+/* 10-19 결과 갈래: 혼자 맞힘 n개 / 도움을 펼쳐 두고 맞힘 n개 / 다시 볼 것 n개 — 개수 한 줄 + 표현 목록 */
+.life-result-count{margin:-2px 0 8px;font-size:15px;line-height:1.45;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.life-result-again ul{display:grid;margin:0 0 10px;padding:0;list-style:none;border-top:1px solid var(--w-line)}
+.life-result-again li{display:grid;gap:3px;padding:11px 0;border-bottom:1px solid var(--w-line)}
+.life-result-again li:last-child{border-bottom:0}
+.life-result-again li strong{font-size:20px;line-height:1.38}
+.life-result-got>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
+.life-result-got .w-led{align-self:center}
+.life-result-got strong{font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.life-result-got small{font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+.life-review-poster{min-height:220px}
+.life-review-poster .life-poster-word{font-size:32px}
+h3.life-poster-word,h3.life-poster-sub,p.life-poster-sub{margin-left:0;margin-right:0}
+h3.life-poster-sub{margin-bottom:0}
+
+/* ── 카페: 카운터 사진 위에 친구들과 쟁반, 오른쪽(아래)은 직원과의 대화 ── */
+.cafe-focus{outline:none}
+.cafe-play-layout{display:grid;gap:18px;align-content:start;min-width:0}
+.cafe-world,.cafe-conversation{display:grid;gap:12px;align-content:start;min-width:0}
+.cafe-scene{position:relative;isolation:isolate;overflow:hidden;height:196px;border-radius:var(--w-r-lg);background:var(--cafe-room) 84% 74% / 190% auto no-repeat,var(--w-s2);box-shadow:var(--w-card-edge)}
+.cafe-scene::after{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(8,9,12,.18),transparent 30%,transparent 62%,rgba(8,9,12,.34));pointer-events:none}
+.cafe-scene-table{background:var(--cafe-room) 15% 60% / cover no-repeat,var(--w-s2)}
+.cafe-scene-table[data-cafe-seat=garden]{background-position:85% 60%}
+/* 세 친구까지 함께 구운 카페 사진(카운터 · 창가 · 정원). 사진이 있는 자리는 친구 컷을 얹지 않는다. */
+.cafe-scene[data-cafe-photo=true]{background:var(--cafe-counter) 50% 100% / cover no-repeat,var(--w-s2)}
+.cafe-scene-table[data-cafe-photo=true]{background:var(--cafe-window) 50% 100% / cover no-repeat,var(--w-s2)}
+.cafe-scene-table[data-cafe-seat=garden][data-cafe-photo=true]{background-image:var(--cafe-garden)}
+/* 사진 속 세 친구는 장면 폭의 왼쪽 58%까지 선다(굽기 지시). 쟁반은 그 옆 빈 카운터에만 놓이게 좁힌다(390 실측). 사진은 아래에 붙여 아래 상태 줄이 발을 덜 가리게 한다. */
+.cafe-scene[data-cafe-photo=true]>.cafe-tray{width:34%}
+.cafe-place-label{position:absolute;left:10px;top:10px;z-index:2;display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(8,9,12,.62);color:#FAFAF9;font-size:13px;line-height:1.2;font-weight:var(--wt-strong);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.cafe-place-label>span{font-weight:var(--wt-body);color:rgba(250,250,249,.68)}
+.cafe-place-label>span::before{content:'·';margin-right:6px}
+.cafe-friends{display:flex;align-items:flex-end;justify-content:center;gap:4px}
+.cafe-scene>.cafe-friends{position:absolute;z-index:1;bottom:48px;left:12px;width:50%}
+.cafe-friends .life-friend{width:31%;height:86px;max-width:80px;filter:drop-shadow(0 6px 6px rgba(20,14,10,.3))}
+.cafe-friends .life-friend:first-child{height:75px}
+.cafe-friends .life-friend:last-child{height:79px}
+.cafe-scene-table[data-cafe-seat=garden]>.cafe-friends{left:auto;right:12px}
+.cafe-scene-table[data-cafe-seat=garden]>.cafe-tray{right:auto;left:12px}
+.cafe-cups{display:inline-flex;align-items:flex-end;justify-content:center;gap:0}
+.cafe-drink{display:block;flex-shrink:0;width:45px;height:60px;background:var(--cafe-drinks) 0 0 / 400% 100% no-repeat;filter:drop-shadow(0 2px 2px rgba(40,30,20,.18))}
+.cafe-drink-warm{background-position-x:33.333333%}
+.cafe-drink-tea{background-position-x:66.666667%}
+.cafe-drink-coldtea{background-position-x:66.666667%;position:relative}
+.cafe-ice{position:absolute;bottom:12%;right:-4%;width:46%;height:35%;background:var(--cafe-ice) center / contain no-repeat}
+.cafe-drink-takeout{background-position-x:100%}
+/* 카운터 위 쟁반: 주문한 잔이 놓인다 */
+.cafe-tray{position:absolute;z-index:1;bottom:48px;right:12px;width:42%;min-height:72px;display:flex;justify-content:center;align-items:flex-end;padding:0 6px 8px;border-radius:16px;background:rgba(250,250,249,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 0 0 1px rgba(255,255,255,.24);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.cafe-tray .cafe-drink{width:50px;height:66px}
+.cafe-tray .cafe-cups{width:100%}
+.cafe-scene .cafe-tray[data-cafe-count="3"] .cafe-drink{width:33.333333%;max-width:46px;height:auto;aspect-ratio:3 / 4}
+.cafe-tray[data-cafe-drink=empty]::before{content:'빈 쟁반';align-self:center;padding:6px 4px 0;font-size:13px;line-height:1.3;font-weight:var(--wt-strong);color:#FAFAF9;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.45)}
+.cafe-scene-caption{position:absolute;left:10px;right:10px;bottom:10px;z-index:2;padding:6px 12px;border-radius:14px;background:rgba(8,9,12,.66);color:#FAFAF9;font-size:13px;line-height:1.45;font-weight:var(--wt-label);text-align:center;text-wrap:balance;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.cafe-tray-note{display:flex;align-items:baseline;gap:9px;padding:0 4px;font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+.cafe-tray-note::before{content:'';width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--w-led-idle);transform:translateY(-1px)}
+/* 주문표: 한 줄 */
+.cafe-ticket{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:12px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.cafe-ticket small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-ticket strong{min-width:0;font-size:15.5px;line-height:1.45;font-weight:var(--wt-title);color:var(--w-ink)}
+.cafe-ticket>span{font-size:13px;line-height:1.45;color:var(--w-ink-3);text-align:right}
+/* 할 일 · 직원 · 친구 */
+.cafe-focus>small{display:block;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-face-text)}
+.cafe-conversation .cafe-focus h3{margin:4px 0 0;font-size:20px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);text-wrap:balance}
+.cafe-goal{margin:6px 0 0;font-size:15.5px;line-height:1.6;color:var(--w-ink-2)}
+.cafe-menu-notice{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:14px;line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink)}
+.cafe-menu-notice::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.55)}
+.cafe-staff{display:grid;gap:10px;justify-items:start;min-width:0}
+.cafe-staff>small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-staff>p:not(.cafe-speech-status){max-width:100%;padding:14px 18px 15px;border-radius:6px 20px 20px 20px;background:var(--w-ink);color:var(--w-on-ink);font-size:22px;line-height:1.5;font-weight:var(--wt-strong);letter-spacing:-.015em;text-wrap:pretty;box-shadow:0 14px 34px rgba(0,0,0,.28);outline:none}
+.cafe-staff>p[hidden]{display:none}
+/* 듣고 주문할 때: 말풍선 자리에 「글자로 보기」 */
+.cafe-staff-hidden{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:6px 8px 6px 18px;border-radius:6px 20px 20px 20px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15px;line-height:1.5;color:var(--w-ink-2)}
+.cafe-staff-hidden .quiet-button{flex-shrink:0}
+/* 말풍선 옆 단추 둘: 다시 듣기 · 느리게 */
+.cafe-speech-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+#world-panel .cafe-speech-controls .plain-button{position:relative;display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 18px 0 6px;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15px;font-weight:var(--wt-strong);color:var(--w-ink);text-align:left}
+#world-panel .cafe-speech-controls .plain-button::before{content:'';width:36px;height:36px;flex-shrink:0;border-radius:50%;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+#world-panel .cafe-speech-controls .plain-button::after{content:'';position:absolute;left:15px;top:50%;width:18px;height:18px;margin-top:-9px;background:var(--w-ink);-webkit-mask:var(--life-play) center/contain no-repeat;mask:var(--life-play) center/contain no-repeat}
+#world-panel .cafe-speech-controls .cafe-slow::after{-webkit-mask-image:var(--life-slow);mask-image:var(--life-slow)}
+#world-panel .cafe-speech-controls [data-life-cafe-speech][data-phase=playing]::before{background:var(--w-ink);box-shadow:none}
+#world-panel .cafe-speech-controls [data-life-cafe-speech][data-phase=playing]::after{background:var(--w-on-ink);-webkit-mask-image:var(--life-pause);mask-image:var(--life-pause)}
+#world-panel .cafe-speech-controls [data-life-cafe-speech]:is([data-phase=ended],[data-phase=error],[data-phase=unavailable])::after{-webkit-mask-image:var(--life-retry);mask-image:var(--life-retry)}
+#world-panel .cafe-speech-controls .plain-button:not(:disabled):hover{background:var(--w-s2)}
+.cafe-speech-status{font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+.cafe-speech-status:empty{display:none}
+.cafe-friend-line{font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.cafe-friend-line>b{margin-right:6px;font-weight:650;color:var(--w-ink)}
+.cafe-repair-note{display:flex;align-items:baseline;gap:9px;font-size:13.5px;line-height:1.55;color:var(--w-alert-text)}
+.cafe-repair-note::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 8px rgba(249,104,89,.5);transform:translateY(-1px)}
+.cafe-reply-label{margin-top:4px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.is-composing .cafe-friend-line{display:none}
+/* 내가 할 말: 잔 그림 + 큰 한국어 줄, 고르면 흰 바탕 */
+.cafe-options{display:grid;gap:10px}
+.cafe-option{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:8px 16px 8px 8px;border:0;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);text-align:left;word-break:keep-all;transition:background .18s var(--w-ease),color .18s var(--w-ease),transform .12s var(--w-ease)}
+.cafe-option>.cafe-cups{flex:0 0 58px;align-self:stretch;min-height:52px;align-items:center;border-radius:12px;background:rgba(250,250,249,.05)}
+.cafe-option .cafe-drink{width:30px;height:40px}
+.cafe-option .cafe-cups:has(.cafe-drink:nth-child(2)) .cafe-drink{width:24px;height:32px;margin:0 -2px}
+.cafe-option .cafe-cups:has(.cafe-drink:nth-child(3)) .cafe-drink{width:19px;height:26px;margin:0 -1px}
+.cafe-option>span:not(.cafe-cups){flex:1;min-width:0;font-size:22px;line-height:1.4;font-weight:var(--wt-strong);letter-spacing:-.02em;text-wrap:pretty}
+.cafe-option>small{flex-shrink:0;font-family:var(--w-sans);font-size:13px;line-height:1.3;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-option:not(:disabled):hover{background:var(--w-s2)}
+.cafe-option:not(:disabled):active{transform:scale(.985)}
+.cafe-option:disabled{opacity:1;cursor:default}
+.cafe-option:disabled:not(.is-chosen){color:var(--w-ink-q)}
+.cafe-option:disabled:not(.is-chosen)>.cafe-cups{opacity:.55}
+.cafe-option.is-chosen{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+.cafe-option.is-chosen>.cafe-cups{background:rgba(8,9,12,.06)}
+.cafe-option.is-chosen>small{color:color-mix(in srgb,var(--w-on-ink) 58%,transparent)}
+.cafe-option:focus-visible,.cafe-pick:focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+/* 고르기 묶음(듣기/읽기 · 자리): --w-s1 알약 안에서 고른 것만 흰 바탕 */
+.cafe-input-modes,.cafe-seats{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-width:0;margin:30px 0 0;padding:4px;border:0;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.cafe-input-modes legend,.cafe-seats legend{position:absolute;top:-27px;left:2px;padding:0;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+#world-panel :is(.cafe-input-modes,.cafe-seats) .plain-button{min-height:46px;padding:0 10px;border-radius:999px;background:transparent;box-shadow:none;font-size:15.5px;font-weight:var(--wt-strong);line-height:1.25;color:var(--w-ink-2)}
+#world-panel :is(.cafe-input-modes,.cafe-seats) .plain-button:not(:disabled):hover{color:var(--w-ink);background:var(--w-s2)}
+#world-panel :is(.cafe-input-modes,.cafe-seats) .plain-button[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink)}
+/* 내 말로 주문하기: 카운터 윗면 위에 펠트 잔을 늘어놓고 직접 집는다(칩 줄 없음) */
+.cafe-composer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;padding:16px 14px 14px;border-radius:var(--w-r-lg);background:linear-gradient(180deg,var(--w-s2),var(--w-s1) 70%);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px var(--w-line)}
+.cafe-composer fieldset{min-width:0;margin:0;padding:0;border:0}
+.cafe-composer fieldset[data-cafe-field=count],.cafe-my-sentence{grid-column:1 / -1}
+.cafe-composer legend{margin:0 0 8px 2px;padding:0;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.cafe-composer fieldset>div{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px}
+#world-panel .cafe-composer .cafe-pick{display:grid;justify-items:center;align-content:end;gap:6px;min-height:100px;padding:10px 4px 10px;border-radius:16px;background:rgba(250,250,249,.04);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font-size:14px;font-weight:var(--wt-strong);line-height:1.3;transition:background .18s var(--w-ease),color .18s var(--w-ease),transform .12s var(--w-ease)}
+#world-panel .cafe-composer .cafe-pick .cafe-cups{min-height:52px;align-items:flex-end}
+#world-panel .cafe-composer .cafe-pick .cafe-drink{width:39px;height:52px}
+#world-panel .cafe-composer .cafe-pick .cafe-cups:has(.cafe-drink:nth-child(2)) .cafe-drink{width:30px;height:40px;margin:0 -2px}
+#world-panel .cafe-composer .cafe-pick .cafe-cups:has(.cafe-drink:nth-child(3)) .cafe-drink{width:27px;height:36px;margin:0 -3px}
+#world-panel .cafe-composer .cafe-pick:not(:disabled):hover{background:var(--w-s3);color:var(--w-ink)}
+#world-panel .cafe-composer .cafe-pick:not(:disabled):active{transform:scale(.97)}
+#world-panel .cafe-composer .cafe-pick[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+#world-panel .cafe-composer .cafe-pick:disabled{opacity:.55}
+/* 내가 만든 주문: 오른쪽 꼬리의 흰 말풍선(내 말) */
+.cafe-my-sentence{justify-self:end;max-width:94%;margin:2px 0 0;padding:14px 18px 15px;border-radius:20px 20px 6px 20px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 14px 34px rgba(0,0,0,.28)}
+.cafe-my-sentence small{display:block;margin-bottom:4px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:color-mix(in srgb,var(--w-on-ink) 56%,transparent)}
+.cafe-my-sentence strong{display:block;font-size:24px;line-height:1.38;font-weight:var(--wt-title);letter-spacing:-.02em;text-wrap:balance}
+.cafe-my-sentence[data-complete=false]{background:transparent;color:var(--w-ink-3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.cafe-my-sentence[data-complete=false] small{color:var(--w-ink-3)}
+.cafe-my-sentence[data-complete=false] strong{font-size:16px;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+.cafe-help{justify-self:start;margin-left:-6px}
+/* 들어가기 · 잠깐 앉기 */
+.cafe-welcome,.cafe-break{display:grid;gap:20px;align-content:start}
+.cafe-welcome-copy,.cafe-break-copy{display:grid;gap:10px;align-content:start}
+.cafe-welcome-copy .life-section-label,.cafe-break-copy .life-section-label{margin:0}
+.cafe-welcome h3,.cafe-break h3{margin:0;font-size:24px;line-height:1.35;font-weight:var(--wt-display);letter-spacing:var(--track-display);text-wrap:balance}
+.cafe-welcome-copy>p:not(.life-section-label):not(.cafe-soft-note),.cafe-break-copy>p:not(.life-section-label){font-size:15.5px;line-height:1.65;color:var(--w-ink-2);text-wrap:pretty}
+.cafe-break-copy>p:has(b){display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;padding:12px 0;border-top:1px solid var(--w-line);color:var(--w-ink)}
+.cafe-break-copy>p b,.cafe-opening-lines b,.cafe-ending-lines b{padding-top:2px;font-size:13px;line-height:1.4;font-weight:650;color:var(--w-ink-3)}
+.cafe-opening-lines,.cafe-ending-lines{display:grid;margin:4px 0;text-align:left}
+.cafe-opening-lines p,.cafe-ending-lines p{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;margin:0;padding:12px 0;border-top:1px solid var(--w-line);font-size:15.5px;line-height:1.6;color:var(--w-ink)}
+.cafe-ending-lines p:last-child{border-bottom:1px solid var(--w-line)}
+.cafe-soft-note{font-size:14px;line-height:1.6;color:var(--w-ink-3)}
+/* 방문 결과: 받은 음료(얻은 것) */
+.cafe-complete{display:grid;gap:22px;align-content:start;text-align:left}
+.cafe-receipt{display:grid}
+.cafe-complete-orders{display:grid;border-top:1px solid var(--w-line)}
+.cafe-complete-orders>div{display:grid;grid-template-columns:72px minmax(0,1fr);grid-template-areas:"cups place" "cups label";align-items:center;column-gap:14px;padding:12px 0;border-bottom:1px solid var(--w-line)}
+.cafe-complete-orders .cafe-cups{grid-area:cups;justify-content:center;min-height:56px;border-radius:12px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.cafe-complete-orders .cafe-drink{width:30px;height:40px}
+.cafe-complete-orders .cafe-cups:has(.cafe-drink:nth-child(3)) .cafe-drink{width:21px;height:28px}
+.cafe-complete-orders strong{grid-area:place;align-self:end;font-size:16px;line-height:1.4;font-weight:var(--wt-title)}
+.cafe-complete-orders span:not(.cafe-cups):not(.cafe-drink):not(.cafe-ice){grid-area:label;align-self:start;font-size:13.5px;line-height:1.45;color:var(--w-ink-3)}
+
+/* ── 학습 목표 · 도움 방식: 목록 줄 · 알약 묶음 · 스위치 ── */
+#world-panel.world-study-panel{padding-bottom:0;scroll-padding-bottom:168px}
+#world-panel.world-study-panel .close-button{width:44px;height:44px}
+.study-form{display:grid;gap:26px;max-width:680px;margin:0 auto;color:var(--w-ink)}
+.study-poster{min-height:196px}
+.study-poster>.w-print{width:104px}
+.study-print>i{display:block;aspect-ratio:1;border-radius:6px;background:#fff var(--life-print-goals,none) center / cover no-repeat}
+.study-poster .study-intro{font-size:14px;line-height:1.55}
+.study-form fieldset{min-width:0;margin:0;padding:0;border:0}
+.study-form legend{display:block;margin:0 0 12px;padding:0;font-size:16px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+/* 알약 묶음: 이유는 여러 줄로 감싸고, 짧은 고르기는 한 줄 트랙 */
+.study-pills{display:flex;flex-wrap:wrap;gap:8px}
+.study-pill{position:relative;cursor:pointer}
+.study-pill input{position:absolute;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+.study-pill span{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15px;line-height:1.25;font-weight:var(--wt-strong);color:var(--w-ink-2);white-space:nowrap;transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.study-pill:hover span{background:var(--w-s2);color:var(--w-ink)}
+.study-pill input:checked+span{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+.study-pill input:focus-visible+span{outline:2px solid var(--w-ink);outline-offset:2px}
+.study-segment{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.study-segment .study-pill span{display:flex;width:100%;padding:0 6px;box-shadow:none;font-size:14px}
+/* 도움 방식: 목록 줄(제목 + 설명 한 줄 + 체크) */
+.study-options{display:grid;border-top:1px solid var(--w-line)}
+.study-option{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:72px;padding:12px 4px;border-bottom:1px solid var(--w-line);cursor:pointer}
+.study-option input{position:absolute;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+.study-option>span{display:grid;gap:3px;min-width:0}
+.study-option strong{font-size:16px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink-2)}
+.study-option small{font-size:13.5px;line-height:1.5;color:var(--w-ink-3);text-wrap:pretty}
+.study-option::after{content:'';width:24px;height:24px;flex-shrink:0;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--w-line-2)}
+.study-option:hover strong{color:var(--w-ink)}
+.study-option:has(input:checked) strong{color:var(--w-ink)}
+.study-option:has(input:checked)::after{background:var(--w-ink) no-repeat center/16px;box-shadow:none;-webkit-mask:none;mask:none;background-image:none}
+.study-option:has(input:checked)::before{content:'';position:absolute;right:8px;top:50%;width:16px;height:16px;margin-top:-8px;z-index:1;background:var(--w-on-ink);-webkit-mask:var(--w-check) center/contain no-repeat;mask:var(--w-check) center/contain no-repeat}
+.study-option:has(input:focus-visible){outline:2px solid var(--w-ink);outline-offset:2px}
+.study-today{display:grid;gap:18px;padding-top:20px;border-top:1px solid var(--w-line)}
+.study-today>.life-section-label{margin:0}
+.study-today>p:not(.life-section-label){margin:-12px 0 0;font-size:13.5px;line-height:1.55;color:var(--w-ink-3)}
+/* 기억하기: 50×30 스위치 줄(누르는 자리는 줄 전체) */
+.study-consent{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px;padding:14px 0;border-top:1px solid var(--w-line);border-bottom:1px solid var(--w-line);cursor:pointer}
+.study-consent>span{display:grid;gap:3px;min-width:0}
+.study-consent strong{font-size:16px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.study-consent small{font-size:13.5px;line-height:1.5;color:var(--w-ink-3);text-wrap:pretty}
+.study-consent input{-webkit-appearance:none;appearance:none;order:2;position:relative;flex-shrink:0;width:50px;height:44px;margin:0;border-radius:999px;background:transparent;cursor:pointer}
+.study-consent input::before{content:'';position:absolute;left:0;top:7px;width:50px;height:30px;border-radius:999px;background:var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2);transition:background .18s var(--w-ease)}
+.study-consent input::after{content:'';position:absolute;top:10px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--w-ink-2);transition:transform .2s var(--w-ease),background .18s var(--w-ease)}
+.study-consent input:checked::before{background:var(--w-ink);box-shadow:none}
+.study-consent input:checked::after{transform:translateX(20px);background:var(--w-on-ink)}
+.study-consent input:focus-visible{outline:2px solid var(--w-ink);outline-offset:1px}
+.study-scope{margin-top:-12px;font-size:13px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.study-save-status{min-height:20px;margin-top:-14px;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+.study-save-status:empty{display:none}
+.study-form .life-actions{position:sticky;bottom:0;z-index:3;margin:-8px 0 0;padding:18px 0 calc(16px + var(--safe-bottom,0px));background:linear-gradient(180deg,transparent,var(--w-panel) 22px)}
+.study-form .life-actions .felt-button{min-height:58px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12),0 14px 34px rgba(0,0,0,.3)}
+.study-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 18px;margin-top:-14px}
+/* 학습 목표 창의 「내 위치 보기」 한 줄(10-19 결정: 「연습에서 본 것」 네 칸을 갈음) */
+.study-position{display:grid;gap:6px;margin:0 0 28px;padding-top:20px;border-top:1px solid var(--w-line)}
+.study-position>.life-section-label{margin:0}
+.study-position-row{border-top:1px solid var(--w-line)}
+
+/* ── 내 위치: TOPIK I 항목 지도 · 짧은 진단 · 한글 판(world-position-ui.mjs, 10-19 결정) ──
+ * 코랄 포스터 하나(내 위치) → 세 칸 수 → 짧은 진단(흰 알약 하나) → 듣기·읽기 항목 줄(펼치면 근거) → 예상 급수(문턱 전에는 「아직」).
+ * 진단 문항은 집중 판처럼 위 진행 막대 → 문항 → 보기(학습 내용이라 22px 한국어) → 건너뛰기·그만하기. */
+.wpos{display:grid;gap:18px;outline:none}
+.wpos-poster{min-height:168px}
+.wpos-poster>.w-print{width:96px}
+.wpos-print>i{display:block;aspect-ratio:1;border-radius:6px;background:#fff var(--life-print-position,none) center / cover no-repeat}
+.wpos-print[data-print=hangul]>i{background-image:var(--life-print-hangul,none)}
+.wpos-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.wpos-counts li{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:8px;min-width:0;padding:12px 12px 13px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-counts strong{font-size:28px;line-height:1.1;font-weight:var(--wt-display);letter-spacing:var(--track-display);color:var(--w-ink)}
+.wpos-counts span{grid-column:1 / -1;margin-top:4px;font-size:13px;line-height:1.35;font-weight:var(--wt-label);color:var(--w-ink-2);overflow-wrap:anywhere;text-wrap:balance}
+.wpos-intro{margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-note,.wpos-empty,.wpos-scope{margin:0;font-size:13.5px;line-height:1.55;color:var(--w-ink-3);text-wrap:pretty}
+.wpos-diagnostic,.wpos-estimate{display:grid;gap:8px;padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos :is(.wpos-diagnostic,.wpos-estimate)>.life-section-label{margin:0}
+.wpos :is(.wpos-diagnostic,.wpos-estimate)>h3{margin:0;font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.wpos-diagnostic>p:not(.life-section-label){margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-diagnostic>p.wpos-note{color:var(--w-ink-3);font-size:13.5px}
+.wpos-diagnostic>.felt-button{width:100%;margin-top:8px}
+.wpos-estimate-state{display:flex;align-items:center;gap:10px;margin:0}
+.wpos-estimate-state strong{font-size:15.5px;line-height:1.45;font-weight:var(--wt-strong);color:var(--w-ink)}
+.wpos-estimate-count{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;margin:4px 0 0;font-size:13px;font-variant-numeric:tabular-nums;color:var(--w-ink-3)}
+.wpos-bar{position:relative;display:block;height:4px;border-radius:999px;background:var(--w-line-2);overflow:hidden}
+.wpos-bar>i{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:var(--w-ink)}
+.wpos-group{display:grid;gap:8px}
+.wpos-group>h3{display:flex;align-items:baseline;gap:8px;margin:6px 0 0;font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.wpos-group>h3>span{font-family:var(--w-mono);font-size:12px;font-weight:500;letter-spacing:.06em;color:var(--w-ink-3)}
+.wpos-skills{display:grid;border-top:1px solid var(--w-line)}
+.wpos-skill{border-bottom:1px solid var(--w-line)}
+.wpos-skill>summary{display:flex;align-items:center;gap:12px;min-height:56px;padding:9px 2px;list-style:none;cursor:pointer}
+.wpos-skill>summary::-webkit-details-marker{display:none}
+.wpos-skill>summary::after{content:'';flex-shrink:0;width:14px;height:14px;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat;transform:rotate(90deg);transition:transform .18s var(--w-ease)}
+.wpos-skill[open]>summary::after{transform:rotate(-90deg)}
+.wpos-skill>summary:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px;border-radius:6px}
+.wpos-skill-name{flex:1;min-width:0;font-size:15.5px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink);text-wrap:pretty}
+.wpos-chip{display:inline-flex;align-items:center;gap:7px;flex-shrink:0;max-width:48%;min-height:28px;padding:3px 11px;border-radius:999px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:13px;line-height:1.3;font-weight:var(--wt-label);color:var(--w-ink-2)}
+.wpos-chip[data-tone=ok]{color:var(--w-ok-text)}
+.wpos-chip[data-tone=check]{color:var(--w-check-text)}
+.wpos-skill-body{display:grid;gap:8px;padding:0 2px 16px}
+.wpos-status{margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-evidence-title{margin:4px 0 0;font-size:13px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.wpos-evidence-list,.wpos-done-list{display:grid;margin:0;padding:0;list-style:none}
+.wpos-evidence{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:4px 10px;padding:9px 0;border-top:1px solid var(--w-line)}
+/* 줄 수가 달라도 불은 첫 줄(맞음 · 틀림) 앞에 선다. */
+.wpos-evidence>.w-led{margin-top:.5em}
+.wpos-evidence-main{display:grid;gap:2px;min-width:0}
+.wpos-evidence-main strong{font-size:14px;line-height:1.4;font-weight:var(--wt-strong)}
+.wpos-evidence-main small{font-size:13px;line-height:1.45;color:var(--w-ink-3);overflow-wrap:anywhere}
+.wpos-evidence time{font-size:13px;font-variant-numeric:tabular-nums;color:var(--w-ink-3);white-space:nowrap}
+.wpos-hangul{display:grid;gap:8px}
+.wpos-hangul>p{margin:6px 0 0;font-size:15px;line-height:1.45;font-weight:var(--wt-strong)}
+.wpos>.felt-button{width:100%}
+/* 진단 한 문항 */
+.wpos-stage{min-width:0}
+.wpos-advisory{margin-block:24px;padding-top:20px;border-top:1px solid var(--w-line);min-width:0}
+.wpos-advisory p{font-size:14px;line-height:1.6;color:var(--w-ink-2);margin:6px 0}
+.wpos-advisory h3{font-size:20px;margin:0 0 8px}
+/* 시간을 두고 다시 확인(11-08 프론트 검수): 카드가 있으면 진단 칸과 같은 카드 꼴로 진단 앞에, 없으면 판 끝의 한 줄.
+   기준 답마다 항목 이름 아래 1 · 7 · 30일 세 칸 — 지금 확인할 칸은 노란 불, 확인한 칸은 초록 불. */
+.wpos-followups{display:grid;gap:8px;min-width:0}
+.wpos-followups:not([data-cards]){margin-top:6px;padding-top:20px;border-top:1px solid var(--w-line)}
+.wpos-followups[data-cards]{padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-followups>.life-section-label{margin:0}
+.wpos-followups>h3{margin:0;font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.wpos-followups>p:not(.life-section-label){margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-followups .wfol-note{margin:0;font-size:13.5px;line-height:1.55;color:var(--w-ink-3)}
+.wfol-list{display:grid;margin:4px 0 0;padding:0;list-style:none}
+.wfol-card{display:grid;gap:10px;padding:14px 0 4px;border-top:1px solid var(--w-line);min-width:0}
+.wfol-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;margin:0}
+.wfol-head strong{font-size:15.5px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink)}
+.wfol-head small{font-size:13px;line-height:1.4;color:var(--w-ink-3)}
+/* 1 · 7 · 30일은 누르는 칸이 아니다(11-09): 테두리 칸 셋은 단추처럼 보여 아래 「…에서 확인하기 →」와 헷갈렸고, 작은 점 타임라인은 이 구역 첫 시안에서 기각된 꼴이다(슬롭 점검표 36 · 그래프 문법).
+   글 세 칸을 1px 선으로만 나눈다(디자인 규칙 「카드 안 카드 금지 — 안쪽은 1px 선」). 지금이면 노란 불, 확인했으면 초록 불. 누르는 것은 카드 아래 단추 하나다. */
+.wfol-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:2px 0 0;padding:0;list-style:none}
+.wfol-steps>li{display:grid;align-content:start;gap:4px;min-width:0;padding:1px 8px 2px 10px;border-left:1px solid var(--w-line-2)}
+.wfol-steps>li:first-child{padding-left:0;border-left:0}
+.wfol-window{font-size:13px;line-height:1.35;font-weight:var(--wt-label);color:var(--w-ink-3);overflow-wrap:anywhere}
+.wfol-state{display:block;min-width:0;font-size:14px;line-height:1.35;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere;text-wrap:balance}
+html[lang=ko] .wfol-state{font-size:15.5px}
+.wfol-state>.w-led{margin-right:6px;vertical-align:.12em}
+.wfol-steps>li[data-status=due] .wfol-state{color:var(--w-check-text)}
+.wfol-steps>li[data-status=observed] .wfol-state{color:var(--w-ok-text)}
+.wfol-steps>li:is([data-status=missed],[data-status=invalidated],[data-status=unavailable]) .wfol-state{font-size:13px;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.wfol-open{justify-self:start}
+.wpos-run{gap:16px}
+.wpos-run-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+.wpos-run-count{margin:0;font-size:13px;font-variant-numeric:tabular-nums;color:var(--w-ink-3)}
+.wpos-run-skill{margin:0;outline:none}
+/* 한국어 화면의 항목 이름 라벨(진단 · 연습 · 시험 형식 문항 위, 연습 끝 화면)은 모노 라벨 꼴이 아니라 본문 글꼴로 — 한글은 모노 · 13px 밑으로 쓰지 않는다(11-09 다듬기 세션 world-finish-rows-20261109-b F1). 영어 · 몽골어는 라벨 꼴 그대로다. 이 화면들은 타이핑 움직임을 걸지 않아 CSS만으로 된다. */
+html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label){font-family:var(--w-sans);font-size:13px;font-weight:var(--wt-label);letter-spacing:0;text-transform:none}
+.wpos-prompt{margin:0;font-size:22px;line-height:1.5;font-weight:var(--wt-strong);letter-spacing:-.02em;color:var(--w-ink);text-wrap:pretty}
+.wpos-question{margin:0;font-size:17px;line-height:1.5;font-weight:var(--wt-title);color:var(--w-ink-2)}
+.wpos-listen{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-listen>.quiet-button{min-height:44px;padding:0 16px;border-radius:999px;background:var(--w-s3);text-decoration:none;color:var(--w-ink)}
+.wpos-listen>.quiet-button[aria-busy=true]{opacity:.7}
+.wpos-listen>.wpos-note{flex:1 1 180px}
+.wpos-choices{display:grid;gap:10px}
+.wpos-choice{display:flex;align-items:center;width:100%;min-height:60px;padding:13px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font-size:22px;line-height:1.35;font-weight:var(--wt-strong);letter-spacing:-.022em;text-align:left;text-wrap:pretty;overflow-wrap:anywhere}
+.wpos-choice:not(:disabled):hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.wpos-choice:not(:disabled):active{transform:scale(.985)}
+.wpos-choice:disabled{color:var(--w-ink-q);cursor:default}
+/* 그림 보기(낱말 듣기, 10-20): 세 칸에 그림을 크게 가운데. 그림은 글자색을 따르지 않으니 듣기 전(disabled)에는 흐리게 둔다. */
+.wpos-pictures{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wpos-pictures .wpos-choice{justify-content:center;min-height:104px;padding:12px;font-size:52px;line-height:1;text-align:center}
+.wpos-pictures .wpos-choice:disabled{opacity:.42}
+/* 짧은 연습 새 판(Atlas 단계 4-1): 문항 위 이유 한 줄은 .wpos-note 그대로, 끈질긴 단위 힌트는 해설 카드와 같은 면에 불 하나 + 글(여러 줄이면 불은 첫 줄에),
+   「모르겠어요」는 보기 아래 왼쪽의 조용한 단추(누르는 자리 44px). */
+.wpos-cue{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:10px;margin:0;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:15px;line-height:1.55;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-cue>.w-led{margin-top:.55em}
+.wpos-unknown{justify-self:start;min-height:44px}
+/* 듣기 전에는 보기처럼 흐리게 — 이 단추만 눌릴 것처럼 보이지 않게(11-12 화면 최종 넘친 지적). */
+.wpos-unknown:disabled{color:var(--w-ink-q)}
+/* 이 기기에 저장하지 못한 답 — 저장 실패 문법(경고 글색 + 빨간 불)과 같게(.life-save-status · .cafe-repair-note). */
+[data-practice-unsaved]{display:flex;align-items:baseline;gap:9px;color:var(--w-alert-text)}
+[data-practice-unsaved]::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 8px rgba(249,104,89,.5);transform:translateY(-1px)}
+.wpos-run-status{min-height:20px;margin:0;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
+.wpos-run-status:empty{min-height:0}
+.wpos-run-actions{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px}
+.wpos-card{display:grid;gap:10px}
+.wpos-notice,.wpos-guest{display:grid;gap:8px;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-notice-title{margin:0;font-size:17px;line-height:1.45;font-weight:var(--wt-title)}
+.wpos-notice ul{display:grid;gap:4px;margin:0;padding-left:20px;font-size:16px;line-height:1.55;color:var(--w-ink-2)}
+.wpos-guest-time{margin:0;font-family:var(--w-mono);font-size:12px;letter-spacing:.06em;color:var(--w-face-text)}
+.wpos-guest dl{display:grid;gap:4px;margin:0}
+.wpos-guest dl>div{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid var(--w-line)}
+.wpos-guest dt{font-size:14px;color:var(--w-ink-3)}
+.wpos-guest dd{margin:0;font-size:16px;font-weight:var(--wt-strong);text-align:right}
+.wpos-bag{margin:0;font-size:15px;line-height:1.5;color:var(--w-ink-2)}
+.wpos-line{margin:2px 0 0;font-size:18px;line-height:1.55;font-weight:var(--wt-strong);text-wrap:pretty}
+.wpos-line>span{display:block;margin-bottom:2px;font-size:13px;font-weight:var(--wt-label);color:var(--w-ink-3)}
+/* 진단 끝 */
+.wpos-done-list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--w-line)}
+.wpos-done-list li strong{font-size:15px;line-height:1.4;font-weight:var(--wt-strong)}
+.wpos-done-list li span{font-size:13px;color:var(--w-ink-3);text-align:right}
+.wpos-summary-line{margin:0;font-size:14px;line-height:1.6;color:var(--w-ink-2)}
+
+/* ── 10-20 TOPIK 맞춤: 칸 아래 한 줄 · 먼저 볼 항목 · 해설 · 읽기 짧은 연습 · 이번 주 계획 ── */
+.wpos-skill-note{display:block;margin-top:2px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty}
+/* 놓친 곳 카드(11-14, world-missed-spot.mjs): 머리(시험 · 영역 → 항목 → 놓친 수) → 좁혀 보면(안내문 줄 · 놓친 방향, 이름 칸 + 내용 칸) →
+   다시 만나기(● 기록에 있는 일 · ○ 다음 차례 — 점 · 단계 · 내용 세 칸 한 줄씩) → 범례 · 단추. 이름 칸은 몽골어처럼 긴 말이면 34%까지 접는다. */
+.wpos-missed{display:grid;gap:10px;padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);min-width:0}
+.wpos .wpos-missed>:is(.life-section-label,h3){margin:0}
+.wpos .wpos-missed>h3{font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.wmis-head{display:grid;gap:3px;min-width:0}
+.wmis-exam{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.wmis-skill{font-size:17px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere;text-wrap:balance}
+.wmis-count{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:14.5px;line-height:1.45;font-weight:var(--wt-strong);color:var(--w-alert-text)}
+.wmis-narrow{display:grid;grid-template-columns:fit-content(34%) minmax(0,1fr);column-gap:14px;margin:2px 0 0;padding:0}
+.wmis-narrow>div{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;row-gap:4px;padding:10px 0;border-top:1px solid var(--w-line)}
+.wmis-narrow dt{min-width:4.5em;font-size:13px;line-height:1.55;font-weight:var(--wt-label);color:var(--w-ink-3);overflow-wrap:anywhere}
+.wmis-narrow dd{display:grid;gap:3px;margin:0;min-width:0;font-size:15px;line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere;text-wrap:pretty}
+.wmis-narrow dd>small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-alert-text)}
+.wmis-sub{margin:6px 0 0;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.wmis-again{display:grid;grid-template-columns:12px fit-content(34%) minmax(0,1fr);column-gap:10px;margin:0;padding:0;list-style:none}
+.wmis-again>li{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:start;row-gap:4px;padding:9px 0;border-top:1px solid var(--w-line)}
+.wmis-dot{display:inline-block;flex-shrink:0;width:9px;height:9px;border-radius:50%;box-sizing:border-box;border:1.5px solid var(--w-ink-2);background:transparent}
+.wmis-again>li>.wmis-dot{margin-top:6px}
+:is(.wmis-again>li,.wmis-legend>span)[data-state=done] .wmis-dot{border-color:var(--w-ink);background:var(--w-ink)}
+.wmis-step{min-width:4.5em;font-size:13.5px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-2);overflow-wrap:anywhere}
+.wmis-what{min-width:0;font-size:14.5px;line-height:1.5;color:var(--w-ink);overflow-wrap:anywhere;text-wrap:pretty}
+.wmis-again>li[data-state=planned] .wmis-what{color:var(--w-ink-2)}
+.wmis-legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0;font-size:12.5px;line-height:1.5;color:var(--w-ink-3)}
+.wmis-legend>span{display:inline-flex;align-items:center;gap:6px}
+/* ── 「내 위치」 2판(11-16, world-position-page.mjs) — 드라마 「오늘」 한 장과 같은 결(qa/내위치2판-20261116/설계.md) ──
+ * 차례: 놓친 곳 이야기(상자 없이 판 위에 — 큰 한 줄 · 안내문 종이 한 장 · 줄 · 흰 알약) → 항목 지도 → 낮은 줄들(짧은 진단 · 다시 확인 · 항목별 · 예상 급수).
+ * 카드는 테두리 없이 옅은 면만. 누르는 곳은 두 꼴뿐: 흰 알약 하나(주 단추)와 선 알약(둘째 단추) — 접힘 줄은 오른쪽 화살표.
+ * 강조색은 한 곳: 다시 만나 혼자 해낸 칸의 따뜻한 노랑. 놓친 표시만 분홍(드라마의 틀림 색). 영문 모노 라벨을 쓰지 않는다(옛 묶음의 것도 화면 쪽이 뺀다).
+ * 글자 크기: 큰 한 줄 28 · 안내문 19 · 줄 글 15.5 · 머리 13.5 · 작은 말 12.5. */
+#world-panel .wpv{--wpv-face:rgba(255,255,255,.055);--wpv-face-2:rgba(255,255,255,.1);--wpv-line:rgba(255,255,255,.1);--wpv-ink:#f4f5f8;--wpv-dim:rgba(244,245,248,.68);--wpv-muted:rgba(244,245,248,.52);--wpv-faint:rgba(244,245,248,.3);--wpv-warm:#ffcf5c;--wpv-slip:#ff6b81;gap:14px;color:var(--wpv-ink);word-break:keep-all}
+.wpv :is(.wpv-map,.wpv-fold,.wpos-attention,.wpos-diagnostic,.wpos-followups[data-cards],[data-domain=writing],.wpos-advisory){border:0;border-radius:20px;background:var(--wpv-face);box-shadow:none}
+/* 놓친 곳 이야기 */
+.wpv-story{display:grid;padding:6px 2px 10px;min-width:0}
+.wpv-kicker{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0;font-size:13px;line-height:1.4;font-weight:700;color:var(--wpv-dim)}
+.wpv-kicker::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--wpv-slip)}
+.wpv-kicker>span+span{font-weight:600;color:var(--wpv-muted)}
+.wpv-kicker>span+span::before{content:'·';margin-right:8px}
+.wpv-skill{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:6px 0 0;min-width:0}
+.wpv-skill>strong{font-size:15.5px;line-height:1.45;font-weight:700;color:var(--wpv-ink);overflow-wrap:anywhere}
+.wpv-skill>small{flex-basis:100%;font-size:13px;line-height:1.45;color:var(--wpv-muted)}
+/* 손님 표식: ✗ 놓침(분홍 테 · 엑스) · ✓ 맞힘(흰 면 · 체크) — 시각 차례 */
+.wpv-marks{display:inline-flex;align-items:center;gap:4px}
+.wpv-marks>i{position:relative;display:block;width:18px;height:18px;border-radius:5px;box-sizing:border-box}
+.wpv-marks>i[data-verdict=incorrect]{box-shadow:inset 0 0 0 1.5px var(--wpv-slip)}
+.wpv-marks>i[data-verdict=incorrect]::before,.wpv-marks>i[data-verdict=incorrect]::after{content:'';position:absolute;left:4px;right:4px;top:8px;height:2px;border-radius:1px;background:var(--wpv-slip);transform:rotate(45deg)}
+.wpv-marks>i[data-verdict=incorrect]::after{transform:rotate(-45deg)}
+.wpv-marks>i[data-verdict=correct]{background:var(--wpv-ink)}
+.wpv-marks>i[data-verdict=correct]::after{content:'';position:absolute;left:6px;top:3px;width:4px;height:8px;border:solid #111;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.wpv-marks>b{font-size:12px;font-weight:700;color:var(--wpv-muted)}
+.wpv .wpv-headline{margin:14px 0 0;font-size:28px;line-height:1.22;font-weight:800;letter-spacing:-.04em;color:var(--wpv-ink);text-wrap:balance}
+.wpv .wpv-headline[data-long]{font-size:23px;line-height:1.26;letter-spacing:-.03em}
+/* 안내문 한 장: 입장 검사 화면의 안내문처럼 종이 위 먹색 글 — 판에서 유일하게 밝은 면이라 눈이 먼저 간다. */
+.wpv-notice{margin:14px 0 0;padding:14px 16px 15px;border-radius:12px;background:#f3efe6;color:#17140f;box-shadow:0 24px 48px -28px rgba(0,0,0,.95)}
+.wpv-notice figcaption{font-size:12px;line-height:1.4;font-weight:700;color:rgba(23,20,15,.72)}
+.wpv-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.wpv-row li{position:relative}
+.wpv-notice blockquote{margin:5px 0 0;font-size:19px;line-height:1.4;font-weight:800;letter-spacing:-.025em;text-wrap:pretty}
+/* 놓침 → 다시 만난 일 → 다음 차례를 잇는 줄. 한 일은 찬 점과 실선, 다음 차례는 빈 점과 점선. */
+.wpv .wpv-steps{display:grid;grid-template-columns:none;gap:0;margin:18px 0 0;padding:0;list-style:none}
+.wpv .wpv-steps>li{position:relative;display:grid;grid-column:auto;grid-template-columns:22px minmax(0,1fr);column-gap:10px;row-gap:2px;align-items:start;padding:0 0 13px;border-top:0}
+.wpv .wpv-steps>li:last-child{padding-bottom:0}
+.wpv .wpv-steps>li::before{content:'';position:absolute;left:10px;top:17px;bottom:-1px;width:2px;border-radius:2px;background:rgba(255,255,255,.18)}
+.wpv .wpv-steps>li:last-child::before{display:none}
+.wpv .wpv-steps>li:has(+li[data-state=planned])::before{background:repeating-linear-gradient(180deg,rgba(255,255,255,.26) 0 4px,transparent 4px 8px)}
+.wpv-dot{grid-row:1 / span 2;justify-self:center;width:12px;height:12px;margin-top:4px;border-radius:50%;background:var(--wpv-ink);box-sizing:border-box}
+.wpv-steps>li[data-step=miss] .wpv-dot{background:var(--wpv-slip)}
+.wpv-steps>li[data-state=planned] .wpv-dot{background:transparent;border:2px solid var(--wpv-faint)}
+.wpv-steps>li[data-win] .wpv-dot{width:20px;height:20px;margin-top:0;background:var(--wpv-warm)}
+.wpv-steps>li[data-win] .wpv-dot::after{content:'';display:block;width:5px;height:9px;margin:3px auto 0;border:solid #17140f;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.wpv-step{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;line-height:1.4;font-weight:700;color:var(--wpv-muted)}
+.wpv-next{padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700;color:var(--wpv-ink);background:var(--wpv-face-2)}
+.wpv-what{grid-column:2;min-width:0;font-size:15.5px;line-height:1.48;font-weight:600;color:var(--wpv-ink);overflow-wrap:anywhere;text-wrap:pretty}
+.wpv-steps>li[data-win] .wpv-what{color:var(--wpv-warm)}
+.wpv-steps>li[data-state=planned] .wpv-what{font-weight:500;color:var(--wpv-dim)}
+/* 주 단추 하나: 드라마 「오늘」의 흰 알약. */
+#world-panel .wpv .wpv-go{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;margin:18px 0 0;padding:0 22px;border:0;border-radius:999px;background:#f4f5f8;color:#0b0b0d;font:800 16.5px/1.2 var(--w-sans);letter-spacing:-.02em;cursor:pointer;box-shadow:0 18px 40px -20px rgba(255,255,255,.45);transition:transform .2s cubic-bezier(.23,1,.32,1),translate .2s cubic-bezier(.23,1,.32,1),box-shadow .2s ease}
+#world-panel .wpv .wpv-go:active{transform:scale(.97)}
+#world-panel .wpv .wpv-go:focus-visible{outline:2px solid #6fd3ff;outline-offset:3px}
+/* 글이 긴 언어(영어 · 몽골어)에서 흰 알약이 휴대폰 첫 화면 아래로 밀리면 알약 칸이 화면 아래에 붙어 따라온다(11-16 다음 판 P3).
+   한국어 405×720은 알약이 화면 안에 들어 붙지 않는다. 붙었을 때만 판 바탕색 테두리와 위쪽 그늘로 뒤에 지나가는 글을 가리고 알약을 14px 띄운다.
+   붙음을 읽는 스크롤 상태 쿼리를 모르는 브라우저는 붙이지 않고 전처럼 둔다. 띄움과 테두리는 0.2초로 이어 붙음이 풀릴 때 알약이 튀지 않게 한다(최종 검수 F1). */
+@supports (container-type:scroll-state){
+ #world-panel .wpv .wpv-go-bar{position:sticky;bottom:0;z-index:2;container-type:scroll-state}
+ @container scroll-state(stuck:bottom){#world-panel .wpv .wpv-go{translate:0 -14px;box-shadow:0 0 0 14px #0c0d10,0 -18px 14px 2px rgb(12 13 16/.9)}}
+}
+/* 둘째 단추는 모두 선 알약 하나의 꼴: 짧은 진단(이야기가 있을 때) · 이 항목 연습하기(목록 안) · 시험 형식 연습 · 다시 확인 · 쓰기 · 권장 연습 */
+#world-panel .wpv :is(.wpos-practice,[data-position-mock],[data-position-writing],.wfol-open,[data-advisory]),#world-panel .wpv:has(.wpv-go) .wpos-diagnostic>.felt-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--wpv-ink);font-size:14.5px;font-weight:700;text-decoration:none;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.26)}
+#world-panel .wpv:has(.wpv-go) .wpos-diagnostic>.felt-button{width:100%}
+/* 항목 지도: 칸 하나가 항목 하나. 빈 칸 아직 · 아래 반이 찬 칸 연습 중 · 찬 칸 혼자 해냄 · 분홍 테 놓친 곳. */
+.wpv-map{display:grid;padding:18px 18px 16px;min-width:0}
+.wpv .wpv-map>h3{margin:0;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:-.025em}
+.wpv-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 0;padding:0;list-style:none}
+.wpv-legend li{display:inline-flex;align-items:center;gap:6px;font-size:13px;line-height:1.4;color:var(--wpv-dim)}
+.wpv-legend b{font-size:15px;font-weight:800;color:var(--wpv-ink);font-variant-numeric:tabular-nums}
+.wpv-legend i,.wpv-row li{display:block;border-radius:6px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22);box-sizing:border-box}
+.wpv-legend i{width:14px;height:14px;border-radius:4px}
+.wpv-legend li[data-cell=practicing] i,.wpv-row li[data-cell=practicing]{background:linear-gradient(0deg,rgba(244,245,248,.8) 50%,transparent 50%)}
+.wpv-legend li[data-cell=independent] i,.wpv-row li[data-cell=independent]{background:var(--wpv-ink);box-shadow:none}
+.wpv-legend li[data-missed] i,.wpv-row li[data-missed]{box-shadow:inset 0 0 0 2px var(--wpv-slip)}
+.wpv-grid{display:grid;gap:8px;margin:16px 0 0}
+.wpv-row{display:grid;grid-template-columns:3.2em minmax(0,1fr);align-items:center;gap:8px}
+.wpv-row>span{font-size:12px;line-height:1.3;font-weight:700;color:var(--wpv-muted);overflow-wrap:anywhere}
+.wpv-row>ol{display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,1fr));gap:5px;margin:0;padding:0;list-style:none}
+.wpv-row li{aspect-ratio:1;max-height:44px}
+.wpv .wpv-map .wpv-note{margin:14px 0 0;font-size:12.5px;line-height:1.5;color:var(--wpv-muted)}
+/* 낮은 줄들: 옛 묶음(먼저 볼 항목 · 짧은 진단 · 다시 확인 · 쓰기 · 권장 연습)과 접힘(항목별 · 예상 급수). */
+.wpv :is(.wpos-attention,.wpos-diagnostic,.wpos-followups[data-cards],[data-domain=writing],.wpos-advisory){padding:18px 18px 16px}
+.wpv .wpos-followups:not([data-cards]){margin:0;padding:2px 6px;border-top:0}
+.wpv .wpos-followups:not([data-cards])>h3{font-size:15px}
+.wpv .wpos-followups:not([data-cards])>p{font-size:13px}
+.wpv :is(.wpos-attention,.wpos-diagnostic,.wpos-followups,[data-domain=writing])>h3,.wpv .wpos-advisory h3{margin:0;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:-.025em}
+.wpv :is(.wpos-attention,.wpos-diagnostic,.wpos-followups,.wpos-estimate,.wpos-advisory) :is(p,.wpos-note){font-size:13.5px;color:var(--wpv-dim)}
+.wpv .wpos-advisory{margin:0}
+.wpv .wpos-followups>.life-section-label{display:none}
+.wpv :is(.wpos-attention li,.wfol-card){border-top-color:var(--wpv-line)}
+.wpv .wpos-diagnostic>.felt-button{min-height:56px;margin-top:10px}
+.wpv-lead>:is(.wpos-diagnostic,.wpos-attention){padding:20px 18px 18px}
+.wpv-lead>:is(.wpos-diagnostic,.wpos-attention)>h3{font-size:24px;font-weight:800;letter-spacing:-.035em}
+.wpv-fold{min-width:0}
+.wpv-fold>summary{display:flex;align-items:center;gap:10px;min-height:56px;padding:0 18px;list-style:none;cursor:pointer;font-size:15px;font-weight:700}
+.wpv-fold>summary::-webkit-details-marker{display:none}
+.wpv-fold>summary>small{margin-left:auto;font-size:13px;font-weight:600;color:var(--wpv-muted);text-align:right}
+.wpv-fold>summary::after{content:'';flex-shrink:0;width:14px;height:14px;background:var(--wpv-muted);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat;transform:rotate(90deg);transition:transform .2s}
+.wpv-fold[open]>summary::after{transform:rotate(-90deg)}
+.wpv-fold>summary:focus-visible{outline:2px solid #6fd3ff;outline-offset:-2px;border-radius:20px}
+.wpv-fold-body{display:grid;gap:16px;padding:0 18px 14px}
+.wpv .wpv-fold .wpos-group>h3{margin:4px 0 0;font-size:15px}
+.wpv .wpv-fold :is(.wpos-skills,.wpos-skill,.wpos-evidence){border-color:var(--wpv-line)}
+.wpv .wpv-estimate .wpos-estimate{display:grid;gap:10px;padding:0;background:none;box-shadow:none}
+.wpv>.wpos-scope,.wpv>.wpos-note{padding:0 6px;font-size:12.5px;color:var(--wpv-muted)}
+/* 시험 고르기는 판 전체의 거름이라 맨 위에 두되, 흰 알약과 겨루지 않게 낮은 칸으로. */
+.wpv>.wpos-exam{display:inline-flex;justify-self:start;gap:2px;margin:0;padding:2px;border-radius:999px;background:var(--wpv-face)}
+#world-panel .wpv>.wpos-exam>.wpos-exam-pill{min-height:44px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--wpv-muted);font-size:13.5px;font-weight:700;box-shadow:none}
+#world-panel .wpv>.wpos-exam>.wpos-exam-pill[aria-pressed=true]{background:var(--wpv-face-2);color:var(--wpv-ink)}
+.wpos-attention,.wplan-week,.wplan-next,.wplan-checks,.wplan-reach{display:grid;gap:8px;padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos :is(.wpos-attention,.wplan-week,.wplan-next,.wplan-checks,.wplan-reach)>:is(.life-section-label,h3){margin:0}
+.wpos :is(.wpos-attention,.wplan-week,.wplan-next,.wplan-checks)>h3{font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.wpos-attention ul,.wplan-checks ul{display:grid;margin:0;padding:0;list-style:none}
+.wpos-attention li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;min-height:56px;padding:8px 0;border-top:1px solid var(--w-line)}
+.wpos-attention-copy{display:grid;gap:2px;min-width:0;flex:1 1 180px}
+.wpos-attention-copy strong{font-size:15px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink)}
+.wpos-attention-copy small{font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+.wpos .wpos-practice,.wpos-attention .quiet-button,.wplan-checks .quiet-button{justify-self:start;min-height:44px;padding:0 4px;text-align:left}
+.wpos-done-list li .wpos-done-copy{display:grid;gap:3px;min-width:0;font-size:inherit;color:inherit;text-align:left}
+.wpos-done-list li .wpos-done-copy>small{font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+.wpos-explain{margin-top:2px}
+.wpos-explain>summary{min-height:44px;display:inline-flex;align-items:center;font-size:13.5px;font-weight:var(--wt-strong);color:var(--w-ink-2);text-decoration:underline;text-decoration-color:var(--w-ink-4);text-underline-offset:5px;cursor:pointer;list-style:none}
+.wpos-explain>summary::-webkit-details-marker{display:none}
+.wpos-explain>p{margin:0 0 4px;font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-choice[data-state=answer]{color:var(--w-ink);background:var(--w-ok-wash);box-shadow:inset 0 0 0 2px var(--w-led-ok)}
+.wpos-choice[data-state=wrong]{color:var(--w-ink-2);background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line-2);text-decoration:line-through;text-decoration-color:var(--w-ink-4)}
+.wpos-feedback{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:6px 10px;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-feedback>strong{font-size:16px;line-height:1.4;font-weight:var(--wt-title)}
+.wpos-feedback>p{grid-column:1 / -1;margin:0;font-size:15px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-run>.felt-button,.wpos-change+.felt-button,.wplan-next>.felt-button{width:100%}
+.wpos-change{display:grid;gap:6px}
+.wpos-change>.life-section-label{margin:0}
+.wpos-misses ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}
+.wpos-misses li{padding:8px 0;border-top:1px solid var(--w-line);font-size:15px;line-height:1.5}
+.wpos-print[data-print=plan]>i{background-image:var(--life-print-goals,none)}
+.wplan-areas{display:grid;margin:0;padding:0;list-style:none}
+/* 이번 주 칸: 큰 제목의 「N번」에 드는 줄과 계획 밖에 한 줄을 가른다. */
+.wplan-extra-label{margin:8px 0 0;font-size:13px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.wplan-areas li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:4px 12px;min-height:48px;padding:6px 0;border-top:1px solid var(--w-line)}
+.wplan-area-name{font-size:15px;line-height:1.4;font-weight:var(--wt-strong)}
+.wplan-date-note{margin-bottom:-12px;text-align:center}
+/* 한글이 섞이는 작은 수 줄은 모노로 쓰지 않는다(11-09 미학 맹검 — 빗금 친 0이 본문 글꼴과 따로 놀았다, .is-text와 같은 규칙). */
+.wplan-area-count{font-size:13px;font-variant-numeric:tabular-nums;color:var(--w-ink-3)}
+.wplan-classwork{grid-column:1 / -1;font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+/* 쓰기 칸의 「TOPIK II 쓰기 연습 →」: 칸 이름 아래 한 줄(다른 칸의 연습은 지금 할 것·숙제·다시 확인에서 연다). */
+.wplan-areas .wplan-area-open{grid-column:1 / -1;justify-self:start;padding:0 4px;text-align:left}
+/* 계획한 횟수는 빈 점, 한 것은 채운 점. 못 한 것을 빨갛게 보이지 않는다. */
+.wplan-dots{display:inline-flex;gap:5px}
+.wplan-dots i{width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--w-line-2)}
+.wplan-dots i[data-done]{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.45)}
+.wplan-checks li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--w-line);font-size:15px;line-height:1.4}
+.wplan-checks li small{font-size:13px;color:var(--w-ok-text)}
+.wplan-shortage{flex-basis:100%;font-size:13px;line-height:1.45;color:var(--w-ink-3)}
+/* ── 10-21 ④: 시험 고르기 · 영역별 진행 · 대본 · 시험 형식 연습(남은 시간 · 번호판 · 마치기 확인) ── */
+/* 판의 시험 고르기: 학습 목표 창의 반반 알약(study-segment)과 같은 모양 */
+.wpos-exam{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
+.wpos-exam-pill{min-height:44px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--w-ink-2);font:inherit;font-size:14px;font-weight:var(--wt-strong);cursor:pointer;transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.wpos-exam-pill:hover{background:var(--w-s2);color:var(--w-ink)}
+.wpos-exam-pill[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink)}
+.wpos-exam-pill:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+/* 영역별 진행: 확인한 항목 수만(칸 이름·색 없이 한 색 막대) */
+.wpos-progress{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;margin:0;font-size:13px;font-variant-numeric:tabular-nums;color:var(--w-ink-3)}
+.wplan-reach>.wpos-progress{font-size:13.5px;color:var(--w-ink-2)}
+/* 듣기 문항의 들은 대화(해설 아래) */
+.wpos-script{display:grid;gap:4px;margin-top:4px}
+.wpos-script>p[lang]{display:grid;gap:3px;margin:0;font-size:15px;line-height:1.55;color:var(--w-ink-2)}
+.wpos-feedback>.wpos-script{grid-column:1 / -1}
+/* 시험 형식 연습 */
+.wmock-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+.wmock-clock{display:grid;justify-items:end;gap:1px;margin:0}
+.wmock-clock-label{font-size:12px;line-height:1.3;color:var(--w-ink-3)}
+.wmock-clock>[data-mock-clock]{font-family:var(--w-mono);font-size:22px;line-height:1.1;font-weight:600;letter-spacing:.02em;color:var(--w-ink);font-variant-numeric:tabular-nums}
+.wmock-palette{display:flex;flex-wrap:wrap;gap:6px}
+.wmock-number{width:40px;height:40px;border:0;border-radius:999px;background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font-family:var(--w-mono);font-size:13px;font-weight:600;cursor:pointer}
+.wmock-number[data-mark=answered]{background:var(--w-s3);box-shadow:none;color:var(--w-ink)}
+.wmock-number[aria-current=step]{background:var(--w-ink);box-shadow:none;color:var(--w-on-ink)}
+.wmock-number:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.wmock .wpos-choice[data-state=chosen]{color:var(--w-ink);background:var(--w-s3);box-shadow:inset 0 0 0 2px var(--w-ink)}
+.wmock>.felt-button{width:100%}
+.wmock-confirm{display:grid;gap:10px;padding:14px 16px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);outline:none}
+.wmock-confirm>p{margin:0;font-size:15px;line-height:1.55;color:var(--w-ink)}
+.wmock-confirm>.felt-button{width:100%}
+.wplan-checks li>span{min-width:0;text-wrap:pretty}
+/* 끝 한 장의 문항 줄은 진단 끝 목록과 같은 세 칸(불 · 글 · 단추) */
+.wplan-checks .wpos-done-list li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--w-line);font-size:inherit}
+/* 학습 목표 창의 시험 칸 */
+.study-form [hidden]{display:none!important}
+.study-exam{display:grid;gap:22px;padding-top:20px;border-top:1px solid var(--w-line)}
+.study-exam>.life-section-label{margin:0}
+.study-exam-note,.study-exam-hint{margin:-10px 0 0;font-size:13.5px;line-height:1.55;color:var(--w-ink-3);text-wrap:pretty}
+.study-exam-hint{margin:8px 0 0}
+.study-exam-past{margin:0;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:14.5px;line-height:1.55;color:var(--w-ink)}
+.study-date{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:8px}
+.study-date select{min-width:0;min-height:48px;padding:0 12px;border:0;border-radius:var(--w-r-md);background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge);font:inherit;font-size:15px}
+.study-date select:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+
+/* ── 넓은 둘러보기 판(PC 오른쪽 패널): 팩 3열 ── */
+@container life-sheet (min-width:600px){
+  .life-pack-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .life-pack-card:is([data-shape=wide],[data-shape=wide-left]){grid-column:auto;min-height:212px;padding:16px}
+  .life-pack-card[data-shape=wide]>.w-print{width:82px;top:14px;right:14px;margin-top:0}
+  .life-pack-card[data-shape=wide-left]>.w-print{width:80px;top:14px;left:16px;margin-top:0}
+  .life-pack-card[data-current=true]:is([data-shape=wide],[data-shape=wide-left]){padding-top:56px}
+  .life-now{grid-template-columns:minmax(0,1fr) auto;min-height:250px}
+  .life-now>.w-print{width:150px}
+  .life-now .life-poster-word{font-size:40px}
+  .life-now>.felt-button{justify-self:start;width:auto;min-width:240px}
+}
+
+/* ── 넓은 집중 판(가로 휴대폰 · PC): 두 단 — 왼쪽 장면·사진, 오른쪽 표현·선택지 ── */
+@container life-sheet (min-width:620px){
+  .life-question-layout{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);column-gap:32px;align-items:start}
+  .life-intro{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:32px;align-items:start}
+  .life-intro-head{grid-template-columns:minmax(0,1fr);align-items:start}
+  .w-print.life-intro-print{width:120px}
+  .life-story-stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+  .life-dialogue::before{top:50%;left:-6px;margin:-7px 0 0}
+  .life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker]::before{left:-6px}
+  .life-story-stage:has(>.life-story-photo){gap:28px}
+  .life-story-stage>.life-story-photo{margin:0;border-radius:var(--w-r-lg);box-shadow:var(--w-card-edge)}
+  .life-story-stage:has(>.life-story-photo)>.life-dialogue{margin:0}
+  .life-complete,.life-review-summary,.cafe-complete{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px 32px;align-items:start}
+  .life-complete>.life-poster,.life-review-summary>.life-poster,.cafe-complete>.life-poster{grid-row:1 / span 6;position:sticky;top:0}
+  .cafe-play-layout{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:28px;align-items:start}
+  .cafe-welcome,.cafe-break{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+  .cafe-world{position:sticky;top:64px}
+  /* 아래 막대: 판정 띠는 왼쪽에 넓게, 흰 알약은 오른쪽 */
+  .life-actions{display:flex;align-items:flex-end;gap:16px}
+  .life-actions>.life-feedback{flex:1 1 auto;min-width:0}
+  .life-actions>.quiet-button{order:1;margin-left:auto}
+  .life-actions>.felt-button{order:2;flex:0 0 auto;min-width:240px}
+  .life-actions:not(:has(>.life-feedback))>.felt-button{min-width:280px}
+  #world-panel[class*="life-"]:not(.life-library-panel) #panel-content{scroll-padding-bottom:150px}
+}
+@container life-sheet (min-width:960px){
+  .life-question-layout,.cafe-play-layout{column-gap:48px}
+  .life-scene{min-height:132px;padding:18px 22px 18px 18px;gap:22px}
+  .w-print.life-scene-print{width:96px}
+  .life-question-title h3{font-size:30px}
+  .life-choice{min-height:72px;font-size:24px;padding:15px 22px}
+  .life-cast{min-height:320px}
+  .life-cast .is-speaking .life-friend{height:250px}
+  .life-cast .life-friend{height:104px}
+  .life-dialogue>p{font-size:24px}
+  .life-complete-poster,.life-review-poster{min-height:320px}
+  .life-complete-poster .life-poster-word{font-size:48px}
+  .life-complete>.life-poster>.w-print,.cafe-complete>.life-poster>.w-print,.life-review-summary>.life-poster>.w-print{width:150px}
+  .cafe-scene{height:300px}
+  .cafe-scene>.cafe-friends,.cafe-tray{bottom:56px}
+  .cafe-friends .life-friend{height:120px;max-width:110px}
+  .cafe-friends .life-friend:first-child{height:104px}
+  .cafe-friends .life-friend:last-child{height:110px}
+  .cafe-tray{min-height:96px}
+  .cafe-tray .cafe-drink{width:62px;height:82px}
+}
+
+/* ── 10-22 연습 한 판의 응답(WORLD 학습자 응답 설계 §3): 결과 아래 조용한 줄 — 묻기 · 알약 넷(고른 것만 채움) · 상태 한 줄 ── */
+/* 학습 목표 창의 알약(study-pill)과 같은 모양이고, 몽골어처럼 긴 이름은 줄을 바꿔 감싼다(가로로 넘치지 않게). */
+.wpos-response{display:grid;gap:10px;padding-top:16px;border-top:1px solid var(--w-line)}
+.wpos-response-ask{margin:0;font-size:15px;line-height:1.45;font-weight:var(--wt-strong);color:var(--w-ink-2);text-wrap:pretty}
+.wpos-response-choices{display:flex;flex-wrap:wrap;gap:8px}
+.wpos-response-choice{min-height:44px;max-width:100%;padding:8px 16px;border:0;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink-2);font:inherit;font-size:15px;line-height:1.25;font-weight:var(--wt-strong);text-align:center;cursor:pointer;transition:background .18s var(--w-ease),color .18s var(--w-ease)}
+.wpos-response-choice:hover{background:var(--w-s2);color:var(--w-ink)}
+.wpos-response-choice[aria-pressed=true]{background:var(--w-ink);color:var(--w-on-ink);box-shadow:none}
+.wpos-response-choice:focus-visible{outline:2px solid var(--w-ink);outline-offset:2px}
+.wpos-response>.wpos-note:empty{display:none}
+
+/* ── 작은 휴대폰 ── */
+@media(max-width:359px){
+  .life-story-stage>.life-story-photo{margin:0 -16px}
+  #world-panel[class*="life-"],.world-study-panel{--life-pad:16px}
+  .life-poster{padding:16px}
+  .life-poster>.w-print{width:96px}
+  .life-now>.w-print{width:104px}
+  .life-poster-word{font-size:30px}
+  .life-pack-poster .life-poster-word{font-size:48px}
+  .life-pack-card{padding:14px;min-height:184px}
+  .life-pack-card:is([data-shape=wide]){padding-right:118px;min-height:140px}
+  .life-pack-card[data-shape=wide]>.w-print{width:90px;margin-top:-48px}
+  .life-pack-card[data-shape=wide-left]{padding-left:124px;min-height:140px}
+  .life-pack-card[data-shape=wide-left]>.w-print{width:88px;margin-top:-47px;left:16px}
+  .life-pack-card[data-shape=tall]>.w-print{width:60px}
+  .life-pack-card[data-shape=low]>.w-print{width:78px}
+  .life-pack-word{font-size:24px}
+  .life-goal,.life-question-title h3,.cafe-welcome h3,.cafe-break h3{font-size:20px}
+  .life-choice{font-size:22px}
+  .cafe-option>span:not(.cafe-cups),.life-dialogue>p,.cafe-staff>p:not(.cafe-speech-status),.life-expression-list strong{font-size:22px}
+  .life-cast{min-height:204px}
+  .life-cast .is-speaking .life-friend{height:150px}
+  .life-cast .life-friend{height:66px}
+  .cafe-option>.cafe-cups{flex-basis:50px}
+  .cafe-my-sentence strong{font-size:22px}
+  .life-complete-poster .life-poster-word{font-size:32px}
+  #world-panel .cafe-composer .cafe-pick{min-height:92px;font-size:13.5px}
+  .study-segment .study-pill span{font-size:13.5px;padding:0 4px}
+}
+
+/* ── 낮은 가로 휴대폰: 머리·여백을 줄인다 ── */
+@media(orientation:landscape) and (max-height:500px){
+  #world-panel[class*="life-"]:not(.life-library-panel){padding-top:calc(4px + var(--safe-top));padding-left:max(var(--life-pad),env(safe-area-inset-left));padding-right:max(var(--life-pad),env(safe-area-inset-right))}
+  #world-panel[class*="life-"]:not(.life-library-panel) .panel-header{min-height:44px;margin-bottom:0}
+  #world-panel[class*="life-"]:not(.life-library-panel) .panel-header h2{font-size:15.5px}
+  .life-session-meta,.cafe-session-meta{gap:6px 12px;margin-bottom:8px;padding-top:2px;padding-bottom:8px}
+  #world-panel[class*="life-"]:not(.life-library-panel) #panel-content>.life-tutor{margin-bottom:10px}
+  .life-cast{min-height:0;padding:10px 8px 8px}
+  .life-cast .is-speaking .life-friend{height:132px}
+  .life-cast .life-friend{height:58px}
+  .life-dialogue>p{font-size:20px}
+  .life-question-title h3,.life-goal,.cafe-welcome h3,.cafe-break h3{font-size:20px}
+  .life-question-layout,.cafe-play-layout{gap:18px}
+  .life-scene{min-height:0;padding:10px 14px 10px 10px}
+  .w-print.life-scene-print{width:48px}
+  .life-choices,.cafe-options{gap:8px}
+  .life-choice{min-height:56px;padding:9px 16px;font-size:22px}
+  .cafe-option{min-height:56px}
+  .cafe-scene{height:150px}
+  .cafe-scene>.cafe-friends{bottom:42px}
+  .cafe-friends .life-friend{height:62px}
+  .cafe-friends .life-friend:first-child{height:55px}
+  .cafe-friends .life-friend:last-child{height:58px}
+  .cafe-tray{bottom:42px;min-height:56px;padding-bottom:6px}
+  .cafe-tray .cafe-drink{width:40px;height:54px}
+  .cafe-scene-caption{padding:4px 10px;bottom:8px}
+  .cafe-world{top:44px}
+  .life-poster{min-height:0}
+  .life-complete>.life-poster,.life-review-summary>.life-poster,.cafe-complete>.life-poster{position:static}
+  .life-session-meta>.life-progress,.cafe-session-meta>.life-progress{grid-column:1}
+  .life-session-meta>.life-progress+span,.cafe-session-meta>.life-progress+span{display:none}
+  .life-session-meta>span.life-steps{grid-column:1}
+  .life-session-meta>.life-steps+span{display:none}
+  .life-session-meta::after,.cafe-session-meta::after{height:10px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions{padding-top:10px;padding-bottom:4px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions .felt-button{min-height:48px}
+  .life-feedback{padding:10px 14px 4px}
+  .life-feedback-answer{font-size:22px}
+  .life-feedback-foot>small{display:none}
+  .life-feedback-foot:not(:has(.life-tutor-retry)){display:none}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-save-status{padding-bottom:calc(6px + var(--safe-bottom))}
+  #world-panel[class*="life-"]:not(.life-library-panel) #panel-content{scroll-padding:44px 0 96px}
+}
+/* 세로로 짧은 휴대폰: 아래 막대를 조금 낮춘다 */
+@media(orientation:portrait) and (max-height:700px){
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions{padding-top:14px}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-actions .felt-button{min-height:52px}
+  .life-feedback-foot>small{display:none}
+  .life-feedback-foot:not(:has(.life-tutor-retry)){display:none}
+  .life-scene{min-height:0}
+  #world-panel[class*="life-"]:not(.life-library-panel) .life-save-status{padding-bottom:calc(8px + var(--safe-bottom))}
+  #world-panel[class*="life-"]:not(.life-library-panel) #panel-content{scroll-padding:56px 0 170px}
+}
+
+/* ── PC 가로 틀: 판 크기는 home.css의 PC 시트 계약(집중 판 가운데 최대 1120px)을 따르고, 여기서는 안쪽 여백만 넓힌다 ── */
+@media(min-width:600px) and (min-height:600px) and (pointer:fine){
+  :root:not([data-layout=landscape]) #world-panel[class*="life-"]:not(.life-library-panel){border-radius:30px}
+  :root[data-layout=landscape] #world-panel[class*="life-"]:not(.life-library-panel){--life-pad:36px;padding-top:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06),var(--w-shadow)}
+  :root[data-layout=landscape] #world-panel[class*="life-"]:not(.life-library-panel) .panel-header{margin-bottom:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .life-pack-card:active,.life-choice:not(:disabled):active,.cafe-option:not(:disabled):active,#world-panel .cafe-composer .cafe-pick:not(:disabled):active{transform:none}
+  .life-feedback,.life-result.is-arriving{animation:none}
+}

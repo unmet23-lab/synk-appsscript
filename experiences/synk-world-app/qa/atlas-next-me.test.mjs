@@ -520,7 +520,7 @@ test('앱의 배선 — 입구에 옛 엔진의 두 문을 넘기고, 감싸기�
   );
   assert.match(
     source,
-    /for\(let asks=0;asks<3&&result\?\.code==='UNSENT_SKIPPED'&&Number\.isSafeInteger\(result\.skipped\)&&result\.skipped>0;asks\+=1\)\{\r?\n  if\(!same\(\)\|\|!window\.confirm\(meText\('me\.clearSkippedAsk',\{n:result\.skipped\}\)\)\|\|!same\(\)\)return;\r?\n  try\{result=await education\.clearPractice\(\{allowSkipped:result\.skipped\}\);\}/,
+    /for\(let asks=0;asks<3&&result\?\.code==='UNSENT_SKIPPED'&&Number\.isSafeInteger\(result\.skipped\)&&result\.skipped>0;asks\+=1\)\{\r?\n  if\(!same\(\)\|\|!window\.confirm\(meText\('me\.clearSkippedAsk',\{n:result\.skipped\}\)\)\|\|!same\(\)\)return;\r?\n  waiting\(\);try\{result=await education\.clearPractice\(\{allowSkipped:result\.skipped\}\);\}/,
     '지금 보낼 수 없는 기록의 수를 알리고 한 번 더 묻는다. 그사이 수가 늘었으면 새 수로 다시 묻는다(F4 · GPT -c GA4)',
   );
   assert.match(source, /\$\{responsesSection\(\)\}\$\{meSection\(true\)\}<div id="world-classroom-lessons">/);
@@ -609,7 +609,9 @@ test('앱의 비우기 — 비우는 사이 다시 누르면 묻지 않는다. �
         return pending.promise;
       },
     };
-    const context = shellSandbox(['clearingPractice', 'clearPracticeNow', 'sheetOpen'], {
+    const context = shellSandbox(['clearingPractice', 'CLEAR_SLOW_MS', 'clearPracticeNow', 'sheetOpen'], {
+      setTimeout: () => 1,
+      clearTimeout: () => {},
       window: {
         confirm: text => {
           confirms.push(text);
@@ -642,7 +644,7 @@ test('앱의 비우기 — 비우는 사이 다시 누르면 묻지 않는다. �
   };
   const plain = await run();
   assert.deepEqual(plain.confirms, ['me.clearAsk'], '비우는 사이 다시 누른 것은 묻지 않는다');
-  assert.deepEqual(plain.calls, ['clear', 'toast:me.clearDone', 'restore', 'profile']);
+  assert.deepEqual(plain.calls, ['toast:me.clearing', 'clear', 'toast:me.clearDone', 'restore', 'profile']);
   assert.equal(plain.button.disabled, false, '끝나면 단추를 푼다');
   const draft = await run({ draft: true });
   assert.deepEqual(draft.calls.slice(-2), ['restore', 'parts'], '원고가 있으면 시트를 다시 그리지 않고 칸만 고친다');
@@ -654,6 +656,74 @@ test('앱의 비우기 — 비우는 사이 다시 누르면 묻지 않는다. �
     },
   });
   assert.deepEqual(gone.calls.slice(-1), ['restore'], '시트가 사라졌으면 그리지 않는다');
+});
+
+test('앱의 비우기 진행 — 비우는 동안 단추 글과 상태 알림으로 보이고, 한 번 부른 비우기가 10초를 넘기면 한 번 더 알린다. 다시 묻는 사이에는 알리지 않고 끝나면 단추 글을 되돌린다(설계 주인 11-20 밤 · 계획 §24-8)', async () => {
+  const calls = [];
+  const timers = [];
+  const first = deferred();
+  const second = deferred();
+  const answers = [first.promise, second.promise];
+  const live = () => timers.filter(timer => !timer.cleared).length;
+  const button = { disabled: false, isConnected: true, textContent: 'me.clearButton' };
+  const view = { isConnected: true, querySelector: selector => (selector === '[data-me-clear]' ? button : null) };
+  const context = shellSandbox(['clearingPractice', 'CLEAR_SLOW_MS', 'clearPracticeNow', 'sheetOpen'], {
+    setTimeout: (fn, ms) => {
+      timers.push({ fn, ms, cleared: false });
+      return timers.length;
+    },
+    clearTimeout: id => {
+      if (id) timers[id - 1].cleared = true;
+    },
+    window: {
+      confirm: text => {
+        calls.push(`confirm:${text}:${live()}`);
+        return true;
+      },
+    },
+    $: selector => (selector === '#panel-content .ws-me' && view.isConnected ? view : null),
+    meText: key => key,
+    life: {
+      education: {
+        clearPractice: options => {
+          calls.push(`clear:${options?.allowSkipped ?? ''}`);
+          return answers.shift();
+        },
+      },
+    },
+    client: { snapshot: { accountId: 'a' } },
+    home: { toast: text => calls.push(`toast:${text}`), openPanel: () => 'world-profile' },
+    operating: false,
+    account: { restore: async () => {} },
+    sheet: { hasDraft: () => false },
+    profile: () => calls.push('profile'),
+    redrawMeParts: () => calls.push('parts'),
+  });
+  const run = context.clearPracticeNow();
+  assert.equal(button.textContent, 'me.clearing', '비우는 동안 단추 글이 진행을 말한다');
+  assert.equal(button.disabled, true);
+  assert.deepEqual(timers.map(timer => timer.ms), [10000], '한 번 부른 비우기가 10초를 넘기면 한 번 더 알린다');
+  timers[0].fn();
+  first.resolve({ ok: false, code: 'UNSENT_SKIPPED', skipped: 2 });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(timers.map(timer => [timer.ms, timer.cleared]), [[10000, true], [10000, false]], '다시 부르면 새로 잰다');
+  assert.equal(button.textContent, 'me.clearing');
+  second.resolve({ ok: true });
+  await run;
+  assert.deepEqual(calls, [
+    'confirm:me.clearAsk:0',
+    'toast:me.clearing',
+    'clear:',
+    'toast:me.clearingSlow',
+    'confirm:me.clearSkippedAsk:0',
+    'toast:me.clearing',
+    'clear:2',
+    'toast:me.clearDone',
+    'profile',
+  ]);
+  assert.equal(live(), 0, '끝나면 기다림 알림을 걷는다');
+  assert.equal(button.textContent, 'me.clearButton', '끝나면 단추 글을 되돌린다');
+  assert.equal(button.disabled, false);
 });
 
 test('앱의 「나」 칸 — 확인 중에 연 시트는 홈 코치가 선 뒤 칸을 제자리(반 수업 앞)에 넣는다. 그사이 닫았거나 이미 칸이 있으면 넣지 않는다(4-5 끝 판 GPT GB5)', async () => {

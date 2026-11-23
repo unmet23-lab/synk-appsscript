@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f96859">
+<title>레이싱 · SYNK LAB PLAY</title>
+<meta name="description" content="한국어 문제를 듣고 답이 있는 차선으로 달리는 듣기·읽기 레이싱. 문장·대화·안내문의 6단계 도전과 기초 어휘 2,000개를 연습합니다.">
+<link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
+<link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="kit/lab.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="garage.css">
+<script src="./world-host.js"></script>
+<link rel="stylesheet" href="./world-skin.css">
+<script type="importmap">{"imports":{"three":"../scene-assets/three.module.js"}}</script>
+<script src="../korean-runner/atlas-learning.js?v=404a24909985"></script>
+<script src="./collection.js"></script>
+<script type="module" src="./app.js"></script>
+</head>
+<body>
+<p id="sr-live" class="sr" aria-live="polite"></p>
+
+<!-- 입구 -->
+<main id="lobby" class="screen lobby">
+  <header class="topbar on-field">
+    <a class="logo-tag" href="./" aria-label="레이싱 처음으로"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></a>
+    <span class="kicker">LAB · LISTEN &amp; DRIVE</span>
+    <a class="chip-btn garage-link" href="./?garage=1" data-open-garage>공통 차고</a>
+    <button class="sound-toggle" type="button" aria-pressed="true" data-sound-toggle><span class="sr">소리</span></button>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="kicker">KOREAN RACING · A DRIVING GAME</span>
+      <h1>레이싱</h1>
+      <p class="lede">들은 한국어가<br><span class="crayon-under">속도</span>가 돼요!</p>
+      <p class="sub">바닷가 길을 달리면 문제가 소리로 나와요. 답이 있는 차선으로 옮겨 통과하면 부스터가 켜지고, 앞차를 따라잡아요.</p>
+    </div>
+    <figure class="hero-art" aria-hidden="true">
+      <div class="hero-frame paper">
+        
+      </div>
+      
+    </figure>
+  </section>
+
+  <section class="plan">
+    <article class="paper start-card">
+      <span class="tag">오늘의 레이스</span>
+      <div class="course-now">
+        <span class="course-meta" id="l-meta">1단계 · 짧은 문장 듣기</span>
+        <h2 id="l-title">아침의 작은 일</h2>
+        <span class="medals" id="l-medals" aria-label="학습 메달 3개 중 0개"></span>
+      </div>
+      <p id="l-reason" class="reason" role="status">처음이라 짧은 조작 연습부터 함께 달려요.</p>
+      <button id="start" class="felt-cta coral" type="button"><span>레이스 시작</span><i class="disc" aria-hidden="true"></i></button>
+      <button id="return-practice" class="felt-cta cream" type="button" hidden><span>놓친 문제 바로 연습</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="start-options">
+        <button id="watch" class="chip-btn" type="button">자동 시연</button>
+        <button id="choose-course" class="chip-btn" type="button" aria-haspopup="dialog">코스 고르기</button>
+      </div>
+      <div class="driver-pick" role="group" aria-label="함께 달릴 친구">
+        <span class="fine">함께 달릴 친구</span>
+        <button id="driver-marin" class="chip-btn driver" type="button" aria-pressed="true">마린</button>
+        <button id="driver-kkamong" class="chip-btn driver" type="button" aria-pressed="false">까몽</button>
+      </div>
+      <p id="world-status" class="fine world-status" role="status">해안도로를 준비하고 있어요. 레이스 시작을 누르면 준비되는 대로 출발해요.</p>
+      <p class="synk-collection-line"><span data-collection-balance>코인을 불러오고 있어요.</span><a data-collection-garage data-open-garage href="./?garage=1">공통 차고 →</a></p>
+    </article>
+    <section class="paper how" aria-labelledby="how-title">
+      <span class="tag" id="how-title">하는 방법</span>
+      <ol class="how-steps">
+        <li><b class="num">1</b><strong>문제 듣기</strong><span>달리다 보면 문제가 소리로 나와요. 왼쪽·가운데·오른쪽 길의 답도 차례로 불러 줘요.</span></li>
+        <li><b class="num">2</b><strong>답 차선으로</strong><span>답이 있는 길로 옮기고 ↑로 출발해요. 문장 문제는 고를 때까지 차가 기다려 줘요.</span></li>
+        <li><b class="num">3</b><strong>부스터로 달리기</strong><span>맞히면 부스터가 켜져 앞차를 따라잡아요. 다섯 문제 중 넷을 맞히면 다음 코스가 열려요.</span></li>
+      </ol>
+      <p class="fine">키보드: ← → 또는 A·D로 옮기기 · ↑ 또는 W로 이 길 고르기 · Esc 멈춤. 휴대폰은 아래 단추나 답 꼬리표를 눌러요. ‘글로 보기’를 펼친 동안에는 차가 기다려요.</p>
+      <div class="how-more">
+        <button id="tutorial-replay" class="chip-btn" type="button">조작 연습 다시 하기</button>
+      </div>
+      <p class="other-games"><span class="fine">다른 게임</span><a id="runner-play" class="chip-btn" href="#">바람길</a><a id="rhythm-play" class="chip-btn" href="#">말의 리듬</a></p>
+    </section>
+  </section>
+
+  <footer class="lobby-foot">
+    <p>TOPIK I 듣기·읽기처럼 짧은 문장·대화·안내문을 알아듣는 연습이에요. 문장 도전은 직접 만든 연습 문항이고, 단계·메달은 게임 진행 기준이라 TOPIK 급수나 합격 판정이 아니에요.</p>
+    <p>어휘 연습 2,000단어는 <a href="https://www.korean.go.kr/front/etcData/etcDataView.do?etc_seq=70&amp;mn_id=46" target="_blank" rel="noopener">국립국어원 학습용 어휘 목록(2003)</a>의 기초·확장 어휘에서 골랐어요. 단어 정답 기록은 암기 완료를 뜻하지 않아요.</p>
+    <p><span id="learning-scope">지금 연습은 이 브라우저에 저장돼요.</span> <button id="reset-learning" class="text-link" type="button">이 브라우저의 공통 학습 기록 지우기</button></p>
+    <details class="credits">
+      <summary>그래픽 출처</summary>
+      <p>Ferrari 458 Italia 3D 모델: <a href="https://sketchfab.com/models/57bf6cc56931426e87494f554df1dab6" target="_blank" rel="noopener">vicent091036</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. 게임에 맞게 재질·색과 배치를 바꿨어요. 도로·암반·모래: <a href="https://polyhaven.com/license" target="_blank" rel="noopener">Poly Haven, CC0</a>. 해안 바위는 <a href="https://polyhaven.com/a/coast_rocks_01" target="_blank" rel="noopener">Coast Rocks 01 / Rob Tuytel·Rico Cilliers</a>(CC0)를 가볍게 줄여 썼어요. 하늘·해송 잎·벚꽃 잎·잔디는 이 게임을 위해 만든 그림이에요. Three.js: MIT. 게임사·차량 브랜드와 제휴 관계는 없어요.</p>
+    </details>
+  </footer>
+</main>
+
+<!-- 레이스 -->
+<main id="game" class="screen game race" hidden>
+  <header class="topbar game-bar">
+    <img class="logo-mini" src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="78" height="24">
+    <strong class="game-title">레이싱</strong>
+    <div class="hud" aria-live="off">
+      <span class="pill"><small>문제</small><b id="g-count">1 / 5</b></span>
+      <span class="pill speed-pill"><small>속도</small><b><span id="speed">0</span><i>km/h</i></b></span>
+      <span class="pill"><small>순위</small><b id="rank">3 / 3</b></span>
+    </div>
+    <button id="pause" class="disc-btn" type="button" aria-label="잠깐 멈춤"><span aria-hidden="true">Ⅱ</span></button>
+    <span class="course-line" aria-hidden="true"><i id="progress"></i></span>
+  </header>
+
+  <section class="arena race-arena" id="arena" aria-label="해안도로 레이스. 문제를 듣고 답이 있는 차선으로 옮겨 통과해요.">
+    <div id="world" class="world" aria-hidden="true"></div>
+    <div id="cruise-loop" class="cruise-loop" aria-hidden="true"></div>
+
+    <div class="top-stack">
+      <p class="tag demo-tag" id="demo-indicator" hidden>자동 시연 중 · 정답 길을 따라 달려요</p>
+      <section class="qcard paper" id="question" data-phase="idle" hidden>
+        <div class="q-head">
+          <span class="tag" id="q-tag">듣기 1 / 5</span>
+          <span class="q-ear" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span id="voice-status" class="sr" role="status">음성 안내</span>
+        </div>
+        <p class="q-ask" id="prompt" aria-live="polite">잘 들어 보세요</p>
+        <p class="q-passage" id="question-passage" hidden></p>
+        <p class="q-caption" id="voice-caption" hidden></p>
+        <p class="q-hint" id="question-help">끝까지 들은 뒤에 길을 골라요</p>
+        <div class="q-tools" id="q-tools">
+          <button id="repeat-question" class="chip-btn" type="button" aria-label="문제와 보기 다시 듣기">다시 듣기</button>
+          <button id="question-toggle" class="chip-btn" type="button" aria-expanded="false" aria-controls="question-passage">글로 보기</button>
+          <button id="feedback-continue" class="chip-btn" type="button" hidden>확인했어요 · 계속 달리기</button>
+          <button id="subtitles" class="chip-btn" type="button" aria-pressed="false">자막</button>
+        </div>
+      </section>
+
+      <section class="tutorial-card paper" id="tutorial-hud" aria-label="첫 플레이 조작 연습" hidden>
+        <div class="t-head"><span class="tag" id="tutorial-step">조작 연습 · 1 / 4</span><span class="t-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
+        <h2 id="tutorial-title" role="status" aria-live="polite">왼쪽으로 움직여 봐요</h2>
+        <p id="tutorial-hint">← 단추 또는 A 키</p>
+        <div class="t-actions">
+          <button id="tutorial-repeat" class="chip-btn" type="button">안내 다시 듣기</button>
+          <button id="tutorial-skip" class="chip-btn" type="button">연습 건너뛰기</button>
+          <button id="tutorial-race" class="felt-cta coral" type="button" hidden><span>레이스 시작</span><i class="disc" aria-hidden="true"></i></button>
+          <button id="tutorial-home" class="chip-btn" type="button" hidden>처음으로</button>
+        </div>
+      </section>
+
+      <section class="cruise-card paper" id="cruise-banner" aria-label="완주 후 드라이브" hidden>
+        <strong role="status">모든 문제를 마쳤어요!</strong>
+        <p>해안선을 따라 천천히 달리며 쉬어요. 준비되면 결과를 봐요.</p>
+        <button id="cruise-track" class="chip-btn" type="button" aria-label="시티팝 해안선 재생">♫ 해안선</button>
+        <div class="cruise-action" id="cruise-action" hidden>
+          <button id="cruise-results" class="felt-cta coral" type="button"><span id="cruise-next">결과 · 다음 코스</span><i class="disc" aria-hidden="true"></i></button>
+        </div>
+      </section>
+
+      <p class="tip" id="toast" role="status" aria-live="polite" hidden></p>
+    </div>
+
+    <div class="lane-tags" id="lane-choices" role="group" aria-label="차선별 답 고르기" hidden></div>
+    <p class="pop" id="pop" hidden aria-hidden="true"></p>
+
+    <div class="boost" id="boost-meter">
+      <span class="boost-head"><span class="boost-label" id="nitro-label">부스터</span><span class="boost-note" id="combo"></span></span>
+      <span class="boost-track"><i id="nitro-fill"></i></span>
+    </div>
+    <div class="dash" id="dash">
+      <button id="left" class="steer-btn" type="button" aria-label="왼쪽 차선으로">←</button>
+      <button id="right" class="steer-btn" type="button" aria-label="오른쪽 차선으로">→</button>
+      <button id="go" class="steer-btn go" type="button" aria-label="이 길로 출발" hidden>↑<small>이 길로</small></button>
+    </div>
+
+    <section class="world-error paper" id="world-error" hidden>
+      <strong>3D 화면이 잠깐 멈췄어요.</strong>
+      <p>그래픽 장치가 화면을 다시 그리지 못했어요. 새로 열면 이어서 달릴 수 있어요.</p>
+      <button class="felt-cta coral" type="button" data-reload><span>다시 열기</span><i class="disc" aria-hidden="true"></i></button>
+    </section>
+  </section>
+</main>
+
+<!-- 결과 -->
+<main id="results" class="screen results" hidden>
+  <header class="topbar on-field">
+    <span class="logo-tag"><img src="kit/brand/logo-lab.webp" alt="SYNK LAB" width="96" height="30"></span>
+    <span class="kicker">RACE COMPLETE</span>
+  </header>
+  <section class="res-hero">
+    <div>
+      <span class="kicker ko" id="r-kicker">001 · 아침의 작은 일</span>
+      <h1 id="r-title" tabindex="-1">완주!</h1>
+      <p class="big"><b id="r-correct">0</b><span>/ <i id="r-total">5</i></span></p>
+      <p class="r-label">맞힌 문제</p>
+      <p class="stars" id="r-stars" aria-label="학습 메달 3개 중 0개"></p>
+      <div class="r-stats" id="r-stats"></div>
+      <p class="r-note" id="r-note"></p>
+      <p class="synk-collection-line"><span id="r-coins" role="status"></span><a data-collection-garage data-open-garage href="./?garage=1">공통 차고 →</a></p>
+    </div>
+    <img class="res-mongle diecut" id="r-mongle" alt="">
+  </section>
+  <section class="res-grid">
+    <article class="paper log">
+      <span class="tag">이번 레이스의 문제</span>
+      <ol id="r-log"></ol>
+    </article>
+    <article class="paper rewards">
+      <span class="tag">보상과 기록</span>
+      <ul id="r-rewards"></ul>
+      <p class="fine" id="r-learning"></p>
+    </article>
+    <article class="paper next">
+      <span class="tag">다음 레이스</span>
+      <p id="r-next-reason" class="reason"></p>
+      <button id="next-stage" class="felt-cta coral" type="button"><span>다음 코스 달리기</span><i class="disc" aria-hidden="true"></i></button>
+      <div class="r-actions">
+        <button id="return-cruise" class="chip-btn" type="button">드라이브로 돌아가기</button>
+        <button id="replay" class="chip-btn" type="button">이 코스 다시 달리기</button>
+        <button id="result-garage" class="chip-btn" type="button">공통 차고 구경</button>
+        <button id="home" class="chip-btn" type="button">처음으로</button>
+      </div>
+      <p class="other-games"><span class="fine">다른 게임</span><a id="runner-play-next" class="chip-btn" href="#">바람길</a><a id="rhythm-play-next" class="chip-btn" href="#">말의 리듬</a></p>
+    </article>
+  </section>
+</main>
+
+<!-- 공통 차고(?garage=1) — garage-ui.js가 그린다 -->
+<main id="garage" class="screen garage-screen" hidden aria-labelledby="garage-title"></main>
+
+<!-- 코스 고르기 -->
+<dialog id="course-dialog" class="paper lab-dialog course-dialog" aria-labelledby="course-title">
+  <div class="course-head">
+    <div><span class="kicker">COURSES</span><h2 id="course-title">코스 고르기</h2></div>
+    <button id="course-close" class="disc-btn" type="button" aria-label="코스 고르기 닫기"><span aria-hidden="true">✕</span></button>
+  </div>
+  <div class="course-tabs" role="group" aria-label="학습 코스 종류">
+    <button id="collection-campaign" class="chip-btn" type="button" aria-pressed="true">문장 도전 · 6단계</button>
+    <button id="collection-words" class="chip-btn" type="button" aria-pressed="false">어휘 연습 · 2,000단어</button>
+  </div>
+  <p class="course-stats" id="course-stats"></p>
+  <div class="course-quick" id="course-quick">
+    <button id="journey-next" class="chip-btn" type="button">나에게 맞는 5문항 달리기</button>
+    <button id="review-stage" class="chip-btn" type="button">놓친 문장부터 복습</button>
+    <button id="today-mission" class="chip-btn" type="button">오늘의 미션</button>
+  </div>
+  <div class="word-tools" id="word-tools" hidden>
+    <label class="search"><span class="sr">단어나 주제 찾기</span><input id="stage-search" type="search" placeholder="단어나 주제 찾기" autocomplete="off"></label>
+    <div class="filter-chips" id="stage-filter" role="group" aria-label="어휘 스테이지 종류">
+      <button class="chip-btn" type="button" data-filter="all" aria-pressed="true">모두</button>
+      <button class="chip-btn" type="button" data-filter="picture" aria-pressed="false">그림</button>
+      <button class="chip-btn" type="button" data-filter="listen" aria-pressed="false">소리</button>
+      <button class="chip-btn" type="button" data-filter="foundation" aria-pressed="false">기초</button>
+      <button class="chip-btn" type="button" data-filter="extension" aria-pressed="false">확장</button>
+    </div>
+  </div>
+  <p class="fine course-rule" id="course-rule">다섯 문제 중 넷을 맞히면 다음 코스가 열려요. 챕터마다 두 코스를 지나면 새 문장 결승전과 특별 꾸미기 보상이 기다려요.</p>
+  <div class="course-grid" id="stage-grid"></div>
+  <nav class="course-pages" id="stage-pagination" aria-label="스테이지 페이지">
+    <button id="stage-prev" class="chip-btn" type="button">← 이전</button>
+    <span id="stage-page">1 / 1</span>
+    <button id="stage-next" class="chip-btn" type="button">다음 →</button>
+  </nav>
+</dialog>
+
+<!-- 멈춤 -->
+<dialog id="pause-dialog" class="paper lab-dialog" aria-labelledby="pause-title">
+  <span class="kicker">PAUSED</span>
+  <h2 id="pause-title">잠깐 쉬어요</h2>
+  <p>차와 문제가 함께 멈췄어요. 이어서 달리거나 처음으로 돌아갈 수 있어요.</p>
+  <div class="dialog-actions">
+    <button id="resume" class="felt-cta coral" type="button"><span>이어 하기</span><i class="disc" aria-hidden="true"></i></button>
+    <div class="dialog-toggles">
+      <button class="chip-btn" type="button" data-sound-toggle data-sound-label aria-pressed="true">소리 켜짐</button>
+      <button class="chip-btn" type="button" id="quality" value="auto">화질 자동</button>
+    </div>
+    <button id="exit" class="chip-btn wide" type="button">처음으로</button>
+  </div>
+</dialog>
+</body>
+</html>

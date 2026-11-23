@@ -1,0 +1,86 @@
+{
+ "판": 1,
+ "종류": "synk.im",
+ "항목": [
+  {
+   "경로": "world/brand-opening/home-tutor-lines.mjs",
+   "종류": "바꿈",
+   "sha256": "266f6796418cdb1b460b6bccece3dcdc08da13e54784e1317c1d86da6efe2c9c",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/brand-opening/home-tutor.mjs",
+   "종류": "바꿈",
+   "sha256": "0f2308fe2003deefa5f0ee3386f64ad09ab71100df3c4107dd87fce8d58576bd",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/brand-opening/home.mjs",
+   "종류": "바꿈",
+   "sha256": "0a996e7d7a8943e5c30f39fdc8fb086d145160290bdd7458931d16c6e856595b",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/life-progress.mjs",
+   "종류": "바꿈",
+   "sha256": "8e132ba6fed74ac78c9d184c3683b482cdc6bffbe4643bc634e2ee22fb4355af",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/life-ui.css",
+   "종류": "바꿈",
+   "sha256": "2a686e80df3461db82c0f0106e1c989f3c6f1da0cecb7cf3e8f54f5c98f4286e",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/life-ui.mjs",
+   "종류": "바꿈",
+   "sha256": "56fd508b7db25e8c2cb94130e1b9562c01be3c954fd63be661b853f2eb4fef74",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/world-client.mjs",
+   "종류": "바꿈",
+   "sha256": "211e83473733045ce36c29f2e18f4babd56dfdfc5dcbcd35084dd0ad1d993e10",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/world-learning-ui.mjs",
+   "종류": "바꿈",
+   "sha256": "1bf3dd4c0ebf411746d4c6d0469fc4b36d0b23a8e3cb74131a9d97a298a65732",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/world-month-answer.mjs",
+   "종류": "새",
+   "sha256": "7f9f3ab28fab2aa88dd31ad17fc793f789dc98c2b86ee048f6db2f5f22ab4683",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/world-reminder-device.mjs",
+   "종류": "바꿈",
+   "sha256": "c00b966a37b20cbc3b5b07d665a1bfb97238b1ec64898e4a58e351b1664c0428",
+   "모드": "100644"
+  },
+  {
+   "경로": "world/world-session.mjs",
+   "종류": "바꿈",
+   "sha256": "1c5ded18497d50e830c74d616ff87c9beda977b981df09633db33534201c1043",
+   "모드": "100644"
+  }
+ ],
+ "위": "7dd7a9bfdae20e13df0b4f5daf79adf8584cfba0",
+ "계획": "7d8cdada334c",
+ "앞판": {
+  "world/brand-opening/home-tutor-lines.mjs": "8b4fc044c31b38964550054f425abe7186dcfd10",
+  "world/brand-opening/home-tutor.mjs": "3303d2b52b3dbf1e922e23e666a9f8a85c000b9c",
+  "world/brand-opening/home.mjs": "f6d55c19b9c5785d6a84f6ff5eab0592c9a22b51",
+  "world/life-progress.mjs": "d2fd58d6420dd043576824fb00808e3df8b87b57",
+  "world/life-ui.css": "23ee877411f6c35051518c410f1908a0309628ab",
+  "world/life-ui.mjs": "2814cfa30700ff9d8ac5368f90c4746db9b71e5a",
+  "world/world-client.mjs": "a5b2bb2c54901a2f307eca1d4c86c8b661fa9581",
+  "world/world-learning-ui.mjs": "8d07151a1c16305978b7788045bbc092d14959aa",
+  "world/world-reminder-device.mjs": "b0b09240f9127d5078d927b39ec9612077d78537",
+  "world/world-session.mjs": "cb0802795e6256d2efcb2c918e18b6ec39407d66"
+ }
+}

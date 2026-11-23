@@ -405,3 +405,66 @@ test('닫은 패널의 미룬 닫기가 돌기 전에 다시 연 패널의 문�
   assert.equal(coach.calls.filter(([name]) => name === 'finishSet').length, 1);
   assert.equal(facade.closed, false);
 });
+
+// ③ (나) 후보(라이브 7dd7a9b 위 cand-pub-s3e2b)의 app-shell 문 기다림 줄. ③ 공개부터 5-3 켜는 공개(master의 app-shell)까지 라이브에 서는 줄이다.
+// 후보는 master d3abfd8c14 뒤의 문 기다림(생활 세션 · 계정 길의 로딩 패널)을 옮기지 않고 같은 뜻을 이 한 줄로 막았다 — 기다리기 전에 패널이 열려
+// 있던 길만 패널이 닫혔는지 본다(손님 · 리허설은 패널 없이 연다). 검수 중에는 SYNK_STEP3_APP_SHELL로 후보 파일을 주어 이 줄이 그대로인지 본다.
+const STEP3_DOOR =
+  'if(life.atlasNext?.gameDoor){const doorTicket=gameLaunch,panelWas=worldPanel.open;gameDoor=await life.atlasNext.gameDoor(id).catch(()=>null);if(doorTicket!==gameLaunch||panelWas&&!worldPanel.open){gameDoor?.dispose();gameDoor=null;session?.dispose();return;}if(gameDoor)window.SYNKAtlasGame=gameDoor.api;}';
+
+// 문 기다림 줄 하나를 가짜 셸 상태로 돌린다. 문을 기다리는 사이 장면(패널 닫힘 · 다른 화면 · 그대로)을 일으키고, 연다 · 멈춘다와 치운 것을 낸다.
+async function doorScene(statement, { loadingShown, openBefore, openAfter, kindAfter = '', bump = false, door = true }) {
+  const disposed = [];
+  let release;
+  const waiting = new Promise(resolve => (release = resolve));
+  const given = door ? { api: { tag: 'door' }, dispose: () => disposed.push('door') } : null;
+  const scope = {
+    gameLaunch: 1,
+    worldPanel: { open: openBefore },
+    kind: loadingShown ? 'world-game-loading' : '',
+    loadingShown,
+    atlasNextOn: true,
+    life: { ensure: async () => {}, atlasNext: { gameDoor: () => waiting } },
+    home: { openPanel: () => (scope.worldPanel.open ? scope.kind : '') },
+    session: { dispose: () => disposed.push('session') },
+    gameDoor: null,
+    window: {},
+    id: 'runner',
+    listed: { path: 'korean-runner/' },
+  };
+  // 셸 원문의 한 줄을 그 자리의 이름(gameLaunch · worldPanel · life …)으로 돌린다 — with는 sloppy 함수 안에서만 쓸 수 있다.
+  const run = new Function('scope', `return (async function(){with(scope){${statement}\nreturn 'opened';}})();`)(scope);
+  for (let i = 0; i < 3; i += 1) await null;
+  scope.worldPanel.open = openAfter;
+  scope.kind = kindAfter;
+  if (bump) scope.gameLaunch += 1;
+  release(given);
+  const result = (await run) ?? 'stopped';
+  return { result, disposed, door: scope.window.SYNKAtlasGame?.tag ?? null };
+}
+
+test('게임 문 — ③ 후보의 문 기다림 줄과 master의 문 기다림이 같은 장면에서 같은 답을 낸다(설계 주인 11-23 조건 5 · master d3abfd8c14)', async () => {
+  const { readFileSync } = await import('node:fs');
+  if (process.env.SYNK_STEP3_APP_SHELL) assert.ok(readFileSync(process.env.SYNK_STEP3_APP_SHELL, 'utf8').includes(STEP3_DOOR), '후보 app-shell에 이 줄이 그대로 있다');
+  const shell = readFileSync(process.env.SYNK_APP_SHELL_SOURCE ?? new URL('../app-shell.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const from = shell.indexOf('if(atlasNextOn){const doorTicket=gameLaunch;');
+  const to = shell.indexOf('window.SYNKAtlasGame=gameDoor.api;}', from);
+  assert.ok(from >= 0 && to > from, 'master의 문 기다림을 찾았다');
+  const masterDoor = shell.slice(from, to + 'window.SYNKAtlasGame=gameDoor.api;}'.length);
+  const scenes = [
+    ['손님 · 리허설 — 패널 없이 열고, 문을 기다리는 사이 아무 일도 없다(4-6 브라우저 확인 · 조건 1 측정에서 막혔던 장면)', { loadingShown: false, openBefore: false, openAfter: false }, 'opened'],
+    ['계정 길 — 로딩 패널이 그대로 열려 있다', { loadingShown: true, openBefore: true, openAfter: true, kindAfter: 'world-game-loading' }, 'opened'],
+    ['계정 길 — 기다리는 사이 로딩 패널을 닫았다(닫기 전환 160ms 안 — gameLaunch는 그대로)', { loadingShown: true, openBefore: true, openAfter: false }, 'stopped'],
+    ['기다리는 사이 다른 화면을 열었다(gameLaunch가 바뀜)', { loadingShown: false, openBefore: false, openAfter: true, kindAfter: 'world-profile', bump: true }, 'stopped'],
+    ['계정 길 — 기다리는 사이 다른 화면을 열었다', { loadingShown: true, openBefore: true, openAfter: true, kindAfter: 'world-profile', bump: true }, 'stopped'],
+    ['문이 없다(입구가 문을 내지 않음 · 404) — 옛 길로 연다', { loadingShown: false, openBefore: false, openAfter: false, door: false }, 'opened'],
+  ];
+  for (const [name, setting, want] of scenes) {
+    const step3 = await doorScene(STEP3_DOOR, setting);
+    const next = await doorScene(masterDoor, setting);
+    assert.equal(step3.result, want, `③ 후보 — ${name}`);
+    assert.deepEqual(step3, next, `③ 후보와 master가 같다 — ${name}`);
+    if (want === 'stopped' && setting.door !== false) assert.deepEqual(step3.disposed.sort(), ['door', 'session'], `멈추면 문과 세션을 치운다 — ${name}`);
+    if (want === 'opened') assert.equal(step3.door, setting.door === false ? null : 'door', `열면 문을 둔다 — ${name}`);
+  }
+});
