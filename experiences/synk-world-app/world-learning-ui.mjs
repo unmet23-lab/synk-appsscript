@@ -1286,6 +1286,29 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    evidenced();
   }});
  }
+ // 동아리 튜터의 첫 실력 파악(앞면 club — experiences/world-front/club.mjs, 11-24 유호님 「추천대로 지어」): 「내 위치」 짧은 진단과 같은
+ // 문항 고르기(selectDiagnostic) · 같은 세션(createDiagnosticSession) · 같은 끝 기록(finishSet 'diagnostic')을 쓰고, 판 대신 앞면 대화 카드가
+ // 문항을 그린다. pick(rows): 앞면이 대화 카드로 낼 수 있는 문항만 골라 줄인다. 새 길(엔진 판)은 아직 판으로 연다 — status 'board'.
+ async function clubCheck({pick=null}={}){
+  if(!position)return {status:'unavailable'};
+  check();try{await prepare();}catch{/* 기록이 덜 왔으면 아래에서 unavailable */}
+  check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still counts */}
+  check();try{await bankReady();}catch{/* reviewed game items still run */}
+  check();
+  if(homePhase()!=='old')return {status:'board'};
+  const coachNow=readCoach();if(!coachNow)return {status:'unavailable'};
+  const data=positionData(coachNow),plan=data.plan;
+  let rows=plan?.status==='ready'?plan.items:[];
+  if(typeof pick==='function'){try{rows=pick(rows.map(row=>({skillId:row.skillId,target:row.target,item:row.item})))||[];}catch{rows=[];}}
+  if(!rows.length)return {status:plan?.status==='ready'?'none':plan?.status||'unavailable',reason:plan?.reason||null};
+  const session=position.createDiagnosticSession({coach:coachNow,items:rows});let ended=false;
+  const skillName=id=>{const key=`position.skill.${id}`;let name='';try{name=t(key);}catch{name='';}return name&&name!==key?name:data.map.skills.find(skill=>skill.id===id)?.label||id;};
+  const mapNow=()=>{try{return position.buildPositionMap({summary:coachNow.summary(),events:coachNow.events?.()||[],policy:engine.POLICY,exam:data.map.exam});}catch{return data.map;}};
+  return {status:'ready',session,total:session.total,skillName,audioUrl,map:data.map,
+   stop(){if(ended)return;ended=true;try{session.stop();}catch{}try{coachNow.flush?.();}catch{}if(session.results().length)diagnosed=true;queueMicrotask(()=>refresh());},
+   finish(){if(ended)return null;ended=true;try{coachNow.flush?.();}catch{}const results=session.results();if(results.length)diagnosed=true;
+    const set=finishSet(coachNow,'diagnostic');refresh();evidenced();return {set,map:mapNow(),results};}};
+ }
  // 진단 판 한 바퀴(「내 위치」 짧은 진단과 마을 준비 확인이 함께 쓴다). done({box,results,top}): 끝 화면을 그린다.
  // stopLabel·onStop: 그만두기 단추의 글과 그 뒤에 열 판(없으면 진단 글과 「내 위치」 판).
  function runDiagnostic({coachNow,items,map,title,eyebrow,done,stopLabel=null,onStop=null}){
@@ -1902,5 +1925,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,meReady,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();readWaitingResponses();responseCoachOff?.();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,meReady,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,clubCheck,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();readWaitingResponses();responseCoachOff?.();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

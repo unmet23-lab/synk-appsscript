@@ -64,7 +64,9 @@ const MOD = [
   ['experiences/synk-world-app/seoul-entry.mjs', 'seoul-entry.mjs'],
   ['experiences/brand-opening/home.mjs', 'brand-opening/home.mjs'],
   ['experiences/seoul-arrival/app.mjs', 'seoul-arrival/app.mjs'],
-  ['experiences/seoul-arrival/strings.mjs', 'seoul-arrival/strings.mjs']
+  ['experiences/seoul-arrival/strings.mjs', 'seoul-arrival/strings.mjs'],
+  // 동아리장 알림(11-24): 앞면 대화 카드가 부르는 짧은 진단 문(clubCheck) 한 토막만 공개본 위에 3방향으로 얹는다
+  ['experiences/synk-world-app/world-learning-ui.mjs', 'world-learning-ui.mjs']
 ];
 for (const dir of ['base', 'new']) fs.rmSync(path.join(OUT, dir), {recursive: true, force: true});
 fs.mkdirSync(OUT, {recursive: true});
@@ -158,6 +160,9 @@ async function addNew(rel, data) {
 const entry = rw(lf(git('show', `${END}:experiences/synk-world-app/world-front-entry.mjs`).toString()), 'world-front-entry.mjs');
 if (!/export const FRONT_AUTO=(true|false);/.test(entry)) throw Error('스위치 줄을 못 찾음');   // 공개 뒤 master가 켜져 있어도 같은 재료
 await addNew('world-front-entry.mjs', entry.replace(/export const FRONT_AUTO=(true|false);/, 'export const FRONT_AUTO=true;'));
+// 동아리장 알림(11-24): 다리와 내 길 알림은 새 파일이라 끝 판 그대로(빌드의 경로 고쳐 쓰기)
+for (const [src, rel] of [['experiences/synk-world-app/world-front-club.mjs', 'world-front-club.mjs'], ['experiences/seoul-arrival/club-call.mjs', 'seoul-arrival/club-call.mjs']])
+  await addNew(rel, rw(lf(git('show', `${END}:${src}`).toString()), rel));
 for (const f of git('ls-tree', '-r', '--name-only', END, 'experiences/world-front/').toString().trim().split('\n')) {
   const rel = f.slice('experiences/'.length);
   if (/^world-front\/(?:qa\/|.*\.test\.mjs$|.*\.md$|assets\/.*\.(?:txt|json)$)/.test(rel)) continue;

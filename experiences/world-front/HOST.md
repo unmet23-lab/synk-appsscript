@@ -94,3 +94,10 @@
 ## 5. 기기 표
 
 다리는 `localStorage`의 `synk.world.front.v1:<주인>`에 `ended`(첫날 끝을 봄) · `day2`(둘째 날 아침을 지남) · `goal`(손님 · 동의 없는 목표) · `after` · `afterEntry`(첫 연습을 마침) · `firstAt`(첫날 시각 — 처음 앞면을 연 때 한 번 적고, 서울행 기록이 나중에 바뀌어도 날 수가 줄지 않게 기록 시각과 견줘 이른 쪽을 쓴다)를 적는다.
+
+## 6. 동아리장 알림 · 튜터(11-24, `club.mjs` · 다리 `world-front-club.mjs`)
+
+- state에 `club: { tutor, note }`가 붙는다. `tutor`는 고른 튜터(`seoha` · `taeo` · `yuna`, 없으면 null)이고 맞춤 화면의 말하는 사람이 된다. `note`는 맞춤 화면(`more` · `front`) 위에 띄울 알림 하나(`{ from, who, kind, code, slots, read, drop }`)다. `club`이 없는 state는 앞 값을 둔다.
+- view `club`이면 틀은 맞춤 화면 대신 처음 만남을 연다. 끝나면 host가 돌려준 다음 state로 넘어간다.
+- 틀이 부르는 것: `clubTutor(id, {answer})` · `clubDiag()` → `{status, total, item}`(status `ready` · `board` · `none`) · `clubReplay()` · `clubAudio('completed' | 'failed')` · `clubAnswer(choiceId)` → `{correct, correctId, explanation}` · `clubNext()` · `clubFinish(rows)` → `{total, cells, listening, minutes}` · `clubDone()` → 다음 state · `clubBoard()` → 다음 state · `clubSeen({dropped, opened})` · `clubAct(kind, slots)` · `clubStop()`.
+- 기기 표의 `club`과 `inbox`는 다리만 쓴다. 서울행 내 길은 부모 창의 `SYNKFrontClub`(`needed()` · `ask()`)으로 알림을 띄울지 묻는다.

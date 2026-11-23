@@ -28204,6 +28204,93 @@ function createWorldEducation({
       evidenced();
     } });
   }
+  async function clubCheck({ pick: pick2 = null } = {}) {
+    if (!position) return { status: "unavailable" };
+    check3();
+    try {
+      await prepare();
+    } catch {
+    }
+    check3();
+    try {
+      await target.SYNKLearningHost?.ready?.();
+    } catch {
+    }
+    check3();
+    try {
+      await bankReady();
+    } catch {
+    }
+    check3();
+    if (homePhase() !== "old") return { status: "board" };
+    const coachNow = readCoach();
+    if (!coachNow) return { status: "unavailable" };
+    const data = positionData(coachNow), plan = data.plan;
+    let rows2 = plan?.status === "ready" ? plan.items : [];
+    if (typeof pick2 === "function") {
+      try {
+        rows2 = pick2(rows2.map((row) => ({ skillId: row.skillId, target: row.target, item: row.item }))) || [];
+      } catch {
+        rows2 = [];
+      }
+    }
+    if (!rows2.length) return { status: plan?.status === "ready" ? "none" : plan?.status || "unavailable", reason: plan?.reason || null };
+    const session = position.createDiagnosticSession({ coach: coachNow, items: rows2 });
+    let ended = false;
+    const skillName = (id) => {
+      const key = `position.skill.${id}`;
+      let name = "";
+      try {
+        name = t2(key);
+      } catch {
+        name = "";
+      }
+      return name && name !== key ? name : data.map.skills.find((skill2) => skill2.id === id)?.label || id;
+    };
+    const mapNow = () => {
+      try {
+        return position.buildPositionMap({ summary: coachNow.summary(), events: coachNow.events?.() || [], policy: engine.POLICY, exam: data.map.exam });
+      } catch {
+        return data.map;
+      }
+    };
+    return {
+      status: "ready",
+      session,
+      total: session.total,
+      skillName,
+      audioUrl,
+      map: data.map,
+      stop() {
+        if (ended) return;
+        ended = true;
+        try {
+          session.stop();
+        } catch {
+        }
+        try {
+          coachNow.flush?.();
+        } catch {
+        }
+        if (session.results().length) diagnosed = true;
+        queueMicrotask(() => refresh());
+      },
+      finish() {
+        if (ended) return null;
+        ended = true;
+        try {
+          coachNow.flush?.();
+        } catch {
+        }
+        const results = session.results();
+        if (results.length) diagnosed = true;
+        const set = finishSet(coachNow, "diagnostic");
+        refresh();
+        evidenced();
+        return { set, map: mapNow(), results };
+      }
+    };
+  }
   function runDiagnostic({ coachNow, items, map, title, eyebrow, done, stopLabel = null, onStop = null }) {
     const session = position.createDiagnosticSession({ coach: coachNow, items });
     const skillOf = (id) => map.skills.find((skill2) => skill2.id === id) || { id };
@@ -29662,7 +29749,7 @@ function createWorldEducation({
       return Promise.resolve();
     }
   }, life: engine.life || null });
-  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, me: meNow, meReady, tellMe, undoMe, clearPractice, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
+  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, me: meNow, meReady, tellMe, undoMe, clearPractice, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, clubCheck, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));

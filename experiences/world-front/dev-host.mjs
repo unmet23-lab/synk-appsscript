@@ -2,6 +2,7 @@
  *   v=end|off|more|day2   dream=idol|actor   who=login|guest   lines=0~5   hangul=reads|new|ask|skip   lang=ko|en|mn
  *   mom=fix|ok|later   after=1   goal=travel|people|life|work|culture|exam|later_   step=hangul|goal   pc=1
  *   더한 값: consent=1(목표 저장 동의 줄)   pos=none(위치 지도 없음)   still=1(움직임 줄이기)
+ *   동아리(club.mjs, 11-24): club=open(내 길 알림을 누른 뒤처럼 처음 만남부터) · club=1(맞춤 화면 위 동아리장 알림부터)   club=done&tutor=seoha|taeo|yuna&note=club|hangul|review|level|today(맞춤 화면 위 알림)   diag=board|none
  * 할 일 표는 시안이 실제 계획 코드로 잰 값이다(측정 A~O). 화면 비교와 손 시험에만 쓴다. */
 import {LOOK_FACES} from '../seoul-arrival/data.mjs';
 
@@ -43,6 +44,18 @@ const CONSENT = {
   en: {label: 'Save to my account', note: 'We remember your goals and help style to suggest practice.'},
   mn: {label: 'Бүртгэлдээ хадгалах', note: 'Зорилго, тусламжийн хэлбэрийг санаж дасгал санал болгоход ашиглана.'}
 };
+// 동아리 처음 만남의 문항 넷 — 지금 진단 풀(world-diagnostic-items.mjs)에서 다리의 고르기(pickClubRows)가 실제로 고르는 넷과 같다
+const DEV_ITEMS = [
+  {skillId: 'ko.reading.grammar', label: '조사·문형 읽기', labelEn: 'Reading particles and sentence patterns', labelMn: 'Туслах үг, өгүүлбэрийн загварыг ойлгож унших', audio: null, prompt: '저는 아침에 빵(      ) 먹어요.', question: '빈칸에 알맞은 것을 고르세요.',
+    choices: [['o0', '을'], ['o3', '과'], ['o1', '에'], ['o2', '이']], correct: 'o0', explanation: '무엇을 먹는지 말할 때는 ‘을/를’을 붙여요. ‘빵’은 받침이 있어서 ‘빵을’이에요.'},
+  {skillId: 'ko.listening.detail', label: '듣고 세부 정보 찾기', labelEn: 'Listening for details', labelMn: 'Сонсоод нарийн мэдээллийг олох', audio: '../korean-runner/assets/voice/check-star-middle.mp3', prompt: null, question: null,
+    choices: [['o1', '가운데 길로 가기'], ['o2', '왼쪽 길로 가기'], ['o3', '오른쪽 길로 가기']], correct: 'o1', explanation: '별이 있는 길은 가운데예요.'},
+  {skillId: 'ko.reading.vocabulary', label: '낱말 뜻 읽기', labelEn: 'Reading word meanings', labelMn: 'Үгийн утгыг ойлгож унших', audio: null, prompt: '목이 말라요. (      )을 마시고 싶어요.', question: '빈칸에 알맞은 것을 고르세요.',
+    choices: [['o0', '물'], ['o2', '옷'], ['o1', '빵'], ['o3', '책']], correct: 'o0', explanation: '목이 마를 때는 물을 마셔요. 빵은 먹고, 옷은 입고, 책은 읽어요.'},
+  {skillId: 'ko.listening.negation', label: '듣고 부정·변경 이해하기', labelEn: 'Listening for “not” and changes', labelMn: 'Сонсоод үгүйсгэл, өөрчлөлтийг ойлгох', audio: '../korean-runner/assets/voice/check-not-middle.mp3', prompt: null, question: null,
+    choices: [['o1', '가운데로 가기'], ['o2', '왼쪽으로 가기'], ['o3', '오른쪽으로 가기']], correct: 'o3', explanation: '가운데는 가지 말라고 했어요. 오른쪽으로 가요.'}
+];
+const DEV_CELLS = ['done', '', 'next', '', '', '', '', '', 'done', 'done', '', '', '', '', '', ''];
 const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 ? a : b; };
 
 export function createDevHost(search = location.search) {
@@ -61,8 +74,11 @@ export function createDevHost(search = location.search) {
     pc: Q.get('pc') === '1',
     consent: Q.get('consent') === '1', agreed: false,
     pos: Q.get('pos') !== 'none',
-    still: Q.get('still') === '1'
+    still: Q.get('still') === '1',
+    club: ['1', 'done', 'open'].includes(Q.get('club')) ? Q.get('club') : '', tutor: ['seoha', 'taeo', 'yuna'].includes(Q.get('tutor')) ? Q.get('tutor') : null,
+    note: ['club', 'hangul', 'review', 'level', 'today'].includes(Q.get('note')) ? Q.get('note') : '', diag: ['board', 'none'].includes(Q.get('diag')) ? Q.get('diag') : '', di: -1
   };
+  if (D.club === '1') { D.v = 'more'; D.note = 'club'; }
   if (D.v === 'day2') D.after = false;   // 「첫날 연습 → 둘째 날」은 시안이 재지 않은 조합(측정 K)
   const ST = STUDENTS[D.dream], me = `저는 ${ST.name}${josa(ST.name, '이에요', '예요')}.`;
   let api = null;
@@ -94,7 +110,7 @@ export function createDevHost(search = location.search) {
     const practicing = D.after && !day2 ? 2 : 0, read = Array.from({length: 8}, (_, i) => i < 2 ? (practicing ? 'p' : 't') : '');
     const crop = LOOK_FACES[ST.look];
     return {
-      view: day2 && D.goal ? 'front' : D.v, lang: D.lang, who: D.pc ? 'pc' : D.who, dream: D.dream,
+      view: D.club === 'open' ? 'club' : day2 && D.goal ? 'front' : D.v, lang: D.lang, who: D.pc ? 'pc' : D.who, dream: D.dream,
       student: {name: ST.name, nameEn: ST.nameEn, nameCy: ST.nameCy, call: ST.call, from: ST.from,
         face: `../seoul-arrival/assets/img/look-${ST.look.replace('_', '-')}.webp`, faceCrop: crop ? {fx: crop.fx, fy: crop.fy, fw: crop.fw} : null, card: null},
       record: {spoke: r.spoke, n: r.n, t2: r.t2, tr: r.tr, mom: r.mom, wrap: r.wrap, momAnswer: D.mom === 'ok' ? 'ok' : 'fix'},
@@ -107,8 +123,21 @@ export function createDevHost(search = location.search) {
       today,
       position: D.pos ? {total: 16, done: 0, practicing, rows: [{label: '듣기', cells: Array(8).fill('')}, {label: '읽기', cells: read}], names: ['낱말 뜻 읽기', '조사·문형 읽기']} : null,
       consent: {needed: D.consent && !D.agreed, ...CONSENT[D.lang]},
-      reduced: D.still
+      reduced: D.still,
+      club: {tutor: D.tutor, note: clubNote()}
     };
+  }
+  const lang = () => D.lang;
+  const lab = it => lang() === 'en' ? it.labelEn : lang() === 'mn' ? it.labelMn : it.label;
+  const viewOf = i => { const it = DEV_ITEMS[i]; return it && {index: i, total: DEV_ITEMS.length, skillId: it.skillId, label: lab(it), labelKo: it.label, audio: it.audio, prompt: it.prompt, question: it.question, choices: it.choices.map(([id, label]) => ({id, label}))}; };
+  function clubNote() {
+    const plan = itemOf(planOf()), who = D.tutor || 'seoha';
+    if (D.note === 'club') return {from: 'club', who: 'head', kind: 'club', code: 'club.hello', slots: {}, read: false, drop: true};
+    if (D.note === 'hangul') return {from: 'tutor', who, kind: 'review', code: 'tutor.review.hangul', slots: {}, read: false, drop: true};
+    if (D.note === 'review') return {from: 'tutor', who, kind: 'review', code: 'tutor.review.skill', slots: {skill: '듣고 부정·변경 이해하기', skillUi: lab(DEV_ITEMS[3]), skillId: 'ko.listening.negation'}, read: false, drop: true};
+    if (D.note === 'level') return {from: 'tutor', who, kind: 'level', code: 'tutor.level', slots: {n: 3, t: 16, cells: DEV_CELLS, listening: 8}, read: false, drop: true};
+    if (D.note === 'today') return {from: 'tutor', who, kind: 'today', code: 'tutor.today', slots: {title: plan.title, m: plan.min, token: plan.token, photo: plan.photo}, read: false, drop: true};
+    return null;
   }
   const note = (what, ...a) => console.info('[dev-host]', what, ...a);   // 실제 앱에서는 이 자리에서 해당 화면이 열린다
   return {
@@ -132,6 +161,19 @@ export function createDevHost(search = location.search) {
     async openAll() { note('openAll'); return null; },
     async openMe() { note('openMe'); return null; },
     async signIn() { note('signIn'); return null; },
-    async seen(key) { note('seen', key); return null; }
+    async seen(key) { note('seen', key); return null; },
+    // 동아리(club.mjs): 실제 다리(world-front-club.mjs)와 같은 꼴로 답한다. 기록은 남기지 않는다
+    async clubTutor(t) { D.tutor = t; note('clubTutor', t); return {tutor: t, saved: false}; },
+    async clubDiag() { if (D.diag) return {status: D.diag}; D.di = 0; return {status: 'ready', total: DEV_ITEMS.length, item: viewOf(0)}; },
+    async clubReplay() { return 'first'; },
+    async clubAudio(status) { note('clubAudio', status); return true; },
+    async clubAnswer(id) { const it = DEV_ITEMS[D.di]; return it ? {correct: id === it.correct, correctId: it.correct, explanation: it.explanation} : {error: 'notReady'}; },
+    async clubNext() { D.di += 1; return viewOf(D.di); },
+    async clubFinish(rows) { note('clubFinish', rows); return {total: 16, cells: DEV_CELLS, listening: 8, minutes: planOf().min}; },
+    async clubDone() { D.club = 'done'; D.note = ''; D.v = 'more'; return state(); },
+    async clubBoard() { D.club = 'done'; D.note = ''; D.v = 'more'; note('position'); return state(); },
+    async clubSeen(o) { note('clubSeen', o); return null; },
+    async clubAct(kind, slots) { note('clubAct', kind, slots); D.note = ''; return null; },
+    clubStop() {}
   };
 }

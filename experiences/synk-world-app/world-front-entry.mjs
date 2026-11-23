@@ -5,6 +5,7 @@
 import {currentLang,onLang} from '../brand-opening/world-lang.mjs';
 import {LOOK_FACES} from '../seoul-arrival/data.mjs';
 import {lessonById} from './life-content.mjs';
+import {createFrontClub} from './world-front-club.mjs';
 
 // 스위치: 참이면 서울행을 끝낸 학생에게 앞면을 연다. 거짓이면 지금 길 그대로(로컬 확인은 ?frontAuto=1). 켜는 것도 끄는 것도 공개 한 번이다.
 // 11-20 켬(유호님 11-19 「심사 전으로 당겨」 · 11-20 「지금 해봐」 — synk.im 선택 공개 f50ef5c7, 검수 world-front-공개2-20261120).
@@ -134,6 +135,14 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   return Object.keys(GOAL_REASONS).find(k=>GOAL_REASONS[k]===r)||'';
  }
  function currentPlan(){try{education()?.refresh?.();return education()?.metrics?.().plan||null;}catch{return null;}}
+ // 동아리장 알림 → 튜터 → 실력 파악(world-front-club.mjs, 11-24). 서울행 내 길은 부모 창의 SYNKFrontClub에 알림을 띄울지 묻고 「답하기」를 남긴다(asked).
+ let asked=null;
+ const viewAfter=who=>{const mark=readMark(who);let v=frontView({arrival:arrivalOf(who),mark,native:!!native()});if(v==='day2'&&!mark.goal&&accountGoal())v='front';return v;};
+ const club=createFrontClub({same:()=>same(),owner,readMark,writeMark,education,progress:()=>life.progress,lang:currentLang,openPlan:token=>host.open(token),
+  plan:()=>{const raw=currentPlan(),{plan:main}=planState(raw,{label:entry=>home.planLabel?.(entry)||entry?.label||''});return main?{...main,route:raw?.selected?.route||null}:null;},
+  stateOf:async()=>{const v=viewAfter(owner());if(session)session.view=v;return withClub(await stateOf(v));}});
+ const withClub=state=>state&&({...state,club:{tutor:club.tutorOf(owner()),note:['more','front'].includes(state.view)?club.noteOf(owner(),state.plan,state.hangul):null}});
+ if(typeof window!=='undefined')window.SYNKFrontClub=Object.freeze({needed:()=>{try{return !!on()&&!club.doneOf(owner());}catch{return false;}},ask:()=>{asked='club';}});
  async function stateOf(view){
   const who=owner(),arrival=arrivalOf(who),guest=who==='guest',pc=!!native();
   let hangul='ask';try{const answer=await hangulReading(who);hangul=answer?.answer==='new'?'new':answer?.answer==='reads'?'reads':'ask';}catch{hangul='ask';}
@@ -169,7 +178,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  async function show(view){
   const s=session;if(!s?.api)return;
   const who=owner();s.view=view;
-  try{const next=await stateOf(view);if(session===s&&s.view===view&&owner()===who&&s.owner===who)s.api.show(next);}catch(error){console.warn('Front state failed',error);}
+  try{const next=withClub(await stateOf(view));if(session===s&&s.view===view&&owner()===who&&s.owner===who)s.api.show(next);}catch(error){console.warn('Front state failed',error);}
  }
 
  /* ── 틀 ── 서울행과 같은 전체 화면 dialog. 레슨 · 게임 시트(#world-panel)는 그 위에 모달로 뜨고, 닫히면 앞면을 다시 그린다 */
@@ -203,7 +212,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   return s;
  }
  function drop(){
-  const s=session;if(!s)return;session=null;s.closing=true;
+  const s=session;if(!s)return;session=null;s.closing=true;club.stop();
   document.querySelector('#world-panel')?.removeEventListener('close',s.onPanelClose);
   try{s.dialog.close();}catch{}s.dialog.remove();
   if(window.SYNKFrontHost===host)delete window.SYNKFrontHost;
@@ -217,6 +226,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   let view=frontView({arrival,mark,native:!!native()});
   // 다른 기기에서 이미 목표를 골랐으면 둘째 날 아침의 목표 질문을 다시 하지 않는다.
   if(view==='day2'&&!mark.goal&&accountGoal())view='front';
+  if(asked==='club'&&!club.doneOf(who))view='club';asked=null;
   const s=mount();
   const api=await Promise.race([s.ready,new Promise(res=>setTimeout(()=>res(null),FRAME_WAIT_MS))]);
   if(!api||session!==s||owner()!==who){if(session===s)drop();return false;}
@@ -235,6 +245,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  const same=()=>!!session&&session.owner===owner();
  const host=Object.freeze({
   ready(api){const s=session;if(!s)return;s.api=api;try{api.setLang(currentLang());}catch{}s.markReady(api);},
+  ...club.host,
   async answerHangul(value){
    // 관문의 한글 질문과 같은 질문이라 출처 값도 'question'이다(학습 기록이 받는 값만 쓴다).
    if(!same()||!['reads','new'].includes(value))return null;
@@ -279,6 +290,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    const s=session,who=owner();s.pending=null;
    try{await openStory?.();}catch{}
    if(session!==s||owner()!==who)return null;
+   if(asked==='club'&&!club.doneOf(who)){asked=null;s.view='club';return withClub(await stateOf('club'));}asked=null;
    return stateOf(s.view);
   },
   async openTab(tab){if(!same())return null;session.pending=null;if(tab==='learn')return openLife('packs');if(tab==='play')return home.showPlay?.();return null;},
