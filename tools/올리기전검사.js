@@ -92,7 +92,7 @@ const 오마주 = require('./오마주.js');
 const 반복 = require('./무대반복.js');
 const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
-const { finalCutFindings } = require('./lib/최종본관문.js');
+const { finalCutFindings, 까닭관문, 글자까닭올림 } = require('./lib/최종본관문.js');
 const { mnPickFindings } = require('./lib/몽골고르기관문.js');
 const { rightWrongFindings } = require('./lib/맞음틀림관문.js');
 const { screenTextFindings } = require('./lib/화면글관문.js');
@@ -1162,7 +1162,9 @@ async function run(dir, opts = {}) {
   const 판본영상 = Object.values(prep.돌림?.판본 || {}).map((v) => v && v.파일 && 미디어경로(path.resolve(bundle.dir, v.파일))).filter(Boolean);
   findings.push(...aestheticFindings(bundle, [...videos.keys()], { 판본영상 }));
   findings.push(...musicLayerFindings(bundle, [...videos.keys()]));
-  findings.push(...finalCutFindings(bundle, [...videos.keys()], { save: !opts.noSave }));
+  // 까닭 관문(11-23): 최종 확인 전 두 브랜드 편의 글자 가림 · 같은 구도 · 되풀이 · 끝소리 확인할 것은 「최종본판단」 까닭이 없으면 고칠 것(tools/lib/최종본관문.js)
+  const 까닭 = 까닭관문(bundle);
+  findings.push(...finalCutFindings(bundle, [...videos.keys()], { save: !opts.noSave, 관문: 까닭 }));
   findings.push(...screenTextFindings(bundle, [...videos.keys()], { save: !opts.noSave }));
   let repeat = { findings: [], summary: null };
   try { repeat = 반복.repeatFindings(bundle, plates, { skipOcr: opts.skipOcr, work: out }); } catch (error) {
@@ -1245,6 +1247,7 @@ async function run(dir, opts = {}) {
   if (!opts.skipLinks) findings.push(...await checkLinks([...links]));
   findings.push(...await promptFindings(prep, { repo: bundle.repo, skipLinks: opts.skipLinks }));
 
+  findings.splice(0, findings.length, ...글자까닭올림(findings, prep, 까닭));
   const fixes = findings.filter((f) => f.level === FIX);
   const looks = findings.filter((f) => f.level === LOOK);
   const result = fixes.length ? FIX : looks.length ? LOOK : '통과';
@@ -1275,7 +1278,10 @@ function 이력남기기(bundle, result, findings, files) {
     const code = String(f.code || '');
     const m = /^final-cut-(.+)$/.exec(code);
     const 번호 = m ? 이력.번호찾기('최종본검사', m[1]) : undefined;
-    return { 규칙: code, ...(Number.isInteger(번호) ? { 번호 } : {}), 등급: f.level === FIX ? '걸림' : '확인', 글: `${f.where} · ${f.message}` };
+    // 까닭(「…판단」: …)은 글 끝에 붙는데 이력 글은 200자에서 잘린다 — 까닭을 글 앞으로 옮겨 흠 장부가 「까닭 있음」을 읽게 한다(설계 검토 GA10)
+    const m까닭 = /^(.*?) · (「[^」]*판단」: .*)$/.exec(String(f.message || ''));
+    const 글 = m까닭 ? `${m까닭[2]} · ${f.where} · ${m까닭[1]}` : `${f.where} · ${f.message}`;
+    return { 규칙: code, ...(Number.isInteger(번호) ? { 번호 } : {}), 등급: f.level === FIX ? '걸림' : '확인', 글 };
   });
   이력.남기기({ 편: bundle.dir, 눈: '올리기전검사', 단계: '올리기 전', 결과: result === FIX ? '걸림' : result === LOOK ? '확인' : '통과', 끝코드: result === FIX ? 1 : 0,
     판: 이력.지문([].concat(files || []).map((f) => `${f.경로}:${f.sha256 || f.바이트 || ''}`)), 걸림 });

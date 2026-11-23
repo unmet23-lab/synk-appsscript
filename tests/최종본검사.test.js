@@ -343,7 +343,7 @@ test('흐름은 기본 항목이 아니다 — 올리기 전 검사 ⑳이 부�
   assert.ok(!m[1].split(',').includes('흐름'));
   for (const k of 흐름이름) assert.ok(new RegExp(`SOFT = \\{[^}]*"${k}"`).test(src), `${k}는 끝 코드를 바꾸지 않는다(SOFT)`);
   const gate = fs.readFileSync(path.join(__dirname, '..', 'tools', '영상관문판.py'), 'utf8');
-  assert.ok(/최종본항목 = "[^"]*흐름/.test(gate), '마감 관문 판이 흐름을 붙여 부른다');
+  assert.ok(/^관문항목 = DEFAULT_ITEMS \+ ",흐름"/m.test(src) && /"--컷표", str\(컷표\)/.test(gate), '마감 관문 판은 「--컷표」로 불러 기본 항목(멈춤 · 첫머리 포함)에 흐름을 붙인다');
 });
 
 // ── 첫머리굳음(11-18 — 서울로 1:48 C14s 「이 장면 시작할떄 0.1초정도 굳어있는 상태에서 시작」, 11-14 1:08과 같은 짜임 · 점검표 26) ──
@@ -485,7 +485,7 @@ test('첫머리굳음 — 첫 장을 0.35초 세운 컷만 걸리고(끝 코드 
   assert.ok(!lastJson(off.stdout).걸림.some((x) => x.항목 === '첫머리굳음'));
   assert.ok(/SOFT = \{[^}]*"첫머리굳음"/.test(fs.readFileSync(tool, 'utf8')), '첫머리굳음은 끝 코드를 바꾸지 않는다(SOFT)');
   const gate = fs.readFileSync(path.join(__dirname, '..', 'tools', '영상관문판.py'), 'utf8');
-  assert.ok(/최종본항목 = "[^"]*첫머리/.test(gate) && /확인항목 = [^\n]*"첫머리굳음"/.test(gate), '마감 관문 판이 첫머리를 붙여 부르고 확인으로 센다');
+  assert.ok(/"--컷표", str\(컷표\)/.test(gate) && /확인항목 = [^\n]*"첫머리굳음"/.test(gate), '마감 관문 판이 첫머리(기본 항목)를 붙여 부르고 확인으로 센다');
 });
 
 test('없는 파일은 끝 코드 2와 오류 한 줄', { skip: 없음 }, () => {

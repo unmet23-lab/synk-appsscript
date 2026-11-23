@@ -109,6 +109,64 @@ function reasonFor(prep, hit) {
   return text(exact) || text(whole);
 }
 
+// ── 까닭 없이 넘기지 않는다(11-23, 설계 검토 .tmp/검수/설계검토_넘김막기_20261123.md) ──
+// 왜: 11-23 흠 장부 — 최근 20편에서 기계가 띄운 흠을 넘긴 21번 가운데 11번이 검사가 「확인할 것」으로 띄운 채 까닭 없이 최종 확인으로 갔다.
+//   그 가운데 10번이 이 검사의 글자 가림(#5) · 같은 구도 · 되풀이(#50) · 끝(#2)이었다. 확인할 것은 한 번에 15~20개가 나와(시각 · 오마주 · 지난 편 닮음 같은
+//   운영 항목) 점검표 번호가 붙은 품질 항목이 그 사이에 묻혔다.
+// 무엇: 최종 확인을 아직 받지 않은 두 브랜드 편(차례 제작 중 · 다시 볼 차례 · 고칠 차례)에서, 아래 항목이 「확인할 것」이면 준비.json 「최종본판단」에 까닭이
+//   없을 때 고칠 것으로 올린다. 고칠 것이 있는 편은 최종 확인 대기열에 들지 않는다(최종확인.js ready). 최종 확인을 받은 영상(열림)과 이미 걸린 편은 그대로다.
+//   항목은 넘김이 실제로 난 것만 코드에 적는다 — 흠갈래.json에 규칙을 더해도 조용히 등록을 막는 항목이 되지 않게(설계 검토 GA13, 시험이 번호를 맞춘다).
+//   yuhobuilds 굳음 · 화면멈춤 · 조용구간은 위 머리말의 까닭으로 확인할 것 그대로다.
+// 까닭 열쇠: final-cut 항목은 위 reasonFor 그대로(「같은구도@초」 · 「되풀이」). 글자 자리는 「<code>@<군데 수>」 — 한 줄이 여러 자리를 합치므로, 까닭을 적은 뒤
+//   다시 렌더해 군데가 늘면 다시 고칠 것이 된다(GA4). 최종 확인이 「미흡」이고 그 갈래에 같은 번호가 있으면 까닭이 있어도 고칠 것이다(새 판정 기록이 생길 때까지).
+const 까닭항목 = { 같은구도: 50, 되풀이: 50, 끝소리: 2 };
+const 까닭코드 = { 'text-right': 5, 'text-top': 5, 'text-bottom': 5, 'text-left': 5, 'cover-safe-area': 5 };
+const 지난차례 = new Set(['관문 밖', '이미 나감', '이미 걸림', '열림', '등록 기다림', '판정 끝', '못 읽음']);
+
+// 갈래 이름 · 번호 → 점검표 번호(흠갈래.json 「항목」). 못 읽으면 숫자 갈래만 센다
+function 갈래번호들(갈래) {
+  let 항목 = {};
+  try { 항목 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'docs', '마케팅', '제작양식', '흠갈래.json'), 'utf8')).항목 || {}; } catch { /* 숫자만 */ }
+  const out = new Set();
+  for (const g of [].concat(갈래 || [])) {
+    const m = /^[Kk#]?(\d{1,3})$/.exec(String(g).trim());
+    if (m) out.add(Number(m[1]));
+    else if (Number.isInteger(항목[g]?.번호)) out.add(항목[g].번호);
+  }
+  return out;
+}
+
+// 이 편에 까닭 관문이 켜지나 → { 켬, 미흡: Set(점검표 번호) }. 최종 확인 차례를 못 읽으면 켜지 않는다(검사 결과를 막는 쪽으로 틀리지 않게)
+function 까닭관문(bundle, 확인 = require('./최종확인.js')) {
+  try {
+    if (!확인.required(bundle.prep || {})) return { 켬: false, 미흡: new Set() };
+    const s = 확인.stage(bundle);
+    if (지난차례.has(s.차례)) return { 켬: false, 미흡: new Set() };
+    const r = 확인.read(bundle);
+    return { 켬: true, 미흡: r && r.결과 === '미흡' ? 갈래번호들(r.갈래) : new Set(), 차례: s.차례 };
+  } catch { return { 켬: false, 미흡: new Set() }; }
+}
+
+function 까닭붙이는법(열쇠, 번호) {
+  return ` — 최종 확인 전에 고치거나, 일부러 둔 자리면 준비.json 「최종본판단」 {"${열쇠}": "까닭"}에 적는다(점검표 ${번호} · 기계가 띄운 흠은 까닭 없이 최종 확인으로 넘기지 않는다)`;
+}
+
+// 글자 자리 확인할 것(올리기 전 검사 ⑤)을 까닭이 없으면 고칠 것으로 — findings를 고쳐 돌려준다
+function 글자까닭올림(findings, prep, 관문) {
+  if (!관문 || !관문.켬) return findings;
+  const table = prep && prep.최종본판단 && typeof prep.최종본판단 === 'object' ? prep.최종본판단 : {};
+  return findings.map((f) => {
+    const 번호 = 까닭코드[f && f.code];
+    if (!번호 || f.level !== LOOK) return f;
+    const 군데 = (/(\d+)군데/.exec(String(f.message || '')) || [])[1] || '1';
+    const 열쇠 = `${f.code}@${군데}`;
+    const why = typeof table[열쇠] === 'string' ? table[열쇠].trim() : '';
+    if (why && !관문.미흡.has(번호)) return { ...f, message: `${f.message} · 「최종본판단」: ${why}` };
+    const 미흡글 = why ? ` — 최종 확인이 이 흠(점검표 ${번호})으로 미흡이라 까닭이 있어도 고친다` : 까닭붙이는법(열쇠, 번호);
+    return { ...f, level: FIX, message: `${f.message}${미흡글}` };
+  });
+}
+
 // 잴 영상: 준비.json 「최종본」에 적힌 영상 + 판이 쓰는 영상 가운데 「최종본」에 없고 화질 낮춘 사본(올리기판)도 아닌 것.
 // 올리기판은 최종본을 다시 누른 같은 그림이라 두 번 재지 않지만, 다른 렌더(끝 말 바꾼 틱톡판 등)는 따로 잰다(Fable 검수 6)
 function targets(bundle, videoFiles) {
@@ -121,7 +179,7 @@ function targets(bundle, videoFiles) {
 }
 
 // bundle: 게시묶음 · videoFiles: 판이 쓰는 영상 파일 절대 경로 · run: 시험에서 바꿔 끼운다 · save: false면 기록을 쓰지 않는다(--저장안함)
-function finalCutFindings(bundle, videoFiles, { run = runTool, save = true } = {}) {
+function finalCutFindings(bundle, videoFiles, { run = runTool, save = true, 관문 = null } = {}) {
   const findings = [];
   const prep = bundle.prep || {};
   if (!applies(prep)) return findings;
@@ -144,7 +202,11 @@ function finalCutFindings(bundle, videoFiles, { run = runTool, save = true } = {
       const why = reasonFor(prep, hit);
       const hard = HARD.has(hit.항목) && !why && live;
       const tail = why ? ` · 「최종본판단」: ${why}` : ` — ${HOW[hit.항목] || '컷 전수에서 눈으로 본다'}${HARD.has(hit.항목) && live ? `. 사진 · 화면 속 인물처럼 일부러 둔 자리면 준비.json 「최종본판단」 {"${hit.항목}@${hit.초}": "까닭"}` : ''}`;
-      findings.push({ level: hard ? FIX : LOOK, code: `final-cut-${hit.항목}`, where, message: `${hit.글}${tail}` });
+      // 까닭 관문(위 까닭항목): 최종 확인 전 편에서 까닭이 없거나, 최종 확인 「미흡」 갈래에 같은 번호가 있으면 고칠 것
+      const 번호 = 까닭항목[hit.항목];
+      const 올림 = !hard && 관문 && 관문.켬 && 번호 && (!why || 관문.미흡.has(번호));
+      const 올림글 = 올림 ? (why ? ` — 최종 확인이 이 흠(점검표 ${번호})으로 미흡이라 까닭이 있어도 고친다` : 까닭붙이는법(`${hit.항목}@${hit.초}`, 번호)) : '';
+      findings.push({ level: hard || 올림 ? FIX : LOOK, code: `final-cut-${hit.항목}`, where, message: `${hit.글}${tail}${올림글}` });
     }
     for (const miss of result.못잼 || []) {
       findings.push({ level: LOOK, code: 'final-cut-unmeasured', where, message: `${miss.항목}을 못 쟀다(${miss.오류}) — 이 항목은 컷 전수에서 1/8초 띠로 눈으로 본다${live && /굳음|같은판/.test(miss.항목) ? '(실사 재연의 고칠 것 항목이다)' : ''}` });
@@ -153,4 +215,4 @@ function finalCutFindings(bundle, videoFiles, { run = runTool, save = true } = {
   return findings;
 }
 
-module.exports = { finalCutFindings, applies, inWindow, reasonFor, targets, FINAL_FROM, BRANDS, HARD };
+module.exports = { finalCutFindings, applies, inWindow, reasonFor, targets, FINAL_FROM, BRANDS, HARD, 까닭관문, 글자까닭올림, 까닭항목, 까닭코드 };

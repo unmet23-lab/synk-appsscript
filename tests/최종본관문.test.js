@@ -152,3 +152,57 @@ test('관문 밖 편은 재지 않는다 — LAB · 「사람편」 아닌 브�
   // 슬롯은 그대로 두고 판 시각만 뒤로 옮긴 편도 관문에 든다
   assert.equal(applies({ 브랜드: 'synkbrief', 슬롯: '2026-11-13', 판: [{ 시각: '2026-11-15T21:00:00+09:00' }] }), true);
 });
+
+// ── 까닭 관문(11-23 넘김 막기 — .tmp/검수/설계검토_넘김막기_20261123.md) ──
+const 관문들 = require('../tools/lib/최종본관문.js');
+const 켬 = (미흡 = []) => ({ 켬: true, 미흡: new Set(미흡) });
+const 끔 = { 켬: false, 미흡: new Set() };
+
+test('까닭 관문 — 최종 확인 전 편의 되풀이 · 같은구도 · 끝소리 확인할 것은 「최종본판단」 까닭이 없으면 고칠 것, 굳음 · 화면멈춤 · 조용구간(yuhobuilds)은 그대로', (t) => {
+  const { bundle, video } = fixture(t, { 브랜드: 'yuhobuilds' });
+  const 더 = [...걸림, { 항목: '같은구도', 초: 7.92, 글: '7.92초 점프 컷' }, { 항목: '화면멈춤', 초: 5.3, 글: '2초 넘게 그대로' }, { 항목: '조용구간', 초: 12, 글: '조용' }];
+  const run = () => ({ 걸림: 더 });
+  const 등급 = (관문) => Object.fromEntries(finalCutFindings(bundle, [video], { run, save: false, 관문 }).map((f) => [f.code.replace('final-cut-', ''), f.level]));
+  assert.deepEqual(등급(끔), { 굳음: LOOK, 같은판: LOOK, 되풀이: LOOK, 끝소리: LOOK, 같은구도: LOOK, 화면멈춤: LOOK, 조용구간: LOOK }, '관문이 꺼지면(열림 · 이미 걸림 · LAB) 지금과 같다');
+  assert.deepEqual(등급(켬()), { 굳음: LOOK, 같은판: LOOK, 되풀이: FIX, 끝소리: FIX, 같은구도: FIX, 화면멈춤: LOOK, 조용구간: LOOK });
+  const 글 = finalCutFindings(bundle, [video], { run, save: false, 관문: 켬() }).find((f) => f.code === 'final-cut-같은구도').message;
+  assert.match(글, /「최종본판단」 \{"같은구도@7\.92": "까닭"\}에 적는다\(점검표 50/);
+  bundle.prep.최종본판단 = { 되풀이: '교차 편집 — 듣는 사람과 화면을 번갈아', '같은구도@7.92': '숫자가 바뀌는 순간을 같은 자리에서 보인다', 끝소리: '끝 말이 마지막 한 방' };
+  assert.deepEqual(등급(켬()), { 굳음: LOOK, 같은판: LOOK, 되풀이: LOOK, 끝소리: LOOK, 같은구도: LOOK, 화면멈춤: LOOK, 조용구간: LOOK });
+  // 최종 확인이 그 번호로 미흡이면 까닭이 있어도 고칠 것 — 새 판정 기록이 생길 때까지
+  const 미흡 = 등급(켬([50]));
+  assert.deepEqual([미흡.되풀이, 미흡.같은구도, 미흡.끝소리], [FIX, FIX, LOOK]);
+});
+
+test('까닭 관문 — 글자 자리(⑤ text-* · cover-safe-area)는 「<code>@<군데 수>」 까닭이 없으면 고칠 것, 군데가 늘면 다시 고칠 것, 번호 없는 확인할 것은 그대로', () => {
+  const f = (code, message) => ({ level: LOOK, code, where: '최종.mp4', message });
+  const 목록 = [f('text-right', '오른쪽 단추 자리 3군데 — 0.0초 「48,000,000원」'), f('cover-safe-area', '표지 아래 앱 글자 자리 2군데'), f('time-slot', '시각이 슬롯 날이 아니다'),
+    f('homage-길이', '원본과 길이가 다르다'), { level: FIX, code: 'still', where: '최종.mp4', message: '정지 30%' }];
+  const 등급 = (prep, 관문) => 관문들.글자까닭올림(목록, prep, 관문).map((x) => `${x.code}:${x.level}`);
+  assert.deepEqual(등급({}, 끔), ['text-right:확인할 것', 'cover-safe-area:확인할 것', 'time-slot:확인할 것', 'homage-길이:확인할 것', 'still:고칠 것'].map((x) => x.replace('확인할 것', LOOK).replace('고칠 것', FIX)));
+  assert.deepEqual(등급({}, 켬()), [`text-right:${FIX}`, `cover-safe-area:${FIX}`, `time-slot:${LOOK}`, `homage-길이:${LOOK}`, `still:${FIX}`]);
+  assert.match(관문들.글자까닭올림(목록, {}, 켬())[0].message, /\{"text-right@3": "까닭"\}에 적는다\(점검표 5/);
+  const prep = { 최종본판단: { 'text-right@3': '화면 캡처 속 이름표 — 앱 단추가 덮어도 뜻이 남는다', 'cover-safe-area@2': '표지 아래 글은 날짜 줄이다' } };
+  assert.deepEqual(등급(prep, 켬()), [`text-right:${LOOK}`, `cover-safe-area:${LOOK}`, `time-slot:${LOOK}`, `homage-길이:${LOOK}`, `still:${FIX}`]);
+  assert.match(관문들.글자까닭올림(목록, prep, 켬())[0].message, /「최종본판단」: 화면 캡처 속 이름표/);
+  const 늘어남 = [f('text-right', '오른쪽 단추 자리 5군데 — 다시 렌더')];
+  assert.equal(관문들.글자까닭올림(늘어남, prep, 켬())[0].level, FIX, '까닭을 적은 뒤 군데가 늘면 옛 까닭이 덮지 않는다');
+  assert.equal(관문들.글자까닭올림(목록, prep, 켬([5]))[0].level, FIX, '최종 확인이 글자 가림으로 미흡이면 까닭이 있어도 고칠 것');
+});
+
+test('까닭 관문의 항목은 코드 목록이다 — 흠갈래.json 「올린검사」가 그 code를 같은 점검표 번호에 잇는다(장부 표가 관문을 조용히 넓히지 않게)', () => {
+  const 갈래 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', '마케팅', '제작양식', '흠갈래.json'), 'utf8'));
+  const 번호of = (검사, 규칙) => 갈래.줄.find((x) => [].concat(x.올린검사 || []).some((o) => o.검사 === 검사 && [].concat(o.규칙 || []).includes(규칙)))?.번호;
+  for (const [항목, n] of Object.entries(관문들.까닭항목)) assert.equal(번호of('최종본검사', 항목), n, `최종본검사:${항목}`);
+  for (const [code, n] of Object.entries(관문들.까닭코드)) assert.equal(번호of('올리기전검사', code), n, `올리기전검사:${code}`);
+});
+
+test('까닭 관문을 켜는 편 — 두 브랜드에서 최종 확인을 아직 받지 않은 차례(제작 중 · 검사 고칠 것 · 다시 볼 차례 · 고칠 차례)만, 미흡 갈래는 번호로', () => {
+  const 가짜 = (차례, 기록 = null, prep = { 브랜드: 'synkbrief', 슬롯: FINAL_FROM }) => 관문들.까닭관문({ prep },
+    { required: (p) => p.브랜드 === 'synkbrief', stage: () => ({ 차례 }), read: () => 기록 });
+  for (const 차례 of ['제작 중', '검사 고칠 것', '다시 볼 차례', '고칠 차례']) assert.equal(가짜(차례).켬, true, 차례);
+  for (const 차례 of ['열림', '이미 걸림', '이미 나감', '등록 기다림', '판정 끝']) assert.equal(가짜(차례).켬, false, 차례);
+  assert.equal(가짜('제작 중', null, { 브랜드: 'LAB' }).켬, false, 'LAB은 최종 확인 관문 밖');
+  assert.deepEqual([...가짜('고칠 차례', { 결과: '미흡', 갈래: ['글자표', '끝약함', '50', '점프컷'] }).미흡].sort((a, b) => a - b), [2, 50]);
+  assert.equal(관문들.까닭관문({ prep: { 브랜드: 'synkbrief' } }, { required: () => true, stage: () => { throw Error('못 읽음'); } }).켬, false, '차례를 못 읽으면 켜지 않는다');
+});

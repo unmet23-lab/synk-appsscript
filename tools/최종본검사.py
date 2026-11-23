@@ -866,7 +866,16 @@ def main(argv=None):
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--항목", default=DEFAULT_ITEMS)
     ap.add_argument("--컷초", default="", help="흐름 · 첫머리가 쓴다: 컷이 바뀌는 초(쉼표) — 천 닦기 같은 전환은 장 차이로 못 찾아 컷표 경계를 더한다")
+    ap.add_argument("--컷표", default="", help="컷표(틀 2)로 마감 관문 판 도구와 같은 값을 잰다 — 항목 기본+흐름 · 컷초는 컷표 경계(--항목 · --컷초를 주면 그 값)")
     o = ap.parse_args(argv)
+    if o.컷표:
+        try:
+            o.컷초 = o.컷초 or 컷표컷초(o.컷표)
+        except Exception as e:  # noqa: BLE001 — 끝 코드 2로 알린다
+            print(json.dumps({"파일": o.mp4, "오류": f"컷표를 못 읽음: {e}"}, ensure_ascii=False) if o.json else f"컷표를 못 읽음: {e}")
+            return 2
+        if o.항목 == DEFAULT_ITEMS:
+            o.항목 = 관문항목
     want = set(o.항목.split(","))
     if "기본" in want:     # 「기본,말」 — 기본 항목에 더해 부른다(최종 확인 묶음)
         want |= set(DEFAULT_ITEMS.split(","))
@@ -875,6 +884,15 @@ def main(argv=None):
     except Exception as e:  # noqa: BLE001 — 끝 코드 2로 알린다
         print(json.dumps({"파일": o.mp4, "오류": str(e)}, ensure_ascii=False) if o.json else f"잴 수 없음: {e}")
         return 2
+    캐시 = 캐시자리(o.mp4, want, o.컷초)
+    if 캐시 and os.path.isfile(캐시):
+        try:
+            with open(캐시, encoding="utf-8") as f:
+                out = json.load(f)
+            out["파일"] = o.mp4
+            return 내기(o, out, 캐시씀=True)
+        except Exception:  # noqa: BLE001 — 못 읽으면 다시 잰다
+            pass
     small = decode(o.mp4, fit_size(w, h, 192))
     if len(small) < 4:
         print(json.dumps({"파일": o.mp4, "오류": "장이 모자람"}, ensure_ascii=False) if o.json else "잴 수 없음: 장이 모자람")
@@ -1098,10 +1116,65 @@ def main(argv=None):
 
     out = {"파일": o.mp4, "길이": round(dur, 2), "fps": fps, "원본fps": round(src_fps, 3), "컷": [t(c) for c in cuts], "걸림": hits, "알림": notes,
            **({"못잼": failed} if failed else {})}
+    if 캐시 and not failed:   # 못 잰 항목이 있으면 다음에 다시 잰다
+        try:
+            os.makedirs(os.path.dirname(캐시), exist_ok=True)
+            with open(캐시 + ".임시", "w", encoding="utf-8") as f:
+                json.dump({k: v for k, v in out.items() if k != "파일"}, f, ensure_ascii=False)
+            os.replace(캐시 + ".임시", 캐시)
+        except OSError:
+            pass
+    return 내기(o, out)
+
+
+# ── 같은 영상은 한 번만 잰다(11-23 넘김 막기 · 설계 검토 D, GA7) ──
+# 왜: 광고 · 공모전 · 포트폴리오 편은 편집 단계(synk-video 6단계)에서 이 검사를 돌리고, 7단계 마감 관문 판 도구(tools/영상관문판.py)가 같은 영상을 다시 쟀다(한 편 2~4분,
+#   흐름까지 더 김). 둘 다 「--컷표 <컷표.json>」(판 도구와 같은 항목 · 컷초)로 부르면 영상 SHA-256 · 이 도구와 사람움직임.py 지문 · 항목 · 컷초가 같은 결과를
+#   .tmp/최종본검사캐시/에서 다시 쓴다. 못 잰 항목이 있는 결과는 남기지 않는다. 끄기: SYNK_최종본캐시=끔(시험).
+관문항목 = DEFAULT_ITEMS + ",흐름"   # 마감 관문 판 도구가 쓰는 항목 — 멈춤(화면멈춤)을 빠뜨리지 않게 기본 항목에 흐름을 더한다(설계 검토 GA7)
+
+
+def 컷표컷초(컷표파일):
+    """컷표(틀 2)의 컷 경계 초 — 판 도구(영상관문판.py 컷시간)와 같은 셈이다. 첫 컷의 시작(0)은 뺀다."""
+    spec = importlib.util.spec_from_file_location("영상관문판", os.path.join(HERE, "영상관문판.py"))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    with open(컷표파일, encoding="utf-8-sig") as f:
+        표 = json.load(f)
+    return ",".join(f"{t:.3f}" for t, _ in m.컷시간(표)[1:] if t is not None)
+
+
+def 캐시자리(mp4, want, 컷초):
+    if os.environ.get("SYNK_최종본캐시") == "끔":
+        return None
+    try:
+        import hashlib
+        h = hashlib.sha256()
+        with open(mp4, "rb") as f:
+            for 조각 in iter(lambda: f.read(1 << 20), b""):
+                h.update(조각)
+        도구 = hashlib.sha1()
+        for p in (os.path.abspath(__file__), MOTION_PY):
+            try:
+                with open(p, "rb") as f:
+                    도구.update(f.read())
+            except OSError:
+                도구.update(b"none")
+        쓰는컷초 = 컷초 if want & {"흐름", "첫머리"} else ""
+        # 결과를 바꾸는 환경(사람움직임 도구 자리 · 말 시각 끄기)도 열쇠에 넣는다 — 시험이 같은 영상을 다른 환경으로 잴 때 앞 결과를 쓰지 않게
+        환경 = [os.path.abspath(MOTION_PY), os.environ.get("SYNK_말시각", "")]
+        열쇠 = hashlib.sha1(json.dumps([도구.hexdigest(), sorted(want), 쓰는컷초, 환경], ensure_ascii=False).encode()).hexdigest()[:12]
+        return os.path.join(HERE, "..", ".tmp", "최종본검사캐시", f"{h.hexdigest()[:16]}-{열쇠}.json")
+    except OSError:
+        return None
+
+
+def 내기(o, out, 캐시씀=False):
+    hits, failed, notes = out.get("걸림") or [], out.get("못잼") or [], out.get("알림") or []
     if o.json:
         print(json.dumps(out, ensure_ascii=False))
     else:
-        print(f"{os.path.basename(o.mp4)} · {out['길이']}초 · 컷 {len(cuts) + 1}개")
+        print(f"{os.path.basename(o.mp4)} · {out['길이']}초 · 컷 {len(out.get('컷') or []) + 1}개{' · 같은 영상의 앞 결과(.tmp/최종본검사캐시)' if 캐시씀 else ''}")
         for x in hits:
             print(f"  [{x['항목']}] {x['글']}")
         for x in failed:

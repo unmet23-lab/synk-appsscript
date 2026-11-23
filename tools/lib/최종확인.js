@@ -52,8 +52,15 @@ function required(prep) {
 
 function recordFile(bundle) { return path.join(bundle.dir, '게시', FILE); }
 
+// 같은 파일(크기 · 수정 시각)은 한 번만 해시한다 — scan 한 번에 changed() · 검사문제() · fingerprint()가 같은 영상을 세 번 읽었다(11-23 설계 검토 GA1)
+const shaMemo = new Map();
 function sha256(file) {
-  return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  let key = null;
+  try { const st = fs.statSync(file); key = `${path.resolve(file)}|${st.size}|${st.mtimeMs}`; } catch { /* 아래에서 읽다 던진다 */ }
+  if (key && shaMemo.has(key)) return shaMemo.get(key);
+  const digest = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  if (key) shaMemo.set(key, digest);
+  return digest;
 }
 
 // 이 편이 올릴 영상 — 판이 쓰는 영상과 「최종본」(같은 파일은 한 번)
@@ -138,9 +145,41 @@ const LIVE_DONE = new Set(['게시됨', '예약됨']);
 const LOCK_HOURS = 2;
 const FIX_LOOKBACK_DAYS = 3;
 
-// 제작이 끝났다고 적은 편 — 준비.json 상태가 「완성」이나 「올릴 준비」로 시작하고 올리기 전 검사가 「고칠 것」이 아니다
-function ready(prep) {
-  return /^(완성|올릴 준비)/.test(String(prep?.상태 || '').trim()) && String(prep?.검사?.결과 || '') !== '고칠 것';
+// 제작이 끝났다고 적은 편 — 준비.json 상태가 「완성」이나 「올릴 준비」로 시작한다
+function done(prep) { return /^(완성|올릴 준비)/.test(String(prep?.상태 || '').trim()); }
+
+// 올리기 전 검사가 지금 판 영상을 재서 고칠 것이 없나 — 아니면 그 까닭(글), 그렇다면 null(11-23 넘김 막기 · 설계 검토 GA1).
+// 11-19 회의록은 검사이력에 올리기 전 검사 줄이 없는 채 최종 확인을 받았다(편집 단계 최종본 검사 걸림 뒤). 그래서 「검사」가 없으면 아직 안 잰 것이다.
+// 「검사」.파일이 있으면 아직 걸 판의 영상마다 기록과 견준다(크기 → 수정 시각 → sha256, tools/예약큐.js checkOf와 같은 방향) — 기록에 없는 판 영상 · 바뀐 영상은
+// 다시 잴 차례다. 이미 게시됨 · 예약됨인 판의 영상(올리기 전 검사가 다시 재지 않는다)과 「최종본」 · 돌림 판본만의 영상은 견주지 않는다. 파일 칸이 없는 옛 기록은 견주지 않는다
+function 검사문제(bundle) {
+  const rec = bundle.prep?.검사;
+  if (!rec || typeof rec !== 'object') return '올리기 전 검사 기록이 없다 — node tools/올리기전검사.js <편 폴더>';
+  if (String(rec.결과 || '') === '고칠 것') return `올리기 전 검사에 고칠 것이 남았다(${[].concat(rec.고칠것 || []).length}개) — 고치거나 일부러 둔 자리는 까닭을 적고 다시 검사`;
+  const rows = Array.isArray(rec.파일) ? rec.파일.filter((f) => f && typeof f.경로 === 'string') : [];
+  if (!rows.length) return null;
+  const byRel = new Map(rows.map((f) => [f.경로, f]));
+  const posted = new Set((resultRows(bundle) || []).filter((p) => LIVE_DONE.has(p.상태)).map((p) => p.계정));
+  for (const plate of 묶음.plates(bundle)) {
+    if (!plate.video?.exists || !plate.video.path || posted.has(plate.account)) continue;
+    const rel = 묶음.rel(bundle, plate.video.path);
+    const row = byRel.get(rel);
+    if (!row) return `올리기 전 검사 뒤 판 영상이 더해졌다(${path.basename(plate.video.path)}) — 다시 검사`;
+    let st;
+    try { st = fs.statSync(plate.video.path); } catch { continue; }
+    const same = st.size === row.바이트 && (new Date(st.mtimeMs).toISOString() === row.수정 || Boolean(row.sha256 && sha256(plate.video.path) === String(row.sha256).toLowerCase()));
+    if (!same) return `올리기 전 검사 뒤 영상이 바뀌었다(${path.basename(plate.video.path)}) — 다시 검사`;
+  }
+  return null;
+}
+
+// 최종 확인 대기열에 들 편 — 제작이 끝났다고 적었고 올리기 전 검사가 지금 영상을 재서 고칠 것이 없다
+function ready(bundle) { return done(bundle.prep) && !검사문제(bundle); }
+
+// 완성이라 적었는데 검사가 막는 편 — 대기열에도 미흡 고칠 편에도 안 떠 칸이 비지 않게 「검사 고칠 것」 차례로 낸다(설계 검토 GA5)
+function notReady(bundle, extra = {}) {
+  const why = done(bundle.prep) ? 검사문제(bundle) : null;
+  return why ? { 차례: '검사 고칠 것', 까닭: why, ...extra } : { 차례: '제작 중', ...extra };
 }
 
 function resultRows(bundle) {
@@ -188,9 +227,9 @@ function stage(bundle) {
       if (registrationBlocked(bundle, r)) return { 차례: '등록 기다림', 까닭: '통과 · 작은 흠인데 앞서 미흡으로 거둘 때 걸린 자동 등록 중지 표식 때문에 예약큐가 등록하지 않는다 — 명시 등록', 기록: r };
       return { 차례: '열림', 기록: r };
     }
-    return ready(bundle.prep) ? { 차례: '다시 볼 차례', 까닭: why, 기록: r } : { 차례: '제작 중', 기록: r };
+    return ready(bundle) ? { 차례: '다시 볼 차례', 까닭: why, 기록: r } : notReady(bundle, { 기록: r });
   }
-  return ready(bundle.prep) ? { 차례: '다시 볼 차례', 까닭: '최종 확인 기록이 없다' } : { 차례: '제작 중' };
+  return ready(bundle) ? { 차례: '다시 볼 차례', 까닭: '최종 확인 기록이 없다' } : notReady(bundle);
 }
 
 // 볼 영상 — 판이 실제로 올리는 영상(화질을 낮춘 사본이 아닌 것)이 먼저다. 「최종본」만 옛 파일로 남은 편에서 옛 판을 보지 않게(11-15 Fable 검수 P3)
@@ -236,7 +275,7 @@ function addDays(day, n) {
 // 슬롯이 지난 편은 「지남」 — 고친 뒤 목표 칸으로 슬롯과 판 시각을 옮긴다(11-15 Fable 검수 P2: 저녁에 미흡이 난 오늘 칸 편이 다음 날 어느 목록에도 없었다)
 function needsFix(root, brand, today) {
   const from = today ? addDays(today, -FIX_LOOKBACK_DAYS) : '';
-  return scan(root).filter((x) => x.차례 === '고칠 차례' && (!brand || x.브랜드 === brand) && (!from || x.슬롯 >= from))
+  return scan(root).filter((x) => ['고칠 차례', '검사 고칠 것'].includes(x.차례) && (!brand || x.브랜드 === brand) && (!from || x.슬롯 >= from))
     .map((x) => ({ ...x, 지남: Boolean(today && x.슬롯 < today) }));
 }
 
@@ -305,4 +344,4 @@ function finish(bundle, 누가 = '', { onOrigin = originHas } = {}) {
 function release(bundle) { try { fs.rmSync(lockFile(bundle), { force: true }); } catch { /* 없으면 그만 */ } }
 
 module.exports = { required, problem, changed, write, read, videos, recordFile, FINAL_FROM, BRANDS, FILE, OPEN, KINDS, HISTORY, historyFile,
-  ready, allBooked, registrationBlocked, fingerprint, stage, mainVideo, scan, needsFix, lockDir, readLock, lockOf, take, originHas, finish, release, LOCK_HOURS, FIX_LOOKBACK_DAYS };
+  ready, 검사문제, allBooked, registrationBlocked, fingerprint, stage, mainVideo, scan, needsFix, lockDir, readLock, lockOf, take, originHas, finish, release, LOCK_HOURS, FIX_LOOKBACK_DAYS };

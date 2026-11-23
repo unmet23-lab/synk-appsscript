@@ -63,7 +63,7 @@ test('기록 없는 완성 편 · 영상이 바뀐 미흡 편은 「다시 볼 �
     'synkbrief_그대로_20261113': '고칠 차례',
     'synkbrief_통과_20261113': '열림',
     'synkbrief_만드는중_20261114': '제작 중',
-    'synkbrief_검사걸림_20261114': '제작 중',
+    'synkbrief_검사걸림_20261114': '검사 고칠 것',
     'synkbrief_나감_20261114': '이미 나감',
   });
   const list = 확인.scan(root마케팅(root));
@@ -213,3 +213,54 @@ test('명령: 대기는 오늘과 뒤 슬롯 먼저 · 못 읽은 편은 따로,
 });
 
 test.after(() => fs.rmSync(lockDir, { recursive: true, force: true }));
+
+// 11-23 넘김 막기(설계 검토 GA1 · GA5): 대기열은 올리기 전 검사가 지금 판 영상을 쟀을 때만 — 검사 없음 · 검사 뒤 바뀐 영상 · 검사 뒤 더한 판 영상은
+// 「검사 고칠 것」으로 고칠편에 뜬다. 이미 나간 판의 영상 · 「최종본」에만 있는 영상은 견주지 않고, 수정 시각만 다른 같은 영상은 지나간다.
+test('대기열은 올리기 전 검사가 지금 영상을 잰 편만 — 검사 없음 · 검사 뒤 바뀜 · 더한 판은 「검사 고칠 것」(고칠편에 뜸)', (t) => {
+  const root = repo(t);
+  const 검사로 = (dir, 판들 = ['게시/final.mp4']) => {
+    const prep = 묶음.readJson(path.join(dir, '게시', '준비.json'));
+    const 파일 = 판들.map((rel) => {
+      const f = path.join(dir, ...rel.split('/'));
+      const st = fs.statSync(f);
+      return { 경로: 묶음.rel(묶음.load(dir), f), 바이트: st.size, 수정: new Date(st.mtimeMs).toISOString(), sha256: require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex') };
+    });
+    prep.검사 = { 결과: '확인할 것', 파일 };
+    fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify(prep));
+  };
+  const 없음 = piece(root, 'synkbrief_검사없음_20261120');
+  const p = 묶음.readJson(path.join(없음, '게시', '준비.json')); delete p.검사;
+  fs.writeFileSync(path.join(없음, '게시', '준비.json'), JSON.stringify(p));
+  검사로(piece(root, 'synkbrief_맞음_20261120'));
+  const 바뀜 = piece(root, 'synkbrief_바뀜_20261120'); 검사로(바뀜);
+  fs.writeFileSync(path.join(바뀜, '게시', 'final.mp4'), '검사 뒤 다시 렌더한 영상');
+  const 시각만 = piece(root, 'synkbrief_시각만_20261120'); 검사로(시각만);
+  const 뒤 = new Date(Date.now() + 60e3); fs.utimesSync(path.join(시각만, '게시', 'final.mp4'), 뒤, 뒤);
+  // 더한 판: 검사 뒤 틱톡 판에 다른 영상을 붙임 → 다시 검사. 나간 판: 게시된 판의 영상은 기록에 없어도 된다
+  const 더함 = piece(root, 'synkbrief_더함_20261120'); 검사로(더함);
+  const 판더함 = (dir, 게시) => {
+    fs.writeFileSync(path.join(dir, '게시', 'tt.mp4'), '틱톡 판');
+    const q = 묶음.readJson(path.join(dir, '게시', '준비.json'));
+    q.판.push({ 계정: 'synkbrief-tiktok', 파일: '게시/tt.mp4', 시각: '2026-11-20T21:00:00+09:00' });
+    q.최종본 = ['게시/final.mp4', '게시/긴판.mp4'];
+    fs.writeFileSync(path.join(dir, '게시', '긴판.mp4'), '최종본에만 있는 긴 판');
+    fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify(q));
+    if (게시) fs.writeFileSync(path.join(dir, '게시', '게시결과.json'), JSON.stringify({ 판: [{ 계정: 'synkbrief-tiktok', 상태: '게시됨' }] }));
+  };
+  판더함(더함, false);
+  const 나간판 = piece(root, 'synkbrief_나간판_20261120'); 검사로(나간판); 판더함(나간판, true);
+  assert.deepEqual(차례(root), {
+    'synkbrief_검사없음_20261120': '검사 고칠 것',
+    'synkbrief_맞음_20261120': '다시 볼 차례',
+    'synkbrief_바뀜_20261120': '검사 고칠 것',
+    'synkbrief_시각만_20261120': '다시 볼 차례',
+    'synkbrief_더함_20261120': '검사 고칠 것',
+    'synkbrief_나간판_20261120': '다시 볼 차례',
+  });
+  const 고칠 = 확인.needsFix(root마케팅(root), '', '2026-11-20');
+  assert.deepEqual(고칠.map((x) => [x.편, x.까닭.split(' — ')[0]]).sort(), [
+    ['synkbrief_검사없음_20261120', '올리기 전 검사 기록이 없다'],
+    ['synkbrief_더함_20261120', '올리기 전 검사 뒤 판 영상이 더해졌다(tt.mp4)'],
+    ['synkbrief_바뀜_20261120', '올리기 전 검사 뒤 영상이 바뀌었다(final.mp4)'],
+  ]);
+});
