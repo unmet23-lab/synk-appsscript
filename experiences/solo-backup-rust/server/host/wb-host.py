@@ -12,7 +12,7 @@ only through directory descriptors opened with O_NOFOLLOW, so a role user cannot
 for a link and make root change or write something outside its folder. Every action that
 changes something holds one host lock, so two runs never interleave.
 """
-import base64, hashlib, hmac, http.client, json, os, pathlib, re, shutil, signal, socket, stat, subprocess, tempfile, time, urllib.error, urllib.request
+import base64, hashlib, hmac, json, os, pathlib, re, shutil, signal, socket, stat, subprocess, tempfile, time, urllib.error, urllib.request
 
 ROOT = pathlib.Path('/opt/synk/workbackup')
 SRV = pathlib.Path('/srv/synk/workbackup')
@@ -42,9 +42,10 @@ SECRET_NAMES = {'api': ('wb-keys-rpc', 'wb-files-rpc'), 'keys': ('wb-keys-b2', '
 RPC_PAIRS = {'wb-keys-rpc': ('api', 'keys'), 'wb-files-rpc': ('api', 'files')}
 RPC_URLS = {'wb-keys-rpc': 'http://127.0.0.1:4211/rpc', 'wb-files-rpc': 'http://127.0.0.1:4212/rpc'}
 HEALTH = 'http://172.30.77.9:4210/backup-api/v1/health'
-# The host reaches the api from the bridge address itself: an unbound connection to 172.30.77.9
-# leaves from the node's VPC address, which the api's box refuses (10.0.0.0/8, measured 11-23).
-API_ADDR = ('172.30.77.9', 4210)
+# The api is checked the way its real requests come: from the Caddy container (172.30.77.11).
+# The host's own connections to the bridge address never reach it: the box's 10.0.0.0/8 rule
+# refuses them, bound to 172.30.77.9 or not (measured with transient units on 11-23).
+CADDY = 'synk-company-https-1'
 APP_NAME = re.compile(r'^[a-z0-9-]+\.mjs$')
 # A box connect counts as blocked only with one of these answers. The unit's address filter
 # drops the SYN, so a blocked TCP connect most likely times out; EPERM is taken too. Anything
@@ -433,13 +434,11 @@ def company_identity():
 
 
 def get_health(timeout=5):
-    conn = http.client.HTTPConnection(API_ADDR[0], API_ADDR[1], timeout=timeout, source_address=(API_ADDR[0], 0))
-    try:
-        conn.request('GET', '/backup-api/v1/health')
-        r = conn.getresponse()
-        return r.status, r.read()
-    finally:
-        conn.close()
+    """GET /backup-api/v1/health from inside the Caddy container (a read: wget, nothing written)."""
+    p = run(['docker', 'exec', CADDY, 'wget', '-q', '-T', str(timeout), '-O', '-', HEALTH], timeout=timeout + 20, check=False)
+    if p.returncode != 0:
+        raise OSError('wget ' + str(p.returncode) + ' ' + p.stderr.strip()[-80:])
+    return 200, p.stdout.encode()
 
 
 def health(timeout=45):
@@ -514,7 +513,7 @@ def rpc_handshake():
 
 def reachability():
     """Caddy (wb-front) must reach the api; the company container (edge) must not."""
-    caddy = run(['docker', 'exec', 'synk-company-https-1', 'wget', '-q', '-T', '5', '-O', '-', HEALTH], timeout=20, check=False)
+    caddy = run(['docker', 'exec', CADDY, 'wget', '-q', '-T', '5', '-O', '-', HEALTH], timeout=20, check=False)
     company = run(['docker', 'exec', 'synk-company-company-1', 'node', '-e',
                    "fetch(process.argv[1],{signal:AbortSignal.timeout(5000)}).then(()=>process.exit(0),()=>process.exit(3))", HEALTH], timeout=20, check=False)
     r = {'caddyReaches': caddy.returncode == 0 and '"ok"' in caddy.stdout.replace(' ', ''), 'companyBlocked': company.returncode == 3}
@@ -893,7 +892,7 @@ def start_diagnosis():
     reaches them, the api address, the services' state and the host's INPUT rules."""
     def reach(host, port):
         try:
-            with socket.create_connection((host, port), timeout=3, source_address=(host, 0) if host == API_ADDR[0] else None):
+            with socket.create_connection((host, port), timeout=3):
                 return 'connected'
         except OSError as e:
             return type(e).__name__
@@ -903,7 +902,9 @@ def start_diagnosis():
         except Exception as e:
             return [type(e).__name__]
     return {'listen': out(['ss', '-ltnpH', '( sport = :4210 or sport = :4211 or sport = :4212 )']),
-            'reach': {'api': reach('172.30.77.9', 4210), 'keys': reach('127.0.0.1', 4211), 'files': reach('127.0.0.1', 4212)},
+            'reach': {'apiFromCaddy': (lambda p: 'ok' if p.returncode == 0 else 'wget ' + str(p.returncode) + ' ' + p.stderr.strip()[-60:])(
+                          run(['docker', 'exec', CADDY, 'wget', '-q', '-T', '4', '-O', '-', HEALTH], timeout=25, check=False)),
+                      'keys': reach('127.0.0.1', 4211), 'files': reach('127.0.0.1', 4212)},
             'address': out(['ip', '-4', '-o', 'addr', 'show', 'to', '172.30.77.9/32']),
             'route': out(['ip', 'route', 'get', '172.30.77.9']),
             'services': {n: service_show(n) for n in SERVICES},
