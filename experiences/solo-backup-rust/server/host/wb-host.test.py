@@ -58,9 +58,10 @@ class Units(unittest.TestCase):
         self.assertIn('ExecStartPre=+/usr/bin/python3 -I -B /opt/synk/workbackup/offsite/cccc/wb-pair-check.py' + chr(10), u)
         self.assertEqual(sorted(self.req['payload']['offsite']), sorted(M.ROOT_TOOLS))
     def test_sudo_input_logging_is_read_conservatively(self):
-        self.assertFalse(M.sudoers_log_input('Defaults env_reset\nDefaults !log_input\n# Defaults log_input\n'))
+        self.assertFalse(M.sudoers_log_input('Defaults env_reset\nDefaults !log_input\n# Defaults log_input\n@includedir /etc/sudoers.d\nsynk ALL=(ALL) NOPASSWD: NOLOG_INPUT: ALL\n'))
         for on in ('Defaults log_input', 'Defaults:synk log_input', 'Defaults>root log_stdin', 'Defaults!/usr/bin/python3 log_input',
-                   'Defaults log_input\nDefaults:root !log_input', 'Defaults   env_reset,log_input'):
+                   'Defaults log_input\nDefaults:root !log_input', 'Defaults   env_reset,log_input',
+                   'synk ALL=(ALL) NOPASSWD: LOG_INPUT: ALL', 'synk ALL=(root) LOG_INPUT:NOPASSWD: /usr/bin/python3'):
             self.assertTrue(M.sudoers_log_input(on), on)
     def test_admin_wrapper_uses_the_api_box(self):
         w = M.wb_admin(self.req, pathlib.PurePosixPath('/opt/synk/workbackup/app/aaaa'), pathlib.PurePosixPath('/opt/synk/workbackup/runtime/node-bbbb')).decode()

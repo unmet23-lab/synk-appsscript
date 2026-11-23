@@ -25,11 +25,12 @@ UNIT_NAMES = (*SERVICES, *OFFSITE)
 OFFSITE_STATE = pathlib.Path('/var/lib/synk-wb-offsite')
 COMPANY_ENV = pathlib.Path('/etc/synk/company.env')
 LOCK = '/run/lock/synk-wb-host.lock'
-# Root-only records: the configuration generation (new whenever secrets writes a file) and the
-# generation, app and runtime the services were last started on by start.
+# Root-only records. The configuration generation is renewed by secrets before it writes any
+# file. good.json is what the last start verified: that generation, the unit files, wb-admin and
+# the checked-bucket record. Restarts are decided against it and a failed start returns to it.
 STATE_DIR = ROOT / 'state'
 GENERATION = STATE_DIR / 'config-generation'
-STARTED = STATE_DIR / 'started.json'
+GOOD = STATE_DIR / 'good.json'
 ROOT_TOOLS = ('wb-offsite.py', 'wb-pair-check.py')
 LISTEN = {'synk-wb-api.service': '172.30.77.9:4210', 'synk-wb-keys.service': '127.0.0.1:4211', 'synk-wb-files.service': '127.0.0.1:4212'}
 COMPANY = ('synk-company-company-1', 'synk-company-https-1', 'synk-spaceship-spaceship-1')
@@ -510,13 +511,38 @@ def active_states():
     return {n: run(['systemctl', 'is-active', n], check=False).stdout.strip() for n in (*SERVICES, *OFFSITE)}
 
 
+def sudoers_files():
+    """The sudoers files sudo reads: /etc/sudoers and what it includes (files and directories)."""
+    seen, todo, out = set(), [pathlib.Path('/etc/sudoers')], []
+    while todo:
+        f = todo.pop(0)
+        if f in seen:
+            continue
+        seen.add(f)
+        out.append(f)
+        try:
+            text = f.read_text(errors='replace')
+        except OSError:
+            continue
+        for line in text.splitlines():
+            m = re.match(r'\s*[#@](include|includedir)\s+(\S+)', line)
+            if not m:
+                continue
+            target = pathlib.Path(m.group(2)) if m.group(2).startswith('/') else f.parent / m.group(2)
+            if m.group(1) == 'include':
+                todo.append(target)
+            elif target.is_dir():
+                todo += sorted(x for x in target.iterdir() if '.' not in x.name and not x.name.endswith('~'))
+    return out
+
+
 def sudo_logs_input():
-    """True when any sudoers Defaults line (global, per user, per host, per runas user or per
-    command) turns on log_input or log_stdin. A later '!' for some callers is not trusted to
-    cover ours, so one such line is enough. host-install reads this with plan before it sends
-    any secret."""
-    files = [pathlib.Path('/etc/sudoers')] + sorted(f for f in pathlib.Path('/etc/sudoers.d').glob('*') if '.' not in f.name and not f.name.endswith('~'))
-    for f in files:
+    """True when any sudoers line may log what sudo reads on standard input: a Defaults line
+    (for anyone, any host, runas user or command) that turns on log_input or log_stdin, or a
+    LOG_INPUT tag on a rule. A '!' or NOLOG_INPUT elsewhere is not trusted to cover our call, so
+    one such line is enough; an unreadable file counts as one. host-install reads this with plan
+    before it sends any secret."""
+    for f in sudoers_files():
         try:
             text = f.read_text(errors='replace')
         except OSError:
@@ -528,13 +554,17 @@ def sudo_logs_input():
 
 def sudoers_log_input(text):
     for line in text.splitlines():
+        if re.match(r'\s*[#@]include', line):
+            continue
         line = line.split('#', 1)[0].strip()
+        if not line:
+            continue
         if line.startswith('Defaults') and any(t in ('log_input', 'log_stdin') or t.startswith(('log_input=', 'log_stdin=')) for t in re.split(r'[\s,]+', line)):
+            return True
+        if re.search(r'(?<![A-Z_])LOG_INPUT\s*:', line):
             return True
     return False
 
-
-# ── actions
 
 def act_plan(req):
     return {'mounted': os.path.ismount('/srv/synk'), 'companyActive': run(['systemctl', 'is-active', 'synk-company.service'], check=False).stdout.strip(),
@@ -610,7 +640,22 @@ def act_secrets(req):
                     continue
                 need(old[role, name] is None or replace, 'SECRET_DIFFERS:' + role + ':' + name)
                 plan.append((role, name, value))
+        settings_plan = []
+        for role in ROLES:
+            fd, _ = role_fd(role)
+            try:
+                data = req['settings'][role].encode()
+                was, st = read_in(fd, 'settings.env')
+                if not (was == data and st.st_uid == ROLES[role] and stat.S_IMODE(st.st_mode) == 0o600):
+                    settings_plan.append((role, data))
+            finally:
+                os.close(fd)
         result = {role + '/' + name: 'kept' for role, names in SECRET_NAMES.items() for name in names}
+        result.update({role + '/settings.env': 'kept' for role in ROLES})
+        if plan or settings_plan:
+            # First: whatever stops this run later, the next start sees a new generation and restarts all three.
+            root_dir(STATE_DIR, 0o700)
+            write_root_file(GENERATION, (os.urandom(8).hex() + '\n').encode(), 0o600)
         # Every new file is written and synced under a temporary name first; only then are they
         # renamed, the workers' halves before the api's, so a stop mid-way leaves at most a split
         # between two renames (start then refuses it, and secrets --바꿈 writes a new pair).
@@ -628,23 +673,15 @@ def act_secrets(req):
     finally:
         for fd in fds.values():
             os.close(fd)
-    for role in ROLES:
+    for role, data in settings_plan:
         fd, _ = role_fd(role)
         try:
-            data = req['settings'][role].encode()
-            old, st = read_in(fd, 'settings.env')
-            if old == data and st.st_uid == ROLES[role] and stat.S_IMODE(st.st_mode) == 0o600:
-                result[role + '/settings.env'] = 'kept'
-            else:
-                write_in(fd, 'settings.env', data, 0o600, ROLES[role])
-                result[role + '/settings.env'] = 'written'
+            write_in(fd, 'settings.env', data, 0o600, ROLES[role])
+            result[role + '/settings.env'] = 'written'
         finally:
             os.close(fd)
     running = [n for n in SERVICES if run(['systemctl', 'is-active', n], check=False).stdout.strip() == 'active']
     written = any(v == 'written' for v in result.values())
-    if written:
-        root_dir(STATE_DIR, 0o700)
-        write_root_file(GENERATION, (os.urandom(8).hex() + '\n').encode(), 0o600)
     return {'files': result, 'note': ('running services keep their old values until the next start restarts them: ' + ','.join(running)) if running and written else None}
 
 
@@ -698,7 +735,27 @@ def unit_state():
     admin = ADMIN.read_bytes() if ADMIN.exists() else None
     checked = CHECKED.read_bytes() if CHECKED.exists() else None
     return {'files': files, 'active': active, 'enabled': enabled, 'admin': admin, 'checked': checked,
-            'generation': read_small(GENERATION), 'started': read_small(STARTED)}
+            'generation': (read_small(GENERATION) or b'').decode().strip(), 'good': read_good()}
+
+
+def b64e(data):
+    return None if data is None else base64.b64encode(data).decode()
+
+
+def b64d(text):
+    return None if text is None else base64.b64decode(text)
+
+
+def read_good():
+    try:
+        good = json.loads(GOOD.read_text())
+    except (OSError, ValueError):
+        return None
+    return good if isinstance(good, dict) and isinstance(good.get('units'), dict) else None
+
+
+def good_record(generation, units, admin, checked):
+    return (json.dumps({'generation': generation, 'units': {n: b64e(units[n]) for n in UNIT_NAMES}, 'admin': b64e(admin), 'checked': b64e(checked)}, sort_keys=True) + '\n').encode()
 
 
 def put_back(path, data, mode):
@@ -712,38 +769,45 @@ def put_back(path, data, mode):
 
 
 def restore(before, done):
-    """Undo what this start did, and only that: unit files it wrote, services it restarted, the
-    enabling, wb-admin, the checked-bucket record and the timer. Units it did not touch keep
-    running. A daily copy already running is left alone. Then read what is really there."""
+    """Return to the last verified start (good.json): its unit files, wb-admin and checked-bucket
+    record, enabled as they were; the services and the timer run again if they ran before this start.
+    Before any verified start there is nothing to return to, so a failure removes the units,
+    wb-admin and the record. A daily copy already running is left alone. Only what this run
+    stopped is started again; then what is really there is read back."""
+    good = before['good']
+    managed = (*SERVICES, TIMER)
     stop = list(done['restarted']) + ([TIMER] if done['timer'] else [])
+    if good is None:
+        stop = list(managed)
     if stop:
         run(['systemctl', 'stop', *stop], timeout=120, check=False)
-    for n in done['files']:
-        if before['files'][n] is None:
-            run(['systemctl', 'disable', n], check=False)
-        put_back(UNIT_DIR / n, before['files'][n], 0o644)
-    if done['admin']:
-        put_back(ADMIN, before['admin'], 0o755)
-    if done['checked']:
-        put_back(CHECKED, before['checked'], 0o600)
-    if done['started']:
-        put_back(STARTED, before['started'], 0o600)
-    if done['files']:
+    if good is None:
+        run(['systemctl', 'disable', *managed], check=False)
+        for n in UNIT_NAMES:
+            put_back(UNIT_DIR / n, None, 0o644)
+        put_back(ADMIN, None, 0o755)
+        put_back(CHECKED, None, 0o600)
         run(['systemctl', 'daemon-reload'], check=False)
-    if done['enabled']:
-        for n in SERVICES:
-            if before['files'][n] is not None and before['enabled'][n] != 'enabled':
-                run(['systemctl', 'disable', n], check=False)
-    if done['timer'] and before['files'][TIMER] is not None and before['enabled'][TIMER] != 'enabled':
-        run(['systemctl', 'disable', TIMER], check=False)
-    again = [n for n in stop if before['active'][n] == 'active' and before['files'][n] is not None]
+        now = unit_state()
+        on = [n for n in managed if now['active'][n] == 'active' or now['enabled'][n] == 'enabled']
+        return 'units removed' + ('' if not on else ' · RESTORE_INCOMPLETE:' + ','.join(n + '=' + now['active'][n] + '/' + now['enabled'][n] for n in on))
+    for n in UNIT_NAMES:
+        want = b64d(good['units'].get(n))
+        if read_small(UNIT_DIR / n) != want:
+            put_back(UNIT_DIR / n, want, 0o644)
+    if read_small(ADMIN) != b64d(good.get('admin')):
+        put_back(ADMIN, b64d(good.get('admin')), 0o755)
+    if read_small(CHECKED) != b64d(good.get('checked')):
+        put_back(CHECKED, b64d(good.get('checked')), 0o600)
+    run(['systemctl', 'daemon-reload'], check=False)
+    for n in managed:
+        run(['systemctl', 'enable' if before['enabled'][n] == 'enabled' else 'disable', n], check=False)
+    again = [n for n in stop if before['active'][n] == 'active']
     if again:
         run(['systemctl', 'start', *again], timeout=120, check=False)
     now = unit_state()
-    managed = (*SERVICES, TIMER)
-    off = [n for n in managed if (now['active'][n] == 'active') != (before['active'][n] == 'active') or (now['enabled'][n] == 'enabled') != (before['enabled'][n] == 'enabled')]
-    said = 'units removed' if all(before['files'][n] is None for n in done['files']) and done['files'] else 'put back what this start changed'
-    return said + ('' if not off else ' · RESTORE_INCOMPLETE:' + ','.join(n + '=' + now['active'][n] + '/' + now['enabled'][n] for n in off))
+    off = [n for n in managed if (now['enabled'][n] == 'enabled') != (before['enabled'][n] == 'enabled') or (n in again and now['active'][n] != 'active') or (n in stop and n not in again and now['active'][n] == 'active')]
+    return 'last verified units back' + ('' if not off else ' · RESTORE_INCOMPLETE:' + ','.join(n + '=' + now['active'][n] + '/' + now['enabled'][n] for n in off))
 
 
 def process_argv(pid):
@@ -769,13 +833,14 @@ def read_small(path):
     return path.read_bytes() if path.exists() else None
 
 
-def stale_services(before, app, node):
-    """Services to restart: not running, running another app or runtime than this payload's,
-    or (all three) started on an older configuration generation than the current one."""
-    started = json.loads(before['started']) if before['started'] else {}
-    if started.get('generation') != (before['generation'] or b'').decode().strip():
+def stale_services(before, app, node, units):
+    """Services to restart. All three before any verified start, or when secrets renewed the
+    generation since the last one. Otherwise each one that is not running, whose process runs
+    another app or runtime, or whose unit differs from the one the last verified start ran."""
+    good = before['good']
+    if good is None or good.get('generation') != before['generation']:
         return list(SERVICES)
-    return [n for n in SERVICES if before['active'][n] != 'active' or running_argv(n) != expected_argv(app, node, n)]
+    return [n for n in SERVICES if before['active'][n] != 'active' or running_argv(n) != expected_argv(app, node, n) or b64d(good['units'].get(n)) != units[n]]
 
 
 def verify(company, app, node):
@@ -789,13 +854,12 @@ def verify(company, app, node):
 
 def act_start(req):
     """Every check that needs nothing new comes first: files, secrets, the bucket, the box.
-    Then only what differs changes: unit files that differ are written (and units always
-    reloaded); a service restarts when it is not running, its process runs another app or
-    runtime, its unit changed, all three when secrets wrote a new configuration generation since
-    the last start, or with --다시. The checks run on the result (the running argv included);
-    then the services are enabled, the started generation, wb-admin and the checked bucket
-    recorded, and the timer started last. Any failure undoes what this run did and nothing else.
-    The company containers stay the same throughout."""
+    Then only what differs from the last verified start (good.json) changes: unit files that
+    differ are written and units always reloaded; a service restarts when stale_services says so
+    or with --다시. The checks run on the result, the running argv included; then the services
+    are enabled, wb-admin and the checked bucket recorded, the timer started, and good.json
+    written last. Any failure returns to the last verified start. The company containers stay
+    the same throughout."""
     writer_node()
     app, node, off = installed(req)
     provisioned()
@@ -807,18 +871,19 @@ def act_start(req):
     admin = wb_admin(req, app, node)
     marked = (bucket + '\n').encode()
     before = unit_state()
+    good = before['good']
+    record = good_record(before['generation'], units, admin, marked)
     changed = [n for n in UNIT_NAMES if before['files'][n] != units[n]]
-    restart = list(SERVICES) if req.get('restart') else sorted(set(n for n in SERVICES if n in changed) | set(stale_services(before, app, node)), key=SERVICES.index)
-    started = (json.dumps({'generation': (before['generation'] or b'').decode().strip()}) + '\n').encode()
+    restart = list(SERVICES) if req.get('restart') else stale_services(before, app, node, units)
     enable = [n for n in SERVICES if before['enabled'][n] != 'enabled']
-    timer = TIMER in changed or before['active'][TIMER] != 'active' or before['enabled'][TIMER] != 'enabled'
-    rest = [x for x, same in (('wb-admin', before['admin'] == admin), ('checked-bucket', before['checked'] == marked), ('started', before['started'] == started)) if not same]
+    timer = (TIMER in changed or good is None or b64d(good['units'].get(TIMER)) != units[TIMER]
+             or before['active'][TIMER] != 'active' or before['enabled'][TIMER] != 'enabled')
+    rest = [x for x, same in (('wb-admin', before['admin'] == admin), ('checked-bucket', before['checked'] == marked), ('good', read_small(GOOD) == record)) if not same]
     if not changed and not restart and not enable and not timer and not rest:
         return {'box': box, 'alreadyRunning': True, **verify(company, app, node), 'active': active_states(), 'companyUnchanged': True}
-    done = {'files': [], 'restarted': [], 'enabled': False, 'admin': False, 'checked': False, 'started': False, 'timer': False}
+    done = {'restarted': [], 'timer': False}
     try:
         for n in changed:
-            done['files'].append(n)
             write_root_file(UNIT_DIR / n, units[n], 0o644)
         # Always: a run stopped after writing unit files but before the reload leaves them unread.
         run(['systemctl', 'daemon-reload'])
@@ -826,26 +891,19 @@ def act_start(req):
             done['restarted'] = restart
             run(['systemctl', 'restart', *restart], timeout=120)
         checks = verify(company, app, node)
-        if 'started' in rest:
-            done['started'] = True
-            root_dir(STATE_DIR, 0o700)
-            write_root_file(STARTED, started, 0o600)
-        if enable:
-            done['enabled'] = True
-            run(['systemctl', 'enable', *SERVICES])
-        if 'wb-admin' in rest:
-            done['admin'] = True
-            root_dir(ROOT / 'bin')
+        run(['systemctl', 'enable', *SERVICES])
+        root_dir(ROOT / 'bin')
+        if before['admin'] != admin:
             write_root_file(ADMIN, admin, 0o755)
-        if 'checked-bucket' in rest:
-            done['checked'] = True
+        if before['checked'] != marked:
             mark_checked_bucket(bucket)
         need(company_identity() == company, 'COMPANY_CONTAINERS_CHANGED')
         if timer:
             done['timer'] = True
-            run(['systemctl', 'enable', '--now', TIMER])
-            if TIMER in changed:
-                run(['systemctl', 'restart', TIMER])
+            run(['systemctl', 'enable', TIMER])
+            run(['systemctl', 'restart', TIMER])
+        root_dir(STATE_DIR, 0o700)
+        write_root_file(GOOD, record, 0o600)
     except BaseException as e:
         undone = restore(before, done)
         raise Refused((str(e) if isinstance(e, Refused) else 'UNEXPECTED_' + type(e).__name__) + ' · ' + undone)
