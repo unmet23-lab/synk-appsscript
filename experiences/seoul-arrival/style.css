@@ -86,8 +86,13 @@ p{text-wrap:pretty}
 .narr mark{background:none;color:inherit;box-shadow:inset 0 -.42em 0 color-mix(in srgb,var(--dream) 55%,transparent)}
 .tap-hint{position:absolute;z-index:5;left:0;right:0;bottom:max(26px,calc(var(--sab,env(safe-area-inset-bottom,0px)) + 12px));text-align:center;font-size:13px;color:var(--ink4);opacity:0;transition:opacity .5s}
 .tap-hint.on{opacity:1}
-.big-box{position:absolute;z-index:6;left:0;right:0;bottom:max(90px,calc(var(--sab,env(safe-area-inset-bottom,0px)) + 74px));pointer-events:none}
-.big-title{position:relative;text-align:center;font-family:var(--sans);font-weight:700;font-size:46px;letter-spacing:-.045em;line-height:1.1;text-shadow:0 2px 30px rgba(0,0,0,.5),0 0 60px rgba(255,140,200,.35);opacity:0;transition:opacity .3s ease-in,text-shadow .3s ease-in}
+.big-box{position:absolute;z-index:6;left:0;right:0;bottom:max(96px,calc(var(--sab,env(safe-area-inset-bottom,0px)) + 80px));display:flex;flex-direction:column;align-items:center;pointer-events:none}
+/* 회차 표지 머리(11-24 유호님 「안녕 서울 … 너무 슬롭같아 … episode 1 이런식으로 … 같이 써줘야 스토리 시작이 이해가 갈것같아」). 뒤에 드라마 1화가 있어 「PROLOGUE」로 단다.
+   제목 · 번역 뒤에 두고 순서만 앞으로 당긴다(형제 선택자로 켜려고) */
+.ep-kicker{order:-1;display:flex;align-items:center;gap:12px;margin-bottom:16px;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.34em;text-indent:.34em;color:rgba(255,255,255,.82);text-shadow:0 1px 12px rgba(0,0,0,.6);opacity:0;transform:translateY(6px);transition:opacity .25s ease-in,transform 0s .25s}
+.ep-kicker::before,.ep-kicker::after{content:"";width:22px;height:1px;background:rgba(255,255,255,.5)}
+.big-title.on~.ep-kicker{opacity:1;transform:none;transition:opacity .5s ease-out,transform .6s var(--sp-def,cubic-bezier(.2,.8,.2,1))}
+.big-title{position:relative;text-align:center;font-family:var(--sans);font-weight:650;font-size:44px;letter-spacing:-.055em;line-height:1.08;color:#fff;text-shadow:0 2px 24px rgba(0,0,0,.55),0 0 2px rgba(0,0,0,.35);opacity:0;transition:opacity .3s ease-in,text-shadow .3s ease-in}
 .big-title.on{opacity:1;transition:none}
 /* 낱말마다 아래 가장자리에서 올라온다 — 위 · 옆은 빛 번짐이 잘리지 않게 넉넉히 연다. 둘째 낱말까지 0.28초에 앉는다 */
 .big-title .w{display:inline-block;clip-path:inset(-60% -30% -6% -30%)}
@@ -397,6 +402,12 @@ p{text-wrap:pretty}
 .go-btn{position:relative;display:block;width:100%;height:58px;border-radius:29px;font-size:17px;font-weight:650;color:#08090C;background:#FAFAF9;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .go-btn{transition:transform .38s var(--sp-fast,ease-out)}
 .go-btn:active{transform:scale(.97);transition-duration:.08s}
+/* 처음 보는 학생의 건너뛰기 확인(11-24): 꿈 시트와 같은 판을 장면 위 맨 앞 층에 */
+.skip-ask{position:absolute;inset:0;z-index:40;background:rgba(4,6,14,.55);opacity:0;transition:opacity .3s}
+.skip-ask.on{opacity:1}
+.skip-ask .sheet{z-index:auto}
+.skip-ask.on .sheet{transform:none;visibility:visible;transition:transform .6s var(--sp-slow,cubic-bezier(.2,.8,.2,1)),visibility 0s}
+@media (prefers-reduced-motion:reduce){.skip-ask,.skip-ask .sheet{transition:opacity .2s}.skip-ask .sheet{transform:none}}
 .back-btn{display:block;min-height:44px;margin:6px auto 0;padding:0 16px;font-size:14px;font-weight:600;color:var(--ink3)}
 
 /* ── 정문 부스: 게임 대화창 ── */
@@ -423,12 +434,12 @@ p{text-wrap:pretty}
 .vn-name{position:absolute;left:16px;top:-16px;display:inline-flex;align-items:baseline;gap:8px;padding:6px 14px 7px;border-radius:999px;background:#fff;color:#08090C;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .vn-name b{font-size:15.5px;font-weight:680;letter-spacing:-.03em}
 .vn-name span{font-size:13px;font-weight:550;color:rgba(8,9,12,.58)}
-.vn.me .vn-name{background:var(--dream2)}
+.vn.mine .vn-name{background:var(--dream2)}
 .vn.off .vn-name{background:rgba(255,255,255,.18);color:#fff}
 .vn.off .vn-name span{color:var(--ink3)}
 .vn-text{font-size:20px;line-height:1.6;font-weight:500;letter-spacing:-.025em;text-wrap:pretty;word-break:keep-all;min-height:3.2em}
 .vn-text .c{opacity:0;transition:opacity .12s linear}.vn-text .c.on{opacity:1}
-.vn.me .vn-text{font-weight:600;color:var(--dream2)}
+.vn.mine .vn-text{font-weight:600;color:var(--dream2)}
 .vn-next{position:absolute;right:18px;bottom:12px;width:12px;height:12px;opacity:0;border-right:2px solid var(--ink2);border-bottom:2px solid var(--ink2);transform:rotate(45deg)}
 .vn.wait .vn-next{opacity:1;animation:nudge 1.1s ease-in-out infinite}
 @keyframes nudge{0%,100%{transform:translateY(-2px) rotate(45deg)}50%{transform:translateY(2px) rotate(45deg)}}
@@ -568,6 +579,16 @@ p{text-wrap:pretty}
 .lk-th{transition:transform .38s var(--sp-fast,cubic-bezier(.2,.9,.2,1))}
 .lk-th[aria-pressed="true"]{transform:scale(1.06)}
 .lk-th[aria-pressed="true"]::after{box-shadow:inset 0 0 0 2.5px #fff}
+/* (?) 이 모습의 쓰임(11-23 유호님 「이 아바타로 스토리 진행한다고 … 알려주면」): 힌트 줄 끝의 작은 단추 → 레일 위 말풍선 */
+.lk-hintrow{display:flex;align-items:center;justify-content:center;gap:7px;min-height:24px;transition:opacity .25s}
+.lk-q{position:relative;flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;line-height:1;color:var(--ink2);box-shadow:inset 0 0 0 1.5px var(--line2)}
+.lk-q::after{content:"";position:absolute;inset:-11px}
+.lk-q[aria-expanded="true"]{color:#08090C;background:#FAFAF9;box-shadow:none}
+.lk-why{position:absolute;left:16px;right:16px;z-index:3;padding:16px 18px 17px;border-radius:18px;background:rgba(18,22,34,.95);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px var(--line2),0 14px 34px rgba(0,0,0,.45);opacity:0;transform:translateY(6px);transition:opacity .2s,transform .25s var(--sp-fast,ease-out)}
+.lk-why.on{opacity:1;transform:none}
+.lk-why b{display:block;font-size:16px;font-weight:650;letter-spacing:-.025em;color:#fff}
+.lk-why p{margin-top:6px;font-size:14.5px;line-height:1.55;color:var(--ink2);word-break:keep-all;text-wrap:pretty}
+.look.shoot .lk-hintrow{opacity:0;pointer-events:none}
 .lk-hint{min-height:20px;text-align:center;font-size:14px;line-height:20px;color:var(--ink3);word-break:keep-all;transition:opacity .25s}
 .lk-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;transition:opacity .25s}
 .lk-later{justify-self:start;min-height:44px;padding:0 4px;font-size:13.5px;font-weight:600;color:var(--ink2);text-decoration:underline;text-decoration-color:var(--ink4);text-underline-offset:3px}

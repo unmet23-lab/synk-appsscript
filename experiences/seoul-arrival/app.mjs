@@ -207,7 +207,7 @@ async function narrate(r,text,{hold=null,marks=[]}={}){
   state.seenHint=true;$('#tapHint').classList.remove('on');
   n.classList.add('out');$('#narrSub').classList.add('out');await sleep(380);guard(r);
 }
-const state={dream:'idol',lights:0,best:{},scenes:[],replayOf:null,prologue:false,seenHint:false,name:null,nameEn:null,sign:null,from:null,call:null,look:null,dreamPicked:false,momSeen:false,momAnswer:null};
+const state={dream:'idol',lights:0,best:{},scenes:[],replayOf:null,prologue:false,seenHint:false,name:null,nameEn:null,sign:null,from:null,call:null,look:null,dreamPicked:false,momSeen:false,momAnswer:null,issuedAt:null};
 function show(id){if(id==='s-path')ambient(IMG[state.dream+'Goal']);else if(id==='s-gate')ambient(IMG.booth);document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));$('#skipBtn').hidden=!(id==='s-cut'&&!state.prologue);}
 
 /* 0 → 1: 입구를 누르면 콘서트가 터지고, 그 화면이 내 방 휴대폰 속이었음이 드러난다 */
@@ -695,8 +695,17 @@ $('#titleSkip').onclick=async e=>{
   const r=++RUN;SND.play('bgm_campus',{at:0,vol:.5,fade:1});SND.play('amb_campus',{vol:.8,fade:1,bus:'amb'});
   try{await gate(r);}catch(err){if(err!==SKIP)throw err;}
 };
+// 처음 보는 학생이 이야기 중에 건너뛰기를 누르면 한 번 묻는다(11-24 유호님 「skip 눌렀을때 … 확인문구를 한번 띄워줬으면」).
+// 학생증을 받은 적 있는 학생과, 한 번 답한 뒤에는 묻지 않는다. 묻는 동안 이야기는 그대로 흐른다.
+let skipAsked=false;
+function askSkip(){return new Promise(res=>{const w=$('#skipAsk'),stay=$('#skipStay'),go=$('#skipGo');w.hidden=false;void w.offsetWidth;w.classList.add('on');
+  const done=v=>{w.classList.remove('on');stay.onclick=go.onclick=w.onclick=null;setTimeout(()=>{if(!w.classList.contains('on'))w.hidden=true;},450);res(v);};
+  stay.onclick=e=>{e.stopPropagation();done(false);};go.onclick=e=>{e.stopPropagation();done(true);};
+  w.onclick=e=>{e.stopPropagation();if(!e.target.closest('.sheet'))done(false);};stay.focus({preventScroll:true});});}
 $('#skipBtn').onclick=async e=>{
-  e.stopPropagation();const r=++RUN;
+  e.stopPropagation();
+  if(!skipAsked&&!state.issuedAt){skipAsked=true;if(!await askSkip())return;}
+  const r=++RUN;
   ['amb_dawn','amb_cabin','amb_train','amb_airport','amb_hall','amb_clock'].forEach(n=>SND.stop(n,.4));
   ['banner','pa','place','bigTitle','trace','note','stamp','mrSheet','mrHint'].forEach(id=>$('#'+id).classList.remove('on'));spotOff();$('#mirror').classList.remove('on','lit','done','ask');$('#s-cut').classList.remove('mr-up');$('#vn').className='vn';closePanel();$('#narr').innerHTML='';$('#narrSub').hidden=true;$('#tapHint').classList.remove('on');
   if(!$('#s-dream').classList.contains('picked')&&$('#s-dream').classList.contains('on'))return;
@@ -736,7 +745,7 @@ async function say(r,who,text){
   await new Promise(res=>{vnWait=()=>{vnWait=null;res();};});guard(r);
   $('#vn').classList.remove('wait');SND.felt('page');
 }
-async function me(r,text){guard(r);$('#s-gate').classList.remove('focus');plate('나','','me');const t=$('#vnText');t.textContent=text;t._done=true;vnSub(text);SND.felt('select');await sleep(1100);guard(r);}
+async function me(r,text){guard(r);$('#s-gate').classList.remove('focus');plate('나','','mine');const t=$('#vnText');t.textContent=text;t._done=true;vnSub(text);SND.felt('select');await sleep(1100);guard(r);}
 // 고르기 판은 늘 대화창(이름표 포함) 바로 위에 뜨고, 그동안 그림을 올려 두 선배 얼굴이 판 위에 남게 한다
 function panel(html){const p=$('#panel');p.innerHTML=html;const app=$('#app').getBoundingClientRect(),v=$('#vn').getBoundingClientRect();
   p.style.bottom=Math.max(150,app.bottom-v.top+40)+'px';document.querySelector('.screen.on')?.classList.add('ask');requestAnimationFrame(()=>p.classList.add('on'));return p;}
@@ -766,6 +775,7 @@ async function writeName(r,ko,knows,raw){
   await say(r,'seoha','학생증에 들어갈 이름, 한글로 직접 써 볼래요?');
   if(word!==ko)await say(r,'seoha',`이름이 길어서, 오늘은 ${word}만 써 봐요.`);
   await say(r,'seoha',knows?'여기 칸에 써 주면 돼요.':'제가 흐리게 써 둘게요. 위에 따라 써 봐요.');
+  $('#ntDate').textContent=ymd(Date.now()).dots;
   $('#vn').classList.remove('on');$('#s-gate').classList.remove('focus');$('#s-gate').classList.add('writing');
   const res=await nameTrace.run(ko,{knows,called}).finally(()=>$('#s-gate').classList.remove('writing'));guard(r);
   if(res.sign){state.sign=res.sign;save({sign:res.sign});if(res.score==null||res.score>=92)await say(r,'seoha','글씨 예쁘다! 학생증에 이대로 넣을게요.');else await say(r,'seoha','좋아요! 학생증에 이대로 넣을게요.');}
@@ -883,6 +893,10 @@ const px=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,v+'px']));
 function faceTile(l,w,h,share){const r=lookRects.crop(l,w,h,share);return `<i style="left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;background-image:url(${l.src});background-size:100% 100%"></i>`;}
 let lookFit=null;
 addEventListener('resize',()=>{lookFit?.();});
+const lkWhyClose=()=>{const w=$('#lkWhy');if(!w.classList.contains('on'))return;w.classList.remove('on');$('#lkQ').setAttribute('aria-expanded','false');setTimeout(()=>{if(!w.classList.contains('on'))w.hidden=true;},260);};
+$('#lkQ').onclick=e=>{e.stopPropagation();const w=$('#lkWhy'),q=$('#lkQ');if(w.classList.contains('on')){lkWhyClose();return;}
+  const a=$('#look').getBoundingClientRect(),b=$('#lkRail').getBoundingClientRect();w.style.bottom=Math.round(a.bottom-b.top+10)+'px';w.hidden=false;void w.offsetWidth;w.classList.add('on');q.setAttribute('aria-expanded','true');};
+$('#look').addEventListener('pointerdown',e=>{if(!e.target.closest('#lkWhy,#lkQ'))lkWhyClose();});
 function pickLook({change=false}={}){return new Promise(res=>{
   const box=$('#look'),vf=$('#lkVf'),rail=$('#lkRail'),shoot=$('#lkShoot'),hint=$('#lkHint'),af=$('#lkAf'),order=lookOrder();
   let cur=-1;
@@ -909,7 +923,7 @@ function pickLook({change=false}={}){return new Promise(res=>{
   vf.onpointerdown=e=>{if(e.target.closest('button'))return;x0=e.clientX;};
   vf.onpointerup=e=>{if(x0==null)return;const d=e.clientX-x0;x0=null;if(Math.abs(d)<36)return;SND.felt('tap');go(cur<0?0:(cur+(d<0?1:-1)+order.length)%order.length);};
   vf.onpointercancel=()=>{x0=null;};
-  const done=v=>{lookFit=null;shoot.onclick=$('#lkLater').onclick=rail.onclick=vf.onpointerdown=vf.onpointerup=null;res(v);};
+  const done=v=>{lkWhyClose();lookFit=null;shoot.onclick=$('#lkLater').onclick=rail.onclick=vf.onpointerdown=vf.onpointerup=null;res(v);};
   shoot.onclick=()=>{if(cur>=0)done(order[cur]);};
   $('#lkLater').onclick=()=>{box.classList.remove('on');done(null);};
   rail.scrollLeft=0;box.classList.add('on');SND.sfx('pix_whoosh_short',.4);
@@ -1003,11 +1017,14 @@ const CardFX=(()=>{
 })();
 
 /* ══ 학생증 ══ */
+// 학생 기기 시각의 날짜: 학번(연도-월일)과 발급일 · 명부 날짜에 쓴다
+const ymd=t=>{const x=new Date(t),p=n=>String(n).padStart(2,'0');return {y:x.getFullYear(),m:p(x.getMonth()+1),d:p(x.getDate()),dots:`${x.getFullYear()}. ${x.getMonth()+1}. ${x.getDate()}.`};};
 function fillCard(){
   const D=DREAM[state.dream],ko=state.name||'신입생';
   // 사진 칸: 찍은 사진(나중에 찍기를 고르면 실루엣)
   $('#idPhoto').innerHTML='<svg viewBox="0 0 92 120" aria-hidden="true"><circle cx="46" cy="46" r="19" fill="rgba(255,255,255,.8)"/><path d="M10 120c3-24 18-38 36-38s33 14 36 38z" fill="rgba(255,255,255,.8)"/></svg>';
   $('#idName').innerHTML=`<span class="nm-ko">${esc(ko)}</span><small><span class="nm-en">${!state.name?'New student':state.nameEn&&state.nameEn!==ko?esc(state.nameEn):'&nbsp;'}</span></small>`;   // 빈 영어 줄도 한 줄 자리를 남겨 이름 글씨가 앉을 곳이 있게
+  const day=ymd(state.issuedAt||Date.now());$('#idNo').textContent=`${day.y}-${day.m}${day.d}`;$('#idIssue').textContent=`발급 ${day.dots}`;
   $('#idDept').innerHTML='<span class="dp-t">국제학부 1학년'+(state.from?` · <b>${esc(state.from)}</b>`:'')+'</span>';   // 이름 글씨 자리(placeSign)가 학과 줄을 재므로 그보다 먼저 쓴다(다시 검수 FA1)
   // 부스에서 손으로 쓴 이름 글씨(있을 때만). 쓴 이름이 지금 이름과 다르면 그리지 않는다
   const sg=state.sign&&state.name&&(state.sign.w===state.name||state.name.split(' ').includes(state.sign.w))?signSvg(state.sign,{width:.075,tight:true}):'';
@@ -1043,7 +1060,9 @@ function cardAsk(text,label){const h=$('#cardHint'),rig=$('#cardRig');h.textCont
 function cardAskDone(){const rig=$('#cardRig');$('#cardHint').classList.remove('on');rig.removeAttribute('tabindex');rig.removeAttribute('role');rig.removeAttribute('aria-label');}
 
 async function revealCard(r,from){
-  save({stage:'card'});$('#cardHead span').textContent=L('학생증이 나왔어요');
+  // 학생증은 처음 받은 날을 발급일로 남긴다(11-23 유호님 「오늘 등록했다면 26년11월23일이고 내일등록하면 26년11월24일」)
+  if(!state.issuedAt)state.issuedAt=Date.now();
+  save({stage:'card',issuedAt:state.issuedAt});$('#cardHead span').textContent=L('학생증이 나왔어요');
   const rig=$('#cardRig'),box=$('#cardBox'),sw=$('#cardSwing'),pr=$('#printer');
   for(const id of ['cardHead','cardFoot'])$('#'+id).classList.remove('on');cardAskDone();
   rig.classList.remove('down');pr.classList.remove('busy','on');box.classList.remove('feeding');
@@ -1365,7 +1384,7 @@ function applyStatic(){
 }
 function loadState(a){
   if(!a)return;
-  Object.assign(state,{dream:a.dream||state.dream,name:a.name??null,nameEn:a.nameEn??null,sign:a.sign??null,from:a.from??null,call:a.call??null,look:a.look?lookById(a.look):null,lights:a.lights||0,best:a.best||{},scenes:a.scenes||[],momSeen:!!a.momAt,momAnswer:a.momAnswer||null,dreamPicked:!!a.dream});
+  Object.assign(state,{dream:a.dream||state.dream,name:a.name??null,nameEn:a.nameEn??null,sign:a.sign??null,from:a.from??null,call:a.call??null,look:a.look?lookById(a.look):null,lights:a.lights||0,best:a.best||{},scenes:a.scenes||[],momSeen:!!a.momAt,momAnswer:a.momAnswer||null,issuedAt:a.issuedAt||null,dreamPicked:!!a.dream});
   document.body.dataset.dream=state.dream;
 }
 if(location.hash!=='#road')warm(WARM.first);

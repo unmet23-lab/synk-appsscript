@@ -77,6 +77,10 @@ test('학생 칸: 이상한 값은 그 칸만 없는 것으로 읽는다', () =>
  assert.deepEqual(a.scenes,[{id:'s1e01.wrap',at:5,lines:3}]);
  assert.equal(a.momAnswer,null);assert.equal(a.extra,undefined);
  assert.equal(readArrival({version:1,scenes:Array.from({length:300},(_,i)=>({id:'a'+i,at:i}))}).scenes.length,200);
+ // 학생증 발급일(11-23): 시각 숫자만 남고, 이상한 값은 없는 것으로 읽는다
+ assert.equal(readArrival({version:1,issuedAt:1795400000000}).issuedAt,1795400000000);
+ assert.equal(readArrival({version:1,issuedAt:'2026-11-23'}).issuedAt,null);
+ assert.equal(readArrival({version:1}).issuedAt,null);
 });
 
 function memoryStorage(){const m=new Map();return {getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),key:i=>[...m.keys()][i]??null,get length(){return m.size;}};}

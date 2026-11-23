@@ -16131,6 +16131,7 @@ function readArrival(value) {
     scenes,
     momAnswer: MOM.has(value.momAnswer) ? value.momAnswer : null,
     momAt: time(value.momAt) ? value.momAt : null,
+    issuedAt: time(value.issuedAt) ? value.issuedAt : null,
     updatedAt: time(value.updatedAt) ? value.updatedAt : null
   };
 }
