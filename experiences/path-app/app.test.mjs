@@ -1065,7 +1065,7 @@ test('번역 초안: 보내면 등록번호를 가리고, 초안 띠 · 안내 �
   assert.deepEqual(calls[1].drafts.slice(2, 3), ['등록번호: ⟦R1⟧'], '대조에는 가린 초안을 보낸다');
   const text = pageText(app);
   assert.match(text, /번역 초안 — 번역본이 아니에요/);
-  assert.match(text, /Орчуулгын төсөл — албан ёсны орчуулга биш/);
+  assert.match(text, /Орчуулгын ноорог — албан ёсны орчуулга биш/);
   assert.match(text, /번역자가 원문과 대조해 고치고 번역자 확인서를 붙여 내요/);
   assert.match(text, /비자 서류의 공식 접수는 본인이 KVAC에 하거나 등록 행정사에게 맡겨요/);
   assert.match(text, /이 서류를 내는 곳의 번역 규칙/);
