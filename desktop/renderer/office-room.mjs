@@ -3,6 +3,7 @@
 // 줄 하나의 꼴과 안쪽 [종류, …]는 solio-rooms.mjs와 같다. 이 방에서 더한 안쪽 종류는 둘이다.
 //   ['staff', 세션 번호, 도구, 모델, 상태 문장, 하는 일, 표시('alert' · 'now')] — 직원 줄. 그림에서 그 직원을 가리키면 줄이 밝아진다
 //   ['item', 이름, 한 문장, 열림, 묶음 이름, 오른쪽] — 부서의 기능 줄(담은 것 16). 누르면 바로 아래 묶음(grp)이 열린다
+// 「꾸미기」 줄(솔리오_사무실스킨_20261123/PC앱_설계.md): 스킨과 자리마다의 모자 · 이름. 모두 무료다. 모습은 세션이 아니라 자리(부서마다 시작 시각 차례)에 붙는다.
 // 줄의 flag가 참이면 이름 옆에 느낌표가 붙는다(7절). 부서 줄과 「부서 없는 일」은 watch 줄이라, 열었다 닫으면 seen을 부른다(4.1 끝냄).
 import { officeSessions, officeHeadline, officeCapacity, officeSeats, countWord } from './office-model.mjs';
 import { createOfficeTaskRoom, officeTaskHeadline } from './office-task-room.mjs';
@@ -25,6 +26,7 @@ export const OFFICE_CODE_SAY = Object.freeze({
   NAME_TAKEN: '같은 이름의 부서가 이미 있습니다. 다른 이름을 적어 주세요.',
   FOLDER: '그 폴더를 찾지 못했습니다. 다른 폴더를 골라 주세요.',
   LIMIT: '더 넣을 수 없습니다. 부서는 24개, 보는 폴더는 8개까지입니다.',
+  LOOK_LIMIT: '꾸민 자리가 너무 많습니다. 다른 자리의 모자나 이름을 지운 뒤 다시 해 주세요.',
   NOT_FOUND: '그 부서나 세션을 찾지 못했습니다. 화면을 다시 읽었습니다.',
   NOT_ALLOWED: '이 계정에서는 사무실을 고칠 수 없습니다.',
   SIGN_IN_REQUIRED: '로그인을 확인하는 중이라 저장하지 않았습니다. 잠시 뒤 다시 해 주세요.',
@@ -99,7 +101,10 @@ export function officeStaffDetail(v) {
   return [v.activity, helpers, v.note].filter(Boolean).join(' · ');
 }
 function staffItem(v) {
-  return ['staff', v.id, TOOL_NAME[v.tool] || v.tool || '', modelWord(v.model), v.say, officeStaffDetail(v), flags(v.alert && 'alert', v.status === 'asked' && 'now')];
+  // 이름을 바꾼 직원은 이름 칸에 그 이름, 작은 글에 도구와 모델이다(꾸미기 6절)
+  const tool = TOOL_NAME[v.tool] || v.tool || '', model = modelWord(v.model);
+  const nm = v.lookName || tool, small = v.lookName ? [tool, model].filter(Boolean).join(' · ') : model;
+  return ['staff', v.id, nm, small, v.say, officeStaffDetail(v), flags(v.alert && 'alert', v.status === 'asked' && 'now')];
 }
 function staffItems(v, tasking) {
   const rows = [staffItem(v)];
@@ -110,6 +115,81 @@ function staffItems(v, tasking) {
   return rows;
 }
 const rowLabel = parts => parts.filter(Boolean).join(', ');
+
+/* ── 꾸미기(PC앱_설계.md 2~3절 · 6절) ── 값의 꼴은 본체(office-store.cjs)와 같다 */
+export const OFFICE_SKINS = Object.freeze([['black', '검정'], ['walnut', '호두나무 서재']]);
+export const OFFICE_HATS = Object.freeze([['none', '모자 없음'], ['beanie', '니트 비니'], ['beret', '베레모'], ['gat', '갓'], ['phones', '헤드폰'], ['sprout', '새싹']]);
+export const OFFICE_LOOK_NAME_MAX = 12;
+const SEAT_MAX = 100;
+const HAT_IDS = new Set(OFFICE_HATS.slice(1).map(([k]) => k));
+const LOOK_HIDDEN = /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/;
+const skinWord = id => (OFFICE_SKINS.find(([k]) => k === id) || OFFICE_SKINS[0])[1];
+const hatWord = id => (OFFICE_HATS.find(([k]) => k === id) || OFFICE_HATS[0])[1];
+const skinOf = v => (v === 'walnut' ? 'walnut' : 'black');
+/* 자리: 부서마다(부서 없는 일도 하나로) 시작 시각 차례로 센다. list는 officeSessions의 차례 그대로다.
+   직원마다 seat(자리 열쇠), seatNo, seatName(처음 이름 「마케팅부 2」), lookName(바꾼 이름), hat을 더한다. 백째 자리부터는 열쇠가 없다 */
+export function officeSeated(list, departments = [], looks = {}) {
+  const count = new Map();
+  return list.map(v => {
+    const zone = v.departmentId == null ? 'lobby' : 'd:' + v.departmentId, n = count.get(zone) || 0;
+    count.set(zone, n + 1);
+    if (n >= SEAT_MAX) return { ...v, seat: null, seatNo: n + 1, seatName: '', lookName: '', hat: null };
+    const seat = zone + ':' + n, look = looks && typeof looks[seat] === 'object' && looks[seat] ? looks[seat] : {};
+    const dept = v.departmentId == null ? '부서 없는 일' : (departments.find(d => d.id === v.departmentId)?.name || v.departmentName || '');
+    return { ...v, seat, seatNo: n + 1, seatName: `${dept} ${n + 1}`, lookName: typeof look.name === 'string' ? look.name : '', hat: HAT_IDS.has(look.hat) ? look.hat : null };
+  });
+}
+/* 판의 모습에, 손님이 눌러 아직 판에 오지 않은 값(ui.lookWant)을 얹는다 */
+function looksOf(settings, ui) {
+  const out = {};
+  for (const [k, v] of Object.entries(settings?.looks && typeof settings.looks === 'object' ? settings.looks : {})) if (v && typeof v === 'object') out[k] = { ...v };
+  for (const [k, w] of ui.lookWant || []) {
+    const cur = { ...(out[k] || {}) };
+    for (const f of ['hat', 'name']) if (Object.hasOwn(w, f)) { if (w[f]) cur[f] = w[f]; else delete cur[f]; }
+    out[k] = cur;
+  }
+  return out;
+}
+/* 이름 칸의 칸 이름: 저장 차례와 자리를 함께 넣는다. 고른 직원이 저절로 바뀌어도(앞 세션이 끝남) 쓰던 글이 다른 직원의 칸에 남지 않는다(검수 A2) */
+export const officeLookField = (ui, seat = '') => 'lname-' + (ui?.lookSeq || 0) + (seat ? '-' + seat : '');
+const whoOf = v => v.lookName || v.seatName;
+/* 꾸밀 직원의 차례: 부서 줄의 차례(부서 없는 일은 맨 뒤), 그 안에서 자리 차례. 맨 처음 고른 직원도 이 차례의 첫 직원이다 */
+export function officeLookOrder(staff, departments = []) {
+  const rank = v => (v.departmentId == null ? departments.length : Math.max(0, departments.findIndex(d => d.id === v.departmentId)));
+  return staff.filter(v => v.seat).map((v, i) => [v, i]).sort(([a, i], [b, j]) => rank(a) - rank(b) || a.seatNo - b.seatNo || i - j).map(([v]) => v);
+}
+/* 「꾸미기」 줄. staff는 officeSeated의 값이다 */
+export function officeLooksRow({ skin = 'black', staff = [], departments = [], pick = null, ui = {} } = {}) {
+  const note = ui.notes?.get?.('look') || '';
+  const seated = officeLookOrder(staff, departments), now = seated.find(v => v.seat === pick) || null;
+  const hats = seated.filter(v => v.hat).length;
+  const mid = skinWord(skin) + (hats ? ' · 모자 쓴 직원 ' + countWord(hats) : '');
+  const more = [['pick', '스킨', OFFICE_SKINS.map(([k, w]) => [w, k]), skin, '', 'skin']];
+  if (skin === 'walnut') more.push(['note', '일하는 부서 위에만 탁상 등이 켜집니다.']);
+  if (!now) more.push(['note', '직원이 서면 한 명씩 모자를 씌우고 이름을 바꿀 수 있습니다.']);
+  else {
+    // 꾸밀 직원은 부서마다 한 줄이다. 직원이 스물이 넘어도 한 줄에 단추가 몰리지 않는다(설계 검토 13)
+    const groups = [];
+    for (const v of seated) {
+      const label = v.seatName.slice(0, v.seatName.lastIndexOf(' '));
+      const g = groups.find(x => x.zone === v.seat.slice(0, v.seat.lastIndexOf(':')));
+      if (g) g.staff.push(v); else groups.push({ zone: v.seat.slice(0, v.seat.lastIndexOf(':')), label, staff: [v] });
+    }
+    if (groups.length > 1) more.push(['note', '꾸밀 직원을 고릅니다.']);
+    for (const g of groups) {
+      const picked = g.staff.some(v => v.seat === now.seat) ? now.seat : '';
+      more.push(['pick', groups.length > 1 ? g.label : '꾸밀 직원', g.staff.map(v => [v.lookName || v.seatNo + '번', v.seat]), picked, '', 'look-pick']);
+    }
+    // 모자 단추의 값에 자리를 함께 싣는다. 누르는 사이 고른 직원이 바뀌어도 본 직원에게 간다
+    more.push(['pick', '모자', OFFICE_HATS.map(([k, w]) => [w, now.seat + '|' + k]), now.seat + '|' + (now.hat || 'none'), '', 'look-hat']);
+    more.push(['fld', '이름', now.lookName, `비우면 「${now.seatName}」 · ${OFFICE_LOOK_NAME_MAX}자까지`, officeLookField(ui, now.seat), 'text']);
+    more.push(['acts', [['이름 바꾸기', 'look-rename', now.seat, flags('enter', ui.busy && 'off')]]]);
+    more.push(['note', '이름과 모자는 자리에 붙습니다. 앞자리 일이 끝나면 다음 세션이 그 자리의 모습을 이어받습니다.']);
+  }
+  more.push(['note', '모두 무료입니다. 이 값은 계정과 PC마다 따로 기억합니다.']);
+  more.push(['live', note]);
+  return { key: 'look', nm: '꾸미기', mid, val: '', when: '', watch: true, label: rowLabel(['꾸미기', mid]), more };
+}
 
 /* ── 수용 인원 줄(6절, 시안 pcHTML) ── 첫 조각은 보이기만 한다. 구독을 둘 다 다 썼으면 숫자 대신 쉰다고 말한다(6절 11-20) */
 export const OFFICE_REST_SAY = '구독을 다 써서 다시 찰 때까지 쉽니다';
@@ -257,9 +337,10 @@ function lobbyRow(staff, departments, ui, tasking) {
 }
 
 /* 그림의 자료(office-floor.mjs). 부서 여섯까지 따로 그리고, 일곱째부터는 「그 밖」 한 구역으로 묶는다(5절) */
-export function officeFloorScene({ departments = [], list = [], cap = null, view = 'tilted', viewSeq = 0 } = {}) {
+export function officeFloorScene({ departments = [], list = [], cap = null, view = 'tilted', viewSeq = 0, skin = 'black', skinSeq = 0, pick = null, picking = false } = {}) {
   const staffOf = v => ({
     id: v.id, status: v.status, alert: !!v.alert, subagents: v.subagents || 0,
+    hat: HAT_IDS.has(v.hat) ? v.hat : null, picked: !!(picking && pick && v.seat === pick),
     provider: Object.hasOwn(TOOL_NAME, v.tool) ? v.tool : null,
     zone: v.departmentId == null ? 'lobby' : 'd:' + v.departmentId,
   });
@@ -274,7 +355,7 @@ export function officeFloorScene({ departments = [], list = [], cap = null, view
     const ids = new Set(rest.map(d => d.id)), staff = list.filter(v => ids.has(v.departmentId));
     zones.push({ key: 'other', kind: 'other', name: '그 밖 ' + countWord(rest.length), urgent: staff.some(v => v.status === 'asked'), staff: staff.map(staffOf) });
   }
-  return { view: view === 'top' ? 'top' : 'tilted', viewSeq, seats: officeSeats(cap ?? 1), zones };
+  return { view: view === 'top' ? 'top' : 'tilted', viewSeq, skin: skinOf(skin), skinSeq, seats: officeSeats(cap ?? 1), zones };
 }
 
 /* ── 방 하나(controller의 장면) ──
@@ -286,9 +367,12 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
   const assignments = snap.assignments && typeof snap.assignments === 'object' ? snap.assignments : {};
   const all = officeSessions(snap.state, now, { departments, assignments });
   // 승인 물음을 아는 직원이 하나도 없으면(첫 조각은 늘 그렇다) 직원 줄의 「승인 물음은 모릅니다」를 빼고 맨 위 둘째 줄에만 둔다
-  const list = all.some(v => v.hooked) ? all : all.map(v => ({ ...v, note: '' }));
+  const plain = all.some(v => v.hooked) ? all : all.map(v => ({ ...v, note: '' }));
   const subscriptions = officeSubscriptions(subs, now);
   const settings = snap.settings && typeof snap.settings === 'object' ? snap.settings : {};
+  const list = officeSeated(plain, departments, looksOf(settings, ui));
+  const skin = skinOf(ui.skinWant || settings.skin);
+  const pick = (list.find(v => v.seat && v.seat === ui.pick) || officeLookOrder(list, departments)[0])?.seat || null;
   const pc = snap.pc && typeof snap.pc === 'object' ? snap.pc : null;
   // 쉬는 때는 수용 인원 줄이 숫자 대신 쉰다고 말하므로, 맨 위 글도 「몇까지인데」를 세지 않는다(0.5.2 공개 검수 A4)
   const capInfo = countableCapacity(pc, subscriptions, settings.manualCap);
@@ -303,12 +387,13 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
   const capRow = officeCapacityRow({ pc, subscriptions, manualCap: settings.manualCap ?? null, active: head.active, ui, now, tasking });
   rows.push({ ...capRow, gap: rows.length > 0 });
   rows.push(officeSettingsRow({ view, roots: snap.roots || {}, ui }));
+  rows.push(officeLooksRow({ skin, staff: list, departments, pick, ui }));
   rows.push(officeAddRow({ ui }));
   const readAt = Number(snap.readAt);
   const foot = [Number.isFinite(readAt) ? (now - readAt < 2 * 60e3 ? '방금 읽었습니다.' : hm(readAt) + '에 읽었습니다.') : '', '이 방이 열려 있는 동안 15초마다 기록을 살핍니다.', ui.roomNote || ''].filter(Boolean).join(' ');
   return {
     visible: true, alert: list.some(v => v.alert), say: head.say, then: head.then, hint: head.hint, rows, foot,
-    floor: officeFloorScene({ departments, list, cap, view, viewSeq: ui.viewSeq || 0 }),
+    floor: officeFloorScene({ departments, list, cap, view, viewSeq: ui.viewSeq || 0, skin, skinSeq: ui.skinSeq || 0, pick, picking: !!ui.lookOpen }),
     sessions: list.length,
   };
 }
@@ -320,8 +405,9 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
 export function createOfficeRoom({ api = null, snapshot = () => null, reread = () => {}, changed = () => {} } = {}) {
   const tasks = createOfficeTaskRoom({ api, reread, changed });
   const biz = createBizplanRoom({ api, changed });
-  const fresh = () => ({ grps: new Set(), asking: null, notes: new Map(), busy: null, addName: '', addSeq: 0, view: null, viewSeq: 0, roomNote: '' });
-  let st = fresh(), gen = 0, seq = 0, focusReq = null, openReq = null;
+  const fresh = () => ({ grps: new Set(), asking: null, notes: new Map(), busy: null, addName: '', addSeq: 0, view: null, viewSeq: 0, roomNote: '',
+    skinWant: null, skinSeq: 0, lookWant: new Map(), pick: null, lookSeq: 0, lookOpen: false });
+  let st = fresh(), gen = 0, seq = 0, focusReq = null, openReq = null, seenAt = null; // seenAt: 마지막으로 그린 때. 자리는 손님이 본 그때로 센다
   const ask = req => ({ ...req, seq: ++seq });
   const note = (key, text) => { if (text) st.notes.set(key, text); else st.notes.delete(key); };
   const call = (name, ...args) => { try { return typeof api?.[name] === 'function' ? Promise.resolve(api[name](...args)) : Promise.resolve({ ok: false, code: 'NOT_ALLOWED' }); } catch { return Promise.resolve({ ok: false }); } };
@@ -354,6 +440,25 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     changed();
     return true;
   }
+  /* 지금 선 직원의 자리(꾸미기). 판과 손님이 누른 값으로 센다 */
+  function seatsNow() {
+    const snap = snapshot();
+    if (!snap || snap.available !== true) return [];
+    const depts = departments(), all = officeSessions(snap.state, seenAt ?? Date.now(), { departments: depts, assignments: snap.assignments && typeof snap.assignments === 'object' ? snap.assignments : {} });
+    return officeSeated(all, depts, looksOf(snap.settings, st)).filter(v => v.seat);
+  }
+  /* 판에 온 값과 같아진 「누른 값」은 지운다. 그 뒤로는 판을 따른다(설계 검토 9) */
+  function settle(snap) {
+    const s = snap?.settings && typeof snap.settings === 'object' ? snap.settings : {};
+    if (st.skinWant && skinOf(s.skin) === st.skinWant) st.skinWant = null;
+    const looks = s.looks && typeof s.looks === 'object' ? s.looks : {};
+    for (const [seat, w] of [...st.lookWant]) {
+      const l = looks[seat] && typeof looks[seat] === 'object' ? looks[seat] : {};
+      if (['hat', 'name'].every(f => !Object.hasOwn(w, f) || (l[f] || null) === (w[f] || null))) st.lookWant.delete(seat);
+    }
+  }
+  /* 누르기 전 값으로 되돌린다(실패 · 바쁨) */
+  function unwant(seat, before) { if (before === undefined) st.lookWant.delete(seat); else st.lookWant.set(seat, before); }
   const foldRow = key => { for (const g of [...st.grps]) if (g.startsWith(key + ':')) st.grps.delete(g); if (key.startsWith('d:') && st.asking === key.slice(2)) st.asking = null; };
 
   async function handle(p = {}) {
@@ -365,6 +470,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     const key = String(p.key || ''), act = String(p.act || ''), arg = p.arg == null ? '' : String(p.arg), fields = p.fields && typeof p.fields === 'object' ? p.fields : {};
     if (act === 'disarm') return true;
     // 부서 줄을 열었다 닫으면 그 부서의 끝냄 느낌표를 지운다(4.1). 닫힌 부서는 다음에 열 때 기능이 접힌 채로 열린다(시안 sync)
+    if (key === 'look' && (act === 'row-open' || act === 'row-fold')) { st.lookOpen = act === 'row-open'; changed(); return true; }
     if (act === 'row-open') return true;
     if (act === 'row-fold') {
       // 수용 인원 줄을 접으면 저장하지 않고 펼쳐 둔 「직접 정하기」도 접는다. 다시 열면 실제 값(자동)이 골라져 있다(카본 A6)
@@ -445,6 +551,52 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
         if (res === null || res.ok === false) { if (st.view !== was) { st.view = was; st.viewSeq += 1; } changed(); }
         return after(key, res, '');
       }
+      case 'skin': {
+        if (!OFFICE_SKINS.some(([k]) => k === arg)) return true;
+        const was = st.skinWant, shown = skinOf(st.skinWant || snapshot()?.settings?.skin);
+        if (shown === arg) { changed(); return true; }
+        st.skinWant = arg; st.skinSeq += 1;
+        changed();
+        const res = await run(key, () => call('saveSettings', { skin: arg }));
+        if (res === null || res.ok === false) { st.skinWant = was; st.skinSeq += 1; changed(); }
+        return after(key, res, `${skinWord(arg)} 스킨을 입혔습니다.`);
+      }
+      case 'look-pick': {
+        if (!seatsNow().some(v => v.seat === arg)) { note(key, officeCodeSay('NOT_FOUND')); reread(); changed(); return true; }
+        if (st.pick !== arg) { st.pick = arg; st.lookSeq += 1; }
+        changed(); return true;
+      }
+      case 'look-hat': {
+        const cut = arg.lastIndexOf('|'), seat = arg.slice(0, cut), id = arg.slice(cut + 1);
+        const v = seatsNow().find(x => x.seat === seat);
+        if (!v || !(id === 'none' || HAT_IDS.has(id))) { note(key, officeCodeSay('NOT_FOUND')); reread(); changed(); return true; }
+        const hat = id === 'none' ? null : id;
+        st.pick = seat;
+        if ((v.hat || null) === hat) { changed(); return true; }
+        const before = st.lookWant.get(seat);
+        st.lookWant.set(seat, { ...(before || {}), hat });
+        changed();
+        const res = await run(key, () => call('saveSettings', { look: { seat, hat } }));
+        if (res === null || res.ok === false) { unwant(seat, before); changed(); }
+        return after(key, res, hat ? `${whoOf(v)}에게 ${eul(hatWord(hat))} 씌웠습니다.` : `${whoOf(v)}의 모자를 벗겼습니다.`);
+      }
+      case 'look-rename': {
+        const v = seatsNow().find(x => x.seat === arg);
+        if (!v) { note(key, officeCodeSay('NOT_FOUND')); reread(); changed(); return true; }
+        const typed = cleanName(fields[officeLookField(st, arg)]);
+        // 처음 이름을 그대로 적으면 비운 것과 같다. 처음 이름은 12자를 넘을 수 있어 길이보다 먼저 본다(검수 A1)
+        const name = typed === v.seatName ? '' : typed;
+        if (LOOK_HIDDEN.test(name)) { note(key, '이름에 쓸 수 없는 글자가 있습니다.'); changed(); return true; }
+        if ([...name].length > OFFICE_LOOK_NAME_MAX) { note(key, `이름은 ${OFFICE_LOOK_NAME_MAX}자까지 적어 주세요.`); changed(); return true; }
+        if (name === v.lookName) { note(key, '이름이 그대로입니다.'); changed(); return true; }
+        const before = st.lookWant.get(arg);
+        st.lookWant.set(arg, { ...(before || {}), name: name || null });
+        st.pick = arg;
+        changed();
+        const res = await run(key, () => call('saveSettings', { look: { seat: arg, name } }));
+        if (res === null || res.ok === false) { unwant(arg, before); changed(); }
+        return after(key, res, name ? `이름을 ${ro('「' + name + '」')} 바꿨습니다.` : `처음 이름 ${ro('「' + v.seatName + '」')} 되돌렸습니다.`, () => { st.lookSeq += 1; });
+      }
       case 'cap-mode': {
         if (arg === 'manual') { st.grps.add('cap:manual'); focusReq = ask({ key, field: 'cap' }); changed(); return true; }
         st.grps.delete('cap:manual');
@@ -469,6 +621,8 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     handle,
     /* 장면. 한 번만 따를 요청(열 줄, 초점)을 붙인다 */
     scene(snap, now, subs) {
+      seenAt = now;
+      settle(snap);
       const room = officeRoom(snap, st, now, { subs });
       // 기능 줄(사업계획서 읽기)은 부서 줄과 작업 화면에만 보이고 일 맡기기 카드에는 섞지 않는다(코드 검수 P2-5)
       const plain = room.visible && snap.tasking && Array.isArray(snap.tasking.tasks) ? { ...snap.tasking, tasks: snap.tasking.tasks.filter(t => !t.feature) } : (room.visible ? snap.tasking : null);
@@ -481,7 +635,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
       return room.visible ? { ...room, ...(tasking ? {tasking} : {}), ...(feature ? { feature } : {}), focus: focusReq, opening: openReq } : room;
     },
     /* 방을 떠날 때: 열어 둔 묶음과 물음, 알림 줄을 지운다(보기 고른 것은 남긴다) */
-    close() { st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; focusReq = null; openReq = null; biz.close(); },
+    close() { st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; st.lookOpen = false; focusReq = null; openReq = null; biz.close(); },
     /* 계정이 바뀌면 다 비운다 */
     reset() { gen += 1; tasks.reset(); biz.reset(); st = fresh(); focusReq = null; openReq = null; },
     busy: () => st.busy,

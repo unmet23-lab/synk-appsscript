@@ -39,6 +39,7 @@ const companyInvalid=input=>Promise.resolve({ok:false,requestId:inviteNamed(inpu
 // 솔리오 「사무실」(구현설계.md 13절): 부서 번호와 세션 번호는 정해진 꼴만, 부서 폴더는 'choose'(본체의 고르기 창)나 {fromSession}(그 세션의 작업 폴더)뿐이다.
 // 부서 폴더와 더할 보는 폴더는 경로 글자로 건너가지 않는다. 빼는 보는 폴더만 글자로 건너가고, 본체가 손님이 더한 목록에 있는지 다시 본다.
 const OFFICE_ID=/^[A-Za-z0-9_-]{4,32}$/,OFFICE_SESSION=/^[A-Za-z0-9_-]{8,128}$/,OFFICE_VIEWS=['tilted','top'];
+const OFFICE_SKINS=['black','walnut'],OFFICE_HATS=['beanie','beret','gat','phones','sprout'],OFFICE_SEAT=/^(?:d:[A-Za-z0-9_-]{4,32}|lobby):(?:0|[1-9]\d?)$/;
 const officeId=value=>typeof value==='string'&&OFFICE_ID.test(value);
 const officeSession=value=>typeof value==='string'&&OFFICE_SESSION.test(value);
 const officeInvalid=()=>Promise.resolve({ok:false,code:'VALUE'});
@@ -69,7 +70,9 @@ function officeFeatureArgs(action,a){
 }
 // 번호가 있는 부서는 이름이나 폴더 가운데 하나만 건너갈 수 있다. 뺀 칸은 본체가 저장된 값으로 채운다(GPT 검수 GA3)
 const officeDepartment=input=>{if(!input||typeof input!=='object'||(input.id!==undefined&&input.id!==null&&!officeId(input.id)))return null;const id=officeId(input.id);if(typeof input.name!=='string'&&!(input.name===undefined&&id))return null;const value={...(id?{id:input.id}:{}),...(typeof input.name==='string'?{name:input.name.slice(0,200)}:{})},folder=input.folder;if(folder==='choose')value.folder='choose';else if(folder&&typeof folder==='object'&&officeSession(folder.fromSession))value.folder={fromSession:folder.fromSession};else if(folder!==undefined||!value.id||value.name===undefined)return null;return value;};
-const officeSettings=input=>{if(!input||typeof input!=='object')return null;const value={};if(input.view!==undefined){if(!OFFICE_VIEWS.includes(input.view))return null;value.view=input.view;}if(input.manualCap!==undefined){if(input.manualCap!==null&&!Number.isInteger(input.manualCap))return null;value.manualCap=input.manualCap;}return 'view' in value||'manualCap' in value?value:null;};
+// 꾸미기(사무실스킨 PC앱_설계.md 4절)는 스킨 하나나 자리 하나의 모자 · 이름 하나만, 다른 설정과 섞지 않고 보낸다. 본체가 다시 본다
+const officeLook=input=>{if(!input||typeof input!=='object'||Array.isArray(input)||typeof input.seat!=='string'||input.seat.length>48||!OFFICE_SEAT.test(input.seat))return null;const hat=input.hat!==undefined,name=input.name!==undefined;if(hat===name)return null;if(hat)return input.hat===null||OFFICE_HATS.includes(input.hat)?{seat:input.seat,hat:input.hat}:null;return typeof input.name==='string'&&input.name.length<=64?{seat:input.seat,name:input.name}:null;};
+const officeSettings=input=>{if(!input||typeof input!=='object')return null;if(input.skin!==undefined||input.look!==undefined){if(input.view!==undefined||input.manualCap!==undefined||(input.skin!==undefined&&input.look!==undefined))return null;if(input.skin!==undefined)return OFFICE_SKINS.includes(input.skin)?{skin:input.skin}:null;const look=officeLook(input.look);return look?{look}:null;}const value={};if(input.view!==undefined){if(!OFFICE_VIEWS.includes(input.view))return null;value.view=input.view;}if(input.manualCap!==undefined){if(input.manualCap!==null&&!Number.isInteger(input.manualCap))return null;value.manualCap=input.manualCap;}return 'view' in value||'manualCap' in value?value:null;};
 const pulseViewPlace=input=>input&&typeof input==='object'&&typeof input.visible==='boolean'&&typeof input.top==='number'&&Number.isFinite(input.top)&&input.top>=0&&input.top<=160?{visible:input.visible,top:input.top}:null;
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   openEstimate:()=>ipcRenderer.invoke('synk:open-estimate'),

@@ -39,7 +39,7 @@ const hasOwn = (o, k) => isObject(o) && Object.prototype.hasOwnProperty.call(o, 
 const accountIdOf = account => (isObject(account) && typeof account.synk_user_id === 'string' && ID.test(account.synk_user_id) ? account.synk_user_id : null);
 /* 로그인 회차(main이 계정에 실어 넘기는 sessionGeneration). 없으면 null */
 const roundOf = account => (isObject(account) && (typeof account.sessionGeneration === 'number' || typeof account.sessionGeneration === 'string') ? account.sessionGeneration : null);
-const emptyData = () => ({ view: 'tilted', manualCap: null, departments: [], assignments: {}, roots: { claude: [] } });
+const emptyData = () => ({ view: 'tilted', manualCap: null, skin: 'black', looks: {}, departments: [], assignments: {}, roots: { claude: [] } });
 
 function defaultViewersFile(env = process.env, platform = process.platform) {
   if (env.SYNK_OFFICE_VIEWERS) return env.SYNK_OFFICE_VIEWERS;
@@ -365,7 +365,7 @@ function createOffice({
       ok: true, available: true,
       state: { sessions: structuredClone(state.sessions), ignored: {} }, // 앱이 스스로 돌린 세션의 번호는 화면에 넘기지 않는다
       departments: data.departments, assignments: data.assignments,
-      settings: { view: data.view, manualCap: data.manualCap },
+      settings: { view: data.view, manualCap: data.manualCap, skin: data.skin === 'walnut' ? 'walnut' : 'black', looks: data.looks && typeof data.looks === 'object' ? data.looks : {} },
       roots: { claude: watched.claude, codex: watched.codex, added: [...data.roots.claude], resting },
       pc: pcValue, readAt: now(),
     };

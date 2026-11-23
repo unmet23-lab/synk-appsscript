@@ -41,15 +41,15 @@ test('a viewer that is not shown the office gets nothing: unavailable, refused o
   assert.deepEqual(officeRoom(null, {}, NOW), { visible: false });
 });
 
-test('rows: one per department, 「부서 없는 일」 only while it has sessions, then 수용 인원, 설정 and 부서 더하기', () => {
+test('rows: one per department, 「부서 없는 일」 only while it has sessions, then 수용 인원, 설정, 꾸미기 and 부서 더하기', () => {
   const room = officeRoom(snapOf(), {}, NOW, { subs: SUBS });
   assert.equal(room.visible, true);
-  assert.deepEqual(room.rows.map(r => r.key), ['d:dmkt', 'd:ddev', 'lobby', 'cap', 'cfg', 'add']);
+  assert.deepEqual(room.rows.map(r => r.key), ['d:dmkt', 'd:ddev', 'lobby', 'cap', 'cfg', 'look', 'add']);
   assert.equal(rowOf(room, 'cap').gap, true, 'a row of another kind keeps a gap');
   const noLobby = officeRoom(snapOf({ state: stateOf(EVENTS.filter(e => e.sessionId !== 'sess-lob-0004')) }), {}, NOW, { subs: SUBS });
-  assert.deepEqual(noLobby.rows.map(r => r.key), ['d:dmkt', 'd:ddev', 'cap', 'cfg', 'add']);
-  // 부서 줄과 「부서 없는 일」만 열고 닫는 것을 알린다(끝냄을 본 것으로 치는 seen)
-  assert.deepEqual(room.rows.filter(r => r.watch).map(r => r.key), ['d:dmkt', 'd:ddev', 'lobby']);
+  assert.deepEqual(noLobby.rows.map(r => r.key), ['d:dmkt', 'd:ddev', 'cap', 'cfg', 'look', 'add']);
+  // 부서 줄과 「부서 없는 일」은 열고 닫는 것을 알린다(끝냄을 본 것으로 치는 seen). 꾸미기 줄은 고른 직원을 그림에서 밝히려고 알린다
+  assert.deepEqual(room.rows.filter(r => r.watch).map(r => r.key), ['d:dmkt', 'd:ddev', 'lobby', 'look']);
 });
 
 test('the headline comes from the model: the question first, then how many sessions cannot tell about questions', () => {
@@ -62,7 +62,7 @@ test('the headline comes from the model: the question first, then how many sessi
   const empty = officeRoom(snapOf({ state: officeState(), departments: [] }), {}, NOW, { subs: SUBS });
   assert.equal(empty.say, '지금 이 PC에서 도는 일이 없습니다.');
   assert.equal(empty.then, 'Claude Code나 Codex에서 일을 시작하면 여기에 섭니다.');
-  assert.deepEqual(empty.rows.map(r => r.key), ['cap', 'cfg', 'add']);
+  assert.deepEqual(empty.rows.map(r => r.key), ['cap', 'cfg', 'look', 'add']);
   assert.equal(empty.rows[0].gap, false, 'no gap above the first row');
   assert.deepEqual(empty.floor.zones, [], 'no departments and no sessions: nothing to draw');
   assert.equal(empty.alert, false);

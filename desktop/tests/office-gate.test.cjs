@@ -152,7 +152,7 @@ test('an allowed account: watch lists everything at start, then every 15 s, and 
   assert.equal(snap.available, true);
   assert.deepEqual(Object.keys(snap.state.sessions), [S1]);
   assert.deepEqual(snap.state.ignored, {});
-  assert.deepEqual(snap.settings, { view: 'tilted', manualCap: null });
+  assert.deepEqual(snap.settings, { view: 'tilted', manualCap: null, skin: 'black', looks: {} });
   assert.deepEqual(snap.roots, { claude: [...ROOTS.claude, added], codex: ROOTS.codex, added: [added], resting: [] });
   assert.deepEqual(snap.pc, { cores: 8, totalMemGb: 15.7, freeMemGb: 6.2, cpuPercent: 1 });
   assert.equal(snap.readAt, f.clock.now());
@@ -284,7 +284,7 @@ test('departments, assignments, settings and seen go to the store for the signed
   assert.deepEqual(model.officeSessions(snap.state, f.clock.now(), ctx).map(v => v.status), ['resting']);
   assert.equal((await f.office.seen(5, YUHO)).code, 'VALUE');
   assert.deepEqual((await f.office.saveSettings({ view: 'top', manualCap: 4 }, YUHO)).data.manualCap, 4);
-  assert.deepEqual((await f.office.snapshot(YUHO)).settings, { view: 'top', manualCap: 4 });
+  assert.deepEqual((await f.office.snapshot(YUHO)).settings, { view: 'top', manualCap: 4, skin: 'black', looks: {} });
   assert.equal((await f.office.removeDepartment(dept, YUHO)).ok, true);
   assert.deepEqual((await f.office.snapshot(YUHO)).assignments, {});
 });

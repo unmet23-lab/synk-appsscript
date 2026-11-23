@@ -2241,7 +2241,7 @@ test('opening 사무실 watches the records, the headline comes from the board, 
   assert.ok(office.calls.includes('watch:true'));
   assert.ok(office.reads() >= 2, 'read again when the room opens: ' + office.reads());
   assert.equal(room.office.say, '개발부가 방금 승인을 물었습니다.');
-  assert.deepEqual(room.office.rows.map(r => r.key), ['d:ddev', 'cap', 'cfg', 'add']);
+  assert.deepEqual(room.office.rows.map(r => r.key), ['d:ddev', 'cap', 'cfg', 'look', 'add']);
   assert.equal(room.office.rows.find(r => r.key === 'cap').val, '넷까지', '8 cores and 15.7 GB (16) give four');
   assert.equal(h.face.handle('room', { room: 'solio-office', key: 'd:ddev', act: 'row-open' }), true);
   assert.equal(h.face.handle('room', { room: 'solio-office', key: 'd:ddev', act: 'row-fold' }), true);

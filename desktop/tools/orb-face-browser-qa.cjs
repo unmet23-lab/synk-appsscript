@@ -683,6 +683,9 @@ if(!process.versions.electron){
           check('21 an account without the real entry has no backup object',!o2.includes('backup')&&o2.includes('visits'),{objs:o2});
           v.win.destroy();
         }
+        if(only('office-looks')&&mode==='main'){
+          await require('./office-looks-browser-qa.cjs')({open,boot,signedIn,subsNone,until,wait,click,capture,check,calls});
+        }
         if(only('office-tasks')&&mode==='main'){
           await require('./office-task-browser-qa.cjs')({open,boot,signedIn,signedOut,subsNone,until,wait,click,capture,check,calls});
         }

@@ -9,7 +9,7 @@
 //    읽고 고치고 쓰기와 새 폴더가 있는지 보는 일은 모두 그 차례 안에서 한다. 그래서 부른 차례대로 적히고 서로 덮지 않는다(GPT 검수 GA3).
 //  · 폴더가 있는지는 새로 더하거나 바꾸는 폴더만 본다. 이미 저장된 폴더는 다시 보지 않는다. 옮겼거나 외장 드라이브를 뺀 폴더도
 //    빼거나 이름을 고칠 수 있어야 하기 때문이다(GA4).
-//  · 고치는 함수는 모두 { ok:true, data } 또는 { ok:false, code }를 돌려준다. code: ACCOUNT, VALUE, NAME, NAME_TAKEN, FOLDER, LIMIT, NOT_FOUND, READ, SIZE, WRITE, AUTH_CHANGED.
+//  · 고치는 함수는 모두 { ok:true, data } 또는 { ok:false, code }를 돌려준다. code: ACCOUNT, VALUE, NAME, NAME_TAKEN, FOLDER, LIMIT, LOOK_LIMIT, NOT_FOUND, READ, SIZE, WRITE, AUTH_CHANGED.
 //  · 고치는 함수는 끝 인자로 { guard }를 받는다. guard()가 참이 아니면 쓰기 바로 앞과 이름 바꾸기 바로 앞에서 멈추고 AUTH_CHANGED다. 부른 쪽이 로그인 묶음을
 //    거기서 다시 본다(GPT 검수 GB1 · be3 GA4). 이름 바꾸기가 도는 동안의 로그아웃은 막지 못한다. 파일 자리가 계정 번호로 정해져 다른 계정의 파일에 쓰는 일은 없다.
 //    그래서 AUTH_CHANGED는 「그 묶음에 답하지 않는다」는 뜻이고 「쓰지 않았다」는 약속이 아니다(구현설계 11.1).
@@ -22,6 +22,8 @@
 //    이 판정은 새로 더하는 폴더와 살필 폴더(office.cjs rootsFor)에만 쓴다. 저장된 목록은 판정으로 줄이지 않는다.
 //    늦은 판정이 목록에서 빼면 다음 쓰기가 줄어든 목록을 저장한다(be7 GA1). 읽을 때는 이름 무늬만 본다.
 //  · 읽기 상한(MAX_BYTES)을 넘는 파일은 쓰지 않는다(SIZE). 상한을 넘은 파일은 읽지 못한 것으로 보고 기본값으로 덮지 않는다(GB8).
+//  · 꾸미기(솔리오_사무실스킨_20261123/PC앱_설계.md 4절): 스킨(skin)과 자리마다의 모습(looks: { 자리 열쇠: { hat?, name? } }). 화면에 넘길 때만 거르고,
+//    파일에는 읽은 그대로 둔다. 쓸 때는 이번에 바꾼 열쇠 하나와 뺀 부서의 열쇠만 고친다. 다음 판이 모자나 스킨을 더한 뒤 이 판이 써도 지워지지 않는다(설계 검토 1).
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -38,6 +40,14 @@ const MAX_DEPARTMENTS = 24;
 const MAX_ROOTS = 8;
 const MAX_ASSIGNMENTS = 500;
 const MAX_BYTES = 1024 * 1024;
+const SKINS = Object.freeze(['black', 'walnut']);
+const HATS = Object.freeze(['beanie', 'beret', 'gat', 'phones', 'sprout']);
+const LOOK_NAME_MAX = 12;
+const MAX_LOOKS = 200;
+/* 자리 열쇠: 부서 직원은 d:<부서 번호>:<n>, 부서 없는 일은 lobby:<n>. n은 0이나 1~99이고 앞의 0을 받지 않는다(01과 1이 같은 자리가 되지 않게) */
+const SEAT = /^(?:d:([A-Za-z0-9_-]{4,32})|lobby):(?:0|[1-9]\d?)$/;
+/* 직원 이름에 받지 않는 글자: 제어 글자, 폭 없는 글자, 방향 바꿈 글자 */
+const HIDDEN = /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/;
 const DEPARTMENT_ID = /^[A-Za-z0-9_-]{4,32}$/;
 const SESSION_ID = /^(?!\d+$)[A-Za-z0-9_-]{8,128}$/; // 숫자만인 열쇠는 객체에서 차례가 바뀌므로 받지 않는다
 const ABSOLUTE = /^(?:[A-Za-z]:[\\/]|\\\\[^\\/]|\/)/;
@@ -59,6 +69,21 @@ const folderKey = f => f.replace(/[\\/]+/g, '\\').toLowerCase();
 const cleanName = v => (typeof v === 'string' ? v.normalize('NFC').trim() : '');
 const nameKey = v => cleanName(v).toLowerCase();
 const goodName = n => n.length > 0 && [...n].length <= NAME_MAX && !CONTROL.test(n);
+const goodLookName = n => n.length > 0 && [...n].length <= LOOK_NAME_MAX && !HIDDEN.test(n);
+/* 화면에 넘길 모습: 꼴이 맞고 있는 부서(또는 부서 없는 일)의 열쇠에, 아는 모자와 맞는 이름만 */
+function viewLooks(raw, ids) {
+  const out = {};
+  for (const [seat, v] of Object.entries(isObject(raw) ? raw : {})) {
+    if (Object.keys(out).length >= MAX_LOOKS) break;
+    const m = SEAT.exec(seat);
+    if (!m || (m[1] && !ids.has(m[1])) || !isObject(v)) continue;
+    const look = {}, name = cleanName(v.name);
+    if (HATS.includes(v.hat)) look.hat = v.hat;
+    if (goodLookName(name)) look.name = name;
+    if (look.hat || look.name) out[seat] = look;
+  }
+  return out;
+}
 
 /* 파일의 값을 받을 수 있는 꼴로 고른다. 부서의 모르는 칸은 남긴다 */
 function normalise(raw, cores, isSub = f => SUBSCRIPTION_ACCOUNTS.test(path.resolve(f))) {
@@ -89,6 +114,9 @@ function normalise(raw, cores, isSub = f => SUBSCRIPTION_ACCOUNTS.test(path.reso
     seen.add(folderKey(f)); claude.push(f);
   }
   data.roots = { ...roots, claude };
+  // 꾸미기는 읽은 그대로 들고 다닌다. 거르는 것은 publicData다
+  if (own(raw, 'skin')) data.skinRaw = raw.skin;
+  if (isObject(raw.looks)) data.looksRaw = structuredClone(raw.looks);
   return data;
 }
 /** 구독 방 계정 폴더 판정을 만든다. 돌려주는 함수는 Promise<boolean>이다. userData가 없으면 이름 무늬만 본다.
@@ -140,6 +168,8 @@ function subscriptionCheck(userData, fsImpl = fs, { timeoutMs = 2000, setTimeout
 function publicData(data) {
   return {
     view: data.view, manualCap: data.manualCap,
+    skin: SKINS.includes(data.skinRaw) ? data.skinRaw : 'black',
+    looks: viewLooks(data.looksRaw, new Set(data.departments.map(d => d.id))),
     departments: data.departments.map(d => ({ id: d.id, name: d.name, folder: d.folder, ...(d.role != null ? { role: d.role } : {}), ...(d.tool != null ? { tool: d.tool } : {}) })),
     assignments: { ...data.assignments },
     roots: { claude: [...data.roots.claude] },
@@ -172,6 +202,8 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
   async function write(accountId, current, data, guard) {
     const file = fileOf(accountId), dir = path.dirname(file);
     const out = { ...(current.raw || {}), view: data.view, manualCap: data.manualCap, departments: data.departments, assignments: data.assignments, roots: data.roots };
+    if (own(data, 'skinRaw')) out.skin = data.skinRaw;
+    if (data.looksRaw !== undefined) out.looks = data.looksRaw;
     const text = JSON.stringify(out, null, 2) + '\n';
     if (text.length > MAX_BYTES) return { ok: false, code: 'SIZE' }; // 다음 읽기가 받지 못할 파일은 쓰지 않는다
     const tmp = path.join(dir, `${FILE}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`);
@@ -276,6 +308,7 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       if (at < 0) return { ok: false, code: 'NOT_FOUND' };
       data.departments.splice(at, 1);
       data.assignments = Object.fromEntries(Object.entries(data.assignments).filter(([, did]) => did !== id));
+      if (data.looksRaw) for (const seat of Object.keys(data.looksRaw)) if (seat.startsWith('d:' + id + ':')) delete data.looksRaw[seat];
       return { ok: true };
     }, guard);
   }
@@ -311,16 +344,58 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
     }, guard);
   }
 
-  /** 설정: { view?: 'tilted'|'top', manualCap?: 1~논리 코어 수의 정수 또는 null(자동) } */
+  /** 설정: { view?: 'tilted'|'top', manualCap?: 1~논리 코어 수의 정수 또는 null(자동) }, 또는 꾸미기 하나:
+      { skin: 'black'|'walnut' } · { look: { seat, hat: 모자 또는 null(벗김) } } · { look: { seat, name: 12자까지, 빈 글자는 처음 이름 } }.
+      꾸미기는 다른 칸과 섞어 받지 않는다. 같은 값이면 쓰지 않는다. 모자도 이름도 다른 칸도 없어진 열쇠는 지운다 */
   function saveSettings(accountId, input, { guard } = {}) {
     if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
-    if (!isObject(input) || (!own(input, 'view') && !own(input, 'manualCap'))) return Promise.resolve({ ok: false, code: 'VALUE' });
+    const given = ['view', 'manualCap', 'skin', 'look'].filter(k => own(input, k));
+    if (!given.length) return Promise.resolve({ ok: false, code: 'VALUE' });
+    if ((given.includes('skin') || given.includes('look')) && given.length !== 1) return Promise.resolve({ ok: false, code: 'VALUE' });
+    if (own(input, 'skin')) {
+      if (!SKINS.includes(input.skin)) return Promise.resolve({ ok: false, code: 'VALUE' });
+      return mutate(accountId, async data => {
+        if (data.skinRaw === input.skin) return { ok: true, unchanged: true };
+        data.skinRaw = input.skin;
+        return { ok: true };
+      }, guard);
+    }
+    if (own(input, 'look')) return saveLook(accountId, input.look, guard);
     if (own(input, 'view') && !VIEWS.includes(input.view)) return Promise.resolve({ ok: false, code: 'VALUE' });
     const cap = input.manualCap;
     if (own(input, 'manualCap') && cap !== null && !(Number.isInteger(cap) && cap >= 1 && cap <= coreCount())) return Promise.resolve({ ok: false, code: 'VALUE' });
     return mutate(accountId, async data => {
       if (own(input, 'view')) data.view = input.view;
       if (own(input, 'manualCap')) data.manualCap = cap;
+      return { ok: true };
+    }, guard);
+  }
+  /* 자리 하나의 모자나 이름. 그 자리의 다른 칸(다음 판이 더한 칸 포함)은 그대로 둔다 */
+  function saveLook(accountId, look, guard) {
+    const bad = Promise.resolve({ ok: false, code: 'VALUE' });
+    if (!isObject(look) || typeof look.seat !== 'string') return bad;
+    const m = SEAT.exec(look.seat), fields = ['hat', 'name'].filter(k => own(look, k));
+    if (!m || fields.length !== 1) return bad;
+    const field = fields[0];
+    let value;
+    if (field === 'hat') {
+      if (look.hat !== null && !HATS.includes(look.hat)) return bad;
+      value = look.hat;
+    } else {
+      if (typeof look.name !== 'string') return bad;
+      const name = cleanName(look.name);
+      if (name && !goodLookName(name)) return bad;
+      value = name || null;
+    }
+    return mutate(accountId, async data => {
+      if (m[1] && !data.departments.some(d => d.id === m[1])) return { ok: false, code: 'NOT_FOUND' };
+      const all = data.looksRaw || {};
+      const cur = isObject(all[look.seat]) ? { ...all[look.seat] } : {};
+      if (value === null ? !own(cur, field) : cur[field] === value) return { ok: true, unchanged: true };
+      if (!own(all, look.seat) && Object.keys(all).length >= MAX_LOOKS) return { ok: false, code: 'LOOK_LIMIT' };
+      if (value === null) delete cur[field]; else cur[field] = value;
+      if (Object.keys(cur).length) all[look.seat] = cur; else delete all[look.seat];
+      data.looksRaw = all;
       return { ok: true };
     }, guard);
   }
@@ -381,4 +456,4 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
   return { read, saveDepartment, removeDepartment, assign, forgetSessions, saveSettings, saveRoots, addRoot, removeRoot, isSubscriptionDir, base, fileOf: id => (goodAccount(id) ? fileOf(id) : null) };
 }
 
-module.exports = { createOfficeStore, subscriptionCheck, VIEWS, NAME_MAX, MAX_DEPARTMENTS, MAX_ROOTS, MAX_ASSIGNMENTS, MAX_BYTES, SESSION_ID, SUBSCRIPTION_ACCOUNTS };
+module.exports = { createOfficeStore, subscriptionCheck, VIEWS, SKINS, HATS, LOOK_NAME_MAX, MAX_LOOKS, NAME_MAX, MAX_DEPARTMENTS, MAX_ROOTS, MAX_ASSIGNMENTS, MAX_BYTES, SESSION_ID, SUBSCRIPTION_ACCOUNTS };

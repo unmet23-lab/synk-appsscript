@@ -24,7 +24,7 @@ function setup() {
 
 test('a missing file reads as defaults and each account has its own file', async () => {
   const { store, file, w } = setup();
-  assert.deepEqual(await store.read(A), { ok: true, data: { view: 'tilted', manualCap: null, departments: [], assignments: {}, roots: { claude: [] } } });
+  assert.deepEqual(await store.read(A), { ok: true, data: { view: 'tilted', manualCap: null, skin: 'black', looks: {}, departments: [], assignments: {}, roots: { claude: [] } } });
   assert.equal(fs.existsSync(file(A)), false, 'reading writes nothing');
   const r = await store.saveDepartment(A, { name: '  쇼핑몰  ', folder: w('shop') + '\\' });
   assert.equal(r.ok, true);

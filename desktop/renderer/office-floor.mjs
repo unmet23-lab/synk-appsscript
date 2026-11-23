@@ -8,6 +8,10 @@
 //  · 느낌표: 알림이 새로 붙을 때 0.42초 동안 커지며 나오고, 승인을 물은 직원의 느낌표는 1.6초 주기로 2.5px 안에서 위아래로 뛴다.
 //  · 새 직원: 제자리에서 0.3초 동안 나타난다.
 //  · 보기 바꾸기: 손님이 설정에서 「비스듬히」 · 「위에서」를 바꿀 때만 카메라가 한 번 옮겨 간다(0.7초쯤).
+//  · 스킨 바꾸기(꾸미기, 솔리오_사무실스킨_20261123/PC앱_설계.md 5절): 손님이 스킨을 고를 때(skinSeq가 바뀔 때)만, 바닥부터 부서 자리까지 뒤에서 앞으로
+//    0.06초 간격으로 0.38초씩 앞 스킨에서 새 스킨으로 겹쳐 넘어간다. 판이 늦게 와서 스킨이 바뀌면 움직이지 않는다.
+//  · 탁상 등(호두나무 서재): 부서에 일하는 직원이 서거나 모두 쉬면 0.45초에 걸쳐 켜지고 꺼진다. 첫 그림에서는 바로다.
+//  · 스킨을 바꾸거나 첫 모자를 씌우면 바닥과 모자까지 들어가게 그림 크기를 한 번 바로 맞춘다(움직이지 않는다).
 //  · 움직임 줄이기가 켜져 있으면 모두 멈추고, 장면이 바뀔 때마다 한 번만 그린다.
 // 방이 보이는 동안만 그린다(show). 화면 밀도는 2배까지만 쓴다. 모듈 맨 위에서는 DOM을 건드리지 않는다.
 
@@ -19,6 +23,7 @@ export const FLOOR_MOTION = Object.freeze({
   rimPeriod: 3200, rimLow: 0.38, rimHigh: 0.62,
   bangPeriod: 1600, bangPx: 2.5, popMs: 420,
   fadeMs: 300, viewTau: 230, frameMs: 33,
+  skinMs: 380, skinStep: 60, lampTau: 450,
 });
 const M = FLOOR_MOTION;
 const INK = '243,241,236';
@@ -36,6 +41,21 @@ const LOOK = Object.freeze({
   quiet: { rim: 0.24, glow: 0.06, lift: 0, eye: 0.42, mode: 'closed' },
 });
 const lookOf = s => LOOK[s] || LOOK.quiet;
+/* 스킨마다의 재질(시안 스킨.html의 SK, 미학 맹검 세 번으로 고친 값). rim은 직원 테두리의 빛, label은 부서 이름의 색이다 */
+const SKIN = Object.freeze({
+  black: { slab: SLAB, rim: INK, label: INK, boost: 1 },
+  walnut: {
+    slab: 0.12, boost: 1.25, rim: '255,221,182', label: '255,232,206', shadow: 0.55, mat: 'rgba(0,0,0,.26)',
+    floor: { thick: 0.16, top: ['#1b120b', '#2a1c12'], front: '#120b06', left: '#0b0703', edge: 'rgba(255,214,170,.16)', seam: 'rgba(0,0,0,.6)', grain: 'rgba(255,212,168,.05)', tone: 'rgba(255,196,140,.028)' },
+    ped: { top: ['#452c1c', '#5d3e28'], front: '#2a190e', left: '#1f1209', edge: 'rgba(255,224,190,.36)', line: 'rgba(255,224,190,.10)', hot: 'rgba(255,236,212,.85)', urgent: 'rgba(255,236,212,.6)', hotFill: 'rgba(255,220,180,.05)', grain: 'rgba(255,220,182,.07)' },
+  },
+});
+export const FLOOR_SKINS = Object.freeze(Object.keys(SKIN));
+const LAMP_ON = new Set(['working', 'asked', 'silent']);
+const FLOOR_PAD = 0.45;
+const PLANE_MIN_S = 40, PLANE_PX = 29, PLANE_FONT = `500 ${PLANE_PX}px SUIT, "Malgun Gothic", sans-serif`;
+const rng = seed => () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const mixRGB = (a, b, k) => { if (a === b || k <= 0) return a; if (k >= 1) return b; const x = a.split(',').map(Number), y = b.split(',').map(Number); return x.map((v, i) => Math.round(v + (y[i] - v) * k)).join(','); };
 /* 자리보다 직원이 많으면 승인을 물은 직원, 느낌표가 붙은 직원, 일하는 직원부터 앉힌다. 처음 본 차례로만 앉히면 오래 조용한 직원이 자리를 차지해,
    맨 위 글은 「열둘이 일하고 있습니다」인데 그림에는 하나만 눈을 뜨고 있었다(유호님 PC 실제 확인 11-22, 직원 스물셋).
    지난 그림에도 앉아 있던 직원은 그 자리를 그대로 쓰고, 새로 앉는 직원이 빠진 직원의 자리를 채운다. 그러지 않으면 한 명이 조용해질 때마다
@@ -123,6 +143,9 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   let first = true;
   const cam = { cy: 1, sy: 0, ca: 0, sa: 1, k: 0, S: 50, ox: 0, oy: 0 };
   let zonesOnScreen = [], staffOnScreen = [];
+  // 꾸미기: 지금 스킨과 넘어가는 중인 앞 스킨, 부서마다 탁상 등의 밝기, 나뭇결 모음
+  let skinFrom = 'black', skinTo = 'black', skinT0 = -1e9, skinSeq = null, rectKey = '';
+  const lampK = new Map(), TEX = new Map();
 
   function setCam(t) {
     const e = t * t * (3 - 2 * t);
@@ -135,11 +158,12 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     return [xr * s, (zr * cam.sa - y * cam.ca) * s, d, s];
   }
   const P = (x, y, z) => { const p = P0(x, y, z); return [cam.ox + p[0] * cam.S, cam.oy + p[1] * cam.S, p[2], p[3]]; };
-  function fit() {
+  /* fl: 스킨의 바닥 한 판(있으면 그 두께까지 잰다). hatOn: 모자를 쓴 직원이 있으면 모자와 그 위의 느낌표까지 잰다(설계 검토 12) */
+  function fit(fl = null, hatOn = false) {
     let a = 1e9, b = -1e9, c = 1e9, e = -1e9;
-    for (const z of layout) for (const x of [z.rect.x0, z.rect.x1]) for (const zz of [z.rect.z0, z.rect.z1]) for (const y of [0, 1.05]) {
-      const p = P0(x, y, zz); a = Math.min(a, p[0]); b = Math.max(b, p[0]); c = Math.min(c, p[1]); e = Math.max(e, p[1]);
-    }
+    const take = (x, y, zz) => { const p = P0(x, y, zz); a = Math.min(a, p[0]); b = Math.max(b, p[0]); c = Math.min(c, p[1]); e = Math.max(e, p[1]); };
+    for (const z of layout) for (const x of [z.rect.x0, z.rect.x1]) for (const zz of [z.rect.z0, z.rect.z1]) for (const y of [0, hatOn ? 1.45 : 1.05]) take(x, y, zz);
+    if (fl) for (const x of [fl.x0, fl.x1]) for (const zz of [fl.z0, fl.z1]) for (const y of [0, -SKIN.walnut.floor.thick]) take(x, y, zz);
     if (!(b > a) || !(e > c)) return false;
     const pad = 10;
     cam.S = Math.max(1, Math.min((W - pad * 2) / (b - a), (H - pad * 2) / (e - c), 120));
@@ -175,31 +199,278 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx.beginPath(); ctx.moveTo(x, by - h); ctx.lineTo(x, by - h * 0.38); ctx.stroke();
     ctx.beginPath(); ctx.arc(x, by - lw * 0.2, lw * 0.62 * Math.min(1, e), 0, Math.PI * 2); ctx.fill();
   }
-  function orb(x, y, R, s, now, t3, still) {
-    const L = lookOf(s.status), one = life.get(s.id), isHot = hot.staff === s.id || over.staff === s.id;
+  /* rimInk · boost: 스킨의 테두리 빛과 그 세기. 꾸미기 줄에서 고른 직원(picked)은 테두리가 밝고 눈웃음을 짓는다 */
+  function orb(x, y, R, s, now, t3, still, rimInk = INK, boost = 1) {
+    const L = lookOf(s.status), one = life.get(s.id), isHot = hot.staff === s.id || over.staff === s.id || !!s.picked;
+    const oink = a => `rgba(${rimInk},${a})`;
     ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill();
     const g = ctx.createRadialGradient(x - R * 0.3, y - R * 0.38, 0, x - R * 0.3, y - R * 0.38, R * 1.15);
-    g.addColorStop(0, ink(L.glow * (0.4 + 0.6 * t3))); g.addColorStop(1, ink(0));
+    g.addColorStop(0, oink(L.glow * (0.4 + 0.6 * t3))); g.addColorStop(1, oink(0));
     ctx.fillStyle = g; ctx.fill();
     // 일하는 중은 테두리 밝기만 천천히 오간다(빛줄기 · 고리 없음)
     let rim = L.rim;
     if (s.status === 'working') rim = still ? (M.rimLow + M.rimHigh) / 2 : M.rimLow + (M.rimHigh - M.rimLow) * (0.5 + 0.5 * Math.sin(now * 2 * Math.PI / M.rimPeriod + (one?.phase || 0)));
-    ctx.strokeStyle = ink(isHot ? Math.max(rim, 0.85) : rim); ctx.lineWidth = s.status === 'asked' ? 1.3 : 1;
+    ctx.strokeStyle = oink(Math.min(1, (isHot ? Math.max(rim, 0.85) : rim) * boost)); ctx.lineWidth = s.status === 'asked' ? 1.3 : 1;
     ctx.stroke();
     if (R < 5) return;
     let gx = 0, gy = 0, mode = L.mode === 'look' ? 'open' : L.mode;
+    if (s.picked && s.status !== 'asked') mode = 'smile';
     if (L.mode === 'look') {
       const dx = ptr.x - x, dy = ptr.y - y, m = Math.hypot(dx, dy) || 1, k = ptr.x < -9000 || still ? 0 : Math.min(1, m / 120) * R * M.look;
       gx = dx / m * k; gy = dy / m * k;
     } else if (mode === 'open') { gy = R * 0.16; gx = still ? 0 : Math.sin(now * 2 * Math.PI / M.gazePeriod + (one?.phase || 0)) * R * M.gaze; }
     eyes(x, y, R, mode, gx, gy, one?.blink || 0, L.eye);
-    if (s.alert) bang(x, y, R, s, one || {}, now, still);
+    const lift = hat(x, y, R, s.hat);
+    if (s.alert) bang(x, y - lift, R, s, one || {}, now, still);
   }
   /* 도우미: 구 오른쪽 아래에 꽉 찬 작은 점, 셋까지. 움직이지 않는다 */
   function helpers(x, y, R, n) {
     const r = Math.max(1.6, R * 0.14);
     ctx.fillStyle = ink(0.7);
     for (let i = 0; i < Math.min(3, n); i++) { ctx.beginPath(); ctx.arc(x + R + 4 + r + i * (r * 2 + 3), y + R * 0.55, r, 0, Math.PI * 2); ctx.fill(); }
+  }
+
+  /* ── 꾸미기의 그리기(PC앱_설계.md 5절, 시안 스킨.html 985~1240행을 옮겼다) ──
+     스킨은 바닥 · 부서 자리 · 빛만 바꾸고, 직원은 늘 검은 구다. 모자는 머리 위 소품이고 구의 모양 · 색 · 눈은 그대로다 */
+  const HQ = (q, y) => [P(q.x0, y, q.z0), P(q.x1, y, q.z0), P(q.x1, y, q.z1), P(q.x0, y, q.z1)];
+  const area = f => { let a = 0; for (let i = 0; i < f.length; i++) { const p = f[i], n = f[(i + 1) % f.length]; a += p[0] * n[1] - n[0] * p[1]; } return a / 2; };
+  /* 상자의 옆면 가운데 보이는 것만(뒤로 돈 면은 그리지 않는다) */
+  function faces(q, y0, y1) {
+    const b = HQ(q, y0), t = HQ(q, y1), out = [];
+    [['back', 0, 1], ['right', 1, 2], ['front', 2, 3], ['left', 3, 0]].forEach(([kind, i, j]) => { const f = [t[j], t[i], b[i], b[j]]; if (area(f) > 0.5) out.push({ kind, pts: f }); });
+    return out;
+  }
+  const midOf = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  function depthGrad(top, c0, c1) { const a = midOf(top[0], top[1]), b = midOf(top[3], top[2]), g = ctx.createLinearGradient(a[0], a[1], b[0], b[1]); g.addColorStop(0, c0); g.addColorStop(1, c1); return g; }
+  function seg(a, b, color, w = 1) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.stroke(); }
+  function wpath(pts, y) { ctx.beginPath(); pts.forEach(([x, z], i) => { const p = P(x, y, z); if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); }
+  /* 바닥 위에 퍼지는 둥근 빛이나 그림자. 바닥의 원이 비스듬히 보이는 만큼 납작하게 그린다 */
+  function pool(x, y, z, rad, rgb, alpha, op) {
+    const p = P(x, y, z), R = rad * cam.S * p[3];
+    if (R < 1 || alpha < 0.003) return;
+    ctx.save(); if (op) ctx.globalCompositeOperation = op;
+    ctx.translate(p[0], p[1]); ctx.scale(1, Math.max(0.22, cam.sa));
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, `rgba(${rgb},${alpha})`); g.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  /* 재질의 결: 나뭇결, 마루의 널과 이음매. 세계 좌표로 한 번 만들어 두고, 배치가 바뀌면 비운다(설계 검토 11) */
+  function tex(id, part, q) {
+    const key = [id, part, q.x0, q.z0, q.x1, q.z1].map(v => (typeof v === 'number' ? v.toFixed(2) : v)).join('|');
+    if (TEX.has(key)) return TEX.get(key);
+    const out = [], r = rng(Math.round(Math.abs(q.x0 * 31 + q.z0 * 17) * 100) + part.length * 7 + id.length);
+    const L = (c, pts, w) => out.push({ c, pts, w }), F = (c, pts) => out.push({ c, pts, fill: true });
+    const rect = (x0, z0, x1, z1) => [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+    if (id === 'walnut') {
+      const pl = part === 'floor' ? 0.44 : 0.2;
+      for (let z = q.z0; z < q.z1 - 0.02; z += pl) {
+        const z1 = Math.min(q.z1, z + pl);
+        if (part === 'floor') {
+          if (r() < 0.5) F('tone', rect(q.x0, z, q.x1, z1));
+          if (z > q.z0) L('seam', [[q.x0, z], [q.x1, z]]);
+          let x = q.x0 + 0.4 + r() * 2.4;
+          while (x < q.x1 - 0.4) { L('seam', [[x, z], [x, z1]]); x += 2.3 + r() * 1.9; }
+        }
+        for (const f of part === 'floor' ? [0.3, 0.7] : [0.5]) {
+          const zz = z + (z1 - z) * f, ph = r() * 6, amp = part === 'floor' ? 0.03 : 0.016, pts = [];
+          for (let x = q.x0; x <= q.x1 + 0.01; x += 0.4) pts.push([x, zz + Math.sin(x * 1.3 + ph) * amp]);
+          L('grain', pts, 0.8);
+        }
+      }
+    }
+    TEX.set(key, out);
+    return out;
+  }
+  function paintTex(id, part, q, y) {
+    const st = part === 'floor' ? SKIN[id].floor : SKIN[id].ped;
+    for (const t of tex(id, part, q)) {
+      wpath(t.pts, y);
+      if (t.fill) { ctx.closePath(); ctx.fillStyle = st[t.c]; ctx.fill(); } else { ctx.strokeStyle = st[t.c]; ctx.lineWidth = t.w || 1; ctx.stroke(); }
+    }
+  }
+  /* 스킨의 바닥: 부서 자리와 부서 없는 일의 자리까지 덮는 마루 한 판. 등이 켜진 부서 아래에 둥근 빛이 번진다 */
+  function paintFloor(id, a, q, t3) {
+    const f = SKIN[id].floor;
+    if (!f || a < 0.003) return;
+    ctx.save(); ctx.globalAlpha *= a;
+    const top = HQ(q, 0);
+    if (t3 > 0.02) for (const fc of faces(q, -f.thick * t3, 0)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? f.front : f.left; ctx.fill(); }
+    poly(top); ctx.fillStyle = depthGrad(top, f.top[0], f.top[1]); ctx.fill();
+    ctx.save(); poly(top); ctx.clip();
+    paintTex(id, 'floor', q, 0);
+    for (const z of layout) {
+      const lk = lampK.get(z.key) || 0;
+      if (z.kind === 'dept' && lk > 0.01) pool((z.rect.x0 + z.rect.x1) / 2, 0, (z.rect.z0 + z.rect.z1) / 2, 3.1, '255,168,92', 0.09 * lk, 'lighter');
+    }
+    ctx.restore();
+    seg(top[3], top[2], f.edge);
+    ctx.restore();
+  }
+  /* 호두나무 책상의 탁상 등. 그 부서에 일하는 직원이 있는 동안만 켜진다 */
+  function deskLamp(q, slab, lk, t3) {
+    // 책상 뒤 왼쪽 귀퉁이에 낮게 둔다. 시안 자리(0.36 · 0.34, 높이 0.72)에서는 첫 직원의 모자와 등불이 겹쳐 뭉개졌다(미학 맹검 11-23 C137)
+    const lx = q.x0 + 0.24, lz = q.z0 + 0.22, b = P(lx, slab, lz), t = P(lx, slab + 0.6, lz), s = 1.4 * cam.S * t[3] / 50;
+    if (t3 > 0.3) {
+      seg(b, t, 'rgba(16,10,5,.95)', Math.max(1, 1.3 * s));
+      ctx.save(); ctx.translate(b[0], b[1]); ctx.scale(1, Math.max(0.3, cam.sa)); ctx.beginPath(); ctx.arc(0, 0, 3.6 * s, 0, Math.PI * 2); ctx.fillStyle = '#1a1009'; ctx.fill(); ctx.restore();
+    }
+    // 위에서 보면 등갓은 위에서 본 꽉 찬 원이다(옆모습을 그대로 두면 시점이 어긋난다, 미학 맹검 2회차). 고리를 쓰지 않는다
+    if (t3 <= 0.3) {
+      const r = 4.6 * s;
+      if (lk > 0.01) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const g = ctx.createRadialGradient(t[0], t[1], 0, t[0], t[1], r * 3.2); g.addColorStop(0, `rgba(255,196,128,${0.45 * lk})`); g.addColorStop(1, 'rgba(255,196,128,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(t[0], t[1], r * 3.2, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+      ctx.beginPath(); ctx.arc(t[0], t[1], r, 0, Math.PI * 2); ctx.fillStyle = '#21150c'; ctx.fill();
+      return;
+    }
+    const hw0 = 2.2 * s, hw1 = 6.2 * s, h0 = 5.4 * s, cx = t[0], cy = t[1], by = cy + h0 * 0.45;
+    ctx.beginPath(); ctx.moveTo(cx - hw0, cy - h0 * 0.55); ctx.lineTo(cx + hw0, cy - h0 * 0.55); ctx.lineTo(cx + hw1, by); ctx.lineTo(cx - hw1, by); ctx.closePath();
+    ctx.fillStyle = '#21150c'; ctx.fill(); ctx.strokeStyle = 'rgba(255,224,190,.18)'; ctx.lineWidth = 1; ctx.stroke();
+    if (lk > 0.01) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      const g = ctx.createRadialGradient(cx, by, 0, cx, by, 16 * s); g.addColorStop(0, `rgba(255,196,128,${0.55 * lk})`); g.addColorStop(1, 'rgba(255,196,128,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, by, 16 * s, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      seg([cx - hw1, by], [cx + hw1, by], `rgba(255,220,168,${0.9 * lk})`, Math.max(1, 1.3 * s));
+    }
+  }
+  /* 호두나무 책상(부서 자리) */
+  function paintPed(id, a, z, q, slab, hotZ, t3) {
+    const p = SKIN[id].ped, lk = lampK.get(z.key) || 0;
+    ctx.save(); ctx.globalAlpha *= a;
+    const top = HQ(q, slab);
+    if (slab > 0.004 && t3 > 0.02) for (const fc of faces(q, 0, slab)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? p.front : p.left; ctx.fill(); ctx.strokeStyle = p.line; ctx.lineWidth = 1; ctx.stroke(); }
+    poly(top); ctx.fillStyle = depthGrad(top, p.top[0], p.top[1]); ctx.fill();
+    ctx.save(); poly(top); ctx.clip();
+    paintTex(id, 'ped', q, slab);
+    pool(q.x0 + 1, slab, q.z0 + 0.8, 2.1, '255,176,100', 0.28 * lk, 'lighter');
+    if (hotZ) { ctx.fillStyle = p.hotFill; poly(top); ctx.fill(); }
+    ctx.restore();
+    poly(top); ctx.strokeStyle = hotZ ? p.hot : z.urgent ? p.urgent : p.line; ctx.lineWidth = 1; ctx.stroke();
+    seg(top[3], top[2], hotZ ? p.hot : p.edge); // 앞 모서리에 빛이 맺힌다
+    deskLamp(q, slab, lk, t3);
+    ctx.restore();
+  }
+  /* 부서 없는 일과 「그 밖」의 자리: 스킨에서는 바닥 위의 깔개다 */
+  function paintMat(id, a, z, q, hotZ) {
+    ctx.save(); ctx.globalAlpha *= a;
+    const top = HQ({ x0: q.x0 + 0.1, x1: q.x1 - 0.1, z0: q.z0 + 0.1, z1: q.z1 - 0.1 }, 0.004);
+    poly(top); ctx.fillStyle = SKIN[id].mat; ctx.fill();
+    ctx.strokeStyle = `rgba(${SKIN[id].label},${hotZ ? 0.5 : z.urgent ? 0.36 : 0.22})`; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  }
+  /* 기본 「검정」의 자리: 검은 판과 가는 선(앞 판의 그리기 그대로) */
+  function zoneBlack(a, z, q, slab, hotZ) {
+    ctx.save(); ctx.globalAlpha *= a;
+    const y = z.kind === 'dept' ? slab : 0, topF = HQ(q, y);
+    if (z.kind === 'dept' && slab > 0.004) {
+      const base = HQ(q, 0);
+      poly(base); ctx.strokeStyle = ink(hotZ ? 0.2 : 0.07); ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); for (let i = 0; i < 4; i++) { ctx.moveTo(base[i][0], base[i][1]); ctx.lineTo(topF[i][0], topF[i][1]); } ctx.stroke();
+    }
+    poly(topF);
+    ctx.fillStyle = hotZ ? 'rgb(13,13,12)' : z.kind === 'dept' ? 'rgb(5,5,5)' : 'rgb(3,3,3)'; ctx.fill();
+    ctx.strokeStyle = ink(hotZ ? 0.5 : z.urgent ? 0.3 : z.kind === 'dept' ? 0.13 : 0.09); ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  }
+  /* 바닥 위의 글: 그 자리의 바닥 축(세계의 x, z)대로 눕혀 쓴다. 화면에서 12.5px쯤으로 보이게 키를 맞춘다. 위에서 보면 그대로 똑바르다.
+     스킨에서만 쓴다. 똑바른 글은 비스듬한 책상의 앞 모서리를 가로질렀다(미학 맹검 11-23 C014, 시안도 같은 지적으로 눕혔다) */
+  function planeText(text, x, y, z, max) {
+    ctx.save();
+    ctx.font = PLANE_FONT;
+    const u = 12.5 / PLANE_PX / Math.max(1, cam.S), fit = max / u;
+    let s = text;
+    if (ctx.measureText(s).width > fit) { while (s.length > 1 && ctx.measureText(s + '…').width > fit) s = s.slice(0, -1); s += '…'; }
+    const o = P(x, y, z), ex = P(x + u, y, z), ez = P(x, y, z + u);
+    ctx.translate(o[0], o[1]);
+    ctx.transform(ex[0] - o[0], ex[1] - o[1], ez[0] - o[0], ez[1] - o[1], 0, 0);
+    ctx.fillText(s, 0, 0);
+    ctx.restore();
+  }
+  /* 부서 이름과 빈 자리의 가는 선. 스킨마다 글의 색이 다르다 */
+  function zoneText(id, a, z, q, y, hotZ, labelFits, shortForm) {
+    const lc = SKIN[id].label, dark = id === 'black';
+    ctx.save(); ctx.globalAlpha *= a;
+    const lp = P(q.x0 + 0.2, y, q.z1 - 0.2), lr = P(q.x1 - 0.2, y, q.z1 - 0.2);
+    ctx.fillStyle = `rgba(${lc},${hotZ || z.urgent ? 0.95 : dark ? 0.5 : 0.72})`;
+    const room = Math.max(24, lr[0] - lp[0]), label = floorZoneLabel(z, labelFits(z), shortForm);
+    // 그림이 작으면(좁은 창) 눕힌 글이 뭉개져 똑바로 쓴다(미학 맹검 2회차)
+    if (dark || cam.S < PLANE_MIN_S) ctx.fillText(label.clip ? clipText(label.text, room) : label.text, lp[0], lp[1]);
+    else planeText(label.text, q.x0 + 0.2, y, q.z1 - 0.2, q.x1 - q.x0 - 0.4);
+    // 빈 자리는 가는 짧은 선 하나다
+    for (let i = z.staff.length; i < z.spots.length; i++) {
+      const c = z.spots[i], s0 = P(c.x - 0.17, y, c.z + 0.3), s1 = P(c.x + 0.17, y, c.z + 0.3);
+      seg(s0, s1, `rgba(${lc},${dark ? (hotZ ? 0.22 : 0.12) : (hotZ ? 0.5 : 0.3)})`);
+    }
+    ctx.restore();
+  }
+  /* 직원 아래: 자리에 지는 그림자(스킨에만) */
+  function underOrb(id, a, c, base, y, t3) {
+    const k = SKIN[id];
+    if (!k.floor || a < 0.003) return;
+    const h = Math.max(0, y - R0 - base), sp = P(c.x, base, c.z), sr = R0 * (1.25 + h * 1.6) * cam.S * sp[3], al = Math.min(0.85, k.shadow * 1.25 * (1 - Math.min(0.5, h * 1.6)) * t3) * a;
+    if (sr <= 1 || al <= 0.003) return;
+    ctx.save(); ctx.translate(sp[0], sp[1]); ctx.scale(1, Math.max(0.22, cam.sa));
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sr);
+    g.addColorStop(0, `rgba(0,0,0,${al})`); g.addColorStop(0.45, `rgba(0,0,0,${al * 0.55})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, sr, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  function rr(x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
+  /* 모자를 그리고, 느낌표를 그만큼 올릴 높이를 돌려준다. 색은 디자인 토큰의 2027 실(버터 · 코랄 · 청금석 · 메도우)이다 */
+  function hat(x, y, R, kind) {
+    if (!kind || R < 5) return 0;
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    let top = 0;
+    if (kind === 'beanie') {
+      ctx.beginPath(); ctx.ellipse(x, y - R * 0.44, R * 1.0, R * 0.8, 0, Math.PI, Math.PI * 2); ctx.closePath();
+      const g = ctx.createLinearGradient(x - R, y - R * 1.2, x + R, y - R * 0.3); g.addColorStop(0, '#FFE08A'); g.addColorStop(1, '#D9A42C'); ctx.fillStyle = g; ctx.fill();
+      rr(x - R * 1.05, y - R * 0.6, R * 2.1, R * 0.3, R * 0.12); ctx.fillStyle = '#E3AE33'; ctx.fill(); // 접은 단
+      ctx.strokeStyle = 'rgba(126,90,16,.4)'; ctx.lineWidth = Math.max(0.8, R * 0.06);
+      for (const f of [-0.6, -0.2, 0.2, 0.6]) { ctx.beginPath(); ctx.moveTo(x + f * R, y - R * 0.56); ctx.lineTo(x + f * R, y - R * 0.34); ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(x, y - R * 1.28, R * 0.2, 0, Math.PI * 2); ctx.fillStyle = '#F5C445'; ctx.fill(); // 방울
+      top = R * 0.5;
+    } else if (kind === 'beret') {
+      ctx.translate(x + R * 0.14, y - R * 0.8); ctx.rotate(-0.2);
+      ctx.beginPath(); ctx.ellipse(0, 0, R * 1.02, R * 0.36, 0, 0, Math.PI * 2);
+      const g = ctx.createLinearGradient(0, -R * 0.36, 0, R * 0.36); g.addColorStop(0, '#D4554A'); g.addColorStop(1, '#8E2620'); ctx.fillStyle = g; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-R * 0.04, -R * 0.32); ctx.lineTo(0, -R * 0.56); ctx.strokeStyle = '#8E2620'; ctx.lineWidth = Math.max(1, R * 0.11); ctx.stroke();
+      top = R * 0.25;
+    } else if (kind === 'gat') {
+      const by = y - R * 0.84;
+      ctx.strokeStyle = 'rgba(236,226,206,.36)'; ctx.lineWidth = Math.max(0.7, R * 0.05); // 갓끈
+      for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + s * R * 0.64, by + R * 0.06); ctx.quadraticCurveTo(x + s * R * 0.8, y + R * 0.4, x + s * R * 0.3, y + R * 0.94); ctx.stroke(); }
+      ctx.beginPath(); ctx.ellipse(x, by, R * 1.75, R * 0.42, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(22,19,16,.74)'; ctx.fill(); // 양태: 말총이라 비친다
+      // 양태와 대우의 테두리는 짙은 나무 바닥에서도 모양이 보이게 조금 밝다(미학 맹검 11-23 C137)
+      ctx.beginPath(); ctx.ellipse(x, by, R * 1.75, R * 0.42, 0, Math.PI * 1.06, Math.PI * 1.94); ctx.strokeStyle = 'rgba(236,226,206,.5)'; ctx.lineWidth = 1; ctx.stroke();
+      rr(x - R * 0.46, by - R * 0.8, R * 0.92, R * 0.82, R * 0.18); ctx.fillStyle = '#16130F'; ctx.fill(); // 대우
+      ctx.strokeStyle = 'rgba(236,226,206,.45)'; ctx.stroke();
+      top = R * 0.66;
+    } else if (kind === 'phones') {
+      ctx.beginPath(); ctx.arc(x, y - R * 0.06, R * 1.14, Math.PI * 1.1, Math.PI * 1.9); ctx.strokeStyle = '#3D6BC9'; ctx.lineWidth = Math.max(1.4, R * 0.17); ctx.stroke();
+      for (const s of [-1, 1]) {
+        rr(x + s * R * 1.02 - R * 0.21, y - R * 0.42, R * 0.42, R * 0.7, R * 0.19); ctx.fillStyle = '#3D6BC9'; ctx.fill();
+        rr(x + s * R * 1.02 - R * 0.21 + (s < 0 ? R * 0.24 : 0), y - R * 0.34, R * 0.18, R * 0.54, R * 0.08); ctx.fillStyle = '#24448C'; ctx.fill();
+      }
+      top = R * 0.2;
+    } else if (kind === 'sprout') {
+      const b0 = y - R * 0.98, b1 = y - R * 1.44;
+      ctx.beginPath(); ctx.moveTo(x, b0); ctx.quadraticCurveTo(x + R * 0.06, (b0 + b1) / 2, x, b1); ctx.strokeStyle = '#3F6B2E'; ctx.lineWidth = Math.max(1, R * 0.09); ctx.stroke();
+      for (const s of [-1, 1]) {
+        ctx.beginPath(); ctx.moveTo(x, b1); ctx.quadraticCurveTo(x + s * R * 0.24, b1 - R * 0.52, x + s * R * 0.66, b1 - R * 0.3); ctx.quadraticCurveTo(x + s * R * 0.34, b1 + R * 0.06, x, b1);
+        ctx.fillStyle = s < 0 ? '#7DB45A' : '#8FC46A'; ctx.fill();
+      }
+      top = R * 0.8;
+    }
+    ctx.restore();
+    return top;
+  }
+  /* 스킨이 바뀌는 차례: 바닥(0)부터, 그다음 부서 자리가 뒤에서 앞으로(1, 2, …) 0.06초 간격, 0.38초씩 */
+  const skinK = (i, now, still) => {
+    if (skinFrom === skinTo || still) return 1;
+    const k = Math.min(1, Math.max(0, (now - skinT0 - i * M.skinStep) / M.skinMs));
+    return k * k * (3 - 2 * k);
+  };
+  /* 바닥 한 판: 배치한 자리를 모두 덮고 둘레에 조금 남긴다 */
+  function floorRect() {
+    let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
+    for (const z of layout) { x0 = Math.min(x0, z.rect.x0); x1 = Math.max(x1, z.rect.x1); z0 = Math.min(z0, z.rect.z0); z1 = Math.max(z1, z.rect.z1); }
+    return { x0: x0 - FLOOR_PAD, x1: x1 + FLOOR_PAD, z0: z0 - FLOOR_PAD, z1: z1 + FLOOR_PAD };
   }
 
   function draw(now = clock()) {
@@ -212,43 +483,45 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx.clearRect(0, 0, W, H);
     zonesOnScreen = []; staffOnScreen = [];
     if (!layout.length) return;
-    const t3 = view * view * (3 - 2 * view), slab = SLAB * t3;
-    setCam(view);
-    if (!fit()) return;
-    ctx.font = '400 12.5px SUIT, "Malgun Gothic", sans-serif'; ctx.textBaseline = 'alphabetic';
-    const order = [...layout].sort((a, b) => P0(0, 0, a.rect.z0)[2] - P0(0, 0, b.rect.z0)[2]);
-    // 이름표 폭. 한 장면 안에서는 빠진 수를 한 꼴로 적는다: 어느 구역이든 긴 꼴이 안 들어가면 모두 짧은 꼴이다(검수 solio-office-ga1b-20261122 F2)
-    const labelFits = z => { const q = z.rect, y = z.kind === 'dept' ? slab : 0, room = Math.max(24, P(q.x1 - 0.2, y, q.z1 - 0.2)[0] - P(q.x0 + 0.2, y, q.z1 - 0.2)[0]); return t => ctx.measureText(t).width <= room; };
-    const shortForm = floorShortForm(layout, labelFits);
-    for (const z of order) {
-      const q = z.rect, hotZ = hot.zone === z.key || over.zone === z.key || isOpen(z.key);
-      const y = z.kind === 'dept' ? slab : 0;
-      const topF = [P(q.x0, y, q.z0), P(q.x1, y, q.z0), P(q.x1, y, q.z1), P(q.x0, y, q.z1)];
-      if (z.kind === 'dept' && slab > 0.004) {
-        const base = [P(q.x0, 0, q.z0), P(q.x1, 0, q.z0), P(q.x1, 0, q.z1), P(q.x0, 0, q.z1)];
-        poly(base); ctx.strokeStyle = ink(hotZ ? 0.2 : 0.07); ctx.lineWidth = 1; ctx.stroke();
-        ctx.beginPath(); for (let i = 0; i < 4; i++) { ctx.moveTo(base[i][0], base[i][1]); ctx.lineTo(topF[i][0], topF[i][1]); } ctx.stroke();
-      }
-      poly(topF);
-      ctx.fillStyle = hotZ ? 'rgb(13,13,12)' : z.kind === 'dept' ? 'rgb(5,5,5)' : 'rgb(3,3,3)'; ctx.fill();
-      ctx.strokeStyle = ink(hotZ ? 0.5 : z.urgent ? 0.3 : z.kind === 'dept' ? 0.13 : 0.09); ctx.lineWidth = 1; ctx.stroke();
-      zonesOnScreen.push({ key: z.key, pts: topF });
-      const lp = P(q.x0 + 0.2, y, q.z1 - 0.2), lr = P(q.x1 - 0.2, y, q.z1 - 0.2);
-      ctx.fillStyle = ink(hotZ || z.urgent ? 0.95 : 0.5);
-      const room = Math.max(24, lr[0] - lp[0]), label = floorZoneLabel(z, labelFits(z), shortForm);
-      ctx.fillText(label.clip ? clipText(label.text, room) : label.text, lp[0], lp[1]);
-      // 빈 자리는 가는 짧은 선 하나다
-      for (let i = z.staff.length; i < z.spots.length; i++) {
-        const c = z.spots[i], a = P(c.x - 0.17, y, c.z + 0.3), b = P(c.x + 0.17, y, c.z + 0.3);
-        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.strokeStyle = ink(hotZ ? 0.22 : 0.12); ctx.lineWidth = 1; ctx.stroke();
-      }
+    const t3 = view * view * (3 - 2 * view);
+    // 탁상 등: 그 부서에 일하는(승인을 물은 · 소식 없는) 직원이 있으면 켠다. 첫 그림과 움직임 줄이기에서는 바로(설계 검토 10)
+    for (const z of layout) {
+      const want = z.kind === 'dept' && z.staff.some(s => LAMP_ON.has(s.status)) ? 1 : 0, was = lampK.get(z.key);
+      lampK.set(z.key, still || first || was === undefined ? want : was + (want - was) * (1 - Math.exp(-dt / M.lampTau)));
     }
+    const A = skinFrom, B = skinTo, order = [...layout].sort((a, b) => P0(0, 0, a.rect.z0)[2] - P0(0, 0, b.rect.z0)[2]);
+    if (A !== B && skinK(1 + order.length, now, still) >= 1) skinFrom = skinTo;
+    const mix = k => (A === B ? [[B, 1]] : [[A, 1 - k], [B, k]]);
+    const floorOn = !!(SKIN[A].floor || SKIN[B].floor), fl = floorOn ? floorRect() : null;
+    const hatOn = layout.some(z => z.staff.some(s => s.hat));
+    setCam(view);
+    if (!fit(fl, hatOn)) return;
+    ctx.font = '400 12.5px SUIT, "Malgun Gothic", sans-serif'; ctx.textBaseline = 'alphabetic';
+    // 이름표 폭. 한 장면 안에서는 빠진 수를 한 꼴로 적는다: 어느 구역이든 긴 꼴이 안 들어가면 모두 짧은 꼴이다(검수 solio-office-ga1b-20261122 F2)
+    const slabB = SKIN[B].slab * t3;
+    const labelFits = z => { const q = z.rect, y = z.kind === 'dept' ? slabB : 0, room = Math.max(24, P(q.x1 - 0.2, y, q.z1 - 0.2)[0] - P(q.x0 + 0.2, y, q.z1 - 0.2)[0]); return t => ctx.measureText(t).width <= room; };
+    const shortForm = floorShortForm(layout, labelFits);
+    if (fl) { const k0 = skinK(0, now, still); for (const [id, a] of mix(k0)) paintFloor(id, a, fl, t3); }
+    const kZ = new Map(), yZ = new Map();
+    order.forEach((z, i) => {
+      const q = z.rect, hotZ = hot.zone === z.key || over.zone === z.key || isOpen(z.key) || z.staff.some(s => s.picked);
+      const k = A === B ? 1 : skinK(1 + i, now, still), sl = (SKIN[A].slab * (1 - k) + SKIN[B].slab * k) * t3, y = z.kind === 'dept' ? sl : 0;
+      kZ.set(z.key, k); yZ.set(z.key, y);
+      for (const [id, a] of mix(k)) {
+        if (a < 0.003) continue;
+        if (id === 'black') zoneBlack(a, z, q, sl, hotZ);
+        else if (z.kind === 'dept') paintPed(id, a, z, q, sl, hotZ, t3);
+        else paintMat(id, a, z, q, hotZ);
+        zoneText(id, a, z, q, y, hotZ, labelFits, shortForm);
+      }
+      zonesOnScreen.push({ key: z.key, pts: HQ(q, y) });
+    });
     const list = [];
     for (const z of layout) {
-      const base = z.kind === 'dept' ? slab : 0;
+      const base = yZ.get(z.key) || 0;
       z.staff.slice(0, z.spots.length).forEach((s, i) => {
         const c = z.spots[i], L = lookOf(s.status), y = base + R0 + L.lift * (0.25 + 0.75 * t3), p = P(c.x, y, c.z);
-        list.push({ s, c, base, y, p, R: R0 * cam.S * p[3], depth: p[2] });
+        list.push({ s, z, c, base, y, p, R: R0 * cam.S * p[3], depth: p[2] });
         const one = life.get(s.id);
         if (one && !still) {
           if (one.blink > 0) one.blink = Math.max(0, one.blink - dt / M.blinkMs);
@@ -257,13 +530,16 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       });
     }
     list.sort((a, b) => a.depth - b.depth);
-    for (const { s, c, base, y, p, R } of list) {
-      const one = life.get(s.id);
+    for (const { s, z, c, base, y, p, R } of list) {
+      const one = life.get(s.id), k = kZ.get(z.key) ?? 1, near = k < 0.5 ? A : B;
       const alpha = still || first || !one ? 1 : Math.min(1, (now - one.bornAt) / M.fadeMs);
       ctx.save(); ctx.globalAlpha = alpha;
-      if (t3 > 0.02 && y - R0 - base > 0.02) { const b = P(c.x, base, c.z), a = P(c.x, y - R0, c.z); ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(a[0], a[1]); ctx.strokeStyle = ink(0.16 * t3); ctx.lineWidth = 1; ctx.stroke(); }
+      for (const [id, a] of mix(k)) underOrb(id, a, c, base, y, t3);
+      // 기본 「검정」에서는 직원과 자리를 가는 선 하나로 잇는다
+      const lineA = (A === 'black' ? 1 - k : 0) + (B === 'black' ? k : 0);
+      if (lineA > 0.01 && t3 > 0.02 && y - R0 - base > 0.02) { const b = P(c.x, base, c.z), a = P(c.x, y - R0, c.z); ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(a[0], a[1]); ctx.strokeStyle = ink(0.16 * t3 * lineA); ctx.lineWidth = 1; ctx.stroke(); }
       if (s.subagents > 0) helpers(p[0], p[1], R, s.subagents);
-      orb(p[0], p[1], R, s, now, t3, still);
+      orb(p[0], p[1], R, s, now, t3, still, mixRGB(SKIN[A].rim, SKIN[B].rim, k), SKIN[near].boost || 1);
       ctx.restore();
       staffOnScreen.push({ id: s.id, zone: s.zone, x: p[0], y: p[1], r: R });
     }
@@ -327,6 +603,14 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       if (viewSeq === null || s.viewSeq === viewSeq || reduced()) { view = viewTo = want; } else viewTo = want;
       viewSeq = s.viewSeq;
       layout = floorLayout(s, layout);
+      // 스킨은 손님이 고른 때(skinSeq가 바뀜)만 겹쳐 넘어가고, 그 밖에는 바로 그 스킨이다(설계 검토 10)
+      const skin = Object.hasOwn(SKIN, s.skin) ? s.skin : 'black';
+      if (skinSeq === null || s.skinSeq === skinSeq || reduced() || !shown) { skinFrom = skinTo = skin; skinT0 = -1e9; }
+      else if (skin !== skinTo) { skinFrom = skinTo; skinTo = skin; skinT0 = clock(); }
+      skinSeq = s.skinSeq ?? 0;
+      const rk = layout.map(z => [z.rect.x0, z.rect.x1, z.rect.z0, z.rect.z1].map(v => v.toFixed(2)).join(',')).join(';');
+      if (rk !== rectKey) { rectKey = rk; TEX.clear(); }
+      for (const k of [...lampK.keys()]) if (!layout.some(z => z.key === k)) lampK.delete(k);
       const t = clock(), ids = new Set();
       for (const z of layout) for (const st of z.staff) {
         ids.add(st.id);
@@ -351,6 +635,9 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     redraw() { if (shown) draw(); },
     zones: () => layout.map(z => z.key),
     view: () => (viewTo ? 'tilted' : 'top'),
+    /* 시험이 본다: 지금 스킨(넘어가는 중이면 앞 스킨도)과 나뭇결 모음의 크기 */
+    skin: () => ({ from: skinFrom, to: skinTo }),
+    texSize: () => TEX.size,
     dispose() {
       shown = false;
       if (frame) { unraf(frame); frame = 0; }

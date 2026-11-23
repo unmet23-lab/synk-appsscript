@@ -399,6 +399,20 @@ test('preload exposes exactly the office bridge, frozen, and rebuilds every argu
   await refused(office.saveSettings({ view: 'side' }), 'an unknown view');
   await refused(office.saveSettings({ manualCap: 2.5 }), 'a fractional cap');
   await refused(office.saveSettings({}), 'nothing to save');
+  // 꾸미기(사무실스킨 PC앱_설계.md 4절): 스킨 하나나 자리 하나의 모자 · 이름 하나만, 다른 설정과 섞지 않고 보낸다
+  await office.saveSettings({ skin: 'walnut', extra: 1 }); assert.deepEqual(last(), ['synk:office-settings-save', { skin: 'walnut' }]);
+  await office.saveSettings({ look: { seat: 'd:dept-1:0', hat: 'gat', x: 1 } }); assert.deepEqual(last(), ['synk:office-settings-save', { look: { seat: 'd:dept-1:0', hat: 'gat' } }]);
+  await office.saveSettings({ look: { seat: 'lobby:12', hat: null } }); assert.deepEqual(last(), ['synk:office-settings-save', { look: { seat: 'lobby:12', hat: null } }]);
+  await office.saveSettings({ look: { seat: 'd:dept-1:3', name: '서진' } }); assert.deepEqual(last(), ['synk:office-settings-save', { look: { seat: 'd:dept-1:3', name: '서진' } }]);
+  await refused(office.saveSettings({ skin: 'hanok' }), 'an unknown skin');
+  await refused(office.saveSettings({ skin: 'walnut', view: 'top' }), 'a skin mixed with another setting');
+  await refused(office.saveSettings({ skin: 'walnut', look: { seat: 'lobby:0', hat: 'gat' } }), 'a skin and a look together');
+  await refused(office.saveSettings({ look: { seat: 'd:dept-1:01', hat: 'gat' } }), 'a seat number with a leading zero');
+  await refused(office.saveSettings({ look: { seat: 'other:0', hat: 'gat' } }), 'an unknown seat zone');
+  await refused(office.saveSettings({ look: { seat: 'd:dept-1:0', hat: 'crown' } }), 'an unknown hat');
+  await refused(office.saveSettings({ look: { seat: 'd:dept-1:0', hat: 'gat', name: '서진' } }), 'a hat and a name together');
+  await refused(office.saveSettings({ look: { seat: 'd:dept-1:0' } }), 'nothing to change in the look');
+  await refused(office.saveSettings({ look: { seat: 'd:dept-1:0', name: 3 } }), 'a name that is not text');
 
   await office.addRoot('C:\\Users\\a\\.claude-work'); assert.deepEqual(last(), ['synk:office-roots-add'], 'adding a root carries no path');
   await office.removeRoot(ADDED); assert.deepEqual(last(), ['synk:office-roots-remove', ADDED]);
