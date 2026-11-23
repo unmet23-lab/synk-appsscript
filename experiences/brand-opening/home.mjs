@@ -197,6 +197,8 @@ function openPanel(title,html,{type='',eyebrow='SYNK WORLD',nav='home'}={}){
  panelKind=type;panel.className='world-panel panel-dialog';
  // 집중 화면(레슨·문제·카페·결과·이야기·게임·옷장·마을·보상)은 PC 가로 틀에서 가운데 최대 1120px(home.css .is-wide), 나머지 시트는 오른쪽 680px 패널.
  panel.classList.toggle('is-wide',/^(?:game|life-(?:lesson|question|cafe|cafe-complete|complete|review|review-complete|story)|wardrobe|world-(?:wardrobe|town|reward|hanger|hanger-list|writing|game-[a-z-]+))$/.test(type));
+ // 종이 겉(11-23 유호님 승인 「학생 시트만」): 레슨 소개 · 이야기 · 문제 · 배우기 · 놀이 · 로그인 시트만 종이다(world-ui.css #world-panel.is-paper).
+ panel.classList.toggle('is-paper',/^(?:life-(?:library|lesson|story|question)|play|world-signin)$/.test(type));
  if(type==='game')panel.classList.add('game-panel');
  else if(type==='wardrobe'||type==='world-wardrobe')panel.classList.add('wardrobe-dialog');
  else if(/^[a-z][a-z0-9-]*$/i.test(type))panel.classList.add(`${type}-panel`);
@@ -402,7 +404,7 @@ function showPlay(){
  // 해금 표(play-unlocks.mjs) + 학생 기록: 열린 놀이는 그대로, 잠긴 놀이는 이름과 「이야기에서 열려요 — 여는 자리」 한 줄(누르면 같은 말을 알린다).
  // 표로 잠겼던 놀이가 열린 뒤 처음 볼 때 한 번만 「새로 열림」(자물쇠가 열리고 흑백 → 색 · 빛 한 번 — home.css). 본 것은 계정마다 이 기기에 남긴다.
  const record=playRecordNow(),seen=seenPlays(),fresh=[];
- openPanel(t('play.title'),`<div class="play-list">${playOrder(Object.keys(games),record).map(id=>[id,games[id]]).map(([id,g],i)=>{const state=playState(id,record,seen),lock=state.open?'':lockText(state);const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play'});
+ openPanel(t('play.title'),`<div class="play-list">${playOrder(Object.keys(games),record).map(id=>[id,games[id]]).map(([id,g],i)=>{const state=playState(id,record,seen),lock=state.open?'':lockText(state);const isNew=!lock&&PLAY_UNLOCKS[id]&&seen&&!seen.includes(id);if(isNew)fresh.push(id);return `<button data-game="${id}"${lock?` data-locked="" aria-disabled="true" aria-label="${g.title}. ${lock}"`:''}${isNew?' data-new=""':''}><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span>${isNew?'<span class="play-sheen" aria-hidden="true"></span>':''}<span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')}<span class="play-label-en"> · ${g.label}</span></small><strong>${g.title}</strong><small>${isNew?`<span class="play-new">${t('play.new')}</span> `:''}${lock?`<span class="play-lock">${lock}</span>`:g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`;}).join('')}</div><p class="panel-note">${t('play.note')}</p>${more}`,{eyebrow:'PLAY',nav:'play',type:'play'});
  if(fresh.length)markPlaysSeen([...seen,...fresh]);
 }
 /** 「새로 열림」을 이미 본 놀이(계정마다). 저장소를 못 쓰면 null — 그때는 「새로 열림」을 띄우지 않는다(열 때마다 되풀이되지 않게). */

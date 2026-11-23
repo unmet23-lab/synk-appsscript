@@ -84,6 +84,79 @@
   --w-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2308090C' stroke-opacity='.6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme:light;
 }
+/* 종이 겉(2026-11-23 유호님 승인 「종이」 · 「학생 시트만」): 레슨 소개 · 이야기 장면 · 문제 · 배우기 · 놀이 · 로그인 시트만 앞면(world-front)의 종이로 바꾼다.
+ * 어느 판이 종이인지는 home.mjs openPanel이 is-paper로 정한다. 다른 화면(홈 · 마을 · 옷장 · 게임 · 결과 · 카페)은 밤 · 낮 겉 그대로다.
+ * 색 하나에 역할 하나: 붉은 흙빛 = 대사 속 배울 말(과 배울 말 판) · 인물 색 = 말하는 사람 · 남색 = 나 · 뒤집힌 짙은 띠 = 판정 · 따뜻한 먹 = 먼저 누를 단추. */
+#world-panel.is-paper{
+  --w-bg:#EAE3D6;--w-panel:#F3EEE6;--w-s1:#ECE6DC;--w-s2:#E5DED2;--w-s3:#DBD3C5;
+  --w-line:rgba(22,21,19,.12);--w-line-2:rgba(22,21,19,.2);
+  --w-ink:#161513;--w-ink-2:#4C4842;--w-ink-3:#6F695F;--w-ink-q:rgba(22,21,19,.42);--w-ink-4:#BCB5A9;--w-on-ink:#FFFFFF;
+  --w-glass:rgba(251,248,242,.94);--w-glass-strong:rgba(251,248,242,.97);
+  --w-glass-edge:inset 0 0 0 1px rgba(22,21,19,.08),0 2px 10px rgba(30,20,10,.14);
+  --w-card-edge:inset 0 0 0 1px var(--w-line);
+  --w-shadow:0 28px 80px rgba(30,20,10,.22);
+  --w-face:#2A2420;--w-on-face:#FFFFFF;--w-face-text:#161513;--w-face-deep:#A9441F;--w-glow:#2A2420;
+  --w-led-idle:rgba(22,21,19,.3);
+  --w-ok-text:#3F6B2E;--w-info-text:#24448C;--w-check-text:#7E5A10;--w-alert-text:#AE322A;
+  --w-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23161513' stroke-opacity='.6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* 종이 판에서만 쓰는 역할 색 */
+  --paper-key:#A9441F;--paper-me:#1D2547;--paper-btn:#2A2420;--paper-btn-fg:#FFFFFF;
+  --paper-learn:color-mix(in srgb,#A9441F 8%,#F3EEE6);--paper-learn-line:rgba(169,68,31,.16);
+  --paper-band:#1B1A17;--paper-band-fg:#F3EEE6;--paper-band-2:rgba(243,238,230,.74);--paper-band-key:#F0A37F;
+  /* 말하는 사람: 옷 색에서 뽑은 인물 색(서하 청바지 · 지호 짙은 초록 · 태오 회색 후드 · 나 남색), 세 친구는 털실 색을 종이 위 글자 대비(4.5 이상)로 낮춘 값 */
+  --c-seoha:#4C6E9E;--c-jiho:#3D6A53;--c-taeo:#5E6573;--c-me:#1D2547;--c-mongle:#9C3B57;--c-kkamong:#7A5134;--c-marine:#2D3F8E;--c-narrator:#6F695F;
+  color-scheme:light;
+}
+/* 종이 판 안에 따로 여는 창(튜터 표현 도움 · 연습)은 학생 시트가 아니라 원래 겉 그대로 둔다 */
+#world-panel.is-paper dialog{
+  --w-bg:#060709;--w-panel:#0C0D10;--w-s1:#121317;--w-s2:#191A1F;--w-s3:#222329;
+  --w-line:rgba(255,255,255,.075);--w-line-2:rgba(255,255,255,.14);
+  --w-ink:#FAFAF9;--w-ink-2:rgba(250,250,249,.76);--w-ink-3:rgba(250,250,249,.58);--w-ink-q:rgba(250,250,249,.42);--w-ink-4:rgba(250,250,249,.22);--w-on-ink:#08090C;
+  --w-glass:rgba(17,18,22,.52);--w-glass-strong:rgba(14,15,19,.82);
+  --w-glass-edge:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 10px 30px rgba(0,0,0,.26);
+  --w-card-edge:inset 0 1px 0 rgba(255,255,255,.055),inset 0 0 0 1px var(--w-line);
+  --w-shadow:0 28px 80px rgba(0,0,0,.55);
+  --w-face:#F96859;--w-on-face:#1E0E0A;--w-face-text:#FFB4A9;--w-face-deep:#AE322A;--w-glow:#F96859;
+  --w-led-idle:rgba(250,250,249,.34);
+  --w-ok-text:#C9E6AE;--w-info-text:#C5D6F5;--w-check-text:#FFE08A;--w-alert-text:#FFB4A9;
+  --w-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23FAFAF9' stroke-opacity='.7' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  color-scheme:dark;
+}
+:root[data-world-theme=day] #world-panel.is-paper dialog{
+  --w-bg:#ECECEA;--w-panel:#FFFFFF;--w-s1:#F5F5F4;--w-s2:#EDEDEB;--w-s3:#E2E2E0;
+  --w-line:rgba(8,9,12,.08);--w-line-2:rgba(8,9,12,.15);
+  --w-ink:#08090C;--w-ink-2:rgba(8,9,12,.72);--w-ink-3:rgba(8,9,12,.56);--w-ink-q:rgba(8,9,12,.42);--w-ink-4:rgba(8,9,12,.2);--w-on-ink:#FFFFFF;
+  --w-glass:rgba(255,255,255,.72);--w-glass-strong:rgba(255,255,255,.9);
+  --w-glass-edge:inset 0 1px 0 #FFFFFF,inset 0 0 0 1px rgba(8,9,12,.1),0 10px 28px rgba(8,9,12,.12);
+  --w-card-edge:inset 0 0 0 1px var(--w-line);
+  --w-face-text:#AE322A;--w-ok-text:#3F6B2E;--w-info-text:#24448C;--w-check-text:#7E5A10;--w-alert-text:#AE322A;
+  --w-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2308090C' stroke-opacity='.6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  color-scheme:light;
+}
+/* 종이 판의 단추: 글이 있으면 알약, 그림만 있으면 동그라미. 먼저 누를 단추 하나만 따뜻한 먹으로 채운다. */
+#world-panel.is-paper{background:var(--w-panel);color:var(--w-ink);box-shadow:0 -20px 60px rgba(20,12,4,.28)}
+#world-panel.is-paper .sheet-handle{background:var(--w-ink-4)}
+#world-panel.is-paper .close-button{background:rgba(22,21,19,.07);color:var(--w-ink);box-shadow:none}
+#world-panel.is-paper .close-button:hover{background:rgba(22,21,19,.12)}
+/* 판 머리의 영문 대문자 모노 꼬리표(LIFE IN KOREA · PLAY · ACCOUNT)는 종이 판에서 두지 않는다 — 제목이 그 판을 말한다 */
+#world-panel.is-paper #panel-eyebrow{display:none}
+#world-panel.is-paper .panel-header h2{margin-top:2px}
+/* 튜터 이름: 알약 대신 그 친구 색 글자(종이 위 대비 4.5 이상). 판(#world-panel)도 dialog라 판 안에 따로 연 창만 dialog dialog로 뺀다. */
+#world-panel.is-paper .w-name:not(dialog dialog *){height:auto;padding:0;border-radius:0;background:none;color:var(--who,var(--w-ink));font-weight:800}
+#world-panel.is-paper .w-name[data-who=mongle]:not(dialog dialog *){--who:var(--c-mongle)}
+#world-panel.is-paper .w-name[data-who=kkamong]:not(dialog dialog *){--who:var(--c-kkamong)}
+#world-panel.is-paper .w-name:is([data-who=marin],[data-who=marine]):not(dialog dialog *){--who:var(--c-marine)}
+#world-panel.is-paper .game-tutor:not(dialog dialog *){box-shadow:none}
+#world-panel.is-paper .game-tutor-portrait:not(dialog dialog *){box-shadow:0 0 0 1.5px rgba(22,21,19,.08),0 6px 14px rgba(30,20,10,.18)}
+#world-panel.is-paper .panel-header h2{font-weight:700;letter-spacing:-.02em}
+#world-panel.is-paper .felt-button{border-radius:999px;background:var(--paper-btn);color:var(--paper-btn-fg);box-shadow:0 10px 24px rgba(30,20,10,.14)}
+#world-panel.is-paper .felt-button:hover{box-shadow:0 0 0 4px rgba(42,36,32,.12),0 10px 24px rgba(30,20,10,.14)}
+#world-panel.is-paper .plain-button{border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1.5px rgba(42,36,32,.32)}
+#world-panel.is-paper .plain-button:hover{background:rgba(22,21,19,.05)}
+#world-panel.is-paper .quiet-button{color:var(--w-ink-2);text-decoration:none;font-weight:600}
+#world-panel.is-paper .quiet-button:hover{color:var(--w-ink)}
+#world-panel.is-paper :focus-visible{outline-color:var(--w-ink)}
+#world-panel.is-paper .w-print{box-shadow:0 1px 0 rgba(0,0,0,.04),0 12px 26px rgba(30,20,10,.18),0 2px 6px rgba(30,20,10,.12)}
 
 /* ── 공통 부품: 새 화면은 .w-* 를 쓰고, 기존 화면의 클래스는 각 CSS에서 같은 토큰으로 맞춘다 ── */
 .w-label{display:inline-flex;align-items:center;gap:10px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;line-height:1.4;letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3)}

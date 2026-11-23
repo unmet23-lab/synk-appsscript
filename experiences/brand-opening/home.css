@@ -440,3 +440,39 @@ noscript{position:fixed;inset:auto 20px 100px;background:var(--w-panel);color:va
 .classroom-enrollment [role=status]{font-size:14px;line-height:1.6;color:var(--w-ink-2)}
 .classroom-enrollment .error{display:flex;gap:8px;align-items:baseline;color:var(--w-alert-text)}
 .classroom-enrollment .error::before{content:'';flex-shrink:0;width:7px;height:7px;border-radius:50%;background:var(--w-led-alert);transform:translateY(-1px)}
+
+/* ── 놀이 목록 · 종이 겉(2026-11-23 유호님 승인 「종이」 · 「학생 시트만」, world-ui.css #world-panel.is-paper) ──
+ * 코랄 포스터 · 어두운 카드 대신 종이 위에 놓는다: 펠트 물건 사진은 흰 인화지 없이 종이에 바로 얹고(곱하기), 번호는 DM Mono, 영문 대문자 꼬리표는 뺀다.
+ * 오늘 해 볼 놀이(첫 줄)는 큰 제목 한 줄, 나머지는 옅은 종이 칸. 잠긴 놀이는 자물쇠 그림과 여는 자리 한 줄. */
+#world-panel.play-panel.is-paper .play-list{gap:12px}
+#world-panel.play-panel.is-paper .play-list button{background:var(--w-s1);color:var(--w-ink);box-shadow:none}
+#world-panel.play-panel.is-paper .play-list button::before,#world-panel.play-panel.is-paper .play-list button::after{display:none}
+#world-panel.play-panel.is-paper .play-list button:hover{background:var(--w-s2);box-shadow:none}
+/* 첫 줄은 종이 바탕 그대로(사진의 흰 바탕이 곱하기로 종이에 녹도록 판 색을 깐다) */
+#world-panel.play-panel.is-paper .play-list button:first-child{min-height:228px;padding:18px 0 20px;border-radius:0;background:var(--w-panel);border-bottom:1px solid var(--w-line)}
+#world-panel.play-panel.is-paper .play-list button:first-child:hover{background:var(--w-panel)}
+#world-panel.play-panel.is-paper .play-list button:first-child:hover .play-copy strong{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-color:var(--w-ink-4)}
+#world-panel.play-panel.is-paper .play-art.w-print{padding:0;border-radius:6px;background:none;box-shadow:none;mix-blend-mode:multiply}
+#world-panel.play-panel.is-paper .play-art.w-print img{border-radius:0;filter:brightness(1.045) contrast(1.04)}
+#world-panel.play-panel.is-paper .play-list button:first-child .play-art{top:6px;right:-6px;width:164px;transform:rotate(-7deg)}
+#world-panel.play-panel.is-paper .play-label{font-size:12px;letter-spacing:.02em;text-transform:none;color:var(--w-ink-3)}
+#world-panel.play-panel.is-paper .play-label-en{display:none}
+#world-panel.play-panel.is-paper .play-copy strong{font-weight:800;letter-spacing:-.035em}
+#world-panel.play-panel.is-paper .play-list button:first-child .play-copy strong{font-size:46px;line-height:1.08;letter-spacing:-.045em}
+#world-panel.play-panel.is-paper .play-list button:not(:first-child) .play-copy strong{font-size:20px;line-height:1.2;font-weight:700;letter-spacing:-.025em}
+#world-panel.play-panel.is-paper .play-copy small:last-child{color:var(--w-ink-2);font-weight:500}
+#world-panel.play-panel.is-paper .play-list .arrow{background:none;color:var(--w-ink-2);box-shadow:inset 0 0 0 1.5px var(--w-line-2)}
+#world-panel.play-panel.is-paper .play-list button:first-child .arrow{top:18px;left:auto;right:4px;opacity:0}
+#world-panel.play-panel.is-paper .play-list button[data-locked] .play-copy strong{color:var(--w-ink-3)}
+#world-panel.play-panel.is-paper .play-list button[data-locked]:hover{background:var(--w-s1)}
+#world-panel.play-panel.is-paper .play-lock{gap:6px;color:var(--w-ink-2)}
+#world-panel.play-panel.is-paper .play-lock::before{width:12px;height:12px;border-radius:0;background:currentColor;transform:translateY(1px);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='5' y='11' width='14' height='9' rx='2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='5' y='11' width='14' height='9' rx='2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") center/contain no-repeat}
+#world-panel.play-panel.is-paper .play-more .eyebrow{font-family:var(--w-sans);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none}
+#world-panel.play-panel.is-paper .play-more .eyebrow::after{flex:1;width:auto;background:var(--w-line)}
+#world-panel.play-panel.is-paper .play-more img{box-shadow:0 4px 10px rgba(30,20,10,.16)}
+@container (min-width:600px){
+  #world-panel.play-panel.is-paper .play-list button:first-child{min-height:400px;padding:22px 24px 26px 0;border-bottom:0;box-shadow:inset -1px 0 0 var(--w-line)}
+  #world-panel.play-panel.is-paper .play-list button:first-child .play-art{top:24px;right:30px;width:220px}
+  #world-panel.play-panel.is-paper .play-list button:first-child .play-copy strong{font-size:56px}
+}
+@media(max-width:359px){#world-panel.play-panel.is-paper .play-list button:first-child .play-copy strong{font-size:40px}#world-panel.play-panel.is-paper .play-list button:first-child .play-art{width:132px}}

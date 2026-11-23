@@ -1,4 +1,4 @@
-// WORLD 이야기 해설 글꼴(본명조 · Noto Serif KR, OFL)을 이야기 장면에 쓰인 글자만 잘라 만든다(10-15 이야기 화면 디테일 ⑥).
+// WORLD 이야기 해설 글꼴(본명조 · Noto Serif KR, OFL)을 이야기 장면에 쓰인 글자만 잘라 만든다(10-15 이야기 화면 디테일 ⑥). 11-23부터는 학생 시트의 레슨 제목 · 문제 상황 글자도 담는다.
 // 해설은 책 글씨(본명조 450), 친구 대사는 말 글씨(SUIT). 굵기는 해설 450과 배울 말 650만 쓰므로 가변 축을 450–650으로 줄인다.
 //   node tools/build-world-story-font.mjs [--source <NotoSerifKR-VF.ttf>]   → assets/NotoSerifKR-story.woff2 + .json(담긴 글자)
 //   node tools/build-world-story-font.mjs --check                          → 이야기 글자가 모두 담겼는지(파이썬 없이)
@@ -19,7 +19,9 @@ const RANGES='U+0020-007E,U+00B7,U+2010-2027';
 export async function storyCharacters(){
  const {LESSONS}=await import(pathToFileURL(path.join(root,'experiences/synk-world-app/life-content.mjs')).href);
  const chars=new Set();
- for(const lesson of LESSONS)for(const scene of lesson.scenes||[])for(const ch of scene.text)if(ch.codePointAt(0)>=0x80)chars.add(ch);
+ const add=text=>{for(const ch of String(text||''))if(ch.codePointAt(0)>=0x80)chars.add(ch);};
+ // 이야기 해설에 더해, 종이 겉 학생 시트(11-23 「종이」 · 「학생 시트만」)의 레슨 제목과 문제 상황 글(복습 상황 포함)도 같은 명조로 쓴다.
+ for(const lesson of LESSONS){for(const scene of lesson.scenes||[])add(scene.text);add(lesson.title);for(const q of lesson.questions||[]){add(q.context);add(q.review?.context);}}
  return [...chars].sort();
 }
 export function missingCharacters(chars,list=JSON.parse(fs.readFileSync(listPath,'utf8'))){const have=new Set(list.chars);return chars.filter(ch=>!have.has(ch));}

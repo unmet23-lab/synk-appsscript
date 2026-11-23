@@ -1129,3 +1129,197 @@ html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label){font-family:
   .life-pack-card:active,.life-choice:not(:disabled):active,.cafe-option:not(:disabled):active,#world-panel .cafe-composer .cafe-pick:not(:disabled):active{transform:none}
   .life-feedback,.life-result.is-arriving{animation:none}
 }
+
+/* ══ 종이 겉(2026-11-23 유호님 승인 「종이」 · 「학생 시트만」 — 보기 페이지 https://claude.ai/artifact/NRDv7e4iTuLgevDRHBz62d) ══
+ * 레슨 소개 · 이야기 장면 · 문제 · 배우기(허브 · 팩 · 이야기 모음)만. 판의 토큰은 world-ui.css #world-panel.is-paper가 바꾸고, 여기서는 글자 · 색 역할과 짜임을 맞춘다.
+ * 글자: 대사 · 배울 말 SUIT 700~800 · 해설 · 레슨 제목 · 문제 상황 World Story Serif · 내 말 뜻 Inter Tight(키릴 포함) 500 · 숫자 DM Mono · 작은 머리 SUIT 600(영문 대문자 모노 꼬리표 없음).
+ * 색: 붉은 흙빛 = 대사 속 배울 말(과 배울 말 판의 옅은 바탕) · 인물 색 = 말하는 사람 · 남색 = 나 · 뒤집힌 짙은 띠 = 판정 · 따뜻한 먹 = 먼저 누를 단추 하나. */
+.life-poster-kicker{display:none}
+.life-ghost{position:absolute;z-index:60;margin:0;pointer-events:none;white-space:nowrap;font-family:var(--w-sans);font-weight:800;letter-spacing:-.02em;color:var(--paper-key,#A9441F);transform-origin:0 0}
+#world-panel.is-paper .life-section-label{font-family:var(--w-sans);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--w-ink-3)}
+#world-panel.is-paper .life-section-label::after{flex:1;width:auto;background:var(--w-line)}
+#world-panel.is-paper .life-section-head>.life-section-label::after{display:none}
+#world-panel.is-paper .life-count{font-size:12.5px;letter-spacing:.02em;color:var(--w-ink-2)}
+#world-panel.is-paper .w-led{box-shadow:none}
+#world-panel.is-paper .life-rest{background:none;box-shadow:inset 0 0 0 1px var(--w-line)}
+#world-panel.is-paper .life-rest::before{box-shadow:none}
+/* 집중 판 머리: 레슨 제목은 명조, 진행 칸은 먹(지난 칸 찬 먹 · 지금 칸 반쯤 찬 먹) */
+#world-panel.is-paper:is(.life-lesson-panel,.life-story-panel,.life-question-panel) .panel-header h2{font-family:'World Story Serif',var(--w-sans);font-size:19px;font-weight:600;letter-spacing:-.01em}
+#world-panel.is-paper .life-steps i{background:var(--w-line)}
+#world-panel.is-paper .life-steps i.is-done{background:var(--w-ink)}
+#world-panel.is-paper .life-steps i.is-now{background:linear-gradient(90deg,var(--w-ink) 50%,var(--w-line) 50%)}
+#world-panel.is-paper .life-progress{background:var(--w-line)}
+#world-panel.is-paper .life-progress>i{background:var(--w-ink)}
+#world-panel.is-paper[class*="life-"] .life-actions .felt-button:not(:disabled){box-shadow:0 10px 24px rgba(30,20,10,.14)}
+#world-panel.is-paper[class*="life-"] .life-actions .felt-button:disabled{box-shadow:inset 0 0 0 1.5px var(--w-line-2)}
+#world-panel.is-paper .felt-button{transition:transform .12s var(--w-ease),opacity .35s ease,box-shadow .2s var(--w-ease)}
+/* 배울 말이 판으로 날아와 앉는 동안 「다음」은 물러나 있다 */
+#world-panel.is-paper .felt-button.is-holding{opacity:.3;pointer-events:none}
+
+/* ── 레슨 소개: 목표 한 줄(머리 줄이 이미 단계를 말하므로 단계 꼬리표는 뺀다) → 이번에 배울 표현(한국어 · 내 말 뜻 · 쓰임) ── */
+#world-panel.is-paper .life-intro-head .life-section-label{display:none}
+#world-panel.is-paper .life-goal{font-size:22px;line-height:1.42;font-weight:700;letter-spacing:-.02em;color:var(--w-ink)}
+#world-panel.is-paper .life-expression-list article{gap:10px;padding:14px 0;border-top-color:var(--w-line)}
+#world-panel.is-paper .life-expression-list article:last-child{border-bottom-color:var(--w-line)}
+#world-panel.is-paper .life-expression-index{padding-top:10px;font-size:12px;letter-spacing:.02em}
+#world-panel.is-paper .life-expression-list strong{font-size:23px;line-height:1.35;font-weight:700;letter-spacing:-.02em}
+#world-panel.is-paper .life-expression-list p{margin-top:3px}
+#world-panel.is-paper .life-expression-gloss{font-size:15px;line-height:1.4;font-weight:500;color:var(--w-ink)}
+#world-panel.is-paper .life-expression-use{font-size:15px;line-height:1.55;color:var(--w-ink-2)}
+#world-panel.is-paper .life-expression-gloss+.life-expression-use{font-size:13.5px;line-height:1.5;color:var(--w-ink-3)}
+
+/* ── 이야기 장면: 사진 → 말하는 사람(인물 색 네모 + 이름) → 큰 대사(카드 없음) → 배울 말 판 ── */
+#world-panel.is-paper .life-story-stage>.life-story-photo{border-radius:0 0 22px 22px;background:#D9D1C3}
+#world-panel.is-paper .life-story-stage:has(>.life-story-photo)>.life-dialogue{margin:0}
+#world-panel.is-paper .life-dialogue{padding:18px 0 2px;border-radius:0;background:none;color:var(--w-ink);box-shadow:none}
+#world-panel.is-paper .life-dialogue::before{display:none}
+#world-panel.is-paper .life-speaker{--who:var(--w-ink-2);display:flex;align-items:center;gap:8px;min-height:24px;margin:0 0 8px;font-size:15px;line-height:1.2;font-weight:800;letter-spacing:-.01em;color:var(--who)}
+#world-panel.is-paper .life-speaker::before{content:'';flex:none;width:9px;height:9px;border-radius:2px;background:var(--who)}
+#world-panel.is-paper .life-speaker[data-who=seoha]{--who:var(--c-seoha)}
+#world-panel.is-paper .life-speaker[data-who=jiho]{--who:var(--c-jiho)}
+#world-panel.is-paper .life-speaker[data-who=taeo]{--who:var(--c-taeo)}
+#world-panel.is-paper .life-speaker[data-who=me]{--who:var(--c-me)}
+#world-panel.is-paper .life-speaker[data-who=mongle]{--who:var(--c-mongle)}
+#world-panel.is-paper .life-speaker[data-who=kkamong]{--who:var(--c-kkamong)}
+#world-panel.is-paper .life-speaker[data-who=marine]{--who:var(--c-marine)}
+#world-panel.is-paper .life-speaker[data-who=narrator]{font-family:'World Story Serif',var(--w-sans);font-weight:500;color:var(--w-ink-3)}
+#world-panel.is-paper .life-speaker[data-who=narrator]::before{display:none}
+#world-panel.is-paper .life-dialogue>p{font-size:28px;line-height:1.38;font-weight:700;letter-spacing:-.02em;color:var(--w-ink);text-wrap:pretty}
+#world-panel.is-paper .life-dialogue[data-speaker=me]>p{color:var(--paper-me)}
+#world-panel.is-paper .life-dialogue[data-speaker=narrator]>p{font-family:'World Story Serif',var(--w-sans);font-size:21px;line-height:1.62;font-weight:450;letter-spacing:-.01em;color:var(--w-ink-2)}
+#world-panel.is-paper mark.life-say{--life-say:var(--paper-key);font-weight:800}
+#world-panel.is-paper .life-dialogue[data-speaker=narrator] mark.life-say{font-weight:650}
+#world-panel.is-paper mark.life-say[data-life-mark]:focus-visible{outline-color:var(--paper-key)}
+/* 배울 말 판: 옅은 흙빛 판(휴대폰은 화면 끝까지). 한국어는 먹 SUIT 800, 내 말 뜻은 Inter Tight 500, 쓰임은 작게. 뜻과 쓰임은 말이 앉은 뒤에 뜬다. */
+#world-panel.is-paper .life-learn{display:grid;align-content:start;margin:18px calc(var(--life-pad) * -1) 0;padding:12px var(--life-pad) 16px;background:var(--paper-learn)}
+#world-panel.is-paper .life-learn[hidden]{display:none}
+#world-panel.is-paper .life-learn-head{margin:0 0 2px;font-size:13px;line-height:1.4;font-weight:600;color:var(--w-ink-3)}
+#world-panel.is-paper .life-learn-row{padding:8px 0 10px}
+#world-panel.is-paper .life-learn-row+.life-learn-row{border-top:1px solid var(--paper-learn-line);transition:border-color .3s .1s}
+#world-panel.is-paper .life-learn-row.is-waiting+.life-learn-row.is-waiting{border-top-color:transparent}
+#world-panel.is-paper .life-learn-phrase{display:block;font-size:24px;line-height:1.3;font-weight:800;letter-spacing:-.02em;color:var(--w-ink)}
+#world-panel.is-paper .life-learn-gloss{margin-top:3px;font-size:15px;line-height:1.4;font-weight:500;color:var(--w-ink)}
+#world-panel.is-paper .life-learn-use{margin-top:3px;font-size:14.5px;line-height:1.5;color:var(--w-ink-2);text-wrap:pretty}
+#world-panel.is-paper .life-learn-gloss+.life-learn-use{margin-top:1px;font-size:13.5px;color:var(--w-ink-3)}
+#world-panel.is-paper .life-learn-row :is(.life-learn-gloss,.life-learn-use){transition:opacity .3s .18s}
+#world-panel.is-paper .life-learn-row.is-waiting :is(.life-learn-gloss,.life-learn-use){opacity:0}
+/* 휴대폰: 판이 아래 단추 띠까지 이어지고, 단추는 판 위에 앉는다 */
+/* 아래 저장 줄 자리(평소에는 숨긴 채 자리만 남는다)는 단추 띠의 그림자 한 겹으로 같은 색을 이어 칠하고, 저장 중 · 실패로 글이 보일 때는 그 줄이 같은 바탕을 갖는다. */
+@container life-sheet (max-width:619px){
+  #world-panel.is-paper .life-story-stage:has(>.life-learn:not([hidden])){flex-grow:1;grid-template-rows:auto auto 1fr;align-content:stretch}
+  #world-panel.is-paper #panel-content:has(.life-learn:not([hidden])) .life-actions{background:var(--paper-learn);box-shadow:0 60px 0 30px var(--paper-learn)}
+  #world-panel.is-paper #panel-content:has(.life-learn:not([hidden]))>.life-save-status:not([data-save-phase=device]):not([data-save-phase=synced]){position:relative;z-index:5;margin:0 calc(var(--life-pad) * -1);background:var(--paper-learn)}
+  #world-panel.is-paper .life-actions:has(>.life-feedback){box-shadow:0 60px 0 30px var(--paper-band)}
+  #world-panel.is-paper #panel-content:has(.life-actions>.life-feedback)>.life-save-status:not([data-save-phase=device]):not([data-save-phase=synced]){position:relative;z-index:5;margin:0 calc(var(--life-pad) * -1);background:var(--paper-band);color:var(--paper-band-2)}
+}
+
+/* ── 문제: 상황(명조) → 굵은 물음 → 1px 선으로 나눈 보기 줄(맞은 말은 붉은 흙빛 + 체크, 고른 오답은 엑스) → 판정은 아래 뒤집힌 짙은 띠 ── */
+#world-panel.is-paper .life-question-layout{gap:16px}
+#world-panel.is-paper .life-question-copy{gap:12px}
+#world-panel.is-paper .life-scene{min-height:0;padding:0;gap:14px;border-radius:0;background:none;box-shadow:none}
+#world-panel.is-paper .w-print.life-scene-print{width:58px}
+#world-panel.is-paper .life-context{font-family:'World Story Serif',var(--w-sans);font-size:17px;line-height:1.6;font-weight:450;letter-spacing:-.01em;color:var(--w-ink-2)}
+#world-panel.is-paper .life-question-title small{color:var(--w-ink-3);font-weight:600}
+#world-panel.is-paper .life-question-title h3{font-size:25px;line-height:1.36;font-weight:700;letter-spacing:-.025em}
+#world-panel.is-paper .life-help{display:inline-flex;align-items:center;gap:7px;margin:-8px 0 -6px -4px;padding:0 4px;font-size:15px;font-weight:600;color:var(--w-ink-2)}
+#world-panel.is-paper .life-help::before{content:'';flex:none;width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+#world-panel.is-paper .life-hint{padding:2px 0 2px 14px;border-radius:0;background:none;box-shadow:inset 2px 0 0 var(--w-line-2);font-size:15px;line-height:1.6;color:var(--w-ink-2)}
+#world-panel.is-paper .life-hint::before{display:none}
+#world-panel.is-paper .life-choices{gap:0;border-top:1px solid var(--w-line)}
+#world-panel.is-paper .life-choices>.life-choice{min-height:66px;padding:12px 4px;border-radius:0;background:none;box-shadow:none;border-bottom:1px solid var(--w-line);font-size:24px;font-weight:600;letter-spacing:-.02em;color:var(--w-ink)}
+#world-panel.is-paper .life-choices>.life-choice:not(:disabled):hover{background:rgba(22,21,19,.035);box-shadow:none}
+#world-panel.is-paper .life-choices>.life-choice:disabled:not(.is-chosen):not(.is-correct){color:var(--w-ink)}
+#world-panel.is-paper .life-choices>.life-choice:disabled:not(.is-chosen):not(.is-correct)>.life-choice-copy>span:first-child{opacity:.42}
+#world-panel.is-paper .life-choices>.life-choice:is(.is-chosen,.is-correct){background:none;box-shadow:none;color:var(--w-ink)}
+#world-panel.is-paper .life-choices>.life-choice.is-correct{color:var(--paper-key);font-weight:800}
+#world-panel.is-paper .life-choices>.life-choice.is-chosen:not(.is-correct)>.life-choice-copy>span:first-child{opacity:.55}
+#world-panel.is-paper .life-choices>.life-choice:is(.is-chosen,.is-correct)::after{width:28px;height:28px;margin:0 4px 0 0;border-radius:0;background:var(--paper-key);box-shadow:none;-webkit-mask:var(--w-check) center/24px no-repeat;mask:var(--w-check) center/24px no-repeat}
+#world-panel.is-paper .life-choices>.life-choice.is-chosen:not(.is-correct)::after{width:28px;height:28px;margin:0 4px 0 0;border-radius:0;background:var(--w-ink-2);box-shadow:none;-webkit-mask:var(--w-close) center/22px no-repeat;mask:var(--w-close) center/22px no-repeat}
+#world-panel.is-paper .life-choice-note{font-size:15px;font-weight:500;color:var(--w-ink-2)}
+#world-panel.is-paper .life-choices>.life-choice.is-chosen:not(.is-correct) .life-choice-note,#world-panel.is-paper .life-choices>.life-choice:disabled:not(.is-chosen):not(.is-correct) .life-choice-note{color:var(--w-ink-2)}
+#world-panel.is-paper .w-wash{inset:5px 0;border-radius:10px;background:color-mix(in srgb,var(--paper-key) 9%,transparent)}
+#world-panel.is-paper .life-meanings{border-radius:0;background:none;box-shadow:none;border-bottom:1px solid var(--w-line)}
+#world-panel.is-paper .life-meanings>summary{padding:0 4px}
+#world-panel.is-paper .life-meanings>ul{padding:0 4px 10px}
+#world-panel.is-paper .life-meanings li>span{font-weight:700}
+#world-panel.is-paper .life-meanings li>small{font-size:14.5px;font-weight:500;color:var(--w-ink-2)}
+/* 판정 띠: 아래 단추 자리 전체가 바탕을 뒤집은 짙은 띠가 된다(화면에서 한 곳). 이유 · 다른 보기 · 다시 볼 때 · 다음 단추가 띠 안에 있다. */
+#world-panel.is-paper .life-actions:has(>.life-feedback){--w-ink:var(--paper-band-fg);--w-ink-2:var(--paper-band-2);--w-ink-3:rgba(243,238,230,.62);--w-ink-4:rgba(243,238,230,.3);--w-line:rgba(243,238,230,.14);--w-line-2:rgba(243,238,230,.3);--w-s2:rgba(243,238,230,.08);--w-s3:rgba(243,238,230,.13);
+  --w-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23F3EEE6' stroke-opacity='.75' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  margin:auto calc(var(--life-pad) * -1) 0;padding:18px var(--life-pad) 10px;gap:6px 12px;border-radius:22px 22px 0 0;background:var(--paper-band);color:var(--paper-band-fg)}
+#world-panel.is-paper .life-actions>.life-feedback{gap:0;padding:0;border-radius:0;background:none;box-shadow:none}
+#world-panel.is-paper .life-feedback>strong{gap:9px;min-height:28px;font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--paper-band-fg)}
+#world-panel.is-paper .life-feedback>strong::before{width:20px;height:20px;border-radius:0;background:var(--paper-band-key);box-shadow:none;-webkit-mask:var(--w-check) center/18px no-repeat;mask:var(--w-check) center/18px no-repeat}
+#world-panel.is-paper .life-feedback[data-result=retry]>strong::before{background:var(--paper-band-2);-webkit-mask-image:var(--w-close);mask-image:var(--w-close)}
+#world-panel.is-paper .life-feedback .life-explanation>summary{min-height:40px;color:var(--paper-band-2)}
+#world-panel.is-paper .life-feedback .life-explanation>p,#world-panel.is-paper .life-feedback:not([data-result=ok]) .life-explanation>p{padding:4px 0 6px;font-size:15.5px;line-height:1.55;color:var(--paper-band-fg)}
+#world-panel.is-paper .life-feedback .life-quote{color:var(--paper-band-fg);font-weight:800}
+#world-panel.is-paper .life-feedback .life-other-notes{justify-self:start;min-height:38px;margin:6px 0 4px;padding:0 15px;border-radius:999px;color:var(--paper-band-key);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--paper-band-key) 60%,transparent);font-size:14.5px;font-weight:650;text-decoration:none}
+#world-panel.is-paper .life-feedback-foot{padding:8px 0 6px;border-top-color:var(--w-line)}
+#world-panel.is-paper .life-actions:has(>.life-feedback)>.felt-button{background:var(--paper-band-fg);color:#161513;box-shadow:none}
+#world-panel.is-paper .life-actions:has(>.life-feedback)>.felt-button:hover{box-shadow:0 0 0 4px rgba(243,238,230,.18)}
+#world-panel.is-paper .life-actions:has(>.life-feedback)>.quiet-button{color:var(--paper-band-2)}
+#world-panel.is-paper .life-actions:has(>.life-feedback) .life-sr{color:var(--paper-band-fg)}
+
+/* ── 배우기(허브 · 팩 · 이야기 모음): 코랄 포스터 대신 종이 위 한 장 — 인화지 · 큰 한국어 · 진행선 · 따뜻한 먹 단추 하나 ── */
+#world-panel.is-paper .life-poster{padding:0 0 22px;border-radius:0;background:none;color:var(--w-ink);overflow:visible;border-bottom:1px solid var(--w-line)}
+#world-panel.is-paper .life-poster::before,#world-panel.is-paper .life-poster::after{display:none}
+#world-panel.is-paper .life-poster-label{display:none}
+#world-panel.is-paper .life-poster>.life-poster-kicker{display:block;grid-area:label;align-self:start;font-size:13px;line-height:1.4;font-weight:600;color:var(--w-ink-3)}
+#world-panel.is-paper .life-poster-word{font-weight:800;letter-spacing:-.035em;color:var(--w-ink)}
+#world-panel.is-paper .life-poster-sub,#world-panel.is-paper .life-poster>.life-pack-description{color:var(--w-ink-2)}
+#world-panel.is-paper .life-poster-why{color:var(--w-ink-3)}
+#world-panel.is-paper .life-poster-count{color:var(--w-ink-3)}
+#world-panel.is-paper .life-meter>span{background:var(--w-line)}
+#world-panel.is-paper .life-meter>span>i{background:var(--w-ink)}
+#world-panel.is-paper .life-meter>b{letter-spacing:.02em;color:var(--w-ink-3)}
+#world-panel.is-paper .life-poster>.felt-button{box-shadow:0 10px 24px rgba(30,20,10,.14)}
+#world-panel.is-paper .life-pack-head .life-poster{padding-bottom:0;border-bottom:0}
+#world-panel.is-paper .life-pack-poster .life-poster-word{letter-spacing:calc(-.06em + var(--len,3) * .01em)}
+#world-panel.is-paper .life-pack-card{background:var(--w-s1);box-shadow:none;color:var(--w-ink)}
+#world-panel.is-paper .life-pack-card::before{display:none}
+#world-panel.is-paper .life-pack-card:hover{background:var(--w-s2);box-shadow:none}
+#world-panel.is-paper .life-pack-label{font-size:12px;letter-spacing:.02em;text-transform:none;color:var(--w-ink-3)}
+#world-panel.is-paper .life-pack-en{display:none}
+#world-panel.is-paper .life-pack-word{font-weight:800;letter-spacing:-.035em}
+#world-panel.is-paper .life-pack-title{color:var(--w-ink-2)}
+#world-panel.is-paper .life-pack-card .life-meter>b{color:var(--w-ink-2)}
+#world-panel.is-paper .life-pack-card[data-current=true]{box-shadow:inset 0 0 0 1.5px rgba(42,36,32,.34)}
+#world-panel.is-paper .life-pack-now{padding:0;background:none;color:var(--w-ink);font-weight:700}
+#world-panel.is-paper .w-print.life-row-print{box-shadow:0 4px 10px rgba(30,20,10,.16)}
+#world-panel.is-paper .life-row-state{color:var(--w-ink)}
+#world-panel.is-paper .life-lesson-card>em::before{box-shadow:none}
+#world-panel.is-paper .cafe-pack-preview{box-shadow:none}
+
+/* ── 넓은 판(가로 휴대폰 · PC): 이야기는 왼쪽 사진, 오른쪽 말하는 사람 · 대사 · 배울 말 판. 판정 띠는 판 안의 둥근 띠 ── */
+@container life-sheet (min-width:620px){
+  #world-panel.is-paper .life-story-stage:has(>.life-story-photo){grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:36px;row-gap:0;align-items:start}
+  #world-panel.is-paper .life-story-stage>.life-story-photo{grid-row:1 / span 2;border-radius:22px}
+  #world-panel.is-paper .life-story-stage>.life-dialogue{grid-column:2;padding-top:4px}
+  #world-panel.is-paper .life-story-stage>.life-learn{grid-column:2;margin:22px 0 0;padding:14px 20px 16px;border-radius:12px}
+  #world-panel.is-paper .life-dialogue>p{font-size:34px;line-height:1.32}
+  #world-panel.is-paper .life-dialogue[data-speaker=narrator]>p{font-size:24px}
+  #world-panel.is-paper .life-speaker{font-size:16px}
+  #world-panel.is-paper .life-learn-phrase{font-size:26px}
+  #world-panel.is-paper .life-actions:has(>.life-feedback){margin:auto 0 10px;padding:16px 20px;border-radius:18px;align-items:center}
+  #world-panel.is-paper .life-actions:has(>.life-feedback)>.felt-button{min-width:220px}
+}
+@container life-sheet (min-width:960px){
+  #world-panel.is-paper .life-question-title h3{font-size:30px}
+  #world-panel.is-paper .life-choices>.life-choice{min-height:74px;font-size:26px}
+  #world-panel.is-paper .life-dialogue>p{font-size:38px}
+}
+@media(max-width:359px){
+  #world-panel.is-paper .life-dialogue>p{font-size:24px}
+  #world-panel.is-paper .life-dialogue[data-speaker=narrator]>p{font-size:19px}
+  #world-panel.is-paper .life-learn-phrase{font-size:22px}
+  #world-panel.is-paper .life-choices>.life-choice{font-size:22px}
+}
+@media(orientation:landscape) and (max-height:500px){
+  #world-panel.is-paper .life-dialogue>p{font-size:24px}
+  #world-panel.is-paper .life-dialogue[data-speaker=narrator]>p{font-size:19px}
+  #world-panel.is-paper .life-learn-phrase{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){
+  #world-panel.is-paper .life-learn-row :is(.life-learn-gloss,.life-learn-use),#world-panel.is-paper .felt-button{transition:none}
+}

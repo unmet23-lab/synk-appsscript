@@ -46,8 +46,10 @@ const CPS=23;
 const pauseAfter=(ch,base)=>ch===' '?base*.55:ch===','?base+140:'.!?'.includes(ch)?base+230:ch==='…'?base+320:base;
 const NAV_HINT='synk.world.story.nav-hint';
 
-/** 이야기 장면 디테일을 한 판(#panel-content)에 붙인다. 판은 장면마다 다시 그려지므로, 그린 뒤 enter(장면)를 부른다. */
-export function createStoryDetail({content,isActive,onNext,onPrev,onMark,reduced=()=>false}){
+/** 이야기 장면 디테일을 한 판(#panel-content)에 붙인다. 판은 장면마다 다시 그려지므로, 그린 뒤 enter(장면)를 부른다.
+ * onLine({line,animate}): 대사가 다 나타난 순간(타자가 끝나거나 눌러서 건너뛰었을 때, 움직임 줄이기면 그리자마자) 한 번 부른다 — 종이 겉의 「배울 말」 판이 이때 뜬다.
+ * 목소리가 생기면(대사 녹음 + 낱말 시각) 타자 대신 목소리가 지나간 낱말을 채우고, 소리가 끝난 때 같은 onLine을 부르면 된다. */
+export function createStoryDetail({content,isActive,onNext,onPrev,onMark,onLine=()=>{},reduced=()=>false}){
  let typing=null,photoSwap=null,down=null,swiped=false;
  const motionOff=()=>reduced()||matchMedia('(prefers-reduced-motion: reduce)').matches;
  const storageGet=()=>{try{return localStorage.getItem(NAV_HINT)==='used';}catch{return false;}};
@@ -58,10 +60,14 @@ export function createStoryDetail({content,isActive,onNext,onPrev,onMark,reduced
   // 다 나타난 글은 원래 글자로 되돌린다(글자마다 쪼갠 span이 화면 읽기 프로그램에서 한 자씩 읽히지 않게). 형광펜은 그다음에 0.3초 동안 칠한다.
   if(!line.isConnected)return;
   line.innerHTML=html;delete line.dataset.typing;
-  const marks=[...line.querySelectorAll('mark.life-say')];if(!marks.length||motionOff())return;
-  for(const mark of marks)mark.classList.add('is-fresh');
-  void line.offsetWidth;requestAnimationFrame(()=>{for(const mark of marks)mark.classList.remove('is-fresh');});
+  const marks=[...line.querySelectorAll('mark.life-say')];
+  if(marks.length&&!motionOff()){
+   for(const mark of marks)mark.classList.add('is-fresh');
+   void line.offsetWidth;requestAnimationFrame(()=>{for(const mark of marks)mark.classList.remove('is-fresh');});
+  }
+  lineDone(line,!motionOff()&&!document.hidden);
  }
+ function lineDone(line,animate){try{onLine({line,animate});}catch{/* 배울 말 판은 덤이다 — 장면은 그대로 넘긴다 */}}
  function startTyping(line,who){
   stopTyping();
   const html=line.innerHTML,units=[];
@@ -106,7 +112,7 @@ export function createStoryDetail({content,isActive,onNext,onPrev,onMark,reduced
    const crowded=signs.some(s=>s.box[2]>60&&s.box[1]<18);
    if(first&&!crowded&&!storageGet()){const hint=document.createElement('span');hint.className='life-story-hint';hint.setAttribute('aria-hidden','true');hint.innerHTML='눌러서 넘기기 <span>→</span>';figure.append(hint);}
   }
-  if(!motionOff()&&!document.hidden)startTyping(line,who);
+  if(!motionOff()&&!document.hidden)startTyping(line,who);else lineDone(line,false);
  }
 
  // WORLD 판(#world-panel)도 dialog라서, 판 안에 따로 열린 창(표현 도움·연습)만 뺀다.

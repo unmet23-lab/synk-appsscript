@@ -17051,7 +17051,8 @@ function storySteps({ scenes, questions, phase, sceneIndex = 0, questionIndex = 
 var CPS = 23;
 var pauseAfter = (ch, base) => ch === " " ? base * 0.55 : ch === "," ? base + 140 : ".!?".includes(ch) ? base + 230 : ch === "\u2026" ? base + 320 : base;
 var NAV_HINT = "synk.world.story.nav-hint";
-function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced = () => false }) {
+function createStoryDetail({ content, isActive, onNext, onPrev, onMark, onLine = () => {
+}, reduced = () => false }) {
   let typing = null, photoSwap = null, down = null, swiped = false;
   const motionOff = () => reduced() || matchMedia("(prefers-reduced-motion: reduce)").matches;
   const storageGet = () => {
@@ -17077,12 +17078,20 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
     line.innerHTML = html;
     delete line.dataset.typing;
     const marks = [...line.querySelectorAll("mark.life-say")];
-    if (!marks.length || motionOff()) return;
-    for (const mark of marks) mark.classList.add("is-fresh");
-    void line.offsetWidth;
-    requestAnimationFrame(() => {
-      for (const mark of marks) mark.classList.remove("is-fresh");
-    });
+    if (marks.length && !motionOff()) {
+      for (const mark of marks) mark.classList.add("is-fresh");
+      void line.offsetWidth;
+      requestAnimationFrame(() => {
+        for (const mark of marks) mark.classList.remove("is-fresh");
+      });
+    }
+    lineDone(line, !motionOff() && !document.hidden);
+  }
+  function lineDone(line, animate) {
+    try {
+      onLine({ line, animate });
+    } catch {
+    }
   }
   function startTyping(line, who) {
     stopTyping();
@@ -17172,6 +17181,7 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced 
       }
     }
     if (!motionOff() && !document.hidden) startTyping(line, who);
+    else lineDone(line, false);
   }
   const inSheet = (el) => {
     const sheet = el?.closest?.("dialog");
@@ -17478,6 +17488,7 @@ var drawer2 = motionNext.drawer || noMotion;
 var reveal2 = motionNext.reveal || noMotion;
 var markIn2 = motionNext.markIn || noMotion;
 var lifeChoiceNote2 = lifeChoiceNote || (() => null);
+var CHOICE_GLOSS = LIFE_CHOICE_MEANINGS || {};
 if (!document.querySelector("[data-life-style]")) {
   const style = document.createElement("link");
   style.rel = "stylesheet";
@@ -17552,7 +17563,7 @@ var expressionOf = (lesson2, q2) => lesson2?.expressions.find((e) => e.id === q2
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
 }, onNext = null, presentation = null, leadRows = null, moreRows = null, positionTotal = null, learning: learning2 = null, today = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
-  let lastPoint = null, justChose = false, barMemo = { key: "", value: -1 };
+  let lastPoint = null, justChose = false, barMemo = { key: "", value: -1 }, flight = 0;
   content?.addEventListener("pointerdown", (event) => {
     lastPoint = { x: event.clientX, y: event.clientY };
   }, { passive: true });
@@ -17691,7 +17702,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     play("open");
     haptic("tap");
     companion.openGuide({ expression: index });
-  }, reduced: () => !!home.state?.reduced });
+  }, onLine: (value) => showLearn(value), reduced: () => !!home.state?.reduced });
   const summary = () => getProgress().summary(PACKS, LESSONS);
   const preferences = () => {
     let values = {}, chosen = {};
@@ -17857,9 +17868,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     viewPhase = tutorPhase;
     screenView = screen;
     const scroll = keepScroll && shown ? content.scrollTop : 0;
+    rendering = true;
+    flight++;
+    for (const ghost of panel.querySelectorAll?.(".life-ghost") || []) ghost.remove();
     story.stop();
     generation2++;
-    rendering = true;
     show(title, html + statusLine(), { type, eyebrow, nav: "play" });
     const tutor = home.mountLifeTutor?.({ state: tutorState(), snapshot: getProgress().exportSnapshot(), lessons: LESSONS, practised: [...practised], onHint: tutorHint, onPause: () => speech.pause(), onPreparePractice: prepareTutorPractice, onPracticeSuccess: (id) => completeTutorPractice(id, home.tutor?.().tutor), onPracticeComplete: (id) => {
       practised.add(id);
@@ -17912,12 +17925,13 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (!motionOn() || home.state?.reduced || /^life-(story|cafe)/.test(type)) return;
     const reward = getPref("celebrate");
     const result = ["life-complete", "life-review-complete"].includes(type);
+    const paper = panel.classList?.contains("is-paper");
     if (!again && !answered) {
-      if (!result) [...content.querySelectorAll(".life-poster-label,.life-section-label:not(.is-text),.life-pack-label,.life-pack-count")].slice(0, 10).forEach((el, i) => typeLabel(el, { delay: 260 + i * 130 }));
+      if (!result && !paper) [...content.querySelectorAll(".life-poster-label,.life-section-label:not(.is-text),.life-pack-label,.life-pack-count")].slice(0, 10).forEach((el, i) => typeLabel(el, { delay: 260 + i * 130 }));
       content.querySelectorAll(".life-meter>b,.life-library-note,.life-count").forEach((el) => roll(el, { delay: 700 }));
       const poster = content.querySelector(".life-poster:not(.life-complete-poster)"), print2 = poster?.querySelector(":scope>.w-print");
       if (poster) {
-        ink(poster.querySelector(".life-poster-word"), { delay: 480, from: 250, duration: 1100 });
+        if (!paper) ink(poster.querySelector(".life-poster-word"), { delay: 480, from: 250, duration: 1100 });
         if (print2) {
           const base = baseOf(print2);
           drop(print2, { base, delay: 520 });
@@ -17931,13 +17945,15 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
           poster.style.touchAction = "pan-y";
         }
       }
-      content.querySelectorAll(".life-pack-word").forEach((el, i) => ink(el, { delay: 900 + i * 70 }));
-      const cta = poster?.querySelector(".felt-button");
-      if (cta) {
-        cta.classList.add("w-sheen");
-        if (getComputedStyle(cta).position === "static") cta.style.position = "relative";
+      if (!paper) {
+        content.querySelectorAll(".life-pack-word").forEach((el, i) => ink(el, { delay: 900 + i * 70 }));
+        const cta = poster?.querySelector(".felt-button");
+        if (cta) {
+          cta.classList.add("w-sheen");
+          if (getComputedStyle(cta).position === "static") cta.style.position = "relative";
+        }
+        stitch(content.querySelector('.life-pack-card[data-current="true"]'), { delay: 1300 });
       }
-      stitch(content.querySelector('.life-pack-card[data-current="true"]'), { delay: 1300 });
     }
     const meta = content.querySelector(".life-session-meta"), key = meta?.dataset.lifeLessonId || "";
     if (meta) {
@@ -17949,7 +17965,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       barMemo = { key, value };
     }
     if (type === "life-question" && answered && lastFeedback) {
-      const chosen = content.querySelector(".life-choice.is-chosen"), band = content.querySelector(".life-feedback");
+      const chosen = content.querySelector(".life-choice.is-chosen"), band = content.querySelector(".life-feedback"), rise = paper && band?.parentElement ? band.parentElement : band;
       if (lastFeedback.correct) {
         wash(chosen, lastPoint);
         markIn2(chosen, { delay: 220 });
@@ -17958,7 +17974,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
         drawer2(chosen?.querySelector(".life-choice-note:not([hidden])"), { delay: 160 });
         reveal2(content.querySelector(".life-choice.is-correct"), content.querySelector(".life-choice:not(.is-correct):not(.is-chosen)"), { delay: 800 });
       }
-      spring(band, [{ opacity: 0, transform: "translateY(46px)" }, { opacity: 1, transform: "translateY(-6px)", offset: 0.62 }, { transform: "translateY(2px)", offset: 0.82 }, { transform: "none" }], { duration: 620, delay: 120 });
+      spring(rise, [{ opacity: 0, transform: "translateY(46px)" }, { opacity: 1, transform: "translateY(-6px)", offset: 0.62 }, { transform: "translateY(2px)", offset: 0.82 }, { transform: "none" }], { duration: 620, delay: 120 });
       if (lastFeedback.correct && !lastFeedback.helped && reward && band) stamp(band, { size: 92, rot: -12, top: -40, right: 4, delay: 640, shake: content });
     }
     if (result) {
@@ -18004,8 +18020,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function packCard(pack2, index, current = null) {
     const done = packDone(pack2), total = pack2.lessons.length, started = pack2.lessons.some((l) => stateOf(l.id) === "started"), [word, label] = packWords[pack2.id] || [pack2.title, pack2.id.toUpperCase()];
     const state = done === total ? "done" : done || started ? "active" : "new", now = pack2.id === current;
-    const foot = state === "new" ? `<span class="life-pack-count">${pad(total)} LESSONS</span>` : state === "done" ? `<span class="life-pack-done"><i class="w-led ok"></i>${t("life.allDone")}</span>` : meter(done, total);
-    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
+    const foot = state === "done" ? `<span class="life-pack-done"><i class="w-led ok"></i>${t("life.allDone")}</span>` : meter(done, total);
+    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)}<span class="life-pack-en"> \xB7 ${label}</span></small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
   }
   let todayMark = "";
   const dayNow = () => {
@@ -18019,11 +18035,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   const todaySign = (day) => day ? [day.state, day.capped ? "capped" : "", day.selectedKind || "", day.selected?.id || "", day.reason || "", (day.items || []).map((row) => `${row.kind}:${row.activityId}`).join(",")].join("|") : "";
   const cappedOf = (day) => day?.capped && day.cappedText ? day.cappedText : "";
   const whyLine = (why) => why ? `<span class="life-poster-why">${escape2(why)}</span>` : "";
+  const kicker = () => `<span class="life-poster-kicker">${t("life.upNext")}</span>`;
   function lessonPoster(lesson2, started, why = "") {
     const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length;
-    return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}${whyLine(why)}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
+    return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small>${kicker()}<strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}${whyLine(why)}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
   }
-  const reviewPoster = (s, why = "") => ({ kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(backCount(s))}</small><strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: backCount(s) })}${whyLine(why)}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` });
+  const reviewPoster = (s, why = "") => ({ kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(backCount(s))}</small>${kicker()}<strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: backCount(s) })}${whyLine(why)}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` });
   function todayPoster(row) {
     const open = row.open, hangul = open.route === "game" && open.gameId === "hangul", listening = open.modality === "listening";
     let name = "";
@@ -18033,7 +18050,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       name = "";
     }
     const minutes2 = Number.isFinite(row.minutes) ? `<span class="life-poster-count">${escape2(t("goal.minutes.n", { n: row.minutes }))}</span>` : "";
-    return { kind: "today", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(hangul ? "hangul" : "goals")}<small class="life-poster-label">UP NEXT \xB7 ${hangul ? "HANGUL" : listening ? "LISTENING" : "READING"}</small><strong class="life-poster-word">${escape2(name || open.label || row.title || "")}</strong><span class="life-poster-sub">${escape2(row.why?.text || "")}</span>${minutes2}<button class="felt-button" data-life-next>${t("life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
+    return { kind: "today", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(hangul ? "hangul" : "goals")}<small class="life-poster-label">UP NEXT \xB7 ${hangul ? "HANGUL" : listening ? "LISTENING" : "READING"}</small>${kicker()}<strong class="life-poster-word">${escape2(name || open.label || row.title || "")}</strong><span class="life-poster-sub">${escape2(row.why?.text || "")}</span>${minutes2}<button class="felt-button" data-life-next>${t("life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
   }
   function rowPoster(s, day) {
     const row = (day.items || []).find((item) => item.kind === day.selectedKind && item.open?.id === day.selected?.id);
@@ -18048,7 +18065,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function restPoster(s, day = null) {
     const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "", capped = cappedOf(day);
-    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">${t("life.allPacksWord")}</strong><span class="life-poster-sub">${capped ? escape2(capped) : future ? t("life.nextReviewOpens", { date: escape2(future) }) : t("life.pickPackAgain")}</span><button class="felt-button" data-life-review>${t("life.reviewSchedule")} <span aria-hidden="true">\u2192</span></button></section>` };
+    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small>${kicker()}<strong class="life-poster-word">${t("life.allPacksWord")}</strong><span class="life-poster-sub">${capped ? escape2(capped) : future ? t("life.nextReviewOpens", { date: escape2(future) }) : t("life.pickPackAgain")}</span><button class="felt-button" data-life-review>${t("life.reviewSchedule")} <span aria-hidden="true">\u2192</span></button></section>` };
   }
   function nowPoster(s) {
     const day = dayNow();
@@ -18083,11 +18100,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
     const lead = typeof leadRows === "function" ? leadRows(print) : "";
     reviewMark = reviewSign(s);
-    paint(t("life.learn"), `<div class="life-hub life-heading" tabindex="-1">${now.html}${lead ? `<section class="life-rows life-lead-rows" aria-label="${t("goal.reason.exam")}"><p class="life-section-label">EXAM</p>${lead}</section>` : ""}<section class="life-pack-section" aria-label="${t("life.packsSection")}"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${s.completed ? t("life.lessonsDone", { done: s.completed, total: s.total }) : t("life.packsAndLessons", { packs: PACKS.length, lessons: LESSONS.length })}</small></div><div class="life-pack-grid">${PACKS.map((p, i) => packCard(p, i, now.kind === "lesson" ? now.packId : null)).join("")}</div></section><section class="life-rows" aria-label="${t("life.more")}"><p class="life-section-label">MORE</p>${rows2.join("")}</section></div>`, { screen: "packs", ...again ? { keepScroll: true, focus: null, keepFocus: focusedKey() } : {} });
+    paint(t("life.learn"), `<div class="life-hub life-heading" tabindex="-1">${now.html}${lead ? `<section class="life-rows life-lead-rows" aria-label="${t("goal.reason.exam")}"><p class="life-section-label is-text">${t("goal.reason.exam")}</p>${lead}</section>` : ""}<section class="life-pack-section" aria-label="${t("life.packsSection")}"><div class="life-section-head"><p class="life-section-label is-text">${t("life.packsSection")}</p><small class="life-library-note">${s.completed ? t("life.lessonsDone", { done: s.completed, total: s.total }) : t("life.packsAndLessons", { packs: PACKS.length, lessons: LESSONS.length })}</small></div><div class="life-pack-grid">${PACKS.map((p, i) => packCard(p, i, now.kind === "lesson" ? now.packId : null)).join("")}</div></section><section class="life-rows" aria-label="${t("life.more")}"><p class="life-section-label is-text">${t("life.more")}</p>${rows2.join("")}</section></div>`, { screen: "packs", ...again ? { keepScroll: true, focus: null, keepFocus: focusedKey() } : {} });
   }
-  function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker = phaseName(l.type), labels = [t("life.state.done"), t("life.state.doing"), ""] } = {}) {
+  function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker: kicker2 = phaseName(l.type), labels = [t("life.state.done"), t("life.state.doing"), ""] } = {}) {
     const state = stateOf(l.id), now = l.id === nowId, text2 = state === "completed" ? labels[0] : state === "started" ? labels[1] : now ? t("life.state.now") : labels[2];
-    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape2(kicker)}</small><strong lang="ko">${escape2(l.title)}</strong><span>${escape2(lessonGoal(l))}</span></span>${text2 ? `<em>${escape2(text2)}</em>` : ""}</button>`;
+    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape2(kicker2)}</small><strong lang="ko">${escape2(l.title)}</strong><span>${escape2(lessonGoal(l))}</span></span>${text2 ? `<em>${escape2(text2)}</em>` : ""}</button>`;
   }
   const nowIn = (lessons) => (lessons.find((l) => stateOf(l.id) === "started") || lessons.find((l) => stateOf(l.id) !== "completed"))?.id || null;
   function cafeVisitCards(nowId = null) {
@@ -18101,7 +18118,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     place = "life";
     context = null;
     const episodes = PACKS.map((p) => ({ pack: p, episode: p.lessons.find((l) => l.type === "story") })).filter((e) => e.episode);
-    paint(t("life.stories"), `<div class="life-heading" tabindex="-1"><section class="life-poster life-stories-poster">${print("stories")}<small class="life-poster-label">STORIES \xB7 ${pad(episodes.length)}</small><strong class="life-poster-word">${t("life.stories")}</strong><span class="life-poster-sub">${t("life.storiesSub")}</span></section></div><section class="life-list" aria-label="${t("life.stories")}"><p class="life-section-label">EPISODES</p><div class="life-lesson-list">${episodes.map(({ pack: pack2, episode }) => lessonRow(episode, 0, { className: "life-story-card", lead: print(pack2.id, "life-row-print"), kicker: packTitle(pack2), labels: [t("life.state.readAgain"), t("life.state.reading"), ""] })).join("")}</div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label">CAFE VISITS</p><small class="life-library-note">${t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list">${cafeVisitCards()}</div></section>`);
+    paint(t("life.stories"), `<div class="life-heading" tabindex="-1"><section class="life-poster life-stories-poster">${print("stories")}<small class="life-poster-label">STORIES \xB7 ${pad(episodes.length)}</small><strong class="life-poster-word">${t("life.stories")}</strong><span class="life-poster-sub">${t("life.storiesSub")}</span></section></div><section class="life-list" aria-label="${t("life.stories")}"><p class="life-section-label is-text">${t("life.stories")}</p><div class="life-lesson-list">${episodes.map(({ pack: pack2, episode }) => lessonRow(episode, 0, { className: "life-story-card", lead: print(pack2.id, "life-row-print"), kicker: packTitle(pack2), labels: [t("life.state.readAgain"), t("life.state.reading"), ""] })).join("")}</div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label is-text">${t("life.cafeVisits")}</p><small class="life-library-note">${t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list">${cafeVisitCards()}</div></section>`);
   }
   function pack(id, { again = false } = {}) {
     if (!ensureReadable()) return;
@@ -18111,8 +18128,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     context = null;
     const p = getProgress(), s = summary(), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt) || s.dueState === "checking" && Object.keys(p.exportSnapshot().reviews || {}).length > 0, activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
     const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
-    const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="${t("life.cafeAlt")}" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${t(p.lessonState(nextVisit.id).status === "started" ? "life.continue" : nextVisit.number === 1 ? "life.cafeEnter" : "life.cafeNext")} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? t("life.visited", { done: visited, total: CAFE_VISITS.length }) : t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
-    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
+    const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="${t("life.cafeAlt")}" width="1600" height="900"><div><small class="life-section-label is-text">${t("life.visitN", { n: nextVisit.number })}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${t(p.lessonState(nextVisit.id).status === "started" ? "life.continue" : nextVisit.number === 1 ? "life.cafeEnter" : "life.cafeNext")} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label is-text">${t("life.cafeVisits")}</p><small class="life-library-note">${visited ? t("life.visited", { done: visited, total: CAFE_VISITS.length }) : t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
+    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${meter(done, value.lessons.length)}</section></div>`;
     const nowId = id === "cafe" ? null : nowIn(lessons);
     reviewMark = reviewSign(s);
     paint(packTitle(value), `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>${t("life.toPacks")}</button>${hasReviews ? `<button class="quiet-button" data-life-review>${t("life.seeReviews")}</button>` : ""}</div>`, { screen: `pack:${id}`, ...again ? { keepScroll: true, focus: null, keepFocus: focusedKey() } : {} });
@@ -18262,9 +18279,91 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const pack2 = packById(l.packId), scenes = l.scenes.length, questions = l.questions.length, phase = context.phase;
     const done = phase === "story" ? context.sceneIndex + 1 : phase === "questions" ? scenes + Math.min(context.questionIndex + (lastFeedback ? 1 : 0), questions) : 0;
     const count = phase === "questions" ? `${Math.min(context.questionIndex + 1, questions)} / ${questions}` : phase === "story" ? `${Math.min(context.sceneIndex + 1, scenes)} / ${scenes}` : "";
-    return `<div class="life-session-meta" data-life-session="${escape2(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${scenes ? storySteps({ scenes, questions, phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, answered: !!lastFeedback }) : progressLine(done, scenes + questions)}<span>${escape2(packTitle(pack2))} \xB7 ${phaseName(l.type)}</span><span>${count ? `<b class="life-count">${count}</b>` : '<b class="life-count">START</b>'}</span></div>`;
+    return `<div class="life-session-meta" data-life-session="${escape2(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${scenes ? storySteps({ scenes, questions, phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, answered: !!lastFeedback }) : progressLine(done, scenes + questions)}<span>${escape2(packTitle(pack2))} \xB7 ${phaseName(l.type)}</span><span>${count ? `<b class="life-count">${count}</b>` : ""}</span></div>`;
   }
-  const expressionList = (l, label = "EXPRESSIONS") => `<section class="life-expression-list" aria-label="${t(label === "EXPRESSIONS" ? "life.expressionsNow" : "life.expressionsLearned")}"><p class="life-section-label">${label}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong lang="ko">${escape2(e.korean)}</strong><p>${escape2(lifeExpressionText(e, currentLang()))}</p></div></article>`).join("")}</section>`;
+  const learnKey = (korean) => String(korean || "").replace(/[.!?。…]+$/, "").trim();
+  const learnLines = (e, cls = "life-learn") => {
+    const lang = currentLang(), gloss = lang === "ko" ? "" : CHOICE_GLOSS[e.korean]?.[lang] || "", use = lifeExpressionText(e, lang);
+    return `${gloss ? `<p class="${cls}-gloss" lang="${lang}">${escape2(gloss)}</p>` : ""}${use ? `<p class="${cls}-use" lang="${lang}">${escape2(use)}</p>` : ""}`;
+  };
+  const expressionList = (l) => `<section class="life-expression-list" aria-label="${t("life.expressionsNow")}"><p class="life-section-label is-text">${t("life.expressionsNow")}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong lang="ko">${escape2(e.korean)}</strong>${learnLines(e, "life-expression")}</div></article>`).join("")}</section>`;
+  function learnBox(l, lineHtml) {
+    const order2 = [];
+    for (const m of String(lineHtml).matchAll(/data-life-mark="(\d+)"/g)) {
+      const i = Number(m[1]);
+      if (l.expressions[i] && !order2.includes(i)) order2.push(i);
+    }
+    if (!order2.length) return "";
+    return `<section class="life-learn" hidden aria-label="${t("life.expressionsNow")}"><p class="life-learn-head">${t("life.expressionsNow")}</p>${order2.map((i) => {
+      const e = l.expressions[i];
+      return `<div class="life-learn-row" data-learn-row="${i}"><strong class="life-learn-phrase" lang="ko"><span>${escape2(learnKey(e.korean))}</span></strong>${learnLines(e)}</div>`;
+    }).join("")}</section>`;
+  }
+  function showLearn({ line, animate } = {}) {
+    if (rendering || context?.phase !== "story") return;
+    const box = content.querySelector(".life-learn");
+    if (!box || !box.hidden) return;
+    const rows2 = [...box.querySelectorAll("[data-learn-row]")];
+    if (!animate || !line || !rows2.length || !motionOn() || home.state?.reduced || matchMedia("(prefers-reduced-motion: reduce)").matches || typeof box.animate !== "function") {
+      box.hidden = false;
+      return;
+    }
+    for (const row of rows2) row.classList.add("is-waiting");
+    box.hidden = false;
+    const ticket = ++flight, next2 = content.querySelector("[data-life-scene-next]");
+    keepLearnInView(box, line);
+    next2?.classList.add("is-holding");
+    const release = () => {
+      if (ticket === flight) next2?.classList.remove("is-holding");
+    }, safety = setTimeout(release, 2400);
+    let left = rows2.length;
+    box.animate([{ backgroundColor: "rgba(0,0,0,0)" }, {}], { duration: 520, easing: "ease-out", fill: "backwards" });
+    box.querySelector(".life-learn-head")?.animate([{ opacity: 0 }, { opacity: 0, offset: 0.62 }, { opacity: 1 }], { duration: 1e3, easing: "ease-out", fill: "backwards" });
+    rows2.forEach((row, n2) => {
+      flyPhrase([...line.querySelectorAll(`mark[data-life-mark="${row.dataset.learnRow}"]`)], row.querySelector(".life-learn-phrase>span"), n2 * 90, ticket, () => {
+        row.classList.remove("is-waiting");
+        if (!--left) {
+          clearTimeout(safety);
+          release();
+        }
+      });
+    });
+  }
+  function keepLearnInView(box, line) {
+    const actions2 = content.querySelector(".life-actions");
+    if (!actions2) return;
+    const need = box.getBoundingClientRect().bottom + 8 - actions2.getBoundingClientRect().top;
+    if (need <= 0) return;
+    const meta = content.querySelector(".life-session-meta"), room = line.getBoundingClientRect().top - (meta || content).getBoundingClientRect().bottom - 12;
+    content.scrollTop += Math.max(0, Math.min(need, room));
+  }
+  function flyPhrase(src, target, delay, ticket, onLand) {
+    if (!src.length || !target || typeof target.animate !== "function") {
+      onLand();
+      return;
+    }
+    const a = src[0].getClientRects()[0] || src[0].getBoundingClientRect(), b = target.getClientRects()[0] || target.getBoundingClientRect(), host = panel.getBoundingClientRect();
+    const fa = parseFloat(getComputedStyle(src[0]).fontSize) || 28, fb = parseFloat(getComputedStyle(target).fontSize) || 24;
+    const ghost = document.createElement("span");
+    ghost.className = "life-ghost";
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.textContent = target.textContent;
+    ghost.style.cssText = `left:${a.left - host.left}px;top:${a.top - host.top}px;font-size:${fa}px;line-height:${a.height}px`;
+    target.style.opacity = "0";
+    panel.append(ghost);
+    for (const mark of src) mark.animate([{ opacity: 1 }, { opacity: 0.5, offset: 0.16 }, { opacity: 0.5, offset: 0.55 }, { opacity: 1 }], { duration: 900, delay, easing: "ease-in-out" });
+    const dx = b.left - a.left, dy = b.top - a.top, sc = fb / fa, at = (k) => 1 - (1 - sc) * k;
+    const run = ghost.animate([{ transform: "translate(0,0) scale(1)", opacity: 0 }, { transform: `translate(${dx * 0.04}px,${dy * 0.16}px) scale(${at(0.15)})`, opacity: 0, offset: 0.14 }, { transform: `translate(${dx * 0.1}px,${dy * 0.36}px) scale(${at(0.35)})`, opacity: 1, offset: 0.3 }, { transform: `translate(${dx * 0.3}px,${dy * 0.78}px) scale(${at(0.7)})`, opacity: 1, offset: 0.55 }, { transform: `translate(${dx}px,${dy}px) scale(${sc})`, opacity: 1 }], { duration: 620, delay: delay + 130, easing: "cubic-bezier(.35,0,.25,1)", fill: "both" });
+    const from = getComputedStyle(ghost).color, to = getComputedStyle(target).color;
+    ghost.animate([{ color: from }, { color: from, offset: 0.62 }, { color: to }], { duration: 620, delay: delay + 130, fill: "both" });
+    run.finished.catch(() => {
+    }).then(() => {
+      target.style.opacity = "";
+      ghost.remove();
+      if (ticket === flight && shown) play("tap");
+      onLand();
+    });
+  }
   const listHead = () => currentLang() === "ko" ? " is-text" : "";
   const learnedList = (expressions, label = "LEARNED", kind = "", foot = "") => `<section class="life-result-learned" aria-label="${t("life.expressionsLearned")}"><p class="life-section-label${kind}">${label}</p><ul>${expressions.map((e) => `<li><strong lang="ko">${escape2(e.korean)}</strong>${e.note ? `<small>${e.tone ? `<i class="w-led ${e.tone}" aria-hidden="true"></i>` : ""}${escape2(e.note)}</small>` : ""}</li>`).join("")}</ul>${foot ? `<p class="life-review-foot">${escape2(foot)}</p>` : ""}</section>`;
   const doneWord = (title) => {
@@ -18296,7 +18395,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       }
       const photo2 = Boolean(people) || hasStoryPhoto(l.packId), signs = photo2 && !people ? storySigns(l.packId) : [];
       const previousSrc = content.querySelector(".life-session-meta")?.dataset.lifeLessonId === l.id ? content.querySelector(".life-story-photo>img")?.src || null : null;
-      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(people ? people.file : storyPhotoFile(l.packId, speaker))}" alt="${people ? `${person && speaker !== "me" ? `${person.name} \uCC28\uB840 \xB7 ` : ""}${people.alt}` : `${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape2(signs.map((s) => s.text).join(", "))}` : ""}`}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t("life.signListen", { text: escape2(s.text) })}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape2(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"${at != null ? ` data-at style="--life-at:${at}%"` : ""}><small${friend ? ` class="w-name" data-who="${speaker}"` : person ? ` class="w-name" data-who="person"` : ""}>${who ? who.name : "\uC774\uC57C\uAE30"}</small><p>${storyLineMarkup(scene2.text, l.expressions)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last ? "life.toQuestions" : "life.next")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>${t("life.later")}</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
+      const line = storyLineMarkup(scene2.text, l.expressions);
+      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(people ? people.file : storyPhotoFile(l.packId, speaker))}" alt="${people ? `${person && speaker !== "me" ? `${person.name} \uCC28\uB840 \xB7 ` : ""}${people.alt}` : `${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape2(signs.map((s) => s.text).join(", "))}` : ""}`}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t("life.signListen", { text: escape2(s.text) })}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape2(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"${at != null ? ` data-at style="--life-at:${at}%"` : ""}><small class="life-speaker" data-who="${speaker}">${who ? who.name : "\uC774\uC57C\uAE30"}</small><p>${line}</p></div>${learnBox(l, line)}</div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last ? "life.toQuestions" : "life.next")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>${t("life.later")}</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
       story.enter({ who: speaker, previousSrc, first: context.sceneIndex === 0, signs });
       return;
     }
