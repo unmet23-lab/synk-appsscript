@@ -176,7 +176,7 @@ test('흐름: 넣기 → 읽기 → 고르기 → 같이 쓰기 → 새 파일 �
   assert.equal(saved.ok,true,JSON.stringify(saved));
   assert.match(saved.name,/^사업계획서_v3_솔리오고침_\d{8}-\d{4}\.docx$/);
   assert.ok(before.equals(await fs.readFile(path.join(s.docs,'사업계획서_v3.docx'))));
-  const out=ox.docxDocument(await fs.readFile(saved.path));
+  const out=ox.docxDocument(await fs.readFile(path.join(s.docs,saved.name)));
   assert.deepEqual(out.paragraphs.map(p=>p.text),[P[0],'2025년 9월부터 온라인으로 팔아 왔습니다. 10월에 다시 산 손님은 112명입니다.',P[2],P[3],P[4],'첫해에는 인스타그램에서 새 손님을 만납니다.']);
   const again=await call('save');
   assert.notEqual(again.name,saved.name,'같은 이름이 있으면 -2를 붙인다');
@@ -245,4 +245,59 @@ test('받지 않는 파일과 깨진 목록', async () => {
   assert.equal((await s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action:'pick-plan',args:{}})).code,'BROKEN');
   assert.equal(await fs.readFile(path.join(dir,'list.json'),'utf8'),'{broken','깨진 목록을 갈아 쓰지 않는다');
   assert.equal((await s.features.snapshot(s.a,{feature:'nope',departmentId:s.dept.id})).code,'VALUE');
+});
+
+test('코드 검수: 계획서를 못 연 실패 기록도 판이 서고, 깨진 목록은 기록 지우기로 지운다', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  await call('pick-plan');await call('pick-data');
+  assert.equal((await call('start',{provider:'codex'})).ok,true);
+  await fs.rename(path.join(s.docs,'사업계획서_v3.docx'),path.join(s.docs,'옮김.docx'));
+  const receipt=await s.features.run(spec(s),hooks(),{turn:turnWith()});
+  assert.equal(receipt.alert,true);
+  const snap=await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  assert.equal(snap.ok,true,JSON.stringify(snap));
+  assert.equal(snap.read.status,'failed');
+  assert.equal(snap.read.plan.name,'');assert.equal(snap.read.plan.samePlan,false);
+  const dir=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id);
+  await fs.writeFile(path.join(dir,'list.json'),'{broken');
+  assert.equal((await call('clear',{confirm:true})).ok,true);
+  await assert.rejects(fs.stat(path.join(dir,'list.json')),{code:'ENOENT'});
+  await fs.rename(path.join(s.docs,'옮김.docx'),path.join(s.docs,'사업계획서_v3.docx'));
+  assert.deepEqual(await call('pick-plan'),{ok:true});
+});
+
+test('코드 검수: 한 문단의 고침 둘을 한 번에 넣고, 링크가 안 되는 드라이브에서는 덮지 않는 복사로 저장한다', async () => {
+  const s=await setup();
+  const io={...require('node:fs/promises'),link:async()=>{throw Object.assign(new Error('no link'),{code:'EXDEV'});}};
+  const features=createOfficeFeatures({userData:s.userData,io,departments:async()=>[s.dept],
+    pick:async({multi})=>multi?[path.join(s.docs,'영수증.csv')]:[path.join(s.docs,'사업계획서_v3.docx')],
+    tasks:{submitFeature:async(a,x)=>({ok:true,id:x.id})}});
+  const call=(action,args={})=>features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  await call('pick-plan');await call('pick-data');await call('start',{provider:'codex'});
+  const notes={notes:[
+    {kind:'mismatch',para:1,quote:'단골 손님 300명이 매달 다시 삽니다.',why:'영수증과 다릅니다.',evidence:'10월,112명',source:1,fix:'10월에 다시 산 손님은 112명입니다.'},
+    {kind:'mismatch',para:1,quote:'2025년 9월부터 온라인으로 팔아 왔습니다.',why:'영수증에는 시작 달이 없습니다.',evidence:'2025년 매출,3억 2천만 원',source:1,fix:'2025년부터 온라인으로 팔아 왔습니다.'},
+  ]};
+  await features.run(spec(s),hooks(),{turn:turnWith({notes})});
+  const snap=await features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  assert.equal(snap.read.notes.length,2,JSON.stringify(snap.read.dropped));
+  for(const n of snap.read.notes)assert.deepEqual(await call('choose',{key:n.key,kind:'fix'}),{ok:true});
+  const saved=await call('save');
+  assert.equal(saved.ok,true,JSON.stringify(saved));
+  assert.equal(saved.skipped,0);
+  const out=ox.docxDocument(await fs.readFile(path.join(s.docs,saved.name)));
+  assert.equal(out.paragraphs[1].text,'2025년부터 온라인으로 팔아 왔습니다. 10월에 다시 산 손님은 112명입니다.');
+  assert.match((await call('save')).name,/-2\.docx$/,'복사로 저장해도 있는 이름은 덮지 않는다');
+  const after=await features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  assert.deepEqual(Object.keys(after.saved).sort(),['at','name','skipped'],'화면에는 저장한 파일의 경로를 보내지 않는다');
+});
+
+test('코드 검수: 한자어 수와 어림수, 200자 넘는 근거', () => {
+  const p=pool('매출 2억 원','30만 원','50곳');
+  for(const bad of ['매출은 이억 원입니다','값은 삼십만 원입니다','오십여 곳에 팝니다','수백 곳에 팝니다','손님이 절반으로 줄었습니다'])assert.equal(ck.within(bad,p),false,bad);
+  for(const ok of ['일일 방문을 셉니다','세 곳에서 팝니다','2만 9천 원'])assert.equal(ck.within(ok,pool('2만 9천 원','3곳')),true,ok);
+  const long='10월,112명 '+'가'.repeat(220);
+  const r=ck.checkNotes({notes:[note({evidence:long})]},{...ctx,files:[{...files[0],lines:[long],text:long}]});
+  assert.equal(r.notes.length,0,'긴 근거는 잘라 쓰지 않고 버린다');
 });

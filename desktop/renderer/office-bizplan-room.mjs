@@ -19,11 +19,12 @@ export function createBizplanRoom({ api = null, changed = () => {}, now = () => 
     ask: null, answers: {}, provider: null, criteriaOpen: false, criteriaMode: null, criteriaText: null, clearAsk: false, loadedAt: 0, sig: '' });
   let st = fresh(), gen = 0, timer = null;
   const call = (name, ...a) => { try { return typeof api?.[name] === 'function' ? Promise.resolve(api[name](...a)) : Promise.resolve({ ok: false, code: 'NOT_AVAILABLE' }); } catch { return Promise.resolve({ ok: false }); } };
+  let loadSeq = 0;
   async function load() {
     if (!st.departmentId) return;
-    const my = gen, dept = st.departmentId;
+    const my = gen, dept = st.departmentId, seq = ++loadSeq;
     const snap = await call('featureSnapshot', FEATURE, dept);
-    if (my !== gen || st.departmentId !== dept) return;
+    if (my !== gen || st.departmentId !== dept || seq !== loadSeq) return;
     st.snap = snap && typeof snap === 'object' ? snap : { ok: false };
     st.loadedAt = now();
     changed();
@@ -83,12 +84,19 @@ export function createBizplanRoom({ api = null, changed = () => {}, now = () => 
         case 'biz-provider': st.provider = arg === 'codex' ? 'codex' : 'claude'; changed(); return true;
         case 'biz-start': {
           const s = st.snap, unsaved = s?.read?.notes?.some(n => n.choice && n.choice.kind !== 'handed') && !s.saved;
-          if (unsaved && arg !== 'yes') { st.live = '고른 것이 아직 저장되지 않았습니다. 다시 읽으면 사라집니다. 한 번 더 누르면 다시 읽습니다.'; st.startAsk = true; changed(); return true; }
+          // 저장 안 한 고름이 있으면 한 번 묻고, 두 번째 누름은 다시 읽는다(코드 검수 P1-2)
+          if (unsaved && arg !== 'yes' && !st.startAsk) { st.live = '고른 것이 아직 저장되지 않았습니다. 다시 읽으면 사라집니다. 한 번 더 누르면 다시 읽습니다.'; st.startAsk = true; changed(); return true; }
           st.startAsk = false;
+          // 붙여 넣고 저장하지 않은 평가 항목이 있으면 먼저 저장한다(코드 검수 P2-6)
+          if (st.criteriaMode === 'pasted' && typeof fields.criteria === 'string' && fields.criteria.trim() !== (s?.list?.criteria?.text || '').trim()) {
+            const saved = await act('criteria', { mode: 'pasted', text: fields.criteria.slice(0, 4000) });
+            if (!saved?.ok) return true;
+            st.criteriaMode = null; st.criteriaText = null;
+          }
           await act('start', { provider: st.provider || s?.read?.provider || 'claude' }, '읽기를 맡겼습니다.');
           return true;
         }
-        case 'biz-sel': st.sel = arg; st.edit = null; st.hand = null; st.ask = null; changed(); return true;
+        case 'biz-sel': st.sel = arg; st.edit = null; st.hand = null; st.ask = null; st.startAsk = false; changed(); return true;
         case 'biz-choose': {
           const [key, kind] = arg.split('|');
           st.sel = key; st.edit = null;

@@ -111,12 +111,13 @@ async function snapshot({store,member,dept,io}){
   return {
     broken,
     list:{plan:list.plan?{name:path.basename(list.plan.path)}:null,data:list.data.map(x=>({name:path.basename(x.path)})),criteria:list.criteria,items:itemsOf(list)},
-    read:read?{id:read.id,at:read.at,status:read.status,reason:read.reason||null,provider:read.provider,failedChunks:read.failedChunks||0,totalChunks:read.totalChunks||0,
-      plan:{name:read.plan.name,kind:read.plan.kind,samePlan:!!list.plan&&read.plan.path===list.plan.path},dataNames:read.data.map(d=>d.name),
+    read:read?{id:read.id,at:read.at,status:read.status,reason:read.reason||null,provider:read.provider,failedChunks:read.failedChunks||0,totalChunks:read.totalChunks||0,dataName:read.dataName||'',
+      // 계획서를 열지 못한 실패 기록은 plan이 없다(코드 검수 P1-1)
+      plan:{name:read.plan?.name||'',kind:read.plan?.kind||'',samePlan:!!list.plan&&!!read.plan&&read.plan.path===list.plan.path},dataNames:(read.data||[]).map(d=>d.name),
       paragraphs:read.paragraphs,sections:read.sections,items:read.items,
       notes:read.notes.map((n,i)=>({...n,key:'n'+i,sourceName:n.source?read.data[n.source-1]?.name||'':'',handoff:n.kind==='unsupported'?ck.handoffText(n):'',choice:own?state.choices?.['n'+i]||null:null}))}:null,
     drafts:own?state.drafts||{}:{},
-    saved:own?state.saved||null:null,
+    saved:own&&state.saved?{name:state.saved.name,at:state.saved.at,skipped:state.saved.skipped||0}:null,
     planChanged,
   };
 }
@@ -208,7 +209,8 @@ async function act(ctx){
         const res=await saveCopy({read,state:state.readId===read.id?state:{},io,fallbackDir:dept.folder});
         if(!res.ok)return res;
         await saveState({...state,readId:read.id,saved:{name:res.name,path:res.path,at:Date.now(),skipped:res.skipped}});
-        return res;
+        // 경로는 본체에만 둔다. 화면에는 이름과 뺀 수만 보낸다(코드 검수 P3-15)
+        return {ok:true,name:res.name,skipped:res.skipped};
       });
     case 'reveal':{
       const state=await loadState(store,f);
@@ -237,7 +239,10 @@ async function act(ctx){
     case 'clear':
       if(args.confirm!==true)return {ok:false,code:'VALUE'};
       return store.line(member,async()=>{
-        await io.rm(f.reads,{recursive:true,force:true});await io.rm(f.state,{force:true});return {ok:true};
+        await io.rm(f.reads,{recursive:true,force:true});await io.rm(f.state,{force:true});
+        // 깨진 목록은 「기록 지우기」로 지워야 다시 고를 수 있다(코드 검수 P2-7). 멀쩡한 목록은 남긴다
+        try{await loadList(store,f);}catch{await io.rm(f.list,{force:true});}
+        return {ok:true};
       });
     default:return {ok:false,code:'VALUE'};
   }
@@ -273,11 +278,35 @@ function plannedChanges(read,state){
   }
   return {changes,inserts,skipped};
 }
+/* 한 문단의 고침 둘 이상은 그 사이 글까지 덮는 한 편집으로 합친다. 한 글 조각 안의 두 고침이 같은 XML 자리를 고쳐 저장 전체가 막히던 것(코드 검수 P1-3).
+   합친 자리가 바꿀 수 없는 조각(탭, 필드)을 걸치면 앞의 고침만 넣고 나머지는 뺀 수로 센다 */
+function mergeParagraphChanges(changes,textOf,can){
+  const out=[];let skipped=0;
+  const groups=new Map();
+  for(const c of changes){if(!groups.has(c.para))groups.set(c.para,[]);groups.get(c.para).push(c);}
+  for(const [para,list] of groups){
+    list.sort((x,y)=>x.from-y.from);
+    if(list.length===1){out.push(list[0]);continue;}
+    const a=list[0].from,b=Math.max(...list.map(c=>c.to));
+    if(!can(para,a,b)){out.push(list[0]);skipped+=list.length-1;continue;}
+    let seg=textOf(para).slice(a,b);
+    for(const c of [...list].sort((x,y)=>y.from-x.from))seg=seg.slice(0,c.from-a)+c.text+seg.slice(c.to-a);
+    out.push({para,from:a,to:b,text:seg,merged:list.map(c=>c.text)});
+  }
+  return {changes:out,skipped};
+}
+/* 같은 이름이 있으면 -2, -3. 하드 링크가 안 되는 드라이브(exFAT 등)는 있는 이름을 덮지 않는 복사로 대신한다(코드 검수 P3-10) */
 async function linkUnique(io,temp,dir,base,ext){
+  const {constants}=require('node:fs');
   for(let n=1;n<100;n++){
     const name=base+(n>1?'-'+n:'')+ext,target=path.join(dir,name);
     try{await io.link(temp,target);return {name,path:target};}
-    catch(e){if(e.code==='EEXIST')continue;throw e;}
+    catch(e){
+      if(e.code==='EEXIST')continue;
+      if(!['EISDIR','ENOTSUP','EXDEV','EPERM','EINVAL','ENOSYS'].includes(e.code))throw e;
+      try{await io.copyFile(temp,target,constants.COPYFILE_EXCL);return {name,path:target};}
+      catch(e2){if(e2.code==='EEXIST')continue;throw e2;}
+    }
   }
   throw fail('SAVE');
 }
@@ -285,7 +314,9 @@ async function saveCopy({read,state,io,fallbackDir,now=Date.now()}){
   let plan;
   try{plan=await readPlan(io,read.plan.path);}catch(e){return {ok:false,code:e.code||'PLAN_MISSING'};}
   if(plan.sha256!==read.plan.sha256)return {ok:false,code:'PLAN_CHANGED'};
-  const {changes,inserts,skipped}=plannedChanges(read,state);
+  const planned=plannedChanges(read,state);
+  const merged=mergeParagraphChanges(planned.changes,i=>plan.paragraphs[i].text,plan.kind==='docx'?(i,a,b)=>ox.canReplace(plan.doc.paragraphs[i],a,b):()=>true);
+  const {changes}=merged,{inserts}=planned,skipped=planned.skipped+merged.skipped;
   if(!changes.length&&!inserts.length)return {ok:false,code:'NOTHING'};
   let out;
   if(plan.kind==='docx'){
@@ -295,7 +326,7 @@ async function saveCopy({read,state,io,fallbackDir,now=Date.now()}){
     const tables=xml=>(xml.match(/<w:tbl>/g)||[]).length+(xml.match(/<w:tbl\s/g)||[]).length;
     const texts=again.paragraphs.map(p=>p.text).join('\n');
     if(!ox.wellFormed(again.xml)||again.paragraphs.length!==plan.doc.paragraphs.length+inserts.length||tables(again.xml)!==tables(plan.doc.xml)||
-      changes.some(c=>!texts.includes(c.text))||inserts.some(c=>!texts.includes(c.text.split('\n')[0])))return {ok:false,code:'SAVE'};
+      changes.some(c=>(c.merged||[c.text]).some(t=>!texts.includes(t)))||inserts.some(c=>!texts.includes(c.text.split('\n')[0])))return {ok:false,code:'SAVE'};
   }else{
     let raw=plan.raw;
     const edits=[...changes.map(c=>({at:plan.paragraphs[c.para].start+c.from,end:plan.paragraphs[c.para].start+c.to,text:c.text})),
@@ -402,4 +433,4 @@ module.exports={id:'bizplan',name:'사업계획서',
   attach:dept=>/기획/.test(String(dept?.name||'')),
   snapshot,act,run,
   // 시험용
-  readPlan,readData,saveCopy,plannedChanges,draftAnchor,LIMIT};
+  readPlan,readData,saveCopy,plannedChanges,mergeParagraphChanges,draftAnchor,LIMIT};

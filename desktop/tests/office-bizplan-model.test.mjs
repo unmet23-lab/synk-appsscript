@@ -19,7 +19,10 @@ const snap = (o = {}) => ({ ok: true, list: list(), read: read(), drafts: {}, sa
 const depts = [{ id: 'plan01', name: '기획부' }, { id: 'dev001', name: '개발부' }];
 
 test('맨 위 두 줄: 넣기 전, 기다림, 읽는 중, 메모 있음, 다 고름, 저장함, 메모 없음, 실패, 멈춤', () => {
-  assert.deepEqual(bizplanScene(snap({ read: null }), null, {}).head, ['사업계획서 파일을 넣어 주세요.', '회사 자료와 견주어 다른 숫자와 빠진 내용을 짚고, 고친 문장을 새 파일로 저장합니다.']);
+  assert.deepEqual(bizplanScene(snap({ read: null, list: list({ plan: null, data: [] }) }), null, {}).head, ['사업계획서 파일을 넣어 주세요.', '회사 자료와 견주어 다른 숫자와 빠진 내용을 짚고, 고친 문장을 새 파일로 저장합니다.']);
+  assert.deepEqual(bizplanScene(snap({ read: null }), null, {}).head, ['「읽기 시작」을 누르면 읽습니다.', '계획서를 회사 자료 하나와 견주어 읽습니다. 몇 분 걸립니다.'], '계획서를 고른 뒤에는 다음에 누를 것을 말한다');
+  assert.match(bizplanScene(snap({ read: null, list: list({ data: [] }) }), null, {}).head[0], /회사 자료를 더하면/);
+  assert.match(bizplanScene(snap({ read: null, list: list({ data: [{ name: 'a.csv' }, { name: 'b.csv' }] }) }), null, {}).head[1], /회사 자료 둘과 견주어/);
   assert.equal(bizplanScene(snap({ read: null }), { id: 't', status: 'queued', updatedAt: 2 }, {}, { deptName: '기획부' }).head[1], '앞에 맡긴 일이 끝나면 기획부 직원이 읽기 시작합니다.');
   const reading = bizplanScene(snap({ progress: { taskId: 't', part: 2, total: 3, title: '3년 뒤' } }), { id: 't', status: 'running', updatedAt: 2 }, {}, { deptName: '기획부' });
   assert.deepEqual(reading.head, ['기획부가 계획서를 읽고 있습니다.', '3번 가운데 2번째 · 3년 뒤']);
@@ -80,8 +83,8 @@ test('방: 열면 기능 판을 읽고, 단추는 정해 둔 동작과 칸만 �
   await room.handle({ act: 'biz-start' });
   assert.equal(sent.some(s => s[1] === 'start'), false, '첫 누름은 묻기만 한다');
   assert.match(room.state().live, /아직 저장되지 않았습니다/);
-  await room.handle({ act: 'biz-start', arg: 'yes' });
-  assert.deepEqual(sent.find(s => s[1] === 'start'), ['act', 'start', { provider: 'codex' }]);
+  await room.handle({ act: 'biz-start', arg: '' });
+  assert.deepEqual(sent.find(s => s[1] === 'start'), ['act', 'start', { provider: 'codex' }], '화면이 보내는 두 번째 누름(빈 arg)이 다시 읽는다');
   await room.handle({ act: 'biz-hand', arg: 'n1' });
   await room.handle({ act: 'biz-hand-send', fields: { extra: '급하지 않아요' } });
   assert.deepEqual(sent.find(s => s[1] === 'handoff'), ['act', 'handoff', { key: 'n1', departmentId: 'dev001', provider: 'claude', extra: '급하지 않아요' }]);
@@ -90,4 +93,23 @@ test('방: 열면 기능 판을 읽고, 단추는 정해 둔 동작과 칸만 �
   room.close();
   assert.equal(room.scene(null), null);
   assert.ok(changes > 0);
+});
+
+test('코드 검수: 저장 안 한 평가 항목을 먼저 저장하고 읽으며, 기능 판을 못 읽으면 기록 지우기를 보인다', async () => {
+  const sent = [];
+  const api = {
+    featureSnapshot: async () => snap({ read: null }),
+    featureAction: async (f, d, action, args) => { sent.push([action, args]); return { ok: true }; },
+  };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(r => setTimeout(r, 0));
+  room.scene(null, { departments: depts });
+  await room.handle({ act: 'biz-criteria', arg: 'pasted' });
+  await room.handle({ act: 'biz-start', arg: '', fields: { criteria: '시장성\n기술성' } });
+  assert.deepEqual(sent.map(s => s[0]), ['criteria', 'start']);
+  assert.deepEqual(sent[0][1], { mode: 'pasted', text: '시장성\n기술성' });
+  const sc = bizplanScene({ ok: false, code: 'BROKEN' }, {}, { departments: depts });
+  assert.equal(sc.stage, 'error');
+  assert.match(sc.head[1], /기록 지우기/);
 });

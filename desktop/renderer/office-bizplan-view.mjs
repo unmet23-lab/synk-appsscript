@@ -36,7 +36,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
   const fields = () => Object.fromEntries([...host.querySelectorAll('[data-biz-f]')].map(n => [n.dataset.bizF, n.value]));
 
   function paperNode(sc) {
-    const blankStage = ['start', 'failed', 'stopped', 'loading'].includes(sc.stage) || !sc.paper;
+    const blankStage = ['start', 'failed', 'stopped', 'loading', 'error'].includes(sc.stage) || !sc.paper;
     if (blankStage) {
       const s = el('div', 'sheet blank'), inner = el('div', 'blank-in');
       if (sc.stage === 'start') {
@@ -47,6 +47,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
             btn('계획서 파일 고르기', 'biz-pick-plan', '', 'dark', !!sc.busy));
         }
       } else if (sc.stage === 'loading') inner.append(el('small', '', sc.head?.[0] || ''));
+      else if (sc.stage === 'error') inner.append(el('b', '', sc.head[0]), el('small', '', sc.head[1]));
       else if (sc.stage === 'waiting' || sc.stage === 'reading') inner.append(el('small', '', sc.planName || ''), el('b', '', sc.stage === 'reading' ? '읽는 중입니다' : '자리를 기다리는 중입니다'));
       else inner.append(el('b', '', sc.head[0]), el('small', '', sc.head[1]), btn('다시 읽기', 'biz-start', '', 'dark', !!sc.busy || !sc.list?.plan));
       s.append(inner);
@@ -161,15 +162,20 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
       side.append(end);
     }
     if (sc.stage !== 'loading' && sc.stage !== 'reading' && sc.stage !== 'waiting' && (sc.stage !== 'start' || sc.broken)) {
+      if (sc.stage === 'error') side.append(el('p', 'why', sc.head[1]));
       side.append(sc.clearAsk ? (() => { const c = el('div', 'biz-block'); c.append(el('p', 'why', '읽은 결과와 고른 것을 지웁니다. 계획서와 회사 자료 파일은 그대로 둡니다.'), acts([['지우기', 'biz-clear', '', 'ghost', !!sc.busy], ['그만두기', 'biz-clear-ask', '', 'quiet']])); return c; })()
         : acts([['기록 지우기', 'biz-clear-ask', '', 'quiet']]));
     }
     return side;
   }
 
+  // 알림 자리는 한 번 만들어 두고 글만 바꾼다. 그릴 때마다 새로 만들면 화면 읽기 프로그램이 알림을 놓친다(코드 검수 P2-9)
+  const body = doc.createElement('div');
+  const liveEl = doc.createElement('p'); liveEl.className = 'more-note biz-live'; liveEl.setAttribute('role', 'status'); liveEl.setAttribute('aria-live', 'polite');
   function render(sc) {
-    if (!sc) { host.hidden = true; host.replaceChildren(); lastKey = ''; return; }
+    if (!sc) { host.hidden = true; host.replaceChildren(); liveEl.textContent = ''; lastKey = ''; return; }
     host.hidden = false;
+    if (body.parentNode !== host || liveEl.parentNode !== host) host.replaceChildren(body, liveEl);
     const values = fields(), focus = doc.activeElement && host.contains(doc.activeElement) ? doc.activeElement : null;
     const fkey = focus?.dataset?.bizF ? 'f:' + focus.dataset.bizF : focus?.dataset?.bizAct ? 'a:' + focus.dataset.bizAct + '|' + (focus.dataset.bizArg || '') : focus?.dataset?.bizNote ? 'n:' + focus.dataset.bizNote : '';
     const sel = focus && 'selectionStart' in focus ? [focus.selectionStart, focus.selectionEnd] : null;
@@ -183,15 +189,16 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const grid = el('div', 'biz-grid');
     grid.append(paperNode(sc), sideNode(sc));
     root.append(grid);
-    const live = el('p', 'more-note biz-live', sc.live); live.setAttribute('role', 'status'); live.setAttribute('aria-live', 'polite');
-    root.append(live);
-    host.replaceChildren(root);
+    body.replaceChildren(root);
+    if (liveEl.textContent !== (sc.live || '')) liveEl.textContent = sc.live || '';
     for (const n of host.querySelectorAll('[data-biz-f]')) if (Object.hasOwn(values, n.dataset.bizF) && values[n.dataset.bizF] !== '') n.value = values[n.dataset.bizF];
     if (fkey) {
       const [k, v] = [fkey.slice(0, 2), fkey.slice(2)];
       const again = k === 'f:' ? host.querySelector(`[data-biz-f="${CSS.escape(v)}"]`) : k === 'n:' ? host.querySelector(`[data-biz-note="${CSS.escape(v)}"]`)
         : [...host.querySelectorAll('[data-biz-act]')].find(b => b.dataset.bizAct + '|' + (b.dataset.bizArg || '') === v);
       if (again && !again.disabled) { again.focus({ preventScroll: true }); if (sel && 'setSelectionRange' in again) try { again.setSelectionRange(...sel); } catch {} }
+      // 누른 단추가 사라지면 초점이 문서 처음으로 날아가지 않게, 고른 메모의 첫 단추나 머리글로 옮긴다
+      else (host.querySelector('.note.sel button:not([disabled])') || host.querySelector('[data-biz-head]'))?.focus({ preventScroll: true });
     }
     const key = sc.stage + ':' + (sc.sel || '');
     if (key !== lastKey) {

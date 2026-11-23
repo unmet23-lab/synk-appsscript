@@ -470,7 +470,9 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     /* 장면. 한 번만 따를 요청(열 줄, 초점)을 붙인다 */
     scene(snap, now, subs) {
       const room = officeRoom(snap, st, now, { subs });
-      const tasking = tasks.scene(room.visible ? snap.tasking : null, snap?.departments);
+      // 기능 줄(사업계획서 읽기)은 부서 줄과 작업 화면에만 보이고 일 맡기기 카드에는 섞지 않는다(코드 검수 P2-5)
+      const plain = room.visible && snap.tasking && Array.isArray(snap.tasking.tasks) ? { ...snap.tasking, tasks: snap.tasking.tasks.filter(t => !t.feature) } : (room.visible ? snap.tasking : null);
+      const tasking = tasks.scene(plain, snap?.departments);
       const deptId = biz.departmentId, depts = Array.isArray(snap?.departments) ? snap.departments : [];
       const dept = deptId && depts.find(d => d.id === deptId);
       // 작업 화면은 일 맡기기가 켜진 판에서 부서가 남아 있을 때만 선다. 부서를 빼면 사무실로 돌아간다

@@ -39,7 +39,9 @@ const NATIVE={한:1,하나:1,두:2,둘:2,세:3,셋:3,석:3,네:4,넷:4,넉:4,다
 // 「주요」, 「대표」처럼 낱말 머리와 겹치는 세는 말(주, 대, 장, 분, 날)은 넣지 않는다
 const COUNTER='배|곳|명|개|번|달|해|사람|가지|군데|차례|건|살|시간|권|잔|마리|팀|분기';
 const NATIVE_RE=new RegExp(`(?<![가-힣])(열\\s?(?:한|두|세|네|다섯|여섯|일곱|여덟|아홉)|스무|스물|서른|마흔|쉰|하나|한|두|둘|세|셋|석|네|넷|넉|다섯|여섯|일곱|여덟|아홉|열)\\s?(?:${COUNTER})`,'g');
-const SINO_ONLY=/(?<![가-힣0-9])(?:[일이삼사오육칠팔구]?십|[일이삼사오육칠팔구]?백|[일이삼사오육칠팔구]?천|[일이삼사오육칠팔구]만)[일이삼사오육칠팔구]?\s?(?:명|개|곳|원|건|년|월|일|%|퍼센트|배|분기|주)/;
+// 숫자 없이 한자어 수 · 어림수로 쓴 양(「삼십 명」, 「이억 원」, 「삼십만 원」, 「오십여 곳」, 「수백 곳」, 「절반」)은 읽지 못하므로 그 글을 받지 않는다(코드 검수 P2-4)
+const SINO_UNIT='(?:명|개|곳|원|건|년|월|일|%|퍼센트|배|분기|주|가지|군데|차례|대|권|장|톤|킬로|미터|시간|분)';
+const SINO_ONLY=new RegExp(`(?<![가-힣0-9])(?:(?:[일이삼사오육칠팔구]?십|[일이삼사오육칠팔구]?백|[일이삼사오육칠팔구]?천|[일이삼사오육칠팔구]만)[일이삼사오육칠팔구]?|[일이삼사오육칠팔구십백천만억조]{2,}|수[십백천만억]+)여?\\s?${SINO_UNIT}|절반|갑절|곱절`);
 const NUM=/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g;
 const key=v=>String(Number(v.toPrecision(15)));
 function unitMul(units){let m=1;for(const u of units)m*=UNIT[u];return m;}
@@ -207,7 +209,8 @@ function checkNotes(answer,ctx){
     if(typeof n.evidence==='string'&&n.evidence.trim()&&Number.isInteger(n.source)&&n.source>=1&&n.source<=ctx.files.length){
       const f=ctx.files[n.source-1];
       const hit=f.lines.some(line=>findOnce(line,n.evidence));
-      if(hit){evidence=fold(n.evidence).s.slice(0,200);source=n.source;en=numbers(evidence,{scale:f.scale}).set;}
+      const folded=fold(n.evidence).s;
+      if(hit&&folded.length<=200){evidence=folded;source=n.source;en=numbers(evidence,{scale:f.scale}).set;}
     }
     let kind=n.kind;
     if(kind==='mismatch'){

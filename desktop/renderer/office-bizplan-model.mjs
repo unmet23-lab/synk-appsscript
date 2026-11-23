@@ -6,6 +6,7 @@ export const countWord = n => (n > 0 && n <= 10 ? WORD[n] : n > 10 && n < 20 ? '
 const batchim = w => { const c = String(w).charCodeAt(String(w).length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; };
 export const iga = w => w + (batchim(w) ? '이' : '가');
 export const eul = w => w + (batchim(w) ? '을' : '를');
+const wa = w => w + (batchim(w) ? '과' : '와');
 export const eseo = w => w + '에';
 export const eunneun = w => w + (batchim(w) ? '은' : '는');
 const kindLabel = { mismatch: '자료와 다른 숫자', unsupported: '근거를 찾지 못한 문장', thin: '빈약한 평가 항목' };
@@ -109,6 +110,8 @@ function paperOf(read, notes, drafts, progress, reading) {
 export function bizplanScene(snap, task, ui = {}, { departments = [], deptName = '기획부' } = {}) {
   const depts = departments.filter(d => d && d.id !== ui.departmentId).map(d => ({ id: d.id, name: d.name }));
   if (!snap || snap.ok === false) {
+    if (snap?.ok === false && snap.code !== 'NOT_AVAILABLE')
+      return { stage: 'error', head: ['사업계획서 기록을 읽지 못했습니다.', '기록 지우기를 누르면 처음부터 할 수 있습니다. 계획서와 회사 자료 파일은 그대로 둡니다.'], back: '← 사무실', live: ui.live || '', busy: ui.busy || null, clearAsk: !!ui.clearAsk };
     return { stage: 'loading', head: [snap?.code === 'NOT_AVAILABLE' ? '이 판에서는 사업계획서 기능을 쓸 수 없습니다.' : '사업계획서를 여는 중입니다.', ''], back: '← 사무실', live: ui.live || '' };
   }
   const read = snap.read;
@@ -126,7 +129,7 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
     return {
       ...base, stage: reading ? 'reading' : 'waiting',
       head: reading ? [`${iga(deptName)} 계획서를 읽고 있습니다.`, p ? `${p.total}번 가운데 ${p.part}번째 · ${p.title}` : '종이에서 어디까지 읽었는지 보입니다.'] : ['자리가 비면 읽습니다.', `앞에 맡긴 일이 끝나면 ${deptName} 직원이 읽기 시작합니다.`],
-      paper: read && read.status !== 'failed' && read.plan.samePlan ? paperOf({ ...read, notes: [] }, [], {}, p, reading) : null,
+      paper: read && read.status !== 'failed' && read.plan?.samePlan ? paperOf({ ...read, notes: [] }, [], {}, p, reading) : null,
       planName: snap.list.plan?.name || '', progress: p, taskId: task.id,
     };
   }
@@ -138,10 +141,15 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
     return { ...base, stage: 'failed', head: ['이번에는 읽지 못했습니다.', reasonText(task.reason, { provider: task.provider })], paper: null };
   }
   if (!read) {
-    return { ...base, stage: 'start', head: ['사업계획서 파일을 넣어 주세요.', '회사 자료와 견주어 다른 숫자와 빠진 내용을 짚고, 고친 문장을 새 파일로 저장합니다.'], paper: null };
+    // 계획서를 고른 뒤에도 「넣어 주세요」가 남던 것(11-23 앱 창 확인). 고른 뒤에는 다음에 누를 것을 말한다
+    const dataCount = snap.list.data?.length || 0;
+    const head = !snap.list.plan ? ['사업계획서 파일을 넣어 주세요.', '회사 자료와 견주어 다른 숫자와 빠진 내용을 짚고, 고친 문장을 새 파일로 저장합니다.']
+      : dataCount ? ['「읽기 시작」을 누르면 읽습니다.', `계획서를 회사 자료 ${wa(countWord(dataCount))} 견주어 읽습니다. 몇 분 걸립니다.`]
+      : ['회사 자료를 더하면 숫자까지 견줍니다.', '자료 없이 읽으면 근거 없는 문장과 빈약한 평가 항목만 짚습니다.'];
+    return { ...base, stage: 'start', head, paper: null };
   }
   if (read.status === 'failed') {
-    return { ...base, stage: 'failed', head: ['이번에는 읽지 못했습니다.', reasonText(read.reason, { provider: read.provider, failedChunks: read.failedChunks, totalChunks: read.totalChunks })], paper: null };
+    return { ...base, stage: 'failed', head: ['이번에는 읽지 못했습니다.', reasonText(read.reason, { provider: read.provider, failedChunks: read.failedChunks, totalChunks: read.totalChunks, dataName: read.dataName })], paper: null };
   }
   const drafts = snap.drafts || {};
   const notes = read.notes.map(n => noteView(n, ui, depts));
