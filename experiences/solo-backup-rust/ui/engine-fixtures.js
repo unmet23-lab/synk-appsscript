@@ -9,7 +9,13 @@ const GB = 1024 ** 3;
 
 // 솔리오 잇기(설계 4.13 · 4.14 · 4.16 — 엔진 305e380fe): 창 상태의 solio 칸
 const SOLIO = { setup: null, restNetworks: [], aiTools: { tools: { space_report: false, find_restorable: false }, masks: [], clients: [] } };
-const SOLIO_SET = { setup: null, restNetworks: ['휴대폰 핫스팟', 'Cafe_Free', '사무실 손님'], aiTools: { tools: { space_report: false, find_restorable: true }, masks: ['건강', '계약'],
+// 공간 비우기 2판(시험 표식이 있는 PC): 켜기 전 미리 보기 한 번과 드라이브 둘
+const SPACE_FREE = { open: true, on: false, since: null, lines: [{ drive: 'C', size: 953 * 2 ** 30, free: 102 * 2 ** 30, gb: 400, set: true }, { drive: 'D', size: 1907 * 2 ** 30, free: 357 * 2 ** 30, gb: 150, set: false }],
+  last: { at: '2026-11-24T01:10:00.000Z', preview: true, bytes: 9.6 * 2 ** 30, count: 41, items: [
+    { kind: 'node_modules', path: 'C:\\Users\\studio\\dev\\landing-2025\\node_modules', n: 1, bytes: 1.9 * 2 ** 30 },
+    { kind: 'target', path: 'C:\\Users\\studio\\dev\\cli-tool\\target', n: 1, bytes: 5.2 * 2 ** 30 },
+    { kind: 'temp', path: null, n: 39, bytes: 2.5 * 2 ** 30 }] } };
+const SOLIO_SET = { setup: null, restNetworks: ['휴대폰 핫스팟', 'Cafe_Free', '사무실 손님'], spaceFree: SPACE_FREE, aiTools: { tools: { space_report: false, find_restorable: true }, masks: ['건강', '계약'],
   clients: [{ name: 'claude-code', version: '2.1.0', exe: 'C:\\Users\\studio\\AppData\\Local\\AnthropicClaude\\claude.exe', firstSeen: '2026-11-10T01:00:00Z', lastSeen: '2026-11-13T04:40:00Z' }] } };
 // 한꺼번에 지워짐 · 바뀜(설계 4.4 — 엔진 massHold, 조율 세션 9ddcbeb40). 어제 오전 판과 오늘 오후 2시 판 사이에 「문서」에서 3,980개가 사라지고
 // 「사진」에서 12개가 바뀌었다. 목록은 엔진처럼 500개까지다
@@ -62,6 +68,8 @@ export const STATES = {
   home: base,
   // 쉬는 Wi-Fi 셋 · 백업 안 파일 찾기를 켜고 가리는 낱말 둘 · 이어 온 AI 도구 하나
   'home-solio': { ...base, solio: SOLIO_SET },
+  // 공간 비우기 2판을 켠 뒤 — 지난 누름에 실제로 비운 것
+  'home-space-on': { ...base, solio: { ...SOLIO_SET, spaceFree: { ...SPACE_FREE, on: true, since: '2026-11-24T00:40:00.000Z', last: { ...SPACE_FREE.last, preview: false } } } },
   'home-run': { ...base, job: { kind: 'backup', stage: '예약 백업 · 작업 파일 백업 중', percent: 62, scheduled: true }, nextBackupAt: at('2026-11-13T16:02:00+09:00'), protection: { level: 'running', reason: 'job', nextAction: 'none' } },
   'home-partial': { ...base, lastBackup: { ...base.lastBackup, at: at('2026-11-13T13:02:00+09:00') }, lastPartial: { id: 'b'.repeat(64), at: at('2026-11-13T14:02:00+09:00'), unreadable: 2, cut: false, files: 12480, bytes: Math.round(18.4 * GB), program: 'Outlook' }, admin: true },
   'home-missing': { ...base, missingSources: [SOURCES[3]], lastBackup: { ...base.lastBackup, files: 10610, bytes: Math.round(16.2 * GB) } },

@@ -29,6 +29,7 @@
 #[path = "../run_helper.rs"] mod helper;
 // 공간 비우기 1판의 훑기 (4.15) — 회차 실행기만 쓴다.
 #[path = "../space.rs"] mod space;
+#[path = "../space_free.rs"] mod space_free;
 // AI 도구의 MCP 보기 도구 (4.16): `--mcp`.
 #[path = "../mcp.rs"] mod mcp;
 use backup_native::{bundle, notify, platform, power, runlog, schedule, secret, update, worker::Worker};
@@ -125,7 +126,7 @@ fn resources() -> Result<PathBuf, String> {
 /// The worker's host calls in run mode: the DPAPI secret store, and for the daily 옮겨 오기 꾸러미 (4.6) where this PC's
 /// folders are and the programs winget knows — reading only. Nothing here installs (`reinstall.user` · `.elevate` are
 /// the window app's).
-fn host(method: &str, args: Value) -> Result<Value, String> {
+fn host(root: &Path, test: bool, method: &str, args: Value) -> Result<Value, String> {
     let list = args.as_array().cloned().unwrap_or_default();
     let first = || list.first().and_then(Value::as_str).ok_or_else(|| "HOST_REQUEST".to_string());
     match method {
@@ -138,6 +139,19 @@ fn host(method: &str, args: Value) -> Result<Value, String> {
             let exe = std::env::current_exe().map_err(|_| "EXECUTABLE")?;
             let sid = schedule::current_sid()?;
             Ok(json!(schedule::registered(&exe, &schedule::account_label(&sid), &sid)?))
+        }
+        // 공간 비우기 2판 (SPACE_DESIGN.md 12장): 원클릭 누름의 비우기 · 미리 보기와 끊긴 지우기 잇기. 엔진 잠금을 쥔 회차의 워커만 부른다.
+        // 백업 폴더 목록은 확인에만 쓰고 어디에도 적지 않는다. 답은 수뿐이다.
+        "space.free" | "space.resume" => {
+            let input = list.first().cloned().unwrap_or(Value::Null);
+            let folders: Vec<String> = input["folders"].as_array().into_iter().flatten().filter_map(|f| f.as_str().map(str::to_string)).take(1000).collect();
+            let (places, _) = space_places(test).ok_or("SPACE_FREE_PLACES")?;
+            if method == "space.resume" { return space_free::resume(root, &places, &folders); }
+            let report = input["report"].as_str().filter(|r| (8..=64).contains(&r.len())).ok_or("HOST_REQUEST")?.to_string();
+            let items: Vec<u32> = input["items"].as_array().into_iter().flatten().filter_map(|n| n.as_u64().filter(|n| (1..=1000).contains(n)).map(|n| n as u32)).take(100).collect();
+            // 미리 보기가 기본이다: 「지우기」는 워커가 동의를 확인하고 false를 줄 때만.
+            let preview = input["preview"].as_bool() != Some(false);
+            space_free::free(root, &places, &space_free::Ask { report, items, folders, preview })
         }
         _ => Err("HOST_METHOD".into()),
     }
@@ -295,7 +309,9 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
     line["skipCloud"] = json!(skip);
     let failure: Arc<Mutex<Option<String>>> = Arc::default();
     let (progress_root, failed) = (root.to_path_buf(), failure.clone());
-    let worker = Worker::start(&resources, root, lock, args.test, true, Arc::new(host),
+    let host_root = root.to_path_buf();
+    let test = args.test;
+    let worker = Worker::start(&resources, root, lock, args.test, true, Arc::new(move |method: &str, value: Value| host(&host_root, test, method, value)),
         // Progress is written only while the gate is open; run() closes it before removing the file (review C2).
         Arc::new(move |value| { let open = writing.lock().unwrap(); if *open { let _ = runlog::progress(&progress_root, &progress(&value)); } }),
         Arc::new(move |code| { *failed.lock().unwrap() = Some(code.to_owned()); }))?;
@@ -690,5 +706,41 @@ fn main() { std::process::exit(run()); }
         let out = progress(&value);
         assert_eq!(out["profiles"], json!({"local": {"kind": "backup", "stage": "작업 파일 백업 중", "percent": 42.5}, "b2": null}));
         assert_eq!(out["pid"], std::process::id());
+    }
+    /// 공간 비우기 2판의 host 호출(SPACE_DESIGN.md 12장): 워커가 넘긴 번호로 미리 보기는 세기만 하고, 동의한 비우기는 지운다.
+    /// 시험 판은 SWB_SPACE_ROOTS · SWB_SPACE_TEMP로 준 자리만 다룬다.
+    #[test] fn the_space_free_host_call_previews_then_frees_only_in_the_given_places() {
+        use std::os::windows::fs::{FileTimesExt, OpenOptionsExt};
+        let base = std::env::temp_dir().join(format!("swb-run-free-{}", std::process::id()));
+        let (state, scan) = (base.join("state"), base.join("scan"));
+        let temp = scan.join("temp");
+        // 이 이름이 든 명령줄이 떠 있으면(이 시험을 부른 셸 따위) 「쓰는 중」으로 남으므로 겹치지 않는 이름을 쓴다.
+        let item = temp.join(format!("old-item-{:08x}", space::random32()));
+        fs::create_dir_all(&item).unwrap();
+        fs::write(item.join("f.bin"), vec![1u8; 700]).unwrap();
+        let old = std::time::SystemTime::now() - Duration::from_secs(5 * 86_400);
+        for p in [item.join("f.bin"), item.clone()] {
+            let f = fs::OpenOptions::new().access_mode(0x100).custom_flags(0x0200_0000).open(&p).unwrap();
+            f.set_times(fs::FileTimes::new().set_modified(old).set_created(old)).unwrap();
+        }
+        fs::create_dir_all(state.join("space")).unwrap();
+        fs::write(state.join("space").join(space_free::GATE), "").unwrap();
+        fs::create_dir_all(state.join("solio")).unwrap();
+        fs::write(state.join("solio").join("space.json"), json!({"v": 1, "report": "space-1-abcdef12", "candidates": [{"n": 1, "grade": "auto", "kind": "temp", "path": temp.to_string_lossy()}]}).to_string()).unwrap();
+        std::env::set_var("SWB_SPACE_ROOTS", &scan);
+        std::env::set_var("SWB_SPACE_TEMP", &temp);
+        let ask = |preview: bool| json!([{"report": "space-1-abcdef12", "items": [1], "folders": [], "preview": preview}]);
+        let v = host(&state, true, "space.free", ask(true)).unwrap();
+        assert_eq!((v["preview"].as_bool(), v["items"].as_u64(), v["freed"].as_u64()), (Some(true), Some(1), Some(700)), "{v}");
+        assert!(item.exists(), "a preview takes nothing");
+        // 「지우기」는 워커가 false를 줄 때만: 칸이 없으면 미리 보기다.
+        let v = host(&state, true, "space.free", json!([{"report": "space-1-abcdef12", "items": [1], "folders": []}])).unwrap();
+        assert_eq!(v["preview"].as_bool(), Some(true));
+        let v = host(&state, true, "space.free", ask(false)).unwrap();
+        assert_eq!((v["preview"].as_bool(), v["items"].as_u64()), (Some(false), Some(1)), "{v}");
+        assert!(!item.exists());
+        assert!(host(&state, true, "space.resume", json!([{"folders": []}])).is_ok());
+        assert_eq!(host(&state, true, "space.free", json!([{"report": "x", "items": [1]}])).unwrap_err(), "HOST_REQUEST", "a report id of the wrong length");
+        let _ = fs::remove_dir_all(&base);
     }
 }

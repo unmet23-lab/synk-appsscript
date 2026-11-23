@@ -19,7 +19,7 @@ use std::{collections::{HashMap, HashSet}, fs, os::windows::fs::MetadataExt, pat
 
 /// 하루 훑기 상한(4.15).
 pub const BUDGET: Duration = Duration::from_secs(300);
-const DIR: &str = "space";
+pub(crate) const DIR: &str = "space";
 const FORMAT: u32 = 1;
 pub const REPORT_MAX: usize = 1_048_576;
 pub const CANDIDATES_MAX: usize = 1000;
@@ -27,11 +27,11 @@ pub const CANDIDATES_MAX: usize = 1000;
 const DEPTH: u8 = 4;
 /// 다 훑은 바퀴의 기록에 남기는 폴더의 크기 하한.
 const KEEP_FOLDER: u64 = 64 << 20;
-const DAY_MS: u64 = 86_400_000;
+pub(crate) const DAY_MS: u64 = 86_400_000;
 const LAPS_KEPT: usize = 20;
 const GIT_TIMEOUT: Duration = Duration::from_secs(20);
 
-const REPARSE: u32 = 0x400;
+pub(crate) const REPARSE: u32 = 0x400;
 const OFFLINE: u32 = 0x1000;
 const RECALL_ON_OPEN: u32 = 0x40000;
 const RECALL_ON_DATA_ACCESS: u32 = 0x400000;
@@ -101,8 +101,8 @@ pub fn last_access_off() -> Option<bool> {
     ok.then_some(value & 1 == 1)
 }
 
-fn key(path: &Path) -> String { path.to_string_lossy().trim_start_matches(r"\\?\").trim_end_matches('\\').to_lowercase() }
-fn epoch_ms() -> u64 { SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0) }
+pub(crate) fn key(path: &Path) -> String { path.to_string_lossy().trim_start_matches(r"\\?\").trim_end_matches('\\').to_lowercase() }
+pub(crate) fn epoch_ms() -> u64 { SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0) }
 fn ms_of(t: std::io::Result<SystemTime>) -> u64 { t.ok().and_then(|t| t.duration_since(UNIX_EPOCH).ok()).map(|d| d.as_millis() as u64).unwrap_or(0) }
 
 /// 크기를 모으는 자리 하나: 깊이 안의 폴더이거나 후보다.
@@ -142,7 +142,7 @@ struct Finished { v: u32, started: u64, finished: u64, days: u32, folders: HashM
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 struct Candidate { grade: String, kind: String, bytes: u64, reason: String, name: String, path: String }
 
-fn read_json<T: for<'a> Deserialize<'a>>(file: &Path, max: u64) -> Option<T> {
+pub(crate) fn read_json<T: for<'a> Deserialize<'a>>(file: &Path, max: u64) -> Option<T> {
     let meta = fs::symlink_metadata(file).ok()?;
     if meta.file_attributes() & REPARSE != 0 || !meta.is_file() || meta.len() > max { return None; }
     serde_json::from_slice(&fs::read(file).ok()?).ok()
@@ -165,7 +165,7 @@ fn replace(tmp: &Path, file: &Path) -> Result<(), String> {
     Err("SPACE_WRITE".into())
 }
 /// 상태 폴더 안의 우리 폴더: 실제 폴더이고 연결점이 아니어야 한다.
-fn own_dir(dir: &Path) -> Result<(), String> {
+pub(crate) fn own_dir(dir: &Path) -> Result<(), String> {
     fs::create_dir_all(dir).map_err(|_| "SPACE_DIR")?;
     let meta = fs::symlink_metadata(dir).map_err(|_| "SPACE_DIR")?;
     if meta.file_attributes() & REPARSE != 0 || !meta.is_dir() { return Err("SPACE_DIR".into()); }
@@ -239,7 +239,7 @@ fn scan_day(root: &Path, places: &Places, today: &str, budget: Duration, now: u6
 }
 
 /// 뿌리 아래의 마디가 모두 연결점이 아닌 보통 폴더인지. 어느 뿌리 아래도 아니면 거짓.
-fn plain_below_root(roots: &[PathBuf], path: &Path) -> bool {
+pub(crate) fn plain_below_root(roots: &[PathBuf], path: &Path) -> bool {
     let wanted = key(path);
     let Some(root) = roots.iter().find(|r| { let k = key(r); wanted == k || wanted.starts_with(&format!("{}\\", k.trim_end_matches('\\'))) }) else { return false };
     let Ok(rest) = path.strip_prefix(root) else { return false };
@@ -276,7 +276,7 @@ fn start_lap(places: &Places, now: u64) -> Lap {
 }
 
 /// 이름으로 알아보는 빌드 산출물과 그 잠금 파일(SPACE_DESIGN.md 4장).
-fn artifact(name: &str, siblings: &HashSet<String>) -> Option<(&'static str, bool)> {
+pub(crate) fn artifact(name: &str, siblings: &HashSet<String>) -> Option<(&'static str, bool)> {
     let has = |list: &[&str]| list.iter().any(|f| siblings.contains(*f));
     match name {
         "node_modules" => Some(("node_modules", has(&["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb", "bun.lock"]))),
@@ -414,7 +414,7 @@ fn local_plain_dir(path: &Path) -> Option<PathBuf> {
 }
 /// `git`을 낮은 우선순위로, 색인 잠금 없이(`--no-optional-locks`) 부른다. 20초와 그날 남은 시간 가운데 짧은 쪽을 넘기면 끝낸다.
 /// 출력은 도는 동안 따로 읽어 비운다(출력이 파이프를 채우면 git이 멈추므로). 앞 64KB만 남긴다. 실패하면 None.
-fn git(dir: &Path, args: &[&str], deadline: Instant) -> Option<(i32, String)> {
+pub(crate) fn git(dir: &Path, args: &[&str], deadline: Instant) -> Option<(i32, String)> {
     use std::io::Read;
     use std::os::windows::process::CommandExt;
     use std::process::{Command, Stdio};
@@ -603,7 +603,7 @@ fn days_from_civil(y: i64, m: i64, d: i64) -> i64 {
 
 /// 기본 시작선(GB): 드라이브 크기의 15%와 150GB 가운데 작은 쪽(SPACE_DESIGN.md 6장). 엔진의 solio.cjs와 같은 셈이다.
 pub fn default_start_line(size: u64) -> u64 { ((size as f64 * 0.15).min(150.0 * (1u64 << 30) as f64) / (1u64 << 30) as f64).floor().max(1.0) as u64 }
-fn start_lines(root: &Path) -> HashMap<String, u64> {
+pub(crate) fn start_lines(root: &Path) -> HashMap<String, u64> {
     read_json::<Value>(&root.join("space-settings.json"), 65536).and_then(|v| v["startLines"].as_object().cloned()).map(|m| m.into_iter()
         .filter(|(d, gb)| d.len() == 1 && d.chars().all(|c| c.is_ascii_uppercase()) && gb.as_u64().is_some_and(|g| g >= 1)).map(|(d, gb)| (d, gb.as_u64().unwrap_or(1))).collect()).unwrap_or_default()
 }
@@ -637,7 +637,7 @@ fn grew(old: &HashMap<String, u64>, new: &HashMap<String, u64>) -> Vec<(String, 
     picked
 }
 
-fn iso(ms: u64) -> String {
+pub(crate) fn iso(ms: u64) -> String {
     let (secs, rem_ms) = (ms / 1000, ms % 1000);
     let (z, rem) = ((secs / 86400) as i64 + 719_468, secs % 86400);
     let era = z.div_euclid(146_097); let doe = z - era * 146_097;
@@ -692,7 +692,7 @@ fn report(root: &Path, dir: &Path, drives: &HashMap<String, (u64, u64, Option<f6
     Ok(true)
 }
 /// 보고서 번호의 꼬리: 비밀이 아니고 겹치지만 않으면 된다(RandomState는 프로세스마다 운영체제의 난수로 씨를 받는다).
-fn random32() -> u32 { use std::hash::BuildHasher; std::collections::hash_map::RandomState::new().hash_one((epoch_ms(), std::process::id())) as u32 }
+pub(crate) fn random32() -> u32 { use std::hash::BuildHasher; std::collections::hash_map::RandomState::new().hash_one((epoch_ms(), std::process::id())) as u32 }
 
 /// 이 스레드를 배경 모드로(낮은 CPU · 디스크 · 메모리 우선순위) 두거나 되돌린다.
 fn background(on: bool) {

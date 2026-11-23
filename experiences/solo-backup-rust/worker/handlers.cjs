@@ -37,6 +37,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   // 솔리오(STAGE1_DESIGN.md 4.13): 상태 파일, 솔리오가 남긴 「보호 시작」 이어 하기(`setup`), 쉬는 회선(4.14).
   const solioFiles = new solio.SolioFiles({ root });
   let solioSetup = null, solioBusy = false, solioAgain = false, restNetworks = await solio.readRestNetworks(root), aiTools = await solio.readAiTools(root);
+  // 공간 비우기 2판(SPACE_DESIGN.md 12.5): 시험 표식이 있는 PC에서만 열린다. 창을 열 때, 화면이 물을 때, 바꾼 뒤에 다시 읽는다.
+  let spaceFree = await solio.spaceFreeInfo(root).catch(() => ({ open: false }));
   const window = null, handlers = new Map();
   const secretStore = {
     encrypt: async value => Buffer.from(await host('secret.encrypt', [value]), 'base64'),
@@ -98,7 +100,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   await recommended.open();recommended.onChange=()=>push();
   function state() {
     const value = {...profiles.getState(), version:APP_VERSION, recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(),
-      solio:{ setup: solioSetup && Date.now() - Date.parse(solioSetup.at) < 1800000 ? { ...solioSetup } : null, restNetworks: [...restNetworks], aiTools },
+      solio:{ setup: solioSetup && Date.now() - Date.parse(solioSetup.at) < 1800000 ? { ...solioSetup } : null, restNetworks: [...restNetworks], aiTools, spaceFree },
       move:{ reinstall: reinstallJob ? { ...reinstallJob } : null, progress: moveProgress && cloud().job?.kind === 'move' ? { bytes: moveProgress.bytes, total: moveProgress.total, folder: moveProgress.folder, bytesPerSecond: moveProgress.bytesPerSecond } : null }};
     withRun(value);
     return {...value, protection:protection(value,{startupRegistered:launchAtLogin})};
@@ -116,7 +118,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     if (solioBusy) { solioAgain = true; return solioRun; }
     solioBusy = true;
     const make = async () => solio.statusOf({ state: profiles.engines.b2.getState(), version: APP_VERSION, startupRegistered: launchAtLogin,
-      ledger: await solio.readJson(path.join(root, 'notify.json')), update: await solio.readJson(path.join(root, 'update.json')) });
+      ledger: await solio.readJson(path.join(root, 'notify.json')), update: await solio.readJson(path.join(root, 'update.json')), spaceFree: await solio.spaceFreeOf(root) });
     solioRun = (async () => {
       try {
         do {
@@ -409,6 +411,16 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     // 「AI 도구」(4.16): 도구마다 켜고 끄기와 가리는 낱말. MCP 연결이 알려 온 도구 목록은 그때 다시 읽는다.
     handle('setAiTools', async (_context, input) => { aiTools = await solio.writeAiTools(root, input); return state(); }, { codes: true });
     handle('aiToolsState', async () => { aiTools = await solio.readAiTools(root); return aiTools; }, { read: true });
+    // 공간 비우기 2판(12.4 「엔진 창 쪽 방법」): 누를 때 비우기의 동의와 드라이브마다 정한 선. 엔진 창에서 부르는 것은 넓히는 쪽도 받는다.
+    // 솔리오는 이 둘을 바꾸지 못한다(요청 파일의 `space-setting`은 줄이는 쪽만). 상태 파일의 `spaceFree`도 바로 맞춘다.
+    handle('spaceFreeState', async () => { spaceFree = await solio.spaceFreeInfo(root); return spaceFree; }, { read: true });
+    handle('setPressFree', async (_context, on) => { await solio.setPressFree(root, on); spaceFree = await solio.spaceFreeInfo(root); await push(); return state(); }, { codes: true });
+    handle('setStartLine', async (_context, input) => {
+      const v = objectInput(input);
+      await solio.setStartLine(root, v.drive, v.gb);
+      spaceFree = await solio.spaceFreeInfo(root);
+      return state();
+    }, { codes: true });
     // 화면 세션 E30: the Wi-Fi this PC is on, for 「쉬는 Wi-Fi」 — read when that screen asks, never kept or written to a log.
     // The host reads it only then (Windows counts it as a location access). Anything that could not be a Wi-Fi name, or a
     // host that could not read one, is null: the screen then offers the field to type it in.

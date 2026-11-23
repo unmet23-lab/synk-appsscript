@@ -58,6 +58,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
       // 솔리오 잇기 — 같은(또는 새) 요청이 다시 실린 상태를 보낸다
       window.__handover = () => { cur = { ...handedHome, solio: cur.solio }; window.__push?.(); };
       window.__setRest = (names) => { cur = { ...cur, solio: { ...cur.solio, restNetworks: names } }; window.__push?.(); };
+      window.__setSpace = (sf) => { cur = { ...cur, solio: { ...cur.solio, spaceFree: sf } }; window.__push?.(); };
       // 한꺼번에 지워짐 — 되살리기가 끝남 · 다른 길로 멈춤이 풀림
       const calm = { level: 'active', reason: 'active', nextAction: 'backup' };
       window.__massDone = () => { cur = { ...cur, job: null, lastRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 20일)', at: new Date().toISOString(), fromEarlier: 0, inNone: 0, mass: { beforeId: cur.massHold.beforeId, beforeAt: cur.massHold.beforeAt } } }; window.__push?.(); };
@@ -90,6 +91,10 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'setRestNetworks') { cur = { ...cur, solio: { ...cur.solio, restNetworks: args[0] } }; return { ok: true, value: cur }; }
         if (method === 'setAiTools') { const i = args?.[0] || {}, t = cur.solio.aiTools; cur = { ...cur, solio: { ...cur.solio, aiTools: { ...t, tools: { ...t.tools, ...(i.tools || {}) }, masks: i.masks ?? t.masks } } }; return { ok: true, value: cur }; }
         if (method === 'wifiName') return { ok: true, value: '집 Wi-Fi' };
+        // 공간 비우기 2판 — 엔진 창에서만 켜고 정한 선을 바꾼다
+        if (method === 'spaceFreeState') return { ok: true, value: cur.solio.spaceFree || { open: false } };
+        if (method === 'setPressFree') { cur = { ...cur, solio: { ...cur.solio, spaceFree: { ...cur.solio.spaceFree, on: args[0] === true, since: args[0] === true ? new Date().toISOString() : null } } }; return { ok: true, value: cur }; }
+        if (method === 'setStartLine') { const i = args?.[0] || {}; cur = { ...cur, solio: { ...cur.solio, spaceFree: { ...cur.solio.spaceFree, lines: cur.solio.spaceFree.lines.map((l) => (l.drive === i.drive ? { ...l, gb: i.gb, set: true } : l)) } } }; return { ok: true, value: cur }; }
         if (method === 'aiToolsState') return { ok: true, value: { ...cur.solio.aiTools, clients: [{ name: 'claude-code', version: '2.1.0', exe: 'C:\\Tools\\claude.exe', firstSeen: '2026-11-15T01:00:00Z', lastSeen: '2026-11-17T04:40:00Z' }] } };
         if (method === 'signInGoogle' && start === 'denied') {
           if (calls.filter((c) => c === 'signInGoogle').length < 2) return { ok: false, error: 'x', code: 'DENIED' };
@@ -340,6 +345,45 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setAiTools').map((a) => a.input), text: document.getElementById('room').innerText, val: document.getElementById('mask-in')?.value }));
     check('가리는 낱말은 도구를 바꾸지 않고(tools 빈 칸) masks에 더하고 칸을 비운다', JSON.stringify(x.args[1]) === JSON.stringify({ tools: {}, masks: ['건강'] }) && /건강/.test(x.text) && x.val === '', JSON.stringify(x.args));
     check('쪽 오류 없음(쉬는 Wi-Fi · AI 도구)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  // 10b. 공간 비우기 2판(SPACE_DESIGN.md 12.5) — 시험 표식이 있는 PC에서만 열린다. 켜기와 정한 선은 이 창에서만
+  {
+    const { pg, ctx, errors } = await scenario('settings');
+    const { STATES: S } = await import(pathToFileURL(path.join(APP, 'ui/engine-fixtures.js')).href);
+    const look = () => pg.evaluate(() => ({ screen: document.getElementById('stage').dataset.screen, text: document.getElementById('room').innerText, calls: window.__calls.slice(), note: document.getElementById('note').textContent,
+      drawerRow: !!document.querySelector('#drawer-panel [data-act="space-free"]') }));
+    await click(pg, '[data-act="drawer"]');
+    let x = await look();
+    check('시험 표식이 없는 PC에는 설정 서랍에 「공간 비우기」 줄이 없다', !x.drawerRow, JSON.stringify(x.drawerRow));
+    await pg.evaluate(() => window.__open('space')); await pg.waitForTimeout(500);
+    x = await look();
+    check('표식이 없으면 알림 주제 space는 기본 화면으로 온다', x.screen === 'home', x.screen);
+    await pg.evaluate((sf) => window.__setSpace(sf), S['home-solio'].solio.spaceFree); await pg.waitForTimeout(400);
+    await click(pg, '[data-act="drawer"]');
+    x = await look();
+    check('표식이 있으면 설정 서랍에 「공간 비우기」 줄이 생긴다', x.drawerRow, '');
+    await click(pg, '#drawer-panel [data-act="space-free"]');
+    x = await look();
+    check('「열기」로 공간 비우기 화면이 열리면 spaceFreeState로 지난 누름을 다시 읽고, 켜기 전이라 「켜면 비울 것」과 경로를 보인다',
+      x.screen === 'space-free' && x.calls.includes('spaceFreeState') && /켜면 비울 것/.test(x.text) && /landing-2025/.test(x.text) && /Windows 임시 파일/.test(x.text) && /비우지 않는 것/.test(x.text), JSON.stringify(x).slice(0, 400));
+    await click(pg, '#room [data-act="press-on"]');
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setPressFree').map((a) => a.input), text: document.getElementById('room').innerText, note: document.getElementById('note').textContent, off: !!document.querySelector('#room [data-act="press-off"]') }));
+    check('「누를 때 비우기 켜기」는 setPressFree(true)를 부르고, 화면이 「원클릭을 누르면」과 「끄기」로 바뀐다', JSON.stringify(x.args) === JSON.stringify([true]) && /원클릭을 누르면/.test(x.text) && x.off && /켰습니다/.test(x.note), JSON.stringify(x).slice(0, 300));
+    await pg.fill('#line-C', '450'); await click(pg, '#room [data-act="line-save"][data-drive="C"]');
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setStartLine').map((a) => a.input), note: document.getElementById('note').textContent }));
+    check('정한 선 「바꾸기」는 그 드라이브와 GB 숫자로 setStartLine을 부른다', JSON.stringify(x.args) === JSON.stringify([{ drive: 'C', gb: 450 }]) && /450GB로 바꿨습니다/.test(x.note), JSON.stringify(x));
+    await pg.fill('#line-D', '12.5'); await click(pg, '#room [data-act="line-save"][data-drive="D"]');
+    x = await pg.evaluate(() => ({ n: window.__args.filter((a) => a.method === 'setStartLine').length, note: document.getElementById('note').textContent }));
+    check('정수가 아닌 선은 보내지 않고 까닭을 쓴다', x.n === 1 && /1 이상의 GB 숫자/.test(x.note), JSON.stringify(x));
+    await click(pg, '#room [data-act="press-off"]');
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setPressFree').map((a) => a.input), on: !!document.querySelector('#room [data-act="press-on"]') }));
+    check('「끄기」는 setPressFree(false)를 부르고 켜기 단추로 돌아간다', JSON.stringify(x.args) === JSON.stringify([true, false]) && x.on, JSON.stringify(x));
+    await click(pg, '#room [data-act="home"]').catch(() => {});
+    await pg.evaluate(() => window.__open('space')); await pg.waitForTimeout(500);
+    x = await look();
+    check('표식이 있으면 알림 주제 space(솔리오의 「엔진 창에서 켜기」)는 이 화면으로 온다', x.screen === 'space-free', x.screen);
+    check('쪽 오류 없음(공간 비우기)', !errors.length, errors.join(' | '));
     await ctx.close();
   }
   // 11. 솔리오가 넘긴 처음 시작(state.solio.setup) — 「Google로 시작」을 누르지 않아도 hint를 실어 로그인을 연다. 같은 요청은 한 번만

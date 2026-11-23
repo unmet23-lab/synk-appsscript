@@ -191,6 +191,13 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   assert.equal(await runExe(['--run', 'hourly', '--test-mode'], spaceEnv), 0);
   assert.equal(lines(state)[13].space, undefined, 'once a day');
 
+  // 공간 비우기 2판 (SPACE_DESIGN.md 12장): 시험 표식이 있으면 상태 파일이 `off`를 말하고, 쓰는 기기가 아닌 PC의 `pick free`는 거절한다.
+  fs.writeFileSync(path.join(state, 'space', '2판-시험'), '');
+  fs.writeFileSync(path.join(requests, `${Date.now()}-pickfree1.json`), JSON.stringify({ v: 1, kind: 'pick', action: 'free', report: report.report, items: [1] }));
+  assert.equal(await runExe(['--run', 'request', '--test-mode'], env), 0);
+  assert.deepEqual(lines(state)[14].requests, [{ kind: 'pick', result: 'rejected', reason: 'not-set-up' }]);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(state, 'solio', 'status.json'), 'utf8')).spaceFree, 'off');
+
   // AI 도구의 MCP 보기 도구 (4.16): 표준 입출력으로 한 줄씩 답하고, 입력이 닫히면 끝난다. 상태는 동의 없이, 찾기는 동의 뒤에만.
   const mcp = async calls => {
     const child = spawn(exe, ['--mcp', '--test-mode'], { env, stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });

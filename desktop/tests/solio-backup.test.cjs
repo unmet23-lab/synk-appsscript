@@ -120,8 +120,13 @@ test('only the owner account sees the real entry; the built-in list keeps no acc
 test('the status file is read with known fields only; a newer format and broken files are told apart', async () => {
   const known = B.normalizeStatus({ ...sample(), path: SENTINEL, folderNames: ['x'] });
   assert.equal(known.format, 'ok');
-  assert.deepEqual(Object.keys(known.status).sort(), ['attention', 'bytes', 'engine', 'folders', 'job', 'lastBackupAt', 'nextRunAt', 'proof', 'state', 'writer', 'writtenAt']);
+  assert.deepEqual(Object.keys(known.status).sort(), ['attention', 'bytes', 'engine', 'folders', 'job', 'lastBackupAt', 'nextRunAt', 'proof', 'spaceFree', 'state', 'writer', 'writtenAt']);
   assert.equal(known.status.state, 'safe');
+  // 공간 비우기 2판: 칸이 없는 엔진(0.7.0)과 모르는 값은 unavailable이다
+  assert.equal(known.status.spaceFree, 'unavailable');
+  assert.equal(B.normalizeStatus({ ...sample(), spaceFree: 'on' }).status.spaceFree, 'on');
+  assert.equal(B.normalizeStatus({ ...sample(), spaceFree: 'maybe' }).status.spaceFree, 'unavailable');
+  assert.equal(B.normalizeStatus({ ...sample(), job: { stage: 'free', percent: null } }).status.job.stage, 'free');
   assert.equal(B.normalizeStatus({ ...sample(), v: 2 }).format, 'newer');
   assert.equal(B.normalizeStatus({ v: 'one' }).format, 'invalid');
   assert.equal(B.normalizeStatus({ ...sample(), state: 'exploded', attention: ['space', 'nope', 'status'] }).status.state, 'unknown');

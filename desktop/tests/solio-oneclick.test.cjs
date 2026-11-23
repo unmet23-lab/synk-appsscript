@@ -487,3 +487,81 @@ test('Fable F1: the main process stamps when it gave up on a request, so the roo
   assert.equal(snap.oneclick.stage, 'gone');
   assert.ok(Number.isFinite(Date.parse(snap.oneclick.answeredAt)), 'gone carries the time it was decided');
 });
+
+/* ── 공간 비우기 2판(SPACE_DESIGN.md 12.4 · 12.5) ── */
+const REPORT2 = (over = {}) => ({ v: 1, report: 'space-1795400000000-abcd1234', createdAt: new Date().toISOString(), lap: { finishedAt: new Date().toISOString(), days: 1 }, drives: [],
+  candidates: [
+    { n: 1, grade: 'auto', kind: 'temp', bytes: 2e9, reason: 'old-temp', name: 'x', path: MARK },
+    { n: 2, grade: 'auto', kind: 'node_modules', bytes: 1e9, reason: 'rebuildable', name: 'x', path: MARK + '\\node_modules' },
+    { n: 3, grade: 'auto', kind: 'pip-cache', bytes: 5e8, reason: 'cache-official', name: 'x', path: MARK },
+    { n: 4, grade: 'suggest', kind: 'node_modules', bytes: 9e8, reason: 'recent', name: 'x', path: MARK }], ...over });
+
+test('2판: on a PC the engine opened (spaceFree off · on) a press writes run-now then pick free with only the 2판 auto numbers; the engine accepts it', async () => {
+  const a = appdata({ status: { ...SAFE, spaceFree: 'off' }, space: REPORT2() }), { s } = service(a);
+  assert.deepEqual(await s.oneClick(ME), { ok: true });
+  const names = requests(a).sort();
+  assert.equal(names.length, 2);
+  const bodies = names.map(n => JSON.parse(fs.readFileSync(path.join(a.paths.requests, n), 'utf8')));
+  assert.deepEqual(bodies[0], { v: 1, kind: 'run-now' }, 'the backup runs first: the pick is named after it');
+  assert.deepEqual(bodies[1], { v: 1, kind: 'pick', action: 'free', report: 'space-1795400000000-abcd1234', items: [1, 2] });
+  const at = Number(engineSolio.NAME.exec(names[1])[1]);
+  assert.equal(engineSolio.validate(bodies[1], { at, now: at }).ok, true, 'the engine accepts the pick as written');
+  assert.ok(!JSON.stringify(bodies).includes('sentinel'), 'no path goes into a request');
+  // 엔진이 run-now에 이어 pick을 「미리 보기」로 답하면 수 다섯이 판까지 온다
+  const files = new engineSolio.SolioFiles({ root: a.root });
+  await files.process({ wants: v => v.ok, handle: async v => (v.kind === 'run-now' ? { result: 'done' } : { result: 'done', preview: true, freed: 3e9, items: 6, kept: 2, busy: 1 }) });
+  const snap = await s.snapshot(ME);
+  assert.equal(snap.oneclick.result, 'done');
+  assert.deepEqual([snap.oneclick.free.result, snap.oneclick.free.numbers], ['done', { preview: true, freed: 3e9, items: 6, kept: 2, busy: 1 }]);
+  assert.ok(!JSON.stringify(snap).includes('sentinel') && !JSON.stringify(snap).includes('abcd1234'), 'no path and no report id reach the room');
+});
+
+test('2판: no pick on an engine that did not open it, with no fresh report, or with no 2판 numbers — the backup press still goes', async () => {
+  for (const [status, space, why] of [
+    [SAFE, REPORT2(), 'engine 0.7.0 has no spaceFree'],
+    [{ ...SAFE, spaceFree: 'unavailable' }, REPORT2(), 'not the test PC'],
+    [{ ...SAFE, spaceFree: 'on' }, REPORT2({ createdAt: new Date(Date.now() - 25 * 3600e3).toISOString() }), 'a report over a day old'],
+    [{ ...SAFE, spaceFree: 'on' }, REPORT2({ candidates: [{ n: 3, grade: 'auto', kind: 'pip-cache', bytes: 1, reason: 'x', name: 'x', path: 'x' }] }), 'only kinds 2판 does not free'],
+    [{ ...SAFE, spaceFree: 'on' }, undefined, 'no report yet']]) {
+    const a = appdata({ status, space }), { s } = service(a);
+    assert.deepEqual(await s.oneClick(ME), { ok: true }, why);
+    assert.deepEqual(requests(a).map(n => JSON.parse(fs.readFileSync(path.join(a.paths.requests, n), 'utf8')).kind), ['run-now'], why);
+  }
+});
+
+test('2판 room: the label follows consent, line 03 says the preview, the freeing, what was freed and kept; Solio never turns it on itself', async () => {
+  const { solioBackupView, ONECLICK_LABEL, ONECLICK_FREE_LABEL } = await import('../renderer/solio-backup-model.mjs');
+  const st = sf => ({ ...STATUS, spaceFree: sf });
+  assert.equal(solioBackupView(SNAP({ status: st('off') }), NOW).board.main.label, ONECLICK_LABEL);
+  assert.equal(solioBackupView(SNAP({ status: st('on') }), NOW).board.main.label, ONECLICK_FREE_LABEL);
+  assert.equal(solioBackupView(SNAP({ status: st('unavailable') }), NOW).board.main.label, ONECLICK_LABEL);
+  // 누르기 전: 보고서의 크기는 「많게는」
+  assert.match(solioBackupView(SNAP({ status: st('on') }), NOW).board.steps[2].mid, /^많게는 .+를 비울 수 있습니다$/);
+  assert.match(solioBackupView(SNAP(), NOW).board.steps[2].mid, /다시 만들 수 있는 것 .+를 찾았습니다/, '0.7.0 keeps its words');
+  const answered = { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() };
+  const free = patch => ({ stage: 'sent', result: null, reason: null, answeredAt: null, ...patch });
+  // 백업은 끝났고 비우기가 도는 중: 03 줄에 도우미 구가 앉고 단추는 막힌다
+  let v = solioBackupView(SNAP({ status: { ...st('on'), job: { stage: 'free', percent: null } }, oneclick: PRESS(120000, { ...answered, free: free({ stage: 'claimed' }) }) }), NOW);
+  assert.deepEqual([v.board.steps[2].state, v.board.at, v.board.main.disabled], ['now', 'space', true]);
+  assert.match(v.board.steps[2].mid, /비우는 중입니다/);
+  // 미리 보기 답: 켜면 비울 양과 엔진 창에서 켜기(주제 space). 지웠다고 말하지 않는다
+  v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, numbers: { preview: true, freed: 3 * GBy, items: 6, kept: 2, busy: 1 } }) }) }), NOW);
+  assert.match(v.board.steps[2].mid, /켜면 지금 3\.0GB를 비울 수 있습니다/);
+  assert.equal(v.say, '백업을 마쳤습니다.');
+  assert.match(v.then, /엔진 창에서 「누를 때 비우기」를 켜면/);
+  assert.deepEqual([v.acts[0].act, v.acts[0].arg], ['backup-open', 'space']);
+  assert.doesNotMatch(JSON.stringify(v), /비웠습니다/);
+  // 실제로 비운 답
+  v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, numbers: { preview: false, freed: 4.5 * GBy, items: 3, kept: 1, busy: 1 } }) }) }), NOW);
+  assert.equal(v.say, '백업하고 4.5GB를 비웠습니다.');
+  assert.match(v.board.steps[2].mid, /4\.5GB를 비웠습니다 · 1개는 쓰는 중이라 남겼습니다/);
+  assert.equal(v.board.sum.nm, '백업하고 4.5GB를 비웠습니다');
+  // 비우지 않고 끝난 답은 까닭을 말하고, 모르는 까닭은 엔진 창으로
+  v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, result: 'rejected', reason: 'old-report' }) }) }), NOW);
+  assert.match(v.board.steps[2].mid, /다시 잰 뒤에 비웁니다/);
+  v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, result: 'failed', reason: 'error' }) }) }), NOW);
+  assert.equal(v.board.steps[2].state, 'fail');
+  // 「다시 만들 수 있는 것」 묶음의 설명도 켜고 끈 것을 따른다
+  assert.equal(solioBackupView(SNAP({ status: st('off') }), NOW).board.groups.find(g => g.k === 'auto').mid, '엔진 창에서 켜면 원클릭이 비웁니다');
+  assert.equal(solioBackupView(SNAP({ status: st('on') }), NOW).board.groups.find(g => g.k === 'auto').mid, '원클릭을 누를 때 비웁니다');
+});

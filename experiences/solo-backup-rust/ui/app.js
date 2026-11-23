@@ -238,6 +238,7 @@ function go(id, scope = null) {
   // 쉬는 Wi-Fi는 들어올 때마다 지금 Wi-Fi 이름을, AI 도구는 이어 온 도구 목록을 다시 읽는다(창 상태에는 창을 연 때 읽은 것만 있다)
   if (!fixture && screen === 'rest-net') void loadWifi();
   if (!fixture && screen === 'ai-tools') void loadAiTools();
+  if (!fixture && screen === 'space-free') void loadSpaceFree();
   if (screen !== 'home') acct = { ...acct, solioNoMove: false, solioBox: null };
   if (screen === 'restore') openCatalog();
   // 되돌리기 화면을 떠나면 찾은 시각을 버린다 — 다시 들어오면 새로 찾는다(서버가 5분 동안 같은 답을 준다)
@@ -414,12 +415,29 @@ async function solioSave(method, arg, done, onOk = null, focus = null) {
   const r = await store.call(method, arg);
   acct = { ...acct, running: null };
   if (r.ok) { if (method === 'setAiTools') ui = { ...ui, aiClients: undefined }; onOk?.(); note(done, 5000); }
-  else note(r.code === 'BAD_INPUT' ? (method === 'setRestNetworks' ? 'Wi-Fi 이름을 받지 못했습니다. 이름을 고쳐 다시 더해 주세요.' : 'AI 도구 설정을 받지 못했습니다. 다시 눌러 주세요.') : failureText(r.code));
+  else note(r.code === 'BAD_INPUT' ? (method === 'setRestNetworks' ? 'Wi-Fi 이름을 받지 못했습니다. 이름을 고쳐 다시 더해 주세요.' : method === 'setStartLine' ? '정한 선을 받지 못했습니다. 그 드라이브 크기보다 작은 GB 숫자로 적어 주세요.' : 'AI 도구 설정을 받지 못했습니다. 다시 눌러 주세요.')
+    : r.code === 'NOT_AVAILABLE' ? '이 PC에서는 아직 공간 비우기를 켤 수 없습니다.' : failureText(r.code));
   paint();
   // 키보드로 누른 단추가 그림과 함께 사라졌으면 정한 곳으로(그 사이 손님이 옮겨 둔 포커스는 두고)
   const fell = !document.activeElement || document.activeElement === document.body;
   if (r.ok && focus && fell) room.querySelector(focus)?.focus({ preventScroll: true });
   return r.ok;
+}
+/** 공간 비우기 2판 — 들어올 때마다 지난 누름과 정한 선을 다시 읽는다(창 상태에는 창을 연 때 읽은 것만 있다) */
+async function loadSpaceFree() {
+  const r = await store.aside('spaceFreeState');
+  if (screen !== 'space-free' || !r.ok || typeof r.value !== 'object') return;
+  ui = { ...ui, spaceFree: r.value }; paint();
+}
+function pressFree(on) {
+  return solioSave('setPressFree', on, on ? '켰습니다. 이제 솔리오 원클릭을 누르면 다시 만들 수 있는 것만 비웁니다.' : '껐습니다. 이제 누를 때마다 무엇을 비울지 미리 보기만 합니다.',
+    () => { ui = { ...ui, spaceFree: undefined }; });
+}
+function lineSave(drive) {
+  const raw = String(room.querySelector(`#line-${CSS.escape(drive || '')}`)?.value ?? '').trim();
+  const gb = Number(raw);
+  if (!/^[A-Z]$/.test(drive || '') || !/^[0-9]+$/.test(raw) || !Number.isSafeInteger(gb) || gb < 1) return note('정한 선은 1 이상의 GB 숫자로 적어 주세요.', 6000);
+  return solioSave('setStartLine', { drive, gb }, `${drive}: 정한 선을 ${gb}GB로 바꿨습니다.`, () => { ui = { ...ui, spaceFree: undefined }; void loadSpaceFree(); });
 }
 const restNames = () => (Array.isArray(state()?.solio?.restNetworks) ? state().solio.restNetworks : []);
 const aiState = () => state()?.solio?.aiTools || {};
@@ -1018,7 +1036,7 @@ const GLOBAL = {
   add: { call: 'addSources' }, drop: { call: 'removeSource' }, 'auto-on': { call: 'setAutomatic', arg: true }, 'auto-off': { call: 'setAutomatic', arg: false },
   code: { to: 'code' }, lost: { to: 'lost' }, 'undo-1': { to: 'undo-1' }, 'move-apps': { to: 'move-apps' }, partial: { to: 'partial' }, 'partial-std': { to: 'partial-std' }, 'move-0': { to: 'move-0' }, 'mass-list': { to: 'mass-list' }, 'left-out': { to: 'left-out' },
   'move-count': { flow: 'moveCount' }, 'move-add': { flow: 'moveAdd' },
-  'rest-net': { to: 'rest-net' }, 'ai-tools': { to: 'ai-tools' },
+  'rest-net': { to: 'rest-net' }, 'ai-tools': { to: 'ai-tools' }, 'space-free': { to: 'space-free' },
   external: { pending: '외장 드라이브 사본' }, tray: { pending: '트레이 아이콘' }, telemetry: { pending: '시범 측정 내용 보기' }, help: { pending: '도움 요청' },
 };
 
@@ -1042,6 +1060,9 @@ stage.addEventListener('click', (e) => {
   if (id === 'rest-here') return void restAdd(ui.wifi, false);
   if (id === 'rest-drop') return void restDrop(el.dataset.name);
   if (id === 'ai-tool') return void aiToggle(el.dataset.tool);
+  if (id === 'press-on') return void pressFree(true);
+  if (id === 'press-off') return void pressFree(false);
+  if (id === 'line-save') return void lineSave(el.dataset.drive);
   if (id === 'mask-add') return void maskAdd(room.querySelector('#mask-in')?.value);
   if (id === 'mask-drop') return void maskDrop(el.dataset.name);
   // 옛 PC 백업에서 꺼내기 — 고르기는 창 안에서, 한 층 읽기와 목록 열기는 엔진에
@@ -1185,11 +1206,13 @@ document.addEventListener('keydown', (e) => {
 // 열기 주소의 낱말(설계 4.2 「알림」 여덟 + 11-16 `move`) → 화면. 네이티브가 'backup:open' 알림으로 낱말을 넘기면 그 화면으로 간다.
 // 누르기만으로 실행되는 화면은 열지 않는다 — 모두 보기 · 고르기 화면이고, 실행은 그 화면의 단추를 손님이 눌러야 한다.
 // 「바뀜」 · 「상태」는 기본 화면이 엔진 상태로 갈래를 고르므로(한꺼번에 지워짐 · 점검 실패 등) 기본 화면이다.
-const TOPICS = { status: 'home', changes: 'home', restore: 'restore', signin: 'home', space: 'home', folders: 'drawer', devices: 'drawer', update: 'drawer', move: 'move' };
+// 「공간」은 공간 비우기 2판이 열린 PC(시험 표식)에서 그 화면으로, 아니면 기본 화면이다(SPACE_DESIGN.md 12.5).
+const TOPICS = { status: 'home', changes: 'home', restore: 'restore', signin: 'home', space: 'space', folders: 'drawer', devices: 'drawer', update: 'drawer', move: 'move' };
 export function openTopic(topic) {
   const to = TOPICS[topic]; if (!to) return false;
   if (to === 'drawer') { go('home'); openDrawer(); return true; }
   if (to === 'move') { const s = state(); if (moveOpen(s)) go(moveJob(s) ? 'move-2' : 'move-1'); else if (s?.configured) go('move-0'); else if (fixture) go('move-1'); else go('home'); return true; }
+  if (to === 'space') { closeDrawer(); go(state()?.solio?.spaceFree?.open ? 'space-free' : 'home'); return true; }
   if (to === 'restore' && screen === 'restore' && catalogScope) go('home');
   closeDrawer(); go(to); return true;
 }

@@ -16,11 +16,12 @@
 | `lastBackupAt` | 마지막으로 백업을 확인한 시각(UTC ISO), 없으면 null |
 | `proof` | 마지막 되살리기 증명 `{at, result}`. `result`는 `passed` · `failed` · `incomplete` · `skipped` |
 | `attention` | 주의 주제 낱말 목록. 알림의 여덟 낱말 `status` · `folders` · `changes` · `devices` · `restore` · `space` · `signin` · `update` 가운데서, 이 차례로 |
-| `job` | 지금 도는 작업 `{stage, percent}`, 없으면 null. `stage`는 `backup` · `check` · `proof` · `restore` · `move` · `setup` · `other` |
+| `job` | 지금 도는 작업 `{stage, percent}`, 없으면 null. `stage`는 `backup` · `check` · `proof` · `restore` · `move` · `setup` · `free`(공간 비우기 2판이 비우거나 세는 중, 0.8.0부터) · `other` |
 | `folders` | 보호 중인 폴더 수 |
 | `bytes` | 마지막 백업의 원본 크기 합(바이트), 모르면 null |
 | `writer` | 이 PC가 쓰는 기기인지 |
 | `nextRunAt` | 다음 회차 예정 시각. 쓰는 기기가 아니면 null. 지금 시각이 이보다 2시간 넘게 지났으면 솔리오는 「확인 중」으로 보인다 |
+| `spaceFree` | 공간 비우기 2판(0.8.0부터, [설계 12장](../../SPACE_DESIGN.md)): `unavailable`(이 PC에는 열지 않음 — 시험 표식이 없다) · `off`(열렸고 엔진 창에서 켜지 않음, 누를 때 미리 보기만) · `on`(엔진 창에서 켬, 누를 때 비움). 칸이 없는 엔진은 `unavailable`로 읽는다 |
 | `writtenAt` | 이 파일을 쓴 시각 |
 
 ## 요청 파일 `requests\<시각>-<난수>.json` — 솔리오가 쓰고 엔진이 처리한다
@@ -35,7 +36,7 @@
 | `setup` | `mode`(`protect` · `move`), `hint`(없어도 된다) | 엔진 창(떠 있는 동안 2초마다 본다. 확인을 넘지 못한 요청도 엔진 창이 거절로 치운다) | 「Google로 시작」 화면을 건너뛰고 Google 로그인으로 바로 가게 창에 알린다. 30분이 지나면 거절(`expired`). 보호를 시작한 PC와 옮겨진 PC는 거절. 옮겨 오기만 한 PC는 `protect`만 받는다 |
 | `run-now` | 없음 | 요청 작업(작업 스케줄러 「요청 - <계정 이름> · <SID 짧은 표시>」)과 모든 회차의 끝 | 회차 간격만 건너뛰고 백업한다. 종량 회선 · 배터리 · 절전 · 쉬는 회선이면 쉬고(`rested`), 손님이 잠시 멈춘 동안은 거절(`paused`)한다. 화면에서 직접 누른 「지금 백업」과 달리 쉼을 지킨다 |
 | `space-setting` | `name`이 `start-line`이면 `drive`(대문자 한 글자) · `gb`(정수), `auto-free` · `cloud-only-auto` · `empty-trash`이면 `value`(참 · 거짓) | 요청 작업과 회차 | 삭제 범위를 줄이는 쪽(시작선 낮추기, 끄기)만 한다. 넓히거나 켜는 값은 `confirm-in-engine` |
-| `pick` | `action`(`free` · `restore`), `report`(보고서 번호), `items`(후보 번호 1~100개) | 요청 작업과 회차 | 보고서가 그 종류의 가장 새 것이 아니거나 24시간이 지났으면 거절한다. 공간 비우기 1판은 아무것도 비우지 않으므로 `free`는 모두 거절(`not-available`)한다. 찾기 결과의 보고서는 1단계에 남기지 않으므로 `restore`도 거절(`no-report`)한다(2단계 요청 도구와 함께 연다) |
+| `pick` | `action`(`free` · `restore`), `report`(보고서 번호), `items`(후보 번호 1~100개), `free`이면 `preview`(참 · 거짓, 없어도 된다) | 요청 작업과 회차 | `restore`: 찾기 결과의 보고서는 1단계에 남기지 않으므로 거절(`no-report`)한다(2단계 요청 도구와 함께 연다). `free`(0.8.0부터, [설계 12.4](../../SPACE_DESIGN.md)): 이 차례대로 답한다 — 시험 표식이 없으면 `not-available` → 쓰는 기기가 아니면 `not-set-up` · `moved` · `restore-only` → 그 회차가 요청 목록을 처음 읽은 때에 10분이 지났으면 `expired` → 공간 보고서가 그 번호의 가장 새 것이 아니거나 24시간이 지났으면 `old-report`(보고서가 없으면 `no-report`) → 2판 종류(Windows 임시 · 자동화 임시 프로필 · 빌드 산출물)의 가 등급 번호가 없으면 `not-available` → 그 밖에는 `done`. 엔진 창에서 켜지 않았거나 `preview`가 참이면 지우지 않고 셈만 한다. 0.7.0은 `free`를 모두 `not-available`로 거절한다 |
 
 `setup` 밖의 요청은 24시간이 지나면 거절(`expired`)한다. 견본은 [requests](requests/)에 있다.
 
@@ -54,6 +55,7 @@
 `{"v":1,"result":<낱말>,"reason":<까닭 낱말>,"at":<시각>}`이다. 하루가 지난 것은 엔진이 치운다.
 
 - `result`: `done`(했음) · `rejected`(거절) · `confirm-in-engine`(엔진 창에서 확인 필요) · `rested`(쉼) · `failed`(실패)
+- `pick free`의 `done`에만(0.8.0부터) 수 다섯이 더 붙는다: `preview`(참이면 미리 보기 — 지우지 않음) · `freed`(지운 크기, 미리 보기면 지울 크기, 바이트) · `items`(지운 · 지울 수) · `kept`(남긴 수) · `busy`(쓰는 중이라 남긴 수). 경로와 이름은 없다. 남긴 까닭의 자세한 갈래와 경로는 엔진 상태 폴더의 장부(`space\freed.jsonl`)에만 있다
 - `reason`(거절 · 쉼 · 실패일 때): `invalid` · `version` · `expired` · `set-up` · `moved` · `restore-only` · `not-set-up` · `no-report` · `old-report` · `not-available` · `not-yet` · `no-drive` · `paused` · `clock` · `busy` · `interrupted` · `battery` · `saver` · `metered` · `network` · `error` · `cancelled`(솔리오가 취소 표식으로 거둠)
 
 견본은 [results](results/)에 있다.

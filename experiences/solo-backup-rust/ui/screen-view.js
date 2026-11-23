@@ -1193,8 +1193,40 @@ function solioRows(st, R) {
   const on = AI_TOOL_ROWS.filter((x) => so.aiTools?.tools?.[x.id] === true).map((x) => x.name);
   const restText = rest.length ? `${rest.slice(0, 2).map((n) => `「${h(n)}」`).join(', ')}${rest.length > 2 ? ` 외 ${h(count(rest.length - 2))}곳` : ''}에서는 매시간 백업을 쉽니다`
     : '휴대폰 핫스팟처럼 데이터 요금이 드는 Wi-Fi에서 매시간 백업을 쉬게 합니다';
+  const sf = so.spaceFree?.open ? so.spaceFree : null;
   return `${R('쉬는 Wi-Fi', restText, { id: 'rest-net', label: '고르기' })}
-      ${R('AI 도구', on.length ? `${h(on.join(', '))} 켜짐 · AI 도구에 파일 이름과 폴더 이름이 나갑니다` : '백업 상태만 답합니다 · 파일 이름은 나가지 않습니다', { id: 'ai-tools', label: '열기' })}`;
+      ${R('AI 도구', on.length ? `${h(on.join(', '))} 켜짐 · AI 도구에 파일 이름과 폴더 이름이 나갑니다` : '백업 상태만 답합니다 · 파일 이름은 나가지 않습니다', { id: 'ai-tools', label: '열기' })}
+      ${sf ? R('공간 비우기', sf.on ? '켜짐 · 솔리오 원클릭을 누를 때 다시 만들 수 있는 것만 비웁니다' : '꺼짐 · 켜기 전에는 누를 때마다 무엇을 비울지 미리 봅니다', { id: 'space-free', label: '열기' }) : ''}`;
+}
+
+/* ── 공간 비우기 2판(SPACE_DESIGN.md 12.5) — 시험 표식이 있는 PC에서만 열린다 ─────── */
+const FREE_KIND_KO = { node_modules: 'Node 패키지 폴더', target: 'Rust 빌드 폴더', venv: 'Python 가상 환경', pycache: 'Python 임시 파일', temp: 'Windows 임시 파일', 'temp-profile': '브라우저 자동화 임시 프로필' };
+/**
+ * 누를 때 비우기의 동의(setPressFree)와 드라이브마다 정한 선(setStartLine), 지난 누름. 엔진 창은 손님 PC 안의 화면이라 지난 누름의
+ * 경로를 보인다(솔리오에는 크기와 수만 간다). 켜기는 이 화면의 단추로만 된다.
+ */
+function spaceFreeScreen(s, ui, acct, now) {
+  const sf = ui?.spaceFree || s?.solio?.spaceFree || { open: false };
+  const run = !!acct?.running, dis = run ? ' aria-disabled="true"' : '';
+  const last = sf.last || null, lines = Array.isArray(sf.lines) ? sf.lines : [];
+  const l = `${kick('설정 · 공간 비우기')}${sf.on ? say('원클릭을 누르면', '다시 만들 수 있는 것만 비웁니다.') : say('켜면 원클릭을 누를 때', '다시 만들 수 있는 것만 비웁니다.')}
+    ${then('비우는 것은 셋입니다. 이틀 넘게 그대로인 Windows 임시 파일, 브라우저 자동화가 남긴 임시 프로필, 14일 넘게 손대지 않은 프로젝트의 빌드 폴더(node_modules, target, .venv, __pycache__)입니다. 빌드 폴더는 그 드라이브의 남은 공간이 정한 선보다 적을 때만 비웁니다.')}
+    <div class="box rise i3"><b>비우지 않는 것</b>백업하는 폴더 안, AI 앱이 만든 작업 사본 안, 지금 쓰거나 다른 프로그램이 부르는 폴더, 다시 만들 수 없는 자료는 비우지 않습니다. 빌드 폴더는 그 프로젝트에서 다시 설치하면 돌아옵니다.</div>
+    ${acts([sf.on ? { id: 'press-off', label: '끄기', kind: 'line', disabled: run } : { id: 'press-on', label: '누를 때 비우기 켜기', kind: 'main', disabled: run }, { id: 'drawer', label: '설정으로 돌아가기', kind: 'link' }],
+      sf.on && sf.since ? `<span class="hint">${h(dayKo(sf.since).replace(/ \S$/, ''))}에 켰습니다.</span>` : '')}`;
+  const lastRows = last ? last.items.map((x) => x.kind === 'temp'
+      ? row(h(FREE_KIND_KO.temp), `<span class="meta">${h(`${count(x.n)}개`)}</span>`, h(size(x.bytes)))
+      : row(h(FREE_KIND_KO[x.kind] || '빌드 폴더'), `<span class="meta">${h(x.path || '')}</span>`, h(size(x.bytes)))).join('')
+    : '<p class="empty">아직 누른 적이 없습니다. 솔리오에서 원클릭을 누르면 여기에 적습니다.</p>';
+  const lastMeta = last ? `<span class="num">${h(size(last.bytes))}</span> · ${h(whenKo(last.at, now))}` : '';
+  const lineRows = lines.length ? lines.map((d) => row(`${h(d.drive)}:`, `<span class="meta">남은 공간 ${h(size(d.free))} / ${h(size(d.size))}</span>`,
+      `<input id="line-${h(d.drive)}" class="gb" type="number" min="1" step="1" inputmode="numeric" value="${h(d.gb)}" aria-label="${h(`${d.drive}: 정한 선(GB)`)}"${run ? ' readonly' : ''}> GB <button class="lnk sm" type="button" data-act="line-save" data-drive="${h(d.drive)}"${dis} aria-label="${h(`${d.drive}: 정한 선 바꾸기`)}">바꾸기</button>`)).join('')
+    : '<p class="empty">드라이브를 아직 훑지 않았습니다. 하루 한 번 훑은 뒤에 보입니다.</p>';
+  const r = panel(last?.preview === false ? '지난 누름에 비운 것' : '켜면 비울 것', lastMeta, `<div class="rows">${lastRows}</div>
+    <p class="foot">${last?.preview === false ? '지운 것과 다시 만드는 법은 이 PC의 장부에 남깁니다.' : '켜기 전에는 누를 때마다 무엇을 비울지 세기만 하고 지우지 않습니다. 지금 쓰는 중인 것은 실제로 비울 때 한 번 더 걸러지므로, 비우는 양은 이보다 적을 수 있습니다.'}</p>`)
+    + panel('드라이브마다 정한 선', '', `<div class="rows">${lineRows}</div>
+    <p class="foot">남은 공간이 이 선보다 적은 드라이브에서만 빌드 폴더를 비우고, 선을 넉넉히 넘으면 멈춥니다. 선을 올리면 더 자주 비웁니다.</p>`);
+  return { kind: 'flow', tone: 'setup', here: '공간 비우기', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { drawer: { id: 'drawer', drawer: true } } };
 }
 
 /**
@@ -1308,6 +1340,8 @@ export function renderScreen(id, ctx) {
     case 'code': return code(s);
     case 'rest-net': return restNet(s, ctx.ui, ctx.acct);
     case 'ai-tools': return aiToolsScreen(s, ctx.ui, ctx.acct, now);
+    // 시험 표식이 없는 PC(엔진이 열지 않음)는 기본 화면 — 창은 기본 화면으로 돌린다
+    case 'space-free': return s?.solio?.spaceFree?.open ? spaceFreeScreen(s, ctx.ui, ctx.acct, now) : homeScreen(ctx.model, ctx.acct, s);
     // 멈춤이 풀렸으면(확인을 마침) 기본 화면을 그린다 — 창은 기본 화면으로 돌린다(app.js resolve)
     case 'mass-list': return massOf(s) ? massList(s, now, ctx.ui, ctx.acct, ctx.model) : homeScreen(ctx.model, ctx.acct, s);
     // 담지 못한 이름이 없으면 기본 화면을 그린다 — 창은 기본 화면으로 돌린다(app.js resolve)
@@ -1317,5 +1351,5 @@ export function renderScreen(id, ctx) {
 }
 
 /** 앱이 그리는 화면 이름 전부(시험 · tauri-driver · 캡처가 돈다) */
-export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'restore-old', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list', 'left-out', 'rest-net', 'ai-tools'];
+export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'restore-old', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list', 'left-out', 'rest-net', 'ai-tools', 'space-free'];
 export { FAKE };

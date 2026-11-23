@@ -32,13 +32,19 @@ const STATES = ['safe', 'starting', 'attention', 'paused', 'off', 'not-set-up', 
 const TOPICS = ['status', 'folders', 'changes', 'devices', 'restore', 'space', 'signin', 'update'];
 /** 지금 도는 작업의 단계 낱말. 엔진 작업 종류를 이 목록으로 옮기고, 모르는 것은 `other`다. */
 const STAGES = { backup: 'backup', protect: 'backup', fill: 'backup', check: 'check', probe: 'proof', restore: 'restore', move: 'move',
-  setup: 'setup', import: 'setup', sources: 'setup', key: 'setup', credentials: 'setup', recovery: 'setup', 'recovery-key': 'setup' };
+  setup: 'setup', import: 'setup', sources: 'setup', key: 'setup', credentials: 'setup', recovery: 'setup', 'recovery-key': 'setup', free: 'free' };
 const KINDS = ['setup', 'pick', 'space-setting', 'run-now'];
 const RESULTS = ['done', 'rejected', 'confirm-in-engine', 'rested', 'failed'];
 /** 거절 · 실패의 까닭 낱말. 결과 파일에는 이 목록 밖의 낱말이 나가지 않는다. */
 const REASONS = ['invalid', 'version', 'expired', 'set-up', 'moved', 'restore-only', 'not-set-up', 'no-report', 'old-report', 'not-available',
   'not-yet', 'no-drive', 'paused', 'clock', 'busy', 'interrupted', 'battery', 'saver', 'metered', 'network', 'error', 'cancelled'];
 const SPACE_SETTINGS = ['start-line', 'auto-free', 'cloud-only-auto', 'empty-trash'];
+// 공간 비우기 2판(SPACE_DESIGN.md 12장): 비우는 종류, `pick free`의 수명(그 회차가 요청 목록을 처음 읽은 때부터), 시험 표식, 동의 범위.
+const FREE_KINDS = ['node_modules', 'target', 'venv', 'pycache', 'temp', 'temp-profile'];
+const FREE_FOR = 10 * 60000;
+const FREE_GATE = '2판-시험';
+const PRESS_SCOPE = Object.freeze({ v: 2, kinds: ['temp', 'temp-profile', 'build'] });
+const FREE_WORDS = ['unavailable', 'off', 'on'];
 const GB = 1024 ** 3;
 
 // Windows에서 막 쓴 파일을 다른 프로그램(백신, 색인)이 잠깐 쥐면 바꿔 넣기가 EPERM · EBUSY로 실패한다. 잠깐씩 다시 한다.
@@ -56,7 +62,7 @@ const only = (v, keys) => Object.keys(v).every(k => keys.includes(k));
  * 상태 파일에 담을 것(꼴 1). `state`는 클라우드 프로필 엔진의 getState(), `ledger`는 notify.json(회차 실행기의 알림 장부),
  * `update`는 update.json, `startupRegistered`는 회차 작업이 다 있는지(모르면 null — 그때는 그것으로 주의를 띄우지 않는다).
  */
-function statusOf({ state: s, version, ledger = null, update = null, startupRegistered = null, now = Date.now() }) {
+function statusOf({ state: s, version, ledger = null, update = null, startupRegistered = null, spaceFree = 'unavailable', freeing = false, now = Date.now() }) {
   const configured = !!s?.configured;
   const moved = !!s?.movedTo;
   const restoreOnly = configured && (s.mode === 'restore' || !!s.readOnly);
@@ -80,7 +86,8 @@ function statusOf({ state: s, version, ledger = null, update = null, startupRegi
     : p.level === 'paused' ? 'paused' : p.level === 'off' ? 'off'
     : p.reason === 'empty' && !topics.size ? 'starting'
     : p.level === 'attention' || p.level === 'partial' || topics.has('folders') || topics.has('changes') || topics.has('signin') ? 'attention' : 'safe';
-  const job = s?.job ? { stage: STAGES[s.job.kind] || 'other', percent: Number.isFinite(s.job.percent) ? Math.max(0, Math.min(100, Math.round(s.job.percent * 10) / 10)) : null } : null;
+  const job = s?.job ? { stage: STAGES[s.job.kind] || 'other', percent: Number.isFinite(s.job.percent) ? Math.max(0, Math.min(100, Math.round(s.job.percent * 10) / 10)) : null }
+    : freeing ? { stage: 'free', percent: null } : null;
   const probe = s?.lastProbe && iso(s.lastProbe.at) ? { at: iso(s.lastProbe.at), result: ['passed', 'failed', 'incomplete', 'skipped'].includes(s.lastProbe.result) ? s.lastProbe.result : 'failed' } : null;
   const writer = configured && !moved && !restoreOnly;
   return {
@@ -89,7 +96,7 @@ function statusOf({ state: s, version, ledger = null, update = null, startupRegi
     attention: TOPICS.filter(t => topics.has(t)), job,
     folders: configured && Array.isArray(s.sources) ? s.sources.length : 0,
     bytes: configured && Number.isSafeInteger(s.lastBackup?.bytes) && s.lastBackup.bytes >= 0 ? s.lastBackup.bytes : null,
-    writer, nextRunAt: writer ? iso(s.nextBackupAt) : null, writtenAt: new Date(now).toISOString()
+    writer, nextRunAt: writer ? iso(s.nextBackupAt) : null, spaceFree: FREE_WORDS.includes(spaceFree) ? spaceFree : 'unavailable', writtenAt: new Date(now).toISOString()
   };
 }
 
@@ -121,12 +128,13 @@ function validate(value, { at, now = Date.now() }) {
       return { ok: true, value: { kind: 'setup', mode: value.mode, hint, at } };
     }
     case 'pick': {
-      if (!only(value, ['v', 'kind', 'action', 'report', 'items']) || !['restore', 'free'].includes(value.action)
+      if (!only(value, ['v', 'kind', 'action', 'report', 'items', 'preview']) || !['restore', 'free'].includes(value.action)
+        || (value.preview !== undefined && (typeof value.preview !== 'boolean' || value.action !== 'free'))
         || typeof value.report !== 'string' || !/^[A-Za-z0-9-]{8,64}$/.test(value.report)
         || !Array.isArray(value.items) || !value.items.length || value.items.length > 100
         || !value.items.every(n => Number.isSafeInteger(n) && n >= 1 && n <= 1000) || new Set(value.items).size !== value.items.length) return { ok: false, reason: 'invalid' };
       if (age > DAY) return { ok: false, reason: 'expired' };
-      return { ok: true, value: { kind: 'pick', action: value.action, report: value.report, items: [...value.items], at } };
+      return { ok: true, value: { kind: 'pick', action: value.action, report: value.report, items: [...value.items], ...(value.preview === true ? { preview: true } : {}), at } };
     }
     case 'space-setting': {
       if (!SPACE_SETTINGS.includes(value.name)) return { ok: false, reason: 'invalid' };
@@ -149,7 +157,10 @@ function validate(value, { at, now = Date.now() }) {
 function resultOf(r, now) {
   const result = RESULTS.includes(r?.result) ? r.result : 'failed';
   const reason = ['rejected', 'failed', 'rested'].includes(result) ? (REASONS.includes(r?.reason) ? r.reason : 'error') : undefined;
-  return { v: FORMAT, result, ...(reason ? { reason } : {}), at: new Date(now).toISOString() };
+  // 2판 `pick free`의 `done`만 수 다섯을 더한다(12.4). 경로나 이름은 넣지 않는다.
+  const count = v => Number.isSafeInteger(v) && v >= 0 ? v : 0;
+  const free = result === 'done' && typeof r?.preview === 'boolean' ? { preview: r.preview, freed: count(r.freed), items: count(r.items), kept: count(r.kept), busy: count(r.busy) } : {};
+  return { v: FORMAT, result, ...(reason ? { reason } : {}), ...free, at: new Date(now).toISOString() };
 }
 
 /** 엔진 상태 폴더 안 `solio` 폴더의 파일들. `root`는 확인을 마친 엔진 상태 폴더다. */
@@ -317,6 +328,8 @@ class SolioFiles {
   async process({ wants, handle }) {
     await this.ready();
     const done = [];
+    // 이 차례가 요청 목록을 읽은 때. `pick free`의 수명은 이때로 잰다(앞 백업이 오래 걸려도 만료되지 않게 — 12.4, 다시 확인 N6).
+    const listedAt = this.now();
     // 한 차례에 처리는 PER_PASS개, 읽어 보기는 PEEKS개까지. 다른 쪽이 맡는 요청이 앞자리를 채워도 뒤의 것을 본다.
     let peeks = 0;
     for (const name of await this.names(this.requests)) {
@@ -343,7 +356,7 @@ class SolioFiles {
       // 창에 hint를 넘기는 일도 처리다.
       if (await this.cancelled(name)) r = { result: 'rejected', reason: 'cancelled' };
       else if (!value.ok) r = { result: 'rejected', reason: value.reason };
-      else { try { r = await handle(value.value); } catch { r = { result: 'failed', reason: 'error' }; } }
+      else { try { r = await handle(value.value, { listedAt }); } catch { r = { result: 'failed', reason: 'error' }; } }
       await this.answer(name, r);
       done.push({ kind: value.ok ? value.value.kind : 'invalid', result: RESULTS.includes(r?.result) ? r.result : 'failed', ...(r?.reason && REASONS.includes(r.reason) ? { reason: r.reason } : {}) });
     }
@@ -357,8 +370,80 @@ async function readSpaceSettings(root) {
   try {
     const v = JSON.parse(await fs.readFile(path.join(root, SPACE_FILE), 'utf8'));
     const lines = plain(v?.startLines) ? Object.fromEntries(Object.entries(v.startLines).filter(([d, gb]) => /^[A-Z]$/.test(d) && Number.isSafeInteger(gb) && gb >= 1)) : {};
-    return { v: FORMAT, startLines: lines, autoFree: v?.autoFree === true, cloudOnlyAuto: v?.cloudOnlyAuto === true, emptyTrash: v?.emptyTrash === true };
-  } catch { return { v: FORMAT, startLines: {}, autoFree: false, cloudOnlyAuto: false, emptyTrash: false }; }
+    return { v: FORMAT, startLines: lines, autoFree: v?.autoFree === true, cloudOnlyAuto: v?.cloudOnlyAuto === true, emptyTrash: v?.emptyTrash === true, pressFree: pressFreeOf(v?.pressFree) };
+  } catch { return { v: FORMAT, startLines: {}, autoFree: false, cloudOnlyAuto: false, emptyTrash: false, pressFree: null }; }
+}
+/** 2판 동의(12.4 동의 파일): 판 번호와 종류가 지금 범위와 같을 때만 켜진 것이다. 범위가 넓어지면 다시 받는다. */
+function pressFreeOf(v) {
+  return plain(v) && v.v === PRESS_SCOPE.v && Array.isArray(v.kinds) && v.kinds.length === PRESS_SCOPE.kinds.length && PRESS_SCOPE.kinds.every(k => v.kinds.includes(k)) && iso(v.at)
+    ? { v: PRESS_SCOPE.v, kinds: [...PRESS_SCOPE.kinds], at: iso(v.at) } : null;
+}
+async function writeSpaceSettings(root, next) {
+  const file = path.join(root, SPACE_FILE), temp = `${file}.${crypto.randomBytes(4).toString('hex')}.tmp`;
+  await fs.writeFile(temp, JSON.stringify(next), { flag: 'wx' });
+  try { await replace(temp, file); } catch (e) { await fs.rm(temp, { force: true }); throw e; }
+}
+/** 시험 표식이 있는지(12.1). 보통 파일이어야 한다. */
+async function freeGateOpen(root) {
+  try { const st = await fs.lstat(path.join(root, 'space', FREE_GATE)); return st.isFile() && !st.isSymbolicLink(); } catch { return false; }
+}
+/** 상태 파일의 `spaceFree`: 표식이 없으면 `unavailable`, 있으면 동의에 따라 `on` · `off`. */
+async function spaceFreeOf(root) {
+  if (!await freeGateOpen(root)) return 'unavailable';
+  return (await readSpaceSettings(root)).pressFree ? 'on' : 'off';
+}
+/** 엔진 창에서만 부른다(12.4 「엔진 창 쪽 방법」): 2판 동의를 켜고 끈다. 켜기는 시험 표식이 있는 PC에서만 된다. */
+async function setPressFree(root, on, now = Date.now()) {
+  if (typeof on !== 'boolean') throw Object.assign(new Error('켜기 · 끄기 값을 확인해 주세요.'), { code: 'BAD_INPUT' });
+  if (on && !await freeGateOpen(root)) throw Object.assign(new Error('이 PC에서는 아직 공간 비우기를 켤 수 없습니다.'), { code: 'NOT_AVAILABLE' });
+  const next = { ...await readSpaceSettings(root) };
+  next.pressFree = on ? { ...PRESS_SCOPE, kinds: [...PRESS_SCOPE.kinds], at: new Date(now).toISOString() } : null;
+  await writeSpaceSettings(root, next);
+  return readSpaceSettings(root);
+}
+/**
+ * 엔진 창의 「공간 비우기」 화면이 읽는 것(12.5): 시험 표식, 동의, 드라이브마다 정한 선(공간 보고서의 드라이브와 손님이 정한 값),
+ * 지난 누름. 표식이 없으면 `{ open: false }`뿐이다.
+ */
+async function spaceFreeInfo(root) {
+  if (!await freeGateOpen(root)) return { open: false };
+  const settings = await readSpaceSettings(root);
+  const report = await readJson(path.join(root, 'solio', 'space.json'), 1048576);
+  const lines = (Array.isArray(report?.drives) ? report.drives : []).filter(d => typeof d?.drive === 'string' && /^[A-Z]$/.test(d.drive) && Number.isSafeInteger(d.size) && Number.isSafeInteger(d.free))
+    .map(d => ({ drive: d.drive, size: d.size, free: d.free, gb: settings.startLines[d.drive] ?? defaultStartLine(d.size), set: settings.startLines[d.drive] !== undefined }));
+  return { open: true, on: !!settings.pressFree, since: settings.pressFree?.at || null, lines, last: await readFreeSummary(root) };
+}
+/** 엔진 창에서만 부른다: 드라이브 하나의 정한 선(GB). 넓히는 쪽(올리기)도 받는다. */
+async function setStartLine(root, drive, gb, { driveSize: sizeOf = driveSize } = {}) {
+  const bad = () => Object.assign(new Error('정한 선을 확인해 주세요.'), { code: 'BAD_INPUT' });
+  if (typeof drive !== 'string' || !/^[A-Z]$/.test(drive) || !Number.isSafeInteger(gb) || gb < 1) throw bad();
+  const size = await sizeOf(drive);
+  if (!Number.isFinite(size) || size <= 0 || gb * GB > size) throw bad();
+  const next = { ...await readSpaceSettings(root) };
+  next.startLines = { ...next.startLines, [drive]: gb };
+  await writeSpaceSettings(root, next);
+  return readSpaceSettings(root);
+}
+/**
+ * 엔진 창의 「공간 비우기」 화면에 보일 지난 누름(장부 `space/freed.jsonl`의 마지막 누름). 엔진 창은 손님 PC 안의 화면이라 경로를
+ * 보인다(12.5). 이 값은 솔리오로 가지 않는다.
+ */
+async function readFreeSummary(root) {
+  const file = path.join(root, 'space', 'freed.jsonl');
+  let text = '';
+  try {
+    const st = await fs.lstat(file);
+    if (st.isSymbolicLink() || !st.isFile()) return null;
+    const handle = await fs.open(file, 'r');
+    try { const size = Math.min(st.size, 1048576); const buf = Buffer.alloc(size); await handle.read(buf, 0, size, st.size - size); text = buf.toString('utf8'); } finally { await handle.close(); }
+  } catch { return null; }
+  const rows = text.split(/\r?\n/).map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(plain);
+  const done = rows.filter(r => ['would', 'freed'].includes(r.stage) && typeof r.at === 'string' && typeof r.report === 'string');
+  if (!done.length) return null;
+  const last = done[done.length - 1];
+  const same = done.filter(r => r.at === last.at && r.report === last.report);
+  const items = same.map(r => ({ kind: typeof r.kind === 'string' ? r.kind : 'other', path: typeof r.path === 'string' ? r.path : null, n: Number.isSafeInteger(r.n) ? r.n : 1, bytes: Number.isSafeInteger(r.bytes) ? r.bytes : 0 })).slice(0, 50);
+  return { at: iso(last.at), preview: last.preview === true, bytes: items.reduce((a, b) => a + b.bytes, 0), count: items.reduce((a, b) => a + (b.kind === 'temp' ? b.n : 1), 0), items };
 }
 /** 기본 시작선: 드라이브 크기의 15%와 150GB 가운데 작은 쪽(SPACE_DESIGN.md 6장), GB 정수로. */
 const defaultStartLine = sizeBytes => Math.max(1, Math.floor(Math.min(sizeBytes * 0.15, 150 * GB) / GB));
@@ -379,12 +464,13 @@ async function applySpaceSetting(root, req, { driveSize }) {
   } else {
     const key = { 'auto-free': 'autoFree', 'cloud-only-auto': 'cloudOnlyAuto', 'empty-trash': 'emptyTrash' }[req.name];
     if (req.value === true) return now[key] ? { result: 'done' } : { result: 'confirm-in-engine' };
-    if (!now[key]) return { result: 'done' };
+    // `auto-free: false`는 2판의 「누를 때 비우기」 동의도 함께 끈다(줄이는 쪽, 12.4 동의 파일).
+    const alsoPress = key === 'autoFree' && !!now.pressFree;
+    if (!now[key] && !alsoPress) return { result: 'done' };
     next[key] = false;
+    if (key === 'autoFree') next.pressFree = null;
   }
-  const file = path.join(root, SPACE_FILE), temp = `${file}.${crypto.randomBytes(4).toString('hex')}.tmp`;
-  await fs.writeFile(temp, JSON.stringify(next), { flag: 'wx' });
-  try { await replace(temp, file); } catch (e) { await fs.rm(temp, { force: true }); throw e; }
+  await writeSpaceSettings(root, next);
   return { result: 'done' };
 }
 
@@ -414,16 +500,32 @@ async function spaceReportOf(root) {
   return v && typeof v.report === 'string' && Number.isFinite(Date.parse(v.createdAt)) ? { report: v.report, createdAt: Date.parse(v.createdAt) } : null;
 }
 /**
- * `pick`: 엔진이 낸 보고서의 후보를 번호로 고른다(4.13). 보고서가 그 종류의 가장 새 것이 아니거나 24시간이 지났으면 거절한다.
- * 1판의 공간 보고서는 아무것도 비우지 않으므로 `free`는 모두 거절하고, 찾기 결과의 보고서는 1단계에 남기지 않으므로(찾기는
- * AI 도구에만 답한다 — 요청 도구와 함께 2단계) `restore`도 거절한다.
+ * `pick`: 엔진이 낸 보고서의 후보를 번호로 고른다(4.13). 찾기 결과의 보고서는 1단계에 남기지 않으므로(찾기는 AI 도구에만 답한다 —
+ * 요청 도구와 함께 2단계) `restore`는 거절한다. `free`는 2판(SPACE_DESIGN.md 12.4)의 판단 차례대로 답한다: 시험 표식 → 쓰는 기기 →
+ * 수명 → 보고서 → 2판 종류의 가 등급 번호. 동의가 없거나 요청의 `preview`가 참이면 미리 보기만 한다. 확인 · 떼어 내기 · 지우기는
+ * 실행기(Rust)의 `space.free` 한 곳에서 하고, 이 쪽은 백업 폴더 목록과 번호만 넘긴다.
  */
-async function pickAnswer(root, req, now) {
+async function pickAnswer(root, req, now, { engine = null, host = null, folders = [], listedAt = now, onFree = null } = {}) {
   if (req.action === 'restore') return { result: 'rejected', reason: 'no-report' };
-  const report = await spaceReportOf(root);
-  if (!report) return { result: 'rejected', reason: 'no-report' };
-  if (report.report !== req.report || now - report.createdAt > DAY) return { result: 'rejected', reason: 'old-report' };
-  return { result: 'rejected', reason: 'not-available' };
+  if (typeof host !== 'function' || !await freeGateOpen(root)) return { result: 'rejected', reason: 'not-available' };
+  const c = engine?.config;
+  if (!c?.repositoryId) return { result: 'rejected', reason: 'not-set-up' };
+  if (c.movedTo) return { result: 'rejected', reason: 'moved' };
+  if (c.mode !== 'backup' || c.readOnly) return { result: 'rejected', reason: 'restore-only' };
+  if (listedAt - req.at > FREE_FOR) return { result: 'rejected', reason: 'expired' };
+  const report = await readJson(path.join(root, 'solio', 'space.json'), 1048576);
+  if (!report || typeof report.report !== 'string' || !Number.isFinite(Date.parse(report.createdAt))) return { result: 'rejected', reason: 'no-report' };
+  if (report.report !== req.report || now - Date.parse(report.createdAt) > DAY) return { result: 'rejected', reason: 'old-report' };
+  const ok = new Set((Array.isArray(report.candidates) ? report.candidates : []).filter(x => x?.grade === 'auto' && FREE_KINDS.includes(x?.kind) && Number.isSafeInteger(x?.n)).map(x => x.n));
+  const items = req.items.filter(n => ok.has(n));
+  if (!items.length) return { result: 'rejected', reason: 'not-available' };
+  const preview = req.preview === true || !(await readSpaceSettings(root)).pressFree;
+  try {
+    await onFree?.(true);
+    const r = await host('space.free', [{ report: req.report, items, folders, preview }]);
+    return { result: 'done', preview: r?.preview !== false, freed: r?.freed, items: r?.items, kept: r?.kept, busy: r?.busy };
+  } catch { return { result: 'failed', reason: 'error' }; }
+  finally { await onFree?.(false); }
 }
 /**
  * 회차 실행기의 요청 처리(4.13 「읽는 때」). 엔진 잠금을 쥔 회차가 백업 뒤에 부른다. `setup`은 화면 앱의 몫이라 남겨 두고(30분이
@@ -431,7 +533,7 @@ async function pickAnswer(root, req, now) {
  * 요청은 화면에서 누른 것과 달리 이것을 지킨다. `result`는 이 회차의 클라우드 프로필 결과다. 돌려주는 `forced`는 요청 때문에
  * 한 백업의 결과(없으면 null)다.
  */
-async function runRequests({ files, engine, root, rest = null, result = null, driveSize, now = () => Date.now() }) {
+async function runRequests({ files, engine, root, rest = null, result = null, driveSize, host = null, folders = null, onFree = null, now = () => Date.now() }) {
   let forced = null, forcedAnswer = null;
   const runNow = async req => {
     // 같은 차례에 쌓인 「지금 백업」은 한 번만 돌린다. 이 차례의 목록은 백업을 시작하기 전에 읽었으므로, 이름의 시각과 상관없이
@@ -456,12 +558,22 @@ async function runRequests({ files, engine, root, rest = null, result = null, dr
       : { result: 'failed', reason: 'error' };
     return forcedAnswer;
   };
+  // 백업 폴더: 비우기가 겹치지 않게 넘기기만 하고 어디에도 적지 않는다(12.2).
+  const backupFolders = (Array.isArray(folders) ? folders : Array.isArray(engine?.config?.sources) ? engine.config.sources : []).filter(f => typeof f === 'string');
+  const ask = { wants: c => !(c.ok && c.value.kind === 'setup'),
+    handle: async (req, ctx = {}) => req.kind === 'run-now' ? runNow(req) : req.kind === 'space-setting' ? applySpaceSetting(root, req, { driveSize })
+      : req.kind === 'pick' ? pickAnswer(root, req, now(), { engine, host, folders: backupFolders, listedAt: ctx.listedAt ?? now(), onFree })
+      : { result: 'rejected', reason: 'invalid' } };
   await files.ready();
   await files.sweep();
-  const done = await files.process({
-    wants: c => !(c.ok && c.value.kind === 'setup'),
-    handle: async req => req.kind === 'run-now' ? runNow(req) : req.kind === 'space-setting' ? applySpaceSetting(root, req, { driveSize }) : req.kind === 'pick' ? pickAnswer(root, req, now()) : { result: 'rejected', reason: 'invalid' }
-  });
+  // 끊긴 지우기를 잇는다(12.3-3 · 6): 어느 계기의 회차든 요청을 읽는 이 끝에서. 실패해도 요청 처리는 그대로 한다.
+  if (typeof host === 'function' && await freeGateOpen(root)) {
+    try { await onFree?.(true); await host('space.resume', [{ folders: backupFolders }]); } catch { /* 다음 회차가 다시 본다 */ } finally { await onFree?.(false); }
+  }
+  let done = await files.process(ask);
+  // 비우기를 한 차례면 그사이 쓰인 요청을 한 번 더 읽는다(12.4 끝): 요청 작업이 도는 동안 작업 스케줄러는 새 깨우기를 버린다.
+  // 둘째 차례의 「지금 백업」은 그 요청 뒤의 백업으로 다시 한다.
+  if (done.some(d => d.kind === 'pick')) { forcedAnswer = null; done = done.concat(await files.process(ask)); }
   return { done, forced };
 }
 /** 드라이브 하나의 크기(바이트). 없는 드라이브는 null. */
@@ -509,4 +621,5 @@ async function readJson(file, max = 65536) {
 }
 
 module.exports = { FORMAT, NAME, STATES, TOPICS, KINDS, RESULTS, REASONS, STATUS_MAX, REQUEST_MAX, SolioFiles, statusOf, validate, resultOf,
+  FREE_KINDS, FREE_FOR, FREE_GATE, PRESS_SCOPE, freeGateOpen, spaceFreeOf, spaceFreeInfo, setPressFree, setStartLine, readFreeSummary,
   readSpaceSettings, applySpaceSetting, defaultStartLine, readAiTools, writeAiTools, AI_TOOLS, runRequests, pickAnswer, spaceReportOf, driveSize, readRestNetworks, writeRestNetworks, okNetworkName, readJson, SPACE_FILE, REST_FILE };

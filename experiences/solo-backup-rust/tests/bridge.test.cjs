@@ -49,7 +49,8 @@ test('bridge, worker and native method contract preserves all existing app actio
   // 쉬는 회선(4.14): 손님이 고른 Wi-Fi 이름. 백업 상태를 바꾸지 않아 복구 전용 연결에서도 고른다(찾기 · 되살리기 내려받기에도 든다).
   // 「AI 도구」(4.16): MCP 보기 도구의 동의와 가리는 낱말, 연결이 알려 온 도구 목록.
   // 화면 세션 E30: the Wi-Fi this PC is on, read for the 「쉬는 Wi-Fi」 screen.
-  const solio=['setRestNetworks','setAiTools','aiToolsState','wifiName'];
+  // 공간 비우기 2판(SPACE_DESIGN.md 12.4): 엔진 창에서만 켜는 「누를 때 비우기」와 정한 선. 쓰는 기기에서만 바꾼다.
+  const solio=['setRestNetworks','setAiTools','aiToolsState','wifiName','spaceFreeState','setPressFree','setStartLine'];
   const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move,...oldBackup,...stop,...solio,...scope,...mass].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
@@ -75,4 +76,5 @@ test('bridge, worker and native method contract preserves all existing app actio
   assert.deepEqual([contract.setRestNetworks.mutating,contract.setRestNetworks.dialog,contract.setRestNetworks.allowedReadOnly],[true,false,true]);
   assert.deepEqual([contract.setAiTools.mutating,contract.aiToolsState.mutating,contract.aiToolsState.allowedReadOnly],[true,false,true]);
   assert.deepEqual([contract.wifiName.mutating,contract.wifiName.dialog,contract.wifiName.allowedReadOnly],[false,false,true]);
+  assert.deepEqual([contract.spaceFreeState.mutating,contract.setPressFree.allowedReadOnly,contract.setStartLine.allowedReadOnly],[false,false,false]);
 });

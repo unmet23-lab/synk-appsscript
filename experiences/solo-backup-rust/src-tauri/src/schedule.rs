@@ -518,6 +518,29 @@ fn action_starts(xml: &str, exe: &Path) -> bool {
         && element(xml, "Arguments").is_some_and(|a| Trigger::ALL.iter().any(|t| a.trim() == format!("--run {}", t.arg())))
 }
 
+/// 공간 비우기 2판(SPACE_DESIGN.md 12.2 「경로를 부르는 곳」): 이 계정이 읽을 수 있는 예약 작업의 XML 전부. `\Microsoft` 아래(Windows
+/// 자체 작업)는 뺀다. 폴더나 작업 목록, 작업 하나라도 읽지 못하면 Err — 그 누름에서는 빌드 산출물을 비우지 않는다.
+pub fn task_texts() -> Result<Vec<String>, String> {
+    let _com = Com::init()?;
+    let service = service()?;
+    let mut out = Vec::new();
+    let mut stack = vec![folder(&service, ROOT).ok_or("SCHEDULE_ROOT")?];
+    while let Some(place) = stack.pop() {
+        let path = unsafe { place.Path() }.map(|p| p.to_string()).map_err(|_| "SCHEDULE_FOLDER")?;
+        if path.eq_ignore_ascii_case(r"\Microsoft") { continue; }
+        let tasks = unsafe { place.GetTasks(TASK_ENUM_HIDDEN.0) }.map_err(|_| "SCHEDULE_TASKS")?;
+        for i in 1..=unsafe { tasks.Count() }.map_err(|_| "SCHEDULE_TASKS")? {
+            let task = unsafe { tasks.get_Item(&Var::number(i).0) }.map_err(|_| "SCHEDULE_TASK")?;
+            out.push(unsafe { task.Xml() }.map_err(|_| "SCHEDULE_TASK")?.to_string());
+        }
+        let folders = unsafe { place.GetFolders(0) }.map_err(|_| "SCHEDULE_FOLDERS")?;
+        for i in 1..=unsafe { folders.Count() }.map_err(|_| "SCHEDULE_FOLDERS")? {
+            stack.push(unsafe { folders.get_Item(&Var::number(i).0) }.map_err(|_| "SCHEDULE_FOLDERS")?);
+        }
+    }
+    Ok(out)
+}
+
 /// The signed-in user's SID from the process token (never from environment variables).
 pub fn current_sid() -> Result<String, String> {
     use windows_sys::Win32::{Foundation::{CloseHandle, LocalFree, HANDLE}, Security::{GetTokenInformation, TokenUser, TOKEN_QUERY, TOKEN_USER, Authorization::ConvertSidToStringSidW}, System::Threading::{GetCurrentProcess, OpenProcessToken}};

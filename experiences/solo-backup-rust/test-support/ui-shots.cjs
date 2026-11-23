@@ -90,6 +90,8 @@ const CASES = [
   ['home-solio', 'rest-net', { name: 'rest-net-busy', ui: { wifi: 'Cafe_Free' }, acct: { running: 'setRestNetworks' } }],
   ['home-move-read', 'home', { name: 'home-solio-box', acct: { solioBox: { mode: 'protect', restore: true } } }],
   ['home', 'ai-tools', { name: 'ai-tools-empty' }], ['home-solio', 'ai-tools', { name: 'ai-tools' }],
+  ['home-solio', 'space-free', { name: 'space-free-preview' }], ['home-space-on', 'space-free', { name: 'space-free-on' }],
+  ['home-solio', 'space-free', { name: 'space-free-busy', acct: { running: 'setPressFree' } }],
   ['start-signin', 'start-1', { name: 'start-1-freed', acct: { limit: DEVICES_FULL.map((d) => (d.name === '거실 PC' ? { ...d, state: 'revoked' } : d)), freed: '거실 PC' } }],
   ['start-write', 'start-2', { name: 'start-2-empty' }], ['start-write-picked', 'start-2', { name: 'start-2-picked' }],
   ['start-google-step', 'start-2', { name: 'start-2-google' }], ['start-write-picked', 'start-2', { name: 'start-2-again', acct: { repoExists: true } }],

@@ -63,11 +63,13 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
   profiles.on('state', () => { publish(progress()); void status(false); });
   // 솔리오 상태 파일(4.13): 작업이 도는 동안(5초에 한 번까지)과 회차가 끝날 때 쓴다. 쓰지 못해도 회차는 그대로다.
   const files = new solio.SolioFiles({ root });
-  let startup = null, statusChain = Promise.resolve();
+  // `freeing`: 공간 비우기 2판이 도는 동안(SPACE_DESIGN.md 12.3-4) — 상태 파일의 작업 단계가 `free`(「비우는 중」)다.
+  let startup = null, statusChain = Promise.resolve(), freeing = false;
   function status(force) {
     statusChain = statusChain.then(async () => {
       const value = solio.statusOf({ state: profiles.engines.b2.getState(), version: APP_VERSION, startupRegistered: startup,
-        ledger: await solio.readJson(path.join(root, 'notify.json')), update: await solio.readJson(path.join(root, 'update.json')) });
+        ledger: await solio.readJson(path.join(root, 'notify.json')), update: await solio.readJson(path.join(root, 'update.json')),
+        spaceFree: await solio.spaceFreeOf(root), freeing });
       await files.writeStatus(value, { force });
     }).catch(() => {});
     return statusChain;
@@ -134,7 +136,11 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
         let requests = [];
         if (trigger !== 'test' || input.requests === true) {
           try {
-            const r = await solio.runRequests({ files, engine: profiles.engines.b2, root, rest, result: results.b2, driveSize: solio.driveSize });
+            // 공간 비우기 2판: 확인 · 지우기는 실행기(host `space.free` · `space.resume`)가 한다. 모든 프로필의 백업 폴더를 넘겨
+            // 겹치는 자리를 건드리지 않게 한다(넘기기만 하고 적지 않는다).
+            const folders = Object.values(profiles.engines).flatMap(e => Array.isArray(e.config?.sources) ? e.config.sources : []);
+            const r = await solio.runRequests({ files, engine: profiles.engines.b2, root, rest, result: results.b2, driveSize: solio.driveSize, host, folders,
+              onFree: async on => { freeing = on; await status(true); } });
             requests = r.done;
             if (r.forced) results.b2 = r.forced;
           } catch { requests = [{ kind: 'all', result: 'failed', reason: 'error' }]; }

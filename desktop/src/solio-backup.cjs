@@ -36,7 +36,9 @@ const STATES = Object.freeze(['safe', 'starting', 'attention', 'paused', 'off', 
 const ATTENTION = Object.freeze(['status', 'folders', 'changes', 'devices', 'restore', 'space', 'signin', 'update']);
 const OPEN_TOPICS = Object.freeze([...ATTENTION, 'move']);
 const PROOF_RESULTS = Object.freeze(['passed', 'failed', 'incomplete', 'skipped']);
-const STAGES = Object.freeze(['backup', 'check', 'proof', 'restore', 'move', 'setup', 'other']);
+const STAGES = Object.freeze(['backup', 'check', 'proof', 'restore', 'move', 'setup', 'free', 'other']);
+/* 공간 비우기 2판(계약 상태 파일 spaceFree): 엔진이 열지 않았거나 칸이 없는 엔진(0.7.0)은 unavailable이다 */
+const SPACE_FREE = Object.freeze(['unavailable', 'off', 'on']);
 const MODES = Object.freeze(['protect', 'move']);
 const UNINSTALL_KEY = 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SYNK 업무 백업';
 const VERSION = /^(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})$/;
@@ -105,6 +107,7 @@ function normalizeStatus(value) {
       bytes: count(value.bytes),
       writer: value.writer === true,
       nextRunAt: iso(value.nextRunAt),
+      spaceFree: SPACE_FREE.includes(value.spaceFree) ? value.spaceFree : 'unavailable',
       writtenAt: iso(value.writtenAt),
     },
   };
@@ -542,18 +545,23 @@ function createSolioBackup({
   /* 요청이 어디까지 갔는지 본다. 엔진은 requests → claimed(옮긴 뒤 원래 이름을 지움) → 결과 쓰기 → claimed 지우기 차례로 움직이므로,
      같은 차례(requests → claimed → results)로 봐야 처리 중인 요청을 「사라짐」으로 잘못 보지 않는다. 사라짐은 두 번 잇달아 볼 때만 세운다(Fable 설계 검토 2) */
   async function followOneClick(c) {
-    if (c.result || !paths || !ONECLICK_OPEN.includes(c.stage)) return;
-    const stage = await oneclickFiles.requestStage({ paths, name: c.name, fsImpl: fsImpl.promises });
+    await followRequest(c, c);
+    // 같은 누름의 pick free(2판). 엔진은 run-now 다음에 처리하므로 같은 길로 따라간다. 수명은 엔진 쪽 10분이지만 답이 없으면 같은 하루를 기다린다
+    if (c.free && oneclick === c) await followRequest(c, c.free);
+  }
+  async function followRequest(c, r) {
+    if (r.result || !paths || !ONECLICK_OPEN.includes(r.stage)) return;
+    const stage = await oneclickFiles.requestStage({ paths, name: r.name, fsImpl: fsImpl.promises });
     if (oneclick !== c) return;
-    if (stage === 'sent' || stage === 'claimed') { c.stage = stage; c.missing = 0; }
+    if (stage === 'sent' || stage === 'claimed') { r.stage = stage; r.missing = 0; }
     else if (stage === 'gone') {
-      const answer = await oneclickFiles.takeResult({ paths, name: c.name, fsImpl: fsImpl.promises });
+      const answer = await oneclickFiles.takeResult({ paths, name: r.name, fsImpl: fsImpl.promises });
       if (oneclick !== c) return;
-      if (answer) Object.assign(c, { result: answer.result, reason: answer.reason, answeredAt: now(), stage: 'answered', missing: 0 });
+      if (answer) Object.assign(r, { result: answer.result, reason: answer.reason, answeredAt: now(), stage: 'answered', missing: 0, ...(answer.free ? { numbers: answer.free } : {}) });
       // 사라짐 · 만료를 정한 때를 answeredAt에 적는다. 화면은 그때부터 30분 뒤 이 누름을 판에서 내린다(Fable F1)
-      else { c.missing = (c.missing || 0) + 1; if (c.missing >= 2) { c.stage = 'gone'; c.answeredAt = now(); } else c.stage = 'unseen'; }
+      else { r.missing = (r.missing || 0) + 1; if (r.missing >= 2) { r.stage = 'gone'; r.answeredAt = now(); } else r.stage = 'unseen'; }
     }
-    if (!c.result && ONECLICK_OPEN.includes(c.stage) && now() - c.at >= ONECLICK_WAIT) { c.stage = 'expired'; c.answeredAt = now(); }
+    if (!r.result && ONECLICK_OPEN.includes(r.stage) && now() - c.at >= ONECLICK_WAIT) { r.stage = 'expired'; r.answeredAt = now(); }
   }
   async function oneClickSnapshot(account) {
     const c = oneclick;
@@ -562,7 +570,10 @@ function createSolioBackup({
     if (oneclick !== c) return oneClickSnapshot(account);
     const at = t => (Number.isFinite(t) ? new Date(t).toISOString() : null);
     // unseen(한 번 못 봄)은 밖으로는 claimed와 같다. 다음 읽기에서 답이나 사라짐으로 정해진다
-    return { at: at(c.at), wokeAt: at(c.wokeAt), woke: c.woke, stage: c.stage === 'unseen' ? 'claimed' : c.stage, result: c.result, reason: c.reason, answeredAt: at(c.answeredAt) };
+    const f = c.free;
+    // 2판: 비우기 요청의 단계와 답, 그리고 수 다섯(경로 · 이름 · 번호는 없다)
+    const free = f ? { stage: f.stage === 'unseen' ? 'claimed' : f.stage, result: f.result, reason: f.reason, answeredAt: at(f.answeredAt), ...(f.numbers ? { numbers: { ...f.numbers } } : {}) } : null;
+    return { at: at(c.at), wokeAt: at(c.wokeAt), woke: c.woke, stage: c.stage === 'unseen' ? 'claimed' : c.stage, result: c.result, reason: c.reason, answeredAt: at(c.answeredAt), free };
   }
   const spaceCache = { key: null, read: null };
   async function readSpaceSummary() {
@@ -605,10 +616,20 @@ function createSolioBackup({
       const { view, read } = await state(fresh);
       if (!oneClickReady(view, read.format === 'ok' ? read.status : null)) return { ok: false, code: 'NOT_NEEDED' };
       let name;
-      try { name = oneclickFiles.writeRunNow({ paths, now: now(), owner: me, fsSync: fsImpl }); }
+      const pressedAt = now();
+      try { name = oneclickFiles.writeRunNow({ paths, now: pressedAt, owner: me, fsSync: fsImpl }); }
       catch { return { ok: false, code: 'REQUEST_FAILED' }; }
       // run-now는 setup 요청의 수명(written · live · .owner 표)에 넣지 않는다. 넣으면 치우기가 취소 표식을 세워 엔진이 cancelled로 거절한다(Fable 설계 검토 7)
-      const c = { name, account: account.synk_user_id, at: now(), wokeAt: null, woke: 'waking', stage: 'sent', missing: 0, result: null, reason: null, answeredAt: null };
+      const c = { name, account: account.synk_user_id, at: pressedAt, wokeAt: null, woke: 'waking', stage: 'sent', missing: 0, result: null, reason: null, answeredAt: null, free: null };
+      // 공간 비우기 2판: 엔진이 열어 둔 PC(spaceFree off · on)에서만 run-now 다음 이름으로 pick free를 쓴다. 비울 번호가 없거나 쓰지 못해도
+      // 백업 누름은 그대로 간다(비우기는 덤이다)
+      if (['off', 'on'].includes(read.status.spaceFree)) {
+        const pick = await oneclickFiles.readFreePick({ paths, now: pressedAt, fsImpl: fsImpl.promises }).catch(() => null);
+        if (pick) {
+          try { c.free = { name: oneclickFiles.writePickFree({ paths, now: pressedAt + 1, owner: me, fsSync: fsImpl, pick }), stage: 'sent', missing: 0, result: null, reason: null, answeredAt: null }; }
+          catch { c.free = null; }
+        }
+      }
       oneclick = c;
       // 깨우기와 두 업데이트 확인은 기다리지 않는다. 방은 다시 읽어 단계를 보인다. 업데이터가 다른 일 중이라 거절해도 답을 삼킨다
       wake(c);

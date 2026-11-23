@@ -8,7 +8,7 @@ export const SOLIO_BACKUP_NAME = '원클릭';
 
 const TOPIC_NAMES = Object.freeze({ status: '백업 상태', folders: '백업 폴더', changes: '많이 바뀐 파일', devices: '기기', restore: '되살리기 증명', space: '저장 공간', signin: 'Google 로그인', update: '엔진 업데이트' });
 const PROOF_WORDS = Object.freeze({ passed: '통과', failed: '실패', incomplete: '덜 끝남', skipped: '건너뜀' });
-const STAGE_WORDS = Object.freeze({ backup: '백업하는', check: '백업을 점검하는', proof: '되살리기를 증명하는', restore: '파일을 되살리는', move: '옮겨 오는', setup: '처음 설정하는', other: '일하는' });
+const STAGE_WORDS = Object.freeze({ backup: '백업하는', check: '백업을 점검하는', proof: '되살리기를 증명하는', restore: '파일을 되살리는', move: '옮겨 오는', setup: '처음 설정하는', free: '공간을 비우는', other: '일하는' });
 const UNINSTALL = 'Windows 설정의 「설치된 앱」에서 「SYNK 업무 백업」을 지웁니다. 솔리오를 지워도 엔진은 남아 백업을 이어 갑니다.';
 
 const pad = n => String(n).padStart(2, '0');
@@ -228,7 +228,8 @@ function withBoard(scene, snap, now) {
   const board = oneClickBoard(snap, now), lead = board.lead;
   const quiet = scene.acts.map(a => ({ ...a, primary: false }));
   // 이끄는 단추와 같은 동작 · 낱말이거나 이름이 같은 단추는 뺀다. 주제가 달라도 「엔진 창 열기」가 둘 서지 않는다(카본 A2)
-  const acts = lead?.act ? [lead.act, ...quiet.filter(a => !(a.act === lead.act.act && (a.arg === lead.act.arg || a.label === lead.act.label)))] : quiet;
+  // 엔진 창을 여는 단추는 하나만 둔다: 이끄는 단추가 엔진 창을 열면 아래 줄의 「엔진 창 열기」는 뺀다(엔진 창 안에서 옮겨 다닌다)
+  const acts = lead?.act ? [lead.act, ...quiet.filter(a => !(a.act === lead.act.act && (a.arg === lead.act.arg || a.label === lead.act.label || a.act === 'backup-open')))] : quiet;
   // 줄(다음 백업 · 매시간)이 빠지므로 자동 백업이 도는 것은 아래 범위 칸에 한 줄로 남긴다
   // 「매시간 저절로」는 정상(status · safe)일 때만 쓴다. 소식 없음 · 확인할 일 · 첫 백업 준비 중에는 위 문장과 어긋난다(Fable F4)
   const next = nextWords(snap.status?.nextRunAt, now);
@@ -240,6 +241,8 @@ function withBoard(scene, snap, now) {
    엔진 0.7.0이 하는 일만 「한다」고 쓴다. 01 백업은 run-now 요청으로 실제로 하고, 02 되살리기 확인과 03 공간은 엔진이 정해진 때 스스로 한 결과를
    읽어 보인다. 04 업데이트는 PC 앱 업데이터와 엔진 피드를 다시 본다. 지우기는 엔진의 공간 비우기 2판부터다 */
 export const ONECLICK_LABEL = '백업하고 상태 보기';
+/* 공간 비우기 2판을 엔진 창에서 켠 PC(상태 파일 spaceFree on)의 단추(SPACE_DESIGN.md 12.5) */
+export const ONECLICK_FREE_LABEL = '백업하고 비우기';
 /* 보호 중(본체 oneClickReady와 같은 조건). 멈춤 · 꺼짐 · 옮겨 감에는 판이 없다. 꺼짐은 엔진이 받아도 손님이 꺼 둔 뜻을 요청으로 넘지 않는다 */
 export function oneClickReady(snap) {
   const s = snap?.status;
@@ -269,8 +272,18 @@ const GROUP_HOW = Object.freeze({
   'cloud-drive': '클라우드 드라이브 앱에서 「이 기기에서 공간 확보」로 줄입니다.',
   trash: '휴지통 비우기는 엔진 다음 판에서 따로 묻고 합니다.',
 });
+/* 「다시 만들 수 있는 것」 묶음의 설명. 2판이 열린 PC는 켜고 끈 것에 따라 말한다 */
+const AUTO_MID = Object.freeze({ unavailable: '엔진 다음 판부터 원클릭이 비웁니다', off: '엔진 창에서 켜면 원클릭이 비웁니다', on: '원클릭을 누를 때 비웁니다' });
+/* 2판 비우기 요청이 비우지 않고 끝났을 때 03 줄의 말 */
+const FREE_ANSWER = Object.freeze({
+  'old-report': '공간 보고서가 하루 넘게 지나 이번에는 비우지 않았습니다. 엔진이 다시 잰 뒤에 비웁니다',
+  'no-report': '엔진이 공간을 다시 잰 뒤에 비웁니다',
+  expired: '요청이 늦게 닿아 이번에는 비우지 않았습니다',
+  'not-available': '이번에는 비울 것이 없었습니다',
+  'not-set-up': '이 PC에서는 비우지 않습니다', 'restore-only': '이 PC에서는 비우지 않습니다', moved: '이 PC에서는 비우지 않습니다',
+});
 const GRADE_GROUPS = Object.freeze([
-  Object.freeze({ k: 'auto', nm: '다시 만들 수 있는 것', mid: '엔진 다음 판부터 원클릭이 비웁니다' }),
+  Object.freeze({ k: 'auto', nm: '다시 만들 수 있는 것', mid: AUTO_MID.unavailable }),
   Object.freeze({ k: 'suggest', nm: '확인하면 비울 수 있는 것', mid: '고르는 기능은 엔진 다음 판과 함께 엽니다' }),
   Object.freeze({ k: 'view', nm: '솔리오가 지우지 않는 것', mid: '다른 앱의 자료이거나 하나뿐인 파일' }),
 ]);
@@ -303,7 +316,7 @@ function answerWords(result, reason) {
   return ANSWER[`${result}|${reason}`] || ANSWER[`${result}|*`] || ANSWER['*'];
 }
 const JOB_STEP = Object.freeze({ backup: 'backup', check: 'backup', proof: 'proof' });
-const JOB_LABEL = Object.freeze({ backup: '백업하는 중', check: '백업을 점검하는 중', proof: '되살리기 확인 중', restore: '되살리는 중', move: '옮겨 오는 중', setup: '설정하는 중', other: '엔진이 일하는 중' });
+const JOB_LABEL = Object.freeze({ backup: '백업하는 중', check: '백업을 점검하는 중', proof: '되살리기 확인 중', restore: '되살리는 중', move: '옮겨 오는 중', setup: '설정하는 중', free: '비우는 중', other: '엔진이 일하는 중' });
 const cmpVersion = (a, b) => {
   const pa = String(a || '').split('.').map(Number), pb = String(b || '').split('.').map(Number);
   for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) - (pb[i] || 0);
@@ -335,13 +348,13 @@ function driveCard(space, now) {
     below: d.daysToStartLine === 0,
   };
 }
-function spaceGroups(space) {
+function spaceGroups(space, spaceFree = 'unavailable') {
   if (!space || !Array.isArray(space.groups)) return [];
   return GRADE_GROUPS.map(g => {
     const list = space.groups.filter(x => x.grade === g.k && Object.hasOwn(GROUP_NAMES, x.group));
     if (!list.length) return null;
     const total = list.reduce((t, x) => t + x.bytes, 0);
-    return { k: g.k, nm: g.nm, mid: g.mid, val: gb(total), items: list.map(x => ({ nm: GROUP_NAMES[x.group], cnt: x.count > 1 ? `${x.count}곳` : '', val: gb(x.bytes), how: g.k === 'view' ? GROUP_HOW[x.group] || '' : '' })) };
+    return { k: g.k, nm: g.nm, mid: g.k === 'auto' ? AUTO_MID[spaceFree] || AUTO_MID.unavailable : g.mid, val: gb(total), items: list.map(x => ({ nm: GROUP_NAMES[x.group], cnt: x.count > 1 ? `${x.count}곳` : '', val: gb(x.bytes), how: g.k === 'view' ? GROUP_HOW[x.group] || '' : '' })) };
   }).filter(Boolean);
 }
 
@@ -406,13 +419,24 @@ export function oneClickBoard(snap, now = Date.now()) {
   else pr = { ...pr, mid: `마지막 확인이 「${PROOF_WORDS[proof.result] || '알 수 없음'}」이었습니다. 엔진 창에서 확인해 주세요`, val: `${backupDay(proof.at)} ${PROOF_WORDS[proof.result] || '알 수 없음'}`, state: proof.result === 'skipped' ? '' : 'fail' };
   steps.push(pr);
 
-  // 03 공간: 엔진이 하루 한 번 잰 보고서의 합계다. 지우기는 엔진 2판부터다
+  // 03 공간: 엔진이 하루 한 번 잰 보고서의 합계. 2판이 열린 PC(spaceFree off · on)는 이 누름의 비우기 · 미리 보기 결과를 쓴다(SPACE_DESIGN.md 12.5)
   const auto = (space?.groups || []).filter(x => x.grade === 'auto').reduce((t, x) => t + x.bytes, 0);
+  const two = ['off', 'on'].includes(s.spaceFree), freeOn = s.spaceFree === 'on';
+  const f = c?.free || null, n = f?.numbers || null;
+  const fPending = !!f && ['sent', 'claimed'].includes(f.stage) && !f.result;
   let sp = { k: 'space', no: '03', nm: '공간', mid: '', val: backupDay(space?.createdAt), state: '', p: null };
-  if (!space || space.missing) sp = { ...sp, mid: '엔진이 아직 공간을 재지 않았습니다. 하루 한 번 잽니다', val: '' };
+  if (job?.stage === 'free') sp = { ...sp, mid: freeOn ? '다시 만들 수 있는 것을 비우는 중입니다' : '켜면 비울 것을 세는 중입니다', val: '', state: 'now' };
+  else if (fPending) sp = { ...sp, mid: freeOn ? '백업 뒤에 다시 만들 수 있는 것을 비웁니다' : '백업 뒤에 켜면 비울 것을 셉니다', val: '', state: c.result ? 'now' : '' };
+  else if (f?.result === 'done' && n && n.preview) sp = { ...sp, mid: n.items ? `켜면 지금 ${gb(n.freed)}를 비울 수 있습니다` : '지금 비울 만한 것이 없었습니다', val: '', can: n.items > 0 };
+  else if (f?.result === 'done' && n) {
+    const kept = n.busy ? `${n.busy}개는 쓰는 중이라 남겼습니다` : '';
+    sp = { ...sp, mid: n.items ? `${gb(n.freed)}를 비웠습니다${kept ? ` · ${kept}` : ''}` : kept || '지금 비울 만한 것이 없었습니다', val: n.items ? gb(n.freed) : '', state: 'done' };
+  } else if (f?.result) sp = { ...sp, mid: FREE_ANSWER[f.reason] || '비우지 못했습니다. 엔진 창에서 확인해 주세요', state: f.result === 'failed' || !FREE_ANSWER[f.reason] ? 'fail' : 'wait' };
+  else if (!space || space.missing) sp = { ...sp, mid: '엔진이 아직 공간을 재지 않았습니다. 하루 한 번 잽니다', val: '' };
   else if (space.invalid) sp = { ...sp, mid: '공간 보고서를 읽지 못했습니다', val: '' };
   else if (!space.lapFinishedAt && Number.isSafeInteger(space.scanningDays)) sp = { ...sp, mid: `엔진이 디스크를 처음 훑는 중입니다(${space.scanningDays + 1}일째)` };
-  else if (auto > 0) sp = { ...sp, mid: `다시 만들 수 있는 것 ${gb(auto)}를 찾았습니다`, can: true };
+  // 보고서의 크기는 하루 한 번 잰 값이고, 비울 때 쓰는 중인 것은 걸러지므로 2판에서는 「많게는」으로 쓴다
+  else if (auto > 0) sp = { ...sp, mid: two ? `많게는 ${gb(auto)}를 비울 수 있습니다` : `다시 만들 수 있는 것 ${gb(auto)}를 찾았습니다`, can: true };
   else sp = { ...sp, mid: '바로 비울 만한 것은 찾지 못했습니다' };
   steps.push(sp);
 
@@ -429,8 +453,10 @@ export function oneClickBoard(snap, now = Date.now()) {
   // 도우미 구는 실제로 일하는 줄에만 앉는다(01 · 엔진이 하는 되살리기 확인 · 04의 확인)
   const at = steps.find(x => x.state === 'now')?.k || null;
   // 끝: 누른 백업이 답을 받았고 확인도 끝났으면 넷을 한 줄로 접는다
-  const finished = !!c && !pending && !job && !checking && c.result === 'done';
-  const sum = finished ? { nm: '백업을 마쳤습니다', mid: [pr.val && `되살리기 확인 ${pr.val}`, fresh ? '새 판 있음' : ''].filter(Boolean).join(' · '), val: b.val } : null;
+  const finished = !!c && !pending && !job && !checking && c.result === 'done' && !fPending;
+  const freed = f?.result === 'done' && n && !n.preview && n.items > 0 ? n.freed : 0;
+  const canFree = f?.result === 'done' && n?.preview && n.items > 0 ? n.freed : 0;
+  const sum = finished ? { nm: freed ? `백업하고 ${gb(freed)}를 비웠습니다` : '백업을 마쳤습니다', mid: [pr.val && `되살리기 확인 ${pr.val}`, fresh ? '새 판 있음' : ''].filter(Boolean).join(' · '), val: b.val } : null;
   if (finished && !lead) {
     const next = nextWords(s.nextRunAt, now);
     // 네 줄은 접히므로 04 줄을 가리키지 않고 새 판을 이 문장에서 말한다(카본 A3)
@@ -440,19 +466,24 @@ export function oneClickBoard(snap, now = Date.now()) {
     const then = topics ? `다만 엔진 창에서 확인할 일이 있습니다: ${topics}.`
       : snap.view === 'checking' ? '다만 예정된 백업 소식이 2시간 넘게 없습니다. 엔진 창을 열어 확인해 주세요.'
         : pr.state === 'fail' ? '다만 마지막 되살리기 확인이 실패했습니다. 엔진 창에서 확인해 주세요.'
-          : driveCard(space).below ? '다만 남은 공간이 정한 선보다 적습니다. 아래에서 비울 수 있는 것을 봐 주세요.'
-            : fresh ? `${news}.` : next ? `다음 백업은 ${next}입니다.` : '';
+          // 2판 미리 보기: 지금 켜면 비울 수 있는 양과 켜는 곳(엔진 창)을 말한다. 솔리오는 켜지 못한다
+          : canFree ? `엔진 창에서 「누를 때 비우기」를 켜면 다음 누름부터 ${gb(canFree)}쯤 비웁니다.`
+            : driveCard(space).below ? '다만 남은 공간이 정한 선보다 적습니다. 아래에서 비울 수 있는 것을 봐 주세요.'
+              : fresh ? `${news}.` : next ? `다음 백업은 ${next}입니다.` : '';
     const attention = !!topics || snap.view === 'checking' || pr.state === 'fail';
-    lead = { say: '백업을 마쳤습니다.', then, note: attention ? '확인 필요' : '끝남', ...(topics ? { act: act('엔진 창에서 확인', 'backup-open', knownTopics(s.attention)[0], { primary: false }) } : {}) };
+    const leadAct = topics ? act('엔진 창에서 확인', 'backup-open', knownTopics(s.attention)[0], { primary: false })
+      : canFree && !attention ? act('엔진 창에서 켜기', 'backup-open', 'space', { primary: false }) : null;
+    lead = { say: freed ? `백업하고 ${gb(freed)}를 비웠습니다.` : '백업을 마쳤습니다.', then, note: attention ? '확인 필요' : '끝남', ...(leadAct ? { act: leadAct } : {}) };
   } else if (working && (!lead || job)) {
     // 엔진이 지금 일하면(되살리기 확인 · 파일 되살리기 따위) 지난 누름의 답보다 그 일이 맨 위다(카본 A4)
     lead = { say: job ? `지금 ${STAGE_WORDS[job.stage] || STAGE_WORDS.other} 중입니다${Number.isFinite(job.percent) ? `(${job.percent}%)` : ''}.` : '지금 백업을 시작합니다.', then: '창을 닫아도 엔진이 이어서 합니다.', note: '하는 중' };
   }
   const main = job ? { label: JOB_LABEL[job.stage] || JOB_LABEL.other, disabled: true }
-    : pending && !late ? { label: '백업하는 중', disabled: true } : { label: ONECLICK_LABEL, disabled: false };
+    : pending && !late ? { label: '백업하는 중', disabled: true }
+      : fPending && c.result ? { label: freeOn ? '비우는 중' : '세는 중', disabled: true } : { label: freeOn ? ONECLICK_FREE_LABEL : ONECLICK_LABEL, disabled: false };
   return {
-    main, drive: driveCard(space, now), steps, at, sum, groups: spaceGroups(space), lead,
-    // 빨리 다시 읽는 때: 엔진이 일하거나, 요청을 막 넣었거나, 업데이트를 확인하는 중. 기다리는 중이면 천천히(15초) 읽는다
-    busy: working || checking, key: c?.at || '',
+    main, drive: driveCard(space, now), steps, at, sum, groups: spaceGroups(space, two ? s.spaceFree : 'unavailable'), lead,
+    // 빨리 다시 읽는 때: 엔진이 일하거나, 요청을 막 넣었거나, 비우기 답을 기다리거나, 업데이트를 확인하는 중. 기다리는 중이면 천천히(15초) 읽는다
+    busy: working || checking || fPending, key: c?.at || '',
   };
 }

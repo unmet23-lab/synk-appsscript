@@ -126,6 +126,10 @@ a { color: inherit; }
 .panel + .panel { margin-top: clamp(32px, 5vh, 48px); }
 .panel .now { padding: 14px 0 6px; font: 400 14px/1.6 var(--sans); color: var(--dim); }
 .row .meta { overflow-wrap: anywhere; }
+/* 공간 비우기 2판 — 드라이브마다 정한 선(GB) 칸. 칸이 좁아야 가운데 「남은 공간」 글이 세로로 꺾이지 않는다 */
+.row .w input.gb { width: 4.6em; height: 30px; margin-right: 4px; padding: 0 8px; background: none; border: 1px solid var(--hair); border-radius: 6px; font: 400 14px/1 var(--sans); color: var(--paper); text-align: right; font-variant-numeric: tabular-nums; }
+.row .w input.gb:focus-visible { outline: 1px solid var(--ring); outline-offset: 3px; }
+.row .w input.gb[readonly] { color: var(--dim); }
 .panel-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 14px; padding-bottom: 12px; border-bottom: 1px solid var(--hair-2); }
 .panel-h h2 { font: 500 15px/1.35 var(--sans); white-space: nowrap; }
 .panel-h p, .meta { font: 400 13px/1.45 var(--sans); color: var(--dim); }

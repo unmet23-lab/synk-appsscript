@@ -17,7 +17,7 @@
     'openFileCatalog', 'browseBackupFolder', 'queryFileCatalog', 'setFileSelection',
     'closeFileCatalog', 'restoreSelected', 'openSelectedRestoreFolder',
     'importRecoveryKit', 'setLaunchAtLogin', 'openRestoreFolder',
-    'signInGoogle', 'startProtection', 'continueBackup', 'setRestNetworks', 'setAiTools', 'aiToolsState', 'wifiName',
+    'signInGoogle', 'startProtection', 'continueBackup', 'setRestNetworks', 'setAiTools', 'aiToolsState', 'wifiName', 'spaceFreeState', 'setPressFree', 'setStartLine',
     'openAccountBackup', 'devicesList', 'takeWriteSeat', 'revokeDevice',
     'reportLost', 'rotateReadKey', 'restorePlan', 'restoreRun',
     'restoreJob', 'restoreChoose', 'restoreSeen', 'cancelGoogle', 'openGoogleAccount', 'cancelRestore', 'restoreScope', 'restoreMassBefore', 'massConfirm',

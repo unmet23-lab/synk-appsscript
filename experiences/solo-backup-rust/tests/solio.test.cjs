@@ -24,7 +24,11 @@ const engineState = over => ({ configured: true, mode: 'backup', readOnly: false
 
 test('status: one fixed word, no names, the fields solio reads', () => {
   const s = solio.statusOf({ state: engineState(), version: '0.7.0', startupRegistered: true, now: NOW });
-  assert.deepEqual(Object.keys(s), ['v', 'engine', 'state', 'lastBackupAt', 'proof', 'attention', 'job', 'folders', 'bytes', 'writer', 'nextRunAt', 'writtenAt']);
+  assert.deepEqual(Object.keys(s), ['v', 'engine', 'state', 'lastBackupAt', 'proof', 'attention', 'job', 'folders', 'bytes', 'writer', 'nextRunAt', 'spaceFree', 'writtenAt']);
+  assert.equal(s.spaceFree, 'unavailable', 'no test gate, no 2판');
+  assert.equal(solio.statusOf({ state: engineState(), version: '0.8.0', spaceFree: 'on', now: NOW }).spaceFree, 'on');
+  assert.equal(solio.statusOf({ state: engineState(), version: '0.8.0', spaceFree: 'yes', now: NOW }).spaceFree, 'unavailable');
+  assert.deepEqual(solio.statusOf({ state: engineState(), version: '0.8.0', freeing: true, now: NOW }).job, { stage: 'free', percent: null }, '「비우는 중」');
   assert.equal(s.v, 1); assert.equal(s.state, 'safe'); assert.equal(s.folders, 2); assert.equal(s.bytes, 123456); assert.equal(s.writer, true);
   assert.deepEqual(s.proof, { at: new Date(NOW - 86400000).toISOString(), result: 'passed' });
   const text = JSON.stringify(s);
@@ -327,13 +331,13 @@ test('run side: 「지금 백업」 keeps the rests, space settings only narrow,
   r = await go([[name(at, 'auto0000'), { v: 1, kind: 'space-setting', name: 'auto-free', value: true }], [name(at, 'auto0001'), { v: 1, kind: 'space-setting', name: 'empty-trash', value: false }]], { engine: e });
   assert.deepEqual(r.done.map(x => x.result), ['confirm-in-engine', 'done']);
   assert.equal(solio.defaultStartLine(1000 * 2 ** 30), 150);
-  // Picks: the newest space report within a day only; the first version frees nothing; found files keep no report yet.
+  // Picks: without the 2판 test gate (SPACE_DESIGN 12.1) a free is not available on this PC; found files keep no report yet.
   r = await go([[name(at, 'pick0000'), { v: 1, kind: 'pick', action: 'free', report: 'space-1-abcdef12', items: [1] }]], { engine: e });
-  assert.deepEqual([r.done[0].result, r.done[0].reason], ['rejected', 'no-report']);
+  assert.deepEqual([r.done[0].result, r.done[0].reason], ['rejected', 'not-available']);
   fs.writeFileSync(path.join(root, 'solio', 'space.json'), JSON.stringify({ v: 1, report: 'space-9-abcdef12', createdAt: new Date().toISOString(), candidates: [] }));
   r = await go([[name(at, 'pick0001'), { v: 1, kind: 'pick', action: 'free', report: 'space-1-abcdef12', items: [1] }], [name(at, 'pick0002'), { v: 1, kind: 'pick', action: 'free', report: 'space-9-abcdef12', items: [1] }],
     [name(at, 'pick0003'), { v: 1, kind: 'pick', action: 'restore', report: 'space-9-abcdef12', items: [1] }]], { engine: e });
-  assert.deepEqual(r.done.map(x => x.reason), ['old-report', 'not-available', 'no-report']);
+  assert.deepEqual(r.done.map(x => x.reason), ['not-available', 'not-available', 'no-report']);
   // Setup is left for the window; an expired one is cleared as rejected.
   put(files, name(at, 'setupnew'), { v: 1, kind: 'setup', mode: 'protect' });
   put(files, name(at - 31 * 60000, 'setupold'), { v: 1, kind: 'setup', mode: 'protect' });
@@ -358,6 +362,100 @@ test('rest networks and AI tool consent are kept strictly', async t => {
   }
   fs.writeFileSync(path.join(root, 'mcp', 'clients.json'), JSON.stringify({ v: 1, clients: [{ name: 'Claude Code\u0007', version: '2.1', exe: 'C:\\x\\claude.exe', firstSeen: NOW, lastSeen: NOW }, { name: '' }] }));
   assert.deepEqual((await solio.readAiTools(root)).clients, [{ name: 'Claude Code', version: '2.1', exe: 'C:\\x\\claude.exe', firstSeen: new Date(NOW).toISOString(), lastSeen: new Date(NOW).toISOString() }]);
+});
+
+test('2판 free (SPACE_DESIGN 12.4): gate first, then the writer, the 10-minute life from the listing, the report, the kinds; consent off is a preview', async t => {
+  const root = temp(t);
+  const files = new solio.SolioFiles({ root, now: () => Date.now() });
+  await files.ready();
+  const engine = (over = {}) => ({ config: { repositoryId: 'r', mode: 'backup', readOnly: false, automatic: true, sources: ['C:\\Users\\me\\Documents'], ...over }, intervalMs: 3600000, now: () => Date.now(), lastAttempt: 0,
+    async runOnce() { return { outcome: 'complete', resticStartedAt: Date.now() }; } });
+  const calls = [];
+  const host = async (method, args) => { calls.push([method, args[0]]); return method === 'space.free' ? { preview: args[0].preview, freed: 4096, items: 2, kept: 1, busy: 1 } : { freed: 0, items: 0 }; };
+  const freeing = [];
+  const go = async (requests, options) => { for (const [n, v] of requests) put(files, n, v); return solio.runRequests({ files, root, driveSize: async () => 1000 * 2 ** 30, host, onFree: on => { freeing.push(on); }, ...options }); };
+  const at = Date.now();
+  const report = { v: 1, report: 'space-7-abcdef12', createdAt: new Date().toISOString(), candidates: [
+    { n: 1, grade: 'auto', kind: 'temp' }, { n: 2, grade: 'auto', kind: 'node_modules' }, { n: 3, grade: 'auto', kind: 'pip-cache' }, { n: 4, grade: 'suggest', kind: 'node_modules' }] };
+  fs.writeFileSync(path.join(root, 'solio', 'space.json'), JSON.stringify(report));
+  const free = (tag, over = {}) => [name(at, tag), { v: 1, kind: 'pick', action: 'free', report: 'space-7-abcdef12', items: [1, 2, 3, 4], ...over }];
+  // 1. No gate: not available (no dead end in Solio — D8), and nothing reaches the runner.
+  let r = await go([free('nogate00')], { engine: engine() });
+  assert.deepEqual([r.done[0].result, r.done[0].reason, calls.length], ['rejected', 'not-available', 0]);
+  assert.equal(await solio.spaceFreeOf(root), 'unavailable');
+  fs.mkdirSync(path.join(root, 'space'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'space', solio.FREE_GATE), '');
+  assert.equal(await solio.spaceFreeOf(root), 'off');
+  // 2. Not the writer.
+  r = await go([free('readonly')], { engine: engine({ readOnly: true }) });
+  assert.deepEqual([r.done[0].reason], ['restore-only']);
+  calls.length = 0;
+  // 3. Consent off: a preview with only the 2판 kinds of the auto grade, and the backup folders handed over; the answer carries the five numbers.
+  r = await go([free('preview0')], { engine: engine() });
+  const free1 = calls.find(c => c[0] === 'space.free');
+  assert.deepEqual(free1[1], { report: 'space-7-abcdef12', items: [1, 2], folders: ['C:\\Users\\me\\Documents'], preview: true });
+  assert.ok(calls.some(c => c[0] === 'space.resume'), 'a stopped deletion is picked up first (12.3-6)');
+  const result = JSON.parse(fs.readFileSync(path.join(root, 'solio', 'results', name(at, 'preview0')), 'utf8'));
+  assert.deepEqual([result.result, result.preview, result.freed, result.items, result.kept, result.busy], ['done', true, 4096, 2, 1, 1]);
+  assert.ok(freeing.includes(true) && freeing[freeing.length - 1] === false, 'the status says 「비우는 중」 while it runs');
+  // 4. Consent on (engine window only): a real free; a request's own preview stays a preview (N2).
+  await solio.setPressFree(root, true);
+  assert.equal(await solio.spaceFreeOf(root), 'on');
+  calls.length = 0;
+  await go([free('realfree')], { engine: engine() });
+  assert.equal(calls.find(c => c[0] === 'space.free')[1].preview, false);
+  calls.length = 0;
+  await go([free('toolprev', { preview: true })], { engine: engine() });
+  assert.equal(calls.find(c => c[0] === 'space.free')[1].preview, true);
+  // 5. The life is ten minutes from when this pass listed the requests.
+  r = await go([[name(at - 11 * 60000, 'stale000'), free('x')[1]]], { engine: engine() });
+  assert.deepEqual([r.done[0].result, r.done[0].reason], ['rejected', 'expired']);
+  // 6. Only kinds 2판 does not free: not available. An old report: old-report.
+  r = await go([free('cacheonl', { items: [3, 4] })], { engine: engine() });
+  assert.equal(r.done[0].reason, 'not-available');
+  r = await go([free('oldrepor', { report: 'space-6-abcdef12' })], { engine: engine() });
+  assert.equal(r.done[0].reason, 'old-report');
+  // A free answers, then the folder is read once more: a request written meanwhile is not left until the next hour (12.4 끝).
+  calls.length = 0;
+  const later = name(at + 1, 'later000');
+  let wrote = false;
+  const slowHost = async (method, args) => { if (method === 'space.free' && !wrote) { wrote = true; put(files, later, { v: 1, kind: 'space-setting', name: 'empty-trash', value: false }); } return host(method, args); };
+  put(files, name(at, 'again000'), free('again000')[1]);
+  r = await solio.runRequests({ files, root, engine: engine(), driveSize: async () => 1, host: slowHost });
+  assert.deepEqual(r.done.map(d => d.kind), ['pick', 'space-setting']);
+  // `auto-free: false` from Solio narrows: it also turns the press consent off. Turning it on stays the engine window's.
+  r = await go([[name(at, 'autooff0'), { v: 1, kind: 'space-setting', name: 'auto-free', value: false }]], { engine: engine() });
+  assert.equal(r.done[0].result, 'done');
+  assert.equal(await solio.spaceFreeOf(root), 'off');
+  // Validation: preview only on free and only a boolean.
+  assert.equal(solio.validate({ v: 1, kind: 'pick', action: 'restore', report: 'space-7-abcdef12', items: [1], preview: true }, { at, now: at }).ok, false);
+  assert.equal(solio.validate({ v: 1, kind: 'pick', action: 'free', report: 'space-7-abcdef12', items: [1], preview: 'yes' }, { at, now: at }).ok, false);
+  // A result never carries anything but the five numbers.
+  const r2 = solio.resultOf({ result: 'done', preview: false, freed: -1, items: 1.5, kept: 2, busy: 0, path: 'C:\\x' }, NOW);
+  assert.deepEqual(r2, { v: 1, result: 'done', preview: false, freed: 0, items: 0, kept: 2, busy: 0, at: new Date(NOW).toISOString() });
+});
+
+test('2판 engine window: consent and lines are set only from the window; the summary is the last press', async t => {
+  const root = temp(t);
+  await assert.rejects(solio.setPressFree(root, true), { code: 'NOT_AVAILABLE' });
+  fs.mkdirSync(path.join(root, 'space'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'space', solio.FREE_GATE), '');
+  const on = await solio.setPressFree(root, true, NOW);
+  assert.deepEqual(on.pressFree, { v: 2, kinds: ['temp', 'temp-profile', 'build'], at: new Date(NOW).toISOString() });
+  // A wider scope written by anything else is not consent.
+  fs.writeFileSync(path.join(root, solio.SPACE_FILE), JSON.stringify({ pressFree: { v: 2, kinds: ['temp', 'temp-profile', 'build', 'cache'], at: new Date(NOW).toISOString() } }));
+  assert.equal((await solio.readSpaceSettings(root)).pressFree, null);
+  await solio.setStartLine(root, 'C', 400, { driveSize: async () => 953 * 2 ** 30 });
+  assert.deepEqual((await solio.readSpaceSettings(root)).startLines, { C: 400 });
+  await assert.rejects(solio.setStartLine(root, 'C', 2000, { driveSize: async () => 953 * 2 ** 30 }), { code: 'BAD_INPUT' });
+  const ledger = [
+    { at: '2026-11-24T01:00:00.000Z', report: 'space-1-aaaaaaaa', preview: true, kind: 'node_modules', stage: 'would', path: 'C:\\old\\node_modules', bytes: 100 },
+    { at: '2026-11-25T01:00:00.000Z', report: 'space-2-aaaaaaaa', preview: true, kind: 'node_modules', stage: 'would', path: 'C:\\a\\node_modules', bytes: 300 },
+    { at: '2026-11-25T01:00:00.000Z', report: 'space-2-aaaaaaaa', preview: true, kind: 'temp', stage: 'would', n: 4, bytes: 50, list: 'freed/x.txt' },
+    { at: '2026-11-25T01:00:00.000Z', stage: 'kept', why: { recent: 3 } }];
+  fs.writeFileSync(path.join(root, 'space', 'freed.jsonl'), ledger.map(l => JSON.stringify(l)).join('\n') + '\n');
+  const sum = await solio.readFreeSummary(root);
+  assert.deepEqual([sum.preview, sum.bytes, sum.count, sum.items.length], [true, 350, 5, 2]);
 });
 
 test('contract samples in contract/solio are what the engine writes and accepts', () => {

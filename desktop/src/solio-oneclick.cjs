@@ -7,6 +7,8 @@
 //   2. 엔진의 요청 작업(작업 스케줄러 「요청 - <계정 이름> · <SID 표 6자>」)을 깨운다. 한글 이름은 환경 변수로만 넘긴다.
 //   3. 요청이 어디까지 갔는지(requests · claimed · 결과) 보고, 결과 파일은 읽은 뒤 지운다(계약 「솔리오가 읽고 지운다」).
 //   4. 공간 보고서(space.json)를 읽어 합계만 낸다. 후보의 경로 · 이름 · 번호와 「지난 7일 늘어난 자리」는 이 파일 밖으로 내보내지 않는다.
+//   5. 공간 비우기 2판(SPACE_DESIGN.md 12.4): 엔진이 열어 둔 PC(상태 파일 spaceFree가 off · on)에서는 run-now 다음 이름으로 pick free를
+//      쓴다. 넘기는 것은 보고서 번호와 2판 종류의 가 등급 후보 번호뿐이고, 이 번호들도 본체 밖으로 내보내지 않는다.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -21,6 +23,10 @@ const REASONS = Object.freeze(['invalid', 'version', 'expired', 'set-up', 'moved
 /* 솔리오가 공간 후보를 접는 낱말(설계 표). 엔진 space.rs의 kind와 reason에서 정한다. 모르는 kind는 other다 */
 const GROUPS = Object.freeze(['temp', 'temp-profile', 'build', 'cache', 'worktree', 'ai-app-copy', 'project-temp', 'ai-history', 'models', 'cloud-drive', 'vm-disk', 'big-old-file', 'trash', 'other']);
 const GRADES = Object.freeze(['auto', 'suggest', 'view']);
+/* 2판이 비우는 종류(엔진 solio.cjs FREE_KINDS와 같다). 이 밖의 번호는 넘기지 않는다 */
+const FREE_KINDS = Object.freeze(['node_modules', 'target', 'venv', 'pycache', 'temp', 'temp-profile']);
+const FREE_ITEMS_MAX = 100;
+const REPORT_ID = /^[A-Za-z0-9-]{8,64}$/;
 
 const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const fault = code => Object.assign(new Error(code), { backupCode: code });
@@ -37,8 +43,8 @@ function realFoldersSync(paths, fsSync) {
   return true;
 }
 
-/* run-now 요청 하나를 쓰고 이름을 돌려준다. 본문은 {"v":1,"kind":"run-now"}뿐이다(계약: 칸 없음) */
-function writeRunNow({ paths, now = Date.now(), owner, random = () => crypto.randomBytes(8).toString('hex'), fsSync = fs }) {
+/* 요청 하나를 쓰고 이름을 돌려준다. 이름의 시각이 요청의 차례다(엔진은 이름 차례로 처리한다) */
+function writeRequest({ paths, now, owner, random, fsSync, body }) {
   if (!paths || typeof owner !== 'string' || !/^[0-9a-z]{8}$/.test(owner)) throw fault('INVALID');
   try { fsSync.mkdirSync(paths.requests, { recursive: true }); } catch {}
   const name = `${String(Math.trunc(now)).padStart(13, '0')}-${owner}${random()}.json`;
@@ -47,10 +53,21 @@ function writeRunNow({ paths, now = Date.now(), owner, random = () => crypto.ran
   // 폴더 확인 · 임시 이름에 쓰기 · 이름 바꾸기를 한 동기 구간에서 한다. 치우기(동기)가 그 사이에 끼어 이 실행의 임시 파일을 지우지 못한다
   try {
     if (!realFoldersSync(paths, fsSync)) throw fault('STORAGE');
-    fsSync.writeFileSync(temp, JSON.stringify({ v: FORMAT, kind: 'run-now' }), { flag: 'wx' });
+    fsSync.writeFileSync(temp, JSON.stringify(body), { flag: 'wx' });
     fsSync.renameSync(temp, file);
   } catch (error) { try { fsSync.unlinkSync(temp); } catch {} throw error?.backupCode ? error : fault('STORAGE'); }
   return name;
+}
+/* run-now 요청 하나를 쓰고 이름을 돌려준다. 본문은 {"v":1,"kind":"run-now"}뿐이다(계약: 칸 없음) */
+function writeRunNow({ paths, now = Date.now(), owner, random = () => crypto.randomBytes(8).toString('hex'), fsSync = fs }) {
+  return writeRequest({ paths, now, owner, random, fsSync, body: { v: FORMAT, kind: 'run-now' } });
+}
+/* 2판 pick free 요청(계약 4.13 · SPACE_DESIGN.md 12.4). 같은 누름의 run-now보다 1ms 뒤 이름으로 써서 백업이 먼저 돈다.
+   지울지 미리 볼지는 엔진이 동의로 정한다. 솔리오는 preview 칸을 쓰지 않는다 */
+function writePickFree({ paths, now = Date.now(), owner, random = () => crypto.randomBytes(8).toString('hex'), fsSync = fs, pick }) {
+  if (!isObject(pick) || typeof pick.report !== 'string' || !REPORT_ID.test(pick.report) || !Array.isArray(pick.items) || !pick.items.length
+    || pick.items.length > FREE_ITEMS_MAX || !pick.items.every(n => Number.isSafeInteger(n) && n >= 1 && n <= 1000) || new Set(pick.items).size !== pick.items.length) throw fault('INVALID');
+  return writeRequest({ paths, now, owner, random, fsSync, body: { v: FORMAT, kind: 'pick', action: 'free', report: pick.report, items: [...pick.items] } });
 }
 
 /* ── 요청 작업 깨우기. 이 사용자의 SID로 표 6자(SHA-256 앞 6자, 엔진 schedule.rs sid_tag)를 셈하고,
@@ -122,11 +139,10 @@ async function takeResult({ paths, name, fsImpl = fs.promises }) {
     if (stat.isFile() && !stat.isSymbolicLink() && await realResults(paths, fsImpl)) await fsImpl.unlink(file);
   } catch {}
   const v = read.format === 'ok' && isObject(read.value) ? read.value : {};
-  return {
-    result: v.v === FORMAT && RESULTS.includes(v.result) ? v.result : 'unknown',
-    reason: REASONS.includes(v.reason) ? v.reason : null,
-    at: iso(v.at),
-  };
+  const result = v.v === FORMAT && RESULTS.includes(v.result) ? v.result : 'unknown';
+  // 2판 pick free의 done만 수 다섯을 싣는다(계약 「결과 파일」). 꼴이 틀리면 싣지 않는다
+  const free = result === 'done' && typeof v.preview === 'boolean' ? { preview: v.preview, freed: bytes(v.freed) ?? 0, items: bytes(v.items) ?? 0, kept: bytes(v.kept) ?? 0, busy: bytes(v.busy) ?? 0 } : null;
+  return { result, reason: REASONS.includes(v.reason) ? v.reason : null, at: iso(v.at), ...(free ? { free } : {}) };
 }
 /* 요청이 어디까지 갔는가: sent(requests에 있음) · claimed(엔진이 가져감) · gone(어디에도 없음) · unknown(보지 못함) */
 async function requestStage({ paths, name, fsImpl = fs.promises }) {
@@ -180,6 +196,22 @@ function summarizeSpace(value) {
     drive, otherDrives: Math.max(0, drives.length - 1), groups,
   };
 }
+/* 2판 pick free에 넘길 것: 24시간 안의 보고서 번호와, 그 보고서의 2판 종류 가 등급 후보 번호(많아야 100개). 없으면 null.
+   번호는 본체 안에서 요청 파일에만 쓴다 — 화면으로도, 로그로도 넘기지 않는다 */
+async function readFreePick({ paths, now = Date.now(), fsImpl = fs.promises }) {
+  if (!paths) return null;
+  for (const dir of [paths.root, paths.solio]) {
+    try { const stat = await fsImpl.lstat(dir); if (!stat.isDirectory() || stat.isSymbolicLink()) return null; } catch { return null; }
+  }
+  const read = await readSmallJson(path.join(paths.solio, 'space.json'), SPACE_MAX, fsImpl);
+  const v = read.format === 'ok' && isObject(read.value) ? read.value : null;
+  if (!v || v.v !== FORMAT || typeof v.report !== 'string' || !REPORT_ID.test(v.report)) return null;
+  const made = Date.parse(v.createdAt || '');
+  if (!Number.isFinite(made) || now - made > 24 * 3600000 || made - now > 5 * 60000) return null;
+  const items = (Array.isArray(v.candidates) ? v.candidates : []).filter(c => isObject(c) && c.grade === 'auto' && FREE_KINDS.includes(c.kind) && Number.isSafeInteger(c.n) && c.n >= 1 && c.n <= 1000)
+    .map(c => c.n).filter((n, i, all) => all.indexOf(n) === i).slice(0, FREE_ITEMS_MAX);
+  return items.length ? { report: v.report, items } : null;
+}
 /* 공간 보고서를 읽어 합계를 낸다. { format: 'ok', space } · { format: 'missing' | 'invalid' }.
    cache({key, read})를 주면 크기와 고친 시각이 같을 때 다시 해석하지 않는다(방은 2초마다 읽는다, Fable 설계 검토 6).
    해석 오류의 글(원문 조각이 든다)은 어디에도 싣지 않고 invalid 하나로 접는다 */
@@ -201,6 +233,6 @@ async function readSpace({ paths, fsImpl = fs.promises, cache = null }) {
 }
 
 module.exports = {
-  writeRunNow, wakeRequestTask, takeResult, requestStage, readSpace, summarizeSpace, groupOf,
+  writeRunNow, writePickFree, readFreePick, FREE_KINDS, wakeRequestTask, takeResult, requestStage, readSpace, summarizeSpace, groupOf,
   WAKE_SCRIPT, TASK_FOLDER, TASK_PREFIX, TASK_JOIN, RESULTS, REASONS, GROUPS, GRADES,
 };
