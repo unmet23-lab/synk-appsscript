@@ -357,6 +357,83 @@
             }
           }
         }
+      },
+      "MY": {
+        "언어": "ms",
+        "파일": "게시/판본/MY/video.mp4",
+        "표지": "게시/판본/MY/cover.png",
+        "글": "게시/판본/MY/글.json",
+        "원고": {
+          "youtube": "게시/판본/MY/원고_youtube.json"
+        }
+      },
+      "BR": {
+        "언어": "pt-BR",
+        "파일": "게시/판본/BR/video.mp4",
+        "표지": "게시/판본/BR/cover.png",
+        "글": "게시/판본/BR/글.json",
+        "원고": {
+          "youtube": "게시/판본/BR/원고_youtube.json"
+        }
+      },
+      "PH": {
+        "언어": "fil",
+        "파일": "게시/판본/PH/video.mp4",
+        "표지": "게시/판본/PH/cover.png",
+        "글": "게시/판본/PH/글.json",
+        "원고": {
+          "youtube": "게시/판본/PH/원고_youtube.json"
+        }
+      },
+      "CN": {
+        "언어": "zh-Hans",
+        "파일": "게시/판본/CN/video.mp4",
+        "표지": "게시/판본/CN/cover.png",
+        "글": "게시/판본/CN/글.json",
+        "원고": {
+          "douyin": "게시/판본/CN/원고_douyin.json",
+          "xiaohongshu": "게시/판본/CN/원고_xiaohongshu.json"
+        }
+      },
+      "ID": {
+        "언어": "id",
+        "파일": "게시/판본/ID/video.mp4",
+        "표지": "게시/판본/ID/cover.png",
+        "글": "게시/판본/ID/글.json",
+        "원고": {
+          "tiktok": "게시/판본/ID/원고_tiktok.json",
+          "youtube": "게시/판본/ID/원고_youtube.json"
+        }
+      },
+      "TH": {
+        "언어": "th",
+        "파일": "게시/판본/TH/video.mp4",
+        "표지": "게시/판본/TH/cover.png",
+        "글": "게시/판본/TH/글.json",
+        "원고": {
+          "tiktok": "게시/판본/TH/원고_tiktok.json",
+          "youtube": "게시/판본/TH/원고_youtube.json"
+        }
+      },
+      "VN": {
+        "언어": "vi",
+        "파일": "게시/판본/VN/video.mp4",
+        "표지": "게시/판본/VN/cover.png",
+        "글": "게시/판본/VN/글.json",
+        "원고": {
+          "tiktok": "게시/판본/VN/원고_tiktok.json",
+          "youtube": "게시/판본/VN/원고_youtube.json"
+        }
+      },
+      "MM": {
+        "언어": "my",
+        "파일": "게시/판본/MM/video.mp4",
+        "표지": "게시/판본/MM/cover.png",
+        "글": "게시/판본/MM/글.json",
+        "원고": {
+          "tiktok": "게시/판본/MM/원고_tiktok.json",
+          "youtube": "게시/판본/MM/원고_youtube.json"
+        }
       }
     }
   }
