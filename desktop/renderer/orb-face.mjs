@@ -203,6 +203,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   let hostReducedMotion = options.initialState?.reducedMotion === true;
 
   // 화면에 보일 글. 장면을 만들 때 읽는다
+  let estimateError = '';
   const feedback = { auth: '', note: '', inviteError: '', inviteStatus: '', workspace: '', switch: '' };
 
   // 들어온 뒤의 상태
@@ -495,7 +496,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       const scenes = readScenes(state);
       const programs = programsFor(state, scenes);
       const at = programs.some(p => p.key === prog) ? prog : 'subs';
-      return { space, solio: solioScene(state), prog: at, programs, ...scenes };
+      return { space, solio: solioScene(state), prog: at, programs, ...scenes,
+        canOpenEstimate: memberShown(state) && typeof options.onOpenEstimate === 'function', estimateError };
     }
     // 창 안의 PULSE가 열려 있으면 방은 비운다. 뷰가 띠 아래를 덮고, 펼침을 여는 동안에는 검정으로 남는다
     const slot = slotOf(space);
@@ -2101,6 +2103,17 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         if (!aside && payload.room !== 'solio') return false;
         void rooms.handle(payload);
         return true;
+      case 'open-estimate': {
+        if (clientMode() !== 'app' || space !== 'solio' || aside || state.phase !== 'entered' ||
+            !memberShown(state) || typeof options.onOpenEstimate !== 'function') return false;
+        const account = state.accountKey;
+        void Promise.resolve().then(() => options.onOpenEstimate()).catch(() => null).then(result => {
+          if (machine.read().accountKey !== account) return;
+          const message = result?.ok ? '' : '견적 비서를 열지 못했어요.';
+          if (estimateError !== message) { estimateError = message; render(); }
+        });
+        return true;
+      }
       case 'reread': void reread(); return true;
       // 구독 방 맨 위 「지금 출력」의 「켜기」. 모델별 토큰 줄의 켜기와 같은 일이다(솔리오 구독 비서 설계 3.3)
       case 'tok-on':

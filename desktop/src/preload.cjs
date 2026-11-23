@@ -72,6 +72,7 @@ const officeDepartment=input=>{if(!input||typeof input!=='object'||(input.id!==u
 const officeSettings=input=>{if(!input||typeof input!=='object')return null;const value={};if(input.view!==undefined){if(!OFFICE_VIEWS.includes(input.view))return null;value.view=input.view;}if(input.manualCap!==undefined){if(input.manualCap!==null&&!Number.isInteger(input.manualCap))return null;value.manualCap=input.manualCap;}return 'view' in value||'manualCap' in value?value:null;};
 const pulseViewPlace=input=>input&&typeof input==='object'&&typeof input.visible==='boolean'&&typeof input.top==='number'&&Number.isFinite(input.top)&&input.top>=0&&input.top<=160?{visible:input.visible,top:input.top}:null;
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
+  openEstimate:()=>ipcRenderer.invoke('synk:open-estimate'),
   teacher:Object.freeze({
     getEnvironment:()=>ipcRenderer.invoke('synk:teacher-environment'),
     authStatus:()=>ipcRenderer.invoke('synk:teacher-auth-status'),

@@ -155,6 +155,24 @@ if(!process.versions.electron){
         w.win.destroy();
       }else{
         // 1. 처음 켬(로그아웃)
+        if(only('estimate')&&mode==='main'){
+          const w=await open();
+          try{
+            await boot(w,{subs:subsReady},{restore:signedIn(),fold:true});
+            const entered=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:15000});
+            check('estimate enters the real Solio room',entered.ok,entered.state);
+            const selector='[data-orb-act="open-estimate"]';
+            for(const [width,height] of [[1440,900],[390,844]]){
+              w.win.setContentSize(width,height);await wait(250);
+              const visible=await w.js(`(()=>{const b=document.querySelector('${selector}');if(!b||b.hidden)return false;b.scrollIntoView({block:'center'});const r=b.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.width>0&&r.height>0&&b.contains(hit);})()`);
+              check('estimate launch control is reachable at '+width,visible);
+              await capture(w,'estimate-entry-'+width);
+            }
+            check('estimate waits for a click',!(await calls(w)).includes('openEstimate'));
+            await click(w,selector);await wait(100);
+            check('estimate click reaches the desktop bridge',(await calls(w)).filter(x=>x==='openEstimate').length===1);
+          }finally{w.win.destroy();}
+        }
         if(only('1')){
           const part='orb-qa-returning-'+Date.now();let w=await open({partition:part});const t0=await boot(w,{subs:subsReady},{restore:signedOut});
           const first=await state(w);timings.documentHidden=first.hidden;

@@ -115,6 +115,8 @@ function markup() {
       <div class="details-top" id="orb-details-top" data-details-top hidden></div>
       <div class="rows rise" id="orb-sub-rows" style="--i:3" role="group" aria-label="구독별 남은 양" data-rows></div>
       <p class="read rise" style="--i:5"><span data-read></span><button class="reread" type="button" data-orb-act="subs-manage" hidden>계정 관리</button><button class="reread" type="button" data-orb-act="reread">다시 읽기</button><button class="reread" type="button" data-orb-act="connect" hidden>구독 연결하기</button><button class="reread" type="button" data-orb-act="recheck-auth" hidden>다시 확인</button></p>
+      <button type="button" class="reread" data-orb-act="open-estimate" hidden>견적 비서 열기</button>
+      <span data-estimate-note aria-live="polite" hidden></span>
     </div>
     <div class="room room-top" data-room="solio-visits" hidden>
       <p class="say rise" style="--i:1"><span data-vis-say></span><span class="then" data-vis-then></span></p>
@@ -186,6 +188,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   };
   const sw = { lead: $('[data-sw-lead]'), error: $('[data-sw-error]'), names: $('[data-sw-names]'), foot: $('[data-sw-foot]'), close: $('[data-orb-act="close-switch"]') };
   const app = {
+    estimateBtn: $('[data-orb-act="open-estimate"]'), estimateNote: $('[data-estimate-note]'),
     orbBtn: $('.here-orb'), nameBtn: $('.here-name'), name: $('[data-here-text]'), legacyBack: $('.legacy-back'), bandClose: $('.band-close'),
     solio: $('[data-room="solio"]'), say: $('[data-say]'), then: $('[data-then]'), rows: $('[data-rows]'), read: $('[data-read]'),
     brief: $('[data-brief]'), soon: $('[data-soon]'), soonMore: $('[data-soon-more]'), live: $('[data-live]'), liveBig: $('[data-live-big]'), liveUnit: $('[data-live-unit]'), liveSmall: $('[data-live-small]'), tokOn: $('[data-orb-act="tok-on"]'),
@@ -687,6 +690,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     // 방이 열려 있으면 그 방 하나만 보인다(시안 #stage[data-aside])
     const asideName = s.aside && app.asides[s.aside] ? s.aside : null;
     app.solio.hidden = !solio || prog !== 'subs' || !!asideName;
+    app.estimateBtn.hidden = app.solio.hidden || !room.canOpenEstimate;
+    app.estimateNote.hidden = app.estimateBtn.hidden || !room.estimateError;
+    setText(app.estimateNote, room.estimateError || '');
     for (const [name, r] of Object.entries(readRooms)) r.room.hidden = prog !== name || !!asideName;
     app.office.hidden = prog !== 'office' || !!asideName;
     app.space.hidden = solio || !!asideName;

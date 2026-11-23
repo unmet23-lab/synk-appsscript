@@ -50,6 +50,7 @@ const {createSnsHealth}=require('./sns-health.cjs');
 const {createSolioBackup}=require('./solio-backup.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
+const {createEstimateWindow}=require('./estimate-window.cjs');
 const {createLocalServerGate}=require('./local-server-owner.cjs');
 const {createOffice,loadOfficeModel}=require('./office.cjs');
 const {enabled:officeTasksEnabled,createTaskRuntime}=require('./office-task-runtime.cjs');
@@ -105,6 +106,7 @@ const ARRIVE_SCENE_MS=4130;
 let waitingForFirstWindow=false,openBeforeStartupGate=false;
 let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,suiteDeviceId=null,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
 let companyEntry,companyPartitions,companyDestinations;
+let estimateWindow;
 let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
@@ -112,7 +114,7 @@ const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
 // Workspace 로그인의 Suite 따라가기를 500ms 틈 없이 지금 플랫폼 기록에 묶는다. 묶지 않으면 계정을 바꾼 직후 새 계정의 뷰가 앞 계정의 로그인 상태와 계정 정보를 받는다(4단계 설계 검토 R2).
 // 따라가기를 아직 만들지 않았거나 닫은 뒤에 불려도 다음 따라가기가 다시 본다
 function followWorkspaceNow(){try{void workspaceFollower?.refresh();}catch{}}
-function publishAuthState(state){chatgptConnection?.accountChanged();careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){chatgptConnection?.accountChanged();careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();estimateWindow?.sync();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -230,6 +232,15 @@ const renewingAccount=()=>suitePublisher&&!suitePublisher.available()?null:auth?
 // The UUID auth issued for its current epoch (auth-service.cjs accountGeneration). PULSE binds every invite hand-off
 // to it, so a request a renderer made for another account or epoch is never applied to this one. Masked like the renewal.
 const pulseAccountGeneration=()=>suitePublisher&&!suitePublisher.available()?null:auth?.accountGeneration?.()??null;
+function estimateBinding(){
+  const state=accountStatus(),generation=pulseAccountGeneration();
+  return state?.signedIn===true&&state.account?.synk_user_id&&generation ? {owner:state.account.synk_user_id,generation} : null;
+}
+function openEstimate(){
+  if(runtime.clientId!=='platform'||smoke||!estimateBinding())return {ok:false,code:'SIGN_IN_REQUIRED'};
+  estimateWindow ||= createEstimateWindow({BrowserWindow,ipcMain,session,safeStorage,shell,userData:app.getPath('userData'),getParent:()=>window,getBinding:estimateBinding});
+  return estimateWindow.open();
+}
 // The company entry (company-entry.cjs, company-entry-destinations.cjs) binds every hand-off and lookup to main's own
 // account: auth's UUID generation and numeric epoch (the generation masked like PULSE's while the suite hides the
 // sign-in), the SYNK ID auth verified, and whether that sign-in is settled (company-entry.cjs bindingFromAuth). A
@@ -359,6 +370,7 @@ require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();handoffCover?.prepareForQuit();});
 app.on('before-quit',()=>aiSubscriptions?.dispose());
 app.on('before-quit',()=>{chatgptConnection?.close();chatgptConnection=undefined;});
+app.on('before-quit',()=>estimateWindow?.close());
 app.on('before-quit',()=>officeService?.close());
 app.on('before-quit',()=>officeEmployeeTasks?.close());
 app.on('browser-window-focus',(_event,focused)=>{if(officeTaskSource&&focused===window)sendDesktop('synk:office-changed');});
@@ -919,6 +931,7 @@ function createWindow(){
     'synk:draft-recovery-load':(slot,owner)=>isPlatform?draftRecoveryRequests.load(slot,owner):{ok:false,code:'LAUNCHER_ONLY'},
     'synk:draft-recovery-save':(slot,value,owner)=>isPlatform?draftRecoveryRequests.save(slot,value,owner):{ok:false,code:'LAUNCHER_ONLY'},
     'synk:draft-recovery-clear':(slot,owner)=>isPlatform?draftRecoveryRequests.clear(slot,owner):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:open-estimate':openEstimate,
     'synk:open-public-app':id=>requireSuite(()=>publicApps.open(id)),
     'synk:open-portal-purpose':id=>isPlatform&&!smoke?requireSuite(()=>portalNavigation.openPurpose(id)):{ok:false,code:'PORTAL_PURPOSE_UNAVAILABLE'},
     'synk:teacher-preview':()=>requireSuite(()=>teacherPreview.open()),

@@ -85,6 +85,18 @@ function harness(t, { options = {}, storage = memoryStorage(), initial = { statu
 
 const signedIn = (accountKey = ACCOUNT, generation = 1) => ({ status: 'signed-in', accountKey, generation });
 
+test('솔리오에서 로그인한 회원이 견적 비서 단추를 눌러야 업무 메일 창을 연다',async t=>{
+  let opened=0;
+  const h=harness(t,{storage:memoryStorage({[ORB_RETURNING_KEY]:'1'}),options:{onOpenEstimate:async()=>{opened++;return {ok:true};}}});
+  await settle();
+  assert.equal(h.face.handle('open-estimate'),false);
+  h.face.setState(signedIn());await settle();
+  assert.equal(h.view.last().room.canOpenEstimate,true);
+  assert.equal(opened,0);
+  assert.equal(h.face.handle('open-estimate'),true);await settle();
+  assert.equal(opened,1);
+});
+
 test('an existing account goes from the first orb to Solio with no text and no ask scene', async t => {
   const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }) });
   await settle();

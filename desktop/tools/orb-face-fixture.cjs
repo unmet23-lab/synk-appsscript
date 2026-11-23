@@ -101,6 +101,7 @@ function workspaceCover(value){
 const openWorkspace=()=>{if(!workspaceOpen){workspaceOpen=true;tellWorkspace();}};
 const desktopActions=new Set();
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
+  openEstimate:async()=>{calls.push('openEstimate');return {ok:true};},
   pulseView:Object.freeze({
     place:async value=>{pulsePlaced.push({visible:value?.visible===true,top:value?.top});pulseCover(value);return {ok:true,open:pulseOpen};},
     state:async()=>({open:pulseOpen}),

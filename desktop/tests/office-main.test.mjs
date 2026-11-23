@@ -265,7 +265,7 @@ test('an account change or sign-out reaches the office, a same-account renewal d
     careNotifications: null, pulseApp: null, workspaceApp: null, followWorkspaceNow() {}, syncCompanyEntry() {}, scheduleHiddenAuthRetry() {}, syncTrayApps: async () => {},
     window: null, trustedEntry: () => false, entry: '', runtime: { clientId: 'platform' },
     renewing: null, renewingAccount: () => ctx.renewing,
-    officeService: null, officeEmployeeTasks:null, chatgptConnection: null, solioBackupService: null, solioBackupSweep: () => {},
+    estimateWindow: null, officeService: null, officeEmployeeTasks:null, chatgptConnection: null, solioBackupService: null, solioBackupSweep: () => {},
   };
   vm.runInNewContext([source('const officeAccountOf='), source('const officeLoginOf='), source('function publishAuthState(state){')].join('\n'), ctx);
   ctx.publishAuthState(signedIn(YUHO));
