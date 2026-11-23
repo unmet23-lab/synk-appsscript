@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "그러면 클로드가 무료 받아쓰기 프로그램으로, 내 컴퓨터에서 돌려 줘요.",
+ "dur": 3.385,
+ "words": [
+  {
+   "text": "그러면",
+   "start": 0.02,
+   "end": 0.277
+  },
+  {
+   "text": "클로드가",
+   "start": 0.339,
+   "end": 0.682
+  },
+  {
+   "text": "무료",
+   "start": 0.805,
+   "end": 0.964
+  },
+  {
+   "text": "받아쓰기",
+   "start": 1.001,
+   "end": 1.333
+  },
+  {
+   "text": "프로그램으로,",
+   "start": 1.382,
+   "end": 1.836
+  },
+  {
+   "text": "내",
+   "start": 2.252,
+   "end": 2.301
+  },
+  {
+   "text": "컴퓨터에서",
+   "start": 2.376,
+   "end": 2.78
+  },
+  {
+   "text": "돌려",
+   "start": 2.817,
+   "end": 2.976
+  },
+  {
+   "text": "줘요.",
+   "start": 3.014,
+   "end": 3.385
+  }
+ ],
+ "source": {
+  "key": "9f6e944508166c69547d5285bba5d0a7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2",
+ "text": "클로드에게 그대로 붙여 넣을 말, 댓글에 받아쓰기라고 남기면 보내 드려요.",
+ "dur": 3.725,
+ "words": [
+  {
+   "text": "클로드에게",
+   "start": 0.06,
+   "end": 0.503
+  },
+  {
+   "text": "그대로",
+   "start": 0.554,
+   "end": 0.802
+  },
+  {
+   "text": "붙여",
+   "start": 0.841,
+   "end": 1.023
+  },
+  {
+   "text": "넣을",
+   "start": 1.076,
+   "end": 1.218
+  },
+  {
+   "text": "말,",
+   "start": 1.27,
+   "end": 1.466
+  },
+  {
+   "text": "댓글에",
+   "start": 1.713,
+   "end": 1.987
+  },
+  {
+   "text": "받아쓰기라고",
+   "start": 2.039,
+   "end": 2.572
+  },
+  {
+   "text": "남기면",
+   "start": 2.611,
+   "end": 2.989
+  },
+  {
+   "text": "보내",
+   "start": 3.028,
+   "end": 3.197
+  },
+  {
+   "text": "드려요.",
+   "start": 3.236,
+   "end": 3.725
+  }
+ ],
+ "source": {
+  "key": "b95dd61ff6c84aee0c598699bbd5b094",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

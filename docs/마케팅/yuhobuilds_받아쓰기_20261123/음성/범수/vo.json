@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 2103,
+  "lufs": -17
+ },
+ "made": "2026-11-23T01:28:05.900Z",
+ "lines": [
+  {
+   "id": "P1",
+   "text": "사십오 분짜리 녹음을, 받아쓰기 앱 구독 없이 내 컴퓨터에서 글로 바꿨어요.",
+   "dur": 3.825,
+   "syllablesPerSec": 7.84,
+   "src": "P1.wav",
+   "key": "55deb2a8c7b4e2d91961d8662b5439c4",
+   "words": 11
+  },
+  {
+   "id": "V2",
+   "text": "클로드한테 이렇게만 말했어요. 이 녹음, 내 컴퓨터에서 무료로 글로 바꿔 줘.",
+   "dur": 3.812,
+   "syllablesPerSec": 7.87,
+   "src": "V2.wav",
+   "key": "3f7411e55adbd8b29a7e780d37fde049",
+   "words": 11
+  },
+  {
+   "id": "V3",
+   "text": "그러면 클로드가 무료 받아쓰기 프로그램으로, 내 컴퓨터에서 돌려 줘요.",
+   "dur": 3.385,
+   "syllablesPerSec": 8.57,
+   "src": "V3.wav",
+   "key": "9f6e944508166c69547d5285bba5d0a7",
+   "words": 9
+  },
+  {
+   "id": "V4",
+   "text": "말한 시각이 줄마다 붙은 글이 나왔어요. 원래 대본과 거의 같았어요.",
+   "dur": 3.52,
+   "syllablesPerSec": 7.67,
+   "src": "V4.wav",
+   "key": "2f30cb8fc915304edfd53a1d3cad929d",
+   "words": 10
+  },
+  {
+   "id": "V5",
+   "text": "단, 휴대폰이나 웹 말고, 컴퓨터의 클로드 코드에서 돼요.",
+   "dur": 3.225,
+   "syllablesPerSec": 6.82,
+   "src": "V5.wav",
+   "key": "272a8e51cbe1eccd70937d96aed3d13f",
+   "words": 8
+  },
+  {
+   "id": "P2",
+   "text": "클로드에게 그대로 붙여 넣을 말, 댓글에 받아쓰기라고 남기면 보내 드려요.",
+   "dur": 3.725,
+   "syllablesPerSec": 8.05,
+   "src": "P2.wav",
+   "key": "b95dd61ff6c84aee0c598699bbd5b094",
+   "words": 10
+  },
+  {
+   "id": "P2G",
+   "text": "클로드에게 그대로 붙여 넣을 말, 게시글에 다 적어 뒀어요.",
+   "dur": 2.823,
+   "syllablesPerSec": 8.15,
+   "src": "P2G.wav",
+   "key": "6d5aff0bc6fd66776b2d37477d5484ab",
+   "words": 9
+  }
+ ]
+}

@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P1",
+ "text": "사십오 분짜리 녹음을, 받아쓰기 앱 구독 없이 내 컴퓨터에서 글로 바꿨어요.",
+ "dur": 3.825,
+ "words": [
+  {
+   "text": "사십오",
+   "start": 0.02,
+   "end": 0.332
+  },
+  {
+   "text": "분짜리",
+   "start": 0.371,
+   "end": 0.631
+  },
+  {
+   "text": "녹음을,",
+   "start": 0.67,
+   "end": 0.982
+  },
+  {
+   "text": "받아쓰기",
+   "start": 1.254,
+   "end": 1.645
+  },
+  {
+   "text": "앱",
+   "start": 1.697,
+   "end": 1.762
+  },
+  {
+   "text": "구독",
+   "start": 1.801,
+   "end": 1.969
+  },
+  {
+   "text": "없이",
+   "start": 2.008,
+   "end": 2.203
+  },
+  {
+   "text": "내",
+   "start": 2.425,
+   "end": 2.476
+  },
+  {
+   "text": "컴퓨터에서",
+   "start": 2.554,
+   "end": 2.983
+  },
+  {
+   "text": "글로",
+   "start": 3.035,
+   "end": 3.191
+  },
+  {
+   "text": "바꿨어요.",
+   "start": 3.243,
+   "end": 3.825
+  }
+ ],
+ "source": {
+  "key": "55deb2a8c7b4e2d91961d8662b5439c4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

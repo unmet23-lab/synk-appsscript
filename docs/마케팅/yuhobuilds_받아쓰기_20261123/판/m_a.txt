@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, quiet early-morning meeting-room mood, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny meeting table in the morning, seen from the front, slightly above table height. The background is a plain deep slate-blue felt wall that becomes almost black toward the top, with nothing on it. Soft cool daylight comes from a window out of frame on the RIGHT and falls across the table; the left side is a little darker.
+- The TOP 38% of the image is plain, very dark slate wall with nothing in it — keep it empty and dark for titles.
+- The table surface (light oak-coloured felt) starts at 68% of the image height. Everything stands on that line.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the table on the RIGHT, centred at 75% of the image width, about 23% of the image width wide, its top at about 52% of the image height. Mongle is turned toward the LEFT and is LOOKING DOWN at the long ribbon on the table: two round glossy black bead eyes placed a little low on its face, each with a tiny highlight — it looks worried at how long the ribbon is.
+- THE RECORDER: on the LEFT of the table, centred at 22% of the image width: a small chunky felt voice recorder, a rounded upright rectangle in charcoal-grey felt, about 13% of the image width wide and 15% of the image height tall, with ONE round red felt button near its top and three short horizontal stitched lines below the button. No holes, no grille, no dots, no screen.
+- THE LONG RIBBON: from the top of the recorder a single very long flat butter-yellow felt ribbon (like audio tape, about 2% of the image height wide) spills out and runs across the whole front of the table in many loose S-shaped loops and curls, piling up in a soft tangle between the recorder and Mongle and trailing toward the bottom edge. It is clearly far too long.
+- The BOTTOM 26% of the image is the table surface in soft focus, with only the ribbon's loops on it.
+- Keep Mongle, the recorder and the ribbon between 8% and 86% of the image width.
+
+Exactly ONE Mongle, nobody else, no laptop, no paper, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.

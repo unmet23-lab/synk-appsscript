@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, calm late-morning mood, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a close view of a tiny meeting table, seen from the front at table height, closer than a wide shot. The background is a plain deep slate-blue felt wall that becomes almost black toward the top, with nothing on it. Warm soft sunlight comes from out of frame on the LEFT.
+- The TOP 40% of the image is plain, very dark slate wall with nothing in it — keep it empty and dark for titles.
+- The table surface (light oak-coloured felt) starts at 72% of the image height.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the table slightly LEFT of centre, centred at 40% of the image width, about 34% of the image width wide, its top at about 46% of the image height, facing the viewer directly: two round glossy black bead eyes, open, each with a tiny highlight, calm and pleased.
+- THE NEAT PAGES: on the table just RIGHT of Mongle, centred at 72% of the image width, a neat small stack of three cream-white felt sheets lying flat, seen slightly from above, the top sheet about 26% of the image width wide. On the top sheet there are several rows of tiny stitched lines in two columns: a narrow LEFT column of very short butter-yellow stitches, and a wider RIGHT column of longer charcoal stitches of different lengths — like a tidy list. Only stitched lines, no letters, no numbers.
+- Next to the pages, the end of a short neatly rolled butter-yellow felt ribbon coil, tidy and small.
+- The BOTTOM 22% of the image is the table surface in soft focus, empty.
+- Keep Mongle and the pages between 8% and 88% of the image width.
+
+Exactly ONE Mongle, nobody else, no laptop, no recorder, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.

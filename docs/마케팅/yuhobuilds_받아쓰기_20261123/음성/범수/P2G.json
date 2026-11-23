@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2G",
+ "text": "클로드에게 그대로 붙여 넣을 말, 게시글에 다 적어 뒀어요.",
+ "dur": 2.823,
+ "words": [
+  {
+   "text": "클로드에게",
+   "start": 0.06,
+   "end": 0.483
+  },
+  {
+   "text": "그대로",
+   "start": 0.547,
+   "end": 0.765
+  },
+  {
+   "text": "붙여",
+   "start": 0.803,
+   "end": 0.982
+  },
+  {
+   "text": "넣을",
+   "start": 1.02,
+   "end": 1.187
+  },
+  {
+   "text": "말,",
+   "start": 1.226,
+   "end": 1.379
+  },
+  {
+   "text": "게시글에",
+   "start": 1.648,
+   "end": 2.019
+  },
+  {
+   "text": "다",
+   "start": 2.07,
+   "end": 2.134
+  },
+  {
+   "text": "적어",
+   "start": 2.186,
+   "end": 2.34
+  },
+  {
+   "text": "뒀어요.",
+   "start": 2.378,
+   "end": 2.823
+  }
+ ],
+ "source": {
+  "key": "6d5aff0bc6fd66776b2d37477d5484ab",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 169
+ }
+}

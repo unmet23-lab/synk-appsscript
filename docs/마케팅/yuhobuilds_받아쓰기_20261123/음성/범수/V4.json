@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "말한 시각이 줄마다 붙은 글이 나왔어요. 원래 대본과 거의 같았어요.",
+ "dur": 3.52,
+ "words": [
+  {
+   "text": "말한",
+   "start": 0.02,
+   "end": 0.214
+  },
+  {
+   "text": "시각이",
+   "start": 0.256,
+   "end": 0.52
+  },
+  {
+   "text": "줄마다",
+   "start": 0.645,
+   "end": 0.951
+  },
+  {
+   "text": "붙은",
+   "start": 0.992,
+   "end": 1.173
+  },
+  {
+   "text": "글이",
+   "start": 1.214,
+   "end": 1.326
+  },
+  {
+   "text": "나왔어요.",
+   "start": 1.367,
+   "end": 1.714
+  },
+  {
+   "text": "원래",
+   "start": 2.158,
+   "end": 2.339
+  },
+  {
+   "text": "대본과",
+   "start": 2.45,
+   "end": 2.755
+  },
+  {
+   "text": "거의",
+   "start": 2.797,
+   "end": 2.922
+  },
+  {
+   "text": "같았어요.",
+   "start": 2.964,
+   "end": 3.52
+  }
+ ],
+ "source": {
+  "key": "2f30cb8fc915304edfd53a1d3cad929d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 150
+ }
+}

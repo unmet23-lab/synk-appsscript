@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "클로드한테 이렇게만 말했어요. 이 녹음, 내 컴퓨터에서 무료로 글로 바꿔 줘.",
+ "dur": 3.812,
+ "words": [
+  {
+   "text": "클로드한테",
+   "start": 0.08,
+   "end": 0.53
+  },
+  {
+   "text": "이렇게만",
+   "start": 0.594,
+   "end": 0.928
+  },
+  {
+   "text": "말했어요.",
+   "start": 0.967,
+   "end": 1.339
+  },
+  {
+   "text": "이",
+   "start": 1.674,
+   "end": 1.686
+  },
+  {
+   "text": "녹음,",
+   "start": 1.764,
+   "end": 2.034
+  },
+  {
+   "text": "내",
+   "start": 2.291,
+   "end": 2.342
+  },
+  {
+   "text": "컴퓨터에서",
+   "start": 2.407,
+   "end": 2.844
+  },
+  {
+   "text": "무료로",
+   "start": 2.921,
+   "end": 3.114
+  },
+  {
+   "text": "글로",
+   "start": 3.152,
+   "end": 3.333
+  },
+  {
+   "text": "바꿔",
+   "start": 3.371,
+   "end": 3.564
+  },
+  {
+   "text": "줘.",
+   "start": 3.602,
+   "end": 3.812
+  }
+ ],
+ "source": {
+  "key": "3f7411e55adbd8b29a7e780d37fde049",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 184
+ }
+}

@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "단, 휴대폰이나 웹 말고, 컴퓨터의 클로드 코드에서 돼요.",
+ "dur": 3.225,
+ "words": [
+  {
+   "text": "단,",
+   "start": 0.05,
+   "end": 0.218
+  },
+  {
+   "text": "휴대폰이나",
+   "start": 0.664,
+   "end": 1.11
+  },
+  {
+   "text": "웹",
+   "start": 1.167,
+   "end": 1.259
+  },
+  {
+   "text": "말고,",
+   "start": 1.333,
+   "end": 1.575
+  },
+  {
+   "text": "컴퓨터의",
+   "start": 1.929,
+   "end": 2.282
+  },
+  {
+   "text": "클로드",
+   "start": 2.338,
+   "end": 2.561
+  },
+  {
+   "text": "코드에서",
+   "start": 2.617,
+   "end": 2.896
+  },
+  {
+   "text": "돼요.",
+   "start": 2.952,
+   "end": 3.225
+  }
+ ],
+ "source": {
+  "key": "272a8e51cbe1eccd70937d96aed3d13f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

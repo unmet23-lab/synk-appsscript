@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Attached images in order: (1) the scene to edit, (2) mascot reference.
+
+EDIT image 1. Keep EVERYTHING exactly as it is — the framing, the dark slate-blue wall, the daylight, the table, the charcoal felt recorder with its red button, the long butter-yellow ribbon and every one of its loops, the colours, and Mongle's position, size, body shape, turn and wool texture. Portrait 2:3, same crop.
+
+Change ONLY Mongle's eyes: instead of the two round bead eyes looking down, Mongle's two glossy black bead eyes are now WIDE OPEN and a little LARGER, placed slightly higher on its face, each with a bright tiny highlight — a surprised, delighted look, as if something good just happened. Same place on the face, still looking toward the ribbon on the left. No eyebrows, no blush marks, no sparkles.
+
+Mongle still has NO arms, NO legs, NO hands, NO mouth. Exactly ONE Mongle. Absolutely no text, letters, numbers, symbols or watermarks anywhere.
