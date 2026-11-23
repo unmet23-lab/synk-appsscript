@@ -700,15 +700,16 @@ $('#titleSkip').onclick=async e=>{
 // 학생증을 받은 적 있는 학생과, 한 번 답한 뒤에는 묻지 않는다. 묻는 동안 이야기는 그대로 흐른다.
 let skipAsked=false;
 function askSkip(){return new Promise(res=>{const w=$('#skipAsk'),stay=$('#skipStay'),go=$('#skipGo');w.hidden=false;void w.offsetWidth;w.classList.add('on');
-  const done=v=>{w.classList.remove('on');stay.onclick=go.onclick=w.onclick=w.onkeydown=null;setTimeout(()=>{if(!w.classList.contains('on'))w.hidden=true;},450);const b=$('#skipBtn');if(!v&&!b.hidden)b.focus({preventScroll:true});res(v);};
+  const done=v=>{w.classList.remove('on');stay.onclick=go.onclick=w.onclick=null;document.removeEventListener('keydown',key,true);setTimeout(()=>{if(!w.classList.contains('on'))w.hidden=true;},450);const b=$('#skipBtn');if(!v&&!b.hidden)b.focus({preventScroll:true});res(v);};
   stay.onclick=e=>{e.stopPropagation();done(false);};go.onclick=e=>{e.stopPropagation();done(true);};
   w.onclick=e=>{e.stopPropagation();if(!e.target.closest('.sheet'))done(false);};
   // 키보드: Esc는 「계속 볼게요」, Tab은 두 단추 사이에서만 돈다(A2)
-  w.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();done(false);}else if(e.key==='Tab'){e.preventDefault();(document.activeElement===stay?go:stay).focus({preventScroll:true});}};
+  function key(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done(false);}else if(e.key==='Tab'){e.preventDefault();(document.activeElement===stay?go:stay).focus({preventScroll:true});}}
+  document.addEventListener('keydown',key,true);
   stay.focus({preventScroll:true});});}
 $('#skipBtn').onclick=async e=>{
   e.stopPropagation();
-  if(!skipAsked&&!state.issuedAt){skipAsked=true;if(!await askSkip()||$('#skipBtn').hidden)return;}   // 묻는 동안 이야기가 다음 화면으로 넘어갔으면 건너뛰지 않는다(A1)
+  if(!skipAsked&&!state.issuedAt&&!state.replayOf){skipAsked=true;if(!await askSkip()||$('#skipBtn').hidden)return;}   // 묻는 동안 이야기가 다음 화면으로 넘어갔으면 건너뛰지 않는다(A1)
   const r=++RUN;
   ['amb_dawn','amb_cabin','amb_train','amb_airport','amb_hall','amb_clock'].forEach(n=>SND.stop(n,.4));
   ['banner','pa','place','bigTitle','trace','note','stamp','mrSheet','mrHint'].forEach(id=>$('#'+id).classList.remove('on'));spotOff();$('#mirror').classList.remove('on','lit','done','ask');$('#s-cut').classList.remove('mr-up');$('#vn').className='vn';closePanel();$('#narr').innerHTML='';$('#narrSub').hidden=true;$('#tapHint').classList.remove('on');
@@ -1057,7 +1058,7 @@ addEventListener('resize',()=>{if($('#s-card').classList.contains('on'))placeSig
 function putPhoto(){if(!state.look)return;const p=$('#idPhoto'),r=lookRects.crop(state.look,p.clientWidth,p.clientHeight,.6),im=new Image();im.alt='';im.src=state.look.src;Object.assign(im.style,px(r));p.replaceChildren(im);}
 function cardEnd(){$('#cardHead').classList.add('on');setTimeout(()=>$('#cardFoot').classList.add('on'),reduce?0:240);}
 /* 학생증 다시 보기 · 모습 다시 고르기: 내 길의 내 사진을 누르면 온다 */
-function openCardView(){const rig=$('#cardRig');for(const x of [$('#cardSwing'),$('#printer')])x.getAnimations().forEach(a=>a.cancel());$('#cardSwing').style.transform='';$('#cardBox').classList.remove('feeding');$('#printer').classList.remove('busy','on');cardAskDone();fillCard();CardFX.setup();rig.classList.add('down');show('s-card');putPhoto();$('#s-card').classList.add('view');$('#cardHead span').textContent=L('내 학생증');cardEnd();CardFX.live(true);SND.felt('open');}
+function openCardView(){const rig=$('#cardRig');for(const x of [$('#cardSwing'),$('#printer')])x.getAnimations().forEach(a=>a.cancel());$('#cardSwing').style.transform='';$('#cardBox').classList.remove('feeding');$('#printer').classList.remove('busy','on');cardAskDone();if(!state.issuedAt){state.issuedAt=Date.now();save({issuedAt:state.issuedAt});}fillCard();CardFX.setup();rig.classList.add('down');show('s-card');putPhoto();$('#s-card').classList.add('view');$('#cardHead span').textContent=L('내 학생증');cardEnd();CardFX.live(true);SND.felt('open');}
 $('#reLook').onclick=async()=>{const lk=await pickLook({change:true});$('#look').classList.remove('on');if(!lk)return;state.look=lk;save({look:lk.id});SND.felt('shutter');putPhoto();buildRoad();};
 // 카드에 손을 대야 이어지는 순간: 안내 한 줄과 키보드 초점(Enter · 스페이스)
 function cardAsk(text,label){const h=$('#cardHint'),rig=$('#cardRig');h.textContent=L(text);h.classList.add('on');rig.tabIndex=0;rig.setAttribute('role','button');rig.setAttribute('aria-label',L(label));}

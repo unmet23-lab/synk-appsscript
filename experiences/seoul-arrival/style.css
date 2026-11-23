@@ -405,6 +405,7 @@ p{text-wrap:pretty}
 /* 처음 보는 학생의 건너뛰기 확인(11-24): 꿈 시트와 같은 판을 장면 위 맨 앞 층에 */
 .skip-ask{position:absolute;inset:0;z-index:40;background:rgba(4,6,14,.55);opacity:0;transition:opacity .3s}
 .skip-ask.on{opacity:1}
+.skip-ask:not(.on){pointer-events:none}
 .skip-ask .sheet{z-index:auto}
 .skip-ask.on .sheet{transform:none;visibility:visible;transition:transform .6s var(--sp-slow,cubic-bezier(.2,.8,.2,1)),visibility 0s}
 @media (prefers-reduced-motion:reduce){.skip-ask,.skip-ask .sheet{transition:opacity .2s}.skip-ask .sheet{transform:none}}
@@ -586,6 +587,7 @@ p{text-wrap:pretty}
 .lk-q[aria-expanded="true"]{color:#08090C;background:#FAFAF9;box-shadow:none}
 .lk-why{position:absolute;left:16px;right:16px;z-index:3;padding:16px 18px 17px;border-radius:18px;background:rgba(18,22,34,.95);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px var(--line2),0 14px 34px rgba(0,0,0,.45);opacity:0;transform:translateY(6px);transition:opacity .2s,transform .25s var(--sp-fast,ease-out)}
 .lk-why.on{opacity:1;transform:none}
+.lk-why:not(.on){pointer-events:none}
 .lk-why b{display:block;font-size:16px;font-weight:650;letter-spacing:-.025em;color:#fff}
 .lk-why p{margin-top:6px;font-size:14.5px;line-height:1.55;color:var(--ink2);word-break:keep-all;text-wrap:pretty}
 .look.shoot .lk-hintrow{opacity:0;pointer-events:none}
