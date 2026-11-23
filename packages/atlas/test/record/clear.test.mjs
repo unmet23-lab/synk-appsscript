@@ -966,3 +966,34 @@ test('같은 읽기 차례의 꼬리 읽기가 늦게 와도 이미 받은 기�
     '늦게 온 꼬리가 앞 차이(1000)로 되돌리지 않는다',
   );
 });
+
+// 대조 시험 5(기기 답 저장 빠르게 하기 설계 2-5 · 게임 세션 조건, 11-23) — 묶음 색인 · 손님 접기 캐시는 지우기 세대를 읽거나 쓰지 않는다.
+// generation()(= summary().storage.generation)은 손님 비우기 · 옮긴 사건 지우기 · 다른 탭의 비움 전후에 앞 판과 같은 값이고, 비운 뒤 보기는
+// 남은 사건만으로 처음부터 접은 보기와 같다(색인이 지운 사건을 들고 있지 않다).
+test('대조 5 — 비우기 · 옮긴 사건 지우기 · 다른 탭의 비움 전후 generation()은 앞 판과 같고, 비운 뒤 보기 = 남은 사건만으로 처음부터 접은 보기', async () => {
+  const port = memoryPort();
+  const record = await guestOn(port);
+  const other = await guestOn(port);
+  const fresh = async () => (await guestOn(port)).view();
+  const [p1, a1] = await practise(record, items[0]);
+  await practise(record, items[1]);
+  record.view();
+  await record.refold();
+  assert.equal(record.generation(), 0);
+  await record.mark({ mark: 'moved', account: 'Z', revision: 1, until: 99, ids: [p1, a1] });
+  assert.deepEqual(await record.dropMoved({ account: 'Z' }), { gen: 1, dropped: 2 });
+  assert.equal(record.generation(), 1, '옮긴 사건 지우기는 세대를 하나 올린다');
+  assert.equal(record.has(p1), false);
+  assert.deepEqual(record.view(), await fresh(), '지운 뒤 보기 = 처음부터');
+  await practise(record, items[2]);
+  await other.refresh();
+  assert.equal(other.generation(), 1, '다른 탭은 꼬리에서 새 세대를 읽는다');
+  assert.deepEqual(other.view(), await fresh(), '다른 탭의 보기 = 처음부터');
+  await other.clear();
+  assert.equal(other.generation(), 2, '손님 비우기는 세대를 하나 올린다');
+  await record.refresh();
+  assert.equal(record.generation(), 2);
+  assert.equal(record.heldItems().length, 0);
+  assert.deepEqual(record.view(), await fresh(), '비운 뒤 보기 = 빈 저장소');
+  assert.deepEqual(record.summary.lines.unit, new Map(), '비운 뒤 요약에 지운 답이 남지 않는다');
+});

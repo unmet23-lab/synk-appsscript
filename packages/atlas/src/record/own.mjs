@@ -3,7 +3,7 @@
 // 얹을 수 없으면 기다리는 꼴(닿는 줄을 실은 제외 · 줄을 모르면 WAIT)을 낸다 — 기기는 서버와 다른 값을 지어내지 않는다.
 //   pending = 아직 안 접힌 사건의 차례 열쇠(2판 = 사건 id, 옛 꼴 = l.<적힌 시각>.<순번>)
 import { touchedBy } from '../fold/device.mjs';
-import { foldEventsOf, groupsOf, isPrior, isSource } from './adapt.mjs';
+import { foldEventsOf, isPrior, isSource } from './adapt.mjs';
 import { EVENT_FORM, EVENT_TYPES } from './events.mjs';
 
 // 닿는 줄을 모르는 제외 꼴 — overlay가 이것을 만나면 요약 그대로 둔다(번호는 어떤 사건과도 겹치지 않는다).
@@ -123,24 +123,13 @@ function unknownOf(entry, touches) {
   };
 }
 
-// 든 사건(entries)과 아직 안 접힌 것(pending — 차례 열쇠) → overlay의 입력. memo(id) = 제외를 만들 때 적어 둔 줄.
-export function ownFoldEvents(entries, pending, { index, memo = () => null }) {
+// 아직 안 접힌 사건(pending — 차례 열쇠)이 든 묶음들(groups — 머리가 든 차례)과 어느 묶음에도 들지 않은 밀린 사건(loose — 든 차례) →
+// overlay의 입력. memo(id) = 제외를 만들 때 적어 둔 줄, find(id) = 그 번호의 기록(기록부의 묶음 색인 — groups.mjs).
+export function ownFoldEvents(groups, loose, pending, { index, memo = () => null, find }) {
   const out = [];
-  const covered = new Set();
-  for (const group of groupsOf(entries).values()) {
-    const members = [group.source, ...group.children, ...group.exclusions];
-    if (!members.some(entry => pending.has(entry.key))) continue;
-    for (const entry of members) covered.add(entry.key);
-    out.push(...ownOfGroup(group, pending, index));
-  }
-  const byId = new Map(entries.map(entry => [entry.event.id, entry]));
-  for (const entry of entries)
-    if (
-      pending.has(entry.key) &&
-      !covered.has(entry.key) &&
-      !standalone(entry.event) &&
-      !aimsAtNothing(entry, byId)
-    )
+  for (const group of groups) out.push(...ownOfGroup(group, pending, index));
+  for (const entry of loose)
+    if (!standalone(entry.event) && !aimsAtNothing(entry, find))
       out.push(unknownOf(entry, memo(entry.event.id)));
   return out;
 }
@@ -154,16 +143,17 @@ const NOT_FOLDED = new Set([
   EVENT_TYPES.setCompleted,
   EVENT_TYPES.feedback,
 ]);
-function aimsAtNothing(entry, byId) {
+function aimsAtNothing(entry, find) {
   if (entry.event.type !== EVENT_TYPES.excluded) return false;
-  const target = byId.get(entry.event.targetId)?.event;
+  const target = find(entry.event.targetId)?.event;
   return target?.schema === EVENT_FORM.current && NOT_FOLDED.has(target.type);
 }
 
-// 제외를 만들 때 그 답이 적힌 줄을 함께 적어 둔다(부모 사건이 기기에서 사라진 뒤에도 기다릴 줄을 안다 — 설계 §5-1).
-export function touchesOf(entries, targetId, index) {
+// 제외를 만들 때 그 답이 적힌 줄을 함께 적어 둔다(부모 사건이 기기에서 사라진 뒤에도 기다릴 줄을 안다 — 설계 §5-1). groups는 겨눈 사건이
+// 든 묶음을 모두 담는 묶음들이다(기록부는 색인의 touching — 그 밖의 묶음은 아래에서 거른다).
+export function touchesOf(groups, targetId, index) {
   let touched = { units: [], skills: [] };
-  for (const group of groupsOf(entries).values()) {
+  for (const group of groups) {
     const members = [group.source, ...group.children].map(entry => entry.event.id);
     if (!members.includes(targetId) && group.source.event.decisionId !== targetId) continue;
     for (const fold of foldEventsOf(group, index))
@@ -177,11 +167,19 @@ export function touchesOf(entries, targetId, index) {
 // 내 이른 답이 그 계열의 첫 만남을 가져가면 이 능력들의 줄을 기다린다(단계 2 overlay의 index.familySkills). 옛 꼴 제시는 색인을 거치지 않고
 // 적힌 measure 그대로 읽는다 — 색인 · 요약에 없는 계열의 옛 꼴 답 앞에 옮겨 온 장부가 서면 그 능력 줄을 기다림 없이 틀리게 냈다(Fable 5.2
 // 합친 끝 판 넘친 #16).
-export function familySkillsOf(summary, index, events) {
+// held = 든 제시의 계열 → 능력들(색인이 사건을 들 때마다 addHeldSkills로 모은다 — groups.mjs).
+export function familySkillsOf(summary, index, held) {
   const out = new Map();
   const add = (family, skills) => out.set(family, union(out.get(family) ?? [], skills));
   for (const [family, line] of summary?.lines.family ?? []) add(family, line.skills ?? []);
   for (const [family, skills] of index.familySkills ?? []) add(family, skills);
+  for (const [family, skills] of held) add(family, skills);
+  for (const [family, skills] of out) out.set(family, skills.sort());
+  return out;
+}
+
+// 든 제시의 계열 → 능력 몫 — 2판은 적힌 계열 · 능력, 옛 꼴은 measure.
+export function addHeldSkills(events, add) {
   for (const event of events)
     if (event.type === EVENT_TYPES.presented && event.schema === EVENT_FORM.current)
       add(event.familyKey, [event.skillId]);
@@ -191,6 +189,4 @@ export function familySkillsOf(summary, index, events) {
       event.measure?.skillId
     )
       add(event.measure.familyKey, [event.measure.skillId]);
-  for (const [family, skills] of out) out.set(family, skills.sort());
-  return out;
 }

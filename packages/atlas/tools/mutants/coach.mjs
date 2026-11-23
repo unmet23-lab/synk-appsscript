@@ -1388,9 +1388,9 @@ export const COACH_MUTANTS = [
     C,
     '측정(끝 판 둘째)',
     '첫 만남 측정이 판 결정을 빼고 묶는다(옛 꼴 결정을 겨눈 제외가 그 결정의 답에 닿지 않는다 — GPT GE1)',
-    'src/coach/record.mjs',
-    '  return [...groupsOf(entries)].filter(([, group]) => {\n',
-    '  return [...groupsOf(entries.filter(({ event }) => event.type !== EVENT_TYPES.setDecided))].filter(([, group]) => {\n',
+    'src/record/groups.mjs',
+    '    if (legacyDecision(event)) {\n',
+    '    if (false) {\n',
   ],
   [
     'unit',

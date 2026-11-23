@@ -173,8 +173,14 @@ export function cellLines(skill, rows) {
 }
 
 // 기록 전부 → 요약의 줄 전부(손님 기기 · 시험의 기준). 서버의 「닿은 것만 다시 접기」는 이것과 같아야 한다.
-export function linesOfGroups(groups, { memory, params, index }) {
-  const rows = [...groups.values()].flatMap(group => rowsOfGroup(group, index));
+export const linesOfGroups = (groups, { memory, params, index }) =>
+  linesOfRows(
+    [...groups.values()].flatMap(group => rowsOfGroup(group, index)),
+    { memory, params },
+  );
+
+// 근거 줄 전부(묶음 차례) → 요약의 줄 전부. 손님 기기는 묶음 색인이 지어 둔 근거 줄로 부른다(groups.mjs).
+export function linesOfRows(rows, { memory, params }) {
   const byUnit = groupBy(
     rows.filter(r => r.kind === 'unit' || r.kind === 'say'),
     r => r.unit,
