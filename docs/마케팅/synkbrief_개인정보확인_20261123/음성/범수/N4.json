@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N4",
+ "text": "보낸 말은 이거예요. 이 두 가지로 인터넷을 검색해서, 누구나 볼 수 있게 드러난 내 정보를 찾아 줘.",
+ "dur": 5.308,
+ "words": [
+  {
+   "text": "보낸",
+   "start": 0.02,
+   "end": 0.249
+  },
+  {
+   "text": "말은",
+   "start": 0.292,
+   "end": 0.478
+  },
+  {
+   "text": "이거예요.",
+   "start": 0.535,
+   "end": 0.836
+  },
+  {
+   "text": "이",
+   "start": 1.367,
+   "end": 1.381
+  },
+  {
+   "text": "두",
+   "start": 1.467,
+   "end": 1.553
+  },
+  {
+   "text": "가지로",
+   "start": 1.596,
+   "end": 1.868
+  },
+  {
+   "text": "인터넷을",
+   "start": 1.94,
+   "end": 2.269
+  },
+  {
+   "text": "검색해서,",
+   "start": 2.312,
+   "end": 2.785
+  },
+  {
+   "text": "누구나",
+   "start": 3.287,
+   "end": 3.53
+  },
+  {
+   "text": "볼",
+   "start": 3.573,
+   "end": 3.688
+  },
+  {
+   "text": "수",
+   "start": 3.745,
+   "end": 3.802
+  },
+  {
+   "text": "있게",
+   "start": 3.845,
+   "end": 3.974
+  },
+  {
+   "text": "드러난",
+   "start": 4.017,
+   "end": 4.304
+  },
+  {
+   "text": "내",
+   "start": 4.347,
+   "end": 4.418
+  },
+  {
+   "text": "정보를",
+   "start": 4.461,
+   "end": 4.791
+  },
+  {
+   "text": "찾아",
+   "start": 4.834,
+   "end": 4.992
+  },
+  {
+   "text": "줘.",
+   "start": 5.035,
+   "end": 5.308
+  }
+ ],
+ "source": {
+  "key": "db1554106e5e3f7458fa5fcfc41968c9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N5",
+ "text": "그리고 이 한 줄. 이름이 같은 다른 사람으로 보이는 정보는 빼 줘.",
+ "dur": 3.821,
+ "words": [
+  {
+   "text": "그리고",
+   "start": 0.02,
+   "end": 0.238
+  },
+  {
+   "text": "이",
+   "start": 0.331,
+   "end": 0.347
+  },
+  {
+   "text": "한",
+   "start": 0.425,
+   "end": 0.518
+  },
+  {
+   "text": "줄.",
+   "start": 0.565,
+   "end": 0.706
+  },
+  {
+   "text": "이름이",
+   "start": 1.672,
+   "end": 1.859
+  },
+  {
+   "text": "같은",
+   "start": 1.906,
+   "end": 2.14
+  },
+  {
+   "text": "다른",
+   "start": 2.187,
+   "end": 2.374
+  },
+  {
+   "text": "사람으로",
+   "start": 2.42,
+   "end": 2.717
+  },
+  {
+   "text": "보이는",
+   "start": 2.763,
+   "end": 2.997
+  },
+  {
+   "text": "정보는",
+   "start": 3.044,
+   "end": 3.356
+  },
+  {
+   "text": "빼",
+   "start": 3.418,
+   "end": 3.496
+  },
+  {
+   "text": "줘.",
+   "start": 3.543,
+   "end": 3.821
+  }
+ ],
+ "source": {
+  "key": "cbc542cf2fa3aefad434a149327503d1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

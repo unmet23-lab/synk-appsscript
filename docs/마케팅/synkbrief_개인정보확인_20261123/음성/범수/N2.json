@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N2",
+ "text": "전화번호랑 집 주소는 안 나왔고, 얼굴 사진이랑 경력은 나왔어요.",
+ "dur": 3.738,
+ "words": [
+  {
+   "text": "전화번호랑",
+   "start": 0.02,
+   "end": 0.544
+  },
+  {
+   "text": "집",
+   "start": 0.587,
+   "end": 0.686
+  },
+  {
+   "text": "주소는",
+   "start": 0.728,
+   "end": 0.983
+  },
+  {
+   "text": "안",
+   "start": 1.025,
+   "end": 1.082
+  },
+  {
+   "text": "나왔고,",
+   "start": 1.125,
+   "end": 1.422
+  },
+  {
+   "text": "얼굴",
+   "start": 2.017,
+   "end": 2.257
+  },
+  {
+   "text": "사진이랑",
+   "start": 2.3,
+   "end": 2.71
+  },
+  {
+   "text": "경력은",
+   "start": 2.753,
+   "end": 3.079
+  },
+  {
+   "text": "나왔어요.",
+   "start": 3.121,
+   "end": 3.738
+  }
+ ],
+ "source": {
+  "key": "07527bbd52265a83b6d20430f79bf06a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

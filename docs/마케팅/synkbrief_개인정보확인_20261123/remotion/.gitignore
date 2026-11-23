@@ -1,0 +1,11 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# 렌더 결과는 git에 넣지 않는다(영상은 저장소 전체 *.mp4 무시, 확인용 정지컷도 여기)
+out
+
+# 그림/ · 판/에서 옮긴 영상용 사본(편 폴더의 원본이 정본이다)
+public/img/
+public/plate/

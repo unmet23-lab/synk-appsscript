@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N3",
+ "text": "여섯 곳을 찾아서, 위험한 순서로 정리해 줬어요.",
+ "dur": 2.602,
+ "words": [
+  {
+   "text": "여섯",
+   "start": 0.04,
+   "end": 0.221
+  },
+  {
+   "text": "곳을",
+   "start": 0.263,
+   "end": 0.445
+  },
+  {
+   "text": "찾아서,",
+   "start": 0.487,
+   "end": 0.766
+  },
+  {
+   "text": "위험한",
+   "start": 1.227,
+   "end": 1.492
+  },
+  {
+   "text": "순서로",
+   "start": 1.534,
+   "end": 1.799
+  },
+  {
+   "text": "정리해",
+   "start": 1.841,
+   "end": 2.079
+  },
+  {
+   "text": "줬어요.",
+   "start": 2.121,
+   "end": 2.602
+  }
+ ],
+ "source": {
+  "key": "8de8a4dbacdf730a880574ad6b49f8c1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

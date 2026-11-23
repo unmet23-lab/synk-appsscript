@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N7Y",
+ "text": "요청문이랑 지우는 곳 다섯 군데, 고정 댓글에 적어 뒀어요.",
+ "dur": 2.919,
+ "words": [
+  {
+   "text": "요청문이랑",
+   "start": 0.02,
+   "end": 0.527
+  },
+  {
+   "text": "지우는",
+   "start": 0.566,
+   "end": 0.839
+  },
+  {
+   "text": "곳",
+   "start": 0.878,
+   "end": 0.93
+  },
+  {
+   "text": "다섯",
+   "start": 0.969,
+   "end": 1.177
+  },
+  {
+   "text": "군데,",
+   "start": 1.216,
+   "end": 1.424
+  },
+  {
+   "text": "고정",
+   "start": 1.749,
+   "end": 1.957
+  },
+  {
+   "text": "댓글에",
+   "start": 1.996,
+   "end": 2.217
+  },
+  {
+   "text": "적어",
+   "start": 2.256,
+   "end": 2.412
+  },
+  {
+   "text": "뒀어요.",
+   "start": 2.45,
+   "end": 2.919
+  }
+ ],
+ "source": {
+  "key": "2447ccfb6961c4e0c64bc9a6c76abc9c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

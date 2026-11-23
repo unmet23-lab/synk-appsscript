@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N6",
+ "text": "지울 곳도 알려 줘요. 원본 사이트부터, 그다음 구글이랑 네이버예요.",
+ "dur": 3.64,
+ "words": [
+  {
+   "text": "지울",
+   "start": 0.04,
+   "end": 0.238
+  },
+  {
+   "text": "곳도",
+   "start": 0.329,
+   "end": 0.526
+  },
+  {
+   "text": "알려",
+   "start": 0.602,
+   "end": 0.769
+  },
+  {
+   "text": "줘요.",
+   "start": 0.815,
+   "end": 1.012
+  },
+  {
+   "text": "원본",
+   "start": 1.301,
+   "end": 1.574
+  },
+  {
+   "text": "사이트부터,",
+   "start": 1.62,
+   "end": 2.09
+  },
+  {
+   "text": "그다음",
+   "start": 2.318,
+   "end": 2.561
+  },
+  {
+   "text": "구글이랑",
+   "start": 2.607,
+   "end": 2.986
+  },
+  {
+   "text": "네이버예요.",
+   "start": 3.032,
+   "end": 3.64
+  }
+ ],
+ "source": {
+  "key": "afed01f52c27edccf5491101f9d22b34",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}
