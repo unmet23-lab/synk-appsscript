@@ -11,6 +11,7 @@
 //             그 카드에서 심한 줄의 시각마다 까닭이 있어야 내려간다.
 //   확인할 것 — 그 밖의 걸림 전부(읽기 시간은 언어마다 어림이고, 새 글 사이(바뀜)는 심함이 없다), 그 앞에 만든 편과 synkbrief · yuhobuilds(목소리가 이끄는 모국어 자막)의 걸림,
 //             못 잰 영상(원본 없음 · 원본을 다시 그린 그림이 영상과 다름 · 렌더 실패). 올리기 전 검사 전체를 멈추지 않는다.
+// 이해 시험 전에도 같은 등급을 쓴다(아래 시험전검사 — tools/낯선이시험.js가 LAB 새 편의 질문을 만들기 전에 부르고, 고칠 것이 있으면 재료를 만들지 않는다).
 // 잰 값은 게시/화면글검사.json에 영상 내용 해시(sha1) · 도구 지문 · 원본 지문 · 판정 조건(브랜드 · 판의 말)과 함께 둔다 — 넷이 같으면 다시 재지 않는다(한 편 1~2분).
 //   해시는 재기 전에 구해 두고, 재는 사이 영상이 바뀌었으면 그 결과를 쓰지도 남기지도 않고 못 잰 것으로 알린다. 기록을 못 쓰면 확인할 것 한 줄로 알린다.
 //   못 잰 결과는 다시 재도 같은 것만 남긴다(원본 없음 · 길이가 같은 composition 없음 · 원본과 영상이 다름 · 글을 하나도 못 읽음).
@@ -94,8 +95,8 @@ function remember(cacheFile, key, stat, src, cond, result) {
   } catch { return false; }
 }
 
-function runTool(dir, files) {
-  const args = [TOOL, dir, ...files.flatMap((f) => ['--영상', f]), '--json'];
+function runTool(dir, files, extra = []) {
+  const args = [TOOL, dir, ...files.flatMap((f) => ['--영상', f]), ...extra, '--json'];
   const r = spawnSync(process.execPath, args, { encoding: 'utf8', windowsHide: true, timeout: 20 * 60 * 1000, maxBuffer: 64 * 1024 * 1024 });
   if (r.error) throw r.error;
   const line = String(r.stdout || '').trim().split(/\r?\n/).filter((l) => l.startsWith('{')).pop();
@@ -187,18 +188,73 @@ function screenTextFindingsInner(bundle, videoFiles, { run = runTool, save = tru
   }
   for (const file of files) {
     const r = results.get(file);
-    const where = `화면 글 ${path.basename(path.dirname(file))}/${path.basename(file)}`;
-    if (!r) continue;
-    if (r.못잼) { findings.push({ level: LOOK, code: 'screen-text-unmeasured', where, message: `화면 글 시간을 못 쟀다 — ${r.못잼}` }); continue; }
-    for (const h of 모으기(r.걸림 || [])) {
-      const why = reasonFor(prep, h);
-      const hard = hardOk && h.심함 && HARD.has(h.항목) && !why;
-      const 열쇠 = h.항목 === '새낱말' ? [`"새낱말": "까닭"`] : 물을때(h).map((t) => `"${h.항목}@${t}": "까닭"`);
-      const tail = why ? ` · 「화면글판단」: ${why}` : ` — ${HOW[h.항목] || '눈으로 본다'}${hardOk && h.심함 && HARD.has(h.항목) ? `. 일부러 둔 자리면 준비.json 「화면글판단」 {${열쇠.join(', ')}}` : ''}`;
-      findings.push({ level: hard ? FIX : LOOK, code: `screen-text-${h.항목}`, where, message: `${줄글(h)}${tail}` });
-    }
+    if (r) findings.push(...결과줄(r, prep, hardOk, `화면 글 ${path.basename(path.dirname(file))}/${path.basename(file)}`));
   }
   return findings;
 }
 
-module.exports = { screenTextFindings, applies, reasonFor, 모으기, FROM, FIX_FROM, BRANDS, HARD, 남길못잼 };
+// 영상 하나의 결과 → 걸림 줄. 올리기 전 검사 ㉓과 이해 시험 전 검사가 같은 등급을 쓴다
+function 결과줄(r, prep, hardOk, where) {
+  if (r.못잼) return [{ level: LOOK, code: 'screen-text-unmeasured', where, message: `화면 글 시간을 못 쟀다 — ${r.못잼}` }];
+  return 모으기(r.걸림 || []).map((h) => {
+    const why = reasonFor(prep, h);
+    const hard = hardOk && h.심함 && HARD.has(h.항목) && !why;
+    const 열쇠 = h.항목 === '새낱말' ? [`"새낱말": "까닭"`] : 물을때(h).map((t) => `"${h.항목}@${t}": "까닭"`);
+    const tail = why ? ` · 「화면글판단」: ${why}` : ` — ${HOW[h.항목] || '눈으로 본다'}${hardOk && h.심함 && HARD.has(h.항목) ? `. 일부러 둔 자리면 준비.json 「화면글판단」 {${열쇠.join(', ')}}` : ''}`;
+    return { level: hard ? FIX : LOOK, code: `screen-text-${h.항목}`, where, message: `${줄글(h)}${tail}` };
+  });
+}
+
+// ── 이해 시험 전(11-23 유호님 「2번: 렌더 직후 먼저」) ──
+// tools/낯선이시험.js가 질문을 만들기 전에 부른다. 렌더한 영상의 화면 글 시간을 먼저 고쳐, 이해 시험이 시간을 고친 판을 보게 한다.
+// 이해 시험에 떨어진 편을 「가장 나은 판」으로 내는 규칙은 그대로다 — 그 판이 올리기 전 검사 ㉓에서 막히지 않게 앞에서 고친다.
+// 누구에게: LAB 새 편(docs/마케팅/LAB_…_날짜 폴더, 날짜가 FIX_FROM부터) — 고칠 것이 생길 수 있는 편이다. 준비.json이 아직 없어도 폴더 이름으로 본다.
+//   synkbrief · yuhobuilds는 확인할 것만 나와 올리기 전 검사 ㉓에 맡긴다(시험마다 1~3분 렌더를 더하지 않는다).
+// 등급은 ㉓과 같다. 일부러 둔 자리는 준비.json 「화면글판단」(있으면 읽는다). 잰 값은 .tmp/화면글시험전/<편>.json에 둔다 — 편 폴더에 쓰지 않는다.
+const REPO = path.resolve(__dirname, '..', '..');
+const 시험전기록 = path.join(REPO, '.tmp', '화면글시험전');
+const 빗금 = (p) => p.split(path.sep).join('/');
+
+// 영상이 든 편 폴더 — 부모 이름이 「마케팅」인 가장 가까운 윗 폴더
+function 편폴더(file) {
+  let d = path.dirname(path.resolve(file));
+  for (;;) {
+    if (path.basename(path.dirname(d)) === '마케팅') return d;
+    const up = path.dirname(d);
+    if (up === d) return null;
+    d = up;
+  }
+}
+
+// → { 대상: false } 이거나 { 대상: true, 편, 줄: [{ level, code, where, message }] } — 던지지 않는다(못 잰 것은 확인할 것 한 줄)
+function 시험전검사(file, { 언어 = null, run = runTool, 기록폴더 = 시험전기록, 알림 = () => {} } = {}) {
+  const 편 = 편폴더(file);
+  const name = 편 ? path.basename(편) : '';
+  if (!편 || !/^LAB_/.test(name) || (편날짜(name) || '') < FIX_FROM) return { 대상: false };
+  const where = `화면 글 ${path.basename(path.dirname(file))}/${path.basename(file)}`;
+  try {
+    let prep = {};
+    try { prep = JSON.parse(fs.readFileSync(path.join(편, '게시', '준비.json'), 'utf8').replace(/^﻿/, '')); } catch { /* 게시 묶음 전 */ }
+    const stat = statOf(file);
+    if (!stat) return { 대상: true, 편, 줄: [{ level: LOOK, code: 'screen-text-failed', where, message: '영상 파일을 못 읽었다' }] };
+    const src = sourceStamp(편);
+    const cond = crypto.createHash('sha1').update(JSON.stringify(['시험전', 언어 || ''])).digest('hex').slice(0, 12);
+    const cacheFile = path.join(기록폴더, `${name}.json`);
+    const key = 빗금(path.relative(REPO, path.resolve(file)));
+    let r = cached(cacheFile, key, stat, src, cond);
+    if (!r) {
+      알림();
+      const out = run(편,[path.resolve(file)], 언어 ? ['--언어', 언어] : []);
+      r = ((out && out.결과) || []).find((x) => x.영상 === key || path.resolve(REPO, x.영상 || '') === path.resolve(file)) || null;
+      if (!r) return { 대상: true, 편, 줄: [{ level: LOOK, code: 'screen-text-failed', where, message: '화면 글 검사가 이 영상의 결과를 내지 않았다 — node tools/화면글검사.js <편 폴더> --영상 <영상>으로 직접 돌려 본다' }] };
+      if (!같은영상(stat, statOf(file))) return { 대상: true, 편, 줄: [{ level: LOOK, code: 'screen-text-unmeasured', where, message: '재는 사이 영상 파일이 바뀌었다 — 이해 시험을 다시 돌린다' }] };
+      const 원본같음 = (!out.원본지문 || out.원본지문 === src) && sourceStamp(편) === src;
+      if (원본같음 && (!r.못잼 || 남길못잼.test(r.못잼))) remember(cacheFile, key, stat, src, cond, r);
+    }
+    return { 대상: true, 편, 줄: 결과줄(r, prep, true, where) };
+  } catch (error) {
+    return { 대상: true, 편, 줄: [{ level: LOOK, code: 'screen-text-failed', where, message: `화면 글 검사가 멈췄다(${String(error && error.message).slice(0, 200)}) — 올리기 전 검사 ㉓이 다시 본다` }] };
+  }
+}
+
+module.exports = { screenTextFindings, applies, reasonFor, 모으기, 결과줄, 편폴더, 시험전검사, FROM, FIX_FROM, BRANDS, HARD, 남길못잼 };

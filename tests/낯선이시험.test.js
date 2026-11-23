@@ -325,3 +325,24 @@ test('--중간: 15번(칸마다 누가 · 무엇을 · 왜 · 끊김)을 묻고 
   assert.match(기본, /전체 700자 안팎/);
   assert.match(require('../tools/낯선이시험.js').중간관문, /시험관 둘이 같은 칸을 「왜 모름」 · 「끊김」이라 하면 유호님께 보내지 않는다/);
 });
+
+test('㉓ 화면 글 먼저(11-23 유호님 「2번: 렌더 직후 먼저」) — LAB 편은 질문 전에 재고, 고칠 것이 있으면 멈춘다', () => {
+  const { 화면글먼저 } = require('../tools/낯선이시험.js');
+  const 줄들 = [];
+  const 찍기 = (x) => 줄들.push(x);
+  const 부름 = [];
+  const 검사 = (줄) => (video, opts) => { 부름.push(opts.언어); return { 대상: true, 편: 'docs/마케팅/LAB_시험_mn_20261124', 줄 }; };
+  const 고칠 = { level: '고칠 것', code: 'screen-text-핵심', where: '화면 글 out/final.mp4', message: '답 · 뜻풀이 「САЛЮТ」이 1.1초만 있다' };
+  const 볼 = { level: '확인할 것', code: 'screen-text-읽기', where: '화면 글 out/final.mp4', message: '긴 줄' };
+  const 영상 = path.join('docs', '마케팅', 'LAB_시험_mn_20261124', 'out', 'final.mp4');
+  assert.equal(화면글먼저(영상, 'lab-mn', {}, { 검사: 검사([고칠, 볼]), 찍기 }).막음, true);
+  assert.match(줄들[0], /고칠 것 1줄: 재료를 만들지 않았다/);
+  assert.ok(줄들.some((x) => /확인할 것 · .*긴 줄/.test(x)));
+  assert.deepEqual(부름, ['mn']);
+  assert.equal(화면글먼저(영상, 'lab-cn', {}, { 검사: 검사([볼]), 찍기 }).막음, false);
+  assert.equal(부름[1], 'zh-Hans');
+  // LAB 밖 브랜드 · 첫 컷 확인(--첫컷… · 장면/ 영상)은 재지 않는다
+  for (const [v, brand, opts] of [[영상, 'synkbrief', {}], [영상, 'pulse', {}], [영상, 'lab-mn', { 첫컷시작: '0' }], [path.join('docs', '마케팅', 'LAB_시험_mn_20261124', '장면', 'a.mp4'), 'lab-mn', {}]]) {
+    assert.equal(화면글먼저(v, brand, opts, { 검사: () => { throw new Error('부르면 안 된다'); }, 찍기 }).막음, false);
+  }
+});

@@ -18,6 +18,8 @@
  *   --컷을 안 주면(11-17 자동 칸) ffmpeg 장면 바뀜으로 칸을 찾아, 아래 기본 장면이 빠뜨린 짧은 칸마다 그 칸 가운데 한 장을 더 찍는다.
  *   --컷 끔은 기본 장면만(11-16까지의 꼴). 자세한 까닭은 아래 addCutShots 머리.
  *   --틀 퀴즈(11-10): 퀴즈 칸 편 — 9번을 지난 퀴즈끼리 무대 · 주제 · 표정 · 색 · 구도로만 묻는다(--지난에 그 계정의 지난 퀴즈 영상 둘을 준다).
+ *   LAB 새 편(폴더 날짜 11-24부터)은 질문을 만들기 전에 ㉓ 화면 글 시간을 먼저 잰다(11-23 유호님 「2번: 렌더 직후 먼저」 — 아래 화면글먼저).
+ *     고칠 것이 있으면 재료를 만들지 않고 끝 코드 1로 멈춘다.
  *
  * 만드는 것: <밖>/정지컷_01.jpg …(한 장에 휴대폰 크기 칸 넷) · <밖>/지난1_<편>.jpg · 지난2_<편>.jpg(같은 계정의 지난 두 편, 작게) ·
  * <밖>/말.txt · <밖>/질문.md(이해 시험관 셋 — sonnet · haiku · GPT(`node tools/GPT시험관.mjs <밖>`) — 에게 그대로 줄 글. 그록은 11-22에 뺐다) ·
@@ -378,6 +380,26 @@ function 첫컷인자(video, options, duration) {
   return args;
 }
 
+// ㉓ 화면 글 먼저(11-23 유호님 「2번: 렌더 직후 먼저」) — LAB 새 편은 질문을 만들기 전에 화면 글 시간을 잰다(tools/lib/화면글관문.js 시험전검사).
+// 고칠 것(새 글 5/6초 아래 · 답 1.5초 아래 · 낱말 일곱 넘음)이 있으면 재료를 만들지 않는다 — 원본의 시간만 늘려 다시 렌더한 뒤 이 시험을 돈다.
+// 그래서 이해 시험에 떨어져 「가장 나은 판」으로 나가는 판도 시간을 고친 판이다(그 규칙은 그대로). 첫 컷 확인(장면/ 영상 · --첫컷…)은 편의 렌더가 아니라 재지 않는다.
+// 확인할 것 · 못 잰 것은 알리고 시험을 이어 간다.
+const 화면글언어 = { 'lab-en': 'en', 'lab-mn': 'mn', 'lab-cn': 'zh-Hans', 'lab-mm': 'my' };
+function 화면글먼저(video, brand, options = {}, { 검사 = null, 찍기 = console.log } = {}) {
+  if (!String(brand).startsWith('lab-')) return { 막음: false };
+  if (Object.keys(options).some((k) => k.startsWith('첫컷')) || path.basename(path.dirname(path.resolve(video))) === '장면') return { 막음: false };
+  const 관문 = require('./lib/화면글관문.js');
+  const r = (검사 || 관문.시험전검사)(video, { 언어: 화면글언어[brand] || null, 알림: () => 찍기('  ㉓ 화면 글 시간을 먼저 잰다(LAB 새 편 · 원본을 다시 렌더해 1~3분)') });
+  if (!r.대상) return { 막음: false };
+  const { FIX } = require('./lib/게시글규칙.js');
+  const 고칠 = r.줄.filter((x) => x.level === FIX);
+  const 나머지 = r.줄.filter((x) => x.level !== FIX);
+  if (고칠.length) 찍기(`㉓ 화면 글 — 고칠 것 ${고칠.length}줄: 재료를 만들지 않았다. 원본에서 시간을 늘려 다시 렌더한 뒤 이 시험을 다시 돈다(제작절차 「화면 글은 읽을 만큼」)`);
+  else 찍기(`㉓ 화면 글 — 고칠 것 없음${나머지.length ? ` · 확인할 것 ${나머지.length}줄` : ''}`);
+  for (const x of [...고칠, ...나머지]) 찍기(`  ${x.level} · ${x.where}: ${x.message}`);
+  return { 막음: 고칠.length > 0 };
+}
+
 function main(argv) {
   const args = { _: [] };
   for (let i = 0; i < argv.length; i += 1) {
@@ -394,6 +416,7 @@ function main(argv) {
   if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${args['브랜드']}`);
   if (args['틀'] !== undefined && args['틀'] !== '퀴즈') throw new Error(`--틀은 퀴즈만 있다: ${args['틀']}`);
   const src = path.resolve(video);
+  if (화면글먼저(src, args['브랜드'], args).막음) return 1;
   const info = probe(src);
   const firstCut = 첫컷인자(src, args, info.duration);
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
@@ -505,4 +528,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 
-module.exports = { 중간관문, 첫컷인자, srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, sceneTimes, addCutShots, detectCuts, 자동칸, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };
+module.exports = { 중간관문, 첫컷인자, 화면글먼저, 화면글언어, srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, sceneTimes, addCutShots, detectCuts, 자동칸, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };

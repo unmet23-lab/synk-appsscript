@@ -218,3 +218,57 @@ test('설계 6 — 도구가 낸 원본 지문이 재기 전과 다르면(재는
   screenTextFindings(bundle, [video], { run });
   assert.equal(calls, 2);
 });
+
+// ── 이해 시험 전(11-23 유호님 「2번: 렌더 직후 먼저」) ──
+const { 시험전검사 } = require('../tools/lib/화면글관문.js');
+const REPO = path.resolve(__dirname, '..');
+const 시험전가짜 = (결과, 셈 = { n: 0 }) => (dir, files, extra) => { 셈.n++; 셈.extra = extra; return { 꼴: '화면글검사/1', 결과: files.map((f) => ({ 영상: path.relative(REPO, f).split(path.sep).join('/'), 틀: 'm34-mn', 대조: { 비율: 1 }, ...결과 })) }; };
+const 기록폴더 = (t) => { const d = fs.mkdtempSync(path.join(os.tmpdir(), '화면글시험전-')); t.after(() => fs.rmSync(d, { recursive: true, force: true })); return d; };
+
+test('이해 시험 전 — LAB 새 편은 준비.json 없이도 재고, 심한 걸림은 고칠 것 · 같은 영상은 다시 재지 않는다', (t) => {
+  const { bundle, video } = fixture(t);
+  fs.rmSync(path.join(bundle.dir, '게시', '01-ig-fb-mn'), { recursive: true });
+  const 렌더 = path.join(bundle.dir, 'out', 'final.mp4');
+  fs.mkdirSync(path.dirname(렌더), { recursive: true });
+  fs.writeFileSync(렌더, 'video');
+  const 셈 = { n: 0 };
+  const opts = { 언어: 'mn', run: 시험전가짜({ 걸림 }, 셈), 기록폴더: 기록폴더(t) };
+  const r = 시험전검사(렌더, opts);
+  assert.equal(r.대상, true);
+  assert.equal(r.편, bundle.dir);
+  assert.deepEqual(codes(r.줄), ['고칠:screen-text-머묾', '확인:screen-text-머묾', '확인:screen-text-읽기', '고칠:screen-text-핵심', '고칠:screen-text-새낱말']);
+  assert.deepEqual(셈.extra, ['--언어', 'mn']);
+  시험전검사(렌더, opts);
+  assert.equal(셈.n, 1);
+  fs.writeFileSync(렌더, 'video v2');
+  시험전검사(렌더, opts);
+  assert.equal(셈.n, 2);
+  void video;
+});
+
+test('이해 시험 전 — 준비.json 「화면글판단」 까닭이 있으면 고칠 것이 확인할 것으로', (t) => {
+  const { bundle, video } = fixture(t);
+  fs.writeFileSync(path.join(bundle.dir, '게시', '준비.json'), JSON.stringify({ 화면글판단: { '머묾@9.5': '장난 글', '핵심@11.9': '다음 장면에 다시 뜬다', 새낱말: '복습 편' } }));
+  const r = 시험전검사(video, { run: 시험전가짜({ 걸림 }), 기록폴더: 기록폴더(t) });
+  assert.ok(r.줄.every((x) => x.level === LOOK));
+});
+
+test('이해 시험 전 — 11-24 앞 LAB 편 · synkbrief · yuhobuilds · 편 폴더 밖 영상은 재지 않는다', (t) => {
+  const 셈 = { n: 0 };
+  for (const name of ['LAB_옛편_mn_20261123', 'synkbrief_새편_20261125', 'yuhobuilds_새편_20261125']) {
+    const { video } = fixture(t, { name });
+    assert.equal(시험전검사(video, { run: 시험전가짜({ 걸림 }, 셈), 기록폴더: 기록폴더(t) }).대상, false);
+  }
+  const 밖 = path.join(기록폴더(t), 'clip.mp4');
+  fs.writeFileSync(밖, 'video');
+  assert.equal(시험전검사(밖, { run: 시험전가짜({ 걸림 }, 셈), 기록폴더: 기록폴더(t) }).대상, false);
+  assert.equal(셈.n, 0);
+});
+
+test('이해 시험 전 — 못 잰 영상 · 도구 실패는 확인할 것 한 줄이고 던지지 않는다', (t) => {
+  const { video } = fixture(t);
+  const 못 = 시험전검사(video, { run: 시험전가짜({ 못잼: '원본을 다시 그린 그림이 영상과 안 맞는다(맞는 장 20%)' }), 기록폴더: 기록폴더(t) });
+  assert.deepEqual(codes(못.줄), ['확인:screen-text-unmeasured']);
+  const 멈춤 = 시험전검사(video, { run: () => { throw new Error('렌더 멈춤'); }, 기록폴더: 기록폴더(t) });
+  assert.deepEqual(codes(멈춤.줄), ['확인:screen-text-failed']);
+});
