@@ -208,7 +208,7 @@ async function narrate(r,text,{hold=null,marks=[]}={}){
   n.classList.add('out');$('#narrSub').classList.add('out');await sleep(380);guard(r);
 }
 const state={dream:'idol',lights:0,best:{},scenes:[],replayOf:null,prologue:false,seenHint:false,name:null,nameEn:null,sign:null,from:null,call:null,look:null,dreamPicked:false,momSeen:false,momAnswer:null,issuedAt:null};
-function show(id){if(id==='s-path')ambient(IMG[state.dream+'Goal']);else if(id==='s-gate')ambient(IMG.booth);document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));$('#skipBtn').hidden=!(id==='s-cut'&&!state.prologue);}
+function show(id){if(id==='s-path')ambient(IMG[state.dream+'Goal']);else if(id==='s-gate')ambient(IMG.booth);document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));$('#skipBtn').hidden=!(id==='s-cut'&&!state.prologue);if($('#skipAsk').classList.contains('on'))$('#skipStay').click();}
 
 /* 0 → 1: 입구를 누르면 콘서트가 터지고, 그 화면이 내 방 휴대폰 속이었음이 드러난다 */
 async function begin(){
@@ -699,12 +699,15 @@ $('#titleSkip').onclick=async e=>{
 // 학생증을 받은 적 있는 학생과, 한 번 답한 뒤에는 묻지 않는다. 묻는 동안 이야기는 그대로 흐른다.
 let skipAsked=false;
 function askSkip(){return new Promise(res=>{const w=$('#skipAsk'),stay=$('#skipStay'),go=$('#skipGo');w.hidden=false;void w.offsetWidth;w.classList.add('on');
-  const done=v=>{w.classList.remove('on');stay.onclick=go.onclick=w.onclick=null;setTimeout(()=>{if(!w.classList.contains('on'))w.hidden=true;},450);res(v);};
+  const done=v=>{w.classList.remove('on');stay.onclick=go.onclick=w.onclick=w.onkeydown=null;setTimeout(()=>{if(!w.classList.contains('on'))w.hidden=true;},450);const b=$('#skipBtn');if(!v&&!b.hidden)b.focus({preventScroll:true});res(v);};
   stay.onclick=e=>{e.stopPropagation();done(false);};go.onclick=e=>{e.stopPropagation();done(true);};
-  w.onclick=e=>{e.stopPropagation();if(!e.target.closest('.sheet'))done(false);};stay.focus({preventScroll:true});});}
+  w.onclick=e=>{e.stopPropagation();if(!e.target.closest('.sheet'))done(false);};
+  // 키보드: Esc는 「계속 볼게요」, Tab은 두 단추 사이에서만 돈다(A2)
+  w.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();done(false);}else if(e.key==='Tab'){e.preventDefault();(document.activeElement===stay?go:stay).focus({preventScroll:true});}};
+  stay.focus({preventScroll:true});});}
 $('#skipBtn').onclick=async e=>{
   e.stopPropagation();
-  if(!skipAsked&&!state.issuedAt){skipAsked=true;if(!await askSkip())return;}
+  if(!skipAsked&&!state.issuedAt){skipAsked=true;if(!await askSkip()||$('#skipBtn').hidden)return;}   // 묻는 동안 이야기가 다음 화면으로 넘어갔으면 건너뛰지 않는다(A1)
   const r=++RUN;
   ['amb_dawn','amb_cabin','amb_train','amb_airport','amb_hall','amb_clock'].forEach(n=>SND.stop(n,.4));
   ['banner','pa','place','bigTitle','trace','note','stamp','mrSheet','mrHint'].forEach(id=>$('#'+id).classList.remove('on'));spotOff();$('#mirror').classList.remove('on','lit','done','ask');$('#s-cut').classList.remove('mr-up');$('#vn').className='vn';closePanel();$('#narr').innerHTML='';$('#narrSub').hidden=true;$('#tapHint').classList.remove('on');
