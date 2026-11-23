@@ -54,7 +54,11 @@ test('이야기 장면을 닫는 중에는 배울 말 판을 열지 않고 날�
   const guard = show.split('\n').find(l => l.trim().startsWith('if(rendering'));
   assert.match(guard, /rendering\|\|!shown\|\|/, '그리는 중 · 닫는 중에는 열지 않는다');  // 말이 나는 동안 「다음」은 키보드(Enter)로도 넘기지 않고, 화면 읽기에는 쉬는 단추로 읽힌다(카본 world-sheet-paper-pub A3).
   assert.match(show, /classList\.add\('is-holding'\);next\?\.setAttribute\('aria-disabled','true'\)/);
-  assert.match(life, /'scene-next':el=>\{if\(el\?\.classList\?\.contains\('is-holding'\)\)return;turnScene\(1\);\}/);
+  // 단추 · → 키 · 사진 누르기 · 밀기는 모두 turnScene으로 온다 — 거기서 앞으로 넘기기를 막는다(Fable world-sheet-paper-pub F2).
+  const turn = life.slice(life.indexOf('function turnScene('), life.indexOf('function pause('));
+  assert.match(turn, /if\(delta>0&&content\.querySelector\('\[data-life-scene-next\]\.is-holding'\)\)return;/);
+  assert.match(life, /'scene-next':\(\)=>turnScene\(1\)/);
+  assert.match(life, /onNext:\(\)=>turnScene\(1\)/);
 });
 
 test('종이 시트에 영문 대문자 꼬리표를 두지 않는다', () => {

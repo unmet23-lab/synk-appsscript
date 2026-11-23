@@ -18593,6 +18593,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function turnScene(delta) {
     if (context?.phase !== "story") return;
+    if (delta > 0 && content.querySelector("[data-life-scene-next].is-holding")) return;
     const l = lessonById(context.lessonId), target = context.sceneIndex + delta;
     if (target < 0) {
       play("tap");
@@ -18631,10 +18632,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       persistStage();
       renderLesson();
     },
-    "scene-next": (el) => {
-      if (el?.classList?.contains("is-holding")) return;
-      turnScene(1);
-    },
+    "scene-next": () => turnScene(1),
     choice: (el) => context.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
     notes: (el) => {
       content.querySelectorAll(".life-choice:not(.is-correct) .life-choice-note[hidden]").forEach((n2) => {

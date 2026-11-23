@@ -693,7 +693,9 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  }
  // 이야기 넘기기: 다음 단추·사진 누르기·밀기·←/→가 모두 여기로 온다. 첫 장면에서 이전은 알림만.
  function turnScene(delta){
-  if(context?.phase!=='story')return;const l=lessonById(context.lessonId),target=context.sceneIndex+delta;
+  if(context?.phase!=='story')return;
+  // 배울 말이 나는 동안(「다음」 is-holding)은 앞으로 넘기지 않는다 — 단추 · → 키 · 사진 누르기 · 밀기가 모두 여기로 온다(Fable world-sheet-paper-pub F2). 뒤로는 연다.
+  if(delta>0&&content.querySelector('[data-life-scene-next].is-holding'))return;const l=lessonById(context.lessonId),target=context.sceneIndex+delta;
   if(target<0){play('tap');home.toast(t('life.firstScene'));return;}
   play('page');haptic('tap');
   context.sceneIndex=target;if(target>=l.scenes.length)context.phase='questions';persistStage();renderLesson();
@@ -702,7 +704,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  const handlers={
   packs,stories,review,next,home:()=>{home.closePanel();home.goTown?.();updateHome();},pack:el=>pack(el.dataset.lifePack),lesson:el=>start(el.dataset.lifeLesson),
   begin:()=>{context.phase='story';context.sceneIndex=0;persistStage();renderLesson();},
-  'scene-next':el=>{if(el?.classList?.contains('is-holding'))return;turnScene(1);},
+  'scene-next':()=>turnScene(1),
   choice:el=>context.phase==='review'?chooseReview(el.dataset.lifeChoice):choose(el.dataset.lifeChoice),
   notes:el=>{content.querySelectorAll('.life-choice:not(.is-correct) .life-choice-note[hidden]').forEach(n=>{n.hidden=false;drawer(n,{delay:0});});el.remove();},
   'question-next':()=>{if(context.phase==='review'){lastFeedback=null;helped=false;helpBy=null;renderReview();}else{context.questionIndex++;lastFeedback=null;helped=false;helpBy=null;persistStage();renderLesson();}},
