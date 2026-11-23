@@ -1,6 +1,6 @@
 # 디자인 참고 사이트 장부
 
-> 2026-11-06 처음 씀 · 마지막 크롤링 2026-11-13(Recent web · interface 최근순 각 60개, `recent/*-20261113.json` — 11-10 뒤 새로 올라온 것은 interface 0 · web 2(「Prefer Taste Quiz」 · 「Matcha Brand Pitch」, `recent/new-20261113/`). 11-10 판: interface 21장 `recent/new-20261110/_sheet.jpg`) · 유호님 「새로운 디자인사이트들 저장해두면 디자인참고할때 매번 들어가지않아도되니까 잘 기억해줘」
+> 2026-11-06 처음 씀 · 마지막 크롤링 2026-11-24(Recent interface 최근 80 · 인기 300, web 최근 60 — 11-13 뒤 새로 올라온 것 25개, `워크스페이스_리디자인_20261124/recent/`, 아래 5-4절) · 11-13 판: web · interface 최근순 각 60개, 새 web 2(「Prefer Taste Quiz」 · 「Matcha Brand Pitch」, `recent/new-20261113/`). 11-10 판: interface 21장 `recent/new-20261110/_sheet.jpg` · 유호님 「새로운 디자인사이트들 저장해두면 디자인참고할때 매번 들어가지않아도되니까 잘 기억해줘」
 
 화면 · 웹 · 앱 디자인을 시작할 때 **이 장부터 연다**. 여기 있는 사이트는 다시 열지 않고 아래 실측과 「가져올 것」을 쓴다. 「마지막 크롤링」 날짜 뒤에 올라온 것만 새로 받고, 받은 날 이 장의 숫자와 날짜를 고친다. 최신 트렌디 사이트의 평균이 슬롭을 막는 바닥이다([DESIGN](../../../DESIGN.md) 맨 위 「모든 화면이 우리 포트폴리오다」).
 
@@ -120,6 +120,29 @@
 | Recent 「Live Audio Recorder」 | 녹음 · 시간 · 파형 · 멈춤이 한 줄 알약 | 마이크 알약 하나에 음량 줄, 녹음 중에만 코랄 |
 
 - 유호님 11-23: 옛 직업 고르기의 「한눈에 파악」되는 큰 카드 격자를 살리고, 일터마다 사진을 둔다. 카드 사진은 그 일이 한눈에 보이는 자리(매장 계산대, 프런트 데스크, 수출 창고)를 고른다.
+
+## 5-4. 업무 도구 화면 견줌(2026-11-24, 워크스페이스 다시 짓기)
+
+사내 업무 화면(받은편지함 · 하루 일정 · 회사별 현황 · 제작 흐름 · 메신저)을 지을 때 연다. 업무 제품 19곳의 1440 첫 화면과 아래로 두 번 내린 화면, Recent에서 고른 18장을 저장소 밖 `C:/Users/q1212/Documents/SYNK-보관함/조사/디자인참고_20261106/워크스페이스_리디자인_20261124/`에 두었다(`sites/` · `recent/`, 한눈 판 `_sheet-*.jpg`, 다시 받기 `get.cjs`). 같은 날 Recent 목록도 다시 받았다(interface 최근 80 · 인기 300, web 최근 60). 11-13 뒤 새로 올라온 것은 25개이고 열람 상위는 「Stripe Press Shelf」(880) · 「Football Ticket Seat View」(860) · 「Payment Swipe」(708)다. 업무 화면에 닿는 새 작품은 「AI Agent Scheduler UI」(11-20)와 「Carousel to Top Nav」(11-23) 둘뿐이다.
+
+| 참고 | 11-24 실측 | 가져올 것 |
+|---|---|---|
+| Linear linear.app | 검정 바탕, 첫 화면 아래가 곧 제품 화면. 사이드바 Inbox · My issues · Reviews, 오른쪽 속성 칸 | 받은편지함 하나에 내 차례를 모으고, 고른 줄의 자세히와 속성을 오른쪽 칸에 |
+| Attio attio.com | 흰 바탕, 「Good morning, Alex」 홈과 묻기 칸. 회사 표의 줄마다 점수 · 담당 · 상태, 오른쪽에 메일 작성 칸 | 줄마다 담당과 상태를 같은 자리에 두는 표, 표 옆에서 바로 쓰는 칸 |
+| Mercury mercury.com | 풍경 속 책상 한 장의 첫 화면, 대시보드는 큰 잔액 숫자 하나 + 계좌 목록 | 큰 숫자 하나와 조용한 목록. 첫 화면을 그림 한 장으로 여는 짜임 |
+| Notion Calendar | 세로 하루 시간표, 색 블록 일정, 「Upcoming in 45 min」 옆 칸 | 하루를 시간 줄 하나로, 다음 일정을 옆 칸에 |
+| Sunsama · Amie | 하루 계획 열 + 오른쪽 달력, 조용한 흰 판과 둥근 일정 칩 | 오늘 할 일 목록과 시간표를 한 화면에 |
+| Things culturedcode.com/things | Today · Upcoming 목록, 넓은 여백, 큰 제목 | 오늘 목록의 큰 제목과 여백 |
+| Basecamp | 사진이 많은 프로젝트 판(카드 테이블 · 사진 묶음) | 제작물은 표지 그림이 곧 카드 |
+| Front · Plain | 공유 받은편지함, 줄마다 출처 · 담당 표시 | 사람 · 자동 일 · 고객 문의를 한 목록에서 출처로 가름 |
+| 채널톡 channel.io/ko | 세 칸 메신저(방 목록 · 대화 · 고객 정보), 한글 제목 700 | 한국어 업무 메신저의 세 칸 짜임 |
+| flex flex.team | 검정 · 흰 판 번갈아, 「조직을 제대로 아는 AI」 큰 한글 문장 | 사람 · 조직 화면의 한글 문장 위계 |
+| Raycast · Superhuman | 찾기 창 하나로 모든 이동, 키보드 J/K/E | Ctrl+K 찾기 창과 키 안내 |
+| Recent 「Sidebar Active State」 · 「Sidebar Sub-Menu」 · 「Quiver AI Sidebar」 | 고른 줄은 옅은 면 + 글자만 진하게, 짧은 행동 셋 + 「최근」 | 사이드바 마감 |
+| Recent 「Agent Status」 · 「AI Task Progress Pills」 | 상태는 알약 하나에 낱말 하나 | 진행 상태 표시 |
+| Recent 「Stripe Press Shelf」 · 「Team Profile Card」 | 넓은 여백 위 실물 하나(선 책, 줄에 매단 카드) | 제작물을 실물처럼 세우기 |
+
+- Granola(세리프 큰 제목 + 메모장), Craft(한글 큰 문장 + 종이 콜라주), Cal.com, Twist는 찍었지만 이번 시안에 가져온 것이 없다. Height는 접속이 끊겨 못 찍었다. Fey는 서비스를 닫아 안내 글만 남았다.
 
 ## 6. 다시 재는 법
 

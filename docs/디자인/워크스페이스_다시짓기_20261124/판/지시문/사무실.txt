@@ -1,0 +1,21 @@
+Create one image.
+
+Image 1 and Image 2 are style references only. Match their 3D character style exactly: soft stylized 3D figures with rounded faces, knit and felt clothing textures, matte clay-like materials, warm soft studio light, gentle contact shadows. Do not copy their scenes.
+
+Scene: a dollhouse-style cross-section of a small two-floor office building, seen straight from the front at eye level with the front wall removed, so all six rooms are visible as clean rectangles. The building is a single block centered in the frame on a pure white background (#FFFFFF), with a soft shadow under it. Landscape 3:2.
+
+Layout: exactly two floors, three rooms per floor, all six rooms the same width and height, separated by thin light wooden floor slabs and walls. Keep the room edges straight and aligned, like a grid.
+
+Top floor, left to right:
+1. Korean language classroom: coral (#F96859) accent wall, three small student desks, one teacher pointing at a blank whiteboard, two students (one Mongolian-looking young woman, one young man) taking notes.
+2. Lecture room: lapis blue (#3D6BC9) chairs in two short rows, a wooden lectern, a blank pale projector screen, one speaker and three listeners.
+3. Video studio: deep berry magenta (#99295D) seamless paper backdrop, a camera on a tripod, one softbox light, a camera operator and one person being filmed sitting on a stool.
+
+Bottom floor, left to right:
+4. Study-abroad consultation room: sage green (#526956) wall, a round table, a consultant and a young international student with a small suitcase, a globe on a shelf.
+5. Team lounge: a light grey sofa, a coffee table with two mugs, two coworkers chatting, one holding a phone.
+6. Content production desk: a long wooden desk with two monitors showing blank soft-colored screens, one editor working, a small stack of papers.
+
+All rooms otherwise use white walls, light oak floors and simple furniture. Every person wears knit or felt clothes in calm colors. Faces friendly and clearly visible, not covered.
+
+Do not draw any text, letters, numbers, logos, signs or labels anywhere. Do not draw string lights, dotted patterns, polka dots, perforated panels, holes or ring shapes. Keep the outer background pure white with nothing else around the building.

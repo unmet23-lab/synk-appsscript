@@ -1,0 +1,9 @@
+Create one image.
+
+Image 1 is a style reference only. Match its 3D character style exactly: soft stylized 3D figures with rounded faces, knit and felt clothing textures, matte clay-like materials, warm soft studio light, gentle contact shadows. Do not copy its scene.
+
+Scene: a small video studio set built as a diorama on a low rounded platform, centered on a pure white background (#FFFFFF), landscape 3:2, seen slightly from above at a three-quarter angle.
+
+On the set: a deep berry magenta (#99295D) seamless paper backdrop curving down to the floor. A young woman in a cream knit sweater sits on a wooden stool in front of it, smiling and talking. On the left, a camera operator in a dark green knit cardigan stands behind a camera on a tripod; the camera is seen from its side, so the lens does not face the viewer. One rectangular softbox light on a stand lights her from the right. A small wooden side table holds a laptop showing a blank soft pink screen.
+
+Do not draw any text, letters, numbers, logos or labels. Do not draw string lights, dotted patterns, polka dots, holes or ring shapes. Keep everything outside the platform pure white.
