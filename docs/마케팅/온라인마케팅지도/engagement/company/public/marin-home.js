@@ -615,7 +615,7 @@ function wsDetailBodyHtml(item,model){
   }
   if(item.kind==='chat'){
     const task=item.task,body=String(task.message?.body||'').slice(0,400);
-    const {acts,hint}=wsChatActions(task,item.reasons),confirm=workspaceInbox.chatConfirm===item.key;
+    const {acts,hint}=wsChatActions(task,item.reasons),confirm=workspaceInbox.chatConfirm===item.key&&acts.some(act=>act.stage==='changes');
     const buttons=acts.map(act=>`<button type="button" class="ws-btn ${act.primary?'ws-btn-decide':'ws-btn-line'}" data-action="${act.stage==='changes'?'ws-chat-changes':'ws-chat-stage'}" data-key="${escape(item.key)}" data-stage="${act.stage}" ${busy?'disabled':''}>${escape(act.label)}</button>`).join('');
     const open=task.channelId?`<button type="button" class="ws-btn ${acts.length?'ws-btn-text':'ws-btn-primary'}" data-action="ws-chat-open" data-key="${escape(item.key)}">${workspaceShellGlyph('chat')}대화 열기</button>`:'';
     const ask=confirm?`<div class="ws-fb" role="group" aria-labelledby="ws-chat-changes-q"><p id="ws-chat-changes-q">수정 요청으로 바꾸고 대화에서 고칠 점을 남겨요.</p><div class="ws-acts"><button type="button" class="ws-btn ws-btn-primary" data-action="ws-chat-changes-confirm" data-key="${escape(item.key)}" ${busy?'disabled':''}>수정 요청하고 대화 열기</button><button type="button" class="ws-btn ws-btn-text" data-action="ws-chat-changes-cancel" data-key="${escape(item.key)}">그만두기</button></div></div>`:'';
@@ -712,15 +712,16 @@ function wsQueueNext(){workspaceInbox.sel='';workspaceInbox.noteFor='';workspace
 // 검토 맡기기 · 다시 열기 · 검토자 다시 정하기는 결과물이나 사람을 골라야 해서 대화로 간다.
 function wsChatActions(task,reasons=[]){
   if(!task||task.canManage===false)return {acts:[],hint:'이 계정으로는 상태를 바꿀 수 없어요. 대화에서 요청과 결과물을 볼 수 있어요.'};
-  if(reasons.includes('recovery')||task.canReassignReviewer)return {acts:[],hint:'새 검토자는 대화의 할 일에서 정해요.'};
   const allowed=new Set(task.allowedStages||[]),stage=task.stage||'requested',reviewer=Boolean(task.reviewerId||task.reviewer?.id);
+  if(reasons.includes('recovery')||task.canReassignReviewer&&task.reviewerUnavailable&&stage!=='done')return {acts:[],hint:'새 검토자는 대화의 할 일에서 정해요.'};
+  if(task.assigneeUnavailable||!task.assignee?.id||task.reviewerUnavailable&&stage!=='done')return {acts:[],hint:''};
   if(stage==='requested'&&allowed.has('accepted'))return {acts:[{stage:'accepted',label:'수락하기',primary:true}],hint:''};
   if(stage==='accepted'&&allowed.has('doing'))return {acts:[{stage:'doing',label:'시작하기',primary:true},...(allowed.has('done')?[{stage:'done',label:'완료'}]:[])],hint:''};
   if(['doing','changes'].includes(stage)){
     if(!reviewer&&allowed.has('done'))return {acts:[{stage:'done',label:'완료',primary:true}],hint:''};
     return {acts:[],hint:allowed.has('review')?'검토 맡기기는 올린 결과물을 골라야 해서 대화에서 해요.':''};
   }
-  if(stage==='review'&&allowed.has('done'))return {acts:[{stage:'done',label:'완료',primary:true},...(allowed.has('changes')?[{stage:'changes',label:'수정 요청'}]:[])],hint:''};
+  if(stage==='review'){const acts=[...(allowed.has('done')?[{stage:'done',label:'완료',primary:true}]:[]),...(allowed.has('changes')?[{stage:'changes',label:'수정 요청',primary:!allowed.has('done')}]:[])];return {acts,hint:''};}
   return {acts:[],hint:''};
 }
 const WS_CHAT_DONE={accepted:'수락했어요',doing:'시작했어요',done:'완료했어요',changes:'수정 요청으로 바꿨어요'};
@@ -742,12 +743,17 @@ async function wsChatPatch(item,stage){
   }catch{if(!current())return;message='메신저에 닿지 못했어요. 잠시 뒤 다시 해 주세요.';}
   finally{
     if(current()){
-      workspaceTurn.busy.delete(key);if(done)workspaceInbox.chatConfirm='';
+      workspaceTurn.busy.delete(key);workspaceInbox.chatConfirm='';
       const slot=workspaceTurn.messenger;slot.at=0;slot.request++;slot.loading=false;await wsLoadMessenger();
     }
   }
   if(!current())return;
-  if(!done){notify(message);return;}
+  if(!done){
+    notify(message);
+    const active=document.activeElement;
+    if(workspaceInbox.open&&(!active||!active.isConnected||active===document.body))(document.querySelector(`#ws-inbox-detail-body [data-key="${wsCss(key)}"][data-stage="${wsCss(stage)}"]:not(:disabled)`)||document.getElementById('ws-detail-title'))?.focus?.({preventScroll:true});
+    return;
+  }
   if(stage==='changes'){notify(`${WS_CHAT_DONE.changes}. 대화에서 고칠 점을 남겨 주세요.`);openWorkspaceDestination({type:'messenger',label:'대화',channelId:task.channelId,messageId:task.messageId});return;}
   const stays=Boolean(wsFindItem(key));
   notify(`${WS_CHAT_DONE[stage]}. ${stays?'이 일은 순서에 그대로 있어요.':'다음 일로 넘어갈게요.'}`);
