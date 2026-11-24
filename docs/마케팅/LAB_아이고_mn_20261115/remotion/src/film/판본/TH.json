@@ -93,34 +93,45 @@
   "lang": "th",
   "font": "'Inter Tight', 'Leelawadee UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "title": "",
-  "titleSize": 44,
+  "title": "3 สัญญาณที่บอกว่า\nคุณเก่งภาษาเกาหลีขึ้นแล้ว",
+  "titleSize": 36,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "ดูซีรีส์เกาหลีแบบไม่มีซับ\nขำจนอุทาน “พีคมาก!”",
+    "โดดไปนับเลขเกาหลีไป",
+    "ไม่ร้อง “โอ๊ย!” แต่…"
   ],
   "signSizes": [
-    48,
-    48,
-    50
+    44,
+    44,
+    46
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
+    "dae-bak!",
+    "hana dul set=1,2,3",
     "a-i-go!"
   ],
-  "endMean": "",
-  "endMeanSize": 48,
+  "endMean": "เอ๊ะ? ฉัน… กลายเป็นคนเกาหลีแล้ว?!",
+  "endMeanSize": 40,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
-  "askSize": 42,
+  "ask": "จาก 3 ข้อ ตรงกี่ข้อ?\nเมนต์ตัวเลขเลย",
+  "askSize": 46,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "네 한국어 실력이 늘었다고\n말해 주는 신호 3가지",
+    "signs.0": "한국 드라마를 자막 없이 보다가\n웃겨서 「최고다!」 하고 외친다",
+    "signs.1": "뛰면서 숫자를 한국어로 센다",
+    "signs.2": "「아야!」 하지 않고…",
+    "reads.0": "대박!(읽는 법)",
+    "reads.1": "하나 둘 셋(읽는 법)=1, 2, 3",
+    "reads.2": "아이고!(읽는 법)",
+    "endMean": "어? 나… 한국 사람이 돼 버렸어?!",
+    "ask": "3개 중에 몇 개 맞아?\n숫자로 댓글 달아"
+  }
 }

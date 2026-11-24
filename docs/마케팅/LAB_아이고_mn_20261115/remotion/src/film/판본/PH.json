@@ -93,13 +93,13 @@
   "lang": "fil",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "title": "",
-  "titleSize": 44,
+  "title": "Gumagaling ka na\nsa Korean? 3 senyales",
+  "titleSize": 38,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "Natatawa sa K-drama\nkahit walang subs",
+    "Pati pagtalon,\nKorean ang bilang",
+    "Imbes na “Aray!”…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
+    "dae-bak = Grabe!",
+    "ha-na! dul! set!",
     "a-i-go!"
   ],
-  "endMean": "",
+  "endMean": "Ha? Ako…\nKoreano na ba ako?!",
   "endMeanSize": 48,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "Relate ka ba? Ilan sa 3?\nComment mo!",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "너 한국어 늘고 있어?\n신호 3가지",
+    "signs.0": "한국 드라마에 웃는다\n자막이 없어도",
+    "signs.1": "뛸 때까지도\n숫자는 한국어로",
+    "signs.2": "「아야!」 대신…",
+    "reads.0": "대박 = 대단해!",
+    "reads.1": "하나! 둘! 셋!(읽는 법)",
+    "reads.2": "아이고!(읽는 법)",
+    "endMean": "어? 나…\n한국 사람 된 거야?!",
+    "ask": "공감돼? 3개 중 몇 개?\n댓글 달아!"
+  }
 }

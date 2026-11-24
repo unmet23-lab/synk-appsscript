@@ -93,13 +93,13 @@
   "lang": "ne",
   "font": "'Inter Tight', 'Nirmala UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "title": "",
+  "title": "तिम्रो कोरियन राम्रो\nहुँदैछ भन्ने ३ संकेत",
   "titleSize": 44,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "सबटाइटलबिनै के-ड्रामा हेर्दै हाँस्छौ",
+    "उफ्रँदा पनि कोरियनमै गन्छौ",
+    "दुख्दा मुखबाट…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
-    "a-i-go!"
+    "dae-bak = gajab!",
+    "ha-na dul set = 1 2 3",
+    "a-i-go! = aiya!"
   ],
-  "endMean": "",
+  "endMean": "ए? म… कोरियन भइसकेछु?!",
   "endMeanSize": 48,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "३ मध्ये कति\nमिल्यो?",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "네 한국어가 좋아지고\n있다는 신호 3가지",
+    "signs.0": "자막 없이 K드라마를 보며 웃는다",
+    "signs.1": "뛸 때도 한국어로 센다",
+    "signs.2": "아플 때 입에서…(그 아래 「아이고!」로 이어진다)",
+    "reads.0": "대박 = 대단해!(네팔 말을 로마자로)",
+    "reads.1": "하나 둘 셋 = 1 2 3",
+    "reads.2": "아이고! = 아이야!(아플 때 네팔 사람이 내는 소리를 로마자로)",
+    "endMean": "어? 나… 한국 사람이 돼 버렸네?!",
+    "ask": "3개 중 몇 개가\n맞았어?"
+  }
 }

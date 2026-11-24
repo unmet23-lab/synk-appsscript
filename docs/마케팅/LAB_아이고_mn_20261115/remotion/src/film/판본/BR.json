@@ -93,13 +93,13 @@
   "lang": "pt-BR",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "title": "",
+  "title": "3 sinais de que\nseu coreano evoluiu",
   "titleSize": 44,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "Ri vendo dorama\nsem legenda",
+    "Até pulando, conta\nem coreano",
+    "Em vez de “Ai!”, sai…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
+    "dae-bak = Demais!",
+    "ha-na! dul! set!",
     "a-i-go!"
   ],
-  "endMean": "",
+  "endMean": "Ué? Eu… virei coreano?!",
   "endMeanSize": 48,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "Quantos dos 3 você tem?\nComenta aí!",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "네 한국어가 늘었다는\n신호 3가지",
+    "signs.0": "한국 드라마를 보며\n자막 없이 웃는다",
+    "signs.1": "뛰면서도 숫자를\n한국어로 센다",
+    "signs.2": "「아야!」 대신 나오는 말…",
+    "reads.0": "대박 = 굉장해!",
+    "reads.1": "하나! 둘! 셋!(읽는 법)",
+    "reads.2": "아이고!(읽는 법)",
+    "endMean": "어? 나… 한국 사람 된 거야?!",
+    "ask": "3개 중 몇 개 해당돼?\n댓글 달아!"
+  }
 }

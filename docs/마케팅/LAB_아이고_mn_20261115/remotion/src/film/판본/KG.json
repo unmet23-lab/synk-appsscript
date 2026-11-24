@@ -93,13 +93,13 @@
   "lang": "ky",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "title": "",
-  "titleSize": 44,
+  "title": "Корей тилиң\nжакшырды: 3 белги",
+  "titleSize": 40,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "Дорамаларды субтитрсиз\nкөрүп күлөсүң",
+    "Секирсең да\nкорейче санайсың",
+    "Ооруганда…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
-    "a-i-go!"
+    "dae-bak = Укмуш!",
+    "ha-na dul set = 1 2 3",
+    "a-i-go! = Ой-бой!"
   ],
-  "endMean": "",
+  "endMean": "Э? Мен… корей\nболуп калдымбы?!",
   "endMeanSize": 48,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "3 белгинин канчасы\nсага туура келет?",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "네 한국어가\n좋아졌다: 신호 3가지",
+    "signs.0": "드라마를 자막 없이\n보며 웃는다",
+    "signs.1": "뛰어도\n한국어로 센다",
+    "signs.2": "아플 때…(그 아래 「아이고!」로 이어진다)",
+    "reads.0": "대박 = 굉장해!",
+    "reads.1": "하나 둘 셋 = 1 2 3",
+    "reads.2": "아이고! = 오이보이!(아플 때 키르기스 사람이 내는 소리)",
+    "endMean": "어? 나… 한국 사람이\n돼 버린 거야?!",
+    "ask": "신호 3개 중 몇 개가\n너한테 맞아?"
+  }
 }

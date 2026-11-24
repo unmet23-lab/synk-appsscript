@@ -93,13 +93,13 @@
   "lang": "km",
   "font": "'Inter Tight', 'Leelawadee UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "title": "",
-  "titleSize": 44,
+  "title": "សញ្ញាទាំង ៣ បង្ហាញថា\nភាសាកូរ៉េអ្នកកាន់តែល្អ",
+  "titleSize": 38,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "មើលរឿងកូរ៉េអត់អក្សររត់ ក៏សើច",
+    "រាប់លេខជាភាសាកូរ៉េ",
+    "ពេលឈឺ…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
-    "a-i-go!"
+    "dae-bak = wow!",
+    "ha-na dul set = 1 2 3",
+    "a-i-go! = oy!"
   ],
-  "endMean": "",
-  "endMeanSize": 48,
+  "endMean": "ហា៎? ខ្ញុំ… ក្លាយជាជនជាតិកូរ៉េហើយ?!",
+  "endMeanSize": 42,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "ក្នុងចំណោមសញ្ញាទាំងបី\nត្រូវនឹងអ្នកប៉ុន្មាន?",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "네 한국어가 더 좋아졌다는 걸\n보여 주는 신호 3가지",
+    "signs.0": "자막 없이 한국 드라마를 봐도 웃는다",
+    "signs.1": "숫자를 한국어로 센다",
+    "signs.2": "아플 때…(그 아래 「아이고!」로 이어진다)",
+    "reads.0": "대박 = 와!",
+    "reads.1": "하나 둘 셋 = 1 2 3",
+    "reads.2": "아이고! = 오이!(아플 때 캄보디아 사람이 내는 소리를 로마자로)",
+    "endMean": "어? 나… 한국 사람이 돼 버렸어?!",
+    "ask": "신호 셋 가운데\n너한테 몇 개 맞아?"
+  }
 }

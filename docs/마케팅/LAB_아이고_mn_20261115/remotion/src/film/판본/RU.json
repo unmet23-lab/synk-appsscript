@@ -93,13 +93,13 @@
   "lang": "ru",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "title": "",
-  "titleSize": 44,
+  "title": "3 признака, что твой\nкорейский стал лучше",
+  "titleSize": 40,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "Дорама смешит даже\nбез субтитров",
+    "Прыжки считаешь\nпо-корейски",
+    "Когда больно…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
-    "a-i-go!"
+    "dae-bak = Офигеть!",
+    "ha-na dul set = 1 2 3",
+    "a-i-go! = Ай!"
   ],
-  "endMean": "",
+  "endMean": "Э? Я что…\nтеперь кореянка?!",
   "endMeanSize": 48,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "Сколько из 3 признаков\nпро тебя?",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "네 한국어가 좋아졌다는\n신호 3가지",
+    "signs.0": "드라마가 웃긴다\n자막 없이도",
+    "signs.1": "뛰는 횟수를\n한국어로 센다",
+    "signs.2": "아플 때…(그 아래 「아이고!」로 이어진다)",
+    "reads.0": "대박 = 대박이다(놀람)!",
+    "reads.1": "하나 둘 셋 = 1 2 3",
+    "reads.2": "아이고! = 아이!(아플 때 러시아 사람이 내는 소리)",
+    "endMean": "어? 나 설마…\n이제 한국 사람?!",
+    "ask": "신호 3개 중 몇 개가\n너 얘기야?"
+  }
 }

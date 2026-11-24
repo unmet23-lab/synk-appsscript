@@ -93,13 +93,13 @@
   "lang": "ms",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "title": "",
-  "titleSize": 44,
+  "title": "3 tanda awak makin\npandai bahasa Korea",
+  "titleSize": 40,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "Gelak tengok drama\ntanpa sari kata",
+    "Lompat sambil kira\nguna bahasa Korea",
+    "Sakit? Bukan “Adoi!”…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
+    "dae-bak = Terbaik!",
+    "ha-na dul set",
     "a-i-go!"
   ],
-  "endMean": "",
+  "endMean": "Eh? Aku… dah jadi\norang Korea ke?!",
   "endMeanSize": 48,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "Dapat berapa daripada 3?\nJom komen!",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "네가 한국어를 점점 잘한다는\n신호 3가지",
+    "signs.0": "드라마를 보며 웃는다\n자막 없이",
+    "signs.1": "뛰면서 숫자를\n한국어로 센다",
+    "signs.2": "아파? 「아야!」가 아니라…",
+    "reads.0": "대박 = 최고!",
+    "reads.1": "하나 둘 셋(읽는 법)",
+    "reads.2": "아이고!(읽는 법)",
+    "endMean": "어? 나… 벌써\n한국 사람 된 거야?!",
+    "ask": "3개 중에 몇 개 나왔어?\n댓글 달자!"
+  }
 }

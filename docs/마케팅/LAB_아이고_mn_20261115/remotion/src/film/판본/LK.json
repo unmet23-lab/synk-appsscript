@@ -93,13 +93,13 @@
   "lang": "si",
   "font": "'Inter Tight', 'Nirmala UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "title": "",
-  "titleSize": 44,
+  "title": "ඔයාගේ කොරියන්\nහොඳ වෙලාද?",
+  "titleSize": 40,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "සබ් නැතුවත් හිනා යනවා",
+    "කොරියන්වලින් ගණිනවා",
+    "රිදෙද්දී…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
-    "a-i-go!"
+    "dae-bak = supiri!",
+    "hana dul set=1 2 3",
+    "a-i-go! = aiyo!"
   ],
-  "endMean": "",
-  "endMeanSize": 48,
+  "endMean": "හෑ? මම… කොරියන් කෙනෙක්ද?!",
+  "endMeanSize": 40,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "3න් කීයක් ඔයාට\nගැලපෙනවද?",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "네 한국어\n잘하게 됐어?",
+    "signs.0": "자막이 없어도 웃음이 난다",
+    "signs.1": "한국어로 센다",
+    "signs.2": "아플 때…(그 아래 「아이고!」로 이어진다)",
+    "reads.0": "대박 = 끝내준다!(싱할라 말을 로마자로)",
+    "reads.1": "하나 둘 셋 = 1 2 3",
+    "reads.2": "아이고! = 아이요!(아플 때 스리랑카 사람이 내는 소리를 로마자로)",
+    "endMean": "어? 나… 한국 사람이야?!",
+    "ask": "3개 중 몇 개가 너한테\n맞아?"
+  }
 }

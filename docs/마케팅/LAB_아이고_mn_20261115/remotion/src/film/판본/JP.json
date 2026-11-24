@@ -93,13 +93,13 @@
   "lang": "ja",
   "font": "'Inter Tight', 'Yu Gothic', 'SUIT', sans-serif",
   "lineH": 1.2,
-  "title": "",
+  "title": "韓国語が上達した\n3つのサイン",
   "titleSize": 44,
   "signLabel": "{n}",
   "signs": [
-    "",
-    "",
-    ""
+    "字幕なしで笑える",
+    "韓国語で数える",
+    "痛い時は…"
   ],
   "signSizes": [
     48,
@@ -107,20 +107,31 @@
     50
   ],
   "reads": [
-    "",
-    "ha-na! dul! set! = 1, 2, 3",
-    "a-i-go!"
+    "daebak!",
+    "1, 2, 3",
+    "aigo!"
   ],
-  "endMean": "",
+  "endMean": "え？私って韓国人？！",
   "endMeanSize": 48,
   "endCard": "",
   "endSize": 44,
-  "ask": "",
+  "ask": "いくつ当てはまる？",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "title": "한국어가 늘었다는\n신호 3가지",
+    "signs.0": "자막 없이 웃을 수 있다",
+    "signs.1": "한국어로 센다",
+    "signs.2": "아플 때는…",
+    "reads.0": "대박!(읽는 법)",
+    "reads.1": "1, 2, 3(하나 둘 셋의 뜻)",
+    "reads.2": "아이고!(읽는 법)",
+    "endMean": "어? 나 한국 사람?!",
+    "ask": "몇 개 해당돼?"
+  }
 }
