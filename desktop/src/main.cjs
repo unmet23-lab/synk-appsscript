@@ -115,7 +115,7 @@ const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
 // Workspace 로그인의 Suite 따라가기를 500ms 틈 없이 지금 플랫폼 기록에 묶는다. 묶지 않으면 계정을 바꾼 직후 새 계정의 뷰가 앞 계정의 로그인 상태와 계정 정보를 받는다(4단계 설계 검토 R2).
 // 따라가기를 아직 만들지 않았거나 닫은 뒤에 불려도 다음 따라가기가 다시 본다
 function followWorkspaceNow(){try{void workspaceFollower?.refresh();}catch{}}
-function publishAuthState(state){chatgptConnection?.accountChanged();careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();estimateWindow?.sync();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){chatgptConnection?.accountChanged();careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();estimateWindow?.sync();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();pcProfileWarm();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -279,7 +279,10 @@ function pcProfile(){if(runtime.clientId!=='platform'||smoke)return null;if(!pcP
 function pcSpaceDrives(){const service=pcProfile();if(!service)return null;void service.refresh().catch(()=>{});return service.spaceDrives();}
 function pcProfileCall(work){const service=pcProfile();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};return work(service);}
 // 앱을 켜면 첫 화면을 막지 않게 조금 뒤에 가벼운 값을 읽는다(설계 6절). 그래픽 값은 하루 한 번이다
-function pcProfileWarm(){if(!pcProfile())return;const timer=setTimeout(()=>{void pcProfile()?.refresh().catch(()=>{});},8000);timer.unref?.();}
+// 이 PC는 로그인한 회원에게만 잰다. 손님의 첫 실행에서는 자식 프로세스(PowerShell)를 띄우지 않는다(공개 CI Windows 검사기, PC 0.5.10 CI 45500197530).
+// 켤 때 로그인돼 있으면 8초 뒤에, 아니면 로그인한 때(publishAuthState) 한 번 잰다
+let pcProfileWarmed=false;
+function pcProfileWarm(){if(pcProfileWarmed||!pcProfile()||!accountStatus()?.signedIn)return;pcProfileWarmed=true;const timer=setTimeout(()=>{if(accountStatus()?.signedIn)void pcProfile()?.refresh().catch(()=>{});else pcProfileWarmed=false;},8000);timer.unref?.();}
 // 로그인 알림마다 남은 setup 요청을 치운다. 방을 아직 열지 않았어도 서비스를 만들어 치우므로, 앱을 다시 켠 뒤 첫 알림이 앞 실행의 요청을 지운다(Fable 요청 수명 확인 P2)
 function solioBackupSweep(){if(runtime.clientId!=='platform'||smoke)return;try{solioBackup().accountChanged();}catch{}}
 function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};return work(solioBackup(),status.account);}

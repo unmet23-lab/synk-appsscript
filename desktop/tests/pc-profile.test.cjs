@@ -181,3 +181,13 @@ test('main wires the service for the platform client only, and the four calls ta
   const scripts = P.LIGHT_SCRIPT + P.SLOW_SCRIPT;
   assert.doesNotMatch(scripts, /VolumeLabel|SerialNumber|MachineGuid|Caption|DriverDesc|ProfileName|SSID|\.Description|Win32_Processor|\.Name\b(?!\.Substring\(0,1\))/, 'no names, labels or serial numbers are read');
 });
+
+test('main measures this PC only for a signed-in member: a guest first run starts no PowerShell (PC 0.5.10 CI)', () => {
+  const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
+  const warm = /function pcProfileWarm\(\)\{([^\n]*)\}/.exec(main);
+  assert.ok(warm, 'pcProfileWarm is one line');
+  assert.match(warm[1], /^if\(pcProfileWarmed\|\|!pcProfile\(\)\|\|!accountStatus\(\)\?\.signedIn\)return;/, 'no timer before sign-in');
+  assert.match(warm[1], /setTimeout\(\(\)=>\{if\(accountStatus\(\)\?\.signedIn\)void pcProfile\(\)\?\.refresh\(\)/, 'signed out during the wait: no measurement');
+  assert.match(main, /function publishAuthState\(state\)\{[^\n]*solioBackupSweep\(\);pcProfileWarm\(\);/, 'signing in measures once');
+});
+
