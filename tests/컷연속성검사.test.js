@@ -521,7 +521,7 @@ const 표대로그림글 = (표, d, { 옷 = true, 소품 = true, 더 = [] } = {}
   ...(표.세트 ? [`PALETTE: ${표.세트}`] : []),
   ...d.인물.map((n) => `WHO: ${표.인물[n].묘사}${옷 ? ` ${표.인물[n].옷}` : ' A grey hoodie.'}`),
   `MOMENT: ${d.line}`,
-  `FRAME: ${d.구도}`,
+  `FRAME: ${d.구도}${d.앵글 && d.앵글.렌즈 ? `, ${d.앵글.렌즈}mm lens` : ''}`,   // 렌즈 계획(11-25) — FRAME 줄에 컷표 「앵글.렌즈」 그대로
   ...(소품 ? Object.entries(표.소품 || {}).filter(([n]) => !['화면밖', '없음', undefined].includes((d.소품 || {})[n])).map(([, p]) => `PROPS: ${p.생김새}`) : []),
   ...더,
 ].join('\n');
