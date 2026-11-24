@@ -370,6 +370,30 @@ test('--적기는 화면 값을 장부에 남기고 72시간 판정에 더한다
   assert.throws(() => 도구.화면값(['아무거나=1']), /칸 이름이 아니다/);
 });
 
+test('--적기목록은 여러 게시물의 화면 값을 한 번에 장부에 남기고, 한 줄이라도 틀리면 아무것도 쓰지 않는다(11-24)', async t => {
+  const { dir } = tempRepo(t);
+  const server = data({ entries: [1, 2, 3, 4, 5].map(n => igEntry(n, n * 10)) });
+  const opts = { now: T0 + 9 * 24 * H, data: server, shorts: new Map() };
+  const ledgerFile = path.join(dir, 'docs', '_ops', '게시성과.jsonl');
+  const list = path.join(dir, '적기목록.txt');
+  // 틀린 줄(없는 칸 이름)이 끼면 앞 줄도 쓰지 않는다
+  fs.writeFileSync(list, 'https://www.instagram.com/reel/CODE4x/ 팔로우=2\nhttps://www.instagram.com/reel/CODE5x/ 아무거나=1\n');
+  await assert.rejects(도구.run({ 실행: true, 저장소: dir, 적기목록: list, 값들: [] }, opts), /2번째 줄: .*칸 이름이 아니다/);
+  assert.ok(!fs.existsSync(ledgerFile) || 도구.readLedger(ledgerFile).every(l => l.kind !== '화면'));
+  // 같은 게시물 두 줄도 막는다
+  fs.writeFileSync(list, 'https://www.instagram.com/reel/CODE5x/ 팔로우=2\nhttps://www.instagram.com/reel/CODE5x/ 팔로우=3\n');
+  await assert.rejects(도구.run({ 실행: true, 저장소: dir, 적기목록: list, 값들: [] }, opts), /같은 게시물/);
+  // 빈 줄 · 「#」 줄은 건너뛰고, 두 줄이 한 번에 들어가 판정에 더해진다
+  fs.writeFileSync(list, '# 인스타 팔로우\r\nhttps://www.instagram.com/reel/CODE4x/ 팔로우=2\r\n\r\nhttps://www.instagram.com/reel/CODE5x/ 팔로우=7 3초유지율=55.5\r\n');
+  const r = await 도구.run({ 실행: true, 저장소: dir, 적기목록: list, 값들: [] }, opts);
+  assert.deepEqual(r.화면줄들.map(l => [l.post, l.metrics]), [['instagram:CODE4x', { follows: 2 }], ['instagram:CODE5x', { follows: 7, earlyRetention3sPct: 55.5 }]]);
+  const ledger = 도구.readLedger(ledgerFile);
+  assert.equal(ledger.filter(l => l.kind === '화면').length, 2);
+  const line = ledger.filter(l => l.kind === '판정' && l.post === 'instagram:CODE5x' && l.point === '72h').pop();
+  assert.ok(line.screenMetrics.includes('follows'));
+  await assert.rejects(도구.run({ 실행: false, 저장소: dir, 적기: 'https://www.instagram.com/reel/CODE5x/', 적기목록: list, 값들: ['팔로우=1'] }, opts), /함께 쓰지 않는다/);
+});
+
 test('화면 필요 — 유튜브 창 지표는 주인 권한 채널이면 6일째까지 기다리고, 공개 통계 연결이면 바로 올린다', () => {
   const published = T0;
   const record = { platform: 'youtube', format: 'youtube-shorts', publishedMs: published, points: { '72h': { metrics: { views: 10 } } }, screen: null };

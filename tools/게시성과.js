@@ -12,6 +12,7 @@
  *   node tools/게시성과.js --실행              편 폴더(게시/성과.json · 기획.md 끝 묶음)·장부·요약에 쓰고, 공용 작업본이면 그 경로만 origin에 올린다
  *   node tools/게시성과.js --적기 <게시 주소> 본비율=62.3 평균시청=11 … [--실행]
  *                                             화면에서 읽은 값을 장부에 적는다(이름: 본비율 3초유지율 평균시청 평균조회율 완주율 공유 저장 도달 조회 팔로우 구독증가 맞춤도구)
+ *   node tools/게시성과.js --적기목록 <파일> [--실행]  한 줄에 「<게시 주소> 칸=값 …」 — 여러 칸을 한 번에 적고 한 번만 올린다(한 줄이라도 틀리면 아무것도 안 씀)
  *   node tools/게시성과.js --화면목록 [--json]  주 1회 읽을 칸 목록(요약의 「화면 필요」와 같다)
  *   node tools/게시성과.js --요약              장부만으로 요약을 다시 만든다(서버를 읽지 않는다)
  *   node tools/게시성과.js --연결목록 <json> [--실행]  주소·편·계정·구분·근거·이유를 확인해 기존 장부/게시결과에 잇는다(게시 안 함)
@@ -552,6 +553,7 @@ function 인자(argv) {
     else if (a === '--저장소') o.저장소 = argv[++i];
     else if (a === '--연결목록') o.연결목록 = argv[++i];
     else if (a === '--적기') o.적기 = argv[++i];
+    else if (a === '--적기목록') o.적기목록 = argv[++i];
     else if (a === '--화면목록') o.화면목록 = true;
     else if (a === '--요약') o.요약 = true;
     else if (a === '--쇼츠안읽음') o.쇼츠안읽음 = true;
@@ -561,6 +563,20 @@ function 인자(argv) {
     else throw new Error(`모르는 인자: ${a}`);
   }
   return o;
+}
+
+/** --적기목록 파일을 읽는다. 빈 줄과 「#」 줄은 건너뛴다. → [{ 줄번호, 주소, 값들 }] */
+function 적기목록읽기(file) {
+  const text = fs.readFileSync(path.resolve(file), 'utf8').replace(/^﻿/, '');
+  const out = [];
+  text.split(/\r?\n/).forEach((raw, i) => {
+    const s = raw.trim();
+    if (!s || s.startsWith('#')) return;
+    const [주소, ...값들] = s.split(/\s+/);
+    if (!값들.length) throw new Error(`--적기목록 ${i + 1}번째 줄: 주소 뒤에 「칸=값」이 없다`);
+    out.push({ 줄번호: i + 1, 주소, 값들 });
+  });
+  return out;
 }
 
 function 화면값(pairs) {
@@ -626,18 +642,39 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   const shortsByChannel = shorts || await shortsLists(server, { skip: o.쇼츠안읽음 });
   let screens = screensOf(ledger);
 
-  if (o.적기) {
-    const id = 판정.postIdOf(o.적기);
+  const 화면줄만들기 = (주소, 값들) => {
+    const id = 판정.postIdOf(주소);
     if (!id) throw new Error('게시 주소를 읽지 못했다(유튜브·인스타·페북·틱톡)');
     // 비교 제외와 원본 관측 기록은 별개다. 작품·운영시험도 읽은 화면 값은 남길 수 있다.
     const entry = source.entries.find(e => 판정.postIdOf(e.url)?.key === id.key);
     if (!entry) throw new Error('서버에 등록되지 않은 게시물이다 — 작업실 「게시 주소로 추가」로 먼저 등록한다');
     const ageHours = Number.isFinite(o.나이) ? o.나이 : Math.round((now - Date.parse(entry.publishedAt)) / 3_600_000);
-    const line = { at: new Date(now).toISOString(), kind: '화면', post: id.key, url: entry.url, ageHours, metrics: 화면값(o.값들) };
+    return { at: new Date(now).toISOString(), kind: '화면', post: id.key, url: entry.url, ageHours, metrics: 화면값(값들) };
+  };
+  if (o.적기 && o.적기목록) throw new Error('--적기와 --적기목록은 함께 쓰지 않는다');
+  if (o.적기) {
+    const line = 화면줄만들기(o.적기, o.값들);
     report.화면줄 = line;
     if (o.실행) appendLines(ledgerFile, [line]);
     // 미리 보기에서도 이 값이 들어간 판정을 보인다(장부 파일에는 --실행일 때만 쓴다)
     ledger.push(line);
+    screens = screensOf(ledger);
+  }
+  if (o.적기목록) {
+    // 한 줄 = 「<게시 주소> 칸=값 …」. 한 줄이라도 틀리면 아무것도 쓰지 않는다(11-24 — 한 번에 올려 회차마다 수십 번 하던 커밋을 한 번으로).
+    const lines = [];
+    const seen = new Set();
+    적기목록읽기(o.적기목록).forEach(({ 줄번호, 주소, 값들 }) => {
+      let line;
+      try { line = 화면줄만들기(주소, 값들); } catch (e) { throw new Error(`--적기목록 ${줄번호}번째 줄: ${e.message}`); }
+      if (seen.has(line.post)) throw new Error(`--적기목록 ${줄번호}번째 줄: 같은 게시물이 앞 줄에 있다(${line.post})`);
+      seen.add(line.post);
+      lines.push(line);
+    });
+    if (!lines.length) throw new Error('--적기목록에 적을 줄이 없다');
+    report.화면줄들 = lines;
+    if (o.실행) appendLines(ledgerFile, lines);
+    ledger.push(...lines);
     screens = screensOf(ledger);
   }
 
@@ -697,7 +734,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
     ledger.push(...newLines);
     written.add(LEDGER);
   }
-  if (o.적기) written.add(LEDGER);
+  if (o.적기 || o.적기목록) written.add(LEDGER);
   for (const [folder, { dir, items }] of byFolder) {
     const order = { '24h': 0, '72h': 1, '7d': 2 };
     for (const x of items) x.lines.sort((a, b) => order[a.point] - order[b.point]);
@@ -719,7 +756,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   report.쓴파일 = [...written];
   if (written.size) {
     const { 장부올리기, 장부올리기글 } = require('./lib/장부올리기.js');
-    const r = await 장부올리기([...written], `chore(게시 성과): 판정 ${newLines.length}줄${autoLines.length ? ` · 캡션 연결 ${autoLines.length}건` : ''}${o.적기 ? ' · 화면 값 적음' : ''} — ${[...new Set(newLines.map(l => l.folder).filter(Boolean))].slice(0, 4).join(', ') || '요약'}`, { 저장소: repo });
+    const r = await 장부올리기([...written], `chore(게시 성과): 판정 ${newLines.length}줄${autoLines.length ? ` · 캡션 연결 ${autoLines.length}건` : ''}${o.적기 ? ' · 화면 값 적음' : ''}${report.화면줄들 ? ` · 화면 값 ${report.화면줄들.length}칸 적음` : ''} — ${[...new Set(newLines.map(l => l.folder).filter(Boolean))].slice(0, 4).join(', ') || '요약'}`, { 저장소: repo });
     report.올리기 = 장부올리기글(r, '게시 성과') || r.결과;
   }
   return report;
@@ -767,6 +804,7 @@ async function main(argv) {
     if (report.요약 && o.요약) { console.log(o.실행 ? `요약을 다시 만들었다: ${SUMMARY}` : report.요약); return; }
     console.log(`게시 성과 판정 · ${report.결과}`);
     if (report.화면줄) console.log(`  화면 값${o.실행 ? ' 적음' : '(미리 보기)'}: ${report.화면줄.post} ${JSON.stringify(report.화면줄.metrics)} · 게시 ${report.화면줄.ageHours}시간 뒤`);
+    for (const l of report.화면줄들 || []) console.log(`  화면 값${o.실행 ? ' 적음' : '(미리 보기)'}: ${l.post} ${JSON.stringify(l.metrics)} · 게시 ${l.ageHours}시간 뒤`);
     for (const l of report.새판정) console.log(`  + ${l}`);
     if (report.시험) console.log(`  2주 시험: ${report.시험}`);
     for (const f of report.편쓰기) console.log(`  쓴 곳: ${f}`);
