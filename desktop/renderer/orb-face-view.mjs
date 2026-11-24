@@ -180,13 +180,13 @@ function markup() {
             <div class="ofc-thread ofc-scroll" data-off-thread>
               <div class="rows off ofc-now" role="group" aria-label="지금 선 직원" data-off-center hidden></div>
               <div data-off-tasks></div>
-              <div class="ofc-empty" data-off-empty hidden><p>부서를 하나 만들면 그 부서에 일을 맡길 수 있습니다.</p><button class="ofc-pill" type="button" data-off-empty-add>부서 더하기</button></div>
+              <div class="ofc-empty" data-off-empty hidden><p data-off-empty-say></p><button class="ofc-pill" type="button" data-off-empty-add>부서 더하기</button></div>
             </div>
             <button class="ofc-new" type="button" data-off-new hidden>새 답 보기</button>
             <div class="ofc-compose" data-off-compose></div>
             <p class="ofc-offsay" data-off-offsay hidden></p>
           </div>
-          <aside class="ofc-side ofc-scroll" id="ofc-side" aria-label="이 부서" data-off-side><div class="rows off" role="group" aria-label="이 부서" data-off-rows></div></aside>
+          <aside class="ofc-side ofc-scroll" id="ofc-side" aria-label="이 부서" tabindex="-1" data-off-side><button class="quiet ofc-side-close" type="button" data-off-side-close>닫기</button><div class="rows off" role="group" aria-label="이 부서" data-off-rows></div></aside>
         </div>
       </div>
       <div class="biz-host" data-off-feature hidden></div>
@@ -258,7 +258,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     health: $('[data-room="solio-health"]'), heaSay: $('[data-hea-say]'), heaThen: $('[data-hea-then]'), heaRows: $('[data-hea-rows]'), heaWhen: $('[data-hea-when]'), heaScope: $('[data-hea-scope]'),
     office: $('[data-room="solio-office"]'), offHead: $('[data-off-head]'), offSay: $('[data-off-say]'), offThen: $('[data-off-then]'), offHint: $('[data-off-hint]'), offSlot: $('[data-off-slot]'), offFloor: $('[data-off-floor]'), offRows: $('[data-off-rows]'), offFoot: $('[data-off-foot]'),
     ofc: $('[data-ofc]'), offNm: $('[data-off-nm]'), offChats: $('[data-off-chats]'), offAddBtn: $('[data-off-add-btn]'), offAdd: $('[data-off-add]'), offCap: $('[data-off-cap]'), offCenter: $('[data-off-center]'), offThread: $('[data-off-thread]'),
-    offCompose: $('[data-off-compose]'), offOffSay: $('[data-off-offsay]'), offEmpty: $('[data-off-empty]'), offEmptyAdd: $('[data-off-empty-add]'), offSide: $('[data-off-side]'), offSideBtn: $('[data-off-side-btn]'), offNew: $('[data-off-new]'),
+    offCompose: $('[data-off-compose]'), offOffSay: $('[data-off-offsay]'), offEmpty: $('[data-off-empty]'), offEmptySay: $('[data-off-empty-say]'), offEmptyAdd: $('[data-off-empty-add]'), offSide: $('[data-off-side]'), offSideBtn: $('[data-off-side-btn]'), offNew: $('[data-off-new]'),
     todoBar: $('[data-todo-bar]'), todoN: $('[data-todo-n]'), todoGo: $('[data-todo-go]'),
     todo: $('[data-room="solio-todo"]'), todoMeta: $('[data-todo-meta]'), todoRank: $('[data-todo-rank]'), todoWhy: $('[data-todo-why]'), todoWhere: $('[data-todo-where]'),
     todoHead: $('[data-todo-head]'), todoSay: $('[data-todo-say]'), todoThen: $('[data-todo-then]'), todoActs: $('[data-todo-acts]'), todoNote: $('[data-todo-note]'), todoFoot: $('[data-todo-foot]'), todoLeft: $('[data-todo-left]'),
@@ -1034,7 +1034,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
      그림의 책상을 누르면 그 부서를, 직원을 누르면 그 부서와 그 도구로 입력칸을 고른다. 손을 올리면 밝아지기만 한다(설계 검토 10) ── */
   // inRoom: 좁은 폭(방 상자 640px 아래)에서 목록 대신 방을 보이는가. 처음은 고른 상대의 방이다(맡긴 일과 입력칸이 먼저 보인다).
   // 「목록으로」를 누르면 목록, 목록 줄을 누르거나 「한 번에 처리」에서 오면 다시 방이다
-  let assignmentFloor = null, chatSel = null, inRoom = true;
+  // sideWant: 다음 그림에서 서랍을 연다(수용 인원 단추가 상대를 바꾸며 서랍을 열 때 상대 바꿈이 서랍을 도로 닫지 않게, 카본 화면 검수 A6).
+  // officeShown: 앞 그림에서 사무실 방이 보였는가. 숨었다 보이는 첫 그림에서 대화를 끝으로 내린다(카본 화면 검수 A7)
+  let assignmentFloor = null, chatSel = null, inRoom = true, sideWant = false, officeShown = false;
   const markOfficeStaff = id => { for (const box of [app.offRows, app.offCenter]) for (const r of box.querySelectorAll('.row.staff')) r.classList.toggle('hot', !!id && r.dataset.staff === id); };
   const taskHost = $('[data-off-tasks]');
   // 기획부 「사업계획서」 작업 화면(사업계획서_설계.md 6절). 열려 있는 동안 사무실의 다른 자리는 감춘다
@@ -1126,6 +1128,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   /* 좁은 창(방 상자 1100px 아래)에서 오른쪽 칸은 방 머리의 단추로 여는 서랍이다. 열면 초점을 안에 가두고 Esc로 닫는다(설계 검토 14) */
   const sideOpen = () => app.ofc.classList.contains('side-open');
+  // 서랍으로 보이는 때(방 상자 1100px 아래)에만 「이 부서」 단추가 보인다
+  const drawerOpen = () => sideOpen() && !!app.offSideBtn.offsetParent;
   function setSide(open, { focus = true } = {}) {
     app.ofc.classList.toggle('side-open', open);
     app.offSideBtn.setAttribute('aria-expanded', String(open));
@@ -1149,12 +1153,16 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onOfficeClick = event => {
     const t = event.target?.nodeType === 1 ? event.target : event.target?.parentElement;
     if (!t) return;
+    // 서랍 밖을 누르면 서랍을 닫고 그 누름은 그대로 한다. 서랍 안의 「닫기」는 닫고 단추로 초점을 돌린다(카본 화면 검수 A1)
+    if (t.closest('[data-off-side-close]')) { event.preventDefault(); event.stopPropagation(); setSide(false); return; }
+    if (drawerOpen() && !app.offSide.contains(t) && !t.closest('[data-off-side-btn]') && !t.closest('[data-off-cap]')) setSide(false, { focus: false });
     const c = t.closest('[data-chat]');
     if (c && app.offChats.contains(c)) { event.preventDefault(); event.stopPropagation(); inRoom = true; app.ofc.classList.add('in-room'); pickChat(c.dataset.chat); return; }
     if (t.closest('[data-off-back]')) { event.preventDefault(); event.stopPropagation(); inRoom = false; app.ofc.classList.remove('in-room'); app.offChats.querySelector('[aria-current="true"]')?.focus?.({ preventScroll: true }); return; }
     if (t.closest('[data-off-add-btn]')) { event.preventDefault(); event.stopPropagation(); onAction('room', { room: 'solio-office', act: 'chat-add' }); return; }
     if (t.closest('[data-off-empty-add]')) { event.preventDefault(); event.stopPropagation(); onAction('room', { room: 'solio-office', act: 'chat-add', arg: 'open' }); return; }
-    if (t.closest('[data-off-cap]')) { event.preventDefault(); event.stopPropagation(); pickChat('all', { focus: 'cap' }); if (!sideOpen() && app.offSideBtn.offsetParent) setSide(true, { focus: false }); return; }
+    // 수용 인원: 「사무실」을 고르고(좁으면 방으로 넘어가) 오른쪽 칸의 수용 인원 줄을 펼쳐 초점을 둔다. 서랍이면 그림 안에서 서랍을 먼저 연다
+    if (t.closest('[data-off-cap]')) { event.preventDefault(); event.stopPropagation(); inRoom = true; app.ofc.classList.add('in-room'); sideWant = true; pickChat('all', { focus: 'cap' }); return; }
     if (t.closest('[data-off-side-btn]')) { event.preventDefault(); event.stopPropagation(); setSide(!sideOpen()); return; }
     if (t.closest('[data-off-new]')) { event.preventDefault(); event.stopPropagation(); app.offNew.hidden = true; app.offThread.scrollTo?.({ top: app.offThread.scrollHeight, behavior: reduced() ? 'auto' : 'smooth' }); }
   };
@@ -1178,7 +1186,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const c = on && v.chat ? v.chat : null;
     const sel = c ? c.sel : null, selChanged = sel !== chatSel;
     chatSel = sel;
-    if (selChanged && sideOpen()) setSide(false, { focus: false });
+    if (selChanged && sideOpen() && !sideWant) setSide(false, { focus: false });
     if (on && v.focus?.task) inRoom = true;
     app.ofc.classList.toggle('in-room', inRoom);
     assignmentFloor = shown && on && v.tasking ? v.floor : null;
@@ -1221,6 +1229,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     putRows(app.offCenter, center, 'solio-office');
     if (app.offCenter.hidden !== !center.length) app.offCenter.hidden = !center.length;
     const empty = !!(c && c.empty);
+    setText(app.offEmptySay, empty ? c.emptySay || '' : '');
     if (app.offEmpty.hidden !== !empty) app.offEmpty.hidden = !empty;
     // 오른쪽 칸
     const side = c ? c.side || [] : [];
@@ -1229,8 +1238,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (app.offSideBtn.hidden !== !side.length) app.offSideBtn.hidden = !side.length;
     setText(app.offSideBtn, c && c.sel === 'all' ? '사무실 설정' : '이 부서');
     app.offSide.setAttribute('aria-label', c && c.sel === 'all' ? '사무실 설정' : '이 부서');
+    if (sideWant) { sideWant = false; if (side.length && app.offSideBtn.offsetParent && !sideOpen()) setSide(true, { focus: false }); }
     // 스크롤: 상대를 바꾸면 대화 끝으로. 바닥에 있을 때만 바닥을 따라가고, 위로 올려 읽는 중에 새 말이 오면 「새 답 보기」를 둔다(설계 검토 16)
-    if (selChanged) { th.scrollTop = th.scrollHeight; app.offNew.hidden = true; }
+    const reveal = !!shown && !officeShown;
+    officeShown = !!shown;
+    if (selChanged || reveal) { th.scrollTop = th.scrollHeight; app.offNew.hidden = true; }
     else if (atEnd) th.scrollTop = th.scrollHeight;
     else if (th.scrollHeight > h0 + 4) app.offNew.hidden = false;
     // 숨긴 카드에 있던 초점은 고른 목록 줄로 옮긴다(설계 검토 2)
@@ -2525,6 +2537,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (event.key === 'Escape') {
       if (mode === 'legacy' && (dialogOutside() || typing || (t && !root.contains(t) && t.closest?.('dialog')))) return;
       if (dialogOutside()) return;
+      // 사무실의 서랍이 열려 있으면 Esc는 서랍부터 닫는다. 초점이 서랍 밖에 있어도 같다(카본 화면 검수 A1)
+      if (mode === 'app' && !app.office.hidden && drawerOpen()) { setSide(false, { focus: !t || t === doc.body || app.offSide.contains(t) }); event.preventDefault(); return; }
       // 펼친 줄이 있으면 Esc가 먼저 접는다(시안). 줄 안쪽에 있던 초점은 그 줄로 돌린다
       // 숨은 방에 남은 고정 줄은 보지 않는다. 보이는 방에 펼친 줄이 없으면 Esc는 원래 일을 한다(검수 A6)
       if (mode === 'app' && scene?.layer === 'app' && !scene.fan?.open && [...root.querySelectorAll('.more.open:not(.fixed)')].some(m => !m.closest('[hidden]'))) {

@@ -1,7 +1,7 @@
 'use strict';
 
 // Runs inside orb-face-browser-qa.cjs with the native Solio page and its isolated synthetic bridge.
-module.exports = async function checkOfficeTasks({ open, boot, signedIn, signedOut, subsNone, until, wait, click, capture, check, calls }) {
+module.exports = async function checkOfficeTasks({ open, boot, signedIn, signedOut, subsNone, until, wait, click, capture, check, calls, key }) {
   const w = await open();
   const room = '#portal-entry [data-room="solio-office"]';
   const prompt = room + ' [data-task-prompt]';
@@ -289,6 +289,40 @@ const deptRow = room + ' [data-chat="d:design"]';
     }, room);
     const floorSelector = room + ' [data-off-floor]';
     await captures('staff', floorSelector);
+    // 앱의 가장 작은 창(960×680)과 그 창을 110 · 125 · 150%로 키운 크기에서도 입력칸과 보내기 단추가 방 안에 다 보이고 대화 칸이 남는다(카본 화면 검수 A2).
+    // 좁은 창의 「이 부서」 서랍은 안의 「닫기」, 서랍 밖 누름, 서랍 밖에 초점이 있을 때의 Esc로 닫힌다(카본 화면 검수 A1)
+    for (const [width, height] of [[960, 680], [1180, 700], [873, 618], [768, 544], [640, 453]]) {
+      w.win.setContentSize(width, height);
+      await eventually(([width, height]) => innerWidth === width && innerHeight === height, [width, height]);
+      await wait(160);
+      const fit = await query(({ room, submit }) => {
+        const box = document.querySelector(room), r = box?.getBoundingClientRect(), b = document.querySelector(submit)?.getBoundingClientRect();
+        const th = box?.querySelector('[data-off-thread]'), slot = box?.querySelector('[data-off-slot]');
+        return { ok: !!(r && b && b.height > 0 && b.top >= r.top && b.bottom <= r.bottom + 1 && th && th.clientHeight >= (innerHeight < 500 ? 72 : 100)), submitBottom: b && Math.round(b.bottom), roomBottom: r && Math.round(r.bottom), thread: th && th.clientHeight, slot: slot && !slot.hidden ? Math.round(slot.getBoundingClientRect().height) : 0 };
+      }, { room, submit });
+      check('the composer and its send button stay inside the office with room left for the conversation at ' + width + '×' + height, fit.ok, fit);
+      if (width === 960) await capture(w, 'office-task-small-960x680');
+    }
+    w.win.setContentSize(960, 680);
+    await eventually(width => innerWidth === width, 960);
+    await wait(120);
+    const sideBtn = room + ' [data-off-side-btn]', isOpen = () => query(sel => document.querySelector(sel).classList.contains('side-open'), room + ' [data-ofc]');
+    await click(w, sideBtn);
+    const opened = await isOpen();
+    await capture(w, 'office-task-drawer-960x680');
+    await click(w, room + ' [data-off-side-close]');
+    const closedByButton = !(await isOpen()) && await query(sel => document.activeElement === document.querySelector(sel), sideBtn);
+    await click(w, sideBtn);
+    await click(w, room + ' [data-off-thread]');
+    const closedByOutside = !(await isOpen());
+    await click(w, sideBtn);
+    await query(() => { document.activeElement?.blur?.(); });
+    await key(w, 'Escape');
+    const closedByEsc = !(await isOpen());
+    check('the narrow 이 부서 drawer opens and closes by its own button, an outside click, and Escape with focus outside', opened && closedByButton && closedByOutside && closedByEsc, { opened, closedByButton, closedByOutside, closedByEsc });
+    w.win.setContentSize(1440, 900);
+    await eventually(width => innerWidth === width, 1440);
+    await wait(150);
     await query(sel => document.querySelector(sel).scrollIntoView({ block: 'center' }), floorSelector);
     const position = await query(sel => {
       const box = document.querySelector(sel);

@@ -1547,14 +1547,20 @@ export function createOfficeTaskView(host, dispatch, { formHost = null } = {}) {
   const hhmm = (t) => { const d = new Date(Number(t)); return Number.isFinite(d.getTime()) ? pad2(d.getHours()) + ':' + pad2(d.getMinutes()) : ''; };
   /* 대화 차림의 말 하나: 새 일 가름, 솔리오가 전한 일, 긴 답, 낭독 이름 */
   function chatDecorate(rec, task, info, shownPrev, rawTasks) {
-    const linked = Boolean(shownPrev && task.previousId != null && String(task.previousId) === String(shownPrev.id));
-    rec.el.classList.toggle('new-run', Boolean(shownPrev) && !linked);
+    // 「새 일」 가름은 이어 맡기지 않은 일에만 붙인다. 이어 맡긴 일의 앞 일이 바로 위가 아니면(사이에 다른 일이 있거나 「사무실」에서 섞일 때)
+    // 가름 대신 어느 일에 이었는지 한 줄로 적는다(카본 화면 검수 A4)
+    const follows = task.previousId != null && String(task.previousId) !== '';
+    const linked = Boolean(shownPrev && follows && String(task.previousId) === String(shownPrev.id));
+    rec.el.classList.toggle('new-run', Boolean(shownPrev) && !follows);
     rec.el.classList.toggle('follow', linked);
-    const prevTask = task.previousId != null ? rawTasks.find((t) => t && String(t.id) === String(task.previousId)) : null;
+    const prevTask = follows ? rawTasks.find((t) => t && String(t.id) === String(task.previousId)) : null;
     const copied = Boolean(prevTask && prevTask.prompt === task.prompt && (prevTask.quoteHandoff === true || prevTask.quoteSource));
-    const bySolio = Boolean(task.quoteSource && typeof task.quoteSource === 'object') || copied;
-    const byText = task.quoteSource && typeof task.quoteSource === 'object' ? '견적 담당이 맡았습니다.' : copied ? '앞의 일에 이어서 찾습니다.' : '';
-    if (rec.byEl.hidden !== !bySolio) rec.byEl.hidden = !bySolio;
+    const quote = Boolean(task.quoteSource && typeof task.quoteSource === 'object');
+    const bySolio = quote || copied;
+    const prevAt = prevTask ? hhmm(prevTask.createdAt) : '';
+    const farText = follows && !linked && !bySolio ? (prevAt ? `${prevAt}에 맡긴 일에 이어서 맡겼습니다.` : '앞의 일에 이어서 맡겼습니다.') : '';
+    const byText = quote ? '견적 담당이 맡았습니다.' : copied ? '앞의 일에 이어서 찾습니다.' : farText;
+    if (rec.byEl.hidden !== !byText) rec.byEl.hidden = !byText;
     if (rec.byEl.textContent !== byText) rec.byEl.textContent = byText;
     if (bySolio && !rec.promptEl.hidden) rec.promptEl.hidden = true;
     rec.el.classList.toggle('by-solio', bySolio);
@@ -1562,8 +1568,10 @@ export function createOfficeTaskView(host, dispatch, { formHost = null } = {}) {
     const long = Boolean(answer) && (answer.split('\n').length > 10 || answer.length > 700) && !['running', 'queued'].includes(String(task.status));
     if (rec.moreBtn.hidden !== !long) rec.moreBtn.hidden = !long;
     rec.el.classList.toggle('long', long);
-    const who = info.deptLabel || '사무실';
-    const label = `내가 ${hhmm(task.createdAt)}에 ${who}에 맡긴 일, ${providerLabel(task.provider)}, ${info.statusText}`;
+    // 낭독 이름의 주체는 화면 글과 같다: 솔리오가 맡긴 일은 「내가」로 읽지 않는다(카본 화면 검수 A8)
+    const who = info.deptLabel || '사무실', at = hhmm(task.createdAt);
+    const subject = quote ? `견적 담당이 ${at}에 ${who}에서 맡은 일` : copied ? `솔리오가 ${at}에 앞의 일에 이어서 ${who}에 맡긴 일` : `내가 ${at}에 ${who}에 맡긴 일`;
+    const label = `${subject}, ${providerLabel(task.provider)}, ${info.statusText}`;
     if (rec.el.getAttribute('aria-label') !== label) rec.el.setAttribute('aria-label', label);
   }
   /* 「한 번에 처리」에서 온 일로 간다: 그 말이 보이면 화면 가운데로 올리고 초점을 둔다 */

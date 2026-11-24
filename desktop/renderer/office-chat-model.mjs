@@ -14,6 +14,11 @@ export const OFFICE_CHAT_OFF_SAY = Object.freeze({
   all: '일 맡기기는 아직 준비 중입니다. 부서 폴더에서 Claude Code나 Codex를 켜면 그 부서의 직원으로 섭니다.',
   dept: '일 맡기기는 아직 준비 중입니다. 이 부서 폴더에서 Claude Code나 Codex를 켜면 여기에 직원으로 섭니다.',
 });
+/* 부서가 하나도 없을 때 가운데의 안내. 맡기기가 꺼진 판은 맡긴다고 말하지 않고, 아래 「준비 중」 줄도 두지 않는다(카본 화면 검수 A3) */
+export const OFFICE_CHAT_EMPTY_SAY = Object.freeze({
+  on: '부서를 하나 만들면 그 부서에 일을 맡길 수 있습니다.',
+  off: '부서를 하나 만들고 폴더를 정하면, 그 폴더에서 켠 Claude Code와 Codex가 그 부서의 직원으로 섭니다.',
+});
 export const OFFICE_CHAT_EMPTY_DEPT = '이 부서 폴더에서 Claude Code나 Codex를 켜면 여기에 섭니다.';
 
 const firstLine = s => String(s ?? '').split('\n').map(l => l.trim()).find(Boolean) || '';
@@ -75,7 +80,13 @@ export function officeChatContacts(room, { tasks = [], chat = null, seen = new M
     const since = seen.get(key) ?? base;
     const fresh = key !== chat && since != null ? ts.filter(t => t.status === 'completed' && num(t.updatedAt) > since).length : 0;
     const latest = [...ts].sort((a, b) => num(b.updatedAt) - num(a.updatedAt))[0] || null;
+    const newest = test => [...ts].filter(test).sort((a, b) => num(b.updatedAt) - num(a.updatedAt))[0] || null;
     const waitTask = ts.find(t => officeTaskTurn(t, now) === 'wait') || null;
+    // 미리보기와 방 머리에 맡긴 일의 말을 쓰는 때: 확인을 기다리는 일, 그다음(직원이 승인을 묻는 중이 아니면) 못 끝낸 일 · 아직 안 본 새 결과 · 하는 중인 일.
+    // 이미 본 지난 답은 직원의 지금 한 가지를 가리지 않는다(카본 화면 검수 A5)
+    const pick = waitTask || (!row?.now && (newest(t => officeTaskTurn(t, now) === 'failed')
+      || (fresh ? newest(t => t.status === 'completed' && num(t.updatedAt) > since) : null)
+      || newest(t => officeTaskTurn(t, now) === 'ai'))) || null;
     let word;
     if (row?.now) word = row.val;
     else if (wait) word = wait > 1 ? `확인 기다림 ${countWord(wait)}` : '확인 기다림';
@@ -83,11 +94,12 @@ export function officeChatContacts(room, { tasks = [], chat = null, seen = new M
     else if (fresh) word = '새 결과';
     else if (ai) word = ai > 1 ? countWord(ai) + ' 일하는 중' : '일하는 중';
     else word = key === OFFICE_CHAT_ALL ? '' : row?.val || '';
-    const preview = (waitTask && taskPreview(waitTask, now)) || (latest && taskPreview(latest, now)) || (key === OFFICE_CHAT_ALL ? room?.say || '' : row?.mid || '');
+    const told = pick ? taskPreview(pick, now) : '';
+    const preview = told || (key === OFFICE_CHAT_ALL ? room?.say || '' : row?.mid || '') || (latest && taskPreview(latest, now)) || '';
     const flag = !!row?.flag || wait > 0 || fresh > 0;
     const label = [nm, flag && '새 소식', word, preview].filter(Boolean).join(', ');
     // urgent: 사람이 지금 할 일(승인 물음 · 확인을 기다리는 일)이 있다. 처음 고를 상대는 이것이 먼저다
-    return { key, nm, word: word || '', preview, flag, waiting: wait, urgent: !!row?.now || wait > 0, orbs: orbsOf(key), label };
+    return { key, nm, word: word || '', preview, fromTask: !!told, flag, waiting: wait, urgent: !!row?.now || wait > 0, orbs: orbsOf(key), label };
   }
   const out = [contact(OFFICE_CHAT_ALL, OFFICE_CHAT_NAME, null)];
   for (const d of departments) out.push(contact('d:' + d.id, d.name, rowOf('d:' + d.id)));
@@ -124,24 +136,24 @@ export function officeChatPanes(room, key, { tasking = false, contacts = [] } = 
   const rowOf = k => rows.find(r => r.key === k) || null;
   const c = contacts.find(x => x.key === key) || null;
   const empty = departments.length === 0;
+  const emptySay = empty ? OFFICE_CHAT_EMPTY_SAY[tasking ? 'on' : 'off'] : '';
   const cap = rowOf('cap');
   const capLine = cap ? [cap.nm, cap.val || cap.mid].filter(Boolean).join(' · ') : '';
   if (key === 'lobby' && rowOf('lobby')) {
     const r = rowOf('lobby');
-    return { key, head: { nm: r.nm, say: c?.preview || r.mid, then: r.val }, center: [{ ...r, pin: true }], side: [], composer: { on: false, off: '' }, empty, capLine };
+    return { key, head: { nm: r.nm, say: c?.preview || r.mid, then: r.val }, center: [{ ...r, pin: true }], side: [], composer: { on: false, off: '' }, empty, emptySay, capLine };
   }
   if (typeof key === 'string' && key.startsWith('d:') && rowOf(key)) {
     const r = rowOf(key), staffMore = Array.isArray(r.staffMore) ? r.staffMore : [], restMore = Array.isArray(r.restMore) ? r.restMore : r.more || [];
     // 맡긴 일에서 온 말(확인을 기다리는 일 따위)이 있으면 그것이 먼저다. 없으면 앞선 직원의 지금 한 가지를 문장으로 쓴다
-    const fromTask = c && (c.waiting > 0 || (c.preview && c.preview !== r.mid));
-    const head = { nm: r.nm, say: fromTask ? sentence(c.preview) : deptSay(room, key, r), then: c?.word || r.val };
-    if (tasking) return { key, head, center: null, side: [{ ...r, pin: true, more: [...staffMore, ...restMore] }], composer: { on: true, deptPick: false, departmentId: key.slice(2) }, empty, capLine };
+    const head = { nm: r.nm, say: c?.fromTask ? sentence(c.preview) : deptSay(room, key, r), then: c?.word || r.val };
+    if (tasking) return { key, head, center: null, side: [{ ...r, pin: true, more: [...staffMore, ...restMore] }], composer: { on: true, deptPick: false, departmentId: key.slice(2) }, empty, emptySay, capLine };
     const now = staffMore.length ? staffMore : [['note', OFFICE_CHAT_EMPTY_DEPT]];
-    return { key, head, center: [{ key: 'now:' + key, nm: '지금', mid: r.val, val: '', when: '', pin: true, label: `지금, ${r.nm}, ${r.val}`, more: now }], side: [{ ...r, pin: true, more: restMore }], composer: { on: false, off: OFFICE_CHAT_OFF_SAY.dept }, empty, capLine };
+    return { key, head, center: [{ key: 'now:' + key, nm: '지금', mid: r.val, val: '', when: '', pin: true, label: `지금, ${r.nm}, ${r.val}`, more: now }], side: [{ ...r, pin: true, more: restMore }], composer: { on: false, off: OFFICE_CHAT_OFF_SAY.dept }, empty, emptySay, capLine };
   }
   const head = { nm: OFFICE_CHAT_NAME, say: room?.say || '', then: room?.then || '' };
   const side = ['cap', 'cfg', 'look'].map(rowOf).filter(Boolean).map(r => ({ ...r, gap: false }));
-  if (tasking) return { key: OFFICE_CHAT_ALL, head, center: null, side, composer: { on: true, deptPick: true, departmentId: null }, empty, capLine };
+  if (tasking) return { key: OFFICE_CHAT_ALL, head, center: null, side, composer: { on: true, deptPick: true, departmentId: null }, empty, emptySay, capLine };
   // 배포판의 「사무실」: 부서마다 지금 선 직원을 펼친 채 세운다
   const center = departments.map(d => {
     const r = rowOf('d:' + d.id);
@@ -149,5 +161,5 @@ export function officeChatPanes(room, key, { tasking = false, contacts = [] } = 
     const staffMore = Array.isArray(r.staffMore) && r.staffMore.length ? r.staffMore : [['note', OFFICE_CHAT_EMPTY_DEPT]];
     return { key: 'now:d:' + d.id, nm: r.nm, mid: r.val, val: '', when: '', pin: true, label: `${r.nm}, ${r.val}`, more: staffMore };
   }).filter(Boolean);
-  return { key: OFFICE_CHAT_ALL, head, center, side, composer: { on: false, off: OFFICE_CHAT_OFF_SAY.all }, empty, capLine };
+  return { key: OFFICE_CHAT_ALL, head, center, side, composer: { on: false, off: empty ? '' : OFFICE_CHAT_OFF_SAY.all }, empty, emptySay, capLine };
 }

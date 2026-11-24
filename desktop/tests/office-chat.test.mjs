@@ -215,3 +215,28 @@ test('24 departments all get a contact, even past the six the floor draws', () =
   assert.equal(c.contacts.length, 25);
   assert.equal(officeChatContacts({ rows: [], departments: [], seated: [] }, {}).length, 1);
 });
+
+test('an answer already seen does not hide what staff are doing now; unseen, failed and running tasks still speak first (카본 A5)', () => {
+  const room = {
+    rows: [{ key: 'd:ddev', nm: '개발부', mid: '명령 · npm', val: '승인을 물었습니다', now: true }, { key: 'd:dmkt', nm: '마케팅부', mid: '쓰기 · 블로그.md', val: '하나 일하는 중' }],
+    departments: [{ id: 'ddev', name: '개발부' }, { id: 'dmkt', name: '마케팅부' }],
+    seated: [{ id: 's1', departmentId: 'ddev', status: 'asked', tool: 'claude', say: '3분 전에 승인을 물었습니다' }, { id: 's2', departmentId: 'dmkt', status: 'working', tool: 'codex', say: '일하는 중' }],
+  };
+  const old = [task('a1', { departmentId: 'ddev', updatedAt: NOW - 50 * MIN }), task('a2', { departmentId: 'dmkt', updatedAt: NOW - 50 * MIN })];
+  const seen = new Map([['d:ddev', NOW - 10 * MIN], ['d:dmkt', NOW - 10 * MIN]]);
+  const cs = officeChatContacts(room, { tasks: old, seen, now: NOW });
+  const dev = cs.find(c => c.key === 'd:ddev'), mkt = cs.find(c => c.key === 'd:dmkt');
+  assert.equal(dev.preview, '명령 · npm');
+  assert.equal(dev.fromTask, false);
+  assert.equal(mkt.preview, '쓰기 · 블로그.md');
+  assert.equal(officeChatPanes(room, 'd:ddev', { tasking: true, contacts: cs }).head.say, 'Claude Code가 3분 전에 승인을 물었습니다.');
+  // 아직 안 본 새 결과는 미리보기에 오른다. 승인을 묻는 부서는 그 물음이 먼저다
+  const fresh = [task('b1', { departmentId: 'dmkt', answer: '블로그 글을 다 썼습니다.', updatedAt: NOW - 2 * MIN }), task('b2', { departmentId: 'ddev', updatedAt: NOW - 2 * MIN })];
+  const cs2 = officeChatContacts(room, { tasks: fresh, seen, now: NOW });
+  assert.equal(cs2.find(c => c.key === 'd:dmkt').preview, '블로그 글을 다 썼습니다.');
+  assert.equal(cs2.find(c => c.key === 'd:dmkt').fromTask, true);
+  assert.equal(cs2.find(c => c.key === 'd:ddev').preview, '명령 · npm');
+  // 하는 중인 일은 승인 물음이 없는 부서에서 미리보기가 된다
+  const run = [task('c1', { departmentId: 'dmkt', status: 'running', prompt: '보도자료 초안', answer: '' })];
+  assert.match(officeChatContacts(room, { tasks: run, seen, now: NOW }).find(c => c.key === 'd:dmkt').preview, /보도자료 초안/);
+});
