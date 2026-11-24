@@ -2,7 +2,8 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-/* 6판(11-24): 유호님 「더 고쳐줘」(5판 뒤).
+/* 7판(11-24): 유호님 「더 고쳐줘」(6판 뒤) — 납작한 검정 대신 응원봉 빛: 바닥에서 오르는 무대 빛(보라 → 분홍 → 복숭아), 말하는 팬 쪽으로 옮겨 가는 보라 빛, 사진은 보라 톤으로 밝게.
+   6판(11-24): 유호님 「더 고쳐줘」(5판 뒤).
    5판은 WORLD 정본(월드 시그널 · experiences/brand-opening/world-ui.css)이 아니라 토스 값을 가져왔고, 뜻 줄의 라틴 글꼴이 Bold 한 벌이라 굵게 찍혔다.
    6판은 WORLD 토큰을 그대로 쓴다 — 바탕 #060709, 면 #121317 · #191A1F, 글자 100 · 76 · 58 · 42 · 22%, 크기 13 · 14 · 15.5 · 17 · 20 · 24 · 30,
    굵기 680 · 650 · 600 · 550 · 450, 라틴은 SYNK Latin 세 벌, 배울 한국어는 22px 이상, 튜터는 흰 말풍선, 고르기는 알약 묶음, 주 단추는 흰 알약 하나.
@@ -55,7 +56,7 @@ p{margin:0}
 .note{font-size:14px;line-height:1.65;color:var(--pageInk2);max-width:54ch;margin:0}
 
 /* ── 휴대폰 ── */
-.phone{position:relative;width:390px;height:844px;border-radius:46px;background:var(--w-bg);color:var(--w-ink);overflow:hidden;box-shadow:0 50px 100px -40px rgba(120,100,255,.32),0 0 0 10px #111214,0 0 0 11px #2a2c31;isolation:isolate;font-family:var(--sans);letter-spacing:-.01em}
+.phone{position:relative;width:390px;height:844px;border-radius:46px;background:#06060f;color:var(--w-ink);overflow:hidden;box-shadow:0 50px 100px -40px rgba(120,100,255,.32),0 0 0 10px #111214,0 0 0 11px #2a2c31;isolation:isolate;font-family:var(--sans);letter-spacing:-.01em}
 .phone .onlyB{display:none}
 .phone.vB .onlyA{display:none}
 .phone.vB .onlyB{display:block}
@@ -64,8 +65,14 @@ p{margin:0}
 .scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
 .scroll::-webkit-scrollbar{display:none}
 /* 바탕: 객석 사진을 흐리게 깐 빛(납작한 검정 대신) */
-.amb{position:absolute;inset:-12%;z-index:0;background:url(img/crowd4.webp) 50% 62%/cover;filter:blur(46px) saturate(1.5) brightness(.62);opacity:.5;pointer-events:none}
-.amb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,7,9,.2),rgba(6,7,9,.55) 60%,rgba(6,7,9,.8))}
+.amb{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(150% 50% at 50% 114%,rgba(255,170,132,.6) 0%,rgba(232,92,196,.44) 28%,rgba(124,92,255,.3) 55%,rgba(11,9,30,0) 82%),linear-gradient(180deg,#06060f 0%,#0a0920 48%,#150e31 100%)}
+.amb::after{content:"";position:absolute;left:var(--bx,30%);top:36%;width:460px;height:560px;margin-left:-230px;background:radial-gradient(closest-side,rgba(164,139,255,.4),rgba(164,139,255,0));transition:left 1s var(--spring)}
+#path .amb,#letter .amb{background:radial-gradient(150% 42% at 50% 118%,rgba(255,170,132,.4) 0%,rgba(232,92,196,.3) 30%,rgba(124,92,255,.2) 56%,rgba(11,9,30,0) 82%),linear-gradient(180deg,#06060f 0%,#0a0920 60%,#120c2a 100%)}
+#path .amb::after,#letter .amb::after{display:none}
+/* 말하는 화면은 객석 암전 그대로(7판 쌍 맹검: 보라 바닥 빛을 깐 판이 6판에 졌다), 색 점은 「내 차례」 하나만 */
+#encore .amb{background:#06060f}
+#encore .amb::after{display:none}
+#encore .sub .who b::before{display:none}
 
 /* 위 띠 */
 .top{position:absolute;top:52px;left:var(--g);right:var(--g);z-index:10;display:flex;align-items:center;gap:12px;height:40px}
@@ -76,14 +83,16 @@ p{margin:0}
 .prog i b{position:absolute;inset:0;background:#fff;transform:scaleX(0);transform-origin:left}
 .back{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .back::before{content:"";width:9px;height:9px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateX(2px) rotate(45deg)}
-.topfade{position:absolute;z-index:9;left:0;right:0;top:0;height:120px;background:linear-gradient(180deg,var(--w-bg) 80%,rgba(6,7,9,0));opacity:0;transition:opacity .2s ease;pointer-events:none}
+.topfade{position:absolute;z-index:9;left:0;right:0;top:0;height:120px;background:linear-gradient(180deg,#07061a 80%,rgba(7,6,26,0));opacity:0;transition:opacity .2s ease;pointer-events:none}
 .topfade.on{opacity:1}
 
 /* 사진(장면) — 위에 밝게, 끝은 바탕으로 녹는다. 글자는 사람 위에 얹지 않는다 */
 .shot{position:absolute;inset:0 0 auto 0;overflow:hidden;z-index:1}
-.shot::after{content:'';position:absolute;inset:-1px;z-index:2;background:linear-gradient(180deg,rgba(6,7,9,.55),transparent 24%,transparent 62%,rgba(6,7,9,.6) 84%,rgba(6,7,9,0) 100%);pointer-events:none}
+.shot::after{content:'';position:absolute;inset:-1px;z-index:3;background:linear-gradient(180deg,rgba(6,6,15,.55),transparent 24%,transparent 62%,rgba(10,8,28,.5) 84%,rgba(10,8,28,0) 100%);pointer-events:none}
 .shot{-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent);mask-image:linear-gradient(180deg,#000 72%,transparent)}
-.hall{position:absolute;aspect-ratio:720/1203;background:url(img/crowd4.webp) 0 0/100% 100% no-repeat;filter:brightness(1.22) contrast(1.06) saturate(1.1)}
+.hall{position:absolute;aspect-ratio:720/1203;background:url(img/crowd4.webp) 0 0/100% 100% no-repeat;filter:brightness(1.32) contrast(1.08) saturate(1.12)}
+.hall::before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(96,66,230,.34),rgba(214,76,176,.26));mix-blend-mode:soft-light;pointer-events:none}
+.hall .dim{z-index:1}.hall .bloom{z-index:2}
 .hall.five{background-image:url(img/crowd5.webp)}
 @property --sx{syntax:'<percentage>';inherits:false;initial-value:26%}
 @property --sy{syntax:'<percentage>';inherits:false;initial-value:66%}
@@ -99,12 +108,14 @@ p{margin:0}
 .who b{font-weight:650;color:var(--who)}
 .say{font-size:24px;line-height:33px;font-weight:680;letter-spacing:-.025em;text-wrap:balance}
 .say .w{display:inline-block;white-space:pre}
-.mean{font-family:var(--latin);font-size:14px;line-height:20px;font-weight:450;color:var(--w-ink-3);text-wrap:pretty}
+.mean{font-family:var(--latin);font-size:15px;line-height:22px;font-weight:450;color:var(--w-ink-3);text-wrap:pretty}
 .lab13{font-size:13px;line-height:18px;font-weight:550;color:var(--w-ink-3)}
 
 /* 자막(A): 가운데 한 명씩 */
 .sub{display:grid;justify-items:center;text-align:center}
-.sub .say{margin-top:8px;max-width:15em;text-shadow:0 2px 16px rgba(0,0,0,.5)}
+.sub .say{margin-top:10px;max-width:14em;font-size:26px;line-height:35px;text-shadow:0 2px 18px rgba(20,8,40,.55)}
+.sub .who b,.fline .who b{display:inline-flex;align-items:center;gap:6px}
+.sub .who b::before,.fline .who b::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--fan);box-shadow:0 0 10px var(--fan)}
 .sub .mean{margin-top:8px;max-width:30em}
 
 /* 튜터 — WORLD 말풍선(흰 바탕 · 검정 글자 · 꼬리, 이름은 위 작은 라벨) */
@@ -124,7 +135,7 @@ p{margin:0}
 .ly.cur .tutorB.has{display:grid}
 
 /* 카드 · 단추 */
-.card{border-radius:20px;padding:18px 20px 20px;background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line)}
+.card{border-radius:20px;padding:18px 20px 20px;background:rgba(12,10,30,.58);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
 .card .head{display:flex;align-items:center;gap:8px}
 .card .head img{width:24px;height:24px;border-radius:50%;object-fit:cover}
 .card .head .dot{width:7px;height:7px;border-radius:50%;background:var(--turn);box-shadow:0 0 10px var(--turn)}
@@ -132,7 +143,7 @@ p{margin:0}
 .card .learn{margin-top:10px;font-size:22px;line-height:31px;font-weight:680;letter-spacing:-.02em;text-wrap:balance}
 .card .learn b{font-weight:800;color:#fff}
 .card .mean{margin-top:6px}
-.pill{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:17px;font-weight:600;width:100%}
+.pill{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:17px;font-weight:600;width:100%;box-shadow:0 14px 40px -10px rgba(255,170,140,.55)}
 .pill .ar{width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 .foot{position:absolute;z-index:12;left:var(--g);right:var(--g);bottom:34px;display:grid;gap:14px}
 .hint{text-align:center;font-size:13px;font-weight:450;color:var(--w-ink-q)}
@@ -184,7 +195,7 @@ p{margin:0}
 .who2 b{display:block;font-size:17px;line-height:24px;font-weight:680}
 .who2 span{display:flex;gap:8px;margin-top:2px;font-size:13px;font-weight:600;color:var(--who)}
 .who2 span u{color:var(--w-ink-q);text-decoration:none;font-weight:550}
-.fansBtn{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px 0 8px;border-radius:999px;background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.fansBtn{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px 0 8px;border-radius:999px;background:rgba(12,10,30,.58);box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .stack{display:flex}
 .stack img{width:26px;height:26px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--w-s1)}
 .stack img+img{margin-left:-8px}
@@ -211,7 +222,7 @@ p{margin:0}
 .stop .ok{color:var(--done);font-weight:600}
 .stop.dream .ph{width:100%;height:148px;border-radius:16px;margin-top:12px;background:url(img/dream.webp) 50% 85%/cover;opacity:.9}
 .lv{position:relative;padding:4px 0 4px 60px;font:600 11px/16px var(--latin);letter-spacing:.08em;color:var(--w-ink-q)}
-#path .foot::before{content:"";position:absolute;z-index:-1;left:calc(var(--g) * -1);right:calc(var(--g) * -1);bottom:-34px;height:150px;background:linear-gradient(180deg,rgba(6,7,9,0),var(--w-bg) 45%);pointer-events:none}
+#path .foot::before{content:"";position:absolute;z-index:-1;left:calc(var(--g) * -1);right:calc(var(--g) * -1);bottom:-34px;height:150px;background:linear-gradient(180deg,rgba(14,11,40,0),rgba(14,11,40,.92) 45%);pointer-events:none}
 
 /* ── 내 팬 ── */
 #fans .shot{height:400px}
@@ -219,7 +230,7 @@ p{margin:0}
 .body{position:relative;z-index:6;margin-top:356px;padding:0 var(--g) 48px}
 .fhead .t{font-size:30px;line-height:38px;font-weight:680;letter-spacing:-.03em}
 .fhead .s{margin-top:6px;font-size:15.5px;line-height:22px;font-weight:450;color:var(--w-ink-3)}
-.pick{margin-top:24px;display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line)}
+.pick{margin-top:24px;display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(12,10,30,.58);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
 .pk{flex:1;height:40px;border-radius:999px;font-size:15.5px;font-weight:600;color:var(--w-ink-3);text-align:center;transition:background .2s ease,color .2s ease}
 .pk[aria-pressed="true"]{background:var(--w-ink);color:var(--w-on-ink)}
 #fans .fline{margin-top:20px;display:grid;gap:8px;min-height:132px;align-content:start}
@@ -235,7 +246,7 @@ p{margin:0}
 .sec > .lab13{display:block;margin-bottom:12px}
 .sec .pill{margin-top:16px}
 .tiles{margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.tile{display:grid;gap:4px;align-content:start;min-height:120px;padding:16px;border-radius:20px;background:var(--w-s1);box-shadow:inset 0 0 0 1px var(--w-line)}
+.tile{display:grid;gap:4px;align-content:start;min-height:120px;padding:16px;border-radius:20px;background:rgba(12,10,30,.58);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
 .tile .k{font-size:13px;line-height:18px;font-weight:600;color:var(--who)}
 .tile .h{margin-top:4px;font-size:17px;line-height:24px;font-weight:650}
 .tile .d{font-size:14px;line-height:20px;font-weight:450;color:var(--w-ink-q)}
@@ -246,7 +257,7 @@ p{margin:0}
 /* ── 다시 말하기 ── */
 #encore .shot{height:480px}
 #encore .hall{width:180%;left:-62%;top:-420px}
-#encore .shot::after{background:linear-gradient(180deg,rgba(6,7,9,.55),transparent 22%,transparent 52%,rgba(6,7,9,.82) 74%,rgba(6,7,9,.95) 100%)}
+#encore .shot::after{background:linear-gradient(180deg,rgba(6,6,15,.55),transparent 22%,transparent 52%,rgba(10,9,30,.84) 76%,rgba(10,9,30,.96) 100%)}
 #encore .hall .dim{background:radial-gradient(120px 150px at var(--sx) var(--sy),rgba(6,7,9,0) 0,rgba(6,7,9,0) 44%,rgba(6,7,9,.76) 100%)}
 #encore .sub{position:absolute;z-index:10;left:var(--g);right:var(--g);top:340px}
 #encore .panel{position:absolute;z-index:12;left:var(--g);right:var(--g);bottom:34px;display:grid;gap:24px}
@@ -426,7 +437,7 @@ p{margin:0}
   const FANS = [
     { img: 'fan1', n: '나랑', role: '최애 팬', say: '「길을 잃어서 한참 헤맸어요」, 한 번에 해냈어요!', mean: 'You nailed “I was lost for quite a while” in one go!', fx: 26.7, fy: 65.8, lx: 13.2, ly: 71.7 },
     { img: 'fan2', n: '하린', role: '내 팬', say: '「아세요?」로 바꾼 거, 딱 맞았어요.', mean: 'Switching to “아세요?” was exactly right.', fx: 49.7, fy: 53.4, lx: 42.4, ly: 58.9, tutor: true },
-    { img: 'fan3', n: '도윤', role: '내 팬', say: '「덕분에 살았어요」, 두 번째엔 또렷했어요.', mean: '“덕분에 살았어요” came through clearly the second time.', fx: 75.8, fy: 52.4, lx: 75.0, ly: 57.0 }
+    { img: 'fan3', n: '도윤', role: '내 팬', say: '「덕분에 살았어요」, 두 번째엔 또렷했어요.', mean: '“덕분에 살았어요” came through clearly the second time.', fx: 75.8, fy: 52.4, lx: 75.0, ly: 57.0 }
   ];
   const DAY3 = { say: '사흘째 기다리는 중이에요. 한 줄이면 충분해요.', mean: 'Day three of waiting. One line is enough.' };
   const TUTOR = '<span class="who">서하 선배 · 튜터</span><div class="bub">처음 만난 선배에게는 「알아?」 대신 <b>「아세요?」</b>로 물어요.</div>';
@@ -449,6 +460,8 @@ p{margin:0}
   }
   const light = (dim, bloom, f) => {
     dim.style.setProperty('--sx', f.fx + '%'); dim.style.setProperty('--sy', f.fy + '%');
+    const scr = dim.closest('.scr'), hall = dim.parentElement, amb = scr && scr.querySelector('.amb');
+    if (amb && hall.offsetWidth) amb.style.setProperty('--bx', (hall.offsetLeft + hall.offsetWidth * f.lx / 100) + 'px');
     bloom.style.left = f.lx + '%'; bloom.style.top = f.ly + '%';
     bloom.classList.remove('go'); void bloom.offsetWidth; bloom.classList.add('go');
   };
@@ -521,7 +534,6 @@ p{margin:0}
     $$('[data-fans]').forEach(e => { e.textContent = S.fans; });
     $('#stack').innerHTML = Array.from({ length: S.fans }, (_, k) => `<img src="img/fan${k + 1}.webp" alt="">`).join('');
     $$('.hall').forEach(h => h.classList.toggle('five', S.fans >= 5));
-    $$('.amb').forEach(a => { a.style.backgroundImage = `url(img/crowd${S.fans >= 5 ? 5 : 4}.webp)`; });
   }
   function renderFans() {
     renderCounts();
