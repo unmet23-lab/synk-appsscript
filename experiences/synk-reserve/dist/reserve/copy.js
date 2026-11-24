@@ -39,9 +39,9 @@
   const SCENES = [
     {
       id: 'gate', shot: 'name',
-      ko: { tag: '01 입학', name: '정문에서 「환영」이 기다립니다', body: '내 이름을 한글로 직접 써서 학생증을 받습니다. 얼굴도, 꿈도 내가 고릅니다.', alt: '대학 정문 앞 광장에 털실로 만든 큰 「환영」 글자가 서 있다. 정문 둘레에 벚꽃이 피어 있다.' },
-      en: { tag: '01 · First day', name: 'A felt 「환영」 (Welcome) waits at the gate', body: 'Write your own name in Hangul to get your student ID. You choose your look and your dream, too.', alt: 'Giant felt letters 환영 (Welcome) stand in the square before the university gate, with cherry blossoms around it.' },
-      mn: { tag: '01 · Элсэлт', name: 'Хаалган дээр «환영» (Тавтай морил) хүлээж байна', body: 'Нэрээ солонгос үсгээр өөрөө бичиж, оюутны үнэмлэхээ авна. Төрх, мөрөөдлөө ч өөрөө сонгоно.', alt: 'Их сургуулийн хаалганы өмнөх талбайд ноосоор хийсэн «환영» (Тавтай морил) гэсэн том үсэг байна. Хаалганы орчим интоор цэцэглэжээ.' },
+      ko: { tag: '01 · 입학', name: '정문에서 「환영」이 기다립니다', body: '내 이름을 한글로 직접 써서 학생증을 받습니다. 얼굴도, 꿈도 내가 고릅니다.', alt: '대학 정문 앞 광장에 털실로 만든 큰 「환영」 글자가 서 있다. 정문 둘레에 벚꽃이 피어 있다.' },
+      en: { tag: '01 · First day', name: 'Giant felt letters 환영 (Welcome) greet you at the gate', body: 'Write your own name in Hangul to get your student ID. You choose your look and your dream, too.', alt: 'Giant felt letters 환영 (Welcome) stand in the square before the university gate, with cherry blossoms around it.' },
+      mn: { tag: '01 · Элсэлт', name: 'Хаалган дээр таныг «환영» (Тавтай морил) гэсэн бичиг угтана', body: 'Нэрээ солонгос үсгээр өөрөө бичиж, оюутны үнэмлэхээ авна. Төрх, мөрөөдлөө ч өөрөө сонгоно.', alt: 'Их сургуулийн хаалганы өмнөх талбайд ноосоор хийсэн «환영» (Тавтай морил) гэсэн том үсэг байна. Хаалганы орчим интоор цэцэглэжээ.' },
     },
     {
       id: 'cafeteria', shot: 'road', line: '혹시 도서관이 어디에 있는지 아세요?',
@@ -65,7 +65,7 @@
       id: 'idol',
       ko: { tag: '꿈의 무대', name: '8화 끝에서, 내 꿈의 무대에 섭니다', body: 'TOPIK 1급부터 4급까지 이어지는 이야기의 끝. 아이돌이면 데뷔 무대, 배우면 첫 주연 시사회입니다.', alt: '공연장 무대 위에 털실로 만든 「데뷔」 글자가 조명을 받고, 무대 옆에 선 사람의 뒷모습이 보인다.' },
       en: { tag: 'Dream stage', name: 'At the end of Ep. 8, you step onto your dream stage', body: 'The story runs from TOPIK Level 1 to Level 4. If you dream of being an idol, it ends at your debut; if an actor, at your first lead-role premiere.', alt: 'Felt letters 데뷔 (Debut) lit up on a concert stage, with someone watching from the wings.' },
-      mn: { tag: 'Мөрөөдлийн тайз', name: '8-р ангийн төгсгөлд мөрөөдлийн тайзан дээрээ гарна', body: 'TOPIK-ийн 1-ээс 4-р түвшин хүртэл үргэлжлэх түүхийн төгсгөл. Айдол бол дебютийн тайз, жүжигчин бол анхны гол дүрийн нээлт.', alt: 'Концертын тайзан дээр ноосоор хийсэн «데뷔» (Дебют) үсэг гэрэлтэж, тайзны хажууд зогсох хүний нуруу харагдана.' },
+      mn: { tag: 'Мөрөөдлийн тайз', name: '8-р ангийн төгсгөлд мөрөөдлийн тайзан дээрээ гарна', body: 'TOPIK-ийн 1-ээс 4-р түвшин хүртэл үргэлжлэх түүхийн төгсгөл. Айдол бол дебютийн тайз, жүжигчин бол анхны гол дүрийн нээлт.', alt: 'Концертын тайзан дээр ноосон «데뷔» (Дебют) гэсэн том үсэг гэрэлтэж, тайзны хажууд нэг хүн ар талаасаа харагдана.' },
     },
   ];
   // 동아리 친구 셋(장면 taeo의 얼굴 줄). 사진은 src/img/<id>.webp.
@@ -198,7 +198,7 @@
     nowTag: 'Одоо туршиж болох зүйл',
     nowTitle: 'Хаврын улирал. Та Сөүлд суралцахаар ирлээ.',
     nowSub: 'Солонгосоор ярьж түүхээ үргэлжлүүлдэг тоглоом — SYNK WORLD',
-    nowGo: 'Үнэгүй тоглож үзэх',
+    nowGo: '«Сөүл рүү хийх аялал» хэсгийг үнэгүй тоглох',
     nowEnd: 'Албан ёсоор нээгдэхээс өмнө ч «Сөүл рүү хийх аялал» болон 1-р анги үнэгүй.',
     nowGo2: 'SYNK WORLD дээр тоглох',
     home: 'SYNK нүүр хуудас',

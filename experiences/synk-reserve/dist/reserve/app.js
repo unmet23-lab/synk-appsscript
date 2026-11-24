@@ -166,8 +166,8 @@
       const x = s[state.lang];
       const line = s.line ? `<p class="rs-line"><small>${keep(x.lineLabel)}</small><span lang="ko">${esc(s.line)}</span>${x.lineMean ? `<span class="rs-mean">${keep(x.lineMean)}</span>` : ''}</p>` : '';
       return `<li class="rs-chapter${i === sceneAt ? ' on' : ''}" data-i="${i}">`
-        + `<div class="rs-chapter-pic"><img src="${pic(s.id)}" alt="${esc(x.alt)}" width="900" height="1125" loading="lazy" decoding="async">${s.soon ? `<p class="rs-soon">${keep(x.soon)}</p>` : ''}</div>`
-        + `<div class="rs-chapter-say"><span class="rs-num">${keep(x.tag)}</span><h3>${keep(x.name)}</h3><p>${keep(x.body)}</p>${line}${s.friends ? `<div class="rs-faces">${faces}</div>` : ''}</div></li>`;
+        + `<div class="rs-chapter-pic"><img src="${pic(s.id)}" alt="${esc(x.alt)}" width="900" height="1125" loading="lazy" decoding="async">${s.soon ? `<span class="rs-soon" aria-hidden="true">${keep(x.soon)}</span>` : ''}</div>`
+        + `<div class="rs-chapter-say"><span class="rs-num">${keep(x.tag)}${s.soon ? `<em class="rs-soon-tag">${keep(x.soon)}</em>` : ''}</span><h3>${keep(x.name)}</h3><p>${keep(x.body)}</p>${line}${s.friends ? `<div class="rs-faces">${faces}</div>` : ''}</div></li>`;
     }).join('');
     showScene(sceneAt, false);
   }
@@ -181,7 +181,7 @@
     if (!stage) return;
     const s = C.SCENES[i], x = s[state.lang];
     const tag = $('.rs-stage-tag');
-    if (tag) tag.textContent = s.soon ? x.soon : x.tag;
+    if (tag) tag.textContent = x.tag;
     const phone = $('.rs-stage-phone');
     if (phone) {
       phone.classList.toggle('on', !!s.shot);
