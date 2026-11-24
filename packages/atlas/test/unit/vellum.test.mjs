@@ -673,8 +673,8 @@ const SCENE_SAMPLES = Object.freeze([
 const KO_FAN = Object.freeze({
   'take2:done': '「한 번 더」도 말해 봤어요.',
   'take2:wait': '「한 번 더」는 기다릴게요. 하면 자리 하나가 켜져요.',
-  'transfer:done': '처음 보는 말까지 말해 봤어요.',
-  'transfer:wait': '처음 보는 말도 들어 보고 싶어요.',
+  'transfer:done': '「처음 보는 말」까지 말해 봤어요.',
+  'transfer:wait': '「처음 보는 말」도 들어 보고 싶어요.',
 });
 const KO_DEFAULT = Object.freeze({
   'take2:done': '「한 번 더」를 말해 봤어요.',

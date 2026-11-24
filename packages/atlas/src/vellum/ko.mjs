@@ -54,11 +54,11 @@ const SCENE_STEP = Object.freeze({
   transfer: Object.freeze({
     done: Object.freeze({
       default: '처음 보는 말을 말해 봤어요.',
-      fan: '처음 보는 말까지 말해 봤어요.',
+      fan: '「처음 보는 말」까지 말해 봤어요.',
     }),
     wait: Object.freeze({
       default: '처음 보는 말은 아직이에요.',
-      fan: '처음 보는 말도 들어 보고 싶어요.',
+      fan: '「처음 보는 말」도 들어 보고 싶어요.',
     }),
   }),
 });

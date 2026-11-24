@@ -11,28 +11,28 @@ const withFan = (sentence, fan) => ({ standard: { default: [sentence], fan: [fan
 
 // 장면 사실(서울행 「내 팬」 1차 — ko.mjs와 같은 뜻 · 같은 말투, 더한 주장 없음). 단계 이름은 서울행 화면 글 표(experiences/seoul-arrival/
 // strings.mjs의 「1화 · 한 번 더」 · 「1화 · 처음 보는 말」)의 영어 One more time · Something new와 같다.
-// 아직 현지어 검수 전이다 — Opus 역번역 → Fable 교정 → 카본 문법 채점을 지나야 화면에 낸다.
+// 현지어 검수: Opus 역번역 → Fable 교정(11-25, 팬 줄 — 단계 이름은 큰따옴표 “…”, 마침표는 따옴표 안) → 카본 문법 채점. fan 줄만 화면에 낸다.
 const lines = n => `${n} ${n === 1 ? 'line' : 'lines'}`;
 const sceneLines = s => `You spoke ${lines(s.n)} out loud.`;
 const SCENE_STEP = Object.freeze({
   take2: Object.freeze({
     done: Object.freeze({
       default: 'You tried ‘One more time’.',
-      fan: 'You tried ‘One more time’ too.',
+      fan: 'You tried “One more time” too.',
     }),
     wait: Object.freeze({
       default: '‘One more time’ isn’t done yet.',
-      fan: 'I’ll wait for ‘One more time’. When you do it, a seat lights up.',
+      fan: 'I’ll wait for you to try “One more time.” When you do, a seat lights up.',
     }),
   }),
   transfer: Object.freeze({
     done: Object.freeze({
       default: 'You tried saying something new.',
-      fan: 'You even tried saying something new.',
+      fan: 'You even tried “Something new.”',
     }),
     wait: Object.freeze({
       default: '‘Something new’ isn’t done yet.',
-      fan: 'I’d love to hear you say something new, too.',
+      fan: 'I’d love to hear you try “Something new” too.',
     }),
   }),
 });
