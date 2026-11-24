@@ -23,8 +23,8 @@ export const CELLS: Cell[] = [
 // 몽글 자리(그림 좌표) — 그림을 구운 뒤 잰다
 export const MONGLE: Record<string, Spot> = {};
 // 눈송이가 떨어져 닿는 자리(그림 좌표) — 첫째는 e_up의 몽글 왼쪽 눈, 둘째는 e_two의 몽글 열린 눈
-export const HIT1 = { x: 430, y: 1080, size: 300 };
-export const HIT2 = { x: 700, y: 1150, size: 220 };
+export const HIT1 = { x: 450, y: 1015, size: 240 }; // 11-24 15시 회차가 e_up_164026에서 잼(몽글 왼쪽 눈) — e_splat의 눈송이는 (435, 1110) · 폭 약 240
+export const HIT2 = { x: 804, y: 1155, size: 150 }; // e_two_165035의 몽글 열린 눈
 export const FALL1 = { from: 9.55, to: 10.4 };
 export const FALL2 = { from: 16.35, to: 16.9 };
 
@@ -68,5 +68,5 @@ export const TXT = {
   end: '눈에 눈 = snow in your eye',
 };
 // 이름표 자리(e_two 그림 좌표) — 몽글의 열린 눈 · 눈에 붙은 눈송이
-export const TAG_EYE = { x: 760, y: 1120 };
-export const TAG_SNOW = { x: 560, y: 1080 };
+export const TAG_EYE = { x: 804, y: 1155 }; // e_two_165035에서 잼
+export const TAG_SNOW = { x: 675, y: 1134 };

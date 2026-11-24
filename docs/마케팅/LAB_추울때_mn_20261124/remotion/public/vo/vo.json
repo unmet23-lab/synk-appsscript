@@ -15,7 +15,7 @@
   "seed": 1124,
   "lufs": -16
  },
- "made": "2026-11-23T22:49:04.864Z",
+ "made": "2026-11-24T10:17:10.681Z",
  "lines": [
   {
    "id": "f1",
@@ -47,19 +47,19 @@
   {
    "id": "f4",
    "text": "이불 밖은 위험해…",
-   "dur": 1.332,
-   "syllablesPerSec": 5.26,
+   "dur": 1.597,
+   "syllablesPerSec": 4.38,
    "src": "f4.wav",
-   "key": "d8dd4a4f666a21693f9c69952bbd5439",
+   "key": "bb1237f38b850d35cc607acfdfc52fdc",
    "words": 3
   },
   {
    "id": "f5",
    "text": "삼… 삼십 도?!",
-   "dur": 1.907,
-   "syllablesPerSec": 2.1,
+   "dur": 1.468,
+   "syllablesPerSec": 2.72,
    "src": "f5.wav",
-   "key": "ab742e28f346cffeb7df4492061f770b",
+   "key": "df612b08118e920daf562cb86744c778",
    "words": 3
   },
   {

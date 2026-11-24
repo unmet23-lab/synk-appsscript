@@ -58,6 +58,10 @@ const Plate: React.FC<{ i: number; t: number }> = ({ i, t }) => {
       oy = f.cy - f.ry * 0.3;
     }
   }
+  if (img === 'open.jpg') {
+    // 첫 2초 박자 — 원본 0.6초 박자 자리에서 한 번 당긴다(올리기 전 검사 ⑮ 「첫 2초」, 11-24 15시 회차)
+    z *= 1 + 0.07 * interpolate(t, [0.6, 0.72], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  }
   if (img === 'gust.jpg') {
     // 돌풍 — 판이 한 번 옆으로 밀린다
     const g = interpolate(t, [c.at, c.at + 0.25, c.at + 1.2], [0, 1, 0], clamp);
@@ -166,8 +170,9 @@ const Gauge: React.FC<{ p: LocPack; t: number }> = ({ p, t }) => {
   return (
     <>
       <Glow x={X + 70} y={TOP + H / 2 - 20} w={330} h={H + 380} a={0.55} />
+      {t < POP_AT ? <Glow x={X + 120} y={TOP - 110} w={420} h={340} a={0.72} /> : null}
       {/* 11-24 15시 회차 이해 시험(s · h · G 셋이 「게이지가 무엇을 재는지」를 짚음): 이름표를 크게 · 밝게, 위에 🥶, 오를 때마다 「+25%」 */}
-      <div style={{ position: 'absolute', left: X - 30, bottom: 1920 - (TOP - 12), width: 330, opacity: interpolate(t, [POP_AT, POP_AT + 0.15], [1, 0], clamp), transform: `translateX(${shake}px) scale(${grow})`, transformOrigin: '20% 100%', fontFamily: p.font, fontWeight: 800, fontSize: p.gaugeSize * 1.2, color: CREAM, whiteSpace: 'pre-line', lineHeight: 1.12, textShadow: SH }}>
+      <div style={{ position: 'absolute', left: X - 8, bottom: 1920 - (TOP - 12), width: 290, opacity: interpolate(t, [POP_AT, POP_AT + 0.15], [1, 0], clamp), transform: `translateX(${shake}px) scale(${grow})`, transformOrigin: '20% 100%', fontFamily: p.font, fontWeight: 800, fontSize: p.gaugeSize * 1.45, color: CREAM, whiteSpace: 'pre-line', lineHeight: 1.12, textShadow: SH }}>
         <div style={{ fontSize: 64, lineHeight: 1.05, marginBottom: 4 }}>🥶</div>
         {p.gauge}
       </div>
@@ -190,7 +195,7 @@ const Gauge: React.FC<{ p: LocPack; t: number }> = ({ p, t }) => {
       </div>
       {/* 아래 꽉 찬 구슬(고리 아님) */}
       <div style={{ position: 'absolute', left: X - 17, top: TOP + H - 26, width: 80, height: 80, borderRadius: '50%', background: col, border: `5px solid ${CREAM}`, boxSizing: 'border-box', transform: `translateX(${shake}px)`, boxShadow: '0 4px 10px rgba(6,8,16,0.5)' }} />
-      <div style={{ position: 'absolute', left: X - 40, top: TOP + H + 66, width: 180, textAlign: 'center', transform: `translateX(${shake}px) scale(${grow})`, fontFamily: EN, fontWeight: 900, fontSize: burst ? 60 : 48, color: burst ? '#FF8A7A' : CREAM, lineHeight: 1, textShadow: SH }}>{pct}</div>
+      <div style={{ position: 'absolute', left: X - 40 - (burst ? 50 : 0), top: TOP + H + 66, width: 180 + (burst ? 100 : 0), textAlign: 'center', transform: `translateX(${shake}px) scale(${grow})`, fontFamily: EN, fontWeight: 900, fontSize: burst ? 60 : 48, color: burst ? '#FF8A7A' : CREAM, lineHeight: 1, textShadow: SH, whiteSpace: 'nowrap' }}>{burst ? `🥶${pct}` : pct}</div>
     </>
   );
 };
@@ -223,7 +228,7 @@ const Sit: React.FC<{ pk: LocPack; n: number; at: number; t: number }> = ({ pk, 
   return (
     <>
       <Glow x={560} y={360} w={1100} h={300} a={0.6 * p} />
-      <div style={{ position: 'absolute', left: 230, right: 50, top: 300, textAlign: 'center', opacity: p, transform: `translateY(${(1 - p) * 10}px)`, color: CREAM, fontFamily: pk.font, fontWeight: 800, fontSize: pk.sitSize, lineHeight: Math.max(1.14, pk.lineH), whiteSpace: 'pre-line', textShadow: SH }}>{pk.sits[n]}</div>
+      <div style={{ position: 'absolute', left: 230, right: 160, top: 300, textAlign: 'center', opacity: p, transform: `translateY(${(1 - p) * 10}px)`, color: CREAM, fontFamily: pk.font, fontWeight: 800, fontSize: pk.sitSize, lineHeight: Math.max(1.14, pk.lineH), whiteSpace: 'pre-line', textShadow: SH }}>{pk.sits[n]}</div>
     </>
   );
 };
@@ -265,7 +270,7 @@ const Small: React.FC<{ pk: LocPack; t: number; from: number; until: number; lef
 
 const Sounds: React.FC = () => (
   <>
-    <Audio src={staticFile('sfx/bgm.wav')} volume={(f) => MASTER * interpolate(f / FPS, [0, BURST_AT - 0.3, BURST_AT, PILE_AT, PILE_AT + 0.3, TOTAL - 0.6, TOTAL], [BGM_LOW, BGM_LOW, BGM_DIP, BGM_DIP, BGM_LOW, BGM_LOW, 0], clamp)} />
+    <Audio src={staticFile('sfx/bgm.wav')} volume={(f) => MASTER * interpolate(f / FPS, [0, BURST_AT - 0.3, BURST_AT, BURST_AT + 0.6, BURST_AT + 1.0, TOTAL - 0.6, TOTAL], [BGM_LOW, BGM_LOW, BGM_DIP, BGM_DIP, BGM_LOW, BGM_LOW, 0], clamp)} />
     <Audio src={staticFile('sfx/wind.wav')} volume={(f) => 0.3 * MASTER * interpolate(f / FPS, [0, 17.0, 17.4, TOTAL], [1, 1, 0, 0], clamp)} />
     <Audio src={staticFile('sfx/room.wav')} volume={(f) => 0.22 * MASTER * interpolate(f / FPS, [0, 17.1, 17.5, TOTAL - 0.4, TOTAL], [0, 0, 1, 1, 0], clamp)} />
     {SFX.map((s, k) => (
@@ -300,7 +305,7 @@ export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
       {c.phrase ? <Speech pk={p} b={c.phrase} at={c.at} t={t} /> : null}
       <Small pk={p} t={t} from={18.05} until={19.4} left={170} top={700} width={640} ko={KO_LINES.invite} read={p.inviteRead} mn={p.inviteMean} koSize={84} />
       <Small pk={p} t={t} from={MONG_AT} until={POP_AT} left={150} top={290} width={820} ko={KO_LINES.mong} read={p.mongRead} mn={p.mongMean} koSize={86} glow={0.8} />
-      <Small pk={p} t={t} from={POP_AT + 0.12} until={PILE_AT} left={300} top={330} width={720} ko={KO_LINES.shock} read={p.shockRead} mn={p.shockMean} koSize={96} glow={0.85} color="#FFE3DE" />
+      <Small pk={p} t={t} from={POP_AT + 0.12} until={END_AT} left={300} top={330} width={720} ko={KO_LINES.shock} read={p.shockRead} mn={p.shockMean} koSize={96} glow={0.85} color="#FFE3DE" />
       {t >= END_AT ? (
         <>
           <Glow x={540} y={500} w={1180} h={420} a={0.6 * interpolate(t, [END_AT, END_AT + 0.15], [0, 1], clamp)} />

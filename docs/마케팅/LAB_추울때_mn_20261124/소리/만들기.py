@@ -124,5 +124,5 @@ d = 판(0.3)
 
 # 음악
 곡 = os.path.join(뿌리, 'docs', '홍보물', 'BGM', '05_Toddler-Kids_alex-morgan.mp3')
-subprocess.run(['ffmpeg', '-y', '-v', 'error', '-ss', '21.0', '-i', 곡, '-t', '31.6', '-ar', '48000', '-ac', '2', '-af', 'afade=t=in:st=0:d=0.3,afade=t=out:st=30.2:d=1.4', os.path.join(밖, 'bgm.wav')], check=True)
+subprocess.run(['ffmpeg', '-y', '-v', 'error', '-ss', '21.0', '-i', 곡, '-t', '31', '-ar', '48000', '-ac', '2', '-af', 'afade=t=in:st=0:d=0.3,afade=t=out:st=29.4:d=1.4', os.path.join(밖, 'bgm.wav')], check=True)
 print('소리 끝:', sorted(os.listdir(밖)))

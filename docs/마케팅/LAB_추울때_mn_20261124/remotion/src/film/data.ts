@@ -7,7 +7,7 @@
 // 소리는 범수(친구) · 소진(몽글) · 효과음은 직접 합성(../../../소리/만들기.py) · 음악은 보유곡 05_Toddler-Kids 한 토막.
 export const FPS = 30;
 export const PULL_AT = 26.8; // 이불을 끌어 덮는 칸(머리 내밂과 이불 산 사이)
-export const TOTAL = 31.4; // 11-24 15시 회차: 30.4 → 31.4 — 끝 줄(몽골어 31자)을 읽을 2.4초를 둔다(화면 글 검사)
+export const TOTAL = 30.4;
 
 // 친구의 네 마디(표현 칸)
 export type Phrase = {
@@ -52,7 +52,7 @@ export const CELLS: Cell[] = [
   { at: 12.5, img: 'snowpile.jpg', sit: 2 },
   {
     at: 14.4, img: 'frozen.jpg', vo: [{ id: 'f3', at: 14.52 }],
-    phrase: { n: 3, ko: '얼어 죽겠다!', cold: 0.75, riseAt: 16.0, right: 980, bottom: 560, width: 640, koSize: 104, koShow: '얼어\n죽겠다!' },
+    phrase: { n: 3, ko: '얼어 죽겠다!', cold: 0.75, riseAt: 16.0, right: 1010, bottom: 610, width: 680, koSize: 96 }, // 11-24 15시 회차: 얼굴(눈 · 입)과 화면 위 머리 자리(269px)를 피해 한 줄로
   },
   { at: 17.2, img: 'room.jpg', sit: 3, vo: [{ id: 'm1', at: 18.05 }] }, // 11-24 15시 회차: 17.5 · 17.75 → 17.2 · 18.05 — 위 글과 몽글 말 사이를 0.83초 넘게(화면 글 검사)
   {
@@ -72,7 +72,7 @@ export const MONG_AT = 22.7;
 export const POP_AT = 24.7;
 export const BURST_AT = 24.95; // 게이지가 넘쳐 999%
 export const PILE_AT = 28.6;
-export const END_AT = 28.75;
+export const END_AT = 27.0; // 11-24 15시 회차: 끝 줄(몽골어 31자 — 읽는 데 2.4초)을 이불을 끌어 덮는 칸부터 띄운다. 길이를 늘리면 원본 박자 · 끝 자리가 어긋난다(올리기 전 검사 ⑮)
 
 // 몽글 · 친구 자리(1080×1920에 맞춘 좌표) — 움직임 조각이 여기서 난다. 그림을 다시 구우면 다시 잰다.
 export type Spot = { cx: number; cy: number; rx: number; ry: number };
@@ -102,7 +102,7 @@ export const FRIEND: Record<string, Spot> = {
 
 // 배경음 — public/sfx/bgm.wav는 보유곡 05_Toddler-Kids의 21.0~52.0초(빈 마디 없음). 내내 낮게, 넘침에서 한 번 낮추고 끝에서 다시
 export const BGM_LOW = 0.16;
-export const BGM_DIP = 0.08;
+export const BGM_DIP = 0.1; // 넘침에서 1초 안만 낮춘다(11-24 15시 회차 음악층 — 3.6초 10dB 꺼짐을 고침)
 
 export const SFX: { file: string; at: number; vol: number }[] = [
   { file: 'chatter.wav', at: 0.4, vol: 0.18 }, // 첫 1초 효과음은 음악 아래로(영상 기준 #36 · 11-24)

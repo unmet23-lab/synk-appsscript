@@ -2,26 +2,26 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "f5",
  "text": "삼… 삼십 도?!",
- "dur": 1.907,
+ "dur": 1.468,
  "words": [
   {
    "text": "삼…",
    "start": 0.02,
-   "end": 0.303
+   "end": 0.262
   },
   {
    "text": "삼십",
-   "start": 1.03,
-   "end": 1.454
+   "start": 0.725,
+   "end": 1.067
   },
   {
    "text": "도?!",
-   "start": 1.514,
-   "end": 1.907
+   "start": 1.148,
+   "end": 1.468
   }
  ],
  "source": {
-  "key": "ab742e28f346cffeb7df4492061f770b",
+  "key": "df612b08118e920daf562cb86744c778",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -32,7 +32,7 @@
    "emotion": "smart",
    "intensity": 1,
    "tempo": 1,
-   "seed": 1124,
+   "seed": 2211,
    "lufs": -16,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
    "prev": "몽골은 영하 삼십 도라는 말에 친구가 이불 밖으로 머리를 쑥 내밀고 믿을 수 없다는 듯 깜짝 놀라 되묻는다.",
@@ -47,6 +47,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 235
+  "topPitchHz": 244
  }
 }
