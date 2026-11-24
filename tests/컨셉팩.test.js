@@ -14,6 +14,8 @@ const 점검표 = fs.readFileSync(path.join(뿌리, 'docs/마케팅/제작양식
 const 번호들 = new Set([...점검표.matchAll(/^\|\s*(\d+)\s*\|/gm)].map(m => Number(m[1])));
 const 감독칸 = { 미술감독: '미술', 작가: '작가', 캐스팅디렉터: '캐스팅', 촬영감독: '촬영', 음향감독: '음향', 편집감독: '편집' };
 const 아홉 = ['코믹', 'B급', '멜로', '감동', '비주얼', '스펙터클', '스릴러', '뮤직', '홍보'];
+const 띠 = ['기', '승', '전', '결'];
+const 갈래 = ['희', '노', '애', '락', '긴장'];   // 컷연속성검사.py 감정갈래와 같다
 const 팩들 = fs.readdirSync(팩폴더).filter(f => f.endsWith('.json'));
 
 test('팩 폴더에 팩이 있고, 이름은 컨셉 아홉 가운데 하나다', () => {
@@ -45,5 +47,18 @@ for (const f of 팩들) {
       }
     }
     for (const n of 팩.컨셉감독.먼저볼공통줄?.줄 || []) assert.ok(번호들.has(n), `먼저볼공통줄: 점검표에 없는 번호 ${n}`);
+    // 기승전결 모양(11-24 유호님 「컨셉마다 전부 기승전결 적용해서 만드는거 적용 되어있어?」 → 「넣어줘」) — 컷 연속성 검사 T24가 「검사」를 읽는다
+    const 판 = 팩.기승전결;
+    assert.equal(typeof 판, 'object', '「기승전결」이 없다 — 기 · 승 · 전 · 결마다 이 컨셉의 모양을 한 문장으로 적는다');
+    for (const k of 띠) assert.ok(String(판.모양?.[k] || '').trim(), `기승전결.모양.${k}가 비었다`);
+    assert.ok(String(판.근거 || '').trim(), '기승전결.근거가 없다 — 만족 사례 · 실측 · 유호님 말씀 가운데 무엇에서 왔는지 적는다');
+    if (판.검사 != null) {
+      const 검 = 판.검사;
+      for (const 키 of Object.keys(검)) assert.ok(['가장센', '갈래', '꺾임', '세기최소'].includes(키), `기승전결.검사에 모르는 조건 「${키}」 — 컷 연속성 검사가 읽지 않는다`);
+      if ('가장센' in 검) assert.ok(띠.includes(검.가장센), `가장센은 기 · 승 · 전 · 결 가운데 하나다: ${검.가장센}`);
+      for (const [k, v] of Object.entries(검.갈래 || {})) assert.ok(띠.includes(k) && Array.isArray(v) && v.length && v.every(g => 갈래.includes(g)), `갈래.${k}는 ${갈래.join(' · ')}의 목록이다`);
+      if ('꺾임' in 검) assert.ok(Array.isArray(검.꺾임) && 검.꺾임.length === 2 && 검.꺾임.every(k => 띠.includes(k)) && 검.꺾임[0] !== 검.꺾임[1], '꺾임은 서로 다른 띠 둘이다');
+      for (const [k, n] of Object.entries(검.세기최소 || {})) assert.ok(띠.includes(k) && Number.isInteger(n) && n >= 1 && n <= 5, `세기최소.${k}는 1~5의 수다`);
+    }
   });
 }

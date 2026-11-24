@@ -1901,6 +1901,69 @@ def 감정흐름검사(seq, 폴더=None):
         out.append(("주의", "표", f"전의 세기({띠값['전'][2]:g})가 기({띠값['기'][2]:g})보다 세지 않다 — 전은 터지는 자리다(14)"))
     if 띠값["기"][0] == 띠값["결"][0]:
         out.append(("주의", "표", f"처음과 끝의 감정이 같다(「{띠값['기'][0]}」) — 이 편이 보는 사람의 마음을 무엇에서 무엇으로 바꾸나(14)"))
+    # 굴곡부터 걸린 편은 그것부터 고친다 — 컨셉 모양은 굴곡이 선 뒤에 본다
+    if not any(등급 == "걸림" for 등급, _, _ in out): out += 팩모양검사(seq, 띠값)
+    return out
+
+
+# 컨셉 팩의 기승전결 모양 — 11-24 유호님 「컨셉마다 전부 기승전결 적용해서 만드는거 적용 되어있어?」 → 「넣어줘」.
+#   위 굴곡 검사는 아홉 컨셉에 같은 잣대다. 코믹은 끝의 반전이 가장 큰 웃음이고, 감동은 전에서 결로 갈래가 꺾이며 끝의 감정이 세다.
+#   컷표 「컨셉」의 팩(docs/마케팅/제작양식/영상양식/컨셉팩/<컨셉>.json)에 「기승전결.검사」가 있으면 그 조건을 주의로 알린다(멈추지 않는다).
+#   조건: 가장센(그 띠의 세기가 넷 가운데 가장 크거나 같다) · 갈래({띠: [허용 갈래]}) · 꺾임([띠, 띠] 두 띠의 갈래가 다르다) · 세기최소({띠: 수}).
+#   팩 폴더는 시험을 위해 SYNK_CONCEPT_PACK_DIR로 바꿀 수 있다.
+def 컨셉팩폴더():
+    import os
+    return Path(os.environ.get("SYNK_CONCEPT_PACK_DIR") or (Path(__file__).resolve().parent.parent / "docs" / "마케팅" / "제작양식" / "영상양식" / "컨셉팩"))
+
+
+def 팩모양검사(seq, 띠값):
+    """띠값은 기 · 승 · 전 · 결 넷이 다 있을 때만 온다(감정흐름검사). 팩 파일이 없으면 조용히 넘기고, 있는데 못 읽거나
+    「검사」의 꼴이 틀리면 건너뛴 것을 주의 한 줄로 남긴다(통과와 구별되게 — 11-24 Fable 설계 검토 P2-2)."""
+    컨셉 = str(seq.get("컨셉") or "").strip()
+    if not re.fullmatch(r"[^\W_]{1,20}", 컨셉): return []
+    파일 = 컨셉팩폴더() / f"{컨셉}.json"
+    if not 파일.is_file(): return []   # 팩이 없는 컨셉 — 영상기준이 「팩이 아직 없다」를 알린다
+    머리 = f"컨셉 「{컨셉}」 팩의 기승전결"
+    try: 팩 = json.loads(파일.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError): return [("주의", "표", f"컨셉 「{컨셉}」 팩 파일을 읽지 못해 기승전결 모양을 보지 않았다 — 팩 JSON을 고친다(팩 기승전결)")]
+    판 = 팩.get("기승전결") if isinstance(팩, dict) else None
+    if not isinstance(판, dict) or 판.get("검사") is None: return []
+    조건 = 판["검사"]
+    if not isinstance(조건, dict): return [("주의", "표", f"{머리} 검사가 조건 표가 아니라 건너뛰었다 — 팩 JSON을 고친다(팩 기승전결)")]
+    모양 = 판.get("모양") if isinstance(판.get("모양"), dict) else {}
+    받침 = lambda 낱말: "가" <= str(낱말)[-1:] <= "힣" and (ord(str(낱말)[-1]) - 0xAC00) % 28 != 0
+    뜻 = lambda k: f"「{k}」{'은' if 받침(k) else '는'} {모양[k]}" if 모양.get(k) else f"「{k}」"
+    띠 = lambda k: isinstance(k, str) and k in ("기", "승", "전", "결")
+    수 = lambda n: isinstance(n, (int, float)) and not isinstance(n, bool) and n == n and abs(n) != float("inf")
+    한결 = not 빈칸((seq.get("감정흐름") or {}).get("한결"))
+    out = []; 틀린 = [str(키) for 키 in 조건 if 키 not in ("가장센", "갈래", "꺾임", "세기최소")]
+    if "가장센" in 조건:
+        k = 조건["가장센"]
+        if not 띠(k): 틀린.append("가장센")
+        else:
+            더센 = [x for x in "기승전결" if x != k and 띠값[x][2] > 띠값[k][2]]
+            if 더센: out.append(("주의", "표", f"{머리}에서 {뜻(k)} — 지금 {' · '.join(f'{x}({띠값[x][2]:g})' for x in 더센)}{'이' if 받침(더센[-1]) else '가'} {k}({띠값[k][2]:g})보다 세다(팩 기승전결)"))
+    if "갈래" in 조건:
+        표 = 조건["갈래"]
+        if not (isinstance(표, dict) and 표 and all(띠(k) and isinstance(v, list) and v and all(isinstance(g, str) for g in v) for k, v in 표.items())): 틀린.append("갈래")
+        else:
+            for k, 허용 in 표.items():
+                if 띠값[k][1] not in 허용:
+                    out.append(("주의", "표", f"{머리}에서 {뜻(k)} — {k}의 갈래가 {' · '.join(허용)} 가운데 하나가 아니라 「{띠값[k][1]}」이다(팩 기승전결)"))
+    if "꺾임" in 조건:
+        꺾임 = 조건["꺾임"]
+        if not (isinstance(꺾임, list) and len(꺾임) == 2 and all(띠(x) for x in 꺾임) and 꺾임[0] != 꺾임[1]): 틀린.append("꺾임")
+        elif not 한결 and 띠값[꺾임[0]][1] == 띠값[꺾임[1]][1]:   # 「한결」 까닭을 적은 편은 위 굴곡 주의가 이미 말했다(P2-1)
+            a, b = 꺾임
+            out.append(("주의", "표", f"{머리}에서 {a}에서 {b}로 갈래가 꺾인다({뜻(b)}) — 지금 둘 다 「{띠값[a][1]}」이다(팩 기승전결)"))
+    if "세기최소" in 조건:
+        표 = 조건["세기최소"]
+        if not (isinstance(표, dict) and 표 and all(띠(k) and 수(n) for k, n in 표.items())): 틀린.append("세기최소")
+        else:
+            for k, 최소 in 표.items():
+                if 띠값[k][2] < 최소:
+                    out.append(("주의", "표", f"{머리}에서 {뜻(k)} — {k}의 세기가 {최소:g}보다 낮은 {띠값[k][2]:g}이다(팩 기승전결)"))
+    if 틀린: out.append(("주의", "표", f"{머리} 검사에서 꼴이 틀린 조건({' · '.join(틀린)})은 건너뛰었다 — 팩 JSON을 고친다(팩 기승전결)"))
     return out
 
 
