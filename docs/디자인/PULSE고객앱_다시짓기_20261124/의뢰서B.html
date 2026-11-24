@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE 시안 · 의뢰서 B 광고 구성기</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./공통.css">
+<style>
+/* 컨셉: 고를 때마다 내 광고가 왼쪽에서 한 컷씩 생긴다(유호님 11-25 「AI 슬롭처럼 느껴진다」 뒤 다시 짠 판).
+   강조 순위: ① 내 광고 미리보기(내 제품이 든 화면) ② 지금 고를 한 가지(두 톤 제목) · 값 띠 ③ 나머지(도움말 · 동의)는 물러선다.
+   참고: Apple 구입 구성기(그림은 그대로 서 있고 고를 때마다 바뀜 · 두 톤 제목 · 칸 오른쪽 값 · 접힌 도움말), Prefer(그림으로 고르기), 어두운 결제(수단 두 장 + 합계 · 단추).
+   글자 역할: 질문은 SUIT 700 두 톤(앞은 먹, 뒤는 흐림) · 광고 속 글은 명조 300(손님 광고의 목소리) · 초 · 컷 · 값은 DM Mono.
+   색 역할: 먹(글 · 고른 칸 테두리) · 흐림(질문 뒤 절반 · 설명) — 화면의 색은 손님 자료와 광고 그림만 낸다. */
+:root{--bg:#060606;--ink:#f4f1ea;--dim:rgba(244,241,234,.5);--faint:rgba(244,241,234,.32);--line:rgba(244,241,234,.12);--card:#101010;--card2:#161616}
+body{background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(400px,1fr);min-height:100dvh}
+
+/* 왼쪽: 내 광고(멈춰 서 있고 답할 때마다 바뀐다) */
+.view{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;padding:28px 28px 24px 36px;gap:14px}
+.view-top{display:flex;justify-content:space-between;align-items:center}
+.logo{height:20px;width:auto}
+.view-top .small{font-size:13px;color:var(--dim)}
+.board{position:relative;flex:1;min-height:0;display:grid;place-items:center;background:var(--card);border-radius:18px;overflow:hidden}
+.board-label{position:absolute;left:22px;top:18px;display:flex;gap:10px;align-items:baseline;font-size:13px;color:var(--dim)}
+.board-label b{font-size:15px;color:var(--ink);font-weight:600}
+.board-label .mono{font-size:12px}
+.frame{container-type:size;position:relative;height:calc(100% - 120px);aspect-ratio:9/16;max-width:calc(100% - 48px);background:#000;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);transition:aspect-ratio .6s var(--ease),height .6s var(--ease)}
+.frame[data-ratio="16:9"]{aspect-ratio:16/9;height:auto;width:calc(100% - 64px)}
+.frame[data-ratio="1:1"]{aspect-ratio:1/1;height:calc(100% - 140px)}
+.cut{position:absolute;inset:0;opacity:0;transition:opacity .5s var(--ease)}
+.cut.on{opacity:1}
+.cut.is-ex{transition-duration:.2s}
+.cut img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cut .copy{position:absolute;left:8%;right:8%;bottom:10%;font-family:var(--serif);font-weight:300;font-size:clamp(12px,7.4cqw,30px);line-height:1.25;letter-spacing:-.03em;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.cut .tag{position:absolute;left:8%;top:7%;max-width:84%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(10px,3.2cqw,12px);color:rgba(255,255,255,.75);background:rgba(0,0,0,.45);padding:3px 8px}
+.cut.is-title{display:grid;place-items:center;background:radial-gradient(120% 90% at 50% 30%,#1b1b1b,#050505)}
+.cut.is-title .copy{position:static;text-align:center;padding:0 10%}
+.cut.is-hero{background:linear-gradient(160deg,#2a2520,#0c0b0a)}
+.cut.is-hero img{object-fit:cover}
+.cut video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cut.is-ex .copy{font-size:clamp(14px,8.4cqw,34px);font-weight:400}
+.cut.is-empty{display:grid;place-items:center;background:#0b0b0b}
+.cut.is-empty .hint{font-size:13px;color:var(--faint);text-align:center;line-height:1.6;padding:0 14%}
+.cut.is-end{display:grid;place-content:center;justify-items:center;gap:10px;background:#050505;text-align:center;padding:0 10%}
+.cut.is-end .lg{font-family:var(--latin);font-weight:650;font-size:clamp(15px,8cqw,30px);letter-spacing:-.03em}
+.cut.is-end .ln{font-family:var(--serif);font-weight:300;font-size:clamp(12px,5cqw,19px)}
+.cut.is-end .info{font-family:var(--mono);font-size:clamp(10px,3.4cqw,13px);color:var(--dim)}
+.cut.is-end .info.is-ex{opacity:.55}
+.frame.g-moved .grade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(70,40,10,.28),transparent 60%);mix-blend-mode:multiply}
+.frame.g-moved .cut img{filter:saturate(.82) sepia(.12)}
+.frame.g-wow .cut img{filter:contrast(1.14) saturate(1.1)}
+.frame.g-laugh .cut img{filter:saturate(1.3) brightness(1.06)}
+.timeline{display:flex;gap:3px;height:4px;width:min(520px,80%);margin:0 auto}
+.timeline i{flex:1;background:rgba(244,241,234,.16);transition:background .3s}
+.timeline i.on{background:var(--ink)}
+.timeline i.end{flex:.6}
+.view-foot{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--dim)}
+.view-foot .mono{color:var(--ink)}
+
+/* 오른쪽: 한 번에 한 가지 */
+.ask{display:flex;flex-direction:column;padding:28px 40px 0 28px}
+.ask-top{display:flex;justify-content:flex-end;gap:16px;align-items:center;min-height:20px;font-size:14px;color:var(--dim)}
+.ask-top a{color:var(--dim)}
+.intro{padding:56px 0 18px}
+.intro h1{margin:0;font-family:var(--sans);font-weight:700;font-size:clamp(30px,2.6vw,40px);line-height:1.2;letter-spacing:-.04em}
+.intro h1 span{color:var(--dim)}
+.sec{padding:34px 0;border-top:1px solid var(--line)}
+.sec h2{margin:0 0 16px;font-size:clamp(20px,1.6vw,24px);font-weight:700;line-height:1.35;letter-spacing:-.03em}
+.sec h2 span{color:var(--dim)}
+.sec[data-locked]{opacity:.32;pointer-events:none}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opts.two{display:grid;grid-template-columns:1fr 1fr}
+.opt{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;min-height:68px;padding:12px 18px;border:1px solid rgba(244,241,234,.2);border-radius:14px;text-align:left;transition:border-color .2s,background .2s}
+.opt:hover{border-color:rgba(244,241,234,.45)}
+.opt[aria-checked=true]{border:2px solid var(--ink);padding:11px 17px;background:rgba(244,241,234,.04)}
+.opt img{width:44px;height:44px;border-radius:8px;object-fit:cover}
+.opt .t b{display:block;font-size:16px;font-weight:600;letter-spacing:-.02em}
+.opt .t small{display:block;font-size:13px;color:var(--dim);margin-top:2px;line-height:1.4}
+.opt .won{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--dim);white-space:nowrap}
+.opt[aria-checked=true] .won{color:var(--ink)}
+.opt.no-ico{grid-template-columns:1fr auto}
+.input{width:100%;background:var(--card);border:1px solid rgba(244,241,234,.2);border-radius:14px;padding:18px;font-size:18px;color:var(--ink);outline:none}
+.input:focus{border:2px solid var(--ink);padding:17px}
+.drops{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.drop{position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;min-height:104px;padding:14px;border-radius:14px;background:var(--card);text-align:left;overflow:hidden;transition:background .2s}
+.drop:hover{background:var(--card2)}
+.drop b{font-size:15px;font-weight:600}
+.drop small{font-size:12px;color:var(--dim)}
+.drop .need{position:absolute;left:14px;top:12px;font-size:12px;color:var(--ink)}
+.drop .add{position:absolute;right:14px;top:10px;font-size:20px;line-height:1;color:var(--dim)}
+.drop.is-in img{position:absolute;right:10px;top:10px;width:54px;height:54px;object-fit:contain;border-radius:8px;background:#000}
+.drop.is-in .add{display:none}
+.drop.is-in::after{content:'받았어요';position:absolute;left:14px;top:12px;font-size:12px;color:var(--ink)}
+.drop.is-in .need{display:none}
+.drop.is-need:not(.is-in){box-shadow:inset 0 0 0 1px var(--ink)}
+.drop.is-need:not(.is-in) .add{color:var(--ink)}
+.drop:not(.is-need):not(.is-in) b{color:var(--dim);font-weight:500}
+.help{margin-top:14px;border-radius:14px;background:var(--card)}
+.help summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;font-size:14px;color:var(--dim);cursor:pointer;list-style:none}
+.help summary::-webkit-details-marker{display:none}
+.help summary::after{content:'+';font-size:18px}
+.help[open] summary::after{content:'−'}
+.help .in{padding:0 18px 18px;font-size:14px;line-height:1.6;color:var(--dim)}
+.help .in b{color:var(--ink);font-weight:600}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{min-height:40px;padding:0 15px;border:1px solid rgba(244,241,234,.2);border-radius:999px;font-size:14px;transition:.2s}
+.chip[aria-pressed=true]{background:var(--ink);color:#0b0b0b;border-color:var(--ink)}
+.chip .mono{font-size:11px;opacity:.7;margin-left:6px}
+.more{display:flex;flex-direction:column;gap:10px}
+.more label{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--dim)}
+.more textarea,.more input{background:var(--card);border:1px solid rgba(244,241,234,.2);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--ink);outline:none;min-height:46px}
+.more textarea:focus,.more input:focus{border-color:var(--ink)}
+.who{display:flex;gap:14px;align-items:center;padding:14px 18px;border-radius:14px;background:var(--card)}
+.who img{width:44px;height:56px;object-fit:cover;border-radius:8px;object-position:50% 15%;filter:grayscale(1) brightness(.8)}
+.who p{margin:0;font-size:14px;line-height:1.55;color:var(--dim)}
+.who b{color:var(--ink);font-weight:600}
+.consent{display:flex;gap:10px;align-items:center;margin-top:12px;font-size:13px;color:var(--dim)}
+.consent input{accent-color:#f4f1ea;width:18px;height:18px}
+
+/* 값 띠: 오른쪽 아래에 붙어 늘 보인다 */
+.bar{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;margin:24px -40px 0 -28px;padding:16px 40px 20px 28px;background:rgba(6,6,6,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+.bar .sum{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bar .sum small{display:block;font-size:12px;color:var(--dim)}
+.bar .sum b{font-weight:700;font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.bar .sum s{font-size:14px;color:var(--faint);text-decoration-thickness:1px}
+.bar .sum .code{display:block;font-size:12px;color:var(--ink)}
+.go{flex:none;white-space:nowrap;display:inline-flex;align-items:center;gap:14px;min-height:54px;padding:0 26px;background:var(--ink);color:#0b0b0b;font-weight:700;font-size:16px;border-radius:999px;letter-spacing:-.02em;transition:opacity .2s,transform .2s var(--ease)}
+.go:hover{transform:translateY(-1px)}
+.go[disabled]{opacity:.3;transform:none}
+.go .icon{width:18px;height:18px}
+.need-left{font-size:12px;color:var(--dim);margin-top:4px}
+
+/* 확인 · 결제(같은 오른쪽 자리) */
+.sheet{padding:56px 0 0}
+.sheet h1{margin:0 0 22px;font-family:var(--sans);font-weight:700;font-size:clamp(28px,2.4vw,38px);letter-spacing:-.04em;line-height:1.2}
+.sheet h1 span{color:var(--dim)}
+.lines{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.lines div{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--line);font-size:15px}
+.lines dt{color:var(--dim)}
+.lines dd{margin:0}
+.lines button{font-size:13px;color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--faint)}
+.lines button:hover{color:var(--ink)}
+.total{margin-top:18px;padding:18px;border-radius:14px;background:var(--card);display:flex;flex-direction:column;gap:8px}
+.total .ln{display:flex;justify-content:space-between;font-size:14px;color:var(--dim)}
+.total .ln .mono{color:var(--ink);font-family:var(--sans);font-weight:600}
+.total .ln s{text-decoration-thickness:1px}
+.total .ln.code{color:var(--ink)}
+.total .sum{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid var(--line)}
+.total .sum b{font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
+.total p{margin:2px 0 0;font-size:13px;line-height:1.55;color:var(--dim)}
+.codein{display:flex;gap:8px;margin-top:12px}
+.codein input{flex:1;background:var(--card);border:1px solid rgba(244,241,234,.2);border-radius:12px;padding:12px 14px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);outline:none}
+.codein button{padding:0 18px;border-radius:12px;border:1px solid rgba(244,241,234,.2);font-size:14px}
+.applied{animation:applied .45s var(--ease)}
+@keyframes applied{from{opacity:.2;transform:translateY(-4px)}}
+.status{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--dim);margin-bottom:12px}
+.status i{width:8px;height:8px;background:var(--busy)}
+.test{font-size:13px;color:var(--new);margin:-6px 0 18px}
+
+.mock{position:fixed;left:150px;top:20px;z-index:90;display:flex;gap:4px;align-items:center;padding:5px;border-radius:10px;background:rgba(28,28,28,.92);font-size:12px;color:#ddd;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.mock button,.mock a{padding:6px 10px;border-radius:7px;color:#ddd}
+.mock button[aria-pressed=true],.mock button[aria-current=true]{background:#f4f1ea;color:#111}
+.mock i{width:1px;height:16px;background:#444}
+.is-shot .mock{display:none}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .view{position:sticky;top:0;z-index:6;height:auto;padding:12px 14px 10px;gap:8px;background:var(--bg)}
+  .view-top .small,.view-foot{display:none}
+  .board{height:40dvh;flex:none;border-radius:14px}
+  .ask button,.ask input,.ask [data-sec]{scroll-margin-top:calc(40dvh + 70px);scroll-margin-bottom:120px}
+  .frame{height:calc(100% - 20px)}
+  .frame[data-ratio="16:9"]{width:calc(100% - 40px)}
+  .board-label{display:none}
+  .ask{padding:0 16px}
+  .intro{padding:22px 0 8px}
+  .sec{padding:26px 0}
+  .bar{margin:16px -16px 0;padding:12px 16px calc(env(safe-area-inset-bottom) + 14px)}
+  .drops{grid-template-columns:1fr 1fr}
+  .opts.two{grid-template-columns:1fr}
+  .mock{bottom:auto;top:6px;flex-wrap:wrap;justify-content:center;max-width:94vw}
+}
+@media (prefers-reduced-motion:reduce){.cut,.frame,.applied{transition:none;animation:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <section class="view" aria-label="내 광고 미리보기">
+    <div class="view-top"><img class="logo" src="../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/request/logo-paper.webp" alt="synk PULSE"></div>
+    <div class="board"><p class="board-label"><b data-l-name>내 광고</b><span class="mono" data-l-meta>15초 · 6컷 · 9:16</span></p><div class="frame" data-frame data-ratio="9:16"><div class="grade"></div></div></div>
+    <div class="timeline" data-timeline></div>
+    <div class="view-foot"><span>나올 모델은 저희가 골라 먼저 보여 드려요</span><span class="mono" data-l-due>결제한 날부터 10일</span></div>
+  </section>
+  <section class="ask" data-ask></section>
+</div>
+<script type="module">
+import { MODELS, FILMS, icon, sound, $, $$, reduced } from './공통.js';
+const APP = '../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/';
+const film = id => FILMS.find(f => f.id === id);
+const won = v => v == null ? '정가 ○○만원' : `${v < 10 ? Math.round(v * 10) / 10 : Math.round(v)}만원`;
+const arrow = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M14 7l5 5-5 5"/></svg>';
+const model = MODELS.find(m => m.id === 'M06');
+
+// 갈래: 이름 · 자료 · 길이 · 마지막 화면의 안내 예시가 갈래마다 다르다.
+const KINDS = [
+  { id: 'product', name: '제품 광고', note: '먹고, 바르고, 입고, 쓰는 물건', ico: film('omitok15').poster, nameQ: ['제품 이름.', '광고 첫 화면에 이 이름이 서요.'], ph: '오미톡 오미자 스파클링',
+    files: [['제품 정면', true, APP + 'request/demo-can-front.webp'], ['옆면 · 뒷면', true, APP + 'request/demo-can-side.webp'], ['로고', false, APP + 'request/demo-logo.webp'], ['쓰는 모습', false, null]],
+    lens: [['15초', '한 편', 29, 6], ['30초', '30초 + 15초 · 6초 편집본', 59, 12], ['60초', '브랜드 필름 또는 시리즈 3편', 149, 20], ['사진 5장', '모델이 제품을 든 사진', 9.9, 5]], info: '350ml · 2,500원 · 12월 한정', line: '한 캔에 맛이 다섯 번', ex: film('omitok15') },
+  { id: 'place', name: '매장 · 공간', note: '카페, 식당, 병원, 학원, 숙소', ico: APP + 'films/somchae-room-poster-v1.webp', nameQ: ['매장 이름.', '광고 첫 화면에 이 이름이 서요.'], ph: '솜채 한옥스테이',
+    files: [['공간 사진', true, APP + 'films/somchae-room-poster-v1.webp'], ['대표 메뉴 · 서비스', false, null], ['로고 · 간판', false, null]],
+    lens: [['15초', '한 편', 29, 6], ['30초', '30초 + 15초 · 6초 편집본', 59, 12], ['60초', '공간 필름 또는 시리즈 3편', 149, 20]], info: '서울 종로구 · 예약은 네이버', line: '연말, 빈방이 하나 남았어요', ex: film('somchae') },
+  { id: 'app', name: '앱 · 웹 서비스', note: '화면으로 쓰는 서비스', ico: film('modu').poster, nameQ: ['서비스 이름.', '광고 첫 화면에 이 이름이 서요.'], ph: '모두의코스',
+    files: [['앱 화면 녹화', true, film('modu').poster], ['로고 · 아이콘', false, null], ['쓰는 순서', false, null]],
+    lens: [['15초', '한 편', 29, 6], ['30초', '30초 + 15초 · 6초 편집본', 59, 12], ['60초', '서비스 필름 또는 시리즈 3편', 149, 20]], info: '앱스토어 · 구글 플레이', line: '가는 데마다 또 그 사람', ex: film('modu') },
+  { id: 'brand', name: '회사 · 브랜드 영상', note: '회사 소개, 채용, 행사', ico: APP + 'films/dodam-heavy-poster-v1.webp', nameQ: ['회사 이름.', '광고 첫 화면에 이 이름이 서요.'], ph: '도담중공업',
+    files: [['로고', true, null], ['회사 소개서', false, null], ['대표 사진 · 지난 영상', false, APP + 'films/dodam-heavy-poster-v1.webp']],
+    lens: [['30초', '30초 + 15초 · 6초 편집본', 59, 12], ['60초', '브랜드 필름', 149, 20], ['기업 캠페인', '30~60초 + 편집본, 기획서', 250, 16]], info: '1994년부터 · dodam.co.kr', line: '무거운 것을 30년 들었습니다', ex: { poster: APP + 'films/dodam-heavy-poster-v1.webp' } },
+  { id: 'mv', name: '뮤직비디오', note: '곡 하나에 맞춘 영상', ico: APP + 'films/hwaseong-cm-song-poster-v1.webp', nameQ: ['곡 제목.', '아티스트 이름도 함께 적어 주세요.'], ph: '첫눈 · 하람',
+    files: [['음원 파일', true, null], ['가사', false, null], ['앨범 커버', false, APP + 'films/hwaseong-cm-song-poster-v1.webp']],
+    lens: [['한 곡', '곡 길이 그대로 · 4분까지', null, 24]], info: '2026. 12. 1 발매', line: '첫눈이 오면 그 길로', ex: { poster: APP + 'films/hwaseong-cm-song-poster-v1.webp' } },
+];
+const CHANNELS = [['릴스 · 쇼츠 · 틱톡', '9:16'], ['유튜브 · 웹사이트', '16:9'], ['상세페이지 · 자사몰', '1:1'], ['매장 화면 · 행사', '16:9']];
+const ENDS = [['로고만', '로고 한 장으로 끝나요'], ['로고 + 한 줄', '로고 아래 문구 한 줄'], ['로고 + 한 줄 + 안내', '가격 · 기간 · 주소 같은 안내까지']];
+const FEELS = [['moved', '뭉클하게', '끝까지 보고, 끝에서 마음이 움직여요'], ['wow', '「와」 하게', '한 장면이 오래 기억에 남아요'], ['laugh', '웃으며 보내게', '보다가 웃고, 친구에게 보내고 싶어져요']];
+
+const S = { kind: '', name: '', files: {}, chan: 0, len: 0, end: 1, line: '', feel: '', avoid: '', exact: '', mail: '', agree: false, code: location.search.includes('code'), from: '크몽', view: 'form' };
+const K = () => KINDS.find(k => k.id === S.kind);
+const L = () => (K() || KINDS[0]).lens[S.len] || (K() || KINDS[0]).lens[0];
+const ratio = () => K()?.id === 'mv' ? '16:9' : CHANNELS[S.chan][1];
+const ask = $('[data-ask]'), frame = $('[data-frame]');
+
+// ── 미리보기: 제목 · 내 제품 · 모델과 제품 · 마지막 화면. 고를 때마다 그 컷으로 건너가 보여 준다. ──
+let cuts = [], at = 0, timer = 0;
+function drawFrame(focus) {
+  const k = K() || KINDS[0], name = S.name || (S.kind ? k.ph : '내 광고'), hero = k.files.find((f, i) => S.files[i] && f[2]);
+  const line = S.line || (S.kind ? k.line : '');
+  frame.dataset.ratio = ratio();
+  frame.className = 'frame' + (S.feel ? ' g-' + S.feel : '');
+  if (!S.kind) {
+    frame.innerHTML = KINDS.map(x => `<div class="cut is-ex" data-c="ex-${x.id}">${x.ex.video && !reduced ? `<video src="${x.ex.video}" poster="${x.ex.poster}" muted playsinline loop preload="none"></video>` : `<img src="${x.ex.poster}" alt="">`}<span class="tag">예시 · ${x.name}</span><p class="copy">${x.line}</p></div>`).join('') + '<div class="grade"></div>';
+    cuts = $$('.cut', frame); show(focus ? Math.max(0, cuts.findIndex(c => c.dataset.c === focus)) : at % cuts.length);
+    $('[data-l-name]').textContent = '내 광고'; $('[data-l-meta]').textContent = '고르시면 여기서 만들어져요'; $('[data-timeline]').innerHTML = ''; return;
+  }
+  frame.innerHTML = `
+    <div class="cut is-title" data-c="title"><p class="copy">${S.kind ? name : '무엇을 만들지<br>골라 주세요'}</p></div>
+    ${hero ? `<div class="cut is-hero" data-c="hero"><img src="${hero[2]}" alt=""><span class="tag">보내 주신 원본 그대로</span></div>` : `<div class="cut is-empty" data-c="hero"><p class="hint">${S.kind ? `${k.files[0][0]}을 넣으면<br>이 자리에 그대로 얹어요` : ''}</p></div>`}
+    <div class="cut" data-c="model"><img src="${k.ex.poster}" alt=""><span class="tag">예시 장면</span></div>
+    <div class="cut is-end" data-c="end"><span class="lg">${name.split(' · ')[0]}</span>${S.end > 0 ? `<span class="ln">${line}</span>` : ''}${S.end > 1 ? `<span class="info${S.exact ? '' : ' is-ex'}">${S.exact || '예) ' + k.info}</span>` : ''}</div>
+    <div class="grade"></div>`;
+  cuts = $$('.cut', frame);
+  const idx = focus ? Math.max(0, cuts.findIndex(c => c.dataset.c === focus)) : at % cuts.length;
+  show(idx);
+  const [l, , , n] = L();
+  $('[data-l-name]').textContent = S.kind ? name : '내 광고';
+  $('[data-l-meta]').textContent = `${l} · ${k.id === 'product' && l === '사진 5장' ? '5장' : n + '컷'} · ${ratio()}`;
+  $('[data-timeline]').innerHTML = Array.from({ length: Math.min(n, 24) }, (_, i) => `<i class="${i === Math.min(n, 24) - 1 ? 'end' : ''}"></i>`).join('');
+  tick();
+}
+function show(i) { at = i; cuts.forEach((c, j) => { c.classList.toggle('on', j === i); const v = $('video', c); if (v) { if (j === i) v.play().catch(() => {}); else v.pause(); } }); tick(); }
+function tick() { const bars = $$('[data-timeline] i'); const on = Math.round((at + 1) / cuts.length * bars.length); bars.forEach((b, j) => b.classList.toggle('on', j < on)); }
+function loop() { clearInterval(timer); if (reduced) return; timer = setInterval(() => show((at + 1) % cuts.length), 2200); }
+
+// ── 오른쪽: 한 번에 한 가지. 앞 칸을 고르기 전에는 뒤 칸이 물러서 있다. ──
+function formHTML() {
+  const k = K(), [l, , p] = L();
+  const sec = (id, on, h, body) => `<div class="sec" data-sec="${id}" ${on ? '' : 'data-locked'}>${h}${body}</div>`;
+  return `
+  <div class="ask-top"><a href="./A.html#entry">닫기</a></div>
+  <div class="intro"><h1>새 광고 만들기. <span>고르실 때마다 왼쪽에 내 광고가 생겨요.</span></h1></div>
+  ${sec('kind', true, `<h2>만들 것. <span>무엇을 광고하나요?</span></h2>`, `<div class="opts" role="radiogroup" aria-label="만들 것">${KINDS.map(x => `<button class="opt no-ico" role="radio" aria-checked="${S.kind === x.id}" data-kind="${x.id}"><span class="t"><b>${x.name}</b><small>${x.note}</small></span><span class="won">${x.lens[0][2] == null ? '정가 ○○만원' : won(Math.min(...x.lens.map(v => v[2]))) + '부터'}</span></button>`).join('')}</div>`)}
+  ${sec('name', !!k, `<h2>${k ? k.nameQ[0] : '이름.'} <span>${k ? k.nameQ[1] : '광고 첫 화면에 이 이름이 서요.'}</span></h2>`, `<input class="input" data-name placeholder="${k ? k.ph : ''}" value="${S.name}" aria-label="이름">`)}
+  ${sec('files', !!k, `<h2>자료. <span>AI로 다시 그리지 않고 그대로 얹을 원본이에요.</span></h2>`, `<div class="drops">${(k || KINDS[0]).files.map(([n, need, img], i) => `<button class="drop${S.files[i] ? ' is-in' : ''}${need ? ' is-need' : ''}" data-file="${i}">${need ? '<span class="need">꼭 필요해요</span>' : ''}<span class="add">+</span>${S.files[i] && img ? `<img src="${img}" alt="">` : ''}<b>${n}</b><small>${S.files[i] ? '바꾸려면 다시 누르세요' : need ? '눌러서 고르기' : '있으면 좋아요'}</small></button>`).join('')}</div>
+    <details class="help"><summary>왜 원본이 필요한가요?</summary><div class="in">화면에 나오는 <b>제품 · 로고 · 글자는 AI로 그리지 않아요.</b> 보내 주신 사진을 그대로 얹어야 글자가 뭉개지거나 모양이 바뀌지 않아요. 지금 없으면 나중에 보내셔도 돼요.</div></details>`)}
+  ${sec('len', !!k, `<h2>${k?.id === 'mv' ? '길이.' : '올릴 곳과 길이.'} <span>${k?.id === 'mv' ? '곡 길이 그대로 만들어요.' : '올릴 곳에 따라 화면 비율이 정해져요.'}</span></h2>`, `${k?.id === 'mv' ? '' : `<div class="chips" role="radiogroup" aria-label="올릴 곳">${CHANNELS.map(([c, r], i) => `<button class="chip" role="radio" aria-pressed="${S.chan === i}" data-chan="${i}">${c}<span class="mono">${r}</span></button>`).join('')}</div>`}
+    <div class="opts" role="radiogroup" aria-label="길이">${(k || KINDS[0]).lens.map(([a, b, c, n], i) => `<button class="opt no-ico" role="radio" aria-checked="${S.len === i}" data-len="${i}"><span class="t"><b>${a}</b><small>${b}</small></span><span class="won">${won(c)}${c == null ? '' : '부터'}</span></button>`).join('')}</div>`)}
+  ${sec('end', !!k, `<h2>마지막 화면. <span>영상이 끝날 때 무엇을 남길까요?</span></h2>`, `<div class="opts" role="radiogroup" aria-label="마지막 화면">${ENDS.map(([a, b], i) => `<button class="opt no-ico" role="radio" aria-checked="${S.end === i}" data-end="${i}"><span class="t"><b>${a}</b><small>${b}</small></span><span></span></button>`).join('')}</div>
+    <details class="help" ${S.end > 0 ? 'open' : ''}><summary>문구와 안내를 적어 주세요(바꾸면 안 되는 표기는 그대로 써요)</summary><div class="in more">${S.end > 0 ? `<label>문구 한 줄<input data-line placeholder="예) 한 캔에 맛이 다섯 번" value="${S.line}"></label>` : ''}<label>한 글자도 바뀌면 안 되는 표기<input data-exact placeholder="예) ${(k || KINDS[0]).info}" value="${S.exact}"></label></div></details>`)}
+  ${sec('feel', !!k, `<h2>느낌. <span>보고 나서 어떤 마음이 들면 좋을까요?</span></h2>`, `<div class="opts" role="radiogroup" aria-label="느낌">${FEELS.map(([id, a, b]) => `<button class="opt no-ico" role="radio" aria-checked="${S.feel === id}" data-feel="${id}"><span class="t"><b>${a}</b><small>${b}</small></span><span></span></button>`).join('')}</div>
+    <details class="help"><summary>고르기 어려우면 비워 두세요</summary><div class="in">의뢰서를 보고 저희가 어울리는 쪽을 골라 방향 두 안으로 보여 드려요. <b>피할 말이나 꼭 맞출 날</b>이 있으면 여기에 적어 주세요.<div class="more" style="margin-top:10px"><label>피할 것<textarea data-avoid placeholder="예) 「최고」 「1등」 같은 말은 빼 주세요">${S.avoid}</textarea></label></div></div></details>`)}
+  ${sec('who', !!k, `<h2>모델. <span>저희가 정해 드려요.</span></h2>`, `<div class="who"><p><b>의뢰서를 보고 어울리는 AI 모델을 골라</b> 먼저 보여 드려요. 마음에 안 드시면 그때 바꾸시면 돼요.${k?.id === 'mv' ? ' 아티스트 본인이 나와야 하면 담당자에게 따로 말씀해 주세요.' : ''}</p></div>`)}
+  ${sec('mail', !!k, `<h2>연락. <span>진행 상황을 이 메일로 알려 드려요.</span></h2>`, `<input class="input" type="email" autocomplete="email" data-mail placeholder="name@company.com" value="${S.mail}" aria-label="메일"><label class="consent"><input type="checkbox" data-agree ${S.agree ? 'checked' : ''}>연락과 제작에 필요한 정보 수집 · 이용에 동의해요(필수)</label>`)}
+  <div class="bar">${barHTML()}</div>`;
+}
+function need() { const k = K(); if (!k) return ['만들 것']; const out = []; if (!S.name.trim()) out.push('이름'); k.files.forEach(([n, nd], i) => { if (nd && !S.files[i]) out.push(n); }); if (!/^\S+@\S+\.\S+$/.test(S.mail)) out.push('메일'); if (!S.agree) out.push('동의'); return out; }
+function barHTML() {
+  const [l, , p] = L(), left = need();
+  const sum = !K() ? `<small>합계</small><b>—</b>` : p == null ? `<small>${l}</small><b>정가 ○○만원</b>` : S.code ? `<small>${l} · 결제할 금액</small><s>${won(p)}부터</s><b>0원</b><span class="code">초대코드 적용 · ${S.from}에서 결제하신 의뢰</span>` : `<small>${l} · 예상 가격</small><b>${won(p)}부터</b>`;
+  return `<span class="sum">${sum}${left.length ? `<span class="need-left">남은 것: ${left.join(', ')}</span>` : ''}</span><button class="go" data-review ${left.length ? 'disabled' : ''}>확인하기 ${arrow}</button>`;
+}
+
+function render(focus) {
+  if (S.view === 'form') { ask.innerHTML = formHTML(); bindForm(); }
+  if (S.view === 'review') reviewView();
+  if (S.view === 'pay') payView();
+  drawFrame(focus); loop();
+}
+const refreshBar = () => { const b = $('.bar', ask); if (b) b.innerHTML = barHTML(); };
+const unlock = () => $$('[data-sec]', ask).forEach(s => { if (K()) s.removeAttribute('data-locked'); });
+
+function bindForm() {
+  ask.onclick = e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.kind) { const changed = S.kind !== t.dataset.kind; S.kind = t.dataset.kind; if (changed) { S.files = {}; S.len = 0; S.name = ''; } sound.tick(); render('title'); $('[data-sec="name"]', ask)?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); $('[data-name]', ask)?.focus({ preventScroll: true }); return; }
+    if (t.dataset.file) { const i = t.dataset.file; S.files[i] = true; sound.shutter(); render('hero'); return; }
+    if (t.dataset.chan) { S.chan = Number(t.dataset.chan); sound.tick(); render('hero'); return; }
+    if (t.dataset.len) { S.len = Number(t.dataset.len); sound.tick(); render(); return; }
+    if (t.dataset.end) { S.end = Number(t.dataset.end); sound.tick(); render('end'); return; }
+    if (t.dataset.feel) { S.feel = S.feel === t.dataset.feel ? '' : t.dataset.feel; sound.soft(); render('model'); return; }
+    if (t.hasAttribute('data-review') && !t.disabled) { S.view = 'review'; sound.tick(); render('end'); scrollTo(0, 0); }
+  };
+  ask.onpointerover = e => { const o = e.target.closest('[data-kind]'); if (o && !S.kind) show(Math.max(0, cuts.findIndex(c => c.dataset.c === 'ex-' + o.dataset.kind))); };
+  ask.oninput = e => {
+    const t = e.target;
+    if (t.matches('[data-name]')) { S.name = t.value; drawFrame('title'); refreshBar(); }
+    if (t.matches('[data-line]')) { S.line = t.value; drawFrame('end'); }
+    if (t.matches('[data-exact]')) { S.exact = t.value; drawFrame('end'); }
+    if (t.matches('[data-avoid]')) S.avoid = t.value;
+    if (t.matches('[data-mail]')) { S.mail = t.value.trim(); refreshBar(); }
+  };
+  ask.onchange = e => { if (e.target.matches('[data-agree]')) { S.agree = e.target.checked; refreshBar(); } };
+}
+
+// ── 확인: 고른 것을 한 장에, 맨 아래 값(초대코드면 줄 긋고 0원) ──
+function totalHTML() {
+  const [l, , p] = L();
+  if (p == null) return `<div class="sum"><span>뮤직비디오 한 곡</span><b>정가 ○○만원</b></div><p>뮤직비디오 정가는 유호님이 정하실 값이에요(시안 자리).</p>`;
+  if (S.code) return `<div class="ln"><span>${l} 정가</span><s>${won(p)}부터</s></div><div class="ln code"><span>초대코드 적용</span><span>${S.from}에서 결제하신 의뢰</span></div><div class="sum"><span>결제할 금액</span><b>0원</b></div><p>이미 ${S.from}에서 결제하셨어요. 따로 결제하지 않아요.</p>`;
+  return `<div class="sum"><span>${l} · 예상 가격</span><b>${won(p)}부터</b></div><p>지금은 결제하지 않아요. 담당자가 의뢰서를 보고 방향과 함께 값을 정해 드리고, 장면 순서를 글로 먼저 보여 드리고, 확인하시면 카드나 계좌이체로 결제해요.</p>`;
+}
+function reviewView() {
+  const k = K() || KINDS[0], [l, b] = L();
+  const rows = [['만들 것', k.name], ['이름', S.name || k.ph], ['자료', `${Object.keys(S.files).length}개`], ['길이', `${l} · ${b}`], ...(k.id === 'mv' ? [] : [['올릴 곳', CHANNELS[S.chan][0]]]), ['마지막 화면', ENDS[S.end][0]], ['느낌', S.feel ? FEELS.find(f => f[0] === S.feel)[1] : '저희가 제안해요'], ['모델', '저희가 골라 드려요']];
+  ask.innerHTML = `
+  <div class="ask-top"><button data-back>고치기</button></div>
+  <div class="sheet"><h1>이대로 보낼까요? <span>왼쪽이 지금 고르신 광고예요.</span></h1>
+    <dl class="lines">${rows.map(([a, v]) => `<div><dt>${a}</dt><dd>${v}</dd><button data-back>고치기</button></div>`).join('')}</dl>
+    <div class="total" data-total>${totalHTML()}</div>
+    ${S.code ? '' : `<details class="help"><summary>크몽 · 숨고에서 받은 초대코드가 있어요</summary><div class="in"><div class="codein"><input data-code placeholder="초대코드" maxlength="12" aria-label="초대코드"><button data-apply>적용</button></div></div></details>`}
+    <div class="bar"><span class="sum"><small>보내면 담당자가 평일 10~19시에 확인해요</small></span><button class="go" data-send>보내기 ${arrow}</button></div></div>`;
+  ask.onclick = e => {
+    if (e.target.closest('[data-back]')) { S.view = 'form'; render(); return; }
+    if (e.target.closest('[data-apply]')) { const v = $('[data-code]', ask).value.trim(); if (!/^[A-Za-z0-9-]{4,12}$/.test(v)) return; S.code = true; sound.shutter(); const t = $('[data-total]', ask); t.innerHTML = totalHTML(); t.classList.add('applied'); e.target.closest('details').remove(); return; }
+    if (e.target.closest('[data-send]')) { sound.shutter(); ask.innerHTML = `<div class="sheet"><p class="status"><i></i>접수했어요 · 저희 차례</p><h1>보내 주셔서 고마워요. <span>평일 10~19시에 확인하고, 방향 두 안과 어울리는 모델을 메일로 알려 드려요.</span></h1><button class="go" data-goto-pay>결제 화면 보기(시안) ${arrow}</button></div>`; $('[data-goto-pay]', ask).onclick = () => { S.view = 'pay'; render('model'); }; }
+  };
+  ask.oninput = null; ask.onchange = null;
+}
+
+// ── 방의 결제 차례: 왼쪽은 정해진 내 광고, 오른쪽은 수단 두 장과 합계 ──
+function payView() {
+  const [pl, pd, amount] = L(), pname = S.name || (K() || KINDS[0]).ph;
+  if (S.code) {
+    ask.innerHTML = `<div class="sheet"><p class="status"><i></i>저희 차례</p><h1>결제는 이미 끝났어요. <span>${S.from}에서 결제하신 의뢰라 바로 장면 이미지를 만들고 있어요.</span></h1><div class="total"><div class="ln"><span>${pl} · 정해 드린 값</span><s>${won(amount)}</s></div><div class="ln code"><span>초대코드 적용</span><span>${S.from}에서 결제하신 의뢰</span></div><div class="sum"><span>결제할 금액</span><b>0원</b></div></div></div>`;
+    return;
+  }
+  let method = 'card';
+  const draw = () => {
+    ask.innerHTML = `<div class="ask-top"><span>${pname} · 의뢰 번호 <span class="mono">P-1125-7828</span></span></div>
+    <div class="sheet"><h1>결제. <span>결제하시면 장면 이미지를 만들기 시작해요.</span></h1>${method === 'card' ? '<p class="test">시험 결제 화면이에요. 카드 가맹 계약이 끝나면 실제 결제로 바뀌어요.</p>' : ''}
+      <dl class="lines"><div><dt>정해 드린 값</dt><dd>${pl} ${pd}</dd><span class="mono">${won(amount)}</span></div><div><dt>기간 · 수정</dt><dd>결제한 날부터 10일 · 2회</dd><span></span></div></dl>
+      <div class="opts" role="radiogroup" aria-label="결제 수단" style="margin-top:18px">
+        <button class="opt no-ico" role="radio" aria-checked="${method === 'card'}" data-m="card"><span class="t"><b>카드 결제</b><small>결제창에서 카드나 간편결제로 바로 끝나요</small></span><span class="won">바로 시작</span></button>
+        <button class="opt no-ico" role="radio" aria-checked="${method === 'bank'}" data-m="bank"><span class="t"><b>계좌이체</b><small>입금하시면 담당자가 평일 10~19시에 확인하고 시작해요</small></span><span class="won">확인 뒤 시작</span></button>
+      </div>
+      ${method === 'bank' ? `<div class="total"><div class="ln"><span>입금할 곳</span><span class="mono">○○은행 000-000000-00-000</span></div><div class="ln"><span>입금자명</span><span class="mono">P-1125-7828</span></div><p>계좌는 운영 설정에서 불러와요(시안 자리).</p></div>` : ''}
+      <div class="bar"><span class="sum"><small>결제할 금액</small><b>${won(amount)}</b></span><button class="go" data-pay>${method === 'card' ? '카드로 결제하기' : '입금했어요'} ${arrow}</button></div></div>`;
+  };
+  draw();
+  ask.onclick = e => {
+    const m = e.target.closest('[data-m]'); if (m) { method = m.dataset.m; sound.tick(); draw(); return; }
+    if (e.target.closest('[data-pay]')) { sound.shutter(); ask.innerHTML = `<div class="sheet"><p class="status"><i></i>${method === 'card' ? '결제 확인 · 저희 차례' : '입금 확인 중'}</p><h1>${method === 'card' ? '결제를 확인했어요.' : '입금을 확인하고 있어요.'} <span>${method === 'card' ? '장면 이미지를 만들기 시작했어요. 받으실 날은 12월 5일이에요.' : '담당자가 입금을 확인하면 바로 시작해요.'}</span></h1></div>`; }
+  };
+}
+
+// 시안 조작 띠(손님 화면 밖)
+const bar = document.createElement('nav'); bar.className = 'mock'; bar.setAttribute('aria-label', '시안 조작');
+bar.innerHTML = `<a href="./의뢰서.html">옛 시안</a><i></i><button data-v="form">의뢰서</button><button data-v="review">확인</button><button data-v="pay">결제 화면</button><i></i><button data-code-t aria-pressed="${S.code}">초대코드 손님</button>`;
+document.body.append(bar);
+if (location.search.includes('shot')) document.documentElement.classList.add('is-shot');
+bar.onclick = e => {
+  const v = e.target.closest('[data-v]'); if (v) { if (!S.kind) { S.kind = 'product'; S.name = '오미톡 오미자 스파클링'; S.files = { 0: true, 1: true }; S.mail = 'buyer@example.com'; S.agree = true; } S.view = v.dataset.v; render(v.dataset.v === 'pay' ? 'model' : undefined); return; }
+  if (e.target.closest('[data-code-t]')) { S.code = !S.code; e.target.closest('button').setAttribute('aria-pressed', String(S.code)); render(); }
+};
+render('title');
+</script>
+</body>
+</html>
