@@ -150,7 +150,12 @@ export function roomModel(p){
   // key는 제안마다 다르다 — 화면이 고르던 값을 그 제안에만 붙여 둔다(app.mjs s.proposeUi).
   const proposed=r?.modelProposal?.status==='open'?modelCard(r.modelProposal.modelId):null,proposalLooks=!!proposed&&!!r.modelProposalLooks&&answers.package==='photo'&&!!modelLooks(proposed.id)&&!['custom','persona'].includes(answers.modelChoice)&&castingOf(r,p?.studio?.strategy?.data?.castingSelection).kind!=='persona';
   const shots=answers.package==='photo'?screenShots(p,state):[];
-  const proposal=proposed?{...proposed,note:r.modelProposal.note||'',...(proposalLooks?{looks:true,key:`${proposed.id}:${r.modelProposal.at||''}`,look:(look=>({outfit:look.outfit,hair:look.hair}))(answers.models?.[0]===proposed.id?lookOf(proposed.id,answers):lookOf(''))}:{})}:null,direction=directionModel(p);
+  // key는 제안마다 다르다(2판 ①부터 옷 · 머리가 없는 제안도 — 무대 복도에서 가운데로 데려온 모델을 그 제안에만 붙여 둔다).
+  const proposal=proposed?{...proposed,note:r.modelProposal.note||'',key:`${proposed.id}:${r.modelProposal.at||''}`,...(proposalLooks?{looks:true,look:(look=>({outfit:look.outfit,hair:look.hair}))(answers.models?.[0]===proposed.id?lookOf(proposed.id,answers):lookOf(''))}:{})}:null,direction=directionModel(p);
+  // 방 무대 · 지난 결정 줄(2판 ①, 11-24): 고른 모델(서버 고름 → 받아들인 제안 → 의뢰 기록 — castingOf), 판마다 어디까지 왔는지, 결제 상태,
+  // 사진 상품 결제 차례의 확인한 첫 장. 무대는 이 값으로 고른 모델의 띠 · 첫 장을 건다.
+  const casting=castingOf(r,p?.studio?.strategy?.data?.castingSelection),chosen=casting.kind==='catalog'?modelCard(casting.modelId):null;
+  const firstShot=answers.package==='photo'&&state==='pay'?draftModel(p)?.cuts?.[0]?.src||'':'';
   return {
     state,stage:roomStage(state),photo:answers.package==='photo',options:r?.directionProposal?.options?.length||0,title:p?.title||'',number:r?.number||'',manager:p?.ownerName||t('PULSE 담당자'),hasRound:!!lastRound(r),lastKind:lastRound(r)?.kind||'',
     brief:r?roomBrief(r,answers,p?.seat?.state==='queue'):[],
@@ -169,7 +174,15 @@ export function roomModel(p){
     news:roomNews(p,state),
     // 낮 판(11-20): 방 첫 화면의 담당자 한마디와 받으실 날(없으면 null — 그 줄을 그리지 않는다).
     word:roomWord(p,state),due:roomDue(p,state),
+    chosen,rounds:roundsOf(r,state),payStatus:r?.payment?.status||'',...(firstShot?{firstShot}:{}),
   };
+}
+// 판마다 어디까지 왔는지(지난 결정 줄): next(다음) · writing(만드는 중) · new(도착) · sent(의견 보냄) · done(확인함).
+// open은 그 판이 마지막 판이라 1차안 화면이 그 판을 보여 줄 수 있는지다(draftModel은 마지막 판만 준다 — 장면 이미지 판이 온 뒤의 글 콘티는 열 판이 없다).
+function roundsOf(r,state){
+  const rounds=r?.rounds||[],last=rounds.at(-1)||null,script=rounds.filter(item=>item.kind==='script').at(-1)||null,images=rounds.filter(item=>item.kind==='images').at(-1)||null;
+  const at=(round,writing)=>round?(round.approvedAt?'done':round.feedbackAt?'sent':'new'):writing?'writing':'next';
+  return {script:{at:images?'done':at(script,state==='prepare'),open:!!script&&last===script},images:{at:at(images,state==='prepare-images'||state==='prepare'&&r?.answers?.package==='photo'),open:!!images&&last===images}};
 }
 // 결제 안내 카드(판 4): 값 · 받으실 날 · 수정 · 접수 번호 · 결제 상태. 값은 결제 요청에 적힌 값, 없으면 고른 방향의 값, 없으면 패키지 값.
 export function payModel(p){

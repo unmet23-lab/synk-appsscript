@@ -1,11 +1,12 @@
 import {esc,safeUrl,stamp} from './api.mjs';
 import {t,k,locale,intlLocale} from './i18n.mjs';
 import {CASTING_MODELS,modelLooks} from './casting-catalog.mjs';
-import {MODEL_LINES,MODEL_PICKS,sceneSet} from './request-data.mjs';
+import {MODEL_PICKS,sceneSet} from './request-data.mjs';
 import {ROOM_STAGES,ROOM_COPY,CONFIRM_OF,modelCard,roomTab,lookOf,lookLine} from './room-view.mjs';
 import {FINISHED_FILMS,filmNote,filmTitle} from './films-view.mjs';
-import {revealWords,riseAll,rise,play,reduced} from './motion.mjs';
-import {arrow} from './film-home.mjs';
+import {revealWords,riseAll,play,reduced} from './motion.mjs';
+import {arrow,slowData,pageLoaded} from './film-home.mjs';
+import {hallItems,hallView,hallModels,hallOne,mountHall,mountOne,sweepHalls} from './hall.mjs';
 import {holdPoster} from './film-review.mjs';
 import {personaCopy,personaCard,personaLine,personaScreen,personaKeep,personaReuseLine,personaRemovedLine} from './persona-view.mjs';
 export {entryView,mountEntry} from './film-home.mjs';
@@ -21,7 +22,6 @@ const modelScene=id=>`${ASSET}model-scene-${String(id).toLowerCase()}.webp`;
 // 큰 판으로도 모자란 화면(5K 같은)과 스크린의 다른 그림(예시 그림 · 받은 자료 · 소식 그림)은 data-cap이 칸을 실제 화소의 1.47배 안으로 줄인다(api.mjs capPixels).
 export const ROOM_SCENE_SIZES='(max-width:820px) max(68.1vw,17.6vh), (max-aspect-ratio:1/1) max(68.1vw,17.6vh), max(36.8vw,54.8vh)';
 const roomScene=src=>{const set=sceneSet(src);return `<img class="sx-q-fill" src="${esc(src)}"${set?` srcset="${esc(set)}" sizes="${ROOM_SCENE_SIZES}"`:''} data-cap alt="">`;};
-const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.image;
 // 모델 이름 · 한 줄은 카탈로그 한국어를 그리는 자리에서 번역한다.
 const nameOf=name=>t(name,null,'model');
 // 단계 이름(단계 문맥 — 의뢰서 칸 이름 「확인」과 영어가 갈린다).
@@ -30,22 +30,29 @@ const stageName=(id,photo=false)=>({request:t('의뢰서',null,'stage'),check:t(
 const withMarks=(text,marks)=>Object.entries(marks).reduce((html,[name,mark])=>html.split(`{${name}}`).join(mark),esc(text));
 
 // ── 고객 방 ──
-// 단계 낱말 줄(판 3, 11-08): 앱 머리에 하나만 둔다. 지금 단계까지만 열리고, 완성 광고는 줄 끝에.
+// 단계 막대(2판 ①, 11-24 — 설계 docs/디자인/PULSE고객앱_다시짓기_20261124/방_설계.md 「머리」): 다섯 칸이 그대로 단추다(잠금 규칙 · aria-current 그대로).
+// 단계 이름은 단추 안 글 그대로 둔다(자동 안내가 이 글로 단계를 읽는다) — 넓은 화면은 CSS가 글을 감추고 단추 바탕으로 막대를 그리고, 막대 옆에 지금 단계를 말로 한 번 더 쓴다(꾸밈이라 화면 읽기에서 뺀다).
+// 줄 끝에 있던 입구 셋(SYNK 작품 · 마케팅 성과 · 인플루언서 광고)은 머리 오른쪽 「더 보기」 차림으로 옮겼다(views.mjs headMore).
 export function roomRail(p,{tab='overview'}={}){
   const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),view=roomTab(tab),now=['draft','review','films','marketing','people'].includes(view)?view:p.stage,away=view==='films'||view==='marketing'||view==='people';
   // 판이 오기 전의 1차안 칸은 지금 단계여도 열지 않는다(모델을 정하기 전에 글 콘티로 넘어가지 않게).
   const locked=(item,i)=>item.id==='draft'&&!p.hasRound||item.id!==now&&i>at;
-  // 줄 끝의 따로 선 칸: SYNK 작품과, 스위치(features.marketing)가 켜진 손님의 마케팅 성과(11-16), 인플루언서 광고(11-21 — 스위치 people · 결제 뒤).
-  const foot=[p.films&&['films',t('SYNK 작품')],p.marketing&&['marketing',t('마케팅 성과')],p.people&&['people',t('인플루언서 광고')]].filter(Boolean);
-  return `<nav class="sx-steps sx-head-steps" aria-label="${esc(t('단계'))}"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(stageName(item.id,p.photo))}</button>`).join('')}</div>${foot.length?`<div class="sx-steps-foot sx-small">${foot.map(([id,label])=>`<button type="button" class="${view===id?'is-now':''}" ${view===id?'aria-current="page"':''} data-room-go="${id}">${esc(label)}</button>`).join('')}</div>`:''}</nav>`;
+  return `<nav class="sx-steps sx-head-steps" aria-label="${esc(t('단계'))}"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(stageName(item.id,p.photo))}</button>`).join('')}</div><span class="sx-head-stage" aria-hidden="true">${esc(stageName(p.stage,p.photo))}</span></nav>`;
 }
-// 머리 하나: 프로젝트 이름(누르면 고객 방) · 접수 번호 · 단계 줄. 앱에서는 앱 머리 칸에, 예시에서는 화면 안 머리에 같은 마크업을 그린다.
-// 언어 메뉴(다국어 판 2)는 이 가운데 칸에 두지 않는다 — 앱 머리 오른쪽 끝(views.mjs header)에 하나만 선다(같은 머리에 둘이 서지 않게).
-// 가운데 칸은 넓이가 모자라면 끝이 잘리는 칸이라(overflow hidden) 821~1000 영어에서 메뉴가 잘렸다. 예시 머리(exampleHead)에는 메뉴가 없다(체험은 한국어로만).
+// 머리 하나: 프로젝트 이름(누르면 고객 방) · 단계 막대. 앱에서는 앱 머리 칸에, 예시에서는 화면 안 머리에 같은 마크업을 그린다.
+// 접수 번호는 의뢰서 서랍 맨 위와 결제 카드에만 있다(크몽 「문의하기」에 붙여 넣는 번호). 언어 메뉴는 「더 보기」 차림 안에 있다(views.mjs headMore).
 export function roomHead(p,{tab='overview'}={}){
-  return `<button type="button" class="sx-head-title" data-room-go="room" title="${esc(t('고객 방으로'))}"><b class="crumb-title">${esc(p.title)}</b></button>${p.number?`<span class="crumb-no">${esc(t('접수 번호'))} <span class="mono">${esc(p.number)}</span></span>`:''}<i class="sx-head-break" aria-hidden="true"></i>${roomRail(p,{tab})}`;
+  return `<button type="button" class="sx-head-title" data-room-go="room" title="${esc(t('고객 방으로'))}"><b class="crumb-title">${esc(p.title)}</b></button><i class="sx-head-break" aria-hidden="true"></i>${roomRail(p,{tab})}`;
 }
-export const exampleHead=(p,{tab='overview'}={})=>`<header class="sx-room-bar is-head"><a class="sx-logo" href="./" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><div class="header-crumb">${roomHead(p,{tab})}</div><div class="header-actions"><button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal">${esc(t('나눈 말'))}</button></div></header>`;
+// 머리 오른쪽 아이콘(2판 ①): 의뢰서 · 나눈 말 · 더 보기. 그림은 가는 선 하나씩(꾸밈 — 이름은 그림 아래 글이 말한다).
+export const HEAD_ICON={
+  brief:'<svg class="sx-head-glyph" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5.5 2.5h6l3 3v12h-9z M11.5 2.5v3h3 M8 9.5h4.5 M8 12.5h4.5"/></svg>',
+  talk:'<svg class="sx-head-glyph" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3.5 4.5h13v9h-7l-4 3v-3h-2z"/></svg>',
+  more:'<svg class="sx-head-glyph is-fill" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 8.6h2.8v2.8H4z M8.6 8.6h2.8v2.8H8.6z M13.2 8.6H16v2.8h-2.8z"/></svg>',
+};
+// 「의뢰서」: 의뢰서 서랍을 연다(의뢰서가 아직 없는 쓰기 차례는 app.mjs가 의뢰서 쓰기를 연다).
+export const headBrief=(open=false)=>`<button type="button" class="sx-head-icon" data-room-do="brief" aria-controls="room-brief-box" aria-expanded="${open?'true':'false'}">${HEAD_ICON.brief}<span>${esc(t('의뢰서'))}</span></button>`;
+export const exampleHead=(p,{tab='overview'}={})=>`<header class="sx-room-bar is-head"><a class="sx-logo" href="./" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><div class="header-crumb">${roomHead(p,{tab})}</div><div class="header-actions">${headBrief()}<button type="button" class="sx-head-ask sx-head-icon" data-room-do="journal" aria-controls="room-journal">${HEAD_ICON.talk}<span>${esc(t('나눈 말'))}</span></button></div></header>`;
 // ── 일지(판 3b) ──
 // 한 화면에 하나만 그린다. 자리는 data-place와 CSS가 정한다: column(방 — 늘 흐름 안), side(1차안 · 영상 — 넓은 화면은 왼쪽 단, 휴대폰은 아래 시트),
 // drawer(방향 · 완성 광고 — 넓은 화면은 오른쪽 서랍, 휴대폰은 아래 시트). 열고 닫기 · 「봤다」는 app.mjs가 맡는다.
@@ -53,7 +60,8 @@ export const JOURNAL_SHOWN=5;
 const askForm=ask=>`<form class="sx-ask-reply" data-form="ask" data-id="${esc(ask.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="${esc(t('글로 답하거나 파일을 보내 주세요'))}" aria-label="${esc(t('{label} 답',{label:ask.label}))}"></textarea><div class="sx-ask-tools"><label class="sx-quiet"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>${esc(t('파일 고르기'))}</span></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button></div></form>`;
 // talk(「말만 보기」 — 운영 조각 4 · 설계 S1): 켜면 말 줄(문의 · 답 · 담당자 글)만 보인다 — 사건 · 소식 줄이 늘어도 문답이 묻히지 않게. 말 줄과 다른 줄이 함께 있을 때만 단추를 둔다.
 // attach(운영 조각 8-B): 이 서버가 문의 사진을 받을 때만(messagePhotos) 묻기 칸에 「사진 붙이기」와 미리 보기 칸을 그린다. 고른 사진은 app.mjs가 메모리에 두고 칸을 채운다(sayPhotoChips).
-export function journalView(j,{place='column',here=null,video=false,photo=false,open=false,all=false,talk=false,owner=t('담당자'),attach=false}={}){
+// pin(2판 ①): 답할 되묻기를 맨 위에 둘지. 방은 되묻기 차례에 답 칸을 왼쪽 판(askList)에 두므로 서랍에는 다시 두지 않는다(같은 칸이 두 벌 서지 않게).
+export function journalView(j,{place='column',here=null,video=false,photo=false,open=false,all=false,talk=false,owner=t('담당자'),attach=false,pin=true}={}){
   const overlay=place!=='column',isHere=go=>!!go&&!!here&&go.tab===here.tab&&(!go.versionId||go.versionId===here.versionId||!!go.final&&!!here.finals);
   const when=at=>at&&stamp(at)?` · <time datetime="${esc(at)}">${esc(stamp(at))}</time>`:'';
   // 「열기」 · 「이 화면」은 머리 줄 끝에. 지금 화면의 일감을 가리키는 인용은 그 글이 바로 옆에 있으니 머리 줄만 둔다(같은 말이 한 화면에 두 번 서지 않게).
@@ -68,7 +76,7 @@ export function journalView(j,{place='column',here=null,video=false,photo=false,
     const body=(item.kind==='talk'||item.kind==='progress')&&item.text?`<p class="sx-body sx-j-text">${esc(item.text)}</p>${shots}`:item.kind==='quote'&&(!here||place==='drawer')?`<p class="sx-j-quote">${esc(item.text)}</p>`:shots;
     return `<li class="sx-j-row is-${esc(item.kind)}${tail?' has-tail':''}" data-who="${esc(item.who)}" data-journal-id="${esc(item.id)}" tabindex="-1">${meta}${tail}${body}</li>`;
   };
-  const asks=j.pinned.asks.map(ask=>`<section class="sx-j-ask" data-journal-id="a:${esc(ask.id)}" tabindex="-1"><p class="sx-j-meta"><b>${esc(owner)}</b> ${esc(t('물어봐요'))}${when(ask.at)}</p><h3 class="sx-serif">${esc(ask.label)}</h3>${ask.why?`<p class="sx-j-why">${esc(ask.why)}</p>`:''}${askForm(ask)}</section>`).join('');
+  const asks=(pin?j.pinned.asks:[]).map(ask=>`<section class="sx-j-ask" data-journal-id="a:${esc(ask.id)}" tabindex="-1"><p class="sx-j-meta"><b>${esc(owner)}</b> ${esc(t('물어봐요'))}${when(ask.at)}</p><h3 class="sx-serif">${esc(ask.label)}</h3>${ask.why?`<p class="sx-j-why">${esc(ask.why)}</p>`:''}${askForm(ask)}</section>`).join('');
   const talks=j.items.filter(item=>item.kind==='talk'),filter=talk||talks.length>0&&talks.length<j.items.length,items=talk?talks:j.items;
   const shown=all?items:items.slice(0,JOURNAL_SHOWN),rest=items.length-JOURNAL_SHOWN;
   return `${overlay?`<div class="sx-j-scrim" data-journal-do="close" data-place="${esc(place)}"${open?'':' hidden'}></div>`:''}<aside class="sx-journal${open?' is-open':''}" id="room-journal" data-journal data-place="${esc(place)}" aria-labelledby="room-journal-title"${place==='drawer'?' role="dialog"':''}>
@@ -108,6 +116,36 @@ export function journalRelease(){for(const node of document.querySelectorAll('[d
 export const journalFocus=box=>{const title=box?.querySelector('#room-journal-title');if(title){title.setAttribute('tabindex','-1');title.focus({preventScroll:true});}};
 // 휴대폰에서만 보이는 「담당자에게 묻기」(넓은 화면은 같은 화면 왼쪽에 일지가 있다). 시트를 연다.
 export const journalAsk=(cls='')=>`<button type="button" class="sx-quiet sx-j-ask-open ${cls}" data-room-do="journal">${esc(t('담당자에게 묻기'))}</button>`;
+// ── 의뢰서 서랍(2판 ①, 11-24) ──
+// 나눈 말 서랍과 같은 틀: 넓은 화면은 오른쪽 400px, 휴대폰 · 세로 화면은 아래 시트. 열리면 대화상자(뒤 내용 inert · 가림막 · Esc · 연 단추로 초점). 두 서랍은 함께 열리지 않는다(app.mjs).
+// 앱은 모든 방 화면에서 main 밖 한 자리(#room-brief)에 그린다(듣개도 app.mjs 한 곳). 예시는 화면 안에 같은 마크업을 둔다(demo-film.mjs).
+// 안: 맨 위 접수 번호와 복사(크몽 결제 안내가 「접수 번호를 보내 주시면」이라 묻는다), 의뢰서 칸, 받은 자료, 준비 칸(바뀐 내용 · 준비 자료 · 납품 규격 — 있을 때).
+export function briefView(p,{open=false,prep=''}={}){
+  return `<div class="sx-brief-scrim" data-brief-do="close"${open?'':' hidden'}></div><aside class="sx-brief${open?' is-open':''}" id="room-brief-box" data-brief role="dialog" aria-modal="true" aria-labelledby="room-brief-title">
+    <header class="sx-j-head"><h2 class="sx-serif" id="room-brief-title" tabindex="-1">${esc(t('보내 주신 의뢰서'))}</h2><button type="button" class="sx-quiet sx-brief-close" data-brief-do="close">${esc(t('닫기'))}</button></header>
+    ${p.number?`<p class="sx-brief-no"><span class="sx-small">${esc(t('접수 번호'))}</span> <b class="sx-no">${esc(p.number)}</b> <button type="button" class="sx-quiet" data-room-do="copy-number" data-number="${esc(p.number)}">${esc(t('번호 복사'))}</button></p>`:''}
+    <section class="sx-brief-doc">${paperRows(p)}</section>
+    <section class="sx-brief-doc"><h3>${esc(t('받은 자료'))} <span class="sx-no">${p.files.length+(p.others?.length||0)}</span></h3>${paperFiles(p)}</section>
+    ${prep}
+  </aside>`;
+}
+// 연 상태를 그린다(가림막 · 문서 잠금 · 여는 단추의 aria-expanded · 뒤 내용 inert). 나눈 말과 표식이 달라(data-brief-inert) 한쪽을 풀어도 다른 쪽이 풀리지 않는다.
+export function briefSetOpen(root,on){
+  const box=root?.querySelector('[data-brief]'),open=!!on&&!!box;
+  box?.classList.toggle('is-open',open);root?.querySelectorAll('.sx-brief-scrim').forEach(node=>{node.hidden=!open;});
+  document.documentElement.classList.toggle('has-brief-open',open);
+  document.querySelectorAll('[data-room-do="brief"][aria-controls]').forEach(button=>button.setAttribute('aria-expanded',open?'true':'false'));
+  briefRelease();
+  if(open)for(let at=box;at?.parentElement&&at!==document.body;at=at.parentElement)for(const node of at.parentElement.children)if(node!==at&&!node.inert&&!node.matches('.sx-brief-scrim,.notice,#notice,dialog,script,style,link')){node.inert=true;node.setAttribute('data-brief-inert','');}
+  return box;
+}
+export function briefRelease(){for(const node of document.querySelectorAll('[data-brief-inert]')){node.inert=false;node.removeAttribute('data-brief-inert');}}
+// 열 때 초점은 서랍 제목으로(나눈 말과 같다). 준비 칸으로 열면(showRoomPaper) 그 칸으로 굴린다.
+export function briefFocus(box,paper=''){
+  const at=paper&&box?.querySelector(`[data-paper-for="${CSS.escape(paper)}"]`);
+  if(at){at.setAttribute('tabindex','-1');at.scrollIntoView?.({block:'start'});at.focus({preventScroll:true});return;}
+  box?.querySelector('#room-brief-title')?.focus({preventScroll:true});
+}
 function roomPreviewScreen(p){
   const filmSrc=safeUrl(p.film?.src,{media:true});
   if(filmSrc)return `<video class="sx-q-fill" src="${esc(filmSrc)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go||'review')}"><span class="sr">${esc(t('{label} 보기',{label:p.film.label}))}</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;
@@ -119,18 +157,43 @@ function roomPreviewScreen(p){
   if(pv?.kind==='media'&&pv.html)return `<div class="sx-room-media">${pv.html}</div><p class="sx-small sx-room-cap"><button type="button" class="sx-link" data-room-go="${esc(pv.go||'review')}">${esc(pv.label)} · ${esc(t('열기',null,'open'))}</button></p>`;
   return '';
 }
-function roomScreen(p,{news=true}={}){
-  if(p.state==='model'&&p.proposal)return `${roomScene(modelScene(p.proposal.id))}<p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
-  const preview=roomPreviewScreen(p);
-  if(preview)return preview;
-  if(news&&p.news?.pictures?.length){const pics=p.news.pictures.map(src=>safeUrl(src,{media:true})).filter(Boolean);if(pics.length)return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" data-cap alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap" data-room-news="n:${esc(p.news.id)}"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b>${p.word?.id===p.news.id?'':` <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button>`}</p>`;}
-  const chosenSrc=p.state==='prepare'?safeUrl(p.direction?.chosen?.src,{media:true}):'';
-  if(chosenSrc)return `<img class="sx-q-fill" src="${esc(chosenSrc)}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
-  const cuts=p.draft?.cuts||[];
+// ── 방 무대(2판 ①, 설계 「무대」 · 「무대 대체 순서」) ──
+// 올린 판(시안 · 최종본)이 있으면 어떤 상태든 그것을 먼저 건다(모델 제안 차례만 빼고). 없으면 상태마다 정한 그림, 그 그림이 없거나 못 받으면
+// 고른 모델의 걷는 띠 → 받은 자료의 첫 사진 → 방향 그림 → 앱에 있는 모델 장면 그림 → 멈춘 복도 차례로 넘어간다. 무대는 접지 않는다.
+// 다음 차례는 <template data-stage-next>로 두어 받지 않고 기다린다 — 지금 그림을 못 받으면 mountRoom이 다음 것을 꺼내 끼운다.
+// 무대 그림 주소: 앱 안 그림(./assets — 예시 자료)은 그대로, 그 밖은 같은 출처의 매체 주소만(safeUrl).
+const stageSrc=src=>typeof src==='string'&&/^\.\/assets\/[\w./-]+$/.test(src)?src:safeUrl(src,{media:true});
+const stageImg=src=>`<img class="sx-q-fill" src="${esc(src)}" data-cap alt="" decoding="async">`;
+// 멈춘 복도(의뢰서 쓰기 차례 · 마지막 대체): 입장의 복도 그대로, 넘기지 않고 영상 없이. 꾸밈이라 누르거나 Tab에 걸리지 않는다(inert).
+const stoppedHall=()=>`<div class="sx-room-hall" inert>${hallView(hallItems(),{hold:false,key:'stopped'})}</div>`;
+// 모델 제안 차례의 복도: 지금 모델 벽과 같은 모든 모델, 제안 모델(또는 손님이 가운데로 데려온 모델)이 가운데. 누르면 가운데로 올 뿐 정해지지 않는다 — 정하는 것은 왼쪽 판 주 단추다.
+const modelHall=(m,ui)=>{const ids=CASTING_MODELS.map(item=>item.id),start=ids.includes(ui.pick)?ui.pick:m.id;return `${hallView(hallModels(ids),{start,key:`models:${m.key||m.id}`,hold:false,label:t('모델 고르기')})}<p class="sx-small sx-room-hint">${esc(t('사진을 누르면 그 모델이 가운데로 와요'))}</p>`;};
+const draftCap=p=>`<p class="sx-small sx-room-cap">${esc(p.photo?t('첫 장 {round}판 · {count}장',{round:String(p.draft.round),count:p.draft.cuts.length}):t('{round}판 · {count}컷. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.',{round:String(p.draft.round),count:p.draft.cuts.length}))}</p>`;
+function stageFall(p){
+  const list=[],chosen=p.chosen?.id||'';
+  if(p.state==='pay'&&p.firstShot){const src=stageSrc(p.firstShot);if(src)list.push(stageImg(src));}
+  if(chosen)list.push(hallOne(chosen));
+  const file=stageSrc(p.files?.[0]?.src);if(file)list.push(stageImg(file));
+  const d=p.direction,dir=stageSrc((d?.chosen||d?.options?.find(o=>o.recommended)||d?.options?.[0])?.src);if(dir)list.push(stageImg(dir));
+  if(chosen)list.push(roomScene(modelScene(chosen)));
+  list.push(stoppedHall());
+  return list.filter(Boolean);
+}
+function roomStage(p,{main=false,ui={}}={}){
+  const out=(kind,html)=>({kind,html});
+  if(!(p.state==='model'&&p.proposal)){const preview=roomPreviewScreen(p);if(preview)return out('preview',preview);}
+  if(main){const html=personaScreen(p.persona);if(html)return out('persona',html);}
+  if(p.state==='write')return out('hall',stoppedHall());
+  if(p.state==='model'&&p.proposal)return out('models',modelHall(p.proposal,ui));
+  // 장면 이미지 도착 · 의견 반영 · 장면 이미지 준비: 그 판의 컷 띠(읽기만, 모든 컷). 글만 든 판은 컷 카드.
+  const cuts=['images','revise','prepare-images'].includes(p.state)?p.draft?.cuts||[]:[];
   const pictured=cuts.map(cut=>({...cut,src:safeUrl(cut?.src,{media:true})})).filter(cut=>cut.src);
-  if(pictured.length)return `<div class="sx-room-cuts" data-count="${Math.min(pictured.length,12)}">${pictured.slice(0,12).map(cut=>`<img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async">`).join('')}</div><p class="sx-small sx-room-cap">${esc(p.photo?t('첫 장 {round}판 · {count}장',{round:String(p.draft.round),count:cuts.length}):t('{round}판 · {count}컷. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.',{round:String(p.draft.round),count:cuts.length}))}</p>`;
-  if(cuts.length)return `<div class="sx-room-word"><p class="sx-serif">${esc(p.draft.oneLine)}</p><ol>${cuts.slice(0,4).map((cut,i)=>`<li><span class="sx-no">${pad(i+1)}</span><span class="sx-small">${esc(cut.what)}</span></li>`).join('')}</ol></div>`;
-  return '';
+  if(pictured.length)return out('cuts',`<ol class="sx-room-cutrow" data-count="${pictured.length}" aria-label="${esc(p.photo?t('사진 목록'):t('컷 목록'))}">${pictured.map((cut,i)=>`<li><img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async"><span class="sx-no">${pad(i+1)}</span></li>`).join('')}</ol>${draftCap(p)}`);
+  if(cuts.length)return out('script',`<div class="sx-room-word"><p class="sx-serif">${esc(p.draft.oneLine)}</p><ol>${cuts.slice(0,4).map((cut,i)=>`<li><span class="sx-no">${pad(i+1)}</span><span class="sx-small">${esc(cut.what)}</span></li>`).join('')}</ol></div>`);
+  // 저희 차례: 소식 그림이 있으면(roomNews — 저희 차례에만 있다) 그 그림과 「작업 중인 화면이에요」. 맞춤 인물이 지금 차례인 방은 띄우지 않는다(그림이 없으면 대체 순서로).
+  if(!main&&p.news?.pictures?.length){const pics=p.news.pictures.map(src=>safeUrl(src,{media:true})).filter(Boolean);if(pics.length)return out('news',`${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" data-cap alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap" data-room-news="n:${esc(p.news.id)}"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b>${p.word?.id===p.news.id?'':` <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button>`}</p>`);}
+  const [first,...rest]=stageFall(p);
+  return out('fall',`${first}${rest.map(html=>`<template data-stage-next>${html}</template>`).join('')}`);
 }
 // ── 방향과 모델(영상 전 확인 1/3, 2026-11-07) ──
 // 시안 docs/마케팅/PULSE_방향제안_20261106/시안 그대로: 그림 둘이 양쪽 끝까지, 가운데 설명 한 장, 고른 쪽만 색. 휴대폰은 안내 → 두 그림 나란히 → 설명.
@@ -175,7 +238,7 @@ function lookBox(id,ui,at){
 const dpLooks=(d,ui)=>lookBox(lookModel(d,ui),ui,{box:'data-dp-look',pick:'data-dp-look-pick',sum:'data-dp-look-sum',hint:'data-dp-look-hint',toggle:'data-dp-do="looks"',panel:'data-dp-looks',id:'dp-looks',say:t('방향에 맞춰 골라 드려요'),note:t('고른 옷 · 머리는 장면 이미지에서 이 사진 그대로 맞춰요.')});
 // 사진 상품의 모델 제안 카드: 방향 화면이 없어 여기서 고른다(기본은 맡김). ui는 app.mjs s.proposeUi — 실시간으로 다시 그려도 고르던 값 · 펼침이 남는다.
 const seedPropose=(m,ui)=>{if(ui.outfit===undefined)ui.outfit=m.look?.outfit||'';if(ui.hair===undefined)ui.hair=m.look?.hair||'';};
-const proposeLooks=(m,ui)=>lookBox(m.id,ui,{box:`data-room-look data-key="${esc(m.key||'')}"`,pick:'data-room-look-pick',sum:'data-room-look-sum',hint:'data-room-look-hint',toggle:'data-room-do="looks"',panel:'data-room-looks',id:'room-looks',say:t('제품에 맞춰 골라 드려요'),note:t('고른 옷 · 머리는 사진에서 이 모습 그대로 맞춰요.')});
+const proposeLooks=(m,ui,folded=false)=>lookBox(m.id,ui,{box:`data-room-look data-key="${esc(m.key||'')}"${folded?' hidden':''}`,pick:'data-room-look-pick',sum:'data-room-look-sum',hint:'data-room-look-hint',toggle:'data-room-do="looks"',panel:'data-room-looks',id:'room-looks',say:t('제품에 맞춰 골라 드려요'),note:t('고른 옷 · 머리는 사진에서 이 모습 그대로 맞춰요.')});
 // 「이 방향으로 갈게요」 양식의 숨은 칸: 줄을 그릴 때만 두고, 그때는 빈 값(맡김)이라도 늘 보낸다(서버 규칙 — 칸이 없으면 건드리지 않음).
 const lookFields=(d,ui)=>{if(!d.looks)return '';const now=lookOf(lookModel(d,ui),ui);return `<input type="hidden" name="outfit" value="${esc(now.outfit)}"><input type="hidden" name="hair" value="${esc(now.hair)}">`;};
 export function directionView(p,{top='',ui={},journal=''}={}){
@@ -319,84 +382,97 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
   if(animate)riseAll(host.querySelectorAll('.sx-dp-frame,.sx-dp-top,.sx-dp-choose'),{start:120,gap:60});
   return {unmount(){stopFilm();window.removeEventListener('resize',refit);cancelAnimationFrame(fitFrame);}};
 }
-const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item=>item.id!==m.id).map(item=>`<button type="button" class="sx-cast" data-room-model="${item.id}" aria-label="${esc([nameOf(item.name),t(MODEL_LINES[item.id]?.line||item.description),t('이 모델로 정하기')].join(' · '))}"><img src="${esc(sceneOf(item))}" alt="" loading="lazy" decoding="async" width="538" height="720"><span class="sx-cast-name sx-small">${esc(nameOf(item.name))}</span></button>`).join('')}</div>`;
-// 고객 전용 인물(판 3, persona-view.mjs): 인물이 손님 차례이고 영상 쪽이 손님 차례가 아니면 인물이 「지금 차례」(머리 글 · 카드 · 스크린)가 되고,
-// 영상 쪽도 손님 차례면 인물 카드는 그 아래 제 머리를 단 카드로, 인물이 저희 차례 · 끝이면 작은 한 줄로 선다. 인물이 없으면 판 3 전과 바이트가 같다(기존 줄 안에만 이어 붙인다).
-// 되묻기 차례는 답할 칸이 일지 맨 위에 있어(「아래 칸만 채워 주시면」) 인물 칸을 일지 뒤로 보낸다 — 되묻기 글과 답 칸 사이에 끼지 않게.
-// ── 낮 판(2026-11-20, 설계 docs/디자인/PULSE고객경험_20261120/운영설계.md) ──
-// 방(roomView)만 밝은 작업실로 그린다: 뿌리에 data-day를 달고, 색 · 선반 · 인화지는 film.css 끝의 낮 판 절이 맡는다. 1차안 · 방향 · 영상 확인 같은 보는 화면은 그대로 어둡다.
-// 제목의 강조 구절: 한국어는 이 표의 구절, 다른 언어는 사전의 mark 문맥 값(키는 한국어 제목). 번역한 제목 안에 그 구절이 없으면 강조하지 않는다.
-// 그리는 글(roomView)의 제목은 그대로 두고, 화면에 붙일 때(mountRoom) 그 구절만 감싼다 — 제목 글을 통째로 읽는 자리(자동 안내가 손님 방과 같은 말을 하는지 대조하는 시험 등)가 바뀌지 않게.
-// i18n-skip-start
-const TITLE_MARKS={
-  '의뢰서를 써 주세요':'의뢰서','지금은 저희 차례예요':'저희 차례','이것만 더 알려 주세요':'이것만','새 방향을 준비하고 있어요':'새 방향','이 모델로 갈까요?':'이 모델',
-  '글 콘티를 쓰고 있어요':'글 콘티','장면 이미지를 만들고 있어요':'장면 이미지','글 콘티가 도착했어요':'글 콘티','장면 이미지가 도착했어요':'장면 이미지','의견을 반영하고 있어요':'의견',
-  '확인하신 컷으로 만들고 있어요':'확인하신 컷','영상이 도착했어요':'영상','완성본을 받으세요':'완성본','글 콘티를 확인해 주셨어요':'글 콘티','완성본을 받으셨어요':'완성본',
-  '결제가 취소됐어요':'결제','크몽에서 결제해 주세요':'결제','첫 장을 확인해 주셨어요':'첫 장','결제를 확인했어요':'결제','이 방향으로 정했어요':'이 방향','담당자가 직접 연락드려요':'담당자',
-  '첫 장이 도착했어요':'첫 장','사진이 도착했어요':'사진','첫 장을 만들고 있어요':'첫 장','확인하신 첫 장대로 만들고 있어요':'확인하신 첫 장',
-};
-// i18n-skip-end
-// 지금 언어로 그려진 제목 글 → 그 안의 강조 구절(없으면 '').
-export function titleKey(text){
-  for(const [title,ko] of Object.entries(TITLE_MARKS)){if(t(title)!==text)continue;const mark=locale()==='ko'?ko:t(title,null,'mark');return mark&&mark!==title&&text.includes(mark)?mark:'';}
-  return '';
-}
-// 제목 칸의 글에서 강조 구절만 <b class="sx-key">로 감싼다. 감쌌으면 true(이미 감쌌거나 구절이 없으면 false).
-function markTitle(node){
-  const text=node.textContent||'',mark=node.children.length?'':titleKey(text),at=mark?text.indexOf(mark):-1;if(at<0)return false;
-  const key=document.createElement('b');key.className='sx-key';key.textContent=mark;node.textContent='';node.append(text.slice(0,at),key,text.slice(at+mark.length));return true;
-}
-// 담당자 한마디: 저희 차례에 가장 최근에 올린 소식의 글. 넉 줄까지만 보이고(CSS가 자른다) 전문은 일지의 그 줄에 있다 — 알림과 「소식 보기」가 가는 자리는 그대로 일지다.
-// 손님 화면에서 일지의 이름은 「나눈 말」이다(머리 단추 · 칸 제목과 같은 말).
+// 고객 전용 인물(판 3, persona-view.mjs): 인물이 손님 차례이고 영상 쪽이 손님 차례가 아니면 인물이 「지금 차례」(머리 글 · 카드 · 무대)가 되고,
+// 영상 쪽도 손님 차례면 인물 카드는 그 아래 제 머리를 단 카드로, 인물이 저희 차례 · 끝이면 작은 한 줄로 선다.
+// ── 방 틀(2판 ①, 11-24 — 설계 docs/디자인/PULSE고객앱_다시짓기_20261124/방_설계.md, 시안 A.html #pick · #images) ──
+// 왼쪽 판(위에서 아래로): 알림 → 차례 줄 → 제목 → 이끄는 글 → 담당자 한마디(옅은 판) → 지난 결정 아이콘 줄 → 상태 카드 → 주 단추 → 입구 칩 → 받으실 날.
+// 오른쪽 무대(roomStage). 바탕은 A의 검정이고(11-20 낮 판을 거뒀다), 새 짜임의 CSS는 뿌리 data-room-a 안에서만 건다(옛 현황 · 묻기 · 납품 화면은 같은 칸 이름을 쓴다).
+// 자동 안내가 읽는 마크업(차례 줄 · 제목 · 이끄는 글)과 상태마다 문구(ROOM_COPY · copyBase)는 글자 하나 바꾸지 않는다.
+// 담당자 한마디: 저희 차례에 가장 최근에 올린 소식의 글. 넉 줄까지만 보이고(CSS가 자른다) 전문은 나눈 말의 그 줄에 있다 — 알림과 「소식 보기」가 가는 자리는 그대로 나눈 말이다.
 const wordCard=p=>p.word?`<figure class="sx-room-say" data-room-in data-room-say><blockquote class="sx-body">${esc(p.word.text)}</blockquote><figcaption class="sx-small"><b>${esc(p.manager)}</b>${stamp(p.word.at)?` · <time datetime="${esc(p.word.at)}">${esc(stamp(p.word.at))}</time>`:''} <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.word.id)}">${esc(t('나눈 말에서 보기'))}</button></figcaption></figure>`:'';
-// 받으실 날: 결제를 확인하며 정한 날(room-view roomDue). 저희 차례에는 남은 날을 함께, 손님 차례에는 날짜만. 지난 날은 싣지 않아 이 줄이 없다.
+// 받으실 날: 결제를 확인하며 정한 날(room-view roomDue). 저희 차례에는 남은 날을 함께, 손님 차례에는 날짜만. 지난 날은 싣지 않아 이 줄이 없다. 왼쪽 판 맨 아래에 선다.
 const dueDay=date=>{try{return new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',day:'numeric',weekday:'long',timeZone:'UTC'}).format(new Date(date+'T00:00:00Z'));}catch{return date;}};
 const dueLine=p=>{
   const due=p.due;if(!due)return '';
   const date=dueDay(due.date),lead=due.left===null?'':due.left===0?t('오늘'):t('{count}일 뒤',{count:due.left});
   return `<p class="sx-room-due" data-room-in data-room-due>${lead?`<b>${esc(lead)}</b> `:''}<span>${esc(due.left===null?t('받으실 날 {date}',{date}):t('{date}에 받으세요',{date}))}</span>${due.changed?` <span class="sx-small">${esc(t('담당자가 다시 정한 날'))}</span>`:''}</p>`;
 };
-export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',tail='',ui={}}={}){
+// ── 지난 결정 아이콘 줄(2판 ①) ──
+// 의뢰서 · 모델(얼굴) · 방향(그림) · 글 콘티 · 장면 이미지 · 결제(사진 상품은 의뢰서 · 모델 · 첫 장 · 결제). 고른 칩은 테두리만, 새로 도착한 판은 다홍 점 하나(A 색 역할).
+// 의뢰서 칩은 의뢰서 서랍을, 모델 · 방향 칩은 고른 방향 카드를 연다. 지금 판(마지막 판)의 글 콘티 · 장면 이미지 칩은 1차안 화면으로 간다.
+// 열 판이 없는 것(장면 이미지 판이 온 뒤의 글 콘티)과 아직 오지 않은 것은 누를 수 없는 표시다.
+const FOLD_ICON={
+  brief:HEAD_ICON.brief,
+  script:'<svg class="sx-head-glyph" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4.5 5.5h11 M4.5 9.5h11 M4.5 13.5h7"/></svg>',
+  images:'<svg class="sx-head-glyph" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3.5 4.5h4v11h-4z M8.5 4.5h8v11h-8z"/></svg>',
+  pay:'<svg class="sx-head-glyph" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3.5 5.5h13v9h-13z M3.5 8.5h13"/></svg>',
+  look:'<svg class="sx-head-glyph" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5.5 3.5h9v13h-9z"/></svg>',
+};
+const FOLD_AT={next:()=>t('다음',null,'fold'),new:()=>t('도착',null,'fold'),sent:()=>t('의견 보냄',null,'fold'),done:()=>t('확인함',null,'fold')};
+function roomFolds(p){
+  if(p.state==='write')return '';
+  const d=p.direction,dir=d?.chosen||null,card=!!dir;
+  const chip=({ico,label,value,attrs='',cls=''})=>{const body=`<span class="sx-fold-ico">${ico}</span><span class="sx-fold-t"><small>${esc(label)}</small><span>${esc(value)}</span></span>`;return attrs?`<button type="button" class="sx-fold${cls}" ${attrs}>${body}</button>`:`<span class="sx-fold is-status${cls}">${body}</span>`;};
+  const toChosen=card?'data-room-do="fold" aria-controls="room-chosen" aria-expanded="false"':'';
+  const round=(key,label,writing)=>{const r=p.rounds?.[key];if(!r)return '';const at=r.at==='writing'?writing:FOLD_AT[r.at]?.()||'';return chip({ico:FOLD_ICON[key==='script'?'script':'images'],label,value:at,attrs:r.open&&!['next','writing'].includes(r.at)?'data-room-go="draft"':'',cls:r.at==='new'?' is-new':r.at==='done'?' is-done':''});};
+  const out=[chip({ico:FOLD_ICON.brief,label:t('의뢰서'),value:t('보기',null,'fold'),attrs:'data-room-do="brief" aria-controls="room-brief-box" aria-expanded="false"'})];
+  if(p.chosen)out.push(chip({ico:`<img src="${esc(p.chosen.image)}" alt="" loading="lazy" decoding="async">`,label:t('모델'),value:nameOf(p.chosen.name),attrs:toChosen,cls:' is-done'}));
+  if(dir)out.push(chip({ico:dir.src&&safeUrl(dir.src,{media:true})?`<img src="${esc(safeUrl(dir.src,{media:true}))}" alt="" loading="lazy" decoding="async">`:FOLD_ICON.look,label:t('방향'),value:dir.name,attrs:toChosen,cls:' is-done'}));
+  if(p.photo)out.push(round('images',t('첫 장'),t('만드는 중',null,'fold')));
+  else out.push(round('script',t('글 콘티'),t('쓰는 중',null,'fold')),round('images',t('장면 이미지'),t('만드는 중',null,'fold')));
+  if(p.payStatus==='confirmed')out.push(chip({ico:FOLD_ICON.pay,label:t('결제'),value:t('확인됨',null,'fold'),cls:' is-done'}));
+  return `<div class="sx-folds" role="group" aria-label="${esc(t('지난 결정'))}" data-room-in>${out.join('')}</div>`;
+}
+// 모델 제안 차례의 주 단추: 가운데가 제안 모델이면 「이 모델로 할게요」(model-accept), 다른 모델이면 「{이름}으로 바꿀게요」(그 모델 값으로 answer_model).
+// 무대 복도의 띠를 누르는 것은 가운데로 데려올 뿐이다 — 보내는 것은 이 단추 하나다(mountRoom이 복도 소식을 받아 이 단추만 다시 그린다).
+function modelGo(m,ui={}){
+  const pick=ui.pick&&ui.pick!==m.id?modelCard(ui.pick):null,name=pick?nameOf(pick.name):'';
+  return `<div class="sx-room-go" data-room-in data-room-pick-go>${pick?`<button type="button" class="sx-go is-solid" data-room-model="${esc(pick.id)}"><span>${esc(t('{name}{ro} 바꿀게요',{name,ro:withRo(name)}))}</span>${arrow}</button>`:`<button type="button" class="sx-go is-solid" data-room-do="model-accept"><span>${esc(t('이 모델로 할게요'))}</span>${arrow}</button>`}</div>`;
+}
+export function roomView(p,{bar=true,top='',after='',entries='',journal='',tail='',ui={}}={}){
   const room=copyOf(p),pc=p.persona?.card?personaCopy(p.persona):null,main=!!pc&&room.turn!=='you',copy=main?pc:room,confirm=main||p.photo?'':CONFIRM_OF[p.state];
   // 판 4: 인물 칸 바로 아래 「내 모델로 모아 두기」(앱이 회원 상태를 읽어 넘긴 p.keep이 있을 때만 — 없으면 판 4 전과 같다).
   const keep=p.persona&&p.keep?personaKeep(p.persona,p.keep):'';
   // 내 모델로 맡긴 의뢰인데 서버가 인물을 싣지 않은 다시 쓰기 방(연결 확인 전 · 지금 쓸 수 없는 모델 — 켜기 전 후속 11-11)은 내 모델로 가는 한 줄만 둔다.
   // 90일 시계로 지운 인물(판 4 설계 11-6)은 지운 날 한 줄만(p.personaRemoved — 살아 있는 인물이 있으면 서버가 싣지 않는다).
-  const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona))+keep:!p.persona&&p.keep?.state==='reuse'?personaReuseLine():!p.persona&&p.personaRemoved?personaRemovedLine(p.personaRemoved):'',late=p.state==='ask'&&!!journal;
-  const preview=!(p.state==='model'&&p.proposal)?roomPreviewScreen(p):'',screen=preview||(main&&personaScreen(p.persona)||roomScreen(p,{news:!main})),heroCls=preview?' is-preview-first':screen?'':' is-no-screen';
-  return `<div class="sx-room" data-state="${esc(p.state)}" data-day>
+  const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona))+keep:!p.persona&&p.keep?.state==='reuse'?personaReuseLine():!p.persona&&p.personaRemoved?personaRemovedLine(p.personaRemoved):'';
+  const propose=!main&&p.state==='model'&&!!p.proposal,stage=roomStage(p,{main,ui});
+  // 고른 방향 카드: 방향을 정하고 글 콘티를 기다리는 동안은 펼치고, 그 밖에는 접어 두었다가 모델 · 방향 칩으로 편다.
+  const chosen=p.direction?.chosen?`<div class="sx-room-chosen" id="room-chosen"${p.state==='prepare'?'':' hidden'}>${chosenCard(p.direction)}</div>`:'';
+  const action=propose?modelGo(p.proposal,ui):copy.action?`<div class="sx-room-go" data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:'';
+  const due=main?'':dueLine(p);
+  return `<div class="sx-room" data-state="${esc(p.state)}" data-room-a${propose?` data-propose-key="${esc(p.proposal.key||p.proposal.id)}"`:''}>
     ${bar?exampleHead(p):''}
-    <section class="sx-room-hero${heroCls}">
-      <div class="sx-room-left">
+    <section class="sx-room-a" data-stage="${esc(stage.kind)}">
+      <div class="sx-room-side">
         <div class="sx-room-main">
           ${top}
           <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}${main&&pc.confirm?`<span>${esc(t('맞춤 인물 확인'))} <b class="sx-no">${pc.confirm}</b></span>`:''}</p>
           <h1 class="sx-display" data-room-title>${esc(t(copy.title))}</h1>
-          <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>${main?'':dueLine(p)+wordCard(p)}
-          ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}${main?personaCard(p.persona,{main:true})+keep:''}
-          ${p.state==='pay'?payCard(p):''}
-          ${p.state==='done'?doneCard(p):''}
-          ${p.state==='model'&&p.proposal?proposeCard(p.proposal,ui):''}
-          ${p.state==='prepare'&&p.direction?.chosen?chosenCard(p.direction):''}
-          ${p.state==='ask'&&!journal?askList(p):''}${late?'':below}
+          <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>${main?'':wordCard(p)+roomFolds(p)}
+          ${p.state==='ask'?askList(p):''}${p.state==='pay'?payCard(p):''}${p.state==='done'?doneCard(p):''}${propose?proposeCard(p.proposal,ui):''}${chosen}${below}
           ${after}
+          ${action}${main?personaCard(p.persona,{main:true})+keep:''}
+          ${entries}
         </div>
-        ${journal}${late&&below?`<div class="sx-room-sub">${below}</div>`:''}
+        ${due?`<div class="sx-room-side-foot">${due}</div>`:''}
       </div>
-      ${screen?`<div class="sx-room-screen">${screen}</div>`:''}
+      <div class="sx-room-right">
+        <div class="sx-room-stage" data-room-stage>${stage.html}</div>
+        ${tail?`<div class="sx-room-tail">${tail}</div>`:''}
+      </div>
     </section>
-    ${foot?`<div class="sx-room-foot">${foot}</div>`:''}
-    ${roomPaper(p)}
-    ${prep}
-    ${tail?`<div class="sx-room-foot is-tail">${tail}</div>`:''}
-    ${p.films?`<p class="sx-room-films"><button type="button" class="sx-small sx-link" data-room-go="films">${esc(t('SYNK가 만든 다른 광고 보기'))}</button></p>`:''}
+    ${journal}
   </div>`;
 }
-// 아래 인화지 쪽: 보내 주신 의뢰서 · 받은 자료. 고객 방과 방향 화면이 같이 쓴다.
+// 보내 주신 의뢰서 칸 · 받은 자료 칸: 의뢰서 서랍(briefView)과 방향 화면 아래 인화지 쪽(roomPaper)이 같이 쓴다.
+const paperRows=p=>`<dl class="sx-kv">${p.brief.map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>${p.canEdit?`<button type="button" class="sx-quiet" data-room-do="edit">${esc(t('고치기'))}</button>`:''}`;
+const paperFiles=p=>`<div class="sx-contact">${p.files.map(file=>`<figure><img src="${esc(file.src)}" alt="" loading="lazy" decoding="async"><figcaption class="sx-small">${esc(t(file.label))}</figcaption></figure>`).join('')}</div>${p.others?.length?`<ul class="sx-room-others-list">${p.others.map(name=>`<li class="sx-small">${esc(name)}</li>`).join('')}</ul>`:''}<label class="sx-quiet sx-room-more"><input type="file" class="sr" multiple data-room-file>${esc(t('자료 더 보내기'))}</label>`;
+// 아래 인화지 쪽: 보내 주신 의뢰서 · 받은 자료. 방향 화면이 쓴다(방은 의뢰서 서랍으로 옮겼다 — 방향 화면은 ②에서 옮긴다).
 function roomPaper(p){
   return `<section class="sx-room-paper" data-room-in data-room-brief>
-      <div class="sx-room-doc"><h2 class="sx-serif">${esc(t('보내 주신 의뢰서'))}</h2><dl class="sx-kv">${p.brief.map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>${p.canEdit?`<button type="button" class="sx-quiet" data-room-do="edit">${esc(t('고치기'))}</button>`:''}</div>
-      <div class="sx-room-doc"><h2 class="sx-serif">${esc(t('받은 자료'))} <span class="sx-no">${p.files.length+(p.others?.length||0)}</span></h2><div class="sx-contact">${p.files.map(file=>`<figure><img src="${esc(file.src)}" alt="" loading="lazy" decoding="async"><figcaption class="sx-small">${esc(t(file.label))}</figcaption></figure>`).join('')}</div>${p.others?.length?`<ul class="sx-room-others-list">${p.others.map(name=>`<li class="sx-small">${esc(name)}</li>`).join('')}</ul>`:''}<label class="sx-quiet sx-room-more"><input type="file" class="sr" multiple data-room-file>${esc(t('자료 더 보내기'))}</label></div>
+      <div class="sx-room-doc"><h2 class="sx-serif">${esc(t('보내 주신 의뢰서'))}</h2>${paperRows(p)}</div>
+      <div class="sx-room-doc"><h2 class="sx-serif">${esc(t('받은 자료'))} <span class="sx-no">${p.files.length+(p.others?.length||0)}</span></h2>${paperFiles(p)}</div>
     </section>`;
 }
 // 그 상태의 왼쪽 글. 방향을 고른 뒤 · 두 번째 제안도 거절한 뒤는 글이 다르다.
@@ -476,52 +552,75 @@ function chosenCard(d){
 }
 // 되묻기: 칸마다 글로 답하거나 파일을 보낸다. 파일만, 글만 보내도 된다.
 function askList(p){return `<ul class="sx-asks" data-room-in>${p.asks.map(item=>`<li><div class="sx-ask-head"><b class="sx-serif">${esc(item.label)}</b>${item.why?`<p class="sx-small">${esc(item.why)}</p>`:''}</div><form class="sx-ask-reply" data-form="ask" data-id="${esc(item.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="${esc(t('글로 답하거나 파일을 보내 주세요'))}" aria-label="${esc(t('{label} 답',{label:item.label}))}"></textarea><div class="sx-ask-tools"><label class="sx-small sx-link"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>${esc(t('파일 고르기'))}</span></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button></div></form></li>`).join('')}${(p.answered||[]).map(item=>`<li class="is-answered"><div class="sx-ask-head"><b>${esc(item.label)}</b><p class="sx-small">${esc(item.answer||item.fileName||t('파일을 보내 주셨어요.'))}</p></div><span class="sx-small">${esc(t('보냈어요'))}</span></li>`).join('')}</ul>`;}
-// 영상 전 첫 확인: 모델을 맡긴 손님에게 저희가 고른 모델을 보여 드린다. 다른 모델은 그 자리에서 고르거나 글로 말할 수 있다.
+// 영상 전 첫 확인: 모델을 맡긴 손님에게 저희가 고른 모델을 보여 드린다(2판 ①: 다른 모델은 무대 복도에서 가운데로 데려와 왼쪽 판 주 단추로 정한다 — modelGo).
+// 「말로 알려 주세요」 양식(model-say)은 이 카드 아래 그대로다. 펼침은 ui.say(실시간 다시 그리기에도 남는다). 다른 모델을 가운데로 데려오면 제안 모델의 옷 · 머리 줄은 접는다(그 모델 몫이 아니다).
 function proposeCard(m,ui={}){
   if(m.looks)seedPropose(m,ui);
-  return `<section class="sx-propose" data-room-in><h2 class="sx-serif">${esc(nameOf(m.name))}</h2><p class="sx-body sx-propose-line">${esc(t(m.line))}</p>${m.note?`<p class="sx-small">${esc(m.note)}</p>`:''}${m.looks?proposeLooks(m,ui):''}<div class="sx-propose-actions"><button type="button" class="sx-go is-solid" data-room-do="model-accept"><span>${esc(t('이 모델로 할게요'))}</span>${arrow}</button><button type="button" class="sx-quiet" data-room-do="model-others">${esc(t('다른 모델 보기'))}</button></div>
-    <form class="sx-propose-say" data-form="model-say" data-model-say hidden><label class="sx-field"><span class="sx-small">${esc(t('딱 맞는 모델이 없으면 말로 알려 주세요'))}</span><textarea name="note" rows="2" maxlength="300" required placeholder="${esc(t('예) 조금 더 어린 느낌이면 좋겠어요'))}"></textarea></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('이대로 보내기'))}</span>${arrow}</button></form></section>`;
+  return `<section class="sx-propose" data-room-in><h2 class="sx-serif">${esc(nameOf(m.name))}</h2><p class="sx-body sx-propose-line">${esc(t(m.line))}</p>${m.note?`<p class="sx-small">${esc(m.note)}</p>`:''}${m.looks?proposeLooks(m,ui,!!ui.pick&&ui.pick!==m.id):''}<p class="sx-propose-actions"><button type="button" class="sx-quiet" data-room-do="model-say" aria-expanded="${ui.say?'true':'false'}" aria-controls="room-model-say">${esc(t('말로 알려 주기'))}</button></p>
+    <form class="sx-propose-say" id="room-model-say" data-form="model-say" data-model-say${ui.say?'':' hidden'}><label class="sx-field"><span class="sx-small">${esc(t('딱 맞는 모델이 없으면 말로 알려 주세요'))}</span><textarea name="note" rows="2" maxlength="300" required placeholder="${esc(t('예) 조금 더 어린 느낌이면 좋겠어요'))}"></textarea></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('이대로 보내기'))}</span>${arrow}</button></form></section>`;
 }
 // 고객 방과, 영상 확인 · 납품의 단계 낱말 줄에 같이 쓴다.
 // onPersona({decision,button}) · onPersonaFiles(purpose,files): 고객 전용 인물 카드(판 3)의 승인 단추와 사진 보내기 — 부른 쪽(app.mjs)이 서버에 보낸다.
-// onKeep() · onMyModels(): 판 4 「내 모델로 모아 두기」와 「내 모델 열기」(persona-view personaKeep).
-// 낮 판: 같은 소식을 한 화면에 두 번 적지 않는다(11-21 다듬기). 선반에 선 그림은 나눈 말의 그 줄에서 접는다(is-on-shelf).
-// 한마디가 글을 끝까지 보이면 그 줄의 글은 한 줄로 줄이고(is-said), 더 볼 것이 없으면 「나눈 말에서 보기」도 감춘다. 한마디가 넉 줄에서 잘리면 그 줄이 전문을 그대로 보인다.
+// onKeep() · onMyModels(): 판 4 「내 모델로 모아 두기」와 「내 모델 열기」(persona-view personaKeep). onBrief(): 지난 결정 줄의 의뢰서 칩(의뢰서 서랍).
+// 같은 소식을 한 화면에 두 번 적지 않는다(11-21 다듬기, 2판 ①에서 방 뿌리 data-room-a로 옮김): 무대에 선 소식 그림은 나눈 말의 그 줄에서 접는다(is-on-shelf).
+// 나눈 말은 서랍이라(2판 ①) 담당자 한마디가 보여도 그 줄의 글을 한 줄로 접지 않는다.
 // 손님이 나눈 말의 그 줄로 가자고 한 소식(「나눈 말에서 보기」 · 「소식 보기」 · 알림)은 접지 않는다 — 운영설계 9절 물음 3 「일지는 그대로 전문을 둔다」.
 // app.mjs openJournal이 부르고, 이 화면이 떠 있는 동안 기억한다(다시 그려도 그 줄은 전문과 그림 그대로).
 const wholeRows=new Set();
-export function keepWhole(id){if(!id)return;wholeRows.add(id);for(const row of document.querySelectorAll('.sx-j-row'))if(row.dataset.journalId===id)row.classList.remove('is-said','is-on-shelf');}
+export function keepWhole(id){if(!id)return;wholeRows.add(id);for(const row of document.querySelectorAll('.sx-j-row'))if(row.dataset.journalId===id)row.classList.remove('is-on-shelf');}
 function tidyEcho(host){
   const rowOf=id=>id?Array.from(host.querySelectorAll('.sx-journal [data-journal-id]')).find(node=>node.dataset.journalId===id):null;
-  const shelf=rowOf(host.querySelector('.sx-room-screen>[data-room-news]')?.dataset.roomNews);if(shelf&&!wholeRows.has(shelf.dataset.journalId))shelf.classList.add('is-on-shelf');
-  const say=host.querySelector('[data-room-say]'),quote=say?.querySelector('blockquote'),link=say?.querySelector('[data-journal-target]'),row=rowOf(link?.dataset.journalTarget);
-  if(!quote||!row)return;
-  const mark=()=>{const whole=quote.scrollHeight-quote.clientHeight<=1&&!wholeRows.has(row.dataset.journalId);row.classList.toggle('is-said',whole);link.hidden=whole&&(!row.querySelector('.sx-j-shots')||row.classList.contains('is-on-shelf'));};
-  mark();if(typeof ResizeObserver==='function')new ResizeObserver(mark).observe(quote);document.fonts?.ready?.then(mark);
+  const shelf=rowOf(host.querySelector('.sx-room-stage>[data-room-news]')?.dataset.roomNews);if(shelf&&!wholeRows.has(shelf.dataset.journalId))shelf.classList.add('is-on-shelf');
 }
-export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper,onPersona,onPersonaFiles,onKeep,onMyModels,ui={}}={}){
+// 무대가 영상 없이 그림만 둘 때: 움직임 줄이기 · 데이터 절약(3G 포함) · 문서 load 전(1판 복도와 같은 규칙). 숨은 탭은 띠가 스스로 멈춘다.
+const stageStill=()=>reduced()||slowData()||!pageLoaded();
+// 무대 붙이기: 복도 · 한 명 띠를 붙이고(다시 그려 옮겨 낀 옛 띠는 그대로 걷는다 — hall.mjs가 이미 붙인 노드는 다시 붙이지 않는다),
+// 지금 그림을 못 받으면 다음 대체 그림(<template data-stage-next>)을 꺼내 끼운다. 마지막은 멈춘 복도라 무대가 비지 않는다.
+function mountStage(host){
+  const stage=host.querySelector('[data-room-stage]');if(!stage)return;
+  sweepHalls();
+  const halls=()=>{
+    stage.querySelectorAll('.sx-room-hall [data-hall]').forEach(box=>mountHall(box,{items:hallItems(),auto:false,still:()=>true,quiet:()=>true}));
+    stage.querySelectorAll('[data-hall-key^="models:"]').forEach(box=>mountHall(box,{items:hallModels(CASTING_MODELS.map(item=>item.id)),auto:false,center:true,still:stageStill}));
+    stage.querySelectorAll('[data-hall-one]').forEach(box=>mountOne(box,{still:stageStill}));
+  };
+  const next=()=>{
+    const later=stage.querySelector(':scope>template[data-stage-next]');if(!later)return;
+    for(const node of [...stage.childNodes])if(node!==later&&!(node.matches?.('template[data-stage-next]')))node.remove();
+    stage.prepend(later.content.cloneNode(true));later.remove();watch();halls();
+  };
+  // 지금 그림(무대 맨 앞 그림 · 한 명 띠의 그림)이 깨지면 다음으로. 이미 깨진 채 붙었으면(옮겨 낀 노드 · 캐시) 바로 넘긴다.
+  const watch=()=>{
+    if(!stage.querySelector(':scope>template[data-stage-next]'))return;
+    const img=stage.querySelector(':scope>img.sx-q-fill,:scope>[data-hall-one] .sx-hall-strip>img');if(!img)return;
+    if(img.complete&&img.naturalWidth===0&&img.getAttribute('src')){next();return;}
+    img.addEventListener('error',next,{once:true});
+  };
+  watch();halls();
+}
+export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper,onPersona,onPersonaFiles,onKeep,onMyModels,onBrief,ui={}}={}){
   const host=root.querySelector('.sx-room,.sx-shell,.sx-draft');if(!host)return {unmount(){}};
   // 휴대폰 단계 띠: 지금 단계가 화면 안에 오게 띠만 민다.
   const steps=host.querySelector('.sx-steps-run'),current=steps?.querySelector('.is-now');
   if(current&&steps.scrollWidth>steps.clientWidth)steps.scrollLeft=current.offsetLeft-(steps.clientWidth-current.offsetWidth)/2;
-  // 낮 판: 붙이는 화면이 방(roomView)이면 html에 sx-day를 달고, 아니면 뗀다 — 예시가 같은 프로젝트 안에서 어두운 화면으로 옮겨 그릴 때도 남지 않게.
-  // 앱은 그릴 때마다 mountScreens도 판정하고(이 함수를 부르지 않는 화면까지), 예시는 장면을 지울 때도 뗀다.
-  document.documentElement.classList.toggle('sx-day',host.matches('.sx-room[data-day]'));
-  // 낮 판 제목의 강조 구절은 그릴 때마다 여기서 감싼다(그리는 글은 통짜 그대로).
-  const roomTitle=host.matches('.sx-room')?host.querySelector('[data-room-title]'):null,keyed=!!roomTitle&&host.matches('[data-day]')&&markTitle(roomTitle);
-  if(host.matches('.sx-room[data-day]'))tidyEcho(host);
+  const roomA=host.matches('.sx-room[data-room-a]'),roomTitle=host.matches('.sx-room')?host.querySelector('[data-room-title]'):null;
+  if(roomA){tidyEcho(host);mountStage(host);}
   if(animate&&host.matches('.sx-room')){
-    // 강조 구절이 든 제목은 어절로 쪼개지 않는다(쪼개면 구절 표시가 지워진다) — 제목 전체를 한 번에 올린다.
-    if(roomTitle){if(keyed)rise(roomTitle,{delay:60});else revealWords(roomTitle,{delay:60});}
+    if(roomTitle)revealWords(roomTitle,{delay:60});
     riseAll(host.querySelectorAll('[data-room-in]'),{start:140});
-    // 낮 판: 선반의 인화지가 한 장씩 올라와 선다(처음 그릴 때만 — 실시간 다시 그리기에는 움직이지 않는다).
-    if(host.matches('[data-day]'))riseAll(host.querySelectorAll('.sx-room-screen>.sx-q-fill,.sx-room-screen>.sx-room-files>img,.sx-room-screen>.sx-room-cuts,.sx-room-screen>.sx-room-word'),{start:220,gap:80,y:8,blur:0,duration:420});
   }
   const film=host.querySelector('[data-room-film]');if(film&&!reduced())film.play?.().catch(()=>{});else if(film)holdPoster(film);
-  // 낮 판의 영상 인화지: 재생 표를 영상 한가운데에 둔다(가로 영상은 선반 칸보다 낮아 칸 기준으로는 영상 밖에 선다). 영상 크기가 바뀔 때마다 다시 잰다 — 지켜보는 것은 영상 노드라 다시 그리면 함께 사라진다.
-  const playMark=host.matches('[data-day]')?host.querySelector('.sx-room-screen>.sx-room-play'):null,printed=playMark?host.querySelector('.sx-room-screen>video.sx-q-fill'):null;
+  // 무대의 영상(시안 · 최종본): 재생 표를 영상 한가운데에 둔다(가로 영상은 무대보다 낮아 칸 기준으로는 영상 밖에 선다). 영상 크기가 바뀔 때마다 다시 잰다 — 지켜보는 것은 영상 노드라 다시 그리면 함께 사라진다.
+  const playMark=roomA?host.querySelector('.sx-room-stage>.sx-room-play'):null,printed=playMark?host.querySelector('.sx-room-stage>video.sx-q-fill'):null;
   if(printed){const place=()=>{playMark.style.setProperty('--play-x',`${printed.offsetLeft+printed.offsetWidth/2}px`);playMark.style.setProperty('--play-y',`${printed.offsetTop+printed.offsetHeight/2}px`);};place();if(typeof ResizeObserver==='function')new ResizeObserver(place).observe(printed);printed.addEventListener('loadedmetadata',place,{once:true});}
   host.querySelectorAll('video[data-hold]').forEach(video=>holdPoster(video));
+  // 모델 제안 차례(2판 ①): 무대 복도에서 가운데로 데려온 모델은 ui.pick에 두고(실시간 다시 그리기에도 남는다) 왼쪽 판 주 단추만 그 모델로 바꿔 그린다. 보내지 않는다.
+  const proposal=host.matches('[data-propose-key]')?host.querySelector('[data-room-look]')?.dataset.model||host.querySelector('[data-hall-key^="models:"]')?.dataset.hallKey.split(':')[1]||'':'';
+  host.addEventListener('sx-hall-pick',event=>{
+    if(!proposal)return;const id=event.detail?.id||'';ui.pick=id===proposal?'':id;
+    const go=host.querySelector('[data-room-pick-go]'),m=modelCard(proposal);if(go&&m){const box=document.createElement('div');box.innerHTML=modelGo(m,ui);go.replaceWith(box.firstElementChild);}
+    const looks=host.querySelector('[data-room-look]');if(looks)looks.hidden=!!ui.pick;
+  });
   // 모델 제안 카드의 옷 · 머리(사진 상품): 누르면 고르고 다시 누르면 맡김. 사진을 못 받으면 사진만 숨기고 이름은 남긴다(글로는 늘 고를 수 있게).
   // 처음 값: 그릴 때 누른 채로 그린 칸(앞서 정한 값)을 읽는다 — 다시 그릴 때는 ui에 이미 고르던 값이 있다.
   const lookBoxEl=host.querySelector('[data-room-look]'),lookNow=()=>lookOf(lookBoxEl.dataset.model,ui);
@@ -551,10 +650,11 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
     // 옷 · 머리 줄을 그린 카드에서는 두 칸을 늘(빈 값 = 맡김이라도) 함께 보낸다 — 줄이 없으면(영상 상품 · 옛 서버) 칸을 보내지 않는다.
     if(what==='model-accept')onModel?.({accept:true,...(lookBoxEl?(now=>({outfit:now.outfit,hair:now.hair}))(lookNow()):{})});
     if(what==='looks'&&lookBoxEl){const panel=lookBoxEl.querySelector('[data-room-looks]');ui.looks=!ui.looks;panel.hidden=!ui.looks;button.setAttribute('aria-expanded',ui.looks?'true':'false');button.textContent=ui.looks?t('접기'):t('직접 고르기');if(ui.looks)play(panel,[{opacity:0},{opacity:1}],{duration:320});}
-    if(what==='model-others'){const box=host.querySelector('[data-model-others]'),say=host.querySelector('[data-model-say]');box.hidden=!box.hidden;if(say)say.hidden=box.hidden;button.textContent=box.hidden?t('다른 모델 보기'):t('이 모델 다시 보기');if(!box.hidden){play(box,[{opacity:0},{opacity:1}],{duration:420});
-      // 휴대폰에서는 벽이 화면 위쪽 큰 사진 칸에 뜨고 그 칸 높이로 잘린다 — 옷 · 머리를 편 채 아래에서 누르면 벽이 화면 밖이거나 띠만 보인다.
-      // 벽 상자가 아니라 벽이 실제로 보이는 그 칸으로 재서, 칸이 창에 온전히 보이지 않으면 칸째 보이게 굴린다(넓은 화면은 칸이 늘 창에 붙어 있어 굴리지 않는다).
-      const frame=box.closest('.sx-room-screen')||box,at=frame.getBoundingClientRect(),seen=Math.min(at.bottom,innerHeight)-Math.max(at.top,0);if(seen<Math.min(at.height,innerHeight)-1)frame.scrollIntoView({block:'nearest',behavior:reduced()?'auto':'smooth'});}}
+    // 지난 결정 줄(2판 ①): 의뢰서 칩은 의뢰서 서랍을, 모델 · 방향 칩은 고른 방향 카드를 편다(칩 여럿이 같은 카드를 가리킨다 — 눌린 상태를 함께 맞춘다).
+    if(what==='brief'){onBrief?.(button);return;}
+    if(what==='fold'){const card=host.querySelector('#'+CSS.escape(button.getAttribute('aria-controls')||''));if(!card)return;card.hidden=!card.hidden;host.querySelectorAll(`[data-room-do="fold"][aria-controls="${card.id}"]`).forEach(chip=>chip.setAttribute('aria-expanded',card.hidden?'false':'true'));if(!card.hidden)play(card,[{opacity:0},{opacity:1}],{duration:320});return;}
+    // 「말로 알려 주기」: 모델 카드 아래 양식을 편다(펼침은 ui.say — 다시 그려도 남는다).
+    if(what==='model-say'){const form=host.querySelector('[data-model-say]');if(!form)return;ui.say=form.hidden;form.hidden=!ui.say;button.setAttribute('aria-expanded',ui.say?'true':'false');if(ui.say)form.querySelector('textarea')?.focus({preventScroll:false});}
   });
   // 예시(앱 밖)에서만 쓴다. 실제 앱은 문서 전체의 폼 처리기가 받는다.
   if(onForm)host.addEventListener('submit',event=>{event.preventDefault();onForm(event.target);});

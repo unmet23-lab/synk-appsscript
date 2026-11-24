@@ -106,7 +106,7 @@ test('the app keeps picked photos in memory, uploads each once, then sends their
   assert.match(app,/const messagePhotoUpload=file=>request\('\/pulse\/api\/studio\/message-photo',\{\.\.\.options\(\),file,headers:\{'Content-Type':file\.type,'X-File-Name':encodeURIComponent\(photoName\(file\)\)\}\}\);/);
   assert.match(app,/for\(const item of items\)\{if\(item\.id\)continue;const uploaded=await messagePhotoUpload\(item\.file\);accept\(uploaded\);item\.id=uploaded\.photo\.id;\}/,'a retry does not upload twice');
   assert.match(app,/if\(error\.status===409\)for\(const item of items\)item\.id='';throw error;/,'a refused photo is uploaded fresh next time');
-  assert.match(app,/restore\(main\);drawSay\(sayPick,sayNote\);mountScreens\(\);/,'every redraw refills the chips and keeps the picker node (a pick made while the dialog was open still lands)');
+  assert.match(app,/restore\(main\);(?:if\(briefHost\)restore\(briefHost\);)?drawSay\(sayPick,sayNote\);mountScreens\(\);/,'every redraw refills the chips and keeps the picker node (a pick made while the dialog was open still lands)');
   // 옮겨 쓴 칸은 보내는 동안의 잠금 표시를 버린다 — 넷을 보낸 뒤 칸이 풀린다(브라우저 확인 4). 장수 안내는 옛 노드를 옮기고 글이 바뀔 때만 고친다.
   assert.match(app,/if\(kept&&fresh&&kept!==fresh&&!kept\.isConnected\)\{delete kept\.dataset\.wasDisabled;fresh\.replaceWith\(kept\);\}/);
   assert.match(app,/if\(keptNote&&freshNote&&keptNote!==freshNote&&!keptNote\.isConnected\)freshNote\.replaceWith\(keptNote\);/);

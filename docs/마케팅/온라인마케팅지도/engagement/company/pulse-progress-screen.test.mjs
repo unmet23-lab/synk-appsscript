@@ -80,7 +80,8 @@ test('저희 차례 큰 그림 칸: 차례가 넘어온 뒤 올린 최근 소식
   assert.equal(model.state,'make');
   assert.deepEqual(model.news,{id:N(2),at:T(4),pictures:['/pulse/api/studio/media/'+A(2),'/pulse/api/studio/media/'+A(3)]},'그림이 있는 가장 최근 소식');
   const html=roomView(model,{bar:false});
-  const screen=html.match(/<div class="sx-room-screen">[\s\S]*?<\/div>\s*<\/section>/)?.[0]||'';
+  // 2판 ①: 큰 그림 칸은 방 무대(.sx-room-stage)다.
+  const screen=html.match(/<div class="sx-room-stage" data-room-stage>[\s\S]*?<\/div>\n/)?.[0]||'';assert.ok(screen);
   assert.match(screen,/<div class="sx-room-files" data-count="2">/);assert.match(screen,/작업 중인 화면이에요 · 완성본이 아니에요/);
   assert.match(screen,new RegExp(`data-room-do="journal" data-journal-target="n:${N(2)}"`));
   assert.doesNotMatch(screen,/w-gift/,'예시 그림 대신');
@@ -147,7 +148,7 @@ test('화면 Fable 최종 반영: 예시 일지의 「말만 보기」 · 인물
   const withPersona=project({approvedAt:T(3),rounds,progress:[{id:N(2),at:T(4),text:'편집 중',assets:[A(2)]}]},{stage:'producing',persona:{id:'persona-1',turn:'customer',status:'needs_materials',why:'옆모습 사진이 더 필요해요.',kind:'virtual',sources:{identity:0,mood:0,files:[]}}},assets);
   const model=roomModel(withPersona);
   assert.ok(model.news,'소식은 있다');assert.ok(model.persona?.card,'인물 카드가 손님 차례');
-  const screen=(roomView(model,{bar:false}).match(/<div class="sx-room-screen">[\s\S]*?<\/div>\s*<\/section>/)||[''])[0];
+  const screen=(roomView(model,{bar:false}).match(/<div class="sx-room-stage" data-room-stage>[\s\S]*?<\/div>\n/)||[''])[0];assert.ok(screen);
   assert.doesNotMatch(screen,/작업 중인 화면이에요/,'인물 차례 방에는 소식 그림을 띄우지 않는다');
   // F3 · F4 · F6: 그림 다시 올리기는 파일마다 · 「말만 보기」를 켠 채 「봤다」는 보이는 줄만 · 켜진 단추는 좌우 여백만.
   const app=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');

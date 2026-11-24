@@ -222,7 +222,8 @@ test('the room sends both fields with the accept only when the row is drawn, and
   assert.match(views,/if\(what==='model-accept'\)onModel\?\.\(\{accept:true,\.\.\.\(lookBoxEl\?\(now=>\(\{outfit:now\.outfit,hair:now\.hair\}\)\)\(lookNow\(\)\):\{\}\)\}\);/);
   assert.match(views,/const lookBoxEl=host\.querySelector\('\[data-room-look\]'\)/);
   assert.match(views,/if\(lookPick\)\{const key=lookPick\.dataset\.roomLookPick;ui\[key\]=ui\[key\]===lookPick\.dataset\.value\?'':lookPick\.dataset\.value;syncRoomLooks\(\);return;\}/,'press again to leave it to us');
-  assert.match(app,/const proposeKey=room\?main\.querySelector\('\[data-room-look\]'\)\?\.dataset\.key\|\|'':'';if\(proposeKey&&s\.proposeUi\?\.key!==proposeKey\)s\.proposeUi=\{key:proposeKey\};/);
+  // 2판 ①: 옷 · 머리 줄이 없는 제안도 복도에서 가운데로 데려온 모델을 같은 열쇠(data-propose-key)로 남긴다.
+  assert.match(app,/const proposeKey=room\?main\.querySelector\('\[data-room-look\]'\)\?\.dataset\.key\|\|main\.querySelector\('\[data-propose-key\]'\)\?\.dataset\.proposeKey\|\|'':'';if\(proposeKey&&s\.proposeUi\?\.key!==proposeKey\)s\.proposeUi=\{key:proposeKey\};/);
   assert.match(app,/mountRoom\(main,\{animate,ui:proposeKey\?s\.proposeUi:\{\},/);
   assert.match(read('views.mjs'),/ui:info\.proposal\?\.key&&s\.proposeUi\?\.key===info\.proposal\.key\?s\.proposeUi:\{\}\}\);/);
   // 사진 상품은 글 콘티가 없다 — 정한 뒤 글이 「첫 장」을 말한다.
@@ -232,9 +233,9 @@ test('the room sends both fields with the accept only when the row is drawn, and
   // 옷 · 머리 칸에 둔 자판 초점은 실시간 다시 그리기 뒤 같은 칸으로 돌아간다(F4).
   assert.match(app,/look:previousFocus\.dataset\.roomLookPick\?previousFocus\.dataset\.roomLookPick\+':'\+previousFocus\.dataset\.value:''\}:null;/);
   assert.match(app,/focusKey\.look\?node\.dataset\.roomLookPick\+':'\+node\.dataset\.value===focusKey\.look:focusKey\.room\?/);
-  // 「다른 모델 보기」 벽이 뜨는 큰 사진 칸이 창에 온전히 보이지 않으면(휴대폰에서 옷 · 머리를 편 채 아래에서 누름) 칸째 보이게 굴린다(F3).
-  // 벽 상자가 아니라 벽을 자르는 그 칸으로 잰다 — 벽 상자로 재면 띠만 보이는 자리에서 굴리지 않았다(다시 검수 FA1).
-  assert.match(views,/const frame=box\.closest\('\.sx-room-screen'\)\|\|box,at=frame\.getBoundingClientRect\(\),seen=Math\.min\(at\.bottom,innerHeight\)-Math\.max\(at\.top,0\);if\(seen<Math\.min\(at\.height,innerHeight\)-1\)frame\.scrollIntoView\(\{block:'nearest',behavior:reduced\(\)\?'auto':'smooth'\}\);/);
+  // 2판 ①: 「다른 모델 보기」 벽은 무대의 모델 복도가 되어 굴려 보일 칸이 없다. 복도에서 가운데로 데려온 모델은 ui.pick에만 두고 보내지 않는다 — 보내는 것은 왼쪽 판 주 단추다.
+  assert.doesNotMatch(views,/model-others|const frame=box\.closest/);
+  assert.match(views,/host\.addEventListener\('sx-hall-pick',event=>\{\s*if\(!proposal\)return;const id=event\.detail\?\.id\|\|'';ui\.pick=id===proposal\?'':id;/);
 });
 
 test('a photo order does not speak of films on the model proposal screen',()=>{
@@ -347,14 +348,15 @@ test('a photo order reads as photos from the stage line to the first sheet, and 
   // 방의 큰 그림 칸 설명(F2): 사진 상품은 움직임 · 장면 이미지 · 완성 영상을 말하지 않는다.
   assert.match(room,/<p class="sx-small sx-room-cap">첫 장 1판 · 1장<\/p>/);assert.doesNotMatch(room,/움직이는 동안/);
   assert.match(roomView(roomModel(film)),/1판 · 1컷\. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요\./);
+  // 2판 ①: 무대는 접지 않는다 — 판이 오기 전에는 고른 모델의 걷는 띠, 예시 그림은 여전히 없다.
   const bare=project({answers:{package:'photo',models:['F02']},casting:{modelId:'F02'}}),bareFilm=project({answers:{package:'s15',models:['F02']},casting:{modelId:'F02'}});
   for(const state of ['prepare','make']){
     const shown=roomView({...roomModel(bare),state});
-    assert.match(shown,/<section class="sx-room-hero is-no-screen">/,state);assert.match(shown,/data-room-title/,state);
+    assert.match(shown,/<section class="sx-room-a" data-stage="fall">/,state);assert.match(shown,/data-hall-one data-hall-key="one:F02"/,state+": the picked model walks on the stage");assert.doesNotMatch(shown,/is-no-screen/,state);assert.match(shown,/data-room-title/,state);
     assert.doesNotMatch(shown,/w-gift|<div class="sx-room-screen">|저희가 만든 광고의 한 장면이에요|완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
   }
   for(const state of ['make','prepare']){
-    const shown=roomView({...roomModel(bareFilm),state});assert.match(shown,/<section class="sx-room-hero is-no-screen">/,state);
+    const shown=roomView({...roomModel(bareFilm),state});assert.match(shown,/<section class="sx-room-a" data-stage="fall">/,state);assert.match(shown,/data-hall-one data-hall-key="one:F02"/,state+": the picked model walks on the stage");assert.doesNotMatch(shown,/is-no-screen/,state);
     assert.match(shown,/data-room-title/,state);assert.doesNotMatch(shown,/w-gift|<div class="sx-room-screen">|완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
   }
   // 일지의 작업 소식 줄 단계 낱말(F3)과 첫 장 승인 뒤 알림(F1).

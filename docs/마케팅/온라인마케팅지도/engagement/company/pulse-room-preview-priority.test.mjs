@@ -55,7 +55,8 @@ function room(stage,versions){
   const p=project(stage,versions),html=projectView({mode:'customer',tab:'overview',project:p});
   assert.equal(typeof html,'string');
   assert.deepEqual(opened,[],'화면을 그리는 동안 주소를 열거나 요청하지 않는다');
-  const at=html.indexOf('class="sx-room-screen"'),end=html.indexOf('</section>',at);
+  // 2판 ①(11-24): 큰 미리 보기 칸은 방 오른쪽 무대(.sx-room-stage)다.
+  const at=html.indexOf('class="sx-room-stage"'),end=html.indexOf('</section>',at);
   assert.ok(at>=0&&end>at,'고객 방에 큰 미리 보기 칸이 있어야 한다');
   const screen=html.slice(html.lastIndexOf('<',at),end);
   return {p,html,screen,videos:tags(screen,'video'),images:tags(screen,'img'),links:tags(screen,'a'),goes:buttons(screen).filter(b=>Object.hasOwn(b.attrs,'data-room-go'))};

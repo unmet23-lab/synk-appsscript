@@ -13,7 +13,7 @@ const read=name=>readFileSync(new URL(name,appDir),'utf8');
 const {capPixels,watchPixelCaps,dropSrcset}=await import('./public/pulse-app/api.mjs');
 const {emptyAnswers,sceneSet}=await import('./public/pulse-app/request-data.mjs');
 const {roomModel}=await import('./public/pulse-app/room-view.mjs');
-const {roomView,ROOM_SCENE_SIZES}=await import('./public/pulse-app/film-views.mjs');
+const {roomView,briefView,ROOM_SCENE_SIZES}=await import('./public/pulse-app/film-views.mjs');
 const {entryView,HOME_SCENE_SIZES}=await import('./public/pulse-app/film-home.mjs');
 const {myModelsView}=await import('./public/pulse-app/my-models.mjs');
 
@@ -94,21 +94,24 @@ function project({answers={},files=[],proposal=null,state=''}={}){
 }
 
 test('the room screen: the model scene takes its large cut through srcset, and every picture there keeps to its pixels',()=>{
-  const model=roomView(project({answers:{package:'photo'},proposal:'F02'}));
+  // 2판 ①: 모델 장면 그림은 무대 대체 순서의 넷째(고른 모델의 띠 → 받은 자료 → 방향 그림 → 모델 장면 → 멈춘 복도)라 <template data-stage-next> 안에 기다린다.
+  const model=roomView(project({answers:{package:'photo',models:['F02']}}));
   assert.ok(model.includes(`<img class="sx-q-fill" src="./assets/request/model-scene-f02.webp" srcset="${sceneSet('./assets/request/model-scene-f02.webp')}" sizes="${ROOM_SCENE_SIZES}" data-cap alt="">`),'the proposed model: two cuts and the cap');
   // sizes = cover 폭 ÷ 1.47 — 넓은 창은 스크린 폭(54vw)과 창 높이 × 0.805 가운데 큰 쪽, 세로 창은 창 폭과 32vh × 0.805 가운데 큰 쪽.
   assert.equal(ROOM_SCENE_SIZES,'(max-width:820px) max(68.1vw,17.6vh), (max-aspect-ratio:1/1) max(68.1vw,17.6vh), max(36.8vw,54.8vh)');
+  // 무대는 접지 않는다(is-no-screen을 거뒀다) — 판이 오기 전에는 멈춘 복도, 예시 그림은 없다.
   for(const info of [project(),project({state:'make'})]){
-    const html=roomView(info);assert.match(html,/<section class="sx-room-hero is-no-screen">/);assert.match(html,/data-room-title/);
+    const html=roomView(info);assert.match(html,/<section class="sx-room-a" data-stage="fall">/);assert.match(html,/data-room-title/);assert.doesNotMatch(html,/is-no-screen/);
     assert.doesNotMatch(html,/w-gift|<div class="sx-room-screen">/,'there is no example or empty screen before actual work arrives');
   }
+  // 받은 자료의 첫 사진은 대체 순서의 한 자리다. 다만 시안처럼 보이지 않는다 — 재생 표 · 「보기」 · 설명 글이 없다.
   const files=roomView(project({files:['/m/a.jpg','/m/b.jpg']}));
-  assert.match(files,/<section class="sx-room-hero is-no-screen">/);
-  const hero=files.match(/<section class="sx-room-hero[^"]*">[\s\S]*?<\/section>/)?.[0];assert.ok(hero);
-  assert.doesNotMatch(hero,/<div class="sx-room-screen">|<img[^>]+\/m\/[ab]\.jpg/,'request attachments are not presented as a delivered preview');
-  assert.match(files,/<section class="sx-room-paper"[\s\S]*<img src="\/m\/a\.jpg"[\s\S]*<img src="\/m\/b\.jpg"/,'both attachments remain in the request details');
+  const stage=files.match(/<div class="sx-room-stage" data-room-stage>[\s\S]*?<\/div>\n/)?.[0];assert.ok(stage);
+  assert.match(stage,/^<div class="sx-room-stage" data-room-stage><img class="sx-q-fill" src="(?:http:\/\/localhost)?\/m\/a\.jpg" data-cap alt="" decoding="async">/);
+  assert.doesNotMatch(stage,/sx-room-play|data-room-go="review"|sx-room-cap/,'request attachments are not presented as a delivered preview');
+  assert.match(briefView(project({files:['/m/a.jpg','/m/b.jpg']})),/<img src="\/m\/a\.jpg"[\s\S]*<img src="\/m\/b\.jpg"/,'both attachments remain in the request details (the brief drawer)');
   const views=read('film-views.mjs'),legacy=read('views.mjs'),persona=read('persona-view.mjs');
-  assert.ok(views.includes('<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">')&&views.includes('<img class="sx-q-fill" src="${esc(chosenSrc)}" data-cap alt="" decoding="async">'),'work news and the chosen direction');
+  assert.ok(views.includes('<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">')&&views.includes('const stageImg=src=>`<img class="sx-q-fill" src="${esc(src)}" data-cap alt="" decoding="async">`;'),'work news and the stage pictures (attachment, direction, first sheet)');
   assert.equal((legacy.match(/<img class="sx-q-fill" src="\.\/assets\/request\/w-gift(?:-snow)?\.webp" data-cap alt="" decoding="async">/g)||[]).length,3,'the older project screens’ example pictures');
   assert.equal((persona.match(/<img class="sx-q-fill" src="\$\{esc\(m\.reference\.assets\[0\]\.url\)\}" data-cap alt="" decoding="async">/g)||[]).length,2,'the persona card’s reference face');
   assert.doesNotMatch(views+legacy+persona,/<img class="sx-q-fill" src="[^"]*"(?![^>]*data-cap)[^>]*>/,'no screen picture left without the cap');

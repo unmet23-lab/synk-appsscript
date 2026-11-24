@@ -11,7 +11,7 @@ import {randomUUID} from 'node:crypto';
 globalThis.location??=new URL('http://localhost/pulse-app/');
 const {emptyAnswers,briefRows,slotCount,PERSONA_SLOTS,isPersonaSlot,personaKindLabel}=await import('./public/pulse-app/request-data.mjs');
 const {roomModel,journalModel,draftModel,deskModel,deskChecks}=await import('./public/pulse-app/room-view.mjs');
-const {roomView}=await import('./public/pulse-app/film-views.mjs');
+const {roomView,briefView}=await import('./public/pulse-app/film-views.mjs');
 const {personaModel,personaCard,personaLine,personaScreen,personaJournal,personaCopy,PERSONA_CONFIRM_OF,STATUS_LINE}=await import('./public/pulse-app/persona-view.mjs');
 const {deskView}=await import('./public/pulse-app/desk-view.mjs');
 const {setLocale,locale}=await import('./public/pulse-app/i18n.mjs');
@@ -89,7 +89,8 @@ test('고객 방: 인물이 없으면 인물 칸도 일지 줄도 없다(판 3 �
   assert.equal(roomModel(plain).persona,null);
   const html=roomView(roomModel(plain),{bar:false});
   assert.ok(!html.includes('sx-persona')&&!html.includes('data-persona'),'인물 마크업 없음');
-  assert.ok(html.includes('맞춤 인물 요청 · 새 가상 인물'),'보내 주신 의뢰서의 모델 줄은 고른 것을 그대로 말한다');
+  // 2판 ①: 보내 주신 의뢰서는 방 아래가 아니라 의뢰서 서랍(briefView)에 있다.
+  assert.ok(briefView(roomModel(plain)).includes('맞춤 인물 요청 · 새 가상 인물'),'보내 주신 의뢰서의 모델 줄은 고른 것을 그대로 말한다');
   assert.ok(!journalModel(plain).items.some(item=>item.id.startsWith('p:')));
   assert.equal(draftModel(plain),null);
 });
@@ -144,14 +145,15 @@ test('고객 방: 영상 쪽이 저희 차례면 인물이 「지금 차례」(�
   const main=roomView(roomModel(project({persona:view('reference_review')})),{bar:false});
   assert.match(main,/<i class="is-you" aria-hidden="true"><\/i>내 차례<span>맞춤 인물 확인 <b class="sx-no">2\/4<\/b><\/span><\/p>/,'영상 전 확인 번호 대신 맞춤 인물 확인 번호');
   assert.match(main,/<h1 class="sx-display" data-room-title>기준 얼굴을 확인해 주세요<\/h1>/);
-  assert.match(main,/<div class="sx-room-screen"><img class="sx-q-fill" src="\/pulse\/api\/persona\/media\/33333333/,'스크린에 기준 얼굴');
+  assert.match(main,/<div class="sx-room-stage" data-room-stage><img class="sx-q-fill" src="\/pulse\/api\/persona\/media\/33333333/,'스크린에 기준 얼굴');
   assert.equal(count(main,'<section class="sx-persona"'),1);
   assert.ok(!main.includes('sx-persona-kicker'),'머리는 방 머리가 그린다');
   const below=roomView(roomModel(project({persona:view('quote_review'),state:'ask'})),{bar:false});
   assert.match(below,/data-room-title>이것만 더 알려 주세요<\/h1>/,'영상 쪽 손님 차례가 먼저');
   assert.ok(below.includes('sx-persona-kicker')&&below.includes('<h2 class="sx-serif">맞춤 인물 견적을 확인해 주세요</h2>'),'인물 카드는 제 머리를 단다');
   const withJournal=roomView(roomModel(project({persona:view('quote_review'),state:'ask'})),{bar:false,journal:'<aside data-journal></aside>'});
-  assert.ok(withJournal.indexOf('<section class="sx-persona"')>withJournal.indexOf('<aside data-journal>'),'되묻기 답 칸(일지 맨 위)과 되묻기 글 사이에 인물 카드가 끼지 않는다');
+  // 2판 ①: 되묻기 답 칸은 일지(이제 서랍)가 아니라 왼쪽 판 상태 카드다 — 인물 카드는 그 뒤에 선다.
+  assert.ok(withJournal.indexOf('class="sx-asks"')>withJournal.indexOf('data-room-title')&&withJournal.indexOf('<section class="sx-persona"')>withJournal.indexOf('class="sx-asks"'),'되묻기 답 칸과 되묻기 글 사이에 인물 카드가 끼지 않는다');
   const ours=roomView(roomModel(project({persona:view('building')})),{bar:false});
   assert.match(ours,/data-room-title>지금은 저희 차례예요<\/h1>/);
   assert.ok(ours.includes('sx-persona is-line')&&ours.includes('인물을 준비하고 있어요'),'저희 차례 인물은 작은 한 줄');
@@ -271,7 +273,7 @@ test('끝까지(실제 서버 응답): 의뢰서 접수부터 이번 광고 사�
       const upload=async(role,bytes,type,name)=>{const current=app.store.get('pulsePersonas',personaId);return must(await staff(`/api/personas/${personaId}/revisions/${revisionId}/media`,{raw:bytes,headers:{'Content-Type':type,'X-File-Name':name,'X-Persona-Role':role,'X-Persona-Revision':String(current.revision)}}),201);};
       await upload('reference',png,'image/png','front.png');
       await act({action:'publish_reference',revisionId,note:'정면 한 장이에요.',...(lang==='en'?{translation:{note:'One front view.'}}:{})});
-      now=await draw();assert.equal(now.model.persona.card,'reference');assert.match(now.html,/<div class="sx-room-screen"><img class="sx-q-fill" src="\/pulse\/api\/persona\/media\//,lang+' 스크린에 기준 얼굴');
+      now=await draw();assert.equal(now.model.persona.card,'reference');assert.match(now.html,/<div class="sx-room-stage" data-room-stage><img class="sx-q-fill" src="\/pulse\/api\/persona\/media\//,lang+' 스크린에 기준 얼굴');
       const shown=now.model.persona.reference.assets[0].url,media=await fetch(base+shown,{headers:{Cookie:[...jar].map(([k,v])=>`${k}=${v}`).join('; ')}});assert.equal(media.status,200,'카드의 그림 주소가 손님 세션으로 열린다');
       await approve('approve');
       await upload('motion',mp4,'video/mp4','motion.mp4');

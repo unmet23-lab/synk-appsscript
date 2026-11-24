@@ -1237,18 +1237,11 @@ html.is-staff{color-scheme:light}
 .sx-head-break{display:none}
 .sx-head-steps{flex:none;flex-wrap:nowrap;align-items:baseline;gap:0 14px;margin-left:4px;padding-left:14px;border-left:1px solid var(--sx-rule)}
 .sx-head-steps .sx-steps-run{flex-wrap:nowrap;gap:0 14px;font-size:13px}
-.sx-head-steps .sx-steps-foot{font-size:13px}
 html.sx.has-room-head:not(.is-staff) .header-crumb,.sx-room-bar.is-head .header-crumb{flex:1 1 auto;min-width:0;align-items:center;overflow:hidden}
-/* 접수 번호: 이름표는 본문 글꼴, 번호만 고정폭(film-legacy.css의 옛 규칙 html.sx:not(.is-staff) .crumb-no가 고정폭 · 자간을 걸어 더 구체적인 선택자로 덮는다 — 최종 검수 F2) */
-html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-head .crumb-no{display:inline;flex:none;font-size:13px;color:var(--sx-dim)}
-html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,html.sx .sx-room-bar.is-head .crumb-no{font-family:var(--sx-sans);letter-spacing:normal}
-html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no>.mono,.sx-room-bar.is-head .crumb-no>.mono{font-family:var(--sx-mono)}
 .sx-head-ask{white-space:nowrap}
 .header-actions .sx-head-ask.is-now{font-weight:600;text-decoration-thickness:2px}
 .sx-room-bar.is-head{right:var(--sx-m);width:auto;gap:14px;font-size:13px}
 .sx-room-bar.is-head .header-actions{margin-left:auto;display:flex;gap:18px;align-items:center}
-@media (max-width:1180px){html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-head .crumb-no{display:none}}
-@media (min-width:821px) and (max-width:1000px) and (min-aspect-ratio:10001/10000){.sx-head-steps .sx-steps-foot{display:none}.sx-room>.sx-room-films{display:block}}
 /* 모델 얼굴 줄(방향 화면): 후보 넷을 작은 얼굴로, 큰 사진은 「크게 보기」로 접어 둔다. */
 .sx-dp-faces{display:flex;align-items:center;gap:6px}
 .sx-dp-face{flex:none;width:40px;height:40px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px var(--sx-rule)}
@@ -1267,17 +1260,10 @@ html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no>.mono,.sx-room-bar.
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-break{display:block;order:3;flex-basis:100%;height:0}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps{order:4;flex:1 1 0;min-width:0;margin:0;padding:4px 0 10px;border:0}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-run{flex:1 1 auto;min-width:0;gap:0 10px;font-size:12.5px}
-  /* 둘째 줄은 단계 다섯과 「담당자에게 묻기」, 셋째 줄은 완성 광고 · 마케팅 성과다(11-18 — 휴대폰에서도 머리에서 바로 연다).
-     단계 줄에 이어 붙이면 390에서 잘리거나 꺾여서 가는 선 아래 한 줄로 따로 둔다. 고객 방 맨 아래의 완성 광고 줄은 그대로 둔다. */
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps{flex-wrap:wrap}
-  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-foot{flex:1 0 100%;flex-wrap:wrap;gap:0 18px;margin-top:6px;font-size:12.5px}
-  /* 좁은 영어 화면에서는 낱말이 꺾이지 않고 단추째 다음 줄로 간다(최종 검수 11-18, 320 영어). */
-  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-foot button{white-space:nowrap}
   /* 단계 줄이 두 줄이 되어도 「담당자에게 묻기」와 언어 단추는 단계 줄의 글자선에 선다(가운데로 내려오지 않게 — 최종 검수 11-18). */
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) :is(.sx-head-steps,.header-actions>.sx-head-ask,.header-actions>.locale-menu){align-self:baseline}
-  .sx-room>.sx-room-films{display:block}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .header-actions>.sx-head-ask{order:5;padding:4px 0 10px}
-  html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no{display:none}
   /* 겹쳐 뜨는 머리를 피하던 위 여백은 흐름 안 머리에서는 뺀다. */
   html.sx.has-room-head:not(.is-staff) .sx-dp-top{padding-top:14px}
   html.sx.has-room-head:not(.is-staff) .sx-dp-sheet>.sx-alert{margin-top:14px}
@@ -1288,9 +1274,6 @@ html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no>.mono,.sx-room-bar.
   html.sx.has-room-head:not(.is-staff) .sx-dp-name{display:none}
 }
 @media (min-width:821px) and (min-aspect-ratio:10001/10000) and (max-height:700px){html.sx.has-room-head:not(.is-staff) .sx-dp-sheet{padding-top:calc(var(--sx-m) + 26px)}}
-/* 고객 방 맨 아래 완성 광고 한 줄은 휴대폰과 시안 전 보조 위치에서 연다. */
-.sx-room-films{display:none;padding:20px var(--sx-m) 28px;margin:0;border-top:1px solid var(--sx-rule)}
-.sx-room:has(>.sx-room-hero.is-no-screen)>.sx-room-films{display:block}
 /* 알림 토스트는 머리 아래에 — 머리의 단계 줄을 덮지 않게. */
 html.sx.has-room-head:not(.is-staff) .notice{top:calc(var(--sx-m) + 40px)}
 /* 묻기 화면: 입력 칸은 제목 줄에 맞추고, 보내기 단추는 다른 화면의 결정 단추와 같은 크기. */
@@ -1682,142 +1665,177 @@ html.sx #app-dialog .dialog-check{margin:14px 0 4px}
   .sx-ppl-sheet{padding:18px 16px}
 }
 /* ── 인플루언서 광고 창 끝 ── */
-/* ── 낮 판 시작(2026-11-20) ──
-   만드는 날은 밝은 작업실이고 보는 날은 불 꺼진 시사실이다. 고객 방(roomView — 뿌리에 data-day)만 밝고, 1차안 · 방향 · 영상 확인 · 납품 칸 · 옛 탭은 위 규칙 그대로 어둡다.
-   앱은 그릴 때마다 html에 sx-day를 붙이고 뗀다(app.mjs mountScreens). 색은 html 전체가 아니라 방과 머리의 글자 칸에서만 바꾼다 — 알림함 · 대화상자는 원래 값 그대로다.
-   토큰은 짝으로 바꾼다: --sx-ink(글 · 먹색 면) · --sx-on(먹색 면 위의 글). 종이 섬(.sx-legacy)은 원래 값으로 되돌린다. 프로젝트 화면에서는 film-legacy.css가 이 파일 뒤에 붙으므로
-   이 절의 규칙은 순서가 아니라 선택자 우선순위로 이긴다. 설계 · 검토: docs/디자인/PULSE고객경험_20261120/운영설계.md. CSP 때문에 기울기 · 차례는 :nth-child로 준다. */
-html.sx.sx-day,html.sx.sx-day body{background:#fff}
-/* 창 스크롤바: html의 색 구성은 어두운 채라(검은 덮개의 입력 칸 때문에) 흰 방 옆 창 스크롤바만 밝게 맞춘다.
-   이 값은 상속되므로 body에서 되돌린다 — 창 스크롤바는 html의 값을 쓰고, 알림함 · 대화상자 같은 어두운 덮개의 스크롤바는 원래대로다 */
-html.sx.sx-day{scrollbar-color:rgba(29,29,31,.34) #fff}
-html.sx.sx-day body{scrollbar-color:auto}
-.sx-room[data-day],html.sx.sx-day:not(.is-staff) :is(.header-crumb,.header-actions){--sx-ink:#1d1d1f;--sx-dim:#4a4744;--sx-faint:#6b6763;--sx-rule:#e2ded9;--sx-on:#fff;--sx-on-dim:rgba(255,255,255,.8);--sx-on-rule:rgba(255,255,255,.26);--sx-acc:#f2573f;--sx-wall:#f6f4f1}
-.sx-room[data-day]{background:#fff;color:var(--sx-ink);color-scheme:light}
-/* 예시(?demo=film)는 검은 덮개 안에 방을 그린다: 방이 창보다 짧아도 아래가 검게 남지 않게, 방 안 머리의 어두운 띠도 밝게 */
-.sx-room[data-day].is-example{min-height:100vh;min-height:100dvh}
-.sx-room[data-day] .sx-room-bar.is-head::before{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,0))}
-/* 종이 섬: 방 아래 준비 칸(바뀐 내용 · 준비 자료 · 납품 규격)은 미색 종이 그대로 */
-.sx-room[data-day] .sx-legacy{--sx-ink:#f4f1ea;--sx-dim:rgba(244,241,234,.78);--sx-faint:rgba(244,241,234,.5);--sx-rule:rgba(244,241,234,.2);--sx-on:#0b0b0b;--sx-on-dim:rgba(11,11,11,.72);--sx-on-rule:rgba(11,11,11,.22);color-scheme:light;border-top:1px solid #e2ded9}
-/* 머리 */
-html.sx.sx-day:not(.is-staff) .app-header{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.82) 62%,rgba(255,255,255,0))}
-html.sx.sx-day:not(.is-staff) .app-header::before{content:none}
-html.sx.sx-day:not(.is-staff) .app-header .brand img,.sx-room[data-day] .sx-room-bar .sx-logo img{content:url('./assets/brand-pulse.webp')}
-html.sx.sx-day:not(.is-staff) .header-actions :is(a,button){text-shadow:none}
-html.sx.sx-day:not(.is-staff) .header-crumb .sx-step:disabled{color:var(--sx-faint)}
-html.sx.sx-day:not(.is-staff) #pulse-live :is(.live-status.is-reconnecting,.live-status.is-offline){color:#1d1d1f}
-html.sx.sx-day .notice,html.sx.sx-day .connection-banner,html.sx.sx-day .sx-demo-note{background:#1d1d1f;color:#fff}
-.sx-room[data-day] .sx-room-bar .header-actions{--sx-ink:#1d1d1f;--sx-dim:#4a4744}
-/* 글자: 제목은 고딕 굵게, 강조는 코랄 한 구절 */
-.sx-room[data-day] .sx-display{font-family:var(--sx-sans);font-weight:800;letter-spacing:-.045em;line-height:1.18;font-size:clamp(34px,3.7vw,56px)}
-.sx-room[data-day] .sx-key{font-weight:800;color:var(--sx-acc)}
-.sx-room[data-day] .sx-serif{font-family:var(--sx-sans);font-weight:700;letter-spacing:-.03em}
-.sx-room[data-day] .sx-turn i{background:var(--sx-acc)}
-.sx-room[data-day] .sx-turn i.is-you,.sx-room[data-day] .sx-turn i.is-done{background:var(--sx-ink)}
-.sx-room[data-day] .sx-room-lead{color:var(--sx-dim)}
-/* 단추: 먹색 면 하나와 밑줄 글자 */
-.sx-room[data-day] .sx-go.is-solid{color:#fff}
-@media (hover:hover){.sx-room[data-day] .sx-go.is-solid:hover{background:#000}}
-.sx-room[data-day] :is(.sx-chip.is-on,.sx-cast-mark,.sx-j-filter[aria-pressed=true]){color:#fff}
-/* 받으실 날 · 담당자 한마디 */
-.sx-room-due{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:15px;line-height:1.5;color:var(--sx-ink)}
-.sx-room-due b{font-weight:800;font-size:clamp(20px,1.9vw,26px);letter-spacing:-.03em}
-.sx-room[data-day] .sx-room-due b{color:var(--sx-acc)}
-.sx-room-say{display:grid;gap:8px;max-width:46ch;padding:14px 0 2px;border-top:1px solid var(--sx-rule)}
-.sx-room-say blockquote{margin:0;color:var(--sx-ink);font-size:17px;line-height:1.6;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;line-clamp:4;overflow:hidden;white-space:pre-line}
+/* ── 방 틀과 머리(2판 ①, 2026-11-24) ──
+   설계 docs/디자인/PULSE고객앱_다시짓기_20261124/방_설계.md, 시안 A.html(#pick · #images). 11-20 낮 판(밝은 방)을 거두고 A의 검정으로 옮겼다 — 흐름이 검정 → 밝음 → 검정으로 오가지 않게.
+   색은 한 색에 한 일(시안 README 색 · 글자 역할표): 검정 #060606 바탕, 미색 글과 면 단추(지금 할 일 하나), 다홍은 「새로 도착」 표시만, 연두는 「저희가 하고 있어요」 표시만, 옅은 판은 담당자의 말.
+   새 짜임은 방 뿌리 data-room-a와 새 머리 클래스 안에서만 건다 — 옛 현황 · 묻기 · 납품 · SYNK 작품 화면은 같은 .sx-room-hero · .sx-room-left · .sx-room-screen을 쓴다. */
+:root{--sx-new:#ff5b3a;--sx-busy:#b9f27c;--sx-room-bg:#060606;--sx-room-say:rgba(255,255,255,.06);--sx-room-head:64px}
+/* 머리 오른쪽 아이콘(의뢰서 · 나눈 말 · 더 보기): 그림 위, 이름 아래. 밑줄 글자 단추 규칙(.header-actions :is(a,button))을 덮는다 */
+:is(html.sx:not(.is-staff) .header-actions,.sx-room-bar.is-head .header-actions) .sx-head-icon{position:relative;display:inline-flex;flex-direction:column;align-items:center;gap:3px;min-width:46px;min-height:40px;padding:3px 6px;font-size:13px;font-weight:500;line-height:1.1;color:var(--sx-dim);text-decoration:none;text-shadow:none;white-space:nowrap;transition:color .2s}
+:is(html.sx:not(.is-staff) .header-actions,.sx-room-bar.is-head .header-actions) .sx-head-icon[aria-expanded=true]{color:var(--sx-ink)}
+@media (hover:hover){:is(html.sx:not(.is-staff) .header-actions,.sx-room-bar.is-head .header-actions) .sx-head-icon:hover{color:var(--sx-ink)}}
+html.sx.has-room-head:not(.is-staff) .header-actions,.sx-room-bar.is-head .header-actions{gap:4px}
+.sx-head-glyph{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.sx-head-glyph.is-fill{fill:currentColor;stroke:none}
+/* 나눈 말의 새 말 수 · 답할 되묻기 점, 「더 보기」의 새 소식 점(다홍 — 새로 도착)은 그림 오른쪽 위에 */
+.sx-head-icon>b.sx-no{position:absolute;top:-2px;right:0;margin:0;min-width:18px;padding:0 4px;font-size:13px;line-height:18px}
+.sx-head-icon>.sx-head-dot{position:absolute;top:2px;left:6px;margin:0}
+.sx-head-new{position:absolute;top:2px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--sx-new)}
+.sx-head-new[hidden]{display:none}
+/* 다섯 칸 막대: 칸마다 단추 그대로 — 글자는 크기 0으로 감추고(화면 읽기는 그대로 읽는다) 단추 바탕에 막대를 그린다. 옆에 지금 단계를 말로 한 번 더(꾸밈 · aria-hidden). */
+:is(html.sx.has-room-head:not(.is-staff) .header-crumb,.sx-room-bar.is-head .header-crumb) .sx-head-steps{display:flex;flex:none;align-items:center;gap:12px;margin-left:auto;padding:0 6px 0 14px;border:0}
+:is(html.sx.has-room-head:not(.is-staff) .header-crumb,.sx-room-bar.is-head .header-crumb) .sx-head-steps .sx-steps-run{display:flex;flex-wrap:nowrap;gap:3px}
+:is(html.sx.has-room-head:not(.is-staff) .header-crumb,.sx-room-bar.is-head .header-crumb) .sx-head-steps .sx-step{position:relative;width:22px;height:24px;padding:0;font-size:0;line-height:0;color:transparent;overflow:hidden}
+.sx-head-steps .sx-step::before{content:'';position:absolute;left:0;right:0;top:50%;height:3px;margin-top:-1.5px;background:rgba(244,241,234,.18);transition:background .25s}
+.sx-head-steps .sx-step.is-done::before{background:rgba(244,241,234,.66)}
+.sx-head-steps .sx-step.is-now::before{background:var(--sx-ink)}
+@media (hover:hover){.sx-head-steps .sx-step:not(:disabled):not(.is-now):hover::before{background:rgba(244,241,234,.86)}}
+.sx-head-steps .sx-step:focus-visible{outline-offset:1px}
+.sx-head-stage{font-size:13px;color:var(--sx-dim);white-space:nowrap}
+/* 영어 821~1000px: 머리 가운데가 좁아 단계 이름 글을 먼저 감춘다(막대는 남는다). */
+@media (min-width:821px) and (max-width:1000px) and (min-aspect-ratio:10001/10000){html:lang(en) .sx-head-stage{display:none}}
+/* 「더 보기」 차림: 아래로 펼쳐지는 작은 목록. 바깥을 누르거나 Esc면 닫힌다(app.mjs). */
+.sx-head-more{position:relative;display:flex}
+.sx-more{position:absolute;right:0;top:calc(100% + 10px);z-index:30;display:grid;min-width:220px;max-width:calc(100vw - 24px);padding:6px 0;background:#0d0d0c;border:1px solid var(--sx-rule)}
+.sx-more[hidden]{display:none}
+:is(html.sx:not(.is-staff) .header-actions,.sx-room-bar.is-head .header-actions) .sx-more :is(.sx-more-item,.button){display:block;width:100%;min-height:42px;margin:0;padding:10px 16px;border:0;border-radius:0;background:none;box-shadow:none;color:var(--sx-ink);font-size:15px;font-weight:500;line-height:1.4;text-align:left;text-decoration:none;text-shadow:none;white-space:nowrap}
+:is(html.sx:not(.is-staff) .header-actions,.sx-room-bar.is-head .header-actions) .sx-more .is-now{font-weight:700}
+@media (hover:hover){:is(html.sx:not(.is-staff) .header-actions,.sx-room-bar.is-head .header-actions) .sx-more :is(.sx-more-item,.button):hover{background:rgba(255,255,255,.06)}}
+.sx-more .locale-menu{padding:6px 16px 8px;border-top:1px solid var(--sx-rule);margin-top:4px}
+html.sx:not(.is-staff) .header-actions .sx-more .locale-option{display:inline-block}
+/* 넓은 화면의 방: 머리는 붙박이 띠(64px · 바탕 검정 · 아래 가는 선) — 왼쪽 판과 무대가 그 아래에서 시작한다. 다른 화면(1차안 · 방향 · 영상)은 겹쳐 뜨는 머리 그대로. */
+@media (min-width:821px) and (min-aspect-ratio:10001/10000){
+  html.sx:not(.is-staff):has(#main>.sx-room[data-room-a]) .app-header{position:fixed;height:var(--sx-room-head);padding:0 20px 0 var(--sx-m);background:var(--sx-room-bg);border-bottom:1px solid var(--sx-rule)}
+  html.sx:not(.is-staff):has(#main>.sx-room[data-room-a]) .app-header::before{content:none}
+  .sx-room[data-room-a]>.sx-room-bar.is-head{position:sticky;top:0;left:auto;right:auto;width:auto;height:var(--sx-room-head);padding:0 20px 0 var(--sx-m);background:var(--sx-room-bg);border-bottom:1px solid var(--sx-rule)}
+  .sx-room[data-room-a]>.sx-room-bar.is-head::before{content:none}
+}
+/* 방 뿌리 */
+.sx-room[data-room-a]{background:var(--sx-room-bg);min-height:100vh;min-height:100dvh}
+.sx-room-a{display:grid;grid-template-columns:minmax(340px,34%) minmax(0,1fr);min-height:100vh;min-height:100dvh}
+@media (min-width:821px) and (min-aspect-ratio:10001/10000){
+  .sx-room[data-room-a]:not(:has(>.sx-room-bar)) .sx-room-a{padding-top:var(--sx-room-head)}
+  .sx-room[data-room-a]>.sx-room-bar~.sx-room-a{min-height:calc(100dvh - var(--sx-room-head))}
+}
+/* 왼쪽 판: 위에서 아래로 차례 줄 · 제목 · 이끄는 글 · 담당자 한마디 · 지난 결정 · 상태 카드 · 주 단추 · 입구, 맨 아래 받으실 날 */
+.sx-room-side{display:flex;flex-direction:column;gap:22px;min-width:0;padding:clamp(28px,5vh,56px) var(--sx-m) var(--sx-m);border-right:1px solid var(--sx-rule)}
+.sx-room-side>.sx-room-main{display:flex;flex-direction:column;gap:18px;margin:auto 0;min-width:0}
+.sx-room[data-room-a] .sx-display{font-size:clamp(34px,3.2vw,50px);line-height:1.14;letter-spacing:-.045em}
+.sx-room[data-room-a] .sx-room-lead{color:var(--sx-dim);max-width:32em}
+.sx-room-side-foot{display:flex;flex-direction:column;gap:12px;padding-top:18px;border-top:1px solid var(--sx-rule)}
+/* 차례 줄의 점: 손님 차례 · 새로 도착(글 콘티 · 장면 이미지 · 영상 · 완성본 · 모델 제안)은 다홍, 도착한 것 없는 손님 차례는 미색, 저희 차례는 연두, 끝은 점 없음 */
+.sx-room[data-room-a] .sx-turn{color:var(--sx-dim)}
+.sx-room[data-room-a] .sx-turn i{background:var(--sx-busy)}
+.sx-room[data-room-a] .sx-turn i.is-you{background:var(--sx-ink)}
+.sx-room[data-room-a]:is([data-state=script],[data-state=images],[data-state=review],[data-state=deliver],[data-state=model]) .sx-turn i.is-you{background:var(--sx-new)}
+.sx-room[data-room-a] .sx-turn i.is-done{display:none}
+/* 담당자 한마디(옅은 판) · 받으실 날 */
+.sx-room-say{display:grid;gap:8px;max-width:46ch;padding:14px 16px;background:var(--sx-room-say)}
+.sx-room-say blockquote{margin:0;color:var(--sx-ink);font-size:15px;line-height:1.6;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;line-clamp:4;overflow:hidden;white-space:pre-line}
 .sx-room-say figcaption b{font-weight:600;color:var(--sx-ink)}
 .sx-room-say .sx-link{margin-left:8px}
+.sx-room-due{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:13px;line-height:1.5;color:var(--sx-dim)}
+.sx-room-due b{font-family:var(--sx-serif);font-weight:300;font-size:var(--sx-t2);letter-spacing:-.03em;color:var(--sx-ink)}
+.sx-room-due>span:first-of-type{color:var(--sx-ink)}
 .sx-done-next{margin-top:2px}
 .sx-done-next .sx-quiet{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
-/* 선반과 인화지: 오른쪽 큰 칸이 밝은 벽이 되고, 그림은 흰 테를 두른 인화지로 선반에 기대어 선다 */
-.sx-room[data-day] .sx-room-screen{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:0;padding:calc(var(--sx-m) + 62px) clamp(20px,3.4vw,56px) clamp(84px,17vh,170px);background:linear-gradient(180deg,#fbfaf8 0%,#f6f4f1 52%,#efebe6 100%)}
-.sx-room[data-day] .sx-room-screen::before,.sx-room[data-day] .sx-room-screen::after{content:none}
-.sx-room[data-day] .sx-room-screen>:is(.sx-q-fill,.sx-room-files,.sx-room-cuts,.sx-room-word,.sx-room-media){position:relative;inset:auto;flex:0 1 auto;min-height:0}
-.sx-room[data-day] .sx-room-screen :is(.sx-q-fill,.sx-room-files>img){width:auto;height:auto;max-width:100%;object-fit:contain;padding:9px;background:#fff;border-radius:2px;box-shadow:0 1px 0 rgba(29,29,31,.05),0 26px 34px -24px rgba(29,29,31,.5),0 2px 10px rgba(29,29,31,.07);rotate:-1deg}
-.sx-room[data-day] .sx-room-screen>.sx-q-fill{margin:0;max-height:calc(100dvh - var(--sx-m) - 62px - clamp(84px,17vh,170px))}
-.sx-room[data-day] .sx-room-files{display:flex;align-items:flex-end;justify-content:center;gap:clamp(10px,1.5vw,24px);width:100%;background:none}
-.sx-room[data-day] .sx-room-files>img{flex:0 1 auto;min-width:0;max-height:min(46vh,430px)}
-.sx-room[data-day] .sx-room-files[data-count="2"]>img{max-height:min(56vh,520px)}
-.sx-room[data-day] .sx-room-files>img:nth-child(even){rotate:1.2deg;translate:0 -6px}
-.sx-room[data-day] .sx-room-files>img:nth-child(3n){rotate:-.6deg;translate:0 -2px}
-.sx-room[data-day] .sx-room-files:is([data-count="5"],[data-count="6"]){flex-wrap:wrap}
-.sx-room[data-day] .sx-room-files:is([data-count="5"],[data-count="6"])>img{max-height:min(28vh,250px)}
-/* 장면 이미지 컷: 흰 밀착 인화지 한 장 */
-.sx-room[data-day] .sx-room-cuts{--cut-c:3;--cut-r:1;--cut-h:calc(100vh - var(--sx-m) - 74px - clamp(84px,17vh,170px));width:min(100%,560px,calc((var(--cut-h) - 24px - (var(--cut-r) - 1)*6px)/var(--cut-r)*9/16*var(--cut-c) + (var(--cut-c) - 1)*6px + 24px));grid-template-columns:repeat(var(--cut-c),1fr);padding:12px;gap:6px;background:#fff;border-radius:2px;box-shadow:0 26px 34px -24px rgba(29,29,31,.5),0 2px 10px rgba(29,29,31,.07);rotate:-.7deg;grid-auto-rows:auto}
-.sx-room[data-day] .sx-room-cuts img{height:auto;aspect-ratio:9/16}
-@supports (height:1dvh){.sx-room[data-day] .sx-room-cuts{--cut-h:calc(100dvh - var(--sx-m) - 74px - clamp(84px,17vh,170px))}}
-.sx-room[data-day] .sx-room-cuts[data-count="1"]{--cut-c:1}
-.sx-room[data-day] .sx-room-cuts[data-count="2"]{--cut-c:2}
-.sx-room[data-day] .sx-room-cuts[data-count="4"]{--cut-c:2;--cut-r:2}
-.sx-room[data-day] .sx-room-cuts:is([data-count="5"],[data-count="6"]){--cut-r:2}
-.sx-room[data-day] .sx-room-cuts:is([data-count="7"],[data-count="8"]){--cut-c:4;--cut-r:2}
-.sx-room[data-day] .sx-room-cuts:is([data-count="9"],[data-count="10"],[data-count="11"],[data-count="12"]){--cut-c:4;--cut-r:3}
-/* 글 콘티: 대본 종이 한 장 */
-.sx-room[data-day] .sx-room-word{width:min(100%,520px);padding:clamp(24px,3vw,40px);gap:clamp(18px,3vh,30px);background:#fff;box-shadow:0 26px 34px -24px rgba(29,29,31,.5),0 2px 10px rgba(29,29,31,.07);rotate:-.7deg;justify-content:flex-start}
-.sx-room[data-day] .sx-room-word .sx-serif{font-size:clamp(24px,2.5vw,36px);line-height:1.3}
-.sx-room[data-day] .sx-room-media{width:min(100%,560px);padding:9px;background:#fff;box-shadow:0 26px 34px -24px rgba(29,29,31,.5)}
-/* 선반: 인화지 바로 아래의 턱. 캡션은 그림 위가 아니라 선반 아래에 */
-.sx-room[data-day] .sx-room-screen>.sx-room-cap{position:absolute;left:0;right:0;bottom:0;top:auto;max-width:none;height:clamp(84px,17vh,170px);margin:0;padding:22px clamp(20px,3.4vw,56px) 0;text-align:left;color:var(--sx-dim);text-shadow:none;background:linear-gradient(180deg,#e7e2db 0,#efebe6 9px,#f8f6f3 10px,#fff 100%);border-top:1px solid #d9d3cb;z-index:0}
-.sx-room[data-day] .sx-room-screen:not(:has(>.sx-room-cap))::after{content:'';position:absolute;left:0;right:0;bottom:0;height:clamp(84px,17vh,170px);background:linear-gradient(180deg,#e7e2db 0,#efebe6 9px,#f8f6f3 10px,#fff 100%);border-top:1px solid #d9d3cb;z-index:0;pointer-events:none}
-.sx-room[data-day] .sx-room-screen>:is(.sx-q-fill,.sx-room-files,.sx-room-cuts,.sx-room-word,.sx-room-media){z-index:1}
-.sx-room[data-day] .sx-room-cap b{color:var(--sx-ink)}
-.sx-room[data-day] .sx-room-play{z-index:2}
-/* 영상 인화지의 재생 표: 먹색 판 위의 흰 세모(밝은 영상 위에서도 묻히지 않게) */
-.sx-room[data-day] .sx-room-screen:has(>video.sx-q-fill)>.sx-room-play::before{content:'';position:absolute;left:var(--play-x,50%);top:var(--play-y,44%);width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:2px;background:rgba(29,29,31,.74)}
-.sx-room[data-day] .sx-room-screen:has(>video.sx-q-fill)>.sx-room-play::after{content:'';position:absolute;left:var(--play-x,50%);top:var(--play-y,44%);width:0;height:0;margin:-11px 0 0 -7px;border-left:19px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent}
-/* 다른 모델 벽 · 모델 제안 · 맞춤 인물: 벽 색 위에 */
-.sx-room[data-day] .sx-room-others{background:#f6f4f1;z-index:3}
-.sx-room[data-day] .sx-wall{background:#f6f4f1}
-.sx-room[data-day] .sx-cast-name{color:#fff}
-/* 아래 인화지 쪽(보내 주신 의뢰서 · 받은 자료): 미색 종이 */
-.sx-room[data-day] .sx-room-paper{background:#f6f4f1;color:var(--sx-ink);border-top:1px solid #e2ded9}
-.sx-room[data-day] .sx-room-paper :is(.sx-small,.sx-no),.sx-room[data-day] .sx-room-paper .sx-kv dt{color:var(--sx-dim)}
-.sx-room[data-day] .sx-quiet{color:var(--sx-ink);text-decoration-color:rgba(29,29,31,.36)}
-.sx-room[data-day] .sx-room-paper .sx-link,.sx-room[data-day] .sx-room-doc h2,.sx-room[data-day] .sx-room-paper .sx-kv dd{color:var(--sx-ink)}
-.sx-room[data-day] .sx-room-paper .sx-kv,.sx-room[data-day] .sx-room-paper .sx-kv>div{border-color:#e2ded9}
-.sx-room[data-day] .sx-contact img{background:#fff;border-color:#e2ded9}
-.sx-room[data-day] .sx-asks{scrollbar-color:rgba(29,29,31,.3) transparent}
-.sx-room[data-day] :is(.sx-ask-reply textarea,.sx-j-say textarea,.sx-slot-note)::placeholder,.sx-room[data-day] .sx-field ::placeholder{color:var(--sx-faint)}
-/* 나눈 말(대화 기록): 담당자의 말과 소식은 옅은 판 위에 두고 내 말은 판 없이 둔다. 누르는 것은 가는 테를 두른 단추로 가른다(이 화면의 단추는 모서리가 각지다) */
-.sx-room[data-day] .sx-journal .sx-j-meta b{font-weight:700}
-.sx-room[data-day] .sx-journal .sx-j-row[data-who=me] .sx-j-meta b{color:var(--sx-dim)}
-.sx-room[data-day] .sx-journal .sx-j-row:where([data-who=staff],[data-who=auto]):where(.is-talk,.is-progress){margin:8px 0;padding:12px 14px;border-top:0;background:#f6f4f1;box-shadow:none}
-.sx-room[data-day] .sx-journal .sx-j-row:where([data-who=staff],[data-who=auto]):where(.is-talk,.is-progress)+.sx-j-row{border-top:0}
-.sx-room[data-day] .sx-journal :is([data-journal-go],.sx-j-more,.sx-j-filter){display:inline-flex;align-items:center;min-height:32px;padding:2px 13px;border:1px solid rgba(29,29,31,.5);text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}
-.sx-room[data-day] .sx-journal .sx-j-filter[aria-pressed=true]{border-color:var(--sx-ink)}
-@media (hover:hover){.sx-room[data-day] .sx-journal :is([data-journal-go],.sx-j-more,.sx-j-filter):not([aria-pressed=true]):hover{background:rgba(29,29,31,.06)}}
-/* 같은 소식을 한 화면에 두 번 적지 않는다(film-views tidyEcho): 선반에 선 그림은 그 줄에서 접고, 한마디가 글을 끝까지 보이면 그 줄의 글은 한 줄로 */
-.sx-room[data-day] .sx-j-row.is-on-shelf .sx-j-shots{display:none}
-.sx-room[data-day] .sx-j-row.is-said .sx-j-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;line-clamp:1;overflow:hidden;white-space:normal;color:var(--sx-dim)}
-/* 데려간 줄(나눈 말에서 보기 · 소식 보기 · 알림)의 5초 강조: 흰 방에서는 먹색 옅은 면 */
-.sx-room[data-day] :is(.sx-j-row,.sx-j-ask).notification-target{background:rgba(29,29,31,.08);box-shadow:-8px 0 0 rgba(29,29,31,.08),8px 0 0 rgba(29,29,31,.08)!important}
-.sx-room[data-day] .sx-j-shots img{background:#ebe7e1}
-/* 좁은 화면: 선반이 글 아래로 내려온다 */
+/* 지난 결정 아이콘 줄: 누를 수 있는 칩은 테두리, 표시는 그냥 칸. 새로 도착한 판만 다홍 점 하나. */
+.sx-folds{display:flex;flex-wrap:wrap;gap:8px}
+.sx-fold{position:relative;display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 14px 6px 6px;border:1px solid var(--sx-rule);background:rgba(255,255,255,.02);color:var(--sx-ink);text-align:left;transition:border-color .2s,background .2s}
+button.sx-fold{cursor:pointer}
+@media (hover:hover){button.sx-fold:hover{border-color:rgba(244,241,234,.5);background:rgba(255,255,255,.05)}}
+button.sx-fold[aria-expanded=true]{border-color:rgba(244,241,234,.5);background:rgba(255,255,255,.05)}
+.sx-fold.is-status{border-color:transparent;background:none;cursor:default}
+.sx-fold-ico{display:grid;place-items:center;flex:none;width:40px;height:40px;overflow:hidden;background:var(--sx-room-say);color:var(--sx-dim)}
+.sx-fold-ico img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.sx-fold.is-done .sx-fold-ico{color:var(--sx-ink)}
+.sx-fold-t{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.sx-fold-t small{font-size:13px;color:var(--sx-faint)}
+.sx-fold-t span{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:14em}
+.sx-fold.is-new::after{content:'';position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--sx-new)}
+.sx-room-chosen[hidden]{display:none}
+.sx-room-go{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sx-room-go .sx-go.is-solid{min-width:min(100%,240px)}
+/* 모델 제안 카드 아래 「말로 알려 주기」 */
+.sx-room[data-room-a] .sx-propose-actions{margin-top:6px}
+/* 오른쪽: 무대(위) · 기기 기억 띠(아래). 넓은 화면은 머리 아래에 붙어 서고 왼쪽 판만 굴러간다. */
+.sx-room-right{display:flex;flex-direction:column;min-width:0}
+@media (min-width:821px) and (min-aspect-ratio:10001/10000){
+  .sx-room-right{position:sticky;top:0;height:100vh;height:100dvh}
+  .sx-room[data-room-a]:not(:has(>.sx-room-bar)) .sx-room-right{top:var(--sx-room-head);height:calc(100vh - var(--sx-room-head));height:calc(100dvh - var(--sx-room-head))}
+  .sx-room[data-room-a]>.sx-room-bar~.sx-room-a .sx-room-right{top:var(--sx-room-head);height:calc(100dvh - var(--sx-room-head) - var(--demo-bar,0px))}
+}
+.sx-room-stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#000}
+.sx-room-stage::after{content:'';position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(0deg,rgba(0,0,0,.62),rgba(0,0,0,0));z-index:1;pointer-events:none}
+.sx-room-stage:has(>:is(.sx-room-hall,.sx-hall))::after{content:none}
+.sx-room-stage>template{display:none}
+.sx-room-stage .sx-room-cap{z-index:2}
+.sx-room-stage>.sx-room-play{z-index:2}
+/* 시안 · 최종본 영상의 재생 표: 어두운 판 위의 미색 세모(영상 한가운데 — mountRoom이 자리를 잰다) */
+.sx-room-stage:has(>video.sx-q-fill)>.sx-room-play::before{content:'';position:absolute;left:var(--play-x,50%);top:var(--play-y,44%);width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:2px;background:rgba(6,6,6,.62)}
+.sx-room-stage:has(>video.sx-q-fill)>.sx-room-play::after{content:'';position:absolute;left:var(--play-x,50%);top:var(--play-y,44%);width:0;height:0;margin:-11px 0 0 -7px;border-left:19px solid var(--sx-ink);border-top:11px solid transparent;border-bottom:11px solid transparent}
+/* 무대의 복도 · 한 명 띠(hall.mjs): 무대를 가득. 이름표는 무대 아래 가장자리에 */
+.sx-room-stage :is(.sx-room-hall,.sx-hall){position:absolute;inset:0}
+.sx-room-stage .sx-hall-tag{padding:72px 22px 26px}
+.sx-room-stage .sx-hall-note{top:16px;right:16px}
+.sx-hall.is-one .sx-hall-track{position:absolute;inset:0;display:flex;justify-content:center;transform:none;transition:none}
+.sx-hall.is-one .sx-hall-strip{width:auto;height:100%;aspect-ratio:9/16;max-width:100%;filter:none}
+.sx-hall.is-one .sx-hall-tag{opacity:1;transform:none}
+.sx-room-hint{position:absolute;left:16px;top:16px;z-index:2;margin:0;padding:4px 10px;background:rgba(0,0,0,.6);color:var(--sx-dim)}
+/* 장면 이미지 컷 띠(읽기만): 모든 컷이 한 줄로 서고, 넘치면 띠만 옆으로 민다. 컷은 제 비율 그대로 */
+.sx-room-cutrow{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;gap:6px;margin:0;padding:clamp(20px,5vh,48px) clamp(16px,3vw,40px) clamp(84px,14vh,120px);overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:rgba(244,241,234,.28) transparent;list-style:none}
+.sx-room-cutrow>li{position:relative;flex:none;height:100%;min-width:0}
+.sx-room-cutrow img{display:block;height:100%;width:auto;max-width:none;object-fit:contain;background:#0a0a0a}
+.sx-room-cutrow .sx-no{position:absolute;left:8px;top:6px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+/* 기기 기억 안내: 지금 칸 그대로(안내 · 「이 기기 기억하기」 · 「괜찮아요」). 넓은 화면은 무대 아래 띠, 휴대폰은 왼쪽 판 끝 */
+.sx-room-tail{flex:none;padding:14px var(--sx-m);border-top:1px solid var(--sx-rule);background:var(--sx-room-bg)}
+html.sx .sx-room-tail .sx-offer{max-width:720px;padding:0;border-top:0}
+/* 나눈 말 서랍: 담당자의 말은 옅은 판(A 색 역할), 무대에 선 소식 그림은 그 줄에서 접는다(film-views tidyEcho) */
+.sx-room[data-room-a] .sx-journal .sx-j-row:where([data-who=staff],[data-who=auto]):where(.is-talk,.is-progress){margin:6px 0;padding:12px 14px;border-top:0;background:var(--sx-room-say);box-shadow:none}
+.sx-room[data-room-a] .sx-journal .sx-j-row:where([data-who=staff],[data-who=auto]):where(.is-talk,.is-progress)+.sx-j-row{border-top:0}
+.sx-room[data-room-a] .sx-j-row.is-on-shelf .sx-j-shots{display:none}
+/* 휴대폰 · 세로 화면: 무대가 위(화면 높이의 40%), 왼쪽 판이 아래, 기기 기억 띠는 판 끝. 머리는 흐름 안 두 줄(로고 · 이름 · 아이콘 셋 / 다섯 칸 막대와 단계 이름). */
 @media (max-width:820px),(max-aspect-ratio:1/1){
-  .sx-room[data-day] .sx-room-screen{height:auto;min-height:0;padding:22px 16px 74px}
-  .sx-room[data-day] .sx-room-screen>.sx-q-fill{max-height:52vh}
-  .sx-room[data-day] .sx-room-files>img{max-height:34vh}
-  .sx-room[data-day] .sx-room-files[data-count="2"]>img{max-height:40vh}
-  .sx-room[data-day] .sx-room-screen>.sx-room-cap,.sx-room[data-day] .sx-room-screen:not(:has(>.sx-room-cap))::after{height:74px;padding:14px 16px 0}
-  .sx-room[data-day] .sx-display{font-size:clamp(30px,8.6vw,40px)}
-  /* 방 안 머리 띠(예시): 글과 로고가 먹색이므로 띠도 흰색 */
-  .sx-room[data-day] .sx-room-bar{background:#fff}
-  .sx-room[data-day] .sx-room-cuts{--cut-h:64vh}
-  /* 보는 차례(영상 · 납품 · 끝)는 선반이 글보다 먼저 선다: 제목과 주 단추가 첫 화면에 남게 선반을 낮춘다 */
-  .sx-room[data-day] .sx-room-hero.is-preview-first>.sx-room-screen>.sx-q-fill{max-height:calc(44vh - 96px);max-height:calc(44dvh - 96px)}
-  .sx-room[data-day] .sx-room-files:is([data-count="5"],[data-count="6"])>img{max-height:min(17vh,150px);max-width:calc((100% - 24px)/3)}
-  /* 오늘 나온 컷이 대화 기록 아래로 밀리지 않게: 글 → 선반 → 일지 순서로 세운다(영상이 먼저 서는 방과 그림이 없는 방은 그대로) */
-  .sx-room[data-day] .sx-room-hero:not(.is-preview-first):not(.is-no-screen)>.sx-room-left{display:contents}
-  /* 눈에 보이는 순서대로 초점과 화면 읽기가 가게(지원하는 브라우저에서). 지원하지 않으면 원문 순서(글 → 일지 → 선반)로 간다 */
-  .sx-room[data-day] .sx-room-hero:not(.is-preview-first):not(.is-no-screen){reading-flow:flex-visual}
-  .sx-room[data-day] .sx-room-hero:not(.is-preview-first):not(.is-no-screen)>.sx-room-left>.sx-room-main{order:1;padding:16px var(--sx-m) 18px}
-  .sx-room[data-day] .sx-room-hero:not(.is-preview-first):not(.is-no-screen)>.sx-room-screen{order:2}
-  .sx-room[data-day] .sx-room-hero:not(.is-preview-first):not(.is-no-screen)>.sx-room-left>:is(.sx-journal,.sx-room-sub){order:3;margin:14px var(--sx-m) 18px}
+  .sx-room-a{display:flex;flex-direction:column;min-height:0}
+  .sx-room-right{display:contents}
+  .sx-room-stage{order:-1;flex:none;height:40vh;height:40dvh;min-height:260px}
+  .sx-room-side{order:0;gap:18px;padding:20px var(--sx-m) 24px;border-right:0}
+  .sx-room-side>.sx-room-main{margin:0}
+  .sx-room-tail{order:1;padding:16px var(--sx-m) calc(env(safe-area-inset-bottom) + 20px)}
+  .sx-room[data-room-a] .sx-display{font-size:clamp(30px,8.4vw,38px)}
+  .sx-room-cutrow{padding:16px 16px 64px}
+  .sx-fold{min-height:48px;padding-right:10px}
+  .sx-fold-t span{max-width:9em}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .header-actions>*{order:2}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .header-actions>.sx-head-ask{order:2;padding:3px 6px}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-title{min-width:0}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps{order:4;flex:1 1 100%;justify-content:flex-start;gap:10px;margin:0;padding:6px 0 10px;border:0}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-run{flex:none;gap:3px}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-step{width:clamp(18px,6vw,26px);height:20px}
+  html.sx.has-room-head:not(.is-staff) .app-header .brand img{height:20px}
 }
-/* 눕힌 작은 휴대폰(가로 · 높이 480px 이하): 인화지가 우표만 해지지 않게 하한을 둔다. 세로 휴대폰은 위 값 그대로(주 단추가 첫 화면에 남게) */
-@media (max-width:820px) and (orientation:landscape) and (max-height:480px){
-  .sx-room[data-day] .sx-room-cuts{--cut-h:max(64vh,420px)}
-  .sx-room[data-day] .sx-room-hero.is-preview-first>.sx-room-screen>.sx-q-fill{max-height:max(calc(44vh - 96px),170px);max-height:max(calc(44dvh - 96px),170px)}
-  .sx-room[data-day] .sx-room-files:is([data-count="5"],[data-count="6"])>img{max-height:clamp(110px,17vh,150px)}
+/* ── 의뢰서 서랍(2판 ①): 나눈 말 서랍과 같은 틀 — 넓은 화면 오른쪽 400px, 휴대폰 · 세로 화면 아래 시트 ── */
+.sx-brief-scrim{position:fixed;inset:0;z-index:56;background:rgba(0,0,0,.38)}
+.sx-brief-scrim[hidden]{display:none}
+.sx-brief{position:fixed;z-index:57;top:0;right:0;bottom:0;width:min(400px,92vw);display:grid;align-content:start;gap:18px;padding:var(--sx-m);background:#0b0b0b;color:var(--sx-ink);box-shadow:-1px 0 0 var(--sx-rule);overflow-y:auto;overscroll-behavior:contain;transform:translateX(100%);visibility:hidden;transition:transform .34s var(--sx-out),visibility 0s .34s}
+.sx-brief.is-open{transform:none;visibility:visible;transition:transform .34s var(--sx-out)}
+.sx-brief>.sx-j-head{padding-top:0;border-top:0}
+.sx-brief-no{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;padding:10px 12px;background:var(--sx-room-say)}
+.sx-brief-no .sx-no{font-size:15px;color:var(--sx-ink)}
+.sx-brief-doc{display:grid;gap:10px;justify-items:start;min-width:0}
+.sx-brief-doc h3{font-size:15px;font-weight:600;line-height:1.4}
+.sx-brief .sx-kv>div{grid-template-columns:92px minmax(0,1fr)}
+.sx-brief .sx-contact{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+.sx-brief .sx-contact img{border-color:var(--sx-rule)}
+.sx-brief .sx-room-prep{display:grid;gap:14px;margin:0 calc(-1*var(--sx-m));padding:18px var(--sx-m)}
+.sx-brief [data-paper-for]{scroll-margin-top:16px}
+html.has-brief-open{overflow:hidden}
+@media (max-width:820px),(max-aspect-ratio:1/1){
+  .sx-brief{left:0;right:0;top:auto;width:auto;max-height:86vh;max-height:86dvh;padding:24px var(--sx-m) calc(env(safe-area-inset-bottom) + 18px);border-radius:16px 16px 0 0;box-shadow:0 -1px 0 var(--sx-rule);transform:translateY(100%)}
+  .sx-brief::before{content:'';position:absolute;left:50%;top:8px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:rgba(244,241,234,.32)}
+  .sx-brief-scrim{background:rgba(0,0,0,.62)}
 }
-/* ── 낮 판 끝 ── */
+@media (prefers-reduced-motion:reduce){.sx-brief{transition:none!important}}
+/* 1판 후속(휴대폰 390): 「내 모델」이 붙어 문 판이 길어지면 발판 줄(「처음이세요? 광고 의뢰하기」)이 오른쪽 아래 쪽 번호와 겹쳤다 — 발판 줄 오른쪽에 쪽 번호 폭만큼 자리를 비운다.
+   쪽 번호는 휴대폰에서 오른쪽 여백에 붙은 일곱 칸(22px)과 양옆 6px(1쪽의 어두운 바탕)이다 — 그 폭에 10px을 더 비운다. 쪽 번호는 화면에 붙어 있어, 낮은 휴대폰(390×667)에서 내리는 중간에도 같은 세로 자리를 지나므로 가로로 비켜 둔다. */
+@media (max-width:820px),(max-aspect-ratio:1/1){.sx-door-foot{padding-right:calc(7*22px + 12px + 10px)}}

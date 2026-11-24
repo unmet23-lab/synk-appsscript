@@ -10,10 +10,9 @@ import {sceneRequestsSummary,sceneRequestView} from './scene-requests-view.mjs';
 import {strategyView,strategySummary,strategyHistory,strategyConfirmDialog,strategyNext,sceneStrategyFields,sceneStrategyContext,sceneDurationNote} from './strategy-view.mjs';
 import {FINISHED_FILMS,filmLine,filmNote,filmsView,hasFinishedFilms,filmTitle} from './films-view.mjs';
 import {arrow} from './film-home.mjs';
-import {entryView,roomView,roomHead,exampleHead,draftView,directionView as directionScreen,journalView,journalAsk} from './film-views.mjs';
+import {entryView,roomView,roomHead,exampleHead,draftView,directionView as directionScreen,journalView,journalAsk,briefView,headBrief,HEAD_ICON} from './film-views.mjs';
 import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue,journalModel,journalNew,staffBoard,marketingLine,peopleRequests,openRequest} from './room-view.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
-import {personaModelsLine} from './persona-view.mjs';
 import {MODEL_LINES,PACKAGES,BOLD,noticeLabel} from './request-data.mjs';
 import {t,k} from './i18n.mjs';
 import {localeMenu} from './locale-menu.mjs';
@@ -91,12 +90,26 @@ function staffHeader(s){
 // i18n-skip-end
 // PC 앱의 PULSE 창(s.desktopApp)은 앱 설치·기기 알림을 쓸 수 없어 설치 안내 단추를 두지 않는다. 새 소식은 「알림」(앱 안 알림)으로 본다.
 // 언어 메뉴는 손님 머리 끝에 — 첫 화면과 의뢰 흐름 손님만(옛 흐름 프로젝트 · 직원 화면은 한국어). 허락 언어가 하나면 빈 글자다.
-export function header(s){if(s.demo)return demoHeader();if(s.mode==='staff')return staffHeader(s);return `${s.project&&isCustomerRoom(s)?headAsk(s):''}${s.desktopApp?'':btn(t('앱 설치'),'install','','install-button')}${!s.project?`<a class="button quiet creator-link" href="https://workspace.synk.im/pulse-app/?mode=staff" target="_blank" rel="noopener noreferrer">${esc(t('제작자 공간 ↗'))}</a>`:''}${s.project?btn(s.live?.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림'),'notifications','aria-controls="pulse-notifications" aria-expanded="'+String(!!s.live?.open)+'"','quiet notify-button'):''}${s.project&&!isCustomerRoom(s)?'':localeMenu()}`;}
+// 의뢰 흐름 손님 방(2판 ①, 11-24): 머리 오른쪽은 아이콘 셋 — 「의뢰서」(서랍) · 「나눈 말」 · 「더 보기」(SYNK 작품 · 마케팅 성과 · 인플루언서 광고 · 내 모델 · 알림 · 앱 설치 · 언어).
+export function header(s){if(s.demo)return demoHeader();if(s.mode==='staff')return staffHeader(s);if(s.project&&isCustomerRoom(s))return headBrief(!!s.briefOpen)+headJournal(s)+headMore(s);return `${s.desktopApp?'':btn(t('앱 설치'),'install','','install-button')}${!s.project?`<a class="button quiet creator-link" href="https://workspace.synk.im/pulse-app/?mode=staff" target="_blank" rel="noopener noreferrer">${esc(t('제작자 공간 ↗'))}</a>`:''}${s.project?btn(s.live?.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림'),'notifications','aria-controls="pulse-notifications" aria-expanded="'+String(!!s.live?.open)+'"','quiet notify-button'):''}${s.project&&!isCustomerRoom(s)?'':localeMenu()}`;}
 // 머리 막대 가운데: 열린 프로젝트의 이름·지금 단계·전달 예정일(app.mjs가 #header-crumb에 넣는다).
 // 의뢰 흐름 손님(판 3, 11-08): 머리 하나 — 프로젝트 이름(고객 방으로) · 접수 번호 · 단계 다섯. 화면 안에는 단계 줄을 두지 않는다.
 // 오른쪽 「나눈 말」(판 3b): 새 말 숫자(이 기기에서 일지를 본 뒤 온 담당자 줄) · 답할 되묻기가 있으면 점. 누르면 그 화면의 일지로.
-export const headJournal=(s,j=journalModel(s.project))=>{const n=journalNew(j,s.journalSeen),ask=j.pinned.asks.length;return `<button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>${esc(t('나눈 말'))}${n?` <b class="sx-no">${n}</b><span class="sr">${esc(t('개 새 말',{count:n}))}</span>`:''}${ask?`<i class="sx-head-dot" aria-hidden="true"></i><span class="sr">${esc(t(', 답할 것이 있어요'))}</span>`:''}</button>`;};
-const headAsk=s=>headJournal(s);
+export const headJournal=(s,j=journalModel(s.project))=>{const n=journalNew(j,s.journalSeen),ask=j.pinned.asks.length;return `<button type="button" class="sx-head-ask sx-head-icon" data-room-do="journal" aria-controls="room-journal" data-journal-count>${HEAD_ICON.talk}<span>${esc(t('나눈 말'))}</span>${n?` <b class="sx-no">${n}</b><span class="sr">${esc(t('개 새 말',{count:n}))}</span>`:''}${ask?`<i class="sx-head-dot" aria-hidden="true"></i><span class="sr">${esc(t(', 답할 것이 있어요'))}</span>`:''}</button>`;};
+// 「더 보기」 차림(2판 ①): 누르면 아래로 작은 목록(aria-expanded). 열림은 s.moreOpen — 머리(#header-actions)는 render()와 앱 설치 안내가 통째로 다시 쓴다.
+// 입구 조건은 지금 그대로다(SYNK 작품 · 스위치가 켜진 손님의 마케팅 성과 · 인플루언서 광고 · 스위치 myModels가 켜진 손님의 내 모델). 앱 설치는 PC 앱 창에서 뺀다.
+// 알림 · 인플루언서 광고(값 안내가 온 의뢰)에 새 것이 있으면 아이콘에 다홍 점 하나(알림 수가 바뀌면 app.mjs renderLive가 점만 고친다).
+// 내 모델은 위 인물 칸이 이미 「내 모델 열기」를 그린 방(브랜드 회원 · 다시 쓰기 — 인물이 끝난 방은 빼고)에서는 두지 않는다(판 4 운영 시험 P3 · 최종 검수 F4 그대로).
+const keptModels=s=>{const p=s.project,persona=roomModel(p).persona,mine=s.keep?.projectId===p.id?s.keep.state:'';return persona?persona.turn!=='end'&&['member','reuse'].includes(mine):mine==='reuse';};
+export const moreNew=s=>!!s.live?.unreadCount||isCustomerRoom(s)&&peopleOn(s)&&peopleRequests(s.project).some(item=>item.status==='quoted');
+export function headMore(s){
+  const open=!!s.moreOpen,info=roomInfo(s),here=roomTab(s.tab),go=(id,label)=>`<button type="button" class="sx-more-item${here===id?' is-now':''}" data-room-go="${id}"${here===id?' aria-current="page"':''}>${esc(label)}</button>`;
+  const items=[info.films&&go('films',t('SYNK 작품')),info.marketing&&go('marketing',t('마케팅 성과')),info.people&&go('people',t('인플루언서 광고')),
+    s.mode==='customer'&&!s.demo&&s.myModelsOn===true&&!keptModels(s)&&`<button type="button" class="sx-more-item" data-room-do="my-models">${esc(t('내 모델'))}</button>`,
+    btn(s.live?.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림'),'notifications','aria-controls="pulse-notifications" aria-expanded="'+String(!!s.live?.open)+'"','quiet notify-button sx-more-item'),
+    !s.desktopApp&&btn(t('앱 설치'),'install','','install-button sx-more-item'),localeMenu()].filter(Boolean);
+  return `<div class="sx-head-more"><button type="button" class="sx-head-icon" data-room-do="more" aria-expanded="${open?'true':'false'}" aria-controls="room-more">${HEAD_ICON.more}<span>${esc(t('더 보기'))}</span><i class="sx-head-new" data-more-new aria-hidden="true"${moreNew(s)?'':' hidden'}></i></button><div class="sx-more" id="room-more"${open?'':' hidden'}>${items.join('')}</div></div>`;
+}
 export function headerCrumb(s){const p=s.project;if(!p)return '';if(isCustomerRoom(s))return roomHead(roomInfo(s),{tab:s.tab});return `<b class="crumb-title">${esc(p.title)}</b>${p.studio?.request?.number?`<span class="crumb-no mono">${esc(p.studio.request.number)}</span>`:''}<span class="crumb-stage stage-${esc(p.stage)}">${esc(stages[p.stage]||p.stage)}</span>${p.dueDate?`<span class="crumb-due">전달 예정 <time datetime="${esc(p.dueDate)}">${esc(day(p.dueDate))}</time></span>`:''}`;} // i18n-skip
 export function welcome(s){return entryView({demoHref:'?demo=film',entryError:s.entryError,resume:s.requestResume,paused:s.intake?.state==='paused'||s.intake?.state==='full'?s.intake:null});}
 // 직원 로그인 · 프로젝트 고르기 — 직원 화면.
@@ -411,6 +424,9 @@ const nextOf=(s)=>s.demo?{title:s.demoGuide.title,text:s.demoGuide.description,t
 function demoCredit(s){const g=s.demoGuide;return `<section class="sx-guide" data-demo-guide data-demo-action="${esc(g.action)}" aria-label="고객 체험 안내"><p class="sx-small"><b class="sx-no">${esc(g.step)} / ${esc(g.total)}</b> <span class="sx-guide-about">체험 프로젝트 · 霜の肌理 15초 광고 · 가상 브랜드로 만든 자체 작품</span></p><h2 class="sx-guide-title">${esc(g.title)}</h2><p class="sx-small">${esc(g.description)}</p><p class="sx-small sx-guide-note">${s.demoPersistent?`체험 기록은 ${s.desktopApp?'이 PC 앱':'이 브라우저'}에만 남고, 실제 의뢰나 승인으로 이어지지 않아요.`:s.desktopApp?'이 PC 앱에서는 체험 기록을 저장할 수 없어 창을 닫으면 사라져요. 실제 의뢰나 승인으로 이어지지 않아요.':'체험 기록을 저장할 수 없는 브라우저라 창을 닫으면 사라져요. 실제 의뢰나 승인으로 이어지지 않아요.'}</p><div class="sx-guide-act">${g.complete?`${inquiryLink('sx-go is-solid')}${lnk('처음부터 다시 체험','demo-reset')}<span class="sx-small">체험한 방식 그대로 실제 광고를 함께 만들어요.</span>`:`${go(g.canAdvance?g.button:'이 단계 해 보기','demo-next')}<span class="sx-small">로그인 없이 마음껏 눌러 보세요.</span>`}</div></section>`;}
 // i18n-skip-end
 
+// 의뢰서 서랍(2판 ①): 모든 방 화면에서 main 밖 한 자리(#room-brief)에 그린다(app.mjs render). 열림은 s.briefOpen — 실시간 다시 그리기 뒤에도 열린 채다.
+// 준비 칸(바뀐 내용 · 준비 자료 · 납품 규격)도 여기 — 「준비 자료 확인」 같은 단추는 서랍을 열고 그 칸으로 굴린다(app.mjs showRoomPaper).
+export function roomBriefView(s){if(!s.project||!isCustomerRoom(s))return '';return briefView(roomInfo(s),{open:!!s.briefOpen,prep:roomPrep(s)});}
 // 고객 방(의뢰 흐름)
 function customerRoom(s){
   const p=s.project;
@@ -419,12 +435,10 @@ function customerRoom(s){
   // 제안이 바뀌었으면(안 id가 다르면) 옛 화면 상태(모델 · 펼침 · 둘 다 아니에요)를 그리기 전에 버린다(11-07 검수).
   const info=roomInfo(s);if(info.direction&&(info.state==='direction'||s.tab==='pick'&&info.direction.canPick)){const key=info.direction.options.map(o=>o.id).join(',');return directionScreen(info,{top:alertBox(s),ui:s.directionUi?.key===key?s.directionUi:{},journal:journalOf(s,'drawer',{tab:'pick'})});}
   const extras=roomExtras(p);
-  const after=`${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(t(item.title))}</h2><p class="sx-small">${esc(t(item.text))}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(t(item.button))}</span>${arrow}</button></section>`).join('')}${info.marketing?marketingEntry(s):''}${info.people?peopleEntry(s):''}`;
-  // 기기 기억 안내는 왼쪽 단(지금 할 일) 한가운데가 아니라 그림 아래 띠로 — 맹검 11-07 「시스템 안내가 내용 자리에 들어옴」.
-  // 내 모델 입구(판 4 운영 시험 P3): 스위치 myModels가 켜진 손님 방에서, 위 인물 칸이 이미 「내 모델 열기」를 둔 방(브랜드 회원 · 다시 쓰기)이 아니면 아래 띠에 한 줄.
-  // 위 인물 칸이 실제로 「내 모델 열기」를 그린 방만 뺀다 — 인물이 끝난 방(turn end)은 personaKeep이 아무것도 그리지 않는다(최종 검수 F4).
-  const mine=s.keep?.projectId===p.id?s.keep.state:'',kept=info.persona?info.persona.turn!=='end'&&['member','reuse'].includes(mine):mine==='reuse',models=s.mode==='customer'&&!s.demo&&s.myModelsOn===true&&!kept?personaModelsLine():'';
-  return roomView(info,{bar:false,top:alertBox(s),after,foot:models,tail:s.rememberOffer?rememberOffer(s):'',prep:roomPrep(s),journal:journalOf(s,'column',{tab:'overview'}),ui:info.proposal?.key&&s.proposeUi?.key===info.proposal.key?s.proposeUi:{}});
+  const after=extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(t(item.title))}</h2><p class="sx-small">${esc(t(item.text))}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(t(item.button))}</span>${arrow}</button></section>`).join(''),entries=`${info.marketing?marketingEntry(s):''}${info.people?peopleEntry(s):''}`;
+  // 기기 기억 안내는 지금 칸 그대로(안내 글 · 「이 기기 기억하기」 · 「괜찮아요」) — 넓은 화면은 무대 아래 띠, 휴대폰은 왼쪽 판 끝(2판 ①, 맹검 11-07 「시스템 안내가 내용 자리에 들어옴」).
+  // 나눈 말은 서랍 하나(2판 ①): 되묻기 차례의 답 칸은 왼쪽 판 상태 카드에 있어 서랍 맨 위에 다시 두지 않는다. 의뢰서 · 받은 자료 · 준비 칸은 의뢰서 서랍(roomBriefView — main 밖).
+  return roomView(info,{bar:false,top:alertBox(s),after,entries,tail:s.rememberOffer?rememberOffer(s):'',journal:journalOf(s,'drawer',{tab:'overview'},{pin:info.state!=='ask'}),ui:info.proposal?.key&&s.proposeUi?.key===info.proposal.key?s.proposeUi:{}});
 }
 // 옛 흐름의 현황 · 옛 탭(overviewScreen부터 legacyStage까지)은 의뢰 흐름이 아닌 프로젝트와 체험만 쓴다 — 한국어 그대로.
 // i18n-skip-start

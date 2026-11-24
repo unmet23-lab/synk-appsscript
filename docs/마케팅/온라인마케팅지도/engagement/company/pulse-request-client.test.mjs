@@ -157,7 +157,8 @@ test('the rail keeps the first draft closed until a round exists and marks only 
   assert.equal(open(roomRail({stage:'draft',hasRound:true})).find(item=>item.id==='draft').disabled,false);
   const films=roomRail({stage:'check',hasRound:false,films:true},{tab:'films'});
   assert.equal(open(films).filter(item=>item.now||item.current).length,0,'no stage claims the page');
-  assert.match(films,/class="is-now" aria-current="page" data-room-go="films"/);
+  // 2판 ①: 줄 끝 입구(SYNK 작품 · 마케팅 성과 · 인플루언서 광고)는 머리의 「더 보기」 차림으로 옮겼다 — 단계 막대에는 다섯 칸만.
+  assert.doesNotMatch(films,/data-room-go="films"|sx-steps-foot/);
 });
 const request=extra=>({number:'P-1',status:'submitted',answers:{...normalizeRequestAnswers(answersForServer(full())),models:[]},files:[],asks:[],notes:[],rounds:[],...extra});
 const project=(r,extra={})=>({id:'p',title:'오미톡',stage:'received',versions:[],studio:{assets:[],scenes:[{id:'s',revision:1,duration:2,description:'벤치 위 캔',narration:'',screenText:'',assetId:null,imageUrl:'https://example.com/c.png'}],request:r,strategy:{data:{}}},...extra});
@@ -247,7 +248,7 @@ const roomState2=(r,extra={})=>({mode:'customer',tab:'overview',live:{},project:
 test('a customer with a request gets the new room; the review and delivery tabs keep working inside its rail',()=>{
   const r=request({status:'submitted'});
   const room=projectView(roomState2(r));
-  assert.match(room,/^<div class="sx-room" data-state="check" data-day>/);
+  assert.match(room,/^<div class="sx-room" data-state="check" data-room-a>/);
   assert.doesNotMatch(room,/sx-room-bar/,'the app header is already on top');
   assert.match(room,/지금은 저희 차례예요/);
   const script=request({status:'confirmed',rounds:[{round:1,kind:'script',oneLine:'한 문장',scenes:[{id:'s',revision:1}]}]});
@@ -257,10 +258,10 @@ test('a customer with a request gets the new room; the review and delivery tabs 
   assert.match(projectView({...roomState2(script),tab:'draft',error:'그사이 새 소식이 생겼어요',conflict:true}),/role="alert"[\s\S]*data-action="refresh"/,'a conflict on the draft can be refreshed from the draft');
   // 판 3: 영상이 오기 전 review 탭(옛 링크 · 알림)은 고객 방으로. 판 3b: 묻기는 화면이 아니라 일지 — 옛 contact 탭은 방(일지가 있는 곳). 단계 줄은 앱 머리에 한 번.
   const legacy=projectView({...roomState2(script),tab:'review'});
-  assert.match(legacy,/^<div class="sx-room" data-state="script" data-day>/,'before any video the review tab is the room');
+  assert.match(legacy,/^<div class="sx-room" data-state="script" data-room-a>/,'before any video the review tab is the room');
   assert.doesNotMatch(legacy,/class="sx-steps/,'no step line inside the screen');
   const asking=projectView({...roomState2(request({status:'submitted'})),tab:'contact'});
-  assert.match(asking,/^<div class="sx-room" data-state="check" data-day>/);assert.equal(asking.split('data-form="support"').length-1,1);assert.match(asking,/담당자와 나눈 말/);
+  assert.match(asking,/^<div class="sx-room" data-state="check" data-room-a>/);assert.equal(asking.split('data-form="support"').length-1,1);assert.match(asking,/담당자와 나눈 말/);
   assert.doesNotMatch(asking,/의견은 모아서 한 번에 보내요/,'before any preview there is no such box');assert.match(asking,/담당자에게 물어보세요/);assert.equal(asking.split('후속 문의').length,1);
   const head=headerCrumb(roomState2(r)),actions=header({...roomState2(r),desktopApp:false});
   assert.match(head,/<nav class="sx-steps sx-head-steps" aria-label="단계"><div class="sx-steps-run">/,'on a phone the steps scroll in the head');
@@ -279,7 +280,7 @@ test('the room asks only what is open and offers the extra work staff requested'
   const html=projectView(roomState2(r));
   assert.match(html,/data-form="ask" data-id="a"/);assert.match(html,/끝 화면에 얹어요/);assert.match(html,/「받은 것」에 답했어요/,'an answered ask is a line in the journal');
   const model=projectView(roomState2(request({modelProposal:{modelId:'M06',status:'open',note:'잘 어울려요'}})));
-  assert.match(model,/이 모델로 갈까요/);assert.match(model,/data-room-do="model-accept"/);assert.match(model,/data-room-model="F01"/);assert.match(model,/영상 전 확인/);
+  assert.match(model,/이 모델로 갈까요/);assert.match(model,/data-room-do="model-accept"/);assert.match(model,/data-hall-key="models:M06:[^"]*"/);assert.match(model,/data-hall-id="F01"/);assert.match(model,/영상 전 확인/);
   const kickoff=projectView(roomState2(request(),{kickoff:{enabled:true,status:'waiting'}}));
   // 판 3: 준비 자료 · 바뀐 내용 · 납품 규격은 탭을 옮기지 않고 방 아래 준비 칸으로.
   assert.match(kickoff,/제작 전에 준비할 자료가 있어요/);assert.match(kickoff,/data-room-do="paper" data-paper="kickoff"/);assert.doesNotMatch(kickoff,/data-tab="strategy"/);

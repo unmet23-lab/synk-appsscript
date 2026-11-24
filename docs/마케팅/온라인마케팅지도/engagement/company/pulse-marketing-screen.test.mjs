@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {emptyAnswers} from './public/pulse-app/request-data.mjs';
 import {roomTab,marketingHeads,marketingLine} from './public/pulse-app/room-view.mjs';
-import {projectView,headerCrumb} from './public/pulse-app/views.mjs';
+import {projectView,headerCrumb,headMore} from './public/pulse-app/views.mjs';
 import {roomRail} from './public/pulse-app/film-views.mjs';
 import {MARKETING_KINDS,marketingRunOk,marketingReport,marketingList} from './public/pulse-app/api.mjs';
 import {marketingScreen,aiSearchModel,competitorModel,labelModel,memoModel} from './public/pulse-app/marketing-view.mjs';
@@ -264,19 +264,20 @@ test('the room shows the entry only while the switch is on, and the tab replaces
   const p={id:'p1',title:'합성 음료',ownerName:'김하늘',stage:'received',revision:1,versions:[],messages:[],requestFlow:true,studio:{assets:[],scenes:[],comments:[],sceneReviews:[],strategy:{revision:1,data:{},request:null,confirmation:null},feedbackRounds:{drafts:[],rounds:[],canDraft:true,maxItems:20,nextNumber:1},request:{status:'submitted',number:'P-2026-ABCD',submittedAt:at.from,answers:{...emptyAnswers(),name:'합성 음료',kind:'food',channels:['shorts'],package:'s15'},files:[],asks:[],notes:[],rounds:[]}}};
   const s=(extra={})=>({mode:'customer',tab:'overview',live:{},versionId:'',project:p,...extra});
   const off=projectView(s()),offHead=headerCrumb(s());
-  assert.doesNotMatch(off,/data-room-go="marketing"/);assert.doesNotMatch(offHead,/마케팅 성과/);
+  // 2판 ①: 머리의 입구는 「더 보기」 차림 안이다(입구 조건은 그대로).
+  assert.doesNotMatch(off,/data-room-go="marketing"/);assert.doesNotMatch(offHead,/마케팅 성과/);assert.doesNotMatch(headMore(s()),/marketing/);
   const on={marketing:{...ready(),projectId:'p1'}};
   const room=projectView(s(on));
   assert.match(room,/<section class="sx-extra sx-mk-entry" data-room-in><div><h2>마케팅 성과<\/h2><p class="sx-small">합성 브랜드는 이름 없는 질문에서 한 번 나왔습니다\.<\/p><\/div><button type="button" class="sx-go" data-room-go="marketing">/);
-  assert.match(headerCrumb(s(on)),/data-room-go="marketing">마케팅 성과<\/button>/);
+  assert.match(headMore(s(on)),/<button type="button" class="sx-more-item" data-room-go="marketing">마케팅 성과<\/button>/);assert.doesNotMatch(headerCrumb(s(on)),/data-room-go="marketing"/,'not in the stage bar');
   assert.doesNotMatch(projectView(s({marketing:{...ready(),projectId:'other'}})),/sx-mk-entry/,'another project\'s state is ignored');
   const loading=projectView(s({...on,tab:'marketing'}));
   assert.match(loading,/class="sx-shell sx-room sx-mk"/);assert.match(loading,/리포트를 불러오고 있어요\./);assert.match(loading,/id="room-journal"/);
   const drawn=projectView(s({...on,tab:'marketing',marketingView:marketingScreen}));
   assert.match(drawn,/id="mk-ai-search"/);
-  assert.match(headerCrumb(s({...on,tab:'marketing'})),/class="is-now" aria-current="page" data-room-go="marketing"/);
-  assert.match(projectView(s({marketing:{projectId:'p1',on:false,status:'off',heads:[],picks:{},reports:{}},tab:'marketing'})),/sx-room-hero/,'switch off: the room, not the tab');
-  assert.match(roomRail({stage:'check',films:true,marketing:false},{tab:'overview'}),/<div class="sx-steps-foot sx-small"><button type="button" class=""  data-room-go="films">SYNK 작품<\/button><\/div>/,'films-only foot is byte-for-byte what it was');
+  assert.match(headMore(s({...on,tab:'marketing'})),/class="sx-more-item is-now" data-room-go="marketing" aria-current="page"/);
+  assert.match(projectView(s({marketing:{projectId:'p1',on:false,status:'off',heads:[],picks:{},reports:{}},tab:'marketing'})),/<div class="sx-room" data-state="check" data-room-a/,'switch off: the room, not the tab');
+  assert.doesNotMatch(roomRail({stage:'check',films:true,marketing:false},{tab:'overview'}),/sx-steps-foot|data-room-go="films"/,'SYNK 작품 moved from the rail foot to 「더 보기」');
 });
 
 test('the tab stays inside the screen rules: no style attributes, no service names or promises in the code, the shell does not store reports',()=>{
@@ -286,7 +287,7 @@ test('the tab stays inside the screen rules: no style attributes, no service nam
   assert.doesNotMatch(body,/매출|순위|노출을 (?:늘|올)|보장|1위|최고|최초/,'no sales, rank or exposure promises');
   assert.deepEqual([...new Set(body.match(/https?:\/\/[^'"`\s]+/g))],['https://www.facebook.com/ads/library/?id='],'the only outside link is the ad library');
   const sw=read('sw.js');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v78-door-hall-20261124';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v79-room-a-20261124';/);
   assert.match(sw,/RUNTIME\.push\(BASE\+'marketing-view\.mjs'\);/);
   assert.doesNotMatch(sw.slice(sw.indexOf('const BASE'),sw.indexOf('const RUNTIME')),/marketing-view/,'not precached for every customer');
   // 서버의 /pulse-app/ 정적 허용 목록에는 있다(없으면 칸을 열 때 모듈이 404라 「불러오지 못했어요」만 선다).

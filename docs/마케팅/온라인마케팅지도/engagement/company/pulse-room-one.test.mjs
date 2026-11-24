@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {emptyAnswers} from './public/pulse-app/request-data.mjs';
 import {roomTab,roomRoute,roomModel,roomStage,ROOM_STAGES} from './public/pulse-app/room-view.mjs';
-import {projectView,header,headerCrumb} from './public/pulse-app/views.mjs';
+import {projectView,header,headerCrumb,roomBriefView} from './public/pulse-app/views.mjs';
 import {roomView} from './public/pulse-app/film-views.mjs';
 
 // 판 3a 「고객 방 하나로」(2026-11-08, docs/마케팅/PULSE_의뢰흐름_20261104/판3_설계.md 끝 절 「11-08 고침」):
@@ -80,12 +80,14 @@ test('one head: the name leads back to the room, the number and five steps sit i
   for(const [name,s] of Object.entries(ROOM_TABS)){
     const html=projectView(s),head=headerCrumb(s),actions=header({...s,desktopApp:false});
     assert.doesNotMatch(html,/class="sx-steps|sx-room-project|sx-dp-rail|sx-dr-back|sx-dr-left-foot|sx-room-bar/,name+': no second head or step line inside the screen');
-    assert.match(head,/^<button type="button" class="sx-head-title" data-room-go="room" title="고객 방으로"><b class="crumb-title">오미톡<\/b><\/button><span class="crumb-no">접수 번호 <span class="mono">P-2026-ABCD<\/span><\/span>/,name);
+    // 2판 ①(11-24): 접수 번호는 머리를 떠나 의뢰서 서랍 맨 위와 결제 카드로 갔다(pulse-room-a.test.mjs).
+    assert.match(head,/^<button type="button" class="sx-head-title" data-room-go="room" title="고객 방으로"><b class="crumb-title">오미톡<\/b><\/button><i class="sx-head-break" aria-hidden="true"><\/i><nav class="sx-steps sx-head-steps"/,name);
+    assert.doesNotMatch(head,/crumb-no|P-2026-ABCD/,name);
     assert.equal(head.split('class="sx-step ').length-1,5,name);assert.equal((head.match(/aria-current="page"/g)||[]).length<=1,true,name);
     assert.equal(actions.split('data-room-do="journal"').length-1,1,name+': one way to ask — the journal');assert.match(actions,/data-action="notifications"/,name+': notifications stay apart from asking');
   }
   assert.match(headerCrumb(ROOM_TABS.contact),/class="sx-step is-now" aria-current="page"\s+data-room-go="check"/,'판 3b: an old contact tab is the room, so its stage is the page');
-  assert.match(header({...ROOM_TABS.contact,desktopApp:false}),/class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>나눈 말</);
+  assert.match(header({...ROOM_TABS.contact,desktopApp:false}),/class="sx-head-ask sx-head-icon" data-room-do="journal" aria-controls="room-journal" data-journal-count><svg class="sx-head-glyph"[^>]*>[\s\S]*?<\/svg><span>나눈 말<\/span>/);
   assert.match(headerCrumb(ROOM_TABS.deliver),/class="sx-step is-now" aria-current="page"\s+data-room-go="review">영상 · 납품</);
   // 옛 프로젝트 머리는 그대로: 단계 낱말 · 전달일, 묻기 단추 없음.
   const old={mode:'customer',tab:'overview',live:{},project:{id:'old',title:'옛',stage:'review',versions:[],messages:[],studio:{scenes:[],concepts:[],references:[],assets:[],comments:[],sceneReviews:[]}}};
@@ -93,7 +95,7 @@ test('one head: the name leads back to the room, the number and five steps sit i
   const app=read('app.mjs');
   assert.match(app,/document\.documentElement\.classList\.toggle\('has-room-head',roomCustomer\(\)\)/,'the head look follows every render, so it never outlives the project');
   assert.match(app,/document\.querySelector\('\.app-header'\)\?\.addEventListener\('click',event=>\{if\(!roomCustomer\(\)\)return;/,'the head sits outside main, so it has its own listener');
-  assert.match(app,/previousFocus=remote&&\(main\.contains\(document\.activeElement\)\|\|headBox\?\.contains\(document\.activeElement\)\)/,'live refresh keeps keyboard focus in the head (Fable N2)');
+  assert.match(app,/previousFocus=remote&&\(main\.contains\(document\.activeElement\)\|\|headBox\?\.contains\(document\.activeElement\)\|\|briefHost\?\.contains\(document\.activeElement\)\)/,'live refresh keeps keyboard focus in the head (Fable N2) and in the brief drawer (2판 ①)');
   const legacyCss=read('film-legacy.css'),css=read('film.css');
   assert.match(legacyCss,/html\.view-dr:not\(\.has-room-head\) \.app-header>\.header-crumb/,'the example head inside the screen keeps its name and steps');assert.match(legacyCss,/html\.has-room-head \.sx-dr-left,\.sx-dr:has\(>\.sx-room-bar\.is-head\) \.sx-dr-left\{padding-top:12px\}/,'no 56px gap under the in-flow phone head (Fable N4), in the example too');
   assert.match(css,/\.sx-head-steps\{flex:none;flex-wrap:nowrap/,'the wide head stays one line so it never covers the version picker (Fable N3)');
@@ -164,11 +166,12 @@ test('the video box lays the still from the last picture round under the hold po
 });
 test('old tab roads close: strategy is the room, and changes, preparation and specs sit below it without links to absent screens (D9)',()=>{
   const p=roomProject({status:'confirmed'},{changes:{enabled:true,status:'changed',changes:[]},kickoff:{enabled:true,status:'waiting'}},{deliverables:{revision:2,request:{deliverableRevision:2},confirmation:null,items:[],history:[]}});
-  const html=projectView(state(p,{tab:'strategy'}));
-  assert.match(html,/^<div class="sx-room" data-state="prepare" data-day>/);assert.doesNotMatch(html,/data-form="strategy"/);
-  for(const key of ['changes','kickoff','deliverables']){assert.match(html,new RegExp(`data-room-do="paper" data-paper="${key}"`),key);assert.match(html,new RegExp(`<div data-paper-for="${key}">`),key);}
-  assert.doesNotMatch(html,/data-action="(changes-strategy|kickoff-reference|kickoff-strategy|tab)"/,'nothing leads to a screen this customer does not have');
-  assert.match(html,/자료 더 보내기」로, 링크는 「담당자에게 묻기」로/,'Fable N6');assert.match(html,/class="section-gap panel-card deliverables-panel"/);
+  const html=projectView(state(p,{tab:'strategy'})),brief=roomBriefView(state(p,{tab:'strategy'}));
+  assert.match(html,/^<div class="sx-room" data-state="prepare" data-room-a>/);assert.doesNotMatch(html+brief,/data-form="strategy"/);
+  // 2판 ①: 준비 칸은 의뢰서 서랍(main 밖 #room-brief) 안에 있고, 방의 안내 단추가 서랍의 그 칸으로 데려간다.
+  for(const key of ['changes','kickoff','deliverables']){assert.match(html,new RegExp(`data-room-do="paper" data-paper="${key}"`),key);assert.match(brief,new RegExp(`<div data-paper-for="${key}">`),key);assert.doesNotMatch(html,new RegExp(`data-paper-for="${key}"`),key);}
+  assert.doesNotMatch(html+brief,/data-action="(changes-strategy|kickoff-reference|kickoff-strategy|tab)"/,'nothing leads to a screen this customer does not have');
+  assert.match(brief,/자료 더 보내기」로, 링크는 「담당자에게 묻기」로/,'Fable N6');assert.match(brief,/class="section-gap panel-card deliverables-panel"/);
   const withSpecs=delivered();withSpecs.studio.deliverables={revision:2,items:[],history:[]};
   const specs=projectView(state(withSpecs,{tab:'history'}));
   assert.match(specs,/data-room-do="paper" data-paper="deliverables">납품 규격 보기/);
@@ -212,13 +215,15 @@ test('photo orders say photo words while we prepare and make (판 2 Fable FA2)',
 
 test('argon 3a: the example draft scenes keep the head, the ask hint only while a preview is open, the wide-tablet films road, the delivery words',()=>{
   const demo=read('demo-film.mjs');
-  assert.match(demo,/root\.innerHTML=draftView\(SCRIPT,\{head:draftHead,journal:sideJournal\('script'\)\}\);bindDraftJournal\(root,'script'\);mountRoom\(root,/);assert.match(demo,/root\.innerHTML=draftView\(DRAFT,\{head:draftHead,journal:sideJournal\('draft'\)\}\);bindDraftJournal\(root,'draft'\);mountRoom\(root,/);
+  // 2판 ①: 예시 1차안 화면도 머리의 「의뢰서」가 열 서랍을 함께 그린다.
+  assert.match(demo,/root\.innerHTML=draftView\(SCRIPT,\{head:draftHead,journal:sideJournal\('script'\)\}\)\+exampleBrief\(\);bindDraftJournal\(root,'script'\);mountRoom\(root,/);assert.match(demo,/root\.innerHTML=draftView\(DRAFT,\{head:draftHead,journal:sideJournal\('draft'\)\}\)\+exampleBrief\(\);bindDraftJournal\(root,'draft'\);mountRoom\(root,/);
   assert.match(read('film-views.mjs'),/const host=root\.querySelector\('\.sx-room,\.sx-shell,\.sx-draft'\)/);
   // 판 3b: 영상 의견 안내는 영상 화면 일지의 묻기 칸 아래 한 줄(D4), 승인 뒤 · 최종본에는 없다.
   const open=projectView(state(roomProject({status:'confirmed',rounds:[round('images')]},{stage:'review',versions:[preview]}),{tab:'review'}));
   assert.match(open,/<p class="sx-j-hint" data-when="typing">영상에서 고칠 곳은/);
   for(const p of [roomProject({status:'confirmed',approvedAt:at,rounds:[round('images')]},{stage:'review',versions:[approved]}),delivered()])assert.doesNotMatch(projectView(state(p,{tab:'review'})),/영상에서 고칠 곳은/,'no notes can be left after approval');
-  assert.match(read('film.css'),/\(min-width:821px\) and \(max-width:1000px\) and \(min-aspect-ratio:10001\/10000\)\{\.sx-head-steps \.sx-steps-foot\{display:none\}\.sx-room>\.sx-room-films\{display:block\}\}/);
+  // 2판 ①: 줄 끝 입구 셋은 「더 보기」로 갔다 — 821~1000 영어 머리는 단계 이름 글을 먼저 감춘다(막대는 남는다).
+  assert.match(read('film.css'),/\(min-width:821px\) and \(max-width:1000px\) and \(min-aspect-ratio:10001\/10000\)\{html:lang\(en\) \.sx-head-stage\{display:none\}\}/);
   const done=projectView(state(delivered(),{tab:'history'}));
   // Fable 최종(11-08) P2: 1366×650 기둥에 들게 단추는 문장 뒤 같은 줄, 수령 확인 뒤에는 「언제든 다시」를 확인 줄에 합친다.
   assert.match(done,/파일은 이 방이 열려 있는 동안 다시 받으실 수 있어요\. 다른 형식이나 길이가 필요하면 담당자에게 알려 주세요\. <span class="sx-deliver-links"><button type="button" class="sx-quiet sx-j-ask-open " data-room-do="journal">담당자에게 묻기<\/button><\/span><\/p>/);

@@ -113,7 +113,8 @@ test('잇는 자리: 손님 칸은 결제 뒤 · 스위치가 켜진 방에서�
   assert.match(views,/if\(view==='people'&&peopleOn\(s\)\)return peopleRoom\(s\);/);
   assert.match(views,/\$\{info\.people\?peopleEntry\(s\):''\}/);
   assert.match(views,/\$\{s\.staffIntake\?\.canEdit\?btn\(STAFF_HEAD\.roster,'people-roster'/);
-  assert.match(film,/p\.people&&\['people',t\('인플루언서 광고'\)\]/);
+  // 2판 ①: 머리의 입구는 단계 줄 밑이 아니라 「더 보기」 차림이다(조건 info.people 그대로).
+  assert.match(views,/info\.people&&go\('people',t\('인플루언서 광고'\)\)/);assert.doesNotMatch(film,/\['people',t\('인플루언서 광고'\)\]/);
   assert.match(film,/\$\{p\?\.people\?`<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-go="people">/);
   assert.match(room,/\['draft','films','pick','marketing','people'\]\.includes\(id\)/);
   assert.match(sw,/RUNTIME\.push\(BASE\+'people-view\.mjs'\);/,'손님 칸 모듈은 받을 때 담는다');assert.doesNotMatch(sw,/people-roster-view/,'직원 화면은 손님 셸에 담지 않는다');

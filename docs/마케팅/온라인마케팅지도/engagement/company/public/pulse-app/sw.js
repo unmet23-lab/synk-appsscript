@@ -83,7 +83,8 @@
 // v77(11-23): 인플루언서 광고 창 조각 ② — 손님 칸의 「내 의뢰」 · 의뢰 시트, 일지 줄, 끝맺음 한 줄, 직원 의뢰 확인의 의뢰 칸 · 제작 보드 꼬리표. 미리 받는 목록은 그대로다.
 // v78(11-24): 첫 화면 1쪽을 시안 A 「캐스팅 복도」로 — 왼쪽 문 판(다시 여는 양식 한 벌) · 오른쪽 모델 띠(hall.mjs, 목록에 더함), 들어가는 순간.
 // film-home.mjs · app.mjs · film.css · i18n/en.mjs가 바뀌었다. 모델 그림 · 걷는 영상은 캐스팅북(synk.im) 주소라 미리 받지 않는다.
-const CACHE = 'synk-pulse-shell-v78-door-hall-20261124';
+// v79(11-24): 2판 ① 방 틀과 머리 — 방을 시안 A의 검정 왼쪽 판 + 무대로(낮 판을 거둠), 머리 다섯 칸 막대 · 아이콘 셋(의뢰서 서랍 · 나눈 말 서랍 · 「더 보기」), 무대의 복도 · 한 명 띠(hall.mjs). 미리 받는 목록은 그대로다.
+const CACHE = 'synk-pulse-shell-v79-room-a-20261124';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','entry-handoff.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

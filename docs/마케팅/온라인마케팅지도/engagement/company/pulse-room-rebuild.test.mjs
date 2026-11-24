@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PACKAGES,termsOf,dueDay,revisionNote,briefRows,emptyAnswers,KINDS} from './public/pulse-app/request-data.mjs';
 import {roomModel,deskChecks} from './public/pulse-app/room-view.mjs';
-import {roomRail,roomView} from './public/pulse-app/film-views.mjs';
+import {roomRail,roomView,briefView} from './public/pulse-app/film-views.mjs';
 
 // 고객 앱 안쪽 재개발 판 1a(2026-11-07, docs/마케팅/PULSE_의뢰흐름_20261104/판1_설계.md): 기간 · 수정 한 줄, 뒷문, 작은 조각.
 globalThis.location??=new URL('http://localhost/pulse-app/');
@@ -64,11 +64,13 @@ test('asking is the journal: the head opens it where you are and the stage stays
   assert.doesNotMatch(rail,/data-room-do="(contact|journal)"/,'the way to ask is once, in the head actions');
   const views=read('views.mjs');
   // 다국어 판 2: 「나눈 말」은 번역 틀을 지난다(한국어 화면은 글자 그대로).
-  assert.ok(views.includes(`<button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>\${esc(t('나눈 말'))}`));
+  // 2판 ①: 머리 오른쪽은 아이콘 셋 — 「나눈 말」은 그림 아래 이름이다.
+  assert.ok(views.includes(`<button type="button" class="sx-head-ask sx-head-icon" data-room-do="journal" aria-controls="room-journal" data-journal-count>\${HEAD_ICON.talk}<span>\${esc(t('나눈 말'))}</span>`));
   assert.doesNotMatch(views,/function contactRoom\(/,'the old ask screen is gone');
   const journal=read('film-views.mjs');assert.ok(journal.includes('<form class="sx-j-say" data-form="support">'));
   assert.doesNotMatch(journal.slice(journal.indexOf('export function journalView('),journal.indexOf('export const journalAsk')),/data-action="refresh"/,'the journal has no standing refresh link (live updates bring answers)');
-  assert.match(roomView(model),/data-room-brief/);
+  // 2판 ①: 의뢰서 · 받은 자료는 방 아래 인화지가 아니라 의뢰서 서랍(briefView)에 있다.
+  assert.doesNotMatch(roomView(model),/data-room-brief|sx-room-paper/);assert.match(briefView(model),/<aside class="sx-brief" id="room-brief-box" data-brief role="dialog" aria-modal="true"/);
 });
 test('pictures carry their words on a shade, not in a black box',()=>{
   const css=read('film.css');

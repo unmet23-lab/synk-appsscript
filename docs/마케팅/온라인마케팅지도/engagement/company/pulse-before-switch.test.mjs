@@ -115,7 +115,8 @@ test('닫힌 다시 쓰기 방: 인물이 실리지 않아도 내 모델로 맡�
   assert.equal(on.split(personaReuseLine()).length-1,1,'한 줄');
   assert.ok(on.includes('data-room-do="my-models"')&&!on.includes('data-room-do="keep"'));
   assert.equal(on.replace(personaReuseLine(),''),off,'그 줄 말고는 같다');
-  for(const state of ['login','ask','member','pending'])assert.ok(!roomView({...model,keep:{projectId:'p1',state}},{bar:false}).includes('data-room-do'),'인물이 없는 방의 다른 회원 상태에는 줄이 없다: '+state);
+  // 2판 ①: 방에는 의뢰서 칩 같은 다른 단추가 늘 있으니 「내 모델 열기 · 모아 두기」 줄만 본다.
+  for(const state of ['login','ask','member','pending'])assert.ok(!/data-room-do="(my-models|keep)"/.test(roomView({...model,keep:{projectId:'p1',state}},{bar:false})),'인물이 없는 방의 다른 회원 상태에는 줄이 없다: '+state);
   assert.ok(EN['내 모델로 맡긴 의뢰인데, 지금은 이 방에서 그 모델을 보여 드릴 수 없어요. 모델 상태는 내 모델에서 확인해 주세요.'],'영어 사전');
   const app=read('app.mjs');
   assert.match(app,/const reuseAsked=\(\)=>s\.project\?\.studio\?\.request\?\.answers\?\.modelChoice==='persona';/);
@@ -168,8 +169,14 @@ test('보통 방의 「내 모델」 입구(판 4 운영 시험 P3): 스위치�
   assert.equal(EN['브랜드에 모델을 보관해 두면 다음 광고에 다시 쓸 수 있어요.'],'Your brand can keep models to reuse in future ads.');
   const views=read('views.mjs');
   // Fable 5.2 F4: 위 인물 칸이 실제로 「내 모델 열기」를 그린 방만 뺀다(인물이 끝난 방 turn end는 personaKeep이 그리지 않는다).
-  assert.match(views,/const mine=s\.keep\?\.projectId===p\.id\?s\.keep\.state:'',kept=info\.persona\?info\.persona\.turn!=='end'&&\['member','reuse'\]\.includes\(mine\):mine==='reuse',models=s\.mode==='customer'&&!s\.demo&&s\.myModelsOn===true&&!kept\?personaModelsLine\(\):'';/);
-  assert.match(views,/roomView\(info,\{bar:false,top:alertBox\(s\),after,foot:models,/);
+  // 2판 ①: 그 입구는 방 아래 띠가 아니라 머리 「더 보기」의 「내 모델」이다. 조건은 그대로.
+  assert.match(views,/const keptModels=s=>\{const p=s\.project,persona=roomModel\(p\)\.persona,mine=s\.keep\?\.projectId===p\.id\?s\.keep\.state:'';return persona\?persona\.turn!=='end'&&\['member','reuse'\]\.includes\(mine\):mine==='reuse';\};/);
+  assert.match(views,/s\.mode==='customer'&&!s\.demo&&s\.myModelsOn===true&&!keptModels\(s\)&&\x60<button type="button" class="sx-more-item" data-room-do="my-models">/);
+  assert.doesNotMatch(views,/foot:models|personaModelsLine/,'the room foot line is gone');
+  const {headMore}=await import('./public/pulse-app/views.mjs'),base={mode:'customer',tab:'overview',live:{},project:reuseProject(),desktopApp:false};
+  assert.match(headMore({...base,myModelsOn:true}),/data-room-do="my-models">내 모델</);
+  assert.doesNotMatch(headMore({...base,myModelsOn:false}),/my-models/,'switch off: no entry');
+  assert.doesNotMatch(headMore({...base,myModelsOn:true,keep:{projectId:'p1',state:'reuse'}}),/my-models/,'a reuse room already shows 「내 모델 열기」');
   assert.match(read('app.mjs'),/function noteFeatures\(features\)\{if\(s\.mode!=='customer'\|\|!features\)return;projectFeatures=features;s\.myModelsOn=features\.myModels===true;/,'스위치 값은 그 프로젝트 응답의 것');
   // Fable 5.2 F3: 로그인 칸 · 빈 목록 안내는 그 단추가 있는 방(맞춤 인물을 만드는 의뢰)을 밝힌다 — 보통 방에서 들어온 손님이 없는 단추를 찾지 않게.
   const mine=read('my-models.mjs');

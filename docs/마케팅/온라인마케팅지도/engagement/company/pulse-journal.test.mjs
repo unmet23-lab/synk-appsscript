@@ -69,18 +69,20 @@ test('new lines are the ones from staff after this device last saw the journal; 
   // T(15) 뒤: 담당자 답 · 프로젝트 답변 · 최종본 + 열린 되묻기(자동 안내 m2는 T(15) 그 시각이라 아님, 내 줄은 세지 않는다)
   assert.equal(journalNew(j,Date.parse(T(15))),4);
   const html=header({...state(full()),journalSeen:Date.parse(T(15)),desktopApp:false});
-  assert.match(html,/<button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal" data-journal-count>나눈 말 <b class="sx-no">4<\/b><span class="sr">개 새 말<\/span><i class="sx-head-dot" aria-hidden="true"><\/i><span class="sr">, 답할 것이 있어요<\/span><\/button>/);
-  assert.match(header({...state(roomProject()),journalSeen:NaN,desktopApp:false}),/data-journal-count>나눈 말<\/button>/,'nothing new, nothing to answer');
+  // 2판 ①: 머리 오른쪽은 아이콘 셋 — 「나눈 말」은 그림 아래 이름, 새 말 수와 점은 그 뒤에 그대로.
+  assert.match(html,/<button type="button" class="sx-head-ask sx-head-icon" data-room-do="journal" aria-controls="room-journal" data-journal-count><svg class="sx-head-glyph"[^>]*>[^]*?<\/svg><span>나눈 말<\/span> <b class="sx-no">4<\/b><span class="sr">개 새 말<\/span><i class="sx-head-dot" aria-hidden="true"><\/i><span class="sr">, 답할 것이 있어요<\/span><\/button>/);
+  assert.match(header({...state(roomProject()),journalSeen:NaN,desktopApp:false}),/data-journal-count><svg class="sx-head-glyph"[^>]*>[^]*?<\/svg><span>나눈 말<\/span><\/button>/,'nothing new, nothing to answer');
   const app=read('app.mjs');
   assert.match(app,/const seenKey=\(\)=>'pulse-journal-seen:'\+identity\(\);/,'stored per device and per project');
   assert.match(app,/try\{const raw=localStorage\.getItem\(seenKey\(\)\);/,'a blocked storage never breaks the room');
   assert.match(app,/if\(!Number\.isFinite\(seen\)\)\{seen=journalModel\(s\.project\)\.latestAt;/,'first visit starts at zero');
 });
 
-test('one journal per screen, in its place: the room column, the dark rooms side, the direction and films drawer (E1)',()=>{
+// 2판 ①: 방의 일지도 단이 아니라 서랍이다(머리 「나눈 말」이 연다).
+test('one journal per screen, in its place: the room and direction and films drawer, the dark rooms side (E1)',()=>{
   const cases={
-    check:[state(roomProject()),'column'],
-    ask:[state(roomProject({asks:[{id:'a',label:'로고 파일',why:'끝 화면에 얹어요',status:'open',at:T(2)}]})),'column'],
+    check:[state(roomProject()),'drawer'],
+    ask:[state(roomProject({asks:[{id:'a',label:'로고 파일',why:'끝 화면에 얹어요',status:'open',at:T(2)}]})),'drawer'],
     direction:[state(roomProject({status:'confirmed',directionProposal:direction})),'drawer'],
     pick:[state(roomProject({status:'confirmed',directionProposal:{...direction,status:'chosen',chosenId:'a',answeredAt:T(7)}}),{tab:'pick'}),'drawer'],
     script:[state(roomProject({status:'confirmed',rounds:[round()]}),{tab:'draft'}),'side'],
@@ -88,13 +90,15 @@ test('one journal per screen, in its place: the room column, the dark rooms side
     review:[state(roomProject({status:'confirmed',approvedAt:T(12),rounds:[round('images')]},{stage:'review',versions:[video('v1','1차 영상')]}),{tab:'review'}),'side'],
     deliver:[state(full(),{tab:'history'}),'side'],
     films:[state(roomProject(),{tab:'films'}),'drawer'],
-    contact:[state(roomProject(),{tab:'contact'}),'column'],
+    contact:[state(roomProject(),{tab:'contact'}),'drawer'],
   };
   for(const [name,[s,place]] of Object.entries(cases)){
     const html=projectView(s);
     assert.equal(html.split('data-journal ').length-1,1,name+': one journal');assert.equal(html.split('data-form="support"').length-1,1,name+': one ask box');
     assert.match(html,new RegExp(`id="room-journal" data-journal data-place="${place}"`),name);
-    assert.doesNotMatch(html,/data-state="contact"|class="sx-note"|class="sx-asks"/,name+': the old ask screen, staff note and ask list live in the journal now');
+    // 2판 ①: 열린 되묻기의 답 칸은 왼쪽 판 상태 카드(askList)다 — 일지는 같은 칸을 다시 세우지 않는다.
+    assert.doesNotMatch(html,name==='ask'?/data-state="contact"|class="sx-note"/:/data-state="contact"|class="sx-note"|class="sx-asks"/,name+': the old ask screen and staff note live in the journal now');
+    if(name==='ask'){const j=html.indexOf('<aside class="sx-journal');assert.ok(html.indexOf('class="sx-asks"')>0&&html.indexOf('class="sx-asks"')<j,'ask: the answer box sits in the left panel');assert.doesNotMatch(html.slice(j),/data-form="ask"/,'ask: the journal does not repeat it');}
     assert.equal((html.match(/data-form="ask"/g)||[]).length,['ask','deliver'].includes(name)?1:0,name+': an open ask is answered right in the journal');
   }
   // 영상 화면: 승인 전 시안을 볼 때만 「의견 칸으로」 한 줄(D4), 넓은 화면 묻기 링크는 걷고 휴대폰 시트 단추만
@@ -138,14 +142,15 @@ test('notifications: a reply opens the journal line on the screen you are on (E7
 test('the drawer and sheet: one opener, Esc and the scrim close, focus returns, the video keys stay off while open (E6)',()=>{
   const app=read('app.mjs'),review=read('film-review.mjs'),views=read('film-views.mjs');
   assert.match(views,/export const journalOverlay=box=>!!box&&\(box\.dataset\.place==='drawer'\|\|box\.dataset\.place==='side'&&/,'one rule, shared by the app and the example');
-  assert.match(read('demo-film.mjs'),/journalOverlay,journalSetOpen,journalFocus,journalRelease(?:,JOURNAL_SHEET)?\} from '\.\/film-views\.mjs'/);
+  assert.match(read('demo-film.mjs'),/journalOverlay,journalSetOpen,journalFocus,journalRelease(?:,JOURNAL_SHEET)?(?:,brief\w+)*\} from '\.\/film-views\.mjs'/);
   assert.match(views,/export const journalFocus=box=>\{const title=box\?\.querySelector\('#room-journal-title'\)/,'opening focuses the title, not the box — no phone keyboard over the lines, no released video still (Fable G3)');
   // 판 3c(Fable F2 · FA1): 머리 · 시각 · 이 순간 시계는 보이는 그림의 자리 하나, 레일 채움만 멈춰 선 동안 비운다. 기다림을 풀면 다시 그린다 — 일지 안 초점은 여전히 풀지 않는다.
   assert.match(review,/const t=video\.currentTime\|\|0,total=duration\(\);/);assert.match(review,/line\?\.style\.setProperty\('--f',String\(total&&!video\.dataset\.holding\?t\/total:0\)\);/);assert.match(review,/if\(clock&&seconds&&seconds\.value===''\)clock\.textContent=short\(t\);/);assert.match(read('film-legacy.css'),/\.sx-line::before\{[^}]*calc\(var\(--f,0\)\*100%\)/);
   assert.match(review,/if\(event\.target\.matches\?\.\('textarea,input'\)&&!event\.target\.closest\?\.\('\[data-journal\]'\)\)\{poster\?\.release\(\);paintTime\(\);\}/);
   assert.match(app,/if\(animate&&s\.journalOpen\)\{s\.journalOpen=false;journalOpener=null;\}/,'a new screen starts with the drawer closed (Fable G9)');
   assert.match(app,/journalTop=main\.querySelector\('\[data-journal\]'\)\?\.scrollTop\|\|0/,'a live refresh keeps where you read (Fable G8)');
-  assert.match(app,/document\.addEventListener\('keydown',event=>\{if\(event\.key!=='Escape'\|\|!s\.journalOpen\|\|document\.querySelector\('\.sx-round-sheet\[open\],dialog\[open\]'\)\)return;closeJournal\(\);\}\);/,'the notes sheet closes first');
+  // 2판 ①: Esc는 의견 시트 · 대화상자 → 일지 → 의뢰서 서랍 → 「더 보기」 순으로 하나씩 닫는다.
+  assert.match(app,/document\.addEventListener\('keydown',event=>\{if\(event\.key!=='Escape'\|\|document\.querySelector\('\.sx-round-sheet\[open\],dialog\[open\]'\)\)return;if\(s\.journalOpen\)\{closeJournal\(\);return;\}if\(s\.briefOpen\)\{closeBrief\(\);return;\}/,'the notes sheet closes first');
   assert.match(app,/s\.tab=view;s\.error='';s\.journalOpen=false;/,'moving to another screen closes it');
   assert.match(app,/\(back\?\.isConnected\?back:document\.querySelector\('\.app-header \[data-room-do="journal"\]'\)\)\?\.focus/,'focus goes back to the opener');
   assert.match(review,/document\.querySelector\('dialog\[open\],\.sx-round-sheet\[open\],\[data-journal\]\.is-open'\)/,'space and arrows do not move the video behind the sheet');
@@ -159,7 +164,7 @@ test('the drawer and sheet: one opener, Esc and the scrim close, focus returns, 
   // 다시 검수(-b): <dialog>는 스스로 뒤를 잠그니 일지가 잠그지 않는다(FA1), 연 채 다시 그릴 때는 창을 볼 때만 「봤다」(FA2), 예시 장면을 바꾸면 표식을 걷는다(FA3).
   assert.match(views,/!node\.matches\('\.sx-j-scrim,\.notice,#notice,dialog,script,style,link'\)/);
   assert.match(app,/if\(journalOverlay\(box\)\)\{if\(s\.journalOpen\)markJournalSeen\(\);return;\}/);
-  assert.match(read('demo-film.mjs'),/classList\.remove\('view-dr','has-journal-open'\);journalRelease\(\);/);
+  assert.match(read('demo-film.mjs'),/classList\.remove\('view-dr','has-journal-open','has-brief-open'\);journalRelease\(\);briefRelease\(\);/,'the brief drawer is cleared the same way (2판 ①)');
   // 창 폭 · 방향이 바뀌어 시트가 단이 되면 연 상태를 푼다(F3). 「봤다」(짝 알림 읽음)는 창을 보고 있을 때만, 직접 연 것은 늘(F5).
   assert.match(app,/window\.matchMedia\?\.\(JOURNAL_SHEET\)\?\.addEventListener\?\.\('change',\(\)=>\{if\(s\.journalOpen&&!journalOverlay\(journalBox\(\)\)\)/);
   assert.match(app,/if\(!opened&&\(document\.hidden\|\|document\.hasFocus\?\.\(\)===false\)\)\{journalSeenLater=true;return;\}/);
@@ -230,7 +235,8 @@ test('small grey words and underlined links stay counted: outside the journal un
     deliver:[state(full(),{tab:'history'}),16,2],room:[state(full()),16,2],
   };
   for(const [name,[s,small,links]] of Object.entries(screens)){
-    const html=projectView(s),at=html.indexOf('<aside class="sx-journal'),end=html.indexOf('</aside>',at)+8,inside=html.slice(at,end),outside=html.slice(0,at)+html.slice(end);
+    // 2판 ①: 무대의 복도 그림 이름표(같은 줄 세 벌, inert)는 그림의 일부라 세지 않는다.
+    const html=projectView(s),at=html.indexOf('<aside class="sx-journal'),end=html.indexOf('</aside>',at)+8,inside=html.slice(at,end),outside=(html.slice(0,at)+html.slice(end)).replace(/<span class="sx-hall-tag">[^]*?<\/span><\/span>/g,'').replace(/<p class="sx-hall-note[^]*?<\/p>/g,'');
     const n=(text,re)=>(text.match(re)||[]).length;
     assert.ok(n(outside,/\bsx-small\b/g)<=small,`${name}: small outside ${n(outside,/\bsx-small\b/g)}`);assert.ok(n(outside,/\bsx-link\b/g)<=links,`${name}: links outside ${n(outside,/\bsx-link\b/g)}`);
     assert.equal(n(inside,/\bsx-(small|link)\b/g),0,name+': the journal has one meta line per row and quiet buttons only');

@@ -36,7 +36,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','hall.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v78-door-hall-20261124';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v79-room-a-20261124';/);
   // 1쪽 복도의 모델 그림 · 걷는 영상은 캐스팅북 주소(synk.im)라 기기에 담지 않는다(2026-11-24).
   assert.doesNotMatch(sw,/-loop\.mp4|wall\.webp/,'the corridor media are not stored on the device');
 });
