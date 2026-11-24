@@ -152,10 +152,13 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .ans-wrap{position:relative;margin-top:16px}
 .ans-big{appearance:none;position:absolute;right:10px;bottom:10px;height:30px;padding:0 12px;border:1px solid var(--hair-strong);border-radius:999px;background:rgba(0,0,0,.6);font:500 12px/1 var(--sans);color:var(--soft);cursor:pointer;transition:color .2s ease,border-color .2s ease}
 .ans-big:hover,.ans-big[aria-pressed="true"]{color:var(--paper);border-color:rgba(243,241,236,.6)}
-.write.big{grid-template-columns:minmax(0,1fr)}
-.write.big > div:first-child{display:none}
-.write.big .ask{position:static;width:100%;max-width:980px;margin:0 auto}
-.write.big .ans{min-height:max(300px,calc(100vh - 470px));padding:22px 24px 52px;font-size:18px;line-height:1.85}
+/* 쓰는 화면: 가운데 한 줄 */
+.qdoc{max-width:820px;margin:0 auto}
+.write.solo{display:block}
+.write.solo .ask{position:static}
+.write.solo .ans{min-height:230px}
+.write.big .guide,.write.big .ex{display:none}
+.write.big .ans{min-height:max(280px,calc(100vh - 405px));padding:22px 24px 52px;font-size:18px;line-height:1.85}
 .ans{display:block;width:100%;min-height:190px;margin-top:0;padding:16px 18px 48px;resize:none;background:var(--pit);border:1px solid var(--hair-strong);border-radius:14px;font:400 16px/1.7 var(--sans);color:var(--paper);transition:border-color .25s ease}
 .ans:focus{outline:none;border-color:rgba(243,241,236,.6)}
 .ans::placeholder{color:rgba(243,241,236,.3)}
@@ -177,14 +180,8 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .sec.future h4 .mono{color:var(--sheet-faint)}
 .sec.done h4 .mono{color:var(--meadow)}
 .slot{margin-top:9px;padding:10px 12px;border:1px dashed #CFCAC0;border-radius:3px;font:400 13px/1.4 var(--sans);color:var(--sheet-dim)}
-.sec.now .slot{border-color:#8F8B83;color:var(--sheet-ink)}
-.sec.landing p{opacity:0}
-.sec p.live{color:#4a4844}
-.sec p.live:empty{display:none}
-.sec .slot[hidden]{display:none}
 .sec p.fresh{animation:land .6s var(--ease)}
 @keyframes land{from{opacity:.2}to{opacity:1}}
-.fly{position:fixed;z-index:30;margin:0;pointer-events:none;font:400 15px/1.8 var(--serif);color:var(--sheet-ink);background:#fff;border-radius:3px;padding:0;overflow:hidden;box-shadow:0 18px 40px -16px rgba(0,0,0,.8);transition:transform .58s var(--ease),width .58s var(--ease),height .58s var(--ease),opacity .2s ease .5s;transform-origin:0 0}
 
 /* 쓰기를 마친 뒤의 장 목록 */
 .chlist{list-style:none;margin:0;padding:0}
@@ -763,16 +760,14 @@ function barsHTML() {
   }).join('')}</nav>`;
 }
 function sheetHTML(texts, opt = {}) {
-  const now = opt.now ?? -1;
   return `<article class="sheet" aria-label="사업계획서 초안"><header class="sheet-h"><small>사업계획서 초안 · 2026.11.23</small><h3>${esc(opt.title || '사업계획서 초안')}</h3><p>${esc(opt.sub || '이 PC에만 저장됩니다.')}</p></header>`
     + CH.map((ch, i) => {
-      const t = texts[i], sk = !t && skipped.has(i) && !opt.example, isNow = i === now;
-      const cls = isNow ? 'now' : t ? 'done' : sk ? 'skip' : 'future';
+      const t = texts[i], sk = !t && skipped.has(i) && !opt.example;
+      const cls = t ? 'done' : sk ? 'skip' : 'future';
       let body = '';
       if (t) body = `<p${opt.fresh === i ? ' class="fresh"' : ''}>${esc(t)}</p>`;
-      else if (isNow) body = `<p class="live" id="live">${esc(opt.draft || '')}</p><div class="slot" id="liveslot"${opt.draft ? ' hidden' : ''}>오른쪽에 쓰면 여기에 바로 적힙니다.</div>`;
       else if (sk) body = `<div class="slot">비워 두었습니다. 다음에 편하실 때 채워 주세요.</div>`;
-      return `<section class="sec ${cls}${opt.landing === i ? ' landing' : ''}" data-sec="${i}"><h4><span class="mono">${ch.no}</span>${esc(ch.name)}</h4>${body}</section>`;
+      return `<section class="sec ${cls}" data-sec="${i}"><h4><span class="mono">${ch.no}</span>${esc(ch.name)}</h4>${body}</section>`;
     }).join('') + `</article>`;
 }
 function renderQ(anim, opt = {}) {
@@ -780,15 +775,15 @@ function renderQ(anim, opt = {}) {
   const ch = CH[qi], last = qi === CH.length - 1, v = ans[qi];
   const r = react; react = null;
   const [m0, tip0] = r ? [r.mood, r.tip] : coach(v);
-  room.innerHTML = `<div class="top"><div>${say(ch.q, `${ch.no} / 07 · ${ch.name}`, anim)}</div><div class="acts"><button class="quiet" type="button" data-skipall>다음에 하기</button></div></div>`
+  room.innerHTML = `<div class="qdoc"><div class="top"><div>${say(ch.q, `${ch.no} / 07 · ${ch.name}`, anim)}</div><div class="acts"><button class="quiet" type="button" data-skipall>다음에 하기</button></div></div>`
     + barsHTML()
-    + `<section class="write${bigWrite ? ' big' : ''}"><div>${sheetHTML(ans, {now:qi, landing:opt.landing, draft:opt.landing != null ? '' : v})}</div>`
+    + `<section class="write solo${bigWrite ? ' big' : ''}">`
     + `<div class="ask">${guideHTML(WHY[qi], tip0)}<p class="ex${v.trim() ? ' fold' : ''}" id="ex"><button class="ex-h" type="button" data-ex>예시</button><span>${esc(ch.ex)}</span></p>`
     + `<label class="sr" for="ans">${esc(ch.name)} 답</label><div class="ans-wrap"><textarea id="ans" class="ans" placeholder="여기에 적어 주세요. 짧아도 괜찮아요.">${esc(v)}</textarea>`
     + `<button class="ans-big" type="button" data-big aria-pressed="${bigWrite}">${bigWrite ? '작게 보기' : '크게 쓰기'}</button></div>`
     + `<div class="ask-row"><span class="lab">Ctrl + Enter로도 넘어갑니다</span><span class="count" id="count">${v.length}자</span></div>`
     + `<div class="ask-go"><button class="go main" type="button" data-next ${v.trim() ? '' : 'disabled'}>${last ? '초안 마치기' : '다음'}</button>`
-    + `<button class="quiet" type="button" data-skip1>이 장 건너뛰기</button>${qi ? '<button class="quiet" type="button" data-prev>앞 장으로</button>' : ''}</div></div></section>`;
+    + `<button class="quiet" type="button" data-skip1>이 장 건너뛰기</button>${qi ? '<button class="quiet" type="button" data-prev>앞 장으로</button>' : ''}</div></div></section></div>`;
   mountGuide(m0);
   if (r?.hop) guide.hop();
   if (r) setTimeout(() => { if (mode === 'q' && guide?.svg.isConnected) { const [m, t] = coach(document.getElementById('ans').value); guide.mood(m); setTip(t); } }, 2600);
@@ -815,29 +810,14 @@ function setBig(on) {
   ta?.focus({preventScroll:true});
   if (on) ta?.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'});   // 물음 제목은 보이는 채로, 칸이 보일 만큼만
 }
-/* 「다음」: 쓴 글이 종이의 그 장 자리로 옮겨 앉는다(내 답이 계획서의 어느 장이 되었는지) */
-function commit(dir) {
-  const ta = document.getElementById('ans'), v = ta.value.trim(), i = qi;
+/* 「다음」: 쓴 글을 그 장에 담고 다음 장으로. 막대가 초록으로 바뀐다 */
+function commit() {
+  const v = document.getElementById('ans').value.trim(), i = qi;
   if (!v) return;
   ans[i] = v; skipped.delete(i); leftNote = '';
   play('land');
   react = {mood:'happy', hop:true, tip:`<b>${CH[i].no} ${esc(CH[i].name)}</b>${이(CH[i].name)} 계획서에 들어갔어요.`};
-  const from = ta.getBoundingClientRect();
-  const next = i + 1;
-  if (still || dir === 'jump' || bigWrite) { advance(next); return; }
-  if (next >= CH.length) { renderQ(false, {landing:i, noFocus:true}); }
-  else { qi = next; renderQ(true, {landing:i, noFocus:true}); }
-  const sec = room.querySelector(`[data-sec="${i}"]`), p = sec.querySelector('p'), to = p.getBoundingClientRect();
-  const fly = document.createElement('div'); fly.className = 'fly'; fly.textContent = v;
-  Object.assign(fly.style, {left:from.left + 'px', top:from.top + 'px', width:from.width + 'px', height:from.height + 'px', padding:'16px 18px', fontFamily:'var(--sans)', fontSize:'16px', lineHeight:'1.7', color:'var(--paper)', background:'var(--pit)', border:'1px solid var(--hair-strong)', borderRadius:'14px'});
-  document.body.appendChild(fly); void fly.offsetWidth;
-  requestAnimationFrame(() => {
-    Object.assign(fly.style, {transform:`translate(${to.left - from.left}px, ${to.top - from.top}px)`, width:to.width + 'px', height:to.height + 'px', padding:'0', fontFamily:'var(--serif)', fontSize:'15px', lineHeight:'1.8', color:'var(--sheet-ink)', background:'#fff', border:'1px solid transparent', borderRadius:'2px', opacity:'0'});
-  });
-  setTimeout(() => {
-    fly.remove(); sec.classList.remove('landing'); p.classList.add('fresh');
-    if (next >= CH.length) finishWrite(); else document.getElementById('ans')?.focus({preventScroll:true});
-  }, 620);
+  advance(i + 1);
 }
 function advance(n) { if (n >= CH.length) finishWrite(); else { qi = n; renderQ(true); } }
 function skipOne() {
@@ -1166,8 +1146,6 @@ room.addEventListener('input', e => {
   if (e.target.id === 'ans') {
     const v = e.target.value;
     document.getElementById('count').textContent = v.length + '자';
-    const lv = document.getElementById('live'), ls = document.getElementById('liveslot');
-    if (lv) { lv.textContent = v; ls.hidden = !!v.trim(); }
     const ex = document.getElementById('ex');
     if (ex && !ex.dataset.open) ex.classList.toggle('fold', !!v.trim());
     room.querySelector('[data-next]').disabled = !v.trim();
