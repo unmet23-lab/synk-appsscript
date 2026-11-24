@@ -458,7 +458,7 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
     if (note.kind === 'level') void Promise.resolve(host.clubMap?.()).then(view => {
       if (!live() || !view?.cells?.length || !go.isConnected) return;
       const card = document.createElement('section'); card.className = 'cl-card res';
-      card.innerHTML = `<p class="k"><b>${esc(K.L(UI.here))}</b></p><p class="sub">${esc(fill(K.L(UI.topik), {t: view.total, x: view.exam === 'topik2' ? 'II' : 'I'}))}</p><div class="strip">${cellsHTML(K, view)}</div>${mapKey(view)}`;
+      card.innerHTML = `<p class="k"><b>${esc(K.L(UI.here))}</b></p><div class="strip">${cellsHTML(K, view)}</div>${mapKey(view)}`;   // 「…실력 가운데」는 첫날 카드의 「{t}칸 중 {c}칸을 봤어요」에 딸린 줄이라 여기에는 두지 않는다
       go.before(card); K.anim(card, [{opacity: 0}, {opacity: 1}], {duration: 260});
     }, () => {});
     const back = document.createElement('button'); back.type = 'button'; back.className = 'cl-back'; back.textContent = K.L(UI.later); C.add(back);

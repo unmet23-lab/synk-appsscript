@@ -55,11 +55,15 @@ const DEV_ITEMS = [
   {skillId: 'ko.listening.negation', label: '듣고 부정·변경 이해하기', labelEn: 'Listening for “not” and changes', labelMn: 'Сонсоод үгүйсгэл, өөрчлөлтийг ойлгох', audio: '../korean-runner/assets/voice/check-not-middle.mp3', prompt: null, question: null,
     choices: [['o1', '가운데로 가기'], ['o2', '왼쪽으로 가기'], ['o3', '오른쪽으로 가기']], correct: 'o3', explanation: '가운데는 가지 말라고 했어요. 오른쪽으로 가요.'}
 ];
-// 가짜 지도(다리 mapView와 같은 꼴): 듣기 8 · 읽기 8, 칸은 혼자 해냄 · 연습 중 · 아직. ?exam=topik2면 TOPIK II(듣기 5 · 읽기 7)
-const DEV_MAP = exam => { const two = exam === 'topik2', lis = two ? 5 : 8, rea = two ? 7 : 8, cell = i => i === 1 ? 'independent' : [0, 2, 9, 10].includes(i) ? 'practicing' : 'notyet';
-  const cells = Array.from({length: lis + rea}, (_, i) => ({id: `${two ? 'ko2' : 'ko'}.${i < lis ? 'listening' : 'reading'}.s${i}`, domain: i < lis ? 'listening' : 'reading', cell: cell(i)}));
+// 가짜 지도(다리 mapView와 같은 꼴): 듣기 8 · 읽기 8. 가짜 문항 넷의 칸은 연습 중(한 번 맞혀도 연습 중), 하나는 혼자 해냄, 나머지는 아직.
+// ?exam=topik2면 TOPIK II(듣기 5 · 읽기 7). 칸 이름은 world-strings의 position.cell.* 세 언어와 같다
+const CELL_NAMES = {ko: {independent: '혼자 해냄', practicing: '연습 중', notyet: '아직'}, en: {independent: 'On my own', practicing: 'Practicing', notyet: 'Not yet'}, mn: {independent: 'Бие даан хийж чадсан', practicing: 'Дасгал хийж байгаа', notyet: 'Хараахан эхлээгүй'}};
+const DEV_MAP = (exam, lang = 'ko') => { const two = exam === 'topik2', p = two ? 'ko2' : 'ko', seen = new Set(DEV_ITEMS.map(x => x.skillId));
+  const ids = (dom, n) => { const own = two ? [] : DEV_ITEMS.filter(x => x.skillId.split('.')[1] === dom).map(x => x.skillId); return [...own, ...Array.from({length: n - own.length}, (_, i) => `${p}.${dom}.s${i}`)]; };
+  const cells = [...ids('listening', two ? 5 : 8).map(id => ({id, domain: 'listening'})), ...ids('reading', two ? 7 : 8).map(id => ({id, domain: 'reading'}))]
+    .map((c, i) => ({...c, cell: seen.has(c.id) ? 'practicing' : i === 3 ? 'independent' : 'notyet'}));
   const counts = Object.fromEntries(['independent', 'practicing', 'notyet'].map(c => [c, cells.filter(x => x.cell === c).length]));
-  return {exam: two ? 'topik2' : 'topik1', total: cells.length, listening: lis, counts, cells, names: {independent: '혼자 해냄', practicing: '연습 중', notyet: '아직'}}; };
+  return {exam: two ? 'topik2' : 'topik1', total: cells.length, listening: two ? 5 : 8, counts, cells, names: CELL_NAMES[lang] || CELL_NAMES.ko}; };
 const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 ? a : b; };
 
 export function createDevHost(search = location.search) {
@@ -175,8 +179,8 @@ export function createDevHost(search = location.search) {
     async clubAudio(status) { note('clubAudio', status); return true; },
     async clubAnswer(id) { const it = DEV_ITEMS[D.di]; return it ? {correct: id === it.correct, correctId: it.correct, explanation: it.explanation} : {error: 'notReady'}; },
     async clubNext() { D.di += 1; return viewOf(D.di); },
-    async clubFinish(rows) { note('clubFinish', rows); return {map: DEV_MAP(D.exam), minutes: planOf().min}; },
-    async clubMap() { note('clubMap'); await new Promise(r => setTimeout(r, 300)); return D.map === 'none' ? null : DEV_MAP(D.exam); },   // ?map=none: 지도를 못 받는 길
+    async clubFinish(rows) { note('clubFinish', rows); return {map: DEV_MAP(D.exam, D.lang), minutes: planOf().min}; },
+    async clubMap() { note('clubMap'); await new Promise(r => setTimeout(r, 300)); return D.map === 'none' ? null : DEV_MAP(D.exam, D.lang); },   // ?map=none: 지도를 못 받는 길
     async clubDone() { D.club = 'done'; D.note = ''; D.v = 'more'; return state(); },
     async clubBoard() { D.club = 'done'; D.note = ''; D.v = 'more'; note('position'); return state(); },
     async clubSeen(o) { note('clubSeen', o); if (o?.opened && D.club === 'done') D.note = ''; return null; },   // 연 알림은 그날 다시 내려오지 않는다(다리와 같다)
