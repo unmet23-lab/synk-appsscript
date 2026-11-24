@@ -905,7 +905,7 @@ export default {
  'life.pack.plans':{ko:'약속',en:'Plans',mn:'Уулзалт'},
  'life.packTitle.greetings':{ko:'처음 만난 날',en:'The day we met',mn:'Анх уулзсан өдөр'},
  'life.packTitle.cafe':{ko:'학교 앞 카페',en:'The café across from school',mn:'Сургуулийн урдах кафе'},
- 'life.packTitle.store':{ko:'까몽의 편의점 작전',en:'Kkamong’s convenience store mission',mn:'Камоны дэлгүүр орох төлөвлөгөө'},
+ 'life.packTitle.store':{ko:'학교 앞 편의점',en:'The convenience store across from school',mn:'Сургуулийн урдах дэлгүүр'},
  'life.packTitle.directions':{ko:'거꾸로 든 지도',en:'The upside-down map',mn:'Урвуу барьсан газрын зураг'},
  'life.packTitle.transit':{ko:'버스로 꽃길까지',en:'By bus to the flower path',mn:'Автобусаар цэцэгт зам хүртэл'},
  'life.packTitle.plans':{ko:'우리의 내일 약속',en:'Our plans for tomorrow',mn:'Бидний маргаашийн уулзалт'},

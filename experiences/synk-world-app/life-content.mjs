@@ -3,7 +3,7 @@
  * 읽고 고르는 연습이며, 음성 전달이나 TOPIK 성과를 전제하지 않는다.
  * ID는 진도/복습 저장 키이므로 내용 변경 시 CONTENT_VERSION도 함께 변경한다.
  */
-export const CONTENT_VERSION = 'life-ko-20261123-v5';
+export const CONTENT_VERSION = 'life-ko-20261125-v6';
 
 const choices = texts => texts.map((text, index) => ({ id: ['a', 'b', 'c'][index], text }));
 const scene = (speaker, text) => ({ speaker, text });
@@ -155,40 +155,31 @@ export const PACKS = [
     ],
   },
   {
-    id: 'store', title: '까몽의 편의점 작전', subtitle: '가격을 묻고 물건을 사요', icon: 'store',
+    id: 'store', title: '학교 앞 편의점', subtitle: '가격을 묻고 물건을 사요', icon: 'store',
     level: '기초 생활 한국어',
     skills: [skill('store-price-reading', '가격 질문과 표시 읽기'), skill('store-bag-request', '봉투 요청하기'), skill('store-payment', '결제 방법 이해하기')],
     lessons: [
-      lesson('store-expressions', 'expressions', '계산대 앞 세 마디', '가격·봉투·카드 결제를 구분해요.', storeExpressions, [
-        scene('mongle', '우와! 작은 가게에 물건이 가득해! 같이 골라 볼까?'),
-        scene('kkamong', '이 몸은 가격도 알아보지. 숫자가 작… 아니, 가까이서 읽는 거야.'),
-        scene('marine', '구매 준비. 가격, 봉투, 결제 방법 확인.'),
-      ], [
+      lesson('store-expressions', 'expressions', '계산대 앞 세 마디', '가격·봉투·카드 결제를 구분해요.', storeExpressions, [], [
         question('store-expressions-price', 'store-price-reading', 'store-price', '물건의 가격을 알고 싶어요. 어떤 말을 할까요?', '', ['이거 어디에 있어요?', '이거 몇 개예요?', '이거 얼마예요?'], 'c', '가격을 물을 때는 ‘얼마예요’를 사용해요.', transfer('이 샌드위치의 값을 물어보려고 해요.', '', ['이거 얼마예요?', '이거 언제 먹어요?', '이거 누구 거예요?'], 'a', '물건의 값은 ‘얼마예요’로 물어요.')),
         question('store-expressions-bag', 'store-bag-request', 'store-bag', '‘봉투 하나 주세요’는 무엇을 부탁하는 말이에요?', '산 물건을 밖으로 가져가려고 해요.', ['물건의 가격', '물건을 담을 봉투', '현금으로 결제하기'], 'b', '‘봉투’는 산 물건을 담아 가져가는 데 사용해요.', transfer('직원에게 어떤 말을 할까요?', '우유와 빵을 한꺼번에 담아 가져갈 봉투가 필요해요.', ['봉투 하나 주세요.', '우유 하나 더 주세요.', '현금으로 계산할게요.'], 'a', '물건을 담을 봉투가 필요하므로 봉투를 요청해요.')),
         question('store-expressions-card', 'store-payment', 'store-card', '‘카드로 계산할게요’는 어떻게 값을 내겠다는 말이에요?', '', ['카드로 내요.', '현금으로 내요.', '다음에 내요.'], 'a', '‘카드로’는 카드라는 방법을 이용한다는 뜻이에요.', transfer('‘현금으로 계산할게요’는 어떻게 값을 내겠다는 말이에요?', '', ['카드로 내요.', '내일 내요.', '현금으로 내요.'], 'c', '지폐나 동전으로 직접 값을 내는 방법은 현금 결제예요.')),
       ]),
-      lesson('store-story', 'story', '물은 원래 준비하는 거야', '가격표와 세 친구의 구매를 읽고 이해해요.', storeExpressions, [
-        scene('narrator', '세 친구가 편의점에서 간식을 골라요. 물 한 병의 가격표에는 1,000원이라고 적혀 있어요.'),
-        scene('mongle', '우와! 라면 봉지가 빨개! 같이 저 그림 볼까?'),
-        scene('kkamong', '이 몸은 매운 라면도 잘 먹지. 물은… 나 말고 너희가 마시라고.'),
-        scene('marine', '보급 확인. 물 한 병, 천 원. …매울 때 마셔라.'),
-        scene('narrator', '마린은 라면과 물을 담으려고 직원에게 ‘봉투 하나 주세요’라고 부탁해요.'),
-        scene('mongle', '오! 물이 넘어지지 않게 세워 줬네! 같이 가져가자!'),
-        scene('kkamong', '계산은 이 몸이 하지. ‘카드로 계산할게요.’'),
-        scene('narrator', '까몽은 카드로 계산하고 봉투를 챙겨요. 마루에 돌아와 라면을 한입 먹어요.'),
-        scene('kkamong', '내가 원래 물도 좋아하거든. …한 모금만.'),
-        scene('marine', '보급 완료. 물, 여기. 전원 간식 확인.'),
+      lesson('store-story', 'story', '라면하고 물 한 병', '가격표와 친구들의 계산을 읽고 이해해요.', storeExpressions, [
+        scene('narrator', '수업이 끝났어요. 나는 서하, 지호, 태오와 학교 앞 편의점에 왔어요.'),
+        scene('taeo', '저는 이 라면을 먹고 싶어요. 아주 매워요!'),
+        scene('seoha', '그럼 물도 사요. 이거 얼마예요?'),
+        scene('narrator', '가격표를 봐요. 라면은 2,000원이에요. 물 한 병은 1,000원이에요.'),
+        scene('jiho', '봉투 하나 주세요. 라면하고 물을 담을게요.'),
+        scene('taeo', '제가 계산할게요. 카드로 계산할게요.'),
+        scene('narrator', '태오가 카드로 계산해요. 지호는 봉투를 들어요.'),
+        scene('me', '태오, 고마워요! 우리 같이 먹어요.'),
+        scene('seoha', '라면은 매워요. 그래도 물이 있어요!'),
       ], [
-        question('store-story-price', 'store-price-reading', 'store-price', '이야기 속 물 한 병은 얼마예요?', '', ['2,000원', '1,000원', '3,000원'], 'b', '물 한 병의 가격표에 1,000원이라고 적혀 있어요.', transfer('새 가격표를 읽어요. 우유 한 개는 얼마예요?', '우유 한 개 1,500원 / 빵 한 개 2,000원', ['2,000원', '3,500원', '1,500원'], 'c', '우유 가격은 1,500원이에요. 다른 물건이나 합계와 구분해요.')),
-        question('store-story-bag', 'store-bag-request', 'store-bag', '마린이 봉투를 부탁한 이유는 무엇이에요?', '', ['라면과 물을 담으려고요.', '가격을 바꾸려고요.', '카드로 계산하려고요.'], 'a', '마린은 산 라면과 물을 함께 담아 가져가려고 봉투를 부탁했어요.', transfer('봉투를 요청하는 장면을 골라요.', '봉투 하나 주세요.', ['가격표를 다시 읽어요.', '산 빵과 우유를 담아요.', '교통카드를 충전해요.'], 'b', '봉투는 산 빵과 우유를 담아 가져갈 때 필요해요.')),
-        question('store-story-card', 'store-payment', 'store-card', '까몽은 어떤 방법으로 계산했어요?', '', ['다음 날 계산했어요.', '현금으로 계산했어요.', '카드로 계산했어요.'], 'c', '까몽은 ‘카드로 계산할게요’라고 말하고 카드를 사용했어요.', transfer('새 계산 장면을 읽고 방법을 골라요.', '몽글: “현금으로 계산할게요.” 몽글이 지폐를 건넸어요.', ['현금으로 계산했어요.', '카드로 계산했어요.', '아직 계산하지 않았어요.'], 'a', '지폐를 사용한 결제는 현금 결제예요.')),
+        question('store-story-price', 'store-price-reading', 'store-price', '이야기에서 물 한 병은 얼마예요?', '', ['2,000원', '1,000원', '3,000원'], 'b', '서하가 ‘이거 얼마예요?’라고 물었어요. 가격표를 보면 물 한 병은 1,000원이에요. 2,000원은 라면의 가격이에요.', transfer('새 가격표를 읽어요. 우유 한 개는 얼마예요?', '우유 한 개 1,500원 / 빵 한 개 2,000원', ['2,000원', '3,500원', '1,500원'], 'c', '우유 가격은 1,500원이에요. 다른 물건이나 합계와 구분해요.')),
+        question('store-story-bag', 'store-bag-request', 'store-bag', '지호가 봉투를 부탁한 이유는 무엇이에요?', '', ['라면과 물을 담으려고요.', '물을 사려고요.', '카드로 계산하려고요.'], 'a', '지호는 ‘봉투 하나 주세요. 라면하고 물을 담을게요.’라고 했어요. 산 라면과 물을 담으려고 봉투를 부탁했어요. 카드로 계산한 사람은 태오예요.', transfer('봉투를 요청하는 장면을 골라요.', '봉투 하나 주세요.', ['가격표를 다시 읽어요.', '산 빵과 우유를 담아요.', '교통카드를 충전해요.'], 'b', '봉투는 산 빵과 우유를 담아 가져갈 때 필요해요.')),
+        question('store-story-card', 'store-payment', 'store-card', '태오는 어떤 방법으로 계산했어요?', '', ['휴대폰으로 계산했어요.', '현금으로 계산했어요.', '카드로 계산했어요.'], 'c', '태오는 ‘카드로 계산할게요.’라고 말하고 카드로 계산했어요.', transfer('서하는 어떤 방법으로 계산했어요?', '서하는 오늘 카드가 없어요. 서하: “현금으로 계산할게요.” 서하가 돈을 냈어요.', ['현금으로 계산했어요.', '카드로 계산했어요.', '카드하고 현금으로 계산했어요.'], 'a', '서하는 오늘 카드가 없어요. 그래서 ‘현금으로 계산할게요.’라고 말하고 돈을 냈어요. 현금으로 계산했어요.')),
       ]),
-      lesson('store-apply', 'apply', '내 간식을 사요', '다른 물건을 살 때 필요한 말을 골라요.', storeExpressions, [
-        scene('mongle', '오! 네 간식은 뭐야? 같이 계산대에 가 보자!'),
-        scene('kkamong', '이 몸은 물까지 준비했지. 준비 잘하는 용이거든.'),
-        scene('marine', '계산대 도착. 필요한 부탁부터 확인.'),
-      ], [
+      lesson('store-apply', 'apply', '내 간식을 사요', '다른 물건을 살 때 필요한 말을 골라요.', storeExpressions, [], [
         question('store-apply-price', 'store-price-reading', 'store-price', '가격을 물을 문장을 골라요.', '도시락에 가격표가 없어요. 직원에게 값을 물어보려고 해요.', ['이 도시락은 얼마예요?', '이 도시락은 어디에서 만들어요?', '이 도시락은 누가 만들어요?'], 'a', '가격표가 없을 때 ‘얼마예요’로 값을 물어요.', transfer('가격을 물을 문장을 골라요.', '우산의 값을 알고 싶어요.', ['우산은 누가 샀어요?', '우산은 얼마예요?', '우산은 언제 써요?'], 'b', '우산의 값은 ‘얼마예요’로 물어요.')),
         question('store-apply-bag', 'store-bag-request', 'store-bag', '직원에게 어떻게 답할까요?', '“봉투 필요하세요?” 산 물건이 많아서 담을 봉투가 필요해요.', ['아니요, 괜찮아요.', '가격은 얼마예요?', '네, 봉투 하나 주세요.'], 'c', '봉투가 필요하므로 ‘네’라고 답하고 하나를 부탁해요.', transfer('직원에게 어떻게 답할까요?', '“봉투 드릴까요?” 내 가방에 물건을 담을 거예요. 봉투는 필요 없어요.', ['네, 봉투 두 개 주세요.', '아니요, 괜찮아요.', '카드로 계산할게요.'], 'b', '봉투가 필요 없으므로 정중하게 ‘아니요, 괜찮아요’라고 답해요.')),
         question('store-apply-card', 'store-payment', 'store-card', '카드로 값을 내려고 해요. 어떤 말을 할까요?', '', ['현금으로 계산할게요.', '카드로 계산할게요.', '나중에 계산할게요.'], 'b', '카드를 사용할 때는 ‘카드로 계산할게요’라고 해요.', transfer('현금으로 값을 내려고 해요. 어떤 말을 할까요?', '', ['현금으로 계산할게요.', '카드로 계산할게요.', '가격표를 붙여 주세요.'], 'a', '현금을 사용하므로 ‘현금으로 계산할게요’가 상황에 맞아요.')),
@@ -334,9 +325,10 @@ export const LIFE_PEOPLE=Object.freeze({seoha:{name:'서하'},jiho:{name:'지호
 export const PEOPLE_STORY=Object.freeze({
  greetings:{file:'life-people/greetings.webp?v=4dea5fb82788',alt:'학교 정문 앞 신입생 부스에서 서하, 지호, 태오가 나를 보고 웃는 장면',at:{seoha:36,jiho:59,taeo:79}},
  cafe:{file:'life-people/cafe.webp?v=52de12263532',alt:'학교 앞 카페 카운터에서 서하가 손을 흔들고, 지호가 주문표를 들고, 태오가 창밖 벤치를 가리키는 장면',at:{seoha:33,jiho:55,taeo:73}},
+ store:{file:'life-people/store.webp?v=9c8403d26e4a',alt:'학교 앞 편의점 계산대에서 서하가 물병을 들고, 지호가 봉투를 벌리고, 태오가 카드를 단말기에 대는 장면',at:{seoha:33,jiho:55,taeo:76}},
 });
 
 export const peopleStory=packId=>PEOPLE_STORY[packId]||null;
 
 // 레슨 소개 · 문제 · 배우기의 팩 그림: 펠트 물건 대신 같은 이야기의 사진(정사각형).
-export const PACK_PRINTS=Object.freeze({greetings:'life-people/greetings-print.webp?v=a78ef737caaf',cafe:'life-people/cafe-print.webp?v=02acd0afd050'});
+export const PACK_PRINTS=Object.freeze({greetings:'life-people/greetings-print.webp?v=a78ef737caaf',cafe:'life-people/cafe-print.webp?v=02acd0afd050',store:'life-people/store-print.webp?v=4a0f324dadb5'});

@@ -37,15 +37,15 @@
   },
   {
     "id": "store-expressions",
-    "sha256": "7450705ab9ce0546eb33a6c4822187ba9d644fa18b9c3c8068e4efb8054430db"
+    "sha256": "0e4afc77819cc35e636c86c114af26a1ff7ad7e9017db827140ca2712d6581bb"
   },
   {
     "id": "store-story",
-    "sha256": "f13354569612066691de60c3c4fb64cfbd9ce9defa14cd26ca7561ca8a47b2c2"
+    "sha256": "234fad78126861c836c89c7bc021a86f7930bc97f189e0ad5864e0370cf83c94"
   },
   {
     "id": "store-apply",
-    "sha256": "2a850071456f114703ad32e95f7f7726336010b24c8e4d64a6c5865748572927"
+    "sha256": "e1cb6d37e38975ea22b019979212318b1e4e715b73d17d77014588330730513d"
   },
   {
     "id": "directions-expressions",

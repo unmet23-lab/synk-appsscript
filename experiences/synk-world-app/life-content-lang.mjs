@@ -1,4 +1,4 @@
-// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24).
+// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24), 편의점 팩(2026-11-25).
 // 학습 내용(보기·표현·이야기 대사·레슨 제목)은 life-content.mjs의 한국어 그대로다. 여기에는 문제 지시(prompt)·상황(context)·해설(explanation),
 // 표현 설명(meaning)과 답한 뒤 누르는 「뜻 보기」의 보기 뜻만 둔다. 문장 속 ‘한국어 인용’은 학습 내용이라 한국어로 남긴다.
 // ko는 원문의 사본이다: 원문을 고치면 qa/life-content-lang.test.mjs가 이 표가 낡았다고 알린다(번역을 같이 고친다).
@@ -248,6 +248,80 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'How do you answer the staff?',context:'Jiho buys hot tea and takes it to school. Staff: “매장에서 드시나요?”',explanation:'Jiho is taking the tea to school, so the answer is ‘아니요, 포장해 주세요.’'},
   {prompt:'Ажилтны асуултад хэрхэн хариулах вэ?',context:'Жихо халуун цай худалдаж аваад сургууль руугаа явна. Ажилтан: «매장에서 드시나요?»',explanation:'Жихо цайгаа сургууль руу авч явна. Тиймээс «아니요, 포장해 주세요.» гэж хариулна.'}),
  // 카페 팩 — 끝
+ // 편의점 팩(11-25 「네, 이어가」) — 시작
+ 'store-expressions-price':q(
+  {prompt:'물건의 가격을 알고 싶어요. 어떤 말을 할까요?',context:'',explanation:'가격을 물을 때는 ‘얼마예요’를 사용해요.'},
+  {prompt:'You want to know the price of something. What do you say?',context:'',explanation:'To ask a price, use ‘얼마예요’.'},
+  {prompt:'Барааны үнийг мэдмээр байна. Юу гэж хэлэх вэ?',context:'',explanation:'Үнэ асуухдаа «얼마예요» гэж хэлнэ.'}),
+ 'store-expressions-price-transfer':q(
+  {prompt:'이 샌드위치의 값을 물어보려고 해요.',context:'',explanation:'물건의 값은 ‘얼마예요’로 물어요.'},
+  {prompt:'You want to ask the price of this sandwich.',context:'',explanation:'Ask the price of something with ‘얼마예요’.'},
+  {prompt:'Энэ сэндвичийн үнийг асуух гэж байна.',context:'',explanation:'Барааны үнийг «얼마예요» гэж асууна.'}),
+ 'store-expressions-bag':q(
+  {prompt:'‘봉투 하나 주세요’는 무엇을 부탁하는 말이에요?',context:'산 물건을 밖으로 가져가려고 해요.',explanation:'‘봉투’는 산 물건을 담아 가져가는 데 사용해요.'},
+  {prompt:'What are you asking for with ‘봉투 하나 주세요’?',context:'You want to take the things you bought outside.',explanation:'A ‘봉투’ (bag) is for carrying the things you bought.'},
+  {prompt:'«봉투 하나 주세요» гэдэг нь юу авъя гэсэн үг вэ?',context:'Худалдаж авсан юмаа авч явах гэж байна.',explanation:'«봉투» (уут) нь худалдаж авсан юмаа хийж авч явахад хэрэглэгддэг.'}),
+ 'store-expressions-bag-transfer':q(
+  {prompt:'직원에게 어떤 말을 할까요?',context:'우유와 빵을 한꺼번에 담아 가져갈 봉투가 필요해요.',explanation:'물건을 담을 봉투가 필요하므로 봉투를 요청해요.'},
+  {prompt:'What do you say to the staff?',context:'You need a bag to carry the milk and bread together.',explanation:'You need a bag for your things, so you ask for one.'},
+  {prompt:'Ажилтанд юу гэж хэлэх вэ?',context:'Сүү, талхаа хамт хийж авч явах уут хэрэгтэй байна.',explanation:'Юмаа хийх уут хэрэгтэй тул уут өгөөч гэж хэлнэ.'}),
+ 'store-expressions-card':q(
+  {prompt:'‘카드로 계산할게요’는 어떻게 값을 내겠다는 말이에요?',context:'',explanation:'‘카드로’는 카드라는 방법을 이용한다는 뜻이에요.'},
+  {prompt:'How does ‘카드로 계산할게요’ say you will pay?',context:'',explanation:'‘카드로’ means you use a card to pay.'},
+  {prompt:'«카드로 계산할게요» гэдэг нь юугаар төлнө гэсэн үг вэ?',context:'',explanation:'«카드로» гэдэг нь картаар төлнө гэсэн утгатай.'}),
+ 'store-expressions-card-transfer':q(
+  {prompt:'‘현금으로 계산할게요’는 어떻게 값을 내겠다는 말이에요?',context:'',explanation:'지폐나 동전으로 직접 값을 내는 방법은 현금 결제예요.'},
+  {prompt:'How does ‘현금으로 계산할게요’ say you will pay?',context:'',explanation:'Paying with bills or coins is paying in cash.'},
+  {prompt:'«현금으로 계산할게요» гэдэг нь юугаар төлнө гэсэн үг вэ?',context:'',explanation:'Цаасан мөнгө эсвэл зоосоор шууд төлөхийг бэлнээр төлөх гэнэ.'}),
+ 'store-story-price':q(
+  {prompt:'이야기에서 물 한 병은 얼마예요?',context:'',explanation:'서하가 ‘이거 얼마예요?’라고 물었어요. 가격표를 보면 물 한 병은 1,000원이에요. 2,000원은 라면의 가격이에요.'},
+  {prompt:'In the story, how much is one bottle of water?',context:'',explanation:'Seoha asked ‘이거 얼마예요?’. The price tag shows one bottle of water is 1,000 won. 2,000 won is the price of the ramen.'},
+  {prompt:'Энэ түүхэнд нэг шил ус ямар үнэтэй вэ?',context:'',explanation:'Сөха «이거 얼마예요?» гэж асуусан. Үнийн шошгоноос харахад нэг шил ус 1,000 вон. 2,000 вон бол рамёны үнэ.'}),
+ 'store-story-price-transfer':q(
+  {prompt:'새 가격표를 읽어요. 우유 한 개는 얼마예요?',context:'우유 한 개 1,500원 / 빵 한 개 2,000원',explanation:'우유 가격은 1,500원이에요. 다른 물건이나 합계와 구분해요.'},
+  {prompt:'Read the new price tag. How much is one carton of milk?',context:'Price tag: “우유 한 개 1,500원 / 빵 한 개 2,000원”',explanation:'‘우유’ (milk) is 1,500 won. Don’t mix it up with ‘빵’ (bread) or the total.'},
+  {prompt:'Шинэ үнийн шошгыг уншина уу. Нэг сав сүү ямар үнэтэй вэ?',context:'Үнийн шошго: «우유 한 개 1,500원 / 빵 한 개 2,000원»',explanation:'«우유» (сүү) 1,500 вон. Талхны үнэ болон нийт үнэтэй битгий андуураарай.'}),
+ 'store-story-bag':q(
+  {prompt:'지호가 봉투를 부탁한 이유는 무엇이에요?',context:'',explanation:'지호는 ‘봉투 하나 주세요. 라면하고 물을 담을게요.’라고 했어요. 산 라면과 물을 담으려고 봉투를 부탁했어요. 카드로 계산한 사람은 태오예요.'},
+  {prompt:'Why did Jiho ask for a bag?',context:'',explanation:'Jiho said ‘봉투 하나 주세요. 라면하고 물을 담을게요.’ He asked for a bag to carry the ramen and water they bought. Taeo is the one who paid by card.'},
+  {prompt:'Жихо яагаад уут авахыг хүссэн бэ?',context:'',explanation:'Жихо «봉투 하나 주세요. 라면하고 물을 담을게요.» гэж хэлсэн. Худалдаж авсан рамён, усаа хийх уут авахыг хүссэн. Картаар төлсөн хүн бол Тэо.'}),
+ 'store-story-bag-transfer':q(
+  {prompt:'봉투를 요청하는 장면을 골라요.',context:'봉투 하나 주세요.',explanation:'봉투는 산 빵과 우유를 담아 가져갈 때 필요해요.'},
+  {prompt:'Choose the scene where you’d ask for a bag.',context:'“봉투 하나 주세요.”',explanation:'You need a bag to carry the bread and milk you bought.'},
+  {prompt:'Уут хэрэг болох тохиолдлыг сонгоно уу.',context:'«봉투 하나 주세요.»',explanation:'Худалдаж авсан талх, сүүгээ хийж авч явахад уут хэрэгтэй.'}),
+ 'store-story-card':q(
+  {prompt:'태오는 어떤 방법으로 계산했어요?',context:'',explanation:'태오는 ‘카드로 계산할게요.’라고 말하고 카드로 계산했어요.'},
+  {prompt:'How did Taeo pay?',context:'',explanation:'Taeo said ‘카드로 계산할게요.’ and paid by card.'},
+  {prompt:'Тэо юугаар төлсөн бэ?',context:'',explanation:'Тэо «카드로 계산할게요.» гэж хэлээд картаар төлсөн.'}),
+ 'store-story-card-transfer':q(
+  {prompt:'서하는 어떤 방법으로 계산했어요?',context:'서하는 오늘 카드가 없어요. 서하: “현금으로 계산할게요.” 서하가 돈을 냈어요.',explanation:'서하는 오늘 카드가 없어요. 그래서 ‘현금으로 계산할게요.’라고 말하고 돈을 냈어요. 현금으로 계산했어요.'},
+  {prompt:'How did Seoha pay?',context:'Seoha doesn’t have her card today. Seoha: “현금으로 계산할게요.” Seoha handed over money.',explanation:'Seoha doesn’t have her card today, so she said ‘현금으로 계산할게요.’ and handed over money. She paid in cash.'},
+  {prompt:'Сөха юугаар төлсөн бэ?',context:'Сөха өнөөдөр картгүй байсан. «현금으로 계산할게요.» гэж хэлээд бэлэн мөнгө өгсөн.',explanation:'Сөха өнөөдөр картгүй байсан. Тиймээс «현금으로 계산할게요.» гэж хэлээд бэлэн мөнгөөр төлсөн.'}),
+ 'store-apply-price':q(
+  {prompt:'가격을 물을 문장을 골라요.',context:'도시락에 가격표가 없어요. 직원에게 값을 물어보려고 해요.',explanation:'가격표가 없을 때 ‘얼마예요’로 값을 물어요.'},
+  {prompt:'Choose the sentence that asks the price.',context:'The lunch box has no price tag. You want to ask the staff how much it is.',explanation:'When there’s no price tag, ask the price with ‘얼마예요’.'},
+  {prompt:'Үнэ асуух өгүүлбэрийг сонгоно уу.',context:'Савтай хоолны үнийн шошго алга. Ажилтнаас үнийг нь асуух гэж байна.',explanation:'Үнийн шошго байхгүй бол «얼마예요» гэж асууна.'}),
+ 'store-apply-price-transfer':q(
+  {prompt:'가격을 물을 문장을 골라요.',context:'우산의 값을 알고 싶어요.',explanation:'우산의 값은 ‘얼마예요’로 물어요.'},
+  {prompt:'Choose the sentence that asks the price.',context:'You want to know the price of an umbrella.',explanation:'Ask the price of the umbrella with ‘얼마예요’.'},
+  {prompt:'Үнэ асуух өгүүлбэрийг сонгоно уу.',context:'Шүхрийн үнийг мэдмээр байна.',explanation:'Шүхрийн үнийг «얼마예요» гэж асууна.'}),
+ 'store-apply-bag':q(
+  {prompt:'직원에게 어떻게 답할까요?',context:'“봉투 필요하세요?” 산 물건이 많아서 담을 봉투가 필요해요.',explanation:'봉투가 필요하므로 ‘네’라고 답하고 하나를 부탁해요.'},
+  {prompt:'How do you answer the staff?',context:'“봉투 필요하세요?” You bought a lot, so you need a bag to carry it all.',explanation:'You need a bag, so answer ‘네’ and ask for one.'},
+  {prompt:'Ажилтанд яаж хариулах вэ?',context:'«봉투 필요하세요?» Олон юм худалдаж авсан тул хийх уут хэрэгтэй байна.',explanation:'Уут хэрэгтэй тул «네» гэж хариулаад нэг уут өгөөч гэж хэлнэ.'}),
+ 'store-apply-bag-transfer':q(
+  {prompt:'직원에게 어떻게 답할까요?',context:'“봉투 드릴까요?” 내 가방에 물건을 담을 거예요. 봉투는 필요 없어요.',explanation:'봉투가 필요 없으므로 정중하게 ‘아니요, 괜찮아요’라고 답해요.'},
+  {prompt:'How do you answer the staff?',context:'“봉투 드릴까요?” You’ll put your things in your own bag. You don’t need a store bag.',explanation:'You don’t need a bag, so politely answer ‘아니요, 괜찮아요’.'},
+  {prompt:'Ажилтанд яаж хариулах вэ?',context:'«봉투 드릴까요?» Та юмаа өөрийнхөө цүнхэнд хийнэ. Уут хэрэггүй.',explanation:'Уут хэрэггүй тул эелдгээр «아니요, 괜찮아요» гэж хариулна.'}),
+ 'store-apply-card':q(
+  {prompt:'카드로 값을 내려고 해요. 어떤 말을 할까요?',context:'',explanation:'카드를 사용할 때는 ‘카드로 계산할게요’라고 해요.'},
+  {prompt:'You want to pay by card. What do you say?',context:'',explanation:'When you use a card, say ‘카드로 계산할게요’.'},
+  {prompt:'Картаар төлөх гэж байна. Юу гэж хэлэх вэ?',context:'',explanation:'Картаар төлөхдөө «카드로 계산할게요» гэж хэлнэ.'}),
+ 'store-apply-card-transfer':q(
+  {prompt:'현금으로 값을 내려고 해요. 어떤 말을 할까요?',context:'',explanation:'현금을 사용하므로 ‘현금으로 계산할게요’가 상황에 맞아요.'},
+  {prompt:'You want to pay in cash. What do you say?',context:'',explanation:'You’re using cash, so ‘현금으로 계산할게요’ fits.'},
+  {prompt:'Бэлнээр төлөх гэж байна. Юу гэж хэлэх вэ?',context:'',explanation:'Бэлэн мөнгөөр төлөх тул «현금으로 계산할게요» гэж хэлнэ.'}),
+ // 편의점 팩 — 끝
 });
 
 // 표현 익히기 카드의 설명(표현 자체는 한국어 그대로).
@@ -265,6 +339,11 @@ export const LIFE_EXPRESSION_TEXT=Object.freeze({
  'cafe-add':q('주문한 수량에 한 잔을 추가해요.','Adds one more cup to what you ordered.','Захиалга дээрээ дахиад нэг аяга нэмүүлнэ.'),
  'cafe-compose':q('음료·온도·잔 수를 직접 골라 한 문장으로 주문해요.','Choose the drink, temperature and number of cups yourself and order in one sentence.','Ямар уух зүйл, халуун хүйтний алийг нь, хэдэн аяга авахаа өөрөө сонгоод нэг өгүүлбэрээр захиална.'),
  // 카페 팩 — 끝
+ // 편의점 팩(11-25 「네, 이어가」) — 시작
+ 'store-price':q('물건의 가격을 물어요.','Asks the price of something.','Барааны үнийг асууна.'),
+ 'store-bag':q('산 물건을 담을 봉투를 부탁해요.','Asks for a bag to carry what you bought.','Худалдаж авсан юмаа хийх уут өгөөч гэж хэлнэ.'),
+ 'store-card':q('카드로 값을 내겠다고 말해요.','Says you will pay by card.','Картаар төлнө гэдгээ хэлнэ.'),
+ // 편의점 팩 — 끝
 });
 
 // 「뜻 보기」: 답한 뒤에만 보이는 보기의 뜻. 키는 보기 글자 그대로다.
@@ -375,6 +454,51 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '차가운 차 두 잔 주세요.':{en:'Two iced teas, please.',mn:'Хоёр аяга хүйтэн цай өгөөрэй.'},
  '차가운 주스 세 잔 주세요.':{en:'Three cold juices, please.',mn:'Гурван аяга хүйтэн шүүс өгөөрэй.'},
  // 카페 팩 — 끝
+ // 편의점 팩(11-25 「네, 이어가」) — 시작
+ '이거 어디에 있어요?':{en:'Where is this?',mn:'Энэ хаана байдаг вэ?'},
+ '이거 몇 개예요?':{en:'How many of these are there?',mn:'Энэ хэдэн ширхэг вэ?'},
+ '이거 얼마예요?':{en:'How much is this?',mn:'Энэ ямар үнэтэй вэ?'},
+ '이거 언제 먹어요?':{en:'When do you eat this?',mn:'Үүнийг хэзээ иддэг вэ?'},
+ '이거 누구 거예요?':{en:'Whose is this?',mn:'Энэ хэний юм бэ?'},
+ '물건의 가격':{en:'the price of an item',mn:'барааны үнэ'},
+ '물건을 담을 봉투':{en:'a bag to carry your things',mn:'юм хийх уут'},
+ '현금으로 결제하기':{en:'paying in cash',mn:'бэлнээр төлөх'},
+ '봉투 하나 주세요.':{en:'One bag, please.',mn:'Нэг уут өгөөрэй.'},
+ '우유 하나 더 주세요.':{en:'One more milk, please.',mn:'Дахиад нэг сүү өгөөрэй.'},
+ '현금으로 계산할게요.':{en:'I’ll pay in cash.',mn:'Бэлнээр төлье.'},
+ '카드로 내요.':{en:'You pay by card.',mn:'Картаар төлнө.'},
+ '현금으로 내요.':{en:'You pay in cash.',mn:'Бэлнээр төлнө.'},
+ '다음에 내요.':{en:'You pay next time.',mn:'Дараа төлнө.'},
+ '내일 내요.':{en:'You pay tomorrow.',mn:'Маргааш төлнө.'},
+ '2,000원':{en:'2,000 won',mn:'2,000 вон'},
+ '1,000원':{en:'1,000 won',mn:'1,000 вон'},
+ '3,000원':{en:'3,000 won',mn:'3,000 вон'},
+ '3,500원':{en:'3,500 won',mn:'3,500 вон'},
+ '1,500원':{en:'1,500 won',mn:'1,500 вон'},
+ '라면과 물을 담으려고요.':{en:'To carry the ramen and water.',mn:'Рамён, усаа уутанд хийх гэсэн юм.'},
+ '물을 사려고요.':{en:'To buy water.',mn:'Ус авах гэсэн юм.'},
+ '카드로 계산하려고요.':{en:'To pay by card.',mn:'Картаар төлөх гэсэн юм.'},
+ '가격표를 다시 읽어요.':{en:'You read the price tag again.',mn:'Үнийн шошгыг дахин уншина.'},
+ '산 빵과 우유를 담아요.':{en:'You pack the bread and milk you bought.',mn:'Худалдаж авсан талх, сүүгээ уутанд хийнэ.'},
+ '교통카드를 충전해요.':{en:'You top up your transit card.',mn:'Нийтийн тээврийн картаа цэнэглэнэ.'},
+ '휴대폰으로 계산했어요.':{en:'Paid with a phone.',mn:'Утсаар төлсөн.'},
+ '카드하고 현금으로 계산했어요.':{en:'Paid with a card and cash.',mn:'Карт болон бэлэн мөнгөөр төлсөн.'},
+ '현금으로 계산했어요.':{en:'Paid in cash.',mn:'Бэлнээр төлсөн.'},
+ '카드로 계산했어요.':{en:'Paid by card.',mn:'Картаар төлсөн.'},
+ '이 도시락은 얼마예요?':{en:'How much is this lunch box?',mn:'Энэ савтай хоол ямар үнэтэй вэ?'},
+ '이 도시락은 어디에서 만들어요?':{en:'Where is this lunch box made?',mn:'Энэ савтай хоолыг хаана бэлтгэдэг вэ?'},
+ '이 도시락은 누가 만들어요?':{en:'Who makes this lunch box?',mn:'Энэ савтай хоолыг хэн бэлтгэдэг вэ?'},
+ '우산은 누가 샀어요?':{en:'Who bought the umbrella?',mn:'Шүхрийг хэн авсан бэ?'},
+ '우산은 얼마예요?':{en:'How much is the umbrella?',mn:'Шүхэр ямар үнэтэй вэ?'},
+ '우산은 언제 써요?':{en:'When do you use the umbrella?',mn:'Шүхрийг хэзээ хэрэглэдэг вэ?'},
+ '아니요, 괜찮아요.':{en:'No, I’m fine.',mn:'Үгүй ээ, зүгээр.'},
+ '가격은 얼마예요?':{en:'What’s the price?',mn:'Үнэ нь хэд вэ?'},
+ '네, 봉투 하나 주세요.':{en:'Yes, one bag, please.',mn:'Тийм ээ, нэг уут өгөөрэй.'},
+ '네, 봉투 두 개 주세요.':{en:'Yes, two bags, please.',mn:'Тийм ээ, хоёр уут өгөөрэй.'},
+ '카드로 계산할게요.':{en:'I’ll pay by card.',mn:'Картаар төлье.'},
+ '나중에 계산할게요.':{en:'I’ll pay later.',mn:'Дараа төлье.'},
+ '가격표를 붙여 주세요.':{en:'Please put a price tag on it.',mn:'Үнийн шошго нааж өгөөрэй.'},
+ // 편의점 팩 — 끝
 });
 
 // 문제 한 개의 화면 언어 글. 이 표에 없는 문제(1판 밖의 팩)는 원문 그대로다.
@@ -483,6 +607,26 @@ export const LIFE_CHOICE_NOTES=Object.freeze({
  'cafe-compose-count-transfer':{a:note('네, 두 잔 주세요.','직원이 말한 두 잔이 맞을 때 하는 대답이에요.','This is the answer when the two cups the staff said are right.','Ажилтан «хоёр аяга» гэж хэлсэн нь зөв бол ингэж хариулна.'),c:note('아니요, 세 잔 주세요.','세 잔이 필요할 때 고쳐 말하는 대답이에요.','This is how you correct the order when you need three cups.','Гурван аяга хэрэгтэй бол ингэж засаж хэлнэ.')},
  'cafe-compose-place':{b:note('아니요, 포장해 주세요.','카페에서 마시지 않고 가지고 나갈 때 하는 대답이에요.','This is the answer when you will take your drink out instead of drinking in the café.','Кафед уухгүй, авч явах бол ингэж хариулна.'),c:note('주문을 취소할게요.','주문을 그만둘 때 하는 말이에요.','You say this when you want to stop your order.','Захиалгаа цуцлахдаа хэлдэг үг.')},
  'cafe-compose-place-transfer':{a:note('네, 여기서 마실게요.','카페 안에서 마실 때 하는 대답이에요.','This is the answer when you will drink inside the café.','Кафе дотор уух бол ингэж хариулна.'),b:note('네, 창가에서 마실게요.','카페 창가에서 마실 때 하는 대답이에요.','This is the answer when you will drink at a window seat in the café.','Кафед цонхны дэргэд сууж уух бол ингэж хариулна.')},
+ // 편의점 팩(11-25 「네, 이어가」) — 시작
+ 'store-expressions-price':{a:note('이거 어디에 있어요?','물건이 있는 곳을 물을 때 하는 말이에요.','You say this to ask where something is.','Энэ бол ямар нэг зүйл хаана байгааг асуудаг өгүүлбэр.'),b:note('이거 몇 개예요?','물건의 수를 물을 때 하는 말이에요. 가격을 묻는 말이 아니에요.','You say this to ask how many there are. It does not ask the price.','Энэ бол хэдэн ширхэг байгааг асуудаг өгүүлбэр. Үнэ асуудаг өгүүлбэр биш.')},
+ 'store-expressions-price-transfer':{b:note('이거 언제 먹어요?','먹는 때를 물을 때 하는 말이에요.','You say this to ask when to eat something.','Энэ бол хэзээ идэхийг асуудаг өгүүлбэр.'),c:note('이거 누구 거예요?','물건의 주인을 물을 때 하는 말이에요.','You say this to ask who something belongs to.','Энэ бол хэний юм болохыг асуудаг өгүүлбэр.')},
+ 'store-expressions-bag':{a:note('물건의 가격','가격은 ‘이거 얼마예요?’로 물어요.','You ask the price with ‘이거 얼마예요?’.','Үнийг «이거 얼마예요?» гэж асууна.'),c:note('현금으로 결제하기','현금으로 낼 때는 ‘현금으로 계산할게요.’라고 해요.','To pay in cash, you say ‘현금으로 계산할게요.’','Бэлнээр төлөх бол «현금으로 계산할게요.» гэж хэлнэ.')},
+ 'store-expressions-bag-transfer':{b:note('우유 하나 더 주세요.','우유를 하나 더 살 때 하는 말이에요.','You say this when you want one more milk.','Дахиад нэг сүү авах бол ингэж хэлнэ.'),c:note('현금으로 계산할게요.','현금으로 값을 낼 때 하는 말이에요.','You say this when you pay in cash.','Бэлнээр төлөхдөө хэлдэг үг.')},
+ 'store-expressions-card':{b:note('현금으로 내요.','지폐나 동전으로 낼 때예요. 그때는 ‘현금으로 계산할게요.’라고 해요.','This is paying with bills or coins. For that, you say ‘현금으로 계산할게요.’','Цаасан мөнгө эсвэл зоосоор төлөх бол «현금으로 계산할게요.» гэж хэлнэ.'),c:note('다음에 내요.','지금 내지 않고 나중에 낸다는 뜻이에요.','This means you will not pay now but later.','Одоо биш, дараа төлнө гэсэн утгатай.')},
+ 'store-expressions-card-transfer':{a:note('카드로 내요.','카드로 낼 때는 ‘카드로 계산할게요.’라고 해요.','To pay by card, you say ‘카드로 계산할게요.’','Картаар төлөх бол «카드로 계산할게요.» гэж хэлнэ.'),b:note('내일 내요.','오늘 내지 않고 내일 낸다는 뜻이에요.','This means you will pay tomorrow, not today.','Өнөөдөр биш, маргааш төлнө гэсэн утгатай.')},
+ 'store-story-price':{a:note('2,000원','2,000원은 라면의 가격이에요.','2,000 won is the price of the ramen.','2,000 вон бол рамёны үнэ.'),c:note('3,000원','3,000원은 라면하고 물을 더한 값이에요.','3,000 won is the ramen and the water added together.','3,000 вон бол рамён, ус хоёрын нийт үнэ.')},
+ 'store-story-price-transfer':{a:note('2,000원','2,000원은 빵 한 개의 가격이에요.','2,000 won is the price of one bread.','2,000 вон бол нэг талхны үнэ.'),b:note('3,500원','3,500원은 우유하고 빵을 더한 값이에요.','3,500 won is the milk and the bread added together.','3,500 вон бол сүү, талх хоёрын нийт үнэ.')},
+ 'store-story-bag':{b:note('물을 사려고요.','물을 사자고 한 사람은 서하예요. 지호는 산 물건을 담으려고 봉투를 부탁했어요.','Seoha is the one who said to buy water. Jiho asked for a bag to carry what they bought.','Ус авъя гэсэн хүн бол Сөха. Жихо худалдаж авсан юмаа хийх уут авахыг хүссэн.'),c:note('카드로 계산하려고요.','카드로 계산한 사람은 태오예요. 지호는 봉투를 부탁했어요.','Taeo is the one who paid by card. Jiho asked for a bag.','Картаар төлсөн хүн бол Тэо. Жихо уут авахыг хүссэн.')},
+ 'store-story-bag-transfer':{a:note('가격표를 다시 읽어요.','가격을 볼 때예요. 봉투는 필요 없어요.','This is when you check a price. You don’t need a bag for that.','Үнэ харах үед уут хэрэггүй.'),c:note('교통카드를 충전해요.','교통카드에 돈을 넣을 때예요. 봉투는 필요 없어요.','This is when you add money to a transit card. You don’t need a bag for that.','Нийтийн тээврийн картаа цэнэглэх үед уут хэрэггүй.')},
+ 'store-story-card':{a:note('휴대폰으로 계산했어요.','태오는 휴대폰이 아니라 카드를 냈어요.','Taeo used a card, not his phone.','Тэо утсаар биш, картаар төлсөн.'),b:note('현금으로 계산했어요.','태오는 현금을 내지 않았어요. ‘카드로 계산할게요.’라고 했어요.','Taeo didn’t hand over any cash. He said ‘카드로 계산할게요.’','Тэо бэлэн мөнгө өгөөгүй. «카드로 계산할게요.» гэж хэлсэн.')},
+ 'store-story-card-transfer':{b:note('카드로 계산했어요.','서하는 오늘 카드가 없어요. 그래서 ‘현금으로’라고 했어요.','Seoha doesn’t have her card today. That’s why she said ‘현금으로’ (in cash).','Сөха өнөөдөр картгүй байсан. Тиймээс «현금으로» (бэлнээр) гэж хэлсэн.'),c:note('카드하고 현금으로 계산했어요.','서하는 카드를 쓰지 않았어요. 현금만 냈어요.','Seoha didn’t use a card. She only paid in cash.','Сөха карт ашиглаагүй. Зөвхөн бэлэн мөнгө өгсөн.')},
+ 'store-apply-price':{b:note('이 도시락은 어디에서 만들어요?','도시락을 만드는 곳을 물을 때 하는 말이에요.','You say this to ask where the lunch box is made.','Энэ бол савтай хоолыг хаана бэлтгэдгийг асуудаг өгүүлбэр.'),c:note('이 도시락은 누가 만들어요?','도시락을 만드는 사람을 물을 때 하는 말이에요.','You say this to ask who makes the lunch box.','Энэ бол савтай хоолыг хэн бэлтгэдгийг асуудаг өгүүлбэр.')},
+ 'store-apply-price-transfer':{a:note('우산은 누가 샀어요?','우산을 산 사람을 물을 때 하는 말이에요.','You say this to ask who bought the umbrella.','Энэ бол шүхрийг хэн авсныг асуудаг өгүүлбэр.'),c:note('우산은 언제 써요?','우산을 쓰는 때를 물을 때 하는 말이에요.','You say this to ask when to use the umbrella.','Энэ бол шүхрийг хэзээ хэрэглэхийг асуудаг өгүүлбэр.')},
+ 'store-apply-bag':{a:note('아니요, 괜찮아요.','봉투가 필요 없을 때 하는 대답이에요.','This is the answer when you don’t need a bag.','Уут хэрэггүй бол ингэж хариулна.'),b:note('가격은 얼마예요?','가격을 물을 때 하는 말이에요. 봉투를 묻는 말의 대답이 아니에요.','You say this to ask the price. It doesn’t answer a question about a bag.','Энэ бол үнэ асуудаг өгүүлбэр. Уут хэрэгтэй эсэхийг асуухад өгөх хариулт биш.')},
+ 'store-apply-bag-transfer':{a:note('네, 봉투 두 개 주세요.','봉투가 두 개 필요할 때 하는 대답이에요.','This is the answer when you need two bags.','Хоёр уут хэрэгтэй бол ингэж хариулна.'),c:note('카드로 계산할게요.','카드로 값을 낼 때 하는 말이에요. 봉투를 묻는 말의 대답이 아니에요.','You say this when you pay by card. It doesn’t answer a question about a bag.','Картаар төлөхдөө хэлдэг үг. Уут хэрэгтэй эсэхийг асуухад өгөх хариулт биш.')},
+ 'store-apply-card':{a:note('현금으로 계산할게요.','현금으로 값을 낼 때 하는 말이에요.','You say this when you pay in cash.','Бэлнээр төлөхдөө хэлдэг үг.'),c:note('나중에 계산할게요.','지금 내지 않고 나중에 내겠다는 말이에요.','This means you won’t pay now, but later.','Одоо биш, дараа төлнө гэсэн үг.')},
+ 'store-apply-card-transfer':{b:note('카드로 계산할게요.','카드로 값을 낼 때 하는 말이에요.','You say this when you pay by card.','Картаар төлөхдөө хэлдэг үг.'),c:note('가격표를 붙여 주세요.','물건에 가격표를 붙여 달라는 부탁이에요. 값을 내는 말이 아니에요.','This asks someone to put a price tag on something. It isn’t about paying.','Бараанд үнийн шошго нааж өгөөч гэсэн үг. Төлбөртэй холбоотой үг хэллэг биш.')},
+ // 편의점 팩 — 끝
 });
 
 /** 그 문항 보기의 한 줄(화면 언어, 없으면 한국어). 문항이나 보기 글이 바뀌었으면 null. */

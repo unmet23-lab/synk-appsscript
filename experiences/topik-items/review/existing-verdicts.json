@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-11-23T16:38:07.242Z",
+  "updatedAt": "2026-11-24T22:12:06.809Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -5442,31 +5442,26 @@
     {
       "itemKey": "life.store-story-bag",
       "source": "life",
-      "verdict": "fix",
+      "verdict": "pass",
       "skillId": "ko.reading.reason",
-      "difficulty": 1,
+      "difficulty": 2,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답은 유일하고 능력도 맞습니다. 다만 오답 하나(가격을 바꾸려고요)가 터무니없어 바꿔야 하고, 「-(으)려고」 문형 때문에 난도는 2가 맞습니다. 해설에 근거 인용과 오답 설명을 더하면 좋습니다. | 이야기에서 봉투를 부탁한 이유를 찾는 문항으로 정답 유일성과 오답 구성이 모두 적절하다. | 정답 0(「라면과 물을 담으려고요」)은 이야기의 「라면과 물을 담으려고 … 부탁해요」로 바로 확인되고, 다른 보기와 다툴 여지가 없습니다. 능력 ko.reading.reason도 맞습니다. 마스코트 이름과 보기 셋은 기존 게임 꼴이라 문제 삼지 않습니다. 그래도 검수자 A의 지적 두 가지는 받아들입니다. 첫째, 오답 「가격을 바꾸려고요」는 이야기와 관계없는 터무니없는 보기라 상식만으로 지워집니다. 둘째, 정답을 가르려면 「-(으)려고」를 이해해야 합니다. 이 문형은 작성 기준 §3에서 2단계 문형으로 정해 두었고, 이야기도 여러 줄이라 difficulty 1은 맞지 않고 2가 맞습니다. 난도 칸이 틀리면 Core 칸 배정이 어긋나므로 그대로 통과시키지 않습니다. 해설은 기존 문항이라 한국어만 있어도 되지만, 근거 인용과 오답 설명을 더하면 학습자에게 도움이 됩니다.",
-      "hash": "e3763a7fdff0b9f9",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답이 유일하고 오답이 이야기 속 다른 인물의 행동이라 그럴듯하다. 이유 읽기 능력과 난도도 맞아 통과다. 로마자 화자 표기는 화면 표기 문제로 사소하다. | 지호가 봉투를 부탁한 이유를 묻는 기존 게임 문항으로, 정답과 오답 설계·해설이 정확하고 2단계 문형(-(으)려고) 사용이 difficulty 2와 부합하여 통과.",
+      "hash": "0d03627ab130e8a8",
+      "reviewedAt": "2026-11-24T22:12:06.809Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-store-people-20261125c",
       "by": [
         {
           "stage": "claude",
           "model": "claude-opus-5-5",
-          "verdict": "fix"
-        },
-        {
-          "stage": "argon",
-          "model": "gemini-4-argon-high",
           "verdict": "pass"
         },
         {
-          "stage": "adjudication",
-          "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "stage": "argon",
+          "model": "gemini-4-carbon-high",
+          "verdict": "pass"
         }
       ]
     },
@@ -5499,47 +5494,42 @@
     {
       "itemKey": "life.store-story-card",
       "source": "life",
-      "verdict": "fix",
+      "verdict": "pass",
       "skillId": "ko.reading.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답(카드)은 유일하고 능력·난도도 맞습니다. 다만 오답 「다음 날 계산했어요」가 방법을 묻는 발문과 꼴이 맞지 않아 쉽게 지워지므로, 방법 보기로 바꾸고 해설에 오답 설명을 더하면 쓸 수 있습니다. | 이야기에서 까몽이 계산한 방법을 찾는 세부 정보 파악 문항으로 모든 기준을 충족한다. | 정답 「카드로 계산했어요」는 이야기의 「카드로 계산할게요」·「카드로 계산하고」로 하나뿐이고, 능력(세부)·난도도 맞습니다. 다만 보기 0 「다음 날 계산했어요」는 방법이 아니라 때를 말하는 보기라 「어떤 방법으로」라는 발문과 꼴이 맞지 않습니다. 그래서 읽지 않고도 지울 수 있고, 오답 매력도 기준(꼴을 고르게)에 어긋납니다. 해설에도 오답이 왜 틀린지가 없습니다. 기존 게임 꼴(보기 셋, 마스코트 이야기)은 그대로 두고 보기 하나와 해설만 고치면 쓸 수 있으므로 검수자 A의 지적을 받아들입니다.",
-      "hash": "554343ce0f3a7454",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답이 분명하고, 수준·자연스러움·해설 모두 기존 게임 꼴 안에서 적절하다. 화자 표시가 로마자인 점만 화면 표시를 확인하면 된다. 통과. | 태오의 계산 방법을 확인하는 기존 게임 문항으로, 동위 범주 결제 수단 오답 구성과 정답 유일성·어휘 수준이 초급 1단계에 알맞아 통과.",
+      "hash": "ee448381b89d1a67",
+      "reviewedAt": "2026-11-24T22:12:06.809Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-store-people-20261125c",
       "by": [
         {
           "stage": "claude",
           "model": "claude-opus-5-5",
-          "verdict": "fix"
-        },
-        {
-          "stage": "argon",
-          "model": "gemini-4-argon-high",
           "verdict": "pass"
         },
         {
-          "stage": "adjudication",
-          "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "stage": "argon",
+          "model": "gemini-4-carbon-high",
+          "verdict": "pass"
         }
       ]
     },
     {
       "itemKey": "life.store-story-card-transfer",
       "source": "life",
-      "verdict": "fix",
+      "verdict": "pass",
       "skillId": "ko.reading.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 유일하고 1급 생활 상황 읽기로 알맞아 통과예요. 해설이 짧으니 나중에 고칠 때 근거 말 「현금으로 계산할게요」를 인용하면 더 좋아요. 예: 「몽글이 '현금으로 계산할게요'라고 말하고 지폐를 건넸으니 현금으로 계산했어요.」 | 지문에 정답 표현(「현금으로 계산」)이 그대로 노출된 상태에서 해설은 초급 외 어휘인 '지폐·결제'로만 설명하고 있고, 발문('방법을 골라요')과 보기 2번('아직 계산하지 않았어요.')의 범주가 맞지 않으며 마스코트 이름('몽글')이 쓰여 수정이 필요하다. | 정답(0번)은 하나뿐이고 게임 꼴 안에서 생활 상황 읽기로 쓸 수 있다. 다만 손볼 곳이 둘 있다. 첫째, 해설이 근거가 된 말 「현금으로 계산할게요」를 짚지 않는다. 그 대신 초급 수준을 넘는 「결제」로만 풀어 학습자에게 근거가 잘 보이지 않는다. 둘째, 발문이 「방법을 골라요」인데 3번 보기 「아직 계산하지 않았어요」는 방법이 아니어서 발문과 범주가 어긋난다. 고치기는 쉬우니 고쳐서 내보내는 편이 낫다. 마스코트 이름 「몽글」은 기존 게임(WORLD)의 등장인물로 쓰인 것이어서 게임 꼴 안에서는 받아들인다. 정답 표현이 지문에 그대로 나오는 점도 「새 상황 복습」 꼴",
-      "hash": "f2578834d5221963",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답이 하나뿐이고, 오답 둘은 「카드가 없어요」로 지워져요. 낱말·문형이 1급 수준에 맞고 해설도 바른 게임 복습 문항이에요. 통과예요. | 결제 수단을 현금으로 바꾼 새 상황 복습 문항으로, 3문장 분량·부정 단서를 활용한 오답 구성·해설이 모두 기준에 부합하여 통과.",
+      "hash": "d7605b1b3a900b9e",
+      "reviewedAt": "2026-11-24T22:12:06.809Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-store-people-20261125c",
       "by": [
         {
           "stage": "claude",
@@ -5548,13 +5538,8 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
-          "verdict": "fix"
-        },
-        {
-          "stage": "adjudication",
-          "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "model": "gemini-4-carbon-high",
+          "verdict": "pass"
         }
       ]
     },
@@ -5566,11 +5551,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "가격표와 대사에서 1,000원이 분명히 드러나 정답이 유일합니다. 게임 꼴 안에서 1급 앞쪽 세부 정보 문항으로 무난하므로 통과입니다. 오답 매력도가 낮고 해설이 짧은 것은 사소합니다. | 이야기 속에서 물 한 병의 가격(1,000원)을 찾는 세부 정보 파악 문항으로 정답 근거가 명확하고 오류가 없다.",
-      "hash": "e1cb1322a06c4905",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "물 값 1,000원을 가격표에서 찾는 세부 정보 문항이다. 정답이 유일하고, 오답은 라면 값과 합계로 그럴듯하다. 해설도 정확해 통과. | 편의점 이야기에서 물 한 병의 가격을 찾는 기존 게임 문항으로, 정답 유일성·오답 구성(라면 가격·합산 가격)·해설 모두 적절하여 통과.",
+      "hash": "267e6f7da677b29f",
+      "reviewedAt": "2026-11-24T22:12:06.809Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-store-people-20261125c",
       "by": [
         {
           "stage": "claude",
@@ -5579,7 +5564,7 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
+          "model": "gemini-4-carbon-high",
           "verdict": "pass"
         }
       ]
