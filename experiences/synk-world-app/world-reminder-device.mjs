@@ -73,11 +73,14 @@ export const pushErrorKey=code=>PUSH_ERRORS[code]||'reminder.push.error';
 
 // owner: 'guest' 또는 계정 id(기록은 주인마다 따로). read(): 위 머리글의 입력. open(kind): 알림이 가리키는 자리로(복습·계획·시험 점검).
 // show(title, html): 시트 열기(시험 점검 카드·휴대폰의 2단 동의). toast(text). repaint(): 묻는 카드가 바뀌었을 때 배우기 판을 다시 그린다.
-// canMock(): 시험 형식 연습(미니 모의, education.mock)을 지금 열 수 있는지 — 시험 점검 카드의 주 단추가 그린 때의 이 판정에 묶인다(4-4d §21-23의 5).
+// mockNow(): 시험 형식 연습(미니 모의, education.mock)을 지금 열 수 있는지 — 시험 점검 카드의 주 단추가 그린 때의 이 판정에 묶인다(4-4d §21-23의 5).
+//   새 셸만 넘긴다. 없으면 옛 셸(③ 공개 직후 캐시에 남은 옛 app-shell — 클릭 목록이 reminder-exam-mock · reminder-exam-check를 모른다)로 보고 카드를
+//   옛 꼴(주 단추 하나 reminder-exam-start — 셸의 open('exam-start')가 누른 때 고른다)로 그린다.
+// canMock(): 옛 뜻 — 시험 형식 입구가 있는 화면인지. 옛 꼴 카드의 주 단추 글만 이것으로 고른다.
 // panel(): 열린 판의 종류(home.openPanel — 닫히는 중이면 빈 값). 판정이 바뀌어 카드에 단추를 더할 때 그 카드가 열려 있는지 본다.
 // push: 2단 기기 쪽(world-push.mjs createWorldPush) — 로그인한 계정 주인일 때만, 손님은 null. close(): 열린 시트를 닫는다(휴대폰의 2단 동의 시트).
 export function createWorldReminders({owner,storage=globalThis.localStorage,target=globalThis,read=()=>null,open=()=>{},show=()=>{},toast=()=>{},repaint=()=>{},
- canMock=()=>false,panel=()=>null,now=()=>Date.now(),offset=deviceOffset,push=null,pushFeature=false,close=()=>{}}){
+ canMock=()=>false,mockNow=null,panel=()=>null,now=()=>Date.now(),offset=deviceOffset,push=null,pushFeature=false,close=()=>{}}){
  const key=`${REMINDER_KEY}.${owner}`;
  // examDrawn: 마지막으로 그린 시험 점검 카드의 꼴('mock' · 'check' · 'added') — 판정이 거짓이던 카드에만 시험 형식 단추를 더한다.
  let stopped=false,timer=null,last=null,pending=null,confirming=false,settingsRoot=null,unwatch=null,settingsUpdate=null,examDrawn=null;
@@ -312,18 +315,27 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   }
   // 시험 점검 카드의 두 단추 — 그린 때 고른 대상을 그대로 연다(누른 때 다시 고르지 않는다 — 4-4d §21-23의 5).
   if(name==='reminder-exam-mock')return open('exam-mock');
+  if(name==='reminder-exam-check')return open('exam-check');
   if(name==='reminder-exam-start')return open('exam-start');
   if(name==='reminder-exam-plan')return open('plan');
  }
  // 시험일 점검을 누르면 여는 카드: 잠금 화면에는 일의 종류를 쓰지 않았으므로 여기서 무엇을 권하는지 말한다.
- // 주 단추는 그린 때의 판정(canMock)에 묶는다(4-4d §21-23의 5 · 설계 다시 검수 A1 · A2): 열 수 있으면 시험 형식 연습(reminder-exam-mock),
- // 아니면 짧은 진단(reminder-exam-start)이고, 누른 때 다시 고르지 않는다. added: 판정이 거짓이던 카드를 연 뒤 참이 된 꼴 — 짧은 진단 단추는 그
+ // 주 단추는 그린 때의 판정(mockNow)에 묶는다(4-4d §21-23의 5 · 설계 다시 검수 A1 · A2): 열 수 있으면 시험 형식 연습(reminder-exam-mock),
+ // 아니면 짧은 진단(reminder-exam-check)이고, 누른 때 다시 고르지 않는다. added: 판정이 거짓이던 카드를 연 뒤 참이 된 꼴 — 짧은 진단 단추는 그
  // 자리에 두고 시험 형식 단추를 곁에 둔다(examChanged가 열린 카드에 같은 꼴로 끼워 넣는다).
  const examButton=(name,key,primary)=>`<button type="button" class="${primary?'felt-button':'plain-button'}" data-world="${name}">${escape(t(key))}${primary?' <span aria-hidden="true">→</span>':''}</button>`;
  function examMarkup({added=false}={}){
-  let mock=false;try{mock=!added&&canMock()===true;}catch{mock=false;}
-  examDrawn=added?'added':mock?'mock':'check';
-  const lead=mock?examButton('reminder-exam-mock','reminder.exam.mock',true):examButton('reminder-exam-start','reminder.exam.start',true)+(added?examButton('reminder-exam-mock','reminder.exam.mock',false):'');
+  let lead;
+  if(typeof mockNow!=='function'){
+   // 옛 셸(mockNow를 넘기지 않는다): 옛 꼴 그대로 — 주 단추 하나(reminder-exam-start)이고 글만 canMock으로 고른다. 누른 때 셸이 고른다.
+   // examChanged는 이 카드에 단추를 더하지 않는다(옛 셸의 클릭 목록이 reminder-exam-mock을 모른다).
+   let old=false;try{old=canMock()===true;}catch{old=false;}
+   examDrawn='old';lead=examButton('reminder-exam-start',old?'reminder.exam.mock':'reminder.exam.start',true);
+  }else{
+   let mock=false;try{mock=!added&&mockNow()===true;}catch{mock=false;}
+   examDrawn=added?'added':mock?'mock':'check';
+   lead=mock?examButton('reminder-exam-mock','reminder.exam.mock',true):examButton('reminder-exam-check','reminder.exam.start',true)+(added?examButton('reminder-exam-mock','reminder.exam.mock',false):'');
+  }
   return `<div class="reminder-exam" data-reminder-exam="${examDrawn}"><div class="world-notice" data-tone="info" data-label="CHECK"><strong>${escape(t('reminder.exam.title'))}</strong><span>${escape(t('reminder.exam.body'))}</span></div><div class="world-actions">${lead}${examButton('reminder-exam-plan','reminder.exam.plan',false)}</div></div>`;
  }
  // 판정이 바뀌었을 수 있을 때(셸이 홈을 다시 그릴 때마다 앱이 부른다): 열린 판이 판정이 거짓일 때 그린 시험 점검 카드이고 지금 판정이 참이면,
@@ -334,9 +346,9 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   if(stopped||examDrawn!=='check')return false;
   let kind=null;try{kind=panel();}catch{kind=null;}
   if(kind!=='world-reminder')return false;
-  const card=target.document?.querySelector?.('[data-reminder-exam="check"]'),start=card?.querySelector?.('[data-world="reminder-exam-start"]');
+  const card=target.document?.querySelector?.('[data-reminder-exam="check"]'),start=card?.querySelector?.('[data-world="reminder-exam-check"]');
   if(!card||typeof start?.insertAdjacentHTML!=='function')return false;
-  let mock=false;try{mock=canMock()===true;}catch{mock=false;}
+  let mock=false;try{mock=mockNow()===true;}catch{mock=false;}
   if(!mock)return false;
   start.insertAdjacentHTML('afterend',examButton('reminder-exam-mock','reminder.exam.mock',false));
   card.setAttribute?.('data-reminder-exam','added');examDrawn='added';

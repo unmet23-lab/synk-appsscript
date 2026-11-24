@@ -24,7 +24,7 @@ export const PLAN_SOURCES = Object.freeze({
 const KEY = "  const key=[homePlanner.todayKey(now),planEnds,info.type,complete,summaryShape(summary)].join('|');\n";
 const START = ' const start=reader?complete&&reader.start?.(skills.map(skill=>skill.id))===true:';
 const HOMEWORK = ' const homework=skills.filter(reader?weakNext:weakOf).map(skill=>{';
-const WAIT_OPEN = "if(homePhase()==='checking'&&examChosen()){const panel=home.openPanel?.()??'';await settledHome();check();if(!quiet&&(home.openPanel?.()??'')!==panel)return 'skipped';}}";
+const WAIT_OPEN = "if(homePhase()==='checking'&&examChosen()){const panel=home.openPanel?.()??'';await settledHome();check();if(mine!==asked||!quiet&&(home.openPanel?.()??'')!==panel)return 'skipped';}}";
 const MET = '      if (!wanted.has(item?.skillId) || quiet(() => skip(item)) === true) continue;\n';
 
 // 변형 하나 = [갈래, 이름, 바꿀 글, 바꾼 글]. 바꿀 글은 원본에 꼭 한 번 있어야 한다.
@@ -91,7 +91,7 @@ export const PLAN_MUTANTS = [
   ['shell', '판이 서도 기다림을 깨우지 않는다 — 판이 선 뒤에도 한도(8초)까지 기다린다(Fable F1)', '  wakePlanWaits();\n', ''],
   // wakePlanWaits의 「닫혔는가」(!stopped) 확인을 빼는 변형은 두지 않는다 — 닫히면 판 상태(homePhase)가 지금 판('old')이라 기다림이 이미 풀린다
   // (같은 동작 변형 · 4-4b 다시 검수 카본 A1). 확인은 그 규칙에 기대지 않으려고 둔 것이다. settledHome 타이머의 unref는 프로세스 종료만 바꿔 장면으로 못 본다.
-  ['shell', '확인 중에 학생이 누른 계획 열기가 기다린 사이 학생이 연 다른 판을 덮는다(4-4b 다시 검수 Fable FA2)', WAIT_OPEN, "if(homePhase()==='checking'&&examChosen()){await settledHome();check();}}"],
+  ['shell', '확인 중에 학생이 누른 계획 열기가 기다린 사이 학생이 연 다른 판을 덮는다(4-4b 다시 검수 Fable FA2)', WAIT_OPEN, "if(homePhase()==='checking'&&examChosen()){await settledHome();check();if(mine!==asked)return 'skipped';}}"],
   ['shell', '문서가 닫혀도 계획 열기의 기다림을 깨우지 않는다 — 판을 기다리던 열기가 8초 한도까지 매달린다(4-4b 다시 검수 카본 A1)', "dispose(){stopped=true;wakePlanWaits();", "dispose(){stopped=true;"],
   ['shell', '짧은 연습을 도중에 닫을 때 판 기록을 적지 않는다', 'try{session.stop();}catch{}counted(session.results());queueMicrotask(()=>refresh());};', 'try{session.stop();}catch{}queueMicrotask(()=>refresh());};'],
   // ── 받기 알림(§21-20 — hearHome · heardHome · drawHeard). 열린 판 · 묶기 · 코치 바꾸기의 변형은 qa/position-mutants.mjs 「셸 받기 알림」에 있다 ──
@@ -101,7 +101,7 @@ export const PLAN_MUTANTS = [
   ['shell', "다른 탭(refresh) 알림을 넘긴다 — 같은 브라우저의 다른 창에서 쓴 답이 이 창의 홈에 닿지 않는다(§21-20 시험 2 · 3)", "off:coachNow.watch(()=>heardHome(coachNow))", "off:coachNow.watch(note=>{if(note?.kind==='receive')heardHome(coachNow);})"],
   ['shell', "알림을 받은 자리에서 바로 그린다 — 잇달아 온 알림을 묶지 않는다(§21-20 조건 3)", "  heard.home=true;heard.panel=true;\n  if(heard.timer==null)heard.timer=watchClock.set(drawHeard,0);\n", "  heard.home=true;heard.panel=true;\n  drawHeard();\n"],
   ['shell', "알림이 묶음 만남을 버리지 않는다 — 다른 창에서 건너뛰기만 한 판의 만남을 그날 내내 못 본다(§21-20 시험 3 · Fable FA1)", "  if(weekMet.coach===coachNow)weekMet={coach:null,key:null,met:null};\n", ""],
-  ['shell', "문서를 닫아도 받기 알림의 듣기를 되돌리지 않는다(§21-20 조건 1)", "wakePlanWaits();stopHearing();homeWatch?.dispose();", "wakePlanWaits();homeWatch?.dispose();"],
+  ['shell', "문서를 닫아도 받기 알림의 듣기를 되돌리지 않는다(§21-20 조건 1)", "stopHearing();homeWatch?.dispose();release(coach);", "homeWatch?.dispose();release(coach);"],
   ['shell', "열린 이번 주 계획 판을 알림으로 다시 그리지 않는다 — 판 뒤의 홈만 새로 그려 학생이 보는 판은 옛 계획이다(받기 알림 설계 검토 D3)", "  if(planOpen&&heard.panel)void openPlan({keepScroll:true}).catch(()=>{});\n", ""],
   ['shell', "받기 알림을 걸지 못하는 엔진 판에서도 새 길 홈을 그대로 둔다 — 다른 기기의 답을 놓친다(받기 알림 설계 검토 D5)", "   if(error instanceof TypeError)unheard();\n", ""],
   ['shell', "겉에 watch가 없는 엔진 코치에서도 새 길 홈을 그대로 둔다 — 조용히 듣지 않아 다른 기기의 답을 놓친다(4-4b 다시 검수 -d Fable P3)", "  if(typeof coachNow.watch!=='function'){unheard();return;}\n", "  if(typeof coachNow.watch!=='function')return;\n"],
@@ -121,6 +121,9 @@ export const PLAN_MUTANTS = [
   ['shell', '새 길 계획 판에 시험 형식 칸을 싣지 않는다 — 홈 줄이 서는 날에도 계획 판에 그 칸이 없다(Fable 끝 판 F8 · 설계 주인 11-17 저녁 답 3)', "  if(mockNow)examPlan.mock=", "  if(false)examPlan.mock="],
   ['week', '이번 주에 한 판의 수(mockDone)를 홈 플래너에 넘기지 않는다 — 차례 돌리기가 늘 0이라 하지 않은 시험 형식이 이레 내내 선다(설계 주인 11-17 저녁 답 1)', 'diagnostic:{ready},mock,mockDone,writing,', 'diagnostic:{ready},mock,writing,'],
   ['week', '쓰기의 한 가지 고치기가 열린 시각을 넘기지 않는다 — 몫이 모두 찬 날에도 보탬이 서지 않는다(설계 주인 11-17 다시 여쭘의 답 2)', 'needAt:needKind?need.at:null', 'needAt:null'],
+  // ── 검수 s3e1로 고친 것(GB3 · GB4) ──
+  ['shell', '확인 중에 기다린 계획 열기가 그 사이 학생이 누른 다른 학습(같은 카드의 짧은 진단 시작)을 덮는다(검수 s3e1 GB4)', WAIT_OPEN, "if(homePhase()==='checking'&&examChosen()){const panel=home.openPanel?.()??'';await settledHome();check();if(!quiet&&(home.openPanel?.()??'')!==panel)return 'skipped';}}"],
+  ['shell', '새 길 연습 코치를 기다리는 사이 판을 닫아도 늦게 선 짧은 연습이 그 판을 덮는다(검수 s3e1 GB3 · 2a3a74e85a의 막이)', '  home.attachPanelResource?.({dispose(){if(launching&&ticket===practiceOpen)practiceOpen++;}});\n', ''],
 ];
 
 // 없는 갈래 이름이면 아무 변형도 돌리지 않고 0으로 끝나던 것을 멈춘다(4-4b 끝 판 GPT GB1).

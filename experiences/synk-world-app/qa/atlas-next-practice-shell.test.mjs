@@ -43,7 +43,7 @@ function fakeSession({views=[],ending={kind:'done'},fresh=3}={}){
 
 // 손님 셸 하나 — 판을 열 때마다 셸이 넘긴 값(opened)을 남기고, 다음 가짜 판(sessions의 앞)을 준다.
 // homeNext: 새 길 홈 입구(4-4b 판 기록을 보는 시험만 — 플래너는 없어 홈은 지금 판이다).
-function world(sessions,{retired=null,toasts=[],homeNext=null}={}){
+function world(sessions,{retired=null,toasts=[],homeNext=null,practiceCoach=null}={}){
  const opened=[];
  let box=null,resource=null;
  const values=new Map();
@@ -52,7 +52,7 @@ function world(sessions,{retired=null,toasts=[],homeNext=null}={}){
  const home={updateStudy(){},toast:message=>toasts.push(message),closePanel(){},attachPanelResource(value){resource=value;},showPanel:(title,html)=>{if(/data-practice-stage/.test(html))box=stage();}};
  const target={localStorage:{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)},
   addEventListener(){},removeEventListener(){},setTimeout,document:{querySelector:selector=>/data-practice-stage/.test(selector)?box:null}};
- const atlasNext={practiceCoach:async()=>({}),createPracticeNextSession:options=>{opened.push(options);const next=sessions.shift();return typeof next?.settled==='function'?next:fakeSession(next);},...(retired?{retired}:{})};
+ const atlasNext={practiceCoach:practiceCoach??(async()=>({})),createPracticeNextSession:options=>{opened.push(options);const next=sessions.shift();return typeof next?.settled==='function'?next:fakeSession(next);},...(retired?{retired}:{})};
  const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:()=>({selected:null,reason:''}),launchGame(){},startLesson(){},startReview(){},position:worldPosition,target,atlasNext,...(homeNext?{homeNext}:{})});
  // close: 홈이 판을 닫는다 — 판 글을 문서에서 떼고 판 자원을 dispose한다(home.mjs disposePanelContent). 떼지 않으면 닫은 뒤 이어 온 판 끝이 그린다.
  return {education,opened,toasts,box:()=>box,close:()=>{if(box)box.isConnected=false;resource?.dispose?.();}};
@@ -85,6 +85,23 @@ test('「새 말 더 배우기」로 연 판 뒤의 「더 하기」는 more를 
  plain.box().press('data-practice-again');
  await until(()=>plain.opened.length===2);
  assert.deepEqual(plain.opened.map(row=>row.more),[false,false],'보통 판의 더 하기는 보통 판');
+});
+
+test('「다시 확인」 카드로 연 판(only)의 「새 말 더 배우기」 · 「더 하기」는 다음 판도 그 단위 문항만 낸다(검수 s3d GG2)',async()=>{
+ const pool=worldPosition.practice.pool;
+ const skillId=pool.find(item=>/^ko\.reading\./.test(item.skillId)).skillId;
+ const same=pool.filter(item=>item.skillId===skillId);
+ assert.ok(same.length>2,'같은 능력의 문항이 여럿이다');
+ const only=same.slice(0,2).map(item=>item.itemKey);
+ const chain=world([{ending:{kind:'limited'}},{ending:{kind:'done'},fresh:3},{ending:{kind:'done'},fresh:2}]);
+ await chain.education.practice(null,{only});
+ await until(()=>done(chain));
+ chain.box().press('data-practice-more');
+ await until(()=>chain.opened.length===2&&done(chain));
+ chain.box().press('data-practice-again');
+ await until(()=>chain.opened.length===3);
+ for(const [index,row] of chain.opened.entries())assert.deepEqual(row.pool.map(item=>item.itemKey).sort(),[...only].sort(),`${index+1}번째 판도 그 단위 문항만`);
+ assert.deepEqual(chain.opened.map(row=>row.more),[false,true,true],'더 배우기로 연 뒤의 더 하기는 more를 잇는다(FA1과 같다)');
 });
 
 test('끈질긴 단위 힌트는 듣기 문항이면 듣기 꼴(「들으면서」), 읽기 문항이면 읽기 꼴로 그린다(FA1 · 앞 F2)',async()=>{
@@ -157,4 +174,19 @@ test('새 길 짧은 연습을 도중에 닫아도(판 자원의 dispose) 채점
   w.close();
   assert.deepEqual(logged,expected,rows.length?'답이 있는 판':'답 없이 닫은 판은 세지 않는다');
  }
+});
+
+test('새 길 연습 코치를 기다리는 사이 판을 닫거나 다른 판을 열면(판 자원의 dispose) 늦게 선 짧은 연습이 그 판을 덮지 않는다(검수 s3e1 GB3)',async()=>{
+ const skillId=worldPosition.practice.pool.find(item=>/^ko\.reading\./.test(item.skillId)).skillId;
+ let release;
+ const held=new Promise(resolve=>(release=resolve));
+ const w=world([{ending:{kind:'done'}}],{practiceCoach:()=>held});
+ const opening=w.education.practice(null,{only:worldPosition.practice.pool.filter(item=>item.skillId===skillId).slice(0,2).map(item=>item.itemKey)});
+ await new Promise(resolve=>setTimeout(resolve,20));
+ w.close();
+ release({});
+ await opening;
+ await new Promise(resolve=>setTimeout(resolve,20));
+ assert.equal(w.opened.length,0,'늦게 선 연습 판을 열지 않는다');
+ assert.equal(w.box(),null,'판을 그리지 않는다');
 });

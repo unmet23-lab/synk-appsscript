@@ -1189,11 +1189,12 @@ test('엔진 판의 짧은 진단 — 서버 길 계정의 끝 화면은 접기�
   }
 });
 
-test('한글 열쇠 — 엔진 판은 이 화면이 이미 든 옛 코치에서만 짓고, 열쇠 하나 때문에 옛 코치를 만들지 않는다(설계 주인 11-15)', async () => {
+test('한글 열쇠 — 엔진 판은 옛 코치 없이도 학습 호스트의 status()로 계정 · 판 구역 열쇠를 지어 졸업을 읽고, 열쇠 하나 때문에 옛 코치를 만들지 않는다(설계 주인 11-15 · 검수 s3d GG1)', async () => {
   // 계정 기록 읽개가 없는 계정(리허설) · 「아직 못 읽어요」를 고른 학생. 이 계정 · 판 구역의 한글 진도는 졸업했다.
   const key = 'synk.account.acct-1.r3.hangul-stage.v1';
   const storage = new Map([[key, JSON.stringify({ v: 1, letters: {}, graduated: { at: '2026-11-01T00:00:00.000Z' } })]]);
   const created = [];
+  let revision = 3;
   const empty = worldLearning.engine.createGame({ gameId: 'world-old-empty', storage: null, historyComplete: false }).summary();
   const old = { assignment() {}, summary: () => empty, presentation: () => null, disconnect() {} };
   const host = {
@@ -1201,7 +1202,7 @@ test('한글 열쇠 — 엔진 판은 이 화면이 이미 든 옛 코치에서�
       created.push(options.gameId);
       return old;
     },
-    status: () => ({ accountKey: 'acct-1', revision: 3 }),
+    status: () => ({ accountKey: 'acct-1', revision }),
     ready: async () => {},
     preferences: () => ({ presentation: () => null, setPresentation: () => true }),
   };
@@ -1209,10 +1210,17 @@ test('한글 열쇠 — 엔진 판은 이 화면이 이미 든 옛 코치에서�
   const app = shell({ owner: 'acct-1', reading: { answer: 'new' }, host, storage });
   try {
     await tick();
-    // 든 옛 코치가 없다 — 계정의 한글 자리를 모르는 것(지금 판에서 학습 호스트가 아직 없을 때와 같다)으로 한글 판을 연다.
+    // 든 옛 코치가 없어도 학습 호스트의 status()로 이 계정 · 판 구역 열쇠를 지어 졸업을 읽고 엔진 판을 연다(검수 s3d GG1 — 전에는 한글 판으로 갔다).
+    const touched0 = { ...globals.touched };
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    assert.deepEqual(created, [], '열쇠 하나 때문에 옛 코치를 만들지 않는다');
+    assert.deepEqual(globals.touched, touched0, 'IndexedDB · /atlas/를 늘리지 않는다');
+    // 졸업 기록이 없는 판 구역(동의 판이 바뀜)이면 한글 판이다 — 열쇠가 그 계정 · 판 구역의 것이다.
+    revision = 4;
     await app.education.position();
     assert.match(app.last(), /data-position-board="hangul"/);
-    assert.deepEqual(created, [], '열쇠 하나 때문에 옛 코치를 만들지 않는다');
+    revision = 3;
     // 생활 화면의 거울이 옛 코치를 연 뒤 — 그 코치로 계정 구역 열쇠를 지어 졸업을 읽고 엔진 판을 연다.
     assert.ok(app.education.lifeLearning.coach());
     assert.deepEqual(created, ['world-life']);
@@ -1224,6 +1232,37 @@ test('한글 열쇠 — 엔진 판은 이 화면이 이미 든 옛 코치에서�
   } finally {
     app.dispose();
     globals.restore();
+  }
+});
+
+test('한글 열쇠 — 손님은 옛 코치를 들지 않아도 이 기기 열쇠(synk.hangul-stage.v1)로 졸업을 읽는다 — 계정 구역 열쇠로 바꾸지 않는다(검수 s3d GG1의 막이)', async () => {
+  const storage = new Map([['synk.hangul-stage.v1', JSON.stringify({ v: 1, letters: {}, graduated: { at: '2026-11-01T00:00:00.000Z' } })]]);
+  const app = shell({ reading: { answer: 'new' }, storage });
+  try {
+    await tick();
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    assert.doesNotMatch(app.last(), /data-position-board="hangul"/, '이 기기에서 졸업했으면 한글 판이 아니다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('은행이 다 온 뒤의 다시 그리기(repaint)는 닫으며 흐려지는 내 위치 판을 다시 열지 않는다(검수 s3d GG3 — 받기 알림의 D1과 같은 막이)', async () => {
+  const app = shell({ timers: fakeClock(), panels: true, fade: true });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await tick(20);
+    const drawn = app.shown.length;
+    app.closePanel();
+    await tick(0); // 닫기의 새로 그리기
+    app.education.repaint();
+    assert.equal(app.shown.length, drawn, '흐려지는 판을 다시 그리지 않는다 — 닫은 판이 다시 열리지 않는다');
+    app.endFade();
+    assert.equal(app.last(), '');
+  } finally {
+    app.dispose();
   }
 });
 
@@ -1768,6 +1807,106 @@ test('엔진 판 — 내 위치 판에서 연 시험 형식이 기다리는 사�
     assert.ok(!/data-mock-stage/.test(app.last()), '시험 형식 판은 열지 않는다');
     assert.match(app.last(), /data-position-next="engine"/, '내 위치 판 그대로');
     assert.match(app.last(), /data-complete="true"/, '기다리는 사이 건너뛴 다시 그리기를 끝에 한 번 한다 — 받기가 끝난 판');
+  } finally {
+    release();
+    app.dispose();
+  }
+});
+
+// 검수 s3e1 GB1: 진짜 홈은 판을 닫으면 정리(dispose)를 바로 부르고 판 모습은 흐려지는 동안(160ms) 문서에 남긴다(fade).
+test('엔진 판의 짧은 진단 — 끝 화면이 답의 저장을 기다리는 사이 판을 닫으면, 판 조각이 흐려지며 남은 동안 저장이 끝나도 판을 기록 없이 닫고 끝 화면을 그리지 않는다(검수 s3e1 GB1)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  const watch = watchSets(made => ({
+    answer(pid, result) {
+      const out = made.answer(pid, result);
+      return { ...out, evidence: hold.then(() => out.evidence) };
+    },
+  }));
+  const app = shell({ wrap: watch.wrap, panels: true, fade: true });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    const coach = app.coaches[0];
+    await app.education.position({ start: true });
+    await until(() => app.box()?.html.includes('data-position-run'), '진단 문항');
+    assert.ok((await answerItems(app)) > 0);
+    await tick(30);
+    assert.deepEqual(watch.sets, [], '끝내기가 저장을 기다린다 — 판은 아직 닫지 않았다');
+    app.closePanel();
+    assert.equal(app.box().isConnected, true, '흐려지는 동안 판 조각은 문서에 남는다');
+    release();
+    await until(() => watch.sets.length > 0, '판을 닫는다');
+    assert.deepEqual(
+      watch.sets.map(set => set.record),
+      [false],
+      '판 기록 없이 닫기만 한다',
+    );
+    assert.doesNotMatch(app.box().html, /data-position-done/, '닫히는 판에 끝 화면을 그리지 않는다');
+    await until(() => coach.summary().storage.unfolded === 0, '그 답이 손님 요약에 접힌다');
+    app.endFade();
+  } finally {
+    release();
+    app.dispose();
+  }
+});
+
+// 검수 s3e1 GB2: 확인 중(홈 코치가 서기 전)에 받은 「짧은 진단 시작」 — 판 감시가 엔진 판으로 다시 그릴 때 한 번 시작한다. 그 사이 다른 학습을
+// 열었으면(여기서는 내 위치를 다시 엶) 버린다.
+test('확인 중에 받은 「짧은 진단 시작」은 엔진 판으로 다시 그릴 때 한 번 시작하고, 그 사이 다른 학습을 열었으면 버린다(검수 s3e1 GB2)', async () => {
+  for (const other of [false, true]) {
+    let release = () => {};
+    const gate = new Promise(resolve => (release = resolve));
+    const app = shell({
+      open: async () => {
+        await gate;
+        return homeCoach();
+      },
+    });
+    try {
+      await app.education.position({ start: true });
+      await until(() => /data-position-next="checking"/.test(app.last()), '확인 중 판');
+      assert.equal(app.box(), null, '확인 중에는 진단을 시작하지 않는다');
+      if (other) {
+        await app.education.position();
+        await until(() => /data-position-next="checking"/.test(app.last()), '다시 연 확인 중 판');
+      }
+      release();
+      await until(() => /data-position-next="engine"/.test(app.last()) || Boolean(app.box()), '엔진 판으로 다시 그린다');
+      if (other) {
+        await tick(40);
+        assert.equal(app.box(), null, '그 사이 다른 학습을 열었으면 남긴 시작을 버린다');
+        assert.match(app.last(), /data-position-next="engine"/, '판은 그린다');
+      } else await until(() => app.box()?.html.includes('data-position-run'), '엔진 판으로 다시 그리며 진단을 시작한다');
+    } finally {
+      release();
+      app.dispose();
+    }
+  }
+});
+
+test('내 위치 판을 다시 그린 뒤 초점을 되돌리는 단추에 시험 형식(data-position-mock)도 든다(검수 s3e1 GB5)', () => {
+  const source = fs.readFileSync(process.env.SYNK_LEARNING_UI_MODULE ?? new URL('../world-learning-ui.mjs', import.meta.url), 'utf8');
+  assert.match(source, /const NEXT_FOCUS=\[[^\]]*'data-position-mock'[^\]]*\];/);
+});
+
+test('내 위치 열기가 기다리는 사이 다른 학습(이번 주 계획)을 열었으면 「짧은 진단 시작」은 버리고 판만 그린다(검수 s3e1 GB2)', async () => {
+  let release = () => {};
+  let gate = Promise.resolve();
+  const app = shell({ host: { ready: () => gate } });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    gate = new Promise(resolve => (release = resolve));
+    const starting = app.education.position({ start: true });
+    await tick(20);
+    const planning = app.education.plan();
+    release();
+    await starting;
+    await planning;
+    await tick(40);
+    assert.equal(app.box(), null, '기다린 사이 다른 학습을 열었으면 진단을 시작하지 않는다');
+    assert.ok(app.shown.some(html => /data-position-next="engine"/.test(html)), '판은 그린다');
   } finally {
     release();
     app.dispose();

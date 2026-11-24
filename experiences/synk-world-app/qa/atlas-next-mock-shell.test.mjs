@@ -252,6 +252,16 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner
     last: () => shown.at(-1) ?? '',
     homeCoach: () => coaches[0] ?? null,
     planTimes: area => planLog(true).times(area),
+    // 판을 닫는다 — 진짜 홈처럼 판 자원을 바로 정리하고 판 조각은 흐려지는 동안(160ms) 문서에 남긴다(검수 s3e1 GB1).
+    closeFading() {
+      for (const resource of resources.splice(0).reverse())
+        try {
+          resource?.dispose?.();
+        } catch {
+          // 닫힌 판의 정리는 다음 정리를 막지 않는다
+        }
+      state.panel = '';
+    },
     retire() {
       for (const row of retirers.filter(entry => entry.live)) row.fn({ reason: 'account' });
     },
@@ -680,13 +690,15 @@ test('알림 시트의 판정(mockReady) — 지금 판은 참, 확인 중은 �
 
 // 앱(app-shell.mjs)은 node에서 못 올려 원문을 본다 — 셸 시험 틀은 입구 칸을 손으로 짓기 때문이다(현장 노트 「셸 시험 틀이 입구 칸을 직접 넣으면」).
 // 변형 시험은 깬 앱 원문을 SYNK_APP_SHELL_SOURCE로 넘긴다.
-test('앱의 배선 — 시험 점검 카드의 판정은 셸의 mockReady이고, 두 단추는 그린 때 고른 대상을 그대로 열며, 홈을 다시 그리면 열린 카드를 맞춘다 · 입구 감싸기가 시험 형식 코치를 잇는다(§21-23의 1 · 5)', () => {
+test('앱의 배선 — 시험 점검 카드의 판정은 셸의 mockReady(새 이름 mockNow)이고, 두 단추는 그린 때 고른 대상을 그대로 열며, 홈을 다시 그리면 열린 카드를 맞춘다 · 옛 이름(canMock · exam-start)은 옛 뜻 · 입구 감싸기가 시험 형식 코치를 잇는다(§21-23의 1 · 5 · ③ 섞임 표 27)', () => {
   const source = fs.readFileSync(process.env.SYNK_APP_SHELL_SOURCE ?? new URL('../app-shell.mjs', import.meta.url), 'utf8');
-  assert.match(source, /canMock:\(\)=>typeof education\?\.mockReady==='function'\?education\.mockReady\(\)===true:typeof education\?\.mock==='function',panel:\(\)=>home\.openPanel\?\.\(\)\?\?null,/);
+  assert.match(source, /\n  canMock:\(\)=>typeof education\?\.mock==='function',\r?\n  mockNow:\(\)=>typeof education\?\.mockReady==='function'\?education\.mockReady\(\)===true:typeof education\?\.mock==='function',panel:\(\)=>home\.openPanel\?\.\(\)\?\?null,/, '옛 이름 canMock은 옛 뜻(입구가 있는가), 새 뜻은 mockNow');
   assert.match(source, /if\(kind==='exam-mock'\)return run\(\(\)=>life\.education\?\.mock\?\.\(\)\);/);
-  assert.match(source, /if\(kind==='exam-start'\)return run\(\(\)=>life\.education\?\.position\?\.\(\{start:true\}\)\);/);
-  assert.doesNotMatch(source, /kind==='exam-start'[^\n]*education\?\.mock/, '누른 때 다시 고르지 않는다');
-  assert.match(source, /'reminder-exam-start','reminder-exam-mock','reminder-exam-plan'/, '시험 형식 단추의 명령');
+  assert.match(source, /if\(kind==='exam-check'\)return run\(\(\)=>life\.education\?\.position\?\.\(\{start:true\}\)\);/);
+  assert.doesNotMatch(source, /kind==='exam-check'[^\n]*education\?\.mock/, '누른 때 다시 고르지 않는다');
+  // 옛 이름은 옛 뜻(③ 섞임 표 27): ③ 공개 직후 캐시에 남은 옛 알림 모듈의 주 단추는 누른 때 고른다.
+  assert.match(source, /if\(kind==='exam-start'\)return run\(\(\)=>\{const education=life\.education;return typeof education\?\.mock==='function'\?education\.mock\(\):education\?\.position\?\.\(\{start:true\}\);\}\);/, '옛 이름 exam-start는 옛 뜻');
+  assert.match(source, /'reminder-exam-start','reminder-exam-mock','reminder-exam-check','reminder-exam-plan'/, '시험 점검 단추의 명령(옛 이름과 새 이름)');
   assert.match(source, /\n  mockChanged:\(\)=>reminders\?\.examChanged\?\.\(\),\r?\n/);
   assert.match(source, /async mockCoach\(pool\)\{if\(disposed\)return null;const entry=await load\(\);return disposed\?null:entry\.mockCoach\(pool\);\},/);
 });
@@ -712,6 +724,77 @@ test('그만둔 시험 형식 판도 이 기기의 판 기록에 한 판으로 �
     assert.equal(app.planTimes('mock').length, 1, '그만둬도 한 판 — 두 번 적지 않는다');
     assert.deepEqual(app.planTimes('recheck'), [], '다른 영역에는 적지 않는다');
   } finally {
+    app.dispose();
+  }
+});
+
+// 검수 s3d G2: 새 길 시험 형식 판이 끝나면(그만둠 포함) 판 끝 수가 올라 이번 주 계획이 묶음 만남을 다시 묻는다 — 짧은 진단 · 짧은 연습(planOnce)과 같다.
+// 그대로면 다 쓴 시험 형식 칸이 이번 주 계획 판에 서 있고, 누르면 「열 수 없어요」와 함께 내 위치로 튕긴다.
+test('시험 형식 판이 끝나면(그만둠 포함) 이번 주 계획이 묶음 만남을 다시 묻는다 — 판 끝 수가 오른다(검수 s3d G2)', async () => {
+  let weekAsked = 0;
+  const app = shell({
+    wrap: made => ({
+      ...made,
+      exposures(items) {
+        if (/weekNext/.test(new Error().stack ?? '')) weekAsked += 1;
+        return made.exposures(items);
+      },
+    }),
+  });
+  try {
+    await until(() => app.homeCoach(), '홈 코치');
+    await app.education.mock();
+    app.box().tap('[data-mock-start]');
+    assert.match(app.box().html, /data-mock-run/, '첫 문항');
+    app.education.refresh();
+    const before = weekAsked;
+    app.education.refresh();
+    assert.equal(weekAsked, before, '판 도중에는 열쇠가 같아 다시 묻지 않는다');
+    app.box().press('data-mock-stop');
+    await until(() => app.box().html.includes('data-mock-done'), '그만둔 뒤의 끝 한 장');
+    app.education.refresh();
+    assert.ok(weekAsked > before, '판이 끝났으니 다시 묻는다 — 낸 문항은 이제 처음 보는 문항이 아니다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 문서 — 끝 한 장이 답의 저장을 기다리는 사이 판을 닫으면, 판 조각이 흐려지며 남은 동안 저장이 끝나도 판을 기록 없이 닫고 끝 한 장을 그리지 않는다(검수 s3e1 GB1)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  const sets = [];
+  const app = shell({
+    mockWrap: made => ({
+      ...made,
+      answer(pid, result) {
+        const out = made.answer(pid, result);
+        return { ...out, evidence: hold.then(() => out?.evidence) };
+      },
+      finishSet(options) {
+        sets.push(options);
+        return made.finishSet(options);
+      },
+    }),
+  });
+  try {
+    await until(() => app.homeCoach(), '홈 코치');
+    await app.education.mock();
+    app.box().tap('[data-mock-start]');
+    assert.equal(await runToEnd(app, { submitted: true }), true, '마지막 영역을 냈다');
+    await tick(30);
+    assert.deepEqual(sets, [], '끝내기가 저장을 기다린다 — 판은 아직 닫지 않았다');
+    app.closeFading();
+    assert.equal(app.box().isConnected, true, '흐려지는 동안 판 조각은 문서에 남는다');
+    release();
+    await until(() => sets.length > 0, '판을 닫는다');
+    assert.deepEqual(
+      sets.map(options => options.record),
+      [false],
+      '판 기록 없이 닫기만 한다',
+    );
+    assert.doesNotMatch(app.box().html, /data-mock-done/, '닫히는 판에 끝 한 장을 그리지 않는다');
+  } finally {
+    release();
     app.dispose();
   }
 });

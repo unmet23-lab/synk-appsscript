@@ -9425,7 +9425,7 @@ var require_temper = __commonJS({
         const t3 = prior?.followups;
         return t3 && t3.v === FOLLOWUP.table && Array.isArray(t3.rows) && t3.rows.every(validRow) && sights(t3.fs) ? t3 : null;
       };
-      function floorOf(prior, table) {
+      function floorOf2(prior, table) {
         if (!prior) return -Infinity;
         const clean = table ? table.folded === prior.folded : !prior.folded || prior.followupsPreserved === true && !prior.followupsLost;
         const floor = Number.isFinite(table?.floor) ? table.floor : -Infinity;
@@ -9506,7 +9506,7 @@ var require_temper = __commonJS({
           if (!inCell.has(cell)) inCell.set(cell, []);
           inCell.get(cell).push(a);
         }
-        const table = tableOf(prior), floor = floorOf(prior, table), usable = complete === true, iso3 = (ms) => new Date(ms).toISOString();
+        const table = tableOf(prior), floor = floorOf2(prior, table), usable = complete === true, iso3 = (ms) => new Date(ms).toISOString();
         const folded = table && Number.isFinite(prior.cutoff) ? prior.cutoff : -Infinity;
         const frozenSight = table?.fs || {};
         const timely = (a) => {
@@ -9754,17 +9754,17 @@ var require_temper = __commonJS({
       }
       function carryMarks(table, others) {
         if (!tableOf({ followups: table })) return table;
-        const marks = /* @__PURE__ */ new Set();
+        const marks2 = /* @__PURE__ */ new Set();
         for (const other of others) if (other && other !== table && tableOf({ followups: other })) for (const row of other.rows) {
-          if (row.l) marks.add(row.id);
-          for (const [window2, pair] of Object.entries(row.t || {})) if (pair.l) marks.add(`${row.id}:${window2}:${pair.id}`);
+          if (row.l) marks2.add(row.id);
+          for (const [window2, pair] of Object.entries(row.t || {})) if (pair.l) marks2.add(`${row.id}:${window2}:${pair.id}`);
         }
         let changed = false;
-        const rows2 = !marks.size ? table.rows : table.rows.map((row) => {
-          const lost = Object.entries(row.t || {}).filter(([window2, pair]) => !pair.l && marks.has(`${row.id}:${window2}:${pair.id}`)).map(([window2]) => window2);
-          if (!lost.length && (row.l || !marks.has(row.id))) return row;
+        const rows2 = !marks2.size ? table.rows : table.rows.map((row) => {
+          const lost = Object.entries(row.t || {}).filter(([window2, pair]) => !pair.l && marks2.has(`${row.id}:${window2}:${pair.id}`)).map(([window2]) => window2);
+          if (!lost.length && (row.l || !marks2.has(row.id))) return row;
           changed = true;
-          return { ...row, ...marks.has(row.id) ? { l: 1 } : {}, ...lost.length ? { t: { ...row.t, ...Object.fromEntries(lost.map((window2) => [window2, { ...row.t[window2], l: 1 }])) } } : {} };
+          return { ...row, ...marks2.has(row.id) ? { l: 1 } : {}, ...lost.length ? { t: { ...row.t, ...Object.fromEntries(lost.map((window2) => [window2, { ...row.t[window2], l: 1 }])) } } : {} };
         });
         return changed ? { ...table, rows: rows2 } : table;
       }
@@ -9978,11 +9978,11 @@ var require_learning_ledger = __commonJS({
       return JSON.stringify(next) === JSON.stringify(a) ? a : next;
     }
     function demote(ledger, { late = [], excluded = [], strays = 0, linkedOnly = false }, find) {
-      const marks = [], gone = new Set(excluded);
+      const marks2 = [], gone = new Set(excluded);
       for (const e of late) {
         if (e.type !== "practice.attempted" && e.type !== "practice.helped") continue;
         const p = find(e.presentationId);
-        if (p) marks.push({ keys: new Set(Trail2.traceKeys(p)), at: Date.parse(e.at) });
+        if (p) marks2.push({ keys: new Set(Trail2.traceKeys(p)), at: Date.parse(e.at) });
       }
       if (!ledger || !late.length && !gone.size && !strays) return ledger;
       const parents = ledger.parents || {}, direct = /* @__PURE__ */ new Set(), retired = new Set(ledger.withdrawn || []);
@@ -9993,7 +9993,7 @@ var require_learning_ledger = __commonJS({
       for (const p of Object.values(parents)) for (const id of p) if (id !== null) direct.add(id);
       const parentGone = [...gone].some((id) => !retired.has(id) && !direct.has(id));
       const withdrawn = (id) => gone.has(id) || own2(parents, id) && parents[id].some((p) => p !== null && gone.has(p)) || !linkedOnly && parentGone && (!own2(parents, id) || parents[id].length === 2);
-      const after = ([eventId, at, , familyKey, itemKey = familyKey]) => withdrawn(eventId) || marks.some((m) => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
+      const after = ([eventId, at, , familyKey, itemKey = familyKey]) => withdrawn(eventId) || marks2.some((m) => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
       const excludedHelp = (h) => Array.isArray(h) ? withdrawn(h[0]) : !linkedOnly && parentGone;
       const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + Math.max(strays, gone.size) };
       for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
@@ -16992,21 +16992,21 @@ var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "
 var expressionKey = (korean) => String(korean || "").replace(/[.!?。…]+$/, "").trim();
 function storyLineMarkup(text2, expressions = []) {
   const source = String(text2 ?? ""), keys = expressions.map((e, index) => ({ index, key: expressionKey(e.korean) })).filter((k) => k.key.length >= 2);
-  const marks = [];
+  const marks2 = [];
   for (const match of source.matchAll(/‘([^‘’]{1,80})’/g)) {
     const inner = match[1], hit = keys.find((k) => inner.includes(k.key) || k.key.includes(inner));
-    marks.push({ start: match.index + 1, end: match.index + 1 + inner.length, index: hit ? hit.index : null });
+    marks2.push({ start: match.index + 1, end: match.index + 1 + inner.length, index: hit ? hit.index : null });
   }
   for (const { index, key } of keys) {
     let from = 0, at;
     while ((at = source.indexOf(key, from)) >= 0) {
       from = at + key.length;
-      if (!marks.some((m) => at < m.end && at + key.length > m.start)) marks.push({ start: at, end: at + key.length, index });
+      if (!marks2.some((m) => at < m.end && at + key.length > m.start)) marks2.push({ start: at, end: at + key.length, index });
     }
   }
-  marks.sort((a, b) => a.start - b.start);
+  marks2.sort((a, b) => a.start - b.start);
   let html = "", cursor = 0;
-  for (const m of marks) {
+  for (const m of marks2) {
     if (m.start < cursor) continue;
     html += escape(source.slice(cursor, m.start));
     const inner = source.slice(m.start, m.end);
@@ -17051,12 +17051,12 @@ function createStoryDetail({ content, isActive, onNext, onPrev, onMark, onLine =
     if (!line.isConnected) return;
     line.innerHTML = html;
     delete line.dataset.typing;
-    const marks = [...line.querySelectorAll("mark.life-say")];
-    if (marks.length && !motionOff()) {
-      for (const mark of marks) mark.classList.add("is-fresh");
+    const marks2 = [...line.querySelectorAll("mark.life-say")];
+    if (marks2.length && !motionOff()) {
+      for (const mark of marks2) mark.classList.add("is-fresh");
       void line.offsetWidth;
       requestAnimationFrame(() => {
-        for (const mark of marks) mark.classList.remove("is-fresh");
+        for (const mark of marks2) mark.classList.remove("is-fresh");
       });
     }
     lineDone(line, !motionOff() && !document.hidden);
@@ -17828,6 +17828,7 @@ function reviewRowsByExpression(rows2) {
     if (kept) {
       kept.scenes += 1;
       kept.soon = kept.soon === true || row.soon === true;
+      kept.again = kept.again === true || row.again === true;
     } else out.set(row.korean, { ...row, scenes: 1 });
   }
   return [...out.values()];
@@ -17852,7 +17853,9 @@ var dayOnly = (at) => {
   if (!Number.isFinite(at)) return "";
   const now = Date.now(), day = (value) => new Date(value).toDateString();
   if (at <= now || day(at) === day(now)) return t("life.when.todayDay");
-  if (day(at) === day(now + 864e5)) return t("life.when.tomorrowDay");
+  const next = new Date(now);
+  next.setDate(next.getDate() + 1);
+  if (day(at) === day(next.getTime())) return t("life.when.tomorrowDay");
   return t("life.when.aroundDay", { date: formatDate(at, { month: "short", day: "numeric" }) });
 };
 var whenOf = (s, at) => s?.dueState ? dayOnly(at) : dayLabel(at);
@@ -18042,7 +18045,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   };
   const photo = (speaker, size = "") => friends[speaker] ? `<img class="life-friend ${size}" src="${asset("home/" + friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">` : "";
   const cut = (speaker) => friends[speaker] ? `<img class="life-friend" src="${asset("tutors/" + friends[speaker].cut + "-\uAE30\uBCF8.webp")}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">` : "";
-  const reviewSign = (s) => [s.dueState ?? "", s.dueCount, (s.dueIds || []).join(","), s.nextReviewAt ?? ""].join("|");
+  const reviewSign = (s) => [s.dueState ?? "", s.dueCount, (s.dueIds || []).join(","), s.nextReviewAt ?? "", (/* @__PURE__ */ new Date()).toDateString()].join("|");
   const tutorBusy = () => {
     try {
       const m = companion?.metrics?.();
@@ -18166,7 +18169,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     try {
       const el = document.activeElement;
       if (!el || el === document.body || !content.contains?.(el)) return null;
-      const attr = [...el.attributes || []].find((a) => a.name.startsWith("data-life-"));
+      const attr = [...el.attributes || []].find((a) => a.name.startsWith("data-life-") || a.name === "data-view");
       return attr ? { name: attr.name, value: attr.value ?? "" } : null;
     } catch {
       return null;
@@ -18341,6 +18344,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const foot = state === "done" ? `<span class="life-pack-done"><i class="w-led ok"></i>${t("life.allDone")}</span>` : meter(done, total);
     return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)}<span class="life-pack-en"> \xB7 ${label}</span></small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
   }
+  const kicker = () => `<span class="life-poster-kicker">${t("life.upNext")}</span>`;
   let todayMark = "";
   const dayNow = () => {
     if (typeof today !== "function") return null;
@@ -18353,14 +18357,23 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   const todaySign = (day) => day ? [day.state, day.capped ? "capped" : "", day.selectedKind || "", day.selected?.id || "", day.reason || "", (day.items || []).map((row) => `${row.kind}:${row.activityId}`).join(",")].join("|") : "";
   const cappedOf = (day) => day?.capped && day.cappedText ? day.cappedText : "";
   const whyLine = (why) => why ? `<span class="life-poster-why">${escape2(why)}</span>` : "";
-  const kicker = () => `<span class="life-poster-kicker">${t("life.upNext")}</span>`;
   function lessonPoster(lesson2, started, why = "") {
     const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length;
     return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small>${kicker()}<strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}${whyLine(why)}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
   }
-  const reviewPoster = (s, why = "") => ({ kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(backCount(s))}</small>${kicker()}<strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: backCount(s) })}${whyLine(why)}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` });
+  const resumableReview = () => {
+    try {
+      const run = getProgress().exportSnapshot().activeReview;
+      return !!run && Array.isArray(run.ids) && run.ids.some((id) => !run.answers?.[id]);
+    } catch {
+      return false;
+    }
+  };
+  const resumePoster = (why = "") => ({ kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">CONTINUE \xB7 REVIEW</small>${kicker()}<strong class="life-poster-word">${t("plan.resumeReview")}</strong><span class="life-poster-sub">${whyLine(why)}</span><button class="felt-button" data-life-review-start>${t("life.continue")} <span aria-hidden="true">\u2192</span></button></section>` });
+  const reviewPoster = (s, why = "") => !backCount(s) && !!s.dueState && resumableReview() ? resumePoster(why) : { kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(backCount(s))}</small>${kicker()}<strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: backCount(s) })}${whyLine(why)}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` };
   function todayPoster(row) {
-    const open = row.open, hangul = open.route === "game" && open.gameId === "hangul", listening = open.modality === "listening";
+    const open = row.open, hangul = open.route === "game" && open.gameId === "hangul";
+    const mode = hangul ? "HANGUL" : { listening: "LISTENING", writing: "WRITING", speaking: "SPEAKING" }[open.modality] || "READING";
     let name = "";
     try {
       name = home.planLabel?.(open) || "";
@@ -18368,7 +18381,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       name = "";
     }
     const minutes2 = Number.isFinite(row.minutes) ? `<span class="life-poster-count">${escape2(t("goal.minutes.n", { n: row.minutes }))}</span>` : "";
-    return { kind: "today", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(hangul ? "hangul" : "goals")}<small class="life-poster-label">UP NEXT \xB7 ${hangul ? "HANGUL" : listening ? "LISTENING" : "READING"}</small>${kicker()}<strong class="life-poster-word">${escape2(name || open.label || row.title || "")}</strong><span class="life-poster-sub">${escape2(row.why?.text || "")}</span>${minutes2}<button class="felt-button" data-life-next>${t("life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
+    return { kind: "today", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(hangul ? "hangul" : "goals")}<small class="life-poster-label">UP NEXT \xB7 ${mode}</small>${kicker()}<strong class="life-poster-word">${escape2(name || open.label || row.title || "")}</strong><span class="life-poster-sub">${escape2(row.why?.text || "")}</span>${minutes2}<button class="felt-button" data-life-next>${t("life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
   }
   function rowPoster(s, day) {
     const row = (day.items || []).find((item) => item.kind === day.selectedKind && item.open?.id === day.selected?.id);
@@ -18807,7 +18820,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     reviewRun = null;
     const s = summary();
     reviewMark = reviewSign(s);
-    const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "", snapshot = getProgress().exportSnapshot(), checking = s.dueState === "checking";
+    const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "", snapshot = getProgress().exportSnapshot(), checking = s.dueState === "checking", resume = !s.dueCount && !!s.dueState && resumableReview();
     const items = reviewRowsByExpression(s.dueReviews.map((r) => {
       const l = lessonById(r.lessonId), q2 = l?.questions.find((x) => x.id === r.questionId);
       return { korean: expressionOf(l, q2).korean, origin: reviewOrigin(r, snapshot) };
@@ -18836,7 +18849,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     paint(t("life.reviewTitle"), `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(backCount(s))}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? t("life.reviewWordCount", { n: backCount(s) }) : t(future || checking ? "life.reviewWordNext" : "life.reviewWordNone")}</h3><p class="life-poster-sub">${s.dueCount ? s.dueCount > s.dueReviews.length ? t("life.reviewSubFirst", { n: s.dueReviews.length }) : t("life.reviewSubScenes", { n: s.dueCount }) : checking ? t("life.reviewChecking") : future ? t("life.reviewSubOpens", { date: escape2(future) }) : t("life.reviewSubNone")}</p></section>${items.length ? `<section class="life-review-list" aria-label="${t("life.backWord")}"><p class="life-section-label${listHead()}">${t(s.dueCount > s.dueReviews.length ? "life.reviewFirstList" : "life.backWord")}</p>${backList.origin ? `<p class="life-review-origin">${escape2(backList.origin)}</p>` : ""}<ul>${backList.rows.map((i) => {
       const note2 = [i.origin, i.scenes > 1 ? t("life.reviewScenes", { n: i.scenes }) : ""].filter(Boolean).join(" \xB7 ");
       return `<li><strong lang="ko">${escape2(i.korean)}</strong>${note2 ? `<small>${escape2(note2)}</small>` : ""}</li>`;
-    }).join("")}</ul></section>` : ""}${upcoming.length ? `<section class="life-review-list" data-upcoming aria-label="${t("life.comingBack")}"><p class="life-section-label${listHead()}">${t("life.comingBack")}</p><ul>${upcoming.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.when)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review", tutorPhase: s.dueCount ? "reviewDue" : checking ? null : future ? "reviewNext" : "reviewEmpty", screen: "review", ...again ? { keepScroll: true, focus: null, keepFocus: focusedKey() } : {} });
+    }).join("")}</ul></section>` : ""}${upcoming.length ? `<section class="life-review-list" data-upcoming aria-label="${t("life.comingBack")}"><p class="life-section-label${listHead()}">${t("life.comingBack")}</p><ul>${upcoming.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.when)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount || resume ? `<button class="felt-button" data-life-review-start>${t(resume ? "life.continue" : "life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review", tutorPhase: s.dueCount ? "reviewDue" : checking ? null : future ? "reviewNext" : "reviewEmpty", screen: "review", ...again ? { keepScroll: true, focus: null, keepFocus: focusedKey() } : {} });
   }
   const backSoon = (id) => {
     if (!nextPath) return false;
@@ -18881,7 +18894,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
         getProgress().dropStaleHelp(id);
       } catch {
       }
-      helped = getProgress().reviewHelped(id);
+      const prog = getProgress();
+      helped = typeof prog.reviewHelped === "function" ? prog.reviewHelped(id) : marked;
       helpBy = helped ? "user" : null;
       if (marked && !helped) releaseReview(reviewSlot2(run.id, id));
       if (helped) try {
@@ -25888,8 +25902,8 @@ function renderStory(card, { t: t3, has, formatDate: formatDate3, practice, skil
     return `<li data-step="${row.step}" data-state="${state}"${win ? " data-win" : ""}>${state === "done" ? `<i class="wpv-dot" role="img" aria-label="${esc2(t3("position.missed.legend.done"))}"></i>` : '<i class="wpv-dot" aria-hidden="true"></i>'}<span class="wpv-step">${esc2(stepName(row))}${tag}</span><span class="wpv-what">${esc2(what)}</span></li>`;
   }).join("");
   const all = (Array.isArray(skill2?.evidence) ? skill2.evidence : []).filter((row) => row && ["correct", "incorrect"].includes(row.verdict)).slice().sort((a, b) => (Date.parse(a.at) || 0) - (Date.parse(b.at) || 0));
-  const marks = all.slice(-10), more = (Number.isInteger(skill2?.folded) && skill2.folded > 0 ? skill2.folded : 0) + (all.length - marks.length);
-  const tokens = marks.length ? `<span class="wpv-marks" aria-hidden="true">${more ? `<b>+${more}</b>` : ""}${marks.map((row) => `<i data-verdict="${row.verdict}"></i>`).join("")}</span>` : "";
+  const marks2 = all.slice(-10), more = (Number.isInteger(skill2?.folded) && skill2.folded > 0 ? skill2.folded : 0) + (all.length - marks2.length);
+  const tokens = marks2.length ? `<span class="wpv-marks" aria-hidden="true">${more ? `<b>+${more}</b>` : ""}${marks2.map((row) => `<i data-verdict="${row.verdict}"></i>`).join("")}</span>` : "";
   let route = null;
   try {
     route = practice?.(id) || null;
@@ -26011,10 +26025,62 @@ var shapeOf = ({ askedFrom, at, windows, month }) => ({
 });
 var generation = 0;
 var keyOf = (kind, account) => `${kind.prefix}${account}`;
+var CLEAR_KIND = Object.freeze({ prefix: "synk:world:month-clear:" });
+var marks = 0;
+var markOf = (storage, account) => {
+  let raw = null;
+  try {
+    raw = storage?.getItem(keyOf(CLEAR_KIND, account)) ?? null;
+  } catch {
+    return null;
+  }
+  if (typeof raw !== "string" || !raw) return null;
+  let value = null;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    value = null;
+  }
+  return plain(value) && typeof value.id === "string" && value.id ? { id: value.id, floor: Number.isSafeInteger(value.floor) ? value.floor : null } : { id: raw, floor: null };
+};
+var makeMark = (storage, account) => {
+  if (markOf(storage, account) !== null) return;
+  marks += 1;
+  const id = `${Date.now().toString(36)}.${marks.toString(36)}.${Math.random().toString(36).slice(2, 10)}`;
+  try {
+    storage?.setItem(keyOf(CLEAR_KIND, account), JSON.stringify({ id, floor: null }));
+  } catch {
+  }
+};
+var floorOf = (storage, account) => markOf(storage, account)?.floor ?? null;
+var raiseFloor = (storage, account, before) => {
+  const mark = markOf(storage, account);
+  if (!mark || mark.floor !== null && mark.floor >= before) return;
+  try {
+    storage.setItem(keyOf(CLEAR_KIND, account), JSON.stringify({ id: mark.id, floor: before }));
+  } catch {
+    try {
+      storage.removeItem(keyOf(CLEAR_KIND, account));
+    } catch {
+    }
+  }
+};
+var aboveFloor = (floor, revision2) => floor === null || Number.isSafeInteger(revision2) && revision2 >= floor;
 function clearMonthAnswer(storage, account, { before = null } = {}) {
+  if (Number.isSafeInteger(before)) {
+    if (!account) return;
+    raiseFloor(storage, account, before);
+    const older = keepNewer(storage, before);
+    for (const kind of KINDS) {
+      try {
+        older?.removeItem(keyOf(kind, account));
+      } catch {
+      }
+    }
+    return;
+  }
   generation += 1;
-  if (Number.isSafeInteger(before)) storage = keepNewer(storage, before);
-  for (const kind of KINDS) {
+  for (const kind of [...KINDS, CLEAR_KIND]) {
     try {
       if (account) storage?.removeItem(keyOf(kind, account));
     } catch {
@@ -26034,8 +26100,15 @@ var keepNewer = (storage, before) => storage && {
   }
 };
 function createMonthAnswers({ storage = globalThis.localStorage, kind = MONTH_KIND } = {}) {
+  const stampOf = (account, ensure = false) => {
+    if (ensure && account) makeMark(storage, account);
+    return `${generation}|${(account && markOf(storage, account)?.id) ?? ""}`;
+  };
   return {
     generation: () => generation,
+    stamp: (account, { ensure = false } = {}) => stampOf(account, ensure),
+    // 판 바닥 — 연습 기록 비우기가 올린 판(없으면 null). 그보다 앞선 판의 물음은 늦은 답이다(GC2).
+    floor: (account) => account ? floorOf(storage, account) : null,
     // 적어 둔 답 — 계정 · 동의 판 · 학습일이 맞고 꼴이 맞을 때만. 아니면 null(다시 묻는다). 늘 저장소에서 바로 읽는다(다른 탭이 덮었으면 그 값).
     read(account, { revision: revision2, day }) {
       let value = null;
@@ -26050,9 +26123,12 @@ function createMonthAnswers({ storage = globalThis.localStorage, kind = MONTH_KI
       if (!askedFrom || !at || !kind.valid(value)) return null;
       return { askedFrom, at, ...kind.body(value) };
     },
-    // 답을 적는다 — 물을 때의 세대 수가 지금과 같고 저장소가 있을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
+    // 답을 적는다 — 물을 때의 표지(세대 수 · 지우기 표지 — stamp)가 지금과 같고 저장소가 있을 때만(이 문서나 다른 탭의 지우는 길이 그 사이에
+    // 돌았으면 적지 않는다). 적었나를 돌려준다.
     write(account, { revision: revision2, day, since, ...answer }) {
-      if (since !== generation) return false;
+      if (since !== stampOf(account)) return false;
+      if (typeof since !== "string" || since.endsWith("|")) return false;
+      if (!aboveFloor(floorOf(storage, account), revision2)) return false;
       if (!storage) return false;
       const value = { v: VERSION, revision: revision2, day, ...kind.shape(answer) };
       try {
@@ -26139,7 +26215,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     state.missed = null;
   };
   const follow = (owner) => {
-    const now = answers.generation();
+    const now = answers.stamp(owner);
     if (state.owner === owner && state.generation === now) return;
     reset();
     state.owner = owner;
@@ -26183,14 +26259,17 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     if (state.tried?.key === key && samePosition(state.tried.from, device)) return;
     const token = {};
     state.asking = { key, token };
-    const since = answers.generation();
+    const before = answers.stamp(owner);
+    const since = answers.stamp(owner, { ensure: true });
+    if (state.owner === owner && state.generation === before) state.generation = since;
     const settle = () => {
       if (state.asking?.token !== token) return false;
       state.asking = null;
       return true;
     };
     const still = () => {
-      if (!alive(owner) || since !== answers.generation()) return false;
+      if (!alive(owner) || since !== answers.stamp(owner)) return false;
+      if (!aboveFloor(answers.floor?.(owner) ?? null, revision2)) return false;
       try {
         return dayOf() === day;
       } catch {
@@ -26217,6 +26296,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       if (state.ahead?.key === key) state.ahead = null;
       const holder = holderOf(coach, line);
       const storage = holder.storage;
+      if (storage && storage.guest !== false) return;
       if (got?.complete !== true) {
         missed(kind.code(got?.reason));
         if (!storage) {
@@ -27360,6 +27440,7 @@ function createWorldEducation({
     return true;
   }
   let diagnosed = false, positionOpen = 0;
+  let asked = 0, startWanted = 0;
   const PANEL = { type: "life-position", eyebrow: "MY POSITION", nav: "packs" };
   const panelNode = (selector) => target.document?.querySelector(`#panel-content ${selector}`) || null;
   const failed = (error2) => home.toast(tMessage2(error2?.message) || t2("position.failed"));
@@ -27369,7 +27450,7 @@ function createWorldEducation({
       check3();
       return position.hangulStageProgress(raw ? JSON.parse(raw) : null, position.hangulLayer);
     }
-    if (owner !== "guest" && !coachNow) return null;
+    if (owner !== "guest" && !coachNow) coachNow = HOSTED_KEY;
     try {
       const key = position.hangulProgressKey(target, coachNow);
       if (!key) return null;
@@ -27650,6 +27731,7 @@ function createWorldEducation({
       }
     }, { once: true });
   }
+  const HOSTED_KEY = Object.freeze({ assignment: () => null });
   function heldCoach() {
     const source = target.SYNKLearningHost || null;
     for (const [instance, host] of [[coach, coachHost], [practiceCoach, practiceHost], [mockCoach, mockHost], [lifeCoachNow, lifeHost]]) if (instance && host === source) return instance;
@@ -27970,6 +28052,10 @@ function createWorldEducation({
     const speakingNow = first && type ? { label: first.label, routeId: first.routeId, minutes: first.minutes, type, untried: speaking.untried } : null;
     return { examPlan, fresh: (item) => seenOf(item) === false, diagnostic: { ready }, mock, mockDone, writing, speaking: speakingNow };
   }
+  function foldedRedraw() {
+    if (!stopped) refresh();
+    redrawNext();
+  }
   function planOnce(coachNow, area) {
     let done = false;
     return (results) => {
@@ -27997,7 +28083,7 @@ function createWorldEducation({
     } catch {
     }
   }
-  const NEXT_FOCUS = ["data-position-diagnostic", "data-position-exam", "data-position-practice", "data-position-recheck", "data-position-writing"];
+  const NEXT_FOCUS = ["data-position-diagnostic", "data-position-exam", "data-position-practice", "data-position-recheck", "data-position-writing", "data-position-mock"];
   const PLAN_FOCUS = ["data-plan-next", "data-plan-practice", "data-plan-game", "data-plan-recheck", "data-plan-writing", "data-plan-speaking", "data-plan-mock", "data-view"];
   function nextFocusOf(root, names = NEXT_FOCUS) {
     try {
@@ -28052,10 +28138,13 @@ function createWorldEducation({
     }
     const scroller = keepScroll ? panelNode("[data-position-next]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0, focusKey = keepScroll ? nextFocusOf(panelNode("[data-position-next]")) : null, openRows = keepScroll ? openRowsOf(panelNode("[data-position-next]")) : [];
     if (!data) {
+      if (start) startWanted = asked;
       home.showPanel(t2("position.title"), nextChecking(), PANEL);
       panelNode("[data-position-next]")?.focus?.({ preventScroll: true });
       return;
     }
+    const wanted = start || startWanted !== 0 && startWanted === asked;
+    startWanted = 0;
     const two2 = topik2Domains(), exams = studentExam(data.values) === "topik2" || two2.listening || two2.reading ? ["topik1", "topik2"] : null;
     home.showPanel(t2("position.title"), draw.board({ board: data.board, plan: data.plan, cards: data.cards, exams, practice: (id) => data.fresh.has(id), scope: data.scope, diagnosed, writing: data.exam === "topik2" && writingList().length > 0, month: data.month, estimate: data.estimate, mock: data.mock }), PANEL);
     heard.panel = false;
@@ -28116,7 +28205,7 @@ function createWorldEducation({
         failed(error2);
       }
     });
-    if (start && data.plan.status === "ready" && data.plan.items.length) startDiagnosticNext(coachNow, data);
+    if (wanted && data.plan.status === "ready" && data.plan.items.length) startDiagnosticNext(coachNow, data);
   }
   function redrawNext() {
     if (redrawingNext || stopped || openPosition.pending || heldMock()) return;
@@ -28154,9 +28243,10 @@ function createWorldEducation({
     check3();
     const P = homePlanner?.position;
     if (!P || data?.plan?.status !== "ready" || !data.plan.items.length) return;
+    asked += 1;
     const session = P.createDiagnosticNextSession({ coach: coachNow, items: data.plan.items.map((row) => row.item), plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
     const counted = planOnce(coachNow, "recheck");
-    let clip = null, playing = false, notice = "", ended = false, finishing = false, unwatch = () => {
+    let clip = null, playing = false, notice = "", ended = false, finishing = false, gone = false, unwatch = () => {
     };
     const silence = () => {
       const sound = clip;
@@ -28181,7 +28271,7 @@ function createWorldEducation({
       if (session.results().length) diagnosed = true;
       counted(session.results());
       queueMicrotask(() => refresh());
-      if (set?.folded) Promise.resolve(set.folded).then(() => redrawNext(), () => {
+      if (set?.folded) Promise.resolve(set.folded).then(foldedRedraw, () => {
       });
     };
     const closed = () => {
@@ -28192,7 +28282,10 @@ function createWorldEducation({
       void openMyPosition();
     };
     home.showPanel(t2("position.diagnostic.title"), '<div class="wpos-stage" data-position-stage></div>', { ...PANEL, eyebrow: "QUICK CHECK" });
-    home.attachPanelResource?.({ dispose: stop });
+    home.attachPanelResource?.({ dispose() {
+      gone = true;
+      stop();
+    } });
     const box = panelNode("[data-position-stage]");
     if (!box) {
       stop();
@@ -28236,7 +28329,7 @@ function createWorldEducation({
       } catch {
       }
       counted(session.results());
-      if (!finishing || !box.isConnected) {
+      if (!finishing || gone || !box.isConnected) {
         const left = finishing;
         finishing = false;
         unwatch();
@@ -28249,7 +28342,7 @@ function createWorldEducation({
         if (left) {
           if (session.results().length) diagnosed = true;
           queueMicrotask(() => refresh());
-          if (set2?.folded) Promise.resolve(set2.folded).then(() => redrawNext(), () => {
+          if (set2?.folded) Promise.resolve(set2.folded).then(foldedRedraw, () => {
           });
         }
         return;
@@ -28268,10 +28361,10 @@ function createWorldEducation({
       if (local && set?.folded) {
         await Promise.race([Promise.resolve(set.folded).catch(() => null), new Promise((resolve) => setTimeout(resolve, FOLD_WAIT_MS))]);
         if (stopped) return;
-        if (!box.isConnected) {
+        if (gone || !box.isConnected) {
           refresh();
           evidenced();
-          Promise.resolve(set.folded).then(() => redrawNext(), () => {
+          Promise.resolve(set.folded).then(foldedRedraw, () => {
           });
           return;
         }
@@ -28418,7 +28511,7 @@ function createWorldEducation({
   async function openPositionNext({ start = false } = {}) {
     if (!position) return;
     check3();
-    const ticket = ++positionOpen;
+    const ticket = ++positionOpen, mine = ++asked;
     openPosition.pending = ticket;
     try {
       let settled = false;
@@ -28479,7 +28572,7 @@ function createWorldEducation({
         showHangul(stage);
         return;
       }
-      showNext({ start });
+      showNext({ start: start && mine === asked });
     } finally {
       if (openPosition.pending === ticket) openPosition.pending = 0;
     }
@@ -28945,6 +29038,7 @@ function createWorldEducation({
     if (!position?.practice) return;
     check3();
     const ticket = ++practiceOpen;
+    asked += 1;
     let launching = true;
     home.attachPanelResource?.({ dispose() {
       if (launching && ticket === practiceOpen) practiceOpen++;
@@ -29257,8 +29351,8 @@ function createWorldEducation({
         } else if (button.hasAttribute("data-practice-stop")) {
           stop();
           void openMyPosition();
-        } else if (button.hasAttribute("data-practice-again")) void Promise.resolve(startPractice(skillId, { more })).catch(failed);
-        else if (button.hasAttribute("data-practice-more")) void Promise.resolve(startPractice(skillId, { more: true })).catch(failed);
+        } else if (button.hasAttribute("data-practice-again")) void Promise.resolve(startPractice(skillId, { more, only })).catch(failed);
+        else if (button.hasAttribute("data-practice-more")) void Promise.resolve(startPractice(skillId, { more: true, only })).catch(failed);
         else if (button.hasAttribute("data-practice-position")) void openMyPosition();
         else if (button.hasAttribute("data-practice-home")) home.closePanel();
       } catch (error2) {
@@ -29517,6 +29611,7 @@ function createWorldEducation({
   async function openMockNext({ exam = null } = {}) {
     check3();
     const ticket = ++mockOpen, panel = home.openPanel?.() ?? "";
+    asked += 1;
     openMockNext.pending = ticket;
     let settled = false;
     try {
@@ -29632,7 +29727,7 @@ function createWorldEducation({
   }
   function runMockNext({ next: next2, plan, sections, exam, mode = null, audioAvailable = true, box, top }) {
     const session = homePlanner.position.createMockNextSession({ coach: next2, sections, exam, plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
-    let ended = false, finishing = false, drawn = false, notice = "", ticker = null, confirm = false, unwatch = () => {
+    let ended = false, finishing = false, drawn = false, gone = false, notice = "", ticker = null, confirm = false, unwatch = () => {
     };
     const cell = () => session.current;
     let finishedAt = null;
@@ -29675,8 +29770,9 @@ function createWorldEducation({
       } catch {
         set = null;
       }
+      planEnd();
       queueMicrotask(() => refresh());
-      if (set?.folded) Promise.resolve(set.folded).then(() => redrawNext(), () => {
+      if (set?.folded) Promise.resolve(set.folded).then(foldedRedraw, () => {
       });
     };
     const closed = () => {
@@ -29686,10 +29782,18 @@ function createWorldEducation({
       home.toast(t2("practice.next.changed"));
       void openMyPosition();
     };
-    home.attachPanelResource?.({ dispose: stop });
+    home.attachPanelResource?.({ dispose() {
+      gone = true;
+      stop();
+    } });
     unwatch = atlasNext?.retired?.(next2, closed) ?? (() => {
     });
-    let logged = false;
+    let logged = false, planEnded = false;
+    const planEnd = () => {
+      if (planEnded || !session.presented) return;
+      planEnded = true;
+      planEnds += 1;
+    };
     const markPlan = () => {
       if (logged || !session.presented) return;
       logged = true;
@@ -29754,7 +29858,8 @@ function createWorldEducation({
         await session.settled();
       } catch {
       }
-      if (!finishing || !box.isConnected) {
+      planEnd();
+      if (!finishing || gone || !box.isConnected) {
         const left = finishing;
         finishing = false;
         unwatch();
@@ -29766,7 +29871,7 @@ function createWorldEducation({
         }
         if (left) {
           queueMicrotask(() => refresh());
-          if (set2?.folded) Promise.resolve(set2.folded).then(() => redrawNext(), () => {
+          if (set2?.folded) Promise.resolve(set2.folded).then(foldedRedraw, () => {
           });
         }
         return;
@@ -29789,10 +29894,10 @@ function createWorldEducation({
       if (local && set?.folded) {
         await Promise.race([Promise.resolve(set.folded).catch(() => null), new Promise((resolve) => setTimeout(resolve, FOLD_WAIT_MS))]);
         if (stopped) return;
-        if (!box.isConnected) {
+        if (gone || !box.isConnected) {
           refresh();
           evidenced();
-          Promise.resolve(set.folded).then(() => redrawNext(), () => {
+          Promise.resolve(set.folded).then(foldedRedraw, () => {
           });
           return;
         }
@@ -29896,7 +30001,7 @@ function createWorldEducation({
   async function openPlan({ keepScroll = false, quiet = false } = {}) {
     if (keepScroll && (openPosition.pending || heldMock())) return "skipped";
     check3();
-    const ticket = ++planOpen;
+    const ticket = ++planOpen, mine = keepScroll || quiet ? asked : ++asked;
     if (!keepScroll) {
       try {
         await prepare();
@@ -29912,7 +30017,7 @@ function createWorldEducation({
         const panel = home.openPanel?.() ?? "";
         await settledHome();
         check3();
-        if (!quiet && (home.openPanel?.() ?? "") !== panel) return "skipped";
+        if (mine !== asked || !quiet && (home.openPanel?.() ?? "") !== panel) return "skipped";
       }
     }
     if (ticket !== planOpen || quiet && home.openPanel?.()) return "skipped";

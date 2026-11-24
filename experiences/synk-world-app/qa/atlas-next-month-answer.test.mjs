@@ -87,16 +87,18 @@ test('학습일 답 — 계정마다 열쇠 하나 · 동의 판 · 학습일이
   const storage = memoryStorage();
   const answers = createMonthAnswers({ storage });
   const month = [{ unit: 'u0', misses: 2, reviews: 3, last: 2.9, evidence: { text: '문항 글' } }];
-  assert.equal(answers.write('acct', { revision: 3, day: 'd1', askedFrom: at(5), at: at(5), windows: WINDOWS, month, since: answers.generation() }), true);
-  assert.equal(storage.map.size, 1);
-  const raw = JSON.parse([...storage.map.values()][0]);
+  assert.equal(answers.write('acct', { revision: 3, day: 'd1', askedFrom: at(5), at: at(5), windows: WINDOWS, month, since: answers.stamp('acct', { ensure: true }) }), true);
+  // 적을 때 물음의 지우기 표지도 저장소에 있다(검수 s3d GH2) — 학습일 답 열쇠는 하나다.
+  const answerKeys = [...storage.map.keys()].filter(key => key.startsWith('synk:world:month-answer:'));
+  assert.equal(answerKeys.length, 1);
+  const raw = JSON.parse(storage.getItem(answerKeys[0]));
   assert.deepEqual(raw.month, [{ unit: 'u0', misses: 2, reviews: 3, last: 2.9 }], '근거 글 · 문항 글은 두지 않는다');
   const read = answers.read('acct', { revision: 3, day: 'd1' });
   assert.deepEqual(read.at, at(5));
   assert.equal(answers.read('acct', { revision: 4, day: 'd1' }), null, '동의 판이 바뀌면 버린다');
   assert.equal(answers.read('acct', { revision: 3, day: 'd2' }), null, '학습일이 바뀌면 다시 묻는다');
   assert.equal(answers.read('other', { revision: 3, day: 'd1' }), null, '다른 계정은 그 값을 읽지 못한다');
-  storage.setItem([...storage.map.keys()][0], '{"v":1,"revision":3,"day":"d1","askedFrom":{},"at":{},"windows":{},"month":[]}');
+  storage.setItem(answerKeys[0], '{"v":1,"revision":3,"day":"d1","askedFrom":{},"at":{},"windows":{},"month":[]}');
   assert.equal(answers.read('acct', { revision: 3, day: 'd1' }), null, '꼴이 틀리면 버린다');
   const [entry] = monthOfAnswer(read);
   assert.deepEqual(entry.evidence, { ...WINDOWS, misses: 2, reviews: 3, last: 2.9 }, '근거는 창과 숫자로 다시 짓는다');
@@ -105,7 +107,7 @@ test('학습일 답 — 계정마다 열쇠 하나 · 동의 판 · 학습일이
 test('학습일 답 — 지우는 길(로그아웃 · 동의 끔 · 계정 바꿈 · 비우기)은 열쇠를 지우고 세대 수를 올려, 그 전에 물은 늦은 답을 적지 않는다', () => {
   const storage = memoryStorage();
   const answers = createMonthAnswers({ storage });
-  const since = answers.generation();
+  const since = answers.stamp('acct', { ensure: true });
   answers.write('acct', { revision: 3, day: 'd1', askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since });
   answers.clear('acct');
   assert.equal(answers.read('acct', { revision: 3, day: 'd1' }), null, '로그아웃 뒤 같은 브라우저에서 그 값을 읽지 못한다');
@@ -127,13 +129,13 @@ test('학습일 답 — 저장소가 막히거나 없어도 던지지 않는다(
   };
   const answers = createMonthAnswers({ storage: broken });
   assert.equal(answers.read('acct', { revision: 1, day: 'd' }), null);
-  assert.equal(answers.write('acct', { revision: 1, day: 'd', askedFrom: at(1), at: at(1), windows: WINDOWS, month: [], since: answers.generation() }), false);
+  assert.equal(answers.write('acct', { revision: 1, day: 'd', askedFrom: at(1), at: at(1), windows: WINDOWS, month: [], since: answers.stamp('acct', { ensure: true }) }), false);
   assert.doesNotThrow(() => answers.clear('acct'));
   // 저장소가 없으면(localStorage가 없는 환경) 적었다고 하지 않는다 — 적은 답을 다음 그리기가 다시 읽으리라 믿지 않게(Fable 다시 보기 FA1).
   const none = createMonthAnswers({ storage: null });
   assert.equal(none.read('acct', { revision: 1, day: 'd' }), null);
   assert.equal(
-    none.write('acct', { revision: 1, day: 'd', askedFrom: at(1), at: at(1), windows: WINDOWS, month: [], since: none.generation() }),
+    none.write('acct', { revision: 1, day: 'd', askedFrom: at(1), at: at(1), windows: WINDOWS, month: [], since: none.stamp('acct', { ensure: true }) }),
     false,
     '저장소가 없으면 적었다고 하지 않는다',
   );
@@ -154,7 +156,7 @@ test('근거 답 — 계정마다 열쇠 하나(학습일 답과 다른 열쇠) 
   const body = FIRST_KIND.parse({ firstAnswers: FIRST_BODY });
   assert.ok(body, '받은 답의 몸');
   const answer = FIRST_KIND.shape({ askedFrom: at(5), at: at(5), ...body });
-  assert.equal(first.write('acct', { revision: 3, day: 'd1', ...answer, since: first.generation() }), true);
+  assert.equal(first.write('acct', { revision: 3, day: 'd1', ...answer, since: first.stamp('acct', { ensure: true }) }), true);
   const read = first.read('acct', { revision: 3, day: 'd1' });
   assert.deepEqual(FIRST_KIND.use(read), { since: FIRST_BODY.since, bySkill: { 'ko.listening.detail': 1, 'ko.reading.main': 3 } }, '쓰기의 세대 수가 창의 시작을 덮지 않는다');
   assert.equal(month.read('acct', { revision: 3, day: 'd1' }), null, '학습일 답 열쇠와 다르다');
@@ -201,7 +203,7 @@ test('근거 답 — 지우는 길(clearMonthAnswer)은 학습일 답과 근거 
   const storage = memoryStorage();
   const first = createMonthAnswers({ storage, kind: FIRST_KIND });
   const month = createMonthAnswers({ storage });
-  const since = first.generation();
+  const since = first.stamp('acct', { ensure: true });
   const answer = FIRST_KIND.shape({ askedFrom: at(5), at: at(5), ...FIRST_KIND.parse({ firstAnswers: FIRST_BODY }) });
   first.write('acct', { revision: 3, day: 'd1', ...answer, since });
   month.write('acct', { revision: 3, day: 'd1', askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since });
@@ -224,7 +226,7 @@ test('근거 답 — 지우는 길(clearMonthAnswer)은 학습일 답과 근거 
     },
   };
   const flakyFirst = createMonthAnswers({ storage: flaky, kind: FIRST_KIND });
-  flakyFirst.write('acct', { revision: 1, day: 'd', ...answer, since: flakyFirst.generation() });
+  flakyFirst.write('acct', { revision: 1, day: 'd', ...answer, since: flakyFirst.stamp('acct', { ensure: true }) });
   clearMonthAnswer(flaky, 'acct');
   assert.equal(thrown, 1);
   assert.equal(flakyFirst.read('acct', { revision: 1, day: 'd' }), null, '학습일 답 지우기가 던져도 근거 답은 지운다');
@@ -243,7 +245,7 @@ test('근거 답 — 지우는 길(clearMonthAnswer)은 학습일 답과 근거 
     },
   };
   const flakyMonth = createMonthAnswers({ storage: flakyOther });
-  flakyMonth.write('acct', { revision: 1, day: 'd', askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since: flakyMonth.generation() });
+  flakyMonth.write('acct', { revision: 1, day: 'd', askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since: flakyMonth.stamp('acct', { ensure: true }) });
   assert.notEqual(flakyMonth.read('acct', { revision: 1, day: 'd' }), null, '장면의 전제 — 학습일 답을 적었다');
   clearMonthAnswer(flakyOther, 'acct');
   assert.equal(thrownFirst, 1);
@@ -701,7 +703,7 @@ test('머리 차례를 가리지 못하는 답(gen 없는 옛 머리끼리 판 �
   const answers = createMonthAnswers({ storage });
   const device = { edition: 'e-old', gen: null, foldedUntil: 5 };
   const there = { edition: 'e-new', gen: null, foldedUntil: 3 };
-  answers.write(A_ID, { revision: 1, day: 7, askedFrom: device, at: there, windows: WINDOWS, month: [], since: answers.generation() });
+  answers.write(A_ID, { revision: 1, day: 7, askedFrom: device, at: there, windows: WINDOWS, month: [], since: answers.stamp(A_ID, { ensure: true }) });
   let asks = 0;
   let pulls = 0;
   const coach = {
@@ -1067,7 +1069,7 @@ test('저장소가 막혀도(없음 · 읽기가 던짐 · 쓰기가 말없이 �
   }
   const answers = createMonthAnswers({ storage: null });
   assert.equal(
-    answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since: answers.generation() }),
+    answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since: answers.stamp(A_ID, { ensure: true }) }),
     false,
     '저장소가 없으면 적었다고 하지 않는다',
   );
@@ -1124,9 +1126,9 @@ test('로그아웃으로 끊긴 물음은 실패로 적지 않고, 다시 들어
   await quiet(10);
   behind.render();
   assert.equal(behind.pulls, 1, '뒤처진 동안 받기는 한 번');
-  behind.answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(9), windows: WINDOWS, month: [], since: behind.answers.generation() });
+  behind.answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(9), windows: WINDOWS, month: [], since: behind.answers.stamp(A_ID, { ensure: true }) });
   behind.answers.clear(A_ID);
-  behind.answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(9), windows: WINDOWS, month: [], since: behind.answers.generation() });
+  behind.answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(9), windows: WINDOWS, month: [], since: behind.answers.stamp(A_ID, { ensure: true }) });
   behind.render();
   await quiet(10);
   assert.equal(behind.pulls, 2, '지우는 길 뒤에는 같은 자리로 다시 받는다');
@@ -1139,7 +1141,7 @@ test('쓰기만 막히고(용량 초과) 저장소에 앞 답이 남아도 이 �
   let seed = null;
   const { storage, unblock } = writesBlockedAfter(store => {
     seed = createMonthAnswers({ storage: store });
-    seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(9), at: at(10), windows: WINDOWS, month: [], since: seed.generation() });
+    seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(9), at: at(10), windows: WINDOWS, month: [], since: seed.stamp(A_ID, { ensure: true }) });
   });
   const box = fakeAsker({ storage, reply: (_n, b) => done(b.device) });
   box.device = at(11);
@@ -1152,7 +1154,7 @@ test('쓰기만 막히고(용량 초과) 저장소에 앞 답이 남아도 이 �
   assert.equal(box.render()?.month.length, 1, '이 문서가 든 새 답(자리 11)으로 문장을 그린다');
   // 다른 탭이 더 새 답(자리 12)을 적었다 — 저장소 것이 앞서면 그것으로 견주고 묻지 않는다.
   unblock();
-  seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(11), at: at(12), windows: WINDOWS, month: [], since: seed.generation() });
+  seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(11), at: at(12), windows: WINDOWS, month: [], since: seed.stamp(A_ID, { ensure: true }) });
   box.device = at(12);
   assert.deepEqual(box.render()?.month, [], '저장소의 더 새 답으로 문장을 그린다');
   await quiet(10);
@@ -1355,7 +1357,7 @@ test('밀려난 물음의 늦은 답과 실패는 상태를 덮지 않는다 —
   slow.render();
   await quiet(5);
   slow.day = 8;
-  tab.write(A_ID, { revision: 1, day: 8, askedFrom: slow.device, at: slow.device, windows: WINDOWS, month: rowOf('today'), since: tab.generation() });
+  tab.write(A_ID, { revision: 1, day: 8, askedFrom: slow.device, at: slow.device, windows: WINDOWS, month: rowOf('today'), since: tab.stamp(A_ID, { ensure: true }) });
   go();
   await quiet(10);
   assert.equal(slow.answers.read(A_ID, { revision: 1, day: 8 })?.month[0].unit, 'today', '넘어간 학습일의 늦은 답이 다른 탭의 오늘 답을 덮지 않는다');
@@ -1541,7 +1543,7 @@ test('근거 상자 — 저장소가 막혀도(없음 · 읽기가 던짐 · 쓰
   const { storage, unblock } = writesBlockedAfter(store => {
     const seed = createMonthAnswers({ storage: store, kind: FIRST_KIND });
     const answer = FIRST_KIND.shape({ askedFrom: at(3), at: at(3), ...FIRST_KIND.parse(firstDone(at(3), { 'ko.reading.main': 1 })) });
-    seed.write(A_ID, { revision: 1, day: 7, ...answer, since: seed.generation() });
+    seed.write(A_ID, { revision: 1, day: 7, ...answer, since: seed.stamp(A_ID, { ensure: true }) });
   });
   const box = fakeAsker({ storage, kind: FIRST_KIND, reply: (_n, b) => firstDone(b.device, { 'ko.reading.main': 5 }) });
   assert.equal(box.render(), null, '앞 답은 지난 자리 — 묻는다');
@@ -1765,10 +1767,168 @@ test('셸 — 로그아웃과 동의 바꾸기(바꾼 뒤 · 실패한 뒤)에�
   assert.ok(shell.includes('firstAnswers:coach=>atlasNext.firstAnswersOf(coach)'), '홈 입구의 근거 줄');
   const consent = shell.split(/\r?\n/).find(text => text.includes("control.matches?.('[data-world-learning]')"));
   assert.ok(consent, '동의 바꾸기 줄');
-  assert.match(consent, /\.then\(\(\)=>\{clearMonthAnswer\(localStorage,client\.snapshot\?\.accountId\);/, '동의를 바꾼 뒤 지운다');
+  assert.match(consent, /const enabled=control\.checked,owner=client\.snapshot\?\.accountId;/, '누른 때의 계정을 잡는다(검수 s3e2 GA1)');
+  assert.match(consent, /\.then\(\(\)=>\{clearMonthAnswer\(localStorage,owner\);/, '동의를 바꾼 뒤 지운다');
   assert.match(
     consent,
-    /\.catch\(error=>\{control\.checked=!enabled;clearMonthAnswer\(localStorage,client\.snapshot\?\.accountId\);/,
+    /\.catch\(error=>\{control\.checked=!enabled;clearMonthAnswer\(localStorage,owner\);/,
     '바꾸기가 실패해도 지운다(서버는 바뀌었는데 뒤 확인만 실패한 갈래)',
   );
+});
+
+// 검수 s3d GH2: 탭 둘(모듈 사본 둘 — 세대 수가 문서마다 따로) · 저장소 하나. 탭 B가 묻는 중에 탭 A가 지우는 길(동의 끔 · 로그아웃)을 돌면, B의 늦은 답은
+// 학습일 답을 다시 적지 않고 다시 그리지도 않는다. 열쇠가 없던 첫 물음도 같다 — 물을 때 둔 계정의 지우기 표지를 A가 지웠기 때문이다.
+const MONTH_URL = process.env.SYNK_MONTH_ANSWER_MODULE
+  ? pathToFileURL(process.env.SYNK_MONTH_ANSWER_MODULE).href
+  : new URL('../world-month-answer.mjs', import.meta.url).href;
+test('다른 탭이 지우면(동의 끔 · 로그아웃) 이 탭의 늦은 답은 학습일 답을 다시 적지도 다시 그리지도 않는다 — 열쇠가 없던 첫 물음도(검수 s3d GH2)', async () => {
+  const tabA = await import(`${MONTH_URL}?tab=gh2-a`);
+  const tabB = await import(`${MONTH_URL}?tab=gh2-b`);
+  const key = `${tabA.MONTH_KIND.prefix}acct`;
+  for (const stale of [true, false]) {
+    const values = new Map();
+    const storage = { getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, String(v)), removeItem: k => values.delete(k) };
+    const pos = at(5);
+    const coach = { summary: () => ({ storage: { guest: false, unfoldedRows: 0, sync: { received: pos } } }), pull: () => Promise.resolve(true) };
+    let release;
+    const pending = new Promise(resolve => (release = resolve));
+    let redraws = 0;
+    let asks = 0;
+    const answers = tabB.createMonthAnswers({ storage });
+    const asker = tabB.createMonthAsker({
+      answers,
+      account: () => 'acct',
+      lineOf: () => ({ revision: 3, ask: () => ((asks += 1), pending) }),
+      dayOf: () => '2026-11-23',
+      offsetOf: () => 540,
+      redraw: () => (redraws += 1),
+      note: () => {},
+      alive: () => true,
+    });
+    assert.equal(asker.month(coach), null, '묻는 중');
+    await new Promise(resolve => setTimeout(resolve, 10));
+    assert.equal(asks, 1, '한 번 물었다(답은 아직)');
+    if (stale) storage.setItem(key, '{"stale":true}');
+    tabA.clearMonthAnswer(storage, 'acct');
+    assert.equal(values.has(key), false, '탭 A가 지웠다');
+    release({ complete: true, summaryAt: pos, lookback: { windows: WINDOWS, month: [{ unit: 'ko.word.1', misses: 2, reviews: 3, last: null }] } });
+    await new Promise(resolve => setTimeout(resolve, 20));
+    assert.equal(values.has(key), false, `${stale ? '앞서 적힌 값이 있던' : '열쇠가 없던 첫'} 물음의 늦은 답을 적지 않는다`);
+    assert.equal(redraws, 0, '늦은 답으로 다시 그리지 않는다');
+  }
+  // 적기도 같은 표지를 본다 — 물을 때 든 표지를 다른 탭이 지웠으면 적지 않는다.
+  const values = new Map();
+  const storage = { getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, String(v)), removeItem: k => values.delete(k) };
+  const answers = tabB.createMonthAnswers({ storage });
+  const since = answers.stamp('acct', { ensure: true });
+  tabA.clearMonthAnswer(storage, 'acct');
+  assert.equal(answers.write('acct', { revision: 3, day: 'd1', askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since }), false, '다른 탭이 지운 뒤의 늦은 적기');
+  assert.equal(answers.write('acct', { revision: 3, day: 'd1', askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since: answers.stamp('acct', { ensure: true }) }), true, '지운 뒤에 다시 물은 답은 적는다');
+});
+
+// 검수 s3e1 GC1 · GC2: 탭 둘(모듈 사본 둘) · 저장소 하나에서 지우는 길과 늦은 답을 본다(위 GH2 시험과 같은 틀).
+async function twoTabs(name) {
+  const tabA = await import(`${MONTH_URL}?tab=${name}-a`);
+  const tabB = await import(`${MONTH_URL}?tab=${name}-b`);
+  return { tabA, tabB };
+}
+function heldAsker(tab, { storage, revision, pos }) {
+  const coach = { summary: () => ({ storage: { guest: false, unfoldedRows: 0, sync: { received: pos } } }), pull: () => Promise.resolve(true) };
+  let release;
+  const pending = new Promise(resolve => (release = resolve));
+  let redraws = 0;
+  const answers = tab.createMonthAnswers({ storage });
+  const asker = tab.createMonthAsker({
+    answers,
+    account: () => 'acct',
+    lineOf: () => ({ revision, ask: () => pending }),
+    dayOf: () => 'd',
+    offsetOf: () => 540,
+    redraw: () => (redraws += 1),
+    note() {},
+    alive: () => true,
+  });
+  asker.month(coach);
+  return { answers, release: () => release({ complete: true, summaryAt: pos, lookback: { windows: WINDOWS, month: [] } }), redraws: () => redraws };
+}
+
+test('연습 기록 비우기(before)가 늦게 끝나도 새 판에서 물은 답은 적고 다시 그린다 — 앞 판에서 물은 늦은 답만 버린다(검수 s3e1 GC2)', async () => {
+  const { tabA, tabB } = await twoTabs('gc2');
+  const values = new Map();
+  const storage = { getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, String(v)), removeItem: k => values.delete(k) };
+  const pos = at(5);
+  const old = heldAsker(tabB, { storage, revision: 6, pos });
+  const fresh = heldAsker(tabB, { storage, revision: 7, pos });
+  assert.ok(values.has(`${tabB.CLEAR_KIND.prefix}acct`), '물을 때 지우기 표지를 둔다');
+  // 다른 탭이 판 7로 비운 뒤의 정리가 늦게 돈다.
+  tabA.clearMonthAnswer(storage, 'acct', { before: 7 });
+  assert.ok(values.has(`${tabB.CLEAR_KIND.prefix}acct`), '비우기는 표지를 지우지 않는다(판 바닥만 올린다)');
+  fresh.release();
+  old.release();
+  for (let i = 0; i < 5; i += 1) await tick();
+  assert.ok(fresh.answers.read('acct', { revision: 7, day: 'd' }), '새 판(7)에서 물은 답은 적는다');
+  assert.equal(fresh.redraws(), 1, '새 판의 답으로 한 번 다시 그린다');
+  assert.equal(old.redraws(), 0, '앞 판(6)에서 물은 늦은 답으로는 다시 그리지 않는다');
+  assert.equal(old.answers.read('acct', { revision: 6, day: 'd' }), null, '앞 판의 늦은 답은 적지 않는다');
+  assert.equal(
+    old.answers.write('acct', { revision: 6, day: 'd', askedFrom: pos, at: pos, windows: WINDOWS, month: [], since: old.answers.stamp('acct') }),
+    false,
+    '판 바닥 아래 판의 답은 적지 않는다',
+  );
+  // 지우는 길(로그아웃 · 동의 끔)은 표지를 지운다 — 판 바닥도 함께 없어진다.
+  tabA.clearMonthAnswer(storage, 'acct');
+  assert.equal(values.has(`${tabB.CLEAR_KIND.prefix}acct`), false);
+});
+
+test('지우기 표지를 만들지 못한 물음(용량 초과)의 답은 저장소에 적지 않는다 — 다른 탭이 동의를 끄며 공간을 비운 뒤에도 그 앞에 물은 답이 다시 적히지 않는다(검수 s3e1 GC1)', async () => {
+  const { tabA, tabB } = await twoTabs('gc1');
+  const values = new Map([[`${tabB.FIRST_KIND.prefix}acct`, '{"old":true}']]);
+  let full = true;
+  const storage = {
+    getItem: k => values.get(k) ?? null,
+    setItem: (k, v) => {
+      if (full) throw new Error('QuotaExceededError');
+      values.set(k, String(v));
+    },
+    removeItem: k => {
+      values.delete(k);
+      full = false; // 지우면 공간이 생긴다
+    },
+  };
+  const asked = heldAsker(tabB, { storage, revision: 3, pos: at(5) });
+  assert.equal(values.has(`${tabB.CLEAR_KIND.prefix}acct`), false, '용량이 차 표지를 만들지 못했다');
+  tabA.clearMonthAnswer(storage, 'acct'); // 다른 탭이 동의를 껐다 — 캐시를 지워 공간이 생겼다
+  assert.equal(full, false);
+  asked.release();
+  for (let i = 0; i < 5; i += 1) await tick();
+  assert.equal(values.has(`${tabB.MONTH_KIND.prefix}acct`), false, '동의를 끈 뒤 그 앞에 물은 답을 저장소에 다시 적지 않는다');
+});
+
+test('늦은 답이 왔을 때 들일 코치가 이제 기기 기록이면(물은 사이 동의를 껐다) 들지도 적지도 다시 그리지도 않는다(검수 s3e1 GC1)', async () => {
+  const values = new Map();
+  const storage = { getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, String(v)), removeItem: k => values.delete(k) };
+  const pos = at(5);
+  let guest = false;
+  const coach = { summary: () => ({ storage: { guest, unfoldedRows: 0, sync: { received: pos } } }), pull: () => Promise.resolve(true) };
+  let release;
+  const pending = new Promise(resolve => (release = resolve));
+  let redraws = 0;
+  const { tabB } = await twoTabs('gc1g');
+  const answers = tabB.createMonthAnswers({ storage });
+  const asker = tabB.createMonthAsker({
+    answers,
+    account: () => 'acct',
+    lineOf: () => ({ revision: 3, ask: () => pending }),
+    dayOf: () => 'd',
+    offsetOf: () => 540,
+    redraw: () => (redraws += 1),
+    note() {},
+    alive: () => true,
+  });
+  asker.month(coach);
+  guest = true;
+  release({ complete: true, summaryAt: pos, lookback: { windows: WINDOWS, month: [] } });
+  for (let i = 0; i < 5; i += 1) await tick();
+  assert.equal(redraws, 0, '다시 그리지 않는다');
+  assert.equal(values.has('synk:world:month-answer:acct'), false, '적지 않는다');
 });

@@ -318,6 +318,68 @@ test('꺼진 판(새 길 입구 없음)을 처음부터 끝까지 — 옛 거울
   }
 });
 
+// 검수 -s3f1 Fable F1: 하던 복습 판(답하지 않은 문항이 남음)이 있어도 꺼진 판의 복습 첫 화면은 라이브와 같다. 「이어서 하기」는 새 길 판정(dueState)이
+// 있을 때만 선다 — 꺼진 판은 돌아온 것이 없으면 「다음 레슨 하기 →」 · 「우리 동네로」다.
+test('꺼진 판 복습 첫 화면 — 하던 판이 남아도 돌아온 것이 없으면 「이어서 하기」 없이 지금 판 그대로(검수 -s3f1 F1)', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const progress = createLifeProgress({ owner: 'guest', mode: 'local', storage: memoryStorage(), now: () => Date.now() });
+  const w = lifeOn({ progress, entry: false });
+  try {
+    playLesson(w, lessonById('greetings-expressions'), { wrong: [0] });
+    // 결과의 「새 장면으로 다시 보기」처럼 때가 안 된 표현으로 판을 열고 한 문항도 답하지 않은 채 닫았다.
+    const id = Object.keys(progress.exportSnapshot().reviews)[0];
+    const run = progress.startReview(1, null, null, { ids: [id] });
+    assert.deepEqual(run.ids, [id], '하던 판이 남았다');
+    assert.ok(!run.answers?.[id], '답하지 않은 문항이 있다');
+    w.ui.review();
+    assert.ok(last(w).includes(t('life.reviewSubOpens', { date: t('life.when.minutes', { n: 1 }) })), '돌아온 것은 아직 없다(1분 뒤)');
+    assert.equal(live(w, 'review-start'), null, '꺼진 판에는 「이어서 하기」가 없다');
+    assert.ok(live(w, 'next') && live(w, 'home'), '라이브처럼 「다음 레슨 하기」 · 「우리 동네로」');
+  } finally {
+    w.ui.dispose();
+  }
+});
+
+// ③ 공개 직후 캐시 섞임(섞임 표 6 · 검수 s3d GD1): 새 생활 화면이 캐시에 남은 옛 진도 모듈을 받는다. 옛 API에는 reviewHelped · dropStaleHelp ·
+// setDueSource가 없다. 그래도 복습 첫 문항이 열리고, 도움은 옛 뜻(미리 본 표시가 곧 도움)으로 읽는다.
+test('옛 진도 모듈(reviewHelped · dropStaleHelp 없음)과 섞여도 복습 첫 문항이 열리고, 미리 본 표시가 곧 도움이다(③ 섞임 GD1 — 옛 뜻)', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const real = createLifeProgress({ owner: 'guest', mode: 'local', storage: memoryStorage(), now: () => Date.now() });
+  const { reviewHelped, dropStaleHelp, setDueSource, ...old } = real;
+  assert.equal(typeof reviewHelped, 'function', '새 진도에는 있다');
+  const progress = Object.freeze(old);
+  const w = lifeOn({ progress, entry: false });
+  try {
+    const lesson = lessonById('greetings-expressions');
+    playLesson(w, lesson, { wrong: [0] });
+    t0.mock.timers.tick(2 * DAY);
+    const hardId = lesson.questions[0].review.id;
+    assert.equal(w.practice()(lesson.questions[0].id), true, '미리 본 표현의 홈 연습');
+    const run = progress.exportSnapshot().activeReview;
+    assert.equal(run.ids[0], hardId);
+    assert.equal(run.pendingHelp?.[hardId], true, '미리 본 표현은 도움 표시');
+    // 옛 거울에 넘긴 보임의 도움 값(셋째 인자)을 함께 적는다 — 미리 본 표시가 곧 도움이면 { helped: true }다.
+    const shownWith = [];
+    const shownBase = w.oldTrail.shown;
+    w.oldTrail.shown = (...args) => {
+      shownWith.push(args[2] ?? null);
+      return shownBase(...args);
+    };
+    const seenBefore = w.oldTrail.seen.length;
+    w.ui.reviewStart();
+    assert.equal(w.ui.metrics().phase, 'review', '첫 문항이 열린다');
+    assert.ok(choices(w).length > 0, '보기가 선다');
+    assert.equal(w.oldTrail.seen.length, seenBefore + 1, '복습 첫 문항이 옛 거울에 보임');
+    assert.deepEqual(shownWith.at(-1), { helped: true }, '미리 본 표시가 곧 도움(옛 뜻) — 옛 거울에도 도움 받은 제시로 보인다');
+    playReview(w);
+    const notes = Object.fromEntries(rows(last(w)).map(row => [row.korean, row.note]));
+    assert.equal(notes[korean(lesson, lesson.questions[0])], t('life.reviewSoon'), '미리 본 표현은 도움 받은 답(조금 뒤 다시)');
+    for (const [expression, note] of Object.entries(notes).filter(([k]) => k !== korean(lesson, lesson.questions[0])))
+      assert.equal(note, t('life.reviewRemembered'), `${expression}: 혼자 맞히면 「잘 기억했어요」`);
+  } finally {
+    w.ui.dispose();
+  }
+});
 test('생활 단독 묶음 — setupLife 한 번: IndexedDB · /atlas/ 없이 옛 코치(world-life)가 옛 기기 기록 열쇠에 적는다(Fable 5.2 합친 끝 판 F6 (가))', async () => {
   const values = new Map();
   const localStorage = {
