@@ -51,6 +51,23 @@ test('the window app takes the update switches alone, and the release still take
   assert.match(read('src-tauri/src/update.rs'), /Err\(Error::Minisign\(_\)\) if recovery_key\(app\.config\(\)\.plugins\.0\.get\("synkUpdate"\)\)\.is_some\(\) => \{/);
 });
 
+test('a window start with no run task registered asks about an update first, as the notice does (11-25)', () => {
+  const main = read('src-tauri/src/main.rs');
+  // Only the run tasks check the feed each day; with none registered, a person's start of the release app asks first.
+  assert.match(main, /fn asks_before_open\(test:bool,debug:bool,background:bool,asked:bool,registered:impl FnOnce\(\)->Result<bool,String>\)->bool\{\n\s+!test&&!debug&&!background&&!asked&&matches!\(registered\(\),Ok\(false\)\)\n\s*\}/);
+  // Asked with the window lock held and the word taken back, before the worker starts; the window opens in a start marked asked.
+  const at = main.indexOf('if asks_before_open(');
+  assert.ok(at > main.indexOf('let (root,lock)=platform::state_root(test)?;') && at < main.indexOf('Worker::start('), 'asked between the window lock and the worker');
+  // A word another start left while the question was up is the screen the new start opens (카본 끝판 A1).
+  assert.match(main.slice(at, at + 800), /asks_before_open\(test,cfg!\(debug_assertions\),background,std::env::var_os\(UPDATE_ASKED\)\.is_some\(\),registered\)\{\n\s+let installing=matches!\(ask_update\(true\),Ok\(true\)\);\n(?:\s+\/\/[^\n]*\n)+\s+let topic=take_topic\(&root\)\.or\(launch_topic\);\n\s+drop\(lock\);\n\s+return if installing\{Ok\(\(\)\)\}else\{open_asked\(topic\)\};/);
+  assert.match(main, /Command::new\(exe\)\.args\(topic\.map\(notify::open_url\)\)\.env\(UPDATE_ASKED,\"1\"\)/);
+  // The notice's click opens the window marked asked too, so it is never asked twice in a row.
+  assert.match(main, /fn offer_update\(\)->Result<\(\),String>\{\n\s+if ask_update\(false\)\?\{return Ok\(\(\)\);\}\n\s+open_asked\(None\)/);
+  // Before the runs, a check that did not reach the feed says nothing, and no automatic backup is said to pause.
+  assert.match(main, /Err\(_\) if before_runs=>\{\},\n\s+Err\(code\)=>say\(update_message\(code\)\),/);
+  assert.match(main, /let pause=if before_runs\{""\}else\{"업데이트하는 동안 자동 백업이 잠시 멈추고, "\};/);
+});
+
 // A minisign key pair and signature made with Node alone, the way `tauri signer sign` makes them (prehashed 「ED」).
 function minisign() {
   const { privateKey, publicKey } = crypto.generateKeyPairSync('ed25519'), id = crypto.randomBytes(8);

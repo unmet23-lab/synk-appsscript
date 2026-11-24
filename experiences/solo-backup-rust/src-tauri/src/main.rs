@@ -279,10 +279,13 @@ fn update_message(code:&str)->&'static str{match code{
     "UPDATE_UNCONFIRMED"=>"업데이트 설치가 시작됐는지 확인하지 못했습니다. 잠시 뒤 앱을 다시 열어 판을 확인해 주세요.",
     _=>"업데이트하지 못했습니다. 잠시 뒤 다시 해 주세요.",
 }}
-/// A click on the 「업데이트 준비됨」 notice (`synk-workbackup:open?topic=update`): ask once, and update. If
-/// there is nothing to install, the person says later, or it cannot go ahead, the window opens as for any
-/// other notice (a started installer opens it itself when it is done).
-fn offer_update()->Result<(),String>{
+/// On the start that opens the window after one already asked about an update, so it is not asked again.
+const UPDATE_ASKED:&str="SWB_UPDATE_ASKED";
+/// Asks once about a newer version and installs it if the person says so. True when an installer was started and took
+/// over: it opens the window itself when it is done. `before_runs`: the window is opening while no run task is
+/// registered (before protection starts, or with automatic backup off) — nobody asked to check, so a check that did not
+/// reach the feed says nothing, and no automatic backup is there to pause.
+fn ask_update(before_runs:bool)->Result<bool,String>{
     let root=updating_folder()?;
     let app=updater_app()?;let handle=app.handle().clone();
     let say=|text:&str|{rfd::MessageDialog::new().set_title("업무 백업 업데이트").set_description(text).show();};
@@ -293,22 +296,44 @@ fn offer_update()->Result<(),String>{
     match found{
         Ok(Some(next))=>{
             let version=update::version_text(&next.version).unwrap_or_default();
+            let pause=if before_runs{""}else{"업데이트하는 동안 자동 백업이 잠시 멈추고, "};
             // An account that cannot approve the prompt itself (the weekly 「관리자에게 부탁」 notice) is told the administrator
             // types their password here — the one way such a PC is updated (GPT workbackup-update-notice GA2 · -b GA5).
-            let text=if update::can_approve(){format!("새 판 {version}이 나왔습니다. 지금 업데이트할까요?\n\n관리자 확인이 한 번 뜹니다. 업데이트하는 동안 자동 백업이 잠시 멈추고, 끝나면 앱이 다시 열립니다.")}
-                else{format!("새 판 {version}이 나왔습니다. 설치에는 이 컴퓨터 관리자 계정의 비밀번호가 필요합니다.\n\n관리자가 함께 있으면 「업데이트」를 누르고, 뜨는 Windows 확인 창에 관리자 비밀번호를 넣어 주세요. 업데이트하는 동안 자동 백업이 잠시 멈추고, 끝나면 앱이 다시 열립니다.")};
+            let text=if update::can_approve(){format!("새 판 {version}이 나왔습니다. 지금 업데이트할까요?\n\n관리자 확인이 한 번 뜹니다. {pause}끝나면 앱이 다시 열립니다.")}
+                else{format!("새 판 {version}이 나왔습니다. 설치에는 이 컴퓨터 관리자 계정의 비밀번호가 필요합니다.\n\n관리자가 함께 있으면 「업데이트」를 누르고, 뜨는 Windows 확인 창에 관리자 비밀번호를 넣어 주세요. {pause}끝나면 앱이 다시 열립니다.")};
             // Cancel first, as in every dialog here: Escape or closing it is 「나중에」.
             let answer=rfd::MessageDialog::new().set_title("업무 백업 업데이트").set_description(text).set_buttons(rfd::MessageButtons::OkCancelCustom("나중에".into(),"업데이트".into())).show();
             if matches!(answer,rfd::MessageDialogResult::Custom(ref s) if s=="업데이트"){
                 // A started installer opens the window itself when it is done.
-                match tauri::async_runtime::block_on(update::install(&handle,&root,|_|{})){Ok(())=>return Ok(()),Err("UP_TO_DATE")=>{},Err(code)=>say(update_message(code))}
+                match tauri::async_runtime::block_on(update::install(&handle,&root,|_|{})){Ok(())=>return Ok(true),Err("UP_TO_DATE")=>{},Err(code)=>say(update_message(code))}
             }
         },
         Ok(None)|Err("UPDATE_NOT_CONFIGURED")=>{},
+        Err(_) if before_runs=>{},
         Err(code)=>say(update_message(code)),
     }
+    Ok(false)
+}
+/// Opens the window in a new start of this app, on this topic's screen if one is given, marked as asked. The check needs a
+/// Tauri app of its own, and a process makes only one, so the window cannot open in the start that asked.
+fn open_asked(topic:Option<&str>)->Result<(),String>{
     let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
-    std::process::Command::new(exe).spawn().map(|_|()).map_err(|_|"OPEN_FAILED".into())
+    std::process::Command::new(exe).args(topic.map(notify::open_url)).env(UPDATE_ASKED,"1").spawn().map(|_|()).map_err(|_|"OPEN_FAILED".into())
+}
+/// A click on the 「업데이트 준비됨」 notice (`synk-workbackup:open?topic=update`): ask once, and update. If
+/// there is nothing to install, the person says later, or it cannot go ahead, the window opens as for any
+/// other notice (a started installer opens it itself when it is done).
+fn offer_update()->Result<(),String>{
+    if ask_update(false)?{return Ok(());}
+    open_asked(None)
+}
+/// Whether a start that opens the window asks about a newer version first (4.10, 11-25): only the run tasks check the feed
+/// each day, so with none registered (before protection starts, or with automatic backup off) an installed version
+/// would stay as it is — 0.7.0, installed 11-23 and not set up, never heard of 0.7.2. A person's start of the release
+/// app only: not the start at sign-in, a test, or the start opened after asking. Not knowing whether the tasks are there
+/// (Task Scheduler did not answer) asks nothing.
+fn asks_before_open(test:bool,debug:bool,background:bool,asked:bool,registered:impl FnOnce()->Result<bool,String>)->bool{
+    !test&&!debug&&!background&&!asked&&matches!(registered(),Ok(false))
 }
 
 fn run()->Result<(),String>{
@@ -349,11 +374,22 @@ fn run()->Result<(),String>{
     let (root,lock)=platform::state_root(test)?;
     let launch_topic=take_topic(&root).filter(|_|topic.is_some());
     if root.join("migration-incomplete").exists(){return Err("MIGRATION_INCOMPLETE".into());}
+    let background=args.contains(&"--background".into());
+    // Asked with the window lock held, so a second start meanwhile (another press in SYNK 솔리오) opens no second question.
+    // Task Scheduler is asked on a thread of its own: its COM apartment stays off this thread, where the window's is made.
+    let registered=||{let app=exe.clone();std::thread::spawn(move||run_tasks_registered(&app,false)).join().unwrap_or_else(|_|Err("SCHEDULE_THREAD".into()))};
+    if asks_before_open(test,cfg!(debug_assertions),background,std::env::var_os(UPDATE_ASKED).is_some(),registered){
+        let installing=matches!(ask_update(true),Ok(true));
+        // A start meanwhile (another press in SYNK 솔리오, a notice) left its word and ended at the held lock, with no
+        // window yet to wake: the newest word is the screen the new start opens, as with a window already open (카본 끝판 A1).
+        let topic=take_topic(&root).or(launch_topic);
+        drop(lock);
+        return if installing{Ok(())}else{open_asked(topic)};
+    }
     let signal=Arc::new(platform::InstanceSignal::new(&root)?);
     let scripted=if test{match std::env::var_os("SOLO_BACKUP_TEST_DIALOGS"){Some(path)=>{let data=fs::read(path).map_err(|_|"TEST_DIALOGS")?;if data.len()>131072{return Err("TEST_DIALOGS".into());}serde_json::from_slice::<VecDeque<Value>>(&data).map_err(|_|"TEST_DIALOGS")?},None=>VecDeque::new()}}else{VecDeque::new()};
     let native=Arc::new(NativeHost{root:root.clone(),exe,test,packaged:!cfg!(debug_assertions),dialogs:Mutex::new(scripted),dialog_busy:AtomicBool::new(false),engine:Mutex::new(None)});
     let current=Arc::new(Mutex::new(Value::Null));
-    let background=args.contains(&"--background".into());
     let app=tauri::Builder::default().invoke_handler(tauri::generate_handler![backup_call]).setup(move|app|{
         let handle=app.handle().clone();let publish_handle=handle.clone();let published=current.clone();
         let failure_handle=handle.clone();let failure_root=root.clone();
@@ -421,6 +457,18 @@ fn main(){
 
 #[cfg(test)] mod tests {
     use super::*;
+    #[test] fn a_window_start_asks_about_an_update_only_while_no_run_task_checks(){
+        let none=||Ok::<bool,String>(false);let there=||Ok::<bool,String>(true);let unknown=||Err::<bool,String>("SCHEDULE_COM:0x1".into());
+        assert!(asks_before_open(false,false,false,false,none));
+        assert!(!asks_before_open(false,false,false,false,there));
+        assert!(!asks_before_open(false,false,false,false,unknown));
+        // A test, a debug build, the start at sign-in and the start opened after asking never ask.
+        for (test,debug,background,asked) in [(true,false,false,false),(false,true,false,false),(false,false,true,false),(false,false,false,true)]{
+            let mut looked=false;
+            assert!(!asks_before_open(test,debug,background,asked,||{looked=true;Ok(false)}));
+            assert!(!looked,"Task Scheduler is not asked for {test} {debug} {background} {asked}");
+        }
+    }
     #[test] fn a_topic_word_is_taken_back_once_and_only_from_the_fixed_list(){
         let dir=std::env::temp_dir().join(format!("swb-open-topic-{}",std::process::id()));
         let _=fs::remove_dir_all(&dir);fs::create_dir_all(&dir).unwrap();
