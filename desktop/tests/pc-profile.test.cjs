@@ -191,3 +191,27 @@ test('main measures this PC only for a signed-in member: a guest first run start
   assert.match(main, /function publishAuthState\(state\)\{[^\n]*solioBackupSweep\(\);pcProfileWarm\(\);/, 'signing in measures once');
 });
 
+test('a guest never measures this PC: the settings room, measure again and the one-click drives only read the saved values (0.5.11 Fable P1)', async () => {
+  const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8').replace(/\r\n/g, '\n').split('\n');
+  const line = start => { const found = main.filter(l => l.startsWith(start)); assert.equal(found.length, 1, start); return found[0]; };
+  const handlers = main.filter(l => /^ {4}'synk:pc-profile(-again)?':/.test(l)).map(l => l.trim().replace(/,$/, ''));
+  assert.equal(handlers.length, 2, 'the two measuring channels');
+  const vm = require('node:vm');
+  const run = signedIn => {
+    const calls = [];
+    const service = { refresh: o => { calls.push(['refresh', o || null]); return Promise.resolve({ ok: true, measured: true }); }, snapshot: () => { calls.push(['snapshot']); return { ok: true, profile: null }; }, spaceDrives: () => { calls.push(['spaceDrives']); return null; } };
+    const ctx = { accountStatus: () => ({ signedIn }), pcProfile: () => service, pcProfileService: service };
+    vm.runInNewContext([line('const pcMember='), line('function pcProfileRead('), line('function pcSpaceDrives('), line('function pcProfileCall('), 'globalThis.channels={' + handlers.join(',') + '};'].join('\n'), ctx);
+    return { ctx, calls };
+  };
+  const guest = run(false);
+  await guest.ctx.channels['synk:pc-profile']();
+  await guest.ctx.channels['synk:pc-profile-again']();
+  guest.ctx.pcSpaceDrives();
+  assert.deepEqual(guest.calls.map(c => c[0]), ['snapshot', 'snapshot', 'spaceDrives'], 'no refresh (no PowerShell) for a guest');
+  const member = run(true);
+  await member.ctx.channels['synk:pc-profile']();
+  await member.ctx.channels['synk:pc-profile-again']();
+  member.ctx.pcSpaceDrives();
+  assert.equal(JSON.stringify(member.calls), JSON.stringify([['refresh', null], ['refresh', { full: true }], ['refresh', null], ['spaceDrives']]), 'a member measures as before');
+});
