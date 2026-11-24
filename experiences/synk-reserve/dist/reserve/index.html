@@ -17,10 +17,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAF1ED">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-synk-20260919-32.png">
-<link rel="preload" href="/reserve/assets/reserve-sans.woff2?v=c11436da932b" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="reserve.css?v=13132f9c7b93">
-<script src="copy.js?v=09604f43f0ac" defer></script>
-<script src="app.js?v=9ddc59be2491" defer></script>
+<link rel="preload" href="/reserve/assets/reserve-sans.woff2?v=f37b6d9da5fb" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="reserve.css?v=8d7c53cf4c29">
+<script src="copy.js?v=2462075e2a77" defer></script>
+<script src="app.js?v=d2a4607d87bb" defer></script>
 </head>
 <body>
 <header class="rs-bar">
@@ -80,22 +80,25 @@
   <section class="rs-now" aria-labelledby="now-title">
     <div class="rs-now-head">
       <p class="rs-now-tag" data-t="nowTag">지금 해 볼 수 있는 것</p>
-      <h2 id="now-title" data-t="nowTitle">한국 유학을 먼저 살아 보는 한국어 이야기 게임</h2>
-      <p class="rs-now-body" data-t="nowBody">출시 전이지만 SYNK WORLD에서 서울행 이야기와 1화를 무료로 해 볼 수 있습니다. 공항에 내리면 입국심사관이 먼저 말을 겁니다.</p>
-      <a class="rs-pill" id="world-go" data-world href="/world/?lang=ko"><span data-t="nowGo">SYNK WORLD에서 해 보기</span> <span aria-hidden="true">→</span></a>
+      <h2 id="now-title"><span data-t="nowTitle">봄 학기, 서울로 유학을 왔습니다.</span> <span class="rs-now-sub" data-t="nowSub">한국어로 말하며 이어 가는 이야기 게임, SYNK WORLD</span></h2>
+      <a class="rs-pill" id="world-go" data-world href="/world/?lang=ko"><span data-t="nowGo">서울행 무료로 해 보기</span> <span aria-hidden="true">→</span></a>
     </div>
     <div class="rs-story">
       <ol id="chapters" aria-labelledby="now-title"></ol>
-      <div class="rs-stage-col" aria-hidden="true"><div id="stage"></div></div>
+      <div class="rs-stage-col" aria-hidden="true">
+        <div class="rs-stage-stick"><div id="stage"><p class="rs-stage-tag"></p></div><div class="rs-stage-phone"><img src="shots/ko/name.webp" alt="" width="600" height="1301"></div></div>
+      </div>
     </div>
     <div class="rs-now-end">
-      <a class="rs-pill" data-world href="/world/?lang=ko"><span data-t="nowGo">SYNK WORLD에서 해 보기</span> <span aria-hidden="true">→</span></a>
+      <p data-t="nowEnd">출시 전에도 서울행과 1화는 무료입니다.</p>
+      <a class="rs-pill" data-world href="/world/?lang=ko"><span data-t="nowGo2">SYNK WORLD에서 해 보기</span> <span aria-hidden="true">→</span></a>
     </div>
   </section>
 </main>
 
 <footer class="rs-foot">
-  <p>SYNK · <span data-t="contact">문의</span> <a href="mailto:hello@synk.im">hello@synk.im</a> · <a href="https://synk.im/privacy/" data-t="privacyFoot">개인정보 처리방침</a> · <a href="https://synk.im/terms/" data-t="terms">이용약관</a></p>
+  <nav aria-label="바닥 메뉴" data-t-attr="aria-label:footLabel"><a href="https://synk.im/" data-t="home">SYNK 홈</a><a href="https://synk.im/privacy/" data-t="privacyFoot">개인정보 처리방침</a><a href="https://synk.im/terms/" data-t="terms">이용약관</a><a href="mailto:hello@synk.im">hello@synk.im</a><span>© 2026 SYNK</span></nav>
+  <div class="rs-wm" aria-hidden="true">synk</div>
 </footer>
 <p class="sr" id="live" aria-live="assertive"></p>
 </body>

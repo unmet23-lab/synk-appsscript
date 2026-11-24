@@ -2,7 +2,7 @@
 //   node experiences/synk-reserve/build.mjs
 // 그림은 공개본에 이미 있는 synk.im 새 홈 그림(/assets/v11/town-road.webp)을 쓴다. 링크 미리보기(og.jpg)는 그 그림을
 // 공개본 git(SYNK_PUBLISH_GIT, 기본 ~/Documents/synk-vendor/synk-policy-publish.git의 origin/main)에서 꺼내 굽는다.
-// 아래 단락의 서울행 장면은 SYNK WORLD 실제 화면 캡처(src/shots/<언어>/<장면>.webp)다(11-24).
+// 아래 단락의 서울행 장면은 WORLD 장면 사진(src/img/)과, 장면에 따라 그 언어의 실제 화면 캡처(src/shots/<언어>/<shot>.webp)다(11-24 B안).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -44,17 +44,12 @@ fs.mkdirSync(ASSETS, { recursive: true });
 // 1) 글 · 코드 · 꼴. 지문(?v=)은 글꼴을 구운 뒤 3)에서 단다.
 // 공용 작업본은 core.autocrlf라 원고가 CRLF일 수 있다 — 공개본과 같은 LF로 쓴다.
 for (const f of ['index.html', 'copy.js', 'app.js', 'reserve.css']) fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(SRC, f), 'utf8').replace(/\r\n/g, '\n'), 'utf8');
-// 아래 단락의 서울행 화면 캡처(언어마다 같은 장면 이름). copy.js의 SCENES가 모두 있어야 한다.
+// 아래 단락의 장면 사진과 화면 캡처. copy.js의 SCENES · FRIENDS가 부르는 파일이 모두 있어야 한다.
 {
   const C = (await import(pathToFileURL(path.join(SRC, 'copy.js')).href)).default;
-  for (const lang of C.LANGS) {
-    fs.mkdirSync(path.join(OUT, 'shots', lang), { recursive: true });
-    for (const { id } of C.SCENES) {
-      const from = path.join(SRC, 'shots', lang, `${id}.webp`);
-      if (!fs.existsSync(from)) throw new Error(`화면 캡처가 없어요: shots/${lang}/${id}.webp`);
-      fs.copyFileSync(from, path.join(OUT, 'shots', lang, `${id}.webp`));
-    }
-  }
+  const need = (from, to) => { if (!fs.existsSync(from)) throw new Error(`그림이 없어요: ${path.relative(SRC, from)}`); fs.mkdirSync(path.dirname(to), { recursive: true }); fs.copyFileSync(from, to); };
+  for (const id of [...C.SCENES.map(s => s.id), ...C.FRIENDS.map(f => `face-${f.id}`)]) need(path.join(SRC, 'img', `${id}.webp`), path.join(OUT, 'img', `${id}.webp`));
+  for (const lang of C.LANGS) for (const { shot } of C.SCENES) if (shot) need(path.join(SRC, 'shots', lang, `${shot}.webp`), path.join(OUT, 'shots', lang, `${shot}.webp`));
 }
 
 // 2) 글꼴. 키릴 밖 글자는 SUIT(빠진 한글이 있으면 멈춤), 몽골어 화면의 라틴 · 숫자 · 키릴은 Inter Tight 둘(500 · 700).
@@ -67,8 +62,6 @@ const miss = run('python', ['-c', 'import sys\nfrom fontTools.ttLib import TTFon
 if (miss) throw new Error(`SUIT 서브셋에 한글이 빠졌어요: ${miss}`);
 subset(path.join(FONTS, 'InterTight/InterTight-Medium.ttf'), ascii() + EXTRA + CYRILLIC, path.join(ASSETS, 'reserve-inter-500.woff2'));
 subset(path.join(FONTS, 'InterTight/InterTight-Bold.ttf'), ascii() + EXTRA + CYRILLIC, path.join(ASSETS, 'reserve-inter-700.woff2'));
-// 장면 번호(01~06)만 DM Mono로 쓴다.
-subset(path.join(FONTS, 'DM_Mono/DMMono-Medium.ttf'), '0123456789', path.join(ASSETS, 'reserve-mono.woff2'));
 
 // 3) 지문: 글꼴은 reserve.css와 index.html의 미리 받기에, css · js는 index.html에 ?v=<내용 지문 12자>로 단다.
 {

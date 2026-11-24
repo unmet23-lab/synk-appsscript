@@ -26,27 +26,36 @@ test('폼 고정 값은 구글 폼 선택지 글과 같고, 질문 번호는 같
   for (const k of ['action', 'email', 'type', 'body', 'consent', 'consentValue']) assert.equal(C.FORM[k], T4.FORM[k], k);
 });
 
-test('아래 단락의 서울행 장면: 세 언어 글이 다 있고 화면 캡처 파일이 언어마다 있다', () => {
+test('아래 단락의 서울행 장면: 세 언어 글이 다 있고 사진 · 화면 캡처 파일이 있다', () => {
   assert.ok(C.SCENES.length >= 4);
+  const webp = f => { assert.ok(fs.existsSync(f), path.relative(__dirname, f)); const b = fs.readFileSync(f); assert.equal(b.toString('ascii', 0, 4) + b.toString('ascii', 8, 12), 'RIFFWEBP', `${path.basename(f)}는 webp`); };
   const ids = new Set();
   for (const s of C.SCENES) {
     assert.match(s.id, /^[a-z]+$/);
     assert.ok(!ids.has(s.id), `장면 이름 겹침: ${s.id}`);
     ids.add(s.id);
-    for (const l of C.LANGS) for (const f of ['name', 'body', 'alt']) assert.ok(typeof s[l][f] === 'string' && s[l][f].trim(), `${s.id}.${l}.${f}`);
+    webp(path.join(__dirname, 'src/img', `${s.id}.webp`));
+    for (const l of C.LANGS) {
+      for (const f of ['tag', 'name', 'body', 'alt']) assert.ok(typeof s[l][f] === 'string' && s[l][f].trim(), `${s.id}.${l}.${f}`);
+      if (s.shot) webp(path.join(__dirname, 'src/shots', l, `${s.shot}.webp`));
+      if (s.soon) assert.ok(s[l].soon, `${s.id}.${l}.soon`);
+      if (s.line) {
+        assert.ok(s[l].lineLabel, `${s.id}.${l}.lineLabel`);
+        if (l !== 'ko') assert.ok(s[l].lineMean, `${s.id}.${l}.lineMean — 한국어 한 줄의 뜻`);
+      }
+    }
   }
-  for (const l of C.LANGS) for (const id of ids) {
-    const f = path.join(__dirname, 'src/shots', l, `${id}.webp`);
-    assert.ok(fs.existsSync(f), `shots/${l}/${id}.webp`);
-    const b = fs.readFileSync(f);
-    assert.equal(b.toString('ascii', 0, 4) + b.toString('ascii', 8, 12), 'RIFFWEBP', `${l}/${id}는 webp`);
-  }
-  // 11-24 유호님 정정: 첫 화면과 폼은 11-23 판 그대로(머리 글 「SYNK 사전예약」, 마을 그림), 바뀐 것은 아래 단락뿐이다.
+  for (const f of C.FRIENDS) { webp(path.join(__dirname, 'src/img', `face-${f.id}.webp`)); for (const l of C.LANGS) assert.ok(f[l], `${f.id}.${l}`); }
+  // 「지금 해 볼 수 있는 것」 안에서 아직 안 열린 화는 「곧 열려요」를 단다 — 2화부터는 아직 없다.
+  for (const s of C.SCENES) if (/^2화/.test(s.ko.tag)) assert.ok(s.soon, `${s.ko.tag}에 「곧 열려요」`);
+  // 11-24 유호님 정정: 첫 화면과 폼은 11-23 판 그대로(머리 글 「SYNK 사전예약」, 마을 그림), 바뀐 것은 아래 단락과 발이다.
   const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
   assert.match(html, /<h1 id="h1" data-t="h1">SYNK 사전예약<\/h1>/);
   assert.match(html, /src="\/assets\/v11\/town-road\.webp"/);
   assert.equal(C.ko.tag, '2027년 2월 정식 출시');
   assert.match(html, /<section class="rs-now"[\s\S]*id="chapters"[\s\S]*<\/section>\s*<\/main>/);
+  // 발은 synk.im 홈처럼 링크 줄과 큰 synk.
+  assert.match(html, /<footer class="rs-foot">[\s\S]*<div class="rs-wm" aria-hidden="true">synk<\/div>\s*<\/footer>/);
 });
 
 test('세 언어의 글 키가 같고 빈 글이 없다', () => {

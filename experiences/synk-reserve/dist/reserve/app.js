@@ -1,7 +1,7 @@
 /* SYNK 사전예약 — 화면 동작.
  * 원본: SYNK-appsscript/experiences/synk-reserve/src/app.js
  * 하는 일: 화면 언어 고르기(?lang → 기기 언어 → 영어), 들어온 곳(?from), 철수한 TOPIK 4급 반에서 온 사람에게 안내(?notice=topik4), 사전예약 보내기,
- *   아래 단락의 서울행 장면(넓은 화면: 장면 글이 화면 가운데를 지나면 옆 휴대폰 한 대가 그 장면으로 바뀜 · 좁은 화면: 장면마다 휴대폰 한 대를 옆으로 넘김).
+ *   아래 단락의 서울행 장면(넓은 화면: 장면 글이 화면 가운데를 지나면 옆 사진틀이 그 장면 사진으로 바뀌고 실제 화면이 있으면 작은 휴대폰에 · 좁은 화면: 장면마다 사진과 글을 위아래로).
  * 보내기: 홈페이지 문의 구글 폼(copy.js FORM)의 formResponse에 바로 보낸다(no-cors라 응답을 못 읽는다 — 요청이 끝나면 접수로 본다).
  *   그래서 이메일은 폼보다 깐깐하게 미리 보고, 완료 판에 「다시 적기」와 문의 주소를 둔다.
  * 문의 내용(받는 쪽 website-inquiry-registration.mjs의 app-reserve가 이 꼴만 「사전예약」으로 센다):
@@ -153,43 +153,46 @@
     if (state.done) renderDone();
   }
 
-  /* ───────── 아래 단락: 서울행 장면 ───────── */
+  /* ───────── 아래 단락: 서울행 장면 사진 ───────── */
+  const pic = id => `img/${id}.webp`;
   const shot = id => `shots/${state.lang}/${id}.webp`;
   let sceneAt = 0;
 
   function renderScenes() {
     const list = $('#chapters');
     if (!list) return;
+    const faces = C.FRIENDS.map(f => `<img src="${pic(`face-${f.id}`)}" alt="${esc(f[state.lang])}" width="56" height="56" loading="lazy">`).join('');
     list.innerHTML = C.SCENES.map((s, i) => {
       const x = s[state.lang];
-      return `<li class="rs-chapter${i === sceneAt ? ' on' : ''}" data-i="${i}"><div class="rs-phone rs-chapter-phone"><img src="${shot(s.id)}" alt="${esc(x.alt)}" width="600" height="1301" loading="lazy" decoding="async"></div>`
-        + `<div class="rs-chapter-say"><span class="rs-num">${String(i + 1).padStart(2, '0')}</span><h3>${keep(x.name)}</h3><p>${keep(x.body)}</p></div></li>`;
+      const line = s.line ? `<p class="rs-line"><small>${keep(x.lineLabel)}</small><span lang="ko">${esc(s.line)}</span>${x.lineMean ? `<span class="rs-mean">${keep(x.lineMean)}</span>` : ''}</p>` : '';
+      return `<li class="rs-chapter${i === sceneAt ? ' on' : ''}" data-i="${i}">`
+        + `<div class="rs-chapter-pic"><img src="${pic(s.id)}" alt="${esc(x.alt)}" width="900" height="1125" loading="lazy" decoding="async">${s.soon ? `<p class="rs-soon">${keep(x.soon)}</p>` : ''}</div>`
+        + `<div class="rs-chapter-say"><span class="rs-num">${keep(x.tag)}</span><h3>${keep(x.name)}</h3><p>${keep(x.body)}</p>${line}${s.friends ? `<div class="rs-faces">${faces}</div>` : ''}</div></li>`;
     }).join('');
-    fitChapters();
     showScene(sceneAt, false);
   }
 
-  /** 좁은 화면에서 장면 줄이 옆으로 넘어갈 때만 키보드로 들어가 넘길 수 있게 한다. */
-  function fitChapters() {
-    const list = $('#chapters');
-    if (!list) return;
-    if (list.scrollWidth > list.clientWidth + 1) list.setAttribute('tabindex', '0'); else list.removeAttribute('tabindex');
-  }
-
-  /** 넓은 화면의 옆 휴대폰에 i번째 장면을 띄운다. 새 그림이 옅게 겹쳐 들어온다.
-   * 빨리 내리면 앞서 부른 그림이 늦게 뜰 수 있어, 마지막으로 부른 장면(want)만 띄우고 나머지는 물러난 뒤 지운다. */
+  /** 넓은 화면의 옆 사진틀에 i번째 장면 사진을 옅게 바꿔 띄우고, 그 장면에 실제 화면이 있으면 작은 휴대폰에 띄운다.
+   * 빨리 내리면 앞서 부른 사진이 늦게 뜰 수 있어, 마지막으로 부른 장면(want)만 띄우고 나머지는 물러난 뒤 지운다. */
   function showScene(i, animate = true) {
     sceneAt = i;
     $$('.rs-chapter').forEach(li => li.classList.toggle('on', Number(li.dataset.i) === i));
     const stage = $('#stage');
     if (!stage) return;
-    const s = C.SCENES[i];
-    const want = `${state.lang}/${s.id}`;
+    const s = C.SCENES[i], x = s[state.lang];
+    const tag = $('.rs-stage-tag');
+    if (tag) tag.textContent = s.soon ? x.soon : x.tag;
+    const phone = $('.rs-stage-phone');
+    if (phone) {
+      phone.classList.toggle('on', !!s.shot);
+      if (s.shot) phone.querySelector('img').src = shot(s.shot);
+    }
+    const want = s.id;
     stage.dataset.want = want;
     let img = [...stage.querySelectorAll('img')].find(o => o.dataset.key === want);
     if (!img) {
       img = new Image();
-      img.src = shot(s.id); img.width = 600; img.height = 1301; img.decoding = 'async'; img.alt = '';
+      img.src = pic(s.id); img.width = 900; img.height = 1125; img.decoding = 'async'; img.alt = '';
       img.dataset.key = want;
       stage.appendChild(img);
     }
@@ -201,7 +204,7 @@
       [...stage.querySelectorAll('img')].forEach(o => {
         if (o === img) return;
         o.classList.remove('on');
-        setTimeout(() => { if (stage.dataset.want !== o.dataset.key) o.remove(); }, animate ? 560 : 0);
+        setTimeout(() => { if (stage.dataset.want !== o.dataset.key) o.remove(); }, animate ? 760 : 0);
       });
     };
     if (img.complete && img.naturalWidth) swap(); else { img.addEventListener('load', swap, { once: true }); img.addEventListener('error', swap, { once: true }); }
@@ -344,7 +347,6 @@
     $('#again').addEventListener('click', again);
     const list = $('#chapters');
     if (list) {
-      addEventListener('resize', fitChapters);
       if ('IntersectionObserver' in window) {
         // 화면 가운데 줄을 지나는 장면 글이 지금 장면이다. 언어를 바꾸면 줄을 다시 그리므로 다시 붙인다.
         const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) showScene(Number(e.target.dataset.i)); }, { rootMargin: '-48% 0px -48% 0px' });
@@ -352,8 +354,8 @@
         watch();
         new MutationObserver(watch).observe(list, { childList: true });
       }
-      // 옆 휴대폰이 보이는 넓은 화면이면 장면 그림을 미리 받아 둔다(넘길 때 빈 화면이 없게).
-      const warm = () => { const st = $('#stage'); if (st && st.offsetParent) C.SCENES.forEach(s => { const im = new Image(); im.src = shot(s.id); }); };
+      // 옆 사진틀이 보이는 넓은 화면이면 장면 사진과 화면 캡처를 미리 받아 둔다(바뀔 때 빈 틀이 없게).
+      const warm = () => { const st = $('#stage'); if (st && st.offsetParent) C.SCENES.forEach(s => { new Image().src = pic(s.id); if (s.shot) new Image().src = shot(s.shot); }); };
       if (document.readyState === 'complete') warm(); else addEventListener('load', warm, { once: true });
     }
     document.documentElement.classList.add('js');

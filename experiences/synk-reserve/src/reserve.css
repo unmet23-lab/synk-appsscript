@@ -5,7 +5,6 @@
 @font-face{font-family:'Reserve Sans';src:url(assets/reserve-sans.woff2) format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-500.woff2) format('woff2');font-weight:400 500;font-display:swap}
 @font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-700.woff2) format('woff2');font-weight:600 900;font-display:swap}
-@font-face{font-family:'Reserve Mono';src:url(assets/reserve-mono.woff2) format('woff2');font-weight:500;font-display:swap}
 
 :root{
   --ink:#1d1d1f;--paper:#fff;--warm:#FAF1ED;--hair:#E2DED9;--cap:#4a4744;--bad:#B42318;
@@ -15,9 +14,8 @@
   --wide:max(var(--gut),calc((100vw - 1240px)/2));
   --shadow:0 26px 52px -34px rgba(40,30,20,.36);
   --ease:cubic-bezier(.2,.7,.2,1);
-  --night:#05091a; /* 아래 단락의 밤 바탕 — 서울행 화면과 이어진다 */
-  --acc-night:#ff8a70; /* 밤 바탕 위 장면 번호 · 꼬리표 */
-  --mono:'Reserve Mono',ui-monospace,monospace;
+  --grey:#6f6963; /* 둘째 줄 · 장면 설명(미색 위 5.1:1) */
+  --foot:#08090c; /* 발 — synk.im 홈의 발과 같은 검정 */
 }
 *,*::before,*::after{box-sizing:border-box}
 html{background:var(--paper);-webkit-text-size-adjust:100%}
@@ -92,44 +90,54 @@ img{display:block;max-width:100%}
 .rs-pill:hover{transform:translateY(-2px)}
 .rs-text{padding-bottom:3px;border-bottom:1.5px solid currentColor;font:600 15px/1.3 var(--sans)}
 
-/* 지금 해 볼 수 있는 것: 서울행 실제 화면(11-24 유호님 정정 — 첫 화면과 폼은 그대로 두고 이 단락만).
- * 넓은 화면: 장면 글이 화면 가운데를 지나면 옆 휴대폰 한 대가 그 장면으로 옅게 바뀐다. 좁은 화면: 장면마다 휴대폰 한 대를 옆으로 넘긴다. */
-.rs-now{color:#fff;background:linear-gradient(180deg,var(--night) 0%,#0d0b22 50%,var(--night) 100%);padding:clamp(80px,9vw,128px) var(--gut) clamp(72px,8vw,112px)}
-.rs-now-head,.rs-now-end{display:grid;gap:14px;justify-items:start;max-width:calc(460px + 340px + clamp(48px,6vw,96px));margin:0 auto}
-.rs-now-tag{font:700 clamp(15px,1.2vw,18px)/1.2 var(--sans);color:var(--acc-night)}
-.rs-now h2{font:700 clamp(30px,3.4vw,48px)/1.15 var(--sans);letter-spacing:-.03em;max-width:15em}
-:lang(mn) .rs-now h2{letter-spacing:-.01em}
-.rs-now-body{max-width:34em;color:rgba(255,255,255,.88)}
-.rs-now .rs-pill{margin-top:8px;background:#fff;color:var(--ink)}
-.rs-now :focus-visible{outline-color:#fff}
-.rs-story{display:grid;grid-template-columns:minmax(0,460px) minmax(0,340px);justify-content:center;column-gap:clamp(48px,6vw,96px);margin-top:clamp(8px,2vw,24px)}
-#chapters{display:grid;margin:0;padding:0;list-style:none}
-.rs-chapter{min-height:64vh;display:flex;align-items:center}
-/* 넓은 화면에서는 옆 휴대폰이 그림을 보이므로 장면 속 휴대폰은 눈에서만 숨긴다(화면 읽기는 대체 글을 읽는다). */
-.rs-chapter .rs-chapter-phone{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);box-shadow:none}
-/* 지금 보지 않는 장면은 글만 옅게 — 장면 번호는 .8까지만 내려 밤 바탕에서 4.5:1을 지킨다(검수 reserve-fix-20261124 카본 A1). */
-.rs-chapter-say{display:grid;gap:12px;max-width:440px}
-.rs-chapter-say>*{opacity:.55;transition:opacity .4s var(--ease)}
-.rs-chapter-say>.rs-num{opacity:.8}
-.rs-chapter.on .rs-chapter-say>*{opacity:1}
-.rs-num{font:500 14px/1 var(--mono);letter-spacing:.02em;color:var(--acc-night)}
-.rs-chapter h3{font:700 clamp(24px,2.4vw,34px)/1.2 var(--sans);letter-spacing:-.03em}
-:lang(mn) .rs-chapter h3{letter-spacing:-.01em}
-.rs-chapter p{font:500 clamp(16px,1.2vw,18px)/1.6 var(--sans);color:rgba(255,255,255,.88)}
+/* 지금 해 볼 수 있는 것: 서울행 장면 사진(11-24 유호님 B안). 첫 화면과 같은 미색 바탕.
+ * 글자 역할: 큰 말 SUIT 700 먹 + 회색 둘째 줄 · 장면 이름 SUIT 700 · 게임에서 하는 한국어 한 줄은 흰 말풍선 · 꼬리표만 코랄.
+ * 넓은 화면: 장면 글이 화면 가운데를 지나면 옆 사진틀이 그 장면 사진으로 옅게 바뀌고, 실제 화면이 있는 장면은 작은 휴대폰이 곁에 뜬다. */
+.rs-now{background:var(--warm);padding:clamp(80px,9vw,140px) var(--gut) clamp(72px,8vw,120px)}
+.rs-now-head,.rs-now-end{max-width:1240px;margin:0 auto}
+.rs-now-head{display:grid;gap:14px;justify-items:start}
+.rs-now-tag{font:700 15px/1.2 var(--sans);color:var(--acc)}
+.rs-now h2{font:700 clamp(34px,4.4vw,64px)/1.12 var(--sans);letter-spacing:-.035em;max-width:15em}
+.rs-now-sub{display:block;color:var(--grey);font-weight:600}
+:lang(mn) .rs-now h2{font-size:clamp(30px,3.6vw,52px);letter-spacing:-.015em}
+.rs-now .rs-pill{height:54px;padding:0 26px;margin-top:10px;font-weight:700;font-size:17px}
+.rs-story{display:grid;grid-template-columns:minmax(0,440px) minmax(0,560px);justify-content:center;column-gap:clamp(40px,6vw,104px);max-width:1240px;margin:clamp(40px,5vw,72px) auto 0}
+#chapters{margin:0;padding:0;list-style:none}
+.rs-chapter{min-height:78vh;display:grid;align-content:center}
+.rs-chapter-say{display:grid;gap:12px}
+.rs-num{font:700 14px/1.2 var(--sans);color:var(--acc)}
+.rs-chapter h3{font:700 clamp(28px,2.8vw,42px)/1.16 var(--sans);letter-spacing:-.03em}
+:lang(mn) .rs-chapter h3{font-size:clamp(25px,2.4vw,36px);letter-spacing:-.01em}
+.rs-chapter p{font:500 17px/1.6 var(--sans);color:#47433f;max-width:26em}
+.rs-chapter .rs-line{display:grid;gap:5px;justify-self:start;margin-top:6px;padding:12px 16px;border-radius:16px;background:#fff;box-shadow:0 12px 30px -18px rgba(40,30,20,.5);font:600 17px/1.4 var(--sans);color:var(--ink)}
+.rs-line small{font:700 12px/1.2 var(--sans);color:var(--acc)}
+.rs-line .rs-mean{font:500 14px/1.4 var(--sans);color:var(--grey)}
+.rs-faces{display:flex;gap:10px;margin-top:6px}
+.rs-faces img{width:56px;height:56px;border-radius:16px;object-fit:cover;object-position:50% 22%;box-shadow:0 8px 18px -10px rgba(40,30,20,.6)}
+/* 넓은 화면에서는 옆 사진틀이 사진을 보이므로 장면 속 사진은 눈에서만 숨긴다(화면 읽기는 대체 글을 읽는다). */
+.rs-chapter .rs-chapter-pic{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0)}
 .rs-stage-col{position:relative}
-.rs-phone{position:relative;padding:8px;border-radius:46px;background:#111;box-shadow:0 40px 70px -40px rgba(20,14,40,.55),0 0 0 1px rgba(255,255,255,.08) inset}
-.rs-phone img{width:100%;height:auto;aspect-ratio:600/1301;border-radius:38px;background:#0b0c18}
-#stage{position:sticky;top:calc(50vh - min(39vh,358px));width:min(100%,min(36vh,330px));margin:0 auto;padding:8px;border-radius:46px;background:#111;box-shadow:0 50px 90px -40px rgba(120,80,255,.35),0 0 0 1px rgba(255,255,255,.08) inset}
-#stage::before{content:"";display:block;aspect-ratio:600/1301}
-#stage img{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);border-radius:38px;object-fit:cover;opacity:0;transform:scale(1.015);transition:opacity .5s var(--ease),transform .6s var(--ease)}
-#stage img.on{opacity:1;transform:none}
+.rs-stage-stick{position:sticky;top:calc(50vh - min(41vh,380px))}
+#stage{position:relative;height:min(82vh,760px);border-radius:32px;overflow:hidden;background:#d9d2c8;box-shadow:0 40px 80px -40px rgba(40,30,20,.55)}
+#stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s var(--ease)}
+#stage img.on{opacity:1}
 #stage img.now{transition:none}
-.rs-now-end{margin-top:clamp(8px,2vw,24px)}
-#chapters:focus{outline:none}
-#chapters:focus-visible{outline:2px solid #fff;outline-offset:-2px;border-radius:12px}
+.rs-stage-tag{position:absolute;z-index:1;left:18px;top:18px;padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.92);font:700 14px/1 var(--sans)}
+.rs-stage-tag:empty{display:none}
+.rs-stage-phone{position:absolute;right:-28px;bottom:-26px;width:clamp(130px,11vw,170px);padding:6px;border-radius:30px;background:#111;box-shadow:0 30px 60px -24px rgba(0,0,0,.6);opacity:0;transform:translateY(12px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.rs-stage-phone.on{opacity:1;transform:none}
+.rs-stage-phone img{width:100%;height:auto;aspect-ratio:600/1301;border-radius:25px;object-fit:cover}
+.rs-soon{position:absolute;left:14px;top:14px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.92);font:700 13px/1 var(--sans)}
+.rs-now-end{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;margin-top:clamp(40px,5vw,72px)}
+.rs-now-end p{font:700 clamp(20px,1.8vw,26px)/1.35 var(--sans);letter-spacing:-.02em}
 
-.rs-foot{padding:28px var(--wide) 44px;border-top:1px solid var(--hair);font:500 14px/1.6 var(--sans);color:var(--cap)}
-.rs-foot a{text-underline-offset:3px}
+/* 발 — synk.im 홈의 발과 같은 짜임(링크 줄과 화면 폭만큼 큰 synk) */
+.rs-foot{background:var(--foot);color:#fafaf9;padding:clamp(40px,6svh,72px) var(--wide) 0;overflow:hidden}
+.rs-foot nav{display:flex;flex-wrap:wrap;gap:12px 28px;font:500 15px/1.5 var(--sans);color:rgba(250,250,249,.74)}
+.rs-foot a{color:inherit;text-decoration:none}
+.rs-foot a:hover{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.rs-foot :focus-visible{outline-color:#fff}
+.rs-wm{font:800 clamp(120px,30vw,520px)/.8 'Reserve Sans','SUIT',system-ui,sans-serif;letter-spacing:-.06em;margin:clamp(28px,5svh,60px) 0 -.06em -.04em;pointer-events:none;user-select:none}
 
 /* 휴대폰 · 좁은 창: 그림이 위, 글과 칸이 아래 */
 @media (max-width:899px){
@@ -140,17 +148,15 @@ img{display:block;max-width:100%}
   .rs-hero h1{font-size:clamp(38px,10vw,56px)}
   :lang(mn) .rs-hero h1{font-size:clamp(30px,8vw,44px)}
   .rs-now{padding:64px var(--gut)}
-  .rs-now h2{font-size:clamp(26px,7vw,34px)}
-  .rs-story{grid-template-columns:1fr;margin-top:28px}
+  .rs-now h2{font-size:clamp(28px,7.6vw,38px)}
+  :lang(mn) .rs-now h2{font-size:clamp(25px,6.6vw,32px)}
+  .rs-story{grid-template-columns:1fr}
   .rs-stage-col{display:none}
-  #chapters{grid-auto-flow:column;grid-auto-columns:min(62vw,250px);gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--gut);margin:0 calc(var(--gut) * -1);padding:4px var(--gut) 8px;scrollbar-width:none}
-  #chapters::-webkit-scrollbar{display:none}
-  .rs-chapter{min-height:0;display:grid;gap:22px;align-content:start;scroll-snap-align:start}
-  .rs-chapter .rs-chapter-phone{position:relative;width:100%;height:auto;padding:8px;margin:0;overflow:visible;clip:auto;box-shadow:0 40px 70px -40px rgba(20,14,40,.55),0 0 0 1px rgba(255,255,255,.08) inset}
-  .rs-chapter-say>*,.rs-chapter-say>.rs-num{opacity:1}
-  .rs-chapter h3{font-size:22px}
-  .rs-chapter p{font-size:15.5px}
-  .rs-now-end{display:none}
+  .rs-chapter{min-height:0;margin-top:44px;gap:4px}
+  .rs-chapter .rs-chapter-pic{position:relative;width:auto;height:auto;margin:0 0 12px;overflow:hidden;clip:auto;border-radius:24px;box-shadow:var(--shadow)}
+  .rs-chapter-pic img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover}
+  .rs-chapter h3{font-size:clamp(24px,6.4vw,28px)}
+  .rs-chapter p{font-size:16px}
 }
 @media (max-width:420px){
   .rs-bar{padding:14px 16px}
