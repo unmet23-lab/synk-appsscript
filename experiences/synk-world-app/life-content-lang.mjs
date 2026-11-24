@@ -161,7 +161,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Сөхагийн хүссэн уух зүйлийг захиална уу.',context:'Сөха: «오늘은 차가운 주스를 마시고 싶어요!»',explanation:'Сөха «차가운 주스» (хүйтэн шүүс) уухыг хүсэж байна. Тиймээс «차가운 주스 한 잔 주세요.» гэж захиална. Энэ өгүүлбэрт «шүүс», «хүйтэн» гэсэн хоёр утга хоёулаа орсон байна.'}),
  'cafe-visit-taste-count':q(
   {prompt:'둘이 한 잔씩 마시려면 어떻게 말할까요?',context:'태오와 내가 따뜻한 차를 한 잔씩 마셔요.',explanation:'태오 한 잔과 내 한 잔을 합하면 두 잔이에요.'},
-  {prompt:'How do you order so the two of you get a cup each?',context:'Taeo and I each drink a cup of hot tea.',explanation:'One cup for Taeo plus one for me makes two cups.'},
+  {prompt:'How do you order so the two of you get a cup each?',context:'You and Taeo each drink a cup of hot tea.',explanation:'One cup for Taeo plus one for you makes two cups.'},
   {prompt:'Хоёулаа нэг нэг аяга уух бол хэрхэн хэлэх вэ?',context:'Та Тэотой хамт нэг нэг аяга халуун цай ууна.',explanation:'Тэогийн нэг аяга, таны нэг аяга нийлээд хоёр аяга цай болно.'}),
  'cafe-visit-taste-count-transfer':q(
   {prompt:'함께 마실 음료를 주문해요.',context:'서하·지호·태오가 차가운 우유를 한 잔씩 마셔요.',explanation:'세 사람이 한 잔씩 마시면 세 잔이고 원하는 음료는 차가운 우유예요.'},
@@ -225,7 +225,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Энэ удаа захиалгаа кафед уухаар өөрчилнө үү.',context:'Шүүсээ гэртээ авч харихаар шийдсэн ч найзтайгаа таараад кафе дотор хамт уух гэж байна.',explanation:'Энэ удаа авч явахгүй, кафед сууж уухаар шийдсэн. Үүнийгээ ажилтанд хэлнэ.'}),
  'cafe-compose-order':q(
   {prompt:'태오와 마실 따뜻한 차 두 잔을 주문해요.',context:'태오와 내가 따뜻한 차를 한 잔씩 마셔요. 음료·온도·잔 수를 직접 골라 주세요.',explanation:'음료는 차, 온도는 따뜻하게, 수량은 두 잔이에요. 세 정보를 연결하면 따뜻한 차 두 잔 주세요가 돼요.'},
-  {prompt:'Order two hot teas for you and Taeo.',context:'Taeo and I each drink a cup of hot tea. Choose the drink, temperature and number of cups yourself.',explanation:'The drink is tea, it’s hot, and it’s two cups. Put the three together and you get ‘따뜻한 차 두 잔 주세요’.'},
+  {prompt:'Order two hot teas for you and Taeo.',context:'You and Taeo each drink a cup of hot tea. Choose the drink, temperature and number of cups yourself.',explanation:'The drink is tea, it’s hot, and it’s two cups. Put the three together and you get ‘따뜻한 차 두 잔 주세요’.'},
   {prompt:'Тэотой хамт уух хоёр аяга халуун цай захиална уу.',context:'Та Тэотой хамт нэг нэг аяга халуун цай ууна. Ямар уух зүйл, халуун хүйтний алийг нь, хэдэн аяга авахаа өөрөө сонгоно уу.',explanation:'Цай, халуун, хоёр аяга гэсэн гурван мэдээллийг холбовол «따뜻한 차 두 잔 주세요» болно.'}),
  'cafe-compose-order-transfer':q(
   {prompt:'상황에 맞는 주문 문장을 골라요.',context:'서하·지호·태오가 차가운 주스를 한 잔씩 마셔요.',explanation:'세 사람이 한 잔씩 마시면 세 잔이에요. 차가운 주스와 세 잔을 모두 담은 문장을 골라요.'},
