@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "눈에 눈!",
+ "dur": 0.719,
+ "words": [
+  {
+   "text": "눈에",
+   "start": 0.03,
+   "end": 0.252
+  },
+  {
+   "text": "눈!",
+   "start": 0.333,
+   "end": 0.719
+  }
+ ],
+ "source": {
+  "key": "98fdc8fe5941500a5630767346ded852",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "큰 눈송이가 몽글의 한쪽 눈에 쏙 붙었다. 몽글이 찡그리며 깜짝 놀라 외친다.",
+   "next": "눈에 눈이네!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 377
+ }
+}

@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "몽골은 영하 삼십 도야.",
+ "dur": 1.599,
+ "words": [
+  {
+   "text": "몽골은",
+   "start": 0.02,
+   "end": 0.485
+  },
+  {
+   "text": "영하",
+   "start": 0.546,
+   "end": 0.748
+  },
+  {
+   "text": "삼십",
+   "start": 0.808,
+   "end": 1.071
+  },
+  {
+   "text": "도야.",
+   "start": 1.152,
+   "end": 1.599
+  }
+ ],
+ "source": {
+  "key": "a8d5f3b66d2efbbb9f74ff3f8409a3e0",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1126,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "이불 속에서 꼼짝 않는 친구 곁에서 몽글이 아이스크림을 들고 아무렇지 않게 해맑게 웃으며 말한다.",
+   "next": "삼… 삼십 도?!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 538
+ }
+}

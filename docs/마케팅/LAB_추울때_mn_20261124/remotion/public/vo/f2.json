@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f2",
+ "text": "손 시려…",
+ "dur": 1.364,
+ "words": [
+  {
+   "text": "손",
+   "start": 0.03,
+   "end": 0.292
+  },
+  {
+   "text": "시려…",
+   "start": 0.393,
+   "end": 1.364
+  }
+ ],
+ "source": {
+  "key": "3b8dfe7676e9d1962ab7792eb470bd9a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "버스를 기다리며 휴대폰을 보던 친구가 빨개진 두 손에 호호 입김을 불며 울상으로 말한다.",
+   "next": "얼어 죽겠다!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 210
+ }
+}

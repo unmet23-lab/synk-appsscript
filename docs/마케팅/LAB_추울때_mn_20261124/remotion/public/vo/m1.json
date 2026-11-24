@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "편의점 가자~!",
+ "dur": 0.96,
+ "words": [
+  {
+   "text": "편의점",
+   "start": 0.02,
+   "end": 0.362
+  },
+  {
+   "text": "가자~!",
+   "start": 0.422,
+   "end": 0.96
+  }
+ ],
+ "source": {
+  "key": "960b237992853cd92332282631c06cf2",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "집에 오자마자 몽글이 아이스크림을 하나 더 사러 가자고 신나게 조른다.",
+   "next": "이불 밖은 위험해…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 506
+ }
+}

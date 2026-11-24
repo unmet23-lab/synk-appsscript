@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "눈?",
+ "dur": 0.512,
+ "words": [
+  {
+   "text": "눈?",
+   "start": 0.02,
+   "end": 0.512
+  }
+ ],
+ "source": {
+  "key": "bfd2cfc1f0c1b611f9be615698df1bdc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "친구가 자기 눈을 손가락으로 가리키며 고개를 갸웃하고 되묻는다.",
+   "next": "이거, 눈!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 246
+ }
+}

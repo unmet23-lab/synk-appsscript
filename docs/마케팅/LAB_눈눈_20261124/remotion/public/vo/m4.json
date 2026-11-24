@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "안 보여~!",
+ "dur": 0.89,
+ "words": [
+  {
+   "text": "안",
+   "start": 0.03,
+   "end": 0.173
+  },
+  {
+   "text": "보여~!",
+   "start": 0.234,
+   "end": 0.89
+  }
+ ],
+ "source": {
+  "key": "a945368461dddced7da14f43873d9746",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "다른 쪽 눈에도 눈송이가 붙어 두 눈이 다 가려진 몽글이 허둥대며 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 452
+ }
+}

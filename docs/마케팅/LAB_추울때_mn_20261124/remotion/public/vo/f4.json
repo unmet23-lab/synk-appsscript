@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f4",
+ "text": "이불 밖은 위험해…",
+ "dur": 1.332,
+ "words": [
+  {
+   "text": "이불",
+   "start": 0.02,
+   "end": 0.242
+  },
+  {
+   "text": "밖은",
+   "start": 0.303,
+   "end": 0.587
+  },
+  {
+   "text": "위험해…",
+   "start": 0.647,
+   "end": 1.332
+  }
+ ],
+ "source": {
+  "key": "d8dd4a4f666a21693f9c69952bbd5439",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "집에 오자마자 이불 속에 돌돌 말린 친구가 꼼짝도 하지 않고 나른하게 늘어진 목소리로 말한다.",
+   "next": "편의점 가자~!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 197
+ }
+}

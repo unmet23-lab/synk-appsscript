@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1124,
+  "lufs": -16
+ },
+ "made": "2026-11-23T23:04:42.894Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "눈!",
+   "dur": 0.514,
+   "syllablesPerSec": 1.95,
+   "src": "m1.wav",
+   "key": "617676902a8f658a86cdb40f668b8cb3",
+   "words": 1
+  },
+  {
+   "id": "f1",
+   "text": "눈?",
+   "dur": 0.512,
+   "syllablesPerSec": 1.95,
+   "src": "f1.wav",
+   "key": "bfd2cfc1f0c1b611f9be615698df1bdc",
+   "words": 1
+  },
+  {
+   "id": "f2",
+   "text": "이거, 눈!",
+   "dur": 1.544,
+   "syllablesPerSec": 1.94,
+   "src": "f2.wav",
+   "key": "b06d7eb8ca8f6b83eb4be63afdc923c7",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "저것도 눈!",
+   "dur": 1.034,
+   "syllablesPerSec": 3.87,
+   "src": "m2.wav",
+   "key": "7df5fbb7f20a5558903ca79c8d38f783",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "눈에 눈!",
+   "dur": 0.719,
+   "syllablesPerSec": 4.17,
+   "src": "m3.wav",
+   "key": "98fdc8fe5941500a5630767346ded852",
+   "words": 2
+  },
+  {
+   "id": "f3",
+   "text": "눈에 눈이네!",
+   "dur": 0.918,
+   "syllablesPerSec": 5.45,
+   "src": "f3.wav",
+   "key": "550aa6dfa83a6cec7d58c1f902f1979f",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "안 보여~!",
+   "dur": 0.89,
+   "syllablesPerSec": 3.37,
+   "src": "m4.wav",
+   "key": "a945368461dddced7da14f43873d9746",
+   "words": 2
+  }
+ ]
+}

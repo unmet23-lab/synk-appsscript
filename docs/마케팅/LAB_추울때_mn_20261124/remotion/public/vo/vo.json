@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1124,
+  "lufs": -16
+ },
+ "made": "2026-11-23T22:49:04.864Z",
+ "lines": [
+  {
+   "id": "f1",
+   "text": "추워~",
+   "dur": 0.804,
+   "syllablesPerSec": 2.49,
+   "src": "f1.wav",
+   "key": "6add61dfb3bc7c0c3eb2c424c12a5a9f",
+   "words": 1
+  },
+  {
+   "id": "f2",
+   "text": "손 시려…",
+   "dur": 1.364,
+   "syllablesPerSec": 2.2,
+   "src": "f2.wav",
+   "key": "3b8dfe7676e9d1962ab7792eb470bd9a",
+   "words": 2
+  },
+  {
+   "id": "f3",
+   "text": "얼어 죽겠다!",
+   "dur": 1.325,
+   "syllablesPerSec": 3.77,
+   "src": "f3.wav",
+   "key": "aaa9ff2e024f558cabc4a2472c834a00",
+   "words": 2
+  },
+  {
+   "id": "f4",
+   "text": "이불 밖은 위험해…",
+   "dur": 1.332,
+   "syllablesPerSec": 5.26,
+   "src": "f4.wav",
+   "key": "d8dd4a4f666a21693f9c69952bbd5439",
+   "words": 3
+  },
+  {
+   "id": "f5",
+   "text": "삼… 삼십 도?!",
+   "dur": 1.907,
+   "syllablesPerSec": 2.1,
+   "src": "f5.wav",
+   "key": "ab742e28f346cffeb7df4492061f770b",
+   "words": 3
+  },
+  {
+   "id": "m1",
+   "text": "편의점 가자~!",
+   "dur": 0.96,
+   "syllablesPerSec": 5.21,
+   "src": "m1.wav",
+   "key": "960b237992853cd92332282631c06cf2",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "몽골은 영하 삼십 도야.",
+   "dur": 1.599,
+   "syllablesPerSec": 5.63,
+   "src": "m2.wav",
+   "key": "a8d5f3b66d2efbbb9f74ff3f8409a3e0",
+   "words": 4
+  }
+ ]
+}

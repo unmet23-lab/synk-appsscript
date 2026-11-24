@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photographed with a macro lens, portrait 9:16, gentle depth of field, cosy handmade felt-and-wool textures everywhere, cute but not babyish (for young adults learning Korean).
+
+WORLD (same in every panel): a quiet Seoul residential alley at early evening, deep-blue dusk sky, the very FIRST snow of the year has just started — the ground is still dark felt cobblestones with only a thin smooth dusting of white at the edges (no thick piles yet). A FEW LARGE soft white felt snowflakes drift in the air, few and far apart — each one a clear chunky six-armed felt snowflake, never a dense dot pattern, never tiny specks. Warm streetlamp glow, warm windows of low houses (windows show only blurred abstract felt shapes, no text). No cherry blossoms, no green leaves.
+CHARACTERS (keep identical in every panel they appear in):
+- THE FRIEND: the needle-felted Korean young man in the friend reference image — keep his face, short straight black wool hair, black bead eyes, straight dark eyebrows, small nose, rosy cheeks, long charcoal-grey padded coat, mustard-yellow knit beanie, thick cream knit scarf and dark-brown felt boots EXACTLY. He has real little felt arms and hands. His face must stay clearly visible.
+- MONGLE: the coral needle-felted wool ghost-shaped mascot in the mascot reference image(s) — use them ONLY for its body shape, coral wool colour, fine short smooth felted fuzz, scalloped bottom hem with one thin continuous cream running stitch, and glossy black bead eyes with NO whites (a squeezed-shut eye is one short curved dark stitched line). Mongle has NO mouth, NO cheeks, NO arms, NO legs, NO hands, ever — it floats a little above the ground with a soft shadow under it. Mongle is about as tall as the friend's chest.
+LAYOUT: keep the TOP 22% of the image calm and plain (soft out-of-focus dusk sky or wall) — titles will be added there later.
+
+Attached images in order: (1) the snowflake-on-the-eye close-up of Mongle — keep the same camera, framing, sky and Mongle, (2) the mascot reference (body shape, wool, hem stitch and bead eyes only).
+
+SCENE:
+Same close framing a moment later: now TWO big chunky white needle-felted snowflakes are stuck flat on Mongle's face, one covering EACH eye, so both eyes are hidden. Mongle wobbles, tilted to the other side as if it cannot see where it is going; a thin smooth layer of fresh felt snow sits on top of its dome. Two or three more big snowflakes drift down toward it.
+
+Only the characters named in this panel, nobody else. Everything is needle-felt and wool craft, no glossy realistic surfaces. Absolutely no text, letters, numbers, symbols, question marks, speech bubbles or watermarks anywhere. No real brand, no logos. No rings, holes or dense dot patterns anywhere (no polka dots, no speckled snow, no tiny snow specks, no bubbles). Keep Mongle's eyes plain glossy black beads with no whites.

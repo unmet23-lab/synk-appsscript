@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f3",
+ "text": "얼어 죽겠다!",
+ "dur": 1.325,
+ "words": [
+  {
+   "text": "얼어",
+   "start": 0.02,
+   "end": 0.202
+  },
+  {
+   "text": "죽겠다!",
+   "start": 0.262,
+   "end": 1.325
+  }
+ ],
+ "source": {
+  "key": "aaa9ff2e024f558cabc4a2472c834a00",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "삼십 분째 오지 않는 버스, 눈을 잔뜩 맞고 꽁꽁 언 친구가 과장되게 크게 외친다.",
+   "next": "이불 밖은 위험해…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 218
+ }
+}

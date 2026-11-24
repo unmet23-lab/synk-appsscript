@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synklabusa",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "ko",
+  "title": "눈 means EYE and SNOW 😂 (snow in my eye = 눈에 눈) #learnkorean",
+  "caption": "눈 (nun) = eye 👁 AND snow ❄️\nSame word, two things — so when snow lands in your eye, that's 눈에 눈 (nu-ne nun) 😂\n\nWords in this video:\n이거, 눈! (i-geo, nun!) = This is 눈 (eye)!\n저것도 눈! (jeo-geot-do nun!) = That's 눈 too (snow)!\n눈에 눈! (nu-ne nun!) = Snow in my eye!\n안 보여~! (an bo-yeo~!) = I can't see~!\n\nTip: In careful standard Korean, 눈 for \"snow\" has a long vowel [nuːn], but in everyday speech most people say both the same way.\n안 보여 is casual — with someone older, say 안 보여요 (an bo-yeo-yo).\n\nSYNK LAB\n#learnkorean #studykorean #koreanwords #koreanlanguage",
+  "pinnedComment": "Does your language have one word for two things? 👇",
+  "alt": [
+    "A needle-felt miniature Seoul alley at dusk as the first snow begins. Mongle, a coral felt blob mascot with no arms, looks up at the sky and says 눈! while a felt Korean young man in a grey padded coat points at his own eye and asks 눈? He explains 이거, 눈! (this is 눈 — eye), Mongle answers 저것도 눈! (that's 눈 too — snow). A big felt snowflake falls and sticks right on Mongle's eye: 눈에 눈! (snow in my eye!). The friend laughs. Labels show 눈 = eye and 눈 = snow. A second snowflake lands on Mongle's other eye — 안 보여~! (I can't see~!) — and Mongle wobbles blindly."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = e50 최종본(음량마감). 표지 cover.png = 핵심 장면(눈에 붙은 눈송이). 어린이 전용 아님. 합성 표시: 켜지 않음 — 펠트 미니어처 그림은 GPT 이미지로 구운 꾸민 장면이고 실제 사람 · 사건을 흉내 내지 않으며, 목소리는 특정인이 아닌 TTS.",
+  "version": "e50-en"
+}

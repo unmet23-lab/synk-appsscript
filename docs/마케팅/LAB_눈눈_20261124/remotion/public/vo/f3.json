@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f3",
+ "text": "눈에 눈이네!",
+ "dur": 0.918,
+ "words": [
+  {
+   "text": "눈에",
+   "start": 0.02,
+   "end": 0.222
+  },
+  {
+   "text": "눈이네!",
+   "start": 0.302,
+   "end": 0.918
+  }
+ ],
+ "source": {
+  "key": "550aa6dfa83a6cec7d58c1f902f1979f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "친구가 눈송이가 붙은 몽글을 보고 웃음을 참지 못하며 말한다.",
+   "next": "안 보여~!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 242
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "저것도 눈!",
+ "dur": 1.034,
+ "words": [
+  {
+   "text": "저것도",
+   "start": 0.02,
+   "end": 0.486
+  },
+  {
+   "text": "눈!",
+   "start": 0.709,
+   "end": 1.034
+  }
+ ],
+ "source": {
+  "key": "7df5fbb7f20a5558903ca79c8d38f783",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1124,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "몽글이 하늘에서 떨어지는 눈송이를 올려다보며 신나게 말한다.",
+   "next": "눈에 눈!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 472
+ }
+}
