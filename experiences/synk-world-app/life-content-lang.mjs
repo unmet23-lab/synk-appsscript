@@ -296,7 +296,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
  'store-story-card-transfer':q(
   {prompt:'서하는 어떤 방법으로 계산했어요?',context:'서하는 오늘 카드가 없어요. 서하: “현금으로 계산할게요.” 서하가 돈을 냈어요.',explanation:'서하는 오늘 카드가 없어요. 그래서 ‘현금으로 계산할게요.’라고 말하고 돈을 냈어요. 현금으로 계산했어요.'},
   {prompt:'How did Seoha pay?',context:'Seoha doesn’t have her card today. Seoha: “현금으로 계산할게요.” Seoha handed over money.',explanation:'Seoha doesn’t have her card today, so she said ‘현금으로 계산할게요.’ and handed over money. She paid in cash.'},
-  {prompt:'Сөха юугаар төлсөн бэ?',context:'Сөха өнөөдөр картгүй байсан. «현금으로 계산할게요.» гэж хэлээд бэлэн мөнгө өгсөн.',explanation:'Сөха өнөөдөр картгүй байсан. Тиймээс «현금으로 계산할게요.» гэж хэлээд бэлэн мөнгөөр төлсөн.'}),
+  {prompt:'Сөха юугаар төлсөн бэ?',context:'Сөха өнөөдөр картгүй байсан. «현금으로 계산할게요.» гэж хэлээд мөнгө өгсөн.',explanation:'Сөха өнөөдөр картгүй байсан. Тиймээс «현금으로 계산할게요.» гэж хэлээд бэлэн мөнгөөр төлсөн.'}),
  'store-apply-price':q(
   {prompt:'가격을 물을 문장을 골라요.',context:'도시락에 가격표가 없어요. 직원에게 값을 물어보려고 해요.',explanation:'가격표가 없을 때 ‘얼마예요’로 값을 물어요.'},
   {prompt:'Choose the sentence that asks the price.',context:'The lunch box has no price tag. You want to ask the staff how much it is.',explanation:'When there’s no price tag, ask the price with ‘얼마예요’.'},
