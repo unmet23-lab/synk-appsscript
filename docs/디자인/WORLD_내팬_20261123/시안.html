@@ -12,6 +12,7 @@
 @font-face{font-family:'World Latin';src:url(fonts/SYNKLatin-Regular.woff2) format('woff2');font-weight:100 549;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2190-2193}
 @font-face{font-family:'World Latin';src:url(fonts/SYNKLatin-SemiBold.woff2) format('woff2');font-weight:550 649;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2190-2193}
 @font-face{font-family:'World Latin';src:url(fonts/SYNKLatin-Bold.woff2) format('woff2');font-weight:650 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2190-2193}
+@font-face{font-family:'World Mono';src:url(fonts/DMMono.woff2) format('woff2');font-weight:400 600;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
 :root{
   --page:#EEF0F4; --pageInk:#14161C; --pageInk2:#4A5060; --pageLine:rgba(20,22,28,.12); --seg:#FFFFFF; --segOn:#14161C; --segOnInk:#FFFFFF;
   /* WORLD 토큰(world-ui.css) */
@@ -29,6 +30,7 @@
   --sans:'World SUIT','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
   --latin:'World Latin','World SUIT',system-ui,sans-serif;
   --serif:'Noto Serif KR','Nanum Myeongjo',serif;
+  --mono:'World Mono','World SUIT',ui-monospace,monospace;
   --g:20px;
   --spring:cubic-bezier(.23,1,.32,1);
 }
@@ -139,6 +141,7 @@ p{margin:0}
 .card .head{display:flex;align-items:center;gap:8px}
 .card .head img{width:24px;height:24px;border-radius:50%;object-fit:cover}
 .card .head .dot{width:7px;height:7px;border-radius:50%;background:var(--turn);box-shadow:0 0 10px var(--turn)}
+.card .head .who b.mine,.card .head .who b.tu{color:var(--w-ink)}
 .card .head .fdot{width:7px;height:7px;border-radius:50%;background:var(--fan);box-shadow:0 0 10px var(--fan)}
 .card .learn{margin-top:10px;font-size:22px;line-height:31px;font-weight:680;letter-spacing:-.02em;text-wrap:balance}
 .card .learn b{font-weight:800;color:#fff}
@@ -338,6 +341,125 @@ p{margin:0}
 .pp .mstate{display:none}
 .pp .win{background:#161513;box-shadow:0 10px 30px -10px rgba(22,21,19,.5)}
 
+/* ── 9판(11-24) 종이 겉의 글자와 배치 — 유호님 「글씨, 배치와 간격」(8판 뒤).
+   학생 레슨 시트 종이 정본(life-ui.css is-paper) 값을 그대로 쓴다: 사진은 화면 폭 그대로(둥근 액자 · 그림자 없음),
+   말하는 사람 15/800 + 9px 네모, 대사 28/1.38 · 700, 배울 말 판(옅은 흙빛, 화면 끝까지) 머리 13/600 · 말 24/800 · 쓰임 14.5/1.5,
+   제목 · 상황은 이야기 명조, 숫자는 DM Mono, 글과 단추는 좌우 20 한 줄에 맞춘다. 8판은 .pp만, 9판은 .pp.p9 ── */
+.p9{--w-ink-3:#6F695F;--learn:#EDE0D6;--key:#A9441F;--meN:#1D2547;--tutor:#4C6E9E;--g:20px}
+.p9 .top{top:52px;height:40px;gap:16px}
+.p9 .tag{height:auto;padding:0;border-radius:0;background:none;box-shadow:none;font-size:15px;line-height:24px;font-weight:700;letter-spacing:-.01em;color:var(--w-ink-2)}
+.p9 .ttl{font-size:17px;line-height:24px;font-weight:700;letter-spacing:-.015em}
+.p9 .back{background:rgba(22,21,19,.06);box-shadow:none}
+.p9 .prog{gap:6px}
+.p9 .prog i{height:2px}
+.p9 .shot{left:0;right:0;top:100px;border-radius:0;box-shadow:none}
+.p9 .shot::after{background:none}
+/* 말하는 사람 · 대사 · 뜻 */
+.p9 .who{display:flex;align-items:center;font-size:15px;line-height:24px;font-weight:500;color:var(--w-ink-3);letter-spacing:-.01em}
+.p9 .who b{display:inline-flex;align-items:center;gap:0;margin-right:6px;font-weight:800;color:var(--fan)}
+.p9 .who b::before,.p9 .sub .who b::before,.p9 .fline .who b::before{content:'';display:inline-block;flex:none;width:9px;height:9px;margin-right:8px;border-radius:2px;background:currentColor;box-shadow:none}
+.p9 .who b.mine{color:var(--meN)}
+.p9 .who b.tu{color:var(--tutor)}
+.p9 .sub .say{margin-top:8px;font-size:28px;line-height:38px;font-weight:700;letter-spacing:-.02em;text-wrap:pretty}
+.p9 .say .key{color:var(--key)}
+.p9 .mean{font-size:15px;line-height:22px;color:var(--w-ink-3)}
+.p9 .sub .mean{margin-top:6px}
+.p9 .pill{height:56px;font-size:17px;font-weight:650}
+/* 장면 끝 */
+#end.p9 .shot{height:320px}
+#end.p9 .hall{width:130%;left:-12%;top:-362px}
+#end.p9 .sub{top:440px}
+#end.p9 .sub .tutorB{display:none}
+#end.p9 .hint{display:none}
+#end.p9 .foot{display:flex;align-items:center;gap:4px}
+#end.p9 .foot .pill{flex:1}
+.nx9,.ctx9,.rows9{display:none}
+#end.p9 .nx9{display:inline-flex;align-items:center;gap:4px;height:56px;padding:0 14px 0 2px;font-size:16px;font-weight:650;color:var(--w-ink-2);white-space:nowrap}
+#end.p9 .nx9::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--chev) center/contain no-repeat;mask:var(--chev) center/contain no-repeat}
+#end.p9 .ctx9{display:grid;justify-self:stretch;margin-top:20px;padding-top:18px;border-top:1px solid var(--w-line-2);opacity:0;transform:translateY(8px);transition:opacity .45s var(--spring),transform .45s var(--spring)}
+#end.p9 .ctx9.in{opacity:1;transform:none}
+.ctx9 .t{margin-top:6px;font-size:17px;line-height:27px;font-weight:600;letter-spacing:-.015em;color:var(--w-ink);text-wrap:pretty}
+.ctx9 .t.tu{font-size:16px;line-height:26px;font-weight:450;color:var(--w-ink-2)}
+.ctx9 .t b{font-weight:700;color:var(--key)}
+#end.p9 .tcard{gap:14px}
+#end.p9 .tcard .k{font-size:13px;line-height:20px;font-weight:600;color:var(--w-ink-3)}
+#end.p9 .tcard .t{font-size:32px;line-height:42px}
+#end.p9 .tcard .t .n{font-family:var(--mono);font-weight:500;letter-spacing:-.04em;color:var(--fan)}
+#end.p9 .tcard .bar{height:2px;background:var(--fan)}
+#end.p9 .tcard .s{font-family:var(--serif);font-size:16px;line-height:26px;color:var(--w-ink-2)}
+/* 내 팬 */
+#fans.p9 .shot{height:260px}
+#fans.p9 .hall{width:120%;left:-10%;top:-348px}
+#fans.p9 .body{display:flex;flex-direction:column;margin-top:388px;padding:0 20px 64px}
+#fans.p9 .fhead{order:1}
+#fans.p9 .goal{order:2;margin-top:20px;gap:10px}
+#fans.p9 .onlyA,#fans.p9 .rows9{order:3}
+#fans.p9 .sec{order:4}
+#fans.p9 .tiles{order:5}
+#fans.p9 .honest{order:6}
+#fans.p9 .fhead .t{font-family:var(--serif);font-size:32px;line-height:40px;font-weight:600;letter-spacing:-.02em}
+#fans.p9 .fhead .t .n{font-family:var(--mono);font-weight:500;letter-spacing:-.04em}
+#fans.p9 .fhead .s{margin-top:8px;font-family:var(--serif);font-size:16px;line-height:26px;font-weight:400;color:var(--w-ink-2)}
+#fans.p9 .goal .gl .lab13{font-size:13px;line-height:20px;font-weight:600;color:var(--w-ink-3)}
+#fans.p9 .goal .gl .v{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--w-ink-3)}
+#fans.p9 .goal .gl .v b{font-weight:500;color:var(--w-ink)}
+#fans.p9 .goal .bar{gap:3px}
+#fans.p9 .goal .bar i{height:3px;border-radius:1px}
+/* 9판 A: 팬 셋의 한마디를 한 장에 */
+.phone:not(.l9b) #fans.p9 .onlyA{display:none}
+.phone:not(.l9b) #fans.p9 .rows9{display:block;margin-top:32px;border-top:1px solid var(--w-line-2)}
+.r9{display:block;width:100%;padding:18px 0 20px;border-bottom:1px solid var(--w-line)}
+.r9 .say{margin-top:6px;font-size:21px;line-height:30px;font-weight:700;letter-spacing:-.02em;color:var(--w-ink-2);text-wrap:pretty;transition:color .3s ease}
+.r9[aria-current="true"] .say{color:var(--w-ink)}
+.r9 .mean{display:block;margin-top:6px;font-size:14px;line-height:21px}
+.r9:focus-visible{border-radius:4px}
+/* 9판 B: 한 명씩, 얼굴로 고른다 */
+.pk img{display:none}
+.phone.l9b #fans.p9 .pick{margin-top:32px;padding:0;gap:8px;border-radius:0;background:none;box-shadow:none;justify-content:flex-start}
+.phone.l9b #fans.p9 .pk{flex:none;display:grid;justify-items:center;gap:6px;width:64px;height:auto;padding:0;border-radius:0;background:none;font-size:14px;line-height:20px;font-weight:600;color:var(--w-ink-3)}
+.phone.l9b #fans.p9 .pk img{display:block;width:52px;height:52px;border-radius:50%;object-fit:cover;transform:scale(.88);transition:transform .35s var(--spring)}
+.phone.l9b #fans.p9 .pk[aria-pressed="true"]{color:var(--fan);font-weight:800}
+.phone.l9b #fans.p9 .pk[aria-pressed="true"] img{transform:scale(1.06)}
+.phone.l9b #fans.p9 .fline{margin-top:24px;gap:0;min-height:156px}
+.phone.l9b #fans.p9 .fline .say{margin-top:8px;font-size:26px;line-height:36px;font-weight:700;letter-spacing:-.02em;text-wrap:pretty}
+.phone.l9b #fans.p9 .fline .mean{margin-top:6px}
+/* 다시 듣고 싶은 대사: 배울 말 판(화면 끝까지) */
+#fans.p9 .sec{margin:40px -20px 0;padding:18px 20px 24px;background:var(--learn)}
+#fans.p9 .sec>.lab13{display:none}
+#fans.p9 .sec .card{padding:0;border-radius:0;background:none;box-shadow:none}
+#fans.p9 .sec .card .head img{display:none}
+#fans.p9 .sec .card .learn{margin-top:8px;font-size:24px;line-height:33px;font-weight:800;letter-spacing:-.02em;text-wrap:pretty}
+#fans.p9 .sec .card .learn b{color:var(--key)}
+#fans.p9 .sec .card .mean{margin-top:6px}
+#fans.p9 .sec .pill{margin-top:20px}
+/* 도전 · 팬레터: 눌러서 여는 줄(끝에 ›) */
+#fans.p9 .tiles{display:block;margin-top:8px}
+#fans.p9 .tile{display:grid;grid-template-columns:minmax(0,1fr) 16px;column-gap:12px;row-gap:0;align-items:center;width:100%;min-height:0;padding:18px 0;border-radius:0;background:none;box-shadow:none;border-bottom:1px solid var(--w-line)}
+#fans.p9 .tile>*{grid-column:1}
+#fans.p9 .tile::after{content:'';grid-column:2;grid-row:1/span 3;width:16px;height:16px;background:var(--w-ink-3);-webkit-mask:var(--chev) center/contain no-repeat;mask:var(--chev) center/contain no-repeat}
+#fans.p9 .tile .k{font-size:13px;line-height:20px;font-weight:600;color:var(--fan)}
+#fans.p9 .tile .h{margin-top:2px;font-size:17px;line-height:25px;font-weight:700;color:var(--w-ink)}
+#fans.p9 .tile .d{margin-top:2px;font-size:14px;line-height:21px;font-weight:450;color:var(--w-ink-3)}
+#fans.p9 .tile[disabled]::after{opacity:.3}
+#fans.p9 .tile[disabled] .h{color:var(--w-ink-2)}
+#fans.p9 .honest{margin-top:24px;text-align:left;font-size:13px;line-height:20px;color:var(--w-ink-3)}
+/* 다시 말하기 */
+#encore.p9 .shot{height:260px}
+#encore.p9 .hall{width:125%}
+#encore.p9 .hall{top:-352px}
+#encore.p9 .sub{top:380px}
+#encore.p9 .panel{gap:24px}
+#encore.p9 .card{padding:18px 20px 20px;border-radius:20px;background:#FBF8F3;box-shadow:inset 0 0 0 1px var(--w-line)}
+#encore.p9 .card .head .dot,#encore.p9 .card .head .fdot{display:none}
+.p9 .card .head .who b.mine{color:var(--meN)}
+.p9 .card .head .who b.tu{color:var(--tutor)}
+#encore.p9 .card .learn{margin-top:8px;font-size:24px;line-height:34px;font-weight:800;letter-spacing:-.02em;text-wrap:pretty}
+#encore.p9 .sub .say{font-size:24px;line-height:34px}
+#encore.p9 .card .learn b{color:var(--key)}
+#encore.p9 .card .mean{margin-top:6px}
+#encore.p9 .orbwrap{background:var(--meN)}
+.phone{--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3.5 10.5 8 6 12.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect x='7' y='2.5' width='6' height='10' rx='3' fill='black'/%3E%3Cpath d='M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v2.5' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E")}
+
 @media (max-width:860px){
   .wrap{grid-template-columns:minmax(0,1fr);gap:18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
   .side{position:static}
@@ -347,7 +469,7 @@ p{margin:0}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation:none!important}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&display=swap">
 
 <div class="wrap">
   <aside class="side" aria-label="시안 보기">
@@ -358,8 +480,10 @@ p{margin:0}
     <div class="ctl">
       <span class="lab">겉</span>
       <div class="seg" id="skinSeg">
-        <button type="button" data-skin="paper" aria-pressed="true">종이 (8판)</button>
-        <button type="button" data-skin="night" aria-pressed="false">밤 (7판)</button>
+        <button type="button" data-skin="p9b" aria-pressed="true">종이 9판</button>
+        <button type="button" data-skin="p9a" aria-pressed="false">9판 줄 목록</button>
+        <button type="button" data-skin="paper" aria-pressed="false">종이 8판</button>
+        <button type="button" data-skin="night" aria-pressed="false">밤 7판</button>
       </div>
     </div>
     <div class="ctl">
@@ -393,9 +517,10 @@ p{margin:0}
         <span class="who" id="cWho"></span>
         <p class="say" id="cLine"></p>
         <span class="mean" id="cMean"></span>
+        <div class="ctx9" id="cCtx"><span class="who" id="cCtxW"></span><p class="t" id="cCtxT"></p></div>
         <div class="tutorB" id="cTutor"><span class="who">서하 선배 · 튜터</span><div class="bub">처음 만난 선배에게는 「알아?」 대신 <b>「아세요?」</b>로 물어요.</div></div>
       </div>
-      <div class="foot"><span class="hint onlyA" id="cHint">화면을 누르면 다음 팬</span><button class="pill" type="button" data-go="path">내 길로<span class="ar"></span></button></div>
+            <div class="foot"><span class="hint onlyA" id="cHint">화면을 누르면 다음 팬</span><button class="nx9" type="button" id="cNext">다음 팬</button><button class="pill" type="button" id="cMain" data-go="path">내 길로<span class="ar"></span></button></div>
       <div class="tcard" id="tcard"><span class="k">1화 끝 · 커튼콜</span><span class="t">팬 <span class="n" data-fans>4</span>명이 봤어요</span><span class="bar" id="tbar"></span><span class="s">그중 세 명이 한마디씩 남겼어요</span></div>
     </section>
 
@@ -435,6 +560,7 @@ p{margin:0}
             <div class="pick" id="pick" role="group" aria-label="한마디를 들을 팬"></div>
             <div class="fline" aria-live="polite"><span class="who" id="fWho"></span><p class="say" id="fLine"></p><span class="mean" id="fMean"></span></div>
           </div>
+          <div class="rows9" id="fRows" role="group" aria-label="팬이 남긴 한마디"></div>
           <div class="goal"><div class="gl"><span class="lab13">다음 무대 · 첫 거리 공연</span><span class="v"><b data-fans>4</b> / 10명</span></div><div class="bar" id="goalBar"></div></div>
           <div class="sec">
             <span class="lab13">다시 듣고 싶은 대사</span>
@@ -500,9 +626,9 @@ p{margin:0}
   const S = { v: 'A', t: 0, fans: 4, enc: { 1: false, 2: false }, pick: 0, noticeGone: false, from: 'fans', seenTitle: false };
   // 사진 위 좌표(%) — 얼굴(fx,fy) · 응원봉(lx,ly). 그림: arena-base + 앞줄 셋 + 첫 친구(자리표대로)
   const FANS = [
-    { img: 'fan1', n: '나랑', role: '최애 팬', say: '「길을 잃어서 한참 헤맸어요」, 한 번에 해냈어요!', mean: 'You nailed “I was lost for quite a while” in one go!', fx: 26.7, fy: 65.8, lx: 13.2, ly: 71.7 },
-    { img: 'fan2', n: '하린', role: '내 팬', say: '「아세요?」로 바꾼 거, 딱 맞았어요.', mean: 'Switching to “아세요?” was exactly right.', fx: 49.7, fy: 53.4, lx: 42.4, ly: 58.9, tutor: true },
-    { img: 'fan3', n: '도윤', role: '내 팬', say: '「덕분에 살았어요」, 두 번째엔 또렷했어요.', mean: '“덕분에 살았어요” came through clearly the second time.', fx: 75.8, fy: 52.4, lx: 75.0, ly: 57.0 }
+    { img: 'fan1', n: '나랑', role: '최애 팬', say: '「길을 잃어서 한참 헤맸어요」, 한 번에 해냈어요!', mine: '네, 맞아요. 길을 잃어서 한참 헤맸어요.', mean: 'You nailed “I was lost for quite a while” in one go!', fx: 26.7, fy: 65.8, lx: 13.2, ly: 71.7 },
+    { img: 'fan2', n: '하린', role: '내 팬', say: '「아세요?」로 바꾼 거, 딱 맞았어요.', mean: 'Switching to “아세요?” was exactly right.', fx: 49.7, fy: 53.4, lx: 42.4, ly: 58.9, tutor: true },
+    { img: 'fan3', n: '도윤', role: '내 팬', say: '「덕분에 살았어요」, 두 번째엔 또렷했어요.', mine: '정말요? 선배님 덕분에 살았어요.', mean: '“덕분에 살았어요” came through clearly the second time.', fx: 75.8, fy: 52.4, lx: 75.0, ly: 57.0 }
   ];
   const DAY3 = { say: '사흘째 기다리는 중이에요. 한 줄이면 충분해요.', mean: 'Day three of waiting. One line is enough.' };
   const TUTOR = '<span class="who">서하 선배 · 튜터</span><div class="bub">처음 만난 선배에게는 「알아?」 대신 <b>「아세요?」</b>로 물어요.</div>';
@@ -518,8 +644,8 @@ p{margin:0}
   // 자막 한 줄: 낱말마다 흐림에서 또렷하게(드라마 정본)
   function speak(who, line, mean, text, sub) {
     who.innerHTML = sub; mean.textContent = text.mean;
-    const words = text.say.split(' ');
-    line.innerHTML = words.map(w => `<span class="w">${esc(w)}</span>`).join(' ');
+    const words = text.say.split(' '), k = text.key;
+    line.innerHTML = words.map(w => `<span class="w">${k && w.includes(k) ? esc(w).replace(esc(k), `<b class="key">${esc(k)}</b>`) : esc(w)}</span>`).join(' ');
     $$('.w', line).forEach((w, i) => w.animate([{ opacity: 0, filter: 'blur(8px)', transform: 'translateY(8px)' }, { opacity: 1, filter: 'blur(0)', transform: 'none' }], { duration: 420, delay: 80 + i * 70, easing: E, fill: 'both' }));
     [who, mean].forEach((el, k) => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 360, delay: k ? 120 + words.length * 70 : 0, easing: E, fill: 'both' }));
   }
@@ -568,22 +694,33 @@ p{margin:0}
     light($('#dimC'), $('#bloomC'), f);
     speak($('#cWho'), $('#cLine'), $('#cMean'), f, whoOf(f));
     $('#cTutor').classList.toggle('in', !!f.tutor);
+    const ctx = $('#cCtx'), dur = $('#end').classList.contains('p9') ? 6400 : 5200;
+    ctx.classList.remove('in');
+    $('#cCtxW').innerHTML = f.tutor ? '<b class="tu">서하 선배</b> · 튜터' : '<b class="mine">나</b> · 1화에서 한 말';
+    $('#cCtxT').className = f.tutor ? 't tu' : 't';
+    $('#cCtxT').innerHTML = f.tutor ? '처음 만난 선배에게는 「알아?」 대신 <b>「아세요?」</b>로 물어요.' : esc(f.mine);
+    later(() => ctx.classList.add('in'), 900);
+    const main = $('#cMain'), quiet = $('#cNext'), more = i < FANS.length - 1 && $('#end').classList.contains('p9');
+    main.innerHTML = (more ? '다음 팬' : '내 길로') + '<span class="ar"></span>';
+    if (more) { delete main.dataset.go; main.onclick = () => runC(i + 1); } else { main.dataset.go = 'path'; main.onclick = null; }
+    quiet.textContent = more ? '내 길로' : '처음부터';
+    quiet.onclick = more ? () => show('path') : () => runC(0);
     markList('cList', i);
     $$('#progC b').forEach((el, k) => {
       el.getAnimations().forEach(a => a.cancel());
       el.style.transform = k < i ? 'scaleX(1)' : 'scaleX(0)';
-      if (k === i) el.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 5200, easing: 'linear', fill: 'forwards' });
+      if (k === i) el.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: dur, easing: 'linear', fill: 'forwards' });
     });
     $('#cHint').textContent = i === FANS.length - 1 ? '화면을 누르면 처음부터' : '화면을 누르면 다음 팬';
     play('pix_notification', .15);
-    if (i < FANS.length - 1) later(() => runC(i + 1), 5200);
+    if (i < FANS.length - 1) later(() => runC(i + 1), dur);
   }
   $('#endTap').onclick = () => runC((ci + 1) % FANS.length);
   // 내려 읽을 때 위 띠 뒤를 덮는다
   [['#fansScroll', '#fansFade', 300], ['#letter .scroll', '#letterFade', 8]].forEach(([sc, fd, at]) => { const el = $(sc); el.addEventListener('scroll', () => $(fd).classList.toggle('on', el.scrollTop > at), { passive: true }); });
 
   // 내 팬
-  $('#pick').innerHTML = FANS.map((f, i) => `<button type="button" class="pk" data-pick="${i}" aria-pressed="${i === 0}">${f.n}</button>`).join('');
+  $('#pick').innerHTML = FANS.map((f, i) => `<button type="button" class="pk" data-pick="${i}" aria-pressed="${i === 0}"><img src="img/${f.img}.webp" alt="">${f.n}</button>`).join('');
   $('#hitsF').innerHTML = FANS.map((f, i) => `<button type="button" class="seatHit" style="left:${f.fx}%;top:${f.fy}%" aria-label="${f.n}의 한마디" data-pick="${i}"></button>`).join('');
   function pickFan(i, quiet) {
     S.pick = i; const f = FANS[i];
@@ -592,6 +729,7 @@ p{margin:0}
     const text = i === 0 && S.t === 3 ? DAY3 : f;
     speak($('#fWho'), $('#fLine'), $('#fMean'), text, whoOf(f));
     $$('#pick .pk').forEach((b, k) => b.setAttribute('aria-pressed', k === i));
+    $$('#fRows .r9').forEach((b, k) => b.setAttribute('aria-current', k === i));
     markList('fList', i);
     if (!quiet) play('pix_notification', .12);
   }
@@ -602,6 +740,7 @@ p{margin:0}
   }
   function renderFans() {
     renderCounts();
+    $('#fRows').innerHTML = FANS.map((f, i) => { const t = i === 0 && S.t === 3 ? DAY3 : f; return `<button type="button" class="r9" data-pick="${i}" aria-current="${i === S.pick}"><span class="who">${whoOf(f)}</span><p class="say">${esc(t.say)}</p><span class="mean">${t.mean}</span></button>`; }).join('');
     $('#goalBar').innerHTML = Array.from({ length: 10 }, (_, k) => `<i class="${k < S.fans ? 'on' : ''}"></i>`).join('');
     $('#enc1Btn').textContent = S.enc[1] ? '한 번 더 들려주기' : '다시 말하기';
     $('#tileNewT').textContent = S.enc[2] ? '해냈어요. 팬이 한 명 더 왔어요' : '도윤이 기다려요. 해내면 팬이 한 명 더 와요';
@@ -629,13 +768,13 @@ p{margin:0}
   const mode = (st, label) => { try { if (orb()) orb().setState(st); } catch (e) {} $('#mstate').textContent = label; $('#mstate').classList.toggle('on', st === 'speaking' || st === 'listening'); };
   (function loop() { const t = performance.now() / 1000; let v = 0; if (level) { const syl = Math.max(0, Math.sin(t * 11.5)) ** 1.6; const ph = .55 + .45 * Math.sin(t * 1.7); v = Math.min(1, .15 + .8 * syl * ph + .1 * Math.random()); } try { if (orb()) orb().setAudioLevel(v); } catch (e) {} requestAnimationFrame(loop); })();
   const ENC = {
-    1: { fan: 1, tag: '다시 듣고 싶은 대사', ask: { say: '그 대사, 이번엔 처음부터 한 번에 들려줄래요?', mean: 'Could you say that line again — in one go this time?' },
-         card: '<div class="head"><span class="dot"></span><span class="who"><b style="color:var(--w-ink)">내 차례</b> · 「알아?」 대신 「아세요?」</span></div><p class="learn">네, 선배님! 그런데 혹시 도서관이 어디에 있는지 <b>아세요?</b></p><p class="mean">Yes, sunbae! By the way, do you know where the library is?</p>',
+    1: { fan: 1, tag: '다시 듣고 싶은 대사', ask: { say: '그 대사, 이번엔 처음부터 한 번에 들려줄래요?', mean: 'Could you say that line again — in one go this time?' },
+         card: '<div class="head"><span class="dot"></span><span class="who"><b class="mine">내 차례</b> · 「알아?」 대신 「아세요?」</span></div><p class="learn">네, 선배님! 그런데 혹시 도서관이 어디에 있는지 <b>아세요?</b></p><p class="mean">Yes, sunbae! By the way, do you know where the library is?</p>',
          win: '한 번에 해냈어요', reply: { say: '완벽해요! 진짜 선배한테도 이렇게 물어봐요.', mean: 'Perfect! Ask a real sunbae just like that.' }, after: '' },
     2: { fan: 2, tag: '도윤의 도전', ask: { say: '장면에 없던 말도 들어 보고 싶어요.', mean: 'I want to hear you say something new.' },
-         card: '<div class="head"><span class="dot"></span><span class="who"><b style="color:var(--w-ink)">내 차례</b> · 처음 만난 선배에게 공손하게</span></div><p class="learn">매점이 어디 있는지 물어보세요.</p><p class="mean">Ask the senior you just met where the campus store is — politely.</p>',
+         card: '<div class="head"><span class="dot"></span><span class="who"><b class="mine">내 차례</b> · 처음 만난 선배에게 공손하게</span></div><p class="learn">매점이 어디 있는지 물어보세요.</p><p class="mean">Ask the senior you just met where the campus store is — politely.</p>',
          win: '팬 한 명 더', reply: { say: '처음 듣는 문장인데 다 알아들었어요!', mean: 'A sentence I’ve never heard — and I understood all of it!' },
-         after: '<div class="head"><span class="fdot"></span><span class="who"><b style="color:var(--w-ink)">모범 답</b></span></div><p class="learn">선배님, 혹시 매점이 어디에 있는지 <b>아세요?</b></p><p class="mean">Sunbae, do you happen to know where the campus store is?</p>' }
+         after: '<div class="head"><span class="fdot"></span><span class="who"><b class="tu">서하 선배</b> · 모범 답</span></div><p class="learn">선배님, 혹시 매점이 어디에 있는지 <b>아세요?</b></p><p class="mean">Sunbae, do you happen to know where the campus store is?</p>' }
   };
   function openEncore(k) {
     const cur = $('.scr.on'); S.from = cur ? cur.id : 'fans';
@@ -643,7 +782,7 @@ p{margin:0}
     encK = k; busy = false; level = 0;
     const c = ENC[k], f = FANS[c.fan];
     $('#encTag').textContent = c.tag;
-    $('#hallE').style.left = k === 1 ? '-62%' : '-95%';
+    const p9e = $('#encore').classList.contains('p9'); $('#hallE').style.left = k === 1 ? (p9e ? '-21%' : '-62%') : (p9e ? '-33%' : '-95%');
     $('#dimE').style.setProperty('--sx', f.fx + '%'); $('#dimE').style.setProperty('--sy', f.fy + '%');
     speak($('#eWho'), $('#eLine'), $('#eMean'), c.ask, whoOf(f));
     $('#eCard').innerHTML = c.card;
@@ -692,12 +831,15 @@ p{margin:0}
     show(S.t === 0 ? 'end' : 'path');
   }; });
   $$('#skinSeg button').forEach(b => { b.onclick = () => {
-    const paper = b.dataset.skin === 'paper';
+    setSkin(b.dataset.skin);
     $$('#skinSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
-    ['end', 'fans', 'encore'].forEach(id => $('#' + id).classList.toggle('pp', paper));
     const cur = $('.scr.on'); show(cur && cur.id !== 'encore' ? cur.id : 'fans');
   }; });
-  ['end', 'fans', 'encore'].forEach(id => $('#' + id).classList.add('pp'));
+  function setSkin(k) {
+    ['end', 'fans', 'encore'].forEach(id => { $('#' + id).classList.toggle('pp', k !== 'night'); $('#' + id).classList.toggle('p9', k === 'p9a' || k === 'p9b'); });
+    $('#phone').classList.toggle('l9b', k === 'p9b');
+  }
+  setSkin('p9b');
   renderFans();
   show('end');
   // 말하기 구 — Orbloom(MIT, orbloom@0.1.0). 화면이 뜬 뒤에 불러 첫 표지를 막지 않는다
