@@ -1919,6 +1919,7 @@ def 컨셉팩폴더():
 # 컨셉 팩의 앵글 견줄 값(T29) — 11-24 유호님 「컨셉별로 카메라 엥글 사용법이 다 재각각일텐데 … 각 카메라감독이 잘 배치되어있는지」 → 「재서 넣어 줘」.
 #   팩의 「앵글」은 그 컨셉 본보기 둘의 컷마다 가운데 장을 위 앵글 낱말로 매겨 낸 비율이다(견줄 값 — 감독 줄이 아니다).
 #   본보기를 20컷 넘게 잰 팩이고 이 편의 앵글을 세 칸 다 적은 컷이 6개 넘으면, 묶음마다 본보기 비율이 30% 넘는데 이 편이 그 절반에 못 미칠 때 주의(멈추지 않는다).
+#   「앵글.만족」(유호님이 만족하신 우리 편을 같은 낱말로 잰 비율 — 11-24 「재서 올려 줘」)이 20컷 넘게 쟀으면 본보기 대신 그 값과 견준다.
 앵글묶음 = {"가까이": ("크기", ("극접", "클로즈", "가슴 위"), "가까운 컷(극접 · 클로즈 · 가슴 위)"),
           "눈높이밖": ("높이", ("로우", "하이", "위에서"), "눈높이 밖 컷(로우 · 하이 · 위에서)"),
           "정면밖": ("방향", ("비스듬히", "옆", "뒤", "어깨 너머", "시점", "물건 너머"), "정면 밖 컷(비스듬히 · 옆 · 뒤 · 어깨 너머 · 시점 · 물건 너머)")}
@@ -1932,16 +1933,19 @@ def 팩앵글검사(seq, 값들):
     except (OSError, ValueError): return []
     판 = 팩.get("앵글") if isinstance(팩, dict) else None
     수 = lambda n: isinstance(n, (int, float)) and not isinstance(n, bool) and 0 <= n <= 100
-    if not isinstance(판, dict) or not (isinstance(판.get("잰컷"), int) and not isinstance(판.get("잰컷"), bool) and 판["잰컷"] >= 20): return []
+    충분 = lambda x: isinstance(x, dict) and isinstance(x.get("잰컷"), int) and not isinstance(x.get("잰컷"), bool) and x["잰컷"] >= 20
+    if not isinstance(판, dict): return []
+    기준, 누구 = (판["만족"], "만족하신 편은") if 충분(판.get("만족")) else ((판, "본보기는") if 충분(판) else (None, None))
+    if 기준 is None: return []
     값 = [v for v in 값들 if v is not None]
     if len(값) < 6: return []
     out = []
     for 키, (칸, 낱말들, 이름) in 앵글묶음.items():
-        c = 판.get(키)
+        c = 기준.get(키)
         if not 수(c) or c < 30: continue
         n = sum(1 for v in 값 if v[("크기", "높이", "방향").index(칸)] in 낱말들); p = round(100 * n / len(값))
         if p * 2 < c:
-            out.append(("주의", "표", f"컨셉 「{컨셉}」 본보기는 {이름}이 {c:g}%인데 이 편은 {p}%({n}/{len(값)}컷)다 — 컷표의 앵글을 다시 본다(팩 앵글)"))
+            out.append(("주의", "표", f"컨셉 「{컨셉}」 {누구} {이름}이 {c:g}%인데 이 편은 {p}%({n}/{len(값)}컷)다 — 컷표의 앵글을 다시 본다(팩 앵글)"))
     return out
 
 
