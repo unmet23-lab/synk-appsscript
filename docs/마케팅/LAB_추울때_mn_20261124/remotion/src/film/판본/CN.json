@@ -37,7 +37,7 @@
   "hookSize": 84,
   "temp": "外面 -5°C",
   "tempSize": 58,
-  "gauge": "朋友\n有多冷",
+  "gauge": "朋友的\n寒冷值",
   "gaugeSize": 36,
   "sits": [
     "突然一阵冷风…",
@@ -49,14 +49,14 @@
   "reads": [
     "chu-wo~",
     "son si-ryeo…",
-    "eo-reo juk-ket-tta!",
+    "eo-reo juk-kket-tta!",
     "i-bul ba-kkeun wi-heo-mae…"
   ],
   "means": [
     "好冷~",
     "手好冰…",
-    "冻死了！\n(= 冷得要命，夸张的说法)",
-    "出被窝很危险…\n(= 不想离开被窝)"
+    "冻死了！",
+    "被窝外面很危险…\n(= 不想离开被窝)"
   ],
   "meanSize": 52,
   "inviteRead": "pyeo-ni-jeom ga-ja~!",
@@ -64,7 +64,7 @@
   "mongRead": "mong-go-reun yeong-ha sam-sip-do-ya~",
   "mongMean": "蒙古可是 -30°C 呢~",
   "shockRead": "sam… sam-sip do?!",
-  "shockMean": "零下…30度?!",
+  "shockMean": "零下…30度？！",
   "smallSize": 54,
   "end": "韩国的 -5°C\n在蒙古只算秋天",
   "endSize": 64,
