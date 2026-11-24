@@ -1380,7 +1380,7 @@ async function crowdScene({n=0,t2=false,tr=false}={}){
   const says=curtainSay({was:prev,run:{n:Math.min(H.data.people.length,Math.max(0,n)),t2:!!t2,tr:!!tr},next}).filter(x=>fanLine('ko',x.why));
   if(says.length)curtain(says,run);
 }
-$('#s-crowd').addEventListener('click',e=>{if(e.target.closest('button'))return;if(CC.on){ccGo(CC.i<0?0:(CC.i+1)%CC.says.length);return;}$('#crowdFoot').classList.add('on');});
+$('#s-crowd').addEventListener('click',e=>{if(e.target.closest('button'))return;if(CC.on){ccNext();return;}$('#crowdFoot').classList.add('on');});
 function drawCrowd(before,gain,keep){
   if(!keep)crowdStop();$('#crowdStage').src=IMG[state.dream+'Goal'];
   const c=$('#crowd'),x=c.getContext('2d'),d=devicePixelRatio;c.width=c.offsetWidth*d;c.height=c.offsetHeight*d;
@@ -1547,7 +1547,7 @@ function ccGo(i,quiet){
   ccSpot(s.fan);sayLine($('#ccWho'),$('#ccSay'),$('#ccMean'),s,state.dream,quiet);
   [...$('#ccProg').children].forEach((el,k)=>{const b=el.firstChild;b.getAnimations().forEach(a=>a.cancel());b.style.transform=k<i||(k===i&&(reduce||last))?'scaleX(1)':'scaleX(0)';
     if(k===i&&!reduce&&!last)b.animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:5200,easing:'linear',fill:'forwards'});});
-  $('#ccHint').textContent=L(last?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');
+  $('#ccHint').textContent=L(last?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');$('#ccHint').hidden=CC.says.length<2;
   if(!quiet)SND.sfx('pix_notification',.15);
   const run=CC.run,tick=CC.tick;if(!reduce&&!last)crowdLater(()=>{if(run===crowdRun&&CC.on&&CC.tick===tick)ccGo(i+1);},5200);
 }
@@ -1566,6 +1566,7 @@ function fansSpot(i){
 }
 function renderFans(quiet=true){
   const dream=state.dream,b=state.best[EP]||{n:0,t2:false,tr:false},lit=litCount(),says=bestSay(b).filter(x=>fanLine('ko',x.why));
+  {const r=$('#fansReplay'),k=episodeDone()?'1화 다시 하기':'1화 시작';r.dataset.l=k;r.textContent=L(k);}
   $('#fansT').textContent=L('팬 {n}명',{n:lit});$('#goalT').textContent=L('{x}까지',{x:L(DREAM[dream].scenes[0])});
   $('#goalN').textContent=Math.min(10,lit);
   $('#goalBar').innerHTML=Array.from({length:10},(_,k)=>`<i class="${k<lit?'on':''}"></i>`).join('');
@@ -1581,7 +1582,9 @@ function openFans(){crowdRun++;crowdStop();ccReset();fanPick=0;renderFans();show
 function closeFans(){show('s-path');SND.felt('page');$('#fansBtn').focus({preventScroll:true});momMaybe();}
 $('#fansBtn').onclick=openFans;
 // 커튼콜 안내 줄은 단추다 — 키보드로도 다음 팬(화면 누름과 같다)
-$('#ccHint').onclick=()=>{if(CC.on)ccGo(CC.i<0?0:(CC.i+1)%CC.says.length);};
+$('#ccHint').onclick=()=>{if(CC.on)ccNext();};
+// 다음 팬(마지막 뒤에는 처음부터). 말하는 팬이 한 명이면 그 팬이 나온 뒤에는 넘기지 않는다
+function ccNext(){if(CC.i>=0&&CC.says.length<2)return;ccGo(CC.i<0?0:(CC.i+1)%CC.says.length);}
 $('#fansBack').onclick=closeFans;
 $('#fansReplay').onclick=()=>{show('s-path');playScene();};
 // 화면 언어가 바뀌면 커튼콜 자막과 내 팬 화면을 지금 언어로 다시 그린다(설계 검토 11번)
