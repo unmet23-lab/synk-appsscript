@@ -922,6 +922,16 @@ if(!process.versions.electron){
           const l2b=await look(w);
           check('22 coming back keeps the picked chat',l2b.sel==='d:qdev',l2b);
           // 개발부를 떠나면 그 부서의 끝냄을 본 것으로 친다(고른 순간이 아니라 떠날 때, 설계 검토 8). 마케팅부를 보고 떠나면 마케팅부의 ! 가 간다
+          // 부서 이름은 20자까지 받는다. 긴 이름에 느낌표가 서도 느낌표는 줄 안에 남고, 짧은 이름은 좁은 창에서도 말줄임되지 않는다(Fable 최종 F3 · 다시 검수 FA1).
+          // 글 길이만 재는 것이라 줄의 이름 글을 잠깐 바꿔 재고 되돌린다
+          for(const [W,Hh] of [[1440,900],[960,680]]){
+            w.win.setContentSize(W,Hh);for(let i=0;i<40&&(await w.js('innerWidth'))!==W;i++)await wait(50);await wait(300);
+            const fit=await w.js("(()=>{const b="+ROOM+".querySelector('[data-off-chats] > [data-chat=\"d:qmkt\"]'),nm=b.querySelector('.ofc-c-nm'),fl=b.querySelector('.ofc-c-flag'),old=nm.textContent;"
+              +"const short=nm.scrollWidth<=nm.clientWidth+0.5;nm.textContent='마케팅 고객지원 자동화 연구 개발팀';const r=b.getBoundingClientRect(),q=fl.getBoundingClientRect();const inside=!fl.hidden&&q.width>0&&q.right<=r.right-4&&q.left>=r.left;nm.textContent=old;"
+              +"return {short,inside,flag:[Math.round(q.left),Math.round(q.right)],row:[Math.round(r.left),Math.round(r.right)]};})()");
+            check('22 at '+W+' a short name with ! is not cut, and a 20-character name keeps its ! inside the row',fit.short&&fit.inside,fit);
+          }
+          w.win.setContentSize(1440,900);for(let i=0;i<40&&(await w.js('innerWidth'))!==1440;i++)await wait(50);await wait(300);
           await chat(w,'d:qmkt');await wait(700);
           check('22 leaving 개발부 calls seen for it',(await calls(w)).includes('office-seen:qdev'));
           await chat(w,'all');await wait(1300);

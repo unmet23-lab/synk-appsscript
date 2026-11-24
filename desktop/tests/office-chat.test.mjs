@@ -280,3 +280,18 @@ test('a reply draft marked 「보냈어요」 in 한 번에 처리 no longer wai
   assert.equal(after.urgent, false);
   assert.equal(after.flag, false);
 });
+
+test('picking a department in 사무실 also carries the mail mode chosen there (Fable 다시 검수 FA2)', async () => {
+  const mail = { providers: [{ id: 'gmail', configured: true, connected: true, address: 'a@example.test' }] };
+  const h = harness({ tasking: { tasks: TASKS, mail } });
+  h.scene();
+  await h.room.handle({ act: 'chat-pick', arg: 'all' });
+  await h.room.handle({ act: 'task-provider', arg: 'codex' });
+  await h.room.handle({ act: 'task-mail-mode', fields: { enabled: true } });
+  const before = h.scene().tasking.form.mailSearch;
+  assert.equal(before, true, 'mail search is on in 사무실 before picking');
+  await h.room.handle({ act: 'task-department', arg: 'ddev' });
+  const s = h.scene();
+  assert.equal(s.chat.sel, 'd:ddev');
+  assert.equal(s.tasking.form.mailSearch, before);
+});

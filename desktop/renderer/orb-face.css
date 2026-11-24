@@ -806,12 +806,13 @@ html[data-motion="reduced"] #portal-entry .rows > button.row::after{transition:n
 #portal-entry .ofc-orb[data-st="empty"]{background:rgba(243,241,236,.06);box-shadow:none}
 #portal-entry .ofc-orb[data-st="empty"]::before,#portal-entry .ofc-orb[data-st="empty"]::after{display:none}
 #portal-entry .ofc-c-main{display:grid;gap:3px;min-width:0}
-#portal-entry .ofc-c-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
-/* 좁으면 상태 낱말이 먼저 줄고 이름은 끝까지 남는다 */
-#portal-entry .ofc-c-nm{flex:0 0 auto;max-width:100%;font:500 15px/1.25 var(--orb-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#portal-entry .ofc-c-flag{flex:none;margin-left:-2px}
+/* 이름 · 느낌표 · 상태 낱말. 이름 칸이 먼저 자리를 받고(제 길이까지), 상태 낱말은 남는 자리만 쓴다. 좁으면 상태 낱말이 먼저 줄고,
+   이름이 줄 너비보다 길 때만 이름이 말줄임된다. 느낌표는 이름 바로 뒤의 따로 선 칸이라 줄 안에 남는다(Fable 최종 F3 · 다시 검수 FA1) */
+#portal-entry .ofc-c-top{display:grid;grid-template-columns:minmax(0,max-content) auto minmax(0,1fr);align-items:baseline;min-width:0}
+#portal-entry .ofc-c-nm{grid-column:1;min-width:0;font:500 15px/1.25 var(--orb-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .ofc-c-flag{grid-column:2;margin-left:6px}
 #portal-entry .ofc-c-flag[hidden]{display:none}
-#portal-entry .ofc-c-word{flex:1 1 auto;min-width:0;text-align:right;font:var(--small);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .ofc-c-word{grid-column:3;min-width:0;margin-left:8px;text-align:right;font:var(--small);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #portal-entry .ofc-chat:is([aria-current="true"],:hover) .ofc-c-word{color:rgba(243,241,236,.8)}
 #portal-entry .ofc-c-pre{font:var(--small);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #portal-entry .ofc-c-pre:empty{display:none}
