@@ -61,6 +61,15 @@
         "링크드인 예약은 시각이 지나도 안 나갈 수 있다 — 11-24 21:00 뒤 /in/yuhobuilds/recent-activity/all/ 맨 위를 본다"
       ],
       "기록시각": "2026-11-21T06:56:17.297Z"
+    },
+    {
+      "계정": "yuhobuilds-threads",
+      "상태": "게시됨",
+      "시각": "2026-11-24T21:00+09:00",
+      "주소": "https://www.threads.com/@yuhobuilds/post/DgH6BVmEf9h",
+      "방법": "Windows 예약 작업 「SYNK 스레드 21시 게시」(tools/스레드예약/게시.js → ego 스레드 웹 바로 게시(AI 레이블) — ~/ego/threads-daily/th-post.mjs) · 받침 확인 예약 작업 synk-daily-threads",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시)",
+      "확인": "예약결과.jsonl 11-24 줄 「게시됨」(21:00:07 시작 · 21:01:39 끝, 토스트 「게시되었습니다」). 22:11 synk-daily-threads 회차에서 th-post.mjs를 다시 돌려 「already: true」, 프로필 첫 글이 같은 주소임을 읽었다. 최종 확인 「작은 흠 — 등록 가능」(종료 0)"
     }
   ]
 }
