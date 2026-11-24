@@ -1,0 +1,17 @@
+{
+  "id": "판본-UZ-telegram",
+  "brand": "LAB",
+  "platform": "telegram",
+  "language": "uz",
+  "audioLanguage": "uz",
+  "alteredContent": false,
+  "caption": "Koreys tilidagi 수고하세요 (sugohaseyo) soʻzma-soʻz «Yaxshi ishlang» degani. Doʻstga yoki hamkasbga aytsa boʻladi, lekin ustoz yoki rahbar kabi kattalarga aytilsa, baʼzan buyruqdek eshitiladi.\nUniversitetda ustozning xonasidan chiqayotganda shunday deng: 안녕히 계세요 (annyeonghi gyeseyo) — «Sogʻ boʻling».\nUstoz esa sizga 수고해요 (sugohaeyo) deyishi mumkin — bu 수고하세요 soʻzining norasmiy shakli.\nDarsdan chiqayotganda ustozingizga nima deysiz?\n\nSYNK LAB\n#koreystili #koreys #learnkorean",
+  "_원문": {
+    "caption": "한국어 수고하세요(sugohaseyo)는 낱말 그대로 「일 잘하세요」라는 뜻이다. 친구나 동료에게는 말해도 되지만, 선생님이나 상사 같은 윗사람에게 말하면 가끔 명령처럼 들린다.\n대학에서 선생님 방을 나설 때는 이렇게 말하세요: 안녕히 계세요(annyeonghi gyeseyo) — 「건강하세요(안녕히 계세요)」.\n한편 선생님은 당신에게 수고해요(sugohaeyo)라고 말할 수 있다 — 이것은 수고하세요라는 말의 격식 없는 꼴이다.\n수업에서 나갈 때 선생님께 뭐라고 하세요?\n\nSYNK LAB\n#koreystili #koreys #learnkorean"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}
