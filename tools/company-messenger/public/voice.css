@@ -51,10 +51,10 @@
 :root body .voice-button:hover:not(:disabled){border-color:var(--sg-ink);background:var(--surface2)}
 :root body .voice-button:disabled{opacity:.48;cursor:not-allowed}
 :root body .voice-button.muted{border-color:var(--coral-line);background:var(--coral-bg);color:var(--coral)}
-:root body .voice-button.active{border-color:rgba(147,184,255,.38);background:var(--sg-lapis-wash);color:var(--sg-lapis)}
+:root body .voice-button.active{border-color:rgba(11,11,12,.32);background:var(--sg-lapis-wash);color:var(--sg-lapis)}
 :root body .voice-button.primary{border-color:var(--cta);background:var(--cta);color:var(--cta-ink)}
 :root body .voice-button.primary:hover:not(:disabled){background:var(--cta-hover);border-color:var(--cta-hover)}
-:root body .voice-button.danger{border-color:#D9382C;background:#D9382C;color:#0B0B0C}
+:root body .voice-button.danger{border-color:#D9382C;background:#D9382C;color:#FFFFFF}
 :root body .voice-button.danger:hover:not(:disabled){border-color:#B82D22;background:#B82D22}
 :root body .voice-icon-button{display:grid;place-items:center;width:40px;height:40px;padding:0;border:1px solid var(--control-line,var(--sg-line-2));border-radius:8px;background:var(--sg-surface-2);color:var(--sg-ink-2);cursor:pointer}
 :root body .voice-icon-button svg{width:18px;height:18px}

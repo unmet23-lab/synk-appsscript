@@ -266,8 +266,9 @@ const WS_ROOMS=[
   {id:'desk',name:'제작 책상 · 만들기',short:'제작 책상',co:'',alt:'제작 책상: 모니터 두 대 앞에서 편집하는 방'},
 ];
 const WS_GROUPS={tips:'공유하신 게시물 · 시안',clients:'PULSE 영상 제작 · 고객 일',messenger:'메신저 · 내 할 일',schedule:'SHIFT · PATH 일정',sns:'SNS 게시물 검토'};
-const WS_WHEN=[['now','지금','기한이 지났거나 바로 볼 일'],['today','오늘','오늘 안에'],['week','이번 주','7일 안에']];
-const WS_FILTERS=[['all','전체'],['tips','시안'],['messenger','대화'],['clients','고객'],['schedule','일정']];
+// 11-25 유호님 「흩어져서 보여주지말고 … 순위를 파악해서 원클릭으로 중요순서대로」(설계 13절): 무리 · 때 · 방으로 나누지 않고 한 줄로 세운다.
+const WS_TURN_GROUPS=['tips','clients','messenger','schedule'];
+const WS_ROOM_GROUPS={lab:['sns'],shift:['schedule'],pulse:['clients'],path:['schedule'],lounge:['messenger'],desk:['tips','sns']};
 const WS_TURN_STALE=60000;
 const wsCss=value=>typeof CSS!=='undefined'&&typeof CSS.escape==='function'?CSS.escape(value):String(value).replace(/["\\]/g,'\\$&');
 const workspaceTurn={userId:null,messenger:{status:'idle',data:null,at:0,request:0,loading:false},clients:{status:'idle',data:null,at:0,request:0,loading:false},busy:new Set(),timer:null,note:''};
@@ -276,7 +277,7 @@ function wsTurnIdentity(){
   const id=state.user?.id||null;if(workspaceTurn.userId===id)return;
   workspaceTurn.userId=id;workspaceTurn.busy=new Set();workspaceTurn.note='';
   for(const key of ['messenger','clients'])Object.assign(workspaceTurn[key],{status:'idle',data:null,at:0,request:workspaceTurn[key].request+1,loading:false});
-  Object.assign(workspaceInbox,{sel:'',detail:false,noteFor:''});
+  Object.assign(workspaceInbox,{sel:'',detail:false,noteFor:'',skipped:[]});
 }
 function wsCan(group){
   if(!state.user||wsDemo())return false;
@@ -329,72 +330,89 @@ function workspaceTurnEnsure({force=false}={}){
   if(!workspaceTurn.timer&&typeof setInterval==='function'){workspaceTurn.timer=setInterval(()=>{if(typeof state!=='undefined'&&state.user&&typeof document!=='undefined'&&!document.hidden)workspaceTurnEnsure();},WS_TURN_STALE+5000);workspaceTurn.timer?.unref?.();}
 }
 function wsKstDate(offsetDays=0){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(Date.now()+offsetDays*86400000));}
-function wsWhen(date,today,week,fallback){
-  const day=typeof date==='string'&&/^\d{4}-\d{2}-\d{2}/.test(date)?date.slice(0,10):'';
-  if(!day)return fallback;
-  return day<today?'now':day===today?'today':day<=week?'week':'later';
-}
+
 function wsShortDate(date){const m=/^\d{4}-(\d{2})-(\d{2})/.exec(String(date||''));return m?`${Number(m[1])}.${Number(m[2])}`:'';}
 // SNS 판의 계정 → 방: /api/social/simple의 accounts[](business · brand)에 판의 손잡이를 맞춘다. LAB 계정이면 LAB 교실, 아니면 제작 책상.
 function wsSnsRoom(review,accounts){
   const lab=(review.plates||[]).some(plate=>(accounts||[]).some(account=>account.platform===plate.platform&&account.handle===plate.handle&&(account.business==='LAB'||/^LAB\b/i.test(account.brand||''))));
   return lab?'lab':'desk';
 }
+function wsDay(value){const m=/^\d{4}-\d{2}-\d{2}/.exec(String(value||''));return m?m[0]:'';}
+function wsDueText(due,today){if(!due)return '';const short=wsShortDate(due);return due<today?`${short} 지남`:due===today?'오늘까지':`${short}까지`;}
+// 순위(설계 13절): 0 밖의 사람이 기다리고 기한이 오늘 · 지남, 1 내 답을 기다리는 사람, 2 기한이 오늘 · 지남, 3 그 밖. 같은 칸은 기한이 이른 것 → 오래된 것.
+function wsRankOf(item,today){
+  const soon=Boolean(item.due)&&item.due<=today;
+  if(item.group==='clients')return soon||item.data?.status==='overdue'?0:1;
+  if(item.group==='messenger'&&item.reasons.some(reason=>['reply','review','recovery'].includes(reason)))return 1;
+  return soon?2:3;
+}
+function wsWhy(item,today){
+  const due=wsDueText(item.due,today);
+  if(item.kind==='client')return [item.data?.projectTitle,'고객이 기다려요',due||(item.data?.status==='overdue'?'기한 지남':'')].filter(Boolean).join(' · ');
+  if(item.kind==='chat'){const r=item.reasons;const why=r.includes('review')?'검토할 차례':r.includes('reply')?'받을지 답할 차례':r.includes('recovery')?'검토자를 다시 정할 차례':'';return [why,item.task.createdBy?.name?`${item.task.createdBy.name} 님이 맡김`:'',due].filter(Boolean).join(' · ');}
+  if(item.kind==='schedule')return !item.due?'일정 미정':item.due<today?`${wsShortDate(item.due)} 지남`:item.due===today?'오늘 일정':`${wsShortDate(item.due)} 일정`;
+  if(item.kind==='tip')return ['시안을 골라 주세요',item.time?`${item.time} 공유`:''].filter(Boolean).join(' · ');
+  return '';
+}
 function workspaceTurnModel(){
   const today=wsKstDate(),week=wsKstDate(6),items=[],notes=[],groups={},uid=state.user?.id;
   const gate=(group,status)=>{groups[group]=wsCan(group)?status():'hidden';return groups[group]==='ready';};
   if(gate('tips',()=>tipShares.data?'ready':tipShares.error||tipShares.readFailed?'failed':'loading')){
     for(const row of tipShares.data.rows||[]){
-      const base={group:'tips',kind:'tip',room:'desk',key:`tip:${row.row}`,row,title:row.summary||'요약이 없어요.',ctx:row.note||'',time:wsShortDate(row.sharedAt)||(typeof tipDate==='function'?tipDate(row.sharedAt):'')};
-      if(row.decidable&&!row.pending)items.push({...base,when:'today'});
-      else if(row.pending&&!row.pending.claimed)notes.push({...base,when:'done'});
+      const base={group:'tips',kind:'tip',room:'desk',key:`tip:${row.row}`,row,title:row.summary||'요약이 없어요.',ctx:row.note||'',due:'',since:String(row.sharedAt||''),time:wsShortDate(row.sharedAt)||(typeof tipDate==='function'?tipDate(row.sharedAt):'')};
+      if(row.decidable&&!row.pending)items.push(base);
+      else if(row.pending&&!row.pending.claimed)notes.push(base);
     }
   }
   if(gate('clients',()=>workspaceTurn.clients.status==='hidden'?'hidden':workspaceTurn.clients.data?'ready':workspaceTurn.clients.status==='failed'?'failed':'loading')){
     for(const item of workspaceTurn.clients.data.items||[]){
       const mine=item.group==='review'?item.reviewerId===uid:['reply','next'].includes(item.group)&&item.ownerId===uid;
       if(!mine||!item.id)continue;
-      const when=item.status==='overdue'||wsWhen(item.dueDate,today,week,'today')==='now'?'now':'today';
-      items.push({group:'clients',kind:'client',room:'pulse',key:`client:${item.id}`,when,data:item,title:item.title||'고객 일',ctx:[item.projectTitle,item.text].filter(Boolean).join(' · '),time:wsShortDate(item.dueDate)});
+      items.push({group:'clients',kind:'client',room:'pulse',key:`client:${item.id}`,data:item,title:item.title||'고객 일',due:wsDay(item.dueDate),since:String(item.updatedAt||item.createdAt||''),time:wsShortDate(item.dueDate)});
     }
   }
   if(gate('messenger',()=>workspaceTurn.messenger.status==='hidden'?'hidden':workspaceTurn.messenger.data?'ready':workspaceTurn.messenger.status==='failed'?'failed':'loading')){
     const D=workspaceTurn.messenger.data,seen=new Map();
     for(const reason of ['reply','review','due','recovery'])for(const task of D.today?.groups?.[reason]||[]){if(!task?.id)continue;if(!seen.has(task.id))seen.set(task.id,{task,reasons:[]});seen.get(task.id).reasons.push(reason);}
-    for(const {task,reasons} of seen.values()){
-      const when=wsWhen(task.dueDate,today,week,'today')==='now'?'now':'today';
-      items.push({group:'messenger',kind:'chat',room:'lounge',key:`chat:${task.id}`,when,task,reasons,title:task.title||'대화 속 할 일',ctx:wsChatContext(task,reasons),time:wsShortDate(task.dueDate)});
-    }
+    const add=(task,reasons)=>items.push({group:'messenger',kind:'chat',room:'lounge',key:`chat:${task.id}`,task,reasons,title:task.title||'대화 속 할 일',due:wsDay(task.dueDate),since:String(task.createdAt||''),time:wsShortDate(task.dueDate)});
+    for(const {task,reasons} of seen.values())add(task,reasons);
     for(const task of D.remaining?.groups?.upcoming||[]){
       if(!task?.id||seen.has(task.id))continue;seen.set(task.id,{task,reasons:['upcoming']});
-      if(wsWhen(task.dueDate,today,week,'later')==='week')items.push({group:'messenger',kind:'chat',room:'lounge',key:`chat:${task.id}`,when:'week',task,reasons:['upcoming'],title:task.title||'대화 속 할 일',ctx:wsChatContext(task,['upcoming']),time:wsShortDate(task.dueDate)});
+      const due=wsDay(task.dueDate);if(due&&due<=week)add(task,['upcoming']);
     }
   }
   if(gate('schedule',()=>typeof wa!=='undefined'&&wa.mine?'ready':typeof wa!=='undefined'&&wa.mineError?'failed':'loading')){
     const companies=waMineVisibleCompanies();
     for(const row of wa.mine.items||[]){
       if(!companies.includes(row.company))continue;
-      const when=wsWhen(row.date,today,week,'later'),room=row.company==='PATH'?'path':'shift';
-      const entry={group:'schedule',kind:'schedule',room,key:`work:${row.id}`,when,row,title:row.title||'제목 없는 일정',ctx:row.company==='PATH'?'PATH 유학 · 정착 상담 일정':'SHIFT AI 강의 일정',time:wsShortDate(row.date)||'일정 미정'};
-      if(when==='now'||when==='today')items.push(entry);else notes.push(entry);
+      const due=wsDay(row.date);
+      const entry={group:'schedule',kind:'schedule',room:row.company==='PATH'?'path':'shift',key:`work:${row.id}`,row,title:row.title||'제목 없는 일정',due,since:'',time:wsShortDate(row.date)||'일정 미정'};
+      if(due&&due<=today)items.push(entry);else notes.push(entry);
     }
   }
   if(gate('sns',()=>snsSimple.data?'ready':snsSimple.errorStatus===403?'hidden':snsSimple.error?'failed':'loading')&&typeof ssReviewSplit==='function'){
     const D=snsSimple.data,{waiting,late}=ssReviewSplit(D);
     for(const [list,isLate] of [[late,true],[waiting,false]])for(const review of list){
       const handles=[...new Set((review.plates||[]).map(plate=>plate.handle).filter(Boolean))];
-      notes.push({group:'sns',kind:'sns',room:wsSnsRoom(review,D.accounts),key:`sns:${review.postId}:${review.at}`,when:isLate?'late':'ai',review,late:isLate,title:review.title||'제목 없는 게시물',ctx:handles.join(' · '),time:String(review.at||'').slice(11,16)});
+      notes.push({group:'sns',kind:'sns',room:wsSnsRoom(review,D.accounts),key:`sns:${review.postId}:${review.at}`,review,late:isLate,title:review.title||'제목 없는 게시물',ctx:handles.join(' · '),time:String(review.at||'').slice(11,16)});
     }
   }
-  const order={now:0,today:1,week:2};
-  items.sort((a,b)=>order[a.when]-order[b.when]||String(a.time).localeCompare(String(b.time)));
+  const skipped=Array.isArray(workspaceInbox.skipped)?workspaceInbox.skipped:[];
+  for(const item of items){item.rank=wsRankOf(item,today);item.why=wsWhy(item,today);item.late=Boolean(item.due)&&item.due<today;}
+  const later=key=>skipped.indexOf(key);
+  items.sort((a,b)=>later(a.key)-later(b.key)||a.rank-b.rank||(a.due||'9999').localeCompare(b.due||'9999')||(a.since||'9999').localeCompare(b.since||'9999')||a.key.localeCompare(b.key));
   return {items,notes,groups,total:items.length,today};
 }
-function wsChatContext(task,reasons){
-  const who=task.createdBy?.name?`${task.createdBy.name} 님이 맡김`:'';
-  const why=reasons.includes('review')?'검토할 차례':reasons.includes('reply')?'받을지 답할 차례':reasons.includes('recovery')?'검토자를 다시 정할 차례':reasons.includes('due')?'오늘까지':'';
-  return [why,who].filter(Boolean).join(' · ');
+// 확인 중 · 못 불러옴 · 없음을 인사 · 1순위 카드 · 받은편지함 머리 · 목록 · 상세가 같은 말로 쓴다(설계 13절 같은 말 규칙). SNS 검토는 내 차례가 아니라 세지 않는다.
+function wsTurnState(model,groups=WS_TURN_GROUPS){
+  const shown=groups.filter(group=>WS_TURN_GROUPS.includes(group)&&model.groups[group]&&model.groups[group]!=='hidden');
+  return {failed:shown.filter(group=>model.groups[group]==='failed'),loading:shown.filter(group=>model.groups[group]==='loading')};
 }
+function wsEmptyText(model,groups,room=false){
+  const {failed,loading}=wsTurnState(model,groups);
+  return loading.length?'내 차례를 확인하고 있어요':failed.length?'불러오지 못한 일이 있어요':room?'이 방에는 지금 손댈 일이 없어요':'지금 손댈 일이 없어요';
+}
+
 function workspaceTurnTotal(){try{return state.user?workspaceTurnModel().total:0;}catch{return 0;}}
 function wsRoomCount(model,room){return model.items.filter(item=>item.room===room).length;}
 function wsRoomEnabled(room){
@@ -415,34 +433,29 @@ function wsDateLabel(){
   const time=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
   return `${escape(parts)} · <span class="ws-mono">${escape(time)}</span>`;
 }
-const WS_KO_NUM=['','한','두','세','네','다섯'];
 function wsHelloHtml(model){
   const name=escape(state.user?.name||'');
-  const kinds=['tips','clients','messenger','schedule'].filter(group=>model.items.some(item=>item.group===group)).length;
-  const failed=Object.values(model.groups).includes('failed'),loading=Object.values(model.groups).includes('loading');
-  const line=kinds?`오늘 손댈 일은 ${WS_KO_NUM[kinds]||kinds} 가지예요.`:failed?'불러오지 못한 일이 있어요.':loading?'내 차례를 확인하고 있어요.':'지금 손댈 일이 없어요.';
+  const line=model.total?`처리할 일이 <span class="ws-num">${model.total}</span>개 있어요.`:`${wsEmptyText(model)}.`;
   return `${wsGreeting()}, ${name}님.<b>${line}</b>`;
 }
-// 오른쪽 열: 무리별 한 줄. 꽉 찬 단추는 첫째 무리 하나만(이 화면에서 먼저 할 일).
-function wsGroupLine(group,model){
-  const list=model.items.filter(item=>item.group===group),n=list.length;
-  const rooms=[...new Set(list.map(item=>item.room))];
-  const room=group==='tips'?'desk':group==='clients'?'pulse':group==='messenger'?'lounge':rooms.length===1?rooms[0]:'';
-  if(group==='tips')return {group,n,room,go:'고르기',k:WS_GROUPS.tips,t:`시안 <span class="ws-num">${n}</span>개를 골라 주세요`,d:'텔레그램으로 보내신 글로 만든 시안이에요'};
-  if(group==='clients')return {group,n,room,go:'보기',k:`${workspaceCompanyMark('PULSE')}${WS_GROUPS.clients}`,t:n===1?escape(list[0].title):`고객 일 <span class="ws-num">${n}</span>개가 기다려요`,d:escape(list.slice(0,2).map(item=>item.data?.projectTitle||item.title).join(' · '))};
-  if(group==='messenger')return {group,n,room,go:'대화 열기',k:WS_GROUPS.messenger,t:`<span class="ws-num">${n}</span>개가 내 답을 기다려요`,d:list.slice(0,2).map(item=>`${escape(item.title)}${item.time?` · <span class="ws-mono">${escape(item.time)}</span>까지`:''}`).join('<br>')};
-  return {group,n,room,go:'열기',k:WS_GROUPS.schedule,t:`오늘 일정 <span class="ws-num">${n}</span>개`,d:escape(list.slice(0,2).map(item=>item.title).join(' · '))};
+function wsSourceText(item){
+  if(item.kind==='tip')return '공유하신 게시물 · 시안';
+  if(item.kind==='client')return 'PULSE 고객 일';
+  if(item.kind==='chat')return '메신저 · 할 일';
+  if(item.kind==='schedule')return item.row.company==='PATH'?'PATH 상담 일정':'SHIFT 강의 일정';
+  return 'SNS 검토';
 }
+function wsSourceMark(item){return item.kind==='client'?workspaceCompanyMark('PULSE'):item.kind==='schedule'?workspaceCompanyMark(item.row.company):'';}
+// 첫 화면(설계 13절): 1순위 한 장과 단추 하나. 2순위부터 다섯 줄, 나머지는 수로만. 무리 · 방별 수는 쓰지 않는다.
+const WS_QUEUE_PREVIEW=5;
 function wsOfficeTurnHtml(model){
-  const order=['tips','clients','messenger','schedule'].filter(group=>model.groups[group]!=='hidden');
-  const lines=order.filter(group=>model.items.some(item=>item.group===group)).map(group=>wsGroupLine(group,model));
-  const failed=order.filter(group=>model.groups[group]==='failed');
-  const loading=order.filter(group=>model.groups[group]==='loading');
-  const lead=lines[0];
-  const leadHtml=lead
-    ?`<li class="ws-turn-lead"><span class="ws-turn-k">${lead.k}</span><p class="ws-turn-t">${lead.t}</p><p class="ws-turn-d">${lead.d}</p><span class="ws-turn-a"><a class="ws-btn ws-btn-primary" href="/?tab=home&section=inbox${lead.room?`&room=${lead.room}`:''}" data-action="ws-inbox" data-room="${lead.room}">${escape(lead.go)}</a></span></li>`
-    :`<li class="ws-turn-lead is-done"><span class="ws-turn-k">내 차례</span><p class="ws-turn-t">${loading.length&&!failed.length?'내 차례를 확인하고 있어요':'지금 손댈 일이 없어요'}</p><p class="ws-turn-d">${loading.length?'잠시만 기다려 주세요':'새 일이 오면 여기에 보여요'}</p></li>`;
-  return {lead:leadHtml,rest:lines.slice(1).map(line=>`<li><a class="ws-trow" href="/?tab=home&section=inbox${line.room?`&room=${line.room}`:''}" data-action="ws-inbox" data-room="${line.room}"><span class="ws-turn-k">${line.k}</span><span class="ws-turn-t">${line.t}</span><span class="ws-turn-d">${line.d}</span><span class="ws-go">${escape(line.go)}${workspaceShellGlyph('chev')}</span></a></li>`).join('')
+  const first=model.items[0],{failed}=wsTurnState(model);
+  const leadHtml=first
+    ?`<li class="ws-turn-lead"><span class="ws-turn-k"><b class="ws-qn">1순위</b>${wsSourceMark(first)}${escape(wsSourceText(first))}</span><p class="ws-turn-t">${escape(first.title)}</p><p class="ws-turn-d">${escape(first.why||'')}</p><span class="ws-turn-a"><a class="ws-btn ws-btn-primary ws-btn-go" href="/?tab=home&section=inbox" data-action="ws-queue-start">1순위부터 처리${workspaceShellGlyph('chev')}</a><span class="ws-turn-of">모두 <span class="ws-num">${model.total}</span>개 · 끝내면 다음 일이 열려요</span></span></li>`
+    :`<li class="ws-turn-lead is-done"><span class="ws-turn-k">내 차례</span><p class="ws-turn-t">${escape(wsEmptyText(model))}</p><p class="ws-turn-d">${wsTurnState(model).loading.length?'잠시만 기다려 주세요.':failed.length?'아래에서 다시 불러와 주세요. 0개라는 뜻이 아니에요.':'새 일이 오면 여기에 보여요.'}</p></li>`;
+  const next=model.items.slice(1,1+WS_QUEUE_PREVIEW).map((item,i)=>`<li><a class="ws-trow ws-qrow" href="/?tab=home&section=inbox" data-action="ws-queue-open" data-key="${escape(item.key)}"><span class="ws-qn">${i+2}</span><span class="ws-turn-k">${wsSourceMark(item)}${escape(wsSourceText(item))}</span><span class="ws-turn-t">${escape(item.title)}</span><span class="ws-turn-d">${escape(item.why||'')}</span><span class="ws-go">열기${workspaceShellGlyph('chev')}</span></a></li>`).join('');
+  const more=model.total>1+WS_QUEUE_PREVIEW?`<li><a class="ws-trow ws-qmore" href="/?tab=home&section=inbox" data-action="ws-inbox" data-room=""><span class="ws-turn-t">그 밖에 <span class="ws-num">${model.total-1-WS_QUEUE_PREVIEW}</span>개</span><span class="ws-go">순서 모두 보기${workspaceShellGlyph('chev')}</span></a></li>`:'';
+  return {lead:leadHtml,rest:next+more
     +failed.map(group=>`<li><div class="ws-trow is-failed" role="status"><span class="ws-turn-k">${WS_GROUPS[group]}</span><span class="ws-turn-t">못 불러왔어요</span><span class="ws-turn-d">이 무리의 수는 아직 몰라요. 0개라는 뜻이 아니에요.</span><button type="button" class="ws-go" data-action="ws-turn-retry" data-group="${group}">다시${workspaceShellGlyph('chev')}</button></div></li>`).join('')
     +wsOfficeSnsLine(model)};
 }
@@ -453,11 +466,12 @@ function wsOfficeSnsLine(model){
   const late=sns.filter(note=>note.late).length;
   return `<li><a class="ws-trow is-ai" href="/?tab=home&section=inbox" data-action="ws-inbox" data-room=""><span class="ws-turn-k">알아 둘 것 · AI가 확인 중</span><span class="ws-turn-t">SNS 게시물 <span class="ws-num">${sns.length}</span>개를 검토하고 있어요</span><span class="ws-turn-d">AI가 텔레그램 검토 링크로 승인해요.${late?` 나갈 시각이 지난 것 ${late}개`:''}</span><span class="ws-go">보기${workspaceShellGlyph('chev')}</span></a></li>`;
 }
-function wsOfficeRoomsHtml(model){
+// 사무실 그림은 남기되 수를 붙이지 않는다. 방을 누르면 그 방의 일만 같은 순서로 본다.
+function wsOfficeRoomsHtml(){
   return WS_ROOMS.map(room=>{
-    const n=wsRoomCount(model,room.id),enabled=wsRoomEnabled(room);
-    const label=`${room.name} ${enabled?(n?`· 내 차례 ${n}개`:'· 지금 내 차례 없음'):'· 내 소속이 아니에요'}`;
-    return `<button type="button" class="ws-room" data-room="${room.id}" data-action="ws-inbox"${enabled?'':' disabled aria-disabled="true"'} aria-label="${escape(label)}"><span class="ws-nametag${n?'':' is-solo'}">${workspaceCompanyMark(room.co)}<span class="ws-full">${escape(room.name)}</span><span class="ws-short">${escape(room.short)}</span>${n?`<span class="ws-pill">${n}</span>`:''}</span></button>`;
+    const enabled=wsRoomEnabled(room);
+    const label=`${room.name} · ${enabled?'이 방의 일 보기':'내 소속이 아니에요'}`;
+    return `<button type="button" class="ws-room" data-room="${room.id}" data-action="ws-inbox"${enabled?'':' disabled aria-disabled="true"'} aria-label="${escape(label)}"><span class="ws-nametag is-solo">${workspaceCompanyMark(room.co)}<span class="ws-full">${escape(room.name)}</span><span class="ws-short">${escape(room.short)}</span></span></button>`;
   }).join('');
 }
 // 오늘 나가는 SNS · 운영 상태 — SNS를 볼 수 있는 사람에게만, SNS 화면과 같은 자료로.
@@ -471,31 +485,27 @@ function wsOfficeExtraHtml(){
   return `${going}<h3>운영 상태</h3><dl class="ws-health">${health.map(([label,value,warn])=>`<div><dt>${escape(label)}</dt><dd class="${warn?'is-warn':''}">${escape(value)}</dd></div>`).join('')}</dl>`;
 }
 function wsOfficeHtml(){
-  const model=workspaceTurnModel(),turn=wsOfficeTurnHtml(model),name=escape(state.user?.name||'');
+  const model=workspaceTurnModel(),turn=wsOfficeTurnHtml(model);
   // 소속 글 · 미지정 안내 띠 · 업무 링크 안내는 인사 아래에 둔다. 회사별 업무 입구(예전 waHomeTools)는 왼쪽 메뉴 · 「더보기」 시트가 맡는다.
   const scope=typeof waScopeBar==='function'?waScopeBar():'',notice=typeof waWorkTargetNoticeHtml==='function'?waWorkTargetNoticeHtml():'';
   return `<section class="next-home ws-office" id="ws-office" aria-labelledby="ws-office-hello">
     <div class="ws-office-hello"><h1 id="ws-office-hello" class="ws-hello">${wsHelloHtml(model)}</h1><div class="ws-office-notes">${scope}${notice}</div></div>
-    <div class="ws-office-t1"><h2 class="ws-office-date">${wsDateLabel()}</h2><ol class="ws-turn" id="ws-office-lead" aria-label="내 차례">${turn.lead}</ol></div>
+    <div class="ws-office-t1"><h2 class="ws-office-date">${wsDateLabel()}</h2><ol class="ws-turn" id="ws-office-lead" aria-label="1순위">${turn.lead}</ol><ol class="ws-turn ws-turn-rest" id="ws-office-rest" aria-label="다음 순서">${turn.rest}</ol></div>
     <div class="ws-office-map">
-      <div class="ws-office-figure" id="ws-office-rooms" role="group" aria-label="사무실 그림. 위층에 LAB 한국어 교실, SHIFT AI 강의실, PULSE 영상 스튜디오, 아래층에 PATH 유학 상담실, 라운지, 제작 책상이 있어요."><span class="ws-office-img" aria-hidden="true"></span>${wsOfficeRoomsHtml(model)}</div>
-      <p class="ws-office-cap">방을 누르면 그 방의 일이 열려요. 검은 숫자는 ${name}님 차례인 일이에요.</p>
+      <div class="ws-office-figure" id="ws-office-rooms" role="group" aria-label="사무실 그림. 위층에 LAB 한국어 교실, SHIFT AI 강의실, PULSE 영상 스튜디오, 아래층에 PATH 유학 상담실, 라운지, 제작 책상이 있어요."><span class="ws-office-img" aria-hidden="true"></span>${wsOfficeRoomsHtml()}</div>
+      <p class="ws-office-cap">방을 누르면 그 방의 일만 같은 순서로 볼 수 있어요.</p>
     </div>
     <div class="ws-office-t2">
-      <ol class="ws-turn ws-turn-rest" id="ws-office-rest" aria-label="내 차례 이어서">${turn.rest}</ol>
-      <div class="ws-office-next"><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div></div>
       <div class="ws-office-extra" id="ws-office-extra">${wsOfficeExtraHtml()}</div>
+      <div class="ws-office-next"><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div></div>
     </div>
     <div class="ws-office-more">${staffStoriesHomeHtml()}<details class="next-assistant" ${marinNext.asking?'open':''}><summary><span class="next-assistant-title"><span class="marin-assistant-avatar" aria-hidden="true">${icon('chat')}</span><span>마린에게 직접 묻기</span></span>${icon('right')}</summary>${marinConversationPage()}</details></div>
   </section>`;
 }
-// ── 받은편지함 ──
+// ── 받은편지함: 첫 화면과 같은 순서 한 줄. 방을 고르면 그 방의 일만 같은 순서로. ──
 function wsInboxItems(model){
-  const room=workspaceInbox.room,filter=room?'all':workspaceInbox.filter;
-  return {
-    items:model.items.filter(item=>(!room||item.room===room)&&(filter==='all'||item.group===filter)),
-    notes:model.notes.filter(note=>(!room||note.room===room)&&(filter==='all'||note.group===filter||filter==='tips'&&note.group==='tips')),
-  };
+  const room=workspaceInbox.room;
+  return {items:model.items.filter(item=>!room||item.room===room),notes:model.notes.filter(note=>!room||note.room===room)};
 }
 function wsLead(item){
   if(item.kind==='sns'&&item.review?.thumb?.src){
@@ -506,22 +516,21 @@ function wsLead(item){
   return `<span class="ws-r-ic">${workspaceShellGlyph(glyph)}</span>`;
 }
 function wsSourceLabel(item){
-  if(item.kind==='tip')return '시안 고르기';
-  if(item.kind==='client')return `${workspaceCompanyMark('PULSE')}고객 · PULSE`;
-  if(item.kind==='chat')return '메신저 · 할 일';
-  if(item.kind==='schedule')return `${workspaceCompanyMark(item.row.company)}${item.row.company==='PATH'?'PATH 상담 일정':'SHIFT 강의 일정'}`;
-  return `${item.room==='lab'?workspaceCompanyMark('LAB'):''}SNS 검토 · AI가 확인 중`;
+  if(item.kind==='sns')return `${item.room==='lab'?workspaceCompanyMark('LAB'):''}SNS 검토 · AI가 확인 중`;
+  return `${wsSourceMark(item)}${escape(wsSourceText(item))}`;
 }
-function wsRowHtml(item,selected){
-  const tag=item.kind==='sns'&&item.late?'<span class="ws-tag is-warn">시각 지남</span>':item.kind==='tip'&&item.row?.pending?'<span class="ws-tag">고름</span>':item.when==='now'?'<span class="ws-tag is-warn">지남</span>':'';
-  return `<button type="button" class="ws-row${item.group==='sns'?' is-note':''}" data-action="ws-inbox-select" data-key="${escape(item.key)}" ${selected?'aria-current="true"':''} aria-controls="ws-inbox-detail">${`<span class="ws-r-lead">${wsLead(item)}</span>`}<span class="ws-r-main"><span class="ws-r-src">${wsSourceLabel(item)}</span><span class="ws-r-title">${escape(item.title)}</span>${item.ctx?`<span class="ws-r-ctx">${escape(item.ctx)}</span>`:''}</span><span class="ws-r-time"><span class="ws-mono">${escape(item.time||'')}</span>${tag}</span></button>`;
+function wsRowHtml(item,selected,n=0){
+  const tag=item.kind==='sns'&&item.late?'<span class="ws-tag is-warn">시각 지남</span>':item.kind==='tip'&&item.row?.pending?'<span class="ws-tag">고름</span>':n&&item.late?'<span class="ws-tag is-warn">지남</span>':'';
+  const ctx=n?item.why:item.kind==='schedule'?'':item.ctx;
+  const time=n?'':item.time||'';
+  return `<button type="button" class="ws-row${item.group==='sns'?' is-note':''}" data-action="ws-inbox-select" data-key="${escape(item.key)}" ${selected?'aria-current="true"':''} aria-controls="ws-inbox-detail"><span class="ws-r-lead">${n?`<span class="ws-r-n">${n}</span>`:wsLead(item)}</span><span class="ws-r-main"><span class="ws-r-src">${wsSourceLabel(item)}</span><span class="ws-r-title">${escape(item.title)}</span>${ctx?`<span class="ws-r-ctx">${escape(ctx)}</span>`:''}</span><span class="ws-r-time"><span class="ws-mono">${escape(time)}</span>${tag}</span></button>`;
 }
-function wsInboxSelectable(model){const {items,notes}=wsInboxItems(model);return [...items,...notes];}
+// 고른 일이 없으면 순서의 첫째. 순서가 비면 알아 둘 것으로 넘어가지 않고 「다 끝냈어요」(고른 알아 둘 것은 그대로 연다).
 function wsInboxCurrent(model){
-  const list=wsInboxSelectable(model);
-  let item=list.find(entry=>entry.key===workspaceInbox.sel)||null;
+  const {items,notes}=wsInboxItems(model);
+  let item=[...items,...notes].find(entry=>entry.key===workspaceInbox.sel)||null;
   if(!item&&workspaceInbox.sel){item=model.items.find(entry=>entry.key===workspaceInbox.sel)||model.notes.find(entry=>entry.key===workspaceInbox.sel)||null;}
-  if(!item){item=list[0]||null;workspaceInbox.sel=item?.key||'';}
+  if(!item){item=items[0]||null;workspaceInbox.sel=item?.key||'';}
   return item;
 }
 function wsInboxHeadHtml(model){
@@ -531,43 +540,55 @@ function wsInboxHeadHtml(model){
     const line={lab:'LAB 계정 SNS 게시물과 LAB 수업 일이 여기에 모여요.',shift:'SHIFT 강의 일정 가운데 오늘 볼 것이 여기에 모여요.',pulse:'PULSE 고객이 보낸 요청과 검토가 여기에 모여요.',path:'PATH 상담 일정 가운데 오늘 볼 것이 여기에 모여요.',lounge:'메신저 대화에서 나에게 온 할 일이 여기에 모여요.',desk:'공유하신 게시물로 만든 시안과 그 밖의 SNS 게시물이 여기에 모여요.'}[room.id];
     return `<div class="ws-lh-nav"><a class="ws-backlink" href="/?tab=home" data-action="ws-office">${workspaceShellGlyph('left')}사무실로</a><a class="ws-alllink" href="/?tab=home&section=inbox" data-action="ws-inbox" data-room="">모든 내 차례 보기${workspaceShellGlyph('chev')}</a></div>
       <div class="ws-roomstrip" data-room="${room.id}" role="img" aria-label="${escape(room.alt)}"></div>
-      <h1 class="ws-lh-title" id="ws-inbox-title">${workspaceCompanyMark(room.co)}${escape(room.name)}${count}</h1><p class="ws-lh-sum">${n?`이 방에서 ${name}님 차례인 일이 ${n}개예요.`:'이 방에는 지금 손댈 일이 없어요.'} ${line}</p>`;
+      <h1 class="ws-lh-title" id="ws-inbox-title">${workspaceCompanyMark(room.co)}${escape(room.name)}${count}</h1><p class="ws-lh-sum">${n?`이 방에서 ${name}님 차례인 일이 ${n}개예요. 급한 것부터 놓았어요.`:`${wsEmptyText(model,WS_ROOM_GROUPS[room.id],true)}.`} ${line}</p>`;
   }
-  const by=when=>model.items.filter(item=>item.when===when).length;
-  const parts=[by('now')?`지금 ${by('now')}개`:'',by('today')?`오늘 안에 ${by('today')}개`:'',by('week')?`이번 주에 ${by('week')}개`:''].filter(Boolean);
-  const filters=WS_FILTERS.filter(([id])=>id==='all'||model.groups[id]&&model.groups[id]!=='hidden');
-  return `<span class="ws-lh-date">${wsDateLabel()}</span><h1 class="ws-lh-title" id="ws-inbox-title">${name}님 차례${count}</h1><p class="ws-lh-sum">${parts.length?`${parts.join(', ')}예요.`:'지금 손댈 일이 없어요.'}</p>
-    ${filters.length>2?`<div class="ws-tabs" role="toolbar" aria-label="무리로 거르기">${filters.map(([id,label])=>{const c=id==='all'?model.total:model.items.filter(item=>item.group===id).length;return `<button type="button" class="ws-tabchip" data-action="ws-inbox-filter" data-filter="${id}" aria-pressed="${workspaceInbox.filter===id}">${escape(label)} <span class="ws-num">${c}</span></button>`;}).join('')}</div>`:''}`;
+  return `<span class="ws-lh-date">${wsDateLabel()}</span><h1 class="ws-lh-title" id="ws-inbox-title">${name}님 차례${count}</h1><p class="ws-lh-sum">${n?`급한 것부터 ${n}개를 놓았어요. 하나를 끝내면 다음 일이 열려요.`:`${wsEmptyText(model)}.`}</p>`;
 }
 function wsInboxBodyHtml(model,current){
   const room=workspaceInbox.room,{items,notes}=wsInboxItems(model);
-  const groupsShown=room?{lab:['sns'],shift:['schedule'],pulse:['clients'],path:['schedule'],lounge:['messenger'],desk:['tips','sns']}[room]:['tips','clients','messenger','schedule','sns'];
-  const failed=groupsShown.filter(group=>model.groups[group]==='failed'&&(workspaceInbox.filter==='all'||room||workspaceInbox.filter===group));
-  const loading=groupsShown.filter(group=>model.groups[group]==='loading');
+  const groupsShown=room?WS_ROOM_GROUPS[room]:[...WS_TURN_GROUPS,'sns'];
+  const failed=groupsShown.filter(group=>model.groups[group]==='failed');
   let html=failed.map(group=>`<div class="ws-grp is-failed" role="status"><b>${WS_GROUPS[group]}</b><span>못 불러왔어요. 0개라는 뜻이 아니에요.</span><button type="button" class="ws-linkbtn" data-action="ws-turn-retry" data-group="${group}">다시</button></div>`).join('');
   if(room==='lounge')html+=`<div class="ws-lounge-open"><a class="ws-btn ws-btn-line" href="/?tab=messenger" data-action="tab" data-tab="messenger">${workspaceShellGlyph('chat')}메신저 열기</a></div>`;
-  for(const [when,label,hint] of WS_WHEN){
-    const list=items.filter(item=>item.when===when);if(!list.length)continue;
-    html+=`<div class="ws-grp"><b>${label}</b><span>${hint}</span></div>${list.map(item=>wsRowHtml(item,item.key===current?.key)).join('')}`;
-  }
-  if(!items.length)html+=`<p class="ws-empty">${loading.length?'내 차례를 확인하고 있어요.':room?'이 방에는 지금 손댈 일이 없어요.':'지금 손댈 일이 없어요. 새 일이 오면 여기에 올라와요.'}</p>`;
-  const noteGroups=[['tips','방금 고른 시안','곧 장부에 옮겨요'],['schedule','다가오는 일정','오늘 뒤 · 날짜 미정'],['sns','알아 둘 것 · AI가 확인 중','AI가 검토 링크로 승인해요']];
-  for(const [group,label,hint] of noteGroups){
+  if(items.length)html+=`<div class="ws-grp"><b>급한 순서</b><span>위에서부터 처리해요</span></div>${items.map((item,i)=>wsRowHtml(item,item.key===current?.key,i+1)).join('')}`;
+  else html+=`<p class="ws-empty">${wsEmptyText(model,groupsShown,Boolean(room))}.${wsTurnState(model,groupsShown).failed.length||wsTurnState(model,groupsShown).loading.length?'':' 새 일이 오면 여기에 올라와요.'}</p>`;
+  const noteGroups=[['tips','방금 고른 시안','곧 장부에 옮겨요',''],['schedule','다가오는 일정','오늘 뒤 · 날짜 미정','SHIFT · PATH 화면'],['sns','알아 둘 것 · AI가 확인 중','AI가 검토 링크로 승인해요','SNS 화면']];
+  for(const [group,label,hint,where] of noteGroups){
     const list=notes.filter(note=>note.group===group);if(!list.length)continue;
-    html+=`<div class="ws-grp is-note"><b>${label}</b><span>${hint}</span></div>${list.slice(0,40).map(note=>wsRowHtml(note,note.key===current?.key)).join('')}${list.length>40?`<p class="ws-empty">그 밖에 ${list.length-40}개는 SNS 화면에서 볼 수 있어요.</p>`:''}`;
+    const rest=list.length-40;
+    html+=`<div class="ws-grp is-note"><b>${label}</b><span>${hint}</span></div>${list.slice(0,40).map(note=>wsRowHtml(note,note.key===current?.key)).join('')}${rest>0?`<p class="ws-empty">그 밖에 ${rest}개${where?`는 ${where}에서 볼 수 있어요`:'가 더 있어요'}.</p>`:''}`;
   }
   return html;
 }
 function wsMeta(rows){const list=rows.filter(([,value])=>value);return list.length?`<dl class="ws-meta">${list.map(([label,value])=>`<dt>${escape(label)}</dt><dd>${value}</dd>`).join('')}</dl>`:'';}
 const WS_STAGE={requested:'수락 전',accepted:'수락함',doing:'진행 중',review:'검토 중',changes:'수정 요청'};
+// 상세 머리: 순서 안의 일이면 「n / 모두」와 건너뛰기(이번 접속 동안 줄 끝으로). 다른 화면에서 끝내는 일은 「다음 일」.
+function wsQueueBar(item,model){
+  const {items}=wsInboxItems(model),at=items.findIndex(entry=>entry.key===item.key);
+  if(at<0)return '';
+  const elsewhere=item.kind==='chat'||item.kind==='schedule';
+  const skip=items.length>1?`<button type="button" class="ws-btn ws-btn-text ws-qskip" data-action="ws-queue-skip" data-key="${escape(item.key)}">${elsewhere?'다음 일':'건너뛰기'}${workspaceShellGlyph('chev')}</button>`:'';
+  return `<div class="ws-qbar"><span class="ws-qpos"><b class="ws-num">${at+1}</b> / <span class="ws-num">${items.length}</span>${at===0?' · 1순위':''}</span>${item.why?`<span class="ws-qwhy">${escape(item.why)}</span>`:''}${skip}</div>`;
+}
+function wsDetailEmptyHtml(model){
+  const room=workspaceInbox.room,groups=room?WS_ROOM_GROUPS[room]:WS_TURN_GROUPS,{failed,loading}=wsTurnState(model,groups);
+  const title=loading.length?'내 차례를 확인하고 있어요':failed.length?'불러오지 못한 일이 있어요':room?'이 방에는 지금 손댈 일이 없어요':'다 끝냈어요';
+  const lead=loading.length?'잠시만 기다려 주세요.':failed.length?'왼쪽 목록에서 「다시」를 눌러 주세요. 0개라는 뜻이 아니에요.':'새로 들어오면 여기에 바로 열려요.';
+  return `<div class="ws-dpad"><h2 class="ws-d-title" id="ws-detail-title" tabindex="-1">${title}</h2><p class="ws-d-lead">${lead}</p>${room||loading.length||failed.length?'':'<div class="ws-acts"><a class="ws-btn ws-btn-line" href="/?tab=home" data-action="ws-office">사무실로</a></div>'}</div>`;
+}
 function wsDetailHtml(item,model){
-  if(!item)return `<div class="ws-dpad"><h2 class="ws-d-title">${workspaceInbox.room?'이 방에는 지금 손댈 일이 없어요':'내 차례를 다 끝냈어요'}</h2><p class="ws-d-lead">새로 들어오면 왼쪽 목록에 올라와요.</p></div>`;
+  if(!item)return wsDetailEmptyHtml(model);
+  return wsQueueBar(item,model)+wsDetailBodyHtml(item,model);
+}
+function wsDetailBodyHtml(item,model){
   const busy=workspaceTurn.busy.has(item.key);
   if(item.kind==='tip'){
     const row=item.row,data=tipShares.data||{},link=typeof tipLink==='function';
-    const draft=row.draft?.url&&link?tipLink(row.draft.url,'시안 보기'):'',source=link?tipLink(row.url,'원본'):'';
+    const draft=row.draft?.url&&link?tipLink(row.draft.url,'시안 보기'):'',source=link?tipLink(row.url,'게시물 열기'):'';
     let acts;
-    if(row.pending)acts=`<div class="ws-sent" role="status"><span class="ws-tag">${escape(typeof tipChoiceLabel==='function'?tipChoiceLabel(row.pending.to):'')} 정했어요</span><p>${row.pending.claimed?'장부에 옮기는 중이에요.':'곧 장부에 옮겨요. 그 전에는 되돌릴 수 있어요.'}</p></div>${row.pending.claimed?'':`<div class="ws-acts"><button type="button" class="ws-btn ws-btn-line" data-tip-action="undo" data-tip-row="${row.row}" ${tipShares.busy?.has(String(row.row))?'disabled':''}>되돌리기</button></div>`}`;
+    // 고른 뒤: 되돌리기는 그 자리에 두고, 순서에 남은 일이 있으면 「다음 일」 한 번으로 넘어간다.
+    const next=wsInboxItems(model).items.length?'<button type="button" class="ws-btn ws-btn-primary" data-action="ws-queue-next">다음 일</button>':'';
+    if(row.pending)acts=`<div class="ws-sent" role="status"><span class="ws-tag">${escape(typeof tipChoiceLabel==='function'?tipChoiceLabel(row.pending.to):'')} 정했어요</span><p>${row.pending.claimed?'장부에 옮기는 중이에요.':'곧 장부에 옮겨요. 그 전에는 되돌릴 수 있어요.'}</p></div>${row.pending.claimed&&!next?'':`<div class="ws-acts">${row.pending.claimed?'':`<button type="button" class="ws-btn ws-btn-line" data-tip-action="undo" data-tip-row="${row.row}" ${tipShares.busy?.has(String(row.row))?'disabled':''}>되돌리기</button>`}${next}</div>`}`;
     else if(!data.canDecide)acts='<p class="ws-d-lead">이 계정은 장부를 올리는 자동화 계정이라 고를 수 없어요.</p>';
     else acts=`<div class="ws-acts"><button type="button" class="ws-btn ws-btn-decide" data-tip-action="decide" data-tip-to="적용 중" data-tip-row="${row.row}" ${tipShares.busy?.has(String(row.row))?'disabled':''}>적용해</button><button type="button" class="ws-btn ws-btn-line" data-tip-action="decide" data-tip-to="버림" data-tip-row="${row.row}" ${tipShares.busy?.has(String(row.row))?'disabled':''}>버림</button></div>`;
     return `<div class="ws-dpad"><div class="ws-src">${workspaceShellGlyph('tip')}공유한 게시물 · ${escape(row.target||'시안')}${item.time?` · ${escape(item.time)}`:''}</div><h2 class="ws-d-title" id="ws-detail-title" tabindex="-1">${escape(item.title)}</h2>${row.note?`<p class="ws-d-lead">${escape(row.note)}</p>`:''}${wsMeta([['받은 곳','텔레그램'],['시안',draft],['원본',source]])}${acts}</div>`;
@@ -584,11 +605,11 @@ function wsDetailHtml(item,model){
   if(item.kind==='chat'){
     const task=item.task,body=String(task.message?.body||'').slice(0,400);
     const open=task.channelId?`<button type="button" class="ws-btn ws-btn-primary" data-action="ws-chat-open" data-key="${escape(item.key)}">${workspaceShellGlyph('chat')}대화 열기</button>`:'';
-    return `<div class="ws-dpad"><div class="ws-src">${workspaceShellGlyph('chat')}메신저 · ${escape(wsChatContext(task,item.reasons)||'할 일')}</div><h2 class="ws-d-title" id="ws-detail-title" tabindex="-1">${escape(item.title)}</h2>${body?`<p class="ws-d-lead">${escape(body)}</p>`:''}${wsMeta([['맡긴 사람',escape(task.createdBy?.name||'')],['기한',task.dueDate?`<span class="ws-mono">${escape(task.dueDate)}</span>`:''],['단계',escape(WS_STAGE[task.stage]||'')]])}<div class="ws-acts">${open}</div><p class="ws-hint">받기 · 끝내기는 대화방의 할 일에서 해요.</p></div>`;
+    return `<div class="ws-dpad"><div class="ws-src">${workspaceShellGlyph('chat')}메신저 · 할 일</div><h2 class="ws-d-title" id="ws-detail-title" tabindex="-1">${escape(item.title)}</h2>${body?`<p class="ws-d-lead">${escape(body)}</p>`:''}${wsMeta([['맡긴 사람',escape(task.createdBy?.name||'')],['기한',task.dueDate?`<span class="ws-mono">${escape(task.dueDate)}</span>`:''],['단계',escape(WS_STAGE[task.stage]||'')]])}<div class="ws-acts">${open}</div><p class="ws-hint">받기 · 끝내기는 대화방의 할 일에서 해요.</p></div>`;
   }
   if(item.kind==='schedule'){
     const row=item.row,valid=typeof waParseWorkHref==='function'&&waParseWorkHref(row.href);
-    return `<div class="ws-dpad"><div class="ws-src">${workspaceCompanyMark(row.company)}${row.company==='PATH'?'PATH 유학 · 정착 상담 · 내 일정':'SHIFT AI 강의 · 내 일정'}</div><h2 class="ws-d-title" id="ws-detail-title" tabindex="-1">${escape(item.title)}</h2>${wsMeta([['날짜',row.date?`<span class="ws-mono">${escape(row.date)}</span>`:'일정 미정']])}<div class="ws-acts">${valid?`<button type="button" class="ws-btn ws-btn-primary" data-action="wa-mine-open" data-company="${escape(row.company)}" data-work-id="${escape(row.id)}">열기</button>`:''}</div></div>`;
+    return `<div class="ws-dpad"><div class="ws-src">${wsSourceLabel(item)}</div><h2 class="ws-d-title" id="ws-detail-title" tabindex="-1">${escape(item.title)}</h2>${wsMeta([['날짜',row.date?`<span class="ws-mono">${escape(row.date)}</span>`:'일정 미정']])}<div class="ws-acts">${valid?`<button type="button" class="ws-btn ws-btn-primary" data-action="wa-mine-open" data-company="${escape(row.company)}" data-work-id="${escape(row.id)}">열기</button>`:''}</div></div>`;
   }
   const review=item.review,thumb=review.thumb,plates=(review.plates||[]).map(plate=>`<span class="ws-plate"><span>${escape(typeof ssPfName==='function'?ssPfName(plate.platform):plate.platform)}</span> <span class="ws-mono">${escape(plate.handle||'')}</span></span>`).join('');
   const cover=thumb?.src?(thumb.kind==='video'?`<video class="ws-cover" src="${escape(thumb.src)}" preload="metadata" muted playsinline aria-label="${escape(item.title)} 표지 영상"></video>`:`<img class="ws-cover" src="${escape(thumb.src)}" alt="${escape(item.title)} 표지">`):'<span class="ws-cover is-empty" aria-hidden="true"></span>';
@@ -605,7 +626,8 @@ function wsInboxHtml(){
 function workspaceTurnPaint(){
   if(typeof document==='undefined'||typeof document.querySelectorAll!=='function'||typeof state==='undefined'||!state.user)return;
   let model;try{model=workspaceTurnModel();}catch{return;}
-  for(const badge of document.querySelectorAll('[data-ws-turn-count]')){badge.hidden=!model.total;badge.textContent=model.total>99?'99+':model.total?String(model.total):'';badge.setAttribute('aria-label',`내 차례 ${model.total}개`);}
+  for(const badge of document.querySelectorAll('[data-ws-turn-count]')){badge.hidden=!model.total;badge.textContent=model.total>99?'99+':model.total?String(model.total):'';}
+  for(const label of document.querySelectorAll('[data-ws-turn-sr]'))label.textContent=model.total?`, ${model.total}개`:'';
   if(state.tab!=='home')return;
   const active=document.activeElement,focusKey=active?.dataset?.key||'',focusAction=active?.dataset?.action||'',focusRoom=active?.dataset?.room,focusTip=active?.dataset?.tipAction||'';
   if(workspaceInbox.open)wsInboxPaint(model);
@@ -614,7 +636,7 @@ function workspaceTurnPaint(){
     const turn=wsOfficeTurnHtml(model);
     const hello=document.getElementById('ws-office-hello');if(hello){const html=wsHelloHtml(model);if(hello.innerHTML!==html)hello.innerHTML=html;}
     set('ws-office-lead',turn.lead);set('ws-office-rest',turn.rest);set('ws-office-extra',wsOfficeExtraHtml());
-    const rooms=document.getElementById('ws-office-rooms');if(rooms){const html=`<span class="ws-office-img" aria-hidden="true"></span>${wsOfficeRoomsHtml(model)}`;if(rooms.innerHTML!==html)rooms.innerHTML=html;}
+    const rooms=document.getElementById('ws-office-rooms');if(rooms){const html=`<span class="ws-office-img" aria-hidden="true"></span>${wsOfficeRoomsHtml()}`;if(rooms.innerHTML!==html)rooms.innerHTML=html;}
   }
   // 적용해 · 버림을 누르면 그 자리에 되돌리기가, 되돌리면 적용해가 온다. 보내는 동안은 단추가 꺼져 있으니 제목에 잠시 두고,
   // 답이 오면 tipSharesMutate가 남긴 tipShares.focus(undo:행 · apply:행)를 받아 새 단추로 옮긴다.
@@ -636,8 +658,8 @@ function wsInboxPaint(model=workspaceTurnModel(),{focus=''}={}){
   const scroll=body?.scrollTop||0;
   const headHtml=wsInboxHeadHtml(model);if(head&&head.innerHTML!==headHtml)head.innerHTML=headHtml;
   const bodyHtml=wsInboxBodyHtml(model,current);if(body&&body.innerHTML!==bodyHtml){body.innerHTML=bodyHtml;body.scrollTop=scroll;}
-  // 고칠 점을 적는 중이면 상세를 갈아 끼우지 않는다(적던 글이 사라지지 않게).
-  const editing=detail?.querySelector?.('textarea')&&(detail.contains(document.activeElement)||detail.querySelector('textarea').value);
+  // 고칠 점을 적는 중이면 상세를 갈아 끼우지 않는다(적던 글이 사라지지 않게). 보냈거나 다른 일을 고르면 noteFor가 비어 다시 그린다.
+  const editing=Boolean(workspaceInbox.noteFor)&&workspaceInbox.noteFor===current?.key&&Boolean(detail?.querySelector?.('textarea'));
   if(detail&&!editing){const html=wsDetailHtml(current,model);if(detail.innerHTML!==html)detail.innerHTML=html;}
   root.dataset.detail=workspaceInbox.detail?'open':'closed';
   if(focus==='detail')(document.getElementById('ws-client-note')||document.getElementById('ws-detail-title'))?.focus?.({preventScroll:true});
@@ -653,8 +675,24 @@ async function wsClientAct(target){
     await api('/api/client-workflow',{projectId:data.projectId,messageId:data.messageId,revision:data.revision,action,...(note?{note}:{})});
     workspaceInbox.noteFor='';notify('처리했어요. 다음 일로 넘어갈게요.');
   }catch(error){if(error?.code==='SESSION_CHANGED')return;notify(error.message||'처리하지 못했어요. 잠시 뒤 다시 해 주세요.');}
-  finally{workspaceTurn.busy.delete(item.key);workspaceTurn.clients.at=0;await wsLoadClients();}
+  finally{
+    workspaceTurn.busy.delete(item.key);workspaceTurn.clients.at=0;await wsLoadClients();
+    // 끝난 일이 빠지면 다음 일이 열려 있다. 초점은 그 제목으로(눌렀던 단추는 새로 그려져 사라졌다).
+    const active=document.activeElement;if(workspaceInbox.open&&(!active||!active.isConnected||active===document.body))document.getElementById('ws-detail-title')?.focus?.({preventScroll:true});
+  }
 }
+// 순서 단추: 1순위부터 처리 · 줄의 일 열기 · 건너뛰기(이번 접속 동안 줄 끝으로) · 다음 일.
+function wsQueueOpen(key=''){
+  if(!openWorkspaceInbox('',{start:true,sel:key}))return;
+  document.getElementById('ws-detail-title')?.focus?.({preventScroll:true});
+}
+function wsQueueSkip(key){
+  if(!key)return;
+  const skipped=(workspaceInbox.skipped||[]).filter(entry=>entry!==key);skipped.push(key);workspaceInbox.skipped=skipped;
+  workspaceInbox.sel='';workspaceInbox.noteFor='';workspaceInbox.detail=true;
+  wsInboxPaint(undefined,{focus:'detail'});
+}
+function wsQueueNext(){workspaceInbox.sel='';workspaceInbox.noteFor='';workspaceInbox.detail=true;wsInboxPaint(undefined,{focus:'detail'});}
 function wsTurnRetry(group){
   if(group==='messenger'){workspaceTurn.messenger.at=0;void wsLoadMessenger();}
   else if(group==='clients'){workspaceTurn.clients.at=0;void wsLoadClients();}
@@ -672,11 +710,13 @@ document.addEventListener('click',event=>{
   if(action==='ws-office'){closeWorkspaceInbox();return;}
   if(action==='ws-inbox-select'){workspaceInbox.sel=target.dataset.key||'';workspaceInbox.detail=true;workspaceInbox.noteFor='';wsInboxPaint(undefined,{focus:'detail'});return;}
   if(action==='ws-inbox-back'){workspaceInbox.detail=false;wsInboxPaint(undefined,{focus:'row'});return;}
-  if(action==='ws-inbox-filter'){workspaceInbox.filter=WS_FILTERS.some(([id])=>id===target.dataset.filter)?target.dataset.filter:'all';workspaceInbox.sel='';wsInboxPaint();document.querySelector(`[data-action="ws-inbox-filter"][data-filter="${wsCss(workspaceInbox.filter)}"]`)?.focus?.({preventScroll:true});return;}
+  if(action==='ws-queue-start'||action==='ws-queue-open'){wsQueueOpen(action==='ws-queue-open'?target.dataset.key||'':'');return;}
+  if(action==='ws-queue-skip'){wsQueueSkip(target.dataset.key||'');return;}
+  if(action==='ws-queue-next'){wsQueueNext();return;}
   if(action==='ws-turn-retry'){wsTurnRetry(target.dataset.group);return;}
   if(action==='ws-chat-open'){const item=wsFindItem(target.dataset.key);if(item?.task)openWorkspaceDestination({type:'messenger',label:'대화',channelId:item.task.channelId,...(item.task.messageId?{messageId:item.task.messageId}:{})});return;}
   if(action==='ws-client-note'){workspaceInbox.noteFor=target.dataset.key||'';const detail=document.getElementById('ws-inbox-detail-body');if(detail)detail.innerHTML=wsDetailHtml(wsFindItem(workspaceInbox.noteFor),workspaceTurnModel());document.getElementById('ws-client-note')?.focus();return;}
-  if(action==='ws-client-note-cancel'){workspaceInbox.noteFor='';const detail=document.getElementById('ws-inbox-detail-body');if(detail)detail.innerHTML=wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel());return;}
+  if(action==='ws-client-note-cancel'){const key=workspaceInbox.noteFor;workspaceInbox.noteFor='';const detail=document.getElementById('ws-inbox-detail-body');if(detail)detail.innerHTML=wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel());(document.querySelector(`#ws-inbox-detail-body [data-action="ws-client-note"][data-key="${wsCss(key)}"]`)||document.getElementById('ws-detail-title'))?.focus?.({preventScroll:true});return;}
   if(action==='ws-client-act'){void wsClientAct(target);return;}
   if(action==='ws-client-open'){const item=wsFindItem(target.dataset.key);if(!item?.data?.href)return;if(typeof openClientWorkflowLink==='function')void Promise.resolve(openClientWorkflowLink(item.data.href)).catch(error=>notify(error.message));else location.assign(item.data.href);}
 });

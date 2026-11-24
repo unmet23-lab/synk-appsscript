@@ -2,9 +2,9 @@
    Canvas #FFFFFF · Surface #F6F6F7 · Subtle #EDEDEF · Ink #0B0B0C · Control Border #8E8E93 · Line rgba(11,11,12,.08) */
 
 :root .synk-workspace .client-desk.cdx{
-  --cx-canvas:var(--ws-canvas,#000000);--cx-surface:var(--ws-surface,#07080A);--cx-subtle:var(--ws-surface-2,#EDEDEF);
-  --cx-ink:var(--ws-ink,#FFFFFF);--cx-ink-2:var(--ws-ink-secondary,#D0D6E0);--cx-ink-3:var(--ws-ink-muted,#9AA5B6);
-  --cx-line:var(--ws-line,rgba(255,255,255,.13));--cx-line-strong:var(--ws-line-strong,rgba(255,255,255,.20));--cx-ctrl:var(--ws-control-line,#78808E);
+  --cx-canvas:var(--ws-canvas,#FFFFFF);--cx-surface:var(--ws-surface,#F6F6F7);--cx-subtle:var(--ws-surface-2,#EDEDEF);
+  --cx-ink:var(--ws-ink,#0B0B0C);--cx-ink-2:var(--ws-ink-secondary,#46464A);--cx-ink-3:var(--ws-ink-muted,#6B6B6E);
+  --cx-line:var(--ws-line,rgba(0,0,0,.08));--cx-line-strong:var(--ws-line-strong,rgba(0,0,0,.15));--cx-ctrl:var(--ws-control-line,#8E8E93);
   --cx-accent:#0B0B0C;--cx-accent-hover:#26262A;--cx-accent-soft:#EDEDEF;--cx-accent-line:rgba(11,11,12,.2);
   --cx-alert:#B42318;--cx-alert-dot:#B42318;--cx-alert-wash:rgba(249,112,102,.10);--cx-alert-line:rgba(249,112,102,.32);
   --cx-due:#7A5300;--cx-due-dot:#7A5300;--cx-due-wash:rgba(251,191,36,.10);--cx-due-line:rgba(251,191,36,.32);

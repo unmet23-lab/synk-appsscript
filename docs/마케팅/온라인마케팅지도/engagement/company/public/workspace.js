@@ -8,7 +8,7 @@ const workspacePrimaryTabs=[['home','오늘','sun'],['messenger','메신저','ch
 const workspaceNavDisplayLabel=(id,label)=>({home:'사무실',workroom:'만들기',members:'사람',teaching:'LAB 한국어 수업',path:'PATH 유학 · 정착 상담',lectures:'SHIFT AI 강의',admin:'관리자'})[id]||label;
 // 「내 차례」 받은편지함(2026-11-24 시안 F): ?tab=home&section=inbox&room=… — 방은 이 여섯만 받는다.
 const WORKSPACE_ROOM_IDS=['lab','shift','pulse','path','desk','lounge'];
-const workspaceInbox={open:false,room:'',sel:'',filter:'all',detail:false,fromOffice:false,noteFor:''};
+const workspaceInbox={open:false,room:'',sel:'',detail:false,fromOffice:false,noteFor:'',skipped:[]};
 // 왼쪽 메뉴 · 아래 탭의 1.5px 선 그림(시안 F와 같은 획).
 const WORKSPACE_SHELL_GLYPHS={
   office:'<path d="M4 20V9l8-5 8 5v11M9 20v-6h6v6"/>',
@@ -78,10 +78,10 @@ function workspaceSideNav(demoMode=false){
   const scope=companies.length>1?`<label class="ws-side-scope"><span>보는 회사</span><select data-wa-company aria-label="화면에 표시할 회사 범위"><option value="all">겸임 업무 모두</option>${companies.map(item=>`<option value="${escape(item.id)}" ${wa.company===item.id?'selected':''}>${escape(item.name)}</option>`).join('')}</select></label>`:'';
   const find=`<button type="button" class="ws-side-find" data-action="command" aria-keyshortcuts="Control+K">${workspaceShellGlyph('search')}<span>찾기</span><kbd aria-hidden="true">Ctrl K</kbd></button>`;
   const turn=typeof workspaceTurnTotal==='function'?workspaceTurnTotal():0;
-  const turnBadge=`<b class="ws-turn-count" data-ws-turn-count aria-label="내 차례 ${turn}개" ${turn?'':'hidden'}>${turn>99?'99+':turn||''}</b>`;
+  const turnBadge=`<b class="ws-turn-count" data-ws-turn-count aria-hidden="true" ${turn?'':'hidden'}>${turn>99?'99+':turn||''}</b><span class="sr-only" data-ws-turn-sr>${turn?`, ${turn}개`:''}</span>`;
   const socialTurn=typeof snsSimple!=='undefined'&&snsSimple.data&&typeof ssMyTurn==='function'?ssMyTurn(snsSimple.data):0;
   const socialSection=view==='social'&&typeof socialWorkspaceSection==='function'?socialWorkspaceSection():'';
-  const socialSub=view==='social'&&typeof waFeature==='function'&&waFeature('social')?sub([['map','나라 지도'],['today','오늘'],['results','성과'],['accounts','계정']].map(([id,label])=>subRow(label,'social-view',`data-view="${id}"`,socialSection===id,id==='today'&&socialTurn?`<b class="nav-count social-turn" aria-label="내 차례 ${socialTurn}">${socialTurn}</b>`:''))):'';
+  const socialSub=view==='social'&&typeof waFeature==='function'&&waFeature('social')?sub([['map','나라 지도'],['today','오늘'],['results','성과'],['accounts','계정']].map(([id,label])=>subRow(label,'social-view',`data-view="${id}"`,socialSection===id,id==='today'&&socialTurn?`<b class="nav-count social-turn" aria-hidden="true">${socialTurn}</b><span class="sr-only">, 내 차례 ${socialTurn}개</span>`:''))):'';
   const wrViews=typeof waWorkroomViews==='function'?waWorkroomViews():[];
   const workroomSub=view==='workroom'?sub([['desk','제작 데스크'],['trends','트렌드 · 레퍼런스'],['tools','제작 도구'],['clients','고객 관리'],['pages','내 관리 페이지']].filter(([id])=>wrViews.includes(id)).map(([id,label])=>subRow(label,'workroom-view',`data-tab="${id}"`,typeof wr!=='undefined'&&wr.view===id))):'';
   const main=[
@@ -114,9 +114,10 @@ function workspaceTabBar(demoMode=false){
   const tabs=demoMode?[]:workspaceAvailableTabs().map(([id])=>id);
   const tab=(label,glyph,action,attrs,href,current,badge='')=>`<a class="ws-tab" href="${href}" data-action="${action}" ${attrs} ${current?'aria-current="page"':''}>${workspaceShellGlyph(glyph)}<span>${escape(label)}</span>${badge}</a>`;
   const turn=typeof workspaceTurnTotal==='function'?workspaceTurnTotal():0;
+  const turnBadge=`<b class="ws-turn-count" data-ws-turn-count aria-hidden="true" ${turn?'':'hidden'}>${turn>99?'99+':turn||''}</b><span class="sr-only" data-ws-turn-sr>${turn?`, ${turn}개`:''}</span>`;
   const items=demoMode?'':[
     tab('사무실','office','tab','data-tab="home"','/?tab=home',view==='home'&&!inbox),
-    tab('내 차례','inbox','ws-inbox','data-room=""','/?tab=home&section=inbox',inbox,`<b class="ws-turn-count" data-ws-turn-count aria-label="내 차례 ${turn}개" ${turn?'':'hidden'}>${turn>99?'99+':turn||''}</b>`),
+    tab('내 차례','inbox','ws-inbox','data-room=""','/?tab=home&section=inbox',inbox,turnBadge),
     tabs.includes('messenger')?tab('메신저','chat','tab','data-tab="messenger"','/?tab=messenger',view==='messenger','<b class="messenger-unread" hidden></b>'):'',
     tabs.includes('social')?tab('SNS','sns','tab','data-tab="social"','/?tab=social',view==='social'):'',
   ].join('');
@@ -296,14 +297,14 @@ function selectWorkspaceView(view,section='',teamId=undefined,draftId=undefined)
   }
 }
 // 받은편지함에 들어갈 때만 주소를 새로 쌓는다(pushState) — 뒤로 가기가 사무실로 돌아간다. 방은 허용 목록만 받는다.
-function openWorkspaceInbox(room=''){
+function openWorkspaceInbox(room='',{start=false,sel=''}={}){
   if(!state.user)return false;
   const target=WORKSPACE_ROOM_IDS.includes(room)?room:'',fromOffice=state.tab==='home'&&!workspaceInbox.open;
   const entering=!(state.tab==='home'&&workspaceInbox.open);
   if(typeof waClearWorkTarget==='function')waClearWorkTarget();
   selectWorkspaceView('home','inbox');
   if(entering)workspaceInbox.fromOffice=fromOffice;
-  workspaceInbox.room=target;workspaceInbox.sel='';workspaceInbox.detail=false;workspaceInbox.filter='all';workspaceInbox.noteFor='';
+  workspaceInbox.room=target;workspaceInbox.sel=typeof sel==='string'?sel:'';workspaceInbox.detail=Boolean(start);workspaceInbox.noteFor='';
   const href=`/?tab=home&section=inbox${target?`&room=${target}`:''}`;
   if(entering&&typeof history!=='undefined'&&typeof history.pushState==='function'&&typeof location!=='undefined'&&location.pathname+location.search!==href)history.pushState(null,'',href);
   state.error='';render();if(typeof window!=='undefined')window.scrollTo?.(0,0);

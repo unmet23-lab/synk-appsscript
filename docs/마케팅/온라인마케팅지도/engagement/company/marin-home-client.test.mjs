@@ -302,10 +302,11 @@ test('SHIFT and PATH staff load personal open schedules immediately on home with
   f.state.user={id:'staff-dual',name:'겸임 담당',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures','path'],companies:['SHIFT','PATH'],memberships:[{company:'SHIFT',role:'instructor'},{company:'PATH',role:'counselor'}],duties:[]}};
   const slot=f.element('section');slot.id='wa-mine-work';f.nodes.set('wa-mine-work',slot);
   const initialHtml=f.run('marinHomePage()');
-  // 11-24 사무실: 옛 「내 강의·상담 일정」 칸 대신 SHIFT · PATH 방이 같은 자료를 받고, 받기 전에는 「확인하고 있어요」를 보인다(0이라고 말하지 않는다).
-  assert.match(initialHtml,/data-room="shift" data-action="ws-inbox" aria-label="SHIFT AI 강의실 · 지금 내 차례 없음"/);
-  assert.match(initialHtml,/data-room="path" data-action="ws-inbox" aria-label="PATH 유학 상담실 /);
+  // 11-25 사무실: 방에는 수를 붙이지 않는다(설계 13절). 받기 전에는 「확인하고 있어요」를 보이고 0이라고 말하지 않는다.
+  assert.match(initialHtml,/data-room="shift" data-action="ws-inbox" aria-label="SHIFT AI 강의실 · 이 방의 일 보기"/);
+  assert.match(initialHtml,/data-room="path" data-action="ws-inbox" aria-label="PATH 유학 상담실 · 이 방의 일 보기"/);
   assert.match(initialHtml,/내 차례를 확인하고 있어요/);
+  assert.doesNotMatch(initialHtml,/지금 손댈 일이 없어요|내 차례 없음/);
   await tick();
   assert.equal(f.requests.length,1);
   assert.equal(f.requests[0].path,'/api/company-work/mine');
@@ -336,8 +337,8 @@ test('SHIFT and PATH staff load personal open schedules immediately on home with
   assert.doesNotMatch(slot.innerHTML,/javascript:alert/);
   assert.doesNotMatch(slot.innerHTML,new RegExp(`data-work-id="${WORK_UUID_3}"`));
   // 11-24 사무실: 범위를 고르면 방 수도 그 회사 일정만 센다(지난 6 + 오늘 1 = SHIFT 7, PATH는 다음 주 · 날짜 미정뿐이라 0).
-  f.run("wa.company='SHIFT'");assert.match(f.run('marinHomePage()'),/aria-label="SHIFT AI 강의실 · 내 차례 7개"/);assert.doesNotMatch(f.run('marinHomePage()'),/다음 주 정착 상담/);
-  f.run("wa.company='PATH'");assert.match(f.run('marinHomePage()'),/aria-label="PATH 유학 상담실 · 지금 내 차례 없음"/);assert.doesNotMatch(f.run('marinHomePage()'),/오늘 자동화 실습 강의/);
+  f.run("wa.company='SHIFT'");assert.equal(f.run("wsRoomCount(workspaceTurnModel(),'shift')"),7);assert.match(f.run('marinHomePage()'),/모두 <span class="ws-num">7<\/span>개/);assert.doesNotMatch(f.run('marinHomePage()'),/다음 주 정착 상담/);
+  f.run("wa.company='PATH'");assert.equal(f.run("wsRoomCount(workspaceTurnModel(),'path')"),0);assert.match(f.run('marinHomePage()'),/내 차례를 확인하고 있어요/,'메신저를 아직 읽는 중이라 「없어요」라고 하지 않는다');assert.doesNotMatch(f.run('marinHomePage()'),/오늘 자동화 실습 강의/);
   assert.equal(f.requests.length,1,'switching scope reuses stamped personal schedule without extra GETs');
 });
 
@@ -844,8 +845,8 @@ test('room counts add up to the inbox total; SNS reviews stay in 알아 둘 것 
   for(const room of rooms){f.context.room=room;f.run('workspaceInbox.room=room');assert.equal(f.run('wsInboxItems(workspaceTurnModel()).items.length'),f.run('wsRoomCount(workspaceTurnModel(),room)'),room);}
   assert.equal(model.items.some(item=>item.group==='sns'),false,'SNS reviews are never counted as my turn');
   assert.deepEqual(model.notes.filter(note=>note.group==='sns').map(note=>note.room).sort(),['desk','lab'],'SNS notes go to the LAB room by account, others to the desk');
-  const labels=[...f.run('wsOfficeRoomsHtml(workspaceTurnModel())').matchAll(/aria-label="[^"]* · 내 차례 (\d+)개"/g)].map(match=>Number(match[1]));
-  assert.equal(labels.reduce((a,b)=>a+b,0),model.total,'the office picture shows the same total');
+  assert.match(f.run('wsOfficeTurnHtml(workspaceTurnModel()).lead'),new RegExp(`모두 <span class="ws-num">${model.total}</span>개`),'the 1순위 card shows the same total');
+  assert.doesNotMatch(f.run('wsOfficeRoomsHtml()'),/ws-pill|내 차례 \d/,'the office picture carries no counts (설계 13절)');
   assert.equal(f.run('workspaceTurnTotal()'),model.total,'the menu badge shows the same total');
 });
 
@@ -869,4 +870,76 @@ test('a 403 hides that group, while 5xx, network failures and messenger 401 show
   const shift=shellFixture({memberships:[['SHIFT','instructor']]});
   await shift.run('wsLoadClients()');assert.equal(shift.requests.filter(row=>row.path==='/api/client-workflow').length,0);
   assert.equal(plain(shift.run('workspaceTurnModel()')).groups.clients,'hidden');
+});
+
+async function rankedFixture(){
+  const {f,today,day}=turnFixture();
+  f.context.fetch=async()=>({ok:true,status:200,json:async()=>workdayReply(today,day)});
+  const messenger=f.run('wsLoadMessenger()'),clients=f.run('wsLoadClients()');
+  f.requests.find(row=>row.path==='/api/client-workflow').resolve({items:[{id:'c1',group:'review',reviewerId:f.state.user.id,title:'편집본 확인',projectTitle:'학원 광고',dueDate:day(-1)},{id:'c3',group:'next',ownerId:f.state.user.id,title:'내 다음 일',dueDate:today}]});
+  await messenger;await clients;
+  return {f,today,day};
+}
+
+test('11-25 한 번에 처리: 모든 내 차례를 한 줄로 세운다 — 고객 → 내 답을 기다리는 사람 → 오늘 · 지난 기한 → 그 밖, 같은 칸은 기한 순',async()=>{
+  const {f,day}=await rankedFixture();
+  const model=plain(f.run('workspaceTurnModel()'));
+  assert.deepEqual(model.items.map(item=>item.key),['client:c1','client:c3','chat:t2','chat:t1','work:w2','work:w1','chat:t3','tip:1','tip:2']);
+  assert.deepEqual(model.items.map(item=>item.rank),[0,0,1,1,2,2,3,3,3]);
+  const why=Object.fromEntries(model.items.map(item=>[item.key,item.why]));
+  assert.match(why['client:c1'],/학원 광고 · 고객이 기다려요 · \d+\.\d+ 지남/);
+  assert.match(why['work:w2'],/^\d+\.\d+ 지남$/,'지난 일정은 오늘 일정으로 세지 않는다(카본 H1)');
+  assert.equal(why['work:w1'],'오늘 일정');
+  const short=day(3).slice(5).split('-').map(Number).join('.');
+  assert.equal(why['chat:t3'],`${short}까지`,'이번 주 기한은 「오늘 안에」로 부르지 않는다(카본 H2)');
+  // 첫 화면: 1순위 한 장 · 단추 하나 · 2순위부터 다섯 줄 · 나머지는 수로만.
+  const office=f.run('wsOfficeTurnHtml(workspaceTurnModel())');
+  assert.match(office.lead,/1순위[\s\S]*편집본 확인[\s\S]*data-action="ws-queue-start"[\s\S]*1순위부터 처리/);
+  assert.equal([...office.rest.matchAll(/data-action="ws-queue-open"/g)].length,5);
+  assert.match(office.rest,/그 밖에 <span class="ws-num">3<\/span>개/);
+  assert.match(f.run('wsHelloHtml(workspaceTurnModel())'),/처리할 일이 <span class="ws-num">9<\/span>개 있어요/);
+});
+
+test('11-25 「1순위부터 처리」는 1순위를 연 채로 받은편지함을 열고, 건너뛰기는 그 일을 줄 끝으로, 고른 시안 뒤에는 「다음 일」 하나로 넘어간다',async()=>{
+  const {f}=await rankedFixture();
+  f.run("wsQueueOpen('')");
+  assert.equal(f.run('workspaceInbox.open'),true);assert.equal(f.run('workspaceInbox.detail'),true,'390에서도 상세가 바로 열린다');
+  assert.equal(f.location.pathname+f.location.search,'/?tab=home&section=inbox');
+  assert.equal(f.run('wsInboxCurrent(workspaceTurnModel()).key'),'client:c1');
+  assert.match(f.run('wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel())'),/<b class="ws-num">1<\/b> \/ <span class="ws-num">9<\/span> · 1순위[\s\S]*data-action="ws-queue-skip" data-key="client:c1">건너뛰기/);
+  f.run("wsQueueSkip('client:c1')");
+  assert.equal(f.run('wsInboxCurrent(workspaceTurnModel()).key'),'client:c3');
+  assert.equal(f.run('workspaceTurnModel().items.at(-1).key'),'client:c1','건너뛴 일은 줄 끝으로');
+  assert.match(f.run('wsOfficeTurnHtml(workspaceTurnModel()).lead'),/내 다음 일/,'첫 화면의 1순위도 같은 순서');
+  // 다른 화면에서 끝내는 일(메신저 · 일정)은 「다음 일」.
+  f.run("workspaceInbox.sel='chat:t2'");assert.match(f.run('wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel())'),/data-action="ws-queue-skip" data-key="chat:t2">다음 일/);
+  // 줄에 든 일을 열면 그 일로.
+  f.run("closeWorkspaceInbox();wsQueueOpen('work:w1')");assert.equal(f.run('wsInboxCurrent(workspaceTurnModel()).key'),'work:w1');
+  // 시안을 고른 뒤: 되돌리기는 그 자리에, 순서에 남은 일이 있으면 「다음 일」.
+  f.run("tipShares.data.rows[0].pending={to:'적용 중',claimed:false};tipShares.data.canDecide=true;workspaceInbox.sel='tip:1'");
+  const tip=f.run('wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel())');
+  assert.match(tip,/data-tip-action="undo"[\s\S]*data-action="ws-queue-next"/);
+  assert.doesNotMatch(tip,/ws-qbar/,'고른 시안은 순서 밖(알아 둘 것)이라 n / 모두를 쓰지 않는다');
+  f.run('wsQueueNext()');assert.equal(f.run('wsInboxCurrent(workspaceTurnModel()).key'),'client:c3');
+});
+
+test('11-25 못 불러온 무리가 있으면 인사 · 1순위 카드 · 받은편지함 머리 · 목록 · 상세 어디에서도 「없어요 · 다 끝냈어요」라고 하지 않는다',async()=>{
+  const {f}=turnFixture();
+  f.run("tipShares.data.rows=[];wa.mine.items=[]");
+  f.context.fetch=async()=>({ok:false,status:502,json:async()=>({})});
+  const clients=f.run('wsLoadClients()');f.requests.find(row=>row.path==='/api/client-workflow').resolve({items:[]});
+  await f.run('wsLoadMessenger()');await clients;
+  f.run("workspaceInbox.room='';workspaceInbox.sel=''");
+  const views={hello:f.run('wsHelloHtml(workspaceTurnModel())'),lead:f.run('wsOfficeTurnHtml(workspaceTurnModel()).lead'),head:f.run('wsInboxHeadHtml(workspaceTurnModel())'),body:f.run('wsInboxBodyHtml(workspaceTurnModel(),null)'),detail:f.run('wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel())')};
+  for(const [name,html] of Object.entries(views)){
+    assert.doesNotMatch(html,/없어요|다 끝냈어요/,name);
+    assert.match(html,/불러오지 못한 일이 있어요|못 불러왔어요/,name);
+  }
+  // 순서가 비면 알아 둘 것(SNS)으로 넘어가지 않는다.
+  assert.equal(f.run('wsInboxCurrent(workspaceTurnModel())'),null);
+  // 다 불러왔고 비었으면 그때 「다 끝냈어요」.
+  f.context.fetch=async()=>({ok:true,status:200,json:async()=>({today:{groups:{}},remaining:{groups:{}}})});
+  f.run('workspaceTurn.messenger.at=0');await f.run('wsLoadMessenger()');
+  assert.match(f.run('wsDetailHtml(null,workspaceTurnModel())'),/다 끝냈어요/);
+  assert.match(f.run('wsHelloHtml(workspaceTurnModel())'),/지금 손댈 일이 없어요/);
 });

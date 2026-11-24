@@ -155,7 +155,7 @@ body:not(.integrated-module) .shell{height:100dvh;margin:0;border-radius:0}
 .nav-name{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .nav-time{flex:none;font-size:12px;font-weight:400;color:var(--ink3)}
 .project-private-mark{display:grid;place-items:center;color:var(--ink3)}.project-private-mark svg{width:13px;height:13px}
-.unread{display:inline-grid;place-items:center;flex:none;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--badge-red);color:#0B0B0C;font-size:12px;font-weight:700;line-height:1}
+.unread{display:inline-grid;place-items:center;flex:none;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--badge-red);color:#FFFFFF;font-size:12px;font-weight:700;line-height:1}
 .deleted-projects-link{color:var(--ink3);font-size:13px}
 .deleted-projects-link .room-symbol svg{width:15px;height:15px}
 
@@ -180,7 +180,7 @@ body:not(.integrated-module) .shell{height:100dvh;margin:0;border-radius:0}
 .header-actions{display:flex;align-items:center;gap:2px}
 .header-actions .icon-button{width:36px;height:36px}
 .header-actions .icon-button svg{width:19px;height:19px}
-.bell-count{position:absolute;top:1px;right:0;display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--badge-red);color:#0B0B0C;font:700 12px/1 var(--num)}
+.bell-count{position:absolute;top:1px;right:0;display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--badge-red);color:#FFFFFF;font:700 12px/1 var(--num)}
 .main.no-conversation .composer-wrap,.main.no-conversation #room-info{display:none}
 
 /* ── 메시지 ── */
