@@ -276,7 +276,11 @@ function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBack
 let pcProfileService=null;
 function pcProfile(){if(runtime.clientId!=='platform'||smoke)return null;if(!pcProfileService)pcProfileService=createPcProfile({userData:app.getPath('userData'),display:()=>{const d=screen.getPrimaryDisplay();return {width:d.size.width,height:d.size.height,scale:d.scaleFactor,workWidth:d.workAreaSize.width};}});return pcProfileService;}
 // 원클릭 판이 엔진 보고서 전에 빌려 쓰는 드라이브. 10분 넘은 값이면 뒤에서 다시 읽고 지금 값을 준다(Fable 최종 P2-2)
-function pcSpaceDrives(){const service=pcProfile();if(!service)return null;void service.refresh().catch(()=>{});return service.spaceDrives();}
+// 이 PC는 로그인한 회원에게만 잰다. 로그인하지 않았으면 설정 방 · 다시 재기 · 원클릭 드라이브 어느 길로도 PowerShell을 띄우지 않고 지금 값만 준다
+// (공개 CI Windows 검사기는 손님 상태로 설정 방을 연다. PC 0.5.10 CI 45500197530 · 0.5.11 공개 후보 Fable P1)
+const pcMember=()=>!!accountStatus()?.signedIn;
+function pcProfileRead(service,options){return pcMember()?service.refresh(options):Promise.resolve(service.snapshot());}
+function pcSpaceDrives(){const service=pcProfile();if(!service)return null;if(pcMember())void service.refresh().catch(()=>{});return service.spaceDrives();}
 function pcProfileCall(work){const service=pcProfile();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};return work(service);}
 // 앱을 켜면 첫 화면을 막지 않게 조금 뒤에 가벼운 값을 읽는다(설계 6절). 그래픽 값은 하루 한 번이다
 // 이 PC는 로그인한 회원에게만 잰다. 손님의 첫 실행에서는 자식 프로세스(PowerShell)를 띄우지 않는다(공개 CI Windows 검사기, PC 0.5.10 CI 45500197530).
@@ -1017,8 +1021,8 @@ function createWindow(){
     // 원클릭(11-23): run-now 요청을 쓰고 엔진의 요청 작업을 깨운다. 본체가 계정 · 엔진 · 보호 상태를 다시 확인한다
     'synk:solio-backup-oneclick':()=>solioBackupCall((service,account)=>service.oneClick(account)),
     // 「이 PC에 이렇게 맞췄습니다」(PC 진단 설계 5.2): 넘기는 값은 없다. 저장 위치 열기는 Windows 설정의 정해진 화면 하나만 연다
-    'synk:pc-profile':()=>pcProfileCall(service=>service.refresh()),
-    'synk:pc-profile-again':()=>pcProfileCall(service=>service.refresh({full:true})),
+    'synk:pc-profile':()=>pcProfileCall(service=>pcProfileRead(service)),
+    'synk:pc-profile-again':()=>pcProfileCall(service=>pcProfileRead(service,{full:true})),
     'synk:pc-profile-seen':()=>pcProfileCall(service=>service.seen()),
     'synk:pc-open-storage':()=>pcProfileCall(()=>process.platform!=='win32'?{ok:false,code:'NOT_AVAILABLE'}:Promise.resolve().then(()=>shell.openExternal('ms-settings:savelocations')).then(()=>({ok:true}),()=>({ok:false,code:'OPEN_FAILED'}))),
     // 솔리오 「사무실」(구현설계.md 13절): 모두 officeCall을 거친다. 폴더는 본체가 고르기 창이나 지금 선 세션에서 받는다
