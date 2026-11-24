@@ -89,7 +89,7 @@ function shellRecipe(pub) {
   const s0 = endText.indexOf('// 첫날 끝 · 맞춤 앞면(1차, 결정 11-19)'), s1 = endText.indexOf("note:t('goal.consent.note')};}});", s0);
   if (s0 < 0 || s1 < 0) throw Error('app-shell.mjs: 끝 판에서 앞면 다리 묶음을 못 찾음');
   const block = endText.slice(s0, s1 + "note:t('goal.consent.note')};}});".length)
-    .replace("newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),", 'newEngine:()=>false,');   // 공개본에는 아직 Atlas 새 엔진(atlasNext)이 없다
+    .replace("newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),", /atlasNextOn/.test(pub) ? '$&' : 'newEngine:()=>false,');   // Atlas ③(11-25) 전 공개본에는 새 엔진(atlasNext)이 없다
   const onEnter = "   if(entryGate.state().phase!=='ready'||identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation)return;\n";
   const h0 = endText.indexOf('   // 앞면 학생은 앞면이 홈이다'), h1 = endText.indexOf("openReminderLink();});return;}\n", h0);
   if (h0 < 0 || h1 < 0) throw Error('app-shell.mjs: 끝 판에서 관문 뒤 앞면 갈고리를 못 찾음');
@@ -108,7 +108,8 @@ function shellRecipe(pub) {
     ['if(!fromSeoul&&home.ensureTutor&&', 'if(!fromSeoul&&!front?.free()&&home.ensureTutor&&'],
     ['sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch', 'sessionConfirmed=false;close();if(front?.active()){front.drop();entryDestinationHandled=false;void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch'],
     ['home.connectHost?.({road:', 'home.connectHost?.({tutorFree:()=>!!front?.free(),road:'],
-    [seoulEnd + '\n', seoulEnd.replace('});', ',frontOn:()=>!!front?.soon()});') + '\n' + block + '\n', 'supportsSpeaking===false,frontOn:()=>!!front?.soon()});'],
+    // master는 frontOn 뒤에 「내 사진으로」 me2 줄이 이어진다(c20a4cfed, 그 세션이 따로 공개) — 끝 판 표식은 frontOn까지만 본다
+    [seoulEnd + '\n', seoulEnd.replace('});', ',frontOn:()=>!!front?.soon()});') + '\n' + block + '\n', 'supportsSpeaking===false,frontOn:()=>!!front?.soon()'],
     ['tutor:home.tutor?.().tutor||null}),', readHook[0]],
     [onEnter, onEnter + enterHook, onEnter]
   ];
