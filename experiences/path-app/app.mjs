@@ -656,6 +656,12 @@ async function trSend() {
   say(accL('번역 초안이 나왔어요. 번역본이 아니에요. 이어서 다시 몽골어로 옮겨 견줘요.', 'The translation draft is ready. It is not a translation for submission. Next, it is translated back into Mongolian for a check.'));
   void trRunCheck(tr);
 }
+// 대조가 끝나 쪽을 다시 그리면 id 없는 단추의 초점이 사라진다. 누르던 단추를 data-action으로 다시 찾아 돌려준다.
+function trRender() {
+  const ae = document.activeElement, act = ae && root.contains(ae) && !ae.id ? ae.getAttribute('data-action') : null;
+  render(false);
+  if (act) root.querySelector(`[data-action="${act}"]`)?.focus();
+}
 async function trRunCheck(tr) {
   if (!tr?.sent || !tr.drafts) return;
   const seq = ++tr.seq;
@@ -667,9 +673,9 @@ async function trRunCheck(tr) {
   } catch (err) { failed = err; }
   if (trStale(tr, seq)) return;
   // 대조는 원장의 다른 연산(path.translate.check)이라 남은 장(초안 연산)을 바꾸지 않는다.
-  if (failed || reply.status !== 'done') { tr.check = 'failed'; render(false); say(accL('다시 옮겨 견주지 못했어요. 초안은 이 화면에 남아 있으니 원문과 직접 견줘 보세요.', 'The back-translation check did not finish. The draft stays on this screen; compare it with the original yourself.')); return; }
+  if (failed || reply.status !== 'done') { tr.check = 'failed'; trRender(); say(accL('다시 옮겨 견주지 못했어요. 초안은 이 화면에 남아 있으니 원문과 직접 견줘 보세요.', 'The back-translation check did not finish. The draft stays on this screen; compare it with the original yourself.')); return; }
   Object.assign(tr, { check: 'done', compared: reply.compared, rows: draftRows(tr.sent.lines, tr.drafts, reply.lines, tr.sent.slots, trHidden()) });
-  render(false);
+  trRender();
   const n = tr.rows.filter((r) => r.verdict === 'differs' || r.verdict === 'unsure').length;
   say(reply.compared ? accL(`견주기를 마쳤어요. 뜻이 달라 보이는 줄 ${n}곳.`, `Check finished. ${n} line(s) may differ in meaning.`) : accL('자동 대조를 하지 못했어요. 원문과 다시 옮긴 몽골어를 직접 견줘 보세요.', 'The automatic check did not run. Compare the original and the back-translation yourself.'));
 }
@@ -725,6 +731,7 @@ const toTop = () => { try { if (typeof scrollTo === 'function') scrollTo(0, 0); 
 function go(page) {
   if (S.page === 'translate' && page !== 'translate') {
     if (S.tr?.phase === 'draft' && !confirm(state.lang === 'en' ? 'Leaving this page deletes the draft. It is not stored anywhere. Leave?' : '이 화면을 떠나면 초안이 지워져요. 어디에도 저장하지 않아요. 떠날까요?')) return;
+    if (S.tr?.phase === 'sending' && !confirm(state.lang === 'en' ? 'The draft is still being made. If you leave, it is discarded and one of today’s 10 may still be used. Leave?' : '초안을 만드는 중이에요. 지금 떠나면 초안은 버려지고 오늘 한 장이 쓰일 수 있어요. 떠날까요?')) return;
     S.tr = null;
   }
   S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.dateNote = null; S.docFull = false; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }

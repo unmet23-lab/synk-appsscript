@@ -821,6 +821,8 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
 .sx-tr-how p{margin-top:6px}
 .sx-tr-text{display:block;box-sizing:border-box;width:100%;min-height:220px;padding:14px 16px;border:2px solid transparent;border-radius:18px;background:var(--soft);font:500 15.5px/1.6 var(--font);color:var(--ink);resize:vertical}
 .sx-tr-text[aria-invalid=true]{border-color:var(--coral-ink)}
+.sx-tr .sx-cta + .sx-store{margin:12px 0 14px}
+.sx-tr-draft .sx-note.is-box{margin-bottom:14px}
 .sx-tr-text:focus{border-color:var(--ink);background:#fff;outline:none;box-shadow:0 0 0 1px var(--ink)}
 .sx-err{margin:8px 4px 0;font-size:14px;font-weight:650;line-height:1.5;color:var(--coral-ink)}
 .sx-err .sx-mn{color:var(--coral-ink);opacity:.85}

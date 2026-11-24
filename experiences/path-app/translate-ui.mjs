@@ -9,7 +9,8 @@ const svg = (p) => `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" s
 const BACK = svg('<path d="M12.5 4.5 7 10l5.5 5.5"/>');
 const ON = svg('<path d="m5 10.4 3.2 3.1L15 6.6"/>');
 export const PRIVACY_URL = 'https://synk.im/privacy/#path-translate';
-const PRIVACY_URL_EN = 'https://synk.im/privacy/#path-translate-en';
+// 영어 문단은 처리방침의 접힌 영어 칸 안에 있다. 조각으로 칸을 열지 않는 브라우저도 있어 영어 칸 머리로 잇는다.
+const PRIVACY_URL_EN = 'https://synk.im/privacy/#synk-id-en';
 
 // [한국어, 영어, 몽골어]
 const M = {

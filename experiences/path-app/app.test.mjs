@@ -1132,6 +1132,11 @@ test('번역 초안: 한도 · 쉼 · 대조 실패를 알리고, 계정이 바�
   off.click('trOpen', '[data-id="wku-ug-grad"]');
   fillTranslate(off);
   off.click('trSend');
+  off.setConfirmation(false);
+  off.click('trLeave');
+  assert.match(off.confirmations.at(-1) || '', /초안을 만드는 중이에요/, '만드는 중에 떠나면 먼저 묻는다');
+  assert.ok(off.root.querySelector('#tr-text'), '「아니요」면 그 쪽에 남는다');
+  off.setConfirmation(true);
   await settle();
   assert.match(pageText(off), /번역 초안은 잠시 쉬어요/);
   const checkFail = fakeTranslateServer({ checkStatus: 'unavailable' });
