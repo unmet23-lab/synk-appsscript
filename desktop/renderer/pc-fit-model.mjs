@@ -32,7 +32,8 @@ export function pcSummary(p) {
   const say = cores && mem != null ? `이 PC는 논리 코어 ${cores}개 · 메모리 ${mem}GB ${PC_KIND(p)}입니다.`
     : cores ? `이 PC는 논리 코어 ${cores}개 ${PC_KIND(p)}입니다. 메모리는 읽지 못했습니다.`
       : mem != null ? `이 PC는 메모리 ${mem}GB ${PC_KIND(p)}입니다. 프로세서는 읽지 못했습니다.` : '이 PC의 프로세서와 메모리를 읽지 못했습니다.';
-  if (!drives.length) return { say, drives: p?.drives ? '판에 세울 드라이브를 찾지 못했습니다.' : '드라이브 목록을 읽지 못했습니다.' };
+  // 원클릭이 없는 회원도 읽는 문장이라 원클릭 판을 가리키지 않는다(PC 0.5.10 공개 후보 Fable F2)
+  if (!drives.length) return { say, drives: p?.drives ? '보일 드라이브를 찾지 못했습니다.' : '드라이브 목록을 읽지 못했습니다.' };
   const w = countWord(drives.length);
   return { say, drives: `드라이브 ${w}(${drives.map(d => `${d.letter}: ${sizeWords(d.size)}`).join(', ')})${particle(w, ['을', '를'])} 씁니다.` };
 }
@@ -57,7 +58,7 @@ function diskRow(p, st, f) {
   const d = p.drives;
   if (!d) return row('disk', '저장', '드라이브를 읽지 못했습니다', [['note', `회사 PC처럼 PowerShell이 막힌 PC에서는 드라이브 목록을 읽지 못합니다.${f.backup ? ' 업무 백업 엔진이 공간을 재면 원클릭 판에는 엔진 값이 보입니다.' : ''}`]]);
   const shown = shownDrives(p), other = roomyOther(p);
-  const mid = shown.length ? `드라이브 ${countWord(shown.length)}${other ? ' · C:가 거의 참' : ''}` : '세울 드라이브 없음';
+  const mid = shown.length ? `드라이브 ${countWord(shown.length)}${other ? ' · C:가 거의 참' : ''}` : '보일 드라이브 없음';
   // 선은 남은 몫을 긋는다. 원클릭 판 막대와 같은 방향이다(Fable 최종 P2-1)
   const more = shown.map(x => ['gauge', `${x.letter}:`, x.size ? Math.round((x.free / x.size) * 100) : 0, `${freeWords(x.free)} 남음`, sizeWords(x.size)]);
   const hid = hiddenSentence(d.hidden);

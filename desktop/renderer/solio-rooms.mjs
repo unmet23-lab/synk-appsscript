@@ -1306,7 +1306,8 @@ function chatgptRow(s, st = {}, now = Date.now()) {
   const { state } = s.chatgpt;
   // OpenAI 등록 전(누를 것이 없다)과 연결을 주지 않는 PC(Windows가 아닌 PC · 다른 앱)에서는 줄을 세우지 않는다.
   // 등록 전 줄은 모든 Windows 회원에게 「연결 준비 중」을 늘 보이고, Mac에서는 풀리지 않는 「상태 확인 필요」가 됐다(PC 0.5.10 준비)
-  if (state === 'pending-approval' || s.chatgpt.code === 'NOT_AVAILABLE') return null;
+  // 로그인을 확인하는 동안(토큰 갱신 · 다시 시도할 인증 오류)의 SIGN_IN_REQUIRED도 등록을 알기 전이라 줄을 세우지 않는다(PC 0.5.10 공개 후보 Fable F1)
+  if (state === 'pending-approval' || s.chatgpt.code === 'NOT_AVAILABLE' || s.chatgpt.code === 'SIGN_IN_REQUIRED') return null;
   const copy = CHATGPT_STATES[state];
   if (!copy) return null;
   const [mid, detail] = copy;
