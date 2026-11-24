@@ -108,15 +108,15 @@ function shellRecipe(pub) {
     ['if(!fromSeoul&&home.ensureTutor&&', 'if(!fromSeoul&&!front?.free()&&home.ensureTutor&&'],
     ['sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch', 'sessionConfirmed=false;close();if(front?.active()){front.drop();entryDestinationHandled=false;void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch'],
     ['home.connectHost?.({road:', 'home.connectHost?.({tutorFree:()=>!!front?.free(),road:'],
-    // master는 frontOn 뒤에 「내 사진으로」 me2 줄이 이어진다(c20a4cfed, 그 세션이 따로 공개) — 끝 판 표식은 frontOn까지만 본다
-    [seoulEnd + '\n', seoulEnd.replace('});', ',frontOn:()=>!!front?.soon()});') + '\n' + block + '\n', 'supportsSpeaking===false,frontOn:()=>!!front?.soon()'],
+    // master와 11-25 공개본(fadf697)은 frontOn 뒤에 「내 사진으로」 me2 줄이 이어진다(c20a4cfed) — 끝 판 · 공개본 표식은 frontOn까지만 보고, 다리 묶음은 아래에서 따로 본다
+    [seoulEnd + '\n', seoulEnd.replace('});', ',frontOn:()=>!!front?.soon()});') + '\n' + block + '\n', 'supportsSpeaking===false,frontOn:()=>!!front?.soon()', 'supportsSpeaking===false,frontOn:()=>!!front?.soon()'],
     ['tutor:home.tutor?.().tutor||null}),', readHook[0]],
     [onEnter, onEnter + enterHook, onEnter]
   ];
   for (const [, to, mark] of steps) { const need = mark ?? to; if (!endText.includes(need)) throw Error(`app-shell.mjs: 끝 판(master)에 「${need.slice(0, 60)}」가 없다 — master 갈고리가 바뀌었으면 표를 맞춘다`); }
   // 이미 앞면을 공개한 뒤(11-20 f50ef5c7)에 다시 돌리면: 갈고리를 또 얹지 않고, 공개본 갈고리가 master 글과 같은지만 본다.
   if (pub.includes("import {createFrontEntry} from './world-front-entry.mjs';")) {
-    for (const [, to, mark] of steps) { const need = typeof to === 'string' ? to : mark; if (!pub.includes(need)) throw Error(`app-shell.mjs: 공개본의 앞면 갈고리가 master와 다르다 — 「${need.slice(0, 60)}」`); }
+    for (const [, to, mark, pubMark] of steps) { const need = pubMark ?? (typeof to === 'string' ? to : mark); if (!pub.includes(need)) throw Error(`app-shell.mjs: 공개본의 앞면 갈고리가 master와 다르다 — 「${need.slice(0, 60)}」`); }
     if (!pub.includes(block)) throw Error('app-shell.mjs: 공개본의 앞면 다리 묶음이 master와 다르다');
     return pub;
   }
