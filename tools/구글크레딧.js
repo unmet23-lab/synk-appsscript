@@ -9,7 +9,7 @@ const path = require('node:path');
 const 지갑들 = {
   옛: { 이름: '옛', 프로: 'gen-lang-client-0106203750', 결제: '0161FA-7C996C-F1B948', 자격: path.join(os.homedir(), '.clasprc.json') },
   이전: { 이름: '이전', 프로: 'project-22fd10a3-c9c2-4b34-9f0', 결제: '013A36-17619E-CE0D07', 자격: path.join(os.homedir(), '.synk-vertex-oauth.77yuhbs.json') },
-  새: { 이름: '새', 프로: 'synk-bake-unmet27', 결제: '01864D-0E650C-40F3CB', 자격: path.join(os.homedir(), '.synk-vertex-oauth.json') },
+  새: { 이름: '새', 프로: 'synk-bake-unmet27', 결제: '013A36-17619E-CE0D07', 자격: path.join(os.homedir(), '.synk-vertex-oauth.json') }, // 11-25 결제만 77yuhbs로
 };
 /** 금융 화면값은 공개 저장소에 넣지 않고 로컬 runtime의 날짜 붙은 관찰만 읽는다. */
 function 마지막확인읽기(프로젝트, 파일 = process.env.SYNK_BILLING_SNAPSHOT || path.join(os.homedir(), '.codex', 'runtime', 'synk-cloud-billing.json')) {
