@@ -541,11 +541,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const readOf = key => {
       if (!readApi[key]) return 'none';
       const res = mine(key);
-      if (!res) return 'checking';
+      // 「다시 불러오기」를 누른 뒤 읽는 동안은 앞 실패 대신 확인 중이다(PC 0.5.10 공개 후보 카본 E2)
+      if (!res || (res.ok === false && reads[key].loading)) return 'checking';
       if (res.ok === false) return res.code === 'NOT_ALLOWED' ? 'none' : 'failed';
       return res.available === true ? 'ok' : 'none';
     };
-    const load = { office: readOf('office'), backup: readOf('backup'), subs: !subs ? 'none' : Array.isArray(subsSnap?.rows) ? 'ok' : sol.account === state.accountKey && sol.error ? 'failed' : 'checking' };
+    const load = { office: readOf('office'), backup: readOf('backup'), subs: !subs ? 'none' : Array.isArray(subsSnap?.rows) ? 'ok' : sol.account === state.accountKey && sol.error && !sol.checking ? 'failed' : 'checking' };
     return { ...solioQueue(items, t, todoMemo(state.accountKey)), load };
   }
   const TODO_ROOM = Object.freeze({ office: '사무실', subs: '구독', backup: '원클릭' });
@@ -587,7 +588,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       // 못 불러온 방이 있으면 「다 끝냈습니다」 대신 그 방을 다시 불러오라고 쓴다. 읽는 중이면 확인 중이라고 쓴다(워크스페이스 13절)
       card = failed ? { key: 'end:failed', end: true, say: `${failed} 일을 불러오지 못했습니다.`, then: '다시 불러오면 남은 일을 이어서 봅니다.', acts: [{ id: 'reload', label: '다시 불러오기', kind: 'reload', primary: true }, close, ...again] }
         : checking ? { key: 'end:checking', end: true, say: '남은 일을 확인하고 있습니다.', then: `${checking} 일을 아직 읽고 있습니다.`, acts: [close, ...again] }
-          : { key: 'end', end: true, say: '다 끝냈습니다.', then: solioTodoEndThen({ later, skipped, ai }, now()), acts: [close, ...again] };
+          // 건너뛴 일이 남았으면 「다 끝냈습니다」라고 하지 않는다. 카드를 닫아도 머리 줄에 그 수가 남는다(PC 0.5.10 공개 후보 카본 E1)
+          : skipped ? { key: 'end', end: true, say: `건너뛴 일 ${skipped}개만 남았습니다.`, then: solioTodoEndThen({ later, skipped: 0, ai }, now()), acts: [close, ...again] }
+            : { key: 'end', end: true, say: '다 끝냈습니다.', then: solioTodoEndThen({ later, skipped, ai }, now()), acts: [close, ...again] };
     }
     const failed = !queue.length ? todoRooms(live.load, 'failed') : '';
     // 원클릭 일이 줄에 있거나 엔진이 돌면 원클릭 자료를 주기로 읽게 한다. 원클릭 카드가 서 있는 동안만 짧은 주기다(끝 카드에서는 늦춘다, Fable FA1)
@@ -622,8 +625,10 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       todo.open = false; todo.paused = true; todo.went = key;
       // 방이 열리지 않았으면(다른 일이 도는 중 따위) 카드를 그대로 둔다. 상태만 닫히고 화면에 카드가 남지 않게 한다(카본 A4)
       const went = a.run?.aside ? (openAside(a.run.aside), aside === a.run.aside) : a.run?.prog ? showProgram(a.run.prog) : false;
-      if (!went) { todo.open = true; todo.paused = false; todo.note = '그 방을 지금 열 수 없습니다. 잠시 뒤 다시 눌러 주세요.'; render(); }
+      if (!went) { todo.open = true; todo.paused = false; todo.went = null; todo.note = '그 방을 지금 열 수 없습니다. 잠시 뒤 다시 눌러 주세요.'; render(); }
       // 사무실로 갔으면 초점을 그 방의 맨 위 문장에 둔다. 누른 단추가 카드와 함께 사라져 초점이 body로 빠지지 않게(Fable F4)
+      // 맡긴 일의 카드면 그 일의 부서 대화를 고르고 그 말로 초점을 옮긴다(사무실 대화 짜임 설계 검토 4)
+      else if (a.run?.prog && a.run.officeTask) { focus('office-head'); void office.handle({ act: 'chat-task', arg: a.run.officeTask }); render(); }
       else if (a.run?.prog) { focus('office-head'); render(); }
       return true;
     }
@@ -658,6 +663,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 그 방에서 끝냈으면 이미 줄에서 빠져 다음 일이 지금 일이다
     if (todo.paused && todo.current && todo.current === todo.went) { const key = todo.current; todo.skipped = [...todo.skipped.filter(k => k !== key), key]; todo.current = null; }
     else if (!todo.paused) { todo.skipped = []; todo.current = null; }
+    // 앞 카드의 실패 글 · 복사 · 기다림이 새 카드에 붙지 않게 비운다(PC 0.5.10 공개 후보 카본 E3)
+    if (!todo.current) { todo.copied = null; todo.waiting = null; todo.busy = null; todo.note = ''; }
     todo.open = true; todo.paused = false; todo.went = null;
     focus('todo');
     render();
@@ -699,7 +706,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         canOpenEstimate: memberShown(state) && typeof options.onOpenEstimate === 'function', estimateError };
     }
     // 다른 공간으로 가면 카드와 「다음 일」을 거둔다(솔리오 안의 일이다)
-    if (todo.open || todo.paused) { todo.open = false; todo.paused = false; todo.current = null; todo.skipped = []; }
+    if (todo.open || todo.paused) { todo.open = false; todo.paused = false; todo.current = null; todo.skipped = []; todo.went = null; todo.copied = null; todo.waiting = null; todo.busy = null; todo.note = ''; }
     // 창 안의 PULSE가 열려 있으면 방은 비운다. 뷰가 띠 아래를 덮고, 펼침을 여는 동안에는 검정으로 남는다
     const slot = slotOf(space);
     if (slot && (slot.open || slot.closing)) return { space, say: '', then: '', action: null, error: feedback.switch, embedded: true };

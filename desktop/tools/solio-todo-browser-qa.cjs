@@ -99,10 +99,10 @@ module.exports = async function checkSolioTodo({ open, boot, signedIn, until, wa
     const s7 = await read(), c7a = await calls(w);
     check('todo 7b 보호 시작 opens the engine window and the card waits on it instead of counting it as finished', c7a.includes('backup-start:protect') && s7.card && s7.where === '원클릭', s7);
     await w.js(`window.__orbFixture.setBackup(${JSON.stringify({ ok: true, available: true, view: 'status', status: { state: 'safe', folders: 3, writtenAt: new Date().toISOString() } })})`);
-    for (let i = 0; i < 60; i++) { s = await read(); if (s.say === '다 끝냈습니다.') break; await wait(100); }
+    for (let i = 0; i < 60; i++) { s = await read(); if (s.say === '건너뛴 일 1개만 남았습니다.') break; await wait(100); }
     const c7 = await calls(w);
-    check('todo 8 보호 시작 opens the engine from the card, and when nothing but the skipped item is left the card says 다 끝냈습니다 with what is left',
-      c7.includes('backup-start:protect') && s.say === '다 끝냈습니다.' && s.then === '건너뛴 일 1개가 남았습니다. AI 직원 셋이 일하고 있습니다.' && s.acts.join('|') === '*닫기|건너뛴 일 다시 보기' && !s.foot && s.focus === '닫기', s);
+    check('todo 8 보호 시작 opens the engine from the card, and when nothing but the skipped item is left the card says so, not 다 끝냈습니다',
+      c7.includes('backup-start:protect') && s.say === '건너뛴 일 1개만 남았습니다.' && s.then === 'AI 직원 셋이 일하고 있습니다.' && s.acts.join('|') === '*닫기|건너뛴 일 다시 보기' && !s.foot && s.focus === '닫기', s);
     await capture(w, 'todo-end-1440');
     w.win.setContentSize(960, 680); await wait(380); await capture(w, 'todo-end-960');
     w.win.setContentSize(1440, 900); await wait(300);
@@ -115,7 +115,7 @@ module.exports = async function checkSolioTodo({ open, boot, signedIn, until, wa
     await capture(w, 'todo-paused-1440');
     await click(w, q('[data-todo-go]'));
     for (let i = 0; i < 30; i++) { s = await read(); if (s.card) break; await wait(60); }
-    check('todo 10 one press on 다음 일 sends the unfinished item to the back and opens the next; here only that one was left', s.card && s.say === '다 끝냈습니다.' && s.then.startsWith('건너뛴 일 1개가 남았습니다.') && s.focus === '닫기', s);
+    check('todo 10 one press on 다음 일 sends the unfinished item to the back and opens the next; here only that one was left', s.card && s.say === '건너뛴 일 1개만 남았습니다.' && s.focus === '닫기', s);
     await key(w, 'Escape');
     for (let i = 0; i < 30; i++) { s = await read(); if (!s.card) break; await wait(60); }
     check('todo 11 Esc stops: the card folds, the room is back and focus returns to the bar', !s.card && s.rooms.join() === 'solio' && s.go === '1순위부터 처리' && s.focus === 'bar', s);

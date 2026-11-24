@@ -1688,13 +1688,13 @@ test('while the fan is open the hidden name, the object row and the dimmed rooms
   assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.backup, app\.visits, app\.health, app\.office, app\.space, app\.todoBar, app\.todo, \.\.\.Object\.values\(app\.asides\)\.map\(a => a\.room\)\]\.filter\(Boolean\);/, 'the rooms opened from the fan leave the Tab order too, the office room and the 한 번에 처리 bar and card among them (공간 지도 검수 c FA1, solio-todo 카본 A3)');
   assert.match(src, /if \(open\) \{ const a = doc\.activeElement; if \(a && back\.some\(x => x\.contains\(a\)\)\) \{ fanReturn = f\.pin \? null : a; app\.orbBtn\.focus/, 'focus inside them moves to the visible orb before they turn inert');
   assert.match(src, /for \(const x of back\) if \(x\.inert !== open\) x\.inert = open;/);
-  assert.match(src, /\[\.\.\.root\.querySelectorAll\('\.more\.open'\)\]\.some\(m => !m\.closest\('\[hidden\]'\)\)/, 'a pinned row left in a hidden room does not swallow Esc');
+  assert.match(src, /\[\.\.\.root\.querySelectorAll\('\.more\.open:not\(\.fixed\)'\)\]\.some\(m => !m\.closest\('\[hidden\]'\)\)/, 'a pinned row left in a hidden room does not swallow Esc, and a row that always stays open (사무실 대화 짜임) is not one to fold');
 });
 
-test('공간 지도 검수 c FA2: with reduced motion, opening a department row redraws the floor — the watcher sees the row buttons, not only the list', () => {
+test('공간 지도 검수 c FA2 → 대화 짜임 설계 검토 10: with reduced motion, picking another chat redraws the floor so the picked desk lights up', () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
-  assert.match(src, /offObserver\?\.observe\(app\.offRows, \{ attributes: true, attributeFilter: \['class'\], subtree: true \}\);/);
-  assert.match(src, /records\.some\(r => r\.target\?\.parentElement === app\.offRows && r\.target\.matches\?\.\('button\.row'\)\)\) officeFloor\.redraw\(\);/, 'only a row button changing its class redraws');
+  assert.match(src, /isOpen: key => !!key && key === chatSel,/, 'the lit desk is the picked chat');
+  assert.match(src, /if \(selChanged && reduced\(\)\) officeFloor\.redraw\(\);/);
 });
 
 test('a focus the fan puts back after 「다시 확인」 makes no tick and lights no space, and only a focus that fell to the page is put back (pc-fan-p3 Fable F1 · F2)', () => {
@@ -2279,8 +2279,8 @@ test('a hidden window stops watching the records and the room watches again when
 test('the view draws the office room with the house row rules and the floor keeps its motion small', async () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
   assert.match(src, /data-orb-prog="office" aria-current="false" style="--k:4"/, 'the object stands after 계정 건강');
-  assert.match(src, /<div class="room room-top" data-room="solio-office" hidden>/);
-  assert.match(src, /const asideBoxes = \[\.\.\.Object\.values\(app\.asides\)\.map\(a => a\.rows\), app\.offRows\];/, 'office rows open, pin and fold like the room rows');
+  assert.match(src, /<div class="room room-top room-office" data-room="solio-office" hidden>/);
+  assert.match(src, /const asideBoxes = \[\.\.\.Object\.values\(app\.asides\)\.map\(a => a\.rows\), app\.offRows, app\.offCenter, app\.offAdd\];/, 'office rows (side, middle, add form) open, pin and fold like the room rows');
   assert.match(src, /o\.classList\.toggle\('news', !!p\?\.alert\)/);
   const { railSettleMs } = await import('../renderer/orb-face-view.mjs');
   assert.equal(railSettleMs(5), 760, 'five names take 0.76 s before resting opens one');
@@ -2957,7 +2957,7 @@ test('한 번에 처리: 건너뛰기 moves an item to the back for this round, 
   assert.equal(todo().card.key, 'task:q7:choose');
   h.face.handle('todo-skip');
   await settle();
-  assert.deepEqual(pickOf(todo().card, ['key', 'then']), { key: 'end', then: '건너뛴 일 2개가 남았습니다.' });
+  assert.deepEqual(pickOf(todo().card, ['key', 'say', 'then']), { key: 'end', say: '건너뛴 일 2개만 남았습니다.', then: '' });
   assert.deepEqual(todo().card.acts.map(a => a.id), ['close', 'again']);
   assert.equal(todo().flash, flash0, '건너뛴 일은 끝낸 것으로 세지 않는다');
   h.face.handle('todo-act', 'again');
@@ -3057,6 +3057,7 @@ test('한 번에 처리: when the office cannot be read for a moment, its items 
   assert.equal(todo().flash, flash0, '읽지 못해 빠진 일은 끝낸 것이 아니다');
   answer = null;
   h.face.handle('todo-act', 'reload');
+  assert.equal(todo().card.key, 'end:checking', '다시 읽는 동안은 앞 실패 대신 확인 중이다(카본 E2)');
   await settle(20);
   assert.equal(todo().card.key, 'task:q3:paused', '다시 불러오면 그 일이 다시 선다');
 });
@@ -3101,7 +3102,7 @@ test('한 번에 처리: a one-click item keeps the backup read going while the 
   assert.equal(ticks.at(-1), 2000, '그 카드를 보는 동안은 2초마다 읽어 엔진 창에서 끝낸 것을 바로 안다');
   h.face.handle('todo-skip');
   await settle();
-  assert.equal(todo().card.say, '다 끝냈습니다.');
+  assert.equal(todo().card.say, '건너뛴 일 1개만 남았습니다.', '건너뛴 일이 남았으면 다 끝냈다고 하지 않는다(카본 E1)');
   assert.equal(ticks.at(-1), 15000, '건너뛰어 끝 카드가 서면 다시 천천히 읽는다(Fable FA1)');
   h.face.handle('todo-act', 'again');
   await settle();
