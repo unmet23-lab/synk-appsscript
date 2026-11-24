@@ -629,6 +629,9 @@ class 확인시험(unittest.TestCase):
             받은 = 부른것(로그)[-1]["글"]
             self.assertIn('"LAB 뜻풀이"', 받은)
             self.assertIn("#1 첫 주의 장면", 받은)
+            # 11-24 만족 사례 S44 · S55가 연출 지적(#33 · #60)과 0.5초 박자 차이로 「다시」가 됐다 — 그런 것은 흠이다
+            self.assertIn("'다시'나 '흠'", 받은)
+            self.assertIn("연출을 묻는 지적은 이 칸에 보여도 '흠'", 받은)
             기록 = next(편.rglob("확인.json"))
             self.assertEqual(첫컷검사.json읽기(기록)["판정"]["종전 지적"]["결과"], "다시")
             self.assertEqual(첫컷검사.검사(편, 영상, 주문=주문), 1, "같은 판은 기록대로 재제작이다")
