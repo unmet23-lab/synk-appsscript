@@ -835,7 +835,7 @@ function viewName(){ return {today:'내 차례', sns:'SNS', messenger:'메신저
 function snsDetail(id){
   const r = REV[id], st = S.rev[id];
   const co = r.company === 'SYNK' ? 'SYNK' : r.company;
-  const checks = r.checks.map(c => /확인|요청/.test(c) ? `<span class="tag warn">${I('alert')}${esc(c)}</span>` : `<span class="tag ok">${I('check')}${esc(c)}</span>`).join('');
+  const checks = r.checks.map(c => /요청/.test(c) ? `<span class="tag warn">${I('alert')}${esc(c)}</span>` : `<span class="tag ok">${I('check')}${esc(c)}</span>`).join('');
   let acts;
   if (S.fb === id){
     acts = `<div class="fb"><label for="fbt">${esc(FB_TO[co]||'제작 담당')}에게 보낼 고칠 점</label><textarea id="fbt" class="ta" rows="4" placeholder="예: 두 번째 자막의 「숙제님」을 첫 번째 번역으로 바꿔 주세요."></textarea>
