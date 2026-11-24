@@ -1,0 +1,6 @@
+{
+ "A_o": { "model": "Omni 1.2 Flash", "n": 1, "cost": "24", "dur": "8초", "proj": "omni", "start": "labvt_k1d", "key": "jumps straight up off the mat in shock" },
+ "B_o": { "model": "Omni 1.2 Flash", "n": 1, "cost": "12", "dur": "4초", "proj": "omni", "start": "labvt_k2", "key": "jerks its whole body back to the left" },
+ "A_v": { "model": "Veo 3.1 - Quality", "n": 1, "cost": "100", "dur": "8초", "proj": "veo", "start": "labvt_k1d", "key": "jumps straight up off the mat in shock" },
+ "B_v": { "model": "Veo 3.1 - Quality", "n": 1, "cost": "100", "dur": "4초", "proj": "veo", "start": "labvt_k2", "key": "jerks its whole body back to the left" }
+}
