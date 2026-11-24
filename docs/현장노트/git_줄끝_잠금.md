@@ -148,6 +148,12 @@ ode_modules`로 끊고 공용 `node_modules`가 남았는지 본 뒤, 커밋이 
 - **고침:** 겹친 파일마다 `git log <옛 HEAD>..origin/master -- <파일>`로 그 파일을 바꾼 커밋이 내 중간 올림뿐인지 봤다. 그렇다면 작업본 판이 최신이다. 바뀐 파일 전부를 scratchpad에 경로째 복사하고 `cmp`로 대조했다. `git stash push -u -m <고유 표지>`로 작업본을 비우고 `node tools/바로올리기.js 따라가기 --실행`으로 origin 최신에 옮긴 뒤 복사본을 다시 얹었다. 다른 세션이 함께 바꾼 파일(게시 성과가 고친 기획.md)은 origin 판을 두었다. 그다음 `--모두`로 올리고 stash 항목은 SHA로 찾아 지웠다.
 - **다시 확인:** 얹은 뒤 `git diff --stat`에 내 편 폴더만 나오고, 줄끝만 다른 파일은 `git diff`에 내용 차이가 없다. 다음 회차는 중간 올림 뒤 출력의 따라가기 줄이 「따라감」인지 보고, 막혔으면 그 편을 더 고치기 전에 이 절차로 옮긴다.
 
+### 앱이 만든 회차 사본에서 바로올리기가 `engine-select.test.cjs`의 「Cannot find module 'tar-stream'」으로 멈춘다 (2026-11-24 Claude)
+- **증상:** yuhobuilds 제작 회차가 D: 회차 사본에서 마케팅 편 폴더만 올리는데, 관련 시험 1646개 가운데 `experiences/solo-backup-rust/engine/tests/engine-select.test.cjs` 하나가 깨져 「아무것도 올리지 않았다」로 멈췄다.
+- **원인:** 엔진은 제 `package.json`(tar-stream 3.2.2)과 제 `node_modules`를 쓴다. `예약사본.js 들기`는 뿌리 `node_modules`만 공용 작업본에 잇고, 엔진의 `node_modules`는 잇지 않는다. 그래서 사본에서만 모듈을 못 찾는다.
+- **고침:** 시험을 건너뛰지 않고 PowerShell `New-Item -ItemType Junction`으로 사본의 `experiences/solo-backup-rust/engine/node_modules`를 공용 작업본의 같은 폴더에 이었다. `--시험건너뜀`은 예약 회차의 자동 판정기가 막았다.
+- **다시 확인:** 이은 뒤 `node --test experiences/solo-backup-rust/engine/tests/engine-select.test.cjs`가 13/13이고, 같은 올리기가 멈추지 않고 올라갔다. `들기`가 이 연결도 만들게 고치면 이 절은 지운다.
+
 ## 줄끝(CRLF·LF)
 
 ### 작업본이 CRLF인 문서로 「HEAD 판 + 내 줄」을 만들면 제목 비교가 전부 어긋난다

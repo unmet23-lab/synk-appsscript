@@ -62,6 +62,26 @@ const Cap: React.FC<{ t: number; at: number; x: number; y: number; size?: number
   return <div style={{ position: 'absolute', left: x, top: y + (1 - p) * 20, opacity: p, fontFamily: KO, fontSize: size, fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1.28, color: CAP, whiteSpace: 'nowrap', textShadow: '0 2px 14px rgba(0,0,0,0.75)' }}>{children}</div>;
 };
 
+/** 써지는 설명 줄 — 멈춘 칸을 메우되 움직임이 할 일(읽을 순서)을 갖게 한다. */
+const TypeCap: React.FC<{ t: number; at: number; dur: number; x: number; y: number; parts: { s: string; strong?: boolean }[] }> = ({ t, at, dur, x, y, parts }) => {
+  if (t < at) return null;
+  const total = parts.reduce((a, b) => a + b.s.length, 0);
+  let n = Math.round(total * interpolate(t, [at, at + dur], [0, 1], clamp));
+  return (
+    <div style={{ position: 'absolute', left: x, top: y, fontFamily: KO, fontSize: 46, fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1.28, color: CAP, whiteSpace: 'nowrap' }}>
+      {parts.map((p, i) => {
+        const k = Math.max(0, Math.min(p.s.length, n));
+        n -= p.s.length;
+        return (
+          <span key={i} style={p.strong ? { color: WHITE, fontWeight: 800 } : undefined}>
+            {p.s.slice(0, k)}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
 type Eye = { x: number; y: number; rx: number; ry: number };
 const Mong: React.FC<{ a: string; b: string; mix: number; eye: Eye; top: number; s: number; ox: number; oy: number; solid: number; fade: number; light?: number }> = ({ a, b, mix, eye, top, s, ox, oy, solid, fade, light = 1 }) => {
   const mask = `radial-gradient(ellipse ${eye.rx}px ${eye.ry}px at ${eye.x}px ${eye.y}px, #000 58%, transparent 100%)`;
@@ -102,14 +122,14 @@ const Opening: React.FC = () => {
   const pulse = 1 + 0.05 * interpolate(t, [T.l3, T.l3 + 0.12, T.l3 + 0.5], [0, 1, 0], clamp);
   return (
     <AbsoluteFill>
-      <Mong a="mong/a.jpg" b="mong/a2.jpg" mix={interpolate(t, [T.eye - 0.2, T.eye + 0.2], [0, 1], clamp)} eye={{ x: 756, y: 860, rx: 150, ry: 80 }} top={150} ox={540} oy={1050} s={drift + lean} solid={430} fade={700} light={glow(t)} />
+      <Mong a="mong/a.jpg" b="mong/a2.jpg" mix={interpolate(t, [T.eye - 0.2, T.eye + 0.2], [0, 1], clamp)} eye={{ x: 623, y: 846, rx: 130, ry: 75 }} top={150} ox={620} oy={1000} s={drift + lean} solid={430} fade={700} light={glow(t)} />
       <Tag />
       <Head
         t={t}
-        top={346}
+        top={340}
         lines={[
-          { at: 0, node: '매주 붙여 넣던', size: 92, color: 'rgba(255,255,255,0.86)' },
-          { at: T.l2, node: <>지시문 <Gold>392자</Gold></>, size: 112 },
+          { at: 0, node: '매주 붙여 넣던 지시문', size: 76, color: 'rgba(255,255,255,0.86)' },
+          { at: T.l2, node: <Gold>392자</Gold>, size: 196 },
           {
             at: T.l3,
             node: (
@@ -117,8 +137,7 @@ const Opening: React.FC = () => {
                 이제 <Gold>한 마디</Gold>로
               </span>
             ),
-            size: 118,
-            gap: 6,
+            size: 100,
           },
         ]}
       />
@@ -151,8 +170,8 @@ const BadScene: React.FC<{ t: number }> = ({ t }) => {
           { at: T.bTone - 0.1, node: <>말투도 <Gold>「~다」</Gold>로</>, size: 112 },
         ]}
       />
-      <Cap t={t} at={T.bad + 0.65} x={84} y={1376} size={38}>
-        지시문 규칙은 「표 없이」 · 「~했습니다」
+      <Cap t={t} at={T.bad + 0.65} x={84} y={1372} size={42}>
+        <span style={{ color: WHITE, fontWeight: 800 }}>규칙은 「표 없이」 · 「~했습니다」</span>
       </Cap>
     </AbsoluteFill>
   );
@@ -163,10 +182,11 @@ const InstrBlock: React.FC<{ t: number; at: number; fold: number; y: number; o?:
   const a = appear(t, at, 0.3) * o;
   // 11-24 장면 심사(Opus): 긴 줄이 오른쪽 끝에서 잘려 보였다 — 줄을 접어 다 보이게 하고 글자를 키운다(안전선 x 920 안).
   return (
-    <div style={{ position: 'absolute', left: 84, top: y, width: 830, opacity: a * (1 - fold) * (1 - fold), transform: `scaleY(${1 - 0.9 * fold})`, transformOrigin: '0 0' }}>
+    <div style={{ position: 'absolute', left: 84, top: y, width: 830, height: 540, overflow: 'hidden', opacity: a * (1 - fold) * (1 - fold), transform: `scaleY(${1 - 0.9 * fold})`, transformOrigin: '0 0', WebkitMaskImage: 'linear-gradient(180deg, #000 55%, transparent 100%)', maskImage: 'linear-gradient(180deg, #000 55%, transparent 100%)' }}>
+      {/* 11-24 이해 시험(s · h · G): 27px 열한 줄은 휴대폰에서 못 읽었다 — 위 몇 줄은 읽히게 키우고 나머지는 흐려지며 「길다」만 보이게 한다. */}
       <div style={{ borderLeft: '6px solid rgba(255,255,255,0.45)', paddingLeft: 26 }}>
         {INSTR.map((l, i) => (
-          <div key={i} style={{ fontFamily: KO, fontSize: 27, fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1.38, color: 'rgba(255,255,255,0.84)', marginBottom: 3 }}>{l}</div>
+          <div key={i} style={{ fontFamily: KO, fontSize: 38, fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.32, color: 'rgba(255,255,255,0.88)', marginBottom: 4 }}>{l}</div>
         ))}
       </div>
     </div>
@@ -185,8 +205,21 @@ const SkillCard: React.FC<{ t: number; at: number; x: number; y: number; s?: num
   );
 };
 
+/** 카드 아래 「스킬」 풀이 — 11-24 이해 시험(s · h): 스킬이 무엇인지 설명이 없다. 다음 장면에서 보고가 올라올 때까지 남는다. */
+const SkillMeaning: React.FC<{ t: number; at: number; o?: number }> = ({ t, at, o = 1 }) => {
+  const p = appear(t, at, 0.26) * o;
+  if (p <= 0) return null;
+  return (
+    <div style={{ position: 'absolute', left: 86, top: 1012 + (1 - p) * 18, opacity: p, fontFamily: KO, fontSize: 48, fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.28, color: WHITE, whiteSpace: 'nowrap' }}>
+      스킬 = 지시문을 저장해 두고
+      <br />
+      <span style={{ color: BUTTER }}>이름으로 부르는 것</span>
+    </div>
+  );
+};
+
 /** ③ 만들기 — 「이 지시문을 스킬로 만들어 줘」가 써지고, 지시문이 카드 한 장으로 접힌다. */
-const ASK = ['이 지시문을', '스킬로 만들어 줘.'];
+const ASK = ['이 지시문을', '스킬로 만들어 줘']; // 11-24 미학 맹검: 큰 글에 마침표를 찍지 않는다
 const MakeScene: React.FC<{ t: number; bare?: boolean }> = ({ t, bare }) => {
   const total = ASK.join('').length;
   const typed = Math.round(total * interpolate(t, [T.mType, T.mTypeEnd], [0, 1], clamp));
@@ -219,7 +252,8 @@ const MakeScene: React.FC<{ t: number; bare?: boolean }> = ({ t, bare }) => {
           })}
         </div>
         <InstrBlock t={t} at={T.make + 0.2} fold={fold} y={780} />
-        <SkillCard t={t} at={T.mFold + 0.3} x={84} y={820} />
+        <SkillCard t={t} at={T.mFold + 0.3} x={84} y={850} />
+        <SkillMeaning t={t} at={T.mFold + 0.45} />
       </div>
       {!bare && (
         <Cap t={t} at={T.make + 0.6} x={84} y={1376} size={38}>
@@ -241,7 +275,8 @@ const OneScene: React.FC<{ t: number; bare?: boolean }> = ({ t, bare }) => {
   const shotOut = interpolate(t, [T.oBig - 0.3, T.oBig], [1, 0], clamp);
   const push = settle(t, T.one) * (1 + 0.04 * interpolate(t, [T.one, T.auth], [0, 1], clamp));
   // 11-24 장면 심사: 보고 화면이 오른쪽 끝까지 차 잘려 보였다 — 폭 1696 × 0.54 ≈ 916px로 x 84~1000 안에 둔다.
-  const sDrift = 0.53 + 0.01 * interpolate(t, [T.oShot, T.oBig], [0, 1], clamp);
+  // 11-24 올리기 전 검사: 바닥 글이 아래 안전선(1428)을 넘었다 — 높이 1562 × 0.4 + 위 775 ≈ 1400 안에 둔다.
+  const sDrift = 0.39 + 0.01 * interpolate(t, [T.oShot, T.oBig], [0, 1], clamp);
   // 보고 그림(2배 찍음)의 소제목 자리: 이번 주 한 일 · 잘된 것 · 아쉬운 것 · 다음 주 할 일 · 도움이 필요한 것 · 확인받을 것
   const heads = [
     { x: 72, y: 202, w: 238, h: 70 },
@@ -269,17 +304,18 @@ const OneScene: React.FC<{ t: number; bare?: boolean }> = ({ t, bare }) => {
         {shot < 1 && (
           <div style={{ opacity: 1 - shot }}>
             <SkillCard t={t} at={T.one - 1} x={84} y={850} />
+            <SkillMeaning t={t} at={T.one - 1} />
           </div>
         )}
         {shot > 0 && shotOut > 0 && (
-          <Shot src="img/shotC.png" x={84} y={790 + (1 - lift) * 260} s={sDrift} h={1562} o={shot * shotOut} t={t} boxes={heads.map((h) => ({ ...h, at: T.oMark }))} />
+          <Shot src="img/shotC.png" x={84} y={775 + (1 - lift) * 260} s={sDrift} h={1562} o={shot * shotOut} t={t} boxes={heads.map((h) => ({ ...h, at: T.oMark }))} />
         )}
         {big > 0 && (
           <div style={{ position: 'absolute', left: 84, top: 720 + (1 - big) * 24, opacity: big, display: 'grid', gridTemplateColumns: '430px 430px', rowGap: 34, fontFamily: KO, whiteSpace: 'nowrap' }}>
             {HEADS.map((h, i) => {
-              const p = appear(t, T.oBig + i * 0.06, 0.24);
+              const p = appear(t, T.oBig + i * 0.18, 0.24);
               return (
-                <div key={i} style={{ opacity: p, fontSize: 56, fontWeight: 800, letterSpacing: '-0.045em', color: BUTTER, lineHeight: 1.2 }}>
+                <div key={i} style={{ opacity: p, transform: `translateY(${(1 - p) * 26}px)`, fontSize: 56, fontWeight: 800, letterSpacing: '-0.045em', color: BUTTER, lineHeight: 1.2 }}>
                   {h}
                 </div>
               );
@@ -288,9 +324,7 @@ const OneScene: React.FC<{ t: number; bare?: boolean }> = ({ t, bare }) => {
         )}
       </div>
       {!bare && (
-        <Cap t={t} at={T.oBig} x={84} y={1180} size={46}>
-          지시문을 붙였을 때와 같은 <span style={{ color: WHITE, fontWeight: 800 }}>소제목 여섯</span>
-        </Cap>
+        <TypeCap t={t} at={T.oBig + 0.3} dur={0.35} x={84} y={1180} parts={[{ s: '지시문대로 나온 ' }, { s: '소제목 여섯', strong: true }]} />
       )}
     </AbsoluteFill>
   );
@@ -311,18 +345,17 @@ const AuthScene: React.FC<{ t: number }> = ({ t }) => {
       />
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${push})`, transformOrigin: '84px 900px' }}>
         {OURS.map((r, i) => {
-          const p = appear(t, T.aList + i * 0.22, 0.26);
-          if (p <= 0) return null;
+          const at = T.aList + i * 0.65;
+          if (t < at) return null;
+          const k = Math.max(1, Math.round(r.name.length * interpolate(t, [at, at + 0.3], [0, 1], clamp)));
+          const job = appear(t, at + 0.3, 0.26);
           return (
-            <div key={i} style={{ position: 'absolute', left: 84, top: 590 + i * 140 + (1 - p) * 22, opacity: p, fontFamily: KO, whiteSpace: 'nowrap', display: 'flex', alignItems: 'baseline', gap: 26 }}>
-              <div style={{ fontSize: 64, fontWeight: 800, letterSpacing: '-0.045em', color: BUTTER, minWidth: 330 }}>{r.name}</div>
-              <div style={{ fontSize: 42, fontWeight: 600, letterSpacing: '-0.03em', color: 'rgba(255,255,255,0.86)' }}>{r.job}</div>
+            <div key={i} style={{ position: 'absolute', left: 84, top: 588 + i * 196, fontFamily: KO, whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 62, fontWeight: 800, letterSpacing: '-0.045em', color: BUTTER, lineHeight: 1.15 }}>{r.name.slice(0, k)}</div>
+              <div style={{ fontSize: 50, fontWeight: 700, letterSpacing: '-0.035em', color: WHITE, lineHeight: 1.25, opacity: job, transform: `translateY(${(1 - job) * 16}px)` }}>{r.job}</div>
             </div>
           );
         })}
-        <Cap t={t} at={T.aList + 5 * 0.22 + 0.05} x={84} y={1300} size={44}>
-          외 6개 · 모두 한 마디로 불러요
-        </Cap>
       </div>
     </AbsoluteFill>
   );
@@ -338,7 +371,8 @@ const EndScene: React.FC<{ ending: Ending }> = ({ ending }) => {
   const under = interpolate(t, [E.key, E.key + 0.3], [0, 100], { ...clamp, easing: OUT });
   const smile = interpolate(t, [E.smile - 0.2, E.smile + 0.2], [0, 1], clamp);
   const coreIn = appear(t, E.cta - 0.05, 0.3);
-  const coreDrift = 0.5 + 0.03 * interpolate(t, [E.cta, LEN], [0, 1], clamp);
+  const endPush = 1 + 0.045 * interpolate(t, [E.cta, LEN], [0, 1], clamp);
+  const cmdN = Math.round(CMD.length * interpolate(t, [E.cta, E.cta + 0.3], [0, 1], clamp));
   const mark = (label: string) => (
     <span style={{ color: BUTTER, backgroundImage: `linear-gradient(${BUTTER}, ${BUTTER})`, backgroundRepeat: 'no-repeat', backgroundPosition: '0 100%', backgroundSize: `${under}% 7px`, paddingBottom: 6 }}>{label}</span>
   );
@@ -346,14 +380,23 @@ const EndScene: React.FC<{ ending: Ending }> = ({ ending }) => {
     <AbsoluteFill>
       {coreIn < 1 && (
         <AbsoluteFill style={{ opacity: 1 - coreIn }}>
-          <Mong a="mong/c.jpg" b="mong/c2.jpg" mix={smile} eye={{ x: 670, y: 900, rx: 170, ry: 85 }} top={150} ox={600} oy={1000} s={1.02 * drift * settle(t, T.end)} solid={500} fade={720} light={glow(t) * (0.96 + 0.08 * smile)} />
+          <Mong a="mong/c.jpg" b="mong/c2.jpg" mix={smile} eye={{ x: 634, y: 839, rx: 150, ry: 78 }} top={150} ox={620} oy={980} s={1.02 * drift * settle(t, T.end)} solid={500} fade={720} light={glow(t) * (0.96 + 0.08 * smile)} />
         </AbsoluteFill>
       )}
       {coreIn > 0 && (
         <AbsoluteFill style={{ backgroundColor: INK, opacity: coreIn }}>
-          {/* 핵심 장면 다시: 지시문대로 나온 실제 보고(소제목 여섯) 위에 /주간보고 한 마디. */}
-          <Shot src="img/shotC.png" x={150} y={900} s={coreDrift} dim={0.35} t={t} />
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 1000, background: 'linear-gradient(180deg, rgba(10,10,10,1) 0, rgba(10,10,10,1) 880px, rgba(10,10,10,0) 960px)' }} />
+          {/* 핵심 장면 다시: /주간보고 한 마디가 써지고 지시문대로 나온 소제목 여섯이 다시 선다(천천히 다가감). */}
+          <div style={{ position: 'absolute', left: 84, top: 830, transform: `scale(${endPush})`, transformOrigin: '0 0', display: 'grid', gridTemplateColumns: '430px 430px', rowGap: 30, fontFamily: KO, whiteSpace: 'nowrap' }}>
+            {HEADS.map((h, i) => {
+              const p = appear(t, E.cta + 0.25 + i * 0.14, 0.24);
+              return (
+                <div key={i} style={{ opacity: p, transform: `translateY(${(1 - p) * 18}px)`, fontSize: 54, fontWeight: 800, letterSpacing: '-0.045em', color: BUTTER, lineHeight: 1.2 }}>
+                  {h}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ position: 'absolute', left: 86, top: 1150, opacity: appear(t, E.cta + 0.25 + (HEADS.length - 1) * 0.14 + 0.2), fontFamily: KO, fontSize: 42, fontWeight: 700, letterSpacing: '-0.03em', color: SUB, whiteSpace: 'nowrap' }}>지시문을 붙였을 때와 같은 소제목 여섯</div>
         </AbsoluteFill>
       )}
       {t < E.cta ? (
@@ -369,7 +412,7 @@ const EndScene: React.FC<{ ending: Ending }> = ({ ending }) => {
         <>
           <div style={{ position: 'absolute', left: LEFT, top: 286, fontFamily: KO, fontWeight: 800, letterSpacing: '-0.045em', whiteSpace: 'nowrap', opacity: row, transform: `translateY(${(1 - row) * 28}px)` }}>
             <div style={{ fontSize: 52, fontWeight: 700, color: 'rgba(255,255,255,0.8)' }}>지시문 392자 대신</div>
-            <div style={{ fontSize: 150, lineHeight: 1.05, color: BUTTER }}>/주간보고</div>
+            <div style={{ fontSize: 150, lineHeight: 1.05, color: BUTTER, minHeight: 158 }}>{CMD.slice(0, Math.max(1, cmdN))}</div>
           </div>
           <div style={{ position: 'absolute', left: LEFT, top: 556, fontFamily: KO, fontSize: 96, fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 1.1, color: WHITE, whiteSpace: 'nowrap', opacity: cta, transform: `translateY(${(1 - cta) * 28}px)` }}>
             {ending === 'post' ? <>{mark('글에')} 다 있어요</> : <>댓글에 {mark('「스킬」')}</>}

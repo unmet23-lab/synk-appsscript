@@ -15,11 +15,9 @@ export const INSTR = [
   '10. 맨 끝에 확인받을 것 한 줄을 쓴다.',
 ];
 
-/** 우리 저장소의 직접 만든 스킬 11개 가운데 다섯(.claude/skills · 설명은 각 SKILL.md의 description을 쉬운 말로). */
+/** 우리 저장소의 직접 만든 스킬 11개 가운데 셋(.claude/skills · 설명은 각 SKILL.md의 description을 쉬운 말로). */
 export const OURS: { name: string; job: string }[] = [
   { name: '/이어서', job: '멈춘 작업 창 전부 다시 깨우기' },
   { name: '/마감작업', job: '영상 최종본 검수 맡기기' },
-  { name: '/굽기전검수', job: '영상 만들기 전 검수' },
-  { name: '/판본지금', job: '나라별 영상 바로 만들기' },
   { name: '/deploy', job: '고친 앱 검사하고 배포까지' },
 ];
