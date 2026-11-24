@@ -5,6 +5,8 @@
  * 돌림표는 공용 작업본까지 찾지만(tools/lib/공용작업본.js 미디어경로), 글자 검사의 「판본」 명령과 판본 사슬 확인(tools/판본글잇기.js 확인)은
  * 사본 안만 본다 — 그대로 돌리면 이미 구운 판본은 「영상이 없다」가 되고, 새로 구운 판본은 견줄 기준 판이 하나도 없이 글자 검사를 받는다.
  * 그래서 그 편의 판본 영상 · 표지를 공용 작업본에서 이 사본의 같은 자리로 복사해 둔다.
+ * 11-25부터 LAB 편은 샷마다 Omni 영상(remotion/public/vid/*.mp4 — git 밖)으로 만든다. 판본 렌더가 그 영상을 읽고 자산 지문(tools/lib/판본잇기.js
+ * 자산지문)도 그 파일을 세므로, 사본에 없으면 렌더가 안 되고 이미 구운 판본은 「원본이 바뀌었다」로 낡는다. 그래서 영상 칸 원천도 함께 들인다.
  *
  *   node tools/판본영상들이기.js <편 폴더…> [--json]
  *   시험용: --저장소 <이 사본 뿌리> · --공용 <공용 작업본 뿌리>
@@ -27,22 +29,31 @@ function 들이기(저장소, 공용, 편폴더) {
   if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) throw new Error(`이 사본 안의 편 폴더가 아니다: ${편폴더}`);
   const out = { 편: rel.split(path.sep).join('/'), 들임: [], 있음: 0, 바이트: 0 };
   if (같은곳(저장소, 공용)) return { ...out, 까닭: '공용 작업본이라 들일 것이 없다' };
+  const 복사 = (src, dst, 이름) => {
+    if (fs.existsSync(dst)) { out.있음 += 1; return; }
+    fs.mkdirSync(path.dirname(dst), { recursive: true });
+    const part = `${dst}.들이는중`;
+    fs.copyFileSync(src, part);
+    const st = fs.statSync(src);
+    fs.utimesSync(part, st.atime, st.mtime);
+    fs.renameSync(part, dst);
+    out.들임.push(이름);
+    out.바이트 += st.size;
+  };
+  // 영상 칸 원천(편 전체를 영상으로 만든 LAB 편) — remotion/public/vid 바로 아래 영상
+  const vidFrom = path.join(공용, rel, 'remotion', 'public', 'vid');
+  if (fs.existsSync(vidFrom)) {
+    for (const name of fs.readdirSync(vidFrom).filter((f) => /\.(mp4|webm|mov)$/i.test(f)).sort()) {
+      복사(path.join(vidFrom, name), path.join(abs, 'remotion', 'public', 'vid', name), `vid/${name}`);
+    }
+  }
   const from = path.join(공용, rel, '게시', '판본');
-  if (!fs.existsSync(from)) return { ...out, 까닭: '공용 작업본에 그 편의 판본 폴더가 없다' };
+  if (!fs.existsSync(from)) return { ...out, 까닭: out.들임.length || out.있음 ? undefined : '공용 작업본에 그 편의 판본 폴더가 없다' };
   for (const key of fs.readdirSync(from).filter((k) => /^[A-Z]{2}$/.test(k)).sort()) {
     for (const name of 들일파일) {
       const src = path.join(from, key, name);
       if (!fs.existsSync(src)) continue;
-      const dst = path.join(abs, '게시', '판본', key, name);
-      if (fs.existsSync(dst)) { out.있음 += 1; continue; }
-      fs.mkdirSync(path.dirname(dst), { recursive: true });
-      const part = `${dst}.들이는중`;
-      fs.copyFileSync(src, part);
-      const st = fs.statSync(src);
-      fs.utimesSync(part, st.atime, st.mtime);
-      fs.renameSync(part, dst);
-      out.들임.push(`${key}/${name}`);
-      out.바이트 += st.size;
+      복사(src, path.join(abs, '게시', '판본', key, name), `${key}/${name}`);
     }
   }
   return out;

@@ -97,3 +97,30 @@ test('명령줄 — 편 여럿 · --json · 인자 없으면 종료 2', () => {
     assert.equal(run(path.join('..', '바깥')).status, 2);
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
 });
+
+test('편 전체를 영상으로 만든 LAB 편 — remotion/public/vid의 영상 칸 원천도 들인다(판본 폴더가 아직 없어도)', () => {
+  const { base, 공용, 사본 } = 자리();
+  try {
+    const when = new Date('2026-11-25T05:00:00Z');
+    const vid = (root, name, text) => {
+      const f = path.join(root, PIECE, 'remotion', 'public', 'vid', name);
+      fs.mkdirSync(path.dirname(f), { recursive: true });
+      fs.writeFileSync(f, text);
+      fs.utimesSync(f, when, when);
+      return f;
+    };
+    vid(공용, 's1.mp4', '샷 하나');
+    vid(공용, 's2.mp4', '샷 둘');
+    vid(공용, '메모.txt', '들이지 않는 것');
+    vid(사본, 's2.mp4', '사본에서 방금 고른 판');
+    const r = 들이기(사본, 공용, PIECE);
+    assert.deepEqual(r.들임, ['vid/s1.mp4']);
+    assert.equal(r.있음, 1);
+    assert.equal(r.까닭, undefined);
+    const got = path.join(사본, PIECE, 'remotion', 'public', 'vid');
+    assert.equal(fs.readFileSync(path.join(got, 's1.mp4'), 'utf8'), '샷 하나');
+    assert.equal(fs.readFileSync(path.join(got, 's2.mp4'), 'utf8'), '사본에서 방금 고른 판');
+    assert.equal(fs.statSync(path.join(got, 's1.mp4')).mtime.toISOString(), when.toISOString());
+    assert.ok(!fs.existsSync(path.join(got, '메모.txt')));
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
