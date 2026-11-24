@@ -240,3 +240,43 @@ test('an answer already seen does not hide what staff are doing now; unseen, fai
   const run = [task('c1', { departmentId: 'dmkt', status: 'running', prompt: '보도자료 초안', answer: '' })];
   assert.match(officeChatContacts(room, { tasks: run, seen, now: NOW }).find(c => c.key === 'd:dmkt').preview, /보도자료 초안/);
 });
+
+test('the department field in 사무실 moves the chat to that department and keeps what was typed (Fable F1)', async () => {
+  const h = harness();
+  h.scene();
+  await h.room.handle({ act: 'chat-pick', arg: 'all' });
+  assert.equal(h.scene().chat.composer.deptPick, true);
+  await h.room.handle({ act: 'task-edit', fields: { prompt: '견적서 양식 찾아 줘' } });
+  await h.room.handle({ act: 'task-department', arg: 'ddev' });
+  const s = h.scene();
+  assert.equal(s.chat.sel, 'd:ddev');
+  assert.equal(s.tasking.form.departmentId, 'ddev');
+  assert.equal(s.tasking.form.prompt, '견적서 양식 찾아 줘');
+  assert.equal(s.chat.composer.deptPick, false);
+  assert.equal(h.scene().tasking.form.departmentId, 'ddev', 'a re-render does not pull it back to 사무실');
+});
+
+test('leaving a department chat drops its pending removal question (Fable F6)', async () => {
+  const h = harness();
+  h.scene();
+  await h.room.handle({ act: 'chat-pick', arg: 'd:ddev' });
+  await h.room.handle({ key: 'd:ddev', act: 'grp', arg: 'set' });
+  await h.room.handle({ key: 'd:ddev', act: 'dept-remove-ask', arg: 'ddev' });
+  const ask = () => h.scene().rows.find(r => r.key === 'd:ddev').more.find(m => m[0] === 'grp')[2].some(m => m[0] === 'confirm');
+  assert.equal(ask(), true);
+  await h.room.handle({ act: 'chat-pick', arg: 'd:dmkt' });
+  await h.room.handle({ act: 'chat-pick', arg: 'd:ddev' });
+  assert.equal(ask(), false);
+});
+
+test('a reply draft marked 「보냈어요」 in 한 번에 처리 no longer waits in the list (Fable F4)', () => {
+  const room = { rows: [{ key: 'd:dmkt', nm: '마케팅부', mid: '쓰기', val: '쉬는 중' }], departments: [{ id: 'dmkt', name: '마케팅부' }], seated: [] };
+  const draft = [task('q1', { quoteSource: { from: '지수 <a@example.test>', subject: '견적 문의', date: '2026-11-24T01:00:00Z' }, quoteOutcome: 'draft', answer: '안녕하세요. 견적은…' })];
+  const before = officeChatContacts(room, { tasks: draft, now: NOW }).find(c => c.key === 'd:dmkt');
+  assert.equal(before.word, '확인 기다림');
+  assert.equal(before.urgent, true);
+  const after = officeChatContacts(room, { tasks: draft, now: NOW, done: { 'quote:q1': NOW - MIN } }).find(c => c.key === 'd:dmkt');
+  assert.notEqual(after.word, '확인 기다림');
+  assert.equal(after.urgent, false);
+  assert.equal(after.flag, false);
+});

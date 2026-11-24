@@ -186,7 +186,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   let backupPoll = null, backupPollMs = 0, backupNotice = null;
   /* 솔리오 「사무실」(사무실 구현설계 11절). 판은 읽기 프로그램처럼 읽고(reads.office), 방의 동작과 화면 상태는 office-room.mjs가 가진다.
    * 방이 보이는 동안 기록 살피기를 켜고(watch), 분 글은 15초마다 다시 쓴다. 솔리오가 보이는 동안은 1분마다와 바뀜 알림 때 다시 읽어 오브제의 느낌표를 맞춘다 */
-  const office = createOfficeRoom({ api: readApi.office, snapshot: () => reads.office.result, reread: () => syncRead('office', { again: true }), changed: () => render() });
+  const office = createOfficeRoom({ api: readApi.office, snapshot: () => reads.office.result, reread: () => syncRead('office', { again: true }), changed: () => render(), todoDone: () => (reads.office.account ? todoMemo(reads.office.account).done : null) });
   let officeWatching = false, officeClock = null, officePoll = null, officeChange = null, officeOff = null;
 
   const machine = createPortalStateMachine({

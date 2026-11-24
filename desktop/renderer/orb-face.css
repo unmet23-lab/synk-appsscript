@@ -808,9 +808,10 @@ html[data-motion="reduced"] #portal-entry .rows > button.row::after{transition:n
 #portal-entry .ofc-c-main{display:grid;gap:3px;min-width:0}
 #portal-entry .ofc-c-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
 /* 좁으면 상태 낱말이 먼저 줄고 이름은 끝까지 남는다 */
-#portal-entry .ofc-c-nm{flex:0 1 auto;min-width:min(100%,4.5em);font:500 15px/1.25 var(--orb-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#portal-entry .ofc-c-nm .flag{margin-left:6px}
-#portal-entry .ofc-c-word{flex:0 100 auto;min-width:0;font:var(--small);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .ofc-c-nm{flex:0 0 auto;max-width:100%;font:500 15px/1.25 var(--orb-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .ofc-c-flag{flex:none;margin-left:-2px}
+#portal-entry .ofc-c-flag[hidden]{display:none}
+#portal-entry .ofc-c-word{flex:1 1 auto;min-width:0;text-align:right;font:var(--small);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #portal-entry .ofc-chat:is([aria-current="true"],:hover) .ofc-c-word{color:rgba(243,241,236,.8)}
 #portal-entry .ofc-c-pre{font:var(--small);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #portal-entry .ofc-c-pre:empty{display:none}
@@ -824,7 +825,8 @@ html[data-motion="reduced"] #portal-entry .rows > button.row::after{transition:n
 #portal-entry .ofc-room{display:grid;grid-template-columns:minmax(0,1fr) 270px;min-width:0;min-height:0}
 #portal-entry .ofc.no-side .ofc-room{grid-template-columns:minmax(0,1fr)}
 #portal-entry .ofc.no-side .ofc-side{display:none}
-#portal-entry .ofc-center{display:flex;flex-direction:column;min-width:0;min-height:0;padding:0 clamp(18px,2.4vw,34px)}
+/* 입력칸이 길어지면(GPT의 메일 연결 칸 따위) 그림 · 대화가 줄 만큼 준 뒤 가운데 칸이 통째로 스크롤된다. 보내기 단추에 늘 닿는다(카본 A2 · Fable 최종 F2) */
+#portal-entry .ofc-center{display:flex;flex-direction:column;min-width:0;min-height:0;padding:0 clamp(18px,2.4vw,34px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 #portal-entry .ofc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex:none}
 #portal-entry .ofc-head .say{max-width:none;min-height:0;font:300 clamp(16px,1.4vw,19px)/1.4 var(--orb-sans);color:rgba(243,241,236,.86)}
 #portal-entry .ofc-nm{display:block;margin-bottom:4px;font:500 clamp(22px,2vw,28px)/1.2 var(--orb-sans);letter-spacing:-.015em;color:var(--paper)}
@@ -943,7 +945,6 @@ html[data-motion="reduced"] #portal-entry .rows > button.row::after{transition:n
   #portal-entry .off-slot{display:none}
   #portal-entry .ofc-head .then{display:none}
   #portal-entry .ofc-thread{min-height:72px}
-  #portal-entry .ofc-center{overflow-y:auto;scrollbar-width:thin}
 }
 
 /* 구를 누르면 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 고리 하나가 공간 하나다 */

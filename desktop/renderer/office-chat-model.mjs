@@ -37,18 +37,20 @@ export function officeTaskChatKey(t, departments = []) {
 export const officeChatDepartment = key => (typeof key === 'string' && key.startsWith('d:') ? key.slice(2) || null : null);
 
 /* 맡긴 일 하나의 차례: 'ai'(직원이 하는 중) · 'wait'(사람 차례) · 'failed'(최근에 못 끝냄) · null.
-   가름은 「한 번에 처리」(solio-queue.mjs)와 같은 함수다. 두 화면이 같은 일을 다르게 세지 않는다 */
-export function officeTaskTurn(t, now = Date.now()) {
+   가름은 「한 번에 처리」(solio-queue.mjs)와 같은 함수다. 두 화면이 같은 일을 다르게 세지 않는다.
+   done: 「한 번에 처리」에서 끝냈다고 적은 일({ [열쇠]: 때 }, 「보냈어요」 따위). 적힌 일은 사람의 차례가 아니다(Fable 최종 F4) */
+export function officeTaskTurn(t, now = Date.now(), done = null) {
   let it = null;
   try { it = solioTaskItem(t, now); } catch { it = null; }
-  if (!it) return null;
+  if (!it || (done && done[it.key] != null)) return null;
   if (it.ai) return 'ai';
   if (it.waiting || it.outside) return 'wait';
   return 'failed';
 }
-function taskPreview(t, now) {
+function taskPreview(t, now, done = null) {
   let it = null;
   try { it = solioTaskItem(t, now); } catch { it = null; }
+  if (it && done && done[it.key] != null) it = null;
   if (it && !it.ai && it.say) return it.say;
   const ask = clip(firstLine(t.prompt), 24);
   if (t.status === 'running' || t.status === 'queued') return ask ? `「${ask}」 일을 하는 중` : '맡긴 일을 하는 중';
@@ -59,7 +61,7 @@ function taskPreview(t, now) {
 /* ── 왼쪽 목록 ──
    room: officeRoom의 결과(rows · seated · departments). tasks: 맡긴 일(기능 업무는 뺀 것).
    chat: 지금 고른 상대. seen: 상대마다 마지막으로 본 때(ms). base: 앱을 켜고 처음 그린 때(그 전에 끝난 일은 새 결과가 아니다) */
-export function officeChatContacts(room, { tasks = [], chat = null, seen = new Map(), base = null, now = Date.now() } = {}) {
+export function officeChatContacts(room, { tasks = [], chat = null, seen = new Map(), base = null, now = Date.now(), done = null } = {}) {
   const rows = Array.isArray(room?.rows) ? room.rows : [];
   const departments = Array.isArray(room?.departments) ? room.departments : [];
   const seated = Array.isArray(room?.seated) ? room.seated : [];
@@ -75,18 +77,18 @@ export function officeChatContacts(room, { tasks = [], chat = null, seen = new M
     .slice(0, 2).map(v => ({ id: v.id, status: v.status, hat: v.hat || null, provider: v.tool === 'codex' || v.tool === 'claude' ? v.tool : null }));
   function contact(key, nm, row) {
     const ts = groups.get(key) || [];
-    const turns = ts.map(t => officeTaskTurn(t, now));
+    const turns = ts.map(t => officeTaskTurn(t, now, done));
     const wait = turns.filter(x => x === 'wait').length, failed = turns.filter(x => x === 'failed').length, ai = turns.filter(x => x === 'ai').length;
     const since = seen.get(key) ?? base;
     const fresh = key !== chat && since != null ? ts.filter(t => t.status === 'completed' && num(t.updatedAt) > since).length : 0;
     const latest = [...ts].sort((a, b) => num(b.updatedAt) - num(a.updatedAt))[0] || null;
     const newest = test => [...ts].filter(test).sort((a, b) => num(b.updatedAt) - num(a.updatedAt))[0] || null;
-    const waitTask = ts.find(t => officeTaskTurn(t, now) === 'wait') || null;
+    const waitTask = ts.find(t => officeTaskTurn(t, now, done) === 'wait') || null;
     // 미리보기와 방 머리에 맡긴 일의 말을 쓰는 때: 확인을 기다리는 일, 그다음(직원이 승인을 묻는 중이 아니면) 못 끝낸 일 · 아직 안 본 새 결과 · 하는 중인 일.
     // 이미 본 지난 답은 직원의 지금 한 가지를 가리지 않는다(카본 화면 검수 A5)
-    const pick = waitTask || (!row?.now && (newest(t => officeTaskTurn(t, now) === 'failed')
+    const pick = waitTask || (!row?.now && (newest(t => officeTaskTurn(t, now, done) === 'failed')
       || (fresh ? newest(t => t.status === 'completed' && num(t.updatedAt) > since) : null)
-      || newest(t => officeTaskTurn(t, now) === 'ai'))) || null;
+      || newest(t => officeTaskTurn(t, now, done) === 'ai'))) || null;
     let word;
     if (row?.now) word = row.val;
     else if (wait) word = wait > 1 ? `확인 기다림 ${countWord(wait)}` : '확인 기다림';
@@ -94,8 +96,8 @@ export function officeChatContacts(room, { tasks = [], chat = null, seen = new M
     else if (fresh) word = '새 결과';
     else if (ai) word = ai > 1 ? countWord(ai) + ' 일하는 중' : '일하는 중';
     else word = key === OFFICE_CHAT_ALL ? '' : row?.val || '';
-    const told = pick ? taskPreview(pick, now) : '';
-    const preview = told || (key === OFFICE_CHAT_ALL ? room?.say || '' : row?.mid || '') || (latest && taskPreview(latest, now)) || '';
+    const told = pick ? taskPreview(pick, now, done) : '';
+    const preview = told || (key === OFFICE_CHAT_ALL ? room?.say || '' : row?.mid || '') || (latest && taskPreview(latest, now, done)) || '';
     const flag = !!row?.flag || wait > 0 || fresh > 0;
     const label = [nm, flag && '새 소식', word, preview].filter(Boolean).join(', ');
     // urgent: 사람이 지금 할 일(승인 물음 · 확인을 기다리는 일)이 있다. 처음 고를 상대는 이것이 먼저다

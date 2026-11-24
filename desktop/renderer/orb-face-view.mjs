@@ -1081,7 +1081,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     b.dataset.chat = key;
     const av = el('span', 'ofc-av'), main = el('span', 'ofc-c-main'), top = el('span', 'ofc-c-top');
     av.setAttribute('aria-hidden', 'true');
-    top.append(el('b', 'ofc-c-nm'), el('span', 'ofc-c-word'));
+    // 느낌표는 이름 글 밖의 따로 선 칸이다. 좁아도 이름 말줄임에 먹히지 않는다(Fable 최종 F3)
+    const fl = el('i', 'flag ofc-c-flag', '!');
+    fl.setAttribute('aria-hidden', 'true');
+    fl.hidden = true;
+    top.append(el('b', 'ofc-c-nm'), fl, el('span', 'ofc-c-word'));
     main.append(top, el('span', 'ofc-c-pre'));
     b.append(av, main);
     return b;
@@ -1093,9 +1097,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const av = b.querySelector('.ofc-av');
       if (c.key === 'all') av.replaceChildren(officeIcon());
       else av.replaceChildren(...(c.orbs.length ? c.orbs : [{ status: 'empty' }]).map(o => { const i = el('i', 'ofc-orb'); i.dataset.st = o.status || ''; if (o.provider) i.dataset.tool = o.provider; return i; }));
-      const nm = b.querySelector('.ofc-c-nm');
-      nm.textContent = c.nm;
-      if (c.flag) { const fl = el('i', 'flag', '!'); fl.setAttribute('aria-hidden', 'true'); nm.append(fl); }
+      setText(b.querySelector('.ofc-c-nm'), c.nm);
+      b.querySelector('.ofc-c-flag').hidden = !c.flag;
       setText(b.querySelector('.ofc-c-word'), c.word);
       setText(b.querySelector('.ofc-c-pre'), c.preview);
       b.setAttribute('aria-label', c.label);
@@ -1139,7 +1142,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   const sideFocusables = () => [...app.offSide.querySelectorAll('button,input,select,textarea,[tabindex]')].filter(n => n.tabIndex >= 0 && !n.closest('[hidden]') && !n.closest('[inert]') && !n.disabled);
   const onSideKey = event => {
-    if (!sideOpen()) return;
+    // 서랍으로 보일 때만 가둔다. 연 채 창을 넓혀 세 칸이 되면 오른쪽 칸은 보통 칸이다(Fable 최종 F7)
+    if (!drawerOpen()) return;
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setSide(false); return; }
     if (event.key !== 'Tab') return;
     const items = sideFocusables();
@@ -1255,7 +1259,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       else if (f.addBtn) focusEl(app.offAddBtn);
       else focusEl(app.offHead);
     }
-    applyRequests(f?.key === 'add' ? app.offAdd : app.offRows, 'solio-office', f && (f.task || f.addBtn || f.say) ? { ...v, focus: null } : v);
+    // 요청의 줄이 선 칸으로 보낸다: 「부서 없는 일」 줄은 가운데에 선다(Fable 최종 F5)
+    const reqKey = f?.key || v.opening?.key || v.closing?.key || '';
+    const reqBox = reqKey === 'add' ? app.offAdd : reqKey && rowByKey(app.offCenter, reqKey) ? app.offCenter : app.offRows;
+    applyRequests(reqBox, 'solio-office', f && (f.task || f.addBtn || f.say) ? { ...v, focus: null } : v);
   }
 
   /* ── 방문자 분석의 방(시안 buildVis)과 계정 건강의 방(계정건강 시안 build). 요약에서 온 글이 섞이므로 모두 textContent로만 넣는다

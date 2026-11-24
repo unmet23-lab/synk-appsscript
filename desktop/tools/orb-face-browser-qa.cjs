@@ -876,7 +876,7 @@ if(!process.versions.electron){
           const ROOM="document.querySelector('#portal-entry [data-room=solio-office]')",OBJ="document.querySelector('#portal-entry [data-orb-prog=office]')";
           const look=w=>w.js("(()=>{const r="+ROOM+",o="+OBJ+",q=s=>r.querySelector(s),slot=q('[data-off-slot]');const vis=n=>!!n&&!n.closest('[hidden]')&&n.getClientRects().length>0;"
             +"return {hidden:r.hidden,nm:q('[data-off-nm]').textContent,say:q('[data-off-say]').textContent,then:q('[data-off-then]').textContent,"
-            +"chats:[...r.querySelectorAll('[data-off-chats] > [data-chat]')].map(b=>b.dataset.chat+'|'+(b.querySelector('.ofc-c-nm')?.firstChild?.textContent||'')+'|'+(b.querySelector('.flag')?'!':'')),"
+            +"chats:[...r.querySelectorAll('[data-off-chats] > [data-chat]')].map(b=>b.dataset.chat+'|'+(b.querySelector('.ofc-c-nm')?.firstChild?.textContent||'')+'|'+(b.querySelector('.flag:not([hidden])')?'!':'')),"
             +"sel:q('[data-off-chats] > [aria-current=\"true\"]')?.dataset.chat||'',side:[...r.querySelectorAll('[data-off-rows] > button.row')].map(b=>b.dataset.key),"
             +"center:[...r.querySelectorAll('[data-off-center] > button.row')].map(b=>b.dataset.key),compose:vis(q('[data-off-compose]')),offsay:vis(q('[data-off-offsay]'))?q('[data-off-offsay]').textContent:'',empty:vis(q('[data-off-empty]')),"
             +"zones:slot.dataset.zones||'',view:slot.dataset.view||'',slot:!slot.hidden&&getComputedStyle(slot).display!=='none',news:o.classList.contains('news'),label:o.getAttribute('aria-label'),"

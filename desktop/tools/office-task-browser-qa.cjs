@@ -296,6 +296,8 @@ const deptRow = room + ' [data-chat="d:design"]';
       await eventually(([width, height]) => innerWidth === width && innerHeight === height, [width, height]);
       await wait(160);
       const fit = await query(({ room, submit }) => {
+        // 방이 떠오르는 움직임(10px, 0.55초)이 끝나기 전에 재면 방 상자가 그만큼 넘친다. 실제 창처럼 끝낸 뒤 잰다
+        for (const a of document.querySelector(room)?.getAnimations({ subtree: true }) || []) try { a.finish(); } catch {}
         const box = document.querySelector(room), r = box?.getBoundingClientRect(), b = document.querySelector(submit)?.getBoundingClientRect();
         const th = box?.querySelector('[data-off-thread]'), slot = box?.querySelector('[data-off-slot]');
         return { ok: !!(r && b && b.height > 0 && b.top >= r.top && b.bottom <= r.bottom + 1 && th && th.clientHeight >= (innerHeight < 500 ? 72 : 100)), submitBottom: b && Math.round(b.bottom), roomBottom: r && Math.round(r.bottom), thread: th && th.clientHeight, slot: slot && !slot.hidden ? Math.round(slot.getBoundingClientRect().height) : 0 };

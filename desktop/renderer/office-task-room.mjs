@@ -665,9 +665,13 @@ export function createOfficeTaskRoom({
       if (previousId !== null) return;
       const next = typeof p.arg === 'string' && p.arg ? p.arg : null;
       if (next !== departmentId) {
+        // 「사무실」 대화의 부서 칸: 쓰던 글은 고른 부서의 초안으로 옮기고 입력칸에 초점을 둔다. 고른 대화도 그 부서로 간다(office-room, Fable 최종 F1)
+        const text = getDraft(provider, departmentId, null);
+        if (text && !getDraft(provider, next, null)) { setDraft(provider, next, null, text); deleteDraft(provider, departmentId, null); }
         departmentId = next;
         clearTransientError();
         stamp = ++stampSeq;
+        focusSeq = ++focusCounter;
         changed?.();
       }
       return;

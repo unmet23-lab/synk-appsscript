@@ -425,7 +425,8 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
    api: window.synkDesktop.office({ snapshot, watch, saveDepartment, removeDepartment, assign, saveSettings, addRoot, removeRoot, seen, onChanged }).
    snapshot(): 지금 가진 사무실 판. reread(): 판을 다시 읽게 한다. changed(): 다시 그린다.
    한 번에 한 일만 보낸다(orb-rooms.mjs의 run과 같다). 계정이 바뀌면(reset) 늦게 온 답을 버린다 */
-export function createOfficeRoom({ api = null, snapshot = () => null, reread = () => {}, changed = () => {} } = {}) {
+// todoDone: 「한 번에 처리」가 끝냈다고 적은 일({ [열쇠]: 때 }). 대화 목록의 「확인 기다림」이 같은 기록을 본다(Fable 최종 F4)
+export function createOfficeRoom({ api = null, snapshot = () => null, reread = () => {}, changed = () => {}, todoDone = () => null } = {}) {
   const tasks = createOfficeTaskRoom({ api, reread, changed });
   const biz = createBizplanRoom({ api, changed });
   const fresh = () => ({ grps: new Set(), asking: null, notes: new Map(), busy: null, addName: '', addSeq: 0, view: null, viewSeq: 0, roomNote: '',
@@ -492,6 +493,8 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     const was = st.chat;
     if (!was) return;
     st.chatSeen.set(was, at);
+    // 떠나는 대화의 펼친 묶음과 「빼시겠습니까?」 물음을 거둔다(옛 짜임의 줄 접기와 같다, Fable 최종 F6)
+    foldRow(was);
     if (was === 'lobby' || was.startsWith('d:')) {
       const id = was === 'lobby' ? null : was.slice(2);
       void call('seen', id).then(res => { if (again && res?.ok !== false) reread(); });
@@ -511,8 +514,9 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     if (typeof p.act === 'string' && p.act.startsWith('task-')) {
       const was = tasks.current().departmentId;
       await tasks.handle(p);
-      // 그림의 직원 · 「이어서 맡기기」 · 「다시 맡기기」가 부서를 바꾸면 고른 대화도 그 부서로 간다(설계 검토 1). 부서가 없으면 「사무실」
-      if (p.act === 'task-open' || p.act === 'task-follow' || p.act === 'task-retry') {
+      // 그림의 직원 · 「이어서 맡기기」 · 「다시 맡기기」 · 「사무실」 입력칸의 부서 칸이 부서를 바꾸면 고른 대화도 그 부서로 간다(설계 검토 1, Fable 최종 F1).
+      // 부서가 없으면 「사무실」
+      if (p.act === 'task-open' || p.act === 'task-follow' || p.act === 'task-retry' || p.act === 'task-department') {
         const now = tasks.current().departmentId, key = now && deptOf(now) ? 'd:' + now : OFFICE_CHAT_ALL;
         if (key !== st.chat && (now !== was || p.act === 'task-open')) { leaveChat(); st.chat = key; st.chatSeen.set(key, seenAt ?? Date.now()); }
         changed();
@@ -715,7 +719,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
       st.chat = null; st.chatAfter = null;
       pickChat(next, now);
     }
-    const contacts = () => officeChatContacts(room, { tasks: taskList, chat: st.chat, seen: st.chatSeen, base: st.chatBase, now });
+    const contacts = () => officeChatContacts(room, { tasks: taskList, chat: st.chat, seen: st.chatSeen, base: st.chatBase, now, done: todoDone() });
     let list = contacts();
     if (!st.chat) { pickChat(officeChatFirst(list), now); list = contacts(); }
     const panes = officeChatPanes(room, st.chat, { tasking: Array.isArray(plain?.tasks), contacts: list });

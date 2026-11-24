@@ -66,6 +66,29 @@ module.exports = async function checkOfficeMail({open,boot,signedIn,signedOut,su
     await mutate(b=>{b.tasking.mail={providers:[{id:'gmail',configured:false,connected:false},{id:'outlook',configured:true,connected:false}]};b.mailTestCodes={outlook:'MAIL_CANCELLED'};b.mailTestAddresses={outlook:other};});
     await revealConnections();
     if(!await eventually(visible,mode)){check('a private GPT form offers an explicit mail search',false);return;}
+    // 메일 연결 칸이 선 긴 입력칸도 작은 창에서 「맡기기」에 닿는다: 사람이 스크롤할 수 없는 칸(overflow hidden)은 움직이지 않고 단추가 방 안에 온다(Fable 최종 F2)
+    for(const [width,height] of [[960,680],[1180,700],[873,618]]){
+      w.win.setContentSize(width,height);
+      await eventually(([width,height])=>innerWidth===width&&innerHeight===height,[width,height]);
+      await wait(150);
+      const reach=await query(({room,submit})=>{
+        const box=document.querySelector(room),b=document.querySelector(submit);
+        if(!box||!b)return {ok:false,why:'missing'};
+        // 방이 떠오르는 움직임(10px, 0.55초)이 끝나기 전에 재면 방 상자가 그만큼 넘친다. 실제 창처럼 끝낸 뒤 잰다
+        for(const a of box.getAnimations({subtree:true}))try{a.finish();}catch{}
+        b.scrollIntoView({block:'nearest'});
+        const stuck=[];for(let n=b;n&&n!==box.parentElement;n=n.parentElement){const o=getComputedStyle(n).overflowY;if((o==='hidden'||o==='clip')&&n.scrollTop>0)stuck.push(n.className||n.tagName);}
+        const r=box.getBoundingClientRect(),q=b.getBoundingClientRect();
+        const ok=stuck.length===0&&q.height>0&&q.top>=r.top-1&&q.bottom<=r.bottom+1;
+        for(let n=b;n&&n!==box.parentElement;n=n.parentElement)if(n.scrollTop)n.scrollTop=0;
+        const chain=ok?null:[];if(chain)for(let n=b;n&&n!==box.parentElement;n=n.parentElement){const st=getComputedStyle(n);if(n.scrollHeight>n.clientHeight+1||st.overflowY!=='visible')chain.push([(n.className||n.tagName).toString().slice(0,40),st.overflowY,n.clientHeight,n.scrollHeight,n.scrollTop]);}
+        return {ok,stuck,submit:[Math.round(q.top),Math.round(q.bottom)],room:Math.round(r.bottom),chain};
+      },{room,submit:room+' [data-task-submit]'});
+      check('with the mailbox fields open the send button is reachable by scrolling at '+width+'×'+height,reach.ok,reach);
+    }
+    w.win.setContentSize(1440,900);
+    await eventually(width=>innerWidth===width,1440);
+    await wait(120);
     check('the visible mailbox setup has no password field or direct external link',await query(sel=>{
       const form=document.querySelector(sel)?.closest('form');
       return !!form&&!form.querySelector('input[type=password],a[href],img[src^="http"],iframe,object');
