@@ -5,7 +5,7 @@ const { pathToFileURL } = require('node:url');
 const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa/contract.cjs');
 const { check } = require('../tools/conditional-qa/guard.cjs');
 const { childRun, temporaryEnvironment, profileBudget, fileConcurrency } = require('../tools/conditional-qa/run.cjs');
-const { materialize, write, release, prepare, slotConfigs, slotState, repairCheckout, git: runGit } = require('../tools/conditional-qa/inputs.cjs');
+const { materialize, write, release, prepare, slotConfigs, slotState, repairCheckout, loadConfig, git: runGit } = require('../tools/conditional-qa/inputs.cjs');
 const { extendQueue, nextItem, advanceTurn, acquire, sleptDuring, failureDisposition, due, resumeFinished, markCancelledRuns, republishFailures, diskWaitFor, browserProfileDiskFull, runPool, cpuMeter, roomForFirst, roomForAnother, calmGate, trimPassedRun, tick } = require('../tools/conditional-qa/worker.cjs');
 const { plan } = require('../tools/conditional-qa/install.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
@@ -920,6 +920,30 @@ test('only a provisioned slot is used, it follows the registered inputs, and it 
   write(path.join(two, 'context.json'), { version: 1, root: path.join(two, 'workspace/SYNK-appsscript'), candidate: false, pinned: [] });
   assert.throws(() => release(two), /Only a candidate/);
   assert.ok(fs.existsSync(path.join(two, 'slot.json')));
+});
+// 11-24 the state folder went to another drive behind a junction. Node loaded run.cjs from the real folder, the context still named the junction,
+// and run.cjs refused every commit with "Local QA requires an explicitly prepared, isolated workspace". The worker now hands on the real folder.
+test('a worker state moved behind a junction hands on its real folder, and another folder is still refused', t => {
+  const dir = scratch(t), moved = path.join(dir, 'moved/state'), state = path.join(dir, 'state'), repo = github.REPO;
+  fs.mkdirSync(moved, { recursive: true }); fs.symlinkSync(moved, state, 'junction');
+  const owned = at => { write(path.join(at, 'owner.json'), { version: 1, purpose: 'synk-conditional-qa', state: at }); write(path.join(at, 'config.json'), { version: 1, repo, state: at, root: path.join(at, 'workspace/SYNK-appsscript') }); };
+  owned(state); write(path.join(state, 'inputs.json'), { version: 1, files: [] });
+  const two = slotState(state, 2); owned(two); write(path.join(two, 'slot.json'), { version: 1, number: 2 });
+  const real = fs.realpathSync(state);
+  assert.notEqual(real, path.resolve(state));
+  const config = loadConfig(state);
+  assert.equal(config.state, real); assert.equal(config.root, path.join(real, 'workspace/SYNK-appsscript'));
+  // run.cjs compares context.root with the root of its own real path: a module under the junction must load from config.root.
+  const probe = path.join(state, 'workspace/SYNK-appsscript/tools/conditional-qa/probe.cjs');
+  fs.mkdirSync(path.dirname(probe), { recursive: true }); fs.writeFileSync(probe, "module.exports = require('node:path').resolve(__dirname, '../..');\n");
+  assert.equal(require(probe), config.root);
+  assert.deepEqual(slotConfigs(state).map(row => [row.state, row.root]), [[path.join(real, 'slots', '2'), path.join(real, 'slots', '2', 'workspace/SYNK-appsscript')]]);
+  const other = path.join(dir, 'other');
+  write(path.join(other, 'owner.json'), { version: 1, purpose: 'synk-conditional-qa', state });
+  write(path.join(other, 'config.json'), { version: 1, repo, state, root: path.join(state, 'workspace/SYNK-appsscript') });
+  assert.throws(() => loadConfig(other), /not owned by this worker/);
+  write(path.join(state, 'config.json'), { version: 1, repo, state, root: path.join(dir, 'elsewhere/workspace/SYNK-appsscript') });
+  assert.throws(() => loadConfig(state), /Invalid worker configuration/);
 });
 
 // The whole tick on two checkouts, with git, GitHub and the test run replaced and the receipts, queue file and lock real.

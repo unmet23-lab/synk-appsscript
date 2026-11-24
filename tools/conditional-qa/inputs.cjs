@@ -18,7 +18,12 @@ function replaceFile(from, to) {
 }
 function write(file, value) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file + '.writing', JSON.stringify(value, null, 2) + '\n'); replaceFile(file + '.writing', file); }
 function git(root, args, options = {}) { const result = cp.execFileSync('git', ['-c', 'core.quotepath=false', ...args], { cwd: root, windowsHide: true, encoding: 'utf8', timeout: 120_000, maxBuffer: 64 << 20, ...options }); return Buffer.isBuffer(result) ? result : result.trim(); }
-function assertOwned(state) { const marker = read(path.join(state, 'owner.json')); if (marker.version !== 1 || marker.purpose !== 'synk-conditional-qa' || path.resolve(marker.state) !== path.resolve(state)) throw Error('Private QA directory is not owned by this worker'); }
+// A state folder can be moved to another drive and left behind a junction (11-24: C: to D:\SYNK-moved for space). Node loads run.cjs from its real
+// path, and run.cjs refuses a context whose root differs from that root, so every path the worker hands on starts from the real folder.
+// fs.realpathSync is the resolver Node uses for modules. Ownership compares real folders: the same folder under another name passes, another folder still fails.
+function realFolder(folder) { const resolved = path.resolve(folder); try { return fs.realpathSync(resolved); } catch { return resolved; } }
+const sameFolder = (a, b) => realFolder(a) === realFolder(b);
+function assertOwned(state) { const marker = read(path.join(state, 'owner.json')); if (marker.version !== 1 || marker.purpose !== 'synk-conditional-qa' || typeof marker.state !== 'string' || !sameFolder(marker.state, state)) throw Error('Private QA directory is not owned by this worker'); }
 function hashFile(file) { return sha256(fs.readFileSync(file)); }
 function provision({ state, audit, originalWorktree, sourceRepo, talkRepo, caddy, cryptoModule }) {
   state = path.resolve(state); sourceRepo = path.resolve(sourceRepo);
@@ -59,7 +64,13 @@ function provision({ state, audit, originalWorktree, sourceRepo, talkRepo, caddy
   write(path.join(state, 'config.json'), config);
   return { files: catalog.length, bytes: catalog.reduce((sum, row) => sum + row.bytes, 0), inputDigest: sha256(JSON.stringify(manifest)) };
 }
-function loadConfig(state) { assertOwned(state); const config = read(path.join(state, 'config.json')); if (config.version !== 1 || config.repo !== REPO || path.resolve(config.state) !== path.resolve(state) || path.resolve(config.root) !== path.resolve(state, 'workspace/SYNK-appsscript')) throw Error('Invalid worker configuration'); return config; }
+function loadConfig(state) {
+  assertOwned(state); const config = read(path.join(state, 'config.json'));
+  if (config.version !== 1 || config.repo !== REPO || typeof config.state !== 'string' || typeof config.root !== 'string' || !sameFolder(config.state, state) ||
+    path.resolve(config.root) !== path.resolve(config.state, 'workspace/SYNK-appsscript')) throw Error('Invalid worker configuration');
+  const real = realFolder(state);
+  return { ...config, state: real, root: path.join(real, 'workspace/SYNK-appsscript') };
+}
 function clone(config, { timeout } = {}) {
   const { root, state } = config; assertOwned(state);
   if (!fs.existsSync(path.join(root, '.git'))) {
@@ -378,7 +389,7 @@ function release(state) {
     return receipt;
   } finally { fs.rmSync(lock, { force: true }); }
 }
-module.exports = { read, write, git, hashFile, provision, loadConfig, clone, prepare, postcheck, materialize, verifyBlob, dependencyInstall, assertOwned, candidate, withCandidate, release, releasePreview, provisionSlot, slotConfigs, slotState, repairCheckout, ensureTestedTree, CHECKOUT_MS };
+module.exports = { read, write, git, hashFile, provision, loadConfig, realFolder, clone, prepare, postcheck, materialize, verifyBlob, dependencyInstall, assertOwned, candidate, withCandidate, release, releasePreview, provisionSlot, slotConfigs, slotState, repairCheckout, ensureTestedTree, CHECKOUT_MS };
 if (require.main === module) {
   const [command, state, flag] = process.argv.slice(2);
   if (!['release', 'slot'].includes(command) || !state) { console.error('usage: node tools/conditional-qa/inputs.cjs release <candidate state> [--preview]\n       node tools/conditional-qa/inputs.cjs slot <worker state> <2-9>'); process.exitCode = 2; }

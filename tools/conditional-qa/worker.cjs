@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process'), os = require('node:os');
 const { readManifest, coverage, sha256 } = require('./contract.cjs');
-const { read, write, git, loadConfig, clone, prepare, postcheck, slotConfigs, CHECKOUT_MS } = require('./inputs.cjs');
+const { read, write, git, loadConfig, realFolder, clone, prepare, postcheck, slotConfigs, CHECKOUT_MS } = require('./inputs.cjs');
 const github = require('./github.cjs');
 const { childRun } = require('./run.cjs');
 const { runnerFor } = require('./legacy-profile.cjs');
@@ -137,6 +137,7 @@ function acquire(state, { reclaimDead = true } = {}) {
   return () => { if (read(file).pid !== process.pid) throw Error('Worker lock ownership changed'); fs.unlinkSync(file); };
 }
 function initialize(stateDir, firstCommit) {
+  stateDir = realFolder(stateDir);
   github.validCommit(firstCommit); const config = loadConfig(stateDir), root = clone(config);
   git(root, ['fetch', 'origin', 'master']);
   git(root, ['merge-base', '--is-ancestor', firstCommit, 'origin/master']);
@@ -333,6 +334,8 @@ async function runPool({ slots, pick, run, mayOpenFirst = () => true, mayOpenAno
 }
 async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, requestedCommit = null, waitForRoom = false, fullRunEveryMs = null, notRunPerRound = NOT_RUN_PER_ROUND, hub = github, runGit = git, cloneRoot = clone, verifyCommit = verify, first = roomForFirst, room = roomForAnother, meter = cpuMeter(), recheckMs = ROOM_RECHECK_MS, warmUpMs = ROOM_WARM_UP_MS, calmMs = CALM_MS, holdTickMs = HOLD_TICK_MS, statfs = fs.statfsSync } = {}) {
   if (requestedCommit !== null) github.validCommit(requestedCommit);
+  // The receipts, the run folders and the disk check follow the state to its real folder, like the checkouts (inputs.cjs realFolder).
+  stateDir = realFolder(stateDir);
   const config = loadConfig(stateDir), release = acquire(stateDir, { reclaimDead: requestedCommit === null }), queueFile = path.join(stateDir, 'queue.json'), started = Date.now();
   try {
     const root = cloneRoot(config), queue = read(queueFile); let head, notRunPublished = 0;
