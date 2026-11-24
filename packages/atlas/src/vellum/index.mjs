@@ -8,11 +8,12 @@ import { EN } from './en.mjs';
 import { josa } from './josa.mjs';
 import { KO } from './ko.mjs';
 import { MN } from './mn.mjs';
-import { DESCRIBE_SLOTS, describeSlots } from './slots.mjs';
+import { DESCRIBE_SLOTS, describeSlots, SCENE_SLOTS, sceneSlots } from './slots.mjs';
 
 export const LANGS = Object.freeze(['ko', 'en', 'mn']);
 export const LEVELS = Object.freeze(['word', 'easy', 'standard']);
-export const SPEAKERS = Object.freeze(['default', 'marin', 'kkamong', 'mongle']);
+// fan은 서울행 「내 팬」의 팬 한마디다(팬설계.md §12-2). 그 줄은 장면 사실(scene.*)에만 있고, 다른 종류는 default로 물러선다.
+export const SPEAKERS = Object.freeze(['default', 'marin', 'kkamong', 'mongle', 'fan']);
 
 // 언어마다 줄 묶음. 영어 · 몽골어는 그 화면이 열릴 때 세 겹 대조를 거쳐 들어온다(단계 4 계획 §4) — 영어는 WORLD 짧은 연습(4-1)의 종류부터.
 const TABLE = Object.freeze({ ko: KO, en: EN, mn: MN });
@@ -35,6 +36,8 @@ const COUNTS = Object.freeze({
 const counted = why => {
   if (Object.hasOwn(DESCRIBE_SLOTS, why.code))
     return describeSlots(why.code, why.slots ?? {}) !== null;
+  // 장면 사실(scene.*)도 같은 꼴의 표(slots.mjs SCENE_SLOTS)로 본다 — 줄 수가 0 · 음수 · 글자이거나, 모르는 단계 · 상태, 빠지거나 더한 칸이면 짓지 않는다.
+  if (Object.hasOwn(SCENE_SLOTS, why.code)) return sceneSlots(why.code, why.slots ?? {}) !== null;
   const need = own(COUNTS, why.code);
   if (!need) return true;
   return Object.entries(need).every(
@@ -66,6 +69,8 @@ const NAMELESS = new Set([
   'host.writing.start',
   'host.speaking',
   'host.speaking.again',
+  'scene.lines',
+  'scene.step',
   ...SILENT_CODES,
 ]);
 // 이름이 없어도 되는 종류 — 이름(단위)을 모르면 이름 없는 틀로 짓는다(생활 단위가 없는 복습 · 이름이 실리지 않은 단위, §20-6의 5).

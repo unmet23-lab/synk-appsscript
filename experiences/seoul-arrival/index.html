@@ -141,7 +141,7 @@
     <header class="bar">
       <button class="me" id="meBadge" type="button" data-l-aria="학생증 보기" aria-label="학생증 보기"><svg viewBox="0 0 24 24"><use href="#stick"/></svg></button>
       <div class="who"><b id="whoName"></b><span id="dreamChip"></span><button id="changeDream" type="button" data-l="바꾸기">바꾸기</button></div>
-      <div class="lights"><small data-l="내 팬">내 팬</small><b><svg viewBox="0 0 24 24"><use id="lightIcon" href="#stick"/></svg><span id="lightNum">0</span></b></div>
+      <button class="lights" id="fansBtn" type="button" data-l-aria="내 팬 보기" aria-label="내 팬 보기"><span class="fan-faces" id="fanFaces" aria-hidden="true" hidden></span><span class="fan-n"><small data-l="내 팬">내 팬</small><b><svg viewBox="0 0 24 24" aria-hidden="true"><use id="lightIcon" href="#stick"/></svg><span id="lightNum">0</span></b></span></button>
     </header>
     <div class="road" id="road"></div>
   </section>
@@ -164,11 +164,37 @@
       <b id="crowdCount"></b>
       <p><span id="crowdWhy"></span><br><span id="goalLine"></span></p>
     </div>
+    <!-- 1화 끝 커튼콜(팬설계.md 12-1): 표지 → 켜진 사람 자리의 팬이 한 명씩 한마디. 누름은 s-crowd 하나가 받는다 -->
+    <div class="cc" id="cc" hidden>
+      <div class="cc-dim" id="ccDim"></div>
+      <div class="cc-top"><span class="cc-tag" data-l="1화 끝">1화 끝</span><span class="cc-prog" id="ccProg"></span></div>
+      <div class="cc-sub" id="ccSub" aria-live="polite"><span class="who" id="ccWho"></span><p class="say" id="ccSay" lang="ko"></p><span class="mean" id="ccMean" hidden></span></div>
+      <div class="cc-card" id="ccCard"><span class="k" data-l="1화 끝 · 커튼콜">1화 끝 · 커튼콜</span><b id="ccCardT"></b><i class="bar"></i><span class="s" id="ccCardS"></span></div>
+    </div>
     <div class="crowd-foot" id="crowdFoot">
       <p class="crowd-aside" id="crowdAside" hidden></p><p class="crowd-aside-sub" id="crowdAsideSub"></p>
+      <p class="cc-hint" id="ccHint" hidden></p>
       <div class="next"><span id="nextWhat"></span><b id="nextLeft"></b></div>
       <button class="go-btn" id="backPath" type="button" data-l="내 길로">내 길로</button>
     </div>
+  </section>
+
+  <!-- 내 팬(팬설계.md 12-1 · 밤 7판): 객석 사진, 팬 수, 한마디를 남긴 팬, 다음 무대 -->
+  <section id="s-fans" class="screen" aria-labelledby="fansT">
+    <div class="fans-scroll" id="fansScroll">
+      <div class="fans-shot"><canvas id="fansHall" aria-hidden="true"></canvas><div class="fans-dim" id="fansDim"></div></div>
+      <div class="fans-body">
+        <h2 class="fans-t" id="fansT"></h2>
+        <p class="fans-s" data-l="대사 한 줄마다 한 명, 「한 번 더」와 「처음 보는 말」에 한 명씩 와요.">대사 한 줄마다 한 명, 「한 번 더」와 「처음 보는 말」에 한 명씩 와요.</p>
+        <div class="fans-pick" id="fansPick" role="group" data-l-aria="한마디를 들을 팬" aria-label="한마디를 들을 팬"></div>
+        <div class="fans-line" id="fansLine" aria-live="polite"><span class="who" id="fWho"></span><p class="say" id="fSay" lang="ko"></p><span class="mean" id="fMean" hidden></span></div>
+        <p class="fans-none" id="fansNone" data-l="아직 말한 대사가 없어요." hidden>아직 말한 대사가 없어요.</p>
+        <div class="fans-goal"><div class="gl"><span data-l="다음 무대 · 첫 거리 공연">다음 무대 · 첫 거리 공연</span><span class="v"><b id="goalN">0</b> / 10</span></div><div class="gbar" id="goalBar" aria-hidden="true"></div><p class="gnote" data-l="2화가 열리면 더 와요.">2화가 열리면 더 와요.</p></div>
+        <p class="fans-honest" data-l="팬은 이야기 속 사람들이에요. 내가 말한 대사와 연습 기록만 보고 말해요. 쉬어도 팬은 줄지 않아요.">팬은 이야기 속 사람들이에요. 내가 말한 대사와 연습 기록만 보고 말해요. 쉬어도 팬은 줄지 않아요.</p>
+        <button class="back-btn fans-replay" id="fansReplay" type="button" data-l="1화 다시 하기">1화 다시 하기</button>
+      </div>
+    </div>
+    <div class="fans-top"><button class="fans-back" id="fansBack" type="button" data-l-aria="내 길로" aria-label="내 길로"></button><span data-l="내 팬">내 팬</span></div>
   </section>
 
   <div class="mom" id="mom" role="dialog" aria-modal="true" data-l-aria="엄마에게서 온 쪽지 사진" aria-label="엄마에게서 온 쪽지 사진" hidden>

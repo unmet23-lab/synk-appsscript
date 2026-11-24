@@ -110,7 +110,13 @@ export const cappedReason = () => ({ code: REASON_CODES.capped, slots: {}, evide
 export const stubbornReason = () => ({ code: REASON_CODES.stubborn, slots: {}, evidence: {} });
 
 // 진도의 사실 — 고르기의 이유가 아니라서 REASON_CODES와 따로 둔다(단계 4 계획 §21-7). 문장은 Vellum의 같은 이름 줄이다.
-export const PROGRESS_CODES = Object.freeze({ month: 'progress.month' });
+//   scene.*  한 장면을 마친 판의 사실(서울행 「내 팬」 1차 — experiences/seoul-arrival/팬설계.md §12-3). 소리가 들린 줄 수(칸 n)와
+//            「한 번 더」 · 「처음 보는 말」을 해 봤는지(칸 step · state, vellum/slots.mjs SCENE_SLOTS)다. 고르기 · 판정 없이 제품이 기록에서 채운다.
+export const PROGRESS_CODES = Object.freeze({
+  month: 'progress.month',
+  lines: 'scene.lines',
+  step: 'scene.step',
+});
 
 // 30일째 문장 — coach.lookback이나 서버 돌아보기 읽기가 낸 단위 하나(네 조건을 넘은 것)의 수. 근거 칸은 그 수를 낸 두 창의 경계와 수다.
 export const monthReason = row => ({

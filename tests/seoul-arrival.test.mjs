@@ -227,7 +227,7 @@ test('이야기 줄: 해설 · 대사마다 번역이 있고 이름 든 줄도 �
 
 test('공개 파일에 도구 · 검수자 이름이 없다', () => {
  const dir=path.join(ROOT,'experiences/seoul-arrival');
- const texts=['app.mjs','data.mjs','strings.mjs','style.css','index.html','hangul-strokes.mjs','name-hand.mjs','name-hangul.mjs','name-trace.mjs','name-ink.mjs','name-coach.mjs'].map(f=>[f,fs.readFileSync(path.join(dir,f),'utf8')]);
+ const texts=['app.mjs','data.mjs','strings.mjs','style.css','index.html','hangul-strokes.mjs','name-hand.mjs','name-hangul.mjs','name-trace.mjs','name-ink.mjs','name-coach.mjs','fans.mjs','fan-lines.mjs'].map(f=>[f,fs.readFileSync(path.join(dir,f),'utf8')]);
  texts.push(['seoul-entry.mjs',entrySource],['seoul-watch.mjs',read('experiences/synk-world-app/seoul-watch.mjs')]);
  const NAMES=/suno|higgsfield|힉스필드|nano banana|나노바나나|midjourney|gpt[- ]?image|gpt[- ]?이미지|elevenlabs|일레븐|typecast|타입캐스트|mmaudio|seedance|시댄스|kling|gemini|아르곤|fable|페이블|\bsam\b/i;
  for(const [name,text] of texts)assert.equal(NAMES.exec(text)?.[0],undefined,name);
@@ -275,4 +275,77 @@ test('시범판 파일을 고치지 않았다: 서울행은 부모 쪽에서만 
  const pilot=read('experiences/drama/pilot/pilot.mjs');
  assert.ok(!/seoul|서울행/i.test(pilot));
  assert.ok(!/SYNKSeoulHost/.test(read('experiences/drama/pilot/index.html')));
+});
+
+// 내 팬 한마디(팬설계.md §12-3): 문장 원천은 Vellum이고, 공개 묶음에는 도구가 구운 fan-lines.mjs만 실린다. 원천을 고치고 다시 굽지 않으면 여기서 걸린다.
+test('내 팬 한마디: 생성 파일이 Vellum 원천에서 다시 구운 것과 같고, 칸 밖이면 null이다', async () => {
+ const {buildFanLines,serialize,fanRows,DESTINATION,MAX_LINES}=await import('../tools/build-seoul-fan-lines.mjs');
+ assert.equal(fs.readFileSync(DESTINATION,'utf8').replace(/\r\n/g,'\n'),serialize(buildFanLines()),'낡음 — node tools/build-seoul-fan-lines.mjs');
+ const {spawnSync}=await import('node:child_process');
+ const check=spawnSync(process.execPath,['tools/build-seoul-fan-lines.mjs','--check'],{cwd:ROOT,encoding:'utf8'});
+ assert.equal(check.status,0,check.stdout+check.stderr);
+ const text=read('experiences/seoul-arrival/fan-lines.mjs');
+ assert.ok(text.startsWith('// Generated from packages/atlas/src/vellum (scene.lines · scene.step, 말하는 사람 fan). Change the source; run node tools/build-seoul-fan-lines.mjs.'));
+ assert.ok(!/^\s*import\b|\bimport\(/m.test(text),'import가 없는 파일');
+ const {FAN_LINES,fanLine}=await import('../experiences/seoul-arrival/fan-lines.mjs');
+ const {render}=await import('../packages/atlas/src/vellum/index.mjs');
+ assert.deepEqual(Object.keys(FAN_LINES),['ko','en','mn']);
+ assert.equal(MAX_LINES,10);
+ for(const [lang,table] of Object.entries(FAN_LINES)){
+  assert.ok(Object.isFrozen(table),lang);
+  assert.deepEqual(Object.keys(table),fanRows().map(([key])=>key),lang);
+  for(const [key,why] of fanRows()){
+   assert.equal(fanLine(lang,why),table[key],`${lang} ${key}`);
+   assert.equal(fanLine(lang,why),render(why,{lang,speaker:'fan'}),`${lang} ${key}: Vellum과 같다`);
+  }
+ }
+ assert.equal(fanLine('ko',{code:'scene.step',slots:{step:'take2',state:'wait'}}),'「한 번 더」는 기다릴게요. 하면 자리 하나가 켜져요.');
+ const bad=[
+  {code:'scene.lines',slots:{n:0}},{code:'scene.lines',slots:{n:11}},{code:'scene.lines',slots:{n:-1}},{code:'scene.lines',slots:{n:1.5}},
+  {code:'scene.lines',slots:{n:'2'}},{code:'scene.lines',slots:{n:[2]}},{code:'scene.lines',slots:{n:2,extra:1}},{code:'scene.lines',slots:{}},{code:'scene.lines'},
+  {code:'scene.step',slots:{step:'take3',state:'done'}},{code:'scene.step',slots:{step:'take2',state:'skipped'}},{code:'scene.step',slots:{step:['take2'],state:['done']}},
+  {code:'scene.step',slots:{step:'take2',state:'done',extra:1}},{code:'scene.step',slots:{step:'take2'}},{code:'scene.step',slots:{step:'toString',state:'done'}},
+  {code:'scene.nope',slots:{n:1}},{code:'toString',slots:{n:1}},{code:'scene.step',slots:Object.assign(Object.create(null),{step:'take2',state:'done'})},null,undefined,
+ ];
+ for(const lang of ['ko','en','mn'])for(const why of bad){
+  assert.equal(fanLine(lang,why),null,`${lang} ${JSON.stringify(why)}`);
+  // 1~10 안에서는 Vellum의 칸 검사와 같은 뜻이다(n 11 이상만 생성 범위 밖이라 Vellum은 짓는다)
+  if(!(why?.code==='scene.lines'&&why.slots?.n===11))assert.equal(render(why,{lang,speaker:'fan'}),null,`Vellum ${lang} ${JSON.stringify(why)}`);
+ }
+ const ok={code:'scene.lines',slots:{n:3}};
+ for(const lang of ['fr','',null,undefined,'constructor','__proto__','toString'])assert.equal(fanLine(lang,ok),null,`언어 ${lang}`);
+ // 공개 파일이다 — 도구 · 검수자 이름이 없다(위 「공개 파일에 도구 · 검수자 이름이 없다」와 같은 잣대)
+ assert.equal(/suno|higgsfield|힉스필드|nano banana|나노바나나|midjourney|gpt[- ]?image|gpt[- ]?이미지|elevenlabs|일레븐|typecast|타입캐스트|mmaudio|seedance|시댄스|kling|gemini|아르곤|fable|페이블|opus|카본|\bsam\b/i.exec(text)?.[0],undefined);
+});
+// 「내 팬」 1차: 누가 무엇을 말하나(팬설계.md 12-2). 모든 조합을 표로 본다 — 첫 판, 다시 한 판, 내 팬 화면(best).
+test('내 팬: 말하는 팬과 이유가 설계 12-2 표와 같다',async()=>{
+ const {curtainSay,bestSay,faceCount,FANS}=await import('../experiences/seoul-arrival/fans.mjs');
+ const {fanLine}=await import('../experiences/seoul-arrival/fan-lines.mjs');
+ const tag=list=>list.map(x=>`${x.fan}:${x.why.code==='scene.lines'?'L'+x.why.slots.n:(x.why.slots.step==='take2'?'T':'R')+(x.why.slots.state==='done'?'+':'-')}`).join(' ');
+ const B=[false,true];
+ // 첫 판: 이번 판 줄 수(1~3)만큼 사람 자리가 말한다. 줄 수 → 단계(한 것 먼저, 같으면 한 번 더 → 처음 보는 말). 0줄이면 아무도
+ for(let n=0;n<=3;n++)for(const t2 of B)for(const tr of B){
+  const run={n,t2,tr},got=tag(curtainSay({was:null,run,next:run}));
+  const steps=[['T',t2],['R',tr]],order=[...steps.filter(s=>s[1]),...steps.filter(s=>!s[1])].map(([k,d])=>k+(d?'+':'-'));
+  const want=n?['L'+n,...order].slice(0,n).map((x,i)=>`${i}:${x}`).join(' '):'';
+  assert.equal(got,want,`첫 판 ${JSON.stringify(run)}`);
+ }
+ // 다시 한 판
+ const R=(was,run)=>{const next={n:Math.max(was.n,run.n),t2:was.t2||run.t2,tr:was.tr||run.tr};return tag(curtainSay({was,run,next}));};
+ assert.equal(R({n:3,t2:true,tr:true},{n:3,t2:true,tr:true}),'','늘어난 것 없음');
+ assert.equal(R({n:0,t2:false,tr:false},{n:3,t2:true,tr:true}),'0:L3 1:T+ 2:R+','첫 판이 0줄이면 다음 판도 다시 한 판 — 새 자리 셋');
+ assert.equal(R({n:2,t2:false,tr:false},{n:2,t2:true,tr:false}),'0:T+','한 번 더만 새로');
+ assert.equal(R({n:1,t2:false,tr:false},{n:2,t2:false,tr:true}),'0:R+ 1:L2','새 자리(1번)가 줄 수, 나머지 자리(0번)가 새 단계');
+ assert.equal(R({n:1,t2:false,tr:false},{n:1,t2:true,tr:true}),'0:T+','자리가 모자라면 남은 사실은 말하지 않는다');
+ assert.equal(R({n:2,t2:true,tr:true},{n:0,t2:false,tr:false}),'','이번 판 0줄');
+ assert.equal(R({n:3,t2:false,tr:false},{n:1,t2:false,tr:false}),'','줄 수가 줄면 말하지 않는다');
+ // 내 팬 화면(best)은 첫 판과 같은 차례
+ assert.equal(tag(bestSay({n:2,t2:false,tr:true})),'0:L2 1:R+');
+ assert.equal(tag(bestSay({n:0,t2:true,tr:true})),'');
+ assert.equal(tag(bestSay(null)),'');
+ for(const n of [0,1,2,3,5])assert.equal(faceCount({n}),Math.min(3,n));
+ // 꿈마다 팬 셋, 이름과 얼굴 네모가 있고 모든 이유에 세 언어 문장이 있다
+ for(const d of ['idol','actor']){assert.equal(FANS[d].length,3);for(const f of FANS[d]){assert.ok(f.name&&f.role);assert.equal(f.face.length,3);}}
+ for(let n=1;n<=3;n++)for(const t2 of B)for(const tr of B)for(const x of [...curtainSay({was:null,run:{n,t2,tr},next:{n,t2,tr}}),...bestSay({n,t2,tr})])
+  for(const lang of ['ko','en','mn'])assert.equal(typeof fanLine(lang,x.why),'string',`${lang} ${JSON.stringify(x.why)}`);
 });

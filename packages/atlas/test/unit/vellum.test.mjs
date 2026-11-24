@@ -5,11 +5,12 @@ import test from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { PACKAGE_ROOT, subject } from '../support/subject.mjs';
 
-const { render, subjectOf, LANGS, SILENT_CODES } = await subject('vellum/index.mjs');
+const { render, subjectOf, LANGS, SILENT_CODES, SPEAKERS } = await subject('vellum/index.mjs');
 const { finalOf, josa } = await subject('vellum/josa.mjs');
 const { reasonLine } = await subject('reason/ko.mjs');
-const { REASON_CODES } = await subject('reason/index.mjs');
-const { DESCRIBE_SLOTS } = await subject('vellum/slots.mjs');
+const { REASON_CODES, PROGRESS_CODES } = await subject('reason/index.mjs');
+const { DESCRIBE_SLOTS, SCENE_SLOTS, SCENE_STEPS, SCENE_STATES } =
+  await subject('vellum/slots.mjs');
 const { KO } = await subject('vellum/ko.mjs');
 const { EN } = await subject('vellum/en.mjs');
 const { MN } = await subject('vellum/mn.mjs');
@@ -659,4 +660,194 @@ test('설명 칸이 표에 맞지 않으면 문장을 짓지 않는다 — 표 �
       `${code}: 이름이 없어도 짓는다`,
     );
   }
+});
+
+// 장면 사실(서울행 「내 팬」 1차 — experiences/seoul-arrival/팬설계.md §12-2 · §12-3). 칸 표는 vellum/slots.mjs SCENE_SLOTS이고, 세 언어 ·
+// 두 말하는 사람(default · fan) 줄이 다 있다. 한국어 팬 줄은 기록과 맞댄 다섯 문장 그대로다(통과를 뜻하는 말을 더하지 않는다).
+const SCENE_SAMPLES = Object.freeze([
+  ...[1, 2, 3, 10, 25].map(n => ['scene.lines', { n }]),
+  ...['take2', 'transfer'].flatMap(step =>
+    ['done', 'wait'].map(state => ['scene.step', { step, state }]),
+  ),
+]);
+const KO_FAN = Object.freeze({
+  'take2:done': '「한 번 더」도 말해 봤어요.',
+  'take2:wait': '「한 번 더」는 기다릴게요. 하면 자리 하나가 켜져요.',
+  'transfer:done': '처음 보는 말까지 말해 봤어요.',
+  'transfer:wait': '처음 보는 말도 들어 보고 싶어요.',
+});
+const KO_DEFAULT = Object.freeze({
+  'take2:done': '「한 번 더」를 말해 봤어요.',
+  'take2:wait': '「한 번 더」는 아직이에요.',
+  'transfer:done': '처음 보는 말을 말해 봤어요.',
+  'transfer:wait': '처음 보는 말은 아직이에요.',
+});
+
+// 언어 × 말하는 사람 × 칸 보기를 한 줄로 편다(시험 함수의 복잡도 상한 15).
+const SCENE_CASES = LANGS.flatMap(lang =>
+  ['default', 'fan'].flatMap(speaker =>
+    SCENE_SAMPLES.map(([code, slots]) => ({ lang, speaker, code, slots })),
+  ),
+);
+
+test('장면 사실 — scene.lines · scene.step은 세 언어 · default와 fan 줄이 다 있고, 영어 · 몽골어 줄에 한국어가 없다(팬설계 §12-2)', () => {
+  assert.deepEqual([...SPEAKERS], ['default', 'marin', 'kkamong', 'mongle', 'fan']);
+  assert.deepEqual([...SCENE_STEPS], ['take2', 'transfer']);
+  assert.deepEqual([...SCENE_STATES], ['done', 'wait']);
+  for (const { lang, speaker, code, slots } of SCENE_CASES) {
+    const at = `${lang} ${speaker} ${code} ${JSON.stringify(slots)}`;
+    const line = render({ code, slots }, { lang, speaker });
+    assert.equal(typeof line, 'string', at);
+    assert.ok(line.trim().length > 5, at);
+    assert.doesNotMatch(line, /undefined|null|NaN|\[object/, at);
+    if (lang !== 'ko') assert.doesNotMatch(line, /「|」|[가-힣]/, `${at}: 한국어가 없다`);
+    if (code === 'scene.lines') assert.ok(line.includes(String(slots.n)), `${at}: 수`);
+  }
+  assert.equal(
+    render({ code: 'scene.lines', slots: { n: 1 } }, { lang: 'en' }),
+    'You spoke 1 line out loud.',
+    '한 줄은 단수',
+  );
+  assert.equal(
+    render({ code: 'scene.lines', slots: { n: 2 } }, { lang: 'en' }),
+    'You spoke 2 lines out loud.',
+  );
+});
+
+test('장면 사실 — 한국어 줄은 설계 표 그대로이고, 팬 줄은 기본 줄과 다르며, 통과를 단정하는 말이 없다(팬설계 §12-2)', () => {
+  for (let n = 1; n <= 10; n += 1)
+    for (const speaker of ['default', 'fan'])
+      assert.equal(
+        render({ code: 'scene.lines', slots: { n } }, { speaker }),
+        `대사 ${n}줄을 소리 내어 말했어요.`,
+      );
+  for (const [key, text] of Object.entries(KO_FAN)) {
+    const [step, state] = key.split(':');
+    const why = { code: 'scene.step', slots: { step, state } };
+    assert.equal(render(why, { speaker: 'fan' }), text, `fan ${key}`);
+    assert.equal(render(why), KO_DEFAULT[key], `default ${key}`);
+    for (const lang of LANGS)
+      assert.notEqual(
+        render(why, { lang, speaker: 'fan' }),
+        render(why, { lang }),
+        `${lang} ${key}: 팬 줄은 기본 줄과 다르다`,
+      );
+  }
+  // 통과 · 솜씨를 단정하는 말은 1차 줄에 없다(줄마다 판정이 오는 2차로). 내 팬 화면에서도 쓰므로 「오늘」 · 「이번에」도 없다.
+  for (const { speaker, code, slots } of SCENE_CASES.filter(row => row.lang === 'ko'))
+    assert.doesNotMatch(
+      render({ code, slots }, { speaker }),
+      /잘|끝까지|해냈|맞게|맞았|오늘|이번에/,
+      `${speaker} ${code} ${JSON.stringify(slots)}`,
+    );
+});
+
+test('장면 사실 칸이 표에 맞지 않으면 세 언어 · 두 말하는 사람 모두 문장을 짓지 않는다 — 0줄 · 음수 · 정수 아님 · 글자 · 모르는 단계 · 상태 · 빠지거나 더한 칸', () => {
+  const bad = [
+    ['scene.lines', { n: 0 }],
+    ['scene.lines', { n: -1 }],
+    ['scene.lines', { n: 1.5 }],
+    ['scene.lines', { n: '2' }],
+    ['scene.lines', { n: Number.NaN }],
+    ['scene.lines', { n: Number.POSITIVE_INFINITY }],
+    ['scene.lines', { n: Number.MAX_SAFE_INTEGER + 1 }],
+    ['scene.lines', { n: [2] }],
+    ['scene.lines', { n: null }],
+    ['scene.lines', {}],
+    ['scene.lines', undefined],
+    ['scene.lines', null],
+    ['scene.lines', { n: 2, extra: 1 }],
+    ['scene.lines', { lines: 2 }],
+    ['scene.lines', Object.assign(Object.create({ inherited: 1 }), { n: 2 })],
+    ['scene.step', { step: 'take3', state: 'done' }],
+    ['scene.step', { step: 'take2', state: 'skipped' }],
+    ['scene.step', { step: 'take2', state: true }],
+    ['scene.step', { step: 'take2', done: true }],
+    ['scene.step', { step: 'toString', state: 'done' }],
+    ['scene.step', { step: ['take2'], state: 'done' }],
+    ['scene.step', { step: 'take2' }],
+    ['scene.step', { state: 'wait' }],
+    ['scene.step', {}],
+    ['scene.step', { step: 'take2', state: 'done', extra: 1 }],
+    ['scene.step', { step: 'take2', state: 'done', n: 1 }],
+    ['scene.step', Object.assign(Object.create(null), { step: 'take2', state: 'done' })],
+  ];
+  for (const lang of LANGS)
+    for (const speaker of ['default', 'fan'])
+      for (const [code, slots] of bad)
+        assert.equal(
+          render({ code, slots }, { lang, speaker }),
+          null,
+          `${lang} ${speaker} ${code} ${JSON.stringify(slots)}`,
+        );
+});
+
+test('장면 사실 — 팬 줄은 다른 눈높이에서 standard의 fan으로 물러서고, 다른 말하는 사람은 default로, 이름은 찾지 않는다', () => {
+  const lines = { code: 'scene.lines', slots: { n: 4 } };
+  const wait = { code: 'scene.step', slots: { step: 'transfer', state: 'wait' } };
+  for (const lang of LANGS) {
+    const fan = render(wait, { lang, speaker: 'fan' });
+    const plain = render(wait, { lang });
+    for (const level of ['word', 'easy', 'standard', 'constructor']) {
+      assert.equal(render(wait, { lang, level, speaker: 'fan' }), fan, `${lang} ${level} fan`);
+      assert.equal(render(wait, { lang, level }), plain, `${lang} ${level} default`);
+      assert.equal(
+        render(lines, { lang, level, speaker: 'fan' }),
+        render(lines, { lang }),
+        `${lang} ${level} 줄 수`,
+      );
+    }
+    for (const speaker of ['marin', 'kkamong', 'mongle', 'caller'])
+      assert.equal(render(wait, { lang, speaker }), plain, `${lang} ${speaker}`);
+    // 이름 없는 종류(NAMELESS) — 이름표가 null을 돌려줘도 짓고, 가리키는 것이 없다
+    assert.equal(render(wait, { lang, speaker: 'fan', label: () => null }), fan);
+  }
+  for (const why of [lines, wait]) {
+    assert.equal(subjectOf({ ...why, slots: { ...why.slots, unit: 'u' } }), null, why.code);
+  }
+  // 다른 종류에는 fan 줄이 없다 — default로 물러선다
+  assert.equal(
+    render({ code: 'idle', slots: {} }, { speaker: 'fan' }),
+    render({ code: 'idle', slots: {} }),
+  );
+  // 진도의 사실 쪽 이름이다 — 고르기의 이유 종류가 아니다
+  assert.equal(PROGRESS_CODES.lines, 'scene.lines');
+  assert.equal(PROGRESS_CODES.step, 'scene.step');
+  for (const code of ['scene.lines', 'scene.step'])
+    assert.ok(!Object.values(REASON_CODES).includes(code), code);
+  assert.deepEqual(
+    Object.keys(SCENE_SLOTS).sort(),
+    Object.values(PROGRESS_CODES)
+      .filter(c => c.startsWith('scene.'))
+      .sort(),
+  );
+});
+
+test('장면 사실 — 세 언어 · 두 말하는 사람 줄이 칸 표(SCENE_SLOTS)의 칸을 빠짐없이, 그 칸만 쓴다', () => {
+  const tables = { ko: KO, en: EN, mn: MN };
+  let lines = 0;
+  for (const [code, table] of Object.entries(SCENE_SLOTS)) {
+    const names = Object.keys(table).sort();
+    for (const sample of samplesOf(table))
+      for (const lang of LANGS)
+        for (const speaker of ['default', 'fan']) {
+          const list = tables[lang][code]?.standard?.[speaker];
+          assert.ok(
+            Array.isArray(list) && list.length === 1,
+            `${lang} ${code} ${speaker}: 줄이 하나`,
+          );
+          const used = new Set();
+          const slots = new Proxy(sample, {
+            get(target, key) {
+              if (typeof key === 'string') used.add(key);
+              return target[key];
+            },
+          });
+          const line = list[0](slots, '', josa);
+          assert.deepEqual([...used].sort(), names, `${lang} ${code} ${speaker}: 읽은 칸`);
+          assert.equal(render({ code, slots: sample }, { lang, speaker }), line);
+          lines += 1;
+        }
+  }
+  assert.equal(lines, 3 * 2 * (3 + 4));
 });

@@ -6,6 +6,37 @@
 const days = n => `${n} ${n === 1 ? 'day' : 'days'}`;
 const times = n => `${n} ${n === 1 ? 'time' : 'times'}`;
 const one = sentence => ({ standard: { default: [sentence] } });
+// 말하는 사람 fan 줄이 함께 있는 종류(장면 사실 scene.* — 아래). 다른 눈높이는 standard로 물러선다.
+const withFan = (sentence, fan) => ({ standard: { default: [sentence], fan: [fan] } });
+
+// 장면 사실(서울행 「내 팬」 1차 — ko.mjs와 같은 뜻 · 같은 말투, 더한 주장 없음). 단계 이름은 서울행 화면 글 표(experiences/seoul-arrival/
+// strings.mjs의 「1화 · 한 번 더」 · 「1화 · 처음 보는 말」)의 영어 One more time · Something new와 같다.
+// 아직 현지어 검수 전이다 — Opus 역번역 → Fable 교정 → 카본 문법 채점을 지나야 화면에 낸다.
+const lines = n => `${n} ${n === 1 ? 'line' : 'lines'}`;
+const sceneLines = s => `You spoke ${lines(s.n)} out loud.`;
+const SCENE_STEP = Object.freeze({
+  take2: Object.freeze({
+    done: Object.freeze({
+      default: 'You tried ‘One more time’.',
+      fan: 'You tried ‘One more time’ too.',
+    }),
+    wait: Object.freeze({
+      default: '‘One more time’ isn’t done yet.',
+      fan: 'I’ll wait for ‘One more time’. When you do it, a seat lights up.',
+    }),
+  }),
+  transfer: Object.freeze({
+    done: Object.freeze({
+      default: 'You tried saying something new.',
+      fan: 'You even tried saying something new.',
+    }),
+    wait: Object.freeze({
+      default: '‘Something new’ isn’t done yet.',
+      fan: 'I’d love to hear you say something new, too.',
+    }),
+  }),
+});
+const sceneStep = who => s => SCENE_STEP[s.step][s.state][who];
 
 // 점검 칸의 쓰기 · 말하기(4-4d — 한국어 줄 ko.mjs와 같은 뜻). 유형 이름은 WORLD 화면 글 표(speaking.type.1 ~ 6)의 영어와 같다.
 // 세 겹 대조(11-17, 세 번)에서 말하기 줄의 부정 수량(「haven’t tried 1 of the six」), 쓰기 다시 줄의 무생물 주어, 다시 하기 줄의 -ing 겹침을 고쳤다.
@@ -128,4 +159,7 @@ export const EN = Object.freeze({
     () =>
       'You’ve tried all six TOPIK Speaking task types on this device this week. Try one again for more practice speaking within the time limit.',
   ),
+  // 장면 사실(서울행 「내 팬」 — 위 SCENE_STEP). 줄 수 문장은 팬도 기록 그대로 말한다.
+  'scene.lines': withFan(sceneLines, sceneLines),
+  'scene.step': withFan(sceneStep('default'), sceneStep('fan')),
 });

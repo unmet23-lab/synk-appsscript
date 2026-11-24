@@ -6,6 +6,8 @@ import {LANG,L,sub,setLang} from './strings.mjs';
 import {hangulName,calledName} from './name-hangul.mjs';
 import {createNameTrace,nameSyllables,signSvg} from './name-trace.mjs';
 import {clubCall,clubWanted} from './club-call.mjs';
+import {FANS,curtainSay,bestSay,faceCount} from './fans.mjs';
+import {fanLine} from './fan-lines.mjs';
 const HOST=(()=>{try{if(window.parent!==window&&window.parent.location.origin===location.origin)return window.parent.SYNKSeoulHost||null;}catch{}return null;})();
 const A=name=>new URL(`./assets/img/${name}.webp`,import.meta.url).href;
 const CONCERT=new URL('../brand-opening/assets/world-title-concert-port-v2.webp',import.meta.url).href;
@@ -1278,7 +1280,7 @@ function paintBadge(){
 }
 function buildRoad(){
   const D=DREAM[state.dream];
-  $('#lightNum').textContent=state.lights;$('#lightIcon').setAttribute('href',state.dream==='actor'?'#seat':'#stick');
+  $('#lightNum').textContent=litCount();$('#lightIcon').setAttribute('href',state.dream==='actor'?'#seat':'#stick');paintFans();
   $('#dreamChip').textContent=L(D.chip);const wn=$('#whoName'),gr=document.createElement('i');gr.className='gr';gr.textContent=L('{n}급 과정',{n:roadGrade()});wn.textContent=(state.name||L('유학생'))+'\u00a0· ';wn.append(gr);
   paintBadge();
   // 내 사진 주소는 5분이면 만료된다 — 4분 넘게 지났으면(1화를 하고 돌아옴 등) 새 주소를 받아 머리를 다시 그린다
@@ -1345,7 +1347,7 @@ async function crowdScene({n=0,t2=false,tr=false}={}){
   $('#goalLine').textContent=L('목표까지 늘어나요',{goal:L(D.goal)});
   $('#crowdWhy').textContent=state.dream==='actor'?L('말한 줄마다 내 팬이 한 사람씩 자리에 앉아요.'):L('말한 줄마다 내 팬의 불빛이 하나씩 켜져요.');
   const plus=$('#plus'),count=$('#crowdCount'),foot=$('#crowdFoot'),lab=$('#crowdLab');
-  plus.classList.remove('on');plus.textContent='';foot.classList.remove('on');show('s-crowd');
+  plus.classList.remove('on');plus.textContent='';foot.classList.remove('on');ccReset();show('s-crowd');
   SND.play('bgm_anthem',{at:ANTHEM_DROP[0]-1.2,vol:.4,fade:1.2});SND.muffle('bgm_anthem',false,3,{from:true});
   ambient(IMG[state.dream==='actor'?'theaterBase':'arenaBase']);
   const P=H.data.people,F=H.data.friendSeats;
@@ -1366,9 +1368,13 @@ async function crowdScene({n=0,t2=false,tr=false}={}){
     const hasFriend=b.seats.some(s=>F.includes(s));
     await sleep(reduce?300:900+b.seats.length*650+(hasFriend?1500:500));
   }
-  if(run===crowdRun)foot.classList.add('on');
+  if(run!==crowdRun)return;
+  foot.classList.add('on');
+  // 커튼콜(팬설계.md 12-1 · 12-2): 이번 판 값으로, 문장이 있는 팬만 말한다
+  const says=curtainSay({was:prev,run:{n:Math.min(H.data.people.length,Math.max(0,n)),t2:!!t2,tr:!!tr},next}).filter(x=>fanLine('ko',x.why));
+  if(says.length)curtain(says,run);
 }
-$('#s-crowd').addEventListener('click',e=>{if(e.target.closest('button'))return;$('#crowdFoot').classList.add('on');});
+$('#s-crowd').addEventListener('click',e=>{if(e.target.closest('button'))return;if(CC.on){ccGo(CC.i<0?0:(CC.i+1)%CC.says.length);return;}$('#crowdFoot').classList.add('on');});
 function drawCrowd(before,gain,keep){
   if(!keep)crowdStop();$('#crowdStage').src=IMG[state.dream+'Goal'];
   const c=$('#crowd'),x=c.getContext('2d'),d=devicePixelRatio;c.width=c.offsetWidth*d;c.height=c.offsetHeight*d;
@@ -1475,7 +1481,105 @@ function drawCinema(seated,freshSeats,keep){
   for(let i=0;i<gain;i++)crowdLater(()=>{if(fresh[i]){sat.push({s:fresh[i],t0:performance.now()});kick();}$('#plus').classList.add('on');SND.felt('ok');if(i===0)SND.sfx(H.sfx[0],H.sfx[1]);},reduce?0:900+i*650);
 }
 function hexA(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
-$('#backPath').onclick=()=>{crowdRun++;crowdStop();SND.stop('bgm_anthem',1);SND.play('bgm_campus',{vol:.45,fade:1.5});SND.play('amb_campus',{vol:.6,fade:1.5,bus:'amb'});SND.felt('page');buildRoad();show('s-path');const r=$('#road');r.scrollTop=r.scrollHeight;momMaybe();};
+$('#backPath').onclick=()=>{crowdRun++;crowdStop();ccReset();SND.stop('bgm_anthem',1);SND.play('bgm_campus',{vol:.45,fade:1.5});SND.play('amb_campus',{vol:.6,fade:1.5,bus:'amb'});SND.felt('page');buildRoad();show('s-path');const r=$('#road');r.scrollTop=r.scrollHeight;momMaybe();};
+/* ══ 내 팬(팬설계.md 12절, 밤 7판) ══
+ * 말하는 팬은 켜진 사람 자리에서만(fans.mjs), 문장은 Vellum이 지은 생성 파일(fan-lines.mjs)에서. 대사는 한국어 그대로 두고, 화면 언어가 한국어가
+ * 아니면 아래 작은 줄에 그 언어의 같은 문장을 둔다(결정 10-19 「한 자리에는 한 언어」). 새 타이머는 모두 crowdLater로 걸고 crowdRun으로 멈춘다. */
+// 객석 그림이 object-fit: cover로 놓인 상자에서 얼굴 네모의 가운데와 크기(상자의 offsetParent 기준 px)
+function coverPoint(el,S,[fx,fy,fs],posY){const W=el.clientWidth,H=el.clientHeight,k=Math.max(W/S.w,H/S.h),dx=(W-S.w*k)/2,dy=(H-S.h*k)*posY;return {x:el.offsetLeft+dx+(fx+fs/2)*k,y:el.offsetTop+dy+(fy+fs/2)*k,r:fs*k};}
+// 팬 얼굴: 바탕 그림 위에 그 사람의 자리 조각만 얹어 얼굴 네모를 자른다(테 없는 모서리 둥근 네모 — 설계 7절)
+function paintFace(cv,dream,i,px){
+  const H=HALLS[dream],f=FANS[dream][i],seat=H.data.people[i];if(!f||!seat)return;
+  const d=Math.min(3,devicePixelRatio||1);cv.width=cv.height=Math.round(px*d);
+  cineLoad(dream).then(v=>{if(!v)return;const [base,at]=v,[fx,fy,fs]=f.face,[X,Y,w,h,ax,ay]=seat,x=cv.getContext('2d'),k=cv.width/fs;
+    x.clearRect(0,0,cv.width,cv.height);x.drawImage(base,fx,fy,fs,fs,0,0,cv.width,cv.height);
+    const ix=Math.max(fx,X),iy=Math.max(fy,Y),ix2=Math.min(fx+fs,X+w),iy2=Math.min(fy+fs,Y+h);
+    if(ix2>ix&&iy2>iy)x.drawImage(at,ax+ix-X,ay+iy-Y,ix2-ix,iy2-iy,(ix-fx)*k,(iy-fy)*k,(ix2-ix)*k,(iy2-iy)*k);
+  });
+}
+// 내 길 머리의 「내 팬」: 켜진 사람 자리의 얼굴(최대 셋)과 팬 수. 얼굴이 없으면 지금 아이콘과 숫자만
+function paintFans(){
+  const box=$('#fanFaces'),k=faceCount(state.best[EP]),dream=state.dream;
+  box.replaceChildren(...Array.from({length:k},(_,i)=>{const c=document.createElement('canvas');c.className='ff';paintFace(c,dream,i,24);return c;}));
+  box.hidden=!k;$('#fansBtn').setAttribute('aria-label',L('내 팬 {n}명 보기',{n:litCount()}));
+}
+// 팬 한마디 한 줄: 이름 · 역할, 한국어 대사(낱말마다 흐림에서 또렷하게 — 글은 한 번에 넣어 한 번만 읽힌다), 화면 언어의 뜻
+function sayLine(who,say,mean,s,dream,quiet){
+  const f=FANS[dream][s.fan],ko=fanLine('ko',s.why)||'';
+  who.innerHTML=`<b>${esc(f.name)}</b> · ${esc(L(f.role))}`;
+  say.innerHTML=ko.split(' ').map(w=>`<span class="w">${esc(w)}</span>`).join(' ');
+  const m=LANG==='ko'?'':fanLine(LANG,s.why)||'';mean.textContent=m;mean.hidden=!m;
+  if(!reduce&&!quiet)[...say.children].forEach((w,i)=>w.animate([{opacity:0,filter:'blur(8px)',transform:'translateY(8px)'},{opacity:1,filter:'blur(0)',transform:'none'}],{duration:420,delay:80+i*70,easing:'cubic-bezier(.23,1,.32,1)',fill:'both'}));
+}
+// 커튼콜: 표지(2초) → 팬 한 명씩. 누르면 다음 팬, 마지막 뒤에는 처음부터. 저절로 넘김은 5.2초, 동작 줄이기에서는 누를 때만
+const CC={on:false,says:[],i:-1,run:0};
+function ccReset(){CC.on=false;CC.says=[];CC.i=-1;$('#cc').hidden=true;$('#ccCard').classList.remove('on');$('#ccDim').classList.remove('on');$('#s-crowd').classList.remove('cc-on');$('#ccHint').hidden=true;}
+function curtain(says,run){
+  Object.assign(CC,{on:true,says,i:-1,run});
+  $('#ccProg').innerHTML=says.map(()=>'<i><b></b></i>').join('');
+  $('#ccWho').innerHTML='';$('#ccSay').innerHTML='';$('#ccMean').hidden=true;
+  ccCopy();$('#cc').hidden=false;$('#s-crowd').classList.add('cc-on');$('#ccCard').classList.add('on');
+  $('#ccHint').textContent=L('화면을 누르면 다음 팬');$('#ccHint').hidden=false;
+  crowdLater(()=>{if(run===crowdRun&&CC.on&&CC.i<0)ccGo(0);},2000);
+}
+function ccCopy(){
+  $('#ccCardT').textContent=L('팬 {n}명이 봤어요',{n:litCount()});
+  $('#ccCardS').textContent=CC.says.length>1?L('그중 {k}명이 한마디씩 남겼어요',{k:CC.says.length}):L('그중 한 명이 한마디 남겼어요');
+}
+function ccSpot(i){
+  const dim=$('#ccDim'),cv=$('#cinema');
+  if(document.body.classList.contains('no-cine')||!cv.clientWidth){dim.classList.remove('on');return;}
+  const p=coverPoint(cv,HALLS[state.dream].data,FANS[state.dream][i].face,1);
+  dim.style.setProperty('--sx',p.x+'px');dim.style.setProperty('--sy',p.y+'px');dim.style.setProperty('--sr',Math.max(60,p.r)+'px');dim.classList.add('on');
+}
+function ccGo(i,quiet){
+  if(!CC.on||CC.run!==crowdRun||!CC.says[i])return;
+  CC.i=i;$('#ccCard').classList.remove('on');
+  const s=CC.says[i],last=i===CC.says.length-1;
+  ccSpot(s.fan);sayLine($('#ccWho'),$('#ccSay'),$('#ccMean'),s,state.dream,quiet);
+  [...$('#ccProg').children].forEach((el,k)=>{const b=el.firstChild;b.getAnimations().forEach(a=>a.cancel());b.style.transform=k<i||(k===i&&(reduce||last))?'scaleX(1)':'scaleX(0)';
+    if(k===i&&!reduce&&!last)b.animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:5200,easing:'linear',fill:'forwards'});});
+  $('#ccHint').textContent=L(last?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');
+  if(!quiet)SND.sfx('pix_notification',.15);
+  const run=CC.run;if(!reduce&&!last)crowdLater(()=>{if(run===crowdRun&&CC.on&&CC.i===i)ccGo(i+1);},5200);
+}
+// 내 팬 화면: best 값으로. 켜진 사람 자리를 객석 그림에 그리고, 고른 팬에 빛을 둔다
+let fanPick=0;
+function paintHall(cv,seated){
+  const S=HALLS[state.dream].data,dream=state.dream;if(cv.width!==S.w||cv.height!==S.h){cv.width=S.w;cv.height=S.h;}
+  return cineLoad(dream).then(v=>{if(!v||state.dream!==dream)return false;const [base,at]=v,x=cv.getContext('2d');x.drawImage(base,0,0);
+    for(const p of seated.slice().sort((a,b)=>a[1]+a[3]-b[1]-b[3])){const [X,Y,w,h,ax,ay]=p;x.drawImage(at,ax,ay,w,h,X,Y,w,h);}return true;});
+}
+function fansSpot(i){
+  const dim=$('#fansDim'),cv=$('#fansHall');if(i==null||!cv.clientWidth){dim.classList.remove('on');return;}
+  const posY=parseFloat(getComputedStyle(cv).getPropertyValue('--py'))||.62;
+  const p=coverPoint(cv,HALLS[state.dream].data,FANS[state.dream][i].face,posY);
+  dim.style.setProperty('--sx',p.x+'px');dim.style.setProperty('--sy',p.y+'px');dim.style.setProperty('--sr',Math.max(60,p.r)+'px');dim.classList.add('on');
+}
+function renderFans(quiet=true){
+  const dream=state.dream,b=state.best[EP]||{n:0,t2:false,tr:false},lit=litCount(),says=bestSay(b).filter(x=>fanLine('ko',x.why));
+  $('#fansT').textContent=L('팬 {n}명',{n:lit});
+  $('#goalN').textContent=Math.min(10,lit);
+  $('#goalBar').innerHTML=Array.from({length:10},(_,k)=>`<i class="${k<lit?'on':''}"></i>`).join('');
+  $('#fansPick').hidden=!says.length;$('#fansLine').hidden=!says.length;$('#fansNone').hidden=!!says.length;
+  if(fanPick>=says.length)fanPick=0;
+  $('#fansPick').innerHTML=says.map((x,i)=>`<button type="button" class="pk" data-i="${i}" aria-pressed="${i===fanPick}">${esc(FANS[dream][x.fan].name)}</button>`).join('');
+  $('#fansPick').querySelectorAll('.pk').forEach(btn=>{btn.onclick=()=>{fanPick=+btn.dataset.i;renderFans(false);SND.felt('tap');};});
+  if(says.length)sayLine($('#fWho'),$('#fSay'),$('#fMean'),says[fanPick],dream,quiet);
+  paintHall($('#fansHall'),litSeats(HALLS[dream],b)).then(()=>fansSpot(says.length?says[fanPick].fan:null));
+}
+function openFans(){crowdRun++;crowdStop();ccReset();fanPick=0;renderFans();show('s-fans');$('#fansScroll').scrollTop=0;SND.felt('page');$('#fansBack').focus({preventScroll:true});}
+function closeFans(){show('s-path');SND.felt('page');$('#fansBtn').focus({preventScroll:true});momMaybe();}
+$('#fansBtn').onclick=openFans;
+$('#fansBack').onclick=closeFans;
+$('#fansReplay').onclick=()=>{show('s-path');playScene();};
+// 화면 언어가 바뀌면 커튼콜 자막과 내 팬 화면을 지금 언어로 다시 그린다(설계 검토 11번)
+function relang(){
+  if(CC.on){ccCopy();if(CC.i>=0){const s=CC.says[CC.i];sayLine($('#ccWho'),$('#ccSay'),$('#ccMean'),s,state.dream,true);$('#ccHint').textContent=L(CC.i===CC.says.length-1?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');}}
+  if($('#s-fans').classList.contains('on'))renderFans();
+  if($('#fansBtn'))$('#fansBtn').setAttribute('aria-label',L('내 팬 {n}명 보기',{n:litCount()}));
+}
+
 /* 1화 끝 쪽지(시즌 1 이야기 지도 1절 · 5절): 엄마가 손글씨를 찍어 보낸다. 고쳐 줘도 되고 「맞아」 해도 되고 안 해도 이야기는 간다. 어느 쪽에도 정답 표시 · 칭찬을 달지 않고, 엄마 글에 펜을 대지 않는다(고친 글자는 다음 쪽지에서 맞게 온다).
  * 쪽지 아래 작은 번역은 실제 앱의 화면 언어 몫(결정 11-03) — 이 시안은 화면이 한국어라 뺐다. */
 function momMaybe(){if(episodeDone()&&!state.momSeen)setTimeout(momNote,reduce?200:800);}
@@ -1533,7 +1637,7 @@ SND.ensure();
 window.__seoulFrame=Object.freeze({
   // 타이틀을 누른 바로 그 순간(동기). 곡과 번쩍임을 부모의 누름 안에서 시작한다
   begin(){begin();},
-  setLang(code){setLang(code);applyStatic();},
+  setLang(code){setLang(code);applyStatic();relang();},
   unlock(){SND.unlock();},
   // 1화 끝 띠를 누른 순간에도 소리를 깨운다
   wake(){SND.unlock();},

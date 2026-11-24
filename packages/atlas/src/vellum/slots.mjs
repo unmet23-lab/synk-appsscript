@@ -33,6 +33,17 @@ export const DESCRIBE_SLOTS = Object.freeze({
   'host.speaking.again': Object.freeze({}),
 });
 
+// 장면 사실의 칸(서울행 「내 팬」 1차 — experiences/seoul-arrival/팬설계.md §12-3). 설명 문장이 아니라 진도의 사실이라 두뇌(select/plan.mjs)는
+// 이 표를 읽지 않고 Vellum(render)만 본다. 꼴과 검사는 설명 칸과 같다(빠지거나 더한 칸 · 표 밖의 값은 받지 않는다).
+//   scene.lines  한 장면에서 소리가 들린 학생 줄 수(1 이상 — 0줄이면 말하지 않는다).
+//   scene.step   「한 번 더」(take2) · 「처음 보는 말」(transfer)을 해 봤는지(done) · 아직인지(wait). 아직에는 해 봤지만 안 들린 판도 섞인다.
+export const SCENE_STEPS = Object.freeze(['take2', 'transfer']);
+export const SCENE_STATES = Object.freeze(['done', 'wait']);
+export const SCENE_SLOTS = Object.freeze({
+  'scene.lines': Object.freeze({ n: Object.freeze({ min: 1 }) }),
+  'scene.step': Object.freeze({ step: oneOf(SCENE_STEPS), state: oneOf(SCENE_STATES) }),
+});
+
 const isPlain = value =>
   value !== null &&
   typeof value === 'object' &&
@@ -43,10 +54,9 @@ const slotOk = (form, value) =>
     ? typeof value === 'string' && form.enum.includes(value)
     : Number.isSafeInteger(value) && value >= form.min && (form.max == null || value <= form.max);
 
-// 그 코드의 칸을 표로 검사한다. 맞으면 표의 칸만 담은 새 객체(얼림), 틀리면 null. 표에 없는 코드는 null이다.
-export function describeSlots(code, slots = {}) {
-  const table =
-    typeof code === 'string' && Object.hasOwn(DESCRIBE_SLOTS, code) ? DESCRIBE_SLOTS[code] : null;
+// 그 코드의 칸을 표 묶음(tables)으로 검사한다. 맞으면 표의 칸만 담은 새 객체(얼림), 틀리면 null. 표에 없는 코드는 null이다.
+function slotsBy(tables, code, slots) {
+  const table = typeof code === 'string' && Object.hasOwn(tables, code) ? tables[code] : null;
   if (!table || !isPlain(slots)) return null;
   const names = Object.keys(table);
   if (Object.keys(slots).length !== names.length) return null;
@@ -57,3 +67,8 @@ export function describeSlots(code, slots = {}) {
   }
   return Object.freeze(out);
 }
+
+// 설명 칸 — 두뇌(select/plan.mjs)와 Vellum이 함께 본다.
+export const describeSlots = (code, slots = {}) => slotsBy(DESCRIBE_SLOTS, code, slots);
+// 장면 사실 칸 — Vellum만 본다.
+export const sceneSlots = (code, slots = {}) => slotsBy(SCENE_SLOTS, code, slots);

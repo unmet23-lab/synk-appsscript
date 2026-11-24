@@ -861,3 +861,82 @@ body.handoff .title-foot{display:none}
 @media (max-width:350px){.node .txt .here{display:none}}
 /* 「가」 칸 단추 줄: 긴 언어에서 화면을 넘지 않게 두 줄로 */
 .trace-btns{max-width:min(calc(var(--appw,100vw) - 24px),436px);flex-wrap:wrap}
+
+/* ══ 내 팬(팬설계.md 12절 · 유호님 11-24 고르신 밤 7판) ══
+   값은 시안 docs/디자인/WORLD_내팬_20261123/시안.html의 밤 겉. 얼굴 모양만은 시안이 아니라 설계 7절(테 없는 모서리 둥근 네모). */
+@property --sx{syntax:'<length>';inherits:false;initial-value:200px}
+@property --sy{syntax:'<length>';inherits:false;initial-value:300px}
+@property --sr{syntax:'<length>';inherits:false;initial-value:90px}
+/* 내 길 머리의 「내 팬」 단추: 얼굴(최대 셋) + 팬 수 */
+.lights{display:flex;align-items:center;gap:10px;flex:none;min-height:48px;margin:-4px -6px -4px 0;padding:4px 6px;border-radius:14px;text-align:right}
+.lights:focus-visible{outline:2px solid var(--dream2);outline-offset:2px}
+.fan-faces{display:flex;gap:4px}
+.fan-faces[hidden]{display:none}
+.fan-faces .ff{width:24px;height:24px;border-radius:7px;background:#0b0f24}
+.fan-n{display:block}
+/* 영어 · 몽골어는 이름 · 꿈 칸이 길어 좁은 폭에서 얼굴을 빼고 숫자만 둔다(바꾸기 단추를 밀어내지 않게 — 390 폭 캡처로 확인) */
+@media (max-width:420px){:lang(mn) .fan-faces,:lang(en) .fan-faces{display:none}}
+/* 커튼콜 */
+.cc{position:absolute;inset:0;z-index:2;pointer-events:none}
+.cc[hidden]{display:none}
+#s-crowd .crowd-copy,#s-crowd .crowd-aside,#s-crowd .crowd-aside-sub,#s-crowd .next{transition:opacity .45s ease}
+#s-crowd.cc-on .crowd-copy,#s-crowd.cc-on .crowd-aside,#s-crowd.cc-on .crowd-aside-sub,#s-crowd.cc-on .next{opacity:0;visibility:hidden}
+/* 위 띠는 소리 단추(.hud, 왼쪽 위 44px)와 같은 줄, 그 오른쪽에 둔다 */
+.cc-top{position:absolute;left:72px;right:20px;top:max(14px,var(--sat,env(safe-area-inset-top,0px)));display:flex;align-items:center;gap:12px;height:44px}
+.cc-tag{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px var(--line2);font-size:13px;font-weight:600;white-space:nowrap}
+.cc-prog{flex:1;display:flex;gap:4px}
+.cc-prog i{position:relative;flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
+.cc-prog i b{position:absolute;inset:0;background:#fff;transform:scaleX(0);transform-origin:left}
+.cc-dim{position:absolute;inset:0;opacity:0;background:radial-gradient(calc(var(--sr)*1.2) calc(var(--sr)*1.4) at var(--sx) var(--sy),rgba(2,3,8,0) 0,rgba(2,3,8,0) 46%,rgba(2,3,8,.55) 100%);transition:opacity .5s ease,--sx .9s cubic-bezier(.23,1,.32,1),--sy .9s cubic-bezier(.23,1,.32,1),--sr .9s cubic-bezier(.23,1,.32,1)}
+.cc-dim.on{opacity:1}
+.cc-sub{position:absolute;left:20px;right:20px;bottom:max(152px,calc(var(--sab,env(safe-area-inset-bottom,0px)) + 152px));display:grid;justify-items:center;text-align:center}
+.cc-sub .who,.fans-line .who{font-size:13px;line-height:18px;font-weight:550;color:var(--ink3)}
+.cc-sub .who b,.fans-line .who b{display:inline-flex;align-items:center;gap:6px;font-weight:650;color:var(--dream2)}
+.cc-sub .who b::before,.fans-line .who b::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dream);box-shadow:0 0 10px var(--dream)}
+.cc-sub .say{margin-top:10px;max-width:14em;font-size:26px;line-height:35px;font-weight:680;letter-spacing:-.025em;text-wrap:balance;text-shadow:0 2px 18px rgba(20,8,40,.75)}
+.cc-sub .say .w,.fans-line .say .w{display:inline-block;white-space:pre}
+.cc-sub .mean,.fans-line .mean{display:block;margin-top:8px;max-width:30em;font-size:15px;line-height:22px;font-weight:450;color:var(--ink3);text-wrap:pretty}
+.cc-sub .mean[hidden],.fans-line .mean[hidden]{display:none}
+.cc-card{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;padding:0 24px;text-align:center;background:#050608;opacity:0;transition:opacity .6s ease}
+.cc-card.on{opacity:1}
+.cc-card .k{font-size:14px;font-weight:550;color:var(--ink3)}
+.cc-card b{font-size:30px;line-height:40px;font-weight:680;letter-spacing:-.03em}
+.cc-card .bar{width:120px;height:2px;margin-top:4px;background:linear-gradient(90deg,var(--dream2),var(--dream))}
+.cc-card .s{font-size:15.5px;font-weight:450;color:var(--ink3)}
+.cc-hint{margin-bottom:14px;text-align:center;font-size:13px;font-weight:450;color:var(--ink4)}
+.cc-hint[hidden]{display:none}
+/* 내 팬 화면 */
+#s-fans{background:radial-gradient(150% 50% at 50% 114%,rgba(255,170,132,.5) 0%,color-mix(in srgb,var(--pink) 34%,transparent) 28%,color-mix(in srgb,var(--dream) 28%,transparent) 55%,rgba(11,9,30,0) 82%),linear-gradient(180deg,#06060f 0%,#0a0920 48%,#150e31 100%)}
+.fans-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none}
+.fans-scroll::-webkit-scrollbar{display:none}
+.fans-shot{position:relative;height:400px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent);mask-image:linear-gradient(180deg,#000 72%,transparent)}
+#fansHall{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;--py:.62;object-position:50% 62%;filter:brightness(1.18) contrast(1.05)}
+/* 배우 꿈의 팬 셋은 상영관 앞쪽 가운데에 작게 앉아 있다 — 그림을 두 배로 키워 그 자리를 상자 가운데에 둔다(비율 그대로라 coverPoint가 그대로 맞는다) */
+body[data-dream="actor"] #fansHall{width:200%;height:auto;aspect-ratio:941/1422;left:-70%;top:-645px}
+.fans-dim{position:absolute;inset:0;opacity:0;background:radial-gradient(calc(var(--sr)*1.2) calc(var(--sr)*1.4) at var(--sx) var(--sy),rgba(6,7,9,0) 0,rgba(6,7,9,0) 46%,rgba(6,7,9,.46) 100%);transition:opacity .5s ease,--sx .9s cubic-bezier(.23,1,.32,1),--sy .9s cubic-bezier(.23,1,.32,1),--sr .9s cubic-bezier(.23,1,.32,1)}
+.fans-dim.on{opacity:1}
+.fans-body{position:relative;z-index:2;margin-top:-44px;padding:0 20px max(40px,calc(var(--sab,env(safe-area-inset-bottom,0px)) + 28px))}
+.fans-t{font-size:30px;line-height:38px;font-weight:680;letter-spacing:-.03em}
+.fans-s{margin-top:6px;font-size:15.5px;line-height:22px;font-weight:450;color:var(--ink3)}
+.fans-pick{display:flex;gap:4px;margin-top:24px;padding:4px;border-radius:999px;background:rgba(12,10,30,.58);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.fans-pick[hidden],.fans-line[hidden],.fans-none[hidden]{display:none}
+.fans-pick .pk{flex:1;min-height:40px;border-radius:999px;font-size:15.5px;font-weight:600;color:var(--ink3);transition:background .2s ease,color .2s ease}
+.fans-pick .pk[aria-pressed="true"]{background:var(--ink);color:#08090C}
+.fans-line{display:grid;gap:0;margin-top:20px;min-height:132px;align-content:start}
+.fans-line .say{margin-top:8px;font-size:24px;line-height:33px;font-weight:680;letter-spacing:-.025em;text-wrap:balance}
+.fans-none{margin-top:24px;font-size:15.5px;color:var(--ink2)}
+.fans-goal{margin-top:32px}
+.fans-goal .gl{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;font-weight:550;color:var(--ink3)}
+.fans-goal .v{font-size:15.5px;font-weight:600;color:var(--ink2);font-variant-numeric:tabular-nums}
+.fans-goal .v b{font-weight:700;color:var(--ink)}
+.gbar{display:flex;gap:4px;margin-top:12px}
+.gbar i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.12)}
+.gbar i.on{background:var(--dream);box-shadow:0 0 10px color-mix(in srgb,var(--dream) 55%,transparent)}
+.gnote{margin-top:10px;font-size:13px;color:var(--ink4)}
+.fans-honest{margin-top:28px;text-align:center;font-size:13px;line-height:19px;font-weight:450;color:var(--ink4)}
+.fans-replay{margin-top:18px}
+.fans-top{position:absolute;z-index:3;left:72px;right:20px;top:max(14px,var(--sat,env(safe-area-inset-top,0px)));display:flex;align-items:center;gap:12px;height:44px;font-size:17px;line-height:24px;font-weight:650;text-shadow:0 1px 10px rgba(0,0,0,.5)}
+.fans-back{flex:none;width:44px;height:44px;margin:-2px 0;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px var(--line2)}
+.fans-back::before{content:"";width:9px;height:9px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateX(2px) rotate(45deg)}
+.fans-back:focus-visible,.fans-pick .pk:focus-visible{outline:2px solid var(--dream2);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.cc-dim,.fans-dim,.cc-card{transition:none}}

@@ -33,6 +33,36 @@ const homework = (s, name) =>
       : null;
 
 const one = sentence => ({ standard: { default: [sentence] } });
+// 말하는 사람 fan 줄이 함께 있는 종류(장면 사실 scene.* — 아래). 다른 눈높이는 standard로 물러선다.
+const withFan = (sentence, fan) => ({ standard: { default: [sentence], fan: [fan] } });
+
+// 장면 사실(서울행 「내 팬」 1차 — experiences/seoul-arrival/팬설계.md §12-2 표). 줄 수는 시범판이 「소리가 들린 학생 줄」로 센 수다(판정이 꺼진
+// 판 · 손님 판도 센다). 그래서 「잘」 · 「끝까지」 · 「맞게」를 쓰지 않는다. 단계는 녹음 · 말해 본 기록이 있는지만 안다. 통과를 뜻하는 말
+// (「해냈어요」)은 줄마다 판정이 오는 2차로 넘긴다. 아직(wait)에는 해 봤지만 안 들린 판도 섞여 탓하지 않는 꼴로 쓴다. default 줄은 기록만 말한다.
+const sceneLines = s => `대사 ${s.n}줄을 소리 내어 말했어요.`;
+const SCENE_STEP = Object.freeze({
+  take2: Object.freeze({
+    done: Object.freeze({
+      default: '「한 번 더」를 말해 봤어요.',
+      fan: '「한 번 더」도 말해 봤어요.',
+    }),
+    wait: Object.freeze({
+      default: '「한 번 더」는 아직이에요.',
+      fan: '「한 번 더」는 기다릴게요. 하면 자리 하나가 켜져요.',
+    }),
+  }),
+  transfer: Object.freeze({
+    done: Object.freeze({
+      default: '처음 보는 말을 말해 봤어요.',
+      fan: '처음 보는 말까지 말해 봤어요.',
+    }),
+    wait: Object.freeze({
+      default: '처음 보는 말은 아직이에요.',
+      fan: '처음 보는 말도 들어 보고 싶어요.',
+    }),
+  }),
+});
+const sceneStep = who => s => SCENE_STEP[s.step][s.state][who];
 
 // 점검 칸의 쓰기 · 말하기(4-4d — 단계 4 계획 §21-23의 3, 설계 주인 11-17 답 4). 문장은 그 연습으로 학생이 얻는 것을 말한다. 쓰기는 TOPIK
 // 쓰기의 어느 점수 칸에 도움이 되는지, 말하기는 시험의 어느 유형을 이번 주에 이 기기에서 아직 안 해 봤는지다(이번 주 계획의 speakingNeeds와 같은 셈). 칸은 slots.mjs 표의 것을 빠짐없이,
@@ -110,6 +140,9 @@ export const KO = Object.freeze({
     (s, name) =>
       `한 달 전에 ${s.misses}번 놓친 「${name}」, 그 뒤로 ${s.reviews}번 모두 혼자 맞혔어요.`,
   ),
+  // 장면 사실(서울행 「내 팬」 — 위 SCENE_STEP). 줄 수 문장은 팬도 기록 그대로 말한다.
+  'scene.lines': withFan(sceneLines, sceneLines),
+  'scene.step': withFan(sceneStep('default'), sceneStep('fan')),
   // 점검 칸의 쓰기 · 말하기(4-4d — 위 WRITING · SPEAKING). 칸 없는 둘은 근거 없는 정상 경로다(한 가지 고치기 전 · 여섯 유형을 다 해 봄).
   'host.writing': one(writing),
   'host.writing.start': one(
