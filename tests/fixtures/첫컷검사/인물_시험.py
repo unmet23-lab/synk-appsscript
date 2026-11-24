@@ -53,6 +53,22 @@ def 질문들(글):
                {"cut": "C2", "in": 0, "out": 1, "인물": ["로지"]}]}
 
 
+표다른 = {"틀": 2, "인물": {
+    "하린": {"묘사": "Harin is 22 years old.", "기준그림": "ref/하린.jpg"},
+    "로지": {"묘사": "Rosie is 25.", "기준그림": "ref/로지.jpg"},
+    "유호": {"묘사": "The same man as in the reference image.", "기준그림": "ref/로지.jpg", "실제사람": True},
+    "슬레이트손": {"묘사": "A crew member seen only as two adult hands.", "기준그림": "ref/거친판.jpg"}},
+    "detail": [{"cut": "C1", "in": 0, "out": 1, "인물": ["하린", "슬레이트손"]},   # 닻 — 손 단역을 빼면 하린 혼자
+               {"cut": "C2", "in": 0, "out": 1, "인물": ["로지", "하린"]},       # 여럿
+               {"cut": "C3", "in": 0, "out": 1, "인물": ["하린", "유호"]},       # 실제 사람
+               {"cut": "C4", "in": 0, "out": 1, "인물": ["하린", "민수"]},       # 표에 없는 이름
+               {"cut": "C5", "in": 0, "out": 1, "인물": ["하린"], "시간건너뜀": True},   # 이번 컷
+               {"cut": "C6", "in": 0.5, "out": 1.5, "인물": ["하린"]},
+               {"cut": "C7", "in": 0, "out": 1, "인물": ["하린"]},
+               {"cut": "C8", "in": 0, "out": 1, "인물": ["하린"]},
+               {"cut": "C9", "in": 0, "out": 1, "인물": ["하린"]}]}
+
+
 class 인물시험(unittest.TestCase):
     def 편만들기(self, stack, 표=표):
         편 = Path(stack.enter_context(tempfile.TemporaryDirectory()))
@@ -65,6 +81,10 @@ class 인물시험(unittest.TestCase):
         stack.enter_context(patch.object(첫컷검사, "얼굴자르기", side_effect=lambda b: (None, "기준 그림에서 얼굴을 찾지 못했다")
                                          if "얼굴없음".encode() in b else (b"face:" + b, None)))
         stack.enter_context(patch.object(첫컷검사, "구간얼굴판", return_value=(b"board", None)))
+        # 다른 컷 얼굴: 파일 이름에 「얼굴없음」이 들면 못 찾고, 아니면 여럿 수만큼 「얼굴」. 판은 꼬리표 목록(JSON)으로 짓는다
+        stack.enter_context(patch.object(첫컷검사, "다른컷얼굴", side_effect=lambda 파일, a, b, 좌우=False, 여럿=1:
+                                         [] if "얼굴없음" in 파일.read_text(encoding="utf-8", errors="ignore") else [f"{파일.name}:{a:g}"] * 여럿))
+        stack.enter_context(patch.object(첫컷검사, "얼굴판짓기", side_effect=lambda 칸, 꼬리: json.dumps(꼬리, ensure_ascii=False).encode()))
         stack.enter_context(redirect_stdout(io.StringIO()))
         (편 / "ref").mkdir()
         for 이름 in ("하린", "거친판", "로지"):
@@ -155,6 +175,134 @@ class 인물시험(unittest.TestCase):
             self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C1"]), 0, "인물의 확인 못 함은 막지 않는 흠이다")
             눈답({"인물": {"결과": "무관", "관찰": "판정 못 함 — 이 구간에는 뒷모습만 나온다"}})
             self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C1"], 주문="뒷모습"), 0, "인물은 필수 질문이 아니라 무관을 쓸 수 있다")
+
+    # ── 컷끼리 견주기(11-24): 같은 배역이 나오는 다른 컷의 받은 판 얼굴을 얼굴판_다른컷.jpg로 ──
+    def 다른편(self, stack, 줄=None):
+        편, _ = self.편만들기(stack, {**표다른, "detail": 줄 or 표다른["detail"]})
+        (편 / "받음").mkdir()
+        for d in 줄 or 표다른["detail"]:
+            (편 / "받음" / f"{d['cut']}.mp4").write_text(d["cut"], encoding="utf-8")
+        return 편, 편 / "받음" / "C5.mp4"
+
+    def 모두(self, 편):
+        return {d["cut"]: 편 / "받음" / f"{d['cut']}.mp4" for d in 표다른["detail"] if d["cut"] != "C5"}
+
+    def test_다른_컷은_닻과_가까운_한_사람_컷부터_넷이고_실제_사람_표에_없는_이름_얼굴_못_찾은_컷은_뺀다(self):
+        with ExitStack() as stack:
+            편, 영상 = self.다른편(stack)
+            (편 / "받음" / "C6.mp4").write_text("얼굴없음", encoding="utf-8")
+            로그 = 눈붙이기(stack)
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판=self.모두(편)), 0)
+            부름 = 부른것(로그)[-1]
+            self.assertEqual([f for f in 부름["파일"] if not f.startswith("초_")], ["기준_하린.jpg", "얼굴판.jpg", "얼굴판_다른컷.jpg"])
+            자리 = next(편.rglob("확인.json")).parent
+            꼬리 = json.loads((자리 / "얼굴판_다른컷.jpg").read_text(encoding="utf-8"))
+            self.assertEqual(꼬리, ["C1 하린", "C7 하린", "C8 하린", "C9 하린"],
+                             "닻(그 배역의 첫 한 사람 컷 — 손 단역은 빼고 센다) 다음 가까운 차례, 얼굴을 못 찾은 C6은 건너뛴다. "
+                             "실제 사람(C3) · 표에 없는 이름(C4)이 든 컷은 빼고, 넷을 채우면 여럿 컷(C2)은 보지 않는다")
+            질문 = 질문들(부름["글"])["인물"]
+            self.assertIn("다른 컷(C1, C7, C8, C9)", 질문)
+            self.assertIn("기준이나 다른 컷과 눈에 띄게 다르면 '흠'", 질문)
+            기록 = 첫컷검사.json읽기(자리 / "확인.json")
+            self.assertEqual([x["컷"] for x in 기록["배역판"]], ["C1", "C7", "C8", "C9"])
+            self.assertNotIn("구간", 기록["배역판"][0], "쓰는 구간은 열쇠에 넣지 않는다(FB13)")
+            self.assertEqual(기록["얼굴판틀"], 첫컷검사.얼굴판틀)
+            self.assertEqual(next(x for x in 기록["다른컷"] if x["컷"] == "C1")["구간"], [0, 1])
+
+    def test_힌트가_없으면_편집에서_고른_판만_스스로_찾고_고른_판과_다른_힌트는_멈춘다(self):
+        with ExitStack() as stack:
+            편, 영상 = self.다른편(stack)
+            로그 = 눈붙이기(stack)
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"]), 0)
+            self.assertNotIn("얼굴판_다른컷.jpg", 부른것(로그)[-1]["파일"], "정한 판도 힌트도 없으면 다른 컷을 고르지 않는다")
+            (편 / "편집").mkdir()
+            (편 / "편집" / "고른판.json").write_text(json.dumps({"C7": {"판": "C7b", "in": 0.25, "out": 0.75}}), encoding="utf-8")
+            (편 / "받음" / "C7b.mp4").write_text("C7b", encoding="utf-8")
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"]), 0)
+            자리 = max(편.rglob("확인.json"), key=lambda p: p.stat().st_mtime).parent
+            self.assertEqual(json.loads((자리 / "얼굴판_다른컷.jpg").read_text(encoding="utf-8")), ["C7 하린"])
+            self.assertEqual(첫컷검사.다른컷얼굴.call_args.args[:3], (편 / "받음" / "C7b.mp4", 0.25, 0.75), "고른 판의 in/out으로 자른다")
+            with self.assertRaisesRegex(ValueError, "편집에서 고른 판"):
+                첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판={"C7": 편 / "받음" / "C7.mp4"})
+
+    def test_한_사람_컷이_없으면_여럿_컷의_얼굴을_배역_이름과_함께_넣는다(self):
+        with ExitStack() as stack:
+            줄 = [{"cut": "C2", "in": 0, "out": 1, "인물": ["로지", "하린", "슬레이트손"]}, {"cut": "C5", "in": 0, "out": 1, "인물": ["하린"]}]
+            편, 영상 = self.다른편(stack, 줄)
+            로그 = 눈붙이기(stack)
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판={"C2": 편 / "받음" / "C2.mp4"}), 0)
+            자리 = next(편.rglob("확인.json")).parent
+            self.assertEqual(json.loads((자리 / "얼굴판_다른컷.jpg").read_text(encoding="utf-8")), ["C2 로지·하린"] * 2,
+                             "얼굴이 나오는 배역 수만큼(손 단역은 빼고) 자른다")
+            self.assertIn("어느 얼굴이 그 배역인지는 기준 얼굴과 생김새로 가린다", 질문들(부른것(로그)[-1]["글"])["인물"])
+
+    def test_이번_줄에_표에_없는_이름이_있거나_실제_사람과_파일을_나눠_쓰는_컷은_얼굴을_보내지_않는다(self):
+        with ExitStack() as stack:
+            편, _ = self.다른편(stack)
+            로그 = 눈붙이기(stack)
+            self.assertEqual(첫컷검사.검사(편, 편 / "받음" / "C4.mp4", 컷들=["C4"], 배역판=self.모두(편)), 0)
+            self.assertFalse({"얼굴판.jpg", "얼굴판_다른컷.jpg"} & set(부른것(로그)[-1]["파일"]), "표에 없는 이름은 실제 사람일 수 있다(FB5)")
+            self.assertFalse(첫컷검사.다른컷얼굴.called)
+        with ExitStack() as stack:
+            줄 = [dict(d, **({"판": "C7"} if d["cut"] == "C3" else {})) for d in 표다른["detail"]]
+            편, 영상 = self.다른편(stack, 줄)
+            로그 = 눈붙이기(stack)
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판={"C7": 편 / "받음" / "C7.mp4"}), 0)
+            self.assertNotIn("얼굴판_다른컷.jpg", 부른것(로그)[-1]["파일"], "실제 사람 컷(C3)이 함께 쓰는 판(C7)은 옆 컷 얼굴이 잘릴 수 있다(FB7)")
+        self.assertTrue(첫컷검사.실제사람({"기준그림": "ref/a.jpg", "실제사람": True}), "인물 표의 명시 칸도 본다(FB6)")
+
+    def test_다른_컷_파일이_바뀌면_다시_보고_앞_인물_다시는_참고로_주지_않는다(self):
+        with ExitStack() as stack:
+            편, 영상 = self.다른편(stack)
+            로그 = 눈붙이기(stack, {"인물": {"결과": "흠", "관찰": "C7의 하린은 앞머리가 촘촘하다"}})
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판=self.모두(편)), 0)
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판=self.모두(편)), 0)
+            self.assertEqual(len(부른것(로그)), 1, "같은 다른 컷 판이면 기록을 다시 쓴다")
+            (편 / "받음" / "C7.mp4").write_text("C7 다시 받음", encoding="utf-8")
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판=self.모두(편)), 0)
+            self.assertEqual(len(부른것(로그)), 2, "견준 다른 컷의 판이 바뀌면 눈이 다시 본다")
+            표2 = json.loads((편 / "컷표.json").read_text(encoding="utf-8"))
+            표2["detail"][7]["out"] = 0.9   # C8의 쓰는 구간만 다듬는다
+            (편 / "컷표.json").write_text(json.dumps(표2, ensure_ascii=False), encoding="utf-8")
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판=self.모두(편)), 0)
+            self.assertEqual(len(부른것(로그)), 2, "이웃 컷의 in/out을 다듬어도 다시 부르지 않는다(FB13)")
+        with ExitStack() as stack:
+            편, 영상 = self.다른편(stack)
+            로그 = 눈붙이기(stack, {"인물": {"결과": "다시", "관찰": "0.5초 칸의 하린은 C7과 다른 사람이다"}})
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판=self.모두(편)), 1)
+            (편 / "받음" / "C7.mp4").write_text("C7 다시 받음", encoding="utf-8")
+            눈답({})
+            self.assertEqual(첫컷검사.검사(편, 영상, 컷들=["C5"], 배역판=self.모두(편)), 0)
+            self.assertNotIn("- 인물:", 부른것(로그)[-1]["글"], "다른 판과 견준 앞 '다시'는 참고로 주지 않는다")
+
+    def test_받은_뒤_검사는_다른_컷마다_고른_판이나_걸림_없는_파일을_넘긴다(self):
+        with tempfile.TemporaryDirectory() as t:
+            편 = Path(t)
+            받음 = 편 / "받음"
+            받음.mkdir()
+            for f in ("C1.mp4", "C1__2.mp4", "C2.mp4", "C3b.mp4", "C5.mp4", "S6.mp4", "P47.mp4"):
+                (받음 / f).write_bytes(b"v")
+            (편 / "편집").mkdir()
+            (편 / "편집" / "고른판.json").write_text(json.dumps({"C3": {"판": "C3b"}}), encoding="utf-8")
+            seq = {"틀": 2, "인물": 표다른["인물"], "detail": [
+                {"cut": "C1", "in": 0, "out": 1, "인물": ["하린"]}, {"cut": "C2", "in": 0, "out": 1, "인물": ["하린"]},
+                {"cut": "C3", "in": 0, "out": 1, "인물": ["하린"]}, {"cut": "C4", "in": 0, "out": 1, "인물": ["하린", "유호"]},
+                {"cut": "C5", "in": 0, "out": 1, "인물": ["하린"], "시간건너뜀": True}, {"cut": "C6", "in": 0, "out": 1, "인물": ["하린"]},
+                {"cut": "C7", "in": 1, "out": 2, "인물": ["하린"]}]}
+            판찾기 = {"C1": {"id": "C1", "컷": ["C1"]}, "C2": {"id": "C2", "컷": ["C2"]}, "C3": {"id": "C3", "컷": ["C3"]},
+                    "C5": {"id": "C5", "컷": ["C5"]}, "S6": {"id": "S6", "컷": ["C6"]}, "P47": {"id": "P47", "컷": ["C4", "C7"]}}
+            파일 = lambda 이름, 걸림=(): {"파일": 이름, "걸림": list(걸림), "확인": [], "주의": []}
+            결과판 = {"C1": {"파일": [파일("C1.mp4", ["길이"]), 파일("C1__2.mp4")]}, "C2": {"파일": [파일("C2.mp4", ["소리"])]},
+                    "C5": {"파일": [파일("C5.mp4")]}, "S6": {"파일": [파일("S6.mp4")]}, "P47": {"파일": [파일("P47.mp4")]}}
+            일 = 받은뒤검사.눈일감(편, seq, 받음, 결과판, ["C5"], 판찾기)
+            self.assertEqual({k: Path(v).name for k, v in 일[0]["배역판"].items()}, {"C1": "C1__2.mp4", "C3": "C3b.mp4", "C6": "S6.mp4"},
+                             "걸림 없는 파일 · 고른 판 · 이은 판(id ≠ 컷)을 넘기고, 걸림뿐인 판(C2)과 실제 사람 컷이 함께 쓰는 판(P47)은 넘기지 않는다")
+            부름 = []
+            with patch.object(받은뒤검사.subprocess, "run", side_effect=lambda 명령, **k: 부름.append(명령) or
+                              type("r", (), {"stdout": "", "stderr": "", "returncode": 0})()):
+                받은뒤검사.눈하나(편, 편 / "컷표.json", 받음, 일[0])
+            명령 = 부름[0]
+            self.assertIn(f"C1={받음 / 'C1__2.mp4'}", [명령[i + 1] for i, x in enumerate(명령) if x == "--배역판"])
 
     def test_눈판을_올려_앞_눈판_기록은_받은_뒤_검사가_다시_잰다(self):
         self.assertGreaterEqual(받은뒤검사.눈판, 2)
