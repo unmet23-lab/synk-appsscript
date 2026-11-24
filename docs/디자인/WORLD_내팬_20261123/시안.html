@@ -280,6 +280,64 @@ p{margin:0}
 .letter .sig img{width:36px;height:36px;border-radius:50%;object-fit:cover}
 .lfoot{position:relative;z-index:2;padding:0 var(--g)}
 
+/* ── 종이 겉(8판 B) — 학생 레슨 시트 종이 정본(월드 시그널 11-23): 바탕 #F3EEE6 · 먹 #161513 · 말하는 사람은 색 네모와 이름(말풍선 카드 없음)
+   · 배울 말 하나만 흙빛 #A9441F · 내 차례 남색 #1d2547 · 주 단추 따뜻한 먹 알약. 장면 끝 · 내 팬 · 다시 말하기에만 입힌다(내 길은 밤 그대로). ── */
+.pp{--w-bg:#F3EEE6;--w-s1:#FBF8F3;--w-s2:#EFE8DD;--w-s3:#E4DCCF;--w-line:rgba(22,21,19,.1);--w-line-2:rgba(22,21,19,.16);--w-ink:#161513;--w-ink-2:#4c4842;--w-ink-3:#7a746b;--w-ink-q:#8f887e;--w-ink-4:rgba(22,21,19,.22);--w-on-ink:#FFFFFF;--fan:#6b52c8;--who:#161513;--done:#2f7a57;background:#F3EEE6;color:#161513}
+.pp .amb{background:#F3EEE6}
+.pp .amb::after{display:none}
+.pp .shot{left:16px;right:16px;top:104px;border-radius:24px;-webkit-mask-image:none;mask-image:none;box-shadow:0 18px 40px -18px rgba(22,21,19,.45)}
+.pp .shot::after{background:linear-gradient(180deg,rgba(0,0,0,.14),transparent 30%,transparent 78%,rgba(0,0,0,.22))}
+#end.pp .shot{height:360px}
+#end.pp .hall{top:-330px}
+#end.pp .sub{top:488px}
+.pp .sub{justify-items:start;text-align:left}
+.pp .sub .say{text-shadow:none;max-width:none}
+.pp .who{color:var(--w-ink-3)}
+.pp .who b{color:var(--w-ink)}
+.pp .sub .who b::before,.pp .fline .who b::before{width:8px;height:8px;border-radius:2px;background:var(--fan);box-shadow:none}
+#encore.pp .sub .who b::before{display:inline-block}
+.pp .tag{background:#fff;box-shadow:inset 0 0 0 1px var(--w-line-2);color:var(--w-ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+.pp .prog i{background:rgba(22,21,19,.14)}
+.pp .prog i b{background:#161513}
+.pp .back{background:#fff;box-shadow:inset 0 0 0 1px var(--w-line-2);-webkit-backdrop-filter:none;backdrop-filter:none}
+.pp .back::before{border-color:#161513}
+.pp .ttl{text-shadow:none}
+.pp .topfade{background:linear-gradient(180deg,#F3EEE6 80%,rgba(243,238,230,0))}
+.pp .pill{background:#2A2420;color:#fff;box-shadow:none}
+.pp .hint{color:var(--w-ink-q)}
+.pp .tutorB .who::before{content:'';display:inline-block;width:8px;height:8px;border-radius:2px;background:#4C6E9E;margin-right:6px}
+.pp .bub{background:transparent;color:var(--w-ink-2);padding:0;border-radius:0;font-size:16px;line-height:25px}
+.pp .bub b{color:#A9441F}
+#end.pp .sub .tutorB{margin-top:16px;padding-top:16px;border-top:1px solid var(--w-line)}
+.pp .card,.pp .tile,.pp .pick{background:#FBF8F3;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 0 0 1px var(--w-line)}
+.pp .card .learn b{color:#A9441F}
+.pp .pk[aria-pressed="true"]{background:#161513;color:#fff}
+.pp .tile .k{color:var(--fan)}
+.pp .goal .bar i{background:rgba(22,21,19,.1)}
+.pp .goal .bar i.on{background:var(--fan);box-shadow:none}
+#fans.pp .shot{height:300px}
+#fans::after{content:'';position:absolute;left:0;right:0;bottom:0;height:64px;z-index:8;pointer-events:none;background:linear-gradient(180deg,rgba(6,6,15,0),#06060f)}
+#fans.pp::after{background:linear-gradient(180deg,rgba(243,238,230,0),#F3EEE6 85%)}
+/* 종이 겉의 제목은 이야기 명조(레슨 제목과 같은 목소리) */
+.pp .fhead .t{font-family:var(--serif);font-weight:600;letter-spacing:-.01em}
+#end.pp .tcard{background:#F3EEE6}
+#end.pp .tcard .t{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;color:#161513}
+#end.pp .tcard .k,#end.pp .tcard .s{color:#7a746b}
+#fans.pp .hall{top:-260px}
+#fans.pp .body{margin-top:428px}
+#encore.pp .amb{background:#F3EEE6}
+#encore.pp .shot{height:280px}
+#encore.pp .shot::after{background:linear-gradient(180deg,rgba(0,0,0,.14),transparent 30%,transparent 78%,rgba(0,0,0,.22))}
+#encore.pp .hall{top:-425px}
+#encore.pp .sub{top:404px}
+.pp .mic{justify-self:stretch}
+.pp .orbwrap{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:56px;border-radius:999px;background:#1d2547;color:#fff;filter:none}
+.pp .orb-motion{display:none}
+.pp .orbwrap::before{content:'';width:10px;height:10px;border-radius:50%;background:#ff6b81}
+.pp .orbwrap::after{content:'눌러서 말하기';font-size:17px;font-weight:600}
+.pp .mstate{display:none}
+.pp .win{background:#161513;box-shadow:0 10px 30px -10px rgba(22,21,19,.5)}
+
 @media (max-width:860px){
   .wrap{grid-template-columns:minmax(0,1fr);gap:18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
   .side{position:static}
@@ -296,6 +354,13 @@ p{margin:0}
     <div>
       <h1>내 팬</h1>
       <p class="lead">1화 끝 객석에서 나를 위해 응원봉을 켠 사람들이 내 팬입니다. 팬은 내 연습 기록만 보고 말하고, 말하는 팬의 자리에 빛이 갑니다.</p>
+    </div>
+    <div class="ctl">
+      <span class="lab">겉</span>
+      <div class="seg" id="skinSeg">
+        <button type="button" data-skin="paper" aria-pressed="true">종이 (8판)</button>
+        <button type="button" data-skin="night" aria-pressed="false">밤 (7판)</button>
+      </div>
     </div>
     <div class="ctl">
       <span class="lab">화면</span>
@@ -626,6 +691,13 @@ p{margin:0}
     S.t = +b.dataset.t; S.noticeGone = false; $$('#tSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
     show(S.t === 0 ? 'end' : 'path');
   }; });
+  $$('#skinSeg button').forEach(b => { b.onclick = () => {
+    const paper = b.dataset.skin === 'paper';
+    $$('#skinSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    ['end', 'fans', 'encore'].forEach(id => $('#' + id).classList.toggle('pp', paper));
+    const cur = $('.scr.on'); show(cur && cur.id !== 'encore' ? cur.id : 'fans');
+  }; });
+  ['end', 'fans', 'encore'].forEach(id => $('#' + id).classList.add('pp'));
   renderFans();
   show('end');
   // 말하기 구 — Orbloom(MIT, orbloom@0.1.0). 화면이 뜬 뒤에 불러 첫 표지를 막지 않는다
