@@ -15,15 +15,13 @@ export function actionEvidence(mission,correct){
  * start at the original game. A performed request is a success; a request with no move at all, or an
  * obstacle the runner could not react to in time, is time running out; a different or late move is a
  * miss within time. None of these is language evidence (the run is confounded; see actionEvidence). */
-// FLOW_ 값은 손잡이 · 값 목록까지 깊게 얼린다 — 실행 중에 고쳐 넘기면 엔진의 내용 정의 막기를 비켜 간다(4-6e-2).
-const deepFrozen=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(deepFrozen);Object.freeze(value);}return value;};
-export const FLOW_RUN=deepFrozen({id:'korean-runner.run',version:1,target:0.8,knobs:[
+export const FLOW_RUN={id:'korean-runner.run',version:1,target:0.8,knobs:[
  {id:'speed',kind:'pace',label:'처음 달리는 속도',values:[11,12,13,14,15],start:2},
- {id:'ramp',kind:'pace',label:'갈수록 빨라지는 정도',values:[0,.025,.04,.055,.07],start:3,weight:.5}]});
+ {id:'ramp',kind:'pace',label:'갈수록 빨라지는 정도',values:[0,.025,.04,.055,.07],start:3,weight:.5}]};
 // A tired day keeps the run from speeding up at all (Atlas design §4-9: nothing gets harder today).
 export const TIRED_RUN={knobs:{ramp:0}};
-export const FLOW_WORDS=deepFrozen({'raise.pace':'바람이 조금 빨라져요.','ease.pace':'바람이 조금 느긋해져요.','start.memory':'','start.prior':'',
- 'start.tired':'오늘은 바람이 빨라지지 않아요.','start.returning':'오랜만이라 바람이 느긋하게 불어요.'});
+export const FLOW_WORDS={'raise.pace':'바람이 조금 빨라져요.','ease.pace':'바람이 조금 느긋해져요.','start.memory':'','start.prior':'',
+ 'start.tired':'오늘은 바람이 빨라지지 않아요.','start.returning':'오랜만이라 바람이 느긋하게 불어요.'};
 export function paceOf(values={}){return {speed:values.speed,ramp:values.ramp};}
 export function runObservation(notice){
  if(notice?.type==='correct')return {outcome:'success'};

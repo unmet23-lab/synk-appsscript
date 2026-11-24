@@ -20,7 +20,7 @@ export const worldMapData=worldMapSource.worldMapData;
 // maps/topik-speaking.json, E 11-08)는 WORLD 코치 지도에만 싣는다 — 3~4급 게임 묶음은 기본 worldMapData()를 그대로 쓴다.
 // 지도판은 기본판 + 층 판들의 짧은 지문 하나다(strata/world-coach.js — 층 판을 이어 붙이면 Trail 식별자 120자를 넘어 모든 제시가 던진다).
 // 지도판이 바뀌어도 재확인 짝은 능력 칸으로 맺어 끊기지 않는다(temper-followup-2).
-export const worldMap=strata.createMap(worldCoach.coachMapData(worldMapData(),[[worldLife.withLifeLayer,worldLife.layer()],[worldSpeaking.withSpeakingLayer,worldSpeaking.layer()]]));
+export const worldMap=strata.createMap(worldCoach.coachMapData(worldMapData(),[[worldSpeaking.withSpeakingLayer,worldSpeaking.layer()]]));
 
 // createWorldEducation이 쓰는 꼴은 atlas/game-browser.js 그대로(engine.createGame·SKILLS·POLICY·recommendActivities…)이고
 // 코치를 만드는 함수와 항목 목록만 이 지도다. 게임 안에서 부르는 createGame(게임 화면의 학습 호스트 연결)은 게임 엔진 그대로다.

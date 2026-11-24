@@ -48,8 +48,7 @@ export function missDirection(choice){
 // Trail 사건 묶음: 제시 · 시도 · 첫 시도 · 결정의 경험 · 차례 · 처음 본 제시 · 뺀 기록 · 도움.
 // 차례(order)는 시각 순서이고, 같은 시각이면 기록 순서다(판 4, 11-15). 다른 기기 · 손님 기록을 받으면(game-learning importEvents) 받은 사건이
 // 로그 끝에 붙어 기록 순서가 실제로 한 차례와 달라진다 — 그러면 놓치기 전의 답이 「그 자리」 · 「나중에 다시」 · 「짧은 연습」에 세어졌다.
-// 한 기기 안의 기록은 게임 시계가 뒤로 가지 않아(game-learning monotonic clock) 시각 순서가 기록 순서와 같다 — 기기 시계가 그 시계의 여유(5분)보다
-// 크게 뒤로 가면 갈릴 수 있고, 그때는 「●」를 덜 내는 쪽으로 갈린다.
+// 한 기기 안의 기록은 게임 시계가 뒤로 가지 않아(game-learning monotonic clock) 시각 순서가 기록 순서와 같다.
 function msIndex(events){
  const list=Array.isArray(events)?events:[],shown=new Map(),first=new Map(),attempt=new Map(),experience=new Map(),order=new Map(),excluded=new Set(),help=new Map();
  const timeOf=event=>{const value=Date.parse(event?.at);return Number.isFinite(value)?value:Infinity;};
@@ -72,8 +71,7 @@ function msIndex(events){
   fresh:presentation=>[presentation.itemKey,presentation.measure?.familyKey].filter(Boolean).every(key=>firstSight.get(key)===presentation.id),
   // 뺀 답(「제가 한 말과 달라요」 · record.excluded): 그 시도 · 그 제시 · 그 결정을 뺐으면 기록이 받쳐 주지 않는 답이다(Trail summarize의 omitted와 같은 가름).
   omitted:row=>{if(!msRecord(row))return true;const presentation=shown.get(row.presentationId);return excluded.has(row.id)||excluded.has(row.presentationId)||!!presentation&&excluded.has(presentation.decisionId);},
-  // 그 제시에 이 답보다 먼저 도움이 남았나(차례나 시각 가운데 하나라도 앞서면). Trail은 기록 순서나 시각으로 가르는데, 여기 차례는 판 4부터
-  // 시각 순서라 기기 시계가 크게 뒤로 간 드문 경우에만 Trail과 갈린다 — 그때는 「도움 받아 맞힘」 대신 덜 말하는 「만남」이 된다.
+  // 그 제시에 이 답보다 먼저 도움이 남았나(차례나 시각 가운데 하나라도 앞서면 — Trail과 같다).
   helped:row=>{const hit=help.get(row?.presentationId);if(!hit)return false;const index=order.get(row.id),time=Date.parse(row.at);
    return hit.index<(index??Infinity)||Number.isFinite(time)&&hit.at<time;}};
 }

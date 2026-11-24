@@ -7,75 +7,75 @@ const phases=['welcome','choose','repair','response','break','complete'];
 const clone=value=>JSON.parse(JSON.stringify(value));
 export const CAFE_SEATS={window:'창가 자리',garden:'화분 옆 자리'};
 export const CAFE_STEPS=[
- {name:'음료 주문',goal:'서하와 둘이 차가운 주스를 한 잔씩 마셔요.',staff:'어서 오세요. 어떤 음료로 드릴까요?',friend:'제 주스도 같이 주문해 줄래요?',speaker:'seoha',hint:'둘이 한 잔씩이면 두 잔이에요. 차가운 주스 두 잔 주세요.',next:'마실 곳 정하기',
-  options:{a:{label:'차가운 주스 · 한 잔',drink:'cold',count:1,response:'차가운 주스 한 잔이요. 친구분도 함께 드시나요?',friend:'어? 한 잔이에요? 우리 둘이 한 잔씩 마셔요!'},b:{label:'차가운 주스 · 두 잔',drink:'cold',count:2,response:'네, 차가운 주스 두 잔 주문받았어요.',friend:'좋아요! 우리 둘이 한 잔씩이에요!'},c:{label:'따뜻한 주스 · 두 잔',drink:'warm',count:2,response:'따뜻한 주스 두 잔이요. 차가운 주스를 찾으셨던 것 같은데, 맞을까요?',friend:'저는 오늘 차가운 주스를 마시고 싶어요!'}}},
- {name:'마실 곳',goal:'서하와 카페 안의 테이블에서 마시려고 해요.',staff:'가져가실 건가요?',friend:'저기 자리가 있어요! 카페 안에서 마셔요!',speaker:'seoha',hint:'카페 안의 테이블에서 마실 때는 여기서 마실게요.',next:'주스 받아 자리로 가기',
-  options:{a:{label:'포장해 주세요.',drink:'cold',count:2,response:'포장으로 준비할게요. 카페 안에 앉으실 거면 매장 이용으로 바꿔 드릴까요?',friend:'어? 우리는 카페 안에서 마시려고 했어요!'},b:{label:'아직 안 마셨어요.',drink:'cold',count:2,response:'네. 음료를 카페 안에서 드실지, 밖으로 가져가실지 알려 주세요.',friend:'여기서 마신다고 말해 볼까요?'},c:{label:'여기서 마실게요.',drink:'cold',count:2,response:'네, 매장 컵에 준비했어요. 두 잔 모두 가져가세요.',friend:'좋아요! 어디에 앉을까요?'}}},
- {name:'포장 부탁',goal:'이번에는 주문한 차를 가지고 학교에 가려고 해요.',staff:'따뜻한 차가 준비됐어요. 매장에서 드시나요?',friend:'저는 이제 수업이 있어요. 차는 가지고 갈게요.',speaker:'jiho',hint:'음료를 학교로 가져가려면 포장해 주세요.',next:'차 받아 학교로 가기',
-  options:{a:{label:'포장해 주세요.',drink:'takeout',count:1,response:'네, 뚜껑을 닫아 포장했어요. 따뜻하니 조심해서 가져가세요.',friend:'고마워요. 따뜻할 때 가지고 갈게요.'},b:{label:'매장에서 마실게요.',drink:'tea',count:1,response:'매장 컵으로 드릴게요. 학교로 가져가시려면 포장 컵으로 바꿔 드릴까요?',friend:'저는 학교에 가야 해요. 가지고 갈 컵이 필요해요.'},c:{label:'주문을 취소할게요.',drink:null,count:0,response:'취소하시겠어요? 학교에 가져갈 차가 필요하시면 주문을 유지하고 포장해 드릴게요.',friend:'차는 필요해요. 포장을 부탁해 주세요.'}}},
+ {name:'음료 주문',goal:'몽글과 둘이 차가운 주스를 한 잔씩 마셔요.',staff:'어서 오세요. 어떤 음료로 드릴까요?',friend:'오! 내 컵도 같이 주문해 줄래?',speaker:'mongle',hint:'둘이 한 잔씩이면 두 잔이에요. 차가운 주스 두 잔 주세요.',next:'마실 곳 정하기',
+  options:{a:{label:'차가운 주스 · 한 잔',drink:'cold',count:1,response:'차가운 주스 한 잔이요. 친구분도 함께 드시나요?',friend:'어? 컵이 하나네! 우리 같이 한 잔씩 마시자!'},b:{label:'차가운 주스 · 두 잔',drink:'cold',count:2,response:'네, 차가운 주스 두 잔 주문받았어요.',friend:'우와! 하나는 네 컵, 하나는 내 컵이야!'},c:{label:'따뜻한 주스 · 두 잔',drink:'warm',count:2,response:'따뜻한 주스 두 잔이요. 차가운 주스를 찾으셨던 것 같은데, 맞을까요?',friend:'오! 오늘은 시원한 주스가 마시고 싶어!'}}},
+ {name:'마실 곳',goal:'몽글과 카페 안의 테이블에서 마시려고 해요.',staff:'가져가실 건가요?',friend:'같이 앉을 자리가 있네! 카페 안에서 마시자!',speaker:'mongle',hint:'카페 안의 테이블에서 마실 때는 여기서 마실게요.',next:'주스 받아 자리로 가기',
+  options:{a:{label:'포장해 주세요.',drink:'cold',count:2,response:'포장으로 준비할게요. 카페 안에 앉으실 거면 매장 이용으로 바꿔 드릴까요?',friend:'오! 우리는 카페 안에서 마시려고 했어!'},b:{label:'아직 안 마셨어요.',drink:'cold',count:2,response:'네. 음료를 카페 안에서 드실지, 밖으로 가져가실지 알려 주세요.',friend:'같이 앉아서 마신다고 말해 볼까?'},c:{label:'여기서 마실게요.',drink:'cold',count:2,response:'네, 매장 컵에 준비했어요. 두 잔 모두 가져가세요.',friend:'우와! 같이 앉을 자리도 골라 볼까?'}}},
+ {name:'포장 부탁',goal:'이번에는 주문한 차를 가지고 학교에 가려고 해요.',staff:'따뜻한 차가 준비됐어요. 매장에서 드시나요?',friend:'학교 갈 시간 확인. 차는 밖으로 가져간다.',speaker:'marine',hint:'음료를 학교로 가져가려면 포장해 주세요.',next:'차 받아 학교로 가기',
+  options:{a:{label:'포장해 주세요.',drink:'takeout',count:1,response:'네, 뚜껑을 닫아 포장했어요. 따뜻하니 조심해서 가져가세요.',friend:'포장 확인. …따뜻할 때 가져가자.'},b:{label:'매장에서 마실게요.',drink:'tea',count:1,response:'매장 컵으로 드릴게요. 학교로 가져가시려면 포장 컵으로 바꿔 드릴까요?',friend:'목적지, 학교. 밖으로 가져갈 컵이 필요하다.'},c:{label:'주문을 취소할게요.',drink:null,count:0,response:'취소하시겠어요? 학교에 가져갈 차가 필요하시면 주문을 유지하고 포장해 드릴게요.',friend:'차가 아직 필요하다. 포장을 부탁하라.'}}},
 ];
 
 const order=(drink,count,label,place='매장 이용')=>({drink,count,label,place});
 export const CAFE_VISITS=[
- {id:CAFE_LESSON_ID,number:1,title:'같이 마실 주스, 내가 주문해 볼까?',caption:'오늘은 내가 주문하는 날',description:'서하와 카페에서 쉬고, 학교에 가는 지호에게 차를 챙겨 줘요.',steps:CAFE_STEPS,seatStep:1,breakStep:2,
-  ending:{title:'주문부터 컵을 받기까지.',text:'친구와 마실 주스 두 잔, 지호가 학교에 가져갈 차 한 잔을 챙겼어요.',orders:[order('cold',2,'차가운 주스 두 잔','매장에서 함께'),order('takeout',1,'따뜻한 차 한 잔','학교로 가져가기')]}},
- {id:'cafe-visit-taste',number:2,title:'태오의 따뜻한 한 잔',caption:'두 번째 방문 · 친구의 취향',description:'따뜻한 차를 마시고 싶은 태오. 친구가 원하는 음료를 같이 골라요.',seatStep:2,
+ {id:CAFE_LESSON_ID,number:1,title:'같이 마실 주스, 내가 주문해 볼까?',caption:'오늘은 내가 주문하는 날',description:'몽글과 카페에서 쉬고, 학교 가는 마린에게 차를 챙겨 줘요.',steps:CAFE_STEPS,seatStep:1,breakStep:2,
+  ending:{title:'주문부터 컵을 받기까지.',text:'친구와 마실 주스 두 잔, 마린이 학교에 가져갈 차 한 잔을 챙겼어요.',orders:[order('cold',2,'차가운 주스 두 잔','매장에서 함께'),order('takeout',1,'따뜻한 차 한 잔','학교로 가져가기')]}},
+ {id:'cafe-visit-taste',number:2,title:'까몽의 따뜻한 한 잔',caption:'두 번째 방문 · 친구의 취향',description:'따뜻한 차가 마시고 싶은 까몽. 친구가 원하는 음료를 같이 골라요.',seatStep:2,
   steps:[
-   {name:'친구의 취향',staff:'어서 오세요. 오늘은 어떤 음료를 드릴까요?',speaker:'taeo',friend:'저는 오늘 따뜻한 차를 마시고 싶어요.',hint:'태오가 원하는 것은 따뜻한 차예요. 종류와 온도를 함께 봐요.',next:'함께 마실 수량 정하기',menu:true,before:order(null,0,'태오의 취향을 골라 주세요','마실 곳은 아직'),options:{
-    a:{...order('warm',1,'따뜻한 주스 한 잔'),response:'따뜻한 주스 한 잔이요. 친구분은 차를 원하셨던 것 같은데, 다시 확인할까요?',friend:'음, 주스 말고 차가 좋아요.'},
-    b:{...order('tea',1,'따뜻한 차 한 잔'),response:'네, 따뜻한 차로 주문받았어요. 함께 드실 수량도 알려 주세요.',friend:'맞아요! 따뜻한 차예요.'},
-    c:{...order('cold',1,'차가운 주스 한 잔'),response:'차가운 주스 한 잔이요. 오늘은 따뜻한 차로 바꾸실까요?',friend:'저는 따뜻한 차가 좋아요. 오늘은 추워요.'}}},
-   {name:'함께 마실 수량',staff:'따뜻한 차를 몇 잔 준비할까요?',speaker:'jiho',friend:'태오 한 잔, 그리고 한 잔 더. 두 잔이에요.',hint:'두 사람이 한 잔씩 마시니까 따뜻한 차 두 잔 주세요.',next:'마실 곳 알려 주기',menu:true,before:order('tea',1,'따뜻한 차 한 잔','수량 확인 중'),options:{
-    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔이요. 두 분이 한 잔씩 드시면 두 잔으로 바꿔 드릴까요?',friend:'한 잔은 부족해요. 두 사람이 마셔요.'},
-    b:{...order('tea',3,'따뜻한 차 세 잔'),response:'세 잔이요. 두 분의 컵만 필요하면 두 잔으로 바꿀 수 있어요.',friend:'두 사람이 마셔요. 두 잔이면 돼요.'},
-    c:{...order('tea',2,'따뜻한 차 두 잔'),response:'따뜻한 차 두 잔, 확인했어요. 여기서 드시나요?',friend:'네, 두 잔이 맞아요.'}}},
-   {name:'함께 쉬는 자리',staff:'가져가실 건가요, 여기서 드실 건가요?',speaker:'seoha',friend:'비가 와요. 여기서 같이 쉬어요!',hint:'카페 안에서 쉬며 마시니까 여기서 마실게요.',next:'차 받아 친구와 앉기',before:order('tea',2,'따뜻한 차 두 잔','마실 곳 확인 중'),options:{
-    a:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 매장 컵 두 잔 준비했어요. 편한 자리를 골라 주세요.',friend:'좋아요! 같이 앉아요!'},
-    b:{...order('takeout',2,'따뜻한 차 두 잔','포장 요청'),response:'포장으로 준비할게요. 카페 안에서 쉬실 거면 매장 이용으로 바꿀까요?',friend:'어? 우리는 안에서 쉬려고 했어요!'},
-    c:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'취소하시겠어요? 따뜻한 차를 마시려면 주문을 유지하실 수 있어요.',friend:'우리 같이 따뜻한 차를 마셔요!'}}}],
-  ending:{title:'태오의 취향을 기억했어요.',text:'따뜻한 차 두 잔을 받아 친구와 함께 앉았어요.',orders:[order('tea',2,'따뜻한 차 두 잔','친구와 함께')],lines:[{speaker:'taeo',text:'제가 좋아하는 차를 기억했네요. 다음에도 같이 와요.'},{speaker:'seoha',text:'다음에는 제가 좋아하는 것도 같이 골라요!'},{speaker:'jiho',text:'따뜻한 차 두 잔, 잘 받았어요. 천천히 마셔요.'}]}},
+   {name:'친구의 취향',staff:'어서 오세요. 오늘은 어떤 음료를 드릴까요?',speaker:'kkamong',friend:'이 몸은 따뜻한 차가 마시고 싶군. …네 컵도 같이.',hint:'까몽이 원하는 것은 따뜻한 차예요. 종류와 온도를 함께 봐요.',next:'함께 마실 수량 정하기',menu:true,before:order(null,0,'까몽의 취향을 골라 주세요','마실 곳은 아직'),options:{
+    a:{...order('warm',1,'따뜻한 주스 한 잔'),response:'따뜻한 주스 한 잔이요. 친구분은 차를 원하셨던 것 같은데, 다시 확인할까요?',friend:'이 몸은 오늘 차 쪽이 더 끌리는군.'},
+    b:{...order('tea',1,'따뜻한 차 한 잔'),response:'네, 따뜻한 차로 주문받았어요. 함께 드실 수량도 알려 주세요.',friend:'훗, 내 취향을 알아봤군. …따뜻한 걸로.'},
+    c:{...order('cold',1,'차가운 주스 한 잔'),response:'차가운 주스 한 잔이요. 오늘은 따뜻한 차로 바꾸실까요?',friend:'내가 원하는 건 따뜻한 차야. 오늘은.'}}},
+   {name:'함께 마실 수량',staff:'따뜻한 차를 몇 잔 준비할까요?',speaker:'marine',friend:'수량 확인. 까몽 한 잔, 네 컵 한 잔. 둘.',hint:'두 사람이 한 잔씩 마시니까 따뜻한 차 두 잔 주세요.',next:'마실 곳 알려 주기',menu:true,before:order('tea',1,'따뜻한 차 한 잔','수량 확인 중'),options:{
+    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔이요. 두 분이 한 잔씩 드시면 두 잔으로 바꿔 드릴까요?',friend:'수량 재확인. 함께 마실 컵, 둘.'},
+    b:{...order('tea',3,'따뜻한 차 세 잔'),response:'세 잔이요. 두 분의 컵만 필요하면 두 잔으로 바꿀 수 있어요.',friend:'주문 대상, 두 사람. 필요한 컵, 둘.'},
+    c:{...order('tea',2,'따뜻한 차 두 잔'),response:'따뜻한 차 두 잔, 확인했어요. 여기서 드시나요?',friend:'수량 확인 완료. 두 사람의 컵, 둘.'}}},
+   {name:'함께 쉬는 자리',staff:'가져가실 건가요, 여기서 드실 건가요?',speaker:'mongle',friend:'오! 비가 그칠 때까지 같이 여기서 쉬자!',hint:'카페 안에서 쉬며 마시니까 여기서 마실게요.',next:'차 받아 친구와 앉기',before:order('tea',2,'따뜻한 차 두 잔','마실 곳 확인 중'),options:{
+    a:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 매장 컵 두 잔 준비했어요. 편한 자리를 골라 주세요.',friend:'우와! 따뜻한 컵 두 개야! 같이 앉자!'},
+    b:{...order('takeout',2,'따뜻한 차 두 잔','포장 요청'),response:'포장으로 준비할게요. 카페 안에서 쉬실 거면 매장 이용으로 바꿀까요?',friend:'오! 우리는 안에서 같이 쉬려고 했어!'},
+    c:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'취소하시겠어요? 따뜻한 차를 마시려면 주문을 유지하실 수 있어요.',friend:'우리 같이 따뜻한 차 마시려고 했지?'}}}],
+  ending:{title:'까몽의 취향을 기억했어요.',text:'따뜻한 차 두 잔을 받아 친구와 함께 앉았어요.',orders:[order('tea',2,'따뜻한 차 두 잔','친구와 함께')],lines:[{speaker:'kkamong',text:'이 몸 취향을 잘 아는군. …다음에도 같이 오지.'},{speaker:'mongle',text:'우와! 다음에는 내가 좋아하는 것도 같이 골라 보자!'},{speaker:'marine',text:'수령 완료. 따뜻한 차, 두 잔. …편히 쉬어라.'}]}},
  {id:'cafe-visit-soldout',number:3,title:'주스가 없는 날',caption:'세 번째 방문 · 작은 품절 안내',description:'주스가 다 나간 날. 가능한 음료를 찾아 공원에 가져가요.',
   steps:[
-   {name:'오늘의 메뉴',staff:'오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요.',speaker:'seoha',friend:'어? 주스가 없어요! 다른 음료를 볼까요?',hint:'품절은 주문할 수 없다는 뜻이에요. 오늘 가능한 것은 따뜻한 차예요.',next:'수량 다시 확인하기',menu:true,notice:'오늘 주스 품절 · 따뜻한 차 주문 가능',before:order(null,0,'가능한 음료를 골라 주세요','공원으로 가져갈 주문'),options:{
-    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'네, 따뜻한 차 한 잔으로 준비할게요.',friend:'차는 있어요! 이걸로 해요!'},
-    b:{...order(null,0,'차가운 주스 · 품절','준비되지 않은 음료'),previewDrink:'cold',response:'차가운 주스도 오늘은 품절이에요. 따뜻한 차는 준비할 수 있어요.',friend:'주스는 오늘 없어요. 다른 걸 봐요!'},
-    c:{...order(null,0,'따뜻한 주스 · 품절','준비되지 않은 음료'),previewDrink:'warm',response:'따뜻한 주스도 품절이에요. 주스 대신 따뜻한 차로 드릴까요?',friend:'따뜻한 주스도 없어요. 차를 봐요!'}}},
-   {name:'직원의 수량 확인',staff:'따뜻한 차, 두 잔, 맞나요?',speaker:'jiho',friend:'한 잔만 필요해요. 직원에게 다시 말해요.',hint:'두 잔이 아니라 한 잔이에요. 아니요, 한 잔 주세요.',next:'공원에 가져갈 컵 부탁하기',menu:true,before:order('tea',1,'따뜻한 차 한 잔','수량 확인 중'),options:{
-    a:{...order('tea',3,'따뜻한 차 세 잔'),response:'세 잔으로 바꿀까요? 혼자 드실 한 잔이면 수량을 다시 알려 주세요.',friend:'세 잔은 많아요. 한 잔이에요.'},
-    b:{...order('tea',2,'따뜻한 차 두 잔'),response:'두 잔으로 확인했어요. 한 잔만 필요하면 바꿔 드릴게요.',friend:'두 잔이 아니에요. 한 잔이에요.'},
-    c:{...order('tea',1,'따뜻한 차 한 잔'),response:'아, 한 잔이군요. 한 잔으로 확인했어요. 여기서 드시나요?',friend:'네, 한 잔이 맞아요.'}}},
-   {name:'공원으로 가져가기',staff:'차가 준비됐어요. 매장에서 드시나요?',speaker:'taeo',friend:'공원에 좋은 벤치가 있어요. 차를 가지고 가요.',hint:'공원으로 가져가려면 포장해 주세요.',next:'포장한 차 받아 공원으로',before:order('tea',1,'따뜻한 차 한 잔','마실 곳 확인 중'),options:{
-    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'매장 컵으로 드릴게요. 공원으로 가져가시면 포장 컵이 필요해요.',friend:'벤치는 밖에 있어요. 가지고 갈 컵이 필요해요.'},
-    b:{...order('takeout',1,'따뜻한 차 한 잔','포장 · 공원으로'),response:'네, 뚜껑을 닫아 포장했어요. 컵을 받아 가세요.',friend:'좋아요! 따뜻할 때 가요.'},
-    c:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'취소하시겠어요? 공원에 가져갈 차는 포장해 드릴 수 있어요.',friend:'차는 가지고 갈 거예요. 포장해 달라고 하면 돼요.'}}}],
-  ending:{title:'주스 대신, 새로운 한 잔.',text:'품절 안내를 읽고 따뜻한 차 한 잔을 포장해 받았어요.',orders:[order('takeout',1,'따뜻한 차 한 잔','공원으로 가져가기')],lines:[{speaker:'seoha',text:'오늘은 차를 들고 같이 공원에 가요!'},{speaker:'taeo',text:'제가 본 벤치예요. 여기 앉아요.'},{speaker:'jiho',text:'주스 대신 차를 받았어요. 다음에는 주스도 있을 거예요.'}]}},
- {id:'cafe-visit-change',number:4,title:'태오의 마음이 바뀌었어요',caption:'네 번째 방문 · 주문 바꾸기',description:'음료를 만들기 전이에요. 차로 바꾸고 한 잔 더 챙겨 세 사람이 공원에 가요.',
+   {name:'오늘의 메뉴',staff:'오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요.',speaker:'mongle',friend:'어? 주스가 다 나갔네! 같이 다른 음료를 골라 볼까?',hint:'품절은 주문할 수 없다는 뜻이에요. 오늘 가능한 것은 따뜻한 차예요.',next:'수량 다시 확인하기',menu:true,notice:'오늘 주스 품절 · 따뜻한 차 주문 가능',before:order(null,0,'가능한 음료를 골라 주세요','공원으로 가져갈 주문'),options:{
+    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'네, 따뜻한 차 한 잔으로 준비할게요.',friend:'오! 차는 있구나! 같이 주문을 이어가자!'},
+    b:{...order(null,0,'차가운 주스 · 품절','준비되지 않은 음료'),previewDrink:'cold',response:'차가운 주스도 오늘은 품절이에요. 따뜻한 차는 준비할 수 있어요.',friend:'어? 주스는 오늘 쉬는 날이네! 다른 메뉴를 같이 보자!'},
+    c:{...order(null,0,'따뜻한 주스 · 품절','준비되지 않은 음료'),previewDrink:'warm',response:'따뜻한 주스도 품절이에요. 주스 대신 따뜻한 차로 드릴까요?',friend:'오! 온도를 바꿔도 주스는 다 나갔네! 차를 같이 보자!'}}},
+   {name:'직원의 수량 확인',staff:'따뜻한 차, 두 잔, 맞나요?',speaker:'marine',friend:'필요 수량, 한 잔. 주문 확인을 고친다.',hint:'두 잔이 아니라 한 잔이에요. 아니요, 한 잔 주세요.',next:'공원에 가져갈 컵 부탁하기',menu:true,before:order('tea',1,'따뜻한 차 한 잔','수량 확인 중'),options:{
+    a:{...order('tea',3,'따뜻한 차 세 잔'),response:'세 잔으로 바꿀까요? 혼자 드실 한 잔이면 수량을 다시 알려 주세요.',friend:'필요한 컵, 하나. 수량 재확인.'},
+    b:{...order('tea',2,'따뜻한 차 두 잔'),response:'두 잔으로 확인했어요. 한 잔만 필요하면 바꿔 드릴게요.',friend:'목표 수량, 한 잔. 확인을 고친다.'},
+    c:{...order('tea',1,'따뜻한 차 한 잔'),response:'아, 한 잔이군요. 한 잔으로 확인했어요. 여기서 드시나요?',friend:'수량 확인 완료. 한 잔.'}}},
+   {name:'공원으로 가져가기',staff:'차가 준비됐어요. 매장에서 드시나요?',speaker:'kkamong',friend:'이 몸이 공원 벤치도 봐 뒀지. 차는 가져가면 되는 거야.',hint:'공원으로 가져가려면 포장해 주세요.',next:'포장한 차 받아 공원으로',before:order('tea',1,'따뜻한 차 한 잔','마실 곳 확인 중'),options:{
+    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'매장 컵으로 드릴게요. 공원으로 가져가시면 포장 컵이 필요해요.',friend:'내가 봐 둔 벤치는 밖에 있지. 가져갈 컵으로.'},
+    b:{...order('takeout',1,'따뜻한 차 한 잔','포장 · 공원으로'),response:'네, 뚜껑을 닫아 포장했어요. 컵을 받아 가세요.',friend:'이 몸 준비는 끝났지. …따뜻할 때 가자.'},
+    c:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'취소하시겠어요? 공원에 가져갈 차는 포장해 드릴 수 있어요.',friend:'차는 아직 가져갈 거지. 포장으로 부탁하면 돼.'}}}],
+  ending:{title:'주스 대신, 새로운 한 잔.',text:'품절 안내를 읽고 따뜻한 차 한 잔을 포장해 받았어요.',orders:[order('takeout',1,'따뜻한 차 한 잔','공원으로 가져가기')],lines:[{speaker:'mongle',text:'오! 오늘은 차를 들고 같이 공원에 가자!'},{speaker:'kkamong',text:'이 몸이 봐 둔 벤치야. …컵은 천천히 내려놔.'},{speaker:'marine',text:'대체 주문, 수령 완료. …다음에는 주스도 만나겠지.'}]}},
+ {id:'cafe-visit-change',number:4,title:'까몽의 마음이 바뀌었어요',caption:'네 번째 방문 · 주문 바꾸기',description:'음료를 만들기 전이에요. 차로 바꾸고 한 잔 더 챙겨 세 친구가 공원에 가요.',
   steps:[
-   {name:'음료 바꾸기',staff:'따뜻한 주스 두 잔, 아직 만들기 전이에요. 주문을 바꾸시겠어요?',speaker:'taeo',friend:'저는 따뜻한 차가 더 좋아요. 지금 바꿀 수 있어요?',hint:'주스 대신 따뜻한 차로 바꿔 주세요. 바꿀 음료를 함께 말해요.',next:'지호의 컵 더하기',before:order('warm',2,'따뜻한 주스 두 잔','변경 전 주문'),options:{
-    a:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 주스 대신 따뜻한 차 두 잔으로 바꿨어요.',friend:'네, 이거예요. 따뜻한 차!'},
-    b:{...order('warm',2,'따뜻한 주스 두 잔'),response:'따뜻한 주스 두 잔을 유지할게요. 차로 바꾸려면 다시 알려 주세요.',friend:'저는 오늘 차로 바꾸고 싶어요.'},
-    c:{...order('cold',2,'차가운 주스 두 잔'),response:'차가운 주스로 바꿀게요. 따뜻한 차를 원하시면 종류도 함께 알려 주세요.',friend:'주스 말고 따뜻한 차가 좋아요.'}}},
-   {name:'한 잔 더',staff:'따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?',speaker:'seoha',friend:'지호도 같이 마셔요! 두 잔에 한 잔 더하면 세 잔이에요!',hint:'두 잔에 한 잔을 추가해요. 한 잔 더 주세요.',next:'가져갈 곳 바꾸기',menu:true,before:order('tea',2,'따뜻한 차 두 잔','추가 전 주문'),options:{
-    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔을 빼면 한 잔만 남아요. 세 잔이 필요하시면 두 잔 더 추가할까요?',friend:'어? 컵이 줄었어요! 우리는 세 사람이에요!'},
-    b:{...order('tea',3,'따뜻한 차 세 잔'),response:'한 잔 추가해서 따뜻한 차 세 잔으로 준비할게요.',friend:'좋아요! 지호 컵도 생겼어요!'},
-    c:{...order('tea',2,'따뜻한 차 두 잔'),response:'두 잔을 유지할게요. 세 분이 드시면 한 잔 더 추가할 수 있어요.',friend:'지호 컵도 필요해요! 한 잔이 더 필요해요!'}}},
-   {name:'포장으로 변경',staff:'세 잔 모두 매장에서 드실 건가요?',speaker:'jiho',friend:'우리는 공원으로 가요. 포장 컵이 세 개 필요해요.',hint:'주문은 유지하고 마실 곳을 바꿔요. 포장으로 바꿔 주세요.',next:'세 사람의 컵 받아 출발하기',before:order('tea',3,'따뜻한 차 세 잔','매장 이용'),options:{
-    a:{...order('tea',3,'따뜻한 차 세 잔'),response:'매장 컵 세 잔으로 드릴게요. 공원에 가져가실 거면 포장으로 바꿀 수 있어요.',friend:'우리는 공원에서 마셔요. 가지고 갈 컵이 필요해요.'},
-    b:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'세 잔 모두 취소하시겠어요? 음료는 유지하고 포장만 바꿀 수 있어요.',friend:'음료는 그대로예요. 마실 곳만 바꿔요.'},
-    c:{...order('takeout',3,'따뜻한 차 세 잔','포장 · 공원으로'),response:'네, 세 잔 모두 포장으로 바꿨어요. 컵을 받아 가세요.',friend:'좋아요. 세 잔 모두 가지고 가요.'}}}],
-  ending:{title:'셋의 컵을 모두 챙겼어요.',text:'주스를 따뜻한 차로 바꾸고, 한 잔을 더해 세 잔을 포장해 받았어요.',orders:[order('takeout',3,'따뜻한 차 세 잔','세 사람 · 공원으로')],lines:[{speaker:'taeo',text:'제 주문을 같이 바꿔 줘서 고마워요.'},{speaker:'seoha',text:'우리 컵이 다 있어요! 같이 가요!'},{speaker:'jiho',text:'세 잔 모두 받았어요. 이번에는 제 컵도 있어요.'}]}}
+   {name:'음료 바꾸기',staff:'따뜻한 주스 두 잔, 아직 만들기 전이에요. 주문을 바꾸시겠어요?',speaker:'kkamong',friend:'이 몸은 따뜻한 차 쪽이 더 끌리는군. …지금 바꿔도 되겠지.',hint:'주스 대신 따뜻한 차로 바꿔 주세요. 바꿀 음료를 함께 말해요.',next:'마린의 컵 더하기',before:order('warm',2,'따뜻한 주스 두 잔','변경 전 주문'),options:{
+    a:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 주스 대신 따뜻한 차 두 잔으로 바꿨어요.',friend:'내가 찾던 건 이거지. 따뜻한 차.'},
+    b:{...order('warm',2,'따뜻한 주스 두 잔'),response:'따뜻한 주스 두 잔을 유지할게요. 차로 바꾸려면 다시 알려 주세요.',friend:'이 몸은 오늘 차로 바꾸고 싶군.'},
+    c:{...order('cold',2,'차가운 주스 두 잔'),response:'차가운 주스로 바꿀게요. 따뜻한 차를 원하시면 종류도 함께 알려 주세요.',friend:'내가 원하는 건 따뜻한 차야. 주스 말고.'}}},
+   {name:'한 잔 더',staff:'따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?',speaker:'mongle',friend:'오! 마린도 같이 마신대! 두 잔에 한 잔 더하면 셋이야!',hint:'두 잔에 한 잔을 추가해요. 한 잔 더 주세요.',next:'가져갈 곳 바꾸기',menu:true,before:order('tea',2,'따뜻한 차 두 잔','추가 전 주문'),options:{
+    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔을 빼면 한 잔만 남아요. 세 잔이 필요하시면 두 잔 더 추가할까요?',friend:'어? 컵이 줄었네! 우리는 셋이 같이 마셔야 해!'},
+    b:{...order('tea',3,'따뜻한 차 세 잔'),response:'한 잔 추가해서 따뜻한 차 세 잔으로 준비할게요.',friend:'우와! 컵이 셋이야! 마린 것도 생겼네!'},
+    c:{...order('tea',2,'따뜻한 차 두 잔'),response:'두 잔을 유지할게요. 세 분이 드시면 한 잔 더 추가할 수 있어요.',friend:'마린 컵도 같이 챙기자! 한 잔 더 필요해!'}}},
+   {name:'포장으로 변경',staff:'세 잔 모두 매장에서 드실 건가요?',speaker:'marine',friend:'목적지 변경. 카페에서 공원으로. 포장 컵, 셋.',hint:'주문은 유지하고 마실 곳을 바꿔요. 포장으로 바꿔 주세요.',next:'세 친구의 컵 받아 출발하기',before:order('tea',3,'따뜻한 차 세 잔','매장 이용'),options:{
+    a:{...order('tea',3,'따뜻한 차 세 잔'),response:'매장 컵 세 잔으로 드릴게요. 공원에 가져가실 거면 포장으로 바꿀 수 있어요.',friend:'목적지, 공원. 가져갈 포장 컵이 필요하다.'},
+    b:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'세 잔 모두 취소하시겠어요? 음료는 유지하고 포장만 바꿀 수 있어요.',friend:'음료 유지. 마실 장소만 변경한다.'},
+    c:{...order('takeout',3,'따뜻한 차 세 잔','포장 · 공원으로'),response:'네, 세 잔 모두 포장으로 바꿨어요. 컵을 받아 가세요.',friend:'변경 확인 완료. …네 컵도 챙겨라.'}}}],
+  ending:{title:'셋의 컵을 모두 챙겼어요.',text:'주스를 따뜻한 차로 바꾸고, 한 잔을 더해 세 잔을 포장해 받았어요.',orders:[order('takeout',3,'따뜻한 차 세 잔','세 친구와 공원으로')],lines:[{speaker:'kkamong',text:'이 몸 주문도 완벽… 해졌군. 같이 골라 줘서.'},{speaker:'mongle',text:'우와! 우리 컵이 다 있어! 같이 출발하자!'},{speaker:'marine',text:'수령 완료. 전원, 세 컵. …이번에는 내 컵도 있다.'}]}}
  ,{id:CAFE_COMPOSE_ID,number:5,title:'내 말로 주문해요',caption:'다섯 번째 방문 · 직접 만드는 주문',description:'음료·온도·잔 수를 골라 나의 주문 문장을 만들고 친구와 쉬어요.',seatStep:2,
   steps:[
-   {name:'내 주문 만들기',staff:'어서 오세요. 어떤 음료를 몇 잔 준비할까요?',speaker:'seoha',friend:'태오와 한 잔씩, 따뜻한 차 두 잔을 주문해 봐요!',hint:'차를 고르고, 따뜻하게, 두 잔을 골라요. 세 정보를 합쳐 주문해요.',next:'직원과 수량 확인하기',compose:true,options:{}},
-   {name:'수량 확인',staff:'따뜻한 차, 두 잔, 맞나요?',speaker:'jiho',friend:'따뜻한 차, 두 잔. 맞아요.',hint:'원하는 수량도 두 잔, 직원의 확인도 두 잔이에요. 네, 두 잔 주세요.',next:'마실 곳 알려 주기',menu:true,before:order('tea',2,'따뜻한 차 두 잔','수량 확인 중'),options:{
-    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔으로 바꿀까요? 두 분이 한 잔씩 드시면 두 잔이 필요해요.',friend:'두 사람이 마셔요. 두 잔이 필요해요.'},
-    b:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 따뜻한 차 두 잔 확인했어요.',friend:'네, 두 잔이 맞아요.'},
-    c:{...order('tea',3,'따뜻한 차 세 잔'),response:'세 잔으로 바꿀까요? 두 분의 컵만 필요하면 두 잔을 유지할 수 있어요.',friend:'두 사람이에요. 두 잔이면 돼요.'}}},
-   {name:'우리 자리',staff:'가져가실 건가요, 여기서 드실 건가요?',speaker:'taeo',friend:'여기서 같이 쉬어요. 따뜻할 때 마셔요.',hint:'카페 안에서 함께 마시려면 네, 여기서 마실게요.',next:'내가 주문한 차 받아 앉기',before:order('tea',2,'따뜻한 차 두 잔','마실 곳 확인 중'),options:{
-    a:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 두 잔 모두 매장 컵에 준비했어요. 자리를 골라 받아 가세요.',friend:'좋아요. 같이 앉아요.'},
-    b:{...order('takeout',2,'따뜻한 차 두 잔','포장 요청'),response:'포장으로 준비할게요. 카페 안에서 쉬실 거면 매장 이용으로 바꿀까요?',friend:'저는 여기서 쉬려고 했어요. 매장 컵이 좋아요.'},
-    c:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'취소하시겠어요? 음료를 함께 마시려면 주문을 유지하실 수 있어요.',friend:'저는 차를 마시고 싶어요. 주문은 그대로 해요.'}}}],
-  ending:{title:'단어가 나의 주문이 됐어요.',text:'음료·온도·수량을 직접 골라 따뜻한 차 두 잔을 주문하고 친구와 앉았어요.',orders:[order('tea',2,'따뜻한 차 두 잔','나의 주문')],lines:[{speaker:'seoha',text:'직접 만든 문장으로 차가 나왔어요! 같이 마셔요!'},{speaker:'taeo',text:'제 차도 잘 챙겼네요. 다음 주문도 부탁해요.'},{speaker:'jiho',text:'주문을 직접 만들었어요. 잘했어요.'}]}}
+   {name:'내 주문 만들기',staff:'어서 오세요. 어떤 음료를 몇 잔 준비할까요?',speaker:'mongle',friend:'오! 까몽과 한 잔씩, 따뜻한 차 두 잔을 같이 만들어 보자!',hint:'차를 고르고, 따뜻하게, 두 잔을 골라요. 세 정보를 합쳐 주문해요.',next:'직원과 수량 확인하기',compose:true,options:{}},
+   {name:'수량 확인',staff:'따뜻한 차, 두 잔, 맞나요?',speaker:'marine',friend:'주문 정보 확인. 따뜻한 차, 두 잔.',hint:'원하는 수량도 두 잔, 직원의 확인도 두 잔이에요. 네, 두 잔 주세요.',next:'마실 곳 알려 주기',menu:true,before:order('tea',2,'따뜻한 차 두 잔','수량 확인 중'),options:{
+    a:{...order('tea',1,'따뜻한 차 한 잔'),response:'한 잔으로 바꿀까요? 두 분이 한 잔씩 드시면 두 잔이 필요해요.',friend:'필요 수량 재확인. 두 사람의 컵, 둘.'},
+    b:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 따뜻한 차 두 잔 확인했어요.',friend:'수량 확인 완료. 두 잔.'},
+    c:{...order('tea',3,'따뜻한 차 세 잔'),response:'세 잔으로 바꿀까요? 두 분의 컵만 필요하면 두 잔을 유지할 수 있어요.',friend:'주문 대상, 두 사람. 필요한 컵, 둘.'}}},
+   {name:'우리 자리',staff:'가져가실 건가요, 여기서 드실 건가요?',speaker:'kkamong',friend:'이 몸이랑 여기서 쉬어 가자. …따뜻할 때.',hint:'카페 안에서 함께 마시려면 네, 여기서 마실게요.',next:'내가 주문한 차 받아 앉기',before:order('tea',2,'따뜻한 차 두 잔','마실 곳 확인 중'),options:{
+    a:{...order('tea',2,'따뜻한 차 두 잔'),response:'네, 두 잔 모두 매장 컵에 준비했어요. 자리를 골라 받아 가세요.',friend:'내 컵도 있군. …같이 앉아.'},
+    b:{...order('takeout',2,'따뜻한 차 두 잔','포장 요청'),response:'포장으로 준비할게요. 카페 안에서 쉬실 거면 매장 이용으로 바꿀까요?',friend:'이 몸은 여기서 쉬려고 했지. 매장 컵으로.'},
+    c:{...order(null,0,'취소 확인 중','아직 수령하지 않음'),response:'취소하시겠어요? 음료를 함께 마시려면 주문을 유지하실 수 있어요.',friend:'내 컵은 아직 필요하지. …네 컵도.'}}}],
+  ending:{title:'단어가 나의 주문이 됐어요.',text:'음료·온도·수량을 직접 골라 따뜻한 차 두 잔을 주문하고 친구와 앉았어요.',orders:[order('tea',2,'따뜻한 차 두 잔','나의 주문')],lines:[{speaker:'mongle',text:'우와! 네가 만든 문장이 진짜 컵이 됐어! 같이 마시자!'},{speaker:'kkamong',text:'이 몸 취향도, 네 컵도 잘 챙겼군. …다음 주문도 부탁하지.'},{speaker:'marine',text:'주문 구성, 수령 완료. …네 말로 해냈다.'}]}}
 ];
 export const CAFE_LESSON_IDS=CAFE_VISITS.map(visit=>visit.id);
 export const cafeVisitById=id=>CAFE_VISITS.find(visit=>visit.id===id)||null;

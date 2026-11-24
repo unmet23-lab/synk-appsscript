@@ -77,7 +77,7 @@ export function createPlatformEntry({ clientKey, getUrl, replaceUrl }) {
   };
 }
 
-const PUBLIC = Object.freeze({ world: 'https://synk.im/world/', care: 'https://synk.im/care/', fortune: 'https://synk.im/fortune/' });
+const PUBLIC = Object.freeze({ world: 'https://synk.im/world/', care: 'https://synk.im/care/', fortune: 'https://synk.im/fortune/', rehearsal: 'https://synk.im/rehearsal/' });
 const COMPANY = 'https://workspace.synk.im/';
 export function platformCompanyEntry(href, identity) {
   let url;try { url = new URL(href); } catch { return href; }

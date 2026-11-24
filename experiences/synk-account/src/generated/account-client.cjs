@@ -29,7 +29,7 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
   fetch: fetcher = globalThis.fetch, timeoutMs = 12000 }) {
   if (!['world', 'platform'].includes(product) || typeof guard !== 'function' || typeof getAccessToken !== 'function') throw new TypeError('An authenticated product host is required');
   const configured = !!url && !!anonKey;
-  async function request(path, body, { signal, keepalive } = {}) {
+  async function request(path, body, { signal } = {}) {
     const checkCancelled = () => { if (signal?.aborted) throw fault('NETWORK', '요청을 중단했어요.', true); };
     guard();
     checkCancelled();
@@ -45,7 +45,7 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
       const timer = setTimeout(cancel, timeoutMs);
       try {
         const response = await fetcher(`${url.replace(/\/$/, '')}/functions/v1/${path}`, {
-          method: body === undefined ? 'GET' : 'POST', signal: abort.signal, ...(keepalive === true ? { keepalive: true } : {}),
+          method: body === undefined ? 'GET' : 'POST', signal: abort.signal,
           headers: { apikey: anonKey, Authorization: `Bearer ${token}`, 'X-SYNK-Product': product, 'X-SYNK-Contract': '1', 'X-SYNK-App-Version': appVersion,
             ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
           ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -118,10 +118,6 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     requestDeletion: request_id => action('delete-request', { request_id }),
     // 7일 취소 유예 동안(요청이 아직 처리 전일 때) 같은 요청 번호로 취소한다.
     cancelDeletion: request_id => action('delete-cancel', { request_id }),
-    // 「방문 목적 안내」 완료(platform 전용, lib/synk-account-purpose-onboarding.js). outcome은 'chosen' · 'skipped' · 'not-asked' 가운데 하나이고,
-    // 고른 목적은 보내지 않는다. 이미 닫혔거나 줄이 없어도 { ok:true, onboarding:{ purpose:'none' } }다. 대기 여부는 load()의 onboarding이 그대로 넘긴다.
-    // options: { signal, keepalive }.
-    completePurposeOnboarding: (outcome, options) => action('purpose-onboarding-complete', { outcome }, options),
     // 「나 > 내 정보」 — 배우는 이유(덧붙이기)와 평가 전용 선택 응답(맞춤의 입력이 아니다).
     saveReasons: (reasons, other = null) => action('learn-reasons', { reasons, other }),
     skipReasons: () => action('learn-reasons-skip'),
@@ -133,12 +129,6 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     // the stored practice (only while learning storage is on). Never evaluation answers.
     atlasSummary: options => request('synk-account?view=atlas', undefined, options),
     exportAiPage: ({ after = 0, until } = {}) => request(`synk-account?view=ai-export&after=${encodeURIComponent(after)}${until == null ? '' : `&until=${encodeURIComponent(until)}`}`),
-    // The town part of the export pages on under its own cursors (the first export page carries its first page).
-    townExportPage: ({ afterCommand = '', afterEvent = '', at = '' } = {}) => request(`synk-account?view=town-export&afterCommand=${encodeURIComponent(afterCommand)}&afterEvent=${encodeURIComponent(afterEvent)}&at=${encodeURIComponent(at)}`),
-    // SYNK TOWN's 「마을 기록」 (SYNK-appsscript vertical slice design §20-5, W6c): the card of what the town keeps of the
-    // person, and the person's own rights over it — only rights commands, sent at the card's revision.
-    townRecords: options => request('synk-town/records', undefined, options),
-    townRights: ({ id, type, payload = {}, expectedRevision }) => request('synk-town/records', { id, type, payload, expectedRevision }),
     learning: Object.freeze({
       get: ({ after, revision, signal }) => request(`synk-learning?after=${encodeURIComponent(after)}&revision=${encodeURIComponent(revision)}`, undefined, { signal }),
       post: ({ revision, events, signal }) => request('synk-learning', { revision, events }, { signal }),

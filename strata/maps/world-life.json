@@ -1,9 +1,9 @@
 {
-  "layer_ver": "world-life-1-9dc13764608e",
+  "layer_ver": "world-life-1-81514d0dfb6b",
   "sources": {
     "world-life": {
       "path": "strata/world-life.json",
-      "sha256": "9dc13764608e5f392dd3878e0aa5c29555df3a3a9b20de39212bebb36f114fcb"
+      "sha256": "81514d0dfb6b2473f2c354f4063bd441c0067b42392403c246fcf8c75056f182"
     }
   },
   "nodes": [
@@ -225,8 +225,7 @@
         "format": "single-choice",
         "items": {
           "cafe-story-takeout": {
-            "skill": "ko.reading.negation",
-            "difficulty": 2
+            "skill": "ko.reading.detail"
           },
           "cafe-visit-change-place": {
             "skill": "ko.reading.negation"

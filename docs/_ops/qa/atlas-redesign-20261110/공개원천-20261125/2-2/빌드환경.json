@@ -1,0 +1,317 @@
+{
+ "설명": "(2-2) 라이브 원천 커밋을 대본 없이 지을 때의 빌드 환경(11-25 아침, (2-2) 공개와 같은 PC · 같은 잇기 원본). 바탕 재현이 깨지면 이 값과 지금 값을 먼저 견준다.",
+ "재었을때": "2026-11-24T20:12:24.405Z",
+ "node": "v26.13.0",
+ "esbuild": {
+  "experiences/synk-account/node_modules": "0.28.2",
+  "node_modules": "0.28.1"
+ },
+ "잠금": {
+  "package-lock.json": "462fcb3536108d6ce07183b18aa45f85526403fa2530f1020cb6369f26648cea",
+  "node_modules/.package-lock.json": "58ccbb112bb22f2b21e384ff572e91f8144491a52187da76febdf173fd6d4790",
+  "experiences/synk-account/package-lock.json": "948978d492660bdc9355610d63b71c73bf85d5db1d70def75aeccc1f258a4e7b",
+  "experiences/synk-account/node_modules/.package-lock.json": "6a4bb5428e331bac7d746bf10f1f3d373a03190d05b06a5d422a0ba8058c3180"
+ },
+ "계정설정": {
+  "경로": ".tmp/world-redesign-20261014/tools/account-config.json",
+  "sha256": "2864ded29a7b5b10b3e467a3699359f664517ebab71211034b83b08fce4bb065"
+ },
+ "git밖입력수": 59,
+ "git밖입력": [
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged.json",
+   "sha256": "3f3cc5ab5c0286cf63fbbbce76dc10f3f7763886a3c12add13d825d26643e288",
+   "크기": 1288
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-ground.glb",
+   "sha256": "844aeec40d56ba094ae76bb3aca94c4d158eada96fa02d7c70dc940f68d24ed9",
+   "크기": 1602436
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-ground-phone.glb",
+   "sha256": "fadd9166fa51c9a365c84e2bfb1d31311f6dc53b75d63a813a87ccb4fe77d7d4",
+   "크기": 768540
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-home.glb",
+   "sha256": "30aa0b19ed592697eaffef9790f9c91ecc22c68283159d4c5b8bb79a38f9df19",
+   "크기": 2391812
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-home-phone.glb",
+   "sha256": "00e0b6be1a1a53b734369465c710f7c9696ccf9221589be7c32f93b19eb878d2",
+   "크기": 1082768
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-cafe.glb",
+   "sha256": "e9d76191a7ae5c628ca8d94c0d189b81fd81fde0beeaab0e3e839226fb130b35",
+   "크기": 1635368
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-cafe-phone.glb",
+   "sha256": "e6c8423ae05dcef5ddf242bcc6a865b50959d796bf1846617ff94e9e375e0a7f",
+   "크기": 774336
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-workshop.glb",
+   "sha256": "d466df3f1a570279ee4697c22e603c9ef503d050d1200b5522a75a3ae3a0aaeb",
+   "크기": 2483704
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-workshop-phone.glb",
+   "sha256": "f3ec052239128050daf325b42f78b5c2a55e41493739a5a150772683e1167407",
+   "크기": 1074828
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-greenhouse.glb",
+   "sha256": "25f12f07df4098eff82a9c3979ddb31d4a693b35fe5d7298d9d7f73c2b720e9a",
+   "크기": 1661460
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-greenhouse-phone.glb",
+   "sha256": "401f8300e9d23182976512e4bb77719bc87892524ddfcb05e5721f069b59dc53",
+   "크기": 745528
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-ring.glb",
+   "sha256": "6f948917492c2485a2cb6de2a067b6432230881c002c468a6959d3b2e63d8a84",
+   "크기": 751896
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-ring-phone.glb",
+   "sha256": "0466ad0ef06a5739d239f350113a2bfca8a6cbaeedb3241ff0470dc1cf5c0b8e",
+   "크기": 495276
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-neighbours.glb",
+   "sha256": "089c860d87fdb274eee8425f9a23d48bcab4631916c6ff2f32da7b9ce1fc4714",
+   "크기": 5283356
+  },
+  {
+   "경로": "experiences/synk-town/assets/district/townwide-merged-neighbours-phone.glb",
+   "sha256": "34f3936b490615970ff818c34c11dd14fafe52a31111791f41d4f26962324821",
+   "크기": 2194740
+  },
+  {
+   "경로": "experiences/drama/pilot/media/DMMono-Medium.woff2",
+   "sha256": "16d7913dd6acebde6603199e176948eddf02f7950e10d9e1c09ac6b85314a49c",
+   "크기": 8464
+  },
+  {
+   "경로": "experiences/drama/pilot/media/DMMono-Regular.woff2",
+   "sha256": "3c682a3aaf3c66a7da9063504aaf71c9dca1bb74f2ee30b92e879a8f884c15fe",
+   "크기": 8352
+  },
+  {
+   "경로": "experiences/drama/pilot/media/InterTight-Bold.woff2",
+   "sha256": "4a409b08c6408ce787fca2657ccd4365b293e54f67de40a78cc572f9f7c4199e",
+   "크기": 23656
+  },
+  {
+   "경로": "experiences/drama/pilot/media/InterTight-Medium.woff2",
+   "sha256": "de3beb2216ba5950ad2dcd0874a7ca35873c61699c1aca44b1b25247f016330c",
+   "크기": 23608
+  },
+  {
+   "경로": "experiences/drama/pilot/media/SUIT-Variable.woff2",
+   "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+   "크기": 624536
+  },
+  {
+   "경로": "experiences/drama/pilot/media/c1-reply.mp4",
+   "sha256": "dbc839563c1b459dc67e2418435b10a0043b2b0cb40dc98b811e46b9652d5303",
+   "크기": 1562936
+  },
+  {
+   "경로": "experiences/drama/pilot/media/c2-listen.mp4",
+   "sha256": "7781fb23d235d14ca76629fe2a7aa01e6641882f4fead4641e9eb453b6ea9a5f",
+   "크기": 1118942
+  },
+  {
+   "경로": "experiences/drama/pilot/media/c2-reply.mp4",
+   "sha256": "ce02afa72a3f905b3542b7783097bd3a21d7f8eb6bb906d922e46d9f92387ff4",
+   "크기": 1515041
+  },
+  {
+   "경로": "experiences/drama/pilot/media/c3-listen.mp4",
+   "sha256": "7431781e21482d9da5a39c52c3d3bb0253ed0a4ada3bfc6eb884b7d726439247",
+   "크기": 982504
+  },
+  {
+   "경로": "experiences/drama/pilot/media/c3-reask.mp4",
+   "sha256": "a38541c3a1980774a225c82720f2c5f734d08d34995e3eddfc48d77491a0dd5d",
+   "크기": 686554
+  },
+  {
+   "경로": "experiences/drama/pilot/media/c4-listen.mp4",
+   "sha256": "e1afb603943a3d3b5435b3e315353ad233995e7eafc73a56ee2ba6eb02250635",
+   "크기": 2154589
+  },
+  {
+   "경로": "experiences/drama/pilot/media/c4-reply.mp4",
+   "sha256": "fbfe2c185db6fca7282ace871a3e514d395ddbb1514820dd10637e34f3509373",
+   "크기": 1320044
+  },
+  {
+   "경로": "experiences/drama/pilot/media/coach-note-ending.mp3",
+   "sha256": "a59ae042cc71a4d2b0dd02c785e50e77f3a7b70007c647a958b2df369dc102f3",
+   "크기": 73560
+  },
+  {
+   "경로": "experiences/drama/pilot/media/coach-note.mp3",
+   "sha256": "a8f28419d15289b1b14f14ff327ccc0dad392483e94fe4e090ea1b680391540f",
+   "크기": 32182
+  },
+  {
+   "경로": "experiences/drama/pilot/media/coach-wrap.mp3",
+   "sha256": "47cc51a161a4dbb2c23deb785fd069dd9743ba3f6e5271922f86c4d503d80f3c",
+   "크기": 40960
+  },
+  {
+   "경로": "experiences/drama/pilot/media/manifest.json",
+   "sha256": "7ea67e1f0067856ec3ed4b6ed4fcc00607173cc28a2b288d9156ca5dea843323",
+   "크기": 8894
+  },
+  {
+   "경로": "experiences/drama/pilot/media/model-6.mp3",
+   "sha256": "ccb39e007f1ea9f37fc9febd40e2b90578c59905d00be064381ac9fbb4b372f4",
+   "크기": 48960
+  },
+  {
+   "경로": "experiences/drama/pilot/media/model-7.mp3",
+   "sha256": "fb3c34318954ee4511a25fc00762aa40b2e2dacc490afd497eadcbd2832fe219",
+   "크기": 62784
+  },
+  {
+   "경로": "experiences/drama/pilot/media/model-8.mp3",
+   "sha256": "1b695299d81e51bb14322001fa9eb68728240b97f4ce4d3f1602209907b22fff",
+   "크기": 43200
+  },
+  {
+   "경로": "experiences/drama/pilot/media/next-fair.webp",
+   "sha256": "0fdc50275a85bde05f8ff5d87c7968141aa04096cccd6b3ee6297b4bf00702ed",
+   "크기": 62576
+  },
+  {
+   "경로": "experiences/drama/pilot/media/senior-01.mp3",
+   "sha256": "5b0829eecaaf2dd3cfaa01daf29459100013da3e4443879953d25b3e46ae5eb7",
+   "크기": 74592
+  },
+  {
+   "경로": "experiences/drama/pilot/media/senior-03.mp3",
+   "sha256": "a47cc13594e8714254a564dbbd32a41d696cf1b8e4c438cefe4922751d2b3dd5",
+   "크기": 92736
+  },
+  {
+   "경로": "experiences/drama/pilot/media/senior-04.mp3",
+   "sha256": "8049b296e1a5ade8c470e7f46fc72e2cf6f612fb9ef2d52a06cb23d7e627db3a",
+   "크기": 73440
+  },
+  {
+   "경로": "experiences/drama/pilot/media/senior-ask-1.mp3",
+   "sha256": "8fd3ef0e80a8ff21370fbcdda8a73cb93044c564f5b475cc5362692fc1c161ef",
+   "크기": 26496
+  },
+  {
+   "경로": "experiences/drama/pilot/media/senior-ask-2.mp3",
+   "sha256": "d058bd65db1ba0ca6d6678eda56c083d5408b54bea9bd04ecbdf03a7da7074f6",
+   "크기": 47232
+  },
+  {
+   "경로": "experiences/drama/pilot/media/senior-ask-3.mp3",
+   "sha256": "3565a9722808b842ab47184edf8bb795098103c709e0362ce5177a6c41c0e214",
+   "크기": 23040
+  },
+  {
+   "경로": "experiences/drama/pilot/media/taeo-listen.mp4",
+   "sha256": "52b5c52cfa6cc6a75127cadec91eac09fbba5708aee6ae639718c12f4ced1e1b",
+   "크기": 1196136
+  },
+  {
+   "경로": "experiences/drama/pilot/media/taeo-reply.mp4",
+   "sha256": "cc1591bd2139feb014c8ef39b8bf72ee0c283ea59762508c5d2f8392a9ce8319",
+   "크기": 1078636
+  },
+  {
+   "경로": "experiences/drama/pilot/media/taeo-still-blur.webp",
+   "sha256": "6cd7ebe0371e379c80d107f40da691d449e3b49abd8d9a1f343a244a96e1717b",
+   "크기": 2852
+  },
+  {
+   "경로": "experiences/drama/pilot/media/taeo-still.webp",
+   "sha256": "4b2b7088b6c8910e8fccdc8e0274998d45334428a4ca4e604990c5dda7a47c83",
+   "크기": 73536
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-scene-bus.webp",
+   "sha256": "6f7a9f0702f828fa93068ca19cd52414f15bc2a090c9ff565a3f1a28647035d7",
+   "크기": 45484
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-scene-cafe.webp",
+   "sha256": "a31a486df9f4c3a65ac131207bc56880ddf0ea824f89aa5fb4b896757c6e5e5f",
+   "크기": 41768
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-scene-dorm.webp",
+   "sha256": "29d933ad7f1e14868a5bc99d5fc3b4482da6f8a6dbe77a8cca2cee72d186ee7d",
+   "크기": 38476
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-scene-hall.webp",
+   "sha256": "5d80b736c2df931b9e2a41d05a6924cefb7aa2d82c8076d42242c84a6836fd05",
+   "크기": 27980
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-scene-libdesk.webp",
+   "sha256": "27a03c8bb0a80a0a9193732c501297372df2f291334722ff6c940630b625e50e",
+   "크기": 46582
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-scene-office.webp",
+   "sha256": "760d5cc354de8b456a9a055d7c685cc7083158f02c4e2a35e989a6c080ed0454",
+   "크기": 54690
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-scene-prof.webp",
+   "sha256": "5b9fe76b995afc8ee7c08c570b8c80c36cf33fe6071c33af4b9789d2c7b64dfd",
+   "크기": 25692
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-scene-transfer.webp",
+   "sha256": "3c97202d219484c5c52c570e55f12bdc9e75f10da9142ae3b40351462bd517a1",
+   "크기": 49876
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-taeo-6yo.mp4",
+   "sha256": "cf80697ddad0f7bf43e8aeea681209e30d0ab71dc1d6ad21b56edd4257a72a7f",
+   "크기": 409920
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-taeo-review.mp4",
+   "sha256": "e96aa9f7e2996c9a1e18d615c5de8fb5ab2bbe8e6cdfb4362b1e6d371fdb8740",
+   "크기": 226631
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-venue-concert.webp",
+   "sha256": "510d532851f83dd0ee3511b306ece7da3128a154d0af3c2bb8f51bee4518de4d",
+   "크기": 46206
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-venue-library.webp",
+   "sha256": "f167d2007aee178b66b4683501e880d4faaa6bdb4d2a190bf72df1c5f62c8b75",
+   "크기": 38740
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-venue-museum.webp",
+   "sha256": "6f341b468a74b6b36148e3de6c480b5ebee6c6b82310a10831d9a6d4dda08180",
+   "크기": 26234
+  },
+  {
+   "경로": "experiences/drama/pilot/media/today-venue-pool.webp",
+   "sha256": "8b2670ed854760df14376f22d2c52c990c2ce9da46534f57c05d443c1b36be14",
+   "크기": 49800
+  }
+ ]
+}
