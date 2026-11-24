@@ -1006,10 +1006,11 @@ function pickLook({change=false}={}){return new Promise(res=>{
     if(!html){old?.remove();clearMine();return;}
     const box2=document.createElement('div');box2.innerHTML=html;const tile=box2.firstElementChild;
     if(old)old.replaceWith(tile);else{const sl=rail.scrollLeft;rail.prepend(tile);if(sl>0)rail.scrollLeft=sl+tile.offsetWidth+10;}
+    if(cur==='me')press(tile);   // 새 칸에도 고른 표시를 바로 둔다(그림 바꾸기만 뒤로 미룬다)
     if(cur==='me'){
       // 같은 사진의 새 주소면 새 그림이 풀린 뒤 칸을 바꾼다(빈 칸이 번쩍이지 않게)
       const shown=vf.querySelector('img:last-of-type');
-      if(PHOTO.url&&shown?.complete&&shown.naturalWidth>0&&shown.src!==ME.src){const im=new Image();im.src=ME.src;im.decode().then(()=>{if(cur==='me'&&PHOTO.url){cur=-1;showMine();}},()=>{});}
+      if(PHOTO.url&&shown?.complete&&shown.naturalWidth>0&&shown.src!==ME.src){const im=new Image();im.src=ME.src;im.decode().then(()=>{if(pickMe===repaintMe&&cur==='me'&&PHOTO.url){cur=-1;showMine();}},()=>{});}
       else{cur=-1;if(!showMine()){cur='me';clearMine();}}
     }
   }

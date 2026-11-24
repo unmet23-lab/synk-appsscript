@@ -149,6 +149,7 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  // 같은 사진의 새 서명 주소가 오면 칸 · 카메라 칸이 새 주소로 바뀐다(만료된 주소로 남지 않게)
  await t.page.evaluate(u=>{window.__st.me2={status:'ok',consent:{given:true},me:{state:'ready',chosen_url:u}};},PHOTO_URL2);
  await t.inF(()=>window.__seoulQA.photo());
+ check(await t.inF(()=>document.querySelector('[data-me]')?.getAttribute('aria-pressed')==='true'),`${lang} 새 주소로 칸을 갈아 끼워도 고른 표시가 바로 남음`);
  check(await until('새 주소',()=>t.inF(u=>document.querySelector('[data-me] .lk-me-face i')?.style.backgroundImage.includes(u)&&[...document.querySelectorAll('#lkVf img')].some(i=>i.src===u&&i.classList.contains('in')),PHOTO_URL2)),`${lang} 새 서명 주소가 오면 칸 · 카메라 칸이 새 주소로`);
  await t.F().click('.lk-th[data-i="0"]');await sleep(300);await t.F().click('#lkShoot');
  check(await until('다른 얼굴 저장',()=>t.page.evaluate(()=>{const s=window.__st.saved.at(-1);return s&&s.photo===null&&typeof s.look==='string';})),`${lang} 준비된 얼굴로 바꾸면 내 사진 표시를 지움`);
