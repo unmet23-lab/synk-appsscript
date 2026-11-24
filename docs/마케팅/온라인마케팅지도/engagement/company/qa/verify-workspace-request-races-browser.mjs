@@ -33,7 +33,7 @@ await 화면시험({분:8},async()=>{
   await page.locator('[data-form="wa-work"] [type="submit"]').click();await save.started;
   await page.locator('.modal-close[data-action="close-modal"]').click();
   const list=await hold('**/api/company-work/SHIFT','GET');
-  await page.locator('#ws-tools-toggle').click();await page.locator('#ws-tools-drawer [data-tab="lectures"]').first().click();await list.started;
+  await page.locator('.ws-side [data-tab="lectures"]').first().click();await list.started;
   await save.release();await list.release();
   await page.waitForFunction(()=>wa.workKey?.endsWith(':SHIFT')&&!wa.workLoading&&wa.work?.items?.length>0);
   assert.ok(await page.locator('.wa-work-item').count()>0);report.checks.push('PATH save response preserves the in-flight SHIFT list');

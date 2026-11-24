@@ -232,8 +232,9 @@ function tipSharesPage(){
 }
 
 function tipSharesPaint(){
-  const badge=document.querySelector('[data-tip-badge]');
-  if(badge)badge.innerHTML=tipBadgeInner(tipShares.data?.waiting||0);
+  // 수는 왼쪽 메뉴와 「더보기」 시트 두 곳에 있다. 사무실 · 받은편지함도 같은 자료로 다시 그린다(그리기 훅).
+  for(const badge of document.querySelectorAll?.('[data-tip-badge]')||[])badge.innerHTML=tipBadgeInner(tipShares.data?.waiting||0);
+  if(typeof workspaceTurnPaint==='function')workspaceTurnPaint();
   const root=document.querySelector('[data-tip-root]');
   if(!root||state.tab!=='tips'){tipShares.painted='';return;}
   const active=document.activeElement,activeKey=root.contains(active)?active?.dataset?.tipKey:'';

@@ -1,18 +1,18 @@
-.cdel-quality{margin:20px 0;padding:16px 18px;border:1px solid rgba(255,255,255,.13);border-radius:8px;background:#000000;min-width:0}
+.cdel-quality{margin:20px 0;padding:16px 18px;border:1px solid rgba(11,11,12,.08);border-radius:8px;background:#FFFFFF;min-width:0}
 .cdel-quality>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.cdel-quality>header h3{margin:5px 0 8px;color:#FFFFFF}
-.cdel-quality>p{font-size:13.5px;line-height:1.65;color:#D0D6E0}
+.cdel-quality>header h3{margin:5px 0 8px;color:#0B0B0C}
+.cdel-quality>p{font-size:13.5px;line-height:1.65;color:#46464A}
 .cdel-quality .cd-tag{flex:none}
 .cdel-quality-results{display:grid;gap:8px}
-.cdel-quality-results>article{min-width:0;padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:6px;background:#000000}
-.cdel-quality-results>article>div{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;font-size:13.5px;color:#FFFFFF}
-.cdel-quality-results>article>div>span{flex:none;font-weight:700;color:#9BE0B5}
-.cdel-quality-results p{margin:5px 0 0;font-size:13px;line-height:1.65;color:#9AA5B6}
-.cdel-quality-results [data-delivery-check-state=missing]>div>span,.cdel-quality-results [data-delivery-check-state=fail]>div>span{color:#FFDAD6}
-.cdel-quality-results [data-delivery-check-state=manual]>div>span,.cdel-quality-results [data-delivery-check-state=pending]>div>span{color:#FDE68A}
+.cdel-quality-results>article{min-width:0;padding:12px;border:1px solid rgba(11,11,12,.08);border-radius:6px;background:#FFFFFF}
+.cdel-quality-results>article>div{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;font-size:13.5px;color:#0B0B0C}
+.cdel-quality-results>article>div>span{flex:none;font-weight:700;color:#3F6B2E}
+.cdel-quality-results p{margin:5px 0 0;font-size:13px;line-height:1.65;color:#6B6B6E}
+.cdel-quality-results [data-delivery-check-state=missing]>div>span,.cdel-quality-results [data-delivery-check-state=fail]>div>span{color:#B42318}
+.cdel-quality-results [data-delivery-check-state=manual]>div>span,.cdel-quality-results [data-delivery-check-state=pending]>div>span{color:#7A5300}
 .cdel-quality-specs ul{list-style:none;padding:0;display:grid;gap:8px}
-.cdel-quality-specs li{display:grid;gap:4px;padding:10px 12px;border:1px solid rgba(255,255,255,.13);border-radius:6px;background:#07080A;overflow-wrap:anywhere}
-.cdel-quality-specs li>span{font-size:13px;color:#9AA5B6}
+.cdel-quality-specs li{display:grid;gap:4px;padding:10px 12px;border:1px solid rgba(11,11,12,.08);border-radius:6px;background:#F6F6F7;overflow-wrap:anywhere}
+.cdel-quality-specs li>span{font-size:13px;color:#6B6B6E}
 .cdel-check-mapping{min-width:0}
 .cdel-check-mapping select{width:100%}
 .cdel-quality .cd-toolbar a{white-space:normal}

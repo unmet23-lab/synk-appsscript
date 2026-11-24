@@ -1,10 +1,10 @@
-.cmu-controls{padding:16px 0;margin:12px 0;border-top:1px solid rgba(255,255,255,.13);border-bottom:1px solid rgba(255,255,255,.13)}
-.cmu-controls h3{margin:0 0 10px;font-size:15.5px;color:#FFFFFF}
+.cmu-controls{padding:16px 0;margin:12px 0;border-top:1px solid rgba(11,11,12,.08);border-bottom:1px solid rgba(11,11,12,.08)}
+.cmu-controls h3{margin:0 0 10px;font-size:15.5px;color:#0B0B0C}
 .cmu-controls p,.cmu-item p{line-height:1.65;overflow-wrap:anywhere}
-.cmu-summary{font-weight:650;color:#FFFFFF}
-.cmu-note{color:#FDE68A}
+.cmu-summary{font-weight:650;color:#0B0B0C}
+.cmu-note{color:#7A5300}
 .cmu-filter{max-width:260px;margin:12px 0}
-.cmu-item{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.13)}
+.cmu-item{margin-top:14px;padding-top:12px;border-top:1px solid rgba(11,11,12,.08)}
 .cmu-item form{display:flex;align-items:end;flex-wrap:wrap;gap:10px}
 .cmu-item .cd-field{flex:1;min-width:140px}
 .cmu-item select{width:100%;max-width:100%}

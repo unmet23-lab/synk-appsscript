@@ -119,7 +119,7 @@ await 화면시험({분:12},async()=>{
     }
     for(const who of [fixture.shift,fixture.manager]){
       const denied=await session(who),before=report.requests.length;
-      await denied.page.goto(fixture.base+'/?tab=admin');await denied.page.locator('#ws-tools-toggle').waitFor();
+      await denied.page.goto(fixture.base+'/?tab=admin');await denied.page.locator('.ws-side').waitFor();
       check(`${who.role} direct entry does not reveal administrator UI`,await denied.page.locator('.admin-workspace,[data-tab="admin"]').count()===0);
       check(`${who.role} direct entry does not request administrator data`,report.requests.length===before);
       assert.equal((await denied.context.request.get(fixture.base+'/api/admin-workspace')).status(),403);

@@ -1,15 +1,15 @@
-/* SNS·마케팅 간편판(오늘·성과·계정) — Pure Black (#000000) Workspace
+/* SNS·마케팅 간편판(오늘·성과·계정) — 밝은 판(#FFFFFF) Workspace
    마크업에 style 속성을 쓰지 않는다(CSP style-src 'self'). 글꼴 SNS Latin은 social-workspace.css가 정의한다. */
 
 :root .synk-workspace .sw-simple{
-  --ss-paper:#000000;--ss-paper-2:#07080A;--ss-surface:#07080A;--ss-surface-2:#0E1015;
-  --ss-ink:#FFFFFF;--ss-ink-2:#D0D6E0;--ss-ink-3:#9AA5B6;--ss-ink-4:#9AA5B6;--ss-ink-5:#5E6675;
-  --ss-line:rgba(255,255,255,.13);--ss-line-2:rgba(255,255,255,.20);--ss-control:#78808E;--ss-control-hover:#D0D6E0;
-  --ss-face:#07080A;--ss-on-face:#FFFFFF;--ss-on-face-2:#9AA5B6;
-  --ss-lapis:#FFFFFF;--ss-lapis-deep:#FFFFFF;--ss-lapis-wash:#0E1015;--ss-lapis-line:rgba(255,255,255,.22);
-  --ss-coral:#F97066;--ss-coral-ink:#FFDAD6;--ss-coral-wash:rgba(249,112,102,.10);--ss-coral-line:rgba(249,112,102,.32);
-  --ss-butter:#FBBF24;--ss-butter-ink:#FDE68A;--ss-butter-wash:rgba(251,191,36,.10);--ss-butter-line:rgba(251,191,36,.32);
-  --ss-green:#8AD4A6;--ss-green-ink:#9BE0B5;--ss-green-wash:rgba(138,212,166,.10);--ss-green-line:rgba(138,212,166,.28);
+  --ss-paper:var(--ws-canvas);--ss-paper-2:var(--ws-surface);--ss-surface:var(--ws-surface);--ss-surface-2:var(--ws-surface-subtle);
+  --ss-ink:var(--ws-ink);--ss-ink-2:var(--ws-ink-secondary);--ss-ink-3:var(--ws-ink-muted);--ss-ink-4:var(--ws-ink-muted);--ss-ink-5:var(--ws-ink-faint);
+  --ss-line:var(--ws-line);--ss-line-2:var(--ws-line-muted);--ss-control:var(--ws-control-line);--ss-control-hover:var(--ws-control-hover);
+  --ss-face:var(--ws-surface);--ss-on-face:var(--ws-ink);--ss-on-face-2:var(--ws-ink-muted);
+  --ss-lapis:var(--ws-ink);--ss-lapis-deep:var(--ws-ink);--ss-lapis-wash:var(--ws-surface-subtle);--ss-lapis-line:var(--ws-line-muted);
+  --ss-coral:var(--ws-danger);--ss-coral-ink:var(--ws-danger);--ss-coral-wash:var(--ws-danger-bg);--ss-coral-line:var(--ws-danger-line);
+  --ss-butter:var(--ws-warn);--ss-butter-ink:var(--ws-warn);--ss-butter-wash:var(--ws-warn-bg);--ss-butter-line:var(--ws-warn-line);
+  --ss-green:var(--ws-ok);--ss-green-ink:var(--ws-ok);--ss-green-wash:var(--ws-ok-bg);--ss-green-line:var(--ws-ok-line);
   --ss-sans:'SNS Latin',SUIT,'SUIT Variable','Inter Tight',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --ss-latin:'SNS Latin','Inter Tight',SUIT,system-ui,sans-serif;
   --ss-mono:'Signal Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
@@ -62,7 +62,7 @@
 :root .synk-workspace .sw-simple .ss-block-tools{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
 :root .synk-workspace .sw-simple .ss-seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--ss-line-2);border-radius:8px;background:var(--ss-surface)}
 :root .synk-workspace .sw-simple .ss-seg button{border:1px solid transparent;background:none;height:32px;min-height:0;padding:0 12px;border-radius:6px;font-size:13px;font-weight:var(--w-label);color:var(--ss-ink-3);box-shadow:none}
-:root .synk-workspace .sw-simple .ss-seg button[aria-pressed=true]{background:#FFFFFF;border-color:#FFFFFF;color:#08090C;box-shadow:none;font-weight:600}
+:root .synk-workspace .sw-simple .ss-seg button[aria-pressed=true]{background:#0B0B0C;border-color:#0B0B0C;color:#F6F6F7;box-shadow:none;font-weight:600}
 :root .synk-workspace .sw-simple .ss-btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--ss-control);background:var(--ss-paper);box-shadow:none;font-size:14px;font-weight:var(--w-strong);color:var(--ss-ink);text-decoration:none;white-space:nowrap;transition:background .14s ease,border-color .14s ease}
 :root .synk-workspace .sw-simple .ss-btn:hover{background:var(--ss-surface-2);border-color:var(--ss-control-hover)}
 :root .synk-workspace .sw-simple .ss-link{border:0;background:none;padding:0;min-height:0;font-size:13.5px;font-weight:var(--w-strong);color:var(--ss-ink);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;box-shadow:none}
@@ -151,9 +151,9 @@
 :root .synk-workspace .sw-simple .ss-x.mid{background:var(--ss-surface-2);border:1px solid var(--ss-line);color:var(--ss-ink-2)}
 :root .synk-workspace .sw-simple .ss-x.none{font:var(--w-label) 13px/1.2 var(--ss-sans);color:var(--ss-ink-4);background:none;padding:0}
 :root .synk-workspace .sw-simple .ss-more{grid-column:2 / -1;justify-self:start;margin-top:6px}
-:root .synk-workspace .sw-simple .ss-detail{grid-column:2 / -1;margin-top:8px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:root .synk-workspace .sw-simple .ss-detail{grid-column:2 / -1;margin-top:8px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:rgba(11,11,12,.15) transparent}
 :root .synk-workspace .sw-simple .ss-detail::-webkit-scrollbar{height:4px}
-:root .synk-workspace .sw-simple .ss-detail::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:2px}
+:root .synk-workspace .sw-simple .ss-detail::-webkit-scrollbar-thumb{background:rgba(11,11,12,.15);border-radius:2px}
 :root .synk-workspace .sw-simple .ss-detail::-webkit-scrollbar-button{display:none}
 :root .synk-workspace .sw-simple .ss-scroll-hint{display:none;margin:0 0 6px;font-size:13px;color:var(--ss-ink-4)}
 :root .synk-workspace .sw-simple .ss-detail.is-wide .ss-scroll-hint{display:block}
@@ -195,11 +195,11 @@
 :root .synk-workspace .sw-simple .ss-acc.is-focus{box-shadow:inset 3px 0 0 var(--ss-butter);background:var(--ss-butter-wash);padding-left:12px}
 
 /* 맥락 메뉴 「오늘」의 내 차례 배지 — 솔리드 화이트 고대비 */
-:root .synk-workspace .nav-item .nav-count.social-turn{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:auto;padding:0 6px;border-radius:6px;background:#FFFFFF;color:#08090C;font:650 11.5px/1 'SNS Latin','Inter Tight',system-ui,sans-serif}
+:root .synk-workspace .nav-item .nav-count.social-turn{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:auto;padding:0 6px;border-radius:6px;background:#0B0B0C;color:#F6F6F7;font:650 11.5px/1 'SNS Latin','Inter Tight',system-ui,sans-serif}
 
 /* 폰 메뉴 */
 :root .synk-workspace .sw-simple .ss-tabs{display:none}
-:root .synk-workspace .sw-simple .ss-badge{min-width:18px;height:18px;padding:0 5px;border-radius:6px;background:#FFFFFF;color:#08090C;font:650 11px/18px var(--ss-latin);text-align:center}
+:root .synk-workspace .sw-simple .ss-badge{min-width:18px;height:18px;padding:0 5px;border-radius:6px;background:#0B0B0C;color:#F6F6F7;font:650 11px/18px var(--ss-latin);text-align:center}
 
 /* 불러오는 중 · 못 불러옴 */
 :root .synk-workspace .sw-simple .ss-empty{margin-top:24px;padding:26px 22px;border:1px solid var(--ss-line);border-radius:10px;background:var(--ss-paper-2);color:var(--ss-ink-3)}
@@ -257,9 +257,9 @@
 :root .synk-workspace .sw-simple .ss-perf-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:4px}
 :root .synk-workspace .sw-simple .ss-perf-metrics{display:flex;flex-wrap:wrap;gap:6px}
 :root .synk-workspace .sw-simple .ss-perf-metrics button{height:34px;min-height:0;padding:0 13px;border:1px solid var(--ss-control);border-radius:8px;background:var(--ss-paper);box-shadow:none;font-size:13px;font-weight:var(--w-label);color:var(--ss-ink-2)}
-:root .synk-workspace .sw-simple .ss-perf-metrics button[aria-pressed="true"]{background:#FFFFFF;color:#08090C;border-color:#FFFFFF;box-shadow:none;font-weight:600}
+:root .synk-workspace .sw-simple .ss-perf-metrics button[aria-pressed="true"]{background:#0B0B0C;color:#F6F6F7;border-color:#0B0B0C;box-shadow:none;font-weight:600}
 :root .synk-workspace .sw-simple .ss-perf-target{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ss-ink-3)}
-:root .synk-workspace .sw-simple .ss-perf-target select{height:36px;min-height:0;max-width:260px;padding:0 10px;border:1px solid var(--ss-control);border-radius:8px;background:var(--ss-paper);font-size:13.5px;color:var(--ss-ink);color-scheme:dark}
+:root .synk-workspace .sw-simple .ss-perf-target select{height:36px;min-height:0;max-width:260px;padding:0 10px;border:1px solid var(--ss-control);border-radius:8px;background:var(--ss-paper);font-size:13.5px;color:var(--ss-ink);color-scheme:light}
 :root .synk-workspace .sw-simple .ss-perf-cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:18px;border-top:1px solid var(--ss-line);border-bottom:1px solid var(--ss-line)}
 :root .synk-workspace .sw-simple .ss-perf-cell{display:grid;align-content:start;gap:4px;padding:16px 18px 16px 0}
 :root .synk-workspace .sw-simple .ss-perf-cell+.ss-perf-cell{padding-left:18px;border-left:1px solid var(--ss-line)}
@@ -285,7 +285,7 @@
 :root .synk-workspace .sw-simple .ss-perf-pdot.is-part{color:var(--ss-control)}
 :root .synk-workspace .sw-simple .ss-perf-cross{stroke:var(--ss-ink-3);stroke-width:1;vector-effect:non-scaling-stroke;pointer-events:none}
 :root .synk-workspace .sw-simple .ss-perf-hit{fill:transparent;cursor:crosshair}
-:root .synk-workspace .sw-simple .ss-perf-tip{position:absolute;top:22px;z-index:3;pointer-events:none;padding:8px 12px;border:1px solid var(--ss-line-2);border-radius:8px;background:#0E1015;box-shadow:0 12px 28px rgba(0,0,0,.65);color:var(--ss-ink);font-size:13px;line-height:1.5;white-space:nowrap;transform:translateX(-50%)}
+:root .synk-workspace .sw-simple .ss-perf-tip{position:absolute;top:22px;z-index:3;pointer-events:none;padding:8px 12px;border:1px solid var(--ss-line-2);border-radius:8px;background:#EDEDEF;box-shadow:0 12px 28px rgba(0,0,0,.16);color:var(--ss-ink);font-size:13px;line-height:1.5;white-space:nowrap;transform:translateX(-50%)}
 :root .synk-workspace .sw-simple .ss-perf-tip b{display:block;font-size:13.5px;font-weight:var(--w-strong)}
 :root .synk-workspace .sw-simple .ss-perf-empty{margin-top:18px;padding:28px 18px;border:1px solid var(--ss-line);border-radius:10px;background:var(--ss-surface);font-size:14px;line-height:1.6;color:var(--ss-ink-3);text-align:center}
 :root .synk-workspace .sw-simple .ss-perf-table{margin-top:14px}

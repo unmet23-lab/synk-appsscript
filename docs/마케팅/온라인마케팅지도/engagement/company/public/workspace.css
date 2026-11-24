@@ -1,172 +1,292 @@
-/* SYNK Workspace Shell — Pure #000000 Minimal Sticky Header + Inline Subnav + Unified Tools Drawer + Embedded Hosts */
+/* SYNK Workspace Shell — 밝은 판(#FFFFFF): 왼쪽 메뉴(넓은 화면) · 아래 탭과 「더보기」 시트(휴대폰) · 화면 안 하위 메뉴 · 겹쳐 띄우는 메신저 */
 .app-shell.synk-workspace {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: var(--ws-side-w) minmax(0, 1fr);
+  align-items: start;
   min-height: 100dvh;
   width: 100%;
   background: var(--ws-canvas);
   color: var(--ws-ink);
 }
 
-/* Minimal Sticky Header (z-index: 28, normal vertical flex flow above .workspace-body) */
-.ws-header {
+/* 왼쪽 메뉴 232px(시안 F): 고르는 판 #F6F6F7, 고른 줄 = 먹 바탕 · 흰 글자. 휴대폰(760px 이하)에서는 숨고 아래 탭과 「더보기」 시트가 맡는다. */
+.ws-side {
   position: sticky;
   top: 0;
-  z-index: 28;
-  flex: none;
-  height: var(--ws-header-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 20px;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--ws-line);
-}
-
-.ws-header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  z-index: 20;
+  height: 100dvh;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 10px 12px;
+  background: var(--ws-rail);
+  border-right: 1px solid var(--ws-line);
+  color: var(--ws-ink);
 }
-
-.ws-brand {
-  display: inline-flex;
+.ws-side-brand {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  flex: none;
-  color: var(--ws-ink);
-  text-decoration: none;
-  padding: 4px 0;
-}
-
-.ws-brand:hover {
+  gap: 10px;
+  padding: 4px 8px 18px;
   color: var(--ws-ink);
   text-decoration: none;
 }
-
-.ws-brand .brand-logo {
+.ws-side-brand:hover {
+  color: var(--ws-ink);
+}
+.ws-side-brand .brand-logo {
   width: 46px;
   height: auto;
 }
-
-.ws-brand-tag {
-  font: 560 12px/1.2 var(--ws-latin);
-  color: var(--ws-ink-muted);
-  letter-spacing: -0.01em;
-}
-
-.ws-header-sep {
-  width: 1px;
-  height: 14px;
-  background: var(--ws-line);
-  flex: none;
-}
-
-.ws-current-view {
-  font: 580 13.5px/1.3 var(--ws-sans);
-  color: var(--ws-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ws-return-home {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 30px;
-  padding: 4px 10px;
-  border: 1px solid var(--ws-line-muted);
-  border-radius: 999px;
-  background: var(--ws-surface);
+.ws-side-brand span {
+  padding-top: 4px;
+  font: 400 14px/1 var(--ws-latin);
   color: var(--ws-ink-secondary);
-  font: 540 13px/1.3 var(--ws-sans);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
-
-.ws-return-home:hover {
-  background: var(--ws-surface-subtle);
-  border-color: var(--ws-control-line);
+.ws-side-scope {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 2px 10px;
+  font: 400 12px/1.3 var(--ws-sans);
+  color: var(--ws-ink-muted);
+}
+.ws-side-scope select {
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--ws-line-muted);
+  border-radius: 7px;
+  background: var(--ws-canvas);
   color: var(--ws-ink);
-  text-decoration: none;
+  font: 400 13px/1.2 var(--ws-sans);
 }
-
-.ws-header-actions {
+.ws-side-find {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  height: 34px;
+  margin: 0 0 12px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--ws-canvas);
+  box-shadow: var(--ws-shadow-sm);
+  color: var(--ws-ink);
+  font: 400 13px/1 var(--ws-sans);
+  cursor: pointer;
+}
+.ws-side-find:hover {
+  box-shadow: 0 0 0 1px var(--ws-line-muted), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.ws-side-find kbd {
+  margin-left: auto;
+  padding: 3px 5px;
+  border: 1px solid var(--ws-line-muted);
+  border-radius: 4px;
+  background: var(--ws-canvas);
+  font: 400 11px/1 var(--ws-mono);
+  color: var(--ws-ink-muted);
+}
+.ws-side-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+.ws-side-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ws-side-head {
+  margin: 0;
+  padding: 16px 10px 6px;
+  font: 400 12px/1.3 var(--ws-sans);
+  color: var(--ws-ink-muted);
+}
+.ws-side-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ws-ink);
+  font: 400 15px/1 var(--ws-sans);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ws-side-link:hover {
+  background: var(--ws-rail-hover);
+  color: var(--ws-ink);
+  text-decoration: none;
+}
+.ws-side-link[aria-current="page"] {
+  background: var(--ws-ink);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+.ws-side-ic {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
   flex: none;
 }
-
-.ws-header-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 34px;
-  padding: 5px 11px;
-  border: 1px solid var(--ws-control-line);
-  border-radius: var(--ws-radius-sm);
-  background: var(--ws-surface);
-  color: var(--ws-ink-secondary);
-  font: 550 13px/1.3 var(--ws-sans);
-  white-space: nowrap;
-  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+.ws-side-ic .ws-co {
+  width: 8px;
+  height: 8px;
 }
-
-.ws-header-btn:hover {
-  background: var(--ws-surface-subtle);
-  border-color: var(--ws-control-hover);
-  color: var(--ws-ink);
-}
-
-.ws-header-btn[aria-expanded="true"] {
-  background: var(--ws-surface-subtle);
-  border-color: var(--ws-cta);
-  color: var(--ws-ink);
-}
-
-.ws-header-btn .icon {
-  width: 15px;
-  height: 15px;
-}
-
-.ws-account-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  max-width: 180px;
-  padding: 3px 10px 3px 5px;
-  border: 1px solid var(--ws-control-line);
-  border-radius: var(--ws-radius-sm);
-  background: var(--ws-surface);
-  color: var(--ws-ink);
-  font: 560 13px/1.3 var(--ws-sans);
-}
-
-.ws-account-btn:hover {
-  background: var(--ws-surface-subtle);
-  border-color: var(--ws-control-hover);
-}
-
-.ws-account-btn .owner-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  font-size: 11.5px;
-}
-
-.ws-account-name {
+.ws-side-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* 「내 차례」 수만 산호 알약(결정 색). 메신저 · 공유한 게시물 수는 메뉴에서 옅은 숫자(시안 F). */
+.ws-turn-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ws-decide);
+  color: var(--ws-decide-ink);
+  font: 600 12px/1.4 var(--ws-latin);
+  font-variant-numeric: tabular-nums;
+}
+.ws-turn-count[hidden] {
+  display: none;
+}
+.ws-side-link .ws-turn-count,
+.ws-side-link .messenger-unread,
+.ws-side-link .ts-drawer-badge {
+  margin-left: auto;
+}
+.ws-side-link .ts-drawer-badge > .icon {
+  display: none;
+}
+.ws-side-link .messenger-unread,
+.ws-side-link .nav-badge {
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  color: var(--ws-ink-muted);
+  font: 400 12px/1 var(--ws-latin);
+}
+.ws-side-link[aria-current="page"] .messenger-unread,
+.ws-side-link[aria-current="page"] .nav-badge {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+}
+/* 넓은 화면의 본문 줄은 글자만(시안 F). 회사 줄의 작은 네모와 찾기 그림은 남긴다. 64px 줄에서는 그림이 다시 나온다. */
+@media (min-width: 961px) {
+  .ws-side-link > .ws-side-ic:has(> .ws-glyph) {
+    display: none;
+  }
+}
+.ws-side-sub {
+  list-style: none;
+  margin: 2px 0 6px;
+  padding: 0 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ws-side-sublink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ws-ink);
+  font: 400 14px/1.2 var(--ws-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.ws-side-sublink:hover {
+  background: var(--ws-rail-hover);
+}
+.ws-side-sublink[aria-current="page"] {
+  background: var(--ws-rail-selected);
+  font-weight: 600;
+}
+.ws-side-sublink .nav-count {
+  margin-left: auto;
+}
+.ws-side-foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ws-line);
+}
+.ws-side-foot .ws-side-head {
+  padding-top: 10px;
+}
+.ws-side-me {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ws-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.ws-side-me:hover {
+  background: var(--ws-rail-hover);
+}
+.ws-side-me .owner-avatar {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  font-size: 12px;
+}
+.ws-side-me-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ws-side-me-copy b {
+  font: 600 14px/1.3 var(--ws-sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ws-side-me-copy small {
+  font: 400 12px/1.3 var(--ws-sans);
+  color: var(--ws-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 아래 탭(휴대폰만) */
+.ws-tabbar {
+  display: none;
 }
 
 .ws-nav-glyph {
@@ -289,7 +409,7 @@
   z-index: 48;
   border: 0;
   padding: 0;
-  background: rgba(0, 0, 0, 0.72);
+  background: var(--ws-scrim, rgba(11,11,12,.32));
   cursor: pointer;
 }
 
@@ -454,7 +574,7 @@
 .workspace-body {
   flex: 1;
   min-width: 0;
-  min-height: calc(100dvh - var(--ws-header-h));
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--ws-canvas);
@@ -506,7 +626,7 @@
 
 .synk-workspace[data-view="messenger"] .workspace-body {
   flex: 1;
-  height: calc(100dvh - var(--ws-header-h));
+  height: 100dvh;
   min-height: 0;
   overflow: hidden;
 }
@@ -737,13 +857,20 @@
   color: var(--ws-danger);
 }
 
-@media (max-width: 900px) {
-  .ws-header-btn kbd,
-  .ws-current-view,
-  .ws-header-sep {
+/* 넓은 화면에서는 왼쪽 메뉴가 하위 줄(SNS 넷 · 만들기 다섯)을 보이므로 화면 위 하위 메뉴를 숨긴다. */
+@media (min-width: 961px) {
+  .synk-workspace .ws-subnav {
     display: none;
   }
+}
 
+@media (max-width: 1180px) {
+  .app-shell.synk-workspace {
+    --ws-side-w: 200px;
+  }
+}
+
+@media (max-width: 960px) {
   .workspace-main {
     padding: 20px 20px 40px;
   }
@@ -753,28 +880,106 @@
   }
 }
 
-@media (max-width: 700px) {
-  .ws-header {
-    padding: 0 12px;
-    gap: 8px;
+/* 761~960px: 메뉴는 그림만 남긴 64px 줄 */
+@media (max-width: 960px) and (min-width: 761px) {
+  .app-shell.synk-workspace {
+    --ws-side-w: 64px;
   }
 
-  .ws-brand-tag,
-  .ws-find-label,
-  .ws-account-name {
+  .ws-side {
+    padding: 14px 8px 12px;
+    align-items: stretch;
+  }
+
+  .ws-side-brand {
+    justify-content: center;
+    padding: 4px 0 16px;
+  }
+
+  .ws-side-brand .brand-logo {
+    width: 40px;
+  }
+
+  .ws-side-brand span,
+  .ws-side-label,
+  .ws-side-head,
+  .ws-side-sub,
+  .ws-side-me-copy,
+  .ws-side-find span,
+  .ws-side-find kbd,
+  .ws-side-scope span {
     display: none;
   }
 
-  .ws-header-find {
-    width: 34px;
+  .ws-side-scope select {
+    width: 100%;
+    padding: 0 2px;
+    font-size: 11px;
+  }
+
+  .ws-side-find,
+  .ws-side-link,
+  .ws-side-me {
+    justify-content: center;
     padding: 0;
   }
 
-  .ws-account-btn {
-    padding: 4px;
+  .ws-side-me {
+    padding: 8px 0;
+  }
+
+  .ws-side-link .ws-turn-count,
+  .ws-side-link .messenger-unread,
+  .ws-side-link .ts-drawer-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    margin: 0;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 10px;
+  }
+
+  /* 글자가 없는 64px 줄에서는 메신저 · 공유한 게시물 수도 작은 먹 알약으로 그림 위에 얹는다. */
+  .ws-side-link .messenger-unread,
+  .ws-side-link .nav-badge,
+  .ws-side-link[aria-current="page"] .messenger-unread,
+  .ws-side-link[aria-current="page"] .nav-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--ws-ink);
+    color: #FFFFFF;
+    font: 600 10px/1 var(--ws-latin);
+  }
+
+  .ws-side-link .messenger-unread[hidden] {
+    display: none;
   }
 
   .ws-subnav {
+    display: flex;
+  }
+}
+
+/* 760px 이하: 왼쪽 메뉴 대신 아래 탭 다섯, 「더보기」는 아래 시트 */
+@media (max-width: 760px) {
+  .app-shell.synk-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+
+  .ws-side {
+    display: none;
+  }
+
+  .ws-subnav {
+    display: flex;
     padding: 7px 12px;
   }
 
@@ -787,20 +992,121 @@
     padding: 0;
   }
 
+  .synk-workspace[data-view="messenger"],
+  .synk-workspace[data-home-section="inbox"] {
+    padding-bottom: 0;
+  }
+
+  .synk-workspace[data-view="messenger"] .workspace-body,
+  .synk-workspace[data-home-section="inbox"] .workspace-body {
+    height: calc(100dvh - 60px - env(safe-area-inset-bottom));
+  }
+
+  .synk-workspace[data-view="messenger"][data-messenger-view="room"] .workspace-body {
+    height: 100dvh;
+  }
+
+  .ws-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    height: calc(60px + env(safe-area-inset-bottom));
+    padding: 0 max(4px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px, env(safe-area-inset-left));
+    background: var(--ws-rail);
+    border-top: 1px solid var(--ws-line);
+  }
+
+  /* 메신저 방 안에서는 아래 탭을 숨겨 입력 칸을 가리지 않는다. */
+  .synk-workspace[data-view="messenger"][data-messenger-view="room"] .ws-tabbar {
+    display: none;
+  }
+
+  .ws-tab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ws-ink-muted);
+    font: 400 11px/1.2 var(--ws-sans);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .ws-tab:hover {
+    color: var(--ws-ink);
+    text-decoration: none;
+  }
+
+  .ws-tab[aria-current="page"] {
+    color: var(--ws-ink);
+    font-weight: 600;
+  }
+
+  .ws-tab .ws-glyph {
+    width: 22px;
+    height: 22px;
+  }
+
+  .ws-tab .ws-turn-count,
+  .ws-tab .messenger-unread {
+    position: absolute;
+    top: 6px;
+    left: calc(50% + 6px);
+    min-width: 18px;
+    height: 16px;
+    padding: 0 5px;
+    font-size: 11px;
+  }
+
+  .ws-tab .messenger-unread {
+    background: var(--ws-ink);
+    color: #FFFFFF;
+  }
+
+  /* 「더보기」 시트: 지금 도구 서랍을 아래에서 올린다(inert · 초점 가두기 · Esc 처리 그대로). */
+  .ws-tools-drawer {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    max-height: min(86dvh, 680px);
+    border-left: 0;
+    border-top: 1px solid var(--ws-line);
+    border-radius: 14px 14px 0 0;
+    background: var(--ws-canvas);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .ws-tools-scrim {
+    z-index: 49;
+  }
+
+  .ws-tools-drawer {
+    z-index: 51;
+  }
+
+  .ws-tools-link {
+    min-height: 44px;
+  }
+
   .workspace-call-dock,
   .workspace-call {
     right: 12px;
     left: 12px;
-    bottom: calc(12px + env(safe-area-inset-bottom));
+    bottom: calc(72px + env(safe-area-inset-bottom));
     width: auto;
-  }
-}
-
-@media (max-width: 359px) {
-  .ws-return-home {
-    padding: 4px 7px;
-    max-width: 96px;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 }

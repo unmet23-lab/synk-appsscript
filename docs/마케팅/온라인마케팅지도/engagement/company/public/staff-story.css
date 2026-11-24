@@ -1,26 +1,26 @@
 /* Public Staff Story & Direct Inquiry Page — SYNK Carbon */
 
 :root {
-  --bg-canvas: #05070b;
-  --bg-surface: #0c1017;
-  --bg-subtle: #121824;
-  --line-base: #1e2636;
-  --line-strong: #2e3a52;
-  --ink-primary: #f3f5f8;
-  --ink-secondary: #c5ccd8;
-  --ink-muted: #8b95a7;
-  --accent: #5ca8ff;
-  --accent-soft: rgba(92, 168, 255, 0.13);
-  --accent-line: rgba(92, 168, 255, 0.36);
-  --cta-bg: #f3f5f8;
-  --cta-ink: #080b10;
-  --cta-hover: #ffffff;
-  --ok-ink: #34d399;
-  --ok-soft: rgba(52, 211, 153, 0.13);
-  --ok-line: rgba(52, 211, 153, 0.36);
-  --danger-ink: #f87171;
-  --danger-soft: rgba(248, 113, 113, 0.12);
-  --danger-line: rgba(248, 113, 113, 0.38);
+  --bg-canvas: var(--ws-canvas, #FFFFFF);
+  --bg-surface: var(--ws-surface, #F6F6F7);
+  --bg-subtle: var(--ws-surface-subtle, #EDEDEF);
+  --line-base: var(--ws-line, rgba(0, 0, 0, 0.08));
+  --line-strong: var(--ws-line-muted, rgba(0, 0, 0, 0.15));
+  --ink-primary: var(--ws-ink, #0B0B0C);
+  --ink-secondary: var(--ws-ink-secondary, #46464A);
+  --ink-muted: var(--ws-ink-muted, #6B6B6E);
+  --accent: var(--ws-accent, #0B0B0C);
+  --accent-soft: var(--ws-accent-soft, rgba(11, 11, 12, 0.06));
+  --accent-line: var(--ws-accent-line, rgba(11, 11, 12, 0.24));
+  --cta-bg: var(--ws-cta, #0B0B0C);
+  --cta-ink: var(--ws-cta-ink, #FFFFFF);
+  --cta-hover: var(--ws-cta-hover, #26262A);
+  --ok-ink: var(--ws-ok, #3F6B2E);
+  --ok-soft: var(--ws-ok-bg, #EDF4E6);
+  --ok-line: var(--ws-ok-line, rgba(63, 107, 46, 0.28));
+  --danger-ink: var(--ws-danger, #B42318);
+  --danger-soft: var(--ws-danger-bg, #FDECEA);
+  --danger-line: var(--ws-danger-line, rgba(180, 35, 24, 0.28));
   --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
 }
 
@@ -85,7 +85,7 @@ h2:focus-visible {
 
 .story-topbar {
   border-bottom: 1px solid var(--line-base);
-  background: rgba(12, 16, 23, 0.9);
+  background: rgba(255,255,255,.9);
 }
 
 .story-topbar-inner {
@@ -103,7 +103,6 @@ h2:focus-visible {
   height: 27px;
   width: auto;
   flex-shrink: 0;
-  filter: brightness(0) invert(1);
 }
 
 .topbar-label {

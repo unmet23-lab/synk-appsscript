@@ -1,9 +1,9 @@
-/* SNS · 나라 지도 — Pure Black (#000000) Workspace
+/* SNS · 나라 지도 — 밝은 판(#FFFFFF) Workspace
    선택자는 :root .synk-workspace .sw-simple .mm-… 로 시작한다(간편판과 같은 우선순위 줄). style 속성은 쓰지 않는다(CSP).
    사업 색은 면에만: LAB 코랄 #F96859 · SHIFT 청금석 #3D6BC9 · PULSE 베리 #99295D · PATH 초록 #526956.
    전체 보기는 사업 색을 섞지 않고 단색, 준비 중은 빗금, 비활성 대륙은 어두운 지형 면으로 둔다. */
 
-:root .synk-workspace .sw-simple .mm-page{--mm-lab:#F96859;--mm-shift:#3D6BC9;--mm-pulse:#99295D;--mm-path:#526956;--mm-synk:#8B95A5;--mm-brand:var(--mm-lab);--mm-land:#1A1D24;--mm-border:#07080A;--mm-hatch-bg:#14171D;--mm-hatch-line:#667085}
+:root .synk-workspace .sw-simple .mm-page{--mm-lab:#F96859;--mm-shift:#3D6BC9;--mm-pulse:#99295D;--mm-path:#526956;--mm-synk:#6B6B6E;--mm-brand:var(--mm-lab);--mm-land:#E6E6E9;--mm-border:#F6F6F7;--mm-hatch-bg:#EDEDEF;--mm-hatch-line:#6B6B6E}
 :root .synk-workspace .sw-simple .mm-page[data-mm-view="pulse"]{--mm-brand:var(--mm-pulse)}
 :root .synk-workspace .sw-simple .mm-page[data-mm-view="shift"]{--mm-brand:var(--mm-shift)}
 :root .synk-workspace .sw-simple .mm-page[data-mm-view="path"]{--mm-brand:var(--mm-path)}
@@ -20,9 +20,9 @@
 :root .synk-workspace .sw-simple .mm-switch{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border:1px solid var(--ss-line-2);border-radius:10px;background:var(--ss-surface);align-self:end}
 :root .synk-workspace .sw-simple .mm-switch button{display:inline-flex;align-items:center;gap:8px;height:38px;min-height:0;padding:0 15px;border:1px solid transparent;border-radius:7px;background:none;font-size:14px;font-weight:var(--w-strong);color:var(--ss-ink-3);box-shadow:none;transition:background .16s ease,color .16s ease,border-color .16s ease}
 :root .synk-workspace .sw-simple .mm-switch button:hover{color:var(--ss-ink)}
-:root .synk-workspace .sw-simple .mm-switch button[aria-pressed="true"]{background:#FFFFFF;color:#08090C;border-color:#FFFFFF;box-shadow:none}
+:root .synk-workspace .sw-simple .mm-switch button[aria-pressed="true"]{background:#0B0B0C;color:#F6F6F7;border-color:#0B0B0C;box-shadow:none}
 :root .synk-workspace .sw-simple .mm-switch .mm-tnum{font-size:13px;color:var(--ss-ink-4)}
-:root .synk-workspace .sw-simple .mm-switch button[aria-pressed="true"] .mm-tnum{color:#383B42}
+:root .synk-workspace .sw-simple .mm-switch button[aria-pressed="true"] .mm-tnum{color:#D9D9DE}
 :root .synk-workspace .sw-simple .mm-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
 :root .synk-workspace .sw-simple .mm-dot-lab{background:var(--mm-lab)}
 :root .synk-workspace .sw-simple .mm-dot-pulse,:root .synk-workspace .sw-simple .mm-dot[data-business="PULSE"]{background:var(--mm-pulse)}
@@ -60,12 +60,12 @@
 :root .synk-workspace .sw-simple .mm-sw{display:inline-block;width:13px;height:13px;border-radius:3px;background:var(--mm-land);border:1px solid var(--ss-line)}
 :root .synk-workspace .sw-simple .mm-sw-active{background:var(--mm-brand);border-color:transparent}
 :root .synk-workspace .sw-simple .mm-sw-target{background:repeating-linear-gradient(45deg,var(--mm-hatch-line) 0 1.5px,var(--mm-hatch-bg) 1.5px 4px)}
-:root .synk-workspace .sw-simple .mm-tip{position:absolute;z-index:3;pointer-events:none;padding:8px 12px;border:1px solid var(--ss-line-2);border-radius:10px;background:#0E1015;box-shadow:0 12px 28px rgba(0,0,0,.65);color:#FFFFFF;font-size:13px;line-height:1.45;white-space:nowrap;transform:translate(-50%,calc(-100% - 14px))}
+:root .synk-workspace .sw-simple .mm-tip{position:absolute;z-index:3;pointer-events:none;padding:8px 12px;border:1px solid var(--ss-line-2);border-radius:10px;background:#EDEDEF;box-shadow:0 12px 28px rgba(0,0,0,.16);color:#0B0B0C;font-size:13px;line-height:1.45;white-space:nowrap;transform:translate(-50%,calc(-100% - 14px))}
 :root .synk-workspace .sw-simple .mm-tip b{display:block;font-size:14.5px;font-weight:var(--w-strong)}
 
-:root .synk-workspace .sw-simple .mm-pane{border-left:1px solid var(--ss-line);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:root .synk-workspace .sw-simple .mm-pane{border-left:1px solid var(--ss-line);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(11,11,12,.15) transparent}
 :root .synk-workspace .sw-simple .mm-pane::-webkit-scrollbar{width:4px;height:4px}
-:root .synk-workspace .sw-simple .mm-pane::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:2px}
+:root .synk-workspace .sw-simple .mm-pane::-webkit-scrollbar-thumb{background:rgba(11,11,12,.15);border-radius:2px}
 :root .synk-workspace .sw-simple .mm-pane::-webkit-scrollbar-button{display:none}
 :root .synk-workspace .sw-simple .mm-sec{padding:18px 20px}
 :root .synk-workspace .sw-simple .mm-sec+.mm-sec{border-top:1px solid var(--ss-line)}
@@ -117,11 +117,11 @@
 :root .synk-workspace .sw-simple .mm-ops dd{margin:0;min-width:0;color:var(--ss-ink-2);overflow-wrap:anywhere}
 :root .synk-workspace .sw-simple .mm-ops>div[data-state="observed"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--ss-ink-2,currentColor);vertical-align:2px}
 :root .synk-workspace .sw-simple .mm-ops>div[data-state="verified"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="success"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-green);vertical-align:2px}
-:root .synk-workspace .sw-simple .mm-ops>div[data-state="partial"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="overdue"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="retry-scheduled"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="historical"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-butter,#FBBF24);vertical-align:2px}
-:root .synk-workspace .sw-simple .mm-ops>div[data-state="login-required"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="failed"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="reconnect"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="needs-reconnect"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="needs-connection"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-coral,#F97066);vertical-align:2px}
+:root .synk-workspace .sw-simple .mm-ops>div[data-state="partial"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="overdue"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="retry-scheduled"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="historical"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-butter,#7A5300);vertical-align:2px}
+:root .synk-workspace .sw-simple .mm-ops>div[data-state="login-required"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="failed"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="reconnect"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="needs-reconnect"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="needs-connection"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-coral,#B42318);vertical-align:2px}
 :root .synk-workspace .sw-simple .mm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-:root .synk-workspace .sw-simple .mm-chips button{display:inline-flex;align-items:center;gap:6px;height:32px;min-height:0;padding:0 12px;border:1px solid var(--ss-control,#78808E);border-radius:8px;background:var(--ss-paper);box-shadow:none;font-size:13px;font-weight:var(--w-strong);color:var(--ss-ink-2)}
-:root .synk-workspace .sw-simple .mm-chips button[aria-pressed="true"]{background:#FFFFFF;color:#08090C;border-color:#FFFFFF;box-shadow:none}
+:root .synk-workspace .sw-simple .mm-chips button{display:inline-flex;align-items:center;gap:6px;height:32px;min-height:0;padding:0 12px;border:1px solid var(--ss-control,#8E8E93);border-radius:8px;background:var(--ss-paper);box-shadow:none;font-size:13px;font-weight:var(--w-strong);color:var(--ss-ink-2)}
+:root .synk-workspace .sw-simple .mm-chips button[aria-pressed="true"]{background:#0B0B0C;color:#F6F6F7;border-color:#0B0B0C;box-shadow:none}
 :root .synk-workspace .sw-simple .mm-plans>summary{display:grid;gap:4px;cursor:pointer;list-style:none}
 :root .synk-workspace .sw-simple .mm-plans>summary::-webkit-details-marker{display:none}
 :root .synk-workspace .sw-simple .mm-plans>summary .mm-sec-title::after{content:"펼치기";margin-left:auto;font-size:13px;font-weight:var(--w-strong);color:var(--ss-ink-3)}
@@ -139,8 +139,8 @@
 @media (max-width:700px){
   :root .synk-workspace .sw-simple .mm-head{grid-template-columns:minmax(0,1fr)}
   :root .synk-workspace .sw-simple .mm-switch{justify-self:start;gap:6px;padding:0;background:none;border:0;border-radius:0}
-  :root .synk-workspace .sw-simple .mm-switch button{height:38px;padding:0 13px;border:1px solid var(--ss-control,#78808E);border-radius:8px;background:var(--ss-paper)}
-  :root .synk-workspace .sw-simple .mm-switch button[aria-pressed="true"]{background:#FFFFFF;color:#08090C;border-color:#FFFFFF;box-shadow:none}
+  :root .synk-workspace .sw-simple .mm-switch button{height:38px;padding:0 13px;border:1px solid var(--ss-control,#8E8E93);border-radius:8px;background:var(--ss-paper)}
+  :root .synk-workspace .sw-simple .mm-switch button[aria-pressed="true"]{background:#0B0B0C;color:#F6F6F7;border-color:#0B0B0C;box-shadow:none}
   :root .synk-workspace .sw-simple .mm-box{padding:14px 0 48px}
   :root .synk-workspace .sw-simple .mm-scroll{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   :root .synk-workspace .sw-simple .mm-scroll::-webkit-scrollbar{display:none}

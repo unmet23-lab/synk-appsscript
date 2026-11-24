@@ -257,3 +257,23 @@ test('switching accounts drops the previous account data',async()=>{
   f.run("state.user={id:'u2',role:'admin'}");f.run('tipSharesIdentity()');
   assert.equal(f.run('tipShares.data'),null);
 });
+
+// 11-24 받은편지함(시안 F · 설계 12절): 고르고 나면 「내 차례」 받은편지함과 사무실을 같은 자료로 다시 그리고, 메뉴 · 「더보기」 시트 두 곳의 수를 함께 바꾼다.
+test('a decision repaints the inbox through the paint hook and updates both count badges',async()=>{
+  let current=data([row(),row({row:53,postId:'XyZ'})]);
+  const f=fixture({tab:'home',api:async(path,body)=>{
+    if(path==='/api/tip-shares/decision'){current=data([row({pending:{to:body.to,requestedAt:'2026-11-16T05:01:00.000Z',claimed:false}}),row({row:53,postId:'XyZ'})]);return current;}
+    return current;
+  }});
+  const badges=[{innerHTML:''},{innerHTML:''}],paints=[];
+  f.context.document.querySelectorAll=selector=>selector==='[data-tip-badge]'?badges:[];
+  f.context.workspaceTurnPaint=()=>paints.push({busy:f.run('tipShares.busy.size'),waiting:f.run('tipShares.data?.waiting??null')});
+  await f.run('tipSharesLoad()');f.run('tipSharesPaint()');
+  for(const badge of badges)assert.match(badge.innerHTML,/<span aria-hidden="true">2<\/span>/,'the side menu and the more sheet both show 2');
+  paints.length=0;
+  f.click({tipAction:'decide',tipTo:'적용 중',tipRow:'52'});await tick();await tick();
+  assert.deepEqual(paints.map(p=>p.busy),[1,0],'the inbox is painted while sending (button off) and again after the answer');
+  assert.equal(paints.at(-1).waiting,1);
+  for(const badge of badges)assert.match(badge.innerHTML,/<span aria-hidden="true">1<\/span>/,'both counts drop to 1');
+  assert.equal(f.run('tipShares.focus'),'undo:52','the inbox detail moves focus to 되돌리기 from this mark');
+});

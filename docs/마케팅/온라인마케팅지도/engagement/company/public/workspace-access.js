@@ -411,6 +411,7 @@ function waSyncMine({refresh=true}={}){
     waRestoreMineView(view);
   }
   if(refresh&&!wa.mineLoading&&((!wa.mine&&!wa.mineError)||wa.mineNeedsRefresh||(wa.mineCheckedAt>0&&Date.now()-wa.mineCheckedAt>60000)))void waLoadMine();
+  if(typeof workspaceTurnPaint==='function')workspaceTurnPaint();
 }
 async function waLoadMine({force=false}={}){
   if(!state.user||state.tab!=='home'||!waMineCompanies().length)return null;
@@ -692,6 +693,8 @@ if(typeof window!=='undefined'&&typeof window.addEventListener==='function'){
           if(tab!=='home')wa.workTargetNotice='';
           if(typeof selectWorkspaceView==='function')selectWorkspaceView(tab,q.get('section')||'',q.has('teamId')?q.get('teamId')||'':undefined,q.has('draftId')?q.get('draftId')||'':undefined);
           else state.tab=tab;
+          // 받은편지함(section=inbox)의 방은 주소에서 다시 읽는다 — 뒤로 가기가 사무실 · 다른 방으로 돌아간다.
+          if(typeof workspaceInboxFromLocation==='function')workspaceInboxFromLocation();
         }
       }catch{}
     }

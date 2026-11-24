@@ -43,7 +43,7 @@ async function screenshot(name){const path=join(out,name);await page.screenshot(
 async function fit(width,frame,label){await page.setViewportSize({width,height:960});await page.waitForTimeout(120);const outer=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));const child=frame?await frame.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})):null;check(label+' fits '+width,outer.scroll<=outer.width&&(!child||child.scroll<=child.width),{outer,child});}
 async function teacherFrame(){const handle=page.locator('#teacher-workspace iframe');await handle.waitFor();const frame=await handle.elementHandle().then(e=>e.contentFrame());await frame.waitForFunction(()=>document.documentElement.dataset.ready==='true');return frame;}
 async function chooseClass(classId){await page.locator('.teacher-class-controls select').selectOption(classId);return teacherFrame();}
-async function chooseCompanyTab(tab){await page.locator('#ws-tools-toggle').click();await page.locator(`#ws-tools-drawer [data-tab="${tab}"]`).click();}
+async function chooseCompanyTab(tab){if(await page.locator('.ws-side').isVisible()){await page.locator(`.ws-side [data-tab="${tab}"]`).first().click();return;}await page.locator('#ws-tools-toggle').click();await page.locator(`#ws-tools-drawer [data-tab="${tab}"]`).click();}
 async function refreshTeacher(frame){await frame.locator('#refresh').click();await frame.waitForFunction(()=>document.documentElement.dataset.ready==='true');}
 async function currentState(){return classroom.state();}
 async function localCompanyLink(user){
@@ -116,7 +116,7 @@ try{
   check('teacher UI observation is retained separately from scored evidence',(await frame.locator('#observations').textContent()).includes('합성 관찰')&&(await currentState()).observations.length===1);
   const second=await chooseClass(secondClass.class_id);check('changing the assigned class removes prior learner and assignment context',await second.locator('.student-row').count()===0&&!(await second.locator('#assignments').textContent()).includes('합성 UI 수정 과제'));
   frame=await chooseClass(classroom.cls.class_id);check('returning to the original class restores canonical history',(await frame.locator('#assignments').textContent()).includes('합성 UI 수정 과제'));
-  await page.goto(base+'/');await page.locator('[name=email]').fill(staff.email);await page.locator('[name=password]').fill(password);await page.locator('[data-form=auth] button[type=submit]').click();await page.locator('#ws-tools-toggle').waitFor();await localCompanyLink(staff);
+  await page.goto(base+'/');await page.locator('[name=email]').fill(staff.email);await page.locator('[name=password]').fill(password);await page.locator('[data-form=auth] button[type=submit]').click();await page.locator('.ws-side').waitFor();await localCompanyLink(staff);
   await page.goto(base+'/?tab=teaching');await page.locator('.teacher-class-controls select').waitFor();frame=await chooseClass(classroom.cls.class_id);
   check('company teacher uses the same integrated shell and classroom',await page.locator('#ws-tools-drawer [data-tab=teaching]').count()===1&&(await frame.locator('#class-title').textContent()).includes('합성 검증 수업'));
   await frame.locator('#assign').click();await frame.locator('textarea[name=instructions]').fill('왕복해도 남아야 하는 교사 과제 초안');const beforeFrame=frame;await frame.evaluate(()=>window.__qaDraftIdentity='persisted-draft');

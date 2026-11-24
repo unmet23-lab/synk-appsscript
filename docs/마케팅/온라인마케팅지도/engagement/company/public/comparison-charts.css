@@ -1,4 +1,4 @@
-/* Shared numeric scales; no inline styles or external chart dependencies — Pure Black (#000000) Workspace */
+/* Shared numeric scales; no inline styles or external chart dependencies — 밝은 판(#FFFFFF) Workspace */
 .comparison-section,
 .period-comparison-section {
   min-width: 0;
@@ -73,7 +73,7 @@
   color: var(--ws-ink, #FFFFFF);
   padding: 6px 26px 6px 10px;
   font: 500 13px/1.4 var(--ws-sans, sans-serif);
-  color-scheme: dark;
+  color-scheme:light;
 }
 .comparison-filter select:focus-visible {
   outline: 2px solid var(--ws-accent, #FFFFFF);
@@ -218,10 +218,10 @@ button.comparison-bar-row:focus-visible {
   fill: var(--ws-accent, #FFFFFF);
 }
 .comparison-bar.is-negative {
-  fill: #F97066;
+  fill: #B42318;
 }
 .comparison-bar.is-previous {
-  fill: #647084;
+  fill: #6B6B6E;
 }
 .comparison-bar.is-previous.is-negative {
   fill: #A85550;
@@ -239,7 +239,7 @@ button.comparison-bar-row:focus-visible {
   color: var(--ws-ink-muted, #9AA5B6);
   font-size: 13px;
   line-height: 1;
-  background: rgba(7, 8, 10, 0.84);
+  background: rgba(255,255,255,.84);
 }
 .comparison-note {
   margin-top: 16px;
@@ -296,7 +296,7 @@ button.comparison-bar-row:focus-visible {
 }
 .period-comparison-legend i.is-previous,
 .period-comparison-label i.is-previous {
-  background: #647084;
+  background: #6B6B6E;
 }
 .period-comparison-grid {
   display: grid;

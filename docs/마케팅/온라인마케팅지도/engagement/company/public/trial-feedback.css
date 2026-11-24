@@ -1,17 +1,17 @@
-/* 말 랠리 체험 의견 결과 — Pure Black (#000000) Workspace (CSP style-src 'self' 준수, 인라인 스타일 없음) */
+/* 말 랠리 체험 의견 결과 — 밝은 판(#FFFFFF) Workspace (CSP style-src 'self' 준수, 인라인 스타일 없음) */
 @font-face{font-family:SUIT;src:url(/font.woff2) format("woff2");font-weight:100 900;font-display:swap}
 @font-face{font-family:"Inter Tight";src:url(/inter.ttf) format("truetype");font-weight:400;font-display:swap;unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF}
 @font-face{font-family:"Inter Tight";src:url(/inter-semibold.ttf) format("truetype");font-weight:600 800;font-display:swap;unicode-range:U+0021-007E,U+00A0-00B6,U+00B8-00FF}
 @font-face{font-family:"DM Mono";src:url(/mono.ttf) format("truetype");font-weight:400 700;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF}
 :root{
-  --ws-canvas:#000000;--ws-surface:#07080A;--ws-subtle:#0E1015;
-  --ws-ink:#FFFFFF;--ws-ink-2:#D0D6E0;--ws-muted:#9AA5B6;
-  --ws-line:rgba(255,255,255,.13);--ws-line-strong:rgba(255,255,255,.20);--ws-control-border:#78808E;
-  --ws-accent:#FFFFFF;--ws-accent-hover:#E6EAF0;--ws-accent-soft:#07080A;--ws-accent-border:rgba(255,255,255,.20);
-  --ws-warn:#FDE68A;--ws-warn-soft:rgba(251,191,36,.10);--ws-warn-border:rgba(251,191,36,.32);
+  --ws-canvas:#FFFFFF;--ws-surface:#F6F6F7;--ws-subtle:#EDEDEF;
+  --ws-ink:#0B0B0C;--ws-ink-2:#46464A;--ws-muted:#6B6B6E;
+  --ws-line:rgba(11,11,12,.08);--ws-line-strong:rgba(11,11,12,.15);--ws-control-border:#8E8E93;
+  --ws-accent:#0B0B0C;--ws-accent-hover:#26262A;--ws-accent-soft:#F6F6F7;--ws-accent-border:rgba(11,11,12,.15);
+  --ws-warn:#7A5300;--ws-warn-soft:rgba(251,191,36,.10);--ws-warn-border:rgba(251,191,36,.32);
   --ws-sans:"Inter Tight",SUIT,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --ws-mono:"DM Mono",SUIT,ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  color-scheme:dark;
+  color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{background:var(--ws-canvas);-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -30,13 +30,13 @@ h1{margin:4px 0 0;font-size:clamp(22px,2.8vw,28px);font-weight:700;line-height:1
 .tf-unit b{color:var(--ws-ink);font-weight:700}
 .tf-filter{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:12px 16px;border:1px solid var(--ws-line);border-radius:10px;background:var(--ws-surface)}
 .tf-filter label{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ws-ink);min-height:44px}
-.tf-filter select{min-height:44px;padding:6px 12px;border:1px solid var(--ws-control-border);border-radius:8px;background:var(--ws-canvas);color:var(--ws-ink);font:500 15px/1.3 var(--ws-sans);cursor:pointer;color-scheme:dark}
+.tf-filter select{min-height:44px;padding:6px 12px;border:1px solid var(--ws-control-border);border-radius:8px;background:var(--ws-canvas);color:var(--ws-ink);font:500 15px/1.3 var(--ws-sans);cursor:pointer;color-scheme:light}
 .tf-filter select:hover{border-color:var(--ws-ink)}
 .tf-data{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0;padding:0;border:0}
 .tf-data legend{float:left;margin-right:8px;font-size:14px;font-weight:600;color:var(--ws-ink-2);line-height:44px}
 .tf-data input[type="radio"]{width:18px;height:18px;margin:0;accent-color:var(--ws-accent);cursor:pointer}
-.tf-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:1px solid #FFFFFF;border-radius:8px;background:#FFFFFF;color:#08090C;font:600 14px/1 var(--ws-sans);text-decoration:none;cursor:pointer;transition:background-color .14s ease,border-color .14s ease}
-.tf-btn:hover{background:var(--ws-accent-hover);border-color:var(--ws-accent-hover);color:#08090C}
+.tf-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:1px solid #0B0B0C;border-radius:8px;background:#0B0B0C;color:#F6F6F7;font:600 14px/1 var(--ws-sans);text-decoration:none;cursor:pointer;transition:background-color .14s ease,border-color .14s ease}
+.tf-btn:hover{background:var(--ws-accent-hover);border-color:var(--ws-accent-hover);color:#F6F6F7}
 #filter .tf-btn{margin-left:auto;background:var(--ws-canvas);color:var(--ws-ink);border-color:var(--ws-control-border)}
 #filter .tf-btn:hover{background:var(--ws-subtle);border-color:var(--ws-ink)}
 .tf-banner{margin:0;padding:12px 16px;border:1px solid var(--ws-warn-border);border-radius:10px;background:var(--ws-warn-soft);color:var(--ws-warn);font-size:14px;font-weight:700}
@@ -62,9 +62,9 @@ dd small{display:block;margin-top:4px;font-size:13px;font-weight:500;color:var(-
 .tf-track i{display:block;height:100%;width:0;background:var(--ws-accent);border-radius:3px}
 .tf-bars b{font-weight:700;color:var(--ws-ink);font-variant-numeric:tabular-nums}
 .tf-bars small{min-width:42px;text-align:right;font-family:var(--ws-mono);font-size:13px;color:var(--ws-muted);font-variant-numeric:tabular-nums}
-.tf-scroll{overflow-x:auto;border:1px solid var(--ws-line);border-radius:8px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+.tf-scroll{overflow-x:auto;border:1px solid var(--ws-line);border-radius:8px;scrollbar-width:thin;scrollbar-color:rgba(11,11,12,.15) transparent}
 .tf-scroll::-webkit-scrollbar{height:4px}
-.tf-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:2px}
+.tf-scroll::-webkit-scrollbar-thumb{background:rgba(11,11,12,.15);border-radius:2px}
 .tf-scroll::-webkit-scrollbar-button{display:none}
 table{width:100%;border-collapse:collapse;font-size:14px;min-width:460px;background:var(--ws-canvas)}
 th,td{padding:10px 12px;border-bottom:1px solid var(--ws-line);text-align:left;vertical-align:top;font-variant-numeric:tabular-nums}

@@ -1,13 +1,13 @@
-/* Chart Hover Leaders Popover — Pure Black (#000000) Workspace */
+/* Chart Hover Leaders Popover — 밝은 판(#FFFFFF) Workspace */
 .chart-content-leaders {
   position: fixed;
   z-index: 1200;
   box-sizing: border-box;
-  background: #0E1015;
+  background: #EDEDEF;
   color: var(--ws-ink, #FFFFFF);
   border: 1px solid var(--ws-line-muted, rgba(255, 255, 255, 0.22));
   border-radius: var(--ws-radius-md, 10px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.72);
+  box-shadow: 0 16px 36px rgba(0,0,0,.18);
   padding: 15px 16px;
   pointer-events: none;
   max-height: calc(100dvh - 24px);
@@ -87,9 +87,9 @@
   font-weight: 650;
 }
 .leaders-list li:first-child .leaders-rank {
-  background: #FFFFFF;
-  color: #08090C;
-  border-color: #FFFFFF;
+  background: #0B0B0C;
+  color: #F6F6F7;
+  border-color: #0B0B0C;
 }
 .leaders-content {
   flex: 1;

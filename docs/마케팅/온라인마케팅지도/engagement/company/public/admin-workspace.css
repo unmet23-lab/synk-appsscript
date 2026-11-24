@@ -1,4 +1,4 @@
-/* SYNK Admin Workspace — Pure #000000 Scoped Under .admin-workspace */
+/* SYNK Admin Workspace — 밝은 판(#FFFFFF) Scoped Under .admin-workspace */
 
 .admin-workspace {
   width: 100%;
@@ -281,7 +281,7 @@
 .admin-workspace .admin-tab-btn[aria-pressed="true"],
 .admin-workspace .admin-tab-btn.is-active:hover:not(:disabled),
 .admin-workspace .admin-tab-btn[aria-pressed="true"]:hover:not(:disabled) {
-  background-color: #161B26;
+  background-color: #EDEDEF;
   border-color: var(--ws-ink);
   color: var(--ws-ink);
   font-weight: 700;
@@ -582,7 +582,7 @@
   text-align: left;
   cursor: pointer;
   text-decoration: underline;
-  text-decoration-color: rgba(255, 255, 255, 0.24);
+  text-decoration-color: rgba(11,11,12,.15);
   text-underline-offset: 3px;
   overflow-wrap: anywhere;
 }
@@ -733,7 +733,7 @@
 
 .admin-workspace .admin-filter-pill[aria-pressed="true"],
 .admin-workspace .admin-filter-pill[aria-pressed="true"]:hover:not(:disabled) {
-  background-color: #161B26;
+  background-color: #EDEDEF;
   border-color: var(--ws-ink);
   color: var(--ws-ink);
   font-weight: 660;

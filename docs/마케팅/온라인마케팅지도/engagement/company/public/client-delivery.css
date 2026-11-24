@@ -1,40 +1,40 @@
-.cdel-card{border:1px solid rgba(255,255,255,.13);background:#000000;scroll-margin-top:24px}
+.cdel-card{border:1px solid rgba(11,11,12,.08);background:#FFFFFF;scroll-margin-top:24px}
 .cdel-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.cdel-card h2{margin:5px 0 12px;color:#FFFFFF}
-.cdel-card h3{margin:22px 0 10px;color:#FFFFFF}
-.cdel-card h4{margin:0 0 10px;color:#FFFFFF}
+.cdel-card h2{margin:5px 0 12px;color:#0B0B0C}
+.cdel-card h3{margin:22px 0 10px;color:#0B0B0C}
+.cdel-card h4{margin:0 0 10px;color:#0B0B0C}
 .cdel-card p,.cdel-card small,.cdel-card a{overflow-wrap:anywhere}
 .cdel-card fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:12px}
 .cdel-card fieldset:disabled{opacity:.65}
 .cdel-card details{margin:14px 0}
-.cdel-card summary{cursor:pointer;font-weight:650;color:#FFFFFF}
+.cdel-card summary{cursor:pointer;font-weight:650;color:#0B0B0C}
 .cdel-card input:not([type=checkbox]),.cdel-card select,.cdel-card textarea{min-width:0;max-width:100%;box-sizing:border-box}
 .cdel-card input[type=file]{font-size:13px}
 .cdel-grid,.cdel-requirements{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.cdel-requirement,.cdel-add,.cdel-item{border:1px solid rgba(255,255,255,.13);border-radius:8px;padding:16px;background:#000000;min-width:0}
+.cdel-requirement,.cdel-add,.cdel-item{border:1px solid rgba(11,11,12,.08);border-radius:8px;padding:16px;background:#FFFFFF;min-width:0}
 .cdel-requirement+.cdel-requirement,.cdel-item+.cdel-item{margin-top:10px}
-.cdel-add h4 small{font-weight:450;color:#9AA5B6}
-.cdel-approved,.cdel-notice{background:#07080A;border:1px solid rgba(255,255,255,.13);border-radius:6px;padding:12px;line-height:1.6;color:#D0D6E0}
-.cdel-approved small{display:block;color:#9AA5B6}
-.cdel-muted,.cdel-card small{font-size:13px;color:#9AA5B6;line-height:1.6}
-.cdel-check{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;line-height:1.6;color:#D0D6E0}
-.cdel-check input{width:17px;height:17px;flex:none;accent-color:#FFFFFF;margin-top:2px}
+.cdel-add h4 small{font-weight:450;color:#6B6B6E}
+.cdel-approved,.cdel-notice{background:#F6F6F7;border:1px solid rgba(11,11,12,.08);border-radius:6px;padding:12px;line-height:1.6;color:#46464A}
+.cdel-approved small{display:block;color:#6B6B6E}
+.cdel-muted,.cdel-card small{font-size:13px;color:#6B6B6E;line-height:1.6}
+.cdel-check{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;line-height:1.6;color:#46464A}
+.cdel-check input{width:17px;height:17px;flex:none;accent-color:#0B0B0C;margin-top:2px}
 .cdel-candidate{display:grid;gap:8px;padding-bottom:14px;font-size:13.5px}
-.cdel-or{font-size:13px;color:#9AA5B6}
+.cdel-or{font-size:13px;color:#6B6B6E}
 .cdel-media{display:grid;justify-items:start;gap:10px;margin:12px 0}
-.cdel-media video,.cdel-media img{max-width:100%;max-height:250px;border-radius:6px;border:1px solid rgba(255,255,255,.13);background:#07080A}
+.cdel-media video,.cdel-media img{max-width:100%;max-height:250px;border-radius:6px;border:1px solid rgba(11,11,12,.08);background:#F6F6F7}
 .cdel-text{white-space:pre-wrap;line-height:1.7}
-.cdel-checks{border-top:1px solid rgba(255,255,255,.13);margin-top:18px}
-.cdel-checks>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.13);font-size:13.5px}
-.cdel-checks>div>span{color:#9BE0B5;font-weight:650}
-.cdel-checks>div[data-check-state=missing]>span{color:#FFDAD6}
-.cdel-checks>div[data-check-state=manual]>span{color:#FDE68A}
-.cdel-checks p{grid-column:1/-1;margin:0;color:#9AA5B6;font-size:13px}
-.cdel-publish{margin-top:18px;border:1px solid rgba(255,255,255,.20);border-radius:8px;padding:16px;background:#07080A}
-.cdel-publish p{margin:0;font-size:13.5px;line-height:1.6;color:#D0D6E0}
+.cdel-checks{border-top:1px solid rgba(11,11,12,.08);margin-top:18px}
+.cdel-checks>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;padding:12px 0;border-bottom:1px solid rgba(11,11,12,.08);font-size:13.5px}
+.cdel-checks>div>span{color:#3F6B2E;font-weight:650}
+.cdel-checks>div[data-check-state=missing]>span{color:#B42318}
+.cdel-checks>div[data-check-state=manual]>span{color:#7A5300}
+.cdel-checks p{grid-column:1/-1;margin:0;color:#6B6B6E;font-size:13px}
+.cdel-publish{margin-top:18px;border:1px solid rgba(11,11,12,.15);border-radius:8px;padding:16px;background:#F6F6F7}
+.cdel-publish p{margin:0;font-size:13.5px;line-height:1.6;color:#46464A}
 .cdel-card .cd-toolbar{flex-wrap:wrap}
 .cdel-card button:disabled{opacity:.55;cursor:not-allowed}
-.cdel-card a:focus-visible,.cdel-card button:focus-visible,.cdel-card summary:focus-visible{outline:2px solid #FFFFFF;outline-offset:2px}
+.cdel-card a:focus-visible,.cdel-card button:focus-visible,.cdel-card summary:focus-visible{outline:2px solid #0B0B0C;outline-offset:2px}
 @media(max-width:760px){
   .cdel-grid,.cdel-requirements{grid-template-columns:1fr}
   .cdel-card>header{flex-direction:column}

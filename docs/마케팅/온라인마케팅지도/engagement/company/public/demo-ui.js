@@ -48,7 +48,7 @@ function demoBanner() {
 function demoAllowsAction(action,target) {
   if (!isDemoMode()) return true;
   if (['tab','marketing-section','command-tab'].includes(action)) return ['marketing','mine','team','all','overview','analysis','history'].includes(target.dataset.tab);
-  return ['workspace-sidebar-toggle','workspace-sidebar-close','workspace-mobile-menu','workspace-mobile-close','reload','logout','chart-mode','growth-metric','report-view','team-scope','team-overview-retry','team-overview-select','range','move-range','metric-focus','platform-focus','channel-detail','member-filter','analysis-content','analysis-view','day','post-detail','refresh','close-modal','comparison-more'].includes(action);
+  return ['workspace-tools-toggle','workspace-tools-close','workspace-sidebar-toggle','workspace-sidebar-close','workspace-mobile-menu','workspace-mobile-close','reload','logout','chart-mode','growth-metric','report-view','team-scope','team-overview-retry','team-overview-select','range','move-range','metric-focus','platform-focus','channel-detail','member-filter','analysis-content','analysis-view','day','post-detail','refresh','close-modal','comparison-more'].includes(action);
 }
 document.addEventListener('click',event=>{
   if(!isDemoMode())return;

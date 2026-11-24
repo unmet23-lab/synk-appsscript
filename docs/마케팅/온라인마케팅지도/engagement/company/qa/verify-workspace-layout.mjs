@@ -56,9 +56,10 @@ try{
   await page.setViewportSize({width:1440,height:900});
   await messenger.locator('#composer-input').fill('합성 미전송 초안');
   await page.locator('#messenger-frame').evaluate(frame=>{frame.dataset.qaIdentity='retained-frame';frame.contentWindow.__layoutQaLifetime='retained-document';});
+  // 넓은 화면은 왼쪽 메뉴, 휴대폰(760px 이하)은 아래 탭의 「더보기」 시트(#ws-tools-drawer)로 옮겨 다닌다.
   const openTools=async()=>{await page.locator('#ws-tools-toggle').click();await page.locator('#ws-tools-drawer').waitFor({state:'visible'});};
-  const navigate=async tab=>{await openTools();await page.locator('#ws-tools-drawer [data-tab="'+tab+'"]').first().click();};
-  await navigate('home');await page.locator('#next-heading').waitFor();
+  const navigate=async tab=>{const side=page.locator('.ws-side [data-tab="'+tab+'"]').first();if(await side.isVisible())await side.click();else{await openTools();await page.locator('#ws-tools-drawer [data-tab="'+tab+'"]').first().click();}};
+  await navigate('home');await page.locator('#ws-office').waitFor();
   await navigate('messenger');await messenger.locator('#composer-input').waitFor({state:'visible'});
   check('same iframe survives navigation',await page.locator('#messenger-frame').getAttribute('data-qa-identity')==='retained-frame');
   check('messenger document is not reloaded during navigation',await page.locator('#messenger-frame').evaluate(frame=>frame.contentWindow.__layoutQaLifetime==='retained-document'));
@@ -76,6 +77,13 @@ try{
     await page.setViewportSize({width,height});
     await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
     check(width+' tools starts closed',!await contextMenu.isVisible());
+    // 761px 이상은 왼쪽 메뉴가 모든 화면을 연다(「더보기」 단추는 없다). 시트 검사는 휴대폰 폭에서만 한다.
+    if(width>760){
+      check(width+' side menu is visible and the more button is hidden',await page.locator('.ws-side').isVisible()&&!await contextToggle.isVisible());
+      check(width+' side menu fits the viewport height',await page.locator('.ws-side').evaluate(side=>{const r=side.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight+1;}));
+      continue;
+    }
+    check(width+' bottom tabs are visible and the side menu is hidden',await page.locator('.ws-tabbar').isVisible()&&!await page.locator('.ws-side').isVisible());
     await openTools();
     check(width+' tools blocks background interaction',await page.locator('#main').evaluate(main=>main.inert));
     check(width+' tools stays inside the viewport',await contextMenu.evaluate(menu=>{const r=menu.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&r.top>=0&&r.bottom<=innerHeight+1;}));
@@ -91,7 +99,7 @@ try{
     check(width+' visible internal close button works',!await contextMenu.isVisible()&&await contextToggle.evaluate(button=>button===document.activeElement));
     await openTools();
     const scrim=page.locator('#ws-tools-scrim');
-    const point=await scrim.evaluate(el=>{for(const [x,y] of [[8,innerHeight-8],[innerWidth-8,innerHeight-8],[8,80],[innerWidth/2,innerHeight-8]])if(document.elementFromPoint(x,y)===el)return{x,y};return null;});
+    const point=await scrim.evaluate(el=>{for(const [x,y] of [[8,8],[innerWidth/2,8],[8,innerHeight-8],[innerWidth-8,innerHeight-8],[8,80]])if(document.elementFromPoint(x,y)===el)return{x,y};return null;});
     check(width+' scrim has a reachable hit target',Boolean(point));
     if(point)await page.mouse.click(point.x,point.y);else await page.keyboard.press('Escape');
     check(width+' scrim closes tools and restores focus',Boolean(point)&&!await contextMenu.isVisible()&&await contextToggle.evaluate(button=>button===document.activeElement));

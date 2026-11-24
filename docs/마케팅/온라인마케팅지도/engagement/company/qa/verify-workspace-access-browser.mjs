@@ -58,12 +58,15 @@ async function session(user,viewport={width:1440,height:900}){
   return {context,page};
 }
 async function openTools(page){await page.locator('#ws-tools-toggle').click();await page.locator('#ws-tools-drawer').waitFor({state:'visible'});}
+// 넓은 화면(761px 이상)은 왼쪽 메뉴(.ws-side)가, 휴대폰은 아래 탭 「더보기」 시트가 같은 탭 집합을 연다.
+async function sideVisible(page){return page.locator('.ws-side').isVisible();}
 async function visibleTabs(page){
+  if(await sideVisible(page))return page.locator('.ws-side [data-tab]').evaluateAll((nodes,primary)=>[...new Set(nodes.filter(node=>node.getClientRects().length).map(node=>node.dataset.tab).filter(tab=>primary.includes(tab)))].sort(),primary);
   await openTools(page);
   const tabs=await page.locator('#ws-tools-drawer [data-tab]').evaluateAll((nodes,primary)=>[...new Set(nodes.filter(node=>node.getClientRects().length).map(node=>node.dataset.tab).filter(tab=>primary.includes(tab)))].sort(),primary);
   await page.keyboard.press('Escape');await page.locator('#ws-tools-drawer').waitFor({state:'hidden'});return tabs;
 }
-async function navigate(page,tab){await openTools(page);await page.locator('#ws-tools-drawer [data-tab="'+tab+'"]').first().click();}
+async function navigate(page,tab){if(await sideVisible(page)){await page.locator('.ws-side [data-tab="'+tab+'"]').first().click();return;}await openTools(page);await page.locator('#ws-tools-drawer [data-tab="'+tab+'"]').first().click();}
 async function shot(page,name){await page.screenshot({path:join(output,name),fullPage:true});report.shots.push(name);}
 async function fillInvite(page,name,email){
   await page.locator('#main [data-action="invite"]').first().click();
@@ -90,7 +93,7 @@ async function openInvites(page){await page.locator('#main [data-action="wa-invi
 async function logout(page){await page.locator('[data-action="marin-account"]:visible').click();await page.locator('#overlay [data-action="logout"]').click();await page.locator('#auth-form').waitFor();}
 async function login(page,user){
   await page.locator('#auth-form [name="email"]').fill(user.email);await page.locator('#auth-form [name="password"]').fill(password);
-  await page.locator('#auth-form [type="submit"]').click();await page.locator('#next-heading').waitFor();
+  await page.locator('#auth-form [type="submit"]').click();await page.locator('#ws-office').waitFor();
   await navigate(page,'members');await page.locator('.organization-page').waitFor();
 }
 try{
@@ -124,7 +127,7 @@ try{
     check(key+' bare entry opens the assigned workspace',await page.locator('.synk-workspace').getAttribute('data-view')===expectedTab);
     if(expectedTab!=='home')check(key+' only loads writing assets on the employee home',(await staffStoryFiles(page)).length===0);
     if(expectedSection)check(key+' starts with customer assignments',await page.evaluate(()=>wr.view)===expectedSection);
-    await page.locator('.ws-brand[data-tab="home"]').click();await page.locator('#next-heading').waitFor();
+    await page.locator('.ws-side-brand[data-tab="home"]').click();await page.locator('#ws-office').waitFor();
     check(key+' explicit return stays on the assignment board',await page.locator('.synk-workspace').getAttribute('data-view')==='home');
     if(key==='shift'){
       const create=page.locator('#staff-stories-root [data-action="ss-new"]:enabled');
@@ -152,13 +155,13 @@ try{
   {
     const {context,page}=await session(people.find(row=>row.key==='shift').user);
     for(const suffix of ['?tab=home','?connected=1','?connectionError=qa','?teachingConnected=1','?teachingError=qa','?panel=tasks','#view=home','#unknown=qa']){
-      await page.goto(base+'/'+suffix);await page.locator('#next-heading').waitFor();
+      await page.goto(base+'/'+suffix);await page.locator('#ws-office').waitFor();
       check('explicit entry is preserved: '+suffix,await page.locator('.synk-workspace').getAttribute('data-view')==='home');
     }
     await context.close();
   }
   for(const {key,user,tabs} of people){
-    const {context,page}=await session(user);await page.goto(base+'/?tab=home');await page.locator('#next-heading').waitFor();
+    const {context,page}=await session(user);await page.goto(base+'/?tab=home');await page.locator('#ws-office').waitFor();
     assert.deepEqual(await visibleTabs(page),[...tabs].sort());check(key+' exact company and duty navigation');
     for(const [company,tab] of [['PATH','path'],['SHIFT','lectures']]){
       const response=await context.request.get(base+'/api/company-work/'+company);
@@ -206,7 +209,7 @@ try{
   check('code acceptance shows assigned companies',/SHIFT/.test(await joined.page.locator('#wa-invite-summary').textContent())&&/PULSE/.test(await joined.page.locator('#wa-invite-summary').textContent()));
   check('invite recipient has no role or company editor',await joined.page.locator('[name="waCompany"],[name="role"]').count()===0);
   await joined.page.locator('#auth-form [name="name"]').fill('합성 새 겸임 직원');await joined.page.locator('#auth-form [name="password"]').fill(password);
-  await shot(joined.page,'invitation-accept-390.png');await joined.page.locator('#auth-form [type="submit"]').click();await joined.page.locator('#next-heading').waitFor();
+  await shot(joined.page,'invitation-accept-390.png');await joined.page.locator('#auth-form [type="submit"]').click();await joined.page.locator('#ws-office').waitFor();
   assert.deepEqual(await visibleTabs(joined.page),['home','lectures','members','messenger','workroom']);
   const me=await (await joined.context.request.get(base+'/api/me')).json();
   assert.deepEqual(me.user.workspaceAccess.memberships,[{company:'SHIFT',role:'instructor'},{company:'PULSE',role:'producer'}]);assert.deepEqual(me.user.workspaceAccess.duties,['pages']);

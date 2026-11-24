@@ -1,4 +1,4 @@
-/* 자막 검사 — 순수 검정(#000000) & 가는 구분선. 공통 어휘는 maker-tools.css에 두고,
+/* 자막 검사 — 흰 바탕(#FFFFFF) & 가는 구분선. 공통 어휘는 maker-tools.css에 두고,
    여기는 이 탭에만 쓰는 규칙(입력 양식 · 자막 줄 목록 · 읽기 기준 접힌 줄)만 정의한다. 인라인 style 없음(CSP style-src 'self'). */
 :root .synk-workspace .mt .sl-form{display:grid;gap:14px}
 :root .synk-workspace .mt .sl-paste textarea{height:176px;min-height:96px;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -12,25 +12,25 @@
 :root .synk-workspace .mt .sl-result-block>.mt-block-head{padding-bottom:2px;border-bottom:0}
 :root .synk-workspace .mt .sl-result-block .mt-meter{margin-bottom:22px}
 :root .synk-workspace .mt .sl-result-block .mt-notice{margin:-8px 0 18px}
-:root .synk-workspace .mt .sl-loose-list{margin:0 0 18px;border-block:1px solid var(--mt-line,rgba(255,255,255,.13))}
+:root .synk-workspace .mt .sl-loose-list{margin:0 0 18px;border-block:1px solid var(--mt-line,rgba(11,11,12,.08))}
 :root .synk-workspace .mt .sl-loose-list .mt-issue strong{font-size:14px;font-weight:var(--w-label)}
 :root .synk-workspace .mt .sl-list-tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin:0 0 8px}
-:root .synk-workspace .mt .sl-list-tools .mt-check{font-size:13.5px;font-weight:var(--w-label);color:var(--mt-ink-2,#D0D6E0)}
-:root .synk-workspace .mt .sl-list-tools .mt-check b{margin-left:4px;font-weight:var(--w-strong);color:var(--mt-ink-3,#9AA5B6)}
-:root .synk-workspace .mt .sl-cues{border-top:1px solid var(--mt-line-2,rgba(255,255,255,.20))}
-:root .synk-workspace .mt .sl-cue{display:grid;grid-template-columns:36px 218px minmax(0,1fr) auto;grid-template-areas:"num time text flags";gap:4px 16px;align-items:start;padding:12px 2px;border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
-:root .synk-workspace .mt .sl-num{grid-area:num;padding-top:2px;font:500 13px/1.5 var(--mt-mono,'DM Mono',monospace);font-variant-numeric:tabular-nums;color:var(--mt-ink-3,#9AA5B6)}
-:root .synk-workspace .mt .sl-cue[data-tone=wait] .sl-num{color:var(--mt-butter-ink,#FDE68A)}
-:root .synk-workspace .mt .sl-cue[data-tone=alert] .sl-num{color:var(--mt-coral-ink,#FFDAD6)}
-:root .synk-workspace .mt .sl-time{grid-area:time;display:block;min-width:0;padding-top:2px;font:500 13px/1.5 var(--mt-mono,'DM Mono',monospace);font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--mt-ink-2,#D0D6E0);overflow-wrap:anywhere}
-:root .synk-workspace .mt .sl-time i{font-style:normal;color:var(--mt-ink-4,#9AA5B6)}
-:root .synk-workspace .mt .sl-time em{display:block;font-style:normal;color:var(--mt-ink-3,#9AA5B6)}
-:root .synk-workspace .mt .sl-time small{display:block;margin-top:3px;font:var(--w-label) 13px/1.45 var(--mt-sans);color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .sl-list-tools .mt-check{font-size:13.5px;font-weight:var(--w-label);color:var(--mt-ink-2,#46464A)}
+:root .synk-workspace .mt .sl-list-tools .mt-check b{margin-left:4px;font-weight:var(--w-strong);color:var(--mt-ink-3,#6B6B6E)}
+:root .synk-workspace .mt .sl-cues{border-top:1px solid var(--mt-line-2,rgba(11,11,12,.15))}
+:root .synk-workspace .mt .sl-cue{display:grid;grid-template-columns:36px 218px minmax(0,1fr) auto;grid-template-areas:"num time text flags";gap:4px 16px;align-items:start;padding:12px 2px;border-bottom:1px solid var(--mt-line,rgba(11,11,12,.08))}
+:root .synk-workspace .mt .sl-num{grid-area:num;padding-top:2px;font:500 13px/1.5 var(--mt-mono,'DM Mono',monospace);font-variant-numeric:tabular-nums;color:var(--mt-ink-3,#6B6B6E)}
+:root .synk-workspace .mt .sl-cue[data-tone=wait] .sl-num{color:var(--mt-butter-ink,#7A5300)}
+:root .synk-workspace .mt .sl-cue[data-tone=alert] .sl-num{color:var(--mt-coral-ink,#B42318)}
+:root .synk-workspace .mt .sl-time{grid-area:time;display:block;min-width:0;padding-top:2px;font:500 13px/1.5 var(--mt-mono,'DM Mono',monospace);font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--mt-ink-2,#46464A);overflow-wrap:anywhere}
+:root .synk-workspace .mt .sl-time i{font-style:normal;color:var(--mt-ink-4,#6B6B6E)}
+:root .synk-workspace .mt .sl-time em{display:block;font-style:normal;color:var(--mt-ink-3,#6B6B6E)}
+:root .synk-workspace .mt .sl-time small{display:block;margin-top:3px;font:var(--w-label) 13px/1.45 var(--mt-sans);color:var(--mt-ink-3,#6B6B6E)}
 :root .synk-workspace .mt .sl-text{grid-area:text;min-width:0}
-:root .synk-workspace .mt .sl-text>p{font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--mt-ink,#FFFFFF)}
-:root .synk-workspace .mt .sl-text>p.is-empty{color:var(--mt-ink-4,#9AA5B6)}
-:root .synk-workspace .mt .sl-text>.sl-issue{margin-top:4px;font-size:13px;line-height:1.55;white-space:normal;color:var(--mt-butter-ink,#FDE68A)}
-:root .synk-workspace .mt .sl-text>.sl-issue[data-tone=alert]{color:var(--mt-coral-ink,#FFDAD6)}
+:root .synk-workspace .mt .sl-text>p{font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--mt-ink,#0B0B0C)}
+:root .synk-workspace .mt .sl-text>p.is-empty{color:var(--mt-ink-4,#6B6B6E)}
+:root .synk-workspace .mt .sl-text>.sl-issue{margin-top:4px;font-size:13px;line-height:1.55;white-space:normal;color:var(--mt-butter-ink,#7A5300)}
+:root .synk-workspace .mt .sl-text>.sl-issue[data-tone=alert]{color:var(--mt-coral-ink,#B42318)}
 :root .synk-workspace .mt .sl-flags{grid-area:flags;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:200px}
 :root .synk-workspace .mt .sl-flags:empty{display:none}
 :root .synk-workspace .mt .sl-more{display:flex;justify-content:center;padding:14px 0 2px}
@@ -39,12 +39,12 @@
 /* 03 받기 */
 :root .synk-workspace .mt .sl-exports{margin:0 0 12px}
 :root .synk-workspace .mt .sl-sort{margin:0 0 10px;font-size:14px}
-:root .synk-workspace .mt .sl-sort small{margin-left:6px;font-size:13px;color:var(--mt-ink-3,#9AA5B6)}
-:root .synk-workspace .mt .sl-reason{color:var(--mt-butter-ink,#FDE68A)}
+:root .synk-workspace .mt .sl-sort small{margin-left:6px;font-size:13px;color:var(--mt-ink-3,#6B6B6E)}
+:root .synk-workspace .mt .sl-reason{color:var(--mt-butter-ink,#7A5300)}
 
 /* 읽기 기준 · 참고 자료(접힌 한 줄) */
 :root .synk-workspace .mt .sl-options{margin-top:4px}
-:root .synk-workspace .mt .sl-options>summary b{margin-left:8px;font-weight:var(--w-label);color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .sl-options>summary b{margin-left:8px;font-weight:var(--w-label);color:var(--mt-ink-3,#6B6B6E)}
 :root .synk-workspace .mt .sl-options-body{display:grid;gap:10px;padding:16px 14px 6px}
 :root .synk-workspace .mt .sl-thresholds{display:flex;flex-wrap:wrap;gap:10px 14px}
 :root .synk-workspace .mt .sl-thresholds .mt-field{width:170px}

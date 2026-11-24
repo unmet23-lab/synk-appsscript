@@ -97,9 +97,7 @@ try {
     if(ids)assert.deepEqual(await visibleIds(page),ids.map(person=>person.id).sort());
   }
   check('direct URL opens the organization screen', await page.locator('.org-heading h1').textContent() === '사람·조직');
-  await page.locator('#ws-tools-toggle').click();
-  check('Tools exposes the People destination', await page.locator('#ws-tools-drawer [data-tab="members"]').count() === 1);
-  await page.keyboard.press('Escape');
+  check('Side menu exposes the People destination', await page.locator('.ws-side [data-tab="members"]').count() === 1);
   check('active people are counted once despite multiple brands', await page.locator('.org-heading p strong').textContent() === '6명');
   check('brand count includes shared responsibilities', (await page.locator('.org-brand-card[data-brand="LAB"] strong').textContent()).startsWith('2'));
   check('inactive people are excluded by default', await page.locator('.org-table tbody tr').count() === 6);
@@ -315,11 +313,10 @@ try {
     const lastDetail=page.locator('.org-table tbody [data-org-action="detail"]').last();
     await lastDetail.scrollIntoViewIfNeeded();
     check(`the last employee remains reachable at ${width}x${height}`,await lastDetail.evaluate(element=>{const box=element.getBoundingClientRect();return element.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));}));
-    await page.locator('#ws-tools-toggle').click();
-    await page.locator('#ws-tools-drawer [data-tab="home"]').click();
+    const go=async tab=>{if(await page.locator('.ws-side').isVisible()){await page.locator(`.ws-side [data-tab="${tab}"]`).first().click();return;}await page.locator('#ws-tools-toggle').click();await page.locator(`#ws-tools-drawer [data-tab="${tab}"]`).click();};
+    await go('home');
     await page.locator('.organization-page').waitFor({state:'hidden'});
-    await page.locator('#ws-tools-toggle').click();
-    await page.locator('#ws-tools-drawer [data-tab="members"]').click();
+    await go('members');
     check(`People tab remains reachable at ${width}x${height}`, await page.locator('.organization-page').isVisible());
   }
   await page.setViewportSize({ width: 390, height: 844 });

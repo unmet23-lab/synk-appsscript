@@ -187,6 +187,7 @@ async function initialize() {
     if(isDemoMode()&&['messenger','home','workroom','handbook','teaching'].includes(requestedView)){location.replace(requestedView==='teaching'?demoTeachingUrl():requestedView==='home'?demoHomeUrl():requestedView==='workroom'?demoWorkroomUrl():requestedView==='handbook'?demoHandbookUrl():demoMessengerUrl());return;}
     state.requestedView=[requestedView,new URLSearchParams(location.search).get('section')||params.get('section')||'',new URLSearchParams(location.search).get('teamId')||params.get('teamId')||undefined,new URLSearchParams(location.search).get('draftId')||params.get('draftId')||undefined];
     selectWorkspaceView(...state.requestedView);
+    if(typeof workspaceInboxFromLocation==='function')workspaceInboxFromLocation();
     const launch = params.get('launch');
     if (launch) { history.replaceState(null, '', location.pathname + location.search); await api('/api/launch', { token: launch }); }
     // A reset link opens its own screen before the SYNK and platform entry checks, which would send a platform tab to OAuth or block it.
@@ -383,12 +384,14 @@ function shell(content) {
     if(typeof adminWorkspaceSyncMount==='function')adminWorkspaceSyncMount();
     if(typeof hideChartLeaders==='function')hideChartLeaders();
     const input=document.getElementById('marin-input'),editing=input&&document.activeElement===input,selection=editing?[input.selectionStart,input.selectionEnd,input.selectionDirection]:null,logTop=document.getElementById('marin-conversation')?.scrollTop;
+    const inboxTop=document.getElementById('ws-inbox-body')?.scrollTop,detailTop=document.getElementById('ws-inbox-detail-body')?.scrollTop,sameHome=renderedTab==='home';
     if(editing&&marinHome.composing){syncWorkspaceLocation();mountWorkspaceModule();return;}
     const nextView=typeof captureMarinNextView==='function'?captureMarinNextView():null;
     app.classList?.remove('boot-shell');
     app.innerHTML=marinHomeShell(content);renderedTab='home';state.workspaceSidebarOpen=false;syncWorkspaceToolsDrawer();syncWorkspaceLocation();mountWorkspaceModule();syncMarinHome();
     if(typeof ensureTeachingWorkspace==='function')ensureTeachingWorkspace();
     if(logTop!=null){const log=document.getElementById('marin-conversation');if(log)log.scrollTop=logTop;}
+    if(sameHome&&inboxTop!=null){const list=document.getElementById('ws-inbox-body');if(list)list.scrollTop=inboxTop;const detail=document.getElementById('ws-inbox-detail-body');if(detail&&detailTop!=null)detail.scrollTop=detailTop;}
     if(typeof restoreMarinNextView==='function')restoreMarinNextView(nextView);
     if(editing){const restored=document.getElementById('marin-input');restored?.focus({preventScroll:true});restored?.setSelectionRange(...selection);}
     return;
@@ -533,14 +536,14 @@ function chartSvg(daily, label) {
   const width = 900, height = 270, pad = { left: 48, right: 20, top: 48, bottom: 35 }, min = Math.min(0, ...known), max = Math.max(1, ...known), extent = max - min;
   const x = i => pad.left + i / Math.max(1, values.length - 1) * (width - pad.left - pad.right);
   const y = value => height - pad.bottom - ((value - min) / extent) * (height - pad.top - pad.bottom);
-  const grid = [0, .5, 1].map(ratio => { const value = min + ratio * extent; return `<line x1="${pad.left}" x2="${width - pad.right}" y1="${y(value)}" y2="${y(value)}" stroke="rgba(255,255,255,0.12)"/><text x="${pad.left - 10}" y="${y(value) + 4}" text-anchor="end" fill="#9AA5B6" font-size="11">${escape(compactNumber(value))}</text>`; }).join('');
+  const grid = [0, .5, 1].map(ratio => { const value = min + ratio * extent; return `<line x1="${pad.left}" x2="${width - pad.right}" y1="${y(value)}" y2="${y(value)}" stroke="rgba(11,11,12,0.08)"/><text x="${pad.left - 10}" y="${y(value) + 4}" text-anchor="end" fill="#6B6B6E" font-size="11">${escape(compactNumber(value))}</text>`; }).join('');
   const segments = []; let current = [];
   values.forEach((value, i) => { if (validNumber(value)) current.push([x(i), y(value)]); else if (current.length) { segments.push(current); current = []; } }); if (current.length) segments.push(current);
   const paths = segments.map(points => {const line=points.map(([px,py],i)=>`${i?'L':'M'}${px.toFixed(1)},${py.toFixed(1)}`).join(' ');return `<path d="${line} L${points.at(-1)[0].toFixed(1)},${y(0).toFixed(1)} L${points[0][0].toFixed(1)},${y(0).toFixed(1)} Z" fill="url(#growth-fill)"/><path class="chart-line" d="${line}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;}).join('');
   const step = Math.max(1, Math.ceil(daily.length / 7));
-  const labels = daily.map((row, i) => (i % step === 0 || i === daily.length - 1) ? `<text x="${x(i)}" y="${height - 8}" fill="#9AA5B6" font-size="11" text-anchor="middle">${formatDate(row.date)}</text>` : '').join('');
+  const labels = daily.map((row, i) => (i % step === 0 || i === daily.length - 1) ? `<text x="${x(i)}" y="${height - 8}" fill="#6B6B6E" font-size="11" text-anchor="middle">${formatDate(row.date)}</text>` : '').join('');
   const first=values.findIndex(validNumber);
-  const dots = daily.map((row,i)=>{if(!validNumber(values[i]))return '';const tx=Math.max(pad.left,Math.min(width-188,x(i)-75)),ty=Math.max(2,y(values[i])-48);return `<g class="chart-point" role="button" tabindex="${i===first?'0':'-1'}" data-chart-point data-action="day" data-date="${row.date}" aria-label="${row.date} ${escape(label)} ${number(values[i])}, 상위 콘텐츠 및 상세 보기"><line class="chart-crosshair" x1="${x(i)}" x2="${x(i)}" y1="${pad.top}" y2="${height-pad.bottom}"/><circle class="chart-hit" cx="${x(i)}" cy="${y(values[i])}" r="12" fill="transparent"/><circle class="chart-dot" cx="${x(i)}" cy="${y(values[i])}" r="${daily.length>50?2:3.5}" fill="#08090C" stroke="currentColor" stroke-width="2"/><g class="chart-callout" aria-hidden="true" pointer-events="none"><rect x="${tx}" y="${ty}" width="166" height="35" rx="7"/><text x="${tx+11}" y="${ty+22}">${formatDate(row.date)} · ${number(values[i])}</text></g></g>`;}).join('');
+  const dots = daily.map((row,i)=>{if(!validNumber(values[i]))return '';const tx=Math.max(pad.left,Math.min(width-188,x(i)-75)),ty=Math.max(2,y(values[i])-48);return `<g class="chart-point" role="button" tabindex="${i===first?'0':'-1'}" data-chart-point data-action="day" data-date="${row.date}" aria-label="${row.date} ${escape(label)} ${number(values[i])}, 상위 콘텐츠 및 상세 보기"><line class="chart-crosshair" x1="${x(i)}" x2="${x(i)}" y1="${pad.top}" y2="${height-pad.bottom}"/><circle class="chart-hit" cx="${x(i)}" cy="${y(values[i])}" r="12" fill="transparent"/><circle class="chart-dot" cx="${x(i)}" cy="${y(values[i])}" r="${daily.length>50?2:3.5}" fill="#FFFFFF" stroke="currentColor" stroke-width="2"/><g class="chart-callout" aria-hidden="true" pointer-events="none"><rect x="${tx}" y="${ty}" width="166" height="35" rx="7"/><text x="${tx+11}" y="${ty+22}">${formatDate(row.date)} · ${number(values[i])}</text></g></g>`;}).join('');
   return `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="group" aria-label="${escape(label)} ${state.chartMode==='change'?'하루 증감':'누적 수치'} 그래프. 점을 가리키거나 방향키로 날짜를 고르면 상위 콘텐츠가 보여요. Enter를 누르면 그날 상세가 열려요."><defs><linearGradient id="growth-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".13"/><stop offset="100%" stop-color="currentColor" stop-opacity=".01"/></linearGradient></defs>${grid}${paths}${dots}${labels}</svg>`;
 }
 function compactNumber(value) { const abs = Math.abs(value); return abs >= 1e8 ? `${(value / 1e8).toFixed(1).replace('.0', '')}억` : abs >= 1e4 ? `${(value / 1e4).toFixed(1).replace('.0', '')}만` : number(Math.round(value)); }

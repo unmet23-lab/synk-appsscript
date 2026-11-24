@@ -14,11 +14,11 @@
 :root{
   --sans:'SYNK Latin','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --mono:'DM Mono','SUIT Variable',ui-monospace,monospace;
-  --bg:#060709;--panel:#0C0D10;--surface-1:#121317;--surface-2:#191A1F;--surface-3:#222329;
-  --line:rgba(255,255,255,.075);--line-2:rgba(255,255,255,.14);
-  --ink:#FAFAF9;--ink-2:rgba(250,250,249,.76);--ink-3:rgba(250,250,249,.58);--ink-4:rgba(250,250,249,.22);--on-ink:#08090C;
-  --glass:rgba(26,27,32,.58);--glass-strong:rgba(18,19,23,.82);
-  --glass-edge:inset 0 1px 0 rgba(255,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.075),0 12px 32px rgba(0,0,0,.36);
+  --bg:var(--ws-canvas,#FFFFFF);--panel:var(--ws-surface,#F6F6F7);--surface-1:var(--ws-surface,#F6F6F7);--surface-2:var(--ws-surface-subtle,#EDEDEF);--surface-3:var(--ws-rail-selected,#E6E6E9);
+  --line:var(--ws-line,rgba(0,0,0,.08));--line-2:var(--ws-line-muted,rgba(0,0,0,.15));
+  --ink:var(--ws-ink,#0B0B0C);--ink-2:var(--ws-ink-secondary,#46464A);--ink-3:var(--ws-ink-muted,#6B6B6E);--ink-4:var(--ws-ink-faint,#9A9AA0);--on-ink:var(--ws-cta-ink,#FFFFFF);
+  --glass:rgba(255,255,255,.72);--glass-strong:rgba(255,255,255,.88);
+  --glass-edge:inset 0 1px 0 rgba(255,255,255,.6),inset 0 0 0 1px rgba(11,11,12,.06),0 12px 32px rgba(0,0,0,.08);
   --blur:blur(22px) saturate(1.7);
   --r-xl:28px;--r-lg:20px;--ease:cubic-bezier(.2,.75,.2,1);
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -28,7 +28,7 @@
   /* 사업 색: SHIFT 청금석(synk.im 컴퓨터 추천과 같은 면) */
   --face:#3D6BC9;--on-face:#FFFFFF;--glow:#3D6BC9;--tint:#C5D6F5;
   --cut-shadow:drop-shadow(0 22px 26px rgba(0,0,0,.3)) drop-shadow(0 4px 6px rgba(0,0,0,.18));
-  color-scheme:dark;
+  color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:92px}

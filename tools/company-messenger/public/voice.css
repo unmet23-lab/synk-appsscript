@@ -1,4 +1,4 @@
-/* 직원 통화 · SYNK Carbon Pure Black (#000000). 시그널 토큰(signal.css)을 쓰고 :root body로 앞 층을 덮는다.
+/* 직원 통화 · 밝은 판(#0B0B0C). 시그널 토큰(signal.css)을 쓰고 :root body로 앞 층을 덮는다.
    상태는 색만으로 구분하지 않는다: 칩 글자·참가자 상태 글자·아이콘을 함께 쓴다. */
 
 /* ── 방 머리 통화 단추 ───────────────────────────── */
@@ -54,7 +54,7 @@
 :root body .voice-button.active{border-color:rgba(147,184,255,.38);background:var(--sg-lapis-wash);color:var(--sg-lapis)}
 :root body .voice-button.primary{border-color:var(--cta);background:var(--cta);color:var(--cta-ink)}
 :root body .voice-button.primary:hover:not(:disabled){background:var(--cta-hover);border-color:var(--cta-hover)}
-:root body .voice-button.danger{border-color:#D9382C;background:#D9382C;color:#FFFFFF}
+:root body .voice-button.danger{border-color:#D9382C;background:#D9382C;color:#0B0B0C}
 :root body .voice-button.danger:hover:not(:disabled){border-color:#B82D22;background:#B82D22}
 :root body .voice-icon-button{display:grid;place-items:center;width:40px;height:40px;padding:0;border:1px solid var(--control-line,var(--sg-line-2));border-radius:8px;background:var(--sg-surface-2);color:var(--sg-ink-2);cursor:pointer}
 :root body .voice-icon-button svg{width:18px;height:18px}
@@ -62,15 +62,15 @@
 :root body .voice-notice{flex-basis:100%;margin:0;padding:9px 12px;border:1px solid var(--sg-line);border-radius:8px;background:var(--sg-surface-2);color:var(--sg-ink-2);font-size:13px;line-height:1.55}
 
 /* 상대 화면 */
-:root body .voice-stage{position:relative;border-top:1px solid var(--sg-line);background:#000000}
+:root body .voice-stage{position:relative;border-top:1px solid var(--sg-line);background:#FFFFFF}
 :root body .voice-stage[hidden]{display:none}
-:root body .voice-stage video{display:block;width:100%;max-height:min(58vh,560px);background:#000000;object-fit:contain}
+:root body .voice-stage video{display:block;width:100%;max-height:min(58vh,560px);background:#FFFFFF;object-fit:contain}
 :root body .voice-stage:fullscreen{display:grid;place-items:center}
 :root body .voice-stage:fullscreen video{max-height:100vh;height:100%}
 :root body .voice-stage-bar{position:absolute;inset:10px 12px auto;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:none}
 :root body .voice-stage-bar>*{pointer-events:auto}
-:root body #voice-stage-title{padding:6px 12px;border-radius:8px;background:rgba(8,9,12,.84);border:1px solid var(--line2);color:#FFFFFF;font-size:13px;font-weight:650}
-:root body .voice-stage .voice-icon-button{border-color:rgba(255,255,255,.32);background:rgba(8,9,12,.84);color:#FFFFFF}
+:root body #voice-stage-title{padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.84);border:1px solid var(--line2);color:#0B0B0C;font-size:13px;font-weight:650}
+:root body .voice-stage .voice-icon-button{border-color:rgba(11,11,12,.2);background:rgba(255,255,255,.84);color:#0B0B0C}
 
 /* ── 받는 통화 초대 ─────────────────────────────── */
 :root body .voice-ring{position:fixed;top:20px;right:20px;z-index:80;display:flex;align-items:center;gap:14px;width:min(440px,calc(100vw - 32px));padding:14px 16px;border:1px solid var(--control-line);border-radius:12px;background:var(--sg-paper-2);color:var(--sg-ink);box-shadow:var(--shadow-pop)}

@@ -1,4 +1,4 @@
-/* 제작 상황판 소재(studio-board.js) — Pure Black #000000 */
+/* 제작 상황판 소재(studio-board.js) — 밝은 판(#FFFFFF) */
 :root #overlay .swb-material-form textarea{min-height:130px;resize:vertical}
 :root #overlay .swb-material-form [hidden]{display:none!important}
 :root #overlay .swb-material-options{padding:14px 0;border-block:1px solid var(--ws-hairline,rgba(255,255,255,.13))}
@@ -8,8 +8,8 @@
 :root #overlay .swb-material-options[open]>summary::after{transform:rotate(-135deg) translateY(-2px)}
 :root #overlay .swb-material-options>summary span{font-size:13px;font-weight:500;color:var(--ws-muted,#9AA5B6)}
 :root #overlay .swb-material-options>.form-stack{margin-top:16px}
-:root #overlay .swb-consent{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--ws-hairline,rgba(255,255,255,.13));border-radius:6px;background:var(--ws-surface-2,#0E1015);font-size:13.5px;line-height:1.65;color:var(--ws-ink,#FFFFFF)}
-:root #overlay .swb-consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:#FFFFFF}
+:root #overlay .swb-consent{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--ws-hairline,rgba(255,255,255,.13));border-radius:6px;background:var(--ws-surface-2,#EDEDEF);font-size:13.5px;line-height:1.65;color:var(--ws-ink,#FFFFFF)}
+:root #overlay .swb-consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:#0B0B0C}
 :root #overlay .swb-consent span{min-width:0;overflow-wrap:anywhere}
 :root #overlay .swb-scope-hint{margin:0;font-size:13px;line-height:1.65;color:var(--ws-muted,#9AA5B6)}
 :root #overlay .swb-material-actions{justify-content:space-between;flex-wrap:wrap;gap:10px}

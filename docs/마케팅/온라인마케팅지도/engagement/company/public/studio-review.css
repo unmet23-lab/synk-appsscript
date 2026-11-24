@@ -1,4 +1,4 @@
-/* 제작 상황판 검토실 · 예시(studio-review.js) — Pure Black #000000 */
+/* 제작 상황판 검토실 · 예시(studio-review.js) — 밝은 판(#FFFFFF) */
 :root .synk-workspace .mt .swr-room{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
 :root .synk-workspace .mt .swr-viewer,:root .synk-workspace .mt .swr-feedback{min-width:0}
 :root .synk-workspace .mt .swr-toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px;margin:0 0 12px}
@@ -9,19 +9,19 @@
 :root .synk-workspace .mt .swr-screen>header span{font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3)}
 :root .synk-workspace .mt .swr-screen>header strong{font-size:14.5px;font-weight:var(--w-strong);line-height:1.4;overflow-wrap:anywhere}
 :root .synk-workspace .mt .swr-screen>footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;padding:9px 14px;border-top:1px solid var(--mt-line);font-size:13px;line-height:1.5;color:var(--mt-ink-3)}
-:root :is(.synk-workspace .mt,#overlay) .swr-media-frame{position:relative;min-width:0;background:#000000;text-align:center}
-:root :is(.synk-workspace .mt,#overlay) .swr-media-frame video{display:block;width:100%;height:auto;min-height:200px;max-height:520px;background:#000000;object-fit:contain}
+:root :is(.synk-workspace .mt,#overlay) .swr-media-frame{position:relative;min-width:0;background:#FFFFFF;text-align:center}
+:root :is(.synk-workspace .mt,#overlay) .swr-media-frame video{display:block;width:100%;height:auto;min-height:200px;max-height:520px;background:#FFFFFF;object-fit:contain}
 :root :is(.synk-workspace .mt,#overlay) .swr-media-frame img{display:block;width:auto;max-width:100%;height:auto;max-height:600px;margin:0 auto;object-fit:contain}
-:root :is(.synk-workspace .mt,#overlay) .swr-media-error{margin:0;padding:12px 14px;background:rgba(249,112,102,.10);color:#FFDAD6;font-size:13.5px;line-height:1.55;text-align:left}
+:root :is(.synk-workspace .mt,#overlay) .swr-media-error{margin:0;padding:12px 14px;background:rgba(249,112,102,.10);color:#B42318;font-size:13.5px;line-height:1.55;text-align:left}
 :root :is(.synk-workspace .mt,#overlay) .swr-media-error[hidden]{display:none}
-:root :is(.synk-workspace .mt,#overlay) .swr-text{min-height:220px;max-height:520px;overflow:auto;padding:20px 22px;background:#07080A;color:#FFFFFF;font-size:15px;line-height:1.85;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:root :is(.synk-workspace .mt,#overlay) .swr-text{min-height:220px;max-height:520px;overflow:auto;padding:20px 22px;background:#F6F6F7;color:#0B0B0C;font-size:15px;line-height:1.85;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2;scrollbar-width:thin;scrollbar-color:rgba(11,11,12,.15) transparent}
 :root :is(.synk-workspace .mt,#overlay) .swr-text::-webkit-scrollbar{width:4px;height:4px}
 :root :is(.synk-workspace .mt,#overlay) .swr-text::-webkit-scrollbar-button{display:none;width:0;height:0}
-:root :is(.synk-workspace .mt,#overlay) :is(.swr-link,.swr-no-media){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:220px;padding:28px 20px;background:#07080A;color:#FFFFFF;text-align:center}
-:root :is(.synk-workspace .mt,#overlay) .swr-link>span{display:grid;place-items:center;width:40px;height:40px;border-radius:8px;border:1px solid rgba(255,255,255,.20);background:#0E1015;color:#FFFFFF}
+:root :is(.synk-workspace .mt,#overlay) :is(.swr-link,.swr-no-media){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:220px;padding:28px 20px;background:#F6F6F7;color:#0B0B0C;text-align:center}
+:root :is(.synk-workspace .mt,#overlay) .swr-link>span{display:grid;place-items:center;width:40px;height:40px;border-radius:8px;border:1px solid rgba(11,11,12,.15);background:#EDEDEF;color:#0B0B0C}
 :root :is(.synk-workspace .mt,#overlay) .swr-link>span svg{width:18px;height:18px}
-:root :is(.synk-workspace .mt,#overlay) .swr-link h3{font-size:16px;font-weight:600;line-height:1.45;color:#FFFFFF}
-:root :is(.synk-workspace .mt,#overlay) :is(.swr-link,.swr-no-media) p{margin:0;font-size:14px;line-height:1.65;color:#9AA5B6}
+:root :is(.synk-workspace .mt,#overlay) .swr-link h3{font-size:16px;font-weight:600;line-height:1.45;color:#0B0B0C}
+:root :is(.synk-workspace .mt,#overlay) :is(.swr-link,.swr-no-media) p{margin:0;font-size:14px;line-height:1.65;color:#6B6B6E}
 :root .synk-workspace .mt .swr-guide{margin-top:10px}
 :root .synk-workspace .mt .swr-share{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:14px;padding:12px 14px;border:1px solid var(--mt-line);border-radius:6px;background:var(--mt-surface)}
 :root .synk-workspace .mt .swr-share p{flex:1 1 260px;font-size:14px;line-height:1.6;color:var(--mt-ink-2)}
@@ -73,21 +73,21 @@
 
 /* 모달 — 버전 올리기 · 좋은 예시로 남기기 · 예시 자세히 */
 :root #overlay .swr-version-form [hidden]{display:none}
-:root #overlay .swr-version-form input[type=file]{max-width:100%;padding:14px 12px;border:1px dashed var(--ws-control-border,#78808E);border-radius:6px;background:var(--ws-surface-2,#0E1015);color:#FFFFFF;font-size:13.5px}
+:root #overlay .swr-version-form input[type=file]{max-width:100%;padding:14px 12px;border:1px dashed var(--ws-control-border,#78808E);border-radius:6px;background:var(--ws-surface-2,#EDEDEF);color:#0B0B0C;font-size:13.5px}
 :root #overlay .swr-version-form small{font-size:13px;font-weight:500;line-height:1.6;color:var(--ws-muted,#9AA5B6)}
 :root #overlay .swr-version-form [name=text]{min-height:240px;font-size:15px;line-height:1.85}
-:root #overlay .swr-upload-status{margin:0;font-size:13.5px;line-height:1.6;color:#FFFFFF}
+:root #overlay .swr-upload-status{margin:0;font-size:13.5px;line-height:1.6;color:#0B0B0C}
 :root #overlay .swr-upload-status:empty{display:none}
-:root #overlay .swr-share-context{padding:14px 16px;border-radius:6px;border:1px solid var(--ws-hairline,rgba(255,255,255,.13));background:var(--ws-surface-2,#0E1015)}
+:root #overlay .swr-share-context{padding:14px 16px;border-radius:6px;border:1px solid var(--ws-hairline,rgba(255,255,255,.13));background:var(--ws-surface-2,#EDEDEF)}
 :root #overlay .swr-share-context>span{font-size:13px;font-weight:600;color:var(--ws-muted,#9AA5B6)}
-:root #overlay .swr-share-context>strong{display:block;margin-top:4px;font-size:15.5px;font-weight:600;line-height:1.5;color:#FFFFFF;overflow-wrap:anywhere}
-:root #overlay .swr-share-context>p{margin-top:6px;font-size:13.5px;line-height:1.65;color:var(--ws-ink-2,#D0D6E0)}
+:root #overlay .swr-share-context>strong{display:block;margin-top:4px;font-size:15.5px;font-weight:600;line-height:1.5;color:#0B0B0C;overflow-wrap:anywhere}
+:root #overlay .swr-share-context>p{margin-top:6px;font-size:13.5px;line-height:1.65;color:var(--ws-ink-2,#46464A)}
 :root #overlay .swr-consent{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.65;color:var(--ws-ink,#FFFFFF)}
-:root #overlay .swr-consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:#FFFFFF}
+:root #overlay .swr-consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:#0B0B0C}
 :root #overlay .swr-example-detail{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
 :root #overlay .swr-example-detail-media{min-width:0;overflow:hidden;border:1px solid var(--ws-hairline,rgba(255,255,255,.13));border-radius:8px}
 :root #overlay .swr-example-detail-copy{min-width:0}
 :root #overlay .swr-example-detail-copy h3{margin:18px 0 6px;font-size:14px;font-weight:600;color:var(--ws-muted,#9AA5B6)}
-:root #overlay .swr-example-detail-copy>p{font-size:15px;line-height:1.75;color:#FFFFFF;white-space:pre-wrap;overflow-wrap:anywhere}
+:root #overlay .swr-example-detail-copy>p{font-size:15px;line-height:1.75;color:#0B0B0C;white-space:pre-wrap;overflow-wrap:anywhere}
 :root #overlay .swr-example-detail-copy>footer{margin:20px 0 12px;padding-top:12px;border-top:1px solid var(--ws-hairline,rgba(255,255,255,.13));font-size:13px;line-height:1.6;color:var(--ws-muted,#9AA5B6)}
 @media (max-width:760px){:root #overlay .swr-example-detail{grid-template-columns:minmax(0,1fr)}}

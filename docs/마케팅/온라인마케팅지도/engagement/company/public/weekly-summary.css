@@ -1,22 +1,22 @@
-/* 주간 정리 — 순수 검정(#000000) & 가는 구분선. 공통 어휘는 maker-tools.css에 두고, 여기에는 이 탭에만 쓰는 규칙만 둔다.
+/* 주간 정리 — 흰 바탕(#FFFFFF) & 가는 구분선. 공통 어휘는 maker-tools.css에 두고, 여기에는 이 탭에만 쓰는 규칙만 둔다.
    인라인 style 없음(CSP). */
 
 /* 머리 단추 줄: 주 고르기 분할 캡슐 「‹ 10월 12일~18일 ›」 */
 :root .synk-workspace .mt .wks-panel .wks-week{align-items:center;gap:2px}
-:root .synk-workspace .mt .wks-panel .wks-week>button{display:grid;place-items:center;flex:none;width:34px;min-height:34px;padding:0;color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .wks-panel .wks-week>button{display:grid;place-items:center;flex:none;width:34px;min-height:34px;padding:0;color:var(--mt-ink-2,#46464A)}
 :root .synk-workspace .mt .wks-panel .wks-week>button svg{width:16px;height:16px}
-:root .synk-workspace .mt .wks-panel .wks-week>button:hover:not(:disabled){background:rgba(255,255,255,.08);color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .wks-panel .wks-week>button:hover:not(:disabled){background:rgba(11,11,12,.05);color:var(--mt-ink,#0B0B0C)}
 :root .synk-workspace .mt .wks-panel .wks-week>button:disabled{opacity:.35;cursor:not-allowed}
-:root .synk-workspace .mt .wks-panel .wks-pick{position:relative;display:inline-flex;align-items:center;min-height:34px;padding:0 13px;border:1px solid var(--mt-control-line,#78808E);border-radius:6px;background:var(--mt-surface,#07080A);box-shadow:none;font:var(--w-strong) 13.5px/1 var(--mt-sans);letter-spacing:-.01em;color:var(--mt-ink,#FFFFFF);white-space:nowrap;cursor:pointer}
+:root .synk-workspace .mt .wks-panel .wks-pick{position:relative;display:inline-flex;align-items:center;min-height:34px;padding:0 13px;border:1px solid var(--mt-control-line,#8E8E93);border-radius:6px;background:var(--mt-surface,#F6F6F7);box-shadow:none;font:var(--w-strong) 13.5px/1 var(--mt-sans);letter-spacing:-.01em;color:var(--mt-ink,#0B0B0C);white-space:nowrap;cursor:pointer}
 :root .synk-workspace .mt .wks-panel .wks-pick input{position:absolute;inset:0;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;border-radius:999px;background:transparent;color:transparent;opacity:0;cursor:pointer;box-shadow:none}
 :root .synk-workspace .mt .wks-panel .wks-pick input:focus-visible{outline:0}
-:root .synk-workspace .mt .wks-panel .wks-pick:focus-within{outline:2px solid #FFFFFF;outline-offset:2px}
+:root .synk-workspace .mt .wks-panel .wks-pick:focus-within{outline:2px solid #0B0B0C;outline-offset:2px}
 :root .synk-workspace .mt .wks-panel .wks-pick:has(input:disabled){opacity:.55;cursor:default}
 :root .synk-workspace .mt .wks-panel .wks-pick input:disabled{cursor:default}
 
 /* 집계 한 줄 · 구역 머리 오른쪽 범위 */
 :root .synk-workspace .mt .wks-panel .wks-snapshot{margin:-10px 0 22px}
-:root .synk-workspace .mt .wks-panel .wks-scope{font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3,#9AA5B6);white-space:nowrap}
+:root .synk-workspace .mt .wks-panel .wks-scope{font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3,#6B6B6E);white-space:nowrap}
 :root .synk-workspace .mt .wks-panel .mt-block>.mt-empty{padding:12px 2px 4px}
 :root .synk-workspace .mt .wks-panel .mt-block>.mt-error{margin:0 0 10px}
 
@@ -24,16 +24,16 @@
 :root .synk-workspace .mt .wks-panel .wks-rows>.mt-issue:last-child{border-bottom:0}
 :root .synk-workspace .mt .wks-panel .mt-issue>.mt-link{align-self:center}
 :root .synk-workspace .mt .wks-panel .mt-issue :is(strong,p){word-break:keep-all;overflow-wrap:anywhere}
-:root .synk-workspace .mt .wks-panel .mt-issue .wks-text{margin-top:1px;color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .wks-panel .mt-issue .wks-text{margin-top:1px;color:var(--mt-ink-2,#46464A)}
 :root .synk-workspace .mt .wks-panel .mt-day+.mt-day{margin-top:6px}
 :root .synk-workspace .mt .wks-panel .mt-day>h3{margin:8px 0 0}
 
 /* 콘텐츠 성과 — 게시 시각순 1px 줄 */
-:root .synk-workspace .mt .wks-panel .wks-perf{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:start;padding:12px 2px;border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
+:root .synk-workspace .mt .wks-panel .wks-perf{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:start;padding:12px 2px;border-bottom:1px solid var(--mt-line,rgba(11,11,12,.08))}
 :root .synk-workspace .mt .wks-panel .wks-perfs>.wks-perf:last-child{border-bottom:0}
-:root .synk-workspace .mt .wks-panel .wks-perf>time{min-width:96px;padding-top:2px;font-size:13.5px;font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0);white-space:nowrap;font-variant-numeric:tabular-nums}
-:root .synk-workspace .mt .wks-panel .wks-perf strong{display:block;font-size:14.5px;font-weight:var(--w-strong);line-height:1.45;color:var(--mt-ink,#FFFFFF);word-break:keep-all;overflow-wrap:anywhere}
-:root .synk-workspace .mt .wks-panel .wks-perf p{margin-top:4px;font-size:13.5px;line-height:1.7;color:var(--mt-ink-2,#D0D6E0);word-break:keep-all;overflow-wrap:anywhere}
+:root .synk-workspace .mt .wks-panel .wks-perf>time{min-width:96px;padding-top:2px;font-size:13.5px;font-weight:var(--w-strong);color:var(--mt-ink-2,#46464A);white-space:nowrap;font-variant-numeric:tabular-nums}
+:root .synk-workspace .mt .wks-panel .wks-perf strong{display:block;font-size:14.5px;font-weight:var(--w-strong);line-height:1.45;color:var(--mt-ink,#0B0B0C);word-break:keep-all;overflow-wrap:anywhere}
+:root .synk-workspace .mt .wks-panel .wks-perf p{margin-top:4px;font-size:13.5px;line-height:1.7;color:var(--mt-ink-2,#46464A);word-break:keep-all;overflow-wrap:anywhere}
 :root .synk-workspace .mt .wks-panel .wks-perf p .mt-badge{min-height:24px;margin-right:7px;vertical-align:1px}
 :root .synk-workspace .mt .wks-panel .wks-perf>.mt-link{padding-top:2px}
 :root .synk-workspace .mt .wks-panel .wks-legend{margin-top:8px}
@@ -45,13 +45,13 @@
 :root .synk-workspace .mt .wks-panel .wks-more>.mt-job+.mt-job{margin-top:10px}
 
 /* 바닥 한 줄 — 예약 정리 */
-:root .synk-workspace .mt .wks-panel .wks-foot.mt-notice{margin:4px 0 0;padding-top:16px;border-top:1px solid var(--mt-line,rgba(255,255,255,.13))}
+:root .synk-workspace .mt .wks-panel .wks-foot.mt-notice{margin:4px 0 0;padding-top:16px;border-top:1px solid var(--mt-line,rgba(11,11,12,.08))}
 :root .synk-workspace .mt .wks-panel .wks-foot-note{margin-top:4px;padding-left:17px}
 
 @container mt (max-width:700px){
   :root .synk-workspace .mt .wks-panel .mt-job-top{flex-direction:row;align-items:flex-start;gap:10px}
   :root .synk-workspace .mt .wks-panel .wks-snapshot{margin:-6px 0 18px;font-size:13px}
   :root .synk-workspace .mt .wks-panel .wks-perf{grid-template-columns:minmax(0,1fr) auto}
-  :root .synk-workspace .mt .wks-panel .wks-perf>time{grid-column:1/-1;font-size:13px;color:var(--mt-ink-3,#9AA5B6)}
+  :root .synk-workspace .mt .wks-panel .wks-perf>time{grid-column:1/-1;font-size:13px;color:var(--mt-ink-3,#6B6B6E)}
   :root .synk-workspace .mt .wks-panel .wks-scope{font-size:13px}
 }

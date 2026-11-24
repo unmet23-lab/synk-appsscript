@@ -1,4 +1,4 @@
-/* SYNK Workspace — 크리에이티브 리서치(Creative Research) Pure Black & Crisp Line */
+/* SYNK Workspace — 크리에이티브 리서치(Creative Research) 밝은 판 & 가는 선 */
 .cr-panel{padding-bottom:26px;border-bottom:1px solid var(--ws-line,rgba(255,255,255,.13));color:var(--ws-ink,#FFFFFF)}
 .cr-head-actions{display:flex;gap:8px;flex-wrap:wrap}
 
@@ -6,18 +6,18 @@
 .cr-source-tabs button{
   display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-content:center;align-items:start;
   gap:6px 12px;min-width:0;min-height:82px;padding:14px 16px;text-align:left;
-  border:1px solid var(--ws-line,rgba(255,255,255,.13));border-radius:8px;background:#000000;
+  border:1px solid var(--ws-line,rgba(255,255,255,.13));border-radius:8px;background:#FFFFFF;
   color:var(--ws-ink,#FFFFFF);font:inherit;font-size:14px;line-height:1.4;cursor:pointer;box-sizing:border-box;
   transition:border-color .15s ease,background-color .15s ease
 }
 .cr-source-tabs>button:first-child{grid-template-rows:auto}
-.cr-source-tabs button:hover:not(:disabled){border-color:rgba(255,255,255,.28);background:var(--ws-surface,#07080A)}
+.cr-source-tabs button:hover:not(:disabled){border-color:rgba(11,11,12,.2);background:var(--ws-surface,#07080A)}
 .cr-source-tabs button:disabled{cursor:wait;opacity:.65}
 .cr-source-tabs strong{grid-column:1;grid-row:1;min-width:0;font-weight:650;overflow-wrap:anywhere}
 .cr-source-tabs small{grid-column:1/-1;grid-row:2;font-size:13px;line-height:1.5;color:var(--ws-ink-muted,#9AA5B6);word-break:keep-all;overflow-wrap:anywhere}
 .cr-source-tabs button>span{grid-column:2;grid-row:1;align-self:start;font-size:13.5px;line-height:1.5;font-weight:650;font-variant-numeric:tabular-nums;color:var(--ws-ink-secondary,#D0D6E0)}
-.cr-source-tabs button[aria-pressed="true"]{border:1px solid #FFFFFF;background:var(--ws-surface-2,#0E1015);color:#FFFFFF}
-.cr-source-tabs button[aria-pressed="true"] strong,.cr-source-tabs button[aria-pressed="true"]>span{color:#FFFFFF}
+.cr-source-tabs button[aria-pressed="true"]{border:1px solid #0B0B0C;background:var(--ws-surface-2,#EDEDEF);color:#0B0B0C}
+.cr-source-tabs button[aria-pressed="true"] strong,.cr-source-tabs button[aria-pressed="true"]>span{color:#0B0B0C}
 .cr-source-tabs button[aria-pressed="true"] small{color:var(--ws-ink-secondary,#D0D6E0)}
 
 .cr-source-note{font-size:13px;line-height:1.8;color:var(--ws-ink-muted,#9AA5B6);margin-bottom:16px;word-break:keep-all}
@@ -34,7 +34,7 @@
 
 .cr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
 .cr-grid:has(>.cr-card:only-child){grid-template-columns:minmax(0,1fr)}
-.cr-card{display:flex;flex-direction:column;min-width:0;padding:20px;border:1px solid var(--ws-line,rgba(255,255,255,.13));border-radius:8px;background:#000000}
+.cr-card{display:flex;flex-direction:column;min-width:0;padding:20px;border:1px solid var(--ws-line,rgba(255,255,255,.13));border-radius:8px;background:#FFFFFF}
 .cr-card-label{display:flex;gap:8px;flex-wrap:wrap;font-size:13px;line-height:1.65;color:var(--ws-ink-muted,#9AA5B6)}
 .cr-card-label span:first-child{color:var(--ws-ink,#FFFFFF);font-weight:650}
 .cr-card h3{font-size:16.5px;line-height:1.5;font-weight:650;word-break:keep-all;overflow-wrap:anywhere;margin:8px 0;color:var(--ws-ink,#FFFFFF)}
@@ -64,7 +64,7 @@
 .cr-source-help-grid strong{font-size:13.5px;color:var(--ws-ink,#FFFFFF)}
 .cr-source-help-grid p{margin:6px 0;word-break:keep-all}
 .cr-source-help-grid>div>div{display:flex;gap:14px;flex-wrap:wrap}
-.cr-source-help a{color:#FFFFFF;text-decoration:underline;text-underline-offset:3px}
+.cr-source-help a{color:#0B0B0C;text-decoration:underline;text-underline-offset:3px}
 .cr-source-help .icon{width:12px;height:12px;margin-left:4px;vertical-align:middle}
 
 .cr-form-note{font-size:13px;line-height:1.8;word-break:keep-all;color:var(--ws-ink-muted,#9AA5B6)}
@@ -86,14 +86,14 @@
 .cr-detail>.modal-actions{margin-top:20px}
 
 .cr-archive-filter{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--ws-ink-secondary,#D0D6E0);margin:0 0 18px}
-.cr-archive-filter input{width:18px;height:18px;accent-color:#FFFFFF}
+.cr-archive-filter input{width:18px;height:18px;accent-color:#0B0B0C}
 
 .cr-sync-status{padding:12px 0;margin-bottom:14px;font-size:13px;line-height:1.8;color:var(--ws-ink-secondary,#D0D6E0);word-break:keep-all;overflow-wrap:anywhere}
 .cr-sync-status strong{font-size:13.5px;font-weight:650;color:var(--ws-ink,#FFFFFF)}
 .cr-sync-status p{margin:5px 0}
 .cr-sync-status>div{display:flex;gap:6px 14px;flex-wrap:wrap}
-.cr-sync-status a{color:#FFFFFF;text-decoration:underline;text-underline-offset:3px}
-.cr-sync-status .cr-sync-error{color:#FFDAD6;font-weight:600}
+.cr-sync-status a{color:#0B0B0C;text-decoration:underline;text-underline-offset:3px}
+.cr-sync-status .cr-sync-error{color:#B42318;font-weight:600}
 
 [data-cr-interest-field][hidden]{display:none}
 [data-cr-report-json]{font-family:var(--ws-mono,'DM Mono',monospace);overflow-wrap:anywhere}
@@ -114,7 +114,7 @@
 .cr-research-facts{padding-left:20px;margin:12px 0}
 .cr-research-facts li{padding:8px 0;line-height:1.8}
 .cr-research-facts p{margin:0 0 6px}
-.cr-research-facts a{font-size:13px;color:#FFFFFF;text-decoration:underline;text-underline-offset:3px}
+.cr-research-facts a{font-size:13px;color:#0B0B0C;text-decoration:underline;text-underline-offset:3px}
 .cr-research-limitations{padding:12px 0;margin-top:10px;color:var(--ws-ink-secondary,#D0D6E0)}
 .cr-research-limitations strong{color:var(--ws-ink,#FFFFFF);margin-right:7px}
 .cr-research-overview>p{margin:9px 0}
@@ -128,14 +128,14 @@
 .cr-automation-note strong{font-size:13px;color:var(--ws-ink,#FFFFFF);font-weight:650}
 .cr-automation-note small{font-size:13px;color:var(--ws-ink-muted,#9AA5B6)}
 
-.cr-panel :is(button,input,select,summary,a):focus-visible,.cr-fields :is(input,select,textarea):focus-visible{outline:2px solid #FFFFFF;outline-offset:2px}
+.cr-panel :is(button,input,select,summary,a):focus-visible,.cr-fields :is(input,select,textarea):focus-visible{outline:2px solid #0B0B0C;outline-offset:2px}
 
 /* Prepared production-guide pool */
 .cr-view-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
 .cr-pool-note,.cr-pool-count{font-size:13.5px;line-height:1.8;color:var(--ws-ink-secondary,#D0D6E0);word-break:keep-all;overflow-wrap:anywhere;margin:8px 0 18px}
-.cr-pool-count [data-cr-live-status]{color:#9BE0B5;font-weight:650}
+.cr-pool-count [data-cr-live-status]{color:#3F6B2E;font-weight:650}
 .cr-guide-card{gap:0}
-.cr-guide-status{font-size:13px;font-weight:650;line-height:1.7;color:#9BE0B5;margin:0 0 10px;word-break:keep-all;overflow-wrap:anywhere}
+.cr-guide-status{font-size:13px;font-weight:650;line-height:1.7;color:#3F6B2E;margin:0 0 10px;word-break:keep-all;overflow-wrap:anywhere}
 .cr-card.cr-guide-in-use{background:var(--ws-surface,#07080A);border-color:var(--ws-line,rgba(255,255,255,.13));color:var(--ws-ink-secondary,#D0D6E0)}
 .cr-guide-in-use .cr-guide-status{color:var(--ws-ink-muted,#9AA5B6)}
 .cr-guide-in-use :is(h3,.cr-card-label span,.cr-guide-appeal,.cr-guide-preview,.cr-card-context,.cr-card-footer>span){color:var(--ws-ink-secondary,#D0D6E0)}
@@ -144,7 +144,7 @@
 .cr-guide-appeal{font-size:14px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere;margin:6px 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .cr-guide-appeal strong,.cr-guide-preview strong{font-weight:650;margin-right:6px;color:var(--ws-ink,#FFFFFF)}
 .cr-guide-preview{font-size:13.5px;line-height:1.8;color:var(--ws-ink-secondary,#D0D6E0);margin:8px 0 14px;word-break:keep-all;overflow-wrap:anywhere}
-.cr-guide-card .btn:disabled{cursor:not-allowed;color:#9AA5B6;background:#11141B;border-color:rgba(255,255,255,.20);opacity:1;box-shadow:none}
+.cr-guide-card .btn:disabled{cursor:not-allowed;color:#6B6B6E;background:#EDEDEF;border-color:rgba(11,11,12,.15);opacity:1;box-shadow:none}
 .cr-production-guide h4{font-size:14px;font-weight:650;margin:20px 0 9px}
 .cr-production-guide p,.cr-production-guide li{line-height:1.8;overflow-wrap:anywhere;word-break:keep-all}
 .cr-production-guide :is(ul,ol){padding-left:22px;margin:9px 0 16px}

@@ -63,7 +63,7 @@ await 화면시험({분:12},async()=>{
     await recipient.page.locator('#wa-invite-summary').waitFor();await recipient.page.waitForFunction(()=>document.querySelector('#wa-invite-summary')?.textContent.includes('SHIFT'));
     await recipient.page.locator('#auth-form [name="name"]').fill('검증 겸임 직원');await recipient.page.locator('#auth-form [name="password"]').fill(fixture.password);
     const joinedResponse=recipient.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/join');await recipient.page.locator('#auth-form [type="submit"]').click();assert.equal((await joinedResponse).status(),201);
-    await recipient.page.locator('#ws-tools-toggle').waitFor();const joined=fixture.app.store.all('users').find(row=>row.email==='new-dual@example.test');
+    await recipient.page.locator('.ws-side').waitFor();const joined=fixture.app.store.all('users').find(row=>row.email==='new-dual@example.test');
     assert.deepEqual(joined.workspaceProfile.memberships,[{company:'SHIFT',role:'instructor'},{company:'PULSE',role:'producer'}]);assert.deepEqual(joined.workspaceProfile.duties,['social']);
     check('accepting the issued link creates exactly the assigned company and duty access');
     await refresh(page);await page.locator('[data-admin-tab="invitations"]').click();

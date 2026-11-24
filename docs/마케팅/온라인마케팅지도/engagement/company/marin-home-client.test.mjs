@@ -1,4 +1,5 @@
 import {workspaceClientContext} from './workspace-access-test-context.mjs';
+import {workspaceAccess,WORKSPACE_COMPANIES,WORKSPACE_DUTIES} from './workspace-access.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -301,8 +302,10 @@ test('SHIFT and PATH staff load personal open schedules immediately on home with
   f.state.user={id:'staff-dual',name:'겸임 담당',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures','path'],companies:['SHIFT','PATH'],memberships:[{company:'SHIFT',role:'instructor'},{company:'PATH',role:'counselor'}],duties:[]}};
   const slot=f.element('section');slot.id='wa-mine-work';f.nodes.set('wa-mine-work',slot);
   const initialHtml=f.run('marinHomePage()');
-  assert.match(initialHtml,/내 강의·상담 일정/);
-  assert.match(initialHtml,/미완료 일정을 불러오고 있어요/);
+  // 11-24 사무실: 옛 「내 강의·상담 일정」 칸 대신 SHIFT · PATH 방이 같은 자료를 받고, 받기 전에는 「확인하고 있어요」를 보인다(0이라고 말하지 않는다).
+  assert.match(initialHtml,/data-room="shift" data-action="ws-inbox" aria-label="SHIFT AI 강의실 · 지금 내 차례 없음"/);
+  assert.match(initialHtml,/data-room="path" data-action="ws-inbox" aria-label="PATH 유학 상담실 /);
+  assert.match(initialHtml,/내 차례를 확인하고 있어요/);
   await tick();
   assert.equal(f.requests.length,1);
   assert.equal(f.requests[0].path,'/api/company-work/mine');
@@ -332,8 +335,9 @@ test('SHIFT and PATH staff load personal open schedules immediately on home with
   assert.match(moreMarkup,/날짜 미정 상담/);
   assert.doesNotMatch(slot.innerHTML,/javascript:alert/);
   assert.doesNotMatch(slot.innerHTML,new RegExp(`data-work-id="${WORK_UUID_3}"`));
-  f.run("wa.company='SHIFT'");assert.match(f.run('marinHomePage()'),/내 강의 일정/);assert.doesNotMatch(f.run('marinHomePage()'),/다음 주 정착 상담/);
-  f.run("wa.company='PATH'");assert.match(f.run('marinHomePage()'),/내 상담·정착 지원 일정/);assert.doesNotMatch(f.run('marinHomePage()'),/오늘 자동화 실습 강의/);
+  // 11-24 사무실: 범위를 고르면 방 수도 그 회사 일정만 센다(지난 6 + 오늘 1 = SHIFT 7, PATH는 다음 주 · 날짜 미정뿐이라 0).
+  f.run("wa.company='SHIFT'");assert.match(f.run('marinHomePage()'),/aria-label="SHIFT AI 강의실 · 내 차례 7개"/);assert.doesNotMatch(f.run('marinHomePage()'),/다음 주 정착 상담/);
+  f.run("wa.company='PATH'");assert.match(f.run('marinHomePage()'),/aria-label="PATH 유학 상담실 · 지금 내 차례 없음"/);assert.doesNotMatch(f.run('marinHomePage()'),/오늘 자동화 실습 강의/);
   assert.equal(f.requests.length,1,'switching scope reuses stamped personal schedule without extra GETs');
 });
 
@@ -344,7 +348,8 @@ test('admin home, unassigned roles and public demo send 0 company-work requests,
   const adminHtml=admin.run('marinHomePage()');await tick();
   assert.equal(admin.requests.length,0);
   assert.doesNotMatch(adminHtml,/wa-mine-work/);
-  assert.match(adminHtml,/wa-primary-entry[\s\S]*관리자/);
+  // 11-24 사무실: 관리자 입구는 사무실 「바로 가기」가 아니라 왼쪽 메뉴 「관리」 묶음에 있다(workspace-shell-client 시험이 소속별 메뉴 표로 본다).
+  assert.match(adminHtml,/id="ws-office"/);assert.doesNotMatch(adminHtml,/wa-primary-entry/);
 
   const demo=nextFixture();
   demo.state.data.workspaceCatalog=companyWorkCatalog;
@@ -671,4 +676,182 @@ test('a session refresh for the same employee starts a fresh schedule lookup aft
   await tick();
   assert.equal(f.run('wa.mineLoading'),false);
   assert.match(slot.innerHTML,/남은 미완료 강의 일정이 없어요/);
+});
+
+// ── 11-24 다시 짓기(시안 F · 설계 12절): 왼쪽 메뉴 · 아래 탭 · 「더보기」 시트 · 받은편지함 ──
+const shellRows=[
+  ['관리자',{role:'admin'}],
+  ['미지정',{role:'member'}],
+  ['LAB 교사',{memberships:[['LAB','teacher']]}],
+  ['LAB 운영',{memberships:[['LAB','operations']]}],
+  ['PATH 상담',{memberships:[['PATH','counselor']]}],
+  ['SHIFT 강사',{memberships:[['SHIFT','instructor']]}],
+  ['SHIFT 자동화',{memberships:[['SHIFT','automation']]}],
+  ['PULSE 제작',{memberships:[['PULSE','producer']]}],
+  ['SNS 담당',{memberships:[['LAB','teacher']],duties:['social']}],
+  ['겸임 · 모두',{memberships:[['SHIFT','instructor'],['PULSE','producer']],scope:'all'}],
+  ['겸임 · SHIFT',{memberships:[['SHIFT','instructor'],['PULSE','producer']],scope:'SHIFT'}],
+  ['겸임 · PULSE',{memberships:[['SHIFT','instructor'],['PULSE','producer']],scope:'PULSE'}],
+  ['보기 전용',{role:'viewer'}],
+];
+function shellFixture({role='member',memberships,duties=[],scope='all'}={}){
+  const f=fixture(),opened=[];let dialog='';
+  const raw={id:'crew-'+role,name:'크루',role,active:true,...(memberships?{workspaceProfile:{version:1,revision:1,memberships:memberships.map(([company,r])=>({company,role:r})),duties}}:{})};
+  f.state.user={id:raw.id,name:'크루',role,workspaceAccess:workspaceAccess(raw)};
+  f.state.data.workspaceCatalog={companies:WORKSPACE_COMPANIES,duties:WORKSPACE_DUTIES,classification:[]};
+  Object.assign(f.context,{workspaceTurnEnsure(){},modal:(_title,_sub,html)=>{dialog=html;},closeModal(){f.context.closed=(f.context.closed||0)+1;},button:(label,action)=>`<button type="button" data-action="${action}">${label}</button>`});
+  f.run(`wa.userId=state.user.id;wa.company=${JSON.stringify(scope)}`);
+  return {...f,opened,dialog:()=>{dialog='';f.run('marinAccountDialog()');return dialog;}};
+}
+// 단추 · 링크 하나를 「어디로 가는가」 한 낱말로 줄인다: tab:X · workroom:X · social:X · panel:X · 그 밖의 동작 이름.
+function shellDestinations(html){
+  const out=new Set();
+  for(const [tag] of html.matchAll(/<(?:a|button)\b[^>]*>/g)){
+    const attr=name=>tag.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1]??null;
+    const action=attr('data-action'),tab=attr('data-tab'),href=attr('href');
+    if(action==='tab'||action==='command-tab')out.add('tab:'+tab);
+    else if(action==='wa-open')out.add(tab+':'+attr('data-section'));
+    else if(action==='workroom-view')out.add('workroom:'+tab);
+    else if(action==='social-view')out.add('social:'+attr('data-view'));
+    else if(action==='marin-workroom-panel')out.add('panel:'+attr('data-panel'));
+    else if(action)out.add(action);
+    else if(href)out.add('href:'+href);
+  }
+  for(const local of ['workspace-tools-close','workspace-tools-toggle'])out.delete(local);
+  return out;
+}
+const shellTabs=set=>[...set].filter(key=>key.startsWith('tab:')).sort();
+// 바꾸기 전 「도구」 서랍이 소속마다 내보내던 곳(11-24 고정). 휴대폰의 「더보기」 시트는 이 서랍 그대로다.
+const FROZEN_DRAWER={
+  "관리자":["account-login-info","command","device-notifications-open","href:/trial-feedback/","invite","logout","panel:saved","panel:tasks","social:map","social:today","synk-id-account","tab:admin","tab:handbook","tab:home","tab:lectures","tab:members","tab:messenger","tab:path","tab:settings","tab:social","tab:teaching","tab:tips","tab:workroom","wa-invites","workroom:desk","workroom:pages","workroom:tools","workroom:trends"],
+  "미지정":["account-login-info","command","device-notifications-open","href:/trial-feedback/","logout","panel:saved","panel:tasks","social:map","social:today","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger","tab:social","tab:teaching","tab:workroom","workroom:desk","workroom:pages","workroom:tools","workroom:trends"],
+  "LAB 교사":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger","tab:teaching"],
+  "LAB 운영":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger"],
+  "PATH 상담":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger","tab:path"],
+  "SHIFT 강사":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:lectures","tab:members","tab:messenger"],
+  "SHIFT 자동화":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger"],
+  "PULSE 제작":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger","tab:workroom","workroom:desk","workroom:tools","workroom:trends"],
+  "SNS 담당":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","social:map","social:today","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger","tab:social","tab:teaching","tab:workroom","workroom:desk","workroom:pages","workroom:tools","workroom:trends"],
+  "겸임 · 모두":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:lectures","tab:members","tab:messenger","tab:workroom","workroom:desk","workroom:tools","workroom:trends"],
+  "겸임 · SHIFT":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:lectures","tab:members","tab:messenger"],
+  "겸임 · PULSE":["account-login-info","command","device-notifications-open","logout","panel:saved","panel:tasks","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger","tab:workroom","workroom:desk","workroom:tools","workroom:trends"],
+  "보기 전용":["account-login-info","command","device-notifications-open","href:/trial-feedback/","logout","panel:saved","panel:tasks","social:map","social:today","synk-id-account","tab:handbook","tab:home","tab:members","tab:messenger","tab:social","tab:teaching","tab:workroom","workroom:desk","workroom:pages","workroom:tools","workroom:trends"],
+};
+
+test('every membership reaches exactly the frozen drawer destinations: 1440 through the side menu and account menu, 390 through the bottom tabs and the more sheet',()=>{
+  const drawers={};
+  for(const [name,row] of shellRows){
+    const f=shellFixture(row);f.state.tab='home';
+    const drawer=shellDestinations(f.run('workspaceToolsDrawer(false)'));drawers[name]=[...drawer].sort();
+    assert.deepEqual(drawers[name],FROZEN_DRAWER[name],name+': the more sheet keeps the frozen drawer');
+    // 1440: 메뉴(사무실 · 만들기 · SNS를 골랐을 때의 하위 줄까지) ∪ 계정 메뉴
+    const side=new Set();
+    for(const view of ['home','workroom','social']){f.state.tab=view;for(const key of shellDestinations(f.run('workspaceSideNav(false)')))side.add(key);}
+    f.state.tab='home';for(const key of shellDestinations(f.dialog()))side.add(key);
+    const missing=[...drawer].filter(key=>!side.has(key));
+    assert.deepEqual(missing,[],name+': 1440 side menu plus account menu reach every drawer destination');
+    assert.deepEqual(shellTabs(side),shellTabs(drawer),name+': the side menu shows no tab the drawer does not allow');
+    assert.ok(side.has('ws-inbox')&&side.has('command'),name+': 내 차례 and 찾기 are in the side menu');
+    // 390: 아래 탭 ∪ 시트. 아래 탭은 허용된 탭만, SNS는 허용될 때만, 「더보기」는 늘 있다.
+    const barHtml=f.run('workspaceTabBar(false)'),bar=shellDestinations(barHtml);
+    assert.match(barHtml,/id="ws-tools-toggle"[^>]*aria-controls="ws-tools-drawer"/,name+': 더보기 opens the sheet');
+    assert.deepEqual(shellTabs(bar).filter(key=>!drawer.has(key)),[],name+': bottom tabs only show allowed tabs');
+    assert.equal(bar.has('tab:social'),drawer.has('tab:social'),name+': SNS tab follows the SNS permission');
+    assert.ok(bar.has('tab:home')&&bar.has('ws-inbox'),name+': 사무실 and 내 차례 are bottom tabs');
+  }
+  // 관리 묶음 · 초대 둘은 관리자에게만.
+  const admin=shellFixture({role:'admin'}),member=shellFixture({memberships:[['SHIFT','instructor']]});
+  assert.match(admin.run('workspaceSideNav(false)'),/<p class="ws-side-head">관리<\/p>[\s\S]*data-tab="admin"[\s\S]*data-tab="tips"[\s\S]*data-tab="settings"/);
+  assert.doesNotMatch(member.run('workspaceSideNav(false)'),/data-tab="admin"|data-tab="tips"/);
+  assert.match(admin.dialog(),/data-action="invite"[\s\S]*data-action="wa-invites"/);assert.doesNotMatch(member.dialog(),/data-action="invite"|data-action="wa-invites"/);
+  // 회사 안내는 모든 직원에게, 관리 묶음 밖에.
+  assert.match(member.run('workspaceSideNav(false)'),/<div class="ws-side-foot"><ul class="ws-side-list"><li><a class="ws-side-link" href="\/\?tab=handbook"/);
+});
+
+test('account menu 내 할 일 and 저장한 메시지 close the dialog and operate the messenger',()=>{
+  for(const panel of ['tasks','saved']){
+    const f=shellFixture({memberships:[['SHIFT','instructor']]});
+    assert.match(f.dialog(),new RegExp(`data-action="marin-workroom-panel"\\s+data-panel="${panel}"`));
+    const overlay=f.element('div'),button=f.element('button');button.dataset={action:'marin-workroom-panel',panel};
+    button.closest=selector=>selector==='[data-action]'?button:selector==='#overlay'?overlay:null;
+    f.dispatch('click',button);
+    assert.equal(f.context.closed,1,panel+': the account dialog closes first');
+    assert.equal(f.state.tab,'messenger',panel+': the messenger opens');
+    assert.equal(f.run('workspaceModule.open.panel'),panel,panel+': the messenger receives the panel to show');
+  }
+});
+
+test('the inbox keeps its address, accepts only the six rooms and goes back to the office in one step',()=>{
+  const f=fixture({withAccessEvents:true});f.state.tab='home';f.run('syncWorkspaceLocation()');
+  const office=f.location.href;
+  f.run("openWorkspaceInbox('lab')");
+  assert.equal(f.location.pathname+f.location.search,'/?tab=home&section=inbox&room=lab');
+  assert.equal(f.run('workspaceInbox.open'),true);assert.equal(f.run('workspaceInbox.room'),'lab');
+  f.run('syncWorkspaceLocation()');assert.equal(f.location.searchParams.get('room'),'lab','sync keeps section and room');
+  f.run("openWorkspaceInbox('');syncWorkspaceLocation()");assert.equal(f.location.searchParams.has('room'),false,'모든 내 차례 replaces the room without a new history step');
+  f.run('closeWorkspaceInbox()');
+  assert.equal(f.location.href,office,'back to the office address');assert.equal(f.run('workspaceInbox.open'),false);assert.equal(f.state.tab,'home');
+  for(const [search,room] of [['?tab=home&section=inbox&room=path','path'],['?tab=home&section=inbox&room=evil',''],['?tab=home&section=inbox','']]){
+    const g=fixture({url:'http://localhost:4191/'+search});g.state.tab='home';g.run('workspaceInboxFromLocation()');
+    assert.equal(g.run('workspaceInbox.open'),true,search);assert.equal(g.run('workspaceInbox.room'),room,search);
+  }
+  const plain=fixture({url:'http://localhost:4191/?tab=home&room=lab'});plain.state.tab='home';plain.run('workspaceInboxFromLocation()');
+  assert.equal(plain.run('workspaceInbox.open'),false,'room without section=inbox is ignored');
+});
+
+function turnFixture(){
+  const f=shellFixture({memberships:[['SHIFT','instructor'],['PATH','counselor'],['PULSE','producer']],duties:['social']});
+  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const day=offset=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(Date.now()+offset*86400000));
+  Object.assign(f.context,{
+    tipSharesAllowed:()=>true,tipShares:{loading:false,loadedAt:Date.now(),triedAt:Date.now(),data:{rows:[{row:1,summary:'시안 하나',decidable:true,pending:null},{row:2,summary:'시안 둘',decidable:true,pending:null},{row:3,summary:'고른 시안',decidable:true,pending:{to:'버림',claimed:false}}]}},
+    snsSimple:{data:{accounts:[{platform:'instagram',handle:'lab_korean',business:'LAB'}],tonight:[],health:{},problems:[]},error:'',loading:false},
+    ssReviewSplit:()=>({waiting:[{postId:'p1',at:today+'T13:00',title:'LAB 게시물',plates:[{platform:'instagram',handle:'lab_korean'}]}],late:[{postId:'p2',at:today+'T09:00',title:'지난 게시물',plates:[{platform:'tiktok',handle:'synk'}]}]}),
+  });
+  f.run(`wa.mine={companies:['SHIFT','PATH'],items:[{id:'w1',company:'SHIFT',date:'${today}',title:'오늘 강의'},{id:'w2',company:'PATH',date:'${day(-2)}',title:'지난 상담'},{id:'w3',company:'PATH',date:'${day(30)}',title:'다음 달 상담'}]}`);
+  return {f,today,day};
+}
+const workdayReply=(today,day)=>({today:{groups:{reply:[{id:'t1',title:'답할 일',dueDate:today}],review:[{id:'t2',title:'검토할 일',dueDate:day(-1)},{id:'t1',title:'답할 일',dueDate:today}]}},remaining:{groups:{upcoming:[{id:'t3',title:'이번 주 일',dueDate:day(3)},{id:'t4',title:'다음 달 일',dueDate:day(40)}]}}});
+
+test('room counts add up to the inbox total; SNS reviews stay in 알아 둘 것 and out of every count',async()=>{
+  const {f,today,day}=turnFixture();
+  f.context.fetch=async()=>({ok:true,status:200,json:async()=>workdayReply(today,day)});
+  const messenger=f.run('wsLoadMessenger()'),clients=f.run('wsLoadClients()');
+  const request=f.requests.find(row=>row.path==='/api/client-workflow');
+  request.resolve({items:[{id:'c1',group:'review',reviewerId:f.state.user.id,title:'편집본 확인',dueDate:day(-1)},{id:'c2',group:'reply',ownerId:'someone-else',title:'남의 일'},{id:'c3',group:'next',ownerId:f.state.user.id,title:'내 다음 일',dueDate:today}]});
+  await messenger;await clients;
+  const model=plain(f.run('workspaceTurnModel()'));
+  const rooms=plain(f.run('WS_ROOMS.map(room=>room.id)'));
+  const sum=rooms.reduce((total,room)=>total+f.run(`wsRoomCount(workspaceTurnModel(),${JSON.stringify(room)})`),0);
+  assert.equal(model.total,2+2+3+2,'tips 2 + clients 2 + messenger 3 (week included) + schedule 2');
+  assert.equal(sum,model.total,'the sum of room counts equals the inbox count');
+  f.run("workspaceInbox.room='';workspaceInbox.filter='all'");assert.equal(f.run('wsInboxItems(workspaceTurnModel()).items.length'),model.total);
+  for(const room of rooms){f.context.room=room;f.run('workspaceInbox.room=room');assert.equal(f.run('wsInboxItems(workspaceTurnModel()).items.length'),f.run('wsRoomCount(workspaceTurnModel(),room)'),room);}
+  assert.equal(model.items.some(item=>item.group==='sns'),false,'SNS reviews are never counted as my turn');
+  assert.deepEqual(model.notes.filter(note=>note.group==='sns').map(note=>note.room).sort(),['desk','lab'],'SNS notes go to the LAB room by account, others to the desk');
+  const labels=[...f.run('wsOfficeRoomsHtml(workspaceTurnModel())').matchAll(/aria-label="[^"]* · 내 차례 (\d+)개"/g)].map(match=>Number(match[1]));
+  assert.equal(labels.reduce((a,b)=>a+b,0),model.total,'the office picture shows the same total');
+  assert.equal(f.run('workspaceTurnTotal()'),model.total,'the menu badge shows the same total');
+});
+
+test('a 403 hides that group, while 5xx, network failures and messenger 401 show 못 불러왔어요 without logging out',async()=>{
+  for(const [kind,reply,expected] of [['messenger-403',{ok:false,status:403},'hidden'],['messenger-502',{ok:false,status:502},'failed'],['messenger-401',{ok:false,status:401},'failed'],['messenger-network',null,'failed']]){
+    const {f}=turnFixture();
+    f.context.fetch=async()=>{if(!reply)throw new TypeError('network');return {...reply,json:async()=>({})};};
+    await f.run('wsLoadMessenger()');
+    const model=plain(f.run('workspaceTurnModel()'));
+    assert.equal(model.groups.messenger,expected,kind);
+    const office=f.run('wsOfficeTurnHtml(workspaceTurnModel())');
+    assert.equal(/data-action="ws-turn-retry" data-group="messenger"/.test(office.rest+office.lead),expected==='failed',kind+': retry only for failures');
+    assert.ok(f.state.user,kind+': the company session stays');assert.equal(f.notifications.length,0,kind);
+  }
+  for(const [status,expected] of [[403,'hidden'],[500,'failed']]){
+    const {f}=turnFixture();const pending=f.run('wsLoadClients()');
+    f.requests.find(row=>row.path==='/api/client-workflow').reject(Object.assign(new Error('x'),{status}));await pending;
+    assert.equal(plain(f.run('workspaceTurnModel()')).groups.clients,expected,'clients '+status);
+  }
+  // 권한 없는 무리는 API를 부르지 않는다.
+  const shift=shellFixture({memberships:[['SHIFT','instructor']]});
+  await shift.run('wsLoadClients()');assert.equal(shift.requests.filter(row=>row.path==='/api/client-workflow').length,0);
+  assert.equal(plain(shift.run('workspaceTurnModel()')).groups.clients,'hidden');
 });

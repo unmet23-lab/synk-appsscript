@@ -765,8 +765,8 @@ async function snsSimpleLoad(){
   snsSimpleIdentity();const identity=snsSimple.identity,request=++snsSimple.request;
   Object.assign(snsSimple,{loading:true,attempted:true,attemptedAt:Date.now(),error:''});
   try{const data=await api('/api/social/simple');if(request!==snsSimple.request||identity!==snsSimple.identity)return;snsSimple.data=data;}
-  catch(error){if(request!==snsSimple.request||identity!==snsSimple.identity)return;snsSimple.error=error.message||'SNS 화면을 불러오지 못했어요.';if([401,403].includes(error.status))snsSimple.data=null;}
-  finally{if(request===snsSimple.request&&identity===snsSimple.identity){snsSimple.loading=false;if(typeof snswRender==='function')snswRender();}}
+  catch(error){if(request!==snsSimple.request||identity!==snsSimple.identity)return;snsSimple.error=error.message||'SNS 화면을 불러오지 못했어요.';snsSimple.errorStatus=Number(error.status)||0;if([401,403].includes(error.status))snsSimple.data=null;}
+  finally{if(request===snsSimple.request&&identity===snsSimple.identity){snsSimple.loading=false;if(!snsSimple.error)snsSimple.errorStatus=0;if(typeof snswRender==='function')snswRender();if(typeof workspaceTurnPaint==='function')workspaceTurnPaint();}}
 }
 // 처음 열 때, 그리고 5분 넘게 지난 뒤 다시 그릴 때만 서버에 묻는다(그리기마다 부르므로 반복 요청을 만들지 않는다).
 // 기간 성과: 이번 · 이전 기간을 한 번에 읽는다. 지표만 바꾸면 다시 묻지 않고(같은 응답에 일곱 지표가 다 있다), 기간 · 대상이 바뀌거나 5분이 지나면 다시 묻는다.

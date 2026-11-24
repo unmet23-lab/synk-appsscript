@@ -1,9 +1,9 @@
-/* 제작 상황판(studio.js) — Pure Black #000000 */
+/* 제작 상황판(studio.js) — 밝은 판(#FFFFFF) */
 :root .synk-workspace .mt .sw-views b{font-variant-numeric:tabular-nums}
 :root .synk-workspace .mt [data-sw-now] h3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 :root .synk-workspace .mt .sw-select{display:block;min-width:0}
-:root .synk-workspace .mt .sw-select select{appearance:none;-webkit-appearance:none;display:block;width:100%;min-height:40px;margin:0;padding:0 34px 0 12px;border:1px solid var(--mt-control-line);border-radius:6px;background:var(--mt-paper-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D0D6E0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 12px center/12px no-repeat;box-shadow:none;font:var(--w-label) 13.5px/1 var(--mt-sans);color:var(--mt-ink);cursor:pointer}
-:root .synk-workspace .mt .sw-select select:focus-visible{outline:2px solid #FFFFFF;outline-offset:2px}
+:root .synk-workspace .mt .sw-select select{appearance:none;-webkit-appearance:none;display:block;width:100%;min-height:40px;margin:0;padding:0 34px 0 12px;border:1px solid var(--mt-control-line);border-radius:6px;background:var(--mt-paper-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2346464A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 12px center/12px no-repeat;box-shadow:none;font:var(--w-label) 13.5px/1 var(--mt-sans);color:var(--mt-ink);cursor:pointer}
+:root .synk-workspace .mt .sw-select select:focus-visible{outline:2px solid #0B0B0C;outline-offset:2px}
 :root .synk-workspace .mt .mt-item.sw-two{align-items:start}
 :root .synk-workspace .mt .mt-item.sw-two strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;line-height:1.4}
 :root .synk-workspace .mt .mt-item.sw-two .mt-item-end{padding-top:2px}
