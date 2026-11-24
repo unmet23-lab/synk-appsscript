@@ -320,6 +320,8 @@ function workspaceTurnEnsure({force=false}={}){
   if(wsCan('messenger')&&!workspaceTurn.messenger.loading&&stale(workspaceTurn.messenger.at))void wsLoadMessenger();
   if(wsCan('clients')&&!workspaceTurn.clients.loading&&stale(workspaceTurn.clients.at))void wsLoadClients();
   if(wsCan('tips')&&typeof tipSharesLoad==='function'&&!tipShares.loading&&stale(Math.max(tipShares.loadedAt||0,tipShares.triedAt||0)))void tipSharesLoad({quiet:true});
+  // SHIFT · PATH 일정은 가벼워 어느 화면에서나 읽는다 — 메뉴 「내 차례」 수가 사무실과 다른 화면에서 달라지지 않게.
+  if(state.tab!=='home'&&wsCan('schedule')&&typeof wa!=='undefined'&&typeof waLoadMine==='function'&&!wa.mineLoading&&stale(wa.mineCheckedAt))void waLoadMine({anyTab:true}).then(()=>workspaceTurnPaint());
   if(state.tab==='home'){
     if(wsCan('sns')&&typeof snsSimpleLoad==='function'){if(typeof snsSimpleIdentity==='function')snsSimpleIdentity();if(!snsSimple.loading&&(force||!snsSimple.attempted||now-snsSimple.attemptedAt>WS_TURN_STALE))void snsSimpleLoad();}
     if(force&&typeof wa!=='undefined'&&typeof waSyncMine==='function'&&wsCan('schedule')){wa.mineNeedsRefresh=true;waSyncMine();}

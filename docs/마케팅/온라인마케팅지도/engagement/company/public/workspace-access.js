@@ -413,8 +413,8 @@ function waSyncMine({refresh=true}={}){
   if(refresh&&!wa.mineLoading&&((!wa.mine&&!wa.mineError)||wa.mineNeedsRefresh||(wa.mineCheckedAt>0&&Date.now()-wa.mineCheckedAt>60000)))void waLoadMine();
   if(typeof workspaceTurnPaint==='function')workspaceTurnPaint();
 }
-async function waLoadMine({force=false}={}){
-  if(!state.user||state.tab!=='home'||!waMineCompanies().length)return null;
+async function waLoadMine({force=false,anyTab=false}={}){
+  if(!state.user||(!anyTab&&state.tab!=='home')||!waMineCompanies().length)return null;
   if(wa.mineUserId&&wa.mineUserId!==state.user.id)waResetMine();
   if(wa.mineLoading&&!force)return null;
   const userId=state.user.id,stamp=typeof companyAuthSnapshot==='function'?companyAuthSnapshot():{userId};

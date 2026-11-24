@@ -659,6 +659,21 @@ test('an owned schedule opens from home, header exits it, and browser history re
   assert.equal(project.location.searchParams.get('project'),'qa-project');
 });
 
+test('11-24 메뉴 「내 차례」 수는 사무실 밖 화면에서도 SHIFT · PATH 일정을 읽어 사무실과 같은 수를 보인다',async()=>{
+  const f=nextFixture({now:'2026-11-20T01:00:00.000Z'});
+  f.state.data.workspaceCatalog=companyWorkCatalog;
+  f.state.user={id:'staff-dual',name:'겸임 담당',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures','path'],companies:['SHIFT','PATH'],memberships:[{company:'SHIFT',role:'instructor'},{company:'PATH',role:'counselor'}],duties:[]}};
+  f.state.tab='settings';
+  f.run('workspaceTurnEnsure()');await tick();
+  const mine=()=>f.requests.filter(request=>request.path==='/api/company-work/mine');
+  assert.equal(mine().length,1,'사무실이 아니어도 일정을 읽는다');
+  mine()[0].resolve({companies:['SHIFT','PATH'],canAct:true,date:'2026-11-20',items:[{id:WORK_UUID_1,company:'SHIFT',title:'오늘 강의',date:'2026-11-20',revision:1,href:''},{id:WORK_UUID_2,company:'PATH',title:'지난 상담',date:'2026-11-18',revision:1,href:''}]});
+  await tick();await tick();
+  assert.equal(f.run('workspaceTurnTotal()'),2,'메뉴 수에 오늘 · 지난 일정이 든다');
+  f.run('workspaceTurnEnsure()');await tick();
+  assert.equal(mine().length,1,'60초 안에는 다시 읽지 않는다');
+});
+
 test('a session refresh for the same employee starts a fresh schedule lookup after the stale response',async()=>{
   const f=fixture({url:'http://localhost:4191/?tab=home'});
   f.state.user.workspaceAccess={configured:true,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]};
