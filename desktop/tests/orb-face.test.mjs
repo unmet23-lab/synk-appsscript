@@ -2957,7 +2957,7 @@ test('한 번에 처리: 건너뛰기 moves an item to the back for this round, 
   assert.equal(todo().card.key, 'task:q7:choose');
   h.face.handle('todo-skip');
   await settle();
-  assert.deepEqual(pickOf(todo().card, ['key', 'then']), { key: 'end', then: '건너뛴 일 2개가 남았습니다.' });
+  assert.deepEqual(pickOf(todo().card, ['key', 'say', 'then']), { key: 'end', say: '건너뛴 일 2개만 남았습니다.', then: '' });
   assert.deepEqual(todo().card.acts.map(a => a.id), ['close', 'again']);
   assert.equal(todo().flash, flash0, '건너뛴 일은 끝낸 것으로 세지 않는다');
   h.face.handle('todo-act', 'again');
@@ -3057,6 +3057,7 @@ test('한 번에 처리: when the office cannot be read for a moment, its items 
   assert.equal(todo().flash, flash0, '읽지 못해 빠진 일은 끝낸 것이 아니다');
   answer = null;
   h.face.handle('todo-act', 'reload');
+  assert.equal(todo().card.key, 'end:checking', '다시 읽는 동안은 앞 실패 대신 확인 중이다(카본 E2)');
   await settle(20);
   assert.equal(todo().card.key, 'task:q3:paused', '다시 불러오면 그 일이 다시 선다');
 });
@@ -3101,7 +3102,7 @@ test('한 번에 처리: a one-click item keeps the backup read going while the 
   assert.equal(ticks.at(-1), 2000, '그 카드를 보는 동안은 2초마다 읽어 엔진 창에서 끝낸 것을 바로 안다');
   h.face.handle('todo-skip');
   await settle();
-  assert.equal(todo().card.say, '다 끝냈습니다.');
+  assert.equal(todo().card.say, '건너뛴 일 1개만 남았습니다.', '건너뛴 일이 남았으면 다 끝냈다고 하지 않는다(카본 E1)');
   assert.equal(ticks.at(-1), 15000, '건너뛰어 끝 카드가 서면 다시 천천히 읽는다(Fable FA1)');
   h.face.handle('todo-act', 'again');
   await settle();

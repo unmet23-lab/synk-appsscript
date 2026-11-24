@@ -605,17 +605,21 @@ function createSolioBackup({
     if (platform !== 'win32' || !paths) return { ok: false, code: 'NOT_AVAILABLE' };
     sweepRequests();
     if (busy || pressing) return { ok: false, code: 'BUSY' };
-    // 앞 누름의 요청이 아직 답을 받지 않았으면 새로 쓰지 않는다. 엔진이 가져가기 전이면 요청 작업만 다시 깨운다(Fable 설계 검토 1).
-    // 엔진이 이미 가져가 처리 중이면 할 일이 없다
-    const prev = oneclick && oneclick.account === account.synk_user_id ? oneclick : null;
-    if (prev) await followOneClick(prev);
-    if (prev && oneclick === prev && !prev.result && ONECLICK_OPEN.includes(prev.stage)) {
-      if (prev.stage !== 'sent') return { ok: false, code: 'BUSY' };
-      if (prev.woke !== 'waking') wake(prev);
-      return { ok: true, again: true };
-    }
+    // 앞 요청을 확인하는 동안에도 누름을 잠근다. 확인(파일 읽기)을 기다리는 사이 겹친 누름이 함께 새 요청을 쓰지 않게(PC 0.5.10 공개 후보 카본 K2)
     pressing = true;
     try {
+      // 앞 누름의 요청이 아직 답을 받지 않았으면 새로 쓰지 않는다. 엔진이 가져가기 전이면 요청 작업만 다시 깨운다(Fable 설계 검토 1).
+      // 엔진이 이미 가져가 처리 중이면 할 일이 없다. 2판의 비우기 요청도 같다: 백업이 먼저 답해도 비우기가 아직 열려 있으면
+      // 새 요청이 그 결과(비운 양)를 덮지 않는다(PC 0.5.10 공개 후보 카본 K1)
+      const prev = oneclick && oneclick.account === account.synk_user_id ? oneclick : null;
+      if (prev) await followOneClick(prev);
+      const open = r => !!r && !r.result && ONECLICK_OPEN.includes(r.stage);
+      if (prev && oneclick === prev && (open(prev) || open(prev.free))) {
+        if ([prev, prev.free].some(r => open(r) && r.stage !== 'sent')) return { ok: false, code: 'BUSY' };
+        if (prev.woke !== 'waking') wake(prev);
+        return { ok: true, again: true };
+      }
+      if (busy) return { ok: false, code: 'BUSY' };
       const fresh = await engineFresh();
       if (fresh.error) return { ok: false, code: 'ENGINE_UNKNOWN' };
       if (!fresh.installed) return { ok: false, code: 'NO_ENGINE' };

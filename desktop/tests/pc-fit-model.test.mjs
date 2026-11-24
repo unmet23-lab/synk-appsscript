@@ -149,6 +149,8 @@ test('the settings room gets an 「이 PC」 row only when the bridge exists', (
   assert.equal(pcSettingsRow(snap(SAMPLES.twoDrive, { changed: [{ what: 'memory', from: 8, to: 16 }] }), {}).val, '바뀜');
   // 읽는 중 · 읽지 못함은 판과 같은 말로(Fable 최종 P2-4)
   assert.deepEqual([pcSettingsRow(null, {}).mid, pcSettingsRow({ ok: false }, {}).mid, pcSettingsRow({ ok: true, available: true, profile: null }, {}).mid], ['읽는 중입니다', '읽지 못했습니다', '아직 재지 않았습니다']);
+  // 첫 진단이 도는 동안과 다시 재기를 누른 동안은 읽는 중이다(카본 F1)
+  assert.deepEqual([pcSettingsRow({ ok: true, available: true, reading: true, profile: null }, {}).mid, pcSettingsRow({ ok: true, available: true, profile: null }, { busy: 'pc:pc-again' }).mid], ['읽는 중입니다', '읽는 중입니다']);
   assert.equal(pcSettingsRow({ ok: true, available: false }, {}), null);
   assert.ok(settingsRoom({ pc: snap(SAMPLES.twoDrive) }, {}, NOW).rows.some(x => x.key === 'pc'));
   assert.ok(!settingsRoom({}, {}, NOW).rows.some(x => x.key === 'pc'), 'no bridge, no row');

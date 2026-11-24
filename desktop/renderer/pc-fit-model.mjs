@@ -189,7 +189,8 @@ export function pcSettingsRow(snap = null, st = {}, features = null) {
   if (snap && snap.ok === true && snap.available === false) return null;
   const p = snap?.ok === true ? snap.profile : null, cores = coresOf(p), mem = memOf(p), n = shownDrives(p).length;
   const mid = p ? [cores ? `논리 코어 ${cores}개` : '', mem != null ? `메모리 ${mem}GB` : '', n ? `드라이브 ${countWord(n)}` : ''].filter(Boolean).join(' · ') || '읽지 못한 값이 있습니다'
-    : snap && snap.ok === false ? '읽지 못했습니다' : snap?.ok === true ? '아직 재지 않았습니다' : '읽는 중입니다';
+    // 첫 진단이 도는 동안(본체 reading · 다시 재기 누름)은 「아직 재지 않았습니다」가 아니라 읽는 중이다(PC 0.5.10 공개 후보 카본 F1)
+    : snap && snap.ok === false ? '읽지 못했습니다' : snap?.ok === true && !snap.reading && st.busy !== 'pc:pc-again' ? '아직 재지 않았습니다' : '읽는 중입니다';
   const val = Array.isArray(snap?.changed) && snap.changed.length ? '바뀜' : '';
   return { key: 'pc', nm: '이 PC', mid, val, when: '', label: rowLabel(['이 PC', mid, val]), more: [
     ['note', fits ? '솔리오가 이 PC를 어떻게 보고 기능마다 무엇을 맞췄는지 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.' : '솔리오가 잰 이 PC의 사양을 한 장에 모았습니다. 이 PC 밖으로 보내지 않습니다.'],

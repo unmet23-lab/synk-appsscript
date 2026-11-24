@@ -530,6 +530,27 @@ test('2판: on a PC the engine opened (spaceFree off · on) a press writes run-n
   assert.ok(!JSON.stringify(snap).includes('sentinel') && !JSON.stringify(snap).includes('abcd1234'), 'no path and no report id reach the room');
 });
 
+test('2판: while the free request is still open after the backup answered, a press writes nothing new; two presses at once write one pair (카본 K1 · K2)', async () => {
+  const a = appdata({ status: { ...SAFE, spaceFree: 'off' }, space: REPORT2() }), { s } = service(a);
+  // 두 누름이 겹쳐도 요청은 한 쌍(run-now · pick)만 쓴다
+  const both = await Promise.all([s.oneClick(ME), s.oneClick(ME)]);
+  assert.deepEqual(both.map(r => r.ok ? 'ok' : r.code).sort(), ['BUSY', 'ok']);
+  const names = requests(a).sort();
+  assert.equal(names.length, 2, 'one run-now and one pick');
+  // 엔진이 run-now에만 답했다. pick은 아직 기다린다
+  fs.rmSync(path.join(a.paths.requests, names[0]));
+  fs.writeFileSync(path.join(a.paths.solio, 'results', names[0]), JSON.stringify({ v: 1, result: 'done', at: new Date().toISOString() }));
+  const snap = await s.snapshot(ME);
+  assert.deepEqual([snap.oneclick.result, snap.oneclick.free.stage], ['done', 'sent']);
+  assert.deepEqual(await s.oneClick(ME), { ok: true, again: true }, 'the open pick is woken again, not replaced');
+  assert.deepEqual(requests(a), [names[1]], 'no new request is written');
+  // 엔진이 pick을 가져가 비우는 중이면 누를 것이 없다
+  fs.mkdirSync(path.join(a.paths.requests, 'claimed'), { recursive: true });
+  fs.renameSync(path.join(a.paths.requests, names[1]), path.join(a.paths.requests, 'claimed', names[1]));
+  assert.deepEqual(await s.oneClick(ME), { ok: false, code: 'BUSY' });
+  assert.equal(requests(a).length, 0);
+});
+
 test('2판: no pick on an engine that did not open it, with no fresh report, or with no 2판 numbers — the backup press still goes', async () => {
   for (const [status, space, why] of [
     [SAFE, REPORT2(), 'engine 0.7.0 has no spaceFree'],

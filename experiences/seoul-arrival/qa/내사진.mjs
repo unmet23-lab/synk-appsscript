@@ -23,6 +23,7 @@ const browser=await chromium.launch({channel:'msedge'});
 const fail=[];const check=(ok,what,detail='')=>{console.log(`${ok?'통과':'실패'} ${what}${detail?` — ${detail}`:''}`);if(!ok)fail.push(what);};
 // 운영 사진 저장소 주소 꼴 그대로(틀의 CSP img-src가 이 주소만 연다). 요청은 아래 route가 가로채 서울행의 지어낸 얼굴 그림을 준다.
 const PHOTO_URL='https://qiwxeddwwnzkwalpsuty.supabase.co/storage/v1/object/sign/me2-media/qa/base.jpg?token=fixture';
+const PHOTO_URL2=PHOTO_URL.replace('fixture','fixture2');   // 같은 사진의 새 5분 주소
 const PHOTO_BYTES=fs.readFileSync(path.join(ROOT,'experiences/seoul-arrival/assets/img/look-vn-f.webp'));
 
 // 가짜 앱: 실제 판(dialog)과 실제 틀. 제2의 나 판은 status · open만 흉내 낸다(동의 · 올리기는 시험이 상태를 바꿔 대신한다).
@@ -145,6 +146,11 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  check(await t.page.evaluate(()=>window.__st.opens===2),`${lang} 사진이 있으면 판을 다시 열지 않음(칸 한 번 · 학생증 단추 한 번뿐)`);
  check(await until('칸에 띄운 얼굴',()=>t.inF(()=>{const vf=document.querySelector('#lkVf'),im=vf.querySelector('img:last-of-type');return vf.classList.contains('has')&&im?.classList.contains('in')&&im.naturalWidth>0&&document.querySelector('[data-me]').getAttribute('aria-pressed')==='true'&&!document.querySelector('#lkShoot').disabled;})),`${lang} 내 얼굴이 칸에 보이고 셔터가 켜짐`);await sleep(400);
  await shot(t,`${lang}-6-내얼굴`);
+ // 같은 사진의 새 서명 주소가 오면 칸 · 카메라 칸이 새 주소로 바뀐다(만료된 주소로 남지 않게)
+ await t.page.evaluate(u=>{window.__st.me2={status:'ok',consent:{given:true},me:{state:'ready',chosen_url:u}};},PHOTO_URL2);
+ await t.inF(()=>window.__seoulQA.photo());
+ check(await t.inF(()=>document.querySelector('[data-me]')?.getAttribute('aria-pressed')==='true'),`${lang} 새 주소로 칸을 갈아 끼워도 고른 표시가 바로 남음`);
+ check(await until('새 주소',()=>t.inF(u=>document.querySelector('[data-me] .lk-me-face i')?.style.backgroundImage.includes(u)&&[...document.querySelectorAll('#lkVf img')].some(i=>i.src===u&&i.classList.contains('in')),PHOTO_URL2)),`${lang} 새 서명 주소가 오면 칸 · 카메라 칸이 새 주소로`);
  await t.F().click('.lk-th[data-i="0"]');await sleep(300);await t.F().click('#lkShoot');
  check(await until('다른 얼굴 저장',()=>t.page.evaluate(()=>{const s=window.__st.saved.at(-1);return s&&s.photo===null&&typeof s.look==='string';})),`${lang} 준비된 얼굴로 바꾸면 내 사진 표시를 지움`);
  await t.page.context().close();
@@ -171,6 +177,9 @@ for(const lang of ['ko','en','mn'].filter(l=>!ONLY||l===ONLY)){
  check(await until('머리 사진',()=>t.inF(u=>document.querySelector('#meBadge i')?.style.backgroundImage.includes(u),PHOTO_URL)),'다시 열기: 내 길 머리에 내 사진(사진관 쉼)');
  await t.F().click('#meBadge');
  check(await until('학생증 사진',()=>t.inF(u=>document.querySelector('#idPhoto img')?.src===u,PHOTO_URL)),'다시 열기: 학생증에 내 사진');
+ await t.page.evaluate(u=>{window.__st.me2={status:'off',consent:{given:true},me:{state:'ready',chosen_url:u}};},PHOTO_URL2);
+ await t.inF(()=>window.__seoulQA.photo());
+ check(await until('학생증 새 주소',()=>t.inF(u=>document.querySelector('#idPhoto img')?.src===u&&document.querySelector('#meBadge i')?.style.backgroundImage.includes(u),PHOTO_URL2)),'새 서명 주소가 오면 학생증 · 내 길 머리도 새 주소로');
  await t.page.context().close();}
 
 // 5b. 다른 사진으로 새 판이 나와 고를 차례여도, 앞서 고른 사진은 머리 · 학생증에 그대로 두고 칸만 「사진 나왔어요」(누르면 판)

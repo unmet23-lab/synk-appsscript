@@ -491,7 +491,7 @@ const ORDER_OF = g => ['claude', 'gpt', 'gemini'].indexOf(g.service);
 // 막대: 주간 초기화가 지나 다시 찼을 계정은 100이다. shareOf는 어림 주간을 버리고 5시간 창으로 떨어진다(Fable 최종 F5)
 const barOf = (a, prices) => (a.projected && a.g?.weekly?.guess ? 100 : shareOf(a, prices) ?? 0);
 function boardRow(a, g, prices, now) {
-  const base = { id: a.row.id, name: a.name || '이름 모름' };
+  const base = { id: a.row.id, name: a.name || '이름 없는 계정' }; // 접힌 줄 · 솔리오 보고와 같은 이름(PC 0.5.10 공개 후보 카본 F6)
   const week = a.g?.weekly && !a.g.weekly.guess ? a.g.weekly : null;
   if (a.state === 'login') return { ...base, tone: 'fix', bar: null, pct: '', note: '다시 로그인해야 합니다' };
   if (a.state === 'error') return { ...base, tone: 'fix', bar: null, pct: '', note: '읽지 못했습니다' };
