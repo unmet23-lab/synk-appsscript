@@ -1,4 +1,4 @@
-// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」).
+// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24).
 // 학습 내용(보기·표현·이야기 대사·레슨 제목)은 life-content.mjs의 한국어 그대로다. 여기에는 문제 지시(prompt)·상황(context)·해설(explanation),
 // 표현 설명(meaning)과 답한 뒤 누르는 「뜻 보기」의 보기 뜻만 둔다. 문장 속 ‘한국어 인용’은 학습 내용이라 한국어로 남긴다.
 // ko는 원문의 사본이다: 원문을 고치면 qa/life-content-lang.test.mjs가 이 표가 낡았다고 알린다(번역을 같이 고친다).
@@ -78,6 +78,176 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'처음 방문한 가게의 직원에게 말을 시작해요.',context:'아직 상품을 고르거나 도움을 받기 전이에요.',explanation:'처음 대화를 시작할 때 정중한 인사는 ‘안녕하세요’예요.'},
   {prompt:'Start talking to a worker at a shop you’re visiting for the first time.',context:'You haven’t picked anything or gotten help yet.',explanation:'When you first start a conversation, the polite greeting is ‘안녕하세요’.'},
   {prompt:'Анх очсон дэлгүүрийн ажилтантай яриа эхлүүлнэ үү.',context:'Та одоохондоо бараа сонгоогүй, тусламж ч аваагүй байна.',explanation:'Анх яриа эхлэхэд хэрэглэх эелдэг мэндчилгээ бол «안녕하세요».'}),
+ // 카페 팩(11-24 「만들어 둬」) — 시작
+ 'cafe-expressions-order':q(
+  {prompt:'주문에 맞는 음료를 골라요.',context:'“따뜻한 차 한 잔 주세요.”',explanation:'‘따뜻한 차’가 종류와 온도이고 ‘한 잔’이 수량이에요.'},
+  {prompt:'Choose the drink that matches the order.',context:'“따뜻한 차 한 잔 주세요.”',explanation:'‘따뜻한 차’ tells you the kind and temperature (hot tea), and ‘한 잔’ tells you how many (one cup).'},
+  {prompt:'Захиалгад тохирох уух зүйлийг сонгоно уу.',context:'«따뜻한 차 한 잔 주세요.»',explanation:'«따뜻한 차» нь ямар уух зүйл болохыг (халуун цай), «한 잔» нь хэдэн аяга болохыг (нэг аяга) заана.'}),
+ 'cafe-expressions-order-transfer':q(
+  {prompt:'주문에 맞는 음료를 골라요.',context:'“차가운 주스 두 잔 주세요.”',explanation:'주스·차가운 온도·두 잔을 모두 확인해요.'},
+  {prompt:'Choose the drink that matches the order.',context:'“차가운 주스 두 잔 주세요.”',explanation:'Check all three: juice, cold, and two cups.'},
+  {prompt:'Захиалгад тохирох уух зүйлийг сонгоно уу.',context:'«차가운 주스 두 잔 주세요.»',explanation:'Хүйтэн шүүс мөн эсэх, хоёр аяга мөн эсэхийг шалгана.'}),
+ 'cafe-expressions-here':q(
+  {prompt:'‘여기서 마실게요’는 무슨 뜻이에요?',context:'카페 직원이 마실 장소를 물었어요.',explanation:'카페에서 말한 ‘여기서’는 그 카페 안을 가리켜요.'},
+  {prompt:'What does ‘여기서 마실게요’ mean?',context:'The café staff asked where you will drink.',explanation:'Said in a café, ‘여기서’ (here) means inside that café.'},
+  {prompt:'«여기서 마실게요» гэдэг нь ямар утгатай вэ?',context:'Кафены ажилтан хаана уухыг тань асуулаа.',explanation:'Кафе дотор хэлсэн «여기서» (энд) гэдэг нь тухайн кафе дотор гэсэн үг.'}),
+ 'cafe-expressions-here-transfer':q(
+  {prompt:'‘매장에서 마실게요’는 무슨 뜻이에요?',context:'직원이 포장할지 물었어요.',explanation:'‘매장에서’는 가게 안에서 이용하겠다는 뜻이에요.'},
+  {prompt:'What does ‘매장에서 마실게요’ mean?',context:'The staff asked if you want it to go.',explanation:'‘매장에서’ means you’ll have it inside the shop.'},
+  {prompt:'«매장에서 마실게요» гэдэг нь ямар утгатай вэ?',context:'Ажилтан авч явах эсэхийг тань асуулаа.',explanation:'«매장에서» гэдэг нь кафед ууна гэсэн үг.'}),
+ 'cafe-expressions-takeout':q(
+  {prompt:'음료를 밖으로 가져가고 싶어요. 어떤 말을 할까요?',context:'',explanation:'음료를 가져갈 때는 ‘포장해 주세요’라고 요청해요.'},
+  {prompt:'You want to take your drink outside. What do you say?',context:'',explanation:'When you take a drink with you, ask with ‘포장해 주세요’.'},
+  {prompt:'Уух зүйлээ авч явмаар байна. Юу гэж хэлэх вэ?',context:'',explanation:'Уух зүйлээ авч явахдаа «포장해 주세요» гэж хэлнэ.'}),
+ 'cafe-expressions-takeout-transfer':q(
+  {prompt:'주스를 집에 가져가려고 해요. 어떤 말을 할까요?',context:'',explanation:'집에 가져가려면 포장을 요청해요.'},
+  {prompt:'You’re going to take juice home. What do you say?',context:'',explanation:'To take it home, ask for it to go.'},
+  {prompt:'Шүүсээ гэртээ авч харих гэж байна. Юу гэж хэлэх вэ?',context:'',explanation:'Гэртээ авч харих бол «авч явна» гэж хэлнэ.'}),
+ 'cafe-story-order':q(
+  {prompt:'지호가 주문한 것은 무엇이에요?',context:'',explanation:'지호는 ‘따뜻한 차 네 잔 주세요.’라고 주문했어요. 네 사람이 한 잔씩 마셔요.'},
+  {prompt:'What did Jiho order?',context:'',explanation:'Jiho ordered with ‘따뜻한 차 네 잔 주세요.’ There are four of you, one cup each.'},
+  {prompt:'Жихо юу захиалсан бэ?',context:'',explanation:'Жихо «따뜻한 차 네 잔 주세요.» гэж захиалсан. Дөрвүүлээ нэг нэг аяга ууна.'}),
+ 'cafe-story-order-transfer':q(
+  {prompt:'주문표에 맞는 음료를 골라요.',context:'새 주문표: “따뜻한 우유 두 잔 주세요.”',explanation:'우유·따뜻한 온도·두 잔을 모두 읽어야 해요.'},
+  {prompt:'Choose the drink that matches the order slip.',context:'New order slip: “따뜻한 우유 두 잔 주세요.”',explanation:'You need to read all three: milk, warm, and two cups.'},
+  {prompt:'Захиалгын хуудсанд тохирох уух зүйлийг сонгоно уу.',context:'Шинэ захиалгын хуудас: «따뜻한 우유 두 잔 주세요.»',explanation:'Сүү, бүлээн, хоёр аяга гэсэн гурвыг бүгдийг нь унших хэрэгтэй.'}),
+ 'cafe-story-here':q(
+  {prompt:'지호가 말한 ‘여기서 마실게요.’의 ‘여기’는 어디예요?',context:'',explanation:'지호는 카페 안에서 이 말을 했어요. 그래서 ‘여기’는 카페 안이에요.'},
+  {prompt:'In Jiho’s ‘여기서 마실게요.’, where is ‘여기’?',context:'',explanation:'Jiho said this inside the café, so ‘여기’ means inside the café.'},
+  {prompt:'Жихогийн хэлсэн «여기서 마실게요.» гэсэн үгэн дэх «여기» нь хаана гэсэн үг вэ?',context:'',explanation:'Жихо энэ үгийг кафе дотор хэлсэн. Тиймээс «여기» нь кафе дотор гэсэн үг.'}),
+ 'cafe-story-here-transfer':q(
+  {prompt:'주문표를 읽고 마실 장소를 골라요.',context:'“카페 안에서 마실게요. 창가에 앉을게요.”',explanation:'‘카페 안’과 ‘창가’를 함께 확인해요.'},
+  {prompt:'Read the order slip and choose where they’ll drink.',context:'“카페 안에서 마실게요. 창가에 앉을게요.”',explanation:'Check both ‘카페 안’ (inside the café) and ‘창가’ (by the window).'},
+  {prompt:'Захиалгын хуудсыг уншаад хаана уухыг сонгоно уу.',context:'«카페 안에서 마실게요. 창가에 앉을게요.»',explanation:'«카페 안» (кафе дотор), «창가» (цонхны дэргэд) гэсэн хоёр үгийг хоёуланг нь анхаараарай.'}),
+ 'cafe-story-takeout':q(
+  {prompt:'지호가 직원에게 다시 한 말은 무엇이에요?',context:'',explanation:'태오가 ‘우리 밖에서 마셔요!’라고 해서 지호가 직원에게 다시 ‘포장해 주세요.’라고 했어요. 나머지 두 말은 처음에 주문할 때 한 말이에요.'},
+  {prompt:'What did Jiho say to the staff the second time?',context:'',explanation:'Taeo said ‘우리 밖에서 마셔요!’, so Jiho told the staff ‘포장해 주세요.’ The other two are what Jiho said when he first ordered.'},
+  {prompt:'Жихо дараа нь ажилтанд юу гэж хэлсэн бэ?',context:'',explanation:'Тэо «우리 밖에서 마셔요!» гэж хэлсэн тул Жихо дараа нь ажилтанд «포장해 주세요.» гэж хэлсэн. Нөгөө хоёр үгийг Жихо анх захиалахдаа хэлсэн.'}),
+ 'cafe-story-takeout-transfer':q(
+  {prompt:'새 장면에서 어떤 말을 할까요?',context:'비가 그쳤어요. 음료를 가지고 공원으로 가려고 해요.',explanation:'음료를 밖의 공원으로 가져가려면 포장을 요청해요.'},
+  {prompt:'What do you say in this new scene?',context:'The rain has stopped. You want to take your drink to the park.',explanation:'To take your drink out to the park, ask for it to go.'},
+  {prompt:'Энэ тохиолдолд юу гэж хэлэх вэ?',context:'Бороо зогслоо. Уух зүйлээ аваад цэцэрлэгт хүрээлэн рүү явах гэж байна.',explanation:'Уух зүйлээ цэцэрлэгт хүрээлэн рүү авч явах бол «авч явна» гэж хэлнэ.'}),
+ 'cafe-apply-order':q(
+  {prompt:'원하는 주문을 골라요.',context:'친구와 둘이 마실 차가운 주스를 한 잔씩 주문해요.',explanation:'둘이 한 잔씩 마시므로 두 잔이고, 원하는 온도는 차가운 온도예요.'},
+  {prompt:'Choose the order you want.',context:'You order cold juice for you and a friend, one cup each.',explanation:'Two people, one cup each, makes two cups, and you want it cold.'},
+  {prompt:'Захиалахдаа хэлэх зөв өгүүлбэрийг сонгоно уу.',context:'Та найздаа болон өөртөө нэг нэг аяга хүйтэн шүүс захиална.',explanation:'Хоёулаа нэг нэг аяга уух тул хоёр аяга хүйтэн шүүс захиална.'}),
+ 'cafe-apply-order-transfer':q(
+  {prompt:'원하는 주문을 골라요.',context:'혼자 마실 따뜻한 우유 한 잔을 주문해요.',explanation:'우유·따뜻한 온도·한 잔에 맞는 주문을 선택해요.'},
+  {prompt:'Choose the order you want.',context:'You order one warm milk just for yourself.',explanation:'Pick the order that matches milk, warm, and one cup.'},
+  {prompt:'Захиалахдаа хэлэх зөв өгүүлбэрийг сонгоно уу.',context:'Өөртөө нэг аяга бүлээн сүү захиална.',explanation:'Нэг аяга бүлээн сүү захиалахдаа хэлэх өгүүлбэрийг сонгоорой.'}),
+ 'cafe-apply-here':q(
+  {prompt:'직원에게 어떻게 답할까요?',context:'“가져가실 건가요?” 카페 안의 테이블에서 마시려고 해요.',explanation:'테이블에서 마시므로 카페 안에서 마신다고 답해요.'},
+  {prompt:'How do you answer the staff?',context:'“가져가실 건가요?” You want to drink at a table inside the café.',explanation:'You’re drinking at a table, so answer that you’ll drink inside the café.'},
+  {prompt:'Ажилтанд хэрхэн хариулах вэ?',context:'«가져가실 건가요?» Та кафены ширээнд сууж уух гэж байна.',explanation:'Ширээнд суугаад уух тул энд ууна гэж хариулна.'}),
+ 'cafe-apply-here-transfer':q(
+  {prompt:'직원에게 어떻게 답할까요?',context:'“매장에서 드시나요?” 카페 안에서 마시려고 해요.',explanation:'‘매장에서’라는 질문에 카페 안에서 마신다고 답해요.'},
+  {prompt:'How do you answer the staff?',context:'“매장에서 드시나요?” You want to drink inside the café.',explanation:'To the ‘매장에서’ question, answer that you’ll drink inside the café.'},
+  {prompt:'Ажилтанд хэрхэн хариулах вэ?',context:'«매장에서 드시나요?» Та кафед сууж уух гэж байна.',explanation:'«매장에서» гэж асуухад энд ууна гэж хариулна.'}),
+ 'cafe-apply-takeout':q(
+  {prompt:'상황에 맞는 부탁을 골라요.',context:'주문한 차를 가지고 학교에 가려고 해요.',explanation:'차를 다른 장소로 가져가므로 포장을 요청해요.'},
+  {prompt:'Choose the request that fits the situation.',context:'You want to take the tea you ordered to school.',explanation:'You’re taking the tea somewhere else, so ask for it to go.'},
+  {prompt:'Энэ тохиолдолд хэлэх зөв өгүүлбэрийг сонгоно уу.',context:'Захиалсан цайгаа аваад сургууль руу явах гэж байна.',explanation:'Цайгаа өөр газар авч явах тул «авч явна» гэж хэлнэ.'}),
+ 'cafe-apply-takeout-transfer':q(
+  {prompt:'상황에 맞는 부탁을 골라요.',context:'친구 집에서 함께 마실 주스를 카페에서 샀어요.',explanation:'친구 집으로 가져갈 주스이므로 포장이 필요해요.'},
+  {prompt:'Choose the request that fits the situation.',context:'You bought juice at the café to drink together at a friend’s house.',explanation:'The juice is going to your friend’s house, so ask for it to go.'},
+  {prompt:'Энэ тохиолдолд хэлэх зөв өгүүлбэрийг сонгоно уу.',context:'Найзынхаа гэрт хамт уух шүүсийг кафегаас худалдаж авч байна.',explanation:'Шүүсээ найзынхаа гэрт авч очих тул «авч явна» гэж хэлнэ.'}),
+ 'cafe-visit-taste-drink':q(
+  {prompt:'태오가 원하는 음료를 주문해요.',context:'태오: “따뜻한 차를 마시고 싶어요.”',explanation:'태오가 원하는 종류는 차이고 온도는 따뜻한 온도예요. 주스나 차가운 음료와 구분해요.'},
+  {prompt:'Order the drink Taeo wants.',context:'Taeo: “따뜻한 차를 마시고 싶어요.”',explanation:'Taeo wants tea, and he wants it hot. Don’t mix it up with juice or a cold drink.'},
+  {prompt:'Тэогийн хүссэн уух зүйлийг захиална уу.',context:'Тэо: «따뜻한 차를 마시고 싶어요.»',explanation:'Тэо халуун цай уухыг хүсэж байна. Шүүс эсвэл хүйтэн уух зүйлтэй андуурч болохгүй.'}),
+ 'cafe-visit-taste-drink-transfer':q(
+  {prompt:'서하가 원하는 음료를 주문해요.',context:'서하: “오늘은 차가운 주스를 마시고 싶어요!”',explanation:'서하가 원하는 음료는 ‘차가운 주스’예요. 온도와 음료 종류가 모두 맞는 ‘차가운 주스 한 잔 주세요.’를 골라요.'},
+  {prompt:'Order the drink Seoha wants.',context:'Seoha: “오늘은 차가운 주스를 마시고 싶어요!”',explanation:'Seoha wants ‘차가운 주스’ (cold juice). Choose ‘차가운 주스 한 잔 주세요.’, where both the drink and the temperature match.'},
+  {prompt:'Сөхагийн хүссэн уух зүйлийг захиална уу.',context:'Сөха: «오늘은 차가운 주스를 마시고 싶어요!»',explanation:'Сөха «차가운 주스» (хүйтэн шүүс) уухыг хүсэж байна. Тиймээс «차가운 주스 한 잔 주세요.» гэж захиална. Энэ өгүүлбэрт «шүүс», «хүйтэн» гэсэн хоёр утга хоёулаа орсон байна.'}),
+ 'cafe-visit-taste-count':q(
+  {prompt:'둘이 한 잔씩 마시려면 어떻게 말할까요?',context:'태오와 내가 따뜻한 차를 한 잔씩 마셔요.',explanation:'태오 한 잔과 내 한 잔을 합하면 두 잔이에요.'},
+  {prompt:'How do you order so the two of you get a cup each?',context:'Taeo and I each drink a cup of hot tea.',explanation:'One cup for Taeo plus one for me makes two cups.'},
+  {prompt:'Хоёулаа нэг нэг аяга уух бол хэрхэн хэлэх вэ?',context:'Та Тэотой хамт нэг нэг аяга халуун цай ууна.',explanation:'Тэогийн нэг аяга, таны нэг аяга нийлээд хоёр аяга цай болно.'}),
+ 'cafe-visit-taste-count-transfer':q(
+  {prompt:'함께 마실 음료를 주문해요.',context:'서하·지호·태오가 차가운 우유를 한 잔씩 마셔요.',explanation:'세 사람이 한 잔씩 마시면 세 잔이고 원하는 음료는 차가운 우유예요.'},
+  {prompt:'Order drinks for everyone.',context:'Seoha, Jiho and Taeo each drink a cup of cold milk.',explanation:'Three people, one cup each, makes three cups, and the drink they want is cold milk.'},
+  {prompt:'Хамтдаа уух зүйлээ захиална уу.',context:'Сөха, Жихо, Тэо гурав нэг нэг аяга хүйтэн сүү ууна.',explanation:'Гурван хүн нэг нэг аяга уувал гурван аяга сүү хэрэгтэй. Тэдний хүссэн нь хүйтэн сүү.'}),
+ 'cafe-visit-taste-place':q(
+  {prompt:'직원에게 마실 곳을 알려 주세요.',context:'비가 그칠 때까지 카페 안에서 따뜻한 차를 마시며 쉬어요.',explanation:'카페 안에서 쉬면서 마시므로 매장 이용을 말해요.'},
+  {prompt:'Tell the staff where you’ll drink.',context:'You rest in the café with hot tea until the rain stops.',explanation:'You’re resting and drinking inside the café, so say you’ll have it in.'},
+  {prompt:'Хаана уухаа ажилтанд хэлнэ үү.',context:'Бороо зогстол кафе дотор халуун цай ууж амарна.',explanation:'Кафед амрангаа уух тул ажилтанд энд ууна гэж хэлнэ.'}),
+ 'cafe-visit-taste-place-transfer':q(
+  {prompt:'직원의 말에 어떻게 대답할까요?',context:'서하가 주스를 가지고 집에 가요. 직원: “매장에서 드시나요?”',explanation:'서하는 주스를 가지고 집에 가요. 그래서 ‘아니요, 포장해 주세요.’라고 대답해요.'},
+  {prompt:'How do you answer the staff?',context:'Seoha is taking her juice home. Staff: “매장에서 드시나요?”',explanation:'Seoha is taking the juice home, so the answer is ‘아니요, 포장해 주세요.’'},
+  {prompt:'Ажилтны асуултад хэрхэн хариулах вэ?',context:'Сөха шүүсээ аваад гэртээ харина. Ажилтан: «매장에서 드시나요?»',explanation:'Сөха шүүсээ аваад гэртээ харина. Тиймээс «아니요, 포장해 주세요.» гэж хариулна.'}),
+ 'cafe-visit-soldout-menu':q(
+  {prompt:'지금 주문할 수 있는 음료를 골라요.',context:'오늘 주스 품절. 따뜻한 차는 주문할 수 있어요.',explanation:'주스는 품절이라 온도를 바꾸어도 주문할 수 없어요. 가능한 음료는 따뜻한 차예요.'},
+  {prompt:'Choose a drink you can order now.',context:'Juice is sold out today. Hot tea is available.',explanation:'Juice is sold out, so you can’t order it even at a different temperature. The drink you can get is hot tea.'},
+  {prompt:'Одоо захиалж болох уух зүйлийг сонгоно уу.',context:'Өнөөдөр шүүс дууссан. Халуун цай захиалж болно.',explanation:'Шүүс дууссан тул халууныг нь ч, хүйтнийг нь ч захиалж болохгүй. Захиалж болох нь халуун цай.'}),
+ 'cafe-visit-soldout-menu-transfer':q(
+  {prompt:'새 안내판에서 주문할 수 있는 음료를 골라요.',context:'오늘 우유 품절. 차가운 주스는 주문할 수 있어요.',explanation:'이번에는 우유가 품절이고 주스는 주문할 수 있어요. 새 안내를 읽고 골라요.'},
+  {prompt:'Choose a drink you can order from the new sign.',context:'Milk is sold out today. Cold juice is available.',explanation:'This time milk is sold out and juice is available. Read the new sign and choose.'},
+  {prompt:'Шинэ зарлалыг уншаад захиалж болох уух зүйлийг сонгоно уу.',context:'Өнөөдөр сүү дууссан. Хүйтэн шүүс захиалж болно.',explanation:'Энэ удаа сүү дууссан боловч шүүс захиалж болно. Шинэ зарлалыг уншаад уух зүйлээ сонгоорой.'}),
+ 'cafe-visit-soldout-count':q(
+  {prompt:'직원이 수량을 다시 물어요. 어떻게 답할까요?',context:'혼자 마실 한 잔을 주문했어요. 직원: “따뜻한 차 두 잔 맞나요?”',explanation:'필요한 것은 한 잔이에요. 직원의 두 잔 확인에 아니요라고 답하고 한 잔을 말해요.'},
+  {prompt:'The staff checks the number again. How do you answer?',context:'You ordered one cup just for yourself. Staff: “따뜻한 차 두 잔 맞나요?”',explanation:'You need one cup. When the staff says two, answer ‘아니요’ and say one cup.'},
+  {prompt:'Ажилтан хэдэн аяга болохыг дахин асууж байна. Хэрхэн хариулах вэ?',context:'Та өөртөө нэг аяга цай захиалсан. Ажилтан: «따뜻한 차 두 잔 맞나요?»',explanation:'Танд нэг аяга цай хэрэгтэй. Ажилтан хоёр аяга уу гэж лавлахад «아니요» гэж хариулаад нэг аяга гэж хэлнэ.'}),
+ 'cafe-visit-soldout-count-transfer':q(
+  {prompt:'새 주문의 수량을 다시 알려 주세요.',context:'친구와 둘이 한 잔씩 마셔요. 직원: “주스 한 잔 맞나요?”',explanation:'이번 주문은 두 사람이 한 잔씩 마실 두 잔이에요. 한 잔이라는 확인을 고쳐요.'},
+  {prompt:'Tell the staff the right number for the new order.',context:'You and a friend each drink a cup. Staff: “주스 한 잔 맞나요?”',explanation:'This order is two cups, one for each of you. Correct the staff’s ‘one cup’.'},
+  {prompt:'Энэ удаа хэдэн аяга шүүс авахаа ажилтанд дахин хэлнэ үү.',context:'Та найзтайгаа нэг нэг аяга шүүс ууна. Ажилтан: «주스 한 잔 맞나요?»',explanation:'Энэ удаа хоёулаа нэг нэг аяга уух тул хоёр аяга шүүс хэрэгтэй. Ажилтны «нэг аяга» гэснийг засаж хэлнэ.'}),
+ 'cafe-visit-soldout-takeout':q(
+  {prompt:'공원으로 가져가려면 어떤 말을 할까요?',context:'따뜻한 차를 가지고 공원 벤치로 가려고 해요.',explanation:'카페 밖의 공원에 가져갈 차이므로 포장을 부탁해요.'},
+  {prompt:'What do you say to take it to the park?',context:'You want to take your hot tea to a bench in the park.',explanation:'The tea is going to the park outside the café, so ask for it to go.'},
+  {prompt:'Цэцэрлэгт хүрээлэн рүү авч явах бол юу гэж хэлэх вэ?',context:'Халуун цайгаа аваад цэцэрлэгт хүрээлэнгийн вандан сандал дээр очиж уух гэж байна.',explanation:'Цайгаа кафены гадна байгаа цэцэрлэгт хүрээлэн рүү авч явах тул «авч явна» гэж хэлнэ.'}),
+ 'cafe-visit-soldout-takeout-transfer':q(
+  {prompt:'새 장면에서 마실 곳을 알려 주세요.',context:'비가 많이 와서 카페 안의 테이블에서 주스를 마시려고 해요.',explanation:'이번에는 밖으로 가져가지 않고 카페 안에서 마시므로 매장 이용을 말해요.'},
+  {prompt:'In this new scene, tell the staff where you’ll drink.',context:'It’s raining hard, so you want to drink your juice at a table inside the café.',explanation:'This time you’re not taking it out. You’re drinking inside, so say you’ll have it in.'},
+  {prompt:'Энэ тохиолдолд хаана уухаа хэлнэ үү.',context:'Бороо их орж байгаа тул шүүсээ кафе доторх ширээнд суугаад уух гэж байна.',explanation:'Энэ удаа авч явахгүй, кафед уух тул ажилтанд энд ууна гэж хэлнэ.'}),
+ 'cafe-visit-change-drink':q(
+  {prompt:'주스를 따뜻한 차로 바꾸어 달라고 말해요.',context:'아직 만들기 전인 따뜻한 주스 두 잔을 따뜻한 차 두 잔으로 바꾸려고 해요.',explanation:'주스 대신이라는 말로 이전 음료를 짚고 따뜻한 차로 바꿔 달라고 부탁해요.'},
+  {prompt:'Ask to change the juice to hot tea.',context:'The two warm juices haven’t been made yet, and you want to change them to two hot teas.',explanation:'Use ‘주스 대신’ (instead of juice) to point to the first drink, then ask to change it to hot tea.'},
+  {prompt:'Шүүсийг халуун цайгаар сольж өгөөч гэж хэлнэ үү.',context:'Та хоёр аяга бүлээн шүүс захиалсан. Шүүс хараахан бэлэн болоогүй байгаа тул захиалгаа хоёр аяга халуун цайгаар солихыг хүсэж байна.',explanation:'Эхлээд «주스 대신» (шүүсний оронд) гэж хэлээд, дараа нь халуун цай авахаа хэлнэ.'}),
+ 'cafe-visit-change-drink-transfer':q(
+  {prompt:'이번에는 차를 주스로 바꾸고 싶어요.',context:'아직 만들기 전인 따뜻한 차 한 잔을 차가운 주스 한 잔으로 바꾸려고 해요.',explanation:'새 주문은 따뜻한 차에서 차가운 주스로 변경하는 것이에요. 바꿀 종류와 온도를 확인해요.'},
+  {prompt:'This time you want to change tea to juice.',context:'The hot tea hasn’t been made yet, and you want to change it to one cold juice.',explanation:'The new order changes hot tea to cold juice. Check the new drink and its temperature.'},
+  {prompt:'Энэ удаа та цайгаа шүүсээр солихыг хүсэж байна.',context:'Та нэг аяга халуун цай захиалсан. Цай хараахан бэлэн болоогүй байгаа тул захиалгаа нэг аяга хүйтэн шүүсээр солихыг хүсэж байна.',explanation:'Шинэ захиалгад халуун цайг хүйтэн шүүсээр солино. Ямар уух зүйл болох, халуун уу, хүйтэн үү гэдгийг нь шалгана.'}),
+ 'cafe-visit-change-count':q(
+  {prompt:'지호의 컵 한 잔을 추가해요.',context:'현재 따뜻한 차 두 잔을 주문했어요. 세 사람이 한 잔씩 마실 세 잔이 필요해요.',explanation:'두 잔에 한 잔 더 추가하면 세 잔이에요. 더는 수량을 늘리는 말이에요.'},
+  {prompt:'Add one cup for Jiho.',context:'You’ve ordered two hot teas. Three people, one cup each, need three cups.',explanation:'Two cups plus one more is three. ‘더’ is the word that adds to the number.'},
+  {prompt:'Жихо ч бас уух тул нэг аяга цай нэмнэ үү.',context:'Одоогоор хоёр аяга халуун цай захиалсан байна. Гурван хүн нэг нэг аяга уух тул гурван аяга цай хэрэгтэй.',explanation:'Хоёр аяга дээр нэгийг нэмбэл гурван аяга цай болно. «더» гэдэг нь «дахиад» гэсэн утгатай үг.'}),
+ 'cafe-visit-change-count-transfer':q(
+  {prompt:'새 주문에 친구의 컵을 추가해요.',context:'현재 주스 한 잔을 주문했어요. 친구와 둘이 한 잔씩 마시려면 두 잔이 필요해요.',explanation:'한 잔에 한 잔을 더하면 두 잔이에요. 새 시작 수량을 읽고 추가해요.'},
+  {prompt:'Add a cup for your friend to the new order.',context:'You’ve ordered one juice. For you and a friend to have one each, you need two.',explanation:'One cup plus one more is two. Read the starting number in the new order, then add.'},
+  {prompt:'Найз тань ч бас уух тул шинэ захиалгад нэг аяга шүүс нэмнэ үү.',context:'Одоогоор нэг аяга шүүс захиалсан байна. Найзтайгаа хоёулаа нэг нэг аяга уух бол хоёр аяга хэрэгтэй.',explanation:'Нэг аяга дээр нэгийг нэмбэл хоёр аяга шүүс болно. Эхлээд хэдэн аяга захиалсныг шалгаад, түүн дээр нэгийг нэмнэ.'}),
+ 'cafe-visit-change-place':q(
+  {prompt:'매장 이용을 포장으로 바꾸어요.',context:'처음에는 카페 안에서 마시기로 했지만, 이제 음료를 가지고 공원에 가려고 해요.',explanation:'음료는 유지하고 밖으로 가져가므로 매장 이용에서 포장으로 바꿔 달라고 부탁해요.'},
+  {prompt:'Change from having it in to taking it out.',context:'At first you planned to drink inside the café, but now you want to take your drinks to the park.',explanation:'Keep the drinks the same and take them outside. Ask to change from having them in to taking them out.'},
+  {prompt:'Захиалгаа авч явахаар өөрчилнө үү.',context:'Эхлээд кафе дотор уухаар шийдсэн ч одоо уух зүйлээ аваад цэцэрлэгт хүрээлэн рүү явах гэж байна.',explanation:'Уух зүйл нь хэвээрээ. Харин гадаа гарч уух учраас «авч явахаар өөрчилж өгөөч» гэж хэлнэ.'}),
+ 'cafe-visit-change-place-transfer':q(
+  {prompt:'이번에는 포장을 매장 이용으로 바꾸어요.',context:'주스를 집에 가져가기로 했지만, 친구를 만나 카페 안에서 함께 마시려고 해요.',explanation:'이번 변경 방향은 포장에서 매장 이용이에요. 새로 마실 장소에 맞게 말해요.'},
+  {prompt:'This time, change from taking it out to having it in.',context:'You planned to take your juice home, but you met a friend and want to drink together inside the café.',explanation:'This time the change goes from taking it out to having it in. Say it to match where you’ll drink now.'},
+  {prompt:'Энэ удаа захиалгаа кафед уухаар өөрчилнө үү.',context:'Шүүсээ гэртээ авч харихаар шийдсэн ч найзтайгаа таараад кафе дотор хамт уух гэж байна.',explanation:'Энэ удаа авч явахгүй, кафед сууж уухаар шийдсэн. Үүнийгээ ажилтанд хэлнэ.'}),
+ 'cafe-compose-order':q(
+  {prompt:'태오와 마실 따뜻한 차 두 잔을 주문해요.',context:'태오와 내가 따뜻한 차를 한 잔씩 마셔요. 음료·온도·잔 수를 직접 골라 주세요.',explanation:'음료는 차, 온도는 따뜻하게, 수량은 두 잔이에요. 세 정보를 연결하면 따뜻한 차 두 잔 주세요가 돼요.'},
+  {prompt:'Order two hot teas for you and Taeo.',context:'Taeo and I each drink a cup of hot tea. Choose the drink, temperature and number of cups yourself.',explanation:'The drink is tea, it’s hot, and it’s two cups. Put the three together and you get ‘따뜻한 차 두 잔 주세요’.'},
+  {prompt:'Тэотой хамт уух хоёр аяга халуун цай захиална уу.',context:'Та Тэотой хамт нэг нэг аяга халуун цай ууна. Ямар уух зүйл, халуун хүйтний алийг нь, хэдэн аяга авахаа өөрөө сонгоно уу.',explanation:'Цай, халуун, хоёр аяга гэсэн гурван мэдээллийг холбовол «따뜻한 차 두 잔 주세요» болно.'}),
+ 'cafe-compose-order-transfer':q(
+  {prompt:'상황에 맞는 주문 문장을 골라요.',context:'서하·지호·태오가 차가운 주스를 한 잔씩 마셔요.',explanation:'세 사람이 한 잔씩 마시면 세 잔이에요. 차가운 주스와 세 잔을 모두 담은 문장을 골라요.'},
+  {prompt:'Choose the order sentence that fits the situation.',context:'Seoha, Jiho and Taeo each drink a cup of cold juice.',explanation:'Three people, one cup each, makes three cups. Choose the sentence that has both cold juice and three cups.'},
+  {prompt:'Энэ нөхцөл байдалд захиалга өгөхөд тохирох өгүүлбэрийг сонгоно уу.',context:'Сөха, Жихо, Тэо гурав нэг нэг аяга хүйтэн шүүс ууна.',explanation:'Гурван хүн нэг нэг аяга уувал гурван аяга шүүс хэрэгтэй. Хүйтэн шүүс, гурван аяга гэсэн хоёр зүйлийг хоёуланг нь багтаасан өгүүлбэрийг сонгоорой.'}),
+ 'cafe-compose-count':q(
+  {prompt:'직원의 수량 확인에 답해요.',context:'따뜻한 차 두 잔을 주문했어요. 직원: “따뜻한 차 두 잔 맞나요?”',explanation:'원하는 수량과 직원이 확인한 수량이 모두 두 잔이에요. 네라고 답하고 두 잔을 확인해요.'},
+  {prompt:'Answer the staff checking the number.',context:'You ordered two hot teas. Staff: “따뜻한 차 두 잔 맞나요?”',explanation:'What you want and what the staff checked are both two cups. Answer ‘네’ and confirm two cups.'},
+  {prompt:'Ажилтан хэдэн аяга авахыг тань лавлаж байна. Хариулна уу.',context:'Та хоёр аяга халуун цай захиалсан. Ажилтан: «따뜻한 차 두 잔 맞나요?»',explanation:'Таны хүссэн нь ч, ажилтны лавласан нь ч хоёр аяга цай. «네» гэж хариулаад хоёр аяга гэдгийг батална.'}),
+ 'cafe-compose-count-transfer':q(
+  {prompt:'새 주문의 수량을 확인해요.',context:'혼자 마실 차가운 차 한 잔을 주문했어요. 직원: “두 잔 맞나요?”',explanation:'이번에는 한 잔이 필요하므로 두 잔이라는 확인을 한 잔으로 고쳐요.'},
+  {prompt:'Check the number for the new order.',context:'You ordered one iced tea just for yourself. Staff: “두 잔 맞나요?”',explanation:'This time you need one cup, so correct the staff’s ‘two cups’ to one.'},
+  {prompt:'Шинэ захиалгад хэдэн аяга цай байгааг шалгана уу.',context:'Та өөртөө нэг аяга хүйтэн цай захиалсан. Ажилтан: «두 잔 맞나요?»',explanation:'Энэ удаа нэг аяга хэрэгтэй тул ажилтны «хоёр аяга» гэснийг нэг аяга болгож засна.'}),
+ 'cafe-compose-place':q(
+  {prompt:'함께 마실 자리를 정해요.',context:'태오와 카페 안에서 따뜻한 차를 마시며 쉬려고 해요.',explanation:'카페 안에서 함께 마시려면 여기서 마실게요로 매장 이용을 말해요.'},
+  {prompt:'Decide where you’ll drink together.',context:'You want to relax with Taeo over hot tea inside the café.',explanation:'To drink together inside the café, say ‘여기서 마실게요’ to have it in.'},
+  {prompt:'Тэотой хамт цайгаа хаана уухаа шийднэ үү.',context:'Тэотой кафе дотор халуун цай ууж амрах гэж байна.',explanation:'Кафед хамт цай уух бол «여기서 마실게요» гэж хэлнэ. Энэ нь энд ууна гэсэн үг.'}),
+ 'cafe-compose-place-transfer':q(
+  {prompt:'직원의 말에 어떻게 대답할까요?',context:'지호는 따뜻한 차를 사서 학교에 가지고 가요. 직원: “매장에서 드시나요?”',explanation:'지호는 차를 학교에 가지고 가요. 그래서 ‘아니요, 포장해 주세요.’라고 대답해요.'},
+  {prompt:'How do you answer the staff?',context:'Jiho buys hot tea and takes it to school. Staff: “매장에서 드시나요?”',explanation:'Jiho is taking the tea to school, so the answer is ‘아니요, 포장해 주세요.’'},
+  {prompt:'Ажилтны асуултад хэрхэн хариулах вэ?',context:'Жихо халуун цай худалдаж аваад сургууль руугаа явна. Ажилтан: «매장에서 드시나요?»',explanation:'Жихо цайгаа сургууль руу авч явна. Тиймээс «아니요, 포장해 주세요.» гэж хариулна.'}),
+ // 카페 팩 — 끝
 });
 
 // 표현 익히기 카드의 설명(표현 자체는 한국어 그대로).
@@ -85,6 +255,16 @@ export const LIFE_EXPRESSION_TEXT=Object.freeze({
  'greet-hello':q('처음 만난 사람이나 아는 사람에게 정중하게 인사해요.','A polite greeting for anyone you meet, even for the first time.','Хэнтэй уулзсан ч, бүр анх удаа ч гэсэн эелдгээр мэндлэх үг.'),
  'greet-thanks':q('도움을 받았을 때 정중하게 고마움을 전해요.','Politely says thank you when someone helps you.','Тусламж авахдаа эелдгээр талархлаа илэрхийлнэ.'),
  'greet-name':q('자기 이름을 소개해요. 이름 끝에 받침이 있으면 ‘이에요’, 없으면 ‘예요’를 써요.','Introduces your own name. If the name ends in a final consonant (받침), use ‘이에요’; if not, use ‘예요’.','Өөрийгөө танилцуулахад хэрэглэнэ. Нэр тань гийгүүлэгчээр (받침) төгссөн бол «이에요»-г, үгүй бол «예요»-г хэрэглэнэ.'),
+ // 카페 팩(11-24 「만들어 둬」) — 시작
+ 'cafe-order':q('음료의 종류·온도·수를 함께 말하며 주문해요.','Order by saying the kind of drink, its temperature and how many cups, all together.','Ямар уух зүйл, халуун хүйтний алийг нь, хэдэн аяга авахаа нэг дор хэлж захиална.'),
+ 'cafe-here':q('카페 안에서 마시겠다고 말해요.','Says you will drink inside the café.','Кафе дотор ууна гэдгээ хэлнэ.'),
+ 'cafe-takeout':q('음료를 밖으로 가져가겠다고 말해요.','Says you will take your drink out with you.','Уух зүйлээ авч явна гэдгээ хэлнэ.'),
+ 'cafe-preference':q('친구가 원하는 음료의 종류와 온도를 알아봐요.','Find out what kind of drink your friend wants, and how hot or cold.','Найз тань ямар уух зүйл, халуун хүйтний алийг нь хүсэж байгааг мэдэж авна.'),
+ 'cafe-soldout':q('품절은 오늘 더 주문할 수 없다는 뜻이에요. 가능한 다른 음료를 골라요.','‘품절’ means sold out: you can’t order it any more today. Pick another drink that is available.','«품절» гэдэг нь дууссан, өнөөдөр дахиж захиалах боломжгүй гэсэн үг. Захиалж болох өөр уух зүйл сонгоно.'),
+ 'cafe-change':q('이미 주문한 음료를 다른 음료로 바꾸어 달라고 부탁해요.','Ask to change a drink you already ordered to a different one.','Захиалсан уух зүйлээ өөр зүйлээр солиулахыг хүснэ.'),
+ 'cafe-add':q('주문한 수량에 한 잔을 추가해요.','Adds one more cup to what you ordered.','Захиалга дээрээ дахиад нэг аяга нэмүүлнэ.'),
+ 'cafe-compose':q('음료·온도·잔 수를 직접 골라 한 문장으로 주문해요.','Choose the drink, temperature and number of cups yourself and order in one sentence.','Ямар уух зүйл, халуун хүйтний алийг нь, хэдэн аяга авахаа өөрөө сонгоод нэг өгүүлбэрээр захиална.'),
+ // 카페 팩 — 끝
 });
 
 // 「뜻 보기」: 답한 뒤에만 보이는 보기의 뜻. 키는 보기 글자 그대로다.
@@ -117,6 +297,84 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '저는 준영이에요.':{en:'I’m Junyoung.',mn:'Би Жүнёон.'},
  '준영은 어디에 있어요?':{en:'Where is Junyoung?',mn:'Жүнёон хаана байна вэ?'},
  '준영은 학교에 가요.':{en:'Junyoung goes to school.',mn:'Жүнёон сургууль руу явж байна.'},
+ // 카페 팩(11-24 「만들어 둬」) — 시작
+ '차가운 차 두 잔':{en:'two iced teas',mn:'хоёр аяга хүйтэн цай'},
+ '따뜻한 차 한 잔':{en:'one hot tea',mn:'нэг аяга халуун цай'},
+ '따뜻한 물 세 잔':{en:'three cups of warm water',mn:'гурван аяга бүлээн ус'},
+ '차가운 주스 두 잔':{en:'two cold juices',mn:'хоёр аяга хүйтэн шүүс'},
+ '따뜻한 주스 두 잔':{en:'two warm juices',mn:'хоёр аяга бүлээн шүүс'},
+ '차가운 차 한 잔':{en:'one iced tea',mn:'нэг аяга хүйтэн цай'},
+ '밖으로 가져갈게요.':{en:'I’ll take it outside.',mn:'Авч явна.'},
+ '음료를 주문하지 않을게요.':{en:'I won’t order a drink.',mn:'Уух зүйл захиалахгүй.'},
+ '카페 안에서 마실게요.':{en:'I’ll drink it inside the café.',mn:'Кафе дотор ууна.'},
+ '집으로 가져갈게요.':{en:'I’ll take it home.',mn:'Гэртээ авч харина.'},
+ '컵을 돌려드릴게요.':{en:'I’ll give the cup back.',mn:'Аягаа буцааж өгье.'},
+ '포장해 주세요.':{en:'To go, please.',mn:'Савлаж өгөөрэй. (авч явна)'},
+ '여기서 마실게요.':{en:'I’ll drink it here.',mn:'Энд ууна.'},
+ '따뜻하게 마실게요.':{en:'I’ll have it hot.',mn:'Халуунаар нь ууна.'},
+ '잘 마셨습니다.':{en:'Thank you, I enjoyed it. (said after drinking)',mn:'Сайхан байлаа, баярлалаа. (уусны дараа хэлдэг)'},
+ '따뜻한 차 네 잔':{en:'four hot teas',mn:'дөрвөн аяга халуун цай'},
+ '차가운 물 네 잔':{en:'four cups of cold water',mn:'дөрвөн аяга хүйтэн ус'},
+ '차가운 우유 두 잔':{en:'two cold milks',mn:'хоёр аяга хүйтэн сүү'},
+ '따뜻한 차 두 잔':{en:'two hot teas',mn:'хоёр аяга халуун цай'},
+ '따뜻한 우유 두 잔':{en:'two warm milks',mn:'хоёр аяга бүлээн сүү'},
+ '카페 앞 벤치':{en:'the bench in front of the café',mn:'кафены урдах вандан сандал'},
+ '카페 안':{en:'inside the café',mn:'кафе дотор'},
+ '학교 교실':{en:'a classroom at school',mn:'сургуулийн анги'},
+ '카페 창가':{en:'a window seat in the café',mn:'кафены цонхны дэргэдэх суудал'},
+ '강가 벤치':{en:'a bench by the river',mn:'голын эрэг дээрх вандан сандал'},
+ '집의 창가':{en:'by the window at home',mn:'гэрийн цонхны дэргэд'},
+ '따뜻한 차 네 잔 주세요.':{en:'Four hot teas, please.',mn:'Дөрвөн аяга халуун цай өгөөрэй.'},
+ '매장에서 마실게요.':{en:'I’ll have it here in the café.',mn:'Кафед ууна.'},
+ '컵을 비워 주세요.':{en:'Please empty the cup.',mn:'Аяган доторх зүйлийг асгаж өгөөрэй.'},
+ '차가운 주스 한 잔 주세요.':{en:'One cold juice, please.',mn:'Нэг аяга хүйтэн шүүс өгөөрэй.'},
+ '차가운 주스 두 잔 주세요.':{en:'Two cold juices, please.',mn:'Хоёр аяга хүйтэн шүүс өгөөрэй.'},
+ '따뜻한 주스 두 잔 주세요.':{en:'Two warm juices, please.',mn:'Хоёр аяга бүлээн шүүс өгөөрэй.'},
+ '따뜻한 우유 한 잔 주세요.':{en:'One warm milk, please.',mn:'Нэг аяга бүлээн сүү өгөөрэй.'},
+ '차가운 우유 한 잔 주세요.':{en:'One cold milk, please.',mn:'Нэг аяга хүйтэн сүү өгөөрэй.'},
+ '따뜻한 차 두 잔 주세요.':{en:'Two hot teas, please.',mn:'Хоёр аяга халуун цай өгөөрэй.'},
+ '아직 안 마셨어요.':{en:'I haven’t drunk it yet.',mn:'Хараахан уугаагүй байна.'},
+ '아니요, 포장해 주세요.':{en:'No, to go, please.',mn:'Үгүй, савлаж өгөөрэй.'},
+ '네, 여기서 마실게요.':{en:'Yes, I’ll drink it here.',mn:'Тийм, энд ууна.'},
+ '네, 집에서 마실게요.':{en:'Yes, I’ll drink it at home.',mn:'Тийм, гэртээ ууна.'},
+ '주문을 취소할게요.':{en:'I’ll cancel my order.',mn:'Захиалгаа цуцалъя.'},
+ '컵은 필요 없어요.':{en:'I don’t need a cup.',mn:'Аяга хэрэггүй.'},
+ '따뜻한 주스 한 잔 주세요.':{en:'One warm juice, please.',mn:'Нэг аяга бүлээн шүүс өгөөрэй.'},
+ '따뜻한 차 한 잔 주세요.':{en:'One hot tea, please.',mn:'Нэг аяга халуун цай өгөөрэй.'},
+ '차가운 차 한 잔 주세요.':{en:'One iced tea, please.',mn:'Нэг аяга хүйтэн цай өгөөрэй.'},
+ '따뜻한 차 세 잔 주세요.':{en:'Three hot teas, please.',mn:'Гурван аяга халуун цай өгөөрэй.'},
+ '차가운 우유 두 잔 주세요.':{en:'Two cold milks, please.',mn:'Хоёр аяга хүйтэн сүү өгөөрэй.'},
+ '차가운 우유 세 잔 주세요.':{en:'Three cold milks, please.',mn:'Гурван аяга хүйтэн сүү өгөөрэй.'},
+ '따뜻한 우유 세 잔 주세요.':{en:'Three warm milks, please.',mn:'Гурван аяга бүлээн сүү өгөөрэй.'},
+ '네, 창가에서 마실게요.':{en:'Yes, I’ll drink it by the window.',mn:'Тийм, цонхны дэргэд ууна.'},
+ '세 잔 주세요.':{en:'Three cups, please.',mn:'Гурван аяга өгөөрэй.'},
+ '네, 두 잔 주세요.':{en:'Yes, two cups, please.',mn:'Тийм, хоёр аяга өгөөрэй.'},
+ '아니요, 한 잔 주세요.':{en:'No, one cup, please.',mn:'Үгүй, нэг аяга өгөөрэй.'},
+ '네, 한 잔 주세요.':{en:'Yes, one cup, please.',mn:'Тийм, нэг аяга өгөөрэй.'},
+ '아니요, 두 잔 주세요.':{en:'No, two cups, please.',mn:'Үгүй, хоёр аяга өгөөрэй.'},
+ '아니요, 세 잔 주세요.':{en:'No, three cups, please.',mn:'Үгүй, гурван аяга өгөөрэй.'},
+ '취소해 주세요.':{en:'Please cancel it.',mn:'Миний захиалгыг цуцалж өгөөрэй.'},
+ '주스 대신 따뜻한 차로 바꿔 주세요.':{en:'Please change the juice to hot tea instead.',mn:'Шүүсийг халуун цайгаар сольж өгөөрэй.'},
+ '따뜻한 주스로 준비해 주세요.':{en:'Please make it a warm juice.',mn:'Бүлээн шүүс болгож өгөөрэй.'},
+ '차가운 주스로 바꿔 주세요.':{en:'Please change it to cold juice.',mn:'Хүйтэн шүүсээр сольж өгөөрэй.'},
+ '따뜻한 차로 준비해 주세요.':{en:'Please make it a hot tea.',mn:'Халуун цай болгож өгөөрэй.'},
+ '차가운 차로 바꿔 주세요.':{en:'Please change it to iced tea.',mn:'Хүйтэн цайгаар сольж өгөөрэй.'},
+ '차 대신 차가운 주스로 바꿔 주세요.':{en:'Please change the tea to cold juice instead.',mn:'Цайг хүйтэн шүүсээр сольж өгөөрэй.'},
+ '한 잔 빼 주세요.':{en:'Please take one cup off.',mn:'Нэг аягыг нь хасаж өгөөрэй.'},
+ '한 잔 더 주세요.':{en:'One more cup, please.',mn:'Дахиад нэг аяга өгөөрэй.'},
+ '그대로 두 잔 주세요.':{en:'Keep it at two cups, please.',mn:'Тоог нь өөрчлөлгүй хоёр аяга өгөөрэй.'},
+ '그대로 한 잔 주세요.':{en:'Keep it at one cup, please.',mn:'Тоог нь өөрчлөлгүй нэг аяга өгөөрэй.'},
+ '그대로 매장에서 마실게요.':{en:'I’ll still have it here in the café.',mn:'Өөрчлөхгүй, энд ууна.'},
+ '포장으로 바꿔 주세요.':{en:'Please change it to go.',mn:'Авч явахаар өөрчилж өгөөрэй.'},
+ '매장 이용으로 바꿔 주세요.':{en:'Please change it to have here.',mn:'Энд уухаар өөрчилж өгөөрэй.'},
+ '그대로 포장해 주세요.':{en:'Keep it to go, please.',mn:'Өөрчлөхгүй, авч явна.'},
+ '주문 조건을 모두 맞췄어요.':{en:'The order matches everything.',mn:'Захиалга бүрэн зөв байна.'},
+ '필요한 수량과 달라요.':{en:'It’s not the number of cups you need.',mn:'Аяганы тоо таарахгүй байна.'},
+ '음료나 온도가 달라요.':{en:'The drink or the temperature is different.',mn:'Уух зүйл нь эсвэл халуун, хүйтний сонголт нь өөр байна.'},
+ '따뜻한 주스 세 잔 주세요.':{en:'Three warm juices, please.',mn:'Гурван аяга бүлээн шүүс өгөөрэй.'},
+ '차가운 차 두 잔 주세요.':{en:'Two iced teas, please.',mn:'Хоёр аяга хүйтэн цай өгөөрэй.'},
+ '차가운 주스 세 잔 주세요.':{en:'Three cold juices, please.',mn:'Гурван аяга хүйтэн шүүс өгөөрэй.'},
+ // 카페 팩 — 끝
 });
 
 // 문제 한 개의 화면 언어 글. 이 표에 없는 문제(1판 밖의 팩)는 원문 그대로다.
