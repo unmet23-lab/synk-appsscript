@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N6",
+ "text": "마지막 답은, 아이가 직접 찾아요.",
+ "dur": 2.204,
+ "words": [
+  {
+   "text": "마지막",
+   "start": 0.02,
+   "end": 0.322
+  },
+  {
+   "text": "답은,",
+   "start": 0.402,
+   "end": 0.705
+  },
+  {
+   "text": "아이가",
+   "start": 1.108,
+   "end": 1.329
+  },
+  {
+   "text": "직접",
+   "start": 1.39,
+   "end": 1.591
+  },
+  {
+   "text": "찾아요.",
+   "start": 1.652,
+   "end": 2.204
+  }
+ ],
+ "source": {
+  "key": "67d324a1c94891a5cbfd00364a2d8ad3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1124,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

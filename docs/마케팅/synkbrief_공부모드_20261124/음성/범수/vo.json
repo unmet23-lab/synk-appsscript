@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1124,
+  "lufs": -17
+ },
+ "made": "2026-11-24T00:18:15.541Z",
+ "lines": [
+  {
+   "id": "N1",
+   "text": "아이가 답만 알려 달라고 하면, 공부하기를 켜도 바로 답이 나와요.",
+   "dur": 3.21,
+   "syllablesPerSec": 8.1,
+   "src": "N1.wav",
+   "key": "b0ae6950ba454b8709046dec07633673",
+   "words": 10
+  },
+  {
+   "id": "N2",
+   "text": "한 줄을 붙이면, 같은 말에도 힌트만 줘요.",
+   "dur": 2.297,
+   "syllablesPerSec": 6.97,
+   "src": "N2.wav",
+   "key": "1b3c80954f9dae8b3d0d4c0c7eeb6775",
+   "words": 7
+  },
+  {
+   "id": "N3",
+   "text": "입력 칸 플러스에서 공부하기를 고르고, 사진에 이 한 줄을 붙여요.",
+   "dur": 3.353,
+   "syllablesPerSec": 7.75,
+   "src": "N3.wav",
+   "key": "c724c87179a065dd1553edefe2f4b6ac",
+   "words": 10
+  },
+  {
+   "id": "N4",
+   "text": "답만 알려 달라고 해도, 힌트로 다시 물어봐 줘.",
+   "dur": 2.409,
+   "syllablesPerSec": 7.47,
+   "src": "N4.wav",
+   "key": "df67490cce2f35dd21fc7e09b5084e34",
+   "words": 8
+  },
+  {
+   "id": "N5",
+   "text": "그러면 아이가 빈칸을 하나씩 채워요.",
+   "dur": 1.767,
+   "syllablesPerSec": 8.49,
+   "src": "N5.wav",
+   "key": "663d2988814f813f7f1bd6de826d5223",
+   "words": 5
+  },
+  {
+   "id": "N6",
+   "text": "마지막 답은, 아이가 직접 찾아요.",
+   "dur": 2.204,
+   "syllablesPerSec": 5.9,
+   "src": "N6.wav",
+   "key": "67d324a1c94891a5cbfd00364a2d8ad3",
+   "words": 5
+  },
+  {
+   "id": "N7",
+   "text": "이 한 줄, 아래 글에 그대로 적어 뒀어요.",
+   "dur": 2.427,
+   "syllablesPerSec": 6.18,
+   "src": "N7.wav",
+   "key": "632130e3c5e45b3a93fca07e1c871c4f",
+   "words": 8
+  },
+  {
+   "id": "N7Y",
+   "text": "이 한 줄, 고정 댓글에 그대로 적어 뒀어요.",
+   "dur": 2.173,
+   "syllablesPerSec": 7.36,
+   "src": "N7Y.wav",
+   "key": "56c6d47990190cdc1104916d6fa671d3",
+   "words": 8
+  }
+ ]
+}

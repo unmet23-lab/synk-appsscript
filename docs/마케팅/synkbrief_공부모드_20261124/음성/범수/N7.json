@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N7",
+ "text": "이 한 줄, 아래 글에 그대로 적어 뒀어요.",
+ "dur": 2.427,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.02,
+   "end": 0.04
+  },
+  {
+   "text": "한",
+   "start": 0.121,
+   "end": 0.242
+  },
+  {
+   "text": "줄,",
+   "start": 0.303,
+   "end": 0.464
+  },
+  {
+   "text": "아래",
+   "start": 0.848,
+   "end": 0.989
+  },
+  {
+   "text": "글에",
+   "start": 1.05,
+   "end": 1.232
+  },
+  {
+   "text": "그대로",
+   "start": 1.413,
+   "end": 1.656
+  },
+  {
+   "text": "적어",
+   "start": 1.716,
+   "end": 1.858
+  },
+  {
+   "text": "뒀어요.",
+   "start": 1.918,
+   "end": 2.427
+  }
+ ],
+ "source": {
+  "key": "632130e3c5e45b3a93fca07e1c871c4f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1124,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

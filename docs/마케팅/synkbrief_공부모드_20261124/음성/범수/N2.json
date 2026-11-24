@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N2",
+ "text": "한 줄을 붙이면, 같은 말에도 힌트만 줘요.",
+ "dur": 2.297,
+ "words": [
+  {
+   "text": "한",
+   "start": 0,
+   "end": 0.103
+  },
+  {
+   "text": "줄을",
+   "start": 0.148,
+   "end": 0.296
+  },
+  {
+   "text": "붙이면,",
+   "start": 0.34,
+   "end": 0.739
+  },
+  {
+   "text": "같은",
+   "start": 1.02,
+   "end": 1.257
+  },
+  {
+   "text": "말에도",
+   "start": 1.301,
+   "end": 1.508
+  },
+  {
+   "text": "힌트만",
+   "start": 1.553,
+   "end": 1.863
+  },
+  {
+   "text": "줘요.",
+   "start": 1.907,
+   "end": 2.297
+  }
+ ],
+ "source": {
+  "key": "1b3c80954f9dae8b3d0d4c0c7eeb6775",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1124,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

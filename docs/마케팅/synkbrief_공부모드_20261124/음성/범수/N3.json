@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N3",
+ "text": "입력 칸 플러스에서 공부하기를 고르고, 사진에 이 한 줄을 붙여요.",
+ "dur": 3.353,
+ "words": [
+  {
+   "text": "입력",
+   "start": 0.03,
+   "end": 0.263
+  },
+  {
+   "text": "칸",
+   "start": 0.304,
+   "end": 0.373
+  },
+  {
+   "text": "플러스에서",
+   "start": 0.414,
+   "end": 0.868
+  },
+  {
+   "text": "공부하기를",
+   "start": 0.909,
+   "end": 1.376
+  },
+  {
+   "text": "고르고,",
+   "start": 1.417,
+   "end": 1.678
+  },
+  {
+   "text": "사진에",
+   "start": 2.049,
+   "end": 2.337
+  },
+  {
+   "text": "이",
+   "start": 2.434,
+   "end": 2.447
+  },
+  {
+   "text": "한",
+   "start": 2.53,
+   "end": 2.626
+  },
+  {
+   "text": "줄을",
+   "start": 2.667,
+   "end": 2.818
+  },
+  {
+   "text": "붙여요.",
+   "start": 2.859,
+   "end": 3.353
+  }
+ ],
+ "source": {
+  "key": "c724c87179a065dd1553edefe2f4b6ac",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1124,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 163
+ }
+}
