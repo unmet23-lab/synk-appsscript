@@ -112,10 +112,21 @@ function 찾은수(일수 = 14, 지금 = Date.now()) {
   try { 통합 = JSON.parse(fs.readFileSync(path.join(보관함(), '통합목록.json'), 'utf8')); } catch { /* 빈 목록 */ }
   const 합 = 그록.합치기(통합, 그록.보고서읽기(보관함()));
   const 기준 = new Date(지금 - 일수 * 864e5 + 9 * 3600e3).toISOString().slice(0, 10);
-  const 셈 = {};
+  // 같은 영화제가 이름 · 주소만 조금 달라 따로 남은 줄은 지도 카드처럼 합쳐 센다(제목 열쇠가 서로를 품거나 공식 주소가 같으면 한 공고).
+  const { 제목열쇠 } = require('../공모지도.js');
+  const 묶음 = [];
   for (const o of 합.items) {
     const by = o.grok_contest?.foundBy;
     if (!by?.length || !o.grok_first_seen || o.grok_first_seen < 기준) continue;
+    const k = 제목열쇠(o.title || ''), 주소 = o.grok_contest.officialUrl || '', 마감 = o.grok_contest.deadline?.date || '';
+    const 같음 = 묶음.find((g) => (주소 && g.주소.has(주소))
+      || g.줄.some((j) => k.length >= 5 && j.k.length >= 5 && (k.includes(j.k) || j.k.includes(k)) && (!마감 || !j.마감 || 마감 === j.마감)));
+    if (같음) { for (const f of by) 같음.by.add(f); 같음.줄.push({ k, 마감 }); if (주소) 같음.주소.add(주소); }
+    else 묶음.push({ by: new Set(by), 줄: [{ k, 마감 }], 주소: new Set(주소 ? [주소] : []) });
+  }
+  const 셈 = {};
+  for (const g of 묶음) {
+    const by = [...g.by];
     for (const f of by) {
       셈[f] ||= { 찾음: 0, 혼자: 0 };
       셈[f].찾음 += 1;
