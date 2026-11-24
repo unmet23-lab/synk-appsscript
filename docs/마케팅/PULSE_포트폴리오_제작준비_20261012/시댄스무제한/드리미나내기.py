@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from 크레딧내기 import boards, PIC, 굽기전, 받은뒤, 인자값, 무시쓰는법, 첫판계획, 첫판잠금, 첫판확인, 판소스
 
 IGNORED = {}   # 판 id → 까닭 — --걸림무시로 지시문 걸림을 넘겨 낸 판(장부의 「걸림무시」 칸)
+SKIP_FIRST = None   # --첫컷건너뜀 까닭 — 유호님이 그 회차의 첫 컷 판정을 건너뛰라고 하신 때만(장부의 「첫컷건너뜀」 칸, 11-24 「gpt 판정 이번엔 스킵해」)
 HOME = os.path.join(os.path.expanduser("~"), ".ai-tools", "dreamina-canvas")
 EXE = os.path.join(HOME, "dreamina-canvas.exe")
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
@@ -213,6 +214,8 @@ def run_one(pack, out, b):
            "상태": state, "상한": ceiling, "걸린초": round(time.time() - t0), "지시문": prompt, "오류": made.get("error"), "답": raw if not rid else None}
     if b["id"] in IGNORED:   # 지시문 걸림을 --걸림무시로 넘겨 낸 판 — 까닭을 그 판 줄에 남긴다(11-10)
         row["걸림무시"] = IGNORED[b["id"]]
+    if SKIP_FIRST:
+        row["첫컷건너뜀"] = SKIP_FIRST
     key = submit or f"{b['id']}-{int(t0)}"
     if state == "failed" and submit:   # 실패 코드(11-05 20114 등)를 기록에 남긴다
         try:
@@ -274,7 +277,7 @@ def main():
 def 실행(정리):
     a = sys.argv[1:]
     opt = lambda k, d: a[a.index(k) + 1] if k in a else d
-    global PROFILE, PROJECT, PER_SEC, RES, MODEL
+    global PROFILE, PROJECT, PER_SEC, RES, MODEL, SKIP_FIRST
     cap, conc, go, out = opt("--상한", None), int(opt("--동시", "3")), "--실행" in a, opt("--받을곳", None)
     PROFILE = opt("--계정", None)
     RES = opt("--해상도", "720p")
@@ -287,10 +290,14 @@ def 실행(정리):
         raise SystemExit(f"--걸림무시에는 까닭을 적는다: {무시쓰는법}")
     if table is not None and not (table and os.path.exists(table)):
         raise SystemExit(f"--컷표 파일이 없다: {table or '(경로 없음)'}")
-    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정", "--걸림무시", "--컷표", "--해상도", "--모델") if k in a}
+    skip = 인자값(a, "--첫컷건너뜀")
+    if skip is not None and not skip.strip():
+        raise SystemExit('--첫컷건너뜀에는 유호님 말씀과 날짜를 까닭으로 적는다: --첫컷건너뜀 "11-24 유호님 「…」"')
+    SKIP_FIRST = skip.strip() if skip else None
+    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정", "--걸림무시", "--컷표", "--해상도", "--모델", "--첫컷건너뜀") if k in a}
     pos = [x for i, x in enumerate(a) if not x.startswith("--") and i not in vals]
     if not pos:
-        raise SystemExit('쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<꾸러미>…] [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--컷표 컷순서.json] [--걸림무시 "판 id,…: 까닭"] [--실행]')
+        raise SystemExit('쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<꾸러미>…] [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--컷표 컷순서.json] [--걸림무시 "판 id,…: 까닭"] [--첫컷건너뜀 "날짜 · 유호님 말씀"] [--실행]')
     # 꾸러미를 여럿 줄 수 있다(11-05) — 폴더인 인자는 꾸러미, 나머지는 판 id. 한 프로세스로 내야 장부(_드리미나.json · _받음.json)를 두 프로세스가 덮어쓰지 않는다
     packs = [os.path.abspath(x) for x in pos if os.path.isdir(x)]
     want = [x for x in pos if not os.path.isdir(x)]
@@ -319,7 +326,9 @@ def 실행(정리):
             continue
         todo += [(p, b)] if want else [(p, b)] * max(0, b["판 수"] - have(out, b["id"]))
     첫시험 = []
-    if go:
+    if go and SKIP_FIRST:   # 첫 컷 판정을 건너뛴다 — 장부 판 줄마다 까닭이 남는다. 지시문 검사는 그대로 돈다
+        print(f"첫 컷 판정 건너뜀 · 까닭: {SKIP_FIRST}", flush=True)
+    elif go:
         낼판 = []
         for p in dict.fromkeys(p for p, _ in todo):
             판들, 첫판 = 첫판계획(p, out, [b for q, b in todo if q == p], table, bool(want))
