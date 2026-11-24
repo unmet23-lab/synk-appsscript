@@ -88,11 +88,11 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .hero-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.02);transition:opacity .55s ease,transform 1.1s var(--ease);
   -webkit-mask-image:radial-gradient(ellipse 62% 64% at 52% 46%,#000 50%,transparent 92%),linear-gradient(to bottom,#000 70%,transparent 96%);-webkit-mask-composite:source-in;mask-image:radial-gradient(ellipse 62% 64% at 52% 46%,#000 50%,transparent 92%),linear-gradient(to bottom,#000 70%,transparent 96%);mask-composite:intersect}
 .hero-art img.on{opacity:1;transform:none}
-/* 첫 화면의 솔리오: 블렌더로 구운 책상 장면(그림/무대/책상자리.json)의 구 위에 눈을 얹는다 */
+/* 첫 화면의 솔리오: Gemini로 4판 결에 맞춰 구운 탁자 장면(11-25)의 얼굴 없는 구 위에 눈을 얹는다. 자리는 그림/무대/책상자리.json(손으로 잰 원) */
 .hero-art{container-type:inline-size}
-.hero-eyes{position:absolute;left:43.248%;top:24.774%;width:19.65%;aspect-ratio:1}
+.hero-eyes{position:absolute;left:19.7%;top:22.175%;width:24.9%;aspect-ratio:1}
 .hero-eyes .orb{width:100%;height:100%}
-.hb{position:absolute;left:65.5%;top:24%;max-width:34.5%;padding:.75em 1em;background:rgba(12,12,11,.9);border:1px solid var(--hair-strong);border-radius:16px;font:500 clamp(11.5px,2.1cqw,16px)/1.45 var(--sans);color:var(--paper);animation:rise .6s var(--ease) .5s both}
+.hb{position:absolute;left:47.5%;top:23%;max-width:40%;padding:.75em 1em;background:rgba(12,12,11,.9);border:1px solid var(--hair-strong);border-radius:16px;font:500 clamp(11.5px,2.1cqw,16px)/1.45 var(--sans);color:var(--paper);animation:rise .6s var(--ease) .5s both}
 .hb::after{content:'';position:absolute;left:-.42em;top:1.6em;width:.7em;height:.7em;background:inherit;border:inherit;border-top:0;border-right:0;transform:rotate(45deg)}
 .hb p{margin:0}
 .hb b{font-weight:700}
@@ -562,7 +562,7 @@ const TEAMS = {
   gpt:{no:'02', name:'팀장 GPT', obj:'팀장 GPT를', tag:'GPT가 팀장, Claude와 Gemini가 함께 일합니다', crew:'GPT(팀장), Claude, Gemini', img:'../솔리오_첫계정고르기_20261121/그림/gpt.jpg'},
   custom:{no:'03', name:'커스텀', obj:'커스텀을', tag:'부서마다 내가 고르는 팀', crew:'내가 고른 AI', img:'../솔리오_첫계정고르기_20261121/그림/custom.jpg'},
 };
-const ART = {write:['그림/write.jpg','호두나무 책상 뒤의 검은 구 솔리오가 빈 종이와 책상 등 앞에서 귀 기울이는 장면']};
+const ART = {write:['그림/write.jpg','낮은 호두나무 탁자 위에 앉은 검은 구 솔리오 앞에 빈 종이 한 장과 작은 수첩이 놓인 장면']};
 
 /* 장마다 솔리오가 「왜 쓰는지」를 말한다(물음은 맨 위, 까닭은 말풍선). 해요체는 마스코트의 말에만 쓴다 */
 const WHY = [
@@ -578,17 +578,17 @@ const NEED_NUM = [0, 2, 4, 6];
 
 /* ── 마스코트 구. front는 눈이 보이고, back은 뒷모습(고개를 돌리면 눈 하나가 가장자리에 보인다) ── */
 let orbSeq = 0;
-/* 눈: 정본 「구 가」의 점 눈(desktop/renderer/orb-stage.mjs eyeSd)을 반지름 50의 판에 옮겼다.
-   평소는 세로로 선 알약(반폭 0.05R · 반높이 0.094R, 좌우 ±0.22R, 가운데보다 0.06R 위), 웃음 ∩, 잠 ∪, 문제 가로줄,
+/* 눈: 팀 고르기 4판 결의 작고 둥근 점 눈(11-25 유호님 「4판 결로 맞춰」). 반지름 50의 판에서
+   평소는 둥근 점(반지름 0.062R, 좌우 ±0.19R, 가운데보다 0.06R 위), 반쯤 감으면 납작한 점, 웃음 ∩, 잠 ∪, 문제 가로줄,
    감을 때는 위아래에서 닫힌다. 입 · 눈썹 · 볼 · 다른 색은 넣지 않는다. 구가 작게 그려지면 앱처럼 눈을 키우고 조금 벌린다 */
 function eyesSVG(shape, k = 1, sk = 1) {
-  const R = 50, X = 0.22 * R * sk, f = n => +n.toFixed(2);
-  const pill = (cx, hh) => { const w = 0.05 * R * k, h = hh * k; return `<rect x="${f(cx - w)}" y="${f(-h)}" width="${f(2 * w)}" height="${f(2 * h)}" rx="${f(Math.min(w, h))}"/>`; };
+  const R = 50, X = 0.19 * R * sk, f = n => +n.toFixed(2);
+  const pill = (cx, hh) => { const w = 0.062 * R * k, h = hh * k; return `<rect x="${f(cx - w)}" y="${f(-h)}" width="${f(2 * w)}" height="${f(2 * h)}" rx="${f(Math.min(w, h))}"/>`; };
   const arc = (cx, up) => { const r = 0.1 * R * k, dx = f(0.894 * r), y0 = f((up ? 0.015 : -0.015) * R * k), sw = f(0.028 * R * k);
     return `<path d="M${f(cx - dx)} ${y0} A${f(r)} ${f(r)} 0 0 ${up ? 1 : 0} ${f(cx + dx)} ${y0}" fill="none" stroke-width="${sw}"/>`; };
   const dash = cx => { const w = 0.056 * R * k, h = 0.013 * R * k; return `<rect x="${f(cx - w)}" y="${f(-h)}" width="${f(2 * w)}" height="${f(2 * h)}" rx="${f(h)}"/>`; };
   const one = cx => shape === 'smile' ? arc(cx, true) : shape === 'sleep' ? arc(cx, false) : shape === 'sorry' ? dash(cx)
-    : pill(cx, R * (shape === 'half' ? 0.057 : shape === 'shut' ? 0.012 : 0.094));
+    : pill(cx, R * (shape === 'half' ? 0.034 : shape === 'shut' ? 0.012 : 0.062));
   return one(-X) + one(X);
 }
 const EYE_SHAPES = ['calm', 'half', 'shut', 'smile', 'sleep', 'sorry'];

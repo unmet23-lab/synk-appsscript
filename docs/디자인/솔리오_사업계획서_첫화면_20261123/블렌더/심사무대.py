@@ -74,19 +74,11 @@ def wood(name, along='X', base='#4a2f1d', dark='#2a180e', light='#5c3b24', fine=
 
 
 def orb_mat():
-    """정본 「구 가」(결정 11-16): 비스듬한 축을 둘러 가는 결을 깎은 검정 금속 구. 결이 빛을 한 줄로 모아 빛줄기가 생긴다.
-    결은 구의 Z축(꼭지)을 도는 위도선이고, 이방성 반사를 90도 돌려 빛줄기가 꼭지에서 바깥으로 뻗게 한다."""
-    m = bpy.data.materials.new('구'); m.use_nodes = True; nt = m.node_tree; b = bsdf(m)
-    for k, v in (('Base Color', lin('#a0a0a0')), ('Metallic', 1.0), ('Roughness', 0.2), ('Anisotropic', 0.95), ('Anisotropic Rotation', 0.25)):
+    """4판 결의 구(11-25, 유호님 「4판 결로 맞춰」): 새틴 검정. 위 왼쪽에 부드러운 빛 한 점과 가장자리의 옅은 빛만 있고 결 · 빛줄기 · 무늬는 없다.
+    11-24에 쓰던 「구 가」 금속 재질(이방성 반사로 빛줄기를 낸 것)은 「완전 대놓고 3d라 오히려 좀 촌스러운」이라 걷었다."""
+    m = bpy.data.materials.new('구'); m.use_nodes = True; b = bsdf(m)
+    for k, v in (('Base Color', lin('#0d0d0d')), ('Roughness', 0.46), ('Coat Weight', 0.22), ('Coat Roughness', 0.32), ('Specular IOR Level', 0.45)):
         if k in b.inputs: b.inputs[k].default_value = v
-    tg = nt.nodes.new('ShaderNodeTangent'); tg.direction_type = 'RADIAL'; tg.axis = 'Z'
-    nt.links.new(tg.outputs['Tangent'], b.inputs['Tangent'])
-    tc = nt.nodes.new('ShaderNodeTexCoord')
-    wv = nt.nodes.new('ShaderNodeTexWave'); wv.wave_type = 'BANDS'; wv.bands_direction = 'Z'
-    wv.inputs['Scale'].default_value = 260 * 0.5 / 0.42; wv.inputs['Distortion'].default_value = 0.0; wv.inputs['Detail'].default_value = 0.0
-    bp = nt.nodes.new('ShaderNodeBump'); bp.inputs['Strength'].default_value = 0.0; bp.inputs['Distance'].default_value = 0.002   # 이 크기에서 결은 화소보다 가늘어 점으로 반짝이기만 한다
-    nt.links.new(tc.outputs['Object'], wv.inputs['Vector']); nt.links.new(wv.outputs['Fac'], bp.inputs['Height'])
-    nt.links.new(bp.outputs['Normal'], b.inputs['Normal'])
     return m
 
 
@@ -307,7 +299,7 @@ for o in [presenter] + judges:
 # 정본 구는 빛줄기만 비친다: 물체는 반사에 나오지 않고 빛만 나온다(탁자 · 바닥이 비치면 크롬 공처럼 보인다)
 for o in bpy.data.objects:
     if o.type == 'MESH': o.visible_glossy = False
-light('구빛', 'AREA', (-2.6, -2.2, 3.6), 70, size=0.35, color='#fff3e6', target=(0, 0.8, 0.8))
+light('구빛', 'AREA', (-2.6, -2.2, 3.6), 95, size=2.2, color='#fff3e6', target=(0, 0.8, 0.8))   # 넓은 빛: 새틴 구에 부드러운 빛 한 점
 light('구테', 'AREA', (2.6, 4.2, 2.6), 30, size=1.2, color='#ffe2c2', target=(0, 0.8, 0.8), shadow=False)
 light('구바탕', 'AREA', (0.2, -2.6, 4.2), 22, size=6.0, color='#f4efe8', target=(0, 1.0, 0.8), shadow=False)   # 넓고 약한 빛이 구의 윤곽을 옅게 드러낸다(정본의 옅은 결)
 for n in ('구빛', '구테', '구바탕'):
