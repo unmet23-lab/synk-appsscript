@@ -1435,7 +1435,7 @@ span.ws-r-thumb{display:block}
 .ws-sent{margin-top:24px;padding:14px 16px;border-radius:8px;background:var(--ws-rail);max-width:560px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .ws-sent p{margin:0;font:400 15px/1.5 var(--ws-sans);color:var(--ws-ink)}
 .ws-fb{margin-top:24px;display:flex;flex-direction:column;gap:10px;max-width:560px}
-.ws-fb label{font:600 13px/1.4 var(--ws-sans);color:var(--ws-ink)}
+.ws-fb label,.ws-fb>p{margin:0;font:600 13px/1.4 var(--ws-sans);color:var(--ws-ink)}
 .ws-ta{width:100%;padding:10px 12px;border:1px solid var(--ws-control-line);border-radius:8px;background:var(--ws-canvas);color:var(--ws-ink);font:400 15px/1.55 var(--ws-sans);resize:vertical}
 .ws-ta:focus{border-color:var(--ws-ink);outline:2px solid var(--ws-ink);outline-offset:1px}
 .ws-fb .ws-acts{margin-top:4px}

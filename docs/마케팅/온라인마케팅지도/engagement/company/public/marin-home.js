@@ -742,10 +742,8 @@ async function wsChatPatch(item,stage){
     else message=response.status===409?'그사이 다른 사람이 이 일을 바꿨어요. 새로 불러왔으니 다시 확인해 주세요.':response.status===401?'메신저 로그인이 끝났어요. 새로고침한 뒤 다시 해 주세요.':String(body.error||'바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
   }catch{if(!current())return;message='메신저에 닿지 못했어요. 잠시 뒤 다시 해 주세요.';}
   finally{
-    if(current()){
-      workspaceTurn.busy.delete(key);workspaceInbox.chatConfirm='';
-      const slot=workspaceTurn.messenger;slot.at=0;slot.request++;slot.loading=false;await wsLoadMessenger();
-    }
+    workspaceTurn.busy.delete(key);workspaceInbox.chatConfirm='';
+    if(current()){const slot=workspaceTurn.messenger;slot.at=0;slot.request++;slot.loading=false;await wsLoadMessenger();}
   }
   if(!current())return;
   if(!done){
@@ -755,8 +753,8 @@ async function wsChatPatch(item,stage){
     return;
   }
   if(stage==='changes'){notify(`${WS_CHAT_DONE.changes}. 대화에서 고칠 점을 남겨 주세요.`);openWorkspaceDestination({type:'messenger',label:'대화',channelId:task.channelId,messageId:task.messageId});return;}
-  const stays=Boolean(wsFindItem(key));
-  notify(`${WS_CHAT_DONE[stage]}. ${stays?'이 일은 순서에 그대로 있어요.':'다음 일로 넘어갈게요.'}`);
+  const model=workspaceTurnModel(),stays=Boolean(wsFindItem(key)),left=wsInboxItems(model).items.length;
+  notify(`${WS_CHAT_DONE[stage]}. ${model.groups.messenger==='failed'?'할 일 목록을 다시 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.':stays?'이 일은 순서에 그대로 있어요.':left?'다음 일로 넘어갈게요.':'남은 일이 없어요.'}`);
   const active=document.activeElement;if(workspaceInbox.open&&(!active||!active.isConnected||active===document.body))document.getElementById('ws-detail-title')?.focus?.({preventScroll:true});
 }
 function wsTurnRetry(group){

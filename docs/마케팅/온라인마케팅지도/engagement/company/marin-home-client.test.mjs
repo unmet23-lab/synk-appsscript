@@ -1027,8 +1027,18 @@ test('11-25 메신저 할 일 단계 바꾸기는 회사 CSRF로 메신저 PATCH
   assert.equal(patch.headers['X-CSRF-Token'],'csrf-test-1');
   assert.deepEqual(JSON.parse(patch.body),{revision:3,stage:'accepted'});
   assert.equal(calls.slice(calls.indexOf(patch)+1).filter(call=>call.url==='/messenger/api/workday').length,1,'끝나면 할 일을 한 번 새로 읽는다');
-  assert.match(String(f.notifications.at(-1)),/수락했어요\. 다음 일로 넘어갈게요/);
+  assert.match(String(f.notifications.at(-1)),/수락했어요\. 남은 일이 없어요/,'마지막 일이면 다음 일로 간다고 하지 않는다(Fable F2)');
   assert.equal(f.run('workspaceTurn.busy.size'),0);
+  // 남은 일이 있으면 다음 일, 다시 읽기가 실패하면 그 사실을 알린다.
+  const two=await chatFixture({reply:[chatTask('t1','requested',['accepted']),chatTask('t3','requested',['accepted'])]});
+  two.box.reply={today:{groups:{reply:[chatTask('t3','requested',['accepted'])]}},remaining:{groups:{}}};
+  await two.f.run("wsChatPatch(wsFindItem('chat:t1'),'accepted')");assert.match(String(two.f.notifications.at(-1)),/수락했어요\. 다음 일로 넘어갈게요/);
+  const lost=await chatFixture({reply:[chatTask('t1','requested',['accepted'])]});
+  const plainFetch=lost.f.context.fetch;lost.f.context.fetch=async(url,options={})=>options.method==='PATCH'?plainFetch(url,options):{ok:false,status:502,json:async()=>({})};
+  await lost.f.run("wsChatPatch(wsFindItem('chat:t1'),'accepted')");assert.match(String(lost.f.notifications.at(-1)),/수락했어요\. 할 일 목록을 다시 불러오지 못했어요/);
+  // 같은 계정의 로그인 세대가 바뀌어도 단추가 꺼진 채 남지 않는다(Fable F1).
+  const gen=await chatFixture({reply:[chatTask('t1','requested',['accepted'])]});gen.f.context.companyAuthCurrent=()=>false;
+  await gen.f.run("wsChatPatch(wsFindItem('chat:t1'),'accepted')");assert.equal(gen.f.run('workspaceTurn.busy.size'),0);assert.equal(gen.f.notifications.length,0,'다른 세대의 결과는 알리지 않는다');
 });
 
 test('11-25 메신저 할 일 단계 바꾸기가 409 · 401이면 알리고 새로 읽되 회사 로그인은 그대로이고, 수정 요청은 바꾼 뒤 그 대화를 연다',async()=>{
