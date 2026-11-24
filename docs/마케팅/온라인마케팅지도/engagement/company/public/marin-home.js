@@ -282,7 +282,7 @@ function wsTurnIdentity(){
 function wsTurnReset(id=null){
   workspaceTurn.userId=id;workspaceTurn.busy=new Set();workspaceTurn.note='';
   for(const key of ['messenger','clients'])Object.assign(workspaceTurn[key],{status:'idle',data:null,at:0,request:workspaceTurn[key].request+1,loading:false});
-  if(typeof workspaceInbox!=='undefined')Object.assign(workspaceInbox,{sel:'',detail:false,noteFor:'',skipped:[]});
+  if(typeof workspaceInbox!=='undefined')Object.assign(workspaceInbox,{sel:'',detail:false,noteFor:'',chatConfirm:'',skipped:[]});
 }
 function wsCan(group){
   if(!state.user||wsDemo())return false;
@@ -577,7 +577,7 @@ const WS_STAGE={requested:'수락 전',accepted:'수락함',doing:'진행 중',r
 function wsQueueBar(item,model){
   const {items}=wsInboxItems(model),at=items.findIndex(entry=>entry.key===item.key);
   if(at<0)return '';
-  const elsewhere=item.kind==='chat'||item.kind==='schedule';
+  const elsewhere=item.kind==='schedule'||item.kind==='chat'&&!wsChatActions(item.task,item.reasons).acts.length;
   const skip=items.length>1?`<button type="button" class="ws-btn ws-btn-text ws-qskip" data-action="ws-queue-skip" data-key="${escape(item.key)}">${elsewhere?'다음 일':'건너뛰기'}${workspaceShellGlyph('chev')}</button>`:'';
   return `<div class="ws-qbar"><span class="ws-qpos"><b class="ws-num">${at+1}</b> / <span class="ws-num">${items.length}</span>${at===0?' · 1순위':''}</span>${item.why?`<span class="ws-qwhy">${escape(item.why)}</span>`:''}${skip}</div>`;
 }
@@ -615,8 +615,11 @@ function wsDetailBodyHtml(item,model){
   }
   if(item.kind==='chat'){
     const task=item.task,body=String(task.message?.body||'').slice(0,400);
-    const open=task.channelId?`<button type="button" class="ws-btn ws-btn-primary" data-action="ws-chat-open" data-key="${escape(item.key)}">${workspaceShellGlyph('chat')}대화 열기</button>`:'';
-    return `<div class="ws-dpad"><div class="ws-src">${workspaceShellGlyph('chat')}메신저 · 할 일</div><h2 class="ws-d-title" id="ws-detail-title" tabindex="-1">${escape(item.title)}</h2>${body?`<p class="ws-d-lead">${escape(body)}</p>`:''}${wsMeta([['맡긴 사람',escape(task.createdBy?.name||'')],['기한',task.dueDate?`<span class="ws-mono">${escape(task.dueDate)}</span>`:''],['단계',escape(WS_STAGE[task.stage]||'')]])}<div class="ws-acts">${open}</div><p class="ws-hint">받기 · 끝내기는 대화방의 할 일에서 해요.</p></div>`;
+    const {acts,hint}=wsChatActions(task,item.reasons),confirm=workspaceInbox.chatConfirm===item.key;
+    const buttons=acts.map(act=>`<button type="button" class="ws-btn ${act.primary?'ws-btn-decide':'ws-btn-line'}" data-action="${act.stage==='changes'?'ws-chat-changes':'ws-chat-stage'}" data-key="${escape(item.key)}" data-stage="${act.stage}" ${busy?'disabled':''}>${escape(act.label)}</button>`).join('');
+    const open=task.channelId?`<button type="button" class="ws-btn ${acts.length?'ws-btn-text':'ws-btn-primary'}" data-action="ws-chat-open" data-key="${escape(item.key)}">${workspaceShellGlyph('chat')}대화 열기</button>`:'';
+    const ask=confirm?`<div class="ws-fb" role="group" aria-labelledby="ws-chat-changes-q"><p id="ws-chat-changes-q">수정 요청으로 바꾸고 대화에서 고칠 점을 남겨요.</p><div class="ws-acts"><button type="button" class="ws-btn ws-btn-primary" data-action="ws-chat-changes-confirm" data-key="${escape(item.key)}" ${busy?'disabled':''}>수정 요청하고 대화 열기</button><button type="button" class="ws-btn ws-btn-text" data-action="ws-chat-changes-cancel" data-key="${escape(item.key)}">그만두기</button></div></div>`:'';
+    return `<div class="ws-dpad"><div class="ws-src">${workspaceShellGlyph('chat')}메신저 · 할 일</div><h2 class="ws-d-title" id="ws-detail-title" tabindex="-1">${escape(item.title)}</h2>${body?`<p class="ws-d-lead">${escape(body)}</p>`:''}${wsMeta([['맡긴 사람',escape(task.createdBy?.name||'')],['기한',task.dueDate?`<span class="ws-mono">${escape(task.dueDate)}</span>`:''],['단계',escape(WS_STAGE[task.stage]||'')]])}${ask||`<div class="ws-acts">${buttons}${open}</div>`}${hint?`<p class="ws-hint">${escape(hint)}</p>`:''}</div>`;
   }
   if(item.kind==='schedule'){
     const row=item.row,valid=typeof waParseWorkHref==='function'&&waParseWorkHref(row.href);
@@ -700,10 +703,56 @@ function wsQueueOpen(key=''){
 function wsQueueSkip(key){
   if(!key)return;
   const skipped=(workspaceInbox.skipped||[]).filter(entry=>entry!==key);skipped.push(key);workspaceInbox.skipped=skipped;
-  workspaceInbox.sel='';workspaceInbox.noteFor='';workspaceInbox.detail=true;
+  workspaceInbox.sel='';workspaceInbox.noteFor='';workspaceInbox.chatConfirm='';workspaceInbox.detail=true;
   wsInboxPaint(undefined,{focus:'detail'});
 }
-function wsQueueNext(){workspaceInbox.sel='';workspaceInbox.noteFor='';workspaceInbox.detail=true;wsInboxPaint(undefined,{focus:'detail'});}
+function wsQueueNext(){workspaceInbox.sel='';workspaceInbox.noteFor='';workspaceInbox.chatConfirm='';workspaceInbox.detail=true;wsInboxPaint(undefined,{focus:'detail'});}
+// 메신저 할 일을 처리 화면 안에서(11-25 유호님 「응, 이어서 지어」). 메신저 할 일 창과 같은 규칙(messenger-task-model.js taskDetailActions)에서
+// 단계만 바꾸는 동작(수락하기 · 시작하기 · 완료 · 수정 요청)을 그 자리에 둔다. 서버가 이 계정에 준 allowedStages만 쓰므로 담당 · 검토자 판정을 화면이 따로 하지 않는다.
+// 검토 맡기기 · 다시 열기 · 검토자 다시 정하기는 결과물이나 사람을 골라야 해서 대화로 간다.
+function wsChatActions(task,reasons=[]){
+  if(!task||task.canManage===false)return {acts:[],hint:'이 계정으로는 상태를 바꿀 수 없어요. 대화에서 요청과 결과물을 볼 수 있어요.'};
+  if(reasons.includes('recovery')||task.canReassignReviewer)return {acts:[],hint:'새 검토자는 대화의 할 일에서 정해요.'};
+  const allowed=new Set(task.allowedStages||[]),stage=task.stage||'requested',reviewer=Boolean(task.reviewerId||task.reviewer?.id);
+  if(stage==='requested'&&allowed.has('accepted'))return {acts:[{stage:'accepted',label:'수락하기',primary:true}],hint:''};
+  if(stage==='accepted'&&allowed.has('doing'))return {acts:[{stage:'doing',label:'시작하기',primary:true},...(allowed.has('done')?[{stage:'done',label:'완료'}]:[])],hint:''};
+  if(['doing','changes'].includes(stage)){
+    if(!reviewer&&allowed.has('done'))return {acts:[{stage:'done',label:'완료',primary:true}],hint:''};
+    return {acts:[],hint:allowed.has('review')?'검토 맡기기는 올린 결과물을 골라야 해서 대화에서 해요.':''};
+  }
+  if(stage==='review'&&allowed.has('done'))return {acts:[{stage:'done',label:'완료',primary:true},...(allowed.has('changes')?[{stage:'changes',label:'수정 요청'}]:[])],hint:''};
+  return {acts:[],hint:''};
+}
+const WS_CHAT_DONE={accepted:'수락했어요',doing:'시작했어요',done:'완료했어요',changes:'수정 요청으로 바꿨어요'};
+// 메신저 쓰기는 회사 로그인과 같은 CSRF 값 · 같은 출처를 본다(회사 server.mjs authenticate → identity.csrfToken).
+// api()를 거치지 않아 메신저 401이 회사 로그아웃으로 번지지 않는다. 끝나면 진행 중이던 읽기를 버리고 할 일을 새로 읽는다.
+async function wsChatPatch(item,stage){
+  const task=item.task,key=item.key;
+  if(!WS_CHAT_DONE[stage]||workspaceTurn.busy.has(key)||!task?.messageId||!wsChatActions(task,item.reasons).acts.some(act=>act.stage===stage))return;
+  const stamp=typeof companyAuthSnapshot==='function'?companyAuthSnapshot():{userId:state.user?.id};
+  const current=()=>typeof companyAuthCurrent==='function'?companyAuthCurrent(stamp):state.user?.id===stamp.userId;
+  workspaceTurn.busy.add(key);wsInboxPaint();
+  let done=false,message='';
+  try{
+    const response=await fetch(`/messenger/api/messages/${encodeURIComponent(task.messageId)}/task`,{method:'PATCH',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json',...(state.csrf?{'X-CSRF-Token':state.csrf}:{})},body:JSON.stringify({revision:task.revision,stage})});
+    const body=await response.json().catch(()=>({}));
+    if(!current())return;
+    if(response.ok)done=true;
+    else message=response.status===409?'그사이 다른 사람이 이 일을 바꿨어요. 새로 불러왔으니 다시 확인해 주세요.':response.status===401?'메신저 로그인이 끝났어요. 새로고침한 뒤 다시 해 주세요.':String(body.error||'바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+  }catch{if(!current())return;message='메신저에 닿지 못했어요. 잠시 뒤 다시 해 주세요.';}
+  finally{
+    if(current()){
+      workspaceTurn.busy.delete(key);if(done)workspaceInbox.chatConfirm='';
+      const slot=workspaceTurn.messenger;slot.at=0;slot.request++;slot.loading=false;await wsLoadMessenger();
+    }
+  }
+  if(!current())return;
+  if(!done){notify(message);return;}
+  if(stage==='changes'){notify(`${WS_CHAT_DONE.changes}. 대화에서 고칠 점을 남겨 주세요.`);openWorkspaceDestination({type:'messenger',label:'대화',channelId:task.channelId,messageId:task.messageId});return;}
+  const stays=Boolean(wsFindItem(key));
+  notify(`${WS_CHAT_DONE[stage]}. ${stays?'이 일은 순서에 그대로 있어요.':'다음 일로 넘어갈게요.'}`);
+  const active=document.activeElement;if(workspaceInbox.open&&(!active||!active.isConnected||active===document.body))document.getElementById('ws-detail-title')?.focus?.({preventScroll:true});
+}
 function wsTurnRetry(group){
   if(group==='messenger'){workspaceTurn.messenger.at=0;void wsLoadMessenger();}
   else if(group==='clients'){workspaceTurn.clients.at=0;void wsLoadClients();}
@@ -719,7 +768,7 @@ document.addEventListener('click',event=>{
   if(target.tagName==='A')event.preventDefault();
   if(action==='ws-inbox'){if(target.closest('#ws-tools-drawer')&&typeof setWorkspaceToolsOpen==='function')setWorkspaceToolsOpen(false,{restoreFocus:false});openWorkspaceInbox(target.dataset.room||'');return;}
   if(action==='ws-office'){closeWorkspaceInbox();return;}
-  if(action==='ws-inbox-select'){workspaceInbox.sel=target.dataset.key||'';workspaceInbox.detail=true;workspaceInbox.noteFor='';wsInboxPaint(undefined,{focus:'detail'});return;}
+  if(action==='ws-inbox-select'){workspaceInbox.sel=target.dataset.key||'';workspaceInbox.detail=true;workspaceInbox.noteFor='';workspaceInbox.chatConfirm='';wsInboxPaint(undefined,{focus:'detail'});return;}
   if(action==='ws-inbox-back'){workspaceInbox.detail=false;wsInboxPaint(undefined,{focus:'row'});return;}
   if(action==='ws-queue-start'||action==='ws-queue-open'){wsQueueOpen(action==='ws-queue-open'?target.dataset.key||'':'');return;}
   if(action==='ws-queue-skip'){wsQueueSkip(target.dataset.key||'');return;}
@@ -729,6 +778,10 @@ document.addEventListener('click',event=>{
   if(action==='ws-client-note'){workspaceInbox.noteFor=target.dataset.key||'';const detail=document.getElementById('ws-inbox-detail-body');if(detail)detail.innerHTML=wsDetailHtml(wsFindItem(workspaceInbox.noteFor),workspaceTurnModel());document.getElementById('ws-client-note')?.focus();return;}
   if(action==='ws-client-note-cancel'){const key=workspaceInbox.noteFor;workspaceInbox.noteFor='';const detail=document.getElementById('ws-inbox-detail-body');if(detail)detail.innerHTML=wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel());(document.querySelector(`#ws-inbox-detail-body [data-action="ws-client-note"][data-key="${wsCss(key)}"]`)||document.getElementById('ws-detail-title'))?.focus?.({preventScroll:true});return;}
   if(action==='ws-client-act'){void wsClientAct(target);return;}
+  if(action==='ws-chat-stage'){const item=wsFindItem(target.dataset.key);if(item?.kind==='chat')void wsChatPatch(item,target.dataset.stage);return;}
+  if(action==='ws-chat-changes'){workspaceInbox.chatConfirm=target.dataset.key||'';wsInboxPaint();document.querySelector('#ws-inbox-detail-body [data-action="ws-chat-changes-confirm"]')?.focus?.({preventScroll:true});return;}
+  if(action==='ws-chat-changes-cancel'){const key=workspaceInbox.chatConfirm;workspaceInbox.chatConfirm='';wsInboxPaint();document.querySelector(`#ws-inbox-detail-body [data-action="ws-chat-changes"][data-key="${wsCss(key)}"]`)?.focus?.({preventScroll:true});return;}
+  if(action==='ws-chat-changes-confirm'){const item=wsFindItem(target.dataset.key);if(item?.kind==='chat')void wsChatPatch(item,'changes');return;}
   if(action==='ws-client-open'){const item=wsFindItem(target.dataset.key);if(!item?.data?.href)return;if(typeof openClientWorkflowLink==='function')void Promise.resolve(openClientWorkflowLink(item.data.href)).catch(error=>notify(error.message));else location.assign(item.data.href);}
 });
 document.addEventListener('visibilitychange',()=>{if(typeof state!=='undefined'&&!document.hidden&&state.user)workspaceTurnEnsure();});

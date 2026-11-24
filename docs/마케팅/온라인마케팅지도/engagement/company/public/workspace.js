@@ -8,7 +8,7 @@ const workspacePrimaryTabs=[['home','오늘','sun'],['messenger','메신저','ch
 const workspaceNavDisplayLabel=(id,label)=>({home:'사무실',workroom:'만들기',members:'사람',teaching:'LAB 한국어 수업',path:'PATH 유학 · 정착 상담',lectures:'SHIFT AI 강의',admin:'관리자'})[id]||label;
 // 「내 차례」 받은편지함(2026-11-24 시안 F): ?tab=home&section=inbox&room=… — 방은 이 여섯만 받는다.
 const WORKSPACE_ROOM_IDS=['lab','shift','pulse','path','desk','lounge'];
-const workspaceInbox={open:false,room:'',sel:'',detail:false,fromOffice:false,noteFor:'',skipped:[]};
+const workspaceInbox={open:false,room:'',sel:'',detail:false,fromOffice:false,noteFor:'',chatConfirm:'',skipped:[]};
 // 왼쪽 메뉴 · 아래 탭의 1.5px 선 그림(시안 F와 같은 획).
 const WORKSPACE_SHELL_GLYPHS={
   office:'<path d="M4 20V9l8-5 8 5v11M9 20v-6h6v6"/>',
@@ -304,7 +304,7 @@ function openWorkspaceInbox(room='',{start=false,sel=''}={}){
   if(typeof waClearWorkTarget==='function')waClearWorkTarget();
   selectWorkspaceView('home','inbox');
   if(entering)workspaceInbox.fromOffice=fromOffice;
-  workspaceInbox.room=target;workspaceInbox.sel=typeof sel==='string'?sel:'';workspaceInbox.detail=Boolean(start);workspaceInbox.noteFor='';
+  workspaceInbox.room=target;workspaceInbox.sel=typeof sel==='string'?sel:'';workspaceInbox.detail=Boolean(start);workspaceInbox.noteFor='';workspaceInbox.chatConfirm='';
   const href=`/?tab=home&section=inbox${target?`&room=${target}`:''}`;
   if(entering&&typeof history!=='undefined'&&typeof history.pushState==='function'&&typeof location!=='undefined'&&location.pathname+location.search!==href)history.pushState(null,'',href);
   state.error='';render();if(typeof window!=='undefined')window.scrollTo?.(0,0);

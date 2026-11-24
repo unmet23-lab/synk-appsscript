@@ -973,3 +973,71 @@ test('11-25 고객 글에서 나온 일만 「고객이 기다려요」로 앞�
   assert.match(why({kind:'customer_review',group:'review'},today),/검토할 차례/);
   f.run("workspaceInbox.room='lab'");assert.doesNotMatch(f.run('wsInboxHeadHtml(workspaceTurnModel())'),/수업 일/);
 });
+
+const chatTask=(id,stage,allowed,extra={})=>({id,messageId:'m-'+id,channelId:'ch1',title:'할 일 '+id,stage,revision:3,allowedStages:allowed,canManage:true,createdBy:{name:'김하린'},...extra});
+async function chatFixture(groups){
+  const {f}=turnFixture();
+  f.run("tipShares.data.rows=[];wa.mine.items=[]");
+  f.state.csrf='csrf-test-1';
+  const calls=[],box={reply:{today:{groups},remaining:{groups:{}}},patch:200};
+  f.context.fetch=async(url,options={})=>{
+    calls.push({url,method:options.method||'GET',headers:options.headers||{},body:options.body});
+    if(options.method==='PATCH')return {ok:box.patch<400,status:box.patch,json:async()=>box.patch<400?{task:{}}:{error:'서버 글'}};
+    return {ok:true,status:200,json:async()=>box.reply};
+  };
+  await f.run('wsLoadMessenger()');
+  return {f,calls,box};
+}
+
+test('11-25 메신저 할 일은 서버가 준 단계만 처리 화면 안의 단추로 둔다 — 수락하기 · 시작하기 · 완료 · 수정 요청, 고를 것이 있는 동작은 대화로',async()=>{
+  const {f}=await chatFixture({reply:[chatTask('t1','requested',['accepted'])],review:[chatTask('t2','review',['changes','done'],{reviewerId:'me'})]});
+  const acts=(task,reasons=[])=>plain(f.run(`wsChatActions(${JSON.stringify(task)},${JSON.stringify(reasons)})`));
+  assert.deepEqual(acts(chatTask('a','requested',['accepted'])).acts.map(act=>act.label),['수락하기']);
+  assert.deepEqual(acts(chatTask('a','accepted',['doing','done'])).acts.map(act=>act.label),['시작하기','완료']);
+  assert.deepEqual(acts(chatTask('a','doing',['done'])).acts.map(act=>act.label),['완료']);
+  assert.deepEqual(acts(chatTask('a','review',['changes','done'],{reviewerId:'me'})).acts.map(act=>act.label),['완료','수정 요청']);
+  const submit=acts(chatTask('a','doing',['review'],{reviewerId:'r'}));assert.equal(submit.acts.length,0);assert.match(submit.hint,/검토 맡기기는 .*대화에서/);
+  assert.equal(acts(chatTask('a','review',[],{canReassignReviewer:true}),['recovery']).acts.length,0,'검토자 다시 정하기는 대화에서');
+  assert.equal(acts(chatTask('a','requested',['accepted'],{canManage:false})).acts.length,0,'보기 전용은 단추가 없다');
+  assert.equal(acts(chatTask('a','requested',[])).acts.length,0,'서버가 허락하지 않은 단계는 보이지 않는다');
+  // 상세: 그 자리 단추가 있으면 건너뛰기, 없으면 다음 일.
+  f.run("workspaceInbox.room='';workspaceInbox.sel='chat:t1'");
+  const detail=f.run('wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel())');
+  assert.match(detail,/data-action="ws-chat-stage" data-key="chat:t1" data-stage="accepted"[^>]*>수락하기/);
+  assert.match(detail,/data-action="ws-queue-skip" data-key="chat:t1">건너뛰기/);
+  assert.doesNotMatch(detail,/받기 · 끝내기는 대화방/);
+  f.run("workspaceInbox.sel='chat:t2';workspaceInbox.chatConfirm='chat:t2'");
+  const ask=f.run('wsDetailHtml(wsInboxCurrent(workspaceTurnModel()),workspaceTurnModel())');
+  assert.match(ask,/수정 요청하고 대화 열기/);assert.match(ask,/data-action="ws-chat-changes-cancel"/);
+});
+
+test('11-25 메신저 할 일 단계 바꾸기는 회사 CSRF로 메신저 PATCH 한 번을 보내고, 새로 읽어 끝난 일이면 다음 일로 넘어간다',async()=>{
+  const {f,calls,box}=await chatFixture({reply:[chatTask('t1','requested',['accepted'])]});
+  const before=calls.length;
+  await f.run("wsChatPatch(wsFindItem('chat:t1'),'done')");assert.equal(calls.length,before,'허락되지 않은 단계는 보내지 않는다');
+  box.reply={today:{groups:{}},remaining:{groups:{}}};
+  await f.run("wsChatPatch(wsFindItem('chat:t1'),'accepted')");
+  const patch=calls.find(call=>call.method==='PATCH');
+  assert.equal(patch.url,'/messenger/api/messages/m-t1/task');
+  assert.equal(patch.headers['X-CSRF-Token'],'csrf-test-1');
+  assert.deepEqual(JSON.parse(patch.body),{revision:3,stage:'accepted'});
+  assert.equal(calls.slice(calls.indexOf(patch)+1).filter(call=>call.url==='/messenger/api/workday').length,1,'끝나면 할 일을 한 번 새로 읽는다');
+  assert.match(String(f.notifications.at(-1)),/수락했어요\. 다음 일로 넘어갈게요/);
+  assert.equal(f.run('workspaceTurn.busy.size'),0);
+});
+
+test('11-25 메신저 할 일 단계 바꾸기가 409 · 401이면 알리고 새로 읽되 회사 로그인은 그대로이고, 수정 요청은 바꾼 뒤 그 대화를 연다',async()=>{
+  for(const [status,text] of [[409,/그사이 다른 사람이 이 일을 바꿨어요/],[401,/메신저 로그인이 끝났어요/],[500,/서버 글/]]){
+    const {f,calls,box}=await chatFixture({reply:[chatTask('t1','requested',['accepted'])]});box.patch=status;
+    await f.run("wsChatPatch(wsFindItem('chat:t1'),'accepted')");
+    assert.match(String(f.notifications.at(-1)),text,String(status));
+    assert.ok(f.state.user,'회사 로그인은 그대로');assert.ok(calls.some(call=>call.method==='GET'&&call.url==='/messenger/api/workday'&&calls.indexOf(call)>calls.findIndex(c=>c.method==='PATCH')),'새로 읽는다');
+    assert.ok(f.run("Boolean(wsFindItem('chat:t1'))"),'일은 순서에 남는다');
+  }
+  const {f,calls}=await chatFixture({review:[chatTask('t2','review',['changes','done'],{reviewerId:'me'})]});
+  const opened=[];f.context.openWorkspaceDestination=destination=>{opened.push(destination);};
+  await f.run("wsChatPatch(wsFindItem('chat:t2'),'changes')");
+  assert.deepEqual(JSON.parse(calls.find(call=>call.method==='PATCH').body),{revision:3,stage:'changes'});
+  assert.deepEqual(plain(opened),[{type:'messenger',label:'대화',channelId:'ch1',messageId:'m-t2'}]);
+  assert.match(String(f.notifications.at(-1)),/수정 요청으로 바꿨어요\. 대화에서 고칠 점을 남겨 주세요/);
+});
