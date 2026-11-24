@@ -1916,6 +1916,35 @@ def 컨셉팩폴더():
     return Path(os.environ.get("SYNK_CONCEPT_PACK_DIR") or (Path(__file__).resolve().parent.parent / "docs" / "마케팅" / "제작양식" / "영상양식" / "컨셉팩"))
 
 
+# 컨셉 팩의 앵글 견줄 값(T29) — 11-24 유호님 「컨셉별로 카메라 엥글 사용법이 다 재각각일텐데 … 각 카메라감독이 잘 배치되어있는지」 → 「재서 넣어 줘」.
+#   팩의 「앵글」은 그 컨셉 본보기 둘의 컷마다 가운데 장을 위 앵글 낱말로 매겨 낸 비율이다(견줄 값 — 감독 줄이 아니다).
+#   본보기를 20컷 넘게 잰 팩이고 이 편의 앵글을 세 칸 다 적은 컷이 6개 넘으면, 묶음마다 본보기 비율이 30% 넘는데 이 편이 그 절반에 못 미칠 때 주의(멈추지 않는다).
+앵글묶음 = {"가까이": ("크기", ("극접", "클로즈", "가슴 위"), "가까운 컷(극접 · 클로즈 · 가슴 위)"),
+          "눈높이밖": ("높이", ("로우", "하이", "위에서"), "눈높이 밖 컷(로우 · 하이 · 위에서)"),
+          "정면밖": ("방향", ("비스듬히", "옆", "뒤", "어깨 너머", "시점", "물건 너머"), "정면 밖 컷(비스듬히 · 옆 · 뒤 · 어깨 너머 · 시점 · 물건 너머)")}
+
+
+def 팩앵글검사(seq, 값들):
+    """값들: 컷마다 _앵글값()의 (크기, 높이, 방향) | None. 팩을 못 읽으면 조용히 넘긴다(읽기 실패는 T24와 영상기준이 알린다)."""
+    컨셉 = str(seq.get("컨셉") or "").strip()
+    if not re.fullmatch(r"[^\W_]{1,20}", 컨셉): return []
+    try: 팩 = json.loads((컨셉팩폴더() / f"{컨셉}.json").read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError): return []
+    판 = 팩.get("앵글") if isinstance(팩, dict) else None
+    수 = lambda n: isinstance(n, (int, float)) and not isinstance(n, bool) and 0 <= n <= 100
+    if not isinstance(판, dict) or not (isinstance(판.get("잰컷"), int) and not isinstance(판.get("잰컷"), bool) and 판["잰컷"] >= 20): return []
+    값 = [v for v in 값들 if v is not None]
+    if len(값) < 6: return []
+    out = []
+    for 키, (칸, 낱말들, 이름) in 앵글묶음.items():
+        c = 판.get(키)
+        if not 수(c) or c < 30: continue
+        n = sum(1 for v in 값 if v[("크기", "높이", "방향").index(칸)] in 낱말들); p = round(100 * n / len(값))
+        if p * 2 < c:
+            out.append(("주의", "표", f"컨셉 「{컨셉}」 본보기는 {이름}이 {c:g}%인데 이 편은 {p}%({n}/{len(값)}컷)다 — 컷표의 앵글을 다시 본다(팩 앵글)"))
+    return out
+
+
 def 팩모양검사(seq, 띠값):
     """띠값은 기 · 승 · 전 · 결 넷이 다 있을 때만 온다(감정흐름검사). 팩 파일이 없으면 조용히 넘기고, 있는데 못 읽거나
     「검사」의 꼴이 틀리면 건너뛴 것을 주의 한 줄로 남긴다(통과와 구별되게 — 11-24 Fable 설계 검토 P2-2)."""
@@ -2213,6 +2242,7 @@ def 앵글검사(seq, 폴더=None):
         if len(사람) >= 3 and len(뻔) >= 2 and len(뻔) * 3 > len(사람):
             out.append(("주의", "표", f"사람 컷 {len(사람)}개 가운데 {len(뻔)}개({' · '.join(map(str, 뻔[:6]))}{' …' if len(뻔) > 6 else ''})가 허리 위 · 눈높이 · 정면이다 — 3분의 1을 넘는다. "
                         "감정이 움직이는 컷은 그 부위가 화면을 채우게 가까이 잡고, 올려다봄 · 내려다봄 · 옆얼굴 · 어깨 너머 · 물건 너머를 섞는다(33 · 제작 규칙 「감정은 가까운 컷과 여러 장치로」)"))
+    out += 팩앵글검사(seq, [값 for 값, _빠짐, _밖 in 읽음])
     return out
 
 

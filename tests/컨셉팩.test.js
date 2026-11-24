@@ -16,6 +16,11 @@ const 감독칸 = { 미술감독: '미술', 작가: '작가', 캐스팅디렉터
 const 아홉 = ['코믹', 'B급', '멜로', '감동', '비주얼', '스펙터클', '스릴러', '뮤직', '홍보'];
 const 띠 = ['기', '승', '전', '결'];
 const 갈래 = ['희', '노', '애', '락', '긴장'];   // 컷연속성검사.py 감정갈래와 같다
+const 앵글낱말 = {   // 컷연속성검사.py 앵글낱말과 같다
+  크기: ['극접', '클로즈', '가슴 위', '허리 위', '무릎 위', '전신', '넓게'],
+  높이: ['로우', '눈높이', '하이', '위에서'],
+  방향: ['정면', '비스듬히', '옆', '뒤', '어깨 너머', '시점', '물건 너머'],
+};
 const 팩들 = fs.readdirSync(팩폴더).filter(f => f.endsWith('.json'));
 
 test('팩 폴더에 팩이 있고, 이름은 컨셉 아홉 가운데 하나다', () => {
@@ -59,6 +64,19 @@ for (const f of 팩들) {
       for (const [k, v] of Object.entries(검.갈래 || {})) assert.ok(띠.includes(k) && Array.isArray(v) && v.length && v.every(g => 갈래.includes(g)), `갈래.${k}는 ${갈래.join(' · ')}의 목록이다`);
       if ('꺾임' in 검) assert.ok(Array.isArray(검.꺾임) && 검.꺾임.length === 2 && 검.꺾임.every(k => 띠.includes(k)) && 검.꺾임[0] !== 검.꺾임[1], '꺾임은 서로 다른 띠 둘이다');
       for (const [k, n] of Object.entries(검.세기최소 || {})) assert.ok(띠.includes(k) && Number.isInteger(n) && n >= 1 && n <= 5, `세기최소.${k}는 1~5의 수다`);
+    }
+    // 앵글 견줄 값(11-24 「재서 넣어 줘」) — 컷표 앵글 낱말(컷연속성검사.py 앵글낱말)로 매긴 본보기 비율. 컷 연속성 검사 T29가 읽는다
+    if (팩.앵글 != null) {
+      const 앵 = 팩.앵글;
+      assert.ok(Number.isInteger(앵.잰컷) && 앵.잰컷 >= 1, '앵글.잰컷은 잰 컷 수다');
+      for (const k of ['가까이', '눈높이밖', '정면밖', '뻔한앵글']) assert.ok(Number.isInteger(앵[k]) && 앵[k] >= 0 && 앵[k] <= 100, `앵글.${k}는 0~100의 정수다`);
+      for (const [칸, 낱말] of Object.entries(앵글낱말)) {
+        const 표 = 앵[칸] || {};
+        for (const [w, n] of Object.entries(표)) assert.ok(낱말.includes(w) && Number.isInteger(n) && n > 0 && n <= 100, `앵글.${칸}.${w}: 앵글 낱말과 1~100의 정수만 쓴다`);
+        const 합 = Object.values(표).reduce((a, b) => a + b, 0);
+        assert.ok(합 === 0 || (합 >= 97 && 합 <= 103), `앵글.${칸}의 비율 합이 ${합}이다 — 100 언저리여야 한다`);
+      }
+      assert.ok(String(앵.근거 || '').trim(), '앵글.근거가 없다 — 어느 본보기의 몇 컷을 언제 매겼는지 적는다');
     }
   });
 }
