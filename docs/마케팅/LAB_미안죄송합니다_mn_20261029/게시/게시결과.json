@@ -624,7 +624,7 @@
     },
     {
       "계정": "lab-uz-instagram",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-24T08:00:00.000Z",
       "방법": "작업실",
       "작업": "c5bafccce2a4e5591560ba8683c2c00488ae05b8b953c053c9c22c203defe7e6",
@@ -636,7 +636,11 @@
       "원고ID": "31ccb209-7eca-4fb6-b9df-f593db77431a",
       "서버": "지금 원고·계정·파일·일정 그대로 고객 검토 승인을 받아야 발행할 수 있어요.",
       "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 11-16 저녁 「작업실에 잇자」 · 자체검수 통과(11-22 14시 회차 — 8장 띠 · 음량 −14.5 LUFS · 올리기 전 검사 고칠 것 0) · Claude가 ego로 작업실 검토 링크 「승인하기」(11-22 17:1x)",
-      "확인": "검토 화면 「승인됐어요. 남은 확인이 없으면 예약한 때에 그대로 올라가요」 · 인스타그램 게시 11월 24일 (화) 오후 5:00(타슈켄트 13:00) · SYNK LAB Uzbekistan synklab.uz · 릴스 0:15 1080×1920 · 게시글 첫 줄 「Koreys tilida uzr soʻrash kimga gapirayotganingizga bogʻliq…」 · 원고 31ccb209… · 서버 상태는 내보내기 직전까지 「승인 대기」 · ego 공간 245 · 11-22 KST. 11-21 판(원고 fcf9b345)은 서버가 PERMISSION_OR_VERSION_CHANGED로 실패해 같은 날 「취소」로 거둔 뒤 다시 등록했다. 같은 계정 11-22 17:00 판(화날때)은 정상 게시됐다"
+      "확인": "검토 화면 「승인됐어요. 남은 확인이 없으면 예약한 때에 그대로 올라가요」 · 인스타그램 게시 11월 24일 (화) 오후 5:00(타슈켄트 13:00) · SYNK LAB Uzbekistan synklab.uz · 릴스 0:15 1080×1920 · 게시글 첫 줄 「Koreys tilida uzr soʻrash kimga gapirayotganingizga bogʻliq…」 · 원고 31ccb209… · 서버 상태는 내보내기 직전까지 「승인 대기」 · ego 공간 245 · 11-22 KST. 11-21 판(원고 fcf9b345)은 서버가 PERMISSION_OR_VERSION_CHANGED로 실패해 같은 날 「취소」로 거둔 뒤 다시 등록했다. 같은 계정 11-22 17:00 판(화날때)은 정상 게시됐다",
+      "주소": "https://www.instagram.com/reel/DgHeiqnjeSn/",
+      "게시관측시각": "2026-11-24T08:01:33.000Z",
+      "플랫폼": "instagram",
+      "게시물ID": "DgHeiqnjeSn"
     }
   ]
 }
