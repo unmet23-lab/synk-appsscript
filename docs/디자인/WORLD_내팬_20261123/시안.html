@@ -480,10 +480,10 @@ p{margin:0}
     <div class="ctl">
       <span class="lab">겉</span>
       <div class="seg" id="skinSeg">
-        <button type="button" data-skin="p9b" aria-pressed="true">종이 9판</button>
+        <button type="button" data-skin="night" aria-pressed="true">밤 7판 (고르심)</button>
+        <button type="button" data-skin="p9b" aria-pressed="false">종이 9판</button>
         <button type="button" data-skin="p9a" aria-pressed="false">9판 줄 목록</button>
         <button type="button" data-skin="paper" aria-pressed="false">종이 8판</button>
-        <button type="button" data-skin="night" aria-pressed="false">밤 7판</button>
       </div>
     </div>
     <div class="ctl">
@@ -839,7 +839,7 @@ p{margin:0}
     ['end', 'fans', 'encore'].forEach(id => { $('#' + id).classList.toggle('pp', k !== 'night'); $('#' + id).classList.toggle('p9', k === 'p9a' || k === 'p9b'); });
     $('#phone').classList.toggle('l9b', k === 'p9b');
   }
-  setSkin('p9b');
+  setSkin('night');
   renderFans();
   show('end');
   // 말하기 구 — Orbloom(MIT, orbloom@0.1.0). 화면이 뜬 뒤에 불러 첫 표지를 막지 않는다
