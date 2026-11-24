@@ -166,6 +166,9 @@ def 굽기전(판목록, 무시까닭=None, 컷표=None):
                 if hasattr(검사, "둘레대조"):   # T31(26 · 11-21) — 둘레에 무리가 있는 컷의 지시문에 AROUND 줄이 있고 무리를 굳히지 않나
                     표경로 = 판의표[pack][0]
                     hits += [(등급, f"(둘레) {말}") for 등급, 말 in 검사.둘레대조(seq, 정보["컷들"], 글, os.path.dirname(표경로) if 표경로 else None)]
+                if hasattr(검사, "기법대조"):   # T29 기법(11-25) — 컷표 「앵글.기법」의 영상 기법 낱말이 지시문에 있나(명령줄 --지시문과 같은 함수)
+                    표경로 = 판의표[pack][0]
+                    hits += [(등급, f"(기법) {말}") for 등급, 말 in 검사.기법대조(seq, 정보["컷들"], 글, os.path.dirname(표경로) if 표경로 else None)]
         for 등급, 말 in hits:
             줄.append((등급, 판id, 말))
         if seq and 검사.틀둘(seq) and not 정보["소리만"] and not 정보["프리비즈"]:

@@ -842,12 +842,12 @@ test('옛 틀 — 이웃한 두 컷이 같은 받은 영상을 잘라 붙이면 
 const 빛문장 = 틀읽기().장면.부엌밤.빛;
 const 좋은연기 = 'at about 0.4 s she sets the pot on the stove and lets go of the handle; at about 1.6 s her shoulders drop once as she breathes out; at about 2.6 s her eyes go from the pot to the empty table.';
 // 지시문 틀(docs/…/영상양식/지시문_틀.md) 순서대로 쓴 판 — 박자 있는 연기 · 표의 빛 문장 · 실내 한 줄
-const 지시문글 = ({ 첫줄 = '@이미지 1 is the exact first frame of this video.', 연기 = 좋은연기, 빛 = 빛문장, 실내줄 = true } = {}) => [
+const 지시문글 = ({ 첫줄 = '@이미지 1 is the exact first frame of this video.', 연기 = 좋은연기, 빛 = 빛문장, 실내줄 = true, 카메라 = 'a slow push-in of 4% from 0 s to 3.5 s.' } = {}) => [
   첫줄,
   'ONE SINGLE CONTINUOUS SHOT.',
   'WHO: the same woman as in the start image, in the same hoodie.',
   `ACTION: ${연기}`,
-  'CAMERA: a slow push-in of 4% from 0 s to 3.5 s.',
+  `CAMERA: ${카메라}`,   // 컷표 「앵글.기법」의 낱말(밀어 들어감 — push in) — 다른 기법의 컷은 그 낱말로 바꿔 넘긴다
   `LOOK: ${빛} ${색감줄(틀읽기()).영상뼈대} The light and colour stay exactly like this to the last frame. No new people, no new text.`,
   ...(실내줄 ? ['Indoors: the air is clear and still, nothing falls or drifts anywhere.'] : []),
   'SOUND: No sound.',
@@ -948,7 +948,7 @@ test('틀 2 + --지시문 — 판(id = 컷 이름 · <편>-<컷> · 컷의 「�
   const 좋은 = 꾸러미만들기(dir, [
     { id: 'C1', 글: 지시문글() },
     { id: 'rm-C2', 글: 지시문글({ 빛: 빛문장.replace('; the window', ';\n   the window') }) },   // 줄바꿈 · 공백 여러 칸은 한 칸으로 견준다
-    { id: 'A7', 글: 지시문글() },
+    { id: 'A7', 글: 지시문글({ 카메라: 'the camera follows the hands toward the right of the frame by 6% from 0 s to 3.9 s.' }) },   // C3 — 기법 「따라가기」
   ], '좋은');
   const r = 틀돌리기((s) => { 컷(s, 'C3').판 = 'A7'; }, ['--지시문', 좋은], dir);
   assert.equal(r.코드, 0, JSON.stringify(r.항목들.filter((x) => x.등급 !== '통과')));

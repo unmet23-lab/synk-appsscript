@@ -53,6 +53,7 @@
 #   detail[] 항목: "장면" · "인물": [이름…](사람 없는 컷은 []) · "구도" · "카메라" · "연기": [{"t": 초, "무엇"}](사람 컷은 둘 이상) · "움직임"(사람 없는 컷) · "넘어옴" · "소리" · "타당성"(두 사람 이상인 컷 — T27)
 #                  "앵글": {"크기": 극접|클로즈|가슴 위|허리 위|무릎 위|전신|넓게, "높이": 로우|눈높이|하이|위에서, "방향": 정면|비스듬히|옆|뒤|어깨 너머|시점|물건 너머, "까닭"} —
 #                  "렌즈": mm(맨 위 "렌즈": [mm…] 편의 렌즈 묶음 가운데 하나 — 편 날짜 2026-11-25부터 비면 걸림 · 이미지 지시문 FRAME 줄이 그 mm를 쓴다 · 렌즈 계획) ·
+#                  "기법": 카메라 기법 사전(영상양식/카메라기법.json)의 이름 하나 · 목록(사전 밖은 편 날짜 2026-11-25부터 걸림 · 지시문에 사전의 낱말 · 큰 움직임은 잇달아 두지 않는다) ·
 #                  이웃 컷과 세 칸이 모두 같으면 걸림(T29 · 편 날짜 2026-11-20부터, 앞선 편은 주의). 사람 컷의 3분의 1 넘게가 허리 위 · 눈높이 · 정면이면 주의(33). 낱말 뒤에 풀이를 붙여도 된다(「시점 — 아이의 눈」)
 #                  "감정자리": "누가 — 무엇을 느끼나" — 감정이 보여야 하는 컷(사건 표의 「감정」 컷은 적지 않아도 감정 자리다). 얼굴이 아니라 손 · 숨으로 보이는 자리는 "감정부위": "손"(얼굴 · 눈 · 입은 얼굴 폭을 재고 손 · 숨 · 몸 · 어깨 · 발 · 등은 재지 않는다 — 풀이는 낱말 뒤에 「손 — 입가를 가린다」).
 #                  감정 자리의 시작 그림은 얼굴 폭 ÷ 그림 폭이 가로 그림 25% · 세로 그림 35%에 닿아야 한다(T28 · 항목 「얼굴」 — 컷의 시작그림 파일을 잰다(관문 판 도구와 같은 풀이 — 첫 장 · ~ · 편 폴더 기준). 칸이 비었을 때만 --그림 폴더의 <컷>.png를 잰다. --영상 · --받음과 함께는 --항목에 얼굴을 밝혔을 때만 잰다)
@@ -2158,6 +2159,16 @@ def 타당성검사(seq, 폴더=None):
 렌즈범위 = (8, 400)
 렌즈계획 = "docs/마케팅/제작양식/영상양식/렌즈_계획.md"
 _초점mm = re.compile(r"(?<![\d.])(\d{1,3}(?:\.\d)?)\s?mm\b(?!\s*(?:film|format|grain|stock|negative|camera|compact|rangefinder|slr|kodak|portra|fuji|cinestill|vision|superia|필름|카메라|소형))", re.I)
+# T29 카메라 기법(11-25 유호님 「카메라 감독 앵글 보니까 너무 부족한데? 불릿샷이나 이런거 카메라 앵글 효과가 이것보다 훨씬 많을텐데 너무 없는데?」).
+#   컷마다 「앵글.기법」에 카메라 기법 사전(영상양식/카메라기법.json)의 이름을 적는다(여럿이면 목록). 사전에 없는 이름은 편 날짜 2026-11-25부터 걸림, 앞선 편은 주의.
+#   큰 움직임 기법이 이웃 컷에 잇달아 오면 주의(멀미 — 11-20 유호님). 한 컷에 카메라 경로(「길」)가 둘이면 주의(모든 도구의 안내와 시험 글이 한 판에 움직임 하나 —
+#   카메라기법_조사_20261125.md). 「한번」 기법(불릿 타임 · 돌리 줌 …)을 한 편에 두 번 넘게 쓰면 주의. 「시험먼저」 기법과 컨셉의 「피함」 기법은 주의로 알린다.
+#   컨셉 편(편 날짜 2026-11-25부터 · 컷 여섯부터)은 「고정」 말고 다른 기법이 그 컨셉의 「최소」보다 적으면 주의.
+#   지시문 대조(기법대조): 「만드는곳」이 영상인 기법은 영상 지시문(--지시문 · 내기 도구 굽기전)에, 그림인 기법은 이미지 지시문(--그림지시문)에 사전의 「낱말」 가운데
+#   하나가 있어야 한다(편 날짜 2026-11-25부터 걸림, 그 밖은 주의). 편집에서 만드는 기법은 지시문에서 보지 않는다.
+기법부터 = "20261125"
+기법사전경로 = 빛이름표경로.parent / "카메라기법.json"
+_기법사전캐시 = None
 
 
 def _글있음(v):
@@ -2326,6 +2337,7 @@ def 앵글검사(seq, 폴더=None):
                         "감정이 움직이는 컷은 그 부위가 화면을 채우게 가까이 잡고, 올려다봄 · 내려다봄 · 옆얼굴 · 어깨 너머 · 물건 너머를 섞는다(33 · 제작 규칙 「감정은 가까운 컷과 여러 장치로」)"))
     out += 팩앵글검사(seq, [값 for 값, _빠짐, _밖 in 읽음])
     out += 렌즈검사(seq, 폴더, det, 읽음)
+    out += 기법검사(seq, 폴더, det)
     return out
 
 
@@ -2374,6 +2386,171 @@ def 렌즈검사(seq, 폴더, det, 읽음):
         if len(갈래) > 1:
             out.append(("주의", "표", f"장면 「{장면}」의 {크기} 사람 컷이 렌즈 {len(갈래)}개로 갈린다({' / '.join(_mm(mm) + ' ' + ' · '.join(cs[:4]) for mm, cs in 갈래.items())}) — "
                         f"맞받는 얼굴과 같은 사람의 같은 크기는 렌즈를 맞춘다. 렌즈가 다르면 얼굴 비율이 달라져 다른 사람처럼 보인다({렌즈계획})"))
+    return out
+
+
+def 기법사전():
+    """카메라 기법 사전 → ({이름: 줄}, {컨셉: 줄}, None). 못 읽으면 (None, None, 까닭)."""
+    global _기법사전캐시
+    if _기법사전캐시 is None:
+        try:
+            raw = json.loads(기법사전경로.read_text(encoding="utf-8"))
+            표 = {x["이름"]: x for x in raw.get("기법", []) if isinstance(x, dict) and isinstance(x.get("이름"), str)}
+            _기법사전캐시 = (표, raw.get("컨셉") if isinstance(raw.get("컨셉"), dict) else {}, None)
+        except (OSError, ValueError, TypeError, AttributeError) as e:
+            _기법사전캐시 = (None, None, f"{기법사전경로.name}: {e}")
+    return _기법사전캐시
+
+
+def _기법들(d):
+    """컷의 「앵글.기법」 → 이름 목록(글 하나 · 글 목록). 다른 꼴은 빈 목록이다(꼴 관문이 걸림으로 낸다)."""
+    a = d.get("앵글") if isinstance(d.get("앵글"), dict) else {}
+    v = a.get("기법")
+    if isinstance(v, str): v = [v]
+    return [x.strip() for x in v if isinstance(x, str) and x.strip()] if isinstance(v, list) else []
+
+
+def _가까운기법(n, 표):
+    import difflib
+    비슷 = difflib.get_close_matches(n, list(표), n=2, cutoff=0.5)
+    return f"(「{'」 · 「'.join(비슷)}」?)" if 비슷 else ""
+
+
+def 기법검사(seq, 폴더, det):
+    """T29 카메라 기법 → [(등급, 어디, 글)]. det는 앵글검사의 컷 줄. 까닭은 기법부터 위 머리말."""
+    표, 컨셉표, 탈 = 기법사전()
+    날짜 = 편날짜(seq, 폴더); 새편 = bool(날짜 and 날짜 >= 기법부터); 센 = "걸림" if 새편 else "주의"
+    if 표 is None:   # 사전을 못 읽으면 새 편은 막는다 — 이름도 낱말도 대조하지 못한 채 지나가지 않게(GA2)
+        return [(센, "표", f"카메라 기법 사전을 못 읽어 「앵글.기법」을 보지 못했다 — {탈}")] if any(_기법들(d) for d in det) else []
+    컨셉 = seq["컨셉"].strip() if isinstance(seq.get("컨셉"), str) else ""
+    줄 = 컨셉표.get(컨셉) if isinstance(컨셉표.get(컨셉), dict) else {}
+    피함 = set(줄.get("피함") or [])
+    out = []; 큰 = []; 쓴 = []
+    for d in det:
+        cut = d.get("cut", "?"); 이름들 = _기법들(d)
+        없음 = [n for n in 이름들 if n not in 표]
+        if 없음:
+            out.append((센, cut, f"「앵글.기법」의 {' · '.join('「' + n + '」' for n in 없음)}은 카메라 기법 사전에 없다 — 사전의 이름으로 적는다{_가까운기법(없음[0], 표)}(영상양식/카메라기법.json)"))
+        아는 = [표[n] for n in dict.fromkeys(이름들) if n in 표]
+        쓴 += [x["이름"] for x in 아는]
+        큰.append([x["이름"] for x in 아는 if x.get("큰움직임")])
+        for x in 아는:
+            if x.get("시험먼저"):
+                out.append(("주의", cut, f"「{x['이름']}」은 시험부터 — 그 판을 480p로 먼저 굽고 얼굴 · 몸 · 배경이 무너지지 않는지 본 뒤 키운다"
+                            + (f". {x['조심']}" if isinstance(x.get("조심"), str) and x["조심"].strip() else "")))
+            if x["이름"] in 피함:
+                out.append(("주의", cut, f"「{x['이름']}」은 {컨셉} 컨셉이 피하는 기법이다 — {줄.get('피함까닭') or '영상양식/카메라기법.json의 컨셉 줄'}"))
+        길 = [x["이름"] for x in 아는 if x.get("길")]
+        if len(길) > 1:
+            out.append(("주의", cut, f"한 컷에 카메라 경로가 둘이다({' · '.join(길)}) — 한 판에는 움직임을 하나만 쓴다(둘을 함께 걸면 모델이 하나를 버리거나 경로를 벗어난다). "
+                        "둘 다 필요하면 컷을 나누거나 시간 구간(0–3s · 3–5s)으로 차례를 준다"))
+    여러번 = [n for n in dict.fromkeys(쓴) if 표[n].get("한번") and 쓴.count(n) > 1]
+    if 여러번:
+        out.append(("주의", "표", f"{' · '.join('「' + n + '」 ' + str(쓴.count(n)) + '번' for n in 여러번)} — 한 편에 한 번만 쓰는 기법이다. 볼거리가 정점에 이르는 한 박에 남기고 나머지는 바꾼다"))
+    for i in range(1, len(det)):
+        if 큰[i] and 큰[i - 1] and det[i].get("이어찍기") is not True:
+            out.append(("주의", det[i].get("cut", "?"), f"큰 움직임이 앞 컷 {det[i - 1].get('cut')}에 이어 또 온다({' · '.join(큰[i - 1])} → {' · '.join(큰[i])}) — "
+                        "사이에 고정이나 느린 컷을 끼운다(멀미 — 11-20 유호님)"))
+    if 새편 and 줄 and len(det) >= 6:
+        다른 = sorted({n for n in 쓴 if n != "고정"})
+        최소 = 줄["최소"] if isinstance(줄.get("최소"), int) and not isinstance(줄.get("최소"), bool) else 2
+        if len(다른) < 최소:
+            out.append(("주의", "표", f"카메라 기법이 {len(다른)}가지뿐이다({' · '.join(다른) or '없음'}) — {컨셉} 컨셉은 컷 {len(det)}개에 고정 말고 {최소}가지부터 쓴다. "
+                        f"자주 쓰는 것: {' · '.join(줄.get('자주') or [])}(영상양식/카메라기법.json)"))
+    return out
+
+
+def _기법글(s):
+    """낱말 대조용 — 소문자로 바꾸고 글자 · 숫자가 아닌 것은 띄어 쓴 한 칸으로(「whip-pan」 = 「whip pan」).
+    문장 끝(. ; ! ? 줄바꿈 · 칸 경계 「|」)은 「||」, 쉼표 · 쌍점 · 줄표는 「|」로 남긴다. 둘 다 낱말이 건너 붙지 않게 막고(「… a time. Stops …」 → time stops · r2 GA3),
+    부정은 「||」 사이 한 문장에서 본다(_낱말있음). 숫자 사이의 점(1.5 s)은 문장 끝이 아니다(Fable 설계 검토 11-25).
+    줄임 부정(don't · can't)과 cannot은 「not」으로 푼다 — 낱자 t를 부정어로 두면 「t=1.5 s」의 t까지 부정으로 읽었다(r4 GA1)."""
+    t = re.sub(r"(?<=\d)\.(?=\d)", " ", str(s).lower()).replace("|", "\n")
+    t = re.sub(r"\bcannot\b", "can not", re.sub(r"n['’]t\b", " not", t))
+    t = re.sub(r"[,:—–]+", " | ", re.sub(r"[.;!?\n]+", " || ", t))
+    return " " + re.sub(r"[^0-9a-z가-힣|]+", " ", t).strip() + " "
+
+
+_기법부정 = {"no", "not", "never", "without", "avoid", "avoids", "avoiding", "nor", "instead", "rather"}
+_찾는칸 = {"카메라": ("CAMERA",), "그림": ("FRAME", ""), "연기": ("ACTION",), "머리": ("",), "샷": ("", "CAMERA")}   # 「전체」는 모든 칸 · ""는 첫 라벨 앞의 머리 글(샷 머리 · 매체 첫 문장)
+_찾는자리말 = {"카메라": "CAMERA 줄", "그림": "FRAME 줄(이나 첫 문장)", "연기": "ACTION 줄", "머리": "샷 머리(첫 라벨 앞)", "샷": "샷 머리나 CAMERA 줄", "전체": "지시문"}
+
+
+def _낱말있음(본글, w):
+    """정리한 글(_기법글)에 낱말 w가 부정어 없는 문장에 나오나 — 낱말이 든 문장(「||」 사이)에 no · not · never · without · instead …가 하나라도 있으면
+    낱말 앞이든 뒤든 그 자리는 세지 않는다(「No whip pan」 · 「No pans, including whip pans」 · 「Do not zoom but use a whip pan」 — GA5 · r3 · Fable 설계 검토 11-25).
+    「No zoom. Whip pan right.」의 휩 팬은 센다(r2 GA2). 부정어 없이 금하는 문장(「Whip pans are forbidden」)은 보지 않는다 — 검수자 몫(지시문 흠 표 지17)."""
+    키 = _기법글(w); i = 본글.find(키)
+    while i != -1:
+        앞, 뒤 = 본글[:i].split(), 본글[i + len(키):].split()
+        a = max((j for j, x in enumerate(앞) if x == "||"), default=-1)
+        b = next((j for j, x in enumerate(뒤) if x == "||"), len(뒤))
+        if not set(앞[a + 1:] + 뒤[:b]) & _기법부정: return True
+        i = 본글.find(키, i + 1)
+    return False
+
+
+def _기법샷들(글):
+    """지시문 → (머리 칸들, [샷마다의 칸들]). 「SHOT n」 라벨이 없으면 샷 하나(빈 목록)다."""
+    머리, 샷 = [], []
+    for l, t in 칸들(글):
+        if l.startswith("SHOT "): 샷.append([(l, t)])
+        elif 샷: 샷[-1].append((l, t))
+        else: 머리.append((l, t))
+    return 머리, (샷 or [[]])
+
+
+def 기법대조(seq, 컷들, 글, 폴더=None, 곳="영상"):
+    """지시문에 컷표 「앵글.기법」의 낱말이 들었나(11-25 · 기법부터 위 머리말) → [(등급, 글)].
+    곳: 「영상」이면 영상 지시문(만드는곳이 영상인 기법), 「그림」이면 이미지 지시문(만드는곳이 그림인 기법). 사전의 낱말 가운데 하나만 있으면 된다.
+    찾는 자리는 기법의 「찾는곳」(없으면 영상은 CAMERA 칸, 그림은 FRAME 칸과 첫 문장)이다 — 지시문 어디든 보면 사람 동작(moves closer)이 카메라 기법으로 읽힌다(GA3).
+    낱말은 부정어 없는 문장에 있어야 센다(_낱말있음). 사전을 못 읽으면 새 편은 걸림(GA2).
+    컷이 여럿인 판은 SHOT 1 · SHOT 2로 나눠 컷마다 제 SHOT만 본다(SHOT 1 = 첫 컷 · GA4). SHOT을 썼으면 컷 수만큼 1부터 차례여야 하고(r4 GA2),
+    컷마다 영상 기법이 다른데 나누지 않았으면 새 편은 걸림이다(r3 GA5) — 한 번에 이어 찍는 판(컷표 뒤 컷이 모두 이어찍기: true)만 나눌 수 없어 주의다.
+    지시문 글의 continuous는 이어 찍는 표시로 믿지 않는다(「continuous room tone」 · r4 GA6).
+    이 대조는 낱말의 꼴과 자리만 보는 형식 관문이다 — 부정어 없이 금하는 문장, 이어 찍는 판 안의 기법 차례, 낱말은 맞지만 다른 움직임을 그린 문장,
+    약어의 점(e.g. · incl.)에서 끊긴 부정과 따옴표 없는 줄임(Dont)은 지시문 검수자가 흠 표 지17로 본다(GPT 검수 세 회차 뒤 Fable 설계 검토 11-25 · r4 덧붙임).
+    약어 목록이나 부정어 목록을 늘려 닫지 않는다 — 늘릴 때마다 반대쪽이 샜다."""
+    표, _컨셉표, 탈 = 기법사전()
+    날짜 = 편날짜(seq, 폴더); 센 = "걸림" if (날짜 and 날짜 >= 기법부터) else "주의"
+    줄들 = {d.get("cut"): d for d in (seq.get("detail") or []) if isinstance(d, dict)}
+    if not any(_기법들(줄들[c]) for c in 컷들 if c in 줄들): return []
+    if 표 is None: return [(센, f"카메라 기법 사전을 못 읽어 컷표 「앵글.기법」을 지시문과 대조하지 못했다 — {탈}")]
+    머리, 샷 = _기법샷들(글)
+    샷수 = sum(1 for s in 샷 if s)
+    이름 = " · ".join(map(str, 컷들))
+    이어 = len(컷들) > 1 and all((줄들.get(c) or {}).get("이어찍기") is True for c in 컷들[1:])   # 한 번에 이어 찍는 판 — 컷표 칸만 믿는다(r4 GA6)
+    if len(컷들) > 1 and 샷수 and not (이어 and 샷수 == 1):   # SHOT을 썼으면 컷 수만큼 1부터 차례로 — 빠지거나 뒤집히면 나온 차례로 잘못 짝짓는다(Fable 설계 검토 · r4 GA2). 이어 찍는 판의 SHOT 하나는 나누지 않은 판이다(r5 GA1)
+        번호 = [int(m.group(1)) for s in 샷 for m in [re.match(r"SHOT (\d+)", s[0][0])] if m]
+        if 번호 != list(range(1, len(컷들) + 1)):
+            return [(센, f"컷 {이름}의 판에서 SHOT 번호가 1부터 차례가 아니다({' · '.join(f'SHOT {k}' for k in 번호)}) — 컷 차례대로 SHOT 1부터 컷 수만큼 쓴다")]
+    나눔 = len(컷들) > 1 and 샷수 == len(컷들)
+    out = []
+    if len(컷들) > 1 and not 나눔:   # SHOT 없이 컷 둘 이상을 한 판에 — 컷마다 영상 기법이 다르면 어느 샷의 것인지 가를 수 없다(r2 GA6 · r3 GA5)
+        갈래 = {tuple(sorted(n for n in _기법들(줄들[c]) if (표.get(n) or {}).get("만드는곳") == 곳)) for c in 컷들 if c in 줄들}
+        if len(갈래) > 1:
+            if 이어:
+                out.append(("주의", f"컷 {이름}의 판은 한 번에 이어 찍는 샷이라 컷마다 기법을 가를 수 없다 — 기법 차례는 지시문 검수자가 본다(지시문 흠 표 지17)"))
+            else:
+                return [(센, f"컷 {이름}의 판이 SHOT으로 나뉘지 않아 컷마다 기법을 가를 수 없다 — 샷 머리 아래를 SHOT 1 (0–2 s) · SHOT 2 (2–4 s)로 나눠 SHOT마다 ACTION · CAMERA를 쓴다. "
+                            "한 번에 이어 찍어 컷 둘로 쓰는 판이면 컷표 뒤 컷에 이어찍기: true를 적는다")]
+    for i, c in enumerate(컷들):
+        d = 줄들.get(c)
+        if d is None: continue
+        칸목록 = 머리 + (샷[i] if 나눔 else [x for s in 샷 for x in s])
+        for n in _기법들(d):
+            x = 표.get(n)
+            if not x or x.get("만드는곳") != 곳: continue
+            낱말 = [w for w in x.get("낱말") or [] if isinstance(w, str) and w.strip()]
+            찾는곳 = x.get("찾는곳") if x.get("찾는곳") in _찾는자리말 else ("카메라" if 곳 == "영상" else "그림")
+            본글 = _기법글("\n".join(t for l, t in 칸목록 if 찾는곳 == "전체" or l in _찾는칸[찾는곳]))   # 칸 사이는 문장 끝이다(r2 GA3)
+            if 낱말 and not any(_낱말있음(본글, w) for w in 낱말):
+                자리 = _찾는자리말[찾는곳] + (f"(SHOT {i + 1})" if 나눔 else "")
+                if any(_기법글(w) in 본글 for w in 낱말):
+                    out.append((센, f"컷 {c}의 기법 「{n}」 낱말이 {자리}에서 부정어(no · not · never · without · instead)가 든 문장에만 있다 — "
+                                "기법은 부정어 없는 한 문장으로 쓰고 금지는 다른 문장으로 뗀다(「Locked-off. No zoom.」 · 지시문 흠 표 지17)"))
+                else:
+                    out.append((센, f"컷 {c}의 기법 「{n}」이 {자리}에 없다 — 「{낱말[0]}」{('(또는 ' + ' · '.join(낱말[1:3]) + ')') if len(낱말) > 1 else ''}를 쓴다(영상양식/카메라기법.json)"))
     return out
 
 
@@ -3200,6 +3377,7 @@ def 지시문항목(seq, r, 경로들, 실내목록=None, 폴더=None, 검수=Fa
             for 등급, 말 in 빛대조(seq, 컷들, 글): r.더함("지시문", 이름, 등급, f"(빛) {말}")
             for 등급, 말 in 시늉대조(seq, 컷들, 글): r.더함("지시문", 이름, 등급, f"(시늉) {말}")   # T30(29) — 크레딧내기.py의 굽기전도 같은 함수
             for 등급, 말 in 둘레대조(seq, 컷들, 글, 폴더): r.더함("지시문", 이름, 등급, f"(둘레) {말}")   # T31(26) — 크레딧내기.py의 굽기전도 같은 함수
+            for 등급, 말 in 기법대조(seq, 컷들, 글, 폴더): r.더함("지시문", 이름, 등급, f"(기법) {말}")   # T29 기법(11-25) — 크레딧내기.py의 굽기전도 같은 함수
             검수판.append((이름, 글, 컷들))
         if not hits: r.더함("지시문", 이름, "통과", "물건 · 실내 낱말 없음")
     if 검수 and 검수판 and 폴더 is not None:   # 지시문 검수(11-25) — 내기 도구의 굽기전도 같은 함수
@@ -3350,6 +3528,7 @@ def 그림지시문항목(seq, r, 경로들, 폴더=None):
         사람문장 = [p.get(k) for p in 인물표.values() if isinstance(p, dict) for k in ("묘사", "맨얼굴묘사", "옷", "기준그림구성")]
         for 등급, 말 in 방향검사(d, 나머지, 원문, 사람문장): r.더함("방향", cut, 등급, 말)
         for 등급, 말 in 렌즈지시문검사(seq, d, cut, 원문, 폴더): r.더함("그림지시문", cut, 등급, f"(렌즈) {말}")
+        for 등급, 말 in 기법대조(seq, [d["cut"]], 원문, 폴더, 곳="그림"): r.더함("그림지시문", cut, 등급, f"(기법) {말}")
     for w, 컷색 in 탈것색.items():
         if len(컷색) < 2: continue
         색있는 = [s for s in 컷색.values() if s]
