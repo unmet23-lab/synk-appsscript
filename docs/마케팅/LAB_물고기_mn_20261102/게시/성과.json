@@ -361,6 +361,17 @@
         "화면필요": []
       },
       {
+        "계정": "lab-mx-tiktok",
+        "채널": "틱톡 @synklab.mx",
+        "주소": "https://www.tiktok.com/@synklab.mx/video/7709824537625382165?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
+        "형식": "tiktok-video",
+        "게시": "2026-11-24T19:00:00.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-vn-tiktok",
         "채널": "틱톡 @synklab.vn",
         "주소": "https://www.tiktok.com/@synklab.vn/video/7709385450632318216?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
