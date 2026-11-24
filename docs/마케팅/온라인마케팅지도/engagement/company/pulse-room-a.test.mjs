@@ -260,6 +260,20 @@ test('Carbon review fixes: the chosen-direction chips say open when the card sta
   // A3: 예시의 영상 화면에서 준비 칸 단추는 준비 칸이 없는 서랍을 열지 않고 예전 안내를 말한다.
   assert.ok(read('demo-film.mjs').includes("onContact:()=>say(NOT_REAL),onPaper:()=>say('예시 자료예요.')});"));
   assert.doesNotMatch(read('demo-film.mjs'),/onPaper:\(\)=>openExampleBrief/);
-  // A1: 좁은 무대에서는 「사진을 누르면…」을 「AI로 만든 가상 인물이에요」 아래로 내린다.
-  assert.match(read('film.css'),/@media \(max-width:820px\),\(max-aspect-ratio:1\/1\)\{\.sx-room-hint\{left:auto;right:16px;top:52px;max-width:calc\(100% - 32px\)\}\}/);
+  // A1: 좁은 무대에서는 「사진을 누르면…」을 「AI로 만든 가상 인물이에요」 아래로 내린다. 기준은 창이 아니라 무대 폭이다(Fable F5 — 눕힌 휴대폰의 넓은 짜임도).
+  assert.match(read('film.css'),/\.sx-room-stage\{container-type:inline-size\}\r?\n@container \(max-width:560px\)\{\.sx-room-hint\{left:auto;right:16px;top:52px;max-width:calc\(100% - 32px\)\}\}/);
+});
+
+test('Fable follow-ups: a language switch redraws the stage strip, prep alerts open that section of the brief drawer, the phone head is two lines, and the main button stands on the first phone screen on your turn',()=>{
+  const app=read('app.mjs'),css=read('film.css');
+  // F1: 띠를 그린 언어와 지금 언어가 같을 때만 옮겨 끼운다.
+  assert.ok(app.includes("if(halls.size&&hallLocale===locale())for(const fresh of main.querySelectorAll('[data-hall-key]'))"));
+  assert.ok(app.includes('fresh.replaceWith(old);}}hallLocale=locale();const briefNode='));
+  // F2: 준비 칸 알림은 서랍의 그 칸으로.
+  assert.ok(app.includes("if(roomCustomer()&&['changes','kickoff','deliverables'].includes(item.target)&&document.querySelector(`#room-brief [data-paper-for=\"${item.target}\"]`)){showRoomPaper(item.target);return;}"));
+  // F3: 휴대폰 막대 줄이 옛 width:100%를 덮어 단계 이름과 한 줄에 선다.
+  assert.match(css,/\.sx-head-steps \.sx-steps-run\{flex:none;width:auto;gap:3px\}/);
+  // F4: 내 차례에는 휴대폰 무대를 낮추고 지난 결정 줄을 주 단추 뒤로.
+  assert.ok(css.includes('.sx-room[data-room-a]:has(.sx-turn>i.is-you) .sx-room-stage{height:28vh;height:28dvh;min-height:200px}'));
+  assert.ok(css.includes('.sx-room[data-room-a]:has(.sx-turn>i.is-you) .sx-room-main>.sx-folds{order:1}'));
 });
