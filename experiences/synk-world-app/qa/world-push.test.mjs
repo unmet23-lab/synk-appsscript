@@ -2628,9 +2628,9 @@ function shellLogout(worldPush,clientLogout){
  return {run,toasts};
 }
 
-test('섞임: 옛 판 world-push는 라이브와 바이트가 같고, retry · resume · bindSettings가 없으며 셸이 부르는 그 밖의 이름은 있다',()=>{
+test('섞임: 옛 판 world-push는 라이브와 내용이 같고(줄 끝만 작업본 설정을 따른다 — GA5), retry · resume · bindSettings가 없으며 셸이 부르는 그 밖의 이름은 있다',()=>{
  const text=fs.readFileSync(new URL('./live-world-push-20261125.mjs',import.meta.url),'utf8').replace(/\r\n/g,'\n');
- assert.equal(createHash('sha256').update(text).digest('hex'),LIVE_PUSH_SHA,'라이브 abd09dc의 world-push.mjs');
+ assert.equal(createHash('sha256').update(text).digest('hex'),LIVE_PUSH_SHA,'라이브 abd09dc의 world-push.mjs와 같다 — 저장소에는 LF로 들고, core.autocrlf 작업본은 CRLF로 꺼내므로 줄 끝을 LF로 맞춰 견준다');
  const live=makeLive(browser({registered:true,subscribed:SUB}),server({device:true,active:true}));
  for(const name of ['retry','resume','bindSettings','hasEdit'])assert.equal(typeof live[name],'undefined',`옛 판에는 ${name}이 없다`);
  for(const name of ['flush','logout','setAccount','ack','subscribe'])assert.equal(typeof live[name],'function',`셸이 부르는 ${name}은 옛 판에도 있다`);
@@ -2817,4 +2817,63 @@ test('섞임 표 4: 옵션 없는 logout이 실패해 계정이 그대로여도,
  assert.ok(b.current,'켰다');
  assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).accountId,'acc-1');
  assert.equal(push.snapshot().device.subscribed,true);
+});
+
+// GPT push-versions-world-mix53 GA1~GA4: 멈춘 켜기의 자리 셋과 셸 처리기의 retry.
+test('섞임 표 4 · GA1: 다른 계정의 구독을 넘겨받는 응답을 기다리는 사이 옵션 없는 logout이 돌면, 켜기 요청을 서버에 보내지 않는다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:false,active:false}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-B',deviceId:'dev-b',endpoint:SUB}));   // 이 브라우저 구독은 B 계정 것이다
+ const held=[];
+ const anonymous=(action,body,options)=>new Promise(resolve=>held.push(()=>resolve(s.anonymous(action,body,options))));
+ const push=make(b,s,{storage,anonymous});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await push.ready();
+ const turning=push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});await settled();
+ assert.equal(held.length,1,'B의 구독을 넘겨받는 끄기 요청이 날아가는 중이다');
+ await push.logout();await settled();
+ held.shift()();await turning;await settled();
+ assert.equal(s.calls.filter(c=>c.action==='subscribe').length,0,'로그아웃을 시작한 계정으로 켜기 요청을 보내지 않는다');
+ assert.notEqual(JSON.parse(storage.getItem(PUSH_RECORD_KEY)||'null')?.accountId,'acc-1','로그아웃한 계정의 기록이 없다');
+ push.dispose();
+});
+
+test('섞임 표 4 · GA2: 켜기가 다른 계정의 이 브라우저 구독을 받기 전에 멈추면(옵션 없는 logout · 계정 바뀜) 그 계정의 구독을 지우지 않는다',async()=>{
+ for(const stop of ['logout','account']){
+  const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:false,active:false}),storage=memory();
+  storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-B',deviceId:'dev-b',endpoint:SUB}));
+  const reg=await b.env.navigator.serviceWorker.getRegistration(SCOPE),answer=reg.pushManager.subscribe.bind(reg.pushManager);let release;
+  reg.pushManager.subscribe=options=>new Promise(resolve=>{release=()=>resolve(answer(options));});   // 브라우저가 늦게 지금 구독(B 것)을 돌려준다
+  const push=make(b,s,{storage});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await push.ready();
+  const turning=push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});await settled();
+  if(stop==='logout')await push.logout();else await push.setAccount('acc-2');
+  release();await turning;await settled();await settled();
+  assert.equal(b.current?.endpoint,SUB,`${stop}: B의 브라우저 구독이 남는다`);
+  assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).accountId,'acc-B',`${stop}: B의 기록이 남는다`);
+  assert.equal(s.calls.filter(c=>c.action==='subscribe'||c.anonymous).length,0,`${stop}: 서버에 아무것도 보내지 않았다`);
+  push.dispose();
+ }
+});
+
+test('섞임 표 4 · GA3: 켜기 뒤 다른 탭의 새 구독으로 다시 올리는 요청이 실패해도, 그사이 옵션 없는 logout이 돌았으면 켜짐으로 적지 않는다',async()=>{
+ const b=browser({registered:true,permission:'granted',endpoints:['https://fcm.googleapis.com/fcm/send/e1','https://fcm.googleapis.com/fcm/send/e2']}),s=server(),storage=memory();
+ const reg=await b.env.navigator.serviceWorker.getRegistration(SCOPE);let push,subscribes=0;
+ const request=async(action,body,options)=>{
+  if(action!=='subscribe')return s.request(action,body,options);
+  subscribes++;
+  if(subscribes===1){const reply=await s.request(action,body,options);await b.current.unsubscribe();await reg.pushManager.subscribe({userVisibleOnly:true});return reply;}   // 다른 탭이 새 구독(e2)으로 다시 이었다
+  await push.logout();throw Object.assign(Error('offline'),{code:'NETWORK'});   // 다시 올리는 사이 옛 셸이 로그아웃하고, 그 요청은 망이 끊겨 실패한다
+ };
+ push=make(b,s,{storage,request});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await push.ready();
+ await push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});await settled();
+ assert.equal(subscribes,2,'다시 올리기까지 갔다');
+ assert.equal(push.snapshot().device.subscribed,false,'멈춘 켜기를 켜짐으로 적지 않는다');
+ assert.equal(push.snapshot().error,null);
+ push.dispose();
+});
+
+test('섞임 · GA4 · 같은 판끼리(새 셸 + 새 world-push): 망이 돌아올 때와 화면이 다시 보일 때 둘 다 retry를 부른다',async()=>{
+ const s=versionedServer(),push=on(s);await push.setAccount('acc-1');
+ let retries=0;const retry0=push.retry;push.retry=(...args)=>{retries++;return retry0(...args);};
+ const shell=shellHandlers(push);
+ shell.handlers['window:online']();assert.equal(retries,1,'망이 돌아오면 다시 보낸다');
+ shell.document.hidden=false;shell.handlers['document:visibilitychange']();assert.equal(retries,2,'화면이 다시 보이면 다시 보낸다');
+ assert.deepEqual(shell.refreshed,[false,false]);
 });

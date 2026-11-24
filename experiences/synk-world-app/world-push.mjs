@@ -510,6 +510,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   enable({settings,digest,handover=[]}={}){
    // 날아가는 동안 막지 않는 logout()이 돌면 멈춘다 — 로그아웃은 기록의 옛 주소만 끄므로, 그대로 끝나면 방금 만든 구독과 기록이 로그아웃한 계정으로 남는다.
    const expected=epoch,left=leaves,stay=()=>{guard(expected);if(leaves!==left)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
+   // 멈춘 켜기의 정리는 다른 계정 기록의 이 브라우저 구독을 지우지 않는다 — 아직 넘겨받지 않았으면 그 계정 것이라, 지우면 그 계정의 알림이 끊긴다(GPT mix53 GA2).
+   const me=owner,theirs=value=>{const record=readRecord();return !!value&&!!record&&record.accountId!==me&&record.endpoint===value.endpoint;};
    if(!current(expected)||closing||mutation||attempt)return Promise.resolve(snapshot());
    // 요약 바탕은 누를 때(요약을 지은 때) 잡는다 — 권한 창 사이에 읽은 새 판이 누를 때의 요약에 붙지 않게(r4 GA11).
    const pressed=digest?digestBase():null;
@@ -524,9 +526,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const waiting={cancelled:false,timer:null,edits:new Set(),stop:()=>{waiting.cancelled=true;clearTimeout(waiting.timer);stopWait(STOP);}};attempt=waiting;
    const stopped=new Promise(resolve=>{stopWait=resolve;});
    waiting.timer=setTimeout(()=>waiting.stop(),PERMISSION_WAIT_MS);
-   Promise.resolve(prompt).then(late=>{if(waiting.cancelled&&late)void removeLocal(late,registration);},()=>{});
+   Promise.resolve(prompt).then(late=>{if(waiting.cancelled&&late&&!theirs(late))void removeLocal(late,registration);},()=>{});
    emit({busy:true,error:null});
-   let sub=null;
+   let sub=null,tookOver=false;
    const pending=(async()=>{
     try{
      const first=await Promise.race([prompt,stopped]);clearTimeout(waiting.timer);
@@ -535,7 +537,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      stay();subscription=sub;
      // 이 브라우저 구독이 다른 계정 것이면 그 동작에서 가져간다(앞 계정의 이 브라우저 구독을 서버에서 지운다).
      const record=readRecord();
-     if(record&&record.accountId!==owner&&record.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}
+     if(record&&record.accountId!==owner&&record.endpoint===sub.endpoint){tookOver=true;try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}
+     stay();   // 넘겨받기 응답을 기다리는 사이 막지 않는 logout이 돌았으면 켜기 요청을 보내지 않는다(GPT mix53 GA1)
      const json=sub.toJSON?sub.toJSON():{endpoint:sub.endpoint,keys:sub.keys};
      // 바탕 판은 보낼 때 아는 요약 · 복습 때 판이다(판을 아는 서버일 때만). 설정 바탕은 싣지 않는다 — 이미 켠 계정이면 서버가 계정 설정을 두고(GA3),
      // 처음 켜는 계정이면 바탕과 상관없이 새 줄을 쓴다. 보내지 못한 편집은 응답 뒤 맞추기가 sync로 보낸다. 요약이 거절되면(권한 창 사이 다른 기기의
@@ -577,6 +580,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
        let cur=still;try{cur=await bounded(registration.pushManager.getSubscription());}catch{}
        stay();if(again.device?.subscribed===true&&cur?.endpoint===still.endpoint)writeRecord({accountId:owner,deviceId:again.device.deviceId,endpoint:still.endpoint});}
       catch(error){if(error?.code==='ACCOUNT_CHANGED')throw error;}
+      stay();   // 다시 올리기가 실패해도 그사이 막지 않는 logout이 돌았으면 멈춘다(GPT mix53 GA3)
      }
      // 켜며 보낸 요약을 sync와 같은 표로 적는다 — 켠 바로 뒤 다시 잡기가 같은 요약을 또 보내지 않게(10-22 화면 검수).
      lastSync=digest?syncMark(item,stamp()):null;
@@ -605,7 +609,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      // 계정이 바뀌었으면 그 계정의 편집은 바꿀 때 이미 버렸다(dropEdits).
      dropAttemptEdits(waiting);
      // 서버 저장 실패·응답 유실·늦은 허용: 방금 만든 구독은 지운다(서버에 남았어도 이 브라우저는 그 알림을 못 띄운다).
-     const removed=await removeLocal(sub);
+     const removed=theirs(sub)&&!tookOver?true:await removeLocal(sub);
      const denied=error?.name==='NotAllowedError'||worldPushSupport(env).permission==='denied';
      // 막지 않는 logout()이 멈춘 켜기는 오류를 보이지 않는다 — 학생이 고른 로그아웃이다.
      if(current(expected))emit({busy:false,error:!removed?'PUSH_LOCAL_CLEANUP':leaves!==left?null:denied?'PUSH_DENIED':error?.code||'PUSH_UNAVAILABLE'});
