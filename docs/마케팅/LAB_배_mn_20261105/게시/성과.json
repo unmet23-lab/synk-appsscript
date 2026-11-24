@@ -3,6 +3,17 @@
     "설명": "tools/게시성과.js가 회사 서버 기록으로 다시 쓴다(AI 없음). 판정 규칙과 칸 뜻은 docs/마케팅/게시성과.md",
     "판": [
       {
+        "계정": "lab-np-facebook",
+        "채널": "페북 @synklab.np",
+        "주소": "https://www.facebook.com/reel/2654443868325563/",
+        "형식": "facebook-reels",
+        "게시": "2026-11-24T07:15:28.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-lk-facebook",
         "채널": "페북 SYNK LAB Sri Lanka",
         "주소": "https://www.facebook.com/reel/2161321551927402/",
@@ -512,6 +523,17 @@
         "주소": "https://vk.ru/clip-243082040_456239024",
         "형식": "vk-clip",
         "게시": "2026-11-23T10:00:56.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
+        "계정": "lab-in-youtube",
+        "채널": "유튜브 @synklabindia",
+        "주소": "https://www.youtube.com/watch?v=xRGzpxAksIs",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-24T07:30:22.000Z",
         "훅": null,
         "역할": "유입",
         "시점": {},

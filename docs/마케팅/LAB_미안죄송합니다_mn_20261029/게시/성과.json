@@ -252,6 +252,17 @@
         }
       },
       {
+        "계정": "lab-uz-instagram",
+        "채널": "인스타 @synklab.uz",
+        "주소": "https://www.instagram.com/reel/DgHeiqnjeSn/",
+        "형식": "instagram-reels",
+        "게시": "2026-11-24T08:01:33.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-instagram",
         "채널": "인스타 @synk.mn",
         "주소": "https://www.instagram.com/reel/DfR1VW1lOFW/",
