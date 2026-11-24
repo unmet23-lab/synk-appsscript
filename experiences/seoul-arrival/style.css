@@ -880,7 +880,9 @@ body.handoff .title-foot{display:none}
 .cc{position:absolute;inset:0;z-index:2;pointer-events:none}
 .cc[hidden]{display:none}
 #s-crowd .crowd-copy,#s-crowd .crowd-aside,#s-crowd .crowd-aside-sub,#s-crowd .next{transition:opacity .45s ease}
-#s-crowd.cc-on .crowd-copy,#s-crowd.cc-on .crowd-aside,#s-crowd.cc-on .crowd-aside-sub,#s-crowd.cc-on .next{opacity:0;visibility:hidden}
+#s-crowd.cc-on .crowd-copy{opacity:0;visibility:hidden}
+/* 발판의 목표 줄 · 속마음은 자리까지 뺀다 — 몽골어처럼 두 줄로 접히면 숨긴 채로 안내 줄을 밀어 올려 자막 뜻 줄과 겹쳤다 */
+#s-crowd.cc-on .crowd-aside,#s-crowd.cc-on .crowd-aside-sub,#s-crowd.cc-on .next{display:none}
 /* 위 띠는 소리 단추(.hud, 왼쪽 위 44px)와 같은 줄, 그 오른쪽에 둔다 */
 .cc-top{position:absolute;left:72px;right:20px;top:max(14px,var(--sat,env(safe-area-inset-top,0px)));display:flex;align-items:center;gap:12px;height:44px}
 .cc-tag{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px var(--line2);font-size:13px;font-weight:600;white-space:nowrap}
@@ -889,6 +891,8 @@ body.handoff .title-foot{display:none}
 .cc-prog i b{position:absolute;inset:0;background:#fff;transform:scaleX(0);transform-origin:left}
 .cc-dim{position:absolute;inset:0;opacity:0;background:radial-gradient(calc(var(--sr)*1.2) calc(var(--sr)*1.4) at var(--sx) var(--sy),rgba(2,3,8,0) 0,rgba(2,3,8,0) 46%,rgba(2,3,8,.55) 100%);transition:opacity .5s ease,--sx .9s cubic-bezier(.23,1,.32,1),--sy .9s cubic-bezier(.23,1,.32,1),--sr .9s cubic-bezier(.23,1,.32,1)}
 .cc-dim.on{opacity:1}
+/* 위 줄(소리 단추 · 1화 끝 · 진행 막대) 뒤를 어둡게 — 배우 판 틀에서는 영사실 창이 이 자리에 든다 */
+.cc::before{content:"";position:absolute;inset:0 0 auto;height:150px;background:linear-gradient(180deg,rgba(0,0,0,.92) 35%,rgba(0,0,0,0))}
 .cc-sub{position:absolute;left:20px;right:20px;bottom:max(152px,calc(var(--sab,env(safe-area-inset-bottom,0px)) + 152px));display:grid;justify-items:center;text-align:center}
 .cc-sub .who,.fans-line .who{font-size:13px;line-height:18px;font-weight:550;color:var(--ink3)}
 .cc-sub .who b,.fans-line .who b{display:inline-flex;align-items:center;gap:6px;font-weight:650;color:var(--dream2)}
@@ -899,9 +903,11 @@ body.handoff .title-foot{display:none}
 .cc-sub .mean[hidden],.fans-line .mean[hidden]{display:none}
 .cc-card{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;padding:0 24px;text-align:center;background:#050608;opacity:0;transition:opacity .6s ease}
 .cc-card.on{opacity:1}
+/* 배우 판: 상영관이 깊어 앉은 팬이 화면 아래에 작게 남는다. 표지가 화면을 가린 동안 팬 쪽으로 당겨 둔다(움직임 없이 자르기만) — 내 팬 화면의 배우 판과 같은 틀 */
+body[data-dream="actor"] #s-crowd.cc-zoom #cinema{top:auto;right:auto;bottom:162px;left:-70%;width:200%;height:auto;aspect-ratio:941/1422;animation:none;transform:none;-webkit-mask-image:linear-gradient(180deg,#000 90%,transparent 100%);mask-image:linear-gradient(180deg,#000 90%,transparent 100%)}
 .cc-card .k{font-size:14px;font-weight:550;color:var(--ink3)}
 .cc-card b{font-size:30px;line-height:40px;font-weight:680;letter-spacing:-.03em}
-.cc-card .bar{width:120px;height:2px;margin-top:4px;background:linear-gradient(90deg,var(--dream2),var(--dream))}
+.cc-card .cc-rule{display:block;width:120px;height:2px;margin-top:4px;background:linear-gradient(90deg,var(--dream2),var(--dream))}
 .cc-card .s{font-size:15.5px;font-weight:450;color:var(--ink3)}
 .cc-hint{margin-bottom:14px;text-align:center;font-size:13px;font-weight:450;color:var(--ink4)}
 .cc-hint[hidden]{display:none}

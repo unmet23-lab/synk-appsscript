@@ -1513,13 +1513,15 @@ function sayLine(who,say,mean,s,dream,quiet){
 }
 // 커튼콜: 표지(2초) → 팬 한 명씩. 누르면 다음 팬, 마지막 뒤에는 처음부터. 저절로 넘김은 5.2초, 동작 줄이기에서는 누를 때만
 const CC={on:false,says:[],i:-1,run:0};
-function ccReset(){CC.on=false;CC.says=[];CC.i=-1;$('#cc').hidden=true;$('#ccCard').classList.remove('on');$('#ccDim').classList.remove('on');$('#s-crowd').classList.remove('cc-on');$('#ccHint').hidden=true;}
+function ccReset(){CC.on=false;CC.says=[];CC.i=-1;$('#cc').hidden=true;$('#ccCard').classList.remove('on');$('#ccDim').classList.remove('on');$('#s-crowd').classList.remove('cc-on','cc-zoom');$('#ccHint').hidden=true;}
 function curtain(says,run){
   Object.assign(CC,{on:true,says,i:-1,run});
   $('#ccProg').innerHTML=says.map(()=>'<i><b></b></i>').join('');
   $('#ccWho').innerHTML='';$('#ccSay').innerHTML='';$('#ccMean').hidden=true;
   ccCopy();$('#cc').hidden=false;$('#s-crowd').classList.add('cc-on');$('#ccCard').classList.add('on');
   $('#ccHint').textContent=L('화면을 누르면 다음 팬');$('#ccHint').hidden=false;
+  // 표지가 다 덮은 뒤(0.6초 페이드) 배우 판의 틀을 팬 쪽으로 바꾼다 — 바뀌는 순간이 보이지 않게
+  crowdLater(()=>{if(run===crowdRun&&CC.on)$('#s-crowd').classList.add('cc-zoom');},reduce?0:650);
   crowdLater(()=>{if(run===crowdRun&&CC.on&&CC.i<0)ccGo(0);},2000);
 }
 function ccCopy(){
