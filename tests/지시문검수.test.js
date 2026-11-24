@@ -55,6 +55,8 @@ test('검수자 정의 — 쓰는 손(video-prompts)과 다른 모델이고, 판
   assert.match(글, /tools\/지시문검수판\.py 적기/);
   assert.match(글, /고치지 않는다/);
   assert.match(글, /표에 없는 것/, '새 흠은 주 세션에 올린다');
+  assert.match(글, /「새흠」/, '표에 없는 흠을 판정.json에 남긴다');
+  assert.match(글, /컷표 <컷> <칸>도 바꾼다/, '컷표 초까지 바꿔야 하는 고침을 따로 밝힌다');
 });
 
 test('지시문 지문 — 줄끝 · 줄 끝 빈칸 · 앞뒤 빈 줄은 같은 글로 보고, 글자 하나가 다르면 다른 글로 본다', { skip: 건너뜀 }, () => {
@@ -161,6 +163,20 @@ test('지시문검수판.py — 판은 판마다 지문 · 컷표 줄 · 앞뒤 
     a = 판도구('적기', 출력);
     assert.equal(a.status, 1);
     assert.match(a.stdout, /「그대로」인데 흠이나 고칠 것이 있다/);
+    // 표에 없는 흠(새흠, 11-25 시험 검수) — 그대로와 함께 쓸 수 없고, 고침은 고칠문장이, 시험 먼저는 무엇만 있으면 된다 · 결과에 남는다
+    판정({ 판정: '그대로', 흠: [], 고칠것: [], 새흠: [{ 무엇: '말하지 않는 사람의 입' }] });
+    assert.equal(판도구('적기', 출력).status, 1);
+    판정({ 판정: '고침', 흠: [], 고칠것: [], 새흠: [{ 무엇: '말하지 않는 사람의 입' }] });
+    a = 판도구('적기', 출력);
+    assert.equal(a.status, 1);
+    assert.match(a.stdout, /고칠문장/);
+    판정({ 판정: '시험 먼저', 흠: [], 고칠것: [], 새흠: [{ 무엇: '두 사람이 맞닿는 동작 — 해낼지 모른다' }] });
+    a = 판도구('적기', 출력);
+    assert.equal(a.status, 2, a.stdout + a.stderr);
+    assert.match(a.stdout, /표에 없는 흠 1개/);
+    const 새 = JSON.parse(fs.readFileSync(path.join(출력, '결과.json'), 'utf8'));
+    assert.equal(새.판.C2.새흠.length, 1);
+    assert.equal(새.요약.새흠, 1);
     // 고침 → 끝 코드 2 · 내기 쪽 검사가 걸림
     판정({ 판정: '고침', 흠: ['지8'], 고칠것: [{ 흠: '지8', 무엇: '컵의 생김새를 못 박지 않았다', 고칠문장: 'the cup keeps its plain white look exactly as in the first frame' }] });
     a = 판도구('적기', 출력);

@@ -6,11 +6,12 @@
 #   python -I -X utf8 tools/지시문검수판.py 판 <편 폴더> [--판 C3,C5] [--꾸러미 <폴더>] [--출력 <폴더>]
 #       → <편>/검수/지시문검수_<YYYYMMDD-HHmm>/판.json — 판마다 지시문 · 지문 · 컷표 줄 · 앞뒤 컷 · 그림 · 기계 검사 줄
 #   python -I -X utf8 tools/지시문검수판.py 적기 <출력 폴더>
-#       → 검수자가 쓴 <출력>/판정.json을 판.json과 대 보고 <출력>/결과.json을 쓴다. 끝 코드 0 모두 그대로 · 2 고칠 판 있음 · 1 판정.json을 고친다
+#       → 검수자가 쓴 <출력>/판정.json을 판.json과 대 보고 <출력>/결과.json을 쓴다. 끝 코드 0 모두 그대로 · 2 고침 · 나눔 · 시험 먼저가 하나라도 · 1 판정.json을 고친다
 #
 # 내기 도구(크레딧내기 · 드리미나내기)와 컷연속성검사.py --지시문검수가 결과.json을 읽는다(컷연속성검사.지시문검수결과검사).
 # 판정.json 꼴: {"검수자": {"모델": "claude-fable-5-2"}, "판": {"C3": {"판정": "고침", "흠": ["지7"],
-#                "고칠것": [{"흠": "지7", "무엇": "…", "고칠문장": "…"}]}, "C4": {"판정": "그대로", "흠": [], "고칠것": []}}}
+#                "고칠것": [{"흠": "지7", "무엇": "…", "고칠문장": "…"}], "새흠": [{"무엇": "표에 없는 흠", "고칠문장": "…"}]},
+#                "C4": {"판정": "그대로", "흠": [], "고칠것": []}}}   「새흠」은 없어도 된다
 import datetime
 import json
 import re
@@ -122,20 +123,22 @@ def 적기(출력):
         이름 = p["id"]; x = 받은판.get(이름)
         if not isinstance(x, dict): 틀림.append(f"{이름}: 판정이 없다"); continue
         g = x.get("판정"); hs = x.get("흠") if isinstance(x.get("흠"), list) else None; 고칠 = x.get("고칠것") if isinstance(x.get("고칠것"), list) else None
+        새흠 = x.get("새흠", []) if isinstance(x.get("새흠", []), list) else None   # 표에 없는 흠(11-25 시험 검수) — 결과에 남겨 주 세션이 표에 더할지 정한다
         if g not in 판정들: 틀림.append(f"{이름}: 판정은 {' · '.join(판정들)} 가운데 하나다 — 「{g}」"); continue
-        if hs is None or 고칠 is None: 틀림.append(f"{이름}: 「흠」과 「고칠것」은 목록이다(없으면 [])"); continue
+        if hs is None or 고칠 is None or 새흠 is None: 틀림.append(f"{이름}: 「흠」 · 「고칠것」 · 「새흠」은 목록이다(없으면 [])"); continue
         모름 = [h for h in hs if h not in 흠]
         if 모름: 틀림.append(f"{이름}: 흠은 지시문 흠 표의 번({' · '.join(sorted(흠, key=lambda s: int(s[1:])))})으로 적는다 — 모르는 번 {모름}")
         if g == "그대로":
-            if hs or 고칠: 틀림.append(f"{이름}: 「그대로」인데 흠이나 고칠 것이 있다 — 고칠 것이 있으면 「고침」이다")
+            if hs or 고칠 or 새흠: 틀림.append(f"{이름}: 「그대로」인데 흠이나 고칠 것이 있다 — 고칠 것이 있으면 「고침」이다")
         else:
-            if not hs: 틀림.append(f"{이름}: 「{g}」는 걸린 흠의 번을 적는다")
-            나쁜 = [c for c in 고칠 if not (isinstance(c, dict) and str(c.get("무엇") or "").strip() and (g != "고침" or str(c.get("고칠문장") or "").strip()))]
-            if not 고칠 or 나쁜: 틀림.append(f"{이름}: 「{g}」는 고칠것마다 「무엇」을 적고, 「고침」은 「고칠문장」(넣거나 바꿀 문장 그대로)까지 적는다")
+            if not (hs or 새흠): 틀림.append(f"{이름}: 「{g}」는 걸린 흠의 번을 적는다(표에 없는 흠이면 「새흠」에)")
+            줄 = 고칠 + 새흠
+            나쁜 = [c for c in 줄 if not (isinstance(c, dict) and str(c.get("무엇") or "").strip() and (g != "고침" or str(c.get("고칠문장") or "").strip()))]
+            if not 줄 or 나쁜: 틀림.append(f"{이름}: 「{g}」는 고칠것 · 새흠마다 「무엇」을 적고, 「고침」은 「고칠문장」(넣거나 바꿀 문장 그대로)까지 적는다")
         f = Path(p["지시문파일"])
         if 검사.지시문지문(f.read_text(encoding="utf-8") if f.is_file() else "") != p["지문"]:
             틀림.append(f"{이름}: 판을 만든 뒤 지시문이 바뀌었다 — 판을 다시 만든다(tools/지시문검수판.py 판 <편> --판 {이름})")
-        결과판[이름] = {"컷들": p["컷들"], "지문": p["지문"], "판정": g, "흠": hs, "고칠것": 고칠, **({"메모": x["메모"]} if x.get("메모") else {})}
+        결과판[이름] = {"컷들": p["컷들"], "지문": p["지문"], "판정": g, "흠": hs, "고칠것": 고칠, **({"새흠": 새흠} if 새흠 else {}), **({"메모": x["메모"]} if x.get("메모") else {})}
     남은 = sorted(set(받은판) - {p["id"] for p in 판["판"]})
     if 남은: 틀림.append(f"판.json에 없는 판의 판정: {' · '.join(남은)}")
     if 틀림:
@@ -143,15 +146,17 @@ def 적기(출력):
         for t in 틀림: print(f"  ✗ {t}")
         return 1
     셈 = Counter(x["판정"] for x in 결과판.values())
+    새흠수 = sum(len(x.get("새흠") or []) for x in 결과판.values())
     결과 = {"때": datetime.datetime.now().astimezone().isoformat(timespec="seconds"), "편": 판["편"], "컷표": 판["컷표"], "꾸러미": 판["꾸러미"],
-          "검수자": 검수자, "판": 결과판, "건너뜀": 판.get("건너뜀") or [], "요약": dict(셈)}
+          "검수자": 검수자, "판": 결과판, "건너뜀": 판.get("건너뜀") or [], "요약": {**dict(셈), **({"새흠": 새흠수} if 새흠수 else {})}}
     (출력 / "결과.json").write_text(json.dumps(결과, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"지시문 검수 결과 — {' · '.join(f'{k} {셈[k]}' for k in 판정들 if 셈[k])} → {출력 / '결과.json'}")
     for 이름, x in 결과판.items():
         if x["판정"] == "그대로": continue
-        for c in x["고칠것"]:
-            print(f"  {이름} {x['판정']} [{c.get('흠') or ' · '.join(x['흠'])}] {str(c.get('무엇'))[:90]}" + (f" → {str(c.get('고칠문장'))[:120]}" if c.get("고칠문장") else ""))
-    return 0 if set(셈) == {"그대로"} else 2
+        for c in x["고칠것"] + (x.get("새흠") or []):
+            print(f"  {이름} {x['판정']} [{c.get('흠') or ('표에 없음' if c in (x.get('새흠') or []) else ' · '.join(x['흠']))}] {str(c.get('무엇'))[:90]}" + (f" → {str(c.get('고칠문장'))[:120]}" if c.get("고칠문장") else ""))
+    if 새흠수: print(f"표에 없는 흠 {새흠수}개 — 주 세션이 docs/마케팅/제작양식/영상양식/지시문_흠표.md에 줄을 더할지 정한다")
+    return 0 if set(셈) == {"그대로"} else 2   # 고침 · 나눔 · 시험 먼저가 하나라도 있으면 2
 
 
 def main(argv):
