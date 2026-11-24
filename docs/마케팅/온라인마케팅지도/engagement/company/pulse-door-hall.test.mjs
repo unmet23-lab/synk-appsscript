@@ -58,7 +58,9 @@ test('복도: 캐스팅북 모델(실제 인물 없이) 사이에 세로 완성 
 
 test('복도의 움직임: 손이 닿거나 초점이 안에 있거나 숨은 탭 · 움직임 줄이기면 넘기지 않고, 손을 올려도 띠를 옮기지 않는다',()=>{
   const hall=read('hall.mjs');
-  assert.ok(hall.includes("const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||!!box.querySelector(':focus-visible');"),'키보드 초점일 때만 멈춘다 — 누른 단추가 초점을 쥐어도 다시 넘어간다');
+  assert.ok(hall.includes("const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||(canHover()&&box.matches(':hover'))||!!box.querySelector(':focus-visible');"),'키보드 초점일 때만 멈춘다 — 누른 단추가 초점을 쥐어도 다시 넘어간다. 손을 올린 멈춤은 마우스 화면에서만(터치는 누른 뒤에도 :hover가 남는다)');
+  assert.ok(hall.includes("if(box.querySelector(':focus-visible')&&document.activeElement!==holdButton)strip.focus({preventScroll:true});"),'저절로 넘길 때 초점을 끌고 다니지 않는다 — 키보드 초점일 때만 새 띠로 옮긴다');
+  assert.ok(hall.includes("const canHover=()=>typeof matchMedia==='function'&&matchMedia('(hover:hover)').matches;"));
   assert.match(read('film.css'),/\.sx-models-m\{display:none\}/,'휴대폰용 「내 모델」은 넓은 화면에서 숨는다');
   assert.doesNotMatch(hall,/mouseenter|pointerenter/,'손을 올린다고 띠가 움직이지 않는다(큰 움직임 멀미)');
   assert.ok(hall.includes("if(alone||!['ArrowLeft','ArrowRight'].includes(event.key)||event.target===holdButton)return;"),'좌우 화살표는 복도 안에서만');

@@ -12,6 +12,8 @@ import {reduced} from './motion.mjs';
 
 const wallOf=id=>`${MODEL_FILM_BASE}img/${id}/wall.webp`,walkOf=id=>`${MODEL_FILM_BASE}video/${id}-loop.mp4`;
 const COPIES=3,STEP_MS=4000,HOLD_MS=7000;
+// 터치 화면은 누른 뒤에도 :hover가 남는다 — 손을 올린 멈춤은 마우스가 있는 화면에서만.
+const canHover=()=>typeof matchMedia==='function'&&matchMedia('(hover:hover)').matches;
 // 들어가는 순간에 멈출 수 있는 모델인지(복도에 선 모델만).
 export const inHall=id=>MOVING_MODELS.includes(id)&&!!modelCard(id);
 // 처음 가운데에 설 사람: 하린(시안 A와 같음). 띠는 하린부터 캐스팅북 차례로 선다.
@@ -68,10 +70,10 @@ export function mountHall(host,{items=hallItems(),onFilm,still=()=>false,quiet=(
     if(i<n||i>=n*2){const shift=i<n?n:-n,from=strips[cur];from?.classList.remove('is-on');from?.setAttribute('tabindex','-1');dropVideo();cur+=shift;strips[cur].classList.add('is-on');place(false);i+=shift;}
     const was=strips[cur];was?.classList.remove('is-on');was?.setAttribute('tabindex','-1');
     cur=i;const strip=strips[cur];strip.classList.add('is-on');strip.setAttribute('tabindex','0');
-    if(box.contains(document.activeElement)&&document.activeElement!==holdButton)strip.focus({preventScroll:true});
+    if(box.querySelector(':focus-visible')&&document.activeElement!==holdButton)strip.focus({preventScroll:true});
     walk(strip);place(animate);
   }
-  const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||!!box.querySelector(':focus-visible');
+  const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||(canHover()&&box.matches(':hover'))||!!box.querySelector(':focus-visible');
   const tick=()=>{if(!busy())set(cur+1);};
   const start=()=>{clearInterval(timer);timer=setInterval(tick,STEP_MS);};
   const hold=()=>{pause=Date.now()+HOLD_MS;};
