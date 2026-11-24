@@ -51,6 +51,9 @@ function watchJobs(s) {
   // 넘긴 뒤 첫 백업 때문에 못 읽은 「프로그램과 설정」은 그 일이 끝나면 다시 읽는다 — 이 PC에 둔 꾸러미가 없으면 엔진이 저장소를 읽는다(E19)
   if (prevJob && !s.job && screen === 'move-apps' && ['JOB_BUSY', 'RUN_ACTIVE'].includes(mv?.apps?.listError)) void openApps();
   else if (prevJob && !s.job && (screen === 'move-apps' || screen === 'move-4') && mv?.apps?.checks === null) void loadChecks();
+  // 「보호 시작」 작업이 처음 보일 때 지난 백업이 있었는지 기억한다 — 작업 도중 새 판이 저장돼도 진행 화면의 「첫 백업」 · 「백업」이
+  // 바뀌지 않게(start3, Fable 다시 검수 F1)
+  if (s.job?.kind === 'protect' && prevJob !== 'protect') acct = { ...acct, protectAfter: !!s.lastBackup?.at };
   prevJob = s.job?.kind || null;
   const moving = !!moveJob(s);
   if (mvRunning && !moving) { mv = { ...(mv || {}), state: undefined, result: undefined }; void moveEnded(); }
@@ -108,6 +111,10 @@ function resolve(id, s, model) {
   if (id !== 'home') return id;
   if (s?.job?.kind === 'protect') return 'start-3';
   if (model.id === 'start') return startStep(s) === 'signin' ? 'start-1' : 'start-2';
+  // 「보호 시작」 · 「이어서 백업」의 답을 기다리는 동안은 엔진에 아직 작업이 없다. 클라우드 자리가 생긴 뒤 복구 정보를 맡기는 사이(약 20초)의
+  // 엔진 상태는 복구 정보를 맡기다 멈춘 PC와 같아, 기본 화면이 「보호 시작이 중간에 멈췄습니다」를 잠깐 그렸다(T13 11-25 유호님 캡처).
+  // 그동안은 진행 순서를 보인다(start3이 누른 단추로 글을 가른다). 실패하면 호출이 끝나 보호 범위 화면으로 돌아간다
+  if (runningCalls.has('startProtection') || runningCalls.has('continueBackup')) return 'start-3';
   return 'home';
 }
 
@@ -530,7 +537,11 @@ async function takeOver() {
   }
   const t = await store.call('takeWriteSeat', {});
   if (!t.ok) return stop(t);
-  const c = await store.call('continueBackup', { googleStepDone: acct.googleAck === true });
+  // 이어서 백업의 답을 기다리는 동안 기본 화면의 「자동 백업이 꺼져 있습니다」가 그려지지 않게 진행 화면을 고른다(resolve, Fable P3).
+  // 앞의 Google 걸음(takeWriteSeat)에는 걸지 않는다 — 그 화면의 로그인 그만두기 단추가 남아야 한다
+  runningCalls.add('continueBackup'); paint();
+  let c;
+  try { c = await store.call('continueBackup', { googleStepDone: acct.googleAck === true }); } finally { runningCalls.delete('continueBackup'); }
   if (!c.ok) return stop(c);
   acct = { ...acct, take: false, googleAck: false };
   return go('home');

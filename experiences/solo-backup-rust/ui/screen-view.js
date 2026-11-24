@@ -236,8 +236,44 @@ function startRead(s, acct, now) {
     acts: { move: { id: 'move', flow: 'moveOpen', account: true, ...(needStep ? { google: 'maybe' } : {}) }, open: { id: 'open', flow: 'openRead', account: true, ...(needStep ? { google: 'maybe' } : {}) }, take: { id: 'take' }, 'google-ack': { id: 'google-ack' } } };
 }
 
-function start3(s, fake) {
+function start3(s, fake, acct) {
+  // 첫 백업 작업이 아직 없으면 「보호 시작」 · 「이어서 백업」 · 「복구 정보 맡기기」의 답을 기다리는 중이다(app.js resolve). 이때 창을 닫으면
+  // 정말로 중간에 멈추므로 「창을 닫아도 됩니다」와 창 닫기 단추를 두지 않는다. 누른 단추(acct.running)로 글과 순서를 가른다(Fable F2).
+  // 예시 화면은 acct.starting('protect' · 'continue' · 'recovery')으로 이 갈래를 그린다
+  if (fake ? !!acct?.starting : s?.job?.kind !== 'protect') {
+    const how = fake ? acct.starting : acct?.running, wait = '그때까지 창을 열어 두세요.';
+    const cont = how === 'continue' || how === 'take-go', again = !cont && how === 'recovery' && (fake || !!s?.lastBackup?.at);
+    // 클라우드 자리는 그 작업(setupCloud)이 끝나 저장소가 이어진 뒤에야 끝난 걸음이다(Fable F1)
+    const made = fake || (!!s?.configured && !s?.job);
+    const [word, title, text, head, list] = cont
+      ? ['이어서 백업', '이 PC에서 이어서 백업할 준비를 하고 있습니다.', `이 계정의 백업을 열고 이 PC를 백업하는 기기로 바꾸고 있습니다. 끝나면 백업이 바로 시작됩니다. ${wait}`, '이어서 백업 순서',
+        [{ st: 'now', n: '1', h: '이 계정의 백업을 이 PC로 잇기' }, { n: '2', h: '매시간 저절로 돌게 등록하기' }, { n: '3', h: '백업' }]]
+      : again
+        ? ['복구 정보', '복구 정보를 맡기는 중입니다.', `복구 정보를 Google 계정에 맡기고 있습니다. 끝나면 백업이 바로 이어집니다. ${wait}`, '순서',
+          [{ st: 'now', n: '1', h: '복구 정보를 내 Google 계정에 맡기기', p: '맡긴 뒤 다시 받아 열리는지까지 봅니다.' }, { n: '2', h: '백업' }]]
+        : ['보호 시작', '보호를 시작하는 중입니다.',
+          made ? `복구 정보를 Google 계정에 맡기고 있습니다. 끝나면 첫 백업이 바로 시작됩니다. ${wait}` : `내 클라우드 자리를 만들고 있습니다. 이어서 복구 정보를 맡기고 첫 백업을 시작합니다. ${wait}`, '첫 백업 순서',
+          [made ? { st: 'done', n: '✓', h: '내 클라우드 자리 만들기' } : { st: 'now', n: '1', h: '내 클라우드 자리 만들기' },
+            { st: made ? 'now' : '', n: '2', h: '복구 정보를 내 Google 계정에 맡기기', p: '맡긴 뒤 다시 받아 열리는지까지 봅니다.' },
+            { n: '3', h: '매시간 저절로 돌게 등록하기' }, { n: '4', h: '첫 백업' }]];
+    const l = `${kick(`${h(s?.device || (fake ? EX.device : '이 PC'))} · ${word}`)}${say(title)}${then(text)}`;
+    const r = panel(head, cont || again ? '' : '넷째 걸음이 끝나면 매시간 저절로 지킵니다', steps(list));
+    return { kind: 'flow', tone: 'run', here: word, top: [], html: flow(l, r), acts: {} };
+  }
   const p = s?.job?.kind === 'protect' && Number.isFinite(Number(s.job.percent)) ? Math.max(0, Math.min(100, Math.round(Number(s.job.percent)))) : fake ? 31 : 0;
+  // 이미 백업이 있는 PC(이어서 백업 · 복구 정보 맡기기 뒤)의 같은 작업은 첫 백업이 아니다 — 앞의 진행 화면과 말을 맞춘다(Fable 다시 검수 F1).
+  // 작업이 처음 보일 때 창이 기억한 값(app.js watchJobs의 acct.protectAfter)으로 가른다. 작업 도중 새 판이 생겨도 그대로다
+  if (!fake && acct?.protectAfter === true) {
+    const l = `${kick(`${h(s?.device || '이 PC')} · 백업`)}${say('백업 중입니다.')}${then('창을 닫아도 됩니다. 끝나면 알려 드립니다.')}
+    <div class="bar rise i3" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100" aria-label="백업"><i data-pct="${p}"></i></div>
+    ${notes(['전원이 연결돼 있는 동안은 절전 모드로 들어가지 않습니다.', '이 뒤로는 매시간 바뀐 것만 올립니다. 꺼져 있어 놓친 시간은 로그인하거나 깨어난 뒤에 채웁니다.'])}
+    ${acts([{ id: 'close', label: '창 닫기', kind: 'line' }])}`;
+    const r = panel('순서', '', steps([
+      { st: 'done', n: '✓', h: '매시간 저절로 돌게 등록하기', p: '창을 닫아도 매시간 뒤에서 조용히 돕니다.' },
+      { st: 'now', n: '2', h: `백업 · 올리는 중 <span class="num">${p}%</span>` },
+    ]));
+    return { kind: 'flow', tone: 'run', here: '백업', top: [], html: flow(l, r), acts: { close: { id: 'close', call: 'closeWindow' } } };
+  }
   const l = `${kick(`${h(s?.device || (fake ? EX.device : '이 PC'))} · 첫 백업`)}${say('첫 백업 중입니다.')}${then('창을 닫아도 됩니다. 끝나면 알려 드립니다.')}
     <div class="bar rise i3" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100" aria-label="첫 백업"><i data-pct="${p}"></i></div>
     ${notes(['전원이 연결돼 있는 동안은 절전 모드로 들어가지 않습니다.', '첫 백업 뒤로는 매시간 바뀐 것만 올립니다. 꺼져 있어 놓친 시간은 로그인하거나 깨어난 뒤에 채웁니다.'])}
@@ -1325,7 +1361,7 @@ export function renderScreen(id, ctx) {
   switch (id) {
     case 'start-1': return start1(s, ctx.acct, now, fake);
     case 'start-2': return start2(s, ctx.acct, fake, now);
-    case 'start-3': return start3(s, fake);
+    case 'start-3': return start3(s, fake, ctx.acct);
     case 'restore': return restore(s, now, ctx.catalog, ctx.ui, ctx.mv, ctx.acct);
     case 'restore-old': return restoreOld(s, ctx.mv, ctx.acct, ctx.old, now, ctx.ui);
     case 'partial': case 'partial-std': return partial(s, now, partialMode(id, s, fake));

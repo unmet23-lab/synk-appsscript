@@ -159,6 +159,53 @@ test('기본 화면: 실제 엔진 상태의 빈칸 · 갈래에서 틀린 말�
   assert.equal(miss.evidence.head[0].v, '오후 2:02 · 세 곳');
 });
 
+test('보호 시작의 답을 기다리는 동안은 「중간에 멈췄습니다」 대신 첫 백업 순서를 보인다(T13 11-25 유호님 캡처)', async () => {
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const real = { ...STATES.home, device: undefined, recovery: undefined, job: null };
+  // 첫 백업 작업이 아직 없다 — 복구 정보를 맡기는 걸음. 창을 닫으면 정말 멈추므로 닫기를 권하지 않는다
+  const pre = renderScreen('start-3', { state: real, now: NOW, acct: {} });
+  assert.match(pre.html, /보호를 시작하는 중입니다/);
+  assert.match(pre.html, /class=\"step now\"><span class=\"n\">2<\/span><div><h4>복구 정보를 내 Google 계정에 맡기기/);
+  assert.doesNotMatch(pre.html, /창을 닫아도 됩니다|data-act="close"|중간에 멈췄습니다/);
+  assert.deepEqual(pre.acts, {});
+  // 첫 백업 작업이 생기면 첫 백업 화면 그대로
+  const run = renderScreen('start-3', { state: { ...real, job: { kind: 'protect', percent: 40 } }, now: NOW, acct: {} });
+  assert.match(run.html, /첫 백업 중입니다/);
+  assert.match(run.html, /aria-valuenow="40"/);
+  // 작업이 처음 보일 때 지난 백업이 있었으면(acct.protectAfter) 첫 백업이 아니다. 작업 도중 새 판이 생겨도 처음 기억한 대로 쓴다(Fable 다시 검수 F1)
+  const later = renderScreen('start-3', { state: { ...real, job: { kind: 'protect', percent: 40 } }, now: NOW, acct: { protectAfter: true } }).html;
+  assert.match(later, /백업 중입니다/);
+  assert.doesNotMatch(later, /첫 백업|내 클라우드 자리/);
+  assert.match(renderScreen('start-3', { state: { ...real, job: { kind: 'protect', percent: 90 } }, now: NOW, acct: { protectAfter: false } }).html, /첫 백업 중입니다/);
+  const watch = require('node:fs').readFileSync(path.join(__dirname, '..', 'ui', 'app.js'), 'utf8');
+  assert.match(watch, /if \(s\.job\?\.kind === 'protect' && prevJob !== 'protect'\) acct = \{ \.\.\.acct, protectAfter: !!s\.lastBackup\?\.at \};\r?\n\s*prevJob = s\.job\?\.kind \|\| null;/);
+  // 예시 화면은 acct.starting일 때만 이 갈래를 그린다
+  assert.match(renderScreen('start-3', { state: STATES.home, now: NOW, acct: { starting: 'protect' }, fake: true }).html, /보호를 시작하는 중입니다/);
+  // 클라우드 자리를 만드는 중(설정 전 · setup 작업)에는 첫 걸음이 지금이다(Fable F1)
+  for (const st of [{ ...real, configured: false }, { ...real, job: { kind: 'setup', percent: null } }]) {
+    const made = renderScreen('start-3', { state: st, now: NOW, acct: { running: 'protect' } }).html;
+    assert.match(made, /class=\"step now\"><span class=\"n\">1<\/span><div><h4>내 클라우드 자리 만들기/);
+    assert.match(made, /내 클라우드 자리를 만들고 있습니다/);
+  }
+  // 이어서 백업 · 되살리지 않고 이어서 백업 · 이미 백업이 있는 PC의 복구 정보 맡기기에는 「첫 백업」이라고 쓰지 않는다(Fable F2)
+  for (const running of ['continue', 'take-go']) {
+    const c = renderScreen('start-3', { state: real, now: NOW, acct: { running } }).html;
+    assert.match(c, /이 PC에서 이어서 백업할 준비를 하고 있습니다/);
+    assert.doesNotMatch(c, /첫 백업|내 클라우드 자리/);
+  }
+  const again = renderScreen('start-3', { state: real, now: NOW, acct: { running: 'recovery' } }).html;
+  assert.match(again, /복구 정보를 맡기는 중입니다/);
+  assert.doesNotMatch(again, /첫 백업/);
+  // 첫 백업 전의 「이어서 보호 시작」(같은 단추)은 보호 시작의 둘째 걸음이다
+  assert.match(renderScreen('start-3', { state: { ...real, lastBackup: null }, now: NOW, acct: { running: 'recovery' } }).html, /class=\"step now\"><span class=\"n\">2<\/span><div><h4>복구 정보를 내 Google 계정에 맡기기/);
+  assert.match(renderScreen('start-3', { state: STATES.home, now: NOW, acct: {}, fake: true }).html, /첫 백업 중입니다/);
+  // 화면 고르기(app.js resolve): 엔진 설정이 생긴 뒤, 보호 시작 · 이어서 백업의 답을 기다리는 동안
+  const appSrc = require('node:fs').readFileSync(path.join(__dirname, '..', 'ui', 'app.js'), 'utf8');
+  assert.match(appSrc, /if \(model\.id === 'start'\) return startStep\(s\) === 'signin' \? 'start-1' : 'start-2';\r?\n(?:[ \t]*\/\/[^\n]*\n)+[ \t]*if \(runningCalls\.has\('startProtection'\) \|\| runningCalls\.has\('continueBackup'\)\) return 'start-3';\r?\n[ \t]*return 'home';/);
+  assert.match(appSrc, /runningCalls\.add\('continueBackup'\); paint\(\);\r?\n\s*let c;\r?\n\s*try \{ c = await store\.call\('continueBackup', \{ googleStepDone: acct\.googleAck === true \}\); \} finally \{ runningCalls\.delete\('continueBackup'\); \}/);
+});
+
 test('그리기: 실제 상태에서는 예시 값으로 메우지 않는다(카본 B2 · B3 · B7 · B9 · B15)', async () => {
   const { renderScreen, drawer } = await load('screen-view.js');
   const { homeModel } = await load('screen-model.js');

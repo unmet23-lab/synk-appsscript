@@ -70,7 +70,7 @@ const UNDO = { value: { suggestions: [{ at: PICK, reason: 'before-mass-hide' }, 
 const CASES = [
   ['home', 'home'], ['home-run', 'home'], ['home-partial', 'home'], ['home-missing', 'home'], ['home-mass', 'home'], ['home-moved', 'home'],
   ['home-overdue', 'home'], ['home-credential', 'home'], ['home-startup', 'home'], ['home-restored', 'home'], ['home-health', 'home'], ['home-paused', 'home'], ['home-off', 'home'], ['home-probe', 'home'], ['home-error', 'home'],
-  ['start', 'start-1'], ['home', 'start-2'], ['home', 'start-3'], ['home', 'restore'], ['home-partial', 'partial'], ['home-partial', 'partial-std'],
+  ['start', 'start-1'], ['home', 'start-2'], ['home', 'start-3'], ['home', 'start-3', { name: 'start-3-starting', acct: { starting: 'protect' } }], ['home', 'start-3', { name: 'start-3-continuing', acct: { starting: 'continue' } }], ['home', 'start-3', { name: 'start-3-recovering', acct: { starting: 'recovery' } }], ['home', 'restore'], ['home-partial', 'partial'], ['home-partial', 'partial-std'],
   ['home', 'move-0'], ['home', 'move-1'], ['home', 'move-2'], ['home', 'move-3'], ['home', 'move-4'],
   ['home', 'undo-1'], ['home', 'undo-2'], ['home', 'undo-3'], ['home', 'lost'], ['home', 'lost-2'], ['home', 'code'], ['home-mass', 'mass-list'], ['home', 'drawer'],
   // 개통 잇기(11-16) — 실제 상태 모양의 갈래. 셋째 칸은 창이 기억하는 개통 걸음(app.js acct)과 되돌리기 미리 보기(undo)
