@@ -241,30 +241,38 @@
     },
     {
       "계정": "lab-vn-tiktok",
-      "상태": "거는 중",
-      "거는중": "2026-11-24T05:32:12.882Z",
+      "상태": "예약됨",
       "시각": "2026-11-25T13:00:00+07:00",
       "지문": "11f8a0d5bfd426b7c522a45cda0d9253a3bb75a808efa72a16824f6654052db7",
       "게시글지문": "fdc0205161e147e4e8ff40d0ba4706f6b5f602aa21da8cbde1a39e4e4a51a1e9",
-      "방법": "ego"
+      "방법": "ego",
+      "게시물ID": "7711610509266652468",
+      "주소": "https://www.tiktok.com/@synklab.vn/video/7711610509266652468",
+      "확인": "TikTok Studio 콘텐츠 목록(@synklab.vn) 줄 「Nov 25, 3:00 PM (GMT+9) Seoul Everyone」 · 글 첫 줄 「Trong tiếng Hàn, 수고하세요 (sugohaseyo) dịch sát nghĩa là “làm việc tốt nhé”. Nói với bạn bè, đồng nghiệp thì không sao, như」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 25, 2026 15:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 끔",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-24 14시 회차)",
+      "기록시각": "2026-11-24T05:59:07.486Z"
     },
     {
       "계정": "lab-np-facebook",
-      "상태": "거는 중",
-      "거는중": "2026-11-24T05:32:15.396Z",
+      "상태": "예약됨",
       "시각": "2026-11-25T13:00:00+05:45",
       "지문": "0c5a1b0ca1bb4737b13120cad83c1e9f50b4f8abc33476cfa424ec3dad2e92bb",
       "게시글지문": "fd62481ba26b69d8136baa96b768385a12fe972544834dfad8deeafd6a0097b0",
-      "방법": "ego-BusinessSuite"
+      "방법": "ego-BusinessSuite",
+      "확인": "Business Suite scheduled_posts?asset_id=1311065102093068 「2026년 11월 25일 수요일 4:15 전체 공개 FB 처리 중… कोरियनमा 수고하세요 (sugohaseyo) को शाब्दिक अर्थ हो …」(오후 4:15, 예약 칸 「2026년 11월 25일 오후 04:15 Asia/Jayapura」 = UTC+9 · 오전/오후 aria-valuetext 「오후」). 완료 창 「릴스가 처리 완료 후 2026. 11. 25.에 게시되도록 예약되었습니다」. 게시할 위치 「SYNK LAB Nepal」 하나, 캡션 원고_facebook.json caption 455자 · 6줄(빈 줄 뺌) 일치(insertText), 표지 cover.png, AI 표시 칸 없음 · 안 켬, 스토리 공유 꺼짐. 건 전 그 칸 줄 없음(목록에는 11-24 4:15 배 한 줄뿐)",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-24 14시 회차)",
+      "기록시각": "2026-11-24T05:55:41.632Z"
     },
     {
       "계정": "lab-lk-facebook",
-      "상태": "거는 중",
-      "거는중": "2026-11-24T05:32:17.638Z",
+      "상태": "예약됨",
       "시각": "2026-11-27T13:00:00+05:30",
       "지문": "92d643bf5a8f83bafa71bbf5a61fe0416aabec83406f8aaa42fe65b36bba9ce4",
       "게시글지문": "7ba90f0d030214e7a8096f147b106e7ea963667d6d41110520f2427b7945bfe5",
-      "방법": "ego-BusinessSuite"
+      "방법": "ego-BusinessSuite",
+      "확인": "Business Suite scheduled_posts?asset_id=1322127544319220 「2026년 11월 27일 금요일 4:30 전체 공개 FB 처리 중… කොරියන් භාෂාවේ 수고하세요 (sugohaseyo) කියන එකේ වචනාර්ථය …」(오후 4:30, 예약 칸 「2026년 11월 27일 오후 04:30 Asia/Jayapura」 = UTC+9 · 오전/오후 aria-valuetext 「오후」). 완료 창 「릴스가 처리 완료 후 2026. 11. 27.에 게시되도록 예약되었습니다」. 게시할 위치 「SYNK LAB Sri Lanka」 하나, 캡션 원고_facebook.json caption 466자 · 6줄(빈 줄 뺌) 일치(insertText), 표지 cover.png, AI 표시 칸 없음 · 안 켬, 스토리 공유 꺼짐. 건 전 그 칸 줄 없음. 건 뒤 11-26 4:30 피곤할때 줄도 그대로 있음",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-24 14시 회차)",
+      "기록시각": "2026-11-24T05:55:42.245Z"
     }
   ]
 }
