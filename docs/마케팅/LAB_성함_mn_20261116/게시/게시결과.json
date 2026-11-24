@@ -60,12 +60,16 @@
     },
     {
       "계정": "lab-br-youtube",
-      "상태": "거는 중",
-      "거는중": "2026-11-24T05:32:06.896Z",
+      "상태": "예약됨",
       "시각": "2026-11-25T13:00:00-03:00",
       "지문": "1374baabc5211cab6efe26315ccd42ba6ada30b681c9fb9e1482b5c5f2780d7f",
       "게시글지문": "016cf6ec3cbcf427a25a9703a54af3a45e8005135127f9b21924ad04f4a891d6",
-      "방법": "ego"
+      "방법": "ego",
+      "게시물ID": "SuLgvb6BI08",
+      "주소": "https://youtube.com/shorts/SuLgvb6BI08",
+      "확인": "예약 한국 시각 2026-11-26 01:00 = 현지 13:00 · Como perguntar o nome de um idoso em coreano ☕ Errou e levou um banho de café 😂 #aprendercoreano · 쇼츠 목록(SYNK LAB Brasil | Coreano divertido): 「Como perguntar o nome de um idoso em coreano ☕ Errou e levou um banho de café 😂 #aprendercoreano」 · 예약됨 · 2026. 11. 26. 예약 날짜 · 예약 창 2026. 11. 26. 오전 1:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 포르투갈어(브라질)로 저장됨 · 동영상 언어: 포르투갈어(브라질)",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-24 14시 회차)",
+      "기록시각": "2026-11-24T07:21:59.130Z"
     }
   ]
 }

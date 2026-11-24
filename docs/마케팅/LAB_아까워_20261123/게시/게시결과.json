@@ -2,12 +2,19 @@
   "판": [
     {
       "계정": "lab-us-youtube",
-      "상태": "거는 중",
-      "거는중": "2026-11-24T05:32:12.159Z",
+      "상태": "예약됨",
       "시각": "2026-11-28T21:00:00-05:00",
       "지문": "7996ec136f7a6cdb6933d88b1012d08e80b1eebea1287303f64dcdd36220d354",
       "게시글지문": "b4af8f14c6cb49e958a1fc6330de3f021a1d7ed3e197d4bfa449d01cd2f51e3b",
-      "방법": "ego"
+      "방법": "ego",
+      "게시물ID": "XABVlNyNaq4",
+      "주소": "https://youtube.com/shorts/XABVlNyNaq4",
+      "확인": "예약 한국 시각 2026-11-29 11:00 = 현지 21:00 · No English word for 아까워 😭 (too good to waste) #learnkorean · 쇼츠 목록(SYNK LAB USA | Korean Made Fun): 「No English word for 아까워 😭 (too good to waste) #learnkorean」 · 예약됨 · 2026. 11. 29. 예약 날짜 · 예약 창 2026. 11. 29. 오전 11:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 영어로 저장됨 · 동영상 언어: 영어 · 고정 댓글(게시문안 「What's too good to waste for YOU? 👇」)은 예약 중엔 달 수 없어 넣지 않음 — 공개 뒤 달 일",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-24 14시 회차)",
+      "기록시각": "2026-11-24T07:22:00.225Z",
+      "후속": [
+        "고정 댓글은 게시 뒤 손으로(게시문안.txt 「고정 댓글:」 절 · 예약 상태라 지금은 못 단다)"
+      ]
     }
   ]
 }
