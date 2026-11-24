@@ -168,6 +168,12 @@ test('내 위치 알림의 칸은 첫날 기록이 아니라 그날의 지도로
   g.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 1 * DAY, results: [], cells: ['']}};
   await g.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
   assert.equal(g.calls.some(c => c[0] === 'map'), false, '내 위치 날이 아니면 지도를 묻지 않는다');
+  // 첫날 한 번 맞힌 항목은 지도에서 아직 연습 중(practicing)이다 — 다시 세도 맞힌 칸은 맞힌 칸이다
+  const pm = {skills: [{id: 'a.listening.x', domain: 'listening', cell: 'practicing'}, {id: 'a.reading.y', domain: 'reading', cell: 'practicing'}, {id: 'a.reading.z', domain: 'reading', cell: 'practicing'}, {id: 'a.reading.w', domain: 'reading', cell: 'independent'}]};
+  const k = harness({map: pm});
+  k.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 3 * DAY, results: [{skillId: 'hangul', ok: true}, {skillId: 'a.listening.x', ok: true}, {skillId: 'a.reading.y', ok: false}, {skillId: 'a.reading.w', ok: false}], cells: ['done', 'next', '', ''], listening: 1}};
+  await k.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
+  assert.deepEqual(k.marks.guest.club.cells, ['done', 'next', 'next', 'done'], '첫날 맞힘은 그대로, 그 뒤 혼자 해낸 칸은 채움');
   const e = harness({map: null});
   e.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 3 * DAY, results: [], cells: ['done', ''], listening: 1}};
   await e.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
