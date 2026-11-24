@@ -77,11 +77,18 @@ export const END_AT = 28.85;
 // 몽글 · 친구 자리(1080×1920에 맞춘 좌표) — 움직임 조각이 여기서 난다. 그림을 다시 구우면 다시 잰다.
 export type Spot = { cx: number; cy: number; rx: number; ry: number };
 export const MONGLE: Record<string, Spot> = {
+  'open.jpg': { cx: 725, cy: 1235, rx: 190, ry: 205 },
+  'gust.jpg': { cx: 945, cy: 1150, rx: 135, ry: 165 },
+  'busstop.jpg': { cx: 760, cy: 1290, rx: 115, ry: 115 },
   'mongle.jpg': { cx: 620, cy: 1080, rx: 340, ry: 300 },
   'mountain.jpg': { cx: 640, cy: 660, rx: 140, ry: 115 },
   'pull.jpg': { cx: 880, cy: 1150, rx: 165, ry: 140 },
 };
 export const FRIEND: Record<string, Spot> = {
+  'open.jpg': { cx: 340, cy: 1210, rx: 200, ry: 490 },
+  'gust.jpg': { cx: 390, cy: 1300, rx: 410, ry: 650 },
+  'hug.jpg': { cx: 510, cy: 1230, rx: 450, ry: 720 },
+  'busstop.jpg': { cx: 570, cy: 1295, rx: 115, ry: 265 },
   'pop.jpg': { cx: 380, cy: 820, rx: 330, ry: 320 },
   'pull.jpg': { cx: 450, cy: 1090, rx: 300, ry: 170 },
   'mountain.jpg': { cx: 540, cy: 1240, rx: 540, ry: 500 },
