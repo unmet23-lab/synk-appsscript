@@ -233,7 +233,7 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-door.is-arriving :is(.sx-invite,.sx-door-foot,.sx-door-lead){opacity:0;pointer-events:none}
 .sx-hall{--sx-w0:84px;--sx-gap:3px;position:relative;overflow:hidden;background:#050505}
 .sx-hall-track{position:absolute;inset:0 auto 0 0;display:flex;gap:var(--sx-gap);height:100%;will-change:transform;transition:transform 1s var(--sx-out)}
-.sx-hall-track.is-still{transition:none}
+.sx-hall-track.is-still,.sx-hall-track.is-still :is(.sx-hall-strip,.sx-hall-tag){transition:none}
 .sx-hall-strip{position:relative;flex:none;width:var(--sx-w0);height:100%;overflow:hidden;background:#111;filter:saturate(.8) brightness(.8);transition:width 1s var(--sx-out),margin 1s var(--sx-out),opacity .7s var(--sx-io),filter .7s var(--sx-io)}
 .sx-hall-strip.is-on{width:var(--sx-w1,40vw);filter:none}
 .sx-hall-strip>:is(img,video){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}

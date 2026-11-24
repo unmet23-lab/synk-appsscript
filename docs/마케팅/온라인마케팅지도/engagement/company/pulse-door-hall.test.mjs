@@ -52,17 +52,20 @@ test('복도: 캐스팅북 모델(실제 인물 없이) 사이에 세로 완성 
   assert.equal((html.match(/ aria-hidden="true" aria-label=/g)||[]).length,n*2,'바깥 두 벌은 화면 읽기에서 뺀다');
   assert.equal((html.match(/data-hall-i="\d+" data-hall-id="[^"]+" tabindex="-1"/g)||[]).length,n*3,'Tab은 처음부터 띠에 걸리지 않고, 가운데 한 칸만 hall.mjs가 연다');
   const first=Number(html.match(/data-first="(\d+)"/)[1]);assert.ok(first>=n&&first<n*2,'가운데 벌에서 시작');
-  assert.match(html,/<button type="button" class="sx-hall-hold sx-small" data-hall-hold aria-pressed="false">넘기기 멈춤<\/button>/,'저절로 넘기는 것을 멈출 수 있다');
+  assert.match(html,/<button type="button" class="sx-hall-hold sx-small" data-hall-hold>자동 넘김 멈추기<\/button>/,'저절로 넘기는 것을 멈출 수 있다(이름만 바뀐다 — 눌림 상태를 함께 바꾸면 화면 읽기가 뜻을 뒤집는다)');
   assert.doesNotMatch(html,/style=/,'style 속성 글자 없음(CSP)');
 });
 
 test('복도의 움직임: 손이 닿거나 초점이 안에 있거나 숨은 탭 · 움직임 줄이기면 넘기지 않고, 손을 올려도 띠를 옮기지 않는다',()=>{
   const hall=read('hall.mjs');
-  assert.ok(hall.includes("const busy=()=>held||alone||gone||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||box.contains(document.activeElement);"));
+  assert.ok(hall.includes("const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||box.contains(document.activeElement);"));
   assert.doesNotMatch(hall,/mouseenter|pointerenter/,'손을 올린다고 띠가 움직이지 않는다(큰 움직임 멀미)');
   assert.ok(hall.includes("if(alone||!['ArrowLeft','ArrowRight'].includes(event.key)||event.target===holdButton)return;"),'좌우 화살표는 복도 안에서만');
   const home=read('film-home.mjs');
-  assert.ok(home.includes("still:()=>hold||current!==0||!!screening||reduced()||slowData()||!pageLoaded()"),'1쪽 밖 · 덮개 아래 · 데이터 절약 · load 전에는 영상 없이');
+  assert.ok(home.includes("const quiet=()=>hold||current!==0||!!screening;"),'1쪽 밖 · 상영 · 덮개 아래에서는 넘기지도 않는다');
+  assert.ok(home.includes("still:()=>quiet()||reduced()||slowData()||!pageLoaded()"),'그때와 데이터 절약 · load 전에는 영상 없이');
+  assert.ok(home.includes('linkForm.after(phone);'),'휴대폰 「내 모델」은 링크 칸 뒤');
+  assert.match(read('film.css'),/\.sx-hall-track\.is-still,\.sx-hall-track\.is-still :is\(\.sx-hall-strip,\.sx-hall-tag\)\{transition:none\}/,'조용히 옮길 때 띠 폭 · 이름표 전환도 끈다');
   assert.ok(home.includes("const reelApi=mountReel($('[data-reel]'),{held:true});"),'쇼릴은 1쪽에서 받지 않는다');
   const css=read('film.css');
   assert.match(css,/@media \(prefers-reduced-motion:reduce\)\{\.sx-hall-track,\.sx-hall-strip,\.sx-hall-tag\{transition:none\}/);

@@ -32,11 +32,11 @@ export function hallView(items=hallItems()){
   const n=items.length,first=Math.max(0,items.findIndex(item=>item.id===FIRST));
   // 세 벌을 잇대어 두고 가운데 벌에서 시작한다 — 끝에 닿으면 같은 사람의 가운데 벌 자리로 조용히 옮긴다. 화면 읽기 · Tab은 가운데 벌 한 칸만 본다.
   const strips=Array.from({length:n*COPIES},(_,k)=>{const item=items[k%n],copy=Math.floor(k/n),near=copy===1&&Math.abs(k%n-first)<=8;return `<button type="button" class="sx-hall-strip is-${item.kind}" data-hall-i="${k}" data-hall-id="${esc(item.id)}" tabindex="-1"${copy===1?'':' aria-hidden="true"'} aria-label="${esc(label(item))}"><img src="${esc(item.still)}" alt="" decoding="async"${near?'':' loading="lazy"'}>${tag(item)}</button>`;}).join('');
-  return `<div class="sx-hall" data-hall data-first="${n+first}" role="group" aria-label="${esc(t('AI 모델과 완성 광고'))}"><div class="sx-hall-track" data-hall-track>${strips}</div><p class="sx-hall-note sx-small">${esc(t('AI로 만든 가상 인물이에요'))}</p><button type="button" class="sx-hall-hold sx-small" data-hall-hold aria-pressed="false">${esc(t('넘기기 멈춤'))}</button></div>`;
+  return `<div class="sx-hall" data-hall data-first="${n+first}" role="group" aria-label="${esc(t('AI 모델과 완성 광고'))}"><div class="sx-hall-track" data-hall-track>${strips}</div><p class="sx-hall-note sx-small">${esc(t('AI로 만든 가상 인물이에요'))}</p><button type="button" class="sx-hall-hold sx-small" data-hall-hold>${esc(t('자동 넘김 멈추기'))}</button></div>`;
 }
 
-// still(): 영상 없이 그림만 둘 때(움직임 줄이기 · 데이터 절약 · 문서 load 전). onFilm(id): 광고 띠를 눌렀을 때.
-export function mountHall(host,{items=hallItems(),onFilm,still=()=>false}={}){
+// still(): 영상 없이 그림만 둘 때(움직임 줄이기 · 데이터 절약 · 문서 load 전). quiet(): 넘기지도 않을 때(1쪽 밖 · 상영 · 덮개 아래). onFilm(id): 광고 띠를 눌렀을 때.
+export function mountHall(host,{items=hallItems(),onFilm,still=()=>false,quiet=()=>false}={}){
   const box=host?.querySelector('[data-hall]');if(!box)return null;
   const track=box.querySelector('[data-hall-track]'),strips=[...box.querySelectorAll('.sx-hall-strip')],holdButton=box.querySelector('[data-hall-hold]');
   const n=items.length;
@@ -71,12 +71,12 @@ export function mountHall(host,{items=hallItems(),onFilm,still=()=>false}={}){
     if(box.contains(document.activeElement)&&document.activeElement!==holdButton)strip.focus({preventScroll:true});
     walk(strip);place(animate);
   }
-  const busy=()=>held||alone||gone||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||box.contains(document.activeElement);
+  const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||box.contains(document.activeElement);
   const tick=()=>{if(!busy())set(cur+1);};
   const start=()=>{clearInterval(timer);timer=setInterval(tick,STEP_MS);};
   const hold=()=>{pause=Date.now()+HOLD_MS;};
   box.addEventListener('click',event=>{
-    if(event.target.closest('[data-hall-hold]')){held=!held;holdButton.setAttribute('aria-pressed',held?'true':'false');holdButton.textContent=held?t('넘기기 다시'):t('넘기기 멈춤');return;}
+    if(event.target.closest('[data-hall-hold]')){held=!held;holdButton.textContent=held?t('자동 넘김 다시 켜기'):t('자동 넘김 멈추기');return;}
     const strip=event.target.closest('.sx-hall-strip');if(!strip||alone)return;
     const i=Number(strip.dataset.hallI),item=items[i%n];hold();
     if(item.kind==='film'&&i===cur){onFilm?.(item.id);return;}

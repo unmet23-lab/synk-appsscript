@@ -356,7 +356,8 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
   linkForm.addEventListener('keydown',event=>{if(event.key!=='Escape'||$('[data-entry-mail]')?.hidden)return;showLink(false);linkButton.focus();});
   if(onInvite)$('[data-entry-invite]').addEventListener('submit',event=>{if(event.target.dataset.form!=='invite')return;event.preventDefault();onInvite(event.target.invite.value);});
   // 복도(1쪽 오른쪽): 광고 띠를 누르면 소리와 함께 상영한다. 1쪽 밖 · 덮개 아래 · 움직임 줄이기 · 데이터 절약 · 문서 load 전에는 그림만.
-  hallApi=mountHall(sections[0],{onFilm:id=>{const film=filmOf(id);if(film)watch(film);},still:()=>hold||current!==0||!!screening||reduced()||slowData()||!pageLoaded()});
+  const quiet=()=>hold||current!==0||!!screening;
+  hallApi=mountHall(sections[0],{onFilm:id=>{const film=filmOf(id);if(film)watch(film);},quiet,still:()=>quiet()||reduced()||slowData()||!pageLoaded()});
   activate(0);sections[0].classList.add('is-in');
   // 접수 상태(운영 조각 3): 앱이 이어 쓰기 · 접수 상태를 읽은 뒤 update로 알려 준다.
   // 처음 그려진 안내의 열쇠에서 시작한다 — 쉬는 채로 그려진 화면에 같은 안내가 다시 오면 다시 쓰지 않는다.
@@ -386,9 +387,9 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
       if($('[data-entry="models"]'))return;
       const top=document.createElement('button');top.type='button';top.dataset.entry='models';top.textContent=t('내 모델');
       $('.sx-top-nav [data-entry="open"]')?.after(top);
-      // 휴대폰(머리 단추가 숨는 폭)은 문 판의 「담당자에게 받은 링크로 열기」 뒤.
+      // 휴대폰(머리 단추가 숨는 폭)은 문 판의 링크 칸 뒤 — 「담당자에게 받은 링크로 열기」와 그 칸 사이를 가르지 않는다.
       const phone=document.createElement('button');phone.type='button';phone.className='sx-door-link sx-small sx-models-m';phone.dataset.entry='models';phone.textContent=t('내 모델');
-      linkButton.after(phone);
+      linkForm.after(phone);
     },
     // 받은 링크 오류 · 이어 쓰기는 쇼릴을 끊지 않고 글만 바꾼다.
     // 예시 · 의뢰서 덮개가 열리고 닫힐 때(app.mjs overlayState).
