@@ -456,6 +456,7 @@
   font-size: 13px;
   color: var(--ws-ink-secondary);
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .metrics-label {
