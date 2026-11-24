@@ -43,7 +43,7 @@ export function explainOf(item,lang='ko'){
 // 진단 지도 → 결과 칸(항목 순서 그대로). 이번 대화에서 본 항목은 그 답으로(맞힘 'done' · 놓침 'next'), 나머지는 지도 칸으로
 // (최근 혼자 해냄 'done' · 연습 중 'next' · 아직 ''). 한 번 맞힌 것을 「해냄」이라 하지 않으려고 화면은 「맞힘」이라 쓴다(club.mjs).
 // solo: 다시 셀 때(사흘마다 내 위치) — 지도가 혼자 해냄이면 그 칸이 먼저고, 아니면 첫날 답(맞힘 'done' · 놓침 'next'), 그다음 지도 칸.
-// 첫날 한 번 맞힌 항목은 지도에서 아직 연습 중이라, 첫날 답을 빼고 세면 맞힌 칸이 놓친 칸처럼 보인다(Fable 11-25 P1).
+// 첫날 한 번 맞힌 항목은 지도에서 아직 연습 중이라, 첫날 답을 빼고 세면 맞힌 칸이 놓친 칸처럼 보인다(11-25).
 export function cellsOf(map,rows=[],{solo=false}={}){
  const skills=Array.isArray(map?.skills)?map.skills:[],seen=new Map((Array.isArray(rows)?rows:[]).filter(r=>r?.skillId&&r.skillId!=='hangul').map(r=>[r.skillId,!!r.ok]));
  const cell=skill=>solo&&skill.cell==='independent'?'done':seen.has(skill.id)?(seen.get(skill.id)?'done':'next'):skill.cell==='independent'?'done':skill.cell==='practicing'?'next':'';
