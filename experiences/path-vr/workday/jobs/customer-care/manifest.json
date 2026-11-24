@@ -6,8 +6,7 @@
   "projection": "rectilinear-mono",
   "stereo": false,
   "source": {
-    "status": "making",
-    "reviewScope": "유호님이 11-23에 Flow를 멈추기로 하셔서 영상 없이 사진과 자막으로 공개한다."
+    "status": "making"
   },
   "notice": "인물과 장소는 AI로 만든 그림이에요. 실제 사람이나 시설이 아니에요.",
   "clips": []
