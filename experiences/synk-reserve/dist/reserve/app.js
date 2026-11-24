@@ -166,7 +166,7 @@
       const x = s[state.lang];
       const line = s.line ? `<p class="rs-line"><small>${keep(x.lineLabel)}</small><span lang="ko">${esc(s.line)}</span>${x.lineMean ? `<span class="rs-mean">${keep(x.lineMean)}</span>` : ''}</p>` : '';
       return `<li class="rs-chapter${i === sceneAt ? ' on' : ''}" data-i="${i}">`
-        + `<div class="rs-chapter-pic"><img src="${pic(s.id)}" alt="${esc(x.alt)}" width="900" height="1125" loading="lazy" decoding="async">${s.soon ? `<span class="rs-soon" aria-hidden="true">${keep(x.soon)}</span>` : ''}</div>`
+        + `<div class="rs-chapter-pic"><img src="${pic(s.id)}" alt="${esc(x.alt)}" width="900" height="${s.h}" loading="lazy" decoding="async">${s.soon ? `<span class="rs-soon" aria-hidden="true">${keep(x.soon)}</span>` : ''}</div>`
         + `<div class="rs-chapter-say"><span class="rs-num">${keep(x.tag)}${s.soon ? `<em class="rs-soon-tag">${keep(x.soon)}</em>` : ''}</span><h3>${keep(x.name)}</h3><p>${keep(x.body)}</p>${line}${s.friends ? `<div class="rs-faces">${faces}</div>` : ''}</div></li>`;
     }).join('');
     showScene(sceneAt, false);
@@ -192,7 +192,7 @@
     let img = [...stage.querySelectorAll('img')].find(o => o.dataset.key === want);
     if (!img) {
       img = new Image();
-      img.src = pic(s.id); img.width = 900; img.height = 1125; img.decoding = 'async'; img.alt = '';
+      img.src = pic(s.id); img.width = 900; img.height = s.h; img.decoding = 'async'; img.alt = '';
       img.dataset.key = want;
       stage.appendChild(img);
     }

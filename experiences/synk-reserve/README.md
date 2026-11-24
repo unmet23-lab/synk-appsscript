@@ -9,7 +9,7 @@
 | 화면 글(한국어 · 영어 · 몽골어), 아래 단락의 서울행 장면 글(`SCENES`), 폼 질문 번호, 관심 선택지 | `src/copy.js` |
 | 화면 동작(언어 · 들어온 곳 · TOPIK 안내 띠 · 장면 휴대폰 · 보내기 · 친구에게 보내기) | `src/app.js` |
 | 구조와 모양 | `src/index.html`, `src/reserve.css` (synk.im 새 홈 v11의 값과 마을 그림 `/assets/v11/town-road.webp`) |
-| 아래 단락의 장면 사진 | `src/img/<gate·cafeteria·fair·taeo·idol>.webp`, 동아리 친구 얼굴 `src/img/face-<seoha·taeo·yuna>.webp` — WORLD 원천 그림(seoul-arrival 정문 · 데뷔 무대, 드라마 시범판 학생 식당 · 동아리 박람회, world-front 동아리 친구)을 900px로 줄인 판 |
+| 아래 단락의 장면 사진 | `src/img/<gate·cafeteria·fair·taeo·idol>.webp`, 동아리 친구 얼굴 `src/img/face-<seoha·taeo·yuna>.webp` — WORLD 원천 그림(seoul-arrival 정문 · 데뷔 무대, 드라마 시범판 학생 식당 · 동아리 박람회, world-front 동아리 친구)을 폭 900px로 줄인 판. 학생 식당 · 박람회는 `Documents/synk-vendor/drama-showcase-20261031`의 큰 원본(`taeo-still.png` · 칸 15 박람회)에서 줄였다. 높이는 `copy.js` 장면의 `h`이고 시험이 파일과 대조한다 |
 | 아래 단락의 실제 화면 캡처 | `src/shots/<ko·en·mn>/<name·road>.webp` (아래 「화면 캡처」) |
 | 링크 미리보기 원고 | `src/og.html` → `reserve/og.jpg` |
 | 철수한 `/lab/topik4/` 자리 | `src/lab-topik4.html` → `lab/topik4/index.html` |

@@ -29,12 +29,21 @@ test('폼 고정 값은 구글 폼 선택지 글과 같고, 질문 번호는 같
 test('아래 단락의 서울행 장면: 세 언어 글이 다 있고 사진 · 화면 캡처 파일이 있다', () => {
   assert.ok(C.SCENES.length >= 4);
   const webp = f => { assert.ok(fs.existsSync(f), path.relative(__dirname, f)); const b = fs.readFileSync(f); assert.equal(b.toString('ascii', 0, 4) + b.toString('ascii', 8, 12), 'RIFFWEBP', `${path.basename(f)}는 webp`); };
+  // VP8X · VP8 · VP8L 머리에서 가로 · 세로를 읽는다.
+  const webpSize = f => {
+    const b = fs.readFileSync(f), k = b.toString('ascii', 12, 16);
+    if (k === 'VP8X') return [1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)];
+    if (k === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+    if (k === 'VP8L') { const v = b.readUInt32LE(21); return [1 + (v & 0x3fff), 1 + ((v >> 14) & 0x3fff)]; }
+    throw new Error(`${path.basename(f)}: 모르는 webp 머리 ${k}`);
+  };
   const ids = new Set();
   for (const s of C.SCENES) {
     assert.match(s.id, /^[a-z]+$/);
     assert.ok(!ids.has(s.id), `장면 이름 겹침: ${s.id}`);
     ids.add(s.id);
     webp(path.join(__dirname, 'src/img', `${s.id}.webp`));
+    assert.deepEqual(webpSize(path.join(__dirname, 'src/img', `${s.id}.webp`)), [900, s.h], `${s.id}.webp 크기 = img 크기 속성(900 × h)`);
     for (const l of C.LANGS) {
       for (const f of ['tag', 'name', 'body', 'alt']) assert.ok(typeof s[l][f] === 'string' && s[l][f].trim(), `${s.id}.${l}.${f}`);
       if (s.shot) webp(path.join(__dirname, 'src/shots', l, `${s.shot}.webp`));

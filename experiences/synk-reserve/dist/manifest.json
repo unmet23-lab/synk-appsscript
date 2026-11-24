@@ -4,8 +4,8 @@
     "sha256": "6708b9296df9c0e019715a548c55979b36d8fb42bd88536f52c660d7e9b113cb"
   },
   "reserve/app.js": {
-    "bytes": 17396,
-    "sha256": "2e7bcb43af4d350780aedddf8e3ad4bcfb4e5822659c826a8608a98cd0ca2a11"
+    "bytes": 17397,
+    "sha256": "1f4874d358446a1976ae19a78f6ddea44d548211b3d9124221cd55bc1ed2d6cc"
   },
   "reserve/assets/reserve-inter-500.woff2": {
     "bytes": 29560,
@@ -16,16 +16,16 @@
     "sha256": "27e0264fe7d1ddaff844ccba5cc9d00cddd18a8353a76935ffeafc665091c7f4"
   },
   "reserve/assets/reserve-sans.woff2": {
-    "bytes": 103012,
-    "sha256": "f37b6d9da5fbd5a09b5cc159575fd1a1030700b20e3e17bd72b0fa0fa28bf6c6"
+    "bytes": 103976,
+    "sha256": "950957da5aabdae9c78a9ab3682715b5417c85bbbe3102746195559681d52d3e"
   },
   "reserve/copy.js": {
-    "bytes": 20671,
-    "sha256": "6240efe1684f4c1049a1d1ea3af0d945713e6e2837406498b2337cfa11457b51"
+    "bytes": 20823,
+    "sha256": "1b1e1f2a49620a6a3ef222f013ea648fbd43ca83b2dcd10ac148136680e951d8"
   },
   "reserve/img/cafeteria.webp": {
-    "bytes": 63840,
-    "sha256": "25f6bc450a3ef7ab29a22268a6bb51928aa7e7a85ec7d447a8859e5a8556e70a"
+    "bytes": 86094,
+    "sha256": "7f89f00ee6d4400770a0c8f8fdc2438758024113aab77160452a2bcfff57aed5"
   },
   "reserve/img/face-seoha.webp": {
     "bytes": 4300,
@@ -40,8 +40,8 @@
     "sha256": "f1ed0e43fecef7f0fc3604e2f2948f558c039f6c6d32384d9d4be280e3e080c1"
   },
   "reserve/img/fair.webp": {
-    "bytes": 59610,
-    "sha256": "3d3dd66bb6c7e092976919f51ca38e39f5906131637a0df1cf44686c79c19c3a"
+    "bytes": 77034,
+    "sha256": "92dfd0967b9ee5965af718868c51a30e7b2cbbdb13118de393478a83b12e03f9"
   },
   "reserve/img/gate.webp": {
     "bytes": 123476,
@@ -57,15 +57,15 @@
   },
   "reserve/index.html": {
     "bytes": 8005,
-    "sha256": "a4b035025d6be0f3589b2b93a854b9a050ab8a01f7821191ade05f5e707946c1"
+    "sha256": "64cfd2e8abaa94972c0788c1a329568169ef6467dd9fc412d2a64c8684e673d7"
   },
   "reserve/og.jpg": {
     "bytes": 95001,
     "sha256": "144ca4b63d22d0fd06865dc0f6002147bdfffcac6720494f7bce5bb10008ba73"
   },
   "reserve/reserve.css": {
-    "bytes": 13454,
-    "sha256": "1bdcbdb89a89efd24a09bfcfa42f1c2fb0eb90f2a0713bef29de8d24473235d6"
+    "bytes": 13738,
+    "sha256": "cbfe0fcfc888f9edbe6eff1ea49bdcd2111e1edabee72dba7328129ae635271e"
   },
   "reserve/shots/en/name.webp": {
     "bytes": 23208,
