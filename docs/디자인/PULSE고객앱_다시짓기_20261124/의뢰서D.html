@@ -147,9 +147,11 @@ body{background:var(--bg);color:var(--ink)}
 .nav{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:28px}
 .back{font-size:14px;color:var(--dim)}
 .back:hover{color:var(--ink)}
+.pair{display:flex;gap:12px}
 .go.ghost{background:none;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(244,241,234,.3)}
 
 /* 갈래 카드: 솔리오가 그 갈래의 소품을 든 작은 그림 */
+.drop small.act{color:var(--ink)}
 .kinds{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .kcard{display:flex;flex-direction:column;gap:3px;padding:0 0 14px;border-radius:14px;background:var(--card);text-align:left;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(244,241,234,.08);transition:box-shadow .2s,transform .2s var(--ease)}
 .kcard img{width:100%;aspect-ratio:1;object-fit:cover;margin-bottom:10px;filter:brightness(.9);transition:filter .3s}
@@ -179,6 +181,7 @@ body{background:var(--bg);color:var(--ink)}
 .card-h b{font-size:15px;color:var(--ink);font-weight:600}
 
 /* 확인 · 결제 */
+.test{display:inline-block;margin:-6px 0 18px;padding:3px 9px;border:1px solid var(--new);border-radius:999px;font-size:12px;color:var(--new)}
 .sheet{padding-top:38px;animation:rise .4s var(--ease)}
 
 @media (max-width:1060px){
@@ -186,7 +189,7 @@ body{background:var(--bg);color:var(--ink)}
   .side{position:fixed;left:0;right:0;bottom:0;z-index:20}
   .card{position:static;margin:0;flex-direction:row;align-items:center;gap:14px;padding:12px 28px calc(env(safe-area-inset-bottom) + 14px);border-radius:0;background:rgba(6,6,6,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line)}
   .card-h,.sumlist{display:none}
-  .card.empty{display:none}
+  .card.empty,.card.quiet{display:none}
   .mini{width:34px}.mini[data-ratio="16:9"]{width:62px}.mini[data-ratio="1:1"]{width:44px}
   .price{flex:1}
 }
@@ -195,7 +198,8 @@ body{background:var(--bg);color:var(--ink)}
   .app{padding:18px 16px 120px}
   .track{padding-top:52px}
   .seg span{font-size:11px}
-  .kinds{grid-template-columns:1fr}
+  .drop small.act{color:var(--ink)}
+.kinds{grid-template-columns:1fr}
   .kcard{flex-direction:row;align-items:center;gap:14px;padding:0 14px 0 0}
   .kcard img{width:72px;margin:0;flex:none}
   .kcard b,.kcard small,.kcard .won{padding:0}
@@ -266,7 +270,7 @@ function lineFor(id) {
     kind: '안녕하세요, 솔리오예요. 무엇을 광고할지부터 골라 주세요.',
     name: k?.nameSay || '',
     files: '보내 주신 사진은 고치지 않고 그대로 써요. 지금 없으면 나중에 보내셔도 돼요.',
-    len: k?.id === 'mv' ? '곡 길이 그대로 만들어요. 값은 곡마다 정가예요.' : '올릴 곳에 맞춰 화면 모양을 정해요. 처음이면 15초 한 편이 무난해요.',
+    len: k?.id === 'mv' ? '곡 길이 그대로 만들어요. 값은 곡마다 정가예요.' : '처음이면 15초 한 편이 무난해요.',
     more: S.custom ? '고르기 어려운 것은 비워 두셔도 돼요. 담당자가 어울리는 쪽을 두 안으로 보여 드려요.' : '나머지는 제가 추천해 둘게요. 바꾸고 싶으면 직접 고르셔도 돼요.',
     mail: '진행 소식을 받을 메일이에요. 이것만 적으면 끝이에요.',
     review: '한 번 훑어보시고 보내기를 눌러 주세요. 지금은 결제하지 않아요.',
@@ -306,13 +310,13 @@ function stepHTML() {
   if (id === 'kind') return `<h2>무엇을 광고하나요? <span>필요한 것만 여쭤볼게요.</span></h2>
     <div class="kinds" role="radiogroup" aria-label="만들 것">${KINDS.map(x => `<button class="kcard" role="radio" aria-checked="${S.kind === x.id}" data-kind="${x.id}"><img src="./그림/솔리오_${x.id}.webp" alt=""><span class="t"><b>${x.name}</b><small>${x.note}</small><span class="won">${x.lens[0][2] == null ? '정가 ○○만원' : won(Math.min(...x.lens.map(v => v[2]))) + '부터'}</span></span></button>`).join('')}</div>${S.kind ? nav(true) : ''}`;
   if (id === 'name') return `<h2>${k.nameQ[0]} <span>${k.nameQ[1]}</span></h2><input class="input" data-name placeholder="${k.ph}" value="${S.name}" aria-label="이름" enterkeyhint="next">${nav(S.name.trim() ? true : 'off')}`;
-  if (id === 'files') return `<h2>자료. <span>사진과 파일을 보내 주세요.</span></h2><div class="drops">${k.files.map(([n, need, img], i) => `<button class="drop${S.files[i] ? ' is-in' : ''}${need ? ' is-need' : ''}" data-file="${i}">${need ? '<span class="need">꼭 필요해요</span>' : ''}<span class="add">+</span>${S.files[i] && img ? `<img src="${img}" alt="">` : ''}<b>${n}</b><small>${S.files[i] ? '바꾸려면 다시 누르세요' : need ? '눌러서 고르기' : '있으면 좋아요'}</small></button>`).join('')}</div>${nav(true, k.files.some(([, nd], i) => nd && !S.files[i]) ? '나중에 보낼게요' : '다음')}`;
-  if (id === 'len') return `<h2>${k.id === 'mv' ? '길이.' : '올릴 곳과 길이.'} <span>${k.id === 'mv' ? '곡 하나를 끝까지 만들어요.' : '값은 길이로 정해져요.'}</span></h2>${k.id === 'mv' ? '' : `<div class="chips" role="radiogroup" aria-label="올릴 곳">${CHANNELS.map(([c], i) => `<button class="chip" role="radio" aria-pressed="${S.chan === i}" data-chan="${i}">${c}</button>`).join('')}</div>`}
+  if (id === 'files') return `<h2>자료. <span>사진과 파일을 보내 주세요.</span></h2><div class="drops">${k.files.map(([n, need, img], i) => `<button class="drop${S.files[i] ? ' is-in' : ''}${need ? ' is-need' : ''}" data-file="${i}">${need ? '<span class="need">꼭 필요해요</span>' : ''}<span class="add">+</span>${S.files[i] && img ? `<img src="${img}" alt="">` : ''}<b>${n}</b><small class="${S.files[i] || need ? 'act' : ''}">${S.files[i] ? '바꾸려면 다시 누르세요' : need ? '눌러서 고르기' : '있으면 좋아요'}</small></button>`).join('')}</div>${nav(true, k.files.some(([, nd], i) => nd && !S.files[i]) ? '나중에 보낼게요' : '다음')}`;
+  if (id === 'len') return `<h2>${k.id === 'mv' ? '길이.' : '올릴 곳과 길이.'} <span>${k.id === 'mv' ? '곡 하나를 끝까지 만들어요.' : '얼마나 만들까요?'}</span></h2>${k.id === 'mv' ? '' : `<div class="chips" role="radiogroup" aria-label="올릴 곳">${CHANNELS.map(([c], i) => `<button class="chip" role="radio" aria-pressed="${S.chan === i}" data-chan="${i}">${c}</button>`).join('')}</div>`}
     <div class="opts" role="radiogroup" aria-label="길이">${k.lens.map(([a, b, c], i) => `<button class="opt" role="radio" aria-checked="${S.len === i}" data-len="${i}"><span class="t"><b>${a}</b><small>${b}</small></span><span class="won">${won(c)}${c == null ? '' : '부터'}</span></button>`).join('')}</div>${nav(true)}`;
   if (id === 'more') {
     if (!S.custom) return `<h2>마무리. <span>나머지는 추천대로 할까요?</span></h2>
       <dl class="rec"><div><dt>마지막 화면</dt><dd>로고 + 한 줄</dd></div><div><dt>문구 한 줄</dt><dd>담당자가 써서 보여 드려요</dd></div><div><dt>느낌</dt><dd>담당자가 두 안으로 제안해요</dd></div><div><dt>모델</dt><dd>저희가 골라 먼저 보여 드려요</dd></div></dl>
-      <div class="nav">${'<button class="back" data-prev>← 뒤로</button>'}<span><button class="go ghost" data-custom>직접 고를게요</button> <button class="go" data-next>추천대로 할게요 ${arrow}</button></span></div>`;
+      <div class="nav">${'<button class="back" data-prev>← 뒤로</button>'}<span class="pair"><button class="go ghost" data-custom>직접 고를게요</button><button class="go" data-next>추천대로 할게요 ${arrow}</button></span></div>`;
     return `<h2>마무리. <span>원하시는 것만 고르세요.</span></h2>
       <p class="sub">마지막 화면</p><div class="opts" role="radiogroup" aria-label="마지막 화면">${ENDS.map(([a, b], i) => `<button class="opt" role="radio" aria-checked="${S.end === i}" data-end="${i}"><span class="t"><b>${a}</b><small>${b}</small></span><span></span></button>`).join('')}</div>
       <div class="more">${S.end > 0 ? `<label>문구 한 줄<input data-line placeholder="비워 두면 담당자가 써요" value="${S.line}"></label>` : ''}<label>한 글자도 바뀌면 안 되는 표기<input data-exact placeholder="예) 350ml · 2,500원 · 12월 한정" value="${S.exact}"></label></div>
@@ -337,10 +341,10 @@ function drawCard() {
   const k = K(), [l, , p] = L(), have = k ? k.files.filter((f, i) => S.files[i]).length : 0;
   const row = (a, v) => `<div><dt>${a}</dt><dd class="${v ? '' : 'empty'}">${v || '—'}</dd></div>`;
   const sum = !k ? '' : p == null ? `<small>${l}</small><b>정가 ○○만원</b>` : S.code ? `<small>${l} · 결제할 금액</small><s>${won(p)}부터</s><b>0원</b><span class="code">초대코드 적용 · ${S.from}에서 결제하신 의뢰</span>` : S.view === 'pay' ? `<small>결제할 금액</small><b>${won(p)}</b>` : `<small>${l} · 예상 가격</small><b>${won(p)}부터</b>`;
-  card.classList.toggle('empty', !k);
+  card.classList.toggle('empty', !k); card.classList.toggle('quiet', S.view !== 'form');
   card.innerHTML = `<div class="card-h"><b>내 광고</b><span>${k ? `${l} · ${shape(ratio())}` : ''}</span></div>
     <div class="mini" data-ratio="${ratio()}">${cutHTML()}</div>
-    ${k ? `<dl class="sumlist">${row('만들 것', k.name)}${row('이름', S.name)}${row('자료', `${have} / ${k.files.length}`)}${row('마지막 화면', ENDS[S.end][0])}${row('느낌', S.feel ? FEELS.find(f => f[0] === S.feel)[1] : '담당자 제안')}</dl><div class="price">${sum}</div>` : ''}`;
+    ${k && S.view === 'form' ? `<dl class="sumlist">${row('만들 것', k.name)}${row('이름', S.name)}${row('자료', `${have} / ${k.files.length}`)}${row('길이', `${l} · ${shape(ratio())}`)}</dl><div class="price">${sum}</div>` : ''}`;
 }
 
 // ── 확인 · 결제 ──
@@ -356,7 +360,7 @@ function reviewHTML() {
 function payHTML() {
   const [pl, pd, amount] = L();
   if (S.code) return `<div class="sheet"><p class="status"><i></i>저희 차례</p><h1>결제는 이미 끝났어요. <span>${S.from}에서 결제하신 의뢰예요.</span></h1><div class="total"><div class="ln"><span>${pl} · 정해 드린 값</span><s>${won(amount)}</s></div><div class="ln code"><span>초대코드 적용</span><span>${S.from}에서 결제하신 의뢰</span></div><div class="ln"><span>결제할 금액</span><b>0원</b></div></div></div>`;
-  return `<div class="sheet"><h1>결제. <span>마치시면 장면 이미지를 만들기 시작해요.</span></h1>${S.method === 'card' ? '<p class="test">시험 결제 화면이에요.</p>' : ''}
+  return `<div class="sheet"><h1>결제할 차례예요. <span>마치시면 장면 이미지를 만들기 시작해요.</span></h1>${S.method === 'card' ? '<p class="test">시험 결제 화면</p>' : ''}
     <dl class="lines"><div><dt>정해 드린 값</dt><dd>${pl} ${pd}</dd><span>${won(amount)}</span></div><div><dt>기간 · 수정</dt><dd>결제한 날부터 10일 · 2회</dd><span></span></div></dl>
     <div class="opts pay-opts" role="radiogroup" aria-label="결제 수단">
       <button class="opt" role="radio" aria-checked="${S.method === 'card'}" data-m="card"><span class="t"><b>카드 결제</b><small>결제창에서 카드나 간편결제로 바로 끝나요</small></span><span class="won">바로 시작</span></button>
@@ -387,7 +391,7 @@ function render() {
   if (inForm) requestAnimationFrame(place);
   $('[data-name], [data-mail]', ask)?.focus({ preventScroll: true });
 }
-function goStep(i) { S.view = 'form'; S.step = Math.max(0, Math.min(STEPS.length - 1, i)); S.reached = Math.max(S.reached, S.step); S.cut = { kind: 'title', name: 'title', more: 'end' }[STEPS[S.step][0]] || 'hero'; sound.tick(); render(); if (scrollY > 80) scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); }
+function goStep(i) { S.view = 'form'; S.step = Math.max(0, Math.min(STEPS.length - 1, i)); S.reached = Math.max(S.reached, S.step); S.cut = { kind: 'title', name: 'title' }[STEPS[S.step][0]] || 'hero'; sound.tick(); render(); if (scrollY > 80) scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); }
 
 function act(t) {
   if (t.dataset.kind) { const changed = S.kind !== t.dataset.kind; S.kind = t.dataset.kind; if (changed) { S.files = {}; S.len = 0; S.name = ''; S.reached = 0; } mood('nod', 340); setTimeout(() => goStep(1), reduced ? 0 : 260); return; }
@@ -398,7 +402,7 @@ function act(t) {
   if (t.dataset.chan) { S.chan = Number(t.dataset.chan); S.cut = 'hero'; sound.tick(); render(); mood('nod', 340); return; }
   if (t.dataset.len) { S.len = Number(t.dataset.len); sound.tick(); render(); mood('nod', 340); return; }
   if (t.hasAttribute('data-custom')) { S.custom = true; sound.tick(); render(); return; }
-  if (t.dataset.end) { S.end = Number(t.dataset.end); S.cut = 'end'; sound.tick(); render(); mood('nod', 340); return; }
+  if (t.dataset.end) { S.end = Number(t.dataset.end); S.cut = S.line || S.exact ? 'end' : 'hero'; sound.tick(); render(); mood('nod', 340); return; }
   if (t.dataset.feel) { S.feel = S.feel === t.dataset.feel ? '' : t.dataset.feel; sound.soft(); render(); mood('nod', 340); return; }
   if (t.hasAttribute('data-apply')) { const v = $('[data-code]', ask).value.trim(); if (!/^[A-Za-z0-9-]{4,12}$/.test(v)) return; S.code = true; sound.shutter(); render(); mood('happy', 900); return; }
   if (t.hasAttribute('data-send')) { S.view = 'sent'; sound.shutter(); render(); mood('happy', 900); return; }
