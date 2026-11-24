@@ -876,7 +876,7 @@ async function rankedFixture(){
   const {f,today,day}=turnFixture();
   f.context.fetch=async()=>({ok:true,status:200,json:async()=>workdayReply(today,day)});
   const messenger=f.run('wsLoadMessenger()'),clients=f.run('wsLoadClients()');
-  f.requests.find(row=>row.path==='/api/client-workflow').resolve({items:[{id:'c1',group:'review',reviewerId:f.state.user.id,title:'편집본 확인',projectTitle:'학원 광고',dueDate:day(-1)},{id:'c3',group:'next',ownerId:f.state.user.id,title:'내 다음 일',dueDate:today}]});
+  f.requests.find(row=>row.path==='/api/client-workflow').resolve({items:[{id:'c1',kind:'feedback',group:'review',reviewerId:f.state.user.id,title:'편집본 확인',projectTitle:'학원 광고',dueDate:day(-1)},{id:'c3',kind:'support',group:'reply',ownerId:f.state.user.id,title:'내 다음 일',dueDate:today}]});
   await messenger;await clients;
   return {f,today,day};
 }
@@ -942,4 +942,34 @@ test('11-25 못 불러온 무리가 있으면 인사 · 1순위 카드 · 받은
   f.run('workspaceTurn.messenger.at=0');await f.run('wsLoadMessenger()');
   assert.match(f.run('wsDetailHtml(null,workspaceTurnModel())'),/다 끝냈어요/);
   assert.match(f.run('wsHelloHtml(workspaceTurnModel())'),/지금 손댈 일이 없어요/);
+});
+
+test('11-25 계정이 바뀌면 첫 그리기부터 앞 사람의 메신저 할 일 · 건너뛴 일을 보이지 않는다(Fable F1)',async()=>{
+  const {f}=await rankedFixture();
+  f.run("wsQueueSkip('client:c1')");
+  assert.match(f.run('marinHomePage()'),/답할 일/);
+  f.run("state.user={...state.user,id:'crew-b',name:'다른 직원'}");
+  const html=f.run('marinHomePage()');
+  for(const title of ['답할 일','검토할 일','이번 주 일','편집본 확인','내 다음 일'])assert.doesNotMatch(html,new RegExp(title),title);
+  const model=plain(f.run('workspaceTurnModel()'));
+  assert.equal(model.groups.messenger,'loading');assert.equal(model.groups.clients,'loading');
+  assert.equal(model.items.some(item=>item.group==='messenger'||item.group==='clients'),false);
+  assert.deepEqual(plain(f.run('workspaceInbox.skipped')),[]);
+  // 로그아웃 화면(renderAuth → resetMarinHome)에서도 비운다.
+  f.run("state.user=null;resetMarinHome()");assert.equal(f.run('workspaceTurn.messenger.data'),null);
+});
+
+test('11-25 고객 글에서 나온 일만 「고객이 기다려요」로 앞에 서고, 내부 점검 고객 일은 상태 글과 기한으로 선다(Fable F6)',async()=>{
+  const {f,today,day}=await rankedFixture();
+  const rank=(data,due)=>f.run(`wsRankOf({kind:'client',group:'clients',data:${JSON.stringify(data)},due:'${due}'},'${today}')`);
+  const why=(data,due)=>f.run(`wsWhy({kind:'client',group:'clients',data:${JSON.stringify(data)},due:'${due}'},'${today}')`);
+  assert.equal(rank({kind:'feedback',group:'reply'},day(-1)),0);
+  assert.equal(rank({kind:'scene_request',group:'reply'},day(3)),1);
+  assert.equal(rank({kind:'client_delivery_check',group:'next',statusLabel:'납품 준비'},day(-1)),2);
+  assert.equal(rank({kind:'client_rights_expiry',group:'next',statusLabel:'자료 챙기기'},day(5)),3);
+  assert.equal(rank({kind:'customer_review',group:'review'},day(5)),1,'검토 무리는 동료가 기다린다');
+  assert.match(why({kind:'client_delivery_check',group:'next',statusLabel:'납품 준비',projectTitle:'학원 광고'},day(-1)),/^학원 광고 · 납품 준비 · \d+\.\d+ 지남$/);
+  assert.doesNotMatch(why({kind:'client_schedule',group:'next',statusLabel:'일정 늦음'},today),/고객이 기다려요/);
+  assert.match(why({kind:'customer_review',group:'review'},today),/검토할 차례/);
+  f.run("workspaceInbox.room='lab'");assert.doesNotMatch(f.run('wsInboxHeadHtml(workspaceTurnModel())'),/수업 일/);
 });

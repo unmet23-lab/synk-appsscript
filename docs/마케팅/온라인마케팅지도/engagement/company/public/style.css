@@ -82,6 +82,19 @@
   --ws-danger-bg: #FDECEA;
   --ws-danger-line: rgba(180, 35, 24, 0.28);
 
+  /* 옛 화면 CSS가 쓰던 이름 — 정의가 없어 어두운 판 대체값이 나오던 것을 밝은 판 값에 잇는다(Fable F2, 11-25). */
+  --ws-bg: var(--ws-canvas);
+  --ws-surface-1: var(--ws-surface);
+  --ws-surface-2: var(--ws-surface-subtle);
+  --ws-subtle: var(--ws-surface-subtle);
+  --ws-ink-2: var(--ws-ink-secondary);
+  --ws-muted: var(--ws-ink-muted);
+  --ws-hairline: var(--ws-line);
+  --ws-line-strong: var(--ws-line-muted);
+  --ws-control-border: var(--ws-control-line);
+  --ws-warn-soft: var(--ws-warn-bg);
+  --ws-warn-border: var(--ws-warn-line);
+
   /* 사업 색 넷 — 회사 이름 옆 작은 네모에만 */
   --ws-lab: #F96859;
   --ws-shift: #3D6BC9;

@@ -1445,6 +1445,10 @@ span.ws-r-thumb{display:block}
 .ws-sns-info{min-width:0;padding-top:4px}
 .ws-plate{display:inline-flex;align-items:center;gap:4px;margin-right:10px}
 
+@media (min-width:1101px){
+  .ws-office .ws-nametag .ws-full{display:none}
+  .ws-office .ws-nametag .ws-short{display:inline}
+}
 @media (max-width:1180px){
   .ws-inbox{grid-template-columns:360px minmax(0,1fr)}
   .ws-sns{grid-template-columns:240px minmax(0,1fr);gap:28px}

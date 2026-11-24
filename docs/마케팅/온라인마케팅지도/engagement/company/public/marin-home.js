@@ -273,11 +273,16 @@ const WS_TURN_STALE=60000;
 const wsCss=value=>typeof CSS!=='undefined'&&typeof CSS.escape==='function'?CSS.escape(value):String(value).replace(/["\\]/g,'\\$&');
 const workspaceTurn={userId:null,messenger:{status:'idle',data:null,at:0,request:0,loading:false},clients:{status:'idle',data:null,at:0,request:0,loading:false},busy:new Set(),timer:null,note:''};
 const wsDemo=()=>typeof isDemoMode==='function'&&isDemoMode();
+// 계정이 바뀌면(새로고침 없는 로그아웃 → 로그인 포함) 앞 사람의 메신저 · 고객 일과 고른 일 · 건너뛴 일을 버린다.
+// 자료 모델이 그릴 때마다 먼저 확인하므로 첫 그리기에도 앞 사람의 할 일이 나오지 않는다(Fable F1).
 function wsTurnIdentity(){
   const id=state.user?.id||null;if(workspaceTurn.userId===id)return;
+  wsTurnReset(id);
+}
+function wsTurnReset(id=null){
   workspaceTurn.userId=id;workspaceTurn.busy=new Set();workspaceTurn.note='';
   for(const key of ['messenger','clients'])Object.assign(workspaceTurn[key],{status:'idle',data:null,at:0,request:workspaceTurn[key].request+1,loading:false});
-  Object.assign(workspaceInbox,{sel:'',detail:false,noteFor:'',skipped:[]});
+  if(typeof workspaceInbox!=='undefined')Object.assign(workspaceInbox,{sel:'',detail:false,noteFor:'',skipped:[]});
 }
 function wsCan(group){
   if(!state.user||wsDemo())return false;
@@ -290,6 +295,7 @@ function wsCan(group){
 }
 // 메신저 할 일은 회사 화면이 처음 읽는 메신저 API다. api()를 거치지 않아 401이 회사 로그아웃으로 번지지 않고, 그 무리만 「못 불러옴」이 된다.
 async function wsLoadMessenger(){
+  wsTurnIdentity();
   const slot=workspaceTurn.messenger;if(slot.loading||!wsCan('messenger'))return;
   const userId=state.user.id,request=++slot.request;slot.loading=true;if(!slot.data)slot.status='loading';
   try{
@@ -304,6 +310,7 @@ async function wsLoadMessenger(){
   finally{if(request===slot.request){slot.loading=false;slot.at=Date.now();workspaceTurnPaint();}}
 }
 async function wsLoadClients(){
+  wsTurnIdentity();
   const slot=workspaceTurn.clients;if(slot.loading||!wsCan('clients'))return;
   const userId=state.user.id,request=++slot.request;slot.loading=true;if(!slot.data)slot.status='loading';
   try{
@@ -340,21 +347,25 @@ function wsSnsRoom(review,accounts){
 function wsDay(value){const m=/^\d{4}-\d{2}-\d{2}/.exec(String(value||''));return m?m[0]:'';}
 function wsDueText(due,today){if(!due)return '';const short=wsShortDate(due);return due<today?`${short} 지남`:due===today?'오늘까지':`${short}까지`;}
 // 순위(설계 13절): 0 밖의 사람이 기다리고 기한이 오늘 · 지남, 1 내 답을 기다리는 사람, 2 기한이 오늘 · 지남, 3 그 밖. 같은 칸은 기한이 이른 것 → 오래된 것.
+const WS_CUSTOMER_KINDS=['feedback','support','scene_request'];
+function wsCustomerWaiting(item){return item.kind==='client'&&WS_CUSTOMER_KINDS.includes(item.data?.kind);}
 function wsRankOf(item,today){
   const soon=Boolean(item.due)&&item.due<=today;
-  if(item.group==='clients')return soon||item.data?.status==='overdue'?0:1;
+  if(wsCustomerWaiting(item))return soon||item.data?.status==='overdue'?0:1;
+  if(item.group==='clients'&&item.data?.group==='review')return 1;
   if(item.group==='messenger'&&item.reasons.some(reason=>['reply','review','recovery'].includes(reason)))return 1;
   return soon?2:3;
 }
 function wsWhy(item,today){
   const due=wsDueText(item.due,today);
-  if(item.kind==='client')return [item.data?.projectTitle,'고객이 기다려요',due||(item.data?.status==='overdue'?'기한 지남':'')].filter(Boolean).join(' · ');
+  if(item.kind==='client')return [item.data?.projectTitle,wsCustomerWaiting(item)?'고객이 기다려요':item.data?.group==='review'?'검토할 차례':item.data?.statusLabel,due||(item.data?.status==='overdue'?'기한 지남':'')].filter(Boolean).join(' · ');
   if(item.kind==='chat'){const r=item.reasons;const why=r.includes('review')?'검토할 차례':r.includes('reply')?'받을지 답할 차례':r.includes('recovery')?'검토자를 다시 정할 차례':'';return [why,item.task.createdBy?.name?`${item.task.createdBy.name} 님이 맡김`:'',due].filter(Boolean).join(' · ');}
   if(item.kind==='schedule')return !item.due?'일정 미정':item.due<today?`${wsShortDate(item.due)} 지남`:item.due===today?'오늘 일정':`${wsShortDate(item.due)} 일정`;
   if(item.kind==='tip')return ['시안을 골라 주세요',item.time?`${item.time} 공유`:''].filter(Boolean).join(' · ');
   return '';
 }
 function workspaceTurnModel(){
+  wsTurnIdentity();
   const today=wsKstDate(),week=wsKstDate(6),items=[],notes=[],groups={},uid=state.user?.id;
   const gate=(group,status)=>{groups[group]=wsCan(group)?status():'hidden';return groups[group]==='ready';};
   if(gate('tips',()=>tipShares.data?'ready':tipShares.error||tipShares.readFailed?'failed':'loading')){
@@ -397,7 +408,7 @@ function workspaceTurnModel(){
       notes.push({group:'sns',kind:'sns',room:wsSnsRoom(review,D.accounts),key:`sns:${review.postId}:${review.at}`,review,late:isLate,title:review.title||'제목 없는 게시물',ctx:handles.join(' · '),time:String(review.at||'').slice(11,16)});
     }
   }
-  const skipped=Array.isArray(workspaceInbox.skipped)?workspaceInbox.skipped:[];
+  const skipped=typeof workspaceInbox!=='undefined'&&Array.isArray(workspaceInbox.skipped)?workspaceInbox.skipped:[];
   for(const item of items){item.rank=wsRankOf(item,today);item.why=wsWhy(item,today);item.late=Boolean(item.due)&&item.due<today;}
   const later=key=>skipped.indexOf(key);
   items.sort((a,b)=>later(a.key)-later(b.key)||a.rank-b.rank||(a.due||'9999').localeCompare(b.due||'9999')||(a.since||'9999').localeCompare(b.since||'9999')||a.key.localeCompare(b.key));
@@ -452,7 +463,7 @@ function wsOfficeTurnHtml(model){
   const first=model.items[0],{failed}=wsTurnState(model);
   const leadHtml=first
     ?`<li class="ws-turn-lead"><span class="ws-turn-k"><b class="ws-qn">1순위</b>${wsSourceMark(first)}${escape(wsSourceText(first))}</span><p class="ws-turn-t">${escape(first.title)}</p><p class="ws-turn-d">${escape(first.why||'')}</p><span class="ws-turn-a"><a class="ws-btn ws-btn-primary ws-btn-go" href="/?tab=home&section=inbox" data-action="ws-queue-start">1순위부터 처리${workspaceShellGlyph('chev')}</a><span class="ws-turn-of">모두 <span class="ws-num">${model.total}</span>개 · 끝내면 다음 일이 열려요</span></span></li>`
-    :`<li class="ws-turn-lead is-done"><span class="ws-turn-k">내 차례</span><p class="ws-turn-t">${escape(wsEmptyText(model))}</p><p class="ws-turn-d">${wsTurnState(model).loading.length?'잠시만 기다려 주세요.':failed.length?'아래에서 다시 불러와 주세요. 0개라는 뜻이 아니에요.':'새 일이 오면 여기에 보여요.'}</p></li>`;
+    :`<li class="ws-turn-lead is-done"><span class="ws-turn-k">내 차례</span>${wsTurnState(model).loading.length||failed.length?`<p class="ws-turn-t">${escape(wsEmptyText(model))}</p><p class="ws-turn-d">${failed.length?'아래에서 다시 불러와 주세요. 0개라는 뜻이 아니에요.':'잠시만 기다려 주세요.'}</p>`:'<p class="ws-turn-t">새 일이 오면 여기에 1순위로 보여요</p>'}</li>`;
   const next=model.items.slice(1,1+WS_QUEUE_PREVIEW).map((item,i)=>`<li><a class="ws-trow ws-qrow" href="/?tab=home&section=inbox" data-action="ws-queue-open" data-key="${escape(item.key)}"><span class="ws-qn">${i+2}</span><span class="ws-turn-k">${wsSourceMark(item)}${escape(wsSourceText(item))}</span><span class="ws-turn-t">${escape(item.title)}</span><span class="ws-turn-d">${escape(item.why||'')}</span><span class="ws-go">열기${workspaceShellGlyph('chev')}</span></a></li>`).join('');
   const more=model.total>1+WS_QUEUE_PREVIEW?`<li><a class="ws-trow ws-qmore" href="/?tab=home&section=inbox" data-action="ws-inbox" data-room=""><span class="ws-turn-t">그 밖에 <span class="ws-num">${model.total-1-WS_QUEUE_PREVIEW}</span>개</span><span class="ws-go">순서 모두 보기${workspaceShellGlyph('chev')}</span></a></li>`:'';
   return {lead:leadHtml,rest:next+more
@@ -537,7 +548,7 @@ function wsInboxHeadHtml(model){
   const room=WS_ROOMS.find(entry=>entry.id===workspaceInbox.room),{items}=wsInboxItems(model),n=items.length,name=escape(state.user?.name||'');
   const count=n?` <span class="ws-coral-n">${n}</span>`:'';
   if(room){
-    const line={lab:'LAB 계정 SNS 게시물과 LAB 수업 일이 여기에 모여요.',shift:'SHIFT 강의 일정 가운데 오늘 볼 것이 여기에 모여요.',pulse:'PULSE 고객이 보낸 요청과 검토가 여기에 모여요.',path:'PATH 상담 일정 가운데 오늘 볼 것이 여기에 모여요.',lounge:'메신저 대화에서 나에게 온 할 일이 여기에 모여요.',desk:'공유하신 게시물로 만든 시안과 그 밖의 SNS 게시물이 여기에 모여요.'}[room.id];
+    const line={lab:'LAB 계정 SNS 게시물이 여기에 모여요.',shift:'SHIFT 강의 일정 가운데 오늘 볼 것이 여기에 모여요.',pulse:'PULSE 고객이 보낸 요청과 검토가 여기에 모여요.',path:'PATH 상담 일정 가운데 오늘 볼 것이 여기에 모여요.',lounge:'메신저 대화에서 나에게 온 할 일이 여기에 모여요.',desk:'공유하신 게시물로 만든 시안과 그 밖의 SNS 게시물이 여기에 모여요.'}[room.id];
     return `<div class="ws-lh-nav"><a class="ws-backlink" href="/?tab=home" data-action="ws-office">${workspaceShellGlyph('left')}사무실로</a><a class="ws-alllink" href="/?tab=home&section=inbox" data-action="ws-inbox" data-room="">모든 내 차례 보기${workspaceShellGlyph('chev')}</a></div>
       <div class="ws-roomstrip" data-room="${room.id}" role="img" aria-label="${escape(room.alt)}"></div>
       <h1 class="ws-lh-title" id="ws-inbox-title">${workspaceCompanyMark(room.co)}${escape(room.name)}${count}</h1><p class="ws-lh-sum">${n?`이 방에서 ${name}님 차례인 일이 ${n}개예요. 급한 것부터 놓았어요.`:`${wsEmptyText(model,WS_ROOM_GROUPS[room.id],true)}.`} ${line}</p>`;
@@ -673,10 +684,10 @@ async function wsClientAct(target){
   workspaceTurn.busy.add(item.key);wsInboxPaint();
   try{
     await api('/api/client-workflow',{projectId:data.projectId,messageId:data.messageId,revision:data.revision,action,...(note?{note}:{})});
-    workspaceInbox.noteFor='';notify('처리했어요. 다음 일로 넘어갈게요.');
+    workspaceInbox.noteFor='';notify(['start','reopen'].includes(action)?'시작했어요. 이 일은 순서에 그대로 있어요.':'처리했어요. 다음 일로 넘어갈게요.');
   }catch(error){if(error?.code==='SESSION_CHANGED')return;notify(error.message||'처리하지 못했어요. 잠시 뒤 다시 해 주세요.');}
   finally{
-    workspaceTurn.busy.delete(item.key);workspaceTurn.clients.at=0;await wsLoadClients();
+    const slot=workspaceTurn.clients;workspaceTurn.busy.delete(item.key);slot.at=0;slot.request++;slot.loading=false;await wsLoadClients();
     // 끝난 일이 빠지면 다음 일이 열려 있다. 초점은 그 제목으로(눌렀던 단추는 새로 그려져 사라졌다).
     const active=document.activeElement;if(workspaceInbox.open&&(!active||!active.isConnected||active===document.body))document.getElementById('ws-detail-title')?.focus?.({preventScroll:true});
   }
@@ -796,6 +807,7 @@ function safeMarinAction(value){
 }
 function resetMarinHome({clearStorage=true,clearRecommendation=true}={}){
   if(clearRecommendation)resetMarinNext(clearStorage);
+  if(typeof workspaceTurn!=='undefined')wsTurnIdentity();
   if(typeof resetCompanyGuide==='function')resetCompanyGuide();
   if(typeof resetWorkroom==='function')resetWorkroom({clearStorage});
   if(typeof resetMarinWork==='function')resetMarinWork();
