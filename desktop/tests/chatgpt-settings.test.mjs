@@ -10,13 +10,17 @@ test('member sees partner and entitlement states with only the corresponding act
   assert.equal(rowFor(model('connected'),false),undefined);
   assert.equal(rowFor(null),undefined);
   for(const [state, expected] of [
-    ['pending-approval',[]],['disconnected',['chatgpt-connect']],['connecting',['chatgpt-cancel']],
+    ['disconnected',['chatgpt-connect']],['connecting',['chatgpt-cancel']],
     ['connected',['chatgpt-disconnect']],['recheck',['chatgpt-connect','chatgpt-disconnect']]
   ]){
     const row=rowFor(model(state));
     assert.equal(row.nm,'ChatGPT 연결');assert.deepEqual(acts(row),expected);
     if(state==='connected')assert.match(JSON.stringify(row.more),/요금제/);
   }
+  // 등록 전에는 누를 것이 없어 줄을 세우지 않고, 연결을 주지 않는 PC(Mac)의 답도 「상태 확인 필요」 줄이 되지 않는다
+  assert.equal(rowFor(model('pending-approval')),undefined);
+  assert.equal(rowFor({ok:true,state:'unavailable',code:'NOT_AVAILABLE'}),undefined);
+  assert.equal(rowFor({ok:true,state:'unavailable',code:'IPC_FAILED'}).nm,'ChatGPT 연결','읽기 실패는 그대로 알린다');
 });
 test('settings follows status changes and rejects late replies, guest actions and stale connections',async()=>{
   const late=Promise.withResolvers();let reads=0,clicked=0,unsub=0,listener;

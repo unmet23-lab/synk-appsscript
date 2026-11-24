@@ -21,6 +21,8 @@ test('PC 앱 받기, the help page, the 여는 법 window and the PC toast say t
   assert.match(platform, /button\('여는 법','install-info',app\.id,'plain'\)/);
   // 휴대폰에서 열어도 맞게 「이 PC」라고 가리키지 않는다(카본 B2)
   assert.ok(!/이 PC에 Workspace/.test(platform));
-  assert.equal(launcher.split(SAY).length - 1, 2, 'the missing and the failed-launch toasts both name the browser address');
+  // PC 0.5.9부터 「작업실 열기」는 설치한 앱을 찾지 않고 창 안 Workspace를 연다(4단계 구현설계 14.1). 앱이 없을 때 · 못 띄울 때의 알림도 함께 사라졌다
+  assert.equal(launcher.split(SAY).length - 1, 0, 'the PC opens Workspace inside its window, so no toast sends people to the browser');
+  assert.ok(!/Workspace 앱을 (설치|찾지)/.test(launcher));
   assert.ok(!launcher.includes('다시 설치해 주세요'));
 });
