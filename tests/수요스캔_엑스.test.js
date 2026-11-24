@@ -62,7 +62,10 @@ test('고른어: 날짜마다 돌려 가며 열 개, 적으면 그대로', () =>
 });
 
 test('인자: 전부 · 고른 브랜드 · 모르는 인자', () => {
-  assert.deepEqual(엑스.인자(['전부']).브랜드, ['lab-en', 'lab-mn', 'synkbrief', 'yuhobuilds', 'pulse']);
+  assert.deepEqual(엑스.인자(['전부']).브랜드, ['lab-en', 'synkbrief', 'yuhobuilds', 'pulse'], 'lab-mn은 설정의 엑스.전부에서뺌으로 빠진다(11-25)');
+  assert.deepEqual(엑스.인자(['lab-mn']).브랜드, ['lab-mn'], '따로 부르면 돈다');
+  assert.equal(엑스.인자(['전부', '--사이', '72']).사이, 72);
+  assert.equal(엑스.인자([]).사이, null);
   assert.deepEqual(엑스.인자(['pulse']).브랜드, ['pulse']);
   assert.deepEqual(엑스.인자(['synkbrief', '--시간', '48']).브랜드, ['synkbrief']);
   assert.equal(엑스.인자(['--개수', '99']).개수, 20);
@@ -174,4 +177,35 @@ test('그록 통로: 답읽기는 text가 있는 JSON만', () => {
   assert.deepEqual(그록.답읽기('{"text":"{}","structuredOutput":{"findings":[]}}').구조답, { findings: [] }, '꼴을 강제하면 structuredOutput을 받는다');
   assert.equal(그록.답읽기('{"result":"x"}'), null);
   assert.equal(그록.답읽기(''), null);
+});
+
+test('사흘에 한 번: 마지막 실제 회차가 (사이 − 6)시간 안이면 이어 쓰고, 이어 쓴 우리반응은 새를 뗀다(11-25)', () => {
+  const os = require('node:os'), fs = require('node:fs'), path = require('node:path');
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'x-cadence-'));
+  const 쓰기 = (d, 기록, 결과) => {
+    fs.mkdirSync(path.join(뿌리, d), { recursive: true });
+    fs.writeFileSync(path.join(뿌리, d, '기록.jsonl'), 기록.map(j => JSON.stringify(j)).join('\n') + '\n');
+    if (결과) fs.writeFileSync(path.join(뿌리, d, '엑스.json'), JSON.stringify({ 결과 }));
+  };
+  const 글 = { 올린때: '2026-11-22T09:00:00Z', 갈래: '일 문의', 요지: '견적 문의', 주소: 'x.com/i/status/9', 번호: '9', 새: true };
+  const 본 = { 브랜드: 'pulse', 이름: 'P', 우리: 'synk_pulse', 받음: [], 계정글: [], 우리반응: [글], 버림: [], 흐름: [], 못잼: null };
+  쓰기('2026-11-22', [{ 도구: '엑스', 브랜드: 'pulse', 때: '2026-11-22T10:50:00Z', 못잼: null }], [본]);
+  쓰기('2026-11-23', [{ 도구: '엑스', 브랜드: 'pulse', 때: '2026-11-23T10:50:00Z', 이어씀: '2026-11-22' }], [{ ...본, 이어씀: '2026-11-22' }]);
+  쓰기('2026-11-24', [{ 도구: '엑스', 브랜드: 'pulse', 때: '2026-11-24T10:50:00Z', 못잼: 'LIMIT — 한도' }], [{ 브랜드: 'pulse', 못잼: 'LIMIT' }]);
+  fs.mkdirSync(path.join(뿌리, '메모')); // 날짜가 아닌 폴더는 건너뛴다
+  const 지난 = 엑스.지난회차('pulse', 뿌리);
+  assert.equal(지난.날짜, '2026-11-22', '이어 쓴 날과 못 잰 날은 실제 회차가 아니다');
+  assert.equal(지난.때, Date.parse('2026-11-22T10:50:00Z'));
+  assert.equal(엑스.지난회차('lab-en', 뿌리), null);
+  assert.equal(엑스.이어쓸까(지난, 72, Date.parse('2026-11-24T11:00:00Z')), true, '이틀 뒤는 이어 쓴다');
+  assert.equal(엑스.이어쓸까(지난, 72, Date.parse('2026-11-25T10:40:00Z')), false, '사흘째 19:30 회차가 조금 일찍 시작해도 부른다');
+  assert.equal(엑스.이어쓸까(지난, null, Date.parse('2026-11-23T11:00:00Z')), false, '--사이가 없으면 늘 부른다');
+  assert.equal(엑스.이어쓸까(null, 72), false, '앞 회차가 없으면 부른다');
+  const r = 엑스.이어쓴결과(지난);
+  assert.equal(r.이어씀, '2026-11-22');
+  assert.equal(r.우리반응[0].새, false, '같은 일 문의를 두 번 알리지 않는다');
+  assert.equal(지난.결과.우리반응[0].새, true, '원본은 그대로');
+  const md = 엑스.마크다운('2026-11-24', { 시간: 72 }, [r]);
+  assert.match(md, /그록을 부르지 않았다 — 2026-11-22 회차 결과/);
+  assert.match(md, /새 일 문의 없음/);
 });

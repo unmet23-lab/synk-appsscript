@@ -5,7 +5,7 @@
  * 유호님 11-07 「그록만이 잘하는 장점을 살려보자」. 수요 스캔은 유튜브 · 틱톡 · 인스타 릴스를 읽지만 X는 로그인 벽이라 비어 있었고,
  * 그록은 X를 실시간으로 검색한다. 통로는 tools/lib/그록호출.js(구독 로그인 · 빈 폴더 · 파일 · 셸 도구 막음 · 웹 검색만 엶).
  *
- *   node tools/수요스캔/엑스.js [전부 | lab-en lab-mn synkbrief yuhobuilds pulse …] [--시간 72] [--개수 8] [--날짜 YYYY-MM-DD] [--출력 <폴더>] [--프롬프트만]
+ *   node tools/수요스캔/엑스.js [전부 | lab-en lab-mn synkbrief yuhobuilds pulse …] [--시간 72] [--개수 8] [--사이 72] [--날짜 YYYY-MM-DD] [--출력 <폴더>] [--프롬프트만]
  *
  * 그록이 지어낸 글을 걸러 내는 문: 글 주소는 x.com/…/status/<번호> 꼴만 받고, 번호에 박힌 올린 시각(X 글 번호의 앞 비트)이
  * 창 밖이면 버린다(그록이 적은 날짜보다 번호를 믿는다). 숫자는 0 이상 정수나 null만. 남은 글도 「그록 보고 · 주소 안 열어 봄」으로 싣는다.
@@ -18,6 +18,11 @@
  * 설정의 「엑스.지켜볼계정」이 있으면 그 계정들의 새 작업과 튄 글을 「계정글」로, 「엑스.우리계정」이 있으면 그 계정을 부른 글과
  * 답글을 「우리반응」(갈래 · 일 문의 먼저)으로 받는다. pulse는 수요 스캔(스캔.js) 브랜드가 아니라 설정을 엑스_pulse.json에 따로 둔다.
  * 우리반응은 처음 본 글 번호를 <공용 작업본>/.tmp/수요스캔/엑스_우리반응.json에 남겨, 다음 회차부터 「새」가 아닌 것으로 적는다.
+ *
+ * 사흘에 한 번(2026-11-25 유호님 「그록은 x 오케이 니 말대로 사흘에 하나만 수집」): --사이 <시간>을 주면 브랜드마다 마지막으로
+ * 실제로 부른 회차가 (사이 − 6)시간 안이면 그록을 부르지 않고 그 회차 결과를 오늘 파일에 「이어씀」으로 싣는다. 창이 72시간이라
+ * 사흘마다 부르면 빈 날 없이 이어진다. 6시간은 매일 19:30 회차의 시작 시각이 밀리는 몫이다. 이어 쓴 우리반응은 「새」를 떼어
+ * 같은 일 문의를 두 번 알리지 않는다. 설정의 「엑스.전부에서뺌」이 있는 브랜드는 「전부」에 넣지 않는다(lab-mn — 11-22~24 내리 0건).
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -31,22 +36,31 @@ const 아이디꼴 = /^[A-Za-z0-9_]{1,15}$/;
 const 반응갈래 = ['일 문의', '질문', '칭찬', '비판', '협업 제안', '광고나 스팸'];
 const X시작ms = 1288834974657; // X(트위터) 글 번호(snowflake) 시각의 기준점
 const 서울날짜 = (ms = Date.now()) => new Date(ms + 9 * 3600e3).toISOString().slice(0, 10);
+const 밀림시간 = 6;
+
+/** 「전부」에 넣는 브랜드 — 설정의 엑스.전부에서뺌이 있으면 뺀다. */
+function 전부브랜드(파일 = 설정파일) {
+  return 브랜드들.filter(b => {
+    try { return !JSON.parse(fs.readFileSync(파일(b), 'utf8'))?.엑스?.전부에서뺌; } catch { return true; }
+  });
+}
 
 function 인자(argv) {
-  const o = { 브랜드: [], 시간: 72, 개수: 8, 날짜: null, 출력: null, 프롬프트만: false };
+  const o = { 브랜드: [], 시간: 72, 개수: 8, 사이: null, 날짜: null, 출력: null, 프롬프트만: false };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     const 수 = () => { const v = Number(argv[++i]); if (!Number.isFinite(v) || v <= 0) throw new Error(`${a} 뒤에 0보다 큰 수`); return v; };
     if (a === '--시간') o.시간 = 수();
     else if (a === '--개수') o.개수 = Math.min(20, Math.round(수()));
+    else if (a === '--사이') o.사이 = 수();
     else if (a === '--날짜') o.날짜 = argv[++i];
     else if (a === '--출력') o.출력 = argv[++i];
     else if (a === '--프롬프트만') o.프롬프트만 = true;
-    else if (a === '전부') o.브랜드.push(...브랜드들);
+    else if (a === '전부') o.브랜드.push(...전부브랜드());
     else if (브랜드들.includes(a)) o.브랜드.push(a);
     else throw new Error(`모르는 인자: ${a}`);
   }
-  if (!o.브랜드.length) o.브랜드 = [...브랜드들];
+  if (!o.브랜드.length) o.브랜드 = 전부브랜드();
   o.브랜드 = [...new Set(o.브랜드)];
   return o;
 }
@@ -189,6 +203,37 @@ function 새표시(우리반응, 본, 날짜) {
   return 장부;
 }
 
+/** 브랜드마다 마지막으로 그록을 실제로 불러 결과를 받은 회차 — { 때(ms), 날짜, 결과 } 또는 null. 뿌리는 .tmp/수요스캔. */
+function 지난회차(브랜드, 뿌리) {
+  let 날짜들 = [];
+  try { 날짜들 = fs.readdirSync(뿌리).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().reverse(); } catch { return null; }
+  for (const d of 날짜들) {
+    let 줄들 = [];
+    try { 줄들 = fs.readFileSync(path.join(뿌리, d, '기록.jsonl'), 'utf8').split(/\r?\n/).filter(Boolean); } catch { continue; }
+    const 맞음 = 줄들.map(l => { try { return JSON.parse(l); } catch { return null; } })
+      .filter(j => j && j.도구 === '엑스' && j.브랜드 === 브랜드 && !j.못잼 && !j.이어씀 && Date.parse(j.때));
+    if (!맞음.length) continue;
+    const 때 = Math.max(...맞음.map(j => Date.parse(j.때)));
+    let 결과 = null;
+    try { 결과 = (JSON.parse(fs.readFileSync(path.join(뿌리, d, '엑스.json'), 'utf8')).결과 || []).find(r => r.브랜드 === 브랜드 && !r.못잼 && !r.이어씀) || null; } catch { /* 파일 없음 */ }
+    return 결과 ? { 때, 날짜: d, 결과 } : null;
+  }
+  return null;
+}
+
+/** 이번 회차에 그록을 부르지 않아도 되는지 — 마지막 회차가 (사이 − 밀림)시간 안이면 그 결과를 이어 쓴다. */
+function 이어쓸까(지난, 사이, 지금 = Date.now()) {
+  if (!사이 || !지난) return false;
+  return 지금 - 지난.때 < Math.max(0, 사이 - 밀림시간) * 3600e3;
+}
+
+function 이어쓴결과(지난) {
+  const r = JSON.parse(JSON.stringify(지난.결과));
+  r.이어씀 = 지난.날짜;
+  for (const g of r.우리반응 || []) g.새 = false;
+  return r;
+}
+
 const 숫자 = v => (v === null || v === undefined ? '—' : Number(v).toLocaleString('ko-KR'));
 
 function 마크다운(날짜, o, 결과) {
@@ -196,6 +241,7 @@ function 마크다운(날짜, o, 결과) {
   for (const r of 결과) {
     줄.push(`## ${r.이름} (${r.브랜드})`, '');
     if (r.못잼) { 줄.push(`못 잼 — ${r.못잼}`, ''); continue; }
+    if (r.이어씀) 줄.push(`이번에는 그록을 부르지 않았다 — ${r.이어씀} 회차 결과를 그대로 싣는다(사흘에 한 번 부른다).`, '');
     if (r.흐름.length) { 줄.push('흐름', ...r.흐름.map(s => `- ${s}`), ''); }
     if (!r.받음.length) 줄.push(`받은 글 없음${r.못찾음 ? ` — ${r.못찾음}` : ''}`, '');
     else {
@@ -240,6 +286,13 @@ async function main(argv) {
   const 본파일 = path.join(path.dirname(출력), '엑스_우리반응.json');
   const 결과 = [], 기록 = [];
   for (const b of o.브랜드) {
+    const 지난 = o.사이 ? 지난회차(b, path.dirname(출력)) : null;
+    if (이어쓸까(지난, o.사이)) {
+      결과.push(이어쓴결과(지난));
+      기록.push({ 도구: '엑스', 브랜드: b, 때: new Date().toISOString(), 이어씀: 지난.날짜 });
+      console.log(`${b}: 그록을 부르지 않음 — ${지난.날짜} 회차 결과를 이어 씀(다음 회차는 그 뒤 ${o.사이}시간쯤)`);
+      continue;
+    }
     const s = 설정(b);
     const r = { 브랜드: b, 이름: s.이름, 계정수: s.계정.length, 우리: s.우리, 받음: [], 계정글: [], 우리반응: [], 버림: [], 흐름: [], 못찾음: '', 못잼: null, 걸린ms: null, 비용USD: null };
     const 더 = s.계정.length || s.우리;
@@ -272,4 +325,4 @@ async function main(argv) {
 
 if (require.main === module) main(process.argv.slice(2)).then(c => { process.exitCode = c; }, e => { console.error(e.message); process.exitCode = 2; });
 
-module.exports = { 인자, 설정, 프롬프트, 거르기, 새표시, 번호시각, JSON꺼내기, 고른어, 마크다운, 브랜드들 };
+module.exports = { 인자, 설정, 프롬프트, 거르기, 새표시, 번호시각, JSON꺼내기, 고른어, 마크다운, 브랜드들, 전부브랜드, 지난회차, 이어쓸까, 이어쓴결과 };
