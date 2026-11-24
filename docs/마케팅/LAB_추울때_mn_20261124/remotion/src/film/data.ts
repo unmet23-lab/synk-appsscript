@@ -7,7 +7,7 @@
 // 소리는 범수(친구) · 소진(몽글) · 효과음은 직접 합성(../../../소리/만들기.py) · 음악은 보유곡 05_Toddler-Kids 한 토막.
 export const FPS = 30;
 export const PULL_AT = 26.8; // 이불을 끌어 덮는 칸(머리 내밂과 이불 산 사이)
-export const TOTAL = 30.4;
+export const TOTAL = 31.4; // 11-24 15시 회차: 30.4 → 31.4 — 끝 줄(몽골어 31자)을 읽을 2.4초를 둔다(화면 글 검사)
 
 // 친구의 네 마디(표현 칸)
 export type Phrase = {
@@ -31,7 +31,7 @@ export type Cell = {
 };
 
 export const KO_LINES = {
-  invite: '편의점 가자~!', // 17.75초 몽글 — inviteRead · inviteMean
+  invite: '편의점 가자~!', // 18.05초 몽글 — inviteRead · inviteMean
   mong: '몽골은 영하 30도야~', // 22.7초 몽글 — mongRead · mongMean
   shock: '삼… 삼십 도?!', // 24.8초 친구 — shockRead · shockMean
 };
@@ -52,9 +52,9 @@ export const CELLS: Cell[] = [
   { at: 12.5, img: 'snowpile.jpg', sit: 2 },
   {
     at: 14.4, img: 'frozen.jpg', vo: [{ id: 'f3', at: 14.52 }],
-    phrase: { n: 3, ko: '얼어 죽겠다!', cold: 0.75, riseAt: 16.0, right: 980, bottom: 760, width: 640, koSize: 112, koShow: '얼어\n죽겠다!' },
+    phrase: { n: 3, ko: '얼어 죽겠다!', cold: 0.75, riseAt: 16.0, right: 980, bottom: 560, width: 640, koSize: 104, koShow: '얼어\n죽겠다!' },
   },
-  { at: 17.5, img: 'room.jpg', sit: 3, vo: [{ id: 'm1', at: 17.75 }] },
+  { at: 17.2, img: 'room.jpg', sit: 3, vo: [{ id: 'm1', at: 18.05 }] }, // 11-24 15시 회차: 17.5 · 17.75 → 17.2 · 18.05 — 위 글과 몽글 말 사이를 0.83초 넘게(화면 글 검사)
   {
     at: 19.4, img: 'burrito.jpg', vo: [{ id: 'f4', at: 19.52 }],
     phrase: { n: 4, ko: '이불 밖은 위험해…', cold: 1.0, riseAt: 21.0, right: 1000, bottom: 760, width: 760, koSize: 100, koShow: '이불 밖은\n위험해…' },
@@ -72,7 +72,7 @@ export const MONG_AT = 22.7;
 export const POP_AT = 24.7;
 export const BURST_AT = 24.95; // 게이지가 넘쳐 999%
 export const PILE_AT = 28.6;
-export const END_AT = 28.85;
+export const END_AT = 28.75;
 
 // 몽글 · 친구 자리(1080×1920에 맞춘 좌표) — 움직임 조각이 여기서 난다. 그림을 다시 구우면 다시 잰다.
 export type Spot = { cx: number; cy: number; rx: number; ry: number };
@@ -80,6 +80,8 @@ export const MONGLE: Record<string, Spot> = {
   'open.jpg': { cx: 725, cy: 1235, rx: 190, ry: 205 },
   'gust.jpg': { cx: 945, cy: 1150, rx: 135, ry: 165 },
   'busstop.jpg': { cx: 760, cy: 1290, rx: 115, ry: 115 },
+  'snowpile.jpg': { cx: 765, cy: 1400, rx: 225, ry: 245 },
+  'room.jpg': { cx: 260, cy: 1110, rx: 150, ry: 135 },
   'mongle.jpg': { cx: 620, cy: 1080, rx: 340, ry: 300 },
   'mountain.jpg': { cx: 640, cy: 660, rx: 140, ry: 115 },
   'pull.jpg': { cx: 880, cy: 1150, rx: 165, ry: 140 },
@@ -89,6 +91,10 @@ export const FRIEND: Record<string, Spot> = {
   'gust.jpg': { cx: 390, cy: 1300, rx: 410, ry: 650 },
   'hug.jpg': { cx: 510, cy: 1230, rx: 450, ry: 720 },
   'busstop.jpg': { cx: 570, cy: 1295, rx: 115, ry: 265 },
+  'hands.jpg': { cx: 570, cy: 1230, rx: 430, ry: 700 },
+  'snowpile.jpg': { cx: 405, cy: 1210, rx: 160, ry: 545 },
+  'frozen.jpg': { cx: 590, cy: 1180, rx: 480, ry: 760 },
+  'burrito.jpg': { cx: 540, cy: 1190, rx: 450, ry: 730 },
   'pop.jpg': { cx: 380, cy: 820, rx: 330, ry: 320 },
   'pull.jpg': { cx: 450, cy: 1090, rx: 300, ry: 170 },
   'mountain.jpg': { cx: 540, cy: 1240, rx: 540, ry: 500 },
@@ -109,8 +115,8 @@ export const SFX: { file: string; at: number; vol: number }[] = [
   { file: 'gust.wav', at: 12.45, vol: 0.35 },
   { file: 'freeze.wav', at: 14.42, vol: 0.55 },
   { file: 'rise.wav', at: 16.02, vol: 0.5 },
-  { file: 'door.wav', at: 17.5, vol: 0.45 },
-  { file: 'rustle.wav', at: 17.6, vol: 0.45 },
+  { file: 'door.wav', at: 17.2, vol: 0.45 },
+  { file: 'rustle.wav', at: 17.3, vol: 0.45 },
   { file: 'rustle.wav', at: 19.45, vol: 0.3 },
   { file: 'rise.wav', at: 21.02, vol: 0.55 },
   { file: 'pop.wav', at: POP_AT, vol: 0.6 },

@@ -166,7 +166,16 @@ const Gauge: React.FC<{ p: LocPack; t: number }> = ({ p, t }) => {
   return (
     <>
       <Glow x={X + 70} y={TOP + H / 2 - 20} w={330} h={H + 380} a={0.55} />
-      <div style={{ position: 'absolute', left: X - 30, top: TOP - 108, width: 260, opacity: interpolate(t, [POP_AT, POP_AT + 0.15], [1, 0], clamp), transform: `translateX(${shake}px) scale(${grow})`, transformOrigin: '20% 100%', fontFamily: p.font, fontWeight: 800, fontSize: p.gaugeSize, color: DIM, whiteSpace: 'pre-line', lineHeight: 1.12, textShadow: SH }}>{p.gauge}</div>
+      {/* 11-24 15시 회차 이해 시험(s · h · G 셋이 「게이지가 무엇을 재는지」를 짚음): 이름표를 크게 · 밝게, 위에 🥶, 오를 때마다 「+25%」 */}
+      <div style={{ position: 'absolute', left: X - 30, bottom: 1920 - (TOP - 12), width: 330, opacity: interpolate(t, [POP_AT, POP_AT + 0.15], [1, 0], clamp), transform: `translateX(${shake}px) scale(${grow})`, transformOrigin: '20% 100%', fontFamily: p.font, fontWeight: 800, fontSize: p.gaugeSize * 1.2, color: CREAM, whiteSpace: 'pre-line', lineHeight: 1.12, textShadow: SH }}>
+        <div style={{ fontSize: 64, lineHeight: 1.05, marginBottom: 4 }}>🥶</div>
+        {p.gauge}
+      </div>
+      {CELLS.map((c) =>
+        c.phrase && t >= c.phrase.riseAt && t < c.phrase.riseAt + 1.0 ? (
+          <div key={c.at} style={{ position: 'absolute', left: X + 66, top: TOP + H - 6 - c.phrase.cold * (H - 12) - 34 - 46 * interpolate(t, [c.phrase.riseAt, c.phrase.riseAt + 1.0], [0, 1], clamp), opacity: interpolate(t, [c.phrase.riseAt, c.phrase.riseAt + 0.1, c.phrase.riseAt + 0.75, c.phrase.riseAt + 1.0], [0, 1, 1, 0], clamp), fontFamily: EN, fontWeight: 900, fontSize: 46, color: ICE, textShadow: SH }}>+25%</div>
+        ) : null,
+      )}
       <div style={{ position: 'absolute', left: X, top: TOP, width: W, height: H, transform: `translateX(${shake}px)`, filter: 'drop-shadow(0 4px 10px rgba(6,8,16,0.55))' }}>
         {/* 관 — 크림 테 · 둥근 위 */}
         <div style={{ position: 'absolute', inset: 0, border: `5px solid ${CREAM}`, borderRadius: W / 2, boxSizing: 'border-box', background: 'rgba(8,10,20,0.35)' }} />
@@ -196,10 +205,10 @@ const Hook: React.FC<{ pk: LocPack; t: number }> = ({ pk, t }) => {
   );
 };
 
-// 온도 — 머리 칸 온도계 곁(0.5~3.2초)
+// 온도 — 머리 칸 온도계 곁(0.9~3.2초 — 머리 글과 0.83초 넘게 띄운다, 화면 글 검사 11-24)
 const Temp: React.FC<{ pk: LocPack; t: number }> = ({ pk, t }) => {
-  if (t < 0.5 || t >= 3.2) return null;
-  const p = interpolate(t, [0.5, 0.65], [0.8, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
+  if (t < 0.9 || t >= 3.2) return null;
+  const p = interpolate(t, [0.9, 1.05], [0.8, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   return (
     <>
       <Glow x={300} y={680} w={560} h={240} a={0.6} />
@@ -257,8 +266,8 @@ const Small: React.FC<{ pk: LocPack; t: number; from: number; until: number; lef
 const Sounds: React.FC = () => (
   <>
     <Audio src={staticFile('sfx/bgm.wav')} volume={(f) => MASTER * interpolate(f / FPS, [0, BURST_AT - 0.3, BURST_AT, PILE_AT, PILE_AT + 0.3, TOTAL - 0.6, TOTAL], [BGM_LOW, BGM_LOW, BGM_DIP, BGM_DIP, BGM_LOW, BGM_LOW, 0], clamp)} />
-    <Audio src={staticFile('sfx/wind.wav')} volume={(f) => 0.3 * MASTER * interpolate(f / FPS, [0, 17.3, 17.7, TOTAL], [1, 1, 0, 0], clamp)} />
-    <Audio src={staticFile('sfx/room.wav')} volume={(f) => 0.22 * MASTER * interpolate(f / FPS, [0, 17.4, 17.8, TOTAL - 0.4, TOTAL], [0, 0, 1, 1, 0], clamp)} />
+    <Audio src={staticFile('sfx/wind.wav')} volume={(f) => 0.3 * MASTER * interpolate(f / FPS, [0, 17.0, 17.4, TOTAL], [1, 1, 0, 0], clamp)} />
+    <Audio src={staticFile('sfx/room.wav')} volume={(f) => 0.22 * MASTER * interpolate(f / FPS, [0, 17.1, 17.5, TOTAL - 0.4, TOTAL], [0, 0, 1, 1, 0], clamp)} />
     {SFX.map((s, k) => (
       <Sequence key={k} from={fr(s.at)} layout="none">
         <Audio src={staticFile(`sfx/${s.file}`)} volume={s.vol * MASTER} />
@@ -289,7 +298,7 @@ export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
       <Temp pk={p} t={t} />
       {c.sit !== undefined ? <Sit pk={p} n={c.sit} at={c.at} t={t} /> : null}
       {c.phrase ? <Speech pk={p} b={c.phrase} at={c.at} t={t} /> : null}
-      <Small pk={p} t={t} from={17.75} until={19.4} left={420} top={560} width={600} ko={KO_LINES.invite} read={p.inviteRead} mn={p.inviteMean} koSize={84} />
+      <Small pk={p} t={t} from={18.05} until={19.4} left={170} top={700} width={640} ko={KO_LINES.invite} read={p.inviteRead} mn={p.inviteMean} koSize={84} />
       <Small pk={p} t={t} from={MONG_AT} until={POP_AT} left={150} top={290} width={820} ko={KO_LINES.mong} read={p.mongRead} mn={p.mongMean} koSize={86} glow={0.8} />
       <Small pk={p} t={t} from={POP_AT + 0.12} until={PILE_AT} left={300} top={330} width={720} ko={KO_LINES.shock} read={p.shockRead} mn={p.shockMean} koSize={96} glow={0.85} color="#FFE3DE" />
       {t >= END_AT ? (

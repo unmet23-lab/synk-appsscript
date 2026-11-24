@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20c7b-cf55-79a1-ab31-af3b77ee975b"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one felt-diorama panel using the three references, with the friend buried head-first in the quilts and Mongle waiting cheerfully by the door.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The friend kicks beneath cozy quilts while cheerful Mongle floats by the snowy doorway with its ice cream."}}
+{"type":"turn.completed","usage":{"input_tokens":127920,"cached_input_tokens":109184,"cache_write_input_tokens":0,"output_tokens":1939,"reasoning_output_tokens":395}}

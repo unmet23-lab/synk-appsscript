@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20c7b-cf55-7101-8fb1-a4350b98e1c8"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"참고 이미지의 얼굴과 겨울옷을 유지해, 두 손에 입김을 부는 클로즈업 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A felt-wool close-up of the shivering friend warming his red hands with a soft puff of breath."}}
+{"type":"turn.completed","usage":{"input_tokens":44407,"cached_input_tokens":38272,"cache_write_input_tokens":0,"output_tokens":769,"reasoning_output_tokens":0}}
