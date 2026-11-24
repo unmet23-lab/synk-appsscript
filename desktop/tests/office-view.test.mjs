@@ -445,7 +445,9 @@ test('부서 더하기 checks the name here, then asks the main process to open 
   assert.deepEqual(h.calls, [['saveDepartment', { name: '법무부', folder: 'choose' }]]);
   assert.equal(h.scene().rows.find(r => r.key === 'add').more[0][2], '', 'the name field is empty again after adding');
   assert.equal(h.scene().rows.find(r => r.key === 'add').more[0][4], 'name-1', 'a new field name, so the screen does not carry the typed name over');
-  assert.deepEqual(h.scene().focus, { key: 'add', field: 'name-1', seq: h.scene().focus.seq }, 'the focus goes back to the empty name field');
+  // 대화 짜임: 더한 부서는 판에 오면 그 대화를 고르고, 더하기 칸은 닫고, 초점은 방 머리로 간다(PC앱_옮기기.md 「고른 상대가 바뀌는 때」)
+  assert.deepEqual(h.scene().focus, { say: true, seq: h.scene().focus.seq }, 'the add form closes and the focus goes to the room head');
+  assert.equal(h.scene().chat.addOpen, false);
   // 고르기 창을 닫으면 아무 말도 남기지 않는다. 다른 거절은 까닭을 쓴다
   h.res.saveDepartment = { ok: false, code: 'CANCELLED' };
   await h.room.handle({ key: 'add', act: 'dept-add', fields: { name: '회계부' } });
@@ -467,8 +469,10 @@ test('renaming keeps the folder (no folder sent), changing the folder sends choo
     ['saveDepartment', { name: '회의록', folder: { fromSession: 'sess-lob-0004' } }],
     ['assign', 'sess-lob-0004', 'ddev'],
   ]);
-  assert.deepEqual(h.scene().opening.key, 'd:ddev', 'the department the session went to opens');
+  // 대화 짜임: 보낸 뒤에는 「부서 없는 일」에 머물고 그 자리와 보낸 부서에 적는다(PC앱_옮기기.md 「고른 상대가 바뀌는 때」)
+  assert.equal(h.scene().opening, null, 'no row opens; the chat stays where the user was');
   assert.match(h.scene().rows.find(r => r.key === 'd:ddev').more.find(m => m[0] === 'live')[1], /^이 세션을 개발부로 보냈습니다/);
+  assert.match(h.scene().rows.find(r => r.key === 'lobby').more.find(m => m[0] === 'live')[1], /^이 세션을 개발부로 보냈습니다/);
 });
 
 test('settings: the view changes at once and is saved, the manual number is checked against the cores, folders go through the main process', async () => {

@@ -11,6 +11,7 @@ import { createBizplanRoom } from './office-bizplan-room.mjs';
 import { bizplanLine, attachesBizplan } from './office-bizplan-model.mjs';
 import { limitGauge } from './subscriptions-model.mjs';
 import { josa, whenWords } from './solio-today.mjs';
+import { OFFICE_CHAT_ALL, officeChatContacts, officeChatFirst, officeChatPanes, officeChatKeyOk, officeChatDepartment, officeTaskChatKey } from './office-chat-model.mjs';
 
 export const OFFICE_NAME = '사무실';
 /* 방이 보이는 동안 분 글을 다시 쓰는 사이, 솔리오가 보이는 동안 오브제의 느낌표를 맞추려고 다시 읽는 사이, 바뀜 알림을 모으는 시간(ms) */
@@ -305,9 +306,10 @@ function departmentRow(d, staff, ui, tasking, tasks = []) {
   // 닫힌 줄에는 경로를 쓰지 않는다(11-23 맹검이 「inapp\기획부」를 짚었다). 빈 부서는 직원이 서는 길을 말하고, 온전한 경로는 부서 설정의 「폴더」 줄에 있다
   const mid = lead ? rowActivity(lead, d.folder) : tasking ? '일을 맡기면 직원이 자리에 앉습니다' : '이 부서 폴더에서 일을 시작하면 직원이 섭니다';
   const val = officeGroupStatus(staff);
-  const more = staff.flatMap(v => staffItems(v, tasking));
-  if (tasking) more.push(['acts', [['이 부서에 일 맡기기', 'task-open', '']]]);
-  else if (!staff.length) more.push(['note', '이 폴더에서 Claude Code나 Codex를 켜면 여기에 섭니다.']);
+  const staffMore = staff.flatMap(v => staffItems(v, tasking));
+  if (tasking) staffMore.push(['acts', [['이 부서에 일 맡기기', 'task-open', '']]]);
+  else if (!staff.length) staffMore.push(['note', '이 폴더에서 Claude Code나 Codex를 켜면 여기에 섭니다.']);
+  const more = [];
   // 기능 줄은 누르면 작업 화면이 열린다(사업계획서_설계.md 2절). 일 맡기기가 켜진 판에서만 선다
   if (tasking && attachesBizplan(d)) {
     const l = bizplanLine(featureTask(tasks, 'bizplan', d.id));
@@ -323,7 +325,7 @@ function departmentRow(d, staff, ui, tasking, tasks = []) {
   if (asking) inner.push(['confirm', eul(d.name) + ' 빼시겠습니까?', ['이 부서에 선 직원은 「부서 없는 일」로 갑니다.', '폴더와 그 안의 파일은 그대로 둡니다.'], [['부서 빼기', 'dept-remove', d.id, ui.busy ? 'off' : ''], ['그만두기', 'dept-remove-keep', d.id]]]);
   more.push(['grp', 'set', inner, !open]);
   more.push(['live', ui.notes?.get?.(key) || '']);
-  return { key, nm: d.name, flag: alert, mid, val, when: '', now: staff.some(v => v.status === 'asked'), watch: true, label: rowLabel([d.name, alert && '새 소식', mid, val]), more };
+  return { key, nm: d.name, flag: alert, mid, val, when: '', now: staff.some(v => v.status === 'asked'), watch: true, label: rowLabel([d.name, alert && '새 소식', mid, val]), more: [...staffMore, ...more], staffMore, restMore: more };
 }
 
 /* 「이 폴더로 부서 만들기」의 첫 이름: 읽히는 폴더 이름을 20자로 자른 것, 그 이름의 부서가 있으면 끝 폴더 이름을 자른 것 */
@@ -415,6 +417,7 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
     visible: true, alert: list.some(v => v.alert), say: head.say, then: head.then, hint: head.hint, rows, foot, lookPick: pick,
     floor: officeFloorScene({ departments, list, cap, view, viewSeq: ui.viewSeq || 0, skin, skinSeq: ui.skinSeq || 0, pick, picking: !!ui.lookOpen }),
     sessions: list.length,
+    departments, seated: list,
   };
 }
 
@@ -426,7 +429,10 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
   const tasks = createOfficeTaskRoom({ api, reread, changed });
   const biz = createBizplanRoom({ api, changed });
   const fresh = () => ({ grps: new Set(), asking: null, notes: new Map(), busy: null, addName: '', addSeq: 0, view: null, viewSeq: 0, roomNote: '',
-    skinWant: null, skinSeq: 0, lookWant: new Map(), pick: null, lookSeq: 0, lookOpen: false });
+    skinWant: null, skinSeq: 0, lookWant: new Map(), pick: null, lookSeq: 0, lookOpen: false,
+    // 대화 짜임(PC앱_옮기기.md): 고른 상대, 보낸 뒤 「부서 없는 일」이 비면 갈 상대, 더한 부서 이름(판에 오면 고른다), 더하기 칸 열림,
+    // 상대마다 마지막으로 본 때와 처음 그린 때(새 결과 느낌표), 「한 번에 처리」에서 온 일
+    chat: null, chatAfter: null, chatWantName: null, addOpen: false, chatSeen: new Map(), chatBase: null });
   let st = fresh(), gen = 0, seq = 0, focusReq = null, openReq = null, seenAt = null; // seenAt: 마지막으로 그린 때. 자리는 손님이 본 그때로 센다
   const ask = req => ({ ...req, seq: ++seq });
   const note = (key, text) => { if (text) st.notes.set(key, text); else st.notes.delete(key); };
@@ -479,13 +485,70 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
   }
   /* 누르기 전 값으로 되돌린다(실패 · 바쁨) */
   function unwant(seat, before) { if (before === undefined) st.lookWant.delete(seat); else st.lookWant.set(seat, before); }
+  /* 대화 상대 바꾸기. 떠나는 부서 대화의 끝냄 느낌표를 지우고(고른 순간이 아니라 떠날 때, 설계 검토 8), 보낼 부서를 맞춘다(설계 검토 1) */
+  // 때는 마지막으로 그린 때(seenAt)로 센다. 장면의 now와 같은 시계라 「새 결과」가 어긋나지 않는다
+  // 방을 닫을 때(close)는 다시 읽지 않는다. 숨은 창이 기록 지켜보기를 다시 켜지 않게 한다(본체가 바뀜을 알리면 그때 읽는다)
+  function leaveChat(at = seenAt ?? Date.now(), { again = true } = {}) {
+    const was = st.chat;
+    if (!was) return;
+    st.chatSeen.set(was, at);
+    if (was === 'lobby' || was.startsWith('d:')) {
+      const id = was === 'lobby' ? null : was.slice(2);
+      void call('seen', id).then(res => { if (again && res?.ok !== false) reread(); });
+    }
+  }
+  function pickChat(key, at = seenAt ?? Date.now()) {
+    st.chatSeen.set(key, at);
+    if (st.chat === key) return; // 같은 대화를 다시 고르면 이어서 맡기기를 풀지 않는다
+    leaveChat(at);
+    st.chat = key;
+    st.chatSeen.set(key, at);
+    if (key !== 'lobby') tasks.pickDepartment(officeChatDepartment(key));
+  }
   const foldRow = key => { for (const g of [...st.grps]) if (g.startsWith(key + ':')) st.grps.delete(g); if (key.startsWith('d:') && st.asking === key.slice(2)) st.asking = null; };
 
   async function handle(p = {}) {
-    if (typeof p.act === 'string' && p.act.startsWith('task-')) { await tasks.handle(p); return true; }
+    if (typeof p.act === 'string' && p.act.startsWith('task-')) {
+      const was = tasks.current().departmentId;
+      await tasks.handle(p);
+      // 그림의 직원 · 「이어서 맡기기」 · 「다시 맡기기」가 부서를 바꾸면 고른 대화도 그 부서로 간다(설계 검토 1). 부서가 없으면 「사무실」
+      if (p.act === 'task-open' || p.act === 'task-follow' || p.act === 'task-retry') {
+        const now = tasks.current().departmentId, key = now && deptOf(now) ? 'd:' + now : OFFICE_CHAT_ALL;
+        if (key !== st.chat && (now !== was || p.act === 'task-open')) { leaveChat(); st.chat = key; st.chatSeen.set(key, seenAt ?? Date.now()); }
+        changed();
+      }
+      return true;
+    }
+    // 대화 상대를 고른다(왼쪽 목록 · 그림의 책상)
+    if (p.act === 'chat-pick') {
+      const key = String(p.arg || ''), snap = snapshot();
+      const lobby = !!(snap && snap.available === true && officeSessions(snap.state, seenAt ?? Date.now(), { departments: departments(), assignments: snap.assignments && typeof snap.assignments === 'object' ? snap.assignments : {} }).some(v => v.departmentId == null));
+      if (!officeChatKeyOk(key, { departments: departments(), lobby })) return true;
+      pickChat(key);
+      if (p.focus) focusReq = ask({ key: p.focus });
+      changed();
+      return true;
+    }
+    // 「한 번에 처리」에서 맡긴 일로 왔다: 그 일의 부서 대화를 고르고 그 말로 간다(설계 검토 4)
+    if (p.act === 'chat-task') {
+      const id = String(p.arg || ''), list = snapshot()?.tasking?.tasks;
+      const t = Array.isArray(list) ? list.find(x => x && String(x.id) === id) : null;
+      if (!t) return true;
+      pickChat(officeTaskChatKey(t, departments()));
+      focusReq = ask({ task: id });
+      changed();
+      return true;
+    }
+    // 목록 머리의 「+」: 부서 더하기 칸을 열고 닫는다
+    if (p.act === 'chat-add') {
+      st.addOpen = p.arg === 'close' ? false : p.arg === 'open' ? true : !st.addOpen;
+      focusReq = st.addOpen ? ask({ key: 'add', field: officeAddField(st) }) : ask({ addBtn: true });
+      changed();
+      return true;
+    }
     // 기능의 작업 화면: 부서 줄의 기능 줄을 누르면 열리고, 「← 사무실」로 닫는다
     if (p.act === 'feature-open' && String(p.key || '').startsWith('d:') && p.arg === 'bizplan') { biz.open(String(p.key).slice(2)); changed(); return true; }
-    if (p.act === 'biz-close') { const back = biz.departmentId; biz.close(); if (back) openReq = ask({ key: 'd:' + back }); changed(); return true; }
+    if (p.act === 'biz-close') { const back = biz.departmentId; biz.close(); if (back && deptOf(back)) pickChat('d:' + back); focusReq = ask({ say: true }); changed(); return true; }
     if (typeof p.act === 'string' && p.act.startsWith('biz-')) { await biz.handle(p); return true; }
     const key = String(p.key || ''), act = String(p.act || ''), arg = p.arg == null ? '' : String(p.arg), fields = p.fields && typeof p.fields === 'object' ? p.fields : {};
     if (act === 'disarm') return true;
@@ -517,7 +580,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
         const bad = nameProblem(name);
         if (bad) { note(key, officeCodeSay(bad)); focusReq = ask({ key, field }); changed(); return true; }
         const res = await run(key, () => call('saveDepartment', { name, folder: 'choose' }));
-        return after(key, res, `「${name}」 부서를 더했습니다.`, () => { st.addName = ''; st.addSeq += 1; focusReq = ask({ key, field: officeAddField(st) }); });
+        return after(key, res, `「${name}」 부서를 더했습니다.`, () => { st.addName = ''; st.addSeq += 1; st.addOpen = false; st.chatWantName = name; st.roomNote = `「${name}」 부서를 더했습니다.`; focusReq = ask({ say: true }); });
       }
       case 'dept-from': {
         const name = cleanName(fields['nm-' + arg]);
@@ -552,7 +615,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
         const d = deptOf(arg);
         if (!d || st.asking !== arg) { st.asking = null; changed(); return true; }
         const res = await run(key, () => call('removeDepartment', d.id));
-        return after(key, res, '', () => { st.asking = null; foldRow(key); st.roomNote = `「${d.name}」 부서를 뺐습니다.`; focusReq = ask({ say: true }); });
+        return after(key, res, '', () => { st.asking = null; foldRow(key); if (st.chat === key) { st.chat = OFFICE_CHAT_ALL; tasks.pickDepartment(null); } st.roomNote = `「${d.name}」 부서를 뺐습니다.`; focusReq = ask({ say: true }); });
       }
       case 'assign': {
         const [sid, did] = arg.split('|');
@@ -560,7 +623,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
         if (!sid || !d) { note(key, officeCodeSay('NOT_FOUND')); reread(); changed(); return true; }
         const res = await run(key, () => call('assign', sid, d.id));
         // 보낸 부서의 줄을 열어 둔다(시안 send → pin)
-        return after(key, res, '', () => { note('d:' + d.id, `이 세션을 ${ro(d.name)} 보냈습니다.`); openReq = ask({ key: 'd:' + d.id }); });
+        return after(key, res, '', () => { note('lobby', `이 세션을 ${ro(d.name)} 보냈습니다.`); note('d:' + d.id, `이 세션을 ${ro(d.name)} 보냈습니다.`); st.chatAfter = 'd:' + d.id; });
       }
       case 'view': {
         const view = arg === 'top' ? 'top' : 'tilted';
@@ -637,6 +700,30 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     }
   }
 
+  /* 대화 짜임의 자료. 고른 상대를 정한다: 더한 부서가 판에 오면 그 부서, 없어진 상대는 「사무실」(보낸 뒤 비운 「부서 없는 일」은 보낸 부서),
+     처음 열 때만 느낌표가 있는 첫 부서(설계 검토 9). 고른 상대가 바뀌면 보낼 부서도 맞춘다 */
+  function chatScene(room, plain, now) {
+    const taskList = Array.isArray(plain?.tasks) ? plain.tasks : [];
+    const depts = room.departments || [], lobby = (room.rows || []).some(r => r.key === 'lobby');
+    if (st.chatBase == null) st.chatBase = now;
+    if (st.chatWantName) {
+      const d = depts.find(x => x.name === st.chatWantName);
+      if (d) { st.chatWantName = null; pickChat('d:' + d.id, now); }
+    }
+    if (st.chat && !officeChatKeyOk(st.chat, { departments: depts, lobby })) {
+      const next = st.chat === 'lobby' && st.chatAfter && officeChatKeyOk(st.chatAfter, { departments: depts, lobby }) ? st.chatAfter : OFFICE_CHAT_ALL;
+      st.chat = null; st.chatAfter = null;
+      pickChat(next, now);
+    }
+    const contacts = () => officeChatContacts(room, { tasks: taskList, chat: st.chat, seen: st.chatSeen, base: st.chatBase, now });
+    let list = contacts();
+    if (!st.chat) { pickChat(officeChatFirst(list), now); list = contacts(); }
+    const panes = officeChatPanes(room, st.chat, { tasking: Array.isArray(plain?.tasks), contacts: list });
+    // 「사무실」과 부서를 고른 동안 보낼 부서는 늘 고른 상대와 같다(장면마다 맞춘다. 맡기기가 꺼진 판에서는 일이 없다)
+    if (st.chat !== 'lobby' && tasks.current().departmentId !== officeChatDepartment(st.chat)) tasks.pickDepartment(officeChatDepartment(st.chat));
+    return { ...panes, sel: st.chat, contacts: list, addOpen: st.addOpen, foot: room.foot };
+  }
+
   return {
     handle,
     /* 장면. 한 번만 따를 요청(열 줄, 초점)을 붙인다 */
@@ -648,16 +735,17 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
       if (room.visible && st.pick && room.lookPick !== st.pick) st.pick = room.lookPick;
       // 기능 줄(사업계획서 읽기)은 부서 줄과 작업 화면에만 보이고 일 맡기기 카드에는 섞지 않는다(코드 검수 P2-5)
       const plain = room.visible && snap.tasking && Array.isArray(snap.tasking.tasks) ? { ...snap.tasking, tasks: snap.tasking.tasks.filter(t => !t.feature) } : (room.visible ? snap.tasking : null);
+      const chat = room.visible ? chatScene(room, plain, now) : null;
       const tasking = tasks.scene(plain, snap?.departments);
       const deptId = biz.departmentId, depts = Array.isArray(snap?.departments) ? snap.departments : [];
       const dept = deptId && depts.find(d => d.id === deptId);
       // 작업 화면은 일 맡기기가 켜진 판에서 부서가 남아 있을 때만 선다. 부서를 빼면 사무실로 돌아간다
       if (deptId && (!room.visible || !dept || !Array.isArray(snap?.tasking?.tasks))) biz.close();
       const feature = biz.departmentId ? biz.scene(featureTask(snap.tasking.tasks, 'bizplan', deptId), { departments: depts, deptName: dept.name }) : null;
-      return room.visible ? { ...room, ...(tasking ? {tasking} : {}), ...(feature ? { feature } : {}), focus: focusReq, opening: openReq } : room;
+      return room.visible ? { ...room, ...(tasking ? {tasking} : {}), ...(feature ? { feature } : {}), ...(chat ? { chat } : {}), focus: focusReq, opening: openReq } : room;
     },
     /* 방을 떠날 때: 열어 둔 묶음과 물음, 알림 줄을 지운다(보기 고른 것은 남긴다) */
-    close() { st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; st.lookOpen = false; focusReq = null; openReq = null; biz.close(); },
+    close() { leaveChat(seenAt ?? Date.now(), { again: false }); st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; st.lookOpen = false; st.addOpen = false; focusReq = null; openReq = null; biz.close(); },
     /* 계정이 바뀌면 다 비운다 */
     reset() { gen += 1; tasks.reset(); biz.reset(); st = fresh(); focusReq = null; openReq = null; },
     busy: () => st.busy,

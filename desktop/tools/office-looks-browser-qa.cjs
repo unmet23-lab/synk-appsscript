@@ -32,6 +32,9 @@ module.exports = async function checkOfficeLooks({ open, boot, signedIn, subsNon
   await wait(1200);
   await click(w, '#portal-entry [data-orb-prog="office"]');
   await wait(1400);
+  // 대화 짜임(docs/디자인/솔리오_사무실대화_20261124/PC앱_옮기기.md): 꾸미기는 「사무실」을 고르면 오른쪽 칸에 선다
+  await press(w, '#portal-entry [data-off-chats] > [data-chat="all"]');
+  await wait(700);
   const black = await lit(w);
   const r0 = await lookRow(w);
   check('looks: the 꾸미기 row stands with the black skin and no hats', r0.mid === '검정' && !r0.open, r0);

@@ -97,7 +97,7 @@ if(!process.versions.electron){
       // 11-20부터 구독 줄은 「상세내역」 안에 접혀 있다(솔리오 구독 비서 설계 3.5). 줄을 누르는 앞 흐름은 상세내역을 한 번 펼친 채로 본다.
       // 자바스크립트 click이라 초점은 옮기지 않는다. 접힌 판 자체는 20번이 fold:true로 본다
       // 앞 흐름은 줄의 자리(포인터 사건을 보내는 좌표)를 옛 판 그대로 재므로, 비서 판은 그 흐름에서만 감춘다
-      if(!fold)await w.js("(()=>{if(window.__detailsAuto)return true;window.__detailsAuto=1;const st=document.createElement('style');st.textContent='#portal-entry [data-brief],#portal-entry [data-details-top],#portal-entry [data-board],#portal-entry [data-rep-h],#portal-entry [data-say-tag]{display:none!important}#portal-entry .room.boarded{display:block!important}#portal-entry .room.boarded .say{display:block!important;font:var(--display)!important;letter-spacing:-.018em!important;max-width:21em!important}#portal-entry .room.boarded .say .then{margin-top:0!important;font:inherit!important;color:var(--dim)!important}';document.head.appendChild(st);const t=setInterval(()=>{const b=document.querySelector('#portal-entry [data-details]');if(b&&!b.hidden&&b.getAttribute('aria-expanded')!=='true'){b.click();clearInterval(t);}},25);setTimeout(()=>clearInterval(t),30000);return true;})()");
+      if(!fold)await w.js("(()=>{if(window.__detailsAuto)return true;window.__detailsAuto=1;const st=document.createElement('style');st.textContent='#portal-entry [data-brief],#portal-entry [data-details-top],#portal-entry [data-board],#portal-entry [data-rep-h],#portal-entry [data-say-tag]{display:none!important}#portal-entry .room.boarded:not([hidden]){display:block!important}#portal-entry .room.boarded .say{display:block!important;font:var(--display)!important;letter-spacing:-.018em!important;max-width:21em!important}#portal-entry .room.boarded .say .then{margin-top:0!important;font:inherit!important;color:var(--dim)!important}';document.head.appendChild(st);const t=setInterval(()=>{const b=document.querySelector('#portal-entry [data-details]');if(b&&!b.hidden&&b.getAttribute('aria-expanded')!=='true'){b.click();clearInterval(t);}},25);setTimeout(()=>clearInterval(t),30000);return true;})()");
       if(restore){if(restoreAfter)setTimeout(()=>{w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')').catch(()=>{});},restoreAfter);else await w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')');}
       return t0;
     }
@@ -862,6 +862,7 @@ if(!process.versions.electron){
         //     부서 빼기의 두 번 확인, 자판만으로 부서 더하기, 수용 인원을 넘었을 때, 부서 여섯과 일곱, 기록으로만 선 직원(첫 조각의 실제 모습, 11-21 훅을 뺐다), 세션이 없을 때를 본다. 다섯 크기(꽉 참 1440×900, 1080×700, 720×760, 420×760, 380×250)에서 두 보기를 찍는다.
         //     그림은 눈 깜빡임 · 테두리 밝기 · 느낌표만 움직인다. 1.2초 사이에 캔버스에서 바뀐 점의 몫을 잰다
         if(only('22')&&mode==='main'){
+          // 사무실 대화 짜임(docs/디자인/솔리오_사무실대화_20261124/PC앱_옮기기.md, 2026-11-25): 왼쪽 대화 상대 · 가운데 그림과 대화 · 오른쪽 「이 부서」 칸
           const MKT='C:\\qa\\문서\\마케팅',SHOP='C:\\qa\\코드\\shop';
           const depts=[{id:'qmkt',name:'마케팅부',folder:MKT},{id:'qdev',name:'개발부',folder:SHOP}];
           const sessions=[
@@ -873,12 +874,20 @@ if(!process.versions.electron){
           ];
           const board=patch=>({available:true,departments:JSON.parse(JSON.stringify(depts)),sessions,assignments:{},settings:{view:'tilted',manualCap:null},roots:{claude:['C:\\Users\\qa\\.claude'],codex:['C:\\Users\\qa\\.codex\\sessions'],added:[]},pc:{cores:16,totalMemGb:31.7,freeMemGb:19,cpuPercent:38},...patch});
           const ROOM="document.querySelector('#portal-entry [data-room=solio-office]')",OBJ="document.querySelector('#portal-entry [data-orb-prog=office]')";
-          const look=w=>w.js("(()=>{const r="+ROOM+",o="+OBJ+",q=s=>r.querySelector(s),slot=q('[data-off-slot]');return {hidden:r.hidden,say:q('[data-off-say]').textContent,then:q('[data-off-then]').textContent,rows:[...r.querySelectorAll('[data-off-rows] > button.row')].map(b=>b.dataset.key+'|'+(b.querySelector('.nm')?.firstChild?.textContent||'')+'|'+(b.querySelector('.flag')?'!':'')),zones:slot.dataset.zones||'',view:slot.dataset.view||'',slot:!slot.hidden&&getComputedStyle(slot).display!=='none',news:o.classList.contains('news'),label:o.getAttribute('aria-label'),overflow:Math.max(document.documentElement.scrollWidth-innerWidth,r.scrollWidth-r.clientWidth)};})()");
+          const look=w=>w.js("(()=>{const r="+ROOM+",o="+OBJ+",q=s=>r.querySelector(s),slot=q('[data-off-slot]');const vis=n=>!!n&&!n.closest('[hidden]')&&n.getClientRects().length>0;"
+            +"return {hidden:r.hidden,nm:q('[data-off-nm]').textContent,say:q('[data-off-say]').textContent,then:q('[data-off-then]').textContent,"
+            +"chats:[...r.querySelectorAll('[data-off-chats] > [data-chat]')].map(b=>b.dataset.chat+'|'+(b.querySelector('.ofc-c-nm')?.firstChild?.textContent||'')+'|'+(b.querySelector('.flag')?'!':'')),"
+            +"sel:q('[data-off-chats] > [aria-current=\"true\"]')?.dataset.chat||'',side:[...r.querySelectorAll('[data-off-rows] > button.row')].map(b=>b.dataset.key),"
+            +"center:[...r.querySelectorAll('[data-off-center] > button.row')].map(b=>b.dataset.key),compose:vis(q('[data-off-compose]')),offsay:vis(q('[data-off-offsay]'))?q('[data-off-offsay]').textContent:'',empty:vis(q('[data-off-empty]')),"
+            +"zones:slot.dataset.zones||'',view:slot.dataset.view||'',slot:!slot.hidden&&getComputedStyle(slot).display!=='none',news:o.classList.contains('news'),label:o.getAttribute('aria-label'),"
+            +"overflow:Math.max(document.documentElement.scrollWidth-innerWidth,r.scrollWidth-r.clientWidth,...[...r.querySelectorAll('.ofc-list,.ofc-center,.ofc-side')].filter(vis).map(n=>n.scrollWidth-n.clientWidth))};})()");
           const setBoard=async(w,b)=>{await w.js('window.__orbFixture.setOffice('+JSON.stringify(b)+')');await wait(900);};
           // 실제 손처럼 누르기 전에 초점을 그 단추로 옮긴다(쓰던 칸에 초점이 남으면 안쪽을 다시 짓지 않는 규칙 때문이다)
           const press=(w,sel)=>w.js(`(()=>{const el=document.querySelector(${JSON.stringify(sel)});if(!el)return false;el.focus({preventScroll:true});el.click();return true;})()`);
-          const sizes5=[[1440,900],[1080,700],[720,760],[420,760],[380,250]];
-          const shoot=async(w,name,list=sizes5)=>{const over=[];for(const [W,Hh] of list){w.win.setContentSize(W,Hh);for(let i=0;i<40&&(await w.js('innerWidth'))!==W;i++)await wait(50);await wait(420);await w.js(ROOM+'.scrollTop=0');await wait(120);await capture(w,`${name}-${W}x${Hh}`);const l=await look(w);if(l.overflow>0)over.push({W,Hh,overflow:l.overflow});}w.win.setContentSize(1440,900);await wait(400);check('22 '+name+': no sideways overflow in the room at any size',over.length===0,{over});};
+          const chat=(w,key)=>press(w,'#portal-entry [data-off-chats] > [data-chat="'+key+'"]');
+          // 앱 창의 최소 크기는 960×680이다. 1100 아래는 오른쪽 칸이 서랍, 640 아래(휴대폰 너비 흉내)는 목록과 방을 오간다
+          const sizes=[[1440,900],[1180,860],[960,680],[1920,1080],[420,760]];
+          const shoot=async(w,name,list=sizes)=>{const over=[];for(const [W,Hh] of list){w.win.setContentSize(W,Hh);for(let i=0;i<40&&(await w.js('innerWidth'))!==W;i++)await wait(50);await wait(520);await capture(w,`${name}-${W}x${Hh}`);const l=await look(w);if(l.overflow>0)over.push({W,Hh,overflow:l.overflow});}w.win.setContentSize(1440,900);await wait(400);check('22 '+name+': no sideways overflow in the room at any size',over.length===0,{over});};
           const w=await open();await boot(w,{subs:subsReady,office:board()},{restore:signedIn('none')});
           await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
           const objs=await w.js("[...document.querySelectorAll('#portal-entry [data-orb-prog]')].filter(o=>!o.hidden).map(o=>o.dataset.orbProg)");
@@ -889,112 +898,107 @@ if(!process.versions.electron){
           await capture(w,'office-rail-alert');
           await click(w,'#portal-entry [data-orb-prog="office"]');await wait(1200);
           const l1=await look(w);
-          check('22 entering 사무실: the question first, how many cannot tell, one row per department, the lobby, capacity, settings and 부서 더하기, and the floor',!l1.hidden&&l1.say==='개발부가 3분 전에 승인을 물었습니다.'&&l1.then==='하나는 승인 요청이 여기에 뜨지 않습니다.'&&JSON.stringify(l1.rows)===JSON.stringify(['d:qmkt|마케팅부|!','d:qdev|개발부|!','lobby|부서 없는 일|','cap|수용 인원|','cfg|설정|','look|꾸미기|','add|부서 더하기|'])&&l1.zones==='d:qmkt d:qdev lobby'&&l1.view==='tilted'&&l1.slot,l1);
+          check('22 entering 사무실: 사무실 first, one contact per department, then 부서 없는 일; the department waiting on a question is picked first with its ! and the floor is drawn',
+            !l1.hidden&&JSON.stringify(l1.chats)===JSON.stringify(['all|사무실|','d:qmkt|마케팅부|!','d:qdev|개발부|!','lobby|부서 없는 일|'])&&l1.sel==='d:qdev'&&l1.nm==='개발부'&&l1.slot&&l1.zones==='d:qmkt d:qdev lobby'&&JSON.stringify(l1.side)===JSON.stringify(['d:qdev']),l1);
           check('22 entering turns the record watch on',(await calls(w)).includes('office-watch:true'));
           const motion=await w.js("(async()=>{const c="+ROOM+".querySelector('[data-off-floor]'),x=c.getContext('2d');const a=x.getImageData(0,0,c.width,c.height).data;await new Promise(r=>setTimeout(r,1200));const b=x.getImageData(0,0,c.width,c.height).data;let n=0,lit=0;for(let i=0;i<a.length;i+=4){if(a[i]>20||b[i]>20)lit++;if(Math.abs(a[i]-b[i])>24||Math.abs(a[i+3]-b[i+3])>24)n++;}return {w:c.width,h:c.height,changed:n,lit,share:Math.round(n/(a.length/4)*1e4)/1e4};})()");
           check('22 the floor is drawn and only small parts change in 1.2 s (blink, rim, the bouncing mark), no body or camera moves',motion.lit>500&&motion.share<0.01,motion);
-          // 직원 줄: 승인 물음을 모르는 Codex 세션, 도우미 둘
-          await click(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"]');await click(w,'#portal-entry [data-off-rows] button.row[data-key="lobby"]');await wait(800);
-          const staff=await w.js("[..."+ROOM+".querySelectorAll('.row.staff')].map(r=>r.dataset.staff+'|'+r.querySelector('.nm').firstChild.textContent+'|'+r.querySelector('.mid b').textContent+'|'+(r.querySelector('.mid small')?.textContent||''))");
-          check('22 staff lines say the state, the folder and tool, the helpers, and that a Codex session cannot tell about questions',staff.includes('sess-qa-dev-01|Claude Code|3분 전에 승인을 물었습니다|shop · 명령 · npm')&&staff.includes('sess-qa-cdx-01|Codex|일하는 중|api · 승인 요청은 여기에 뜨지 않습니다')&&staff.includes('sess-qa-lob-01|Claude Code|일하는 중|회의록 · 읽기 · 회의록_1118.txt · 도우미 둘과 함께'),{staff});
-          await capture(w,'office-rows-open');
-          await key(w,'Escape');await wait(600);
+          // 직원 줄: 개발부는 오른쪽 칸에 펼친 채 서고, 부서 없는 일은 가운데에 선다. 승인 물음을 모르는 Codex 세션, 도우미 둘
+          const devStaff=await w.js("[..."+ROOM+".querySelectorAll('[data-off-rows] .row.staff, [data-off-center] .row.staff')].map(r=>r.dataset.staff+'|'+r.querySelector('.nm').firstChild.textContent+'|'+r.querySelector('.mid b').textContent+'|'+(r.querySelector('.mid small')?.textContent||''))");
+          await chat(w,'lobby');await wait(800);
+          const lobbyStaff=await w.js("[..."+ROOM+".querySelectorAll('[data-off-center] .row.staff')].map(r=>r.dataset.staff+'|'+r.querySelector('.nm').firstChild.textContent+'|'+r.querySelector('.mid b').textContent+'|'+(r.querySelector('.mid small')?.textContent||''))");
+          const staff=[...devStaff,...lobbyStaff];
+          check('22 staff lines say the state, the folder and tool, the helpers, and that a Codex session cannot tell about questions',staff.includes('sess-qa-dev-01|Claude Code|3분 전에 승인을 물었습니다|shop · 명령 · npm')&&staff.some(s=>s.startsWith('sess-qa-cdx-01|Codex|일하는 중|api'))&&staff.some(s=>s.startsWith('sess-qa-lob-01|')&&s.includes('도우미 둘')),{staff});
+          const l1b=await look(w);
+          check('22 부서 없는 일 puts its sessions in the middle with no composer and no side column',l1b.sel==='lobby'&&JSON.stringify(l1b.center)===JSON.stringify(['lobby'])&&!l1b.compose&&l1b.side.length===0,l1b);
+          await capture(w,'office-lobby');
+          await chat(w,'d:qdev');await wait(800);
           await shoot(w,'office-tilted');
           // 다른 프로그램을 보는 동안에도 느낌표가 남는다. 나가면 기록 살피기를 끈다
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(700);
           const l2=await look(w);const watch2=(await calls(w)).filter(c=>c.startsWith('office-watch:')).at(-1);
           check('22 leaving for 구독 stops the record watch and keeps the ! on the object',l2.hidden&&l2.news&&watch2==='office-watch:false',{...l2,watch2});
           await click(w,'#portal-entry [data-orb-prog="office"]');await wait(1000);
-          // 보기 바꾸기: 설정 줄 안의 「위에서」. 저장하고, 카메라가 한 번 옮겨 간다
+          const l2b=await look(w);
+          check('22 coming back keeps the picked chat',l2b.sel==='d:qdev',l2b);
+          // 개발부를 떠나면 그 부서의 끝냄을 본 것으로 친다(고른 순간이 아니라 떠날 때, 설계 검토 8). 마케팅부를 보고 떠나면 마케팅부의 ! 가 간다
+          await chat(w,'d:qmkt');await wait(700);
+          check('22 leaving 개발부 calls seen for it',(await calls(w)).includes('office-seen:qdev'));
+          await chat(w,'all');await wait(1300);
+          const l4=await look(w);
+          check('22 leaving 마케팅부 marks its finished turn seen and its ! goes',(await calls(w)).includes('office-seen:qmkt')&&l4.chats.includes('d:qmkt|마케팅부|'),l4);
+          // 보기 바꾸기: 「사무실」의 오른쪽 칸의 설정 줄 안 「위에서」. 저장하고, 카메라가 한 번 옮겨 간다
+          check('22 사무실 shows capacity, settings and 꾸미기 on the side',JSON.stringify(l4.side)===JSON.stringify(['cap','cfg','look']),l4);
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(600);
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"] + .more [data-pv="top"]');await wait(1400);
           const l3=await look(w);
           check('22 「위에서」 in the settings row saves the view and the floor turns to the top view',l3.view==='top'&&(await calls(w)).includes('office-settings:{"view":"top"}'),l3);
-          await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(500);
-          await shoot(w,'office-top');
-          await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(500);
+          await shoot(w,'office-top',[[1440,900],[960,680]]);
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"] + .more [data-pv="tilted"]');await wait(1200);
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(400);
-          // 알약은 판을 하나만 연다: 설정에 머문 뒤 부서 더하기에 머물면 설정 판이 접힌다(검수 solio-room-layout-20261124 대체 최종 F4)
-          const pillOver=(k,from)=>w.js("(()=>{const q=k=>k&&document.querySelector('#portal-entry [data-off-rows] button.row[data-key=\"'+k+'\"]');q("+JSON.stringify(k)+").dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',pointerId:1,isPrimary:true,relatedTarget:q("+JSON.stringify(from)+")||null}));return true;})()");
-          await pillOver('cfg',null);await wait(500);await pillOver('add','cfg');await wait(500);
-          const pills=await w.js("[...document.querySelectorAll('#portal-entry [data-off-rows] > button.row.opened')].map(b=>b.dataset.key).join(' ')");
-          check('22 resting on 설정 then on 부서 더하기 leaves only the 부서 더하기 panel open',pills==='add',{pills});
-          await w.js("document.querySelector('#portal-entry [data-off-rows]').dispatchEvent(new PointerEvent('pointerleave',{pointerType:'mouse',pointerId:1,isPrimary:true})),true");await wait(800);
-          // 마케팅부 줄을 열었다 닫으면 끝냄 알림이 지워진다
-          await click(w,'#portal-entry [data-off-rows] button.row[data-key="d:qmkt"]');await wait(700);
-          await click(w,'#portal-entry [data-off-rows] button.row[data-key="d:qmkt"]');await wait(1200);
-          const l4=await look(w);
-          check('22 opening then closing 마케팅부 marks its finished turn seen and the ! goes',(await calls(w)).includes('office-seen:qmkt')&&l4.rows[0]==='d:qmkt|마케팅부|',l4);
-          // 부서 빼기는 그 자리에서 한 번 더 묻는다
-          await click(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"]');await wait(600);
-          await press(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more .row.item');await wait(600);
+          // 부서 빼기는 그 부서의 오른쪽 칸 「부서 설정」 안에서 한 번 더 묻는다
+          await chat(w,'d:qdev');await wait(700);
+          await press(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more .row.item[data-grp="set"], #portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more .row.item');await wait(600);
           await press(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more [data-room-act="dept-remove-ask"]');await wait(600);
-          const ask=await w.js("(()=>{const m="+ROOM+".querySelector('button.row[data-key=\"d:qdev\"] + .more');const c=m.querySelector('.confirm');return {confirm:!!c,question:c?.querySelector('[data-ask-q]')?.textContent||'',focus:document.activeElement?.dataset?.askQ!==undefined,removed:false};})()");
+          const ask=await w.js("(()=>{const m="+ROOM+".querySelector('[data-off-rows] button.row[data-key=\"d:qdev\"] + .more');const c=m&&m.querySelector('.confirm');return {confirm:!!c,question:c?.querySelector('[data-ask-q]')?.textContent||'',focus:document.activeElement?.dataset?.askQ!==undefined};})()");
           check('22 「부서 빼기」 asks first in place, with the focus on the question',ask.confirm&&ask.question==='개발부를 빼시겠습니까?'&&ask.focus&&!(await calls(w)).some(c=>c.startsWith('office-remove:')),ask);
-          await w.js("document.querySelector('#portal-entry [data-off-rows] button.row[data-key=\"d:qdev\"] + .more .confirm').scrollIntoView({block:'center'})");await wait(200);
           await capture(w,'office-remove-ask');
-          await press(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more .confirm [data-room-act="dept-remove"]');await wait(1200);
+          await press(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more .confirm [data-room-act="dept-remove"]');await wait(1300);
           const l5=await look(w);
-          check('22 the second press removes 개발부 and its sessions move to 「부서 없는 일」',(await calls(w)).includes('office-remove:qdev')&&!l5.rows.some(r=>r.startsWith('d:qdev'))&&l5.rows.some(r=>r.startsWith('lobby')),l5);
+          check('22 the second press removes 개발부, its sessions move to 「부서 없는 일」, and the chat goes to 사무실',(await calls(w)).includes('office-remove:qdev')&&!l5.chats.some(c=>c.startsWith('d:qdev'))&&l5.chats.some(c=>c.startsWith('lobby'))&&l5.sel==='all',l5);
           await setBoard(w,board());
-          // 자판만으로 부서 더하기: 설정 줄에서 Tab으로 「부서 더하기」 줄까지 가면 열리고, 이름을 적고 Enter
-          await w.js("document.querySelector('#portal-entry [data-off-rows] button.row[data-key=\"cfg\"]').focus()");
-          // 숨은 시험 창에는 초점 사건이 오지 않아(19번과 같다) 자판으로 옮긴 초점마다 focusin을 직접 보낸다
-          const focusin=()=>w.js("document.activeElement?.dispatchEvent(new FocusEvent('focusin',{bubbles:true}))");
-          await focusin();
-          let onAdd=false;for(let i=0;i<30&&!onAdd;i++){await key(w,'Tab');await focusin();await wait(80);onAdd=await w.js("document.activeElement?.dataset?.key==='add'");}
-          await wait(500);
-          const addOpen=await w.js("document.querySelector('#portal-entry [data-off-rows] button.row[data-key=\"add\"]').getAttribute('aria-expanded')");
-          await key(w,'Tab');await focusin();await wait(120);
-          const inField=await w.js("document.activeElement?.dataset?.f==='name'");
+          // 자판만으로 부서 더하기: 목록 머리의 「+」에서 Enter, 이름을 적고 Enter. 더한 부서가 판에 오면 그 대화를 고른다
+          await w.js("document.querySelector('#portal-entry [data-off-add-btn]').focus()");
+          await key(w,'Return');await wait(700);
+          const addOpen=await w.js("document.querySelector('#portal-entry [data-off-add-btn]').getAttribute('aria-expanded')");
+          const inField=await w.js("document.activeElement?.dataset?.f?.startsWith('name')");
           w.win.webContents.insertText('법무부');await wait(150);
-          await key(w,'Return');await wait(1300);
+          await key(w,'Return');await wait(1500);
           const l6=await look(w);
-          check('22 keyboard only: Tab reaches 「부서 더하기」, it opens, the name field takes 법무부, Enter adds it through the folder dialog',onAdd&&addOpen==='true'&&inField&&(await calls(w)).includes('office-save:{"name":"법무부","folder":"choose"}')&&l6.rows.some(r=>r.endsWith('|법무부|')),{onAdd,addOpen,inField,rows:l6.rows,calls:(await calls(w)).filter(c=>c.startsWith('office-save'))});
-          await w.js("document.querySelector('#portal-entry [data-off-rows] button.row[data-key=\"add\"]').scrollIntoView({block:'center'})");await wait(200);
+          check('22 keyboard only: 「+」 opens the add form with the focus in the name field, Enter adds 법무부 through the folder dialog, and its chat is picked',addOpen==='true'&&inField&&(await calls(w)).includes('office-save:{"name":"법무부","folder":"choose"}')&&l6.chats.some(c=>c.endsWith('|법무부|'))&&l6.nm==='법무부',{addOpen,inField,l6});
           await capture(w,'office-added');
-          await key(w,'Escape');await wait(400);
-          // 수용 인원을 넘었을 때(직접 정한 둘, 일하는 넷)
+          // 수용 인원을 넘었을 때(직접 정한 둘, 일하는 넷). 「사무실」의 머리가 말한다
           const busy=[1,2,3,4].map(i=>({id:'sess-qa-busy-0'+i,cwd:i<3?MKT:SHOP,kind:'work',ago:15e3*i,toolName:'Read',detail:'파일'+i+'.md'}));
           await setBoard(w,board({sessions:busy,settings:{view:'tilted',manualCap:2}}));
+          await chat(w,'all');await wait(700);
           const l7=await look(w);
-          check('22 over capacity the headline says how many may work and how many do',l7.say==='둘까지인데 지금 직원 넷이 일하고 있습니다.',l7);
-          await shoot(w,'office-over',[[1440,900],[720,760]]);
-          // 부서 여섯과 일곱: 일곱째부터는 그림에서 「그 밖」 한 구역으로 묶는다
+          check('22 over capacity the 사무실 head says how many may work and how many do',l7.say==='둘까지인데 지금 직원 넷이 일하고 있습니다.',l7);
+          await shoot(w,'office-over',[[1440,900],[960,680]]);
+          // 부서 여섯과 일곱: 목록에는 모두 서고, 일곱째부터는 그림에서 「그 밖」 한 구역으로 묶는다
           const six=['마케팅부','법무부','개발부','디자인부','회계부','고객지원부'].map((name,i)=>({id:'qd6'+i,name,folder:'C:\\qa\\부서'+i}));
           const sixStaff=six.slice(0,4).map((d,i)=>({id:'sess-qa-six-0'+i,cwd:d.folder,kind:i===1?'ask':i===3?'rest':'work',ago:30e3+i*1000,toolName:'Read',detail:'메모.md'}));
           await setBoard(w,board({departments:six,sessions:sixStaff}));
           const l8=await look(w);
-          check('22 six departments are drawn one by one in two lines',l8.zones.split(' ').length===6&&!l8.zones.includes('other')&&l8.rows.filter(r=>r.startsWith('d:')).length===6,l8);
-          await shoot(w,'office-six',[[1440,900],[1080,700]]);
+          check('22 six departments are drawn one by one and listed',l8.zones.split(' ').length===6&&!l8.zones.includes('other')&&l8.chats.filter(c=>c.startsWith('d:')).length===6,l8);
+          await shoot(w,'office-six',[[1440,900],[1180,860]]);
           await setBoard(w,board({departments:[...six,{id:'qd7x',name:'영업부',folder:'C:\\qa\\영업'}],sessions:[...sixStaff,{id:'sess-qa-sev-01',cwd:'C:\\qa\\영업',kind:'work',ago:20e3}]}));
           const l9=await look(w);
-          check('22 a seventh department has its row, and the floor bundles it into 「그 밖」',l9.zones.split(' ').filter(z=>z.startsWith('d:')).length===6&&l9.zones.endsWith('other')&&l9.rows.some(r=>r.startsWith('d:qd7x|영업부')),l9);
+          check('22 a seventh department has its contact, and the floor bundles it into 「그 밖」',l9.zones.split(' ').filter(z=>z.startsWith('d:')).length===6&&l9.zones.endsWith('other')&&l9.chats.some(c=>c.startsWith('d:qd7x|영업부')),l9);
           await shoot(w,'office-seven',[[1440,900]]);
-          // 첫 조각의 실제 모습(11-21 훅을 뺐다): 모든 직원이 기록으로만 선다. 느낌표가 없고, 맨 위 둘째 줄이 승인 물음을 모른다고 한 번 말한다
+          // 첫 조각의 실제 모습(11-21 훅을 뺐다): 모든 직원이 기록으로만 선다. 느낌표가 없고, 「사무실」의 머리가 승인 물음을 모른다고 한 번 말한다
           const recs=[{id:'sess-qa-rec-01',cwd:MKT,kind:'work',ago:20e3,hooked:false},{id:'sess-qa-rec-02',cwd:SHOP,kind:'work',ago:240e3,hooked:false},{id:'sess-qa-rec-03',tool:'codex',cwd:SHOP+'\\api',kind:'work',ago:30e3}];
           await setBoard(w,board({sessions:recs}));
+          await chat(w,'all');await wait(600);
           const lr=await look(w);
-          check('22 records only (the first piece): no ! on the object or any row, and the headline says once that it cannot tell about questions',lr.say==='직원 둘이 일하고 있습니다.'&&lr.then==='승인 요청은 Claude Code와 Codex 창에서 확인해 주세요.'&&!lr.news&&!lr.rows.some(r=>r.endsWith('|!')),lr);
-          await shoot(w,'office-records-only',[[1440,900],[720,760]]);
-          // 더했지만 지금 보지 않는 폴더(구독 방 계정 폴더이거나 2초 안에 답하지 않음)도 설정 줄에 남고 뺄 수 있다(설계 검토 be7 고칠 것 1)
+          check('22 records only (the first piece): no ! on the object or any contact, and the head says once that it cannot tell about questions',lr.say==='직원 둘이 일하고 있습니다.'&&lr.then==='승인 요청은 Claude Code와 Codex 창에서 확인해 주세요.'&&!lr.news&&!lr.chats.some(c=>c.endsWith('|!')),lr);
+          check('22 without 일 맡기기 (this build) the composer is replaced by one line, and the middle shows who is at work',!lr.compose&&lr.offsay.startsWith('일 맡기기는 아직 준비 중입니다.')&&lr.center.length>0,lr);
+          await shoot(w,'office-records-only',[[1440,900],[960,680]]);
+          // 더했지만 지금 보지 않는 폴더도 설정 줄에 남고 뺄 수 있다(설계 검토 be7 고칠 것 1)
           const resting='\\\\qa-share\\team\\.claude';
           await setBoard(w,board({sessions:recs,roots:{claude:['C:\\Users\\qa\\.claude'],codex:['C:\\Users\\qa\\.codex\\sessions'],added:[resting]}}));
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(600);
-          const restLook="(()=>{const m="+ROOM+".querySelector('button.row[data-key=\"cfg\"] + .more');const b=m&&[...m.querySelectorAll('[data-room-act=\"root-remove\"]')].find(x=>x.dataset.roomArg==="+JSON.stringify(resting)+");return {open:!!m,text:m?m.textContent:'',remove:!!b};})()";
+          const restLook="(()=>{const m="+ROOM+".querySelector('[data-off-rows] button.row[data-key=\"cfg\"] + .more');const b=m&&[...m.querySelectorAll('[data-room-act=\"root-remove\"]')].find(x=>x.dataset.roomArg==="+JSON.stringify(resting)+");return {open:!!m&&m.classList.contains('open'),text:m?m.textContent:'',remove:!!b};})()";
           const lrest=await w.js(restLook);
           check('22 a folder that is added but not watched keeps its line in 설정 with 「지금은 보지 않음」 and 빼기',lrest.open&&lrest.text.includes(resting)&&lrest.text.includes('지금은 보지 않음')&&lrest.remove,lrest);
-          await w.js("document.querySelector('#portal-entry [data-off-rows] button.row[data-key=\"cfg\"] + .more').scrollIntoView({block:'center'})");await wait(200);
           await capture(w,'office-root-resting');
-          await w.js("(()=>{const m="+ROOM+".querySelector('button.row[data-key=\"cfg\"] + .more');const b=[...m.querySelectorAll('[data-room-act=\"root-remove\"]')].find(x=>x.dataset.roomArg==="+JSON.stringify(resting)+");b.focus({preventScroll:true});b.click();})()");await wait(1200);
+          await w.js("(()=>{const m="+ROOM+".querySelector('[data-off-rows] button.row[data-key=\"cfg\"] + .more');const b=[...m.querySelectorAll('[data-room-act=\"root-remove\"]')].find(x=>x.dataset.roomArg==="+JSON.stringify(resting)+");b.focus({preventScroll:true});b.click();})()");await wait(1200);
           check('22 its 빼기 removes it',(await calls(w)).includes('office-root-remove:'+resting)&&!(await w.js(restLook)).text.includes(resting));
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(400);
-          // 세션이 하나도 없을 때
+          // 세션도 부서도 없을 때: 빈 그림을 두지 않고, 가운데에 꽉 찬 「부서 더하기」가 선다
           await setBoard(w,board({departments:[],sessions:[]}));
           const l10=await look(w);
-          check('22 with no sessions the headline says nothing runs and no empty floor is drawn',l10.say==='지금 이 PC에서 도는 일이 없습니다.'&&l10.then==='Claude Code나 Codex에서 일을 시작하면 여기에 섭니다.'&&!l10.slot&&!l10.news&&JSON.stringify(l10.rows)===JSON.stringify(['cap|수용 인원|','cfg|설정|','look|꾸미기|','add|부서 더하기|']),l10);
-          await shoot(w,'office-empty');
+          check('22 with no sessions and no departments the head says nothing runs, no empty floor is drawn, and 부서 더하기 stands in the middle',l10.say==='지금 이 PC에서 도는 일이 없습니다.'&&!l10.slot&&!l10.news&&l10.empty&&JSON.stringify(l10.chats)===JSON.stringify(['all|사무실|']),l10);
+          await shoot(w,'office-empty',[[1440,900],[960,680]]);
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(700);
           check('22 leaving the room at the end stops the record watch',(await calls(w)).filter(c=>c.startsWith('office-watch:')).at(-1)==='office-watch:false');
           w.win.destroy();

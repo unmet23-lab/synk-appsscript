@@ -264,7 +264,8 @@ module.exports = async function checkOfficeTasks({ open, boot, signedIn, signedO
       b.departments = [{ id: 'design', name: '디자인부', folder: 'C:\\qa\\design' }];
       b.sessions = [{ id: 'staff-claude-1', cwd: 'C:\\qa\\design', tool: 'claude', kind: 'work' }];
     });
-    const deptRow = room + ' button.row[data-key="d:design"]';
+    // 대화 짜임(PC앱_옮기기.md): 부서는 왼쪽 목록에서 고른다. 고르면 오른쪽 「이 부서」 칸에 직원 줄과 「새 일 맡기기」가 펼친 채 선다
+const deptRow = room + ' [data-chat="d:design"]';
     await eventually(sel => !!document.querySelector(sel), deptRow);
     await click(w, deptRow);
     const fromWorker = await eventually(() => Array.from(document.querySelectorAll('[data-room-act="task-open"]')).some(n => n.dataset.roomArg === 'claude'));
@@ -429,6 +430,9 @@ module.exports = async function checkOfficeTasks({ open, boot, signedIn, signedO
     check('an unsaved answer can be read and selected; retrying storage never launches the worker again', pendingSave && copyable && saveOnly && reread && (await sent()).length === 3);
     await mutate(b => { b.tasking.code = 'STORAGE'; });
     const unavailable = await eventually(sel => document.querySelector(sel)?.disabled === true, submit);
+    // 대화 짜임: 다른 부서의 일은 그 대화에서 보인다. 이 카드는 부서 없이 맡긴 일이라 「사무실」 대화를 고른다
+    await click(w, room + ' [data-chat="all"]');
+    await wait(400);
     check('storage failures block submission and leave the task history visible', unavailable && await query(sel => !!document.querySelector(sel)?.getClientRects().length, card));
     await emit({ available: true, departments: [], sessions: [] });
     const hidden = await eventually(sel => !document.querySelector(sel)?.getClientRects().length, prompt);

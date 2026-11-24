@@ -361,11 +361,15 @@ function describeTask(task, deptMap, hasMail = false) {
   };
 }
 
-export function createOfficeTaskView(host, dispatch) {
+/* formHost를 주면 「대화 차림」이다(사무실 대화 짜임, docs/디자인/솔리오_사무실대화_20261124/PC앱_옮기기.md).
+   폼은 formHost(방 아래 입력칸 자리)에, 카드는 host(대화)에 선다. 카드는 맡긴 차례(오래된 것이 위)로 서고,
+   model.view.departmentId로 고른 부서의 카드만 보인다. 거를 때 카드를 지우지 않고 숨긴다. 붙여 넣던 답, 메일 조건, 펼침과 낭독 알림은 모든 일로 지닌다(설계 검토 2 · 11) */
+export function createOfficeTaskView(host, dispatch, { formHost = null } = {}) {
   if (!host || !host.ownerDocument) {
     throw new TypeError('Valid host element is required.');
   }
   const doc = host.ownerDocument;
+  const chat = Boolean(formHost && formHost.ownerDocument);
   const emit = typeof dispatch === 'function' ? dispatch : () => {};
 
   let panelEl = null;
@@ -374,6 +378,7 @@ export function createOfficeTaskView(host, dispatch) {
   let formSlotEl = null;
   let listEl = null;
   let liveEl = null;
+  let emptyEl = null;
   let formRefs = null;
 
   let currentEpoch = NONE;
@@ -590,6 +595,8 @@ export function createOfficeTaskView(host, dispatch) {
   }
 
   function resetMemory() {
+    if (chat) clearChildren(formHost);
+    emptyEl = null;
     if (formRefs && formRefs.mailControls) {
       formRefs.mailControls.update(null, null, false, false);
     }
@@ -779,6 +786,7 @@ export function createOfficeTaskView(host, dispatch) {
     return {
       form,
       providerSelect,
+      deptField,
       deptSelect,
       mailControls,
       followNote,
@@ -791,7 +799,7 @@ export function createOfficeTaskView(host, dispatch) {
   }
 
   function ensureShell() {
-    if (panelEl && panelEl.parentNode === host) return;
+    if (panelEl && panelEl.parentNode === host && (!chat || formSlotEl?.parentNode === formHost)) return;
     clearChildren(host);
 
     panelEl = doc.createElement('section');
@@ -844,8 +852,20 @@ export function createOfficeTaskView(host, dispatch) {
     panelEl.appendChild(liveEl);
     panelEl.appendChild(storageNoteEl);
     panelEl.appendChild(refreshEl);
-    panelEl.appendChild(formSlotEl);
-    panelEl.appendChild(listEl);
+    if (chat) {
+      panelEl.classList.add('chat');
+      emptyEl = doc.createElement('p');
+      emptyEl.className = 'off-task-empty';
+      emptyEl.hidden = true;
+      emptyEl.textContent = '아직 맡긴 일이 없습니다. 아래 칸에 적어 맡겨 보세요.';
+      panelEl.appendChild(listEl);
+      panelEl.appendChild(emptyEl);
+      clearChildren(formHost);
+      formHost.appendChild(formSlotEl);
+    } else {
+      panelEl.appendChild(formSlotEl);
+      panelEl.appendChild(listEl);
+    }
     host.appendChild(panelEl);
   }
 
@@ -893,6 +913,7 @@ export function createOfficeTaskView(host, dispatch) {
 
     const promptEl = doc.createElement('div');
     promptEl.className = 'off-task-copy';
+    if (chat) promptEl.classList.add('off-task-me');
     promptEl.style.whiteSpace = 'pre-wrap';
 
     const answerLabel = doc.createElement('strong');
@@ -944,16 +965,39 @@ export function createOfficeTaskView(host, dispatch) {
     actionsEl.appendChild(copyBtn);
     actionsEl.appendChild(continuationBtn);
 
-    el.appendChild(headEl);
+    // 대화 차림: 솔리오가 만든 일(견적 담당)은 내 말풍선 대신 활동 줄이다(설계 검토 15). 긴 답은 CSS로 접고 펼친다. 글을 자르지 않으므로 「답 복사」는 전체다(설계 검토 16)
+    const byEl = doc.createElement('p');
+    byEl.className = 'off-task-by';
+    byEl.hidden = true;
+    const moreBtn = doc.createElement('button');
+    moreBtn.type = 'button';
+    moreBtn.className = 'quiet off-task-more';
+    moreBtn.hidden = true;
+    moreBtn.textContent = '전체 답 보기';
+    moreBtn.setAttribute('aria-expanded', 'false');
+    moreBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const open = !el.classList.contains('long-open');
+      el.classList.toggle('long-open', open);
+      moreBtn.setAttribute('aria-expanded', String(open));
+      moreBtn.textContent = open ? '줄여 보기' : '전체 답 보기';
+    });
+    if (chat) el.tabIndex = -1;
+
+    el.appendChild(byEl);
     el.appendChild(promptEl);
+    el.appendChild(headEl);
     el.appendChild(answerLabel);
     el.appendChild(answerEl);
+    el.appendChild(moreBtn);
     el.appendChild(noteEl);
     el.appendChild(continuationBox);
     el.appendChild(actionsEl);
 
     return {
       el,
+      byEl,
+      moreBtn,
       metaEl,
       statusEl,
       promptEl,
@@ -1333,9 +1377,20 @@ export function createOfficeTaskView(host, dispatch) {
       formRefs.exitFollowBtn.hidden = !locked;
     }
 
-    const followBannerText = locked
+    // 대화 차림: 부서를 고른 동안 부서 칸은 숨는다(보낼 부서는 고른 대화다, 설계 검토 1). 이어 쓰지 않을 때는 새 일로 간다고 적고,
+    // 이어 쓸 때는 어느 답에 잇는지 첫 줄을 보인다(설계 검토 5)
+    const hideDept = chat && formState.deptPick === false;
+    if (formRefs.deptField && formRefs.deptField.hidden !== hideDept) formRefs.deptField.hidden = hideDept;
+    let followBannerText = locked
       ? '완료된 작업에 이어서 작성 중입니다. 도구나 부서를 변경하려면 먼저 새 작업으로 전환하세요.'
       : '';
+    if (chat) {
+      const prevTask = locked ? rawTasks.find((t) => t && String(t.id) === nextPreviousId) : null;
+      const line = prevTask ? String(prevTask.answer ?? '').split('\n').map((x) => x.trim()).find(Boolean) || '' : '';
+      followBannerText = locked
+        ? `앞의 답에 이어서 씁니다${line ? `: 「${[...line].length > 40 ? [...line].slice(0, 39).join('') + '…' : line}」` : '.'} 새 일로 맡기려면 「새 작업으로 전환」을 누르세요.`
+        : '새 일로 맡깁니다. 앞의 답에 이어 가려면 그 답의 「이어서 맡기기」를 누르세요.';
+    }
     if (formRefs.followNote.hidden !== !followBannerText) {
       formRefs.followNote.hidden = !followBannerText;
     }
@@ -1373,8 +1428,18 @@ export function createOfficeTaskView(host, dispatch) {
     const nextCardEls = [];
     const seenCardKeys = new Set();
     let statusAnnouncement = '';
+    // 대화 차림: 맡긴 차례(오래된 것이 위). 고른 부서만 보이고 나머지는 숨긴다(지우지 않는다)
+    const viewDept = chat && model.view && typeof model.view === 'object' && Object.prototype.hasOwnProperty.call(model.view, 'departmentId')
+      ? (model.view.departmentId == null ? '' : String(model.view.departmentId)) : undefined;
+    const order = rawTasks.map((_, i) => i);
+    if (chat) {
+      const at = (t) => (t && Number.isFinite(Number(t.createdAt)) ? Number(t.createdAt) : 0);
+      order.sort((a, b) => at(rawTasks[a]) - at(rawTasks[b]) || a - b);
+    }
+    let shownPrev = null;
+    let shownCount = 0;
 
-    for (let i = 0; i < rawTasks.length; i += 1) {
+    for (const i of order) {
       const task = rawTasks[i];
       if (!task || typeof task !== 'object') continue;
       const baseKey =
@@ -1396,6 +1461,15 @@ export function createOfficeTaskView(host, dispatch) {
       const info = describeTask(task, deptMap, Boolean(currentMail));
       patchCard(rec, key, info, task, rawTasks);
       nextCardEls.push(rec.el);
+      if (chat) {
+        const shown = viewDept === undefined || String(task.departmentId ?? '') === viewDept;
+        if (rec.el.hidden !== !shown) rec.el.hidden = !shown;
+        if (shown) {
+          chatDecorate(rec, task, info, shownPrev, rawTasks);
+          shownPrev = task;
+          shownCount += 1;
+        }
+      }
 
       const prevStatus = knownStatuses.get(key);
       if (initializedLive && prevStatus !== info.statusCode && !statusAnnouncement) {
@@ -1429,6 +1503,16 @@ export function createOfficeTaskView(host, dispatch) {
     if (listEl.hidden !== hideList) {
       listEl.hidden = hideList;
     }
+    if (emptyEl) {
+      const none = shownCount === 0;
+      if (emptyEl.hidden !== !none) emptyEl.hidden = !none;
+    }
+    // 숨긴 카드 안에 초점이 있었으면 초점이 사라진 것이다. 화면이 고른 목록 줄로 옮긴다(onFocusLost)
+    const act = doc.activeElement;
+    if (chat && act && listEl.contains(act) && act.closest('.off-task-card')?.hidden) {
+      try { act.blur(); } catch {}
+      focusLostAt = Date.now();
+    }
 
     const nextLive = storageText || errText || statusAnnouncement;
     if (nextLive && nextLive !== lastLiveText) {
@@ -1458,9 +1542,43 @@ export function createOfficeTaskView(host, dispatch) {
     }
   }
 
+  let focusLostAt = 0;
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const hhmm = (t) => { const d = new Date(Number(t)); return Number.isFinite(d.getTime()) ? pad2(d.getHours()) + ':' + pad2(d.getMinutes()) : ''; };
+  /* 대화 차림의 말 하나: 새 일 가름, 솔리오가 전한 일, 긴 답, 낭독 이름 */
+  function chatDecorate(rec, task, info, shownPrev, rawTasks) {
+    const linked = Boolean(shownPrev && task.previousId != null && String(task.previousId) === String(shownPrev.id));
+    rec.el.classList.toggle('new-run', Boolean(shownPrev) && !linked);
+    rec.el.classList.toggle('follow', linked);
+    const prevTask = task.previousId != null ? rawTasks.find((t) => t && String(t.id) === String(task.previousId)) : null;
+    const copied = Boolean(prevTask && prevTask.prompt === task.prompt && (prevTask.quoteHandoff === true || prevTask.quoteSource));
+    const bySolio = Boolean(task.quoteSource && typeof task.quoteSource === 'object') || copied;
+    const byText = task.quoteSource && typeof task.quoteSource === 'object' ? '견적 담당이 맡았습니다.' : copied ? '앞의 일에 이어서 찾습니다.' : '';
+    if (rec.byEl.hidden !== !bySolio) rec.byEl.hidden = !bySolio;
+    if (rec.byEl.textContent !== byText) rec.byEl.textContent = byText;
+    if (bySolio && !rec.promptEl.hidden) rec.promptEl.hidden = true;
+    rec.el.classList.toggle('by-solio', bySolio);
+    const answer = rec.answerEl.hidden ? '' : rec.answerEl.textContent;
+    const long = Boolean(answer) && (answer.split('\n').length > 10 || answer.length > 700) && !['running', 'queued'].includes(String(task.status));
+    if (rec.moreBtn.hidden !== !long) rec.moreBtn.hidden = !long;
+    rec.el.classList.toggle('long', long);
+    const who = info.deptLabel || '사무실';
+    const label = `내가 ${hhmm(task.createdAt)}에 ${who}에 맡긴 일, ${providerLabel(task.provider)}, ${info.statusText}`;
+    if (rec.el.getAttribute('aria-label') !== label) rec.el.setAttribute('aria-label', label);
+  }
+  /* 「한 번에 처리」에서 온 일로 간다: 그 말이 보이면 화면 가운데로 올리고 초점을 둔다 */
+  function focusTask(id) {
+    const rec = cardMap.get(String(id));
+    if (!rec || rec.el.hidden || !rec.el.isConnected) return false;
+    try { rec.el.scrollIntoView({ block: 'center' }); rec.el.focus({ preventScroll: true }); } catch {}
+    return true;
+  }
+  /* 숨긴 카드에 있던 초점이 방금 사라졌는가(한 번만 참) */
+  function takeFocusLost() { const was = focusLostAt; focusLostAt = 0; return was > 0; }
+
   function dispose() {
     resetMemory();
   }
 
-  return { render, dispose };
+  return { render, dispose, focusTask, takeFocusLost };
 }

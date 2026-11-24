@@ -723,6 +723,28 @@ html[data-motion="reduced"] #portal-entry .b-bar i{animation:none}
   padding-left: 0.625rem;
   border-left: 2px solid rgba(128, 128, 128, 0.3);
 }
+/* 대화 차림(사무실 대화 짜임): 내 말은 오른쪽 말풍선, 직원의 답은 왼쪽 글, 앞 일과 이어지지 않은 일 앞에는 「새 일」 가름 */
+#portal-entry .off-task-panel.chat{gap:16px}
+#portal-entry .off-task-panel.chat .off-task-list{gap:26px}
+#portal-entry .off-task-panel.chat .off-task-card{position:relative;gap:8px;padding-top:0;border-top:0}
+#portal-entry .off-task-panel.chat .off-task-card:focus{outline:none}
+#portal-entry .off-task-panel.chat .off-task-card:focus-visible{outline:1px solid var(--ring);outline-offset:6px}
+#portal-entry .off-task-panel.chat .off-task-card.new-run{padding-top:26px;border-top:1px solid var(--hair)}
+#portal-entry .off-task-panel.chat .off-task-card.new-run::before{content:"새 일";position:absolute;top:-9px;left:50%;transform:translateX(-50%);padding:0 10px;background:var(--void);font:var(--small);color:var(--dim)}
+#portal-entry .off-task-panel.chat .off-task-me{align-self:flex-end;max-width:min(560px,82%);padding:10px 14px;border-radius:14px 14px 4px 14px;background:rgba(243,241,236,.09);color:var(--paper);font:var(--body);line-height:1.5}
+#portal-entry .off-task-panel.chat .off-task-by{margin:0;font:var(--small);color:var(--dim)}
+/* 답의 출처 줄(「최종 답」, 「터미널에서 직접 옮긴 답」)은 직원의 말 머리처럼 작게 남긴다. 누가 남긴 답인지가 이 줄이다 */
+#portal-entry .off-task-panel.chat .off-task-card > strong.off-task-note{font:var(--small);font-weight:500;color:var(--dim)}
+#portal-entry .off-task-panel.chat .off-task-copy[data-task-answer]{max-width:680px;padding-left:0;border-left:0;color:rgba(243,241,236,.9);font:var(--body);line-height:1.6}
+#portal-entry .off-task-panel.chat .off-task-card.long:not(.long-open) .off-task-copy[data-task-answer]{display:-webkit-box;-webkit-line-clamp:10;-webkit-box-orient:vertical;overflow:hidden}
+#portal-entry .off-task-panel.chat .off-task-more{align-self:flex-start;padding:2px 0;border:0;background:none;color:var(--dim);font:var(--small);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+#portal-entry .off-task-panel.chat .off-task-more[hidden]{display:none}
+#portal-entry .off-task-panel.chat .off-task-empty{margin:0;font:var(--body);color:rgba(243,241,236,.7)}
+#portal-entry .off-task-panel.chat .off-task-empty[hidden]{display:none}
+#portal-entry .ofc-compose .off-task-form{gap:8px}
+#portal-entry .ofc-compose .off-task-input{min-height:44px;max-height:30cqh;border-radius:12px}
+#portal-entry .ofc-compose .off-task-field{flex:0 0 auto}
+#portal-entry .ofc-compose .off-task-field > select{width:auto;min-height:1.875rem;padding:0.15rem 0.6rem;border-radius:999px}
 #portal-entry .off-task-note {
   margin: 0;
   min-width: 0;
@@ -744,25 +766,106 @@ html[data-motion="reduced"] #portal-entry .b-bar i{animation:none}
   outline-offset: 2px;
 }
 
-/* ── 솔리오 「사무실」(사무실 구현설계 11.2 · 11.3, 시안 사무실.html 53~140행). 맨 위 두 줄 아래에 사무실 그림과 부서 줄이 나란히 선다.
-   1000px 아래에서는 그림이 위, 줄이 아래로 쌓인다. 아주 낮은 창에서는 그림을 빼고 문장과 줄만 둔다. 색은 하나이고 알림은 느낌표만이다(유호님 11-19 「느낌표만」) ── */
-#portal-entry .off-hint{margin:12px 0 0;padding:0}
-#portal-entry .office{margin-top:clamp(22px,4.6vh,52px);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);column-gap:clamp(22px,3.6vw,60px);align-items:start}
-/* 그림이 놓이는 자리. 줄이 펼쳐져 방이 길어져도 제자리에 있다 */
-#portal-entry .off-slot{position:sticky;top:0;height:clamp(230px,54vh,540px);min-width:0}
+/* ── 솔리오 「사무실」: 대화 짜임(docs/디자인/솔리오_사무실대화_20261124/PC앱_옮기기.md, 2026-11-25, 유호님 「1번은 진행」).
+   왼쪽 목록 · 가운데(머리 · 그림 · 대화 · 입력칸) · 오른쪽 「이 부서」 칸이다. 방은 높이를 창에 맞추고 세 칸이 저마다 스크롤한다(설계 검토 6).
+   방 상자의 컨테이너 쿼리로 나눈다: 1100px 넘음은 세 칸, 그 아래는 오른쪽 칸이 방 머리의 단추로 여는 서랍이다(설계 검토 14). 알림은 느낌표만이다(유호님 11-19) ── */
+#portal-entry .room-office{container:ofc / size;overflow:hidden;padding-bottom:0}
+@media (min-width:641px){
+  /* 사무실 방만 좌우 여백을 줄여 세 칸이 들게 한다. 아래 흐림은 대화 칸이 따로 한다 */
+  #portal-entry .room-office{top:clamp(84px,12vh,132px);bottom:22px;max-height:none;left:clamp(16px,3vw,48px);right:clamp(16px,3vw,48px);-webkit-mask-image:none;mask-image:none}
+  #portal-entry .room-office.scrolled{-webkit-mask-image:none;mask-image:none}
+}
+#portal-entry .ofc{position:relative;height:100%;display:grid;grid-template-columns:260px minmax(0,1fr);min-height:0}
+#portal-entry .ofc[hidden]{display:none}
+#portal-entry .ofc-scroll{position:relative;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;min-height:0}
+/* 왼쪽 목록: 줄마다 작은 구 둘, 이름과 느낌표, 상태 낱말, 미리보기. 고른 줄만 옅은 바탕이다 */
+#portal-entry .ofc-list{display:flex;flex-direction:column;padding:0 14px 10px 0;border-right:1px solid var(--hair)}
+#portal-entry .ofc-list-h{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 10px 10px}
+#portal-entry .ofc-h{margin:0;font:var(--small);font-weight:500;color:var(--dim);letter-spacing:.02em}
+#portal-entry .ofc-plus{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:none;color:var(--dim);cursor:pointer}
+#portal-entry .ofc-plus svg{width:14px;height:14px}
+#portal-entry .ofc-plus:is(:hover,[aria-expanded="true"]){background:rgba(243,241,236,.07);color:var(--paper)}
+#portal-entry :is(.ofc-plus,.ofc-chat,.ofc-cap,.ofc-side-btn,.ofc-new,.ofc-pill):focus-visible{outline:1px solid var(--ring);outline-offset:2px}
+#portal-entry .ofc-addrows{margin:0 0 10px;padding:0 4px 0 10px}
+#portal-entry .ofc-addrows[hidden]{display:none}
+#portal-entry .ofc-chats{display:flex;flex-direction:column;gap:2px}
+#portal-entry .ofc-chat{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:10px;width:100%;padding:10px;border:0;border-radius:10px;background:none;color:var(--paper);text-align:left;cursor:pointer;font:inherit}
+#portal-entry .ofc-chat:hover{background:rgba(243,241,236,.045)}
+#portal-entry .ofc-chat[aria-current="true"]{background:rgba(243,241,236,.085)}
+#portal-entry .ofc-av{display:flex;align-items:center;width:40px;height:28px}
+#portal-entry .ofc-av svg{width:22px;height:22px;margin-left:5px;opacity:.8}
+/* 작은 구: 결 없는 새틴 검정에 꽉 찬 작은 점 눈(솔리오 구 정본의 결). 일하는 직원만 옅게 빛난다. 쉬는 직원은 눈이 가로줄이다 */
+#portal-entry .ofc-orb{position:relative;display:block;flex:none;width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#3b3b38 0,#171716 46%,#050505 100%);box-shadow:0 4px 9px -4px rgba(0,0,0,.9)}
+#portal-entry .ofc-orb + .ofc-orb{margin-left:-8px}
+#portal-entry .ofc-orb::before,#portal-entry .ofc-orb::after{content:"";position:absolute;top:10px;width:3px;height:3px;border-radius:50%;background:var(--paper);opacity:.92}
+#portal-entry .ofc-orb::before{left:8px}
+#portal-entry .ofc-orb::after{left:13px}
+#portal-entry .ofc-orb[data-st="working"]{box-shadow:0 0 11px rgba(243,241,236,.2),0 4px 9px -4px rgba(0,0,0,.9)}
+#portal-entry .ofc-orb:is([data-st="resting"],[data-st="quiet"])::before,#portal-entry .ofc-orb:is([data-st="resting"],[data-st="quiet"])::after{top:11px;height:1.5px;border-radius:1px}
+#portal-entry .ofc-orb[data-st="empty"]{background:rgba(243,241,236,.06);box-shadow:none}
+#portal-entry .ofc-orb[data-st="empty"]::before,#portal-entry .ofc-orb[data-st="empty"]::after{display:none}
+#portal-entry .ofc-c-main{display:grid;gap:3px;min-width:0}
+#portal-entry .ofc-c-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
+/* 좁으면 상태 낱말이 먼저 줄고 이름은 끝까지 남는다 */
+#portal-entry .ofc-c-nm{flex:0 1 auto;min-width:min(100%,4.5em);font:500 15px/1.25 var(--orb-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .ofc-c-nm .flag{margin-left:6px}
+#portal-entry .ofc-c-word{flex:0 100 auto;min-width:0;font:var(--small);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .ofc-chat:is([aria-current="true"],:hover) .ofc-c-word{color:rgba(243,241,236,.8)}
+#portal-entry .ofc-c-pre{font:var(--small);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .ofc-c-pre:empty{display:none}
+#portal-entry .ofc-foot{margin:auto 0 0;padding:14px 10px 2px;font:var(--small);color:var(--dim)}
+#portal-entry .ofc-foot:empty{display:none}
+#portal-entry .ofc-cap{margin:8px 0 0;padding:10px;border:0;border-top:1px solid var(--hair);background:none;color:var(--dim);font:var(--small);text-align:left;cursor:pointer}
+#portal-entry .ofc-cap[hidden]{display:none}
+#portal-entry .ofc-foot:empty + .ofc-cap{margin-top:auto}
+#portal-entry .ofc-cap:hover{color:var(--paper)}
+/* 가운데와 오른쪽 */
+#portal-entry .ofc-room{display:grid;grid-template-columns:minmax(0,1fr) 270px;min-width:0;min-height:0}
+#portal-entry .ofc.no-side .ofc-room{grid-template-columns:minmax(0,1fr)}
+#portal-entry .ofc.no-side .ofc-side{display:none}
+#portal-entry .ofc-center{display:flex;flex-direction:column;min-width:0;min-height:0;padding:0 clamp(18px,2.4vw,34px)}
+#portal-entry .ofc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex:none}
+#portal-entry .ofc-head .say{max-width:none;min-height:0;font:300 clamp(16px,1.4vw,19px)/1.4 var(--orb-sans);color:rgba(243,241,236,.86)}
+#portal-entry .ofc-nm{display:block;margin-bottom:4px;font:500 clamp(22px,2vw,28px)/1.2 var(--orb-sans);letter-spacing:-.015em;color:var(--paper)}
+#portal-entry .ofc-head .then{display:block;margin-top:4px;font:var(--small);color:var(--dim)}
+#portal-entry .ofc-head .then:empty{display:none}
+#portal-entry .ofc-side-btn{display:none;flex:none}
+#portal-entry .ofc-back{display:none;place-items:center;flex:none;width:32px;height:32px;margin:0 2px 0 -6px;border:0;border-radius:8px;background:none;color:var(--paper);cursor:pointer}
+#portal-entry .ofc-back svg{width:14px;height:14px}
+#portal-entry .ofc-back:focus-visible{outline:1px solid var(--ring);outline-offset:2px}
+#portal-entry .off-hint{margin:8px 0 0;padding:0}
+/* 그림: 대화 위에 선다. 높이가 모자라면 그림부터 줄이고, 아주 낮으면 뺀다 */
+#portal-entry .off-slot{position:relative;flex:none;height:clamp(150px,30cqh,300px);min-width:0;margin:8px 0 2px}
+#portal-entry .off-slot[hidden]{display:none}
 #portal-entry .off-slot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-#portal-entry .office > .rows{margin-top:0}
-#portal-entry .office > .off-slot[hidden] + .rows{grid-column:1 / -1}
+#portal-entry .ofc-thread{flex:1 1 auto;min-height:220px;padding:10px 2px 14px;-webkit-mask-image:linear-gradient(transparent,#000 14px);mask-image:linear-gradient(transparent,#000 14px)}
+#portal-entry .ofc-thread .off-task-panel{margin-top:0}
+#portal-entry .ofc-now{margin-top:0}
+#portal-entry .ofc-now[hidden]{display:none}
+#portal-entry .ofc-empty{display:grid;justify-items:start;gap:14px;padding:18px 0}
+#portal-entry .ofc-empty[hidden]{display:none}
+#portal-entry .ofc-empty p{margin:0;font:var(--body);color:rgba(243,241,236,.8)}
+/* 그 순간 먼저 할 일 하나만 꽉 찬 단추다(DESIGN 11-23). 부서가 없을 때의 「부서 더하기」 */
+#portal-entry .ofc-pill{height:40px;padding:0 20px;border:0;border-radius:999px;background:var(--paper);color:var(--void);font:500 14px/1 var(--orb-sans);cursor:pointer}
+#portal-entry .ofc-pill:hover{background:#FFFFFF}
+#portal-entry .ofc-new{position:relative;z-index:2;align-self:center;height:32px;margin:-46px 0 14px;padding:0 14px;border:0;border-radius:999px;background:rgba(243,241,236,.16);color:var(--paper);font:var(--small);cursor:pointer}
+#portal-entry .ofc-new[hidden]{display:none}
+#portal-entry .ofc-compose{flex:none;padding:10px 0 2px;border-top:1px solid var(--hair)}
+#portal-entry .ofc-compose[hidden],#portal-entry .ofc-offsay[hidden]{display:none}
+#portal-entry .ofc-offsay{flex:none;margin:0;padding:14px 0 4px;border-top:1px solid var(--hair);font:var(--small);color:var(--dim)}
+#portal-entry .ofc-side{padding:0 0 16px 18px;border-left:1px solid var(--hair)}
+#portal-entry .ofc .rows{margin-top:0}
+/* 「펼친 채 고정」 줄: 머리는 누르지 않는 작은 제목이고 안쪽이 늘 열려 있다(설계 검토 7) */
+#portal-entry .rows.off > button.row.fixed{cursor:default;padding-top:4px;padding-bottom:6px;border-bottom:0}
+#portal-entry .rows.off > button.row.fixed::after{display:none}
+#portal-entry .rows.off > button.row.fixed > .nm{font:var(--small);font-weight:500;color:var(--dim);letter-spacing:.02em}
+#portal-entry .rows.off > button.row.fixed:is(:hover,.opened,.now,.pin){background:none}
 /* 줄은 이름, 하는 일, 상태 세 칸이다. 비어 있는 오른쪽 칸은 자리를 차지하지 않는다 */
 #portal-entry .rows.off{grid-template-columns:minmax(84px,auto) minmax(0,1fr) auto;column-gap:18px}
 #portal-entry .rows.off .row{column-gap:normal}
 #portal-entry .rows.off .row > .val:empty,#portal-entry .rows.off .row > .when:empty{display:none}
 #portal-entry .rows.off .val{font:var(--small)}
 #portal-entry .rows.off > button.row .val{font:var(--small);color:inherit}
-/* 11-24 짜임 C(쌍 맹검에서 지금 판 · 큰 무대 · 부서 카드를 모두 이김, 유호님 「둘 다 옮겨」): 부서 줄과 수용 인원은 줄로 서고,
-   설정 · 꾸미기 · 부서 더하기는 그 아래 한 줄의 알약 단추로 선다. 알약 셋을 한 줄에 세우려고 상자는 flex다.
-   줄과 안쪽 판은 저마다 같은 열(--off-row · --off-more)을 쓰고, 알약은 차례 1, 알약의 안쪽 판은 차례 2라 알약 줄 아래에서 열린다.
-   흐름 시험이 [data-off-rows] 안의 cfg · look · add 줄을 누르므로 줄은 같은 상자에 둔다 */
 #portal-entry .rows.off{--off-row:minmax(84px,8.5em) minmax(0,1fr) auto;--off-more:var(--off-row);display:flex;flex-wrap:wrap;align-items:flex-start;column-gap:10px;row-gap:0}
 #portal-entry .rows.off > .row{flex:0 0 100%;min-width:0;grid-template-columns:var(--off-row);column-gap:18px}
 #portal-entry .rows.off > .more{flex:0 0 100%;min-width:0;grid-template-columns:var(--off-more);column-gap:18px}
@@ -771,22 +874,6 @@ html[data-motion="reduced"] #portal-entry .b-bar i{animation:none}
 #portal-entry .rows.off > button.row > .nm{color:var(--paper)}
 #portal-entry .rows.off > button.row > .val{color:rgba(243,241,236,.74)}
 #portal-entry .rows.off > button.row:is(:hover,.opened,.now) > .val{color:var(--paper)}
-#portal-entry .rows.off > button.row:is([data-key="cfg"],[data-key="look"],[data-key="add"]){order:1;flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;width:auto;height:40px;min-height:0;margin:22px 0 0;padding:0 18px;border:0;border-radius:999px;
-  background:rgba(243,241,236,.07);color:var(--paper);font:500 14px/1 var(--orb-sans);white-space:nowrap;transition:background-color .2s ease}
-#portal-entry .rows.off > button.row:is([data-key="cfg"],[data-key="look"],[data-key="add"]) + .more{order:2}
-#portal-entry .rows.off > button.row:is([data-key="cfg"],[data-key="look"],[data-key="add"]) > :not(.nm){display:none}
-#portal-entry .rows.off > button.row:is([data-key="cfg"],[data-key="look"],[data-key="add"]) > .nm{font:inherit;color:inherit}
-#portal-entry .rows.off > button.row:is([data-key="cfg"],[data-key="look"],[data-key="add"]):is(:hover,.opened){background:rgba(243,241,236,.13)}
-#portal-entry .rows.off > button.row:is([data-key="cfg"],[data-key="look"],[data-key="add"]):focus-visible{outline:1px solid var(--ring);outline-offset:3px}
-/* 그 순간 먼저 할 일 하나만 꽉 찬 단추다(DESIGN 11-23). 사무실에서는 부서 더하기다 */
-#portal-entry .rows.off > button.row[data-key="add"]{background:var(--paper);color:var(--void)}
-#portal-entry .rows.off > button.row[data-key="add"]:is(:hover,.opened){background:#FFFFFF}
-/* 알약의 그림: 설정은 밀대 둘, 꾸미기는 붓, 부서 더하기는 더하기. 줄 끝의 「›」는 알약에 쓰지 않는다 */
-#portal-entry .rows.off > button.row:is([data-key="cfg"],[data-key="look"],[data-key="add"])::after{display:none}
-#portal-entry .rows.off > button.row:is([data-key="cfg"],[data-key="look"],[data-key="add"])::before{content:"";width:15px;height:15px;flex:none;background:currentColor;opacity:.86;-webkit-mask:var(--ico) center / contain no-repeat;mask:var(--ico) center / contain no-repeat}
-#portal-entry .rows.off > button.row[data-key="cfg"]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 4.5h11M2.5 11.5h11' stroke='%23000' stroke-width='1.3' stroke-linecap='round'/%3E%3Ccircle cx='10.5' cy='4.5' r='2.2' fill='%23000'/%3E%3Ccircle cx='5.5' cy='11.5' r='2.2' fill='%23000'/%3E%3C/svg%3E")}
-#portal-entry .rows.off > button.row[data-key="look"]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10.5 2.2l3.3 3.3-6.3 6.3-3.3-3.3Z' fill='%23000'/%3E%3Cpath d='M3.6 9.2l3.2 3.2-4.6 1.4Z' fill='%23000'/%3E%3C/svg%3E")}
-#portal-entry .rows.off > button.row[data-key="add"]{--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2.5v11M2.5 8h11' stroke='%23000' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E")}
 /* 직원 줄: 상태 문장은 밝게, 작업 폴더와 마지막 도구는 작게. 그림에서 가리킨 직원(hot)과 승인을 물은 직원은 더 밝다 */
 #portal-entry .row.staff .nm{font:var(--small);color:rgba(243,241,236,.7)}
 #portal-entry .row.staff .mid b{display:block;font:var(--small);font-weight:400;color:rgba(243,241,236,.84)}
@@ -804,27 +891,45 @@ html[data-motion="reduced"] #portal-entry .b-bar i{animation:none}
 #portal-entry .obj.news::after{content:"!";position:absolute;left:25px;top:5px;font:700 11px/1 var(--orb-sans);color:var(--paper)}
 /* 그림과 나란히 선 줄 칸이 좁아지면(사무실 폭 1100px 아래, 줄 칸 약 420px 아래) 이름 아래로 글을 내린다. 오른쪽 칸이 가장 긴 상태 글만큼 자리를 잡아
    가운데 칸이 두세 낱말 폭으로 줄던 것(1080×700에서 설정 줄 · 폴더 경로가 네 줄로 꺾임)을 막는다. 쌓는 꼴은 640px 아래의 줄과 같다 */
-#portal-entry .office{container:office / inline-size}
-@media (min-width:1001px){
-  @container office (max-width:1100px){
-    #portal-entry .rows.off{--off-row:minmax(0,1fr) auto;--off-more:minmax(0,1fr)}
-    #portal-entry .rows.off .row{grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:8px;padding:14px 0}
-    /* 여는 줄 끝 「›」의 자리는 이 폭에서도 남긴다(카본 solio-room-layout-20261124 A2) */
-    #portal-entry .rows.off > button.row{padding-right:30px}
-    #portal-entry .rows.off .mid{grid-column:1 / -1;grid-row:2}
-    #portal-entry .rows.off .when{grid-column:1 / -1;grid-row:3;text-align:left;white-space:normal}
-    #portal-entry .rows.off .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
-    #portal-entry .rows.off .row-plain > :last-child{grid-column:2;grid-row:1}
-    #portal-entry .rows.off .fld{grid-template-columns:minmax(0,1fr);row-gap:2px;padding:8px 0}
-    #portal-entry .rows.off .fld .hint{grid-column:1;justify-self:start;text-align:left}
-  }
+/* 세 칸의 줄은 좁다. 이름 아래로 글을 내리는 꼴(옛 짜임의 1100px 아래 줄)을 늘 쓴다 */
+#portal-entry .ofc .rows.off{--off-row:minmax(0,1fr) auto;--off-more:minmax(0,1fr)}
+#portal-entry .ofc .rows.off .row{grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:6px;padding:12px 0}
+#portal-entry .ofc .rows.off > button.row:not(.fixed){padding-right:30px}
+#portal-entry .ofc .rows.off .mid{grid-column:1 / -1;grid-row:2}
+#portal-entry .ofc .rows.off .when{grid-column:1 / -1;grid-row:3;text-align:left;white-space:normal}
+#portal-entry .ofc .rows.off .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
+#portal-entry .ofc .rows.off .row-plain > :last-child{grid-column:2;grid-row:1}
+#portal-entry .ofc .rows.off .fld{grid-template-columns:minmax(0,1fr);row-gap:2px;padding:8px 0}
+#portal-entry .ofc .rows.off .fld .hint{grid-column:1;justify-self:start;text-align:left}
+@container ofc (max-width:1100px){
+  #portal-entry .ofc{grid-template-columns:232px minmax(0,1fr)}
+  #portal-entry .ofc-room{grid-template-columns:minmax(0,1fr)}
+  #portal-entry .ofc-side-btn{display:inline-flex}
+  #portal-entry .ofc .ofc-side{position:absolute;top:0;right:0;bottom:0;z-index:5;display:none;width:min(320px,80%);padding:12px 16px 16px 18px;background:var(--void);box-shadow:-30px 0 60px -20px rgba(0,0,0,.95)}
+  #portal-entry .ofc.side-open .ofc-side{display:block}
+  #portal-entry .ofc.no-side .ofc-side-btn{display:none}
 }
-@media (max-width:1000px){
-  #portal-entry .office{grid-template-columns:minmax(0,1fr);row-gap:22px}
-  #portal-entry .off-slot{position:relative;height:clamp(200px,36vh,320px)}
+@container ofc (max-width:760px){
+  #portal-entry .ofc{grid-template-columns:200px minmax(0,1fr)}
+  #portal-entry .ofc-c-pre{display:none}
+  #portal-entry .ofc-center{padding:0 14px}
 }
-@media (max-height:420px){
-  #portal-entry .office{grid-template-columns:minmax(0,1fr)}
+/* 방 상자 640px 아래(좁은 창 · 휴대폰 너비): 목록과 방을 오간다. 방 머리에 「목록으로」가 선다 */
+@container ofc (max-width:640px){
+  #portal-entry .ofc{grid-template-columns:minmax(0,1fr)}
+  #portal-entry .ofc .ofc-list{padding-right:0;border-right:0}
+  #portal-entry .ofc.in-room .ofc-list{display:none}
+  #portal-entry .ofc:not(.in-room) .ofc-room{display:none}
+  #portal-entry .ofc-back{display:inline-grid}
+  #portal-entry .ofc-c-pre{display:block}
+  #portal-entry .ofc-center{padding:0 4px}
+  #portal-entry .ofc .ofc-side{width:min(320px,88%)}
+}
+@container ofc (max-height:520px){
+  #portal-entry .off-slot{height:clamp(120px,24cqh,190px)}
+  #portal-entry .ofc-thread{min-height:160px}
+}
+@container ofc (max-height:400px){
   #portal-entry .off-slot{display:none}
 }
 

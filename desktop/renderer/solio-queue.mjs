@@ -94,12 +94,13 @@ const taskTool = t => (t?.provider === 'codex' ? 'GPT (Codex)' : 'Claude Code');
 const taskTitle = t => clip(String(t?.prompt ?? '').split('\n').find(l => l.trim()) || '', 28);
 const taskWhere = t => (typeof t?.departmentName === 'string' && t.departmentName.trim() ? t.departmentName.trim() : '사무실');
 const quoteFrom = q => { const f = String(q?.from ?? '').trim(); const m = /^"?([^"<]+?)"?\s*<[^>]+>$/.exec(f); return clip(m ? m[1] : f.replace(/^<|>$/g, ''), 24); };
-const goOffice = label => ({ id: 'go', label, kind: 'go', run: { prog: 'office' } });
+/* 사무실로 가는 단추. 맡긴 일이면 그 일 번호를 실어, 사무실이 그 일의 부서 대화를 고르고 그 말로 간다(대화 짜임 설계 검토 4) */
+const goOffice = (label, taskId = null) => ({ id: 'go', label, kind: 'go', run: taskId == null ? { prog: 'office' } : { prog: 'office', officeTask: String(taskId) } });
 /* 맡긴 일 동작은 본체(office.taskAction)를 바로 부른다. 거절하면 카드가 그 자리에서 말한다(Fable F3) */
 const taskRun = (id, kind) => ({ task: { id, kind } });
 
-/* 맡긴 일 하나. 사람이 할 일이 없으면 null, AI가 하는 중이면 { ai } */
-function taskItem(t, now) {
+/* 맡긴 일 하나. 사람이 할 일이 없으면 null, AI가 하는 중이면 { ai }. 사무실 대화 짜임의 목록도 이 가름을 쓴다(office-chat-model.mjs) */
+export function solioTaskItem(t, now) {
   if (!t || typeof t !== 'object' || t.id == null || !['claude', 'codex'].includes(t.provider)) return null;
   const id = String(t.id), status = String(t.status || ''), reason = String(t.reason || '').trim();
   const since = timeOf(t.updatedAt) ?? timeOf(t.createdAt);
@@ -110,7 +111,7 @@ function taskItem(t, now) {
   // 공식 터미널에서 이어 간 Codex 일: 수기로 보관한 일과 옛 기록은 끝난 일이고, 답을 붙여 넣을 일은 사람의 차례다(사무실 카드와 같은 가름, Fable F5)
   const cs = classifyCodexTask(t);
   if (cs.memberResult || cs.legacyViaTerminal) return null;
-  if (cs.manualResult) return { ...base, key: `task:${id}:manual`, waiting: true, say: `${job}의 답을 직접 붙여 넣어 보관해야 합니다.`, then: '공식 터미널에서 확인한 답을 사무실의 그 업무에 붙여 넣어 주세요.', acts: [goOffice('사무실에서 붙여 넣기')] };
+  if (cs.manualResult) return { ...base, key: `task:${id}:manual`, waiting: true, say: `${job}의 답을 직접 붙여 넣어 보관해야 합니다.`, then: '공식 터미널에서 확인한 답을 사무실의 그 업무에 붙여 넣어 주세요.', acts: [goOffice('사무실에서 붙여 넣기', id)] };
   if (q) {
     const from = quoteFrom(q), subject = clip(q.subject, 34), asked = timeOf(q.date) ?? since;
     const whoAsked = from ? from + '님' : '고객';
@@ -118,25 +119,25 @@ function taskItem(t, now) {
       return { ...base, key: 'quote:' + id, outside: true, since: asked,
         say: `${whoAsked}의 견적 문의에 보낼 답장 초안이 있습니다.`,
         then: (subject ? `「${subject}」 · ` : '') + '초안을 복사해 메일에서 보내 주세요.',
-        acts: [{ id: 'copy', label: '초안 복사', kind: 'copy', run: { copy: t.answer } }, { id: 'sent', label: '보냈어요', kind: 'mark' }, goOffice('사무실에서 보기')],
+        acts: [{ id: 'copy', label: '초안 복사', kind: 'copy', run: { copy: t.answer } }, { id: 'sent', label: '보냈어요', kind: 'mark' }, goOffice('사무실에서 보기', id)],
         copied: '복사했습니다. 메일에서 보낸 뒤 「보냈어요」를 눌러 주세요.' };
     }
     if (status === 'completed' && t.quoteOutcome === 'held') {
       return { ...base, key: 'quote-held:' + id, outside: true, since: asked,
-        say: `${whoAsked}의 견적 문의를 직원이 보류했습니다.`, then: '사무실에서 보류한 까닭을 보고 답할지 정해 주세요.', acts: [goOffice('사무실에서 보기')] };
+        say: `${whoAsked}의 견적 문의를 직원이 보류했습니다.`, then: '사무실에서 보류한 까닭을 보고 답할지 정해 주세요.', acts: [goOffice('사무실에서 보기', id)] };
     }
     if (status === 'failed' && t.canRetry === true && reason !== 'CANCELLED') {
       return { ...base, key: 'quote-retry:' + id, outside: true, since: asked,
         say: `${whoAsked}의 견적 답장 초안을 쓰지 못했습니다.`, then: '「다시 작성」을 누르면 견적 담당이 다시 씁니다.',
-        acts: [{ id: 'resume', label: '다시 작성', kind: 'do', run: taskRun(id, 'resume') }, goOffice('사무실에서 보기')] };
+        acts: [{ id: 'resume', label: '다시 작성', kind: 'do', run: taskRun(id, 'resume') }, goOffice('사무실에서 보기', id)] };
     }
     // 견적 담당 일은 멈춘 채 만들어지기도 한다(본체 addRecipients). 멈춘 일은 그 자리에서 다시 시작하고, 중단된 일은 사무실에서 본다(Fable F7)
     if (status === 'paused') {
       return { ...base, key: 'quote-paused:' + id, outside: true, since: asked, say: `${whoAsked}의 견적 답장 일이 멈춰 있습니다.`, then: '「다시 시작」을 누르면 견적 담당이 이어서 씁니다.',
-        acts: [{ id: 'resume', label: '다시 시작', kind: 'do', run: taskRun(id, 'resume') }, goOffice('사무실에서 보기')] };
+        acts: [{ id: 'resume', label: '다시 시작', kind: 'do', run: taskRun(id, 'resume') }, goOffice('사무실에서 보기', id)] };
     }
     if (status === 'interrupted' && reason !== 'CANCELLED') {
-      return { ...base, key: 'quote-stopped:' + id, outside: true, since: asked, say: `${whoAsked}의 견적 답장 일이 중단됐습니다.`, then: '사무실에서 까닭을 보고 다시 맡겨 주세요.', acts: [goOffice('사무실에서 보기')] };
+      return { ...base, key: 'quote-stopped:' + id, outside: true, since: asked, say: `${whoAsked}의 견적 답장 일이 중단됐습니다.`, then: '사무실에서 까닭을 보고 다시 맡겨 주세요.', acts: [goOffice('사무실에서 보기', id)] };
     }
     return null;
   }
@@ -144,22 +145,22 @@ function taskItem(t, now) {
     const can = t.canOpenTerminal === true && !(t.provider === 'codex' && t.viaTerminal === true && reason === 'MEMBER_RESULT');
     return { ...base, key: `task:${id}:terminal`, waiting: true,
       say: `${job}을 맡은 ${taskTool(t)} 직원이 공식 터미널에서 확인을 기다립니다.`, then: '터미널에서 승인하거나 로그인하면 일이 이어집니다.',
-      acts: can ? [{ id: 'terminal', label: '터미널 열기', kind: 'open', run: taskRun(id, 'terminal') }, goOffice('사무실에서 보기')] : [goOffice('사무실에서 보기')],
+      acts: can ? [{ id: 'terminal', label: '터미널 열기', kind: 'open', run: taskRun(id, 'terminal') }, goOffice('사무실에서 보기', id)] : [goOffice('사무실에서 보기', id)],
       wait: '터미널에서 마치면 여기서 다음 일로 넘어갑니다.' };
   }
   if (status === 'paused') {
     return { ...base, key: `task:${id}:paused`, waiting: true, say: `${job}이 멈춰 있습니다.`, then: '「다시 시작」을 누르면 직원이 이어서 합니다.',
-      acts: [{ id: 'resume', label: '다시 시작', kind: 'do', run: taskRun(id, 'resume') }, goOffice('사무실에서 보기')] };
+      acts: [{ id: 'resume', label: '다시 시작', kind: 'do', run: taskRun(id, 'resume') }, goOffice('사무실에서 보기', id)] };
   }
   if (status === 'failed' && reason === 'MAIL_CHOOSE') {
-    return { ...base, key: `task:${id}:choose`, waiting: true, say: `${job}을 어떻게 할지 골라야 직원이 이어 갑니다.`, then: '사무실에서 메일에서 찾을지, 일반 업무로 맡길지 골라 주세요.', acts: [goOffice('사무실에서 고르기')] };
+    return { ...base, key: `task:${id}:choose`, waiting: true, say: `${job}을 어떻게 할지 골라야 직원이 이어 갑니다.`, then: '사무실에서 메일에서 찾을지, 일반 업무로 맡길지 골라 주세요.', acts: [goOffice('사무실에서 고르기', id)] };
   }
   if (status === 'failed' && reason === 'MAIL_REVIEW') {
-    return { ...base, key: `task:${id}:review`, waiting: true, say: `${job}의 메일 검색 조건을 확인해 주세요.`, then: '사무실에서 조건을 보고 「이 조건으로 찾기」를 누르면 이어 갑니다.', acts: [goOffice('사무실에서 확인')] };
+    return { ...base, key: `task:${id}:review`, waiting: true, say: `${job}의 메일 검색 조건을 확인해 주세요.`, then: '사무실에서 조건을 보고 「이 조건으로 찾기」를 누르면 이어 갑니다.', acts: [goOffice('사무실에서 확인', id)] };
   }
   const failed = (status === 'failed' || status === 'interrupted') && reason !== 'CANCELLED';
   if (failed && since != null && now - since < QUEUE_FAILED_MS) {
-    return { ...base, key: `task:${id}:failed`, say: `${job}을 끝내지 못했습니다.`, then: '사무실에서 까닭을 보고 다시 맡길 수 있습니다.', acts: [goOffice('사무실에서 보기')] };
+    return { ...base, key: `task:${id}:failed`, say: `${job}을 끝내지 못했습니다.`, then: '사무실에서 까닭을 보고 다시 맡길 수 있습니다.', acts: [goOffice('사무실에서 보기', id)] };
   }
   return null;
 }
@@ -187,7 +188,7 @@ function officeItems(snap, now) {
     }
   }
   for (const t of Array.isArray(snap.tasking?.tasks) ? snap.tasking.tasks : []) {
-    const it = taskItem(t, now);
+    const it = solioTaskItem(t, now);
     if (it) out.push(it);
   }
   return out;

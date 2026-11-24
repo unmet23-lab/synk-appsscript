@@ -120,7 +120,7 @@ test('office tasks: mailbox choice and search review wait on me and go to the of
   const r = solioQueue(solioTodoItems({ office: office([choose, review, recent, stale, cancelled, terminalNoOpen]) }, NOW), NOW);
   assert.deepEqual(keys(r).sort(), ['task:c1:choose', 'task:c2:review', 'task:c3:failed', 'task:c6:terminal'].sort());
   const by = k => r.queue.find(i => i.key === k);
-  assert.deepEqual(by('task:c1:choose').acts.map(a => [a.kind, a.run]), [['go', { prog: 'office' }]]);
+  assert.deepEqual(by('task:c1:choose').acts.map(a => [a.kind, a.run]), [['go', { prog: 'office', officeTask: 'c1' }]]);
   assert.equal(by('task:c3:failed').tier, QUEUE_TIER.rest);
   assert.equal(by('task:c1:choose').tier, QUEUE_TIER.waitingOnMe);
   assert.deepEqual(by('task:c6:terminal').acts.map(a => a.id), ['go'], '터미널을 열 수 없으면 사무실로 간다');

@@ -62,6 +62,7 @@ const REASON_MESSAGES = {
   NO_ANSWER: '작업 응답을 받지 못했습니다.',
   FOLDER: '작업 폴더를 준비할 수 없습니다.',
   SESSION: '이전 작업 세션을 이어서 열 수 없습니다.',
+  DEPARTMENT_GONE: '이 일의 부서를 뺐습니다. 새 일로 맡겨 주세요.',
   PERMISSION: '권한이 부족하여 작업을 실행할 수 없습니다.',
   NATIVE: '시스템 실행 중 오류가 발생했습니다.',
   RESTART: '프로그램이 다시 시작되어 작업이 중단되었습니다.',
@@ -311,6 +312,13 @@ export function createOfficeTaskRoom({
       return;
     }
     if (task.mailSearch === true && !canUseMailSearch(cachedTasking, task.provider)) return;
+    // 뺀 부서의 일은 잇거나 다시 맡기지 않는다. 없는 부서로 보내지 않게 그 자리에서 말한다(사무실 대화 짜임 설계 검토 19)
+    if (task.departmentId != null && !cachedDepartments.some((d) => d.id === task.departmentId)) {
+      error = REASON_MESSAGES.DEPARTMENT_GONE;
+      actionStorageError = false;
+      changed?.();
+      return;
+    }
     provider = task.provider;
     departmentId = task.departmentId ?? null;
     previousId = asFollow ? task.id : null;
@@ -677,5 +685,18 @@ export function createOfficeTaskRoom({
     clearSession(true);
   }
 
-  return { scene, handle, reset };
+  /* 사무실 대화 짜임: 보낼 부서의 주인은 이 방이고, 고른 대화(office-room의 ui.chat)는 늘 이 값과 같다(설계 검토 1).
+     다른 대화를 고르면 그 부서로 바꾸고 이어서 맡기기를 푼다. 초점 번호는 올리지 않는다(고르는 동안 초점은 목록에 남는다) */
+  function pickDepartment(id) {
+    const next = typeof id === 'string' && id ? id : null;
+    if (next === departmentId && previousId === null) return false;
+    departmentId = next;
+    previousId = null;
+    clearTransientError();
+    stamp = ++stampSeq;
+    return true;
+  }
+  const current = () => ({ departmentId, previousId, provider });
+
+  return { scene, handle, reset, pickDepartment, current };
 }
