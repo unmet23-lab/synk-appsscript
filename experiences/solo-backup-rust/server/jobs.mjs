@@ -13,6 +13,9 @@ import { reconcile } from './reconcile.mjs';
 import { LIMITS } from './server.mjs';
 
 const DAY = 86400000, HOUR = 3600000, KST = 9 * HOUR;
+// The daily pass runs once per KST day, so its copy carries that day. A UTC name gave the 22:00 KST
+// first-day copy and the next 03:00 KST copy the same date, and the second one failed (11-24).
+const kstDay = (ms) => new Date(ms + KST).toISOString().slice(0, 10);
 const GROWTH_ALERT = 200 * 1024 ** 3;
 // The daily database copies are kept 30 days: a record the server drops (after 90 days, or on a deletion
 // request) leaves the copies within 30 days (synk.im 처리방침 「SYNK 업무 백업」, privacy-map.json).
@@ -188,12 +191,14 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
   };
   // Only this service's own day copies are removed; any other file in the folder is left alone. The copy made
   // 30 days ago goes too, so at most 30 copies remain (today and the 29 days before) and no copy outlives 30 days
-  // (처리방침 「30일이 지나면 지웁니다」, 카본 끝판 A1).
+  // (처리방침 「30일이 지나면 지웁니다」, 카본 끝판 A1). A `.part` left by a copy killed half-way goes at the
+  // next pass whatever its day: this runs after the day's copy has finished, so no `.part` is being written
+  // (카본 끝판 11-24 A1 — a stop past midnight would leave it outside the 30-day rule).
   function pruneBackups(t) {
-    const cut = dayOf(t - BACKUP_KEEP_DAYS * DAY);
+    const cut = kstDay(t - BACKUP_KEEP_DAYS * DAY);
     for (const name of fs.readdirSync(cfg.backupDir)) {
-      const m = /^workbackup-(\d{4}-\d{2}-\d{2})\.sqlite$/.exec(name);
-      if (m && m[1] <= cut) fs.rmSync(path.join(cfg.backupDir, name), { force: true });
+      const m = /^workbackup-(\d{4}-\d{2}-\d{2})\.sqlite(\.part)?$/.exec(name);
+      if (m && (m[2] || m[1] <= cut)) fs.rmSync(path.join(cfg.backupDir, name), { force: true });
     }
   }
 
@@ -207,7 +212,7 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     await task('silence', () => silence(t));
     await task('prune', () => { store.pruneTelemetry(); store.pruneNonces(); });
     if (cfg.backupDir) {
-      await task('backup', () => store.backupTo(path.join(cfg.backupDir, `workbackup-${dayOf(t)}.sqlite`)));
+      await task('backup', () => store.backupTo(path.join(cfg.backupDir, `workbackup-${kstDay(t)}.sqlite`)));
       await task('backup-prune', () => pruneBackups(t));
     }
   }
@@ -233,7 +238,7 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
       // path forgot to check (Fable 5.2 설계 관문 셋째 3). The first tick runs at start.
       for (const customerId of store.waitingRestores()) await step('settle', () => api.settleRestore?.(customerId));
       preparing(t);
-      const kst = new Date(t + KST), day = kst.toISOString().slice(0, 10);
+      const kst = new Date(t + KST), day = kstDay(t);
       const done = store.get("select v from meta where k = 'daily'")?.v;
       if (!dailyRun && kst.getUTCHours() >= cfg.dailyHourKst && done !== day) {
         // Recorded when the pass ends, so a stop half-way runs it again that day.

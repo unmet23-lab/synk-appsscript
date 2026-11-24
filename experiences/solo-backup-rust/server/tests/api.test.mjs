@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { FakeB2, fakeGoogle, clockAt, sessionOf } from './fakes.mjs';
+import { DatabaseSync } from 'node:sqlite';
 import { Store } from '../store.mjs';
 import { createVerifier } from '../google-token.mjs';
 import { rpcClient, rpcServer } from '../rpc.mjs';
@@ -1701,7 +1702,7 @@ test('처리방침 · 설계 검토 2026-11-17: the daily database copy is delet
   const h = await harness(t);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-backups-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  const day = (ms) => new Date(ms).toISOString().slice(0, 10);
+  const day = (ms) => new Date(ms + 9 * 3600000).toISOString().slice(0, 10);
   const old = `workbackup-${day(h.clock.t - 31 * 86400000)}.sqlite`, day30 = `workbackup-${day(h.clock.t - 30 * 86400000)}.sqlite`;
   const kept = `workbackup-${day(h.clock.t - 29 * 86400000)}.sqlite`;
   for (const f of [old, day30, kept, 'workbackup-notes.txt', 'other-2000-01-01.sqlite']) fs.writeFileSync(path.join(dir, f), 'x');
@@ -1714,4 +1715,37 @@ test('처리방침 · 설계 검토 2026-11-17: the daily database copy is delet
   assert.ok(left.includes(kept), 'the copy made 29 days ago is kept');
   assert.equal(left.filter((f) => /^workbackup-\d{4}-\d{2}-\d{2}\.sqlite$/.test(f)).length, 2, 'today and the 29th day only');
   assert.ok(left.includes('workbackup-notes.txt') && left.includes('other-2000-01-01.sqlite'), 'other files are left alone');
+});
+
+test('운영 11-24: the daily copy is named by the KST day it runs for, and a pass run again that day replaces the copy', async (t) => {
+  const h = await harness(t);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-backups-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const logs = [];
+  const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files: h.files, now: () => h.clock.t, log: (e) => logs.push(e), config: { bucketId: h.b2.bucketId, protectedKeyIds: h.protectedKeyIds, backupDir: dir } });
+  const copies = () => fs.readdirSync(dir).sort();
+  // The first start at 22:00 KST and the next day's 03:00 KST pass share the UTC date 11-23.
+  h.clock.t = Date.UTC(2026, 10, 23, 13, 0, 0);
+  await jobs.daily(h.clock.t);
+  h.clock.t = Date.UTC(2026, 10, 23, 18, 1, 0);
+  await jobs.daily(h.clock.t);
+  assert.deepEqual(copies(), ['workbackup-2026-11-23.sqlite', 'workbackup-2026-11-24.sqlite']);
+  // A pass stopped half-way runs again the same day: the copy is replaced, not refused.
+  const before = fs.statSync(path.join(dir, 'workbackup-2026-11-24.sqlite')).size;
+  h.store.run("insert into meta(k, v) values ('copy-test', 'x') on conflict(k) do update set v = excluded.v");
+  h.clock.t += 3600000;
+  await jobs.daily(h.clock.t);
+  assert.deepEqual(copies(), ['workbackup-2026-11-23.sqlite', 'workbackup-2026-11-24.sqlite'], 'no part file is left');
+  assert.ok(fs.statSync(path.join(dir, 'workbackup-2026-11-24.sqlite')).size >= before);
+  assert.equal(logs.filter((l) => l.task === 'backup').length, 0, 'no copy failed');
+  const copy = new DatabaseSync(path.join(dir, 'workbackup-2026-11-24.sqlite'), { readOnly: true });
+  const held = copy.prepare("select v from meta where k = 'copy-test'").get()?.v;
+  copy.close();
+  assert.equal(held, 'x', 'the replaced copy holds the later state');
+  // A copy killed half-way on an earlier day leaves a .part that no later copy writes over: the next pass removes it.
+  fs.writeFileSync(path.join(dir, 'workbackup-2026-11-20.sqlite.part'), 'x');
+  fs.writeFileSync(path.join(dir, 'workbackup-notes.sqlite.part'), 'x');
+  h.clock.t = Date.UTC(2026, 10, 24, 18, 1, 0);
+  await jobs.daily(h.clock.t);
+  assert.deepEqual(copies(), ['workbackup-2026-11-23.sqlite', 'workbackup-2026-11-24.sqlite', 'workbackup-2026-11-25.sqlite', 'workbackup-notes.sqlite.part']);
 });

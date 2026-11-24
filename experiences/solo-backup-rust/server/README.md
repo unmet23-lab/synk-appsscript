@@ -88,7 +88,7 @@ sudo /opt/synk/workbackup/bin/wb-admin invites
 
 ## 매일 사본
 
-- api가 매일 03시 KST 뒤 `backups/workbackup-<UTC 날짜>.sqlite`를 만든다(30일 뒤 지움, `jobs.mjs`).
+- api가 매일 03시 KST 뒤 `backups/workbackup-<KST 날짜>.sqlite`를 만든다(30일 뒤 지움, `jobs.mjs`). 이름의 날짜는 그 매일 일이 도는 KST 날짜다. 그날 매일 일이 다시 돌면 그날 사본을 바꾼다.
 - `synk-wb-offsite.timer`가 매일 05:40 KST(± 10분)에 가장 새 사본을 회사 백업 버킷의 `company/workbackup/<이름>.gz`로 보낸다([`host/wb-offsite.py`](host/wb-offsite.py)). 링크를 따라가지 않고 열고, 연 파일이 일반 파일 · 링크 수 1 · 소유자 10771인지 본 뒤, root 전용 자리로 복사해 그 복사본만 검사하고 압축한다. 노드 서비스 계정의 만들기 권한으로 덮어쓰지 않고 올린다.
 - 버킷 규칙이 그 자리의 객체를 14일 뒤 지운다(`tools/backup-bucket-rule.mjs`). 소프트 삭제 7일과 처리 지연 하루를 더해도 22일이라, 처리방침의 「서버의 매일 사본은 30일이 지나면 지운다」 안이다. 이 자리에 닿는 다른 규칙, 버전 관리, 7일이 넘는 소프트 삭제, 보존 정책, 보류가 있으면 도구가 거절한다.
 - 사본은 `start`가 규칙을 확인한 버킷으로만 간다. `start`가 그 버킷 이름의 해시를 `/var/lib/synk-wb-offsite/checked-bucket`에 두고, 매일 사본은 company.env의 목적지가 그 해시와 같을 때만 올린다. 목적지가 바뀌면 `FAILED BUCKET_NOT_CHECKED`로 멈추고, 새 버킷에 규칙을 넣은 뒤 `start`를 다시 돌린다.

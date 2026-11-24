@@ -3,6 +3,7 @@
 // secret, a Google token or a device token — only the SHA-256 of device tokens.
 // It does hold customer mail addresses, so its dumps are operator-only material.
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 
 export const NONCE_MS = 10 * 60000;
@@ -323,7 +324,16 @@ drop table restore_jobs_old;`);
     return id;
   }
 
-  backupTo(file) { this.db.exec(`vacuum into '${String(file).replace(/'/g, "''")}'`); }
+  // `vacuum into` refuses a file that already exists, so the copy is written beside the name and moved
+  // over it: a pass run again the same day replaces that day's copy (11-24 the second copy of a day failed).
+  backupTo(file) {
+    const part = `${file}.part`;
+    fs.rmSync(part, { force: true });
+    try {
+      this.db.exec(`vacuum into '${part.replace(/'/g, "''")}'`);
+      fs.renameSync(part, file);
+    } finally { fs.rmSync(part, { force: true }); }
+  }
 
   update(table, keyCol, keyVal, fields) {
     const cols = Object.keys(fields);
