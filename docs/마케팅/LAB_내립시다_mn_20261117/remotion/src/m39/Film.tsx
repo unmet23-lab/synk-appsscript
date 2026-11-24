@@ -2,10 +2,13 @@
 // 승강장에서 아주머니는 돌아보지 않고 가 버리고, 알림음 끝에 문이 닫히고 열차가 떠나 몽글만 남는다(핵심 장면) — It was not my stop.
 // 그 말은 「저 내려요」였다. 다음엔 「잠시만요, 내릴게요」 — 끝은 빈 승강장 벤치에서 혼자 연습하는 몽글.
 // 장면은 GPT 이미지(구독 경로)로 구운 판(판/*.png, 지시문 판/*.txt). 화면 글은 판 · 상자 없이 위쪽 어두운 자리의 큰 글자 한 갈래, 말은 말한 이 곁의 글자. 전부 useCurrentFrame()으로만 움직인다.
+// 11-24 판본 틀: 그 나라 글(머리 글 · 들은 뜻 · 외침 넷 · 상황 줄 · 뜻 칸 · 「다음엔」 칸의 작은 줄 · 읽는 법 · 뜻 · 끝 줄)과 글꼴 · 글자 크기 · 줄 높이 하한은
+// 판본 꾸러미 p(./판본/<KEY>.json — ./판본.ts)에서 받는다. 그림 · 한국어 · 소리 · 박자 · 카메라는 그대로다(옛 data.ts TEXT는 판본 MN.json으로 옮겼다).
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { FONT, KO, TEXT } from './data';
+import { KO, KO_TEXT } from './data';
 import { fr, T } from './timeline';
+import { LocPack } from './판본';
 
 const C = { cream: '#FFF6E6', coral: '#FF8A75', mint: '#9FD8B4', dim: 'rgba(255,246,230,0.84)' };
 const MASTER = 0.8; // Remotion은 소리를 16비트로 더해 넘치면 자른다 — 모든 볼륨에 같은 값을 곱한다
@@ -181,29 +184,29 @@ const mix = (s: string, hl?: string) =>
     </span>
   ));
 
-// 화면 글 — 판 없이 위쪽 어두운 자리에: 작은 줄(옅게) + 큰 줄(굵게) + 덧붙임 한 줄
-const Title: React.FC<{ t: number; at: number; until: number; small?: string; big: string; size?: number; top?: number; note?: string; noteAt?: number; hl?: string }> = ({ t, at, until, small, big, size = 96, top = 280, note, noteAt, hl }) => {
+// 화면 글 — 판 없이 위쪽 어두운 자리에: 작은 줄(옅게) + 큰 줄(굵게) + 덧붙임 한 줄(글꼴 · 줄 높이 하한은 판본 글, 작은 줄 · 덧붙임 크기는 부르는 쪽이 판본 글에서)
+const Title: React.FC<{ p: LocPack; t: number; at: number; until: number; small?: string; smallSize?: number; big: string; size?: number; top?: number; note?: string; noteAt?: number; noteSize?: number; hl?: string }> = ({ p, t, at, until, small, smallSize = 52, big, size = 96, top = 280, note, noteAt, noteSize = 62, hl }) => {
   if (t < at || t >= until) return null;
   const a = interpolate(t, [at, at + 0.2], [0, 1], { ...clamp, easing: EASE_OUT });
   const na = note ? interpolate(t, [noteAt ?? at, (noteAt ?? at) + 0.2], [0, 1], { ...clamp, easing: EASE_OUT }) : 0;
   return (
     <div style={{ position: 'absolute', left: 80, width: 830, top, textAlign: 'center', opacity: a, transform: `translateY(${(1 - a) * 18}px)`, textShadow: SHADOW }}>
-      {small ? <div style={{ fontFamily: FONT, fontWeight: 600, fontSize: 52, lineHeight: 1.2, color: C.dim, letterSpacing: 0.5 }}>{mix(small)}</div> : null}
-      {big ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: size, lineHeight: 1.12, color: C.cream, marginTop: small ? 34 : 0, whiteSpace: 'pre-line' }}>{mix(big, hl)}</div> : null}
-      {note ? <div style={{ fontFamily: FONT, fontWeight: 600, fontSize: 62, lineHeight: 1.2, color: C.dim, marginTop: 16, opacity: na }}>{mix(note)}</div> : null}
+      {small ? <div style={{ fontFamily: p.font, fontWeight: 600, fontSize: smallSize, lineHeight: Math.max(1.2, p.lineH), color: C.dim, letterSpacing: 0.5 }}>{mix(small)}</div> : null}
+      {big ? <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: size, lineHeight: Math.max(1.12, p.lineH), color: C.cream, marginTop: small ? 34 : 0, whiteSpace: 'pre-line' }}>{mix(big, hl)}</div> : null}
+      {note ? <div style={{ fontFamily: p.font, fontWeight: 600, fontSize: noteSize, lineHeight: Math.max(1.2, p.lineH), color: C.dim, marginTop: 16, opacity: na }}>{mix(note)}</div> : null}
     </div>
   );
 };
 
-// 말 — 말한 이 곁에 글자만(상자 · 테두리 없음)
-const Say: React.FC<{ t: number; from: number; until: number; x: number; y: number; ko: string; sub?: string; size?: number; rot?: number; shake?: boolean; color?: string }> = ({ t, from, until, x, y, ko, sub, size = 118, rot = -5, shake, color = C.cream }) => {
+// 말 — 말한 이 곁에 글자만(상자 · 테두리 없음). ko가 판본 글(외침 넷)이면 loc — 판본 sayFont · 줄 높이 하한. sub(읽는 법 · 연습 줄)는 판본 글
+const Say: React.FC<{ p: LocPack; t: number; from: number; until: number; x: number; y: number; ko: string; loc?: boolean; sub?: string; size?: number; rot?: number; shake?: boolean; color?: string }> = ({ p, t, from, until, x, y, ko, loc, sub, size = 118, rot = -5, shake, color = C.cream }) => {
   if (t < from || t >= until) return null;
   const a = pop(t, from);
   const j = shake ? 3 * Math.sin(t * 40) * Math.exp(-(t - from) * 3) : 0;
   return (
     <div style={{ position: 'absolute', left: x, top: y, transform: `translate(-50%, -50%) rotate(${rot + j}deg) scale(${a})`, textAlign: 'center', whiteSpace: 'nowrap', textShadow: SHADOW }}>
-      <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.05, color }}>{ko}</div>
-      {sub ? <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: Math.max(50, size * 0.42), lineHeight: 1.2, color: C.dim, fontStyle: 'italic' }}>{sub}</div> : null}
+      <div style={{ fontFamily: loc ? p.sayFont : KO, fontWeight: 900, fontSize: size, lineHeight: loc ? Math.max(1.05, p.lineH) : 1.05, color }}>{ko}</div>
+      {sub ? <div style={{ fontFamily: p.font, fontWeight: 700, fontSize: Math.max(50, size * 0.42), lineHeight: Math.max(1.2, p.lineH), color: C.dim, fontStyle: 'italic' }}>{sub}</div> : null}
     </div>
   );
 };
@@ -276,8 +279,8 @@ const Sound: React.FC = () => (
   </>
 );
 
-// 장면 심사용(scene)에는 화면 글을 빼고 장면의 말 · 소리만 남긴다
-export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
+// 장면 심사용(scene)에는 화면 글을 빼고 장면의 말 · 소리만 남긴다. p = 판본 글(./판본/<KEY>.json)
+export const Film: React.FC<{ p: LocPack; scene?: boolean }> = ({ p, scene }) => {
   const frame = useCurrentFrame();
   const t = frame / 30;
   return (
@@ -285,26 +288,26 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       <Plate t={t} />
       {/* 위쪽을 살짝 어둡게 — 글자가 놓일 자리(상자가 아니라 빛) */}
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 980, opacity: interpolate(t, [T.stare - 0.01, T.stare, T.go + 0.3, T.go + 0.55], [1, 0.55, 0.55, 1], clamp), background: 'linear-gradient(to bottom, rgba(8,16,14,1) 0%, rgba(8,16,14,1) 38%, rgba(8,16,14,0.95) 62%, rgba(8,16,14,0.66) 82%, rgba(8,16,14,0) 100%)' }} />
-      <Say t={t} from={T.call} until={T.think} x={520} y={640} ko="내립시다!" sub={TEXT.callRead} size={132} rot={-4} shake />
-      <Say t={t} from={T.w1} until={T.w3} x={540} y={800} ko={TEXT.together} size={104} rot={4} color={C.coral} />
-      <Say t={t} from={T.w3 + 0.1} until={T.out} x={540} y={800} ko={TEXT.ok} size={130} rot={5} shake color={C.coral} />
-      <Say t={t} from={T.huh} until={T.chime} x={720} y={985} ko={TEXT.hello} size={92} rot={-4} />
-      <Say t={t} from={T.rush + 0.05} until={T.stare} x={560} y={1010} ko={TEXT.wait} size={92} rot={-5} shake color={C.coral} />
-      <Say t={t} from={T.stare} until={T.stare + 0.9} x={540} y={1560} ko={TEXT.wait} size={96} rot={-4} shake color={C.coral} />
-      <Say t={t} from={T.prac + 0.05} until={T.total + 1} x={540} y={900} ko="잠시만요… 내릴게요…" sub={TEXT.pracRead} size={66} rot={-2} />
+      <Say p={p} t={t} from={T.call} until={T.think} x={520} y={640} ko="내립시다!" sub={p.callRead} size={132} rot={-4} shake />
+      <Say p={p} t={t} from={T.w1} until={T.w3} x={540} y={800} ko={p.together} loc size={p.togetherSize} rot={4} color={C.coral} />
+      <Say p={p} t={t} from={T.w3 + 0.1} until={T.out} x={540} y={800} ko={p.ok} loc size={p.okSize} rot={5} shake color={C.coral} />
+      <Say p={p} t={t} from={T.huh} until={T.chime} x={720} y={985} ko={p.callAunt} loc size={p.callAuntSize} rot={-4} />
+      <Say p={p} t={t} from={T.rush + 0.05} until={T.stare} x={560} y={1010} ko={p.wait} loc size={p.waitSizes[0]} rot={-5} shake color={C.coral} />
+      <Say p={p} t={t} from={T.stare} until={T.stare + 0.9} x={540} y={1560} ko={p.wait} loc size={p.waitSizes[1]} rot={-4} shake color={C.coral} />
+      <Say p={p} t={t} from={T.prac + 0.05} until={T.total + 1} x={540} y={900} ko="잠시만요… 내릴게요…" sub={p.pracRead} size={66} rot={-2} />
       {!scene ? (
         <>
-          <Title t={t} at={-1} until={T.think} big={TEXT.hook} size={72} />
-          <Title t={t} at={T.think} until={T.out} small={TEXT.heardSmall} big={TEXT.heard} size={100} />
-          <Title t={t} at={T.walk} until={T.huh} big={TEXT.gotOff} size={74} />
-          <Title t={t} at={T.huh} until={T.rush} big={TEXT.noLook} size={74} />
-          <Title t={t} at={T.rush} until={T.shut + 0.1} big={TEXT.back} size={74} />
-          <Title t={t} at={T.shut + 0.1} until={T.go + 0.55} big={TEXT.shut} size={78} />
-          <Title t={t} at={T.go + 0.55} until={T.meant} big={TEXT.line} size={80} />
-          <Title t={t} at={T.meant} until={T.polite} small={TEXT.meantSmall} big={TEXT.meant} size={88} note={TEXT.fair} noteAt={T.fair} />
-          <Title t={t} at={T.polite} until={T.eq} small={TEXT.youSmall} big={TEXT.youBig} size={112} note={TEXT.youRead} hl={C.mint} />
-          <Title t={t} at={T.eq} until={T.bench} small={TEXT.eqSmall} big={TEXT.eq} size={78} />
-          <Title t={t} at={T.bench} until={T.total + 1} big={TEXT.endSmall} size={62} />
+          <Title p={p} t={t} at={-1} until={T.think} big={p.hook} size={p.hookSize} />
+          <Title p={p} t={t} at={T.think} until={T.out} small={p.heardSmall} smallSize={p.smallSize} big={p.heard} size={p.heardSize} />
+          <Title p={p} t={t} at={T.walk} until={T.huh} big={p.gotOff} size={p.gotOffSize} />
+          <Title p={p} t={t} at={T.huh} until={T.rush} big={p.noLook} size={p.noLookSize} />
+          <Title p={p} t={t} at={T.rush} until={T.shut + 0.1} big={p.back} size={p.backSize} />
+          <Title p={p} t={t} at={T.shut + 0.1} until={T.go + 0.55} big={p.shut} size={p.shutSize} />
+          <Title p={p} t={t} at={T.go + 0.55} until={T.meant} big={p.line} size={p.lineSize} />
+          <Title p={p} t={t} at={T.meant} until={T.polite} small={p.meantSmall} smallSize={p.smallSize} big={p.meant} size={p.meantSize} note={p.fair} noteAt={T.fair} noteSize={p.fairSize} />
+          <Title p={p} t={t} at={T.polite} until={T.eq} small={p.youSmall} smallSize={p.smallSize} big={KO_TEXT.youBig} size={112} note={p.youRead} noteSize={p.youReadSize} hl={C.mint} />
+          <Title p={p} t={t} at={T.eq} until={T.bench} small={KO_TEXT.eqSmall} big={p.eq} size={p.eqSize} />
+          <Title p={p} t={t} at={T.bench} until={T.total + 1} big={p.endSmall} size={p.endSmallSize} />
           <Mark t={t} at={T.meant} until={T.polite} glyph="⏪" />
           <Mark t={t} at={T.polite} until={T.bench} glyph="💭" />
         </>
