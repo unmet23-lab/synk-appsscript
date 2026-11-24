@@ -427,7 +427,7 @@
     {
       "계정": "lab-uz-instagram",
       "상태": "게시됨",
-      "시각": "2026-11-23T13:00:00+05:00",
+      "시각": "2026-11-23T08:00:00.000Z",
       "방법": "작업실",
       "작업": "d990ec8e3d1517d3d2c1d7c41b23e348bdfcb5de54dd4b43e485251d0ecb14e7",
       "지문": "43b9946abe181fbb392a5f6cbe18af2636906747bdaf50e48bdbe522988af755",
@@ -440,7 +440,8 @@
       "주소": "https://www.instagram.com/reel/DgE5r0AlKJH/",
       "게시관측시각": "2026-11-23T08:01:00.000Z",
       "플랫폼": "instagram",
-      "게시물ID": "DgE5r0AlKJH"
+      "게시물ID": "DgE5r0AlKJH",
+      "원고ID": "3d15c8e0-089f-4e8d-8836-5ae19cbbe83d"
     }
   ]
 }
