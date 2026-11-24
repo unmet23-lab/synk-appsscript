@@ -6,6 +6,7 @@ import {CASTING_BOOK_URL} from './casting-view.mjs';
 import {modelCard} from './room-view.mjs';
 import {reduced} from './motion.mjs';
 import {sceneSet} from './request-data.mjs';
+import {hallView,mountHall,inHall} from './hall.mjs';
 
 // 첫 화면(2026-11-05): 들어오자마자 작품이 화면 전부다. 쇼릴 위에 제목, 다음 쪽은 작품 이름, 그다음 세 번 확인 · 약속 · 진행 · 사람 · 끝.
 // 글은 승인 원고(docs/마케팅/PULSE_소개글_20261103/README.md 1절 · 5절)이고 낱말을 바꾸지 않는다. 짜임의 근거는 docs/마케팅/PULSE_프론트재구성_20261104/README.md.
@@ -25,7 +26,6 @@ const lines=list=>list.map(text=>`<span class="sx-ln"><span>${esc(t(text))}</spa
 // 두 줄로 두면 둘째 줄이 가장 길어 넓은 화면에서 쇼릴의 세로 작품 화면(제품을 든 손)까지 닿고, 휴대폰에서는 어차피 세 줄로 접힌다.
 // 끝 쪽 그림 칸은 제목 세 줄(3.42 × 제목 크기)을 비우고 잰다(film.css).
 const HERO_TITLE=[k('카메라 앞에서 10년,'),k('배우가 AI 모델을'),k('연출합니다')];
-const HERO_LEAD=k('넷플릭스 · tvN에 출연하고 웹드라마 주연(페이스북 1,000만 회)을 맡은 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출해요.');
 const CHECK_LEAD=k('영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요.');
 const HERO_NOTE=k('상담은 제품 사진 한 장과 올릴 곳만으로 시작해요.');
 // 1/3은 11-07부터 「방향과 모델」 — 제작사가 방향 두 안과 모델을 함께 내밀고 손님이 고른다(docs/마케팅/PULSE_의뢰흐름_20261104/판1_설계.md).
@@ -175,7 +175,7 @@ export function openScreening(film,{onClose}={}){
 const workRow=film=>`<li data-in><button type="button" class="sx-work" data-work="${esc(film.id)}"><span class="sx-work-name sx-serif">${esc(filmTitle(film))}</span><span class="sx-work-line sx-small"><span>${esc(filmLine(film))}${film.tag?` · ${esc(t(film.tag))}`:''}</span></span></button></li>`;
 // 내 프로젝트 다시 열기(판 4): 위는 메일로 코드 받기(의뢰서에 적은 메일 → 여섯 자리 → 열림, 둘 이상이면 고르기 — 앱이 서버를 보고 켤 때만 보인다),
 // 아래는 접수증 · 담당자에게 받은 링크 붙여 넣기. 메일에는 방 열쇠를 넣지 않는다 — 코드는 10분 동안 한 번만 쓴다.
-const inviteForm=entryError=>`<div class="sx-invite" data-entry-invite ${entryError?'':'hidden'}>${entryError?`<div class="sx-invite-alert" role="alert"><strong>${esc(entryError.title)}</strong><p>${esc(entryError.text)}</p></div>`:''}<form class="sx-invite-form sx-invite-mail" data-form="mail-open" data-entry-mail data-step="email" novalidate hidden><p class="sx-body sx-invite-head">${esc(t('메일로 다시 열기'))}</p><label data-mail-step="email"><span class="sx-small">${esc(t('의뢰서에 적은 메일'))}</span><input name="email" type="email" maxlength="254" autocomplete="email" autocapitalize="off" spellcheck="false"></label><label data-mail-step="code" hidden><span class="sx-small">${esc(t('진행 중인 의뢰가 있으면 이 주소로 코드를 보냈어요. 메일의 여섯 자리를 넣어 주세요.'))}</span><input name="code" type="text" maxlength="7" autocomplete="one-time-code" inputmode="numeric"></label><div class="sx-mail-pick" data-mail-step="pick" hidden></div><input class="sx-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit" class="sx-go" data-mutate><span data-mail-go>${esc(t('코드 받기'))}</span>${arrow}</button><p class="sx-small" data-mail-help hidden>${esc(t('몇 분 안에 오지 않으면 스팸함을 보시고, 그래도 없으면 hello@synk.im으로 접수 번호를 보내 주세요.'))} <button type="button" class="sx-link" data-action="mail-again">${esc(t('다른 주소로 다시 받기'))}</button></p></form><form class="sx-invite-form" data-form="invite"><label><span class="sx-small">${esc(t('접수증이나 담당자에게 받은 링크'))}</span><input name="invite" type="text" maxlength="3000" required placeholder="https://workspace.synk.im/pulse-app/#invite=…" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url"></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('열기',null,'open'))}</span>${arrow}</button></form><p class="sx-small">${esc(t('가입이나 비밀번호 없이 열려요. 연결하면 이 프로젝트의 자료와 대화만 볼 수 있어요.'))}</p><button type="button" class="sx-small sx-link" data-action="retry">${esc(t('이 기기에서 다시 확인'))}</button><button type="button" class="sx-small sx-invite-close" data-entry="close">${esc(t('닫기'))}</button></div>`;
+const inviteForm=entryError=>`<div class="sx-invite" data-entry-invite>${entryError?`<div class="sx-invite-alert" role="alert"><strong>${esc(entryError.title)}</strong><p>${esc(entryError.text)}</p></div>`:''}<form class="sx-invite-form sx-invite-mail" data-form="mail-open" data-entry-mail data-step="email" data-checking novalidate><label data-mail-step="email"><span class="sx-small">${esc(t('의뢰서에 적은 메일'))}</span><input name="email" type="email" maxlength="254" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="name@company.com"></label><label data-mail-step="code" hidden><span class="sx-small">${esc(t('진행 중인 의뢰가 있으면 이 주소로 코드를 보냈어요. 메일의 여섯 자리를 넣어 주세요.'))}</span><input name="code" type="text" maxlength="7" autocomplete="one-time-code" inputmode="numeric"></label><div class="sx-mail-pick" data-mail-step="pick" hidden></div><input class="sx-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit" class="sx-go is-solid" data-mutate><span data-mail-go>${esc(t('코드 받기'))}</span>${arrow}</button><p class="sx-small" data-mail-help hidden>${esc(t('몇 분 안에 오지 않으면 스팸함을 보시고, 그래도 없으면 hello@synk.im으로 접수 번호를 보내 주세요.'))} <button type="button" class="sx-link" data-action="mail-again">${esc(t('다른 주소로 다시 받기'))}</button></p></form><button type="button" class="sx-door-link sx-small" data-door-link aria-expanded="${entryError?'true':'false'}" aria-controls="door-invite">${esc(t('담당자에게 받은 링크로 열기'))}</button><form class="sx-invite-form" id="door-invite" data-form="invite" ${entryError?'':'hidden'}><label><span class="sx-small">${esc(t('접수증이나 담당자에게 받은 링크'))}</span><input name="invite" type="text" maxlength="3000" required placeholder="https://workspace.synk.im/pulse-app/#invite=…" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url"></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('열기',null,'open'))}</span>${arrow}</button></form><button type="button" class="sx-small sx-link" data-action="retry">${esc(t('이 기기에서 다시 확인'))}</button></div>`;
 
 // 접수를 쉬는 동안(운영 조각 3 · 2026-11-11, 서버 pulse-capacity.mjs): 「광고 의뢰하기」 자리에 안내가 선다 — 머리 한 줄,
 // 그 아래 다시 여는 날과 담당자가 적은 안내. 열려 있거나 쓰던 의뢰서가 있으면(이어 쓰기는 쉬는 동안에도 된다) 아무것도 더하지 않는다.
@@ -189,10 +189,10 @@ const waitlistSlot=paused=>paused.state!=='full'||!paused.notify?'':paused.notif
   :`<form class="sx-wait" data-form="waitlist" novalidate><label><span class="sx-small">${esc(t('열리면 메일로 알려 드릴까요?'))}</span><input name="email" type="email" maxlength="254" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><input class="sx-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit" class="sx-go" data-mutate><span>${esc(t('알려 주세요'))}</span>${arrow}</button><p class="sx-small sx-wait-note">${esc(t('자리가 나면 이 주소로 한 번만 보내 드리고, 그 뒤 주소는 지워요.'))}</p></form>`;
 // 휴대폰 1쪽(두 줄 높이)은 칸 대신 둘째 줄을 끝 쪽 칸으로 내려가는 한 줄 단추로 바꾼다 — 1쪽에서 돌아서는 손님도 알림을 만나게(최종 검수). 넓은 화면에서는 숨는다.
 const waitJump=paused=>paused.state==='full'&&paused.notify&&!paused.notified;
-const pausedInner=(paused,works)=>{const note=pausedNote(paused),jump=waitJump(paused);return `<p class="sx-paused-head">${esc(pausedHead(paused))}</p><p class="sx-small${jump?' sx-paused-when':''}">${esc(pausedWhen(paused))}</p>${jump?`<button type="button" class="sx-go sx-wait-jump" data-entry="wait"><span>${esc(t('열리면 메일로 알려 드릴까요?'))}</span>${arrow}</button>`:''}${note?`<p class="sx-small sx-paused-note">${esc(note)}</p>`:''}${waitlistSlot(paused)}${works?`<button type="button" class="sx-go sx-paused-works" data-entry="works"><span>${esc(t('완성 광고 보기'))}</span>${arrow}</button>`:''}`;};
+const pausedInner=(paused,works,door=false)=>{const note=pausedNote(paused),jump=waitJump(paused);return `<p class="sx-paused-head">${esc(pausedHead(paused))}</p><p class="sx-small${jump&&!door?' sx-paused-when':''}">${esc(pausedWhen(paused))}</p>${jump?`<button type="button" class="sx-go sx-wait-jump" data-entry="wait"><span>${esc(t('열리면 메일로 알려 드릴까요?'))}</span>${arrow}</button>`:''}${note?`<p class="sx-small sx-paused-note">${esc(note)}</p>`:''}${door?(paused.notified?waitlistSlot(paused):''):waitlistSlot(paused)}${works?`<button type="button" class="sx-go sx-paused-works" data-entry="works"><span>${esc(t('완성 광고 보기'))}</span>${arrow}</button>`:''}`;};
 const pausedKey=paused=>!paused?'':paused.state==='full'?JSON.stringify(['full',paused.noticeDate||'',locale(),!!paused.notify,paused.notified||'']):JSON.stringify([paused.until||'',paused.note||'',paused.noteEn||'',locale()]);
 // data-key: 처음부터 쉬는 채로 그려진 화면이 그 상태에서 시작하게(mountEntry) 그린 안내의 열쇠를 적어 둔다. tabindex: 단추가 사라질 때 초점을 받을 자리.
-const pausedSlot=(paused,works=false)=>`<div class="sx-paused" data-paused${works?' data-paused-works':''} data-in tabindex="-1" data-key="${esc(pausedKey(paused))}"${paused?'':' hidden'}>${paused?pausedInner(paused,works):''}</div>`;
+const pausedSlot=(paused,works=false,door=false)=>`<div class="sx-paused" data-paused${works?' data-paused-works':''}${door?' data-paused-door':''} data-in tabindex="-1" data-key="${esc(pausedKey(paused))}"${paused?'':' hidden'}>${paused?pausedInner(paused,works,door):''}</div>`;
 // 화면 읽기에 한 번 알릴 말(머리 한 줄 + 다시 여는 날). 눈에 보이는 안내 칸 둘이 아니라 늘 있는 칸 하나(data-paused-say)가 읽는다.
 const pausedSay=paused=>`${pausedHead(paused)}. ${pausedWhen(paused)}`;
 // 접수 상태를 이미 그려진 첫 화면에 옮긴다 — mountEntry의 update가 부른다(앱은 첫 화면을 그린 뒤에 접수 상태를 읽는다). state는 {resume,paused,key}이고
@@ -205,14 +205,20 @@ export function applyEntryIntake({starts,notes,slots,say=null},state){
   starts.forEach(button=>{button.hidden=!!shown;});
   notes.forEach(node=>{node.hidden=!!shown;});
   if(key===state.key)return;state.key=key;
-  slots.forEach(node=>{node.innerHTML=shown?pausedInner(shown,node.hasAttribute('data-paused-works')):'';node.hidden=!shown;});
+  slots.forEach(node=>{node.innerHTML=shown?pausedInner(shown,node.hasAttribute('data-paused-works'),node.hasAttribute('data-paused-door')):'';node.hidden=!shown;});
   if(say)say.textContent=shown?pausedSay(shown):'';
   if(from>=0)(shown?slots[from]:starts[from])?.focus?.({preventScroll:true});
 }
 
-const pages=({start,demoHref,paused=null})=>[
-  {layer:'reel',html:`<div class="sx-hero-copy"><p class="sx-kicker" data-in>${esc(t('SYNK PULSE · AI 광고 제작'))}</p><h1 class="sx-display">${lines(HERO_TITLE)}</h1><p class="sx-body sx-hero-lead" data-in>${esc(t(HERO_LEAD))}</p></div>
-    <div class="sx-hero-act"><button type="button" class="sx-credit" data-watch-now data-in><b data-cr-name></b> <span data-cr-line></span><em data-cr-note></em></button><button type="button" class="sx-go is-solid" data-entry="start" data-in${paused?' hidden':''}><span data-start-label>${esc(start)}</span>${arrow}</button>${pausedSlot(paused,true)}<button type="button" class="sx-open-m sx-small" data-entry="open" data-in>${esc(t('내 프로젝트 다시 열기'))}</button></div>`},
+// 1쪽(2026-11-24, 시안 A 「캐스팅 복도」): 왼쪽 문 판에 「내 광고 방」과 다시 여는 양식(한 벌), 오른쪽에 모델 띠 복도.
+// 처음 온 사람의 「광고 의뢰하기」는 문 판 아래. 설계: docs/디자인/PULSE고객앱_다시짓기_20261124/옮기기_설계.md 「1쪽 왼쪽 판」.
+// 승인 원고의 제목(HERO_TITLE)은 끝 쪽에 그대로 있다.
+const doorAsk=resume=>resume?t('쓰던 의뢰서가 있어요'):t('처음이세요?');
+const pages=({start,demoHref,paused=null,resume=false,entryError=null})=>[
+  {layer:'none',cls:'is-door',html:`<div class="sx-door" data-door><div class="sx-door-head"><p class="sx-kicker" data-door-kicker data-in>${esc(t('SYNK PULSE · AI 광고 제작'))}</p><h1 class="sx-display sx-door-title" data-door-title>${esc(t('내 광고 방'))}</h1><p class="sx-body sx-door-lead" data-door-lead data-in>${esc(t('의뢰서에 적은 메일만 넣으면 열려요. 가입도 비밀번호도 없어요.'))}</p></div>
+    ${inviteForm(entryError)}
+    <div class="sx-door-foot" data-in><span class="sx-small" data-door-ask data-start-note${paused?' hidden':''}>${esc(doorAsk(resume))}</span><button type="button" class="sx-go sx-door-start" data-entry="start"${paused?' hidden':''}><span data-start-label>${esc(start)}</span>${arrow}</button>${pausedSlot(paused,false,true)}</div><p class="sr" role="status" data-door-say></p></div>
+    ${hallView()}`},
   {layer:'reel',cls:'is-works',veil:true,html:`<header class="sx-works-head"><p class="sx-kicker" data-in>${esc(t('완성 광고'))}</p><h2 class="sx-body" data-in>${esc(t('SYNK가 끝까지 만든 작품이에요. 가상 브랜드로 만든 자체 광고와 공모전 당선작이에요. 새 작품은 완성되는 대로 더해요.'))}</h2></header>
     <div class="sx-works-wrap"><ol class="sx-works">${OWN.map(workRow).join('')}</ol>${CONTEST?`<button type="button" class="sx-work is-contest" data-work="${esc(CONTEST.id)}" data-in><span class="sx-small">${esc(t('공모전 출품작'))}</span><span class="sx-work-name sx-serif">${esc(filmTitle(CONTEST))}</span><span class="sx-work-line sx-small">${esc(filmLine(CONTEST))}</span></button>`:''}</div>`},
   {layer:'none',cls:'is-check',html:`<div class="sx-check"><p class="sx-kicker" data-in>${esc(t('이렇게 만들어요'))}</p><h2 class="sx-display">${lines([k('영상 전에 세 번 확인해요')])}</h2><p class="sx-body sx-check-lead" data-in>${esc(t(CHECK_LEAD))}</p>
@@ -234,14 +240,13 @@ const LAYERS=[{id:'reel'},{id:'none'},{id:'shard',image:`${A}shard.webp`},{id:'e
 const startLabel=resume=>resume?t('쓰던 의뢰서 이어 쓰기'):t('광고 의뢰하기');
 
 export function entryView({demoHref='?demo=film',entryError=null,resume=false,paused=null}={}){
-  const list=pages({start:startLabel(resume),demoHref,paused:paused&&!resume?paused:null});
+  const list=pages({start:startLabel(resume),demoHref,paused:paused&&!resume?paused:null,resume,entryError});
   return `<div class="sx-home${entryError?' has-entry-error':''}">
     <div class="sx-stage" aria-hidden="true">${LAYERS.map(layer=>`<div class="sx-layer sx-layer-${layer.id}" data-layer="${layer.id}">${layer.image?`<img data-src="${layer.image}" alt="" decoding="async">`:''}${layer.id==='reel'?'<video data-reel></video>':''}</div>`).join('')}<div class="sx-shade"></div><div class="sx-veil" data-veil></div></div>
     <header class="sx-top"><a class="sx-logo" href="./" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><nav class="sx-top-nav" aria-label="${esc(t('바로 가기'))}"><button type="button" data-entry="open">${esc(t('내 프로젝트 다시 열기'))}</button>${demoOn()?`<a href="${esc(demoHref)}" data-entry-demo>${DEMO_LABEL.top}</a>`:''}${localeMenu()}</nav></header>
     <p class="sr" role="status" data-paused-say></p>
     <div class="sx-reel" tabindex="-1">${list.map((page,i)=>`<section class="sx-p ${page.cls||''}" data-i="${i}" data-layer="${page.layer}">${page.html}</section>`).join('')}</div>
     <nav class="sx-nums" aria-label="${esc(t('쪽'))}">${list.map((_,i)=>`<button type="button" data-go="${i}" aria-label="${esc(t('{n}쪽',{n:i+1}))}"><span>${i+1}</span></button>`).join('')}<i class="sx-nums-bar" aria-hidden="true"></i></nav>
-    ${inviteForm(entryError)}
   </div>`;
 }
 
@@ -254,10 +259,11 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
   if(!animate)host.classList.add('no-enter');
   document.documentElement.classList.add('view-entry');
   let hold=held;
-  const reelApi=mountReel($('[data-reel]'),{held,onCut:film=>{const name=$('[data-cr-name]');if(!name||!film)return;name.textContent=filmTitle(film);$('[data-cr-line]').textContent=filmLine(film);$('[data-cr-note]').textContent=filmNote(film);}});
+  // 쇼릴은 1쪽(문 판)에 없다 — 처음에는 받지 않고 쇼릴 쪽(완성 광고 · 만드는 사람)에 와서 처음 틀 때 붙는다.
+  const reelApi=mountReel($('[data-reel]'),{held:true});
   const layers=new Map($$('.sx-layer').map(el=>[el.dataset.layer,el]));
   const numbers=$$('.sx-nums button'),sections=$$('.sx-p'),reel=$('.sx-reel');
-  let current=-1,cursor=null,screening=null;
+  let current=-1,screening=null,hallApi=null,arriving=null;
   const smooth=()=>reduced()?'auto':'smooth';
   // 첫 방문 무게(11-11): 뒤쪽 무대 그림(shard 449KB · end)과 「세 번 확인」 창 그림 16장(약 1MB)은 data-src로 그려 두고 가까이 왔을 때 붙인다 —
   // 지금 쪽부터 두 쪽 앞까지의 무대 그림, 지금 쪽과 다음 쪽 안의 그림. 덮개(의뢰서 · 예시) 뒤에서는 붙이지 않는다(판 6 점검 E에서
@@ -268,7 +274,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
   const warm=i=>{if(hold||i<0)return;for(let k=i;k<=i+2&&k<list.length;k++)hydrate(layers.get(list[k].layer));hydrate(sections[i]);hydrate(sections[i+1]);};
   const warmAll=()=>{if(!hold&&!slowData())hydrate(host);};
   const later=()=>{clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(typeof requestIdleCallback==='function')requestIdleCallback(warmAll,{timeout:4000});else warmAll();},1200);};
-  if(pageLoaded())later();else{onLoad=()=>{onLoad=null;later();};addEventListener('load',onLoad,{once:true});}
+  if(pageLoaded())later();else{onLoad=()=>{onLoad=null;later();hallApi?.refresh();};addEventListener('load',onLoad,{once:true});}
   // 세 번 확인: 줄마다 오른쪽 화면이 바뀐다. 쪽에 머무는 동안 천천히 저절로 넘어가고, 손을 대면 멈춘다.
   const panes=$$('.sx-pane'),rows=$$('[data-check]');
   let checkAt=0,checkTimer=0;
@@ -292,7 +298,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
     host.classList.toggle('on-paper',page.cls==='is-paper');
     host.classList.toggle('on-maker',page.cls==='is-maker');
     host.classList.toggle('on-end',page.cls==='is-end');
-    cursor?.classList.remove('is-on');
+    hallApi?.refresh();
   }
   // 화면 가운데 줄에 걸린 쪽을 켠다. 창보다 긴 쪽도 놓치지 않는다.
   const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('is-in');activate(Number(entry.target.dataset.i));}},{root:reel,rootMargin:'-50% 0px -50% 0px',threshold:0}):null;
@@ -329,39 +335,28 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
   // 작품 이름에 손을 올리면 뒤 화면이 그 작품으로.
   $$('.sx-work').forEach(button=>{const on=()=>{host.classList.add('has-work');$$('.sx-work').forEach(item=>item.classList.toggle('is-on',item===button));reelApi.focus(button.dataset.work,{ask:true});};button.addEventListener('pointerenter',on);button.addEventListener('focus',on);});
   $('.sx-works-wrap')?.addEventListener('pointerleave',()=>{clearWork();reelApi.focus(null);});
-  const watch=film=>{reelApi.pause();screening=openScreening(film,{onClose:()=>{screening=null;if(list[current]?.layer==='reel'&&!hold)reelApi.play();}});};
-  // 받은 링크 폼: 여는 단추 둘(넓은 화면 머리 · 휴대폰 1쪽)이 같은 상태를 따르고, 닫으면 연 단추(없으면 보이는 단추)로 초점이 돌아간다.
-  // 휴대폰은 폼을 연 채 다른 쪽으로 넘길 수 있다 — 연 단추가 화면 밖이면 첫 화면을 그 쪽으로 되감지 않는다(검수 F1).
-  const invite=$('[data-entry-invite]');let inviteFrom=null;
-  const markInvite=open=>{invite.hidden=!open;$$('[data-entry="open"]').forEach(button=>button.setAttribute('aria-expanded',open?'true':'false'));};
-  const setInvite=(open,from)=>{markInvite(open);if(open){if(from)inviteFrom=from;invite.querySelector('form:not([hidden]) input:not(.sx-hp)')?.focus();return;}const back=[inviteFrom,...$$('[data-entry="open"]')].find(button=>button?.isConnected&&button.offsetParent!==null);if(!back)return;const box=back.getBoundingClientRect();back.focus({preventScroll:box.bottom<=0||box.top>=innerHeight});};
-  markInvite(!invite.hidden);
+  const watch=film=>{reelApi.pause();screening=openScreening(film,{onClose:()=>{screening=null;if(list[current]?.layer==='reel'&&!hold)reelApi.play();hallApi?.refresh();}});hallApi?.refresh();};
+  // 다시 열기 칸(1쪽 문 판): 메일 양식이 먼저고, 받은 링크 칸은 「담당자에게 받은 링크로 열기」를 누르거나 메일로 열기가 꺼졌거나 오류가 있을 때 펼친다.
+  // 머리의 「내 프로젝트 다시 열기」와 메일의 ?open=mail은 1쪽으로 올라가 보이는 첫 칸에 초점을 둔다.
+  const invite=$('[data-entry-invite]'),linkForm=$('form[data-form="invite"]'),linkButton=$('[data-door-link]');
+  const showLink=(open,{focus=false}={})=>{linkForm.hidden=!open;linkButton.setAttribute('aria-expanded',open?'true':'false');if(open&&focus)linkForm.querySelector('input')?.focus();};
+  const goDoor=()=>{sections[0].scrollIntoView({behavior:smooth()});const mail=$('[data-entry-mail]');if(!mail||mail.hidden)showLink(true);const field=mail&&!mail.hidden?mail.querySelector('[data-mail-step]:not([hidden]) input'):linkForm.querySelector('input');field?.focus({preventScroll:true});};
   host.addEventListener('click',event=>{
     if(onDemo&&event.target.closest('[data-entry-demo]')){event.preventDefault();onDemo();return;}
     const work=event.target.closest('[data-work]');if(work){watch(filmOf(work.dataset.work));return;}
-    if(event.target.closest('[data-watch-now]')){watch(reelApi.current());return;}
     const what=event.target.closest('[data-entry]')?.dataset.entry;
     if(what==='start'){onStart?.();return;}
     if(what==='models'){onModels?.();return;}
     if(what==='works'){sections[1]?.scrollIntoView({behavior:smooth()});return;}
     if(what==='wait'){const end=$('.sx-end');(end?.closest('.sx-p')||end)?.scrollIntoView({behavior:smooth()});$('.sx-end form[data-form="waitlist"] input[name="email"]')?.focus({preventScroll:true});return;}
-    if(what==='open'){setInvite(invite.hidden,event.target.closest('[data-entry]'));return;}
-    if(what==='close'){setInvite(false);return;}
-    // 쇼릴 위 빈 곳을 누르면 그 작품을 소리와 함께.
-    if(current===0&&cursor&&!event.target.closest('button,a,input,form,.sx-hero-copy,.sx-paused'))watch(reelApi.current());
+    if(what==='open'){goDoor();return;}
+    if(event.target.closest('[data-door-link]'))showLink(linkForm.hidden,{focus:true});
   });
-  invite.addEventListener('keydown',event=>{if(event.key==='Escape')setInvite(false);});
+  // 링크 칸에서 Esc는 칸을 접는다(메일 양식이 있을 때만 — 꺼졌으면 링크 칸이 유일한 길이다).
+  linkForm.addEventListener('keydown',event=>{if(event.key!=='Escape'||$('[data-entry-mail]')?.hidden)return;showLink(false);linkButton.focus();});
   if(onInvite)$('[data-entry-invite]').addEventListener('submit',event=>{if(event.target.dataset.form!=='invite')return;event.preventDefault();onInvite(event.target.invite.value);});
-  // 쇼릴 위에서는 커서가 곧 재생 안내다(마우스일 때만).
-  let cursorRaf=0,onPointer=null;
-  if(typeof matchMedia==='function'&&matchMedia('(hover:hover) and (pointer:fine)').matches&&!reduced()){
-    cursor=document.createElement('div');cursor.className='sx-cursor';cursor.setAttribute('aria-hidden','true');cursor.innerHTML=`<span>${esc(t('소리와 함께 보기'))}</span>`;host.append(cursor);
-    let x=innerWidth/2,y=innerHeight/2,tx=x,ty=y;
-    onPointer=event=>{tx=event.clientX;ty=event.clientY;cursor.classList.toggle('is-on',current===0&&!screening&&!event.target.closest?.('button,a,input,form,.sx-hero-copy,.sx-paused,.sx-nums,.sx-top'));};
-    addEventListener('pointermove',onPointer);
-    const tick=()=>{x+=(tx-x)*.16;y+=(ty-y)*.16;cursor.style.setProperty('--tx',`${x}px`);cursor.style.setProperty('--ty',`${y}px`);cursorRaf=requestAnimationFrame(tick);};
-    tick();
-  }
+  // 복도(1쪽 오른쪽): 광고 띠를 누르면 소리와 함께 상영한다. 1쪽 밖 · 덮개 아래 · 움직임 줄이기 · 데이터 절약 · 문서 load 전에는 그림만.
+  hallApi=mountHall(sections[0],{onFilm:id=>{const film=filmOf(id);if(film)watch(film);},still:()=>hold||current!==0||!!screening||reduced()||slowData()||!pageLoaded()});
   activate(0);sections[0].classList.add('is-in');
   // 접수 상태(운영 조각 3): 앱이 이어 쓰기 · 접수 상태를 읽은 뒤 update로 알려 준다.
   // 처음 그려진 안내의 열쇠에서 시작한다 — 쉬는 채로 그려진 화면에 같은 안내가 다시 오면 다시 쓰지 않는다.
@@ -369,35 +364,52 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
   const syncStart=()=>applyEntryIntake({starts:$$('[data-entry="start"]'),notes:$$('[data-start-note]'),slots:$$('[data-paused]'),say:$('[data-paused-say]')},intake);
   return {
     // 메일의 「?open=mail」로 왔을 때 앱이 다시 열기 판을 열어 둔다(판 4).
-    openInvite(){if(invite.hidden)setInvite(true);},
+    openInvite(){goDoor();},
+    // 메일로 열기 확인이 끝났을 때(app.mjs applyMailOpen). 꺼졌으면 메일 양식을 숨기고 링크 칸을 편다.
+    mail(available){const box=$('[data-entry-mail]');if(!box)return;box.removeAttribute('data-checking');box.hidden=!available;linkButton.hidden=!available;if(!available){showLink(true);const lead=$('[data-door-lead]');if(lead)lead.textContent=t('담당자에게 받은 링크를 붙여 넣으면 열려요.');}},
+    // 들어가는 순간(설계 「들어가는 순간」): 복도가 그 프로젝트의 모델에게 멈추고 나머지가 접힌다. 최대 1.8초, 떼어지면 · 숨은 탭 · 움직임 줄이기면 바로 끝난다.
+    arrive(id,{title=''}={}){
+      return new Promise(resolve=>{
+        let timer=0;const done=()=>{clearTimeout(timer);if(arriving===done)arriving=null;resolve();};
+        if(gone||!hallApi||!inHall(id)||reduced()||document.hidden){done();return;}
+        arriving?.();arriving=done;timer=setTimeout(done,1800);
+        if(current!==0)sections[0].scrollIntoView({behavior:'auto'});
+        const door=$('[data-door]');door?.classList.add('is-arriving');
+        const kicker=$('[data-door-kicker]'),head=$('[data-door-title]'),say=$('[data-door-say]');
+        if(kicker)kicker.textContent=t('열렸어요');if(head&&title)head.textContent=title;if(say)say.textContent=title?t('열렸어요. {title}',{title}):t('열렸어요');
+        hallApi.focus(id);
+        setTimeout(done,1500);
+      });
+    },
     // 「내 모델」 입구(PULSE 인물 판 4): 넓은 화면 머리(다시 열기 옆)와 휴대폰 1쪽(다시 열기 아래)에 한 번만 붙인다.
     showModels(){
       if($('[data-entry="models"]'))return;
       const top=document.createElement('button');top.type='button';top.dataset.entry='models';top.textContent=t('내 모델');
       $('.sx-top-nav [data-entry="open"]')?.after(top);
-      const phone=document.createElement('button');phone.type='button';phone.className='sx-open-m sx-small sx-models-m';phone.dataset.entry='models';phone.textContent=t('내 모델');
-      $('.sx-hero-act .sx-open-m')?.after(phone);
+      // 휴대폰(머리 단추가 숨는 폭)은 문 판의 「담당자에게 받은 링크로 열기」 뒤.
+      const phone=document.createElement('button');phone.type='button';phone.className='sx-door-link sx-small sx-models-m';phone.dataset.entry='models';phone.textContent=t('내 모델');
+      linkButton.after(phone);
     },
     // 받은 링크 오류 · 이어 쓰기는 쇼릴을 끊지 않고 글만 바꾼다.
     // 예시 · 의뢰서 덮개가 열리고 닫힐 때(app.mjs overlayState).
-    pause(){hold=true;reelApi.suspend();},
-    resume(){hold=false;warm(current);later();if(list[current]?.layer==='reel'&&!screening)reelApi.play();},
+    pause(){hold=true;reelApi.suspend();hallApi?.refresh();},
+    resume(){hold=false;warm(current);later();if(list[current]?.layer==='reel'&&!screening)reelApi.play();hallApi?.refresh();},
     update({resume,entryError,busy,paused}={}){
       if(resume!==undefined||paused!==undefined){if(resume!==undefined)intake.resume=!!resume;if(paused!==undefined)intake.paused=paused||null;syncStart();}
       if(busy!==undefined){const send=$('[data-form="invite"] button[type=submit]');if(send){send.disabled=!!busy;send.querySelector('span').textContent=busy?t('확인하고 있어요'):t('열기',null,'open');}}
-      if(resume!==undefined)$$('[data-start-label]').forEach(node=>{node.textContent=startLabel(resume);});
+      if(resume!==undefined){$$('[data-start-label]').forEach(node=>{node.textContent=startLabel(resume);});$$('[data-door-ask]').forEach(node=>{node.textContent=doorAsk(resume);});}
       if(entryError!==undefined){
         host.classList.toggle('has-entry-error',!!entryError);
         const form=$('[data-entry-invite]');form.querySelector('.sx-invite-alert')?.remove();
-        if(entryError){const box=document.createElement('div');box.className='sx-invite-alert';box.setAttribute('role','alert');const title=document.createElement('strong');title.textContent=entryError.title;const text=document.createElement('p');text.textContent=entryError.text;box.append(title,text);form.prepend(box);markInvite(true);}
+        if(entryError){const box=document.createElement('div');box.className='sx-invite-alert';box.setAttribute('role','alert');const title=document.createElement('strong');title.textContent=entryError.title;const text=document.createElement('p');text.textContent=entryError.text;box.append(title,text);form.prepend(box);showLink(true);}
       }
     },
     unmount(){
       document.documentElement.classList.remove('view-entry');
       gone=true;clearTimeout(idleTimer);if(onLoad)removeEventListener('load',onLoad);
-      observer?.disconnect();clearInterval(checkTimer);clearTimeout(wheelIdle);cancelAnimationFrame(cursorRaf);
-      removeEventListener('keydown',onKey);if(onPointer)removeEventListener('pointermove',onPointer);
-      screening?.close();reelApi.stop();
+      observer?.disconnect();clearInterval(checkTimer);clearTimeout(wheelIdle);
+      removeEventListener('keydown',onKey);
+      screening?.close();reelApi.stop();hallApi?.stop();arriving?.();
     },
   };
 }

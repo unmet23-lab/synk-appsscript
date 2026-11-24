@@ -33,9 +33,10 @@ const words=html=>html.replace(/<[^>]+>/g,' ').replace(/[\s\u00A0]+/g,' ');
 test('the entry page introduces PULSE in the approved words and keeps the invite door and the demo',()=>{
   const html=welcome({}),text=words(html);
   for(const line of [
-    // 11-07 제목 · 공개 이력 소개 줄(결정 표 「… PULSE 제목 …」, synk.im/pulse와 같은 말 — 11-10 앱에도).
+    // 11-07 제목(결정 표 「… PULSE 제목 …」, synk.im/pulse와 같은 말)은 끝 쪽에 그대로다. 11-24 시안 A로 1쪽이 문 판(「내 광고 방」)이 되어
+    // 1쪽에만 있던 공개 이력 소개 줄은 내렸다 — 같은 이력은 「만드는 사람」 쪽의 이력 줄에 있다.
     '카메라 앞에서 10년, 배우가 AI 모델을 연출합니다',
-    '넷플릭스 · tvN에 출연하고 웹드라마 주연(페이스북 1,000만 회)을 맡은 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출해요.',
+    '내 광고 방','의뢰서에 적은 메일만 넣으면 열려요. 가입도 비밀번호도 없어요.',
     '영상에 들어갈 모든 컷을 장면 이미지로 먼저 보여 드려요. AI 모델 21명 캐스팅, 제품·로고는 실제 파일로 합성해요.',
     // 장면 이미지 단서 — 장면 이미지를 말할 때는 함께 둔다.
     '장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.',
@@ -68,8 +69,8 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
   // 다국어 판 2: 「부터」는 번역 틀을 지난다(한국어 화면은 그대로 「29만원부터」).
   assert.ok(readFileSync(new URL('request-flow.mjs',appDir),'utf8').includes("${esc(t('{price}부터',{price:price(item.price)}))}"));
   // 초대 문과 체험은 그대로다.
-  // 판 4: 다시 열기 판은 메일 코드 칸(서버가 켤 때만 보임)과 링크 칸 둘이다.
-  assert.match(html,/<div class="sx-invite" data-entry-invite[\s\S]*<form class="sx-invite-form sx-invite-mail" data-form="mail-open" data-entry-mail data-step="email" novalidate hidden>[\s\S]*<form class="sx-invite-form" data-form="invite">[\s\S]*name="invite"[\s\S]*<\/form>/);
+  // 판 4 · 11-24 시안 A: 1쪽 문 판의 다시 열기 칸은 메일 코드 칸(처음부터 보이고, 서버가 꺼 두면 앱이 숨긴다)과 링크 칸 둘이다.
+  assert.match(html,/<div class="sx-invite" data-entry-invite>[\s\S]*<form class="sx-invite-form sx-invite-mail" data-form="mail-open" data-entry-mail data-step="email" data-checking novalidate>[\s\S]*<form class="sx-invite-form" id="door-invite" data-form="invite" hidden>[\s\S]*name="invite"[\s\S]*<\/form>/);
   assert.equal(html.split('href="?demo=film"').length,3,'머리의 예시 링크와 맡긴 뒤 줄');
   // 「이 기기에서 다시 확인」은 입장 칸 안에 둔다 — 첫 화면이 길어 맨 아래에 두면 누른 뒤 알림이 화면 밖에 난다.
   assert.match(html,/<div class="sx-invite"[^>]*>[\s\S]*?data-action="retry"[\s\S]*?<\/div>/);
@@ -103,7 +104,7 @@ test('someone with no project yet can start a request right here, try the exampl
   assert.equal(html.split('data-entry="start"').length,3,'the request button is at the top and on the last page');
   assert.match(html,/광고 의뢰하기/);
   assert.match(html,/href="\?demo=film"/);
-  assert.match(html,/<form class="sx-invite-form" data-form="invite"/);
+  assert.match(html,/<form class="sx-invite-form" id="door-invite" data-form="invite"/);
   assert.equal(html.includes(PULSE_INQUIRY_URL),false,'the request starts in the app, not on another site');
   assert.match(welcome({requestResume:true}),/쓰던 의뢰서 이어 쓰기/);
 });

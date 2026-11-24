@@ -24,8 +24,8 @@ const text=html=>html.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
 const YEAR=new Date().getFullYear(),D=(m,d)=>`${YEAR}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
 
 const FULL={state:'full',kinds:['video','photo'],noticeDate:''};
-const slots=html=>[...html.matchAll(/<div class="sx-paused" data-paused( data-paused-works)? data-in tabindex="-1" data-key="([^"]*)"( hidden)?>(.*?)<\/div>/gs)].map(m=>({works:!!m[1],key:m[2].replaceAll('&quot;','"'),hidden:!!m[3],inner:m[4]}));
-const starts=html=>[...html.matchAll(/<button type="button" class="sx-go is-solid[^"]*" data-entry="start" data-in( hidden)?>/g)].map(m=>!!m[1]);
+const slots=html=>[...html.matchAll(/<div class="sx-paused" data-paused( data-paused-works| data-paused-door)? data-in tabindex="-1" data-key="([^"]*)"( hidden)?>(.*?)<\/div>/gs)].map(m=>({door:m[1]===' data-paused-door',works:m[1]===' data-paused-works',key:m[2].replaceAll('&quot;','"'),hidden:!!m[3],inner:m[4]}));
+const starts=html=>[...html.matchAll(/<button type="button" class="sx-go[^"]*" data-entry="start"( data-in)?( hidden)?>/g)].map(m=>!!m[2]);
 
 test('첫 화면: 대기까지 차면 「광고 의뢰하기」 두 자리에 「지금은 예약이 찼어요」가 서고 단추는 숨는다 — 담당자 글 없이, 날짜를 알면 그 무렵',()=>{
   const html=entryView({paused:FULL}),[one,end]=slots(html);
@@ -35,7 +35,8 @@ test('첫 화면: 대기까지 차면 「광고 의뢰하기」 두 자리에 �
     assert.match(slot.inner,/<p class="sx-paused-head">지금은 예약이 찼어요<\/p><p class="sx-small">자리가 나면 이 화면에서 바로 시작하실 수 있어요\.<\/p>/);
     assert.doesNotMatch(slot.inner,/sx-paused-note/);
   }
-  assert.match(one.inner,/data-entry="works"/,'1쪽 안내에는 완성 광고 보기');
+  // 11-24 시안 A: 1쪽(문 판) 다음 쪽이 곧 완성 광고라 안내에 작품 줄을 두지 않는다.
+  assert.equal(one.door,true);assert.doesNotMatch(one.inner,/data-entry="works"/);
   assert.deepEqual(JSON.parse(one.key),['full','','ko',false,'']);
   const dated=slots(entryView({paused:{...FULL,noticeDate:D(11,20)}}))[0];
   assert.match(dated.inner,/<p class="sx-small">11월 20일쯤 자리가 나요\. 그때 이 화면에서 바로 시작하실 수 있어요\.<\/p>/,'요일 없이 「○월 ○일쯤」');

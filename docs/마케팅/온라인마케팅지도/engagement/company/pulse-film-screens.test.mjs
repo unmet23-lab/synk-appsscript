@@ -32,11 +32,13 @@ test('the first screen reads only the new stylesheet; the old sheets stay served
 });
 test('the server serves every new file and the service worker caches the shell but not the films',()=>{
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8'),sw=read('sw.js');
-  for(const name of ['film-home.mjs','film-review.mjs'])assert.ok(server.includes(`'${name}'`),name);
+  for(const name of ['film-home.mjs','film-review.mjs','hall.mjs'])assert.ok(server.includes(`'${name}'`),name);
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
-  for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
+  for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','hall.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v77-people-requests-20261123';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v78-door-hall-20261124';/);
+  // 1쪽 복도의 모델 그림 · 걷는 영상은 캐스팅북 주소(synk.im)라 기기에 담지 않는다(2026-11-24).
+  assert.doesNotMatch(sw,/-loop\.mp4|wall\.webp/,'the corridor media are not stored on the device');
 });
 test('the step-five still is the sharp re-render and its layer keeps the logo readable on wide monitors',()=>{
   // 11-10: 1080×864 영상 장면은 유호님 화면(1440 · 1.5배)에서 2배로 늘어나 흐렸다 → 같은 구도를 2520×2016으로 다시 구웠다.
@@ -264,12 +266,17 @@ test('the request form reads choose-then-next: back and next come after the scre
   const css=read('film.css');
   assert.match(css,/\.sx-q-foot\{grid-column:1;grid-row:2;/);assert.match(css,/\.sx-q-screen\{grid-column:2;grid-row:1\/3;/);assert.match(css,/  \.sx-q-foot\{order:3;position:sticky;bottom:0;/);
 });
-test('the invite door closes from inside, both openers follow it, and the first screen keeps to the rules it set itself',()=>{
+test('the reopen forms live on the first page in one set, the link field unfolds from its own button, and the first screen keeps to the rules it set itself',()=>{
+  // 2026-11-24 시안 A 「캐스팅 복도」: 숨은 다시 열기 판(닫기 단추 · 여는 단추 둘)이 1쪽 왼쪽 문 판의 양식 한 벌이 됐다.
   const html=entryView({});
-  assert.match(html,/<div class="sx-invite"[^>]*>[\s\S]*<button type="button" class="sx-small sx-invite-close" data-entry="close">닫기<\/button><\/div>/);
+  const door=html.slice(html.indexOf('<section class="sx-p is-door"'),html.indexOf('</section>',html.indexOf('<section class="sx-p is-door"')));
+  assert.ok(door.includes('<div class="sx-invite" data-entry-invite>'),'the forms sit in the door, always shown');
+  assert.equal((html.match(/data-entry-invite/g)||[]).length,1,'one set of forms only');
+  assert.match(door,/<button type="button" class="sx-door-link sx-small" data-door-link aria-expanded="false" aria-controls="door-invite">담당자에게 받은 링크로 열기<\/button><form class="sx-invite-form" id="door-invite" data-form="invite" hidden>/);
+  assert.doesNotMatch(html,/data-entry="close"|sx-invite-close/,'nothing to close');
   const home=read('film-home.mjs');
-  assert.ok(home.includes(`if(what==='close'){setInvite(false);return;}`));
-  assert.ok(home.includes(`$$('[data-entry="open"]').forEach(button=>button.setAttribute('aria-expanded',open?'true':'false'))`),'여는 단추 둘이 같은 상태');
+  assert.ok(home.includes(`if(what==='open'){goDoor();return;}`),'the top button goes to the door');
+  assert.ok(home.includes(`if(event.key!=='Escape'||$('[data-entry-mail]')?.hidden)return;showLink(false);linkButton.focus();`),'Esc folds the link field back while the mail form is there');
   assert.ok(home.includes('let closed=false;\n  function close(){if(closed)return;closed=true;')||home.includes('let closed=false;\r\n  function close(){if(closed)return;closed=true;'),'상영 창은 한 번만 닫힌다');
   assert.ok(home.includes(`if(!host){listScreening?.close();return;}`),'완성 광고 목록이 사라지면 그 목록에서 연 상영도 닫는다');
   assert.ok(read('app.mjs').includes(`held:!!(filmDemo||startRequest)`),'예시 · 의뢰서가 곧바로 열리는 주소에서는 쇼릴을 받지 않는다');
@@ -277,8 +284,7 @@ test('the invite door closes from inside, both openers follow it, and the first 
   assert.doesNotMatch(css,/min-aspect-ratio:1\/1\)/,'넓은 화면 질의는 좁은 화면 질의((max-aspect-ratio:1/1))의 정확한 여집합');
   assert.doesNotMatch(css,/box-shadow:0 -22px/,'가리는 것은 그라데이션으로 — 그림자 없음');
   assert.doesNotMatch(read('film.css'),/font-size:14px/,'글자 크기는 넷(제목 · 준제목 · 본문 15 · 작은 글 13)');
-  // Fable 최종(pulse-film-20261105-next) F1~F5.
-  assert.ok(home.includes('back.focus({preventScroll:box.bottom<=0||box.top>=innerHeight})'),'F1 휴대폰에서 닫아도 첫 화면을 되감지 않는다');
+  // Fable 최종(pulse-film-20261105-next) F2~F5(F1 「닫아도 되감지 않음」은 닫는 판이 없어져 11-24에 거뒀다).
   const legacy=read('film-legacy.css'),film=read('film.css'),flow=read('request-flow.mjs');
   assert.match(legacy,/@media \(min-width:821px\) and \(min-aspect-ratio:10001\/10000\)\{html\.has-demo-nav \.sx-room-hero\{min-height:calc\(100dvh - var\(--demo-bar\)\)\}/,'F2 예시 방 높이는 넓은 화면만');
   assert.doesNotMatch(legacy,/^html\.has-demo-nav \.sx-room-hero\{/m);
@@ -378,8 +384,9 @@ test('on a portrait phone the first page keeps its copy off the faces in the ree
   // 폭 360 미만(320 · 폴드 커버): 36px 첫 줄 288px이 콘텐츠 폭 280px을 넘어 네 줄로 접혔다(Fable 11-10 P2) — 첫 화면 큰 제목만 32px.
   assert.ok(narrow.includes('@media (max-width:359.98px) and (max-aspect-ratio:1/1){.sx-home .sx-display{font-size:32px}}'),'the narrowest phones keep the title at three lines');
   const html=entryView({});
-  assert.match(html,/<h1 class="sx-display">(<span class="sx-ln"><span>[^<]+<\/span><\/span>){3}<\/h1>/,'the title is three lines, as on synk.im');
-  assert.ok(html.includes('<p class="sx-body sx-hero-lead" data-in>넷플릭스 · tvN에 출연하고 웹드라마 주연(페이스북 1,000만 회)을 맡은 대표가'),'wider screens keep the lead');
+  // 2026-11-24 시안 A: 1쪽 제목은 문 판의 「내 광고 방」(문서의 h1 하나), 승인 원고의 세 줄 제목은 끝 쪽에 그대로다.
+  assert.deepEqual(html.match(/<h1[^>]*>[^<]*<\/h1>/g),['<h1 class="sx-display sx-door-title" data-door-title>내 광고 방</h1>']);
+  assert.match(html,/<div class="sx-end"><p class="sx-display">(<span class="sx-ln"><span>[^<]+<\/span><\/span>){3}<\/p>/,'the approved three-line title stays on the end page');
 });
 // 11-10 큰 모니터 인물 장면 배율 시험은 저장소 시험 tests/pulse-film-scale.test.mjs에 있다 — 저장소 전용 도구 tools/화면배율.mjs를
 // 쓰므로, 이 파일(회사 이미지 판의 격리 QA에 실림)에 두면 판 사본에서 ERR_MODULE_NOT_FOUND로 실패한다.

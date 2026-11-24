@@ -154,7 +154,9 @@ test('the entrance explains a failed or ended link in place, and only the custom
   const panel=remembered=>liveView({mode:'customer',live:{open:true,status:'connected',notifications:[],unreadCount:0,rememberKnown:true,remembered}});
   assert.match(panel(false),/class="button quiet small-button panel-logout is-customer" data-action="logout"/);
   const css=readFileSync(new URL('app.css',appDir),'utf8');assert.match(css,/\.panel-logout\.is-customer\{display:inline-flex\}/,'customers close the connection from the inbox at every width');
-  assert.match(failed,/^<div class="sx-home has-entry-error">/,'the error keeps the invite form open on the entrance');assert.doesNotMatch(failed,/data-entry-invite hidden/);assert.match(welcome({}),/data-entry-invite hidden/);
+  assert.match(failed,/^<div class="sx-home has-entry-error">/,'the error keeps the invite form open on the entrance');
+  // 11-24 시안 A: 다시 여는 칸은 1쪽 문 판에 늘 보이고, 오류가 있으면 링크 칸이 펼쳐진 채 그려진다.
+  assert.doesNotMatch(welcome({}),/data-entry-invite hidden/);assert.match(failed,/id="door-invite" data-form="invite" >/);assert.match(welcome({}),/id="door-invite" data-form="invite" hidden>/);
   assert.match(panel(false),/data-action="remember-device"/);assert.match(panel(true),/이 기기는 기억돼 있어요/);assert.doesNotMatch(panel(true),/data-action="remember-device"/);
 });
 

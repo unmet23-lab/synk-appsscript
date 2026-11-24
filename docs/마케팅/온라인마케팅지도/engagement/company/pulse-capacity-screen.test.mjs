@@ -16,13 +16,14 @@ const read=name=>readFileSync(new URL(name,appDir),'utf8');
 const PAUSED={state:'paused',until:'',note:'11월 셋째 주까지 제작 일정이 찼어요.',noteEn:'We are fully booked until late November.'};
 const HEAD='지금은 잠시 접수를 쉬어요';
 // 꼬리표 하나(여는 꼬리표부터 닫는 꼬리표까지)를 떼어 본다 — 안내 칸과 단추.
-const slots=html=>[...html.matchAll(/<div class="sx-paused" data-paused( data-paused-works)? data-in tabindex="-1" data-key="[^"]*"( hidden)?>(.*?)<\/div>/gs)].map(m=>({works:!!m[1],hidden:!!m[2],inner:m[3]}));
-const starts=html=>[...html.matchAll(/<button type="button" class="sx-go is-solid[^"]*" data-entry="start" data-in( hidden)?>/g)].map(m=>!!m[1]);
+// 11-24 시안 A: 1쪽 자리는 문 판 아래(data-paused-door — 알림 메일 칸 · 작품 줄 없이 머리 · 다시 여는 날 · 안내), 끝 쪽 자리는 그대로다.
+const slots=html=>[...html.matchAll(/<div class="sx-paused" data-paused( data-paused-works)?( data-paused-door)? data-in tabindex="-1" data-key="[^"]*"( hidden)?>(.*?)<\/div>/gs)].map(m=>({door:!!m[2],works:!!m[1],hidden:!!m[3],inner:m[4]}));
+const starts=html=>[...html.matchAll(/<button type="button" class="sx-go[^"]*" data-entry="start"( data-in)?( hidden)?>/g)].map(m=>!!m[2]);
 const text=html=>html.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
 
 test('열려 있으면 첫 화면에 아무것도 더하지 않는다 — 안내 칸은 비어 숨고 단추는 그대로다',()=>{
   for(const html of [entryView({}),entryView({paused:null}),welcome({entryError:null,requestResume:false,intake:{state:'open'}}),welcome({})]){
-    assert.deepEqual(slots(html),[{works:true,hidden:true,inner:''},{works:false,hidden:true,inner:''}]);
+    assert.deepEqual(slots(html),[{door:true,works:false,hidden:true,inner:''},{door:false,works:false,hidden:true,inner:''}]);
     assert.deepEqual(starts(html),[false,false]);
     assert.equal(html.includes(HEAD),false);
     assert.match(html,/<p class="sx-small" data-start-note data-in>/,'끝 쪽의 한 줄 안내도 그대로');
@@ -41,10 +42,11 @@ test('쉬는 중이면 「광고 의뢰하기」 두 자리에 안내가 서고 
     assert.match(text(slot.inner),/11월 셋째 주까지 제작 일정이 찼어요\./);
     assert.equal(slot.inner.includes(PAUSED.noteEn),false,'한국어 화면에 영어 안내를 겹쳐 내지 않는다');
   }
-  assert.match(found[0].inner,/data-entry="works"/,'1쪽 안내에는 완성 광고로 가는 줄이 있다');
-  assert.doesNotMatch(found[1].inner,/data-entry="works"/);
+  // 11-24: 1쪽(문 판)의 다음 쪽이 곧 완성 광고라 안내에 작품 줄을 두지 않는다. 알림 메일 칸은 끝 쪽 한 곳이다.
+  for(const slot of found)assert.doesNotMatch(slot.inner,/data-entry="works"/);
+  assert.doesNotMatch(found[0].inner,/data-form="waitlist"/);
   assert.match(html,/<p class="sx-small" data-start-note data-in hidden>/,'시작을 권하는 한 줄은 쉬는 동안 숨는다');
-  assert.match(html,/data-watch-now/,'완성 광고 보기(쇼릴 · 작품 쪽)는 그대로다');assert.equal(html.split('data-work="').length-1,4);
+  assert.equal(html.split('data-work="').length-1,4,'완성 광고 쪽은 그대로다');
   // 다시 여는 날이 없으면 그 자리에서 다시 시작할 수 있다는 말을, 담당자 안내가 없으면 그 줄을 두지 않는다.
   const bare=slots(entryView({paused:{state:'paused',until:'',note:'',noteEn:''}}))[1].inner;
   assert.match(bare,/다시 열리면 이 화면에서 바로 시작하실 수 있어요\./);assert.doesNotMatch(bare,/sx-paused-note/);
@@ -74,7 +76,6 @@ test('영어 화면: 고정 문장은 영어로, 담당자 글은 영어로 적�
       assert.match(slot.inner,/We are fully booked until late November\./);
       assert.doesNotMatch(slot.inner,/[가-힣]/,'영어 화면의 안내에 한글이 없다');
     }
-    assert.match(found[0].inner,/See finished ads/);
     const koOnly=slots(entryView({paused:{...PAUSED,noteEn:''}}))[0].inner;
     assert.doesNotMatch(koOnly,/[가-힣]/,'영어 안내를 안 적었으면 한국어 글을 대신 내지 않는다');assert.doesNotMatch(koOnly,/sx-paused-note/);
     assert.match(koOnly,/Once we resume, you can start right here\./);
@@ -83,13 +84,13 @@ test('영어 화면: 고정 문장은 영어로, 담당자 글은 영어로 적�
 
 test('이미 그려진 첫 화면: 접수 상태가 뒤늦게 와도 단추 · 안내가 바뀌고, 같은 안내는 다시 그리지 않는다',()=>{
   const node=(attrs=[])=>{let html='',writes=0,focused=0;return {hidden:false,textContent:'',hasAttribute:name=>attrs.includes(name),contains:()=>false,focus(){focused++;},get focused(){return focused;},get innerHTML(){return html;},set innerHTML(value){html=value;writes++;},get writes(){return writes;}};};
-  const nodes={starts:[node(),node()],notes:[node()],slots:[node(['data-paused-works']),node()],say:node()},state={resume:false,paused:null,key:null};
+  const nodes={starts:[node(),node()],notes:[node()],slots:[node(['data-paused-door']),node()],say:node()},state={resume:false,paused:null,key:null};
   nodes.slots.forEach(slot=>{slot.hidden=true;});
   applyEntryIntake(nodes,state);
   assert.deepEqual(nodes.starts.map(n=>n.hidden),[false,false]);assert.deepEqual(nodes.slots.map(n=>n.hidden),[true,true]);
   state.paused=PAUSED;applyEntryIntake(nodes,state);
   assert.deepEqual(nodes.starts.map(n=>n.hidden),[true,true]);assert.equal(nodes.notes[0].hidden,true);assert.deepEqual(nodes.slots.map(n=>n.hidden),[false,false]);
-  assert.match(nodes.slots[0].innerHTML,/data-entry="works"/);assert.doesNotMatch(nodes.slots[1].innerHTML,/data-entry="works"/);assert.match(nodes.slots[1].innerHTML,/지금은 잠시 접수를 쉬어요/);
+  assert.doesNotMatch(nodes.slots[0].innerHTML,/data-entry="works"|data-form="waitlist"/,'문 판 안내는 머리 · 날 · 안내만');assert.match(nodes.slots[0].innerHTML,/지금은 잠시 접수를 쉬어요/);assert.match(nodes.slots[1].innerHTML,/지금은 잠시 접수를 쉬어요/);
   assert.equal(nodes.say.textContent,'지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.','화면 읽기에는 늘 있는 칸 하나가 한 번 알린다');
   const writes=nodes.slots.map(n=>n.writes);
   applyEntryIntake(nodes,state);applyEntryIntake(nodes,state);
@@ -121,7 +122,7 @@ test('이미 그려진 첫 화면: 접수 상태가 뒤늦게 와도 단추 · �
 test('처음부터 쉬는 채로 그려진 화면은 그린 안내의 열쇠를 적어 두고, 앱은 거기서 시작한다',()=>{
   const home=read('film-home.mjs');
   assert.match(home,/const intake=\{resume:false,paused:null,key:\$\('\[data-paused\]'\)\?\.dataset\.key\?\?null\};/);
-  const keyOf=html=>html.match(/data-paused data-paused-works data-in tabindex="-1" data-key="([^"]*)"/)[1];
+  const keyOf=html=>html.match(/data-paused data-paused-door data-in tabindex="-1" data-key="([^"]*)"/)[1];
   assert.equal(keyOf(entryView({})),'');assert.equal(keyOf(entryView({paused:PAUSED,resume:true})),'');
   const key=keyOf(entryView({paused:PAUSED})).replaceAll('&quot;','"');
   assert.deepEqual(JSON.parse(key),['',PAUSED.note,PAUSED.noteEn,'ko']);
@@ -222,10 +223,11 @@ test('좁은 화면 1쪽의 쉬는 안내는 굵은 단추와 같은 높이 안 
   assert.ok(css.includes('.sx-go.is-solid{background:var(--sx-ink);color:#0a0a0a;padding:17px 22px;'));
 });
 
-test('넓은 화면 1쪽의 안내 판은 「쇼릴 위 빈 곳」이 아니다 — 눌러도 상영하지 않고 커서 글을 띄우지 않는다',()=>{
+test('1쪽은 쇼릴 위가 아니다 — 빈 곳을 눌러 상영하거나 커서 글을 띄우는 일이 없다(11-24 시안 A 문 판)',()=>{
   const home=read('film-home.mjs');
-  assert.ok(home.includes("!event.target.closest('button,a,input,form,.sx-hero-copy,.sx-paused'))watch(reelApi.current());"));
-  assert.ok(home.includes("!event.target.closest?.('button,a,input,form,.sx-hero-copy,.sx-paused,.sx-nums,.sx-top'));"));
+  assert.doesNotMatch(home,/watch\(reelApi\.current\(\)\)/,'빈 곳을 눌러 쇼릴 작품을 상영하지 않는다');
+  assert.doesNotMatch(home,/sx-cursor/,'「소리와 함께 보기」 커서가 없다');
+  assert.match(entryView({}),/<section class="sx-p is-door" data-i="0" data-layer="none">/,'1쪽은 쇼릴 층이 아니다');
 });
 
 test('쉬는 안내가 선 채 열려 있던 화면은 다시 열렸는지 스스로 다시 묻는다(화면으로 돌아올 때 · 첫 화면을 다시 붙일 때 · 보이는 동안 1분마다)',()=>{
