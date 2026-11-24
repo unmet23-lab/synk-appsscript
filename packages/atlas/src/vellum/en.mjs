@@ -13,7 +13,7 @@ const withFan = (sentence, fan) => ({ standard: { default: [sentence], fan: [fan
 // strings.mjs의 「1화 · 한 번 더」 · 「1화 · 처음 보는 말」)의 영어 One more time · Something new와 같다.
 // 현지어 검수: Opus 역번역 → Fable 교정(11-25, 팬 줄 — 단계 이름은 큰따옴표 “…”, 마침표는 따옴표 안) → 카본 문법 채점. fan 줄만 화면에 낸다.
 const lines = n => `${n} ${n === 1 ? 'line' : 'lines'}`;
-const sceneLines = s => `You spoke ${lines(s.n)} out loud.`;
+const sceneLines = s => `You said ${lines(s.n)} out loud.`;
 const SCENE_STEP = Object.freeze({
   take2: Object.freeze({
     done: Object.freeze({
@@ -22,7 +22,7 @@ const SCENE_STEP = Object.freeze({
     }),
     wait: Object.freeze({
       default: '‘One more time’ isn’t done yet.',
-      fan: 'I’ll wait for you to try “One more time.” When you do, a seat lights up.',
+      fan: 'I’ll be waiting for you to try “One more time.” When you do, a seat will light up.',
     }),
   }),
   transfer: Object.freeze({

@@ -705,12 +705,12 @@ test('장면 사실 — scene.lines · scene.step은 세 언어 · default와 fa
   }
   assert.equal(
     render({ code: 'scene.lines', slots: { n: 1 } }, { lang: 'en' }),
-    'You spoke 1 line out loud.',
+    'You said 1 line out loud.',
     '한 줄은 단수',
   );
   assert.equal(
     render({ code: 'scene.lines', slots: { n: 2 } }, { lang: 'en' }),
-    'You spoke 2 lines out loud.',
+    'You said 2 lines out loud.',
   );
 });
 

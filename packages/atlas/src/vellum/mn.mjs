@@ -12,9 +12,9 @@ const withFan = (sentence, fan) => ({ standard: { default: [sentence], fan: [fan
 
 // 장면 사실(서울행 「내 팬」 1차 — ko.mjs와 같은 뜻 · 같은 말투, 더한 주장 없음). 단계 이름은 서울행 화면 글 표(experiences/seoul-arrival/
 // strings.mjs의 「1화 · 한 번 더」 · 「1화 · 처음 보는 말」)의 몽골어 Дахин нэг удаа · Шинэ үг хэллэг과 같고, 대사 한 줄은 같은 표의
-// 「말한 줄」처럼 мөр로 센다(үг는 「낱말 N개」로 읽혀 Fable 교정 11-25에서 바꿨다 — 서울행 객석 화면 글도 같이). 수 뒤의 이름씨는 수와 상관없이 단수 그대로다.
+// 「말한 줄」은 이름씨로 세지 않고 횟수(«{n} удаа чангаар»)로 센다 — үг는 「낱말 N개」, мөр는 글줄(카본), өгүүлбэр는 한 차례가 두 문장이라 수가 틀린다(Fable 교정 2회차 11-25). 서울행 객석 화면 글도 같이.
 // 현지어 검수: Opus 역번역 → Fable 교정(11-25, 팬 줄 — 주어 Та를 밝히고 단계 이름은 «…») → 카본 문법 채점. fan 줄만 화면에 낸다.
-const sceneLines = s => `Та ${s.n} мөр чангаар хэллээ.`;
+const sceneLines = s => `Та ${s.n} удаа чангаар хэллээ.`;
 const SCENE_STEP = Object.freeze({
   take2: Object.freeze({
     done: Object.freeze({
