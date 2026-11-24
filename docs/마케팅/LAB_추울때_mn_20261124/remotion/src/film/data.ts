@@ -6,6 +6,7 @@
 // 그 나라 글(머리 글 · 온도 · 상황 글 · 말 읽는 법 · 뜻 · 게이지 이름표 · 끝 줄)은 판본 글 하나(./판본/<KEY>.json — ./판본.ts)가 원천이다.
 // 소리는 범수(친구) · 소진(몽글) · 효과음은 직접 합성(../../../소리/만들기.py) · 음악은 보유곡 05_Toddler-Kids 한 토막.
 export const FPS = 30;
+export const PULL_AT = 26.8; // 이불을 끌어 덮는 칸(머리 내밂과 이불 산 사이)
 export const TOTAL = 30.4;
 
 // 친구의 네 마디(표현 칸)
@@ -32,7 +33,7 @@ export type Cell = {
 export const KO_LINES = {
   invite: '편의점 가자~!', // 17.75초 몽글 — inviteRead · inviteMean
   mong: '몽골은 영하 30도야~', // 22.7초 몽글 — mongRead · mongMean
-  shock: '삼… 삼십 도?!', // 25.4초 친구 — shockRead · shockMean
+  shock: '삼… 삼십 도?!', // 24.8초 친구 — shockRead · shockMean
 };
 
 export const CELLS: Cell[] = [
@@ -61,20 +62,30 @@ export const CELLS: Cell[] = [
   // 끝 — 몽글 「몽골은 영하 30도야~」 → 친구가 이불 밖으로 머리를 내밀고 「삼… 삼십 도?!」(게이지 999%) → 이불 산(한 장면 — 끝 3초가 이 장면이다)
   { at: 22.5, img: 'mongle.jpg', vo: [{ id: 'm2', at: 22.7 }] },
   // 원본 M37의 반전(25.3초 100% 번쩍) · 끝 장치(28.6초 다음 날) 자리에 「삼… 삼십 도?!」와 이불 산을 둔다(나란히 뼈대 자리)
-  { at: 25.3, img: 'pop.jpg', vo: [{ id: 'f5', at: 25.42 }] },
+  { at: 24.7, img: 'pop.jpg', vo: [{ id: 'f5', at: 24.82 }] }, // 장면 심사 v2 「몽글만 떠 있는 2.5초」로 25.3 → 24.7(원본 반전 자리 ±0.7초 안)
+  // 11-24 첫 컷 검사 「다시」(친구가 3초 굳음 · 이불 산이 쌓는 칸 없이 나타남) — 친구가 겁에 질려 이불을 끌어 덮는 칸을 사이에 둔다
+  { at: PULL_AT, img: 'pull.jpg' },
   { at: 28.6, img: 'mountain.jpg' },
 ];
 
 export const MONG_AT = 22.7;
-export const POP_AT = 25.3;
-export const BURST_AT = 25.55; // 게이지가 넘쳐 999%
+export const POP_AT = 24.7;
+export const BURST_AT = 24.95; // 게이지가 넘쳐 999%
 export const PILE_AT = 28.6;
 export const END_AT = 28.85;
 
 // 몽글 · 친구 자리(1080×1920에 맞춘 좌표) — 움직임 조각이 여기서 난다. 그림을 다시 구우면 다시 잰다.
 export type Spot = { cx: number; cy: number; rx: number; ry: number };
-export const MONGLE: Record<string, Spot> = {};
-export const FRIEND: Record<string, Spot> = {};
+export const MONGLE: Record<string, Spot> = {
+  'mongle.jpg': { cx: 620, cy: 1080, rx: 340, ry: 300 },
+  'mountain.jpg': { cx: 640, cy: 660, rx: 140, ry: 115 },
+  'pull.jpg': { cx: 880, cy: 1150, rx: 165, ry: 140 },
+};
+export const FRIEND: Record<string, Spot> = {
+  'pop.jpg': { cx: 380, cy: 820, rx: 330, ry: 320 },
+  'pull.jpg': { cx: 450, cy: 1090, rx: 300, ry: 170 },
+  'mountain.jpg': { cx: 540, cy: 1240, rx: 540, ry: 500 },
+};
 
 // 배경음 — public/sfx/bgm.wav는 보유곡 05_Toddler-Kids의 21.0~52.0초(빈 마디 없음). 내내 낮게, 넘침에서 한 번 낮추고 끝에서 다시
 export const BGM_LOW = 0.16;
@@ -96,6 +107,8 @@ export const SFX: { file: string; at: number; vol: number }[] = [
   { file: 'rustle.wav', at: 19.45, vol: 0.3 },
   { file: 'rise.wav', at: 21.02, vol: 0.55 },
   { file: 'pop.wav', at: POP_AT, vol: 0.6 },
+  { file: 'rustle.wav', at: PULL_AT, vol: 0.55 }, // 이불을 확 끌어 덮음
+  { file: 'whoosh.wav', at: PULL_AT - 0.05, vol: 0.3 },
   { file: 'alarm.wav', at: BURST_AT, vol: 0.45 },
   { file: 'whoosh.wav', at: PILE_AT - 0.2, vol: 0.45 },
   { file: 'thud.wav', at: PILE_AT, vol: 0.7 },

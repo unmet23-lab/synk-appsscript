@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a20b77-e114-7b22-a82e-53ec11cc68e1"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one panel with the friend pulling the quilts over his head and Mongle floating calmly beside the bed.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The frightened friend buries himself under colorful quilts while Mongle floats calmly beside him."}}
+{"type":"turn.completed","usage":{"input_tokens":171658,"cached_input_tokens":146048,"cache_write_input_tokens":0,"output_tokens":1901,"reasoning_output_tokens":301}}
