@@ -120,8 +120,10 @@ function 중복합치기(나옴) {
       if (k.length < 5 || j.length < 5 || !(k.includes(j) || j.includes(k))) return false;
       return !x.마감 || !y.마감 || x.마감 === y.마감;
     });
-    if (같음) (같음.같은공고 ||= []).push(x.id);
-    else 남김.push(x);
+    if (같음) {
+      (같음.같은공고 ||= []).push(x.id);
+      if (x.찾은곳?.length) 같음.찾은곳 = [...new Set([...(같음.찾은곳 || []), ...x.찾은곳])];
+    } else 남김.push(x);
   }
   return 남김;
 }
@@ -213,7 +215,7 @@ function 열린영상(통합, 현황, 기준일, 지금, 자격판정 = null, �
       자격: 판정?.status || '확인 전',
       ...(판정?.quote && { 자격근거: 판정.quote }),
       ...(그록공고 && {
-        그록: !그록공고.geminiOnly, ...(그록공고.reviewed && { 카본확인: true }), AI허용: 허용, AI주소: 그록공고.ai.url, 마감주소: 그록공고.deadline.url,
+        그록: !그록공고.geminiOnly, ...(그록공고.reviewed && { 카본확인: true }), ...(그록공고.foundBy?.length && { 찾은곳: 그록공고.foundBy }), AI허용: 허용, AI주소: 그록공고.ai.url, 마감주소: 그록공고.deadline.url,
         제출물: 그록공고.deliverables.items, 제출물주소: 그록공고.deliverables.url,
       }),
     });
@@ -522,7 +524,8 @@ function 열린판() {
     r.append(m);
     const t = el('div', 'tags');
     t.append(el('span', o.값 === 'AI 영상' ? 'tag ai' : 'tag', o.값 === 'AI 영상' ? 'AI 영상' : 'AI 확인 필요'));
-    if (o.원문확인안함) t.append(el('span', 'tag warn', '그록 보고 · 원문 확인 전'));
+    if (o.원문확인안함) t.append(el('span', 'tag warn', 'AI 보고 · 원문 확인 전'));
+    if (o.찾은곳 && o.찾은곳.length) t.append(el('span', 'tag', '찾음 ' + o.찾은곳.map((x) => ({ opus: 'Opus', sol: 'Sol', gemini: 'Gemini', grok: '그록', mail: '메일' })[x] || x).join(' · ')));
     if (o.자격 && o.자격 !== '됨') t.append(el('span', 'tag warn', '자격 확인 필요'));
     if (o.추천 && o.추천.추천) t.prepend(el('span', 'tag ai', '추천 ' + o.추천.점수));
     if (o.급함) t.prepend(el('span', 'tag warn', '마감 임박 · 맡은 세션 없음'));

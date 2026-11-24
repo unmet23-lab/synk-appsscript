@@ -117,6 +117,11 @@ async function 공고확인(raw, getPage) {
   };
 }
 
+/** 보고서를 낸 AI 이름 — 소문자 영문 2~10자만 받는다(opus · sol · gemini · grok · mail). */
+function 찾은곳(value) {
+  return typeof value === 'string' && /^[a-z]{2,10}$/.test(value) ? value : '';
+}
+
 function sha(value) {
   return createHash('sha256').update(value).digest('hex');
 }
@@ -138,9 +143,11 @@ async function 가져오기(folder, input, fetchPage = 공개쪽읽기) {
   }
   fs.mkdirSync(dir, { recursive: true });
   const tmp = path.join(dir, randomUUID() + '.tmp');
+  // 어느 AI가 찾았나(11-25 공모전 찾기 넷 — tools/수집/공모찾기.js). 옛 보고서에는 없고, 없으면 그록으로 친다.
+  const finder = 찾은곳(source.finder);
   try {
     fs.writeFileSync(tmp, JSON.stringify({
-      schema, reportId: source.reportId, reports: source.reports, importedAt: new Date().toISOString(), items,
+      schema, reportId: source.reportId, ...(finder && { finder }), reports: source.reports, importedAt: new Date().toISOString(), items,
     }, null, 2) + '\n', { encoding: 'utf8', flag: 'wx' });
     fs.renameSync(tmp, file);
   } finally {
@@ -241,7 +248,7 @@ function 갱신(old, entry) {
 }
 
 function 회차시각(report) {
-  const routine = /^(\d{4}-\d{2}-\d{2})_(\d{2})(\d{2})$/.exec(report.reportId);
+  const routine = /^(\d{4}-\d{2}-\d{2})_(\d{2})(\d{2})(?:-[a-z]{2,10})?$/.exec(report.reportId);
   if (routine) return Date.parse(routine[1] + 'T' + routine[2] + ':' + routine[3] + '+09:00');
   const bootstrap = /^bootstrap-\d{8}-(\d{4})(\d{2})(\d{2})$/.exec(report.reportId);
   const archive = /^grok-(\d{4}-\d{2}-\d{2})-archive-/.exec(report.reportId);
@@ -263,8 +270,10 @@ function 합치기(통합, reports) {
   const items = (통합.items || []).map((item) => ({ ...item }));
   const existingCount = items.length;
   const keys = items.map(기존공고);
+  const 더함 = (a, b) => [...new Set([...(a || []), ...(b || [])])];
   for (const report of reports) {
-    for (const row of report.items) {
+    for (const raw of report.items) {
+      const row = { ...raw, foundBy: [raw.geminiOnly ? 'gemini' : 찾은곳(report.finder) || 'grok'] };
       const matching = [];
       for (let i = 0; i < items.length; i++) {
         const current = items[i].grok_contest;
@@ -276,11 +285,12 @@ function 합치기(통합, reports) {
         let evidence = items[index].grok_contest;
         for (const other of duplicates.reverse()) {
           if (other < existingCount) continue;
-          evidence = evidence ? 갱신(items[other].grok_contest, evidence) : items[other].grok_contest;
+          const 그쪽 = items[other].grok_contest;
+          evidence = evidence ? { ...갱신(그쪽, evidence), foundBy: 더함(그쪽?.foundBy, evidence.foundBy) } : 그쪽;
           items.splice(other, 1);
           keys.splice(other, 1);
         }
-        items[index].grok_contest = 갱신(evidence, row);
+        items[index].grok_contest = { ...갱신(evidence, row), foundBy: 더함(evidence?.foundBy, row.foundBy) };
       } else if (!row.onlyExisting) {
         const id = (row.geminiOnly ? 'gemini-contest:' : 'grok-contest:') + sha([row.organizer, row.title, row.edition, row.noticeId, row.officialUrl].join('\n')).slice(0, 20);
         keys.push(row);
@@ -293,4 +303,4 @@ function 합치기(통합, reports) {
   return { ...통합, items };
 }
 
-module.exports = { 가져오기, 보고서읽기, 합치기, 기존공고, 동일공고, 비교글, 주소, 사이트, 모음사이트, 본문, 날짜, 한국마감, 회차시각 };
+module.exports = { 가져오기, 보고서읽기, 합치기, 기존공고, 동일공고, 비교글, 주소, 사이트, 모음사이트, 본문, 날짜, 한국마감, 회차시각, 찾은곳 };
