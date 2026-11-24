@@ -247,3 +247,19 @@ test('the new room keeps to the screen rules: no style attributes, every new wor
   for(const key of ['더 보기','의뢰서','지난 결정','모델 고르기','사진을 누르면 그 모델이 가운데로 와요','말로 알려 주기','{name}{ro} 바꿀게요','보내 주신 의뢰서','번호 복사'])assert.ok(Object.hasOwn(en,key),key);
   for(const name of ['film-views.mjs','views.mjs','hall.mjs','room-view.mjs','film.css','demo-film.mjs'])assert.doesNotMatch(read(name),/유호님/,name);
 });
+
+test('Carbon review fixes: the chosen-direction chips say open when the card starts open, the example keeps its note, and the two stage badges stack on a narrow stage',()=>{
+  // A2: prepare 차례에는 고른 방향 카드가 처음부터 펼쳐져 있다 — 그 카드를 여닫는 칩도 펼침으로 알린다. 다른 차례는 접힘.
+  const chosen=project({r:{status:'confirmed',directionProposal:direction()},assets:[asset('d1'),asset('d2')]});
+  const open=room(chosen,{state:'prepare'}),shut=room(chosen,{state:'make'});
+  assert.match(open,/<div class="sx-room-chosen" id="room-chosen">/);
+  assert.ok((open.match(/aria-controls="room-chosen" aria-expanded="true"/g)||[]).length>=1);
+  assert.doesNotMatch(open,/aria-controls="room-chosen" aria-expanded="false"/);
+  assert.match(shut,/<div class="sx-room-chosen" id="room-chosen" hidden>/);
+  assert.doesNotMatch(shut,/aria-controls="room-chosen" aria-expanded="true"/);
+  // A3: 예시의 영상 화면에서 준비 칸 단추는 준비 칸이 없는 서랍을 열지 않고 예전 안내를 말한다.
+  assert.ok(read('demo-film.mjs').includes("onContact:()=>say(NOT_REAL),onPaper:()=>say('예시 자료예요.')});"));
+  assert.doesNotMatch(read('demo-film.mjs'),/onPaper:\(\)=>openExampleBrief/);
+  // A1: 좁은 무대에서는 「사진을 누르면…」을 「AI로 만든 가상 인물이에요」 아래로 내린다.
+  assert.match(read('film.css'),/@media \(max-width:820px\),\(max-aspect-ratio:1\/1\)\{\.sx-room-hint\{left:auto;right:16px;top:52px;max-width:calc\(100% - 32px\)\}\}/);
+});

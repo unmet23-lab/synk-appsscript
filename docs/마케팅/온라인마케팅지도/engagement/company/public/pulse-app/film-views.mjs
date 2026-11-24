@@ -413,7 +413,8 @@ function roomFolds(p){
   if(p.state==='write')return '';
   const d=p.direction,dir=d?.chosen||null,card=!!dir;
   const chip=({ico,label,value,attrs='',cls=''})=>{const body=`<span class="sx-fold-ico">${ico}</span><span class="sx-fold-t"><small>${esc(label)}</small><span>${esc(value)}</span></span>`;return attrs?`<button type="button" class="sx-fold${cls}" ${attrs}>${body}</button>`:`<span class="sx-fold is-status${cls}">${body}</span>`;};
-  const toChosen=card?'data-room-do="fold" aria-controls="room-chosen" aria-expanded="false"':'';
+  // 고른 방향 카드는 prepare 차례에만 처음부터 펼쳐 둔다(roomView) — 칩의 펼침 표시도 그 상태를 따른다(카본 A2).
+  const toChosen=card?`data-room-do="fold" aria-controls="room-chosen" aria-expanded="${p.state==='prepare'?'true':'false'}"`:'';
   const round=(key,label,writing)=>{const r=p.rounds?.[key];if(!r)return '';const at=r.at==='writing'?writing:FOLD_AT[r.at]?.()||'';return chip({ico:FOLD_ICON[key==='script'?'script':'images'],label,value:at,attrs:r.open&&!['next','writing'].includes(r.at)?'data-room-go="draft"':'',cls:r.at==='new'?' is-new':r.at==='done'?' is-done':''});};
   const out=[chip({ico:FOLD_ICON.brief,label:t('의뢰서'),value:t('보기',null,'fold'),attrs:'data-room-do="brief" aria-controls="room-brief-box" aria-expanded="false"'})];
   if(p.chosen)out.push(chip({ico:`<img src="${esc(p.chosen.image)}" alt="" loading="lazy" decoding="async">`,label:t('모델'),value:nameOf(p.chosen.name),attrs:toChosen,cls:' is-done'}));

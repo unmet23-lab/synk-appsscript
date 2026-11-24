@@ -143,7 +143,7 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
       const versions=state.project.versions,current=state.versionId||versions.filter(v=>v.kind==='final').at(-1)?.id||versions.filter(v=>v.kind==='preview').at(-1)?.id,prior=current==='demo-v2'?{id:'demo-v1',src:BASE+'preview-v1.mp4'}:null;
       handle=mountReview(root,{previous:prior});
     }
-    mountRoom(root,{animate:false,onGo:to=>{if(to==='request')openExampleBrief(root);else if(to==='check'||to==='room')go('room');else if(to==='draft')go('draft');else if(to==='review')go(state.project.stage==='delivered'?'history':'review');},onContact:()=>say(NOT_REAL),onPaper:()=>openExampleBrief(root)});
+    mountRoom(root,{animate:false,onGo:to=>{if(to==='request')openExampleBrief(root);else if(to==='check'||to==='room')go('room');else if(to==='draft')go('draft');else if(to==='review')go(state.project.stage==='delivered'?'history':'review');},onContact:()=>say(NOT_REAL),onPaper:()=>say('예시 자료예요.')});
   }
   function bindProject(root){
     root.addEventListener('click',event=>{
