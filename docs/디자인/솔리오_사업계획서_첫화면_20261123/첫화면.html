@@ -139,10 +139,7 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .left-note{margin:14px 0 0;font:400 13px/1.5 var(--sans);color:var(--soft);animation:swap .5s var(--ease)}
 .left-note b{font-weight:600;color:var(--paper)}
 
-/* 쓰기는 가운데 한 줄: 물음 · 일곱 막대 · 종이. 지금 쓰는 장 안에서 바로 쓴다 */
-.doc{max-width:860px;margin:0 auto}
-.write{display:block;margin-top:clamp(18px,3vh,30px)}
-.write.two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,1fr);gap:clamp(26px,4.4cqw,72px);align-items:start}
+.write{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,1fr);gap:clamp(26px,4.4cqw,72px);margin-top:clamp(18px,3vh,30px);align-items:start}
 .ask{position:sticky;top:20px}
 .ex{margin:0;padding:14px 16px;border-left:2px solid var(--hair-strong);font:400 14px/1.65 var(--sans);color:var(--soft)}
 .ex-h{appearance:none;background:none;border:0;padding:0;text-align:left;cursor:default}
@@ -152,7 +149,14 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .ex.fold .ex-h{margin:0;cursor:pointer}
 .ex.fold .ex-h::after{content:' · 쓰는 동안 접어 둡니다. 다시 보기 ›';letter-spacing:0}
 .ex.fold .ex-h:hover{color:var(--paper)}
-.ans{display:block;width:100%;min-height:190px;margin-top:16px;padding:16px 18px;resize:none;background:var(--pit);border:1px solid var(--hair-strong);border-radius:14px;font:400 16px/1.7 var(--sans);color:var(--paper);transition:border-color .25s ease}
+.ans-wrap{position:relative;margin-top:16px}
+.ans-big{appearance:none;position:absolute;right:10px;bottom:10px;height:30px;padding:0 12px;border:1px solid var(--hair-strong);border-radius:999px;background:rgba(0,0,0,.6);font:500 12px/1 var(--sans);color:var(--soft);cursor:pointer;transition:color .2s ease,border-color .2s ease}
+.ans-big:hover,.ans-big[aria-pressed="true"]{color:var(--paper);border-color:rgba(243,241,236,.6)}
+.write.big{grid-template-columns:minmax(0,1fr)}
+.write.big > div:first-child{display:none}
+.write.big .ask{position:static;width:100%;max-width:980px;margin:0 auto}
+.write.big .ans{min-height:max(300px,calc(100vh - 470px));padding:22px 24px 52px;font-size:18px;line-height:1.85}
+.ans{display:block;width:100%;min-height:190px;margin-top:0;padding:16px 18px 48px;resize:none;background:var(--pit);border:1px solid var(--hair-strong);border-radius:14px;font:400 16px/1.7 var(--sans);color:var(--paper);transition:border-color .25s ease}
 .ans:focus{outline:none;border-color:rgba(243,241,236,.6)}
 .ans::placeholder{color:rgba(243,241,236,.3)}
 .ask-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
@@ -160,7 +164,7 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .ask-go{display:flex;align-items:center;flex-wrap:wrap;gap:14px 22px;margin-top:18px}
 
 /* 계획서 종이: 손님의 문서. 명조로 쓴다 */
-.sheet{--sp:clamp(22px,3.4cqw,48px);display:block;background:var(--sheet);color:var(--sheet-ink);border-radius:2px;padding:clamp(24px,3cqw,42px) clamp(22px,3.4cqw,48px) clamp(14px,2cqw,26px);box-shadow:0 30px 70px -24px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.04)}
+.sheet{display:block;background:var(--sheet);color:var(--sheet-ink);border-radius:2px;padding:clamp(24px,3cqw,42px) clamp(22px,3.4cqw,48px) clamp(14px,2cqw,26px);box-shadow:0 30px 70px -24px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.04)}
 .sheet-h{padding-bottom:14px}
 .sheet-h small{font:400 11.5px/1.3 var(--mono);color:var(--sheet-dim)}
 .sheet-h h3{margin:10px 0 4px;font:600 clamp(22px,2.1cqw,27px)/1.3 var(--serif);letter-spacing:-.01em}
@@ -174,34 +178,6 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .sec.done h4 .mono{color:var(--meadow)}
 .slot{margin-top:9px;padding:10px 12px;border:1px dashed #CFCAC0;border-radius:3px;font:400 13px/1.4 var(--sans);color:var(--sheet-dim)}
 .sec.now .slot{border-color:#8F8B83;color:var(--sheet-ink)}
-.sheet.editing .sec.now{margin:0 calc(var(--sp) * -1);padding:18px var(--sp) 22px;background:#FAF8F3;border-top-color:#DCD7CD}
-.sheet.editing .sec.now + .sec{border-top-color:#DCD7CD}
-.sec h4 .sec-what{margin-left:auto;font:400 12.5px/1.4 var(--sans);color:var(--sheet-faint)}
-.sec-go{appearance:none;margin:0 0 0 auto;padding:0 0 2px;background:none;border:0;border-bottom:1px solid rgba(21,21,20,.25);font:400 12.5px/1.3 var(--sans);color:var(--sheet-dim);cursor:pointer}
-.sec-go:hover{color:var(--sheet-ink);border-bottom-color:var(--sheet-ink)}
-.pen{margin-top:14px}
-.sheet .guide{grid-template-columns:62px minmax(0,1fr);gap:12px;margin:0 0 14px}
-.sheet .g-bub{background:#fff;border-color:#E2DDD3}
-.sheet .g-bub::before{background:#fff;border-color:#E2DDD3}
-.sheet .g-bub p{color:#3B3A37;font-size:14.5px}
-.sheet .g-bub p b{color:var(--sheet-ink)}
-.sheet .g-tip{border-top-color:#E7E3DA;color:var(--sheet-dim) !important}
-.sheet .ex{margin:0 0 10px;padding:6px 0 6px 14px;border-left:2px solid #DCD7CD;font:400 14.5px/1.75 var(--serif);color:#5B5955}
-.sheet .ex .ex-h{color:var(--sheet-dim)}
-.sheet .ex.fold{padding-top:2px;padding-bottom:2px}
-.sheet .ex.fold .ex-h:hover{color:var(--sheet-ink)}
-.sheet .ans{min-height:120px;margin:0;padding:12px 14px;background:#fff;border:1px solid #D3CEC4;border-radius:6px;font:400 16px/1.8 var(--serif);color:var(--sheet-ink);overflow:hidden}
-.sheet .ans:focus{border-color:#6B6A66;box-shadow:0 0 0 3px rgba(21,21,20,.06)}
-.sheet .ans::placeholder{color:#ABA79F}
-.pen-go{display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;margin-top:14px}
-.sheet .go.main{background:var(--sheet-ink);border-color:var(--sheet-ink);color:#fff}
-.sheet .go.main:hover{background:#000}
-.sheet .go.main:disabled{opacity:.28}
-.sheet .go.main:disabled:hover{background:var(--sheet-ink)}
-.sheet .quiet{color:#4A4844;border-bottom-color:rgba(21,21,20,.3)}
-.sheet .quiet:hover{color:var(--sheet-ink);border-bottom-color:var(--sheet-ink)}
-.pen-meta{margin-left:auto;font:400 12px/1 var(--sans);color:var(--sheet-faint)}
-.pen-meta .count{color:var(--sheet-dim)}
 .sec.landing p{opacity:0}
 .sec p.live{color:#4a4844}
 .sec p.live:empty{display:none}
@@ -787,49 +763,38 @@ function barsHTML() {
   }).join('')}</nav>`;
 }
 function sheetHTML(texts, opt = {}) {
-  const now = opt.now ?? -1, ed = opt.edit;
-  return `<article class="sheet${ed ? ' editing' : ''}" aria-label="사업계획서 초안"><header class="sheet-h"><small>사업계획서 초안 · 2026.11.23</small><h3>${esc(opt.title || '사업계획서 초안')}</h3><p>${esc(opt.sub || '이 PC에만 저장됩니다.')}</p></header>`
+  const now = opt.now ?? -1;
+  return `<article class="sheet" aria-label="사업계획서 초안"><header class="sheet-h"><small>사업계획서 초안 · 2026.11.23</small><h3>${esc(opt.title || '사업계획서 초안')}</h3><p>${esc(opt.sub || '이 PC에만 저장됩니다.')}</p></header>`
     + CH.map((ch, i) => {
       const t = texts[i], sk = !t && skipped.has(i) && !opt.example, isNow = i === now;
       const cls = isNow ? 'now' : t ? 'done' : sk ? 'skip' : 'future';
       let body = '';
-      if (isNow && ed) body = penHTML(i, ed);
-      else if (t) body = `<p${opt.fresh === i ? ' class="fresh"' : ''}>${esc(t)}</p>`;
+      if (t) body = `<p${opt.fresh === i ? ' class="fresh"' : ''}>${esc(t)}</p>`;
       else if (isNow) body = `<p class="live" id="live">${esc(opt.draft || '')}</p><div class="slot" id="liveslot"${opt.draft ? ' hidden' : ''}>오른쪽에 쓰면 여기에 바로 적힙니다.</div>`;
       else if (sk) body = `<div class="slot">비워 두었습니다. 다음에 편하실 때 채워 주세요.</div>`;
-      /* 쓰는 동안: 쓴 장은 「고치기」, 아직 안 쓴 장은 무엇을 쓰는 장인지 옅게 */
-      const side = ed && !isNow ? (t || sk ? `<button class="sec-go" type="button" data-go="${i}">${t ? '고치기' : '쓰기'}</button>` : `<small class="sec-what">${esc(ch.what)}</small>`) : '';
-      return `<section class="sec ${cls}${opt.landing === i ? ' landing' : ''}" data-sec="${i}"><h4><span class="mono">${ch.no}</span>${esc(ch.name)}${side}</h4>${body}</section>`;
+      return `<section class="sec ${cls}${opt.landing === i ? ' landing' : ''}" data-sec="${i}"><h4><span class="mono">${ch.no}</span>${esc(ch.name)}</h4>${body}</section>`;
     }).join('') + `</article>`;
 }
-/* 지금 쓰는 장: 솔리오의 한마디, 예시, 바로 쓰는 칸, 단추가 그 장 안에 모인다(눈이 종이를 떠나지 않게) */
-function penHTML(i, e) {
-  const ch = CH[i], last = i === CH.length - 1;
-  return `<div class="pen">${guideHTML(WHY[i], e.tip)}`
-    + `<p class="ex${e.v.trim() ? ' fold' : ''}" id="ex"><button class="ex-h" type="button" data-ex>예시</button><span>${esc(ch.ex)}</span></p>`
-    + `<label class="sr" for="ans">${esc(ch.name)} 답</label><textarea id="ans" class="ans" rows="4" placeholder="여기에 바로 적어 주세요. 짧아도 괜찮아요.">${esc(e.v)}</textarea>`
-    + `<div class="pen-go"><button class="go main sm" type="button" data-next ${e.v.trim() ? '' : 'disabled'}>${last ? '초안 마치기' : '다음 장'}</button>`
-    + `<button class="quiet" type="button" data-skip1>이 장 건너뛰기</button>${i ? '<button class="quiet" type="button" data-prev>앞 장으로</button>' : ''}`
-    + `<span class="pen-meta"><span class="count" id="count">${e.v.length}자</span> · Ctrl + Enter</span></div></div>`;
-}
-function growAns(ta) { if (!ta) return; ta.style.height = 'auto'; ta.style.height = Math.max(ta.scrollHeight + 2, 120) + 'px'; }
 function renderQ(anim, opt = {}) {
   mode = 'q'; setStep('처음 시작 · 1 / 3 · 사업계획서');
-  const ch = CH[qi], v = ans[qi];
+  const ch = CH[qi], last = qi === CH.length - 1, v = ans[qi];
   const r = react; react = null;
   const [m0, tip0] = r ? [r.mood, r.tip] : coach(v);
-  room.innerHTML = `<div class="doc"><div class="top"><div>${say(ch.q, `${ch.no} / 07 · ${ch.name}`, anim)}</div><div class="acts"><button class="quiet" type="button" data-skipall>다음에 하기</button></div></div>`
+  room.innerHTML = `<div class="top"><div>${say(ch.q, `${ch.no} / 07 · ${ch.name}`, anim)}</div><div class="acts"><button class="quiet" type="button" data-skipall>다음에 하기</button></div></div>`
     + barsHTML()
-    + `<section class="write">${sheetHTML(ans, {now:qi, edit:{v, tip:tip0}, fresh:opt.fresh})}</section></div>`;
+    + `<section class="write${bigWrite ? ' big' : ''}"><div>${sheetHTML(ans, {now:qi, landing:opt.landing, draft:opt.landing != null ? '' : v})}</div>`
+    + `<div class="ask">${guideHTML(WHY[qi], tip0)}<p class="ex${v.trim() ? ' fold' : ''}" id="ex"><button class="ex-h" type="button" data-ex>예시</button><span>${esc(ch.ex)}</span></p>`
+    + `<label class="sr" for="ans">${esc(ch.name)} 답</label><div class="ans-wrap"><textarea id="ans" class="ans" placeholder="여기에 적어 주세요. 짧아도 괜찮아요.">${esc(v)}</textarea>`
+    + `<button class="ans-big" type="button" data-big aria-pressed="${bigWrite}">${bigWrite ? '작게 보기' : '크게 쓰기'}</button></div>`
+    + `<div class="ask-row"><span class="lab">Ctrl + Enter로도 넘어갑니다</span><span class="count" id="count">${v.length}자</span></div>`
+    + `<div class="ask-go"><button class="go main" type="button" data-next ${v.trim() ? '' : 'disabled'}>${last ? '초안 마치기' : '다음'}</button>`
+    + `<button class="quiet" type="button" data-skip1>이 장 건너뛰기</button>${qi ? '<button class="quiet" type="button" data-prev>앞 장으로</button>' : ''}</div></div></section>`;
   mountGuide(m0);
   if (r?.hop) guide.hop();
   if (r) setTimeout(() => { if (mode === 'q' && guide?.svg.isConnected) { const [m, t] = coach(document.getElementById('ans').value); guide.mood(m); setTip(t); } }, 2600);
   const ta = document.getElementById('ans');
-  growAns(ta);
   if (!opt.noFocus) ta.focus({preventScroll:true});
   ta.setSelectionRange(ta.value.length, ta.value.length);
-  /* 다음 장으로 넘어가면 그 장이 화면 안에 오도록 */
-  if (opt.fresh != null || opt.scroll) room.querySelector('.sec.now')?.scrollIntoView({block:'nearest', behavior:anim && !still ? 'smooth' : 'auto'});
 }
 /* 쓰는 동안 솔리오가 짧게 돕는다. 숫자가 중요한 장(1 · 3 · 5 · 7)에서는 숫자를 권한다 */
 function coach(v) {
@@ -841,20 +806,40 @@ function coach(v) {
   if (NEED_NUM.includes(qi)) return ['happy', '숫자가 들어갔어요. 심사위원이 좋아할 거예요.'];
   return ['happy', '좋아요. 이대로 넘어가도 돼요.'];
 }
-let react = null;
-/* 「다음 장」: 쓴 글이 그 자리에서 계획서 글로 앉고, 아래 장이 펼쳐진다 */
+let react = null, bigWrite = false;
+function setBig(on) {
+  bigWrite = on;
+  const w = room.querySelector('.write'), b = room.querySelector('[data-big]'), ta = document.getElementById('ans');
+  if (!w || !b) return;
+  w.classList.toggle('big', on); b.textContent = on ? '작게 보기' : '크게 쓰기'; b.setAttribute('aria-pressed', String(on));
+  ta?.focus({preventScroll:true});
+  if (on) ta?.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'});   // 물음 제목은 보이는 채로, 칸이 보일 만큼만
+}
+/* 「다음」: 쓴 글이 종이의 그 장 자리로 옮겨 앉는다(내 답이 계획서의 어느 장이 되었는지) */
 function commit(dir) {
   const ta = document.getElementById('ans'), v = ta.value.trim(), i = qi;
   if (!v) return;
   ans[i] = v; skipped.delete(i); leftNote = '';
   play('land');
   react = {mood:'happy', hop:true, tip:`<b>${CH[i].no} ${esc(CH[i].name)}</b>${이(CH[i].name)} 계획서에 들어갔어요.`};
+  const from = ta.getBoundingClientRect();
   const next = i + 1;
-  if (next >= CH.length) { finishWrite(); return; }
-  if (still || dir === 'jump') { advance(next); return; }
-  qi = next; renderQ(true, {fresh:i});
+  if (still || dir === 'jump' || bigWrite) { advance(next); return; }
+  if (next >= CH.length) { renderQ(false, {landing:i, noFocus:true}); }
+  else { qi = next; renderQ(true, {landing:i, noFocus:true}); }
+  const sec = room.querySelector(`[data-sec="${i}"]`), p = sec.querySelector('p'), to = p.getBoundingClientRect();
+  const fly = document.createElement('div'); fly.className = 'fly'; fly.textContent = v;
+  Object.assign(fly.style, {left:from.left + 'px', top:from.top + 'px', width:from.width + 'px', height:from.height + 'px', padding:'16px 18px', fontFamily:'var(--sans)', fontSize:'16px', lineHeight:'1.7', color:'var(--paper)', background:'var(--pit)', border:'1px solid var(--hair-strong)', borderRadius:'14px'});
+  document.body.appendChild(fly); void fly.offsetWidth;
+  requestAnimationFrame(() => {
+    Object.assign(fly.style, {transform:`translate(${to.left - from.left}px, ${to.top - from.top}px)`, width:to.width + 'px', height:to.height + 'px', padding:'0', fontFamily:'var(--serif)', fontSize:'15px', lineHeight:'1.8', color:'var(--sheet-ink)', background:'#fff', border:'1px solid transparent', borderRadius:'2px', opacity:'0'});
+  });
+  setTimeout(() => {
+    fly.remove(); sec.classList.remove('landing'); p.classList.add('fresh');
+    if (next >= CH.length) finishWrite(); else document.getElementById('ans')?.focus({preventScroll:true});
+  }, 620);
 }
-function advance(n) { if (n >= CH.length) finishWrite(); else { qi = n; renderQ(true, {scroll:true}); } }
+function advance(n) { if (n >= CH.length) finishWrite(); else { qi = n; renderQ(true); } }
 function skipOne() {
   const i = qi; ans[i] = ''; skipped.add(i);
   react = {mood:'sad', tip:`<b>${esc(CH[i].name)}</b>${은(CH[i].name)} 비워 둘게요. 다음에 편하실 때 채워 주세요.`};
@@ -870,7 +855,7 @@ function renderDone(anim) {
   const sub = m ? `${n}장을 썼고 ${m}장은 비워 두었습니다.\n팀을 고르면 첫 업무로 심사위원 셋이 이 계획서를 평가합니다.` : '일곱 장을 모두 썼습니다.\n팀을 고르면 첫 업무로 심사위원 셋이 이 계획서를 평가합니다.';
   room.innerHTML = `<div class="top"><div>${say('사업계획서 초안이 생겼습니다.', sub, anim)}</div></div>`
     + barsHTML()
-    + `<section class="write two"><div>${sheetHTML(ans)}</div><div class="ask">`
+    + `<section class="write"><div>${sheetHTML(ans)}</div><div class="ask">`
     + guideHTML(m ? '수고하셨어요! 비운 장은 <b>나중에 채우실 수 있게 남겨 둘게요</b>.' : '수고하셨어요! <b>일곱 장을 다 썼어요</b>.', '이제 함께 일할 팀을 고르면, 사무실의 첫 업무로 심사위원 셋이 이 계획서를 봐 줄 거예요.')
     + `<ul class="chlist">${CH.map((ch, i) => `<li class="${ans[i] ? 'ok' : ''}"><span class="mono">${ch.no}</span><span><b>${esc(ch.name)}</b><small>${ans[i] ? '썼습니다' : '비워 두었습니다'}</small></span>${ans[i] ? '' : `<button class="quiet" type="button" data-go="${i}">채우기</button>`}</li>`).join('')}</ul>`
     + `<div class="ask-go"><button class="go main" type="button" data-toteam>AI 팀 고르기</button><button class="quiet" type="button" data-go="0">첫 장부터 고치기</button></div></div></section>`;
@@ -1181,7 +1166,6 @@ room.addEventListener('input', e => {
   if (e.target.id === 'ans') {
     const v = e.target.value;
     document.getElementById('count').textContent = v.length + '자';
-    growAns(e.target);
     const lv = document.getElementById('live'), ls = document.getElementById('liveslot');
     if (lv) { lv.textContent = v; ls.hidden = !!v.trim(); }
     const ex = document.getElementById('ex');
@@ -1199,9 +1183,10 @@ room.addEventListener('click', e => {
   else if ('skipall' in d) openSkipDialog(false);
   else if ('next' in d) commit();
   else if ('skip1' in d) skipOne();
+  else if ('big' in d) setBig(!bigWrite);
   else if ('ex' in d) { const ex = document.getElementById('ex'); ex.dataset.open = '1'; ex.classList.remove('fold'); }
-  else if ('prev' in d) { const v = document.getElementById('ans').value.trim(); if (v) ans[qi] = v; qi--; leftNote = ''; renderQ(true, {scroll:true}); }
-  else if (d.go != null) { const v = document.getElementById('ans')?.value.trim(); if (mode === 'q' && v) ans[qi] = v; qi = +d.go; leftNote = ''; renderQ(true, {scroll:true}); }
+  else if ('prev' in d) { const v = document.getElementById('ans').value.trim(); if (v) ans[qi] = v; qi--; leftNote = ''; renderQ(true); }
+  else if (d.go != null) { const v = document.getElementById('ans')?.value.trim(); if (mode === 'q' && v) ans[qi] = v; qi = +d.go; leftNote = ''; renderQ(true); }
   else if ('toteam' in d) { renderTeam(true); scrollTo({top:0}); }
   else if (d.team) { team = d.team; renderTeam(false); }
   else if ('backWrite' in d) { ans.some(Boolean) ? renderDone(true) : renderIntro(true); }
@@ -1229,7 +1214,7 @@ layer.addEventListener('click', e => {
   else if ('later' in b.dataset) { closeDialog(); planSkipped = !ans.some(Boolean); leftNote = ''; renderTeam(true); scrollTo({top:0}); }
   else if ('closedlg' in b.dataset) closeDialog();
 });
-addEventListener('keydown', e => { if (e.key === 'Escape' && dialog) closeDialog(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && dialog) closeDialog(); else if (e.key === 'Escape' && mode === 'q' && bigWrite) setBig(false); });
 
 function reset() {
   stopTimers(); closeDialog();
