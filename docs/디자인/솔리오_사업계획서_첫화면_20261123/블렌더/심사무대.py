@@ -1,6 +1,8 @@
 # 솔리오 첫 업무 「사업계획서 심사」 무대를 층마다 굽는다(2026-11-24).
 # 조명 아래 단상의 발표자 구, 오른쪽 이젤의 빈 종이, 앞쪽 호두나무 탁자와 나무 의자에 앉은 뒷모습의 심사위원 구 셋.
-# 2판(11-24 유호님 「3D 무대 다듬기」): 유호님이 「너무 훌륭해 깔끔하다」고 하신 팀 고르기 6판 장면의 결을 따른다.
+# 3판(11-25 유호님 「무대도 바꿔」): 팀 고르기 4판 그림의 결을 따른다. 새틴 검정 구, 결이 거의 없는 따뜻한 호두나무,
+#   장난감처럼 단순하고 둥근 소품(판 다리 탁자, 짙은 둥근 받침, 두 다리 판), 막과 빛줄기 안개 없는 어둠. 2판(11-24)의 정교한 가구는 걷었다.
+# 2판(11-24 유호님 「3D 무대 다듬기」): 유호님이 「너무 훌륭해 깔끔하다」고 하신 팀 고르기 6판 장면의 결을 따랐다.
 #   무광에 가까운 검은 구, 결이 보이는 호두나무와 둥근 모서리, 네 다리 나무 의자, 따뜻한 어둠.
 #   심사위원마다 탁자 위 소품이 다르다(Opus 수첩과 만년필, Sol 노트북, Sonnet 서류 묶음). 고리 · 구멍 · 빽빽한 점 무늬는 쓰지 않는다.
 # 화면은 이 층들을 겹치고, 눈 · 말풍선 · 종이 글 · 점수 글만 그 위에서 움직인다. 층마다 같은 카메라라 그대로 겹치면 맞는다.
@@ -52,24 +54,14 @@ def bump(m, scale, strength, detail=3.0):
     return m
 
 
-def wood(name, along='X', base='#4a2f1d', dark='#2a180e', light='#5c3b24', fine=7.0):
-    """호두나무: 곧은 결과 가끔 휘는 무늬, 옅은 칠. along은 결이 달리는 축."""
-    m = mat(name, base, rough=0.4, coat=0.3, coat_rough=0.28, spec=0.45); nt = m.node_tree; b = bsdf(m)
-    co = nt.nodes.new('ShaderNodeTexCoord'); mp = nt.nodes.new('ShaderNodeMapping')
-    # 결 방향으로 길게 늘인다
-    mp.inputs['Scale'].default_value = {'X': (0.35, fine, fine), 'Y': (fine, 0.35, fine), 'Z': (fine, fine, 0.35)}[along]
-    nz = nt.nodes.new('ShaderNodeTexNoise'); nz.inputs['Scale'].default_value = 2.4; nz.inputs['Detail'].default_value = 6.0
-    nz.inputs['Distortion'].default_value = 0.6
-    wv = nt.nodes.new('ShaderNodeTexWave'); wv.wave_type = 'BANDS'; wv.bands_direction = {'X': 'Y', 'Y': 'X', 'Z': 'X'}[along]
-    wv.inputs['Scale'].default_value = 1.6; wv.inputs['Distortion'].default_value = 3.5; wv.inputs['Detail'].default_value = 4.0
-    mix = nt.nodes.new('ShaderNodeMath'); mix.operation = 'MULTIPLY_ADD'; mix.inputs[1].default_value = 0.55
+def wood(name, along='X', base='#6a4128', dark='#5a3620', light='#77492c', fine=None):
+    """4판 결의 호두나무: 결이 거의 보이지 않는 따뜻한 갈색에 아주 옅은 얼룩만(along · fine은 옛 부름과 맞추려고 둔다)."""
+    m = mat(name, base, rough=0.55, coat=0.15, coat_rough=0.4, spec=0.35); nt = m.node_tree; b = bsdf(m)
+    nz = nt.nodes.new('ShaderNodeTexNoise'); nz.inputs['Scale'].default_value = 1.4; nz.inputs['Detail'].default_value = 1.0
     rp = nt.nodes.new('ShaderNodeValToRGB')
-    rp.color_ramp.elements[0].position = 0.2; rp.color_ramp.elements[0].color = lin(dark)
-    rp.color_ramp.elements[1].position = 0.95; rp.color_ramp.elements[1].color = lin(light)
-    nt.links.new(co.outputs['Object'], mp.inputs['Vector']); nt.links.new(mp.outputs['Vector'], nz.inputs['Vector'])
-    nt.links.new(mp.outputs['Vector'], wv.inputs['Vector'])
-    nt.links.new(wv.outputs['Fac'], mix.inputs[0]); nt.links.new(nz.outputs['Fac'], mix.inputs[2])
-    nt.links.new(mix.outputs['Value'], rp.inputs['Fac']); nt.links.new(rp.outputs['Color'], b.inputs['Base Color'])
+    rp.color_ramp.elements[0].position = 0.3; rp.color_ramp.elements[0].color = lin(dark)
+    rp.color_ramp.elements[1].position = 0.7; rp.color_ramp.elements[1].color = lin(light)
+    nt.links.new(nz.outputs['Fac'], rp.inputs['Fac']); nt.links.new(rp.outputs['Color'], b.inputs['Base Color'])
     return m
 
 
@@ -90,21 +82,19 @@ def orient(o, cam_obj):
 
 
 ORB = orb_mat()
-FLOOR = mat('바닥', '#0b0908', rough=0.7, spec=0.3)
-CURTAIN = mat('막', '#130f0d', rough=0.85, spec=0.2, sheen=0.7)
-PLAT_SIDE = mat('단상옆', '#181512', rough=0.55, coat=0.1)
+FLOOR = mat('바닥', '#070605', rough=0.8, spec=0.25)
+PLAT_SIDE = mat('받침', '#1b1917', rough=0.62, coat=0.12, coat_rough=0.35, spec=0.35)   # 4판의 짙은 둥근 받침
 PAPER = mat('종이', '#f1eee7', rough=0.85, spec=0.2)
 BOARD = mat('판', '#24201c', rough=0.6)
 WOOD_X = wood('호두나무_가로', 'X')
 WOOD_Y = wood('호두나무_깊이', 'Y')
 WOOD_Z = wood('호두나무_세로', 'Z')
-WOOD_DAIS = wood('호두나무_단상', 'Y', dark='#311d11', light='#45291a', fine=2.6)
 CARD = mat('점수판', '#f3f1ec', rough=0.7, spec=0.25, emit=0.35)
-SEAT = mat('방석', '#141210', rough=0.75, spec=0.25)
+SEAT = mat('의자', '#1b1917', rough=0.62, coat=0.12, coat_rough=0.35, spec=0.35)
 LEATHER = mat('가죽', '#3a2519', rough=0.55, coat=0.1)
 INK = mat('먹', '#141312', rough=0.3, coat=0.5)
 BRASS = mat('놋', '#b08d57', rough=0.32, metal=1.0)
-ALU = mat('알루미늄', '#a9a9ab', rough=0.32, metal=1.0)
+ALU = mat('노트북', '#3a3a3c', rough=0.45, coat=0.2, spec=0.4)   # 금속 대신 짙은 회색(4판의 노트북)
 GLOW = mat('화면빛', '#9fa6b0', rough=0.4, emit=0.4, emit_color='#dfe5ee')
 KEYS = mat('자판', '#2b2b2d', rough=0.6)
 
@@ -144,72 +134,41 @@ def cyl(name, loc, r, depth, m, rot=(0, 0, 0), verts=96, bevel=0.0, seg=5, r2=No
 
 
 def stool(name, x, y, seat_top, r=0.24, legs_m=None):
-    """6판 장면의 네 다리 나무 의자: 둥근 방석 같은 자리, 바깥으로 살짝 벌린 둥근 다리."""
-    parts = [cyl(name + '자리', (x, y, seat_top - 0.035), r, 0.07, SEAT, bevel=0.03, seg=6)]
-    h = seat_top - 0.07
+    """4판 결의 둥근 의자: 짙은 둥근 자리와 곧은 짧은 다리 넷(나무 결 · 벌린 다리 없음)."""
+    parts = [cyl(name + '자리', (x, y, seat_top - 0.04), r, 0.08, SEAT, bevel=0.035, seg=6)]
+    h = seat_top - 0.08
     for k in range(4):
         a = math.radians(45 + 90 * k); lx, ly = math.cos(a) * r * 0.62, math.sin(a) * r * 0.62
-        tilt = math.radians(7)
-        parts.append(cyl(name + '다리%d' % k, (x + lx * 1.12, y + ly * 1.12, h / 2), 0.022, h, legs_m or WOOD_Z,
-                         rot=(-math.sin(a) * tilt, math.cos(a) * tilt, 0), verts=20, r2=0.028))
+        parts.append(cyl(name + '다리%d' % k, (x + lx, y + ly, h / 2), 0.028, h, SEAT, verts=24, bevel=0.01, seg=3))
     return parts
 
 
-# ── 바닥과 막 ──
+# ── 바닥(막 없이 어둠으로 녹는다) ──
 bpy.ops.mesh.primitive_plane_add(size=40, location=(0, 6, 0)); floor = add(bpy.context.active_object, FLOOR); floor.name = '바닥'
 
-
-def curtain(name, y, x0, x1, z1):
-    """무대 뒤 어두운 막: 넓고 부드러운 주름만(가는 줄무늬가 되지 않게)."""
-    me = bpy.data.meshes.new(name); bm = bmesh.new()
-    nx, nz = 220, 12; rows = []
-    for j in range(nz + 1):
-        z = z1 * j / nz; row = []
-        for i in range(nx + 1):
-            x = x0 + (x1 - x0) * i / nx
-            dy = 0.09 * math.sin(x * 4.1) + 0.04 * math.sin(x * 9.3 + 1.3)
-            row.append(bm.verts.new((x, y + dy, z)))
-        rows.append(row)
-    for j in range(nz):
-        for i in range(nx):
-            bm.faces.new((rows[j][i], rows[j][i + 1], rows[j + 1][i + 1], rows[j + 1][i]))
-    bm.to_mesh(me); bm.free()
-    o = bpy.data.objects.new(name, me); col.objects.link(o); return add(o, CURTAIN, True)
-
-
-drape = curtain('막', 5.4, -6.5, 6.5, 5.0)
-
-# ── 발표자 단상: 짙은 옆면에 호두나무 윗면, 앞에 작은 계단 ──
+# ── 발표자 받침: 4판처럼 짙은 둥근 받침 하나(윗면 높이 0.5는 그대로) ──
 PX, PY = -0.86, 3.05
 PR = 0.42
-plat = [cyl('단상', (PX, PY, 0.22), 1.05, 0.44, PLAT_SIDE, bevel=0.02),
-        cyl('단상윗면', (PX, PY, 0.47), 1.07, 0.06, WOOD_DAIS, bevel=0.022, seg=6),
-        box('단상계단', (PX + 0.55, PY - 1.12, 0.12), (0.62, 0.3, 0.24), WOOD_X, bevel=0.018)]
+plat = [cyl('받침', (PX, PY, 0.25), 1.02, 0.5, PLAT_SIDE, bevel=0.05, seg=8)]
 presenter = sphere('발표자', (PX, PY, 0.5 + PR), PR)
 
-# ── 이젤: 호두나무 다리 셋과 받침, 어두운 판에 끼운 종이 ──
+# ── 이젤: 짙은 판 하나를 곧은 다리 둘이 받친다(종이 자리는 그대로) ──
 EX, EY = 1.0, 3.2
 easel = []
-for i, (dx, dy, tilt) in enumerate(((-0.3, -0.06, 0.16), (0.3, -0.06, -0.16), (0.0, 0.32, 0.0))):
-    easel.append(cyl('이젤다리%d' % i, (EX + dx, EY + dy, 0.78), 0.022, 1.6, WOOD_Z, rot=(0.2 if i == 2 else -0.08, tilt, 0), verts=24, r2=0.017))
-easel.append(box('받침', (EX, EY - 0.1, 0.86), (0.8, 0.08, 0.04), WOOD_X, bevel=0.012))
+for i, dx in enumerate((-0.27, 0.27)):
+    easel.append(box('이젤다리%d' % i, (EX + dx, EY + 0.02, 0.44), (0.06, 0.06, 0.88), BOARD, bevel=0.02, seg=4))
 SROT = (math.radians(82), 0, 0)
 nrm = Vector((0, -math.sin(SROT[0]), math.cos(SROT[0])))          # 종이 앞면 방향
 sc = Vector((EX, EY - 0.08, 1.31))
-easel.append(box('판', tuple(sc - nrm * 0.016), (0.72, 0.94, 0.02), BOARD, bevel=0.008, rot=SROT))
-easel.append(box('집게', tuple(sc + nrm * 0.004 + Vector((0, math.cos(SROT[0]), math.sin(SROT[0]))) * 0.44), (0.16, 0.035, 0.02), INK, bevel=0.006, rot=SROT))
+easel.append(box('판', tuple(sc - nrm * 0.022), (0.76, 0.98, 0.035), BOARD, bevel=0.016, seg=4, rot=SROT))
 bpy.ops.mesh.primitive_plane_add(size=1, location=tuple(sc), rotation=SROT)
 sheet = bpy.context.active_object; sheet.name = '종이'; sheet.scale = (0.64, 0.86, 1); bpy.ops.object.transform_apply(scale=True); add(sheet, PAPER)
 
-# ── 심사위원 탁자: 두꺼운 상판, 둥근 모서리, 앞치마 판, 둥글고 가늘어지는 다리 넷 ──
-TY = 1.15; TW, TD, TT = 4.7, 0.86, 0.065; TZ = 0.83          # TZ는 상판 윗면
-table = [box('탁자', (0, TY, TZ - TT / 2), (TW, TD, TT), WOOD_X, bevel=0.03, seg=8)]
+# ── 심사위원 탁자: 4판처럼 둥글고 두툼한 상판과 양 끝의 판 다리 둘 ──
+TY = 1.15; TW, TD, TT = 4.7, 0.86, 0.08; TZ = 0.83          # TZ는 상판 윗면
+table = [box('탁자', (0, TY, TZ - TT / 2), (TW, TD, TT), WOOD_X, bevel=0.035, seg=8)]
 for i, sx in enumerate((-1, 1)):
-    table.append(box('탁자앞치마%d' % i, (0, TY + sx * (TD / 2 - 0.06), TZ - TT - 0.04), (TW - 0.3, 0.03, 0.08), WOOD_X, bevel=0.008))
-for i, sx in enumerate((-1, 1)):
-    table.append(box('탁자옆치마%d' % i, (sx * (TW / 2 - 0.15), TY, TZ - TT - 0.04), (0.03, TD - 0.12, 0.08), WOOD_Y, bevel=0.008))
-for i, (sx, sy) in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
-    table.append(cyl('탁자다리%d' % i, (sx * (TW / 2 - 0.16), TY + sy * (TD / 2 - 0.1), (TZ - TT) / 2), 0.032, TZ - TT, WOOD_Z, verts=24, r2=0.045))
+    table.append(box('탁자다리%d' % i, (sx * (TW / 2 - 0.3), TY, (TZ - TT) / 2), (0.1, TD - 0.16, TZ - TT), WOOD_X, bevel=0.025, seg=5))
 
 # ── 심사위원 셋과 의자 ──
 JR = 0.4; JX = (-1.36, 0.0, 1.36); JY = -0.12; JZ = 0.6
@@ -220,15 +179,10 @@ for i, x in enumerate(JX):
 
 # ── 심사위원마다 다른 탁자 위 소품 ──
 props = []
-# Opus(투자자의 눈): 펼친 가죽 수첩과 만년필
+# Opus(투자자의 눈): 덮은 수첩 하나와 종이 한 장
 ox, oy = JX[0] + 0.05, TY - 0.12
-props.append(box('수첩표지', (ox, oy, TZ + 0.004), (0.4, 0.27, 0.008), LEATHER, bevel=0.003, rot=(0, 0, math.radians(-6))))
-for s in (-1, 1):
-    props.append(box('수첩쪽%d' % s, (ox + s * 0.094 * math.cos(math.radians(-6)), oy + s * 0.094 * math.sin(math.radians(-6)), TZ + 0.012),
-                     (0.18, 0.25, 0.008), PAPER, bevel=0.002, rot=(0, s * math.radians(-4), math.radians(-6))))
-props.append(cyl('만년필', (ox + 0.12, oy - 0.02, TZ + 0.024), 0.009, 0.15, INK, rot=(math.radians(90), 0, math.radians(28)), verts=24))
-props.append(cyl('만년필띠', (ox + 0.12 - 0.028 * math.sin(math.radians(28)), oy - 0.02 + 0.028 * math.cos(math.radians(28)), TZ + 0.024),
-                 0.0095, 0.012, BRASS, rot=(math.radians(90), 0, math.radians(28)), verts=24))
+props.append(box('수첩', (ox + 0.1, oy + 0.02, TZ + 0.014), (0.2, 0.27, 0.028), LEATHER, bevel=0.009, seg=4, rot=(0, 0, math.radians(-8))))
+props.append(box('종이한장', (ox - 0.14, oy - 0.03, TZ + 0.002), (0.21, 0.28, 0.003), PAPER, rot=(0, 0, math.radians(5))))
 # Sol(실행 심사위원의 눈): 화면이 심사위원 쪽을 보는 노트북
 lx, ly = JX[1] + 0.5, TY - 0.06
 props.append(box('노트북몸', (lx, ly, TZ + 0.008), (0.36, 0.25, 0.016), ALU, bevel=0.005))
@@ -243,25 +197,12 @@ dx_, dy_ = JX[2] - 0.04, TY - 0.1
 for k in range(4):
     props.append(box('서류%d' % k, (dx_ + 0.004 * k, dy_ - 0.003 * k, TZ + 0.003 + 0.004 * k), (0.23, 0.31, 0.003), PAPER,
                      rot=(0, 0, math.radians(4 - 2.5 * k))))
-props.append(cyl('연필', (dx_ + 0.2, dy_ - 0.04, TZ + 0.007), 0.0065, 0.17, mat('연필', '#2d2a26', rough=0.5), rot=(math.radians(90), 0, math.radians(-12)), verts=12))
 
 # ── 점수판: 둥근 흰 판과 나무 손잡이. 심사위원 머리 위로 든다 ──
 paddles = []
 for i, x in enumerate(JX):
     face = cyl('점수판%d' % i, (x, JY + 0.15, JZ + JR + 0.5), 0.2, 0.025, CARD, rot=(math.radians(84), 0, 0), bevel=0.008)
     paddles.append((face,))
-
-# ── 빛줄기: 위에서 단상으로 내리는 원뿔 안에만 아주 옅은 안개 ──
-bpy.ops.mesh.primitive_cone_add(vertices=64, radius1=1.45, radius2=0.16, depth=4.6, location=(PX, PY - 0.05, 2.3))
-beam = bpy.context.active_object; beam.name = '빛줄기'
-vm = bpy.data.materials.new('안개'); vm.use_nodes = True; nt = vm.node_tree
-for n in list(nt.nodes):
-    if n.type == 'BSDF_PRINCIPLED': nt.nodes.remove(n)
-try: vol = nt.nodes.new('ShaderNodeVolumePrincipled')
-except RuntimeError: vol = nt.nodes.new('ShaderNodePrincipledVolume')
-vol.inputs['Density'].default_value = 0.01; vol.inputs['Color'].default_value = lin('#fff1dc')
-nt.links.new(vol.outputs['Volume'], nt.nodes['Material Output'].inputs['Volume']); beam.data.materials.append(vm)
-
 
 # ── 빛: 6판처럼 왼쪽 위에서 오는 따뜻한 주광, 단상 조명, 뒤 테두리 빛 ──
 def light(name, kind, loc, power, size=1.0, color='#fff3e2', target=None, spot=None, shadow=True, glossy=True):
@@ -276,26 +217,23 @@ def light(name, kind, loc, power, size=1.0, color='#fff3e2', target=None, spot=N
     return o
 
 
-light('조명', 'SPOT', (PX, PY - 0.05, 4.6), 760, size=0.3, target=(PX, PY, 0.2), spot=(math.radians(38), 0.5))
+light('조명', 'SPOT', (PX, PY - 0.05, 4.6), 620, size=1.2, target=(PX, PY, 0.2), spot=(math.radians(40), 0.9))   # 부드러운 빛 웅덩이
 light('이젤빛', 'SPOT', (EX - 0.4, EY - 1.4, 3.2), 110, size=0.3, target=(EX, EY, 1.2), spot=(math.radians(26), 0.6))
 light('주광', 'AREA', (-3.6, -1.2, 3.8), 75, size=3.2, color='#ffe2c2', target=(0, 1.2, 0.6))
 light('뒷빛', 'AREA', (0.6, 4.6, 2.8), 45, size=4.0, color='#ffe2c2', target=(0, 0.4, 0.8), shadow=False)
 light('앞보조', 'AREA', (-2.2, -2.6, 3.4), 18, size=5.0, color='#e9ecf3', target=(0, 2.5, 0.6), shadow=False, glossy=False)
 light('탁자빛', 'AREA', (0, 2.4, 2.8), 14, size=3.0, target=(0, TY, 0.8), shadow=False, glossy=False)
-light('막빛', 'SPOT', (PX + 0.3, 2.6, 4.4), 70, size=0.6, color='#ffdcb4', target=(PX + 0.3, 5.4, 1.4), spot=(math.radians(44), 0.95), shadow=False)
-# 빛줄기 안개는 단상 조명만 밝힌다. 막은 막빛만 받는다(뒷빛 원반이 막을 비스듬히 지나면 막 아래에만 산 모양 빛이 진다)
-lit = bpy.data.collections.new('안개뺀것'); lit_nc = bpy.data.collections.new('안개와막뺀것')
+# 구에는 구만 받는 빛을 준다(아래). 나머지 빛은 구를 뺀 물체만 밝힌다
+lit_nc = bpy.data.collections.new('구뺀것')
 for o in bpy.data.objects:
-    if o.type == 'MESH' and o is not beam:
-        lit.objects.link(o)
-        if o is not drape: lit_nc.objects.link(o)
+    if o.type == 'MESH': lit_nc.objects.link(o)
 for o in bpy.data.objects:
-    if o.type == 'LIGHT' and o.name != '조명':
-        try: o.light_linking.receiver_collection = lit if o.name == '막빛' else lit_nc
+    if o.type == 'LIGHT':
+        try: o.light_linking.receiver_collection = lit_nc
         except Exception as e: print('빛 연결 실패', o.name, e)
 orbs_c = bpy.data.collections.new('구들')
 for o in [presenter] + judges:
-    orbs_c.objects.link(o); lit_nc.objects.unlink(o); lit.objects.unlink(o)
+    orbs_c.objects.link(o); lit_nc.objects.unlink(o)
 # 정본 구는 빛줄기만 비친다: 물체는 반사에 나오지 않고 빛만 나온다(탁자 · 바닥이 비치면 크롬 공처럼 보인다)
 for o in bpy.data.objects:
     if o.type == 'MESH': o.visible_glossy = False
@@ -320,8 +258,10 @@ for o in [presenter] + judges: orient(o, cam)
 r = scene.render; r.engine = 'CYCLES'; r.resolution_x = W; r.resolution_y = H; r.resolution_percentage = 100
 r.image_settings.file_format = 'PNG'; r.image_settings.color_mode = 'RGBA'
 scene.display_settings.display_device = 'sRGB'; scene.view_settings.view_transform = 'Standard'; scene.view_settings.look = 'None'; scene.view_settings.exposure = 0.25
+try:
+    scene.view_settings.view_transform = 'AgX'; scene.view_settings.look = 'AgX - Base Contrast'; scene.view_settings.exposure = 0.5   # 4판처럼 부드러운 대비
+except Exception as e: print('보기 변환', e)
 c = scene.cycles; c.samples = SPP; c.use_adaptive_sampling = True; c.adaptive_threshold = 0.012; c.max_bounces = 6; c.use_denoising = True
-c.volume_step_rate = 2.0
 dev = 'CPU'
 try:
     prefs = bpy.context.preferences.addons['cycles'].preferences
@@ -341,12 +281,11 @@ except Exception: pass
 print('장치', dev, W, 'x', H, '샘플', SPP)
 
 CHARS = [presenter] + judges + [o for pair in paddles for o in pair]
-STAGE = [o for o in bpy.data.objects if o.type == 'MESH' and o not in CHARS and o is not beam]
+STAGE = [o for o in bpy.data.objects if o.type == 'MESH' and o not in CHARS]
 
 
 def render(name, show, transparent):
     for o in CHARS: o.hide_render = o not in show
-    beam.hide_render = transparent
     for o in STAGE:
         o.is_shadow_catcher = transparent
     r.film_transparent = transparent
@@ -385,7 +324,6 @@ if WHICH == 'all':
     # 안내용 구 하나: 앞에서 본 구, 바닥 그림자만
     for o in bpy.data.objects:
         if o.type == 'MESH': o.hide_render = True
-    beam.hide_render = True
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=6, radius=0.5, location=(30, 0, 0.5)); g = add(bpy.context.active_object, ORB, True)
     bpy.ops.mesh.primitive_plane_add(size=6, location=(30, 0, 0)); gf = add(bpy.context.active_object, FLOOR); gf.is_shadow_catcher = True
     for o in [o for o in bpy.data.objects if o.type == 'LIGHT']: o.hide_render = True
