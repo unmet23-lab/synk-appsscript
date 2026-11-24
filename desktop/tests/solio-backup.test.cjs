@@ -1314,14 +1314,15 @@ test('T30: a feed that redirects shows UNTRUSTED_REDIRECT, and a broken feed sho
   assert.equal(broken.code, 'FEED_INVALID');
 });
 
-test('T30: disk failures while preparing the download are STORAGE whatever their code; a request that cannot be written is REQUEST_FAILED', async () => {
+test('T30: disk failures while preparing the download are STORAGE whatever their code; a request that cannot be written on the install path is INSTALL_REQUEST_FAILED', async () => {
   const locked = { ...fs, promises: { ...fs.promises, mkdtemp: async () => { throw Object.assign(Error('EBUSY'), { code: 'EBUSY', syscall: 'mkdtemp' }); } } };
   assert.equal((await installCode({ fsImpl: locked })).code, 'STORAGE');
   // 앱 데이터의 SynkWorkBackup 자리가 폴더가 아니면 요청을 쓰지 못한다. 설치 파일 저장 실패(STORAGE)가 아니다
   const dir = temp();
   fs.writeFileSync(path.join(dir, 'SynkWorkBackup'), 'not a folder');
   const result = await installCode({ env: { APPDATA: dir } });
-  assert.deepEqual([result.code, result.log], ['REQUEST_FAILED', ['hold', 'release']]);
+  // 설치 길은 다시 누르면 설치 파일을 새로 받으므로, 엔진이 있는 길의 REQUEST_FAILED(「다시 하기」)와 가른다(카본 pc-0507-publish A1)
+  assert.deepEqual([result.code, result.log], ['INSTALL_REQUEST_FAILED', ['hold', 'release']]);
 });
 
 test('T30: an unexpected error while the installer runs is UNEXPECTED, not NETWORK', async () => {
@@ -1331,14 +1332,14 @@ test('T30: an unexpected error while the installer runs is UNEXPECTED, not NETWO
 
 test('T30: failureCode never folds an uncoded error into NETWORK', () => {
   const disk = Object.assign(Error('x'), { code: 'EBUSY', syscall: 'open' }), plain = Error('Digest method not supported');
-  for (const step of [null, 'feed', 'prepare', 'download', 'hold', 'verify', 'request', 'install']) {
+  for (const step of [null, 'feed', 'prepare', 'download', 'hold', 'verify', 'engine', 'request', 'install-request', 'install']) {
     assert.notEqual(B.failureCode(plain, step), 'NETWORK', String(step));
     assert.notEqual(B.failureCode(disk, step), 'NETWORK', String(step));
     assert.equal(B.failureCode(Object.assign(Error('x'), { backupCode: 'NETWORK' }), step), 'NETWORK', 'a coded error keeps its code');
   }
-  const steps = ['prepare', 'download', 'hold', 'verify', 'request', 'install'];
-  assert.deepEqual(steps.map(s => B.failureCode(disk, s)), ['STORAGE', 'STORAGE', 'LOCK_FAILED', 'READ_FAILED', 'REQUEST_FAILED', 'UNEXPECTED']);
-  assert.deepEqual(steps.map(s => B.failureCode(plain, s)), ['UNEXPECTED', 'UNEXPECTED', 'LOCK_FAILED', 'VERIFY_ERROR', 'REQUEST_FAILED', 'UNEXPECTED']);
+  const steps = ['prepare', 'download', 'hold', 'verify', 'engine', 'request', 'install-request', 'install'];
+  assert.deepEqual(steps.map(s => B.failureCode(disk, s)), ['STORAGE', 'STORAGE', 'LOCK_FAILED', 'READ_FAILED', 'UNEXPECTED', 'REQUEST_FAILED', 'INSTALL_REQUEST_FAILED', 'UNEXPECTED']);
+  assert.deepEqual(steps.map(s => B.failureCode(plain, s)), ['UNEXPECTED', 'UNEXPECTED', 'LOCK_FAILED', 'VERIFY_ERROR', 'UNEXPECTED', 'REQUEST_FAILED', 'INSTALL_REQUEST_FAILED', 'UNEXPECTED']);
 });
 
 test('T30: every failure code the main module can hand the screen has its own words', async () => {
@@ -1414,4 +1415,38 @@ test('GPT -c GA1: a write that fails just after the download ends is STORAGE and
   const request = async (url, options) => (url.startsWith('https://release-assets.') ? { status: 200, headers: {}, body: body() } : base(url, options));
   const result = await installCode({ key, data, request });
   assert.deepEqual([result.code, result.log], ['STORAGE', []]);
+});
+
+/* ── PC 0.5.7 공개 후보 검수(pc-0507-publish-20261123)의 P2 셋 ── */
+test('Fable F2: an uncoded failure in the engine re-check after the file was verified is UNEXPECTED, not a check failure', async () => {
+  // 확인을 마친 뒤 그사이 엔진이 깔렸다고 보이면 쥔 설치 파일을 놓는다. 그 놓기가 던진 부호 없는 오류는 확인 기능의 오류가 아니다
+  const engineState = {};
+  const hold = async file => {
+    engineState.dir = engineDir();
+    return { finalPath: file, sha256: shaOf(file), release() { throw new TypeError('surprise'); }, async run() { throw Error('must not run'); } };
+  };
+  const key = minisignKey(), data = crypto.randomBytes(3000), opened = [];
+  const service = createBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, openExternal: async url => opened.push(url), ...quiet });
+  await service.start(ME, 'protect');
+  await service.whenIdle();
+  const snap = await service.snapshot(ME);
+  assert.deepEqual([snap.install.phase, snap.install.code, opened], ['error', 'UNEXPECTED', []]);
+});
+
+test('Fable F2: a read failure while checking keeps its code even though the engine is re-checked after it', async () => {
+  const busy = Object.assign(Error('EBUSY: resource busy or locked, open'), { code: 'EBUSY', syscall: 'open' });
+  const reading = { ...fs, createReadStream: () => new Readable({ read() { this.destroy(busy); } }) };
+  assert.equal((await installCode({ fsImpl: reading })).code, 'READ_FAILED');
+});
+
+test('pc-0507 P2: the VERIFY_ERROR words no longer send people to an update that does not exist; the install path request failure says 「다시 받기」', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const view = code => solioBackupView({ ok: true, available: true, view: 'no-engine', engine: { installed: false }, feed: { state: 'available' }, install: { phase: 'error', code, mode: 'protect' } });
+  const verify = view('VERIFY_ERROR');
+  assert.doesNotMatch(verify.then, /업데이트/);
+  assert.match(verify.then, /「다시 받기」/);
+  const installRequest = view('INSTALL_REQUEST_FAILED');
+  assert.equal(installRequest.acts[0].label, '다시 받기');
+  assert.match(installRequest.then, /「다시 받기」/);
+  assert.equal(view('REQUEST_FAILED').acts[0].label, '다시 하기', 'the engine-present path keeps 「다시 하기」');
 });

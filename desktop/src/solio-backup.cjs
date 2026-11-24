@@ -429,6 +429,7 @@ function failureCode(error, step) {
     // 받은 파일을 읽지 못함(백신이 쥠 따위)과 확인하는 셈 자체가 실패함(이 실행 환경에 없는 셈 따위)을 가른다
     case 'verify': return disk ? 'READ_FAILED' : 'VERIFY_ERROR';
     case 'request': return 'REQUEST_FAILED';
+    case 'install-request': return 'INSTALL_REQUEST_FAILED';
     default: return 'UNEXPECTED';
   }
 }
@@ -908,14 +909,19 @@ function createSolioBackup({
         if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
       } catch (error) {
         // 받기 · 확인이 실패했어도 그사이 다른 길로 엔진이 깔렸으면 오류 대신 엔진 창을 연다(GPT 일곱째 검수 GA3).
-        // 로그인이 바뀌었거나 엔진 확인이 실패하면 처음 오류를 그대로 낸다
-        if (error?.backupCode !== 'ACCOUNT_CHANGED' && stillCurrent()) {
+        // 로그인이 바뀌었거나 엔진 확인이 실패하면 처음 오류를 그대로 낸다.
+        // 처음 오류의 부호는 그 오류가 난 단계로 먼저 정해 둔다. 아래 엔진 다시 확인은 받기 · 확인이 아니므로 step을 바꾼다(Fable pc-0507-publish F2)
+        const first = coded(error, failureCode(error, step));
+        step = 'engine';
+        if (first.backupCode !== 'ACCOUNT_CHANGED' && stillCurrent()) {
           let opened = false;
           try { opened = await openIfInstalled(mode, releaseHolder); } catch (other) { if (other?.backupCode !== 'ENGINE_UNKNOWN') throw other; }
           if (opened) return;
         }
-        throw error;
+        throw first;
       }
+      // 확인은 끝났다. 엔진 다시 확인에서 난 부호 없는 오류가 「확인 기능 오류」로 보이지 않게 한다(Fable pc-0507-publish F2)
+      step = 'engine';
       // 받는 동안 로그인이 바뀌었으면(다른 계정이나 같은 계정의 새 로그인) 요청을 쓰지 않고 멈춘다(GPT 다시 검수 GA3 · 셋째 검수 GA4)
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       // 받는 동안 다른 길로 엔진이 깔렸으면 설치기를 다시 띄우지 않고 엔진 창을 연다(GPT 검수 GA4).
@@ -923,9 +929,10 @@ function createSolioBackup({
       // 지금 확인이 실패하면 깔렸는지 모르므로 띄우지 않는다(GPT 다시 검수 GA5)
       if (await openIfInstalled(mode, releaseHolder)) return;
       // 요청 쓰기는 로그인 확인과 함께 동기로 한다. 쓴 뒤 로그인이 바뀌면 치우기(sweepRequests)가 그 자리에서 지운다.
-      // 쓰지 못하면 엔진이 이미 있는 길(openSetup)과 같은 REQUEST_FAILED다. 설치 파일 저장 실패(STORAGE)로 보이지 않게 한다
-      step = 'request';
-      try { requestName = await writeRequest(mode); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('REQUEST_FAILED'); }
+      // 쓰지 못하면 INSTALL_REQUEST_FAILED다. 설치 파일 저장 실패(STORAGE)로도, 다시 누르면 요청만 다시 쓰는 엔진이 있는 길의
+      // REQUEST_FAILED로도 보이지 않게 한다. 이 길은 다시 누르면 설치 파일을 새로 받는다(카본 pc-0507-publish A1)
+      step = 'install-request';
+      try { requestName = await writeRequest(mode); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('INSTALL_REQUEST_FAILED'); }
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       setInstall('admin');
       step = 'install';
