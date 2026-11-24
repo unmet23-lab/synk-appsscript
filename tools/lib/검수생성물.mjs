@@ -18,11 +18,13 @@
 // 된다 — 그 값이 원천 차이에 이미 있고 대본이 해시로 묶였다(GPT -c GD14). ② 이름이 바뀐 함수 · 클래스의 .name은 직접 읽기(X.name · 그 클래스 안
 // this.constructor.name · new.target.name)만 「다름」으로 잡는다. 간접 읽기는 잡지 못하고 꺼진 판 화면 대조가 받친다. 함수 원문도 직접 읽기(X.toString)만
 // 「다름」으로 잡는다(GPT -d GD12 — String(X) · 틀 글자 안 X 같은 간접 읽기는 한계).
-// 쓰는 범위(설계 주인 11-22): 생성물 칸은 아래 허용 목록의 명세(sha256)에만 쓴다 — 지금은 WORLD 선택 공개 2단계 (2-2) 하나다. 마지막 다시 검수(-e)에서
-// 새로 나온 (ㄷ)는 (2-2) 공개 뒤 후속으로 미뤄, 실제 재료에 없는 꼴에서 「같다」로 새는 구멍이 알려진 채 남는다. 그 구멍이 다른 공개에 닿지 않게
-// 준비와 확인이 허용 목록 밖 명세를 멈춘다. 후속을 다 닫을 때 이 묶음을 푼다(트랙 「검수 도구 생성물 칸 후속」 줄). 시험 실행 표지로 허용 목록을
-// 건너뛰고 지은 증명에는 「허용 목록 건너뜀」 표시가 남고, 검수 확인은 표지가 꺼져 있든 켜져 있든 그 증명을 막는다 — 시험 환경에서 지은 검수가
-// 공개를 통과하지 못한다.
+// 쓰는 범위(결정 11-25 · Fable 설계 검토 11-24): 생성물 칸은 두 등급이다. 모든 항목이 바탕 재현 같음인 명세는 연다 — 후보가 검수받은 원천
+// 커밋의 결정적 빌드이고, 라이브 대비 변화는 원천 차이와 반사실 빌드가 다 말한다. 바탕 재현이 안 되는 항목을 근사 대조(모듈 · 문자열 · 까닭 파일 ·
+// 본문 차이)로 보는 길은 아래 근사 허용 목록의 명세(sha256)에만 쓴다 — WORLD 선택 공개 2단계 (2-2) spec-2-2r 하나로 얼렸고 다시 열지 않는다.
+// 그 밖의 명세는 한 항목이라도 바탕 재현이 안 되면 준비가 멈추고(생성물근사확인) 검수 확인도 막는다. 바탕 재현이 깨지면 근사로 돌아가지 않고 빌드
+// 환경을 맞춘다(바탕 커밋의 빌드환경.json과 견준다). 라이브에 없는 생성물(새 파일)은 바탕 재현이 없으니 이 칸에 넣지 않고 보통 후보 파일로 본문을
+// 검수한다. 근사 길에서 남은 (ㄷ) 11건(GD2~GD6 · GE1~GE6)은 얼림으로 닫았다. 시험 실행 표지로 근사 허용을 건너뛰고 지은 증명에는
+// 「허용 목록 건너뜀」 표시가 남고, 검수 확인은 표지가 꺼져 있든 켜져 있든 그 증명을 막는다 — 시험 환경에서 지은 검수가 공개를 통과하지 못한다.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -32,13 +34,24 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 export const 생성물판 = 1;
-/** 생성물 칸을 쓰는 명세의 sha256 허용 목록(위 「쓰는 범위」 · 설계 주인 11-22). 시험은 합성 명세를 쓰므로 node 시험 실행(NODE_TEST_CONTEXT)에서
- *  SYNK_생성물_시험=1일 때만 건너뛴다(시험 표지). 시험 표지로 지은 증명에는 허용목록건너뜀 표시가 남고 검수 확인이 늘 막는다. */
-export const 생성물허용명세 = Object.freeze({
+/** 근사 대조를 쓰는 명세의 sha256 허용 목록(위 「쓰는 범위」 · 결정 11-25 — spec-2-2r 하나로 얼렸다. 해시를 더하지 않는다). 시험은 합성 명세를
+ *  쓰므로 node 시험 실행(NODE_TEST_CONTEXT)에서 SYNK_생성물_시험=1일 때만 건너뛴다(시험 표지). 시험 표지로 지은 증명에는 허용목록건너뜀 표시가 남고
+ *  검수 확인이 늘 막는다. */
+export const 생성물근사허용명세 = Object.freeze({
   '86edce6fbddb931a048d07d6ca414a75ca48ed43854d15d8192b63b14fcc3e12': 'WORLD 선택 공개 2단계 (2-2) 계정 · 생활 묶음 · 생활 css(spec-2-2r)',
 });
 export const 생성물시험표지 = () => Boolean(process.env.NODE_TEST_CONTEXT && process.env.SYNK_생성물_시험 === '1');
-export const 생성물허용인가 = s => 생성물시험표지() || Object.hasOwn(생성물허용명세, String(s));
+export const 생성물근사인가 = s => 생성물시험표지() || Object.hasOwn(생성물근사허용명세, String(s));
+/** 바탕 재현이 안 된 항목 — 근사 길(본문 차이 · 모듈 · 문자열 · JSON 구조 대조)로 내려가는 항목이다. 재현 결과 · 증명 항목 어느 쪽이든 받는다. */
+export const 근사항목들 = 항목들 => (Array.isArray(항목들) ? 항목들 : []).filter(it => it?.바탕재현 !== true);
+/** 준비가 재현 뒤 부른다(결정 11-25): 근사 허용 밖 명세는 모든 항목이 바탕 재현 같음이어야 선다. 하나라도 내려가면 준비를 멈춘다. */
+export function 생성물근사확인(정보, 재현) {
+  const 아래 = 근사항목들(재현?.결과);
+  if (!아래.length || 생성물근사인가(정보.sha256)) return;
+  throw new Error(`생성물 명세(${path.basename(정보.경로)} · sha256 ${String(정보.sha256).slice(0, 12)}): 바탕 재현이 안 된 항목이 있다 — ${아래.map(r => `${r.경로}(${까닭꼴(r.바탕까닭) ?? '바탕 재현 없음'})`).join(' · ')}. `
+    + '근사 대조는 spec-2-2r에만 쓴다(결정 11-25). 근사로 돌아가지 않고 빌드 환경을 바탕을 지은 때와 맞춘다(바탕 커밋의 빌드환경.json과 견준다). '
+    + '라이브에 없는 새 생성물은 이 칸에서 빼고 보통 후보 파일로 검수한다. 준비를 멈춘다');
+}
 const sha = b => crypto.createHash('sha256').update(b).digest('hex');
 const 슬래시 = p => String(p).replace(/\\/g, '/');
 const 기본시간 = 20 * 60 * 1000;
@@ -83,8 +96,7 @@ function 빌더읽기(목록, 이름, 틀림, 입력열쇠 = new Set()) {
 export function 생성물명세읽기(파일) {
   const 경로 = path.resolve(파일);
   const 원문 = fs.readFileSync(경로);
-  // 쓰는 범위(설계 주인 11-22): 허용 목록 밖 명세는 받지 않는다 — 다른 공개는 본문 차이로 검수한다.
-  if (!생성물허용인가(sha(원문))) throw new Error(`생성물 명세(${path.basename(경로)}): 생성물 칸은 허용 목록의 명세에만 쓴다(설계 주인 11-22 — (2-2) 공개 뒤 후속을 다 닫을 때 푼다). 이 명세 sha256 ${sha(원문).slice(0, 12)}는 목록 밖이다 — 다른 공개는 본문 차이로 검수한다`);
+  // 쓰는 범위(결정 11-25): 어느 명세든 읽는다. 근사 허용 밖 명세는 재현 뒤 모든 항목이 바탕 재현 같음일 때만 선다(생성물근사확인 · 검수 확인).
   let 명세;
   try { 명세 = JSON.parse(원문.toString('utf8')); } catch (e) { throw new Error(`생성물 명세를 읽지 못했다: ${경로} — ${e.message}`); }
   const 틀림 = m => { throw new Error(`생성물 명세(${path.basename(경로)}): ${m}`); };
@@ -215,15 +227,40 @@ export function 생성물증명({ 정보, 재현 }) {
     ...(JSON차이.length ? { JSON차이 } : {}), ...(정보.허용건너뜀 ? { 허용목록건너뜀: true } : {}) };
 }
 
+// core.quotePath를 끈다(GPT -e F1) — 켜진 저장소에서는 git show · diff 머리줄의 한글 · 특수 글자 경로가 따옴표 · 8진 탈출로 나와 실제 경로와 맞지 않는다.
 function git(저장소, args, { env = null, input = undefined, 버퍼 = false } = {}) {
-  const r = spawnSync('git', ['-C', 저장소, '-c', 'core.autocrlf=false', ...args], { env: env ? { ...process.env, ...env } : process.env, input, maxBuffer: 1 << 30, windowsHide: true });
+  const r = spawnSync('git', ['-C', 저장소, '-c', 'core.autocrlf=false', '-c', 'core.quotePath=false', ...args], { env: env ? { ...process.env, ...env } : process.env, input, maxBuffer: 1 << 30, windowsHide: true });
   if (r.error) throw r.error;
   if (r.status !== 0) throw new Error(`git ${args.slice(0, 2).join(' ')} 실패(${r.status}): ${String(r.stderr || '').trim().slice(0, 400)}`);
   return 버퍼 ? r.stdout : r.stdout.toString('utf8');
 }
 // git --name-status -z 출력(상태 NUL 경로 NUL …)을 [상태, 경로] 짝으로 — 줄 출력은 core.quotePath가 켜진 저장소에서 한글 · 특수 글자 경로를
 // 따옴표와 8진 탈출로 감싸 실제 경로와 맞지 않는다(GPT -e GD7). 이 모듈의 다른 경로 읽기도 -z를 쓴다.
-const 이름상태 = 글 => { const xs = 글.split('\0'), 짝 = []; for (let i = 0; i + 1 < xs.length; i += 2) 짝.push([xs[i].trim(), xs[i + 1]]); return 짝; };
+// 상태 칸이 git 상태 글자가 아니면 멈춘다(GPT -e F1) — 이름 바꿈(R · C)처럼 경로가 둘인 줄이 섞이면 짝이 한 칸씩 밀려 경로를 상태로 읽는다.
+export const 이름상태 = 글 => {
+  const xs = 글.split('\0'), 짝 = [];
+  for (let i = 0; i + 1 < xs.length; i += 2) {
+    const s = xs[i].trim();
+    if (!/^[ADMTUXB]$/.test(s)) throw new Error(`git 이름 상태가 아니다: ${JSON.stringify(s.slice(0, 40))} — 이름 바꿈 없이(--no-renames) 상태 · 경로 짝으로 읽어야 한다(도구가 다루지 않는 꼴)`);
+    짝.push([s, xs[i + 1]]);
+  }
+  return 짝;
+};
+/** git 차이 머리줄 단언(GPT -e F1): 머리말(「diff --git」부터 첫 「@@」 앞)의 경로가 따옴표 꼴이면 멈춘다 — core.quotePath를 끄고 읽어도 그런
+ *  머리가 나오면 증거의 경로가 실제와 맞지 않는다. 덩이 안의 「--- "…」 같은 내용 줄은 보지 않는다. */
+export function 차이머리확인(글, 곳) {
+  let 머리 = false;
+  for (const l of String(글).split('\n')) {
+    if (l.startsWith('diff --git ')) {
+      머리 = true;
+      if (!l.startsWith('diff --git a/')) throw new Error(`${곳}: git 차이 머리줄이 따옴표 꼴이다(${l.slice(0, 80)}) — core.quotePath를 끈 채 읽어야 한다(도구가 다루지 않는 꼴)`);
+      continue;
+    }
+    if (머리 && l.startsWith('@@')) { 머리 = false; continue; }
+    if (머리 && /^(?:--- |\+\+\+ |rename from |rename to |copy from |copy to )"/.test(l)) throw new Error(`${곳}: git 차이 머리줄이 따옴표 꼴이다(${l.slice(0, 80)}) — core.quotePath를 끈 채 읽어야 한다(도구가 다루지 않는 꼴)`);
+  }
+  return 글;
+}
 /** 명세 경로의 철자 확인 — 커밋 트리에 대소문자만 다른 경로가 있고 같은 철자는 없으면 멈춘다(Windows 파일 시스템은 대소문자를 가리지 않아
  *  후보 원천은 읽히고 git 판은 빠진다 · GPT -c GD12). 아예 없는 경로는 여기서 보지 않는다(다른 확인이 맡는다). */
 function 철자확인(저장소, 커밋, 경로들) {
@@ -405,9 +442,10 @@ function 두파일차이(a, b, rel, 빈, J = null) {
   // 두 판이 같으면(모듈 원천 차이에서 원천은 같고 묶음 안 모듈만 다를 때) 그 사실만 적는다 — 묶음 쪽 차이는 빌드 맥락(가져오는 쪽)에서 온다.
   if (a && b && 앞.equals(뒤)) return `${머리}\n(두 판의 바이트가 같다 · sha256 ${sha(앞).slice(0, 12)})\n`;
   if (J && a && b && /\.json$/i.test(rel)) { const 표 = J.파일(rel, 앞, 뒤); if (표) return `${머리}\n${표}\n`; }
-  const r = spawnSync('git', ['-c', 'core.autocrlf=false', 'diff', '--no-index', '--no-color', '--no-ext-diff', '-U5', '--', a || 빈, b || 빈], { maxBuffer: 1 << 28, windowsHide: true });
+  const r = spawnSync('git', ['-c', 'core.autocrlf=false', '-c', 'core.quotePath=false', 'diff', '--no-index', '--no-color', '--no-ext-diff', '-U5', '--', a || 빈, b || 빈], { maxBuffer: 1 << 28, windowsHide: true });
   if (r.status !== 0 && r.status !== 1) throw new Error(`원천 차이를 만들지 못했다: ${rel} — ${String(r.stderr || '').trim().slice(0, 300)}`);
-  const 글 = r.stdout.toString('utf8'), k = 글.indexOf('\n@@');
+  // CR은 ␍로 보인다(GPT -e GF2) — 줄 끝을 LF에서 CRLF로 바꾼 줄이 같은 줄을 빼고 더한 것처럼 보이지 않게.
+  const 글 = r.stdout.toString('utf8').replace(/\r/g, '␍'), k = 글.indexOf('\n@@');
   return `${머리}\n${k < 0 ? '' : 글.slice(k + 1)}`;
 }
 /** 원천 차이(바탕 → 되돌린 뒤 후보 원천). 원천경로 항목이 두 판 어디에도 없으면 멈춘다(Opus F3 — 물음 글이 붙은 표지 꼴 같은 잘못 적은 경로가
@@ -1024,12 +1062,13 @@ export function 생성물재현(정보, { 저장소, 후보, 후보내용, 앞�
     // 되돌림 목록(Opus F3): 그 커밋이 원천경로에서 바꾼 것과 함께, 원천경로 밖(꺼냄 안)에서 바꾼 파일 목록 · 빌더가 부르는 파일과 설정 파일의 차이를 싣는다.
     const 되돌림차이 = (명세.되돌림?.목록 || []).map(c => {
       const 커밋 = 커밋확인(저장소, c);
-      const 안 = git(저장소, ['show', '--no-color', '--no-ext-diff', '--format=%H%n%s%n', '-U3', 커밋, '--', ...원천모두]);
+      // 머리줄은 따옴표 꼴이 아니어야 하고(차이머리확인 · GPT -e F1), CR은 ␍로 보인다(GPT -e GF2).
+      const 안 = 차이머리확인(git(저장소, ['show', '--no-color', '--no-ext-diff', '--format=%H%n%s%n', '-U3', 커밋, '--', ...원천모두]).replace(/\r/g, '␍'), `되돌림 ${커밋.slice(0, 10)}`);
       const 밖 = 이름상태(git(저장소, ['show', '--no-color', '--format=', '--name-status', '-z', '--no-renames', 커밋, '--', ...명세.꺼냄]))
         .filter(([s, p]) => s && p && !원천안(p, 원천모두, 명세.원천뺌));
       const 보일 = 밖.map(([, p]) => p).filter(p => 빌더파일.has(p) || 설정꼴(p));
       const 밖글 = 밖.length ? ['', `## 이 커밋이 원천경로 밖(꺼냄 안 — 빌드 입력)에서 바꾼 파일 ${밖.length}개 · 빌더가 부르는 파일과 설정 파일 ${보일.length}개는 차이를 싣는다`, ...밖.map(([s, p]) => `- ${s} ${p}`),
-        ...(보일.length ? ['', git(저장소, ['show', '--no-color', '--no-ext-diff', '--format=', '-U3', 커밋, '--', ...보일])] : [])].join('\n') : '';
+        ...(보일.length ? ['', 차이머리확인(git(저장소, ['show', '--no-color', '--no-ext-diff', '--format=', '-U3', 커밋, '--', ...보일]).replace(/\r/g, '␍'), `되돌림 ${커밋.slice(0, 10)} 빌드 입력`)] : [])].join('\n') : '';
       return { 커밋, 글: `${안}${밖글}`.replace(메일, '<메일>'), ...(밖.length ? { 밖: 밖.length } : {}) };
     });
     return { 원천, 결과, 기록, 바탕기록, 원천차이, 되돌림차이, 대조자료, JSON차이 };

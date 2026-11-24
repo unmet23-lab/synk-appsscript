@@ -11,7 +11,7 @@ import { execFileSync } from 'node:child_process';
 import * as acorn from 'acorn';
 import * as api from '../tools/검수묶음.mjs';
 import { 입력증명, 정규해시 } from '../tools/lib/검수증명.mjs';
-import { 생성물명세읽기, 상대경로인가, 같은코드, 이름짝인가, 낱말나누기, 모듈나누기, 조각덮음, 묶음대조, 문자열대조, 머리입력읽기, 글맞춤, 이름맞춤, 코드글본, 까닭꼴, 원천덮기, JSON쓰기, JSON쓰기꼴, JSON구조차이, JSON차이완전, JSON연산적용, JSON차이글, 모듈JSON값, 덧글자, 생성물바꿔넣기, 파일모음, 생성물증거쓰기, 생성물허용명세 } from '../tools/lib/검수생성물.mjs';
+import { 생성물명세읽기, 상대경로인가, 같은코드, 이름짝인가, 낱말나누기, 모듈나누기, 조각덮음, 묶음대조, 문자열대조, 머리입력읽기, 글맞춤, 이름맞춤, 코드글본, 까닭꼴, 원천덮기, JSON쓰기, JSON쓰기꼴, JSON구조차이, JSON차이완전, JSON연산적용, JSON차이글, 모듈JSON값, 덧글자, 생성물바꿔넣기, 파일모음, 생성물증거쓰기, 생성물근사허용명세, 차이머리확인, 이름상태 } from '../tools/lib/검수생성물.mjs';
 
 // 실패 경우를 시험하면 도구가 재현 사본을 남긴다. 이 파일은 자기 임시 뿌리에서 돌고 끝날 때 한 번에 치운다(검수 도구 시험돌리기와 같은 방식).
 const 시험임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-review-gen-run-'));
@@ -559,6 +559,17 @@ test('생성물 — 되돌림 목록 커밋이 원천경로 밖에서 바꾼 한
   assert.match(되돌림글, /^- A tools\/도움\.mjs$/m, '원천경로 밖에서 바꾼 한글 이름 파일을 제 경로로 적는다');
   assert.match(되돌림글, /바꾼 파일 2개 · 빌더가 부르는 파일과 설정 파일 2개는 차이를 싣는다/);
   assert.match(되돌림글, /^\+export const 표 = 1;$/m, '빌더가 부르는 한글 이름 파일의 차이를 싣는다');
+  assert.match(되돌림글, /^diff --git a\/tools\/도움\.mjs b\/tools\/도움\.mjs$/m, 'git show 머리줄도 따옴표 없이 제 경로다(GPT -e F1)');
+  assert.doesNotMatch(되돌림글, /^diff --git "/m);
+});
+
+test('git 머리줄 · 이름 상태 단언(GPT -e F1) — 따옴표 꼴 머리는 멈추고 덩이 안 내용 줄은 보지 않는다. 상태 칸이 git 상태 글자가 아니면 멈춘다', () => {
+  const 바른 = ['abc', 'subject', '', 'diff --git a/tools/도움.mjs b/tools/도움.mjs', 'index 1..2 100644', '--- a/tools/도움.mjs', '+++ b/tools/도움.mjs', '@@ -1 +1,2 @@', ' a', '--- "내용 줄"', '+++ "이것도 내용"'].join(NL);
+  assert.equal(차이머리확인(바른, '시험'), 바른, '덩이 안의 「--- "…」 줄은 머리말이 아니다');
+  assert.throws(() => 차이머리확인('diff --git "a/tools/\\353\\217\\204.mjs" "b/tools/\\353\\217\\204.mjs"\n@@ -1 +1 @@\n-a\n+b', '시험'), /시험: git 차이 머리줄이 따옴표 꼴이다/);
+  assert.throws(() => 차이머리확인('diff --git a/x b/x\n--- "a/\\353"\n+++ b/x\n@@ -1 +1 @@\n-a\n+b', '시험'), /따옴표 꼴이다/);
+  assert.deepEqual(이름상태(`M${'\0'}a.txt${'\0'}A${'\0'}도움.mjs${'\0'}`), [['M', 'a.txt'], ['A', '도움.mjs']]);
+  assert.throws(() => 이름상태(`R100${'\0'}old.txt${'\0'}new.txt${'\0'}M${'\0'}b.txt${'\0'}`), /git 이름 상태가 아니다: "R100"/, '이름 바꿈 줄이 섞이면 짝이 밀리기 전에 멈춘다');
 });
 
 test('생성물 — 빌더 인자의 사본 밖 파일은 입력 칸에 적은 것만 받고(해시 · 글을 싣는다), 「..」 · 적지 않은 절대 경로는 거절하며, 짓는 동안 바뀌면 멈춘다(Opus F6)', async t => {
@@ -1668,20 +1679,39 @@ test('GPT -d — 두 판 차이: 낱말 차이가 두 판을 다 담지 못하�
   assert.equal(api.파일diff({ 상태: 'M', 경로: 'x.mjs' }, 설정).꼴, '낱말', '첫 검수 묶음의 보통 긴 줄 바뀜은 낱말 차이');
 });
 
-test('생성물 칸은 허용 목록의 명세에만 쓴다: 목록 밖 명세는 준비가 멈추고, 시험 표지로 지은 증명은 「허용 목록 건너뜀」 표시가 남아 표지가 꺼져 있든 켜져 있든 확인이 막는다(설계 주인 11-22)', async t => {
+test('생성물 칸 두 등급(결정 11-25): 모든 항목이 바탕 재현 같음인 명세는 근사 허용 목록 밖이어도 준비 · 확인이 선다. 바탕 재현이 안 된 항목이 있으면 목록 밖 명세는 준비가 멈추고 확인도 막는다. 시험 표지로 지은 증명은 「허용 목록 건너뜀」 표시로 늘 막는다(설계 주인 11-22)', async t => {
+  // ① 시험 표지(SYNK_생성물_시험)로 지은 검수 — 표시가 남고, 표지가 켜져 있어도 그 표시 하나로 막는다
   const f = fixture(t);
-  const { 폴더, 목록 } = await api.준비하기(f.options);   // 시험 표지(SYNK_생성물_시험)로 지은 검수
+  const { 폴더, 목록 } = await api.준비하기(f.options);
   assert.equal(목록.증명.생성물.허용목록건너뜀, true, '시험 표지로 지은 증명에는 표시가 남는다');
   await 카본보내기(폴더, 목록);
   표시만(api.검수확인(폴더, { 저장소: f.repo }), '표지가 켜져 있어도 그 표시 하나로 막는다');
   delete process.env.SYNK_생성물_시험;
   t.after(() => { process.env.SYNK_생성물_시험 = '1'; });
-  assert.throws(() => 생성물명세읽기(f.specFile), /생성물 칸은 허용 목록의 명세에만 쓴다[^\n]*sha256 [0-9a-f]{12}는 목록 밖이다/);
-  await assert.rejects(api.준비하기({ ...f.options, 이름: 'gen-allow-out', 폴더: path.join(f.dir, 'packet-out') }), /생성물 칸은 허용 목록의 명세에만 쓴다/);
-  const r = api.검수확인(폴더, { 저장소: f.repo });
+  // ② 표지를 끄면 어느 명세든 읽는다. 모든 항목이 바탕 재현 같음이면 근사 허용 목록 밖 명세도 준비가 서고 확인을 통과한다
+  assert.doesNotThrow(() => 생성물명세읽기(f.specFile));
+  const 바탕만 = await api.준비하기({ ...f.options, 이름: 'gen-base-only', 폴더: path.join(f.dir, 'packet-base') });
+  assert.equal(바탕만.목록.증명.생성물.허용목록건너뜀, undefined, '표지 없이 지은 증명에는 표시가 없다');
+  assert.ok(바탕만.목록.증명.생성물.항목.every(x => x.바탕재현 === true));
+  await 카본보내기(바탕만.폴더, 바탕만.목록);
+  const 선 = api.검수확인(바탕만.폴더, { 저장소: f.repo });
+  assert.equal(선.통과, true, 선.사유.join(' / '));
+  // ③ 바탕 재현이 안 된 항목이 있으면 근사 허용 목록 밖 명세는 증거를 쓰기 전에 준비가 멈춘다
+  const g = fixture(t, { 라이브: Buffer.from(`/*BUILT*/hello v0${NL}stable${NL}`) });
+  await assert.rejects(api.준비하기({ ...g.options, 이름: 'gen-approx-out' }),
+    /바탕 재현이 안 된 항목이 있다 — site\/bundle\.txt\(라이브와 다름\)\. 근사 대조는 spec-2-2r에만 쓴다\(결정 11-25\)[^\n]*빌드 환경[^\n]*준비를 멈춘다/);
+  assert.equal(fs.existsSync(path.join(g.options.폴더, '생성물', '재현.json')), false, '멈추면 근사 증거를 쓰지 않는다');
+  // ④ 시험 표지로 지은 근사 증명은 표지를 끈 뒤 확인에서 표시와 근사 사유로 함께 막는다
+  process.env.SYNK_생성물_시험 = '1';
+  const 근사 = await api.준비하기({ ...g.options, 이름: 'gen-approx-test', 폴더: path.join(g.dir, 'packet-approx') });
+  assert.equal(근사.목록.증명.생성물.항목[0].바탕재현, false);
+  await 카본보내기(근사.폴더, 근사.목록);
+  delete process.env.SYNK_생성물_시험;
+  const r = api.검수확인(근사.폴더, { 저장소: g.repo });
   assert.equal(r.통과, false);
   assert.ok(r.사유.some(x => 표시사유.test(x)), '표지가 꺼져 있어도 표시로 막는다 — ' + r.사유.join(' / '));
-  assert.ok(r.사유.some(x => /생성물 명세 sha256 [0-9a-f]{12}가 허용 목록 밖이다/.test(x)), r.사유.join(' / '));
-  assert.deepEqual(Object.values(생성물허용명세), ['WORLD 선택 공개 2단계 (2-2) 계정 · 생활 묶음 · 생활 css(spec-2-2r)'], '허용 목록은 (2-2) 명세 하나다');
-  assert.ok(Object.keys(생성물허용명세).every(k => /^[0-9a-f]{64}$/.test(k)));
+  assert.ok(r.사유.some(x => /근사 허용 목록 밖인데 바탕 재현이 안 된 항목이 있다\(site\/bundle\.txt\)/.test(x)), r.사유.join(' / '));
+  // ⑤ 근사 허용 목록은 (2-2) 명세 하나로 얼렸다
+  assert.deepEqual(Object.values(생성물근사허용명세), ['WORLD 선택 공개 2단계 (2-2) 계정 · 생활 묶음 · 생활 css(spec-2-2r)'], '근사 허용 목록은 (2-2) 명세 하나다');
+  assert.ok(Object.keys(생성물근사허용명세).every(k => /^[0-9a-f]{64}$/.test(k)));
 });

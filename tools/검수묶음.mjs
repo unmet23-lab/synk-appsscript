@@ -59,7 +59,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as 캡처도구 from './lib/검수캡처.mjs';
 import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 후보앞판읽기, 정책만들기, 정책판, 대체순서, GPT자리대체정책, GPT한도생략문장, 한도생략증거, 실제필수, 필수글, 응답검사, 막힘증거, 입력증명, 안전경로,
   맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 끝판정책, 대신할검수자, 합침대조, 합침거절, 합침증명, 원격참조 } from './lib/검수증명.mjs';
-import { 생성물명세읽기, 생성물해시, 생성물해시다시, 생성물증명, 생성물재현, 생성물증거쓰기, 생성물항목들, 생성물바꿔넣기, 생성물새버리기, 생성물허용인가 } from './lib/검수생성물.mjs';
+import { 생성물명세읽기, 생성물해시, 생성물해시다시, 생성물증명, 생성물재현, 생성물증거쓰기, 생성물항목들, 생성물바꿔넣기, 생성물새버리기, 생성물근사인가, 근사항목들, 생성물근사확인 } from './lib/검수생성물.mjs';
 
 const require = createRequire(import.meta.url);
 
@@ -200,12 +200,14 @@ export function 낱말줄이기(porcelain, { 맥락 = 70, 파일이름 = null } 
     out.push(`[${file}:${line}] ${txt}`);
     segs = [];
   };
-  for (const l of porcelain.replace(/\r\n/g, '\n').split('\n')) {
-    if (l.startsWith('diff --git')) { flush(); continue; }
-    if (l.startsWith('+++ ')) { if (!파일이름) file = l.slice(4).replace(/^b\//, ''); continue; }
-    if (/^(--- |index |new file|deleted file|similarity|rename |old mode|new mode)/.test(l)) continue;
+  // 머리말은 「diff --git」부터 첫 「@@」 앞까지다 — 덩이 안의 「+++ 」 · 「--- 」 줄은 「++ 」 · 「-- 」로 시작하는 낱말 조각이라 버리지 않는다(GPT -e GF1).
+  // 글 안의 CR은 지우지 않고 ␍로 보인다 — 줄 끝을 LF에서 CRLF로 바꾼 것이 내용 없는 {++}로 사라지지 않게(GPT -e GF2).
+  let 머리 = false;
+  for (const l of CR보임(porcelain).split('\n')) {
+    if (l.startsWith('diff --git')) { flush(); 머리 = true; continue; }
     const h = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(l);
-    if (h) { flush(); line = Number(h[1]); continue; }
+    if (h) { flush(); 머리 = false; line = Number(h[1]); continue; }
+    if (머리) { if (l.startsWith('+++ ') && !파일이름) file = l.slice(4).replace(/^b\//, ''); continue; }
     if (l === '~') { flush(); line++; continue; }
     if (!l) continue;
     segs.push({ t: l[0], v: l.slice(1) });
@@ -248,6 +250,18 @@ export function UTF8낱말원문(raw) {
 }
 
 const 머리줄 = /^(diff --git|index |--- |\+\+\+ |similarity index|dissimilarity index|rename from|rename to|copy from|copy to|new file mode|deleted file mode|old mode|new mode)/;
+/** unified diff에서 파일 머리말만 뺀다. 머리말은 「diff --git」부터 첫 「@@」 앞까지다 — 덩이 안에서 「+++ 」 · 「--- 」로 시작하는 줄은
+ *  「++ 」 · 「-- 」로 시작하는 내용을 더하거나 뺀 줄이라 남긴다(GPT -e GF1). 머리말 안의 다른 줄(Binary files … differ 등)은 그대로 둔다. */
+export function 머리걷기(글) {
+  let 머리 = false;
+  return String(글).split('\n').filter(l => {
+    if (l.startsWith('diff --git ')) { 머리 = true; return false; }
+    if (머리 && l.startsWith('@@')) 머리 = false;
+    return !(머리 && 머리줄.test(l));
+  }).join('\n');
+}
+/** 차이 글의 CR(\r)을 ␍로 보인다 — 줄 끝을 LF에서 CRLF로 바꾼 것이 정규화로 사라지면 같은 줄을 빼고 더한 것처럼 보인다(GPT -e GF2). */
+export const CR보임 = s => String(s).replace(/\r/g, '␍');
 /** 한 파일의 diff 글: unified(앞뒤 5줄) · 긴 줄이면 낱말 · 추적 안 된 새 파일은 + 줄로. 아주 긴 줄은 가운데를 줄인다. */
 export function 파일diff(f, 설정) {
   const cwd = 설정.저장소;
@@ -257,8 +271,7 @@ export function 파일diff(f, 설정) {
     return { 꼴: '새 파일', 글: [`@@ -0,0 +1,${줄들.length} @@`, ...줄들.map(l => '+' + 긴줄줄임(l))].join('\n') };
   }
   const 경로들 = f.옛경로 ? [f.옛경로, f.경로] : [f.경로];
-  const 몸 = git(['diff', '-U5', '--no-color', '-M', ...범위(설정), '--', ...경로들], { cwd }).replace(/\r\n/g, '\n')
-    .split('\n').filter(l => !머리줄.test(l)).join('\n').trim();
+  const 몸 = 머리걷기(CR보임(git(['diff', '-U5', '--no-color', '-M', ...범위(설정), '--', ...경로들], { cwd }))).trim();
   if (f.상태 === 'M' && 몸.split('\n').some(l => /^[+-]/.test(l) && l.length > 긴줄)) {
     // 낱말 = 글자 덩이 또는 문장 부호 하나. 띄어쓰기로만 자르면 띄어쓰기 없는 템플릿 한 줄이 통째로 한 낱말이 된다.
     // 낱말 차이가 두 판을 다 담을 때만 쓴다 — 한쪽에만 더하거나 뺀 줄바꿈은 낱말 차이에 보이지 않는다(GPT -d GE5). 아니면 줄 차이를 싣는다.
@@ -277,7 +290,7 @@ export function 파일diff(f, 설정) {
 /** Fable이 읽는 전체 diff(추적 안 된 새 파일 포함). */
 function 전체diff(설정, 파일들) {
   const 거름 = ['--', ...(설정.경로.length ? 설정.경로 : ['.'])];
-  let 글 = git(['diff', '--no-color', '-M', ...범위(설정), ...거름], { cwd: 설정.저장소 }).replace(/\r\n/g, '\n');
+  let 글 = CR보임(git(['diff', '--no-color', '-M', ...범위(설정), ...거름], { cwd: 설정.저장소 }));
   for (const f of 파일들.filter(x => x.추적안됨 && !x.이진)) {
     const d = 파일diff(f, 설정);
     글 += `diff --git a/${f.경로} b/${f.경로}\nnew file (추적 안 됨)\n--- /dev/null\n+++ b/${f.경로}\n${d.글}\n`;
@@ -677,7 +690,7 @@ export function 규칙글(종류, 작성자 = 'Claude') {
 ④ 인증·권한·비밀값·개인정보가 새거나 넓어지는 곳
 ⑤ 시험이 그 동작을 실제로 지키는지(늘 통과하는 시험, 가짜가 실제와 다른 곳)`,
     `## 자료 꼴
-항목마다 「### [항목 번호] …」 머리 줄이 있다. diff는 unified 꼴(@@ 머리의 줄 번호)이고, 긴 줄 파일은 「[파일:줄] …앞 [-옛-]{+새+} 뒤…」 꼴(줄 번호는 바뀐 뒤 기준)이다.${화면 ? ' 화면 항목은 실제로 띄운 화면에서 뽑은 보이는 글·콘솔 오류·가로 넘침·그림 차이 비율이다(그림 자체는 이 묶음에 없다 — 그림은 다음 검수자가 본다).' : ''}
+항목마다 「### [항목 번호] …」 머리 줄이 있다. diff는 unified 꼴(@@ 머리의 줄 번호)이고, 긴 줄 파일은 「[파일:줄] …앞 [-옛-]{+새+} 뒤…」 꼴(줄 번호는 바뀐 뒤 기준)이다. 글 안의 ␍는 CR 바이트다(줄 끝을 CRLF로 바꾸면 그 줄 끝에 ␍가 보인다).${화면 ? ' 화면 항목은 실제로 띄운 화면에서 뽑은 보이는 글·콘솔 오류·가로 넘침·그림 차이 비율이다(그림 자체는 이 묶음에 없다 — 그림은 다음 검수자가 본다).' : ''}
 이 묶음에 없는 파일은 다른 묶음이 맡는다 — 보지 못한 코드를 추측해 지적하지 않는다.`,
     `## 답
 주어진 JSON 꼴로만 답한다. findings마다 grade·location(파일:줄 또는 「화면 이름 · 그 글」)·quote(지금 글·코드를 그대로)·problem(무엇이 왜 문제인지와 재현 근거)·fix(고칠 방향 한 줄). 지적이 없으면 빈 목록.
@@ -739,6 +752,8 @@ async function 자료모으기(설정, 폴더, { 시험 = true, 캡처 = true, �
     const 정보 = 생성물명세읽기(설정.생성물);
     알리기(`생성물 ${정보.명세.항목.length}개를 원천 ${정보.명세.원천.slice(0, 10)}에서 다시 짓는다`);
     const 재현 = 생성물재현(정보, { 저장소: 설정.저장소, 후보: 앞후보, 후보내용: 자료.후보내용, 앞판: 후보앞판.판, 알리기 });
+    // 근사 허용 밖 명세는 모든 항목이 바탕 재현 같음일 때만 선다 — 하나라도 근사 길로 내려가면 증거를 쓰기 전에 멈춘다(결정 11-25).
+    생성물근사확인(정보, 재현);
     자료.생성물 = { 정보, 재현, 파일들: 생성물증거쓰기(폴더, 정보, 재현, { 곳: 생성물곳, 앞판: 후보앞판.판 }) };
   }
   if (설정.배경파일) 자료.배경 = fs.readFileSync(path.resolve(설정.배경파일), 'utf8');
@@ -798,8 +813,11 @@ const 조사끝 = /(?:으로|에서|에게|까지|부터|은|는|이|가|을|를
  *  한 곳만 고치고 다른 답변에 옛 장면이 남아 공개 질문창이 없는 장면을 안내할 뻔했다. 낱말 둘씩 찾는다(조사는 뗀다). 후보들 = [{ 경로, 글, 앞글 }]. */
 export function 옛문구찾기(diff, 후보들, { 상한 = 30 } = {}) {
   const 지운 = [];
+  let 머리 = false;   // 파일 머리말(「diff --git」부터 첫 「@@」 앞)만 건너뛴다 — 덩이 안의 「--- 」 줄은 「-- 」로 시작하는 지운 줄이다(GPT -e GF1)
   for (const l of String(diff).split('\n')) {
-    if (l.startsWith('--- ')) continue;
+    if (l.startsWith('diff --git ')) { 머리 = true; continue; }
+    if (l.startsWith('@@')) { 머리 = false; continue; }
+    if (머리) continue;
     if (l.startsWith('-')) 지운.push(l.slice(1));
     for (const m of l.matchAll(/\[-(.+?)-\]/g)) 지운.push(m[1]);
   }
@@ -1832,10 +1850,12 @@ function 처음고리판정(폴더, 목록) {
   // 다실림(GPT GB2): 항목 번호 그대로(앞-…)이거나, 쪼갠 조각(앞에 a · b … · z<수>를 붙인 번호, 제목 끝 「(조각 k/n)」)이 1/n부터 n/n까지 다 실렸다.
   // 실린 번호는 목록에 있고 그 묶음 글에 머리줄(### [번호] 제목)로도 있는 번호다 — 목록에만 남은 번호는 실린 것이 아니다(GPT -c GE5).
   // 묶음 글은 위에서 입력 SHA로 묶인 파일이다. 목록 번호의 머리줄이 그 묶음 글에 없으면 두 자료가 어긋난 것이라 사유로 둔다.
-  // 생성물 칸은 허용 목록의 명세에만 쓴다(설계 주인 11-22 — (2-2) 공개 뒤 후속을 다 닫을 때 푼다). 목록 밖 명세로 지은 검수는 충족이 아니다.
+  // 근사 대조는 spec-2-2r에만 쓴다(결정 11-25). 근사 허용 밖 명세로 지은 증명에 바탕 재현이 안 된 항목이 있으면 충족이 아니다 — 준비가
+  // 멈추는 잣대(생성물근사확인)를 확인도 증명에서 다시 본다. 모든 항목이 바탕 재현 같음인 명세는 어느 명세든 선다.
   // 시험 실행 표지로 허용 목록을 건너뛰고 지은 증명은 표지가 꺼져 있든 켜져 있든 충족이 아니다 — 시험 환경에서 지은 검수가 공개를 통과하지 못하게(설계 주인 11-22).
   if (목록.증명.생성물?.허용목록건너뜀) 사유.push('생성물 증명에 「허용 목록 건너뜀」 표시가 있다 — 시험 실행 표지로 허용 목록을 건너뛰고 지은 검수는 공개를 통과하지 못한다(설계 주인 11-22)');
-  if (목록.증명.생성물 && !생성물허용인가(목록.증명.생성물.명세?.sha256)) 사유.push(`생성물 명세 sha256 ${String(목록.증명.생성물.명세?.sha256 ?? '없음').slice(0, 12)}가 허용 목록 밖이다 — 생성물 칸은 (2-2) 명세에만 쓴다(설계 주인 11-22)`);
+  const 근사아래 = 목록.증명.생성물 ? 근사항목들(목록.증명.생성물.항목) : [];
+  if (근사아래.length && !생성물근사인가(목록.증명.생성물.명세?.sha256)) 사유.push(`생성물 명세 sha256 ${String(목록.증명.생성물.명세?.sha256 ?? '없음').slice(0, 12)}가 근사 허용 목록 밖인데 바탕 재현이 안 된 항목이 있다(${근사아래.map(x => x.경로).join(' · ')}) — 근사 대조는 spec-2-2r에만 쓴다(결정 11-25)`);
   const 글들 = 목록.증명.생성물 ? 묶음글들(폴더, 목록.묶음) : [];
   const 머리줄들 = 글들.flatMap(글 => [...글.matchAll(/^### \[([^\]\s]+)\] (.*)$/gm)].map(m => ({ id: m[1], 제목: m[2] })));
   const 실린번호 = new Set();
@@ -2160,11 +2180,12 @@ export function 두판diff(앞, 지금, 경로) {
     fs.writeFileSync(path.join(임시, 'a'), 앞 || '');
     fs.writeFileSync(path.join(임시, 'b'), 지금 || '');
     const 견주기 = (args, buffer = false) => {
-      const r = gitRaw(['diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', ...args, 'a', 'b'], { cwd: 임시, buffer });
+      // 올릴 바이트 그대로 견준다 — core.autocrlf가 켜진 PC에서는 --no-index도 CRLF를 LF로 맞춰 줄 끝만 바꾼 판을 같은 파일로 본다(GPT -e GF2).
+      const r = gitRaw(['-c', 'core.autocrlf=false', 'diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv', ...args, 'a', 'b'], { cwd: 임시, buffer });
       if (r.error || r.status > 1) throw new Error(`git diff --no-index 실패(${r.status}): ${String(r.stderr || r.error || '').trim().slice(0, 300)}`);
-      return buffer ? r.stdout : String(r.stdout || '').replace(/\r\n/g, '\n');
+      return buffer ? r.stdout : CR보임(String(r.stdout || ''));
     };
-    const 몸 = 견주기(['-U5']).split('\n').filter(l => !머리줄.test(l)).join('\n').trim();
+    const 몸 = 머리걷기(견주기(['-U5'])).trim();
     if (몸.split('\n').some(l => /^[+-]/.test(l) && l.length > 긴줄)) {
       // 공백도 낱말로 센다 — 낱말만 세면 공백만 바뀐 곳이 사라지고(GPT 다시 검수 GC1), 보이는 바뀜이 하나라도 있으면 다른 자리의 공백 바뀜도
       // 버린다(GPT -c GE4). 낱말 차이가 비면 아래 줄 차이를 싣는다.
@@ -2191,7 +2212,7 @@ export function 다시규칙글(종류, 작성자 = 'Claude') {
 2. 이 diff가 새로 만든 실제 문제만 findings에 적는다. diff 밖 코드는 맥락으로만 보고, diff가 건드리지 않은 곳의 옛 문제는 지적하지 않는다.${화면 ? ' 화면 글·배치는 diff로 보이는 범위에서만 판단한다(캡처는 이 묶음에 없다).' : ''}`,
     등급글(화면),
     `## 자료 꼴
-항목마다 「### [항목 번호] …」 머리 줄이 있다. diff는 앞 검수 때 판(-)과 지금 판(+)을 견준 unified 꼴(@@ 머리의 줄 번호, 앞뒤 5줄)이고, 긴 줄 파일은 「[파일:줄] …앞 [-옛-]{+새+} 뒤…」 꼴(줄 번호는 지금 판 기준)이다. 배포 후보 항목은 실제로 올릴 바이트를 같은 꼴로 견준 것이다.
+항목마다 「### [항목 번호] …」 머리 줄이 있다. diff는 앞 검수 때 판(-)과 지금 판(+)을 견준 unified 꼴(@@ 머리의 줄 번호, 앞뒤 5줄)이고, 긴 줄 파일은 「[파일:줄] …앞 [-옛-]{+새+} 뒤…」 꼴(줄 번호는 지금 판 기준)이다. 글 안의 ␍는 CR 바이트다(줄 끝을 CRLF로 바꾸면 그 줄 끝에 ␍가 보인다). 배포 후보 항목은 실제로 올릴 바이트를 같은 꼴로 견준 것이다.
 이 묶음에 없는 파일은 앞 검수가 이미 봤다 — 보지 못한 코드를 추측해 지적하지 않는다.`,
     `## 답
 주어진 JSON 꼴로만 답한다. findings마다 grade·location(파일:줄)·quote(지금 글·코드를 그대로)·problem(무엇이 왜 문제인지와 재현 근거)·fix(고칠 방향 한 줄). 새 지적이 없으면 빈 목록.
