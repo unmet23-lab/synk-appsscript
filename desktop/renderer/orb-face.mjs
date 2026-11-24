@@ -627,8 +627,6 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       const went = a.run?.aside ? (openAside(a.run.aside), aside === a.run.aside) : a.run?.prog ? showProgram(a.run.prog) : false;
       if (!went) { todo.open = true; todo.paused = false; todo.went = null; todo.note = '그 방을 지금 열 수 없습니다. 잠시 뒤 다시 눌러 주세요.'; render(); }
       // 사무실로 갔으면 초점을 그 방의 맨 위 문장에 둔다. 누른 단추가 카드와 함께 사라져 초점이 body로 빠지지 않게(Fable F4)
-      // 맡긴 일의 카드면 그 일의 부서 대화를 고르고 그 말로 초점을 옮긴다(사무실 대화 짜임 설계 검토 4)
-      else if (a.run?.prog && a.run.officeTask) { focus('office-head'); void office.handle({ act: 'chat-task', arg: a.run.officeTask }); render(); }
       else if (a.run?.prog) { focus('office-head'); render(); }
       return true;
     }
