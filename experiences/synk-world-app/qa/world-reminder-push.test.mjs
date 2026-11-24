@@ -72,6 +72,38 @@ test('2단이 켜진 계정(다른 기기에서 켬): 1단은 잡아 둔 예약�
  }finally{c.reminders.dispose();}
 });
 
+// 4-8 켜기 전(계획 §24-2): 새 길 판정이 「확인 중」이면 복습 때가 빈 배열인데, 그것은 「복습이 없다」가 아니라 「아직 모른다」다.
+// 그 요약을 2단으로 보내면 서버가 아는 복습 때(review_due)가 지워져, 앱을 닫은 사이 서버가 복습 알림을 못 잡는다.
+test('2단이 켜진 계정: 새 길 판정이 「확인 중」이면 복습 때 칸만 빼고 보내고(오늘 공부함은 간다), 판정이 서면 엔진 판정의 때로 보낸다',async()=>{
+ const push=fakePush({active:true,device:true,plan:{next:null,log:[]}});
+ let input={reviews:[],reviewsPending:true,studyTimes:[at(0,9)],hasReturn:true};
+ const c=controller({push,read:()=>input});
+ try{
+  c.reminders.refresh();
+  const sync=()=>push.calls.filter(call=>call[0]==='sync').map(call=>call[1]);
+  assert.equal(sync().length,1);
+  assert.equal('reviews' in sync()[0].digest,false,'확인 중에는 복습 때 칸이 없다(서버가 아는 때를 그대로 둔다)');
+  assert.equal(sync()[0].digest.lastStudyDay,'2026-10-19','오늘 공부함은 간다');
+  // 엔진 판정의 때는 분 단위 아무 값이다(10:07). 요약은 그것을 15분 단위로 올려 보낸다 — talk validateDigest는 15분 단위만 받는다(11-20 GPT GA3).
+  const engine=[at(1,10,7),at(3,10)];
+  input={reviews:engine,reviewsPending:false,studyTimes:[at(0,9)],hasReturn:true};
+  c.reminders.refresh();
+  const sent=sync().at(-1).digest.reviews;
+  assert.deepEqual(sent,[at(1,10,15),at(3,10)],'엔진 판정의 때를 15분 단위로 올려 보낸다');
+  assert.ok(sent.every(time=>time%(15*MINUTE)===0)&&sent[0]>=engine[0],'서버가 받는 꼴 · 복습 때보다 이르지 않다');
+  // 지금 판(판정 없음)은 표지가 없어 빈 복습도 「없다」로 보낸다.
+  input={reviews:[],studyTimes:[at(0,9)],hasReturn:false};
+  c.reminders.refresh();
+  assert.deepEqual(sync().at(-1).digest.reviews,[]);
+  // 구독 켜기도 같은 꼴이다 — 확인 중에 켜면 복습 때 칸 없이 켠다.
+  input={reviews:[],reviewsPending:true,studyTimes:[at(0,9)],hasReturn:true};
+  push.set({account:{active:false,devices:0},device:{subscribed:false}});
+  await c.reminders.command('reminder-push-yes');
+  const enable=push.calls.filter(call=>call[0]==='enable').at(-1);
+  assert.ok(enable,'구독 켜기를 불렀다');assert.equal('reviews' in enable[1].digest,false);
+ }finally{c.reminders.dispose();}
+});
+
 test('띄우기 직전: 마지막으로 안 상태가 10분보다 오래됐으면 다시 묻고, 그사이 2단이 켜졌으면 띄우지 않는다 — 꺼져 있으면 띄운다',async()=>{
  for(const meanwhile of [true,false]){
   const push=fakePush(),c=controller({push});
@@ -272,4 +304,48 @@ test('잠금 화면 글 언어: 한국어 틀 — 한글 단계 학생만 고른
   const push=fakePush({device:true,active:true,plan:{next:null,log:[]}}),c=controller({push,read:()=>({reviews:[at(1,10)],studyTimes:[at(0,9)],hangulStage})});
   try{c.reminders.refresh();assert.equal(push.calls.filter(call=>call[0]==='sync').at(-1)[1].digest.lang,expected,`${hangulStage} ${lang}`);}finally{c.reminders.dispose();setLang('ko',{save:false});}
  }
+});
+
+test('끄기: 결과를 1단에 넣기 바로 앞에 보내지 못한 편집이 생겼으면 서버 설정을 넣지 않는다(GPT push-versions-world-r4 GA10)',async()=>{
+ const push=fakePush({device:true,active:true}),c=controller({push,target:fakeWindow({userAgent:ANDROID,permission:'default'}),clock:{now:at(2,10)}});
+ try{
+  push.hasEdit=()=>true;
+  push.answers.disable={removed:true,handover:[],settings:{frequency:1,hour:18,since:null},account:{active:false,devices:0}};
+  const before=c.reminders.metrics().state;
+  assert.notDeepEqual([before.frequency,before.hour],[1,18]);
+  await c.reminders.command('reminder-stop');
+  const after=c.reminders.metrics().state;
+  assert.deepEqual([after.frequency,after.hour],[before.frequency,before.hour]);
+ }finally{c.reminders.dispose();}
+});
+
+test('2단 바인딩의 digest()는 1단이 지금 기록으로 지은 요약을 돌려준다 — 거절된 요약을 다시 보낼 때 쓴다(설계 주인 11-21 규칙 4)',()=>{
+ const push=fakePush({device:true,active:true,plan:{next:null,log:[]}});let bound=null;
+ push.bindSettings=value=>{bound=value;return ()=>{bound=null;};};
+ let reviews=[at(1,10)];
+ const c=controller({push,read:()=>({reviews,studyTimes:[at(0,9)]})});
+ const binding=bound;
+ try{
+  c.reminders.refresh();
+  const sent=push.calls.filter(call=>call[0]==='sync').at(-1)[1].digest;
+  assert.deepEqual(binding.digest().digest,sent,'보낸 요약과 같은 기록으로 짓는다');
+  reviews=[at(2,10)];
+  assert.notDeepEqual(binding.digest().digest.reviews,sent.reviews,'지금 기록으로 새로 짓는다');
+ }finally{c.reminders.dispose();}
+ assert.equal(binding.digest(),null,'멈춘 뒤에는 짓지 않는다');
+});
+
+test('열린 설정 화면: 2단이 서버 설정을 들이면 횟수 · 시각 단추도 그 값으로 바뀐다(GPT push-versions-world GA11)',()=>{
+ const push=fakePush({device:true,active:true,plan:{next:null,log:[]}});let bound=null;
+ push.bindSettings=value=>{bound=value;return ()=>{bound=null;};};
+ const c=controller({push});
+ try{
+  const shape=c.reminders.settingsMarkup().match(/data-shape="([^"]*)"/)[1];
+  const radio=(name,value,checked)=>({name,value:String(value),checked});
+  const radios=[radio('reminder-count',1,false),radio('reminder-count',2,true),radio('reminder-hour','auto',true),radio('reminder-hour',20,false)];
+  const box={isConnected:true,getAttribute:name=>name==='data-shape'?shape:null,querySelector:()=>null,querySelectorAll:()=>radios,addEventListener(){}};
+  c.reminders.bindSettings({querySelector:selector=>selector==='[data-reminder-settings]'?box:null});
+  bound.adopt({frequency:1,hour:20,since:null});
+  assert.deepEqual(radios.map(item=>item.checked),[true,false,false,true]);
+ }finally{c.reminders.dispose();}
 });

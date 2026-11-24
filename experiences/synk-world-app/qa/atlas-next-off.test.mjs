@@ -68,8 +68,9 @@ test('꺼진 판의 알림 입력(셸 원문) — 판정 없이 진도의 dueAt 
  // 꺼진 판의 세션은 lifeDue 자리가 비어 있다(world-session part() → null). 넣은 판정이 아예 없는 꼴(undefined)도 같다.
  for(const lifeDue of [null,undefined]){
   const life=(snapshot,education=null)=>({progress:{exportSnapshot:()=>snapshot},education,lifeDue});
-  assert.deepEqual(reminderInputs(life({reviews,hangul:{answer:'reads'}})),{reviews:[at+60000,at-86400000,at+3*86400000],exam:null,examPlan:null,studyTimes:['공부한 시각'],hangulStage:false,hasReturn:true},'복습 기록의 dueAt 그대로(차례 · 지난 것 포함, 수가 아닌 것만 뺀다)');
-  assert.deepEqual(reminderInputs(life({reviews:{},hangul:{answer:'new'}})),{reviews:[],exam:null,examPlan:null,studyTimes:['공부한 시각'],hangulStage:true,hasReturn:false},'복습도 시험도 없으면 돌아올 것이 없다');
+  // 꺼진 판에는 새 길 판정이 없어 「확인 중」이 아니다 — reviewsPending은 거짓이다(2단 요약이 복습 때 칸을 싣는다, 4-8 §24-2).
+  assert.deepEqual(reminderInputs(life({reviews,hangul:{answer:'reads'}})),{reviews:[at+60000,at-86400000,at+3*86400000],reviewsPending:false,exam:null,examPlan:null,studyTimes:['공부한 시각'],hangulStage:false,hasReturn:true},'복습 기록의 dueAt 그대로(차례 · 지난 것 포함, 수가 아닌 것만 뺀다)');
+  assert.deepEqual(reminderInputs(life({reviews:{},hangul:{answer:'new'}})),{reviews:[],reviewsPending:false,exam:null,examPlan:null,studyTimes:['공부한 시각'],hangulStage:true,hasReturn:false},'복습도 시험도 없으면 돌아올 것이 없다');
   assert.equal(reminderInputs(life({reviews:{'r-3':reviews['r-3']}})).hasReturn,false,'꺼진 판에서 돌아올 것은 때(dueAt)가 있는 복습이다');
   const withExam=reminderInputs(life({reviews:{}},exam));
   assert.deepEqual([withExam.reviews,withExam.exam,withExam.hasReturn],[[],{date:'2027-01-17'},true],'시험 날짜(YYYY-MM-DD)만 있어도 돌아올 것이 있다');

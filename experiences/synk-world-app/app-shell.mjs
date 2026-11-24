@@ -520,7 +520,8 @@ function reminderInputs(){
  // 판정이 없으면 지금 판 그대로(진도의 dueAt). 「돌아올 것이 있는가」는 두 판 모두 복습 기록이 있는가다.
  const judged=life.lifeDue?.judge(snapshot,Date.now())??null,records=Object.values(snapshot.reviews||{});
  const reviews=judged?(judged.state==='engine'?[...judged.times]:[]):records.map(review=>review?.dueAt).filter(Number.isFinite);
- return {reviews,exam,examPlan,studyTimes:studyTimes(snapshot),hangulStage:snapshot.hangul?.answer==='new',hasReturn:(judged?records.length>0:reviews.length>0)||typeof exam?.date==='string'&&exam.date.length===10};
+ // 확인 중의 빈 reviews는 「복습이 없다」가 아니라 「아직 모른다」다 — 2단 서버 요약으로 보내면 서버가 아는 복습 때를 지운다(§24-2).
+ return {reviews,reviewsPending:!!judged&&judged.state!=='engine',exam,examPlan,studyTimes:studyTimes(snapshot),hangulStage:snapshot.hangul?.answer==='new',hasReturn:(judged?records.length>0:reviews.length>0)||typeof exam?.date==='string'&&exam.date.length===10};
 }
 // 공부한 시각(「그날 이미 공부했는지」와 공부하던 시간대): 학습 기록(Trail)의 답 · 생활 레슨·복습의 답 · 쓰기 점검.
 // 학습 기록은 읽기 전용 코치로 읽는다(쓰지 않는다 — world-reminder-device.mjs createTrailTimes, 게임 판이 닫혀 코치가 끊기면 다시 만든다).
@@ -1149,7 +1150,7 @@ const commands={
  logout:async()=>{if(dramaInvite.language)finishDramaInvite();accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
    // Atlas 새 길의 로그아웃 표지(손님 저장소 — 되는 만큼만, 단계4_계획 §18-5-3): 이미 연 계정 코치가 있을 때만, 잠깐만 기다린다.
    try{const leavingAtlas=life.owner===leaving?life.atlasNext:null;if(leavingAtlas){let timer;await Promise.race([leavingAtlas.noteLogout(),new Promise(resolve=>{timer=setTimeout(resolve,1500);})]).finally(()=>clearTimeout(timer));}}catch{/* 로그아웃을 막지 않는다 */}
-   await client.logout();const signedOutAt=Date.now();if(leaving){noteDeviceAccount(localStorage,leaving,signedOutAt);clearMonthAnswer(localStorage,leaving);}noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(front?.active()){front.drop();entryDestinationHandled=false;void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
+   await client.logout();const signedOutAt=Date.now();if(leaving){noteDeviceAccount(localStorage,leaving,signedOutAt);clearMonthAnswer(localStorage,leaving);}noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(front?.active()){front.drop();entryDestinationHandled=false;void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;void worldPush?.resume?.();home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 commands.speaking=openSpeaking;
 commands.me2=openMe2;
@@ -1178,12 +1179,16 @@ document.addEventListener('change',event=>{const control=event.target;if(control
  // 옛 묶음) 세션을 다시 확인하는 restore()로 읽는다 — 그대로 두면 다른 기기가 바꾼 판 번호로 같은 충돌이 되풀이됐다(검수 s3e2 GA2).
  return Promise.resolve().then(()=>typeof account.refreshLearning==='function'?account.refreshLearning():account.restore?.()).then(()=>{if(screen==='world-profile')profile();},()=>{});}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
 // pagehide: 생활 세션을 닫고(그 뒤 계정 정리·늦은 준비가 생활 화면을 다시 세우지 않는다) 지금 시트의 자원을 버린 다음 계정을 멈춘다.
-window.addEventListener('pagehide',()=>{authBoundary++;worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
-window.addEventListener('online',()=>{if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});
+// 2단 알림(단계4 계획 §24-6의 5): 떠날 때와 화면이 숨을 때 1단의 모으던 다시 잡기를 먼저 돌리고(막 낸 답의 「오늘 공부함」) 받히지 않은 설정 · 요약을
+// keepalive로 보낸다 — 안드로이드 크롬은 밀어 닫을 때 pagehide 없이 끝나는 일이 많다. 망이 돌아오거나 화면이 다시 보이면 바로 다시 보낸다.
+// 떠날 때 1단의 모으던 다시 잡기를 world-push의 「떠나는 중」 안에서 돌린다 — 그 안에서 나가는 요약도 토큰 갱신을 기다리지 않는다(기기 판 설계 관문 GA1).
+const flushReminders=()=>{const pending=()=>life.reminders?.flushPending?.();if(worldPush)worldPush.flush(pending);else pending();};
+window.addEventListener('pagehide',()=>{authBoundary++;flushReminders();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
+window.addEventListener('online',()=>{worldPush?.retry();if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});
 // Switching between side-by-side web and desktop windows need not hide either
 // document. Refocus must also restore the latest selected companion.
 window.addEventListener('focus',()=>{if(!document.hidden&&client.snapshot&&!client.busy)void refreshTutorAccount();});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&client.snapshot&&!client.busy)client.refresh().then(refreshTutorAccount).catch(()=>{});});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){flushReminders();return;}worldPush?.retry();if(client.snapshot&&!client.busy)client.refresh().then(refreshTutorAccount).catch(()=>{});});
 // A queued close event from sign-in must not clear a newly opened fitting room.
 const worldPanel=$('#world-panel')||$('#panel');
 worldPanel.addEventListener('close',()=>{if(!worldPanel.open){gameLaunch++;gameRecovery=null;screen='';hangerSignature='';renderHomeHanger(client.snapshot);releaseSheet();}});

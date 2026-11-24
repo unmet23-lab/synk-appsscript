@@ -98,7 +98,10 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
  const pushDevice=()=>remote()?.device?.subscribed===true;
  // 2단을 켤 수 있다: 서버 기능이 켜져 있고(상태로 확인) 이 브라우저가 받을 수 있다.
  const pushOffered=()=>{const value=remote();return !!value&&value.enabled===true&&value.support?.supported===true;};
- const digestOf=(input,time)=>reminderDigest({reviews:input.reviews,exam:input.exam,examPlan:input.examPlan,studyTimes:input.studyTimes,lang:pushLang(input),timeZone:deviceTimeZone(target)},{now:time,offset});
+ // 새 길 판정이 「확인 중」이면(reviewsPending) 복습 때 칸을 뺀다 — 빈 배열은 「복습 없음」이라 서버가 아는 복습 때를 지운다. 칸이 없으면
+ // 서버(talk world-push validateDigest)가 아는 때를 그대로 두고 오늘 공부함 · 보낸 줄 · 시각 같은 나머지 칸만 받는다(4-8 §24-2).
+ const digestOf=(input,time)=>{const digest=reminderDigest({reviews:input.reviews,exam:input.exam,examPlan:input.examPlan,studyTimes:input.studyTimes,lang:pushLang(input),timeZone:deviceTimeZone(target)},{now:time,offset});
+  if(input.reviewsPending===true)delete digest.reviews;return digest;};
 
  // 다시 잡기: 앱이 열려 있는 동안 기록이 바뀌거나 창으로 돌아올 때마다. 보내지 않은 옛 계획은 지우고 새로 잡는다.
  // 그 전에 때가 된 알림부터 띄운다 — 잠들었던 기기가 깨어난 순간 다시 잡기가 먼저 돌면 막 때가 된 알림을 띄우지 않고 내일로 옮겨 버린다.
@@ -279,7 +282,8 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   if(!result){rerenderSettings();return null;}
   let state=load();
   if(Array.isArray(result?.handover))state=mergeReminderEntries(state,result.handover,now());
-  if(result?.settings&&REMINDER_POLICY.frequencies.includes(result.settings.frequency))state={...state,frequency:result.settings.frequency,
+  // 서버 설정을 넣기 바로 앞에 보내지 못한 편집이 있는지 한 번 더 본다 — 끄기가 정한 뒤 다른 탭이 설정을 바꿨으면 그 편집을 지킨다(r4 GA10).
+  if(result?.settings&&!push.hasEdit?.()&&REMINDER_POLICY.frequencies.includes(result.settings.frequency))state={...state,frequency:result.settings.frequency,
    hour:REMINDER_POLICY.hours.includes(result.settings.hour)?result.settings.hour:null,since:Number.isFinite(result.settings.since)?result.settings.since:state.since};
   if(localOff)state=updateReminderSettings(state,{enabled:false},now());
   save(state);
@@ -305,8 +309,8 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   if(name==='reminder-push-no'){if(target.document?.querySelector?.('[data-push-consent="sheet"]')){close();return decline();}closeConsent();rerenderSettings();return;}
   if(name==='reminder-keep'){
    save(updateReminderSettings(load(),{enabled:true},now()));
-   // 2단이 켜진 계정은 서버의 물러남도 그때부터 다시 센다.
-   if(pushActive())syncSettings();
+   // 2단이 켜진 계정은 서버의 물러남도 그때부터 다시 센다. 상태를 아직 모를 때도 판으로 적어 두고 상태가 서면 보낸다(world-push sync · 설계 검토 P2-7).
+   if(push)syncSettings();
    toast(onMessage(refresh()));repaint();return;
   }
   if(name==='reminder-stop'){
@@ -441,6 +445,9 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
    const state=load(),{supported,permission}=support(),on=(state.enabled&&supported&&permission==='granted')||pushDevice();
    if(toggle){toggle.checked=on;if(!supported||permission==='denied')toggle.disabled=true;}
    if(choices)choices.hidden=!(on||pushActive());if(line)line.innerHTML=statusMarkup();
+   // 횟수 · 시각 단추도 지금 값으로 맞춘다 — 다른 기기의 설정을 들였을 때 열린 화면이 옛 값을 보이지 않게(GPT push-versions-world GA11).
+   for(const input of current.querySelectorAll?.('input[name="reminder-count"],input[name="reminder-hour"]')||[])
+    input.checked=input.name==='reminder-count'?Number(input.value)===state.frequency:input.value==='auto'?state.hour===null:Number(input.value)===state.hour;
   };
   settingsUpdate=update;
   box.addEventListener('change',event=>{
@@ -468,8 +475,8 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
     return;
    }
    const choose=values=>{save(updateReminderSettings(load(),values,now()));refresh();
-    // 2단이 켜진 계정은 설정이 계정에 하나다 — 서버에도 바로 보낸다(물러남도 그때부터 다시 센다).
-    if(pushActive())syncSettings();
+    // 2단이 켜진 계정은 설정이 계정에 하나다 — 서버에도 바로 보낸다(물러남도 그때부터 다시 센다). 상태를 아직 모를 때도 판으로 적어 둔다(P2-7).
+    if(push)syncSettings();
     toast(t('reminder.saved'));update();};
    if(control.name==='reminder-count')choose({frequency:Number(control.value)});
    if(control.name==='reminder-hour')choose({hour:control.value==='auto'?null:Number(control.value)});
@@ -485,7 +492,23 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   const state=load(),entries=state.entries.filter(row=>Number.isFinite(row.deliveredAt));
   if(entries.length!==state.entries.length)save({...state,entries});
  }
- return {refresh,schedule,tick,askMarkup,examMarkup,examChanged,consentMarkup,settingsMarkup,bindSettings,command,opened,openKind,forgetPending,
+ // 2단 설정 판 맞추기(world-push bindSettings, 단계4 계획 §24-6의 5): 이 브라우저의 1단 설정이 계정 설정의 기기 쪽 사본이다. 보내지 못한 편집이
+ // 없거나 그 바탕이 서버 판과 다르면 서버 설정을 들인다 — 다른 기기의 새 설정을 그리고, 다음 쓰기가 옛 값으로 되돌리지 않게(설계 검토 P1-1).
+ // 들일 때는 설정을 보내지 않는다. 마지막 기기를 끌 때(disablePush) 서버 설정을 넣는 것과 같은 꼴이다.
+ const unbindPush=push?.bindSettings?.({
+  read:()=>{const state=load();return {frequency:state.frequency,hour:state.hour,since:state.since};},
+  // 거절된 요약을 다시 보낼 때 지금 기록으로 새로 짓는다(설계 주인 11-21 규칙 4 — 다시 보낼 때 새로 짓는다).
+  digest:()=>{if(stopped)return null;const time=now(),handover=handoverEntries(load(),time);return {digest:digestOf(inputs(),time),...(handover.length?{handover}:{})};},
+  adopt:value=>{
+   if(stopped||!REMINDER_POLICY.frequencies.includes(value?.frequency))return;
+   const state=load();
+   save({...state,frequency:value.frequency,hour:REMINDER_POLICY.hours.includes(value.hour)?value.hour:null,since:Number.isFinite(value.since)?value.since:state.since});
+   rerenderSettings();repaint();
+  }})||null;
+ // 떠날 때(pagehide · 화면 숨김): 모으던 다시 잡기(400ms)를 바로 돌려 막 낸 답의 「오늘 공부함」이 요약에 들게 한다(설계 검토 P2-6).
+ // app-shell이 push.flush(이 함수)로 부른다 — 그 안에서 나가는 요약은 떠남으로 간다.
+ function flushPending(){if(stopped||!pending)return;clearTimeout(pending);pending=null;refresh();}
+ return {refresh,schedule,tick,askMarkup,examMarkup,examChanged,consentMarkup,settingsMarkup,bindSettings,command,opened,openKind,forgetPending,flushPending,
   metrics:()=>({owner,state:load(),plan:last,support:support(),push:remote(),hour:last?last.hour:reminderHour({hour:load().hour,now:now(),offset}).hour}),
-  dispose(){stopped=true;clearInterval(timer);timer=null;clearTimeout(pending);pending=null;unwatch?.();unwatch=null;target.removeEventListener?.('focus',onVisible);target.document?.removeEventListener?.('visibilitychange',onVisible);}};
+  dispose(){stopped=true;clearInterval(timer);timer=null;clearTimeout(pending);pending=null;unwatch?.();unwatch=null;unbindPush?.();target.removeEventListener?.('focus',onVisible);target.document?.removeEventListener?.('visibilitychange',onVisible);}};
 }
