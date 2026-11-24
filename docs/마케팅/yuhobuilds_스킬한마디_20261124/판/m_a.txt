@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, warm late-afternoon office mood, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny low office cabinet seen from the front, slightly below the cabinet top, so we look a little UP at Mongle. The background is a plain deep olive-green felt wall that becomes almost black toward the top, with nothing on it. Warm amber sunlight comes from a window out of frame on the LEFT and falls across the cabinet top; the right side is a little darker.
+- The TOP 38% of the image is plain, very dark olive wall with nothing in it — keep it empty and dark for titles.
+- The cabinet top (walnut-brown felt) is a flat ledge at 62% of the image height. Its front face (darker walnut felt with one small round wooden knob) fills the image below the ledge down to the bottom edge.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the cabinet top on the RIGHT, centred at 70% of the image width, about 24% of the image width wide, its top at about 44% of the image height. Mongle is turned a little toward the LEFT and is LOOKING DOWN at the long paper: two round glossy black bead eyes placed a little low on its face, each with a tiny highlight — it looks tired of how long the paper is.
+- THE LONG PAPER: on the cabinet top on the LEFT, centred at 28% of the image width, a single very long strip of cream-white felt paper (about 22% of the image width wide), like a receipt that never ends. One end lies flat on the cabinet top; the rest hangs over the front edge of the cabinet and falls straight down the cabinet front all the way past the bottom edge of the image, with one soft fold where it bends over the edge. Across the WHOLE strip, from top to bottom, there are many evenly spaced rows of short charcoal stitched lines of slightly different lengths, like many lines of a long instruction. Only stitched lines — no letters, no numbers.
+- Keep Mongle and the paper between 8% and 86% of the image width.
+
+Exactly ONE Mongle, nobody else, no laptop, no phone, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.

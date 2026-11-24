@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 2103,
+  "lufs": -17
+ },
+ "made": "2026-11-24T01:57:10.126Z",
+ "lines": [
+  {
+   "id": "P1",
+   "text": "매주 붙여 넣던 긴 지시문, 이제 한 마디로 불러요.",
+   "dur": 2.632,
+   "syllablesPerSec": 7.22,
+   "src": "P1.wav",
+   "key": "5dfe72fd329d6663c84796ac42b268ce",
+   "words": 9
+  },
+  {
+   "id": "V2",
+   "text": "지시문 없이 한 마디만 했더니, 표가 나오고 말투도 달랐어요.",
+   "dur": 2.887,
+   "syllablesPerSec": 8.31,
+   "src": "V2.wav",
+   "key": "f4fbf0bf2f913a5d9de518d89568121c",
+   "words": 9
+  },
+  {
+   "id": "V3",
+   "text": "그래서 클로드에게, 이 지시문을 스킬로 만들어 줘, 했어요.",
+   "dur": 3.132,
+   "syllablesPerSec": 7.34,
+   "src": "V3.wav",
+   "key": "6d4f2f06925f35e20e23189f5cd9912e",
+   "words": 8
+  },
+  {
+   "id": "V4",
+   "text": "이제 슬래시 주간보고, 이 한 마디면 지시문대로 나와요.",
+   "dur": 2.602,
+   "syllablesPerSec": 8.46,
+   "src": "V4.wav",
+   "key": "dba7aabc3e40027d24429a31b6eff5c5",
+   "words": 8
+  },
+  {
+   "id": "V5",
+   "text": "저희 회사도 스킬 열한 개를 만들어서, 한 마디로 불러 써요.",
+   "dur": 2.747,
+   "syllablesPerSec": 8.37,
+   "src": "V5.wav",
+   "key": "22f40821138d623af83de762ab70b2fb",
+   "words": 10
+  },
+  {
+   "id": "P2",
+   "text": "스킬로 만들어 달라는 말, 댓글에 스킬이라고 남기면 보내 드려요.",
+   "dur": 3.225,
+   "syllablesPerSec": 8.06,
+   "src": "P2.wav",
+   "key": "6f9e423a256f12f988d94ee36a1ade4c",
+   "words": 9
+  },
+  {
+   "id": "P2G",
+   "text": "스킬로 만들어 달라는 말, 게시글에 다 적어 뒀어요.",
+   "dur": 2.386,
+   "syllablesPerSec": 8.38,
+   "src": "P2G.wav",
+   "key": "05ab415d7f037e8e8e17e5a2c93e3984",
+   "words": 8
+  }
+ ]
+}

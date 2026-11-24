@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "저희 회사도 스킬 열한 개를 만들어서, 한 마디로 불러 써요.",
+ "dur": 2.747,
+ "words": [
+  {
+   "text": "저희",
+   "start": 0.01,
+   "end": 0.162
+  },
+  {
+   "text": "회사도",
+   "start": 0.208,
+   "end": 0.477
+  },
+  {
+   "text": "스킬",
+   "start": 0.605,
+   "end": 0.804
+  },
+  {
+   "text": "열한",
+   "start": 0.851,
+   "end": 1.027
+  },
+  {
+   "text": "개를",
+   "start": 1.061,
+   "end": 1.19
+  },
+  {
+   "text": "만들어서,",
+   "start": 1.225,
+   "end": 1.599
+  },
+  {
+   "text": "한",
+   "start": 1.774,
+   "end": 1.867
+  },
+  {
+   "text": "마디로",
+   "start": 1.915,
+   "end": 2.125
+  },
+  {
+   "text": "불러",
+   "start": 2.16,
+   "end": 2.323
+  },
+  {
+   "text": "써요.",
+   "start": 2.358,
+   "end": 2.747
+  }
+ ],
+ "source": {
+  "key": "22f40821138d623af83de762ab70b2fb",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

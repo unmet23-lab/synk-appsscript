@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "지시문 없이 한 마디만 했더니, 표가 나오고 말투도 달랐어요.",
+ "dur": 2.887,
+ "words": [
+  {
+   "text": "지시문",
+   "start": 0.02,
+   "end": 0.326
+  },
+  {
+   "text": "없이",
+   "start": 0.365,
+   "end": 0.538
+  },
+  {
+   "text": "한",
+   "start": 0.591,
+   "end": 0.684
+  },
+  {
+   "text": "마디만",
+   "start": 0.724,
+   "end": 0.937
+  },
+  {
+   "text": "했더니,",
+   "start": 0.989,
+   "end": 1.255
+  },
+  {
+   "text": "표가",
+   "start": 1.468,
+   "end": 1.64
+  },
+  {
+   "text": "나오고",
+   "start": 1.68,
+   "end": 1.96
+  },
+  {
+   "text": "말투도",
+   "start": 2.013,
+   "end": 2.265
+  },
+  {
+   "text": "달랐어요.",
+   "start": 2.305,
+   "end": 2.887
+  }
+ ],
+ "source": {
+  "key": "f4fbf0bf2f913a5d9de518d89568121c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

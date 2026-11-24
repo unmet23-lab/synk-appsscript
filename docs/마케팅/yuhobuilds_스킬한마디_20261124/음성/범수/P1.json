@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P1",
+ "text": "매주 붙여 넣던 긴 지시문, 이제 한 마디로 불러요.",
+ "dur": 2.632,
+ "words": [
+  {
+   "text": "매주",
+   "start": 0.02,
+   "end": 0.168
+  },
+  {
+   "text": "붙여",
+   "start": 0.227,
+   "end": 0.376
+  },
+  {
+   "text": "넣던",
+   "start": 0.42,
+   "end": 0.628
+  },
+  {
+   "text": "긴",
+   "start": 0.688,
+   "end": 0.821
+  },
+  {
+   "text": "지시문,",
+   "start": 0.865,
+   "end": 1.236
+  },
+  {
+   "text": "이제",
+   "start": 1.591,
+   "end": 1.711
+  },
+  {
+   "text": "한",
+   "start": 1.77,
+   "end": 1.859
+  },
+  {
+   "text": "마디로",
+   "start": 1.903,
+   "end": 2.081
+  },
+  {
+   "text": "불러요.",
+   "start": 2.126,
+   "end": 2.632
+  }
+ ],
+ "source": {
+  "key": "5dfe72fd329d6663c84796ac42b268ce",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

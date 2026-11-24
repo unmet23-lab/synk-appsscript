@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "이제 슬래시 주간보고, 이 한 마디면 지시문대로 나와요.",
+ "dur": 2.602,
+ "words": [
+  {
+   "text": "이제",
+   "start": 0.02,
+   "end": 0.119
+  },
+  {
+   "text": "슬래시",
+   "start": 0.162,
+   "end": 0.388
+  },
+  {
+   "text": "주간보고,",
+   "start": 0.43,
+   "end": 0.812
+  },
+  {
+   "text": "이",
+   "start": 1.151,
+   "end": 1.165
+  },
+  {
+   "text": "한",
+   "start": 1.207,
+   "end": 1.321
+  },
+  {
+   "text": "마디면",
+   "start": 1.363,
+   "end": 1.66
+  },
+  {
+   "text": "지시문대로",
+   "start": 1.702,
+   "end": 2.126
+  },
+  {
+   "text": "나와요.",
+   "start": 2.169,
+   "end": 2.602
+  }
+ ],
+ "source": {
+  "key": "dba7aabc3e40027d24429a31b6eff5c5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

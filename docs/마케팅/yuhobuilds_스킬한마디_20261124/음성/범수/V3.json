@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "그래서 클로드에게, 이 지시문을 스킬로 만들어 줘, 했어요.",
+ "dur": 3.132,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.223
+  },
+  {
+   "text": "클로드에게,",
+   "start": 0.266,
+   "end": 0.729
+  },
+  {
+   "text": "이",
+   "start": 1.221,
+   "end": 1.236
+  },
+  {
+   "text": "지시문을",
+   "start": 1.308,
+   "end": 1.684
+  },
+  {
+   "text": "스킬로",
+   "start": 1.727,
+   "end": 1.959
+  },
+  {
+   "text": "만들어",
+   "start": 2.002,
+   "end": 2.249
+  },
+  {
+   "text": "줘,",
+   "start": 2.291,
+   "end": 2.393
+  },
+  {
+   "text": "했어요.",
+   "start": 2.682,
+   "end": 3.132
+  }
+ ],
+ "source": {
+  "key": "6d4f2f06925f35e20e23189f5cd9912e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}
