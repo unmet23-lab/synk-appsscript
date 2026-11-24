@@ -564,7 +564,7 @@ test('판: 상태를 몰랐을 때 바꾼 설정은 상태가 서면 그때 판�
  assert.equal(s.syncs().length,before+1,'떠날 때 모은 요약이 기다림 없이(같은 차례에서) 나간다');
  assert.equal(s.syncs().at(-1).options.leaving,true);assert.ok(sent>=1);
  for(const release of s.held.splice(0))release();await settled();
- await push.logout();assert.equal(storage.getItem(KEY_V),null);
+ await push.logout({hold:true});assert.equal(storage.getItem(KEY_V),null);
 });
 
 test('판: 거절된 요약은 지금 기록으로 새로 지어 한 번 다시 보내고, 또 거절되면 멈춘다(설계 주인 11-21 규칙 4)',async()=>{
@@ -657,7 +657,7 @@ test('판: 설정 값과 바탕은 한 덩어리로 나가고, 로그아웃한 �
  rem.set({hour:20});tabB.sync({settings:{frequency:2,hour:20}});await settled();
  assert.ok(s.syncs().every(call=>call.body.versions?.settings===V0),'값마다 그때의 바탕이 붙었다');
  const sent=s.syncs().length;
- await tabB.logout();await settled();
+ await tabB.logout({hold:true});await settled();
  assert.equal(EDIT_OF(storage),null,'로그아웃한 B의 편집을 지운다');
  s.failWhen=()=>null;tabA.retry();await tabA.refresh();await settled();
  assert.equal(s.syncs().length,sent,'A는 B의 편집을 넘겨받아 보내지 않는다');
@@ -1839,7 +1839,7 @@ test('판: 켜기 응답을 기다리는 사이 고르고 로그아웃하면 그
   rem.set({hour:18});push.sync({settings:{frequency:2,hour:18}});await flush();
   assert.equal(EDIT_OF(storage)?.hour,18);
   const before=s.calls.length;
-  await push.logout();
+  await push.logout({hold:true});
   push.sync({settings:{frequency:2,hour:18},digest:DIGEST('2026-10-22')});push.retry();push.flush();await settled();   // 로그아웃 중의 1단 다시 잡기 · 다시 시도 · 떠남
   if(!reopen)await push.setAccount(null);
   held.release();await turning;await settled();   // 늦은 성공 응답
@@ -1895,7 +1895,7 @@ test('판: 로그아웃은 넘겨받을 편집과 그 다시 읽기를 버린다
  answer();await settled();await settled();   // A가 낡은 응답을 받고 상태를 다시 읽는다(붙잡힘)
  assert.equal(held.count,1);
  a.retry();await settled();   // 날아가는 동안 다시 시도가 온다
- await a.logout();a.resume();await settled();   // 로그아웃이 실패해 막기를 풀고 다시 읽는다
+ await a.logout({hold:true});a.resume();await settled();   // 로그아웃이 실패해 막기를 풀고 다시 읽는다
  assert.equal(held.count,2);assert.equal(EDIT_OF(storage),null,'로그아웃이 확인받지 못한 편집을 버렸다');
  held.list[0].fail(fault(0,'PUSH_UNAVAILABLE'));await settled();await settled();   // 앞 읽기가 실패한다
  assert.equal(held.count,2,'버린 편집 때문에 다시 읽지 않는다');
@@ -1919,7 +1919,7 @@ const twoTabsLeft=async()=>{
  assert.equal(EDIT_OF(storage)?.hour,18);
  s.failWhen=()=>null;
  const oldValue=storage.getItem(KEY_V);
- await a.logout();await settled();   // 같은 계정의 A 탭만 로그아웃 — B의 편집도 지운다(한계 13)
+ await a.logout({hold:true});await settled();   // 같은 계정의 A 탭만 로그아웃 — B의 편집도 지운다(한계 13)
  assert.equal(EDIT_OF(storage),null);
  return {s,a,b,rem,bus,callsB,mark:callsB.length,oldValue};
 };
@@ -1985,7 +1985,7 @@ test('판: 이 탭이 쓴 편집을 다른 탭이 지우면, 마지막으로 받
  rem.set({hour:18});b.sync({settings:{frequency:2,hour:18}});await settled();   // 20시를 거쳐 다시 18시
  assert.equal(EDIT_OF(storage)?.hour,18);
  s.failWhen=()=>null;const oldValue=storage.getItem(KEY_V),mark=callsB.length;
- await a.logout();await settled();
+ await a.logout({hold:true});await settled();
  bus.fire({key:KEY_V,oldValue,newValue:null});await settled();
  assert.equal(rem.value.hour,9,'B 화면이 서버 시각 9시로 바뀐다');
  const after=callsB.slice(mark);assert.equal(after.filter(action=>action!=='status').length,0);assert.equal(after.length,1);
@@ -2009,7 +2009,7 @@ const threeTabsLeft=async()=>{
  rem.set({hour:20});b.sync({settings:{frequency:2,hour:20}});await settled();
  rem.set({hour:18});b.sync({settings:{frequency:2,hour:18}});await settled();   // B의 화면 · 마지막으로 받은 값은 18시, 서버는 9시
  const oldValue=storage.getItem(KEY_V);
- await a.logout();await settled();   // A가 로그아웃해 B의 편집을 지운다
+ await a.logout({hold:true});await settled();   // A가 로그아웃해 B의 편집을 지운다
  return {s,a,b,c,rem,bus,net,storage,oldValue};
 };
 test('판: 화면 맞추기 읽기가 늦는 사이 다른 탭이 시각을 저장해 판 키가 다시 비면, 이 탭은 한 번 더 읽어 늦은 옛 응답이 화면을 되돌리지 않는다(GPT push-versions-world-r15 GA1)',async()=>{
@@ -2263,7 +2263,7 @@ test('다시 잇기: 이 브라우저 구독을 지우기만 하는 것은 끄�
  assert.equal(off.removed,true);assert.equal(b.current,null,'끄기는 지운다');assert.equal(storage.getItem(PUSH_RECORD_KEY),null);
  await push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});
  assert.ok(b.current);
- await push.logout();
+ await push.logout({hold:true});
  assert.equal(b.current,null,'로그아웃은 지운다');assert.equal(storage.getItem(PUSH_RECORD_KEY),null);
  push.dispose();
 });
@@ -2401,7 +2401,7 @@ test('판: 로그아웃은 보낼 것이 없으면 판 키를 지우고, 늦은 
  rem.set({hour:20});push.sync({settings:{frequency:2,hour:20}});await flush();m.queue.shift().pass();await settled();
  assert.equal(EDIT_OF(storage),null,'받혀 편집을 비웠다');
  push.sync({digest:DIGEST('2026-10-22')});await flush();const release=m.queue.shift().late();
- await push.logout();
+ await push.logout({hold:true});
  assert.equal(storage.getItem(KEY_V),null,'보낼 것이 없어 지웠다');
  const seen=push.snapshot().versions;
  release();await settled();
@@ -2591,4 +2591,230 @@ test('판: 섞기 — 탭 두세 개와 다른 기기 하나의 차례를 섞어
  const seeds=Number(process.env.WORLD_PUSH_SHUFFLE_SEEDS||200),failed=[];
  for(let seed=1;seed<=seeds;seed++){const {problems}=await shuffleRun(seed);if(problems.length)failed.push(`시드 ${seed}: ${problems.join(' / ')}`);if(failed.length>=5)break;}
  assert.deepEqual(failed,[]);
+});
+
+// ── 5-3 켜기 공개의 캐시 섞임(섞임 표 3 · 4, 설계 주인 11-25) ──────────────────────────────────────────────────────────────────────────────
+// 맨 주소로 불리는 world-push는 HTML · 셸과 캐시 판이 갈린다. 옛 판은 라이브(synk-policy abd09dc) world-push.mjs를 그대로 둔 live-world-push-20261125.mjs다.
+// 셸은 node에서 못 올리므로 app-shell.mjs의 진짜 문장을 떼어 돈다. 라이브 셸(abd09dc app-shell 1134 · 1166)은 worldPush?.logout()을 옵션 없이 부르고,
+// 실패해도 resume을 부르지 않으며, 떠날 때 worldPush?.flush()만 부른다 — 「옛 셸」 시험은 이 차례를 그대로 흉내 낸다.
+import {createHash} from 'node:crypto';
+import {sourceStatements} from '../../../tests/lib/source-statements.cjs';
+import {createWorldPush as createLivePush} from './live-world-push-20261125.mjs';
+const LIVE_PUSH_SHA='620858264b3f97b8ccb712bdb11b88ad2cd75c381097f9c3ecb5501d53ff3487';
+const shellStatements=sourceStatements(fs.readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8'));
+const makeLive=(b,s,extra={})=>createLivePush({request:s.request,anonymous:s.anonymous,env:b.env,storage:extra.storage||memory(),workerUrl:SCOPE+'world-push-sw.js',scopeUrl:SCOPE,now:()=>V0,...extra});
+// 셸의 떠남 · 망 돌아옴 · 화면 숨김 · 보임 처리기(flushReminders · pagehide · online · visibilitychange)를 이 worldPush로 건다.
+function shellHandlers(worldPush){
+ const handlers={},refreshed=[],flushedReminders=[];
+ const on=kind=>({hidden:false,addEventListener:(type,fn)=>{handlers[`${kind}:${type}`]=fn;}});
+ const window=on('window'),document=on('document');
+ const client={snapshot:{accountId:'acc-1'},busy:false,refresh:()=>{refreshed.push(document.hidden);return Promise.resolve();}};
+ const life={reminders:{flushPending:()=>flushedReminders.push(1)},close(){}};
+ const body=[shellStatements.declaration('flushReminders'),shellStatements.call('window.addEventListener',{0:'pagehide'},{calls:'flushReminders'}),
+  shellStatements.call('window.addEventListener',{0:'online'}),shellStatements.call('document.addEventListener',{0:'visibilitychange'})].join('\n');
+ new Function('worldPush','client','life','window','document','refreshTutorAccount','writing','speaking','releaseSheet','account','authBoundary',body)(
+  worldPush,client,life,window,document,()=>{},null,null,()=>{},{stop(){}},0);
+ return {handlers,document,refreshed,flushedReminders};
+}
+// 셸의 로그아웃 명령(commands.logout) 원문을 이 worldPush와 client.logout으로 돈다. 셸이 고르는 화면 함수는 가짜다.
+function shellLogout(worldPush,clientLogout){
+ const node=shellStatements.declarationNode('commands').declarations[0].init.properties.find(p=>p.key?.name==='logout');
+ const toasts=[];
+ const names=['dramaInvite','finishDramaInvite','accountActionPending','authBoundary','entryGate','client','worldPush','life','noteDeviceAccount','clearMonthAnswer',
+  'noteDeviceSignOut','localStorage','sessionConfirmed','close','front','entryDestinationHandled','startOpening','home','welcome','t','showEntryRecovery'];
+ const run=new Function(...names,`return (${shellStatements.text(node.value)});`)(
+  {},()=>{},false,0,null,{snapshot:{accountId:'acc-1'},logout:clientLogout},worldPush,{owner:'acc-1',atlasNext:null},()=>{},()=>{},
+  ()=>{},memory(),true,()=>{},null,false,()=>{},{isMaru:false,toast:text=>toasts.push(text)},()=>{},key=>key,()=>{});
+ return {run,toasts};
+}
+
+test('섞임: 옛 판 world-push는 라이브와 바이트가 같고, retry · resume · bindSettings가 없으며 셸이 부르는 그 밖의 이름은 있다',()=>{
+ const text=fs.readFileSync(new URL('./live-world-push-20261125.mjs',import.meta.url),'utf8').replace(/\r\n/g,'\n');
+ assert.equal(createHash('sha256').update(text).digest('hex'),LIVE_PUSH_SHA,'라이브 abd09dc의 world-push.mjs');
+ const live=makeLive(browser({registered:true,subscribed:SUB}),server({device:true,active:true}));
+ for(const name of ['retry','resume','bindSettings','hasEdit'])assert.equal(typeof live[name],'undefined',`옛 판에는 ${name}이 없다`);
+ for(const name of ['flush','logout','setAccount','ack','subscribe'])assert.equal(typeof live[name],'function',`셸이 부르는 ${name}은 옛 판에도 있다`);
+});
+
+test('섞임: 새 셸은 world-push의 새 이름(retry · resume)을 ?.()로 부르고, 로그아웃은 hold로 부른다 — 셸이 부르는 그 밖의 이름은 옛 판에도 있다',()=>{
+ const shell=fs.readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8');
+ const calls=[...shell.matchAll(/worldPush(\?)?\.([A-Za-z]+)(\?\.)?\(/g)].map(([,,name,guard])=>({name,guarded:!!guard}));
+ const live=makeLive(browser(),server());
+ for(const {name,guarded} of calls)assert.ok(typeof live[name]==='function'||guarded,`${name}: 옛 판에 없는 이름은 ?.()로 부른다`);
+ assert.ok(calls.some(c=>c.name==='retry'),'retry를 부르는 줄이 있다');
+ assert.match(shell,/worldPush\?\.logout\(\{hold:true\}\)/,'새 셸은 hold를 넘긴다');
+ assert.match(shell,/worldPush\?\.resume\?\.\(\)/,'로그아웃이 실패하면 resume을 부른다');
+});
+
+test('섞임 표 3 · 새 셸 + 옛 world-push: 망이 돌아오거나 화면이 다시 보이면 TypeError 없이 계정을 다시 읽고, 떠날 때와 숨을 때는 옛 flush만 부른다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:true,active:true});
+ const live=makeLive(b,s);await live.setAccount('acc-1');
+ let flushes=0;const flush0=live.flush;live.flush=(...args)=>{flushes++;return flush0(...args);};
+ const shell=shellHandlers(live);
+ shell.handlers['window:online']();
+ shell.document.hidden=false;shell.handlers['document:visibilitychange']();
+ assert.deepEqual(shell.refreshed,[false,false],'두 처리기 모두 뒤 줄(client.refresh)까지 돈다');
+ shell.document.hidden=true;shell.handlers['document:visibilitychange']();shell.handlers['window:pagehide']();
+ assert.equal(flushes,2,'숨을 때와 떠날 때 옛 flush를 부른다');
+ assert.deepEqual(shell.flushedReminders,[],'옛 flush는 1단 다시 잡기를 받지 않는다 — 라이브 셸처럼 돌리지 않는다');
+});
+
+test('섞임 표 3 · 새 셸 + 옛 world-push: 로그아웃이 실패해도 옛 logout에 옵션을 넘기고 resume 없이 실패 안내까지 간다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:true,active:true}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const live=makeLive(b,s,{storage});await live.setAccount('acc-1');
+ const seen=[];const logout0=live.logout;live.logout=(...args)=>{seen.push(args);return logout0(...args);};
+ const shell=shellLogout(live,()=>Promise.reject(Object.assign(Error('offline'),{code:'NETWORK'})));
+ await shell.run();
+ assert.deepEqual(seen,[[{hold:true}]],'새 셸은 hold를 넘긴다 — 옛 판은 이 옵션을 모른다');
+ assert.deepEqual(shell.toasts,['account.logoutFailed']);
+ assert.equal(b.current,null,'옛 logout은 옛 뜻대로 이 브라우저 구독을 껐다');
+});
+
+test('섞임 표 4 · 옛 셸 + 새 world-push: 옵션 없는 logout은 옛 뜻 그대로 끄기만 하고, 로그아웃이 실패하면 그 탭의 2단 요청이 막히지 않는다',async()=>{
+ const s=versionedServer(),m=manual(s),storage=memory(),rem=reminderSettings();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ // 이 기기만 끈다 — 계정에는 다른 기기가 남아 2단이 켜져 있다(가짜 서버는 기기 하나라 끄기를 여기서 답한다).
+ const request=(action,body,options)=>action==='unsubscribe'?Promise.resolve({ok:true,accountId:'acc-1',removed:true,account:{active:true,devices:1}}):m.request(action,body,options);
+ const push=on(s,{storage,request});push.bindSettings(rem);
+ await push.setAccount('acc-1');
+ rem.set({hour:20});push.sync({settings:{frequency:2,hour:20}});await flush();
+ const pending=m.queue.shift();
+ const out=await push.logout();   // 라이브 셸: await worldPush?.logout() — 그 뒤 client.logout이 실패하고 resume은 부르지 않는다
+ assert.equal(out.ok,true);assert.equal(storage.getItem(PUSH_RECORD_KEY),null,'이 브라우저 구독을 껐다');
+ assert.ok(EDIT_OF(storage),'확인받지 못한 편집을 버리지 않는다(옛 logout은 편집을 몰랐다)');
+ pending.pass();await settled();
+ assert.equal(EDIT_OF(storage),null,'앞서 보낸 요청의 응답을 버리지 않고 받힌다');
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await flush();
+ assert.equal(m.queue.at(-1)?.body.settings?.hour,9,'로그아웃이 실패한 뒤에도 그 탭의 설정 요청이 나간다');
+ m.queue.shift().pass();await settled();
+ const before=s.calls.filter(call=>call.action==='status').length;
+ await push.refresh();
+ assert.equal(s.calls.filter(call=>call.action==='status').length,before+1,'상태 읽기도 나간다');
+});
+
+test('섞임 · 같은 판끼리(새 셸 + 새 world-push): 셸의 로그아웃은 끝날 때까지 2단 요청을 막고, 실패하면 resume으로 풀며, 끝나면 계정 바뀜까지 막는다',async()=>{
+ for(const fails of [true,false]){
+  const s=versionedServer(),m=manual(s),storage=memory(),rem=reminderSettings();
+  const push=on(s,{storage,request:m.request});push.bindSettings(rem);
+  await push.setAccount('acc-1');
+  let finish;const gate=new Promise((resolve,reject)=>{finish=()=>fails?reject(Object.assign(Error('offline'),{code:'NETWORK'})):resolve();});
+  const shell=shellLogout(push,()=>gate);
+  const running=shell.run();await settled();
+  rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await settled();
+  assert.equal(m.queue.length,0,'로그아웃하는 동안(client.logout을 기다린다) 새 요청을 내지 않는다');
+  finish();await running;await settled();
+  push.sync({settings:{frequency:2,hour:9}});await flush();
+  if(fails){
+   assert.deepEqual(shell.toasts,['account.logoutFailed']);
+   assert.equal(m.queue.at(-1)?.body.settings?.hour,9,'실패하면 셸이 resume으로 막기를 풀어 다시 보낸다');
+  }else{
+   assert.equal(m.queue.length,0,'로그아웃이 끝나면 계정이 바뀔 때까지 막는다');
+   await push.setAccount(null);assert.equal(push.snapshot().phase,'signed-out');
+  }
+ }
+});
+
+test('섞임 · 같은 판끼리(옛 셸 + 옛 world-push): 라이브 그대로 — 옵션 없는 logout은 끄기만 하고 막지 않는다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:true,active:true}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const live=makeLive(b,s,{storage});await live.setAccount('acc-1');
+ assert.equal((await live.logout()).ok,true);assert.equal(b.current,null);
+ const before=s.calls.length;live.sync({settings:{frequency:1,hour:9}});await settled();
+ assert.ok(s.calls.length>before,'실패한 로그아웃 뒤에도 요청이 나간다');
+});
+
+test('섞임 표 4 · 불변식: 옵션 없는 logout이 끄는 동안에는 상태 읽기가 「서버에 없음」을 봐도 로그아웃하는 계정의 구독을 다시 올리지 않는다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),base=server({device:true,active:true}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const held=[];let gone=false;
+ const request=(action,body,options)=>{
+  if(action==='unsubscribe'){gone=true;const reply=base.request(action,body,options);return new Promise(resolve=>held.push(()=>resolve(reply)));}   // 서버는 지웠고 응답이 늦다
+  return base.request(action,body,options).then(data=>action==='status'&&gone?{...data,device:{subscribed:false}}:data);
+ };
+ const push=make(b,base,{storage,request});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await settled();
+ const leaving=push.logout();await settled();
+ assert.equal(held.length,1,'끄기 요청이 날아가는 중이다');
+ await push.refresh();await settled();   // 1단이 띄우기 직전의 평소 읽기 — 이 브라우저 구독이 서버에 없다고 본다
+ assert.equal(base.calls.filter(c=>c.action==='subscribe').length,0,'끄는 동안 다시 잇지 않는다');
+ assert.deepEqual(b.log.filter(([kind])=>kind==='unsubscribe'),[],'다시 잇기를 시작하지 않아 브라우저 구독도 건드리지 않는다(지우기는 로그아웃이 한다)');
+ held.shift()();await leaving;await settled();
+ assert.equal(b.current,null,'로그아웃이 이 브라우저 구독을 껐다');assert.equal(storage.getItem(PUSH_RECORD_KEY),null);
+ assert.equal(base.calls.filter(c=>c.action==='subscribe').length,0,'서버에 로그아웃하는 계정의 구독이 남지 않는다');
+ push.dispose();
+});
+
+test('섞임 표 4 · 불변식: 다시 잇기가 옛 구독을 지우는 사이 옵션 없는 logout이 시작되면, 다시 잇기는 새 구독을 올리지 않고 멈춘다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),base=server({device:false,active:true}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const held=[];const old=b.current,unsubscribe=old.unsubscribe.bind(old);old.unsubscribe=()=>new Promise(resolve=>held.push(()=>resolve(unsubscribe())));   // 구독 지우기가 늦다
+ const push=make(b,base,{storage});push.bindSettings(withDigest(reminderSettings()));
+ const starting=push.setAccount('acc-1');await settled();
+ assert.equal(held.length,1,'다시 잇기가 옛 구독을 지우는 중이다');
+ const leaving=push.logout();await settled();
+ assert.equal(held.length,2,'로그아웃도 같은 구독을 지우는 중이다');
+ held.shift()();await starting;await settled();
+ assert.equal(base.calls.filter(c=>c.action==='subscribe').length,0,'로그아웃하는 동안 다시 잇기가 새 구독을 올리지 않는다');
+ held.shift()();await leaving;await settled();
+ assert.equal(b.current,null);assert.equal(storage.getItem(PUSH_RECORD_KEY),null);
+ assert.equal(base.calls.filter(c=>c.action==='subscribe').length,0);
+ push.dispose();
+});
+
+// 설계 검토 push-mix53(Fable 5.2, P1): 옵션 없는 logout은 기록의 옛 주소만 끈다. 그 사이 날아가던 켜기가 그대로 끝나면 방금 만든 구독과 기록이
+// 로그아웃한 계정으로 남는다. 켜기는 시작할 때의 logout 수와 다르면 멈추고 방금 만든 구독을 지운다. 다시 잇기는 계정이 바뀔 때까지 하지 않는다.
+test('섞임 표 4 · 불변식: 다시 잇기의 켜기 요청이 날아가는 사이 옵션 없는 logout이 돌면, 켜기는 멈추고 방금 만든 구독을 지워 로그아웃한 계정의 구독 · 기록이 남지 않는다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),base=server({device:false,active:true}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const held=[];
+ const request=(action,body,options)=>action==='subscribe'?new Promise(resolve=>held.push(()=>resolve(base.request(action,body,options)))):base.request(action,body,options);
+ const push=make(b,base,{storage,request});push.bindSettings(withDigest(reminderSettings()));
+ const starting=push.setAccount('acc-1');await settled();
+ assert.equal(held.length,1,'다시 잇기의 켜기 요청이 날아가는 중이다');
+ const fresh=b.current.endpoint;assert.notEqual(fresh,SUB,'새 구독이 생겼고 기록은 아직 옛 주소다');
+ await push.logout();await settled();   // 라이브 셸의 logout — 기록의 옛 주소만 끈다
+ held.shift()();await starting;await settled();
+ assert.equal(b.current,null,'켜기가 방금 만든 구독을 지웠다');
+ assert.equal(storage.getItem(PUSH_RECORD_KEY),null,'로그아웃한 계정의 기록이 남지 않는다');
+ assert.equal(push.snapshot().error,null,'학생이 고른 로그아웃이라 오류를 보이지 않는다');
+ await push.setAccount(null);await settled();   // 라이브 셸: client.logout 성공 → onLoading → setAccount(null)
+ assert.equal(b.current,null);assert.equal(storage.getItem(PUSH_RECORD_KEY),null);
+ push.dispose();
+});
+
+test('섞임 표 4 · 불변식: 켜기가 권한 창을 기다리는 사이 옵션 없는 logout이 돌면, 뒤늦게 허용돼도 구독을 남기지 않는다',async()=>{
+ const b=browser({registered:true,permission:'default',answer:'hang'}),s=server({device:false,active:false}),storage=memory();
+ const push=make(b,s,{storage});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await push.ready();
+ const turning=push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});await settled();
+ await push.logout();await settled();
+ b.resolvePrompt();await turning;await settled();
+ assert.equal(b.current,null,'뒤늦게 허용된 구독을 지웠다');
+ assert.equal(storage.getItem(PUSH_RECORD_KEY),null);
+ assert.equal(s.calls.filter(c=>c.action==='subscribe').length,0,'서버에 켜기를 보내지 않았다');
+ push.dispose();
+});
+
+test('섞임 표 4 · 불변식: 옵션 없는 logout이 끝난 뒤 계정이 바뀌기 전에는, 브라우저 구독이 남아 있어도 다시 잇지 않는다 — 계정이 바뀌면 다시 잇는다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),base=server({device:true,active:true}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const push=make(b,base,{storage});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await settled();
+ const old=b.current;old.unsubscribe=async()=>false;   // 브라우저가 구독 지우기를 거절했다 — 로그아웃은 기록을 남긴다
+ await push.logout();await settled();
+ assert.equal(b.current?.endpoint,SUB,'브라우저 구독이 남았다');
+ await push.refresh();await settled();   // 서버는 이미 이 기기를 지웠다 — 상태 읽기가 「서버에 없음」을 본다
+ assert.equal(base.calls.filter(c=>c.action==='subscribe').length,0,'로그아웃한 계정으로 다시 올리지 않는다');
+ await push.setAccount('acc-1');   // 같은 계정으로 바꿔 들어와도 그대로 — 계정이 바뀐 것이 아니다
+ await push.setAccount(null);await push.setAccount('acc-1');await settled();   // 다시 로그인했다
+ assert.equal(base.calls.filter(c=>c.action==='subscribe').length,1,'다시 로그인한 뒤의 읽기는 다시 잇는다');
+ push.dispose();
+});
+
+test('섞임 표 4: 옵션 없는 logout이 실패해 계정이 그대로여도, 학생이 그 뒤에 누른 켜기는 된다 — 멈추는 것은 그때 날아가던 켜기뿐이다',async()=>{
+ const b=browser({registered:true,permission:'granted'}),s=versionedServer(),storage=memory();
+ const push=makeV(b,s,{storage,now:()=>V0});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await push.ready();
+ await push.logout();   // 라이브 셸: 그 뒤 client.logout이 실패하고 resume은 부르지 않는다
+ await push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});await settled();
+ assert.ok(b.current,'켰다');
+ assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).accountId,'acc-1');
+ assert.equal(push.snapshot().device.subscribed,true);
 });

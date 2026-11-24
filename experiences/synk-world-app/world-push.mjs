@@ -58,8 +58,10 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  let order=0;const shown={account:0,device:0};
  // binding: 1단 설정 묶음(world-reminder-device가 건다 — read · adopt · digest). owedDigest: 아직 받히지 않은 요약({item, tries}).
  // jobs: 진행 중인 sync(토큰 갱신을 기다리는 요청은 sent가 거짓). closing: 로그아웃 중 — 계정이 바뀔 때까지 새 요청과 판 키 쓰기를 막는다. leavingNow: flush 안.
+ // leftOwner: 막지 않는 logout()(옛 뜻)을 부른 계정 — 계정이 바뀔 때까지 그 계정으로 다시 잇지(reconnect) 않는다. leaves: 그 logout()을 부른 수 —
+ // 날아가는 켜기는 시작할 때의 수와 다르면 멈추고 방금 만든 구독을 지운다(설계 검토 push-mix53 P1). 요청과 판 키 쓰기는 막지 않는다.
  // legacyPending: 판을 모르는 옛 서버에 보낼, 앞 설정 요청의 응답을 기다리는 이 페이지의 설정(판 키에 적지 않는다 — 지금 라이브처럼).
- let binding=null,retryTimer=null,retryStep=0,owedDigest=null,closing=false,leavingNow=false,legacyPending=null,claiming=null,claimRead=null;
+ let binding=null,retryTimer=null,retryStep=0,owedDigest=null,closing=false,leavingNow=false,legacyPending=null,claiming=null,claimRead=null,leftOwner=null,leaves=0;
  // noted: 이 페이지가 적은 편집마다 적은 때의 요청 차례(order). 켜기가 날아가는 동안 적은 편집은 그 켜기(attempt.edits)에 적는다.
  const noted=new Map();
  const jobs=new Set(),listeners=new Set([onChange]);
@@ -433,14 +435,16 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 다시 올린 구독도 서버가 곧바로 없다고 하면 한 번만 더 해 보고 멈춘다 — 켜기가 남긴 오류와 꺼진 기기 칸이 설정 화면에 보여 학생이 다시 켠다.
  // 알림 기능이 꺼졌거나(비상 스위치) 권한이 허용이 아니거나 이 탭이 켜기 · 끄기 중이면 하지 않는다(지우지도 않는다). 1단 설정 묶음이 아직 붙지 않아 보낼
  // 설정 · 요약이 없을 때도 하지 않는다 — 서버가 빈 설정을 거절해 두 번 다 실패하고 구독만 지운다(GPT r18 GA4). 묶음이 붙은 뒤의 평소 읽기가 다시 잇는다.
+ // 막지 않는 logout()을 부른 계정이면 하지 않는다 — 끄는 사이나 끈 뒤에 다시 올리면 로그아웃하는 계정의 구독이 서버에 남는다(5-3 섞임 표 4).
+ // 옛 구독을 지우는 사이 그 logout()이 돌았으면 켜기를 부르기 전에 멈춘다.
  async function reconnect(sub,reg,expected){
-  if(!current(expected)||closing||mutation||attempt||!state.enabled||worldPushSupport(env).permission!=='granted')return snapshot();
+  if(!current(expected)||closing||leftOwner===owner||mutation||attempt||!state.enabled||worldPushSupport(env).permission!=='granted')return snapshot();
   const settings=liveSettings(null);let made=null;try{made=binding?.digest?.()||null;}catch{}
   if(!settings||!made?.digest)return snapshot();
   if(!registration)registration=reg;
   for(let tries=0;tries<2;tries++){
    if(sub){await removeLocal(sub,reg);sub=null;}
-   if(!current(expected))return snapshot();
+   if(!current(expected)||leftOwner===owner)return snapshot();
    // 요약은 켜기를 부르기 바로 앞에 다시 짓는다 — 옛 구독을 지우는 동안 sync가 더 새 요약을 저장했으면, 앞서 지은 옛 요약이 그 뒤의 판을 바탕으로
    // 실려 서버 판 검사를 지나 요약을 되돌린다(GPT r19 GA3). 켜기는 부른 그때의 판을 바탕으로 잡는다.
    try{made=binding?.digest?.()||made;}catch{}
@@ -470,6 +474,17 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  }
  const onStorage=event=>{if(event&&(event.key===null||(event.key===versionKey()&&event.newValue==null)))showServer(true);};
  try{env.addEventListener?.('storage',onStorage);}catch{}
+ // 로그아웃의 끄기: 이 브라우저 구독이 이 계정 것이면 서버와 브라우저에서 끈다(옛 logout()의 몸 그대로).
+ async function unsubscribeOwner(){
+  const record=readRecord();if(record?.accountId!==owner)return {ok:true};
+  const reg=await existing(),sub=reg?await bounded(reg.pushManager.getSubscription()).catch(()=>null):null;
+  let server=false;
+  try{await request('unsubscribe',{endpoint:record.endpoint});server=true;}
+  catch{try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});server=true;}catch{}}
+  const removed=sub&&sub.endpoint===record.endpoint?await removeLocal(sub,reg):true;
+  if(removed)writeRecord(null);
+  return {ok:server||removed};
+ }
  const api={
   snapshot,refresh,
   // 상태가 바뀔 때마다 부를 함수(설정 화면의 동의 상자 단추·안내 글). 떼는 함수를 돌려준다.
@@ -478,7 +493,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   setAccount(accountId){
    const next=typeof accountId==='string'&&accountId?accountId:null;if(next===owner&&!closing)return Promise.resolve(snapshot());
    if(next!==owner)dropEdits();   // 앞 계정에서 확인받지 못한 편집은 버린다(설계 주인 11-23)
-   epoch++;owner=next;closing=false;publicKey=null;lastSync=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;holdPage();claimRead=null;
+   epoch++;owner=next;closing=false;leftOwner=null;publicKey=null;lastSync=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;holdPage();claimRead=null;
    // 앞 계정의 다시 보내기 · 넘겨받기 읽기도 거둔다.
    clearTimeout(retryTimer);retryTimer=null;retryStep=0;owedDigest=null;legacyPending=null;claiming=null;jobs.clear();
    // 앞 계정이 띄운 권한 창 기다리기는 끝낸다(늦게 허용돼도 지운다) — 새 계정이 바로 켤 수 있게.
@@ -493,7 +508,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   async fresh(maxAge=10*60000){if(!owner||closing||state.phase==='signed-out')return snapshot();if(Math.abs(now()-state.checkedAt)<=maxAge)return snapshot();return refresh();},
   // 켜기 — 반드시 누른 동작 안에서 부른다. settings·digest·handover는 서버 계획의 시작(설계 §6-3).
   enable({settings,digest,handover=[]}={}){
-   const expected=epoch;
+   // 날아가는 동안 막지 않는 logout()이 돌면 멈춘다 — 로그아웃은 기록의 옛 주소만 끄므로, 그대로 끝나면 방금 만든 구독과 기록이 로그아웃한 계정으로 남는다.
+   const expected=epoch,left=leaves,stay=()=>{guard(expected);if(leaves!==left)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
    if(!current(expected)||closing||mutation||attempt)return Promise.resolve(snapshot());
    // 요약 바탕은 누를 때(요약을 지은 때) 잡는다 — 권한 창 사이에 읽은 새 판이 누를 때의 요약에 붙지 않게(r4 GA11).
    const pressed=digest?digestBase():null;
@@ -516,7 +532,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      const first=await Promise.race([prompt,stopped]);clearTimeout(waiting.timer);
      if(first===STOP)throw Object.assign(Error('PUSH_TIMEOUT'),{code:'PUSH_TIMEOUT'});
      sub=first;
-     guard(expected);subscription=sub;
+     stay();subscription=sub;
      // 이 브라우저 구독이 다른 계정 것이면 그 동작에서 가져간다(앞 계정의 이 브라우저 구독을 서버에서 지운다).
      const record=readRecord();
      if(record&&record.accountId!==owner&&record.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}
@@ -540,16 +556,16 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      catch(error){
       // 판 때문에 400 INVALID_ACTION — 판을 모르는 옛 서버다(권한 창 사이에 되돌렸을 수 있다 — r2 GA2). 판 없이 한 번 다시 보낸다.
       if(!versions||Number(error?.status)!==400||error?.code!=='INVALID_ACTION')throw error;
-      guard(expected);emit({versioning:false});based=false;data=await request('subscribe',payload);
+      stay();emit({versioning:false});based=false;data=await request('subscribe',payload);
      }
-     guard(expected);
+     stay();
      if(data.device?.subscribed!==true)throw Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'});
      const mine={accountId:owner,deviceId:data.device.deviceId,endpoint:sub.endpoint};
      // 요청이 날아가는 사이 이 브라우저 구독이 바뀌었는지 본다(r18). 다른 탭이 새 구독으로 다시 이었으면 그 탭이 기록을 쓴다 — 여기서 옛 주소로 덮으면
      // 로그아웃 · 끄기가 옛 주소만 끄고 새 구독이 남는다. 구독이 아예 없어졌으면 「켜짐」으로 적지 않고 실패로 끝낸다(기록은 남겨 다음 평소 읽기가 서버의
      // 그 기기를 끄게 한다). 구독을 읽지 못하면 그대로 간다.
      let still=sub;try{still=await bounded(registration.pushManager.getSubscription());}catch{}
-     guard(expected);
+     stay();
      if(!still){writeRecord(mine);throw Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'});}
      if(still.endpoint===sub.endpoint)writeRecord(mine);
      else{
@@ -559,7 +575,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
       const now=still.toJSON?still.toJSON():{endpoint:still.endpoint,keys:still.keys};
       try{const again=await request('subscribe',{...payload,subscription:{endpoint:now.endpoint,keys:{p256dh:now.keys?.p256dh,auth:now.keys?.auth}},...(based&&versions?{versions}:{})});
        let cur=still;try{cur=await bounded(registration.pushManager.getSubscription());}catch{}
-       guard(expected);if(again.device?.subscribed===true&&cur?.endpoint===still.endpoint)writeRecord({accountId:owner,deviceId:again.device.deviceId,endpoint:still.endpoint});}
+       stay();if(again.device?.subscribed===true&&cur?.endpoint===still.endpoint)writeRecord({accountId:owner,deviceId:again.device.deviceId,endpoint:still.endpoint});}
       catch(error){if(error?.code==='ACCOUNT_CHANGED')throw error;}
      }
      // 켜며 보낸 요약을 sync와 같은 표로 적는다 — 켠 바로 뒤 다시 잡기가 같은 요약을 또 보내지 않게(10-22 화면 검수).
@@ -591,7 +607,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      // 서버 저장 실패·응답 유실·늦은 허용: 방금 만든 구독은 지운다(서버에 남았어도 이 브라우저는 그 알림을 못 띄운다).
      const removed=await removeLocal(sub);
      const denied=error?.name==='NotAllowedError'||worldPushSupport(env).permission==='denied';
-     if(current(expected))emit({busy:false,error:!removed?'PUSH_LOCAL_CLEANUP':denied?'PUSH_DENIED':error?.code||'PUSH_UNAVAILABLE'});
+     // 막지 않는 logout()이 멈춘 켜기는 오류를 보이지 않는다 — 학생이 고른 로그아웃이다.
+     if(current(expected))emit({busy:false,error:!removed?'PUSH_LOCAL_CLEANUP':leaves!==left?null:denied?'PUSH_DENIED':error?.code||'PUSH_UNAVAILABLE'});
      return snapshot();
     }finally{if(attempt===waiting)attempt=null;if(mutation===pending)mutation=null;}
    })();
@@ -700,22 +717,21 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   // 알림을 눌러 들어왔을 때 누름을 한 번 더 알린다(워커가 오프라인이라 못 알렸을 때 — 서버는 토큰을 한 번만 쓴다).
   ack(token){if(typeof token==='string'&&/^[A-Za-z0-9_-]{22}$/.test(token)){try{void anonymous('opened',{token}).catch(()=>{});}catch{}}},
   // 로그아웃 단추: 이 브라우저 구독이 이 계정 것이면 서버와 브라우저에서 끈다(로그아웃 전에, 토큰이 살아 있을 때).
-  // 시작부터 계정이 바뀔 때(setAccount)까지 새 요청과 판 키 쓰기를 막는다 — 그 사이(app-shell이 Atlas 표지 · client.logout을 기다린다) 1단 다시 잡기의
-  // 요청이나 늦은 응답이 판 키를 다시 쓰지 않게(GA12 · 설계 검토 4). 앞서 시작한 요청의 응답은 버린다. 로그아웃이 실패하면 resume()이 막기를 푼다.
-  async logout(){
+  // hold(새 셸만 넘긴다): 시작부터 계정이 바뀔 때(setAccount)까지 새 요청과 판 키 쓰기를 막는다 — 그 사이(app-shell이 Atlas 표지 · client.logout을
+  // 기다린다) 1단 다시 잡기의 요청이나 늦은 응답이 판 키를 다시 쓰지 않게(GA12 · 설계 검토 4). 앞서 시작한 요청의 응답은 버린다. 로그아웃이 실패하면
+  // 셸이 resume()으로 막기를 푼다. 옵션 없는 logout()은 옛 뜻 그대로 끄기만 한다 — 캐시에 남은 옛 셸은 실패해도 resume을 부르지 않으므로, 막으면 그 탭의
+  // 2단 요청이 멈춘다(「옛 이름은 옛 뜻, 새 뜻은 새 이름」, 5-3 섞임 표 4). 다만 날아가는 켜기는 멈추고, 계정이 바뀔 때까지 다시 잇지 않는다.
+  async logout({hold=false}={}){
    if(!owner)return {ok:true};
-   // 확인받지 못한 편집 · 다시 보내기 · 넘겨받기 읽기를 버리고, 계정이 바뀌거나 resume()까지 그 계정으로 요청을 내지 않는다(설계 주인 11-23).
-   dropEdits();closing=true;epoch++;releasePageHold();claimRead=null;
-   clearTimeout(retryTimer);retryTimer=null;owedDigest=null;legacyPending=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;jobs.clear();
-   if(attempt){attempt.stop();attempt=null;}
-   const record=readRecord();if(record?.accountId!==owner)return {ok:true};
-   const reg=await existing(),sub=reg?await bounded(reg.pushManager.getSubscription()).catch(()=>null):null;
-   let server=false;
-   try{await request('unsubscribe',{endpoint:record.endpoint});server=true;}
-   catch{try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});server=true;}catch{}}
-   const removed=sub&&sub.endpoint===record.endpoint?await removeLocal(sub,reg):true;
-   if(removed)writeRecord(null);
-   return {ok:server||removed};
+   if(hold===true){
+    // 확인받지 못한 편집 · 다시 보내기 · 넘겨받기 읽기를 버리고, 계정이 바뀌거나 resume()까지 그 계정으로 요청을 내지 않는다(설계 주인 11-23).
+    dropEdits();closing=true;epoch++;releasePageHold();claimRead=null;
+    clearTimeout(retryTimer);retryTimer=null;owedDigest=null;legacyPending=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;jobs.clear();
+    if(attempt){attempt.stop();attempt=null;}
+    return unsubscribeOwner();
+   }
+   leftOwner=owner;leaves++;
+   return unsubscribeOwner();
   },
   // 로그아웃이 실패해 계정이 그대로다: 막기를 풀고 상태를 다시 읽는다(맞추기가 남은 설정을 보낸다).
   resume(){if(!closing)return Promise.resolve(snapshot());closing=false;holdPage();return owner?refresh():Promise.resolve(snapshot());},
