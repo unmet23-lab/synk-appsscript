@@ -137,8 +137,9 @@ function learningRecipe(pub) {
   const b0 = endText.indexOf(' // 동아리 튜터의 첫 실력 파악'), b1 = endText.indexOf(' // 진단 판 한 바퀴(', b0);
   if (b0 < 0 || b1 < 0) throw Error('world-learning-ui.mjs: 끝 판에서 clubCheck 토막을 못 찾음');
   let block = endText.slice(b0, b1);
-  const phase = "  if(homePhase()!=='old')return {status:'board'};\n";
-  if (!/\bfunction homePhase\(/.test(pub)) { if (block.split(phase).length !== 2) throw Error('world-learning-ui.mjs: clubCheck의 새 길 줄이 바뀜'); block = block.replace(phase, ''); }
+  // 새 길 줄: clubCheck는 판으로, clubMap(11-25)은 지도 없음으로 — 공개본에 Atlas 새 길(homePhase)이 없으면 둘 다 뺀다
+  const phases = ["  if(homePhase()!=='old')return {status:'board'};\n", "  if(homePhase()!=='old')return null;\n"];
+  if (!/\bfunction homePhase\(/.test(pub)) for (const phase of phases) { if (block.split(phase).length !== 2) throw Error('world-learning-ui.mjs: 동아리 토막의 새 길 줄이 바뀜'); block = block.replace(phase, ''); }
   for (const name of ['readCoach', 'positionData', 'finishSet', 'evidenced', 'bankReady', 'diagnosed', 'refresh', 'audioUrl', 'prepare'])
     if (!new RegExp(`\\b(?:function|const|let)\\s+${name}\\b|[,{(]\\s*${name}\\s*=`).test(pub)) throw Error(`world-learning-ui.mjs: 공개본에 clubCheck가 부르는 ${name}이 없다`);
   const at = ' // 진단 판 한 바퀴(', exp = 'practice:startPractice,';
@@ -147,7 +148,7 @@ function learningRecipe(pub) {
   if (ret < 0 || e < 0 || pub.indexOf(exp, e + 1) >= 0) throw Error('world-learning-ui.mjs: 공개본 내보내기 줄에서 practice:startPractice를 못 찾음');
   const text = pub.replace(at, block + at);
   const r2 = text.lastIndexOf('\n return {'), e2 = text.indexOf(exp, r2);
-  return text.slice(0, e2 + exp.length) + 'clubCheck,' + text.slice(e2 + exp.length);
+  return text.slice(0, e2 + exp.length) + 'clubCheck,clubMap,' + text.slice(e2 + exp.length);
 }
 // 서울행 내 길의 동아리장 알림 갈고리(11-24)는 다른 일의 커밋(f69a3b9e2 승급 오디션 자리)에 함께 실려 「WORLD 첫날 끝」 커밋으로는 못 집는다.
 // import 한 줄과 1화 전 시작 단추 묶음만 「공개본의 이 글 → 끝 판의 글」로 얹는다.

@@ -28685,6 +28685,28 @@ function createWorldEducation({
       }
     };
   }
+  async function clubMap() {
+    if (!position) return null;
+    check3();
+    try {
+      await prepare();
+    } catch {
+    }
+    check3();
+    try {
+      await target.SYNKLearningHost?.ready?.();
+    } catch {
+    }
+    check3();
+    if (homePhase() !== "old") return null;
+    const coachNow = readCoach();
+    if (!coachNow) return null;
+    try {
+      return positionData(coachNow).map || null;
+    } catch {
+      return null;
+    }
+  }
   function runDiagnostic({ coachNow, items, map, title, eyebrow, done, stopLabel = null, onStop = null }) {
     const session = position.createDiagnosticSession({ coach: coachNow, items });
     const skillOf = (id) => map.skills.find((skill2) => skill2.id === id) || { id };
@@ -30155,7 +30177,7 @@ function createWorldEducation({
       return Promise.resolve();
     }
   }, life: engine.life || null });
-  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, me: meNow, meReady, tellMe, undoMe, clearPractice, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, clubCheck, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
+  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, me: meNow, meReady, tellMe, undoMe, clearPractice, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, clubCheck, clubMap, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));

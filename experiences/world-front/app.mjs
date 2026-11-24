@@ -833,20 +833,25 @@ let clubNoteNow = null, clubNoteKey = '', clubOpen = null;
 function openClub(next) {
   clubNoteNow?.dispose(); clubNoteNow = null; clubOpen?.stop?.();
   if (next.club && typeof next.club === 'object') CLUB = next.club;
-  clubOpen = mountClub({host, state: {...next, lang: LANG}, sfx, calm, onDone: n => { clubOpen = null; if (n) show(n); else if (state) { syncP(); render(); } }});
+  // 다리가 다음 화면을 못 주면(null): 앞면을 그린 적이 있으면 그 화면, 서울행에서 바로 온 처음 만남이면 「지금 더 하기」 화면을 받아 그린다
+  clubOpen = mountClub({host, state: {...next, lang: LANG}, sfx, calm, onDone: n => { clubOpen = null; if (n) show(n); else if (state) { syncP(); render(); } else void call('more').then(show); }});
 }
+// 알림을 내렸다 · 열었다는 화면 안의 CLUB과 state.club에 함께 적는다(다시 그릴 때 syncP가 옛 알림을 되살리지 않게)
+const setClub = c => { CLUB = c; if (state) state = {...state, club: c}; };
 function clubNote() {
   const note = CLUB.note, want = !!note && !clubOpen && !P.pc && (P.v === 'more' || (P.front && !P.step));
   const key = want ? [note.code, note.who, note.slots?.token || '', note.slots?.skillId || '', LANG].join('|') : '';
   if (key && key === clubNoteKey && clubNoteNow?.alive?.()) return;   // 같은 알림이면 다시 그려도 그대로(내려오는 중이면 마저 내려온다)
   clubNoteNow?.dispose(); clubNoteNow = null; clubNoteKey = key;
   if (!want) return;
-  clubNoteNow = mountNote({state: {lang: LANG, note}, sfx, calm, docked: !note.drop || QUIET, onDrop: () => { CLUB = {...CLUB, note: {...note, drop: false}}; call('clubSeen', {dropped: true}); },
+  clubNoteNow = mountNote({state: {lang: LANG, note}, sfx, calm, docked: !note.drop || QUIET, onDrop: () => { setClub({...CLUB, note: {...note, drop: false}}); call('clubSeen', {dropped: true}); },
     onOpen: () => {
       clubNoteNow = null; call('clubSeen', {opened: true});
       if (note.kind === 'club') { openClub({...state, view: 'club'}); return; }
-      CLUB = {...CLUB, note: null};
-      clubOpen = mountTutorDay({host, state: {lang: LANG, note}, sfx, calm, onDone: n => { clubOpen = null; if (n) show(n); }});
+      setClub({...CLUB, note: null});
+      // 오늘 할 일 사진은 이 폴더에 실은 것만(없는 열쇠는 r-union — 맞춤 화면 카드와 같다)
+      const day = note.slots?.photo ? {...note, slots: {...note.slots, photo: photoKey(note.slots.photo)}} : note;
+      clubOpen = mountTutorDay({host, state: {lang: LANG, note: day}, sfx, calm, onDone: n => { clubOpen = null; if (n) show(n); }});
     }});
 }
 /* ── host와 주고받기(HOST.md) ── */

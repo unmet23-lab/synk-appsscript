@@ -59,7 +59,8 @@ export function clubNote({club=null,plan=null,hangul='ask',now=Date.now()}={}){
  const reviewed=new Set(Array.isArray(club.reviewed)?club.reviewed:[]);
  const missed=(Array.isArray(club.results)?club.results:[]).find(row=>row&&!row.ok&&row.skillId&&row.skillId!=='hangul'&&!reviewed.has(row.skillId));
  const who=club.tutor,base={from:'tutor',who};
- if(days===1&&(hangul==='new'||club.results?.some?.(row=>row?.skillId==='hangul'&&!row.ok)))return {...base,kind:'review',code:'tutor.review.hangul',slots:{}};
+ // 「한글 이어 하기」는 지금 계획을 연다 — 계획이 한글 먼저일 때만 건넨다(계획이 다른 활동으로 넘어갔으면 다른 알림으로)
+ if(days===1&&hangul==='new'&&plan?.line==='한글부터 해요')return {...base,kind:'review',code:'tutor.review.hangul',slots:{}};
  if(missed&&days%3!==0)return {...base,kind:'review',code:'tutor.review.skill',slots:{skill:missed.labelKo||missed.label||missed.skillId,skillUi:missed.label||missed.skillId,skillId:missed.skillId}};
  if(days%3===0&&Array.isArray(club.cells)&&club.cells.length)return {...base,kind:'level',code:'tutor.level',slots:{n:club.cells.filter(c=>c==='done').length,t:club.cells.length,cells:club.cells,listening:club.listening||0}};
  if(plan?.token)return {...base,kind:'today',code:'tutor.today',slots:{title:plan.title||'',m:plan.min||0,token:plan.token,photo:plan.photo||null}};
@@ -150,7 +151,7 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
    setClub(who,{results,cells,listening,finishedAt:Date.now()});
    // 놓친 항목이 있으면 그 항목 짧은 연습으로 잇고(분은 연습 길이가 정한다), 다 맞혔거나 한글부터면 오늘 할 일(분은 계획)로
    const p=plan(),missed=results.find(r=>!r.ok&&r.skillId!=='hangul');
-   return {total,cells,listening,minutes:missed?null:p?.min||null};
+   return {total,cells,listening,minutes:missed||!p?.token||p.route==='position'?null:p.min||null};
   },
   // 「맞춤 연습 시작」: 처음 만남을 마치고 오늘 할 일을 연다(짧은 진단이면 방금 봤으니 열지 않고 맞춤 화면만).
   async clubDone(){
@@ -195,5 +196,17 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
   // 그만두기(틀이 닫힘 · 주인이 바뀜): 보이던 문항은 건너뛴 것으로 남긴다(짧은 진단과 같다).
   clubStop(){close();},
  };
- return {host,noteOf,tutorOf:who=>CLUB_TUTORS.includes(clubOf(who).tutor)?clubOf(who).tutor:null,doneOf:who=>!!clubOf(who).done,stop:close,name:t=>NAME[t]||''};
+ // 사흘마다 오는 내 위치 알림의 칸은 첫날 기록이 아니라 그날의 지도로 다시 센다(하루 한 번 · 2.5초 안에 못 받으면 앞 기록 그대로)
+ async function refresh(who,state){
+  if(!state||!['more','front'].includes(state.view))return;
+  const club=clubOf(who),today=dayKey(Date.now());
+  if(club.cellsDay===today||clubNote({club,plan:state.plan,hangul:state.hangul})?.kind!=='level')return;
+  let map=null;try{map=await Promise.race([Promise.resolve(education()?.clubMap?.()),new Promise(r=>setTimeout(()=>r(null),2500))]);}catch{map=null;}
+  if(!same()||owner()!==who)return;
+  const c=map?cellsOf(map,[]):null;
+  setClub(who,c?.total?{cells:c.cells,listening:c.listening,cellsDay:today}:{cellsDay:today});
+ }
+ // 동의 전에 고른 튜터의 스타일: 앞면 목표 질문에서 처음 동의할 때 함께 저장한다(world-front-entry.mjs chooseGoal)
+ const valuesOf=who=>{const set=TUTOR_SETTINGS[clubOf(who).tutor];return set?{support:set.support,explanation:set.explanation}:{};};
+ return {host,noteOf,refresh,valuesOf,tutorOf:who=>CLUB_TUTORS.includes(clubOf(who).tutor)?clubOf(who).tutor:null,doneOf:who=>!!clubOf(who).done,stop:close,name:t=>NAME[t]||''};
 }

@@ -19,7 +19,7 @@ const UI = {
   now: {ko: '방금', en: 'now', mn: 'дөнгөж сая'},
   open: {ko: '답하기', en: 'Reply', mn: 'Хариулах'},
   typing: {ko: '입력 중…', en: 'typing…', mn: 'бичиж байна…'},
-  head: {ko: '동아리장', en: 'Club president', mn: 'Клубын тэргүүн'},
+  head: {ko: '동아리장', en: 'Club president', mn: 'Клубийн тэргүүн'},
   whoLine: {ko: '새솔대 한국어 동아리 · 동아리장 · 4학년', en: 'Saesol Univ. Korean Club · President · 4th year', mn: 'Сэсол их сургууль · Солонгос хэлний клуб · Тэргүүн · 4-р курс'},
   tutorSub: {ko: '한국어 동아리 튜터', en: 'Korean club tutor', mn: 'Солонгос хэлний клубийн туслах'},
   joined: {ko: '{n} 선배가 대화에 들어왔어요', en: '{n} joined the chat', mn: '{n} ярианд нэгдлээ'},
@@ -49,7 +49,7 @@ const UI = {
   hangul: {ko: '한글', en: 'Hangul', mn: 'Солонгос үсэг'},
   lis: {ko: '듣기', en: 'Listening', mn: 'Сонсох'},
   rea: {ko: '읽기', en: 'Reading', mn: 'Унших'},
-  nxt: {ko: '연습할 곳', en: 'To practise', mn: 'Дасгал хийх'},
+  nxt: {ko: '연습할 곳', en: 'To practice', mn: 'Дасгал хийх'},
   go: {ko: '맞춤 연습 시작', en: 'Start my practice', mn: 'Дасгалаа эхлэх'},
   board: {ko: '문제 보러 가기', en: 'Go to the questions', mn: 'Асуулт руу очих'},
   later: {ko: '맞춤 화면으로', en: 'Back to My practice', mn: '«Миний дасгал» руу буцах'},
@@ -141,11 +141,14 @@ function shadowBox(cls, parent = document.body) {
   const sr = host.attachShadow({mode: 'open'}); const st = document.createElement('style'); st.textContent = CSS; sr.append(st);
   parent.append(host); return {host, sr};
 }
+// 대화 판이 열린 동안 뒤쪽 앞면은 누르거나 초점을 줄 수 없다(inert). 닫을 때 이 판이 막은 것만 푼다
 function openRoot(lang) {
-  document.querySelectorAll('.cl-host').forEach(n => n.remove());
+  document.querySelectorAll('.cl-host').forEach(n => n.kill ? n.kill() : n.remove());
   const {host, sr} = shadowBox('cl-host');
   const root = document.createElement('div'); root.className = 'cl-root'; root.setAttribute('lang', lang); sr.append(root);
-  root.kill = () => host.remove();
+  const behind = [...document.body.children].filter(n => n !== host && !n.inert && !['SCRIPT', 'STYLE', 'LINK'].includes(n.tagName));
+  behind.forEach(n => { n.inert = true; });
+  root.kill = host.kill = () => { host.remove(); behind.forEach(n => { n.inert = false; }); behind.length = 0; };
   return root;
 }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
@@ -284,7 +287,8 @@ export function mountClub({host, state, sfx, calm = () => false, onDone}) {
 
 /* 튜터 고르기(11-24 유호님 「튜터 고를때 성격같은거 골라줘. 원하는 스타일(티칭) 마다 고를수있도록」): 가르치는 방식 · 성격 글이 먼저고 얼굴은 작다.
    세 장은 크기가 같고 열 때마다 순서를 섞으며 미리 골라진 쪽이 없다(이야기 지도 3-5 선배 고르기의 규칙과 같다). 고른 장에만 같은 실수를 고쳐 주는 말이 열린다 */
-function pickTutor(root, K) {
+// current: 다음 날 「튜터 바꾸기」에서는 지금 튜터가 골라진 채로 연다(그대로 누르면 바꾸지 않고 대화로 돌아간다). 판이 덮은 뒤쪽 대화는 inert
+function pickTutor(root, K, {current = null} = {}) {
   return new Promise(res => {
     const order = [...CLUB_TUTORS]; for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
     const sh = document.createElement('section'); sh.className = 'cl-pick'; sh.setAttribute('aria-label', K.L(UI.pickTitle));
@@ -295,14 +299,15 @@ function pickTutor(root, K) {
         <span class="how">${T.how.map(h => `<span>${esc(K.L(h))}</span>`).join('')}<span>${esc(fill(K.L(UI.perDay), {n: T.min}))}</span></span>
         <span class="ex"><small>${esc(K.L(UI.same))}</small><span class="mine" lang="ko">빵에 먹어요.</span><span class="his"><span lang="ko">${esc(T.fix.ko)}</span>${K.mean(T.fix)}</span></span></button>`; }).join('')}</div>
       <div class="bot"><button class="cl-cta center" type="button" data-go disabled></button><small>${esc(K.L(UI.pickNote))}</small></div>`;
+    const behind = [...root.children].filter(n => !n.inert); behind.forEach(n => { n.inert = true; });
     root.append(sh);
     const go = sh.querySelector('[data-go]'), cards = [...sh.querySelectorAll('.tc')];
-    let picked = null;
+    let picked = CLUB_TUTORS.includes(current) ? current : null;
     const sync = () => { cards.forEach(c => c.setAttribute('aria-checked', String(c.dataset.t === picked))); go.disabled = !picked; go.textContent = picked ? fill(K.L(UI.pickGo), {n: K.nm(picked)}) : K.L(UI.pickFirst); };
     cards.forEach(c => { K.face(c.querySelector('.cl-av'), c.dataset.t); c.onclick = () => { if (picked === c.dataset.t) return; picked = c.dataset.t; sync(); K.snd('switch'); requestAnimationFrame(() => c.scrollIntoView?.({block: 'nearest', behavior: K.calm() ? 'auto' : 'smooth'})); }; });
     sh.querySelector('.list').addEventListener('keydown', e => { const i = cards.indexOf(e.target.closest?.('.tc')); if (i < 0 || !['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(e.key)) return; e.preventDefault(); cards[(i + (e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : cards.length - 1)) % cards.length].focus(); });
-    sync(); requestAnimationFrame(() => { sh.classList.add('on'); cards[0]?.focus?.({preventScroll: true}); }); K.snd('flick');
-    go.onclick = () => { if (!picked) return; root.getRootNode().activeElement?.blur?.(); sh.classList.remove('on'); setTimeout(() => sh.remove(), 520); res(picked); };
+    sync(); requestAnimationFrame(() => { sh.classList.add('on'); (cards.find(c => c.dataset.t === picked) || cards[0])?.focus?.({preventScroll: true}); }); K.snd('flick');
+    go.onclick = () => { if (!picked) return; root.getRootNode().activeElement?.blur?.(); sh.classList.remove('on'); setTimeout(() => sh.remove(), 520); behind.forEach(n => { n.inert = false; }); res(picked); };
   });
 }
 
@@ -343,7 +348,7 @@ async function engineItem({host, C, K, t, item, n, last}) {
   if (item.prompt) body += `<p class="pass" lang="ko">${esc(item.prompt)}</p>`;
   if (item.question) body += `<p class="qline" lang="ko">${esc(item.question)}</p>`;
   const two = (item.choices.length === 2 || item.choices.length === 4) && item.choices.every(c => String(c.label || '').length <= 5);
-  if (listening) body += `<button class="cl-back cl-pass" type="button" hidden>${esc(K.L(UI.next))}</button>`;
+  if (listening) body += `<button class="cl-back cl-pass" type="button" hidden>${esc(K.L(last ? UI.done : UI.next))}</button>`;
   body += `<div class="chs${two ? ' two' : ''}" lang="ko">${item.choices.map(c => `<button class="cl-ch" type="button" data-v="${esc(c.id)}"${listening ? ' disabled' : ''}><span>${esc(c.label)}</span>${CK}</button>`).join('')}</div><div class="cl-fb"><div class="in"></div></div>`;
   card.innerHTML = `<p class="k">${n} · <b>${esc(item.label || '')}</b></p>${body}`;
   C.add(card);
@@ -354,11 +359,14 @@ async function engineItem({host, C, K, t, item, n, last}) {
     const bar = lb.querySelector('i'), note = card.querySelector('.cl-note');
     let playing = false;
     const failed = () => { if (note?.isConnected) note.textContent = K.L(UI.audioOff); if (pass && !answered) pass.hidden = false; };
+    // 잠금(playing)은 다리에 묻기 전에 건다 — 빠르게 두 번 누르면 재생이 둘 겹치거나 두 번째 거절이 실패 안내를 띄웠다
     lb.onclick = async () => {
-      if (playing || answered) return; K.snd('tap');
-      const kind = await host.clubReplay?.(); if (!kind) { failed(); return; }
-      try { audio = new Audio(item.audio); C.audio = audio; } catch { void host.clubAudio?.('failed'); failed(); return; }
-      playing = true; bar.style.width = '0%';
+      if (playing || answered) return; playing = true; K.snd('tap');
+      const kind = await host.clubReplay?.();
+      if (answered) { playing = false; return; }
+      if (!kind) { playing = false; failed(); return; }
+      try { audio = new Audio(item.audio); C.audio = audio; } catch { playing = false; void host.clubAudio?.('failed'); failed(); return; }
+      bar.style.width = '0%';
       const end = status => { if (!playing) return; playing = false; void host.clubAudio?.(status);
         if (answered) return;
         if (status === 'completed') { bar.style.width = '100%'; btns.forEach(b => b.disabled = false); if (pass) pass.hidden = true; lb.querySelector('.lt').textContent = K.L(UI.again); note?.remove(); btns[0]?.focus?.({preventScroll: true}); }
@@ -411,7 +419,7 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
   const note = state.note || {}, t = CLUB_TUTORS.includes(note.who) ? note.who : 'seoha', lang = state.lang || 'ko', K = kit({lang, sfx, calm});
   const root = openRoot(lang);
   const C = chatShell(root, K);
-  let alive = true;
+  let alive = true, inner = null;
   const live = () => alive && root.isConnected;
   const close = (next = null) => { root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(next); };
   (async () => {
@@ -439,10 +447,20 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
     const back = document.createElement('button'); back.type = 'button'; back.className = 'cl-back'; back.textContent = K.L(UI.later); C.add(back);
     back.onclick = () => { K.snd('tap'); close(); };
     const change = document.createElement('button'); change.type = 'button'; change.className = 'cl-back'; change.textContent = K.L(UI.change); C.add(change);
-    change.onclick = async () => { K.snd('tap'); const nt = await pickTutor(root, K); if (!live()) return; const r = nt !== t ? await host.clubTutor?.(nt, {change: true}) : null; close(r?.state || null); };
+    // 튜터 바꾸기: 지금 튜터가 골라진 채로 열고, 그대로 누르면 대화로 돌아간다. 바꾸면 새 튜터가 같은 알림으로 대화를 이어 가
+    // 그날의 복습 · 할 일 길이 남는다(알림은 열 때 읽음이 됐다). 닫을 때 바뀐 맞춤 화면 state를 넘긴다
+    let changing = false;
+    change.onclick = async () => {
+      if (changing) return; changing = true; K.snd('tap');
+      const nt = await pickTutor(root, K, {current: t}); if (!live()) return;
+      if (nt === t) { changing = false; return; }
+      const r = await host.clubTutor?.(nt, {change: true}); if (!live()) return;
+      alive = false; root.kill();
+      inner = mountTutorDay({host, state: {...state, note: {...note, who: nt}}, sfx, calm, onDone: n => onDone?.(n || r?.state || null)});
+    };
     go.onclick = async () => { go.disabled = true; back.disabled = true; K.snd('paper'); close(); await host.clubAct?.(note.kind, note.slots || {}); };
   })().catch(e => console.warn('[club day]', e));
-  return {root, stop: () => { alive = false; root.kill(); }};
+  return {root, stop: () => { alive = false; root.kill(); inner?.stop(); }};
 }
 
 /* ── 알림 ── 검은 알약이 돋고 얼굴 카드로 부풀었다가 4초 뒤 위 가운데의 작은 얼굴과 빨간 1로 접힌다(드라마 「오늘」 입구 1과 같은 꼴) */

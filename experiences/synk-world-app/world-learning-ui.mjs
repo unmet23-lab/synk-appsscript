@@ -1328,6 +1328,16 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    finish(){if(ended)return null;ended=true;try{coachNow.flush?.();}catch{}const results=session.results();if(results.length)diagnosed=true;
     const set=finishSet(coachNow,'diagnostic');refresh();evidenced();return {set,map:mapNow(),results};}};
  }
+ // 동아리 튜터의 사흘마다 내 위치 알림이 그날의 칸을 센다(문항 · 세션 없이 지도만, 새 길이면 없음)
+ async function clubMap(){
+  if(!position)return null;
+  check();try{await prepare();}catch{/* 기록이 덜 왔으면 아래에서 null */}
+  check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still counts */}
+  check();
+  if(homePhase()!=='old')return null;
+  const coachNow=readCoach();if(!coachNow)return null;
+  try{return positionData(coachNow).map||null;}catch{return null;}
+ }
  // 진단 판 한 바퀴(「내 위치」 짧은 진단과 마을 준비 확인이 함께 쓴다). done({box,results,top}): 끝 화면을 그린다.
  // stopLabel·onStop: 그만두기 단추의 글과 그 뒤에 열 판(없으면 진단 글과 「내 위치」 판).
  function runDiagnostic({coachNow,items,map,title,eyebrow,done,stopLabel=null,onStop=null}){
@@ -1951,5 +1961,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,meReady,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,clubCheck,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();readWaitingResponses();responseCoachOff?.();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,meReady,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,clubCheck,clubMap,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();readWaitingResponses();responseCoachOff?.();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

@@ -35,7 +35,10 @@ test('알림: 처음 만남 전 동아리장, 만난 날 없음, 다음 날부�
   assert.equal(clubNote({club: {...club, reviewed: ['ko.reading.grammar']}, plan, now: at(1)}).code, 'tutor.today', '복습한 항목은 다시 안 부른다');
   assert.equal(clubNote({club, plan, now: at(3)}).code, 'tutor.level', '셋째 날마다 내 위치');
   assert.equal(clubNote({club: {...club, last: {day: '2026-11-25', opened: true}}, plan, now: at(1)}), null, '그날 연 알림은 다시 안 띄운다');
-  assert.equal(clubNote({club: {...club, results: [{skillId: 'hangul', ok: false}]}, plan, hangul: 'new', now: at(1)}).code, 'tutor.review.hangul');
+  const hangulPlan = {...plan, line: '한글부터 해요'};
+  assert.equal(clubNote({club: {...club, results: [{skillId: 'hangul', ok: false}]}, plan: hangulPlan, hangul: 'new', now: at(1)}).code, 'tutor.review.hangul');
+  assert.equal(clubNote({club: {...club, results: [{skillId: 'hangul', ok: false}]}, plan, hangul: 'new', now: at(1)}).code, 'tutor.today', '계획이 한글을 지났으면 「한글 이어 하기」를 건네지 않는다');
+  assert.equal(clubNote({club: {...club, results: [{skillId: 'hangul', ok: false}]}, plan: hangulPlan, hangul: 'ask', now: at(1)}).code, 'tutor.today', '한글 답을 못 남겼으면 한글 복습이 아니다');
   assert.equal(clubNote({club: {...club, results: []}, plan: null, now: at(2)}), null, '근거가 없으면 조용히');
 });
 
@@ -53,7 +56,7 @@ test('해설은 화면 언어, 없으면 한국어', () => {
   assert.equal(explainOf({}), '');
 });
 
-function harness({consent = false, ready = true} = {}) {
+function harness({consent = false, ready = true, route = 'lesson', map = null} = {}) {
   const marks = {}, calls = [];
   const readMark = who => marks[who] || {};
   const writeMark = (who, patch) => { marks[who] = {...readMark(who), ...patch}; };
@@ -65,10 +68,11 @@ function harness({consent = false, ready = true} = {}) {
     replay: () => 'first', delivery: () => true, stop: () => calls.push(['stop'])};
   const education = {
     clubCheck: async ({pick}) => { calls.push(['check', pick(its.map(row)).length]); return ready ? {status: 'ready', session, total: its.length, skillName: id => id, audioUrl: p => '/' + p, finish: () => ({map: {skills: its.map(x => ({id: x.skillId, domain: x.modality, cell: 'notyet'}))}, results})} : {status: 'board'}; },
-    practice: id => calls.push(['practice', id]), position: o => calls.push(['position', o])
+    practice: id => calls.push(['practice', id]), position: o => calls.push(['position', o]),
+    clubMap: async () => { calls.push(['map']); return map; }
   };
   const club = createFrontClub({same: () => true, owner: () => 'guest', readMark, writeMark, education: () => education, progress: () => progress, lang: () => 'en',
-    plan: () => ({token: 'p1', title: 'T', min: 2, route: 'lesson'}), openPlan: t => calls.push(['open', t]), stateOf: async () => ({view: 'more'}), baseUrl: () => 'http://x/world/'});
+    plan: () => ({token: 'p1', title: 'T', min: 2, route}), openPlan: t => calls.push(['open', t]), stateOf: async () => ({view: 'more'}), baseUrl: () => 'http://x/world/'});
   return {club, marks, calls, profileNow: () => profile};
 }
 
@@ -141,6 +145,40 @@ test('튜터 바꾸기: 동아리장에게 한 답은 두고 다시 그릴 state
   assert.equal(h.marks.guest.club.tutor, 'yuna');
   assert.equal(h.marks.guest.club.answer, 'some');
   assert.deepEqual(r.state, {view: 'more'});
+});
+
+test('계획이 아직 짧은 진단이면 「맞춤 연습 시작」에 분을 붙이지 않는다', async () => {
+  const h = harness({route: 'position'});
+  assert.equal((await h.club.host.clubFinish([{skillId: 'hangul', ok: true}])).minutes, null);
+  const g = harness();
+  assert.equal((await g.club.host.clubFinish([{skillId: 'hangul', ok: true}])).minutes, 2);
+});
+
+test('내 위치 알림의 칸은 첫날 기록이 아니라 그날의 지도로 센다(하루 한 번)', async () => {
+  const map = {skills: [{id: 'ko.listening.word', domain: 'listening', cell: 'independent'}, {id: 'ko.reading.grammar', domain: 'reading', cell: 'independent'}, {id: 'ko.reading.vocabulary', domain: 'reading', cell: 'practicing'}]};
+  const h = harness({map}), now = Date.now();
+  h.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 3 * DAY, results: [], cells: ['', '', ''], listening: 1}};
+  await h.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
+  assert.deepEqual([h.marks.guest.club.cells, h.marks.guest.club.listening], [['done', 'done', 'next'], 1]);
+  const n = h.club.noteOf('guest', null, 'reads');
+  assert.deepEqual([n.code, n.slots.n, n.slots.t], ['tutor.level', 2, 3]);
+  await h.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
+  assert.equal(h.calls.filter(c => c[0] === 'map').length, 1, '같은 날 두 번 묻지 않는다');
+  const g = harness({map});
+  g.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 1 * DAY, results: [], cells: ['']}};
+  await g.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
+  assert.equal(g.calls.some(c => c[0] === 'map'), false, '내 위치 날이 아니면 지도를 묻지 않는다');
+  const e = harness({map: null});
+  e.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 3 * DAY, results: [], cells: ['done', ''], listening: 1}};
+  await e.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
+  assert.deepEqual(e.marks.guest.club.cells, ['done', ''], '지도를 못 받으면 앞 기록 그대로');
+});
+
+test('동의 전에 고른 튜터의 스타일을 처음 동의할 때 쓸 값', async () => {
+  const h = harness();
+  assert.deepEqual(h.club.valuesOf('guest'), {});
+  await h.club.host.clubTutor('seoha', {answer: 'some'});
+  assert.deepEqual(h.club.valuesOf('guest'), {support: TUTOR_SETTINGS.seoha.support, explanation: TUTOR_SETTINGS.seoha.explanation});
 });
 
 test('날이 바뀌면 같은 꼴의 알림도 새로 내려온다', () => {

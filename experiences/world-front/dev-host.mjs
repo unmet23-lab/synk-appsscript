@@ -173,7 +173,7 @@ export function createDevHost(search = location.search) {
     async clubFinish(rows) { note('clubFinish', rows); return {total: 16, cells: DEV_CELLS, listening: 8, minutes: planOf().min}; },
     async clubDone() { D.club = 'done'; D.note = ''; D.v = 'more'; return state(); },
     async clubBoard() { D.club = 'done'; D.note = ''; D.v = 'more'; note('position'); return state(); },
-    async clubSeen(o) { note('clubSeen', o); return null; },
+    async clubSeen(o) { note('clubSeen', o); if (o?.opened && D.club === 'done') D.note = ''; return null; },   // 연 알림은 그날 다시 내려오지 않는다(다리와 같다)
     async clubAct(kind, slots) { note('clubAct', kind, slots); D.note = ''; return null; },
     clubStop() {}
   };

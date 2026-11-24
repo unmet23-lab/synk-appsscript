@@ -145,7 +145,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  const withClub=state=>state&&({...state,club:{tutor:club.tutorOf(owner()),note:['more','front'].includes(state.view)?club.noteOf(owner(),state.plan,state.hangul):null}});
  if(typeof window!=='undefined')window.SYNKFrontClub=Object.freeze({needed:()=>{try{return !!on()&&!club.doneOf(owner());}catch{return false;}},ask:()=>{asked='club';}});
  // 앞면에 주는 state는 모두 여기를 거쳐 동아리 · 튜터 줄(club)을 얹는다(맞춤 화면으로 가는 길이 여럿이라 한 곳에서)
- async function stateOf(view){return withClub(await stateBase(view));}
+ async function stateOf(view){const state=await stateBase(view);try{await club.refresh(owner(),state);}catch{}return withClub(state);}
  async function stateBase(view){
   const who=owner(),arrival=arrivalOf(who),guest=who==='guest',pc=!!native();
   let hangul='ask';try{const answer=await hangulReading(who);hangul=answer?.answer==='new'?'new':answer?.answer==='reads'?'reads':'ask';}catch{hangul='ask';}
@@ -269,7 +269,8 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    // 앞면에는 시험 칸이 안 보이므로 시험 정보를 몰래 지우지 않고, 시험 칸이 보이는 학습 목표 창을 연다(goalPatch). 창이 실제로 떴을 때만 goalWindow.
    const patch=goalPatch(profile?.values,reason);
    if(patch.window){try{education()?.open?.();}catch{}return document.querySelector('#world-panel')?.open?{error:'goalWindow'}:{error:'save'};}
-   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:patch.values});}
+   // 처음 동의하면 동의 전에 고른 동아리 튜터의 스타일(도움 방식 · 설명 길이)도 함께 저장한다(world-front-club.mjs valuesOf)
+   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:profile?.consent?patch.values:{...patch.values,...club.valuesOf(who)}});}
    catch(error){return {error:error?.message||'save'};}
    writeMark(who,{day2:true,goal});session.view='front';
    return stateOf('front');
