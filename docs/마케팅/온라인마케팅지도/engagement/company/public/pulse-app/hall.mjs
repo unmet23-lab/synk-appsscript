@@ -71,7 +71,7 @@ export function mountHall(host,{items=hallItems(),onFilm,still=()=>false,quiet=(
     if(box.contains(document.activeElement)&&document.activeElement!==holdButton)strip.focus({preventScroll:true});
     walk(strip);place(animate);
   }
-  const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||box.contains(document.activeElement);
+  const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||!!box.querySelector(':focus-visible');
   const tick=()=>{if(!busy())set(cur+1);};
   const start=()=>{clearInterval(timer);timer=setInterval(tick,STEP_MS);};
   const hold=()=>{pause=Date.now()+HOLD_MS;};

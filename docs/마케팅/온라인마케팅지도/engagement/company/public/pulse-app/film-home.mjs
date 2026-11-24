@@ -374,7 +374,9 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
         let timer=0;const done=()=>{clearTimeout(timer);if(arriving===done)arriving=null;resolve();};
         if(gone||!hallApi||!inHall(id)||reduced()||document.hidden){done();return;}
         arriving?.();arriving=done;timer=setTimeout(done,1800);
-        if(current!==0)sections[0].scrollIntoView({behavior:'auto'});
+        // 휴대폰 1쪽은 화면보다 길어 입력 칸 쪽으로 내려가 있다 — 쪽과 상관없이 1쪽 맨 위로 올리고 입력 초점을 뗀다(모델 얼굴이 화면 위로 잘리지 않게).
+        if(host.contains(document.activeElement))document.activeElement.blur?.();
+        sections[0].scrollIntoView({behavior:'auto',block:'start'});
         const door=$('[data-door]');door?.classList.add('is-arriving');
         const kicker=$('[data-door-kicker]'),head=$('[data-door-title]'),say=$('[data-door-say]');
         if(kicker)kicker.textContent=t('열렸어요');if(head&&title)head.textContent=title;if(say)say.textContent=title?t('열렸어요. {title}',{title}):t('열렸어요');

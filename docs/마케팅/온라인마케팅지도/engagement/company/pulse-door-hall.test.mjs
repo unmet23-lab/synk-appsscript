@@ -58,7 +58,8 @@ test('복도: 캐스팅북 모델(실제 인물 없이) 사이에 세로 완성 
 
 test('복도의 움직임: 손이 닿거나 초점이 안에 있거나 숨은 탭 · 움직임 줄이기면 넘기지 않고, 손을 올려도 띠를 옮기지 않는다',()=>{
   const hall=read('hall.mjs');
-  assert.ok(hall.includes("const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||box.contains(document.activeElement);"));
+  assert.ok(hall.includes("const busy=()=>held||alone||gone||quiet()||document.hidden||reduced()||Date.now()<pause||box.matches(':hover')||!!box.querySelector(':focus-visible');"),'키보드 초점일 때만 멈춘다 — 누른 단추가 초점을 쥐어도 다시 넘어간다');
+  assert.match(read('film.css'),/\.sx-models-m\{display:none\}/,'휴대폰용 「내 모델」은 넓은 화면에서 숨는다');
   assert.doesNotMatch(hall,/mouseenter|pointerenter/,'손을 올린다고 띠가 움직이지 않는다(큰 움직임 멀미)');
   assert.ok(hall.includes("if(alone||!['ArrowLeft','ArrowRight'].includes(event.key)||event.target===holdButton)return;"),'좌우 화살표는 복도 안에서만');
   const home=read('film-home.mjs');
@@ -76,6 +77,7 @@ test('들어가는 순간: 성공 경로에서만, 1.8초 안에 끝나고, 떼�
   assert.ok(app.includes("accept(result);s.entryError=null;if(entryHandle&&s.project){await Promise.all([entryHandle.arrive(arrivalModel(s.project),{title:s.project.title||''}),s.mode==='customer'?ensureLegacyCss():null]);if(requestEpoch!==epoch)return;}}booting=false;"));
   assert.ok(app.includes("return castingOf(r,p.studio?.strategy?.data?.castingSelection).modelId||r.directionProposal?.modelId||(r.modelProposal?.status==='open'?r.modelProposal.modelId:'')||'';"),'고른 모델 → 방향 제안 → 열린 모델 제안');
   assert.ok(home.includes("if(gone||!hallApi||!inHall(id)||reduced()||document.hidden){done();return;}"));
+  assert.ok(home.includes("if(host.contains(document.activeElement))document.activeElement.blur?.();")&&home.includes("sections[0].scrollIntoView({behavior:'auto',block:'start'});"),'늘 1쪽 맨 위에서, 입력 초점을 떼고');
   assert.ok(home.includes("arriving?.();arriving=done;timer=setTimeout(done,1800);"));
   assert.ok(home.includes("screening?.close();reelApi.stop();hallApi?.stop();arriving?.();"),'떼어지면 기다림이 끝난다');
   // 메일로 열기 확인 결과는 문 판이 받는다(꺼지면 링크 칸을 편다).
