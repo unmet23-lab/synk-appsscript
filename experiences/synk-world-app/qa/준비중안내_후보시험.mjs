@@ -120,6 +120,6 @@ try {
 const bad = Object.entries(result.checks).flatMap(([tag, c]) => [
   ...c.blocked.filter(b => !b.ok).map(b => `${tag} ${b.name}`), ...c.errors.map(e => `${tag} 오류 ${e}`), ...c.failed.map(f => `${tag} 실패 요청 ${f}`), ...c.leaked.map(u => `${tag} 새 토큰 요청 ${u}`),
   ...(c.docOverflow > 0 ? [`${tag} 가로 넘침 ${c.docOverflow}`] : []), ...(c.lang !== tag.split('-')[1] ? [`${tag} 언어 ${c.lang}`] : []),
-  ...(!live && c.served.length < 2 ? [`${tag} 후보를 끼우지 못함`] : [])]);
+  ...(!live && c.served.length < files.size ? [`${tag} 후보를 끼우지 못함(${c.served.length}/${files.size})`] : [])]);
 console.log(JSON.stringify(Object.fromEntries(Object.entries(result.checks).map(([k, v]) => [k, {blocked: v.blocked.map(b => b.name + (b.ok ? ' ✓' : ' ✗')), served: [...v.served], failed: v.failed, errors: v.errors.length}]))));
 if (bad.length) { console.error('걸림:\n' + bad.join('\n')); process.exitCode = 1; } else console.log(`통과 — ${result.mode} · ${Object.keys(result.checks).length}판`);
