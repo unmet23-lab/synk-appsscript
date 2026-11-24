@@ -1,0 +1,23 @@
+{
+  "브랜드": "pulse",
+  "이름": "SYNK PULSE — AI로 광고 영상을 만드는 영어 계정(@synk_pulse). 보는 사람은 해외 광고주 · 대행사 · 브랜드 마케터",
+  "근거": "11-24 그록봇 「X 경쟁 계정 주간 감시」(PULSE 갈래)와 「SYNK PULSE X 반응 모으기」를 tools/수요스캔/엑스.js로 옮김. 수요 스캔(스캔.js) 브랜드가 아니라 X 칸만 쓴다. 판정 기준은 docs/마케팅/PULSE_해외타깃_20261111/영어채비_설계_20261117.md 2-4절(먼저 온 연락).",
+  "검색": {
+    "어": [
+      "AI ad", "AI commercial", "AI video ad", "AI UGC ad", "AI ad agency", "AI ad creative",
+      "generative AI advertising", "AI product video", "AI brand film", "AI fashion film",
+      "Seedance ad", "Veo ad", "Kling commercial", "AI spec ad"
+    ]
+  },
+  "엑스": {
+    "우리계정": "synk_pulse",
+    "지켜볼계정": [
+      { "아이디": "avastudio_", "소개": "브랜드 광고 영상을 조사하고 만드는 AI 영상 팀" },
+      { "아이디": "Creatify_AI", "소개": "AI 광고 영상 도구이자 스튜디오" },
+      { "아이디": "arcads_ai", "소개": "AI로 광고를 만드는 서비스" },
+      { "아이디": "0xROAS", "소개": "AI 광고 영상 만드는 법과 새 형식을 올리는 크리에이터" },
+      { "아이디": "nowlovepan", "소개": "한국에서 AI 콘텐츠와 브랜드 협업을 하는 크리에이터 · 에이전시(11-18 회차에 뺄 후보)" },
+      { "아이디": "Hassanlaurent", "소개": "광고풍 짧은 AI 영상을 올리는 크리에이터" }
+    ]
+  }
+}

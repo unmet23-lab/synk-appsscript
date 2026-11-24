@@ -62,10 +62,96 @@ test('고른어: 날짜마다 돌려 가며 열 개, 적으면 그대로', () =>
 });
 
 test('인자: 전부 · 고른 브랜드 · 모르는 인자', () => {
-  assert.deepEqual(엑스.인자(['전부']).브랜드, ['lab-en', 'lab-mn', 'synkbrief', 'yuhobuilds']);
+  assert.deepEqual(엑스.인자(['전부']).브랜드, ['lab-en', 'lab-mn', 'synkbrief', 'yuhobuilds', 'pulse']);
+  assert.deepEqual(엑스.인자(['pulse']).브랜드, ['pulse']);
   assert.deepEqual(엑스.인자(['synkbrief', '--시간', '48']).브랜드, ['synkbrief']);
   assert.equal(엑스.인자(['--개수', '99']).개수, 20);
   assert.throws(() => 엑스.인자(['lab-xx']));
+});
+
+test('설정: 브랜드마다 실제 설정을 읽고, 지켜볼 계정 · 우리 계정은 있는 곳에만 있다(11-24 그록봇 X 루틴 둘을 옮김)', () => {
+  for (const b of 엑스.브랜드들) {
+    const s = 엑스.설정(b);
+    assert.ok(s.이름 && Array.isArray(s.어) && s.어.length, b);
+  }
+  const p = 엑스.설정('pulse');
+  assert.equal(p.우리, 'synk_pulse');
+  assert.equal(p.계정.length, 6);
+  const l = 엑스.설정('lab-en');
+  assert.equal(l.우리, null);
+  assert.equal(l.계정.length, 6);
+  for (const b of ['lab-mn', 'synkbrief', 'yuhobuilds']) assert.deepEqual([엑스.설정(b).계정, 엑스.설정(b).우리], [[], null], b);
+});
+
+test('설정: 아이디 꼴이 아닌 계정은 버리고 @를 뗀다', () => {
+  const os = require('node:os'), fs = require('node:fs'), path = require('node:path');
+  const 파일 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), '엑스설정-')), 's.json');
+  fs.writeFileSync(파일, JSON.stringify({ 이름: '시험', 검색: { 어: ['a'] }, 엑스: { 우리계정: '@ours_1', 지켜볼계정: ['@good', { 아이디: 'bad name' }, { 아이디: 'x'.repeat(16) }, { 아이디: 'ok_2', 소개: '  한\n줄 ' }] } }));
+  const s = 엑스.설정('시험', 파일);
+  assert.equal(s.우리, 'ours_1');
+  assert.deepEqual(s.계정, [{ 아이디: 'good', 소개: '' }, { 아이디: 'ok_2', 소개: '한 줄' }]);
+});
+
+test('프롬프트: 지켜볼 계정 · 우리 계정이 없는 브랜드는 예전 답 꼴 그대로, 있으면 칸을 더한다', () => {
+  const o = { 시간: 72, 개수: 8 };
+  const 맨 = 엑스.프롬프트('synkbrief', { 이름: 'n', 어: ['a'], 계정: [], 우리: null }, o, '2026-11-24');
+  assert.ok(!맨.includes('계정글') && !맨.includes('우리반응') && !맨.includes('지켜볼 계정'));
+  assert.ok(맨.includes('{"글":[{'));
+  const 더 = 엑스.프롬프트('pulse', { 이름: 'n', 어: ['a'], 계정: [{ 아이디: 'comp', 소개: '경쟁' }], 우리: 'ours' }, o, '2026-11-24');
+  assert.ok(더.includes('@comp(경쟁)') && 더.includes('- 우리 계정: @ours'));
+  assert.ok(더.includes('4. 「지켜볼 계정」') && 더.includes('5. 같은 기간에 @ours를 부른 글'));
+  const 꼴 = 더.slice(더.indexOf('```json') + 7, 더.lastIndexOf('```')).trim();
+  assert.deepEqual(Object.keys(JSON.parse(꼴)), ['글', '계정글', '우리반응', '흐름', '못찾음'], '답 꼴 보기 자체가 JSON이다');
+});
+
+test('거르기: 계정글은 지켜볼 계정 것만, 우리반응은 우리 글을 빼고 일 문의를 앞에', () => {
+  const 안 = k => 번호(`2026-11-06T1${k}:00:00Z`);
+  const r = 엑스.거르기({
+    글: [{ 주소: `https://x.com/comp/status/${안(0)}` }],
+    계정글: [
+      { 주소: `https://x.com/Comp/status/${안(0)}`, 좋아요: 10, 요지: '새 광고' },
+      { 주소: `https://x.com/i/status/${안(1)}`, 계정: '@comp' },
+      { 주소: `https://x.com/stranger/status/${안(2)}` },
+      { 주소: `https://x.com/i/status/${안(3)}` },
+    ],
+    우리반응: [
+      { 주소: `https://x.com/fan/status/${안(4)}`, 갈래: '칭찬', 요지: '멋져요' },
+      { 주소: `https://x.com/OURS/status/${안(5)}`, 갈래: '질문' },
+      { 주소: `https://x.com/brand/status/${안(6)}`, 갈래: '일 문의', 요지: '견적 문의' },
+      { 주소: `https://x.com/who/status/${안(7)}`, 갈래: '모름' },
+    ],
+  }, { 시간: 72, 개수: 8, 지금, 계정: [{ 아이디: 'comp' }], 우리: 'ours' });
+  assert.equal(r.받음.length, 1);
+  assert.deepEqual(r.계정글.map(g => [g.계정, g.주소]), [['comp', `https://x.com/i/status/${안(0)}`], ['comp', `https://x.com/i/status/${안(1)}`]], '글 칸과 겹쳐도 계정글에는 따로 남는다');
+  assert.equal(r.계정글[0].좋아요, 10);
+  assert.deepEqual(r.우리반응.map(g => g.갈래), ['일 문의', '칭찬', '확인 필요']);
+  assert.ok(r.우리반응.every(g => /^https:\/\/x\.com\/i\/status\/\d+$/.test(g.주소)));
+  assert.deepEqual(r.버림.map(b => b.까닭), ['지켜볼 계정 밖', '지켜볼 계정 밖', '우리 계정이 쓴 글']);
+  const 없음 = 엑스.거르기({ 계정글: [{ 주소: `https://x.com/comp/status/${안(0)}` }], 우리반응: [{ 주소: `https://x.com/a/status/${안(1)}` }] }, { 시간: 72, 개수: 8, 지금 });
+  assert.deepEqual([없음.계정글, 없음.우리반응], [[], []], '설정에 없으면 칸을 읽지 않는다');
+});
+
+test('새표시: 앞 회차에 본 번호는 새가 아니고, 장부는 처음 본 날을 지킨다', () => {
+  const 반응 = [{ 번호: '1' }, { 번호: '2' }];
+  const 장부 = 엑스.새표시(반응, { 1: '2026-11-23' }, '2026-11-24');
+  assert.deepEqual(반응.map(g => g.새), [false, true]);
+  assert.deepEqual(장부, { 1: '2026-11-23', 2: '2026-11-24' });
+  assert.deepEqual(엑스.새표시([{ 번호: '3' }], null, '2026-11-24'), { 3: '2026-11-24' });
+});
+
+test('마크다운: 지켜볼 계정 · 우리 계정 반응 절과 새 일 문의 수', () => {
+  const r = {
+    브랜드: 'pulse', 이름: 'P', 계정수: 2, 우리: 'ours', 받음: [], 버림: [], 흐름: [], 못찾음: '', 걸린ms: 1000, 비용USD: null,
+    계정글: [{ 계정: 'comp', 올린때: '2026-11-24T01:00:00.000Z', 좋아요: 5, 리포스트: null, 조회: null, 형식: '영상', 요지: 'a|b', 가져갈점: 'c', 주소: 'https://x.com/i/status/9' }],
+    우리반응: [{ 갈래: '일 문의', 새: true, 올린때: '2026-11-24T02:00:00.000Z', 요지: '견적', 주소: 'https://x.com/i/status/8' }, { 갈래: '일 문의', 새: false, 올린때: '2026-11-23T02:00:00.000Z', 요지: '전', 주소: 'https://x.com/i/status/7' }],
+  };
+  const md = 엑스.마크다운('2026-11-24', { 시간: 72 }, [r]);
+  assert.ok(md.includes('### 지켜볼 계정의 새 글 (2곳)') && md.includes('| @comp |') && md.includes('a/b'));
+  assert.ok(md.includes('**새 일 문의 1건**') && md.includes('앞 회차에 봄'));
+  const 빈 = 엑스.마크다운('2026-11-24', { 시간: 72 }, [{ ...r, 계정글: [], 우리반응: [] }]);
+  assert.ok(빈.includes('새 글 없음') && 빈.includes('반응 없음'));
+  const 맨 = 엑스.마크다운('2026-11-24', { 시간: 72 }, [{ ...r, 계정수: 0, 우리: null }]);
+  assert.ok(!맨.includes('지켜볼 계정') && !맨.includes('우리 계정 반응'));
 });
 
 test('그록 통로: 파일 · 셸 · 고치기 · MCP 도구는 늘 막고, 웹 검색은 웹일 때만 연다', () => {
