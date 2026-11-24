@@ -132,7 +132,7 @@ def 굽기전(판목록, 무시까닭=None, 컷표=None):
             읽은표[경로] = None if getattr(r, "뼈대탈", False) else seq   # 뼈대가 깨진 표는 컷 줄을 읽을 수 없다 — 판 대조에 넘기지 않는다
         return 경로, 읽은표[경로]
 
-    본, 본id, 판의표, 관문묶음 = set(), {}, {}, {}
+    본, 본id, 판의표, 관문묶음, 검수묶음 = set(), {}, {}, {}, {}
     for pack, b in 판목록:
         pack = os.path.abspath(pack)
         판id, 폴더 = str(b["id"]), str(b["폴더"])
@@ -170,6 +170,7 @@ def 굽기전(판목록, 무시까닭=None, 컷표=None):
             줄.append((등급, 판id, 말))
         if seq and 검사.틀둘(seq) and not 정보["소리만"] and not 정보["프리비즈"]:
             묶음 = 관문묶음.setdefault(pack, [0, []]); 묶음[0] += 1; 묶음[1] += list(정보["컷들"] or [])
+            if 정보["컷들"]: 검수묶음.setdefault(pack, []).append((판id, 글, list(정보["컷들"])))
     # 11-18 7번 「사랑 한 칸」 — 광고 · 공모전 · 포트폴리오 편은 판 셋부터 굽기 전 검수가 「그대로」로 본 컷만 낸다(컷연속성검사.관문결과검사)
     for pack, (판수, 컷들) in 관문묶음.items():
         경로, seq = 판의표.get(pack, (None, None))
@@ -177,6 +178,13 @@ def 굽기전(판목록, 무시까닭=None, 컷표=None):
         for 등급, 말 in 검사.관문결과검사(seq, 경로, 컷들, 판수):
             줄.append((등급, "컷표 관문", 말))
             if 등급 == "걸림": 걸린표.add(경로)
+    # 11-25 유호님 「지시문도 자체 검수자가 있어야할것같아 … 그래야 영상만들때 토큰을 낭비하지않을테니까」 — 모든 편은 지시문 검수자가
+    # 지금 글을 「그대로」로 본 판만 낸다(컷연속성검사.지시문검수결과검사 · 걸림은 판 id로 적어 --걸림무시 "<판 id>: <까닭>"로 그 판만 넘긴다)
+    for pack, 판들 in 검수묶음.items():
+        경로, seq = 판의표.get(pack, (None, None))
+        if not (경로 and seq and hasattr(검사, "지시문검수결과검사")): continue
+        for 등급, 판id, 말 in 검사.지시문검수결과검사(seq, os.path.dirname(경로), 판들):
+            줄.append((등급, 판id, f"(검수) {말}"))
     표시 = {"걸림": "✗", "확인": "?", "주의": "~", "알림": "·"}
     for 등급, 어디, 말 in 줄:
         print(f"  {표시.get(등급, '·')} {어디}: {말}")
