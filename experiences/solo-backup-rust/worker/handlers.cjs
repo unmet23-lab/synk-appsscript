@@ -105,8 +105,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     forbidden: () => [...profiles.engines.b2.forbidden(), ...Object.values(profiles.engines).flatMap(e => e.config && !e.isCloud() ? [e.config.repository] : []), path.join(root, 'recommended'), ...(workRoot ? [path.join(workRoot, 'recommended')] : [])] });
   await range.open(); range.onChange = () => push();
   const protectedHere = () => { const c = profiles.engines.b2.config; return c?.mode === 'backup' && !!c.repositoryId; };
-  // CI의 시험 판(SWB_TEST)은 시험이 고른 폴더로 시작하므로 저절로 찾지 않는다(「다시 찾기」로는 찾는다)
-  if (!testMode && !protectedHere() && range.stale()) void range.find();
+  // 창이 열릴 때의 저절로 찾기는 이 함수 끝(돌려주기 바로 앞)에서 띄운다 — 아래 「첫 보호 범위 찾기」.
   function state() {
     const value = {...profiles.getState(), version:APP_VERSION, recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(), range:range.state(),
       solio:{ setup: solioSetup && Date.now() - Date.parse(solioSetup.at) < 1800000 ? { ...solioSetup } : null, restNetworks: [...restNetworks], aiTools, spaceFree },
@@ -659,6 +658,11 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   void solioTick();
   void recoveryTick(); void refreshRun(); void accountTick();
   let startupRefresh = null;
+  // 첫 보호 범위 찾기(4.17): 보호를 시작하기 전이면 창이 열릴 때 뒤에서 찾는다. find()는 곧바로 onChange → push()를 불러 위의 선언
+  // (runProgress · solioRun 따위)에 닿으므로, 모든 선언이 끝난 여기서 띄운다. 앞에서 띄우던 판은 시험 모드가 아닌 모든 새 PC에서
+  // 워커 시작이 실패했다(TDZ, CI 45481198341 · 45491962318의 BOOT). CI의 시험 판(SWB_TEST)은 시험이 고른 폴더로 시작하므로 저절로
+  // 찾지 않는다(「다시 찾기」로는 찾는다)
+  if (!testMode && !protectedHere() && range.stale()) void range.find();
   return {
     state,
     async call(name,args) {
