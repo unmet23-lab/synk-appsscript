@@ -20,6 +20,7 @@ test('member sees partner and entitlement states with only the corresponding act
   // 등록 전에는 누를 것이 없어 줄을 세우지 않고, 연결을 주지 않는 PC(Mac)의 답도 「상태 확인 필요」 줄이 되지 않는다
   assert.equal(rowFor(model('pending-approval')),undefined);
   assert.equal(rowFor({ok:true,state:'unavailable',code:'NOT_AVAILABLE'}),undefined);
+  assert.equal(rowFor({ok:true,state:'unavailable',code:'SIGN_IN_REQUIRED'}),undefined,'로그인을 확인하는 동안에도 줄을 세우지 않는다(Fable F1)');
   assert.equal(rowFor({ok:true,state:'unavailable',code:'IPC_FAILED'}).nm,'ChatGPT 연결','읽기 실패는 그대로 알린다');
 });
 test('settings follows status changes and rejects late replies, guest actions and stale connections',async()=>{
