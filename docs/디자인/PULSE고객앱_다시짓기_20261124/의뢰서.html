@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE 시안 · 의뢰서 다시 짓기</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./공통.css">
+<style>
+/* 시안 A 「캐스팅 복도」의 결 그대로: 검정 바탕, 왼쪽 판 + 오른쪽 무대, 명조 300 제목. 유호님 11-25 새벽 말씀으로 의뢰서를 다시 짠다. */
+:root{--bg:#060606;--ink:#f4f1ea;--dim:rgba(244,241,234,.6);--faint:rgba(244,241,234,.38);--line:rgba(244,241,234,.14);--panel:500px}
+body{background:var(--bg);color:var(--ink);overflow:hidden}
+.app{display:grid;grid-template-columns:var(--panel) 1fr;height:100dvh}
+.side{position:relative;z-index:2;display:flex;flex-direction:column;padding:32px 40px 28px;background:var(--bg);border-right:1px solid var(--line);overflow:auto}
+.side-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{height:20px;width:auto;opacity:.95}
+.side-body{margin:auto 0;display:flex;flex-direction:column;gap:22px;padding:26px 0}
+.kick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--dim)}
+.kick b{color:var(--ink);font-weight:600}
+h1{margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(36px,3.2vw,50px);line-height:1.14;letter-spacing:-.045em}
+.lede{margin:0;font-size:15px;line-height:1.65;color:var(--dim);max-width:32em}
+.link{color:var(--dim);font-size:14px;border-bottom:1px solid var(--line)}
+.link:hover{color:var(--ink)}
+.go{display:inline-flex;align-items:center;justify-content:space-between;gap:18px;min-height:52px;padding:0 22px;background:var(--ink);color:#0b0b0b;font-weight:650;font-size:16px;letter-spacing:-.02em;border-radius:2px;transition:transform .2s var(--ease),opacity .2s}
+.go:hover{transform:translateY(-1px)}
+.go[disabled]{opacity:.35;transform:none;cursor:not-allowed}
+.go .icon{width:18px;height:18px}
+.go.ghost{background:transparent;color:var(--ink);border:1px solid rgba(244,241,234,.32)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.msg{min-height:1.4em;margin:0;font-size:13px;color:var(--dim)}
+.small{font-size:13px;color:var(--faint);line-height:1.55}
+.q{display:flex;flex-direction:column;gap:10px}
+.qn{display:flex;gap:8px;align-items:baseline;font-size:15px;font-weight:600}
+.qn .mono{font-size:12px;color:var(--faint);font-weight:400}
+.field input,.field textarea{width:100%;background:transparent;border:0;border-bottom:1px solid rgba(244,241,234,.4);padding:10px 0;font-size:17px;outline:none;border-radius:0;color:var(--ink)}
+.field textarea{border:1px solid var(--line);padding:10px 12px;font-size:15px;min-height:76px;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--ink)}
+
+/* 첫 질문: 무엇을 만들까요 — 그림 카드 다섯(참고: Prefer Taste Quiz의 「그림으로 하나 고르기」) */
+.kinds{display:flex;flex-direction:column;gap:6px}
+.kind{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:14px;padding:8px 14px 8px 8px;border:1px solid var(--line);text-align:left;transition:border-color .2s,background .2s}
+.kind:hover,.kind:focus-visible,.kind[aria-pressed=true]{border-color:rgba(244,241,234,.6);background:rgba(255,255,255,.04)}
+.kind img{width:52px;height:52px;object-fit:cover}
+.kind b{display:block;font-size:17px;font-weight:600;letter-spacing:-.02em}
+.kind span{display:block;font-size:13px;color:var(--dim);margin-top:2px}
+.kind .icon{width:18px;height:18px;color:var(--faint)}
+.subs{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 13px;border:1px solid var(--line);font-size:14px;transition:.2s}
+.chip:hover{border-color:rgba(244,241,234,.5)}
+.chip[aria-pressed=true]{background:rgba(244,241,234,.1);border-color:var(--ink)}
+.chip[aria-pressed=true]::before{content:'';width:6px;height:6px;background:var(--ink)}
+
+/* 보내 주실 것: 갈래마다 다른 칸 */
+.files{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.file{display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.file b{font-size:15px;font-weight:600}
+.file b em{font-style:normal;font-size:12px;font-weight:500;color:var(--faint);margin-left:6px}
+.file b em.need{color:var(--ink)}
+.file p{grid-column:1;margin:0;font-size:13px;color:var(--dim);line-height:1.5}
+.file .pick{grid-row:1/3;grid-column:2;display:flex;align-items:center;gap:8px}
+.file .pick img{width:40px;height:40px;object-fit:cover}
+.file .pick button{min-height:38px;padding:0 12px;border:1px solid var(--line);font-size:13px}
+.file .pick button:hover{border-color:var(--ink)}
+.file.is-in .pick button{color:var(--dim)}
+
+/* 길이와 값 */
+.lens{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px}
+.len{display:flex;flex-direction:column;gap:3px;padding:11px 12px;border:1px solid var(--line);text-align:left;transition:.2s}
+.len:hover{border-color:rgba(244,241,234,.5)}
+.len[aria-pressed=true]{border-color:var(--ink);background:rgba(244,241,234,.07)}
+.len b{font-size:15px}
+.len span{font-size:12px;color:var(--dim);line-height:1.4}
+.len .won{font-family:var(--mono);font-size:13px;color:var(--ink);margin-top:2px}
+.len .won.tbd{color:var(--new)}
+
+/* 접힌 칸(아이콘) — 시안 A 그대로 */
+.folds{display:flex;gap:8px;flex-wrap:wrap}
+.fold{position:relative;display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 14px 6px 6px;border:1px solid var(--line);border-radius:2px;background:rgba(255,255,255,.02);text-align:left;transition:border-color .2s,background .2s}
+.fold:hover,.fold[aria-expanded=true]{border-color:rgba(244,241,234,.5);background:rgba(255,255,255,.05)}
+.fold .ico{display:grid;place-items:center;width:40px;height:40px;background:rgba(255,255,255,.06)}
+.fold .ico .icon{width:20px;height:20px}
+.fold .t{display:flex;flex-direction:column;line-height:1.25}
+.fold .t small{font-size:12px;color:var(--faint)}
+.fold .t span{font-size:13px;max-width:12em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fold.is-rec .t small::after{content:' · 추천';color:var(--dim)}
+.fold.is-set .t small::after{content:' · 정함';color:var(--ink)}
+.who-note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:rgba(255,255,255,.04);font-size:14px;line-height:1.55;color:var(--dim)}
+.who-note b{color:var(--ink);font-weight:600}
+.consent{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--dim)}
+.consent input{accent-color:#f4f1ea;width:16px;height:16px}
+
+/* 값 줄 — 판 아래에 붙어 늘 보인다 */
+.price{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-top:16px;border-top:1px solid var(--line)}
+.price .p small{display:block;font-size:12px;color:var(--faint)}
+.price .p .won{font-family:var(--serif);font-weight:300;font-size:30px;letter-spacing:-.03em;line-height:1.2}
+.price .p .won s{font-size:18px;color:var(--faint);margin-right:8px;text-decoration-thickness:1px}
+.price .p .won .tbd{color:var(--new);font-size:20px}
+.price .p .why{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+
+/* 오른쪽 무대 */
+.stage{position:relative;overflow:hidden;background:#000}
+.stage>video,.stage>img.fill{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage .cap{position:absolute;left:28px;bottom:24px;z-index:2;max-width:70%;font-size:13px;color:var(--dim);text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.stage .cap b{display:block;font-family:var(--serif);font-weight:300;font-size:26px;color:var(--ink);letter-spacing:-.03em}
+.stage .shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 45%)}
+.sheet{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;gap:18px;background:rgba(6,6,6,.97);padding:30px 34px;overflow:auto;animation:sheet .4s var(--ease)}
+@keyframes sheet{from{opacity:0;transform:translateY(12px)}}
+.sheet[hidden]{display:none}
+.sheet-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.sheet-head h2{margin:0;font-family:var(--serif);font-weight:300;font-size:30px;letter-spacing:-.04em}
+.sheet .lede{max-width:40em}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid var(--line);text-align:left;transition:border-color .2s}
+.card:hover,.card[aria-pressed=true]{border-color:var(--ink)}
+.card[aria-pressed=true]{background:rgba(244,241,234,.05)}
+.card h3{margin:0;font-family:var(--serif);font-weight:300;font-size:22px;letter-spacing:-.03em}
+.card p{margin:0;color:var(--dim);font-size:14px;line-height:1.5}
+.card video,.card img{width:100%;aspect-ratio:16/10;object-fit:cover;background:#111}
+.card .ex{font-size:12px;color:var(--faint)}
+.endcards .card .frame{position:relative;aspect-ratio:16/9;background:#0d0d0c;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--dim)}
+.endcards .frame .lg{font-family:var(--latin);font-weight:600;font-size:16px;color:var(--ink);letter-spacing:-.02em}
+.endcards .frame .ln{font-family:var(--serif);font-size:14px;color:var(--ink)}
+.exact{display:flex;flex-direction:column;gap:8px}
+.exact .one{display:flex;gap:8px}
+.exact .one input{flex:1;background:transparent;border:1px solid var(--line);padding:10px 12px;font-size:15px;color:var(--ink);outline:none}
+.exact .one input:focus{border-color:var(--ink)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+
+/* 확인: 영수증 꼴(참고: Receipt Printer) */
+.receipt{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.receipt div{display:grid;grid-template-columns:100px 1fr auto;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.receipt dt{color:var(--faint)}
+.receipt dd{margin:0}
+.receipt button{font-size:12px;color:var(--dim);border-bottom:1px solid var(--line)}
+.total{display:flex;flex-direction:column;gap:6px;padding:16px 18px;background:rgba(255,255,255,.04)}
+.total .line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--dim)}
+.total .line s{text-decoration-thickness:1px}
+.total .line.code{color:var(--ink)}
+.total .line.code b{font-weight:600}
+.total .sum{display:flex;justify-content:space-between;align-items:baseline;padding-top:8px;margin-top:2px;border-top:1px solid var(--line)}
+.total .sum span{font-size:14px}
+.total .sum b{font-family:var(--serif);font-weight:300;font-size:32px;letter-spacing:-.03em}
+.total .note{font-size:13px;color:var(--dim);line-height:1.55}
+.codebox{display:flex;gap:8px}
+.codebox input{flex:1;background:transparent;border:1px solid var(--line);padding:10px 12px;font-family:var(--mono);font-size:15px;letter-spacing:.12em;color:var(--ink);text-transform:uppercase;outline:none}
+.codebox input:focus{border-color:var(--ink)}
+.codebox button{padding:0 16px;border:1px solid var(--line);font-size:14px}
+.applied{animation:applied .5s var(--ease)}
+@keyframes applied{from{opacity:0;transform:translateY(-4px)}}
+
+/* 결제(방): 수단 두 장(참고: 어두운 결제 화면의 수단 카드 + 합계 · 결제 단추) */
+.methods{display:flex;flex-direction:column;border:1px solid var(--line)}
+.method{display:grid;grid-template-columns:18px 1fr auto;gap:12px;align-items:center;padding:16px;text-align:left;border-bottom:1px solid var(--line)}
+.method:last-child{border-bottom:0}
+.method .mk{width:14px;height:14px;border:1px solid rgba(244,241,234,.5);display:grid;place-items:center}
+.method[aria-checked=true] .mk::after{content:'';width:8px;height:8px;background:var(--ink)}
+.method b{font-size:16px}
+.method span{display:block;font-size:13px;color:var(--dim);margin-top:2px}
+.method .tag{font-size:12px;color:var(--faint)}
+.bank{display:flex;flex-direction:column;gap:6px;padding:14px 16px;background:rgba(255,255,255,.04);font-size:14px}
+.bank .mono{font-size:15px;color:var(--ink)}
+.bank[hidden]{display:none}
+.done-mark{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--dim)}
+.done-mark i{width:8px;height:8px;background:var(--busy)}
+.paybar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;border-top:1px solid var(--line)}
+.paybar small{display:block;font-size:12px;color:var(--faint)}
+.paybar b{font-family:var(--serif);font-weight:300;font-size:30px;letter-spacing:-.03em}
+.test-tag{font-size:12px;color:var(--new)}
+
+/* 시안 조작 띠 */
+.mock{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:90;display:flex;gap:4px;align-items:center;padding:5px;border-radius:8px;background:rgba(24,24,24,.9);font-size:12px;color:#ddd;box-shadow:0 4px 18px rgba(0,0,0,.4)}
+.mock button,.mock a{padding:5px 9px;border-radius:5px;color:#ddd}
+.mock button[aria-current=true],.mock button[aria-pressed=true]{background:#f4f1ea;color:#111}
+.mock .sep{width:1px;height:16px;background:#444;margin:0 2px}
+
+@media (max-width:900px){
+  :root{--panel:1fr}
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;height:auto;min-height:100dvh}
+  .stage{order:-1;height:34dvh;min-height:220px}
+  .side{padding:22px 18px 28px;border-right:0}
+  .side-body{margin:0;padding:12px 0}
+  h1{font-size:32px}
+  .sheet{position:fixed;inset:auto 0 0 0;z-index:30;max-height:82dvh;padding:18px 16px 24px;border-top:1px solid var(--line);box-shadow:0 -20px 40px rgba(0,0,0,.5)}
+  .stage .cap{left:16px;bottom:14px}
+  .stage .cap b{font-size:20px}
+  .receipt div{grid-template-columns:86px 1fr auto}
+  .mock{top:auto;bottom:8px;flex-wrap:wrap;justify-content:center;max-width:94vw}
+}
+@media (prefers-reduced-motion:reduce){.sheet,.applied{animation:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script type="module">
+import { MODELS, FILMS, icon, video, sound, $, $$, reduced } from './공통.js';
+
+const APP = '../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/';
+const LOGO = APP + 'request/logo-paper.webp';
+const film = id => FILMS.find(f => f.id === id);
+const won = v => v == null ? '' : `${v < 10 ? Math.round(v * 10) / 10 : Math.round(v)}만원`;
+const ICO = {
+  keep: '<path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6"/>',
+  type: '<path d="M5 6h14M12 6v13M9 19h6"/>',
+  feel: '<path d="M12 3c.6 4 2 6.4 6 7-4 .6-5.4 3-6 7-.6-4-2-6.4-6-7 4-.6 5.4-3 6-7z"/>',
+  avoid: '<path d="M6 6l12 12M18 6 6 18"/>',
+  date: '<path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5"/>',
+  arrow: '<path d="M4 12h15M14 7l5 5-5 5"/>',
+  back: '<path d="M20 12H5M10 7l-5 5 5 5"/>',
+};
+const ic = name => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICO[name] || ''}</svg>`;
+
+// ── 갈래 다섯. 무엇을 만드느냐에 따라 이름 칸 · 보낼 것 · 길이 · 정확한 표기 예시가 바뀐다. ──
+const KINDS = [
+  { id: 'product', name: '제품 광고', note: '먹고, 바르고, 입고, 쓰는 물건', poster: film('omitok15').poster, video: film('omitok15').video, work: '오미톡 「치익이 톡이 될 때까지」', len: '15초 · 가상 브랜드로 만든 자체 작품',
+    subs: ['음료 · 식품', '화장품 · 뷰티', '패션 · 잡화', '생활용품 · 가전', '그 밖의 제품'],
+    nameQ: '어떤 제품인가요', namePh: '예) 오미톡 오미자 스파클링',
+    files: [
+      { n: '제품 정면 사진', need: true, why: '화면 속 제품은 AI로 그리지 않고 이 사진을 그대로 얹어요.', img: APP + 'request/demo-can-front.webp' },
+      { n: '옆면 · 뒷면 사진', need: true, why: '돌아가는 컷과 손에 든 컷의 모양을 이 사진으로 맞춰요.', img: APP + 'request/demo-can-side.webp' },
+      { n: '로고 파일', why: '끝 화면에 그대로 얹어요. 없으면 제품 이름 글자로 대신해요.', img: APP + 'request/demo-logo.webp' },
+      { n: '쓰는 모습 · 내용물', why: '따랐을 때의 색, 바른 질감처럼 겉 사진으로 알 수 없는 모습이에요. 없으면 한 줄로 적어 주셔도 돼요.' },
+    ],
+    lens: [['15초', '한 편', 29], ['30초', '30초 + 15초 · 6초 편집본', 59], ['60초', '브랜드 필름이나 시리즈 3편', 149], ['사진 5장', '모델이 제품을 든 사진', 9.9]],
+    keepPh: '예) 한 캔에 맛이 다섯 번 바뀐다', exact: ['제품명 철자', '용량 · 가격', '행사 기간'] },
+  { id: 'place', name: '매장 · 공간', note: '카페, 식당, 병원, 학원, 숙소처럼 찾아오는 곳', poster: APP + 'films/somchae-room-poster-v1.webp', video: APP + 'films/somchae-room-v1.mp4', work: '솜채 「연말 빈방」', len: '1분 · 가상 브랜드로 만든 자체 작품',
+    nameQ: '어떤 곳인가요', namePh: '예) 솜채 한옥스테이',
+    files: [
+      { n: '공간 사진', need: true, why: '실제 공간의 분위기와 구조를 장면의 기준으로 삼아요. 석 장 이상이면 좋아요.' },
+      { n: '대표 메뉴 · 서비스 사진', why: '화면에 크게 보일 대표 장면이에요.' },
+      { n: '로고 · 간판', why: '끝 화면과 간판 컷에 그대로 얹어요.' },
+    ],
+    lens: [['15초', '한 편', 29], ['30초', '30초 + 15초 · 6초 편집본', 59], ['60초', '공간 필름이나 시리즈 3편', 149]],
+    keepPh: '예) 연말에도 조용한 방이 남아 있다', exact: ['상호', '주소 · 영업시간', '예약 방법 · 가격'] },
+  { id: 'app', name: '앱 · 웹 서비스', note: '화면으로 쓰는 서비스', poster: film('modu').poster, video: film('modu').video, work: '모두의코스 「가는 데마다 또 그 사람」', len: '39초 · 가상 브랜드로 만든 자체 작품',
+    nameQ: '어떤 서비스인가요', namePh: '예) 모두의코스',
+    files: [
+      { n: '앱 화면 캡처 · 녹화', need: true, why: '앱 화면도 그리지 않고 실제 화면을 얹어요. 보여 주고 싶은 순서대로 넣어 주세요.' },
+      { n: '로고 · 앱 아이콘', why: '끝 화면과 스토어 표시에 그대로 얹어요.' },
+      { n: '쓰는 순서 한 줄', why: '어떤 순서로 쓰는지 알아야 화면을 맞게 보여 드려요.' },
+    ],
+    lens: [['15초', '한 편', 29], ['30초', '30초 + 15초 · 6초 편집본', 59], ['60초', '서비스 필름이나 시리즈 3편', 149]],
+    keepPh: '예) 가는 곳마다 코스가 알아서 나온다', exact: ['서비스 이름', '스토어 표기', '요금 · 행사'] },
+  { id: 'brand', name: '회사 · 브랜드 영상', note: '회사 소개, 채용, 행사, 브랜드 이야기', poster: APP + 'films/dodam-heavy-poster-v1.webp', video: APP + 'films/dodam-heavy-v1.mp4', work: '도담중공업 「이 아이를 보냅니다」', len: '1분 1초 · 가상 브랜드로 만든 자체 작품',
+    nameQ: '어느 회사 · 브랜드인가요', namePh: '예) 도담중공업',
+    files: [
+      { n: '로고 파일', need: true, why: '끝 화면과 회사 표시에 그대로 얹어요.' },
+      { n: '회사 소개서 · 브랜드 가이드', why: '색과 글꼴, 쓰는 말이 정해져 있으면 그대로 따라요.' },
+      { n: '대표 사진 · 지난 영상', why: '지금까지의 결을 이어 갈지 바꿀지 정할 수 있어요.' },
+    ],
+    lens: [['30초', '30초 + 15초 · 6초 편집본', 59], ['60초', '브랜드 필름', 149], ['기업 캠페인', '30~60초 + 편집본, 기획서 포함', 250]],
+    keepPh: '예) 30년 동안 납기를 한 번도 어기지 않았다', exact: ['회사명', '슬로건', '대표 문구 · 연락처'] },
+  { id: 'mv', name: '뮤직비디오', note: '곡 하나에 맞춘 영상', poster: APP + 'films/hwaseong-cm-song-poster-v1.webp', video: APP + 'films/hwaseong-cm-song-v1.mp4', work: '화성 CM송', len: '노래에 맞춘 영상 · 공모전 출품작',
+    nameQ: '어떤 곡인가요', namePh: '예) 곡 제목 · 아티스트 이름',
+    files: [
+      { n: '음원 파일', need: true, why: '영상의 박자와 장면 전환을 이 곡에 맞춰요. mp3나 wav로 보내 주세요.' },
+      { n: '가사', why: '가사에 맞는 장면과 자막을 만들어요.' },
+      { n: '앨범 커버 · 아티스트 로고', why: '끝 화면과 제목 화면에 그대로 얹어요.' },
+      { n: '곡 소개 한 줄', why: '예) 헤어진 뒤 처음 맞는 겨울, 담담한 발라드' },
+    ],
+    lens: [['한 곡', '곡 길이 그대로 · 4분까지', null]],
+    keepPh: '예) 혼자 걷는 겨울밤의 쓸쓸함', exact: ['곡 제목', '아티스트 이름', '발매일 · 음원 사이트'] },
+];
+const CHANNELS = ['릴스 · 쇼츠 · 틱톡', '유튜브 · 웹사이트', '상세페이지 · 자사몰', '매장 화면 · 행사'];
+const FEELS = [
+  { id: 'moved', h: '뭉클하게', p: '끝까지 보고, 끝에서 마음이 움직여요.', poster: APP + 'request/w-dodam.webp', video: APP + 'request/film-dodam.mp4', ex: '도담중공업 · 1분 1초' },
+  { id: 'wow', h: '「와」 하게', p: '한 장면이 오래 기억에 남아요.', poster: APP + 'request/w-gift-sphere.webp', video: APP + 'request/film-gift.mp4', ex: '霜の肌理 · 15초' },
+  { id: 'laugh', h: '웃으며 보내게', p: '보다가 웃고, 친구에게 보내고 싶어져요.', poster: APP + 'request/w-maejin-laugh.webp', video: APP + 'request/film-maejin-laugh.mp4', ex: '매진 임박 · 1분 15초' },
+];
+const BOLDS = [['익숙하게', '이 업종이 늘 쓰는 장면 안에서 정확하고 보기 좋게'], ['조금 새롭게', '익숙한 장면에 한 가지만 새롭게'], ['과감하게', '처음 보는 설정으로 눈을 붙잡게']];
+const ENDS = [['로고만', '로고 한 장으로 끝나요'], ['로고 + 한 줄', '로고 아래 문구 한 줄'], ['로고 + 한 줄 + 안내', '가격 · 기간 · 주소 같은 안내까지']];
+
+// 시안 상태. code: 초대코드로 들어온 손님(크몽 · 숨고에서 이미 결제).
+const S = { kind: null, sub: '', name: '', files: {}, chans: [], len: 0, keep: '', end: '', exact: ['', '', ''], none: false, feel: '', bold: '', avoid: '', date: '', mail: '', agree: false, code: location.search.includes('code'), codeFrom: '크몽' };
+const kindOf = () => KINDS.find(k => k.id === S.kind) || KINDS[0];
+const lenOf = () => kindOf().lens[S.len] || kindOf().lens[0];
+const app = $('#app');
+
+function stageFilm(k, cap = true) {
+  const host = $('.stage', app); if (!host) return;
+  host.querySelector('video,img.fill')?.remove();
+  const v = video(k.video, k.poster); host.prepend(v);
+  if (!reduced) { v.src = k.video; v.play().catch(() => {}); }
+  const c = $('.cap', host); if (c) c.innerHTML = cap ? `<b>${k.work}</b>${k.len}` : '';
+}
+const priceHTML = (k = kindOf(), [, , p] = lenOf()) => {
+  if (p == null) return `<span class="tbd">정가 ○○만원</span>`;
+  return S.code ? `<s>${won(p)}부터</s>0원` : `${won(p)}부터`;
+};
+const priceWhy = () => S.code ? `초대코드 적용 · ${S.codeFrom}에서 결제하신 의뢰예요. 따로 결제하지 않아요.` : kindOf().lens[S.len]?.[2] == null ? '뮤직비디오 정가는 유호님이 정하실 값이에요(시안 자리).' : '결제는 글 콘티를 확인한 뒤 방에서 카드나 계좌이체로 해요.';
+
+// ── 1. 무엇을 만들까요 ──
+function viewKind() {
+  app.innerHTML = `
+  <section class="side">
+    <div class="side-top"><img class="logo" src="${LOGO}" alt="synk PULSE"><a class="link" href="./A.html#entry">닫기</a></div>
+    <div class="side-body">
+      <p class="kick">새 의뢰 · 1/3</p>
+      <h1>무엇을<br>만들까요?</h1>
+      <p class="lede">고르시는 것에 따라 보내 주실 자료와 값이 달라져요.</p>
+      <div class="kinds" role="group" aria-label="만들 것">${KINDS.map(k => `<button class="kind" data-kind="${k.id}" aria-pressed="${S.kind === k.id}"><img src="${k.poster}" alt=""><span><b>${k.name}</b><span>${k.note}</span></span>${ic('arrow')}</button>`).join('')}</div>
+      <div class="q" data-subq hidden><span class="qn">어떤 제품인가요</span><div class="subs">${KINDS[0].subs.map(s => `<button class="chip" data-sub="${s}" aria-pressed="${S.sub === s}">${s}</button>`).join('')}</div></div>
+      <div class="row"><button class="go" data-next disabled>다음 ${ic('arrow')}</button></div>
+    </div>
+  </section>
+  <section class="stage"><div class="shade"></div><p class="cap"></p></section>`;
+  stageFilm(KINDS[0]);
+  const sync = () => {
+    $$('[data-kind]', app).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.kind === S.kind)));
+    $('[data-subq]', app).hidden = S.kind !== 'product';
+    $('[data-next]', app).disabled = !S.kind || (S.kind === 'product' && !S.sub);
+  };
+  $$('[data-kind]', app).forEach(b => {
+    b.addEventListener('mouseenter', () => stageFilm(KINDS.find(k => k.id === b.dataset.kind)));
+    b.addEventListener('focus', () => stageFilm(KINDS.find(k => k.id === b.dataset.kind)));
+    b.addEventListener('click', () => { if (S.kind !== b.dataset.kind) { S.kind = b.dataset.kind; S.len = 0; S.files = {}; } sound.tick(); sync(); stageFilm(kindOf()); if (S.kind !== 'product') setTimeout(() => go('form'), reduced ? 0 : 260); });
+  });
+  $$('[data-sub]', app).forEach(b => b.addEventListener('click', () => { S.sub = b.dataset.sub; $$('[data-sub]', app).forEach(x => x.setAttribute('aria-pressed', String(x === b))); sound.tick(); sync(); }));
+  $('[data-next]', app).addEventListener('click', () => go('form'));
+  sync();
+}
+
+// ── 2. 이것만 알려 주세요(갈래마다 다른 칸 + 접힌 칸) ──
+const FOLDS = () => [
+  { id: 'keep', ico: 'keep', name: '남길 한 가지', val: S.keep || '저희가 한 문장으로 제안해요' },
+  { id: 'type', ico: 'type', name: '영상 속 글자', val: S.none ? '없어요' : S.end ? `${S.end}${S.exact.some(Boolean) ? ' · 표기 ' + S.exact.filter(Boolean).length : ''}` : `${kindOf().exact[0]}만 얹어요` },
+  { id: 'feel', ico: 'feel', name: '느낌', val: S.feel ? FEELS.find(f => f.id === S.feel).h + (S.bold ? ' · ' + S.bold : '') : '저희가 제안해요' },
+  { id: 'avoid', ico: 'avoid', name: '피할 것', val: S.avoid || '없음' },
+  { id: 'date', ico: 'date', name: '받을 날', val: S.date || '길이대로(결제한 날부터)' },
+];
+const foldHTML = f => { const set = !/제안|없음|얹어요|길이대로/.test(f.val); return `<button class="fold ${set ? 'is-set' : 'is-rec'}" data-fold="${f.id}" aria-expanded="false" aria-controls="sheet-${f.id}"><span class="ico">${ic(f.ico)}</span><span class="t"><small>${f.name}</small><span>${f.val}</span></span></button>`; };
+
+function viewForm() {
+  if (!S.kind) { S.kind = 'product'; S.sub = '음료 · 식품'; }
+  const k = kindOf();
+  app.innerHTML = `
+  <section class="side">
+    <div class="side-top"><img class="logo" src="${LOGO}" alt="synk PULSE"><a class="link" href="./A.html#entry">닫기</a></div>
+    <div class="side-body">
+      <p class="kick">새 의뢰 · 2/3 <b>${k.name}${S.sub && k.id === 'product' ? ' · ' + S.sub : ''}</b><button class="link" data-go="kind">바꾸기</button></p>
+      <h1>이것만<br>알려 주세요</h1>
+      <div class="q"><label class="qn" for="nm"><span class="mono">01</span>${k.nameQ}</label><div class="field"><input id="nm" placeholder="${k.namePh}" value="${S.name}"></div></div>
+      <div class="q"><span class="qn"><span class="mono">02</span>보내 주실 것</span>
+        <div class="files">${k.files.map((f, i) => `<div class="file ${S.files[i] ? 'is-in' : ''}" data-file="${i}"><b>${f.n}<em class="${f.need ? 'need' : ''}">${f.need ? '꼭 필요해요' : '있으면 좋아요'}</em></b><p>${f.why}</p><span class="pick">${S.files[i] && f.img ? `<img src="${f.img}" alt="">` : ''}<button type="button">${S.files[i] ? '바꾸기' : '고르기'}</button></span></div>`).join('')}</div>
+        <p class="small">지금 없으면 나중에 방에서 보내셔도 돼요. 받은 원본은 그대로 얹고 다시 그리지 않아요.</p></div>
+      <div class="q"><span class="qn"><span class="mono">03</span>${k.id === 'mv' ? '길이' : '올릴 곳과 길이'}</span>
+        ${k.id === 'mv' ? '' : `<div class="subs" role="group" aria-label="올릴 곳">${CHANNELS.map(c => `<button class="chip" data-chan="${c}" aria-pressed="${S.chans.includes(c)}">${c}</button>`).join('')}</div>`}
+        <div class="lens" role="radiogroup" aria-label="길이">${k.lens.map(([l, n, p], i) => `<button class="len" role="radio" data-len="${i}" aria-pressed="${S.len === i}" aria-checked="${S.len === i}"><b>${l}</b><span>${n}</span><span class="won ${p == null ? 'tbd' : ''}">${p == null ? '정가 ○○만원' : won(p) + '부터'}</span></button>`).join('')}</div></div>
+      <div class="q"><span class="small">나머지는 저희가 추천대로 채워요. 바꾸고 싶은 것만 누르세요.</span><div class="folds">${FOLDS().map(foldHTML).join('')}</div></div>
+      <p class="who-note"><span><b>나올 모델은 저희가 정해요.</b> 의뢰서를 보고 어울리는 AI 모델을 골라, 방에서 먼저 보여 드려요.${k.id === 'mv' ? ' 아티스트 본인이 나와야 하면 담당자에게 따로 말씀해 주세요.' : ''}</span></p>
+      <div class="q"><label class="qn" for="ml">답을 받을 메일</label><div class="field"><input id="ml" type="email" autocomplete="email" placeholder="name@company.com" value="${S.mail}"></div>
+        <label class="consent"><input type="checkbox" id="ag" ${S.agree ? 'checked' : ''}>연락과 제작에 필요한 정보 수집 · 이용에 동의해요(필수)</label></div>
+      <p class="msg" data-msg aria-live="polite"></p>
+      <div class="price"><div class="p"><small>${S.code ? '결제할 금액' : '예상 가격'}</small><span class="won" data-won>${priceHTML()}</span><span class="why" data-why>${priceWhy()}</span></div><button class="go" data-next>확인하기 ${ic('arrow')}</button></div>
+    </div>
+  </section>
+  <section class="stage"><div class="shade"></div><p class="cap"></p>${sheetsHTML(k)}</section>`;
+  stageFilm(k);
+  bindForm(k);
+}
+
+function sheetsHTML(k) {
+  return `
+  <div class="sheet" id="sheet-keep" data-sheet="keep" hidden><div class="sheet-head"><h2>보는 사람이 기억할 한 가지</h2><button class="link" data-close>닫기</button></div>
+    <p class="lede">광고 문장이 아니어도 돼요. 평소 하시는 말로 적어 주시면 저희가 한 문장으로 다듬어 글 콘티에서 보여 드려요.</p>
+    <div class="field"><textarea data-keep placeholder="${k.keepPh}">${S.keep}</textarea></div><div class="row"><button class="go" data-save="keep">이걸로 ${ic('arrow')}</button></div></div>
+  <div class="sheet" id="sheet-type" data-sheet="type" hidden><div class="sheet-head"><h2>영상 속 글자</h2><button class="link" data-close>닫기</button></div>
+    <p class="lede">영상 안 글자는 저희가 장면에 맞게 써요. 여기서는 두 가지만 정해 주세요.</p>
+    <span class="qn"><span class="mono">1</span>마지막 화면에는 무엇이 나올까요?</span>
+    <div class="cards endcards">${ENDS.map(([h, p], i) => `<button class="card" data-end="${h}" aria-pressed="${S.end === h}"><span class="frame"><span class="lg">${(S.name || k.namePh.replace('예) ', '')).split(' ·')[0]}</span>${i > 0 ? '<span class="ln">문구 한 줄</span>' : ''}${i > 1 ? '<span>가격 · 기간 · 주소</span>' : ''}</span><h3>${h}</h3><p>${p}</p></button>`).join('')}</div>
+    <span class="qn"><span class="mono">2</span>한 글자도 바뀌면 안 되는 표기가 있나요?</span>
+    <p class="small">맞춤법을 고치거나 줄이지 않고 적어 주신 그대로 써요. ${k.name}이면 보통 이런 것이에요.</p>
+    <div class="exact">${k.exact.map((ph, i) => `<div class="one"><input data-exact="${i}" placeholder="${ph}" value="${S.exact[i]}"></div>`).join('')}</div>
+    <div class="row"><button class="go" data-save="type">이걸로 ${ic('arrow')}</button><button class="go ghost" data-none>없어요</button></div></div>
+  <div class="sheet" id="sheet-feel" data-sheet="feel" hidden><div class="sheet-head"><h2>보고 나서 어떤 마음이 들면 좋을까요?</h2><button class="link" data-close>닫기</button></div>
+    <div class="cards">${FEELS.map(f => `<button class="card" data-feel="${f.id}" aria-pressed="${S.feel === f.id}"><video muted loop playsinline preload="none" poster="${f.poster}" data-src="${f.video}"></video><h3>${f.h}</h3><p>${f.p}</p><span class="ex">예: ${f.ex}</span></button>`).join('')}</div>
+    <span class="qn">얼마나 새롭게 갈까요?</span>
+    <div class="seg">${BOLDS.map(([h, p]) => `<button class="chip" data-bold="${h}" aria-pressed="${S.bold === h}" title="${p}">${h}</button>`).join('')}</div>
+    <p class="small" data-bold-why>${S.bold ? BOLDS.find(b => b[0] === S.bold)[1] : '고르지 않으면 의뢰서를 보고 저희가 제안해요.'}</p>
+    <div class="row"><button class="go" data-save="feel">이걸로 ${ic('arrow')}</button></div></div>
+  <div class="sheet" id="sheet-avoid" data-sheet="avoid" hidden><div class="sheet-head"><h2>피할 것</h2><button class="link" data-close>닫기</button></div>
+    <p class="lede">경쟁사 이름, 쓰면 안 되는 말, 싫어하시는 장면처럼 영상에 나오면 안 되는 것이에요.</p>
+    <div class="field"><textarea data-avoid placeholder="예) 「최고」 「1등」 같은 말은 빼 주세요">${S.avoid}</textarea></div><div class="row"><button class="go" data-save="avoid">이걸로 ${ic('arrow')}</button></div></div>
+  <div class="sheet" id="sheet-date" data-sheet="date" hidden><div class="sheet-head"><h2>받을 날</h2><button class="link" data-close>닫기</button></div>
+    <p class="lede">고르신 길이의 작업 기간이 기본이에요. 꼭 맞춰야 하는 날이 있으면 적어 주세요.</p>
+    <div class="field"><input data-date type="date" value=""></div><div class="row"><button class="go" data-save="date">이걸로 ${ic('arrow')}</button></div></div>`;
+}
+
+function bindForm(k) {
+  const side = $('.side', app), stage = $('.stage', app);
+  const closeSheets = () => { $$('[data-sheet]', stage).forEach(s => { s.hidden = true; s.querySelectorAll('video').forEach(v => v.pause()); }); $$('[data-fold]', side).forEach(b => b.setAttribute('aria-expanded', 'false')); };
+  const refresh = () => { $('.folds', side).innerHTML = FOLDS().map(foldHTML).join(''); $('[data-won]', side).innerHTML = priceHTML(); $('[data-why]', side).textContent = priceWhy(); };
+  $('#nm', side).addEventListener('input', e => { S.name = e.target.value; });
+  $('#ml', side).addEventListener('input', e => { S.mail = e.target.value.trim(); });
+  $('#ag', side).addEventListener('change', e => { S.agree = e.target.checked; });
+  $$('[data-file] button', side).forEach(b => b.addEventListener('click', () => { const i = b.closest('[data-file]').dataset.file; S.files[i] = true; sound.tick(); const row = b.closest('.file'); row.classList.add('is-in'); const f = k.files[i]; b.textContent = '바꾸기'; if (f.img && !row.querySelector('.pick img')) b.insertAdjacentHTML('beforebegin', `<img src="${f.img}" alt="">`); }));
+  $$('[data-chan]', side).forEach(b => b.addEventListener('click', () => { const c = b.dataset.chan; S.chans = S.chans.includes(c) ? S.chans.filter(x => x !== c) : [...S.chans, c]; b.setAttribute('aria-pressed', String(S.chans.includes(c))); sound.tick(); }));
+  $$('[data-len]', side).forEach(b => b.addEventListener('click', () => { S.len = Number(b.dataset.len); $$('[data-len]', side).forEach(x => { x.setAttribute('aria-pressed', String(x === b)); x.setAttribute('aria-checked', String(x === b)); }); sound.tick(); refresh(); }));
+  side.addEventListener('click', e => { const f = e.target.closest('[data-fold]'); if (!f) return; const s = $(`[data-sheet="${f.dataset.fold}"]`, stage), open = s.hidden; closeSheets(); if (open) { s.hidden = false; f.setAttribute('aria-expanded', 'true'); sound.tick(); s.querySelectorAll('video').forEach(v => { if (!reduced) { v.src ||= v.dataset.src; v.play().catch(() => {}); } }); $('textarea,input,button.card', s)?.focus({ preventScroll: true }); } });
+  stage.addEventListener('click', e => {
+    if (e.target.closest('[data-close]')) { closeSheets(); return; }
+    const end = e.target.closest('[data-end]'); if (end) { S.end = end.dataset.end; S.none = false; $$('[data-end]', stage).forEach(x => x.setAttribute('aria-pressed', String(x === end))); sound.tick(); return; }
+    const fl = e.target.closest('[data-feel]'); if (fl) { S.feel = fl.dataset.feel; $$('[data-feel]', stage).forEach(x => x.setAttribute('aria-pressed', String(x === fl))); sound.tick(); return; }
+    const bd = e.target.closest('[data-bold]'); if (bd) { S.bold = bd.dataset.bold; $$('[data-bold]', stage).forEach(x => x.setAttribute('aria-pressed', String(x === bd))); $('[data-bold-why]', stage).textContent = BOLDS.find(b => b[0] === S.bold)[1]; sound.tick(); return; }
+    if (e.target.closest('[data-none]')) { S.none = true; S.end = ''; S.exact = ['', '', '']; closeSheets(); refresh(); sound.tick(); return; }
+    const sv = e.target.closest('[data-save]'); if (!sv) return;
+    const id = sv.dataset.save;
+    if (id === 'keep') S.keep = $('[data-keep]', stage).value.trim();
+    if (id === 'type') { S.exact = $$('[data-exact]', stage).map(i => i.value.trim()); S.none = false; if (!S.end && S.exact.some(Boolean)) S.end = ENDS[0][0]; }
+    if (id === 'avoid') S.avoid = $('[data-avoid]', stage).value.trim();
+    if (id === 'date') { const v = $('[data-date]', stage).value; S.date = v ? v.slice(5).replace('-', '월 ') + '일까지' : ''; }
+    sound.tick(); closeSheets(); refresh();
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') closeSheets(); }, { once: false });
+  $('[data-next]', side).addEventListener('click', () => {
+    const msg = $('[data-msg]', side);
+    if (!S.name.trim()) { msg.textContent = `${k.nameQ.replace('인가요', '')} 이름을 적어 주세요.`; $('#nm', side).focus(); return; }
+    if (!/^\S+@\S+\.\S+$/.test(S.mail)) { msg.textContent = '답을 받을 메일을 넣어 주세요. 이 메일로 방을 열어요.'; $('#ml', side).focus(); return; }
+    if (!S.agree) { msg.textContent = '정보 수집 · 이용 동의가 있어야 보낼 수 있어요.'; return; }
+    go('check');
+  });
+}
+
+// ── 3. 이대로 보낼까요(영수증 꼴 + 값) ──
+function viewCheck() {
+  if (!S.kind) { S.kind = 'product'; S.sub = '음료 · 식품'; S.name = '오미톡 오미자 스파클링'; S.mail = 'buyer@example.com'; S.files = { 0: true, 1: true }; }
+  const k = kindOf(), [l, n, p] = lenOf(), need = k.files.filter((f, i) => f.need && !S.files[i]);
+  const rows = [
+    ['만들 것', `${k.name}${S.sub && k.id === 'product' ? ' · ' + S.sub : ''}`, 'kind'],
+    [k.nameQ.replace('인가요', '').replace('어떤 ', '').replace('어느 ', ''), S.name || '—', 'form'],
+    ['보낼 자료', `${Object.keys(S.files).length}개${need.length ? ` · 아직: ${need.map(f => f.n).join(', ')}` : ''}`, 'form'],
+    ['길이', `${l} · ${n}`, 'form'],
+    ...(k.id === 'mv' ? [] : [['올릴 곳', S.chans.join(', ') || '저희가 제안해요', 'form']]),
+    ['남길 한 가지', S.keep || '저희가 제안해요', 'form'],
+    ['영상 속 글자', S.none ? '없어요' : S.end ? S.end : `${k.exact[0]}만`, 'form'],
+    ['느낌', S.feel ? FEELS.find(f => f.id === S.feel).h : '저희가 제안해요', 'form'],
+    ['모델', '저희가 골라 방에서 보여 드려요', ''],
+  ];
+  app.innerHTML = `
+  <section class="side">
+    <div class="side-top"><img class="logo" src="${LOGO}" alt="synk PULSE"><button class="link" data-go="form">${'뒤로'}</button></div>
+    <div class="side-body">
+      <p class="kick">새 의뢰 · 3/3</p>
+      <h1>이대로<br>보낼까요?</h1>
+      <dl class="receipt">${rows.map(([a, b, to]) => `<div><dt>${a}</dt><dd>${b}</dd>${to ? `<button data-go="${to}">고치기</button>` : '<span></span>'}</div>`).join('')}</dl>
+      <div class="total" data-total>${totalHTML(l, p)}</div>
+      ${S.code ? '' : `<details data-codebox><summary class="small" style="cursor:pointer">크몽 · 숨고에서 받은 초대코드가 있어요</summary><div class="codebox" style="margin-top:10px"><input data-code placeholder="초대코드" aria-label="초대코드" maxlength="12"><button data-apply>적용</button></div><p class="msg" data-codemsg aria-live="polite"></p></details>`}
+      <div class="row"><button class="go" data-send>보내기 ${ic('arrow')}</button></div>
+      <p class="small">보내시면 담당자가 평일 10~19시에 확인하고, 빠진 것이 있으면 그 칸만 다시 여쭤요.</p>
+    </div>
+  </section>
+  <section class="stage"><div class="shade"></div><p class="cap"></p></section>`;
+  stageFilm(k);
+  $('[data-apply]', app)?.addEventListener('click', () => {
+    const v = $('[data-code]', app).value.trim(), msg = $('[data-codemsg]', app);
+    if (!/^[A-Za-z0-9-]{4,12}$/.test(v)) { msg.textContent = '받으신 초대코드를 그대로 넣어 주세요.'; return; }
+    S.code = true; sound.shutter();
+    const t = $('[data-total]', app); t.innerHTML = totalHTML(l, p); t.classList.remove('applied'); void t.offsetWidth; t.classList.add('applied');
+    $('[data-codebox]', app).remove();
+  });
+  $('[data-send]', app).addEventListener('click', () => { sound.shutter(); go('sent'); });
+}
+function totalHTML(l, p) {
+  if (p == null) return `<div class="sum"><span>뮤직비디오 한 곡</span><b class="tbd" style="color:var(--new);font-size:20px">정가 ○○만원</b></div><p class="note">뮤직비디오 정가는 유호님이 정하실 값이에요(시안 자리). 결제는 글 콘티를 확인한 뒤 방에서 해요.</p>`;
+  if (S.code) return `<div class="line"><span>${l} 정가</span><s>${won(p)}부터</s></div><div class="line code"><span><b>초대코드 적용</b> · ${S.codeFrom}에서 결제하신 의뢰</span><span>−${won(p)}</span></div><div class="sum"><span>결제할 금액</span><b>0원</b></div><p class="note">이미 ${S.codeFrom}에서 결제하셨어요. 방에서도 따로 결제하지 않아요.</p>`;
+  return `<div class="sum"><span>${l} · 예상 가격</span><b>${won(p)}부터</b></div><p class="note">지금은 결제하지 않아요. 담당자가 의뢰서를 보고 방향과 함께 값을 정해 드리고, 글 콘티를 확인하신 뒤 방에서 카드나 계좌이체로 결제해요.</p>`;
+}
+
+// ── 보낸 뒤 ──
+function viewSent() {
+  const k = kindOf();
+  app.innerHTML = `
+  <section class="side">
+    <div class="side-top"><img class="logo" src="${LOGO}" alt="synk PULSE"><span></span></div>
+    <div class="side-body">
+      <p class="kick"><span class="done-mark"><i></i>접수했어요 · 저희 차례</span></p>
+      <h1>지금은<br>저희 차례예요</h1>
+      <p class="lede">보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 확인이 끝나면 방향 두 안과 어울리는 모델을 보내 드려요.</p>
+      <div class="row"><button class="go ghost" data-go="pay">방: 결제 차례 보기(시안) ${ic('arrow')}</button></div>
+    </div>
+  </section>
+  <section class="stage"><div class="shade"></div><p class="cap"></p></section>`;
+  stageFilm(k);
+}
+
+// ── 방의 결제 페이지(글 콘티 확인 뒤, 공개 손님만) ──
+function viewPay() {
+  const m = MODELS.find(x => x.id === 'M06');
+  const amount = 39;
+  app.innerHTML = `
+  <section class="side">
+    <div class="side-top"><img class="logo" src="${LOGO}" alt="synk PULSE"><span class="small">오미톡 오미자 스파클링 · P-1125-7828</span></div>
+    <div class="side-body">
+      ${S.code ? `
+      <p class="kick"><span class="done-mark"><i></i>저희 차례</span></p>
+      <h1>결제는<br>이미 끝났어요</h1>
+      <p class="lede">${S.codeFrom}에서 결제하신 의뢰라 방에서는 결제하지 않아요. 확인하신 글 콘티로 장면 이미지를 만들기 시작했어요.</p>
+      <div class="total"><div class="line"><span>15초 · 정해 드린 값</span><s>${won(amount)}</s></div><div class="line code"><span><b>초대코드 적용</b> · ${S.codeFrom}에서 결제</span><span>−${won(amount)}</span></div><div class="sum"><span>결제할 금액</span><b>0원</b></div></div>` : `
+      <p class="kick"><span>내 차례 · 결제</span></p>
+      <h1>결제해<br>주세요</h1>
+      <p class="lede">글 콘티를 확인해 주셔서 고마워요. 결제가 확인되면 장면 이미지를 만들기 시작해요.</p>
+      <div class="total"><div class="line"><span>15초 한 편 · 정해 드린 값</span><span>${won(amount)}</span></div><div class="line"><span>기간 · 수정</span><span>결제한 날부터 10일 · 2회</span></div></div>
+      <div class="methods" role="radiogroup" aria-label="결제 수단">
+        <button class="method" role="radio" aria-checked="true" data-method="card"><span class="mk"></span><span><b>카드 결제</b><span>결제창에서 카드나 간편결제로 바로 끝나요.</span></span><span class="tag">바로 시작</span></button>
+        <button class="method" role="radio" aria-checked="false" data-method="bank"><span class="mk"></span><span><b>계좌이체</b><span>입금하시면 담당자가 확인하고 시작해요(평일 10~19시).</span></span><span class="tag">세금계산서 가능</span></button>
+      </div>
+      <div class="bank" data-bank hidden><span class="small">입금할 곳</span><span class="mono">○○은행 000-000000-00-000</span><span>예금주 ○○ · 입금자명에 <b class="mono">P-1125-7828</b>을 적어 주세요.</span><span class="small">계좌는 운영 설정에서 불러와요. 저장소에는 두지 않아요(시안 자리).</span></div>
+      <div class="paybar"><span><small>결제할 금액</small><b>${won(amount)}</b></span><button class="go" data-pay>카드로 결제하기 ${ic('arrow')}</button></div>
+      <p class="test-tag" data-paytest>시험 결제예요. 가맹 신청이 끝나면 실제 결제로 바뀌어요.</p>
+      <p class="msg" data-paymsg aria-live="polite"></p>`}
+    </div>
+  </section>
+  <section class="stage"><img class="fill" src="${m.tall}" alt="" style="object-position:50% 20%"><div class="shade"></div><p class="cap"><b>${m.name}</b>${m.line} · 정해 드린 모델</p></section>`;
+  if (S.code) return;
+  let method = 'card';
+  $$('[data-method]', app).forEach(b => b.addEventListener('click', () => {
+    method = b.dataset.method; $$('[data-method]', app).forEach(x => x.setAttribute('aria-checked', String(x === b)));
+    $('[data-bank]', app).hidden = method !== 'bank'; $('[data-paytest]', app).hidden = method !== 'card';
+    $('[data-pay]', app).innerHTML = (method === 'card' ? '카드로 결제하기 ' : '입금했어요 ') + ic('arrow'); sound.tick();
+  }));
+  $('[data-pay]', app).addEventListener('click', () => {
+    sound.shutter();
+    const body = $('.side-body', app);
+    body.innerHTML = method === 'card'
+      ? `<p class="kick"><span class="done-mark"><i></i>결제 확인 · 저희 차례</span></p><h1>결제를<br>확인했어요</h1><p class="lede">장면 이미지를 만들기 시작했어요. 받으실 날은 12월 5일이에요. 영수증은 메일로 보내 드렸어요.</p>`
+      : `<p class="kick"><span class="done-mark"><i></i>입금 확인 중</span></p><h1>입금을<br>확인하고 있어요</h1><p class="lede">담당자가 평일 10~19시에 입금을 확인하면 바로 시작해요. 세금계산서가 필요하시면 나눈 말로 사업자 정보를 보내 주세요.</p>`;
+  });
+}
+
+// 시안 조작 띠: 화면 넷 + 초대코드 손님 켜고 끄기(손님 화면 밖).
+const VIEWS = { kind: viewKind, form: viewForm, check: viewCheck, sent: viewSent, pay: viewPay };
+function go(name) { if (!VIEWS[name]) name = 'kind'; if (location.hash !== '#' + name) history.pushState(null, '', '#' + name); show(name); }
+function show(name) { document.documentElement.dataset.screen = name; VIEWS[name](); $$('.mock [data-go]').forEach(b => b.setAttribute('aria-current', String(b.dataset.go === name))); }
+document.addEventListener('click', e => { const a = e.target.closest('[data-go]'); if (a) { e.preventDefault(); go(a.dataset.go); } });
+addEventListener('popstate', () => show(location.hash.slice(1) || 'kind'));
+const bar = document.createElement('nav'); bar.className = 'mock'; bar.setAttribute('aria-label', '시안 화면 고르기');
+bar.innerHTML = `<a href="./">시안</a><span class="sep"></span><button data-go="kind">무엇을</button><button data-go="form">의뢰서</button><button data-go="check">확인 · 값</button><button data-go="pay">방: 결제</button><span class="sep"></span><button data-code-toggle aria-pressed="${S.code}">초대코드 손님</button>`;
+document.body.append(bar);
+$('[data-code-toggle]', bar).addEventListener('click', e => { S.code = !S.code; e.currentTarget.setAttribute('aria-pressed', String(S.code)); show(location.hash.slice(1) || 'kind'); });
+show(location.hash.slice(1) || 'kind');
+</script>
+</body>
+</html>
