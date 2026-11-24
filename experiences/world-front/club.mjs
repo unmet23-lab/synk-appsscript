@@ -42,8 +42,7 @@ const UI = {
   right: {ko: '맞아요', en: 'Correct', mn: 'Зөв'},
   wrong: {ko: '아니에요', en: 'Not quite', mn: 'Буруу'},
   here: {ko: '지금 여기', en: 'You are here', mn: 'Та одоо энд'},
-  topik: {ko: 'TOPIK I 시험이 보는 {t}가지 실력 가운데', en: 'Out of the {t} skills TOPIK I tests', mn: 'TOPIK I шалгалт нийт {t} чадвар шалгадаг'},
-  count: {ko: '{t}칸 중 {n}칸', en: '{n} / {t}', mn: '{n} / {t}'},
+  topik: {ko: 'TOPIK {x} 시험이 보는 {t}가지 실력 가운데', en: 'Out of the {t} skills TOPIK {x} tests', mn: 'TOPIK {x} шалгалт нийт {t} чадвар шалгадаг'},
   checked: {ko: '{t}칸 중 {c}칸을 봤어요', en: 'Checked {c} of {t}', mn: '{t} чадвараас {c} чадварыг шалгалаа'},
   got: {ko: '맞힘', en: 'Got it', mn: 'Зөв'},
   hangul: {ko: '한글', en: 'Hangul', mn: 'Солонгос үсэг'},
@@ -97,7 +96,7 @@ const NOTE = {
   'club.hello': {ko: '안녕, 나는 한국어 동아리장 민우야. 혹시 한국어 잘해?', en: 'Hi, I’m Minu, president of the Korean language club. Do you speak Korean well?', mn: 'Сайн уу, би солонгос хэлний клубийн тэргүүн Мину байна. Чи солонгосоор сайн ярьдаг уу?'},
   'tutor.review.hangul': {ko: '어제 한글을 처음 만났죠? 오늘은 「택시」 한 장만 같이 읽어 봐요.', en: 'You met Hangul yesterday. Let’s read just one word today: 택시.', mn: 'Өчигдөр солонгос үсэгтэй анх танилцсан биз дээ? Өнөөдөр «택시» гэдэг ганц үгийг хамт уншаад үзье.'},
   'tutor.review.skill': {ko: '지난번 「{skill}」에서 하나 놓쳤죠? 오늘 같은 종류로 짧게 연습해 봐요.', en: 'Last time you missed one question in {skillUi}. Let’s do a short practice of the same kind today.', mn: 'Өмнөх удаа «{skillUi}» хэсэгт нэг асуулт алдсан биз дээ? Өнөөдөр ижил төрлийн богино дасгал хийгээд үзье.'},
-  'tutor.level': {ko: '지난번엔 {t}칸 중 {n}칸이 채워졌어요. 지금은 어디쯤인지 같이 볼까요?', en: 'Last time {n} of {t} squares were filled. Shall we see where you are now?', mn: 'Өмнөх удаагийн дүн: {n}/{t}. Одоогийн түвшнийг тань хамт харах уу?'},
+  'tutor.level': {ko: '지금은 어디쯤인지 같이 볼까요?', en: 'Shall we see where you are now?', mn: 'Одоогийн түвшнийг тань хамт харах уу?'},
   'tutor.today': {ko: '오늘은 「{title}」 해 볼까요? {m}분이면 돼요.', en: 'How about “{title}” today? It takes {m} minutes.', mn: 'Өнөөдөр «{title}» хийж үзэх үү? {m} минут л болно.'},
   'tutor.today.nomin': {ko: '오늘은 「{title}」 해 볼까요?', en: 'How about “{title}” today?', mn: 'Өнөөдөр «{title}» хийж үзэх үү?'},
 };
@@ -148,7 +147,8 @@ function openRoot(lang) {
   const root = document.createElement('div'); root.className = 'cl-root'; root.setAttribute('lang', lang); sr.append(root);
   const behind = [...document.body.children].filter(n => n !== host && !n.inert && !['SCRIPT', 'STYLE', 'LINK'].includes(n.tagName));
   behind.forEach(n => { n.inert = true; });
-  root.kill = host.kill = () => { host.remove(); behind.forEach(n => { n.inert = false; }); behind.length = 0; };
+  root.release = () => { behind.forEach(n => { n.inert = false; }); behind.length = 0; };
+  root.kill = host.kill = () => { host.remove(); root.release(); };
   return root;
 }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
@@ -363,7 +363,7 @@ async function engineItem({host, C, K, t, item, n, last}) {
     lb.onclick = async () => {
       if (playing || answered) return; playing = true; K.snd('tap');
       const kind = await host.clubReplay?.();
-      if (answered) { playing = false; return; }
+      if (answered || !card.isConnected) { playing = false; return; }
       if (!kind) { playing = false; failed(); return; }
       try { audio = new Audio(item.audio); C.audio = audio; } catch { playing = false; void host.clubAudio?.('failed'); failed(); return; }
       bar.style.width = '0%';
@@ -388,30 +388,46 @@ async function engineItem({host, C, K, t, item, n, last}) {
   return {skillId: item.skillId, label: item.label, labelKo: item.labelKo || item.label, ok: good};
 }
 
-function cellsHTML(K, cells, lisN) {
-  if (!cells?.length) return '';
-  const row = (lb, list) => list.length ? `<span class="lb">${esc(lb)}</span><span class="cells" style="--n:${list.length}">${list.map(c => `<i data-c="${c}"></i>`).join('')}</span>` : '';
+// 지도 칸(다리의 mapView): 혼자 해냄 꽉 · 연습 중 반 · 아직 빈 칸. 「내 위치」 판과 같은 모양이고, 이번 대화의 답은 칸에 덧씌우지 않는다(목록이 따로 보인다).
+// from: 처음엔 「아직」으로 그렸다가 하나씩 제 칸으로 바꿀 항목(첫날 결과 카드 — 방금 본 칸)
+function cellsHTML(K, view, {from = null} = {}) {
+  const cells = Array.isArray(view?.cells) ? view.cells : [];
+  if (!cells.length) return '';
+  const lisN = view.listening || 0;
+  const row = (lb, list) => list.length ? `<span class="lb">${esc(lb)}</span><span class="cells" style="--n:${list.length}">${list.map(c => `<i data-c="${esc(c.cell)}" class="${from?.has(c.id) ? 'notyet' : esc(c.cell)}"></i>`).join('')}</span>` : '';
   return row(K.L(UI.lis), cells.slice(0, lisN)) + row(K.L(UI.rea), cells.slice(lisN));
 }
+function mapKey(view) {
+  const n = view?.counts || {}, names = view?.names || {};
+  return `<ul class="mapkey">${['independent', 'practicing', 'notyet'].filter(c => names[c]).map(c => `<li><i class="${c}"></i><span>${esc(names[c])}</span><b>${n[c] || 0}</b></li>`).join('')}</ul>`;
+}
+// 대화 판을 닫는 길은 모두 여기로: 한 번만, 닫기 시작할 때 뒤 inert를 풀고 단추를 잠근 뒤 0.42초 뒤 걷는다
+function leave(root, onDone, next = null) {
+  if (root.left) return; root.left = true;
+  root.release?.(); root.querySelectorAll('button').forEach(b => { b.disabled = true; });
+  root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(next);
+}
 async function result({host, C, K, t, res, live, onDone, root}) {
-  if (res.board) { root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(typeof res.board === 'object' ? res.board : null); return; }
+  if (res.board) { leave(root, onDone, typeof res.board === 'object' ? res.board : null); return; }
   await C.say(t, S.fin, 600); if (!live()) return;
   const fin = await host.clubFinish?.(res.map(r => ({skillId: r.skillId, label: r.label || '', labelKo: r.labelKo || '', ok: r.ok}))) || {};
-  const cells = Array.isArray(fin.cells) ? fin.cells : [], hg = res.find(r => r.skillId === 'hangul'), tested = res.filter(r => r.skillId !== 'hangul');
+  const view = fin.map && Array.isArray(fin.map.cells) && fin.map.cells.length ? fin.map : null, hg = res.find(r => r.skillId === 'hangul'), tested = res.filter(r => r.skillId !== 'hangul');
+  const seen = new Set(tested.map(r => r.skillId));
   const card = document.createElement('section'); card.className = 'cl-card res';
-  card.innerHTML = `<p class="k"><b>${esc(K.L(UI.here))}</b></p>${cells.length && tested.length ? `<h3>${esc(fill(K.L(UI.checked), {t: fin.total, c: tested.length}))}</h3><p class="sub">${esc(fill(K.L(UI.topik), {t: fin.total}))}</p>` : ''}
-    <div class="strip"><span class="lb">${esc(K.L(UI.hangul))}</span><span><span class="hg ${hg?.ok ? 'done' : 'next'}">${esc(K.L(hg?.ok ? UI.got : UI.nxt))}</span></span>${cellsHTML(K, cells, fin.listening || 0)}</div>
+  card.innerHTML = `<p class="k"><b>${esc(K.L(UI.here))}</b></p>${view && tested.length ? `<h3>${esc(fill(K.L(UI.checked), {t: view.total, c: tested.length}))}</h3><p class="sub">${esc(fill(K.L(UI.topik), {t: view.total, x: view.exam === 'topik2' ? 'II' : 'I'}))}</p>` : ''}
+    <div class="strip"><span class="lb">${esc(K.L(UI.hangul))}</span><span><span class="hg ${hg?.ok ? 'done' : 'next'}">${esc(K.L(hg?.ok ? UI.got : UI.nxt))}</span></span>${cellsHTML(K, view, {from: seen})}</div>${view ? mapKey(view) : ''}
     ${tested.length ? `<ul class="legend">${tested.map(r => `<li><i class="${r.ok ? 'done' : 'next'}"></i><span>${esc(r.label || '')}</span><small>${esc(K.L(r.ok ? UI.got : UI.nxt))}</small></li>`).join('')}</ul>` : ''}`;
   C.add(card);
   await K.sleep(350);
-  for (const i of card.querySelectorAll('.cells i[data-c]')) { const c = i.dataset.c; if (!c) continue; i.className = c; K.anim(i, [{transform: 'scaleY(.2)', opacity: .3}, {transform: 'scaleY(1)', opacity: 1}], {duration: 260, easing: 'cubic-bezier(.3,1.5,.5,1)'}); K.snd(c === 'done' ? 'chime1320' : 'switch'); await K.sleep(140); }
+  // 방금 본 칸만 「아직」에서 제 칸(대개 연습 중)으로 하나씩 바뀐다
+  for (const i of card.querySelectorAll('.cells i[data-c]')) { const c = i.dataset.c; if (!c || i.className === c) continue; i.className = c; K.anim(i, [{transform: 'scaleY(.2)', opacity: .3}, {transform: 'scaleY(1)', opacity: 1}], {duration: 260, easing: 'cubic-bezier(.3,1.5,.5,1)'}); K.snd(c === 'independent' ? 'chime1320' : 'switch'); await K.sleep(140); }
   if (!live()) return;
   const miss = tested.find(r => !r.ok);
   const line = !hg?.ok ? S.lineHangul : miss ? {...fillAll(S.lineNext, {s: miss.label}), ko: fill(S.lineNext.ko, {s: miss.labelKo, j: josaYe(miss.labelKo)})} : S.lineAll;
   if (tested.length || !hg?.ok) { await C.say(t, line, 850); if (!live()) return; }
   await C.say(t, S.bell, 750); if (!live()) return;
   const go = ctaButton(K, K.L(UI.go), fin.minutes || 0); C.add(go); go.focus?.({preventScroll: true});
-  go.onclick = async () => { go.disabled = true; K.snd('paper'); const next = await host.clubDone?.(); root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(next); };
+  go.onclick = async () => { go.disabled = true; K.snd('paper'); const next = await host.clubDone?.(); leave(root, onDone, next); };
 }
 
 /* ── 다음 날부터: 튜터 알림 한 가지 ── */
@@ -421,7 +437,7 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
   const C = chatShell(root, K);
   let alive = true, inner = null;
   const live = () => alive && root.isConnected;
-  const close = (next = null) => { root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(next); };
+  const close = (next = null) => { alive = false; leave(root, onDone, next); };
   (async () => {
     C.header(t, K.L(UI.tutorSub));
     const d = document.createElement('p'); d.className = 'cl-day'; d.textContent = K.L(UI.todayDiv); C.th.append(d);
@@ -432,18 +448,19 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
       const h = await hangulCard(K, C, 'taxi', {n: 1, tutor: t, label: UI.cont}); await h.next; if (!live()) return;
       label = K.L(UI.hangulGo); mins = 0;
     } else if (note.kind === 'review') { label = K.L(UI.practice); mins = 0; }
-    else if (note.kind === 'level') {
-      const s = note.slots || {}, cells = Array.isArray(s.cells) ? s.cells : [];
-      const card = document.createElement('section'); card.className = 'cl-card res';
-      card.innerHTML = `<p class="k"><b>${esc(K.L(UI.here))}</b></p><h3>${esc(fill(K.L(UI.count), {t: s.t, n: s.n}))}</h3><div class="strip">${cellsHTML(K, cells, s.listening || 0)}</div>`;
-      card.querySelectorAll('.cells i[data-c]').forEach(i => { if (i.dataset.c) i.className = i.dataset.c; });
-      C.add(card); label = K.L(UI.levelGo); mins = 0;
-    } else if (note.kind === 'today' && note.slots?.photo) {
+    else if (note.kind === 'level') { label = K.L(UI.levelGo); mins = 0; } else if (note.kind === 'today' && note.slots?.photo) {
       const card = document.createElement('section'); card.className = 'cl-card plan';
       card.innerHTML = `<div class="pp" style="background-image:url(${PH}${esc(note.slots.photo)}.webp)"></div><div class="pb"><p class="k"><b>${esc(K.L(UI.today))}</b></p><p class="pt" lang="ko">${esc(note.slots.title)}</p></div>`;
       C.add(card);
     }
     const go = ctaButton(K, label, mins); C.add(go); go.focus?.({preventScroll: true});
+    // 내 위치: 단추를 먼저 두고, 그날의 지도를 받으면 단추 위에 「지금 여기」 카드를 끼운다(못 받으면 글과 단추만)
+    if (note.kind === 'level') void Promise.resolve(host.clubMap?.()).then(view => {
+      if (!live() || !view?.cells?.length || !go.isConnected) return;
+      const card = document.createElement('section'); card.className = 'cl-card res';
+      card.innerHTML = `<p class="k"><b>${esc(K.L(UI.here))}</b></p><p class="sub">${esc(fill(K.L(UI.topik), {t: view.total, x: view.exam === 'topik2' ? 'II' : 'I'}))}</p><div class="strip">${cellsHTML(K, view)}</div>${mapKey(view)}`;
+      go.before(card); K.anim(card, [{opacity: 0}, {opacity: 1}], {duration: 260});
+    }, () => {});
     const back = document.createElement('button'); back.type = 'button'; back.className = 'cl-back'; back.textContent = K.L(UI.later); C.add(back);
     back.onclick = () => { K.snd('tap'); close(); };
     const change = document.createElement('button'); change.type = 'button'; change.className = 'cl-back'; change.textContent = K.L(UI.change); C.add(change);
@@ -453,7 +470,8 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
     change.onclick = async () => {
       if (changing) return; changing = true; K.snd('tap');
       const nt = await pickTutor(root, K, {current: t}); if (!live()) return;
-      if (nt === t) { changing = false; return; }
+      if (nt === t) { changing = false; change.focus?.({preventScroll: true}); return; }
+      go.disabled = back.disabled = change.disabled = true;   // 바꾼 튜터를 저장하는 동안 옛 대화의 단추는 잠근다
       const r = await host.clubTutor?.(nt, {change: true}); if (!live()) return;
       alive = false; root.kill();
       inner = mountTutorDay({host, state: {...state, note: {...note, who: nt}}, sfx, calm, onDone: n => onDone?.(n || r?.state || null)});
@@ -540,16 +558,17 @@ const CSS = `
 .cl-ch.right .ck{opacity:1}.cl-ch.right .ck path{stroke-dashoffset:0;transition:stroke-dashoffset .38s cubic-bezier(.2,.8,.2,1)}.cl-ch.right:not(.mine){box-shadow:inset 0 0 0 2px #2f7d4f}
 .cl-ch.mine.right:not(.wrong){background:#fffdf8;color:#17160f;box-shadow:inset 0 0 0 2.5px #2f7d4f}
 .cl-ch.dim{opacity:.45}.cl-ch:disabled{cursor:default}
-.cl-skip{margin-top:10px;min-height:40px;padding:0 14px;border:0;border-radius:999px;background:none;box-shadow:inset 0 0 0 1.5px rgba(23,22,15,.12);font-size:14.5px;font-weight:700;color:rgba(23,22,15,.66);cursor:pointer;text-align:left}
+.cl-skip{margin-top:10px;min-height:40px;padding:8px 14px;border:0;border-radius:999px;background:none;box-shadow:inset 0 0 0 1.5px rgba(23,22,15,.12);font-size:14.5px;font-weight:700;color:rgba(23,22,15,.66);cursor:pointer;text-align:left}
 .cl-fb{overflow:hidden;height:0}.cl-fb .in{padding-top:12px;margin-top:12px;border-top:1px solid rgba(23,22,15,.1)}
 .cl-fb .v{margin:0;font-size:15px;font-weight:800}.cl-fb .v.ok{color:#2f7d4f}.cl-fb .v.no{color:#c2412d}.cl-fb p{margin:5px 0 0;font-size:15px;line-height:1.55;font-weight:600}
 .cl-nx{margin-top:12px;min-height:44px;width:100%;border:0;border-radius:999px;background:#17160f;color:#fbf8f1;font-size:15px;font-weight:750;cursor:pointer}
 .cl-card.res h3{margin:10px 0 0;font-size:30px;font-weight:850;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
 .cl-card.res .sub{margin:4px 0 0;font-size:13px;font-weight:500;color:rgba(23,22,15,.62)}
 .cl-root .strip{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;margin-top:16px}.cl-root .strip .lb{font-size:13.5px;font-weight:750;color:rgba(23,22,15,.66)}
-.cl-root .cells{display:grid;grid-template-columns:repeat(var(--n,8),1fr);gap:4px}.cl-root .cells i{height:22px;border-radius:5px;background:rgba(23,22,15,.07)}.cl-root .cells i.done{background:#17160f}.cl-root .cells i.next{background:#fffdf8;box-shadow:inset 0 0 0 2px #c2412d}
+.cl-root .cells{display:grid;grid-template-columns:repeat(var(--n,8),1fr);gap:4px}.cl-root .cells i{height:22px;border-radius:5px;background:rgba(23,22,15,.05);box-shadow:inset 0 0 0 1.5px rgba(23,22,15,.14)}.cl-root .cells i.practicing{background:linear-gradient(0deg,#17160f 50%,rgba(23,22,15,.05) 50%)}.cl-root .cells i.independent{background:#17160f;box-shadow:none}
+.cl-root .mapkey{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;padding:0;list-style:none}.cl-root .mapkey li{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:rgba(23,22,15,.66)}.cl-root .mapkey b{font-size:14.5px;font-weight:800;color:#17160f;font-variant-numeric:tabular-nums}.cl-root .mapkey i{width:13px;height:13px;border-radius:3px;background:rgba(23,22,15,.05);box-shadow:inset 0 0 0 1.5px rgba(23,22,15,.14)}.cl-root .mapkey i.practicing{background:linear-gradient(0deg,#17160f 50%,rgba(23,22,15,.05) 50%)}.cl-root .mapkey i.independent{background:#17160f;box-shadow:none}
 .hg{display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:999px;font-size:13.5px;font-weight:750}.hg.done{background:#17160f;color:#fbf8f1}.hg.next{box-shadow:inset 0 0 0 2px #c2412d;color:#c2412d}
-.cl-root .legend{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;padding:0;list-style:none}.cl-root .legend li{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:650}.cl-root .legend li i{width:12px;height:12px;border-radius:3px;flex:none}.cl-root .legend li i.done{background:#17160f}.cl-root .legend li i.next{box-shadow:inset 0 0 0 2px #c2412d}.cl-root .legend li small{margin-left:auto;flex:none;white-space:nowrap;padding-left:8px;font-size:12.5px;color:rgba(23,22,15,.62)}
+.cl-root .legend{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;padding:0;list-style:none}.cl-root .legend li{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:650}.cl-root .legend li i{width:9px;height:9px;border-radius:50%;flex:none;margin:0 2px}.cl-root .legend li i.done{background:#17160f}.cl-root .legend li i.next{background:#c2412d}.cl-root .legend li small{margin-left:auto;flex:none;white-space:nowrap;padding-left:8px;font-size:12.5px;color:rgba(23,22,15,.62)}
 .cl-card.plan{padding:0;overflow:hidden}.cl-card.plan .pp{height:150px;background:#ddd center/cover}.cl-card.plan .pb{padding:14px 16px 16px}.cl-card.plan .pt{margin:6px 0 0;font-size:20px;font-weight:850}
 .cl-cta{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;padding:0 20px;border:0;border-radius:999px;background:#17160f;color:#fbf8f1;font-size:16.5px;font-weight:800;cursor:pointer;flex-shrink:0}
 .cl-cta.center{justify-content:center}.cl-cta .mn{margin-left:auto;font-size:13px;font-weight:600;color:rgba(251,248,241,.6);font-variant-numeric:tabular-nums}.cl-cta svg{width:16px;height:16px;flex:none}.cl-cta:not(.center) svg{margin-left:auto}.cl-cta .mn+svg{margin-left:0}

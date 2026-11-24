@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {FRONT_AUTO,frontMode,frontEligible,dayKey,dayIndex,firstOf,frontView,recordOf,studentOf,itemOf,reasonOf,planState,GOAL_REASONS,goalPatch} from '../experiences/synk-world-app/world-front-entry.mjs';
+import {FRONT_AUTO,frontMode,frontEligible,dayKey,dayIndex,firstOf,frontView,recordOf,studentOf,itemOf,reasonOf,planState,GOAL_REASONS,goalPatch,consentValues} from '../experiences/synk-world-app/world-front-entry.mjs';
 
 const left={version:1,stage:'left',dream:'idol',name:'볼로르',nameEn:'Bolor',call:'언니',from:'몽골',look:'mn_f',best:{s1e01:{n:3,t2:true,tr:false}},
  scenes:[{id:'s1e01.wrap',at:Date.parse('2026-11-19T13:00:00Z'),lines:4}],momAnswer:'fix',updatedAt:Date.parse('2026-11-19T13:05:00Z')};
@@ -126,4 +126,12 @@ test('목표 저장: 이유만 바꾸고 나머지는 둔다, 시험 정보가 �
   assert.deepEqual(goalPatch(exam, 'exam').values, {...exam, reasons: ['exam'], primaryReason: 'exam', goal: null});
   assert.deepEqual(goalPatch({support: 'hints'}, 'travel').values, {support: 'hints', reasons: ['travel'], primaryReason: 'travel', goal: null});
   assert.deepEqual(goalPatch(null, 'life').values, {reasons: ['life'], primaryReason: 'life', goal: null});
+});
+
+test('목표 저장: 처음 동의하면 동아리 튜터 스타일을 함께, 이미 동의했으면 덮지 않는다', () => {
+  const values = {reasons: ['travel'], primaryReason: 'travel', support: 'step', explanation: 'brief'}, tutor = {support: 'choose', explanation: 'detailed'};
+  assert.deepEqual(consentValues({consent: false}, values, tutor), {...values, support: 'choose', explanation: 'detailed'}, '처음 동의');
+  assert.deepEqual(consentValues(null, values, tutor), {...values, support: 'choose', explanation: 'detailed'}, '기록 없음도 처음 동의');
+  assert.equal(consentValues({consent: true}, values, tutor), values, '이미 동의');
+  assert.deepEqual(consentValues({consent: false}, values, {}), values, '튜터를 안 골랐으면 그대로');
 });

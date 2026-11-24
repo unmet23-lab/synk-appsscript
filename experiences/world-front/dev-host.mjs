@@ -55,7 +55,11 @@ const DEV_ITEMS = [
   {skillId: 'ko.listening.negation', label: '듣고 부정·변경 이해하기', labelEn: 'Listening for “not” and changes', labelMn: 'Сонсоод үгүйсгэл, өөрчлөлтийг ойлгох', audio: '../korean-runner/assets/voice/check-not-middle.mp3', prompt: null, question: null,
     choices: [['o1', '가운데로 가기'], ['o2', '왼쪽으로 가기'], ['o3', '오른쪽으로 가기']], correct: 'o3', explanation: '가운데는 가지 말라고 했어요. 오른쪽으로 가요.'}
 ];
-const DEV_CELLS = ['done', '', 'next', '', '', '', '', '', 'done', 'done', '', '', '', '', '', ''];
+// 가짜 지도(다리 mapView와 같은 꼴): 듣기 8 · 읽기 8, 칸은 혼자 해냄 · 연습 중 · 아직. ?exam=topik2면 TOPIK II(듣기 5 · 읽기 7)
+const DEV_MAP = exam => { const two = exam === 'topik2', lis = two ? 5 : 8, rea = two ? 7 : 8, cell = i => i === 1 ? 'independent' : [0, 2, 9, 10].includes(i) ? 'practicing' : 'notyet';
+  const cells = Array.from({length: lis + rea}, (_, i) => ({id: `${two ? 'ko2' : 'ko'}.${i < lis ? 'listening' : 'reading'}.s${i}`, domain: i < lis ? 'listening' : 'reading', cell: cell(i)}));
+  const counts = Object.fromEntries(['independent', 'practicing', 'notyet'].map(c => [c, cells.filter(x => x.cell === c).length]));
+  return {exam: two ? 'topik2' : 'topik1', total: cells.length, listening: lis, counts, cells, names: {independent: '혼자 해냄', practicing: '연습 중', notyet: '아직'}}; };
 const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 ? a : b; };
 
 export function createDevHost(search = location.search) {
@@ -75,6 +79,7 @@ export function createDevHost(search = location.search) {
     consent: Q.get('consent') === '1', agreed: false,
     pos: Q.get('pos') !== 'none',
     still: Q.get('still') === '1',
+    exam: Q.get('exam') === 'topik2' ? 'topik2' : 'topik1', map: Q.get('map') === 'none' ? 'none' : '',
     club: ['1', 'done', 'open'].includes(Q.get('club')) ? Q.get('club') : '', tutor: ['seoha', 'taeo', 'yuna'].includes(Q.get('tutor')) ? Q.get('tutor') : null,
     note: ['club', 'hangul', 'review', 'level', 'today'].includes(Q.get('note')) ? Q.get('note') : '', diag: ['board', 'none'].includes(Q.get('diag')) ? Q.get('diag') : '', di: -1
   };
@@ -136,7 +141,7 @@ export function createDevHost(search = location.search) {
     if (D.note === 'club') return {from: 'club', who: 'head', kind: 'club', code: 'club.hello', slots: {}, read: false, drop: true};
     if (D.note === 'hangul') return {from: 'tutor', who, kind: 'review', code: 'tutor.review.hangul', slots: {}, read: false, drop: true};
     if (D.note === 'review') return {from: 'tutor', who, kind: 'review', code: 'tutor.review.skill', slots: {skill: '듣고 부정·변경 이해하기', skillUi: lab(DEV_ITEMS[3]), skillId: 'ko.listening.negation'}, read: false, drop: true};
-    if (D.note === 'level') return {from: 'tutor', who, kind: 'level', code: 'tutor.level', slots: {n: 3, t: 16, cells: DEV_CELLS, listening: 8}, read: false, drop: true};
+    if (D.note === 'level') return {from: 'tutor', who, kind: 'level', code: 'tutor.level', slots: {}, read: false, drop: true};
     if (D.note === 'today') return {from: 'tutor', who, kind: 'today', code: 'tutor.today', slots: {title: plan.title, m: plan.min, token: plan.token, photo: plan.photo}, read: false, drop: true};
     return null;
   }
@@ -170,7 +175,8 @@ export function createDevHost(search = location.search) {
     async clubAudio(status) { note('clubAudio', status); return true; },
     async clubAnswer(id) { const it = DEV_ITEMS[D.di]; return it ? {correct: id === it.correct, correctId: it.correct, explanation: it.explanation} : {error: 'notReady'}; },
     async clubNext() { D.di += 1; return viewOf(D.di); },
-    async clubFinish(rows) { note('clubFinish', rows); return {total: 16, cells: DEV_CELLS, listening: 8, minutes: planOf().min}; },
+    async clubFinish(rows) { note('clubFinish', rows); return {map: DEV_MAP(D.exam), minutes: planOf().min}; },
+    async clubMap() { note('clubMap'); await new Promise(r => setTimeout(r, 300)); return D.map === 'none' ? null : DEV_MAP(D.exam); },   // ?map=none: 지도를 못 받는 길
     async clubDone() { D.club = 'done'; D.note = ''; D.v = 'more'; return state(); },
     async clubBoard() { D.club = 'done'; D.note = ''; D.v = 'more'; note('position'); return state(); },
     async clubSeen(o) { note('clubSeen', o); if (o?.opened && D.club === 'done') D.note = ''; return null; },   // 연 알림은 그날 다시 내려오지 않는다(다리와 같다)

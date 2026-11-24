@@ -129,7 +129,10 @@ const over = await inClub(() => document.documentElement.scrollWidth - innerWidt
 check(over <= 0, '가로 넘침 없음', String(over));
 const mark = await page.evaluate(() => JSON.parse(localStorage.getItem('synk.world.front.v1:guest') || '{}'));
 check(mark.club?.tutor === TUTOR, '고른 튜터를 기기 표에 남김', String(mark.club?.tutor));
-if (!NOREAD) check(Array.isArray(mark.club?.cells) && mark.club.cells.length === 16 && Array.isArray(mark.club?.results) && mark.club.results.length === items + 1, '결과 칸 · 문항 줄을 남김', `${mark.club?.cells?.length} · ${mark.club?.results?.length}`);
+if (!NOREAD) check(!('cells' in (mark.club || {})) && Array.isArray(mark.club?.results) && mark.club.results.length === items + 1, '기기 표에는 문항 줄만(칸은 지도에서)', `${mark.club?.results?.length}`);
+// 결과 칸은 「내 위치」 판과 같은 지도 칸(혼자 해냄 · 연습 중 · 아직) — 붉은 칸 없음, 세 칸 수의 합이 칸 수(설계 검토 11-25)
+const grid = await inClub(() => { const r = document.querySelector('.cl-host').shadowRoot.querySelector('.cl-card.res'); return {cells: r.querySelectorAll('.cells i').length, red: r.querySelectorAll('.cells i.next, .cells i.done').length, sum: [...r.querySelectorAll('.mapkey b')].reduce((n, b) => n + Number(b.textContent), 0)}; });
+if (!NOREAD) check(grid.cells === 16 && grid.red === 0 && grid.sum === 16, '결과 칸은 지도 칸 셋 · 세 칸 수의 합', JSON.stringify(grid));
 await waitPress('「맞춤 연습 시작」', '.cl-cta');
 await until('맞춤 화면', () => F().evaluate(() => !document.querySelector('.cl-host') && !!document.querySelector('.view.home')), 20000);
 await sleep(2000); await shot('7-맞춤');

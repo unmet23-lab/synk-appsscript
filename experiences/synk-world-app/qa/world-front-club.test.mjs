@@ -2,7 +2,7 @@
 //   node --test experiences/synk-world-app/qa/world-front-club.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cardable, pickClubRows, clubNote, cellsOf, explainOf, createFrontClub, TUTOR_SETTINGS} from '../world-front-club.mjs';
+import {cardable, pickClubRows, clubNote, mapView, MAP_CELLS, explainOf, createFrontClub, TUTOR_SETTINGS} from '../world-front-club.mjs';
 
 const item = (id, modality, difficulty = 1, extra = {}) => ({id, skillId: `ko.${modality}.${id}`, modality, difficulty, choices: [{id: 'a', label: '가'}, {id: 'b', label: '나'}], correctId: 'a', explanation: '까닭', audio: modality === 'listening' ? `x/${id}.mp3` : null, ...extra});
 const row = it => ({skillId: it.skillId, item: it});
@@ -26,7 +26,7 @@ test('넷: 읽기 · 듣기를 번갈아 쉬운 것부터, 한쪽이 모자라�
 test('알림: 처음 만남 전 동아리장, 만난 날 없음, 다음 날부터 하루 하나', () => {
   assert.equal(clubNote({club: null}).code, 'club.hello');
   assert.equal(clubNote({club: {tutor: 'taeo'}}).code, 'club.hello', '고르고 끝내지 않았으면 다시 동아리장');
-  const club = {tutor: 'taeo', done: true, at: at(0), results: [{skillId: 'hangul', ok: true}, {skillId: 'ko.reading.grammar', label: 'Reading particles', labelKo: '조사·문형 읽기', ok: false}], cells: ['done', 'next'], listening: 1};
+  const club = {tutor: 'taeo', done: true, at: at(0), results: [{skillId: 'hangul', ok: true}, {skillId: 'ko.reading.grammar', label: 'Reading particles', labelKo: '조사·문형 읽기', ok: false}]};
   const plan = {token: 'p1', title: '첫 인사 세 마디', min: 2, photo: 'ph9-greet'};
   assert.equal(clubNote({club, plan, now: at(0, 22)}), null, '만난 날 밤');
   assert.equal(clubNote({club, plan, now: at(1, 2)}), null, '새벽 4시 전은 같은 날');
@@ -35,18 +35,30 @@ test('알림: 처음 만남 전 동아리장, 만난 날 없음, 다음 날부�
   assert.equal(clubNote({club: {...club, reviewed: ['ko.reading.grammar']}, plan, now: at(1)}).code, 'tutor.today', '복습한 항목은 다시 안 부른다');
   assert.equal(clubNote({club, plan, now: at(3)}).code, 'tutor.level', '셋째 날마다 내 위치');
   assert.equal(clubNote({club: {...club, last: {day: '2026-11-25', opened: true}}, plan, now: at(1)}), null, '그날 연 알림은 다시 안 띄운다');
-  const hangulPlan = {...plan, line: '한글부터 해요'};
-  assert.equal(clubNote({club: {...club, results: [{skillId: 'hangul', ok: false}]}, plan: hangulPlan, hangul: 'new', now: at(1)}).code, 'tutor.review.hangul');
-  assert.equal(clubNote({club: {...club, results: [{skillId: 'hangul', ok: false}]}, plan, hangul: 'new', now: at(1)}).code, 'tutor.today', '계획이 한글을 지났으면 「한글 이어 하기」를 건네지 않는다');
-  assert.equal(clubNote({club: {...club, results: [{skillId: 'hangul', ok: false}]}, plan: hangulPlan, hangul: 'ask', now: at(1)}).code, 'tutor.today', '한글 답을 못 남겼으면 한글 복습이 아니다');
+  const h0 = {...club, results: [{skillId: 'hangul', ok: false}]};
+  assert.equal(clubNote({club: h0, plan, hangul: 'new', hangulFirst: true, now: at(1)}).code, 'tutor.review.hangul');
+  assert.equal(clubNote({club: h0, plan, hangul: 'new', hangulFirst: false, now: at(1)}).code, 'tutor.today', '계획이 한글을 지났으면 「한글 이어 하기」를 건네지 않는다');
+  assert.equal(clubNote({club: h0, plan, hangul: 'ask', hangulFirst: true, now: at(1)}).code, 'tutor.today', '한글 답을 못 남겼으면 한글 복습이 아니다');
+  // 내 위치: 칸 기록 없이도(판으로 연 진단 · 새 기록) 사흘째 날이면, 한글을 처음 배우는 학생은 빼고, 알림에 숫자 · 칸을 싣지 않는다
+  const lv = clubNote({club: {tutor: 'taeo', done: true, at: at(0), results: []}, plan, now: at(3)});
+  assert.deepEqual([lv.code, lv.slots], ['tutor.level', {}]);
+  assert.deepEqual(clubNote({club: {...club, cells: ['done', 'next'], listening: 1}, plan, now: at(6)}).slots, {}, '옛 기록의 cells는 쓰지 않는다');
+  assert.equal(clubNote({club, plan, hangul: 'new', now: at(3)}).code, 'tutor.today', '「아직 한글도 몰라요」 학생에게는 내 위치 알림을 건네지 않는다');
   assert.equal(clubNote({club: {...club, results: []}, plan: null, now: at(2)}), null, '근거가 없으면 조용히');
 });
 
-test('결과 칸: 이번에 본 항목은 그 답, 나머지는 지도 칸', () => {
-  const map = {skills: [{id: 'ko.listening.word', domain: 'listening', cell: 'notyet'}, {id: 'ko.listening.detail', domain: 'listening', cell: 'independent'}, {id: 'ko.reading.grammar', domain: 'reading', cell: 'practicing'}, {id: 'ko.reading.vocabulary', domain: 'reading', cell: 'notyet'}]};
-  const out = cellsOf(map, [{skillId: 'hangul', ok: true}, {skillId: 'ko.listening.word', ok: true}, {skillId: 'ko.reading.vocabulary', ok: false}]);
-  assert.deepEqual(out, {total: 4, cells: ['done', 'done', 'next', 'next'], listening: 2});
-  assert.deepEqual(cellsOf(null), {total: 0, cells: [], listening: 0});
+test('줄인 지도: 칸은 지도 그대로 셋, 「내 위치」 판과 같은 수, 시도 기록은 싣지 않는다', () => {
+  const map = {exam: 'topik1', skills: [{id: 'ko.reading.grammar', domain: 'reading', cell: 'practicing', eventId: 'e1'}, {id: 'ko.listening.word', domain: 'listening', cell: 'notyet'}, {id: 'ko.listening.detail', domain: 'listening', cell: 'independent', itemKey: 'k'}, {id: 'ko.reading.vocabulary', domain: 'reading', cell: 'practicing'}]};
+  const v = mapView(map, {lang: 'ko'});
+  assert.deepEqual(v.cells, [{id: 'ko.listening.word', domain: 'listening', cell: 'notyet'}, {id: 'ko.listening.detail', domain: 'listening', cell: 'independent'}, {id: 'ko.reading.grammar', domain: 'reading', cell: 'practicing'}, {id: 'ko.reading.vocabulary', domain: 'reading', cell: 'practicing'}]);
+  assert.deepEqual([v.exam, v.total, v.listening], ['topik1', 4, 2]);
+  // 「내 위치」 판은 같은 지도의 skill.cell을 센다 — 대화 카드의 수가 판과 같다
+  assert.deepEqual(v.counts, Object.fromEntries(MAP_CELLS.map(c => [c, map.skills.filter(x => x.cell === c).length])));
+  assert.equal(JSON.stringify(v).includes('eventId') || JSON.stringify(v).includes('itemKey'), false);
+  assert.equal(typeof v.names.practicing, 'string');
+  assert.equal(mapView({exam: 'topik2', skills: [{id: 'ko2.reading.a', domain: 'reading', cell: 'odd'}]}).exam, 'topik2');
+  assert.equal(mapView({skills: [{id: 'ko2.reading.a', domain: 'reading', cell: 'odd'}]}).cells[0].cell, 'notyet', '모르는 칸은 아직');
+  assert.equal(mapView(null), null);
 });
 
 test('해설은 화면 언어, 없으면 한국어', () => {
@@ -56,8 +68,8 @@ test('해설은 화면 언어, 없으면 한국어', () => {
   assert.equal(explainOf({}), '');
 });
 
-function harness({consent = false, ready = true, route = 'lesson', map = null} = {}) {
-  const marks = {}, calls = [];
+function harness({consent = false, ready = true, route = 'lesson', gameId = null, map = null, mapWait = 0} = {}) {
+  const marks = {}, calls = [], who = {now: 'guest'};
   const readMark = who => marks[who] || {};
   const writeMark = (who, patch) => { marks[who] = {...readMark(who), ...patch}; };
   let profile = {consent, revision: 3, values: {reasons: ['travel'], support: 'step', explanation: 'brief'}};
@@ -69,11 +81,11 @@ function harness({consent = false, ready = true, route = 'lesson', map = null} =
   const education = {
     clubCheck: async ({pick}) => { calls.push(['check', pick(its.map(row)).length]); return ready ? {status: 'ready', session, total: its.length, skillName: id => id, audioUrl: p => '/' + p, finish: () => ({map: {skills: its.map(x => ({id: x.skillId, domain: x.modality, cell: 'notyet'}))}, results})} : {status: 'board'}; },
     practice: id => calls.push(['practice', id]), position: o => calls.push(['position', o]),
-    clubMap: async () => { calls.push(['map']); return map; }
+    clubMap: async () => { calls.push(['map']); if (mapWait) await new Promise(r => setTimeout(r, mapWait)); if (map instanceof Error) throw map; return map; }
   };
-  const club = createFrontClub({same: () => true, owner: () => 'guest', readMark, writeMark, education: () => education, progress: () => progress, lang: () => 'en',
-    plan: () => ({token: 'p1', title: 'T', min: 2, route}), openPlan: t => calls.push(['open', t]), stateOf: async () => ({view: 'more'}), baseUrl: () => 'http://x/world/'});
-  return {club, marks, calls, profileNow: () => profile};
+  const club = createFrontClub({same: () => who.now === 'guest', owner: () => who.now, readMark, writeMark, education: () => education, progress: () => progress, lang: () => 'en',
+    plan: () => ({token: 'p1', title: 'T', min: 2, route, gameId}), openPlan: t => calls.push(['open', t]), stateOf: async () => ({view: 'more'}), baseUrl: () => 'http://x/world/'});
+  return {club, marks, calls, who, profileNow: () => profile};
 }
 
 test('튜터 스타일은 동의한 학생만 학습 설정에 저장한다', async () => {
@@ -102,7 +114,8 @@ test('문항 → 답 → 결과 → 놓친 항목 짧은 연습으로 잇는다'
   await h.club.host.clubAnswer('b');
   assert.equal(await h.club.host.clubNext(), null);
   const fin = await h.club.host.clubFinish([{skillId: 'hangul', ok: true}, {skillId: 'ko.reading.r1', label: 'R1', labelKo: '읽기1', ok: true}, {skillId: 'ko.listening.l1', label: 'L1', labelKo: '듣기1', ok: false}]);
-  assert.deepEqual(fin, {total: 2, cells: ['next', 'done'], listening: 1, minutes: null});
+  assert.deepEqual([fin.minutes, fin.map.total, fin.map.cells.map(c => c.cell)], [null, 2, ['notyet', 'notyet']], '칸은 지도 그대로(답을 덧씌우지 않는다)');
+  assert.equal('cells' in h.marks.guest.club || 'listening' in h.marks.guest.club, false, '기기 표에는 결과 줄만');
   assert.equal(h.marks.guest.club.results.length, 3);
   const next = await h.club.host.clubDone();
   assert.equal(next.view, 'more');
@@ -154,30 +167,26 @@ test('계획이 아직 짧은 진단이면 「맞춤 연습 시작」에 분을 
   assert.equal((await g.club.host.clubFinish([{skillId: 'hangul', ok: true}])).minutes, 2);
 });
 
-test('내 위치 알림의 칸은 첫날 기록이 아니라 그날의 지도로 센다(하루 한 번)', async () => {
-  const map = {skills: [{id: 'ko.listening.word', domain: 'listening', cell: 'independent'}, {id: 'ko.reading.grammar', domain: 'reading', cell: 'independent'}, {id: 'ko.reading.vocabulary', domain: 'reading', cell: 'practicing'}]};
+test('내 위치 카드: 대화를 연 뒤 지도를 받는다 — 없음 · 실패 · 기다리는 사이 주인 바뀜이면 null, 알림을 고를 때는 묻지 않는다', async () => {
+  const map = {exam: 'topik1', skills: [{id: 'ko.listening.word', domain: 'listening', cell: 'independent'}, {id: 'ko.reading.grammar', domain: 'reading', cell: 'practicing'}]};
   const h = harness({map}), now = Date.now();
-  h.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 3 * DAY, results: [], cells: ['', '', ''], listening: 1}};
-  await h.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
-  assert.deepEqual([h.marks.guest.club.cells, h.marks.guest.club.listening], [['done', 'done', 'next'], 1]);
+  h.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 3 * DAY, results: []}};
   const n = h.club.noteOf('guest', null, 'reads');
-  assert.deepEqual([n.code, n.slots.n, n.slots.t], ['tutor.level', 2, 3]);
-  await h.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
-  assert.equal(h.calls.filter(c => c[0] === 'map').length, 1, '같은 날 두 번 묻지 않는다');
-  const g = harness({map});
-  g.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 1 * DAY, results: [], cells: ['']}};
-  await g.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
-  assert.equal(g.calls.some(c => c[0] === 'map'), false, '내 위치 날이 아니면 지도를 묻지 않는다');
-  // 첫날 한 번 맞힌 항목은 지도에서 아직 연습 중(practicing)이다 — 다시 세도 맞힌 칸은 맞힌 칸이다
-  const pm = {skills: [{id: 'a.listening.x', domain: 'listening', cell: 'practicing'}, {id: 'a.reading.y', domain: 'reading', cell: 'practicing'}, {id: 'a.reading.z', domain: 'reading', cell: 'practicing'}, {id: 'a.reading.w', domain: 'reading', cell: 'independent'}]};
-  const k = harness({map: pm});
-  k.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 3 * DAY, results: [{skillId: 'hangul', ok: true}, {skillId: 'a.listening.x', ok: true}, {skillId: 'a.reading.y', ok: false}, {skillId: 'a.reading.w', ok: false}], cells: ['done', 'next', '', ''], listening: 1}};
-  await k.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
-  assert.deepEqual(k.marks.guest.club.cells, ['done', 'next', 'next', 'done'], '첫날 맞힘은 그대로, 그 뒤 혼자 해낸 칸은 채움');
-  const e = harness({map: null});
-  e.marks.guest = {club: {tutor: 'taeo', done: true, at: now - 3 * DAY, results: [], cells: ['done', ''], listening: 1}};
-  await e.club.refresh('guest', {view: 'more', plan: null, hangul: 'reads'});
-  assert.deepEqual(e.marks.guest.club.cells, ['done', ''], '지도를 못 받으면 앞 기록 그대로');
+  assert.deepEqual([n.code, n.slots], ['tutor.level', {}]);
+  assert.equal(h.calls.some(c => c[0] === 'map'), false, '알림을 고를 때(stateOf)는 지도를 묻지 않는다');
+  const v = await h.club.host.clubMap();
+  assert.deepEqual([v.total, v.counts.independent, v.counts.practicing], [2, 1, 1]);
+  assert.equal(await harness({map: null}).club.host.clubMap(), null, '새 길 · 기록 없음');
+  assert.equal(await harness({map: new Error('x')}).club.host.clubMap(), null, '실패');
+  const w = harness({map, mapWait: 50}); const q = w.club.host.clubMap(); w.who.now = 'other'; assert.equal(await q, null, '기다리는 사이 주인이 바뀌면 버린다');
+});
+
+test('한글 복습: 다리가 계획 값(route · gameId)으로 한글 먼저인지 가린다', () => {
+  const now = Date.now(), club = {tutor: 'seoha', done: true, at: now - DAY, results: [{skillId: 'hangul', ok: false}]};
+  const a = harness({route: 'game', gameId: 'hangul'}); a.marks.guest = {club};
+  assert.equal(a.club.noteOf('guest', {token: 'p1', title: '한글 만나기', min: 3}, 'new').code, 'tutor.review.hangul');
+  const b = harness({route: 'lesson'}); b.marks.guest = {club};
+  assert.equal(b.club.noteOf('guest', {token: 'p1', title: 'T', min: 2}, 'new').code, 'tutor.today');
 });
 
 test('동의 전에 고른 튜터의 스타일을 처음 동의할 때 쓸 값', async () => {

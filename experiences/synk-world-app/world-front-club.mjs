@@ -40,19 +40,23 @@ export function explainOf(item,lang='ko'){
  if(v&&typeof v==='object')return v[lang]||v.ko||'';
  return '';
 }
-// 진단 지도 → 결과 칸(항목 순서 그대로). 이번 대화에서 본 항목은 그 답으로(맞힘 'done' · 놓침 'next'), 나머지는 지도 칸으로
-// (최근 혼자 해냄 'done' · 연습 중 'next' · 아직 ''). 한 번 맞힌 것을 「해냄」이라 하지 않으려고 화면은 「맞힘」이라 쓴다(club.mjs).
-// solo: 다시 셀 때(사흘마다 내 위치) — 지도가 혼자 해냄이면 그 칸이 먼저고, 아니면 첫날 답(맞힘 'done' · 놓침 'next'), 그다음 지도 칸.
-// 첫날 한 번 맞힌 항목은 지도에서 아직 연습 중이라, 첫날 답을 빼고 세면 맞힌 칸이 놓친 칸처럼 보인다(11-25).
-export function cellsOf(map,rows=[],{solo=false}={}){
- const skills=Array.isArray(map?.skills)?map.skills:[],seen=new Map((Array.isArray(rows)?rows:[]).filter(r=>r?.skillId&&r.skillId!=='hangul').map(r=>[r.skillId,!!r.ok]));
- const cell=skill=>solo&&skill.cell==='independent'?'done':seen.has(skill.id)?(seen.get(skill.id)?'done':'next'):skill.cell==='independent'?'done':skill.cell==='practicing'?'next':'';
+// 진단 지도 → 틀에 줄 줄인 지도(첫날 결과 카드와 사흘째 내 위치 카드가 같이 쓴다, 설계 검토 11-25 「고친 A」).
+// 칸은 지도 그대로 셋(혼자 해냄 · 연습 중 · 아직)이고 「내 위치」 판과 같다. 이번 대화의 답은 칸에 덧씌우지 않는다 — 맞힘 · 연습할 곳은
+// 틀의 목록이 따로 보인다(한 번 맞힌 항목은 지도에서 연습 중이다). 시도 기록(eventId 등)은 넘기지 않는다. 듣기 먼저, 읽기 다음.
+export const MAP_CELLS=Object.freeze(['independent','practicing','notyet']);
+export function mapView(map,{lang='ko'}={}){
+ const skills=(Array.isArray(map?.skills)?map.skills:[]).filter(skill=>skill&&skill.id);
+ if(!skills.length)return null;
  const lis=skills.filter(skill=>skill.domain==='listening'||String(skill.id).split('.')[1]==='listening'),rea=skills.filter(skill=>!lis.includes(skill));
- return {total:skills.length,cells:[...lis.map(cell),...rea.map(cell)],listening:lis.length};
+ const cells=[...lis,...rea].map(skill=>({id:String(skill.id),domain:lis.includes(skill)?'listening':'reading',cell:MAP_CELLS.includes(skill.cell)?skill.cell:'notyet'}));
+ const counts=Object.fromEntries(MAP_CELLS.map(c=>[c,cells.filter(x=>x.cell===c).length]));
+ const names=Object.fromEntries(MAP_CELLS.map(c=>{const key=`position.cell.${c}`;let v='';try{v=hasString(key)?t(key,{},lang):'';}catch{v='';}return [c,v];}));
+ return {exam:map?.exam==='topik2'?'topik2':'topik1',total:cells.length,listening:lis.length,counts,cells,names};
 }
 // 오늘 튜터가 알림으로 건넬 한 가지(하루 한 번 · 근거가 없으면 조용히).
 // 처음 만남 전: 동아리장 알림. 처음 만난 날: 없음. 그 뒤 하루에 하나 — 놓친 항목 복습 → 셋째 날마다 내 위치 → 오늘 할 일.
-export function clubNote({club=null,plan=null,hangul='ask',now=Date.now()}={}){
+// hangulFirst: 지금 계획이 한글 먼저인가(다리가 계획 값 route · gameId로 가려 넘긴다 — 화면 문장으로 가리지 않는다)
+export function clubNote({club=null,plan=null,hangul='ask',hangulFirst=false,now=Date.now()}={}){
  if(!club?.tutor||!club.done)return {from:'club',who:'head',kind:'club',code:'club.hello',slots:{}};
  const today=dayKey(now);
  if(!club.at||dayKey(club.at)===today)return null;
@@ -62,9 +66,10 @@ export function clubNote({club=null,plan=null,hangul='ask',now=Date.now()}={}){
  const missed=(Array.isArray(club.results)?club.results:[]).find(row=>row&&!row.ok&&row.skillId&&row.skillId!=='hangul'&&!reviewed.has(row.skillId));
  const who=club.tutor,base={from:'tutor',who};
  // 「한글 이어 하기」는 지금 계획을 연다 — 계획이 한글 먼저일 때만 건넨다(계획이 다른 활동으로 넘어갔으면 다른 알림으로)
- if(days===1&&hangul==='new'&&plan?.line==='한글부터 해요')return {...base,kind:'review',code:'tutor.review.hangul',slots:{}};
+ if(days===1&&hangul==='new'&&hangulFirst)return {...base,kind:'review',code:'tutor.review.hangul',slots:{}};
  if(missed&&days%3!==0)return {...base,kind:'review',code:'tutor.review.skill',slots:{skill:missed.labelKo||missed.label||missed.skillId,skillUi:missed.label||missed.skillId,skillId:missed.skillId}};
- if(days%3===0&&Array.isArray(club.cells)&&club.cells.length)return {...base,kind:'level',code:'tutor.level',slots:{n:club.cells.filter(c=>c==='done').length,t:club.cells.length,cells:club.cells,listening:club.listening||0}};
+ // 내 위치: 사흘째 날마다. 한글을 처음 배우는 학생은 「내 위치」가 한글 판이라 뺀다. 글에는 숫자 · 지난 일을 넣지 않고, 칸은 대화를 연 뒤 지도로 받는다(clubMap)
+ if(days%3===0&&hangul!=='new')return {...base,kind:'level',code:'tutor.level',slots:{}};
  if(plan?.token)return {...base,kind:'today',code:'tutor.today',slots:{title:plan.title||'',m:plan.min||0,token:plan.token,photo:plan.photo||null}};
  if(missed)return {...base,kind:'review',code:'tutor.review.skill',slots:{skill:missed.labelKo||missed.label||missed.skillId,skillUi:missed.label||missed.skillId,skillId:missed.skillId}};
  return null;
@@ -89,7 +94,8 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
   writeMark(who,{inbox:list});
  }
  function noteOf(who,planNow,hangul){
-  const club=clubOf(who),note=clubNote({club,plan:planNow,hangul});
+  let raw=null;try{raw=plan();}catch{raw=null;}
+  const club=clubOf(who),note=clubNote({club,plan:planNow,hangul,hangulFirst:raw?.route==='game'&&raw?.gameId==='hangul'});
   // 항목 이름은 저장한 글이 아니라 지금 화면 언어로 다시 찾는다(첫날 뒤 언어를 바꿔도 섞이지 않게)
   if(note?.slots?.skillId){const id=note.slots.skillId,ko=skillLabel(id,'ko'),ui=skillLabel(id,lang());if(ko!==id)note.slots.skill=ko;if(ui!==id)note.slots.skillUi=ui;}
   const was=(readMark(who).inbox||[]).find?.(row=>row?.from==='club'||row?.from==='tutor');
@@ -128,6 +134,14 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
    const now=run.session.next();item=now?.item||null;
    return {status:'ready',total:run.total,item:viewOf(now)};
   },
+  // 사흘째 내 위치 카드: 대화를 연 뒤 그날의 지도를 받는다(4초 안 · 기다리는 사이 주인이 바뀌면 버림 · 새 길이면 없음)
+  async clubMap(){
+   if(!same())return null;
+   const who=owner();let map=null;
+   try{map=await Promise.race([Promise.resolve(education()?.clubMap?.()),new Promise(r=>setTimeout(()=>r(null),4000))]);}catch{map=null;}
+   if(!same()||owner()!==who)return null;
+   return mapView(map,{lang:lang()});
+  },
   async clubReplay(){if(!same()||!run)return null;try{return run.session.replay();}catch{return null;}},
   async clubAudio(status){if(!same()||!run)return null;try{return run.session.delivery(status);}catch{return null;}},
   // 소리를 끝내 못 틀면 그 문항은 건너뛴 것으로 남긴다(엔진 skip — 답하지 않은 문항을 틀렸다고 하지 않는다)
@@ -148,12 +162,12 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
    if(!same())return null;
    const who=owner();let out=null;
    if(run){try{out=run.finish();}catch{out=null;}run=null;item=null;}
-   const {total,cells,listening}=cellsOf(out?.map,rows);
+   const map=mapView(out?.map,{lang:lang()});
    const results=(Array.isArray(rows)?rows:[]).filter(r=>r&&typeof r.skillId==='string').slice(0,8).map(r=>({skillId:r.skillId,label:String(r.label||'').slice(0,60),labelKo:String(r.labelKo||r.label||'').slice(0,40),ok:!!r.ok}));
-   setClub(who,{results,cells,listening,finishedAt:Date.now()});
+   setClub(who,{results,finishedAt:Date.now()});
    // 놓친 항목이 있으면 그 항목 짧은 연습으로 잇고(분은 연습 길이가 정한다), 다 맞혔거나 한글부터면 오늘 할 일(분은 계획)로
    const p=plan(),missed=results.find(r=>!r.ok&&r.skillId!=='hangul');
-   return {total,cells,listening,minutes:missed||!p?.token||p.route==='position'?null:p.min||null};
+   return {map,minutes:missed||!p?.token||p.route==='position'?null:p.min||null};
   },
   // 「맞춤 연습 시작」: 처음 만남을 마치고 오늘 할 일을 연다(짧은 진단이면 방금 봤으니 열지 않고 맞춤 화면만).
   async clubDone(){
@@ -198,17 +212,7 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
   // 그만두기(틀이 닫힘 · 주인이 바뀜): 보이던 문항은 건너뛴 것으로 남긴다(짧은 진단과 같다).
   clubStop(){close();},
  };
- // 사흘마다 오는 내 위치 알림의 칸은 그날 앞면을 처음 열 때(지난번 공부까지의 기록) 지도와 첫날 답으로 다시 센다(하루 한 번 · 2.5초 안에 못 받으면 앞 기록 그대로)
- async function refresh(who,state){
-  if(!state||!['more','front'].includes(state.view))return;
-  const club=clubOf(who),today=dayKey(Date.now());
-  if(club.cellsDay===today||clubNote({club,plan:state.plan,hangul:state.hangul})?.kind!=='level')return;
-  const late=Symbol('late');let map=null;try{map=await Promise.race([Promise.resolve(education()?.clubMap?.()),new Promise(r=>setTimeout(()=>r(late),2500))]);}catch{map=null;}
-  if(!same()||owner()!==who||map===late)return;   // 늦으면 오늘 다시 묻는다(cellsDay를 적지 않는다)
-  const c=map?cellsOf(map,club.results||[],{solo:true}):null;
-  setClub(who,c?.total?{cells:c.cells,listening:c.listening,cellsDay:today}:{cellsDay:today});
- }
  // 동의 전에 고른 튜터의 스타일: 앞면 목표 질문에서 처음 동의할 때 함께 저장한다(world-front-entry.mjs chooseGoal)
  const valuesOf=who=>{const set=TUTOR_SETTINGS[clubOf(who).tutor];return set?{support:set.support,explanation:set.explanation}:{};};
- return {host,noteOf,refresh,valuesOf,tutorOf:who=>CLUB_TUTORS.includes(clubOf(who).tutor)?clubOf(who).tutor:null,doneOf:who=>!!clubOf(who).done,stop:close,name:t=>NAME[t]||''};
+ return {host,noteOf,valuesOf,tutorOf:who=>CLUB_TUTORS.includes(clubOf(who).tutor)?clubOf(who).tutor:null,doneOf:who=>!!clubOf(who).done,stop:close,name:t=>NAME[t]||''};
 }

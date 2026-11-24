@@ -109,6 +109,8 @@ export function goalPatch(saved,reason){
 }
 
 /* ── 다리 ── */
+// 둘째 날 목표 저장 값: 처음 동의하면 동의 전에 고른 동아리 튜터의 스타일(도움 방식 · 설명 길이)을 함께 넣고, 이미 동의한 학생의 값은 덮지 않는다
+export function consentValues(profile,values,tutor){return profile?.consent?values:{...values,...(tutor&&typeof tutor==='object'?tutor:{})};}
 export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,signIn,openStory,profile,storage=globalThis.localStorage,
  native=()=>false,guestArrival=()=>null,blocked=()=>false,newEngine=()=>false,bypass=()=>false,openSettings=null,hangulReading,setHangulReading,goalConsent=()=>({needed:true,label:'',note:''})}){
  const owner=()=>client().snapshot?.accountId||'guest';
@@ -140,12 +142,12 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  let asked=null;
  const viewAfter=who=>{const mark=readMark(who);let v=frontView({arrival:arrivalOf(who),mark,native:!!native()});if(v==='day2'&&!mark.goal&&accountGoal())v='front';return v;};
  const club=createFrontClub({same:()=>same(),owner,readMark,writeMark,education,progress:()=>life.progress,lang:currentLang,openPlan:token=>host.open(token),
-  plan:()=>{const raw=currentPlan(),{plan:main}=planState(raw,{label:entry=>home.planLabel?.(entry)||entry?.label||''});return main?{...main,route:raw?.selected?.route||null}:null;},
+  plan:()=>{const raw=currentPlan(),{plan:main}=planState(raw,{label:entry=>home.planLabel?.(entry)||entry?.label||''});return main?{...main,route:raw?.selected?.route||null,gameId:raw?.selected?.gameId||null}:null;},
   stateOf:async()=>{const v=viewAfter(owner());if(session)session.view=v;return await stateOf(v);}});
  const withClub=state=>state&&({...state,club:{tutor:club.tutorOf(owner()),note:['more','front'].includes(state.view)?club.noteOf(owner(),state.plan,state.hangul):null}});
  if(typeof window!=='undefined')window.SYNKFrontClub=Object.freeze({needed:()=>{try{return !!on()&&!club.doneOf(owner());}catch{return false;}},ask:()=>{asked='club';}});
  // 앞면에 주는 state는 모두 여기를 거쳐 동아리 · 튜터 줄(club)을 얹는다(맞춤 화면으로 가는 길이 여럿이라 한 곳에서)
- async function stateOf(view){const state=await stateBase(view);try{await club.refresh(owner(),state);}catch{}return withClub(state);}
+ async function stateOf(view){return withClub(await stateBase(view));}
  async function stateBase(view){
   const who=owner(),arrival=arrivalOf(who),guest=who==='guest',pc=!!native();
   let hangul='ask';try{const answer=await hangulReading(who);hangul=answer?.answer==='new'?'new':answer?.answer==='reads'?'reads':'ask';}catch{hangul='ask';}
@@ -270,7 +272,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    const patch=goalPatch(profile?.values,reason);
    if(patch.window){try{education()?.open?.();}catch{}return document.querySelector('#world-panel')?.open?{error:'goalWindow'}:{error:'save'};}
    // 처음 동의하면 동의 전에 고른 동아리 튜터의 스타일(도움 방식 · 설명 길이)도 함께 저장한다(world-front-club.mjs valuesOf)
-   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:profile?.consent?patch.values:{...patch.values,...club.valuesOf(who)}});}
+   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:consentValues(profile,patch.values,club.valuesOf(who))});}
    catch(error){return {error:error?.message||'save'};}
    writeMark(who,{day2:true,goal});session.view='front';
    return stateOf('front');
