@@ -1512,7 +1512,7 @@ function sayLine(who,say,mean,s,dream,quiet){
   if(!reduce&&!quiet)[...say.children].forEach((w,i)=>w.animate([{opacity:0,filter:'blur(8px)',transform:'translateY(8px)'},{opacity:1,filter:'blur(0)',transform:'none'}],{duration:420,delay:80+i*70,easing:'cubic-bezier(.23,1,.32,1)',fill:'both'}));
 }
 // 커튼콜: 표지(2초) → 팬 한 명씩. 누르면 다음 팬, 마지막 뒤에는 처음부터. 저절로 넘김은 5.2초, 동작 줄이기에서는 누를 때만
-const CC={on:false,says:[],i:-1,run:0};
+const CC={on:false,says:[],i:-1,run:0,tick:0};
 function ccReset(){CC.on=false;CC.says=[];CC.i=-1;$('#cc').hidden=true;$('#ccCard').classList.remove('on');$('#ccDim').classList.remove('on');$('#s-crowd').classList.remove('cc-on','cc-zoom');$('#ccHint').hidden=true;}
 function curtain(says,run){
   Object.assign(CC,{on:true,says,i:-1,run});
@@ -1536,14 +1536,14 @@ function ccSpot(i){
 }
 function ccGo(i,quiet){
   if(!CC.on||CC.run!==crowdRun||!CC.says[i])return;
-  CC.i=i;$('#ccCard').classList.remove('on');
+  CC.i=i;CC.tick++;$('#ccCard').classList.remove('on');$('#s-crowd').classList.add('cc-zoom');
   const s=CC.says[i],last=i===CC.says.length-1;
   ccSpot(s.fan);sayLine($('#ccWho'),$('#ccSay'),$('#ccMean'),s,state.dream,quiet);
   [...$('#ccProg').children].forEach((el,k)=>{const b=el.firstChild;b.getAnimations().forEach(a=>a.cancel());b.style.transform=k<i||(k===i&&(reduce||last))?'scaleX(1)':'scaleX(0)';
     if(k===i&&!reduce&&!last)b.animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:5200,easing:'linear',fill:'forwards'});});
   $('#ccHint').textContent=L(last?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');
   if(!quiet)SND.sfx('pix_notification',.15);
-  const run=CC.run;if(!reduce&&!last)crowdLater(()=>{if(run===crowdRun&&CC.on&&CC.i===i)ccGo(i+1);},5200);
+  const run=CC.run,tick=CC.tick;if(!reduce&&!last)crowdLater(()=>{if(run===crowdRun&&CC.on&&CC.tick===tick)ccGo(i+1);},5200);
 }
 // 내 팬 화면: best 값으로. 켜진 사람 자리를 객석 그림에 그리고, 고른 팬에 빛을 둔다
 let fanPick=0;
@@ -1560,13 +1560,13 @@ function fansSpot(i){
 }
 function renderFans(quiet=true){
   const dream=state.dream,b=state.best[EP]||{n:0,t2:false,tr:false},lit=litCount(),says=bestSay(b).filter(x=>fanLine('ko',x.why));
-  $('#fansT').textContent=L('팬 {n}명',{n:lit});
+  $('#fansT').textContent=L('팬 {n}명',{n:lit});$('#goalT').textContent=L('{x}까지',{x:L(DREAM[dream].scenes[0])});
   $('#goalN').textContent=Math.min(10,lit);
   $('#goalBar').innerHTML=Array.from({length:10},(_,k)=>`<i class="${k<lit?'on':''}"></i>`).join('');
   $('#fansPick').hidden=!says.length;$('#fansLine').hidden=!says.length;$('#fansNone').hidden=!!says.length;
   if(fanPick>=says.length)fanPick=0;
   $('#fansPick').innerHTML=says.map((x,i)=>`<button type="button" class="pk" data-i="${i}" aria-pressed="${i===fanPick}">${esc(FANS[dream][x.fan].name)}</button>`).join('');
-  $('#fansPick').querySelectorAll('.pk').forEach(btn=>{btn.onclick=()=>{fanPick=+btn.dataset.i;renderFans(false);SND.felt('tap');};});
+  $('#fansPick').querySelectorAll('.pk').forEach(btn=>{btn.onclick=()=>{const kb=document.activeElement===btn;fanPick=+btn.dataset.i;renderFans(false);SND.felt('tap');if(kb)$('#fansPick').querySelector(`.pk[data-i="${fanPick}"]`)?.focus({preventScroll:true});};});
   if(says.length)sayLine($('#fWho'),$('#fSay'),$('#fMean'),says[fanPick],dream,quiet);
   paintHall($('#fansHall'),litSeats(HALLS[dream],b)).then(()=>fansSpot(says.length?says[fanPick].fan:null));
 }
@@ -1577,7 +1577,7 @@ $('#fansBack').onclick=closeFans;
 $('#fansReplay').onclick=()=>{show('s-path');playScene();};
 // 화면 언어가 바뀌면 커튼콜 자막과 내 팬 화면을 지금 언어로 다시 그린다(설계 검토 11번)
 function relang(){
-  if(CC.on){ccCopy();if(CC.i>=0){const s=CC.says[CC.i];sayLine($('#ccWho'),$('#ccSay'),$('#ccMean'),s,state.dream,true);$('#ccHint').textContent=L(CC.i===CC.says.length-1?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');}}
+  if(CC.on){ccCopy();if(CC.i>=0){const s=CC.says[CC.i];sayLine($('#ccWho'),$('#ccSay'),$('#ccMean'),s,state.dream,true);}$('#ccHint').textContent=L(CC.i===CC.says.length-1?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');}
   if($('#s-fans').classList.contains('on'))renderFans();
   if($('#fansBtn'))$('#fansBtn').setAttribute('aria-label',L('내 팬 {n}명 보기',{n:litCount()}));
 }
