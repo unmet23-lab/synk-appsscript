@@ -1,7 +1,8 @@
 // 배우기 · 놀이 「준비 중」 안내(유호님 11-24 「여기 지금 게임들 클릭하면 전부 준비중입니다! 27년 2월에 봐요 라고 띄워줘
 // 전부 갈아 엎어야할것같아 엉망진창이야」). 배우기 판(생활 팩 판 · 팩 한 장 · 이야기 모음)과 놀이 판에서 레슨 · 게임 · 연습으로
 // 들어가는 단추를 누르면, 들어가는 대신 「준비 중 · 2027년 2월」 판과 사전예약 단추를 띄운다.
-// 우리 동네 홈 카드의 「복습」 · 「내 위치 보기」도 막는다(11-24 유호님 「홈도 막기」). 서울행 이야기 · 내 길 · 1화 · 맞춤 앞면 ·
+// 우리 동네 홈 카드의 「복습」 · 「내 위치 보기」 · 「이번 주 계획」과, 홈의 「학습 목표」 판 안 「내 위치 보기」 줄도 막는다
+// (11-24 유호님 「홈도 막기」 · 11-25 Fable 검수 P2: 학습 목표 판을 거쳐 내 위치 판으로 돌아가는 길). 서울행 이야기 · 내 길 · 1화 · 맞춤 앞면 ·
 // 홈의 「맞춤 연습 시작」(튜터 세션 몫) · 아래 메뉴 · 닫기 · 학습 알림 묻기는 지나간다.
 // 다시 짠 배우기가 준비되면 아래 한 줄을 false로 바꾼다. 판은 그대로 보이고, 누르면 예전처럼 열린다.
 // 로컬 시험 서버(server.mjs)는 기존 레슨 · 게임 시험이 돌도록 <html data-learn-soon="off">로 연다. 그 문서에서는 막지 않는다. 공개본에는 이 표시가 없다.
@@ -13,10 +14,12 @@ export const SOON_SCREENS='.life-hub,.life-pack-head,.life-stories-poster,.play-
 // 들어가는 단추: 팩 · 레슨 · 다음 할 일 · 복습 · 이야기 · 내 위치 · 이번 주 계획 · 놀이 · 노래 · 쓰기 · 말하기.
 // 팩 목록으로 돌아가기(data-life-packs) · 닫기(data-close) · 학습 알림 묻기(data-world="reminder-…")는 막지 않는다.
 export const SOON_ENTRIES='[data-life-pack],[data-life-lesson],[data-life-next],[data-life-review],[data-life-stories],[data-view],[data-game],[data-world-game],[data-world-song],[data-world]:not([data-world^="reminder-"])';
-// 우리 동네 홈 카드(패널 밖): 판을 거치지 않고 바로 열리는 「복습」 줄임 단추와 「내 위치 보기」만 막는다.
+// 우리 동네 홈 카드(패널 밖): 판을 거치지 않고 바로 열리는 「복습」 줄임 단추 · 「내 위치 보기」 · 「이번 주 계획」(시험을 고른 사람만)을 막는다.
 // 「맞춤 연습 시작」(#life-next-button[data-view="learn"])은 지나간다. 카페 · 생활 팩 · 이야기 줄임 단추는 막는 판을 열어 그 안에서 막힌다.
 export const SOON_HOME='.life-home-board';
-export const SOON_HOME_ENTRIES='[data-view="review"],[data-life-review],[data-view="position"]';
+export const SOON_HOME_ENTRIES='[data-view="review"],[data-life-review],[data-view="position"],[data-view="plan"]';
+// 어느 판 안에서든 막는 단추: 학습 목표 · 도움 방식 판(홈 「학습 목표」가 연다)의 「내 위치 보기」 줄. 그 판의 다른 설정은 그대로 쓴다.
+export const SOON_PANEL_ENTRIES='.study-position-row';
 
 export const RESERVE_URL='https://synk.im/reserve/';
 const RESERVE_FROM='world-learn';
@@ -30,12 +33,13 @@ export const SOON_TEXT={
 const pickLang=value=>Object.hasOwn(SOON_TEXT,value)?value:'ko';
 export const reserveHref=lang=>`${RESERVE_URL}?from=${RESERVE_FROM}&lang=${pickLang(lang)}`;
 
-/** 누른 곳이 막을 단추면 그 단추를, 아니면 null. 패널 내용(#panel-content) 안이면 배우기 · 놀이 판의 들어가는 단추, 패널 밖이면 홈 카드의 복습 · 내 위치. */
+/** 누른 곳이 막을 단추면 그 단추를, 아니면 null. 패널 내용(#panel-content) 안이면 배우기 · 놀이 판의 들어가는 단추와 학습 목표 판의 내 위치 줄, 패널 밖이면 홈 카드의 복습 · 내 위치 · 이번 주 계획. */
 export function soonTarget(target,{on=LEARN_SOON}={}){
  if(!on||!target?.closest)return null;
  const button=target.closest('button,a[href]');if(!button)return null;
  const content=button.closest('#panel-content');
  if(!content)return button.closest(SOON_HOME)&&button.matches(SOON_HOME_ENTRIES)?button:null;
+ if(button.matches(SOON_PANEL_ENTRIES))return button;
  if(!content.querySelector(SOON_SCREENS))return null;
  return button.matches(SOON_ENTRIES)?button:null;
 }

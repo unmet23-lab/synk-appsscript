@@ -93,15 +93,28 @@ try {
       const ok = state.title === text.title && state.lead === text.lead && state.reserve === reserveHref(lang) && state.screen && state.panelTitle === before && state.frames === 0 && state.inView && state.art;
       seen.blocked.push({name, ok, ...state});
     };
-    // 우리 동네 홈 카드의 「내 위치 보기」(11-24 「홈도 막기」): 판을 열지 않고 안내를 띄운다.
-    {
-      await page.locator('.life-home-board [data-view="position"]').first().click({force: true}); await page.waitForSelector('dialog.learn-soon[open]');
-      await page.waitForFunction(() => document.querySelector('dialog.learn-soon[open] .learn-soon-art')?.complete === true);
-      const state = await page.evaluate(() => ({title: document.querySelector('dialog.learn-soon[open] .learn-soon-title')?.textContent, panel: !!document.querySelector('#world-panel[open]')}));
-      await page.screenshot({path: path.join(out, `${tag}-home-position.png`)});
+    // 우리 동네 홈 카드의 「내 위치 보기」(11-24 「홈도 막기」)와 홈 「학습 목표」 판 안의 「내 위치 보기」 줄(11-25 Fable P2):
+    // 내 위치 판을 열지 않고 안내를 띄운다. 판 상태(열림 · 제목)는 누르기 전 그대로다. 그림은 그려진 뒤에 찍는다(11-25 Fable P3).
+    const pressKeep = async (selector, name) => {
+      const panelNow = () => page.evaluate(() => ({panel: !!document.querySelector('#world-panel[open]'), title: document.querySelector('#world-panel[open] #panel-title')?.textContent || null}));
+      const before = await panelNow();
+      await page.locator(selector).first().click({force: true}); await page.waitForSelector('dialog.learn-soon[open]');
+      await page.waitForFunction(() => { const img = document.querySelector('dialog.learn-soon[open] .learn-soon-art'); return !!img && img.complete && img.naturalWidth > 0; });
+      await page.evaluate(() => document.querySelector('dialog.learn-soon[open] .learn-soon-art')?.decode().catch(() => {}));
+      const state = await page.evaluate(() => {
+        const box = document.querySelector('dialog.learn-soon[open]'), r = box.getBoundingClientRect(), img = box.querySelector('.learn-soon-art');
+        return {title: box.querySelector('.learn-soon-title')?.textContent, reserve: box.querySelector('.learn-soon-reserve')?.getAttribute('href') || null, art: !!img && img.naturalWidth > 0,
+          inView: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + .5 && r.bottom <= innerHeight + .5, panel: !!document.querySelector('#world-panel[open]'), panelTitle: document.querySelector('#world-panel[open] #panel-title')?.textContent || null};
+      });
+      await page.screenshot({path: path.join(out, `${tag}-${name}.png`)});
       await page.locator('dialog.learn-soon [data-learn-soon-close]').click(); await page.waitForFunction(() => !document.querySelector('dialog.learn-soon[open]'));
-      seen.blocked.push({name: 'home-position', ok: state.title === text.title && !state.panel, ...state});
-    }
+      const ok = state.title === text.title && state.reserve === reserveHref(lang) && state.art && state.inView && state.panel === before.panel && state.panelTitle === before.title;
+      seen.blocked.push({name, ok, ...state});
+    };
+    await pressKeep('.life-home-board [data-view="position"]', 'home-position');
+    await page.locator('.life-home-board [data-view="study"]').first().click(); await page.waitForSelector('#world-panel[open] #panel-content .study-position-row');
+    await pressKeep('#panel-content .study-position-row', 'study-position');
+    await page.locator('#panel-close').click(); await page.waitForFunction(() => !document.querySelector('#world-panel[open]'));
     await page.locator('nav [data-view="packs"]').click(); await page.waitForSelector('#panel-content .life-hub .life-pack-card');
     await page.screenshot({path: path.join(out, `${tag}-learn.png`)});
     await press('#panel-content .life-pack-card >> nth=2', 'pack-card', '.life-hub');

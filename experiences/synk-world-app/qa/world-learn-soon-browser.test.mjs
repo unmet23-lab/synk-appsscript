@@ -89,20 +89,33 @@ test('WORLD 배우기 · 놀이: 들어가는 단추는 「준비 중 · 2027년
    }
    // 우리 동네 홈 카드(11-24 「홈도 막기」): 「내 위치 보기」와 (가로 화면에 보이는) 「복습」 줄임 단추는 판을 열지 않고 안내를 띄운다.
    // 「맞춤 연습 시작」은 튜터 세션 몫이라 안내 없이 지나간다.
-   async function pressHome(selector,name){
-    const target=page.locator(selector).first();await target.evaluate(el=>el.setAttribute('data-qa-pressed',''));
+   // 판이 열려 있던 곳(학습 목표 판의 「내 위치 보기」 줄)에서는 그 판이 그대로 남는다. 그림은 그려진 뒤에 찍는다(11-25 Fable P3).
+   const panelNow=()=>page.evaluate(()=>({panel:!!document.querySelector('#world-panel[open]'),title:document.querySelector('#world-panel[open] #panel-title')?.textContent||null}));
+   async function pressHome(selector,name,{shot=false}={}){
+    const target=page.locator(selector).first();await target.scrollIntoViewIfNeeded();await target.evaluate(el=>el.setAttribute('data-qa-pressed',''));
+    const before=await panelNow();
     await target.click();await page.waitForSelector('dialog.learn-soon[open]');
-    const state=await page.evaluate(()=>({title:document.querySelector('dialog.learn-soon[open] .learn-soon-title')?.textContent,panel:!!document.querySelector('#world-panel[open]')}));
-    if(name==='home-position')await shoot(name);
+    await page.waitForFunction(()=>{const img=document.querySelector('dialog.learn-soon[open] .learn-soon-art');return !!img&&img.complete&&img.naturalWidth>0;});
+    await page.evaluate(()=>document.querySelector('dialog.learn-soon[open] .learn-soon-art')?.decode().catch(()=>{}));
+    const state=await page.evaluate(()=>{const box=document.querySelector('dialog.learn-soon[open]'),r=box.getBoundingClientRect(),img=box.querySelector('.learn-soon-art');
+     return {title:box.querySelector('.learn-soon-title')?.textContent,reserve:box.querySelector('.learn-soon-reserve')?.getAttribute('href')||null,art:!!img&&img.naturalWidth>0,
+      inView:r.left>=0&&r.top>=0&&r.right<=innerWidth+.5&&r.bottom<=innerHeight+.5,panel:!!document.querySelector('#world-panel[open]'),panelTitle:document.querySelector('#world-panel[open] #panel-title')?.textContent||null};});
+    if(shot)await shoot(name);
     await page.locator('dialog.learn-soon [data-learn-soon-close]').click();await page.waitForFunction(()=>!document.querySelector('dialog.learn-soon[open]'));
     const after=await page.evaluate(()=>{const p=document.querySelector('[data-qa-pressed]'),v={panel:!!document.querySelector('#world-panel[open]'),refocused:!!p&&document.activeElement===p};p?.removeAttribute('data-qa-pressed');return v;});
     seen.blocked.push({name,...state,after});
-    assert.equal(state.title,text.title,`${tag} ${name}: 안내`);assert.equal(state.panel,false,`${tag} ${name}: 판이 열리지 않음`);
-    assert.equal(after.panel,false,`${tag} ${name}: 닫아도 판 없음`);assert.equal(after.refocused,true,`${tag} ${name}: 초점이 누른 단추로`);
+    assert.equal(state.title,text.title,`${tag} ${name}: 안내`);assert.equal(state.reserve,reserveHref(lang),`${tag} ${name}: 사전예약 주소`);
+    assert.equal(state.art,true,`${tag} ${name}: 펠트 그림`);assert.equal(state.inView,true,`${tag} ${name}: 안내 판이 화면 안`);
+    assert.equal(state.panel,before.panel,`${tag} ${name}: 판 상태 그대로`);assert.equal(state.panelTitle,before.title,`${tag} ${name}: 같은 판(내 위치 판으로 넘어가지 않음)`);
+    assert.equal(after.panel,before.panel,`${tag} ${name}: 닫아도 판 상태 그대로`);assert.equal(after.refocused,true,`${tag} ${name}: 초점이 누른 단추로`);
    }
-   await pressHome('.life-home-board [data-view="position"]','home-position');
+   await pressHome('.life-home-board [data-view="position"]','home-position',{shot:true});
    if(await page.locator('.life-home-shortcuts [data-view="review"]').isVisible())await pressHome('.life-home-shortcuts [data-view="review"]','home-review');
    seen.homeReviewShown=await page.locator('.life-home-shortcuts [data-view="review"]').isVisible();
+   // 홈 「학습 목표」 판은 열리고, 그 안의 「내 위치 보기」 줄은 안내를 띄운다(11-25 Fable P2).
+   await page.locator('.life-home-board [data-view="study"]').first().click();await page.waitForSelector('#world-panel[open] #panel-content .study-position-row');
+   await pressHome('#panel-content .study-position-row','study-position',{shot:true});
+   await page.locator('#panel-close').click();await page.waitForFunction(()=>!document.querySelector('#world-panel[open]'));
    // 배우기 판(아래 메뉴 「배우기」).
    await page.locator('nav [data-view="packs"]').click();
    await page.waitForSelector('#panel-content .life-hub .life-pack-card');

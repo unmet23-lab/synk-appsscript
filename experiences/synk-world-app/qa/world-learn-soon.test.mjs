@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
-import {LEARN_SOON,SOON_TEXT,SOON_SCREENS,SOON_ENTRIES,SOON_HOME,SOON_HOME_ENTRIES,reserveHref,soonMarkup,soonTarget,installLearnSoon} from '../world-learn-soon.mjs';
+import {LEARN_SOON,SOON_TEXT,SOON_SCREENS,SOON_ENTRIES,SOON_HOME,SOON_HOME_ENTRIES,SOON_PANEL_ENTRIES,reserveHref,soonMarkup,soonTarget,installLearnSoon} from '../world-learn-soon.mjs';
 
 const read=rel=>fs.readFileSync(new URL(`../../../${rel}`,import.meta.url),'utf8');
 
@@ -61,7 +61,8 @@ test('우리 동네 홈 카드: 복습 · 내 위치 보기는 막고, 맞춤 �
  assert.ok(soonTarget(homeButton({'data-view':'position'})),'내 위치 보기');
  assert.ok(soonTarget(homeButton({'data-view':'review','data-life-review':''})),'복습 줄임 단추');
  assert.equal(soonTarget(homeButton({'data-view':'learn','data-life-next':''})),null,'맞춤 연습 시작(튜터 세션 몫)');
- for(const view of ['cafe','packs','stories','home','plan'])assert.equal(soonTarget(homeButton({'data-view':view})),null,view);
+ // 학습 목표(study) 판은 열린다. 그 판 안의 「내 위치 보기」 줄만 막는다(아래 시험). 「이번 주 계획」(plan)은 11-25부터 막는다.
+ for(const view of ['cafe','packs','stories','home','study'])assert.equal(soonTarget(homeButton({'data-view':view})),null,view);
  assert.equal(soonTarget(homeButton({'data-view':'position'},{home:false})),null,'홈 카드 밖의 내 위치 단추');
  assert.equal(soonTarget(homeButton({'data-view':'position'}),{on:false}),null,'꺼져 있으면');
  const home=fs.readFileSync(new URL('../../brand-opening/home.html',import.meta.url),'utf8');
@@ -69,6 +70,27 @@ test('우리 동네 홈 카드: 복습 · 내 위치 보기는 막고, 맞춤 �
  assert.match(board,/data-view="position"/);assert.match(board,/data-view="review" data-life-review/);assert.match(board,/id="life-next-button" data-view="learn" data-life-next/);
  assert.ok(SOON_HOME_ENTRIES.split(',').includes('[data-view="position"]')&&SOON_HOME_ENTRIES.split(',').includes('[data-view="review"]'),'홈 막는 단추 목록');
  assert.ok(!SOON_HOME_ENTRIES.includes('learn')&&!SOON_HOME_ENTRIES.includes('data-life-next'),'맞춤 연습 시작은 목록에 없다');
+});
+
+// 판 안 단추의 가짜 요소: 클래스(.이름)와 속성 선택자만 맞춰 본다. screen은 그 판이 막는 판인지.
+function panelButton({cls=[],attrs={}},{screen=false}={}){
+ const one=part=>{part=part.trim();if(part.startsWith('.'))return cls.includes(part.slice(1));const m=/^\[([a-z-]+)(?:="([^"]*)")?\]$/.exec(part);return !!m&&Object.hasOwn(attrs,m[1])&&(m[2]===undefined||attrs[m[1]]===m[2]);};
+ const content={querySelector:()=>screen?{}:null};
+ const el={closest:sel=>sel==='button,a[href]'?el:sel==='#panel-content'?content:null,matches:sel=>sel.split(',').some(one)};
+ return el;
+}
+
+test('학습 목표 판의 「내 위치 보기」 줄과 홈 「이번 주 계획」도 막는다(11-25 Fable P2: 홈 막음을 돌아가는 길)',()=>{
+ assert.equal(SOON_PANEL_ENTRIES,'.study-position-row');
+ assert.ok(soonTarget(panelButton({cls:['life-row','study-position-row'],attrs:{'data-view':'position'}})),'학습 목표 판(막는 판 표시 없음)의 내 위치 줄');
+ assert.equal(soonTarget(panelButton({cls:['quiet-button'],attrs:{'data-view':'position'}})),null,'막는 판이 아닌 판의 다른 단추는 지나간다');
+ assert.equal(soonTarget(panelButton({cls:['life-row','study-position-row'],attrs:{'data-view':'position'}}),{on:false}),null,'꺼져 있으면');
+ assert.ok(soonTarget(homeButton({'data-view':'plan'})),'홈 이번 주 계획');
+ const ui=fs.readFileSync(new URL('../world-learning-ui.mjs',import.meta.url),'utf8');
+ assert.match(ui,/class="life-row study-position-row" data-view="position"/,'학습 목표 판의 내 위치 줄');
+ const home=fs.readFileSync(new URL('../../brand-opening/home.html',import.meta.url),'utf8');
+ const board=home.slice(home.indexOf('class="lobby-action life-home-board"'),home.indexOf('</main>'));
+ assert.match(board,/id="study-plan-button" data-view="plan"/,'홈 카드의 이번 주 계획');
 });
 
 test('막는 판과 단추 목록: 배우기 · 놀이 판의 들어가는 단추만, 돌아가기 · 닫기 · 학습 알림은 빼고',()=>{
