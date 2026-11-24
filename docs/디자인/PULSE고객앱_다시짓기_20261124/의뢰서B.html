@@ -46,7 +46,7 @@ body{background:var(--bg);color:var(--ink)}
 .cut.is-end .lg{font-family:var(--latin);font-weight:650;font-size:clamp(15px,8cqw,30px);letter-spacing:-.03em}
 .cut.is-end .ln{font-family:var(--serif);font-weight:300;font-size:clamp(12px,5cqw,19px)}
 .cut.is-end .info{font-family:var(--mono);font-size:clamp(10px,3.4cqw,13px);color:var(--dim)}
-.cut.is-end .info.is-ex{opacity:.55}
+.cut.is-end .info.is-ex{padding:3px 12px;border:1px dashed rgba(255,255,255,.3);border-radius:4px;color:var(--faint)}
 .frame.g-moved .grade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(70,40,10,.28),transparent 60%);mix-blend-mode:multiply}
 .frame.g-moved .cut img{filter:saturate(.82) sepia(.12)}
 .frame.g-wow .cut img{filter:contrast(1.14) saturate(1.1)}
@@ -95,7 +95,7 @@ body{background:var(--bg);color:var(--ink)}
 .drop.is-in .need{display:none}
 .drop.is-need:not(.is-in){box-shadow:inset 0 0 0 1px var(--ink)}
 .drop.is-need:not(.is-in) .add{color:var(--ink)}
-.drop:not(.is-need):not(.is-in) b{color:var(--dim);font-weight:500}
+.drop:not(.is-need):not(.is-in) b{font-weight:500}
 .help{margin-top:14px;border-radius:14px;background:var(--card)}
 .help summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;font-size:14px;color:var(--dim);cursor:pointer;list-style:none}
 .help summary::-webkit-details-marker{display:none}
@@ -228,6 +228,7 @@ const S = { kind: '', name: '', files: {}, chan: 0, len: 0, end: 1, line: '', fe
 const K = () => KINDS.find(k => k.id === S.kind);
 const L = () => (K() || KINDS[0]).lens[S.len] || (K() || KINDS[0]).lens[0];
 const ratio = () => K()?.id === 'mv' ? '16:9' : CHANNELS[S.chan][1];
+const shape = r => ({ '9:16': '세로 화면', '16:9': '가로 화면', '1:1': '정사각 화면' })[r];
 const ask = $('[data-ask]'), frame = $('[data-frame]');
 
 // ── 미리보기: 제목 · 내 제품 · 모델과 제품 · 마지막 화면. 고를 때마다 그 컷으로 건너가 보여 준다. ──
@@ -240,20 +241,20 @@ function drawFrame(focus) {
   if (!S.kind) {
     frame.innerHTML = KINDS.map(x => `<div class="cut is-ex" data-c="ex-${x.id}">${x.ex.video && !reduced ? `<video src="${x.ex.video}" poster="${x.ex.poster}" muted playsinline loop preload="none"></video>` : `<img src="${x.ex.poster}" alt="">`}<span class="tag">예시 · ${x.name}</span><p class="copy">${x.line}</p></div>`).join('') + '<div class="grade"></div>';
     cuts = $$('.cut', frame); show(focus ? Math.max(0, cuts.findIndex(c => c.dataset.c === focus)) : at % cuts.length);
-    $('[data-l-name]').textContent = '내 광고'; $('[data-l-meta]').textContent = '고르시면 여기서 만들어져요'; $('[data-timeline]').innerHTML = ''; return;
+    $('[data-l-name]').textContent = '내 광고'; $('[data-l-meta]').textContent = ''; $('[data-timeline]').innerHTML = ''; return;
   }
   frame.innerHTML = `
     <div class="cut is-title" data-c="title"><p class="copy">${S.kind ? name : '무엇을 만들지<br>골라 주세요'}</p></div>
     ${hero ? `<div class="cut is-hero" data-c="hero"><img src="${hero[2]}" alt=""><span class="tag">보내 주신 원본 그대로</span></div>` : `<div class="cut is-empty" data-c="hero"><p class="hint">${S.kind ? `${k.files[0][0]}을 넣으면<br>이 자리에 그대로 얹어요` : ''}</p></div>`}
     <div class="cut" data-c="model"><img src="${k.ex.poster}" alt=""><span class="tag">예시 장면</span></div>
-    <div class="cut is-end" data-c="end"><span class="lg">${name.split(' · ')[0]}</span>${S.end > 0 ? `<span class="ln">${line}</span>` : ''}${S.end > 1 ? `<span class="info${S.exact ? '' : ' is-ex'}">${S.exact || '예) ' + k.info}</span>` : ''}</div>
+    <div class="cut is-end" data-c="end"><span class="lg">${name.split(' · ')[0]}</span>${S.end > 0 ? `<span class="ln">${line}</span>` : ''}${S.end > 1 ? (S.exact ? `<span class="info">${S.exact}</span>` : '<span class="info is-ex">안내 자리</span>') : ''}</div>
     <div class="grade"></div>`;
   cuts = $$('.cut', frame);
   const idx = focus ? Math.max(0, cuts.findIndex(c => c.dataset.c === focus)) : at % cuts.length;
   show(idx);
   const [l, , , n] = L();
   $('[data-l-name]').textContent = S.kind ? name : '내 광고';
-  $('[data-l-meta]').textContent = `${l} · ${k.id === 'product' && l === '사진 5장' ? '5장' : n + '컷'} · ${ratio()}`;
+  $('[data-l-meta]').textContent = `${l} · ${k.id === 'product' && l === '사진 5장' ? '5장' : n + '컷'} · ${shape(ratio())}`;
   $('[data-timeline]').innerHTML = Array.from({ length: Math.min(n, 24) }, (_, i) => `<i class="${i === Math.min(n, 24) - 1 ? 'end' : ''}"></i>`).join('');
   tick();
 }
@@ -270,12 +271,12 @@ function formHTML() {
   <div class="intro"><h1>새 광고 만들기. <span>고르실 때마다 왼쪽에 내 광고가 생겨요.</span></h1></div>
   ${sec('kind', true, `<h2>만들 것. <span>무엇을 광고하나요?</span></h2>`, `<div class="opts" role="radiogroup" aria-label="만들 것">${KINDS.map(x => `<button class="opt no-ico" role="radio" aria-checked="${S.kind === x.id}" data-kind="${x.id}"><span class="t"><b>${x.name}</b><small>${x.note}</small></span><span class="won">${x.lens[0][2] == null ? '정가 ○○만원' : won(Math.min(...x.lens.map(v => v[2]))) + '부터'}</span></button>`).join('')}</div>`)}
   ${sec('name', !!k, `<h2>${k ? k.nameQ[0] : '이름.'} <span>${k ? k.nameQ[1] : '광고 첫 화면에 이 이름이 서요.'}</span></h2>`, `<input class="input" data-name placeholder="${k ? k.ph : ''}" value="${S.name}" aria-label="이름">`)}
-  ${sec('files', !!k, `<h2>자료. <span>AI로 다시 그리지 않고 그대로 얹을 원본이에요.</span></h2>`, `<div class="drops">${(k || KINDS[0]).files.map(([n, need, img], i) => `<button class="drop${S.files[i] ? ' is-in' : ''}${need ? ' is-need' : ''}" data-file="${i}">${need ? '<span class="need">꼭 필요해요</span>' : ''}<span class="add">+</span>${S.files[i] && img ? `<img src="${img}" alt="">` : ''}<b>${n}</b><small>${S.files[i] ? '바꾸려면 다시 누르세요' : need ? '눌러서 고르기' : '있으면 좋아요'}</small></button>`).join('')}</div>
+  ${sec('files', !!k, `<h2>자료. <span>보내 주신 사진은 고치지 않고 그대로 써요.</span></h2>`, `<div class="drops">${(k || KINDS[0]).files.map(([n, need, img], i) => `<button class="drop${S.files[i] ? ' is-in' : ''}${need ? ' is-need' : ''}" data-file="${i}">${need ? '<span class="need">꼭 필요해요</span>' : ''}<span class="add">+</span>${S.files[i] && img ? `<img src="${img}" alt="">` : ''}<b>${n}</b><small>${S.files[i] ? '바꾸려면 다시 누르세요' : need ? '눌러서 고르기' : '있으면 좋아요'}</small></button>`).join('')}</div>
     <details class="help"><summary>왜 원본이 필요한가요?</summary><div class="in">화면에 나오는 <b>제품 · 로고 · 글자는 AI로 그리지 않아요.</b> 보내 주신 사진을 그대로 얹어야 글자가 뭉개지거나 모양이 바뀌지 않아요. 지금 없으면 나중에 보내셔도 돼요.</div></details>`)}
   ${sec('len', !!k, `<h2>${k?.id === 'mv' ? '길이.' : '올릴 곳과 길이.'} <span>${k?.id === 'mv' ? '곡 길이 그대로 만들어요.' : '올릴 곳에 따라 화면 비율이 정해져요.'}</span></h2>`, `${k?.id === 'mv' ? '' : `<div class="chips" role="radiogroup" aria-label="올릴 곳">${CHANNELS.map(([c, r], i) => `<button class="chip" role="radio" aria-pressed="${S.chan === i}" data-chan="${i}">${c}<span class="mono">${r}</span></button>`).join('')}</div>`}
     <div class="opts" role="radiogroup" aria-label="길이">${(k || KINDS[0]).lens.map(([a, b, c, n], i) => `<button class="opt no-ico" role="radio" aria-checked="${S.len === i}" data-len="${i}"><span class="t"><b>${a}</b><small>${b}</small></span><span class="won">${won(c)}${c == null ? '' : '부터'}</span></button>`).join('')}</div>`)}
   ${sec('end', !!k, `<h2>마지막 화면. <span>영상이 끝날 때 무엇을 남길까요?</span></h2>`, `<div class="opts" role="radiogroup" aria-label="마지막 화면">${ENDS.map(([a, b], i) => `<button class="opt no-ico" role="radio" aria-checked="${S.end === i}" data-end="${i}"><span class="t"><b>${a}</b><small>${b}</small></span><span></span></button>`).join('')}</div>
-    <details class="help" ${S.end > 0 ? 'open' : ''}><summary>문구와 안내를 적어 주세요(바꾸면 안 되는 표기는 그대로 써요)</summary><div class="in more">${S.end > 0 ? `<label>문구 한 줄<input data-line placeholder="예) 한 캔에 맛이 다섯 번" value="${S.line}"></label>` : ''}<label>한 글자도 바뀌면 안 되는 표기<input data-exact placeholder="예) ${(k || KINDS[0]).info}" value="${S.exact}"></label></div></details>`)}
+    <details class="help" ${S.end > 0 ? 'open' : ''}><summary>문구와 안내 적기</summary><div class="in more">${S.end > 0 ? `<label>문구 한 줄<input data-line placeholder="예) 한 캔에 맛이 다섯 번" value="${S.line}"></label>` : ''}<label>한 글자도 바뀌면 안 되는 표기<input data-exact placeholder="예) ${(k || KINDS[0]).info}" value="${S.exact}"></label></div></details>`)}
   ${sec('feel', !!k, `<h2>느낌. <span>보고 나서 어떤 마음이 들면 좋을까요?</span></h2>`, `<div class="opts" role="radiogroup" aria-label="느낌">${FEELS.map(([id, a, b]) => `<button class="opt no-ico" role="radio" aria-checked="${S.feel === id}" data-feel="${id}"><span class="t"><b>${a}</b><small>${b}</small></span><span></span></button>`).join('')}</div>
     <details class="help"><summary>고르기 어려우면 비워 두세요</summary><div class="in">의뢰서를 보고 저희가 어울리는 쪽을 골라 방향 두 안으로 보여 드려요. <b>피할 말이나 꼭 맞출 날</b>이 있으면 여기에 적어 주세요.<div class="more" style="margin-top:10px"><label>피할 것<textarea data-avoid placeholder="예) 「최고」 「1등」 같은 말은 빼 주세요">${S.avoid}</textarea></label></div></div></details>`)}
   ${sec('who', !!k, `<h2>모델. <span>저희가 정해 드려요.</span></h2>`, `<div class="who"><p><b>의뢰서를 보고 어울리는 AI 모델을 골라</b> 먼저 보여 드려요. 마음에 안 드시면 그때 바꾸시면 돼요.${k?.id === 'mv' ? ' 아티스트 본인이 나와야 하면 담당자에게 따로 말씀해 주세요.' : ''}</p></div>`)}
@@ -333,7 +334,7 @@ function reviewView() {
   const rows = [['만들 것', k.name], ['이름', S.name || k.ph], ['자료', `${Object.keys(S.files).length}개`], ['길이', `${l} · ${b}`], ...(k.id === 'mv' ? [] : [['올릴 곳', CHANNELS[S.chan][0]]]), ['마지막 화면', ENDS[S.end][0]], ['느낌', S.feel ? FEELS.find(f => f[0] === S.feel)[1] : '저희가 제안해요'], ['모델', '저희가 골라 드려요']];
   ask.innerHTML = `
   <div class="ask-top"><button data-back>고치기</button></div>
-  <div class="sheet"><h1>이대로 보낼까요? <span>왼쪽이 지금 고르신 광고예요.</span></h1>
+  <div class="sheet"><h1>이대로 보낼까요? <span>담당자가 이 내용으로 시작해요.</span></h1>
     <dl class="lines">${rows.map(([a, v]) => `<div><dt>${a}</dt><dd>${v}</dd><button data-back>고치기</button></div>`).join('')}</dl>
     <div class="total" data-total>${totalHTML()}</div>
     ${S.code ? '' : `<details class="help"><summary>크몽 · 숨고에서 받은 초대코드가 있어요</summary><div class="in"><div class="codein"><input data-code placeholder="초대코드" maxlength="12" aria-label="초대코드"><button data-apply>적용</button></div></div></details>`}
@@ -356,7 +357,7 @@ function payView() {
   let method = 'card';
   const draw = () => {
     ask.innerHTML = `<div class="ask-top"><span>${pname} · 의뢰 번호 <span class="mono">P-1125-7828</span></span></div>
-    <div class="sheet"><h1>결제. <span>결제하시면 장면 이미지를 만들기 시작해요.</span></h1>${method === 'card' ? '<p class="test">시험 결제 화면이에요. 카드 가맹 계약이 끝나면 실제 결제로 바뀌어요.</p>' : ''}
+    <div class="sheet"><h1>결제. <span>마치시면 장면 이미지를 만들기 시작해요.</span></h1>${method === 'card' ? '<p class="test">시험 결제 화면이에요. 카드 가맹 계약이 끝나면 실제 결제로 바뀌어요.</p>' : ''}
       <dl class="lines"><div><dt>정해 드린 값</dt><dd>${pl} ${pd}</dd><span class="mono">${won(amount)}</span></div><div><dt>기간 · 수정</dt><dd>결제한 날부터 10일 · 2회</dd><span></span></div></dl>
       <div class="opts" role="radiogroup" aria-label="결제 수단" style="margin-top:18px">
         <button class="opt no-ico" role="radio" aria-checked="${method === 'card'}" data-m="card"><span class="t"><b>카드 결제</b><small>결제창에서 카드나 간편결제로 바로 끝나요</small></span><span class="won">바로 시작</span></button>
