@@ -901,7 +901,8 @@ function setPhoto(v){
   if(v==null){schedulePhoto();return;}
   const url=v.on&&typeof v.url==='string'&&SAFE_URL.test(v.url)?v.url:null;
   const next=v.on?{on:true,state:String(v.state||'none'),url}:{on:false,state:null,url:null};
-  const changed=next.on!==PHOTO.on||next.state!==PHOTO.state||!!next.url!==!!PHOTO.url;
+  // 주소가 바뀌어도(새 5분 서명 주소 · 다른 기준 사진) 다시 그린다 — 칸 · 머리가 만료된 주소로 남지 않게. 학생증은 새 그림이 풀린 뒤 바꾼다(putPhoto)
+  const changed=next.on!==PHOTO.on||next.state!==PHOTO.state||next.url!==PHOTO.url;
   PHOTO=next;ME.src=url||'';
   if(url){const im=new Image();im.decoding='async';im.onload=()=>{if(im.naturalWidth&&ME.src===url){ME.w=im.naturalWidth;ME.h=im.naturalHeight;}};im.src=url;}
   if(changed){pickMe?.();if(state.look?.mine){if($('#s-card').classList.contains('on'))putPhoto();paintBadge();}}
@@ -1005,7 +1006,12 @@ function pickLook({change=false}={}){return new Promise(res=>{
     if(!html){old?.remove();clearMine();return;}
     const box2=document.createElement('div');box2.innerHTML=html;const tile=box2.firstElementChild;
     if(old)old.replaceWith(tile);else{const sl=rail.scrollLeft;rail.prepend(tile);if(sl>0)rail.scrollLeft=sl+tile.offsetWidth+10;}
-    if(cur==='me'){cur=-1;if(!showMine()){cur='me';clearMine();}}
+    if(cur==='me'){
+      // 같은 사진의 새 주소면 새 그림이 풀린 뒤 칸을 바꾼다(빈 칸이 번쩍이지 않게)
+      const shown=vf.querySelector('img:last-of-type');
+      if(PHOTO.url&&shown?.complete&&shown.naturalWidth>0&&shown.src!==ME.src){const im=new Image();im.src=ME.src;im.decode().then(()=>{if(cur==='me'&&PHOTO.url){cur=-1;showMine();}},()=>{});}
+      else{cur=-1;if(!showMine()){cur='me';clearMine();}}
+    }
   }
   pickMe=repaintMe;schedulePhoto();void askPhoto(240000);
   rail.onclick=e=>{if(e.target.closest('[data-me]')){goMe();return;}const t=e.target.closest('.lk-th');if(!t)return;go(+t.dataset.i);};
@@ -1166,13 +1172,12 @@ $('#idPhoto').addEventListener('click',async e=>{
   cardPicking=true;SND.felt('tap');
   let v=null;try{v=await HOST.openPhoto();}catch{}
   cardPicking=false;photoAt=Date.now();photoJob=Promise.resolve().then(()=>PHOTO);setPhoto(v);
-  if(state.look?.mine){if($('#s-card').classList.contains('on'))putPhoto();paintBadge();}
 });
 function cardEnd(){$('#cardHead').classList.add('on');setTimeout(()=>$('#cardFoot').classList.add('on'),reduce?0:240);}
 /* 학생증 다시 보기 · 모습 다시 고르기: 내 길의 내 사진을 누르면 온다 */
 function openCardView(){const rig=$('#cardRig');for(const x of [$('#cardSwing'),$('#printer')])x.getAnimations().forEach(a=>a.cancel());$('#cardSwing').style.transform='';$('#cardBox').classList.remove('feeding');$('#printer').classList.remove('busy','on');cardAskDone();if(!state.issuedAt){state.issuedAt=Date.now();save({issuedAt:state.issuedAt});}fillCard();CardFX.setup();rig.classList.add('down');show('s-card');putPhoto();$('#s-card').classList.add('view');$('#cardHead span').textContent=L('내 학생증');cardEnd();CardFX.live(true);SND.felt('open');
   // 내 사진은 주소가 5분이면 만료되므로 학생증을 열 때 새 주소로 다시 붙인다(현상이 끝났으면 사진이 이때 들어간다).
-  if(state.look?.mine){const was=ME.src;void askPhoto(0).then(()=>{if(state.look?.mine&&$('#s-card').classList.contains('on')&&ME.src!==was)putPhoto();});}}
+  if(state.look?.mine)void askPhoto(0);}
 $('#reLook').onclick=async()=>{const lk=await pickLook({change:true});$('#look').classList.remove('on');if(!lk)return;state.look=lk;saveLook(lk);SND.felt('shutter');putPhoto();buildRoad();};
 // 카드에 손을 대야 이어지는 순간: 안내 한 줄과 키보드 초점(Enter · 스페이스)
 function cardAsk(text,label){const h=$('#cardHint'),rig=$('#cardRig');h.textContent=L(text);h.classList.add('on');rig.tabIndex=0;rig.setAttribute('role','button');rig.setAttribute('aria-label',L(label));}
@@ -1284,7 +1289,7 @@ function buildRoad(){
   $('#dreamChip').textContent=L(D.chip);const wn=$('#whoName'),gr=document.createElement('i');gr.className='gr';gr.textContent=L('{n}급 과정',{n:roadGrade()});wn.textContent=(state.name||L('유학생'))+'\u00a0· ';wn.append(gr);
   paintBadge();
   // 내 사진 주소는 5분이면 만료된다 — 4분 넘게 지났으면(1화를 하고 돌아옴 등) 새 주소를 받아 머리를 다시 그린다
-  if(state.look?.mine&&HOST?.photo&&Date.now()-photoAt>240000){const was=ME.src;void askPhoto(0).then(()=>{if(state.look?.mine&&ME.src!==was)paintBadge();});}
+  if(state.look?.mine&&HOST?.photo&&Date.now()-photoAt>240000)void askPhoto(0);
   let side=0,g=0;const rows=[],G=roadGrade();
   ROAD.forEach((r,i)=>{
     if(r.lv){g=Number(r.lv.slice(-1));rows.push(`<div class="lv"><span>${r.lv}</span>${g>G?`<em class="lv-lock">${LOCK_SVG}${L('{n}급 오디션에 붙으면 열려요',{n:g-1})}</em>`:''}</div>`);return;}
