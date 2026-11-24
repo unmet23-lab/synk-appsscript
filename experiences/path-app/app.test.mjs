@@ -1091,6 +1091,33 @@ test('번역 초안: 보내면 등록번호를 가리고, 초안 띠 · 안내 �
   assert.equal(app.root.querySelector('#tr-text').value, '', '떠나면 원문과 초안을 지운다');
 });
 
+test('번역 초안: 비자 줄만 서류 종류를 고르고, 복사 표시는 새 초안에 남지 않으며, 처리방침은 번역 문단으로 간다', async t => {
+  const { server, calls } = fakeTranslateServer();
+  const app = await openTranslate(t, { signedIn: true, translateServer: server });
+  app.click('trOpen', '[data-id="wku-ug-grad"]');
+  assert.equal(app.root.querySelector('input[data-action="trKind"]'), null, '대학 서류 줄은 연 줄이 종류를 정한다');
+  assert.ok(app.root.querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://synk.im/privacy/#path-translate'), '처리방침 링크는 번역 초안 문단으로 간다');
+  fillTranslate(app);
+  app.click('trSend');
+  await settle();
+  app.click('trCopy');
+  await settle();
+  assert.match(pageText(app), /초안을 복사했어요|복사하지 못했어요/);
+  app.click('trEdit');
+  app.click('trSend');
+  await settle();
+  assert.doesNotMatch(pageText(app), /초안을 복사했어요|복사하지 못했어요/, '새 초안에는 앞 초안의 복사 표시가 없다');
+  app.click('trLeave');
+  app.click('trOpen', '[data-id="visa-d2-school"]');
+  const radio = app.root.querySelector('input[data-action="trKind"][value="transcript"]');
+  assert.ok(radio, '비자 줄은 졸업 · 성적증명서를 함께 가리켜 종류를 고른다');
+  radio.checked = true; app.event('change', radio);
+  fillTranslate(app);
+  app.click('trSend');
+  await settle();
+  assert.equal(calls.filter((c) => c.action === 'translate').at(-1).kind, 'transcript');
+});
+
 test('번역 초안: 한도 · 쉼 · 대조 실패를 알리고, 계정이 바뀌면 지운다', async t => {
   const limit = fakeTranslateServer({ translateStatus: 'limit' });
   const app = await openTranslate(t, { signedIn: true, translateServer: limit.server });

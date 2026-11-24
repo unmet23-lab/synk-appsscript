@@ -11,7 +11,7 @@ import { renderStudyConsent, renderStudyNotices, renderStudyAccountSettings } fr
 import { POSTS, allPosts, findDate, endDay, dateStatus } from './channel-data.mjs';
 import { renderChannels, renderPost, renderUpcoming, renderNews, icsText } from './channel-ui.mjs';
 import { renderPath, renderPathCard, renderPathPick, pathTarget, stageCounts } from './path-ui.mjs';
-import { docsFor, translateKindOf } from './docs-data.mjs';
+import { docsFor, translateKindOf, translateKindChoice } from './docs-data.mjs';
 import { renderTranslate, draftText, countText as trCountText, ERROR_TEXT } from './translate-ui.mjs';
 import { splitPasted, maskLines, validateTranslateRequest, validateTranslateReply, validateCheckReply, draftRows, TRANSLATE_CONSENT_VERSION } from './translate-shape.mjs';
 import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, studyCountSay, condHint, STUDY_FILTERS, GRADE_MAX, FUNDS_MAX_MAN } from './study-ui.mjs';
@@ -612,7 +612,7 @@ const trDoc = () => {
 };
 const translate = () => {
   const found = trDoc();
-  return renderTranslate({ lang: state.lang, signedIn: session.status().signedIn === true, docName: found?.doc.name, rules: found?.rules || [], tr: S.tr || {} });
+  return renderTranslate({ lang: state.lang, signedIn: session.status().signedIn === true, docName: found?.doc.name, rules: found?.rules || [], kindChoice: Boolean(S.tr && translateKindChoice(S.tr.docId)), tr: S.tr || {} });
 };
 const trMsg = (key) => (ERROR_TEXT[key] || ERROR_TEXT.unavailable)[state.lang === 'en' ? 1 : 0];
 const trHidden = () => (state.lang === 'en' ? '[hidden number]' : '[가린 번호]');
@@ -651,7 +651,7 @@ async function trSend() {
     tr.phase = 'edit'; tr.notice = failed ? trFailKey(failed) : reply.status;
     render(false); root.querySelector('[data-action="trSend"]')?.focus(); say(trMsg(tr.notice)); return;
   }
-  Object.assign(tr, { phase: 'draft', sent: { lines, slots, kind: body.kind }, drafts: reply.lines, rows: draftRows(lines, reply.lines, null, slots, trHidden()), check: 'idle', compared: false });
+  Object.assign(tr, { phase: 'draft', sent: { lines, slots, kind: body.kind }, drafts: reply.lines, rows: draftRows(lines, reply.lines, null, slots, trHidden()), check: 'idle', compared: false, copied: null });
   render(false); root.querySelector('.page-title')?.focus();
   say(accL('번역 초안이 나왔어요. 번역본이 아니에요. 이어서 다시 몽골어로 옮겨 견줘요.', 'The translation draft is ready. It is not a translation for submission. Next, it is translated back into Mongolian for a check.'));
   void trRunCheck(tr);
@@ -884,7 +884,8 @@ const ACT = {
   },
   trLeave() { go(STUDY_ON ? 'path' : 'today'); },
   trSend: () => trSend(),
-  trRecheck: () => { if (S.tr?.phase === 'draft') return trRunCheck(S.tr); },
+  // 「다시 견주기」 단추는 다시 그리면 사라지므로 초점을 쪽 제목에 먼저 둔다(제목은 id가 있어 다시 그려도 남는다).
+  trRecheck: () => { if (S.tr?.phase !== 'draft') return; root.querySelector('#tr-title')?.focus(); say(accL('다시 몽골어로 옮겨 원문과 견주는 중이에요.', 'Translating back into Mongolian to compare again.')); return trRunCheck(S.tr); },
   trFlagged() {
     if (!S.tr) return;
     S.tr.onlyFlagged = !S.tr.onlyFlagged; render(false); root.querySelector('[data-action="trFlagged"]')?.focus();
@@ -912,7 +913,7 @@ const ACT = {
   trEdit() {
     if (!S.tr) return;
     if (S.tr.phase === 'draft' && !confirm(accL('초안이 지워져요. 붙여 넣은 글은 남겨요. 글을 고칠까요?', 'The draft will be deleted. The pasted text stays. Edit the text?'))) return;
-    Object.assign(S.tr, { phase: 'edit', rows: null, drafts: null, sent: null, check: 'idle', compared: false, onlyFlagged: false, notice: null, seq: S.tr.seq + 1 });
+    Object.assign(S.tr, { phase: 'edit', rows: null, drafts: null, sent: null, check: 'idle', compared: false, onlyFlagged: false, notice: null, copied: null, seq: S.tr.seq + 1 });
     render(false); root.querySelector('#tr-text')?.focus();
   },
   trFresh() {
@@ -1258,7 +1259,7 @@ root.addEventListener('input', (e) => {
     S.tr.text = e.target.value;
     const cnt = root.querySelector('#tr-count'); if (cnt) cnt.textContent = trCountText(S.tr.text, state.lang === 'en');
     const btn = root.querySelector('[data-action="trSend"]'); if (btn) btn.disabled = !trCanSend(S.tr);
-    if (S.tr.error) { S.tr.error = null; e.target.removeAttribute('aria-invalid'); root.querySelector('#tr-err')?.remove(); }
+    if (S.tr.error) { S.tr.error = null; e.target.removeAttribute('aria-invalid'); e.target.setAttribute('aria-describedby', 'tr-count'); root.querySelector('#tr-err')?.remove(); }
     return;
   }
   if (e.target.dataset.action === 'studyInput') {
@@ -1283,8 +1284,9 @@ root.addEventListener('change', (e) => {
   else if (a === 'jobBoard') { S.jobBoard = e.target.value || 'all'; S.jobPage = 0; render(false); root.querySelector('[data-action="jobBoard"]')?.focus(); }
   else if (a === 'savedJobs') { S.onlySaved = !!e.target.checked; S.jobPage = 0; render(false); root.querySelector('[data-action="savedJobs"]')?.focus(); }
   else if (a === 'topic') { S.help = e.target.value; S.copyMsg = null; render(false); root.querySelector('#topic')?.focus(); }
-  else if (S.tr && S.tr.phase !== 'sending' && ['trAge', 'trGuardian', 'trAgree'].includes(a)) {
-    if (a === 'trAge' && ['adult', 'teen', 'under14'].includes(e.target.value)) { S.tr.age = e.target.value; if (S.tr.age !== 'teen') S.tr.guardian = false; if (S.tr.age === 'under14') S.tr.agree = false; }
+  else if (S.tr && S.tr.phase !== 'sending' && ['trKind', 'trAge', 'trGuardian', 'trAgree'].includes(a)) {
+    if (a === 'trKind' && translateKindChoice(S.tr.docId) && ['grad', 'transcript'].includes(e.target.value)) S.tr.kind = e.target.value;
+    else if (a === 'trAge' && ['adult', 'teen', 'under14'].includes(e.target.value)) { S.tr.age = e.target.value; if (S.tr.age !== 'teen') S.tr.guardian = false; if (S.tr.age === 'under14') S.tr.agree = false; }
     else if (a === 'trGuardian') S.tr.guardian = !!e.target.checked;
     else if (a === 'trAgree') S.tr.agree = !!e.target.checked;
     const id = e.target.id;

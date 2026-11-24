@@ -227,14 +227,19 @@ export const VISA_DOCS = freeze({
 /**
  * 「번역 초안 만들기」 단추를 다는 서류 줄과 처음 고를 종류(grad 졸업증명서 · transcript 성적증명서).
  * 학교가 몽골어로 내는 졸업 · 성적증명서만 연다. 가족관계 · 출생 증명서는 가족 동의 문장을 갖춘 뒤 연다(번역초안_설계.md).
- * 비자 묶음의 「졸업 · 성적증명서 원본」 줄은 KVAC 규칙(몽골어 서류는 번역본을 붙임)이 있어 단다.
+ * 비자 묶음의 「졸업 · 성적증명서 원본」 줄은 KVAC 규칙(몽골어 서류는 번역본을 붙임)이 있어 단다. 두 서류를 함께 가리키므로 'either'로 두고
+ * 화면에서 종류를 고르게 한다(처음은 졸업증명서).
  */
 export const TRANSLATE_DOCS = freeze({
   'jbnu-ug-grad': 'grad', 'jbnu-ug-transcript': 'transcript', 'jbnu-lang-grad': 'grad', 'jbnu-lang-transcript': 'transcript',
   'wku-ug-grad': 'grad', 'wku-ug-transcript': 'transcript', 'wku-lang-grad': 'grad', 'wku-lang-transcript': 'transcript',
-  'jj-ug-grad': 'grad', 'jj-ug-transcript': 'transcript', 'visa-d2-school': 'grad', 'visa-d4-school': 'grad'
+  'jj-ug-grad': 'grad', 'jj-ug-transcript': 'transcript', 'visa-d2-school': 'either', 'visa-d4-school': 'either'
 });
-export const translateKindOf = (docId) => (Object.hasOwn(TRANSLATE_DOCS, docId) ? TRANSLATE_DOCS[docId] : null);
+const translateEntry = (docId) => (Object.hasOwn(TRANSLATE_DOCS, docId) ? TRANSLATE_DOCS[docId] : null);
+/** 그 줄에서 처음 쓸 종류. 번역 단추가 없는 줄은 null. */
+export const translateKindOf = (docId) => { const k = translateEntry(docId); return k === 'either' ? 'grad' : k; };
+/** 졸업 · 성적증명서를 함께 가리키는 줄이라 화면에서 종류를 골라야 하는가. */
+export const translateKindChoice = (docId) => translateEntry(docId) === 'either';
 
 /** 과정의 비자: 학부는 D-2, 어학연수는 D-4-1. */
 export const visaFor = (program) => (program && program.level === 'language' ? 'D-4-1' : 'D-2');
@@ -293,7 +298,7 @@ export function validateDocsData(programDocs = PROGRAM_DOCS, visaDocs = VISA_DOC
     for (const d of vd.docs) { checkDoc(d, visa); if (d.stage !== 'visa') fail('non-visa doc in visa ' + d.id); }
   }
   // 번역 단추를 다는 줄은 실제로 있는 서류여야 하고, 종류는 첫 판의 둘뿐이다.
-  for (const [id, kind] of Object.entries(TRANSLATE_DOCS)) if (!ids.has(id) || !['grad', 'transcript'].includes(kind)) fail('translate doc ' + id);
+  for (const [id, kind] of Object.entries(TRANSLATE_DOCS)) if (!ids.has(id) || !['grad', 'transcript', 'either'].includes(kind)) fail('translate doc ' + id);
   return true;
 }
 

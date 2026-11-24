@@ -8,11 +8,15 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const svg = (p) => `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${p}</svg>`;
 const BACK = svg('<path d="M12.5 4.5 7 10l5.5 5.5"/>');
 const ON = svg('<path d="m5 10.4 3.2 3.1L15 6.6"/>');
-export const PRIVACY_URL = 'https://synk.im/privacy/#synk-id';
+export const PRIVACY_URL = 'https://synk.im/privacy/#path-translate';
+const PRIVACY_URL_EN = 'https://synk.im/privacy/#path-translate-en';
 
 // [한국어, 영어, 몽골어]
 const M = {
   kicker: ['번역 초안', 'Translation draft', 'Орчуулгын ноорог'],
+  kind: ['서류 종류', 'Document', 'Баримтын төрөл'],
+  grad: ['졸업증명서', 'Graduation certificate', 'Төгссөний гэрчилгээ'],
+  transcript: ['성적증명서', 'Transcript', 'Дүнгийн хуудас'],
   lead: ['몽골어 서류의 글을 붙여 넣으면 한국어 초안을 만들어요. 초안은 번역자가 원문과 대조해 고치는 출발점이에요. 그대로 내는 번역본이 아니에요.',
     'Paste the text of a Mongolian document and get a Korean draft. The draft is a starting point that a translator checks against the original and corrects. It is not a translation you can submit as it is.',
     'Монгол баримтын бичвэрийг буулгавал солонгос хэл дээрх ноорог гаргана. Ноорог бол орчуулагч эх хувьтай тулгаж засах эхлэл юм. Тэр чигээр нь өгөх орчуулга биш.'],
@@ -124,15 +128,18 @@ export function renderTranslate(view) {
   const ready = tr.age === 'adult' || (tr.age === 'teen' && tr.guardian);
   const canSend = !busy && ready && tr.agree === true && String(tr.text || '').trim().length > 0;
   const consent = `<section class="sx-card sx-tr-consent" aria-labelledby="sx-tr-consent-h"><h2 class="sx-h" id="sx-tr-consent-h">${esc(P(M.consentTitle))}<span class="sx-mn" lang="mn">${esc(M.consentTitle[2])}</span></h2>
-<dl class="sx-tr-items">${item('what', 'whatText')}${item('who', 'whoText')}${item('keep', 'keepText')}${item('no', 'noText')}<div class="sx-tr-item"><dt>${esc(P(M.ask))}</dt><dd>SYNK · hello@synk.im · <a href="${PRIVACY_URL}" target="_blank" rel="noopener noreferrer">${L('개인정보 처리방침', 'Privacy policy')}<span class="sr-only"> (${L('새 탭에서 열림', 'opens in new tab')})</span></a></dd></div></dl>
+<dl class="sx-tr-items">${item('what', 'whatText')}${item('who', 'whoText')}${item('keep', 'keepText')}${item('no', 'noText')}<div class="sx-tr-item"><dt>${esc(P(M.ask))}</dt><dd>SYNK · hello@synk.im · <a href="${en ? PRIVACY_URL_EN : PRIVACY_URL}" target="_blank" rel="noopener noreferrer">${L('개인정보 처리방침', 'Privacy policy')}<span class="sr-only"> (${L('새 탭에서 열림', 'opens in new tab')})</span></a></dd></div></dl>
 <fieldset class="sx-tr-age"><legend>${esc(P(M.age))}</legend>${ages}</fieldset>
 ${tr.age === 'under14' ? both(en, M.under14Note, 'p', 'sx-store is-warn') : ''}
 ${tr.age === 'teen' ? `<label class="sx-check"><input type="checkbox" id="tr-guardian" data-action="trGuardian"${tr.guardian ? ' checked' : ''}${busy ? ' disabled' : ''}><span><span>${esc(P(M.guardian))}</span>${mnLine(M.guardian)}</span></label>` : ''}
 ${tr.age && tr.age !== 'under14' ? `<label class="sx-check"><input type="checkbox" id="tr-agree" data-action="trAgree"${tr.agree ? ' checked' : ''}${busy ? ' disabled' : ''}><span><span>${esc(P(M.agree))}</span>${mnLine(M.agree)}</span></label>` : ''}</section>`;
+  // 졸업 · 성적증명서를 함께 가리키는 줄(비자 묶음)에서만 종류를 고른다. 다른 줄은 연 줄이 종류를 정한다.
+  const kinds = view.kindChoice ? `<fieldset class="sx-tr-kind"><legend>${esc(P(M.kind))}</legend>${['grad', 'transcript'].map((k) => `<label class="sx-choice"><input type="radio" id="tr-kind-${k}" name="tr-kind" value="${k}" data-action="trKind"${tr.kind === k ? ' checked' : ''}${busy ? ' disabled' : ''}><span>${esc(P(M[k]))}<span class="sx-mn" lang="mn">${esc(M[k][2])}</span></span></label>`).join('')}</fieldset>` : '';
   // 보내기 실패 알림은 단추 바로 아래에 둔다(초점이 단추로 돌아오므로 쪽 맨 위에 두면 화면 밖이다).
   return `<div class="sx sx-tr">${back}${head}
 ${rules}
 <section class="sx-tr-how" aria-labelledby="sx-tr-how-h"><h2 class="sx-h" id="sx-tr-how-h">${esc(P(M.howTitle))}</h2>${both(en, M.how1, 'p', 'sx-fine')}${both(en, M.how2, 'p', 'sx-fine')}</section>
+${kinds}
 <div class="sx-field"><label for="tr-text">${esc(P(M.textLabel))}</label><textarea id="tr-text" class="sx-tr-text" lang="mn" rows="10" spellcheck="false" autocomplete="off" data-action="trText"${tr.error ? ' aria-invalid="true" aria-describedby="tr-err tr-count"' : ' aria-describedby="tr-count"'}${busy ? ' readonly' : ''}>${esc(tr.text || '')}</textarea><p class="sx-fine" id="tr-count">${esc(countText(tr.text, en))}</p>${err}</div>
 ${consent}
 <button type="button" class="sx-cta" data-action="trSend"${canSend ? '' : ' disabled'}>${esc(P(M.send))}</button>
