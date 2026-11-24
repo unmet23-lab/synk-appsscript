@@ -1,0 +1,16 @@
+Generate one image with your image tool. Landscape 3:2.
+
+Images 1 and 2 are the approved look (11-23, version 4). Match their look exactly:
+- The orb employees are perfect spheres of smooth satin black (not metal, not glossy chrome, not brown), with one small soft highlight on the upper left and a thin soft rim of light along the edge. No grooves, no streaks, no rings, no texture.
+- Eyes: exactly two small solid round soft-white dots, side by side, slightly above the middle of the face, softly glowing. Not pills, not ovals, not lines. No mouth, no eyebrows, no cheeks, no arms, no legs.
+- Props are few, small, simple and rounded, like toys. Wood is a soft warm walnut with almost no visible grain. Paper is plain and flat.
+- Soft studio light, very dark charcoal background that fades to pure black at all four edges, shallow depth of field, lots of empty dark space around a small scene.
+- Overall it should feel like a still from a gentle animated short film: soft, calm, friendly, a little playful. It must not look like a photoreal 3D product render, a furniture ad or a 3D test scene.
+
+Never draw text, letters, numbers, logos, brand marks or UI. No repeated small holes or dots anywhere (no speaker grilles, no perforated metal, no bubble textures, no dot grids, no concentric rings). Keep the bottom 15% calm and empty.
+
+Scene: "Solio, the friendly orb secretary, waits behind a little desk to hear about your company". One orb sits behind a small, low, simple walnut desk, facing the viewer, ready to listen. On the desk: one blank white sheet of paper and a small closed notebook. A tiny simple desk lamp at the left end of the desk gives a small warm glow. Front view from slightly above. Nothing else.
+
+Layout, exactly: the orb's center is at about 45% from the left edge and 40% from the top edge; the orb's diameter is about 22% of the image width; the desk sits under the orb and is no wider than half the image. The area from 64% to 100% across and from 10% to 55% down must stay empty dark space (a speech bubble goes there later).
+
+The orb in this image has NO face: no eyes, no mouth, no marks. Leave its front completely blank smooth satin black; the eyes are added later by the app.

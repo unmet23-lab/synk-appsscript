@@ -447,7 +447,7 @@ function eyes(ctx, x, y, R, mode, gy, blink, a) {
     ctx.beginPath();
     if (mode === 'closed') { ctx.moveTo(cx - er * 1.4, cy + er); ctx.lineTo(cx + er * 1.4, cy + er); ctx.stroke(); }
     else if (mode === 'smile') { ctx.arc(cx, cy + er * 1.3, er * 1.7, Math.PI * 1.18, Math.PI * 1.82); ctx.stroke(); }
-    else { ctx.ellipse(cx, cy, er, Math.max(.3, er * 1.39 * (1 - blink)), 0, 0, Math.PI * 2); ctx.fill(); }   // 정본 점 눈의 작은 크기 꼴(세로로 조금 긴 점, orb-stage.mjs eyeSd)
+    else { ctx.ellipse(cx, cy, er, Math.max(.3, er * (1 - blink)), 0, 0, Math.PI * 2); ctx.fill(); }   // 4판 결의 둥근 점 눈(11-24 유호님 「4판 결로 맞춰」)
   }
 }
 /* 직원 하나의 그림 상태. 차례를 이으면 그 순간의 시각을 적어 두고, 그림은 그 시각부터 천천히 바뀐다 */

@@ -1,0 +1,14 @@
+Generate one image with your image tool. Landscape 3:2.
+
+Images 1 and 2 are the approved look (11-23, version 4). Match their look exactly:
+- The orb employees are perfect spheres of smooth satin black (not metal, not glossy chrome, not brown), with one small soft highlight on the upper left and a thin soft rim of light along the edge. No grooves, no streaks, no rings, no texture.
+- Eyes: exactly two small solid round soft-white dots, side by side, slightly above the middle of the face, softly glowing. Not pills, not ovals, not lines. No mouth, no eyebrows, no cheeks, no arms, no legs.
+- Props are few, small, simple and rounded, like toys. Wood is a soft warm walnut with almost no visible grain. Paper is plain and flat.
+- Soft studio light, very dark charcoal background that fades to pure black at all four edges, shallow depth of field, lots of empty dark space around a small scene.
+- Overall it should feel like a still from a gentle animated short film: soft, calm, friendly, a little playful. It must not look like a photoreal 3D product render, a furniture ad or a 3D test scene.
+
+Never draw text, letters, numbers, logos, brand marks or UI. No repeated small holes or dots anywhere (no speaker grilles, no perforated metal, no bubble textures, no dot grids, no concentric rings). Keep the bottom 15% calm and empty.
+
+Image 3 shows which scene to draw. Keep its idea and where each orb sits, but redraw everything in the simpler look of Images 1 and 2: smaller, simpler props, more dark space around the group, orbs that are the main subject.
+
+Scene: "a team lead explains the plan". A small, simple matte graphite board stands on the floor; three blank white sheets lean on its bottom ledge (no pins, no writing). A slightly larger team-lead orb sits beside the board, turned toward a small low round walnut table. Two smaller orbs sit at that round table facing the lead: one has a slim graphite laptop whose soft glow falls only on it, the other has a small neat stack of white paper. Slightly high three-quarter front view. Everything rests on surfaces; nothing floats.
