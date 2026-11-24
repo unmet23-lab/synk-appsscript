@@ -835,6 +835,11 @@ if(!process.versions.electron){
           check('pc a second Esc leaves settings back to Solio',!out.settings&&out.solio,out);
           w.win.destroy();
         }
+        // 솔리오 「한 번에 처리」(docs/디자인/솔리오_한번에처리_20261124/README.md 8절)
+        if(only('todo')&&mode==='main'){
+          const todoHealth=JSON.parse(fs.readFileSync(path.join(root,'tests','fixtures','sns-health-summary-v1.json'),'utf8'));todoHealth.만든때=new Date(now-H).toISOString();
+          await require('./solio-todo-browser-qa.cjs')({open,boot,signedIn,until,wait,click,key,capture,check,calls,visits:{ok:true,available:true,summary:visitSummary()},health:{ok:true,available:true,summary:todoHealth}});
+        }
         if(only('office-looks')&&mode==='main'){
           await require('./office-looks-browser-qa.cjs')({open,boot,signedIn,subsNone,until,wait,click,capture,check,calls});
         }

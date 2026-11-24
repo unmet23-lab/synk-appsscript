@@ -15,6 +15,11 @@ export function unmapScore() {
   return [0, 1, 2].map(i => ({ at: 0.02 + i * 0.055, gain: 0.05 - i * 0.008, freq: 2300 - i * 350 }));
 }
 
+/* 한 일을 끝냈을 때의 두 음(셈만 한다) */
+export function doneScore() {
+  return [{ at: 0.02, freq: 1108.73, gain: 0.016, ring: 0.45 }, { at: 0.11, freq: 1318.51, gain: 0.018, ring: 0.7 }];
+}
+
 /* 설정 방 「화면」 줄의 효과음 켜고 끄기(데스크톱 설정 uiSound)를 따라간다. desk는 { get, onChange }다.
    읽는 동안에는 끈 것으로 보고, 읽지 못했거나 다리가 없으면 켠 것으로 본다. 바뀜 알림을 받은 뒤에 늦게 온 읽기 답은 쓰지 않는다 */
 export function followSoundPreference(desk) {
@@ -97,6 +102,8 @@ export function createOrbSound({ win = globalThis, enabled = () => true } = {}) 
     unmap() { hush(); return play(c => { for (const t of unmapScore()) tock(c, out, t.at, t.gain, t.freq); }); },
     /* 이름이나 별을 가리킬 때: 톡 한 번 */
     key() { return play(c => tock(c, out, 0, 0.055, 2100)); },
+    /* 「한 번에 처리」에서 한 일을 끝냈을 때: 지도의 맑은 음 가운데 둘(도# · 미)을 짧게 올린다 */
+    done() { return play(c => { for (const n of doneScore()) { tone(c, out, n.freq, n.at, 0.005, n.ring, n.gain); tone(c, out, n.freq * 2, n.at, 0.004, 0.25, n.gain / 4); } }); },
     dispose() { dead = true; bus = null; try { void ac?.close?.()?.catch?.(() => {}); } catch { /* 무시 */ } ac = null; out = null; },
   };
 }

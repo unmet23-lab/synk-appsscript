@@ -11,7 +11,7 @@ import {
   normalizePortalWorkspaceState,
   validatePortalInviteInput,
 } from './portal-entry-state.mjs';
-import { solioToday, solioTodayNeedsReread } from './solio-today.mjs';
+import { solioToday, solioTodayNeedsReread, joinNames } from './solio-today.mjs';
 import { solioBrief } from './solio-brief.mjs';
 import { siteVisitsView, SITE_VISITS_NAME } from './site-visits-model.mjs';
 import { snsHealthView, SNS_HEALTH_NAME } from './sns-health-model.mjs';
@@ -19,6 +19,7 @@ import { solioBackupView, backupActionNotice, SOLIO_BACKUP_NAME } from './solio-
 import { createOfficeRoom, OFFICE_NAME, OFFICE_TIMING } from './office-room.mjs';
 import { createOrbFaceView } from './orb-face-view.mjs';
 import { createOrbRooms, ASIDE_ROOMS } from './orb-rooms.mjs';
+import { solioQueue, solioQueueMemoPrune, solioTodoItems, solioTodoAiSay, solioTodoEndThen } from './solio-queue.mjs';
 
 /* 구 위의 자리(places)와 점 로고(signature)를 켜고 끄는 값. 하나를 false로 바꾸면 그 모양이 빠진다(설계 12절) */
 /* eyes: 구의 점 눈(유호님 11-17 「점눈으로 하자」, 결정 표 11-16 「구에 눈을 넣는다」). 끄면 셰이더가 눈을 그리지 않는다 */
@@ -67,6 +68,8 @@ export const ORB_TIMING = Object.freeze({
 
 /* 이 PC에서 한 번이라도 로그인해 들어온 적이 있으면 다시 켤 때의 짧은 길을 쓴다. 움직임의 길이만 정하고 로그인 판단에는 쓰지 않는다 */
 export const ORB_RETURNING_KEY = 'synk.orb.returning';
+/* 「한 번에 처리」의 「나중에」 · 「보냈어요」 기록. 계정마다 이 PC에만 둔다(solio-queue.mjs solioQueueMemoPrune) */
+export const SOLIO_TODO_KEY = 'synk.solio.todo.';
 
 const SPACE_OF_DEST = Object.freeze({ '/': 'workspace', '/pulse-app/': 'pulse' });
 const DEST_OF_SPACE = Object.freeze({ workspace: '/', pulse: '/pulse-app/' });
@@ -504,14 +507,199 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     return SOLIO_PROGRAMS.filter(p => p.key === 'subs' || scenes[p.key]?.visible).map(p => (p.key === 'backup' && scenes.backup?.note ? { ...p, note: scenes.backup.note } : p.key === 'office' && scenes.office?.alert ? { ...p, alert: true } : { ...p }));
   }
 
+  /* ── 「한 번에 처리」(docs/디자인/솔리오_한번에처리_20261124/README.md 5절) ──
+     open: 카드가 서 있다. paused: 사람이 카드에서 다른 방으로 갔고, 머리 줄의 단추가 「다음 일」이다.
+     current: 지금 카드의 일. 줄에서 빠질 때까지 그대로 둔다(그사이 더 급한 일이 들어와도 카드가 바뀌지 않는다).
+     줄에서 빠졌는데 사람이 「나중에」로 뺀 것이 아니면 끝낸 것으로 센다(flash가 올라 구가 웃는다) */
+  const todoCalls = new Set();
+  const freshTodo = () => ({ account: null, open: false, paused: false, current: null, currentSrc: null, currentObj: null, went: null, skipped: [], copied: null, waiting: null, busy: null, note: '', flash: 0, memoAccount: null, memo: { later: {}, done: {} }, gone: null });
+  let todo = freshTodo();
+  function todoReset() { const flash = todo.flash; todo = freshTodo(); todo.flash = flash; }
+  function todoMemo(accountKey) {
+    if (todo.memoAccount !== accountKey) {
+      let saved = null;
+      try { saved = JSON.parse(readStorage(storage, SOLIO_TODO_KEY + accountKey) || 'null'); } catch { saved = null; }
+      todo.memoAccount = accountKey;
+      todo.memo = solioQueueMemoPrune(saved || {}, now());
+    }
+    return todo.memo;
+  }
+  function todoSave() {
+    if (!todo.memoAccount) return;
+    todo.memo = solioQueueMemoPrune(todo.memo, now());
+    writeStorage(storage, SOLIO_TODO_KEY + todo.memoAccount, JSON.stringify(todo.memo));
+  }
+  /* 세 방의 지금 자료에서 줄을 세운다. 그 계정이 받은 답만 쓴다(readScene과 같은 관문) */
+  function todoLive(state, scenes) {
+    if (!memberShown(state) || !state.accountKey) return null;
+    const mine = key => (readApi[key] && reads[key].account === state.accountKey ? reads[key].result : null);
+    const t = now();
+    const subsSnap = sol.account === state.accountKey ? sol.snapshot : null, offSnap = mine('office');
+    const items = solioTodoItems({ subs: subsSnap, office: offSnap, backup: scenes.backup, backupRaw: mine('backup') }, t);
+    // 방마다 자료를 읽은 상태: ok(읽음) · checking(확인 중) · failed(못 불러옴) · none(이 계정에 없는 방). 워크스페이스 13절의 같은 말 규칙이다.
+    // 못 읽어 줄에서 빠진 일은 끝낸 것으로 세지 않고(구가 웃지 않는다), 못 불러온 방이 있으면 「다 끝냈어요」라고 하지 않는다
+    const readOf = key => {
+      if (!readApi[key]) return 'none';
+      const res = mine(key);
+      if (!res) return 'checking';
+      if (res.ok === false) return res.code === 'NOT_ALLOWED' ? 'none' : 'failed';
+      return res.available === true ? 'ok' : 'none';
+    };
+    const load = { office: readOf('office'), backup: readOf('backup'), subs: !subs ? 'none' : Array.isArray(subsSnap?.rows) ? 'ok' : sol.account === state.accountKey && sol.error ? 'failed' : 'checking' };
+    return { ...solioQueue(items, t, todoMemo(state.accountKey)), load };
+  }
+  const TODO_ROOM = Object.freeze({ office: '사무실', subs: '구독', backup: '원클릭' });
+  const todoRooms = (load, word) => joinNames(['office', 'subs', 'backup'].filter(k => load[k] === word).map(k => TODO_ROOM[k]));
+  function todoScene(state, scenes) {
+    const live = todoLive(state, scenes);
+    if (!live) { if (todo.account) todoReset(); return null; }
+    if (todo.account !== state.accountKey) { todoReset(); todo.account = state.accountKey; }
+    const { queue, ai, later } = live;
+    const has = key => queue.some(i => i.key === key);
+    todo.skipped = todo.skipped.filter(has);
+    if (todo.current && !has(todo.current)) {
+      // 같은 대상이 다른 상태로 줄에 남아 있으면(로그인 기한 → 다시 로그인, 멈춤 → 터미널 확인) 끝낸 것이 아니다. 그 카드로 잇는다(카본 A2)
+      const same = todo.gone !== todo.current ? queue.find(i => i.obj === todo.currentObj && !todo.skipped.includes(i.key)) : null;
+      if (!same && todo.gone !== todo.current && live.load[todo.currentSrc] === 'ok' && (todo.open || todo.paused)) todo.flash += 1;
+      todo.current = same ? same.key : null; todo.copied = null; todo.waiting = null; todo.busy = null; todo.note = ''; todo.gone = null;
+    }
+    const ahead = queue.filter(i => !todo.skipped.includes(i.key));
+    if (!todo.current && (todo.open || todo.paused) && ahead[0]) todo.current = ahead[0].key;
+    const cur = todo.current ? queue.find(i => i.key === todo.current) : null;
+    if (cur) { todo.currentSrc = cur.src || null; todo.currentObj = cur.obj || cur.key; }
+    const item = todo.current ? queue.find(i => i.key === todo.current) : null;
+    // 다른 방에 간 동안 줄이 다 비면 「다음 일」을 거두고 쉰다
+    if (todo.paused && !item && !ahead.length) todo.paused = false;
+    const aiSay = solioTodoAiSay(ai);
+    let card = null;
+    if (todo.open && item) {
+      const copied = todo.copied === item.key;
+      const acts = (copied ? [...item.acts.filter(a => a.kind === 'mark'), ...item.acts.filter(a => a.kind !== 'mark')] : item.acts.filter(a => a.kind !== 'mark' || !item.acts.some(b => b.kind === 'copy')))
+        .map((a, i) => ({ id: a.id, label: a.label, kind: a.kind, primary: i === 0 }));
+      const rest = ahead.filter(i => i.key !== item.key).length + todo.skipped.filter(k => k !== item.key).length;
+      card = { key: item.key, rank: '1순위', why: item.why || '', where: item.where || '', say: item.say, then: item.then, acts, busy: todo.busy === item.key,
+        note: todo.note || (todo.waiting === item.key || !item.acts.length ? item.wait || '' : '') || (copied ? item.copied || '' : ''),
+        left: rest ? `남은 일 ${rest}개` : '이 일이 마지막입니다.', ai: aiSay };
+    } else if (todo.open) {
+      const skipped = todo.skipped.length, failed = todoRooms(live.load, 'failed'), checking = todoRooms(live.load, 'checking');
+      const close = { id: 'close', label: '닫기', kind: 'close', primary: !failed };
+      const again = skipped ? [{ id: 'again', label: '건너뛴 일 다시 보기', kind: 'again', primary: false }] : [];
+      // 못 불러온 방이 있으면 「다 끝냈습니다」 대신 그 방을 다시 불러오라고 쓴다. 읽는 중이면 확인 중이라고 쓴다(워크스페이스 13절)
+      card = failed ? { key: 'end:failed', end: true, say: `${failed} 일을 불러오지 못했습니다.`, then: '다시 불러오면 남은 일을 이어서 봅니다.', acts: [{ id: 'reload', label: '다시 불러오기', kind: 'reload', primary: true }, close, ...again] }
+        : checking ? { key: 'end:checking', end: true, say: '남은 일을 확인하고 있습니다.', then: `${checking} 일을 아직 읽고 있습니다.`, acts: [close, ...again] }
+          : { key: 'end', end: true, say: '다 끝냈습니다.', then: solioTodoEndThen({ later, skipped, ai }, now()), acts: [close, ...again] };
+    }
+    const failed = !queue.length ? todoRooms(live.load, 'failed') : '';
+    // 원클릭 일이 줄에 있거나 엔진이 돌면 원클릭 자료를 주기로 읽게 한다. 원클릭 카드가 서 있는 동안만 짧은 주기다(끝 카드에서는 늦춘다, Fable FA1)
+    const watchBackup = queue.some(i => i.src === 'backup') || ai.some(i => i.src === 'backup') ? (todo.open && item?.src === 'backup' ? 'busy' : 'idle') : null;
+    return { count: queue.length, label: todo.paused && item ? '다음 일' : '1순위부터 처리', ai: aiSay, fail: failed ? `${failed} 일을 불러오지 못했습니다` : '', watchBackup, open: todo.open, paused: todo.paused && !!item, flash: todo.flash, card };
+  }
+  /* 카드의 단추(data-orb-arg는 단추의 id다). 동작은 그 방이 이미 가진 길을 그대로 부른다 */
+  function todoAct(id) {
+    const state = machine.read();
+    if (!todo.open || clientMode() !== 'app' || space !== 'solio') return false;
+    if (id === 'close') return todoStop();
+    if (id === 'again') { todo.skipped = []; todo.current = null; render(); return true; }
+    // 못 불러온 방을 다시 읽는다. 읽히면 그 방의 일이 줄에 다시 선다
+    if (id === 'reload') { syncRead('office', { again: true }); syncRead('backup', { again: true }); void reread(); render(); return true; }
+    const live = todoLive(state, readScenes(state));
+    const item = live?.queue.find(i => i.key === todo.current);
+    const a = item?.acts.find(x => x.id === id);
+    // 같은 일의 부름이 도는 동안은 다시 누름을 받지 않는다(「터미널 열기」를 잇달아 눌러도 한 번, Fable FA2)
+    if (!item || !a || todo.busy === item.key || todoCalls.has(item.key)) return true;
+    const key = item.key;
+    todo.note = '';
+    if (a.kind === 'mark') { todo.memo.done[key] = now(); todoSave(); todo.copied = null; render(); return true; }
+    if (a.kind === 'copy') {
+      void Promise.resolve(view.copyText?.(a.run?.copy)).then(ok => {
+        if (todo.current !== key) return;
+        if (ok) todo.copied = key; else todo.note = '복사하지 못했습니다. 사무실에서 답을 열어 복사해 주세요.';
+        render();
+      });
+      return true;
+    }
+    if (a.kind === 'go') {
+      todo.open = false; todo.paused = true; todo.went = key;
+      // 방이 열리지 않았으면(다른 일이 도는 중 따위) 카드를 그대로 둔다. 상태만 닫히고 화면에 카드가 남지 않게 한다(카본 A4)
+      const went = a.run?.aside ? (openAside(a.run.aside), aside === a.run.aside) : a.run?.prog ? showProgram(a.run.prog) : false;
+      if (!went) { todo.open = true; todo.paused = false; todo.note = '그 방을 지금 열 수 없습니다. 잠시 뒤 다시 눌러 주세요.'; render(); }
+      // 사무실로 갔으면 초점을 그 방의 맨 위 문장에 둔다. 누른 단추가 카드와 함께 사라져 초점이 body로 빠지지 않게(Fable F4)
+      else if (a.run?.prog) { focus('office-head'); render(); }
+      return true;
+    }
+    const run = a.run || {};
+    let call = null;
+    // 맡긴 일 동작은 본체를 바로 불러 답을 받는다. 사무실 방을 거치면 거절을 카드가 알 수 없다(Fable F3)
+    if (run.task) call = Promise.resolve().then(() => readApi.office?.taskAction ? readApi.office.taskAction(run.task.id, run.task.kind) : { ok: false });
+    else if (run.office) call = office.handle(run.office);
+    else if (run.backup) call = backupAction(run.backup[0], run.backup[1], { anywhere: true }) || Promise.resolve({ ok: false });
+    if (call === null) return true;
+    if (a.kind === 'open') todo.waiting = key; else todo.busy = key;
+    todoCalls.add(key);
+    render();
+    void Promise.resolve(call).catch(() => ({ ok: false })).then(res => {
+      todoCalls.delete(key);
+      if (disposed) return;
+      // 사무실은 카드를 넘겼어도 다시 읽는다. 바뀐 일과 머리 줄의 수가 다음 주기까지 남지 않게(카본 A8)
+      if (run.office || run.task) syncRead('office', { again: true });
+      if (todo.current !== key) return;
+      todo.busy = null;
+      if (res && res.ok === false) todo.note = a.kind === 'open' ? '창을 열지 못했습니다. 그 방에서 확인해 주세요.' : '여기서 끝내지 못했습니다. 그 방에서 확인해 주세요.';
+      render();
+    });
+    return true;
+  }
+  function todoStart() {
+    const state = machine.read();
+    if (clientMode() !== 'app' || space !== 'solio' || !memberShown(state)) return false;
+    if (switchOpen) { switchOpen = false; fanPin = false; }
+    if (aside) { aside = null; rooms.close(); }
+    // 「다음 일」: 다른 방에 다녀온 일이 아직 줄에 있으면 이번 차례의 끝으로 보내고 다음 일을 연다(워크스페이스 13절, 카본 A7).
+    // 그 방에서 끝냈으면 이미 줄에서 빠져 다음 일이 지금 일이다
+    if (todo.paused && todo.current && todo.current === todo.went) { const key = todo.current; todo.skipped = [...todo.skipped.filter(k => k !== key), key]; todo.current = null; }
+    else if (!todo.paused) { todo.skipped = []; todo.current = null; }
+    todo.open = true; todo.paused = false; todo.went = null;
+    focus('todo');
+    render();
+    return true;
+  }
+  function todoSkip() {
+    if (!todo.open || !todo.current) return false;
+    const key = todo.current;
+    todo.skipped = [...todo.skipped.filter(k => k !== key), key];
+    todo.current = null; todo.copied = null; todo.waiting = null; todo.busy = null; todo.note = '';
+    focus('todo');
+    render();
+    return true;
+  }
+  function todoLater() {
+    if (!todo.open || !todo.current) return false;
+    const key = todo.current;
+    todo.memo.later[key] = now(); todoSave();
+    todo.gone = key;
+    focus('todo');
+    render();
+    return true;
+  }
+  function todoStop() {
+    if (!todo.open && !todo.paused) return false;
+    const wasOpen = todo.open;
+    todo.open = false; todo.paused = false; todo.skipped = []; todo.current = null; todo.copied = null; todo.waiting = null; todo.busy = null; todo.note = '';
+    if (wasOpen) focus('todo-return');
+    render();
+    return true;
+  }
+
   function roomScene(state) {
     if (space === 'solio') {
       const scenes = readScenes(state);
       const programs = programsFor(state, scenes);
       const at = programs.some(p => p.key === prog) ? prog : 'subs';
-      return { space, solio: solioScene(state), prog: at, programs, ...scenes,
+      return { space, solio: solioScene(state), prog: at, programs, ...scenes, todo: todoScene(state, scenes),
         canOpenEstimate: memberShown(state) && typeof options.onOpenEstimate === 'function', estimateError };
     }
+    // 다른 공간으로 가면 카드와 「다음 일」을 거둔다(솔리오 안의 일이다)
+    if (todo.open || todo.paused) { todo.open = false; todo.paused = false; todo.current = null; todo.skipped = []; }
     // 창 안의 PULSE가 열려 있으면 방은 비운다. 뷰가 띠 아래를 덮고, 펼침을 여는 동안에는 검정으로 남는다
     const slot = slotOf(space);
     if (slot && (slot.open || slot.closing)) return { space, say: '', then: '', action: null, error: feedback.switch, embedded: true };
@@ -759,7 +947,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     syncAuthRecheck(scene);
     // 모델별 토큰의 실시간은 구독 방이 보이는 동안 부탁한다(11-20부터 맨 위 「지금 출력」이 늘 보인다, 솔리오 구독 비서 설계 3.3)
     rooms.syncLive(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'subs' && !aside && !isHidden(), Boolean(scene.room?.solio?.brief?.live));
-    syncBackupPoll(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'backup' && !aside && !isHidden(), Boolean(scene.room?.backup?.busy));
+    // 「한 번에 처리」 줄에 원클릭 일이 있으면 원클릭 방이 아니어도 읽는다. 엔진 창에서 끝낸 일이 줄에서 빠져야 카드가 넘어간다(Fable F1)
+    const todoBackup = scene.room?.todo?.watchBackup || null;
+    syncBackupPoll(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && !isHidden() && ((scene.room?.prog === 'backup' && !aside) || !!todoBackup), Boolean(scene.room?.backup?.busy) || todoBackup === 'busy');
     syncOffice(scene);
   }
   /* 사무실(구현설계 3.4의 8, 7절). 방이 보이는 동안만 본체의 기록 살피기를 켜고 15초마다 다시 그린다(분 글). 방을 떠나면 끄고 방의 화면 상태를 지운다.
@@ -806,19 +996,21 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     if (ms) backupPoll = setTick(() => syncRead('backup', { again: true }), ms);
   }
   /* 백업 방의 단추. 본체가 계정과 낱말을 다시 확인한다. 누른 뒤 곧바로 다시 읽어 단계를 보인다 */
-  function backupAction(name, arg) {
+  /* 「한 번에 처리」의 카드에서 부를 때(anywhere)는 원클릭 방이 열려 있지 않아도 받고, 본체의 답을 돌려준다(카드가 실패를 말한다) */
+  function backupAction(name, arg, { anywhere = false } = {}) {
     const api = readApi.backup;
-    if (!api || space !== 'solio' || prog !== 'backup' || clientMode() !== 'app') return false;
+    if (!api || space !== 'solio' || (prog !== 'backup' && !anywhere) || clientMode() !== 'app') return false;
     const call = name === 'backup-start' ? api.start?.(arg) : name === 'backup-open' ? api.open?.(arg) : name === 'backup-oneclick' ? api.oneClick?.() : api.dismiss?.();
     backupNotice = null;
-    Promise.resolve(call).catch(() => ({ ok: false })).then(result => {
-      if (disposed) return;
+    const done = Promise.resolve(call).catch(() => ({ ok: false })).then(result => {
+      if (disposed) return result;
       const text = backupActionNotice(result);
       backupNotice = text ? { text, at: now() } : null;
       syncRead('backup', { again: true });
       if (text) render();
+      return result;
     });
-    return true;
+    return anywhere ? done : true;
   }
 
   function onPhaseChange(state, prev) {
@@ -1677,6 +1869,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     if (disposed || clientMode() === 'portal' || busyAction !== null || !ASIDE_ROOMS.includes(name)) return;
     // 내 계정 방은 회원에게만 있다(손님의 펼침에는 「계정」이 없다)
     if (name === 'account' && (!rooms.hasAccount() || !memberShown(machine.read()))) return;
+    // 카드가 서 있는 동안 펼침에서 방을 열면 카드를 접고 머리 줄의 「다음 일」로 남긴다
+    if (todo.open) { todo.open = false; todo.paused = !!todo.current; }
     switchOpen = false;
     fanPin = false;
     feedback.switch = '';
@@ -2142,7 +2336,13 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         if (clientMode() !== 'app') return false;
         void rooms.handle({ room: 'solio', key: 'tok', act: 'tok-on', arg: '', fields: {} });
         return true;
-      case 'prog': return showProgram(payload);
+      case 'prog': if (todo.open) { todo.open = false; todo.paused = !!todo.current; } return showProgram(payload);
+      // 「한 번에 처리」(docs/디자인/솔리오_한번에처리_20261124/README.md 5절)
+      case 'todo-start': return todoStart();
+      case 'todo-act': return todoAct(typeof payload === 'string' ? payload : '');
+      case 'todo-skip': return todoSkip();
+      case 'todo-later': return todoLater();
+      case 'todo-stop': return todoStop();
       case 'backup-start': case 'backup-open': case 'backup-dismiss': case 'backup-oneclick': return backupAction(action, typeof payload === 'string' ? payload : '');
       case 'recheck-auth': void recheckAuth(); return true;
       case 'reopen-space': void runOpenSpace(space, { reopen: true }); return true;
@@ -2174,6 +2374,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     }
     if (switchOpen) { closeSwitch({ focusHere: true }); return true; }
     if (legacyKind) { closeLegacy(); return true; }
+    if (todo.open) return todoStop();
     if (aside) { closeAside(); return true; }
     return false;
   }

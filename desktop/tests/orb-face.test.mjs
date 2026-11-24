@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { createOrbFaceController, faceSentence, ORB_RETURNING_KEY, sanitizeInviteFeedback, unconfiguredReason, workspaceLead } from '../renderer/orb-face.mjs';
+import { createOrbFaceController, faceSentence, ORB_RETURNING_KEY, SOLIO_TODO_KEY, sanitizeInviteFeedback, unconfiguredReason, workspaceLead } from '../renderer/orb-face.mjs';
 import { ROOM_TIMING } from '../renderer/orb-rooms.mjs';
 import { officeState, officeReduce } from '../renderer/office-model.mjs';
 
@@ -47,7 +47,7 @@ function memoryStorage(initial = {}) {
   return { getItem: k => (map.has(k) ? map.get(k) : null), setItem: (k, v) => map.set(k, String(v)), removeItem: k => map.delete(k), map };
 }
 
-function harness(t, { options = {}, storage = memoryStorage(), initial = { status: 'restoring' } } = {}) {
+function harness(t, { options = {}, storage = memoryStorage(), initial = { status: 'restoring' }, env: envOver = {} } = {}) {
   const view = fakeView();
   const timers = [];
   const calls = [];
@@ -77,6 +77,7 @@ function harness(t, { options = {}, storage = memoryStorage(), initial = { statu
     clearTimeout: id => clearTimeout(id),
     setInterval: () => 0,
     clearInterval: () => {},
+    ...envOver,
   };
   const face = createOrbFaceController({ view, options: opts, env });
   t.after(() => face.dispose());
@@ -1684,7 +1685,7 @@ test('the view opens the fan only on Enter, Space or the down arrow, never on fo
 
 test('while the fan is open the hidden name, the object row and the dimmed rooms leave the Tab order; hidden rooms do not take Esc (카본 A1 · A6)', () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
-  assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.backup, app\.visits, app\.health, app\.office, app\.space, \.\.\.Object\.values\(app\.asides\)\.map\(a => a\.room\)\]\.filter\(Boolean\);/, 'the rooms opened from the fan leave the Tab order too, the office room among them (공간 지도 검수 c FA1)');
+  assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.backup, app\.visits, app\.health, app\.office, app\.space, app\.todoBar, app\.todo, \.\.\.Object\.values\(app\.asides\)\.map\(a => a\.room\)\]\.filter\(Boolean\);/, 'the rooms opened from the fan leave the Tab order too, the office room and the 한 번에 처리 bar and card among them (공간 지도 검수 c FA1, solio-todo 카본 A3)');
   assert.match(src, /if \(open\) \{ const a = doc\.activeElement; if \(a && back\.some\(x => x\.contains\(a\)\)\) \{ fanReturn = f\.pin \? null : a; app\.orbBtn\.focus/, 'focus inside them moves to the visible orb before they turn inert');
   assert.match(src, /for \(const x of back\) if \(x\.inert !== open\) x\.inert = open;/);
   assert.match(src, /\[\.\.\.root\.querySelectorAll\('\.more\.open'\)\]\.some\(m => !m\.closest\('\[hidden\]'\)\)/, 'a pinned row left in a hidden room does not swallow Esc');
@@ -2877,4 +2878,266 @@ test('a tray open that comes while another space is opening waits for it, then o
   finish({ ok: false, message: 'PULSE를 열지 못했어요.' }); await settle(); await settle();
   assert.equal(h.view.last().space, 'workspace', 'the tray request is carried out after the other open ends');
   assert.deepEqual(w.last(), { visible: true, top: 56 });
+});
+
+/* ── 「한 번에 처리」(docs/디자인/솔리오_한번에처리_20261124/README.md 5절) ──
+   사무실 판의 맡긴 일로 줄을 세운다. 지금 실제 앱처럼 세션 훅 소식은 없고, 맡긴 일 카드가 사람을 기다린다 */
+const TODO_NOW = Date.now();
+const pickOf = (o, ks) => Object.fromEntries(ks.map(k => [k, o?.[k]]));
+const todoTask = extra => ({ provider: 'codex', status: 'completed', reason: '', prompt: '일', createdAt: new Date(TODO_NOW - 3 * 3600e3).toISOString(), updatedAt: new Date(TODO_NOW - 3600e3).toISOString(), departmentName: '견적부', ...extra });
+const todoDraft = () => todoTask({ id: 'q1', quoteSource: { parentId: 'p1', subject: '촬영 견적', from: '한가람 <gaeram@example.com>', date: new Date(TODO_NOW - 26 * 3600e3).toISOString() }, quoteOutcome: 'draft', answer: '견적을 보내 드립니다.' });
+const todoPaused = (status = 'paused') => todoTask({ id: 'q3', status, prompt: '주간 보고 쓰기', updatedAt: new Date(TODO_NOW - 2 * 3600e3).toISOString() });
+const todoChoose = () => todoTask({ id: 'q7', status: 'failed', reason: 'MAIL_CHOOSE', prompt: '메일 찾기' });
+const todoBoard = tasks => ({ ...officeBoard({ asked: false }), tasking: { tasks } });
+function todoOffice(tasks) {
+  const fake = officeFake(() => todoBoard(tasks()));
+  fake.api.taskAction = async (id, kind) => { fake.calls.push('task:' + id + ':' + kind); return { ok: true }; };
+  return fake;
+}
+async function todoHarness(t, tasks, { storage = memoryStorage() } = {}) {
+  const office = todoOffice(tasks);
+  const h = harness(t, { storage, options: { office: office.api } });
+  const copied = [];
+  h.view.copyText = async text => { copied.push(text); return true; };
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  return { h, office, copied, todo: () => h.view.last().room?.todo };
+}
+
+test('한 번에 처리: the bar counts the line, the button opens the first item as one card, and finishing each in place moves on until 다 끝냈습니다', async t => {
+  let tasks = [todoPaused(), todoDraft(), todoTask({ id: 'q4', status: 'running' })];
+  const { h, office, copied, todo } = await todoHarness(t, () => tasks);
+  assert.deepEqual(pickOf(todo(), ['count', 'label', 'ai', 'open', 'card']), { count: 2, label: '1순위부터 처리', ai: 'AI 직원 하나가 일하고 있습니다.', open: false, card: null });
+  const flash0 = todo().flash;
+  assert.equal(h.face.handle('todo-start'), true);
+  await settle();
+  // 고객이 26시간 기다린 초안이 먼저다. 「보냈어요」는 복사한 뒤에만 선다
+  let c = todo().card;
+  assert.deepEqual(pickOf(c, ['key', 'rank', 'why', 'where', 'say', 'left']), { key: 'quote:q1', rank: '1순위', why: '고객이 기다립니다', where: '견적부', say: '한가람님의 견적 문의에 보낼 답장 초안이 있습니다.', left: '남은 일 1개' });
+  assert.deepEqual(c.acts.map(a => [a.id, a.primary]), [['copy', true], ['go', false]]);
+  assert.equal(h.view.last().focus, 'todo', 'Enter 한 번이 그 일이다');
+  h.face.handle('todo-act', 'copy');
+  await settle();
+  c = todo().card;
+  assert.deepEqual(copied, ['견적을 보내 드립니다.']);
+  assert.deepEqual(c.acts.map(a => [a.id, a.primary]), [['sent', true], ['copy', false], ['go', false]]);
+  assert.equal(c.note, '복사했습니다. 메일에서 보낸 뒤 「보냈어요」를 눌러 주세요.');
+  h.face.handle('todo-act', 'sent');
+  await settle();
+  c = todo().card;
+  assert.equal(c.key, 'task:q3:paused', '끝내면 다음 일로 저절로 넘어간다');
+  assert.equal(todo().flash, flash0 + 1, '끝낸 일이 빠지면 구가 웃는다');
+  assert.ok(JSON.parse(h.storage.getItem(SOLIO_TODO_KEY + ACCOUNT)).done['quote:q1'] > 0, '「보냈어요」는 이 PC에 적어 다시 줄에 서지 않는다');
+  assert.equal(c.left, '이 일이 마지막입니다.');
+  // 그 자리에서 다시 시작: 본체의 맡긴 일 동작을 부르고, 일이 돌기 시작하면 줄에서 빠진다
+  tasks = [todoPaused('queued'), todoDraft(), todoTask({ id: 'q4', status: 'running' })];
+  h.face.handle('todo-act', 'resume');
+  await settle(24);
+  assert.ok(office.calls.includes('task:q3:resume'), JSON.stringify(office.calls));
+  c = todo().card;
+  assert.deepEqual(pickOf(c, ['key', 'end', 'say', 'then']), { key: 'end', end: true, say: '다 끝냈습니다.', then: 'AI 직원 둘이 일하고 있습니다.' });
+  assert.equal(todo().flash, flash0 + 2);
+  assert.deepEqual(c.acts.map(a => a.id), ['close']);
+  h.face.handle('todo-act', 'close');
+  await settle();
+  assert.deepEqual(pickOf(todo(), ['count', 'open', 'card']), { count: 0, open: false, card: null });
+  assert.equal(h.view.last().focus, 'todo-return');
+});
+
+test('한 번에 처리: 건너뛰기 moves an item to the back for this round, 나중에 holds it three hours without a smile, Esc stops', async t => {
+  const tasks = [todoPaused(), todoChoose()];
+  const { h, todo } = await todoHarness(t, () => tasks);
+  h.face.handle('todo-start');
+  await settle();
+  const first = todo().card.key, flash0 = todo().flash;
+  assert.deepEqual([first, todo().card.why], ['task:q3:paused', '내 결정을 기다립니다'], '오래 기다린 일부터');
+  h.face.handle('todo-skip');
+  await settle();
+  assert.equal(todo().card.key, 'task:q7:choose');
+  h.face.handle('todo-skip');
+  await settle();
+  assert.deepEqual(pickOf(todo().card, ['key', 'then']), { key: 'end', then: '건너뛴 일 2개가 남았습니다.' });
+  assert.deepEqual(todo().card.acts.map(a => a.id), ['close', 'again']);
+  assert.equal(todo().flash, flash0, '건너뛴 일은 끝낸 것으로 세지 않는다');
+  h.face.handle('todo-act', 'again');
+  await settle();
+  assert.equal(todo().card.key, first);
+  h.face.handle('todo-later');
+  await settle();
+  assert.equal(todo().card.key, 'task:q7:choose');
+  assert.equal(todo().count, 1);
+  assert.equal(todo().flash, flash0, '미룬 일도 끝낸 것으로 세지 않는다');
+  assert.ok(JSON.parse(h.storage.getItem(SOLIO_TODO_KEY + ACCOUNT)).later['task:q3:paused'] > 0);
+  assert.equal(h.face.handle('escape'), true);
+  await settle();
+  assert.equal(todo().open, false);
+});
+
+test('한 번에 처리: a card finished in another room sends you there, the bar becomes 다음 일, and one press opens the next item (워크스페이스 13절)', async t => {
+  let tasks = [todoChoose(), todoPaused(), todoTask({ id: 'q8', status: 'failed', reason: 'MAIL_REVIEW', mailSearch: true, prompt: '조건 확인', updatedAt: new Date(TODO_NOW - 30 * 60e3).toISOString() })];
+  const { h, todo } = await todoHarness(t, () => tasks);
+  h.face.handle('todo-start');
+  await settle();
+  assert.equal(todo().card.key, 'task:q3:paused', '오래 기다린 일부터');
+  h.face.handle('todo-skip');
+  await settle();
+  assert.equal(todo().card.key, 'task:q7:choose');
+  assert.deepEqual(todo().card.acts.map(a => [a.id, a.kind]), [['go', 'go']]);
+  h.face.handle('todo-act', 'go');
+  await settle();
+  assert.equal(h.view.last().room.prog, 'office');
+  assert.deepEqual(pickOf(todo(), ['open', 'paused', 'label']), { open: false, paused: true, label: '다음 일' });
+  // 그 방에서 끝내지 않고 「다음 일」을 누르면 그 일은 이번 차례의 끝으로 가고 다음 일이 열린다(카본 A7)
+  h.face.handle('todo-start');
+  await settle();
+  assert.equal(todo().card.key, 'task:q8:review');
+  // 이번에는 그 방에서 끝냈다: 일이 줄에서 빠지면 끝낸 것으로 세고, 건너뛴 일만 남았으니 「다음 일」을 거두고 처음 단추로 돌아온다
+  const flash0 = todo().flash;
+  h.face.handle('todo-act', 'go');
+  await settle();
+  tasks = [todoChoose(), todoPaused()];
+  h.face.handle('room', { room: 'solio-office', act: 'row-fold', key: 'lobby' });
+  await settle(20);
+  assert.deepEqual(pickOf(todo(), ['count', 'paused', 'label', 'flash']), { count: 2, paused: false, label: '1순위부터 처리', flash: flash0 + 1 });
+  h.face.handle('todo-start');
+  await settle();
+  assert.equal(todo().card.key, 'task:q3:paused', '새로 누르면 1순위부터 다시 선다');
+});
+
+test('한 번에 처리: the same item changing state is not counted as finished; the card follows it (카본 A2)', async t => {
+  let tasks = [todoPaused()];
+  const { h, office, todo } = await todoHarness(t, () => tasks);
+  h.face.handle('todo-start');
+  await settle();
+  const flash0 = todo().flash;
+  assert.equal(todo().card.key, 'task:q3:paused');
+  tasks = [todoTask({ id: 'q3', status: 'terminal', canOpenTerminal: true, prompt: '주간 보고 쓰기' })];
+  office.emit();
+  await settle(20);
+  assert.equal(todo().card.key, 'task:q3:terminal', '같은 맡긴 일이 터미널 확인을 기다리면 그 카드로 잇는다');
+  assert.equal(todo().flash, flash0);
+  tasks = [todoTask({ id: 'q3', status: 'running', prompt: '주간 보고 쓰기' })];
+  office.emit();
+  await settle(20);
+  assert.equal(todo().card.key, 'end');
+  assert.equal(todo().flash, flash0 + 1, '일이 다시 돌기 시작하면 사람의 차례는 끝났다');
+});
+
+test('한 번에 처리: another account’s 나중에 is not used, and signing out takes the bar away', async t => {
+  const storage = memoryStorage({ [SOLIO_TODO_KEY + OTHER]: JSON.stringify({ later: { 'task:q3:paused': Date.now() - 60e3 }, done: {} }) });
+  const { h, todo } = await todoHarness(t, () => [todoPaused()], { storage });
+  assert.equal(todo().count, 1);
+  h.face.handle('todo-start');
+  await settle();
+  assert.equal(todo().open, true);
+  h.face.setState({ status: 'signed-out', generation: 2 });
+  await settle(20);
+  assert.equal(h.view.last().room?.todo ?? null, null);
+});
+
+test('한 번에 처리: when the office cannot be read for a moment, its items leave the line without counting as finished', async t => {
+  let answer = null;
+  const office = officeFake(() => answer || todoBoard([todoPaused(), todoChoose()]));
+  const h = harness(t, { options: { office: office.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const todo = () => h.view.last().room?.todo;
+  h.face.handle('todo-start');
+  await settle();
+  const flash0 = todo().flash;
+  assert.equal(todo().card.key, 'task:q3:paused');
+  answer = { ok: false, code: 'STORAGE' };
+  office.emit();
+  await settle(20);
+  // 못 불러온 방이 있으면 「다 끝냈습니다」라고 하지 않고 다시 불러오게 한다(워크스페이스 13절 같은 말 규칙)
+  assert.deepEqual(pickOf(todo().card, ['key', 'end', 'say', 'then']), { key: 'end:failed', end: true, say: '사무실 일을 불러오지 못했습니다.', then: '다시 불러오면 남은 일을 이어서 봅니다.' });
+  assert.deepEqual(todo().card.acts.map(a => [a.id, a.primary]), [['reload', true], ['close', false]]);
+  assert.equal(todo().flash, flash0, '읽지 못해 빠진 일은 끝낸 것이 아니다');
+  answer = null;
+  h.face.handle('todo-act', 'reload');
+  await settle(20);
+  assert.equal(todo().card.key, 'task:q3:paused', '다시 불러오면 그 일이 다시 선다');
+});
+
+test('한 번에 처리: when the office refuses a task action, the card stays and says so, and the office is read again (Fable F3)', async t => {
+  const tasks = [todoPaused()];
+  const office = todoOffice(() => tasks);
+  office.api.taskAction = async (id, kind) => { office.calls.push('task:' + id + ':' + kind); return { ok: false, code: 'BUSY' }; };
+  const h = harness(t, { options: { office: office.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const todo = () => h.view.last().room?.todo;
+  h.face.handle('todo-start');
+  await settle();
+  assert.equal(todo().card.key, 'task:q3:paused');
+  const reads = office.calls.filter(c => c === 'snapshot').length;
+  h.face.handle('todo-act', 'resume');
+  await settle(24);
+  assert.ok(office.calls.includes('task:q3:resume'), JSON.stringify(office.calls));
+  assert.equal(todo().card.key, 'task:q3:paused', '거절된 일은 끝낸 것이 아니다');
+  assert.equal(todo().card.note, '여기서 끝내지 못했습니다. 그 방에서 확인해 주세요.');
+  assert.ok(office.calls.filter(c => c === 'snapshot').length > reads, '거절돼도 사무실을 다시 읽는다');
+});
+
+test('한 번에 처리: a one-click item keeps the backup read going while the one-click room is closed, faster while its card is open (Fable F1)', async t => {
+  const ticks = [];
+  let snap = { ok: true, available: true, view: 'no-engine', feed: { state: 'ready' } };
+  const started = [];
+  const solioBackup = { snapshot: async () => snap, start: async arg => { started.push(arg); return { ok: true }; }, open: async () => ({ ok: true }), onChanged: () => () => {} };
+  const office = todoOffice(() => []);
+  const h = harness(t, { options: { office: office.api, solioBackup }, env: { setInterval: (fn, ms) => { ticks.push(ms); return ticks.length; }, clearInterval: () => {} } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const todo = () => h.view.last().room?.todo;
+  assert.equal(todo().count, 1);
+  assert.equal(ticks.at(-1), 15000, '원클릭 방을 열지 않아도 백업 일이 줄에 있으면 천천히 다시 읽는다');
+  h.face.handle('todo-start');
+  await settle();
+  assert.equal(todo().card.key, 'backup:시작 전');
+  assert.equal(ticks.at(-1), 2000, '그 카드를 보는 동안은 2초마다 읽어 엔진 창에서 끝낸 것을 바로 안다');
+  h.face.handle('todo-skip');
+  await settle();
+  assert.equal(todo().card.say, '다 끝냈습니다.');
+  assert.equal(ticks.at(-1), 15000, '건너뛰어 끝 카드가 서면 다시 천천히 읽는다(Fable FA1)');
+  h.face.handle('todo-act', 'again');
+  await settle();
+  assert.equal(todo().card.key, 'backup:시작 전');
+  assert.equal(ticks.at(-1), 2000);
+  h.face.handle('todo-act', todo().card.acts[0].id);
+  await settle(20);
+  assert.deepEqual(started, ['protect']);
+  snap = { ok: true, available: true, view: 'status', status: { state: 'safe', folders: 3 } };
+  h.face.handle('todo-act', 'reload');
+  await settle(20);
+  assert.equal(todo().card.say, '다 끝냈습니다.', '엔진 창에서 보호가 켜지면 그 일이 줄에서 빠진다');
+});
+
+test('한 번에 처리: pressing 터미널 열기 twice while the first call runs opens the terminal once (Fable FA2)', async t => {
+  const tasks = [todoTask({ id: 'q2', provider: 'claude', status: 'terminal', canOpenTerminal: true, prompt: '랜딩 페이지 고치기' })];
+  const office = todoOffice(() => tasks);
+  let release = null;
+  office.api.taskAction = (id, kind) => { office.calls.push('task:' + id + ':' + kind); return new Promise(res => { release = () => res({ ok: true }); }); };
+  const h = harness(t, { options: { office: office.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const todo = () => h.view.last().room?.todo;
+  h.face.handle('todo-start');
+  await settle();
+  assert.equal(todo().card.key, 'task:q2:terminal');
+  h.face.handle('todo-act', 'terminal');
+  h.face.handle('todo-act', 'terminal');
+  await settle();
+  assert.deepEqual(office.calls.filter(c => c.startsWith('task:')), ['task:q2:terminal']);
+  release();
+  await settle(20);
+  h.face.handle('todo-act', 'terminal');
+  await settle();
+  assert.equal(office.calls.filter(c => c.startsWith('task:')).length, 2, '첫 부름이 끝나면 다시 열 수 있다');
+  release();
+  await settle(20);
 });

@@ -1274,3 +1274,46 @@ html[data-motion="reduced"] #portal-entry .one-board *,html[data-motion="reduced
 #portal-entry .biz-host .pill.ghost[aria-pressed=false],#portal-entry .biz-pick .quiet[aria-pressed=false]{color:rgba(243,241,236,.7);border-color:rgba(243,241,236,.22)}
 /* 처음 화면 오른쪽 칸도 가는 줄 대신 간격으로 묶는다 */
 #portal-entry .biz-side .biz-block{border-top:0;padding:4px 0 22px}
+
+/* ── 「한 번에 처리」(docs/디자인/솔리오_한번에처리_20261124/README.md 2절) ──
+   머리 줄 오른쪽에 「할 일 N」과 꽉 찬 단추 하나. 창 단추(맨 위 40px의 오른쪽 144px)를 비켜 서고, 좁은 창(760px 이하)에서는 오브제 줄과 겹치지 않게 창 아래 오른쪽으로 내린다.
+   방은 아래 70px를 비워 두므로 그 자리에 선다. 카드는 방 하나의 짜임(작은 머리 줄 · 큰 문장 · 흐린 둘째 줄 · 단추)이고 꽉 찬 단추는 그 일을 끝내는 하나뿐이다 */
+#portal-entry .todo-bar{position:absolute;z-index:5;top:clamp(12px,3.4vh,38px);right:max(clamp(20px,9.5vw,168px),152px);height:44px;display:flex;align-items:center;gap:16px;-webkit-app-region:no-drag;transition:opacity .25s ease}
+#portal-entry .todo-n{max-width:min(46vw,420px);overflow:hidden;text-overflow:ellipsis;font:400 13px/1.3 var(--orb-sans);letter-spacing:.02em;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+#portal-entry .todo-n:empty{display:none}
+#portal-entry .todo-go{appearance:none;height:38px;margin:0;padding:0 20px;border:1px solid var(--paper);border-radius:999px;background:var(--paper);font:600 14px/1 var(--orb-sans);color:var(--void);cursor:pointer;white-space:nowrap;transition:background-color .25s ease,border-color .25s ease}
+#portal-entry .todo-go:hover{background:#FFFFFF;border-color:#FFFFFF}
+#portal-entry .todo-go:focus-visible{outline:1px solid var(--ring);outline-offset:4px}
+#portal-entry .orb-stage[data-fan] .todo-bar{opacity:0;pointer-events:none;visibility:hidden}
+/* 펼친 오브제 이름이 단추에 닿는 창(프로그램이 다섯일 때 따위)에서는 보기가 .low를 붙여 같은 자리로 내린다(Fable F2) */
+#portal-entry .todo-bar.low{top:auto;bottom:16px;right:clamp(20px,9.5vw,168px)}
+@media (max-width:760px){#portal-entry .todo-bar{top:auto;bottom:16px;right:clamp(20px,9.5vw,168px)}}
+/* 카드가 선 동안 오브제 줄은 물러난다. 한 장에만 눈이 가게 한다 */
+#portal-entry .orb-stage[data-todo] .rail{opacity:0;pointer-events:none;visibility:hidden}
+#portal-entry .todo-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0 0 clamp(14px,2.4vh,22px);font:500 13px/1.3 var(--orb-sans);letter-spacing:.02em;color:var(--dim)}
+#portal-entry .todo-meta b{font-weight:600;letter-spacing:.04em;color:var(--paper)}
+#portal-entry .todo-meta span::before{content:"·";margin-right:12px;color:var(--dim)}
+/* 둘째 줄은 끝내는 법이다. 큰 문장보다 한 단계 작게 두어 눈이 할 일 → 단추로 간다 */
+#portal-entry .room-todo .say .then{margin-top:10px;font:300 clamp(18px,1.7vw,24px)/1.45 var(--orb-sans);letter-spacing:-.01em;max-width:34em}
+#portal-entry .todo-acts{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:clamp(28px,5vh,48px) 0 0}
+#portal-entry .todo-main,#portal-entry .todo-alt{appearance:none;height:54px;margin:0;padding:0 30px;border:1px solid var(--paper);border-radius:999px;font:600 16px/1 var(--orb-sans);cursor:pointer;white-space:nowrap;transition:background-color .25s ease,border-color .25s ease,color .25s ease}
+#portal-entry .todo-main{background:var(--paper);color:var(--void)}
+#portal-entry .todo-main:hover{background:#FFFFFF;border-color:#FFFFFF}
+#portal-entry .todo-alt{background:none;border-color:rgba(243,241,236,.42);color:var(--paper);font-weight:500}
+#portal-entry .todo-alt:hover{border-color:var(--paper)}
+#portal-entry .todo-main:focus-visible,#portal-entry .todo-alt:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
+#portal-entry .todo-main[aria-disabled="true"],#portal-entry .todo-alt[aria-disabled="true"]{opacity:.45;cursor:default}
+#portal-entry .todo-note{margin:16px 0 0;min-height:1.45em;max-width:36em;font:400 14px/1.45 var(--orb-sans);color:var(--paper)}
+#portal-entry .todo-foot{display:flex;flex-wrap:wrap;gap:12px 26px;margin:clamp(18px,3.4vh,34px) 0 0}
+#portal-entry .todo-foot kbd{margin-left:8px;font:400 11px/1 var(--orb-sans);letter-spacing:.14em;color:var(--dim)}
+@media (hover:none),(max-width:640px){#portal-entry .todo-foot kbd{display:none}}
+#portal-entry .todo-left{margin:14px 0 0;max-width:40em;font:var(--small);color:var(--dim)}
+#portal-entry .todo-left:empty{display:none}
+#portal-entry .room-todo.end .todo-acts{margin-top:clamp(24px,4vh,40px)}
+/* 일이 바뀌면 한 장이 아래에서 떠오른다. 머리 줄 · 문장 · 단추 차례로 조금씩 늦게 */
+@keyframes orb-todo-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+#portal-entry .room-todo.todo-in > *{animation:orb-todo-in .55s cubic-bezier(.2,.7,.2,1) both}
+#portal-entry .room-todo.todo-in > :nth-child(2){animation-delay:.05s}
+#portal-entry .room-todo.todo-in > :nth-child(3){animation-delay:.1s}
+#portal-entry .room-todo.todo-in > :nth-child(n+4){animation-delay:.14s}
+@media (prefers-reduced-motion:reduce){#portal-entry .room-todo.todo-in > *{animation:none}}

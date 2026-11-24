@@ -105,6 +105,7 @@ function markup() {
       <button class="quiet legacy-back" type="button" data-orb-act="legacy-back">돌아가기</button>
       <button class="quiet band-close" type="button" data-orb-act="band-close" hidden>PULSE 닫기</button>
     </div>
+    <div class="todo-bar" data-todo-bar hidden><span class="todo-n" data-todo-n></span><button class="todo-go" type="button" data-orb-act="todo-start" data-todo-go>1순위부터 처리</button></div>
     <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p><p class="fan-lead" role="status" data-fan-lead></p></div>
     <div class="room room-top" data-room="solio">
       <p class="sr" role="status" aria-live="polite" data-solio-status></p>
@@ -169,6 +170,14 @@ function markup() {
       <p class="read rise" style="--i:5"><span data-off-foot></span></p>
       <div class="biz-host" data-off-feature hidden></div>
     </div>
+    <section class="room room-top room-todo" data-room="solio-todo" aria-label="한 번에 처리" hidden>
+      <p class="todo-meta" data-todo-meta><b data-todo-rank></b><span data-todo-why></span><span data-todo-where></span></p>
+      <p class="say" id="orb-todo-say" tabindex="-1" data-todo-head><span data-todo-say></span><span class="then" data-todo-then></span></p>
+      <p class="todo-acts" role="group" aria-label="이 일 처리하기" data-todo-acts></p>
+      <p class="todo-note" role="status" aria-live="polite" data-todo-note></p>
+      <p class="todo-foot" data-todo-foot><button class="quiet" type="button" data-orb-act="todo-skip">건너뛰기</button><button class="quiet" type="button" data-orb-act="todo-later">나중에</button><button class="quiet" type="button" data-orb-act="todo-stop">그만하기<kbd>Esc</kbd></button></p>
+      <p class="todo-left" data-todo-left></p>
+    </section>
     ${ASIDE_NAMES.map(asideMarkup).join('')}
     <div class="room" data-room="space">
       <p class="say rise" style="--i:1"><span data-space-say></span><span class="then" data-space-then></span></p>
@@ -227,6 +236,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     bakBoard: $('[data-bak-board]'), bakDrive: $('[data-bak-drive]'), bakFlow: $('[data-bak-flow]'), bakHelper: $('[data-bak-helper]'), bakSum: $('[data-bak-sum]'), bakSteps: $('[data-bak-steps]'), bakGroups: $('[data-bak-groups]'),
     health: $('[data-room="solio-health"]'), heaSay: $('[data-hea-say]'), heaThen: $('[data-hea-then]'), heaRows: $('[data-hea-rows]'), heaWhen: $('[data-hea-when]'), heaScope: $('[data-hea-scope]'),
     office: $('[data-room="solio-office"]'), offHead: $('[data-off-head]'), offSay: $('[data-off-say]'), offThen: $('[data-off-then]'), offHint: $('[data-off-hint]'), offSlot: $('[data-off-slot]'), offFloor: $('[data-off-floor]'), offRows: $('[data-off-rows]'), offFoot: $('[data-off-foot]'),
+    todoBar: $('[data-todo-bar]'), todoN: $('[data-todo-n]'), todoGo: $('[data-todo-go]'),
+    todo: $('[data-room="solio-todo"]'), todoMeta: $('[data-todo-meta]'), todoRank: $('[data-todo-rank]'), todoWhy: $('[data-todo-why]'), todoWhere: $('[data-todo-where]'),
+    todoHead: $('[data-todo-head]'), todoSay: $('[data-todo-say]'), todoThen: $('[data-todo-then]'), todoActs: $('[data-todo-acts]'), todoNote: $('[data-todo-note]'), todoFoot: $('[data-todo-foot]'), todoLeft: $('[data-todo-left]'),
     asides: Object.fromEntries(ASIDE_NAMES.map(name => {
       const r = $(`[data-room="${name}"]`);
       return [name, { room: r, say: r.querySelector('[data-aside-say]'), text: r.querySelector('[data-aside-text]'), then: r.querySelector('[data-aside-then]'), rows: r.querySelector('[data-aside-rows]'), foot: r.querySelector('[data-aside-foot]'), act: r.querySelector('.read [data-room-act]') }];
@@ -722,6 +734,64 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     app.detailsTop.replaceChildren(...parts);
   }
 
+  /* ── 「한 번에 처리」(docs/디자인/솔리오_한번에처리_20261124/README.md 2절 · 5절) ──
+     머리 줄 오른쪽: 할 일이 있으면 「할 일 N」과 꽉 찬 단추 하나, 없고 AI가 일하면 흐린 한 문장. 카드가 서면 머리 줄의 단추는 물러난다.
+     카드는 한 장이다. 일이 바뀌면 아래에서 떠오르고, 끝낸 일이 줄에서 빠지면 왼쪽 위 구가 한 번 웃는다. 카드가 서 있으면 true */
+  let todoFlash = null, todoKey = '';
+  function renderTodo(t) {
+    const work = !!t && (t.count > 0 || t.paused);
+    app.todoBar.hidden = !t || t.open || (!work && !t.ai && !t.fail);
+    // 머리 줄은 짧게 둔다. AI가 하는 일의 문장은 카드 아래 줄과 끝 카드가 말한다(좁은 창에서 잘리지 않게, 카본 A6)
+    if (app.todoN.title !== (t?.ai || '')) app.todoN.title = t?.ai || '';
+    if (t) {
+      // 줄이 비었어도 못 불러온 방이 있으면 그것을 말한다(「없음」으로 읽히지 않게, 워크스페이스 13절 같은 말 규칙)
+      setText(app.todoN, t.count > 0 ? `할 일 ${t.count}` : t.paused ? '' : t.fail || (t.ai ? 'AI가 처리 중' : ''));
+      app.todoGo.hidden = !work;
+      setText(app.todoGo, t.label);
+      app.todoBar.classList.toggle('idle', !work);
+      if (todoFlash === null) todoFlash = t.flash;
+      else if (t.flash > todoFlash) { todoFlash = t.flash; void stage.setMood?.('smile', 1100); sound.done?.(); }
+    }
+    const c = t?.open ? t.card : null;
+    app.todo.hidden = !c;
+    if (c) { if (stageEl.dataset.todo !== '1') stageEl.dataset.todo = '1'; } else if ('todo' in stageEl.dataset) delete stageEl.dataset.todo;
+    if (!c) { todoKey = ''; return false; }
+    const fresh = c.key !== todoKey;
+    todoKey = c.key;
+    app.todo.classList.toggle('end', !!c.end);
+    app.todoMeta.hidden = !!c.end;
+    setText(app.todoRank, c.rank || '');
+    setText(app.todoWhy, c.why || '');
+    app.todoWhy.hidden = !c.why;
+    setText(app.todoWhere, c.where || '');
+    app.todoWhere.hidden = !c.where;
+    setText(app.todoSay, c.say);
+    setText(app.todoThen, c.then || '');
+    const key = JSON.stringify([c.key, !!c.busy, c.acts.map(a => [a.id, a.label, a.primary])]);
+    if (app.todoActs.dataset.key !== key) {
+      const fa = doc.activeElement, had = fa && app.todoActs.contains(fa);
+      app.todoActs.dataset.key = key;
+      app.todoActs.replaceChildren(...c.acts.map(a => {
+        const b = button(a.primary ? 'todo-main' : 'todo-alt', a.label, { 'data-orb-act': a.kind === 'close' ? 'todo-stop' : 'todo-act', 'data-orb-arg': a.id, 'aria-describedby': 'orb-todo-say' });
+        if (c.busy) b.setAttribute('aria-disabled', 'true');
+        return b;
+      }));
+      // 누른 단추가 일과 함께 사라지면 초점은 다음 카드의 꽉 찬 단추로 간다(body로 빠지지 않게)
+      if (had) { const next = app.todoActs.querySelector('.todo-main') || app.todoActs.firstElementChild; try { (next || app.todoHead).focus({ preventScroll: true }); } catch {} }
+    }
+    app.todoActs.hidden = !c.acts.length;
+    setText(app.todoNote, c.busy ? '처리하는 중입니다.' : c.note || '');
+    app.todoFoot.hidden = !!c.end;
+    setText(app.todoLeft, c.end ? '' : [c.left, c.ai].filter(Boolean).join(' · '));
+    if (fresh) {
+      app.todo.classList.remove('todo-in');
+      void app.todo.offsetWidth;
+      app.todo.classList.add('todo-in');
+      app.todo.scrollTop = 0;
+    }
+    return true;
+  }
+
   function renderApp(s) {
     const room = s.room;
     setText(app.name, s.spaceLabel);
@@ -734,6 +804,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (app.bandClose) { app.bandClose.hidden = !s.bandClose; if (s.bandCloseLabel) setText(app.bandClose, s.bandCloseLabel); }
     renderShare(s.share || null);
     if (!room) {
+      renderTodo(null);
       renderRail(s, [], null);
       lastProg = null;
       renderAsides(null, null);
@@ -751,11 +822,16 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     for (const [name, r] of Object.entries(readRooms)) r.room.hidden = prog !== name || !!asideName;
     app.office.hidden = prog !== 'office' || !!asideName;
     app.space.hidden = solio || !!asideName;
+    // 「한 번에 처리」 카드가 서 있으면 그 한 장만 보인다(방은 그 뒤에 그대로 있다)
+    // 곁방(계정 관리 따위)이 열려 있어도 머리 줄의 「다음 일」은 남는다. 그 방에서 끝낸 뒤 한 번 눌러 줄을 잇는다
+    const todoOpen = renderTodo(solio && s.layer === 'app' && s.mode === 'app' && room.todo ? (asideName ? { ...room.todo, open: false } : room.todo) : null);
+    if (todoOpen) { app.solio.hidden = true; app.estimateBtn.hidden = true; app.estimateNote.hidden = true; for (const r of Object.values(readRooms)) r.room.hidden = true; app.office.hidden = true; }
     renderRail(s, solio ? room.programs || [] : [], prog);
+    placeTodoBar();
     for (const [name, r] of Object.entries(readRooms)) renderRead(r, solio ? room[name] : null);
     // 가려진 방에서 그린 판은 줄 위치가 0이다. 원클릭 방이 보이면 작은 구를 그 자리에서 다시 놓는다(Fable F3)
     if (!app.backup.hidden) placeHelper(board.at);
-    renderOffice(solio ? room.office : null, solio && prog === 'office' && !asideName && s.layer === 'app' && s.mode === 'app');
+    renderOffice(solio ? room.office : null, solio && prog === 'office' && !asideName && !todoOpen && s.layer === 'app' && s.mode === 'app');
     if (prog !== lastProg) {
       closeMores(true);
       if (lastProg !== null && prog && !asideName) enterRoom(prog);
@@ -834,6 +910,27 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     app.shareWindowsH.hidden = app.shareWindows.hidden = windows.length === 0;
   }
 
+  /* 오브제 줄은 다가가면 이름이 펼쳐진다(.rail.near). 펼친 줄이 머리 줄 단추에 닿는 창에서는 단추를 창 아래 오른쪽으로 내린다(Fable F2).
+     이름 한 칸의 최대 너비는 CSS의 9em(13px 글자 → 117px)과 앞 간격 9px이다 */
+  const RAIL_NAME = Object.freeze({ max: 117, gap: 9, clear: 16 });
+  function placeTodoBar() {
+    const bar = app.todoBar;
+    if (!bar) return;
+    const was = bar.classList.contains('low');
+    if (bar.hidden || app.rail.hidden) { if (was) bar.classList.remove('low'); return; }
+    if (was) bar.classList.remove('low');
+    const b = bar.getBoundingClientRect(), r = app.rail.getBoundingClientRect();
+    let right = r.right;
+    for (const o of app.objs) {
+      if (o.hidden) continue;
+      const n = o.querySelector('.obj-n');
+      if (!n) continue;
+      const now = n.getBoundingClientRect().width + (parseFloat(win.getComputedStyle?.(n)?.marginLeft) || 0);
+      right += Math.max(0, Math.min(n.scrollWidth, RAIL_NAME.max) + RAIL_NAME.gap - now);
+    }
+    const low = b.width > 0 && b.top < r.bottom && b.bottom > r.top && right + RAIL_NAME.clear > b.left;
+    if (low) bar.classList.add('low');
+  }
   /* ── 솔리오 안의 프로그램(시안 .rail) ── */
   function renderRail(s, programs, prog) {
     const on = s.mode === 'app' && programs.length > 0;
@@ -1391,7 +1488,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     for (const b of [app.orbBtn, app.nameBtn]) if (b.getAttribute('aria-expanded') !== String(open)) b.setAttribute('aria-expanded', String(open));
     app.fan.inert = !open;
     // 펼친 동안 물러난 이름 단추와 오브제 줄, 흐린 방은 Tab 차례에서도 빠진다. 그 안에 있던 초점은 보이는 구 단추로 먼저 옮긴다(검수 A1)
-    const back = [app.nameBtn, app.rail, app.solio, app.backup, app.visits, app.health, app.office, app.space, ...Object.values(app.asides).map(a => a.room)].filter(Boolean); // 사무실 방도(공간 지도 검수 c FA1)
+    // 「한 번에 처리」의 머리 줄 단추와 카드도 같다(물러난 단추를 Tab이 밟지 않게)
+    const back = [app.nameBtn, app.rail, app.solio, app.backup, app.visits, app.health, app.office, app.space, app.todoBar, app.todo, ...Object.values(app.asides).map(a => a.room)].filter(Boolean); // 사무실 방도(공간 지도 검수 c FA1)
     // 다가가 머물러 연(고정하지 않은) 펼침이면 옮기기 전 자리를 기억해 두고, 닫을 때 초점이 구에 그대로 있으면 그 자리로 돌려놓는다(최종 검수 F5)
     if (open) { const a = doc.activeElement; if (a && back.some(x => x.contains(a))) { fanReturn = f.pin ? null : a; app.orbBtn.focus?.({ preventScroll: true }); } }
     if (open && f.pin) fanReturn = null;
@@ -2012,6 +2110,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       case 'aside': return app.asides[scene?.aside]?.say || null;
       case 'aside-return': return asideReturnTarget();
       case 'legacy-return': return legacyReturnTarget();
+      // 카드가 서면 그 일을 끝내는 꽉 찬 단추에 초점을 둔다(Enter 한 번이 그 일이다). 단추가 없는 카드는 문장이다
+      case 'todo': return (!app.todo.hidden && (app.todoActs.querySelector('.todo-main') || app.todoHead)) || null;
+      case 'todo-return': return isVisible(app.todoGo) ? app.todoGo : app.orbBtn;
+      case 'office-head': return isVisible(app.offHead) ? app.offHead : null;
       default: return null;
     }
   }
@@ -2368,7 +2470,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onPageShow = event => { onAction('pageshow', event?.persisted === true); };
   const onPageHide = () => { if (ask.input) ask.input.value = ''; stage.pause(); };
   const onQaGuest = () => { onAction('qa-guest'); };
-  const resizeObserver = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => { if (!app.backup.hidden) placeHelper(board.at); if (scene?.layer === 'switch') layoutSwitch(); if (fanShown()) layoutFan(); if (scene?.mode === 'app' || scene?.mode === 'legacy') syncDragGap(scene.mode === 'legacy'); }) : null;
+  const resizeObserver = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => { if (!app.backup.hidden) placeHelper(board.at); placeTodoBar(); if (scene?.layer === 'switch') layoutSwitch(); if (fanShown()) layoutFan(); if (scene?.mode === 'app' || scene?.mode === 'legacy') syncDragGap(scene.mode === 'legacy'); }) : null;
 
   root.addEventListener('click', onClick);
   root.addEventListener('scroll', onRoomScroll, true);
