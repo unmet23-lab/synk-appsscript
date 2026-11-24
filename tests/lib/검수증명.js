@@ -4,12 +4,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 
-async function 검수증거({ 저장소, 바탕, 배포후보, 폴더 }) {
+async function 검수증거({ 저장소, 바탕, 배포후보, 폴더, 생성물 = null }) {
   const 도구 = await import(pathToFileURL(path.resolve(__dirname, '../../tools/검수묶음.mjs')));
   const 후보 = JSON.parse(fs.readFileSync(path.join(배포후보, '후보.json'), 'utf8'));
   const 기준전용 = 후보.항목.length && 후보.항목.every(x => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(x.경로));
   const 종류 = 후보.종류 === 'synk.im' && !기준전용 ? '화면' : '백엔드';
-  const { 목록 } = await 도구.준비하기({ 이름: path.basename(폴더), 저장소, 바탕, 배포후보, 폴더, 종류 });
+  // 생성물(2026-11-21): 명세를 주면 검수 도구가 원천에서 다시 지어 후보와 견준 뒤 묶음을 만든다
+  const { 목록 } = await 도구.준비하기({ 이름: path.basename(폴더), 저장소, 바탕, 배포후보, 폴더, 종류, ...(생성물 ? { 생성물 } : {}) });
   const call = async ({ prompt }) => ({ text: JSON.stringify({
     findings: [], seen: [...prompt.matchAll(/^### \[([^\]]+)\]/gm)].map(x => x[1]),
     coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] },

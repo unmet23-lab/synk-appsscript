@@ -1155,6 +1155,60 @@ test('검수 관문: 검수가 견준 앞 공개본이 지금 공개본의 그 �
   assert.equal(공.파일('a.txt').toString(), '남이 다시 고침\n');
 });
 
+test('검수 관문: 시험 실행 표지로 지은 생성물 검수는 표지가 켜져 있든 꺼져 있든 공개를 통과하지 못한다. 생성물 검수의 증명에도 앞 공개본 판이 실린다(검수 생성물 칸 · 설계 주인 11-21 · 11-22)', async t => {
+  const 공 = 새공개본(t, { 'gen.txt': '머리\n가운데\nv1\n' });
+  // 생성물 칸은 허용 목록의 명세에만 쓴다(설계 주인 11-22) — 합성 명세를 쓰는 이 시험만 node 시험 실행의 표지로 묶음을 건너뛴다.
+  process.env.SYNK_생성물_시험 = '1';
+  t.after(() => { delete process.env.SYNK_생성물_시험; });
+  // 원천 저장소: 바탕은 지금 라이브 판(셋째 줄 v1)을, 원천은 후보(셋째 줄 v2)를 짓는다 — 바탕 재현이 같아 생성물은 본문 대신 원천 차이로 검수된다
+  const 원천 = path.join(공.뿌리, 'source');
+  const sg = (...a) => execFileSync('git', ['-C', 원천, '-c', 'core.autocrlf=false', '-c', 'user.name=t', '-c', 'user.email=t@example.invalid', ...a], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+  fs.mkdirSync(원천);
+  sg('init', '-q', '-b', 'main');
+  쓰기(원천, 'tools/build.mjs', "import fs from 'node:fs';fs.mkdirSync('.tmp/out',{recursive:true});fs.writeFileSync('.tmp/out/gen.txt','머리\\n가운데\\n'+fs.readFileSync('src/v.txt','utf8'));\n");
+  쓰기(원천, 'src/v.txt', 'v1\n');
+  sg('add', '-A'); sg('commit', '-q', '-m', 'base');
+  const 바탕커밋 = sg('rev-parse', 'HEAD').trim();
+  쓰기(원천, 'src/v.txt', 'v2\n');
+  sg('commit', '-q', '-am', 'v2');
+  const 원천커밋 = sg('rev-parse', 'HEAD').trim();
+  const 명세 = path.join(공.뿌리, 'gen-spec.json');
+  fs.writeFileSync(명세, JSON.stringify({ 판: 1, 원천저장소: 원천, 원천: 원천커밋, 꺼냄: ['src', 'tools'], 빌더: [['tools/build.mjs']],
+    항목: [{ 경로: 'gen.txt', 만든곳: '.tmp/out/gen.txt', 바탕: 바탕커밋, 원천경로: ['src'] }] }));
+  const 기준 = 공.로컬('base', { 'gen.txt': '머리\n가운데\nv1\n' });
+  const 빌드 = 공.로컬('build', { 'gen.txt': '머리\n가운데\nv2\n' });
+  const 후보 = 공.후보폴더();
+  const 입력 = 공.옵션({ 원본: 빌드, 기준폴더: 기준, 항목: ['gen.txt'], 후보폴더: 후보 });
+  await 원도구.올리기(입력);
+  const 검수 = path.join(공.뿌리, 'gen-review');
+  // 시험 표지로 지은 검수는 증거를 다 지은 뒤 마지막 확인이 그 표시 하나로 막는다(설계 주인 11-22). 증거 도우미가 그 사유 하나로만 실패하는지 본다.
+  await assert.rejects(검수증거({ 저장소: 공.작업, 바탕: 공.바탕, 배포후보: 후보, 폴더: 검수, 생성물: 명세 }), e => {
+    const 사유 = e.message.replace(/^시험 검수 증거 생성 실패: /, '').split(' / ');
+    assert.match(e.message, /^시험 검수 증거 생성 실패: /);
+    assert.equal(사유.length, 1, `막는 사유는 「허용 목록 건너뜀」 표시 하나뿐이다: ${e.message}`);
+    assert.match(사유[0], /「허용 목록 건너뜀」 표시가 있다/);
+    return true;
+  });
+  const 목록 = JSON.parse(fs.readFileSync(path.join(검수, '묶음.json'), 'utf8'));
+  assert.equal(목록.증명.생성물.항목[0].바탕재현, true, '바탕 재현이 같은 생성물');
+  assert.equal(목록.증명.생성물.허용목록건너뜀, true, '시험 표지로 지은 증명에는 「허용 목록 건너뜀」 표시가 남는다');
+  // 공개는 라이브가 검수 뒤 움직였는지 이 판으로 본다(앞 시험이 그 멈춤을 본다). 시험 표지로 지은 생성물 검수는 확인이 먼저 막아 그 멈춤까지 가지 않는다.
+  assert.equal(목록.증명.후보앞판?.항목?.['gen.txt'], 블롭id(글('머리\n가운데\nv1\n')), '생성물 검수의 증명에도 앞 공개본 판이 실린다');
+  // 검수 뒤 남이 생성물의 첫 줄을 고쳐 올린다 — 글이었다면 셋째 줄 고침과 깨끗이 합쳐지는 자리다
+  공.올림({ 'gen.txt': '남이 고친 머리\n가운데\nv1\n' });
+  const 새계획 = await 원도구.올리기({ ...입력, 후보폴더: undefined });
+  const 막힘 = await 원도구.올리기({ ...입력, 후보폴더: undefined, 실행: true, 계획: 새계획.계획, 메시지: 'Publish generated', 검수,
+    받기: async () => ({ 상태: 200, 버퍼: Buffer.from('남이 고친 머리\n가운데\nv2\n'), 머리: '' }) });
+  assert.equal(막힘.결과, '멈춤');
+  assert.match(막힘.이유, /「허용 목록 건너뜀」 표시가 있다/, '표지가 켜져 있어도 시험 환경에서 지은 검수는 공개를 통과하지 못한다');
+  delete process.env.SYNK_생성물_시험;
+  const 끈뒤 = await 원도구.올리기({ ...입력, 후보폴더: undefined, 실행: true, 계획: 새계획.계획, 메시지: 'Publish generated', 검수,
+    받기: async () => ({ 상태: 200, 버퍼: Buffer.from('남이 고친 머리\n가운데\nv2\n'), 머리: '' }) });
+  assert.equal(끈뒤.결과, '멈춤');
+  assert.match(끈뒤.이유, /「허용 목록 건너뜀」 표시가 있다/, '표지가 꺼져 있어도 막는다');
+  assert.equal(공.파일('gen.txt').toString(), '남이 고친 머리\n가운데\nv1\n', '아무것도 올리지 않았다');
+});
+
 test('검수 관문: 자동 토큰 파일·삭제·모드를 포함한 최종 후보 전체가 검수에 있어야 한다', async t => {
   const 공 = 새공개본(t, { 'app.css': 'a{}\n', 'index.html': '<link href="app.css?v=1111">\n', 'gone.txt': '없앨 것\n' });
   const 후보 = 공.후보폴더();
