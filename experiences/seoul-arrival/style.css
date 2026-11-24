@@ -875,7 +875,8 @@ body.handoff .title-foot{display:none}
 .fan-faces .ff{width:24px;height:24px;border-radius:7px;background:#0b0f24}
 .fan-n{display:block}
 /* 영어 · 몽골어는 이름 · 꿈 칸이 길어 좁은 폭에서 얼굴을 빼고 숫자만 둔다(바꾸기 단추를 밀어내지 않게 — 390 폭 캡처로 확인) */
-@media (max-width:420px){:lang(mn) .fan-faces,:lang(en) .fan-faces{display:none}}
+:lang(mn) .fan-faces{display:none}
+@media (max-width:420px){:lang(en) .fan-faces{display:none}}
 /* 커튼콜 */
 .cc{position:absolute;inset:0;z-index:2;pointer-events:none}
 .cc[hidden]{display:none}
@@ -909,16 +910,17 @@ body[data-dream="actor"] #s-crowd.cc-zoom #cinema{top:auto;right:auto;bottom:162
 .cc-card b{font-size:30px;line-height:40px;font-weight:680;letter-spacing:-.03em}
 .cc-card .cc-rule{display:block;width:120px;height:2px;margin-top:4px;background:linear-gradient(90deg,var(--dream2),var(--dream))}
 .cc-card .s{font-size:15.5px;font-weight:450;color:var(--ink3)}
-.cc-hint{margin-bottom:14px;text-align:center;font-size:13px;font-weight:450;color:var(--ink4)}
+.cc-hint{display:block;min-height:32px;margin:0 auto 10px;padding:4px 14px;border-radius:999px;text-align:center;font-size:13px;font-weight:450;color:var(--ink4)}
 .cc-hint[hidden]{display:none}
+.cc-hint:focus-visible{outline:2px solid var(--dream2);outline-offset:2px}
 /* 내 팬 화면 */
 #s-fans{background:radial-gradient(150% 50% at 50% 114%,rgba(255,170,132,.5) 0%,color-mix(in srgb,var(--pink) 34%,transparent) 28%,color-mix(in srgb,var(--dream) 28%,transparent) 55%,rgba(11,9,30,0) 82%),linear-gradient(180deg,#06060f 0%,#0a0920 48%,#150e31 100%)}
 .fans-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none}
 .fans-scroll::-webkit-scrollbar{display:none}
-.fans-shot{position:relative;height:400px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent);mask-image:linear-gradient(180deg,#000 72%,transparent)}
+.fans-shot{position:relative;height:400px;overflow:hidden;container-type:inline-size;-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent);mask-image:linear-gradient(180deg,#000 72%,transparent)}
 #fansHall{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;--py:.62;object-position:50% 62%;filter:brightness(1.18) contrast(1.05)}
 /* 배우 꿈의 팬 셋은 상영관 앞쪽 가운데에 작게 앉아 있다 — 그림을 두 배로 키워 그 자리를 상자 가운데에 둔다(비율 그대로라 coverPoint가 그대로 맞는다) */
-body[data-dream="actor"] #fansHall{width:200%;height:auto;aspect-ratio:941/1422;left:-70%;top:-645px}
+body[data-dream="actor"] #fansHall{width:200%;height:auto;aspect-ratio:941/1422;left:-70%;top:calc(308px - 244.4cqw)}
 .fans-dim{position:absolute;inset:0;opacity:0;background:radial-gradient(calc(var(--sr)*1.2) calc(var(--sr)*1.4) at var(--sx) var(--sy),rgba(6,7,9,0) 0,rgba(6,7,9,0) 46%,rgba(6,7,9,.46) 100%);transition:opacity .5s ease,--sx .9s cubic-bezier(.23,1,.32,1),--sy .9s cubic-bezier(.23,1,.32,1),--sr .9s cubic-bezier(.23,1,.32,1)}
 .fans-dim.on{opacity:1}
 .fans-body{position:relative;z-index:2;margin-top:-44px;padding:0 20px max(40px,calc(var(--sab,env(safe-area-inset-bottom,0px)) + 28px))}

@@ -1417,8 +1417,8 @@ let crowdTimers=[];
 function crowdLater(fn,ms){crowdTimers.push(setTimeout(fn,ms));}
 function crowdStop(){crowdTimers.forEach(clearTimeout);crowdTimers=[];cancelAnimationFrame(window.__crowd);}
 // 돌리거나 크기가 바뀌면 캔버스를 다시 잰다(새로 켜지는 움직임 없이 지금 수만큼)
-addEventListener('resize',()=>{if(!$('#s-crowd').classList.contains('on'))return;clearTimeout(window.__crowdRs);
-  window.__crowdRs=setTimeout(()=>{if(document.body.classList.contains('no-cine'))drawCrowd(state.lights,0,true);},150);});
+addEventListener('resize',()=>{const fans=$('#s-fans').classList.contains('on');if(!fans&&!$('#s-crowd').classList.contains('on'))return;clearTimeout(window.__crowdRs);
+  window.__crowdRs=setTimeout(()=>{if(fans){fansSpot(fansAt);return;}if(document.body.classList.contains('no-cine'))drawCrowd(state.lights,0,true);if(CC.on&&CC.i>=0)ccSpot(CC.says[CC.i].fan);},150);});
 
 /* 1화 끝 보상: 실사 객석(12판 배우 상영관 · 14판 아이돌 콘서트 — 11-03 유호님 「관객석이 너무 AI 같다 — 디자인 사이트 참고해서 제대로」, 11-04 「아이돌도 바꿔 줘」).
  * 배우: 무대에서 본 시사회 상영관(스크린 빛만 닿는 객석 — Sugimoto 「Theaters」, 화면 쪽에서 본 관객 — Eyerman의 LIFE 사진). 말한 줄마다 빈 좌석에 한 사람씩 앉는다.
@@ -1546,7 +1546,7 @@ function ccGo(i,quiet){
   const run=CC.run,tick=CC.tick;if(!reduce&&!last)crowdLater(()=>{if(run===crowdRun&&CC.on&&CC.tick===tick)ccGo(i+1);},5200);
 }
 // 내 팬 화면: best 값으로. 켜진 사람 자리를 객석 그림에 그리고, 고른 팬에 빛을 둔다
-let fanPick=0;
+let fanPick=0,fansAt=null;
 function paintHall(cv,seated){
   const S=HALLS[state.dream].data,dream=state.dream;if(cv.width!==S.w||cv.height!==S.h){cv.width=S.w;cv.height=S.h;}
   return cineLoad(dream).then(v=>{if(!v||state.dream!==dream)return false;const [base,at]=v,x=cv.getContext('2d');x.drawImage(base,0,0);
@@ -1568,11 +1568,14 @@ function renderFans(quiet=true){
   $('#fansPick').innerHTML=says.map((x,i)=>`<button type="button" class="pk" data-i="${i}" aria-pressed="${i===fanPick}">${esc(FANS[dream][x.fan].name)}</button>`).join('');
   $('#fansPick').querySelectorAll('.pk').forEach(btn=>{btn.onclick=()=>{const kb=document.activeElement===btn;fanPick=+btn.dataset.i;renderFans(false);SND.felt('tap');if(kb)$('#fansPick').querySelector(`.pk[data-i="${fanPick}"]`)?.focus({preventScroll:true});};});
   if(says.length)sayLine($('#fWho'),$('#fSay'),$('#fMean'),says[fanPick],dream,quiet);
-  paintHall($('#fansHall'),litSeats(HALLS[dream],b)).then(()=>fansSpot(says.length?says[fanPick].fan:null));
+  fansAt=says.length?says[fanPick].fan:null;
+  paintHall($('#fansHall'),litSeats(HALLS[dream],b)).then(()=>fansSpot(fansAt));
 }
 function openFans(){crowdRun++;crowdStop();ccReset();fanPick=0;renderFans();show('s-fans');$('#fansScroll').scrollTop=0;SND.felt('page');$('#fansBack').focus({preventScroll:true});}
 function closeFans(){show('s-path');SND.felt('page');$('#fansBtn').focus({preventScroll:true});momMaybe();}
 $('#fansBtn').onclick=openFans;
+// 커튼콜 안내 줄은 단추다 — 키보드로도 다음 팬(화면 누름과 같다)
+$('#ccHint').onclick=()=>{if(CC.on)ccGo(CC.i<0?0:(CC.i+1)%CC.says.length);};
 $('#fansBack').onclick=closeFans;
 $('#fansReplay').onclick=()=>{show('s-path');playScene();};
 // 화면 언어가 바뀌면 커튼콜 자막과 내 팬 화면을 지금 언어로 다시 그린다(설계 검토 11번)
