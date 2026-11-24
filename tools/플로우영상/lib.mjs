@@ -3,7 +3,7 @@
 // 지키는 것: 「AI 크레딧 추가」 · 업그레이드 · 구독 · 요금제 · 로그아웃 · 계정 전환 · 워터마크 · 보기 설정(톱니) · 공유 단추는 누르지 않는다.
 //  누르는 것은 aria-label · 역할 · 표식(data-synk-*)으로 하나까지 좁힌 단추만. 계정 창 안은 「계정 패널 닫기」 말고 누르지 않는다.
 // 편 폴더는 라운드 파일이 globalThis.V4.편(절대 경로)으로 준다. 편 아래 「영상칸/」이 이 실행기의 자리다:
-//   영상칸/계획.json  칸(샷)마다 { model, n, cost, dur, proj, start, end?, key } + 「_예산」(이 편에서 낼 크레딧 상한, 없으면 180)
+//   영상칸/계획.json  칸(샷)마다 { model, n, cost, dur, proj, start, end?, key } + 「_누적상한」(이 편에서 다시 굽기까지 낼 크레딧 상한 — 적은 편만, 없으면 계정 바닥만 본다)
 //   영상칸/지시문.json { 공통, 클립: [{ id, prompt }] }   영상칸/시작/<start>.jpg   영상칸/받음/<id>_a.mp4(git 밖)   영상칸/flow/(기록 · 캡처, git 밖)
 const fs = await import("node:fs");
 const { createHash } = await import("node:crypto");
@@ -34,12 +34,12 @@ export const FLOW_HOME = "https://labs.google/fx/ko/tools/flow?authuser=2";
 
 // 모델 · 판 · 「생성 시」 크레딧 · 줄 찾기 KEY · 프로젝트 · 시작 그림
 export const PLAN = {};
-let 예산 = 180;
+let 예산 = Infinity;
 try {
   const J = JSON.parse(fs.readFileSync(V + "계획.json", "utf8"));
-  for (const [k, v] of Object.entries(J)) { if (k === "_예산") 예산 = Number(v); else if (!k.startsWith("_")) PLAN[k] = v; }
+  for (const [k, v] of Object.entries(J)) { if (k === "_누적상한") 예산 = Number(v); else if (!k.startsWith("_")) PLAN[k] = v; }
 } catch {}
-// 예산은 이 편에서 이 실행기가 접수한 줄의 값만 센다(계정은 다른 세션과 같이 쓴다)
+// 누적 상한은 이 편에서 이 실행기가 접수한 줄의 값만 센다(계정은 다른 세션과 같이 쓴다). 기본은 없음 — 11-25 유호님 「크레딧 모자라는거 아니면 끝까지 진행해」라서 계정 바닥(FLOOR)에서만 멈춘다
 export const BUDGET = 예산;
 // 계정 크레딧 바닥 — 접수 뒤 남을 크레딧이 이 밑이면 내지 않는다(공모전 · PULSE 몫을 남긴다)
 export const FLOOR = 1000;
