@@ -11,7 +11,7 @@ const { execFileSync } = require('node:child_process');
 
 const LIMITS = Object.freeze({ files: 20000, bytes: 128 * 1024 * 1024,
   singleFile: 4 * 1024 * 1024, untracked: 2000, entries: 200000,
-  metadata: 64 * 1024 * 1024, retained: 8, retainedBytes: 512 * 1024 * 1024, prepareMs: 150000 });
+  metadata: 64 * 1024 * 1024, retained: 8, retainedBytes: 512 * 1024 * 1024, prepareMs: 300000 });
 const SOURCE_EXTENSIONS = new Set(('.js .cjs .mjs .jsx .ts .tsx .mts .cts .css .scss .sass .less .html .htm .md .mdx .txt .json .jsonc .yaml .yml .toml .xml .sh .bash .ps1 .cmd .bat .py .sql .prisma .graphql .gql .ini .cfg .conf').split(' '));
 const SOURCE_NAMES = new Set(['AGENTS.md', 'CLAUDE.md', 'Dockerfile', 'Makefile', 'Procfile', 'CMakeLists.txt', '.gitignore', '.gitattributes', '.editorconfig', '.dockerignore', 'yarn.lock', 'bun.lock']);
 // Trusted operating rules plus the field-note index only. The field-note archive is opened by an
@@ -32,7 +32,7 @@ const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const canonical = value => fs.realpathSync(path.resolve(value));
 const samePath = (a, b) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
 const contained = (root, value) => { const rel = path.relative(root, value); return rel && !rel.startsWith('..' + path.sep) && rel !== '..' && !path.isAbsolute(rel); };
-function remainingTime(limits, maximum = 120000) {
+function remainingTime(limits, maximum = 240000) {
   const remaining = limits.deadline === undefined ? maximum : limits.deadline - Date.now();
   if (remaining <= 0) throw new Hold('PREPARATION_TIME_LIMIT');
   return Math.max(1, Math.min(maximum, remaining));
@@ -168,7 +168,7 @@ function git(repo, args, { input, index, workTree, filterArgs = [], limits = LIM
     if (allowExitOne && error.status === 1) return Buffer.from(error.stdout || '');
     const detail = String(error.stderr || '');
     if (/\.lock|another git process|Unable to create.*lock/i.test(detail)) throw new Hold('GIT_LOCKED');
-    throw new Hold(error.code === 'ENOBUFS' ? 'GIT_METADATA_LIMIT' : 'GIT_FAILED');
+    throw new Hold(error.code === 'ENOBUFS' ? 'GIT_METADATA_LIMIT' : error.code === 'ETIMEDOUT' ? 'PREPARATION_TIME_LIMIT' : 'GIT_FAILED');
   }
 }
 function gitText(repo, args, options) { return git(repo, args, options).toString('utf8').trim(); }
@@ -205,12 +205,18 @@ function readState(repo, limits, filterArgs) {
   if (untracked.length > limits.entries) throw new Hold('GIT_ENTRY_LIMIT');
   return { head, index: digest(index), status: digest(status), indexRows, statusRows, tracked, dirty, untracked };
 }
-function scopedState(state, scope) {
-  return { head: state.head, index: digest(state.indexRows.filter(row => inScope(row.slice(row.indexOf('\t') + 1), scope)).join('\0')),
-    status: digest(state.statusRows.filter(row => inScope(row.slice(3), scope)).join('\0')),
-    untracked: state.untracked.filter(name => inScope(name, scope)) };
+// Shared ledgers that other sessions edit about once a minute (11-25). The first capture still
+// reads them consistently. Only the re-checks after it ignore their later changes and HEAD moves:
+// a change then is the same as a change right after the worktree exists, which integration
+// already merges three ways against the snapshot.
+const VOLATILE_LEDGERS = new Set(['docs/_ops/트랙.md', 'docs/_ops/결정.md']);
+function scopedState(state, scope, tolerant = false) {
+  const keep = name => inScope(name, scope) && !(tolerant && VOLATILE_LEDGERS.has(name));
+  return { head: tolerant ? null : state.head, index: digest(state.indexRows.filter(row => keep(row.slice(row.indexOf('\t') + 1))).join('\0')),
+    status: digest(state.statusRows.filter(row => keep(row.slice(3))).join('\0')),
+    untracked: state.untracked.filter(keep) };
 }
-function capture(repo, limits, filterArgs, keepBytes, scope) {
+function capture(repo, limits, filterArgs, keepBytes, scope, tolerant = false) {
   rejectIgnoredScope(repo, scope, limits, filterArgs);
   const before = readState(repo, limits, filterArgs);
   const beforeView = scopedState(before, scope);
@@ -241,16 +247,19 @@ function capture(repo, limits, filterArgs, keepBytes, scope) {
     const bytes = fs.readFileSync(file.full);
     try { rejectSecrets(bytes); } catch (error) { throw withPath(error, rel); }
     const after = fs.statSync(file.full, { bigint: true });
-    if (statKey(file.stat) !== statKey(after) || bytes.length !== size) throw new Hold('SOURCE_CHANGED');
+    if ((statKey(file.stat) !== statKey(after) || bytes.length !== size) && !(tolerant && VOLATILE_LEDGERS.has(rel))) throw new Hold('SOURCE_CHANGED');
     files.push({ path: rel, sha256: digest(bytes), mode: Number(file.stat.mode) & 0o111 ? '100755' : '100644',
       stat: statKey(after), bytes: keepBytes ? bytes : undefined });
   }
   const after = readState(repo, limits, filterArgs);
   rejectIgnoredScope(repo, scope, limits, filterArgs);
-  if (JSON.stringify(beforeView) !== JSON.stringify(scopedState(after, scope))) throw new Hold('SOURCE_CHANGED');
+  if (JSON.stringify(scopedState(before, scope, tolerant)) !== JSON.stringify(scopedState(after, scope, tolerant))) throw new Hold('SOURCE_CHANGED');
   const identity = { ...beforeView, scope,
     files: files.map(({ path, sha256, mode, stat }) => ({ path, sha256, mode, stat })), deletions };
-  return { head: before.head, fingerprint: digest(JSON.stringify(identity)), files, deletions, total };
+  const steady = name => !VOLATILE_LEDGERS.has(name);
+  const stableIdentity = { ...scopedState(before, scope, true), scope,
+    files: files.filter(f => steady(f.path)).map(({ path, sha256, mode, stat }) => ({ path, sha256, mode, stat })), deletions: deletions.filter(steady) };
+  return { head: before.head, fingerprint: digest(JSON.stringify(identity)), stableFingerprint: digest(JSON.stringify(stableIdentity)), files, deletions, total };
 }
 function disabledFilters(repo, limits) {
   let output;
@@ -285,15 +294,13 @@ function storageCheck(repo, index, baseCommit, limits) {
   if (pkg.scripts?.['check:storage'] !== 'node tools/git-storage-check.cjs --cached') throw new Hold('STORAGE_GUARD_REQUIRED');
   const helper = path.join(repo, 'tools/git-storage-check.cjs');
   if (!fs.statSync(helper).isFile()) throw new Hold('STORAGE_GUARD_REQUIRED');
-  const candidates = [path.join(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js'),
-    path.join(path.dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js')];
-  const npm = candidates.find(f => fs.existsSync(f));
-  if (!npm) throw new Hold('NPM_CLI_REQUIRED');
+  // Run the exact command the package script names, without the npm wrapper.
+  // On this PC npm adds about 90 s of start-up and pushed the check past its time limit (11-22).
   const timeout = remainingTime(limits);
   try {
-    execFileSync(process.execPath, [npm, '--ignore-scripts', 'run', 'check:storage', '--', '--base', baseCommit, '--json'],
+    execFileSync(process.execPath, [helper, '--cached', '--base', baseCommit, '--json'],
       { cwd: repo, env: environment(index), maxBuffer: limits.metadata, timeout, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
-  } catch { throw new Hold('STORAGE_GUARD_FAILED'); }
+  } catch (error) { throw new Hold(error.code === 'ETIMEDOUT' ? 'PREPARATION_TIME_LIMIT' : 'STORAGE_GUARD_FAILED'); }
 }
 function retainedBudget(parent, limits) {
   let count = 0, bytes = 0, entries = 0;
@@ -507,8 +514,8 @@ async function prepareWorkspace({ repo, taskDir, taskId, scope: requestedScope, 
     storageCheck(repo, index, captured.head, limits);
     owned.set('snapshot.index', identity(fs.lstatSync(index, { bigint: true })));
     if (afterCapture) await afterCapture();
-    const verified = capture(repo, limits, filterArgs, false, scope);
-    if (verified.fingerprint !== captured.fingerprint) throw new Hold('SOURCE_CHANGED');
+    const verified = capture(repo, limits, filterArgs, false, scope, true);
+    if (verified.stableFingerprint !== captured.stableFingerprint) throw new Hold('SOURCE_CHANGED');
     const tree = gitText(repo, ['write-tree'], options);
     const commitEnv = { ...environment(index), GIT_AUTHOR_NAME: 'SYNK workspace snapshot', GIT_AUTHOR_EMAIL: 'snapshot@localhost',
       GIT_COMMITTER_NAME: 'SYNK workspace snapshot', GIT_COMMITTER_EMAIL: 'snapshot@localhost' };
@@ -530,8 +537,8 @@ async function prepareWorkspace({ repo, taskDir, taskId, scope: requestedScope, 
     if (excluded.length) git(workspace, ['update-index', '--skip-worktree', '-z', '--stdin'], { limits, filterArgs, input: Buffer.from(excluded.join('\0') + '\0') });
     // Git applies the repository's line-ending attributes, with executable filters disabled.
     git(workspace, ['checkout-index', '--stdin', '-z'], { limits, filterArgs, input: Buffer.from(captured.files.map(f => f.path).join('\0') + '\0') });
-    const finalSource = capture(repo, limits, filterArgs, false, scope);
-    if (finalSource.fingerprint !== captured.fingerprint) throw new Hold('SOURCE_CHANGED');
+    const finalSource = capture(repo, limits, filterArgs, false, scope, true);
+    if (finalSource.stableFingerprint !== captured.stableFingerprint) throw new Hold('SOURCE_CHANGED');
     Object.assign(receipt, { state: 'ready', snapshotCommit: snapshot, baseline_ref: snapshot, snapshot_id: snapshot,
       storageChecked: true, ignoredScopeChecked: true, sparse: true, readyAt: new Date().toISOString(), excludedFiles: excluded.length });
     writeReceipt(receiptFile, receipt);

@@ -194,4 +194,39 @@ class DeliveryTests(unittest.TestCase):
             self.assertEqual(messages,[])
 
 
+class SilentSenderTests(unittest.TestCase):
+    # 11-25 유호님 「이 메세지들을 알람만 끄게」: alerts arrive without sound through the Bot API.
+    def test_posts_without_sound_and_returns_the_message_id(self):
+        seen=[]
+        class Response:
+            def __init__(self, data): self.data=data
+            def read(self): return json.dumps(self.data).encode()
+            def __enter__(self): return self
+            def __exit__(self,*a): return False
+        def opener(request, timeout):
+            seen.append((request.full_url, json.loads(request.data.decode()), timeout))
+            return Response({'ok':True,'result':{'message_id':77}})
+        send=module.telegram_silent_sender('123:'+'a'*30, opener)
+        self.assertEqual(send({'action':'send','target':'telegram:6017','message':'SYNK · 오늘 확인할 일'}),{'success':True,'message_id':77})
+        url,body,timeout=seen[0]
+        self.assertTrue(url.endswith('/sendMessage'))
+        self.assertEqual(body,{'chat_id':'6017','text':'SYNK · 오늘 확인할 일','disable_notification':True,'disable_web_page_preview':True})
+        self.assertLessEqual(timeout,30)
+
+    def test_a_refused_send_is_not_reported_as_sent(self):
+        class Response:
+            def read(self): return b'{"ok":false,"description":"chat not found"}'
+            def __enter__(self): return self
+            def __exit__(self,*a): return False
+        send=module.telegram_silent_sender('123:'+'a'*30, lambda request, timeout: Response())
+        with tempfile.TemporaryDirectory() as temp:
+            item={'id':'event-'+'c'*24,'needs_attention':True,'text':'x'}
+            self.assertEqual(module.deliver(Path(temp),item,send,'6017'),'unconfirmed')
+            self.assertEqual(module.deliver(Path(temp),item,send,'6017'),'already_claimed')
+
+    def test_only_a_telegram_chat_target_is_sent(self):
+        send=module.telegram_silent_sender('123:'+'a'*30, lambda request, timeout: self.fail('must not send'))
+        with self.assertRaises(ValueError): send({'target':'discord:1','message':'x'})
+
+
 if __name__=='__main__': unittest.main()

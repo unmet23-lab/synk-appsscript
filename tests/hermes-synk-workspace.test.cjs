@@ -228,6 +228,29 @@ test('late source race preserves the already-created official worktree without r
   assert.equal(f.git('rev-parse', 'HEAD'), head); assert.equal(indexHash(f.repo), index);
 });
 
+test('shared ledger edits and HEAD moves after the first capture keep the captured snapshot (11-25)', async t => {
+  const f = fixture(t);
+  f.write('docs/_ops/트랙.md', 'track at capture\n'); f.write('docs/_ops/결정.md', 'decision at capture\n');
+  f.git('add', '.'); f.git('commit', '-qm', 'ledgers');
+  f.write('docs/_ops/트랙.md', 'track dirty at capture\n');
+  const originalWrite = fs.writeFileSync.bind(fs); let late = 0;
+  t.mock.method(fs, 'writeFileSync', (file, ...args) => { const value = originalWrite(file, ...args); if (String(file).replace(/\\/g, '/').endsWith('/info/sparse-checkout')) { late++; originalWrite(path.join(f.repo, 'docs/_ops/결정.md'), 'decision late\n'); } return value; });
+  const result = await prepareWorkspace({ ...f.options, afterCapture: () => {
+    f.write('docs/_ops/트랙.md', 'track after capture\n');
+    f.write('other/untouched.js', 'const untouched = "other session";\n'); f.git('commit', '-qam', 'another session commit');
+    f.write('docs/_ops/트랙.md', 'track after capture\n');
+  } });
+  assert.equal(result.ok, true, JSON.stringify(result)); assert.equal(late, 1);
+  assert.equal(fs.readFileSync(path.join(result.path, 'docs/_ops/트랙.md'), 'utf8'), 'track dirty at capture\n');
+  assert.equal(fs.readFileSync(path.join(result.path, 'docs/_ops/결정.md'), 'utf8'), 'decision at capture\n');
+});
+
+test('a scoped non-ledger change after capture still stops preparation', async t => {
+  const f = fixture(t);
+  const result = await prepareWorkspace({ ...f.options, limits: { prepareMs: 60000 }, afterCapture: () => { f.write('src/current.js', 'changed after capture ' + Math.random() + '\n'); } });
+  assert.equal(result.ok, false); assert.equal(result.code, 'SOURCE_CHANGED');
+});
+
 test('a symlink archive parent is refused without moving snapshot inputs outside the task root', async t => {
   const f = fixture(t), outside = path.join(f.root, 'outside-archive'); fs.mkdirSync(outside); const link = path.join(f.taskDir, 'preparation-attempts');
   try {

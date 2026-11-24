@@ -358,3 +358,79 @@ test('private accounts, credentials and media directives are neutralized',()=>{
   assert.doesNotMatch(text,/a@b.com|sk-secret|access_token=secret|MEDIA:|as_document/);
   assert.equal(kst(at('2026-10-18T15:01:00Z')).day,'2026-10-19');
 });
+
+
+// 11-25 하루 한 번 모아 보내기: KST 09시 이후 첫 회차에 한 통으로 묶고, 알림해결 회차의 진단을 기다렸다가 함께 보낸다.
+// 진단이 120분 안에 오지 않으면 진단 없이 보낸다. 그 전에 풀린 일은 보내지 않는다.
+function digestFixture(prefix){
+  const home=fs.mkdtempSync(path.join(os.tmpdir(),prefix));
+  const outbox=path.join(home,'runtime/synk-automation/outbox');
+  const ok=id=>({id,kind:'task',severity:'info',needs_attention:false,title:id+' 정상',fingerprint:'ok',notify_recovery:true});
+  const bad=(id,fp)=>({id,kind:'task',severity:'error',needs_attention:true,notify_recovery:true,title:id+' 멈춤',detail:'확인 필요',fingerprint:fp});
+  const box={rows:[]};
+  const reader=async()=>({events:box.rows});
+  // The sender (automation.py) claims what it sends; claimed drafts are never offered again.
+  const sent=[];
+  const run=async(iso,extra={})=>{const r=await collect({home,root:home,now:at(iso),readOverview:reader,digestHour:9,...extra});
+    for(const n of r.notifications){fs.writeFileSync(path.join(outbox,n.id+'.claim'),'sent');sent.push(n);}return r;};
+  const diagnose=(id,items,note='')=>{const dir=path.join(home,'runtime/synk-automation/diagnosis');fs.mkdirSync(dir,{recursive:true});
+    fs.writeFileSync(path.join(dir,id+'.json'),JSON.stringify({id,items,note}));};
+  const unclaimed=()=>fs.readdirSync(outbox).filter(x=>/^event-[0-9a-f]{24}\.json$/.test(x)).filter(x=>!fs.existsSync(path.join(outbox,x.slice(0,-5)+'.claim')));
+  return {home,outbox,ok,bad,box,run,sent,diagnose,unclaimed};
+}
+test('daily digest holds alerts until 09:00 KST, waits for the diagnosis and sends one message with it',async()=>{
+  const f=digestFixture('synk-monitor-digest-');
+  f.box.rows=[f.ok('a'),f.ok('b'),f.ok('c')];
+  await f.run('2026-11-24T15:00:00Z'); // 00:00 KST, baseline
+  f.box.rows=[f.bad('a','1'),f.ok('b'),f.ok('c')];
+  assert.equal((await f.run('2026-11-24T16:00:00Z')).notifications.length,0,'01:00 KST is held');
+  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.bad('c','1')];
+  assert.equal((await f.run('2026-11-24T18:00:00Z')).notifications.length,0,'03:00 KST is held');
+  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.ok('c')];
+  assert.equal((await f.run('2026-11-24T23:55:00Z')).notifications.length,0,'08:55 KST is held');
+  const round=await f.run('2026-11-25T00:05:00Z'); // 09:05 KST builds the digest and waits for its diagnosis
+  assert.equal(round.notifications.length,0);assert.equal(round.digest,true);
+  const [digestFile]=f.unclaimed();assert.ok(digestFile,'one digest draft waits');
+  const digest=JSON.parse(fs.readFileSync(path.join(f.outbox,digestFile),'utf8'));
+  assert.deepEqual(digest.digest.items.map(x=>x.id),['a','b'],'c healed before the digest');
+  assert.equal(f.unclaimed().length,1,'the separate drafts were withdrawn into the digest');
+  assert.equal((await f.run('2026-11-25T00:10:00Z')).notifications.length,0,'still waiting for the diagnosis');
+  f.diagnose(digest.id,[{id:'a','원인':'예약 잠금이 남았다','해결':'잠금을 풀고 다시 돌렸다','상태':'고침'},{id:'b','원인':'계정 저장 공간이 찼다','해결':'Drive를 비우거나 요금제를 올린다','상태':'유호님 차례'}]);
+  f.box.rows=[f.ok('a'),f.bad('b','1'),f.ok('c')]; // the diagnosis run fixed a while the digest waited
+  const out=await f.run('2026-11-25T00:15:00Z');
+  assert.equal(out.notifications.length,1);assert.equal(out.notifications[0].id,digest.id);
+  const text=out.notifications[0].text;
+  assert.match(text,/오늘 확인할 일/);assert.match(text,/a 멈춤/);assert.match(text,/원인: 예약 잠금이 남았다/);assert.match(text,/고친 것: 잠금을 풀고 다시 돌렸다\n  지금은 풀렸어요/);
+  assert.match(text,/b 멈춤[\s\S]*해결: Drive를 비우거나[\s\S]*유호님 차례/);assert.doesNotMatch(text,/b 멈춤[^-]*지금은 풀렸어요/);assert.doesNotMatch(text,/c 멈춤/);
+  assert.match(text,/\/synk_attention /);
+  f.box.rows=[f.ok('a'),f.bad('b','1'),f.bad('c','2')];
+  assert.equal((await f.run('2026-11-25T06:00:00Z')).notifications.length,0,'15:00 KST waits for tomorrow');
+  await f.run('2026-11-26T00:10:00Z');
+  const next=await f.run('2026-11-26T02:15:00Z'); // no diagnosis came: the hold ends after 120 minutes
+  assert.equal(next.notifications.length,1);assert.match(next.notifications[0].text,/c 멈춤/);assert.match(next.notifications[0].text,/원인 진단은 이번에 오지 않았어요/);
+  assert.doesNotMatch(next.notifications[0].text,/a 멈춤/,'yesterday’s items are not repeated');
+  assert.deepEqual(f.unclaimed(),[],'every draft is either sent or withdrawn');
+  assert.equal(f.sent.length,2,'two days, two messages');
+});
+test('a digest of only good news goes out at once without waiting',async()=>{
+  const f=digestFixture('synk-monitor-digest-good-');
+  f.box.rows=[f.ok('a')];
+  await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1')];
+  await f.run('2026-11-24T16:00:00Z');
+  await f.run('2026-11-25T00:05:00Z');
+  const [digestFile]=f.unclaimed();
+  f.diagnose(digestFile.slice(0,-5),[]);
+  assert.equal((await f.run('2026-11-25T00:10:00Z')).notifications.length,1,'the first digest goes out with its diagnosis');
+  f.box.rows=[f.ok('a')];
+  await f.run('2026-11-25T03:00:00Z');
+  const good=await f.run('2026-11-26T00:05:00Z');
+  assert.equal(good.notifications.length,1);assert.equal(good.notifications[0].kind,'recovery');assert.match(good.notifications[0].text,/풀린 일/);
+});
+test('without a digest hour the monitor still alerts at once',async()=>{
+  const home=fs.mkdtempSync(path.join(os.tmpdir(),'synk-monitor-nodigest-'));
+  let rows=[event()];const reader=async()=>({events:rows});
+  await collect({home,root:home,now:at('2026-11-24T16:00:00Z'),readOverview:reader});
+  rows=[event('b',{severity:'error',needs_attention:true})];
+  assert.equal((await collect({home,root:home,now:at('2026-11-24T16:05:00Z'),readOverview:reader})).notifications.length,1);
+});

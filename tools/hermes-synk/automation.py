@@ -6,7 +6,29 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import urllib.request
 from datetime import datetime, timezone
+
+
+def telegram_silent_sender(token, opener=urllib.request.urlopen):
+    """Send one plain-text Telegram message with no sound (11-25 유호님 「이 메세지들을 알람만 끄게」).
+
+    The Hermes standalone sender this cron process uses has no silent option, so this one posts to the Bot API
+    with disable_notification. It is called once per claimed draft; a raised error leaves the receipt unconfirmed
+    and the draft is never sent again, as before."""
+    def send(payload):
+        platform, _, chat = str(payload.get('target', '')).partition(':')
+        if platform != 'telegram' or not chat.isdecimal():
+            raise ValueError('telegram target required')
+        body = json.dumps({'chat_id': chat, 'text': str(payload.get('message', '')), 'disable_notification': True,
+                           'disable_web_page_preview': True}).encode('utf-8')
+        request = urllib.request.Request('https://api.telegram.org/bot' + token + '/sendMessage', data=body,
+                                         headers={'Content-Type': 'application/json'}, method='POST')
+        with opener(request, timeout=30) as response:
+            data = json.loads(response.read().decode('utf-8'))
+        message_id = (data.get('result') or {}).get('message_id') if isinstance(data, dict) else None
+        return {'success': True, 'message_id': message_id} if data.get('ok') is True and message_id else {'success': False}
+    return send
 
 
 def save(file, data):
@@ -80,6 +102,9 @@ def main():
     from hermes_cli.env_loader import load_hermes_dotenv
     load_hermes_dotenv(hermes_home=home)
     from tools.send_message_tool import send_message_tool
+    token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+    # Silent when the bot token is readable; otherwise the official sender, which rings, rather than no alert at all.
+    send_message_tool = telegram_silent_sender(token) if re.fullmatch(r'\d+:[A-Za-z0-9_-]{20,}', token) else send_message_tool
     folder = home / 'runtime' / 'synk-automation'
     config = json.loads((folder / 'config.json').read_text(encoding='utf-8'))
     recipient = str(config.get('recipient', ''))

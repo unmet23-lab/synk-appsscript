@@ -1078,7 +1078,7 @@ def _prepare_workspace(source: Path, directory: Path, task_id: str, scope: list[
             argv += ["--scope-json", json.dumps(scope, ensure_ascii=False)]
         completed = subprocess.run(argv,
                                   cwd=str(REPO_ROOT), stdin=subprocess.DEVNULL, capture_output=True,
-                                  text=True, encoding="utf-8", errors="replace", timeout=180, shell=False)
+                                  text=True, encoding="utf-8", errors="replace", timeout=360, shell=False)
         result = json.loads(completed.stdout)
         if completed.returncode or not isinstance(result, dict) or result.get("ok") is not True:
             known = {"SOURCE_CHANGED", "GIT_LOCKED", "UNMERGED_INDEX", "UNSAFE_DIRTY_TRACKED", "SYMLINK_SOURCE",
