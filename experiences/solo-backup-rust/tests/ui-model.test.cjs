@@ -2155,3 +2155,111 @@ test('이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 
   assert.deepEqual([odd.count, odd.names.length, odd.checked, odd.cut], [1, 1, true, false]);
   assert.equal(m.leftOutOf({ leftOutNames: null }), null);
 });
+
+test('첫 보호 범위(설계 4.17): 찾는 중 · 다 찾음 · 세는 중 · 시범 용량 · 진단 실패 · 이어서 백업을 실제 상태로 그린다', async () => {
+  const { renderScreen } = await load('screen-view.js');
+  const { homeModel, rangeSkipText } = await load('screen-model.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const { findBanned, visibleText } = await load('banned-words.js');
+  const GB = 1024 ** 3;
+  const draw = (range, extra = {}) => { const state = { ...STATES['start-write'], range }; return renderScreen('start-2', { state, model: homeModel(state, { now: NOW }), now: NOW, fake: true, ...extra }); };
+  const f = (kind, p, bytes, more = {}) => ({ path: p, kind, bytes, files: 10, partial: false, measured: true, on: true, why: null, inner: null, grouped: 0, measuring: false, within: null, ...more });
+  const total = (bytes, count, partial = false) => ({ bytes, files: 30, partial, count });
+  const base = { at: '2026-11-25T03:00:00Z', complete: true, error: null, more: 0, cap: 100 * GB, budget: 80 * GB, stop: 150 * GB, measuring: false };
+  const U = String.raw`C:\Users\kim`;
+  // 찾는 중: 「보호 시작」은 막고 「추가 보호」는 연다
+  const scanning = draw({ ...base, status: 'scanning', folders: [], total: total(0, 0) });
+  assert.match(scanning.html, /지킬 자료를[\s\S]*찾고 있습니다/);
+  assert.match(scanning.html, /data-act="protect" aria-disabled="true"/);
+  assert.match(scanning.html, /data-act="range-add">추가 보호/);
+  assert.equal(scanning.acts['range-add'].call, 'rangeAdd');
+  assert.doesNotMatch(scanning.html, /data-act="range-find"/);
+  // 다 찾음: 넣은 줄과 빼 둔 줄(까닭), 가장 큰 안쪽 폴더, 지키는 양, 「보호 시작」이 열린다
+  const folders = [
+    f('desktop', `${U}\\Desktop`, 1 * GB),
+    f('documents', `${U}\\Documents`, 30 * GB, { partial: true, inner: { name: 'big-project', bytes: 12 * GB, partial: false } }),
+    f('work', String.raw`D:\work\app`, 2 * GB),
+    f('downloads', `${U}\\Downloads`, 25 * GB, { on: false, why: 'big' }),
+    f('aitool', `${U}\\.claude`, 3 * GB, { on: false, why: 'aitool', partial: true, measured: false }),
+    f('ai', String.raw`D:\SD\models`, 90 * GB, { on: false, why: 'ai' }),
+  ];
+  const ready = draw({ ...base, status: 'ready', folders, total: total(33 * GB, 3, true) });
+  assert.match(ready.html, /이 폴더를 지킵니다/);
+  assert.doesNotMatch(ready.html, /data-act="protect" aria-disabled/);
+  assert.equal(ready.acts.protect.call, 'startProtection');
+  assert.equal(ready.acts['range-set'].call, 'rangeSet');
+  assert.match(ready.html, /문서[\s\S]*약 30GB[\s\S]*data-on="0"/);
+  assert.match(ready.html, /가장 큰 안쪽 폴더: big-project 12GB/);
+  assert.match(ready.html, /찾아낸 작업 폴더 · D:\\work\\app/);
+  assert.match(ready.html, /<h3>빼 둔 폴더<\/h3>[\s\S]*20GB가 넘어 빼 두었습니다[\s\S]*data-on="1"/);
+  assert.match(ready.html, /로그인 파일은 담지 않습니다/);
+  assert.match(ready.html, /다시 받을 수 있는 AI 모델/);
+  assert.match(ready.html, /폴더 3곳 · 약 33GB/);
+  assert.match(ready.html, /약 33GB \/ 100GB까지/);
+  assert.match(ready.html, /node_modules처럼 다시 받을 수 있는 폴더는 담지 않습니다/);
+  assert.match(ready.html, /data-act="range-find"/);
+  assert.doesNotMatch(ready.html, /시범 용량/, '100GB 아래에는 용량 상자가 없다');
+  // 계획기가 끝까지 세지 못한 넣은 폴더는 「실제로는 더 클 수 있습니다」(11-25 실측 — 파일이 아주 많은 문서)
+  assert.match(ready.html, /<b>크기를 다 세지 못한 폴더가 있습니다<\/b>문서는 파일이 많아 일부만 셌습니다/);
+  assert.deepEqual(findBanned(visibleText(ready.html)), []);
+  // 다른 줄 안에 있는 넣은 줄은 「함께 지킵니다」
+  const inside = draw({ ...base, status: 'ready', folders: [folders[1], f('added', `${U}\\Documents\\x`, 1 * GB, { within: `${U}\\Documents` })], total: total(30 * GB, 1) });
+  assert.match(inside.html, /「문서」 안에 있어 함께 지킵니다/);
+  // 세는 중: 막고 까닭을 적는다
+  const measuring = draw({ ...base, status: 'ready', measuring: true, folders: [{ ...folders[0] }, f('pictures', `${U}\\Pictures`, null, { on: false, why: 'measuring', measuring: true, measured: false })], total: total(1 * GB, 1) });
+  assert.match(measuring.html, /data-act="protect" aria-disabled="true"/);
+  assert.match(measuring.html, /크기를 다 세면 누를 수 있습니다/);
+  assert.match(measuring.html, /크기를 세는 중/);
+  // 시범 용량: 100GB를 넘으면 미리 알리고, 150GB를 넘으면 막는다(Fable F3)
+  const over = draw({ ...base, status: 'ready', folders, total: total(120 * GB, 3) });
+  assert.match(over.html, /시범 용량 100GB를 넘습니다/);
+  assert.doesNotMatch(over.html, /data-act="protect" aria-disabled/);
+  const tooBig = draw({ ...base, status: 'ready', folders, total: total(160 * GB, 3) });
+  assert.match(tooBig.html, /시범 용량을 크게 넘습니다/);
+  assert.match(tooBig.html, /data-act="protect" aria-disabled="true"/);
+  // 한도 숫자는 상태의 cap · stop을 쓴다(카본 A3)
+  const small = draw({ ...base, cap: 50 * GB, stop: 75 * GB, status: 'ready', folders: [...folders, f('music', `${U}\\Music`, 9 * GB, { on: false, why: 'budget' })], total: total(60 * GB, 3) });
+  assert.match(small.html, /시범 용량 50GB를 넘습니다[\s\S]*75GB를 넘으면/);
+  assert.match(small.html, /시범 용량 50GB에 가까워 빼 두었습니다/);
+  assert.doesNotMatch(small.html, /100GB|150GB/);
+  // 모르는 종류는 내부 값을 보이지 않는다(카본 A2)
+  assert.doesNotMatch(draw({ ...base, status: 'ready', folders: [f('other', String.raw`D:\x`, 1 * GB)], total: total(1 * GB, 1) }).html, /undefined/);
+  // 다른 넣은 줄 안의 줄은 따로 뺄 수 없어 단추가 없다(GPT GA5). 없어진 줄 · 30곳이 찬 줄의 까닭(GA13 · GA8)
+  const held = draw({ ...base, status: 'ready', folders: [f('added', String.raw`D:\Saved`, 3 * GB), f('documents', String.raw`D:\Saved\Documents`, 1 * GB, { within: String.raw`D:\Saved` }),
+    f('work', String.raw`E:\gone`, 1 * GB, { on: false, why: 'gone' }), f('work', String.raw`E:\w30`, 1 * GB, { on: false, why: 'full' })], total: total(3 * GB, 1) });
+  assert.match(held.html, /「Saved」 안에 있어 함께 지킵니다/);
+  assert.doesNotMatch(held.html, /data-path="D:\\Saved\\Documents"/);
+  assert.match(held.html, /찾을 수 없어 빼 두었습니다[\s\S]*data-path="E:\\gone" data-on="1"/);
+  assert.match(held.html, /30곳이 다 차서 빼 두었습니다/);
+  // 이름이 같은 줄은 화면 읽기 이름표에 경로를 붙인다(Fable F3). 세지 못한 줄은 「일부만 셌습니다」 상자에 넣지 않는다(Fable F4)
+  const twins = draw({ ...base, status: 'ready', folders: [f('work', String.raw`D:\a\app`, 1 * GB), f('work', String.raw`E:\b\app`, 1 * GB), f('added', String.raw`F:\x`, null, { partial: true, unknown: true })], total: total(2 * GB, 3, true) });
+  assert.match(twins.html, /aria-label="「app」 D:\\a\\app 지킬 범위에서 빼기"/);
+  assert.match(twins.html, /크기를 세지 못함/);
+  assert.doesNotMatch(twins.html, /일부만 셌습니다/);
+  // 자리 낱말(오른쪽 · 아래)은 좁은 창에서 틀리므로 쓰지 않는다(Fable F1)
+  const again2 = draw({ ...base, status: 'ready', folders, total: total(33 * GB, 3) }, { acct: { repoExists: true } });
+  const empty2 = draw({ ...base, status: 'ready', folders: [], total: total(0, 0) }, { acct: { solioNoMove: true } });
+  assert.doesNotMatch(again2.html + empty2.html, /오른쪽 목록|아래 폴더/);
+  assert.match(empty2.html, /목록의 폴더를 지키려면/);
+  // 넣은 폴더를 다 빼면 대표 문장도 「없습니다」(카본 A1)
+  const none = draw({ ...base, status: 'ready', folders: folders.map((x) => ({ ...x, on: false, why: x.why || 'user' })), total: total(0, 0) });
+  assert.match(none.html, /넣은 폴더가[\s\S]*없습니다/);
+  assert.doesNotMatch(none.html, /이 폴더를 지킵니다/);
+  assert.match(none.html, /data-act="protect" aria-disabled="true"/);
+  // 진단 실패: 「추가 보호」와 「다시 찾기」로 고른다
+  const failed = draw({ ...base, status: 'failed', error: '이 PC의 폴더를 다 읽지 못했습니다.', folders: [], total: total(0, 0) });
+  assert.match(failed.html, /지킬 폴더를 고르세요/);
+  assert.match(failed.html, /<b>이 PC의 폴더를 다 찾지 못했습니다<\/b>/);
+  assert.match(failed.html, /data-act="range-find"/);
+  assert.match(failed.html, /지킬 폴더를 하나 이상 넣어 주세요/);
+  // 이 계정에 이미 백업이 있으면 같은 범위로 「이어서 백업」
+  const cont = draw({ ...base, status: 'ready', folders, total: total(33 * GB, 3) }, { acct: { repoExists: true } });
+  assert.match(cont.html, /data-act="continue">이어서 백업/);
+  assert.equal(cont.acts.continue.call, 'continueBackup');
+  assert.match(cont.html, /이어서 지킬 폴더/);
+  // 범위가 없는 상태(시험 판의 찾지 않은 창)는 전처럼 고른다
+  assert.match(draw({ ...base, status: 'idle', folders: [], total: total(0, 0) }).html, /지킬 폴더를 고르세요/);
+  // 「추가 보호」로 더하지 못한 까닭
+  assert.match(rangeSkipText([{ path: `${U}\\Documents\\a`, why: 'inside', holder: `${U}\\Documents` }]), /「a」 폴더는 이미 지키는 「문서」 안에 있습니다/);
+  assert.match(rangeSkipText([{ path: 'D:\\', why: 'drive' }]), /D: 드라이브 전체는 고를 수 없습니다/);
+});

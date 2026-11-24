@@ -4,7 +4,7 @@
 
 import { createStore, failureText } from './state-store.js';
 import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey, moveLeft, moveRows,
-  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp, scopeFailText, restNameProblem, maskProblem, AI_TOOL_ROWS, massTooBig, leftOutOf } from './screen-model.js';
+  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp, scopeFailText, restNameProblem, maskProblem, AI_TOOL_ROWS, massTooBig, leftOutOf, rangeSkipText } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -997,6 +997,12 @@ async function send(a, el) {
     if (r.ok) { ui = { ...ui, massAsk: null }; note('확인을 마쳤습니다. 이제 정리가 보관 기간이 지난 판을 지웁니다.', 9000); return go('home'); }
   }
   else if (a.call === 'removeSource') r = await store.call('removeSource', el?.dataset.path ?? a.arg);
+  // 첫 보호 범위(설계 4.17) — 줄마다의 「넣기 · 빼기」와 「추가 보호」. 더하지 못한 폴더는 그 까닭을 한 줄로 알린다
+  else if (a.call === 'rangeSet') r = await store.call('rangeSet', { path: el?.dataset.path, on: el?.dataset.on === '1' });
+  else if (a.call === 'rangeAdd') {
+    r = await store.call('rangeAdd');
+    if (r.ok && Array.isArray(r.value?.skipped) && r.value.skipped.length) note(rangeSkipText(r.value.skipped), 12000);
+  }
   // 분실 신고 뒤에는 Google 걸음을 확인받아야 봉투를 올린다(설계 2.4 (5)(나)) — 확인했을 때만 googleStepDone
   else if (a.account) {
     if (state()?.account?.googleStepRequired && !acct.googleAck) return note(failureText('GOOGLE_STEP'));

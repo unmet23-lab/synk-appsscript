@@ -51,7 +51,9 @@ test('bridge, worker and native method contract preserves all existing app actio
   // 화면 세션 E30: the Wi-Fi this PC is on, read for the 「쉬는 Wi-Fi」 screen.
   // 공간 비우기 2판(SPACE_DESIGN.md 12.4): 엔진 창에서만 켜는 「누를 때 비우기」와 정한 선. 쓰는 기기에서만 바꾼다.
   const solio=['setRestNetworks','setAiTools','aiToolsState','wifiName','spaceFreeState','setPressFree','setStartLine'];
-  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move,...oldBackup,...stop,...solio,...scope,...mass].sort();
+  // 첫 보호 범위(4.17): 「다시 찾기」 · 「넣기 · 빼기」 · 「추가 보호」. 보호 전에만 쓰고 엔진 설정을 건드리지 않는다.
+  const range=['rangeFind','rangeSet','rangeAdd'];
+  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move,...oldBackup,...stop,...solio,...scope,...mass,...range].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
   for(const name of ['backupNow','protectNow','startAutomatic','setupCloud','updateCloudCredentials','addSources','removeSource'])assert.equal(contract[name].allowedReadOnly,false);
@@ -69,6 +71,7 @@ test('bridge, worker and native method contract preserves all existing app actio
   assert.deepEqual([contract.cancelRestore.dialog,contract.cancelRestore.timeoutMs,contract.cancelRestore.allowedReadOnly],[false,10000,true]);
   // A restore-only connection to the account's backup chooses the folders it will back up (the action decides).
   assert.equal(contract.chooseSources.allowedReadOnly,true);
+  for(const name of range)assert.deepEqual([contract[name].mutating,contract[name].allowedReadOnly,contract[name].dialog],[true,true,name==='rangeAdd'],name);
   // The account code decides what a restore-only PC may do (it takes the write seat from there).
   for(const name of account)assert.equal(contract[name].allowedReadOnly,true,name);
   for(const name of move)assert.deepEqual([contract[name].allowedReadOnly,contract[name].dialog],[true,false],name);

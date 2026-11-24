@@ -94,6 +94,10 @@ const CASES = [
   ['home-solio', 'space-free', { name: 'space-free-busy', acct: { running: 'setPressFree' } }],
   ['start-signin', 'start-1', { name: 'start-1-freed', acct: { limit: DEVICES_FULL.map((d) => (d.name === '거실 PC' ? { ...d, state: 'revoked' } : d)), freed: '거실 PC' } }],
   ['start-write', 'start-2', { name: 'start-2-empty' }], ['start-write-picked', 'start-2', { name: 'start-2-picked' }],
+  // 첫 보호 범위(설계 4.17): 찾는 중 · 다 찾음 · 시범 용량 넘김 · 진단 실패 · 같은 범위로 이어서 백업
+  ['start-range-scan', 'start-2', { name: 'start-2-range-scan' }], ['start-range', 'start-2', { name: 'start-2-range' }],
+  ['start-range-over', 'start-2', { name: 'start-2-range-over' }], ['start-range-fail', 'start-2', { name: 'start-2-range-fail' }],
+  ['start-range', 'start-2', { name: 'start-2-range-again', acct: { repoExists: true } }],
   ['start-google-step', 'start-2', { name: 'start-2-google' }], ['start-write-picked', 'start-2', { name: 'start-2-again', acct: { repoExists: true } }],
   ['start-read', 'start-2', { name: 'start-2-read', acct: { devices: DEVICES } }],
   ['home', 'undo-1', { name: 'undo-1-plan', undo: 'UNDO' }], ['home', 'undo-2', { name: 'undo-2-plan', undo: 'UNDO' }],

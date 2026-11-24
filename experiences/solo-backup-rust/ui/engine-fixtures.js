@@ -63,6 +63,20 @@ const signed = (role) => ({ signedIn: true, email: 'studio@example.com', connect
 const restoreOf = (v) => ({ hold: true, jobId: 'job-1', state: null, awaitingChoice: false, at: Date.parse('2026-11-12T14:59:00+09:00'), byThisDevice: true, error: null, undo: false, ...v });
 const first = { version: '0.7.0', configured: false, mode: 'backup', profile: 'b2', device: '새 데스크톱', sources: [], selection: { sources: [], target: null }, job: null,
   protection: { level: 'setup', reason: 'setup', nextAction: 'setup' }, solio: SOLIO };
+// 첫 보호 범위(설계 4.17)의 예시 — 11-25 실측 PC와 같은 꼴(문서가 크고 다 세지 못함, AI 도구 · 모델 폴더는 빼 둠)
+const GIB = 1024 ** 3;
+const rf = (kind, p, gb, more = {}) => ({ path: p, kind, bytes: Math.round(gb * GIB), files: 1200, partial: false, measured: true, on: true, why: null, inner: null, grouped: 0, measuring: false, within: null, ...more });
+const RANGE = (v = {}) => ({ status: 'ready', measuring: false, at: '2026-11-13T05:00:00.000Z', complete: true, error: null, more: 0, cap: 100 * GIB, budget: 80 * GIB, stop: 150 * GIB,
+  folders: [
+    rf('desktop', 'C:\\Users\\studio\\Desktop', 1.1, { files: 420 }),
+    rf('documents', 'C:\\Users\\studio\\Documents', 31.2, { files: 52310, partial: true, inner: { name: '고객 영상 원본', bytes: Math.round(12.4 * GIB), partial: false } }),
+    rf('work', 'D:\\Projects', 2.2, { files: 1870 }),
+    rf('pictures', 'C:\\Users\\studio\\Pictures', 6.9, { files: 4880 }),
+    rf('videos', 'C:\\Users\\studio\\Videos', 48.3, { files: 210, on: false, why: 'big' }),
+    rf('aitool', 'C:\\Users\\studio\\.claude', 2.4, { partial: true, measured: false, on: false, why: 'aitool' }),
+    rf('ai', 'D:\\ComfyUI\\models', 88, { partial: true, measured: false, on: false, why: 'ai' }),
+  ],
+  total: { bytes: Math.round(41.4 * GIB), files: 59480, partial: true, count: 4 }, ...v });
 
 export const STATES = {
   home: base,
@@ -121,6 +135,13 @@ export const STATES = {
   'start-write-picked': { ...first, selection: { sources: SOURCES.slice(0, 3), target: null }, account: acct(signed('write')) },
   'start-google-step': { ...first, selection: { sources: SOURCES.slice(0, 3), target: null }, account: acct({ ...signed('write'), googleStepRequired: true }) },
   'start-read': { ...first, account: acct({ ...signed('read'), writer: '작업 노트북' }) },
+  // 첫 보호 범위(설계 4.17) — 워커 state()의 range(engine/src/first-range.cjs state()). 크기는 계획기가 센 값, partial은 다 세지 못한 하한
+  'start-range-scan': { ...first, account: acct(signed('write')), range: RANGE({ status: 'scanning', folders: [], total: { bytes: 0, files: 0, partial: false, count: 0 } }) },
+  'start-range': { ...first, account: acct(signed('write')), range: RANGE() },
+  // 문서를 끝까지 센 판 — 넣은 넷의 합이 머리 · 막대의 합과 같다(카본 A4)
+  'start-range-over': { ...first, account: acct(signed('write')), range: RANGE({ folders: RANGE().folders.map((f) => (f.kind === 'documents' ? { ...f, bytes: Math.round(116.2 * GIB), files: 334040, partial: false, inner: { name: '고객 영상 원본', bytes: Math.round(88.5 * GIB), partial: false } } : f)),
+    total: { bytes: Math.round(126.4 * GIB), files: 341210, partial: false, count: 4 } }) },
+  'start-range-fail': { ...first, account: acct(signed('write')), range: RANGE({ status: 'failed', error: '이 PC의 폴더를 다 읽지 못했습니다.', folders: [], total: { bytes: 0, files: 0, partial: false, count: 0 } }) },
   // 솔리오의 「보호 시작」 · 「이 PC로 옮겨 오기」로 온 처음 시작(state.solio.setup, 30분)
   'start-solio': { ...first, account: acct(), solio: { ...SOLIO, setup: { mode: 'protect', hint: 'studio@example.com', at: '2026-11-17T04:00:00.000Z' } } },
   'start-solio-move': { ...first, account: acct(), solio: { ...SOLIO, setup: { mode: 'move', hint: null, at: '2026-11-17T04:00:00.000Z' } } },

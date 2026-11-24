@@ -10,6 +10,7 @@ const { clientConfig } = require(path.join(engineRoot, 'src/recovery-auth.cjs'))
 const { protection } = require(path.join(engineRoot, 'src/protection.cjs'));
 const fileSelection = require(path.join(engineRoot, 'src/restore-select.cjs'));
 const { RecommendedBackup } = require(path.join(engineRoot, 'src/recommended.cjs'));
+const { FirstRange } = require(path.join(engineRoot, 'src/first-range.cjs'));
 const { Account, APP_VERSION } = require(path.join(engineRoot, 'src/account.cjs'));
 const { MoveService } = require(path.join(engineRoot, 'src/move-service.cjs'));
 const solio = require(path.join(engineRoot, 'src/solio.cjs'));
@@ -98,8 +99,16 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
         })};
     }});
   await recommended.open();recommended.onChange=()=>push();
+  // 첫 보호 범위(STAGE1_DESIGN.md 4.17): 보호를 시작하기 전이면 창이 열릴 때 진단을 뒤에서 돌려 지킬 폴더를 미리 채운다.
+  // 범위의 경로는 이 창에만 가고, 솔리오 상태 파일(solioStatus)은 엔진 설정만 읽으므로 그쪽으로 새지 않는다.
+  const range = new FirstRange({ root, work: workRoot, inventoryPath: path.join(path.dirname(resticPath), 'WorkBackupInventory.exe'), plannerPath: path.join(path.dirname(resticPath), 'WorkBackupPlanner.exe'),
+    forbidden: () => [...profiles.engines.b2.forbidden(), ...Object.values(profiles.engines).flatMap(e => e.config && !e.isCloud() ? [e.config.repository] : []), path.join(root, 'recommended'), ...(workRoot ? [path.join(workRoot, 'recommended')] : [])] });
+  await range.open(); range.onChange = () => push();
+  const protectedHere = () => { const c = profiles.engines.b2.config; return c?.mode === 'backup' && !!c.repositoryId; };
+  // CI의 시험 판(SWB_TEST)은 시험이 고른 폴더로 시작하므로 저절로 찾지 않는다(「다시 찾기」로는 찾는다)
+  if (!testMode && !protectedHere() && range.stale()) void range.find();
   function state() {
-    const value = {...profiles.getState(), version:APP_VERSION, recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(),
+    const value = {...profiles.getState(), version:APP_VERSION, recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(), range:range.state(),
       solio:{ setup: solioSetup && Date.now() - Date.parse(solioSetup.at) < 1800000 ? { ...solioSetup } : null, restNetworks: [...restNetworks], aiTools, spaceFree },
       move:{ reinstall: reinstallJob ? { ...reinstallJob } : null, progress: moveProgress && cloud().job?.kind === 'move' ? { bytes: moveProgress.bytes, total: moveProgress.total, folder: moveProgress.folder, bytesPerSecond: moveProgress.bytesPerSecond } : null }};
     withRun(value);
@@ -425,12 +434,44 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     // The host reads it only then (Windows counts it as a location access). Anything that could not be a Wi-Fi name, or a
     // host that could not read one, is null: the screen then offers the field to type it in.
     handle('wifiName', async () => { const name = await host('wifi.name', []).catch(() => null); return solio.okNetworkName(name) ? name : null; }, { read: true });
+    // 「보호 시작」 · 「이어서 백업」의 폴더(4.17, Fable F12): 화면이 준 것, 복구 전용 연결에 적어 둔 것, 첫 보호 범위의 넣은 폴더,
+    // 이 창에서 고른 것 차례다. 범위는 이 둘에만 쓰고 takeWriteSeat는 지금대로 sourcesOf를 쓴다. 범위를 찾거나 세는 중이면, 또는
+    // 넣은 폴더가 시범 용량의 1.5배를 넘으면 기다리지 않고 거절한다(화면은 그동안 단추를 막는다, F3).
+    // 저장소를 확인하기 전에 멈춘 첫 시작은 설정에 적힌 폴더로 다시 하므로, 범위가 바뀌었으면 그 폴더를 먼저 바꾼다.
+    async function startSources(v) {
+      let chosen;
+      if (Array.isArray(v.sources) || (cloud().config?.mode === 'restore' && cloud().config.nextSources?.length)) chosen = sourcesOf(v);
+      else {
+        // 범위 파일이 아직 없는 첫 진단 중에도 기다리게 한다(GPT GA9)
+        const why = range.data || range.status === 'scanning' ? range.blocker() : null;
+        if (why === 'RANGE_BUSY') throw Object.assign(new Error('지킬 자료를 아직 찾고 있습니다. 다 찾은 뒤 눌러 주세요.'), { code: 'RANGE_BUSY' });
+        if (why === 'RANGE_TOO_BIG') throw Object.assign(new Error('지킬 폴더가 시범 용량의 1.5배를 넘습니다. 큰 폴더를 빼 주세요.'), { code: 'RANGE_TOO_BIG' });
+        if (why === 'RANGE_FULL') throw Object.assign(new Error('지킬 폴더는 30곳까지입니다. 몇 곳을 빼 주세요.'), { code: 'RANGE_FULL' });
+        chosen = await range.sources() || sourcesOf(v);
+      }
+      // 어느 길로 고른 폴더든, 저장소를 확인하기 전에 멈춘 첫 시작의 설정에 적힌 폴더와 다르면 먼저 바꾼다(GA10)
+      const c = cloud().config;
+      if (c && c.mode === 'backup' && !c.repositoryId && Array.isArray(chosen) && chosen.length && (c.sources.length !== chosen.length || c.sources.some(p => !chosen.some(q => q.toLowerCase() === p.toLowerCase())))) await cloud().updateUnfinishedSources(chosen);
+      return chosen;
+    }
     // 「보호 시작」: the repository and the envelope here, then the schedule and the first backup as a job.
     handle('startProtection', async (_context, input) => {
       const v = objectInput(input); profiles.select('b2');
-      await account.startProtection({ sources: sourcesOf(v), googleStepDone: v.googleStepDone === true }); return protect();
+      await account.startProtection({ sources: await startSources(v), googleStepDone: v.googleStepDone === true }); return protect();
     }, { codes: true });
-    handle('continueBackup', async (_context, input) => { const v = objectInput(input); profiles.select('b2'); await account.continueBackup({ sources: sourcesOf(v), googleStepDone: v.googleStepDone === true }); return protect(); }, { codes: true });
+    handle('continueBackup', async (_context, input) => { const v = objectInput(input); profiles.select('b2'); await account.continueBackup({ sources: await startSources(v), googleStepDone: v.googleStepDone === true }); return protect(); }, { codes: true });
+    // 첫 보호 범위의 「다시 찾기」 · 「넣기」 · 「빼기」 · 「추가 보호」(4.17). 엔진 설정과 저장소를 건드리지 않아 엔진 잠금을 쥐지 않는다.
+    // 보호를 시작한 뒤에는 폴더를 설정 서랍(addSources · removeSource)에서 바꾼다.
+    const rangeOpen = () => { if (protectedHere()) throw Object.assign(new Error('이미 보호를 시작했습니다. 폴더는 설정에서 바꿔 주세요.'), { code: 'SET_UP' }); };
+    handle('rangeFind', () => { rangeOpen(); void range.find(); return state(); }, { lock: false, codes: true });
+    handle('rangeSet', async (_context, input) => { rangeOpen(); const v = objectInput(input); await range.set(v.path, v.on); return state(); }, { lock: false, codes: true });
+    handle('rangeAdd', async () => {
+      rangeOpen();
+      const picked = await folder('더 지킬 폴더 선택', true);
+      if (!picked) throw Object.assign(new Error('폴더를 고르지 않았습니다.'), { code: 'CANCELED' });
+      const r = await range.add(picked);
+      return { skipped: r.skipped, state: state() };
+    }, { lock: false, codes: true });
     // Folders chosen before the backup was opened go into its settings too, so they outlast the window (화면 세션 부탁 12).
     handle('openAccountBackup', async () => {
       profiles.select('b2'); await account.openBackup();
@@ -628,7 +669,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       }
       return handlers.get(name)(...args);
     },
-    async stop() { if(closing)return;closing=true;for(const t of timers)clearInterval(t);await recommended.stop();await Promise.all([recovery.stop(),profiles.stop()]);await lockCall('engine.unlock').catch(()=>{}); },
+    async stop() { if(closing)return;closing=true;for(const t of timers)clearInterval(t);await range.stop();await recommended.stop();await Promise.all([recovery.stop(),profiles.stop()]);await lockCall('engine.unlock').catch(()=>{}); },
     active:()=>profiles.active()||!!recommended.engine?.config?.automatic||recommended.busy, busy:()=>profiles.busy()||recommended.busy
   };
 }

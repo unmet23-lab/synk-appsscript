@@ -182,9 +182,101 @@ function start2Example() {
  * 저장소가 이미 있으면(REPO_EXISTS) 「이어서 백업」(continueBackup). 분실 신고 뒤에는 Google 걸음을 확인받아야 단추가 열린다.
  * 진단이 찾은 작업 폴더 · 예상 크기는 엔진이 아직 주지 않아 그리지 않는다(엔진 부탁 3).
  */
+/* 첫 보호 범위(설계 4.17) — 엔진이 진단으로 미리 채운 지킬 폴더. 줄마다 「빼기」 · 「넣기」, 더 지킬 폴더는 「추가 보호」 */
+const RANGE_KIND = { desktop: '바탕화면', documents: '문서', pictures: '사진', downloads: '다운로드', music: '음악', videos: '동영상', work: '찾아낸 작업 폴더', added: '더한 폴더', aitool: 'AI 도구 폴더', ai: 'AI 모델 · 자료 폴더' };
+const RANGE_NAMED = new Set(['desktop', 'documents', 'pictures', 'downloads', 'music', 'videos']);
+const RANGE_WHY = {
+  big: '20GB가 넘어 빼 두었습니다.',
+  budget: '시범 용량 100GB에 가까워 빼 두었습니다.',
+  unsure: '크기를 다 세지 못해 빼 두었습니다.',
+  measuring: '크기를 세고 있습니다. 다 세면 넣을지 정합니다.',
+  ai: '다시 받을 수 있는 AI 모델이 많은 폴더라 빼 두었습니다.',
+  aitool: '스킬과 지침이 든 폴더입니다. 넣어도 로그인 파일은 담지 않습니다.',
+  whole: '드라이브나 사용자 폴더 전체라 넣지 않았습니다.',
+  unreadable: '열 수 없는 폴더라 넣지 않았습니다.',
+  gone: '찾을 수 없어 빼 두었습니다. 다시 연결한 뒤 「넣기」를 누르세요.',
+  full: '지킬 폴더 30곳이 다 차서 빼 두었습니다.',
+  user: '',
+};
+/** 줄의 크기 글 — 세는 중 · 모름 · 다 세지 못한 크기에는 「약」 */
+function rangeSize(f) {
+  if (f.measuring && !Number.isSafeInteger(f.bytes)) return '크기를 세는 중';
+  if (f.unknown || !Number.isSafeInteger(f.bytes)) return '크기를 세지 못함';
+  const near = f.partial || !f.measured ? '약 ' : '';
+  return `${near}${size(f.bytes)}${Number.isSafeInteger(f.files) && f.files > 0 ? ` · ${count(f.files)}개` : ''}`;
+}
+const rangeName = (f) => (RANGE_NAMED.has(f.kind) ? RANGE_KIND[f.kind] : folderName(f.path));
+function rangeRow(f, list, run, cap) {
+  const name = rangeName(f);
+  const holder = f.within ? list.find((o) => o.path === f.within) : null;
+  const why = f.why === 'budget' ? `시범 용량 ${size(cap)}에 가까워 빼 두었습니다.` : RANGE_WHY[f.why] ?? '';
+  const notes = [
+    f.on ? (holder ? `「${rangeName(holder)}」 안에 있어 함께 지킵니다.` : '') : why,
+    f.grouped ? `작업 폴더 ${count(f.grouped)}곳을 묶었습니다.` : '',
+    f.inner && f.bytes > 20 * 1024 ** 3 ? `가장 큰 안쪽 폴더: ${f.inner.name} ${f.inner.partial ? '약 ' : ''}${size(f.inner.bytes)}` : '',
+  ].filter(Boolean);
+  const kind = RANGE_NAMED.has(f.kind) || !RANGE_KIND[f.kind] ? '' : `${RANGE_KIND[f.kind]} · `;
+  // 다른 넣은 줄 안의 줄은 그 줄과 함께 올라가 따로 뺄 수 없다(GPT GA5)
+  const locked = (!f.on && (f.why === 'whole' || f.why === 'unreadable')) || !!holder;
+  // 이름이 같은 줄이 둘 이상이면 화면 읽기 이름표에 경로를 붙인다(Fable F3)
+  const label = list.filter((o) => rangeName(o) === name).length > 1 ? `「${name}」 ${f.path}` : `「${name}」`;
+  const btn = locked ? '' : `<button class="lnk sm" type="button" data-act="range-set" data-path="${h(f.path)}" data-on="${f.on ? '0' : '1'}" aria-label="${h(`${label} ${f.on ? '지킬 범위에서 빼기' : '지킬 범위에 넣기'}`)}"${run ? ' aria-disabled="true"' : ''}>${f.on ? '빼기' : '넣기'}</button>`;
+  return `<div class="row rg${f.on ? '' : ' off'}"><span class="k">${h(name)}<span class="sr"> · </span><br><span class="meta">${h(kind)}${h(f.path)}</span>${notes.map((t) => `<br><span class="meta why">${h(t)}</span>`).join('')}</span><span class="v">${h(rangeSize(f))}</span><span class="w">${btn}</span></div>`;
+}
+/** 보호 범위(실제 상태 · 범위가 있을 때) — 다 찾았으면 넣은 폴더로 「보호 시작」(startProtection), 이 계정에 백업이 있으면 「이어서 백업」 */
+function start2Range(s, acct) {
+  const r = s.range, device = h(s?.device || '이 PC');
+  const needStep = !!s?.account?.googleStepRequired, ack = !!acct?.googleAck, run = acct?.running || null;
+  const list = Array.isArray(r.folders) ? r.folders : [];
+  const on = list.filter((f) => f.on), off = list.filter((f) => !f.on);
+  const t = r.total || { bytes: 0, files: 0, partial: false, count: 0 };
+  const cap = Number(r.cap) || 100 * 1024 ** 3, stop = Number(r.stop) || cap * 1.5;
+  const scanning = r.status === 'scanning', measuring = !scanning && !!r.measuring, failed = r.status === 'failed';
+  const tooBig = !scanning && t.bytes > stop, overCap = !scanning && !tooBig && t.bytes > cap;
+  // 계획기가 끝까지 세지 못한 넣은 폴더(파일이 아주 많은 문서 따위) — 크기는 하한이다(Fable F3, 11-25 실측)
+  // 세지 못한 줄(unknown)은 줄의 크기 칸이 「크기를 세지 못함」이라 이 상자에 넣지 않는다(Fable F4)
+  const unsure = scanning || measuring ? [] : on.filter((f) => f.measured && f.partial && !f.within && !f.unknown);
+  const blocked = scanning || measuring || !t.count || tooBig || (needStep && !ack) || !!run;
+  const near = t.partial ? '약 ' : '';
+  const stepBox = stepBoxOf(needStep, ack);
+  const noMove = acct?.solioNoMove ? `<div class="box rise i3"><b>옮겨 올 PC가 없습니다</b>솔리오에서 「이 PC로 옮겨 오기」를 고르셨지만, 이 계정을 지금 백업하는 다른 PC가 없어 옮겨 오기를 시작하지 않았습니다. ${acct.repoExists ? '이 계정의 백업에 이어서 이 PC가 백업할 수 있습니다.' : '목록의 폴더를 지키려면 「보호 시작」을 누르세요.'}</div>` : '';
+  // 시범 용량(설계 4.5) — 100GB를 넘으면 미리 알리고, 1.5배를 넘으면 서버가 올리기를 멈추므로 시작하지 않는다(Fable F3)
+  const capBox = tooBig ? `<div class="box rise i3"><b>시범 용량을 크게 넘습니다</b>넣은 폴더가 ${near}${size(t.bytes)}입니다. ${size(stop)}를 넘으면 새 파일 올리기가 멈춰 시작할 수 없습니다. 큰 폴더를 빼고, 그 안에서 지킬 폴더만 「추가 보호」로 고르세요.</div>`
+    : overCap ? `<div class="box rise i3"><b>시범 용량 ${size(cap)}를 넘습니다</b>넣은 폴더가 ${near}${size(t.bytes)}입니다. ${size(stop)}를 넘으면 새 파일 올리기가 멈춥니다. 큰 폴더를 빼 두면 더 오래 지킬 수 있습니다.</div>`
+    : unsure.length ? `<div class="box rise i3"><b>크기를 다 세지 못한 폴더가 있습니다</b>${h(unsure.map(rangeName).join(', '))}${pp(rangeName(unsure[unsure.length - 1]), '은/는')} 파일이 많아 일부만 셌습니다. 실제로는 더 클 수 있습니다. 넣은 폴더가 ${size(stop)}를 넘으면 새 파일 올리기가 멈춥니다.</div>` : '';
+  const failBox = failed ? `<div class="box rise i3"><b>이 PC의 폴더를 다 찾지 못했습니다</b>${h(r.error || '')} 「추가 보호」로 지킬 폴더를 고르거나 「다시 찾기」를 눌러 주세요.</div>` : '';
+  const hint = scanning ? '다 찾으면 누를 수 있습니다.' : measuring ? '크기를 다 세면 누를 수 있습니다.' : tooBig ? '큰 폴더를 빼면 누를 수 있습니다.'
+    : !t.count ? '지킬 폴더를 하나 이상 넣어 주세요.' : needStep && !ack ? 'Google 계정을 정리한 뒤에 누를 수 있습니다.' : '';
+  const main = acct?.repoExists ? { id: 'continue', label: '이어서 백업', kind: 'main', disabled: blocked } : { id: 'protect', label: '보호 시작', kind: 'main', disabled: blocked };
+  const more = { id: 'range-add', label: '추가 보호', kind: 'line', disabled: !!run };
+  const head = acct?.repoExists
+    ? `${kick(`${device} · 이어서 백업`)}${say('이 계정에는', '이미 백업이 있습니다.')}${then('같은 PC를 다시 깔았거나 옛 PC의 연결을 끊었다면, 그 백업에 이어서 이 PC가 매시간 올립니다. 지금까지의 판은 그대로 둡니다. 올릴 폴더는 목록에 있습니다.')}`
+    : scanning ? `${kick(`${device} · 보호 범위`)}${say('지킬 자료를', '찾고 있습니다.')}${then('문서, 바탕화면, 사진과 이 PC의 작업 폴더를 찾습니다. 다 찾으면 「보호 시작」만 누르면 됩니다.')}`
+    : failed && !t.count ? `${kick(`${device} · 보호 범위`)}${say('지킬 폴더를 고르세요.')}`
+    : !t.count ? `${kick(`${device} · 보호 범위`)}${say('넣은 폴더가', '없습니다.')}${then('목록에서 「넣기」를 누르거나 「추가 보호」로 지킬 폴더를 고르세요.')}`
+    : `${kick(`${device} · 보호 범위`)}${say('이 폴더를 지킵니다.')}${then('앱이 골라 둔 그대로 두면 됩니다. 「보호 시작」을 누르면 목록의 폴더를 암호화해 올리기 시작합니다.')}`;
+  const l = `${head}${noMove}${failBox}${capBox}${stepBox}${acts([main, more], hint ? `<span class="hint">${h(hint)}</span>` : '')}`;
+  const rows = (fs) => fs.map((f) => rangeRow(f, list, run, cap)).join('');
+  const body = scanning && !list.length ? '<p class="empty">이 PC를 읽는 중입니다.</p>'
+    : `${on.length ? `<div class="rows">${rows(on)}</div>` : '<p class="empty">아직 넣은 폴더가 없습니다.</p>'}${off.length ? `<h3>빼 둔 폴더</h3><div class="rows">${rows(off)}</div>` : ''}`;
+  const foot = [
+    '로그인 정보와 node_modules처럼 다시 받을 수 있는 폴더는 담지 않습니다. 프로그램 목록과 앱 설정은 하루 한 번 함께 지킵니다.',
+    r.more ? `더 찾은 폴더 ${count(r.more)}곳은 목록에 넣지 않았습니다. 필요하면 「추가 보호」로 고르세요.` : '',
+  ].filter(Boolean).map((x) => `<p class="foot">${h(x)}</p>`).join('');
+  const pct = Math.max(0, Math.min(100, Math.round((t.bytes / cap) * 1000) / 10));
+  const gaugeRow = t.count ? `<div class="rows">${row('지키는 양', gauge(pct), `${near}${size(t.bytes)} / ${size(cap)}까지`, 'share')}</div>` : '';
+  const again = scanning ? '' : `<div class="act"><button class="lnk sm" type="button" data-act="range-find"${run ? ' aria-disabled="true"' : ''}>다시 찾기 ${I.rarr}</button></div>`;
+  const meta = t.count ? `폴더 ${count(t.count)}곳 · ${near}${size(t.bytes)}` : '';
+  const right = panel(acct?.repoExists ? '이어서 지킬 폴더' : '보호 범위', meta, `${body}${gaugeRow}${again}${foot}`);
+  return { kind: 'flow', tone: 'setup', here: '보호 범위', top: [], html: flow(l, right),
+    acts: { protect: { id: 'protect', call: 'startProtection', account: true }, continue: { id: 'continue', call: 'continueBackup', account: true },
+      'range-add': { id: 'range-add', call: 'rangeAdd' }, 'range-find': { id: 'range-find', call: 'rangeFind' }, 'range-set': { id: 'range-set', call: 'rangeSet' }, 'google-ack': { id: 'google-ack' } } };
+}
+
 function start2(s, acct, fake, now) {
   if (!s?.account && fake) return start2Example();
   if (startStep(s) === 'read') return startRead(s, acct, now);
+  if (s?.range && typeof s.range === 'object' && s.range.status !== 'idle') return start2Range(s, acct);
   const device = h(s?.device || '이 PC');
   const picked = Array.isArray(s?.selection?.sources) ? s.selection.sources : [];
   const needStep = !!s?.account?.googleStepRequired, ack = !!acct?.googleAck, run = acct?.running || null;

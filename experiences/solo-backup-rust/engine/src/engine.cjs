@@ -367,6 +367,31 @@ const MOVE_TEMP = '~synk-*.part';
 // 모으거나 저장하는 것을 막는다(2026-11-24 결정). Claude는 계정 폴더가 여럿일 수 있어 파일 이름으로 어디서든 뺀다.
 const AI_LOGIN_FILES = Object.freeze(['.credentials.json', '.codex/auth.json', '.gemini/oauth_creds.json']);
 const AI_LOGIN_EXCLUDES = Object.freeze(AI_LOGIN_FILES.flatMap(p => ['--iexclude', p]));
+// 새로 시작한 백업이 빼는 폴더(STAGE1_DESIGN.md 4.17 「다시 만들 수 있는 폴더와 로그인 폴더 빼기」). 이 표시(`skipRebuildable`)가 있는
+// 설정 — 이 판부터 새로 시작한 클라우드 백업 — 에만 준다. 보호 중인 손님의 범위를 말없이 바꾸지 않는다.
+// - 다시 만들 수 있는 폴더: 캐시 표준 표식(CACHEDIR.TAG의 서명 줄까지, Rust target)이 든 폴더의 나머지와, 이름이 node_modules인 폴더.
+//   node_modules는 화면이 그 이름으로 「담지 않습니다」라고 말한다. npm · pnpm · yarn의 표식 파일로 가르면 그 파일을 복사해 둔 작업
+//   폴더가 말없이 빠진다(GPT GA1). 무늬는 `node_modules/*`다 — 그 폴더의 안쪽만 빠지고 폴더는 빈 채로 남는다. 같은 이름의 보통
+//   파일(시험 자료 따위)은 담긴다(다시 검수 GA1).
+// - 로그인 폴더: 진단이 열쇠 자리로 보는 이름(.ssh · .gnupg · .aws · .azure). 넣은 작업 폴더 안에 있어도 담지 않는다(GA2).
+//   무늬는 이름 그대로다 — restic이 그 폴더를 열지 않아, 목록 권한이 막힌 .ssh가 백업을 「일부 못 읽음」으로 끝내지 않는다(r3 GA1).
+// - 이 규칙이 통째로 먹는 자리(node_modules 안 · 로그인 폴더 자체나 그 안)는 지킬 폴더로 받지 않는다 — 받으면 빈 폴더로 성공한다
+//   (Fable 설계 검토 자리 1).
+const REBUILDABLE_DIRS = Object.freeze(['node_modules']);
+const LOGIN_DIRS = Object.freeze(['.ssh', '.gnupg', '.aws', '.azure']);
+const REBUILDABLE_EXCLUDES = Object.freeze(['--exclude-caches', ...REBUILDABLE_DIRS.flatMap(n => ['--iexclude', `${n}/*`]), ...LOGIN_DIRS.flatMap(n => ['--iexclude', n])]);
+const REBUILDABLE_SET = new Set(REBUILDABLE_DIRS), LOGIN_SET = new Set(LOGIN_DIRS);
+const pathParts = p => String(p).split(/[\\/]/).filter(Boolean).map(x => x.toLowerCase());
+/** 파일 경로가 이 규칙에 빠지는가 — 채움 판 목록을 거를 때(node_modules는 폴더 안의 것만, 로그인 이름은 어느 마디든) */
+const inSkippedDir = p => { const s = pathParts(p); return s.slice(0, -1).some(x => REBUILDABLE_SET.has(x)) || s.some(x => LOGIN_SET.has(x)); };
+/** 폴더 경로가 이 규칙에 통째로 먹히는가 — 어느 마디(마지막 포함)가 node_modules이거나 로그인 이름이면 지킬 폴더로 받지 않는다 */
+const skippedPlace = p => pathParts(p).some(x => REBUILDABLE_SET.has(x) || LOGIN_SET.has(x));
+const SKIPPED_MESSAGE = 'node_modules 안이나 로그인 정보 폴더(.ssh · .aws 등)는 백업에 담지 않아 고를 수 없습니다. 그 바깥 폴더를 골라 주세요.';
+/** 새로 시작한 백업의 폴더 목록에 그런 자리가 있으면 거절한다 */
+function refuseSkipped(sources) {
+  if (sources.some(skippedPlace)) throw Object.assign(new Error(SKIPPED_MESSAGE), { code: 'SOURCES_SKIPPED' });
+  return sources;
+}
 async function sha256File(file) {
   const hash = crypto.createHash('sha256');
   const handle = await fs.open(file, 'r');
@@ -714,7 +739,8 @@ class BackupEngine extends EventEmitter {
       const canReuse = !credentials?.keyId && !credentials?.applicationKey && saved && b2.endpoint(endpoint) === saved.endpoint && bucket === saved.bucket;
       const next = b2.credentials(canReuse ? saved.credentials : credentials);
       if (!this.config) {
-        const checked = await validateSources(sources, this.forbidden());
+        // 이 설정은 skipRebuildable이다 — 그 규칙에 통째로 먹히는 자리는 받지 않는다(빈 폴더로 성공하므로, 4.17 Fable 설계 검토 자리 1)
+        const checked = refuseSkipped(await validateSources(sources, this.forbidden()));
         const vaultId = repository ? customerVault(repository.prefix) : crypto.randomUUID();
         const provider = b2.provider({ endpoint, bucket, prefix: repository ? repository.prefix : `work-backup/${vaultId}` }, vaultId);
         await this.probe(provider, next, { now: this.now() });
@@ -726,7 +752,7 @@ class BackupEngine extends EventEmitter {
         const password = crypto.randomBytes(32).toString('base64url');
         await this.storeCredential(password, next);
         this.secret = password; this.cloudCredentials = next;
-        this.config = { schema: 1, mode: 'backup', provider, vaultId, ...(repository ? { host } : {}), repository: b2.repository(provider, vaultId), repositoryId: null, sources: checked, automatic: false, recoverySaved: false, lastBackup: null, health: null, lastError: null, warning: null };
+        this.config = { schema: 1, mode: 'backup', provider, vaultId, ...(repository ? { host } : {}), repository: b2.repository(provider, vaultId), repositoryId: null, sources: checked, automatic: false, recoverySaved: false, lastBackup: null, health: null, lastError: null, warning: null, skipRebuildable: true };
         await this.save();
       } else {
         if (!this.secret) throw new Error('초기화 암호를 열지 못했습니다. 원래 Windows 계정으로 다시 실행해 주세요.');
@@ -837,12 +863,13 @@ class BackupEngine extends EventEmitter {
       if (!DEVICE.test(host || '')) throw new Error('이 PC의 기기 번호를 확인할 수 없습니다.');
       const key = b2.credentials(credentials);
       this.transientSecrets = [key.keyId, key.applicationKey];
-      const checked = await validateSources(sources, this.forbidden());
+      const checked = refuseSkipped(await validateSources(sources, this.forbidden()));
       await this.probe(c.provider, key, { now: this.now() });
       const info = json(await this.run(['cat', 'config'], { credentials: key, timeoutMs: 60000 }));
       if (info.id !== c.repositoryId) throw new Error('다른 저장소의 키입니다.');
       await this.storeCredential(this.secret, key); this.cloudCredentials = key;
-      Object.assign(c, { mode: 'backup', readOnly: false, host, sources: checked, automatic: false, lastBackup: null, lastPartial: null, lastFill: null, leftOutNames: null, leftOutHeld: null, health: null, warning: null, retryAfter: null });
+      // 이 기기의 판은 이 기기 이름(host)으로 따로 세므로, 옛 기기의 판과 달리 다시 만들 수 있는 폴더를 빼도 대량 변경 멈춤에 걸리지 않는다
+      Object.assign(c, { mode: 'backup', readOnly: false, host, sources: checked, automatic: false, lastBackup: null, lastPartial: null, lastFill: null, leftOutNames: null, leftOutHeld: null, health: null, warning: null, retryAfter: null, skipRebuildable: true });
       delete c.nextSources;
       await this.save(); return this.getState();
     });
@@ -868,6 +895,17 @@ class BackupEngine extends EventEmitter {
     const since = this.config.serverRestore?.since || new Date(this.now()).toISOString();
     this.config.serverRestore = { since, ...(jobId ? { jobId } : {}), ...(undo ? { undo: true } : {}),
       ...(adopted ? { adopted: { from: adopted.from, fromUndo: adopted.fromUndo, lost: adopted.lost } } : {}) };
+    await this.save(); return this.getState();
+  }
+  // A first 「보호 시작」 that stopped before the repository was confirmed keeps its folders in the settings, and pressing it
+  // again uses those (setupCloud). Folders chosen since in the first protection range (4.17, Fable F12) go in here: the
+  // settings are not thrown away (resetUnfinishedSetup) because the repository may already be on B2 under that password.
+  async updateUnfinishedSources(sources) {
+    const c = this.config;
+    if (!this.isCloud() || c?.mode !== 'backup' || c.repositoryId) throw new Error('보호를 시작하기 전에만 바꿀 수 있습니다.');
+    if (this.job || this.stopping) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
+    const checked = await validateSources(sources, this.forbidden());
+    c.sources = c.skipRebuildable === true ? refuseSkipped(checked) : checked;
     await this.save(); return this.getState();
   }
   // A restore-only connection to the account's backup chooses the folders this PC backs up once it takes the write
@@ -969,7 +1007,10 @@ class BackupEngine extends EventEmitter {
       const asked = sources.filter((s, i) => !old.some(o => same(o, s)) && sources.findIndex(t => same(t, s)) === i);
       const added = [];
       if (asked.length) {
-        for (const real of await validateSources(asked, [...this.forbidden(), ...(!this.isCloud() ? [path.dirname(this.config.repository)] : [])])) {
+        const askedReal = await validateSources(asked, [...this.forbidden(), ...(!this.isCloud() ? [path.dirname(this.config.repository)] : [])]);
+        // 새로 시작한 백업(skipRebuildable)에 더하는 폴더도 그 규칙에 먹히는 자리면 받지 않는다(4.17 Fable 설계 검토 자리 1)
+        if (this.config.skipRebuildable === true) refuseSkipped(askedReal);
+        for (const real of askedReal) {
           if ([...kept, ...added].some(k => same(k, real))) continue; // the same folder by another spelling
           if ([...kept, ...added].some(k => overlap(k, real))) throw new Error('서로 포함되는 작업 폴더는 하나만 선택해 주세요.');
           added.push(real);
@@ -1041,7 +1082,7 @@ class BackupEngine extends EventEmitter {
         if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true;
       };
       try {
-        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, ...AI_LOGIN_EXCLUDES, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
+        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, ...AI_LOGIN_EXCLUDES, ...(this.config.skipRebuildable === true ? REBUILDABLE_EXCLUDES : []), '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
           { onErrorItem });
       } catch (e) {
         if (e.exitCode !== 3 || !unreadable.length) throw e;
@@ -1424,6 +1465,7 @@ class BackupEngine extends EventEmitter {
     for (const item of list.unreadable) {
       const mapped = linked(roots, item);
       if (!mapped) continue;
+      if (this.config.skipRebuildable === true && inSkippedDir(mapped)) continue;
       try { await fs.lstat(mapped); } catch (e) { if (e.code === 'ENOENT' || e.code === 'ENOTDIR') continue; }
       asked.push(item); targets.push(mapped);
     }
@@ -1435,7 +1477,7 @@ class BackupEngine extends EventEmitter {
     // Each path ends in NUL, the last one too: restic 0.19.1 refuses a list without the trailing zero byte (exit 1).
     await fs.writeFile(listFile, targets.map(t => t + '\0').join(''), { flag: 'wx' });
     try {
-      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, ...AI_LOGIN_EXCLUDES, '--files-from-raw', listFile, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`],
+      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, ...AI_LOGIN_EXCLUDES, ...(this.config.skipRebuildable === true ? REBUILDABLE_EXCLUDES : []), '--files-from-raw', listFile, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`],
         { onErrorItem: item => { if (item !== null && failedAt.length < UNREADABLE_MAX) failedAt.push(item); else failedCut = true; } });
     } catch (e) { if (e.exitCode !== 3) throw e; }
     finally { await fs.rm(listFile, { force: true }).catch(() => {}); }
@@ -2712,4 +2754,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, customerVault, AI_LOGIN_EXCLUDES, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, oddName, walkOdd, stillThere, oddReads, topMost, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };
+module.exports = { BackupEngine, customerVault, AI_LOGIN_EXCLUDES, REBUILDABLE_EXCLUDES, LOGIN_DIRS, inSkippedDir, skippedPlace, refuseSkipped, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, oddName, walkOdd, stillThere, oddReads, topMost, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };

@@ -76,6 +76,21 @@ export function folderName(p) {
   return KNOWN[b.toLowerCase()] || b;
 }
 
+/** 「추가 보호」로 더하지 못한 폴더의 까닭(엔진 first-range.cjs add의 skipped) — 한 줄로 */
+const RANGE_SKIP = {
+  inside: (s) => `「${folderName(s.path)}」 폴더는 이미 지키는 「${folderName(s.holder || '')}」 안에 있습니다.`,
+  drive: (s) => `${String(s.path).slice(0, 2)} 드라이브 전체는 고를 수 없습니다. 그 안의 폴더를 골라 주세요.`,
+  engine: (s) => `「${folderName(s.path)}」 폴더는 이 앱이 쓰는 자리와 겹쳐 넣지 않았습니다.`,
+  login: (s) => `「${folderName(s.path)}」 폴더는 로그인 정보나 앱이 쓰는 자리라 넣지 않았습니다. 앱 설정은 하루 한 번 따로 지킵니다.`,
+  rebuild: (s) => `「${folderName(s.path)}」 폴더는 node_modules 안이라 백업에 담기지 않습니다. 그 바깥 폴더를 골라 주세요.`,
+  full: () => '지킬 폴더는 30곳까지라 몇 곳을 더하지 못했습니다.',
+  unreadable: (s) => `「${folderName(s.path)}」 폴더를 열 수 없어 넣지 않았습니다.`,
+};
+export function rangeSkipText(skipped) {
+  const lines = (Array.isArray(skipped) ? skipped : []).map((s) => (RANGE_SKIP[s?.why] || RANGE_SKIP.unreadable)(s || {}));
+  return [...new Set(lines)].slice(0, 3).join(' ');
+}
+
 function samePath(a, b) { return String(a || '').replace(/[\\/]+$/, '').toLowerCase() === String(b || '').replace(/[\\/]+$/, '').toLowerCase(); }
 
 /** 되살려 본 날 줄 */

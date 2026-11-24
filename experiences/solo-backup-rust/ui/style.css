@@ -126,6 +126,13 @@ a { color: inherit; }
 .panel + .panel { margin-top: clamp(32px, 5vh, 48px); }
 .panel .now { padding: 14px 0 6px; font: 400 14px/1.6 var(--sans); color: var(--dim); }
 .row .meta { overflow-wrap: anywhere; }
+/* 첫 보호 범위(설계 4.17) — 이름 칸에 종류 · 경로 · 까닭을 겹쳐 둔다. 크기는 가운데, 넣기 · 빼기는 오른쪽. 빼 둔 줄의 이름은 흐리게 */
+.row.rg { grid-template-columns: minmax(0, 1fr) auto auto; }
+.row.rg .v { font-size: 14px; color: var(--dim); text-align: right; white-space: nowrap; }
+.row.rg .k { color: var(--paper); }
+.row.rg.off .k { color: var(--dim); }
+.row.rg .meta.why { color: var(--soft); }
+.row.rg.off .meta.why { color: var(--dim); }
 /* 공간 비우기 2판 — 드라이브마다 정한 선(GB) 칸. 칸이 좁아야 가운데 「남은 공간」 글이 세로로 꺾이지 않는다 */
 .row .w input.gb { width: 4.6em; height: 30px; margin-right: 4px; padding: 0 8px; background: none; border: 1px solid var(--hair); border-radius: 6px; font: 400 14px/1 var(--sans); color: var(--paper); text-align: right; font-variant-numeric: tabular-nums; }
 .row .w input.gb:focus-visible { outline: 1px solid var(--ring); outline-offset: 3px; }
