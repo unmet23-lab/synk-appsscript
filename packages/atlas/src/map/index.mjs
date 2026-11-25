@@ -5,8 +5,8 @@
 // 두뇌가 읽는 문항(단계 1 ↔ 2 계약): { itemKey, familyKey, skillId, difficulty, responseFormat, units, order,
 // unknownOption?, audioRequired? }. units 첫째가 주 단위이고, 태그가 없는 문항은 그 계열이 곧 단위다(['family:<계열>']).
 // 은행에서 빠진 문항(retired)은 번호로만 찾고 두뇌 꼴로 내주지 않는다. 판마다 열쇠가 생기는 은행(한글 단계)은 계열 줄
-// (templates — 능력 · 단위만)로 적혀 있어 item({ itemKey, familyKey, difficulty, responseFormat })가 계열 줄에 제품이 넘긴
-// 난도 · 꼴을 얹어 문항을 만든다(같은 계열 안에서도 판마다 난도 · 보기 수가 바뀐다).
+// (templates — 능력 · 단위 · 그 계열이 내는 난도 levels)로 적혀 있어 item({ itemKey, familyKey, difficulty, responseFormat })가 계열
+// 줄에 제품이 넘긴 난도 · 꼴을 얹어 문항을 만든다(같은 계열 안에서도 판마다 난도 · 보기 수가 바뀐다). levels 밖의 난도는 null이다.
 export const STAGE = 1;
 export const MAP_FORMAT = 'atlas-map-index/1';
 export const UNITS_FORMAT = 'atlas-map-units/1';
@@ -65,10 +65,12 @@ function lookups(index) {
   return { families, items, templates };
 }
 
-// 계열 줄 + 제품이 넘긴 문항 → 두뇌 꼴. 난도 · 꼴이 없거나 틀리면 만들지 않는다(지어내지 않는다).
+// 계열 줄 + 제품이 넘긴 문항 → 두뇌 꼴. 난도 · 꼴이 없거나 틀리면 만들지 않는다(지어내지 않는다). 계열 줄에 levels(그 계열이 실제로
+// 내는 문항 난도 — 단계 4 계획 §26-4)가 있으면 그 밖의 난도도 만들지 않는다. levels가 없는 줄(드라마 시범 · 서버가 든 옛 색인)은 1~3을 받는다.
 function fromTemplate(template, ref) {
   if (!template || typeof ref?.itemKey !== 'string' || !ref.itemKey) return null;
   if (![1, 2, 3].includes(ref.difficulty) || typeof ref.responseFormat !== 'string') return null;
+  if (Array.isArray(template.levels) && !template.levels.includes(ref.difficulty)) return null;
   const flags = template.flags | (ref.unknownOption ? FLAGS.unknown : 0);
   const row = {
     ...template,
@@ -189,8 +191,18 @@ export function openMap({ index: given, units = null, words = null } = {}) {
       // 은퇴 문항은 메타를 든 객체로 물어도 내지 않는다 — 낡은 제품이 보여도 그 답이 계열 단위에 쌓이지 않게(Fable 최종 P3-1).
       if (typeof ref === 'string' || retiredNumbers.has(itemName(ref?.itemKey))) return null;
       const familyKey = familyName(ref?.familyKey);
-      const template = fromTemplate(byFamily.get(familyKey), ref);
-      return template ?? unindexed({ ...ref, familyKey });
+      // 계열 줄이 있는 계열은 그 줄로만 짓는다 — levels 밖 · 틀린 난도를 계열 단위 문항으로 흘리지 않는다(단계 4 계획 §26-4, 4-7 설계
+      // 검토 1회차 P1-2). 계열 줄이 없는 계열(한글 낱말 읽기 · 색인 전의 새 문항)만 계열 단위다.
+      const template = byFamily.get(familyKey);
+      return template ? fromTemplate(template, ref) : unindexed({ ...ref, familyKey });
+    },
+    // 계열 → 그 계열 줄의 지금 이름과 단위(없으면 null). 판마다 열쇠가 생기는 은행(한글 단계)의 옛 꼴 사건은 열쇠로 색인에서 찾지 못해,
+    // 접기 어댑터가 사건의 계열로 다시 찾는다(src/record/adapt.mjs itemOf — 단계 4 계획 §26-6). 능력 · 난도 · 꼴 · levels는 보지 않는다.
+    familyRow(familyKey) {
+      const row = byFamily.get(familyName(familyKey));
+      return row
+        ? Object.freeze({ familyKey: row.familyKey, units: Object.freeze([...row.units]) })
+        : null;
     },
     items(bank = null) {
       return items.filter(row => live(row) && inBank(row, bank)).map(row => brainItem(row));
@@ -208,10 +220,12 @@ export function openMap({ index: given, units = null, words = null } = {}) {
   };
   // 단계 3이 한 색인으로 두 곳에 넘기는 꼴 — 접기 어댑터(src/record/adapt.mjs itemOf)가 edition · lookup(itemKey)을, 기기 얹기 직전
   // (src/record/own.mjs familySkillsOf)이 familySkills(계열 → 능력들)를 읽는다. 계열 줄 문항은 열쇠만으로 못 찾아 lookup이
-  // null이고, 어댑터는 그때 사건에 적힌 값을 쓴다. overlay의 index.lookup(사건 번호로 찾기)과는 이름만 같다.
+  // null이고, 어댑터는 그때 2판이면 사건에 적힌 값을, 옛 꼴이면 family(계열 → 계열 줄)로 다시 찾은 값을 쓴다(단계 4 계획 §26-6).
+  // overlay의 index.lookup(사건 번호로 찾기)과는 이름만 같다.
   map.foldIndex = Object.freeze({
     edition: map.editions.index,
     lookup: itemKey => map.item(itemKey),
+    family: familyKey => map.familyRow(familyKey),
     familySkills: map.familySkills,
   });
   return Object.freeze(map);

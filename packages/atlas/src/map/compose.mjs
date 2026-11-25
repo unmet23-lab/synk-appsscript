@@ -17,8 +17,18 @@ export const ITEM_FIELDS = Object.freeze([
   'bank',
   'flags',
 ]);
-// 계열 줄(판마다 열쇠가 생기는 은행): 난도 · 꼴은 판마다 달라 제품이 넘긴 값을 쓴다(계획 §2).
-export const TEMPLATE_FIELDS = Object.freeze(['f', 'skillId', 'units', 'order', 'bank', 'flags']);
+// 계열 줄(판마다 열쇠가 생기는 은행): 난도 · 꼴은 판마다 달라 제품이 넘긴 값을 쓴다(계획 §2). levels는 그 계열이 실제로 내는 문항
+// 난도의 집합이다(단계 4 계획 §26-4 — 「단」이 아니다). 없는 줄(드라마 시범)은 null이고 읽을 때 1~3을 받는다. 접기 칸이 아니다 —
+// 접기는 계열 줄의 난도를 읽지 않는다.
+export const TEMPLATE_FIELDS = Object.freeze([
+  'f',
+  'skillId',
+  'units',
+  'order',
+  'bank',
+  'flags',
+  'levels',
+]);
 // 접기가 읽는 칸 — 이것이 바뀌면 색인 판이 오르고 단계 3 서버가 그 문항을 다시 접는다(Fable 설계 검토 P1-1 · P2-5). 번호(n · f)로
 // 견주므로 열쇠 이름만 바뀐 것(renames)은 판을 올리지 않는다. order · bank · 소리 칸은 고르기만 바꿔 넣지 않는다.
 export const FOLD_FIELDS = Object.freeze([
@@ -56,11 +66,24 @@ function flagsOf(meta, basis) {
   return flags;
 }
 
+// 계열 줄의 levels — 없으면(null) 그대로, 있으면 1 · 2 · 3 가운데 겹치지 않는 오름차순(빈 배열 아님).
+const levelsShaped = levels =>
+  levels == null ||
+  (Array.isArray(levels) &&
+    levels.length > 0 &&
+    [...levels].every(
+      (level, i, all) => [1, 2, 3].includes(level) && (i === 0 || all[i - 1] < level),
+    ));
+
 function metaProblems(meta, where, skills, template) {
   const problems = [];
   if (typeof meta.familyKey !== 'string' || !meta.familyKey) problems.push(`${where}: 계열이 없다`);
   if (!skills.has(meta.skillId)) problems.push(`${where}: 모르는 능력 ${meta.skillId}`);
-  if (template) return problems;
+  if (template) {
+    if (!levelsShaped(meta.levels))
+      problems.push(`${where}: levels ${JSON.stringify(meta.levels)}(1 · 2 · 3 오름차순만)`);
+    return problems;
+  }
   if (![1, 2, 3].includes(meta.difficulty))
     problems.push(`${where}: 난도 ${meta.difficulty}(1 · 2 · 3만)`);
   if (typeof meta.responseFormat !== 'string' || !meta.responseFormat)
@@ -88,10 +111,16 @@ export function foldViewOf(row) {
     unknownOption: !!(row.flags & FLAG.unknown),
   };
 }
+// 계열 줄의 levels도 견준다 — 접기 칸은 아니지만 두뇌가 받는 문항(levels 밖 null)을 바꾼다.
 const sameFold = (a, b) =>
   a.familyKey === b.familyKey &&
   a.flags === b.flags &&
+  JSON.stringify(a.levels ?? null) === JSON.stringify(b.levels ?? null) &&
   JSON.stringify(foldViewOf(a)) === JSON.stringify(foldViewOf(b));
+
+// 계열 줄만 싣는 칸 — 그 계열이 내는 난도(levels, 없으면 null). 문항 줄에는 칸이 없다.
+const templateOnly = (meta, template) =>
+  template ? { levels: meta.levels ? [...meta.levels] : null } : {};
 
 // 은행 하나의 줄을 만든다. template 은행은 계열 줄(열쇠가 판마다 생긴다)이다.
 function bankRows({ bank, template = false, items }, ctx) {
@@ -115,6 +144,7 @@ function bankRows({ bank, template = false, items }, ctx) {
       order,
       bank,
       flags: flagsOf(meta, basis),
+      ...templateOnly(meta, template),
     };
   });
 }

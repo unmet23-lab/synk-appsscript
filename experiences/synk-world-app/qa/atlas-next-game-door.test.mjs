@@ -83,7 +83,8 @@ test('문은 그 게임 하나와 표의 은행만 받고, 지금 판이면 null
   assert.deepEqual(entry.asked.at(-1), ['order-rush', ['order-rush', 'order-rush-beginner']]);
   const old = createGameDoor({ entry: fakeEntry({ give: () => null }), gameId: 'talk-rally' });
   assert.equal(await old.api.open({ gameId: 'talk-rally', banks: ['talk-rally'] }), null);
-  assert.deepEqual(Object.keys(GAME_BANKS).sort().length, 11);
+  assert.deepEqual(Object.keys(GAME_BANKS).sort().length, 12, '열한 게임 + 한글 만나기(4-7)');
+  assert.deepEqual(GAME_BANKS['hangul-stage'], ['hangul-stage'], '한글 만나기는 한글 단계 은행 하나만 받는다');
 });
 
 test('패널이 닫히면 기다리던 open은 null이 아니라 RUN_ENDED로 거절하고, 받은 코치의 판을 닫는다(다시 검토 A2)', async () => {
@@ -303,7 +304,7 @@ test('셸 원문 — 문은 게임 이름(주소의 폴더)으로 청하고, 셸
   const table = shell.slice(from, shell.indexOf('\n};', from));
   const folders = new Set([...table.matchAll(/['`]([a-z-]+)\/(?:\?[^'`]*)?['`]/g)].map(match => match[1]));
   const reachable = Object.keys(GAME_BANKS).filter(game => folders.has(game)).sort();
-  assert.deepEqual(reachable, ['blank-slice', 'entry-check', 'korean-racing', 'korean-rhythm', 'korean-runner', 'order-rush', 'snap-words', 'subway-rush', 'talk-rally'], 'WORLD가 여는 아홉 게임');
+  assert.deepEqual(reachable, ['blank-slice', 'entry-check', 'hangul-stage', 'korean-racing', 'korean-rhythm', 'korean-runner', 'order-rush', 'snap-words', 'subway-rush', 'talk-rally'], 'WORLD가 여는 열 게임(4-7에 한글 만나기를 더함)');
   for (const path of ['korean-runner/', 'snap-words/?grade=3', 'subway-rush/?grade=4', 'talk-rally/'])
     assert.ok(Object.hasOwn(GAME_BANKS, path.split(/[/?#]/)[0]), path);
 });

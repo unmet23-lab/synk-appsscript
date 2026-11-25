@@ -1,4 +1,4 @@
-// 열한 게임 입구에서 import를 따라가 정한 제품 파일(4-6e-5 — 설계 주인 11-21 설계 관문 답 1). 게임 목록은 셸의 게임 표(world-atlas-game.mjs
+// 셸의 게임 표에 든 게임의 입구에서 import를 따라가 정한 제품 파일(4-6e-5 — 설계 주인 11-21 설계 관문 답 1). 게임 목록은 셸의 게임 표(world-atlas-game.mjs
 // GAME_BANKS)에서 읽는다. 게임 폴더의 HTML이 싣는 스크립트가 입구이고, esbuild로 그 import를 따라간다(묶지 않고 metafile의 입력만 본다).
 // 그래서 폴더 밖 공유 모듈(brand-opening/game-tutor-support.mjs 등)이 저절로 든다. 옛 엔진 사본(atlas-learning.js)과 시험은 뺀다. 절대
 // 주소(/atlas/loader.js) · 바깥 주소 · import map의 꾸러미 이름(three)은 따라가지 않는다.
@@ -68,6 +68,7 @@ function remapsUrls(node) {
   const urlish = key => /^(\/|\.\.?\/|[a-z][a-z0-9+.-]*:)/i.test(key);
   return map?.scopes !== undefined || Object.keys(map?.imports ?? {}).some(urlish);
 }
+const INLINE_SCRIPT = 'src 없는 script — 주소를 바꾸지 않는 importmap 말고는 받지 않는다';
 // src 없이 글이 있는 script는 주소를 바꾸지 않는 importmap(type이 앞뒤 ASCII 공백을 뺀 importmap)만 받는다. 그 밖에는 type · language를
 // 가리지 않고 막는다 — 도는지는 브라우저마다 다를 수 있다(예: Chromium은 type 앞뒤의 유니코드 공백을 지우고 돌린다, r5 GA1). 실제 재료의 src
 // 없는 script는 korean-racing의 importmap 하나뿐이다. 그래서 공백뿐인 type · ld+json 같은 데이터 스크립트도 실패한다 — 재료에 없는 꼴의 한계다
@@ -81,7 +82,7 @@ function scriptTrap(node) {
     return remapsUrls(node)
       ? '주소를 바꾸거나 읽지 못하는 importmap — 따라가는 파일이 달라지거나 맨 이름을 못 푼다'
       : null;
-  return hasText(node) ? 'src 없는 script — 주소를 바꾸지 않는 importmap 말고는 받지 않는다' : null;
+  return hasText(node) ? INLINE_SCRIPT : null;
 }
 function elementTrap(node) {
   if (node.nodeName === 'base' && attrOf(node, 'href') !== undefined)
@@ -118,23 +119,46 @@ export function htmlTraps(html) {
   return traps;
 }
 
-// 게임 하나의 입구 — 그 폴더의 HTML이 싣는 제 스크립트들.
+// 게임 폴더에 있지만 게임 화면이 아닌 HTML과 그 까닭(4-7 — 한글 만나기를 셸의 게임 표에 더하며, 단계 4 계획 §26-12). 입구로 따라가지 않는다.
+// 그 화면이 싣는 것(src와 인라인 module 스크립트의 직접 import)을 적어 두고 견준다. 다르면 멈춘다 — 그때 게임 화면인지 다시 정하고, 게임
+// 화면이면 인라인 스크립트를 파일로 옮겨 입구로 따라가게 한다. 실은 파일은 옛 엔진 사본이거나 그 게임 입구가 이미 따라간 파일이어야 한다 —
+// 그래서 이 화면을 빼도 따라간 파일은 같다. 게임 화면의 인라인 스크립트는 그대로 함정이다(htmlTraps).
+export const NOT_GAME_PAGES = Object.freeze({
+  'hangul-stage/voice-check.html': Object.freeze({
+    why: '유호님이 글자 소리를 귀로 확인하는 화면이다(tools/한글단계_목소리.cjs) — 코치 · 기록을 부르지 않는다',
+    srcs: Object.freeze(['./atlas-learning.js']),
+    imports: Object.freeze(['./pack.mjs']),
+  }),
+});
+
+// 스크립트 주소 → 따라갈 파일. 바깥 주소와 옛 엔진 사본은 null이다.
+function entryFile(dir, found) {
+  const src = found.split(/[?#]/, 1)[0];
+  if (/^(https?:)?\/\//.test(src)) return null;
+  const file = src.startsWith('/')
+    ? path.join(EXPERIENCES, publishedScripts.get(src) ?? src)
+    : path.join(dir, src);
+  return OLD_ENGINE.test(file) ? null : file;
+}
+
+// 게임 하나의 입구 — 그 폴더의 HTML이 싣는 제 스크립트들과, 입구로 보지 않는 게임이 아닌 화면들(NOT_GAME_PAGES).
 function entriesOf(dir) {
   const entries = new Set();
+  const pages = [];
   for (const html of fs.readdirSync(dir).filter(file => file.endsWith('.html'))) {
     const text = fs.readFileSync(path.join(dir, html), 'utf8');
-    const traps = htmlTraps(text);
-    if (traps.length) throw new Error(`${nameOf(path.join(dir, html))}: ${traps.join(' · ')}`);
-    for (const found of scriptSrcs(text)) {
-      const src = found.split(/[?#]/, 1)[0];
-      if (/^(https?:)?\/\//.test(src)) continue;
-      const file = src.startsWith('/')
-        ? path.join(EXPERIENCES, publishedScripts.get(src) ?? src)
-        : path.join(dir, src);
-      if (!OLD_ENGINE.test(file)) entries.add(file);
+    const name = nameOf(path.join(dir, html));
+    if (Object.hasOwn(NOT_GAME_PAGES, name)) pages.push({ name, text });
+    else {
+      const traps = htmlTraps(text);
+      if (traps.length) throw new Error(`${name}: ${traps.join(' · ')}`);
+      for (const found of scriptSrcs(text)) {
+        const file = entryFile(dir, found);
+        if (file) entries.add(file);
+      }
     }
   }
-  return [...entries];
+  return { entries: [...entries], pages };
 }
 
 const outside = {
@@ -146,6 +170,68 @@ const outside = {
   },
 };
 
+// 인라인 module 스크립트의 글 — 게임이 아닌 화면에서만 읽는다(product-flow 시험이 코치 이름도 이 글에서 본다).
+const isModuleType = node =>
+  (attrOf(node, 'type') ?? '').replace(ASCII_SPACE, '').toLowerCase() === 'module';
+export function inlineModules(html) {
+  const out = [];
+  const walk = node => {
+    const inline =
+      node.nodeName === 'script' &&
+      node.namespaceURI === HTML_NS &&
+      attrOf(node, 'src') === undefined &&
+      isModuleType(node) &&
+      hasText(node);
+    if (inline) out.push(node.childNodes.map(child => child.value ?? '').join(''));
+    for (const child of node.childNodes ?? []) walk(child);
+  };
+  walk(parse(String(html)));
+  return out;
+}
+
+// 인라인 module 글이 직접 들이는 것(esbuild의 import 기록 — original은 적힌 주소, path는 푼 파일).
+async function directImports(contents, resolveDir) {
+  const result = await esbuild.build({
+    stdin: { contents, resolveDir, loader: 'js' },
+    bundle: true,
+    write: false,
+    metafile: true,
+    outdir: 'out',
+    format: 'esm',
+    platform: 'browser',
+    logLevel: 'silent',
+    plugins: [outside],
+  });
+  return result.metafile.inputs['<stdin>'].imports;
+}
+
+// 게임이 아닌 화면(name — experiences/ 기준)이 적어 둔 꼴과 다른 곳. reached는 그 게임 입구가 따라간 파일(experiences/ 기준)이다.
+export async function notGamePageProblems(name, html, reached) {
+  const page = Object.hasOwn(NOT_GAME_PAGES, name) ? NOT_GAME_PAGES[name] : null;
+  if (!page) return [`${name}: 게임이 아닌 화면으로 적지 않았다`];
+  const inline = inlineModules(html);
+  const traps = htmlTraps(html);
+  if (traps.length !== inline.length || traps.some(trap => trap !== INLINE_SCRIPT))
+    return [`${name}: 인라인 module 말고도 도는 코드가 있다 — ${traps.join(' · ')}`];
+  const dir = path.join(EXPERIENCES, path.dirname(name));
+  const imports = [];
+  for (const contents of inline) imports.push(...(await directImports(contents, dir)));
+  const loads = { srcs: scriptSrcs(html), imports: imports.map(row => row.original) };
+  const problems = [];
+  if (JSON.stringify(loads) !== JSON.stringify({ srcs: page.srcs, imports: page.imports }))
+    problems.push(
+      `${name}: 싣는 것이 적어 둔 꼴과 다르다 ${JSON.stringify(loads)} — 게임 화면인지 다시 정한다`,
+    );
+  const files = [
+    ...loads.srcs.map(src => path.join(dir, src)),
+    ...imports.filter(row => !row.external).map(row => row.path),
+  ].map(nameOf);
+  const missing = files.filter(file => !OLD_ENGINE.test(file) && !reached.has(file));
+  if (missing.length)
+    problems.push(`${name}: 게임 입구가 따라가지 않는 파일을 싣는다 — ${missing.join(', ')}`);
+  return problems;
+}
+
 let cached = null;
 // { games, files } — files는 experiences/ 기준 이름, 게임마다 따라간 파일의 합.
 export async function gameClosure() {
@@ -156,8 +242,9 @@ export async function gameClosure() {
   const games = Object.keys(GAME_BANKS);
   const files = new Set();
   for (const game of games) {
+    const { entries, pages } = entriesOf(path.join(EXPERIENCES, game));
     const result = await esbuild.build({
-      entryPoints: entriesOf(path.join(EXPERIENCES, game)),
+      entryPoints: entries,
       bundle: true,
       write: false,
       metafile: true,
@@ -167,10 +254,13 @@ export async function gameClosure() {
       logLevel: 'silent',
       plugins: [outside],
     });
-    for (const input of Object.keys(result.metafile.inputs)) {
-      const name = nameOf(input);
-      if (/\.m?js$/.test(name) && !OLD_ENGINE.test(name) && !TEST.test(name)) files.add(name);
+    const reached = new Set(Object.keys(result.metafile.inputs).map(nameOf));
+    for (const page of pages) {
+      const problems = await notGamePageProblems(page.name, page.text, reached);
+      if (problems.length) throw new Error(problems.join(' · '));
     }
+    for (const name of reached)
+      if (/\.m?js$/.test(name) && !OLD_ENGINE.test(name) && !TEST.test(name)) files.add(name);
   }
   cached = { games, files: [...files].sort() };
   return cached;

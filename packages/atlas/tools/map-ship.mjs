@@ -19,6 +19,12 @@ const compact = value => Buffer.from(JSON.stringify(value));
 // 싣지 않는다 — 실으면 조각이 41 → 58KB로 상한(48KiB)을 넘고, 그 게임은 낱말 표를 어차피 받는다.
 export const SLICE_WORDS_MAX = 400;
 
+// 은행 조각에 함께 싣는 계열 줄(은행 → 함께 실을 틀 줄 은행들 — 단계 4 계획 §26-6). WORLD 홈이 늘 받는 조각(world-life — WORLD
+// world-atlas-next.mjs LIFE_BANKS · homeBanksOf)에 한글 단계의 계열 줄을 싣는다. 손님 기기는 판 묶음(RECORD_EDITION)이 바뀐 요약을
+// 읽을 때 한 번 다시 접는데, 그때 묶은 색인에 한글 계열 줄이 있어야 옛 한글 답이 글자 단위로 접힌다. 문항 줄은 싣지 않는다(틀 줄만).
+// 이름 붙인 조각에는 싣지 않는다. 조각 상한(budget.json map.slice)은 그대로 잰다.
+export const RIDE_ALONG = Object.freeze({ 'world-life': Object.freeze(['hangul-stage']) });
+
 function sliceWords(words, units) {
   if (!words) return null;
   const used = new Set(units.filter(unit => unit.startsWith(words.prefix)));
@@ -56,7 +62,8 @@ export function sliceOf(index, name, words = null, slices = committedNamedSlices
   const at = field => fields.indexOf(field);
   const items = sliceItems(index, bank, named);
   const tAt = field => index.templateFields.indexOf(field);
-  const templates = named ? [] : index.templates.filter(row => row[tAt('bank')] === bank);
+  const carried = new Set([bank, ...(Object.hasOwn(RIDE_ALONG, bank) ? RIDE_ALONG[bank] : [])]);
+  const templates = named ? [] : index.templates.filter(row => carried.has(row[tAt('bank')]));
   const used = new Set([...items.map(row => row[at('f')]), ...templates.map(row => row[tAt('f')])]);
   const units = [
     ...items.flatMap(row => row[at('units')]),

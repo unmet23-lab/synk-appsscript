@@ -2743,4 +2743,12 @@ export const COACH_MUTANTS = [
     "        throw new TypeError('Atlas coach: answerLog의 games는 게임 이름의 배열이다');\n",
     '        void 0;\n',
   ],
+  [
+    C,
+    '옛 꼴 다시 찾기',
+    '기기 묶은 색인에 계열 줄 찾기가 없다 — 손님 기기가 옮겨 온 옛 한글 답을 꼴마다 계열 단위에 쌓는다(4-7 §26-6)',
+    HOST,
+    '        const row = map.familyRow?.(familyKey) ?? null;\n',
+    '        const row = null;\n',
+  ],
 ];

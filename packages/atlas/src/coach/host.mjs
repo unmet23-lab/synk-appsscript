@@ -86,6 +86,15 @@ function compositeIndex() {
       }
       return null;
     },
+    // 계열 → 계열 줄(판마다 열쇠가 생기는 은행)의 지금 이름과 단위 — 열쇠로 못 찾은 옛 꼴 제시를 접기 어댑터가 다시 찾는다(단계 4 계획 §26-6,
+    // 서버 foldIndex.family와 같은 길). 계열 줄을 모르는 지도(시험의 가짜 지도)는 건너뛴다.
+    family: familyKey => {
+      for (const map of maps) {
+        const row = map.familyRow?.(familyKey) ?? null;
+        if (row) return row;
+      }
+      return null;
+    },
     familySkills,
     add(map) {
       if (maps.includes(map)) return;

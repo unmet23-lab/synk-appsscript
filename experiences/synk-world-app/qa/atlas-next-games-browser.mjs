@@ -55,10 +55,12 @@ function loadPlaywright() {
 }
 const { chromium } = loadPlaywright();
 
-// 게임 은행 표(셸의 문이 받는 열한 곳)에서 WORLD가 여는 아홉과 혼자 뜨는 둘을 가른다.
+// 게임 은행 표(셸의 문이 받는 열두 곳)에서 WORLD가 여는 아홉과 혼자 뜨는 둘을 가른다. 한글 만나기(4-7)는 문이 서지만 한글 앱의 새 길
+// 모듈(게임 세션 몫 — 단계 4 계획 §26-7의 3)이 들어오기 전에는 옛 길로 열려 ②를 지킬 수 없어, 그 모듈이 들어올 때까지 뺀다.
 const { GAME_BANKS } = await import(pathToFileURL(path.join(repo, 'experiences/synk-world-app/world-atlas-game.mjs')).href);
 const SOLO = ['story-classroom', 'word-magic'];
-const WORLD = Object.keys(GAME_BANKS).filter(id => !SOLO.includes(id));
+const NOT_YET = ['hangul-stage'];
+const WORLD = Object.keys(GAME_BANKS).filter(id => !SOLO.includes(id) && !NOT_YET.includes(id));
 // 셸의 게임 표(app-shell.mjs games)의 짧은 이름 — 셸은 주소의 폴더 이름으로 문을 청한다.
 const SHELL_ID = { 'blank-slice': 'blank', 'entry-check': 'entry', 'korean-racing': 'racing', 'korean-rhythm': 'rhythm', 'korean-runner': 'runner', 'order-rush': 'order', 'snap-words': 'snap', 'subway-rush': 'subway', 'talk-rally': 'rally' };
 // 첫 실행 화면을 건너뛰는 진도 열쇠(기록하지 않는 단계 — 연습 문장 · 연수 · 연습 공 · 조작 연습 · 박자 맞추기).
