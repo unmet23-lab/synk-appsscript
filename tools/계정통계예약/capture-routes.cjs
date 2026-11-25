@@ -13,6 +13,7 @@ const {parseXhs} = require('../lib/외부통계파싱.cjs');
 const {officialScreen} = require('./official-screen.cjs');
 const {ownerCapture} = require('./owner-metrics.cjs');
 const {postLifetime,note} = require('./post-lifetime.cjs');
+const {guardEgo} = require('./ego-alert.cjs');
 const PUBLIC = new Set(['tiktok','brunch','x','instagram','behance','naver-clip','tistory','threads','facebook','linkedin','youtube','vk','rutube','kakao-channel','pinterest']);
 const json = (value) => JSON.stringify(value);
 const privateWrite = (file,content) => fs.writeFileSync(file,content,{flag:'wx'});
@@ -22,9 +23,12 @@ async function external(bin,args,signal,timeout=180_000) {
   return runFile(bin,args,{windowsHide:true,shell:false,timeout,maxBuffer:2*1024*1024,encoding:'utf8',signal});
 }
 function script(dir,name,source) {const out=path.join(dir,name);privateWrite(out,source);return out;}
-async function egoRound(dir,name,source,signal) {
+// 시간 제한은 ego-alert.cjs가 잰다. ego 오류 알림을 닫았으면 밀린 스크립트가 도는 동안 더 기다린다.
+async function egoRound(dir,name,source,signal,{start=runFile,guard=guardEgo}={}) {
   const file=script(dir,name+'.mjs',source);
-  return external('ego-browser',['nodejs','-e','await import('+json(pathToFileURL(file).href)+')'],signal);
+  const job=start('ego-browser',['nodejs','-e','await import('+json(pathToFileURL(file).href)+')'],{windowsHide:true,shell:false,maxBuffer:2*1024*1024,encoding:'utf8',signal});
+  const stop=guard(job.child,{dir,name});
+  try{return await job;}finally{stop();}
 }
 function handleFailure(error) {
   const detail=String(error.stderr||'')+' '+String(error.stdout||'')+' '+error.message;
