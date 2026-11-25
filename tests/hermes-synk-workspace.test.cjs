@@ -247,7 +247,8 @@ test('shared ledger edits and HEAD moves after the first capture keep the captur
 
 test('a scoped non-ledger change after capture still stops preparation', async t => {
   const f = fixture(t);
-  const result = await prepareWorkspace({ ...f.options, limits: { prepareMs: 60000 }, afterCapture: () => { f.write('src/current.js', 'changed after capture ' + Math.random() + '\n'); } });
+  // No shorter time limit here: on a busy PC a 60 s limit ended first with PREPARATION_TIME_LIMIT (11-25).
+  const result = await prepareWorkspace({ ...f.options, afterCapture: () => { f.write('src/current.js', 'changed after capture ' + Math.random() + '\n'); } });
   assert.equal(result.ok, false); assert.equal(result.code, 'SOURCE_CHANGED');
 });
 
