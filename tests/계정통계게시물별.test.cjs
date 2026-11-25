@@ -2,7 +2,7 @@
 // 게시물별 누적값 보완 수집(2026-11-19): 더우인 작품 목록 · 스레드 인사이트 목록 → 외부 관측 post-lifetime, 계정 합계 수집 뒤에 돈다.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto'),vm=require('node:vm');
 const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseTistoryDaily}=require('../tools/lib/외부통계파싱.cjs');
-const {postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage}=require('../tools/계정통계예약/post-lifetime.cjs');
+const {postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage,tistoryDailyPage,note}=require('../tools/계정통계예약/post-lifetime.cjs');
 const {capture}=require('../tools/계정통계예약/capture-routes.cjs');
 const 수집=require('../tools/계정통계수집.cjs');
 const 판정=require('../tools/lib/게시성과판정.js');
@@ -87,7 +87,7 @@ test('더우인 페이지 함수: 화면이 부르는 작품 목록을 끝까지
   const {summary,envelope}=parseDouyinWorks({...data,observedAt:OBSERVED},DY);
   assert.equal(summary.published,2);assert.deepEqual(envelope.observations[1].metrics,{views:66,likes:5,comments:0,shares:0,saves:3});
   realm.location=new URL('https://creator.douyin.com/creator-micro/home');
-  assert.deepEqual(await douyinWorksPage(fakePage(realm),{entry:'https://creator.douyin.com/creator-micro/content/manage',handle:'39504393074'}),{reason:'need_owner'});
+  assert.deepEqual(await douyinWorksPage(fakePage(realm),{entry:'https://creator.douyin.com/creator-micro/content/manage',handle:'39504393074'}),{reason:'need_owner',step:'landed',where:'same'});
 });
 test('스레드 페이지 함수: 본인 프로필 메뉴가 있을 때만 읽고, 프로필 화면에서 목록 게시물의 게시 시각을 모은다',async()=>{
   const link=(pathname,innerText)=>({pathname,innerText,getAttribute:()=>null,textContent:innerText});
@@ -99,7 +99,7 @@ test('스레드 페이지 함수: 본인 프로필 메뉴가 있을 때만 읽�
   assert.deepEqual(data.times,{Df4dNhkEV8K:'2026-11-18T12:01:18.000Z'});
   assert.deepEqual(parseThreadsInsights({...data,observedAt:OBSERVED},TH).envelope.observations[0].metrics,{views:42});
   realm.location=new URL('https://www.threads.com/insights');realm.document={...insights,querySelectorAll:sel=>sel==='a[href]'?[link('/@someone','프로필')]:[]};
-  assert.deepEqual(await threadsInsightsPage(fakePage(realm),{entry:'https://www.threads.com/insights/',handle:'yuhobuilds'}),{reason:'need_owner'});
+  assert.deepEqual(await threadsInsightsPage(fakePage(realm),{entry:'https://www.threads.com/insights/',handle:'yuhobuilds'}),{reason:'need_owner',step:'owner',where:'same'});
 });
 
 test('postLifetime: ego 프로필의 더우인 · 스레드만 읽고, 다른 플랫폼 · Aside 계정은 건드리지 않는다',async()=>{
@@ -114,6 +114,79 @@ test('postLifetime: ego 프로필의 더우인 · 스레드만 읽고, 다른 �
   assert.equal(await postLifetime(ctx('instagram','synk'),helpers),null);
   assert.equal(saved,null);
   assert.equal(await postLifetime(ctx('douyin','39504393074'),{...helpers,pageJob:async()=>douyin([work('7709384615689014547',sec('2026-11-22T06:00:00Z'))])}),'no_posts');
+});
+// 예외가 아닌 실패는 흔적이 없어 「읽혔다」로 잘못 보게 했다(11-20 ~ 25 티스토리 일곱 회차). 까닭은 정한 낱말로만 적는다.
+test('게시물별 읽기가 예외 없이 빠져도 까닭을 회차 폴더에 남긴다',async t=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-post-note-'));
+  t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+  const read=dir=>{const {at,...rest}=JSON.parse(fs.readFileSync(path.join(dir,'post-lifetime-failed.json'),'utf8'));assert.equal(Number.isNaN(Date.parse(at)),false);return rest;};
+  const TISTORY={account:{id:'shift-tistory',platform:'tistory',handle:'yuhobuilds.tistory.com'},profile:{browser:'aside',account:'u0'}};
+  const run=async(data,who=TISTORY,routes)=>{
+    const dir=fs.mkdtempSync(path.join(root,'run-'));
+    const result=await postLifetime({...who,dir,setStage:async()=>{}},{pageJob:async()=>data,storeBatch:async()=>{}},routes);
+    return {dir,result};
+  };
+  let got=await run({reason:'need_owner',step:'landed',where:'login'});
+  assert.equal(got.result,'need_owner');assert.deepEqual(read(got.dir),{reason:'need_owner',code:'',step:'landed',where:'login'});
+  got=await run(undefined);
+  assert.equal(got.result,'retry');assert.deepEqual(read(got.dir),{reason:'retry',code:'NO_MARKER',step:'',where:''});
+  got=await run({reason:'format',step:'http'});
+  assert.equal(got.result,'format');assert.deepEqual(read(got.dir),{reason:'format',code:'',step:'http',where:''});
+  got=await run({},{...TISTORY,account:{...TISTORY.account,handle:'바뀐 이름'}});
+  assert.equal(got.result,'need_owner');assert.deepEqual(read(got.dir),{reason:'need_owner',code:'',step:'handle',where:''});
+  got=await run({},{account:{id:'lab-ru-vk',platform:'vk',handle:'synklab_ru',publicUrl:'https://vk.ru/synklab_ru'},profile:{browser:'ego',profileId:'Profile 5'}});
+  assert.equal(got.result,'need_owner');assert.deepEqual(read(got.dir),{reason:'need_owner',code:'',step:'community',where:''});
+  // 값이 아직 없는 것도 까닭으로 적는다.
+  got=await run(douyin([work('7709384615689014547',sec('2026-11-22T06:00:00Z'))]),{account:{id:DY.accountId,platform:'douyin',handle:DY.handle},profile:{browser:'ego',profileId:'Profile 5'}});
+  assert.equal(got.result,'no_posts');assert.deepEqual(read(got.dir),{reason:'no_posts',code:'SYNK_METRICS_NO_ROWS',step:'',where:''});
+  // 읽혔으면 파일이 없다. 길이 없는 계정도 쓰지 않는다.
+  got=await run(tistory([tPost('27','2026-11-16 21:30')],tDays('2026-11-05',15)));
+  assert.equal(got.result,'limited');assert.equal(fs.existsSync(path.join(got.dir,'post-lifetime-failed.json')),false);
+  got=await run({},{account:{id:'x',platform:'instagram',handle:'synk'},profile:{browser:'ego',profileId:'Profile 5'}});
+  assert.equal(got.result,null);assert.equal(fs.existsSync(path.join(got.dir,'post-lifetime-failed.json')),false);
+});
+test('까닭 기록에는 정한 낱말만 남고, 주소 · 호스트 이름 · 인자 · 오류 글은 남지 않는다',async t=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-post-note-'));
+  t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+  const file=path.join(dir,'post-lifetime-failed.json'),ctx={dir};
+  note(ctx,'need_owner',{step:'landed',where:'accounts.kakao.com'});
+  let saved=JSON.parse(fs.readFileSync(file,'utf8'));assert.equal(saved.where,'');assert.equal(saved.step,'landed');
+  // 첫 까닭을 지킨다.
+  note(ctx,'retry',{code:'LATER'});assert.equal(JSON.parse(fs.readFileSync(file,'utf8')).reason,'need_owner');
+  fs.rmSync(file);
+  note(ctx,'need owner <b>',{code:'token=abc def',step:'some Step!',where:'session-marker.example'});
+  saved=JSON.parse(fs.readFileSync(file,'utf8'));
+  assert.deepEqual([saved.reason,saved.code,saved.step,saved.where],['','','','']);
+  fs.rmSync(file);
+  // 한 칸을 글자로 바꾸지 못해도 나머지 까닭은 남는다(GPT GA4 · c GA1).
+  note(ctx,'retry',{code:{toString:null}});assert.deepEqual([JSON.parse(fs.readFileSync(file,'utf8')).reason,JSON.parse(fs.readFileSync(file,'utf8')).code],['retry','']);
+  fs.rmSync(file);
+  const odd=Object.assign(new Error('x'),{code:{toString:null}});
+  assert.equal(await capture({account:{platform:'douyin'},profile:{},dir,covered:()=>false,signal:new AbortController().signal},{ownerSource:async()=>null,publicSource:async()=>({reason:'limited'}),postSource:async()=>{throw odd;}}),'limited');
+  fs.rmSync(file,{force:true});
+  // 시간 초과로 끊긴 명령은 code가 비어 있다. 무엇을 담았든 오류 글은 남기지 않는다.
+  const killed=Object.assign(new Error('Command failed: ego-browser secret-token'),{killed:true,signal:'SIGTERM',code:null,stdout:'비밀',stderr:'비밀'});
+  const capCtx={account:{platform:'douyin'},profile:{},dir,covered:()=>false,signal:new AbortController().signal};
+  assert.equal(await capture(capCtx,{ownerSource:async()=>null,publicSource:async()=>({reason:'limited'}),postSource:async()=>{throw killed;}}),'limited');
+  saved=fs.readFileSync(file,'utf8');
+  assert.equal(JSON.parse(saved).code,'TIMEOUT');assert.equal(/secret|비밀|Command/.test(saved),false);
+});
+test('링크드인 페이지 함수: 주인 확인과 호스트를 한 번에 읽어, 화면 이동에 끊겨도 까닭이 바뀌지 않는다',async()=>{
+  let calls=0;
+  const p={async waitForFunction(){},async evaluate(fn,arg){if(++calls>1)throw new Error('Execution context was destroyed');return vm.runInNewContext('('+fn.toString()+')',{location:new URL('https://www.linkedin.com/login'),document:{links:[]},decodeURI})(arg);}};
+  const got=await linkedinPostsPage(p,{entry:'https://www.linkedin.com/in/yuhobuilds/',handle:'yuhobuilds',limit:10});
+  assert.equal(calls,1);assert.deepEqual(JSON.parse(JSON.stringify(got)),{reason:'need_owner',step:'owner',where:'same'});
+});
+test('티스토리 페이지 함수: 로그인 화면으로 넘어가면 정한 낱말만 돌려주고, 주소와 호스트 이름은 남기지 않는다',async()=>{
+  const entry='https://yuhobuilds.tistory.com/manage/statistics/blog';
+  const at=url=>tistoryDailyPage(fakePage({location:new URL(url),document:{readyState:'complete'}}),{entry,days:45,logins:LOGIN_HOSTS});
+  assert.deepEqual(await at('https://www.tistory.com/auth/login?redirectUrl=https%3A%2F%2Fsecret'),{reason:'need_owner',step:'landed',where:'login'});
+  assert.deepEqual(await at('https://accounts.kakao.com/login?continue=secret'),{reason:'need_owner',step:'landed',where:'login'});
+  // 호스트가 없는 주소는 경로 글자가 남지 않는다(GPT GA1).
+  assert.equal((await at('about:blank')).where,'blank');
+  assert.deepEqual(await at('data:text/plain,/sample-id/out'),{reason:'need_owner',step:'landed',where:'blank'});
+  // 서비스 밖 호스트 이름도 남기지 않는다(GPT c GA2).
+  assert.deepEqual(await at('https://session-marker.example:8443/log-in'),{reason:'need_owner',step:'landed',where:'other'});
 });
 test('capture: 계정 합계 수집을 마친 뒤 게시물별 값을 읽고, 그 실패는 앞 결과를 바꾸지 않는다',async()=>{
   const order=[],base=()=>({account:{platform:'douyin'},profile:{},covered:()=>false,signal:new AbortController().signal});
@@ -173,7 +246,7 @@ test('링크드인 페이지 함수: 소개 편집 링크로 주인을 확인하
   assert.equal(data.posts.length,1);assert.equal(data.posts[0].lines.includes('본문 글'),false);
   assert.deepEqual(parseLinkedInPosts(data,LI).batches[0].envelope.observations[0].metrics,{views:3,reach:2,likes:0,comments:0,saves:0,shares:0});
   realm.location=new URL('https://www.linkedin.com/in/yuhobuilds/');realm.document={links:[link('/in/someone/edit/intro/')]};
-  assert.deepEqual(await linkedinPostsPage(fakePage(realm),{entry:'https://www.linkedin.com/in/yuhobuilds/',handle:'yuhobuilds',limit:10}),{reason:'need_owner'});
+  assert.deepEqual(await linkedinPostsPage(fakePage(realm),{entry:'https://www.linkedin.com/in/yuhobuilds/',handle:'yuhobuilds',limit:10}),{reason:'need_owner',step:'owner',where:'same'});
 });
 test('postLifetime: 링크드인은 개인 프로필만 읽고 게시물마다 따로 올린다',async()=>{
   const saved=[];
@@ -237,7 +310,7 @@ test('postLifetime: 티스토리는 Aside 계정으로만 읽고, 판정 도구�
 
 // VK 클립(공개 클립 목록 · 클립 화면)과 네이버 블로그 글 목록(주인 세션 · RSS 게시 시각) — 11-19. 서버 회사 판이 오르기 전에는 길이 꺼져 있다.
 const {parseVkClips,parseNaverBlogPosts}=require('../tools/lib/외부통계파싱.cjs');
-const {vkClipsPage,naverBlogPostsPage,ROUTES}=require('../tools/계정통계예약/post-lifetime.cjs');
+const {vkClipsPage,naverBlogPostsPage,ROUTES,LOGIN_HOSTS}=require('../tools/계정통계예약/post-lifetime.cjs');
 const VK={accountId:'lab-ru-vk',handle:'synklab_ru',communityId:'243082040'},NB={accountId:'shift-naverblog',handle:'synkshift'};
 const link=id=>({z:'clip-243082040_'+id,owner:'-243082040',feed:'ownerFeed'});
 const clip=(id,at,engagement={views:21,likes:0,comments:0,shares:0},extra={})=>({clipId:id,ownerId:-243082040,publishTimestamp:at,isAuthor:true,viewPrivacy:'all',engagement,...extra});
@@ -329,9 +402,9 @@ test('VK 페이지 함수: 목록의 이 커뮤니티 클립만 골라 클립 �
   assert.equal(parseVkClips({...data,links:data.links.slice(0,1),observedAt:OBSERVED},VK).envelope.observations[0].metrics.shares,2);
   // 내릴 때마다 칸이 늘어 끝을 확인하지 못하면 덜 읽은 목록이라 올리지 않는다(GPT GA3).
   let grow=0;realm.document={...realm.document,querySelectorAll:()=>Array.from({length:++grow},(_,i)=>({getAttribute:()=>'?z=clip-243082040_'+(456239000+i)+'&feedType=ownerFeed&owner=-243082040'}))};
-  assert.deepEqual(await vkClipsPage(fakePage(realm),{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',communityId:'243082040'}),{reason:'retry',at:'list'});
+  assert.deepEqual(await vkClipsPage(fakePage(realm),{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',communityId:'243082040'}),{reason:'retry',step:'list'});
   realm.location=new URL('https://vk.ru/synklab_ru');
-  assert.deepEqual(await vkClipsPage(fakePage(realm),{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',communityId:'243082040'}),{reason:'need_owner'});
+  assert.deepEqual(await vkClipsPage(fakePage(realm),{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',communityId:'243082040'}),{reason:'need_owner',step:'landed',where:'same'});
 });
 test('네이버 페이지 함수: 쪽을 넘겨 끝까지 읽고 \\\' 이스케이프와 HTML 기호를 풀며, RSS에서 이 블로그 글의 게시 시각만 모은다',async()=>{
   const BS='\\',page=(rows,total)=>'{"resultCode":"S","resultMessage":"","postList":'+JSON.stringify(rows)+',"countPerPage":"30","totalCount":"'+total+'","pagingHtml":"<div class='+BS+"'blog2_paginate"+BS+"'></div>\"}";
@@ -351,7 +424,7 @@ test('네이버 페이지 함수: 쪽을 넘겨 끝까지 읽고 \\\' 이스케�
   assert.deepEqual(data.times,{'224478068429':'2026-11-18T12:10:00.000Z'});
   assert.deepEqual(parseNaverBlogPosts({...data,observedAt:OBSERVED},NB).summary,{rows:2,posts:1,untimed:1});
   realm.location=new URL('https://section.blog.naver.com/BlogHome.naver');
-  assert.deepEqual(await naverBlogPostsPage(p,{entry:'https://blog.naver.com/synkshift',handle:'synkshift'}),{reason:'need_owner'});
+  assert.deepEqual(await naverBlogPostsPage(p,{entry:'https://blog.naver.com/synkshift',handle:'synkshift'}),{reason:'need_owner',step:'landed',where:'other'});
 });
 
 test('postLifetime: VK 길은 회사 판 76부터 ego와 커뮤니티 번호에서, 네이버 길은 회사 판 86부터 Aside 계정에서만 돈다',async()=>{
@@ -368,7 +441,7 @@ test('postLifetime: VK 길은 회사 판 76부터 ego와 커뮤니티 번호에�
   const on=Object.fromEntries(Object.entries(ROUTES).map(([k,r])=>[k,{...r,live:true}]));
   assert.equal(await postLifetime(vkCtx(),helpers,on),'limited');
   assert.equal(saved.name,'vk-clips-posts');assert.equal(saved.envelope.sourceType,'public-page');
-  assert.deepEqual(args.at(-1),['vk-clips',{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',limit:0,days:0,communityId:'243082040'}]);
+  assert.deepEqual(args.at(-1),['vk-clips',{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',limit:0,days:0,logins:LOGIN_HOSTS,communityId:'243082040'}]);
   assert.equal(await postLifetime(nbCtx(),helpers,on),'limited');
   assert.equal(saved.name,'naver-blog-list-posts');assert.equal(saved.envelope.sourceType,'creator-screen');
   assert.deepEqual(stages,['creator-screen','public-page','public-page','creator-screen']);
