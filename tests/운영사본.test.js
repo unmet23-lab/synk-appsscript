@@ -541,10 +541,218 @@ test('갱신: fetch가 실패한 회차(예외)도 못 올린 기록과 처음 �
   assert.deepEqual(뒤.unpushed, ['docs/_ops/장부.jsonl']);
   assert.equal(뒤.unpushedSince, 처음.unpushedSince);
   assert.equal(뒤.head, null, '못 본 회차에는 head가 없다');
+  assert.deepEqual(뒤.unpushedFirst, 처음.unpushedFirst, '못 본 회차는 경로마다 처음 본 때도 이어 간다');
   // 앞 상태까지 못 읽으면 빈 목록이 남는다. head가 없어 감시(tools/hermes-synk/overview.cjs)가 「남은 기록 없음」으로 읽지 않는다
   fs.writeFileSync(path.join(판.상태폴더, '상태.json'), '{ 깨진');
   assert.equal((await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 })).결과, '실패');
   assert.deepEqual([판.상태().unpushed, 판.상태().head], [[], null]);
+});
+
+test('갱신: 처음 본 때는 경로마다 잇는다 — 앞 기록이 올라가고 다른 기록이 남으면 그 시각을 물려받지 않는다', async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const 갱신 = () => 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스: () => ({ 결과: '맞음' }) });
+  const 앞경로 = 'docs/_ops/장부.jsonl', 새경로 = 'docs/마케팅/편1/게시/작업실.json', 옛때 = '2026-11-22T20:39:22.085Z';
+  fs.appendFileSync(path.join(판.운영.폴더, 앞경로), '{"n":2}\n');
+  오래전(path.join(판.운영.폴더, 앞경로));
+  // 같은 기록이 그대로 남으면 처음 본 때를 잇는다 — 경로마다 적기 전의 상태(처음 본 때 하나)도 이어받는다
+  fs.writeFileSync(path.join(판.상태폴더, '상태.json'), JSON.stringify({ ...판.상태(), unpushed: [앞경로], unpushedSince: 옛때 }));
+  await 갱신();
+  assert.deepEqual([판.상태().unpushedSince, 판.상태().unpushedFirst], [옛때, { [앞경로]: 옛때 }]);
+  // 그 기록이 올라가고 같은 회차에 다른 기록이 남는다
+  판.운영.쓰기(새경로, '{"등록":"r1"}\n');
+  오래전(path.join(판.운영.폴더, 새경로));
+  도구.남은장부적기([앞경로], { 결과: '멈춤', 이유: '오프라인' }, 판.상태폴더);
+  assert.equal((await 갱신()).장부.결과, '올림');
+  const 뒤 = 판.상태();
+  assert.deepEqual([뒤.unpushed, 뒤.unpushedFirst, 뒤.unpushedSince], [[새경로], { [새경로]: 뒤.checkedAt }, 뒤.checkedAt]);
+  // 경로마다 적기 전의 상태(옛 판)에서 첫 회차가 origin을 못 봐도 앞 시각을 잃지 않는다
+  const { unpushedFirst: _, ...옛상태 } = 뒤;
+  fs.writeFileSync(path.join(판.상태폴더, '상태.json'), JSON.stringify({ ...옛상태, unpushedSince: 옛때 }));
+  판.공용.g('remote', 'set-url', 'origin', path.join(판.뿌리, '없는.git'));
+  assert.equal((await 갱신()).결과, '실패');
+  판.공용.g('remote', 'set-url', 'origin', 판.원격);
+  await 갱신();
+  assert.deepEqual([판.상태().unpushedSince, 판.상태().unpushedFirst], [옛때, { [새경로]: 옛때 }]);
+  // 표시 목록에만 있고 경로마다 적은 때에는 없는 경로(300개 밖)는 앞 시각을 물려받지 않는다
+  fs.writeFileSync(path.join(판.상태폴더, '상태.json'), JSON.stringify({ ...뒤, unpushed: [새경로], unpushedSince: 옛때, unpushedFirst: {} }));
+  await 갱신();
+  assert.deepEqual([판.상태().unpushedSince, 판.상태().unpushedFirst], [판.상태().checkedAt, { [새경로]: 판.상태().checkedAt }]);
+  fs.writeFileSync(path.join(판.상태폴더, '상태.json'), JSON.stringify(뒤));
+  // 새 기록이 많아 표시 목록(50개) 밖으로 밀려도 처음 본 때를 잃지 않는다
+  for (let i = 0; i < 60; i++) 판.운영.쓰기(`docs/_ops/가${String(i).padStart(2, '0')}.json`, '{}\n');
+  for (const f of fs.readdirSync(path.join(판.운영.폴더, 'docs/_ops'))) 오래전(path.join(판.운영.폴더, 'docs/_ops', f));
+  await 갱신();
+  const 많음 = 판.상태();
+  assert.deepEqual([많음.unpushed.length, 많음.unpushed.includes(새경로), 많음.unpushedSince, 많음.unpushedFirst[새경로]], [50, false, 뒤.checkedAt, 뒤.checkedAt]);
+});
+
+test('갱신: 못 올린 기록은 운영시험으로 시험해 올리고, 올리는 동안 덧붙은 줄이 있으면 목록에 남긴다', async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const 헤르메스 = () => ({ 결과: '맞음' }), 경로 = 'docs/_ops/장부.jsonl', 파일 = path.join(판.운영.폴더, 경로);
+  const core = require(path.join(REPO, 'tools', 'lib', 'git-publish-core.cjs')), 원래 = core.올리기;
+  fs.appendFileSync(파일, '{"n":2}\n');
+  도구.남은장부적기([경로], { 결과: '멈춤', 이유: '오프라인' }, 판.상태폴더);
+  let 받은;
+  t.mock.method(core, '올리기', async (옵션) => {
+    받은 = 옵션;
+    const r = await 원래(옵션);
+    // 올리는 동안 다른 도구가 같은 장부에 덧붙이고, 잠금에 막혀 목록에 적고 끝났다
+    fs.appendFileSync(파일, '{"n":3}\n');
+    도구.남은장부적기([경로], { 결과: '멈춤', 이유: '진행 중' }, 판.상태폴더);
+    return r;
+  });
+  const r = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
+  assert.deepEqual([r.장부.결과, 받은.관련시험돌리기], ['올림', 도구.운영시험], JSON.stringify(r));
+  assert.equal(판.원격파일(경로), '{"n":1}\n{"n":2}\n');
+  assert.deepEqual(Object.keys(도구.남은장부읽기(판.상태폴더)), [경로], '덧붙은 줄은 다음 갱신이 올린다');
+  t.mock.restoreAll();
+  assert.equal((await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 })).장부.결과, '올림');
+  assert.deepEqual([판.원격파일(경로), 도구.남은장부읽기(판.상태폴더)], ['{"n":1}\n{"n":2}\n{"n":3}\n', {}]);
+  // git에는 바뀐 것으로 보여도 올릴 것이 없으면(줄끝만 다름) 목록에서 빼고 회차마다 되풀이하지 않는다
+  fs.writeFileSync(파일, fs.readFileSync(파일, 'utf8').replace(/\n$/, ''));
+  도구.남은장부적기([경로], { 결과: '멈춤', 이유: '오프라인' }, 판.상태폴더);
+  assert.equal((await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 })).장부.결과, '올릴 것 없음');
+  assert.deepEqual(도구.남은장부읽기(판.상태폴더), {});
+});
+
+const 옛항목 = { 시각: '2026-11-25T00:00:00.000Z', 이유: '진행 중' };
+for (const [이름, 적은판, 다시적은, 차례] of [
+  ['지우려는 사이 다른 도구가', null, (옛) => ({ ...옛, 표: '다른 도구' }), 2],
+  // 옛 판은 표를 적지 않는다 — 갱신이 먼저 달아 둔 표가 없어진다. 표를 다는 잠금 안에서 목록을 한 번 더 읽는다
+  ['지우려는 사이 옛 판 도구가', 옛항목, () => 옛항목, 3],
+  // 표를 git 상태보다 먼저 달지 않으면 여기서 새 항목에 표를 달고 지운다
+  ['표를 달려는 사이 옛 판 도구가', 옛항목, () => 옛항목, 2],
+]) test(`갱신: 깨끗해진 항목을 ${이름} 다시 적은 항목은 잃지 않고 올린다`, async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const 경로 = 'docs/_ops/장부.jsonl', 목록파일 = path.join(판.상태폴더, '남은장부.json');
+  const 갱신 = () => 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스: () => ({ 결과: '맞음' }) });
+  도구.남은장부적기([경로], { 결과: '멈춤', 이유: '오프라인' }, 판.상태폴더);   // 이미 깨끗한 기록
+  if (적은판) fs.writeFileSync(목록파일, JSON.stringify({ paths: { [경로]: 적은판 } }));
+  const 원래 = fs.readFileSync;
+  let 읽기 = 0, 다시;
+  t.mock.method(fs, 'readFileSync', function (...인자) {
+    // 갱신이 목록을 그 차례로 읽기 바로 앞에 줄을 덧붙이고 다시 적은 경우
+    if (인자[0] === 목록파일 && ++읽기 === 차례) {
+      fs.appendFileSync(path.join(판.운영.폴더, 경로), '{"n":2}\n');
+      다시 = 다시적은(JSON.parse(원래(목록파일, 'utf8')).paths[경로]);
+      fs.writeFileSync(목록파일, JSON.stringify({ paths: { [경로]: 다시 } }));
+    }
+    return 원래.apply(fs, 인자);
+  });
+  const r = await 갱신();
+  t.mock.restoreAll();
+  assert.ok(읽기 >= 차례, '목록을 다시 읽었다');
+  // git 상태를 본 뒤에 적혔으면 항목이 그대로 남아 다음 갱신이 올리고, 그 앞이면 이 회차가 올린다
+  if (r.장부?.결과 !== '올림') {
+    assert.deepEqual(도구.남은장부읽기(판.상태폴더)[경로], 다시, JSON.stringify(r));
+    assert.equal((await 갱신()).장부?.결과, '올림');
+  }
+  assert.deepEqual([판.원격파일(경로), 도구.남은장부읽기(판.상태폴더)], ['{"n":1}\n{"n":2}\n', {}]);
+});
+
+test('갱신: 목록을 git 상태보다 먼저 읽는다 — 그 앞에 적힌 기록은 그 회차의 상태에 보여 올린다', async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const 경로 = 'docs/_ops/장부.jsonl', 목록파일 = path.join(판.상태폴더, '남은장부.json');
+  const 원래 = fs.readFileSync;
+  let 읽기 = 0;
+  t.mock.method(fs, 'readFileSync', function (...인자) {
+    // 갱신이 목록을 처음 읽기 바로 앞에 다른 도구가 줄을 덧붙이고 적은 경우
+    if (인자[0] === 목록파일 && ++읽기 === 1) {
+      fs.appendFileSync(path.join(판.운영.폴더, 경로), '{"n":2}\n');
+      fs.writeFileSync(목록파일, JSON.stringify({ paths: { [경로]: { 시각: new Date().toISOString(), 이유: '진행 중', 표: '다른 도구' } } }));
+    }
+    return 원래.apply(fs, 인자);
+  });
+  const r = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스: () => ({ 결과: '맞음' }) });
+  t.mock.restoreAll();
+  assert.deepEqual([r.장부?.결과, 판.원격파일(경로), 도구.남은장부읽기(판.상태폴더)], ['올림', '{"n":1}\n{"n":2}\n', {}], JSON.stringify(r));
+});
+
+test('남은장부적기: 적은 뒤 다른 도구가 다시 적은 항목은 올렸어도 남기고, 그대로인 항목만 지운다', (t) => {
+  const 상태폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-left-'));
+  t.after(() => fs.rmSync(상태폴더, { recursive: true, force: true }));
+  const [가, 나] = ['docs/_ops/장부.jsonl', 'docs/마케팅/편1/게시/작업실.json'], 올림 = { 결과: '올림' }, 멈춤 = { 결과: '멈춤', 이유: '진행 중' };
+  const 남은 = () => 도구.남은장부읽기(상태폴더), 적기 = (경로들, 결과, 앞) => 도구.남은장부적기(경로들, 결과, 상태폴더, 앞);
+  const 앞 = 적기([가, 나], { 결과: '올리는 중', 이유: '올리는 중' });
+  assert.deepEqual(앞, 남은(), '적은 뒤의 목록을 돌려준다');
+  assert.ok(앞[가].표 && 앞[가].표 !== 앞[나].표, '적을 때마다 새 표');
+  적기([나], { 결과: '올리는 중', 이유: '올리는 중' });   // 글이 같아도 다시 적은 것이다(적고 나서 끊긴 다른 도구)
+  적기([가, 나], 올림, 앞);
+  assert.deepEqual([Object.keys(남은()), 남은()[나].시각], [[나], 앞[나].시각], '처음 본 때는 이어 간다');
+  // 올리기 전에 적지 못했으면(빈 목록) 다른 도구의 항목을 지우지 않는다
+  적기([나], 올림, {});
+  assert.deepEqual(Object.keys(남은()), [나]);
+  적기([나], { 결과: '올릴 것 없음' }, 남은());
+  assert.deepEqual(남은(), {}, '올릴 것이 없어도 지운다');
+  // 옛 판이 적은 항목은 표가 없어 남긴다(다음 갱신이 표를 달고 본다). 앞 목록에 없던 것도 남긴다. 앞을 안 주면 그대로 지운다
+  fs.writeFileSync(path.join(상태폴더, '남은장부.json'), JSON.stringify({ paths: { [가]: { 시각: 'x', 이유: 'y' }, [나]: { 시각: 'x', 이유: 'y' } } }));
+  적기([가, 나], 올림, { [가]: { 시각: 'x', 이유: 'y' } });
+  assert.deepEqual(Object.keys(남은()), [가, 나]);
+  적기([가, 나], 멈춤);
+  적기([가, 나], 올림);
+  assert.deepEqual(남은(), {});
+});
+
+test('운영시험: 시험 자리를 짧게 기다리고, 없으면 멈추며, 있으면 그 자리로 돌리고 놓는다', (t) => {
+  const 앞 = process.env.SYNK_관련시험_자리;
+  t.after(() => { if (앞 === undefined) delete process.env.SYNK_관련시험_자리; else process.env.SYNK_관련시험_자리 = 앞; });
+  delete process.env.SYNK_관련시험_자리;
+  const 본 = [];
+  const 시험 = (자리, 결과) => ({
+    자리잡기: (폴더, 옵션) => { 본.push(['자리', path.relative(도구.찾기(REPO).공용git, 폴더).replace(/\\/g, '/'), 옵션]); return 자리; },
+    돌리기: (입력) => { 본.push(['돌리기', 입력]); if (결과 instanceof Error) throw 결과; return 결과; },
+  });
+  const 잡은 = { 번호: 1, 수: 2, 기다린초: 3, 놓기: () => 본.push(['놓기']) };
+  assert.throws(() => 도구.운영시험({ root: REPO, 시험: ['a'] }, { 시험: 시험({ ...잡은, 번호: null }) }), (e) => /시험 자리가 차 있다/.test(e.이유 || e.message));
+  assert.deepEqual(본, [['자리', 'synk-관련시험/자리', { 수: undefined, 기다림ms: 120000 }]], '자리가 없으면 시험을 돌리지 않는다');
+  본.length = 0;
+  assert.deepEqual(도구.운영시험({ root: REPO, 시험: ['a'] }, { 시험: 시험(잡은, { 통과함: true }) }), { 통과함: true, 자리: { 번호: 1, 수: 2, 기다린초: 3 } });
+  assert.deepEqual(본.slice(1), [['돌리기', { root: REPO, 시험: ['a'], 자리: false }], ['놓기']], '시험의 한도는 그대로다');
+  본.length = 0;
+  assert.throws(() => 도구.운영시험({ root: REPO, 시험: ['a'] }, { 시험: 시험(잡은, new Error('시험 오류')) }), /시험 오류/);
+  assert.deepEqual(본.at(-1), ['놓기'], '시험이 던져도 자리를 놓는다');
+  for (const [값, 수] of [['3', 3], ['-1', 1], ['1.7', 1], ['0', undefined], ['셋', undefined]]) {
+    process.env.SYNK_관련시험_자리 = 값;
+    본.length = 0;
+    도구.운영시험({ root: REPO, 시험: ['a'] }, { 시험: 시험(잡은, {}) });
+    assert.equal(본[0][2].수, 수, 값);
+  }
+  process.env.SYNK_관련시험_자리 = '끔';
+  본.length = 0;
+  도구.운영시험({ root: REPO, 시험: ['a'] }, { 시험: 시험(잡은, {}) });
+  assert.deepEqual(본.map((x) => x[0]), ['돌리기'], '자리를 끄면 잡지 않는다');
+});
+
+test('바로올리기: 운영 사본에서 올릴 때만 관련 시험을 운영시험으로 돌린다 — 자리가 없으면 멈추고 잠금을 놓는다', async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const core = require(path.join(REPO, 'tools', 'lib', 'git-publish-core.cjs'));
+  let 받은;
+  t.mock.method(core, '올리기', async (옵션) => { 받은 = 옵션; return { 결과: '올릴 것 없음' }; });
+  await 바로.올리기({ 저장소: 판.운영.폴더, 경로들: ['docs/_ops/장부.jsonl'], 메시지: 'x', 실행: true });
+  assert.equal(받은.관련시험돌리기, 도구.운영시험);
+  const 제것 = () => ({});
+  await 바로.올리기({ 저장소: 판.운영.폴더, 경로들: ['docs/_ops/장부.jsonl'], 메시지: 'x', 실행: true, 관련시험돌리기: 제것 });
+  assert.equal(받은.관련시험돌리기, 제것);
+  await 바로.올리기({ 저장소: 판.공용.폴더, 경로들: ['tools/a.js'], 메시지: 'x', 실행: true });
+  assert.equal(받은.관련시험돌리기, undefined, '다른 작업본은 그대로');
+  t.mock.restoreAll();
+  // 시험이 있는 판에서 자리가 없으면 아무것도 올리지 않고 멈춘다
+  const { 멈춤 } = require(path.join(REPO, 'tools', 'lib', 'git-commit-core.cjs'));
+  const 관련 = require(path.join(REPO, 'tools', '관련시험.js'));
+  t.mock.method(관련, '고르기', () => ({ 시험: ['tests/a.test.js'], 까닭: {} }));
+  판.운영.쓰기('docs/_ops/장부.jsonl', '{"n":2}\n');
+  const 앞머리 = 판.원격머리();
+  const r = await 바로.올리기({ 저장소: 판.운영.폴더, 경로들: ['docs/_ops/장부.jsonl'], 메시지: 'x', 실행: true, 관련시험돌리기: () => { throw new 멈춤('관련 시험 자리가 차 있다'); } });
+  assert.deepEqual([r.결과, 판.원격머리()], ['멈춤', 앞머리], JSON.stringify(r));
+  assert.match(r.이유, /자리가 차 있다/);
+  const 잠금 = 도구.잠그기(기본상태);
+  assert.ok(잠금, '잠금을 놓았다');
+  잠금.풀기();
 });
 
 test('장부올리기가 올리다 끊기면 먼저 적힌 기록을 다음 갱신이 올린다', async (t) => {

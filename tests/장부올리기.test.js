@@ -60,6 +60,18 @@ test('an operational publish that dies midway leaves its paths for the next refr
   assert.deepEqual(Object.keys(midway).sort(), [...records].sort());
   assert.match(midway[records[1]].이유, /올리는 중/);
   assert.deepEqual(operations.남은장부읽기(state), {}, '올렸으면 지운다');
+  // 올리는 동안 다른 도구가 같은 기록을 다시 적었으면 목록에 남긴다
+  publish.올리기.mock.mockImplementation(async () => {
+    operations.남은장부적기([records[0]], { 결과: '멈춤', 이유: '진행 중' }, state);
+    return { 결과: '올림', 머리: 'fixture' };
+  });
+  await ledger.장부올리기(records, 'fixture message', { 저장소: worktree, 환경: {} });
+  assert.deepEqual(Object.entries(operations.남은장부읽기(state)).map(([p, x]) => [p, x.이유]), [[records[0], '진행 중']]);
+  // 먼저 적지 못했으면 다른 도구의 항목을 지우지 않는다
+  publish.올리기.mock.mockImplementation(async () => ({ 결과: '올림', 머리: 'fixture' }));
+  t.mock.method(operations, '남은장부적기', operations.남은장부적기).mock.mockImplementationOnce(() => { throw new Error('디스크'); });
+  await ledger.장부올리기(records, 'fixture message', { 저장소: worktree, 환경: {} });
+  assert.deepEqual(Object.keys(operations.남은장부읽기(state)), [records[0]]);
 });
 
 test('failed operational publish preserves retry paths and never touches the shared checkout', async (t) => {

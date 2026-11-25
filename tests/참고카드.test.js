@@ -225,3 +225,40 @@ test('카드 커밋: 예약 작업이 도는 운영 사본(분리된 HEAD 워크
     fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 });
   }
 });
+
+test('카드 커밋: 운영 사본에서는 올리기 전에 적고, 올린 뒤에는 그때의 목록을 건네 그사이 다시 적힌 항목이 남게 한다', () => {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-cards-left-test-'));
+  const git = (...args) => execFileSync('git', ['-c', 'core.quotepath=false', ...args], { cwd: 뿌리, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+  try {
+    fs.mkdirSync(path.join(뿌리, 'tools'));
+    for (const f of ['참고카드_커밋.js', '참고카드_목록.js', 'git잠금.js']) fs.copyFileSync(path.join(REPO, 'tools', f), path.join(뿌리, 'tools', f));
+    // 목록과 올리기만 흉내 낸다(부른 차례와 건넨 값을 본다)
+    fs.writeFileSync(path.join(뿌리, 'tools', '운영사본.js'), `module.exports = { 운영사본인가: () => true, 남은장부적기: (경로들, 결과, 상태폴더, 앞) => {
+      require('fs').appendFileSync(process.env.SYNK_TEST_CALLS, JSON.stringify([경로들, 결과.결과, 앞 || null]) + require('os').EOL);
+      return { 적힌: 결과.결과 };
+    } };`);
+    fs.writeFileSync(path.join(뿌리, 'tools', '바로올리기.js'), "console.log(JSON.stringify({ 결과: process.env.SYNK_TEST_RESULT, 머리: 'abc', 이유: 'x', 수: [] }));");
+    fs.mkdirSync(path.join(뿌리, 'docs', '참고카드', '카드'), { recursive: true });
+    fs.writeFileSync(path.join(뿌리, 'docs', '참고카드', 'README.md'), '# 참고 카드\n');
+    git('init', '-q', '-b', 'master');
+    git('config', 'user.name', 'test');
+    git('config', 'user.email', 'test@example.com');
+    git('add', '-A');
+    git('commit', '-q', '-m', 'base');
+    git('update-ref', 'refs/remotes/origin/master', 'HEAD');
+    git('checkout', '-q', '--detach');
+    const 카드 = 'docs/참고카드/카드/2026-11-26_시험.md', 부름 = path.join(뿌리, '부름.jsonl');
+    fs.mkdirSync(path.join(뿌리, 'docs', '참고카드', '카드'), { recursive: true });   // 빈 폴더는 git에 없다
+    fs.writeFileSync(path.join(뿌리, 카드), 카드글({ 제목: '시험', 대상: 'WORLD 앱', 언제: '지금' }));
+    for (const [값, 결과] of [['올림', '커밋함'], ['올릴 것 없음', '커밋할 것 없음']]) {
+      fs.rmSync(부름, { force: true });
+      const r = JSON.parse(execFileSync('node', [path.join(뿌리, 'tools', '참고카드_커밋.js'), '--커밋', '--json'],
+        { cwd: 뿌리, encoding: 'utf8', env: { ...process.env, SYNK_TEST_CALLS: 부름, SYNK_TEST_RESULT: 값 } }));
+      assert.strictEqual(r.결과, 결과, JSON.stringify(r));
+      assert.deepStrictEqual(fs.readFileSync(부름, 'utf8').trim().split(/\r?\n/).map((l) => JSON.parse(l)),
+        [[[카드], '올리는 중', null], [[카드], 값, { 적힌: '올리는 중' }]]);
+    }
+  } finally {
+    fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 });
+  }
+});

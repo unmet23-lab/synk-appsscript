@@ -31,6 +31,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { randomUUID } = require('crypto');
 const { spawnSync } = require('child_process');
 
 const { git도구, 조상인가, 멈춤, 사용법오류, 잠깐 } = require('./lib/git-commit-core.cjs');
@@ -172,7 +173,7 @@ function 남은장부쓰기(상태폴더, 목록) {
   바꿔쓰기(path.join(상태폴더, '남은장부.json'), `${JSON.stringify({ paths: 목록 }, null, 2)}\n`);
 }
 
-/** 여러 도구가 같이 고치는 목록이라 짧은 잠금 안에서 읽고·고치고·쓴다 — 나중 쓰기가 앞선 항목을 지우지 않게. 잠금을 못 잡으면(6초) 그래도 쓴다 */
+/** 여러 도구가 같이 고치는 목록이라 짧은 잠금 안에서 읽고·고치고·쓴다 — 나중 쓰기가 앞선 항목을 지우지 않게. 잠금을 못 잡으면(6초) 그래도 쓴다. 그래서 잠금 안에서 git처럼 오래 걸리는 일을 하지 않는다 */
 function 남은장부고치기(상태폴더, 바꾸기) {
   let 잠금 = null;
   for (let 차례 = 0; 차례 < 40 && !잠금; 차례++) {
@@ -189,13 +190,25 @@ function 남은장부고치기(상태폴더, 바꾸기) {
   }
 }
 
-/** 장부올리기·참고카드_커밋(운영 사본)이 부른다 — 올렸으면 그 경로를 지우고, 못 올렸으면 남긴다 */
-function 남은장부적기(경로들, 결과, 상태폴더 = 기본상태폴더()) {
+/** 적은 뒤에 다른 도구가 다시 적지 않은 항목인가 — 적을 때마다 새 표를 단다. 옛 판이 적은 항목은 표가 없어 그대로라고 보지 않는다 */
+const 그대로 = (지금, 앞) => Boolean(지금?.표) && 지금.표 === 앞?.표;
+/** 옛 판이 적은 항목에 표를 단다(목록 잠금 안). 그 뒤에 옛 판이 다시 적으면 표가 없어져 「그대로」가 아니다 */
+function 표달기(목록) {
+  for (const p of Object.keys(목록)) if (!목록[p]?.표) 목록[p] = { ...목록[p], 표: randomUUID() };
+  return 목록;
+}
+
+/**
+ * 장부올리기·참고카드_커밋(운영 사본)이 부른다 — 올렸으면 그 경로를 지우고, 못 올렸으면 남긴다. 적은 뒤의 목록을 돌려준다.
+ * 앞(올리기 전의 목록)을 주면, 올렸어도 그 뒤에 다시 적힌 항목은 남긴다. 올리는 동안 다른 도구가 같은 기록에 덧붙이면 그 도구는 잠금에 막혀 목록에 적고
+ * 끝나는데, 먼저 올린 쪽이 그 항목을 지우면 덧붙은 줄은 아무도 올리지 않는다. 남긴 항목의 기록이 이미 올라갔으면 다음 갱신이 지운다.
+ */
+function 남은장부적기(경로들, 결과, 상태폴더 = 기본상태폴더(), 앞 = null) {
   const 됨 = ['올림', '올릴 것 없음'].includes(결과?.결과);
   return 남은장부고치기(상태폴더, (지금) => {
     for (const p of 경로들) {
-      if (됨) delete 지금[p];
-      else 지금[p] = { 시각: 지금[p]?.시각 || new Date().toISOString(), 이유: String(결과?.이유 || 결과?.결과 || '').slice(0, 300) };
+      if (!됨) 지금[p] = { 시각: 지금[p]?.시각 || new Date().toISOString(), 이유: String(결과?.이유 || 결과?.결과 || '').slice(0, 300), 표: randomUUID() };
+      else if (!앞 || 그대로(지금[p], 앞[p])) delete 지금[p];
     }
     return 지금;
   });
@@ -376,6 +389,9 @@ async function 갱신(옵션 = {}) {
     const 이어서 = 멈춤값 && 이전 && ['stopped', 'failed'].includes(이전.state) && 이전.reasonKey === 값.까닭;
     // 안올림을 모르는 회차(fetch 실패 같은 예외)는 지난 목록·처음 본 시각을 이어 간다 — 6시간 알림 시계가 다시 0이 되지 않게
     const 안올림 = 값.안올림 || 이전?.unpushed || [];
+    // 처음 본 때는 경로마다 잇는다. 앞 기록이 올라가고 다른 기록이 남으면 그 시각을 물려받지 않는다(11-26, 03:42에 남은 기록 11개가 11-23부터로 적혔다)
+    const 처음본 = 값.안올림 && 값.안올림.map((p) => [p, (이전?.unpushedFirst ? 이전.unpushedFirst[p] : 이전?.unpushed?.includes(p) && 이전.unpushedSince) || 지금])
+      .sort((가, 나) => (가[1] < 나[1] ? -1 : 가[1] > 나[1] ? 1 : 0));
     const 헤 = 값.헤르메스;
     상태쓰기(상태폴더, {
       checkedAt: 지금, state: 멈춤값 ? (값.결과 === '멈춤' ? 'stopped' : 'failed') : 'ok',
@@ -383,7 +399,8 @@ async function 갱신(옵션 = {}) {
       stoppedSince: 멈춤값 ? (이어서 && 이전.stoppedSince ? 이전.stoppedSince : 지금) : null,
       reasonKey: 멈춤값 ? 값.까닭 : null, reason: 값.이유 || null, paths: (값.걸림 || []).slice(0, 10),
       // 운영 도구가 쓰고 아직 origin에 없는 기록 — 6시간 넘게 남으면 감시가 알린다
-      unpushedSince: 안올림.length ? (이전?.unpushedSince || 지금) : null, unpushed: 안올림.slice(0, 50),
+      unpushedSince: 처음본 ? 처음본[0]?.[1] || null : 안올림.length ? (이전?.unpushedSince || 지금) : null, unpushed: 안올림.slice(0, 50),
+      unpushedFirst: 처음본 ? Object.fromEntries(처음본.slice(0, 300)) : 이전?.unpushedFirst,   // 경로마다 적기 전의 상태면 없는 채로 둔다(빈 값은 「처음 봄」으로 읽힌다)
       // 마지막으로 실제로 다시 잡은 때·어긋남은 다음 회차의 되풀이 막기가 본다 — 제한·실패 결과로 덮지 않고 이어 간다
       hermes: 헤 ? { result: 헤.결과, reason: 헤.이유 || null, at: 지금, differs: (헤.다름 || []).slice(0, 30),
         lastApplyAt: 헤.결과 === '다시 잡음' ? 지금 : (이전?.hermes?.lastApplyAt || null),
@@ -409,6 +426,9 @@ async function 갱신(옵션 = {}) {
       마무리 = 끊긴따라가기마무리(git, B, O) || 되돌아간따라가기맞추기(git, B);
       if (마무리) B = 마무리;
     }
+    // 목록을 git 상태보다 먼저 읽는다 — 도구는 기록을 쓴 다음 목록에 적으므로, 이 목록에 있는 항목의 변화는 아래 기록에 보인다
+    let 남은 = 남은장부읽기(상태폴더);
+    if (옵션.실행 && Object.values(남은).some((x) => !x?.표)) 남은 = 남은장부고치기(상태폴더, 표달기);
     const 기록 = 기록바뀜(git);
     const 남의것 = 판과다른(git, O, 바뀐경로(git).filter((p) => !기록자리인가(p)));
     if (남의것.length) {
@@ -416,25 +436,20 @@ async function 갱신(옵션 = {}) {
         이유: `운영 사본에서 고친 파일이 ${남의것.length}개 있어 따라가지 않았다 — 운영 사본은 고치지 않는다. 고칠 것은 작업본에서 올리고 여기는 git -C "${f.운영사본}" checkout -- <파일>로 되돌린다` });
     }
     // 운영 도구가 올리려다 못 올린 기록만 다시 올린다. 쓰는 중일 수 있는 다른 기록은 건드리지 않는다(쓴 도구가 올린다)
-    let 남은 = 남은장부읽기(상태폴더);
-    if (옵션.실행 && Object.keys(남은).some((p) => !기록.includes(p))) {
-      // 깨끗해진 것(누가 올림)은 지운다 — 잠금 안에서 지금 상태를 다시 보고(그새 다른 도구가 적은 항목을 옛 목록으로 지우지 않게)
-      남은 = 남은장부고치기(상태폴더, (목록) => {
-        const 아직 = new Set(기록바뀜(git));
-        return Object.fromEntries(Object.entries(목록).filter(([p]) => 아직.has(p)));
-      });
-    }
+    // 깨끗해진 것(누가 올림)은 지운다. 그사이 다시 적힌 항목은 남긴다(다음 회차가 본다)
+    const 깨끗 = Object.keys(남은).filter((p) => !기록.includes(p));
+    if (옵션.실행 && 깨끗.length) 남은 = 남은장부적기(깨끗, { 결과: '올릴 것 없음' }, 상태폴더, 남은);
     const 다시올릴 = 기록.filter((p) => 남은[p]);
     let 장부 = null;
     if (다시올릴.length && 옵션.실행) {
       // 이미 운영 사본 잠금을 소유한다. Git 코어만 불러 후속 운영 갱신의 재진입을 없앤다.
       let r = require('./lib/ledger-publish-policy.cjs').holdResult(process.env, true);
       if (!r) {
-        try { r = await require('./lib/git-publish-core.cjs').올리기({ 저장소: f.운영사본, 경로들: 다시올릴, 메시지: 'chore(장부): 운영 사본에서 못 올렸던 기록', 실행: true, 공용안따라감: true }); }
+        try { r = await require('./lib/git-publish-core.cjs').올리기({ 저장소: f.운영사본, 경로들: 다시올릴, 메시지: 'chore(장부): 운영 사본에서 못 올렸던 기록', 실행: true, 공용안따라감: true, 관련시험돌리기: 운영시험 }); }
         catch (e) { r = { 결과: '실패', 이유: e.이유 || e.message }; }
       }
       장부 = { 결과: r.결과, 이유: r.이유 || null };
-      남은장부적기(다시올릴, r, 상태폴더);
+      남은장부적기(다시올릴, r, 상태폴더, 남은);
       // 올렸으면 그 커밋이 새 origin이고 이 사본도 이미 그리로 따라갔다
       B = git.글(['rev-parse', '--verify', 'HEAD^{commit}']);
       O = 추적판();
@@ -567,6 +582,20 @@ async function main(argv = process.argv.slice(2)) {
 // 직접 올릴 때의 관련 시험은 예약 갱신의 20분 한도를 넘길 수 있다.
 function 올리기잠그기() { return 잠그기(기본상태폴더(), '갱신.lock', 잠금한도ms, true); }
 
-module.exports = { 찾기, 운영사본인가, 만들기, 갱신, 밀린뒤, 상태, 헤르메스맞추기, 기록자리인가, 남은장부읽기, 남은장부적기, 잠그기, 올리기잠그기, 상태읽기, 같은곳, 인자읽기, main, 가리킴파일, 뺄폴더, 사람몫, 헤르메스판단 };
+/**
+ * 운영 사본에서 올릴 때의 관련 시험(git-publish-core 올리기의 관련시험돌리기). 운영 사본 잠금을 쥔 채 돌아 그동안 갱신이 모두 「바쁨」이고, 세션의 push 뒤
+ * 갱신이면 그 세션의 올리기 명령도 기다린다. 그래서 시험 자리는 2분까지만 기다리고, 없으면 올리지 않고 멈춘다. 기록은 「못 올린 기록」에 남아 다음
+ * 갱신이 다시 올린다. 시험 자체의 한도와 판정은 그대로다.
+ * 11-13~11-26 감시 초안 「운영 사본 갱신이 멈춤」 29건 가운데 20건이 운영 사본에서 올린 커밋으로 끝난 빈틈(7~143분)이었다.
+ */
+function 운영시험(입력, { 시험 = require('./관련시험.js'), 기다림ms = 2 * 60_000 } = {}) {
+  if (process.env.SYNK_관련시험_자리 === '끔') return 시험.돌리기(입력);
+  const 수 = Number(process.env.SYNK_관련시험_자리) || 0;   // 자리 수를 읽는 법은 관련시험.js 자리설정과 같다
+  const 자리 = 시험.자리잡기(path.join(찾기(입력.root).공용git, 'synk-관련시험', '자리'), { 수: 수 ? Math.max(1, Math.floor(수)) : undefined, 기다림ms });
+  if (자리.번호 === null) throw new 멈춤('관련 시험 자리가 차 있다 — 파일을 보존하고 다음 회차에 다시 한다');
+  try { return { ...시험.돌리기({ ...입력, 자리: false }), 자리: { 번호: 자리.번호, 수: 자리.수, 기다린초: 자리.기다린초 } }; } finally { 자리.놓기(); }
+}
+
+module.exports = { 찾기, 운영사본인가, 만들기, 갱신, 밀린뒤, 상태, 헤르메스맞추기, 기록자리인가, 남은장부읽기, 남은장부적기, 잠그기, 올리기잠그기, 운영시험, 상태읽기, 같은곳, 인자읽기, main, 가리킴파일, 뺄폴더, 사람몫, 헤르메스판단 };
 
 if (require.main === module) main().then((code) => { process.exitCode = code; });
