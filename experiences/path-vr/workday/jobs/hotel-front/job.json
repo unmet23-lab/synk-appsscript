@@ -87,6 +87,7 @@
           "x": 0.24,
           "y": 0.45,
           "label": "객실 관리 화면",
+          "audio": "audio/front-pms.mp3",
           "hint": {
             "mn": "Өрөөний удирдлагын дэлгэц. Захиалга, өрөөний байдал, тооцоог эндээс хардаг.",
             "vi": "Màn hình quản lý phòng. Dùng để xem thông tin đặt phòng, tình trạng phòng và hóa đơn.",
@@ -98,6 +99,7 @@
           "x": 0.34,
           "y": 0.64,
           "label": "카드키 발급기",
+          "audio": "audio/front-key-encoder.mp3",
           "note": "keycard",
           "hint": {
             "mn": "Картан түлхүүр гаргах төхөөрөмж. Зочдын өрөөний картан түлхүүрийг энэ төхөөрөмжөөр бэлддэг.",
@@ -110,6 +112,7 @@
           "x": 0.47,
           "y": 0.66,
           "label": "내선 전화",
+          "audio": "audio/front-house-phone.mp3",
           "hint": {
             "mn": "Дотоод утас. Зочдын өрөө болон бусад хэлтэстэй холбогддог.",
             "vi": "Điện thoại nội bộ. Dùng để gọi đến phòng của khách và các bộ phận khác.",
@@ -121,6 +124,7 @@
           "x": 0.62,
           "y": 0.78,
           "label": "고객등록카드(레지카드)",
+          "audio": "audio/front-reg-card.mp3",
           "hint": {
             "mn": "Зочны бүртгэлийн карт. Чек-ин хийхдээ зочин шалгаад гарын үсэг зурдаг.",
             "vi": "Phiếu đăng ký nhận phòng. Khi nhận phòng, khách kiểm tra thông tin rồi ký tên.",
@@ -139,6 +143,7 @@
           "x": 0.26,
           "y": 0.58,
           "label": "벨 데스크",
+          "audio": "audio/lobby-bell-desk.mp3",
           "hint": {
             "mn": "Ачаа тээшний хэсэг. Зочны ачааг түр хадгалж, өрөөнд нь хүргэж өгдөг.",
             "vi": "Quầy hành lý. Nhân viên giữ hành lý cho khách và mang lên phòng.",
@@ -150,6 +155,7 @@
           "x": 0.56,
           "y": 0.64,
           "label": "로비 라운지",
+          "audio": "audio/lobby-lounge.mp3",
           "hint": {
             "mn": "Лоббины амрах хэсэг. Зочид сууж хүлээдэг газар.",
             "vi": "Khu chờ ở sảnh. Nơi khách ngồi chờ.",
@@ -161,6 +167,7 @@
           "x": 0.91,
           "y": 0.47,
           "label": "안내 게시판",
+          "audio": "audio/lobby-info-board.mp3",
           "hint": {
             "mn": "Мэдээллийн самбар. Өглөөний цай, автобус зэрэг буудлын үйлчилгээний мэдээлэл байдаг.",
             "vi": "Bảng thông tin. Có thông tin về dịch vụ của khách sạn như bữa sáng và xe buýt.",
@@ -179,6 +186,7 @@
           "x": 0.17,
           "y": 0.55,
           "label": "엘리베이터 홀",
+          "audio": "audio/corridor-elevator.mp3",
           "hint": {
             "mn": "Цахилгаан шатны өмнөх талбай.",
             "vi": "Sảnh thang máy.",
@@ -190,6 +198,7 @@
           "x": 0.61,
           "y": 0.24,
           "label": "비상구 유도등",
+          "audio": "audio/corridor-exit-sign.mp3",
           "hint": {
             "mn": "Аваарын гарцын гэрэлтдэг тэмдэг. Гал гарвал зочдыг энэ гарцаар гаргадаг.",
             "vi": "Đèn chỉ lối thoát hiểm. Khi có cháy, nhân viên hướng dẫn khách đi theo lối này.",
@@ -201,6 +210,7 @@
           "x": 0.875,
           "y": 0.9,
           "label": "소화기",
+          "audio": "audio/corridor-extinguisher.mp3",
           "hint": {
             "mn": "Гал унтраагуур.",
             "vi": "Bình chữa cháy.",
@@ -219,6 +229,7 @@
           "x": 0.55,
           "y": 0.31,
           "label": "비상대피안내도",
+          "audio": "audio/room-evac-map.mp3",
           "hint": {
             "mn": "Яаралтай үед гарах замын зураг. Өрөө бүрийн хаалганы дотор талд байдаг.",
             "vi": "Sơ đồ thoát hiểm. Được dán ở mặt trong cửa mỗi phòng.",
@@ -230,6 +241,7 @@
           "x": 0.68,
           "y": 0.42,
           "label": "카드키 꽂이",
+          "audio": "audio/room-key-slot.mp3",
           "hint": {
             "mn": "Картан түлхүүр хийх хэсэг. Картаа хийхэд өрөөний гэрэл асдаг.",
             "vi": "Khe cắm thẻ. Cắm thẻ khóa phòng vào thì đèn trong phòng bật.",
@@ -241,6 +253,7 @@
           "x": 0.31,
           "y": 0.62,
           "label": "안전금고",
+          "audio": "audio/room-safe.mp3",
           "hint": {
             "mn": "Сейф. Зочин үнэт зүйлээ хадгалдаг.",
             "vi": "Két an toàn. Khách cất đồ có giá trị vào đây.",
@@ -259,6 +272,7 @@
           "x": 0.22,
           "y": 0.8,
           "label": "인계 일지(로그북)",
+          "audio": "audio/back-office-logbook.mp3",
           "hint": {
             "mn": "Ээлж хүлээлцэх дэвтэр. Дараагийн ээлжинд мэдэгдэх зүйлээ бичдэг.",
             "vi": "Sổ bàn giao ca. Ghi những việc ca sau cần biết.",
@@ -270,6 +284,7 @@
           "x": 0.55,
           "y": 0.38,
           "label": "근무표",
+          "audio": "audio/back-office-shift-table.mp3",
           "note": "schedule",
           "hint": {
             "mn": "Ээлжийн хуваарь.",
@@ -282,6 +297,7 @@
           "x": 0.78,
           "y": 0.55,
           "label": "분실물 보관함",
+          "audio": "audio/back-office-lost-found.mp3",
           "hint": {
             "mn": "Гээгдсэн эд зүйлсийн тавиур. Зочдын мартсан зүйлийг хадгалдаг.",
             "vi": "Kệ đồ thất lạc. Giữ đồ khách để quên.",

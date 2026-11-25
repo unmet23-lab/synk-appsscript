@@ -17,7 +17,8 @@
 2. `jobs/<id>/places/`에 자리 사진(16:9, 1920×1080 JPEG)을 넣는다. 인물 사진에는 `live`(사람이 있는 사각형)를 적는다.
 3. `jobs/<id>/manifest.json`에 영상 목록을 둔다. 영상이 없으면 `{"status": "making", "clips": []}`로 두고 사진과 자막으로 연다.
 4. `jobs/index.json`에 카드를 더한다. `status`가 `open`이어야 들어갈 수 있다.
-5. `node --test experiences/path-vr/tests/workday-engine.test.mjs`가 장면표, 파일, 직업 목록을 검사한다.
+5. 둘러보기 점의 이름을 굽는다. `production/point-voice/point-voice.mjs`의 「계획」, `tools/나레이션굽기.mjs`의 `--굽기`, 「싣기」 차례로 돌리면 `jobs/<id>/audio/`에 소리가 놓이고 `job.json`의 점에 `audio`가 적힌다. 목소리는 타입캐스트 소진이다.
+6. `node --test experiences/path-vr/tests/workday-engine.test.mjs`가 장면표, 파일, 직업 목록을 검사한다. 녹음이 없는 점이 하나라도 있으면 떨어진다. 기기에 깔린 음성으로 읽지 않기 위해서다(유호님 11-25 「응, 둘 다 바꿔」).
 
 제작 자료(지시문, 고르기 전 그림)는 `jobs/<id>/production/`에 둔다. 이 폴더는 로컬 서버와 공개 묶음에 실리지 않는다.
 

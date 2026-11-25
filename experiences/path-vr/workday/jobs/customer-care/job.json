@@ -26,13 +26,13 @@
       "live": [0.2, 0.12, 0.79, 1],
       "alt": "상담실 입구에서 팀장과 선배 상담사가 서 있다. 뒤에 대기 콜 현황판, 공지 보드, 작은 보관함이 있다.",
       "points": [
-        { "id": "queue-board", "x": 0.17, "y": 0.23, "label": "대기 콜 현황판",
+        { "id": "queue-board", "x": 0.17, "y": 0.23, "label": "대기 콜 현황판", "audio": "audio/entrance-queue-board.mp3",
           "hint": { "mn": "Хүлээгдэж буй дуудлагын самбар. Хэдэн хүн зөвлөхтэй холбогдохоор хүлээж байгааг харуулдаг.", "vi": "Bảng cuộc gọi đang chờ. Cho biết có bao nhiêu khách đang chờ được nối máy.", "en": "Queue board. It shows how many customers are waiting to be connected." } },
-        { "id": "notice-board", "x": 0.17, "y": 0.5, "label": "공지 보드", "note": "brief",
+        { "id": "notice-board", "x": 0.17, "y": 0.5, "label": "공지 보드", "audio": "audio/entrance-notice-board.mp3", "note": "brief",
           "hint": { "mn": "Мэдэгдлийн самбар. Өнөөдрийн анхааруулга энд байдаг.", "vi": "Bảng thông báo. Những điều cần chú ý hôm nay được dán ở đây.", "en": "Notice board. Today's notices are posted here." } },
-        { "id": "phone-lockers", "x": 0.82, "y": 0.59, "label": "휴대폰 보관함",
+        { "id": "phone-lockers", "x": 0.82, "y": 0.59, "label": "휴대폰 보관함", "audio": "audio/entrance-phone-lockers.mp3",
           "hint": { "mn": "Гар утас хадгалах шүүгээ. Үйлчлүүлэгчийн хувийн мэдээллийг хамгаалахын тулд ажлын үеэр хувийн утсаа энд хийдэг.", "vi": "Tủ giữ điện thoại. Để bảo vệ thông tin cá nhân của khách, nhân viên cất điện thoại riêng ở đây khi làm việc.", "en": "Phone lockers. To protect customers' personal information, staff keep their own phones here while they work." } },
-        { "id": "card-reader", "x": 0.96, "y": 0.49, "label": "출입증 단말기",
+        { "id": "card-reader", "x": 0.96, "y": 0.49, "label": "출입증 단말기", "audio": "audio/entrance-card-reader.mp3",
           "hint": { "mn": "Нэвтрэх карт уншигч. Ажилтны үнэмлэхээ уншуулж ордог.", "vi": "Máy đọc thẻ ra vào. Quẹt thẻ nhân viên để vào.", "en": "Card reader. You tap your staff ID card here to get in." } }
       ]
     },
@@ -41,17 +41,17 @@
       "photo": "places/desk.jpg",
       "alt": "내 상담석. 모니터 두 대, 헤드셋, 전화기, 파란 파일, 작은 빨간 깃발이 책상 위에 있다.",
       "points": [
-        { "id": "headset", "x": 0.19, "y": 0.67, "label": "헤드셋",
+        { "id": "headset", "x": 0.19, "y": 0.67, "label": "헤드셋", "audio": "audio/desk-headset.mp3",
           "hint": { "mn": "Чихэвч. Бүх дуудлагыг үүгээр авч ярьдаг.", "vi": "Tai nghe. Nhân viên dùng tai nghe này để nghe và nói trong mọi cuộc gọi.", "en": "Headset. You use it to listen and talk on every call." } },
-        { "id": "crm-screen", "x": 0.36, "y": 0.37, "label": "상담 화면",
+        { "id": "crm-screen", "x": 0.36, "y": 0.37, "label": "상담 화면", "audio": "audio/desk-crm-screen.mp3",
           "hint": { "mn": "Зөвлөгөөний дэлгэц. Үйлчлүүлэгчийн мэдээлэл, өмнөх зөвлөгөөний бүртгэл гарч ирдэг.", "vi": "Màn hình tư vấn. Hiện thông tin khách hàng và lịch sử tư vấn trước đây.", "en": "Agent screen. It shows the customer's details and past contact history." } },
-        { "id": "status-button", "x": 0.63, "y": 0.37, "label": "상태 버튼(대기 · 후처리 · 휴식)",
+        { "id": "status-button", "x": 0.63, "y": 0.37, "label": "상태 버튼(대기 · 후처리 · 휴식)", "audio": "audio/desk-status-button.mp3",
           "hint": { "mn": "Төлөвийн товч. «Дуудлага авахад бэлэн», «Дуудлагын дараах ажил», «Завсарлага» гэсэн төлөвөөс үүгээр сонгодог.", "vi": "Nút trạng thái. Chọn sẵn sàng nghe máy, đang ghi chép sau cuộc gọi, hoặc đang nghỉ.", "en": "Status button. Use it to set your status: ready for calls, after-call work, or on a break." } },
-        { "id": "hold-key", "x": 0.71, "y": 0.73, "label": "보류 버튼",
+        { "id": "hold-key", "x": 0.71, "y": 0.73, "label": "보류 버튼", "audio": "audio/desk-hold-key.mp3",
           "hint": { "mn": "Түр хүлээлгэх товч. Дарвал үйлчлүүлэгч таны яриаг сонсохгүйгээр хүлээнэ.", "vi": "Nút giữ máy. Bấm vào thì khách sẽ chờ và không nghe thấy em nói.", "en": "Hold button. Press it to put the customer on hold so they can't hear you." } },
-        { "id": "manual", "x": 0.76, "y": 0.84, "label": "스크립트(상담 매뉴얼)",
+        { "id": "manual", "x": 0.76, "y": 0.84, "label": "스크립트(상담 매뉴얼)", "audio": "audio/desk-manual.mp3",
           "hint": { "mn": "Скрипт буюу зөвлөгөө өгөх гарын авлага. Тогтсон хариулт, журам үүнд бичигдсэн байдаг.", "vi": "Kịch bản tư vấn (sổ tay tư vấn). Có các câu trả lời và quy trình đã được quy định.", "en": "Script (agent manual). It contains the standard answers and procedures." } },
-        { "id": "help-flag", "x": 0.81, "y": 0.54, "label": "도움 요청 깃발",
+        { "id": "help-flag", "x": 0.81, "y": 0.54, "label": "도움 요청 깃발", "audio": "audio/desk-help-flag.mp3",
           "hint": { "mn": "Тусламж хүсэх туг. Дуудлагын үеэр тусламж хэрэгтэй бол өргөж багийн ахлагчийг дууддаг.", "vi": "Cờ xin hỗ trợ. Khi cần trợ giúp trong cuộc gọi, hãy giơ cờ lên để gọi trưởng nhóm.", "en": "Help flag. Raise it during a call when you need the team leader." } }
       ]
     },
@@ -74,11 +74,11 @@
       "photo": "places/lead-desk.jpg",
       "alt": "줄 끝의 팀장 책상. 큰 모니터, 걸어 둔 헤드셋, 칸막이에 붙인 근무표가 있다.",
       "points": [
-        { "id": "live-board", "x": 0.29, "y": 0.46, "label": "실시간 상담 현황",
+        { "id": "live-board", "x": 0.29, "y": 0.46, "label": "실시간 상담 현황", "audio": "audio/lead-desk-live-board.mp3",
           "hint": { "mn": "Бодит цагийн хяналтын дэлгэц. Хэн ярьж байгаа, хэн амарч байгааг ахлагч эндээс хардаг.", "vi": "Màn hình theo dõi tư vấn theo thời gian thực. Trên màn hình này, trưởng nhóm thấy ai đang nghe máy, ai đang nghỉ.", "en": "Live status screen. The team leader sees who is on a call and who is on a break." } },
-        { "id": "monitor-headset", "x": 0.4, "y": 0.48, "label": "모니터링 헤드셋",
+        { "id": "monitor-headset", "x": 0.4, "y": 0.48, "label": "모니터링 헤드셋", "audio": "audio/lead-desk-monitor-headset.mp3",
           "hint": { "mn": "Хянах чихэвч. Ахлагч зөвлөхийн дуудлагыг зэрэг сонсож туслах боломжтой.", "vi": "Tai nghe giám sát. Trưởng nhóm có thể cùng nghe cuộc gọi để hỗ trợ.", "en": "Monitoring headset. The team leader can listen in on a call to help." } },
-        { "id": "roster", "x": 0.58, "y": 0.39, "label": "근무표", "note": "roster",
+        { "id": "roster", "x": 0.58, "y": 0.39, "label": "근무표", "audio": "audio/lead-desk-roster.mp3", "note": "roster",
           "hint": { "mn": "Ажлын хуваарь. Хэн хэзээ хооллох, амрахыг бичсэн.", "vi": "Bảng phân ca. Ghi ai ăn trưa và nghỉ giải lao lúc nào.", "en": "Shift roster. It shows who takes lunch and breaks when." } }
       ]
     },
@@ -101,11 +101,11 @@
       "photo": "places/training.jpg",
       "alt": "교육실. 앞에 큰 화면과 전화기를 올린 책상 두 개가 있고, 청록색 의자가 줄지어 있다. 오른쪽 벽 보드에 색 쪽지가 붙어 있다.",
       "points": [
-        { "id": "screen", "x": 0.51, "y": 0.41, "label": "교육 화면",
+        { "id": "screen", "x": 0.51, "y": 0.41, "label": "교육 화면", "audio": "audio/training-screen.mp3",
           "hint": { "mn": "Сургалтын дэлгэц. Үйлчилгээ, журам, системийн талаар эндээс мэдэж авдаг.", "vi": "Màn hình đào tạo. Học về dịch vụ, quy trình và hệ thống ở đây.", "en": "Training screen. You learn the services, procedures and system here." } },
-        { "id": "roleplay-phones", "x": 0.4, "y": 0.61, "label": "역할극(롤플레잉) 전화기",
+        { "id": "roleplay-phones", "x": 0.4, "y": 0.61, "label": "역할극(롤플레잉) 전화기", "audio": "audio/training-roleplay-phones.mp3",
           "hint": { "mn": "Дүрд тоглох утас. Нэг нь үйлчлүүлэгч, нөгөө нь зөвлөх болж ярианы загвараар дадлага хийдэг.", "vi": "Điện thoại tập đóng vai. Một người làm khách, một người làm nhân viên tư vấn để luyện kịch bản.", "en": "Role-play phones. One person plays the customer and the other the agent, to practise the script." } },
-        { "id": "training-plan", "x": 0.9, "y": 0.43, "label": "신입 교육 일정", "note": "training",
+        { "id": "training-plan", "x": 0.9, "y": 0.43, "label": "신입 교육 일정", "audio": "audio/training-training-plan.mp3", "note": "training",
           "hint": { "mn": "Шинэ ажилтны сургалтын хуваарь.", "vi": "Lịch đào tạo nhân viên mới.", "en": "New-hire training schedule." } }
       ]
     },
@@ -114,11 +114,11 @@
       "photo": "places/lounge.jpg",
       "alt": "창이 큰 휴게실. 벽에 헤드셋 그림이 있는 안내문이 붙어 있고, 정수기, 안마의자, 작은 탁자와 소파가 있다.",
       "points": [
-        { "id": "water", "x": 0.46, "y": 0.5, "label": "정수기",
+        { "id": "water", "x": 0.46, "y": 0.5, "label": "정수기", "audio": "audio/lounge-water.mp3",
           "hint": { "mn": "Ус цэвэршүүлэгч. Өдөржин ярьдаг ажил тул ус байнга уудаг.", "vi": "Máy lọc nước. Vì công việc phải nói cả ngày nên cần uống nước thường xuyên.", "en": "Water dispenser. You talk all day in this job, so you drink water often." } },
-        { "id": "massage-chair", "x": 0.59, "y": 0.56, "label": "안마의자",
+        { "id": "massage-chair", "x": 0.59, "y": 0.56, "label": "안마의자", "audio": "audio/lounge-massage-chair.mp3",
           "hint": { "mn": "Массажны сандал. Завсарлагаар сууж амардаг.", "vi": "Ghế massage. Dùng để nghỉ ngơi trong giờ giải lao.", "en": "Massage chair. For resting during breaks." } },
-        { "id": "care-notice", "x": 0.37, "y": 0.34, "label": "상담사 보호 안내", "note": "protect",
+        { "id": "care-notice", "x": 0.37, "y": 0.34, "label": "상담사 보호 안내", "audio": "audio/lounge-care-notice.mp3", "note": "protect",
           "hint": { "mn": "Зөвлөхийг хамгаалах заавар. Хараал, доромжлол сонсвол юу хийхийг бичсэн.", "vi": "Hướng dẫn bảo vệ nhân viên tư vấn. Trong đó ghi rõ cần làm gì khi bị khách chửi bới, xúc phạm.", "en": "Agent protection notice. It says what to do when a caller swears or insults you." } }
       ]
     },

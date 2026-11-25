@@ -57,6 +57,7 @@
           "x": 0.7,
           "y": 0.2,
           "label": "세계 시계",
+          "audio": "audio/meeting-world-clock.mp3",
           "hint": {
             "mn": "Дэлхийн цаг. Худалдан авагчийн орны цагийг харж, хэзээ утасдахаа шийднэ.",
             "vi": "Đồng hồ thế giới. Xem giờ ở nước của người mua để biết lúc nào nên gọi điện.",
@@ -68,6 +69,7 @@
           "x": 0.47,
           "y": 0.2,
           "label": "주간 업무 보드",
+          "audio": "audio/meeting-week-board.mp3",
           "hint": {
             "mn": "Долоо хоногийн ажлын самбар. Багийн энэ долоо хоногийн ажил, ачилтын өдрийг бичдэг.",
             "vi": "Bảng công việc trong tuần. Ghi việc của nhóm và ngày giao hàng trong tuần.",
@@ -79,6 +81,7 @@
           "x": 0.07,
           "y": 0.28,
           "label": "화상 회의 화면",
+          "audio": "audio/meeting-video-screen.mp3",
           "hint": {
             "mn": "Видео хурлын дэлгэц. Гадаадын худалдан авагчтай видео хурал хийдэг.",
             "vi": "Màn hình họp trực tuyến. Dùng để họp video với người mua ở nước ngoài.",
@@ -97,6 +100,7 @@
           "x": 0.52,
           "y": 0.42,
           "label": "업무용 모니터",
+          "audio": "audio/desk-mail.mp3",
           "hint": {
             "mn": "Ажлын дэлгэц.",
             "vi": "Màn hình làm việc.",
@@ -108,6 +112,7 @@
           "x": 0.9,
           "y": 0.83,
           "label": "내선 전화",
+          "audio": "audio/desk-desk-phone.mp3",
           "hint": {
             "mn": "Дотуур утас. Компанийн дотоод болон гадаад дуудлагыг авдаг.",
             "vi": "Điện thoại bàn. Dùng để nghe cuộc gọi nội bộ và cuộc gọi từ bên ngoài.",
@@ -119,6 +124,7 @@
           "x": 0.92,
           "y": 0.66,
           "label": "탁상 달력",
+          "audio": "audio/desk-calendar.mp3",
           "hint": {
             "mn": "Ширээний хуанли. Хөлөг онгоц гарах өдөр, бичиг баримтын эцсийн хугацааг тэмдэглэнэ.",
             "vi": "Lịch để bàn. Ghi ngày tàu chạy và hạn nộp chứng từ.",
@@ -130,6 +136,7 @@
           "x": 0.76,
           "y": 0.69,
           "label": "견적서와 결재 서류",
+          "audio": "audio/desk-tray.mp3",
           "note": "fob",
           "hint": {
             "mn": "Үнийн санал ба батлуулах бичиг баримт. Үнийн санал дахь нийлүүлэлтийн нөхцөлийн тайлбарыг харж болно.",
@@ -142,6 +149,7 @@
           "x": 0.6,
           "y": 0.62,
           "label": "견본(샘플)",
+          "audio": "audio/desk-samples.mp3",
           "hint": {
             "mn": "Дээж. Худалдан авагчид илгээх бүтээгдэхүүний дээж.",
             "vi": "Hàng mẫu. Mẫu sản phẩm gửi cho người mua.",
@@ -160,6 +168,7 @@
           "x": 0.46,
           "y": 0.42,
           "label": "커피 머신",
+          "audio": "audio/pantry-coffee.mp3",
           "hint": {
             "mn": "Кофе машин. Ажилтнууд хамтдаа хэрэглэдэг.",
             "vi": "Máy pha cà phê. Nhân viên dùng chung.",
@@ -171,6 +180,7 @@
           "x": 0.6,
           "y": 0.45,
           "label": "정수기",
+          "audio": "audio/pantry-water.mp3",
           "hint": {
             "mn": "Ус цэвэршүүлэгч.",
             "vi": "Máy lọc nước.",
@@ -182,6 +192,7 @@
           "x": 0.08,
           "y": 0.5,
           "label": "공용 냉장고",
+          "audio": "audio/pantry-fridge.mp3",
           "hint": {
             "mn": "Нийтийн хөргөгч. Хоолоо хөргөгчид хийхдээ нэрээ бичдэг.",
             "vi": "Tủ lạnh chung. Khi để đồ ăn vào, nhớ ghi tên mình lên hộp hoặc bao bì.",
@@ -193,6 +204,7 @@
           "x": 0.3,
           "y": 0.15,
           "label": "사내 게시판",
+          "audio": "audio/pantry-notice-board.mp3",
           "hint": {
             "mn": "Компанийн мэдээллийн самбар. Дотоод мэдэгдэл, арга хэмжээний зар наадаг.",
             "vi": "Bảng tin nội bộ. Nơi dán thông báo và thông tin sự kiện của công ty.",
@@ -211,6 +223,7 @@
           "x": 0.77,
           "y": 0.3,
           "label": "상자 겉 표시(화인)",
+          "audio": "audio/warehouse-cartons.mp3",
           "hint": {
             "mn": "Ачааны тэмдэглэгээ (shipping mark). Экспортын хайрцгийн гадна талд дардаг тэмдэг.",
             "vi": "Ký mã hiệu vận chuyển (shipping mark). Ký hiệu in bên ngoài thùng hàng xuất khẩu.",
@@ -222,6 +235,7 @@
           "x": 0.255,
           "y": 0.67,
           "label": "팔레트",
+          "audio": "audio/warehouse-pallet.mp3",
           "hint": {
             "mn": "Тавиур (палет). Хайрцгийг дээр нь өрж, сэрээт ачигчаар зөөдөг.",
             "vi": "Pallet. Dùng để xếp thùng hàng lên trên rồi chở đi bằng xe nâng.",
@@ -233,6 +247,7 @@
           "x": 0.6,
           "y": 0.9,
           "label": "출고 구역",
+          "audio": "audio/warehouse-out-zone.mp3",
           "hint": {
             "mn": "Ачаа гаргах бүс. Гаргахад бэлэн ачааг шар шугамын дотор тавьдаг.",
             "vi": "Khu xuất hàng. Hàng sẵn sàng xuất kho được đặt trong vạch vàng.",
@@ -244,6 +259,7 @@
           "x": 0.53,
           "y": 0.74,
           "label": "바닥 저울",
+          "audio": "audio/warehouse-scale.mp3",
           "hint": {
             "mn": "Шалны жин. Хайрцгийн жинг хэмжиж, савлагааны жагсаалтад бичдэг.",
             "vi": "Cân sàn. Cân thùng hàng rồi ghi vào phiếu đóng gói.",
@@ -255,6 +271,7 @@
           "x": 0.295,
           "y": 0.5,
           "label": "핸드 팔레트(자키)",
+          "audio": "audio/warehouse-hand-pallet.mp3",
           "hint": {
             "mn": "Гар тэрэг (палет зөөгч). Палетыг үүгээр өргөж, гараар чирч зөөдөг.",
             "vi": "Xe nâng tay. Dùng để kéo pallet bằng tay.",
@@ -273,6 +290,7 @@
           "x": 0.66,
           "y": 0.82,
           "label": "결재판",
+          "audio": "audio/lead-desk-approval-folder.mp3",
           "hint": {
             "mn": "Батлуулах хавтас. Цаасан баримтыг багийн ахлагчаар батлуулахдаа үүнд хийж өгдөг.",
             "vi": "Bìa trình ký. Kẹp giấy tờ vào để trình trưởng nhóm ký duyệt.",
@@ -284,6 +302,7 @@
           "x": 0.4,
           "y": 0.62,
           "label": "견본 진열장",
+          "audio": "audio/lead-desk-sample-cabinet.mp3",
           "hint": {
             "mn": "Дээжийн шүүгээ. Компанийн бүтээгдэхүүнийг энд өрж, худалдан авагчид үзүүлдэг.",
             "vi": "Tủ trưng bày hàng mẫu. Dùng để cho người mua xem sản phẩm của công ty.",
@@ -295,6 +314,7 @@
           "x": 0.29,
           "y": 0.3,
           "label": "전시회 일정 달력",
+          "audio": "audio/lead-desk-fair-calendar.mp3",
           "hint": {
             "mn": "Үзэсгэлэнгийн хуваарийн хуанли. Гадаадын үзэсгэлэнд оролцох өдрүүдийг тэмдэглэнэ.",
             "vi": "Lịch hội chợ triển lãm. Đánh dấu ngày tham gia các hội chợ ở nước ngoài.",
@@ -306,6 +326,7 @@
           "x": 0.24,
           "y": 0.6,
           "label": "복합기",
+          "audio": "audio/lead-desk-printer.mp3",
           "hint": {
             "mn": "Олон үйлдэлт хэвлэгч. Хэвлэх, хувилах, скан хийхэд хэрэглэнэ.",
             "vi": "Máy in đa năng. Dùng để in, sao chụp và quét tài liệu.",

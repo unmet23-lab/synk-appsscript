@@ -60,6 +60,7 @@
           "x": 0.75,
           "y": 0.68,
           "label": "접수 창구",
+          "audio": "audio/desk-senior-counter.mp3",
           "hint": {
             "mn": "Хүлээн авах цонх. Гадаад өвчтөнүүд энд бүртгүүлдэг.",
             "vi": "Quầy tiếp nhận. Bệnh nhân nước ngoài làm thủ tục ở đây.",
@@ -71,6 +72,7 @@
           "x": 0.73,
           "y": 0.25,
           "label": "코디네이터 근무 일정판",
+          "audio": "audio/desk-senior-board.mp3",
           "note": "schedule",
           "hint": {
             "mn": "Координаторуудын ажлын хуваарийн самбар.",
@@ -83,6 +85,7 @@
           "x": 0.655,
           "y": 0.47,
           "label": "다국어 안내서",
+          "audio": "audio/desk-senior-leaflets.mp3",
           "hint": {
             "mn": "Олон хэлээр бичсэн танилцуулга.",
             "vi": "Tờ hướng dẫn bằng nhiều thứ tiếng.",
@@ -94,6 +97,7 @@
           "x": 0.08,
           "y": 0.58,
           "label": "휠체어",
+          "audio": "audio/desk-senior-wheelchair.mp3",
           "hint": {
             "mn": "Тэргэнцэр.",
             "vi": "Xe lăn.",
@@ -105,6 +109,7 @@
           "x": 0.12,
           "y": 0.8,
           "label": "외국인 환자 대기석",
+          "audio": "audio/desk-senior-waiting.mp3",
           "hint": {
             "mn": "Гадаад өвчтөний хүлээлгийн суудал.",
             "vi": "Ghế chờ dành cho bệnh nhân nước ngoài.",
@@ -123,6 +128,7 @@
           "x": 0.1,
           "y": 0.55,
           "label": "진료실 문",
+          "audio": "audio/clinic-front-clinic-door.mp3",
           "hint": {
             "mn": "Эмчийн үзлэгийн өрөөний хаалга. Энэ өрөөнд эмч өвчтөн үздэг.",
             "vi": "Cửa phòng khám. Bác sĩ khám bệnh ở bên trong.",
@@ -134,6 +140,7 @@
           "x": 0.225,
           "y": 0.4,
           "label": "진료 대기 화면",
+          "audio": "audio/clinic-front-queue-screen.mp3",
           "hint": {
             "mn": "Дарааллын дэлгэц. Хэний ээлж ирснийг харуулдаг.",
             "vi": "Màn hình chờ khám. Trên đó hiển thị đến lượt ai vào khám.",
@@ -145,6 +152,7 @@
           "x": 0.34,
           "y": 0.53,
           "label": "손 소독제",
+          "audio": "audio/clinic-front-sanitizer.mp3",
           "hint": {
             "mn": "Гар ариутгагч.",
             "vi": "Nước rửa tay sát khuẩn.",
@@ -163,6 +171,7 @@
           "x": 0.1,
           "y": 0.5,
           "label": "탈의실",
+          "audio": "audio/exam-front-changing.mp3",
           "hint": {
             "mn": "Хувцас солих өрөө. Өвчтөн энд шинжилгээний хувцас өмсдөг.",
             "vi": "Phòng thay đồ. Bệnh nhân thay trang phục khám bệnh ở đây.",
@@ -174,6 +183,7 @@
           "x": 0.33,
           "y": 0.6,
           "label": "사물함",
+          "audio": "audio/exam-front-lockers.mp3",
           "hint": {
             "mn": "Өвчтөний хувцас, цүнх хийх шүүгээ.",
             "vi": "Tủ đựng quần áo và túi xách của bệnh nhân.",
@@ -185,6 +195,7 @@
           "x": 0.5,
           "y": 0.5,
           "label": "내시경실 문",
+          "audio": "audio/exam-front-exam-door.mp3",
           "note": "inside",
           "hint": {
             "mn": "Дурангийн шинжилгээний өрөөний хаалга.",
@@ -197,6 +208,7 @@
           "x": 0.8,
           "y": 0.6,
           "label": "회복실",
+          "audio": "audio/exam-front-recovery.mp3",
           "hint": {
             "mn": "Амрах өрөө. Унтуулгатай дурангийн дараа өвчтөн энд сэртлээ амардаг.",
             "vi": "Phòng hồi tỉnh. Sau khi nội soi gây mê, bệnh nhân nghỉ ở đây.",
@@ -221,6 +233,7 @@
           "x": 0.65,
           "y": 0.92,
           "label": "문진표",
+          "audio": "audio/consult-form.mp3",
           "hint": {
             "mn": "Асуумжийн хуудас. Өвчтөн өвчний түүх, одоо ууж буй эм, хамгийн сүүлд юу идсэнээ бичдэг.",
             "vi": "Bảng câu hỏi sức khỏe. Bệnh nhân ghi tiền sử bệnh, thuốc đang dùng và bữa ăn gần nhất.",
@@ -232,6 +245,7 @@
           "x": 0.4,
           "y": 0.36,
           "label": "설명용 화면",
+          "audio": "audio/consult-explain-screen.mp3",
           "hint": {
             "mn": "Шинжилгээний хариуг тайлбарлахад ашигладаг дэлгэц.",
             "vi": "Màn hình dùng để giải thích kết quả khám.",
@@ -243,6 +257,7 @@
           "x": 0.88,
           "y": 0.86,
           "label": "휴지와 물",
+          "audio": "audio/consult-tissue.mp3",
           "hint": {
             "mn": "Салфетка, ус.",
             "vi": "Khăn giấy và nước.",
@@ -261,6 +276,7 @@
           "x": 0.35,
           "y": 0.4,
           "label": "수납 창구",
+          "audio": "audio/billing-pay-window.mp3",
           "hint": {
             "mn": "Төлбөрийн касс.",
             "vi": "Quầy thu ngân.",
@@ -272,6 +288,7 @@
           "x": 0.46,
           "y": 0.52,
           "label": "카드 결제기",
+          "audio": "audio/billing-card-terminal.mp3",
           "hint": {
             "mn": "Карт уншигч төхөөрөмж.",
             "vi": "Máy thanh toán thẻ.",
@@ -283,6 +300,7 @@
           "x": 0.05,
           "y": 0.48,
           "label": "진료비 안내서",
+          "audio": "audio/billing-price-guide.mp3",
           "hint": {
             "mn": "Эмчилгээний төлбөрийн мэдээллийн хуудас. Урьдчилан тогтоосон үнийг бичсэн байдаг.",
             "vi": "Tờ thông tin chi phí khám chữa bệnh. Trên đó có ghi các mức phí bệnh viện đã quy định sẵn.",
@@ -294,6 +312,7 @@
           "x": 0.855,
           "y": 0.45,
           "label": "증명서 발급기",
+          "audio": "audio/billing-kiosk.mp3",
           "hint": {
             "mn": "Баримт бичиг хэвлэх автомат төхөөрөмж. Өвчтөн төлбөрийн баримт, нарийвчилсан задаргаагаа эндээс хэвлэж авдаг.",
             "vi": "Máy cấp giấy tờ tự động. Bệnh nhân in hóa đơn và bảng kê chi tiết ở đây.",
