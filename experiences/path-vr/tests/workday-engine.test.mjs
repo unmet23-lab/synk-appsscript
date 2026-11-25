@@ -116,6 +116,8 @@ test('every job in the catalogue passes the scene-table checks and matches its m
     // Films are not kept in git (*.mp4 is ignored); the publish bundle is what insists they are there.
     for (const file of files.filter((name) => !/\.(?:mp4|webm)$/.test(name))) assert.ok((await stat(path.join(JOBS, entry.id, file))).isFile(), `${entry.id}/${file} exists`);
     assert.ok(files.includes(entry.poster.slice(entry.id.length + 1)), `${entry.id}: poster is a place photograph`);
+    // A name on the look-around is heard from its own recording: no job leaves it to the device's voice.
+    for (const [place, value] of Object.entries(job.places)) for (const point of value.points) assert.equal(point.audio, `audio/${place}-${point.id}.mp3`, `${entry.id}: ${place}/${point.id} has its recording`);
   }
 });
 

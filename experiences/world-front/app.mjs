@@ -3,6 +3,7 @@
  * 시안의 주소 값 판 · 우표 결 · 바탕 결 ed · 나중 판 · 옛 끝 글은 걷었다. 시안의 알림 자리는 host 부르기로 바꿨다. */
 import {T} from './strings.mjs';
 import {mountClub, mountTutorDay, mountNote, tutorLabel, tutorFace} from './club.mjs';
+import {SAY} from './says.mjs';
 
 const SND = '../seoul-arrival/assets/snd/';        // 방 소리 · 초침 · 새벽(서울행과 같은 파일)
 const NOTE = '../seoul-arrival/assets/img/note1.webp';   // 엄마 쪽지(서울행과 같은 파일)
@@ -271,7 +272,7 @@ const choseLine = () => { const g = goalName(); return `<span class="why chose">
 function capHTML(o) {
   const it = o.item || {}, says = Array.isArray(it.says) && it.says.length ? it.says : null, plan = state.plan || {}, day2 = P.v === 'day2';
   const body = says
-    ? `<div class="sayw"><ul class="says sl">${says.map(s => `<li>${TTS ? `<button type="button" class="say-play bub" data-say="${esc(s)}" aria-label="${esc(ui('들어 보기'))} · ${esc(s)}">` : '<span class="say-play bub nob">'}<span lang="ko">${s === myName() ? esc(s).replace(esc(STUDENT.name), `<span class="nmslot">${esc(STUDENT.name)}</span>`) : esc(s)}</span>${TTS ? `${wave(s)}</button>` : '</span>'}</li>`).join('')}</ul>${TTS ? `<div class="sa-row"><button type="button" class="say-all" data-sayall aria-pressed="false"><i class="sa-g" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></i><span>${esc(ui('모두 듣기'))}</span></button></div>` : ''}</div>`   // 10q: 눌러 듣는 말풍선 · 10p: 내 이름 자리
+    ? `<div class="sayw"><ul class="says sl">${says.map(s => `<li>${sayFile(s) ? `<button type="button" class="say-play bub" data-say="${esc(s)}" aria-label="${esc(ui('들어 보기'))} · ${esc(s)}">` : '<span class="say-play bub nob">'}<span lang="ko">${s === myName() ? esc(s).replace(esc(STUDENT.name), `<span class="nmslot">${esc(STUDENT.name)}</span>`) : esc(s)}</span>${sayFile(s) ? `${wave(s)}</button>` : '</span>'}</li>`).join('')}</ul>${says.filter(sayFile).length > 1 ? `<div class="sa-row"><button type="button" class="say-all" data-sayall aria-pressed="false"><i class="sa-g" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></i><span>${esc(ui('모두 듣기'))}</span></button></div>` : ''}</div>`   // 10q: 눌러 듣는 말풍선 · 10p: 내 이름 자리
     : `<p class="tp">${esc(ui(it.topic || it.kind || plan.kind || '', {m: o.min}))}</p>`;
   let why = '';
   if (!o.pick) why = `<p class="why alt">${esc(ui('다른 걸로'))}</p>`;
@@ -706,27 +707,25 @@ function pressAns(b, then) {
 }
 
 let busy = false;
-// 10o: 대사 듣기 — 브라우저 말소리(ko-KR). 못 쓰면 풍선은 누르지 않는 글
-const TTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
-if (!TTS) document.body.classList.add('no-tts');
-let sayU = null;
-function stopSay() { if (TTS) { sayU = null; window.speechSynthesis.cancel(); } document.querySelectorAll('.say-play.on').forEach(x => x.classList.remove('on')); document.querySelectorAll('.say-all.on').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); }
+// 10o: 대사 듣기 — 구운 녹음(assets/say)만 튼다. 녹음이 없는 글은 누르지 않는 말풍선이다(11-25 유호님: 기기 음성은 쓰지 않는다)
+const sayFile = t => Object.hasOwn(SAY, t) ? new URL(`./assets/say/${SAY[t]}.mp3`, import.meta.url).href : '';
+let sayEl = null, sayNow = null;   // 소리 하나를 돌려 쓴다 — 누른 뒤 이어 트는 둘째 말도 휴대폰에서 막히지 않게
+const sayAllOff = () => document.querySelectorAll('.say-all.on').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+function stopSay() { sayNow = null; if (sayEl) sayEl.pause(); document.querySelectorAll('.say-play.on').forEach(x => x.classList.remove('on')); sayAllOff(); }
 function speakAll(chip) {   // 10z: 세 말을 차례로 — 다시 누르면 멈춤
-  if (!TTS) return;
   if (chip.classList.contains('on')) { stopSay(); return; }
   const rows = [...chip.closest('.cap').querySelectorAll('.say-play[data-say]')]; let i = 0;
   const next = () => { if (i >= rows.length) { chip.classList.remove('on'); chip.setAttribute('aria-pressed', 'false'); return; } const b = rows[i++]; speakKo(b.dataset.say, b, next); chip.classList.add('on'); chip.setAttribute('aria-pressed', 'true'); };
   next();
 }
 function speakKo(t, b, done) {
-  if (!TTS) return;
-  const s = window.speechSynthesis;
+  const f = sayFile(t); if (!f) return;
   stopSay();
-  const u = new SpeechSynthesisUtterance(t); u.lang = 'ko-KR'; u.rate = .92;
-  const v = s.getVoices().find(x => /^ko/i.test(x.lang)); if (v) u.voice = v;
-  sayU = u; b.classList.add('on');
-  u.onend = u.onerror = e => { if (sayU === u) { sayU = null; b.classList.remove('on'); if (done && !(e && e.type === 'error')) done(); else document.querySelectorAll('.say-all.on').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); } };
-  s.speak(u);
+  const el = sayEl || (sayEl = new Audio()), now = sayNow = {};
+  b.classList.add('on');
+  const end = ok => { if (sayNow !== now) return; sayNow = null; b.classList.remove('on'); if (done && ok) done(); else sayAllOff(); };
+  el.onended = () => end(true); el.onerror = () => end(false);
+  el.src = f; el.play().catch(() => end(false));
 }
 // 10e: 기록 판 — 닫으면 연 단추로 초점을 돌려준다
 let opener = null;

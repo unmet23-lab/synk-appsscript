@@ -61,6 +61,7 @@
           "x": 0.52,
           "y": 0.33,
           "label": "근무표",
+          "audio": "audio/briefing-shift.mp3",
           "note": "shift",
           "hint": {
             "mn": "Ажлын хуваарь. Хэн хэдэн цагаас ажиллахыг бичсэн.",
@@ -73,6 +74,7 @@
           "x": 0.1,
           "y": 0.45,
           "label": "사물함",
+          "audio": "audio/briefing-locker.mp3",
           "hint": {
             "mn": "Хувийн шүүгээ. Ажлын хувцас, хувийн эд зүйлээ хийдэг.",
             "vi": "Tủ cá nhân. Để đồng phục và đồ dùng cá nhân.",
@@ -103,6 +105,7 @@
           "x": 0.375,
           "y": 0.69,
           "label": "테스터",
+          "audio": "audio/shelf-tester.mp3",
           "hint": {
             "mn": "Туршилтын бүтээгдэхүүн. Үйлчлүүлэгч өөрөө түрхэж үздэг.",
             "vi": "Sản phẩm dùng thử. Khách có thể tự bôi thử.",
@@ -114,6 +117,7 @@
           "x": 0.432,
           "y": 0.43,
           "label": "가격표",
+          "audio": "audio/shelf-price-tag.mp3",
           "hint": {
             "mn": "Үнийн шошго. Татваргүй дэлгүүрт үнийг доллараар бичдэг.",
             "vi": "Bảng giá. Ở cửa hàng miễn thuế, giá được ghi bằng đô la.",
@@ -125,6 +129,7 @@
           "x": 0.652,
           "y": 0.47,
           "label": "거울",
+          "audio": "audio/shelf-mirror.mp3",
           "hint": {
             "mn": "Толь. Үйлчлүүлэгч тос түрхээд нүүрээ хардаг.",
             "vi": "Gương. Khách dùng để soi sau khi bôi thử.",
@@ -136,6 +141,7 @@
           "x": 0.43,
           "y": 0.92,
           "label": "판매용 상품(본품)",
+          "audio": "audio/shelf-stock-boxes.mp3",
           "hint": {
             "mn": "Зарах бүтээгдэхүүн. Хайрцагтай, битүүмжилсэн.",
             "vi": "Hàng để bán. Còn nguyên hộp, chưa mở.",
@@ -154,6 +160,7 @@
           "x": 0.305,
           "y": 0.6,
           "label": "판매 화면(포스)",
+          "audio": "audio/counter-pos.mp3",
           "hint": {
             "mn": "Борлуулалтын дэлгэц. Паспорт, нислэгийн мэдээлэл, худалдан авсан барааг оруулдаг.",
             "vi": "Màn hình bán hàng. Nhập thông tin hộ chiếu, chuyến bay và hàng khách mua.",
@@ -165,6 +172,7 @@
           "x": 0.437,
           "y": 0.69,
           "label": "여권 판독기",
+          "audio": "audio/counter-passport-reader.mp3",
           "hint": {
             "mn": "Паспорт уншигч. Паспортыг тавихад мэдээллийг нь уншдаг.",
             "vi": "Máy đọc hộ chiếu. Đặt hộ chiếu lên là máy đọc thông tin.",
@@ -176,6 +184,7 @@
           "x": 0.53,
           "y": 0.69,
           "label": "카드 단말기",
+          "audio": "audio/counter-card.mp3",
           "hint": {
             "mn": "Карт уншигч.",
             "vi": "Máy quẹt thẻ.",
@@ -187,6 +196,7 @@
           "x": 0.742,
           "y": 0.67,
           "label": "영수증·교환권 프린터",
+          "audio": "audio/counter-voucher-printer.mp3",
           "hint": {
             "mn": "Баримт ба бараа авах талон хэвлэгч. Баримттай хамт онгоцны буудал дээр бараагаа авахдаа үзүүлэх талоныг хэвлэдэг.",
             "vi": "Máy in hóa đơn và phiếu nhận hàng. In hóa đơn cùng phiếu để khách đưa ra khi nhận hàng ở sân bay.",
@@ -198,6 +208,7 @@
           "x": 0.883,
           "y": 0.62,
           "label": "쇼핑백",
+          "audio": "audio/counter-bags.mp3",
           "hint": {
             "mn": "Дэлгүүрийн цаасан уут.",
             "vi": "Túi mua sắm.",
@@ -216,6 +227,7 @@
           "x": 0.16,
           "y": 0.56,
           "label": "고객 안내 데스크",
+          "audio": "audio/entrance-info-desk.mp3",
           "hint": {
             "mn": "Лавлах цэг. Гишүүнчлэл, лавлагаа, гээгдсэн эд зүйлийг хариуцдаг.",
             "vi": "Quầy thông tin khách hàng. Giải đáp thắc mắc, làm thẻ thành viên, nhận đồ thất lạc.",
@@ -227,6 +239,7 @@
           "x": 0.5,
           "y": 0.52,
           "label": "줄 서는 곳(대기 줄)",
+          "audio": "audio/entrance-queue.mp3",
           "hint": {
             "mn": "Дараалалд зогсох газар. Дэлгүүр нээхэд хүмүүс энд дараалан зогсдог.",
             "vi": "Chỗ xếp hàng. Lúc mở cửa, khách xếp hàng ở đây.",
@@ -238,6 +251,7 @@
           "x": 0.88,
           "y": 0.42,
           "label": "환율 안내판",
+          "audio": "audio/entrance-rate-board.mp3",
           "hint": {
             "mn": "Ханшийн самбар. Өнөөдөр 1 доллар хэдэн вон болохыг харуулна.",
             "vi": "Bảng tỷ giá. Cho biết hôm nay 1 đô la bằng bao nhiêu won.",
@@ -256,6 +270,7 @@
           "x": 0.48,
           "y": 0.42,
           "label": "재고 상자",
+          "audio": "audio/stock-stock-box.mp3",
           "hint": {
             "mn": "Нөөцийн хайрцаг. Дэлгүүрт тавиагүй барааг хадгалдаг.",
             "vi": "Thùng hàng tồn kho. Chứa hàng chưa bày ra cửa hàng.",
@@ -267,6 +282,7 @@
           "x": 0.816,
           "y": 0.65,
           "label": "바코드 스캐너",
+          "audio": "audio/stock-scanner.mp3",
           "hint": {
             "mn": "Баркод уншигч. Бараа орж гарахыг бүртгэдэг.",
             "vi": "Máy quét mã vạch. Dùng để ghi nhận hàng nhập và xuất.",
@@ -278,6 +294,7 @@
           "x": 0.234,
           "y": 0.65,
           "label": "운반 상자",
+          "audio": "audio/stock-crate.mp3",
           "hint": {
             "mn": "Бараа зөөх хайрцаг. Агуулах болон дэлгүүрийн хооронд бараа зөөхөд хэрэглэдэг.",
             "vi": "Thùng vận chuyển. Dùng để chuyển hàng giữa kho và cửa hàng.",

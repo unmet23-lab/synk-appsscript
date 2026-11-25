@@ -1,0 +1,442 @@
+{
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.95,
+  "seed": 1003,
+  "lufs": -17
+ },
+ "out": "vo",
+ "trim": "both",
+ "lines": [
+  {
+   "id": "care-home.room.call-bell",
+   "text": "호출 벨.",
+   "seed": 1006
+  },
+  {
+   "id": "care-home.room.fall-sign",
+   "text": "낙상 주의 표지."
+  },
+  {
+   "id": "care-home.room.bed-rail",
+   "text": "침대 난간."
+  },
+  {
+   "id": "care-home.dining.menu",
+   "text": "식단표."
+  },
+  {
+   "id": "care-home.dining.schedule",
+   "text": "일과표."
+  },
+  {
+   "id": "care-home.nurse.record-sheet",
+   "text": "기록지."
+  },
+  {
+   "id": "care-home.nurse.medicine",
+   "text": "약 보관함."
+  },
+  {
+   "id": "care-home.bath-door.bath-plan",
+   "text": "목욕 일정표."
+  },
+  {
+   "id": "hotel-front.front.pms",
+   "text": "객실 관리 화면."
+  },
+  {
+   "id": "hotel-front.front.key-encoder",
+   "text": "카드키 발급기."
+  },
+  {
+   "id": "hotel-front.front.house-phone",
+   "text": "내선 전화."
+  },
+  {
+   "id": "hotel-front.front.reg-card",
+   "text": "고객 등록 카드, 레지 카드.",
+   "show": "고객등록카드(레지카드)"
+  },
+  {
+   "id": "hotel-front.lobby.bell-desk",
+   "text": "벨 데스크.",
+   "seed": 1004
+  },
+  {
+   "id": "hotel-front.lobby.lounge",
+   "text": "로비 라운지."
+  },
+  {
+   "id": "hotel-front.lobby.info-board",
+   "text": "안내 게시판."
+  },
+  {
+   "id": "hotel-front.corridor.elevator",
+   "text": "엘리베이터 홀."
+  },
+  {
+   "id": "hotel-front.corridor.exit-sign",
+   "text": "비상구 유도등."
+  },
+  {
+   "id": "hotel-front.corridor.extinguisher",
+   "text": "소화기."
+  },
+  {
+   "id": "hotel-front.room.evac-map",
+   "text": "비상대피안내도."
+  },
+  {
+   "id": "hotel-front.room.key-slot",
+   "text": "카드키 꽂이."
+  },
+  {
+   "id": "hotel-front.room.safe",
+   "text": "안전금고.",
+   "seed": 1007
+  },
+  {
+   "id": "hotel-front.back-office.logbook",
+   "text": "인계 일지, 로그북.",
+   "show": "인계 일지(로그북)"
+  },
+  {
+   "id": "hotel-front.back-office.shift-table",
+   "text": "근무표."
+  },
+  {
+   "id": "hotel-front.back-office.lost-found",
+   "text": "분실물 보관함."
+  },
+  {
+   "id": "duty-free.briefing.shift",
+   "text": "근무표."
+  },
+  {
+   "id": "duty-free.briefing.locker",
+   "text": "사물함.",
+   "seed": 1004
+  },
+  {
+   "id": "duty-free.shelf.tester",
+   "text": "테스터."
+  },
+  {
+   "id": "duty-free.shelf.price-tag",
+   "text": "가격표."
+  },
+  {
+   "id": "duty-free.shelf.mirror",
+   "text": "거울."
+  },
+  {
+   "id": "duty-free.shelf.stock-boxes",
+   "text": "판매용 상품, 본품.",
+   "show": "판매용 상품(본품)"
+  },
+  {
+   "id": "duty-free.counter.pos",
+   "text": "판매 화면, 포스.",
+   "show": "판매 화면(포스)"
+  },
+  {
+   "id": "duty-free.counter.passport-reader",
+   "text": "여권 판독기."
+  },
+  {
+   "id": "duty-free.counter.card",
+   "text": "카드 단말기."
+  },
+  {
+   "id": "duty-free.counter.voucher-printer",
+   "text": "영수증, 교환권 프린터.",
+   "show": "영수증·교환권 프린터"
+  },
+  {
+   "id": "duty-free.counter.bags",
+   "text": "쇼핑백.",
+   "seed": 1007
+  },
+  {
+   "id": "duty-free.entrance.info-desk",
+   "text": "고객 안내 데스크."
+  },
+  {
+   "id": "duty-free.entrance.queue",
+   "text": "줄 서는 곳, 대기 줄.",
+   "show": "줄 서는 곳(대기 줄)"
+  },
+  {
+   "id": "duty-free.entrance.rate-board",
+   "text": "환율 안내판."
+  },
+  {
+   "id": "duty-free.stock.stock-box",
+   "text": "재고 상자."
+  },
+  {
+   "id": "duty-free.stock.scanner",
+   "text": "바코드 스캐너."
+  },
+  {
+   "id": "duty-free.stock.crate",
+   "text": "운반 상자."
+  },
+  {
+   "id": "trade-office.meeting.world-clock",
+   "text": "세계 시계."
+  },
+  {
+   "id": "trade-office.meeting.week-board",
+   "text": "주간 업무 보드."
+  },
+  {
+   "id": "trade-office.meeting.video-screen",
+   "text": "화상 회의 화면."
+  },
+  {
+   "id": "trade-office.desk.mail",
+   "text": "업무용 모니터."
+  },
+  {
+   "id": "trade-office.desk.desk-phone",
+   "text": "내선 전화."
+  },
+  {
+   "id": "trade-office.desk.calendar",
+   "text": "탁상 달력.",
+   "seed": 1004
+  },
+  {
+   "id": "trade-office.desk.tray",
+   "text": "견적서와 결재 서류."
+  },
+  {
+   "id": "trade-office.desk.samples",
+   "text": "견본, 샘플.",
+   "show": "견본(샘플)"
+  },
+  {
+   "id": "trade-office.pantry.coffee",
+   "text": "커피 머신."
+  },
+  {
+   "id": "trade-office.pantry.water",
+   "text": "정수기."
+  },
+  {
+   "id": "trade-office.pantry.fridge",
+   "text": "공용 냉장고."
+  },
+  {
+   "id": "trade-office.pantry.notice-board",
+   "text": "사내 게시판."
+  },
+  {
+   "id": "trade-office.warehouse.cartons",
+   "text": "상자 겉 표시, 화인.",
+   "show": "상자 겉 표시(화인)"
+  },
+  {
+   "id": "trade-office.warehouse.pallet",
+   "text": "팔레트."
+  },
+  {
+   "id": "trade-office.warehouse.out-zone",
+   "text": "출고 구역."
+  },
+  {
+   "id": "trade-office.warehouse.scale",
+   "text": "바닥 저울."
+  },
+  {
+   "id": "trade-office.warehouse.hand-pallet",
+   "text": "핸드 팔레트, 자키.",
+   "show": "핸드 팔레트(자키)"
+  },
+  {
+   "id": "trade-office.lead-desk.approval-folder",
+   "text": "결재판."
+  },
+  {
+   "id": "trade-office.lead-desk.sample-cabinet",
+   "text": "견본 진열장."
+  },
+  {
+   "id": "trade-office.lead-desk.fair-calendar",
+   "text": "전시회 일정 달력."
+  },
+  {
+   "id": "trade-office.lead-desk.printer",
+   "text": "복합기."
+  },
+  {
+   "id": "medical-coordinator.desk-senior.counter",
+   "text": "접수 창구."
+  },
+  {
+   "id": "medical-coordinator.desk-senior.board",
+   "text": "코디네이터 근무 일정판."
+  },
+  {
+   "id": "medical-coordinator.desk-senior.leaflets",
+   "text": "다국어 안내서."
+  },
+  {
+   "id": "medical-coordinator.desk-senior.wheelchair",
+   "text": "휠체어."
+  },
+  {
+   "id": "medical-coordinator.desk-senior.waiting",
+   "text": "외국인 환자 대기석.",
+   "seed": 1007
+  },
+  {
+   "id": "medical-coordinator.clinic-front.clinic-door",
+   "text": "진료실 문."
+  },
+  {
+   "id": "medical-coordinator.clinic-front.queue-screen",
+   "text": "진료 대기 화면."
+  },
+  {
+   "id": "medical-coordinator.clinic-front.sanitizer",
+   "text": "손 소독제."
+  },
+  {
+   "id": "medical-coordinator.exam-front.changing",
+   "text": "탈의실."
+  },
+  {
+   "id": "medical-coordinator.exam-front.lockers",
+   "text": "사물함.",
+   "seed": 1004
+  },
+  {
+   "id": "medical-coordinator.exam-front.exam-door",
+   "text": "내시경실 문."
+  },
+  {
+   "id": "medical-coordinator.exam-front.recovery",
+   "text": "회복실.",
+   "seed": 1004
+  },
+  {
+   "id": "medical-coordinator.consult.form",
+   "text": "문진표."
+  },
+  {
+   "id": "medical-coordinator.consult.explain-screen",
+   "text": "설명용 화면."
+  },
+  {
+   "id": "medical-coordinator.consult.tissue",
+   "text": "휴지와 물."
+  },
+  {
+   "id": "medical-coordinator.billing.pay-window",
+   "text": "수납 창구."
+  },
+  {
+   "id": "medical-coordinator.billing.card-terminal",
+   "text": "카드 결제기."
+  },
+  {
+   "id": "medical-coordinator.billing.price-guide",
+   "text": "진료비 안내서."
+  },
+  {
+   "id": "medical-coordinator.billing.kiosk",
+   "text": "증명서 발급기."
+  },
+  {
+   "id": "customer-care.entrance.queue-board",
+   "text": "대기 콜 현황판."
+  },
+  {
+   "id": "customer-care.entrance.notice-board",
+   "text": "공지 보드."
+  },
+  {
+   "id": "customer-care.entrance.phone-lockers",
+   "text": "휴대폰 보관함."
+  },
+  {
+   "id": "customer-care.entrance.card-reader",
+   "text": "출입증 단말기."
+  },
+  {
+   "id": "customer-care.desk.headset",
+   "text": "헤드셋."
+  },
+  {
+   "id": "customer-care.desk.crm-screen",
+   "text": "상담 화면."
+  },
+  {
+   "id": "customer-care.desk.status-button",
+   "text": "상태 버튼. 대기, 후처리, 휴식.",
+   "show": "상태 버튼(대기 · 후처리 · 휴식)"
+  },
+  {
+   "id": "customer-care.desk.hold-key",
+   "text": "보류 버튼."
+  },
+  {
+   "id": "customer-care.desk.manual",
+   "text": "스크립트, 상담 매뉴얼.",
+   "show": "스크립트(상담 매뉴얼)"
+  },
+  {
+   "id": "customer-care.desk.help-flag",
+   "text": "도움 요청 깃발.",
+   "seed": 1004
+  },
+  {
+   "id": "customer-care.lead-desk.live-board",
+   "text": "실시간 상담 현황."
+  },
+  {
+   "id": "customer-care.lead-desk.monitor-headset",
+   "text": "모니터링 헤드셋."
+  },
+  {
+   "id": "customer-care.lead-desk.roster",
+   "text": "근무표."
+  },
+  {
+   "id": "customer-care.training.screen",
+   "text": "교육 화면."
+  },
+  {
+   "id": "customer-care.training.roleplay-phones",
+   "text": "역할극, 롤플레잉 전화기.",
+   "show": "역할극(롤플레잉) 전화기",
+   "seed": 1006
+  },
+  {
+   "id": "customer-care.training.training-plan",
+   "text": "신입 교육 일정."
+  },
+  {
+   "id": "customer-care.lounge.water",
+   "text": "정수기."
+  },
+  {
+   "id": "customer-care.lounge.massage-chair",
+   "text": "안마의자."
+  },
+  {
+   "id": "customer-care.lounge.care-notice",
+   "text": "상담사 보호 안내."
+  }
+ ]
+}

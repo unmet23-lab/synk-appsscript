@@ -6,6 +6,7 @@
 
 - 틀은 `window.parent.SYNKFrontHost`(같은 출처일 때만)를 쓴다. 틀 안인데 아직 없으면 1.5초까지 기다린다. 혼자 열린 판은 `dev-host.mjs`의 가짜 host로 돈다(주소 값은 시안 10z6과 같다 — `v · who · lines · hangul · lang · mom · after · goal · step · pc · dream`. 더한 값은 `consent=1` 동의 줄, `pos=none` 위치 지도 없음, `still=1` 움직임 줄이기).
 - 틀이 뜨면 `host.ready(api)`를 한 번 부른다. host는 그 뒤 `api.show(state)`로 화면을 정한다.
+- 오늘 할 일 카드의 대사(`says`)는 이 폴더 `assets/say/`의 녹음만 튼다. 글과 파일의 짝은 `says.mjs`에 있고, 표에 없는 글은 소리 단추 없이 글만 보인다(기기 음성을 쓰지 않는다, 11-25). 레슨의 앞 세 말이 바뀌면 `tests/world-front-says.test.mjs`가 떨어진다 — `qa/대사녹음_20261125/plan.json`에 줄을 더해 굽고 표를 맞춘다.
 - 그림 · 소리 · 글꼴: 자리 사진과 밤 · 아침 사진은 이 폴더 `assets/`에 있다. 방 소리 · 새벽 소리 · 엄마 쪽지는 `../seoul-arrival/assets/`, 글꼴은 `../brand-opening/assets/`의 같은 파일을 쓴다. 공개본에 두 형제 폴더가 같이 실려야 한다.
 
 ## 2. 틀이 내놓는 api

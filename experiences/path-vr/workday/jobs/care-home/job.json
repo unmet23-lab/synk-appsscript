@@ -28,11 +28,11 @@
       "photo": "places/room.jpg",
       "alt": "침대 두 개가 놓인 밝은 생활실. 침대마다 머리맡에 호출 벨이 있다.",
       "points": [
-        { "id": "call-bell", "x": 0.89, "y": 0.43, "label": "호출 벨",
+        { "id": "call-bell", "x": 0.89, "y": 0.43, "label": "호출 벨", "audio": "audio/room-call-bell.mp3",
           "hint": { "mn": "Дуудлагын хонх. Настан тусламж хэрэгтэй үед дардаг.", "vi": "Chuông gọi. Cụ bấm khi cần giúp đỡ.", "en": "Call bell. A resident presses it when they need help." } },
-        { "id": "fall-sign", "x": 0.247, "y": 0.43, "label": "낙상 주의 표지",
+        { "id": "fall-sign", "x": 0.247, "y": 0.43, "label": "낙상 주의 표지", "audio": "audio/room-fall-sign.mp3",
           "hint": { "mn": "Унахаас сэрэмжлүүлэх тэмдэг. Энэ настан унах эрсдэлтэй гэсэн үг.", "vi": "Biển cảnh báo té ngã. Cụ này dễ bị ngã.", "en": "Fall-risk sign. This resident may fall easily." } },
-        { "id": "bed-rail", "x": 0.32, "y": 0.56, "label": "침대 난간",
+        { "id": "bed-rail", "x": 0.32, "y": 0.56, "label": "침대 난간", "audio": "audio/room-bed-rail.mp3",
           "hint": { "mn": "Орны хашлага.", "vi": "Thanh chắn giường.", "en": "Bed rail." } }
       ]
     },
@@ -41,9 +41,9 @@
       "photo": "places/dining.jpg",
       "alt": "식탁 여러 개와 큰 창이 있는 넓은 방. 벽에 식단표와 일과표가 붙어 있다.",
       "points": [
-        { "id": "menu", "x": 0.45, "y": 0.22, "label": "식단표",
+        { "id": "menu", "x": 0.45, "y": 0.22, "label": "식단표", "audio": "audio/dining-menu.mp3",
           "hint": { "mn": "Хоолны цэс.", "vi": "Thực đơn.", "en": "Menu. A list of the dishes served." } },
-        { "id": "schedule", "x": 0.72, "y": 0.22, "label": "일과표", "note": "schedule",
+        { "id": "schedule", "x": 0.72, "y": 0.22, "label": "일과표", "audio": "audio/dining-schedule.mp3", "note": "schedule",
           "hint": { "mn": "Өдрийн хуваарь.", "vi": "Lịch sinh hoạt trong ngày.", "en": "Daily schedule." } }
       ]
     },
@@ -52,9 +52,9 @@
       "photo": "places/nurse.jpg",
       "alt": "복도 쪽으로 열린 간호사실. 책상에 기록지 묶음이 있고 뒤에 약 보관함이 있다.",
       "points": [
-        { "id": "record-sheet", "x": 0.47, "y": 0.63, "label": "기록지",
+        { "id": "record-sheet", "x": 0.47, "y": 0.63, "label": "기록지", "audio": "audio/nurse-record-sheet.mp3",
           "hint": { "mn": "Тэмдэглэлийн хуудас. Настны байдал, хийсэн ажлаа бичдэг.", "vi": "Phiếu ghi chép. Ghi tình trạng của cụ và việc đã làm.", "en": "Care record sheet. You write down the resident's condition and what you did." } },
-        { "id": "medicine", "x": 0.8, "y": 0.4, "label": "약 보관함",
+        { "id": "medicine", "x": 0.8, "y": 0.4, "label": "약 보관함", "audio": "audio/nurse-medicine.mp3",
           "hint": { "mn": "Эмийн шүүгээ. Эмийг сувилагч өгдөг.", "vi": "Tủ thuốc. Y tá là người cho các cụ uống thuốc.", "en": "Medicine cabinet. The nurse gives the residents their medicine." } }
       ]
     },
@@ -63,7 +63,7 @@
       "photo": "places/bath-door.jpg",
       "alt": "닫힌 목욕실 문 앞 복도. 문 옆에 목욕 일정표가 붙어 있다.",
       "points": [
-        { "id": "bath-plan", "x": 0.645, "y": 0.31, "label": "목욕 일정표", "note": "bath",
+        { "id": "bath-plan", "x": 0.645, "y": 0.31, "label": "목욕 일정표", "audio": "audio/bath-door-bath-plan.mp3", "note": "bath",
           "hint": { "mn": "Усанд оруулах хуваарь.", "vi": "Lịch tắm.", "en": "Bathing schedule." } }
       ]
     },
