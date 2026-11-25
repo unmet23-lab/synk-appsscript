@@ -75,7 +75,7 @@ jobs:
             /docs/마케팅/맞춤도구/assets/**
             /docs/마케팅/맞춤도구/voice/samples/**
             /docs/마케팅/맞춤도구/homepage/shots/**
-            /docs/마케팅/맞춤도구/profile-photo/shots/*.webp
+            /docs/마케팅/맞춤도구/*/shots/*.webp
             /docs/마케팅/맞춤도구/profile-photo/brand-shift-sm.webp
             /docs/캐릭터/정본_4K/*_본체.png
             /docs/홍보물/계정별콘텐츠_20260909/**
