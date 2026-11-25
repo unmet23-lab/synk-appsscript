@@ -64,7 +64,7 @@
 
 ### 아직 확인하지 않은 것과 유호님 손
 
-- founder와 synk.yuh 키는 11-13 Opus 호출 한 번의 「credit balance is too low」로 소진 표시가 됐다. 그런데 11-12 Console에서 읽은 founder 잔액은 $199.71이었고, 이번 주기 호출도 각 한 번뿐이다. 실제로 바닥났는지는 Console에서 확인하지 않았다(11-15).
+- founder와 synk.yuh 키는 11-13 Opus 호출 한 번의 「credit balance is too low」로 소진 표시가 됐다. 그런데 11-12 Console에서 읽은 founder 잔액은 $199.71이었고, 이번 주기 호출도 각 한 번뿐이다. 실제로 바닥났는지는 Console에서 확인하지 않았다(11-15). 11-25 21시에 1토큰을 보내니 두 키를 포함한 무인 목록 일곱 키가 모두 HTTP 200이었다. 바닥나지 않은 키에서 같은 문구가 나는 까닭 하나를 찾았다([현장 노트](현장노트/AI_CLI.md#session-entrypoint-credit)). 두 키의 소진 표시는 그대로 두었다.
 - Gemini API 유료 키 하나와 회사 서버의 다음 결제 자리는 [트랙](_ops/트랙.md) §1에 있다.
 
 <a id="current-ai-settings"></a>

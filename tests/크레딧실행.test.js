@@ -90,12 +90,13 @@ test('결과읽기·환경만들기: json·stream-json 결과를 읽고, 자격�
   const 줄들 = 실행기.결과읽기(['{"type":"system","subtype":"init"}', '{"type":"result","is_error":true,"result":"Credit balance is too low","num_turns":1}'].join('\n'));
   assert.equal(줄들.크레딧부족, true);
   assert.equal(실행기.결과읽기('엉망').읽음, false);
-  const env = 실행기.환경만들기('sk-ant-test-zzzz', { PATH: 'p', ANTHROPIC_API_KEY: 'old', ANTHROPIC_BASE_URL: 'x', CLAUDE_CODE_OAUTH_TOKEN: 'o' }, 'C:/cfg');
+  const env = 실행기.환경만들기('sk-ant-test-zzzz', { PATH: 'p', ANTHROPIC_API_KEY: 'old', ANTHROPIC_BASE_URL: 'x', CLAUDE_CODE_OAUTH_TOKEN: 'o', CLAUDE_CODE_ENTRYPOINT: 'claude-desktop' }, 'C:/cfg');
   assert.deepEqual(env, { PATH: 'p', ANTHROPIC_API_KEY: 'sk-ant-test-zzzz', CLAUDE_CONFIG_DIR: 'C:/cfg' });
   assert.throws(() => 실행기.환경만들기('sk-ant-test-zzzz', {}), /전용 설정 폴더/);
   const 줄들인증 = 실행기.결과읽기('{"type":"system","subtype":"init","apiKeySource":"ANTHROPIC_API_KEY"}\n{"type":"result","result":"x"}');
   assert.equal(줄들인증.인증, 'ANTHROPIC_API_KEY');
-  assert.deepEqual(실행기.환경만들기(null, { PATH: 'p', ANTHROPIC_API_KEY: 'old', CLAUDE_CODE_OAUTH_TOKEN: 'o' }), { PATH: 'p', CLAUDE_CODE_OAUTH_TOKEN: 'o' });
+  assert.deepEqual(실행기.환경만들기(null, { PATH: 'p', ANTHROPIC_API_KEY: 'old', CLAUDE_CODE_OAUTH_TOKEN: 'o', CLAUDE_CODE_ENTRYPOINT: 'claude-desktop' }),
+    { PATH: 'p', CLAUDE_CODE_OAUTH_TOKEN: 'o', CLAUDE_CODE_ENTRYPOINT: 'claude-desktop' }, '구독 실행의 환경은 그대로 둔다');
 });
 
 test('할 일이 없으면 claude를 띄우지 않고(비용 0), 15분마다 돌아도 기록 파일을 쌓지 않는다', async () => {

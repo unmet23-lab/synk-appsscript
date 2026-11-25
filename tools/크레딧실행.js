@@ -71,6 +71,9 @@ function 환경만들기(키값, 기본 = process.env, 설정폴더 = null) {
   for (const 이름 of ['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_BASE_URL']) delete env[이름];
   if (키값) {
     delete env.CLAUDE_CODE_OAUTH_TOKEN;
+    // Code 탭 세션에서 띄우면 CLAUDE_CODE_ENTRYPOINT=claude-desktop을 물려받는다. 그 값이 있으면 잔액이 있는 키도
+    // API가 400 「Credit balance is too low」로 거절했고, 그 키가 소진으로 잘못 표시됐다(2026-11-25, 변수 하나씩 빼며 확인).
+    delete env.CLAUDE_CODE_ENTRYPOINT;
     env.ANTHROPIC_API_KEY = 키값;
     if (!설정폴더) throw new Error('크레딧으로 돌 때는 전용 설정 폴더가 있어야 한다(구독으로 새지 않게)');
     env.CLAUDE_CONFIG_DIR = 설정폴더;
