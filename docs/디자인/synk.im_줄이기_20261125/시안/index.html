@@ -2,6 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="base.css">
 <style>
+:root{--coral-ink:#c2402f}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 [hidden]{display:none!important}
 /* 장면: 사업마다 사진 하나 */
@@ -10,9 +11,23 @@
 .sc .m>img{position:absolute;inset:0;width:100%;height:100%}
 .sc>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
 .town{width:max(100cqw,84cqh*1040/1604);aspect-ratio:1040/1604;bottom:0}
-.hall{width:max(100cqw,84cqh*1080/1720);aspect-ratio:1080/1720;top:0}
-.scr{position:absolute;left:8.26%;top:31.1%;width:69.2%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5em;color:#3a2a17;text-align:center;font:600 3.5cqi/1.4 var(--sans)}
-.scr b{font:500 14.5cqi/1 var(--mono);letter-spacing:-.04em}
+.sc .hall{width:max(100cqw,90cqh*1024/1536);aspect-ratio:1024/1536;top:3cqh;left:34%;transform:translateX(-34%)}
+/* 화면: 지금 시각과 예약된 일. 강사 손이 오른쪽 아래를 덮어 줄은 왼쪽 80%만 쓴다 */
+.scr{position:absolute;left:8.2%;top:31.2%;width:68%;height:27.1%;padding:3.4cqi 4.2cqi 0;color:#2b1f12;font:600 max(12px,2.62cqi)/1.2 var(--sans);letter-spacing:-.01em;white-space:nowrap;overflow:hidden}
+.scr .hd{font:800 max(14px,3.75cqi)/1.25 var(--sans);letter-spacing:-.03em;white-space:nowrap}
+.scr .ck{display:flex;align-items:flex-end;gap:2.6cqi;margin-top:1.7cqi}
+.scr .ck b{display:flex;align-items:flex-start;font:500 10.2cqi/.9 var(--mono);letter-spacing:-.06em;white-space:nowrap}
+.scr .sec{margin:.12em 0 0 .3em;font:500 .3em/1 var(--mono);letter-spacing:0;color:var(--coral-ink)}
+.scr .wh{padding-bottom:.35em;color:#6f5a3c}
+.scr .ft{margin-top:.5em;font-size:.92em;color:#6f5a3c}
+.scr .pg{width:100%;height:2px;margin:1.9cqi 0 1.2cqi;background:rgba(43,31,18,.16)}
+.scr .pg i{display:block;height:100%;width:0;background:var(--coral)}
+.scr .jb{margin:0;padding:0;list-style:none;width:80%}
+.scr .jb li{display:grid;grid-template-columns:3.5em 1fr auto;gap:.4em;padding:.24em 0}
+.scr .jb time{font:500 1em/1.2 var(--mono);color:#6f5a3c}
+.scr .jb em{font-style:normal;font-weight:500;color:#6f5a3c}
+.scr .jb li:first-child{font-weight:800}
+@container (max-width:420px){.scr .ft{display:none}}@container (max-width:345px){.scr .jb li:nth-child(3){display:none}}
 .pin{position:absolute;transform:translate(-50%,-100%);padding:.5em .8em;border-radius:999px;background:#fff;color:#1b1a12;font:700 clamp(12px,2.9cqi,16px)/1 var(--sans);white-space:nowrap;box-shadow:0 8px 22px rgba(60,50,10,.2)}
 /* 세 칸 */
 .tri{position:relative;display:flex;gap:10px;height:var(--vh);min-height:600px;max-height:1180px;padding:12px;background:#fff}
@@ -64,7 +79,7 @@
 <section class="hero tri" data-v="a">
   <h1 class="vh">끝까지 책임지는 한국 유학, 실전 AI 활용 강의, 브랜드를 드라마로 만드는 광고</h1>
   <a class="k1" href="path.html"><span class="sc"><div class="m town"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"><span class="pin" style="left:19.5%;top:59.4%">한국어</span><span class="pin" style="left:32.1%;top:44.7%">교실</span><span class="pin" style="left:63.5%;top:41.2%">유학</span><span class="pin" style="left:86%;top:51.4%">취업</span><span class="pin" style="left:75.6%;top:62.9%">모임</span></div></span><span class="t"><small>끝까지 책임지는</small><b>한국 유학</b></span></a>
-  <a class="k2" href="shift.html"><span class="sc"><div class="m hall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><span class="t"><small>실전</small><b>AI 활용 강의</b></span></a>
+  <a class="k2" href="shift.html"><span class="sc"><div class="m hall"><img src="a/hall-front-port.webp" alt="강사가 큰 화면을 가리키며 청중을 보고 이야기하는 강의장"><div class="scr" aria-hidden="true"><p class="hd">강의하는 지금도 회사는 일합니다</p><div class="ck"><b><span class="now">00:00</span><i class="sec">00</i></b><span class="wh">서울 지금</span></div><div class="pg"><i></i></div><ol class="jb"></ol><p class="ft">이렇게 30여 가지가 사람 없이 돕니다</p></div></div></span><span class="t"><small>실전</small><b>AI 활용 강의</b></span></a>
   <a class="k3" href="pulse.html"><span class="sc"><video src="a/dodam-port.mp4" poster="a/dodam-port.webp" muted loop autoplay playsinline></video></span><span class="t"><small>브랜드를 드라마로 만드는</small><b>광고</b></span></a>
 </section>
 <section class="hero no" data-v="now" hidden><img src="a/now.webp" alt="지금 공개된 첫 화면"><p>지금 공개본 · 1536×730 창에서 찍음</p></section>
@@ -82,7 +97,18 @@ const nav=$('#nav');
 function show(k){$$('[data-v]').forEach(h=>h.hidden=h.dataset.v!==k);$$('[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===k));scrollTo(0,0);paint()}
 $$('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 function paint(){nav.hidden=!$('[data-v=now]').hidden;$$('.end,.foot,.wm').forEach(e=>e.hidden=nav.hidden)}
-const tick=()=>{const t=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());$$('.now').forEach(e=>e.textContent=t)};tick();setInterval(tick,10000);
+/* 실제 예약표(docs/_ops/관문_자동화.md, 2026-11-26). 광고 의뢰 확인은 10분마다 5분에 돈다 */
+const J=[['03:30','회사 자료 백업'],['04:00','복원본 만들기'],['05:00','잘된 콘텐츠 조사'],['05:10','지원사업 공고 읽기'],['05:30','서버 암호화 백업'],['06:00','앱 새 판 올리기'],['07:00','오늘 영상 만들기'],['08:30','공모전 찾기'],['09:00','게시물 성과 모으기'],['09:10','나라별 말로 옮기기'],['10:30','여행 자료 다시 확인'],['10:40','유학 접수 마감 확인'],['12:30','영상 원본 백업'],['13:10','지원사업 공고 읽기'],['14:00','SNS 검수와 게시'],['15:00','오늘 영상 만들기'],['17:00','앱 새 판 올리기'],['18:30','메일 훑어보기'],['19:30','내일 주제 찾기'],['20:00','인기 영상 조사'],['21:00','스레드 글 올리기'],['22:10','나라별 말로 옮기기'],['23:00','브랜드 광고 조사']].map(x=>[+x[0].slice(0,2)*60+ +x[0].slice(3),x[0],x[1]]);
+const p2=n=>String(n).padStart(2,'0'),ago=m=>m>=60?Math.floor(m/60)+'시간'+(m%60?' '+m%60+'분':'')+' 뒤':m+'분 뒤';
+let shown='';
+function tick(){const [h,m,s]=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(new Date()).split(':');
+$('.sec').textContent=s;const k=h+':'+m;if(k===shown)return;shown=k;$('.now').textContent=k;
+const n=+h*60+ +m;let i=J.findIndex(x=>x[0]>n);if(i<0)i=0;const gap=x=>(x-n+1440)%1440,a=J[(i+J.length-1)%J.length],b=J[i],c=J[(i+1)%J.length];
+const q=(Math.floor((n-5)/10)*10+5+1440)%1440,past=x=>(n-x+1440)%1440;
+const first=past(a[0])<=past(q)?[a[1],a[2],'방금']:[p2(Math.floor(q/60))+':'+p2(q%60),'새 광고 의뢰 확인','10분마다'];
+$('.jb').innerHTML=[first,[b[1],b[2],ago(gap(b[0]))],[c[1],c[2],ago(gap(c[0]))]].map(x=>`<li><time>${x[0]}</time><span>${x[1]}</span><em>${x[2]}</em></li>`).join('');
+$('.pg i').style.width=past(a[0])/(past(a[0])+gap(b[0]))*100+'%'}
+tick();setInterval(tick,1000);
 const wm=$('.wm');if('IntersectionObserver'in window){wm.classList.add('io');new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){wm.classList.add('on');o.disconnect()}},{threshold:.25}).observe(wm)}
 show('a');
 </script>
