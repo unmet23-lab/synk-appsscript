@@ -20,8 +20,8 @@ body{background:var(--night);color:#fff}
 .stage{margin-top:clamp(26px,2.6vw,40px);display:grid;grid-template-columns:minmax(0,1.62fr) minmax(0,1fr);gap:clamp(28px,4vw,64px);align-items:center}
 .scr{position:relative;aspect-ratio:1280/632;border-radius:24px;overflow:hidden;background:#000;display:grid;place-items:center}
 .scr video{width:100%;height:100%;object-fit:cover;background:#000}
-.stage.tall{grid-template-columns:minmax(0,min(400px,38svh)) minmax(0,1fr);justify-content:start}
-.stage.tall .scr{aspect-ratio:9/16}
+.stage.wide{grid-template-columns:1fr;gap:26px}.stage.wide .scr{aspect-ratio:1400/386}.stage.wide .steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(16px,2.4vw,36px)}.stage.wide .steps button{align-content:start}
+.stage.wide .nm{font-size:clamp(34px,3.3vw,50px)}
 .scr .big{position:absolute;inset:0;display:grid;place-items:center;border-radius:24px}
 .scr .big i{display:grid;place-items:center;width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.94);transition:transform .3s var(--ease)}
 .scr .big i::after{content:"";border-left:22px solid #111;border-block:14px solid transparent;margin-left:7px}
@@ -58,7 +58,7 @@ body{background:var(--night);color:#fff}
 .cta h2{font-size:var(--mid)}.cta p{margin-top:8px}
 .foot{background:var(--panel)}
 @media (max-width:820px){
-  .stage.tall{grid-template-columns:1fr}.stage.tall .scr{width:min(70vw,290px)}
+  .stage.wide .steps{grid-template-columns:1fr;gap:8px}.scr .big i{width:64px;height:64px}
   .open .c{grid-template-columns:1fr;justify-items:start}.way>header,.stage,.who .g,.cta{grid-template-columns:1fr}.flow ol{grid-template-columns:1fr}
   .pick{justify-self:start}.pick button{padding:0 16px}.who li{grid-template-columns:1fr;gap:2px}
 }
@@ -69,7 +69,7 @@ body{background:var(--night);color:#fff}
   <div class="c"><div><h1>이야기가 끝나면<br>제품 이름이 남습니다</h1><p>보는 사람이 이야기를 따라가다가 마지막에 이름을 기억하게 만듭니다.</p></div><a class="btn w" href="#ask">광고 의뢰하기</a></div></section>
 
 <section class="way" id="way">
-  <header><h2>이름에서 이야기를 시작합니다</h2><div class="pick" role="group" aria-label="작품 고르기"><button type="button" data-f="dodam" aria-pressed="true">도담중공업</button><button type="button" data-f="pet" aria-pressed="false">첨벙댕</button></div></header>
+  <header><h2>이름에서 이야기를 시작합니다</h2><div class="pick" role="group" aria-label="작품 고르기"><button type="button" data-f="dodam" aria-pressed="true">도담중공업</button><button type="button" data-f="bridge" aria-pressed="false">다리가 기억하는 것</button></div></header>
   <div class="stage">
     <div class="scr" id="scr"><video id="film" src="a/dodam.mp4" poster="a/d-52.webp" playsinline preload="metadata"></video><button type="button" class="big" aria-label="작품 재생"><i></i></button></div>
     <div class="steps" id="steps"></div>
@@ -89,20 +89,20 @@ body{background:var(--night);color:#fff}
   <div class="cast" aria-label="AI 모델 스물한 명 가운데 일부"><img src="a/m-f02.webp" alt=""><img src="a/m-m01.webp" alt=""><img src="a/m-f03.webp" alt=""><img src="a/m-m02.webp" alt=""><img src="a/m-f01.webp" alt=""><img src="a/m-m04.webp" alt=""><img src="a/m-f04.webp" alt=""><img src="a/m-m06.webp" alt=""><img src="a/m-f06.webp" alt=""><img src="a/m-m05.webp" alt=""><img src="a/m-f08.webp" alt=""><img src="a/m-m08.webp" alt=""></div></section>
 <section class="cta" id="ask"><div><h2>제품 사진 한 장과 올릴 곳만 있으면 시작합니다</h2><p>의뢰서에서 길이와 구성을 고르면 그 자리에서 값이 보입니다. 모델은 캐스팅북의 스물한 명 가운데 고릅니다.</p></div><div class="row"><a class="btn" href="#ask">광고 의뢰하기</a><a class="btn l" href="#ask">캐스팅북</a></div></section>
 </main>
-<footer class="foot"><nav><span>hello@synk.im</span><span>개인정보처리방침</span><span>이용약관</span></nav><span>작품의 브랜드는 모두 지어낸 것이고 사람과 목소리는 AI로 만들었습니다</span></footer>
+<footer class="foot"><nav><span>hello@synk.im</span><span>개인정보처리방침</span><span>이용약관</span></nav><span>도담중공업은 지어낸 브랜드이고 작품의 사람과 목소리는 AI로 만들었습니다</span></footer>
 <div class="rev" role="group" aria-label="시안 보기"><a href="index.html">홈</a><i></i><a href="pulse.html" aria-current="page">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html">창업자</a></div>
 <script>
 const $=s=>document.querySelector(s),nav=$('#nav'),calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const paint=()=>{const y=scrollY,o=$('.open').offsetHeight-60,f=$('.flow').offsetTop-110;nav.classList.toggle('solid',y>f);nav.classList.toggle('on-dark',y<=f);nav.style.background=y>o&&y<=f?'rgba(8,8,10,.86)':''};addEventListener('scroll',paint,{passive:true});paint();
 const F={dodam:{src:'a/dodam.mp4',poster:'a/d-52.webp',note:'도담중공업 「이 아이를 보냅니다」 · 1분 1초 · 가상 브랜드로 만든 자체 제작 광고',s:[
  ['이름의 뜻','도담도담, 아이가 탈 없이 자라는 모양',2.2,0],['그 뜻으로 지은 이야기','300톤 가스터빈 한 대를 아이처럼 3년 키워 떠나보냅니다',24.8,0],['마지막 3초에 처음 나오는 이름','도담중공업',49.6,1]]},
- pet:{src:'a/pet.mp4',poster:'a/p-20_9.webp',note:'첨벙댕 · 26초 세로 광고 · 가상 브랜드로 만든 자체 제작 광고',s:[
- ['이름의 뜻','첨벙 하는 물소리와 댕댕이',0,0],['그 뜻으로 지은 이야기','외계인을 닮은 개가 구명조끼를 입고 물에 떨어집니다',6.7,0],['물에 빠지는 소리가 곧 이름','첨벙댕',17.3,1]]}};
+ bridge:{src:'a/bridge.mp4',poster:'a/bridge.webp',note:'「다리가 기억하는 것」 · 2분 58초 · 2026 서울로미디어캔버스 단편 애니메이션 공모 당선작 · 2026년 12월부터 2027년 2월까지 상영',s:[
+ ['이름의 뜻','서울로7017, 1970년의 찻길이 2017년에 걷는 길로',8,0],['그 뜻으로 지은 이야기','할머니가 손주와 걸으며 다리의 옛이야기를 들려줍니다',26,0],['이야기 끝에 남는 이름','다리가 기억하는 것',170.6,1]]}};
 const v=$('#film'),st=$('#steps'),scr=$('#scr');let k='dodam',cur=0;
 function draw(){const f=F[k];st.innerHTML=f.s.map((x,i)=>`<button type="button" data-i="${i}" aria-pressed="${i===cur}"><span>${x[0]}</span><b class="${x[3]?'nm':''}">${x[1]}</b></button>`).join('');$('#note').textContent=f.note;[...st.children].forEach(b=>b.onclick=()=>play(+b.dataset.i))}
 function mark(i){if(i===cur)return;cur=i;[...st.children].forEach((b,n)=>b.setAttribute('aria-pressed',n===i))}
 function play(i){cur=-1;mark(i);scr.classList.add('on');v.controls=true;const go=()=>{v.currentTime=F[k].s[i][2];v.play().catch(()=>{})};v.readyState?go():(v.onloadedmetadata=go,v.load())}
-document.querySelectorAll('.pick button').forEach(b=>b.onclick=()=>{k=b.dataset.f;cur=0;document.querySelectorAll('.pick button').forEach(x=>x.setAttribute('aria-pressed',x===b));v.pause();v.controls=false;v.poster=F[k].poster;v.src=F[k].src;$('.stage').classList.toggle('tall',k==='pet');scr.classList.remove('on');draw()});
+document.querySelectorAll('.pick button').forEach(b=>b.onclick=()=>{k=b.dataset.f;cur=0;document.querySelectorAll('.pick button').forEach(x=>x.setAttribute('aria-pressed',x===b));v.pause();v.controls=false;v.poster=F[k].poster;v.src=F[k].src;$('.stage').classList.toggle('wide',k==='bridge');scr.classList.remove('on');draw()});
 $('.scr .big').onclick=()=>play(0);
 v.ontimeupdate=()=>{const s=F[k].s;let i=0;s.forEach((x,n)=>{if(v.currentTime>=x[2]-.2)i=n});if(!v.paused)mark(i)};
 draw();

@@ -56,6 +56,8 @@ span.pin{height:auto;padding:.5em .8em;font-size:clamp(12px,2.9cqi,16px)}
 .na .card b{font:800 20px/1.2 var(--sans);letter-spacing:-.03em}.na .card em{font:500 13px/1 var(--sans);color:var(--sub);font-style:normal;justify-self:end}.na .card p{grid-column:1/-1;font-size:15px;line-height:1.45}
 .na .tabs{padding:18px clamp(8px,4.6vw,72px) 22px;display:grid;grid-template-columns:repeat(3,1fr) auto;gap:clamp(12px,2vw,28px);align-items:center}
 .na .tabs button{padding-top:14px;font:700 clamp(15px,1.25vw,19px)/1.3 var(--sans);position:relative}
+.na .tabs button span{font-weight:500}.na .tabs button b{font-weight:800}
+.rev .lb{padding:0 4px 0 2px;color:#fff;flex:none;white-space:nowrap}
 .na .tabs button::before,.na .tabs button::after{content:"";position:absolute;left:0;top:0;height:3px;width:100%;border-radius:3px;background:currentColor;opacity:.3}
 .na .tabs button::after{opacity:1;transform:scaleX(0);transform-origin:left}
 .na .tabs button[aria-pressed=true]::after{transform:scaleX(1)}
@@ -105,6 +107,7 @@ span.pin{height:auto;padding:.5em .8em;font-size:clamp(12px,2.9cqi,16px)}
   .tri,.tri.low{flex-direction:column;height:auto;max-height:none;padding:64px 10px 10px}.tri.low{padding-top:10px}.tri a{flex:none;height:min(122vw,560px)}
   .na{padding:64px 10px 0}.na .stage{border-radius:26px}
   .na .tabs{grid-template-columns:repeat(3,1fr);padding:14px 10px 16px}.na .tabs .btn{grid-column:1/-1;justify-self:start;order:-1}
+  .na .tabs button>span{display:none}
   .na .txt{top:22px;left:22px;right:22px}.na .txt h1{font-size:54px}.na .txt .lead{display:none}
   .na .s3::before{background:linear-gradient(rgba(0,0,0,.66),transparent 46%)}
   .na .pin{height:34px;padding:0 11px 0 5px;font-size:14px}.na .pin i{width:24px;height:24px;font-size:12px}
@@ -120,38 +123,38 @@ span.pin{height:auto;padding:.5em .8em;font-size:clamp(12px,2.9cqi,16px)}
 
 <main>
 <section class="hero tri" data-v="a">
-  <h1 class="vh">끝까지 책임지는 한국 유학, 직접 가서 가르치는 AI 강의, 이야기로 기억에 남는 광고</h1>
+  <h1 class="vh">끝까지 책임지는 한국 유학, 써 본 것만 가르치는 AI 강의, 이야기로 각인시키는 광고</h1>
   <a class="k1" href="path.html"><span class="sc"><div class="m town tall"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"><span class="pin" style="left:19.5%;top:59.4%">한국어</span><span class="pin" style="left:32.1%;top:44.7%">교실</span><span class="pin" style="left:63.5%;top:41.2%">유학</span><span class="pin" style="left:86%;top:51.4%">취업</span><span class="pin" style="left:75.6%;top:62.9%">모임</span></div></span><span class="t"><small>끝까지 책임지는</small><b>한국 유학</b></span></a>
-  <a class="k2" href="shift.html"><span class="sc"><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><span class="t"><small>직접 가서 가르치는</small><b>AI 강의</b></span></a>
-  <a class="k3" href="pulse.html"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><span class="t"><small>이야기로 기억에 남는</small><b>광고</b></span></a>
+  <a class="k2" href="shift.html"><span class="sc"><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><span class="t"><small><span data-m="l">써 본 것만 가르치는</span></small><b><span data-n="l">AI 강의</span></b></span></a>
+  <a class="k3" href="pulse.html"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><span class="t"><small><span data-m="c">이야기로 각인시키는</span></small><b>광고</b></span></a>
 </section>
 
 <section class="hero na" data-v="b" hidden>
   <div class="stage">
     <div class="sl s1 on"><span class="sc"><div class="m town wide"><img src="a/town-road.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"><button type="button" class="pin" data-i="0" style="left:45.5%;top:51%" aria-pressed="false"><i>1</i>한국어</button><button type="button" class="pin" data-i="1" style="left:54%;top:28%" aria-pressed="false"><i>2</i>교실</button><button type="button" class="pin" data-i="2" style="left:75.3%;top:22.5%" aria-pressed="true"><i>3</i>유학</button><button type="button" class="pin" data-i="3" style="left:90.5%;top:38.5%" aria-pressed="false"><i>4</i>취업</button><button type="button" class="pin" data-i="4" style="left:83.5%;top:56.5%" aria-pressed="false"><i>5</i>모임</button></div><div class="m town tall"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"><button type="button" class="pin" data-i="0" style="left:19.5%;top:59.4%" aria-pressed="false"><i>1</i>한국어</button><button type="button" class="pin" data-i="1" style="left:32.1%;top:44.7%" aria-pressed="false"><i>2</i>교실</button><button type="button" class="pin" data-i="2" style="left:63.5%;top:41.2%" aria-pressed="true"><i>3</i>유학</button><button type="button" class="pin" data-i="3" style="left:86%;top:51.4%" aria-pressed="false"><i>4</i>취업</button><button type="button" class="pin" data-i="4" style="left:75.6%;top:62.9%" aria-pressed="false"><i>5</i>모임</button></div></span><div class="txt"><p>끝까지 책임지는</p><h1>한국 유학</h1><div class="row"><a class="btn" href="path.html">사전예약하기</a><span class="lead">2027년 2월에 문을 엽니다</span></div></div>
       <div class="card" aria-live="polite"><img src="a/in-3.webp" alt=""><div><b>유학</b><em>2028 목표</em><p>학교 고르기, 입학 서류, 면접까지 한국에 오기 전에 먼저 해 봅니다.</p></div></div></div>
-    <div class="sl s2"><span class="sc"><div class="m hall wide"><img src="a/hall.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><div class="txt"><p>직접 가서 가르치는</p><h1>AI 강의</h1></div></div>
-    <div class="sl s3"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><div class="txt"><p>이야기로 기억에 남는</p><h1>광고</h1></div></div>
+    <div class="sl s2"><span class="sc"><div class="m hall wide"><img src="a/hall.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><div class="txt"><p data-m="l">써 본 것만 가르치는</p><h1 data-n="l">AI 강의</h1></div></div>
+    <div class="sl s3"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><div class="txt"><p data-m="c">이야기로 각인시키는</p><h1>광고</h1></div></div>
   </div>
-  <div class="tabs"><button type="button" aria-pressed="true">한국 유학</button><button type="button" aria-pressed="false">AI 강의</button><button type="button" aria-pressed="false">광고</button><a class="btn" href="path.html">들어가 보기</a></div>
+  <div class="tabs"><button type="button" aria-pressed="true"><span>끝까지 책임지는</span> <b>한국 유학</b></button><button type="button" aria-pressed="false"><span data-m="l">써 본 것만 가르치는</span> <b data-n="l">AI 강의</b></button><button type="button" aria-pressed="false"><span data-m="c">이야기로 각인시키는</span> <b>광고</b></button><a class="btn" href="path.html">들어가 보기</a></div>
 </section>
 
 <section class="hero ga" data-v="c" hidden>
   <span class="wm" aria-hidden="true">synk</span>
-  <h1 class="vh">끝까지 책임지는 한국 유학, 직접 가서 가르치는 AI 강의, 이야기로 기억에 남는 광고</h1>
+  <h1 class="vh">끝까지 책임지는 한국 유학, 써 본 것만 가르치는 AI 강의, 이야기로 각인시키는 광고</h1>
   <a class="win w1" href="path.html"><span class="sc"><div class="m town tall"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"></div></span><b><span><small>끝까지 책임지는</small>한국 유학</span></b></a>
-  <a class="win w2" href="shift.html"><span class="sc"><div class="m hall wide"><img src="a/hall.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><b><span><small>직접 가서 가르치는</small>AI 강의</span></b></a>
-  <a class="win w3" href="pulse.html"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><b><span><small>이야기로 기억에 남는</small>광고</span></b></a>
+  <a class="win w2" href="shift.html"><span class="sc"><div class="m hall wide"><img src="a/hall.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><b><span><small data-m="l">써 본 것만 가르치는</small><span data-n="l">AI 강의</span></span></b></a>
+  <a class="win w3" href="pulse.html"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><b><span><small data-m="c">이야기로 각인시키는</small>광고</span></b></a>
 </section>
 
 <section class="hero eav" data-v="d" hidden>
   <svg class="mk" viewBox="0 0 560 328" fill="currentColor" aria-hidden="true"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>
   <div class="roof"></div>
-  <div class="say2"><h1 class="vh">끝까지 책임지는 한국 유학, 직접 가서 가르치는 AI 강의, 이야기로 기억에 남는 광고</h1><a href="path.html"><span>끝까지 책임지는</span> <b>한국 유학</b></a><a href="shift.html"><span>직접 가서 가르치는</span> <b>AI 강의</b></a><a href="pulse.html"><span>이야기로 기억에 남는</span> <b>광고</b></a></div>
+  <div class="say2"><h1 class="vh">끝까지 책임지는 한국 유학, 써 본 것만 가르치는 AI 강의, 이야기로 각인시키는 광고</h1><a href="path.html"><span>끝까지 책임지는</span> <b>한국 유학</b></a><a href="shift.html"><span data-m="l">써 본 것만 가르치는</span> <b data-n="l">AI 강의</b></a><a href="pulse.html"><span data-m="c">이야기로 각인시키는</span> <b>광고</b></a></div>
 </section>
 <section class="tri low" data-v="d" hidden>
   <a class="k1" href="path.html"><span class="sc"><div class="m town tall"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"></div></span><span class="t"><b>한국 유학</b></span></a>
-  <a class="k2" href="shift.html"><span class="sc"><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><span class="t"><b>AI 강의</b></span></a>
+  <a class="k2" href="shift.html"><span class="sc"><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><span class="t"><b><span data-n="l">AI 강의</span></b></span></a>
   <a class="k3" href="pulse.html"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><span class="t"><b>광고</b></span></a>
 </section>
 
@@ -172,7 +175,7 @@ span.pin{height:auto;padding:.5em .8em;font-size:clamp(12px,2.9cqi,16px)}
 </main>
 <footer class="foot"><nav><span>창업자</span><span>아틀라스</span><span>개인정보처리방침</span><span>이용약관</span><span>데이터 삭제</span></nav><span>© 2026 SYNK</span></footer>
 
-<div class="rev" role="group" aria-label="시안 보기"><button type="button" data-go="a" aria-pressed="true">첫 화면 가</button><button type="button" data-go="b" aria-pressed="false">나</button><button type="button" data-go="c" aria-pressed="false">다</button><button type="button" data-go="d" aria-pressed="false">라</button><button type="button" data-go="now" aria-pressed="false">지금</button><i></i><a href="pulse.html">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html">창업자</a></div>
+<div class="rev" role="group" aria-label="시안 보기"><button type="button" data-go="a" aria-pressed="true">첫 화면 가</button><button type="button" data-go="b" aria-pressed="false">나</button><button type="button" data-go="c" aria-pressed="false">다</button><button type="button" data-go="d" aria-pressed="false">라</button><button type="button" data-go="now" aria-pressed="false">지금</button><i></i><span class="lb">강의</span><button type="button" data-w="l" data-k="1" aria-pressed="true">1</button><button type="button" data-w="l" data-k="2" aria-pressed="false">2</button><button type="button" data-w="l" data-k="3" aria-pressed="false">3</button><button type="button" data-w="l" data-k="4" aria-pressed="false">4</button><i></i><span class="lb">광고</span><button type="button" data-w="c" data-k="1" aria-pressed="true">1</button><button type="button" data-w="c" data-k="2" aria-pressed="false">2</button><button type="button" data-w="c" data-k="3" aria-pressed="false">3</button><button type="button" data-w="c" data-k="4" aria-pressed="false">4</button><i></i><a href="pulse.html">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html">창업자</a></div>
 
 <script>
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -193,5 +196,7 @@ $$('.tabs button',na).forEach((b,i)=>b.onclick=()=>{stop();slide(i)});
 const P=[['한국어','','드라마 속 선배에게 소리 내어 답해야 다음 장면이 열립니다.',1],['교실','2027 목표','선생님이 교실에서 고쳐 준 말을 앱이 평일에 다시 꺼냅니다.',2],['유학','2028 목표','학교 고르기, 입학 서류, 면접까지 한국에 오기 전에 먼저 해 봅니다.',3],['취업','2030 목표','일하고 싶은 자리에 필요한 조건부터 순서대로 짚습니다.',4],['모임','','먼저 온 선배가 첫 달을 함께합니다.',5]];
 const card=$('.na .card');
 $$('button.pin').forEach(b=>{const f=()=>{const i=+b.dataset.i,p=P[i];$$('button.pin').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.i===i));$('img',card).src='a/in-'+p[3]+'.webp';$('b',card).textContent=p[0];$('em',card).textContent=p[1];$('p',card).textContent=p[2]};b.onclick=()=>{stop();f()};b.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'){stop();f()}})});
+const W={l:{1:['써 본 것만 가르치는','AI 강의'],2:['돈도 시간도 먼저 써 본','AI 강의'],3:['배운 날 바로 쓰는','AI 강의'],4:['실전','AI 활용 강의']},c:{1:['이야기로 각인시키는'],2:['브랜드를 각인시키는'],3:['이야기로 브랜드를 각인시키는'],4:['보고 나면 이름이 남는']}};
+$$('[data-w]').forEach(b=>b.onclick=()=>{const w=b.dataset.w,s=W[w][b.dataset.k];$$('[data-w="'+w+'"]').forEach(x=>x.setAttribute('aria-pressed',x===b));$$('[data-m="'+w+'"]').forEach(e=>e.textContent=s[0]);if(s[1])$$('[data-n="'+w+'"]').forEach(e=>e.textContent=s[1]);if(v==='b'){stop();slide(w==='l'?1:2)}});
 show(location.hash.slice(1)||'a');addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(['a','b','c','d','now'].includes(h))show(h)});
 </script>
