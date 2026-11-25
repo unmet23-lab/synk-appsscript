@@ -26,6 +26,7 @@ export type 말 = {
   감정: 감정;
   크기?: number; // 한글 크기(안 적으면 130, 두 줄 118)
   폭?: number; // 한글 최대 폭(안 적으면 900)
+  그림?: '눈송이'; // 배우는 낱말 위에 얹는 뜻 그림(안 적으면 없음)
 };
 
 const FPS = 30;
@@ -38,13 +39,30 @@ const 맞춘크기 = (줄: string[], 크기: number, 폭: number) => {
   return 넓이 > 폭 ? Math.max(60, Math.floor((크기 * 폭) / 넓이)) : 크기;
 };
 
-const 글자하나: React.FC<{ ch: string; i: number; n: number; 줄: number; w: 말; size: number; fill: string }> = ({ ch, i, n, 줄, w, size, fill }) => {
+// 뜻 그림 — 배우는 낱말의 뜻을 낱말에 붙여 보인다(유호님 11-26 「손 시려 할때 "시려"에 눈송이같은 아이콘」). 글자와 같은 먹 테두리
+const 눈송이: React.FC<{ size: number }> = ({ size }) => {
+  const 가지 = 'M50 50 L50 8 M50 23 L37 12 M50 23 L63 12 M50 36 L41 28 M50 36 L59 28';
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" style={{ overflow: 'visible', display: 'block' }}>
+      {[INK, '#CFEBFF'].map((c, k) => (
+        <g key={k} stroke={c} strokeWidth={k === 0 ? 20 : 9} strokeLinecap="round" fill="none">
+          {[0, 60, 120, 180, 240, 300].map((a) => (
+            <path key={a} d={가지} transform={`rotate(${a} 50 50)`} />
+          ))}
+        </g>
+      ))}
+    </svg>
+  );
+};
+
+const 글자하나: React.FC<{ ch: string; i: number; n: number; 줄: number; w: 말; size: number; fill: string; 그림?: 말['그림'] }> = ({ ch, i, n, 줄, w, size, fill, 그림 }) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t0 = fr(w.at) + 줄 * 5 + i * 2;
   const sp = spring({ frame: f - t0, fps, config: { damping: w.감정 === '놀람' ? 8 : 11, mass: 0.5, stiffness: 190 } });
   const t = (f - fr(w.at)) / FPS;
   const m = n > 1 ? i / (n - 1) : 0.5;
+  const 그림커짐 = 그림 ? spring({ frame: f - fr(w.at) - 12, fps, config: { damping: 9, mass: 0.5, stiffness: 160 } }) : 0;
   let y = 0;
   let rot = 0;
   let sc = sp;
@@ -76,8 +94,13 @@ const 글자하나: React.FC<{ ch: string; i: number; n: number; 줄: number; w:
     rot = -3;
   }
   return (
-    <span style={{ display: 'inline-block', fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.05, color: fill, marginRight: gap, transform: `translateY(${y}px) rotate(${rot}deg) scale(${sc})`, transformOrigin: '50% 80%', WebkitTextStroke: `${size * 0.14}px ${INK}`, paintOrder: 'stroke fill', whiteSpace: 'pre' }}>
+    <span style={{ display: 'inline-block', fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.05, color: fill, marginRight: gap, transform: `translateY(${y}px) rotate(${rot}deg) scale(${sc})`, transformOrigin: '50% 80%', WebkitTextStroke: `${size * 0.14}px ${INK}`, paintOrder: 'stroke fill', whiteSpace: 'pre', position: 'relative' }}>
       {ch}
+      {그림 === '눈송이' ? (
+        <span style={{ position: 'absolute', left: '56%', top: '-52%', transform: `scale(${그림커짐}) rotate(${10 + 5 * Math.sin(t * 2.4)}deg)`, transformOrigin: '50% 50%' }}>
+          <눈송이 size={size * 0.86} />
+        </span>
+      ) : null}
     </span>
   );
 };
@@ -120,7 +143,7 @@ export const 튀는글자: React.FC<{ w: 말 }> = ({ w }) => {
             <div key={li} data-synk-line="" style={{ whiteSpace: 'pre', marginBottom: -4 }}>
               {Array.from(ln).map((ch, i) => {
                 const 안 = w.key && ln.includes(w.key) && i >= ln.indexOf(w.key) && i < ln.indexOf(w.key) + w.key.length;
-                return <글자하나 key={i} ch={ch} i={i} n={Array.from(ln).length} 줄={li} w={w} size={마지막 ? Math.round(size * 1.15) : size} fill={안 ? KEY : PAPER} />;
+                return <글자하나 key={i} ch={ch} i={i} n={Array.from(ln).length} 줄={li} w={w} size={마지막 ? Math.round(size * 1.15) : size} fill={안 ? KEY : PAPER} 그림={안 && w.key && i === ln.indexOf(w.key) + w.key.length - 1 ? w.그림 : undefined} />;
               })}
             </div>
           );
