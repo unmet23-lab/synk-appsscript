@@ -2877,3 +2877,86 @@ test('섞임 · GA4 · 같은 판끼리(새 셸 + 새 world-push): 망이 돌아
  shell.document.hidden=false;shell.handlers['document:visibilitychange']();assert.equal(retries,2,'화면이 다시 보이면 다시 보낸다');
  assert.deepEqual(shell.refreshed,[false,false]);
 });
+
+// GPT push-versions-world-mix53-r2(GA2가 남음 — 설계 주인 11-25): 다른 계정(B)의 이 브라우저 구독을 넘겨받다 멈춘 켜기. 서버는 주소마다 주인을 적는다.
+function takeoverRig(takeover){
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),storage=memory(),rows=new Map([[SUB,'acc-B']]),held={takeover:[],subscribe:[]},sent=[];
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-B',deviceId:'dev-b',endpoint:SUB}));
+ let who='acc-A',holdSubscribe=false;
+ const account=me=>{const on=[...rows.values()].includes(me);return {active:on,devices:on?1:0};};
+ const answer=(me,extra={})=>({ok:true,accountId:me,enabled:true,publicKey:KEY,account:account(me),plan:null,...extra});
+ const request=(action,body={})=>{
+  const me=who;sent.push(`${me}:${action}`);
+  if(action==='status')return Promise.resolve(answer(me,{device:rows.get(body.endpoint)===me?{subscribed:true,deviceId:'dev-'+me}:{subscribed:false}}));
+  if(action==='subscribe'){
+   rows.set(body.subscription.endpoint,me);   // 서버에는 바로 닿는다
+   const reply=answer(me,{device:{subscribed:true,deviceId:'dev-'+me},plan:{next:1,log:[]}});
+   return holdSubscribe?new Promise(resolve=>held.subscribe.push(()=>resolve(reply))):Promise.resolve(reply);
+  }
+  if(action==='unsubscribe'){if(rows.get(body.endpoint)===me)rows.delete(body.endpoint);return Promise.resolve({ok:true,accountId:me,removed:true,account:account(me),handover:[]});}
+  return Promise.resolve(answer(me));
+ };
+ // 넘겨받기(익명 끄기): 'before'는 서버에 닿기 전에 실패, 'lost'는 닿았지만 응답을 잃음, 'ok'는 성공.
+ const anonymous=(action,body)=>{
+  sent.push(`anonymous:${action}`);if(takeover!=='before')rows.delete(body.endpoint);
+  return new Promise((resolve,reject)=>held.takeover.push(()=>takeover==='ok'?resolve({ok:true,removed:true}):reject(Object.assign(Error('offline'),{code:'NETWORK'}))));
+ };
+ const push=make(b,{request,anonymous},{storage});push.bindSettings(withDigest(reminderSettings()));
+ return {b,storage,rows,held,sent,push,record:()=>JSON.parse(storage.getItem(PUSH_RECORD_KEY)||'null'),
+  hold(){holdSubscribe=true;},
+  async open(me){who=me;await push.setAccount(me);await settled();},
+  press:()=>push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')}),
+  // 멈추는 계기: 옛 셸의 옵션 없는 logout(뒤에 client.logout이 성공해 계정이 빠진다) · 계정 바뀜.
+  async stop(how){if(how==='logout')await push.logout();else{who='acc-C';await push.setAccount('acc-C');}}};
+}
+for(const [takeover,label] of [['before','서버에 닿기 전에 실패하고'],['lost','서버에는 닿았는데 응답을 잃고'],['ok','성공하고']])
+ test(`섞임 표 4 · 넘겨받기가 ${label} 켜기가 멈추면, 다른 계정(B)의 브라우저 구독과 기록이 남고 B의 다음 읽기에서 알림이 이어진다`,async()=>{
+  for(const how of ['logout','account']){
+   const r=takeoverRig(takeover);await r.open('acc-A');await r.push.ready();
+   const turning=r.press();await settled();
+   assert.equal(r.held.takeover.length,1,'B의 구독을 넘겨받는 요청이 날아가는 중이다');
+   await r.stop(how);await settled();
+   r.held.takeover.shift()();await turning;await settled();
+   assert.ok(!r.sent.includes('acc-A:subscribe'),`${how}: 멈춘 계정의 켜기를 보내지 않았다`);
+   assert.equal(r.b.current?.endpoint,SUB,`${how}: B의 브라우저 구독이 남는다`);
+   assert.equal(r.record()?.accountId,'acc-B',`${how}: B의 기록이 남는다`);
+   if(how==='logout')await r.open(null);
+   await r.open('acc-B');await r.push.refresh();await settled();   // B의 다음 읽기
+   assert.equal(r.push.snapshot().device.subscribed,true,`${how}: B의 알림이 켜져 있다`);
+   assert.ok(r.b.current,`${how}: B의 브라우저 구독이 있다`);
+   assert.equal(r.rows.get(r.b.current.endpoint),'acc-B',`${how}: 서버의 그 구독 주인은 B다`);
+   assert.equal(r.record()?.endpoint,r.b.current.endpoint,`${how}: 기록이 그 구독이다`);
+   r.push.dispose();
+  }
+ });
+for(const [takeover,label] of [['before','실패했어도'],['ok','성공한 뒤라도']])
+ test(`섞임 표 4 · 넘겨받기가 ${label} 켜기 요청이 이미 나갔으면, 멈춘 켜기는 이 브라우저 구독을 지운다 — 로그아웃한 계정의 알림이 이 브라우저에 오지 않는다`,async()=>{
+  for(const how of ['logout','account']){
+   const r=takeoverRig(takeover);await r.open('acc-A');await r.push.ready();r.hold();
+   const turning=r.press();await settled();
+   r.held.takeover.shift()();await settled();
+   assert.equal(r.held.subscribe.length,1,'A의 켜기 요청이 날아가는 중이고 서버에는 닿았다');
+   assert.equal(r.rows.get(SUB),'acc-A','서버의 그 주소 주인은 A다');
+   await r.stop(how);await settled();
+   r.held.subscribe.shift()();await turning;await settled();
+   assert.equal(r.b.current,null,`${how}: 서버에 A의 줄이 남아도 이 브라우저는 그 알림을 받지 못한다`);
+   assert.notEqual(r.record()?.accountId,'acc-A',`${how}: 로그아웃한 A의 기록이 없다`);
+   r.push.dispose();
+  }
+ });
+
+test('섞임 표 4 · 불변식: 옵션 없는 logout이 실패한 뒤 학생이 다시 켠 알림은, 그 뒤 서버가 구독을 잃어도 다시 이어진다',async()=>{
+ const b=browser({registered:true,permission:'granted',endpoints:['https://fcm.googleapis.com/fcm/send/e1','https://fcm.googleapis.com/fcm/send/e2']}),s=server({device:false,active:true}),storage=memory();
+ let lost=false;
+ const request=(action,body,options)=>s.request(action,body,options).then(data=>action==='status'&&lost?{...data,device:{subscribed:false}}:data);
+ const push=make(b,s,{storage,request});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await push.ready();
+ await push.logout();   // 라이브 셸: 그 뒤 client.logout이 실패해 계정이 그대로다
+ await push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});await settled();
+ const first=b.current?.endpoint;assert.ok(first);assert.equal(push.snapshot().device.subscribed,true,'다시 켰다');
+ lost=true;const subscribes=()=>s.calls.filter(c=>c.action==='subscribe').length,before=subscribes();
+ const reading=push.refresh();await settled();lost=false;await reading;await settled();   // 서버가 이 기기를 잃었다
+ assert.equal(subscribes(),before+1,'다시 이었다');
+ assert.ok(b.current&&b.current.endpoint!==first,'새 구독이다');
+ assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).endpoint,b.current.endpoint);
+ push.dispose();
+});
