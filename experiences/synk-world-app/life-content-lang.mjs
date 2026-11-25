@@ -113,7 +113,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Захиалгын хуудсанд тохирох уух зүйлийг сонгоно уу.',context:'Шинэ захиалгын хуудас: «따뜻한 우유 두 잔 주세요.»',explanation:'Сүү, бүлээн, хоёр аяга гэсэн гурвыг бүгдийг нь унших хэрэгтэй.'}),
  'cafe-story-here':q(
   {prompt:'지호가 말한 ‘여기서 마실게요.’의 ‘여기’는 어디예요?',context:'',explanation:'지호는 카페 안에서 이 말을 했어요. 그래서 ‘여기’는 카페 안이에요.'},
-  {prompt:'In Jiho’s ‘여기서 마실게요.’, where is ‘여기’?',context:'',explanation:'Jiho said this inside the café, so ‘여기’ means inside the café.'},
+  {prompt:'Jiho said ‘여기서 마실게요.’ Where is ‘여기’?',context:'',explanation:'Jiho said this inside the café, so ‘여기’ means inside the café.'},
   {prompt:'Жихогийн хэлсэн «여기서 마실게요.» гэсэн үгэн дэх «여기» нь хаана гэсэн үг вэ?',context:'',explanation:'Жихо энэ үгийг кафе дотор хэлсэн. Тиймээс «여기» нь кафе дотор гэсэн үг.'}),
  'cafe-story-here-transfer':q(
   {prompt:'주문표를 읽고 마실 장소를 골라요.',context:'“카페 안에서 마실게요. 창가에 앉을게요.”',explanation:'‘카페 안’과 ‘창가’를 함께 확인해요.'},
@@ -121,7 +121,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Захиалгын хуудсыг уншаад хаана уухыг сонгоно уу.',context:'«카페 안에서 마실게요. 창가에 앉을게요.»',explanation:'«카페 안» (кафе дотор), «창가» (цонхны дэргэд) гэсэн хоёр үгийг хоёуланг нь анхаараарай.'}),
  'cafe-story-takeout':q(
   {prompt:'지호가 직원에게 다시 한 말은 무엇이에요?',context:'',explanation:'태오가 ‘우리 밖에서 마셔요!’라고 해서 지호가 직원에게 다시 ‘포장해 주세요.’라고 했어요. 나머지 두 말은 처음에 주문할 때 한 말이에요.'},
-  {prompt:'What did Jiho say to the staff the second time?',context:'',explanation:'Taeo said ‘우리 밖에서 마셔요!’, so Jiho told the staff ‘포장해 주세요.’ The other two are what Jiho said when he first ordered.'},
+  {prompt:'What did Jiho say to the staff the second time?',context:'',explanation:'Taeo said ‘우리 밖에서 마셔요!’ So Jiho told the staff ‘포장해 주세요.’ The other two are what Jiho said when he first ordered.'},
   {prompt:'Жихо дараа нь ажилтанд юу гэж хэлсэн бэ?',context:'',explanation:'Тэо «우리 밖에서 마셔요!» гэж хэлсэн тул Жихо дараа нь ажилтанд «포장해 주세요.» гэж хэлсэн. Нөгөө хоёр үгийг Жихо анх захиалахдаа хэлсэн.'}),
  'cafe-story-takeout-transfer':q(
   {prompt:'새 장면에서 어떤 말을 할까요?',context:'비가 그쳤어요. 음료를 가지고 공원으로 가려고 해요.',explanation:'음료를 밖의 공원으로 가져가려면 포장을 요청해요.'},
@@ -157,7 +157,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Тэогийн хүссэн уух зүйлийг захиална уу.',context:'Тэо: «따뜻한 차를 마시고 싶어요.»',explanation:'Тэо халуун цай уухыг хүсэж байна. Шүүс эсвэл хүйтэн уух зүйлтэй андуурч болохгүй.'}),
  'cafe-visit-taste-drink-transfer':q(
   {prompt:'서하가 원하는 음료를 주문해요.',context:'서하: “오늘은 차가운 주스를 마시고 싶어요!”',explanation:'서하가 원하는 음료는 ‘차가운 주스’예요. 온도와 음료 종류가 모두 맞는 ‘차가운 주스 한 잔 주세요.’를 골라요.'},
-  {prompt:'Order the drink Seoha wants.',context:'Seoha: “오늘은 차가운 주스를 마시고 싶어요!”',explanation:'Seoha wants ‘차가운 주스’ (cold juice). Choose ‘차가운 주스 한 잔 주세요.’, where both the drink and the temperature match.'},
+  {prompt:'Order the drink Seoha wants.',context:'Seoha: “오늘은 차가운 주스를 마시고 싶어요!”',explanation:'Seoha wants ‘차가운 주스’ (cold juice). Both the drink and the temperature match in ‘차가운 주스 한 잔 주세요.’'},
   {prompt:'Сөхагийн хүссэн уух зүйлийг захиална уу.',context:'Сөха: «오늘은 차가운 주스를 마시고 싶어요!»',explanation:'Сөха «차가운 주스» (хүйтэн шүүс) уухыг хүсэж байна. Тиймээс «차가운 주스 한 잔 주세요.» гэж захиална. Энэ өгүүлбэрт «шүүс», «хүйтэн» гэсэн хоёр утга хоёулаа орсон байна.'}),
  'cafe-visit-taste-count':q(
   {prompt:'둘이 한 잔씩 마시려면 어떻게 말할까요?',context:'태오와 내가 따뜻한 차를 한 잔씩 마셔요.',explanation:'태오 한 잔과 내 한 잔을 합하면 두 잔이에요.'},
@@ -275,7 +275,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'«현금으로 계산할게요» гэдэг нь юугаар төлнө гэсэн үг вэ?',context:'',explanation:'Цаасан мөнгө эсвэл зоосоор шууд төлөхийг бэлнээр төлөх гэнэ.'}),
  'store-story-price':q(
   {prompt:'이야기에서 물 한 병은 얼마예요?',context:'',explanation:'서하가 ‘이거 얼마예요?’라고 물었어요. 가격표를 보면 물 한 병은 1,000원이에요. 2,000원은 라면의 가격이에요.'},
-  {prompt:'In the story, how much is one bottle of water?',context:'',explanation:'Seoha asked ‘이거 얼마예요?’. The price tag shows one bottle of water is 1,000 won. 2,000 won is the price of the ramen.'},
+  {prompt:'In the story, how much is one bottle of water?',context:'',explanation:'Seoha asked ‘이거 얼마예요?’ The price tag shows one bottle of water is 1,000 won. 2,000 won is the price of the ramen.'},
   {prompt:'Энэ түүхэнд нэг шил ус ямар үнэтэй вэ?',context:'',explanation:'Сөха «이거 얼마예요?» гэж асуусан. Үнийн шошгоноос харахад нэг шил ус 1,000 вон. 2,000 вон бол рамёны үнэ.'}),
  'store-story-price-transfer':q(
   {prompt:'새 가격표를 읽어요. 우유 한 개는 얼마예요?',context:'우유 한 개 1,500원 / 빵 한 개 2,000원',explanation:'우유 가격은 1,500원이에요. 다른 물건이나 합계와 구분해요.'},
@@ -349,7 +349,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Номын сан хаана байдаг вэ?',context:'«도서관은 학교 옆에 있어요.»',explanation:'«학교 옆» гэдэг нь сургуулийн яг хажууд гэсэн утгатай.'}),
  'directions-story-where':q(
   {prompt:'서하는 아주머니에게 무엇을 물었어요?',context:'',explanation:'서하는 ‘저기요, 공원이 어디에 있어요?’라고 물었어요. 병원은 태오가 말한 곳이고, 은행은 아주머니가 말한 곳이에요.'},
-  {prompt:'What did Seoha ask the woman?',context:'',explanation:'Seoha asked ‘저기요, 공원이 어디에 있어요?’. Taeo mentioned the hospital, and the woman mentioned the bank.'},
+  {prompt:'What did Seoha ask the woman?',context:'',explanation:'Seoha asked ‘저기요, 공원이 어디에 있어요?’ Taeo mentioned the hospital, and the woman mentioned the bank.'},
   {prompt:'Сөха нэг эмэгтэйгээс юу гэж асуусан бэ?',context:'',explanation:'Сөха «저기요, 공원이 어디에 있어요?» гэж асуусан. Тэо «병원 옆» (эмнэлгийн хажууд), харин тэр эмэгтэй «은행 옆» (банкны хажууд) гэж хэлсэн.'}),
  'directions-story-where-transfer':q(
   {prompt:'지호는 어떤 말을 할까요?',context:'지호는 책을 빌리고 싶어요. 그런데 길을 몰라요.',explanation:'책은 도서관에서 빌려요. 그래서 도서관의 위치를 물어요.'},
@@ -357,19 +357,19 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Жихо юу гэж хэлэх вэ?',context:'Жихо ном зээлж уншихыг хүсэж байна. Гэхдээ хаашаа явахаа мэдэхгүй байна.',explanation:'Номыг номын сангаас зээлж авдаг. Тиймээс номын сан хаана байгааг асууна.'}),
  'directions-story-turn':q(
   {prompt:'친구들은 어느 쪽으로 갔어요?',context:'',explanation:'아주머니가 ‘오른쪽으로 가세요.’라고 말했어요. 그래서 오른쪽으로 갔어요. 왼쪽은 태오가 지도를 잘못 보고 한 말이에요.'},
-  {prompt:'Which way did the friends go?',context:'',explanation:'The woman said ‘오른쪽으로 가세요.’, so they went right. Taeo said left because he misread the map.'},
+  {prompt:'Which way did the friends go?',context:'',explanation:'The woman said ‘오른쪽으로 가세요.’ So they went right. Taeo said left because he misread the map.'},
   {prompt:'Найзууд аль тийш явсан бэ?',context:'',explanation:'Тэр эмэгтэй «오른쪽으로 가세요.» гэж хэлсэн. Тиймээс найзууд баруун тийш явсан. Тэо газрын зургийг буруу хараад «왼쪽» (зүүн тийшээ) гэж хэлсэн.'}),
  'directions-story-turn-transfer':q(
   {prompt:'지호는 어느 쪽으로 가야 해요?',context:'지호: “도서관이 어디에 있어요?” 아저씨: “왼쪽으로 가세요. 시장 오른쪽에 있어요.”',explanation:'갈 방향은 ‘왼쪽으로 가세요.’예요. ‘시장 오른쪽’은 도서관이 있는 자리예요.'},
-  {prompt:'Which way should Jiho go?',context:'Jiho: “도서관이 어디에 있어요?” Man: “왼쪽으로 가세요. 시장 오른쪽에 있어요.”',explanation:'The direction to go is ‘왼쪽으로 가세요.’. ‘시장 오른쪽’ is where the library is.'},
+  {prompt:'Which way should Jiho go?',context:'Jiho: “도서관이 어디에 있어요?” Man: “왼쪽으로 가세요. 시장 오른쪽에 있어요.”',explanation:'The man said ‘왼쪽으로 가세요.’ The part ‘시장 오른쪽’ tells you where the library is.'},
   {prompt:'Жихо аль тийш явах ёстой вэ?',context:'Жихо: «도서관이 어디에 있어요?» Эрэгтэй: «왼쪽으로 가세요. 시장 오른쪽에 있어요.»',explanation:'«왼쪽으로 가세요.» гэсэн тул Жихо зүүн тийш явах ёстой. «시장 오른쪽» гэдэг нь номын сан захын баруун талд байдаг гэсэн үг.'}),
  'directions-story-landmark':q(
   {prompt:'이야기에서 공원은 어디 옆에 있어요?',context:'',explanation:'아주머니가 ‘은행 옆에 있어요.’라고 말했어요. 나도 ‘공원이 은행 옆에 있어요!’라고 말했어요. 병원은 태오가, 시장은 지호가 말한 곳이에요.'},
-  {prompt:'In the story, what is the park next to?',context:'',explanation:'The woman said ‘은행 옆에 있어요.’. You also said ‘공원이 은행 옆에 있어요!’. Taeo mentioned the hospital, and Jiho mentioned the market.'},
+  {prompt:'In the story, what is the park next to?',context:'',explanation:'The woman said ‘은행 옆에 있어요.’ You also said ‘공원이 은행 옆에 있어요!’ Taeo mentioned the hospital, and Jiho mentioned the market.'},
   {prompt:'Энэ түүхэнд цэцэрлэгт хүрээлэн юуны хажууд байдаг вэ?',context:'',explanation:'Тэр эмэгтэй «은행 옆에 있어요.» гэж хэлсэн. Та ч бас «공원이 은행 옆에 있어요!» гэж хэлсэн. Тэо «병원 옆» (эмнэлгийн хажууд), Жихо «시장 옆» (захын хажууд) гэж хэлсэн.'}),
  'directions-story-landmark-transfer':q(
   {prompt:'약국은 어디 옆에 있어요?',context:'서하: “은행 옆에 약국이 있어요?” 아저씨: “아니요, 약국은 병원 옆에 있어요. 학교 앞이에요.”',explanation:'아저씨가 ‘약국은 병원 옆에 있어요.’라고 말했어요. 은행 옆이 아니에요.'},
-  {prompt:'What is the pharmacy next to?',context:'Seoha: “은행 옆에 약국이 있어요?” Man: “아니요, 약국은 병원 옆에 있어요. 학교 앞이에요.”',explanation:'The man said ‘약국은 병원 옆에 있어요.’. It is not next to the bank.'},
+  {prompt:'What is the pharmacy next to?',context:'Seoha: “은행 옆에 약국이 있어요?” Man: “아니요, 약국은 병원 옆에 있어요. 학교 앞이에요.”',explanation:'The man said ‘약국은 병원 옆에 있어요.’ It is not next to the bank.'},
   {prompt:'Эмийн сан юуны хажууд байдаг вэ?',context:'Сөха: «은행 옆에 약국이 있어요?» Эрэгтэй: «아니요, 약국은 병원 옆에 있어요. 학교 앞이에요.»',explanation:'Тэр эрэгтэй «약국은 병원 옆에 있어요.» гэж хэлсэн. Тэгэхээр эмийн сан банкны хажууд биш.'}),
  'directions-apply-where':q(
   {prompt:'직원에게 무엇을 물을까요?',context:'처음 온 동네에서 약국을 찾고 있어요.',explanation:'찾는 약국의 위치를 ‘어디에 있어요’로 물어요.'},
@@ -725,7 +725,7 @@ export const LIFE_CHOICE_NOTES=Object.freeze({
  // 편의점 팩(11-25 「네, 이어가」) — 시작
  'store-expressions-price':{a:note('이거 어디에 있어요?','물건이 있는 곳을 물을 때 하는 말이에요.','You say this to ask where something is.','Энэ бол ямар нэг зүйл хаана байгааг асуудаг өгүүлбэр.'),b:note('이거 몇 개예요?','물건의 수를 물을 때 하는 말이에요. 가격을 묻는 말이 아니에요.','You say this to ask how many there are. It does not ask the price.','Энэ бол хэдэн ширхэг байгааг асуудаг өгүүлбэр. Үнэ асуудаг өгүүлбэр биш.')},
  'store-expressions-price-transfer':{b:note('이거 언제 먹어요?','먹는 때를 물을 때 하는 말이에요.','You say this to ask when to eat something.','Энэ бол хэзээ идэхийг асуудаг өгүүлбэр.'),c:note('이거 누구 거예요?','물건의 주인을 물을 때 하는 말이에요.','You say this to ask who something belongs to.','Энэ бол хэний юм болохыг асуудаг өгүүлбэр.')},
- 'store-expressions-bag':{a:note('물건의 가격','가격은 ‘이거 얼마예요?’로 물어요.','You ask the price with ‘이거 얼마예요?’.','Үнийг «이거 얼마예요?» гэж асууна.'),c:note('현금으로 결제하기','현금으로 낼 때는 ‘현금으로 계산할게요.’라고 해요.','To pay in cash, you say ‘현금으로 계산할게요.’','Бэлнээр төлөх бол «현금으로 계산할게요.» гэж хэлнэ.')},
+ 'store-expressions-bag':{a:note('물건의 가격','가격은 ‘이거 얼마예요?’로 물어요.','You ask the price with ‘이거 얼마예요?’','Үнийг «이거 얼마예요?» гэж асууна.'),c:note('현금으로 결제하기','현금으로 낼 때는 ‘현금으로 계산할게요.’라고 해요.','To pay in cash, you say ‘현금으로 계산할게요.’','Бэлнээр төлөх бол «현금으로 계산할게요.» гэж хэлнэ.')},
  'store-expressions-bag-transfer':{b:note('우유 하나 더 주세요.','우유를 하나 더 살 때 하는 말이에요.','You say this when you want one more milk.','Дахиад нэг сүү авах бол ингэж хэлнэ.'),c:note('현금으로 계산할게요.','현금으로 값을 낼 때 하는 말이에요.','You say this when you pay in cash.','Бэлнээр төлөхдөө хэлдэг үг.')},
  'store-expressions-card':{b:note('현금으로 내요.','지폐나 동전으로 낼 때예요. 그때는 ‘현금으로 계산할게요.’라고 해요.','This is paying with bills or coins. For that, you say ‘현금으로 계산할게요.’','Цаасан мөнгө эсвэл зоосоор төлөх бол «현금으로 계산할게요.» гэж хэлнэ.'),c:note('다음에 내요.','지금 내지 않고 나중에 낸다는 뜻이에요.','This means you will not pay now but later.','Одоо биш, дараа төлнө гэсэн утгатай.')},
  'store-expressions-card-transfer':{a:note('카드로 내요.','카드로 낼 때는 ‘카드로 계산할게요.’라고 해요.','To pay by card, you say ‘카드로 계산할게요.’','Картаар төлөх бол «카드로 계산할게요.» гэж хэлнэ.'),b:note('내일 내요.','오늘 내지 않고 내일 낸다는 뜻이에요.','This means you will pay tomorrow, not today.','Өнөөдөр биш, маргааш төлнө гэсэн утгатай.')},

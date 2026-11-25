@@ -59,16 +59,27 @@ function merge3(tag, liveText, baseText, mineText) {
 }
 // 겹친 블록의 세 판(공개본 · 바탕 · 내 판) 줄 수가 같으면 줄마다 3방향으로 푼다: 한쪽만 바꾼 줄은 그쪽을, 둘 다 다르게 바꾼 줄이 있으면 겹침으로 남긴다.
 // 공개본이 master보다 옛 판이라 남의 고침(예: 카페 방문 직원 응답)이 내가 고친 줄 바로 옆에 있을 때, 남의 고침은 싣지 않고 내 줄만 얹는다(11-24).
+// 글 표의 열쇠 줄( 'life.packTitle.…':{…} )을 공개본이 다른 자리에 두고 있어 그 블록의 공개본 쪽만 비면, 공개본에서 같은 열쇠 줄을 찾아 내 줄로 바꾼다.
+// 그 열쇠 줄이 공개본에 꼭 하나가 아니면 겹침으로 남긴다(11-26 길 팩: 놀이 안내 글 play.where.directions).
+const keyOf = line => line.match(/^ '([^']+)':[{]/)?.[1] ?? null;
 function lineWise(text) {
+  const moved = [];
   const re = /^<<<<<<< [^\n]*\n([\s\S]*?)^\|\|\|\|\|\|\| [^\n]*\n([\s\S]*?)^=======\n([\s\S]*?)^>>>>>>> [^\n]*\n/gm;
   let conflicts = 0;
-  const out = text.replace(re, (whole, live, base, mine) => {
+  let out = text.replace(re, (whole, live, base, mine) => {
     const [L, B, M] = [live, base, mine].map(t => t.split('\n').slice(0, -1));
+    if (!L.length && B.length && B.length === M.length && B.every((b, i) => keyOf(b) && keyOf(b) === keyOf(M[i]))) { moved.push(...M); return ''; }
     if (L.length !== B.length || B.length !== M.length) { conflicts++; return whole; }
     const lines = B.map((b, i) => L[i] === b ? M[i] : M[i] === b || M[i] === L[i] ? L[i] : wordWise(L[i], b, M[i]));
     if (lines.includes(null)) { conflicts++; return whole; }
     return lines.map(l => l + '\n').join('');
   });
+  for (const line of moved) {
+    const rows = out.split('\n'), at = rows.flatMap((r, i) => keyOf(r) === keyOf(line) ? [i] : []);
+    if (at.length !== 1) { conflicts++; continue; }
+    rows[at[0]] = line; out = rows.join('\n');
+    console.log(`공개본에서 자리가 다른 열쇠 줄을 바꿈: ${keyOf(line)}`);
+  }
   return {out, conflicts};
 }
 // 한 줄을 양쪽이 다 바꿨으면(한 줄에 직원 응답과 친구 대사가 같이 있다) 낱말 · 문장부호 단위로 다시 3방향으로 합친다. 겹치면 null.

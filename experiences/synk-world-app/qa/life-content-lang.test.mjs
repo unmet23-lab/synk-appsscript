@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PACKS,LESSONS} from '../life-content.mjs';
-import {LIFE_QUESTION_TEXT,LIFE_EXPRESSION_TEXT,LIFE_CHOICE_MEANINGS,lifeQuestionText,lifeExpressionText,lifeChoiceMeanings} from '../life-content-lang.mjs';
+import {LIFE_QUESTION_TEXT,LIFE_EXPRESSION_TEXT,LIFE_CHOICE_MEANINGS,lifeQuestionText,lifeExpressionText,lifeChoiceMeanings,lifeChoiceNote} from '../life-content-lang.mjs';
 
 const HANGUL=/[ᄀ-ᇿ㄰-㆏가-힣]/;
 const packs=['greetings','cafe','store','directions'].map(id=>PACKS.find(pack=>pack.id===id));
@@ -68,4 +68,12 @@ test('표현 설명: ko 사본이 원문과 같고 영어·몽골어가 있다',
   assert.equal(lifeExpressionText(expression,'mn'),entry.mn);
   assert.ok(entry.en&&entry.mn);
  }
+});
+
+test('인용 끝 문장 부호 뒤에 마침표 · 쉼표를 겹쳐 찍지 않는다(영어 · 몽골어)',()=>{
+ const DOUBLED=/[.?!][’”»][.,]/;
+ const texts=[...Object.entries(LIFE_QUESTION_TEXT).flatMap(([id,row])=>['en','mn'].flatMap(code=>FIELDS.map(field=>[`${id}.${field} ${code}`,row[code]?.[field]]))),
+  ...questions.flatMap(q=>q.choices.flatMap(c=>['en','mn'].map(code=>[`${q.id}:${c.id} ${code}`,lifeChoiceNote(q,c.id,code)])))];
+ assert.ok(texts.length>700);
+ for(const [where,text] of texts)if(text)assert.doesNotMatch(String(text),DOUBLED,where);
 });
