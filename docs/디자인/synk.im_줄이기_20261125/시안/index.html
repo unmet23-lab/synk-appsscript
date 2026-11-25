@@ -37,26 +37,12 @@
 /* 지금 공개본 */
 .no{position:relative;background:#000}.no img{width:100%;height:auto}
 .no p{position:absolute;left:50%;top:84px;transform:translateX(-50%);background:#fff;color:#111;border-radius:999px;padding:10px 18px;font:600 14px/1.3 var(--sans);white-space:nowrap}
-/* 시작하기 */
-.go{padding:var(--S) var(--gut) clamp(60px,7vw,100px);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(40px,7vw,110px)}
-.go h2{font-size:var(--big)}
-.go .ls a{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:24px 0;border-bottom:1px solid var(--line);font:600 clamp(19px,1.9vw,27px)/1.3 var(--sans);letter-spacing:-.02em;transition:padding .35s var(--ease)}
-.go .ls a:hover{padding-left:14px}
-.go .ls span{font:600 16px/1 var(--sans);display:inline-flex;align-items:center;gap:9px}
-.go .ls span::after{content:"";width:7px;height:7px;border-right:2px solid;border-top:2px solid;transform:rotate(45deg)}
-.go .ls{margin-top:30px;border-top:1px solid var(--line)}
-.go .nw h3{font:700 18px/1.3 var(--sans);margin-bottom:6px}
-.go .nw li{display:grid;grid-template-columns:64px 1fr;padding:16px 0;border-bottom:1px solid var(--line);font-size:16px;line-height:1.5}
-.go .nw time{font:500 14px/1.7 var(--mono);color:var(--sub)}
-.go ul{margin:0;padding:0;list-style:none}
 /* 맨 아래: 묻는 곳 한 줄, 잔글씨 한 줄, 큰 synk */
 .end{padding:clamp(44px,5vw,76px) var(--gut) 0;display:grid;grid-template-columns:1fr auto;gap:18px 40px;align-items:end}
-body[data-g=on] .end{padding-top:0}
 .end .ask{font:600 clamp(19px,1.7vw,25px)/1.4 var(--sans);letter-spacing:-.02em}
 .end .ask a{font-weight:800}
 .end nav{display:flex;flex-wrap:wrap;gap:8px 24px;font:700 16px/1.4 var(--sans)}
 .foot{padding:clamp(22px,2.4vw,36px) var(--gut) clamp(8px,1vw,18px)}
-body[data-g=off] .go{display:none}
 .wm{position:relative;height:30.4vw;overflow:hidden;background:#fff}
 .wm span{position:absolute;left:50%;top:-12.6vw;transform:translateX(-51%);font:800 46vw/1 var(--sans);letter-spacing:-.07em;white-space:nowrap;color:#0b0b0c;user-select:none}
 @media (prefers-reduced-motion:no-preference){.wm.io span{translate:0 22%;opacity:0;transition:translate 1s var(--ease),opacity .6s}.wm.on span{translate:0 0;opacity:1}}
@@ -69,7 +55,6 @@ body[data-g=off] .go{display:none}
   .tri .k1 .t{top:72px}
   .tri .k1{height:min(138vw,620px)}
   .end{grid-template-columns:1fr}
-  .go{grid-template-columns:1fr}
 }
 </style>
 
@@ -84,34 +69,20 @@ body[data-g=off] .go{display:none}
 </section>
 <section class="hero no" data-v="now" hidden><img src="a/now.webp" alt="지금 공개된 첫 화면"><p>지금 공개본 · 1536×730 창에서 찍음</p></section>
 
-<section class="go" id="go">
-  <div><h2>어디서부터 볼까요</h2><div class="ls">
-    <a href="path.html">한국어를 배우고 싶습니다<span>사전예약하기</span></a>
-    <a href="shift.html">강의를 부탁하고 싶습니다<span>강의 의뢰하기</span></a>
-    <a href="pulse.html">광고를 맡기고 싶습니다<span>광고 의뢰하기</span></a>
-    <a href="#go">혼자 일하며 AI를 씁니다<span>솔리오 받기</span></a></div></div>
-  <div class="nw"><h3>최근에 새로 연 것</h3><ul>
-    <li><time>11.24</time>서울행 1화를 로그인 없이 끝까지</li>
-    <li><time>11.23</time>2027년 2월 출시 사전예약</li>
-    <li><time>11.21</time>PATH 앱에서 내 조건으로 대학 찾기</li></ul>
-    <p style="margin-top:26px">무엇이든 물어보세요<br><b style="font-weight:700">hello@synk.im</b></p></div>
-</section>
 </main>
 <section class="end"><p class="ask">무엇이든 물어보세요 <a href="mailto:hello@synk.im">hello@synk.im</a></p><nav><a href="https://synk.im/#platform-get" target="_blank" rel="noopener">솔리오 받기</a><a href="https://synk.im/#now" target="_blank" rel="noopener">새 소식</a><a href="https://synk.im/account/platform.html#home" target="_blank" rel="noopener">내 홈</a></nav></section>
 <footer class="foot"><nav><a href="founder.html">회사</a><a href="https://synk.im/atlas/" target="_blank" rel="noopener">아틀라스</a><a href="https://synk.im/privacy/" target="_blank" rel="noopener">개인정보처리방침</a><a href="https://synk.im/terms/" target="_blank" rel="noopener">이용약관</a><a href="https://synk.im/data-deletion/" target="_blank" rel="noopener">데이터 삭제</a></nav><span>© 2026 SYNK</span></footer>
 <div class="wm" aria-hidden="true"><span>synk</span></div>
 
-<div class="rev" role="group" aria-label="시안 보기"><button type="button" data-go="a" aria-pressed="true">첫 화면</button><button type="button" data-go="now" aria-pressed="false">지금</button><i></i><span class="lb">아래 칸</span><button type="button" data-g="off" aria-pressed="true">뺌</button><button type="button" data-g="on" aria-pressed="false">그대로</button><i></i><a href="pulse.html">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html">창업자</a></div>
+<div class="rev" role="group" aria-label="시안 보기"><button type="button" data-go="a" aria-pressed="true">첫 화면</button><button type="button" data-go="now" aria-pressed="false">지금</button><i></i><a href="pulse.html">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html">창업자</a></div>
 
 <script>
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const nav=$('#nav'),B=document.body;
+const nav=$('#nav');
 function show(k){$$('[data-v]').forEach(h=>h.hidden=h.dataset.v!==k);$$('[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===k));scrollTo(0,0);paint()}
 $$('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
-function low(k){B.dataset.g=k;$$('button[data-g]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===k));show('a')}
-$$('button[data-g]').forEach(b=>b.onclick=()=>low(b.dataset.g));
-function paint(){nav.hidden=!$('[data-v=now]').hidden;$$('.end,.foot,.wm').forEach(e=>e.hidden=nav.hidden);$('.go').hidden=nav.hidden}
+function paint(){nav.hidden=!$('[data-v=now]').hidden;$$('.end,.foot,.wm').forEach(e=>e.hidden=nav.hidden)}
 const tick=()=>{const t=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());$$('.now').forEach(e=>e.textContent=t)};tick();setInterval(tick,10000);
 const wm=$('.wm');if('IntersectionObserver'in window){wm.classList.add('io');new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){wm.classList.add('on');o.disconnect()}},{threshold:.25}).observe(wm)}
-low(location.hash==='#on'?'on':'off');
+show('a');
 </script>
