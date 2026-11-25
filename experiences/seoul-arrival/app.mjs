@@ -1547,7 +1547,9 @@ function ccGo(i,quiet){
   ccSpot(s.fan);sayLine($('#ccWho'),$('#ccSay'),$('#ccMean'),s,state.dream,quiet);
   [...$('#ccProg').children].forEach((el,k)=>{const b=el.firstChild;b.getAnimations().forEach(a=>a.cancel());b.style.transform=k<i||(k===i&&(reduce||last))?'scaleX(1)':'scaleX(0)';
     if(k===i&&!reduce&&!last)b.animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:5200,easing:'linear',fill:'forwards'});});
-  $('#ccHint').textContent=L(last?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');$('#ccHint').hidden=CC.says.length<2;
+  const hint=$('#ccHint'),solo=CC.says.length<2;hint.textContent=L(last?'화면을 누르면 처음부터':'화면을 누르면 다음 팬');
+  // 팬이 한 명이면 안내 단추가 사라진다. 자판 초점이 그 단추에 있었으면 「내 길로」로 넘긴다
+  if(solo&&document.activeElement===hint)$('#backPath').focus({preventScroll:true});hint.hidden=solo;
   if(!quiet)SND.sfx('pix_notification',.15);
   const run=CC.run,tick=CC.tick;if(!reduce&&!last)crowdLater(()=>{if(run===crowdRun&&CC.on&&CC.tick===tick)ccGo(i+1);},5200);
 }

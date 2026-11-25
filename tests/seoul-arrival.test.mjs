@@ -349,3 +349,33 @@ test('내 팬: 말하는 팬과 이유가 설계 12-2 표와 같다',async()=>{
  for(let n=1;n<=3;n++)for(const t2 of B)for(const tr of B)for(const x of [...curtainSay({was:null,run:{n,t2,tr},next:{n,t2,tr}}),...bestSay({n,t2,tr})])
   for(const lang of ['ko','en','mn'])assert.equal(typeof fanLine(lang,x.why),'string',`${lang} ${JSON.stringify(x.why)}`);
 });
+
+test('내 팬: 커튼콜에서 팬이 한 명이면 넘기지 않고 안내 단추를 숨기며, 자판 초점은 「내 길로」로 넘긴다',()=>{
+ const app=read('experiences/seoul-arrival/app.mjs').replace(/\r\n/g,'\n');
+ const go=/function ccGo\(i,quiet\)\{\n[\s\S]*?\n\}\n/.exec(app)?.[0],next=/function ccNext\(\)\{.*\}\n/.exec(app)?.[0];
+ assert.ok(go&&next,'ccGo · ccNext를 앱에서 찾는다');
+ const run=(says,{focus=false}={})=>{
+  const doc={activeElement:null},els={},el=id=>els[id]??={id,hidden:false,textContent:'',children:[],classList:{add(){},remove(){}},focus(){doc.activeElement=this;}};
+  const CC={on:true,says:says.map(x=>({fan:x})),i:-1,run:0,tick:0};
+  const api=new Function('$','CC','crowdRun','L','ccSpot','sayLine','SND','crowdLater','reduce','state','document',go+next+'return {ccGo,ccNext};')(el,CC,0,x=>x,()=>{},()=>{},{sfx(){}},()=>{},true,{dream:'idol'},doc);
+  if(focus)doc.activeElement=el('#ccHint');
+  return {CC,doc,hint:el('#ccHint'),...api};
+ };
+ const one=run([0],{focus:true});one.ccNext();   // 표지에서 누르면 첫 팬
+ assert.equal(one.CC.i,0);assert.equal(one.hint.hidden,true);assert.equal(one.doc.activeElement.id,'#backPath','사라지는 단추의 초점을 넘긴다');
+ const tick=one.CC.tick;one.ccNext();assert.equal(one.CC.tick,tick,'한 명이면 다시 그리지 않는다');
+ const many=run([0,1,2],{focus:true});
+ for(const [i,text] of [[0,'화면을 누르면 다음 팬'],[1,'화면을 누르면 다음 팬'],[2,'화면을 누르면 처음부터'],[0,'화면을 누르면 다음 팬']]){many.ccNext();assert.equal(many.CC.i,i);assert.equal(many.hint.textContent,text);assert.equal(many.hint.hidden,false);}
+ assert.equal(many.doc.activeElement.id,'#ccHint','여럿이면 초점을 그대로 둔다');
+ const pointer=run([0]);pointer.ccNext();assert.equal(pointer.doc.activeElement,null,'단추에 초점이 없었으면 옮기지 않는다');
+});
+
+test('내 팬 화면: 1화를 끝내기 전에는 「1화 시작」, 끝낸 뒤에는 「1화 다시 하기」이고 머리줄이 본문보다 먼저 온다',()=>{
+ const app=read('experiences/seoul-arrival/app.mjs').replace(/\r\n/g,'\n');
+ const body=/function renderFans\([^)]*\)\{\n[\s\S]*?\n\}\n/.exec(app)?.[0],label=/\{const r=\$\('#fansReplay'\).*?\}\n/.exec(body??'')?.[0];
+ assert.ok(label,'단추 글을 정하는 줄을 앱에서 찾는다');
+ const set=done=>{const r={dataset:{},textContent:''};new Function('$','episodeDone','L',label)(()=>r,()=>done,x=>x);return r;};
+ for(const [done,text] of [[false,'1화 시작'],[true,'1화 다시 하기']]){const r=set(done);assert.equal(r.textContent,text);assert.equal(r.dataset.l,text,'언어를 바꿔도 같은 열쇠로 다시 그린다');}
+ const html=read('experiences/seoul-arrival/index.html'),fans=html.slice(html.indexOf('id="s-fans"'));
+ assert.ok(fans.indexOf('class="fans-top"')>0&&fans.indexOf('class="fans-top"')<fans.indexOf('id="fansScroll"'),'Tab은 뒤로 단추에서 본문으로 간다');
+});
