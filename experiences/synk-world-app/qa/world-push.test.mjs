@@ -2592,3 +2592,124 @@ test('판: 섞기 — 탭 두세 개와 다른 기기 하나의 차례를 섞어
  for(let seed=1;seed<=seeds;seed++){const {problems}=await shuffleRun(seed);if(problems.length)failed.push(`시드 ${seed}: ${problems.join(' / ')}`);if(failed.length>=5)break;}
  assert.deepEqual(failed,[]);
 });
+
+// ── 5-3 켜기 공개의 캐시 섞임(4c 5-3 섞임 표 3 · 4, 설계 주인 11-25) ─────────────────────────────────────────────────────────────────────────
+// 맨 주소로 불리는 world-push는 HTML · 셸과 캐시 판이 갈린다. 옛 판은 라이브(synk-policy abd09dc) world-push.mjs를 그대로 둔 live-world-push-20261125.mjs다.
+// 셸은 node에서 못 올리므로 app-shell.mjs의 진짜 문장을 떼어 돈다. 표 3(새 셸 + 옛 판)은 셸이 견딘다. 표 4(옛 셸 + 새 판)는 코드로 막지 않고 차례로 막는다 —
+// worldPush 깃발은 5-3 공개에서 10분 넘게 지난 뒤 켠다. 코드로 막던 고침은 가지 claude/atlas-push-mix53(3f941ede7e)에 있다.
+import {createHash} from 'node:crypto';
+import {sourceStatements} from '../../../tests/lib/source-statements.cjs';
+import {createWorldPush as createLivePush} from './live-world-push-20261125.mjs';
+const LIVE_PUSH_SHA='620858264b3f97b8ccb712bdb11b88ad2cd75c381097f9c3ecb5501d53ff3487';
+const shellSource=fs.readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8'),shellStatements=sourceStatements(shellSource);
+const makeLive=(b,s,extra={})=>createLivePush({request:s.request,anonymous:s.anonymous,env:b.env,storage:extra.storage||memory(),workerUrl:SCOPE+'world-push-sw.js',scopeUrl:SCOPE,now:()=>V0,...extra});
+// 셸의 떠남 · 망 돌아옴 · 화면 숨김 · 보임 처리기(flushReminders · pagehide · online · visibilitychange)를 이 worldPush로 건다.
+function shellHandlers(worldPush){
+ const handlers={},refreshed=[],flushedReminders=[];
+ const target=kind=>({hidden:false,addEventListener:(type,fn)=>{handlers[`${kind}:${type}`]=fn;}});
+ const window=target('window'),document=target('document');
+ const client={snapshot:{accountId:'acc-1'},busy:false,refresh:()=>{refreshed.push(document.hidden);return Promise.resolve();}};
+ const life={reminders:{flushPending:()=>flushedReminders.push(1)},close(){}};
+ const body=[shellStatements.declaration('flushReminders'),shellStatements.call('window.addEventListener',{0:'pagehide'},{calls:'flushReminders'}),
+  shellStatements.call('window.addEventListener',{0:'online'}),shellStatements.call('document.addEventListener',{0:'visibilitychange'})].join('\n');
+ new Function('worldPush','client','life','window','document','refreshTutorAccount','writing','speaking','releaseSheet','account','authBoundary',body)(
+  worldPush,client,life,window,document,()=>{},null,null,()=>{},{stop(){}},0);
+ return {handlers,document,refreshed,flushedReminders};
+}
+// 셸의 로그아웃 명령(commands.logout) 원문을 이 worldPush와 client.logout으로 돈다. 셸이 고르는 화면 함수는 가짜다.
+function shellLogout(worldPush,clientLogout){
+ const node=shellStatements.declarationNode('commands').declarations[0].init.properties.find(p=>p.key?.name==='logout');
+ const toasts=[];
+ const names=['dramaInvite','finishDramaInvite','accountActionPending','authBoundary','entryGate','client','worldPush','life','noteDeviceAccount','clearMonthAnswer',
+  'noteDeviceSignOut','localStorage','sessionConfirmed','close','front','entryDestinationHandled','startOpening','home','welcome','t','showEntryRecovery'];
+ const run=new Function(...names,`return (${shellStatements.text(node.value)});`)(
+  {},()=>{},false,0,null,{snapshot:{accountId:'acc-1'},logout:clientLogout},worldPush,{owner:'acc-1',atlasNext:null},()=>{},()=>{},
+  ()=>{},memory(),true,()=>{},null,false,()=>{},{isMaru:false,toast:text=>toasts.push(text)},()=>{},key=>key,()=>{});
+ return {run,toasts};
+}
+const offline=()=>Promise.reject(Object.assign(Error('offline'),{code:'NETWORK'}));
+
+test('섞임: 옛 판 world-push는 라이브와 내용이 같고(줄 끝만 작업본 설정을 따른다), retry · resume · bindSettings · hasEdit가 없다',()=>{
+ const text=fs.readFileSync(new URL('./live-world-push-20261125.mjs',import.meta.url),'utf8').replace(/\r\n/g,'\n');
+ assert.equal(createHash('sha256').update(text).digest('hex'),LIVE_PUSH_SHA,'저장소에는 LF로 들고, core.autocrlf 작업본은 CRLF로 꺼내므로 줄 끝을 LF로 맞춰 견준다');
+ const live=makeLive(browser(),server());
+ for(const name of ['retry','resume','bindSettings','hasEdit'])assert.equal(typeof live[name],'undefined',`옛 판에는 ${name}이 없다`);
+});
+
+test('섞임 표 3: 셸은 옛 world-push에 없는 이름을 모두 ?.()로 부른다',()=>{
+ const live=makeLive(browser(),server()),calls=[...shellSource.matchAll(/worldPush(\?)?\.([A-Za-z]+)(\?\.)?\(/g)].map(([,,name,guard])=>({name,guarded:!!guard}));
+ for(const {name,guarded} of calls)assert.ok(typeof live[name]==='function'||guarded,`${name}: 옛 판에 없는 이름은 ?.()로 부른다`);
+ for(const name of ['retry','resume','flush','logout','setAccount','ack','subscribe'])assert.ok(calls.some(c=>c.name===name),`${name}을 부르는 줄을 보았다`);
+});
+
+test('섞임 표 3 · 새 셸 + 옛 world-push: 망이 돌아오거나 화면이 다시 보이면 TypeError 없이 계정을 다시 읽고, 떠날 때와 숨을 때는 옛 flush만 부른다',async()=>{
+ const live=makeLive(browser({registered:true,subscribed:SUB,permission:'granted'}),server({device:true,active:true}));await live.setAccount('acc-1');
+ let flushes=0;const flush0=live.flush;live.flush=(...args)=>{flushes++;return flush0(...args);};
+ const shell=shellHandlers(live);
+ shell.handlers['window:online']();
+ shell.handlers['document:visibilitychange']();
+ assert.deepEqual(shell.refreshed,[false,false],'두 처리기 모두 뒤 줄(client.refresh)까지 돈다');
+ shell.document.hidden=true;shell.handlers['document:visibilitychange']();shell.handlers['window:pagehide']();
+ assert.equal(flushes,2,'숨을 때와 떠날 때 옛 flush를 부른다');
+ assert.deepEqual(shell.flushedReminders,[],'옛 flush는 1단 다시 잡기를 받지 않는다 — 라이브 셸처럼 돌리지 않는다');
+});
+
+test('섞임 표 3 · 새 셸 + 옛 world-push: 로그아웃이 실패하면 옛 뜻대로 끄고, 없는 resume을 건너뛰어 실패 안내까지 간다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:true,active:true}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const live=makeLive(b,s,{storage});await live.setAccount('acc-1');
+ const shell=shellLogout(live,offline);await shell.run();
+ assert.deepEqual(shell.toasts,['account.logoutFailed']);
+ assert.equal(b.current,null,'옛 logout은 이 브라우저 구독을 껐다');
+ const reads=()=>s.calls.filter(c=>c.action==='status').length,before=reads();await live.refresh();
+ assert.equal(reads(),before+1,'옛 판은 요청을 막지 않는다');
+});
+
+test('섞임 · 같은 판끼리(새 셸 + 새 world-push): 망이 돌아올 때와 화면이 다시 보일 때 둘 다 retry를 부르고 계정을 다시 읽는다',async()=>{
+ const push=on(versionedServer());await push.setAccount('acc-1');
+ let retries=0;const retry0=push.retry;push.retry=(...args)=>{retries++;return retry0(...args);};
+ const shell=shellHandlers(push);
+ shell.handlers['window:online']();assert.equal(retries,1,'망이 돌아오면 다시 보낸다');
+ shell.handlers['document:visibilitychange']();assert.equal(retries,2,'화면이 다시 보이면 다시 보낸다');
+ assert.deepEqual(shell.refreshed,[false,false]);
+ shell.document.hidden=true;shell.handlers['document:visibilitychange']();
+ assert.deepEqual(shell.flushedReminders,[1],'숨을 때 1단 다시 잡기를 먼저 돌린다');
+});
+
+test('섞임 · 같은 판끼리(새 셸 + 새 world-push): 셸의 로그아웃은 끝날 때까지 2단 요청을 막고, 실패하면 resume으로 풀며, 끝나면 계정 바뀜까지 막는다',async()=>{
+ for(const fails of [true,false]){
+  const s=versionedServer(),m=manual(s),rem=reminderSettings(),push=on(s,{request:m.request});push.bindSettings(rem);
+  await push.setAccount('acc-1');
+  let finish;const gate=new Promise((resolve,reject)=>{finish=()=>fails?reject(Object.assign(Error('offline'),{code:'NETWORK'})):resolve();});
+  const shell=shellLogout(push,()=>gate),running=shell.run();await settled();
+  rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await settled();
+  assert.equal(m.queue.length,0,'로그아웃하는 동안(client.logout을 기다린다) 새 요청을 내지 않는다');
+  finish();await running;await settled();
+  push.sync({settings:{frequency:2,hour:9}});await flush();
+  if(fails){
+   assert.deepEqual(shell.toasts,['account.logoutFailed']);
+   assert.equal(m.queue.at(-1)?.body.settings?.hour,9,'실패하면 셸이 resume으로 막기를 풀어 다시 보낸다');
+  }else{
+   assert.equal(m.queue.length,0,'로그아웃이 끝나면 계정이 바뀔 때까지 막는다');
+   await push.setAccount(null);assert.equal(push.snapshot().phase,'signed-out');
+  }
+ }
+});
+
+test('섞임 표 4 · 옛 셸 + 새 world-push(차례로 막는 것): 로그아웃이 실패하면 옛 셸은 resume을 부르지 않아 그 탭의 2단 요청이 막힌 채이고, 계정이 바뀌면 풀린다',async()=>{
+ const s=versionedServer(),m=manual(s),rem=reminderSettings(),push=on(s,{request:m.request});push.bindSettings(rem);
+ await push.setAccount('acc-1');
+ await push.logout();   // 라이브 셸: await worldPush?.logout() — 그 뒤 client.logout이 실패하고 resume은 부르지 않는다
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await settled();
+ assert.equal(m.queue.length,0,'막힌 채다 — worldPush 깃발을 5-3 공개에서 10분 넘게 지난 뒤 켜면 이 짝이 생기지 않는다');
+ await push.setAccount(null);await push.setAccount('acc-1');
+ push.sync({settings:{frequency:2,hour:9}});await flush();
+ assert.equal(m.queue.at(-1)?.body.settings?.hour,9,'계정이 바뀌면 풀린다');
+});
+
+test('섞임 · 같은 판끼리(옛 셸 + 옛 world-push): 라이브 그대로 — logout은 이 브라우저 구독을 끈다',async()=>{
+ const b=browser({registered:true,subscribed:SUB,permission:'granted'}),s=server({device:true,active:true}),storage=memory();
+ storage.setItem(PUSH_RECORD_KEY,JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:SUB}));
+ const live=makeLive(b,s,{storage});await live.setAccount('acc-1');
+ assert.equal((await live.logout()).ok,true);assert.equal(b.current,null);assert.equal(storage.getItem(PUSH_RECORD_KEY),null);
+});
