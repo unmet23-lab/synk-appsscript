@@ -1027,6 +1027,21 @@ if(!process.versions.electron){
           const l10=await look(w);
           check('22 with no sessions and no departments the head says nothing runs, no empty floor is drawn, and 부서 더하기 stands in the middle',l10.say==='지금 이 PC에서 도는 일이 없습니다.'&&!l10.slot&&!l10.news&&l10.empty&&JSON.stringify(l10.chats)===JSON.stringify(['all|사무실|']),l10);
           await shoot(w,'office-empty',[[1440,900],[960,680]]);
+          // 좁은 방(150%로 키운 작은 창)에서도 가운데 「부서 더하기」가 목록의 더하기 칸을 보이고, 더하면 방으로 넘어간다(0.5.12 공개 후보 카본 B1)
+          w.win.setContentSize(420,760);for(let i=0;i<40&&(await w.js('innerWidth'))!==420;i++)await wait(50);await wait(500);
+          const narrow="(()=>{const r="+ROOM+",seen=s=>r.querySelector(s).getClientRects().length>0,a=document.activeElement;return {list:seen('.ofc-list'),room:seen('.ofc-room'),field:!!a?.dataset?.f?.startsWith('name'),head:!!a?.hasAttribute?.('data-off-head'),nm:r.querySelector('[data-off-nm]').textContent};})()";
+          await press(w,'#portal-entry [data-off-empty-add]');await wait(800);
+          const n1=await w.js(narrow);
+          w.win.webContents.insertText('총무부');await wait(150);
+          await key(w,'Return');await wait(1600);
+          const n2=await w.js(narrow);
+          check('22 narrow: 부서 더하기 in the middle shows the add form with the focus in it, and adding goes into the room with the focus on its head',n1.list&&!n1.room&&n1.field&&!n2.list&&n2.room&&n2.head&&n2.nm==='총무부',{n1,n2});
+          await press(w,'#portal-entry [data-off-back]');await wait(500);
+          const n3=await w.js(narrow);
+          await press(w,'#portal-entry [data-off-chats] > [data-chat="all"]');await wait(700);
+          const n4=await w.js(narrow);
+          check('22 narrow: back shows the list, and a pick goes into the room with the focus on its head',n3.list&&!n3.room&&!n4.list&&n4.room&&n4.head,{n3,n4});
+          w.win.setContentSize(1440,900);for(let i=0;i<40&&(await w.js('innerWidth'))!==1440;i++)await wait(50);await wait(400);
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(700);
           check('22 leaving the room at the end stops the record watch',(await calls(w)).filter(c=>c.startsWith('office-watch:')).at(-1)==='office-watch:false');
           w.win.destroy();

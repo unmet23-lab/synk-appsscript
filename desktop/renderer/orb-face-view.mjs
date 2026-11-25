@@ -37,8 +37,6 @@ const PROGRAM_ICON = Object.freeze({
   office: '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3.4" y="5" width="13.2" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="7.6" cy="10" r="1.2" fill="currentColor"/><circle cx="12.4" cy="10" r="1.2" fill="currentColor"/></svg>',
 });
 /* 다가가서 잠깐 머물러야 열리고, 벗어나서 잠깐 지나야 닫힌다(시안 NEAR). pad는 오브제 줄에 다가갔다고 보는 거리(px) */
-/* 사무실 줄 묶음에서 한 줄의 알약으로 서는 줄(orb-face.css의 .rows.off 알약과 같은 셋) */
-const OFF_PILLS = new Set(['cfg', 'look', 'add']);
 const NEAR = Object.freeze({ row: 120, prog: 180, close: 400, pad: 64, open: 150, fast: 260, orb: 18, name: 10, zone: 44 });
 /* 오브제 이름이 다 펼쳐지는 데 걸리는 시간. 이름 하나가 0.46초에 펼쳐지고 보이는 오브제마다 70ms씩 늦게 시작한다(CSS .obj-n의 --k는 보이는 차례다).
  * 이름이 펼쳐지는 동안에는 그 위에 머물러도 프로그램을 열지 않는다. 셋이면 620ms(시안 railSettle), 둘이면 550ms, 넷이면 690ms다
@@ -1161,10 +1159,16 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (t.closest('[data-off-side-close]')) { event.preventDefault(); event.stopPropagation(); setSide(false); return; }
     if (drawerOpen() && !app.offSide.contains(t) && !t.closest('[data-off-side-btn]') && !t.closest('[data-off-cap]')) setSide(false, { focus: false });
     const c = t.closest('[data-chat]');
-    if (c && app.offChats.contains(c)) { event.preventDefault(); event.stopPropagation(); inRoom = true; app.ofc.classList.add('in-room'); pickChat(c.dataset.chat); return; }
+    if (c && app.offChats.contains(c)) {
+      event.preventDefault(); event.stopPropagation(); inRoom = true; app.ofc.classList.add('in-room'); pickChat(c.dataset.chat);
+      // 좁은 방에서는 목록이 통째로 숨는다. 누른 줄에 있던 초점을 방 머리로 옮긴다(0.5.12 공개 후보 카본 B1)
+      if (c.offsetParent === null) focusEl(app.offHead);
+      return;
+    }
     if (t.closest('[data-off-back]')) { event.preventDefault(); event.stopPropagation(); inRoom = false; app.ofc.classList.remove('in-room'); app.offChats.querySelector('[aria-current="true"]')?.focus?.({ preventScroll: true }); return; }
     if (t.closest('[data-off-add-btn]')) { event.preventDefault(); event.stopPropagation(); onAction('room', { room: 'solio-office', act: 'chat-add' }); return; }
-    if (t.closest('[data-off-empty-add]')) { event.preventDefault(); event.stopPropagation(); onAction('room', { room: 'solio-office', act: 'chat-add', arg: 'open' }); return; }
+    // 더하기 칸은 목록에 있다. 좁은 방에서는 목록부터 보인다(0.5.12 공개 후보 카본 B1)
+    if (t.closest('[data-off-empty-add]')) { event.preventDefault(); event.stopPropagation(); inRoom = false; app.ofc.classList.remove('in-room'); onAction('room', { room: 'solio-office', act: 'chat-add', arg: 'open' }); return; }
     // 수용 인원: 「사무실」을 고르고(좁으면 방으로 넘어가) 오른쪽 칸의 수용 인원 줄을 펼쳐 초점을 둔다. 서랍이면 그림 안에서 서랍을 먼저 연다
     if (t.closest('[data-off-cap]')) { event.preventDefault(); event.stopPropagation(); inRoom = true; app.ofc.classList.add('in-room'); sideWant = true; pickChat('all', { focus: 'cap' }); return; }
     if (t.closest('[data-off-side-btn]')) { event.preventDefault(); event.stopPropagation(); setSide(!sideOpen()); return; }
@@ -1191,7 +1195,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const sel = c ? c.sel : null, selChanged = sel !== chatSel;
     chatSel = sel;
     if (selChanged && sideOpen() && !sideWant) setSide(false, { focus: false });
-    if (on && v.focus?.task) inRoom = true;
+    // 초점을 방 안으로 보내는 새 요청이면 좁은 방에서도 방을 보인다. 요청은 다음 요청까지 남아 있으므로 새것만 본다(뒤로 간 목록을 다시 그리며 덮지 않게)
+    if (on && (v.focus?.task || v.focus?.say) && applied.focus['solio-office'] !== v.focus.seq) inRoom = true;
     app.ofc.classList.toggle('in-room', inRoom);
     assignmentFloor = shown && on && v.tasking ? v.floor : null;
     renderChats(c ? c.contacts : [], sel);
@@ -1222,7 +1227,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     // 고른 책상이 밝아진다. 움직임 줄이기에서는 그림이 저절로 다시 그려지지 않으므로 고른 상대가 바뀔 때 한 번 그린다(설계 검토 10)
     if (selChanged && reduced()) officeFloor.redraw();
     // 대화: 맡긴 일(고른 부서만 보이고 나머지는 숨긴다). 「부서 없는 일」과 맡기기가 꺼진 판은 가운데에 직원 줄을 세운다
-    const th = app.offThread, atEnd = threadAtEnd(), h0 = th.scrollHeight;
+    // 숨은 방에서는 스크롤 값을 읽지 않는다. 사무실을 못 보는 회원의 그림마다 배치를 다시 재지 않게 한다(0.5.12 공개 후보 Fable F3)
+    const th = app.offThread, live = !!shown && on, atEnd = live && threadAtEnd(), h0 = live ? th.scrollHeight : 0;
     const tk = on && v.tasking ? { ...v.tasking, form: { ...(v.tasking.form || {}), deptPick: !!c?.composer?.deptPick }, view: !c || c.sel === 'all' || c.sel === 'lobby' ? {} : { departmentId: c.composer.departmentId } } : null;
     officeTasks.render(tk);
     const lobby = c?.sel === 'lobby';
@@ -1244,12 +1250,15 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     app.ofc.classList.toggle('no-side', !side.length);
     if (app.offSideBtn.hidden !== !side.length) app.offSideBtn.hidden = !side.length;
     setText(app.offSideBtn, c && c.sel === 'all' ? '사무실 설정' : '이 부서');
-    app.offSide.setAttribute('aria-label', c && c.sel === 'all' ? '사무실 설정' : '이 부서');
+    for (const box of [app.offSide, app.offRows]) box.setAttribute('aria-label', c && c.sel === 'all' ? '사무실 설정' : '이 부서');
     if (sideWant) { sideWant = false; if (side.length && app.offSideBtn.offsetParent && !sideOpen()) setSide(true, { focus: false }); }
     // 스크롤: 상대를 바꾸면 대화 끝으로. 바닥에 있을 때만 바닥을 따라가고, 위로 올려 읽는 중에 새 말이 오면 「새 답 보기」를 둔다(설계 검토 16)
     const reveal = !!shown && !officeShown;
     officeShown = !!shown;
-    if (selChanged || reveal) { th.scrollTop = th.scrollHeight; app.offNew.hidden = true; }
+    // 맡긴 일의 대화가 없으면(직원 줄만 설 때) 맨 위부터 보인다. 급한 직원이 맨 위에 선다(0.5.12 공개 후보 카본 B3)
+    if (!live) { /* 다시 보일 때 맞춘다 */ }
+    else if (taskHost.hidden) { if (selChanged || reveal) th.scrollTop = 0; app.offNew.hidden = true; }
+    else if (selChanged || reveal) { th.scrollTop = th.scrollHeight; app.offNew.hidden = true; }
     else if (atEnd) th.scrollTop = th.scrollHeight;
     else if (th.scrollHeight > h0 + 4) app.offNew.hidden = false;
     // 숨긴 카드에 있던 초점은 고른 목록 줄로 옮긴다(설계 검토 2)
@@ -1569,19 +1578,12 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       setTimeout(() => { if (!disposed) onAction('room', { room, key, act: on ? 'row-open' : 'row-fold' }); }, 0);
     }
   }
-  /* 한 줄을 펼치면 그 아래에 열려 있던 줄은 접는다. 위쪽 줄은 접지 않는다(접으면 손 밑의 줄이 위로 달아난다).
-     사무실의 알약(설정 · 꾸미기 · 부서 더하기)은 한 줄에 나란히 서고 판은 모두 그 아래에 열린다. 접어도 알약이 움직이지 않으므로
-     알약을 열면 다른 알약의 판을 접는다. 눌러서 열면 고정한 판도 접는다(검수 solio-room-layout-20261124 대체 최종 F4) */
+  /* 한 줄을 펼치면 그 아래에 열려 있던 줄은 접는다. 위쪽 줄은 접지 않는다(접으면 손 밑의 줄이 위로 달아난다) */
   function openVis(b, pin = false) {
     if (b.classList.contains('fixed')) { setMore(b, true); return; }
     const box = b.parentElement, rows = box ? [...box.querySelectorAll(':scope > button.row')] : [], i = rows.indexOf(b);
     if (i < 0) return;
-    const pill = r => box.classList.contains('off') && OFF_PILLS.has(r.dataset.key);
-    rows.forEach((r, k) => {
-      if (r === b) return;
-      if (pill(b) && pill(r)) { if (pin || !r.classList.contains('pin')) setMore(r, false); }
-      else if (k > i && !r.classList.contains('pin')) setMore(r, false);
-    });
+    rows.forEach((r, k) => { if (k > i && !r.classList.contains('pin')) setMore(r, false); });
     if (pin) b.classList.add('pin');
     setMore(b, true);
   }

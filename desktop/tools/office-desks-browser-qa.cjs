@@ -49,6 +49,10 @@ module.exports = async function checkOfficeDesks({ open, boot, signedIn, subsNon
   const before = await pixels(w);
   await setBoard(w, board({ qmkt: 7, qdev: 2, qlaw: 1 }));
   const r1 = await row(w), after = await pixels(w);
+  // 맡긴 일의 대화가 없으면 직원 줄은 맨 위부터 보인다(0.5.12 공개 후보 카본 B3)
+  const tops = [];
+  for (const key of ['all', 'd:qmkt']) { await chat(w, key); await wait(700); tops.push(await w.js("(()=>{const r=" + ROOM + ",t=r.querySelector('[data-off-thread]');return {top:t.scrollTop,over:t.scrollHeight>t.clientHeight+4,new:!r.querySelector('[data-off-new]').hidden};})()")); }
+  check('desks: the staff list opens at its top, without 새 답 보기', tops.every(t => t.top === 0 && !t.new) && tops.some(t => t.over), { tops });
   check('desks: seven staff in 마케팅부 bring two more desks, and the line and the picture say so', r1.mid === '3인 책상 셋 · 직원이 늘어 둘 더 놓음' && after.lit !== before.lit, { r1, before, after });
   await shoot(w, 'desks-grown');
   // 떠나도 바로 빼지 않는다

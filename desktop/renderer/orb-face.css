@@ -855,7 +855,7 @@ html[data-motion="reduced"] #portal-entry .rows > button.row::after{transition:n
 /* 그 순간 먼저 할 일 하나만 꽉 찬 단추다(DESIGN 11-23). 부서가 없을 때의 「부서 더하기」 */
 #portal-entry .ofc-pill{height:40px;padding:0 20px;border:0;border-radius:999px;background:var(--paper);color:var(--void);font:500 14px/1 var(--orb-sans);cursor:pointer}
 #portal-entry .ofc-pill:hover{background:#FFFFFF}
-#portal-entry .ofc-new{position:relative;z-index:2;align-self:center;height:32px;margin:-46px 0 14px;padding:0 14px;border:0;border-radius:999px;background:rgba(243,241,236,.16);color:var(--paper);font:var(--small);cursor:pointer}
+#portal-entry .ofc-new{position:relative;z-index:2;align-self:center;height:32px;margin:-46px 0 14px;padding:0 14px;border:0;border-radius:999px;background:#272726;color:var(--paper);font:var(--small);cursor:pointer}
 #portal-entry .ofc-new[hidden]{display:none}
 #portal-entry .ofc-compose{flex:none;padding:10px 0 2px;border-top:1px solid var(--hair)}
 #portal-entry .ofc-compose[hidden],#portal-entry .ofc-offsay[hidden]{display:none}

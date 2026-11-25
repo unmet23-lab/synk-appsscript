@@ -874,6 +874,10 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
     ghostOn = false;
     place();
+    // 크기가 바뀌어 놓이거나 빠진 책상은 새 책상이 아니다. 다음 장면에서 뒤늦게 밝아지지 않게 여기서 맞춘다(0.5.12 공개 후보 카본 A1)
+    const keys = new Set(layout.flatMap(z => (z.desks || []).map(q => q.key)));
+    for (const k of keys) if (!deskBorn.has(k)) deskBorn.set(k, -1e9);
+    for (const m of [deskBorn, lampK]) for (const k of [...m.keys()]) if (!keys.has(k)) m.delete(k);
     if (shown) draw();
   }
   /* 배치를 다시 잡는다. 자리가 바뀌었으면 나뭇결 모음을 비우고 참을 돌려준다 */

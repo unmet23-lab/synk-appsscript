@@ -135,10 +135,28 @@ test('removing the picked department goes to 사무실; an emptied 부서 없는
   await h.room.handle({ key: 'lobby', act: 'assign', arg: 'sess-lob-0004|ddev' });
   assert.equal(h.scene().chat.sel, 'lobby', 'after sending, the chat stays where the user was');
   h.setSnap(snapOf({ tasking: { tasks: TASKS }, assignments: { 'sess-lob-0004': 'ddev' } }));
-  assert.equal(h.scene().chat.sel, 'd:ddev', 'once 부서 없는 일 is empty, the chat goes to the department it went to');
+  const moved = h.scene();
+  assert.equal(moved.chat.sel, 'd:ddev', 'once 부서 없는 일 is empty, the chat goes to the department it went to');
+  assert.equal(moved.focus?.say, true, 'the pressed button is gone, so the keyboard goes to the head of the room (0.5.12 Fable F2)');
   await h.room.handle({ act: 'dept-remove-ask', key: 'd:ddev', arg: 'ddev' });
   await h.room.handle({ act: 'dept-remove', key: 'd:ddev', arg: 'ddev' });
   assert.equal(h.scene().chat.sel, 'all');
+});
+
+test('leaving 사무실 takes back the staff picked in 꾸미기 and the open 직접 정하기 (0.5.12 Fable F1)', async () => {
+  const h = harness();
+  const cap = s => JSON.stringify(s.rows.find(r => r.key === 'cap').more.slice(0, -1)), first = cap(h.scene());
+  await h.room.handle({ key: 'look', act: 'row-open' });
+  await h.room.handle({ key: 'cap', act: 'cap-mode', arg: 'manual' });
+  const picked = s => s.floor.zones.flatMap(z => z.staff).filter(x => x.picked).length;
+  assert.notEqual(cap(h.scene()), first, '직접 정하기 is open');
+  assert.equal(picked(h.scene()), 1, 'while 꾸미기 is open one staff is picked');
+  await h.room.handle({ act: 'chat-pick', arg: 'd:dmkt' });
+  assert.equal(picked(h.scene()), 0);
+  await h.room.handle({ act: 'chat-pick', arg: 'all' });
+  const back = h.scene();
+  assert.equal(picked(back), 0, 'coming back, 꾸미기 stands folded and nothing is picked');
+  assert.equal(cap(back), first, '직접 정하기 is folded again');
 });
 
 test('a new department is picked once it arrives on the board', async () => {

@@ -554,6 +554,8 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     st.chatSeen.set(was, at);
     // 떠나는 대화의 펼친 묶음과 「빼시겠습니까?」 물음을 거둔다(옛 짜임의 줄 접기와 같다, Fable 최종 F6)
     foldRow(was);
+    // 「사무실」을 떠나면 꾸미기와 수용 인원의 줄이 없어진다. 그림의 고른 직원 표시와 「직접 정하기」가 남지 않게 함께 거둔다(0.5.12 공개 후보 Fable F1)
+    if (was === OFFICE_CHAT_ALL) { st.lookOpen = false; for (const g of [...st.grps]) if (g.startsWith('cap:')) st.grps.delete(g); }
     if (was === 'lobby' || was.startsWith('d:')) {
       const id = was === 'lobby' ? null : was.slice(2);
       void call('seen', id).then(res => { if (again && res?.ok !== false) reread(); });
@@ -798,6 +800,8 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     }
     if (st.chat && !officeChatKeyOk(st.chat, { departments: depts, lobby })) {
       const next = st.chat === 'lobby' && st.chatAfter && officeChatKeyOk(st.chatAfter, { departments: depts, lobby }) ? st.chatAfter : OFFICE_CHAT_ALL;
+      // 마지막 세션을 부서로 보내 「부서 없는 일」이 없어졌으면 누른 단추도 사라진다. 자판 초점을 방 머리로 보낸다(0.5.12 공개 후보 Fable F2)
+      if (next !== OFFICE_CHAT_ALL) focusReq = ask({ say: true });
       st.chat = null; st.chatAfter = null;
       pickChat(next, now);
     }
