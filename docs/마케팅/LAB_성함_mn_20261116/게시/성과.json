@@ -308,6 +308,17 @@
         }
       },
       {
+        "계정": "lab-br-youtube",
+        "채널": "유튜브 SYNK LAB Brasil | Coreano divertido",
+        "주소": "https://www.youtube.com/watch?v=SuLgvb6BI08",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-25T16:00:34.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-tw-youtube",
         "채널": "유튜브 @synklabtaiwan",
         "주소": "https://www.youtube.com/watch?v=eNOgtVpLxGQ",
