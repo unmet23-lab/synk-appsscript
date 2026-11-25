@@ -46,7 +46,10 @@ test('「뜻 보기」: 인사 · 카페 · 편의점 · 길 팩 문제는 답�
  assert.equal(lifeChoiceMeanings(questions[0],'ko'),null);
  const outside=LESSONS.find(lesson=>lesson.packId==='transit'&&lesson.questions?.length).questions[0];
  assert.equal(lifeChoiceMeanings(outside,'en'),null);
- const used=new Set(questions.flatMap(q=>q.choices.map(c=>c.text)));
+ // 배울 표현의 뜻 줄(life-ui learnLines)도 이 표에서 읽는다 — 보기에 없는 배울 표현도 뜻이 있어야 한다(11-26 Fable F2).
+ const learn=packs.flatMap(pack=>pack.lessons.flatMap(lesson=>lesson.expressions||[])).map(e=>e.korean);
+ for(const text of learn)for(const code of ['en','mn'])assert.ok(LIFE_CHOICE_MEANINGS[text]?.[code],`배울 표현 ${text} ${code} 뜻`);
+ const used=new Set([...questions.flatMap(q=>q.choices.map(c=>c.text)),...learn]);
  assert.deepEqual(Object.keys(LIFE_CHOICE_MEANINGS).filter(text=>!used.has(text)),[],'쓰지 않는 뜻이 없다');
 });
 

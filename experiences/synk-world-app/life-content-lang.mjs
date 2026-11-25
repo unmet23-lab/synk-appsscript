@@ -432,6 +432,10 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '다녀왔어요.':{en:'I’m back. (said when you get home)',mn:'Ирлээ. (гэртээ ирэхдээ хэлдэг)'},
  '다녀왔습니다.':{en:'I’m back. (said politely when you get home)',mn:'Ирлээ. (гэртээ ирэхдээ эелдгээр хэлдэг)'},
  '저는 수진이에요.':{en:'I’m Sujin.',mn:'Би Сүжин.'},
+ // 보기에는 없는 배울 표현(표현 판의 뜻 줄로 쓴다, 11-26)
+ '저는 서하예요.':{en:'I’m Seoha.',mn:'Намайг Сөха гэдэг.'},
+ '따뜻한 차를 마시고 싶어요.':{en:'I’d like to drink hot tea.',mn:'Халуун цай уумаар байна.'},
+ '주스는 품절이에요.':{en:'The juice is sold out.',mn:'Шүүс дууссан.'},
  '저는 지훈이에요.':{en:'I’m Jihun.',mn:'Би Жихүн.'},
  '처음 뵙겠습니다.':{en:'Nice to meet you. (very polite, at a first meeting)',mn:'Танилцсандаа таатай байна. (анх уулзахдаа хэлдэг, маш эелдэг)'},
  '잘 먹겠습니다.':{en:'Thank you for the food. (said before eating)',mn:'Хоол идэхийн өмнө хэлдэг талархлын үг.'},
@@ -613,6 +617,8 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '학교 옆에 있어요.':{en:'It’s next to the school.',mn:'Сургуулийн хажууд байдаг.'},
  '학교 안에 있어요.':{en:'It’s inside the school.',mn:'Сургууль дотор байдаг.'},
  '은행 뒤에 있어요.':{en:'It’s behind the bank.',mn:'Банкны ард байдаг.'},
+ '오른쪽으로 가세요.':{en:'Go right.',mn:'Баруун тийш яваарай.'},
+ '은행 옆에 있어요.':{en:'It’s next to the bank.',mn:'Банкны хажууд байдаг.'},
  // 길 팩 — 끝
 });
 
