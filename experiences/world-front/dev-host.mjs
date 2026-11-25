@@ -134,7 +134,7 @@ export function createDevHost(search = location.search) {
       position: D.pos ? {total: 16, done: 0, practicing, rows: [{label: '듣기', cells: Array(8).fill('')}, {label: '읽기', cells: read}], names: ['낱말 뜻 읽기', '조사·문형 읽기']} : null,
       consent: {needed: D.consent && !D.agreed, ...CONSENT[D.lang]},
       reduced: D.still,
-      club: {tutor: D.tutor, note: clubNote()}
+      club: {tutor: D.tutor, answer: D.answer, note: clubNote()}
     };
   }
   const lang = () => D.lang;
@@ -142,7 +142,8 @@ export function createDevHost(search = location.search) {
   const viewOf = i => { const it = DEV_ITEMS[i]; return it && {index: i, total: DEV_ITEMS.length, skillId: it.skillId, label: lab(it), labelKo: it.label, audio: it.audio, prompt: it.prompt, question: it.question, choices: it.choices.map(([id, label]) => ({id, label}))}; };
   function clubNote() {
     const plan = itemOf(planOf()), who = D.tutor || 'seoha';
-    if (D.note === 'club') return {from: 'club', who: 'head', kind: 'club', code: 'club.hello', slots: {}, read: false, drop: true};
+    if (D.note === 'club' && D.tutor) return {from: 'club', who: D.tutor, kind: 'level', code: 'tutor.level', slots: {}, read: false, drop: D.drop !== false};   // 튜터를 고르고 나갔던 학생
+    if (D.note === 'club') return {from: 'club', who: 'head', kind: 'club', code: 'club.hello', slots: {}, read: false, drop: D.drop !== false};
     if (D.note === 'hangul') return {from: 'tutor', who, kind: 'review', code: 'tutor.review.hangul', slots: {}, read: false, drop: true};
     if (D.note === 'review') return {from: 'tutor', who, kind: 'review', code: 'tutor.review.skill', slots: {skill: '듣고 부정·변경 이해하기', skillUi: lab(DEV_ITEMS[3]), skillId: 'ko.listening.negation'}, read: false, drop: true};
     if (D.note === 'level') return {from: 'tutor', who, kind: 'level', code: 'tutor.level', slots: {}, read: false, drop: true};
@@ -173,15 +174,16 @@ export function createDevHost(search = location.search) {
     async signIn() { note('signIn'); return null; },
     async seen(key) { note('seen', key); return null; },
     // 동아리(club.mjs): 실제 다리(world-front-club.mjs)와 같은 꼴로 답한다. 기록은 남기지 않는다
-    async clubTutor(t, o = {}) { D.tutor = t; note('clubTutor', t); return o.change ? {tutor: t, saved: false, state: state()} : {tutor: t, saved: false}; },
+    async clubTutor(t, o = {}) { D.tutor = t; if (!o.change) D.answer = o.answer || null; note('clubTutor', t); return o.change ? {tutor: t, saved: false, state: state()} : {tutor: t, saved: false}; },
     async clubDiag() { if (D.diag) return {status: D.diag}; D.di = 0; return {status: 'ready', total: DEV_ITEMS.length, item: viewOf(0)}; },
     async clubReplay() { return 'first'; },
     async clubAudio(status) { note('clubAudio', status); return true; },
     async clubAnswer(id) { const it = DEV_ITEMS[D.di]; return it ? {correct: id === it.correct, correctId: it.correct, explanation: it.explanation} : {error: 'notReady'}; },
     async clubNext() { D.di += 1; return viewOf(D.di); },
-    async clubFinish(rows) { note('clubFinish', rows); return {map: DEV_MAP(D.exam, D.lang), minutes: planOf().min}; },
+    async clubFinish(rows) { note('clubFinish', rows); return {map: D.di < 0 || D.map === 'none' ? null : DEV_MAP(D.exam, D.lang), minutes: planOf().min}; },   // 문항을 열지 않았으면(못 읽음 · diag=none) 지도도 없다(다리와 같다)
+    async clubLater() { note('clubLater'); D.club = '1'; D.note = 'club'; D.drop = false; D.v = 'more'; return state(); },
     async clubMap() { note('clubMap'); await new Promise(r => setTimeout(r, 300)); return D.map === 'none' ? null : DEV_MAP(D.exam, D.lang); },   // ?map=none: 지도를 못 받는 길
-    async clubDone() { D.club = 'done'; D.note = ''; D.v = 'more'; return state(); },
+    async clubDone(o) { note('clubDone', o); D.club = 'done'; D.note = ''; D.v = 'more'; return state(); },
     async clubBoard() { D.club = 'done'; D.note = ''; D.v = 'more'; note('position'); return state(); },
     async clubSeen(o) { note('clubSeen', o); if (o?.opened && D.club === 'done') D.note = ''; return null; },   // 연 알림은 그날 다시 내려오지 않는다(다리와 같다)
     async clubAct(kind, slots) { note('clubAct', kind, slots); D.note = ''; return null; },

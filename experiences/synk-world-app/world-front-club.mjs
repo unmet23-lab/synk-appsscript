@@ -2,7 +2,8 @@
 // 화면은 experiences/world-front/club.mjs가 그린다. 이 다리는 앞면 다리(world-front-entry.mjs)의 host에 club* 함수를 더하고,
 // 기록은 지금 있는 길만 쓴다: 튜터 스타일 → 학습 설정(도움 방식 · 설명 길이, 동의한 학생만), 한글 답 → 한글 답 저장,
 // 문항 넷 → 「내 위치」 짧은 진단과 같은 문항 · 세션 · 끝 기록(education().clubCheck — world-learning-ui.mjs).
-// 기기 표(synk.world.front.v1:<주인>)의 club에는 고른 튜터 · 결과 줄 · 알림을 연 날만 둔다. 학습 기록의 정본은 Trail이다.
+// 기기 표(synk.world.front.v1:<주인>)의 club에는 고른 튜터 · 결과 줄만 둔다. 알림을 내렸나(dropped) · 읽었나(read)는 inbox의 동아리 · 튜터 줄 하나에만 적는다.
+// 학습 기록의 정본은 Trail이다.
 import {t,hasString} from '../brand-opening/world-lang.mjs';
 // 하루는 새벽 4시에 바뀐다(world-front-entry.mjs dayKey와 같은 셈 — 서로 import하지 않으려고 둘 다 둔다).
 const dayKey=at=>{const d=new Date(at-4*3600e3);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
@@ -34,9 +35,10 @@ export function pickClubRows(rows,max=4){
  }
  return out;
 }
-export function explainOf(item,lang='ko'){
+// 게임 원고에서 온 문항은 해설이 한국어 한 줄이다. 영어 · 몽골어 화면은 번역 표(world-front-why.mjs, 열쇠 = 그 한국어 글)에서 찾고, 없으면 한국어 그대로.
+export function explainOf(item,lang='ko',why=null){
  const v=item?.explanation;
- if(typeof v==='string')return v;
+ if(typeof v==='string')return (lang!=='ko'&&why?.[v]?.[lang])||v;
  if(v&&typeof v==='object')return v[lang]||v.ko||'';
  return '';
 }
@@ -54,13 +56,15 @@ export function mapView(map,{lang='ko'}={}){
  return {exam:map?.exam==='topik2'?'topik2':'topik1',total:cells.length,listening:lis.length,counts,cells,names};
 }
 // 오늘 튜터가 알림으로 건넬 한 가지(하루 한 번 · 근거가 없으면 조용히).
-// 처음 만남 전: 동아리장 알림. 처음 만난 날: 없음. 그 뒤 하루에 하나 — 놓친 항목 복습 → 셋째 날마다 내 위치 → 오늘 할 일.
-// hangulFirst: 지금 계획이 한글 먼저인가(다리가 계획 값 route · gameId로 가려 넘긴다 — 화면 문장으로 가리지 않는다)
-export function clubNote({club=null,plan=null,hangul='ask',hangulFirst=false,now=Date.now()}={}){
- if(!club?.tutor||!club.done)return {from:'club',who:'head',kind:'club',code:'club.hello',slots:{}};
+// 처음 만남 전: 동아리장 알림(튜터를 고르고 나갔으면 그 튜터가 이어서 부른다). 처음 만난 날: 없음. 그 뒤 하루에 하나 — 놓친 항목 복습 → 셋째 날마다 내 위치 → 오늘 할 일.
+// row: 기기 표 inbox의 동아리 · 튜터 줄(오늘 이미 열었으면 다시 안 부른다). hangulFirst: 지금 계획이 한글 먼저인가(다리가 계획 값 route · gameId로 가려 넘긴다 — 화면 문장으로 가리지 않는다)
+export function clubNote({club=null,row=null,plan=null,hangul='ask',hangulFirst=false,now=Date.now()}={}){
+ if(!club?.tutor)return {from:'club',who:'head',kind:'club',code:'club.hello',slots:{}};
+ if(!club.done)return {from:'club',who:club.tutor,kind:'level',code:'tutor.level',slots:{}};
  const today=dayKey(now);
  if(!club.at||dayKey(club.at)===today)return null;
- if(club.last?.day===today&&club.last.opened)return null;
+ if(row?.from==='tutor'&&row.read&&dayKey(row.at||0)===today)return null;
+ if(club.last?.opened&&club.last.day===today)return null;   // 11-26 첫 공개판이 오늘 적은 「열었음」(읽기만 — 새로 적지 않는다)
  const days=Math.max(1,Math.round((new Date(today.replace(/-/g,'/')).getTime()-new Date(dayKey(club.at).replace(/-/g,'/')).getTime())/864e5));
  const reviewed=new Set(Array.isArray(club.reviewed)?club.reviewed:[]);
  const missed=(Array.isArray(club.results)?club.results:[]).find(row=>row&&!row.ok&&row.skillId&&row.skillId!=='hangul'&&!reviewed.has(row.skillId));
@@ -76,34 +80,47 @@ export function clubNote({club=null,plan=null,hangul='ask',hangulFirst=false,now
 }
 
 /* ── 다리 ── 앞면 다리가 부른다. same()은 요청한 때의 주인이 지금 주인인지, done(view)는 앞면 다음 화면 state */
-export function createFrontClub({same,owner,readMark,writeMark,education,progress,lang,plan,openPlan,stateOf,baseUrl=()=>location.href}){
- let run=null,item=null;
+export function createFrontClub({same,owner,readMark,writeMark,education,progress,lang,plan,openPlan,stateOf,baseUrl=()=>location.href,loadWhy=()=>import('./world-front-why.mjs')}){
+ let run=null,item=null,why=null,turn=0;
  const clubOf=who=>{const v=readMark(who).club;return v&&typeof v==='object'?v:{};};
  const setClub=(who,patch)=>writeMark(who,{club:{...clubOf(who),...patch}});
  const abs=path=>{try{return new URL(path,baseUrl()).href;}catch{return path;}};
  // 항목 이름: 화면 언어(카드 머리 · 결과 줄)와 한국어(튜터 말풍선) 둘 다
  const skillLabel=(id,code)=>{const key=`position.skill.${id}`;try{if(hasString(key))return t(key,{},code);}catch{}return run?.skillName?.(id)||id;};
+ // 할 일을 말하는 지시(빈칸 고르기)는 「내 위치」 판처럼 화면 언어로, 읽을 내용인 물음은 한국어 그대로
+ const askOf=it=>{const key=it.ask?`position.diagnostic.ask.${it.ask}`:'';try{if(key&&hasString(key))return {question:t(key,{},lang()),questionLang:lang()};}catch{}return {question:it.question||null,questionLang:'ko'};};
  const viewOf=now=>now&&{index:now.index,total:now.total,skillId:now.item.skillId,label:skillLabel(now.item.skillId,lang()),labelKo:skillLabel(now.item.skillId,'ko'),modality:now.item.modality,
-  audio:now.item.audio?abs(run.audioUrl(now.item.audio)):null,prompt:now.item.prompt||null,question:now.item.question||null,
+  audio:now.item.audio?abs(run.audioUrl(now.item.audio)):null,prompt:now.item.prompt||null,...askOf(now.item),
   choices:now.item.choices.map(choice=>({id:choice.id,label:choice.label}))};
- const close=()=>{try{run?.stop?.();}catch{}run=null;item=null;};
- // 알림 기록(팬 세션과 맞춘 꼴 — { from, who, kind, code, slots, at, read }). 동아리 · 튜터 알림만 갈아 끼우고 다른 알림은 둔다.
+ const close=()=>{turn+=1;try{run?.stop?.();}catch{}run=null;item=null;};
+ // 알림 기록(팬 세션과 맞춘 꼴 — { from, who, kind, code, slots, at, read } + 내려왔나 dropped). 동아리 · 튜터 줄은 하나뿐이고 다른 알림은 둔다.
+ const rows=who=>(Array.isArray(readMark(who).inbox)?readMark(who).inbox:[]).filter(Boolean),ours=row=>row.from==='club'||row.from==='tutor';
+ const rowOf=who=>rows(who).find(ours)||null,today=row=>!!row&&dayKey(row.at||0)===dayKey(Date.now());
  function inbox(who,note){
-  const list=(Array.isArray(readMark(who).inbox)?readMark(who).inbox:[]).filter(row=>row&&row.from!=='club'&&row.from!=='tutor');
-  if(note)list.push({from:note.from,who:note.who,kind:note.kind,code:note.code,slots:note.slots||{},at:Date.now(),read:false});
+  const was=rowOf(who),list=rows(who).filter(row=>!ours(row));
+  // 하루에 한 번만 내려온다: 같은 날 알림이 바뀌어도(오늘 할 일이 바뀜 등) 이미 내려왔으면 작은 얼굴로만
+  if(note)list.push({from:note.from,who:note.who,kind:note.kind,code:note.code,slots:note.slots||{},at:Date.now(),read:false,...(today(was)&&was.dropped?{dropped:true}:{})});
   writeMark(who,{inbox:list});
  }
+ const patchRow=(who,patch)=>writeMark(who,{inbox:rows(who).map(row=>ours(row)?{...row,...patch}:row)});
+ // 날이 바뀌었거나 다른 알림이면 줄을 새로 쓴다(어제 읽은 표시를 이어 쓰지 않는다)
+ function keep(who,note){
+  const was=rowOf(who);
+  if(!today(was)||was.code!==note.code||was.who!==note.who||was.slots?.token!==note.slots?.token||was.slots?.skillId!==note.slots?.skillId)inbox(who,note);
+  return rowOf(who);
+ }
+ // 처음 만남 전의 알림(동아리장 · 이어 부르는 튜터). 서울행 내 길과 앞면이 같은 줄을 쓴다(주인마다 — 기기 공통 열쇠를 쓰지 않는다)
+ const helloOf=who=>{const club=clubOf(who);return club.done&&club.tutor?null:clubNote({club});};
  function noteOf(who,planNow,hangul){
   let raw=null;try{raw=plan();}catch{raw=null;}
-  const club=clubOf(who),note=clubNote({club,plan:planNow,hangul,hangulFirst:raw?.route==='game'&&raw?.gameId==='hangul'});
+  const was=rowOf(who),note=clubNote({club:clubOf(who),row:was,plan:planNow,hangul,hangulFirst:raw?.route==='game'&&raw?.gameId==='hangul'});
   // 항목 이름은 저장한 글이 아니라 지금 화면 언어로 다시 찾는다(첫날 뒤 언어를 바꿔도 섞이지 않게)
   if(note?.slots?.skillId){const id=note.slots.skillId,ko=skillLabel(id,'ko'),ui=skillLabel(id,lang());if(ko!==id)note.slots.skill=ko;if(ui!==id)note.slots.skillUi=ui;}
-  const was=(readMark(who).inbox||[]).find?.(row=>row?.from==='club'||row?.from==='tutor');
-  if(!note){if(was)inbox(who,null);return null;}
-  // 날이 바뀌면 같은 꼴의 알림이라도 새 알림이다(어제 읽은 표시를 이어 쓰지 않는다)
-  if(!was||was.code!==note.code||was.slots?.token!==note.slots?.token||was.slots?.skillId!==note.slots?.skillId||dayKey(was.at||0)!==dayKey(Date.now()))inbox(who,note);
-  const row=(readMark(who).inbox||[]).find(r=>r?.from===note.from&&r.code===note.code);
-  return {...note,read:!!row?.read,drop:!row?.read&&club.last?.dropped!==dayKey(Date.now())};
+  // 오늘 연 튜터 알림 줄은 그날 동안 둔다(다시 부르지 않으려면 그 줄이 있어야 한다). 그 밖의 묵은 줄은 치운다
+  if(!note){if(was&&!(was.from==='tutor'&&was.read&&today(was)))inbox(who,null);return null;}
+  const row=keep(who,note);
+  // club.last.dropped: 11-26 첫 공개판이 오늘 적은 「내려왔음」(읽기만)
+  return {...note,read:!!row?.read,drop:!row?.read&&!row?.dropped&&clubOf(who).last?.dropped!==dayKey(Date.now())};
  }
  const host={
   // 튜터를 고르면 스타일을 학습 설정에 저장한다(이미 학습 목표 저장에 동의한 학생만 — 동의는 앞면이 따로 묻지 않는다). 아니면 이 기기 표에만.
@@ -125,10 +142,12 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
   async clubDiag(){
    if(!same())return null;
    close();
-   const ed=education();
+   const ed=education(),mine=turn;
    if(typeof ed?.clubCheck!=='function')return {status:typeof ed?.position==='function'?'board':'none'};
-   let got;try{got=await ed.clubCheck({pick:rows=>pickClubRows(rows)});}catch{got=null;}
-   if(!same())return null;
+   if(lang()!=='ko'&&!why){try{why=(await loadWhy()).WHY||null;}catch{why=null;}}
+   let got;try{got=same()&&turn===mine?await ed.clubCheck({pick:rows=>pickClubRows(rows)}):null;}catch{got=null;}
+   // 고르는 사이 나갔으면(나중에 · 틀 닫힘 · 주인 바뀜) 낸 적 없는 문항으로 걷는다
+   if(!same()||turn!==mine){try{got?.stop?.();}catch{}return null;}
    if(!got||got.status!=='ready')return {status:got?.status==='board'?'board':'none',reason:got?.reason||null};
    run=got;
    const now=run.session.next();item=now?.item||null;
@@ -150,14 +169,14 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
    if(!same()||!run||!item)return null;
    const now=item;let row=null;try{row=run.session.answer(choiceId);}catch{row=null;}
    if(!row)return {error:'notReady'};
-   return {correct:row.verdict==='correct',correctId:now.correctId,explanation:explainOf(now,lang())};
+   return {correct:row.verdict==='correct',correctId:now.correctId,explanation:explainOf(now,lang(),why)};
   },
   async clubNext(){
    if(!same()||!run)return null;
    let now=null;try{now=run.session.next();}catch{now=null;}
    item=now?.item||null;return viewOf(now);
   },
-  // 결과: 진단을 마치면(끝 기록 'diagnostic') 바뀐 지도의 칸 · 대화로 본 줄을 기기 표에 남긴다. 문항을 못 냈으면(한글만) 한글 줄만.
+  // 결과: 진단을 마치면(끝 기록 'diagnostic') 대화로 본 줄만 기기 표에 남기고, 칸은 바뀐 지도에서 줄여 돌려준다. 문항을 못 냈으면(한글만) 한글 줄만.
   async clubFinish(rows=[]){
    if(!same())return null;
    const who=owner();let out=null;
@@ -170,15 +189,25 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
    return {map,minutes:missed||!p?.token||p.route==='position'?null:p.min||null};
   },
   // 「맞춤 연습 시작」: 처음 만남을 마치고 오늘 할 일을 연다(짧은 진단이면 방금 봤으니 열지 않고 맞춤 화면만).
-  async clubDone(){
+  // open:false = 결과를 보고 「맞춤 화면으로」만 간다 — 연습을 열지 않았으니 놓친 항목은 다음 날 복습 알림으로 남는다.
+  async clubDone({open=true}={}){
    if(!same())return null;
-   const who=owner(),p=plan(),club=clubOf(who),missed=(club.results||[]).find(r=>r&&!r.ok&&r.skillId&&r.skillId!=='hangul');
+   const who=owner(),p=plan(),club=clubOf(who),missed=open?(club.results||[]).find(r=>r&&!r.ok&&r.skillId&&r.skillId!=='hangul'):null;
    setClub(who,{done:true,at:Date.now(),...(missed?{reviewed:[...new Set([...(club.reviewed||[]),missed.skillId])]}:{})});writeMark(who,{ended:true});
    const next=await stateOf();
    // 대화 판이 걷힌 뒤(0.42초) 연다 — 튜터가 말한 대로 놓친 항목의 짧은 연습, 없으면 오늘 할 일(방금 진단을 봤으니 짧은 진단은 열지 않는다)
-   const go=missed&&typeof education()?.practice==='function'?()=>education().practice(missed.skillId):p?.token&&p.route!=='position'?()=>openPlan(p.token):null;
+   const go=!open?null:missed&&typeof education()?.practice==='function'?()=>education().practice(missed.skillId):p?.token&&p.route!=='position'?()=>openPlan(p.token):null;
    if(go)setTimeout(()=>{if(same())Promise.resolve().then(go).catch(()=>{});},450);
    return next;
+  },
+  // 처음 만남을 나중으로: 보이던 문항은 건너뛴 것으로 남기고 맞춤 화면으로 간다. 고른 튜터 · 한 답은 남아 다음에 그 튜터부터 잇는다.
+  // 알림은 오늘 다시 내려오지 않고 작은 얼굴로 남는다.
+  async clubLater(){
+   if(!same())return null;
+   const who=owner(),note=helloOf(who);close();
+   if(note){keep(who,note);patchRow(who,{dropped:true,read:false});}
+   writeMark(who,{ended:true});
+   return await stateOf();
   },
   // 판으로 여는 진단(새 길 · 대화 문항 없음). 판이 닫히면 앞면 다리가 다시 그린다.
   async clubBoard(){
@@ -191,13 +220,7 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
   // 알림을 열었다(하루 한 번). 내려오는 알림을 그날 이미 보였으면 다음부터는 작은 얼굴로만.
   async clubSeen({dropped=false,opened=false}={}){
    if(!same())return null;
-   const who=owner(),today=dayKey(Date.now()),club=clubOf(who);
-   if(dropped)setClub(who,{last:{...(club.last||{}),dropped:today}});
-   if(opened){
-    const list=(readMark(who).inbox||[]).map(row=>row&&(row.from==='club'||row.from==='tutor')?{...row,read:true}:row);
-    writeMark(who,{inbox:list});
-    if(club.done)setClub(who,{last:{...(clubOf(who).last||{}),day:today,opened:true}});
-   }
+   if(dropped||opened)patchRow(owner(),{...(dropped?{dropped:true}:{}),...(opened?{read:true}:{})});
    return null;
   },
   // 다음 날 알림의 단추: 복습은 그 항목 짧은 연습, 오늘은 그 할 일, 내 위치는 「내 위치」 판.
@@ -214,5 +237,7 @@ export function createFrontClub({same,owner,readMark,writeMark,education,progres
  };
  // 동의 전에 고른 튜터의 스타일: 앞면 목표 질문에서 처음 동의할 때 함께 저장한다(world-front-entry.mjs chooseGoal)
  const valuesOf=who=>{const set=TUTOR_SETTINGS[clubOf(who).tutor];return set?{support:set.support,explanation:set.explanation}:{};};
- return {host,noteOf,valuesOf,tutorOf:who=>CLUB_TUTORS.includes(clubOf(who).tutor)?clubOf(who).tutor:null,doneOf:who=>!!clubOf(who).done,stop:close,name:t=>NAME[t]||''};
+ // 서울행 내 길의 알림: 띄울 알림 · 오늘 이미 내려왔나(읽었나) · 내려왔다고 적기
+ const road={note:helloOf,dropped:who=>{const n=helloOf(who),row=rowOf(who);return !!n&&today(row)&&row.code===n.code&&row.who===n.who&&!!(row.dropped||row.read);},drop:who=>{const n=helloOf(who);if(n){keep(who,n);patchRow(who,{dropped:true});}}};
+ return {host,noteOf,valuesOf,road,answerOf:who=>clubOf(who).answer||null,tutorOf:who=>CLUB_TUTORS.includes(clubOf(who).tutor)?clubOf(who).tutor:null,doneOf:who=>!!clubOf(who).done,stop:close,name:t=>NAME[t]||''};
 }

@@ -144,8 +144,9 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  const club=createFrontClub({same:()=>same(),owner,readMark,writeMark,education,progress:()=>life.progress,lang:currentLang,openPlan:token=>host.open(token),
   plan:()=>{const raw=currentPlan(),{plan:main}=planState(raw,{label:entry=>home.planLabel?.(entry)||entry?.label||''});return main?{...main,route:raw?.selected?.route||null,gameId:raw?.selected?.gameId||null}:null;},
   stateOf:async()=>{const v=viewAfter(owner());if(session)session.view=v;return await stateOf(v);}});
- const withClub=state=>state&&({...state,club:{tutor:club.tutorOf(owner()),note:['more','front'].includes(state.view)?club.noteOf(owner(),state.plan,state.hangul):null}});
- if(typeof window!=='undefined')window.SYNKFrontClub=Object.freeze({needed:()=>{try{return !!on()&&!club.doneOf(owner());}catch{return false;}},ask:()=>{asked='club';}});
+ const withClub=state=>state&&({...state,club:{tutor:club.tutorOf(owner()),answer:club.answerOf(owner()),note:['more','front'].includes(state.view)?club.noteOf(owner(),state.plan,state.hangul):null}});
+ if(typeof window!=='undefined')window.SYNKFrontClub=Object.freeze({needed:()=>{try{return !!on()&&!club.doneOf(owner());}catch{return false;}},ask:()=>{asked='club';},
+  note:()=>{try{return club.road.note(owner());}catch{return null;}},dropped:()=>{try{return club.road.dropped(owner());}catch{return false;}},drop:()=>{try{club.road.drop(owner());}catch{/* 못 적으면 다음에 또 내려온다 */}}});
  // 앞면에 주는 state는 모두 여기를 거쳐 동아리 · 튜터 줄(club)을 얹는다(맞춤 화면으로 가는 길이 여럿이라 한 곳에서)
  async function stateOf(view){return withClub(await stateBase(view));}
  async function stateBase(view){

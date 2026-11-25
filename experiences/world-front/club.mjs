@@ -51,6 +51,7 @@ const UI = {
   nxt: {ko: '연습할 곳', en: 'To practice', mn: 'Дасгал хийх'},
   go: {ko: '맞춤 연습 시작', en: 'Start my practice', mn: 'Дасгалаа эхлэх'},
   board: {ko: '문제 보러 가기', en: 'Go to the questions', mn: 'Асуулт руу очих'},
+  notNow: {ko: '나중에 할게요', en: 'Maybe later', mn: 'Дараа хийнэ'},
   later: {ko: '맞춤 화면으로', en: 'Back to My practice', mn: '«Миний дасгал» руу буцах'},
   change: {ko: '튜터 바꾸기', en: 'Change tutor', mn: 'Туслахаа солих'},
   todayDiv: {ko: '오늘', en: 'Today', mn: 'Өнөөдөр'},
@@ -166,15 +167,16 @@ function kit({lang, sfx, calm}) {
   const L = o => o ? (o[lang] ?? o.ko) : '';
   const mean = o => lang === 'ko' || !o || !o[lang] ? '' : `<span class="mean">${esc(o[lang])}</span>`;
   const nm = t => L(NAME[t]);
-  const snd = k => { try { sfx?.(k); } catch {} };
+  const snd = k => { if (kit.off) return; try { sfx?.(k); } catch {} };   // off: 나간 뒤에는 남은 글 · 판정이 소리를 내지 않는다
   const sleep = ms => wait(calm() ? Math.min(ms, 60) : ms);
   const anim = (el, kf, o) => calm() || !el?.animate ? {finished: Promise.resolve()} : el.animate(kf, o);
   const face = (el, who) => { const f = tutorFace(who); if (!el || !f) return; el.style.backgroundImage = `url(${f.url})`; el.style.backgroundSize = f.size; el.style.backgroundPosition = f.pos; };
-  return {lang, L, mean, nm, snd, sleep, anim, face, calm};
+  const kit = {lang, L, mean, nm, snd, sleep, anim, face, calm, off: false};
+  return kit;
 }
 
 function chatShell(root, K) {
-  root.innerHTML = `<section class="cl-msg" aria-live="polite"><header class="cl-hd"><span class="cl-av" data-hd-av></span><span class="cl-nm"><b data-hd-name></b><span data-hd-sub></span></span></header><div class="cl-th" data-th></div><div class="cl-ft" data-ft></div></section>`;
+  root.innerHTML = `<section class="cl-msg" aria-live="polite"><header class="cl-hd"><span class="cl-av" data-hd-av></span><span class="cl-nm"><b data-hd-name></b><span data-hd-sub></span></span><button class="cl-out" type="button" data-out hidden></button></header><div class="cl-th" data-th></div><div class="cl-ft" data-ft></div></section>`;
   const th = root.querySelector('[data-th]'), ft = root.querySelector('[data-ft]'), msg = root.querySelector('.cl-msg'), sub = root.querySelector('[data-hd-sub]');
   const scroll = () => { th.scrollTop = th.scrollHeight; };
   const header = (who, text) => { K.face(root.querySelector('[data-hd-av]'), who); root.querySelector('[data-hd-name]').textContent = K.nm(who); sub.textContent = text || ''; sub.className = ''; };
@@ -201,9 +203,18 @@ function chatShell(root, K) {
       if (i === 0) setTimeout(() => b.focus?.({preventScroll: true}), 30);
     }));
   }
+  // 약속을 기다리는 동안 입력 중 점을 보인다(바로 오면 점 없이). 글 사이가 빈 채로 멈춰 보이지 않게
+  async function until(who, p) {
+    let done = false; const q = Promise.resolve(p).then(v => { done = true; return v; }, () => { done = true; return null; });
+    await Promise.race([q, wait(160)]); if (done) return q;
+    const w = faceRow('cl-m', who); w.innerHTML = '<span class="cl-av"></span><span class="cl-dots"><i></i><i></i><i></i></span>'; K.face(w.querySelector('.cl-av'), who); th.append(w); scroll();
+    const v = await q; w.remove(); return v;
+  }
+  // 머리 오른쪽의 나가는 단추(처음 만남에만)
+  function exit(label, fn) { const b = root.querySelector('[data-out]'); b.textContent = label; b.hidden = false; if (fn) b.onclick = fn; return b; }
   function sys(html) { const w = document.createElement('div'); w.className = 'cl-sys'; w.innerHTML = html; th.append(w); scroll(); return w; }
   function add(el) { th.append(el); K.anim(el, [{opacity: 0, transform: 'translateY(12px)'}, {opacity: 1, transform: 'none'}], {duration: 320}); scroll(); return el; }
-  return {root, msg, th, ft, scroll, header, say, me, replies, sys, add};
+  return {root, msg, th, ft, scroll, header, say, me, replies, sys, add, until, exit};
 }
 
 function ctaButton(K, label, mins) {
@@ -254,10 +265,24 @@ export function mountClub({host, state, sfx, calm = () => false, onDone}) {
   const lang = state.lang || 'ko', K = kit({lang, sfx, calm});
   const root = openRoot(lang);
   const C = chatShell(root, K);
-  let alive = true;
+  let alive = true, fin = false;
   const live = () => alive && root.isConnected;
+  // 처음 만남 어디서든 나갈 수 있다: 결과 전에는 「나중에 할게요」(고른 튜터 · 한 답은 남고 다음에 그 튜터부터 잇는다), 결과를 본 뒤에는 「맞춤 화면으로」(연습은 열지 않는다)
+  const out = C.exit(K.L(UI.notNow), async () => {
+    if (!live()) return; alive = false; K.snd('tap'); K.off = true; try { C.audio?.pause(); } catch {}
+    root.querySelectorAll('button').forEach(b => { b.disabled = true; });   // 다음 화면을 받는 동안 본문 단추도 잠근다(나가면서 연습이 열리지 않게)
+    let next = null; try { next = fin ? await host.clubDone?.({open: false}) : await host.clubLater?.(); } catch {}
+    leave(root, onDone, next || null);
+  });
+  const finished = () => { fin = true; C.exit(K.L(UI.later)); };
   const byName = (o, t) => ({ko: fill(o.ko, {n: NAME[t].ko}), en: fill(o.en, {n: NAME[t].en}), mn: fill(o.mn, {n: NAME[t].mn})});
   (async () => {
+    // 튜터를 고르고 나갔던 학생은 그 튜터의 대화부터 잇는다
+    const keep = CLUB_TUTORS.includes(state.club?.tutor) ? state.club.tutor : null;
+    if (keep) {
+      C.header(keep, K.L(UI.tutorSub)); await K.sleep(400); if (!live()) return;
+      await meet(keep, state.club.answer === 'none'); return;
+    }
     C.msg.classList.add('solo'); C.header('head', K.L(UI.now));
     const wc = document.createElement('div'); wc.className = 'cl-who';
     wc.innerHTML = `<div class="cv" style="background-image:url(${A}head.webp)"></div><div class="tx"><b>${esc(K.nm('head'))}</b><span>${esc(K.L(UI.whoLine))}</span></div>`;
@@ -277,11 +302,14 @@ export function mountClub({host, state, sfx, calm = () => false, onDone}) {
     const s = C.sys(`<span class="cl-av"></span><span>${esc(fill(K.L(UI.joined), {n: K.nm(t)}))}</span>`); K.face(s.querySelector('.cl-av'), t); K.snd('switch');
     C.msg.classList.remove('solo'); C.header(t, K.L(UI.tutorSub));
     await C.say(t, byName(S.t1, t), 850); if (!live()) return;
-    await C.say(t, a.k === 'none' ? S.t2n : S.t2, 950); if (!live()) return;
+    await meet(t, a.k === 'none');
+  })().catch(e => { console.warn('[club]', e); });
+  async function meet(t, none) {
+    await C.say(t, none ? S.t2n : S.t2, 950); if (!live()) return;
     await C.replies([{...UI.start, solid: 1}]); if (!live()) return;
     const res = await diagnose({host, C, K, t, live}); if (!live()) return;
-    await result({host, C, K, t, res, live, onDone, root});
-  })().catch(e => { console.warn('[club]', e); });
+    await result({host, C, K, t, res, live, onDone, root, finished});
+  }
   return {root, stop: () => { alive = false; try { C.audio?.pause(); } catch {} try { host.clubStop?.(); } catch {} root.kill(); }};
 }
 
@@ -346,7 +374,7 @@ async function engineItem({host, C, K, t, item, n, last}) {
   let body = '';
   if (listening) body += `<button class="cl-listen" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span class="lt">${esc(K.L(UI.listen))}</span><span class="bar"><i></i></span></button><p class="cl-note">${esc(K.L(UI.listenFirst))}</p>`;
   if (item.prompt) body += `<p class="pass" lang="ko">${esc(item.prompt)}</p>`;
-  if (item.question) body += `<p class="qline" lang="ko">${esc(item.question)}</p>`;
+  if (item.question) body += `<p class="qline" lang="${esc(item.questionLang || 'ko')}">${esc(item.question)}</p>`;
   const two = (item.choices.length === 2 || item.choices.length === 4) && item.choices.every(c => String(c.label || '').length <= 5);
   if (listening) body += `<button class="cl-back cl-pass" type="button" hidden>${esc(K.L(last ? UI.done : UI.next))}</button>`;
   body += `<div class="chs${two ? ' two' : ''}" lang="ko">${item.choices.map(c => `<button class="cl-ch" type="button" data-v="${esc(c.id)}"${listening ? ' disabled' : ''}><span>${esc(c.label)}</span>${CK}</button>`).join('')}</div><div class="cl-fb"><div class="in"></div></div>`;
@@ -407,10 +435,13 @@ function leave(root, onDone, next = null) {
   root.release?.(); root.querySelectorAll('button').forEach(b => { b.disabled = true; });
   root.classList.add('out'); setTimeout(() => root.kill(), 420); onDone?.(next);
 }
-async function result({host, C, K, t, res, live, onDone, root}) {
+async function result({host, C, K, t, res, live, onDone, root, finished}) {
   if (res.board) { leave(root, onDone, typeof res.board === 'object' ? res.board : null); return; }
+  // 문항을 다 답했으면 「다 봤어요」 글이 나오기 전에 끝을 적는다 — 여기부터 나가면 마친 것이다
+  finished?.();
+  const ending = Promise.resolve(host.clubFinish?.(res.map(r => ({skillId: r.skillId, label: r.label || '', labelKo: r.labelKo || '', ok: r.ok})))).catch(() => null);
   await C.say(t, S.fin, 600); if (!live()) return;
-  const fin = await host.clubFinish?.(res.map(r => ({skillId: r.skillId, label: r.label || '', labelKo: r.labelKo || '', ok: r.ok}))) || {};
+  const fin = await ending || {}; if (!live()) return;
   const view = fin.map && Array.isArray(fin.map.cells) && fin.map.cells.length ? fin.map : null, hg = res.find(r => r.skillId === 'hangul'), tested = res.filter(r => r.skillId !== 'hangul');
   const seen = new Set(tested.map(r => r.skillId));
   const card = document.createElement('section'); card.className = 'cl-card res';
@@ -427,12 +458,14 @@ async function result({host, C, K, t, res, live, onDone, root}) {
   if (tested.length || !hg?.ok) { await C.say(t, line, 850); if (!live()) return; }
   await C.say(t, S.bell, 750); if (!live()) return;
   const go = ctaButton(K, K.L(UI.go), fin.minutes || 0); C.add(go); go.focus?.({preventScroll: true});
-  go.onclick = async () => { go.disabled = true; K.snd('paper'); const next = await host.clubDone?.(); leave(root, onDone, next); };
+  go.onclick = async () => { if (!live()) return; root.querySelectorAll('button').forEach(b => { b.disabled = true; }); K.snd('paper'); const next = await host.clubDone?.(); leave(root, onDone, next); };
 }
 
 /* ── 다음 날부터: 튜터 알림 한 가지 ── */
 export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
-  const note = state.note || {}, t = CLUB_TUTORS.includes(note.who) ? note.who : 'seoha', lang = state.lang || 'ko', K = kit({lang, sfx, calm});
+  const note = state.note || {}, text = noteText(note);
+  if (!text) return null;   // 글 없는 알림은 판을 열지 않는다(열자마자 닫으면 부른 쪽이 죽은 손잡이를 갖는다)
+  const t = CLUB_TUTORS.includes(note.who) ? note.who : 'seoha', lang = state.lang || 'ko', K = kit({lang, sfx, calm});
   const root = openRoot(lang);
   const C = chatShell(root, K);
   let alive = true, inner = null;
@@ -441,26 +474,29 @@ export function mountTutorDay({host, state, sfx, calm = () => false, onDone}) {
   (async () => {
     C.header(t, K.L(UI.tutorSub));
     const d = document.createElement('p'); d.className = 'cl-day'; d.textContent = K.L(UI.todayDiv); C.th.append(d);
-    const text = noteText(note); if (!text) { close(); return; }
+    // 내 위치: 대화를 여는 순간 그날의 지도를 묻는다
+    const map = note.kind === 'level' ? Promise.resolve(host.clubMap?.()).catch(() => null) : null;
     await C.say(t, text, 650); if (!live()) return;
     let label = K.L(UI.todayGo), mins = note.slots?.m || 0;
     if (note.code === 'tutor.review.hangul') {
       const h = await hangulCard(K, C, 'taxi', {n: 1, tutor: t, label: UI.cont}); await h.next; if (!live()) return;
       label = K.L(UI.hangulGo); mins = 0;
     } else if (note.kind === 'review') { label = K.L(UI.practice); mins = 0; }
-    else if (note.kind === 'level') { label = K.L(UI.levelGo); mins = 0; } else if (note.kind === 'today' && note.slots?.photo) {
+    else if (note.kind === 'level') {
+      label = K.L(UI.levelGo); mins = 0;
+      // 글 뒤에 1.8초까지만 기다려 「지금 여기」 카드와 단추를 함께 그린다. 늦게 온 지도는 끼우지 않는다 — 누르려던 단추가 밀리지 않게(검수 11-26 F1). 못 받으면 글과 단추만
+      const view = await C.until(t, Promise.race([map, wait(1800).then(() => null)])); if (!live()) return;
+      if (view?.cells?.length) {
+        const card = document.createElement('section'); card.className = 'cl-card res';
+        card.innerHTML = `<p class="k"><b>${esc(K.L(UI.here))}</b></p><div class="strip">${cellsHTML(K, view)}</div>${mapKey(view)}`;   // 「…실력 가운데」는 첫날 카드의 「{t}칸 중 {c}칸을 봤어요」에 딸린 줄이라 여기에는 두지 않는다
+        C.add(card);
+      }
+    } else if (note.kind === 'today' && note.slots?.photo) {
       const card = document.createElement('section'); card.className = 'cl-card plan';
       card.innerHTML = `<div class="pp" style="background-image:url(${PH}${esc(note.slots.photo)}.webp)"></div><div class="pb"><p class="k"><b>${esc(K.L(UI.today))}</b></p><p class="pt" lang="ko">${esc(note.slots.title)}</p></div>`;
       C.add(card);
     }
     const go = ctaButton(K, label, mins); C.add(go); go.focus?.({preventScroll: true});
-    // 내 위치: 단추를 먼저 두고, 그날의 지도를 받으면 단추 위에 「지금 여기」 카드를 끼운다(못 받으면 글과 단추만)
-    if (note.kind === 'level') void Promise.resolve(host.clubMap?.()).then(view => {
-      if (!live() || !view?.cells?.length || !go.isConnected) return;
-      const card = document.createElement('section'); card.className = 'cl-card res';
-      card.innerHTML = `<p class="k"><b>${esc(K.L(UI.here))}</b></p><div class="strip">${cellsHTML(K, view)}</div>${mapKey(view)}`;   // 「…실력 가운데」는 첫날 카드의 「{t}칸 중 {c}칸을 봤어요」에 딸린 줄이라 여기에는 두지 않는다
-      go.before(card); K.anim(card, [{opacity: 0}, {opacity: 1}], {duration: 260});
-    }, () => {});
     const back = document.createElement('button'); back.type = 'button'; back.className = 'cl-back'; back.textContent = K.L(UI.later); C.add(back);
     back.onclick = () => { K.snd('tap'); close(); };
     const change = document.createElement('button'); change.type = 'button'; change.className = 'cl-back'; change.textContent = K.L(UI.change); C.add(change);
@@ -521,6 +557,7 @@ const CSS = `
 .cl-root .mean{display:block;margin-top:2px;font-weight:500;font-size:.84em;line-height:1.4;color:rgba(23,22,15,.62)}
 .cl-msg{position:absolute;inset:0;display:flex;flex-direction:column;max-width:560px;margin:0 auto}
 .cl-hd{flex:none;display:flex;align-items:center;gap:11px;padding:calc(16px + var(--sat,env(safe-area-inset-top,0px))) 16px 12px;box-shadow:0 1px 0 rgba(23,22,15,.1)}
+.cl-out{flex:none;max-width:42%;min-height:44px;margin:-6px -8px -6px 0;padding:0 10px;border:0;background:none;font-size:14px;line-height:1.25;font-weight:700;text-align:right;color:rgba(23,22,15,.6);cursor:pointer}.cl-out[hidden]{display:none}.cl-out:disabled{opacity:.4;cursor:default}
 .cl-av{position:relative;width:40px;height:40px;flex:none;border-radius:50%;background:#ddd center/cover no-repeat}
 .cl-nm{min-width:0;flex:1}.cl-nm b{display:block;font-size:16px;font-weight:800}.cl-nm span{display:block;margin-top:1px;font-size:12.5px;font-weight:600;color:rgba(23,22,15,.62)}.cl-nm span.typing{color:#2f7d4f}
 .cl-th{flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:12px 16px 18px;display:flex;flex-direction:column;gap:8px;-webkit-mask-image:linear-gradient(transparent 0,#000 14px);mask-image:linear-gradient(transparent 0,#000 14px)}

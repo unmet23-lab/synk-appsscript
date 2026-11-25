@@ -4,7 +4,8 @@
 // · app-shell.mjs: 공개본과 master의 머리(import 묶음 · Atlas 줄)가 많이 달라, 앞면 갈고리를 「공개본의 이 글 → 이렇게」 표(shellRecipe)로 얹는다.
 // · 고친 파일 넷(seoul-entry · home · 서울행 app · strings): 바탕 판(이 일 전 a9d50abdd)에 이 일의 커밋(제목이 「WORLD 첫날 끝」)만 얹은
 //   「내 판」을 공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 겹치면 멈춘다.
-// · 새 파일(world-front-entry.mjs · world-front/): 끝 판 그대로(빌드의 경로 고쳐 쓰기), 스위치 FRONT_AUTO만 참으로.
+// · 새 파일(world-front-entry.mjs · world-front/): 끝 판 그대로(빌드의 경로 고쳐 쓰기), 스위치 FRONT_AUTO만 참으로. 공개본이 앞 공개판(LAST)과 다르면
+//   그 사이 다른 일이 얹은 것이라(11-26 앞면 녹음 b870e228) 앞 공개판 · 끝 판 · 공개본을 3방향으로 합친다. 겹치면 멈춘다.
 // 출력: .tmp/world-front-pub/base(지금 공개본) · new(후보 원천) · 항목.txt, 그리고 tools/공개.js 미리 보기 명령.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,6 +15,8 @@ import {fileURLToPath} from 'node:url';
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const args = process.argv.slice(2), opt = (n, d) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; };
 const END = opt('--끝', 'origin/master'), BASE = 'a9d50abdd97d649ddb2ba1906cad6451f2f29200';
+// 이 일이 마지막으로 공개한 원천(11-26 synk-policy 9961e4f4). 그 뒤 다른 일이 앞면 파일에 먼저 공개한 변경을 지우지 않게 3방향의 바탕으로 쓴다 — 공개할 때마다 새 원천으로 고친다.
+const LAST = opt('--앞판', '54d626cc17ce9d56ae050f5b9c116500eae14c40');
 const OUT = path.join(ROOT, '.tmp', 'world-front-pub');
 const git = (...a) => execFileSync('git', ['-C', ROOT, '-c', 'core.autocrlf=false', ...a], {maxBuffer: 1 << 30});
 const lf = s => s.replace(/\r\n/g, '\n');
@@ -196,8 +199,16 @@ for (const [src, rel] of MOD) {
 // 이 도구는 앞면 갈고리와 앞면 파일만 대조한다(레슨 글 후보를 얹은 앞면은 qa/흐름.mjs --후보로 본다).
 // 새 파일: 다리 + 틀 폴더(시험 · 설계 문서 · 견줌 자료는 빼고 — 빌드의 거름과 같다). 공개본에 이미 같은 바이트로 있으면 뺀다(공개 뒤 다시 돌릴 때).
 const liveBytes = async rel => { const r = await fetch(`https://synk.im/world/${rel}?probe=${Date.now()}`, {cache: 'no-store'}); return r.ok ? Buffer.from(await r.arrayBuffer()) : null; };
-async function addNew(rel, data) {
-  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8'), pubBuf = await liveBytes(rel);
+const lastText = (src, rel) => { try { return rw(lf(execFileSync('git', ['-C', ROOT, '-c', 'core.autocrlf=false', 'show', `${LAST}:${src}`], {maxBuffer: 1 << 30, stdio: ['ignore', 'pipe', 'ignore']}).toString()), rel); } catch { return null; } };
+async function addNew(rel, data, src = null, fix = t => t) {
+  const pubBuf = await liveBytes(rel);
+  if (pubBuf && pubBuf.equals(Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8'))) return;   // 이미 같은 바이트로 공개됨(공개 뒤 다시 돌릴 때)
+  if (src && typeof data === 'string' && pubBuf) {
+    const pub = lf(pubBuf.toString('utf8')), was = lastText(src, rel);
+    if (was === null) throw Error(`${rel}: 공개본에 있는데 앞 공개판(${LAST.slice(0, 9)})에는 없다 — 다른 일이 만든 파일인지 본다`);
+    if (pub !== fix(was)) data = merge3(pub, fix(was), data, rel);
+  }
+  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
   if (pubBuf && pubBuf.equals(buf)) return;
   const f = path.join(OUT, 'new', 'world', rel); fs.mkdirSync(path.dirname(f), {recursive: true}); fs.writeFileSync(f, buf);
   if (pubBuf) { const b = path.join(OUT, 'base', 'world', rel); fs.mkdirSync(path.dirname(b), {recursive: true}); fs.writeFileSync(b, pubBuf); }
@@ -205,15 +216,16 @@ async function addNew(rel, data) {
 }
 const entry = rw(lf(git('show', `${END}:experiences/synk-world-app/world-front-entry.mjs`).toString()), 'world-front-entry.mjs');
 if (!/export const FRONT_AUTO=(true|false);/.test(entry)) throw Error('스위치 줄을 못 찾음');   // 공개 뒤 master가 켜져 있어도 같은 재료
-await addNew('world-front-entry.mjs', entry.replace(/export const FRONT_AUTO=(true|false);/, 'export const FRONT_AUTO=true;'));
+const frontOn = t => t.replace(/export const FRONT_AUTO=(true|false);/, 'export const FRONT_AUTO=true;');
+await addNew('world-front-entry.mjs', frontOn(entry), 'experiences/synk-world-app/world-front-entry.mjs', frontOn);
 // 동아리장 알림(11-24): 다리와 내 길 알림은 새 파일이라 끝 판 그대로(빌드의 경로 고쳐 쓰기)
-for (const [src, rel] of [['experiences/synk-world-app/world-front-club.mjs', 'world-front-club.mjs'], ['experiences/seoul-arrival/club-call.mjs', 'seoul-arrival/club-call.mjs']])
-  await addNew(rel, rw(lf(git('show', `${END}:${src}`).toString()), rel));
+for (const [src, rel] of [['experiences/synk-world-app/world-front-club.mjs', 'world-front-club.mjs'], ['experiences/synk-world-app/world-front-why.mjs', 'world-front-why.mjs'], ['experiences/seoul-arrival/club-call.mjs', 'seoul-arrival/club-call.mjs']])
+  await addNew(rel, rw(lf(git('show', `${END}:${src}`).toString()), rel), src);
 for (const f of git('ls-tree', '-r', '--name-only', END, 'experiences/world-front/').toString().trim().split('\n')) {
   const rel = f.slice('experiences/'.length);
   if (/^world-front\/(?:qa\/|.*\.test\.mjs$|.*\.md$|assets\/.*\.(?:txt|json)$)/.test(rel)) continue;
   const bytes = git('show', `${END}:${f}`);
-  await addNew(rel, /\.(mjs|js|css|html)$/.test(rel) ? rw(lf(bytes.toString('utf8')), rel) : bytes);
+  await addNew(rel, /\.(mjs|js|css|html)$/.test(rel) ? rw(lf(bytes.toString('utf8')), rel) : bytes, f);
 }
 fs.writeFileSync(path.join(OUT, '항목.txt'), items.join('\n') + '\n');
 let cand = path.join(OUT, '후보'); for (let n = 2; fs.existsSync(cand); n++) cand = path.join(OUT, '후보' + n);

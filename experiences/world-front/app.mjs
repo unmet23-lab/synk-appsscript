@@ -846,7 +846,7 @@ function clubNote() {
   clubNoteNow = mountNote({state: {lang: LANG, note}, sfx, calm, docked: !note.drop || QUIET, onDrop: () => { setClub({...CLUB, note: {...note, drop: false}}); call('clubSeen', {dropped: true}); },
     onOpen: () => {
       clubNoteNow = null; call('clubSeen', {opened: true});
-      if (note.kind === 'club') { openClub({...state, view: 'club'}); return; }
+      if (note.from === 'club') { openClub({...state, view: 'club'}); return; }   // 동아리장 · 튜터를 고르고 나갔던 학생의 이어 부르기
       setClub({...CLUB, note: null});
       // 오늘 할 일 사진은 이 폴더에 실은 것만(없는 열쇠는 r-union — 맞춤 화면 카드와 같다)
       const day = note.slots?.photo ? {...note, slots: {...note.slots, photo: photoKey(note.slots.photo)}} : note;

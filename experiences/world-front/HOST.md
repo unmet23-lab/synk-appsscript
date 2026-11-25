@@ -98,8 +98,10 @@
 
 ## 6. 동아리장 알림 · 튜터(11-24, `club.mjs` · 다리 `world-front-club.mjs`)
 
-- state에 `club: { tutor, note }`가 붙는다. `tutor`는 고른 튜터(`seoha` · `taeo` · `yuna`, 없으면 null)이고 맞춤 화면의 말하는 사람이 된다. `note`는 맞춤 화면(`more` · `front`) 위에 띄울 알림 하나(`{ from, who, kind, code, slots, read, drop }`)다. `club`이 없는 state는 앞 값을 둔다.
+- state에 `club: { tutor, answer, note }`가 붙는다. `answer`는 동아리장에게 한 답(`some` · `none` · `good`, 없으면 null)이다. `tutor`는 고른 튜터(`seoha` · `taeo` · `yuna`, 없으면 null)이고 맞춤 화면의 말하는 사람이 된다. `note`는 맞춤 화면(`more` · `front`) 위에 띄울 알림 하나(`{ from, who, kind, code, slots, read, drop }`)다. `club`이 없는 state는 앞 값을 둔다.
 - view `club`이면 틀은 맞춤 화면 대신 처음 만남을 연다. 끝나면 host가 돌려준 다음 state로 넘어간다.
 - 틀이 부르는 것: `clubTutor(id, {answer, change})`(change면 동아리장 답은 두고 `{state}`로 다시 그릴 state를 준다) · `clubSkip()`(소리를 못 틀어 건너뛴 문항) · `clubDiag()` → `{status, total, item}`(status `ready` · `board` · `none`) · `clubReplay()` · `clubAudio('completed' | 'failed')` · `clubAnswer(choiceId)` → `{correct, correctId, explanation}` · `clubNext()` · `clubFinish(rows)` → `{map, minutes}` · `clubMap()` → `map` 또는 null(사흘째 내 위치 카드, 대화를 연 뒤 부른다) · `clubDone()` → 다음 state · `clubBoard()` → 다음 state · `clubSeen({dropped, opened})` · `clubAct(kind, slots)` · `clubStop()`.
 - `map`은 줄인 지도다: `{ exam, total, listening, counts, cells: [{ id, domain, cell }], names }`. `cell`은 「내 위치」 판과 같은 셋(`independent` · `practicing` · `notyet`)이고 이번 대화의 답을 덧씌우지 않는다. 사흘째 `tutor.level` 알림의 `slots`는 비어 있다(설계 검토 11-25).
-- 기기 표의 `club`과 `inbox`는 다리만 쓴다. 서울행 내 길은 부모 창의 `SYNKFrontClub`(`needed()` · `ask()`)으로 알림을 띄울지 묻는다.
+- 기기 표의 `club`과 `inbox`는 다리만 쓴다. 알림을 내렸나 · 읽었나는 `inbox`의 동아리 · 튜터 줄 하나(`dropped` · `read`)에만 적는다. 서울행 내 길은 부모 창의 `SYNKFrontClub`(`needed()` · `note()` · `dropped()` · `drop()` · `ask()`)으로 알림을 띄울지 · 어떤 글인지 · 오늘 이미 내려왔는지 묻는다(주인마다).
+- `clubLater()`: 처음 만남의 「나중에 할게요」. 보이던 문항을 건너뛴 것으로 남기고 맞춤 화면 state를 준다. 고른 튜터와 한 답은 남고, 다음에는 그 튜터의 알림(`from:'club'`, `who` = 튜터)이 그 대화부터 잇는다. 결과를 본 뒤의 「맞춤 화면으로」는 `clubDone({ open: false })`다(연습을 열지 않고, 놓친 항목은 다음 날 복습으로 남는다).
+- 게임 원고에서 온 문항의 해설(한국어 한 줄)은 영어 · 몽골어 화면에서 번역 표(`world-front-why.mjs`)로 보인다. 표는 첫 문항을 고를 때만 받는다.

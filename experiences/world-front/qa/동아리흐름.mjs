@@ -1,8 +1,9 @@
 // 동아리장 알림 → 튜터 고르기 → 실력 파악 → 맞춤(club.mjs · world-front-club.mjs, 11-24) 실제 앱 흐름 시험.
 // 로컬 WORLD 리허설 서버(서울행 qa/서버.mjs)에서 손님이 1화 전 내 길에 있는 기록을 심고, 내 길의 동아리장 알림을 눌러
 // 앞면의 처음 만남을 끝까지 간다. 문항 넷은 실제 엔진(「내 위치」 짧은 진단과 같은 고르기 · 세션 · 끝 기록)이 낸다. 운영 계정 · talk는 건드리지 않는다.
-//   node experiences/world-front/qa/동아리흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--튜터 seoha|taeo|yuna] [--못읽음] [--찍기] [--라이브] [--날]
+//   node experiences/world-front/qa/동아리흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--튜터 seoha|taeo|yuna] [--못읽음] [--찍기] [--라이브] [--날] [--나중에]
 // --라이브: 로컬 서버 대신 synk.im/world 공개본을 손님으로 연다(공개본은 안 바꾼다. GET이 아닌 요청이 나가면 실패).
+// --나중에: 튜터를 고른 뒤 첫 문항에서 「나중에 할게요」로 나갔다가, 맞춤 화면의 작은 얼굴로 다시 들어와 그 튜터부터 잇는다.
 // --날: 처음 만난 날을 앞으로 옮겨 이튿날 복습 알림과 사흘째 내 위치 알림까지 본다.
 // --못읽음: 한글 「커피」에서 「아직 못 읽어요」 — 문항 없이 한글 길로 끝나는지 본다.
 // 기록: .tmp/world-front-qa/club-<폭>-<언어>/ (찍기와 결과.json)
@@ -18,8 +19,8 @@ const MAIN = path.join(os.homedir(), 'Documents', 'SYNK-appsscript');
 const require = createRequire(path.join(fs.existsSync(path.join(ROOT, 'node_modules')) ? ROOT : MAIN, 'x.js'));
 const {chromium} = require('playwright');
 const args = process.argv.slice(2), opt = (n, d = null) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; }, has = n => args.includes(n);
-const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), TUTOR = opt('--튜터', 'taeo'), NOREAD = has('--못읽음'), LIVE = has('--라이브'), DAYS = has('--날');
-const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${LIVE ? '라이브-' : ''}club-${W}x${H}-${LANG}${NOREAD ? '-noread' : ''}`); fs.mkdirSync(OUT, {recursive: true});
+const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), TUTOR = opt('--튜터', 'taeo'), NOREAD = has('--못읽음'), LIVE = has('--라이브'), DAYS = has('--날'), LATER = has('--나중에');
+const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${LIVE ? '라이브-' : ''}club-${W}x${H}-${LANG}${NOREAD ? '-noread' : ''}${LATER ? '-later' : ''}`); fs.mkdirSync(OUT, {recursive: true});
 const PORT = Number(opt('--포트', String(5100 + Math.floor(Math.random() * 300))));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = [], fail = [];
@@ -100,6 +101,31 @@ else await waitPress('커피 그림', '.cl-ch[data-v="coffee"]');
 await sleep(800);
 await waitPress('판정 뒤 단추', '.cl-nx');
 
+// ── 나중에: 첫 문항에서 나갔다가 작은 얼굴로 다시 ──
+if (LATER) {
+  await until('첫 문항', () => inClub(() => [...document.querySelector('.cl-host').shadowRoot.querySelectorAll('.cl-card')].at(-1)?.querySelectorAll('.cl-ch:not([data-v="coffee"])').length > 1 && !!document.querySelector('.cl-host').shadowRoot.querySelector('.cl-out:not([hidden])')), 40000);
+  await sleep(600); await shot('L1-첫문항');
+  const label = await inClub(() => document.querySelector('.cl-host').shadowRoot.querySelector('.cl-out').textContent);
+  check(label === {ko: '나중에 할게요', en: 'Maybe later', mn: 'Дараа хийнэ'}[LANG], '머리에 「나중에 할게요」', label);
+  await press('.cl-out');
+  await until('나간 뒤 맞춤 화면', () => F().evaluate(() => !document.querySelector('.cl-host') && !!document.querySelector('.view.home')), 20000);
+  await sleep(1500); await shot('L2-나간뒤');
+  const m = await page.evaluate(() => JSON.parse(localStorage.getItem('synk.world.front.v1:guest') || '{}'));
+  check(m.club?.tutor === TUTOR && !m.club?.done, '나가도 고른 튜터는 남고 마친 것은 아니다', JSON.stringify({tutor: m.club?.tutor, done: m.club?.done}));
+  const row = (m.inbox || []).filter(r => r.from === 'club' || r.from === 'tutor');
+  check(row.length === 1 && row[0].who === TUTOR && row[0].dropped === true && row[0].read === false, '알림은 한 줄 · 그 튜터 · 오늘은 다시 내려오지 않음', JSON.stringify(row.map(r => ({who: r.who, code: r.code, dropped: r.dropped, read: r.read}))));
+  const face = await F().evaluate(() => { const i = document.querySelector('.cl-host-note')?.shadowRoot?.querySelector('.cl-isl'); return i ? {docked: i.classList.contains('docked'), badge: !!i.querySelector('.badge'), label: i.getAttribute('aria-label')} : null; });
+  check(!!face?.docked && face.badge, '작은 얼굴과 빨간 1로 남는다', JSON.stringify(face));
+  await F().evaluate(() => document.querySelector('.cl-host-note').shadowRoot.querySelector('.cl-isl').click());
+  await until('다시 들어온 튜터 대화', () => inClub(() => !!document.querySelector('.cl-host')?.shadowRoot?.querySelector('.cl-rp.solid')), 30000);
+  await sleep(500); await shot('L3-다시');
+  check(await inClub(() => !document.querySelector('.cl-host').shadowRoot.querySelector('.cl-pick') && !document.querySelector('.cl-host').shadowRoot.querySelector('.cl-who')), '동아리장 · 튜터 고르기를 되풀이하지 않는다');
+  await waitPress('「시작」(다시)', '.cl-rp.solid', '', 30000);
+  await until('「커피」 카드(다시)', () => inClub(() => !!document.querySelector('.cl-host').shadowRoot.querySelector('.cl-ch[data-v="coffee"]')), 20000);
+  await sleep(400); await waitPress('커피 그림(다시)', '.cl-ch[data-v="coffee"]');
+  await sleep(800); await waitPress('판정 뒤 단추(다시)', '.cl-nx');
+}
+
 // ── 문항(실제 엔진) ──
 let items = 0, listened = 0;
 if (!NOREAD) {
@@ -119,6 +145,7 @@ if (!NOREAD) {
     await until('판정 줄', () => inClub(() => !![...document.querySelector('.cl-host').shadowRoot.querySelectorAll('.cl-card')].at(-1).querySelector('.cl-fb .cl-nx')), 15000);
     const fb = await inClub(() => [...document.querySelector('.cl-host').shadowRoot.querySelectorAll('.cl-card')].at(-1).querySelector('.cl-fb')?.innerText || '');
     check(fb.replace(/\s+/g, '').length > 8, `문항 ${items}: 판정 줄에 까닭이 있음`, fb.slice(0, 60).replace(/\s+/g, ' '));
+    if (LANG !== 'ko') check(!/[가-힣]{2}/.test(fb.replace(/「[^」]*」/g, '')), `문항 ${items}: 까닭이 화면 언어(따옴표 밖 한국어 없음)`, fb.replace(/\s+/g, ' ').slice(0, 90));
     await press('.cl-nx');
   }
   check(items >= 1, '실제 엔진이 문항을 냄', `${items}문항 · 듣기 ${listened}`);
@@ -150,9 +177,9 @@ log.push(`참고 한글 답 ${hangul}`);
 await sleep(1500);
 if (await page.evaluate(() => document.querySelector('#world-panel')?.open)) { await shot('8-오늘할일판'); log.push('참고 오늘 할 일 판이 열림'); }
 
-// ── 이튿날 · 사흘째 알림(기기 표의 처음 만난 날만 앞으로 옮긴다) ──
+// ── 이튿날 · 사흘째 알림(기기 표의 처음 만난 날과 알림 줄의 날을 앞으로 옮긴다) ──
 if (DAYS) for (const [days, level] of [[1, false], [3, true]]) {
-  await page.evaluate(d => { const k = 'synk.world.front.v1:guest', m = JSON.parse(localStorage.getItem(k)); m.club.at = Date.now() - d * 864e5; delete m.club.last; localStorage.setItem(k, JSON.stringify(m)); }, days);
+  await page.evaluate(d => { const k = 'synk.world.front.v1:guest', m = JSON.parse(localStorage.getItem(k)); m.club.at = Date.now() - d * 864e5; m.inbox = (m.inbox || []).map(r => ({...r, at: (r.at || Date.now()) - 864e5})); localStorage.setItem(k, JSON.stringify(m)); }, days);
   await page.goto(`${base}/mobile.html${LIVE ? '' : '?frontAuto=1'}`, {waitUntil: 'domcontentloaded'});
   // 앞면에 다녀온 학생은 앞면이 바로 열린다. 내 길에 서면 「오늘은 여기까지」로 간다
   const frontOpen = async () => (await page.evaluate(() => !!document.querySelector('#front-layer')?.open)) && !!F();
@@ -170,7 +197,11 @@ if (DAYS) for (const [days, level] of [[1, false], [3, true]]) {
   check(true, `${days}일째 튜터 알림이 뜸`, await F().evaluate(() => (document.querySelector('.cl-host-note').shadowRoot.querySelector('.cl-isl').innerText || '').replace(/\s+/g, ' ').slice(0, 80)));
   await F().evaluate(() => document.querySelector('.cl-host-note').shadowRoot.querySelector('.cl-isl').click());
   if (!await until(`${days}일째 대화`, () => inClub(() => !!document.querySelector('.cl-host')?.shadowRoot?.querySelector('.cl-cta')), 20000)) continue;
+  await sleep(450);
+  const y0 = await inClub(() => document.querySelector('.cl-host').shadowRoot.querySelector('.cl-cta').getBoundingClientRect().top);
   await sleep(4500); await shot(`${days}일-2대화`);
+  const y1 = await inClub(() => document.querySelector('.cl-host').shadowRoot.querySelector('.cl-cta').getBoundingClientRect().top);
+  check(Math.abs(y1 - y0) < 2, `${days}일째 단추가 뜬 뒤 밀리지 않음`, `${Math.round(y0)} → ${Math.round(y1)}`);
   const cells = await inClub(() => document.querySelector('.cl-host').shadowRoot.querySelectorAll('.cells i').length);
   check(level ? cells === 16 : cells === 0, level ? '사흘째 대화에 내 위치 칸 16' : '이튿날은 복습 대화(칸 없음)', String(cells));
 }
