@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1125,
+  "lufs": -16
+ },
+ "made": "2026-11-24T23:14:40.753Z",
+ "lines": [
+  {
+   "id": "o1",
+   "text": "서비스~!",
+   "dur": 0.702,
+   "syllablesPerSec": 4.27,
+   "src": "o1.wav",
+   "key": "d4e7a78687d5767eca75e104c611b35b",
+   "words": 1
+  },
+  {
+   "id": "m1",
+   "text": "얼마예요…?",
+   "dur": 0.994,
+   "syllablesPerSec": 4.02,
+   "src": "m1.wav",
+   "key": "0dba5c90755ee0bd513d88308740b4da",
+   "words": 1
+  },
+  {
+   "id": "o2",
+   "text": "아니 아니~ 서비스!",
+   "dur": 1.948,
+   "syllablesPerSec": 3.59,
+   "src": "o2.wav",
+   "key": "773e5576692f1db3878e188e16a5b104",
+   "words": 3
+  },
+  {
+   "id": "m2",
+   "text": "서비스예요~!",
+   "dur": 0.977,
+   "syllablesPerSec": 5.12,
+   "src": "m2.wav",
+   "key": "207fd6caac7eafd26d7da66776ab8360",
+   "words": 1
+  },
+  {
+   "id": "o3",
+   "text": "허허~",
+   "dur": 0.876,
+   "syllablesPerSec": 2.28,
+   "src": "o3.wav",
+   "key": "8b1998d787d8ae2c9a3e1219da71d20a",
+   "words": 1
+  }
+ ]
+}

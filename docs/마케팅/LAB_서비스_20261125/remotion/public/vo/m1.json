@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "얼마예요…?",
+ "dur": 0.994,
+ "words": [
+  {
+   "text": "얼마예요…?",
+   "start": 0.22,
+   "end": 0.994
+  }
+ ],
+ "source": {
+  "key": "0dba5c90755ee0bd513d88308740b4da",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2251,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "서비스~! 사장님이 주문하지 않은 만두를 내려놓자, 작은 손님이 돈을 내야 하는 줄 알고 땀을 흘리며 지갑을 밀어 내밀면서 조심스럽고 불안하게 묻는다.",
+   "next": "아니 아니~ 서비스!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 432
+ }
+}

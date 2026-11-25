@@ -1,0 +1,41 @@
+{
+ "_예산": 180,
+ "s1": {
+  "model": "Omni 1.2 Flash",
+  "n": 1,
+  "cost": "12",
+  "dur": "4초",
+  "proj": "omni",
+  "start": "s1n",
+  "key": "lays it flat, palm down, on the front of the table just left of the wallet",
+  "end": "s1ne"
+ },
+ "s2": {
+  "model": "Omni 1.2 Flash",
+  "n": 1,
+  "cost": "15",
+  "dur": "5초",
+  "proj": "omni",
+  "start": "s2n",
+  "key": "no plate in its way",
+  "end": "s2ne"
+ },
+ "s3": {
+  "model": "Omni 1.2 Flash",
+  "n": 1,
+  "cost": "15",
+  "dur": "5초",
+  "proj": "omni",
+  "start": "s3n",
+  "key": "bursts into a hearty warm laugh"
+ },
+ "s4": {
+  "model": "Omni 1.2 Flash",
+  "n": 1,
+  "cost": "18",
+  "dur": "6초",
+  "proj": "omni",
+  "start": "s4",
+  "key": "keeps facing the camera the whole time and never turns around"
+ }
+}

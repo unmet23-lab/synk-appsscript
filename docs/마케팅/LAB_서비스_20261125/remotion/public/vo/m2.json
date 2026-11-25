@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "서비스예요~!",
+ "dur": 0.977,
+ "words": [
+  {
+   "text": "서비스예요~!",
+   "start": 0.03,
+   "end": 0.977
+  }
+ ],
+ "source": {
+  "key": "207fd6caac7eafd26d7da66776ab8360",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2252,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "몇 분 뒤 옆 테이블 관광객이 공짜 만두를 받고 놀라 지갑을 꺼내자, 이제 뜻을 아는 작은 손님이 으쓱하며 밝고 자신 있게 알려 준다.",
+   "next": "허허~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 555
+ }
+}

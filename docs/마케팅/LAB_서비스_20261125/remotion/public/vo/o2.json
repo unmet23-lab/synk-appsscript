@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "o2",
+ "text": "아니 아니~ 서비스!",
+ "dur": 1.948,
+ "words": [
+  {
+   "text": "아니",
+   "start": 0.02,
+   "end": 0.242
+  },
+  {
+   "text": "아니~",
+   "start": 0.323,
+   "end": 0.565
+  },
+  {
+   "text": "서비스!",
+   "start": 0.949,
+   "end": 1.948
+  }
+ ],
+ "source": {
+  "key": "773e5576692f1db3878e188e16a5b104",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1126,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "얼마예요…? 손님이 지갑을 내밀자 중국집 사장님이 크게 웃으며 손을 저어 지갑을 돌려주고, 공짜라는 뜻으로 다정하게 말한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 234
+ }
+}
