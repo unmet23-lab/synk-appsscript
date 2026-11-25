@@ -60,9 +60,9 @@ test('HTTP anonymous casting photos and the films module return exact MIME, nosn
   }
 });
 
-// 10-22 화성 세 편 · 11-04 유리결(11-06 「霜の肌理」, 파일 이름은 그대로) · 매진 임박: 포스터(git 추적)와 본편(mp4, git 밖)만 낸다 — 발췌가 없다.
+// 2026-11-26 남긴 세 편: 포스터(git 추적)와 본편(mp4, git 밖)만 낸다 — 발췌가 없다. 내린 작품은 파일이 남아 있어도 내지 않는다(아래 시험).
 test('HTTP the finished films in the films folder serve their posters and full films with exact MIME, bytes and byte ranges, and nothing else',async t=>{
-  for(const name of ['yurigyeol-holiday','maejin-imbak','hwaseong-cf-light','hwaseong-short-first','hwaseong-cm-song'])for(const [file,mime]of [[name+'-poster-v1.webp','image/webp'],[name+'-v1.mp4','video/mp4']]){
+  for(const name of ['dodam-heavy','seoullo-bridge','opalin-seethrough'])for(const [file,mime]of [[name+'-poster-v1.webp','image/webp'],[name+'-v1.mp4','video/mp4']]){
     const path='assets/films/'+file;
     if(mime==='video/mp4'&&process.env.CI&&!existsSync(appFile(path))){t.diagnostic('CI 체크아웃에는 없다 — public/pulse-app/'+path+' (git 밖 출시 영상)');continue;}
     const response=await fetch(fixture.base+'/pulse-app/'+path),bytes=Buffer.from(await response.arrayBuffer());
@@ -77,7 +77,33 @@ test('HTTP the finished films in the films folder serve their posters and full f
     assert.equal(part.headers['content-range'],`bytes 0-7/${bytes.length}`,path);
     assert.deepEqual(part.bytes,bytes.subarray(0,8),path);
   }
-  for(const path of ['/pulse-app/assets/films/hwaseong-cf-light-v2.mp4','/pulse-app/assets/films/hwaseong-cf-light.mp4','/pulse-app/assets/films/hwaseong-cf-light-excerpt-v1.mp4','/pulse-app/assets/films/hwaseong-cf-light-poster-v1.png','/pulse-app/assets/films/','/pulse-app/assets/films/../casting/video/F02-ad-iced-coffee-20s-v1.mp4','/pulse-app/assets/films/%2e%2e%2fcasting%2fvideo%2fF02-ad-iced-coffee-20s-v1.mp4'])assert.equal((await rawGet(path)).status,404,path);
+  for(const path of ['/pulse-app/assets/films/dodam-heavy-v2.mp4','/pulse-app/assets/films/dodam-heavy.mp4','/pulse-app/assets/films/dodam-heavy-excerpt-v1.mp4','/pulse-app/assets/films/dodam-heavy-poster-v1.png','/pulse-app/assets/films/','/pulse-app/assets/films/../casting/video/F02-ad-iced-coffee-20s-v1.mp4','/pulse-app/assets/films/%2e%2e%2fcasting%2fvideo%2fF02-ad-iced-coffee-20s-v1.mp4'])assert.equal((await rawGet(path)).status,404,path);
+});
+
+// 2026-11-26 작품을 내렸다: 남긴 세 편 밖의 포스터 · 본편 · 의뢰서 예시 영상은 파일이 남아 있어도 내지 않고, 목록(films-view)과 공개 목록(server)이 같은 편을 가리킨다.
+const DOWN=[
+  ...['omitok-court','modu-course','somchae-room','cheombeong-dang','neujimak-sniper','himkkeot-sale','castingbook-intro','omitok-pour','yurigyeol-holiday','maejin-imbak','hwaseong-cf-light','hwaseong-short-first','hwaseong-cm-song'].flatMap(name=>['assets/films/'+name+'-poster-v1.webp','assets/films/'+name+'-v1.mp4']),
+  ...['poster-v1.webp','excerpt-20s-v1.mp4','full-v1.mp4'].map(name=>'assets/casting/video/M03-mv-happy-gangster-'+name),
+  ...['film-gift.mp4','film-maejin.mp4','film-maejin-laugh.mp4','w-maejin.webp','w-maejin-laugh.webp'].map(name=>'assets/request/'+name),
+];
+test('HTTP the works taken down on 2026-11-26 are not served although the files stay, and the list shows exactly what the server gives',async()=>{
+  for(const path of DOWN){
+    if(!path.endsWith('.mp4')||!process.env.CI)assert.ok(existsSync(appFile(path)),path+' stays in the repository');
+    const response=await rawGet('/pulse-app/'+path,path.endsWith('.mp4')?{Range:'bytes=0-1'}:{});
+    assert.equal(response.status,404,path);assert.equal(response.headers['accept-ranges'],undefined,path);
+  }
+  const {FINISHED_FILMS}=await import('./public/pulse-app/films-view.mjs'),{KINDS,WIN}=await import('./public/pulse-app/request-data.mjs');
+  for(const path of [...FINISHED_FILMS.flatMap(film=>[film.poster,film.full.src]),...KINDS.map(kind=>kind.shot),...WIN.flatMap(item=>[item.poster,item.film]),'./assets/request/film-dodam.mp4','./assets/request/w-dodam.webp'].filter(Boolean)){
+    if(path.endsWith('.mp4')&&process.env.CI)continue;
+    const response=await rawGet('/pulse-app/'+path.slice(2),path.endsWith('.mp4')?{Range:'bytes=0-1'}:{});
+    assert.equal(response.status,path.endsWith('.mp4')?206:200,path);
+    assert.ok(!DOWN.includes(path.slice(2)),path);
+  }
+  // 화면 모듈이 내린 작품의 그림 · 영상 주소를 부르지 않는다(예시 프로젝트 demo · demo-film은 따로 바꾼다).
+  for(const name of ['films-view.mjs','film-home.mjs','request-data.mjs','request-flow.mjs','film-views.mjs','room-view.mjs','hall.mjs']){
+    const source=(await readFile(appFile(name),'utf8'));
+    for(const path of DOWN)assert.ok(!source.includes(path.split('/').at(-1)),name+' → '+path);
+  }
 });
 
 test('HTTP withdrawn reference films, the plan library, its boards, full-body references and plan module are not served although the files stay',async()=>{

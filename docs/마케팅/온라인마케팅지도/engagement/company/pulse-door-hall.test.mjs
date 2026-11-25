@@ -46,7 +46,8 @@ test('복도: 캐스팅북 모델(실제 인물 없이) 사이에 세로 완성 
   assert.equal(models[0].id,'F02','하린부터');
   for(const item of models){assert.equal(item.still,`${MODEL_FILM_BASE}img/${item.id}/wall.webp`);assert.equal(item.walk,`${MODEL_FILM_BASE}video/${item.id}-loop.mp4`);}
   for(const item of films)assert.equal(FINISHED_FILMS.find(film=>film.id===item.id)?.orientation,'portrait',item.id);
-  assert.ok(films.length>=5);
+  // 2026-11-26: 남긴 세 편은 모두 가로라 지금 복도에는 모델만 선다. 세로 작품을 다시 올리면 저절로 사이에 선다.
+  assert.equal(films.length,FINISHED_FILMS.filter(film=>film.orientation==='portrait').length);
   const html=hallView(items),n=items.length;
   assert.equal((html.match(/class="sx-hall-strip /g)||[]).length,n*3);
   assert.equal((html.match(/ aria-hidden="true" aria-label=/g)||[]).length,n*2,'바깥 두 벌은 화면 읽기에서 뺀다');

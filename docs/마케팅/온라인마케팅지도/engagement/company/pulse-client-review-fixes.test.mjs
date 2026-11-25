@@ -54,7 +54,7 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
     '상담은 제품 사진 한 장과 올릴 곳만으로 시작해요.',
     '영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.',
     // 11-17 메인 네 편: 작품 쪽 머리는 자체 광고와 공모전 당선작(「다리가 기억하는 것」)을 함께 말한다.
-    '가상 브랜드로 만든 자체 광고와 공모전 당선작이에요.',
+    '공모전 당선작과 AI 아이돌 뮤직비디오, 가상 브랜드로 만든 자체 광고예요.',
   ])assert.ok(text.includes(line),line);
   // 이력 차례도 synk.im/pulse와 같다 — 서울로 당선이 맨 앞 줄.
   assert.match(html,/<ul class="sx-maker-credits"><li class="sx-small" data-in>2026 서울로미디어캔버스 단편 애니메이션 공모 당선/);

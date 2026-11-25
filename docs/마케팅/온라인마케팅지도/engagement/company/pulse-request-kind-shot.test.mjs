@@ -41,11 +41,19 @@ test('every business picture says its shape, and the shape is the file’s own',
     assert.equal(sceneSet(kind.shot),'',`${kind.id}: a work picture has no large cut`);
     assert.equal(shotShape(kind.shot),kind.shotShape);
   }
-  assert.ok(KINDS.some(kind=>kind.shotShape==='wide')&&KINDS.some(kind=>kind.shotShape==='tall'));
+  // 2026-11-26: 작품 그림은 도담중공업(가로) 하나이고 나머지 업종은 모델의 예시 장면이다.
+  assert.deepEqual(KINDS.map(kind=>[kind.id,kind.shotShape]),[['food','scene'],['beauty','scene'],['fashion','scene'],['living','scene'],['app','scene'],['place','scene'],['brand','wide']]);
+  assert.equal(new Set(KINDS.map(kind=>kind.shot)).size,KINDS.length,'업종마다 다른 그림');
   assert.equal(shotShape('blob:http://localhost/x'),'','a customer photo has no shape — it fills as before');
-  assert.equal(shotShape('./assets/request/model-scene-f02.webp'),'','a model scene that is no business picture has no shape');
-  // 업종을 고르기 전 「추천해 주세요」의 그림(still('w-gift-sphere'))도 화장품 업종과 같은 그림이라 꼴이 있다.
-  assert.equal(shotShape('./assets/request/w-gift-sphere.webp'),'tall');
+  assert.equal(shotShape('./assets/request/model-scene-m10.webp'),'','a model scene that is no business picture has no shape');
+  // 업종을 고르기 전 「추천해 주세요」의 그림은 「브랜드 · 기업 전체」와 같은 작품 그림이라 꼴이 있다.
+  assert.ok(read('request-flow.mjs').includes("const FIRST_SHOT=KINDS.find(kind=>kind.id==='brand');"));
+  assert.equal(shotShape(KINDS.find(kind=>kind.id==='brand').shot),'wide');
+});
+
+test('picking another row lifts the mark of the row picked before',()=>{
+  assert.ok(read('request-flow.mjs').includes("const mark=el.querySelector('.sx-row-mark');"));
+  assert.match(read('request-flow.mjs'),/mark\?\.getAnimations\?\.\(\)\.forEach\(animation=>animation\.cancel\(\)\);if\(on\)play\(mark,/,'표시의 움직임은 끝 모습을 붙들고 있어 먼저 거둔다');
 });
 
 test('the big portrait carries the shape on first paint and on every swap, and swaps only once the next picture is in',()=>{
@@ -82,16 +90,16 @@ test('the work pictures are fitted, never filled past their pixels: tall ones ri
 
 test('the first step’s screen shows the same picture whole, never past 1.47× its pixels at any pixel ratio',()=>{
   const flow=read('request-flow.mjs'),css=read('film.css');
-  assert.ok(flow.includes("if(id==='what'){const kind=kindOf(a),src=kind?.shot||still('w-gift-sphere'),shape=shotShape(src);monSwap(`<img class=\"sx-q-fill\" data-still src=\"${esc(src)}\"${shape?` data-shot=\"${shape}\"`:''} alt=\"\">"),'the first paint carries the shape');
+  assert.ok(flow.includes("if(id==='what'){const kind=kindOf(a),src=kind?.shot||FIRST_SHOT.shot,shape=shotShape(src);monSwap(`<img class=\"sx-q-fill\" data-still src=\"${esc(src)}\"${shape?` data-shot=\"${shape}\"`:''} alt=\"\">"),'the first paint carries the shape');
   assert.ok(flow.includes("kind(el){a.kind=el.dataset.id;setRows('kind',a.kind);crossfade($('[data-still]'),kindOf(a).shot);"),'changing the business swaps the picture (and its shape) through crossfade');
   // 말 · 글자 단계의 광고 틀도 같은 그림이다 — 틀 비율이 달라도 자르지 않고 틀 안에 맞춘다. 손님이 올린 사진 · 업종을 고르기 전 예시 그림은 꼴이 없다
   // (채우던 그대로, 실제 화소의 1.47배까지만 칸을 쓴다 — data-cap, 11-13).
   assert.ok(flow.includes("const own=ownPhoto(a),shot=kindOf(a)?.shot,shape=own?'':shotShape(shot);"));
   assert.ok(flow.includes("`<img class=\"sx-q-fill\" src=\"${esc(own||shot||still(id==='words'?'w-gift':'w-gift-snow'))}\"${shape?` data-shot=\"${shape}\"`:' data-cap'} alt=\"\">"));
   assert.ok(css.includes('.sx-q-screen:has(>.sx-q-view>.sx-q-fill[data-shot]){background:#000}'),'only a picture placed straight on the screen turns the screen black — an ad frame keeps its edge');
-  // 휴대폰 첫 단계 띠(19dvh, Fable 5.2 P2): 세로 작품 · 모델 장면은 오른쪽에 붙고, 이름 글줄은 그 왼쪽 빈자리에만(그림 폭 ≤ 띠 높이 × .75).
+  // 휴대폰 첫 단계 띠(19dvh, Fable 5.2 P2): 세로 작품 · 모델 장면은 오른쪽에 붙고, 이름 글줄은 그 왼쪽 빈자리에만(그림 폭 ≤ 띠 높이 × .81 — 모델 장면 960×1192가 가장 넓다).
   assert.ok(css.includes('  .sx-q[data-step=what] .sx-q-fill:is([data-shot=tall],[data-shot=scene]){margin-right:var(--sx-m);object-position:100% 50%}'));
-  assert.ok(css.includes('>.sx-q-cap{max-width:calc(100% - 2*var(--sx-m) - 19vh*.75 - 16px);max-width:calc(100% - 2*var(--sx-m) - 19dvh*.75 - 16px)}'),'the name line stays clear of the picture');
+  assert.ok(css.includes('>.sx-q-cap{max-width:calc(100% - 2*var(--sx-m) - 19vh*.81 - 16px);max-width:calc(100% - 2*var(--sx-m) - 19dvh*.81 - 16px)}'),'the name line stays clear of the picture');
   assert.ok(css.includes('  .sx-q[data-step=what] .sx-q-screen{height:19vh;height:19dvh}'),'the strip height the caption width counts on');
   assert.ok(css.includes('.sx-q-fill[data-shot]{--shot-k:1.47;object-fit:contain;margin:auto;max-width:calc(var(--shot-w) * var(--shot-k));max-height:calc(var(--shot-h) * var(--shot-k))}'),'fitted whole, centred, capped on both sides');
   // 꼴마다 적은 원본 폭 · 높이가 그 꼴 그림의 실제 화소 이하라야 상한(원본 × k)이 실제 화소의 k배 안에 든다.

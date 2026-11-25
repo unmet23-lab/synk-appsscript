@@ -31,7 +31,7 @@ const HERO_NOTE=k('상담은 제품 사진 한 장과 올릴 곳만으로 시작
 // 1/3은 11-07부터 「방향과 모델」 — 제작사가 방향 두 안과 모델을 함께 내밀고 손님이 고른다(docs/마케팅/PULSE_의뢰흐름_20261104/판1_설계.md).
 // 세 줄은 시험(pulse-direction-client)이 이 줄의 원문을 그대로 대조해 k로 감싸지 않았다 — 그리는 자리에서 t(text)로 옮긴다(사전 키는 있다).
 const CHECK_THREE=['방향과 모델 고르기','광고가 남길 한 문장과 글 콘티','컷마다 장면 이미지']; // i18n-skip
-const CHECK_WORD={one:k('서리꽃이 피는 순간을 담은 홀리데이 세트'),rows:[['0:00',k('깜깜한 유리 위에서 눈 결정 하나가 자라요. 얼음에 금이 가는 작은 소리로 시작해요.')],['0:03',k('카메라가 물러나면 결정은 유리구슬 겉에 붙어 있어요. 서리가 번지고 구슬 안에 앰플과 크림이 보여요.')],['0:06',k('구슬이 깨지는 순간 소리가 사라지고 조각과 두 제품이 허공에 멈춰요. 카메라만 그 사이를 지나가요.')],['0:11',k('시간이 다시 흐르고 두 제품이 내려앉아요. 떨어진 결정이 뚜껑에 앉아 피어나고 이름이 떠요.')]]};
+const CHECK_WORD={one:k('우리가 만든 기계는 어디서든 잘 돌아가요'),rows:[['0:00',k('푸른 도면이 비친 눈에서 시작해요. 용접 불꽃이 튀고 날개를 한 장씩 손으로 달아요.')],['0:25',k('다 만든 터빈이 트레일러에 실려요. 뒤에는 노란 아기 그림 표지가 붙어 있어요.')],['0:46',k('손바닥이 터빈에 닿는 순간 모든 소리가 끊겨요.')],['0:50',k('노을이 드는 문 앞에서 「이 아이를 보냅니다」 한마디만 남기고 이름이 떠요.')]]};
 // 세 번 확인의 모델 판: 얼굴을 늘어놓지 않고 한 사람씩 크게. 이름과 맡은 역할이 함께 간다.
 // 이름 · 역할은 카탈로그(고객 방 모델 카드와 같은 modelCard)에서 — 원문 낱말은 같고(유나 · 도시의 뮤즈 …) 번역도 한 곳이다.
 const CHECK_CAST=['F01','M02','F09','M01'];
@@ -63,13 +63,12 @@ const DEMO_LABEL={top:'예시 프로젝트',after:'예시 프로젝트 체험하
 
 // 쇼릴: 작품 여럿의 자막 없는 구간을 이은 소리 없는 반복 영상. 2026-11-09 3판은 synk.im과 같은 영상이고(docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열/굽기.cjs reel),
 // 시간표는 그 도구가 구운 영상의 24fps 컷 경계(reel.json)다. 도담중공업으로 열고 오미톡 · 매진 임박 · 모두의코스가 이어진 뒤 도담 · 매진 · 모두의코스가 한 번 더 나온다. 화면 글이 얼굴을 덮지 않는 컷만 쓴다. 화면 비율이 맞는 작품만 꽉 채우고 안 맞는 작품은 자르지 않고 검은 바탕의 스크린으로 영상 안에 구워 두었다(11-09).
-// 2026-11-17 4판(12.46초, 진열 작품.json 메인 네 편): 도담중공업 → 「다리가 기억하는 것」(우산 장면) → 첨벙댕 → 매진 임박 → 도담 → 「다리가 기억하는 것」(빛이 된 버스) → 매진 → 첨벙댕(물 찬 방 · 우주).
+// 2026-11-26 5판(14.08초, 남긴 세 편): 도담중공업(터빈 공장) → 「시스루」(소금 호수의 네 사람) → 「다리가 기억하는 것」(우산) → 도담(트레일러) → 「시스루」(구름 위 그네) → 「다리가 기억하는 것」(빛이 된 버스) → 도담(노을 공장) → 「시스루」(밤 들판의 문) → 「다리가 기억하는 것」(할머니와 손주).
 // 2000 × 550 애니메이션은 자르지 않고 띠로 구웠다(넓은 판 1480 × 408 · 세로 판 880 × 242). 포스터는 첫 장면이 같아 3판 그림 그대로다.
-const REEL_TOTAL=12.46;
-const REEL=[[0,'dodam-heavy'],[1.63,'seoullo-bridge'],[3.13,'cheombeong-dang'],[4.46,'maejin-imbak'],[6.08,'dodam-heavy'],[7.46,'seoullo-bridge'],[9.08,'maejin-imbak'],[10.5,'cheombeong-dang']].map(([at,work])=>({at,work}));
+const REEL_TOTAL=14.08;
+const REEL=[[0,'dodam-heavy'],[1.63,'opalin-seethrough'],[3.25,'seoullo-bridge'],[4.75,'dodam-heavy'],[6.38,'opalin-seethrough'],[8,'seoullo-bridge'],[9.63,'dodam-heavy'],[11.04,'opalin-seethrough'],[12.54,'seoullo-bridge']].map(([at,work])=>({at,work}));
 const filmOf=id=>FINISHED_FILMS.find(film=>film.id===id);
-// 11-09: 「완성 광고」 쪽 목록은 쇼릴에 나오는 네 편(featured)이다 — 이름에 손을 올리면 쇼릴이 그 작품 컷만 돈다. 쇼릴에 없는 공모전 출품작 한 줄은 뺐고
-// (손을 올려도 그 작품 컷이 없어 이름과 화면이 어긋난다), 화성 세 편은 「완성 광고」 공간에 그대로 있다.
+// 11-09: 「완성 광고」 쪽 목록은 쇼릴에 나오는 편(featured)이다 — 이름에 손을 올리면 쇼릴이 그 작품 컷만 돈다.
 const OWN=FINISHED_FILMS.filter(film=>film.featured),CONTEST=null;
 const isTall=()=>typeof matchMedia==='function'&&matchMedia('(max-aspect-ratio: 1/1)').matches;
 const reelSrc=()=>`${A}reel-${isTall()?'tall':'wide'}.mp4`;
@@ -219,7 +218,7 @@ const pages=({start,demoHref,paused=null,resume=false,entryError=null})=>[
     ${inviteForm(entryError)}
     <div class="sx-door-foot" data-in><span class="sx-small" data-door-ask data-start-note${paused?' hidden':''}>${esc(doorAsk(resume))}</span><button type="button" class="sx-go sx-door-start" data-entry="start"${paused?' hidden':''}><span data-start-label>${esc(start)}</span>${arrow}</button>${pausedSlot(paused,false,true)}</div><p class="sr" role="status" data-door-say></p></div>
     ${hallView()}`},
-  {layer:'reel',cls:'is-works',veil:true,html:`<header class="sx-works-head"><p class="sx-kicker" data-in>${esc(t('완성 광고'))}</p><h2 class="sx-body" data-in>${esc(t('SYNK가 끝까지 만든 작품이에요. 가상 브랜드로 만든 자체 광고와 공모전 당선작이에요. 새 작품은 완성되는 대로 더해요.'))}</h2></header>
+  {layer:'reel',cls:'is-works',veil:true,html:`<header class="sx-works-head"><p class="sx-kicker" data-in>${esc(t('완성 광고'))}</p><h2 class="sx-body" data-in>${esc(t('SYNK가 끝까지 만든 작품이에요. 공모전 당선작과 AI 아이돌 뮤직비디오, 가상 브랜드로 만든 자체 광고예요. 새 작품은 완성되는 대로 더해요.'))}</h2></header>
     <div class="sx-works-wrap"><ol class="sx-works">${OWN.map(workRow).join('')}</ol>${CONTEST?`<button type="button" class="sx-work is-contest" data-work="${esc(CONTEST.id)}" data-in><span class="sx-small">${esc(t('공모전 출품작'))}</span><span class="sx-work-name sx-serif">${esc(filmTitle(CONTEST))}</span><span class="sx-work-line sx-small">${esc(filmLine(CONTEST))}</span></button>`:''}</div>`},
   {layer:'none',cls:'is-check',html:`<div class="sx-check"><p class="sx-kicker" data-in>${esc(t('이렇게 만들어요'))}</p><h2 class="sx-display">${lines([k('영상 전에 세 번 확인해요')])}</h2><p class="sx-body sx-check-lead" data-in>${esc(t(CHECK_LEAD))}</p>
     <ol class="sx-check-list">${CHECK_THREE.map((text,i)=>`<li data-in><button type="button" data-check="${i}"><span class="sx-no">${i+1}/3</span><span class="sx-serif">${esc(t(text))}</span></button></li>`).join('')}</ol>
@@ -227,12 +226,12 @@ const pages=({start,demoHref,paused=null,resume=false,entryError=null})=>[
     <div class="sx-check-stage" aria-hidden="true">
       <div class="sx-pane sx-pane-cast is-on">${CHECK_CAST.map(modelCard).filter(Boolean).map(m=>`<figure><img data-src="${A}model-scene-${m.id.toLowerCase()}.webp" data-srcset="${sceneSet(`${A}model-scene-${m.id.toLowerCase()}.webp`)}" sizes="${HOME_SCENE_SIZES}" data-cap alt="" loading="lazy" decoding="async" width="960" height="1285"><figcaption class="sx-small"><b>${esc(t(m.name,null,'model'))}</b> ${esc(t(m.line))}</figcaption></figure>`).join('')}</div>
       <div class="sx-pane sx-pane-word"><p class="sx-serif sx-pane-one">${esc(t(CHECK_WORD.one))}</p><ol>${CHECK_WORD.rows.map(([at,text])=>`<li><span class="sx-no">${at}</span><span class="sx-small">${esc(t(text))}</span></li>`).join('')}</ol></div>
-      <div class="sx-pane sx-pane-cuts">${Array.from({length:12},(_,i)=>`<img data-src="${A}sheet-gift-${pad(i+1)}.webp" alt="" loading="lazy" decoding="async" width="360" height="640">`).join('')}</div>
+      <div class="sx-pane sx-pane-cuts">${Array.from({length:10},(_,i)=>`<img data-src="${A}sheet-dodam-${pad(i+1)}.webp" alt="" loading="lazy" decoding="async" width="720" height="360">`).join('')}</div>
     </div>`},
   {layer:'none',cls:'is-paper',html:`<ol class="sx-promises">${INTRO_PROMISES.map(([title,text,link],i)=>`<li data-in><span class="sx-no">${pad(i+1)}</span><h3 class="sx-serif">${esc(t(title))}</h3><p class="sx-body">${esc(t(text))}${link?` ${link()}`:''}</p></li>`).join('')}</ol>`},
   {layer:'shard',cls:'is-stages',html:`<h2 class="sx-display">${lines([k('맡기면 이렇게 진행돼요')])}</h2><ol class="sx-stages">${STAGES.map(([title,text],i)=>`<li data-in><span class="sx-no">${pad(i+1)}</span><h3 class="sx-serif">${esc(t(title))}</h3><p class="sx-body">${esc(t(text))}</p></li>`).join('')}</ol>
     <p class="sx-after" data-in><span class="sx-body">${esc(t('맡기신 뒤에는 한 방에서 시안을 보고 의견을 남기고, 최종 파일까지 받아요.'))}</span>${demoOn()?` <a class="sx-link" href="${esc(demoHref)}" data-entry-demo>${DEMO_LABEL.after}</a>`:''}</p>`},
-  {layer:'reel',cls:'is-maker',focus:'maejin-imbak',html:`<div class="sx-maker"><p class="sx-kicker" data-in>${esc(t('만드는 사람'))}</p><h2 class="sx-display">${lines([k('카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요')])}</h2><p class="sx-body" data-in>${esc(t('AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.'))}</p><ul class="sx-maker-credits">${MAKER_CREDITS.map(line=>`<li class="sx-small" data-in>${esc(t(line))}</li>`).join('')}</ul></div>`},
+  {layer:'reel',cls:'is-maker',focus:'dodam-heavy',html:`<div class="sx-maker"><p class="sx-kicker" data-in>${esc(t('만드는 사람'))}</p><h2 class="sx-display">${lines([k('카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요')])}</h2><p class="sx-body" data-in>${esc(t('AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.'))}</p><ul class="sx-maker-credits">${MAKER_CREDITS.map(line=>`<li class="sx-small" data-in>${esc(t(line))}</li>`).join('')}</ul></div>`},
   {layer:'end',cls:'is-end',html:`<div class="sx-end"><p class="sx-display">${lines(HERO_TITLE)}</p><button type="button" class="sx-go is-solid is-large" data-entry="start" data-in${paused?' hidden':''}><span data-start-label>${esc(start)}</span>${arrow}</button>${pausedSlot(paused)}<p class="sx-small" data-start-note data-in${paused?' hidden':''}>${esc(t(HERO_NOTE))}</p>
     <footer class="sx-foot" data-in><p class="sx-small">${esc(t(FOOT_NOTE))}</p><a class="sx-small sx-link" href="?mode=staff">${esc(t('제작자 공간'))}</a></footer></div>`},
 ];

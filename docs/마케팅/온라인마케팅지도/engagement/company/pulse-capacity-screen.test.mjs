@@ -46,7 +46,7 @@ test('쉬는 중이면 「광고 의뢰하기」 두 자리에 안내가 서고 
   for(const slot of found)assert.doesNotMatch(slot.inner,/data-entry="works"/);
   assert.doesNotMatch(found[0].inner,/data-form="waitlist"/);
   assert.match(html,/<p class="sx-small" data-start-note data-in hidden>/,'시작을 권하는 한 줄은 쉬는 동안 숨는다');
-  assert.equal(html.split('data-work="').length-1,4,'완성 광고 쪽은 그대로다');
+  assert.equal(html.split('data-work="').length-1,3,'완성 광고 쪽은 그대로다');
   // 다시 여는 날이 없으면 그 자리에서 다시 시작할 수 있다는 말을, 담당자 안내가 없으면 그 줄을 두지 않는다.
   const bare=slots(entryView({paused:{state:'paused',until:'',note:'',noteEn:''}}))[1].inner;
   assert.match(bare,/다시 열리면 이 화면에서 바로 시작하실 수 있어요\./);assert.doesNotMatch(bare,/sx-paused-note/);

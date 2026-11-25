@@ -111,8 +111,10 @@ test('first-screen pictures behind later pages are attached only when the visito
   const html=entryView({});
   for(const name of ['shard','end'])assert.match(html,new RegExp(`<div class="sx-layer sx-layer-${name}" data-layer="${name}"><img data-src="\\./assets/request/${name}\\.webp" alt="" decoding="async">`),name);
   assert.equal((html.match(/<img data-src="\.\/assets\/request\/model-scene-/g)||[]).length,4);
-  assert.equal((html.match(/<img data-src="\.\/assets\/request\/sheet-gift-\d\d\.webp" alt="" loading="lazy"/g)||[]).length,12);
-  assert.doesNotMatch(html,/<img src="\.\/assets\/request\/(shard|end|model-scene-|sheet-gift-)/,'뒤쪽 그림은 처음 그릴 때 받지 않는다');
+  assert.equal((html.match(/<img data-src="\.\/assets\/request\/sheet-dodam-\d\d\.webp" alt="" loading="lazy"/g)||[]).length,10);
+  for(let i=1;i<=10;i++)assert.ok(existsSync(new URL(`assets/request/sheet-dodam-${String(i).padStart(2,'0')}.webp`,appDir)),`sheet-dodam-${i}`);
+  assert.ok(readFileSync(new URL('./server.mjs',import.meta.url),'utf8').includes("...Array.from({length:10},(_,index)=>'sheet-dodam-'+String(index+1).padStart(2,'0'))"),'서버가 열 장을 낸다');
+  assert.doesNotMatch(html,/<img src="\.\/assets\/request\/(shard|end|model-scene-|sheet-dodam-)/,'뒤쪽 그림은 처음 그릴 때 받지 않는다');
   assert.match(html,/<img src="\.\/assets\/request\/logo-paper\.webp"/,'로고는 그대로');
   assert.match(read('film.css'),/^\.sx-home img\[data-src\]\{visibility:hidden\}\r?$/m,'아직 붙이지 않은 빈 그림은 자리 그대로 숨긴다 — 판 6 점검이 「깨짐 18」로 셌다');
   const home=read('film-home.mjs');
@@ -159,13 +161,13 @@ test('the reel file waits for the page load, a held reel fetches not even its po
     heldApi.play();assert.match(held.poster,/-poster\.webp$/);assert.match(held.getAttribute('src'),/\.mp4$/);heldApi.stop();
     // 데이터 절약: 저절로는 받지 않고, 작품 이름을 고르면(ask) 그때 받는다. 쪽이 넘어가며 부르는 focus는 고름이 아니다.
     w.restore();w=fakeWindow({readyState:'complete',connection:{saveData:true,effectiveType:'4g'}});
-    const names=[],lean=fakeVideo(),leanApi=mountReel(lean,{onCut:film=>names.push(film?.id)});leanApi.play();leanApi.focus('maejin-imbak');
+    const names=[],lean=fakeVideo(),leanApi=mountReel(lean,{onCut:film=>names.push(film?.id)});leanApi.play();leanApi.focus('seoullo-bridge');
     assert.equal(lean.getAttribute('src'),null,'데이터 절약이면 포스터로 둔다');assert.match(lean.poster,/-poster\.webp$/);
     // Fable 최종: 6쪽 「만드는 사람」(그 작품 컷만 도는 쪽)을 다녀와 1쪽으로 돌아와도, 파일이 안 붙은 동안 이름 줄 · 「지금 작품」은 포스터의 작품이다.
     leanApi.focus(null);assert.equal(names.at(-1),'dodam-heavy','이름 줄은 포스터(쇼릴 첫 장면)의 작품');assert.equal(leanApi.current().id,'dodam-heavy','누르면 열리는 작품도 보이는 것과 같다');
-    assert.ok(!names.includes('maejin-imbak'),'안 붙은 동안에는 컷 번호만 옮겨 간 작품 이름을 알리지 않는다');
-    leanApi.focus('cheombeong-dang',{ask:true});assert.match(lean.getAttribute('src'),/\.mp4$/,'손님이 작품을 고르면 받는다');
-    assert.equal(names.at(-1),'cheombeong-dang','붙는 순간부터 고른 작품 이름');assert.equal(leanApi.current().id,'cheombeong-dang');leanApi.stop();
+    assert.ok(!names.includes('seoullo-bridge'),'안 붙은 동안에는 컷 번호만 옮겨 간 작품 이름을 알리지 않는다');
+    leanApi.focus('seoullo-bridge',{ask:true});assert.match(lean.getAttribute('src'),/\.mp4$/,'손님이 작품을 고르면 받는다');
+    assert.equal(names.at(-1),'seoullo-bridge','붙는 순간부터 고른 작품 이름');assert.equal(leanApi.current().id,'seoullo-bridge');leanApi.stop();
     w.restore();w=fakeWindow({readyState:'complete',connection:{saveData:false,effectiveType:'2g'}});
     const slow=fakeVideo(),slowApi=mountReel(slow,{});slowApi.play();assert.equal(slow.getAttribute('src'),null,'2G도 포스터로');slowApi.stop();
     w.restore();w=fakeWindow({readyState:'complete',connection:{saveData:false,effectiveType:'3g'}});

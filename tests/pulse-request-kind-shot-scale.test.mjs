@@ -70,8 +70,9 @@ test('film.css carries every band this test follows',()=>{
 
 test('the business picture in the big portrait never stretches past the limit, on the 21 screens',()=>{
   // 큰 칸에서 꼴을 다는 것은 큰 판이 없는 작품 그림(tall · wide)뿐이다 — 모델 장면 사진(scene)은 큰 판 srcset으로 채운다(pulse-model-scene-scale.test.mjs).
+  // 11-26: 업종 여섯은 모델 장면 사진이 되고 도담중공업 한 장만 작품 그림으로 남았다. 세로 띠는 4초 영상이 그대로 쓰므로 아래 시험이 셈으로 본다.
   const shots=KINDS.filter(kind=>kind.shotShape==='tall'||kind.shotShape==='wide');
-  assert.equal(shots.length,6);
+  assert.deepEqual(shots.map(kind=>[kind.id,kind.shotShape]),[['brand','wide']]);
   const table=[];
   for(const kind of shots){
     const size=webpSize(readFileSync(new URL(kind.shot.replace('./',''),appDir)));

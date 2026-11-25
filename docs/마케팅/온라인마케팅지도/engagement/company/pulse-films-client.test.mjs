@@ -12,60 +12,31 @@ const appDir=new URL('./public/pulse-app/',import.meta.url);
 // 출시 영상(*.mp4)은 .gitignore라 공용 작업본에만 있다 — CI 체크아웃에서는 그 파일만 빼고 재고, 뺀 것을 진단으로 남긴다.
 const present=(t,src)=>{if(!process.env.CI||!/\.mp4$/.test(src)||existsSync(new URL(src,appDir)))return true;t.diagnostic(`CI 체크아웃에는 없다 — public/pulse-app/${src.slice(2)} (git 밖 출시 영상)`);return false;};
 
-// 10-22 화성 세 편(부모 세션 전달, 유호님이 꼽은 화성 홍보영상): 「2026 별별화성 Awards」 제출본의 웹판 — 끝 출처 카드 대신 로고 장면, 소리는 그대로.
-const HWASEONG=[
-  ['hwaseong-light','ad','1억 년의 빛','hwaseong-cf-light','55초',undefined,'2529893f1b7b95c519eb290782454d4c04c93dd83f97a8363ef4c4e827568e03','5ce2d88259c184cb668d5454bbb6f618432b95dec7ad0a7e10e0d03fd057c443'],
-  ['hwaseong-first','short','화성에서 처음','hwaseong-short-first','40초','portrait','56a3763ef400ae50ee8b5e5189441146d2b38bfacdb6b8c1f5b06af96aa3fe3c','9da7a150cd747f74973b06177c42d94f426ec01c7bf1f1ebc1865b2a173b4f74'],
-  ['hwaseong-koriyo','song','코리요와 화성 한 바퀴','hwaseong-cm-song','51초',undefined,'0e5bb5d1f300e386af90f0666d7f96fefbfdd98c46657e3a5735ce5eecfa20a4','13761813e14bea4b6211953db1912ea832f84a8afd802eb9f792852ba65da69c'],
-];
-const MARK='로고·슬로건 화성특례시 「화성의 상징」(공공누리 제4유형)';
-
-// 11-09 작품 최신화(docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열): 확정 · 맹검 통과 판만 잘 나온 차례로 맨 앞에 둔다 — 앞 넷(featured)은 첫 화면 쇼릴과 목록에 보인다.
-// 霜の肌理(11-06 옛 이름 유리결 — id · 파일 이름은 옛 로마자 그대로)는 일곱째, 매진 임박은 11-05에 다시 구운 1분 15초 판으로 바이트를 바꿨다. 공모 작품이 아니라 가상 브랜드로 만든 자체 작품이다(캐스팅북 소개 영상만 우리 서비스 영상).
-// 11-17 메인 네 편(유호님 「시안대로 반영」): 도담중공업 · 「다리가 기억하는 것」(서울로미디어캔버스 단편 애니메이션 당선작, 2000 × 550 넓은 판) · 첨벙댕 · 매진 임박이 앞 넷(featured)이고, 오미톡 15초 · 모두의코스는 「더 많은 작품」으로 내려간다.
+// 2026-11-26 남긴 세 편(「다리가 기억하는 것」 · 오팔린 「시스루」 · 도담중공업)만 둔다. 내린 작품의 판정 · 파일은 docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열(작품.json down)에 있다.
 // [id, kind, title, 파일 이름, 길이, 세로 · 넓은 판, featured, 출연, 구분, 포스터 sha256, 본편 sha256, 출품]
 const OWN=[
-  ['dodam-heavy','film','이 아이를 보냅니다','dodam-heavy','1분 1초',undefined,true,'준호','가상 브랜드로 만든 자체 작품','6dc8a4c252880328743db47891922aabf6707650903fef7a9d9aa2df005d86c7','e8eb024b412f695548aa29ec016523608c0d95769653337a506fd38c9ddefe7a'],
   ['seoullo-bridge','animation','다리가 기억하는 것','seoullo-bridge','2분 58초','pano',true,undefined,'공모전 당선작','9df19497755b40e1486572c21b6148c2b9cfa5abcc785837e3814039db2027f3','706b6c9256f13973b158bc657a99402bc92e24b7cde37bbc421bdc4f00fd8104','2026 서울로미디어캔버스 단편 애니메이션 공모'],
-  ['cheombeong-dang','ad','첨벙댕','cheombeong-dang','26초','portrait',true,undefined,'가상 브랜드로 만든 자체 작품','619678febaeec97d24dd60e70ba1cd267832559d635152f60382f73e0c69862d','159cc3956c79f9d0c3d007381b09cc779a8d2476fa122fc7fcaf27a28956147f'],
-  ['maejin-imbak','ad','매진 임박','maejin-imbak','1분 15초',undefined,true,undefined,'가상 브랜드로 만든 자체 작품','aec527e98d8c198fa731b588aa1ec080b8ce742493a4e35daaac09cc105c8702','40d1c703852cafa996d5ddcb968e40b82f18137a04e096823a365e78586e7f84'],
-  ['omitok-court','ad','치익이 톡이 될 때까지','omitok-court','15초','portrait',undefined,'한결','가상 브랜드로 만든 자체 작품','30dc4fdc14b9c8feac86d6678d66741cad51ad046af86b25b64c688ffc044e49','d6fe9f7e612f9e347fac2cb81b061b146d346a6acbc3d78a1b6e66a1b05b95a1'],
-  ['modu-course','ad','가는 데마다 또 그 사람','modu-course','39초','portrait',undefined,'유호','가상 브랜드로 만든 자체 작품','e5ace5e16f44285b268beb85708a2d2ca270dcd229f41343bda43d60b092c77a','fef04c4531a0647e14a126ee922ea57c2fe652427a4fc47c9e7acc431e7a210b'],
-  ['somchae-room','ad','연말 빈방','somchae-room','1분',undefined,undefined,'은정 · 지유','가상 브랜드로 만든 자체 작품','c3382687441f2cf543a9cd4d2e6249249c22219ab1287a0a3ec3f2ff771349d9','31ead6bf73eadc59529df7ea8d805b72e42061ed97971638b0dda1a5c3a98d9e'],
-  ['yurigyeol-holiday','ad','霜の肌理','yurigyeol-holiday','15초','portrait',undefined,undefined,'가상 브랜드로 만든 자체 작품','6347222fa25e92998a7f79e0a3284482c0533380c2af2dc4028dc4c04ca6482a','f0dc4ef3b0992ea7357964540d229b82d3a117e62bc9d6e5bcd4890b9233adf1'],
-  ['neujimak-sniper','ad','블프 스나이퍼','neujimak-sniper','33초',undefined,undefined,'준호','가상 브랜드로 만든 자체 작품','58751409481c421eed6143bb6108be264aa04a96a91d205fd02fb7ef46f12756','f2f3263f5bcd8d688c8a2baf41f70934fbc59efc292c731e1576c8a5159b8fbf'],
-  ['himkkeot-sale','ad','오늘 자정까지 70%','himkkeot-sale','15초','portrait',undefined,'채원','가상 브랜드로 만든 자체 작품','637b35e5838b14db0596898483388565e29bbf35578f5216178820edd6c5c3be','e1f4793055b6a47caa7f5a20270f74011a85a7113974bb0684af4484d18cc6d1'],
-  ['omitok-pour','ad','오미톡','omitok-pour','13초','portrait',undefined,undefined,'가상 브랜드로 만든 자체 작품','ee9f678922bd3791e6db39dad172e546035e345c1ae159ab6b9024ee4b76f3da','a44d9baefc8a44969c5aa123abc38f4938a0634c8828b212e728fb94fc43e446'],
-  ['castingbook-intro','ad','손님을 부르는 모델','castingbook-intro','30초',undefined,undefined,undefined,'SYNK PULSE 캐스팅북 소개 영상','e167b6dd876ed4cd0a9730209142b4d797f51b2d757d151bd417adafab90077f','d4cf4bb76ae4215eef44eec2d5e4d3c0e95a845c68aeb7fcf6819ed4aee92d89'],
+  ['opalin-seethrough','music-video','시스루','opalin-seethrough','3분 27초',undefined,true,'윤슬 · 로하 · 새봄 · 해인','AI 아이돌 뮤직비디오','e006c9e0d683991fc52a5646d0d6997af5a08996c27af0efba83324bcfffc727','497c974c85dd6b88d520350883ba46aad5d7f4156070cd845811f3c004be18ad'],
+  ['dodam-heavy','film','이 아이를 보냅니다','dodam-heavy','1분 1초',undefined,true,'준호','가상 브랜드로 만든 자체 작품','6dc8a4c252880328743db47891922aabf6707650903fef7a9d9aa2df005d86c7','e8eb024b412f695548aa29ec016523608c0d95769653337a506fd38c9ddefe7a'],
 ];
-const N=OWN.length;
+// 카드가 그리는 꼴(세로 · 넓은 판 · 발췌와 본편 · 출처 줄)을 모두 가진 지은 예. 남긴 세 편에는 세로 · 발췌 · 출처가 없다.
+const SAMPLES=Object.freeze([
+  ...FINISHED_FILMS,
+  {id:'sample-portrait',kind:'short',title:'세로 예시',orientation:'portrait',poster:'./assets/films/sample-portrait-poster-v1.webp',full:{src:'./assets/films/sample-portrait-v1.mp4',duration:'15초'},description:'세로 예시 설명이에요.',entry:'예시 공모전',finished:'2026년 10월',credits:['예시 출처 하나','예시 출처 둘']},
+  {id:'sample-mv',kind:'music-video',title:'Sample MV',poster:'./assets/films/sample-mv-poster-v1.webp',excerpt:{src:'./assets/films/sample-mv-excerpt-v1.mp4',duration:'20초'},full:{src:'./assets/films/sample-mv-full-v1.mp4',duration:'3분 18초'},description:'긴 작품 예시 설명이에요.',cast:'유호 · M03',finished:'2026년 10월'},
+]);
 
-test('the finished films list opens with our own films in their showing order, then the three Hwaseong films and the founder music video, with exact media paths and bytes',async t=>{
-  assert.deepEqual(FINISHED_FILMS.map(film=>film.id),[...OWN.map(row=>row[0]),'hwaseong-light','hwaseong-first','hwaseong-koriyo','happy-happy-gangster']);
+test('the finished films list holds exactly the three kept works in their showing order, with exact media paths and bytes',async t=>{
+  assert.deepEqual(FINISHED_FILMS.map(film=>film.id),OWN.map(row=>row[0]));
   const media=[];
   for(const [index,[id,kind,title,name,duration,orientation,featured,cast,origin,posterDigest,fullDigest,entry]]of OWN.entries()){
     const film=FINISHED_FILMS[index];
-    assert.deepEqual({id:film.id,kind:film.kind,title:film.title,orientation:film.orientation,featured:film.featured,poster:film.poster,excerpt:film.excerpt,full:film.full,entry:film.entry,cast:film.cast,origin:film.origin,finished:film.finished},{
+    assert.deepEqual({id:film.id,kind:film.kind,title:film.title,orientation:film.orientation,featured:film.featured,poster:film.poster,excerpt:film.excerpt,full:film.full,entry:film.entry,cast:film.cast,origin:film.origin,finished:film.finished,credits:film.credits},{
       id,kind,title,orientation,featured,poster:`./assets/films/${name}-poster-v1.webp`,excerpt:undefined,full:{src:`./assets/films/${name}-v1.mp4`,duration},
-      entry,cast,origin,finished:'2026년 11월',
+      entry,cast,origin,finished:'2026년 11월',credits:undefined,
     });
     media.push([film.poster,posterDigest],[film.full.src,fullDigest]);
   }
-  for(const [index,[id,kind,title,name,duration,orientation,posterDigest,fullDigest]]of HWASEONG.entries()){
-    const film=FINISHED_FILMS[index+N];
-    assert.deepEqual({id:film.id,kind:film.kind,title:film.title,orientation:film.orientation,poster:film.poster,excerpt:film.excerpt,full:film.full,entry:film.entry,finished:film.finished},{
-      id,kind,title,orientation,poster:`./assets/films/${name}-poster-v1.webp`,excerpt:undefined,full:{src:`./assets/films/${name}-v1.mp4`,duration},
-      entry:'2026 별별화성 Awards(화성특례시 공모전)',finished:'2026년 10월',
-    });
-    media.push([film.poster,posterDigest],[film.full.src,fullDigest]);
-  }
-  assert.deepEqual(FINISHED_FILMS.slice(N,N+3).map(film=>film.credits),[[MARK],[MARK,'통계 화성시 인구현황(2026년 9월, 외국인 포함)'],['캐릭터 코리요 · 화성특례시(공공누리 제1유형)',MARK]]);
-  const film=FINISHED_FILMS[N+3],base='./assets/casting/video/M03-mv-happy-gangster-';
-  assert.deepEqual({id:film.id,kind:film.kind,title:film.title,poster:film.poster,excerpt:film.excerpt,full:film.full,cast:film.cast,finished:film.finished},{
-    id:'happy-happy-gangster',kind:'music-video',title:'Happy, Happy Gangster',poster:base+'poster-v1.webp',
-    excerpt:{src:base+'excerpt-20s-v1.mp4',duration:'20초'},full:{src:base+'full-v1.mp4',duration:'3분 18초'},cast:'유호 · M03',finished:'2026년 10월',
-  });
-  media.push([film.poster,'cab9f663ca559534948325e96b80ccc41e840ae5665472e39bdbc19f6fd46e50'],[film.excerpt.src,'76c4e87d6002e3d0aa328a12b57d2601b792c980f0814e30fdf6d48689354dba'],[film.full.src,'583b940e21845b621a68a68730074be181b1bb4e0d57844a48da602192ac4c6d']);
   assert.equal(hasFinishedFilms(),true);
   for(const [src,digest]of media.filter(([src])=>present(t,src))){
     const bytes=await readFile(new URL(src,appDir));
@@ -73,54 +44,56 @@ test('the finished films list opens with our own films in their showing order, t
   }
 });
 
-test('short films play in full inside their card and only the long music video keeps an excerpt with a new-tab full film, with no autoplay or empty slots',()=>{
-  const html=filmsView(),films=FINISHED_FILMS,mv=films.at(-1);
+test('short films play in full inside their card and only a long one keeps an excerpt with a new-tab full film, with no autoplay or empty slots',()=>{
+  const html=filmsView(SAMPLES),films=SAMPLES,mv=films.at(-1);
   assert.equal((html.match(/<article class="film-card[ "]/g)||[]).length,films.length);
   const players=Array.from(html.matchAll(/<video\b[^>]*>/g),match=>match[0]);
   assert.deepEqual(players,[
     ...films.slice(0,-1).map(film=>`<video controls playsinline preload="none" data-film-player poster="${film.poster}" src="${film.full.src}" aria-label="${film.title} · ${film.full.duration}">`),
-    `<video controls playsinline preload="none" data-film-player poster="${mv.poster}" src="${mv.excerpt.src}" aria-label="Happy, Happy Gangster · 20초 발췌">`,
+    `<video controls playsinline preload="none" data-film-player poster="${mv.poster}" src="${mv.excerpt.src}" aria-label="Sample MV · 20초 발췌">`,
   ]);
   // 세로 작품은 세로 카드로, 아주 넓은 작품은 넓은 카드로 그린다.
   assert.deepEqual(Array.from(html.matchAll(/<article class="([^"]+)" aria-labelledby="([^"]+)">/g),match=>[match[2],match[1]]),[
-    ['film-dodam-heavy','film-card'],['film-seoullo-bridge','film-card film-card--pano'],['film-cheombeong-dang','film-card film-card--portrait'],['film-maejin-imbak','film-card'],['film-omitok-court','film-card film-card--portrait'],['film-modu-course','film-card film-card--portrait'],['film-somchae-room','film-card'],['film-yurigyeol-holiday','film-card film-card--portrait'],['film-neujimak-sniper','film-card'],['film-himkkeot-sale','film-card film-card--portrait'],['film-omitok-pour','film-card film-card--portrait'],['film-castingbook-intro','film-card'],['film-hwaseong-light','film-card'],['film-hwaseong-first','film-card film-card--portrait'],['film-hwaseong-koriyo','film-card'],['film-happy-happy-gangster','film-card'],
+    ['film-seoullo-bridge','film-card film-card--pano'],['film-opalin-seethrough','film-card'],['film-dodam-heavy','film-card'],['film-sample-portrait','film-card film-card--portrait'],['film-sample-mv','film-card'],
   ]);
   assert.deepEqual(Array.from(html.matchAll(/<span class="eyebrow ko">([^<]+)<\/span><h2 id="([^"]+)">([^<]+)<\/h2>/g),match=>match.slice(1)),[
-    ['브랜드 필름','film-dodam-heavy','이 아이를 보냅니다'],['단편 애니메이션','film-seoullo-bridge','다리가 기억하는 것'],['광고','film-cheombeong-dang','첨벙댕'],['광고','film-maejin-imbak','매진 임박'],['광고','film-omitok-court','치익이 톡이 될 때까지'],['광고','film-modu-course','가는 데마다 또 그 사람'],['광고','film-somchae-room','연말 빈방'],['광고','film-yurigyeol-holiday','霜の肌理'],['광고','film-neujimak-sniper','블프 스나이퍼'],['광고','film-himkkeot-sale','오늘 자정까지 70%'],['광고','film-omitok-pour','오미톡'],['광고','film-castingbook-intro','손님을 부르는 모델'],['광고','film-hwaseong-light','1억 년의 빛'],['숏폼','film-hwaseong-first','화성에서 처음'],['CM송','film-hwaseong-koriyo','코리요와 화성 한 바퀴'],['뮤직비디오','film-happy-happy-gangster','Happy, Happy Gangster'],
+    ['단편 애니메이션','film-seoullo-bridge','다리가 기억하는 것'],['뮤직비디오','film-opalin-seethrough','시스루'],['브랜드 필름','film-dodam-heavy','이 아이를 보냅니다'],['숏폼','film-sample-portrait','세로 예시'],['뮤직비디오','film-sample-mv','Sample MV'],
   ]);
   for(const film of films)assert.ok(html.includes(`<p>${film.description}</p>`),film.id);
-  assert.ok(html.includes('<dl class="film-facts"><div><dt>길이</dt><dd>15초</dd></div><div><dt>구분</dt><dd>가상 브랜드로 만든 자체 작품</dd></div><div><dt>완성</dt><dd>2026년 11월</dd></div></dl>'));
   assert.ok(html.includes('<dl class="film-facts"><div><dt>길이</dt><dd>1분 1초</dd></div><div><dt>출연</dt><dd>준호</dd></div><div><dt>구분</dt><dd>가상 브랜드로 만든 자체 작품</dd></div><div><dt>완성</dt><dd>2026년 11월</dd></div></dl>'));
-  assert.ok(html.includes('<dl class="film-facts"><div><dt>길이</dt><dd>55초</dd></div><div><dt>출품</dt><dd>2026 별별화성 Awards(화성특례시 공모전)</dd></div><div><dt>완성</dt><dd>2026년 10월</dd></div></dl>'));
-  assert.ok(html.includes('<div class="film-credits"><span>출처</span><ul><li>캐릭터 코리요 · 화성특례시(공공누리 제1유형)</li><li>로고·슬로건 화성특례시 「화성의 상징」(공공누리 제4유형)</li></ul></div>'));
+  assert.ok(html.includes('<dl class="film-facts"><div><dt>길이</dt><dd>2분 58초</dd></div><div><dt>구분</dt><dd>공모전 당선작</dd></div><div><dt>출품</dt><dd>2026 서울로미디어캔버스 단편 애니메이션 공모</dd></div><div><dt>완성</dt><dd>2026년 11월</dd></div></dl>'));
+  assert.ok(html.includes('<dl class="film-facts"><div><dt>길이</dt><dd>15초</dd></div><div><dt>출품</dt><dd>예시 공모전</dd></div><div><dt>완성</dt><dd>2026년 10월</dd></div></dl>'));
+  assert.ok(html.includes('<div class="film-credits"><span>출처</span><ul><li>예시 출처 하나</li><li>예시 출처 둘</li></ul></div>'));
   assert.match(html,/<dl class="film-facts"><div><dt>본편<\/dt><dd>3분 18초<\/dd><\/div><div><dt>출연<\/dt><dd>유호 · M03<\/dd><\/div><div><dt>완성<\/dt><dd>2026년 10월<\/dd><\/div><\/dl>/);
-  assert.equal((html.match(/<div class="film-credits">/g)||[]).length,3);
+  assert.equal((html.match(/<div class="film-credits">/g)||[]).length,1);
   const links=Array.from(html.matchAll(/<a\b[^>]*>/g),match=>match[0]);
   assert.deepEqual(links,[`<a class="film-full" href="${mv.full.src}" target="_blank" rel="noopener noreferrer">`]);
   assert.ok(html.includes('본편 보기 · 3분 18초 <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>'));
+  // 남긴 세 편은 발췌 없이 본편을 카드에서 바로 튼다 — 새 탭 단추도 출처 줄도 없다.
+  assert.doesNotMatch(filmsView(),/<a |film-credits|발췌/);
   assert.doesNotMatch(html,/autoplay|\bloop\b|preload="auto"|src=""|곧 공개|준비 중|제작 중|coming soon/i);
   // 공모 제출본의 끝 출처 카드에 있던 제작 도구 이름은 카드 글로 옮기지 않는다(사이트에 도구 이름 없음, 10-02).
-  assert.doesNotMatch(html,/Suno|타입캐스트|Typecast|Veo|Flow|Nano ?Banana|Omni|Google|AI 생성|AI 음성/i);
+  assert.doesNotMatch(filmsView(),/Suno|타입캐스트|Typecast|Veo|Flow|Nano ?Banana|Omni|Google|AI 생성|AI 음성/i);
   // 11-04 소개글: 「같은 얼굴」 약속을 쓰지 않는다(「같은 모델」).
-  assert.doesNotMatch(html,/같은 얼굴/);assert.ok(mv.description.includes('같은 모델로 이어져요'));
+  assert.doesNotMatch(filmsView(),/같은 얼굴/);
 });
 
-test('the entry page shows only the four featured own films, playing in place with no autoplay, and only safe media paths',()=>{
+test('the entry page shows only the three kept films, playing in place with no autoplay, and only safe media paths',()=>{
   const html=featuredFilmsView();
   assert.deepEqual(Array.from(html.matchAll(/<article class="([^"]+)"><video controls playsinline preload="none" data-film-player poster="([^"]+)" src="([^"]+)" aria-label="([^"]+)"><\/video><h3>([^<]+)<\/h3>/g),match=>match.slice(1)),[
-    ['welcome-work','./assets/films/dodam-heavy-poster-v1.webp','./assets/films/dodam-heavy-v1.mp4','이 아이를 보냅니다 · 1분 1초','이 아이를 보냅니다'],
     ['welcome-work welcome-work--pano','./assets/films/seoullo-bridge-poster-v1.webp','./assets/films/seoullo-bridge-v1.mp4','다리가 기억하는 것 · 2분 58초','다리가 기억하는 것'],
-    ['welcome-work welcome-work--portrait','./assets/films/cheombeong-dang-poster-v1.webp','./assets/films/cheombeong-dang-v1.mp4','첨벙댕 · 26초','첨벙댕'],
-    ['welcome-work','./assets/films/maejin-imbak-poster-v1.webp','./assets/films/maejin-imbak-v1.mp4','매진 임박 · 1분 15초','매진 임박'],
+    ['welcome-work','./assets/films/opalin-seethrough-poster-v1.webp','./assets/films/opalin-seethrough-v1.mp4','시스루 · 3분 27초','시스루'],
+    ['welcome-work','./assets/films/dodam-heavy-poster-v1.webp','./assets/films/dodam-heavy-v1.mp4','이 아이를 보냅니다 · 1분 1초','이 아이를 보냅니다'],
   ]);
   assert.doesNotMatch(html,/autoplay|\bloop\b|preload="auto"|hwaseong|gangster/i);
+  assert.match(featuredFilmsView([{...SAMPLES.find(film=>film.id==='sample-portrait'),featured:true}]),/<article class="welcome-work welcome-work--portrait">/,'세로 작품은 세로 칸');
   assert.equal(featuredFilmsView([{...FINISHED_FILMS[0],full:{src:'javascript:alert(1)',duration:'1초'}}]),'<div class="welcome-work-grid"></div>');
   assert.equal(featuredFilmsView(FINISHED_FILMS.filter(film=>!film.featured)),'<div class="welcome-work-grid"></div>');
   assert.doesNotMatch(featuredFilmsView([{...FINISHED_FILMS[0],title:'<img src=x onerror=alert(1)>',description:'<script>'}]),/<img src=x|<script>/);
 });
 
 test('only finished films with safe media paths are drawn; an empty list hides the space',()=>{
-  const film=FINISHED_FILMS.find(item=>item.id==='happy-happy-gangster');
+  const film={...SAMPLES.at(-1),id:'happy-happy-gangster',title:'Happy, Happy Gangster',full:{src:'./assets/casting/video/M03-mv-happy-gangster-full-v1.mp4',duration:'3분 18초'}};
   // 본편만 있는 작품은 그 본편을 카드에서 바로 튼다. 세로 표시는 'portrait'만 받고, 출처 글도 이스케이프한다.
   const short=filmsView([{...film,excerpt:undefined,orientation:'portrait" onclick="x',credits:['<b>출처</b>',7,'']}]);
   assert.match(short,/<article class="film-card" aria-labelledby="film-happy-happy-gangster"><div class="film-media"><video [^>]*src="\.\/assets\/casting\/video\/M03-mv-happy-gangster-full-v1\.mp4" aria-label="Happy, Happy Gangster · 3분 18초"><\/video>/);
@@ -202,7 +175,7 @@ test('the finished films rules in app.css pair one to one with the cards films-v
   // 선언은 한 속성에 한 번씩, !important 없이 — 아래 값 단언이 실제로 이기는 값을 본다.
   for(const rule of own){assert.deepEqual(rule.bad,[],'선언 꼴이 아니거나 겹친 선언 — '+rule.selector);for(const [property,text]of rule.decls)assert.doesNotMatch(text,/!\s*important/i,`${rule.selector} ${property}`);}
   // 짝: 규칙마다 기본 목록(세로 카드·출처·본편 단추가 다 든다)에서 고르는 요소가 있고, 그리는 film- 클래스마다 규칙이 있다.
-  const nodes=[...descendants(htmlTree(filmsView()))];
+  const nodes=[...descendants(htmlTree(filmsView(SAMPLES)))];
   for(const rule of own)assert.ok(nodes.some(node=>selects(node,rule.selector)),'그리는 요소가 없는 규칙 '+rule.selector);
   const drawn=[...new Set(nodes.flatMap(node=>node.classes))];
   assert.deepEqual(drawn.filter(filmClass).sort(),[...new Set(own.flatMap(rule=>classesIn(rule.selector)))].sort());
@@ -257,8 +230,8 @@ test('the customer films page lists every film by name and opens it in the scree
   const customer=projectView(state({tab:'films'}));
   assert.match(customer,/<h1 class="sx-display">SYNK가 끝까지 만든 작품이에요<\/h1>/);
   assert.equal((customer.match(/class="sx-film-row" data-film-open="/g)||[]).length,FINISHED_FILMS.length);
-  assert.match(customer,/data-film-poster src="\.\/assets\/films\/dodam-heavy-poster-v1\.webp"/);
-  assert.match(customer,/공모전 출품작/);assert.match(customer,/단편 애니메이션 · 2분 58초 · 공모전 당선작/);assert.match(customer,/가상 브랜드로 만든 자체 작품/);
+  assert.match(customer,/data-film-poster data-pano src="\.\/assets\/films\/seoullo-bridge-poster-v1\.webp"/);
+  assert.doesNotMatch(customer,/공모전 출품작/);assert.match(customer,/단편 애니메이션 · 2분 58초 · 공모전 당선작/);assert.match(customer,/가상 브랜드로 만든 자체 작품/);
   assert.doesNotMatch(customer,/refresh-button|staff-note|confirmation-scope|schedule-|casting-configurator|<form/);
 });
 test('the staff films page has its own head, the next step and the film list, and no project tools, confirmation or schedule blocks',()=>{
@@ -278,7 +251,7 @@ test('the staff films page has its own head, the next step and the film list, an
 test('live refresh waits while a film excerpt plays, and the offline shell caches the films module instead of the withdrawn plan module',()=>{
   const app=readFileSync(new URL('app.mjs',appDir),'utf8'),sw=readFileSync(new URL('sw.js',appDir),'utf8');
   assert.match(app,/Array\.from\(document\.querySelectorAll\('\[data-preview-test\],\[data-film-player\]'\)\)\.some\(video=>!video\.paused&&!video\.ended\)/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v79-room-a-20261124';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v80-works-20261126';/);
   assert.match(sw,/'casting-catalog\.mjs','films-view\.mjs',/);
   assert.doesNotMatch(sw,/production-catalog/);
 });

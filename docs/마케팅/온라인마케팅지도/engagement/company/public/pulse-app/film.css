@@ -161,9 +161,10 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-pane-cast figcaption{position:absolute;right:var(--sx-m);bottom:calc(var(--sx-m) - 10px);background:#000;color:var(--sx-ink);padding:3px 9px}
 .sx-pane-cast figcaption b{font-weight:600}
 .sx-pane-cast img,.sx-pane-cuts img{width:100%;height:100%;object-fit:cover;display:block;min-height:0}
-.sx-pane-cuts{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(2,1fr)}
+/* 가로 2:1 장면 열 장(도담중공업, 2026-11-26): 넓은 화면은 두 줄씩 다섯 층, 휴대폰은 세 칸씩 세 층(열째는 숨김) — 칸 꼴이 그림 꼴에 가깝게. */
+.sx-pane-cuts{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(5,1fr)}
 .sx-pane-word{display:flex;flex-direction:column;justify-content:center;gap:clamp(24px,5vh,48px);padding:clamp(28px,6vw,88px);background:#0e0e0e;color:var(--sx-ink)}
-.sx-pane-one{font-size:clamp(28px,3.2vw,46px);line-height:1.26;max-width:13em}
+.sx-pane-one{font-size:clamp(28px,3.2vw,46px);line-height:1.26;max-width:13em;text-wrap:balance}
 .sx-pane-word ol{display:grid;gap:10px;max-width:520px}
 .sx-pane-word li{display:grid;grid-template-columns:48px 1fr;align-items:baseline}
 /* 약속: 불을 켠 쪽 */
@@ -372,7 +373,8 @@ html.sx.view-entry .app-header{display:none!important}
   .sx-check{flex:none;width:100%;padding:14px var(--sx-m) calc(var(--sx-m) + 36px)}
   .sx-check-lead{margin-top:6px;font-size:13px;line-height:1.5}
   .sx-check-stage{flex:none;width:100%;height:32vh;height:32dvh}
-  .sx-pane-cuts{grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr)}
+  .sx-pane-cuts{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)}
+  .sx-pane-cuts img:nth-child(n+10){display:none}
   .sx-pane-word{padding:18px var(--sx-m);gap:12px;justify-content:center}
   .sx-pane-one{font-size:var(--sx-t2)}
   .sx-pane-word li{grid-template-columns:44px 1fr}
@@ -522,7 +524,7 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-q-fill[data-shot]{--shot-k:1.47;object-fit:contain;margin:auto;max-width:calc(var(--shot-w) * var(--shot-k));max-height:calc(var(--shot-h) * var(--shot-k))}
 .sx-q-fill[data-shot=tall]{--shot-w:720px;--shot-h:1280px}
 .sx-q-fill[data-shot=wide]{--shot-w:1280px;--shot-h:720px}
-.sx-q-fill[data-shot=scene]{--shot-w:960px;--shot-h:1285px} /* 모델 장면 사진(작은 판 폭 960 — 폭 상한만으로도 배율이 묶인다) */
+.sx-q-fill[data-shot=scene]{--shot-w:960px;--shot-h:1192px} /* 모델 장면 사진(작은 판 폭 960, 높이는 1192 · 1285 두 꼴 — 폭 상한만으로도 배율이 묶인다) */
 .sx-q-screen:has(>.sx-q-view>.sx-q-fill[data-shot]){background:#000} /* 스크린에 바로 놓인 작품: 작품에 구워진 검정 띠와 스크린 바탕이 두 톤으로 갈리지 않게(광고 틀 안의 그림은 틀이 검정이라 스크린은 그대로) */
 @media not all and (max-resolution:1dppx){.sx-q-fill[data-shot]{--shot-k:1.176}}
 @media not all and (max-resolution:1.25dppx){.sx-q-fill[data-shot]{--shot-k:.98}}
@@ -712,7 +714,7 @@ img[data-cap]{--cap-k:1.47;margin:auto;max-width:calc(var(--cap-w) * var(--cap-k
   /* 세로 창의 업종 작품 그림(data-shot): 첫 단계 띠(19dvh)에서 세로 작품 · 모델 장면은 오른쪽에 붙이고 이름 글줄은 그 왼쪽 빈자리에 둔다(그림을 가로지르지 않게).
      큰 칸의 가로 작품은 칸 위에 붙인다 — 62dvh 칸 가운데에 두면 위아래 검정이 「아직 안 뜬 칸」처럼 보인다. 칸 높이는 그대로 둔다(그림 꼴에 묶으면 후보 칸을 가리켜 사람 사진이 될 때 칸이 커져 후보 칸이 마우스 밑에서 밀린다). 폭 상한 띠는 그대로 걸린다(cqw). */
   .sx-q[data-step=what] .sx-q-fill:is([data-shot=tall],[data-shot=scene]){margin-right:var(--sx-m);object-position:100% 50%}
-  .sx-q[data-step=what] .sx-q-view:has(>.sx-q-fill:is([data-shot=tall],[data-shot=scene]))>.sx-q-cap{max-width:calc(100% - 2*var(--sx-m) - 19vh*.75 - 16px);max-width:calc(100% - 2*var(--sx-m) - 19dvh*.75 - 16px)}
+  .sx-q[data-step=what] .sx-q-view:has(>.sx-q-fill:is([data-shot=tall],[data-shot=scene]))>.sx-q-cap{max-width:calc(100% - 2*var(--sx-m) - 19vh*.81 - 16px);max-width:calc(100% - 2*var(--sx-m) - 19dvh*.81 - 16px)}
   .sx-casting-lead img[data-shot=wide]{object-position:50% 0}
   .sx-q-saved{display:none}
   .sx-q-how{grid-template-rows:minmax(0,1fr)}

@@ -3,19 +3,6 @@
   "vendor": "Documents/synk-vendor",
   "works": [
     {
-      "key": "dodam", "appId": "dodam-heavy", "pcId": "dodam",
-      "title": "도담중공업 「이 아이를 보냅니다」", "en": "Dodam Heavy Industries, \"We Send This One Off\"",
-      "kicker": "BRAND FILM", "length": "1분 1초", "enLength": "1 min 1 s", "seconds": 61.27, "tall": false,
-      "final": "pulse-portfolio12-20261024/최종/p10/도담중공업_16x9.mp4",
-      "raw": "pulse-portfolio12-20261024/최종/p10/화면.mp4", "rawBox": [0, 60, 1920, 960],
-      "poster": { "src": "raw", "t": 50.6 },
-      "text": "발전용 가스터빈 한 대가 공장을 떠나는 날을, 아이를 떠나보내는 마음으로 따라가는 기업 홍보영상입니다. 가상 제조사 「도담중공업」의 규모와 신뢰를 한 사람의 시선으로 보여 줍니다.",
-      "enText": "A corporate film that follows a gas turbine leaving the factory the way a parent sees a child off. The scale and trust of a fictional maker, Dodam Heavy Industries, seen through one engineer.",
-      "alt": "노을빛이 들어오는 넓은 공장 바닥에 크림색 발전용 가스터빈이 놓여 반사되는 장면. 도담중공업 기업 홍보영상의 한 장면",
-      "enAlt": "A cream gas turbine resting on a reflective factory floor with sunset light coming through the open bay. A scene from the Dodam Heavy Industries film",
-      "tags": ["기업 홍보", "B2B", "이야기"]
-    },
-    {
       "key": "seoullo", "appId": "seoullo-bridge", "pcId": "seoullo-bridge",
       "title": "「다리가 기억하는 것」", "en": "\"What the Bridge Remembers\"",
       "kicker": "ANIMATION", "length": "2분 58초", "enLength": "2 min 58 s", "seconds": 178.42, "tall": false, "pano": true, "contest": true,
@@ -28,6 +15,34 @@
       "enAlt": "Felt-doll children with bright umbrellas walking in a line under the overpass in the rain. A scene from the short animation \"What the Bridge Remembers\"",
       "tags": ["단편 애니메이션", "공모전 당선", "이야기"]
     },
+    {
+      "key": "opalin", "appId": "opalin-seethrough", "pcId": "opalin",
+      "title": "오팔린 「시스루」", "en": "OPALIN, \"See-Through\"",
+      "kicker": "MUSIC VIDEO", "length": "3분 27초", "enLength": "3 min 27 s", "seconds": 207.0, "tall": false,
+      "final": "contests-20261019/opalin/시스루_진열판_1080p.mp4",
+      "poster": { "src": "final", "t": 77.2 },
+      "text": "AI 아이돌 그룹 오팔린의 뮤직비디오입니다. 들판의 흰 문에서 시작해, AI라는 사실을 숨기지 않겠다는 약속을 노래합니다.",
+      "enText": "A music video by OPALIN, an AI idol group. It opens at a white door in a meadow and sings a promise not to hide that they are AI.",
+      "alt": "파란 하늘 아래 풀밭에 머리를 맞대고 누워 웃는 AI 아이돌 네 사람. 오팔린 「시스루」의 한 장면",
+      "enAlt": "Four AI idols lying head to head on the grass and laughing. A scene from OPALIN's See-Through",
+      "tags": ["뮤직비디오", "AI 아이돌", "노래"]
+    },
+    {
+      "key": "dodam", "appId": "dodam-heavy", "pcId": "dodam",
+      "title": "도담중공업 「이 아이를 보냅니다」", "en": "Dodam Heavy Industries, \"We Send This One Off\"",
+      "kicker": "BRAND FILM", "length": "1분 1초", "enLength": "1 min 1 s", "seconds": 61.27, "tall": false,
+      "final": "pulse-portfolio12-20261024/최종/p10/도담중공업_16x9.mp4",
+      "raw": "pulse-portfolio12-20261024/최종/p10/화면.mp4", "rawBox": [0, 60, 1920, 960],
+      "poster": { "src": "raw", "t": 50.6 },
+      "text": "발전용 가스터빈 한 대가 공장을 떠나는 날을, 아이를 떠나보내는 마음으로 따라가는 기업 홍보영상입니다. 가상 제조사 「도담중공업」의 규모와 신뢰를 한 사람의 시선으로 보여 줍니다.",
+      "enText": "A corporate film that follows a gas turbine leaving the factory the way a parent sees a child off. The scale and trust of a fictional maker, Dodam Heavy Industries, seen through one engineer.",
+      "alt": "노을빛이 들어오는 넓은 공장 바닥에 크림색 발전용 가스터빈이 놓여 반사되는 장면. 도담중공업 기업 홍보영상의 한 장면",
+      "enAlt": "A cream gas turbine resting on a reflective factory floor with sunset light coming through the open bay. A scene from the Dodam Heavy Industries film",
+      "tags": ["기업 홍보", "B2B", "이야기"]
+    }
+  ],
+  "down_": "2026-11-26 내린 작품(유호님 11-25 「홈페이지든 어디든 포트폴리오 영상 전부 내리고 … 3개만 일단 남기자. 나머지는 퀄리티가 너무 후져」). 굽기.cjs는 works만 읽는다. 다시 올리려면 칸을 works로 옮긴다.",
+  "down": [
     {
       "key": "pet", "appId": "cheombeong-dang", "pcId": "cheombeong-dang",
       "title": "첨벙댕", "en": "Cheombeong-dang",
@@ -177,14 +192,14 @@
     },
     "cuts": [
       { "work": "dodam", "src": "raw", "in": 12.5, "dur": 1.6, "wide": {}, "tall": {} },
+      { "work": "opalin", "src": "final", "in": 130.8, "dur": 1.6, "wide": {}, "tall": {} },
       { "work": "seoullo", "src": "raw", "in": 58, "dur": 1.5, "wide": {}, "tall": {} },
-      { "work": "pet", "src": "raw", "in": 2.25, "dur": 1.3, "wide": {}, "tall": {} },
-      { "work": "maejin", "src": "cut:10", "in": 0.5, "dur": 1.6, "wide": {}, "tall": {} },
-      { "work": "dodam", "src": "raw", "in": 50.43, "dur": 1.35, "wide": {}, "tall": {} },
+      { "work": "dodam", "src": "raw", "in": 28.9, "dur": 1.6, "wide": {}, "tall": {} },
+      { "work": "opalin", "src": "final", "in": 89.4, "dur": 1.6, "wide": {}, "tall": {} },
       { "work": "seoullo", "src": "raw", "in": 157.4, "dur": 1.6, "wide": {}, "tall": {} },
-      { "work": "maejin", "src": "cut:03", "in": 0.1, "dur": 1.4, "wide": {}, "tall": {} },
-      { "work": "pet", "src": "raw", "in": 21.8, "dur": 0.8, "wide": {}, "tall": { "in": 16.0 } },
-      { "work": "pet", "src": "raw", "in": 23.5, "dur": 1.1, "wide": {}, "tall": { "in": 16.8 } }
+      { "work": "dodam", "src": "raw", "in": 50.46, "dur": 1.4, "wide": {}, "tall": {} },
+      { "work": "opalin", "src": "final", "in": 196.8, "dur": 1.5, "wide": {}, "tall": {} },
+      { "work": "seoullo", "src": "raw", "in": 168, "dur": 1.6, "wide": {}, "tall": {} }
     ]
   }
 }

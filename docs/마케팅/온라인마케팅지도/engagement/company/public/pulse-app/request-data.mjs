@@ -9,15 +9,15 @@ const shot=code=>`./assets/request/model-scene-${code}.webp`;
 // 장면 사진이 아니면 빈 글(작품 포스터 · 손님 사진에는 큰 판이 없다).
 export const sceneSet=src=>/\/model-scene-[a-z]\d+\.webp$/.test(src)?`${src} 960w, ${src.replace(/\.webp$/,'-l.webp')} 1600w`:'';
 export const KINDS=Object.freeze([
-  // 11-09: 업종마다 완성 광고가 있으면 그 작품 그림을 둔다(음료 오미톡 · 앱 모두의코스 · 기업 도담중공업 — 진열 정본 docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열). 없는 업종은 예시 장면 그대로.
+  // 업종마다 남긴 작품이 있으면 그 작품 그림을 두고(기업 도담중공업 — 진열 정본 docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열), 없으면 모델의 예시 장면을 둔다(2026-11-26 내린 작품의 그림 다섯을 바꿈).
   // 11-12: shotShape는 업종 그림의 꼴(tall 세로 9:16 · wide 가로 16:9 · scene 모델 장면 사진 폭 960). 늘리지 않고 꼴대로 놓는다 — 작품 그림은 큰 판이 없고(작품 원본 720p),
   // 모델 장면 사진은 의뢰서 큰 칸에서만 큰 판(srcset)으로 채운다(스크린 · 광고 틀에서는 꼴대로).
-  {id:'food',label:k('음료 · 식품'),note:k('먹고 마시는 제품'),shot:'./assets/films/omitok-court-poster-v1.webp',shotShape:'tall',who:k('「치익이 톡이 될 때까지」 오미톡 · 가상 브랜드로 만든 자체 작품'),group:'product'},
-  {id:'beauty',label:k('화장품 · 뷰티'),note:k('스킨케어, 색조, 뷰티 기기'),shot:'./assets/request/w-gift-sphere.webp',shotShape:'tall',who:k('「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품'),group:'product'},
+  {id:'food',label:k('음료 · 식품'),note:k('먹고 마시는 제품'),shot:shot('f02'),shotShape:'scene',who:k('예시 장면 · 하린 · 상큼한 막내'),group:'product'},
+  {id:'beauty',label:k('화장품 · 뷰티'),note:k('스킨케어, 색조, 뷰티 기기'),shot:shot('f01'),shotShape:'scene',who:k('예시 장면 · 유나 · 도시의 뮤즈'),group:'product'},
   {id:'fashion',label:k('패션 · 잡화'),note:k('옷, 가방, 신발, 액세서리'),shot:shot('m09'),shotShape:'scene',who:k('예시 장면 · 서율 · 블루 그레이빛 차가운 비주얼'),group:'wear'},
-  {id:'living',label:k('생활용품 · 가전'),note:k('집과 일상에서 쓰는 물건'),shot:'./assets/films/maejin-imbak-poster-v1.webp',shotShape:'wide',who:k('「매진 임박」 홈쇼핑 × 공포 코미디 · 가상 브랜드로 만든 자체 작품'),group:'product'},
-  {id:'app',label:k('앱 · 웹 서비스'),note:k('화면으로 쓰는 서비스'),shot:'./assets/films/modu-course-poster-v1.webp',shotShape:'tall',who:k('「가는 데마다 또 그 사람」 모두의코스 · 가상 브랜드로 만든 자체 작품'),group:'app'},
-  {id:'place',label:k('매장 · 공간 · 서비스'),note:k('찾아오거나 예약하는 곳'),shot:'./assets/films/hwaseong-cf-light-poster-v1.webp',shotShape:'wide',who:k('「1억 년의 빛」 화성 CF · 공모전 출품작'),group:'place'},
+  {id:'living',label:k('생활용품 · 가전'),note:k('집과 일상에서 쓰는 물건'),shot:shot('f05'),shotShape:'scene',who:k('예시 장면 · 소연 · 믿고 사는 언니'),group:'product'},
+  {id:'app',label:k('앱 · 웹 서비스'),note:k('화면으로 쓰는 서비스'),shot:shot('f03'),shotShape:'scene',who:k('예시 장면 · 서진 · 똑 부러진 선배'),group:'app'},
+  {id:'place',label:k('매장 · 공간 · 서비스'),note:k('찾아오거나 예약하는 곳'),shot:shot('f08'),shotShape:'scene',who:k('예시 장면 · 윤슬 · 반달 웃음의 믿음직한 리더'),group:'place'},
   {id:'brand',label:k('브랜드 · 기업 전체'),note:k('제품 하나가 아니라 회사 이야기'),shot:'./assets/films/dodam-heavy-poster-v1.webp',shotShape:'wide',who:k('「이 아이를 보냅니다」 도담중공업 · 가상 브랜드로 만든 자체 작품'),group:'brand'},
 ]);
 export const CHANNELS=Object.freeze([
@@ -130,10 +130,10 @@ export const ACTIONS=Object.freeze([
 ]);
 export const WIN=Object.freeze([
   // 11-09: 「이야기로 여운을」 예시는 도담중공업(끝의 노을 · 「이 아이를 보냅니다」 12초, 소리 없음)으로 — 매진 임박은 웃음으로 이기는 편이라 여운의 예로는 어긋났다.
-  {id:'story',label:k('이야기로 여운을'),note:k('끝까지 보게 하고, 끝에서 마음이 움직여요.'),work:k('도담중공업'),poster:'./assets/request/w-dodam.webp',film:'./assets/request/film-dodam.mp4',kind:k('1분 1초 · 16:9'),ratio:'16:9'},
-  {id:'impact',label:k('한 장면의 임팩트로'),note:k('한 번 보면 잊히지 않는 그림 하나로 이겨요.'),work:'霜の肌理',poster:'./assets/request/w-gift-sphere.webp',film:'./assets/request/film-gift.mp4',kind:k('15초 · 9:16'),ratio:'9:16'},
-  // 셋째 길 「웃음」(11-13 의뢰서 탭). 예시는 「매진 임박」(홈쇼핑 × 공포 코미디)의 자막 없는 화면 판 12초다.
-  {id:'laugh',label:k('웃음으로 퍼지게'),note:k('보다가 웃고, 친구에게 보내고 싶어져요.'),work:k('매진 임박'),poster:'./assets/request/w-maejin-laugh.webp',film:'./assets/request/film-maejin-laugh.mp4',kind:k('1분 15초 · 16:9'),ratio:'16:9'},
+  {id:'story',label:k('이야기로 여운을'),note:k('끝까지 보게 하고, 끝에서 마음이 움직여요.'),cap:k('「이 아이를 보냅니다」 도담중공업 · 가상 브랜드로 만든 자체 작품'),poster:'./assets/request/w-dodam.webp',film:'./assets/request/film-dodam.mp4',kind:k('1분 1초 · 16:9'),ratio:'16:9'},
+  {id:'impact',label:k('한 장면의 임팩트로'),note:k('한 번 보면 잊히지 않는 그림 하나로 이겨요.'),cap:k('「다리가 기억하는 것」 · 공모전 당선작'),poster:'./assets/request/w-seoullo.webp',film:'./assets/request/film-seoullo.mp4',kind:k('단편 애니메이션 · 2분 58초'),ratio:'16:9'},
+  // 셋째 길 「웃음」(11-13 의뢰서 탭). 남긴 작품에 웃음으로 이기는 편이 없어 영상 없이 모델의 예시 장면을 둔다(2026-11-26).
+  {id:'laugh',label:k('웃음으로 퍼지게'),note:k('보다가 웃고, 친구에게 보내고 싶어져요.'),cap:k('민재 · 옆집 자취생'),poster:shot('m04'),film:'',kind:k('예시 장면'),ratio:'9:16'},
 ]);
 // 얼마나 과감하게(11-13). 고르지 않으면 저희가 제안한다. 무엇을 고르든 제품 사실과 피할 말은 지킨다. ID는 서버 pulse-requests.mjs BOLDS와 같다.
 export const BOLD=Object.freeze([

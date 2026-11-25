@@ -109,22 +109,23 @@ test('an interrupted large media stream leaves subsequent range requests usable'
   const next=await f.get({Range:'bytes=0-1'});assert.equal(next.status,206);assert.deepEqual(Buffer.from(await next.arrayBuffer()),Buffer.from([7,7]));assert.equal(f.reads(),0);
 });
 
-test('company allowlist exposes exactly the three M03 release files with Range playback',async t=>{
+test('company allowlist plays the kept films with Range and gives no withdrawn music video or model clip',async t=>{
   const directory=await mkdtemp(join(tmpdir(),'synk-m03-public-'));let app;
   t.after(async()=>{await app?.stop();await rm(directory,{recursive:true,force:true});});
   app=createCompanyApp({dataDir:join(directory,'app'),port:0,allowTestHost:true,schedule:false});await app.start();
   const base=`http://127.0.0.1:${app.server.address().port}`,media='/pulse-app/assets/casting/video/';
   for(const [name,digest]of[
-    ['M03-mv-happy-gangster-poster-v1.webp','cab9f663ca559534948325e96b80ccc41e840ae5665472e39bdbc19f6fd46e50'],
-    ['M03-mv-happy-gangster-excerpt-20s-v1.mp4','76c4e87d6002e3d0aa328a12b57d2601b792c980f0814e30fdf6d48689354dba'],
-    ['M03-mv-happy-gangster-full-v1.mp4','583b940e21845b621a68a68730074be181b1bb4e0d57844a48da602192ac4c6d'],
-  ].filter(([name])=>present(t,name))){
-    const response=await fetch(base+media+name);assert.equal(response.status,200,name);assert.equal(response.headers.get('x-content-type-options'),'nosniff');
+    ['dodam-heavy-poster-v1.webp','6dc8a4c252880328743db47891922aabf6707650903fef7a9d9aa2df005d86c7'],
+    ['dodam-heavy-v1.mp4','e8eb024b412f695548aa29ec016523608c0d95769653337a506fd38c9ddefe7a'],
+  ].filter(([name])=>!process.env.CI||!name.endsWith('.mp4'))){
+    const path='/pulse-app/assets/films/'+name,response=await fetch(base+path);assert.equal(response.status,200,name);assert.equal(response.headers.get('x-content-type-options'),'nosniff');
     assert.equal(createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex'),digest,name);
     if(name.endsWith('.mp4')){
-      const probe=await fetch(base+media+name,{headers:{Range:'bytes=0-1'}});assert.equal(probe.status,206);assert.match(probe.headers.get('content-range'),/^bytes 0-1\/[1-9]\d*$/);assert.equal((await probe.arrayBuffer()).byteLength,2);
+      const probe=await fetch(base+path,{headers:{Range:'bytes=0-1'}});assert.equal(probe.status,206);assert.match(probe.headers.get('content-range'),/^bytes 0-1\/[1-9]\d*$/);assert.equal((await probe.arrayBuffer()).byteLength,2);
     }
   }
+  // 2026-11-26 작품을 내렸다: 갱스터 뮤직비디오도 공개 목록에서 뺐다(파일은 그대로) — pulse-photos-films-server.test.mjs가 내린 작품 모두를 잰다.
+  for(const name of ['M03-mv-happy-gangster-poster-v1.webp','M03-mv-happy-gangster-excerpt-20s-v1.mp4','M03-mv-happy-gangster-full-v1.mp4']){const response=await fetch(base+media+name,{headers:{Range:'bytes=0-1'}});assert.equal(response.status,404,name);await response.arrayBuffer();}
   // 10-22 모델은 사진만: 하린 영상은 공개 목록에서 뺐다(파일은 그대로) — pulse-photos-films-server.test.mjs가 넷 모두 잰다.
   const withdrawn=await fetch(base+media+'F02-ad-motion-5s-v1.mp4',{headers:{Range:'bytes=0-1'}});assert.equal(withdrawn.status,404);await withdrawn.arrayBuffer();
   const privateFile=await fetch(base+media+'unlisted.mp4',{headers:{Range:'bytes=0-1'}});assert.equal(privateFile.status,404);assert.equal(privateFile.headers.get('accept-ranges'),null);await privateFile.arrayBuffer();
