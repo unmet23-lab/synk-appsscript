@@ -1005,7 +1005,7 @@ if(!process.versions.electron){
           await setBoard(w,board({sessions:recs}));
           await chat(w,'all');await wait(600);
           const lr=await look(w);
-          check('22 records only (the first piece): no ! on the object or any contact, and the head says once that it cannot tell about questions',lr.say==='직원 둘이 일하고 있습니다.'&&lr.then==='승인 요청은 Claude Code와 Codex 창에서 확인해 주세요.'&&!lr.news&&!lr.chats.some(c=>c.endsWith('|!')),lr);
+          check('22 records only (the first piece): no ! on the object or any contact, and the head says once that it cannot tell about questions',lr.say==='직원 둘이 일하고 있습니다.'&&lr.then==='이 PC에서 따로 켠 AI가 허락을 물으면 그 AI 화면에서 답해 주세요.'&&!lr.news&&!lr.chats.some(c=>c.endsWith('|!')),lr);
           check('22 without 일 맡기기 (this build) the composer is replaced by one line, and the middle shows who is at work',!lr.compose&&lr.offsay.startsWith('일 맡기기는 아직 준비 중입니다.')&&lr.center.length>0,lr);
           await shoot(w,'office-records-only',[[1440,900],[960,680]]);
           // 더했지만 지금 보지 않는 폴더도 설정 줄에 남고 뺄 수 있다(설계 검토 be7 고칠 것 1)

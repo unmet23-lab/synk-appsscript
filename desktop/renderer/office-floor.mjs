@@ -67,23 +67,36 @@ const mixRGB = (a, b, k) => { if (a === b || k <= 0) return a; if (k >= 1) retur
    자리 수와 같을 때는 지난 배치의 자리 수도 같으면 지난 자리를 잇는다(검수 -r2 FA1) */
 const SEAT_RANK = Object.freeze({ working: 2, done: 3, quiet: 4, resting: 5 });
 const seatRank = s => (s.status === 'asked' ? 0 : s.alert ? 1 : SEAT_RANK[s.status] ?? 9);
-/* 구역 이름표. 자리를 넘어 그림에 없는 직원이 있으면 그 수를 알린다(맨 위 글은 일하는 수를 다 세므로, 검수 solio-office-seats-20261122 F2).
-   이름이 먼저다: 이름과 함께 다 들어갈 때만 「 · 열다섯 더」, 그다음 「 +15」를 붙이고, 그래도 안 들어가면 전처럼 이름만 줄여 쓴다(검수 solio-office-ga1-20261122 F1).
-   「그 밖 셋」은 이름의 수가 부서 수라 「직원」을 붙인다(F4). fits(글): 그 글이 이름표 폭에 들어가는가. short: 이 장면은 짧은 꼴로만 쓴다.
-   form은 쓴 꼴(long · short · none)이고, clip이면 그리는 쪽이 줄인다 */
-export function floorZoneLabel(z, fits, short = false) {
-  const name = String(z?.name || ''), n = z && z.hidden > 0 ? z.hidden : 0;
-  if (n) {
-    // 긴 꼴에는 「직원」을 늘 붙인다. 「부서 없는 일 · 스물둘 더」는 무엇이 더 있는지 몰랐다(11-23 맹검). 짧은 꼴은 좁은 이름표에 들어가는 것이 먼저라 전처럼 둔다
-    const who = z.kind === 'other' ? '직원 ' : '';
-    const forms = [['long', ' · 직원 ' + countWord(n) + ' 더'], ['short', (who ? ' · ' + who : ' ') + '+' + n]].filter(([f]) => !short || f === 'short');
-    for (const [form, tail] of forms) if (fits(name + tail)) return { text: name + tail, clip: false, form };
+/* 구역 이름표. 일하는 직원이 자리를 넘어 그림에 다 없으면 알린다(맨 위 글은 일하는 수를 다 세므로, 검수 solio-office-seats-20261122 F2).
+   세는 것은 어느 꼴이나 일하는 직원뿐이라 맨 위 · 왼쪽 목록과 같은 수다. 「직원 스물넷 더」는 쉬는 직원까지 센 수라 맨 위의 「직원 열이 일하고 있습니다」와
+   어긋나 보였고(11-23 둘째 맹검), 쉬는 직원까지 모두 적은 「직원 서른다섯 중 여덟만 보임」도 그랬다(11-25 맹검).
+   일하는 직원이 다 앉아 있으면 수를 적지 않는다. 때에 따라 쉬는 직원을 세면 같은 「+N」이 다른 것을 뜻한다(카본 solio-office-words A1).
+   꼴은 셋이고 긴 것부터 들어가는 것을 쓴다. 이름이 먼저라 어느 꼴도 안 들어가면 이름만 줄여 쓴다(검수 solio-office-ga1-20261122 F1).
+   - full 「 · 일하는 직원 열여섯 중 여덟만 보임」. 느낌표가 붙은 끝낸 직원이 자리를 다 차지해 앉은 일하는 직원이 없으면 「 · 일하는 직원 셋 더」
+   - long 「 · 여덟 더 일함」. 「스물둘 더」는 무엇이 더 있는지 몰랐다(11-23 맹검)
+   - short 「 +8」: 좁은 이름표. 「그 밖 셋」은 이름의 수가 부서 수라 어느 꼴에나 「직원」을 붙인다(F4)
+   fits(글): 그 글이 이름표 폭에 들어가는가. from: 이 장면이 쓰는 꼴(더 긴 꼴은 쓰지 않는다). form은 쓴 꼴이고, clip이면 그리는 쪽이 줄인다 */
+const LABEL_FORMS = Object.freeze(['full', 'long', 'short']);
+const workingOf = staff => (Array.isArray(staff) ? staff : []).filter(s => LAMP_ON.has(s?.status)).length;
+export function floorZoneLabel(z, fits, from = 'full') {
+  const name = String(z?.name || ''), seen = workingOf(z?.staff), more = Math.max(0, (Number(z?.active) || 0) - seen);
+  if (more) {
+    const other = z.kind === 'other';
+    const tails = {
+      full: ' · 일하는 직원 ' + (seen ? countWord(seen + more) + ' 중 ' + countWord(seen) + '만 보임' : countWord(more) + ' 더'),
+      long: ' · ' + (other ? '직원 ' : '') + countWord(more) + ' 더 일함',
+      short: (other ? ' · 직원 ' : ' ') + '+' + more,
+    };
+    for (const form of LABEL_FORMS.slice(Math.max(0, LABEL_FORMS.indexOf(from)))) if (fits(name + tails[form])) return { text: name + tails[form], clip: false, form };
   }
   return { text: name, clip: true, form: 'none' };
 }
-/* 이 장면을 짧은 꼴로 쓰는가: 빠진 수가 있는 구역 가운데 긴 꼴은 안 들어가고 짧은 꼴은 들어가는 구역이 하나라도 있으면 그렇다.
+/* 이 장면이 쓰는 꼴: 빠진 일하는 직원이 있는 구역마다 들어가는 가장 긴 꼴을 보고, 그 가운데 가장 짧은 꼴이다.
    어느 꼴도 안 들어가는 구역(수를 적지 못함)은 이 판단에서 뺀다(검수 solio-office-ga1b-20261122-r2 FA1). fitsOf(구역): 그 구역 이름표 폭의 fits */
-export const floorShortForm = (zones, fitsOf) => (Array.isArray(zones) ? zones : []).some(z => z && z.hidden > 0 && floorZoneLabel(z, fitsOf(z)).form === 'short');
+export function floorLabelForm(zones, fitsOf) {
+  const used = (Array.isArray(zones) ? zones : []).filter(z => z && z.hidden > 0).map(z => LABEL_FORMS.indexOf(floorZoneLabel(z, fitsOf(z)).form)); // 수를 적지 않는 구역은 -1
+  return LABEL_FORMS[Math.max(0, ...used)];
+}
 function seated(staff, n, before) {
   // 자리 수와 같아질 때도 지난 자리를 잇는다. 넘쳤다가 그림에 없던 직원이 빠져 자리 수와 같아질 때 모두가 옮겨 앉지 않게(검수 -r2 F1)
   if (staff.length < n || (staff.length === n && !(before && before.spots?.length === n))) return staff;
@@ -112,7 +125,7 @@ export function floorLayout(scene, prev = null) {
     const line = (k, z0) => { const f = k === 1 ? [0.5] : k === 2 ? [0.34, 0.66] : [0.22, 0.5, 0.78]; for (const x of f) spots.push({ x: cx - ZW / 2 + ZW * x, z: z0 }); };
     if (n <= 3) line(n, cz - 0.18); else { line(Math.ceil(n / 2), cz - 0.55); line(n - Math.ceil(n / 2), cz + 0.35); }
     const shown = seated(z.staff, n, was(z.key));
-    out.push({ ...z, staff: shown, hidden: z.staff.length - shown.length, rect: { x0: cx - ZW / 2, x1: cx + ZW / 2, z0: cz - ZD / 2, z1: cz + ZD / 2 }, spots });
+    out.push({ ...z, staff: shown, hidden: z.staff.length - shown.length, active: workingOf(z.staff), rect: { x0: cx - ZW / 2, x1: cx + ZW / 2, z0: cz - ZD / 2, z1: cz + ZD / 2 }, spots });
   });
   if (bottom.length) {
     const gridHalf = depts.length ? (cols * ZW + (cols - 1) * GAP) / 2 : 0;
@@ -128,7 +141,7 @@ export function floorLayout(scene, prev = null) {
       x = x1 + GAP;
       const spots = Array.from({ length: n }, (_, k) => ({ x: mid + (k - (n - 1) / 2) * STEP, z: z0 + STRIP / 2 - 0.05 }));
       const shown = seated(z.staff, n, was(z.key));
-      out.push({ ...z, staff: shown, hidden: z.staff.length - shown.length, rect: { x0, x1, z0, z1: z0 + STRIP }, spots });
+      out.push({ ...z, staff: shown, hidden: z.staff.length - shown.length, active: workingOf(z.staff), rect: { x0, x1, z0, z1: z0 + STRIP }, spots });
     });
   }
   return out;
@@ -478,14 +491,14 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx.restore();
   }
   /* 부서 이름과 빈 자리의 가는 선. 스킨마다 글의 색이 다르다 */
-  function zoneText(id, a, z, q, y, hotZ, labelFits, shortForm) {
+  function zoneText(id, a, z, q, y, hotZ, labelFits, labelForm) {
     const lc = SKIN[id].label, dark = id === 'black';
     ctx.save(); ctx.globalAlpha *= a;
     // 검정의 좁은 띠(부서 없는 일 · 그 밖)는 이름을 띠 앞 바닥에 쓴다. 띠 안에 쓰면 노트북이 글을 덮었다(11-24 시안)
     const front = dark && z.kind !== 'dept', ly = front ? 0 : y, lz = front ? q.z1 + LABEL_FRONT : q.z1 - 0.2;
     const lp = P(q.x0 + 0.2, ly, lz), lr = P(q.x1 - 0.2, ly, lz);
     ctx.fillStyle = `rgba(${lc},${hotZ || z.urgent ? 0.95 : dark ? 0.62 : 0.72})`;
-    const room = Math.max(24, lr[0] - lp[0]), label = floorZoneLabel(z, labelFits(z), shortForm);
+    const room = Math.max(24, lr[0] - lp[0]), label = floorZoneLabel(z, labelFits(z), labelForm);
     // 그림이 작으면(좁은 창) 눕힌 글이 뭉개져 똑바로 쓴다(미학 맹검 2회차). 검정도 11-24부터 판 위에 눕힌다 —
     // 두께 있는 책상과 띠가 서자 똑바른 글이 판 모서리를 가로질렀다(맹검 「수평 글자가 판 테두리를 침범」)
     if (cam.S < PLANE_MIN_S) ctx.fillText(label.clip ? clipText(label.text, room) : label.text, lp[0], lp[1]);
@@ -594,10 +607,10 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     setCam(view);
     if (!fit(fl, hatOn)) return;
     ctx.font = '400 12.5px SUIT, "Malgun Gothic", sans-serif'; ctx.textBaseline = 'alphabetic';
-    // 이름표 폭. 한 장면 안에서는 빠진 수를 한 꼴로 적는다: 어느 구역이든 긴 꼴이 안 들어가면 모두 짧은 꼴이다(검수 solio-office-ga1b-20261122 F2)
+    // 이름표 폭. 한 장면 안에서는 빠진 수를 한 꼴로 적는다: 어느 구역이든 긴 꼴이 안 들어가면 모두 그다음 꼴이다(검수 solio-office-ga1b-20261122 F2)
     const slabB = SKIN[B].slab * t3;
     const labelFits = z => { const q = z.rect, y = z.kind === 'dept' ? slabB : 0, room = Math.max(24, P(q.x1 - 0.2, y, q.z1 - 0.2)[0] - P(q.x0 + 0.2, y, q.z1 - 0.2)[0]); return t => ctx.measureText(t).width <= room; };
-    const shortForm = floorShortForm(layout, labelFits);
+    const labelForm = floorLabelForm(layout, labelFits);
     // 검정 스킨: 가장자리로 갈수록 어둠에 묻히는 바닥 한 판(11-24 「불 켜진 자리」). 다른 스킨의 바닥보다 먼저 그려야 둘레 지우기가 그것만 지운다
     const blackK = mix(skinK(0, now, still)).reduce((n, [id, a]) => n + (id === 'black' ? a : 0), 0);
     if (blackK > 0.01) floorBlack(blackK, t3);
@@ -612,7 +625,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
         if (id === 'black') zoneBlack(a, z, q, sl, hotZ, t3);
         else if (z.kind === 'dept') paintPed(id, a, z, q, sl, hotZ, t3);
         else paintMat(id, a, z, q, hotZ);
-        zoneText(id, a, z, q, y, hotZ, labelFits, shortForm);
+        zoneText(id, a, z, q, y, hotZ, labelFits, labelForm);
       }
       zonesOnScreen.push({ key: z.key, pts: HQ(q, y) });
     });

@@ -60,6 +60,10 @@ export function officeIgnoredCwd(cwd) {
   return p === 'aisubscriptions\\run' || p.endsWith('\\aisubscriptions\\run');
 }
 
+/* 부서를 정하지 않고 솔리오에 맡긴 일의 작업 폴더. 본체가 userData\OfficeWork\<회원 번호>에 만든다(office-task-runtime.cjs taskDirectory).
+   손님의 폴더 이름과 섞이지 않게 경로의 끝이 그 꼴일 때만이다(Fable solio-office-words F3) */
+export function officeOwnWorkCwd(cwd) { return /(?:^|\\)officework\\[a-z0-9_-]{8,80}$/.test(normPath(cwd)); }
+
 /* ── 부서(5절) ── 손님이 보낸 부서가 먼저고, 그다음은 작업 폴더가 부서 폴더이거나 그 아래인 부서 가운데 가장 깊은 것이다.
    폴더는 마디 경계에서만 맞는다(C:\work\shop2는 C:\work\shop 아래가 아니다). 어디에도 안 걸리면 null(「부서 없는 일」) */
 export function officeDepartmentOf({ sessionId = null, cwd = null } = {}, departments = [], assignments = {}) {
@@ -354,13 +358,6 @@ export function officeSessions(state, now, { departments = [], assignments = {} 
    차례: 승인을 물은 세션 · 수용 인원을 넘음 · 일하는 수 · 모두 쉼. 훅 소식이 없는 세션(Codex 포함)이 있으면 둘째 줄이 그 수를 말한다.
    input: officeSessions의 값, { cap 수용 인원, hooksOn 「승인 물음도 보기」를 켰는지 }. 돌려주는 값: { say, then, hint, active, unknown } */
 const whoOf = v => v.departmentName || (v.folder ? v.folder + ' 폴더의 일' : '부서 없는 일');
-/* 승인을 하는 창의 이름: 화면에 선 직원의 도구들(「Claude Code」, 「Claude Code와 Codex」). 모르는 도구가 섞이면 「각 프로그램」 */
-const TOOL_WINDOW = Object.freeze({ claude: 'Claude Code', codex: 'Codex' });
-function toolWindows(list) {
-  const tools = [...new Set(list.map(v => v.tool))];
-  if (!tools.length || tools.some(t => !own(TOOL_WINDOW, t))) return '각 프로그램';
-  return TOOLS.filter(t => tools.includes(t)).map(t => TOOL_WINDOW[t]).join('와 ');
-}
 export function officeHeadline(list, { cap = null, hooksOn = true } = {}) {
   const shown = Array.isArray(list) ? list : [];
   const asks = shown.filter(v => v.status === 'asked').sort((a, b) => a.askedAt - b.askedAt);
@@ -368,8 +365,9 @@ export function officeHeadline(list, { cap = null, hooksOn = true } = {}) {
   const active = busy.length + asks.length; // 수용 인원에 세는 것은 일하는 직원과 승인을 물은 직원이다(6절)
   const unknown = shown.filter(v => !v.hooked).length;
   const over = Number.isFinite(cap) && cap >= 1 && active > cap ? countWord(cap) + '까지인데 지금 직원 ' + ga(countWord(active)) + ' 일하고 있습니다.' : '';
-  // 모두가 모르면 어디서 승인하는지를 말한다(11-23 맹검 「모두 승인 물음을 모릅니다」가 어색하다). 일부만 모르면 그 수를 말한다
-  const unknownSay = !unknown ? '' : unknown < shown.length ? neun(countWord(unknown)) + ' 승인 요청이 여기에 뜨지 않습니다.' : '승인 요청은 ' + toolWindows(shown) + ' 창에서 확인해 주세요.';
+  // 모두가 모르면 어디서 승인하는지를 말한다(11-23 맹검 「모두 승인 물음을 모릅니다」가 어색하다). 일부만 모르면 그 수를 말한다.
+  // 창의 이름(「Claude Code 창」)은 처음 보는 사람이 모르는 개발 도구 이름이고(11-23 맹검), 「AI를 켠 창」 · 「솔리오 밖에서 켠 AI」는 어디를 말하는지 몰랐다(11-25 맹검 두 번)
+  const unknownSay = !unknown ? '' : unknown < shown.length ? neun(countWord(unknown)) + ' 승인 요청이 여기에 뜨지 않습니다.' : '이 PC에서 따로 켠 AI가 허락을 물으면 그 AI 화면에서 답해 주세요.';
   const silent = shown.find(v => v.status === 'silent'), done = shown.find(v => v.status === 'done' && v.alert);
   const news = silent ? ga(whoOf(silent)) + ' ' + silent.say + '.' : done ? ga(whoOf(done)) + ' 일을 하나 끝냈습니다.' : '';
   const hint = hooksOn === false ? '승인 요청은 설정에서 켜면 여기에 뜹니다.' : '';
