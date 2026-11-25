@@ -1,5 +1,5 @@
 # LAB 영어 E50 소리 — 첫눈 골목 공기 · 반짝 · 뽁 · 눈송이 내려옴 · 쏙(붙음) · 똑(이름표) · 비틀 을 모두 직접 만든다(남의 음원 없음).
-# 음악은 보유곡 「밝은_052」 30.0~50.5초(곡 안 빈 마디 29~30초를 피함 — 지난 영어 편 E62 키즈파티 · E58 시티팝_147 · E57 따뜻_118과 다른 곡).
+# 음악은 보유곡 「밝은_052」 1.0~23.3초(곡 안 빈 마디 29~30초와 끝 50.3초 뒤를 피함 — 지난 영어 편 E62 키즈파티 · E58 시티팝_147 · E57 따뜻_118과 다른 곡).
 # 만들기(저장소 뿌리에서): python -X utf8 docs/마케팅/LAB_눈눈_20261124/소리/만들기.py
 import os
 import subprocess
@@ -45,7 +45,7 @@ def 얹기(버퍼, x, at, 세기=1.0):
 
 
 # 첫눈 골목 — 조용한 바람과 먼 동네 소리
-t = 판(21)
+t = 판(22.6)
 쓰기('air.wav', 띠(rng.standard_normal(len(t)), 150, 700) * (0.7 + 0.3 * np.sin(2 * np.pi * 0.17 * t)) + 0.3 * 저역(rng.standard_normal(len(t)), 180), 0.45)
 
 # 반짝 — 첫눈(높은 음 셋)
@@ -78,5 +78,5 @@ d = 판(0.9)
 
 # 음악
 곡 = os.path.join(뿌리, 'docs', '홍보물', 'BGM', '밝은_052.wav')
-subprocess.run(['ffmpeg', '-y', '-v', 'error', '-ss', '30.0', '-i', 곡, '-t', '20.5', '-ar', '48000', '-ac', '2', '-af', 'afade=t=in:st=0:d=0.3,afade=t=out:st=19.3:d=1.2', os.path.join(밖, 'bgm.wav')], check=True)
+subprocess.run(['ffmpeg', '-y', '-v', 'error', '-ss', '1.0', '-i', 곡, '-t', '22.3', '-ar', '48000', '-ac', '2', '-af', 'afade=t=in:st=0:d=0.3,afade=t=out:st=21.0:d=1.2', os.path.join(밖, 'bgm.wav')], check=True)
 print('소리 끝:', sorted(os.listdir(밖)))

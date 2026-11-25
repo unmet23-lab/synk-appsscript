@@ -2,21 +2,21 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "f2",
  "text": "이거, 눈!",
- "dur": 1.544,
+ "dur": 1.031,
  "words": [
   {
    "text": "이거,",
    "start": 0.02,
-   "end": 0.201
+   "end": 0.202
   },
   {
    "text": "눈!",
-   "start": 0.945,
-   "end": 1.544
+   "start": 0.605,
+   "end": 1.031
   }
  ],
  "source": {
-  "key": "b06d7eb8ca8f6b83eb4be63afdc923c7",
+  "key": "979c31cfaf022b0a9c5600e8feecd963",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -27,11 +27,11 @@
    "emotion": "smart",
    "intensity": 1,
    "tempo": 1,
-   "seed": 1124,
+   "seed": 77,
    "lufs": -16,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
-   "prev": "친구가 자기 눈을 가리키며 또박또박 알려 준다.",
-   "next": "저것도 눈!"
+   "prev": "남자가 낮고 차분한 목소리로 제 눈을 가리키며 설명한다.",
+   "next": "여기, 눈."
   },
   "speed": 1,
   "cut": null
@@ -42,6 +42,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 274
+  "topPitchHz": 266
  }
 }

@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+TASK - Image 1 is a tall portrait 9:16 photo of a handmade needle-felt miniature first-snow evening street: the coral-pink felt blob Mongle floating just above the ground with one white felt snowflake stuck over its eye on the left. Make the SAME photo again, as one tall portrait 9:16 photo (1080 x 1920): same camera, same framing, same street, same lamp, same snowflakes, same light and colours, Mongle in the same place, same size, same pose, the stuck snowflake and its tiny crumbs exactly as they are.
+
+ONLY MONGLE'S FACE CHANGES - it is surprised:
+- its one open glossy black bead eye is clearly bigger and perfectly round (about one and a half times as big), still a plain black bead with a small shine;
+- below and between the stuck snowflake and the open eye is a small open felt mouth: one simple round hole of dark burgundy felt, about as wide as the open eye, with a soft felt edge, no teeth, no lips, no tongue;
+- a soft rosy blush beside the mouth.
+
+Mongle has NO nose, NO arms, NO legs and NO neck. Everything is matte needle-felted wool. No speed lines, no motion lines, no stars, no effects, no extra snowflakes, no snow particles. Absolutely no text, letters, numbers, symbols or watermarks. The top 30% of the photo stays plain evening-blue sky with the same few snowflakes.

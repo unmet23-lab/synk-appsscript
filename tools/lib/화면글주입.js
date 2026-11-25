@@ -3,7 +3,9 @@
  * 「__SYNK_TEXT__{…}」 한 줄로 콘솔에 낸다. 검사 도구가 renderFrames의 onBrowserLog로 받는다. 편 코드는 바꾸지 않는다.
  *
  * 글 덩이: 글 마디(text node)를 가장 가까운 블록 조상(display가 inline · contents가 아닌 요소)으로 묶는다 — 한 낱말을 글자마다
- *   다른 색 span으로 칠한 꼴(물개의 tint)도 한 덩이가 된다. 덩이마다 글 · 자리(뷰포트 px) · 보이는 정도(조상 opacity의 곱을 글자 수로 가중한 평균) ·
+ *   다른 색 span으로 칠한 꼴(물개의 tint)도 한 덩이가 된다. 글자마다 inline-block으로 따로 튀는 줄(제작 절차 「말 글씨」의 튀는 글자 — 11-26부터)은
+ *   그 줄 요소에 data-synk-line을 달면 한 덩이로 묶고, 띄어쓰기는 화면 틈이 아니라 원문의 빈칸 마디로 둔다(틈으로 재면 커지고 기운 글자 때문에 빈칸이
+ *   빠지거나 끼었다 — 11-26 GPT GA2). 달지 않은 한 글자 카드(「물」 · 「개」)는 지금처럼 따로 센다(GA1). 덩이마다 글 · 자리(뷰포트 px) · 보이는 정도(조상 opacity의 곱을 글자 수로 가중한 평균) ·
  *   글자 크기 · 색을 적는다. display:none · visibility:hidden · 화면 밖 · 0 크기는 뺀다.
  *   옅은 마디(보이는 정도 FAINT 아래 — 판정의 VISIBLE과 같은 0.5)는 같은 블록의 짙은 마디와 따로 한 덩이로 적는다. 옅은 느낌표 하나가 본문의 글을
  *   「한국어!」로 바꿔 본문이 새로 뜬 것처럼 읽히거나 본문을 숨긴 것으로 읽히지 않게(GPT 검수 GA8 · 다시 GA10). 옅은 덩이는 판정이 읽지 않고,
@@ -41,18 +43,29 @@
     }
     return o;
   }
+  // 글자마다 따로 튀는 한 줄(data-synk-line) — 없으면 null
+  function lineOf(el) {
+    while (el && el !== document.body) {
+      if (el.hasAttribute && el.hasAttribute('data-synk-line')) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
   function dump() {
     if (lastFrame === null) return;
     var W = window.innerWidth, H = window.innerHeight;
     var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     var blocks = new Map();
     var faint = new Map();
+    var spaced = new Set(), spacedFaint = new Set(); // 앞 글자 뒤에 원문 빈칸이 있던 줄 — 짙은 덩이와 옅은 덩이가 따로 쓴다(한쪽이 지우면 다른 쪽 띄어쓰기가 사라졌다 — 11-26 GPT)
     var n;
     while ((n = walker.nextNode())) {
       var t = n.nodeValue;
-      if (!t || !t.trim()) continue;
+      if (!t) continue;
       var p = n.parentElement;
       if (!p || /^(SCRIPT|STYLE|NOSCRIPT|TITLE|TEMPLATE)$/.test(p.tagName)) continue;
+      var line = lineOf(p);
+      if (!t.trim()) { if (line) { spaced.add(line); spacedFaint.add(line); } continue; }
       var r = document.createRange();
       r.selectNodeContents(n);
       var rect = r.getBoundingClientRect();
@@ -61,7 +74,7 @@
       var op = opacityOf(p);
       if (op <= 0) continue;
       var cs = getComputedStyle(p);
-      var b = blockOf(p);
+      var b = line || blockOf(p);
       var 덩이들 = op < FAINT ? faint : blocks;
       var e = 덩이들.get(b);
       var size = parseFloat(cs.fontSize) || 0;
@@ -75,12 +88,14 @@
         // 틈은 화면에 그려진 줄 높이로 잰다 — 튀어나오며 작게 그려진 장에서 글자 크기로 재면 틈을 놓쳐 「나이를먹어요!」가 됐다(11-23 먹어요 편)
         var last = e.last;
         var unit = Math.min(size || 1e9, rect.bottom - rect.top);
-        if (last && (rect.left - last.right > unit * 0.15 || rect.top >= last.bottom - 1)) gap = ' ';
+        if (line) gap = (op < FAINT ? spacedFaint : spaced).has(line) ? ' ' : '';
+        else if (last && (rect.left - last.right > unit * 0.15 || rect.top >= last.bottom - 1)) gap = ' ';
         e.x0 = Math.min(e.x0, rect.left); e.y0 = Math.min(e.y0, rect.top);
         e.x1 = Math.max(e.x1, rect.right); e.y1 = Math.max(e.y1, rect.bottom);
         e.fs = Math.max(e.fs, size);
         if (len > e.cl) { e.c = cs.color; e.cl = len; }
       }
+      if (line) (op < FAINT ? spacedFaint : spaced).delete(line);
       e.os += op * Math.max(1, len); e.ol += Math.max(1, len);
       e.t += gap + t;
       e.last = { right: rect.right, top: rect.top, bottom: rect.bottom };

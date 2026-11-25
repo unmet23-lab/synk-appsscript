@@ -37,20 +37,20 @@
   "hookSize": 84,
   "temp": "外面 -5°C",
   "tempSize": 58,
-  "gauge": "朋友的\n寒冷值",
-  "gaugeSize": 36,
+  "gauge": "朋友的\n冻僵值\n​",
+  "gaugeSize": 28,
   "sits": [
     "突然一阵冷风…",
     "公交还有15分钟才来…",
     "等了30分钟，公交还没来…",
-    "一到家…"
+    "一到家，朋友就钻进被窝…"
   ],
   "sitSize": 50,
   "reads": [
     "chu-wo~",
     "son si-ryeo…",
     "eo-reo juk-kket-tta!",
-    "i-bul ba-kkeun wi-heo-mae…"
+    "i-bul ba-kkeun wi-heo-mae"
   ],
   "means": [
     "好冷~",
@@ -60,11 +60,11 @@
   ],
   "meanSize": 52,
   "inviteRead": "pyeo-ni-jeom ga-ja~!",
-  "inviteMean": "去便利店吧~！",
-  "mongRead": "mong-go-reun yeong-ha sam-sip-do-ya~",
+  "inviteMean": "走，去便利店吧~！\n（我还想吃冰淇淋）",
+  "mongRead": "monggoreun yeongha samsip-doya~",
   "mongMean": "蒙古可是 -30°C 呢~",
   "shockRead": "sam… sam-sip do?!",
-  "shockMean": "零下…30度？！",
+  "shockMean": "零下…30度？！\n（冻僵值爆表）",
   "smallSize": 54,
   "end": "韩国的 -5°C\n在蒙古只算秋天",
   "endSize": 64,

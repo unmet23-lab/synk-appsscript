@@ -1,22 +1,27 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "f3",
- "text": "눈에 눈이네!",
- "dur": 0.918,
+ "text": "하하, 눈에 눈!",
+ "dur": 1.748,
  "words": [
   {
-   "text": "눈에",
-   "start": 0.02,
-   "end": 0.222
+   "text": "하하,",
+   "start": 0.03,
+   "end": 0.291
   },
   {
-   "text": "눈이네!",
-   "start": 0.302,
-   "end": 0.918
+   "text": "눈에",
+   "start": 0.995,
+   "end": 1.216
+  },
+  {
+   "text": "눈!",
+   "start": 1.316,
+   "end": 1.748
   }
  ],
  "source": {
-  "key": "550aa6dfa83a6cec7d58c1f902f1979f",
+  "key": "f1b6d04bd0ff8f29b908f42dfe8a629b",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -27,11 +32,11 @@
    "emotion": "smart",
    "intensity": 1,
    "tempo": 1,
-   "seed": 1124,
+   "seed": 77,
    "lufs": -16,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
-   "prev": "친구가 눈송이가 붙은 몽글을 보고 웃음을 참지 못하며 말한다.",
-   "next": "안 보여~!"
+   "prev": "남자가 낮은 목소리로 편하게 웃으며 말한다.",
+   "next": "하하."
   },
   "speed": 1,
   "cut": null
@@ -42,6 +47,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 242
+  "topPitchHz": 175
  }
 }

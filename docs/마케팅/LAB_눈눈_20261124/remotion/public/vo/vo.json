@@ -15,7 +15,7 @@
   "seed": 1124,
   "lufs": -16
  },
- "made": "2026-11-23T23:04:42.894Z",
+ "made": "2026-11-25T16:16:07.185Z",
  "lines": [
   {
    "id": "m1",
@@ -38,10 +38,10 @@
   {
    "id": "f2",
    "text": "이거, 눈!",
-   "dur": 1.544,
-   "syllablesPerSec": 1.94,
+   "dur": 1.031,
+   "syllablesPerSec": 2.91,
    "src": "f2.wav",
-   "key": "b06d7eb8ca8f6b83eb4be63afdc923c7",
+   "key": "979c31cfaf022b0a9c5600e8feecd963",
    "words": 2
   },
   {
@@ -64,12 +64,12 @@
   },
   {
    "id": "f3",
-   "text": "눈에 눈이네!",
-   "dur": 0.918,
-   "syllablesPerSec": 5.45,
+   "text": "하하, 눈에 눈!",
+   "dur": 1.748,
+   "syllablesPerSec": 2.86,
    "src": "f3.wav",
-   "key": "550aa6dfa83a6cec7d58c1f902f1979f",
-   "words": 2
+   "key": "f1b6d04bd0ff8f29b908f42dfe8a629b",
+   "words": 3
   },
   {
    "id": "m4",

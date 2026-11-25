@@ -6,8 +6,9 @@
     "cost": "12",
     "dur": "4초",
     "proj": "omni",
-    "start": "h1",
-    "key": "pops straight up out of the box"
+    "start": "h1u",
+    "end": "h1x",
+    "key": "the skeleton toy sways gently left and right on its spring and Mongle stays leaned back"
   },
   "h2": {
     "model": "Omni 1.2 Flash",
@@ -15,8 +16,9 @@
     "cost": "12",
     "dur": "4초",
     "proj": "omni",
-    "start": "h2n",
-    "key": "gives a lazy, casual little wave with the chopsticks"
+    "start": "h2u",
+    "key": "two flat felt eyelids sink halfway over its bead eyes, a small straight stitched mouth",
+    "end": "h2x"
   },
   "h3": {
     "model": "Omni 1.2 Flash",
@@ -24,8 +26,9 @@
     "cost": "12",
     "dur": "4초",
     "proj": "omni",
-    "start": "h3",
-    "key": "the spider drops a little further down on its thread"
+    "start": "h3s",
+    "end": "h3x",
+    "key": "slides straight down its thread from above and comes to a stop just left of"
   },
   "h4": {
     "model": "Omni 1.2 Flash",
@@ -33,16 +36,36 @@
     "cost": "12",
     "dur": "4초",
     "proj": "omni",
-    "start": "h4",
-    "key": "bumps the front of its body softly against the bottom of the door twice"
+    "start": "h4u",
+    "key": "its face changes to a panicked, about-to-cry face",
+    "end": "h4x"
   },
   "h5": {
     "model": "Omni 1.2 Flash",
     "n": 1,
-    "cost": "15",
-    "dur": "5초",
+    "cost": "18",
+    "dur": "6초",
     "proj": "omni",
-    "start": "h5n",
-    "key": "turns and runs away to the left out of the frame"
+    "start": "h5u",
+    "key": "spins around and scampers off to the left until he is completely out of the picture"
+  },
+  "h5c": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "h5c",
+    "key": "his raised hands jitter in quick tiny moves and his shoulders jerk back a little"
+  },
+  "h6": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "h6",
+    "key": "its dome tilts slowly to the left like a puzzled question and its face changes",
+    "end": "h6x"
   }
 }

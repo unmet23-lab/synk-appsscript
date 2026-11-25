@@ -1,0 +1,59 @@
+{
+  "_예산": 180,
+  "s1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "e_open",
+    "key": "the friend taps the spot under his eye twice with his fingertip, raises his eyebrows"
+  },
+  "s2": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "e_eye2",
+    "key": "both round black bead eyes stay wide open the whole time"
+  },
+  "s3": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "18",
+    "dur": "6초",
+    "proj": "omni",
+    "start": "e_up",
+    "end": "e_splatx",
+    "key": "it lands flat right on Mongle's eye on the left and sticks there"
+  },
+  "s4": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "e_laugh",
+    "key": "shoulders shaking up and down, rocking backward a little"
+  },
+  "s5": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "e_two",
+    "key": "the friend wiggles his pointing fingertip at the stuck snowflake"
+  },
+  "s6": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "e_splatx",
+    "end": "e_bothx",
+    "key": "one solid glossy black bead with no white part"
+  }
+}

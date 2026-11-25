@@ -15,15 +15,15 @@
   "seed": 1125,
   "lufs": -16
  },
- "made": "2026-11-25T02:01:40.945Z",
+ "made": "2026-11-25T14:59:52.461Z",
  "lines": [
   {
    "id": "m1",
    "text": "깜짝이야!",
-   "dur": 0.814,
-   "syllablesPerSec": 4.91,
+   "dur": 0.915,
+   "syllablesPerSec": 4.37,
    "src": "m1.wav",
-   "key": "a4a87cea1c9a6e4706297be956a26f6d",
+   "key": "a288b8aec41422ad0ad0161c928591c8",
    "words": 1
   },
   {
@@ -56,10 +56,10 @@
   {
    "id": "s1",
    "text": "깜짝이야!",
-   "dur": 0.89,
-   "syllablesPerSec": 4.49,
+   "dur": 1.107,
+   "syllablesPerSec": 3.61,
    "src": "s1.wav",
-   "key": "26d209c03553e230f3886d5735e779c9",
+   "key": "7681f88c06f37983aed685921ce1a621",
    "words": 1
   }
  ]

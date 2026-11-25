@@ -2,16 +2,16 @@
  "tool": "tools/나레이션굽기.mjs",
  "id": "m1",
  "text": "깜짝이야!",
- "dur": 0.814,
+ "dur": 0.915,
  "words": [
   {
    "text": "깜짝이야!",
    "start": 0.02,
-   "end": 0.814
+   "end": 0.915
   }
  ],
  "source": {
-  "key": "a4a87cea1c9a6e4706297be956a26f6d",
+  "key": "a288b8aec41422ad0ad0161c928591c8",
   "voice": {
    "id": "tc_666a9871abcf27a5169850d0",
    "name": "소진"
@@ -25,8 +25,8 @@
    "seed": 1125,
    "lufs": -16,
    "voiceId": "tc_666a9871abcf27a5169850d0",
-   "prev": "귀신의 집 첫 방, 상자를 들여다보던 몽글 앞으로 해골 인형이 펑 튀어나온다. 몽글이 뒤로 휙 젖히며 숨을 들이켜고 크게 외친다.",
-   "next": "헐…"
+   "prev": "아무 생각 없이 상자를 보다가 깜짝 놀란다. 놀라서 가슴을 쓸어내리며 말한다.",
+   "next": "아, 놀랐네."
   },
   "speed": 1,
   "cut": null
@@ -37,6 +37,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 563
+  "topPitchHz": 495
  }
 }
