@@ -2,94 +2,42 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="base.css">
 <style>
-/* 사업마다 사진은 하나: 마을(한국 유학) · 강의장(AI 강의) · 광고 영상(광고) */
-[data-v][hidden]{display:none!important}
-.hero{position:relative}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-/* 장면 */
+[hidden]{display:none!important}
+/* 장면: 사업마다 사진 하나 */
 .sc{position:absolute;inset:0;overflow:hidden;container-type:size}
-.sc .m{position:absolute;container-type:inline-size}
+.sc .m{position:absolute;container-type:inline-size;left:50%;transform:translateX(-50%)}
 .sc .m>img{position:absolute;inset:0;width:100%;height:100%}
-.sc>video{position:absolute;left:0;top:0;width:100%;height:118%;object-fit:cover}
-.town.tall{width:max(100cqw,100cqh*1040/1604);aspect-ratio:1040/1604;left:50%;bottom:0;transform:translateX(-50%)}
-.town.wide{width:max(100cqw,150cqh);aspect-ratio:3/2;right:0;top:calc((100cqh - max(100cqw,150cqh)/1.5)*.4)}
-.hall.tall{width:max(100cqw,100cqh*1080/1720);aspect-ratio:1080/1720;left:50%;top:0;transform:translateX(-50%)}
-.hall.wide{width:max(100cqw,150cqh);aspect-ratio:3/2;right:0;top:0}
-.scr{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#3a2a17;text-align:center;gap:.5em;font:600 1.28cqi/1.4 var(--sans)}
-.scr b{font:500 5.1cqi/1 var(--mono);letter-spacing:-.04em}
-.wide .scr{left:47.35%;top:7.45%;width:38.9%;height:33.6%}
-.tall .scr{left:8.26%;top:31.1%;width:69.2%;height:25%;font-size:3.5cqi}
-.tall .scr b{font-size:14.5cqi}
-.pin{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 8px;border-radius:999px;background:#fff;color:#1b1a12;font:700 15px/1 var(--sans);white-space:nowrap;box-shadow:0 8px 22px rgba(60,50,10,.2);transition:transform .3s var(--ease),background .3s,color .3s}
-.pin i{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#1b1a12;color:#fff;font:500 13px/1 var(--mono);font-style:normal}
-.pin[aria-pressed=true]{background:#1b1a12;color:#fff;transform:translate(-50%,-112%)}
-.pin[aria-pressed=true] i{background:#fff;color:#1b1a12}
-span.pin{height:auto;padding:.5em .8em;font-size:clamp(12px,2.9cqi,16px)}
-/* ── 가 · 세 칸 ── */
-.tri{position:relative;display:flex;gap:10px;height:var(--vh);min-height:600px;max-height:1180px;padding:64px 12px 12px;background:#fff}
-.tri a{position:relative;flex:1 1 0;min-width:0;border-radius:26px;overflow:hidden;background:#0b0b0c;color:#fff;transition:flex-grow .8s var(--ease)}
-.tri .k1{color:#14120f;background:#b9c9ea}
-.tri .k3::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.62),transparent 42%)}
-.tri .t{position:absolute;z-index:1;left:clamp(20px,2vw,34px);top:clamp(20px,2.1vw,34px);right:20px}
+.sc>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+.town{width:max(100cqw,84cqh*1040/1604);aspect-ratio:1040/1604;bottom:0}
+.hall{width:max(100cqw,84cqh*1080/1720);aspect-ratio:1080/1720;top:0}
+.scr{position:absolute;left:8.26%;top:31.1%;width:69.2%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5em;color:#3a2a17;text-align:center;font:600 3.5cqi/1.4 var(--sans)}
+.scr b{font:500 14.5cqi/1 var(--mono);letter-spacing:-.04em}
+.pin{position:absolute;transform:translate(-50%,-100%);padding:.5em .8em;border-radius:999px;background:#fff;color:#1b1a12;font:700 clamp(12px,2.9cqi,16px)/1 var(--sans);white-space:nowrap;box-shadow:0 8px 22px rgba(60,50,10,.2)}
+/* 세 칸 */
+.tri{position:relative;display:flex;gap:10px;height:var(--vh);min-height:600px;max-height:1180px;padding:12px;background:#fff}
+.tri a{position:relative;flex:1 1 0;min-width:0;border-radius:26px;overflow:hidden;background:#0b0b0c;color:#fff}
+.tri .k1{color:#14120f;background:#c5d3ed}.tri .k2{background:#010101}
+.tri .k3::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.66),transparent 46%)}
+.tri .t{position:absolute;z-index:1;left:clamp(20px,2vw,34px);right:20px}
 .tri small{display:block;font:600 clamp(16px,1.25vw,21px)/1.3 var(--sans);letter-spacing:-.01em}
-.tri b:not(.now){display:flex;align-items:center;gap:.34em;margin-top:8px;font:800 clamp(30px,3.15vw,56px)/1.1 var(--sans);letter-spacing:-.04em;white-space:nowrap}
-.tri .t b::after,.ga .win>b::after,.eav .say2 a::after{content:"";flex:none;width:.24em;height:.24em;border-right:.085em solid;border-top:.085em solid;transform:rotate(45deg);transition:translate .4s var(--ease)}
-.tri a:hover .t b::after,.eav .say2 a:hover::after{translate:.16em 0}
+.tri .t b{display:flex;align-items:center;gap:.34em;margin-top:8px;font:800 clamp(30px,3.15vw,56px)/1.1 var(--sans);letter-spacing:-.04em;white-space:nowrap}
+.tri .t b::after{content:"";flex:none;width:.24em;height:.24em;border-right:.085em solid;border-top:.085em solid;transform:rotate(45deg);transition:translate .4s var(--ease)}
+.tri a:hover .t b::after{translate:.16em 0}
+@media (hover:hover) and (min-width:901px){.tri a{transition:flex-grow .7s var(--ease)}.tri:has(a:hover) a:not(:hover){flex-grow:.91}.tri a:hover,.tri a:focus-visible{flex-grow:1.18}}
 @media (prefers-reduced-motion:no-preference){.tri a{animation:rise .9s var(--ease) both}.tri .k2{animation-delay:.1s}.tri .k3{animation-delay:.2s}@keyframes rise{from{translate:0 40px;opacity:0}to{translate:0 0;opacity:1}}}
-@media (min-width:901px) and (max-width:1240px){.tri{height:min(var(--vh),62vw)}}
-/* ── 나 · 한 장면씩 ── */
-.na{height:var(--vh);min-height:620px;max-height:1240px;padding:64px 16px 0;background:#fff;display:grid;grid-template-rows:1fr auto}
-.na .stage{position:relative;min-height:0;border-radius:34px;overflow:hidden;background:#0c0c0e;color:#fff}
-.na .sl{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .9s var(--ease),visibility 0s .9s}
-.na .sl.on{opacity:1;visibility:visible;transition-delay:0s}
-.na .s1{color:#1b1a12}
-.na .s3::before{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.6),transparent 60%)}
-.na .txt{position:absolute;z-index:1;left:clamp(22px,4.6vw,72px);top:clamp(30px,6.4svh,70px)}
-.na .txt p{font:600 clamp(22px,2.5vw,42px)/1.3 var(--sans);letter-spacing:-.02em}
-.na .txt h1{margin-top:4px;font:800 clamp(52px,7.6vw,132px)/1.08 var(--sans);letter-spacing:-.045em}
-.na .txt .row{margin-top:clamp(14px,2.4svh,26px);gap:18px}.na .txt .lead{font-weight:600}
-.na .sl .txt>*{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease) .1s,transform .9s var(--ease) .1s}
-.na .sl.on .txt>*{opacity:1;transform:none}
-.na .card{position:absolute;z-index:1;left:clamp(22px,4.6vw,72px);bottom:clamp(18px,3.4svh,36px);width:min(34vw,380px);border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 18px 46px rgba(60,50,10,.2);display:grid;grid-template-columns:38% 1fr}
-.na .card img{width:100%;height:100%;object-fit:cover;object-position:60% 42%}
-.na .card div{padding:16px 18px 18px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;align-content:center}
-.na .card b{font:800 20px/1.2 var(--sans);letter-spacing:-.03em}.na .card em{font:500 13px/1 var(--sans);color:var(--sub);font-style:normal;justify-self:end}.na .card p{grid-column:1/-1;font-size:15px;line-height:1.45}
-.na .tabs{padding:18px clamp(8px,4.6vw,72px) 22px;display:grid;grid-template-columns:repeat(3,1fr) auto;gap:clamp(12px,2vw,28px);align-items:center}
-.na .tabs button{padding-top:14px;font:700 clamp(15px,1.25vw,19px)/1.3 var(--sans);position:relative}
-.na .tabs button span{font-weight:500}.na .tabs button b{font-weight:800}
-.rev .lb{padding:0 4px 0 2px;color:#fff;flex:none;white-space:nowrap}
-.na .tabs button::before,.na .tabs button::after{content:"";position:absolute;left:0;top:0;height:3px;width:100%;border-radius:3px;background:currentColor;opacity:.3}
-.na .tabs button::after{opacity:1;transform:scaleX(0);transform-origin:left}
-.na .tabs button[aria-pressed=true]::after{transform:scaleX(1)}
-.na.auto .tabs button[aria-pressed=true]::after{animation:fill 7s linear}
-@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-/* ── 다 · 이름 앞의 장면 셋 ── */
-.ga{height:var(--vh);min-height:620px;max-height:1160px;overflow:hidden;background:#fff;color:#0b0b0c}
-.ga .wm{position:absolute;left:50%;bottom:-2.6vw;transform:translateX(-51%);font:800 46vw/1 var(--sans);letter-spacing:-.07em;white-space:nowrap;user-select:none;pointer-events:none}
-.ga .win{position:absolute;display:block;border-radius:22px;overflow:hidden;background:#111;box-shadow:0 22px 50px rgba(0,0,0,.2);transition:transform .6s var(--ease),opacity .4s}
-.ga .win>b{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:64px 20px 18px;font:700 clamp(22px,2vw,34px)/1.2 var(--sans);letter-spacing:-.02em;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.66))}
-.ga .win small{display:block;margin-bottom:5px;font:500 .62em/1.3 var(--sans);letter-spacing:-.01em;white-space:nowrap}
-.ga .w1{left:9.2vw;top:10.5%;width:17.2vw;height:min(29vw,66%)}
-.ga .w2{left:29.5vw;top:max(13.5%,104px);width:37.5vw;height:min(24.5vw,62%)}
-.ga .w3{left:70.6vw;top:31%;width:15.8vw;height:min(27vw,60%)}
-.ga .scr{font-size:2.4cqi}.ga .scr b{font-size:8.6cqi}.ga .scr b+span{display:none}
-.ga:has(.win:hover) .win:not(:hover){opacity:.55}
-.ga .win:hover{transform:scale(1.035)}
-@media (prefers-reduced-motion:no-preference){.ga .win{animation:up .9s var(--ease) both}.ga .w2{animation-delay:.12s}.ga .w3{animation-delay:.24s}@keyframes up{from{translate:0 46px;opacity:0}to{translate:0 0;opacity:1}}}
-/* ── 라 · 처마, 아래에 세 칸 한 줄 ── */
-.eav{height:var(--vh);min-height:600px;max-height:1180px;overflow:hidden;background:#050a1c;color:#fafaf9}
-.eav::before,.eav .roof{content:"";position:absolute;inset:0;background:url(a/eaves-night.webp) 100% 42%/cover}
-.eav .roof{-webkit-mask:url(a/roof-land.webp) 100% 42%/cover;mask:url(a/roof-land.webp) 100% 42%/cover}
-.eav .mk{position:absolute;left:var(--gut);top:clamp(84px,12svh,132px);height:min(40svh,34vw);width:auto}
-.eav::after{content:"";position:absolute;inset:auto 0 0 0;height:52%;background:linear-gradient(transparent,rgba(4,6,14,.9))}
-.eav .say2{position:absolute;z-index:2;left:var(--gut);right:var(--gut);bottom:clamp(34px,6svh,64px)}
-.eav .say2 a{display:flex;align-items:center;gap:.36em;width:fit-content;font:500 clamp(22px,2.35vw,42px)/1.42 var(--sans);letter-spacing:-.03em}
-.eav .say2 b{font-weight:800}
-.tri.low{height:clamp(440px,68svh,760px);min-height:0;padding-top:12px}
-/* 지금 */
-.no{background:#000}.no img{width:100%;height:auto}
+@media (prefers-reduced-motion:reduce){.tri a{transition:none!important}}
+@media (min-width:901px) and (max-width:1240px){.tri{height:min(var(--vh),66vw)}}
+/* 윗줄: 그림 위에 synk 하나와 언어만 */
+.nav{position:absolute;inset:calc(var(--rev) + 12px) 12px auto 12px;height:68px;padding:0 clamp(20px,2vw,34px);grid-template-columns:1fr auto 1fr;color:#fff}
+.nav .logo{grid-column:2;font-size:28px}
+.nav .lang{grid-column:3;justify-self:end;display:flex;gap:4px;font:600 14px/1 var(--sans)}
+.nav .lang>*{padding:12px 8px;opacity:.78}.nav .lang [aria-current]{opacity:1;font-weight:800}
+.tri .t{top:calc(68px + clamp(8px,1vw,18px))}
+/* 지금 공개본 */
+.no{position:relative;background:#000}.no img{width:100%;height:auto}
 .no p{position:absolute;left:50%;top:84px;transform:translateX(-50%);background:#fff;color:#111;border-radius:999px;padding:10px 18px;font:600 14px/1.3 var(--sans);white-space:nowrap}
-/* ── 시작하기 ── */
+/* 시작하기 */
 .go{padding:var(--S) var(--gut) clamp(60px,7vw,100px);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(40px,7vw,110px)}
 .go h2{font-size:var(--big)}
 .go .ls a{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:24px 0;border-bottom:1px solid var(--line);font:600 clamp(19px,1.9vw,27px)/1.3 var(--sans);letter-spacing:-.02em;transition:padding .35s var(--ease)}
@@ -101,63 +49,39 @@ span.pin{height:auto;padding:.5em .8em;font-size:clamp(12px,2.9cqi,16px)}
 .go .nw li{display:grid;grid-template-columns:64px 1fr;padding:16px 0;border-bottom:1px solid var(--line);font-size:16px;line-height:1.5}
 .go .nw time{font:500 14px/1.7 var(--mono);color:var(--sub)}
 .go ul{margin:0;padding:0;list-style:none}
-@media (min-width:901px){.na .tall{display:none}}
+/* 맨 아래: 묻는 곳 한 줄, 잔글씨 한 줄, 큰 synk */
+.end{padding:clamp(44px,5vw,76px) var(--gut) 0;display:grid;grid-template-columns:1fr auto;gap:18px 40px;align-items:end}
+body[data-g=on] .end{padding-top:0}
+.end .ask{font:600 clamp(19px,1.7vw,25px)/1.4 var(--sans);letter-spacing:-.02em}
+.end .ask a{font-weight:800}
+.end nav{display:flex;flex-wrap:wrap;gap:8px 24px;font:700 16px/1.4 var(--sans)}
+.foot{padding:clamp(22px,2.4vw,36px) var(--gut) clamp(8px,1vw,18px)}
+body[data-g=off] .go{display:none}
+.wm{position:relative;height:30.4vw;overflow:hidden;background:#fff}
+.wm span{position:absolute;left:50%;top:-12.6vw;transform:translateX(-51%);font:800 46vw/1 var(--sans);letter-spacing:-.07em;white-space:nowrap;color:#0b0b0c;user-select:none}
+@media (prefers-reduced-motion:no-preference){.wm.io span{translate:0 22%;opacity:0;transition:translate 1s var(--ease),opacity .6s}.wm.on span{translate:0 0;opacity:1}}
+.rev .lb{padding:0 4px 0 2px;color:#fff;flex:none;white-space:nowrap}
 @media (max-width:900px){
-  .na .wide,.na .card{display:none}
-  .tri,.tri.low{flex-direction:column;height:auto;max-height:none;padding:64px 10px 10px}.tri.low{padding-top:10px}.tri a{flex:none;height:min(122vw,560px)}
-  .na{padding:64px 10px 0}.na .stage{border-radius:26px}
-  .na .tabs{grid-template-columns:repeat(3,1fr);padding:14px 10px 16px}.na .tabs .btn{grid-column:1/-1;justify-self:start;order:-1}
-  .na .tabs button>span{display:none}
-  .na .txt{top:22px;left:22px;right:22px}.na .txt h1{font-size:54px}.na .txt .lead{display:none}
-  .na .s3::before{background:linear-gradient(rgba(0,0,0,.66),transparent 46%)}
-  .na .pin{height:34px;padding:0 11px 0 5px;font-size:14px}.na .pin i{width:24px;height:24px;font-size:12px}
-  .ga{height:auto;max-height:none;padding:84px 20px 28px;display:flex;flex-direction:column;gap:14px}
-  .ga .wm{position:static;transform:none;font-size:45vw;line-height:1;margin:-6vw 0 4vw -1.5vw}
-  .ga .win{position:relative;left:auto;top:auto;width:100%;height:104vw}.ga .w2{height:62vw}
-  .eav .mk{height:auto;width:80vw;top:96px}.eav::before{inset:0 0 24% 0;background:url(a/eaves-night-port.webp) 66% 100%/auto 112%;-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}.eav .roof{display:none}.eav::after{height:44%}
+  .tri{flex-direction:column;height:auto;max-height:none;padding:10px}.tri a{flex:none;height:min(122vw,560px)}
+  .nav{inset:calc(var(--rev) + 10px) 10px auto 10px;height:60px;color:#14120f;grid-template-columns:1fr auto 1fr}
+  .nav .logo{font-size:25px}.nav .lang{gap:0}.nav .lang>*{padding:12px 6px}
+  .tri .t{top:clamp(20px,2.1vw,34px)}
+  .tri .k1 .t{top:72px}
+  .tri .k1{height:min(138vw,620px)}
+  .end{grid-template-columns:1fr}
   .go{grid-template-columns:1fr}
 }
 </style>
 
-<header class="nav" id="nav"><a class="logo" href="index.html">synk</a><ul><li><a href="path.html">한국 유학</a></li><li><a href="shift.html">AI 강의</a></li><li><a href="pulse.html">광고</a></li><li><a href="founder.html">회사</a></li></ul><div class="r"><span>EN</span><span>MN</span><span class="me">내 홈</span></div></header>
+<header class="nav" id="nav"><a class="logo" href="index.html">synk</a><div class="lang" role="group" aria-label="언어"><b aria-current="true">한글</b><a href="https://synk.im/en/" target="_blank" rel="noopener" hreflang="en">ENG</a><a href="https://synk.im/mn/" target="_blank" rel="noopener" hreflang="mn">MN</a></div></header>
 
 <main>
 <section class="hero tri" data-v="a">
   <h1 class="vh">끝까지 책임지는 한국 유학, 실전 AI 활용 강의, 브랜드를 드라마로 만드는 광고</h1>
-  <a class="k1" href="path.html"><span class="sc"><div class="m town tall"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"><span class="pin" style="left:19.5%;top:59.4%">한국어</span><span class="pin" style="left:32.1%;top:44.7%">교실</span><span class="pin" style="left:63.5%;top:41.2%">유학</span><span class="pin" style="left:86%;top:51.4%">취업</span><span class="pin" style="left:75.6%;top:62.9%">모임</span></div></span><span class="t"><small>끝까지 책임지는</small><b>한국 유학</b></span></a>
-  <a class="k2" href="shift.html"><span class="sc"><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><span class="t"><small><span>실전</span></small><b>AI 활용 강의</b></span></a>
-  <a class="k3" href="pulse.html"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><span class="t"><small><span>브랜드를 드라마로 만드는</span></small><b>광고</b></span></a>
+  <a class="k1" href="path.html"><span class="sc"><div class="m town"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"><span class="pin" style="left:19.5%;top:59.4%">한국어</span><span class="pin" style="left:32.1%;top:44.7%">교실</span><span class="pin" style="left:63.5%;top:41.2%">유학</span><span class="pin" style="left:86%;top:51.4%">취업</span><span class="pin" style="left:75.6%;top:62.9%">모임</span></div></span><span class="t"><small>끝까지 책임지는</small><b>한국 유학</b></span></a>
+  <a class="k2" href="shift.html"><span class="sc"><div class="m hall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><span class="t"><small>실전</small><b>AI 활용 강의</b></span></a>
+  <a class="k3" href="pulse.html"><span class="sc"><video src="a/dodam-port.mp4" poster="a/dodam-port.webp" muted loop autoplay playsinline></video></span><span class="t"><small>브랜드를 드라마로 만드는</small><b>광고</b></span></a>
 </section>
-
-<section class="hero na" data-v="b" hidden>
-  <div class="stage">
-    <div class="sl s1 on"><span class="sc"><div class="m town wide"><img src="a/town-road.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"><button type="button" class="pin" data-i="0" style="left:45.5%;top:51%" aria-pressed="false"><i>1</i>한국어</button><button type="button" class="pin" data-i="1" style="left:54%;top:28%" aria-pressed="false"><i>2</i>교실</button><button type="button" class="pin" data-i="2" style="left:75.3%;top:22.5%" aria-pressed="true"><i>3</i>유학</button><button type="button" class="pin" data-i="3" style="left:90.5%;top:38.5%" aria-pressed="false"><i>4</i>취업</button><button type="button" class="pin" data-i="4" style="left:83.5%;top:56.5%" aria-pressed="false"><i>5</i>모임</button></div><div class="m town tall"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"><button type="button" class="pin" data-i="0" style="left:19.5%;top:59.4%" aria-pressed="false"><i>1</i>한국어</button><button type="button" class="pin" data-i="1" style="left:32.1%;top:44.7%" aria-pressed="false"><i>2</i>교실</button><button type="button" class="pin" data-i="2" style="left:63.5%;top:41.2%" aria-pressed="true"><i>3</i>유학</button><button type="button" class="pin" data-i="3" style="left:86%;top:51.4%" aria-pressed="false"><i>4</i>취업</button><button type="button" class="pin" data-i="4" style="left:75.6%;top:62.9%" aria-pressed="false"><i>5</i>모임</button></div></span><div class="txt"><p>끝까지 책임지는</p><h1>한국 유학</h1><div class="row"><a class="btn" href="path.html">사전예약하기</a><span class="lead">2027년 2월에 문을 엽니다</span></div></div>
-      <div class="card" aria-live="polite"><img src="a/in-3.webp" alt=""><div><b>유학</b><em>2028 목표</em><p>학교 고르기, 입학 서류, 면접까지 한국에 오기 전에 먼저 해 봅니다.</p></div></div></div>
-    <div class="sl s2"><span class="sc"><div class="m hall wide"><img src="a/hall.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><div class="txt"><p>실전</p><h1>AI 활용 강의</h1></div></div>
-    <div class="sl s3"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><div class="txt"><p>브랜드를 드라마로 만드는</p><h1>광고</h1></div></div>
-  </div>
-  <div class="tabs"><button type="button" aria-pressed="true"><span>끝까지 책임지는</span> <b>한국 유학</b></button><button type="button" aria-pressed="false"><span>실전</span> <b>AI 활용 강의</b></button><button type="button" aria-pressed="false"><span>브랜드를 드라마로 만드는</span> <b>광고</b></button><a class="btn" href="path.html">들어가 보기</a></div>
-</section>
-
-<section class="hero ga" data-v="c" hidden>
-  <span class="wm" aria-hidden="true">synk</span>
-  <h1 class="vh">끝까지 책임지는 한국 유학, 실전 AI 활용 강의, 브랜드를 드라마로 만드는 광고</h1>
-  <a class="win w1" href="path.html"><span class="sc"><div class="m town tall"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"></div></span><b><span><small>끝까지 책임지는</small>한국 유학</span></b></a>
-  <a class="win w2" href="shift.html"><span class="sc"><div class="m hall wide"><img src="a/hall.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><b><span><small>실전</small>AI 활용 강의</span></b></a>
-  <a class="win w3" href="pulse.html"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><b><span><small>브랜드를 드라마로 만드는</small>광고</span></b></a>
-</section>
-
-<section class="hero eav" data-v="d" hidden>
-  <svg class="mk" viewBox="0 0 560 328" fill="currentColor" aria-hidden="true"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>
-  <div class="roof"></div>
-  <div class="say2"><h1 class="vh">끝까지 책임지는 한국 유학, 실전 AI 활용 강의, 브랜드를 드라마로 만드는 광고</h1><a href="path.html"><span>끝까지 책임지는</span> <b>한국 유학</b></a><a href="shift.html"><span>실전</span> <b>AI 활용 강의</b></a><a href="pulse.html"><span>브랜드를 드라마로 만드는</span> <b>광고</b></a></div>
-</section>
-<section class="tri low" data-v="d" hidden>
-  <a class="k1" href="path.html"><span class="sc"><div class="m town tall"><img src="a/town-port.webp" alt="집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을"></div></span><span class="t"><b>한국 유학</b></span></a>
-  <a class="k2" href="shift.html"><span class="sc"><div class="m hall tall"><img src="a/hall-port.webp" alt="강의장에서 강의를 듣는 사람들"><div class="scr"><span>서울 지금</span><b class="now">00:00</b><span>이 시각에도 SYNK의 일 30여 가지가<br>사람 없이 돌고 있습니다</span></div></div></span><span class="t"><b>AI 활용 강의</b></span></a>
-  <a class="k3" href="pulse.html"><span class="sc"><video src="a/dodam-loop.mp4" poster="a/dodam-loop.webp" muted loop autoplay playsinline></video></span><span class="t"><b>광고</b></span></a>
-</section>
-
 <section class="hero no" data-v="now" hidden><img src="a/now.webp" alt="지금 공개된 첫 화면"><p>지금 공개본 · 1536×730 창에서 찍음</p></section>
 
 <section class="go" id="go">
@@ -173,28 +97,21 @@ span.pin{height:auto;padding:.5em .8em;font-size:clamp(12px,2.9cqi,16px)}
     <p style="margin-top:26px">무엇이든 물어보세요<br><b style="font-weight:700">hello@synk.im</b></p></div>
 </section>
 </main>
-<footer class="foot"><nav><span>창업자</span><span>아틀라스</span><span>개인정보처리방침</span><span>이용약관</span><span>데이터 삭제</span></nav><span>© 2026 SYNK</span></footer>
+<section class="end"><p class="ask">무엇이든 물어보세요 <a href="mailto:hello@synk.im">hello@synk.im</a></p><nav><a href="https://synk.im/#platform-get" target="_blank" rel="noopener">솔리오 받기</a><a href="https://synk.im/#now" target="_blank" rel="noopener">새 소식</a><a href="https://synk.im/account/platform.html#home" target="_blank" rel="noopener">내 홈</a></nav></section>
+<footer class="foot"><nav><a href="founder.html">회사</a><a href="https://synk.im/atlas/" target="_blank" rel="noopener">아틀라스</a><a href="https://synk.im/privacy/" target="_blank" rel="noopener">개인정보처리방침</a><a href="https://synk.im/terms/" target="_blank" rel="noopener">이용약관</a><a href="https://synk.im/data-deletion/" target="_blank" rel="noopener">데이터 삭제</a></nav><span>© 2026 SYNK</span></footer>
+<div class="wm" aria-hidden="true"><span>synk</span></div>
 
-<div class="rev" role="group" aria-label="시안 보기"><button type="button" data-go="a" aria-pressed="true">첫 화면 가</button><button type="button" data-go="b" aria-pressed="false">나</button><button type="button" data-go="c" aria-pressed="false">다</button><button type="button" data-go="d" aria-pressed="false">라</button><button type="button" data-go="now" aria-pressed="false">지금</button><i></i><a href="pulse.html">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html">창업자</a></div>
+<div class="rev" role="group" aria-label="시안 보기"><button type="button" data-go="a" aria-pressed="true">첫 화면</button><button type="button" data-go="now" aria-pressed="false">지금</button><i></i><span class="lb">아래 칸</span><button type="button" data-g="off" aria-pressed="true">뺌</button><button type="button" data-g="on" aria-pressed="false">그대로</button><i></i><a href="pulse.html">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html">창업자</a></div>
 
 <script>
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const calm=matchMedia('(prefers-reduced-motion:reduce)').matches,nav=$('#nav'),na=$('.na');
-let v='a',cur=0,tm;
-function show(k){v=['a','b','c','d','now'].includes(k)?k:'a';$$('[data-v]').forEach(h=>h.hidden=h.dataset.v!==v);$$('[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===v));$$('[data-v]:not([hidden]) video').forEach(x=>x.play().catch(()=>{}));scrollTo(0,0);paint();arm()}
-$$('[data-go]').forEach(b=>b.onclick=()=>{history.replaceState(null,'','#'+b.dataset.go);show(b.dataset.go)});
-function paint(){const y=scrollY,h=$('.hero:not([hidden])').offsetHeight;nav.classList.toggle('solid',y>h-70||v==='now');nav.classList.toggle('on-dark',y<=h-70&&v==='d')}
-addEventListener('scroll',paint,{passive:true});
+const nav=$('#nav'),B=document.body;
+function show(k){$$('[data-v]').forEach(h=>h.hidden=h.dataset.v!==k);$$('[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===k));scrollTo(0,0);paint()}
+$$('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+function low(k){B.dataset.g=k;$$('button[data-g]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===k));show('a')}
+$$('button[data-g]').forEach(b=>b.onclick=()=>low(b.dataset.g));
+function paint(){nav.hidden=!$('[data-v=now]').hidden;$$('.end,.foot,.wm').forEach(e=>e.hidden=nav.hidden);$('.go').hidden=nav.hidden}
 const tick=()=>{const t=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());$$('.now').forEach(e=>e.textContent=t)};tick();setInterval(tick,10000);
-/* 나: 장면 넘기기 */
-const hr=['path.html','shift.html','pulse.html'];
-function slide(i){cur=(i+3)%3;$$('.sl',na).forEach((s,k)=>s.classList.toggle('on',k===cur));$$('.tabs button',na).forEach((b,k)=>b.setAttribute('aria-pressed',k===cur));$('.tabs .btn',na).href=hr[cur]}
-function stop(){clearInterval(tm);na.classList.remove('auto')}
-function arm(){stop();if(v==='b'&&!calm){na.classList.add('auto');tm=setInterval(()=>slide(cur+1),7000)}}
-$$('.tabs button',na).forEach((b,i)=>b.onclick=()=>{stop();slide(i)});
-/* 나: 마을 다섯 곳 */
-const P=[['한국어','','드라마 속 선배에게 소리 내어 답해야 다음 장면이 열립니다.',1],['교실','2027 목표','선생님이 교실에서 고쳐 준 말을 앱이 평일에 다시 꺼냅니다.',2],['유학','2028 목표','학교 고르기, 입학 서류, 면접까지 한국에 오기 전에 먼저 해 봅니다.',3],['취업','2030 목표','일하고 싶은 자리에 필요한 조건부터 순서대로 짚습니다.',4],['모임','','먼저 온 선배가 첫 달을 함께합니다.',5]];
-const card=$('.na .card');
-$$('button.pin').forEach(b=>{const f=()=>{const i=+b.dataset.i,p=P[i];$$('button.pin').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.i===i));$('img',card).src='a/in-'+p[3]+'.webp';$('b',card).textContent=p[0];$('em',card).textContent=p[1];$('p',card).textContent=p[2]};b.onclick=()=>{stop();f()};b.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'){stop();f()}})});
-show(location.hash.slice(1)||'a');addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(['a','b','c','d','now'].includes(h))show(h)});
+const wm=$('.wm');if('IntersectionObserver'in window){wm.classList.add('io');new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){wm.classList.add('on');o.disconnect()}},{threshold:.25}).observe(wm)}
+low(location.hash==='#on'?'on':'off');
 </script>
