@@ -1118,6 +1118,70 @@ test('번역 초안: 비자 줄만 서류 종류를 고르고, 복사 표시는 
   assert.equal(calls.filter((c) => c.action === 'translate').at(-1).kind, 'transcript');
 });
 
+test('번역 초안: 대조가 끝나 다시 그려도 초점이 같은 탭 · 같은 언어 단추에 남는다', async t => {
+  for (const [what, selector, pickAt] of [
+    ['English 단추', 'button[data-action="setLang"][data-id="en"]', 0],
+    ['채널 탭(위 · 아래 중 둘째)', 'button[data-action="nav"][data-page="channels"]', 1],
+    ['초안 단추', 'button[data-action="trCopy"]', 0],
+  ]) {
+    const { server } = fakeTranslateServer();
+    let release = null;
+    const gate = new Promise(resolve => { release = resolve; });
+    const held = async (body, owner) => { if (body.action === 'check') await gate; return server(body, owner); };
+    const app = await openTranslate(t, { signedIn: true, translateServer: held });
+    app.click('trOpen', '[data-id="wku-ug-grad"]');
+    fillTranslate(app);
+    app.click('trSend');
+    await settle();
+    const buttons = app.root.querySelectorAll(selector);
+    assert.ok(buttons.length > pickAt, `${what}이 있다`);
+    buttons[pickAt].focus();
+    release();
+    await settle();
+    const now = app.document.activeElement;
+    assert.equal(now?.getAttribute('data-action'), buttons[pickAt].getAttribute('data-action'), what);
+    assert.equal(now?.getAttribute('data-page'), buttons[pickAt].getAttribute('data-page'), what);
+    assert.equal(now?.getAttribute('data-id'), buttons[pickAt].getAttribute('data-id'), what);
+    assert.equal(app.root.querySelectorAll(selector).indexOf(now), pickAt, `${what}: 위아래에 같은 단추가 있어도 누르던 자리`);
+  }
+});
+
+test('번역 초안: 손님이 로그인하고 돌아오면 같은 서류의 번역 쪽을 열고, 글 · 동의는 남기지 않는다', async t => {
+  const KEY = 'synk-path-translate-return';
+  const guest = await openTranslate(t);
+  guest.click('trOpen', '[data-id="wku-ug-grad"]');
+  guest.click('accountSignIn');
+  const kept = guest.record(KEY);
+  assert.deepEqual(Object.keys(JSON.parse(kept)).sort(), ['at', 'id'], '서류 줄 id와 누른 때만 둔다');
+  assert.equal(JSON.parse(kept).id, 'wku-ug-grad');
+  await settle();
+  assert.equal(guest.record(KEY), undefined, '로그인이 시작되지 않으면 지운다');
+  const seed = Object.fromEntries(guest.keys().map(key => [key, guest.record(key)]));
+  const real = studyData.programsFor(studyData.PROGRAMS, true);
+  const comeBack = (value, extra = {}) => boot(t, { raw: studyGoalDocument(), programs: real, signedIn: true, seed: { ...seed, [KEY]: value }, ...extra });
+
+  const back = await comeBack(JSON.stringify({ id: 'wku-ug-grad', at: Date.now() - 1000 }));
+  await settle();
+  assert.match(back.root.querySelector('h1').textContent, /졸업\(예정\)증명서/);
+  assert.equal(back.root.querySelector('#tr-text').value, '', '글은 남기지 않는다');
+  assert.equal(back.root.querySelector('#tr-agree'), null, '동의는 다시 받는다');
+  assert.equal(back.document.activeElement?.getAttribute('id'), 'tr-title', '돌아오면 쪽 제목에 초점');
+  assert.equal(back.record(KEY), undefined, '한 번만 쓴다');
+
+  for (const [what, value] of [['10분이 지난 값', JSON.stringify({ id: 'wku-ug-grad', at: Date.now() - 11 * 60 * 1000 })], ['앞선 시각', JSON.stringify({ id: 'wku-ug-grad', at: Date.now() + 60 * 60 * 1000 })], ['번역 단추가 없는 서류', JSON.stringify({ id: 'wku-ug-passport', at: Date.now() })], ['깨진 값', '{"id":']]) {
+    const app = await comeBack(value);
+    await settle();
+    assert.equal(app.root.querySelector('#tr-text'), null, what);
+    assert.equal(app.record(KEY), undefined, `${what}은 지운다`);
+  }
+  const noProgram = await boot(t, { raw: studyGoalDocument(), programs: real, signedIn: true, seed: { [KEY]: JSON.stringify({ id: 'wku-ug-grad', at: Date.now() }) } });
+  await settle();
+  assert.equal(noProgram.root.querySelector('#tr-text'), null, '고른 과정이 없으면 열지 않는다');
+  const cancelled = await boot(t, { raw: studyGoalDocument(), programs: real, seed: { ...seed, [KEY]: JSON.stringify({ id: 'wku-ug-grad', at: Date.now() }) } });
+  await settle();
+  assert.equal(cancelled.record(KEY), undefined, '로그인을 그만두고 손님으로 돌아오면 지운다');
+});
+
 test('번역 초안: 한도 · 쉼 · 대조 실패를 알리고, 계정이 바뀌면 지운다', async t => {
   const limit = fakeTranslateServer({ translateStatus: 'limit' });
   const app = await openTranslate(t, { signedIn: true, translateServer: limit.server });

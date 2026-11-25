@@ -656,11 +656,49 @@ async function trSend() {
   say(accL('번역 초안이 나왔어요. 번역본이 아니에요. 이어서 다시 몽골어로 옮겨 견줘요.', 'The translation draft is ready. It is not a translation for submission. Next, it is translated back into Mongolian for a check.'));
   void trRunCheck(tr);
 }
-// 대조가 끝나 쪽을 다시 그리면 id 없는 단추의 초점이 사라진다. 누르던 단추를 data-action으로 다시 찾아 돌려준다.
+// 대조가 끝나 쪽을 다시 그리면 id 없는 단추의 초점이 사라진다. 누르던 단추를 다시 찾아 돌려준다.
+// data-action만으로는 탭 · 언어처럼 같은 동작의 다른 단추가 걸리므로 data-page · data-id까지 견주고, 같은 단추가 위아래에 둘이면 몇 번째였는지로 가른다.
+function trFocusTarget(el) {
+  if (!el || !root.contains(el) || el.id || !el.getAttribute('data-action')) return null;
+  const parts = ['data-action', 'data-page', 'data-id'].filter((a) => el.getAttribute(a) !== null).map((a) => [a, el.getAttribute(a)]);
+  if (!parts.every(([, v]) => /^[\w-]+$/.test(v))) return null;
+  const sel = parts.map(([a, v]) => `[${a}="${v}"]`).join('');
+  const at = [...root.querySelectorAll(sel)].indexOf(el);
+  return at < 0 ? null : { sel, at };
+}
 function trRender() {
-  const ae = document.activeElement, act = ae && root.contains(ae) && !ae.id ? ae.getAttribute('data-action') : null;
+  const target = trFocusTarget(document.activeElement);
   render(false);
-  if (act) root.querySelector(`[data-action="${act}"]`)?.focus();
+  if (target) [...root.querySelectorAll(target.sel)][target.at]?.focus();
+}
+// 손님이 번역 쪽에서 로그인하면 웹 로그인이 쪽을 새로 연다. 돌아온 뒤 같은 서류의 번역 쪽을 다시 연다.
+// 이 탭에 두는 것은 서류 줄 id와 누른 때뿐이다(글 · 초안 · 동의는 없다). 10분이 지나거나 다른 쪽으로 가거나 손님으로 돌아오면 지운다.
+const TR_RETURN_KEY = 'synk-path-translate-return', TR_RETURN_MS = 10 * 60 * 1000;
+const trReturnSet = (id) => { try { tabStorage()?.setItem(TR_RETURN_KEY, JSON.stringify({ id, at: Date.now() })); } catch { /* 저장이 막힌 탭: 돌아오기만 없다 */ } };
+const trReturnClear = () => { try { tabStorage()?.removeItem(TR_RETURN_KEY); } catch { /* 위와 같음 */ } };
+function trReturnGet() {
+  let raw = null;
+  try { raw = tabStorage()?.getItem(TR_RETURN_KEY) ?? null; } catch { return null; }
+  if (raw === null) return null;
+  try {
+    const v = JSON.parse(raw), age = Date.now() - v.at;
+    if (typeof v.id === 'string' && Number.isFinite(age) && age >= 0 && age <= TR_RETURN_MS && translateKindOf(v.id)) return v.id;
+  } catch { /* 깨진 값은 지운다 */ }
+  trReturnClear();
+  return null;
+}
+/** 돌아올 서류가 있고 계정과 조건이 준비됐으면 번역 쪽을 연다(빈 쪽). 열었으면 true. 계정의 과정이 달라 그 서류가 없으면 열지 않는다. */
+function trResume() {
+  if (S.page === 'translate') { if (session.status().signedIn) trReturnClear(); return false; }
+  if (S.tr || S.page !== 'today' || !session.status().signedIn || !session.document()?.state || !state.onboarded) return false;
+  const id = trReturnGet();
+  // 계정의 조건을 아직 못 읽었거나 고르기를 기다리는 동안에는 열지 않고 기다린다.
+  if (!id || studyLocked() || studyAcct.snapshot().phase === 'loading') return false;
+  trReturnClear();
+  S.tr = newTr(id);
+  if (!trDoc()) { S.tr = null; return false; }
+  S.page = 'translate';
+  return true;
 }
 async function trRunCheck(tr) {
   if (!tr?.sent || !tr.drafts) return;
@@ -695,6 +733,7 @@ function render(focus = true) {
     if (had) { S.tr = null; if (S.page === 'translate') S.flash = esc(trMsg('account')); } else S.tr = newTr(S.tr.docId);
   }
   if (S.page === 'translate' && (!S.tr || !trDoc())) { S.tr = null; S.page = STUDY_ON ? 'path' : 'today'; }
+  if (trResume()) focus = true;
   const accSt = session.status();
   const ae = document.activeElement;
   const keepId = !focus && ae && root.contains(ae) ? ae.id : '';
@@ -732,7 +771,7 @@ function go(page) {
   if (S.page === 'translate' && page !== 'translate') {
     if (S.tr?.phase === 'draft' && !confirm(state.lang === 'en' ? 'Leaving this page deletes the draft. It is not stored anywhere. Leave?' : '이 화면을 떠나면 초안이 지워져요. 어디에도 저장하지 않아요. 떠날까요?')) return;
     if (S.tr?.phase === 'sending' && !confirm(state.lang === 'en' ? 'The draft is still being made. If you leave, it is discarded and one of today’s 10 may still be used. Leave?' : '초안을 만드는 중이에요. 지금 떠나면 초안은 버려지고 오늘 한 장이 쓰일 수 있어요. 떠날까요?')) return;
-    S.tr = null;
+    S.tr = null; trReturnClear();
   }
   S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.dateNote = null; S.docFull = false; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }
 
@@ -1149,7 +1188,10 @@ Object.assign(ACT, {
     S.flash = ok ? accL('남은 변경을 계정에 올려요.', 'Sending the unsent changes to your account.') : accL('남은 변경을 찾지 못했어요. 계정 것을 써요.', 'Could not find the unsent changes. Using the account.');
     render(false); say(S.flash);
   },
-  accountSignIn: async () => { await session.signIn(); },
+  accountSignIn: async () => {
+    if (S.page === 'translate' && S.tr) trReturnSet(S.tr.docId);
+    try { if (!(await session.signIn())) trReturnClear(); } catch (err) { trReturnClear(); throw err; }
+  },
   accountSignOut: async () => {
     // 계정에 올라가지 않은 조건 변경이 있으면 한 번 더 보내 보고, 그래도 남으면 확인받고 지운다(공용 기기).
     if (studyAcct.snapshot().pending) {
@@ -1324,5 +1366,10 @@ root.addEventListener('keydown', (e) => {
 S.draft = newDraft();
 render(false);
 void session.init().catch((err) => { const m = getAccountErrorMessage(err, state.lang); S.flash = esc(m); render(false); say(m); })
-  .finally(() => { studySettled = true; if (syncStudyOwner()) render(false); });
+  .finally(() => {
+    studySettled = true;
+    // 로그인을 그만두고 손님으로 돌아온 것이 확실할 때만 지운다(일시 연결 오류나 로그인 이동 중에는 남긴다).
+    if (['signed-out', 'unconfigured'].includes(session.status().accountStatus)) trReturnClear();
+    if (syncStudyOwner()) render(false);
+  });
 void jobsFeed.load();
