@@ -128,7 +128,7 @@ function fixture() {
   }, '2026-11-09T10:01:00.000Z');
 }
 
-async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null, studyGate = null } = {}) {
+async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null, studyGate = null, emptyAccount = false } = {}) {
   const initial = raw ?? JSON.stringify(legacy ? fixture() : { ...createPathDocument('ko'), state: fixture() });
   const originalKey = legacy ? LEGACY_KEY : GUEST_KEY;
   const records = new Map([[originalKey, initial]]);
@@ -184,7 +184,7 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
       if (operation === 'pathSave' && conflictSave) throw Object.assign(new Error('Synthetic revision conflict'), { code: 'REVISION_CONFLICT', revision: 2 });
       if (operation === 'pathSave') { remote = structuredClone(values.state); revision++; }
       return { ok: true, scope: 'synk-path', resource: 'path-app', accountId: owner, revision,
-        updatedAt: '2026-11-10T00:00:00.000Z', state: structuredClone(remote) };
+        updatedAt: '2026-11-10T00:00:00.000Z', state: emptyAccount ? null : structuredClone(remote) };
     },
     signOut: async () => { providerSignOuts++; },
     requestTranslate: async body => { if (!translateServer) throw Object.assign(new Error('off'), { code: 'PATH_TRANSLATE_UNAVAILABLE' }); return translateServer(body, owner); },
@@ -1189,6 +1189,15 @@ test('번역 초안: 손님이 로그인하고 돌아오면 같은 서류의 번
     if (!stay) { app.click('nav', '[data-page="today"]'); assert.equal(app.root.querySelector('#tr-text'), null, `${what}: 「오늘」을 다시 눌러도`); }
     assert.equal(app.record(KEY), undefined, `${what}: 남기지 않는다`);
   }
+  // 계정에 글이 없어 「나」 쪽이 저절로 열린 채 로그아웃하면(공용 기기) 다음 사람에게 남기지 않는다.
+  const leaving = await comeBack(JSON.stringify({ id: 'wku-ug-grad', at: Date.now() }), { emptyAccount: true });
+  await settle();
+  assert.ok(leaving.record(KEY), '저절로 열린 쪽에서는 남긴다');
+  leaving.click('accountSignOut');
+  await settle();
+  assert.equal(leaving.providerSignOuts(), 1);
+  assert.equal(leaving.record(KEY), undefined, '로그아웃하면 지운다');
+  assert.equal(leaving.root.querySelector('#tr-title'), null, '로그아웃한 화면에 번역 쪽이 열리지 않는다');
   const noProgram = await boot(t, { raw: studyGoalDocument(), programs: real, signedIn: true, seed: { [KEY]: JSON.stringify({ id: 'wku-ug-grad', at: Date.now() }) } });
   await settle();
   assert.equal(noProgram.root.querySelector('#tr-text'), null, '고른 과정이 없으면 열지 않는다');
