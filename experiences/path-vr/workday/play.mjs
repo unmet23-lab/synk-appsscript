@@ -420,21 +420,12 @@ function replay() {
   render();
 }
 let pointAudio = null;
-/** A point's name is always shown. It is also spoken when the job supplies a recording, or when
- * this device has a Korean voice of its own; otherwise it stays silent. */
+/** A point's name is always shown, and is heard from its own recording (the engine test checks that every point has one). */
 function sayPointName(point) {
   pointAudio?.pause(); pointAudio = null;
-  const synth = globalThis.speechSynthesis;
-  try { synth?.cancel(); } catch { /* no voice engine */ }
-  if (!point) return;
-  if (point.audio) { pointAudio = new Audio(new URL(point.audio, jobBase).href); void pointAudio.play().catch(() => {}); return; }
-  try {
-    const korean = synth?.getVoices().find((item) => /^ko(?:[-_]|$)/i.test(item.lang));
-    if (!korean) return;
-    const words = new SpeechSynthesisUtterance(point.label);
-    words.lang = 'ko-KR'; words.voice = korean; words.rate = 0.9;
-    synth.speak(words);
-  } catch { /* the name stays on screen without sound */ }
+  if (!point?.audio) return;
+  pointAudio = new Audio(new URL(point.audio, jobBase).href);
+  void pointAudio.play().catch(() => {});
 }
 function pause() {
   const state = session.snapshot();
