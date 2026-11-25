@@ -11,7 +11,9 @@ import * as atlas from '../../../packages/atlas/src/index.mjs';
 import { sliceOf } from '../../../packages/atlas/tools/map-ship.mjs';
 import { worldPosition } from '../world-position-kit.mjs';
 import { worldLearning } from '../world-learning-map.mjs';
-import { homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
+import { createWriteCount, homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
+// 길 표(4-6e-2 — 단계4_계획 §25-3)는 입구가 홈 플래너에 실어 준다. 이 시험의 플래너도 싣는다(게임 목록은 싣지 않는다 — 게임 길은 qa/atlas-next-routes-shell.test.mjs가 본다).
+import { createRoutes } from '../world-home-games.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
 import { createPlanLog } from '../world-plan-next.mjs';
 import { WRITING_CANDIDATES } from '../world-writing-practice.mjs';
@@ -27,7 +29,7 @@ const INDEX = readJson('../../../packages/atlas/map/index.json');
 const UNITS = readJson('../../../packages/atlas/map/units.json');
 const WORDS = readJson('../../../packages/atlas/map/words.json');
 worldPosition.topik.use(readJson('../world-topik-items.json'));
-const PLANNER = Object.freeze({ createWorldTodayPlan, watchHomePlan, todayKey, say: () => '', position: positionPlanner, plan: planPlanner });
+const PLANNER = Object.freeze({ createWorldTodayPlan, watchHomePlan, todayKey, say: () => '', position: positionPlanner, createRoutes, plan: planPlanner });
 const EXAM_T1 = { reasons: ['exam'], primaryReason: 'exam', examType: 'topik1', targetGrade: 2, examDate: '2027-04-18', weeklyMinutes: 120 };
 const EXAM_T2 = { reasons: ['exam'], primaryReason: 'exam', examType: 'topik2', targetGrade: 4, examDate: '2027-04-18', weeklyMinutes: 120 };
 const tick = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
@@ -78,6 +80,20 @@ async function homeCoach() {
 // 판 상자: innerHTML 글을 들고 단추 누르기만 흉내 낸다.
 function stage() {
   const clicks = [];
+  const made = new Map();
+  const buttonsOf = (html, name) => {
+    const key = `${name}|${html}`;
+    if (!made.has(key))
+      made.set(
+        key,
+        [...html.matchAll(new RegExp(`\\s${name}(?:="([^"]*)")?(?=[\\s>])`, 'g'))].map(([, value = '']) => {
+          const heard = [];
+          const camel = name.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+          return { value, dataset: { [camel]: value }, addEventListener: (type, fn) => type === 'click' && heard.push(fn), click: () => heard.forEach(fn => fn({})), focus() {}, getAttribute: attr => (attr === name ? value : null), hasAttribute: attr => attr === name };
+        }),
+      );
+    return made.get(key);
+  };
   const box = {
     html: '',
     isConnected: true,
@@ -93,9 +109,11 @@ function stage() {
     contains: () => true,
     closest: () => null,
     focus() {},
-    querySelectorAll: () => [],
+    // 「이 항목 연습하기」 단추만 글에서 짓는다(끝 화면이 길을 거는 자리 — 사슬 -c GC2). 나머지는 앞과 같이 흉내만 낸다.
+    querySelectorAll: selector => (selector === '[data-position-practice]' ? buttonsOf(box.html, 'data-position-practice') : []),
     querySelector: () => ({ focus() {}, addEventListener() {} }),
   };
+  box.practice = skill => buttonsOf(box.html, 'data-position-practice').find(button => button.value === skill) ?? null;
   box.press = (attr, value = '') => {
     const camel = attr.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     const button = { dataset: { [camel]: value }, disabled: false, hasAttribute: name => name === attr };
@@ -114,15 +132,21 @@ function shell({
   values = { audio: 'off', ...EXAM_T1 },
   wrap = made => made,
   planLog = null,
-  planner = async () => PLANNER,
+  planner = null,
   fast = false,
   focusing = false,
   writingPractice = null,
   speakingPractice = null,
+  panels = false,
+  atlasNext = null,
 } = {}) {
   const opens = [];
+  const launched = [];
   const toasts = [];
   const waits = [];
+  // 기록이 바뀐 셈(4-6e-2) — 입구처럼 홈 코치를 그 겉으로 내고(쓰기 · 받기 알림마다 오른다) 플래너의 writes로 넘긴다.
+  const writes = createWriteCount();
+  planner ??= async () => ({ ...PLANNER, writes: writes.count });
   const engine = {
     ...worldLearning,
     engine: {
@@ -216,7 +240,14 @@ function shell({
         }
       : setTimeout,
   };
-  const state = { values, panel: null };
+  const state = { values, panel: panels ? '' : null };
+  // 판 자원(panels일 때만) — 진짜 홈처럼 한 칸이다. 새 자원을 달거나 판을 바꾸거나 닫으면 앞 자원을 바로 정리한다(home.mjs attachPanelResource · openPanel).
+  let resource = null;
+  const dropResource = () => {
+    const was = resource;
+    resource = null;
+    was?.dispose?.();
+  };
   const progress = {
     owner: 'guest',
     learningProfile: () => ({ profile: { status: 'active', revision: 1, consent: true } }),
@@ -234,10 +265,24 @@ function shell({
     toast(text) {
       toasts.push(String(text));
     },
-    closePanel() {},
-    attachPanelResource() {},
+    closePanel() {
+      if (!panels) return;
+      dropResource();
+      state.panel = '';
+      shown.push('');
+    },
+    attachPanelResource(value) {
+      if (!panels || value === resource) return;
+      const was = resource;
+      resource = value;
+      was?.dispose?.();
+    },
     openPanel: () => state.panel,
-    showPanel(title, html) {
+    showPanel(title, html, options = {}) {
+      if (panels) {
+        dropResource();
+        state.panel = options?.type || 'life-position';
+      }
       shown.push(String(html));
       if (/data-position-stage/.test(html)) box = stage();
       // 진짜 홈처럼 판 글을 바꾸면 스크롤 자리가 처음으로 가고 초점은 닫기 단추로 간다(focusing일 때만).
@@ -249,7 +294,7 @@ function shell({
   };
   const homeNext = {
     async coach() {
-      const made = wrap(await homeCoach());
+      const made = writes.face(wrap(await homeCoach()));
       coaches.push(made);
       return made;
     },
@@ -269,7 +314,7 @@ function shell({
     getProgress: () => progress,
     engine,
     createPlan: () => ({ selected: null, reason: '' }),
-    launchGame() {},
+    launchGame: id => launched.push(id),
     startLesson() {},
     startReview() {},
     position: worldPosition,
@@ -277,10 +322,14 @@ function shell({
     homeNext,
     ...(writingPractice ? { writingPractice } : {}),
     ...(speakingPractice ? { speakingPractice } : {}),
+    ...(atlasNext ? { atlasNext } : {}),
   });
   return {
     education,
+    // 학생이 판을 닫는다(panels일 때만).
+    closePanel: () => home.closePanel(),
     opens,
+    launched,
     shown,
     coaches,
     state,
@@ -611,6 +660,624 @@ test('새 길 짧은 진단이 끝나면 이 기기의 판 기록에 다시 확�
     assert.equal(asked.length, changed + 1, '목표 시험을 바꾸면 다시 묻는다');
   } finally {
     app.dispose();
+  }
+});
+
+test('게임 판 끝(§25-3 불변식 나) — 셸은 입구의 판 끝을 듣고 판 끝 수를 올려 묶음 만남을 다시 묻고, 홈과 열린 이번 주 계획 판을 다시 그려 방금 한 게임 판이 듣기 한 수로 든다 · 문서를 닫으면 듣기를 끊는다', async () => {
+  const logs = new Map();
+  const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
+  const log = createPlanLog({ storage: memory, store: 'synk-atlas:guest', gen: 0 });
+  // 입구의 판 끝 듣기(홈 플래너의 gameEnds) — 앱의 입구 감싸개는 메서드를 이름으로 옮기므로 셸은 플래너로 건다.
+  const ears = new Set();
+  const asked = [];
+  const app = shell({
+    values: { ...EXAM_T1 },
+    planner: async () => ({ ...PLANNER, gameEnds: fn => (ears.add(fn), () => ears.delete(fn)) }),
+    planLog: made => (made ? log : null),
+    wrap: made => ({
+      ...made,
+      exposures(items) {
+        asked.push(items.length);
+        return made.exposures(items);
+      },
+    }),
+  });
+  try {
+    await clearOfWeekEnd();
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    assert.equal(ears.size, 1, '셸이 입구의 게임 판 끝을 듣는다');
+    const listening = () => app.plan().examPlan.areas.find(row => row.area === 'listening')?.done ?? 0;
+    assert.equal(listening(), 0);
+    assert.equal(await app.education.plan(), 'shown', '이번 주 계획 판을 연다');
+    const boards = app.shown.length;
+    const board = app.last();
+    // 판에 보이는 듣기 줄의 수 — 안쪽 계획의 done이 아니라 학생이 보는 글이다(새 사슬 GA4).
+    const shownCount = html => Number(/<li data-area="listening">.*?class="wplan-area-count">\D*(\d+)/.exec(html)?.[1] ?? Number.NaN);
+    assert.equal(shownCount(board), 0, '판의 듣기 줄은 0회');
+    const before = asked.length;
+    // 입구가 게임 판의 판 기록을 적은 뒤 알린다. 실제 패널 닫기 알림처럼 판의 다시 접기(folded)를 싣는다(4-6e-2 검수 GPT GA2).
+    const at = recentInWeek(60_000);
+    log.record('listening', at, 'korean-runner');
+    for (const fn of [...ears]) fn({ gameId: 'korean-runner', at, areas: ['listening'], folded: Promise.resolve(true) });
+    await until(() => app.shown.length > boards, '열린 이번 주 계획 판을 다시 그림');
+    assert.match(app.last(), /data-plan-board/);
+    // 다시 그린 판은 새 계획으로 지은 글이다 — 앞 글을 다시 보이면 학생이 보는 듣기 수가 그대로다(GA3).
+    assert.notEqual(app.last(), board, '열린 판이 방금 한 게임 판을 반영한 새 글이다');
+    assert.equal(shownCount(app.last()), 1, '판의 듣기 줄이 1회로 바뀐다');
+    assert.equal(listening(), 1, '방금 한 게임 판이 듣기 한 수로 든다');
+    assert.equal(asked.length, before + 1, '판 끝 수가 올라 묶음 만남을 다시 묻는다(답 없이 문항만 본 판의 만남)');
+    // 센 첫 답이 없는 판 끝도 판 끝 수를 올린다.
+    for (const fn of [...ears]) fn({ gameId: 'korean-runner', at, areas: [], folded: null });
+    await tick(20);
+    assert.equal(asked.length, before + 2, '센 첫 답이 없는 판 끝도 묶음 만남을 다시 묻게 한다');
+    assert.equal(listening(), 1);
+  } finally {
+    app.dispose();
+  }
+  assert.equal(ears.size, 0, '문서를 닫으면 판 끝 듣기를 끊는다');
+});
+
+// ── 게임 판 끝과 다시 접기의 그리기(사슬 -c 카본 C1 · -d 카본 A1 · GPT GA1 · -d-r2) ──
+// 길 표의 답을 바꿔 끼운다 — way()가 참이면 모든 능력의 길이 게임(리듬)이고, 아니면 길이 없다(내 위치의 단추가 서고 없어진다).
+function swapRoutes(way) {
+  const open = { id: 'world.play.rhythm', label: '말의 리듬', route: 'game', gameId: 'rhythm', minutes: 3, supports: [], targets: [] };
+  const answerOf = id =>
+    way()
+      ? { skillId: id, route: 'game', gameId: 'rhythm', id: open.id, practice: [], games: [{ id: open.id, gameId: 'rhythm', open, items: [], left: 0 }] }
+      : { skillId: id, route: null, practice: [], games: [] };
+  return options => ({ ...createRoutes(options), routeOf: answerOf, reader: () => answerOf });
+}
+// 입구의 겉(짧은 연습) — 코치 받기를 시험이 붙들었다가 준다(calls의 give). 판은 문항 하나를 보인 채 선다. broken: 판을 짓다 던진다.
+function practiceEntry({ broken = false } = {}) {
+  const calls = [];
+  const mocks = [];
+  const entry = {
+    broken,
+    calls,
+    mocks,
+    practiceCoach: () => new Promise(resolve => calls.push({ give: (coach = {}) => resolve(coach) })),
+    mockCoach: () => new Promise(resolve => mocks.push({ give: () => resolve(null) })),
+    createPracticeNextSession: ({ pool }) => {
+      if (entry.broken) throw Error('판을 짓지 못했다');
+      const view = { item: pool[0], index: 0, total: 5, upTo: true, heard: false, why: null, stubborn: false, targetLabel: null };
+      let at = -1;
+      return {
+        get current() {
+          return at === 0 ? view : null;
+        },
+        next: () => ((at += 1) === 0 ? view : null),
+        preHelp() {},
+        answer() {},
+        unknown() {},
+        skip() {},
+        replay: () => null,
+        delivery() {},
+        stop() {},
+        results: () => [],
+        settled: async () => [],
+        freshLeft: () => 0,
+        ending: { kind: 'done' },
+      };
+    },
+    retired: () => () => {},
+  };
+  return entry;
+}
+const READING = [...new Set(worldPosition.practice.pool.filter(item => item.skillId.startsWith('ko.reading.')).map(item => item.skillId))];
+const practiceButtons = html => [...html.matchAll(/data-position-practice="([^"]+)"/g)].length;
+const practiceShown = app => app.shown.filter(html => html.includes('data-practice-stage')).length;
+
+// 셸 하나 — 게임 판 끝을 내고(end), 붙든 다시 접기를 준다(hold). 판(board)을 연 채로 돌려준다. broken: 연습 판을 짓다 던지는 입구.
+// opened가 거짓이면 판을 열지 않고 돌려준다(openBoard로 연다).
+async function foldApp(board, { practice = false, broken = false, opened = true } = {}) {
+  const ears = new Set();
+  const logs = new Map();
+  const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
+  const log = createPlanLog({ storage: memory, store: 'synk-atlas:guest', gen: 0 });
+  const way = { game: false };
+  const entry = practice ? practiceEntry({ broken }) : null;
+  const app = shell({
+    values: { audio: 'available', ...EXAM_T1 },
+    panels: true,
+    // 이번 주 계획은 진짜 길 표로 짓는다(길이 없으면 듣기 줄이 서지 않는다) — 바뀌는 것은 판 기록의 수다.
+    planner: async () => ({ ...PLANNER, ...(board === 'plan' ? {} : { createRoutes: swapRoutes(() => way.game) }), gameEnds: fn => (ears.add(fn), () => ears.delete(fn)) }),
+    planLog: made => (made ? log : null),
+    ...(entry ? { atlasNext: entry } : {}),
+  });
+  const held = [];
+  const end = folded => {
+    for (const fn of [...ears]) fn({ gameId: 'korean-runner', at: Date.now(), areas: ['listening'], folded });
+  };
+  const hold = () => {
+    let release = () => {};
+    const folded = new Promise(resolve => (release = resolve));
+    held.push(release);
+    end(folded);
+    return release;
+  };
+  const openBoard = async () => {
+    if (board === 'plan') assert.equal(await app.education.plan(), 'shown');
+    else {
+      await app.education.position();
+      await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    }
+  };
+  // 여기서 떨어지면 셸을 닫고 던진다 — 닫지 않은 셸의 시계가 남아 시험 파일이 끝나지 않는다(변형이 홈 계획을 세우지 않을 때).
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    if (opened) await openBoard();
+  } catch (error) {
+    app.dispose();
+    throw error;
+  }
+  // 그 판이 지금 보이는 것 — 내 위치는 길이 선 단추가 있는가, 이번 주 계획은 듣기 줄의 수다.
+  const now = () =>
+    board === 'plan' ? Number(/<li data-area="listening">.*?class="wplan-area-count">\D*(\d+)/.exec(app.last())?.[1] ?? Number.NaN) : Number(practiceButtons(app.last()) > 0);
+  let rows = 0;
+  // 판 끝 · 다시 접기가 바꾸는 것 — 내 위치의 길이 뒤집히고, 이번 주 계획에 듣기 판이 하나 더 든다(경험이 다르면 한 수씩 — §25-3).
+  const turn = () => {
+    way.game = !way.game;
+    log.record('listening', recentInWeek(60_000), ['korean-runner', 'korean-rhythm', 'order-rush', 'subway-rush'][rows++]);
+    return board === 'plan' ? rows : Number(way.game);
+  };
+  return {
+    ...app,
+    entry,
+    end,
+    hold,
+    now,
+    turn,
+    openBoard,
+    // 짧은 연습을 연다 — 떨어진 장면이 남긴 열기의 거절이 다른 장면으로 새지 않게 받아 둔다(기다리는 쪽은 그대로 던져진다).
+    practice(...args) {
+      const run = Promise.resolve(app.education.practice(...args));
+      run.catch(() => {});
+      return run;
+    },
+    close() {
+      held.forEach(release => release(true));
+      for (const call of [...(entry?.calls ?? []), ...(entry?.mocks ?? [])]) call.give(null);
+      app.dispose();
+    },
+  };
+}
+const BOARDS = ['position', 'plan'];
+
+test('게임 판 끝 — 열린 내 위치 · 이번 주 계획 판과 홈을 판 끝에 한 번, 판이 다시 접힌 뒤 한 번 더 그려 지금 길과 수를 단다(기기 기록부의 요약은 접힌 뒤에야 그 판을 안다 — 사슬 -c 카본 C1 · -d 카본 A1 · -d-r2 GPT GA1) · 접기가 실패하거나 없으면 한 번만 · 닫은 문서는 그리지 않는다', async () => {
+  await clearOfWeekEnd();
+  for (const board of BOARDS) {
+    const t = await foldApp(board);
+    try {
+      assert.equal(t.now(), 0, '판 끝 앞의 판');
+      let [shown, drawn] = [t.shown.length, t.drawn()];
+      let want = t.turn();
+      const release = t.hold();
+      await until(() => t.shown.length > shown, '판 끝에 열린 판을 다시 그린다');
+      assert.equal(t.now(), want, '판 끝의 길 · 수');
+      assert.ok(t.drawn() > drawn, '판 끝에 홈을 그린다');
+      await tick(20);
+      [shown, drawn] = [t.shown.length, t.drawn()];
+      want = t.turn();
+      await tick(20);
+      assert.equal(t.shown.length, shown, '접히기 전에는 더 그리지 않는다');
+      release(true);
+      await until(() => t.shown.length > shown, '접힌 뒤 열린 판을 한 번 더 그린다');
+      assert.equal(t.now(), want, '접힌 뒤의 길 · 수');
+      assert.ok(t.drawn() > drawn, '접힌 뒤 홈을 한 번 더 그린다');
+      await tick(20);
+      // 접기가 실패해도(거절) 조용히 지나간다 · 다시 접기가 없는 판 끝은 한 번만 그린다.
+      for (const folded of [Promise.reject(Error('접지 못함')), null]) {
+        const before = [t.shown.length, t.drawn()];
+        t.end(folded);
+        await tick(20);
+        assert.equal(t.shown.length, before[0] + 1, '판은 판 끝에 한 번만');
+        assert.ok(t.drawn() > before[1]);
+      }
+      // 닫은 문서는 접힌 뒤에도 그리지 않는다.
+      const last = t.hold();
+      await tick(20);
+      const after = [t.shown.length, t.drawn()];
+      t.education.dispose();
+      last(true);
+      await tick(20);
+      assert.deepEqual([t.shown.length, t.drawn()], after, '닫은 문서는 그리지 않는다');
+    } finally {
+      t.close();
+    }
+  }
+});
+
+test('게임 판 끝 — 알림이 온 뒤 접히기 전에 연 판도 접힌 뒤 다시 그린다(판이 열렸는지는 그릴 때마다 본다 — 사슬 -d-r3 GPT GA2) · 열린 판이 없으면 홈만 그린다', async () => {
+  await clearOfWeekEnd();
+  for (const board of BOARDS) {
+    const t = await foldApp(board, { opened: false });
+    try {
+      const drawn = t.drawn();
+      const release = t.hold();
+      assert.ok(t.drawn() > drawn, '판 끝에 홈을 그린다');
+      assert.equal(t.shown.length, 0, '열린 판이 없다');
+      await t.openBoard();
+      assert.equal(t.now(), 0, '접기 전의 판');
+      const [shown, home] = [t.shown.length, t.drawn()];
+      const want = t.turn();
+      release(true);
+      await until(() => t.shown.length > shown, '접힌 뒤 그 사이 연 판을 다시 그린다');
+      assert.equal(t.now(), want, '접힌 뒤의 길 · 수');
+      assert.ok(t.drawn() > home, '접힌 뒤 홈도 그린다');
+      // 접히기 전에 판을 닫았으면 닫은 판을 다시 열지 않는다.
+      const last = t.hold();
+      await tick(20);
+      t.closePanel();
+      const closed = t.shown.length;
+      last(true);
+      await tick(20);
+      assert.equal(t.shown.length, closed, '닫은 판을 다시 열지 않는다');
+    } finally {
+      t.close();
+    }
+  }
+});
+
+test('여는 중인 짧은 연습 — 판 끝 · 다시 접기 · 은행 도착은 열린 판을 바로 다시 그려 지금 길을 달고, 그 열기는 끊지 않는다(사슬 -d GPT GA1 · -d-r3 GPT GA1)', async () => {
+  await clearOfWeekEnd();
+  for (const board of BOARDS) {
+    const t = await foldApp(board, { practice: true });
+    try {
+      const opening = t.practice(READING[0]);
+      await until(() => t.entry.calls.length === 1, '연습 코치를 기다린다');
+      let shown = t.shown.length;
+      let want = t.turn();
+      const release = t.hold();
+      await until(() => t.shown.length > shown, '판 끝에 열린 판을 다시 그린다');
+      assert.equal(t.now(), want, '여는 동안에도 판 끝의 길 · 수를 단다 — 같은 판의 다른 단추가 묵은 길을 열지 않는다');
+      await tick(20);
+      shown = t.shown.length;
+      want = t.turn();
+      release(true);
+      await until(() => t.shown.length > shown, '접힌 뒤에도 바로 다시 그린다');
+      assert.equal(t.now(), want, '접힌 뒤의 길 · 수');
+      await tick(20);
+      shown = t.shown.length;
+      t.education.repaint();
+      await until(() => t.shown.length > shown, '은행이 오면 바로 다시 그린다');
+      shown = t.shown.length;
+      assert.equal(practiceShown(t), 0, '연습은 아직 여는 중이다');
+      t.entry.calls[0].give();
+      await opening;
+      await tick(20);
+      assert.equal(t.shown.length, shown + 1, '연습 판 하나만 선다');
+      assert.match(t.last(), /data-practice-stage/, '짧은 연습이 열린다');
+    } finally {
+      t.close();
+    }
+  }
+});
+
+test('다시 그린 뒤 학생이 판을 닫거나 다른 열기로 바꾸면 여는 중이던 연습은 서지 않는다 — 다시 단 자원이 그 열기를 무효로 한다', async () => {
+  for (const board of BOARDS) {
+    // 판을 닫는다.
+    let t = await foldApp(board, { practice: true });
+    try {
+      const opening = t.practice(READING[0]);
+      await until(() => t.entry.calls.length === 1, '연습 코치를 기다린다');
+      t.end(null);
+      await tick(20);
+      t.closePanel();
+      const shown = t.shown.length;
+      t.entry.calls[0].give();
+      await opening;
+      await tick(20);
+      assert.equal(t.shown.length, shown, '닫은 뒤에는 서지 않는다');
+      // 그 뒤의 새 연습은 열린다.
+      const next = t.practice(READING[1]);
+      await until(() => t.entry.calls.length === 2, '새 연습의 코치를 기다린다');
+      t.entry.calls[1].give();
+      await next;
+      assert.match(t.last(), /data-practice-stage/, '새 연습은 열린다');
+    } finally {
+      t.close();
+    }
+    // 학생이 다른 판을 연다(내 위치 ↔ 이번 주 계획) — 뒤의 다시 그리기가 아니다.
+    t = await foldApp(board, { practice: true });
+    try {
+      const opening = t.practice(READING[0]);
+      await until(() => t.entry.calls.length === 1, '연습 코치를 기다린다');
+      t.end(null);
+      await tick(20);
+      if (board === 'position') assert.equal(await t.education.plan(), 'shown');
+      else {
+        await t.education.position();
+        await until(() => /data-position-next="engine"/.test(t.last()), '엔진 판');
+      }
+      await tick(20);
+      const shown = t.shown.length;
+      t.entry.calls[0].give();
+      await opening;
+      await tick(20);
+      assert.equal(t.shown.length, shown, '누른 판을 덮지 않는다');
+    } finally {
+      t.close();
+    }
+    // 다른 짧은 연습으로 바꾼다.
+    t = await foldApp(board, { practice: true });
+    try {
+      const first = t.practice(READING[0]);
+      await until(() => t.entry.calls.length === 1, '첫 연습의 코치를 기다린다');
+      t.end(null);
+      await tick(20);
+      const second = t.practice(READING[1]);
+      await until(() => t.entry.calls.length === 2, '둘째 연습의 코치를 기다린다');
+      t.end(null);
+      await tick(20);
+      const shown = t.shown.length;
+      t.entry.calls[0].give();
+      await first;
+      await tick(20);
+      assert.equal(t.shown.length, shown, '앞 연습은 서지 않는다');
+      t.entry.calls[1].give();
+      await second;
+      await tick(20);
+      assert.equal(t.shown.length, shown + 1);
+      assert.match(t.last(), /data-practice-stage/, '둘째 연습이 열린다');
+    } finally {
+      t.close();
+    }
+    // 시험 형식으로 바꾼다 — 시험 형식 코치를 받지 못해 안내 한 줄로 끝난다(시험 형식을 여는 동안의 다시 그리기는 4-4d의 막이 그대로 끝에 한 번이다).
+    t = await foldApp(board, { practice: true });
+    try {
+      const opening = t.practice(READING[0]);
+      await until(() => t.entry.calls.length === 1, '연습 코치를 기다린다');
+      t.end(null);
+      await tick(20);
+      const mocking = t.education.mock();
+      await until(() => t.entry.mocks.length === 1, '시험 형식 코치를 기다린다');
+      let shown = t.shown.length;
+      t.end(null);
+      await tick(20);
+      assert.equal(t.shown.length, shown, '시험 형식을 여는 중에는 미룬다');
+      t.entry.mocks[0].give();
+      await mocking;
+      await tick(20);
+      assert.equal(t.shown.length, shown + 1, '판 없이 끝나면 한 번 다시 그린다');
+      shown = t.shown.length;
+      t.entry.calls[0].give();
+      await opening;
+      await tick(20);
+      assert.equal(t.shown.length, shown, '버린 연습은 서지 않는다');
+    } finally {
+      t.close();
+    }
+  }
+});
+
+test('시험 형식을 여는 중에 짧은 연습으로 바꾸면 그 사이 미룬 다시 그리기를 곧 한다 — 연습을 못 열어도 판이 접기 전의 길로 남지 않고, 연습은 끊기지 않는다(사슬 -d-r4 GPT GA1) · 판을 닫으면 그리지 않는다', async () => {
+  await clearOfWeekEnd();
+  for (const board of BOARDS)
+    for (const coach of [null, {}]) {
+      const t = await foldApp(board, { practice: true });
+      try {
+        const mocking = t.education.mock();
+        await until(() => t.entry.mocks.length === 1, '시험 형식 코치를 기다린다');
+        const shown = t.shown.length;
+        const want = t.turn();
+        t.end(Promise.resolve(true));
+        await tick(20);
+        assert.equal(t.shown.length, shown, '시험 형식을 여는 중에는 미룬다');
+        const item = worldPosition.practice.pool.find(row => row.skillId === READING[0]);
+        const opening = t.practice(null, { only: [item.itemKey] });
+        await until(() => t.shown.length === shown + 1, '연습으로 바꾸면 미룬 다시 그리기를 곧 한다');
+        assert.equal(t.now(), want, '판 끝 뒤의 길 · 수');
+        await until(() => t.entry.calls.length === 1, '연습 코치를 기다린다');
+        t.entry.mocks[0].give();
+        await mocking;
+        await tick(20);
+        assert.equal(t.shown.length, shown + 1, '버린 시험 형식은 다시 그리지 않는다');
+        t.entry.calls[0].give(coach);
+        await opening;
+        await tick(20);
+        assert.equal(practiceShown(t), coach ? 1 : 0, '바꾼 연습 열기는 끊기지 않는다');
+        assert.equal(t.shown.length, shown + (coach ? 2 : 1));
+      } finally {
+        t.close();
+      }
+    }
+  // 판을 닫으면 그 정리는 닫은 판을 다시 열지 않는다.
+  for (const board of BOARDS) {
+    const t = await foldApp(board, { practice: true });
+    try {
+      const mocking = t.education.mock();
+      await until(() => t.entry.mocks.length === 1, '시험 형식 코치를 기다린다');
+      t.end(null);
+      await tick(20);
+      t.closePanel();
+      const shown = t.shown.length;
+      t.entry.mocks[0].give();
+      await mocking;
+      await tick(20);
+      assert.equal(t.shown.length, shown, '닫은 판을 다시 열지 않는다');
+    } finally {
+      t.close();
+    }
+  }
+});
+
+test('판을 그리지 않고 끝난 연습 열기(코치를 못 받음 · 판을 짓다 던짐) 뒤에도 열린 판은 판 끝마다 다시 그려지고 새 연습이 열린다', async () => {
+  await clearOfWeekEnd();
+  for (const board of BOARDS)
+    for (const broken of [false, true]) {
+      const t = await foldApp(board, { practice: true, broken });
+      try {
+        const item = worldPosition.practice.pool.find(row => row.skillId === READING[0]);
+        // 「다시 확인」 카드로 연 판(only)은 새 길 코치를 못 받으면 열지 않는다. broken이면 코치를 받고 판을 짓다 던진다.
+        const opening = t.practice(null, { only: [item.itemKey] });
+        await until(() => t.entry.calls.length === 1, '연습 코치를 기다린다');
+        t.entry.calls[0].give(broken ? {} : null);
+        if (broken) await assert.rejects(opening, /판을 짓지 못했다/);
+        else await opening;
+        assert.equal(practiceShown(t), 0, '연습 판은 서지 않았다');
+        for (let i = 0; i < 2; i += 1) {
+          const shown = t.shown.length;
+          const want = t.turn();
+          t.end(null);
+          await tick(20);
+          assert.equal(t.shown.length, shown + 1, '판 끝마다 다시 그린다');
+          assert.equal(t.now(), want);
+        }
+        t.entry.broken = false;
+        const next = t.practice(READING[1]);
+        await until(() => t.entry.calls.length === 2, '새 연습의 코치를 기다린다');
+        t.end(null);
+        await tick(20);
+        t.entry.calls[1].give();
+        await next;
+        assert.match(t.last(), /data-practice-stage/, '새 연습은 열린다');
+      } finally {
+        t.close();
+      }
+    }
+});
+
+test('여는 중에 문서를 닫으면 판 끝 · 접힌 뒤의 그리기도 연습도 서지 않는다', async () => {
+  const t = await foldApp('plan', { practice: true });
+  try {
+    const opening = t.practice(READING[0]);
+    await until(() => t.entry.calls.length === 1, '연습 코치를 기다린다');
+    const release = t.hold();
+    await tick(20);
+    const after = [t.shown.length, t.drawn()];
+    t.education.dispose();
+    release(true);
+    t.entry.calls[0].give();
+    await Promise.allSettled([opening]);
+    await tick(20);
+    assert.deepEqual([t.shown.length, t.drawn()], after, '닫은 문서는 그리지 않는다');
+  } finally {
+    t.close();
+  }
+});
+
+// 꺼진 판(atlasNext · homeNext 없음 — 앱이 기능 꺼짐에서 넘기는 값)은 지금 그대로다(5-3 꺼진 판 대조): 짧은 연습을 여는 동안에도 은행 도착의 다시
+// 그리기가 열린 판을 바로 그리고, 그 정리가 여는 중인 연습을 무효로 한다(master 2a3a74e85a 그대로 — 자원을 넘기는 것은 새 길 문서뿐이다). 라이브 ③은
+// 꺼진 문서에서 연습 열기에 자원을 달지 않아 연습이 선다 — 5-3은 라이브 판에 이 묶음의 줄만 얹으므로 그 차이는 이 묶음이 싣지 않는다.
+test('꺼진 판 — 짧은 연습을 여는 동안 온 다시 그리기는 지금처럼 열린 판을 바로 그리고 그 열기를 무효로 한다(새 길의 이어 주기가 서지 않는다 — 사슬 -d-r3)', async () => {
+  const shown = [];
+  let kind = '';
+  let resource = null;
+  let hold = null;
+  let release = () => {};
+  const drop = () => {
+    const was = resource;
+    resource = null;
+    was?.dispose?.();
+  };
+  const node = () => ({ isConnected: true, focus() {}, closest: () => null, querySelector: () => null, querySelectorAll: () => [], contains: () => false, addEventListener() {}, insertAdjacentHTML() {} });
+  const storage = new Map();
+  const target = {
+    localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },
+    addEventListener() {},
+    removeEventListener() {},
+    setTimeout,
+    document: {
+      querySelector(selector) {
+        const found = /\[(data-[a-z-]+)(?:="([^"]*)")?\]/.exec(selector);
+        const html = shown.at(-1) ?? '';
+        if (!found) return null;
+        return (found[2] === undefined ? new RegExp(`\\s${found[1]}(?=[\\s=>])`).test(html) : html.includes(`${found[1]}="${found[2]}"`)) ? node() : null;
+      },
+    },
+  };
+  const progress = {
+    owner: 'guest',
+    learningProfile: () => ({ profile: { status: 'active', revision: 1, consent: true } }),
+    learningProfileValues: () => ({ audio: 'off', ...EXAM_T1 }),
+    status: () => ({ phase: 'synced', rejected: false, scoped: false, message: '' }),
+    exportSnapshot: () => ({}),
+    flush: async () => {},
+    hangulReading: () => ({ answer: 'reads' }),
+  };
+  const home = {
+    updateStudy() {},
+    toast() {},
+    closePanel() {},
+    openPanel: () => kind,
+    attachPanelResource(value) {
+      if (value === resource) return;
+      const was = resource;
+      resource = value;
+      was?.dispose?.();
+    },
+    showPanel(title, html, options = {}) {
+      drop();
+      kind = options?.type || 'life-position';
+      shown.push(String(html));
+    },
+  };
+  const education = createWorldEducation({
+    home,
+    getProgress: () => progress,
+    engine: worldLearning,
+    createPlan: input => ({ selected: null, reason: '', examPlan: input.examPlan ?? null }),
+    launchGame() {},
+    startLesson() {},
+    startReview() {},
+    prepare: () => hold ?? Promise.resolve(),
+    position: worldPosition,
+    target,
+  });
+  try {
+    for (const open of ['position', 'plan']) {
+      await education[open]();
+      assert.match(shown.at(-1), open === 'plan' ? /data-plan-board/ : /data-position-board[\s=>]/, '지금 판 판');
+      hold = new Promise(resolve => (release = resolve));
+      const opening = education.practice(READING[0]);
+      await tick(5);
+      const boards = shown.length;
+      education.repaint();
+      await until(() => shown.length > boards, '여는 동안에도 열린 판을 다시 그린다');
+      hold = null;
+      release();
+      await opening;
+      await tick(5);
+      assert.ok(!shown.some(html => html.includes('data-practice-stage')), '정리된 열기는 서지 않는다');
+    }
+  } finally {
+    release();
+    education.dispose();
+  }
+});
+
+test('짧은 진단 결과의 「이 항목 연습하기」도 내 위치와 같은 길이다 — 길이 게임이면 그 게임을 열고, 길이 없으면 단추가 없다(사슬 -c GC2)', async () => {
+  // 소리를 켠 학생이다. 진단은 읽기 문항만 낸다(이 시험에는 재생기가 없다). 길 표의 답을 능력마다 바꿔 끼워, 결과 화면이 스스로 고르지 않고 길 표의 답을 다는지 본다.
+  const position = { ...positionPlanner, selectDiagnosticNext: options => positionPlanner.selectDiagnosticNext({ ...options, audioAvailable: false }) };
+  for (const [before, way] of [['game', 'game'], [null, null], ['game', null], [null, 'game']]) {
+    // 진단이 낸 문항이 길을 바꾼다 — 진단 문항이 그 능력의 마지막 새 문항이면 답한 뒤 길이 사라진다. 끝 화면은 진단 뒤의 길을 단다(사슬 -d GA3).
+    let now = before;
+    const open = { id: 'world.play.rhythm', label: '말의 리듬', route: 'game', gameId: 'rhythm', minutes: 3, supports: [], targets: [] };
+    const answerOf = id => (now ? { skillId: id, route: 'game', gameId: 'rhythm', id: open.id, practice: [], games: [{ id: open.id, gameId: 'rhythm', open, items: [], left: 0 }] } : { skillId: id, route: null, practice: [], games: [] });
+    const routes = options => ({ ...createRoutes(options), routeOf: answerOf, reader: () => answerOf });
+    const app = shell({ values: { audio: 'available', ...EXAM_T1 }, planner: async () => ({ ...PLANNER, position, createRoutes: routes }) });
+    try {
+      app.education.refresh();
+      await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+      await app.education.position();
+      await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+      await app.education.position({ start: true });
+      await until(() => app.box()?.html.includes('data-position-run'), '진단 문항');
+      now = way;
+      assert.ok((await answerItems(app)) > 0);
+      await until(() => app.box().html.includes('data-position-done'), '진단 끝 화면');
+      const skills = [...app.box().html.matchAll(/data-position-practice="([^"]+)"/g)].map(match => match[1]);
+      if (way) {
+        assert.ok(skills.length > 0, '결과의 능력에 단추가 선다');
+        app.box().practice(skills[0]).click();
+        await tick();
+        assert.deepEqual(app.launched, ['rhythm'], '길이 게임이면 그 게임을 연다');
+      } else assert.deepEqual(skills, [], '길이 없는 능력에는 단추가 없다');
+    } finally {
+      app.dispose();
+    }
   }
 });
 

@@ -27,10 +27,15 @@ export function createPositionNextView({ t, has = () => true, formatDate = null 
   };
   const poster = (word, sub) =>
     `<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="position" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${escape(word)}</strong><p class="life-poster-sub">${escape(sub)}</p></div>`;
-  const practiceButton = (id, practice) =>
-    practice?.(id)
-      ? `<button class="quiet-button wpos-practice" type="button" data-position-practice="${escape(id)}">${escape(t('position.practice.start'))} <span aria-hidden="true">→</span></button>`
-      : '';
+  // 「이 항목 연습하기」 — practice(id)가 낸 그 능력의 길(4-6e-3 — 단계4_계획 §25-6). 짧은 연습이면 지금 판 글, 게임 길({ route: 'game', gameId })이면
+  // 그 게임의 홈 이름표(지금 판 그림 world-position-ui.mjs와 같은 글)를 달고 data-position-game에 게임을 싣는다. 길이 없으면 단추가 없다.
+  const practiceButton = (id, practice) => {
+    const route = practice?.(id);
+    if (!route) return '';
+    const game = route.route === 'game' && route.gameId ? route.gameId : null;
+    const label = game && has(`plan.game.${game}`) ? t(`plan.game.${game}`) : t('position.practice.start');
+    return `<button class="quiet-button wpos-practice" type="button" data-position-practice="${escape(id)}"${game ? ` data-position-game="${escape(game)}"` : ''}>${escape(label)} <span aria-hidden="true">→</span></button>`;
+  };
   const summaryOf = board =>
     t(board.exam === 'topik2' ? 'position.summary.topik2' : 'position.summary', { ...board.counts, total: board.total });
   const numbers = row =>
@@ -174,7 +179,7 @@ export function createPositionNextView({ t, has = () => true, formatDate = null 
   }
 
   // 판 한 장. board: buildPositionNext · plan: selectDiagnosticNext · cards: recheckCards · exams: 고를 수 있는 시험(둘 이상일 때 위에 고르기) ·
-  // practice(skillId): 「이 항목 연습하기」를 달 수 있나 · scope: 'account' | 'device' | null · diagnosed: 이 문서에서 진단을 한 번 했나 · writing: 쓰기 줄 단추.
+  // practice(skillId): 「이 항목 연습하기」의 길({ route: 'practice' } · { route: 'game', gameId } · 없으면 null) · scope: 'account' | 'device' | null · diagnosed: 이 문서에서 진단을 한 번 했나 · writing: 쓰기 줄 단추.
   // 놓친 곳 카드는 새 길에서 숨긴다(21-10의 5 — 4-6). 예상 급수 칸과 시험 형식 단추는 4-4d가 잇는다(estimate · mock — 위 estimateBlock).
   // month: 30일째 문장(4-4c — 21-7) { text, unit, misses, reviews } — 셸이 Vellum으로 지은 문장(그 화면 언어의 줄이 없으면 셸이 null을 넘긴다).
   // 판 맨 위(머리 그림 바로 뒤)에 한 줄로 싣는다. 모양은 리디자인이 정한다 — 여기서는 글 한 줄과 수를 data-*로만.

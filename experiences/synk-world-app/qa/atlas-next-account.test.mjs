@@ -48,7 +48,8 @@ function accountLine({enabled=true,revision=1,learningSync=true,get=async()=>({s
 }
 const fail=(status,code,extra={})=>Object.assign(Error(code),{status,code,...extra});
 
-// 가짜 코치 · 로더 — 엔진 모듈(SynkAtlas.load)은 storeName · createHealth만.
+// 가짜 코치 · 로더 — 엔진 모듈(SynkAtlas.load)은 storeName · createHealth만. 입구는 연 코치를 기록이 바뀐 셈의 겉(createWriteCount — 4-6e-2)으로 내므로
+// 받은 코치가 그 가짜 코치인지는 options(가짜 코치마다 하나)로 견준다.
 function fakeCoach({base=false,synced={ok:true,base:true},ready=Promise.resolve(),guestRecords=async()=>null}={}){
  const made={options:null,disposed:0,syncedCalls:0,ready,summary:()=>({storage:{base}}),synced:async()=>{made.syncedCalls+=1;return synced;},
   guestRecords:async options=>guestRecords(options),dispose(){made.disposed+=1;}};
@@ -81,7 +82,7 @@ test('처음인 기기 — 첫 받기가 요약(빈 요약 포함)을 받으면 
  const storage=memoryStorage(),line=accountLine(),{opened,load}=fakeLoader(),health=recorder();
  const next=createAtlasNext({owner:'acct-1',storage,trail:line.trail,load,health});
  const coach=await next.practiceCoach(POOL);
- assert.equal(coach,opened[0]);
+ assert.equal(coach.options,opened[0].options);
  const host=coach.options.host;
  assert.equal(host.account,'acct-1');assert.equal(host.revision,1);assert.equal(host.guest,undefined);assert.equal(host.legacy,undefined,'계정 길에는 손님 옛 기록 읽개가 없다');
  assert.equal(typeof host.transport.get,'function');assert.equal(typeof host.onAccount,'function');assert.equal(host.health,health);
@@ -123,7 +124,7 @@ test('새 길에 다녀간 계정이 오프라인으로 다시 열면(계정 읽
  const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
  const next=createAtlasNext({owner:'acct-f1',storage,trail:()=>line.trail(),load,health:recorder()});
  const coach=await next.practiceCoach(POOL);
- assert.equal(coach,opened[0],'오프라인이어도 새 길');assert.equal(coach.options.host.revision,5,'표지의 판으로');
+ assert.equal(coach.options,opened[0].options,'오프라인이어도 새 길');assert.equal(coach.options.host.revision,5,'표지의 판으로');
  assert.equal(coach.syncedCalls,0,'첫 받기를 기다리지 않는다');
  await assert.rejects(coach.options.host.transport.get(null),{code:'NETWORK'},'나르개는 부를 때 계정을 다시 읽는다 — 못 닿으면 그 실패');
  assert.deepEqual(await next.guestMove({watermarks:{}}),{failed:true},'계정을 못 읽은 채 연 판은 옮기기를 세지 않는다');
@@ -203,7 +204,7 @@ test('30일째 문장의 돌아보기 읽기(lookbackOf) — 오프라인으로 
  const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
  const next=createAtlasNext({owner:'acct-ga1',storage,trail:()=>line.trail(),load,health:recorder()});
  const coach=await next.practiceCoach(POOL);
- assert.equal(coach,opened[0],'오프라인이어도 새 길');
+ assert.equal(coach.options,opened[0].options,'오프라인이어도 새 길');
  const reader=next.lookbackOf(coach);
  assert.ok(reader,'오프라인으로 연 올리는 길에도 돌아보기 읽기를 준다');
  assert.equal(reader.revision,5,'표지의 판으로');
@@ -326,7 +327,7 @@ test('새 길 간 적 있는 기기 — 판이 오른 직후 그 판의 요약�
  const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
  const next=createAtlasNext({owner:'acct-3',storage,trail:line.trail,load,health:recorder()});
  const coach=await next.practiceCoach(POOL);
- assert.equal(coach,opened[0]);assert.equal(coach.options.host.revision,4);
+ assert.equal(coach.options,opened[0].options);assert.equal(coach.options.host.revision,4);
  assert.equal(coach.syncedCalls,0,'받기를 기다리지 않는다');
  next.dispose();
 });
@@ -380,7 +381,7 @@ test('동의 꺼진 계정 — 받기 한 번으로 스위치를 묻고(LEARNING
  const {opened,load}=fakeLoader();
  const next=createAtlasNext({owner:'acct-5',storage,trail:line.trail,load,health:recorder()});
  const coach=await next.practiceCoach(POOL);
- assert.equal(coach,opened[0]);
+ assert.equal(coach.options,opened[0].options);
  const host=coach.options.host;
  assert.deepEqual({guest:host.guest,account:host.account,revision:host.revision,key:host.key},
   {guest:true,account:'acct-5',revision:3,key:atlas.storeName({account:'acct-5',revision:3,local:true})});
@@ -466,7 +467,7 @@ test('여는 사이에 판을 다시 정하면 앞 판에서 열던 코치는 �
  const checks=opened.filter(made=>made.options.banks.includes('entry-check'));
  assert.equal(checks.length,2,'다시 정한 판으로 한 번 더 열었다');
  assert.equal(checks[0].disposed,1,'앞 판에서 열던 코치는 닫았다');
- assert.equal(got,checks[1],'앞 판 코치가 아니라 다시 정한 판의 코치');
+ assert.equal(got.options,checks[1].options,'앞 판 코치가 아니라 다시 정한 판의 코치');
  assert.equal(got.disposed,0);
  next.dispose();
 });
@@ -1037,7 +1038,7 @@ test('생활 코치를 여는 사이 판을 다시 정하면 앞 판 코치는 �
  release();
  const coach=await asking;
  assert.ok(coach,'지금 판으로 떨어지지 않는다');
- assert.equal(coach,opened[1],'다시 정한 판의 코치');
+ assert.equal(coach.options,opened[1].options,'다시 정한 판의 코치');
  assert.equal(opened[0].disposed,1,'앞 판 코치는 닫혔다');
  assert.equal(line.reads,2,'다시 정하기는 한 번');
  next.dispose();
@@ -1064,7 +1065,7 @@ test('판을 다시 정해 이미 닫은 코치에 건 retired도 울린다 — 
  const line=accountLine(),{opened,load}=fakeLoader();
  const next=createAtlasNext({owner:'acct-c2',storage:memoryStorage(),trail:line.trail,load,health:recorder()});
  const coach=await next.lifeCoach();
- assert.equal(coach,opened[0]);
+ assert.equal(coach.options,opened[0].options);
  next.redecide('account');
  await tick();
  assert.equal(coach.disposed,1,'판을 다시 정해 닫았다');
@@ -1083,7 +1084,7 @@ test('생활 코치를 받은 직후 판을 다시 정해도 판정은 닫힌 �
  let first=true;
  const w=watchLifeDue({open:()=>next.lifeCoach().then(made=>{if(first&&made){first=false;next.redecide('account');}return made;}),
   retired:(made,fn)=>next.retired(made,fn),reopened:fn=>next.reopened(fn),progress:{setDueSource(){}},lessons:[]});
- const coach=await until(async()=>{const made=await w.coach();return made&&made!==opened[0]?made:null;},3000);
+ const coach=await until(async()=>{const made=await w.coach();return made&&made.options!==opened[0].options?made:null;},3000);
  assert.equal(opened[0].disposed,1,'앞 판 코치는 닫혔다');
  assert.equal(coach.disposed,0,'새 판 코치');
  assert.equal(w.state(),'engine');
@@ -1694,7 +1695,7 @@ test('첫 받기가 판 · 동의 갈래로 실패하면(진짜 호스트처럼 
    const coach=await next.practiceCoach(POOL);
    assert.ok(coach,`${name}: 지금 판으로 떨어지지 않는다`);
    assert.deepEqual(opened.map(made=>[made.options.host.revision,made.disposed]),[[1,1],[2,0]],`${name}: 앞 판 코치는 닫고 오른 판의 코치를 준다`);
-   assert.equal(coach,opened[1]);
+   assert.equal(coach.options,opened[1].options);
    assert.equal(coach.options.host.guest,path==='device'?true:undefined,`${name}: ${path} 길`);
    assert.deepEqual(markOf(storage,'acct-fp'),{went:true,path,revision:2},`${name}: 표지도 오른 판`);
    assert.equal(health.notes.some(([kind,outcome])=>kind==='load'&&outcome.ok===false),false,`${name}: 앞 판 첫 받기의 실패는 지금 판의 계기가 아니다`);
@@ -1821,7 +1822,7 @@ test('예상 급수의 근거 읽기(firstAnswersOf — 4-4d §21-23의 2) — �
  const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
  const next=createAtlasNext({owner:'acct-fa1',storage,trail:()=>line.trail(),load,health:recorder()});
  const coach=await next.practiceCoach(POOL);
- assert.equal(coach,opened[0]);
+ assert.equal(coach.options,opened[0].options);
  const reader=next.firstAnswersOf(coach);
  assert.ok(reader,'오프라인으로 연 올리는 길에도 근거 읽기를 준다');
  assert.equal(reader.revision,5,'표지의 판으로');
@@ -1907,7 +1908,7 @@ test('스위치 먼저 묻기 — 목록에 든 계정은 첫 연습을 지금 �
  await until(()=>heard.includes('switch'));
  assert.equal(switchOf(storage,'acct-7').on,true,'켜짐 답을 기기에 적었다');
  const coach=await next.practiceCoach(POOL);
- assert.equal(coach,opened[0],'다음 연습부터 새 길');
+ assert.equal(coach.options,opened[0].options,'다음 연습부터 새 길');
  assert.deepEqual(markOf(storage,'acct-7'),{went:true,path:'upload',revision:1});
  next.dispose();
  const again=createAtlasNext({owner:'acct-7',storage,trail:line.trail,load,health:recorder()});
@@ -1937,7 +1938,7 @@ test('스위치 먼저 묻기 — 새 길에 간 적 있는 계정은 켜짐 답
  const storage=memoryStorage([[NEXT_MARK+'acct-5',JSON.stringify({went:true,path:'upload',revision:1})]],{switchOn:false}),line=accountLine();
  const {opened,load}=fakeLoader();
  const next=createAtlasNext({owner:'acct-5',storage,trail:line.trail,load,health:recorder()});
- assert.equal(await next.practiceCoach(POOL),opened[0]);
+ assert.equal((await next.practiceCoach(POOL)).options,opened[0].options);
  await tick();
  assert.equal(line.gets.length,0,'스위치를 따로 묻지 않는다');
  next.dispose();

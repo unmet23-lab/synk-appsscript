@@ -27345,10 +27345,11 @@ function createWorldEducation({
       openGames = null;
     }
     const lang = currentLang2(), coachNow = phase === "engine" ? homeWatch.coach() : null;
+    const games = gamesNow(values, now), gameList = typeof homePlanner.games === "function" ? { games } : {};
     let week = null;
     if (coachNow) {
       try {
-        week = weekNext(coachNow, values, now);
+        week = weekNext(coachNow, values, now, games);
       } catch {
         week = null;
       }
@@ -27367,7 +27368,8 @@ function createWorldEducation({
       opened: opened.kinds,
       lang,
       say: (why, names) => homePlanner.say(why, lang, names),
-      week
+      week,
+      ...gameList
     });
     homeWatch.redrawAt(plan.today.redrawAt);
     return plan;
@@ -27863,11 +27865,24 @@ function createWorldEducation({
     openMockNext.skipped = true;
     return true;
   }
+  let keepOpening = null;
+  function redrawPanel(...args) {
+    let kept = null;
+    keepOpening = (resource) => {
+      kept = resource;
+    };
+    try {
+      home.showPanel(...args);
+    } finally {
+      keepOpening = null;
+      if (kept) home.attachPanelResource?.(kept);
+    }
+  }
   function repaint() {
     try {
       if (home.openPanel?.() === "" || openPosition.pending || heldMock()) return;
       if (panelNode("[data-position-next]")) {
-        showNext({ keepScroll: true });
+        showNext({ keepScroll: true, redraw: true });
         return;
       }
       if (panelNode("[data-position-board]") && !panelNode('[data-position-board="hangul"]')) showBoard(readCoach(), { keepScroll: true });
@@ -27953,7 +27968,6 @@ function createWorldEducation({
   }
   function heardHome(coachNow) {
     if (stopped || heard.coach !== coachNow) return;
-    if (weekMet.coach === coachNow) weekMet = { coach: null, key: null, met: null };
     heard.home = true;
     heard.panel = true;
     if (heard.timer == null) heard.timer = watchClock.set(drawHeard, 0);
@@ -27986,24 +28000,36 @@ function createWorldEducation({
       values = {};
     }
     const exam = examOf(values), audioAvailable = values.audio !== "off", listening = (item) => item.audioRequired ?? item.modality === "listening";
-    const summary = coachNow.summary(), diagnostic = position.items, practice = position.practice.pool;
-    const mockPool = Array.isArray(position.mock?.pool) ? position.mock.pool : [];
-    const met = coachNow.exposures([...diagnostic, ...practice, ...mockPool]);
+    const routes = routesFor(coachNow, values);
+    if (!routes) throw Error("WORLD position next needs the routes");
+    const summary = coachNow.summary(), diagnostic = routes.pools.diagnostic, practice = routes.pools.practice, rows2 = routes.rows;
     const fresh = /* @__PURE__ */ new Set();
     practice.forEach((item, i) => {
-      if (met[diagnostic.length + i]?.seen === false && (audioAvailable || !listening(item))) fresh.add(item.skillId);
+      if (rows2.practice[i]?.seen === false && (audioAvailable || !listening(item))) fresh.add(item.skillId);
     });
     const synced = nextSync.coach === coachNow ? nextSync.value : null;
-    const unseen = P.unseenFamilies([{ items: diagnostic, exposures: met.slice(0, diagnostic.length) }, { items: practice, exposures: met.slice(diagnostic.length, diagnostic.length + practice.length) }], (item) => P.withheldItem(item));
-    const board = P.buildPositionNext({ exam, skills: P.examSkills(engine.SKILLS, exam), summary, prefer: (id) => fresh.has(id), synced, unseen });
-    const plan = P.selectDiagnosticNext({ position: board, items: diagnostic, exposures: met.slice(0, diagnostic.length), audioAvailable });
+    const unseen = P.unseenFamilies([{ items: diagnostic, exposures: rows2.diagnostic }, { items: practice, exposures: rows2.practice }], (item) => P.withheldItem(item));
+    const skills = P.examSkills(engine.SKILLS, exam);
+    const board = P.buildPositionNext({ exam, skills, summary, prefer: (id) => fresh.has(id), synced, unseen });
+    const plan = P.selectDiagnosticNext({ position: board, items: diagnostic, exposures: rows2.diagnostic, audioAvailable });
+    const practiceRoutes2 = /* @__PURE__ */ new Map(), routeOf = routes.reader();
+    for (const skill2 of skills) {
+      let route = null;
+      try {
+        route = routeOf(skill2.id);
+      } catch {
+        route = null;
+      }
+      const way = practiceWay(route, audioAvailable);
+      if (way) practiceRoutes2.set(skill2.id, way);
+    }
     let life = [];
     try {
       life = engine.life?.lifeItems?.() || [];
     } catch {
       life = [];
     }
-    const routes = P.unitRoutes({ itemUnits: (item) => coachNow.itemUnits(item), practice, diagnostic, life });
+    const unitWays = P.unitRoutes({ itemUnits: (item) => coachNow.itemUnits(item), practice, diagnostic, life });
     let judged = null;
     try {
       judged = homeNext.judge(getProgress().exportSnapshot(), Date.now());
@@ -28011,7 +28037,7 @@ function createWorldEducation({
       judged = null;
     }
     const lifeOpen = (unit) => judged?.state === "engine" && Array.isArray(judged.items) ? judged.items.some((row) => row.unit === unit) : null;
-    const cards = P.recheckCards({ due: coachNow.due(), units: summary.units, routes, capped: current?.today?.capped === true, audioAvailable, lifeOpen });
+    const cards = P.recheckCards({ due: coachNow.due(), units: summary.units, routes: unitWays, capped: current?.today?.capped === true, audioAvailable, lifeOpen });
     const scope = owner === "guest" ? "device" : summary.storage?.guest === false ? "account" : null;
     return {
       values,
@@ -28019,12 +28045,12 @@ function createWorldEducation({
       board,
       plan,
       cards,
-      fresh,
+      practice: practiceRoutes2,
       judged,
       scope,
-      month: monthOf(coachNow, P, routes),
+      month: monthOf(coachNow, P, unitWays),
       estimate: estimateOf(coachNow, P, exam, values),
-      mock: mockOf(coachNow, values, exam, met.slice(diagnostic.length + practice.length))
+      mock: mockOf(coachNow, values, exam, rows2.mock)
     };
   }
   function estimateOf(coachNow, P, exam, values) {
@@ -28073,7 +28099,76 @@ function createWorldEducation({
     }
     return pick2 && typeof text2 === "string" && text2 ? { text: text2, unit: pick2.unit, misses: pick2.misses, reviews: pick2.reviews } : null;
   }
-  let planEnds = 0, weekMet = { coach: null, key: null, met: null };
+  let planEnds = 0;
+  let routesNow = { coach: null, key: null, pools: [], routes: null };
+  function gamesNow(values, now = Date.now()) {
+    if (typeof homePlanner?.games !== "function") return [];
+    let progress2 = {}, openGames = null, storage = null;
+    try {
+      progress2 = getProgress().exportSnapshot() ?? {};
+    } catch {
+      progress2 = {};
+    }
+    try {
+      openGames = homeNext?.openGames?.() ?? null;
+    } catch {
+      openGames = null;
+    }
+    try {
+      storage = target.localStorage ?? null;
+    } catch {
+      storage = null;
+    }
+    try {
+      const list = homePlanner.games({ progress: progress2, settings: values, now, openGames, storage });
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+  const NO_MOCK = Object.freeze([]);
+  function routesFor(coachNow, values, now = Date.now(), games = gamesNow(values, now)) {
+    const make = homePlanner?.createRoutes;
+    if (typeof make !== "function" || !coachNow || typeof coachNow.exposures !== "function" || !position?.practice) return null;
+    const diagnostic = position.items, practice = position.practice.pool, mock = Array.isArray(position.mock?.pool) ? position.mock.pool : NO_MOCK;
+    const summary = coachNow.summary(), synced = nextSync.coach === coachNow ? nextSync.value : null;
+    let complete = null;
+    try {
+      complete = homePlanner.plan?.recordsComplete?.(summary.storage, synced) ?? null;
+    } catch {
+      complete = null;
+    }
+    const info = position.exam?.examInfo?.(values) || null;
+    let writes = 0;
+    try {
+      writes = homePlanner.writes?.() ?? 0;
+    } catch {
+      writes = 0;
+    }
+    const gameKeys = games.map((game) => `${game.id}:${(game.items || []).map((item) => item.itemKey).join(",")}`).join(";");
+    const key = [writes, summary.storage?.pending ?? null, planEnds, info?.type ?? "none", complete, summaryShape(summary), gameKeys].join("|");
+    const pools2 = [diagnostic, practice, mock];
+    if (routesNow.coach !== coachNow || routesNow.key !== key || routesNow.pools.some((pool, i) => pool !== pools2[i]))
+      routesNow = { coach: coachNow, key, pools: pools2, routes: make({ coach: coachNow, diagnostic, practice, mock, games, itemUnits: (item) => coachNow.itemUnits(item) }) };
+    return routesNow.routes;
+  }
+  function studentSkill(values) {
+    if (studentExam(values) !== "topik2") return (id) => skillExam(id) === "topik1";
+    const two2 = topik2Domains();
+    return (id) => two2[String(id).split(".")[1]] ? skillExam(id) === "topik2" : skillExam(id) === "topik1";
+  }
+  function supplyOf(routes, values, audioAvailable) {
+    const fits = studentSkill(values), skills = /* @__PURE__ */ new Set(), practice = {}, listening = {}, routeOf = routes.reader();
+    for (const item of [...routes.pools.practice, ...routes.pools.games]) if (typeof item?.skillId === "string" && fits(item.skillId)) skills.add(item.skillId);
+    for (const id of [...skills].sort()) {
+      const route = routeOf(id);
+      const fresh = route.practice.filter((item) => audioAvailable || !(item.audioRequired ?? item.modality === "listening")).length;
+      if (fresh > 0) practice[id] = fresh;
+      if (route.games.length) listening[id] = route.games.map((game) => game.id);
+    }
+    return { practice, listening };
+  }
+  const practiceWay = (route, audioAvailable) => route?.route === "practice" && (audioAvailable || route.practice.some((item) => !(item.audioRequired ?? item.modality === "listening"))) ? { route: "practice", skillId: route.skillId } : route?.route === "game" && audioAvailable ? { route: "game", gameId: route.gameId } : null;
   const monthAsker = createMonthAsker({
     answers: createMonthAnswers({ storage: (() => {
       try {
@@ -28119,22 +28214,16 @@ function createWorldEducation({
     }
     return [summary?.skills?.length || 0, n2, cells, summary?.units?.length || 0, sittings, lapses].join(".");
   };
-  function weekNext(coachNow, values, now) {
+  function weekNext(coachNow, values, now, games = gamesNow(values, now)) {
     const N2 = homePlanner?.plan, P = homePlanner?.position;
     const info = position?.exam?.examInfo?.(values) || null;
-    if (!N2 || !P || !coachNow || !info || typeof coachNow.exposures !== "function") return null;
+    if (!N2 || !P || !coachNow || !info) return null;
+    const routes = routesFor(coachNow, values, now, games);
+    if (!routes) return null;
     const exam = examOf(values), audioAvailable = values?.audio !== "off", listening = (item) => item.audioRequired ?? item.modality === "listening";
-    const summary = coachNow.summary(), diagnostic = position.items, practice = position.practice.pool;
+    const summary = coachNow.summary(), diagnostic = routes.pools.diagnostic, practice = routes.pools.practice;
     const synced = nextSync.coach === coachNow ? nextSync.value : null;
-    const complete = N2.recordsComplete(summary.storage, synced);
-    const key = [homePlanner.todayKey(now), planEnds, info.type, complete, summaryShape(summary)].join("|");
-    const mockPool = Array.isArray(position.mock?.pool) ? position.mock.pool : [];
-    if (weekMet.coach !== coachNow || weekMet.key !== key) weekMet = { coach: coachNow, key, met: coachNow.exposures([...diagnostic, ...practice, ...mockPool]) };
-    const metDiag = weekMet.met.slice(0, diagnostic.length), metPractice = weekMet.met.slice(diagnostic.length, diagnostic.length + practice.length), metMock = weekMet.met.slice(diagnostic.length + practice.length);
-    const at = new Map(practice.map((item, i) => [item, i])), seenOf = (item) => {
-      const row = metPractice[at.get(item)];
-      return row ? row.seen : null;
-    };
+    const metDiag = routes.rows.diagnostic, metPractice = routes.rows.practice, metMock = routes.rows.mock;
     const fresh = /* @__PURE__ */ new Set();
     practice.forEach((item, i) => {
       if (metPractice[i]?.seen === false && (audioAvailable || !listening(item))) fresh.add(item.skillId);
@@ -28162,6 +28251,7 @@ function createWorldEducation({
       progress2 = null;
     }
     const ready = diag.status === "ready" && diag.items.length > 0;
+    const supply = supplyOf(routes, values, audioAvailable);
     const examPlan = N2.buildPlanNext({
       examPlan: position.exam,
       info,
@@ -28172,8 +28262,8 @@ function createWorldEducation({
       classwork: classworkRows(),
       audioAvailable,
       available: {
-        practice: position.practice.practiceSupply({ pool: practiceFor(values), seen: seenOf, audioAvailable }),
-        listening: {},
+        practice: supply.practice,
+        listening: supply.listening,
         recheck: ready ? diag.items.length : 0,
         life: true,
         writing: writingAvailable,
@@ -28188,7 +28278,7 @@ function createWorldEducation({
     let mockDone = null;
     try {
       const times = homeNext?.planLog?.(coachNow)?.times?.("mock");
-      if (Array.isArray(times)) mockDone = times.filter((at2) => at2 >= examWeek2.start && at2 < examWeek2.end).length;
+      if (Array.isArray(times)) mockDone = times.filter((at) => at >= examWeek2.start && at < examWeek2.end).length;
     } catch {
       mockDone = null;
     }
@@ -28205,7 +28295,7 @@ function createWorldEducation({
     const first = speaking?.recommend?.[0] || null, listed = first ? speaking.list.find((row) => row.route === first.routeId) || null : null;
     const type = typeof listed?.targets?.[0] === "string" ? listed.targets[0].split(".").pop() : null;
     const speakingNow = first && type ? { label: first.label, routeId: first.routeId, minutes: first.minutes, type, untried: speaking.untried } : null;
-    return { examPlan, fresh: (item) => seenOf(item) === false, diagnostic: { ready }, mock, mockDone, writing, speaking: speakingNow };
+    return { examPlan, routes, diagnostic: { ready }, mock, mockDone, writing, speaking: speakingNow };
   }
   function foldedRedraw() {
     if (!stopped) refresh();
@@ -28219,10 +28309,24 @@ function createWorldEducation({
       planEnds += 1;
       if (!(Array.isArray(results) ? results : []).some((row) => row && !row.skipped && (row.verdict === "correct" || row.verdict === "incorrect"))) return;
       try {
-        homeNext?.planLog?.(coachNow)?.record(area, Date.now());
+        homeNext?.planLog?.(coachNow)?.record(area, Date.now(), area === "recheck" ? "world-home" : "world-practice");
       } catch {
       }
     };
+  }
+  let stopGameEnds = null;
+  function heardGameEnd(end) {
+    if (stopped) return;
+    planEnds += 1;
+    const draw = () => {
+      if (stopped) return;
+      if (panelOpen() && panelNode("[data-plan-board]")) void openPlan({ keepScroll: true }).catch(() => {
+      });
+      foldedRedraw();
+    };
+    draw();
+    if (end?.folded) Promise.resolve(end.folded).then(draw, () => {
+    });
   }
   function openRowsOf(root) {
     try {
@@ -28265,8 +28369,9 @@ function createWorldEducation({
     } catch {
     }
   }
-  function showNext({ start = false, keepScroll = false, fresh = false } = {}) {
+  function showNext({ start = false, keepScroll = false, fresh = false, redraw = false } = {}) {
     check3();
+    const show = redraw ? redrawPanel : (...args) => home.showPanel(...args);
     const phase = homePhase();
     if (phase === "old") {
       const shown = showBoard(readCoach(), { keepScroll });
@@ -28294,14 +28399,14 @@ function createWorldEducation({
     const scroller = keepScroll ? panelNode("[data-position-next]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0, focusKey = keepScroll ? nextFocusOf(panelNode("[data-position-next]")) : null, openRows = keepScroll ? openRowsOf(panelNode("[data-position-next]")) : [];
     if (!data) {
       if (start) startWanted = asked;
-      home.showPanel(t2("position.title"), nextChecking(), PANEL);
+      show(t2("position.title"), nextChecking(), PANEL);
       panelNode("[data-position-next]")?.focus?.({ preventScroll: true });
       return;
     }
     const wanted = start || startWanted !== 0 && startWanted === asked;
     startWanted = 0;
     const two2 = topik2Domains(), exams = studentExam(data.values) === "topik2" || two2.listening || two2.reading ? ["topik1", "topik2"] : null;
-    home.showPanel(t2("position.title"), draw.board({ board: data.board, plan: data.plan, cards: data.cards, exams, practice: (id) => data.fresh.has(id), scope: data.scope, diagnosed, writing: data.exam === "topik2" && writingList().length > 0, month: data.month, estimate: data.estimate, mock: data.mock }), PANEL);
+    show(t2("position.title"), draw.board({ board: data.board, plan: data.plan, cards: data.cards, exams, practice: (id) => data.practice.get(id) ?? null, scope: data.scope, diagnosed, writing: data.exam === "topik2" && writingList().length > 0, month: data.month, estimate: data.estimate, mock: data.mock }), PANEL);
     heard.panel = false;
     const root = panelNode("[data-position-next]");
     if (keepScroll) {
@@ -28330,7 +28435,8 @@ function createWorldEducation({
     root?.querySelectorAll?.("[data-position-practice]").forEach((button) => button.addEventListener("click", () => {
       try {
         check3();
-        void Promise.resolve(startPractice(button.dataset.positionPractice)).catch(failed);
+        const id = button.dataset.positionPractice, way = data.practice.get(id);
+        void Promise.resolve(way?.route === "game" ? launchGame(way.gameId) : startPractice(id)).catch(failed);
       } catch (error2) {
         failed(error2);
       }
@@ -28366,7 +28472,7 @@ function createWorldEducation({
     if (redrawingNext || stopped || openPosition.pending || heldMock()) return;
     redrawingNext = true;
     try {
-      if (panelOpen() && panelNode("[data-position-next]")) showNext({ keepScroll: true, fresh: true });
+      if (panelOpen() && panelNode("[data-position-next]")) showNext({ keepScroll: true, fresh: true, redraw: true });
     } catch {
     } finally {
       redrawingNext = false;
@@ -28531,7 +28637,7 @@ function createWorldEducation({
       } catch {
         after = data;
       }
-      const routes = new Map([...after.fresh].map((id) => [id, { route: "practice", skillId: id }]));
+      const routes = after.practice;
       const response = answering() && set?.completionId ? set : null;
       box.innerHTML = view.renderDiagnosticDone({ map: after.board, results, items: position.itemsById, practice: (id) => routes.get(id) || null, response: responseView(response, "diagnostic") });
       bindPractice(box, routes);
@@ -29217,9 +29323,15 @@ function createWorldEducation({
     const ticket = ++practiceOpen;
     asked += 1;
     let launching = true;
-    home.attachPanelResource?.({ dispose() {
-      if (launching && ticket === practiceOpen) practiceOpen++;
-    } });
+    const resource = { dispose() {
+      if (!launching || ticket !== practiceOpen) return;
+      if (atlasNext && keepOpening) {
+        keepOpening(resource);
+        return;
+      }
+      practiceOpen++;
+    } };
+    home.attachPanelResource?.(resource);
     const active = () => {
       check3();
       return ticket === practiceOpen;
@@ -29797,7 +29909,11 @@ function createWorldEducation({
           mockOpen++;
           if (openMockNext.pending === ticket) {
             openMockNext.pending = 0;
+            const skipped = openMockNext.skipped;
             openMockNext.skipped = false;
+            if (skipped) queueMicrotask(() => {
+              if (!stopped) repaint();
+            });
           }
         }
       } });
@@ -30208,7 +30324,7 @@ function createWorldEducation({
       return "missing";
     }
     const scroller = keepScroll ? panelNode("[data-plan-board]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0, focusKey = keepScroll ? nextFocusOf(panelNode("[data-plan-board]"), PLAN_FOCUS) : null;
-    home.showPanel(t2("plan.week.title"), view.renderExamPlan({ plan: examPlan, next: plan.selected, reason: tMessage2(plan.reason || ""), count: practiceLength() }), { type: "life-position", eyebrow: "MY WEEK", nav: "packs" });
+    (keepScroll ? redrawPanel : (...args) => home.showPanel(...args))(t2("plan.week.title"), view.renderExamPlan({ plan: examPlan, next: plan.selected, reason: tMessage2(plan.reason || ""), count: practiceLength() }), { type: "life-position", eyebrow: "MY WEEK", nav: "packs" });
     heard.panel = false;
     const root = panelNode("[data-plan-board]");
     if (keepScroll) {
@@ -30292,6 +30408,11 @@ function createWorldEducation({
       return;
     }
     homePlanner = planner;
+    try {
+      stopGameEnds = planner.gameEnds?.(heardGameEnd) ?? null;
+    } catch {
+      stopGameEnds = null;
+    }
     homeWatch = planner.watchHomePlan({ open: openHome, retired: (made, fn) => homeNext.retired(made, fn), lifeState: () => homeNext.life(), onChange: () => {
       if (!stopped) {
         refresh();
@@ -30342,6 +30463,10 @@ function createWorldEducation({
     readWaitingResponses();
     responseCoachOff?.();
     stopHearing();
+    try {
+      stopGameEnds?.();
+    } catch {
+    }
     homeWatch?.dispose();
     release(coach);
     release(practiceCoach);

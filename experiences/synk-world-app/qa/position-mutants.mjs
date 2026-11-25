@@ -654,7 +654,7 @@ export const POSITION_MUTANTS = [
     'shell',
     "셸 30일째 문장",
     "내 위치 판에 30일째 문장을 넘기지 않는다",
-    "scope,month:monthOf(coachNow,P,routes),estimate:",
+    "scope,month:monthOf(coachNow,P,unitWays),estimate:",
     "scope,estimate:",
   ],
   [
@@ -731,8 +731,8 @@ export const POSITION_MUTANTS = [
     'shell',
     "셸 받기 알림",
     "닫힌 판에도 다시 그린다 — 늦게 온 첫 받기 답이 닫은 내 위치 판을 다시 연다(GPT 다시 검수 GA1 · 카본 A1)",
-    "try{if(panelOpen()&&panelNode('[data-position-next]'))showNext({keepScroll:true,fresh:true});}",
-    "try{showNext({keepScroll:true,fresh:true});}",
+    "try{if(panelOpen()&&panelNode('[data-position-next]'))showNext({keepScroll:true,fresh:true,redraw:true});}",
+    "try{showNext({keepScroll:true,fresh:true,redraw:true});}",
   ],
   [
     'shell',
@@ -1608,7 +1608,7 @@ export const POSITION_MUTANTS = [
     "shell",
     "예상 급수 셸",
     "내 위치 판에 시험 형식 단추를 싣지 않는다(내 위치 단추 — §21-23의 1)",
-    "   mock:mockOf(coachNow,values,exam,met.slice(diagnostic.length+practice.length))};\n",
+    "   mock:mockOf(coachNow,values,exam,rows.mock)};\n",
     "   mock:null};\n",
   ],
   // ── 4-4d Fable 끝 판과 설계 주인 11-17 저녁 답: 근거를 읽지 못한 자리 · 꼴 검사 · 시험 형식 고르기와 여는 길 ──
@@ -1672,7 +1672,7 @@ export const POSITION_MUTANTS = [
     "shell",
     "시험 형식 고르기와 여는 길",
     "시험 형식을 기다리는 열기에 판 자원을 달지 않는다 — 그 사이 연 같은 종류의 판을 늦게 온 판이 덮는다(Fable 끝 판 F6)",
-    "  home.attachPanelResource?.({dispose(){if(!settled&&ticket===mockOpen){mockOpen++;if(openMockNext.pending===ticket){openMockNext.pending=0;openMockNext.skipped=false;}}}});\n",
+    "  home.attachPanelResource?.({dispose(){if(!settled&&ticket===mockOpen){mockOpen++;if(openMockNext.pending===ticket){openMockNext.pending=0;const skipped=openMockNext.skipped;openMockNext.skipped=false;if(skipped)queueMicrotask(()=>{if(!stopped)repaint();});}}}});\n",
     "",
   ],
   [
@@ -1695,6 +1695,20 @@ export const POSITION_MUTANTS = [
     "시험 형식 열기가 기다리는 사이 건너뛴 다시 그리기를 적지 않는다 — 끝에 다시 그릴 것을 모른다(끝 판 카본 B1)",
     "function heldMock(){if(!openMockNext.pending)return false;openMockNext.skipped=true;return true;}",
     "function heldMock(){return Boolean(openMockNext.pending);}",
+  ],
+  [
+    "shell",
+    "시험 형식 고르기와 여는 길",
+    "확인 중 판으로 다시 그릴 때 여는 중인 짧은 연습을 끊는다(4-6e-2 사슬 -d-r3)",
+    "show(t('position.title'),nextChecking(),PANEL);",
+    "home.showPanel(t('position.title'),nextChecking(),PANEL);",
+  ],
+  [
+    "shell",
+    "시험 형식 고르기와 여는 길",
+    "학생이 누른 시험 판 바꾸기를 뒤의 다시 그리기로 본다 — 여는 중이던 연습이 누른 판을 덮는다(4-6e-2 사슬 -d-r3)",
+    "boardExam=button.dataset.positionExam==='topik2'?'topik2':'topik1';showNext({keepScroll:true});",
+    "boardExam=button.dataset.positionExam==='topik2'?'topik2':'topik1';showNext({keepScroll:true,redraw:true});",
   ],
   // 「판을 그린 뒤에도 끝에 다시 그린다」(!settled 빼기)와 「판이 바뀔 때 건너뛴 표를 지우지 않는다」는 넣지 않는다 — 새로 그린 판(시험 형식 판 ·
   // 다른 판)을 keepScroll로 한 번 더 그리거나 그리지 않는 같은 동작이 된다(방어용 막이).
@@ -1752,7 +1766,7 @@ export const POSITION_MUTANTS = [
   ["clear", "비우기 입구", "기기 길의 서버 비우기를 엔진에 넘기지 않는다", "        ...(clear ? { clear } : {}),\n", ""],
   ["clear", "비우기 입구", "새 길이 아닌 판(스위치 꺼짐)에서도 비운다", "    if (plan.path === 'old') return { ok: false, path: 'old', code: 'NOT_NEXT', known: true };\n", ""],
   ["clear", "비우기 입구", "겹쳐 누르면 비우기를 두 번 한다", "      clearing ??= (account ? clearAccount(options) : clearGuest())\n", "      clearing = (account ? clearAccount(options) : clearGuest())\n"],
-  ["clear", "비우기 입구", "손님 판 기록 열쇠를 지우지 않는다", "      if (name) store.removeItem(planLogKey(name));\n", ""],
+  ["clear", "비우기 입구", "손님 판 기록 열쇠를 지우지 않는다(세대 쓸기 · 세대 칸이 없는 엔진 판의 열쇠 지우기 — 4-6e-2 §25-3)", "      const whole = name && after !== null ? sweepGenerations(store, name, after) : null;\n      if (whole === false) partial = true;\n      else if (whole === null && name) store.removeItem(planLogKey(name, gens.get(made) ?? 0));\n", ""],
   ["clear", "비우기 입구", "손님 비우기 뒤 같은 문서의 손님 코치를 은퇴시키지 않는다", "    retire('cleared');\n    return { ok: true, path: 'guest', partial };\n", "    return { ok: true, path: 'guest', partial };\n"],
   ["clear", "비우기 입구", "옛 엔진이 바빠도(busy) 다 비웠다고 한다", "    let partial = done.legacy === 'busy' || done.legacy === 'failed';\n", "    let partial = done.legacy === 'failed';\n"],
   ["clear", "비우기 입구", "저장소가 없는 손님도 비우려 한다", "    if (!store) return { ok: false, path: 'guest', code: 'NO_STORAGE', known: true };\n", ""],
@@ -1866,7 +1880,7 @@ export const POSITION_MUTANTS = [
   ["clear","비우기 입구","서버가 받지 않은 비우기(409)도 다른 기기의 비우기를 이 비우기의 성공으로 본다(4-5 끝 판 GPT GC4)","        if (done?.known === true || clearedBefore(last, began))\n","        if (clearedBefore(last, began))\n"],
   ["clear","비우기 입구","결과를 모르는 비우기가 누르기 전에 끝난 비우기를 이 비우기로 본다(4-5 끝 판 GPT GC4)","        if (done?.known === true || clearedBefore(last, began))\n","        if (done?.known === true)\n"],
   ["clear","비우기 입구","서버 시각을 기기 시계의 어긋남 없이 견준다(4-5 끝 판 GPT GC4)","    Number.isFinite(last?.at) && Number.isFinite(last?.offset) && last.at + last.slack < at + last.offset;\n","    Number.isFinite(last?.at) && Number.isFinite(last?.offset) && last.at + last.slack < at;\n"],
-  ["clear","비우기 입구","앞 판 쓸기가 못 지운 열쇠를 알리지 않는다(4-5 끝 판 GPT GC6)","      whole = false; // 나머지는 지운다\n","      // 나머지는 지운다\n"],
+  ["clear","비우기 입구","앞 판 쓸기가 못 지운 열쇠를 알리지 않는다(4-5 끝 판 GPT GC6)","      storage.removeItem(name);\n    } catch {\n      whole = false; // 나머지는 지운다\n","      storage.removeItem(name);\n    } catch {\n      // 나머지는 지운다\n"],
   ["clear","비우기 입구","앞 판을 다 쓸지 못해도 「비웠어요」로 끝내고 표지를 지운다(4-5 끝 판 GPT GC6)","    const rest = left ?? (done.swept ? null : 'sweep');\n","    const rest = left;\n"],
   ["clear","비우기 입구","남은 걸음이 앞 판 쓸기를 다시 하지 않는다(4-5 끝 판 GPT GC6)","    const rest = sweepEarlier(store, whose, mark.revision) === false ? (left ?? 'sweep') : left;\n","    const rest = left;\n"],
   ["clear","비우기 입구","쓸기만 남았는데도 손님 코치를 열어 남은 걸음을 한다(4-5 끝 판 GPT GC6)","    if (mark.left === 'sweep') return stepsDone(at, whose, mark, null);\n",""],

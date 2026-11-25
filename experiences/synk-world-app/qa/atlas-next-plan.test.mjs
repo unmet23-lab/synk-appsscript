@@ -23,6 +23,8 @@ const moduleOf = (name, fallback) => (process.env[name] ? pathToFileURL(process.
 const examPlan = await import(moduleOf('SYNK_EXAM_PLAN_MODULE', '../world-exam-plan.mjs'));
 const N = await import(moduleOf('SYNK_PLAN_NEXT_MODULE', '../world-plan-next.mjs'));
 const { createWorldTodayPlan, todayRows, HOMEWORK_PREFIX } = await import(moduleOf('SYNK_TODAY_MODULE', '../world-today.mjs'));
+// 길 표(4-6e-2 — §25-3 불변식 다). 변형 시험(qa/today-mutants.mjs)은 게임 목록 · 길 표의 깬 사본을 SYNK_HOME_GAMES_MODULE로도 넘긴다.
+const { createRoutes } = await import(moduleOf('SYNK_HOME_GAMES_MODULE', '../world-home-games.mjs'));
 const { buildExamPlan, examInfo, examWeek } = examPlan;
 const { PLAN_LOG_PREFIX, PLAN_NEXT_POLICY, buildPlanNext, createPlanLog, planBoard, planLogKey, planReader, planStart } = N;
 
@@ -114,13 +116,18 @@ const EXAM_T1 = { reasons: ['exam'], primaryReason: 'exam', examType: 'topik1', 
 const EXAM_T2 = { reasons: ['exam'], primaryReason: 'exam', examType: 'topik2', targetGrade: 4, examDate: '2027-04-18', weeklyMinutes: 120 };
 // 셸(world-learning-ui.mjs weekNext)과 같은 재료로 이번 주 계획을 짓는다 — 묶음 만남 · 내 위치 칸 · 시작점 · 이 기기의 판 기록.
 // speaking — 말하기를 고른 학생의 이번 주 말하기(셸의 speakingThisWeek 꼴 — times · untried). 주면 계획에 말하기 영역이 선다(앱 셸과 같다).
-function weekOf({ coach, settings = EXAM_T1, now, log = null, audioAvailable = true, extra = {}, speaking = null }) {
-  const met = coach.exposures([...DIAGNOSTIC, ...PRACTICE]);
-  const metDiag = met.slice(0, DIAGNOSTIC.length);
-  const metPractice = met.slice(DIAGNOSTIC.length);
-  const at = new Map(PRACTICE.map((item, i) => [item, i]));
-  const seenOf = item => metPractice[at.get(item)]?.seen ?? null;
+// 4-6e-2부터 셸처럼 길 표 한 벌(createRoutes)로 짓는다 — 만남 줄은 길 표의 묶음 만남, 짧은 연습 공급은 능력마다의 길, 홈 숙제 줄은 week.routes를 읽는다.
+// games: 길 표의 게임 목록(기본은 없음 — 게임 길은 qa/atlas-next-routes.test.mjs가 본다).
+function weekOf({ coach, settings = EXAM_T1, now, log = null, audioAvailable = true, extra = {}, speaking = null, games = [] }) {
+  const routes = createRoutes({ coach, diagnostic: DIAGNOSTIC, practice: PRACTICE, games, itemUnits: key => coach.itemUnits(key) });
+  const metDiag = routes.rows.diagnostic;
+  const metPractice = routes.rows.practice;
   const pools = [{ items: DIAGNOSTIC, exposures: metDiag }, { items: PRACTICE, exposures: metPractice }];
+  const supply = {};
+  for (const skillId of [...new Set(PRACTICE.map(item => item.skillId))].sort()) {
+    const fresh = routes.routeOf(skillId).practice.filter(item => audioAvailable || !(item.audioRequired ?? item.modality === 'listening')).length;
+    if (fresh > 0) supply[skillId] = fresh;
+  }
   const skip = item => positionPlanner.withheldItem(item);
   const summary = coach.summary();
   const info = examInfo(settings);
@@ -138,7 +145,7 @@ function weekOf({ coach, settings = EXAM_T1, now, log = null, audioAvailable = t
     now,
     audioAvailable,
     available: {
-      practice: worldPosition.practice.practiceSupply({ pool: PRACTICE, seen: seenOf, audioAvailable }),
+      practice: supply,
       listening: {},
       recheck: ready ? diag.items.length : 0,
       life: true,
@@ -147,7 +154,7 @@ function weekOf({ coach, settings = EXAM_T1, now, log = null, audioAvailable = t
     },
     speaking,
   });
-  return { examPlan: plan, fresh: item => seenOf(item) === false, diagnostic: { ready }, reader };
+  return { examPlan: plan, routes, diagnostic: { ready }, reader };
 }
 
 // ── 능력 읽개(§21-6 표 · 검토 D1) ──
@@ -266,7 +273,7 @@ function memoryStorage(entries = []) {
   return { map, getItem: key => (map.has(key) ? map.get(key) : null), setItem: (key, value) => map.set(key, String(value)), removeItem: key => map.delete(key) };
 }
 
-test('판 기록은 영역과 끝난 때만 적고, 상한을 넘으면 오래된 줄부터 버리되 마지막 다시 확인은 남긴다', () => {
+test('판 기록은 영역 · 끝난 때 · 경험 이름을 적고, 쓸 때 이레가 지난 줄을 거두되 마지막 다시 확인은 남긴다 — 수로 자르지 않는다(§25-3 「거두기」)', () => {
   const storage = memoryStorage();
   const log = createPlanLog({ storage, store: 'synk-atlas:guest' });
   assert.equal(log.key, `${PLAN_LOG_PREFIX}synk-atlas:guest`);
@@ -280,15 +287,152 @@ test('판 기록은 영역과 끝난 때만 적고, 상한을 넘으면 오래�
   assert.deepEqual(log.times('reading'), [T0 - HOUR]);
   assert.equal(log.lastCheck(examWeek(T0).start), T0 - 9 * DAY, '이번 주 앞의 가장 늦은 다시 확인');
   assert.equal(log.lastCheck(T0 - 10 * DAY), null);
-  for (let i = 0; i < PLAN_NEXT_POLICY.log + 10; i += 1) log.record('listening', T0 - 8 * DAY + i * MIN);
-  const rows = JSON.parse(storage.getItem(log.key)).rows;
-  assert.equal(rows.length, PLAN_NEXT_POLICY.log, '상한');
-  assert.equal(rows.filter(row => row.area === 'recheck').length, 1, '마지막 다시 확인은 남긴다(다음 확인의 간격을 잰다)');
+  // 기간으로 거둔다 — 쓸 때 그때보다 이레 넘게 앞선 줄을 버린다. 마지막 다시 확인은 남긴다(다음 확인의 간격을 잰다).
+  assert.equal(log.record('listening', T0 - 8 * DAY, 'korean-runner'), true);
+  assert.equal(log.record('reading', T0, 'snap-words'), true);
+  const kept = JSON.parse(storage.getItem(log.key)).rows;
+  assert.ok(!kept.some(row => row.at === T0 - 8 * DAY), '이레 지난 줄은 거둔다');
+  assert.equal(kept.filter(row => row.area === 'recheck').length, 1, '마지막 다시 확인은 이레가 지나도 남긴다');
   assert.equal(log.lastCheck(), T0 - 9 * DAY);
+  assert.deepEqual(
+    log.rows().map(row => [row.area, row.experience]),
+    [['recheck', null], ['mock', null], ['reading', 'world-practice'], ['reading', 'snap-words']],
+    '경험 이름이 없는 옛 듣기 · 읽기 줄은 짧은 연습(world-practice)으로 읽는다',
+  );
+  // 수로 자르지 않는다 — 한 주에 게임 판이 300번 넘어도 그 주의 시험 형식 판과 주초의 듣기 판이 세어진다(넷째 판 검토 Fable FA2).
+  const busy = createPlanLog({ storage: memoryStorage(), store: 'busy', gen: 0 });
+  const week = examWeek(T0);
+  busy.record('mock', week.start + 5 * MIN);
+  busy.record('listening', week.start + 10 * MIN, 'world-practice');
+  for (let i = 0; i < 320; i += 1) busy.record('listening', week.start + HOUR + i * 25 * MIN, i % 2 ? 'korean-runner' : 'korean-rhythm');
+  assert.equal(busy.rows().length, 322, '줄을 수로 자르지 않는다');
+  assert.deepEqual(busy.times('mock'), [week.start + 5 * MIN], '주초의 시험 형식 판이 남는다');
+  assert.ok(busy.rows().some(row => row.experience === 'world-practice'), '주초의 짧은 연습 듣기 판이 남는다');
   // 저장소가 없거나 깨졌어도 계획이 서야 한다 — 그 판을 세지 못할 뿐이다.
   assert.equal(createPlanLog({ storage, store: '' }).record('reading', T0), false, '열쇠가 없으면 적지 않는다');
   assert.deepEqual(createPlanLog({ storage: { getItem: () => '{oops', setItem() {} }, store: 'x' }).times('reading'), []);
   assert.equal(createPlanLog({ storage: { getItem: () => null, setItem() { throw Error('full'); } }, store: 'x' }).record('reading', T0), false);
+});
+
+test('판 기록 — 비운 것을 모르는 탭은 쓰지 않는다(비운 세대가 연 세대보다 크거나 다음 세대 판 기록이 섬 — 4-6e-2 검수 GPT GC1) · 세대 0의 옛 꼴은 이어받기를 못 적어도 읽는다(GC3)', () => {
+  const store = 'synk-atlas:guest';
+  const storage = memoryStorage([[planLogKey(store, 0), JSON.stringify({ v: 1, rows: [{ area: 'listening', at: T0 - HOUR }] })]]);
+  const stale = createPlanLog({ storage, store, gen: 0, cleared: () => 1 });
+  assert.equal(stale.record('reading', T0, 'world-practice'), false, '비운 세대 1 > 연 세대 0');
+  assert.equal(stale.adopt(), false, '이어받기도 적지 않는다');
+  assert.equal(JSON.parse(storage.getItem(planLogKey(store, 0))).gen, undefined, '값이 그대로다');
+  const same = createPlanLog({ storage, store, gen: 1, cleared: () => 1 });
+  assert.equal(same.record('reading', T0, 'world-practice'), true, '비운 세대와 같은 세대의 탭은 쓴다');
+  const behind = createPlanLog({ storage, store, gen: 0, cleared: () => null });
+  assert.equal(behind.record('reading', T0, 'world-practice'), false, '표지를 못 읽어도 다음 세대 판 기록이 섰으면 쓰지 않는다');
+  assert.equal(createPlanLog({ storage, store, gen: 0, cleared: () => { throw Error('읽지 못함'); } }).record('reading', T0), false);
+  // 열 때 이미 있던 표지와 열쇠는 다른 탭의 비우기가 아니다 — IndexedDB만 잃은 기기는 세대 0에서 다시 서고 표지 1 · @1이 남는다. 연 뒤에
+  // 오른 표지는 막는다.
+  const lost = memoryStorage([[planLogKey(store, 1), JSON.stringify({ v: 1, gen: 1, rows: [] })]]);
+  const opened = { mark: 1, last: 1 };
+  assert.equal(createPlanLog({ storage: lost, store, gen: 0, cleared: () => 1, opened }).record('reading', T0), true, '열 때 있던 표지 · 열쇠');
+  assert.equal(createPlanLog({ storage: lost, store, gen: 0, cleared: () => 2, opened }).record('reading', T0), false, '연 뒤에 오른 표지');
+  assert.equal(createPlanLog({ storage: lost, store, gen: 0, cleared: () => null, opened: { mark: 0, last: 0 } }).record('reading', T0), false, '연 뒤에 선 다음 세대 열쇠');
+  // 세대 칸이 없는 엔진 판(gen null)은 세대를 보지 않는다 — 지금과 같다.
+  assert.equal(createPlanLog({ storage, store, cleared: () => 9 }).record('reading', T0), true);
+  // GC3: 이어받기를 적지 못하는 저장소에서도 세대 0의 옛 꼴 줄을 이 세대의 줄로 읽는다.
+  const old = memoryStorage([[planLogKey(store, 0), JSON.stringify({ v: 1, rows: [{ area: 'listening', at: T0 }, { area: 'recheck', at: T0 - DAY }] })]]);
+  const full = { getItem: key => old.getItem(key), setItem() { throw Error('full'); } };
+  const log = createPlanLog({ storage: full, store, gen: 0 });
+  assert.equal(log.adopt(), false);
+  assert.deepEqual(log.times('listening'), [T0]);
+  assert.equal(log.lastCheck(), T0 - DAY);
+  assert.deepEqual(createPlanLog({ storage: full, store, gen: 1 }).rows(), [], '세대 1 이상은 옛 꼴을 읽지 않는다');
+});
+
+// 판 기록으로 센 이번 주 수(영역 → done) — 시작점이 아닌 빈 학생의 계획(셈만 본다).
+const doneOf = (log, now = T0) =>
+  Object.fromEntries(buildPlanNext({ examPlan, info: examInfo(EXAM_T1), reader: readerOf(summaryOf([])), log, now }).areas.map(row => [row.area, row.done]));
+
+test('이번 주 듣기 · 읽기는 경험마다 같은 간격으로 묶어 센 수로 넘긴다 — 다른 경험의 10분 뒤 판은 한 수를 더 올리고, 같은 경험의 10분 뒤 판 · 옛 줄 뒤의 짧은 연습은 한 수, 지난주 줄은 들지 않는다(§25-3 「셈」)', () => {
+  const week = examWeek(T0);
+  const at = week.start + DAY + 10 * HOUR; // 이번 주 화요일 10시
+  const logOf = rows => {
+    const storage = memoryStorage([[planLogKey('s', 0), JSON.stringify({ v: 1, gen: 0, rows })]]);
+    return createPlanLog({ storage, store: 's', gen: 0 });
+  };
+  assert.equal(doneOf(logOf([{ area: 'listening', at, experience: 'korean-runner' }])).listening, 1, '한 판은 한 수 — count와 times로 두 번 세지 않는다');
+  assert.equal(
+    doneOf(logOf([{ area: 'listening', at, experience: 'korean-runner' }, { area: 'listening', at: at + 10 * MIN, experience: 'korean-rhythm' }])).listening,
+    2,
+    '바람길 판 뒤 10분의 리듬 판은 한 수를 더 올린다(옛 길도 경험마다 따로 묶었다)',
+  );
+  assert.equal(
+    doneOf(logOf([{ area: 'listening', at, experience: 'world-practice' }, { area: 'listening', at: at + 10 * MIN, experience: 'order-rush' }])).listening,
+    2,
+    '짧은 연습 듣기 판 뒤 10분의 게임 판도 둘이다',
+  );
+  assert.equal(
+    doneOf(logOf([{ area: 'listening', at, experience: 'korean-runner' }, { area: 'listening', at: at + 10 * MIN, experience: 'korean-runner' }])).listening,
+    1,
+    '같은 게임 두 판이 10분 간격이면 하나다',
+  );
+  assert.equal(
+    doneOf(logOf([{ area: 'listening', at }, { area: 'listening', at: at + 10 * MIN, experience: 'world-practice' }])).listening,
+    1,
+    '경험 이름이 없는 옛 듣기 줄 뒤 10분의 짧은 연습 판은 한 수(옛 줄은 짧은 연습에서 왔다 — 넷째 판 검토 GPT GA4)',
+  );
+  assert.equal(doneOf(logOf([{ area: 'listening', at: week.start - HOUR, experience: 'korean-runner' }])).listening ?? 0, 0, '지난주 판 기록은 이번 주 한 수에 들지 않는다');
+  assert.equal(doneOf(logOf([{ area: 'reading', at, experience: 'snap-words' }, { area: 'reading', at: at + 30 * MIN, experience: 'snap-words' }])).reading, 2, '간격(20분)을 넘기면 다른 번이다');
+  // 한 주에 게임 판이 300번 넘어도 그 주의 시험 형식 판과 주초의 듣기 판이 세어진다(수로 자르지 않는다 — 위 시험의 판 기록으로).
+  const busy = createPlanLog({ storage: memoryStorage(), store: 'busy', gen: 0 });
+  busy.record('recheck', week.start + 3 * MIN, 'world-home');
+  busy.record('mock', week.start + 5 * MIN);
+  busy.record('listening', week.start + 10 * MIN, 'world-practice');
+  for (let i = 0; i < 320; i += 1) busy.record('listening', week.start + 2 * HOUR + i * MIN, 'korean-runner');
+  const done = doneOf(busy, week.start + 2 * DAY);
+  assert.equal(done.listening, 2, '주초의 짧은 연습 듣기 판 하나와 게임 판 한 번(1분 간격 320판은 한 번)');
+  assert.equal(done.recheck, 1, '주초의 다시 확인이 세어진다');
+});
+
+test('판 기록 열쇠는 저장소 이름과 기록부 세대로 짓는다 — 세대 0은 「@」 없이, 값에 세대를 싣고, 값의 세대가 다르면 읽지 않는다 · 세대 칸이 없는 엔진 판(gen null)은 세대 0 열쇠에 gen 없이 쓴다(§25-3 불변식 가)', () => {
+  assert.equal(planLogKey('synk-atlas:guest', 0), `${PLAN_LOG_PREFIX}synk-atlas:guest`);
+  assert.equal(planLogKey('synk-atlas:guest', 1), `${PLAN_LOG_PREFIX}synk-atlas:guest@1`);
+  assert.equal(planLogKey('synk-atlas:guest', 2), `${PLAN_LOG_PREFIX}synk-atlas:guest@2`);
+  assert.equal(N.sideKey('synk.atlas.next.flow.', 'synk-atlas:guest', 2), 'synk.atlas.next.flow.synk-atlas:guest@2', '내용 기억과 같은 짜임(앞마디 + 저장소 이름 + @세대)');
+  assert.equal(planLogKey('', 1), null);
+  const storage = memoryStorage();
+  const second = createPlanLog({ storage, store: 'g', gen: 2 });
+  assert.equal(second.key, `${PLAN_LOG_PREFIX}g@2`);
+  assert.equal(second.record('listening', T0, 'korean-runner'), true);
+  assert.deepEqual(JSON.parse(storage.getItem(second.key)), { v: 1, gen: 2, rows: [{ area: 'listening', at: T0, experience: 'korean-runner' }] }, '값에 세대를 싣는다');
+  storage.setItem(planLogKey('g', 1), JSON.stringify({ v: 1, gen: 0, rows: [{ area: 'reading', at: T0 }] }));
+  assert.deepEqual(createPlanLog({ storage, store: 'g', gen: 1 }).times('reading'), [], '값의 세대가 다르면 빈 기록이다');
+  const bare = createPlanLog({ storage, store: 'b', gen: null });
+  assert.equal(bare.key, `${PLAN_LOG_PREFIX}b`, '세대 칸이 없는 엔진 판은 세대 0 열쇠');
+  bare.record('reading', T0);
+  assert.equal(JSON.parse(storage.getItem(bare.key)).gen, undefined, '값에 gen을 싣지 않는다');
+  storage.setItem(planLogKey('c', 0), JSON.stringify({ v: 1, gen: 0, rows: [{ area: 'mock', at: T0 }] }));
+  assert.deepEqual(createPlanLog({ storage, store: 'c', gen: null }).times('mock'), [T0], '세대 칸이 없는 엔진 판은 값의 세대를 보지 않는다(되돌림 동안에도 판 수가 이어진다)');
+});
+
+test('세대 0은 옛 꼴(gen 없는) 판 기록을 그 자리에서 gen 0을 실어 이어받는다 — 줄은 그대로(같은 줄은 하나로), 두 번 이어받아도 한 번만 적고, 세대 1 이상은 옮기지 않는다(§25-3 「옛 꼴 판 기록 다루기」)', () => {
+  const old = [{ area: 'listening', at: T0 - HOUR }, { area: 'listening', at: T0 - HOUR }, { area: 'mock', at: T0 - 2 * HOUR }];
+  const storage = memoryStorage([[planLogKey('g', 0), JSON.stringify({ v: 1, rows: old })]]);
+  const log = createPlanLog({ storage, store: 'g', gen: 0 });
+  // 이어받기 전에도 세대 0은 옛 꼴을 이 세대의 줄로 읽는다 — 이어받은 뒤와 같은 줄(같은 줄은 하나로)이다. 저장소가 가득 차 이어받기를 못 적어도
+  // 이번 주 수가 빠지지 않는다(4-6e-2 검수 GPT GC3 · 카본 C1). 적는 것은 입구가 코치를 열 때 한 번이다.
+  assert.deepEqual(log.times('listening'), [T0 - HOUR], '이어받기 전에도 세대 0은 옛 꼴을 읽는다');
+  assert.equal(log.adopt(), true);
+  const value = JSON.parse(storage.getItem(planLogKey('g', 0)));
+  assert.equal(value.gen, 0, '그 자리에 gen 0을 실어 적는다(읽을 때마다 이어받지 않는다)');
+  assert.deepEqual(value.rows, [old[0], old[2]], '같은 줄은 하나로 합친다');
+  assert.equal(log.adopt(), false, '두 번 이어받지 않는다');
+  assert.deepEqual(log.times('listening'), [T0 - HOUR]);
+  assert.equal(doneOf(log, T0).listening, 1);
+  // 세대 1 이상은 기본 열쇠의 옛 꼴을 옮기지 않는다(쓸기가 지운다 — 입구).
+  const later = memoryStorage([[planLogKey('h', 0), JSON.stringify({ v: 1, rows: old })]]);
+  assert.equal(createPlanLog({ storage: later, store: 'h', gen: 1 }).adopt(), false);
+  assert.deepEqual(createPlanLog({ storage: later, store: 'h', gen: 1 }).times('listening'), []);
+  // 이어받은 뒤 옛 판(되돌림)이 gen 없이 적은 줄도 세대 0의 다음 쓰기가 잃지 않는다.
+  createPlanLog({ storage, store: 'g', gen: null }).record('reading', T0 - 30 * MIN);
+  log.record('listening', T0, 'korean-runner');
+  assert.deepEqual(log.times('reading'), [T0 - 30 * MIN]);
 });
 
 // 가짜 계정 길 · 로더(qa/atlas-next-account.test.mjs와 같은 꼴) — 엔진 모듈은 storeName만.
@@ -454,7 +598,7 @@ test('숙제 연습 — 놓친 답이 있는 숙제는 오늘 공부 칸의 줄�
   assert.equal(plan.examPlan, week.examPlan, '홈 계획이 이번 주 계획을 싣는다(계획 입구 · 알림이 읽는다)');
   // 후보 거름(검토 D3): 그 능력의 처음 보는 문항만, 돌아온 단위가 든 문항은 뺀다(다음 레슨과 같은 거름 — 그 단위는 복습 칸이 맡는다).
   const { todayActivities } = await import(moduleOf('SYNK_TODAY_MODULE', '../world-today.mjs'));
-  const fresh = s.items.filter(item => week.fresh(item));
+  const fresh = s.items.filter(item => week.routes.routeOf('ko.reading.detail').practice.includes(item));
   assert.equal(fresh.length, s.items.length - s.used.length, '푼 문항은 처음 보는 문항이 아니다');
   const back = fresh[0];
   const units = new Set(s.coach.itemUnits(back.itemKey).map(row => row.unit));
@@ -497,7 +641,7 @@ test('맨 앞 층이 9(새 단위 한도에 막힘)인데 두뇌가 숙제 문�
   const id = `${HOMEWORK_PREFIX}ko.reading.detail`;
   const act = plan.candidates.find(open => open.id === id);
   assert.ok(act, '숙제 연습 활동은 넘긴다');
-  const [entry] = s.coach.plan([{ id, candidates: s.items.filter(item => week.fresh(item)).map(item => ({ itemKey: item.itemKey })), facts: { goals: [{ kind: 'homework', skill: 'ko.reading.detail', status: 'missed' }] } }], { lang: 'ko' });
+  const [entry] = s.coach.plan([{ id, candidates: s.items.filter(item => week.routes.routeOf('ko.reading.detail').practice.includes(item)).map(item => ({ itemKey: item.itemKey })), facts: { goals: [{ kind: 'homework', skill: 'ko.reading.detail', status: 'missed' }] } }], { lang: 'ko' });
   assert.equal(entry.none, true, '새 단위 한도에 막혀 낼 것이 없다');
   assert.equal(entry.tier, 9);
   assert.equal(entry.why?.code, 'host.homework', '두뇌는 숙제 문장을 낸다');
@@ -529,8 +673,10 @@ test('시간 조건에 걸린 숙제 연습도 풀어서 한 번 더 셈한다 �
   const settings = { ...s.settings, minutes: 2 };
   const week = weekOf({ coach: s.coach, settings, now: s.time.t });
   assert.ok(week.examPlan.homework.some(row => row.skillId === 'ko.reading.detail' && row.status === 'missed'));
-  for (const [pool, code, status] of [[PRACTICE, 'blocked', 'unavailable'], [spent, 'done', 'empty']]) {
-    const plan = homePlan({ coach: s.coach, progress: s.progress, now: s.time.t, settings, week, pool });
+  // 4-6e-2부터 숙제 줄의 후보는 길 표에서 온다 — 처음 보는 문항을 뺀 풀로 지은 길 표를 싣는다.
+  const spentWeek = { ...week, routes: createRoutes({ coach: s.coach, diagnostic: DIAGNOSTIC, practice: spent, itemUnits: key => s.coach.itemUnits(key) }) };
+  for (const [pool, code, status, weekNow] of [[PRACTICE, 'blocked', 'unavailable', week], [spent, 'done', 'empty', spentWeek]]) {
+    const plan = homePlan({ coach: s.coach, progress: s.progress, now: s.time.t, settings, week: weekNow, pool });
     const act = plan.candidates.find(open => open.id === id);
     assert.ok(act, '숙제 연습 활동은 넘긴다');
     assert.ok(!plan.today.items.some(row => row.activityId === id), '시간 조건에 걸린 줄은 서지 않는다');

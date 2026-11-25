@@ -201,8 +201,54 @@ test('홈 게임 목록 모듈(world-home-games)은 홈 세 줄과 입구만 받
  }
  assert.deepEqual(takers.sort(),['world-atlas-next.mjs','world-today.mjs']);
  assert.match(read('world-atlas-next.mjs'),/games: homeGames,/,'홈 플래너에 실어 넘긴다');
- // 아무것도 import하지 않는 표 — 계정 묶음(이미 입구 닫힘에 있다) 하나만 받는다. 형제 폴더 · JSON 모듈을 입구 닫힘에 들이지 않는다(§25-7의 9).
- assert.deepEqual(importsOf(read('world-home-games.mjs')).map(row=>row.specifier),['./world-account.bundle.mjs']);
+ // 아무것도 import하지 않는 표 — 계정 묶음(이미 입구 닫힘에 있다)과, 4-6e-2의 길 표가 짧은 연습과 같은 처음 보는가 판정을 부르는 새 길 모듈
+ // (world-practice-next.mjs — 이미 입구 닫힘에 있다) 둘만 받는다. 형제 폴더 · JSON 모듈을 입구 닫힘에 들이지 않는다(§25-7의 9).
+ assert.deepEqual(importsOf(read('world-home-games.mjs')).map(row=>row.specifier).sort(),['./world-account.bundle.mjs','./world-practice-next.mjs']);
+ assert.match(read('world-atlas-next.mjs'),/^import \{ createPracticeNextSession \} from '\.\/world-practice-next\.mjs';\r?$/m,'짧은 연습 새 판 모듈은 입구가 이미 정적으로 받는다');
+});
+// 4-6e-2 길 표(createRoutes — 단계4_계획 §25-3 · 25-9)는 새 길에서만 선다. 셸은 입구가 준 홈 플래너의 createRoutes로만 짓고, 홈 플래너는 새 길 홈 입구
+// (homeNext — 기능이 꺼지면 null)에서만 온다. 그래서 꺼진 판에서는 부름이 0이다. 새 길 문서라도 생활 판정이 지금 판이면(지금 판 홈) 짓지 않는다.
+test('꺼진 판 · 지금 판 홈에서 길 표(createRoutes) 부름이 0이다(4-6e-2 — 설계 주인 25-12의 11)',async()=>{
+ const source=read('world-learning-ui.mjs'),code=source.split(/\r?\n/).filter(line=>!line.trim().startsWith('//')).join('\n');
+ assert.deepEqual([...code.matchAll(/createRoutes/g)].length,1,'셸 원문(주석 밖)에서 createRoutes는 한 번 — 홈 플래너에서 받는 자리뿐이다');
+ assert.match(source,/const make=homePlanner\?\.createRoutes;/);
+ assert.match(source,/homePlanner=planner;/,'홈 플래너는 새 길 홈 입구의 planner()에서만 온다');
+ assert.doesNotMatch(source,/^import[^;]*world-home-games/m);
+ let calls=0;
+ const exam={audio:'available',reasons:['exam'],primaryReason:'exam',examType:'topik1',targetGrade:2,examDate:'2027-04-18',weeklyMinutes:120};
+ const values=new Map(),storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};
+ const progress={owner:'guest',learningProfile:()=>({profile:{status:'active',revision:1,consent:true}}),learningProfileValues:()=>exam,
+  status:()=>({phase:'synced',rejected:false,scoped:false,message:''}),exportSnapshot:()=>({}),summary:()=>({nextLesson:null,resume:false}),flush:async()=>{},hangulReading:()=>({answer:'reads'})};
+ const shown=[];
+ const home={updateStudy(){},toast(){},closePanel(){},attachPanelResource(){},showPanel:(title,html)=>shown.push(String(html))};
+ const target={localStorage:storage,addEventListener(){},removeEventListener(){},setTimeout,document:{querySelector:()=>null}};
+ const base={home,getProgress:()=>progress,engine:worldLearning,createPlan:input=>({selected:null,reason:'',examPlan:input.examPlan??null}),launchGame(){},startLesson(){},startReview(){},position:worldPosition,target};
+ // 꺼진 판 — atlasNext · homeNext를 넘기지 않는다.
+ // 두 장면 모두 지금 판의 이번 주 계획과 내 위치가 실제로 열린다 — 아무것도 열리지 않아 새 길 표지가 없는 것과 가른다(새 사슬 GA3).
+ const openBoth=async(education,name)=>{
+  const at=shown.length;
+  education.refresh();
+  assert.equal(await education.plan(),'shown',`${name} — 이번 주 계획이 열린다`);
+  assert.equal(shown.length,at+1);assert.match(shown.at(-1),/data-plan-board/);
+  await education.position();
+  assert.equal(shown.length,at+2,`${name} — 내 위치가 열린다`);assert.match(shown.at(-1),/wpos/);assert.doesNotMatch(shown.at(-1),/data-plan-board/);
+ };
+ const off=createWorldEducation(base);
+ await openBoth(off,'꺼진 판');
+ off.dispose();
+ // 지금 판 홈 — 생활 판정이 지금 판인 새 길 문서. 플래너는 길 표를 세는 함수를 싣는다. 실제 입구의 홈 플래너처럼 내 위치(position) · 계획(plan)
+ // 갈래도 싣되, 부르면 적히는 가짜로 둔다 — 꺼진 판 시험은 새 길 모듈을 불러오지 않는다(4-6e-2 검수 카본 A1).
+ const touched=[];
+ const counted=name=>new Proxy({},{get:(_,key)=>typeof key==='string'&&key!=='then'?(...args)=>{touched.push(`${name}.${key}`);return null;}:undefined});
+ const planner={createWorldTodayPlan:()=>{throw Error('지금 판 홈은 새 길 세 줄을 짓지 않는다');},watchHomePlan:()=>({phase:()=>'engine',coach:()=>null,redrawAt(){},dispose(){}}),todayKey:()=>'d',say:()=>'',
+  createRoutes:()=>{calls+=1;return null;},games:()=>[],position:counted('position'),plan:counted('plan'),gameEnds:()=>()=>{}};
+ const old=createWorldEducation({...base,homeNext:{planner:async()=>planner,life:()=>'old',ask:async()=>{},judge:()=>null,answers:()=>null,openGames:()=>null,coach:async()=>null,retired:()=>()=>{},painted(){},packs(){}}});
+ await new Promise(resolve=>setTimeout(resolve,20));
+ await openBoth(old,'지금 판 홈');
+ old.dispose();
+ assert.equal(calls,0,'지금 판 홈에서도 길 표를 짓지 않는다');
+ assert.deepEqual(touched,[],'지금 판 홈은 플래너의 내 위치 · 계획 갈래를 부르지 않는다');
+ assert.ok(shown.every(html=>!html.includes('data-position-next')),'새 길 판을 그리지 않는다');
 });
 // world-life-next.mjs(새 길의 판 겉 · 판정)는 world-learning-map.mjs가 정적으로 받아 꺼진 판의 계정 묶음 · 생활 단독 묶음에도 실린다 — 맨 위에서
 // 아무것도 돌지 않아야 한다(import · 상수 · 함수 선언뿐). 맨 위에 부름 · 읽기 · 바꾸기가 들면 라이브 첫 화면에서 바로 돈다(Fable 5.2 합친 끝 판 넘친 #28).

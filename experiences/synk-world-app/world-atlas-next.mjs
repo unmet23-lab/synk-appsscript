@@ -5,7 +5,7 @@
 // 엔진이 준비되지 못하면(입구 · 묶음 · 지도 · 저장소) null을 돌려주고 셸은 지금 판으로 간다 — 학습이 막히지 않는다.
 import { createPracticeNextSession } from './world-practice-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from './world-today.mjs';
-import { HOME_GAME_BANKS, homeGames } from './world-home-games.mjs';
+import { createRoutes, HOME_GAME_BANKS, homeGames } from './world-home-games.mjs';
 import { buildPositionNext, estimateNext, examSkills, recheckCards, unitRoutes, unseenFamilies } from './world-position-next.mjs';
 import { createDiagnosticNextSession, selectDiagnosticNext, withheldItem } from './world-diagnostic-next.mjs';
 import { createMockNextSession, selectMockNext, todayPractice } from './world-mock-next.mjs';
@@ -19,6 +19,7 @@ import {
   planReader,
   planStart,
   recordsComplete,
+  sideKey,
 } from './world-plan-next.mjs';
 import { monthWhy, pickMonth } from './world-lookback-next.mjs';
 import { meUnits } from './world-me-next.mjs';
@@ -26,7 +27,7 @@ import { meUnits } from './world-me-next.mjs';
 export { oldEngineDoors } from './world-old-engine-doors.mjs';
 import { clearMonthAnswer, FIRST_GAME } from './world-month-answer.mjs';
 import { lifeReviewCandidate } from './world-account.bundle.mjs';
-import { createGameDoor, FLOW_MEMORY_PREFIX, GAME_BANKS, gamePrefs } from './world-atlas-game.mjs';
+import { createGameDoor, FLOW_CLEARED_SUFFIX, FLOW_MEMORY_PREFIX, GAME_BANKS, gamePrefs } from './world-atlas-game.mjs';
 
 const ENTRY = '/atlas/loader.mjs';
 // 「내 위치」 새 판(4-4a — 단계4_계획 §21-2 ~ 21-5): 계약(칸 셋 · 다시 확인 카드 · 짧은 진단)과 최소 그림. 홈 플래너에 실어 셸에 넘긴다 — 홈 코치
@@ -82,6 +83,67 @@ const LIFE_BANKS = ['world-life'];
 // 4-6e-1(§25-1): 홈 후보 게임 셋의 은행(바람길 · 리듬 · 환승)을 고정으로 더한다 — 코치는 지도에 없는 후보를 지우므로 그 조각을 홈 코치가 열어야
 // 게임 줄이 선다. 리듬은 보충 연습 문항이 짧은 연습 풀에 있어 지금도 들지만, 보충 연습이 풀에서 빠져도 남게 적는다.
 export const homeBanksOf = pool => [...new Set([...LIFE_BANKS, ...HOME_GAME_BANKS, ...banksOf(pool)])].sort();
+
+// 기록이 바뀐 셈(4-6e-2 — 단계4_계획 §25-3 불변식 다). 셸의 길 표(world-home-games.mjs createRoutes)는 이 셈을 열쇠에 넣어, 셈이 오르면 다음에
+// 읽을 때 다시 선다. 셈은 이 문서가 기록부에 쓸 때(입구가 이 문서에서 낸 코치의 겉이 제시 · 답 · 도움 · 전달 · 제외를 쓸 때)와 그 코치의 받기
+// 알림(watch — 다른 탭의 refresh · 서버 receive)마다 오른다. 같은 문서의 쓰기는 watch로 오지 않기 때문이다. 화면 목록이나 판 끝을 따르지 않으므로
+// 답 없이 닫은 판, 오류로 끊긴 판, 나중에 생기는 화면의 쓰기도 놓치지 않는다(설계 주인 25-12의 16). 순간 맞춤 손잡이(겉의 live()가 돌려준 것)의
+// 제시 · 답도 엔진 안쪽 코치로 기록부에 쓰므로, 겉은 그 손잡이도 감싸 셈을 올린다(4-6e-2 검수 F1 — 주문 폭주 · 레이싱).
+const WRITES = Object.freeze(['present', 'answer', 'help', 'delivery', 'exclude']);
+const HANDLE_WRITES = Object.freeze(['present', 'answer']);
+export function createWriteCount() {
+  let count = 0;
+  const bump = () => {
+    count += 1;
+  };
+  return Object.freeze({
+    count: () => count,
+    // 코치의 겉 — 쓰는 메서드 다섯은 부를 때 셈을 올리고, 받기 알림(watch)은 듣는 함수를 부르기 전에 셈을 올린다(셸이 홈 코치에 거는 듣기 —
+    // 듣는 곳을 따로 늘리지 않는다). 나머지는 그대로 넘긴다. 칸은 코치의 것을 그때그때 읽는다 — 입구 · 로더의 겉은 실린 엔진 판에 그 메서드가
+    // 없으면 undefined를 내므로 셸의 typeof 검사가 그대로 선다.
+    face(made) {
+      if (!made || typeof made !== 'object') return made;
+      const face = {};
+      const calls = new Map();
+      const counted = call => (...args) => {
+        try {
+          return call(...args);
+        } finally {
+          bump();
+        }
+      };
+      // 순간 맞춤 손잡이 — 기록부에 쓰는 둘만 감싸고 나머지 칸은 그대로 옮긴다(손잡이는 얼린 값이다).
+      const handleOf = handle => {
+        if (!handle || typeof handle !== 'object') return handle;
+        const copy = { ...handle };
+        for (const name of HANDLE_WRITES) if (typeof handle[name] === 'function') copy[name] = counted((...args) => handle[name](...args));
+        return Object.freeze(copy);
+      };
+      const wrapOf = name =>
+        name === 'watch'
+          ? listener =>
+              made.watch((...args) => {
+                bump();
+                return listener(...args);
+              })
+          : name === 'live'
+            ? (...args) => handleOf(made.live(...args))
+            : counted((...args) => made[name](...args));
+      for (const name of Object.keys(made)) {
+        Object.defineProperty(face, name, {
+          enumerable: true,
+          get() {
+            const value = made[name];
+            if (!(WRITES.includes(name) || name === 'watch' || name === 'live') || typeof value !== 'function') return value;
+            if (!calls.has(name)) calls.set(name, wrapOf(name));
+            return calls.get(name);
+          },
+        });
+      }
+      return Object.freeze(face);
+    },
+  });
+}
 
 // 옛 기기 기록 읽개(계획 §1 #22 — 손님 호스트가 열 때마다 부른다). 옛 로그(events)와 접힌 장부(ledger)를 그대로 넘기고, 옮길 것을
 // 고르는 일(아직 안 옮긴 옛 꼴 사건 · 새로 든 장부)은 엔진(record/carry.mjs)이 한다. 못 읽으면 null — 새 길은 그대로 연다.
@@ -441,6 +503,90 @@ function sweepEarlier(storage, owner, below) {
     }
   return whole;
 }
+// 저장소의 열쇠 목록 — 셀 수 없는 저장소면 null.
+function storageKeys(storage) {
+  try {
+    const count = storage?.length;
+    if (typeof storage?.key !== 'function' || !Number.isSafeInteger(count) || count < 0) return null;
+    const names = [];
+    for (let index = 0; index < count; index += 1) {
+      const name = storage.key(index);
+      if (typeof name === 'string') names.push(name);
+    }
+    return names;
+  } catch {
+    return null;
+  }
+}
+// 저장소 이름 name의 마지막으로 비운 세대 — 엔진 내용 기억의 비운 세대 표지({ v: 1, gen }, 손님 비우기가 적는다). 없거나 읽지 못하면 null.
+// 판 기록은 이 세대가 연 때의 세대보다 크면 쓰지 않는다(createPlanLog cleared — 4-6e-2 검수 GC1).
+function clearedGen(storage, name) {
+  try {
+    const value = JSON.parse(storage.getItem(`${FLOW_MEMORY_PREFIX}${name}${FLOW_CLEARED_SUFFIX}`) ?? 'null');
+    return value?.v === 1 && Number.isSafeInteger(value.gen) && value.gen > 0 ? value.gen : null;
+  } catch {
+    return null;
+  }
+}
+// 코치를 열기 전에 본 비운 세대 표지와 판 기록 열쇠의 가장 뒤 세대(createPlanLog opened). 코치가 기록부를 읽기 전에 부른다 — 뒤에 부르면 여는
+// 사이 다른 탭이 비운 것을 「열 때 있던 것」으로 본다.
+function seenBefore(storage, name) {
+  let last = 0;
+  const base = sideKey(PLAN_LOG_PREFIX, name, 0);
+  for (const key of storageKeys(storage) ?? []) {
+    const gen = key.startsWith(`${base}@`) ? Number(key.slice(base.length + 1)) : Number.NaN;
+    if (Number.isSafeInteger(gen) && gen > last) last = gen;
+  }
+  return Object.freeze({ mark: clearedGen(storage, name) ?? 0, last });
+}
+// 그 열쇠 값의 세대(gen) — 없거나 읽지 못하면 null.
+function storedGen(storage, name) {
+  try {
+    const gen = JSON.parse(storage.getItem(name) ?? 'null')?.gen;
+    return Number.isSafeInteger(gen) ? gen : null;
+  } catch {
+    return null;
+  }
+}
+// 세대 쓸기(단계4_계획 §25-3 불변식 가 · 설계 주인 조건 1) — 저장소 이름 name의 기기 쪽 곁 기록(순간 맞춤 내용 기억 · 판 기록 두 앞마디) 가운데
+// 지금 세대 gen보다 앞선 세대의 열쇠를 지운다. 열쇠는 판 기록과 같은 함수(sideKey)로 짓는다.
+//   - 「@k」 열쇠는 k가 gen보다 작을 때만 지운다. 뒤 세대 열쇠는 연 직후 다른 탭이 비워 선 것일 수 있어 남긴다(앞 판 쓸기 sweepEarlier와 같은 규칙).
+//   - 기본 열쇠(세대 0)는 값에 든 세대가 gen보다 앞설 때만 지운다 — 엔진은 세대 열쇠가 없으면 기본 열쇠에 같은 세대로 든 앞 꼴 기억을 이어받는다
+//     (4c 20beea9ed — 쓸기는 그 이어받기를 깨지 않는다).
+//   - gen 없는 옛 꼴 판 기록은 세대 1 이상이면 어디서 왔는지 가를 수 없어 옮기지 않고 지운다(v8 검토 · 설계 주인 25-12의 16). 세대 0이면 그 자리에서
+//     gen 0을 실어 이어받는다(createPlanLog adopt — 두 번 돌려도 한 번만 적는다).
+//   - 내용 기억의 비운 세대 표지(#cleared)와 이름이 다른 저장소의 열쇠는 건드리지 않는다 — 비운 것을 모르는 탭을 막는 것이 그 표지다(25-12의 13).
+// 입구는 문서에서 한 저장소 · 한 세대의 코치를 처음 열 때와 손님 기록을 비운 직후에 부른다. 열쇠를 셀 수 없는 저장소면 쓸지 않는다(null). 한
+// 열쇠를 지우다 던져도 나머지는 지우고 거짓, 다 했으면 참.
+function sweepGenerations(storage, name, gen, opened = null) {
+  if (!storage || typeof name !== 'string' || !name || !Number.isSafeInteger(gen) || gen < 0) return null;
+  const names = storageKeys(storage);
+  if (!names) return null;
+  const plans = sideKey(PLAN_LOG_PREFIX, name, 0);
+  const flows = sideKey(FLOW_MEMORY_PREFIX, name, 0);
+  const drop = [];
+  for (const key of names)
+    for (const base of [plans, flows]) {
+      if (!key.startsWith(base)) continue;
+      const rest = key.slice(base.length);
+      if (rest === '') {
+        const was = storedGen(storage, key);
+        if (was !== null ? was < gen : base === plans && gen > 0) drop.push(key);
+      } else if (/^@\d+$/.test(rest)) {
+        if (Number(rest.slice(1)) < gen) drop.push(key);
+      }
+      // 그 밖(비운 세대 표지 #cleared · 이름이 더 긴 다른 저장소)은 건드리지 않는다.
+    }
+  if (gen === 0) createPlanLog({ storage, store: name, gen, cleared: () => clearedGen(storage, name), opened }).adopt();
+  let whole = true;
+  for (const key of drop)
+    try {
+      storage.removeItem(key);
+    } catch {
+      whole = false; // 나머지는 지운다
+    }
+  return whole;
+}
 // 손님 저장소의 걸음 결과 → 남은 걸음. 넷째 걸음이 안 됐으면 앞의 남은 걸음 그대로(없었으면 'cleared'), 옛 손님 로그를 다른 창이 쥐었거나
 // 비우기를 확인하지 못했으면 'legacy'(4b만 — 일부만 비움), 다 됐으면 null.
 const leftOf = (guest, before = null) =>
@@ -734,6 +880,8 @@ function lifeShare(events) {
   return { attempts: firstAnswers(life), events: life.length };
 }
 
+// 게임 판이 판 기록에 적는 형식 — 이번 주 계획이 세는 듣기 · 읽기(§25-3 「셈」).
+const GAME_AREAS = Object.freeze(['listening', 'reading']);
 const OLD = code => ({ path: 'old', code });
 const GUEST = Object.freeze({ path: 'guest' });
 
@@ -785,6 +933,17 @@ export function createAtlasNext({
   // 코치 → 그 저장소 이름(손님 synk-atlas:guest · 올리는 길 · 기기 길 — 엔진 storeName). 기기의 판 기록(4-4b §21-6 가)의 열쇠다 — 같은 판의
   // 코치(짧은 연습 · 홈)는 같은 저장소라 같은 기록을 읽는다. 동의 판이 오르면 이름이 바뀌어 앞 판의 기록은 읽히지 않는다.
   const stores = new WeakMap();
+  // 코치 → 연 때 읽은 기록부 세대(§25-3 불변식 가 — summary().storage.generation). 그 코치의 판 기록은 늘 이 세대의 열쇠에 적는다. 엔진 판에 세대
+  // 칸이 없으면 null(세대 0 열쇠에 gen 없이 적고, 쓸기 · 옛 꼴 옮기기를 돌리지 않는다). 계정 저장소는 비우면 이름이 바뀌어 세대가 늘 0이다.
+  const gens = new WeakMap();
+  // 코치 → 그 코치를 열기 전에 본 비운 세대 표지 · 판 기록 열쇠의 가장 뒤 세대(seenBefore — 4-6e-2 검수 GC1 고침의 뒤 고침).
+  const openedWith = new WeakMap();
+  // 이 문서에서 세대 쓸기를 돌린 저장소 · 세대(「이름@세대」) — 한 저장소 · 한 세대의 코치를 처음 열 때 한 번.
+  const swept = new Set();
+  // 게임 판 끝을 듣는 함수들(셸 — 홈 플래너의 gameEnds로 건다).
+  const gameEndListeners = new Set();
+  // 기록이 바뀐 셈(4-6e-2 — 위 createWriteCount). 이 입구가 연 코치는 모두 그 겉으로 낸다. 홈 플래너의 writes로 셸에 넘긴다.
+  const writes = createWriteCount();
   let disposed = false;
   let generation = 0; // 판을 다시 정할 때마다 오른다 — 앞 판에서 열기 시작한 코치는 돌려주지 않는다
   let decided = null; // 계정의 판(약속) — 다시 정하면 비운다
@@ -1225,28 +1384,52 @@ export function createAtlasNext({
     }
   }
 
+  // 그 코치의 기록부 세대(코치 요약의 storage.generation) — 엔진 판에 세대 칸이 없거나 읽지 못하면 null.
+  function generationOf(made) {
+    try {
+      const gen = made.summary()?.storage?.generation;
+      return Number.isSafeInteger(gen) && gen >= 0 ? gen : null;
+    } catch {
+      return null;
+    }
+  }
+  // 연 코치의 세대를 적고, 문서에서 그 저장소 · 세대의 코치를 처음 열 때 세대 쓸기를 돌린다(§25-3 「쓸기」). 연 코치의 세대는 저장소를 읽어
+  // 정하므로 그때의 지금 세대다.
+  function seatGeneration(made, name) {
+    const gen = generationOf(made);
+    gens.set(made, gen);
+    if (!name || !store || gen === null || swept.has(`${name}@${gen}`)) return;
+    swept.add(`${name}@${gen}`);
+    sweepGenerations(store, name, gen, openedWith.get(made) ?? null);
+  }
+
   // 입구 받기 · 코치 만들기 · 준비 — 어디서 실패해도 계기에 원인을 남기고 null(셸은 지금 판으로 간다).
   async function open(banks, plan, at, gameId) {
     let made = null;
     try {
       const { coach, engine } = await entry();
-      made = coach({
-        gameId,
-        banks,
-        // 이유 줄이 「「은행」 처음 만나요」처럼 낱말 이름을 말하려면 낱말 이름이 든다 — 조각이 실으면 조각에서, 아니면 낱말 표에서.
-        words: true,
-        host: { ...hostOf(plan, at), prefs: prefsFor(plan) },
-        lang: lang(),
-        label,
-      });
-      await made.ready;
       const name = storeOf(plan, engine);
+      const seen = name && store ? seenBefore(store, name) : null;
+      made = writes.face(
+        coach({
+          gameId,
+          banks,
+          // 이유 줄이 「「은행」 처음 만나요」처럼 낱말 이름을 말하려면 낱말 이름이 든다 — 조각이 실으면 조각에서, 아니면 낱말 표에서.
+          words: true,
+          host: { ...hostOf(plan, at), prefs: prefsFor(plan) },
+          lang: lang(),
+          label,
+        }),
+      );
+      await made.ready;
       if (name) stores.set(made, name);
+      if (seen) openedWith.set(made, seen);
       plans.set(made, plan);
       if (plan.path === 'upload' && !(await confirmed(made, plan, at))) {
         made.dispose();
         return null;
       }
+      seatGeneration(made, name);
     } catch (error) {
       note('load', {
         ok: false,
@@ -1569,8 +1752,14 @@ export function createAtlasNext({
     // 옛 엔진 비우기가 안 됐거나(busy · failed) 판 기록 열쇠를 못 지웠으면 「일부만 비움」이다 — 새 길은 이미 비었고 바닥이 있어 되살아나지 않는다.
     let partial = done.legacy === 'busy' || done.legacy === 'failed';
     const name = stores.get(made);
+    // 비우기는 기록부 세대를 올리는 것만으로 앞 판 기록 · 내용 기억을 읽히지 않게 한다(§25-3 불변식 가). 비운 뒤 코치 요약의 새 세대로 세대 쓸기를
+    // 그 자리에서 한 번 돌린다 — 앞 세대 열쇠가 다음 코치를 열 때까지 기기에 남지 않게(다섯째 판 검토 FA2). 비우기 자리의 쓸기는 옛 꼴을 옮기지
+    // 않는다(새 세대는 1 이상이다). 세대 칸이 없는 엔진 판이거나 열쇠를 셀 수 없는 저장소면 지금처럼 그 코치의 판 기록 열쇠를 지운다.
+    const after = gens.get(made) == null ? null : generationOf(made);
     try {
-      if (name) store.removeItem(planLogKey(name));
+      const whole = name && after !== null ? sweepGenerations(store, name, after) : null;
+      if (whole === false) partial = true;
+      else if (whole === null && name) store.removeItem(planLogKey(name, gens.get(made) ?? 0));
     } catch {
       partial = true;
     }
@@ -1720,6 +1909,48 @@ export function createAtlasNext({
   }
   let clearing = null; // 지금 도는 비우기 — 겹쳐 누르면 같은 약속을 준다
 
+  // 그 코치의 판 기록 — 저장소 이름과 연 때의 세대 열쇠로 연다(§25-3 불변식 가). 이 입구가 연 코치가 아니거나 엔진을 못 받았거나 저장소가 없으면 null.
+  function planLogOf(made) {
+    const name = made ? stores.get(made) : null;
+    return name && store ? createPlanLog({ storage: store, store: name, gen: gens.get(made) ?? null, cleared: () => clearedGen(store, name), opened: openedWith.get(made) ?? null }) : null;
+  }
+  function listenGameEnds(fn) {
+    if (typeof fn !== 'function' || disposed) return () => {};
+    gameEndListeners.add(fn);
+    return () => gameEndListeners.delete(fn);
+  }
+  // 게임 판 끝(단계4_계획 §25-3 불변식 나). 문이 판이 닫힐 때 한 번 부른다 — end: { gameId, counted(센 첫 답 형식들의 약속 — 저장 뒤 evidence를
+  // 기다린 값, 엔진 판에 형식 · 전달 칸이 없으면 null), folded(그 판의 다시 접기) }. 센 첫 답이 있는 형식(듣기 · 읽기)마다 그 코치의 판 기록(연
+  // 때의 세대 열쇠)에 한 줄(형식 · 판이 닫힌 때 · 게임 이름)을 적고, 센 첫 답이 없어도 셸에 판 끝을 알린다(folded를 싣는다). 판을 다시 정해 닫은
+  // 코치(gone)와 닫힌 입구의 판 끝은 적지도 알리지도 않는다 — 비운 뒤 늦게 끝난 판이 판 기록을 되살리지 않게. 판 기록은 판이 닫힐 때 한 번 쌓는
+  // 곁 기록이라 그 뒤의 제외로 다시 세지 않는다(제품은 답 · 소리 전달을 제외하지 않는다 — product-exclude 시험).
+  async function gameEnded(made, { gameId = null, counted = null, folded = null } = {}) {
+    const at = now();
+    if (disposed || !made) return false;
+    let kinds = null;
+    try {
+      kinds = await counted;
+    } catch {
+      kinds = null;
+    }
+    if (disposed || gone.has(made)) return false;
+    const log = planLogOf(made);
+    const areas = (Array.isArray(kinds) ? kinds : []).filter(area => GAME_AREAS.includes(area));
+    for (const area of areas)
+      try {
+        log?.record(area, at, typeof gameId === 'string' ? gameId : null);
+      } catch {
+        // 이 기기에서 세지 못할 뿐이다
+      }
+    for (const fn of [...gameEndListeners])
+      try {
+        fn({ gameId, at, areas, folded });
+      } catch {
+        // 한 화면의 실패가 다른 화면의 알림을 막지 않는다
+      }
+    return true;
+  }
+
   return {
     createPracticeNextSession,
     // 짧은 연습의 코치 — 손님은 손님 저장소, 계정은 정한 판의 저장소. 지금 판이면 null. 한 번 연 코치는 다시 쓴다.
@@ -1794,10 +2025,16 @@ export function createAtlasNext({
         entry: {
           gameCoach: (game, banks) => self.gameCoach(game, banks),
           retired: (made, fn) => self.retired(made, fn),
+          // 판 끝(§25-3 불변식 나) — 문이 판이 닫힐 때 한 번 부른다.
+          ended: (made, end) => void gameEnded(made, end),
         },
         gameId,
       });
     },
+    // 게임 판 끝(§25-3 불변식 나) — 문(world-atlas-game.mjs)이 부르는 자리와 같다(시험이 늦은 판 끝을 이 자리로 넣는다). 아래 gameEnded.
+    gameEnded: (made, end) => gameEnded(made, end),
+    // 게임 판 끝을 듣는다(셸 — 홈 플래너의 gameEnds와 같다). 돌려준 함수로 끊는다.
+    gameEnds: fn => listenGameEnds(fn),
     // 홈 플래너(4-3 — world-today.mjs). 엔진을 받아야 화면 언어의 문장(Vellum)을 그린다 — 못 받으면 null(셸은 생활 판정을 따라 지금 판으로 간다).
     async homePlanner() {
       if (disposed) return null;
@@ -1817,6 +2054,12 @@ export function createAtlasNext({
         plan: planPlanner,
         // 홈의 게임 목록(4-6e-1 — world-home-games.mjs). 홈 세 줄은 world-today.mjs가 같은 함수로 짓는다. 셸은 이 모듈을 직접 부르지 않는다.
         games: homeGames,
+        // 게임 판 끝을 듣는다(§25-3 불변식 나 — 셸이 판 끝 수를 올리고 홈 · 열린 이번 주 계획 판을 다시 그린다). 앱의 입구 감싸개(app-shell.mjs
+        // lazyAtlasNext)는 메서드를 이름으로 옮기므로 셸은 이 플래너로 건다. 돌려준 함수로 끊는다.
+        gameEnds: fn => listenGameEnds(fn),
+        // 길 표와 기록이 바뀐 셈(4-6e-2 — §25-3 불변식 다). 셸은 문서마다 길 표 한 벌을 짓고, 이 셈을 그 열쇠에 넣는다.
+        createRoutes,
+        writes: writes.count,
       });
     },
     // 30일째 문장의 돌아보기 읽기(4-4c 둘째 묶음 — 단계4_계획 §21-22). 그 코치를 연 판이 올리는 길이면 그 판의 동의 판과 묻는 함수를 준다.
@@ -1868,8 +2111,7 @@ export function createAtlasNext({
     // 이 기기의 판 기록(4-4b — 단계4_계획 §21-6 가): 그 코치의 저장소 이름으로 연다. 이 입구가 연 코치가 아니거나 엔진을 못 받았으면 null —
     // 계획이 이번 주에 한 판을 세지 못할 뿐이다. 저장소가 없는 입구(storage null — 시험)도 null.
     planLog(made) {
-      const name = made ? stores.get(made) : null;
-      return name && store ? createPlanLog({ storage: store, store: name }) : null;
+      return planLogOf(made);
     },
     // 지금 판을 준 뒤 새 길이 될 수 있을 때(판이 풀림 · 지금 판 뒤 새 길 코치를 줌) 부를 함수 — 생활 · 홈이 판을 다시 묻는다(§19-3 7 — 까닭을
     // 세지 않는다, 계정 · 손님 모두). retired(새 길 → 다시 정함)의 짝이다. 돌려준 함수로 끊는다.
@@ -2015,6 +2257,7 @@ export function createAtlasNext({
       coaches.clear();
       watchers.clear();
       reopeners.clear();
+      gameEndListeners.clear();
     },
   };
 }

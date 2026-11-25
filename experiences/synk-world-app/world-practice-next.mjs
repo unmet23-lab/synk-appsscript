@@ -56,6 +56,17 @@ function setSeen(pool, item, seen) {
   return pool.some(other => other !== item && other.setId === item.setId && seen(other) === true);
 }
 
+// 측정용 「앞서 만났나」의 값 — 처음 보는 문항 고르기와 같은 지문 세트 판정은 측정 자격의 일이라 화면용 seen이 아니라 met을 쓴다
+// (띄우기만 하고 닫힌 문항은 아직 측정 기회다 — 검수 끝 판). 모르면(null) 만난 것으로 친다(측정을 부풀리지 않게).
+export const metOf = exposure => exposure?.met ?? exposure?.seen ?? true;
+// 처음 보는 짧은 연습 문항의 판정 — 만난 적 없고 같은 지문 세트의 다른 문항도 만나지 않은 것(그래야 그 답이 측정 근거가 된다 — 검수 끝 판).
+// setPool: 같은 지문 세트를 찾을 문항 전체 · met(item): 측정용 「앞서 만났나」. 세션과 길 표(world-home-games.mjs createRoutes — 단계4_계획
+// §25-3 불변식 다)가 함께 부른다. 길 표가 「짧은 연습」이라고 한 능력에 실제 짧은 연습이 낼 처음 보는 문항이 남게 하려는 것이다.
+export const practiceFresh =
+  ({ setPool, met }) =>
+  item =>
+    met(item) === false && !setSeen(setPool, item, met);
+
 // setPool: 같은 지문 세트를 찾을 문항 전체(기본은 pool) — 세트의 다른 문항이 다른 항목일 수 있어 셸은 은행 전체를 넘긴다.
 export function createPracticeNextSession({
   coach,
@@ -78,13 +89,9 @@ export function createPracticeNextSession({
     throw TypeError('WORLD practice next needs the play counters (allowedPlays · nextPlay)');
   if (!Array.isArray(pool) || !pool.length || !Number.isInteger(length) || length < 1)
     throw TypeError('WORLD practice next needs its pool and a length');
-  // 측정용 「앞서 만났나」 — 처음 보는 문항 고르기와 같은 지문 세트 판정은 측정 자격의 일이라 화면용 seen이 아니라 met을 쓴다
-  // (띄우기만 하고 닫힌 문항은 아직 측정 기회다 — 검수 끝 판). 모르면(null) 만난 것으로 친다(측정을 부풀리지 않게).
-  const met = item => {
-    const exposure = coach.exposure(item);
-    return exposure.met ?? exposure.seen ?? true;
-  };
-  const fresh = item => met(item) === false && !setSeen(setPool, item, met);
+  // 측정용 「앞서 만났나」와 처음 보는 문항의 판정은 길 표와 같은 함수다(metOf · practiceFresh).
+  const met = item => metOf(coach.exposure(item));
+  const fresh = practiceFresh({ setPool, met });
   const results = [];
   const pending = [];
   const served = { due: false };

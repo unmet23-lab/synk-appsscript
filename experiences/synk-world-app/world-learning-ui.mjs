@@ -513,10 +513,12 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   try{judged=homeNext.judge(progress.exportSnapshot(),now);}catch{judged=null;}
   try{answers=homeNext.answers();openGames=homeNext.openGames();}catch{answers=null;openGames=null;}
   const lang=currentLang(),coachNow=phase==='engine'?homeWatch.coach():null;
+  // 지금 게임 목록(4-6e-1) — 홈 세 줄과 길 표(4-6e-2)가 같은 목록을 읽는다. 플래너에 목록이 없으면 홈이 제 값으로 짓는다.
+  const games=gamesNow(values,now),gameList=typeof homePlanner.games==='function'?{games}:{};
   // 이번 주 계획(4-4b): 시험을 고른 학생만 — 못 지으면 계획 없이 세 줄을 그린다(4-3과 같다).
-  let week=null;if(coachNow){try{week=weekNext(coachNow,values,now);}catch{week=null;}}
+  let week=null;if(coachNow){try{week=weekNext(coachNow,values,now,games);}catch{week=null;}}
   const plan=homePlanner.createWorldTodayPlan({coach:coachNow,progress,judged,settings:values,now,answers,openGames,pool:practiceFor(values),practiceLength:practiceLength(),
-   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:(why,names)=>homePlanner.say(why,lang,names),week});
+   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:(why,names)=>homePlanner.say(why,lang,names),week,...gameList});
   homeWatch.redrawAt(plan.today.redrawAt);
   return plan;
  }
@@ -801,12 +803,20 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 남으므로 끝에 한 번 다시 그린다(끝 판 B1). 내 위치 열기는 오류가 아니면 끝에 판을 새로 그리므로 적지 않는다 — 그래서 막이마다 내 위치
  // 열기(openPosition.pending)를 먼저 보고, 시험 형식 열기는 그 뒤에 이것으로 본다(루트 시험 world-position-lifecycle이 세 함수만 떼어 돌린다).
  function heldMock(){if(!openMockNext.pending)return false;openMockNext.skipped=true;return true;}
+ // 짧은 연습을 여는 중이면 미루지 않고 바로 다시 그린다 — 미루면 그 판의 다른 단추가 묵은 길을 연다(4-6e-2 사슬 -d-r3 GA1). 판을 바꾸는 동안 정리된
+ // 열기는 끊지 않고 그 자원을 새 판에 다시 단다(새 길 문서의 startPractice만 넘긴다 — 꺼진 문서는 그대로다). 감싸는 것은 판을 보이는 한 번(잎)뿐이다.
+ let keepOpening=null;
+ function redrawPanel(...args){
+  let kept=null;
+  keepOpening=resource=>{kept=resource;};
+  try{home.showPanel(...args);}finally{keepOpening=null;if(kept)home.attachPanelResource?.(kept);}
+ }
  // 은행을 다 불러오면 열려 있는 판을 새 문항으로 다시 그린다(진단·연습·모의가 진행 중일 때는 건드리지 않는다).
  function repaint(){
   try{
    if(home.openPanel?.()===''||openPosition.pending||heldMock())return;
    // 새 길 「내 위치」 판은 새 길로 다시 그린다(옛 코치를 읽지 않는다 — §6).
-   if(panelNode('[data-position-next]')){showNext({keepScroll:true});return;}
+   if(panelNode('[data-position-next]')){showNext({keepScroll:true,redraw:true});return;}
    if(panelNode('[data-position-board]')&&!panelNode('[data-position-board="hangul"]'))showBoard(readCoach(),{keepScroll:true});
    else if(panelNode('[data-plan-board]'))void openPlan({keepScroll:true});
   }catch{/* the next open draws it */}
@@ -850,7 +860,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 두 번 그리지 않게 화면에 듣는 곳은 하나다. 11-16 새벽의 다시 보기 셋(내 위치 판의 pulled 다시 보기 · 홈의 받기 기다림 · 깨어난 뒤 30초
  // 지켜보기)을 이것으로 바꿨다 — 다시 보기는 같은 자리에서 P1이 두 회차 이어졌고 빈틈 셋이 남았다(§21-18). 엔진의 받기 사다리와 다시 받기는
  // 그대로다(알림은 받기가 실제로 돌아야 난다).
- // 알림을 받은 자리에서는 이번 주 계획의 묶음 만남만 버린다(건너뛰기만 한 판의 만남은 요약 모양에 비치지 않는다 — FA1). 그리기는 다음 틱으로
+ // 알림을 받은 자리에서 묶음 만남을 버리지 않는다 — 길 표(4-6e-2)의 열쇠에 든 「기록이 바뀐 셈」이 받기 알림마다 오른다(입구가 센다). 그리기는 다음 틱으로
  // 미뤄 잇달아 온 알림을 한 번으로 묶는다. 미룬 것은 둘로 든다 — 홈 몫(refresh가 그리면 비운다)과 열린 판 몫(내 위치 엔진 판 · 이번 주 계획 판을
  // 그리면 비운다). 그 사이 다른 까닭의 refresh가 홈만 그렸어도 열린 판은 타이머가 그린다(설계 검토 D4). 진단 · 짧은 연습 · 시험 형식 · 마을 확인
  // 판과 생활 레슨 · 복습 · 카페 판이 열려 있으면 그리지 않고 미뤄 둔다 — 그 판들은 닫힐 때 홈을 새로 그리고(판의 stop이 부르는 refresh, 홈의
@@ -888,7 +898,6 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  function heardHome(coachNow){
   if(stopped||heard.coach!==coachNow)return;
-  if(weekMet.coach===coachNow)weekMet={coach:null,key:null,met:null};
   heard.home=true;heard.panel=true;
   if(heard.timer==null)heard.timer=watchClock.set(drawHeard,0);
  }
@@ -907,32 +916,35 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const nextViewOf=()=>nextView||=homePlanner?.position?.createView?.({t,has:hasString,formatDate})||null;
  // 확인 중 판 — 판을 아직 못 정했거나(플래너를 받기 전 · 생활 판정이 확인 중) 홈 코치의 요약이 자리를 잡기 전. 줄 없이 「기록 확인 중」(21-2).
  const nextChecking=()=>`<div class="wpos life-heading" data-position-next="checking" tabindex="-1" aria-busy="true"><div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="position" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${escape(t('position.title'))}</strong><p class="life-poster-sub">${escape(t('homeTutor.checking'))}</p></div></div>`;
- // 엔진 판 한 장의 자료(계약): 칸 셋 · 짧은 진단 · 다시 확인 카드. 묶음 만남은 한 번만 묻는다(진단 풀 + 짧은 연습 풀 — 21-3, 판을 열 때 · 판 끝에 한 번).
+ // 엔진 판 한 장의 자료(계약): 칸 셋 · 짧은 진단 · 다시 확인 카드. 만남 줄은 길 표의 묶음 만남이다(4-6e-2 — 판을 열 때 길 표가 열쇠를 보고 다시 선다).
  function nextData(coachNow,P){
   let values={};try{values=getProgress().learningProfileValues()||{};}catch{values={};}
   const exam=examOf(values),audioAvailable=values.audio!=='off',listening=item=>item.audioRequired??item.modality==='listening';
-  const summary=coachNow.summary(),diagnostic=position.items,practice=position.practice.pool;
-  // 시험 형식 풀(4-4d — 내 위치의 시험 형식 단추)도 같은 묶음 만남 한 번에 묻는다(21-3 — 판을 그릴 때 한 번).
-  const mockPool=Array.isArray(position.mock?.pool)?position.mock.pool:[];
-  const met=coachNow.exposures([...diagnostic,...practice,...mockPool]);
-  // 「이 항목 연습하기」 · 먼저 볼 항목의 「지금 낼 새 문항」: 그 소리 조건에서 처음 보는(seen false) 짧은 연습 문항이 남은 능력.
+  const routes=routesFor(coachNow,values);
+  if(!routes)throw Error('WORLD position next needs the routes');
+  const summary=coachNow.summary(),diagnostic=routes.pools.diagnostic,practice=routes.pools.practice,rows=routes.rows;
+  // 먼저 볼 항목의 「지금 낼 새 문항」(prefer): 그 소리 조건에서 처음 보는(seen false) 짧은 연습 문항이 남은 능력. 길이 아니라 그대로 둔다(§25-3).
   const fresh=new Set();
-  practice.forEach((item,i)=>{if(met[diagnostic.length+i]?.seen===false&&(audioAvailable||!listening(item)))fresh.add(item.skillId);});
+  practice.forEach((item,i)=>{if(rows.practice[i]?.seen===false&&(audioAvailable||!listening(item)))fresh.add(item.skillId);});
   const synced=nextSync.coach===coachNow?nextSync.value:null;
   // 칸 규칙 다의 길이 읽는 F(21-3 「지금 규칙」): 새 길이 낼 수 있는 풀(진단 풀 — 뺀 레이싱 문항 제외 · 짧은 연습 풀)의 칸마다 처음 보는 계열 수.
-  const unseen=P.unseenFamilies([{items:diagnostic,exposures:met.slice(0,diagnostic.length)},{items:practice,exposures:met.slice(diagnostic.length,diagnostic.length+practice.length)}],item=>P.withheldItem(item));
-  const board=P.buildPositionNext({exam,skills:P.examSkills(engine.SKILLS,exam),summary,prefer:id=>fresh.has(id),synced,unseen});
-  const plan=P.selectDiagnosticNext({position:board,items:diagnostic,exposures:met.slice(0,diagnostic.length),audioAvailable});
+  const unseen=P.unseenFamilies([{items:diagnostic,exposures:rows.diagnostic},{items:practice,exposures:rows.practice}],item=>P.withheldItem(item));
+  const skills=P.examSkills(engine.SKILLS,exam);
+  const board=P.buildPositionNext({exam,skills,summary,prefer:id=>fresh.has(id),synced,unseen});
+  const plan=P.selectDiagnosticNext({position:board,items:diagnostic,exposures:rows.diagnostic,audioAvailable});
+  // 「이 항목 연습하기」(4-6e-3 — §25-6): 그 판에 선 능력마다 길 표에 묻는다. 학생이 다른 시험 판을 누르면 그 시험의 능력이다.
+  const practiceRoutes=new Map(),routeOf=routes.reader();
+  for(const skill of skills){let route=null;try{route=routeOf(skill.id);}catch{route=null;}const way=practiceWay(route,audioAvailable);if(way)practiceRoutes.set(skill.id,way);}
   let life=[];try{life=engine.life?.lifeItems?.()||[];}catch{life=[];}
-  const routes=P.unitRoutes({itemUnits:item=>coachNow.itemUnits(item),practice,diagnostic,life});
+  const unitWays=P.unitRoutes({itemUnits:item=>coachNow.itemUnits(item),practice,diagnostic,life});
   // 생활 카드가 지금 열리나: 생활 판정(셸의 lifeDue — 홈 「복습」 줄과 같은 목록)이 그 단위로 낸 복습이 있는가. 판정이 엔진이 아니면 모른다(null).
   let judged=null;try{judged=homeNext.judge(getProgress().exportSnapshot(),Date.now());}catch{judged=null;}
   const lifeOpen=unit=>judged?.state==='engine'&&Array.isArray(judged.items)?judged.items.some(row=>row.unit===unit):null;
-  const cards=P.recheckCards({due:coachNow.due(),units:summary.units,routes,capped:current?.today?.capped===true,audioAvailable,lifeOpen});
+  const cards=P.recheckCards({due:coachNow.due(),units:summary.units,routes:unitWays,capped:current?.today?.capped===true,audioAvailable,lifeOpen});
   // 어디 기록인지 한 줄: 손님은 이 기기, 서버 길 계정은 계정. 동의를 끈 계정(기기에만 두는 계정 기록)은 맞는 글이 없어 두지 않는다(글은 리디자인).
   const scope=owner==='guest'?'device':summary.storage?.guest===false?'account':null;
-  return {values,exam,board,plan,cards,fresh,judged,scope,month:monthOf(coachNow,P,routes),estimate:estimateOf(coachNow,P,exam,values),
-   mock:mockOf(coachNow,values,exam,met.slice(diagnostic.length+practice.length))};
+  return {values,exam,board,plan,cards,practice:practiceRoutes,judged,scope,month:monthOf(coachNow,P,unitWays),estimate:estimateOf(coachNow,P,exam,values),
+   mock:mockOf(coachNow,values,exam,rows.mock)};
  }
  // 예상 급수 칸(4-4d — 단계4_계획 §21-23의 2): 새 길의 근거 수. 손님과 동의를 끈 계정은 코치가 센다(coach.firstAnswers — 기록이 다 오지 않았으면
  // null). 서버 길 계정은 코치가 null을 내므로 근거 상자(evidenceAsker)의 쓸 수 있는 답이 있을 때만 수를 그린다. 수를 모르면 「확인 중」 표지만 둔다
@@ -967,11 +979,64 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   let text=null;try{text=pick?homePlanner.say(P.monthWhy(pick),currentLang()):null;}catch{text=null;}
   return pick&&typeof text==='string'&&text?{text,unit:pick.unit,misses:pick.misses,reviews:pick.reviews}:null;
  }
- // 새 길의 이번 주 계획(4-4b — 단계4_계획 §21-6): 시험을 고른 학생만, 홈 코치가 자리를 잡은 엔진 판에서. 묶음 만남(진단 풀 + 짧은 연습 풀)은 학습일 ·
- // 판 끝 · 목표 시험 · 기록이 다 온 상태가 바뀔 때만 다시 묻는다 — 홈이 다시 그릴 때마다 풀 전체를 훑지 않게, 그러나 시험을 바꾸거나 계정의 첫 받기가
- // 온 뒤에 옛 판정이 그날 내내 굳지 않게(설계 검토 A8). 칸 · 숙제 · 공급은 그 만남과 지금 요약으로 그릴 때마다 짓는다(요약은 보기에서 바로 오른다).
- // 내 위치 판(nextData)은 이 만남을 쓰지 않는다 — 판을 열 때마다 새로 묻는다(21-3).
- let planEnds=0,weekMet={coach:null,key:null,met:null};
+ // 새 길 판의 끝 수(4-4b — 판 기록 planOnce가 올린다). 길 표의 열쇠에 든다.
+ let planEnds=0;
+ // 길 표(4-6e-2 — 단계4_계획 §25-3 불변식 다): 문서마다 한 벌. 입구가 홈 플래너에 실어 준 createRoutes로 짓고, 열쇠가 바뀔 때만 다시 짓는다(화면마다
+ // 짓지 않는다). 열쇠는 홈 코치, 기록이 바뀐 셈(입구가 센다 — 이 문서의 쓰기와 받기 알림)과 저장 중인 쓰기 수, 묶음 만남의 캐시 열쇠(지금 게임 목록의 문항 열쇠 차례 ·
+ // 시험 종류 — 시험을 고르지 않았으면 「없음」 · 판 끝 수 · 기록이 다 왔는가 · 요약의 모양)와 풀(진단 · 짧은 연습 · 시험 형식 — 공개 TOPIK 은행이
+ // 오면 바뀐다)이다. 시험 관문 밖에서 짓는다 — 시험을 고르지 않은 학생의 「이 항목 연습하기」도 같은 표를 읽는다. 계획(weekNext) · 홈 숙제 줄 ·
+ // 내 위치(nextData)와 그 칸 규칙은 이 표의 만남 줄과 길만 읽고 만남을 따로 묻지 않는다. 화면은 표의 답을 붙들지 않고 그릴 때마다 묻는다.
+ let routesNow={coach:null,key:null,pools:[],routes:null};
+ // 지금 게임 목록(4-6e-1 — 입구가 준 homeGames). 홈 세 줄과 길 표가 같은 목록을 읽는다. 플래너에 목록이 없으면 빈 목록이다.
+ function gamesNow(values,now=Date.now()){
+  if(typeof homePlanner?.games!=='function')return [];
+  let progress={},openGames=null,storage=null;
+  try{progress=getProgress().exportSnapshot()??{};}catch{progress={};}
+  try{openGames=homeNext?.openGames?.()??null;}catch{openGames=null;}
+  try{storage=target.localStorage??null;}catch{storage=null;}
+  try{const list=homePlanner.games({progress,settings:values,now,openGames,storage});return Array.isArray(list)?list:[];}catch{return [];}
+ }
+ // 시험 형식 풀이 없을 때의 빈 풀 — 늘 같은 배열이라 길 표 캐시가 풀 참조로 빗나가지 않는다(4-6e-2 검수 GC4).
+ const NO_MOCK=Object.freeze([]);
+ function routesFor(coachNow,values,now=Date.now(),games=gamesNow(values,now)){
+  const make=homePlanner?.createRoutes;
+  if(typeof make!=='function'||!coachNow||typeof coachNow.exposures!=='function'||!position?.practice)return null;
+  const diagnostic=position.items,practice=position.practice.pool,mock=Array.isArray(position.mock?.pool)?position.mock.pool:NO_MOCK;
+  const summary=coachNow.summary(),synced=nextSync.coach===coachNow?nextSync.value:null;
+  let complete=null;try{complete=homePlanner.plan?.recordsComplete?.(summary.storage,synced)??null;}catch{complete=null;}
+  const info=position.exam?.examInfo?.(values)||null;
+  let writes=0;try{writes=homePlanner.writes?.()??0;}catch{writes=0;}
+  const gameKeys=games.map(game=>`${game.id}:${(game.items||[]).map(item=>item.itemKey).join(',')}`).join(';');
+  // 저장 중인 쓰기 수도 넣는다 — 제시는 저장이 끝난 뒤에야 묶음 만남에 비치므로, 셈이 오른 직후 저장 중에 지은 표가 저장이 끝난 뒤 다시 서게 한다.
+  const key=[writes,summary.storage?.pending??null,planEnds,info?.type??'none',complete,summaryShape(summary),gameKeys].join('|');
+  const pools=[diagnostic,practice,mock];
+  if(routesNow.coach!==coachNow||routesNow.key!==key||routesNow.pools.some((pool,i)=>pool!==pools[i]))
+   routesNow={coach:coachNow,key,pools,routes:make({coach:coachNow,diagnostic,practice,mock,games,itemUnits:item=>coachNow.itemUnits(item)})};
+  return routesNow.routes;
+ }
+ // 이 학생 시험의 능력인가 — practiceFor와 같은 다리(TOPIK II 학생은 TOPIK II 문항이 있는 영역은 TOPIK II 능력, 없는 영역은 TOPIK I 능력).
+ function studentSkill(values){
+  if(studentExam(values)!=='topik2')return id=>skillExam(id)==='topik1';
+  const two=topik2Domains();
+  return id=>two[String(id).split('.')[1]]?skillExam(id)==='topik2':skillExam(id)==='topik1';
+ }
+ // 계획의 「지금 열 수 있는 연습」(4-6e-2 — §25-3): 이 학생 시험의 능력마다 길 표에 묻는다. practice는 능력마다 처음 보는 짧은 연습 수(소리를 끈 날은
+ // 듣기를 세지 않는다), listening은 능력마다 그 길의 게임 차례(게임 후보 id)다. 계획 판 단추는 숙제 줄의 fresh > 0이면 짧은 연습, 아니면 activities의
+ // 첫 게임이므로 길과 같은 답이다.
+ function supplyOf(routes,values,audioAvailable){
+  const fits=studentSkill(values),skills=new Set(),practice={},listening={},routeOf=routes.reader();
+  for(const item of [...routes.pools.practice,...routes.pools.games])if(typeof item?.skillId==='string'&&fits(item.skillId))skills.add(item.skillId);
+  for(const id of [...skills].sort()){
+   const route=routeOf(id);
+   const fresh=route.practice.filter(item=>audioAvailable||!(item.audioRequired??item.modality==='listening')).length;
+   if(fresh>0)practice[id]=fresh;
+   if(route.games.length)listening[id]=route.games.map(game=>game.id);
+  }
+  return {practice,listening};
+ }
+ // 「이 항목 연습하기」의 길(4-6e-3 — §25-6): 짧은 연습이 먼저다(소리를 끈 날은 소리가 들지 않는 문항이 있을 때만). 게임 길은 소리를 켠 날에만 단다.
+ const practiceWay=(route,audioAvailable)=>route?.route==='practice'&&(audioAvailable||route.practice.some(item=>!(item.audioRequired??item.modality==='listening')))?{route:'practice',skillId:route.skillId}
+  :route?.route==='game'&&audioAvailable?{route:'game',gameId:route.gameId}:null;
  // 30일째 문장의 계정 길(4-4c 둘째 묶음 — 단계4_계획 §21-22): 학습일 답은 계정마다 열쇠 하나(world-month-answer.mjs). 묻기 · 받기(coach.pull) ·
  // 다시 그리기의 상한은 그 모듈에 있다. 묻는 줄은 그 코치를 연 판(homeNext.lookback — 입구가 연 코치가 아니면 null), 다시 그리기는 열린 내 위치
  // 판만, 완결되지 않은 답의 까닭은 계기(load)에 남긴다. 답이 오면 이 셸이 그대로이고 그 계정일 때만 적는다.
@@ -991,20 +1056,17 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 내내 옛 만남(시작점 · 처음 보는 문항)으로 계획을 지었다(4-4b 끝 판 C2). 요약이 그대로면 다시 묻지 않는다(A8).
  const summaryShape=summary=>{let n=0,cells=0,sittings=0,lapses=0;for(const skill of summary?.skills||[]){n+=skill.n||0;for(const cell of skill.cells||[])cells+=(cell.independent||0)+(cell.helped||0);}
   for(const unit of summary?.units||[]){sittings+=unit.sittings||0;lapses+=unit.lapses||0;}return [summary?.skills?.length||0,n,cells,summary?.units?.length||0,sittings,lapses].join('.');};
- function weekNext(coachNow,values,now){
+ function weekNext(coachNow,values,now,games=gamesNow(values,now)){
   const N=homePlanner?.plan,P=homePlanner?.position;
   const info=position?.exam?.examInfo?.(values)||null;
-  if(!N||!P||!coachNow||!info||typeof coachNow.exposures!=='function')return null;
+  if(!N||!P||!coachNow||!info)return null;
+  const routes=routesFor(coachNow,values,now,games);
+  if(!routes)return null;
   const exam=examOf(values),audioAvailable=values?.audio!=='off',listening=item=>item.audioRequired??item.modality==='listening';
-  const summary=coachNow.summary(),diagnostic=position.items,practice=position.practice.pool;
+  const summary=coachNow.summary(),diagnostic=routes.pools.diagnostic,practice=routes.pools.practice;
   const synced=nextSync.coach===coachNow?nextSync.value:null;
-  const complete=N.recordsComplete(summary.storage,synced);
-  const key=[homePlanner.todayKey(now),planEnds,info.type,complete,summaryShape(summary)].join('|');
-  // 시험 형식 풀(4-4d — 점검 칸의 시험 형식 줄)도 같은 묶음 만남 한 번에 묻는다 — 다시 그릴 때마다 따로 묻지 않는다(A8과 같은 막이).
-  const mockPool=Array.isArray(position.mock?.pool)?position.mock.pool:[];
-  if(weekMet.coach!==coachNow||weekMet.key!==key)weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice,...mockPool])};
-  const metDiag=weekMet.met.slice(0,diagnostic.length),metPractice=weekMet.met.slice(diagnostic.length,diagnostic.length+practice.length),metMock=weekMet.met.slice(diagnostic.length+practice.length);
-  const at=new Map(practice.map((item,i)=>[item,i])),seenOf=item=>{const row=metPractice[at.get(item)];return row?row.seen:null;};
+  // 만남 줄은 길 표의 묶음 만남이다(진단 · 짧은 연습 · 시험 형식 몫 — 4-6e-2). 시험 형식 몫은 그 풀의 길이라 시험 형식 고르기가 다시 묻지 않는다.
+  const metDiag=routes.rows.diagnostic,metPractice=routes.rows.practice,metMock=routes.rows.mock;
   const fresh=new Set();practice.forEach((item,i)=>{if(metPractice[i]?.seen===false&&(audioAvailable||!listening(item)))fresh.add(item.skillId);});
   const pools=[{items:diagnostic,exposures:metDiag},{items:practice,exposures:metPractice}],skip=item=>P.withheldItem(item);
   const unseen=P.unseenFamilies(pools,skip),prefer=id=>fresh.has(id);
@@ -1018,9 +1080,10 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const speaking=['topik1','topik2'].includes(info.type)&&speakingChosen()?speakingThisWeek(now,[]):null;
   let progress=null;try{progress=getProgress().exportSnapshot();}catch{progress=null;}
   const ready=diag.status==='ready'&&diag.items.length>0;
-  // 지금 열 수 있는 연습: 짧은 연습은 이 학생의 시험 풀(practiceFor)에서 처음 보는 문항 수다. 듣기 게임은 4-6까지 새 길의 후보가 아니다(§21-6).
+  // 지금 열 수 있는 연습(4-6e-2 — §25-3 불변식 다): 이 학생 시험의 능력마다 길 표에 물은 답 — 짧은 연습은 처음 보는 문항 수, 듣기는 그 길의 게임 차례.
+  const supply=supplyOf(routes,values,audioAvailable);
   const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:homeNext?.planLog?.(coachNow)??null,progress,now,classwork:classworkRows(),audioAvailable,
-   available:{practice:position.practice.practiceSupply({pool:practiceFor(values),seen:seenOf,audioAvailable}),listening:{},recheck:ready?diag.items.length:0,life:true,
+   available:{practice:supply.practice,listening:supply.listening,recheck:ready?diag.items.length:0,life:true,
     writing:writingAvailable,topik2:topik2Domains(),...(speaking?{speaking:speaking.list}:{})},writingTimes,speaking});
   if(!examPlan)return null;
   // 점검 칸의 시험 형식 · 쓰기 · 말하기(4-4d — §21-23의 3). 값만 넘기고 줄은 홈 플래너가 짓는다(world-today.mjs). 시험 형식은 고르기가 ready일 때만
@@ -1047,7 +1110,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const first=speaking?.recommend?.[0]||null,listed=first?speaking.list.find(row=>row.route===first.routeId)||null:null;
   const type=typeof listed?.targets?.[0]==='string'?listed.targets[0].split('.').pop():null;
   const speakingNow=first&&type?{label:first.label,routeId:first.routeId,minutes:first.minutes,type,untried:speaking.untried}:null;
-  return {examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready},mock,mockDone,writing,speaking:speakingNow};
+  return {examPlan,routes,diagnostic:{ready},mock,mockDone,writing,speaking:speakingNow};
  }
  // 새 길 판 끝(4-4b — 단계4_계획 §21-6 가): 채점된 첫 답이 하나라도 있으면 이 기기의 판 기록에 영역과 시각을 적는다(지금 판 weekActivity의 「처음 낸
  // 답」과 같은 기준 — 건너뛴 문항뿐이면 세지 않는다). 이번 주 계획의 묶음 만남도 다음에 다시 묻는다(판 끝). 한 판에 한 번만 센다(그만둔 뒤 끝이 이어 와도).
@@ -1059,8 +1122,26 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   return results=>{
    if(done)return;done=true;planEnds+=1;
    if(!(Array.isArray(results)?results:[]).some(row=>row&&!row.skipped&&(row.verdict==='correct'||row.verdict==='incorrect')))return;
-   try{homeNext?.planLog?.(coachNow)?.record(area,Date.now());}catch{/* 이 기기에서 세지 못할 뿐이다 */}
+   // 경험 이름(§25-3 — 이번 주 계획이 경험마다 묶어 센다): 짧은 진단은 world-home, 짧은 연습은 world-practice.
+   try{homeNext?.planLog?.(coachNow)?.record(area,Date.now(),area==='recheck'?'world-home':'world-practice');}catch{/* 이 기기에서 세지 못할 뿐이다 */}
   };
+ }
+ // 게임 판 끝(4-6e — 단계4_계획 §25-3 불변식 나): 입구가 게임 판의 판 기록을 적은 뒤 알린다(홈 플래너의 gameEnds — 센 첫 답이 없는 판도 알린다).
+ // 짧은 연습의 planOnce처럼 판 끝 수를 올려 이번 주 계획의 묶음 만남을 다음에 다시 묻게 하고(답 없이 문항만 본 판의 만남), 홈과 열린 이번 주 계획
+ // 판을 다시 그린다. 게임 틀은 셸 창의 판(패널)이라 판을 닫은 뒤의 알림도 여기로 온다.
+ let stopGameEnds=null;
+ // 알림은 그 판 답의 저장을 기다린 뒤 온다 — 그 사이 학생이 연 판도 그린다. 기기 기록부(손님 · 동의를 끈 계정)는 판이 다시 접힌 뒤에야 요약이 그 판을
+ // 안다 — 접힌 뒤 같은 것을 한 번 더 그린다(열린 이번 주 계획 판 · 홈 · 열린 내 위치 판). 두 그리기 모두 여는 중인 짧은 연습을 끊지 않는다(redrawPanel).
+ function heardGameEnd(end){
+  if(stopped)return;
+  planEnds+=1;
+  const draw=()=>{
+   if(stopped)return;
+   if(panelOpen()&&panelNode('[data-plan-board]'))void openPlan({keepScroll:true}).catch(()=>{});
+   foldedRedraw();
+  };
+  draw();
+  if(end?.folded)Promise.resolve(end.folded).then(draw,()=>{});
  }
  // 다시 그릴 때 펴 둔 능력 줄(details[data-skill])을 다시 편다(다시 검수). 다시 그린 판의 줄은 모두 접힌 채로 서는데, 닫힌 줄 안의 단추에는
  // 초점이 가지 않고 접힌 만큼 스크롤 자리도 어긋난다. 그래서 스크롤과 초점을 되돌리기 전에 줄부터 다시 편다.
@@ -1095,8 +1176,10 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  // 새 길 판 그리기(21-2): 지금 판으로 내려왔으면 지금 판 판(그 문서 전체가 지금 판이다), 확인 중이면 확인 중 판, 엔진이면 엔진 판.
  // fresh: 방금 홈을 다시 그렸다(판 감시의 알림 — refresh를 또 부르지 않는다). start: 진단이 낼 문항이 있으면 바로 시작한다(홈 추천 · 계획의 다시 확인).
- function showNext({start=false,keepScroll=false,fresh=false}={}){
+ // redraw: 학생이 누르지 않은 뒤의 다시 그리기다 — 여는 중인 짧은 연습을 끊지 않는다(redrawPanel). 학생이 누른 시험 판 바꾸기는 주지 않는다.
+ function showNext({start=false,keepScroll=false,fresh=false,redraw=false}={}){
   check();
+  const show=redraw?redrawPanel:(...args)=>home.showPanel(...args);
   const phase=homePhase();
   if(phase==='old'){const shown=showBoard(readCoach(),{keepScroll});if(start&&shown.plan?.status==='ready'&&shown.plan.items.length)startDiagnostic(shown.coachNow,shown.plan,shown.map);return;}
   if(!fresh){const was=redrawingNext;redrawingNext=true;try{refresh();}finally{redrawingNext=was;}}
@@ -1107,17 +1190,18 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scroller=keepScroll?panelNode('[data-position-next]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0,focusKey=keepScroll?nextFocusOf(panelNode('[data-position-next]')):null,openRows=keepScroll?openRowsOf(panelNode('[data-position-next]')):[];
   // 확인 중에 받은 「짧은 진단 시작」은 남겨 두고, 판 감시가 엔진 판으로 다시 그릴 때(redrawNext) 그 사이 다른 학습을 열지 않았으면 한 번 시작한다
   // (검수 s3e1 GB2 — 확인 중이면 내 위치만 열리고 시작이 사라졌다). 판을 그리면 남긴 시작을 지운다(쓰거나 버린다).
-  if(!data){if(start)startWanted=asked;home.showPanel(t('position.title'),nextChecking(),PANEL);panelNode('[data-position-next]')?.focus?.({preventScroll:true});return;}
+  if(!data){if(start)startWanted=asked;show(t('position.title'),nextChecking(),PANEL);panelNode('[data-position-next]')?.focus?.({preventScroll:true});return;}
   const wanted=start||startWanted!==0&&startWanted===asked;startWanted=0;
   const two=topik2Domains(),exams=studentExam(data.values)==='topik2'||two.listening||two.reading?['topik1','topik2']:null;
-  home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0,month:data.month,estimate:data.estimate,mock:data.mock}),PANEL);heard.panel=false;
+  show(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.practice.get(id)??null,scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0,month:data.month,estimate:data.estimate,mock:data.mock}),PANEL);heard.panel=false;
   const root=panelNode('[data-position-next]');
   if(keepScroll){reopenRows(root,openRows);const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
   // 첫 받기의 된 답이 아직 없으면(새로 연 코치 · 시간 초과 · 실패) 다시 묻는다 — 된 답이 오면 syncedNext가 다시 그린다(끝 판 GB1).
   void syncedNext(coachNow);
   root?.querySelector?.('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnosticNext(coachNow,data);}catch(error){failed(error);}},{once:true});
   root?.querySelectorAll?.('[data-position-exam]').forEach(button=>button.addEventListener('click',()=>{try{check();boardExam=button.dataset.positionExam==='topik2'?'topik2':'topik1';showNext({keepScroll:true});}catch(error){failed(error);}}));
-  root?.querySelectorAll?.('[data-position-practice]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(startPractice(button.dataset.positionPractice)).catch(failed);}catch(error){failed(error);}}));
+  // 「이 항목 연습하기」(4-6e-3 — §25-6): 그린 판의 길로 연다 — 게임 길이면 그 게임, 아니면 그 능력의 짧은 연습.
+  root?.querySelectorAll?.('[data-position-practice]').forEach(button=>button.addEventListener('click',()=>{try{check();const id=button.dataset.positionPractice,way=data.practice.get(id);void Promise.resolve(way?.route==='game'?launchGame(way.gameId):startPractice(id)).catch(failed);}catch(error){failed(error);}}));
   root?.querySelectorAll?.('[data-position-recheck]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(openRecheck(button.dataset.positionRecheck,data)).catch(failed);}catch(error){failed(error);}}));
   root?.querySelector?.('[data-position-writing]')?.addEventListener('click',()=>{try{check();const first=writingList()[0];if(first&&typeof writingPractice?.open==='function')void Promise.resolve(writingPractice.open(first.route)).catch(failed);}catch(error){failed(error);}});
   // 시험 형식 단추(4-4d) — openMock이 판 셋을 가른다(엔진이면 새 코치의 연습, §21-23의 1).
@@ -1131,7 +1215,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  function redrawNext(){
   if(redrawingNext||stopped||openPosition.pending||heldMock())return;
   redrawingNext=true;
-  try{if(panelOpen()&&panelNode('[data-position-next]'))showNext({keepScroll:true,fresh:true});}catch{/* the next open draws it */}finally{redrawingNext=false;}
+  try{if(panelOpen()&&panelNode('[data-position-next]'))showNext({keepScroll:true,fresh:true,redraw:true});}catch{/* the next open draws it */}finally{redrawingNext=false;}
  }
  // 다시 확인 카드 열기(21-4): 생활 단위는 생활 판정이 그 단위로 낸 복습을, 짧은 연습 단위는 그 단위가 든 문항만 후보로 넘긴 새 판 짧은 연습을 연다.
  function openRecheck(unit,data){
@@ -1201,7 +1285,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    if(local&&set?.folded){await Promise.race([Promise.resolve(set.folded).catch(()=>null),new Promise(resolve=>setTimeout(resolve,FOLD_WAIT_MS))]);if(stopped)return;if(gone||!box.isConnected){refresh();evidenced();Promise.resolve(set.folded).then(foldedRedraw,()=>{});return;}}
    refresh();
    let after=data;try{after=nextData(coachNow,P);}catch{after=data;}
-   const routes=new Map([...after.fresh].map(id=>[id,{route:'practice',skillId:id}]));
+   // 끝 화면의 「이 항목 연습하기」도 내 위치와 같은 길이다(길 표 — 짧은 연습 새 문항이 없으면 게임, 길이 없으면 단추가 없다).
+   const routes=after.practice;
    const response=answering()&&set?.completionId?set:null;
    box.innerHTML=view.renderDiagnosticDone({map:after.board,results,items:position.itemsById,practice:id=>routes.get(id)||null,response:responseView(response,'diagnostic')});
    bindPractice(box,routes);bindResponse({box,coachNow,set:response,kind:'diagnostic'});
@@ -1491,7 +1576,9 @@ async function townSend(coachNow,{wait=true}={}){
   if(!position?.practice)return;
   check();const ticket=++practiceOpen;asked+=1;
   let launching=true;
-  home.attachPanelResource?.({dispose(){if(launching&&ticket===practiceOpen)practiceOpen++;}});
+  // 새 길 문서에서는 뒤의 다시 그리기가 판을 바꿔도 이 열기를 끊지 않는다 — 자원을 넘겨 새 판에 다시 단다(redrawPanel).
+  const resource={dispose(){if(!launching||ticket!==practiceOpen)return;if(atlasNext&&keepOpening){keepOpening(resource);return;}practiceOpen++;}};
+  home.attachPanelResource?.(resource);
   const active=()=>{check();return ticket===practiceOpen;};
   try{await prepare();}catch{/* device-local practice still runs */}
   if(!active())return;try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local practice still runs */}
@@ -1760,8 +1847,9 @@ async function townSend(coachNow,{wait=true}={}){
   // 기다리는 동안 판 종류가 바뀌었거나, 판을 닫거나 다른 판을 열어 판 자원이 정리되면 이 표만 무효로 한다(내 위치 열기와 같은 판 자원 — 끝
   // 판 F6). 판 종류로만 가리면 내 위치 · 짧은 진단 · 이번 주 계획처럼 종류가 같은 판을 그 사이 열어도 늦게 온 안내가 그 판을 덮고 연습을 닫았다.
   // 기다리는 동안은 열린 판을 뒤에서 다시 그리지 않는다(pending — 다시 그리기도 판 자원을 정리하므로, 첫 받기 답이 내 위치 판을 다시 그리면 이
-  // 열기가 끊긴다). 판을 보이기 직전에 settled가 되어 그 판의 정리는 무시된다. 판이 바뀌면 건너뛴 다시 그리기도 지운다(새 판은 새로 그려졌다).
-  home.attachPanelResource?.({dispose(){if(!settled&&ticket===mockOpen){mockOpen++;if(openMockNext.pending===ticket){openMockNext.pending=0;openMockNext.skipped=false;}}}});
+  // 열기가 끊긴다). 판을 보이기 직전에 settled가 되어 그 판의 정리는 무시된다. 학생이 다른 열기(짧은 연습)로 바꾸면 열린 판은 그대로 남으므로, 건너뛴
+  // 다시 그리기가 있으면 곧 한 번 그린다(4-6e-2 사슬 -d-r4 GA1 — 바꾼 연습 열기는 끊지 않는다). 판이 닫혔으면 그리지 않는다.
+  home.attachPanelResource?.({dispose(){if(!settled&&ticket===mockOpen){mockOpen++;if(openMockNext.pending===ticket){openMockNext.pending=0;const skipped=openMockNext.skipped;openMockNext.skipped=false;if(skipped)queueMicrotask(()=>{if(!stopped)repaint();});}}}});
   const moved=()=>ticket!==mockOpen||(home.openPanel?.()??'')!==panel;
   try{await prepare();}catch{/* device-local practice still runs */}
   check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local practice still runs */}
@@ -1921,7 +2009,8 @@ async function townSend(coachNow,{wait=true}={}){
   if(!examPlan&&homePhase()==='checking'&&examChosen()){if(!keepScroll&&!quiet)home.toast(t('home.today.checking'));return 'skipped';}
   if(!examPlan||!view){if(!keepScroll&&!quiet)open();return 'missing';}
   const scroller=keepScroll?panelNode('[data-plan-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0,focusKey=keepScroll?nextFocusOf(panelNode('[data-plan-board]'),PLAN_FOCUS):null;
-  home.showPanel(t('plan.week.title'),view.renderExamPlan({plan:examPlan,next:plan.selected,reason:tMessage(plan.reason||''),count:practiceLength()}),{type:'life-position',eyebrow:'MY WEEK',nav:'packs'});heard.panel=false;
+  // keepScroll은 모두 뒤의 다시 그리기다(게임 판 끝 · 받기 알림 · 은행 · 반 과제) — 여는 중인 짧은 연습을 끊지 않는다.
+  (keepScroll?redrawPanel:(...args)=>home.showPanel(...args))(t('plan.week.title'),view.renderExamPlan({plan:examPlan,next:plan.selected,reason:tMessage(plan.reason||''),count:practiceLength()}),{type:'life-position',eyebrow:'MY WEEK',nav:'packs'});heard.panel=false;
   const root=panelNode('[data-plan-board]');if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
   root?.querySelector('[data-plan-next]')?.addEventListener('click',()=>{try{check();if(plan.selected)void Promise.resolve(launch(plan.selected)).catch(failed);}catch(error){failed(error);}});
   root?.querySelectorAll('[data-plan-practice]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(startPractice(button.dataset.planPractice)).catch(failed);}catch(error){failed(error);}}));
@@ -1946,6 +2035,7 @@ async function townSend(coachNow,{wait=true}={}){
   if(stopped)return;
   if(!planner){homeFailed=true;refresh();redrawNext();readWaitingResponses();return;}
   homePlanner=planner;
+  try{stopGameEnds=planner.gameEnds?.(heardGameEnd)??null;}catch{stopGameEnds=null;}
   homeWatch=planner.watchHomePlan({open:openHome,retired:(made,fn)=>homeNext.retired(made,fn),lifeState:()=>homeNext.life(),onChange:()=>{if(!stopped){refresh();redrawNext();readWaitingResponses();}}});
   refresh();redrawNext();
  },()=>{if(stopped)return;homeFailed=true;refresh();redrawNext();readWaitingResponses();});
@@ -1961,5 +2051,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,meReady,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,clubCheck,clubMap,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();readWaitingResponses();responseCoachOff?.();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,meReady,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,clubCheck,clubMap,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();readWaitingResponses();responseCoachOff?.();stopHearing();try{stopGameEnds?.();}catch{/* 닫힌 입구 */}homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

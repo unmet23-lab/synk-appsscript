@@ -4,6 +4,7 @@
 // 점심 러시의 순간 맞춤 · 며칠 뒤 주문 · 판을 다시 정함 · 패널 닫힘 · 초급 가게.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import test from 'node:test';
 import { createGameDoor, GAME_BANKS } from '../synk-world-app/world-atlas-game.mjs';
 import { BANKS, GAME_ID, SET_LENGTH, openCafe, openShop } from './atlas-next-play.mjs';
@@ -22,6 +23,21 @@ import {
   pressureOf,
   tuningFrom,
 } from './learning.mjs';
+// 원문 토막은 게임 모듈처럼 엄격 모드로 돌린다. 느슨한 모드(with)는 얼린 FLOW_ 값에 쓰는 줄을 조용히 넘겨, 게임에서만 던지는 줄을 시험이 놓친다
+// (4-6e 첫 묶음 Fable F4). env의 이름이 토막의 바깥 이름이다 — 토막이 env에 없는 이름에 쓰면 시험이 던진다.
+// 토막이 대입할 수 있는 이름은 게임 모듈이 맨 위 let으로 둔 것뿐이다(module — 그 게임 모듈의 원문). 나머지(가져온 FLOW_ 값 · const · 함수)는 const로
+// 묶어 다시 대입하면 게임 모듈처럼 던진다(4-6e-2 검수 GA1 · 새 사슬 GA2).
+// 이름은 글이 아니라 구문(acorn)으로 읽는다 — 초기값 속의 이름은 선언이 아니다(사슬 -d F1).
+const acorn = createRequire(import.meta.url)('acorn');
+const topLets = module =>
+  new Set(acorn.parse(module, { ecmaVersion: 'latest', sourceType: 'module' }).body.flatMap(node => (node.type === 'VariableDeclaration' && node.kind !== 'const' ? node.declarations.map(({ id }) => id.name) : [])));
+const strictEnv = (body, module) => env => {
+  const names = Object.keys(env);
+  const lets = topLets(module);
+  const free = names.filter(name => lets.has(name));
+  const fixed = names.filter(name => !free.includes(name));
+  return new Function('__env', ...free, `'use strict';\nconst { ${fixed.join(', ')} } = __env;\n${body}`)(env, ...free.map(name => env[name]));
+};
 
 const atlas = await import('../../packages/atlas/src/index.mjs');
 const json = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
@@ -215,11 +231,10 @@ async function eventsOf(port) {
 // 열었다(순간 맞춤을 연 뒤). picks: 들을 때 고른 결과(pick)를 차례대로 모은다.
 const shifts = new Map();
 function lateChooser() {
-  const body = between(source('./app.mjs'), 'function chooseLate(t) {', 'function presentTicket(');
-  return new Function('env', `with (env) {
-${body}
-return chooseLate;
-}`);
+  const text = source('./app.mjs');
+  const body = between(text, 'function chooseLate(t) {', 'function presentTicket(');
+  return strictEnv(`${body}
+return chooseLate;`, text);
 }
 function openShift(play, picks, { kind = 'open', deck = ORDERS, limit = 8, tuning = null, begun = false } = {}) {
   if (!begun) play.begin(kind);
@@ -531,7 +546,7 @@ function counterParts() {
     between(text, 'function chooseLate(t) {', 'function refreshRecommendation('),
     between(text, 'function serve() {', 'function completeServe() {'),
   ].join('\n');
-  return new Function('env', `with (env) {\n${body}\nreturn { presentTicket, serve };\n}`);
+  return strictEnv(`${body}\nreturn { presentTicket, serve };`, text);
 }
 function counter(play, session, { world = true } = {}) {
   const nodes = {};
@@ -736,8 +751,9 @@ function assertOpened(row, id, adaptive) {
   assert.equal(row.adaptive, adaptive);
 }
 function liveStarter() {
-  const body = between(source('./app.mjs'), 'const FLOW_KEY = ', 'function applyFlow(');
-  return new Function('env', `with (env) {\n${body}\nreturn isReview => { startLive(isReview); return { live, flowStart, flowSpec }; };\n}`);
+  const text = source('./app.mjs');
+  const body = between(text, 'const FLOW_KEY = ', 'function applyFlow(');
+  return strictEnv(`${body}\nreturn isReview => { startLive(isReview); return { live, flowStart, flowSpec }; };`, text);
 }
 
 test('순간 맞춤 진입 — app.mjs startLive가 넘긴 내용을 진짜 엔진이 정의한다: 점심 러시는 순간 맞춤이 켜지고, 끄기 단추(fixed)는 꺼지며, 한가한 오픈 · 새 주문 연습은 열지 않는다', async () => {
@@ -1188,7 +1204,7 @@ test('원문 — 초급 가게는 제시 직전에 남은 주문 수를 넘기�
 function serveStep() {
   const text = source('./beginner.mjs');
   const body = between(text, 'function serve() {', '  if (!result.correct) {').slice('function serve() {'.length);
-  return new Function('env', `with (env) {\n${body}\nreturn result;\n}`);
+  return strictEnv(`${body}\nreturn result;`, text);
 }
 
 test('초급 가게 — 새 길에서는 고쳐 건넨 답도 같은 제시의 다음 답으로 넘기고, 옛 길은 지금처럼 첫 서빙만 넘긴다(GC5)', async () => {

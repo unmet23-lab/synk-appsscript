@@ -16,7 +16,12 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const source = path.join(here, '..', 'world-today.mjs');
 const GAMES_FILE = 'world-home-games.mjs';
 const gamesSource = path.join(here, '..', GAMES_FILE);
-const scenes = [path.join(here, 'atlas-next-home.test.mjs'), path.join(here, 'atlas-next-plan.test.mjs')];
+// 4-6e-2부터 길 표(world-home-games.mjs createRoutes)와 홈 숙제 줄의 길을 qa/atlas-next-routes.test.mjs가 본다.
+const scenes = [
+  path.join(here, 'atlas-next-home.test.mjs'),
+  path.join(here, 'atlas-next-plan.test.mjs'),
+  path.join(here, 'atlas-next-routes.test.mjs'),
+];
 // 갈래마다 더 도는 장면 — 점검 칸의 차례 돌리기는 이레 측정(진짜 셸과 엔진 코치로 이레를 날마다 연다 — 느려서 그 갈래만)이 잡는다(설계 주인 11-17 저녁 답 1).
 const BRANCH_SCENES = Object.freeze({ '점검 칸 돌리기': [path.join(here, 'atlas-next-check-week.test.mjs')] });
 
@@ -231,14 +236,135 @@ export const TODAY_MUTANTS = [
   [
     "숙제 연습 후보",
     "돌아온 단위가 든 문항을 빼지 않는다 — 그 단위는 복습 칸의 짧은 연습이 맡는다(검토 D3)",
-    "        quiet(() => fresh(item)) === true &&\n        !returned(item.itemKey),\n",
-    "        quiet(() => fresh(item)) === true,\n",
+    "      : (route?.practice ?? []).filter(item => !returned(item.itemKey));\n",
+    "      : (route?.practice ?? []);\n",
   ],
   [
     "숙제 연습 후보",
     "처음 보는 문항이 아닌 것도 넘긴다",
-    "        quiet(() => fresh(item)) === true &&\n        !returned(item.itemKey),\n",
-    "        !returned(item.itemKey),\n",
+    "      : (route?.practice ?? []).filter(item => !returned(item.itemKey));\n",
+    "      : (routes ? (routes.pools?.practice ?? []).filter(item => item.skillId === skillId) : (route?.practice ?? [])).filter(item => !returned(item.itemKey));\n",
+  ],
+  // ── 4-6e-2 길 하나(§25-3 불변식 다) — 홈 숙제 줄은 그 능력의 길로 연다 ──
+  [
+    "숙제의 길",
+    "홈 숙제의 게임 길을 뺀다 — 짧은 연습 새 문항이 없는 듣기 숙제가 홈에 서지 않는다",
+    "    const game = route?.route === 'game' ? (route.games?.[0] ?? null) : null;\n",
+    "    const game = null;\n",
+  ],
+  [
+    "숙제의 길",
+    "홈이 숙제 줄의 fresh로 길을 가른다 — 소리를 끈 날 짧은 연습 새 문항이 남은 듣기 숙제를 게임 길로 잠근다",
+    "    const game = route?.route === 'game' ? (route.games?.[0] ?? null) : null;\n",
+    "    const game = !(row.fresh > 0) ? (route?.games?.[0] ?? null) : null;\n",
+  ],
+  [
+    "숙제의 길",
+    "홈이 문항 단위 seen으로 짧은 연습을 가른다 — 띄우기만 한 문항(실제 짧은 연습이 내는 문항)을 뺀다",
+    "      : (route?.practice ?? []).filter(item => !returned(item.itemKey));\n",
+    "      : (routes ? (routes.pools?.practice ?? []).filter(item => item.skillId === skillId && routes.rows?.practice?.[routes.pools.practice.indexOf(item)]?.seen === false) : (route?.practice ?? [])).filter(item => !returned(item.itemKey));\n",
+  ],
+  [
+    "숙제의 길",
+    "게임 숙제 후보에서 돌아온 단위 거름을 뺀다 — 같은 단위를 오늘 공부 칸과 복습 칸이 함께 낸다",
+    "      ? game.items.filter(item => !returned(item.itemKey))\n",
+    "      ? game.items\n",
+  ],
+  // ── 4-6e-2 길 표(world-home-games.mjs createRoutes · routeFrom) ──
+  [
+    "길 표",
+    "짧은 연습보다 게임을 먼저 연다",
+    "  const route = practice.length ? 'practice' : ordered.length ? 'game' : null;\n",
+    "  const route = ordered.length ? 'game' : practice.length ? 'practice' : null;\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "능력 밖 문항에 던지지 않는다 — 다른 능력의 답이 섞인 길이 조용히 선다(설계 주인 25-12의 10)",
+    "    if (entry?.item?.skillId !== skillId)\n      throw TypeError(`WORLD routes: ${entry?.item?.itemKey ?? '(문항 없음)'} is not an item of ${skillId}`);\n",
+    "    if (entry?.item?.skillId !== skillId) continue;\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "길 표가 능력으로 먼저 거른 뒤 세트를 센다 — 같은 세트의 다른 능력 문항을 만난 문항을 처음으로 본다(v6 검토)",
+    "      ...mine.map(item => ({ kind: 'practice', item, fresh: freshSet.has(item) })),\n",
+    "      ...mine.map(item => ({ kind: 'practice', item, fresh: practiceFresh({ setPool: mine, met: row => metOf(practiceRows.get(row)) })(item) })),\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "길 표가 freshBySet(화면용 seen)으로 센다 — 실제 짧은 연습이 내는 띄우기만 한 문항을 처음이 아닌 것으로 본다",
+    "  const freshPractice = practiceFresh({ setPool: lists.practice, met: item => metOf(practiceRows.get(item)) });\n",
+    "  const freshPractice = practiceFresh({ setPool: lists.practice, met: item => practiceRows.get(item)?.seen ?? true });\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "돌아온 단위를 길 표에 담는다 — 시각이 지나 돌아온 단위가 길에 비치지 않는다(v7 검토)",
+    "  const routeOf = skillId => routeWith(skillId, () => dueOf(coach));\n",
+    "  const held = dueOf(coach);\n  const routeOf = skillId => routeWith(skillId, () => held);\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "읽개가 돌아온 단위를 표를 지을 때 읽어 둔다 — 새로 그려도 시각이 지나 돌아온 단위를 모른다(사슬 -c GC3)",
+    "  const reader = () => {\n    let due = null;\n",
+    "  let due = dueOf(coach);\n  const reader = () => {\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "읽개가 능력마다 돌아온 단위를 다시 읽는다(사슬 -c GC3)",
+    "(due ??= dueOf(coach))",
+    "(due = dueOf(coach))",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "처음 보는 게임 문항이 없는 능력에도 돌아온 단위를 읽는다(사슬 -c GC3)",
+    "    const due = played.some(({ row }) => row?.seen === false) ? dueNow() : NO_DUE;\n",
+    "    const due = dueNow();\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "게임 숙제 후보를 짧은 연습 읽개(측정용 met)로 거른다 — 띄우기만 한 게임 문항을 처음으로 본다(셋째 판 확인 N1)",
+    "        fresh: row?.seen === false,\n",
+    "        fresh: metOf(row) === false,\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "시험 형식 몫을 다시 「나머지 전부」로 자른다 — 시험 형식 고르기가 판을 그릴 때마다 만남을 다시 묻는다",
+    "    mock: Object.freeze(all.slice(d + p, d + p + m)),\n",
+    "    mock: Object.freeze(all.slice(d + p)),\n",
+    GAMES_FILE,
+  ],
+  [
+    "길 표",
+    "입장 검사 몫을 짧은 연습 구간의 끝에서 자른다 — 다른 문항의 만남을 입장 검사의 만남으로 읽는다(사슬 -d GA4)",
+    "    entry: Object.freeze(all.slice(d + p + m + g)),\n",
+    "    entry: Object.freeze(all.slice(d + p - lists.entry.length, d + p)),\n",
+    GAMES_FILE,
+  ],
+  [
+    "숙제 앞 셸",
+    "길 표 없이 fresh만 넘기는 앞 공개판 셸의 숙제 줄을 짓지 않는다 — 캐시가 섞인 문서에서 홈 숙제 줄이 빠진다(새 사슬 GC2)",
+    "  const routeOf = typeof routes?.reader === 'function' ? routes.reader() : practiceRoute(pool, fresh);\n",
+    "  const routeOf = typeof routes?.reader === 'function' ? routes.reader() : null;\n",
+  ],
+  [
+    "숙제 앞 셸",
+    "앞 공개판 셸의 처음 보는가를 보지 않는다 — 본 문항도 숙제 후보다(새 사슬 GC2)",
+    "item?.skillId === skillId && typeof item.itemKey === 'string' && quiet(() => fresh(item)) === true,",
+    "item?.skillId === skillId && typeof item.itemKey === 'string',",
+  ],
+  [
+    "숙제 앞 셸",
+    "길 표가 있어도 fresh로 짓는다 — 네 화면의 길이 갈린다(새 사슬 GC2)",
+    "  const routeOf = typeof routes?.reader === 'function' ? routes.reader() : practiceRoute(pool, fresh);\n",
+    "  const routeOf = practiceRoute(pool, fresh) ?? (typeof routes?.reader === 'function' ? routes.reader() : null);\n",
   ],
   [
     "숙제 목표",

@@ -12,6 +12,8 @@ import { sliceOf } from '../../../packages/atlas/tools/map-ship.mjs';
 import { worldPosition } from '../world-position-kit.mjs';
 import { worldLearning } from '../world-learning-map.mjs';
 import { banksOf, homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
+// 길 표(4-6e-2 — 단계4_계획 §25-3)는 입구가 홈 플래너에 실어 준다. 이 시험의 플래너도 싣는다(게임 목록은 싣지 않는다 — 게임 길은 qa/atlas-next-routes-shell.test.mjs가 본다).
+import { createRoutes } from '../world-home-games.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
 
 // 변형 시험(qa/position-mutants.mjs)은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
@@ -24,7 +26,7 @@ const INDEX = readJson('../../../packages/atlas/map/index.json');
 const UNITS = readJson('../../../packages/atlas/map/units.json');
 const WORDS = readJson('../../../packages/atlas/map/words.json');
 worldPosition.topik.use(readJson('../world-topik-items.json'));
-const PLANNER = Object.freeze({ createWorldTodayPlan, watchHomePlan, todayKey, say: () => '', position: positionPlanner });
+const PLANNER = Object.freeze({ createWorldTodayPlan, watchHomePlan, todayKey, say: () => '', position: positionPlanner, createRoutes });
 const tick = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, label, ms = 5000) {
   const end = Date.now() + ms;
@@ -1809,6 +1811,76 @@ test('엔진 판 — 내 위치 판에서 연 시험 형식이 기다리는 사�
     assert.match(app.last(), /data-complete="true"/, '기다리는 사이 건너뛴 다시 그리기를 끝에 한 번 한다 — 받기가 끝난 판');
   } finally {
     release();
+    app.dispose();
+  }
+});
+
+// 4-6e-2 사슬 -d-r3: 뒤의 다시 그리기는 여는 중인 짧은 연습을 끊지 않는다(redrawPanel). 학생이 누른 시험 판 바꾸기는 지금처럼 그 열기를 무효로 한다.
+function practiceHold() {
+  const calls = [];
+  return {
+    calls,
+    practiceCoach: () => new Promise(resolve => calls.push(() => resolve({}))),
+    createPracticeNextSession: ({ pool }) => {
+      const view = { item: pool[0], index: 0, total: 5, upTo: true, heard: false, why: null, stubborn: false, targetLabel: null };
+      let at = -1;
+      return {
+        get current() {
+          return at === 0 ? view : null;
+        },
+        next: () => ((at += 1) === 0 ? view : null),
+        preHelp() {},
+        stop() {},
+        results: () => [],
+        settled: async () => [],
+        freshLeft: () => 0,
+        ending: { kind: 'done' },
+      };
+    },
+    retired: () => () => {},
+  };
+}
+const READING_SKILL = worldPosition.practice.pool.find(item => item.skillId.startsWith('ko.reading.')).skillId;
+
+test('엔진 판 — 여는 중인 짧은 연습은 판이 다시 정해져 확인 중 판으로 다시 그려져도(새 홈 코치로 엔진 판이 다시 서도) 끊기지 않고 선다(4-6e-2 사슬 -d-r3)', async () => {
+  const entry = practiceHold();
+  const app = shell({ panels: true, planner: { ...PLANNER, plan: planPlanner }, atlasNext: entry });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    const opening = app.education.practice(READING_SKILL);
+    await until(() => entry.calls.length === 1, '연습 코치를 기다린다');
+    const shown = app.shown.length;
+    app.retire(app.coaches[0]);
+    await until(() => app.shown.slice(shown).some(html => /data-position-next="checking"/.test(html)), '확인 중 판으로 다시 그린다');
+    await until(() => /data-position-next="engine"/.test(app.last()), '새 홈 코치로 엔진 판이 다시 선다');
+    entry.calls[0]();
+    await opening;
+    assert.match(app.last(), /data-practice-stage/, '짧은 연습이 열린다');
+  } finally {
+    entry.calls.forEach(give => give());
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 짧은 연습을 여는 중에 학생이 다른 시험 판을 누르면 지금처럼 그 열기를 무효로 한다(뒤의 다시 그리기가 아니다 — 4-6e-2 사슬 -d-r3)', async () => {
+  const entry = practiceHold();
+  const app = shell({ values: { audio: 'available', ...EXAM_T2 }, panels: true, focusing: true, planner: { ...PLANNER, plan: planPlanner }, atlasNext: entry });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    const opening = app.education.practice(READING_SKILL);
+    await until(() => entry.calls.length === 1, '연습 코치를 기다린다');
+    app.click('data-position-exam', 'topik1');
+    await tick(20);
+    const shown = app.shown.length;
+    entry.calls[0]();
+    await opening;
+    await tick(20);
+    assert.equal(app.shown.length, shown, '연습은 서지 않는다');
+    assert.match(app.last(), /data-position-next="engine"/, '누른 시험의 내 위치 판 그대로');
+  } finally {
+    entry.calls.forEach(give => give());
     app.dispose();
   }
 });

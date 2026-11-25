@@ -11,6 +11,8 @@ import { sliceOf } from '../../../packages/atlas/tools/map-ship.mjs';
 import { worldPosition } from '../world-position-kit.mjs';
 import { worldLearning } from '../world-learning-map.mjs';
 import { banksOf, homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
+// 길 표(4-6e-2 — 단계4_계획 §25-3)는 입구가 홈 플래너에 실어 준다. 이 시험의 플래너도 싣는다(게임 목록은 싣지 않는다 — 게임 길은 qa/atlas-next-routes-shell.test.mjs가 본다).
+import { createRoutes } from '../world-home-games.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
 import { todayPractice } from '../world-mock-next.mjs';
 import { createPlanLog } from '../world-plan-next.mjs';
@@ -27,7 +29,7 @@ const INDEX = readJson('../../../packages/atlas/map/index.json');
 const UNITS = readJson('../../../packages/atlas/map/units.json');
 const WORDS = readJson('../../../packages/atlas/map/words.json');
 worldPosition.topik.use(readJson('../world-topik-items.json'));
-const PLANNER = Object.freeze({ createWorldTodayPlan, watchHomePlan, todayKey, say: () => '', position: positionPlanner, plan: planPlanner });
+const PLANNER = Object.freeze({ createWorldTodayPlan, watchHomePlan, todayKey, say: () => '', position: positionPlanner, createRoutes, plan: planPlanner });
 const EXAM_T1 = { reasons: ['exam'], primaryReason: 'exam', examType: 'topik1', targetGrade: 2, examDate: '2027-04-18', weeklyMinutes: 120 };
 const ko = key => STRINGS[key].ko;
 const tick = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));

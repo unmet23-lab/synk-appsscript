@@ -13,6 +13,9 @@
 //   - 인수는 셸 창의 structuredClone으로 옮긴 뒤 부른다 — 옮기지 못하는 인수(함수 · DOM)는 DOOR_ARGUMENT 오류다. 닫힌 겉 · 손잡이는
 //     RUN_ENDED로 던진다. 오류는 셸 창의 것이라 틀에서 instanceof Error가 거짓이다 — 게임은 code로만 가른다.
 //   - 패널이 닫히면 겉을 닫고 그 판을 finishSet({ record: false })로 닫는다 — 기록부의 쓰기는 차례대로라 직전 답의 저장 뒤에 선다.
+//   - 판의 한 수(§25-3 불변식 나): 겉을 지나는 답(일반 answer의 돌려줌 · 손잡이 answer의 recorded)을 겉의 한 함수(noteAnswer)가 같은 꼴로
+//     받아 둔다. 판이 닫힐 때(겉의 finishSet · 같은 패널의 다시 open · 패널 닫힘과 틀이 떠남) 입구의 판 끝 함수(entry.ended)를 한 번 부른다 —
+//     센 첫 답의 형식(countedModalities)과 그 판의 다시 접기(finishSet의 folded)를 싣는다. 판을 다시 정해 닫힌 겉(retired)은 부르지 않는다.
 // 겉에 주지 않는 것: dispose · reset · tell · guestRecords · clearPractice류(셸 · 「나」의 일).
 
 // 게임마다 받는 은행(지도 index.json의 bank). 열쇠 앞마디로 미루지 않는다 — 레이싱 · 낱말 마법 · 초급 주문(§23-0).
@@ -70,8 +73,12 @@ const LIVE_METHODS = Object.freeze([
 //   seed: 손님만 — 이 기기의 옛 손님 내용 기억(읽기만). 계정의 옛 내용 기억은 옛 학습 호스트(드라마 묶음)를 고쳐야 읽히므로 씨앗 없이 연다
 //   (설계 주인 11-19 조건).
 const DEVICE_FLOW = 'synk.atlas.learning.v1.device';
-// 엔진의 순간 맞춤 내용 기억 열쇠 앞마디(packages/atlas/src/coach/flow-memory.mjs FLOW_MEMORY_PREFIX와 같다 — 시험이 견준다). 입구의 앞 판 쓸기가 쓴다.
+// 엔진의 순간 맞춤 내용 기억 열쇠 앞마디(packages/atlas/src/coach/flow-memory.mjs FLOW_MEMORY_PREFIX와 같다 — 시험이 견준다). 입구의 앞 판 쓸기와
+// 세대 쓸기가 쓴다.
 export const FLOW_MEMORY_PREFIX = 'synk.atlas.next.flow.';
+// 엔진 내용 기억의 비운 세대 표지 열쇠 뒷마디(flow-memory.mjs FLOW_CLEARED_SUFFIX와 같다 — 시험이 견준다). 입구의 세대 쓸기는 이 열쇠를 남긴다 —
+// 비운 것을 모르는 탭을 막는 것이 이 표지다(§25-3 · 4c 20beea9ed).
+export const FLOW_CLEARED_SUFFIX = '#cleared';
 const localDay = date =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 function readJson(storage, name) {
@@ -108,31 +115,73 @@ function moved(args) {
   }
 }
 
-// 닫히면 RUN_ENDED로 던지는 함수 묶음.
-function guarded(target, names, isOpen, wrapResult = {}) {
+// 닫히면 RUN_ENDED로 던지는 함수 묶음. after[name](돌려줌, 옮긴 인수) — 부른 뒤 겉이 볼 것(판의 한 수 · 판 끝).
+function guarded(target, names, isOpen, after = {}) {
   const out = {};
   for (const name of names) {
     if (typeof target?.[name] !== 'function') continue;
     out[name] = (...args) => {
       if (!isOpen()) throw ended();
-      const result = target[name](...moved(args));
-      return wrapResult[name] ? wrapResult[name](result) : result;
+      const given = moved(args);
+      const result = target[name](...given);
+      after[name]?.(result, given);
+      return result;
     };
   }
   return out;
 }
 
+// 판정된 답(§25-3 불변식 나 — 맞음 · 틀림). 건너뜀(skipped) · 판정 못 함(unassessed) · 「모르겠어요」(unknown)는 세지 않는다(옛 길의 「처음 낸 답」과 같다).
+const JUDGED = new Set(['correct', 'incorrect']);
+// 판의 한 수 — 이 판에서 겉을 지난 답(answers: [{ pid, recorded }])의 센 첫 답 형식들(이름 차례). 센 첫 답은 제시마다 판정이 맞음 · 틀림이고
+// 저장 뒤 evidence가 「기록됨 · 전달됨」(stored · delivered)인 첫 답이다 — 판정 못 한 첫 답 뒤의 첫 판정 답도 센다. 형식(modality)과 전달은
+// 코치가 돌려준 값이다 — 게임이 넘긴 modality · audioRequired는 읽지 않는다(셋째 판 확인 N2). 전달은 엔진이 기록부에 든 사건으로 정한다(가림은
+// 보지 않는다 — 바람길 지시 문항처럼 가려진 답을 빼면 옛 길보다 적게 센다). 코치가 형식이나 evidence를 돌려주지 않는 엔진 판이면 null —
+// 판을 적지 않는다(지금과 같다).
+export async function countedModalities(answers) {
+  const list = Array.isArray(answers) ? answers : [];
+  if (list.some(({ recorded }) => typeof recorded?.modality !== 'string' || typeof recorded?.evidence?.then !== 'function')) return null;
+  const counted = new Set();
+  const kinds = new Set();
+  for (const { pid, recorded } of list) {
+    if (counted.has(pid) || !JUDGED.has(recorded.verdict)) continue;
+    let evidence = null;
+    try {
+      evidence = await recorded.evidence;
+    } catch {
+      evidence = null;
+    }
+    if (evidence?.stored !== true || evidence?.delivered !== true) continue;
+    counted.add(pid);
+    kinds.add(recorded.modality);
+  }
+  return [...kinds].sort();
+}
+
 // 겉 하나 — 그 틀 문서의 실행 하나. close()는 다시 부를 수 없게 막고, 손잡이(live)도 같은 규칙으로 감싼다(설계 주인 조건 ①).
-function makeFacade(coach, { leave, onRetired }) {
+// noteAnswer(pid, recorded): 겉을 지난 답 — 일반 길은 돌려줌 그대로, 손잡이 길은 돌려줌의 recorded를 같은 꼴로 넘긴다. touch(): 제시 · 도움 ·
+// 전달 · 판 열기 · 관찰(이 판에 무언가 있었다). finished(folded): 게임이 판을 닫았다(finishSet).
+function makeFacade(coach, { leave, onRetired, noteAnswer, touch, finished }) {
   let open = true;
   const isOpen = () => open;
+  const touched = Object.fromEntries(['present', 'help', 'delivery', 'startSet', 'observe'].map(name => [name, () => touch()]));
   const live = (...args) => {
     if (!open) throw ended();
     const handle = coach.live(...moved(args));
-    return Object.freeze({ spec: handle.spec, ...guarded(handle, LIVE_METHODS, isOpen) });
+    return Object.freeze({
+      spec: handle.spec,
+      ...guarded(handle, LIVE_METHODS, isOpen, {
+        ...touched,
+        answer: (result, [pid]) => noteAnswer(pid, result?.recorded),
+      }),
+    });
   };
   const api = Object.freeze({
-    ...guarded(coach, COACH_METHODS, isOpen),
+    ...guarded(coach, COACH_METHODS, isOpen, {
+      ...touched,
+      answer: (result, [pid]) => noteAnswer(pid, result),
+      finishSet: result => finished(result?.folded ?? null),
+    }),
     live,
     // 틀이 떠난다(pagehide) — 셸 창의 다음 차례에 겉과 판을 닫는다.
     leave,
@@ -165,30 +214,45 @@ const hold = (coach, by) => {
 // 닫히지 않고 새 틀에 넘어갔다(다시 보기 C2). 새 틀이 문을 열 때는 앞 틀이 이미 내려가 그 마지막 답도 들어 있다.
 const retiring = new WeakMap();
 
-// entry: 입구(gameCoach(gameId, banks) · retired(coach, fn)). gameId: launchGame이 연 게임.
+// entry: 입구(gameCoach(gameId, banks) · retired(coach, fn) · ended(coach, end)). gameId: launchGame이 연 게임.
+//   ended(coach, { gameId, counted, folded }) — 판이 닫힐 때 한 번: counted는 센 첫 답 형식들의 약속(countedModalities — 엔진 판에 형식 ·
+//   전달 칸이 없으면 null로 풀린다), folded는 그 판의 다시 접기(코치 finishSet의 folded — 판을 닫지 못했으면 null)다.
 // later(fn): 셸 창의 다음 차례 — 시험만 바꾼다.
 export function createGameDoor({ entry, gameId, later = fn => setTimeout(fn, 0) }) {
   const allowed = new Set(GAME_BANKS[gameId] ?? []);
   let closed = false;
   let runs = 0;
-  let current = null; // { coach, facade, run, stopRetired, listeners }
+  let current = null; // { coach, facade, run, stopRetired, listeners, answers, touched }
 
-  // 그 코치의 판을 기록 없이 닫는다. 던져도(이미 닫은 코치 — 판을 다시 정함) 문은 그대로 간다.
+  // 그 코치의 판을 기록 없이 닫는다 — 그 판의 다시 접기(folded)를 돌려준다. 던져도(이미 닫은 코치 — 판을 다시 정함) 문은 그대로 간다(null).
   function endSet(coach) {
     try {
-      coach.finishSet({ record: false });
+      return coach.finishSet({ record: false })?.folded ?? null;
     } catch {
-      // 닫을 판이 없다
+      return null; // 닫을 판이 없다
     }
   }
-  // 지금 겉을 닫고 그 판을 닫는다 — 그 코치를 앉혀 쓰는 다른 문이 없을 때만.
+  // 그 겉의 판이 닫혔다 — 이 판에 무언가 있었으면(제시 · 답 · 도움 · 전달 · 판 열기) 입구의 판 끝 함수를 한 번 부르고 판의 답을 비운다. 센 첫
+  // 답이 없어도 부른다 — 답 없이 문항만 보고 닫은 판도 셸이 묶음 만남을 다시 묻게(§25-3).
+  function closeSet(slot, folded) {
+    if (!slot.touched) return;
+    const answers = slot.answers;
+    slot.answers = [];
+    slot.touched = false;
+    try {
+      entry.ended?.(slot.coach, { gameId, counted: countedModalities(answers), folded: folded ?? null });
+    } catch {
+      // 입구의 실패는 문을 막지 않는다 — 그 판을 세지 못할 뿐이다
+    }
+  }
+  // 지금 겉을 닫고 그 판을 닫는다 — 코치의 판은 그 코치를 앉혀 쓰는 다른 문이 없을 때만 닫는다. 판 끝은 이 겉의 판으로 알린다.
   function retireCurrent() {
     const slot = current;
     current = null;
     if (!slot) return;
     slot.facade.close();
     slot.stopRetired?.();
-    if (hold(slot.coach, -1) === 0) endSet(slot.coach);
+    closeSet(slot, hold(slot.coach, -1) === 0 ? endSet(slot.coach) : null);
   }
 
   // 그 겉을 셸 창의 다음 차례에 닫는다 — 그 전에 다른 문이 같은 코치를 앉히면 그때 닫는다(위 retiring).
@@ -213,7 +277,7 @@ export function createGameDoor({ entry, gameId, later = fn => setTimeout(fn, 0) 
 
   function seat(coach, run) {
     const listeners = new Set();
-    const slot = { coach, run, listeners, stopRetired: null, facade: null, retired: null };
+    const slot = { coach, run, listeners, stopRetired: null, facade: null, retired: null, answers: [], touched: false };
     const tell = (fn, detail) => {
       try {
         fn(detail);
@@ -222,6 +286,15 @@ export function createGameDoor({ entry, gameId, later = fn => setTimeout(fn, 0) 
       }
     };
     slot.facade = makeFacade(coach, {
+      // 판의 한 수 — 겉을 지난 답을 같은 꼴(코치가 돌려준 recorded)로 받아 둔다.
+      noteAnswer: (pid, recorded) => {
+        slot.touched = true;
+        slot.answers.push({ pid, recorded });
+      },
+      touch: () => {
+        slot.touched = true;
+      },
+      finished: folded => closeSet(slot, folded),
       leave: () => retireLater(slot),
       // 겉을 받은 틀이 듣개를 걸기 전에 판을 다시 정했으면(받은 뒤 await 사이) 건 때 다음 차례로 알린다(끝 판 D1).
       onRetired: fn => {
@@ -242,11 +315,13 @@ export function createGameDoor({ entry, gameId, later = fn => setTimeout(fn, 0) 
     for (const finish of [...(retiring.get(coach) ?? [])]) finish();
     current = slot;
     hold(coach, 1);
-    // 판을 다시 정했다 — 틀에 알리고 겉을 닫는다(코치는 입구가 닫는다 — finishSet은 부르지 않는다).
+    // 판을 다시 정했다 — 틀에 알리고 겉을 닫는다(코치는 입구가 닫는다 — finishSet은 부르지 않는다). 그 판의 답은 적지 않는다(§25-3).
     slot.stopRetired = entry.retired?.(coach, detail => {
       if (current !== slot) return;
       current = null;
       hold(coach, -1);
+      slot.answers = [];
+      slot.touched = false;
       slot.retired = { reason: detail?.reason ?? 'retired' };
       slot.facade.close();
       for (const fn of [...listeners]) tell(fn, slot.retired);

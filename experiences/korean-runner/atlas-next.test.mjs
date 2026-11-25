@@ -7,6 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { RunnerModel, driveDemo } from './core.mjs';
 import { INSTRUCTIONS } from './instructions.mjs';
 import { FLOW_RUN, FLOW_WORDS, TIRED_RUN, actionEvidence, instructionMetadata, paceOf, runObservation } from './learning.mjs';
@@ -15,6 +16,21 @@ import { mountListeningCheck } from './listening-check-ui.mjs';
 import { BANKS, CHECK_LENGTH, GAME_ID, createRunner, freshFirst, openRunner } from './atlas-next-play.mjs';
 import { ended } from './kit/atlas-next.mjs';
 import { createGameDoor, GAME_BANKS } from '../synk-world-app/world-atlas-game.mjs';
+// 원문 토막은 게임 모듈처럼 엄격 모드로 돌린다. 느슨한 모드(with)는 얼린 FLOW_ 값에 쓰는 줄을 조용히 넘겨, 게임에서만 던지는 줄을 시험이 놓친다
+// (4-6e 첫 묶음 Fable F4). env의 이름이 토막의 바깥 이름이다 — 토막이 env에 없는 이름에 쓰면 시험이 던진다.
+// 토막이 대입할 수 있는 이름은 게임 모듈이 맨 위 let으로 둔 것뿐이다(module — 그 게임 모듈의 원문). 나머지(가져온 FLOW_ 값 · const · 함수)는 const로
+// 묶어 다시 대입하면 게임 모듈처럼 던진다(4-6e-2 검수 GA1 · 새 사슬 GA2).
+// 이름은 글이 아니라 구문(acorn)으로 읽는다 — 초기값 속의 이름은 선언이 아니다(사슬 -d F1).
+const acorn = createRequire(import.meta.url)('acorn');
+const topLets = module =>
+  new Set(acorn.parse(module, { ecmaVersion: 'latest', sourceType: 'module' }).body.flatMap(node => (node.type === 'VariableDeclaration' && node.kind !== 'const' ? node.declarations.map(({ id }) => id.name) : [])));
+const strictEnv = (body, module) => env => {
+  const names = Object.keys(env);
+  const lets = topLets(module);
+  const free = names.filter(name => lets.has(name));
+  const fixed = names.filter(name => !free.includes(name));
+  return new Function('__env', ...free, `'use strict';\nconst { ${fixed.join(', ')} } = __env;\n${body}`)(env, ...free.map(name => env[name]));
+};
 
 const atlas = await import('../../packages/atlas/src/index.mjs');
 const json = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
@@ -466,7 +482,7 @@ function liveStarter() {
   const from = text.indexOf('let live = null;\nfunction startLive()');
   const to = text.indexOf('function followPace(', from);
   assert.ok(from >= 0 && to > from, 'app.mjs의 순간 맞춤 열기 토막');
-  return new Function('env', `with (env) {\n${text.slice(from, to)}\nreturn () => { const pace = startLive(); return { live, pace }; };\n}`);
+  return strictEnv(`${text.slice(from, to)}\nreturn () => { const pace = startLive(); return { live, pace }; };`, text);
 }
 
 test('순간 맞춤 진입 — app.mjs가 달리기마다 넘긴 내용을 진짜 엔진이 정의하고 달리는 속도의 순간 맞춤이 켜진다, 피곤한 날은 갈수록 빨라지지 않는다', async () => {

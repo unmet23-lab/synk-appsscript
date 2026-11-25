@@ -210,10 +210,26 @@ const unitsOfItems = (items, itemUnits) =>
 // 숙제 연습(§21-6 · 검토 D3) — 이번 주 계획의 숙제 항목마다 하나(오늘 공부 칸). 후보는 그 항목의 처음 보는 짧은 연습 문항 가운데 돌아온 단위가
 // 든 문항을 뺀 것이다 — 그 단위는 복습 칸의 짧은 연습이 맡는다(다음 레슨과 같은 거름, 20-13). 목표는 숙제 하나 { kind: homework, skill, status? }다 —
 // 상태(missed)가 있을 때만 두뇌가 숙제 문장을 짓고, 도움받은 첫 만남만 있는 능력은 목표 수에만 센다. 쓰기 숙제는 짧은 연습이 없어 넘기지 않는다.
-// 소리를 끈 날 듣기 숙제는 빼지 않고 잠근다(짧은 연습과 같은 거름 — blockedBy). fresh(item): 그 문항을 처음 보는가(묶음 만남의 seen === false).
+// 소리를 끈 날 듣기 숙제는 빼지 않고 잠근다(짧은 연습과 같은 거름 — blockedBy).
+// 4-6e-2(§25-3 불변식 다): 숙제 줄은 그 능력의 길로 연다 — routes는 셸이 문서마다 한 벌 지은 길 표(world-home-games.mjs createRoutes)다. 짧은
+// 연습 길이면 후보는 그 능력의 처음 보는 짧은 연습 문항(실제 짧은 연습과 같은 판정)이고, 게임 길이면 그 게임의 처음 보는 문항(묶음 만남의 게임 몫)이다.
+// 어느 길이든 돌아온 단위가 든 문항은 뺀다. 활동 id는 길과 상관없이 world.homework.<능력>이고 줄 규칙도 그대로다(낼 후보가 있을 때만 줄 · 소리를 끈
+// 날은 잠근 뒤 풀어서 한 번 더 셈). 그래서 그 길의 처음 보는 문항이 모두 돌아온 단위에 걸린 날에는 숙제 줄이 서지 않고 계획 판 단추만 남는다(25-12의 9).
+// 앞 공개판 셸(③ — 길 표를 짓지 않고 week.fresh만 넘긴다)이 캐시에 남아 이 모듈과 짝이 된 문서에서는 그 셸의 규칙 그대로 짧은 연습 풀과 fresh로 짓는다.
+// 길 표를 넘기는 셸이 공개되고 캐시가 걷힌 뒤(5-3 뒤) 이 갈래를 걷는다.
+const practiceRoute = (pool, fresh) =>
+  Array.isArray(pool) && typeof fresh === 'function'
+    ? skillId => ({
+        route: 'practice',
+        practice: pool.filter(
+          item => item?.skillId === skillId && typeof item.itemKey === 'string' && quiet(() => fresh(item)) === true,
+        ),
+      })
+    : null;
 export const HOMEWORK_PREFIX = 'world.homework.';
-function homeworkActivities({ homework, pool, fresh, dueUnits, itemUnits, settings, labels, length }) {
-  if (!Array.isArray(homework) || !Array.isArray(pool) || typeof fresh !== 'function') return [];
+function homeworkActivities({ homework, routes, pool, fresh, dueUnits, itemUnits, settings, labels, length }) {
+  const routeOf = typeof routes?.reader === 'function' ? routes.reader() : practiceRoute(pool, fresh);
+  if (!Array.isArray(homework) || !routeOf) return [];
   const returned = key =>
     Boolean(dueUnits?.size) &&
     typeof itemUnits === 'function' &&
@@ -223,26 +239,26 @@ function homeworkActivities({ homework, pool, fresh, dueUnits, itemUnits, settin
     const skillId = row?.skillId;
     if (typeof skillId !== 'string' || !['listening', 'reading'].includes(row.domain)) continue;
     const listening = row.domain === 'listening';
-    const items = pool.filter(
-      item =>
-        item?.skillId === skillId &&
-        typeof item.itemKey === 'string' &&
-        quiet(() => fresh(item)) === true &&
-        !returned(item.itemKey),
-    );
+    const route = quiet(() => routeOf(skillId));
+    const game = route?.route === 'game' ? (route.games?.[0] ?? null) : null;
+    const items = game
+      ? game.items.filter(item => !returned(item.itemKey))
+      : (route?.practice ?? []).filter(item => !returned(item.itemKey));
     const name = quiet(() => labels?.(skillId)) || skillId;
-    const open = {
-      id: `${HOMEWORK_PREFIX}${skillId}`,
-      label: `${listening ? '듣기' : '읽기'} 짧은 연습 · ${name}`,
-      route: 'practice',
-      skillId,
-      minutes: Math.max(2, Math.ceil(length * (listening ? 0.8 : 0.5))),
-      minutesEstimated: true,
-      supports: [...PRACTICE_SUPPORTS],
-      audioRequired: listening,
-      modality: listening ? 'listening' : 'reading',
-      targets: [],
-    };
+    const open = game
+      ? { ...game.open, id: `${HOMEWORK_PREFIX}${skillId}`, skillId, audioRequired: true, targets: [] }
+      : {
+          id: `${HOMEWORK_PREFIX}${skillId}`,
+          label: `${listening ? '듣기' : '읽기'} 짧은 연습 · ${name}`,
+          route: 'practice',
+          skillId,
+          minutes: Math.max(2, Math.ceil(length * (listening ? 0.8 : 0.5))),
+          minutesEstimated: true,
+          supports: [...PRACTICE_SUPPORTS],
+          audioRequired: listening,
+          modality: listening ? 'listening' : 'reading',
+          targets: [],
+        };
     const goal = { kind: 'homework', skill: skillId, ...(typeof row.status === 'string' ? { status: row.status } : {}) };
     out.push(
       activity('new', open, { goals: [goal] }, items.map(item => ({ itemKey: item.itemKey })), settings, 'homework'),
@@ -416,7 +432,7 @@ export function todayActivities({
   dueUnits = null,
   itemUnits = null,
   engine = false,
-  // 이번 주 계획(4-4b) — { examPlan(world-plan-next buildPlanNext), fresh(item), diagnostic: { ready } }. 시험을 고르지 않았거나 확인 중이면 null.
+  // 이번 주 계획(4-4b) — { examPlan(world-plan-next buildPlanNext), routes(길 표 — 4-6e-2), diagnostic: { ready } }. 시험을 고르지 않았거나 확인 중이면 null.
   week = null,
   // 홈의 게임 목록(4-6e-1 — world-home-games.mjs homeGames의 값). 없으면 게임 줄이 없다.
   games = null,
@@ -513,6 +529,7 @@ export function todayActivities({
     out.push(
       ...homeworkActivities({
         homework: week.examPlan.homework,
+        routes: week.routes,
         pool,
         fresh: week.fresh,
         dueUnits,
