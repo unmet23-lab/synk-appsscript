@@ -1894,3 +1894,40 @@ test('「새 길 간 적 있음」이 비운 판에 남았으면 오프라인 �
     next.dispose();
   }
 });
+
+// ── 5-3 전 고침 E2 — 판 견줌과 처음인 기기의 첫 받기 ─────────────────────────────────────────────
+test('판 견줌은 새 길에 간 적 없는 기기에 「새 길 간 적 있음」을 적지 않는다 — 다른 기기에서 비운 계정을 이 기기에서 처음 열 때 첫 받기가 안 되면(한도 · 끊김 · 스위치 꺼짐) 이번은 지금 판이고, 이 기기의 몫은 그대로 마친다(5-3 전 고침 E2)', async () => {
+  for (const first of [
+    { ok: false, kind: 'timeout', code: 'PULL_TIMEOUT' },
+    { ok: false, kind: 'offline', code: 'NETWORK' },
+    { ok: false, kind: 'switch', code: 'FEATURE_DISABLED' },
+  ]) {
+    const storage = memoryStorage();
+    const line = accountLine({ revision: 2 });
+    line.lastClear = async () => ({ ok: true, revision: 2, serverTime: Date.now(), lastClear: { revision: 2, at: Date.now() - 3_600_000 } });
+    const opened = [];
+    const coach = options => {
+      const made = {
+        options,
+        syncs: 0,
+        ready: Promise.resolve(),
+        summary: () => ({ storage: { base: false } }),
+        synced: async () => {
+          made.syncs += 1;
+          return first;
+        },
+        reset: async () => settled,
+        dispose() {},
+      };
+      opened.push(made);
+      return made;
+    };
+    const load = async () => ({ SynkAtlas: { load: async () => ({ storeName: atlas.storeName }) }, coach });
+    const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder() });
+    assert.equal(await next.practiceCoach(POOL), null, `${first.kind} — 요약 없는 빈 저장소로 새 길을 열지 않는다(G4)`);
+    assert.equal(opened[0]?.syncs, 1, `${first.kind} — 첫 받기를 기다렸다`);
+    assert.deepEqual(wentOf(storage), first.kind === 'switch' ? { off: true } : null, `${first.kind} — 「새 길 간 적 있음」이 없다`);
+    assert.equal(clearedOf(storage)?.settled, 2, `${first.kind} — 이 기기의 몫(판 견줌)은 그대로 마친다`);
+    next.dispose();
+  }
+});

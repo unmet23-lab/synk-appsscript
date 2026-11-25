@@ -561,6 +561,24 @@ test('다시 그리는 때 — 생활 판정이 아는 앞으로 열릴 때 가�
  coach.dispose();
 });
 
+test('다시 그리는 때 — 이번 주 계획이 있으면 계획의 주가 바뀌는 때(한국 시각 월요일 0시)에도 다시 그린다: 로스앤젤레스 일요일 06:50에는 다음 학습일(월요일 04:00)이 아니라 07:00이다(5-3 전 고침 GI1)',async()=>{
+ const at=Date.UTC(2026,10,22,14,50); // 로스앤젤레스 일요일 06:50(PST) · 한국 일요일 23:50
+ const {coach}=await homeCoach({start:at});
+ const progress=progressOf({completed:['greetings-expressions']});
+ const settings={reasons:['exam'],primaryReason:'exam',examType:'topik2',speaking:true};
+ const week=checkWeekOf(at);
+ assert.equal(week.examPlan.week.end,Date.UTC(2026,10,22,15,0),'계획의 주는 한국 시각 월요일 0시 — 로스앤젤레스 일요일 07:00에 바뀐다');
+ inZone('America/Los_Angeles',()=>{
+  assert.equal(new Date(at).getHours(),6,'시간대를 바꿨다');
+  assert.equal(nextDayStart(at),Date.UTC(2026,10,23,12,0),'다음 학습일은 월요일 04:00(PST)');
+  assert.equal(planOf({coach,progress,now:at,settings,week}).today.redrawAt,week.examPlan.week.end,'새 주가 시작되는 때 다시 그린다');
+  assert.equal(planOf({coach,progress,now:at,settings}).today.redrawAt,nextDayStart(at),'계획이 없으면 지금처럼 다음 학습일');
+ });
+ // 한국 기기에서는 월요일 0시가 다음 학습일(04:00)보다 이르다 — 그때 계획의 주가 바뀌므로 그때 다시 그린다.
+ inZone('Asia/Seoul',()=>assert.equal(planOf({coach,progress,now:at,settings,week}).today.redrawAt,week.examPlan.week.end));
+ coach.dispose();
+});
+
 /* ── 4-6e-1 복습 칸의 게임(단계4_계획 §25-1 · §25-2) ── */
 
 // 변형 시험(qa/today-mutants.mjs)은 게임 목록의 깬 사본을 SYNK_HOME_GAMES_MODULE로도 넘긴다(홈 사본이 같은 사본을 부른다).

@@ -11,7 +11,8 @@ import { sliceOf } from '../../../packages/atlas/tools/map-ship.mjs';
 import { worldPosition } from '../world-position-kit.mjs';
 import { homeBanksOf } from '../world-atlas-next.mjs';
 import { allowedPlays, nextPlay } from '../world-exam-form.mjs';
-import { buildPositionNext } from '../world-position-next.mjs';
+import { buildPositionNext, examSkills } from '../world-position-next.mjs';
+import { worldLearning } from '../world-learning-map.mjs';
 
 const D = await import(
   process.env.SYNK_DIAGNOSTIC_NEXT_MODULE
@@ -252,6 +253,40 @@ test('고르기 — 세트도 측정용 만남(met)으로 가른다: 세트의 �
     ],
   });
   assert.deepEqual(out.items.map(row => row.item.id), ['s1'], '띄우기만 한 s1도 처음 보는 문항이고, 한 진단에 같은 세트에서 하나만');
+});
+
+test('고르기 — 한 진단에 한 지문에서 한 문항이어도 진단하는 능력 수를 먼저 채운다: 앞 능력이 뒤 능력의 하나뿐인 처음 보는 문항과 같은 지문을 쥐면 다른 문항으로 옮기고, 겹침이 없으면 앞 능력의 차례 그대로다(5-3 전 고침 GF1)', () => {
+  const position = positionOf([['ko.reading.a'], ['ko.reading.b']]);
+  const only = [
+    item('v1', 'ko.reading.a', 1, { setId: 'set-1' }),
+    item('v2', 'ko.reading.a', 1),
+    item('m1', 'ko.reading.b', 1, { setId: 'set-1' }),
+  ];
+  const out = selectDiagnosticNext({ position, items: only, exposures: exposuresOf(only, {}) });
+  assert.deepEqual(out.items.map(row => [row.skillId, row.item.id]), [['ko.reading.a', 'v2'], ['ko.reading.b', 'm1']]);
+  assert.deepEqual(out.missing, []);
+  // 뒤 능력에 지문 없는 처음 보는 문항이 있으면 앞 능력은 옮기지 않는다 — 지금 차례(난도 · 형식 · id)의 첫 문항 v1이다.
+  const spare = [...only, item('m2', 'ko.reading.b', 1)];
+  const kept = selectDiagnosticNext({ position, items: spare, exposures: exposuresOf(spare, {}) });
+  assert.deepEqual(kept.items.map(row => [row.skillId, row.item.id]), [['ko.reading.a', 'v1'], ['ko.reading.b', 'm2']]);
+  // 두 번 옮겨야 서는 판 — c의 하나뿐인 문항이 a의 지문에 있고, a가 옮겨 갈 지문은 b가 쥐었다. b가 지문 없는 문항으로 옮기고 a가 그 지문을 받는다.
+  const chain = [
+    item('x1', 'ko.reading.a', 1, { setId: 'set-1' }),
+    item('x2', 'ko.reading.a', 1, { setId: 'set-2' }),
+    item('y2', 'ko.reading.b', 1, { setId: 'set-2' }),
+    item('y3', 'ko.reading.b', 1),
+    item('z1', 'ko.reading.c', 1, { setId: 'set-1' }),
+  ];
+  const moved = selectDiagnosticNext({
+    position: positionOf([['ko.reading.a'], ['ko.reading.b'], ['ko.reading.c']]),
+    items: chain,
+    exposures: exposuresOf(chain, {}),
+  });
+  assert.deepEqual(moved.items.map(row => [row.skillId, row.item.id]), [
+    ['ko.reading.a', 'x2'],
+    ['ko.reading.b', 'y3'],
+    ['ko.reading.c', 'z1'],
+  ]);
 });
 
 test('고르기 — 소리를 끈 날은 듣기 문항을 빼고, 레이싱 문항은 뺀 것으로 적는다(21-2)', () => {
@@ -595,5 +630,27 @@ test('진짜 코치 — 진단을 그만두면 판을 닫아 손님 요약이 �
   const done = again.finish({ record: false });
   assert.ok(done?.setId);
   assert.notEqual(done.setId, stopped.setId, '다음 진단은 그만둔 진단의 판으로 묶이지 않는다');
+  coach.dispose();
+});
+
+test('진짜 코치 — TOPIK II 중심 내용 일곱 문항 가운데 여섯을 답한 기기에서도 진단이 열두 능력을 모두 고른다: 어휘가 tii-r-a-019 대신 다른 지문의 문항을 받고, 중심 내용이 같은 지문의 tii-r-a-020을 받는다(5-3 전 고침 GF1)', async () => {
+  const { coach, advance } = await homeCoach();
+  const pool = worldPosition.items;
+  const byId = new Map(pool.map(row => [row.id, row]));
+  for (const id of ['tii-r-a-007', 'tii-r-a-008', 'tii-r-a-022', 'tii-r-a-043', 'tii-r-a-044', 'tii-u14-002']) {
+    const pid = coach.present(byId.get(id));
+    await coach.answer(pid, { correct: true, assessable: true }).stored;
+    advance(60_000);
+  }
+  await coach.finishSet({ kind: 'diagnostic' }).folded;
+  const skills = examSkills(worldLearning.SKILLS, 'topik2');
+  const position = buildPositionNext({ exam: 'topik2', skills, summary: coach.summary() });
+  const plan = selectDiagnosticNext({ position, items: pool, exposures: coach.exposures(pool) });
+  const pick = Object.fromEntries(plan.items.map(row => [row.skillId, row.item.id]));
+  assert.equal(plan.items.length, skills.length, '열두 능력을 모두 진단한다');
+  assert.equal(pick['ko2.reading.main'], 'tii-r-a-020', '중심 내용에 남은 하나뿐인 처음 보는 문항');
+  assert.notEqual(pick['ko2.reading.vocabulary'], 'tii-r-a-019', '어휘가 그 지문을 먼저 차지하지 않는다');
+  const sets = plan.items.map(row => row.item.setId).filter(Boolean);
+  assert.equal(new Set(sets).size, sets.length, '한 진단에 한 지문에서 한 문항');
   coach.dispose();
 });

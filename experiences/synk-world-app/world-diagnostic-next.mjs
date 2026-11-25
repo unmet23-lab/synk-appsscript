@@ -98,27 +98,25 @@ export function selectDiagnosticNext({
       .map(item => item.id),
   );
   const format = item => policy.formats.indexOf(item.responseFormat ?? 'unknown');
-  const chosen = [];
-  const missing = [];
-  const usedSets = new Set();
+  // 능력 차례 그대로의 줄. 빠지는 능력은 까닭을, 고를 능력은 처음 보는 후보를 정렬한 차례로 든다.
+  const rows = [];
   for (const skill of position.skills) {
     const mine = open.filter(item => item.skillId === skill.id);
     if (!mine.length) {
       const held = pool.some(item => item.skillId === skill.id && withheldItem(item, policy));
-      missing.push({ skillId: skill.id, reason: held ? 'withheld' : 'no-item' });
+      rows.push({ skillId: skill.id, reason: held ? 'withheld' : 'no-item' });
       continue;
     }
     const playable = audioAvailable ? mine : mine.filter(item => !listeningOf(item));
     if (!playable.length) {
-      missing.push({ skillId: skill.id, reason: 'audio' });
+      rows.push({ skillId: skill.id, reason: 'audio' });
       continue;
     }
-    const left = playable.filter(
-      item => fresh.has(item.id) && !(item.setId && usedSets.has(item.setId)),
-    );
+    // 처음 보는 후보가 없을 때의 까닭이다. 후보가 모두 다른 능력이 쓴 지문에 있어 못 받은 능력도 이 까닭으로 적는다(지금까지와 같다).
+    const reason = playable.some(item => met.get(item.id) == null) ? 'unknown' : 'all-seen';
+    const left = playable.filter(item => fresh.has(item.id));
     if (!left.length) {
-      const unknown = playable.some(item => met.get(item.id) == null);
-      missing.push({ skillId: skill.id, reason: unknown ? 'unknown' : 'all-seen' });
+      rows.push({ skillId: skill.id, reason });
       continue;
     }
     const target = targetOf(skill);
@@ -129,9 +127,30 @@ export function selectDiagnosticNext({
         format(a) - format(b) ||
         (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
     );
-    if (left[0].setId) usedSets.add(left[0].setId);
-    chosen.push({ skillId: skill.id, target, item: left[0] });
+    rows.push({ skillId: skill.id, reason, target, left, item: null });
   }
+  // 한 진단에 한 지문에서 한 문항이다(5-3 전 고침 GF1). 지문을 자원으로 보고 능력 차례대로 짝짓는다. 능력은 먼저 자기 후보 차례에서 첫 빈
+  // 문항(지문이 없거나 아직 아무도 안 쓴 지문)을 받는다. 빈 문항이 없을 때만, 그 지문을 쥔 앞 능력을 그 능력의 다음 빈 문항으로 옮겨 본다(증가 경로).
+  // 그래서 진단하는 능력 수가 가장 많고, 그 안에서 앞 차례 능력이 먼저 남는다. 옮겨진 능력은 난도가 덜 맞는 후보를 받을 수 있다. 지문이 겹치지
+  // 않으면 능력마다 첫 후보를 받아 이 고침 앞의 고르기와 같다.
+  const owner = new Map();
+  const take = (row, item) => {
+    row.item = item;
+    if (item.setId) owner.set(item.setId, row);
+    return true;
+  };
+  const place = (row, visited) => {
+    for (const item of row.left) if (!item.setId || !owner.has(item.setId)) return take(row, item);
+    for (const item of row.left) {
+      if (visited.has(item.setId)) continue;
+      visited.add(item.setId);
+      if (place(owner.get(item.setId), visited)) return take(row, item);
+    }
+    return false;
+  };
+  for (const row of rows) if (row.left) place(row, new Set());
+  const chosen = rows.filter(row => row.item).map(({ skillId, target, item }) => ({ skillId, target, item }));
+  const missing = rows.filter(row => !row.item).map(({ skillId, reason }) => ({ skillId, reason }));
   return {
     ...common,
     status: chosen.length ? 'ready' : 'unavailable',

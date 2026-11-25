@@ -841,7 +841,10 @@ export function createWorldTodayPlan({
   const upcoming = (Array.isArray(judged?.times) ? judged.times : [judged?.nextAt]).filter(
     at => Number.isFinite(at) && at > now,
   );
-  const redraw = [...upcoming, nextDayStart(now)].filter(at => Number.isFinite(at) && at > now);
+  // 이번 주 계획의 주가 바뀌는 때(한국 시각 월요일 0시 — examWeek)에도 다시 그린다. 학습일(기기 현지 새벽 4시)만 보면 시간대가 다른 기기에서
+  // 새 주의 점검 칸이 다음 학습일까지 지난주 완료로 남는다(5-3 전 고침 GI1 — 로스앤젤레스는 일요일 07:00에 주가 바뀐다).
+  const weekEnd = live ? week?.examPlan?.week?.end : null;
+  const redraw = [...upcoming, nextDayStart(now), weekEnd].filter(at => Number.isFinite(at) && at > now);
   return {
     status,
     selected: selected?.open ?? null,

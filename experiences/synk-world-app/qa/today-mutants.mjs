@@ -189,6 +189,12 @@ export const TODAY_MUTANTS = [
     '  const upcoming = (Array.isArray(judged?.times) ? judged.times : [judged?.nextAt]).filter(\n',
     '  const upcoming = [].filter(\n',
   ],
+  [
+    '다시 그리기',
+    '이번 주 계획의 주가 바뀌는 때를 다시 그리는 때에 넣지 않는다 — 시간대가 다른 기기에서 새 주의 점검 칸이 다음 학습일까지 지난주 완료로 남는다(5-3 전 고침 GI1)',
+    '  const redraw = [...upcoming, nextDayStart(now), weekEnd].filter(',
+    '  const redraw = [...upcoming, nextDayStart(now)].filter(',
+  ],
   ['판 셋', '홈 코치가 닫혀도 확인 중으로 돌아가지 않는다', '              drop();\n              changed();\n', '              changed();\n'],
   [
     '판 셋',

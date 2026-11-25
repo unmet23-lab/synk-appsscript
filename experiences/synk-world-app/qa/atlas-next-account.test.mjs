@@ -1951,3 +1951,121 @@ test('스위치 먼저 묻기 — 기기 저장소가 없으면 하루 상한을
  assert.deepEqual([line.reads,line.gets.length,loader.loads],[0,0,0],'계정 읽기 · 물음 · 엔진 모두 0');
  next.dispose();
 });
+
+// ── 스위치를 아직 묻지 않은 계정의 옮기기 물음 · 같은 판의 길 바꾸기(5-3 전 고침 E1 · GE1 · GE2) ─────────────────────────────
+// 기기의 IndexedDB 목록(indexedDB.databases)을 흉내 낸다 — 옮기기 물음은 새 길 손님 저장소가 있는지만 본다.
+async function withDatabases(names,work){
+ const was=Object.getOwnPropertyDescriptor(globalThis,'indexedDB');
+ Object.defineProperty(globalThis,'indexedDB',{configurable:true,value:{databases:async()=>names().map(name=>({name}))}});
+ try{return await work();}finally{if(was)Object.defineProperty(globalThis,'indexedDB',was);else delete globalThis.indexedDB;}
+}
+// 옆으로 연 손님 저장소 — 짧은 연습의 첫 답 n개(제시 · 첫 시도)만 든 2판 기록이다.
+const asideOf=attempts=>({
+ plan:async()=>({legacy:[],current:Array.from({length:attempts},(_,i)=>[{id:`p${i}`,type:'practice.presented'},{id:`a${i}`,type:'practice.attempted',attemptNo:1}]).flat(),until:9,touches:new Map()}),
+ move:async()=>({ok:true}),keep:async()=>1,note:async()=>true,close(){},
+});
+
+test('옮기기 물음 — 스위치를 아직 묻지 않은 계정(이 기기의 첫 로그인)은 새 길 손님 저장소가 있으면 스위치 답을 기다려 정한다: 켜짐이면 손님 답을 세고, 꺼짐이면 지금 판 물음, 답이 안 오면 「못 셈」(5-3 전 고침 E1 · GE1)',async()=>{
+ await withDatabases(()=>['synk-atlas:guest'],async()=>{
+  const late=accountLine({get:async()=>{await new Promise(resolve=>setTimeout(resolve,50));return {summary:null,serverTime:0};}});
+  const {load}=fakeLoader(()=>fakeCoach({base:true,guestRecords:async()=>asideOf(3)}));
+  const on=createAtlasNext({owner:'acct-u1',storage:memoryStorage([],{switchOn:false}),trail:late.trail,load,health:recorder()});
+  const found=await on.guestMove({watermarks:{others:0,all:0}});
+  assert.notEqual(found,null,'지금 판 물음(null)으로 보내면 새 길 손님 답이 물음에서 빠진다');
+  assert.equal(found.attempts,3);
+  on.dispose();
+  const off=createAtlasNext({owner:'acct-u2',storage:memoryStorage([],{switchOn:false}),trail:accountLine({get:async()=>{throw fail(403,'FEATURE_DISABLED');}}).trail,load:fakeLoader().load,health:recorder()});
+  assert.equal(await off.guestMove({watermarks:{}}),null,'꺼짐은 지금 판 물음');
+  off.dispose();
+  const keep=setInterval(()=>{},1000); // 입구의 한도 타이머는 unref다 — 시험이 먼저 끝나지 않게 붙든다
+  const silent=createAtlasNext({owner:'acct-u3',storage:memoryStorage([],{switchOn:false}),trail:accountLine({get:()=>new Promise(()=>{})}).trail,load:fakeLoader().load,health:recorder(),switchAskMs:30});
+  try{assert.deepEqual(await silent.guestMove({watermarks:{}}),{failed:true},'답을 모르면 못 셈');}
+  finally{clearInterval(keep);silent.dispose();}
+ });
+});
+
+test('옮기기 물음 — 스위치를 아직 묻지 않은 계정이라도 새 길 손님 저장소가 없으면 기다리지 않고 곧 지금 판 물음이며 엔진을 받지 않는다(5-3 전 고침 E1 · GE1의 지킴)',async()=>{
+ await withDatabases(()=>[],async()=>{
+  const loader=counted(fakeLoader());
+  const next=createAtlasNext({owner:'acct-u4',storage:memoryStorage([],{switchOn:false}),trail:accountLine({get:()=>new Promise(()=>{})}).trail,load:loader.load,health:recorder()});
+  const t0=Date.now();
+  assert.equal(await next.guestMove({watermarks:{}}),null);
+  assert.ok(Date.now()-t0<200,'기다리지 않는다');
+  assert.equal(loader.loads,0,'엔진을 받지 않는다');
+  next.dispose();
+ });
+});
+
+test('옮기기 물음 한 바퀴 — 손님이 새 길에서 답 셋 → 이 기기에서 처음 로그인(스위치를 묻는 받기 0.3초 늦음) → 물음에 「짧은 진단·연습 · 답 3개」가 선다(5-3 전 고침 E1 · GE1)',{timeout:60_000},async()=>{
+ const {createDeviceRecordsOffer}=await import('../device-records.mjs');
+ const B_ID='66666666-6666-4666-8666-666666666666';
+ let now=Date.UTC(2026,10,25,1,0,0);
+ const time={now:()=>now,advance:ms=>{now+=ms;}};
+ const index=atlas.openMap({index:MAP_DATA.index}).foldIndex;
+ const server=createRehearsalTrail({atlas,index,now:time.now,warn:()=>{}});
+ let late=null; // 스위치를 묻는 받기(trail GET)만 늦춘다
+ const fetcher=async(url,init={})=>{
+  const u=new URL(url,'http://local'),path=u.pathname.replace('/api/world/rehearsal/',''),method=init.method??'GET';
+  if(path==='trail'&&method==='GET'&&late)await late;
+  const reply=await server.handle({account:{id:B_ID},path,method,query:u.searchParams,body:init.body?Buffer.from(init.body):undefined,headers:new Headers(init.headers)});
+  return {ok:reply.status<400,status:reply.status,json:async()=>reply.body};
+ };
+ const ports=new Map(),portOf=key=>{if(!ports.has(key))ports.set(key,atlas.memoryPort());return ports.get(key);};
+ const keyOf=host=>host.key??(host.guest?atlas.storeName({}):atlas.storeName({account:host.account,revision:host.revision}));
+ const load=async()=>({SynkAtlas:{load:async()=>atlas},coach:options=>{
+  const made=atlas.createCoach({...options,mapData:MAP_DATA,dayOffset:540,host:{...options.host,port:portOf(keyOf(options.host)),now:time.now}});
+  const wrapped=Object.fromEntries(Object.entries(made).map(([name,value])=>[name,typeof value==='function'?value.bind(made):value]));
+  wrapped.guestRecords=opts=>made.guestRecords({...opts,...(ports.has(atlas.storeName({}))?{port:ports.get(atlas.storeName({}))}:{})});
+  return wrapped;
+ }});
+ const storage=memoryStorage([],{switchOn:false});
+ await withDatabases(()=>[...ports.keys()],async()=>{
+  const guest=createAtlasNext({owner:'guest',storage,load,health:recorder()});
+  const session=createPracticeNextSession({plays:{allowedPlays,nextPlay},coach:await guest.practiceCoach(READING),pool:READING,length:3});
+  while(session.next()){if(!session.current.heard)session.delivery('completed');session.answer(session.current.item.correctId);time.advance(30_000);}
+  assert.equal((await session.settled()).length,3);
+  guest.dispose();
+  late=new Promise(resolve=>setTimeout(resolve,300));
+  const next=createAtlasNext({owner:B_ID,storage,trail:rehearsalTrail({fetcher}),load,health:recorder()});
+  let html=null;
+  const offer=createDeviceRecordsOffer({storage,learningStatus:()=>({accountKey:B_ID,revision:1}),present:view=>{html=view.html;},close(){},now:time.now,defer:fn=>fn(),toast(){},accountOwner:()=>B_ID});
+  const asked=offer.offer({owner:B_ID,generation:1},{atlas:input=>next.guestMove(input)});
+  await until(()=>html,6000);
+  late=null;
+  assert.ok(html.includes('짧은 진단·연습 · 답 3개'),`물음: ${html}`);
+  await offer.choose('keep',{owner:B_ID});
+  await asked;
+  next.dispose();
+ });
+});
+
+test('같은 판에서 쓰기 문이 열려 기기 길이 올리는 길이 되면 요약을 받기 전에는 표지가 기기 길 그대로다 — 오프라인 재개는 그 판의 기기 저장소를 열고, 요약을 받으면 올리는 길로 옮긴다(5-3 전 고침 GE2)',async()=>{
+ const owner='acct-ge2';
+ const storage=memoryStorage([[NEXT_MARK+owner,JSON.stringify({went:true,path:'device',revision:1})]]);
+ let online=true;
+ const line=accountLine({get:()=>new Promise(()=>{})});
+ const trail=async()=>{if(!online)throw fail(0,'NETWORK',{retryable:true});return line.trail();};
+ let base=false,heard=null;
+ const {load}=fakeLoader(()=>({...fakeCoach(),summary:()=>({storage:{base}}),watch:listener=>{heard=listener;return ()=>{heard=null;};}}));
+ const a=createAtlasNext({owner,storage,trail,load,health:recorder()});
+ const coach=await a.practiceCoach(POOL);
+ assert.equal(typeof coach?.options.host.transport?.get,'function','새 길에 간 적이 있어 요약 없이도 올리는 길(B4)');
+ assert.deepEqual(markOf(storage,owner),{went:true,path:'device',revision:1},'요약을 받기 전에는 같은 판의 길을 바꾸지 않는다');
+ online=false;
+ const b=createAtlasNext({owner,storage,trail,load,health:recorder()});
+ assert.equal((await b.practiceCoach(POOL))?.options.host.key,atlas.storeName({account:owner,revision:1,local:true}),'오프라인 재개는 그 판의 기기 저장소');
+ b.dispose();
+ base=true;
+ heard?.({kind:'receive'});
+ assert.deepEqual(markOf(storage,owner),{went:true,path:'upload',revision:1},'요약을 받으면 올리는 길로 옮긴다');
+ a.dispose();
+});
+
+test('판이 오른 기기 길 표지(판 1 → 계정 판 2)는 요약이 없어도 곧 올리는 길 판 2로 옮긴다(5-3 전 고침 GE2의 지킴 · B4)',async()=>{
+ const owner='acct-b4';
+ const storage=memoryStorage([[NEXT_MARK+owner,JSON.stringify({went:true,path:'device',revision:1})]]);
+ const next=createAtlasNext({owner,storage,trail:accountLine({revision:2,get:()=>new Promise(()=>{})}).trail,load:fakeLoader().load,health:recorder()});
+ assert.ok(await next.practiceCoach(POOL));
+ assert.deepEqual(markOf(storage,owner),{went:true,path:'upload',revision:2});
+ next.dispose();
+});

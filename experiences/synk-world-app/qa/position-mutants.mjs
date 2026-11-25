@@ -402,8 +402,22 @@ export const POSITION_MUTANTS = [
     'diagnostic',
     '고르기',
     '한 진단에 같은 세트에서 둘을 낸다',
-    '    if (left[0].setId) usedSets.add(left[0].setId);\n',
+    '    for (const item of row.left) if (!item.setId || !owner.has(item.setId)) return take(row, item);\n',
+    '    for (const item of row.left) return take(row, item);\n',
+  ],
+  [
+    'diagnostic',
+    '고르기',
+    '빈 지문이 없는 능력이 앞 능력을 옮겨 보지 않는다 — 앞 능력이 뒤 능력의 하나뿐인 처음 보는 문항의 지문을 쥐면 그 능력이 빠진다(5-3 전 고침 GF1)',
+    '    for (const item of row.left) {\n      if (visited.has(item.setId)) continue;\n      visited.add(item.setId);\n      if (place(owner.get(item.setId), visited)) return take(row, item);\n    }\n',
     '',
+  ],
+  [
+    'diagnostic',
+    '고르기',
+    '옮긴 능력의 옛 지문을 뒤 능력에게 넘기지 않는다 — 옮긴 뒤에도 뒤 능력이 빠진다(5-3 전 고침 GF1)',
+    '      if (place(owner.get(item.setId), visited)) return take(row, item);\n',
+    '      if (place(owner.get(item.setId), visited)) return false;\n',
   ],
   [
     'diagnostic',
@@ -1756,6 +1770,13 @@ export const POSITION_MUTANTS = [
   ["entry","스위치 먼저 묻기","켜짐 답을 기기에 적지 않는다 — 목록에 든 계정이 계속 지금 판이다","        writeSwitch(store, owner, { on: true });\n",""],
   ["entry","스위치 먼저 묻기","꺼짐 답을 기기에 적지 않는다","      if (asked === 'off') writeSwitch(store, owner, { on: false });\n",""],
   ["entry","스위치 먼저 묻기","켜짐 답을 받아도 같은 문서의 다음 연습을 새 길로 열지 않는다","          reopen('switch'); // 꺼짐 · 모르는 답 뒤 켜짐 — 지금 판으로 남은 면이 다시 묻는다(§19-3 7)\n",""],
+  // 5-3 전 고침 E1 · GE1 · GE2 · E2 — 스위치를 아직 묻지 않은 계정의 옮기기 물음, 같은 판의 길 바꾸기, 판 견줌의 표지.
+  ["entry","스위치 먼저 묻기","스위치를 아직 묻지 않은 계정의 옮기기 물음이 스위치 답을 기다리지 않는다 — 새 길 손님 답이 첫 로그인 물음에서 빠진다(5-3 전 고침 E1 · GE1)","        const asked = await now.plan.asking;\n","        const asked = null;\n"],
+  ["entry","스위치 먼저 묻기","스위치를 아직 묻지 않은 계정을 정해진 지금 판(SWITCH_UNKNOWN)으로 센다 — 옮기기 물음이 지금 판 물음이 된다(5-3 전 고침 E1 · GE1)","      return settled({ ...OLD('SWITCH_UNASKED'), asking });\n","      return settled({ ...OLD('SWITCH_UNKNOWN'), asking });\n"],
+  ["entry","스위치 먼저 묻기","새 길 손님 저장소가 없어도 스위치 답을 기다린다 — 목록 밖 계정의 로그인 물음이 늦고 엔진을 받는다(5-3 전 고침 E1 · GE1의 지킴)","        if (typeof trail !== 'function' || !(await storeMaybe(GUEST_STORE))) return null;\n","        if (typeof trail !== 'function') return null;\n"],
+  ["entry","첫 받기","같은 판의 기기 길 표지를 요약을 받기 전에 올리는 길로 덮는다 — 오프라인 재개가 빈 계정 저장소를 연다(5-3 전 고침 GE2)","      if (mark.revision !== plan.revision || mark.path === 'upload') return markWent(plan, at);\n","      return markWent(plan, at);\n"],
+  ["entry","첫 받기","같은 판의 기기 길 표지가 요약을 받은 뒤에도 기기 길에 남는다 — 다음 오프라인 재개가 앞 길을 연다(5-3 전 고침 GE2)","        markWent(plan, at);\n",""],
+  ["clear","비우기 입구","판 견줌이 새 길에 간 적 없는 기기에도 「새 길 간 적 있음」을 적는다 — 첫 받기가 실패해도 빈 저장소로 새 길을 연다(5-3 전 고침 E2)","  if (!was.went) return true;\n",""],
   ["entry", "판 응답 입구", "판 응답 읽기의 판 울타리를 판 다시 정하기로 잇지 않는다 — 앞 판의 목록을 준다", "          if (planFenced(error)) {\n", "          if (false) {\n"],
   ["entry", "판 응답 입구", "동의 꺼짐(403 LEARNING_DISABLED)을 판이 바뀐 것으로 보지 않는다", "    (error?.status === 403 && error?.code === 'LEARNING_DISABLED');\n", "    false;\n"],
   // ── 4-5 「내가 남긴 응답」 · 짧은 연습 길이의 셸(4-5 코드 검수 GPT GA8 · GA9) ──

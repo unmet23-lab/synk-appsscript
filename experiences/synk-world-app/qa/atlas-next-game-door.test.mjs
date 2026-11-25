@@ -468,3 +468,87 @@ test('게임 문 — ③ 후보의 문 기다림 줄과 master의 문 기다림�
     if (want === 'opened') assert.equal(step3.door, setting.door === false ? null : 'door', `열면 문을 둔다 — ${name}`);
   }
 });
+
+// 셸 원문의 게임 표(games)를 그 자리의 이름으로 돌려 게임마다 주소를 읽는다. 표는 드라마 칸(drama:{…}})으로 끝난다.
+function gamesOf(shell) {
+  const from = shell.indexOf('const games={');
+  const to = shell.indexOf('};', shell.indexOf('drama:{', from)) + 1;
+  return new Function('scope', `with(scope){return (${shell.slice(from + 'const games='.length, to)});}`)({ t: key => key, life: { progress: null }, currentLang: () => 'ko' });
+}
+// 셸 원문의 launchGame에서 실제로 도는 문 줄 하나를 꺼낸다. master 줄(if(atlasNextOn){…)이 없으면 옛 줄(if(life.atlasNext?.gameDoor){…)이다.
+// 주석 안의 줄은 문이 아니다 — 옛 줄을 둔 채 고친 줄을 주석에 넣은 셸이 통과했다(5-3 전 고침 검수 GPT GA1). 그래서 문을 두는 자리
+// (window.SYNKAtlasGame=)가 하나이고, 짧은 이름(id)으로 문을 청하는 줄이 없고, 꺼낸 줄이 줄 주석 · 블록 주석 안에 있지 않아야 한다.
+function doorOf(shell) {
+  const start = shell.indexOf('async function launchGame(');
+  const body = shell.slice(start, shell.indexOf('\n}\n', start));
+  assert.equal([...body.matchAll(/window\.SYNKAtlasGame=(?!=)/g)].length, 1, '문을 두는 자리는 하나');
+  assert.ok(!body.includes('.gameDoor(id)'), '짧은 이름(id)으로 문을 청하는 줄이 없다');
+  const end = 'window.SYNKAtlasGame=gameDoor.api;}';
+  const to = body.indexOf(end) + end.length;
+  const master = body.lastIndexOf('if(atlasNextOn){const doorTicket=gameLaunch;', to);
+  const from = master >= 0 ? master : body.lastIndexOf('if(life.atlasNext?.gameDoor){', to);
+  assert.ok(from >= 0 && to > from, '문 줄을 찾았다');
+  assert.ok(!body.slice(body.lastIndexOf('\n', from) + 1, from).includes('//'), '문 줄이 줄 주석 안에 있지 않다');
+  assert.ok(body.lastIndexOf('/*', from) <= body.lastIndexOf('*/', from), '문 줄이 블록 주석 안에 있지 않다');
+  return body.slice(from, to);
+}
+// 문 줄 하나를 진짜 새 길 입구의 gameDoor로 돌린다. on은 깃발 atlasNext다. 꺼진 판의 셸은 입구를 받지 않는다(life.atlasNext null).
+async function launchScene(statement, { id, listed, entry, on = true }) {
+  const asked = [];
+  let ensured = false;
+  const scope = {
+    gameLaunch: 1,
+    worldPanel: { open: false },
+    loadingShown: false,
+    atlasNextOn: on,
+    life: {
+      ensure: async () => {
+        ensured = true;
+      },
+      atlasNext: on ? { gameDoor: async name => (asked.push(name), entry.gameDoor(name)) } : null,
+    },
+    home: { openPanel: () => '' },
+    session: null,
+    gameDoor: null,
+    window: {},
+    id,
+    listed,
+  };
+  const result = await new Function('scope', `return (async function(){with(scope){${statement}\nreturn 'opened';}})();`)(scope);
+  const door = scope.window.SYNKAtlasGame ?? null;
+  scope.gameDoor?.dispose?.();
+  return { result: result ?? 'stopped', path: door ? 'new' : 'old', asked: asked[0] ?? null, ensured };
+}
+
+// 5-3 전 고침 GD2. 라이브 셸은 짧은 이름(id)으로 문을 청해 입구가 문을 두지 않았다(은행 표의 열쇠는 주소 폴더 이름이다). 5-3 사슬에서는 5-3 후보
+// app-shell을 SYNK_APP_SHELL_SOURCE로 넘겨 돌린다. master 셸에는 이미 고친 줄이 있어, 넘기지 않으면 master 셸을 본다.
+test('게임 문 두 방향 — 옛 셸(③ 라이브 줄)과 새 입구는 옛 길, 새 셸과 새 입구는 게임 넷(레이싱 · 바람길 · 말의 리듬 · 환승 러시)이 새 길이다. 꺼진 판은 문 줄을 건너뛴다(설계 주인 11-25 · 5-3 전 고침 GD2)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { createAtlasNext } = await import('../world-atlas-next.mjs');
+  const entry = createAtlasNext({
+    owner: 'guest',
+    storage: null,
+    health: { note() {}, snapshot: () => ({}) },
+    load: async () => ({
+      coach: () => ({ ready: Promise.resolve(), summary: () => ({ storage: { base: true } }), dispose() {} }),
+      SynkAtlas: { load: async () => ({}) },
+    }),
+  });
+  const shell = readFileSync(process.env.SYNK_APP_SHELL_SOURCE ?? new URL('../app-shell.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const games = gamesOf(shell);
+  const door = doorOf(shell);
+  const want = { racing: 'korean-racing', runner: 'korean-runner', rhythm: 'korean-rhythm', subway: 'subway-rush' };
+  for (const [id, folder] of Object.entries(want)) {
+    assert.equal(String(games[id]?.path).split(/[/?#]/)[0], folder, `셸 게임 표 — ${id}의 주소 폴더`);
+    // 옛 셸과 새 입구: 짧은 이름으로 청해 문이 없고 옛 길로 연다. 캐시의 옛 셸이 10분 섞임 창에서 만나는 한계다.
+    const old = await launchScene(STEP3_DOOR, { id, listed: games[id], entry });
+    assert.deepEqual([old.result, old.asked, old.path], ['opened', id, 'old'], `옛 셸 + 새 입구 — ${id}`);
+    // 새 셸과 새 입구: 게임 이름(주소 폴더)으로 청해 문이 서고 새 길로 연다.
+    const fresh = await launchScene(door, { id, listed: games[id], entry });
+    assert.deepEqual([fresh.result, fresh.asked, fresh.path], ['opened', folder, 'new'], `새 셸 + 새 입구 — ${id}`);
+    // 꺼진 판: 문 줄을 건너뛰고 생활 세션도 기다리지 않는다.
+    const off = await launchScene(door, { id, listed: games[id], entry, on: false });
+    assert.deepEqual([off.result, off.asked, off.path, off.ensured], ['opened', null, 'old', false], `꺼진 판 — ${id}`);
+  }
+  entry.dispose();
+});

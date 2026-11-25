@@ -105,8 +105,12 @@ export function legacyReader(storage) {
 }
 // 옮기기 물음을 지금 판 물음(null)으로 보내는 지금 판의 까닭 — 스위치 꺼짐 · 길(trail)을 받지 않은 셸 · 기기 길 계정의 스위치 모름 · 기기
 // 길로 확인된 계정이 엔진만 못 받음(기기 길은 손님 기록을 올리지 않는다 — 다시 A2, 그 판은 붙들지 않아 다음 연습에서 다시 정한다).
-// 그 밖의 지금 판(계정을 못 읽음 · 첫 받기 실패 등)은 「못 셈」이다.
+// SWITCH_UNKNOWN은 기기 길로 확인된 계정이 스위치 답을 못 받은 갈래만이다. 스위치를 아직 묻지 않은 계정(SWITCH_UNASKED)은 여기 들지 않는다 —
+// 옮기기 물음이 그 답을 기다려 정한다(5-3 전 고침 E1 · GE1). 그 밖의 지금 판(계정을 못 읽음 · 첫 받기 실패 등)은 「못 셈」이다.
 const SETTLED_OLD = new Set(['SWITCH_OFF', 'NO_TRAIL', 'SWITCH_UNKNOWN', 'DEVICE_UNLOADED']);
+// 새 길 손님 저장소의 이름이다(엔진 storeName({})과 같다 — 입구는 앞 판 쓸기에서 이미 저장소 이름 꼴을 안다). 스위치를 아직 묻지 않은 계정의
+// 옮기기 물음이 엔진을 받지 않고 이 저장소가 있는지만 본다.
+const GUEST_STORE = 'synk-atlas:guest';
 // 옮길 것이 없다는 답(손님 저장소도 고를 옛 기록도 없다) — 물음에 학습 줄을 넣지 않고 다녀감 표지도 쓰지 않는다.
 const NOTHING_TO_MOVE = () => ({ attempts: 0, events: 0, none: true, note: async () => false, close() {} });
 // 지금 판 규칙(pick)으로 고를 옛 기기 기록이 있나 — 못 읽으면 없다, 고르기가 던지면 있다고 본다(만들어 세는 쪽이 빠뜨리지 않는다).
@@ -245,6 +249,9 @@ function writeMark(storage, owner, patch) {
 // 늦게 온 읽기가 확인 전에 같은 판의 길을 덮지 않게(입구 다시 검수 -d A1). 판 정하기 끝 · 판 견줌이 쓴다.
 function advanceMark(storage, owner, path, revision) {
   const was = markOf(storage, owner);
+  // 새 길에 간 적 없는 기기의 표지는 첫 받기(markWent)만 적는다 — 판 견줌이 먼저 적으면 첫 받기가 실패해도 빈 저장소로 새 길을 열었다(5-3 전
+  // 고침 E2).
+  if (!was.went) return true;
   if (was.revision != null && was.revision >= revision) return true;
   return writeMark(storage, owner, { went: true, path, revision });
 }
@@ -911,8 +918,10 @@ export function createAtlasNext({
     // 받고 첫 받기(최대 4초)를 기다렸다. 답은 뒤에서 묻고(하루 상한), 켜짐이면 다음 연습부터 새 길이다.
     const known = switchOf(store, owner).on;
     if (!mark.went && known !== true) {
-      void recheck(at);
-      return settled(OLD(known === false ? 'SWITCH_OFF' : 'SWITCH_UNKNOWN'));
+      const asking = recheck(at);
+      if (known === false) return settled(OLD('SWITCH_OFF'));
+      // 아직 답을 모른다 — 연습은 지금 판이고, 옮기기 물음은 이 물음의 답(asking)을 기다려 센다(5-3 전 고침 E1 · GE1).
+      return settled({ ...OLD('SWITCH_UNASKED'), asking });
     }
     if (typeof trail !== 'function') return settled(OLD('NO_TRAIL'));
     let line;
@@ -1042,6 +1051,7 @@ export function createAtlasNext({
   }
   // at: 꺼짐 표지로 지금 판을 정한 판(세대). 다시 물어 켜졌으면 표지를 지우고, 그 판이 아직 지금 판이면 정한 것을 비운다 — 다음 연습(코치를
   // 청할 때)이 다시 정해 새 길로 간다(새로고침을 기다리지 않는다 — 끝 판 GB2, 첫 받기를 다른 코치가 확인한 markWent와 같은 갈래).
+  // 풀린 값은 물음의 답('on' · 'off' · 모름)이다. 묻지 못했으면(길 없음 · 하루 상한 · 줄 꼴) undefined다 — 옮기기 물음이 기다려 읽는다.
   async function recheck(at) {
     if (typeof trail !== 'function') return;
     if (!spendAsk(store, owner, now())) return; // 계정마다 하루 상한(§6 「1단계 켜기」 4)
@@ -1059,6 +1069,7 @@ export function createAtlasNext({
           reopen('switch'); // 꺼짐 · 모르는 답 뒤 켜짐 — 지금 판으로 남은 면이 다시 묻는다(§19-3 7)
         }
       }
+      return asked;
     } catch {
       // 다음 시작에 다시 묻는다
     }
@@ -1151,7 +1162,24 @@ export function createAtlasNext({
   // at: 이 코치를 연 판(세대) — 여는 사이(준비 · 첫 받기) 판을 다시 정했으면 앞 판의 코치는 표지를 쓰지 않는다: 늦게 준비된 판 1 코치가
   // 판 2의 표지를 판 1로 되돌려 다음 오프라인 재개가 앞 판을 열던 것(끝 판 둘째 C).
   async function confirmed(made, plan, at) {
-    if (plan.went || made.summary().storage.base) return markWent(plan, at);
+    if (made.summary().storage.base) return markWent(plan, at);
+    if (plan.went) {
+      // 새 길에 간 적 있는 계정은 요약이 없어도 새 길로 연다(B4). 다만 표지가 같은 판의 기기 길이면 요약을 받은 뒤에 올리는 길로 옮긴다 — 곧
+      // 옮기면 오프라인 재개가 아직 요약이 없는 계정 저장소를 열어 기기 길의 답이 보이지 않았다(5-3 전 고침 GE2 · 같은 판의 길은 확인된 쪽만
+      // 바꾼다 — 입구 다시 검수 -d A1). 판이 오른 표지와 이미 올리는 길인 표지는 지금처럼 곧 적는다.
+      const mark = markOf(store, owner);
+      if (mark.revision !== plan.revision || mark.path === 'upload') return markWent(plan, at);
+      const off = made.watch?.(() => {
+        try {
+          if (disposed || at !== generation || !made.summary().storage.base) return;
+        } catch {
+          return;
+        }
+        off?.();
+        markWent(plan, at);
+      });
+      return !disposed && at === generation;
+    }
     const first = await made.synced(firstSyncMs);
     if (disposed || at !== generation) return false;
     // 같은 판의 다른 코치(옮기기 물음 · 다른 은행)가 그사이 새 길을 확인했으면 그대로 새 길이다.
@@ -1885,8 +1913,20 @@ export function createAtlasNext({
     //   답이 아니면 표지 없이).
     async guestMove({ watermarks = {}, pick = events => events } = {}) {
       if (!account || disposed) return null;
-      const now = await planNow();
+      let now = await planNow();
       if (disposed) return null;
+      // 스위치를 아직 묻지 않은 계정(이 기기의 첫 로그인)이다. 새 길 손님 저장소가 있으면 그 물음의 답을 기다려 센다 — 지금 판 물음으로 보내면
+      // 셸 물음이 새 길 손님 답을 세지 않고, 로그아웃 뒤에는 기준 시각 경계로 영영 빠졌다(5-3 전 고침 E1 · GE1). 저장소가 없으면 곧 지금 판
+      // 물음이다(엔진을 받지 않는다). 꺼짐이면 지금 판 물음, 답을 모르면 「못 셈」, 켜짐이면 판을 다시 정해 이어 센다.
+      if (now?.plan.path === 'old' && now.plan.code === 'SWITCH_UNASKED') {
+        if (typeof trail !== 'function' || !(await storeMaybe(GUEST_STORE))) return null;
+        const asked = await now.plan.asking;
+        if (disposed) return null;
+        if (asked === 'off') return null;
+        if (asked !== 'on') return { failed: true };
+        now = await planNow();
+        if (disposed) return null;
+      }
       if (!now) return { failed: true }; // 판을 못 정했다(기다리는 사이 판이 거듭 바뀜) — 「못 셈」
       const { plan, at } = now;
       // 계정을 못 읽은 채 표지로 연 판(올리는 길 · 기기 길) — 판을 확인하지 못했고 옛 POST(계정 줄)도 없어 세지 않는다(「못 셈」 — 기준

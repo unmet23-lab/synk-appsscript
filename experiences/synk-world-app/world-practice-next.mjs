@@ -171,6 +171,26 @@ export function createPracticeNextSession({
     const again = coach.recommend(candidates, { audio: audioAvailable, lang, pool: 'unseen' });
     return again.status !== 'none' && fresh(again.selected) ? again : { ...again, fresh: false };
   }
+  // 판 길이를 다 낸 뒤, 다음 판이 첫 문항을 낼 수 있는지 묻는다(5-3 전 고침 GH3). 판을 열지 않는 plan으로 묻고, plan은 학습자 상태를 바꾸지
+  // 않는다. 엔진이 겨눌 것(다시 · 돌아온 것 · 새 단위, 층 2 이하)이 있거나 처음 보는 문항을 낼 수 있으면 다음 판이 선다. 처음 보는 문항이
+  // 남았는데 둘 다 아니면 하루 새 말 한도에 걸린 것이라 끝 까닭을 limited로 둔다. 「새 말 더 배우기」로 연 판(more)과 그 뒤 판은 그 한도에
+  // 걸리지 않아 묻지 않는다. 하루 복습 상한에 걸린 날(capped)은 plan이 둘을 가르지 않아 지금처럼 done이다.
+  function limitedNext() {
+    const left = pool.filter(fresh);
+    if (more || !left.length || typeof coach.plan !== 'function') return false;
+    try {
+      const rows = coach.plan([
+        { id: 'pool', candidates: pool },
+        { id: 'fresh', candidates: left },
+      ]);
+      const row = id => rows.find(entry => entry.id === id);
+      const aimed = row('pool');
+      if (aimed && !aimed.none && !aimed.idle && aimed.tier <= 2) return false;
+      return row('fresh')?.none === true && rows.capped !== true;
+    } catch {
+      return false;
+    }
+  }
   // 판을 닫는다(판 기록은 셸이 응답과 함께 — 여기서는 닫기만).
   function closeSet() {
     try {
@@ -215,7 +235,7 @@ export function createPracticeNextSession({
       index += 1;
       current = null;
       if (index >= length) {
-        ending = { kind: 'done' };
+        ending = { kind: limitedNext() ? 'limited' : 'done' };
         closeSet();
         return null;
       }
