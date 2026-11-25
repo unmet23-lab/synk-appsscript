@@ -927,7 +927,8 @@
         "노래": "미정"
       },
       "postRoute": "telegram-web",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
+      "postRouteVerifiedNote": "2026-11-25 첫 판(LAB_배_mn_20261105, t.me/synklab_uz/5)이 타슈켄트 11-24 13:00에 공개된 것을 로그인 없는 t.me 쪽으로 대조(캡션 280자 원고와 같음). t.me 쪽은 영상이 커서 재생을 안 주므로 재생 · 소리는 소유자 텔레그램 웹에서 읽음(17.6초 · 1080×1920 · 소리 있음)",
       "postRoutePolicy": "unknown",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
