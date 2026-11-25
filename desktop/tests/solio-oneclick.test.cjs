@@ -2,6 +2,8 @@
 // 솔리오 「원클릭」(11-23)의 본체 쪽(src/solio-oneclick.cjs, src/solio-backup.cjs의 oneClick · snapshot)과 판의 글(renderer/solio-backup-model.mjs) 시험.
 // 설계: docs/디자인/솔리오_원클릭_20261123/PC앱_옮기기.md(Fable 설계 검토 반영). 엔진 쪽 요청 처리기(engine/src/solio.cjs SolioFiles)로
 // 우리가 쓴 run-now 요청을 실제로 가져가 답하게 해 본다.
+// 방의 글은 그 PC의 시간대로 쓴다. CI는 UTC라서 「오늘 오후 5:50」이 「오늘 오전 8:50」이 되므로, 이 파일은 늘 한국 시간으로 잰다.
+process.env.TZ = 'Asia/Seoul';
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -29,18 +31,24 @@ function appdata({ status = SAFE, space } = {}) {
   if (space !== undefined) fs.writeFileSync(path.join(solio, 'space.json'), typeof space === 'string' ? space : JSON.stringify(space));
   return { env: { APPDATA: dir }, paths: B.statusPaths({ APPDATA: dir }), root: path.join(dir, 'SynkWorkBackup') };
 }
+/* 레지스트리가 답하는 설치 자리는 Windows 경로다. Linux에서도 같은 길을 타도록, 그 경로의 실행 파일만 임시 폴더의 것으로 잇는다(solio-backup.test.cjs와 같다) */
+const fixtureRunners = new Map();
+function engineFiles(io = fs.promises) {
+  return { ...io, stat: (file, ...args) => io.stat(fixtureRunners.get(file) ?? file, ...args) };
+}
 /* 엔진 설치 확인과 요청 작업 깨우기의 가짜. 깨우기는 부른 횟수만 센다 */
 function fakeRun(log = []) {
-  const exe = temp();
-  fs.writeFileSync(path.join(exe, 'WorkBackupRun.exe'), 'x');
+  const exe = temp(), nativeFile = path.join(exe, 'WorkBackupRun.exe'), installDir = path.win32.join('C:\\Solio test programs', path.basename(exe));
+  fs.writeFileSync(nativeFile, 'x');
+  fixtureRunners.set(path.win32.join(installDir, 'WorkBackupRun.exe'), nativeFile);
   return async (script, opts) => {
     if (script === O.WAKE_SCRIPT) { log.push(opts.env); return log.answer ?? 'started'; }
-    return JSON.stringify({ loc: exe, ver: '0.7.0' });
+    return JSON.stringify({ loc: installDir, ver: '0.7.0' });
   };
 }
 function service(a, extra = {}) {
-  const log = extra.log || [];
-  return { log, s: B.createSolioBackup({ platform: 'win32', env: a.env, run: fakeRun(log), previewAccounts: MINE, request: async () => { throw Object.assign(new Error('no net'), { code: 'ENOTFOUND' }); }, ...extra }) };
+  const log = extra.log || [], io = extra.fsImpl ?? fs;
+  return { log, s: B.createSolioBackup({ platform: 'win32', env: a.env, run: fakeRun(log), previewAccounts: MINE, request: async () => { throw Object.assign(new Error('no net'), { code: 'ENOTFOUND' }); }, ...extra, fsImpl: { ...io, promises: engineFiles(io.promises) } }) };
 }
 const requests = a => fs.readdirSync(a.paths.requests).filter(n => n.endsWith('.json'));
 const marks = a => fs.readdirSync(a.paths.requests).filter(n => n.endsWith('.cancel'));

@@ -333,7 +333,8 @@ test('a run reads the status first and sends its measurement when the worker sto
   const kept = cleanBatch(sent[0]);
   assert.deepEqual(kept.runs.map((r) => [r.trigger, r.result, r.pause]), [['hourly', 'skipped', 'none']]);
   assert.equal(kept.dropped.unknownFields, 0); assert.equal(kept.dropped.items, 0);
-  assert.equal(kept.env.appVersion, '0.7.0');
+  // The version the app says everywhere (update.test.cjs 「one version everywhere」), so a new release does not break this.
+  assert.equal(kept.env.appVersion, require('../../package.json').version);
   // Moved: even the person's run rests. Offline: the run is queued and goes with the next one.
   status = { device: { state: 'moved', movedTo: { id: OLD, name: '새 노트북' } } }; offline = true;
   assert.deepEqual((await run('manual')).profiles.b2, { outcome: 'skipped', reason: 'moved' });

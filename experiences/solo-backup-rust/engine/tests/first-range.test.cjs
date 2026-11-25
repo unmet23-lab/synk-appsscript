@@ -8,6 +8,9 @@ const os = require('node:os');
 const path = require('node:path');
 const { FirstRange, pickRange, decide, totals, homeProjects, GB } = require('../src/first-range.cjs');
 
+// 범위는 Windows 경로(드라이브 글자, 사용자 폴더)로 정하므로 Linux에서는 뜻이 없다(mass-hold.test.cjs와 같다)
+const windowsPaths = process.platform !== 'win32' && 'Windows 경로 규칙을 보는 시험 — GitHub Windows에서 돈다(tools/conditional-qa)';
+
 const cand = (raw, category, evidence, bytes = 0, { state = 'present', incomplete = [], files = 10 } = {}) =>
   ({ path: { raw, display: raw, lossy: false }, category, evidence: [].concat(evidence), state, configured_coverage: 'none', stats: { files, logical_bytes: bytes, extensions: {}, incomplete, excluded: [] } });
 const P = 'C:\\Users\\kim';
@@ -16,7 +19,7 @@ const inventory = (candidates, complete = true) => ({ schema_version: 1, scan_co
 const measured = (rows, sizes = {}) => rows.map((r) => ({ ...r, measured: true, partial: false, ...(sizes[path.win32.basename(r.path)] !== undefined ? { bytes: sizes[path.win32.basename(r.path)] } : {}) }));
 const byName = (rows) => Object.fromEntries(rows.map((r) => [path.win32.basename(r.path), r]));
 
-test('범위 고르기: 알려진 폴더, 찾아낸 작업 폴더, AI 폴더, 넣지 않는 자리', () => {
+test('범위 고르기: 알려진 폴더, 찾아낸 작업 폴더, AI 폴더, 넣지 않는 자리', { skip: windowsPaths }, () => {
   const inv = inventory([
     known('Desktop', 1 * GB), known('Documents', 30 * GB), known('Pictures', 2 * GB), known('Downloads', 25 * GB), known('Music', 1 * GB), known('Videos', 3 * GB),
     // 문서 안의 프로젝트는 따로 세우지 않고, 큰 것은 「가장 큰 안쪽 폴더」로만 보인다
@@ -53,7 +56,7 @@ test('범위 고르기: 알려진 폴더, 찾아낸 작업 폴더, AI 폴더, �
   assert.deepEqual([d['.claude'].why, d.models.why], ['aitool', 'ai']);
 });
 
-test('넣기 규칙: 바탕화면 · 문서는 예산을 넘어도 넣고, 작은 것만 넣는 무리는 80GB 예산과 다 센 크기로 정한다', () => {
+test('넣기 규칙: 바탕화면 · 문서는 예산을 넘어도 넣고, 작은 것만 넣는 무리는 80GB 예산과 다 센 크기로 정한다', { skip: windowsPaths }, () => {
   const r = pickRange(inventory([known('Desktop', 0), known('Documents', 75 * GB), known('Pictures', 3 * GB), known('Music', 3 * GB), known('Videos', 1 * GB)]));
   const d = byName(decide(measured(r.folders)));
   assert.equal(d.Documents.on, true);
@@ -76,7 +79,7 @@ test('넣기 규칙: 바탕화면 · 문서는 예산을 넘어도 넣고, 작�
   assert.deepEqual(t, { bytes: 5, files: 1, partial: false, count: 1 });
 });
 
-test('범위 고르기: 드라이브 전체로 옮긴 알려진 폴더, 겹친 알려진 폴더, 24곳 상한과 부모 묶기', () => {
+test('범위 고르기: 드라이브 전체로 옮긴 알려진 폴더, 겹친 알려진 폴더, 24곳 상한과 부모 묶기', { skip: windowsPaths }, () => {
   // 사진이 문서 안에 있어도 두 줄을 다 둔다(합은 바깥 것만 센다, GPT GA4). 드라이브 전체인 폴더는 넣지 않고 까닭을 보인다(Fable F11)
   const r = pickRange(inventory([known('Documents', 1), cand(`${P}\\Documents\\Pictures`, 'irreplaceable', 'known_folder_Pictures', 1), cand('D:\\', 'irreplaceable', 'known_folder_Videos', 1)]));
   assert.deepEqual(r.folders.map((f) => [f.kind, f.why]), [['documents', null], ['pictures', null], ['videos', 'whole']]);
@@ -139,7 +142,7 @@ function fakeExec({ home, sizes = {}, fail = false, calls = [], hold = null, ski
 }
 const settle = async (r) => { for (let i = 0; i < 200 && (r.finding || r.active || r.queue.length); i++) { await r.finding; await new Promise((x) => setTimeout(x, 5)); } };
 
-test('범위 찾기: 진단 뒤 계획기로 줄마다 세고, 보고서 폴더를 지우고, 사용자 폴더 맨 위 프로젝트를 더한다', async () => {
+test('범위 찾기: 진단 뒤 계획기로 줄마다 세고, 보고서 폴더를 지우고, 사용자 폴더 맨 위 프로젝트를 더한다', { skip: windowsPaths }, async () => {
   const { base, home, state } = await sandbox();
   const calls = [];
   const r = new FirstRange({ root: state, inventoryPath: 'C:\\x\\inv.exe', plannerPath: 'C:\\x\\plan.exe', exec: fakeExec({ home, sizes: { Videos: 30 * GB }, calls }), home, forbidden: () => [state] });
@@ -170,7 +173,7 @@ test('범위 찾기: 진단 뒤 계획기로 줄마다 세고, 보고서 폴더�
   await fs.rm(base, { recursive: true, force: true });
 });
 
-test('넣기 · 빼기 · 추가 보호와 다시 찾기: 손님이 바꾼 것은 다시 찾아도 남는다', async () => {
+test('넣기 · 빼기 · 추가 보호와 다시 찾기: 손님이 바꾼 것은 다시 찾아도 남는다', { skip: windowsPaths }, async () => {
   const { base, home, state } = await sandbox();
   const extra = path.join(base, 'extra'); await fs.mkdir(path.join(extra, 'inner'), { recursive: true });
   let now = Date.parse('2026-11-25T03:00:00Z');
@@ -215,7 +218,7 @@ test('넣기 · 빼기 · 추가 보호와 다시 찾기: 손님이 바꾼 것�
   await fs.rm(base, { recursive: true, force: true });
 });
 
-test('GPT 검수(GA3 · GA6 · GA7 · GA11): 빼 둔 줄 더하기, 진단이 놓친 줄, 더한 줄 다시 세기, 닫는 중', async () => {
+test('GPT 검수(GA3 · GA6 · GA7 · GA11): 빼 둔 줄 더하기, 진단이 놓친 줄, 더한 줄 다시 세기, 닫는 중', { skip: windowsPaths }, async () => {
   const { base, home, state } = await sandbox();
   const extra = path.join(base, 'extra'); await fs.mkdir(extra);
   let now = Date.parse('2026-11-25T03:00:00Z');
@@ -248,7 +251,7 @@ test('GPT 검수(GA3 · GA6 · GA7 · GA11): 빼 둔 줄 더하기, 진단이 �
   await fs.rm(base, { recursive: true, force: true });
 });
 
-test('GPT 검수(GA5 · GA8): 넣은 줄 안의 줄은 손님이 뺐어도 「함께 지킵니다」로 보이고, 넣은 곳이 30곳을 넘으면 저절로 넣은 줄을 뺀다', () => {
+test('GPT 검수(GA5 · GA8): 넣은 줄 안의 줄은 손님이 뺐어도 「함께 지킵니다」로 보이고, 넣은 곳이 30곳을 넘으면 저절로 넣은 줄을 뺀다', { skip: windowsPaths }, () => {
   const r = new FirstRange({ root: 'C:\\x\\state', inventoryPath: 'C:\\x\\inv.exe', plannerPath: 'C:\\x\\plan.exe', exec: async () => '{}', home: 'C:\\Users\\kim' });
   const m = (p, kind, bytes) => ({ path: p, kind, bytes, files: 1, partial: false, measured: true, on: false, why: null, inner: null, grouped: 0 });
   r.data = { v: 2, at: '2026-11-25T03:00:00Z', complete: true, failed: null, more: 0, folders: [m('D:\\Saved\\Documents', 'documents', 1 * GB)],
@@ -335,7 +338,7 @@ test('빼기 규칙 한 곳(engine.cjs, Fable 설계 검토 자리 1): 채움 �
   assert.ok(!pickRange(inventory([cand('D:\\p\\node_modules\\pkg', 'irreplaceable', 'project_manifest_name_only', 1), cand('D:\\work\\app', 'irreplaceable', 'git_marker_name_only', 1)])).folders.some((f) => /node_modules/.test(f.path)));
 });
 
-test('진단이 실패하면 「다 읽지 못했습니다」로 두고 추가 보호로 고른다 · 1.5배를 넘거나 세는 중이면 시작을 막는다', async () => {
+test('진단이 실패하면 「다 읽지 못했습니다」로 두고 추가 보호로 고른다 · 1.5배를 넘거나 세는 중이면 시작을 막는다', { skip: windowsPaths }, async () => {
   const { base, home, state } = await sandbox();
   let release; const hold = new Promise((y) => { release = y; });
   const r = new FirstRange({ root: state, inventoryPath: 'C:\\x\\inv.exe', plannerPath: 'C:\\x\\plan.exe', exec: fakeExec({ home, fail: true, sizes: { Documents: 200 * GB }, hold }), home, forbidden: () => [state] });
@@ -354,7 +357,7 @@ test('진단이 실패하면 「다 읽지 못했습니다」로 두고 추가 �
   await fs.rm(base, { recursive: true, force: true });
 });
 
-test('사용자 폴더 맨 위의 프로젝트: 그 폴더나 바로 아래에 프로젝트 표시가 있으면 낸다(Fable F9)', async () => {
+test('사용자 폴더 맨 위의 프로젝트: 그 폴더나 바로 아래에 프로젝트 표시가 있으면 낸다(Fable F9)', { skip: windowsPaths }, async () => {
   const { base, home } = await sandbox();
   await fs.mkdir(path.join(home, 'repo-top', '.git'), { recursive: true });
   await fs.mkdir(path.join(home, 'AppData', 'x', '.git'), { recursive: true });

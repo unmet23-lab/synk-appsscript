@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 222,
+  "expectedCount": 234,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1779,6 +1779,102 @@
       "file": "desktop/tests/solio-backup.test.cjs",
       "name": "GPT r9 GA1 · Opus design: a second app run sharing the folder keeps a live run's request and clears a finished run's, by the run's held owner file",
       "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S223",
+      "file": "experiences/solo-backup-rust/tests/worker-boot.test.cjs",
+      "name": "the window worker starts outside test mode before protection and searches the range (0.7.4 CI BOOT)",
+      "group": "업무 백업 1단계 — 창 워커 시작(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S225",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "범위 고르기: 알려진 폴더, 찾아낸 작업 폴더, AI 폴더, 넣지 않는 자리",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S226",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "넣기 규칙: 바탕화면 · 문서는 예산을 넘어도 넣고, 작은 것만 넣는 무리는 80GB 예산과 다 센 크기로 정한다",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S227",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "범위 고르기: 드라이브 전체로 옮긴 알려진 폴더, 겹친 알려진 폴더, 24곳 상한과 부모 묶기",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S228",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "범위 찾기: 진단 뒤 계획기로 줄마다 세고, 보고서 폴더를 지우고, 사용자 폴더 맨 위 프로젝트를 더한다",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S229",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "넣기 · 빼기 · 추가 보호와 다시 찾기: 손님이 바꾼 것은 다시 찾아도 남는다",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S230",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "GPT 검수(GA3 · GA6 · GA7 · GA11): 빼 둔 줄 더하기, 진단이 놓친 줄, 더한 줄 다시 세기, 닫는 중",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S231",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "GPT 검수(GA5 · GA8): 넣은 줄 안의 줄은 손님이 뺐어도 「함께 지킵니다」로 보이고, 넣은 곳이 30곳을 넘으면 저절로 넣은 줄을 뺀다",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S235",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "진단이 실패하면 「다 읽지 못했습니다」로 두고 추가 보호로 고른다 · 1.5배를 넘거나 세는 중이면 시작을 막는다",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S236",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "사용자 폴더 맨 위의 프로젝트: 그 폴더나 바로 아래에 프로젝트 표시가 있으면 낸다(Fable F9)",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S241",
+      "file": "desktop/tests/solio-oneclick.test.cjs",
+      "name": "a requests folder that is a junction gets no request",
+      "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S242",
+      "file": "desktop/tests/solio-backup-electron.test.cjs",
+      "name": "Electron main process: BLAKE2b, engine keys, minisign and feed checks, and the install path up to the administrator prompt",
+      "group": "솔리오 백업의 Electron 본체 동작",
       "route": "windows",
       "profile": "default"
     }

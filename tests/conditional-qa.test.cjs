@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 222);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 121, linux: 16, local: 85 });
+  assert.equal(check(root), 234);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 133, linux: 16, local: 85 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -28,12 +28,14 @@ test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly th
   assert.deepEqual(rows.map(row => row.name).sort(), skipping.sort());
   for (const row of rows) assert.deepEqual([row.route, row.profile, row.file], ['windows', 'default', 'tests/tmp자동정리.test.js']);
 });
-test('Windows-only Solio backup and tray tests have Windows CI coverage', () => {
-  const declaration = /^test\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*,\s*\{\s*skip\s*:\s*([^}]+)\}/gm;
-  for (const file of ['desktop/tests/solio-backup.test.cjs', 'desktop/tests/platform-tray-memory.test.cjs']) {
+test('Windows-only Solio backup, one-click, Electron and tray tests have Windows CI coverage', () => {
+  // 11-23 `9bb376d5e` (solio-backup-electron) and the one-click tests put Windows-only tests in unregistered: wide-tests (desktop) stayed red.
+  // The Electron test is declared inside an else block with a template literal whose live-run suffix is empty here.
+  const declaration = /^ *test\(\s*(['"`])((?:\\.|(?!\1).)*)\1\s*,\s*\{\s*skip\s*:\s*([^}]+)\}/gm;
+  for (const file of ['desktop/tests/solio-backup.test.cjs', 'desktop/tests/solio-oneclick.test.cjs', 'desktop/tests/solio-backup-electron.test.cjs', 'desktop/tests/platform-tray-memory.test.cjs']) {
     const names = [...fs.readFileSync(path.join(root, file), 'utf8').matchAll(declaration)]
       .filter(match => /!==?\s*['"]win32['"]|\bWINDOWS_LOCK\b/.test(match[3]))
-      .map(match => match[2].replace(/\\(.)/g, '$1'));
+      .map(match => match[2].replace(/\$\{[^}]*\}/g, '').replace(/\\(.)/g, '$1'));
     const registered = manifest.cases.filter(row => row.file === file && row.route === 'windows');
     assert.deepEqual(registered.map(row => row.name).sort(), names.sort(), file);
     assert.ok(names.length > 0, file);
@@ -131,9 +133,12 @@ test('S129–S137 run on the Windows host with the forked engine, the run execut
   // subtests of one test (11-16 `079c05b673`) their skips still counted as unregistered in wide-tests.
   // S157–S207 are the 대량 삭제 · 변경 멈춤 tests (`mass-hold.test.cjs`), which read Windows paths as the engine does:
   // from 11-20 `9ddcbeb409` they ran on Linux unregistered and 38 failed in wide-tests (experiences).
+  // S223 is the window worker's start (11-25 `12a6a2b40f`); S225–S231, S235 and S236 are the first protection range
+  // (`first-range.test.cjs`, Windows paths): from 11-25 `00c8649cf` those nine ran on Linux unregistered and failed there.
   const moveFiles = ['S146', 'S147', 'S148', 'S149', 'S150', 'S151', 'S152'];
   const massHold = Array.from({ length: 51 }, (_, i) => 'S' + (157 + i));
-  const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S145', ...moveFiles, ...massHold, 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
+  const firstRange = ['S223', 'S225', 'S226', 'S227', 'S228', 'S229', 'S230', 'S231', 'S235', 'S236'];
+  const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S145', ...moveFiles, ...massHold, ...firstRange, 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(workflow, /npm ci --prefix experiences\/solo-backup-rust\/engine /);
   // The executables are cached only under a key of every tracked file they are built from; a miss builds them here.
@@ -160,7 +165,7 @@ test('S129–S137 run on the Windows host with the forked engine, the run execut
       }
     }
   }
-  assert.deepEqual(skipping.sort(), rows.slice(0, 8 + moveFiles.length + massHold.length).map(row => `${row.file}\n${row.name}`).sort(), 'register every fork test that skips off the Windows host');
+  assert.deepEqual(skipping.sort(), rows.slice(0, 8 + moveFiles.length + massHold.length + firstRange.length).map(row => `${row.file}\n${row.name}`).sort(), 'register every fork test that skips off the Windows host');
   for (const row of rows) {
     assert.deepEqual([row.route, row.profile], ['windows', 'default'], row.id);
     const source = fs.readFileSync(path.join(root, row.file), 'utf8');
