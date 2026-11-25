@@ -3,7 +3,7 @@
  * 읽고 고르는 연습이며, 음성 전달이나 TOPIK 성과를 전제하지 않는다.
  * ID는 진도/복습 저장 키이므로 내용 변경 시 CONTENT_VERSION도 함께 변경한다.
  */
-export const CONTENT_VERSION = 'life-ko-20261125-v6';
+export const CONTENT_VERSION = 'life-ko-20261126-v7';
 
 const choices = texts => texts.map((text, index) => ({ id: ['a', 'b', 'c'][index], text }));
 const scene = (speaker, text) => ({ speaker, text });
@@ -172,7 +172,7 @@ export const PACKS = [
         scene('jiho', '봉투 하나 주세요. 라면하고 물을 담을게요.'),
         scene('taeo', '제가 계산할게요. 카드로 계산할게요.'),
         scene('narrator', '태오가 카드로 계산해요. 지호는 봉투를 들어요.'),
-        scene('me', '태오, 고마워요! 우리 같이 먹어요.'),
+        scene('me', '태오 선배, 고마워요! 우리 같이 먹어요.'),
         scene('seoha', '라면은 매워요. 그래도 물이 있어요!'),
       ], [
         question('store-story-price', 'store-price-reading', 'store-price', '이야기에서 물 한 병은 얼마예요?', '', ['2,000원', '1,000원', '3,000원'], 'b', '서하가 ‘이거 얼마예요?’라고 물었어요. 가격표를 보면 물 한 병은 1,000원이에요. 2,000원은 라면의 가격이에요.', transfer('새 가격표를 읽어요. 우유 한 개는 얼마예요?', '우유 한 개 1,500원 / 빵 한 개 2,000원', ['2,000원', '3,500원', '1,500원'], 'c', '우유 가격은 1,500원이에요. 다른 물건이나 합계와 구분해요.')),
@@ -187,39 +187,31 @@ export const PACKS = [
     ],
   },
   {
-    id: 'directions', title: '거꾸로 든 지도', subtitle: '위치를 묻고 길을 찾아요', icon: 'map',
+    id: 'directions', title: '공원 가는 길', subtitle: '위치를 묻고 길을 찾아요', icon: 'map',
     level: '기초 생활 한국어',
     skills: [skill('directions-location-question', '장소의 위치 묻기'), skill('directions-turn', '이동 방향 이해하기'), skill('directions-landmark', '주변 장소로 위치 찾기')],
     lessons: [
-      lesson('directions-expressions', 'expressions', '어디로 가면 될까요?', '위치 질문·이동 방향·주변 장소를 읽어요.', directionExpressions, [
-        scene('mongle', '우와! 지도에도 작은 나무가 있네! 같이 공원 찾을까?'),
-        scene('kkamong', '길은 이 몸이 안내하지. 내 지도만 제대로 펴면 되는 거야.'),
-        scene('marine', '경로 확인. 목적지와 방향을 따로 읽어라.'),
-      ], [
+      lesson('directions-expressions', 'expressions', '어디로 가면 될까요?', '위치를 묻고, 방향과 장소를 읽어요.', directionExpressions, [], [
         question('directions-expressions-where', 'directions-location-question', 'directions-where', '공원의 위치를 알고 싶어요. 어떤 말을 할까요?', '', ['공원은 몇 시에 열어요?', '공원이 어디에 있어요?', '공원에는 나무가 많아요?'], 'b', '장소의 위치는 ‘어디에 있어요’로 물어요.', transfer('화장실의 위치를 묻는 말을 골라요.', '', ['화장실이 어디에 있어요?', '화장실은 청소 중이에요?', '화장실은 깨끗해요?'], 'a', '‘어디에’는 장소의 위치를 묻는 표현이에요.')),
         question('directions-expressions-right', 'directions-turn', 'directions-right', '‘오른쪽으로 가세요’라는 안내에 맞는 방향은 무엇이에요?', '길을 따라 걷다가 갈림길에 도착했어요.', ['왼쪽', '뒤쪽', '오른쪽'], 'c', '‘오른쪽으로’는 오른쪽 방향으로 움직이라는 뜻이에요.', transfer('갈림길에서 ‘왼쪽으로 가세요’라는 안내를 읽었어요.', '어느 방향으로 가야 해요?', ['오른쪽', '왼쪽', '뒤쪽'], 'b', '새 안내의 방향은 왼쪽이에요. 이전 문제의 방향을 그대로 고르지 않아요.')),
         question('directions-expressions-beside', 'directions-landmark', 'directions-beside', '공원이 어디에 있어요?', '“공원은 은행 옆에 있어요.”', ['은행 옆', '은행 안', '학교 뒤'], 'a', '‘은행 옆’은 은행 가까이 나란히 있는 위치예요.', transfer('도서관이 어디에 있어요?', '“도서관은 학교 옆에 있어요.”', ['학교 안', '은행 앞', '학교 옆'], 'c', '기준 장소가 학교이고 위치는 그 옆이에요.')),
       ]),
-      lesson('directions-story', 'story', '지도를 뒤집으면', '세 친구가 공원까지 가는 길을 이해해요.', directionExpressions, [
-        scene('narrator', '공원에서 꽃을 보려고 세 친구가 길을 나섰어요. 까몽이 지도를 펼쳐요.'),
-        scene('mongle', '어? 지도 글자가 거꾸로네! 같이 돌려 볼까?'),
-        scene('kkamong', '이 몸은 반대쪽에서도 읽… 아니, 바람 때문에 돌아간 거야.'),
-        scene('narrator', '입구의 안내판에는 ‘공원: 갈림길에서 오른쪽. 은행 옆.’이라고 적혀 있어요.'),
-        scene('marine', '지도 방향 수정. 갈림길에서 오른쪽. 은행 옆. 확인.'),
-        scene('mongle', '우와! 은행 옆에 꽃이 보여! 같이 저기로 가자!'),
-        scene('kkamong', '내가 처음부터 꽃 쪽으로 가려고 했지. …마린도 보고 있었군.'),
-        scene('narrator', '친구들은 갈림길에서 오른쪽으로 가서 은행 옆의 공원에 도착해요.'),
-        scene('marine', '도착 확인. 꽃, 여섯 송이. …한 송이는 아직 피는 중이다.'),
+      lesson('directions-story', 'story', '길이 두 개예요', '친구들과 공원까지 가는 길을 이해해요.', directionExpressions, [
+        scene('narrator', '토요일이에요. 나는 서하, 지호, 태오와 공원에 가요. 그런데 길이 두 개예요.'),
+        scene('taeo', '제가 지도를 봤어요. 왼쪽이에요. 공원은 병원 옆에 있어요!'),
+        scene('jiho', '정말요? 시장 옆이 아니에요?'),
+        scene('seoha', '제가 물어볼게요. 저기요, 공원이 어디에 있어요?'),
+        scene('narrator', '한 아주머니가 말해요. “오른쪽으로 가세요. 은행 옆에 있어요.”'),
+        scene('taeo', '아, 오른쪽이에요? 제가 지도를 잘못 봤어요!'),
+        scene('narrator', '우리는 오른쪽으로 가요. 은행이 있어요.'),
+        scene('me', '저기예요! 공원이 은행 옆에 있어요!'),
+        scene('jiho', '꽃이 정말 많아요! 다음에는 제가 지도를 볼게요.'),
       ], [
-        question('directions-story-where', 'directions-location-question', 'directions-where', '세 친구가 찾던 장소의 위치를 묻는 말은 무엇이에요?', '', ['공원이 어디에 있어요?', '학교가 어디에 있어요?', '카페가 어디에 있어요?'], 'a', '세 친구의 목적지는 꽃을 볼 공원이므로 공원의 위치를 물어요.', transfer('새 목적지의 위치를 묻는 말을 골라요.', '세 친구가 책을 빌리려고 도서관을 찾고 있어요.', ['은행이 어디에 있어요?', '도서관이 어디에 있어요?', '공원이 어디에 있어요?'], 'b', '책을 빌릴 목적지는 도서관이에요. 해당 장소의 위치를 물어요.')),
-        question('directions-story-turn', 'directions-turn', 'directions-right', '세 친구는 갈림길에서 어느 쪽으로 갔어요?', '', ['왼쪽', '오른쪽', '왔던 길'], 'b', '안내판에 적힌 대로 갈림길에서 오른쪽으로 갔어요.', transfer('새 안내를 읽고 갈 방향을 골라요.', '“도서관에 가려면 갈림길에서 왼쪽으로 가세요.”', ['오른쪽', '왔던 길', '왼쪽'], 'c', '새 안내의 갈림길 방향은 왼쪽이에요.')),
-        question('directions-story-landmark', 'directions-landmark', 'directions-beside', '이야기 속 공원은 어느 건물 옆에 있어요?', '', ['학교', '도서관', '은행'], 'c', '안내판과 도착 장면 모두 공원이 은행 옆에 있다고 알려 줘요.', transfer('새 안내를 읽고 기준 건물을 골라요.', '“약국은 병원 옆에 있어요.”', ['병원', '은행', '학교'], 'a', '약국의 위치를 알려 주는 기준 건물은 병원이에요.')),
+        question('directions-story-where', 'directions-location-question', 'directions-where', '서하는 아주머니에게 무엇을 물었어요?', '', ['공원이 어디에 있어요?', '병원이 어디에 있어요?', '은행이 어디에 있어요?'], 'a', '서하는 ‘저기요, 공원이 어디에 있어요?’라고 물었어요. 병원은 태오가 말한 곳이고, 은행은 아주머니가 말한 곳이에요.', transfer('지호는 어떤 말을 할까요?', '지호는 책을 빌리고 싶어요. 그런데 길을 몰라요.', ['은행이 어디에 있어요?', '도서관이 어디에 있어요?', '공원이 어디에 있어요?'], 'b', '책은 도서관에서 빌려요. 그래서 도서관의 위치를 물어요.')),
+        question('directions-story-turn', 'directions-turn', 'directions-right', '친구들은 어느 쪽으로 갔어요?', '', ['왼쪽', '오른쪽', '뒤쪽'], 'b', '아주머니가 ‘오른쪽으로 가세요.’라고 말했어요. 그래서 오른쪽으로 갔어요. 왼쪽은 태오가 지도를 잘못 보고 한 말이에요.', transfer('지호는 어느 쪽으로 가야 해요?', '지호: “도서관이 어디에 있어요?” 아저씨: “왼쪽으로 가세요. 시장 오른쪽에 있어요.”', ['오른쪽', '뒤쪽', '왼쪽'], 'c', '갈 방향은 ‘왼쪽으로 가세요.’예요. ‘시장 오른쪽’은 도서관이 있는 자리예요.')),
+        question('directions-story-landmark', 'directions-landmark', 'directions-beside', '이야기에서 공원은 어디 옆에 있어요?', '', ['병원', '시장', '은행'], 'c', '아주머니가 ‘은행 옆에 있어요.’라고 말했어요. 나도 ‘공원이 은행 옆에 있어요!’라고 말했어요. 병원은 태오가, 시장은 지호가 말한 곳이에요.', transfer('약국은 어디 옆에 있어요?', '서하: “은행 옆에 약국이 있어요?” 아저씨: “아니요, 약국은 병원 옆에 있어요. 학교 앞이에요.”', ['병원', '은행', '학교'], 'a', '아저씨가 ‘약국은 병원 옆에 있어요.’라고 말했어요. 은행 옆이 아니에요.')),
       ]),
-      lesson('directions-apply', 'apply', '내가 길을 물어요', '새 장소의 위치와 방향을 읽고 골라요.', directionExpressions, [
-        scene('mongle', '오! 이번에는 다른 곳이네! 같이 길 찾아볼까?'),
-        scene('kkamong', '내 지도는 이제 똑바로야. 이 몸의 안내도 똑바르지.'),
-        scene('marine', '이동 준비. 목적지, 방향, 기준 장소 확인.'),
-      ], [
+      lesson('directions-apply', 'apply', '내가 길을 물어요', '새 장소의 위치와 방향을 읽고 골라요.', directionExpressions, [], [
         question('directions-apply-where', 'directions-location-question', 'directions-where', '직원에게 무엇을 물을까요?', '처음 온 동네에서 약국을 찾고 있어요.', ['약국은 몇 시에 닫아요?', '약국이 어디에 있어요?', '약국에서 약을 샀어요?'], 'b', '찾는 약국의 위치를 ‘어디에 있어요’로 물어요.', transfer('지하철역을 찾고 있어요. 무엇을 물을까요?', '처음 온 거리라 위치를 몰라요.', ['지하철은 몇 시에 와요?', '지하철 표는 얼마예요?', '지하철역이 어디에 있어요?'], 'c', '가려는 장소가 지하철역으로 바뀌어도 위치 질문은 ‘어디에 있어요’예요.')),
         question('directions-apply-turn', 'directions-turn', 'directions-right', '안내에 따라 갈림길에서 어느 쪽으로 갈까요?', '“오른쪽으로 가세요. 편의점이 보이면 멈추세요.”', ['오른쪽', '왼쪽', '뒤쪽'], 'a', '먼저 갈 방향은 오른쪽이고 편의점은 멈출 기준이에요.', transfer('안내에 따라 갈림길에서 어느 쪽으로 갈까요?', '“왼쪽으로 가세요. 우체국 앞에서 기다리세요.”', ['뒤쪽', '왼쪽', '오른쪽'], 'b', '갈 방향은 왼쪽이에요. 기다릴 장소와 이동 방향을 나누어 읽어요.')),
         question('directions-apply-landmark', 'directions-landmark', 'directions-beside', '약국의 위치에 맞는 설명을 골라요.', '“약국은 병원 옆에 있어요.”', ['병원 안에 있어요.', '학교 뒤에 있어요.', '병원 옆에 있어요.'], 'c', '‘옆’과 ‘안’은 다른 위치예요. 병원 옆이 맞아요.', transfer('우체국의 위치에 맞는 설명을 골라요.', '“우체국은 학교 옆에 있어요.”', ['학교 옆에 있어요.', '학교 안에 있어요.', '은행 뒤에 있어요.'], 'a', '새 기준 장소는 학교이고 우체국은 학교 옆에 있어요.')),
@@ -326,9 +318,10 @@ export const PEOPLE_STORY=Object.freeze({
  greetings:{file:'life-people/greetings.webp?v=4dea5fb82788',alt:'학교 정문 앞 신입생 부스에서 서하, 지호, 태오가 나를 보고 웃는 장면',at:{seoha:36,jiho:59,taeo:79}},
  cafe:{file:'life-people/cafe.webp?v=52de12263532',alt:'학교 앞 카페 카운터에서 서하가 손을 흔들고, 지호가 주문표를 들고, 태오가 창밖 벤치를 가리키는 장면',at:{seoha:33,jiho:55,taeo:73}},
  store:{file:'life-people/store.webp?v=9c8403d26e4a',alt:'학교 앞 편의점 계산대에서 서하가 물병을 들고, 지호가 봉투를 벌리고, 태오가 카드를 단말기에 대는 장면',at:{seoha:33,jiho:55,taeo:76}},
+ directions:{file:'life-people/directions.webp?v=4b9c97704cac',alt:'두 갈래 길에서 서하가 길을 묻고, 지호가 지도를 보고, 태오가 지도를 들고 웃고, 아주머니가 오른쪽 길을 가리키는 장면',at:{seoha:30,jiho:48,taeo:67}},
 });
 
 export const peopleStory=packId=>PEOPLE_STORY[packId]||null;
 
 // 레슨 소개 · 문제 · 배우기의 팩 그림: 펠트 물건 대신 같은 이야기의 사진(정사각형).
-export const PACK_PRINTS=Object.freeze({greetings:'life-people/greetings-print.webp?v=a78ef737caaf',cafe:'life-people/cafe-print.webp?v=02acd0afd050',store:'life-people/store-print.webp?v=4a0f324dadb5'});
+export const PACK_PRINTS=Object.freeze({greetings:'life-people/greetings-print.webp?v=a78ef737caaf',cafe:'life-people/cafe-print.webp?v=02acd0afd050',store:'life-people/store-print.webp?v=4a0f324dadb5',directions:'life-people/directions-print.webp?v=8ffbac5711d7'});

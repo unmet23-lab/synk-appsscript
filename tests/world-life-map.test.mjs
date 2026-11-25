@@ -55,7 +55,8 @@ test('계열 불변식: 정답 글이 같으면 한 계열 · 같은 표현의 �
   // 11-15: 인사 레슨 이름 소개 표현을 마스코트 대신 「저는 수진이에요」로 바꿔, 표현 레슨 이름 문항과 적용 레슨 이름 문항의 정답 글이 같아졌다 — 한 계열로 합쳐져 66 → 65.
   // 11-22: 인사 이야기를 서하 · 지호 · 태오로 바꿔 이야기 감사 문항(태오가 이름표를 찾아 줌)과 그 복습(준호가 책을 주워 줌)의 정답 글이 갈라지고,
   // 이름 복습의 정답이 「저는 준영이에요」가 되어 두 계열이 늘었다 — 65 → 67.
-  assert.deepEqual([measured.length, new Set(measured.map(row => row.own.familyKey)).size], [117, 67]);
+  // 11-26: 길 이야기의 위치 복습(지호가 책을 빌리려고 길을 묻는다)이 장소 낱말을 고르는 문항이라 능력을 낱말 뜻으로 바꿨다. 같은 표현의 낱말 뜻 계열에 들어가 한 계열이 준다 — 67 → 66.
+  assert.deepEqual([measured.length, new Set(measured.map(row => row.own.familyKey)).size], [117, 66]);
   // 정답 · 보기가 바뀐 새 상황 복습은 새 계열(재확인 짝이 될 수 있다).
   const order = rows.find(row => row.own.itemKey === 'life.cafe-expressions-order-transfer'), main = rows.find(row => row.own.itemKey === 'life.cafe-expressions-order');
   assert.notEqual(order.own.familyKey, main.own.familyKey);

@@ -1,4 +1,4 @@
-// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24), 편의점 팩(2026-11-25).
+// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24), 편의점 팩(2026-11-25), 길 팩(2026-11-26).
 // 학습 내용(보기·표현·이야기 대사·레슨 제목)은 life-content.mjs의 한국어 그대로다. 여기에는 문제 지시(prompt)·상황(context)·해설(explanation),
 // 표현 설명(meaning)과 답한 뒤 누르는 「뜻 보기」의 보기 뜻만 둔다. 문장 속 ‘한국어 인용’은 학습 내용이라 한국어로 남긴다.
 // ko는 원문의 사본이다: 원문을 고치면 qa/life-content-lang.test.mjs가 이 표가 낡았다고 알린다(번역을 같이 고친다).
@@ -322,6 +322,80 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'You want to pay in cash. What do you say?',context:'',explanation:'You’re using cash, so ‘현금으로 계산할게요’ fits.'},
   {prompt:'Бэлнээр төлөх гэж байна. Юу гэж хэлэх вэ?',context:'',explanation:'Бэлэн мөнгөөр төлөх тул «현금으로 계산할게요» гэж хэлнэ.'}),
  // 편의점 팩 — 끝
+ // 길 팩(11-26 「네, 이어가」) — 시작
+ 'directions-expressions-where':q(
+  {prompt:'공원의 위치를 알고 싶어요. 어떤 말을 할까요?',context:'',explanation:'장소의 위치는 ‘어디에 있어요’로 물어요.'},
+  {prompt:'You want to know where the park is. What do you say?',context:'',explanation:'Ask where a place is with ‘어디에 있어요’.'},
+  {prompt:'Цэцэрлэгт хүрээлэн хаана байгааг мэдмээр байна. Юу гэж хэлэх вэ?',context:'',explanation:'Аливаа газар хаана байгааг асуухдаа «어디에 있어요» гэж хэлнэ.'}),
+ 'directions-expressions-where-transfer':q(
+  {prompt:'화장실의 위치를 묻는 말을 골라요.',context:'',explanation:'‘어디에’는 장소의 위치를 묻는 표현이에요.'},
+  {prompt:'Choose the sentence that asks where the restroom is.',context:'',explanation:'‘어디에’ is used to ask where a place is.'},
+  {prompt:'Ариун цэврийн өрөө хаана байгааг асуух өгүүлбэрийг сонгоно уу.',context:'',explanation:'«어디에» гэдэг нь аливаа газар хаана байгааг асуудаг хэллэг юм.'}),
+ 'directions-expressions-right':q(
+  {prompt:'‘오른쪽으로 가세요’라는 안내에 맞는 방향은 무엇이에요?',context:'길을 따라 걷다가 갈림길에 도착했어요.',explanation:'‘오른쪽으로’는 오른쪽 방향으로 움직이라는 뜻이에요.'},
+  {prompt:'Which direction does ‘오른쪽으로 가세요’ tell you to go?',context:'You’re walking down the street and come to a fork.',explanation:'‘오른쪽으로’ means to move to the right.'},
+  {prompt:'«오른쪽으로 가세요» гэдэг нь аль тийш яв гэсэн заавар вэ?',context:'Зам дагуу алхаж яваад замын салаан дээр ирлээ.',explanation:'«오른쪽으로» гэдэг нь баруун тийш яв гэсэн утгатай.'}),
+ 'directions-expressions-right-transfer':q(
+  {prompt:'갈림길에서 ‘왼쪽으로 가세요’라는 안내를 읽었어요.',context:'어느 방향으로 가야 해요?',explanation:'새 안내의 방향은 왼쪽이에요. 이전 문제의 방향을 그대로 고르지 않아요.'},
+  {prompt:'At a fork in the road, you read ‘왼쪽으로 가세요’.',context:'Which way should you go?',explanation:'The new directions say left. Don’t just pick the direction from the last question.'},
+  {prompt:'Замын салаан дээр «왼쪽으로 가세요» гэсэн зааврыг уншлаа.',context:'Аль тийш явах ёстой вэ?',explanation:'Шинэ зааварт «왼쪽으로 가세요» гэж бичсэн тул зүүн тийш явна. Өмнөх асуултын хариултыг шууд битгий сонгоорой.'}),
+ 'directions-expressions-beside':q(
+  {prompt:'공원이 어디에 있어요?',context:'“공원은 은행 옆에 있어요.”',explanation:'‘은행 옆’은 은행 가까이 나란히 있는 위치예요.'},
+  {prompt:'Where is the park?',context:'“공원은 은행 옆에 있어요.”',explanation:'‘은행 옆’ means close to the bank, side by side with it.'},
+  {prompt:'Цэцэрлэгт хүрээлэн хаана байдаг вэ?',context:'«공원은 은행 옆에 있어요.»',explanation:'«은행 옆» гэдэг нь банкны яг хажууд гэсэн утгатай.'}),
+ 'directions-expressions-beside-transfer':q(
+  {prompt:'도서관이 어디에 있어요?',context:'“도서관은 학교 옆에 있어요.”',explanation:'기준 장소가 학교이고 위치는 그 옆이에요.'},
+  {prompt:'Where is the library?',context:'“도서관은 학교 옆에 있어요.”',explanation:'The landmark is the school, and the library is next to it.'},
+  {prompt:'Номын сан хаана байдаг вэ?',context:'«도서관은 학교 옆에 있어요.»',explanation:'«학교 옆» гэдэг нь сургуулийн яг хажууд гэсэн утгатай.'}),
+ 'directions-story-where':q(
+  {prompt:'서하는 아주머니에게 무엇을 물었어요?',context:'',explanation:'서하는 ‘저기요, 공원이 어디에 있어요?’라고 물었어요. 병원은 태오가 말한 곳이고, 은행은 아주머니가 말한 곳이에요.'},
+  {prompt:'What did Seoha ask the woman?',context:'',explanation:'Seoha asked ‘저기요, 공원이 어디에 있어요?’. Taeo mentioned the hospital, and the woman mentioned the bank.'},
+  {prompt:'Сөха нэг эмэгтэйгээс юу гэж асуусан бэ?',context:'',explanation:'Сөха «저기요, 공원이 어디에 있어요?» гэж асуусан. Тэо «병원 옆» (эмнэлгийн хажууд), харин тэр эмэгтэй «은행 옆» (банкны хажууд) гэж хэлсэн.'}),
+ 'directions-story-where-transfer':q(
+  {prompt:'지호는 어떤 말을 할까요?',context:'지호는 책을 빌리고 싶어요. 그런데 길을 몰라요.',explanation:'책은 도서관에서 빌려요. 그래서 도서관의 위치를 물어요.'},
+  {prompt:'What should Jiho say?',context:'Jiho wants to borrow a book, but he doesn’t know the way.',explanation:'You borrow books at the library, so he asks where the library is.'},
+  {prompt:'Жихо юу гэж хэлэх вэ?',context:'Жихо ном зээлж уншихыг хүсэж байна. Гэхдээ хаашаа явахаа мэдэхгүй байна.',explanation:'Номыг номын сангаас зээлж авдаг. Тиймээс номын сан хаана байгааг асууна.'}),
+ 'directions-story-turn':q(
+  {prompt:'친구들은 어느 쪽으로 갔어요?',context:'',explanation:'아주머니가 ‘오른쪽으로 가세요.’라고 말했어요. 그래서 오른쪽으로 갔어요. 왼쪽은 태오가 지도를 잘못 보고 한 말이에요.'},
+  {prompt:'Which way did the friends go?',context:'',explanation:'The woman said ‘오른쪽으로 가세요.’, so they went right. Taeo said left because he misread the map.'},
+  {prompt:'Найзууд аль тийш явсан бэ?',context:'',explanation:'Тэр эмэгтэй «오른쪽으로 가세요.» гэж хэлсэн. Тиймээс найзууд баруун тийш явсан. Тэо газрын зургийг буруу хараад «왼쪽» (зүүн тийшээ) гэж хэлсэн.'}),
+ 'directions-story-turn-transfer':q(
+  {prompt:'지호는 어느 쪽으로 가야 해요?',context:'지호: “도서관이 어디에 있어요?” 아저씨: “왼쪽으로 가세요. 시장 오른쪽에 있어요.”',explanation:'갈 방향은 ‘왼쪽으로 가세요.’예요. ‘시장 오른쪽’은 도서관이 있는 자리예요.'},
+  {prompt:'Which way should Jiho go?',context:'Jiho: “도서관이 어디에 있어요?” Man: “왼쪽으로 가세요. 시장 오른쪽에 있어요.”',explanation:'The direction to go is ‘왼쪽으로 가세요.’. ‘시장 오른쪽’ is where the library is.'},
+  {prompt:'Жихо аль тийш явах ёстой вэ?',context:'Жихо: «도서관이 어디에 있어요?» Эрэгтэй: «왼쪽으로 가세요. 시장 오른쪽에 있어요.»',explanation:'«왼쪽으로 가세요.» гэсэн тул Жихо зүүн тийш явах ёстой. «시장 오른쪽» гэдэг нь номын сан захын баруун талд байдаг гэсэн үг.'}),
+ 'directions-story-landmark':q(
+  {prompt:'이야기에서 공원은 어디 옆에 있어요?',context:'',explanation:'아주머니가 ‘은행 옆에 있어요.’라고 말했어요. 나도 ‘공원이 은행 옆에 있어요!’라고 말했어요. 병원은 태오가, 시장은 지호가 말한 곳이에요.'},
+  {prompt:'In the story, what is the park next to?',context:'',explanation:'The woman said ‘은행 옆에 있어요.’. You also said ‘공원이 은행 옆에 있어요!’. Taeo mentioned the hospital, and Jiho mentioned the market.'},
+  {prompt:'Энэ түүхэнд цэцэрлэгт хүрээлэн юуны хажууд байдаг вэ?',context:'',explanation:'Тэр эмэгтэй «은행 옆에 있어요.» гэж хэлсэн. Та ч бас «공원이 은행 옆에 있어요!» гэж хэлсэн. Тэо «병원 옆» (эмнэлгийн хажууд), Жихо «시장 옆» (захын хажууд) гэж хэлсэн.'}),
+ 'directions-story-landmark-transfer':q(
+  {prompt:'약국은 어디 옆에 있어요?',context:'서하: “은행 옆에 약국이 있어요?” 아저씨: “아니요, 약국은 병원 옆에 있어요. 학교 앞이에요.”',explanation:'아저씨가 ‘약국은 병원 옆에 있어요.’라고 말했어요. 은행 옆이 아니에요.'},
+  {prompt:'What is the pharmacy next to?',context:'Seoha: “은행 옆에 약국이 있어요?” Man: “아니요, 약국은 병원 옆에 있어요. 학교 앞이에요.”',explanation:'The man said ‘약국은 병원 옆에 있어요.’. It is not next to the bank.'},
+  {prompt:'Эмийн сан юуны хажууд байдаг вэ?',context:'Сөха: «은행 옆에 약국이 있어요?» Эрэгтэй: «아니요, 약국은 병원 옆에 있어요. 학교 앞이에요.»',explanation:'Тэр эрэгтэй «약국은 병원 옆에 있어요.» гэж хэлсэн. Тэгэхээр эмийн сан банкны хажууд биш.'}),
+ 'directions-apply-where':q(
+  {prompt:'직원에게 무엇을 물을까요?',context:'처음 온 동네에서 약국을 찾고 있어요.',explanation:'찾는 약국의 위치를 ‘어디에 있어요’로 물어요.'},
+  {prompt:'What do you ask the staff?',context:'You’re looking for a pharmacy in a neighborhood you’ve never been to.',explanation:'Ask where the pharmacy is with ‘어디에 있어요’.'},
+  {prompt:'Ажилтнаас юу гэж асуух вэ?',context:'Анх удаа очсон хороололдоо эмийн сан хайж байна.',explanation:'Эмийн сан хаана байгааг асуухдаа «어디에 있어요» гэж хэлнэ.'}),
+ 'directions-apply-where-transfer':q(
+  {prompt:'지하철역을 찾고 있어요. 무엇을 물을까요?',context:'처음 온 거리라 위치를 몰라요.',explanation:'가려는 장소가 지하철역으로 바뀌어도 위치 질문은 ‘어디에 있어요’예요.'},
+  {prompt:'You’re looking for a subway station. What do you ask?',context:'It’s your first time on this street, so you don’t know where it is.',explanation:'Even when the place is now a subway station, you still ask where it is with ‘어디에 있어요’.'},
+  {prompt:'Метроны буудал хайж байна. Юу гэж асуух вэ?',context:'Энэ гудамжинд анх удаа ирсэн тул метроны буудал хаана байгааг мэдэхгүй байна.',explanation:'Очих газар нь метроны буудал байсан ч хаана байгааг нь асуухдаа «어디에 있어요» гэж хэлнэ.'}),
+ 'directions-apply-turn':q(
+  {prompt:'안내에 따라 갈림길에서 어느 쪽으로 갈까요?',context:'“오른쪽으로 가세요. 편의점이 보이면 멈추세요.”',explanation:'먼저 갈 방향은 오른쪽이고 편의점은 멈출 기준이에요.'},
+  {prompt:'Following the directions, which way do you go at the fork?',context:'“오른쪽으로 가세요. 편의점이 보이면 멈추세요.”',explanation:'The way to go first is right. The convenience store is where you stop.'},
+  {prompt:'Зааврын дагуу замын салаанаас аль тийш явах вэ?',context:'«오른쪽으로 가세요. 편의점이 보이면 멈추세요.»',explanation:'Эхлээд баруун тийш явна. Дэлгүүр харагдвал зогсоно.'}),
+ 'directions-apply-turn-transfer':q(
+  {prompt:'안내에 따라 갈림길에서 어느 쪽으로 갈까요?',context:'“왼쪽으로 가세요. 우체국 앞에서 기다리세요.”',explanation:'갈 방향은 왼쪽이에요. 기다릴 장소와 이동 방향을 나누어 읽어요.'},
+  {prompt:'Following the directions, which way do you go at the fork?',context:'“왼쪽으로 가세요. 우체국 앞에서 기다리세요.”',explanation:'The way to go is left. Read the place to wait and the way to go separately.'},
+  {prompt:'Зааврын дагуу замын салаанаас аль тийш явах вэ?',context:'«왼쪽으로 가세요. 우체국 앞에서 기다리세요.»',explanation:'Зүүн тийш явна. Хүлээх газар, явах чиглэлээ ялгаж уншаарай.'}),
+ 'directions-apply-landmark':q(
+  {prompt:'약국의 위치에 맞는 설명을 골라요.',context:'“약국은 병원 옆에 있어요.”',explanation:'‘옆’과 ‘안’은 다른 위치예요. 병원 옆이 맞아요.'},
+  {prompt:'Choose the sentence that fits where the pharmacy is.',context:'“약국은 병원 옆에 있어요.”',explanation:'‘옆’ (next to) and ‘안’ (inside) are different places. Next to the hospital is right.'},
+  {prompt:'Эмийн сангийн байршилд тохирох өгүүлбэрийг сонгоно уу.',context:'«약국은 병원 옆에 있어요.»',explanation:'«옆» (хажууд), «안» (дотор) хоёр өөр утгатай. «Эмнэлгийн хажууд» гэсэн нь зөв.'}),
+ 'directions-apply-landmark-transfer':q(
+  {prompt:'우체국의 위치에 맞는 설명을 골라요.',context:'“우체국은 학교 옆에 있어요.”',explanation:'새 기준 장소는 학교이고 우체국은 학교 옆에 있어요.'},
+  {prompt:'Choose the sentence that fits where the post office is.',context:'“우체국은 학교 옆에 있어요.”',explanation:'The new landmark is the school, and the post office is next to it.'},
+  {prompt:'Шуудангийн байршилд тохирох өгүүлбэрийг сонгоно уу.',context:'«우체국은 학교 옆에 있어요.»',explanation:'Энэ удаад сургуулиар баримжаална. Шуудан сургуулийн хажууд байдаг.'}),
+ // 길 팩 — 끝
 });
 
 // 표현 익히기 카드의 설명(표현 자체는 한국어 그대로).
@@ -344,6 +418,11 @@ export const LIFE_EXPRESSION_TEXT=Object.freeze({
  'store-bag':q('산 물건을 담을 봉투를 부탁해요.','Asks for a bag to carry what you bought.','Худалдаж авсан юмаа хийх уут өгөөч гэж хэлнэ.'),
  'store-card':q('카드로 값을 내겠다고 말해요.','Says you will pay by card.','Картаар төлнө гэдгээ хэлнэ.'),
  // 편의점 팩 — 끝
+ // 길 팩(11-26 「네, 이어가」) — 시작
+ 'directions-where':q('가려는 장소의 위치를 물어요.','Asks where the place you want to go is.','Очих газар хаана байгааг асууна.'),
+ 'directions-right':q('오른쪽 방향으로 이동하라는 안내예요.','Directions that tell you to go to the right.','Баруун тийш яв гэсэн заавар.'),
+ 'directions-beside':q('은행 바로 옆에 있는 장소를 설명해요.','Describes a place right next to the bank.','Банкны яг хажууд байдаг газрыг хэлэхэд хэрэглэнэ.'),
+ // 길 팩 — 끝
 });
 
 // 「뜻 보기」: 답한 뒤에만 보이는 보기의 뜻. 키는 보기 글자 그대로다.
@@ -499,6 +578,42 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '나중에 계산할게요.':{en:'I’ll pay later.',mn:'Дараа төлье.'},
  '가격표를 붙여 주세요.':{en:'Please put a price tag on it.',mn:'Үнийн шошго нааж өгөөрэй.'},
  // 편의점 팩 — 끝
+ // 길 팩(11-26 「네, 이어가」) — 시작
+ '공원은 몇 시에 열어요?':{en:'What time does the park open?',mn:'Цэцэрлэгт хүрээлэн хэдэн цагт нээгддэг вэ?'},
+ '공원이 어디에 있어요?':{en:'Where is the park?',mn:'Цэцэрлэгт хүрээлэн хаана байдаг вэ?'},
+ '공원에는 나무가 많아요?':{en:'Are there many trees in the park?',mn:'Цэцэрлэгт хүрээлэнд мод олон байдаг уу?'},
+ '화장실이 어디에 있어요?':{en:'Where is the restroom?',mn:'Ариун цэврийн өрөө хаана байдаг вэ?'},
+ '화장실은 청소 중이에요?':{en:'Is the restroom being cleaned?',mn:'Ариун цэврийн өрөөг цэвэрлэж байна уу?'},
+ '화장실은 깨끗해요?':{en:'Is the restroom clean?',mn:'Ариун цэврийн өрөө цэвэрхэн үү?'},
+ '왼쪽':{en:'left',mn:'зүүн тал'},
+ '뒤쪽':{en:'back',mn:'ар тал'},
+ '오른쪽':{en:'right',mn:'баруун тал'},
+ '은행 옆':{en:'next to the bank',mn:'банкны хажууд'},
+ '은행 안':{en:'inside the bank',mn:'банк дотор'},
+ '학교 뒤':{en:'behind the school',mn:'сургуулийн ард'},
+ '학교 안':{en:'inside the school',mn:'сургууль дотор'},
+ '은행 앞':{en:'in front of the bank',mn:'банкны урд'},
+ '학교 옆':{en:'next to the school',mn:'сургуулийн хажууд'},
+ '병원이 어디에 있어요?':{en:'Where is the hospital?',mn:'Эмнэлэг хаана байдаг вэ?'},
+ '은행이 어디에 있어요?':{en:'Where is the bank?',mn:'Банк хаана байдаг вэ?'},
+ '도서관이 어디에 있어요?':{en:'Where is the library?',mn:'Номын сан хаана байдаг вэ?'},
+ '병원':{en:'hospital',mn:'эмнэлэг'},
+ '시장':{en:'market',mn:'зах'},
+ '은행':{en:'bank',mn:'банк'},
+ '학교':{en:'school',mn:'сургууль'},
+ '약국은 몇 시에 닫아요?':{en:'What time does the pharmacy close?',mn:'Эмийн сан хэдэн цагт хаадаг вэ?'},
+ '약국이 어디에 있어요?':{en:'Where is the pharmacy?',mn:'Эмийн сан хаана байдаг вэ?'},
+ '약국에서 약을 샀어요?':{en:'Did you buy medicine at the pharmacy?',mn:'Эмийн сангаас эм авсан уу?'},
+ '지하철은 몇 시에 와요?':{en:'What time does the subway come?',mn:'Метро хэдэн цагт ирдэг вэ?'},
+ '지하철 표는 얼마예요?':{en:'How much is a subway ticket?',mn:'Метроны тасалбар ямар үнэтэй вэ?'},
+ '지하철역이 어디에 있어요?':{en:'Where is the subway station?',mn:'Метроны буудал хаана байдаг вэ?'},
+ '병원 안에 있어요.':{en:'It’s inside the hospital.',mn:'Эмнэлэг дотор байдаг.'},
+ '학교 뒤에 있어요.':{en:'It’s behind the school.',mn:'Сургуулийн ард байдаг.'},
+ '병원 옆에 있어요.':{en:'It’s next to the hospital.',mn:'Эмнэлгийн хажууд байдаг.'},
+ '학교 옆에 있어요.':{en:'It’s next to the school.',mn:'Сургуулийн хажууд байдаг.'},
+ '학교 안에 있어요.':{en:'It’s inside the school.',mn:'Сургууль дотор байдаг.'},
+ '은행 뒤에 있어요.':{en:'It’s behind the bank.',mn:'Банкны ард байдаг.'},
+ // 길 팩 — 끝
 });
 
 // 문제 한 개의 화면 언어 글. 이 표에 없는 문제(1판 밖의 팩)는 원문 그대로다.
@@ -627,6 +742,26 @@ export const LIFE_CHOICE_NOTES=Object.freeze({
  'store-apply-card':{a:note('현금으로 계산할게요.','현금으로 값을 낼 때 하는 말이에요.','You say this when you pay in cash.','Бэлнээр төлөхдөө хэлдэг үг.'),c:note('나중에 계산할게요.','지금 내지 않고 나중에 내겠다는 말이에요.','This means you won’t pay now, but later.','Одоо биш, дараа төлнө гэсэн үг.')},
  'store-apply-card-transfer':{b:note('카드로 계산할게요.','카드로 값을 낼 때 하는 말이에요.','You say this when you pay by card.','Картаар төлөхдөө хэлдэг үг.'),c:note('가격표를 붙여 주세요.','물건에 가격표를 붙여 달라는 부탁이에요. 값을 내는 말이 아니에요.','This asks someone to put a price tag on something. It isn’t about paying.','Бараанд үнийн шошго нааж өгөөч гэсэн үг. Төлбөртэй холбоотой үг хэллэг биш.')},
  // 편의점 팩 — 끝
+ // 길 팩(11-26 「네, 이어가」) — 시작
+ 'directions-expressions-where':{a:note('공원은 몇 시에 열어요?','공원이 문을 여는 시간을 물을 때 하는 말이에요.','You say this to ask what time the park opens.','Энэ бол цэцэрлэгт хүрээлэн хэдэн цагт нээгддэгийг асуусан өгүүлбэр.'),c:note('공원에는 나무가 많아요?','공원에 나무가 많은지 물을 때 하는 말이에요. 위치를 묻는 말이 아니에요.','You say this to ask whether the park has many trees. It does not ask where the park is.','Энэ бол цэцэрлэгт хүрээлэнд олон мод байгаа эсэхийг асуусан өгүүлбэр. Хаана байгааг нь асуусан өгүүлбэр биш.')},
+ 'directions-expressions-where-transfer':{b:note('화장실은 청소 중이에요?','지금 화장실을 청소하는지 물을 때 하는 말이에요.','You say this to ask whether the restroom is being cleaned now.','Энэ бол ариун цэврийн өрөөг одоо цэвэрлэж байгаа эсэхийг асуусан өгүүлбэр.'),c:note('화장실은 깨끗해요?','화장실이 깨끗한지 물을 때 하는 말이에요.','You say this to ask whether the restroom is clean.','Энэ бол ариун цэврийн өрөө цэвэрхэн эсэхийг асуусан өгүүлбэр.')},
+ 'directions-expressions-right':{a:note('왼쪽','왼쪽으로 안내할 때는 ‘왼쪽으로 가세요.’라고 해요.','To send someone left, you say ‘왼쪽으로 가세요.’','«Зүүн тийш яваарай» гэдгийг солонгосоор «왼쪽으로 가세요.» гэж хэлнэ.'),b:note('뒤쪽','뒤쪽으로 안내할 때는 ‘뒤로 가세요.’라고 해요.','To send someone back, you say ‘뒤로 가세요.’','«Арагшаа яваарай» гэдгийг солонгосоор «뒤로 가세요.» гэж хэлнэ.')},
+ 'directions-expressions-right-transfer':{a:note('오른쪽','오른쪽으로 안내할 때는 ‘오른쪽으로 가세요.’라고 해요.','To send someone right, you say ‘오른쪽으로 가세요.’','«Баруун тийш яваарай» гэдгийг солонгосоор «오른쪽으로 가세요.» гэж хэлнэ.'),c:note('뒤쪽','뒤쪽으로 안내할 때는 ‘뒤로 가세요.’라고 해요.','To send someone back, you say ‘뒤로 가세요.’','«Арагшаа яваарай» гэдгийг солонгосоор «뒤로 가세요.» гэж хэлнэ.')},
+ 'directions-expressions-beside':{b:note('은행 안','은행 안은 은행 건물 속이에요. 그때는 ‘은행 안에 있어요.’라고 해요.','‘은행 안’ is inside the bank. For that, you say ‘은행 안에 있어요.’','«은행 안» гэдэг нь банк дотор гэсэн үг. Банк дотор байвал «은행 안에 있어요.» гэж хэлнэ.'),c:note('학교 뒤','학교 뒤에 있을 때는 ‘학교 뒤에 있어요.’라고 해요.','If something is behind the school, you say ‘학교 뒤에 있어요.’','Сургуулийн ард байвал «학교 뒤에 있어요.» гэж хэлнэ.')},
+ 'directions-expressions-beside-transfer':{a:note('학교 안','학교 안은 학교 건물 속이에요. 그때는 ‘학교 안에 있어요.’라고 해요.','‘학교 안’ is inside the school. For that, you say ‘학교 안에 있어요.’','«학교 안» гэдэг нь сургууль дотор гэсэн үг. Сургууль дотор байвал «학교 안에 있어요.» гэж хэлнэ.'),b:note('은행 앞','은행 앞에 있을 때는 ‘은행 앞에 있어요.’라고 해요.','If something is in front of the bank, you say ‘은행 앞에 있어요.’','Банкны урд байвал «은행 앞에 있어요.» гэж хэлнэ.')},
+ 'directions-story-where':{b:note('병원이 어디에 있어요?','병원은 태오가 말한 곳이에요. 서하는 공원을 찾아요.','Taeo mentioned the hospital. Seoha is looking for the park.','Эмнэлэг бол Тэогийн хэлсэн газар. Сөха цэцэрлэгт хүрээлэн хайж байна.'),c:note('은행이 어디에 있어요?','은행은 아주머니가 말한 곳이에요. 공원이 은행 옆에 있어요.','The woman mentioned the bank. The park is next to the bank.','Банк бол эмэгтэйн хэлсэн газар. Цэцэрлэгт хүрээлэн банкны хажууд байна.')},
+ 'directions-story-where-transfer':{a:note('은행이 어디에 있어요?','은행은 돈을 찾는 곳이에요. 책은 도서관에서 빌려요.','A bank is where you take out money. You borrow books at a library.','Банкнаас мөнгө авдаг. Номыг номын сангаас зээлж авдаг.'),c:note('공원이 어디에 있어요?','공원은 산책하는 곳이에요. 책은 도서관에서 빌려요.','A park is where you take a walk. You borrow books at a library.','Цэцэрлэгт хүрээлэнд зугаалдаг. Номыг номын сангаас зээлж авдаг.')},
+ 'directions-story-turn':{a:note('왼쪽','왼쪽은 태오가 지도를 잘못 보고 한 말이에요.','Taeo said left because he misread the map.','Тэо газрын зургийг буруу хараад «зүүн тийшээ» гэж хэлсэн.'),c:note('뒤쪽','뒤쪽으로 가라는 말은 이야기에 없어요.','Nobody in the story says to go back.','Энэ түүхэнд хэн ч «арагшаа яв» гэж хэлээгүй.')},
+ 'directions-story-turn-transfer':{a:note('오른쪽','‘시장 오른쪽’은 도서관이 있는 자리예요. 갈 방향은 왼쪽이에요.','‘시장 오른쪽’ is where the library is. The way to go is left.','«시장 오른쪽» гэдэг нь номын сан захын баруун талд байдаг гэсэн үг. Жихо зүүн тийш явах ёстой.'),b:note('뒤쪽','아저씨는 ‘왼쪽으로 가세요.’라고 했어요. 뒤쪽이 아니라 왼쪽이에요.','The man said ‘왼쪽으로 가세요.’ The way is left, not back.','Тэр хүн «왼쪽으로 가세요» (зүүн тийш яваарай) гэж хэлсэн. Арагшаа биш, зүүн тийш явна.')},
+ 'directions-story-landmark':{a:note('병원','병원은 태오가 말한 곳이에요. 태오는 지도를 잘못 봤어요.','Taeo mentioned the hospital. He misread the map.','Тэо газрын зургийг буруу хараад «эмнэлгийн хажууд» гэж хэлсэн.'),b:note('시장','시장은 지호가 물어본 곳이에요. 공원은 은행 옆에 있어요.','Jiho asked about the market. The park is next to the bank.','Жихо захын хажууд биш үү гэж асуусан. Цэцэрлэгт хүрээлэн банкны хажууд байдаг.')},
+ 'directions-story-landmark-transfer':{b:note('은행','서하가 은행 옆인지 물었어요. 아저씨는 ‘아니요’라고 했어요.','Seoha asked whether it was next to the bank. The man said ‘아니요’ (no).','Сөха эмийн сан банкны хажууд байдаг эсэхийг асуусан. Тэр эрэгтэй «아니요» (үгүй) гэж хариулсан.'),c:note('학교','약국은 학교 앞에 있어요. 학교 옆이 아니에요.','The pharmacy is in front of the school, not next to it.','Эмийн сан сургуулийн хажууд биш, урд нь байдаг.')},
+ 'directions-apply-where':{a:note('약국은 몇 시에 닫아요?','약국이 문을 닫는 시간을 물을 때 하는 말이에요.','You say this to ask what time the pharmacy closes.','Энэ бол эмийн сан хэдэн цагт хаадгийг асуусан өгүүлбэр.'),c:note('약국에서 약을 샀어요?','약을 샀는지 물을 때 하는 말이에요. 위치를 묻는 말이 아니에요.','You say this to ask whether someone bought medicine. It does not ask where the pharmacy is.','Энэ бол эм авсан эсэхийг асуусан өгүүлбэр. Эмийн сан хаана байгааг асуусан өгүүлбэр биш.')},
+ 'directions-apply-where-transfer':{a:note('지하철은 몇 시에 와요?','지하철이 오는 시간을 물을 때 하는 말이에요.','You say this to ask what time the subway comes.','Энэ бол метро хэдэн цагт ирдгийг асуусан өгүүлбэр.'),b:note('지하철 표는 얼마예요?','지하철 표의 가격을 물을 때 하는 말이에요.','You say this to ask the price of a subway ticket.','Энэ бол метроны тасалбарын үнийг асуусан өгүүлбэр.')},
+ 'directions-apply-turn':{b:note('왼쪽','왼쪽으로 안내할 때는 ‘왼쪽으로 가세요.’라고 해요.','To send someone left, you say ‘왼쪽으로 가세요.’','«Зүүн тийш яваарай» гэдгийг солонгосоор «왼쪽으로 가세요.» гэж хэлнэ.'),c:note('뒤쪽','뒤쪽으로 안내할 때는 ‘뒤로 가세요.’라고 해요.','To send someone back, you say ‘뒤로 가세요.’','«Арагшаа яваарай» гэдгийг солонгосоор «뒤로 가세요.» гэж хэлнэ.')},
+ 'directions-apply-turn-transfer':{a:note('뒤쪽','뒤쪽으로 안내할 때는 ‘뒤로 가세요.’라고 해요.','To send someone back, you say ‘뒤로 가세요.’','«Арагшаа яваарай» гэдгийг солонгосоор «뒤로 가세요.» гэж хэлнэ.'),c:note('오른쪽','오른쪽으로 안내할 때는 ‘오른쪽으로 가세요.’라고 해요.','To send someone right, you say ‘오른쪽으로 가세요.’','«Баруун тийш яваарай» гэдгийг солонгосоор «오른쪽으로 가세요.» гэж хэлнэ.')},
+ 'directions-apply-landmark':{a:note('병원 안에 있어요.','병원 건물 속에 있다는 말이에요. 약국은 병원 옆에 있어요.','This means it is inside the hospital. The pharmacy is next to the hospital.','Энэ бол эмнэлэг дотор байдаг гэсэн үг. Эмийн сан эмнэлгийн хажууд байдаг.'),b:note('학교 뒤에 있어요.','학교 뒤에 있다는 말이에요. 안내에 학교는 없어요.','This means it is behind the school. The directions don’t mention a school.','Энэ бол сургуулийн ард байдаг гэсэн үг. Зааварт сургуулийг дурдаагүй.')},
+ 'directions-apply-landmark-transfer':{b:note('학교 안에 있어요.','학교 건물 속에 있다는 말이에요. 우체국은 학교 옆에 있어요.','This means it is inside the school. The post office is next to the school.','Энэ бол сургууль дотор байдаг гэсэн үг. Шуудан сургуулийн хажууд байдаг.'),c:note('은행 뒤에 있어요.','은행 뒤에 있다는 말이에요. 안내에 은행은 없어요.','This means it is behind the bank. The directions don’t mention a bank.','Энэ бол банкны ард байдаг гэсэн үг. Зааварт банкийг дурдаагүй.')},
+ // 길 팩 — 끝
 });
 
 /** 그 문항 보기의 한 줄(화면 언어, 없으면 한국어). 문항이나 보기 글이 바뀌었으면 null. */

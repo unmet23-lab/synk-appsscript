@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-11-24T22:12:06.809Z",
+  "updatedAt": "2026-11-25T19:02:50.812Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -4011,11 +4011,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "이야기에서 공원이 은행 옆에 있다는 말이 두 번 나와 정답 「은행」이 분명하다. 오답 학교·도서관은 글에 나오지 않는 건물이라 매력도가 다소 낮지만, 1급 앞쪽 게임 문항으로 학습자에게 해는 없다. 통과. | 레슨 이야기에서 공원 옆 건물(은행)을 찾는 세부 정보 확인 문항으로 구성과 해설이 모두 적절함.",
-      "hash": "85e86fa196ed9dec",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답 은행이 유일하다. 오답은 인물의 잘못된 말을 써서 그럴듯하고, 낱말과 해설도 1급 앞쪽에 맞아 통과다. | 레슨 이야기에서 공원의 실제 위치(은행 옆)를 찾는 문항으로, 등장인물들의 오해·추측(병원·시장)을 오답으로 정교하게 설계함.",
+      "hash": "5d18e84b065c98f3",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",
@@ -4024,7 +4024,7 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
+          "model": "gemini-4-carbon-high",
           "verdict": "pass"
         }
       ]
@@ -4032,26 +4032,26 @@
     {
       "itemKey": "life.directions-story-landmark-transfer",
       "source": "life",
-      "verdict": "fix",
+      "verdict": "pass",
       "skillId": "ko.reading.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답 유일하고 난도·능력도 맞다. 다만 오답 둘이 글에 없는 낱말이라 너무 쉽게 지워진다. 오답 하나를 「약국」으로 바꾸고 발문을 쉽게 다듬으면 쓸 수 있다. | 정답과 보기는 적절하나, 발문과 해설에 1급 학습자에게 어려운 메타 용어('기준 건물')가 쓰여 쉬운 표현으로 수정이 필요함.",
-      "hash": "12d7e4d374d1d57a",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답 병원이 유일하고, 오답 은행(부정됨)과 학교(앞/옆 혼동)가 적절해요. 1급 수준에 맞고 자연스러워요. 해설에 학교 오답 설명을 더하면 좋겠지만, 고치지 않아도 학습자에게 해가 없어 통과로 판정해요. | 기초 장소·위치 표현을 활용한 기존 게임 복습 문항으로, 정답 유일성·오답 매력도·난도(1)·대표 능력(세부 정보 찾기)·한국어 해설 모두 기준에 부합하여 통과(pass) 판정함.",
+      "hash": "dd9982b034da402a",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",
           "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "verdict": "pass"
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
-          "verdict": "fix"
+          "model": "gemini-4-carbon-high",
+          "verdict": "pass"
         }
       ]
     },
@@ -4063,11 +4063,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "안내판과 이야기 서술이 「오른쪽」을 분명히 받쳐 정답이 유일하다. 게임 꼴 안에서 세부 찾기 문항으로 알맞다. 이야기 낱말 일부가 1급보다 높지만 풀이에 영향이 없어 통과한다. | 이야기에서 세 친구가 이동한 방향('오른쪽')을 찾는 세부 정보 파악 문항으로 이상 없음.",
-      "hash": "f04d34f79989bc63",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답 「오른쪽」이 아주머니의 말과 이야기 끝 부분으로 분명히 정해져요. 「왼쪽」은 좋은 오답이에요. 「뒤쪽」은 다소 약한 오답이지만 학습자에게 해가 없어 그대로 통과해요. | 레슨 이야기에서 친구들이 실제로 이동한 방향(오른쪽)을 찾는 문항으로, 태오의 착각(왼쪽)을 오답으로 잘 활용했고 해설도 정확함.",
+      "hash": "6e0e3a666b9b95d5",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",
@@ -4076,7 +4076,7 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
+          "model": "gemini-4-carbon-high",
           "verdict": "pass"
         }
       ]
@@ -4089,11 +4089,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답 「왼쪽」이 유일하고 게임 꼴 안에서 문제가 없어요. 해설에 근거 문장을 인용하면 좋겠지만 사소한 점이라 통과예요. | 짧은 길 안내 문장에서 이동 방향(왼쪽)을 찾는 복습 문항으로 정답이 명확하고 초급 수준에 적합함.",
-      "hash": "00c1f5c9813ea64a",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "갈 방향(왼쪽)과 도서관 위치(시장 오른쪽)를 구별하는 쉬운 세부 읽기 문항이다. 정답이 하나뿐이고 함정 보기가 적절해 통과로 판정한다. | 이동 방향('왼쪽으로 가세요')과 기준점 대비 위치('시장 오른쪽')를 구별해 세부 정보를 찾는 깔끔한 1급 복습 문항임.",
+      "hash": "6d6aee9b6e7cc387",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",
@@ -4102,7 +4102,7 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
+          "model": "gemini-4-carbon-high",
           "verdict": "pass"
         }
       ]
@@ -4115,11 +4115,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "목적지 공원을 묻는 표현을 고르는 기존 게임 문항이에요. 정답이 유일하고 급과 능력이 맞아서 통과예요. 오답 장소가 이야기에 나오지 않아 쉬운 편이라는 점만 사소한 메모예요. | 이야기 속 목적지(공원)를 파악해 위치를 묻는 표현을 고르는 문항으로 이상 없음.",
-      "hash": "712c093eaf114d30",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답이 하나로 분명합니다. 오답도 이야기에 나온 장소를 써서 그럴듯하고, 초급 생활 한국어 게임 문항으로 알맞아 통과입니다. | 길 찾기 이야기에서 서하가 물은 말을 찾는 기존 게임 문항으로, 본문 장소를 활용한 오답 구성과 해설이 모두 우수해 통과한다.",
+      "hash": "e88c942ced166aaf",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",
@@ -4128,7 +4128,7 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
+          "model": "gemini-4-carbon-high",
           "verdict": "pass"
         }
       ]
@@ -4136,31 +4136,26 @@
     {
       "itemKey": "life.directions-story-where-transfer",
       "source": "life",
-      "verdict": "fix",
-      "skillId": "ko.reading.detail",
+      "verdict": "pass",
+      "skillId": "ko.reading.vocabulary",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 하나뿐이고 난도·능력도 맞습니다. 다만 발문의 「새 목적지」가 이 문항만 보는 학습자에게 뜻이 통하지 않아, 발문을 고친 뒤 쓰면 됩니다. | 도서관을 찾는 상황에서 알맞은 위치 질문 표현을 고르는 문항으로 이상 없음. | 정답(도서관, 1번)은 하나뿐이고 오답인 은행·공원도 상황 글과 분명히 어긋나요. 기존 게임 문항이라 보기 셋, 한국어만 있는 해설도 받아들일 수 있어요. 다만 발문의 「새 목적지」는 게임 안의 「앞에서 배운 표현을 바꾼 새 문항」이라는 뜻이에요. 이야기 없이 이 문항만 보는 학습자에게는 무엇이 「새」 것인지 통하지 않아 헷갈릴 수 있어요. 해설의 「해당 장소」도 학습자에게 딱딱하고, 근거가 된 말을 짚지 않아요. 고치면 바로 쓸 수 있어 A의 지적을 받아들여요.",
-      "hash": "911d4090b609e810",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "상황(책을 빌리고 싶다)에서 장소 낱말 「도서관」을 고르는 1급 낱말 문항이다. 정답이 유일하고 오답 꼴이 고르며 해설도 정확해 통과. | 상황에 맞는 장소 어휘(도서관)를 고르는 1급 초급 복습 문항으로, 정답 유일성·오답 구성·난도·대표 능력이 모두 적절함.",
+      "hash": "0b1917db21d98d17",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",
           "model": "claude-opus-5-5",
-          "verdict": "fix"
-        },
-        {
-          "stage": "argon",
-          "model": "gemini-4-argon-high",
           "verdict": "pass"
         },
         {
-          "stage": "adjudication",
-          "model": "claude-opus-5-5",
-          "verdict": "fix"
+          "stage": "argon",
+          "model": "gemini-4-carbon-high",
+          "verdict": "pass"
         }
       ]
     },
@@ -5447,11 +5442,11 @@
       "difficulty": 2,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 유일하고 오답이 이야기 속 다른 인물의 행동이라 그럴듯하다. 이유 읽기 능력과 난도도 맞아 통과다. 로마자 화자 표기는 화면 표기 문제로 사소하다. | 지호가 봉투를 부탁한 이유를 묻는 기존 게임 문항으로, 정답과 오답 설계·해설이 정확하고 2단계 문형(-(으)려고) 사용이 difficulty 2와 부합하여 통과.",
-      "hash": "0d03627ab130e8a8",
-      "reviewedAt": "2026-11-24T22:12:06.809Z",
+      "reason": "정답이 하나뿐이고 오답도 이야기 속 다른 인물의 행동이라 그럴듯해요. 해설도 바르고, 능력과 난도도 맞아요. 화자 로마자 표기만 화면 확인이 필요한 사소한 점이라 통과로 판정해요. | 봉투를 부탁한 이유를 묻는 기존 게임 문항으로, '-(으)려고요' 문형과 이유 파악 능력이 difficulty 2 및 ko.reading.reason에 부합해 통과한다.",
+      "hash": "bae94a482d9d79fa",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-store-people-20261125c",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",
@@ -5499,11 +5494,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 분명하고, 수준·자연스러움·해설 모두 기존 게임 꼴 안에서 적절하다. 화자 표시가 로마자인 점만 화면 표시를 확인하면 된다. 통과. | 태오의 계산 방법을 확인하는 기존 게임 문항으로, 동위 범주 결제 수단 오답 구성과 정답 유일성·어휘 수준이 초급 1단계에 알맞아 통과.",
-      "hash": "ee448381b89d1a67",
-      "reviewedAt": "2026-11-24T22:12:06.809Z",
+      "reason": "정답 「카드로 계산했어요」가 이야기 본문으로 분명히 받쳐지고, 오답은 본문과 어긋난다. 1급 앞쪽 생활 읽기 게임 문항으로 문제가 없어 통과로 판정한다. 레슨 표현과 정답이 그대로 겹쳐 쉬운 편이지만, 연습용으로는 해가 없다. | 태오의 결제 방법을 확인하는 기존 게임 문항으로, 정답이 명확하고 어휘·난도·유형 모두 적절해 통과한다.",
+      "hash": "e54671ad13a00823",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-store-people-20261125c",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",
@@ -5551,11 +5546,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "물 값 1,000원을 가격표에서 찾는 세부 정보 문항이다. 정답이 유일하고, 오답은 라면 값과 합계로 그럴듯하다. 해설도 정확해 통과. | 편의점 이야기에서 물 한 병의 가격을 찾는 기존 게임 문항으로, 정답 유일성·오답 구성(라면 가격·합산 가격)·해설 모두 적절하여 통과.",
-      "hash": "267e6f7da677b29f",
-      "reviewedAt": "2026-11-24T22:12:06.809Z",
+      "reason": "물 가격 1,000원이 글에 분명하고 오답(라면 가격, 합계)이 그럴듯하다. 수준·해설·능력·난도 모두 맞아 통과다. 화자 로마자 표기만 화면 표시를 확인하면 된다. | 편의점 이야기에서 물 한 병의 가격을 찾는 기존 게임 문항으로, 정답 유일성·오답 구성·해설 모두 적절해 통과한다.",
+      "hash": "d05a91a6dfb074a2",
+      "reviewedAt": "2026-11-25T19:02:50.812Z",
       "rubric": "topik-review-r1",
-      "packet": "life-store-people-20261125c",
+      "packet": "life-directions-people-20261126b",
       "by": [
         {
           "stage": "claude",

@@ -1,9 +1,9 @@
 {
-  "layer_ver": "world-life-1-0a6d647e1d82",
+  "layer_ver": "world-life-1-870afe2ed534",
   "sources": {
     "world-life": {
       "path": "strata/world-life.json",
-      "sha256": "0a6d647e1d827f773ba7fd7ff195c41003059a4fbd662aa93de07352b1441666"
+      "sha256": "870afe2ed53408469eae622cf85fd9bd23101b3858a0de786cc245083a9239a9"
     }
   },
   "nodes": [
@@ -526,9 +526,6 @@
         "format": "single-choice",
         "items": {
           "directions-story-where": {
-            "skill": "ko.reading.detail"
-          },
-          "directions-story-where-transfer": {
             "skill": "ko.reading.detail"
           }
         }
