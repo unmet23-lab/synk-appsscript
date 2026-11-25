@@ -34,6 +34,34 @@ test('common checkout sends only requested paths to the publish coordinator', as
   assert.deepEqual(seen, { 저장소: folder, 경로들: ['docs/fixture.jsonl'], 메시지: 'fixture message', 실행: true });
 });
 
+test('common checkout never enters the operations retry list', async (t) => {
+  const { folder } = repository(t);
+  t.mock.method(publish, '올리기', async () => ({ 결과: '올림', 머리: 'fixture' }));
+  const noted = t.mock.method(operations, '남은장부적기', () => {});
+  await ledger.장부올리기(['docs/fixture.jsonl'], 'fixture message', { 저장소: folder, 환경: {} });
+  assert.equal(noted.mock.callCount(), 0);
+});
+
+test('an operational publish that dies midway leaves its paths for the next refresh', async (t) => {
+  const { folder, git } = repository(t);
+  fs.writeFileSync(path.join(folder, 'seed.txt'), 'fixture'); git('add', 'seed.txt'); git('commit', '-qm', 'fixture');
+  const worktree = path.join(folder, 'ops'); git('worktree', 'add', '-q', '--detach', worktree);
+  const state = path.join(folder, 'ops-state');
+  const before = process.env.SYNK_운영사본_상태;
+  process.env.SYNK_운영사본_상태 = state;
+  t.after(() => { if (before === undefined) delete process.env.SYNK_운영사본_상태; else process.env.SYNK_운영사본_상태 = before; });
+  t.mock.method(operations, '운영사본인가', () => true);
+  // 올리기 안에서 프로세스가 끝나면 그 시점의 목록이 그대로 남는다. 그 목록을 다음 갱신이 올리는 것은 tests/운영사본.test.js가 본다.
+  const records = ['docs/_ops/fixture.jsonl', 'docs/마케팅/편/게시/new.json'];
+  assert.ok(records.every(operations.기록자리인가), '갱신이 다시 올리는 자리');
+  let midway;
+  t.mock.method(publish, '올리기', async () => { midway = operations.남은장부읽기(state); return { 결과: '올림', 머리: 'fixture' }; });
+  await ledger.장부올리기(records, 'fixture message', { 저장소: worktree, 환경: {} });
+  assert.deepEqual(Object.keys(midway).sort(), [...records].sort());
+  assert.match(midway[records[1]].이유, /올리는 중/);
+  assert.deepEqual(operations.남은장부읽기(state), {}, '올렸으면 지운다');
+});
+
 test('failed operational publish preserves retry paths and never touches the shared checkout', async (t) => {
   const { folder, git } = repository(t);
   fs.writeFileSync(path.join(folder, 'seed.txt'), 'fixture'); git('add', 'seed.txt'); git('commit', '-qm', 'fixture');

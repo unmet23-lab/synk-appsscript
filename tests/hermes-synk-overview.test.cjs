@@ -1328,10 +1328,29 @@ test('운영 사본이 같은 까닭으로 30분 넘게 멈추거나 갱신 예�
   assert.equal(sent.length, 1);
   assert.match(sent[0].text, /운영 사본에 올리지 못한 기록/);
   assert.match(sent[0].text, /기록 1개가 6시간 넘게/);
+  assert.ok(state.attentionObserved['ops-copy-records']);
+
+  // 목록이 없는 기록, 기록 자리를 못 본 회차(fetch 실패 — head 없음)의 빈 목록은 풀린 것으로 보지 않는다
+  const unseen = [{ unpushed: undefined }, { head: undefined },
+    { state: 'failed', reasonKey: '오류', reason: 'fetch', stoppedSince: at(175).toISOString(), head: null, origin: null, behind: null }];
+  for (const [index, extra] of unseen.entries()) {
+    record(175 + index / 10, extra);
+    assert.deepEqual(await poll(175 + index / 10), []);
+    assert.equal(row(report, 'ops-copy-records'), undefined);
+    assert.ok(state.attentionObserved['ops-copy-records'], '앞 판단 그대로');
+  }
+  // 하나도 없다고 읽으면 풀린다
+  record(176);
+  assert.deepEqual(await poll(176), []);
+  assert.equal(row(report, 'ops-copy-records').needs_attention, false);
+  assert.equal(state.attentionObserved['ops-copy-records'], undefined);
+  record(177, { unpushed: ['docs/_ops/게시성과.jsonl'], unpushedSince: at(176).toISOString() });
+  assert.deepEqual(await poll(177), []);
+  assert.equal(row(report, 'ops-copy-records'), undefined);
 
   // 예약 작업이 기록을 쓰는 중이라 미룬 것도 까닭이 남는다
-  record(176, { state: 'stopped', reasonKey: '기록 쓰는 중', reason: '예약 작업이 기록을 쓰는 중이라 이번 회차는 따라가지 않았다', paths: ['docs/_ops/게시성과.jsonl'], stoppedSince: at(176).toISOString() });
-  const writing = await readOverview({ ...f.options, opsStatusFile: file, now: at(178) });
+  record(178, { state: 'stopped', reasonKey: '기록 쓰는 중', reason: '예약 작업이 기록을 쓰는 중이라 이번 회차는 따라가지 않았다', paths: ['docs/_ops/게시성과.jsonl'], stoppedSince: at(178).toISOString() });
+  const writing = await readOverview({ ...f.options, opsStatusFile: file, now: at(180) });
   assert.equal(writing.snapshot.ops.reasonKey, '기록 쓰는 중');
 
   // 모양이 다르거나 링크인 기록은 읽지 않는다

@@ -496,7 +496,7 @@ function opsCopySnapshot({ hermesHome, now, opsStatusFile }) {
   return { available: true, checkedAt, state: raw.state, stoppedSince, unpushedSince,
     behind: Number.isSafeInteger(raw.behind) && raw.behind >= 0 ? raw.behind : null,
     reasonKey: OPS_REASONS.has(raw.reasonKey) ? raw.reasonKey : null, reason: status.plain(raw.reason || '', 200),
-    paths: count(raw.paths), unpushed: count(raw.unpushed),
+    paths: count(raw.paths), unpushed: count(raw.unpushed), unpushedKnown: Array.isArray(raw.unpushed) && typeof raw.head === 'string',
     stoppedFor: stoppedSince ? now.getTime() - Date.parse(stoppedSince) : 0,
     unpushedFor: count(raw.unpushed) && unpushedSince ? now.getTime() - Date.parse(unpushedSince) : 0,
     stale: age > OPS_STALL_MS || age < -60_000, silent: age >= OPS_STALL_MS && awakeFor >= OPS_STALL_MS };
@@ -775,6 +775,11 @@ function opsCopyEvents(ops) {
   if (ops.unpushedFor >= OPS_UNPUSHED_MS) rows.push(attention(event('ops-copy-records', 'ops', 'warning', '운영 사본에 올리지 못한 기록',
     `예약 작업이 쓴 기록 ${ops.unpushed}개가 6시간 넘게 origin에 없습니다 · 처음 확인 ${formatTime(ops.unpushedSince)} · PC에서 node tools/운영사본.js 로 확인`,
     { unpushed: true }), true, { id: 'ops-copy-records', since: ops.unpushedSince }));
+  // 이번 갱신이 기록 자리를 실제로 보고 하나도 없다고 한 때만 풀린 것이다. 갱신은 기록 자리를 본 회차에만 head를 적는다(못 본 회차는 앞 목록이나
+  // 빈 목록을 이어 적는다 — tests/운영사본.test.js가 지킨다). 남았지만 여섯 시간이 안 됐거나 못 본 회차면 줄을 내지 않아 앞 판단을 그대로 둔다.
+  // 11-26 전에는 정상 줄이 없어 한 번 알린 사건이 풀린 뒤에도 감시 상태에 열린 채 남았다.
+  else if (ops.unpushedKnown && !ops.unpushed) rows.push(attention(event('ops-copy-records', 'ops', 'info', '운영 사본 기록', '올리지 못한 기록이 없습니다', { unpushed: false }),
+    false, { id: 'ops-copy-records', unpushed: false }));
   return rows;
 }
 

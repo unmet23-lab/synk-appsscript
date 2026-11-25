@@ -5,8 +5,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { 만들기, 예약상태, 설정, 답가리기, 감시설명, 예약설명, 백업상태 } = require('../tools/크레딧작업/알림해결.js');
+const { 만들기, 예약상태, 설정, 답가리기, 감시설명, 예약설명, 백업상태, 백업영수증, 운영기록 } = require('../tools/크레딧작업/알림해결.js');
 const monitor = require('../tools/hermes-synk/monitor.cjs');
+// 이 PC의 진짜 운영 사본 상태를 읽지 않게 한다.
+process.env.SYNK_운영사본_상태 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-alert-fix-ops-'));
 
 function 준비({ 남은분 = 100 } = {}) {
   const 집 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-alert-fix-'));
@@ -100,6 +102,99 @@ test('백업 상태는 칸마다 한 줄로 줄이고 못 읽으면 빈 글이�
   assert.doesNotMatch(글, /비밀|긴 글/);
   fs.writeFileSync(파일, '{ 끊긴');
   assert.equal(백업상태(파일), '');
+});
+
+const 실패영수증 = { status: 'partial_failure', startedAt: '2026-11-24T20:30:01Z', finishedAt: '2026-11-24T22:17:06Z', steps: [
+  { id: 'hermes', label: '헤르메스 백업', status: 'success' }, { id: 'argon', label: '조사 서버 상태 암호화 백업', status: 'failed', code: 'ARGON_DOC_MAPPING_CHANGED', metrics: 'C:/비밀/길' }] };
+const 실패줄 = 'argon | 조사 서버 상태 암호화 백업 | failed | ARGON_DOC_MAPPING_CHANGED';
+
+test('백업 영수증은 알림이 가리키는 것의 실패한 단계만 싣는다', () => {
+  const 창고 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-receipts-'));
+  const 쓰기 = (이름, 값) => fs.writeFileSync(path.join(창고, 이름), JSON.stringify(값));
+  쓰기('backup-status.json', 실패영수증);
+  // 업무 문서만 따로 돌린 결과는 제 영수증에만 남는다
+  쓰기('workspace-backup-status.json', { ...실패영수증, steps: [{ id: 'group-4-verify', label: 'workspace-백업 대조', status: 'failed', code: 'VERIFY_MISMATCH' }] });
+  const 서버 = 백업영수증(['backup-server', 'ops-copy'], 창고), 문서 = 백업영수증(['backup-workspace'], 창고);
+  assert.deepEqual(서버.split('\n'), ['매일 백업 · 시작 2026-11-24T20:30:01Z · 끝 2026-11-24T22:17:06Z · partial_failure', 실패줄]);
+  assert.deepEqual(문서.split('\n').slice(1), ['group-4-verify | workspace-백업 대조 | failed | VERIFY_MISMATCH']);
+  assert.equal(백업영수증(['backup-server', 'backup-workspace'], 창고), 서버 + '\n' + 문서);
+  assert.equal(백업영수증(['backup-media', 'ops-copy'], 창고), '');
+  // 영수증이 running이면 지금 도는 것인지 끊긴 것인지 감시로 가른다
+  const 감시 = (status, checkedAt) => 쓰기('backup-health.json', { schemaVersion: 1, checkedAt, components: [{ id: 'server', status }] });
+  쓰기('backup-status.json', { status: 'running', startedAt: '2026-11-25T00:00:00Z', steps: [{ id: 'workspace', label: '업무 문서', status: 'success' },
+    { id: 'retention', label: '보존 규칙', status: 'running' }] });
+  감시('interrupted', '2026-11-25T00:30:00Z');
+  assert.deepEqual(백업영수증(['backup-server'], 창고).split('\n'), ['매일 백업 · 시작 2026-11-25T00:00:00Z · 끝 없음 · 끊김', 'retention | 보존 규칙 | 여기서 끊김 | 코드 없음'], 'PC를 다시 켜서 끊긴 회차');
+  for (const [status, checkedAt, 까닭] of [['running', '2026-11-25T00:30:00Z', '감시가 도는 중이라고 한다'], ['interrupted', '2026-11-24T23:50:00Z', '감시가 본 뒤에 시작했다']]) {
+    감시(status, checkedAt);
+    assert.equal(백업영수증(['backup-server'], 창고), '매일 백업 · 시작 2026-11-25T00:00:00Z · 끝 없음 · 지금 도는 중', 까닭);
+  }
+  fs.rmSync(path.join(창고, 'backup-health.json'));
+  assert.match(백업영수증(['backup-server'], 창고), /지금 도는 중$/, '감시를 못 읽으면 끊겼다고 하지 않는다');
+  fs.writeFileSync(path.join(창고, 'backup-status.json'), '{ 끊긴');
+  assert.equal(백업영수증(['backup-server'], 창고), '');
+});
+
+test('운영 사본 기록은 저장소 경로와 정해진 까닭만 싣고, 오류 글의 경로와 계정 이름은 넣지 않는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-evidence-'));
+  const 멈춘글 = '운영 사본에서 고친 파일이 1개 있어 따라가지 않았다 — git -C "C:\\Users\\계정이름\\AppData\\Local\\synk\\ops" checkout -- <파일>로 되돌린다';
+  fs.writeFileSync(path.join(방, '상태.json'), JSON.stringify({ state: 'stopped', reasonKey: '고친 파일', reason: 멈춘글, unpushedSince: '2026-11-22T20:39:22Z',
+    unpushed: ['docs/마케팅/편/게시/작업실.json', 'docs/_ops/장부.jsonl', 'docs/_ops/둘.jsonl'] }));
+  fs.writeFileSync(path.join(방, '남은장부.json'), JSON.stringify({ paths: { 'docs/_ops/장부.jsonl': { 시각: 'x', 이유: 멈춘글 }, 'docs/_ops/둘.jsonl': { 시각: 'x', 이유: '올리는 중 — 여기서 끊기면' } } }));
+  assert.deepEqual(운영기록(방).split('\n'), ['상태 stopped · 멈춘 까닭 고친 파일 · 처음 확인 2026-11-22T20:39:22Z', 'docs/마케팅/편/게시/작업실.json | 다시 올리는 목록에 없음',
+    'docs/_ops/장부.jsonl | 못 올려 다시 올리는 목록에 있음', 'docs/_ops/둘.jsonl | 올리다 끊겨 다시 올리는 목록에 있음']);
+  assert.equal(운영기록(path.join(방, '없음')), '');
+  fs.writeFileSync(path.join(방, '상태.json'), JSON.stringify({ state: 'ok' }));
+  assert.equal(운영기록(방), '', '목록이 없으면 빈 글');
+});
+
+test('다시 시작하기 전의 실패 단계를 진단에 남기고, 시작하지 못한 것은 다시 돌렸다고 쓰지 않는다', async () => {
+  const f = 준비(), 창고 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-receipts-')), 영수증 = path.join(창고, 'backup-status.json');
+  f.묶음.items.push({ id: 'backup-server', incident: 'i2', title: 'PC 백업', detail: '일부 실패' });
+  fs.writeFileSync(path.join(f.자리, 'diagnosis/request.json'), JSON.stringify(f.묶음));
+  fs.writeFileSync(영수증, JSON.stringify(실패영수증));
+  let 남긴;
+  // 백업은 시작하자마자 영수증을 새 회차 것으로 덮는다
+  const 되살리기 = ({ 방, 증거 }) => {
+    남긴 = { 예약: 'SYNK 매일 백업', 칸: ['server'], 코드: ['BACKUP_PARTIAL_FAILURE'], 앞영수증: 증거(['server']), 시각: f.지금.toISOString(), 결과: '시작함' };
+    fs.writeFileSync(path.join(방, '되살리기.json'), JSON.stringify({ 회차: [남긴, { ...남긴, 예약: 'SYNK 미디어 원본 백업', 앞영수증: '', 결과: '시작하지 못함' }] }));
+    fs.writeFileSync(영수증, JSON.stringify({ status: 'running', startedAt: '2026-11-25T00:10:00Z', steps: [{ id: 'drive-index', label: 'Drive 목록 기준', status: 'running' }] }));
+    return 남긴;
+  };
+  const 작업 = 만들기({ 집고정: f.집, 지금고정: f.지금, 창고, 되살리기 });
+  const 자료 = await 작업.사전확인({ 방: f.방, 실행: () => ({ code: 0, stdout: '' }) });
+  assert.match(남긴.앞영수증, /ARGON_DOC_MAPPING_CHANGED/);
+  assert.equal(자료.백업영수증.split('\n')[1], 실패줄, '다시 시작하기 전에 읽은 영수증');
+  const 지시 = 작업.지시문(자료);
+  assert.doesNotMatch(지시, /drive-index/, '진행 중인 단계를 실패로 싣지 않는다');
+  assert.match(지시, /다시 시작하려 한 백업 예약[^\n]*결과가 「시작함」인 것만 다시 돌았다/);
+  assert.match(지시, /SYNK 매일 백업 · 결과 시작함 · 까닭 BACKUP_PARTIAL_FAILURE\n  다시 시작하기 전 영수증: 매일 백업 · .* \/ argon \| 조사 서버/);
+  assert.match(지시, /SYNK 미디어 원본 백업 · 결과 시작하지 못함/);
+  assert.doesNotMatch(지시, /이미 다시 돌린/);
+  // 마른 실행은 실제 작업이 쓰는 방에서 되살린 기록을 읽고, 시도는 제 방에만 쓴다
+  const g = 준비(), 마른방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-alert-fix-dry-'));
+  const 마른 = await 만들기({ 집고정: g.집, 지금고정: g.지금, 되살리기: null, 되살린방: f.방 }).사전확인({ 방: 마른방 });
+  assert.deepEqual(마른.되살린기록.map((x) => x.예약), ['SYNK 매일 백업', 'SYNK 미디어 원본 백업']);
+  assert.ok(fs.existsSync(path.join(마른방, '시도.json')));
+});
+
+test('되살리고 증거를 모으는 동안 기다림이 끝났으면 크레딧을 쓰지 않는다', async () => {
+  // 마감 10분 앞에서 시작해 되살리기가 10분 걸렸다
+  const f = 준비({ 남은분: 12 });
+  let 때 = +f.지금;
+  const 늦은 = 만들기({ 집고정: f.집, 지금고정: () => new Date(때), 되살리기: () => { 때 += 10 * 60000; return { 이유: '다시 돌릴 백업 없음' }; } });
+  const r = await 늦은.사전확인({ 방: f.방, 실행: () => ({ code: 0, stdout: '' }) });
+  assert.equal(r.할일, false);
+  assert.match(r.이유, /증거를 모으는 동안 기다림이 끝남 · 되살리기: 다시 돌릴 백업 없음/);
+  assert.equal(fs.existsSync(path.join(f.방, '시도.json')), false, '집지 않은 것으로 남는다');
+  // 예약을 조회하는 동안 감시가 그날을 닫았다
+  const g = 준비();
+  const 닫힘 = await g.작업.사전확인({ 방: g.방, 실행: () => {
+    fs.writeFileSync(path.join(g.자리, 'state.json'), JSON.stringify({ digest: { day: g.묶음.day, id: g.묶음.id, status: 'done' } }));
+    return { code: 0, stdout: '' };
+  } });
+  assert.equal(닫힘.할일, false);
+  assert.equal(fs.existsSync(path.join(g.방, '시도.json')), false);
 });
 
 test('빈 답은 진단으로 치지 않고 실패 안내를 남긴다', async () => {

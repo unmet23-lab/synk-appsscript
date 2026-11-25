@@ -532,6 +532,7 @@ test('갱신: fetch가 실패한 회차(예외)도 못 올린 기록과 처음 �
   await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
   const 처음 = 판.상태();
   assert.deepEqual(처음.unpushed, ['docs/_ops/장부.jsonl']);
+  assert.equal(처음.head, 판.운영.머리(), '기록 자리를 본 회차에는 head가 있다');
   판.공용.g('remote', 'set-url', 'origin', path.join(판.뿌리, '없는-원격.git'));
   const r = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 });
   assert.equal(r.결과, '실패', JSON.stringify(r));
@@ -539,6 +540,27 @@ test('갱신: fetch가 실패한 회차(예외)도 못 올린 기록과 처음 �
   assert.equal(뒤.state, 'failed');
   assert.deepEqual(뒤.unpushed, ['docs/_ops/장부.jsonl']);
   assert.equal(뒤.unpushedSince, 처음.unpushedSince);
+  assert.equal(뒤.head, null, '못 본 회차에는 head가 없다');
+  // 앞 상태까지 못 읽으면 빈 목록이 남는다. head가 없어 감시(tools/hermes-synk/overview.cjs)가 「남은 기록 없음」으로 읽지 않는다
+  fs.writeFileSync(path.join(판.상태폴더, '상태.json'), '{ 깨진');
+  assert.equal((await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 판.상태폴더, 실행: true, 헤르메스 })).결과, '실패');
+  assert.deepEqual([판.상태().unpushed, 판.상태().head], [[], null]);
+});
+
+test('장부올리기가 올리다 끊기면 먼저 적힌 기록을 다음 갱신이 올린다', async (t) => {
+  const 판 = 새판(t);
+  await 판.만들기();
+  const 경로 = 'docs/마케팅/편1/게시/작업실.json';
+  판.운영.쓰기(경로, '{"등록":"r1"}\n');
+  // 올리는 중에 프로세스가 끝났다(PC 재시작 · 부른 쪽의 시간 제한) — 결과를 적지 못한다
+  t.mock.method(바로, '올리기', () => new Promise(() => {}));
+  require(path.join(REPO, 'tools', 'lib', '장부올리기.js')).장부올리기([경로], 'chore(장부): 시험', { 저장소: 판.운영.폴더, 환경: {} });
+  assert.match(도구.남은장부읽기(기본상태)[경로].이유, /올리는 중/);
+  t.mock.restoreAll();
+  const r = await 도구.갱신({ 저장소: 판.공용.폴더, 상태폴더: 기본상태, 실행: true, 헤르메스: () => ({ 결과: '맞음' }) });
+  assert.equal(r.장부?.결과, '올림', JSON.stringify(r));
+  assert.equal(판.원격파일(경로), '{"등록":"r1"}\n');
+  assert.deepEqual(도구.남은장부읽기(기본상태), {});
 });
 
 test('만들기: 되돌리기가 가리킴만 지우고 남긴 운영 사본은 다시 가리킨다', async (t) => {
