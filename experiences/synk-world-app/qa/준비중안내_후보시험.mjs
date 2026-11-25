@@ -36,17 +36,19 @@ for (const [r, f] of files) if (r.endsWith('.html')) {
 }
 const type = f => f.endsWith('.html') ? 'text/html; charset=utf-8' : /\.(mjs|js)$/.test(f) ? 'text/javascript; charset=utf-8' : f.endsWith('.css') ? 'text/css; charset=utf-8' : 'application/octet-stream';
 
-function seeded() {
+// exam: 시험 목표(TOPIK I 2급)를 저장해 홈 「이번 주 계획」이 보이게 한다.
+function seeded({exam = false} = {}) {
   const values = new Map(), storage = {getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, String(v)), removeItem: k => values.delete(k)};
   const life = createLifeProgress({storage, owner: 'guest', now: () => Date.now()});
   life.setHangulReading('reads', {via: 'question'}); life.selectTutor('mongle');
+  if (exam) life.updateLearningProfile({consent:true,expectedRevision:life.learningProfile().profile.revision,values:{reasons:['exam'],primaryReason:'exam',examType:'topik1',targetGrade:2}});
   return Object.fromEntries(values);
 }
 
 const result = {mode: live ? '공개본' : '후보', checks: {}};
 const browser = await chromium.launch({channel: 'msedge', headless: true});
 try {
-  for (const [lang, width, height] of [['mn', 390, 844], ['ko', 1440, 900], ['en', 390, 844]]) {
+  for (const [lang, width, height, exam = false] of [['mn', 390, 844], ['ko', 1440, 900, true], ['en', 390, 844]]) {
     const tag = `${width}-${lang}`, text = SOON_TEXT[lang];
     const seen = result.checks[tag] = {blocked: [], errors: [], failed: [], served: new Set(), leaked: []};
     const context = await browser.newContext({viewport: {width, height}, locale: 'ko-KR', timezoneId: 'Asia/Seoul', reducedMotion: 'reduce'});
@@ -62,7 +64,7 @@ try {
       if (window.top !== window || localStorage.getItem('qa.seeded')) return;
       for (const [k, v] of Object.entries(seed)) localStorage.setItem(k, v);
       localStorage.setItem('synk.world.lang', lang); localStorage.setItem('qa.seeded', '1');
-    }, {seed: seeded(), lang});
+    }, {seed: seeded({exam}), lang});
     const page = await context.newPage();
     page.on('pageerror', e => seen.errors.push(e.message));
     page.on('response', r => { if (r.status() >= 400 && /synk\.im/.test(r.url())) seen.failed.push(`${r.status()} ${r.url()}`); });
@@ -112,6 +114,7 @@ try {
       seen.blocked.push({name, ok, ...state});
     };
     await pressKeep('.life-home-board [data-view="position"]', 'home-position');
+    if (exam) { await page.waitForFunction(() => { const b = document.querySelector('#study-plan-button'); return !!b && !b.hidden; }); await pressKeep('#study-plan-button', 'home-plan'); }
     await page.locator('.life-home-board [data-view="study"]').first().click(); await page.waitForSelector('#world-panel[open] #panel-content .study-position-row');
     await pressKeep('#panel-content .study-position-row', 'study-position');
     await page.locator('#panel-close').click(); await page.waitForFunction(() => !document.querySelector('#world-panel[open]'));

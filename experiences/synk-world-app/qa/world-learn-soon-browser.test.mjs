@@ -21,13 +21,14 @@ const talkRoot=[process.env.SYNK_TALK_ROOT,path.resolve(root,'../SYNK-talk'),pat
 const out=path.resolve(process.env.SYNK_LEARN_SOON_QA_OUT||path.join(root,'experiences/synk-world-app/qa/world-learn-soon-20261124'));
 const config={version:1,supabaseUrl:'https://identity.example.test',supabasePublishableKey:'sb_publishable_browser_fixture',accountApiUrl:'https://identity.example.test',portalUrl:'https://identity.example.test/',
  clients:{world:{clientId:'world-browser',redirectUri:'https://world.example.test/world/'}}};
-const CASES=[{lang:'mn',viewport:{width:390,height:844}},{lang:'ko',viewport:{width:390,height:844}},{lang:'en',viewport:{width:390,height:844}},{lang:'mn',viewport:{width:1280,height:800}},{lang:'ko',viewport:{width:1440,height:900}}];
+const CASES=[{lang:'mn',viewport:{width:390,height:844}},{lang:'ko',viewport:{width:390,height:844}},{lang:'en',viewport:{width:390,height:844}},{lang:'mn',viewport:{width:1280,height:800}},{lang:'ko',viewport:{width:1440,height:900},exam:true}];
 
-// 첫 실행을 마친 손님 기기의 생활 진도: 한글 답과 튜터만 골라 두었다.
-function seeded(){
+// 첫 실행을 마친 손님 기기의 생활 진도: 한글 답과 튜터만 골라 두었다. exam이면 시험 목표(TOPIK I 2급)도 저장해 홈 「이번 주 계획」이 보인다.
+function seeded({exam=false}={}){
  const values=new Map(),storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v)),removeItem:k=>values.delete(k)};
  const life=createLifeProgress({storage,owner:'guest',now:()=>Date.parse('2026-11-24T01:00:00Z')});
  life.setHangulReading('reads',{via:'question'});life.selectTutor('mongle');
+ if(exam)life.updateLearningProfile({consent:true,expectedRevision:life.learningProfile().profile.revision,values:{reasons:['exam'],primaryReason:'exam',examType:'topik1',targetGrade:2}});
  return Object.fromEntries(values);
 }
 
@@ -44,11 +45,11 @@ test('WORLD 배우기 · 놀이: 들어가는 단추는 「준비 중 · 2027년
  try{
   await serverReady(url+'/world/health',{signal:t.signal,exited:()=>server.exitCode!==null,output:()=>serverOutput});
   browser=await playwright.chromium.launch({channel:process.platform==='win32'?'msedge':'chrome',headless:true,timeout:30000});
-  for(const {lang,viewport} of CASES){
+  for(const {lang,viewport,exam=false} of CASES){
    const tag=`${viewport.width}-${lang}`,text=SOON_TEXT[lang],seen=checks[tag]={blocked:[]};
    const context=await browser.newContext({viewport,locale:'ko-KR',timezoneId:'Asia/Seoul',reducedMotion:'reduce'});context.setDefaultTimeout(25000);
    await context.route('**/*',route=>new URL(route.request().url()).origin===url?route.continue():route.abort('blockedbyclient'));
-   await context.addInitScript(({seed,lang})=>{if(window.top!==window||localStorage.getItem('qa.seeded'))return;for(const [k,v]of Object.entries(seed))localStorage.setItem(k,v);localStorage.setItem('synk.world.lang',lang);localStorage.setItem('qa.seeded','1');},{seed:seeded(),lang});
+   await context.addInitScript(({seed,lang})=>{if(window.top!==window||localStorage.getItem('qa.seeded'))return;for(const [k,v]of Object.entries(seed))localStorage.setItem(k,v);localStorage.setItem('synk.world.lang',lang);localStorage.setItem('qa.seeded','1');},{seed:seeded({exam}),lang});
    const page=await context.newPage();page.on('pageerror',e=>errors.push(`${tag}: ${e.message}`));
    // 첫 실행(언어 → 한글 질문 → 튜터)이 남아 있으면 지나가 입장까지(world-exam-link-browser.test.mjs와 같은 길).
    await page.goto(url+'/world/?opening=off',{waitUntil:'domcontentloaded'});
@@ -112,6 +113,8 @@ test('WORLD 배우기 · 놀이: 들어가는 단추는 「준비 중 · 2027년
    await pressHome('.life-home-board [data-view="position"]','home-position',{shot:true});
    if(await page.locator('.life-home-shortcuts [data-view="review"]').isVisible())await pressHome('.life-home-shortcuts [data-view="review"]','home-review');
    seen.homeReviewShown=await page.locator('.life-home-shortcuts [data-view="review"]').isVisible();
+   // 홈 「이번 주 계획」은 시험 목표를 저장한 사람에게만 보인다(11-25 Fable 다시 검수 FA1). 실제 단추를 눌러 안내를 확인한다.
+   if(exam){await page.waitForFunction(()=>{const b=document.querySelector('#study-plan-button');return !!b&&!b.hidden;});await pressHome('#study-plan-button','home-plan',{shot:true});}
    // 홈 「학습 목표」 판은 열리고, 그 안의 「내 위치 보기」 줄은 안내를 띄운다(11-25 Fable P2).
    await page.locator('.life-home-board [data-view="study"]').first().click();await page.waitForSelector('#world-panel[open] #panel-content .study-position-row');
    await pressHome('#panel-content .study-position-row','study-position',{shot:true});
