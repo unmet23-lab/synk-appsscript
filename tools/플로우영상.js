@@ -136,7 +136,7 @@ function main(argv) {
     if (!fs.existsSync(src)) { console.error(`받은 판이 없음: ${src}`); return 1; }
     if (명령 === '띠') {
       const dst = path.join(편, '영상칸', 'flow', `${id}_${판}_띠.jpg`);
-      const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', src, '-vf', 'fps=2,scale=216:384,tile=8x2', '-frames:v', '1', dst], { encoding: 'utf8' });
+      const r = spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', src, '-vf', 'fps=2,scale=432:768,tile=5x4', '-frames:v', '1', dst], { encoding: 'utf8' });
       if (r.status !== 0) { console.error(`ffmpeg 실패: ${r.stderr}`); return 2; }
       console.log(dst);
       return 0;
