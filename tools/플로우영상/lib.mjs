@@ -29,8 +29,15 @@ export const JSONP = V + "지시문.json";
 export const JSON_COPY = FLOW + "지시문_사본.json";
 export const VEO = "Veo 3.1 - Quality";
 export const OMNI = "Omni 1.2 Flash";
-export const EMAIL = "77yuhbs@gmail.com";
-export const FLOW_HOME = "https://labs.google/fx/ko/tools/flow?authuser=2";
+// Flow 계정 둘(11-26 유호님 「unmet23 제미나이랑 77yuhbs 제미나이 … 둘 다 울트라」). 부르는 쪽이 V4.account로 고른다(없으면 77yuhbs).
+// 주소는 /u/<번호> 대신 메일로 연다 — 번호는 로그인 차례로 바뀐다.
+export const ACCOUNTS = Object.freeze({ "77yuhbs": "77yuhbs@gmail.com", unmet23: "unmet23@gmail.com" });
+export const ACCOUNT = (globalThis.V4 && globalThis.V4.account) || "77yuhbs";
+if (!Object.hasOwn(ACCOUNTS, ACCOUNT)) throw new Error("모르는 Flow 계정: " + ACCOUNT);
+export const EMAIL = ACCOUNTS[ACCOUNT];
+export const FLOW_HOME = "https://labs.google/fx/ko/tools/flow?authuser=" + encodeURIComponent(EMAIL);
+// 프로젝트와 올린 그림은 계정마다 따로다. 77yuhbs는 옛 기록과 같은 열쇠(「omni」), 다른 계정은 「omni@unmet23」.
+export const projKey = (p) => (ACCOUNT === "77yuhbs" ? p : `${p}@${ACCOUNT}`);
 
 // 모델 · 판 · 「생성 시」 크레딧 · 줄 찾기 KEY · 프로젝트 · 시작 그림
 export const PLAN = {};
@@ -41,8 +48,9 @@ try {
 } catch {}
 // 누적 상한은 이 편에서 이 실행기가 접수한 줄의 값만 센다(계정은 다른 세션과 같이 쓴다). 기본은 없음 — 11-25 유호님 「크레딧 모자라는거 아니면 끝까지 진행해」라서 계정 바닥(FLOOR)에서만 멈춘다
 export const BUDGET = 예산;
-// 계정 크레딧 바닥 — 접수 뒤 남을 크레딧이 이 밑이면 내지 않는다(공모전 · PULSE 몫을 남긴다)
-export const FLOOR = 1000;
+// 계정 크레딧 바닥 — 접수 뒤 남을 크레딧이 이 밑이면 그 계정으로는 내지 않는다. 부르는 쪽(tools/플로우영상.js)이 다른 계정으로 넘긴다.
+// 11-26 유호님 「옴니 크레딧은 공모전용으로는 쓰지말고 우리 매일 만드는 컨텐츠 (lab , shift , yuhobuils) 에 전부 쓰자」 — 공모전 · PULSE 몫을 남기지 않는다.
+export const FLOOR = 300;
 
 const kst = () => new Date().toLocaleString("sv-SE", { timeZone: "Asia/Seoul" });
 export const kstNow = kst;
@@ -207,7 +215,7 @@ export async function closeAccount(page, round) {
   return d === 0;
 }
 
-// 계정 창에서 크레딧 · 메일 · 워터마크를 읽고 닫는다(읽기만). 77yuhbs가 아니거나 띠가 보이거나 창이 안 닫히면 멈춘다.
+// 계정 창에서 크레딧 · 메일 · 워터마크를 읽고 닫는다(읽기만). 고른 계정(V4.account)이 아니거나 띠가 보이거나 창이 안 닫히면 멈춘다.
 export async function readCredits(page, round, tag, shotName = null) {
   await unmin(page, round);
   await openAccount(page, round);
@@ -217,7 +225,7 @@ export async function readCredits(page, round, tag, shotName = null) {
   const out = { credits: num(a.credits), at: kst(), email: a.email, watermark: a.watermark ? a.watermark.ariaChecked : null, watermarkRaw: a.watermark, band: a.creditBand };
   step(round, "크레딧 " + tag, out);
   if (!closed) throw new Error("멈춤 — 계정 창이 안 닫힘");
-  if (a.email !== EMAIL) throw new Error("멈춤 — 계정이 77yuhbs가 아님: " + a.email);
+  if (a.email !== EMAIL) throw new Error("멈춤 — 계정이 " + ACCOUNT + "가 아님: " + a.email);
   if (a.creditBand) throw new Error("멈춤 — 「크레딧 추가」 띠");
   if (!Number.isFinite(out.credits)) throw new Error("멈춤 — 크레딧 숫자를 못 읽음");
   return out;

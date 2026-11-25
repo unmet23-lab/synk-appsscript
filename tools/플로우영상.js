@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * 플로우영상 — LAB 편 전체를 샷마다 Flow Omni 1.2 Flash 영상으로 굽는다(2026-11-25 Claude).
- * 결정 11-25 「LAB 영상 칸 엔진 · Omni 1.2 Flash · Veo 안 씀」 · 「LAB 편 전체를 영상으로」. 시험과 근거는
+ * 플로우영상 — 매일 편(LAB · synkbrief · yuhobuilds)의 장면을 샷마다 Flow Omni 1.2 Flash 영상으로 굽는다(2026-11-25 Claude, 11-26 세 계정으로 넓힘).
+ * 결정 11-25 「LAB 영상 칸 엔진 · Omni 1.2 Flash · Veo 안 씀」 · 「LAB 편 전체를 영상으로」, 11-26 「Flow 크레딧은 매일 편에만 · 두 계정」. 시험과 근거는
  * docs/마케팅/LAB_하루두편_설계_20261110/검토/영상시험_20261125/README.md, 절차는 제작 절차 「LAB 영상 칸」.
  * 브라우저 조작은 tools/플로우영상/(광명역 공모 편 Flow 실행기를 옮긴 것)이 하고, 이 파일은 편 폴더 설정을 읽어 차례대로 부른다.
  *
@@ -11,6 +11,11 @@
  *   node tools/플로우영상.js 굽기 <편 폴더> [칸…]      칸(샷)마다 한 판 굽고 영상칸/받음/<칸>_<a|b|…>.mp4로 받는다(칸을 안 주면 계획의 모든 칸). 끝에 작업 공간을 닫는다
  *   node tools/플로우영상.js 띠 <편 폴더> <칸> [판]    받은 판을 0.5초 간격 띠(영상칸/flow/<칸>_<판>_띠.jpg)로 — 몽글 검사용
  *   node tools/플로우영상.js 넣기 <편 폴더> <칸> [판]  고른 판(기본 a)을 remotion/public/vid/<칸>.mp4로 복사한다
+ *   node tools/플로우영상.js 계정                      두 Flow 계정의 마지막으로 읽은 크레딧 · 경고 · 다시 차는 때와 지금 고를 계정을 보인다
+ *   준비 · 굽기에 --계정 <77yuhbs|unmet23>을 주면 그 계정으로만 낸다. 안 주면 샷마다 고른다: 오늘 「비정상적인 활동」이 두 번 났거나
+ *   3시간 안에 한 번 난 계정은 빼고, 남은 크레딧이 그 샷 값 + 바닥(300)보다 적은 계정도 빼고, 남은 것 가운데 다시 차는 때가 먼저 오는
+ *   계정(그때 사라질 크레딧)부터 쓴다. 고른 계정에 이 편의 프로젝트 · 그림이 없으면 그 자리에서 만들고 올린다. 계정 상태는
+ *   여러 세션이 같이 보는 synk-vendor/_공용차례/flow_계정.json에 남는다.
  *
  * 편 폴더의 영상칸/:
  *   계획.json   { "_예산": 180, "_누적상한": <없으면 뺀다>, "<칸>": { "model": "Omni 1.2 Flash", "n": 1, "cost": "12", "dur": "4초", "proj": "omni", "start": "<시작 그림 이름>", "end": "<끝 그림 이름 — 없으면 뺀다>", "key": "<지시문 속 한 번만 나오는 구절>" } }
@@ -29,11 +34,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
+const os = require('node:os');
 
 const 실행기 = path.join(__dirname, '플로우영상');
 const OMNI = 'Omni 1.2 Flash';
 const 초당 = 3;
 const 기본예산 = 180;
+// Flow 계정 둘(11-26 유호님 「둘 다 울트라 결재했어」). 다시 차는 때는 그 계정 Flow 프로필 「… 초기화」(11-26 읽음, KST)
+const 계정들 = Object.freeze(['77yuhbs', 'unmet23']);
+const 다시참 = Object.freeze({ '77yuhbs': { 날: 1, 시: 21, 분: 29 }, unmet23: { 날: 26, 시: 6, 분: 37 } });
+const 바닥 = 300; // tools/플로우영상/lib.mjs FLOOR와 같게
+const 경고쉼 = 3 * 3600 * 1000;
+const 상태파일 = () => process.env.SYNK_FLOW_ACCOUNTS || path.join(os.homedir(), 'Documents', 'synk-vendor', '_공용차례', 'flow_계정.json');
+const 열쇠 = (계정, 기본 = 'omni') => (계정 === '77yuhbs' ? 기본 : `${기본}@${계정}`);
+const 올림열쇠 = (계정) => (계정 === '77yuhbs' ? '_올림' : `_올림@${계정}`);
 // 배우는 말 칸(11-26 유호님 「너무 빨라서 조금만 천천히」 → 「넣어 줘」). 글 빠르기 13자는 넷플릭스 어린이 자막 상한(여러 언어 판 — 빈칸까지 센다)이다
 const 배움 = { 시작일: '20261126', 초: 3.5, 글: 13, 음절: 3.5, 틈: 0.05 };
 
@@ -60,7 +74,7 @@ function 점검(편) {
   for (const id of 칸) {
     const p = 계획[id];
     if (!/^[A-Za-z0-9_-]+$/.test(id)) 문제.push(`${id}: 칸 이름은 영문 · 숫자 · _ · -만`);
-    if (p.model !== OMNI) 문제.push(`${id}: 모델이 ${OMNI}가 아님(${p.model}) — LAB 영상 칸은 Omni만(결정 11-25)`);
+    if (p.model !== OMNI) 문제.push(`${id}: 모델이 ${OMNI}가 아님(${p.model}) — 매일 편 영상 칸은 Omni만(결정 11-25 · 11-26)`);
     if (p.proj !== 'omni') 문제.push(`${id}: proj는 "omni"`);
     if (p.n !== 1) 문제.push(`${id}: n은 1(한 번에 한 판)`);
     const 초 = Number(String(p.dur || '').replace(/[^0-9]/g, ''));
@@ -81,8 +95,8 @@ function 점검(편) {
     else {
       if (!p.key || 글[id].split(p.key).length - 1 !== 1) 문제.push(`${id}: key가 이 칸 글에 한 번이 아님`);
       for (const [oid, t] of Object.entries(글)) if (oid !== id && p.key && t.includes(p.key)) 문제.push(`${id}: key가 ${oid} 글에도 있음`);
-      // 기본 상태의 몽글은 코와 입이 없고, 감정이 바뀌면 입까지 바뀌어도 된다(11-25 유호님 — 제작 절차 「몽글 표정」)
-      if (!/no mouth/i.test(글[id])) 문제.push(`${id}: 지시문에 몽글의 기본 얼굴(코 · 입 없음) 글이 없음(제작 절차 「편 전체를 영상으로」의 영상 공통 글을 쓴다)`);
+      // 기본 상태의 몽글은 코와 입이 없고, 감정이 바뀌면 입까지 바뀌어도 된다(11-25 유호님 — 제작 절차 「몽글 표정」). LAB 편과 몽글이 나오는 샷만
+      if ((LAB편(편) || /MONGLE/i.test(글[id])) && !/no mouth/i.test(글[id])) 문제.push(`${id}: 지시문에 몽글의 기본 얼굴(코 · 입 없음) 글이 없음(제작 절차 「편 전체를 영상으로」의 영상 공통 글을 쓴다)`);
       if (/no mouth[^.]{0,80}\bever\b/i.test(글[id])) 알림.push(`${id}: 「NO mouth … ever」가 표정을 막는다 — 영상 공통 글로 바꾼다(제작 절차 「몽글 표정」)`);
     }
   }
@@ -91,6 +105,7 @@ function 점검(편) {
   return { 문제, 알림, 칸, 예산, 합 };
 }
 
+const LAB편 = (편) => /^LAB_/.test(path.basename(path.resolve(편)));
 const 글자수 = (s) => [...String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim()].length;
 const 둘째자리 = (n) => Math.round(n * 100) / 100;
 
@@ -121,6 +136,7 @@ function 코드칸초(글들, 말) {
 
 /** 배우는 말 칸은 천천히(제작 절차 lab-learn-pace) — 크레딧을 쓰기 전에 계획으로, 렌더 전에 편 코드와 목소리로 본다 */
 function 배움점검(편, 계획, 문제, 알림) {
+  if (!LAB편(편)) return; // 배우는 말은 LAB 편에만 있다
   const 날짜 = (path.basename(path.resolve(편)).match(/_(\d{8})$/) || [])[1];
   const 말들 = 계획._배우는말;
   if (말들 == null) {
@@ -207,7 +223,14 @@ function 공간닫기(편) {
 }
 
 function main(argv) {
-  const [명령, 편인자, ...나머지] = argv;
+  const 옵션 = {};
+  const 인자 = [];
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] === '--계정') { 옵션.계정 = argv[i + 1]; i += 1; } else 인자.push(argv[i]);
+  }
+  if (옵션.계정 !== undefined && !계정들.includes(옵션.계정)) { console.error(`--계정은 ${계정들.join(' · ')} 가운데 하나`); return 2; }
+  if (인자[0] === '계정') return 계정보기();
+  const [명령, 편인자, ...나머지] = 인자;
   if (!명령 || !편인자 || !['점검', '준비', '굽기', '띠', '넣기'].includes(명령)) {
     console.error('쓰는 법: node tools/플로우영상.js <점검|준비|굽기|띠|넣기> <편 폴더> [칸…] — 파일 머리 참고');
     return 2;
@@ -244,26 +267,13 @@ function main(argv) {
   if (본.문제.length) return 1;
   if (명령 === '점검') return 0;
 
+  const 고른계정 = 옵션.계정;
   if (명령 === '준비') {
-    let res = 결과(편);
-    if (!(res._projects || {}).omni) {
-      돌리기('r01.mjs', { 편, round: `준비-${시각()}`, proj: 'omni' });
-      res = 결과(편);
-      if (!(res._projects || {}).omni) { console.log('  ✗ Flow 프로젝트를 못 만듦 — 영상칸/flow/steps.jsonl을 본다'); 공간닫기(편); return 1; }
-    }
-    const 계획 = 읽기(path.join(편, '영상칸', '계획.json'));
-    const 올린 = new Set(res._올림 || []);
-    const 올릴 = [...new Set(본.칸.flatMap((id) => [계획[id].start, 계획[id].end].filter(Boolean)))].filter((s) => !올린.has(s));
-    if (올릴.length) {
-      const r = 돌리기('up.mjs', { 편, round: `올리기-${시각()}`, proj: 'omni', files: 올릴.map((s) => 슬래시(path.join(편, '영상칸', '시작', `${s}.jpg`))) });
-      if (r.줄.some((s) => s.step === '오류')) { console.log('  ✗ 시작 그림 올리기 실패'); 공간닫기(편); return 1; }
-      res = 결과(편);
-      res._올림 = [...new Set([...(res._올림 || []), ...올릴])];
-      fs.writeFileSync(path.join(편, '영상칸', 'flow', 'results.json'), JSON.stringify(res, null, 1));
-    }
-    console.log(`준비 끝 — 프로젝트 ${res._projects.omni} · 올린 그림 ${(res._올림 || []).length}장`);
+    const 계정 = 고른계정 || 계정고르기(0).계정;
+    if (!계정) { console.log('  ✗ 지금 낼 Flow 계정이 없음 — node tools/플로우영상.js 계정'); return 1; }
+    const 끝 = 준비하기(편, 계정, 본);
     공간닫기(편);
-    return 0;
+    return 끝 ? 0 : 1;
   }
 
   // 굽기
@@ -271,7 +281,7 @@ function main(argv) {
   const 모름 = ids.filter((id) => !본.칸.includes(id));
   if (모름.length) { console.error(`계획에 없는 칸: ${모름.join(', ')}`); return 2; }
   const res0 = 결과(편);
-  if (!(res0._projects || {}).omni) { console.error('먼저 「준비」를 돌린다(프로젝트 · 시작 그림)'); return 1; }
+  if (!Object.keys(res0._projects || {}).some((k) => k === 'omni' || k.startsWith('omni@'))) { console.error('먼저 「준비」를 돌린다(프로젝트 · 시작 그림)'); return 1; }
   // 같은 key로 낸 줄이 프로젝트에 이미 있으면 실행기는 굽지 않고 그 줄을 기다리기만 한다 — 다시 구울 때는 칸 글과 key를 바꾼다
   const 계획 = 읽기(path.join(편, '영상칸', '계획.json'));
   const 낸key = new Set(Object.entries(res0).filter(([k, v]) => !k.startsWith('_') && v && v.accepted).map(([, v]) => `${v.id}\0${v.key}`));
@@ -279,14 +289,116 @@ function main(argv) {
   if (같은key.length) { console.error(`이미 같은 key로 낸 칸: ${같은key.join(', ')} — 다시 구우려면 지시문.json의 그 칸 글을 고치고 계획.json key를 새 글의 구절로 바꾼다`); return 1; }
   let 실패 = 0;
   for (const id of ids) {
-    const run = 다음run(편, id);
-    console.log(`${id} → ${run}`);
-    const r = 돌리기('clip.mjs', { 편, round: `${run}-${시각()}`, id, run });
-    const 받음 = r.줄.find((s) => s.step && s.step.startsWith('받음'));
+    const 값 = Number(계획[id].cost) || 0;
+    const 쓴 = [];
+    let 받음 = null;
+    // 한 계정이 「비정상적인 활동」이나 바닥으로 막히면 다른 계정으로 한 번 더 낸다(--계정을 준 때는 넘기지 않는다)
+    while (!받음 && 쓴.length < 계정들.length) {
+      const 골라 = 고른계정 ? { 계정: 쓴.length ? null : 고른계정, 까닭: '' } : 계정고르기(값);
+      if (!골라.계정 || 쓴.includes(골라.계정)) { if (!쓴.length) console.log(`  ✗ ${id} 낼 Flow 계정이 없음 — ${골라.까닭}`); break; }
+      쓴.push(골라.계정);
+      if (!준비됨(편, 골라.계정, 계획, [id]) && !준비하기(편, 골라.계정, 본)) { console.log(`  ✗ ${id} ${골라.계정} 준비 실패`); continue; }
+      const run = 다음run(편, id);
+      console.log(`${id} → ${run} (${골라.계정})`);
+      const r = 돌리기('clip.mjs', { 편, round: `${run}-${시각()}`, id, run, account: 골라.계정 });
+      상태적기(골라.계정, r.줄);
+      받음 = r.줄.find((s) => s.step && s.step.startsWith('받음'));
+      const 막힘 = r.줄.some((s) => /비정상적인 활동|Flow 크레딧 바닥/.test(JSON.stringify(s)));
+      if (!받음 && !막힘) break;
+    }
     if (!받음) { 실패 += 1; console.log(`  ✗ ${id} 받지 못함`); }
   }
   공간닫기(편);
   return 실패 ? 1 : 0;
+}
+
+/** 이 편의 그 계정 프로젝트와, 칸들이 쓰는 그림이 다 올라가 있나 */
+function 준비됨(편, 계정, 계획, ids) {
+  const res = 결과(편);
+  if (!(res._projects || {})[열쇠(계정)]) return false;
+  const 올린 = new Set(res[올림열쇠(계정)] || []);
+  return ids.every((id) => [계획[id].start, 계획[id].end].filter(Boolean).every((s) => 올린.has(s)));
+}
+
+/** 그 계정에 이 편의 프로젝트를 만들고(처음 한 번) 안 올린 시작 · 끝 그림을 올린다. 크레딧은 쓰지 않는다 */
+function 준비하기(편, 계정, 본) {
+  let res = 결과(편);
+  const pj = 열쇠(계정);
+  if (!(res._projects || {})[pj]) {
+    const r = 돌리기('r01.mjs', { 편, round: `준비-${계정}-${시각()}`, proj: pj, account: 계정 });
+    상태적기(계정, r.줄);
+    res = 결과(편);
+    if (!(res._projects || {})[pj]) { console.log(`  ✗ ${계정} Flow 프로젝트를 못 만듦 — 영상칸/flow/steps.jsonl을 본다`); return false; }
+  }
+  const 계획 = 읽기(path.join(편, '영상칸', '계획.json'));
+  const 올린 = new Set(res[올림열쇠(계정)] || []);
+  const 올릴 = [...new Set(본.칸.flatMap((id) => [계획[id].start, 계획[id].end].filter(Boolean)))].filter((s) => !올린.has(s));
+  if (올릴.length) {
+    const r = 돌리기('up.mjs', { 편, round: `올리기-${계정}-${시각()}`, proj: pj, account: 계정, files: 올릴.map((s) => 슬래시(path.join(편, '영상칸', '시작', `${s}.jpg`))) });
+    if (r.줄.some((s) => s.step === '오류')) { console.log(`  ✗ ${계정} 시작 그림 올리기 실패`); return false; }
+    res = 결과(편);
+    res[올림열쇠(계정)] = [...new Set([...(res[올림열쇠(계정)] || []), ...올릴])];
+    fs.writeFileSync(path.join(편, '영상칸', 'flow', 'results.json'), JSON.stringify(res, null, 1));
+  }
+  console.log(`준비 끝(${계정}) — 프로젝트 ${res._projects[pj]} · 올린 그림 ${(res[올림열쇠(계정)] || []).length}장`);
+  return true;
+}
+
+/* ── Flow 계정 고르기(11-26) ── */
+function 상태읽기() { try { return 읽기(상태파일()); } catch { return {}; } }
+function 상태쓰기(상태) {
+  const f = 상태파일();
+  try { fs.mkdirSync(path.dirname(f), { recursive: true }); const t = `${f}.${process.pid}.tmp`; fs.writeFileSync(t, JSON.stringify(상태, null, 1)); fs.renameSync(t, f); } catch (e) { console.log(`  · 계정 상태를 못 적음: ${e.message}`); }
+}
+/** 지금 뒤로 처음 오는 다시 차는 때(KST 그달 날 · 시 · 분, 그달에 그날이 없으면 그달 끝날) */
+function 다음다시참(계정, now = Date.now()) {
+  const r = 다시참[계정];
+  const kst = new Date(now + 9 * 3600 * 1000);
+  for (let m = 0; m < 3; m += 1) {
+    const y = kst.getUTCFullYear(), mo = kst.getUTCMonth() + m;
+    const 끝날 = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+    const t = Date.UTC(y, mo, Math.min(r.날, 끝날), r.시, r.분) - 9 * 3600 * 1000;
+    if (t > now) return t;
+  }
+  return null;
+}
+/** 실행기 줄에서 크레딧과 「비정상적인 활동」을 읽어 계정 상태에 적는다 */
+function 상태적기(계정, 줄, now = Date.now()) {
+  const 상태 = 상태읽기(), a = 상태[계정] || {};
+  for (const s of 줄) {
+    if (/^크레딧 /.test(s.step || '') && Number.isFinite(s.credits) && s.email === `${계정}@gmail.com`) Object.assign(a, { 크레딧: s.credits, 크레딧때: now });
+  }
+  if (줄.some((s) => /비정상적인 활동/.test(JSON.stringify(s)))) a.경고 = [...(a.경고 || []).filter((t) => now - t < 2 * 86400 * 1000), now];
+  상태[계정] = a;
+  상태쓰기(상태);
+}
+const kst날 = (t) => new Date(t + 9 * 3600 * 1000).toISOString().slice(0, 10);
+/** 샷 값이 「값」일 때 낼 계정과 까닭. 두 계정 다 안 되면 계정 null */
+function 계정고르기(값, now = Date.now(), 상태 = 상태읽기()) {
+  const 까닭 = [];
+  const 후보 = 계정들.filter((계정) => {
+    const a = 상태[계정] || {}, 경고 = (a.경고 || []).filter((t) => t <= now);
+    if (경고.some((t) => now - t < 경고쉼)) { 까닭.push(`${계정} 3시간 안에 「비정상적인 활동」`); return false; }
+    if (경고.filter((t) => kst날(t) === kst날(now)).length >= 2) { 까닭.push(`${계정} 오늘 「비정상적인 활동」 두 번 — 오늘은 접음`); return false; }
+    // 읽은 뒤 다시 차는 때가 지났으면 다시 찬 것으로 본다(읽은 적 없으면 모름 — 내 보고 실행기가 접수 전에 잰다)
+    const 찼다 = a.크레딧때 && 다음다시참(계정, a.크레딧때) <= now;
+    if (Number.isFinite(a.크레딧) && !찼다 && a.크레딧 - 값 < 바닥) { 까닭.push(`${계정} 크레딧 ${a.크레딧} — 바닥 ${바닥}`); return false; }
+    return true;
+  });
+  후보.sort((x, y) => 다음다시참(x, now) - 다음다시참(y, now) || ((상태[y] || {}).크레딧 ?? 0) - ((상태[x] || {}).크레딧 ?? 0));
+  return { 계정: 후보[0] || null, 까닭: 까닭.join(' · ') };
+}
+
+function 계정보기() {
+  const 상태 = 상태읽기(), now = Date.now();
+  const 때 = (t) => (t ? new Date(t).toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(5, 16) : '—');
+  for (const 계정 of 계정들) {
+    const a = 상태[계정] || {};
+    console.log(`${계정}  크레딧 ${a.크레딧 ?? '모름'}(${때(a.크레딧때)} 읽음) · 다시 참 ${때(다음다시참(계정, now))} · 경고 ${(a.경고 || []).map(때).join(', ') || '없음'}`);
+  }
+  const 골라 = 계정고르기(0, now, 상태);
+  console.log(`지금 고를 계정: ${골라.계정 || '없음'}${골라.까닭 ? ` — ${골라.까닭}` : ''}`);
+  return 0;
 }
 
 /** 다시 굽는 판은 기록 이름을 바꾼다(같은 이름이면 접수 잠금 때문에 기다리기만 한다 — 현장 노트 브라우저_게시 11-23) */
@@ -297,5 +409,5 @@ function 다음run(편, id) {
   return `${id}r${Date.now()}`;
 }
 
-module.exports = { 점검, jpg크기 };
+module.exports = { 점검, jpg크기, 계정고르기, 다음다시참 };
 if (require.main === module) process.exit(main(process.argv.slice(2)));

@@ -1,5 +1,5 @@
 // Flow 한 클립(한 줄)을 끝까지 — 광명역 공모 편 flow/clip.mjs(← 서울로 애니 · 「매진 임박」 v4_clip.mjs)를 옮김(11-25 Claude). 라운드 파일이 globalThis.V4 = { 편, round, id }를 정하고 이 파일을 import한다(tools/플로우영상.js).
-// 바꾼 것: 프로젝트는 res._projects[plan.proj], 시작 그림 이름은 plan.start, 잠금 · 캡처 머리 v4_ 뺌, 확인한 접수 뒤 크레딧 읽기 그대로.
+// 바꾼 것: 프로젝트는 res._projects[L.projKey(plan.proj)](계정마다 따로 — 11-26), 시작 그림 이름은 plan.start, 잠금 · 캡처 머리 v4_ 뺌, 확인한 접수 뒤 크레딧 읽기 그대로.
 //   V4 = { round, id, run?(기록 이름 — 다시 낼 때 "S02r"), prompt?(다시 낼 때 바꾼 글), key?(그 글의 줄 찾기 KEY), finish? }
 // 차례: 프로젝트 → 이미 낸 줄 · 접수 잠금이 있으면 기다리기부터 → 계정 창 크레딧(전) · 계정 바닥(남을 크레딧 ≥ 1,000) · 편 누적 상한(「_누적상한」을 적은 편만)
 //   → 설정(동영상 · 프레임 · 16:9 · 모델 이름으로 · 720p · 4초 · x1/x2) → 시작 그림(이름 검색 · 애셋 id) → 지시문
@@ -43,7 +43,7 @@ if (!plan) {
     const pages = await task.pages();
     const page = pages.length ? pages[pages.length - 1] : task.page("p1");
     await L.unmin(page, R);
-    const PROJ = (res._projects || {})[plan.proj];
+    const PROJ = (res._projects || {})[L.projKey(plan.proj)];
     if (!PROJ) throw new Error("멈춤 — 프로젝트 주소 기록 없음");
     // 10-28 E08x: 올리기 라운드 바로 뒤 같은 주소에서 「시작」을 누르면 검색칸 없는 그림 목록 창이 떴다 — 주소가 같아도 늘 새로 읽는다
     {
@@ -86,8 +86,8 @@ if (!plan) {
       save();
       const cost = L.num(plan.cost);
       if (cb.credits < cost) throw new Error("멈춤 — 크레딧이 모자람(" + cb.credits + " < " + cost + ")");
-      // 11-25: 계정을 공모전 · PULSE와 같이 쓰므로 LAB 편 영상은 남은 크레딧이 바닥(1,000) 밑으로 내려가게 내지 않는다 — 그 편은 정지 그림 판으로 만든다
-      if (cb.credits - cost < L.FLOOR) throw new Error(`멈춤 — Flow 크레딧 바닥: 남은 ${cb.credits} − 이번 ${cost} < ${L.FLOOR}(제작 절차 「LAB 편 전체 영상」 — 이 편은 정지 그림 판으로)`);
+      // 11-26: 이 계정에 남을 크레딧이 바닥 밑이면 내지 않는다 — 부르는 쪽이 다른 계정으로 넘기고, 두 계정 다 바닥이면 그 편은 정지 그림 판으로 만든다
+      if (cb.credits - cost < L.FLOOR) throw new Error(`멈춤 — Flow 크레딧 바닥(${L.ACCOUNT}): 남은 ${cb.credits} − 이번 ${cost} < ${L.FLOOR}(제작 절차 「매일 편 영상은 Omni로」 — 다른 계정으로)`);
       // 계정은 다른 세션(네이처 · 정직 UCC)과 같이 쓰므로 잔액 차이가 아니라 이 프로젝트에서 내가 접수한 줄의 값을 센다(10-27).
       // 모든 판이 정책 실패로 끝난 줄은 환불되므로 빼고 센다.
       const used = Object.entries(res).filter(([k, v]) => !k.startsWith("_") && !k.startsWith("그림:") && v && v.accepted && L.PLAN[v.id] && L.PLAN[v.id].proj === plan.proj
@@ -151,9 +151,9 @@ if (!plan) {
         chip: /동영상|videocam|Omni|Veo/.test(chip) && /crop_9_16|9:16/.test(chip) && (plan.model === L.OMNI || chip.includes(dur)) && (plan.n === 1 ? !/x[2-4]\b/.test(chip) : /x2\b/.test(chip)) && (plan.model === L.OMNI ? /720p/.test(chip) : !/1080p|4K/i.test(chip)),
         frames: imgs.length === (plan.end ? 2 : 1) && imgs.every((i) => { const [w, h] = i.size.split("x").map(Number); return h > 0 && Math.abs(w / h - 9 / 16) < 0.01; }),   // 11-25 LAB 세로 판: 칸 그림 288x512 축소판이라 비율로 본다
         // 검색 썸네일 주소가 늦게 떠 su가 비면(10-23 23:34 S07) 올릴 때(v4_round-01) 이름 검색으로 적어 둔 그 그림의 애셋 id와 대조한다
-        frameId: su === "n1" || !!slotIds[0] && (slotIds[0] === su || !su || (!su && ((res._assets || {})[plan.proj + ":" + plan.start] || {}).uuids?.includes(slotIds[0]) === true)),
+        frameId: su === "n1" || !!slotIds[0] && (slotIds[0] === su || !su || (!su && ((res._assets || {})[L.projKey(plan.proj) + ":" + plan.start] || {}).uuids?.includes(slotIds[0]) === true)),
         endSlotEmpty: plan.end ? !a.slots.includes("종료") && !a.slots.includes("시작") : a.slots.includes("종료") && !a.slots.includes("시작"),
-        endId: !plan.end || eu === "n1" || (!!slotIds[1] && (slotIds[1] === eu || (!eu && ((res._assets || {})[plan.proj + ":" + plan.end] || {}).uuids?.includes(slotIds[1]) === true))),
+        endId: !plan.end || eu === "n1" || (!!slotIds[1] && (slotIds[1] === eu || (!eu && ((res._assets || {})[L.projKey(plan.proj) + ":" + plan.end] || {}).uuids?.includes(slotIds[1]) === true))),
         prompt: L.norm(a.prompt) === L.norm(PROMPT),
         noBand: !a.creditBand && !v.creditBand,
         noDialog: a.dialogs === 0,

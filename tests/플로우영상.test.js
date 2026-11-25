@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { 점검, jpg크기 } = require('../tools/플로우영상.js');
+const { 점검, jpg크기, 계정고르기, 다음다시참 } = require('../tools/플로우영상.js');
 
 const TOOL = path.join(__dirname, '..', 'tools', '플로우영상.js');
 const 공통 = fs.readFileSync(path.join(__dirname, '..', 'docs', '마케팅', 'LAB_하루두편_설계_20261110', '영상_공통글.txt'), 'utf8').trim();
@@ -182,5 +182,55 @@ test('편 코드의 at · to와 목소리 빠르기까지 본다 — 같은 말�
     assert.doesNotMatch(글, /「깜짝이야」: 편 코드/);
     assert.match(글, /「엄마야」: 둘째 목소리가 첫째보다 빠름\(3\.33 > 2\.5음절\)/);
     assert.match(r.알림.join('\n'), /「엄마야」: 편 코드에서 key가 이 말인 칸의 at · to\(숫자\)를 못 찾음/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('synkbrief · yuhobuilds 편은 몽글 · 배우는 말 규칙을 몽글이 나오는 샷에만 건다(11-26)', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '플로우영상-'));
+  const 편폴더 = path.join(base, 'yuhobuilds_시험_20261127');
+  fs.mkdirSync(path.join(편폴더, 'remotion'), { recursive: true });
+  fs.mkdirSync(path.join(편폴더, '영상칸', '시작'), { recursive: true });
+  fs.writeFileSync(path.join(편폴더, '영상칸', '시작', 's1.jpg'), jpeg(1080, 1920));
+  fs.writeFileSync(path.join(편폴더, '영상칸', '계획.json'), JSON.stringify({ S1: 칸({ key: 'opens the laptop' }), S2: 칸({ key: 'waves hello' }) }));
+  fs.writeFileSync(path.join(편폴더, '영상칸', '지시문.json'), JSON.stringify({ 공통: 'Camera locked off.', 클립: [{ id: 'S1', prompt: 'A desk; a hand opens the laptop.' }, { id: 'S2', prompt: 'MONGLE waves hello.' }] }));
+  try {
+    const r = 점검(편폴더).문제.join('\n');
+    assert.doesNotMatch(r, /_배우는말/);
+    assert.doesNotMatch(r, /S1: 지시문에 몽글/);
+    assert.match(r, /S2: 지시문에 몽글의 기본 얼굴/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('Flow 계정 고르기 — 경고 · 바닥을 빼고 먼저 다시 차는 계정부터(11-26)', () => {
+  const t = (s) => Date.parse(`${s}+09:00`);
+  const now = t('2026-11-26T08:00:00');
+  const 둘다 = { '77yuhbs': { 크레딧: 5923, 크레딧때: now }, unmet23: { 크레딧: 25050, 크레딧때: now } };
+  assert.equal(계정고르기(24, now, 둘다).계정, '77yuhbs'); // 12-01에 사라질 크레딧부터
+  assert.equal(계정고르기(24, now, {}).계정, '77yuhbs');
+  const 경고둘 = { ...둘다, '77yuhbs': { ...둘다['77yuhbs'], 경고: [t('2026-11-26T00:04:00'), t('2026-11-26T03:52:00')] } };
+  const r = 계정고르기(24, now, 경고둘);
+  assert.equal(r.계정, 'unmet23');
+  assert.match(r.까닭, /오늘 「비정상적인 활동」 두 번/);
+  assert.equal(계정고르기(24, t('2026-11-27T08:00:00'), 경고둘).계정, '77yuhbs'); // 다음 날은 다시 쓴다
+  const 한번 = { ...둘다, '77yuhbs': { ...둘다['77yuhbs'], 경고: [t('2026-11-26T06:30:00')] } };
+  assert.equal(계정고르기(24, now, 한번).계정, 'unmet23'); // 3시간 안
+  assert.equal(계정고르기(24, t('2026-11-26T10:00:00'), 한번).계정, '77yuhbs');
+  const 바닥 = { ...둘다, '77yuhbs': { 크레딧: 310, 크레딧때: now } };
+  assert.equal(계정고르기(24, now, 바닥).계정, 'unmet23');
+  assert.equal(계정고르기(24, t('2026-12-02T08:00:00'), 바닥).계정, 'unmet23'); // 다시 찼으면 둘 다 되고, 12-26에 먼저 사라지는 unmet23부터
+  assert.equal(계정고르기(24, now, { '77yuhbs': { 크레딧: 100, 크레딧때: now }, unmet23: { 크레딧: 200, 크레딧때: now } }).계정, null);
+  assert.equal(new Date(다음다시참('77yuhbs', t('2026-12-01T21:30:00'))).toISOString(), '2027-01-01T12:29:00.000Z');
+});
+
+test('계정 명령은 상태 파일을 읽어 지금 고를 계정을 보인다', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '플로우계정-'));
+  const f = path.join(base, 'flow_계정.json');
+  fs.writeFileSync(f, JSON.stringify({ '77yuhbs': { 크레딧: 100, 크레딧때: Date.now() } }));
+  try {
+    const r = spawnSync(process.execPath, [TOOL, '계정'], { encoding: 'utf8', env: { ...process.env, SYNK_FLOW_ACCOUNTS: f } });
+    assert.equal(r.status, 0);
+    assert.match(r.stdout, /지금 고를 계정: unmet23/);
+    const bad = spawnSync(process.execPath, [TOOL, '점검', base, '--계정', 'founder'], { encoding: 'utf8' });
+    assert.equal(bad.status, 2);
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
 });
