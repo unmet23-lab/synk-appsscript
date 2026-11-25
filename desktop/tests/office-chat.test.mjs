@@ -262,7 +262,7 @@ test('leaving a department chat drops its pending removal question (Fable F6)', 
   await h.room.handle({ act: 'chat-pick', arg: 'd:ddev' });
   await h.room.handle({ key: 'd:ddev', act: 'grp', arg: 'set' });
   await h.room.handle({ key: 'd:ddev', act: 'dept-remove-ask', arg: 'ddev' });
-  const ask = () => h.scene().rows.find(r => r.key === 'd:ddev').more.find(m => m[0] === 'grp')[2].some(m => m[0] === 'confirm');
+  const ask = () => h.scene().rows.find(r => r.key === 'd:ddev').more.find(m => m[0] === 'grp' && m[1] === 'set')[2].some(m => m[0] === 'confirm');
   assert.equal(ask(), true);
   await h.room.handle({ act: 'chat-pick', arg: 'd:dmkt' });
   await h.room.handle({ act: 'chat-pick', arg: 'd:ddev' });

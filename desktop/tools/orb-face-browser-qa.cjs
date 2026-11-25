@@ -858,6 +858,9 @@ if(!process.versions.electron){
         if(only('office-looks')&&mode==='main'){
           await require('./office-looks-browser-qa.cjs')({open,boot,signedIn,subsNone,until,wait,click,capture,check,calls});
         }
+        if(only('office-desks')&&mode==='main'){
+          await require('./office-desks-browser-qa.cjs')({open,boot,signedIn,subsNone,until,wait,click,capture,check,calls});
+        }
         if(only('office-tasks')&&mode==='main'){
           await require('./office-task-browser-qa.cjs')({open,boot,signedIn,signedOut,subsNone,until,wait,click,capture,check,calls,key});
         }
@@ -963,7 +966,7 @@ if(!process.versions.electron){
           await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(400);
           // 부서 빼기는 그 부서의 오른쪽 칸 「부서 설정」 안에서 한 번 더 묻는다
           await chat(w,'d:qdev');await wait(700);
-          await press(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more .row.item[data-grp="set"], #portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more .row.item');await wait(600);
+          await press(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more [data-room-act="grp"][data-room-arg="set"]');await wait(600);
           await press(w,'#portal-entry [data-off-rows] button.row[data-key="d:qdev"] + .more [data-room-act="dept-remove-ask"]');await wait(600);
           const ask=await w.js("(()=>{const m="+ROOM+".querySelector('[data-off-rows] button.row[data-key=\"d:qdev\"] + .more');const c=m&&m.querySelector('.confirm');return {confirm:!!c,question:c?.querySelector('[data-ask-q]')?.textContent||'',focus:document.activeElement?.dataset?.askQ!==undefined};})()");
           check('22 「부서 빼기」 asks first in place, with the focus on the question',ask.confirm&&ask.question==='개발부를 빼시겠습니까?'&&ask.focus&&!(await calls(w)).some(c=>c.startsWith('office-remove:')),ask);

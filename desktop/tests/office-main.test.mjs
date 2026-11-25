@@ -407,6 +407,16 @@ test('preload exposes exactly the office bridge, frozen, and rebuilds every argu
   await refused(office.saveSettings({ skin: 'hanok' }), 'an unknown skin');
   await refused(office.saveSettings({ skin: 'walnut', view: 'top' }), 'a skin mixed with another setting');
   await refused(office.saveSettings({ skin: 'walnut', look: { seat: 'lobby:0', hat: 'gat' } }), 'a skin and a look together');
+  // 부서의 책상(사무실책상 README 5절): 부서 하나의 칸 하나만 건너간다
+  for (const v of [{ size: 1 }, { size: 4 }, { count: 6 }, { finish: 'walnut' }, { finish: null }]) {
+    await office.saveSettings({ desk: { department: 'dept1', ...v, extra: 1 }, other: 2 });
+    assert.deepEqual(last(), ['synk:office-settings-save', { desk: { department: 'dept1', ...v } }]);
+  }
+  for (const bad of [{ size: 5 }, { size: '2' }, { count: 0 }, { count: 7 }, { count: 2.5 }, { finish: 'glass' }, { size: null }, { size: 2, count: 2 }, {}]) await refused(office.saveSettings({ desk: { department: 'dept1', ...bad } }), 'a desk value ' + JSON.stringify(bad));
+  await refused(office.saveSettings({ desk: { department: '../x', size: 2 } }), 'a desk of a bad department');
+  await refused(office.saveSettings({ desk: null }), 'no desk');
+  await refused(office.saveSettings({ desk: { department: 'dept1', size: 2 }, skin: 'black' }), 'a desk and a skin together');
+  await refused(office.saveSettings({ desk: { department: 'dept1', size: 2 }, view: 'top' }), 'a desk mixed with another setting');
   await refused(office.saveSettings({ look: { seat: 'd:dept-1:01', hat: 'gat' } }), 'a seat number with a leading zero');
   await refused(office.saveSettings({ look: { seat: 'other:0', hat: 'gat' } }), 'an unknown seat zone');
   await refused(office.saveSettings({ look: { seat: 'd:dept-1:0', hat: 'crown' } }), 'an unknown hat');

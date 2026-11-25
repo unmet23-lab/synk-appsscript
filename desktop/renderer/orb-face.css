@@ -841,6 +841,7 @@ html[data-motion="reduced"] #portal-entry .rows > button.row::after{transition:n
 /* 그림: 대화 위에 선다. 높이가 모자라면 그림부터 줄이고, 아주 낮으면 뺀다 */
 /* 높이가 모자라면 그림이 먼저 준다. 방 머리와 입력칸은 줄지 않고, 대화는 남는 높이를 다 쓴다(카본 화면 검수 A2) */
 #portal-entry .off-slot{position:relative;flex:0 1 auto;height:clamp(150px,30cqh,300px);min-height:96px;min-width:0;margin:8px 0 2px}
+#portal-entry .off-slot.dense{height:clamp(150px,40cqh,380px)}
 #portal-entry .off-slot[hidden]{display:none}
 #portal-entry .off-slot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #portal-entry .ofc-thread{flex:1 1 0;min-height:120px;padding:10px 2px 14px;-webkit-mask-image:linear-gradient(transparent,#000 14px);mask-image:linear-gradient(transparent,#000 14px)}
@@ -935,15 +936,16 @@ html[data-motion="reduced"] #portal-entry .rows > button.row::after{transition:n
 }
 @container ofc (max-height:660px){
   #portal-entry .off-slot{height:clamp(100px,22cqh,150px);min-height:84px}
+  #portal-entry .off-slot.dense{height:clamp(110px,36cqh,212px)}
 }
 @container ofc (max-height:520px){
-  #portal-entry .off-slot{height:clamp(84px,18cqh,110px);min-height:72px}
+  #portal-entry .off-slot,#portal-entry .off-slot.dense{height:clamp(84px,18cqh,110px);min-height:72px}
   #portal-entry .ofc-thread{min-height:100px}
   #portal-entry .ofc-compose .off-task-input{height:44px}
 }
 /* 가장 작은 창을 150%로 키운 높이(방 약 345px): 그림을 빼고 방 머리의 작은 글을 접는다. 그래도 모자라면 가운데 칸이 통째로 스크롤된다 */
 @container ofc (max-height:440px){
-  #portal-entry .off-slot{display:none}
+  #portal-entry .off-slot,#portal-entry .off-slot.dense{display:none}
   #portal-entry .ofc-head .then{display:none}
   #portal-entry .ofc-thread{min-height:72px}
 }

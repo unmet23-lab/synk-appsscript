@@ -24,6 +24,8 @@
 //  · 읽기 상한(MAX_BYTES)을 넘는 파일은 쓰지 않는다(SIZE). 상한을 넘은 파일은 읽지 못한 것으로 보고 기본값으로 덮지 않는다(GB8).
 //  · 꾸미기(솔리오_사무실스킨_20261123/PC앱_설계.md 4절): 스킨(skin)과 자리마다의 모습(looks: { 자리 열쇠: { hat?, name? } }). 화면에 넘길 때만 거르고,
 //    파일에는 읽은 그대로 둔다. 쓸 때는 이번에 바꾼 열쇠 하나와 뺀 부서의 열쇠만 고친다. 다음 판이 모자나 스킨을 더한 뒤 이 판이 써도 지워지지 않는다(설계 검토 1).
+//  · 부서의 책상(솔리오_사무실책상_20261125/README.md 5절): 부서 한 칸의 desk({ size?, count?, finish? }). 꾸미기와 같이 화면에 넘길 때만 거르고
+//    파일에는 읽은 그대로 둔다. 고칠 때는 이번에 바꾼 칸 하나만 고친다. 부서 하나의 모르는 칸을 남기므로 부서를 빼면 함께 사라진다.
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -43,6 +45,10 @@ const MAX_BYTES = 1024 * 1024;
 const SKINS = Object.freeze(['black', 'walnut']);
 const HATS = Object.freeze(['beanie', 'beret', 'gat', 'phones', 'sprout']);
 const LOOK_NAME_MAX = 12;
+/* 책상 하나에 앉는 수, 손님이 고른 책상 수, 재질. 재질이 없으면 사무실 스킨을 따른다 */
+const DESK_SIZES = Object.freeze([1, 2, 3, 4]);
+const DESK_COUNT_MAX = 6;
+const DESK_FINISHES = Object.freeze(['black', 'walnut']);
 const MAX_LOOKS = 200;
 /* 자리 열쇠: 부서 직원은 d:<부서 번호>:<n>, 부서 없는 일은 lobby:<n>. n은 0이나 1~99이고 앞의 0을 받지 않는다(01과 1이 같은 자리가 되지 않게) */
 const SEAT = /^(?:d:([A-Za-z0-9_-]{4,32})|lobby):(?:0|[1-9]\d?)$/;
@@ -83,6 +89,20 @@ function viewLooks(raw, ids) {
     if (look.hat || look.name) out[seat] = look;
   }
   return out;
+}
+
+const goodDesk = Object.freeze({
+  size: v => DESK_SIZES.includes(v),
+  count: v => Number.isInteger(v) && v >= 1 && v <= DESK_COUNT_MAX,
+  finish: v => DESK_FINISHES.includes(v),
+});
+const DESK_FIELDS = Object.freeze(Object.keys(goodDesk));
+/* 화면에 넘길 책상: 아는 칸의 맞는 값만. 하나도 없으면 null */
+function viewDesk(raw) {
+  if (!isObject(raw)) return null;
+  const desk = {};
+  for (const f of DESK_FIELDS) if (own(raw, f) && goodDesk[f](raw[f])) desk[f] = raw[f];
+  return Object.keys(desk).length ? desk : null;
 }
 
 /* 파일의 값을 받을 수 있는 꼴로 고른다. 부서의 모르는 칸은 남긴다 */
@@ -170,7 +190,7 @@ function publicData(data) {
     view: data.view, manualCap: data.manualCap,
     skin: SKINS.includes(data.skinRaw) ? data.skinRaw : 'black',
     looks: viewLooks(data.looksRaw, new Set(data.departments.map(d => d.id))),
-    departments: data.departments.map(d => ({ id: d.id, name: d.name, folder: d.folder, ...(d.role != null ? { role: d.role } : {}), ...(d.tool != null ? { tool: d.tool } : {}) })),
+    departments: data.departments.map(d => { const desk = viewDesk(d.desk); return { id: d.id, name: d.name, folder: d.folder, ...(d.role != null ? { role: d.role } : {}), ...(d.tool != null ? { tool: d.tool } : {}), ...(desk ? { desk } : {}) }; }),
     assignments: { ...data.assignments },
     roots: { claude: [...data.roots.claude] },
   };
@@ -346,12 +366,13 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
 
   /** 설정: { view?: 'tilted'|'top', manualCap?: 1~논리 코어 수의 정수 또는 null(자동) }, 또는 꾸미기 하나:
       { skin: 'black'|'walnut' } · { look: { seat, hat: 모자 또는 null(벗김) } } · { look: { seat, name: 12자까지, 빈 글자는 처음 이름 } }.
-      꾸미기는 다른 칸과 섞어 받지 않는다. 같은 값이면 쓰지 않는다. 모자도 이름도 다른 칸도 없어진 열쇠는 지운다 */
+      꾸미기는 다른 칸과 섞어 받지 않는다. 같은 값이면 쓰지 않는다. 모자도 이름도 다른 칸도 없어진 열쇠는 지운다.
+      부서의 책상 한 칸: { desk: { department, size: 1~4 } } · { desk: { department, count: 1~6 } } · { desk: { department, finish: 'black'|'walnut', null은 사무실과 같게 } } */
   function saveSettings(accountId, input, { guard } = {}) {
     if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
-    const given = ['view', 'manualCap', 'skin', 'look'].filter(k => own(input, k));
+    const given = ['view', 'manualCap', 'skin', 'look', 'desk'].filter(k => own(input, k));
     if (!given.length) return Promise.resolve({ ok: false, code: 'VALUE' });
-    if ((given.includes('skin') || given.includes('look')) && given.length !== 1) return Promise.resolve({ ok: false, code: 'VALUE' });
+    if (['skin', 'look', 'desk'].some(k => given.includes(k)) && given.length !== 1) return Promise.resolve({ ok: false, code: 'VALUE' });
     if (own(input, 'skin')) {
       if (!SKINS.includes(input.skin)) return Promise.resolve({ ok: false, code: 'VALUE' });
       return mutate(accountId, async data => {
@@ -361,6 +382,7 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       }, guard);
     }
     if (own(input, 'look')) return saveLook(accountId, input.look, guard);
+    if (own(input, 'desk')) return saveDesk(accountId, input.desk, guard);
     if (own(input, 'view') && !VIEWS.includes(input.view)) return Promise.resolve({ ok: false, code: 'VALUE' });
     const cap = input.manualCap;
     if (own(input, 'manualCap') && cap !== null && !(Number.isInteger(cap) && cap >= 1 && cap <= coreCount())) return Promise.resolve({ ok: false, code: 'VALUE' });
@@ -396,6 +418,25 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       if (value === null) delete cur[field]; else cur[field] = value;
       if (Object.keys(cur).length) all[look.seat] = cur; else delete all[look.seat];
       data.looksRaw = all;
+      return { ok: true };
+    }, guard);
+  }
+
+  /* 부서 하나의 책상 한 칸(크기 · 수 · 재질). 그 부서의 다른 책상 칸(다음 판이 더한 칸 포함)은 그대로 둔다. 칸이 하나도 없어지면 desk를 지운다 */
+  function saveDesk(accountId, input, guard) {
+    const bad = Promise.resolve({ ok: false, code: 'VALUE' });
+    if (!isObject(input) || typeof input.department !== 'string' || !DEPARTMENT_ID.test(input.department)) return bad;
+    const fields = DESK_FIELDS.filter(k => own(input, k));
+    if (fields.length !== 1) return bad;
+    const field = fields[0], value = input[field], clear = field === 'finish' && value === null;
+    if (!clear && !goodDesk[field](value)) return bad;
+    return mutate(accountId, async data => {
+      const dept = data.departments.find(d => d.id === input.department);
+      if (!dept) return { ok: false, code: 'NOT_FOUND' };
+      const cur = isObject(dept.desk) ? { ...dept.desk } : {};
+      if (clear ? !own(cur, field) : cur[field] === value) return { ok: true, unchanged: true };
+      if (clear) delete cur[field]; else cur[field] = value;
+      if (Object.keys(cur).length) dept.desk = cur; else delete dept.desk;
       return { ok: true };
     }, guard);
   }
@@ -456,4 +497,4 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
   return { read, saveDepartment, removeDepartment, assign, forgetSessions, saveSettings, saveRoots, addRoot, removeRoot, isSubscriptionDir, base, fileOf: id => (goodAccount(id) ? fileOf(id) : null) };
 }
 
-module.exports = { createOfficeStore, subscriptionCheck, VIEWS, SKINS, HATS, LOOK_NAME_MAX, MAX_LOOKS, NAME_MAX, MAX_DEPARTMENTS, MAX_ROOTS, MAX_ASSIGNMENTS, MAX_BYTES, SESSION_ID, SUBSCRIPTION_ACCOUNTS };
+module.exports = { createOfficeStore, subscriptionCheck, VIEWS, SKINS, HATS, LOOK_NAME_MAX, MAX_LOOKS, DESK_SIZES, DESK_COUNT_MAX, DESK_FINISHES, NAME_MAX, MAX_DEPARTMENTS, MAX_ROOTS, MAX_ASSIGNMENTS, MAX_BYTES, SESSION_ID, SUBSCRIPTION_ACCOUNTS };

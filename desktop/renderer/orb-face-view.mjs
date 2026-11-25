@@ -7,7 +7,7 @@ import { fanR, HOME_R, createOrbStage, easeIO, easeIOQ, easeOut, lerp, smooth, s
 import { createOrbSound, followSoundPreference } from './orb-sound.mjs';
 import { createOrbSignature } from './orb-signature.mjs';
 import { rowSpeech } from './site-visits-model.mjs';
-import { createOfficeFloor } from './office-floor.mjs';
+import { createOfficeFloor, floorSeatCount } from './office-floor.mjs';
 import { createOfficeTaskView } from './office-task-view.mjs';
 import { createBizplanView } from './office-bizplan-view.mjs';
 
@@ -1214,6 +1214,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const zoneKeys = zones.map(z => z.key).join(' '), viewName = on && v.floor ? v.floor.view : '';
     if (app.offSlot.dataset.zones !== zoneKeys) app.offSlot.dataset.zones = zoneKeys;
     if (app.offSlot.dataset.view !== viewName) app.offSlot.dataset.view = viewName;
+    // 자리가 많으면 그림 칸을 높인다. 넓히는 문턱(18)과 좁히는 문턱(12)이 달라 직원 하나가 오갈 때 대화 칸이 들썩이지 않는다(책상 설계 검토 P1-2)
+    const seatCount = on && v.floor ? floorSeatCount(v.floor) : 0, dense = app.offSlot.classList.contains('dense');
+    if (dense ? seatCount <= 12 : seatCount > 18) app.offSlot.classList.toggle('dense', !dense);
     officeFloor.setScene(on ? v.floor : null);
     officeFloor.show(shown && zones.length > 0);
     // 고른 책상이 밝아진다. 움직임 줄이기에서는 그림이 저절로 다시 그려지지 않으므로 고른 상대가 바뀔 때 한 번 그린다(설계 검토 10)

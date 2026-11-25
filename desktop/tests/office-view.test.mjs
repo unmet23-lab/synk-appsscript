@@ -155,7 +155,7 @@ test('staff lines: tool and model, the state in bold, the activity small, helper
   assert.equal(modelWord('gpt-5.2-codex'), 'gpt-5.2-codex');
 });
 
-test('the lobby offers 「보낼 부서」 and 「이 폴더로 부서 만들기」 for each session; departments carry only 「부서 설정」 as their feature', () => {
+test('the lobby offers 「보낼 부서」 and 「이 폴더로 부서 만들기」 for each session; departments carry 「책상」 and 「부서 설정」 as their features', () => {
   const room = officeRoom(snapOf(), {}, NOW, { subs: SUBS });
   const lobby = rowOf(room, 'lobby').more;
   const send = lobby.find(m => m[0] === 'acts' && m[2] === '보낼 부서');
@@ -165,7 +165,7 @@ test('the lobby offers 「보낼 부서」 and 「이 폴더로 부서 만들기
   assert.equal(make[0][3], true, 'the name field stays folded until pressed');
   assert.deepEqual(make.find(m => m[1] === 'mk-sess-lob-0004')[2][0], ['fld', '부서 이름', '회의록', '20자까지', 'nm-sess-lob-0004', 'text'], 'the folder name is the first suggestion');
   const mkt = rowOf(room, 'd:dmkt').more;
-  assert.deepEqual(mkt.filter(m => m[0] === 'item').map(m => [m[1], m[2], m[3], m[4]]), [['부서 설정', '이름 · 폴더 · 빼기', false, 'set']]);
+  assert.deepEqual(mkt.filter(m => m[0] === 'item').map(m => [m[1], m[2], m[3], m[4]]), [['책상', '3인 책상 하나', false, 'desk'], ['부서 설정', '이름 · 폴더 · 빼기', false, 'set']]);
   const set = mkt.find(m => m[0] === 'grp' && m[1] === 'set');
   assert.equal(set[3], true, 'folded until pressed');
   assert.deepEqual(set[2].find(m => m[0] === 'acts')[1].map(b => b[1]), ['dept-rename', 'dept-folder', 'dept-remove-ask']);
@@ -322,7 +322,7 @@ test('the floor draws up to six departments and bundles the rest into one 「그
   assert.equal(strip.length, 2);
   assert.ok(strip[0].rect.x1 < strip[1].rect.x0, 'lobby and 「그 밖」 sit side by side');
   assert.ok(Math.min(...strip.map(z => z.rect.z0)) > Math.max(...layout.filter(z => z.kind === 'dept').map(z => z.rect.z1)), 'below the two rows of departments');
-  // 빈 자리는 가는 선으로 그린다: 자리 수만큼 자리가 있고, 직원이 더 많으면 자리가 는다(여섯까지)
+  // 빈 자리는 가는 선으로 그린다: 자리 수만큼 자리가 있고, 직원이 더 많으면 같은 책상이 더 놓인다(부서별 책상, office-desks.test.mjs)
   assert.equal(layout[0].spots.length, 3);
   // 0.5.2 공개 검수 A5: 아래 띠의 두 구역은 직원 수에 맞춘 폭이다. 구슬이 제 좌대 안에 있고 두 좌대가 겹치지 않는다
   const loneBand = { key: 'lobby', kind: 'lobby', name: '부서 없는 일', staff: [{ id: 'l1', status: 'working' }] };
@@ -333,16 +333,17 @@ test('the floor draws up to six departments and bundles the rest into one 「그
     assert.ok(bands[0].rect.x1 < bands[1].rect.x0, 'the two stands do not overlap');
   }
   const crowded = floorLayout({ seats: 1, zones: [{ key: 'd:x', kind: 'dept', name: 'x', staff: Array.from({ length: 5 }, (_, i) => ({ id: 'p' + i, status: 'working' })) }] });
-  assert.equal(crowded[0].spots.length, 5);
+  assert.equal(crowded[0].desks.length, 2, 'five staff sit at two desks for three');
+  assert.equal(crowded[0].spots.length, 6);
   // 자리보다 직원이 많으면 승인 물음 · 일하는 직원부터 앉고, 앉은 직원끼리는 처음 본 차례다(유호님 PC 실제 확인 11-22: 스물셋 가운데 처음 본 여덟만 그려 일하는 열둘 가운데 하나만 그림에 있었다)
   const lobbyStaff = [...Array.from({ length: 8 }, (_, i) => ({ id: 'q' + i, status: 'quiet' })), { id: 'w1', status: 'working' }, { id: 'q8', status: 'quiet' }, { id: 'w2', status: 'working' }];
   const [lobby] = floorLayout({ seats: 1, zones: [{ key: 'lobby', kind: 'lobby', name: '부서 없는 일', staff: lobbyStaff }] });
   assert.equal(lobby.spots.length, 8);
   assert.deepEqual(lobby.staff.map(s => s.id), ['q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'w1', 'w2'], 'the two working staff take seats from the quiet ones and keep their first-seen order');
-  const deptStaff = [...Array.from({ length: 6 }, (_, i) => ({ id: 'r' + i, status: 'resting' })), { id: 'a1', status: 'asked' }];
+  const deptStaff = [...Array.from({ length: 24 }, (_, i) => ({ id: 'r' + i, status: 'resting' })), { id: 'a1', status: 'asked' }];
   const [dept] = floorLayout({ seats: 1, zones: [{ key: 'd:y', kind: 'dept', name: 'y', staff: deptStaff }] });
   assert.ok(dept.staff.some(s => s.id === 'a1'), 'a staff member asking for approval is always drawn in a full department');
-  assert.equal(dept.staff.length, 6);
+  assert.equal(dept.staff.length, 24);
   const few = [{ id: 'f1', status: 'quiet' }, { id: 'f2', status: 'working' }];
   assert.deepEqual(floorLayout({ seats: 1, zones: [{ key: 'lobby', kind: 'lobby', name: '부서 없는 일', staff: few }] })[0].staff.map(s => s.id), ['f1', 'f2'], 'under the seat count nobody moves');
   // 한 명이 조용해지면 그 자리의 주인만 바뀐다. 남은 직원은 지난 그림의 자리를 그대로 쓴다(검수 solio-office-seats-20261122 F1)
@@ -350,43 +351,46 @@ test('the floor draws up to six departments and bundles the rest into one 「그
   const busy = Array.from({ length: 23 }, (_, i) => ({ id: 's' + i, status: i >= 11 ? 'working' : 'quiet' }));
   const first = floorLayout({ seats: 1, zones: crowd(busy) });
   const firstIds = first[0].staff.map(s => s.id);
-  assert.deepEqual(firstIds, ['s11', 's12', 's13', 's14', 's15', 's16', 's17', 's18']);
+  // 띠는 일하는 직원이 다 보일 만큼 늘어난다(책상 설계 검토 P2-10)
+  assert.deepEqual(firstIds, Array.from({ length: 12 }, (_, i) => 's' + (i + 11)));
   const calmer = busy.map(s => (s.id === 's11' ? { ...s, status: 'quiet' } : s));
   const nextIds = floorLayout({ seats: 1, zones: crowd(calmer) }, first)[0].staff.map(s => s.id);
-  assert.deepEqual(nextIds.map((id, i) => id === firstIds[i]), [false, true, true, true, true, true, true, true], 'only the seat of the staff member who went quiet changes hands');
-  assert.equal(nextIds[0], 's19', 'the next working staff member takes the freed seat');
-  // 넘쳤던 부서에서 그림에 없던 직원이 빠져 자리 수와 같아져도 남은 여섯은 자리를 그대로 쓴다(검수 -r2 F1)
+  assert.deepEqual(nextIds.map((id, i) => id === firstIds[i]), [false, ...Array(11).fill(true)], 'only the seat of the staff member who went quiet changes hands');
+  assert.equal(nextIds[0], 's0', 'the first quiet staff member takes the freed seat');
+  // 넘쳤던 부서에서 그림에 없던 직원이 빠져 자리 수와 같아져도 남은 스물넷은 자리를 그대로 쓴다(검수 -r2 F1)
   const dz = st => [{ key: 'd:z', kind: 'dept', name: 'z', staff: st }];
-  const sevenDept = [...['a', 'b', 'c', 'd', 'e', 'f'].map(id => ({ id, status: 'working' })), { id: 'g', status: 'quiet' }];
+  const rest = Array.from({ length: 18 }, (_, i) => 'h' + i);
+  const sevenDept = [...['a', 'b', 'c', 'd', 'e', 'f', ...rest].map(id => ({ id, status: 'working' })), { id: 'g', status: 'quiet' }];
   const start7 = floorLayout({ seats: 1, zones: dz(sevenDept) });
-  // a가 조용해지고 g가 일을 시작하면 g가 a의 자리에 앉는다([g, b, c, d, e, f])
+  // a가 조용해지고 g가 일을 시작하면 g가 a의 자리에 앉는다([g, b, c, d, e, f, …])
   const swapped = sevenDept.map(s => (s.id === 'a' ? { ...s, status: 'quiet' } : s.id === 'g' ? { ...s, status: 'working' } : s));
   const before7 = floorLayout({ seats: 1, zones: dz(swapped) }, start7);
-  assert.deepEqual(before7[0].staff.map(s => s.id), ['g', 'b', 'c', 'd', 'e', 'f']);
-  // 그림에 없던 a의 세션이 끝나 여섯이 된다
+  assert.deepEqual(before7[0].staff.map(s => s.id), ['g', 'b', 'c', 'd', 'e', 'f', ...rest]);
+  // 그림에 없던 a의 세션이 끝나 스물넷이 된다
   const after6 = floorLayout({ seats: 1, zones: dz(swapped.slice(1)) }, before7);
   const spotOf = (layout, id) => layout[0].spots[layout[0].staff.findIndex(s => s.id === id)];
-  for (const id of ['b', 'c', 'd', 'e', 'f', 'g']) assert.deepEqual(spotOf(after6, id), spotOf(before7, id), id + ' keeps its spot when the hidden staff member leaves');
+  for (const id of ['b', 'c', 'd', 'e', 'f', 'g', ...rest]) assert.deepEqual(spotOf(after6, id), spotOf(before7, id), id + ' keeps its spot when the hidden staff member leaves');
   // 자리를 넘어 그림에 없는 직원 수를 구역 이름 뒤에 적는다(검수 F2)
-  const full = floorLayout({ seats: 1, zones: crowd(busy) })[0];
-  assert.equal(full.hidden, 15);
+  const fifty = Array.from({ length: 60 }, (_, i) => ({ id: 'b' + i, status: i >= 10 ? 'working' : 'quiet' }));
+  const full = floorLayout({ seats: 1, zones: crowd(fifty) })[0];
+  assert.equal(full.hidden, 20, 'the strip seats forty at most');
   const wide = () => true, upTo = n => t => t.length <= n;
-  assert.deepEqual(floorZoneLabel(full, wide), { text: '부서 없는 일 · 일하는 직원 열둘 중 여덟만 보임', clip: false, form: 'full' }, 'the same count of working staff as the headline (11-23 second and 11-25 blind reviews)');
-  // 다 안 들어가면 「넷 더 일함」, 그다음 짧은 표시(+4)다. 이름이 먼저라 그래도 안 들어가면 이름만 둔다(검수 solio-office-ga1 F1)
-  assert.deepEqual(floorZoneLabel(full, upTo(18)), { text: '부서 없는 일 · 넷 더 일함', clip: false, form: 'long' });
-  assert.deepEqual(floorZoneLabel(full, upTo(11)), { text: '부서 없는 일 +4', clip: false, form: 'short' });
+  assert.deepEqual(floorZoneLabel(full, wide), { text: '부서 없는 일 · 일하는 직원 쉰 중 마흔만 보임', clip: false, form: 'full' }, 'the same count of working staff as the headline (11-23 second and 11-25 blind reviews)');
+  // 다 안 들어가면 「열 더 일함」, 그다음 짧은 표시(+10)다. 이름이 먼저라 그래도 안 들어가면 이름만 둔다(검수 solio-office-ga1 F1)
+  assert.deepEqual(floorZoneLabel(full, upTo(18)), { text: '부서 없는 일 · 열 더 일함', clip: false, form: 'long' });
+  assert.deepEqual(floorZoneLabel(full, upTo(11)), { text: '부서 없는 일 +10', clip: false, form: 'short' });
   assert.deepEqual(floorZoneLabel(full, upTo(6)), { text: '부서 없는 일', clip: true, form: 'none' });
   assert.deepEqual(floorZoneLabel(floorLayout({ seats: 1, zones: crowd(few) })[0], wide), { text: '부서 없는 일', clip: true, form: 'none' }, 'nothing is added when everyone has a seat');
   // 한 장면이 짧은 꼴이면 넓은 구역도 짧은 꼴로 쓴다(검수 solio-office-ga1b F2)
-  assert.deepEqual(floorZoneLabel(full, wide, 'short'), { text: '부서 없는 일 +4', clip: false, form: 'short' });
-  assert.equal(floorZoneLabel(full, wide, 'long').text, '부서 없는 일 · 넷 더 일함');
+  assert.deepEqual(floorZoneLabel(full, wide, 'short'), { text: '부서 없는 일 +10', clip: false, form: 'short' });
+  assert.equal(floorZoneLabel(full, wide, 'long').text, '부서 없는 일 · 열 더 일함');
   // 일하는 직원이 다 앉아 있고 조용한 직원만 그림에 없으면 수를 적지 않는다. 같은 「+N」이 때에 따라 다른 것을 뜻하지 않게(카본 A1)
   const calm = floorLayout({ seats: 1, zones: crowd(Array.from({ length: 12 }, (_, i) => ({ id: 'c' + i, status: i < 3 ? 'working' : 'quiet' }))) })[0];
   assert.equal(calm.hidden, 4);
   for (const from of ['full', 'long', 'short']) assert.deepEqual(floorZoneLabel(calm, wide, from), { text: '부서 없는 일', clip: true, form: 'none' }, from);
   assert.equal(floorLabelForm([calm, full], z => (z === calm ? upTo(0) : wide)), 'full', 'a zone without hidden working staff does not shorten the scene');
   // 느낌표가 붙은 끝낸 직원이 자리를 다 차지하면 앉은 일하는 직원이 없다
-  const doneAll = floorLayout({ seats: 1, zones: crowd([...Array.from({ length: 8 }, (_, i) => ({ id: 'd' + i, status: 'done', alert: true })), { id: 'w1', status: 'working' }]) })[0];
+  const doneAll = floorLayout({ seats: 1, zones: crowd([...Array.from({ length: 40 }, (_, i) => ({ id: 'd' + i, status: 'done', alert: true })), { id: 'w1', status: 'working' }]) })[0];
   assert.equal(floorZoneLabel(doneAll, wide).text, '부서 없는 일 · 일하는 직원 하나 더');
   // 「그 밖 셋」의 셋은 부서 수라 빠진 것이 직원임을 적는다(F4)
   assert.equal(floorZoneLabel({ name: '그 밖 셋', kind: 'other', staff: [1, 2, 3].map(id => ({ id, status: 'working' })), hidden: 6, active: 9 }, wide).text, '그 밖 셋 · 일하는 직원 아홉 중 셋만 보임');
@@ -399,7 +403,7 @@ test('the floor draws up to six departments and bundles the rest into one 「그
   assert.equal(floorLabelForm([longName, roomy], z => (z === longName ? upTo(18) : wide)), 'long', 'a zone that fits only the middle form keeps the words for the whole scene');
   assert.equal(floorLabelForm([{ name: 'x', kind: 'dept', hidden: 0 }], () => () => false), 'full');
   // 느낌표가 붙은 직원(오래 걸린 일을 끝냄)은 일하는 직원보다 먼저 앉는다(F3)
-  const doneLong = [...Array.from({ length: 8 }, (_, i) => ({ id: 'k' + i, status: 'working' })), { id: 'd1', status: 'done', alert: true }];
+  const doneLong = [...Array.from({ length: 40 }, (_, i) => ({ id: 'k' + i, status: 'working' })), { id: 'd1', status: 'done', alert: true }];
   assert.ok(floorLayout({ seats: 1, zones: crowd(doneLong) })[0].staff.some(s => s.id === 'd1'), 'a finished staff member with an alert stays in the picture');
   assert.ok(FLOOR_MOTION.rimPeriod >= 2400, 'the working rim changes over at least 2.4 s');
   assert.equal(FLOOR_MOTION.fadeMs, 300, 'a new staff member fades in for 0.3 s at the seat');
@@ -441,12 +445,12 @@ test('a folded department closes its 부서 설정 and drops a pending removal q
   const h = roomHarness();
   await h.room.handle({ key: 'd:dmkt', act: 'grp', arg: 'set' });
   await h.room.handle({ key: 'd:dmkt', act: 'dept-remove-ask', arg: 'dmkt' });
-  let mkt = h.scene().rows.find(r => r.key === 'd:dmkt').more.find(m => m[0] === 'grp');
+  let mkt = h.scene().rows.find(r => r.key === 'd:dmkt').more.find(m => m[0] === 'grp' && m[1] === 'set');
   assert.equal(mkt[3], false);
   assert.ok(mkt[2].some(m => m[0] === 'confirm'));
   assert.deepEqual(h.scene().focus.ask, true, 'the question gets the focus');
   await h.room.handle({ key: 'd:dmkt', act: 'row-fold' });
-  mkt = h.scene().rows.find(r => r.key === 'd:dmkt').more.find(m => m[0] === 'grp');
+  mkt = h.scene().rows.find(r => r.key === 'd:dmkt').more.find(m => m[0] === 'grp' && m[1] === 'set');
   assert.equal(mkt[3], true, 'opened again later, the feature list starts folded');
   assert.ok(!mkt[2].some(m => m[0] === 'confirm'));
 });

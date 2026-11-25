@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>솔리오 사무실 책상</title>
+<style>
+@font-face{font-family:'SUIT';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+/* 사무실 그림은 PC 앱의 모듈(desktop/renderer/office-floor.mjs)을 그대로 부른다. 둘레는 앱의 사무실 방을 줄인 것이다.
+   검정은 방, 종이색은 글과 고른 것, 흐린 종이색은 안내다. 흰 알약은 직원을 더하는 단추 하나뿐이다 */
+:root{color-scheme:dark;--void:#000;--paper:#F3F1EC;--text:rgba(243,241,236,.9);--dim:rgba(243,241,236,.56);--faint:rgba(243,241,236,.34);--hair:rgba(243,241,236,.1);--ring:rgba(243,241,236,.55);--lift:rgba(243,241,236,.07);--sans:'SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);word-break:keep-all;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;appearance:none;border:0;background:none;padding:0;cursor:pointer}
+:focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+#app{min-height:100%;display:grid;grid-template-columns:232px minmax(0,1fr) 300px}
+.list{border-right:1px solid var(--hair);padding:34px 14px 20px 22px;display:flex;flex-direction:column;gap:2px}
+.h{margin:0 0 12px 10px;font:500 14px/1 var(--sans);color:var(--dim)}
+.chat{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;width:100%;padding:11px 10px;border-radius:10px;text-align:left}
+.chat:hover{background:rgba(243,241,236,.045)}
+.chat[aria-current="true"]{background:var(--lift)}
+.chat b{font:500 15px/1.25 var(--sans)}
+.chat span{font:400 13px/1.3 var(--sans);color:var(--dim)}
+.chat .p{grid-column:1/3}
+.room{min-width:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:30px clamp(18px,3vw,44px) 20px}
+h1{margin:0;font:300 clamp(26px,2.6vw,38px)/1.2 var(--sans);letter-spacing:-.02em;text-wrap:balance}
+h1 em{display:block;font-style:normal;color:var(--faint)}
+.slot{position:relative;min-height:340px;margin-top:10px}
+.slot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.foot{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font:400 14px/1.5 var(--sans);color:var(--dim)}
+.foot .pk{display:flex;gap:14px}
+.q{padding:4px 0;color:var(--dim)}
+.q:hover{color:var(--paper)}
+.q[aria-pressed="true"]{color:var(--paper);font-weight:600}
+.side{border-left:1px solid var(--hair);padding:34px 22px 24px;display:flex;flex-direction:column;gap:22px}
+.side h2{margin:0;font:500 19px/1.2 var(--sans)}
+.side .now{margin:6px 0 0;font:400 14px/1.5 var(--sans);color:var(--dim)}
+.grp{display:grid;gap:9px}
+.lab{font:400 13px/1 var(--sans);color:var(--dim)}
+.opts{display:flex;flex-wrap:wrap;gap:5px}
+.opts button{min-width:38px;height:38px;padding:0 12px;border-radius:999px;background:rgba(243,241,236,.07);font:500 14px/1 var(--sans);color:var(--text)}
+.opts button:hover{background:rgba(243,241,236,.13)}
+.opts button[aria-pressed="true"]{background:rgba(243,241,236,.9);color:#0b0b0a}
+.step{display:flex;align-items:center;gap:12px}
+.step button{width:44px;height:44px;border-radius:50%;background:rgba(243,241,236,.07);font:400 20px/1 var(--sans)}
+.step button:disabled{opacity:.3;cursor:default}
+.step .add{width:auto;padding:0 18px;border-radius:999px;background:var(--paper);color:#0b0b0a;font:600 14px/1 var(--sans)}
+.step b{min-width:3.4em;text-align:center;font:500 16px/1 var(--sans)}
+.note{margin:0;font:400 13px/1.6 var(--sans);color:var(--dim)}
+@media (max-width:1060px){#app{grid-template-columns:minmax(0,1fr) 280px}.list{grid-column:1/3;border-right:0;border-bottom:1px solid var(--hair);padding:12px 16px;overflow-x:auto}#chats{display:flex;gap:4px}.h{display:none}.chat{width:auto;min-width:132px;flex:none}.chat .p{display:none}}
+@media (max-width:720px){#app{display:block;min-height:0}.room{grid-template-rows:auto 300px auto}.side{border-left:0;border-top:1px solid var(--hair)}.room{padding:22px 16px}.slot{min-height:260px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <nav class="list" aria-label="부서"><p class="h">사무실</p><div id="chats"></div></nav>
+  <main class="room">
+    <h1 id="say"></h1>
+    <div class="slot"><canvas id="floor" aria-label="부서마다 책상과 직원이 있는 사무실 그림"></canvas></div>
+    <div class="foot">
+      <span>그림 각도</span><span class="pk" id="view"></span>
+      <span>스킨</span><span class="pk" id="skin"></span>
+      <button class="q" id="rush" type="button">마케팅부에 사람 몰아넣기</button>
+      <button class="q" id="reset" type="button">처음부터</button>
+    </div>
+  </main>
+  <aside class="side" id="side" aria-label="이 부서"></aside>
+</div>
+<script type="module">
+import { createOfficeFloor } from '../../../desktop/renderer/office-floor.mjs';
+import { officeDeskPlan, officeDeskLine, countWord } from '../../../desktop/renderer/office-model.mjs';
+
+const $ = id => document.getElementById(id);
+const NAMES = ['마케팅부', '개발부', '법무부', '디자인부', '회계부', '고객지원부'];
+const start = () => ({
+  sel: 'd:0', view: 'tilted', viewSeq: 0, skin: 'black', skinSeq: 0, deskSeq: 0,
+  depts: NAMES.map((name, i) => ({ id: String(i), name, desk: {}, staff: Array.from({ length: [3, 2, 1, 2, 0, 1][i] }, (_, k) => person(i, k)) })),
+  lobby: [person('l', 0)],
+});
+let nth = 0;
+function person(zone, k) { nth += 1; return { id: 's' + nth, status: k % 4 === 3 ? 'resting' : 'working', alert: false, subagents: 0, hat: null, picked: false, provider: 'claude' }; }
+let st = start();
+const floor = createOfficeFloor($('floor'), {
+  isOpen: key => key === st.sel,
+  onPress: zone => { if (zone && zone !== 'other') { st.sel = zone; paint(); } },
+});
+const seats = 3;
+function scene() {
+  const zones = st.depts.map(d => ({ key: 'd:' + d.id, kind: 'dept', name: d.name, urgent: false, desk: { ...d.desk }, staff: d.staff.map(s => ({ ...s, zone: 'd:' + d.id })) }));
+  if (st.lobby.length) zones.push({ key: 'lobby', kind: 'lobby', name: '부서 없는 일', urgent: false, staff: st.lobby.map(s => ({ ...s, zone: 'lobby' })) });
+  return { view: st.view, viewSeq: st.viewSeq, skin: st.skin, skinSeq: st.skinSeq, deskSeq: st.deskSeq, seats, zones };
+}
+const ga = w => w + ((w.charCodeAt(w.length - 1) - 0xAC00) % 28 ? '이' : '가');
+const btn = (text, on, go) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; if (on !== null) b.setAttribute('aria-pressed', String(on)); b.onclick = go; return b; };
+function group(label, opts) { const g = document.createElement('div'); g.className = 'grp'; const l = document.createElement('span'); l.className = 'lab'; l.textContent = label; const o = document.createElement('div'); o.className = 'opts'; o.append(...opts); g.append(l, o); return g; }
+function stepper(list, zone, max) {
+  const s = document.createElement('div'); s.className = 'step';
+  const less = btn('−', null, () => { list.pop(); paint(); }), more = btn('직원 더하기', null, () => { if (list.length < max) list.push(person(zone, list.length)); paint(); });
+  less.setAttribute('aria-label', '직원 줄이기'); less.disabled = !list.length; more.className = 'add'; more.disabled = list.length >= max;
+  const n = document.createElement('b'); n.textContent = list.length ? '직원 ' + countWord(list.length) : '빈 자리';
+  s.append(less, n, more);
+  return s;
+}
+function side() {
+  const box = $('side'); box.replaceChildren();
+  const h = document.createElement('h2'), p = document.createElement('p'); p.className = 'now';
+  if (st.sel === 'lobby') {
+    h.textContent = '부서 없는 일'; p.textContent = '책상 대신 띠가 줄을 늘립니다.';
+    const head = document.createElement('div'); head.append(h, p); box.append(head, stepper(st.lobby, 'l', 60));
+    return;
+  }
+  const d = st.depts.find(x => 'd:' + x.id === st.sel) || st.depts[0], plan = officeDeskPlan(d.desk, d.staff.length, seats);
+  h.textContent = d.name; p.textContent = officeDeskLine(plan);
+  const head = document.createElement('div'); head.append(h, p);
+  const set = patch => { d.desk = { ...d.desk, ...patch }; if (patch.finish === null) delete d.desk.finish; st.deskSeq += 1; paint(); };
+  const note = document.createElement('p'); note.className = 'note'; note.textContent = '직원이 자리보다 많으면 같은 책상이 저절로 더 놓이고, 직원이 떠나면 잠시 뒤 고른 수로 돌아갑니다.';
+  box.append(head, stepper(d.staff, d.id, 30),
+    group('책상 크기', [1, 2, 3, 4].map(n => btn(n + '인', (d.desk.size || 3) === n, () => set({ size: n })))),
+    group('책상 수', [1, 2, 3, 4, 5, 6].map(n => btn(String(n), (d.desk.count || 1) === n, () => set({ count: n })))),
+    group('재질', [['사무실과 같게', null], ['검정', 'black'], ['호두나무', 'walnut']].map(([t, v]) => btn(t, (d.desk.finish || null) === v, () => set({ finish: v })))),
+    note);
+}
+function paint() {
+  const all = [...st.depts.flatMap(d => d.staff), ...st.lobby], busy = all.filter(s => s.status === 'working').length;
+  $('say').innerHTML = busy ? `직원 ${ga(countWord(busy))} 일하고 있습니다.` : '지금은 모두 쉬고 있습니다.';
+  const chats = $('chats'); chats.replaceChildren(...[...st.depts.map(d => ['d:' + d.id, d.name, d.staff, officeDeskLine(officeDeskPlan(d.desk, d.staff.length, seats))]), ['lobby', '부서 없는 일', st.lobby, '솔리오 밖에서 연 일']].map(([key, name, list, line]) => {
+    const b = btn('', null, () => { st.sel = key; paint(); }); b.className = 'chat'; b.setAttribute('aria-current', String(key === st.sel));
+    const n = document.createElement('b'); n.textContent = name; const w = document.createElement('span'); w.textContent = list.length ? countWord(list.length) : '빈 자리'; const p = document.createElement('span'); p.className = 'p'; p.textContent = line;
+    b.append(n, w, p); return b;
+  }));
+  $('view').replaceChildren(...[['비스듬히', 'tilted'], ['위에서', 'top']].map(([t, v]) => { const b = btn(t, st.view === v, () => { if (st.view !== v) { st.view = v; st.viewSeq += 1; paint(); } }); b.className = 'q'; return b; }));
+  $('skin').replaceChildren(...[['검정', 'black'], ['호두나무 서재', 'walnut']].map(([t, v]) => { const b = btn(t, st.skin === v, () => { if (st.skin !== v) { st.skin = v; st.skinSeq += 1; paint(); } }); b.className = 'q'; return b; }));
+  side();
+  floor.setScene(scene());
+  floor.redraw();
+}
+let rush = 0;
+$('rush').onclick = () => { clearInterval(rush); st.sel = 'd:0'; let left = 9; rush = setInterval(() => { const d = st.depts[0]; if (left-- <= 0 || d.staff.length >= 24) { clearInterval(rush); return; } d.staff.push(person(0, d.staff.length)); paint(); }, 620); };
+$('reset').onclick = () => { clearInterval(rush); st = start(); paint(); };
+document.fonts.ready.then(() => { paint(); floor.show(true); });
+window.__desk = { st: () => st, paint, floor, person, set: s => { st = { ...st, ...s }; paint(); } };
+</script>
+</body>
+</html>

@@ -13,10 +13,12 @@
 //    0.06초 간격으로 0.38초씩 앞 스킨에서 새 스킨으로 겹쳐 넘어간다. 판이 늦게 와서 스킨이 바뀌면 움직이지 않는다.
 //  · 탁상 등(호두나무 서재): 부서에 일하는 직원이 서거나 모두 쉬면 0.45초에 걸쳐 켜지고 꺼진다. 첫 그림에서는 바로다.
 //  · 스킨을 바꾸거나 첫 모자를 씌우면 바닥과 모자까지 들어가게 그림 크기를 한 번 바로 맞춘다(움직이지 않는다).
+//  · 책상이 늘거나 줄거나 바뀔 때(부서별 책상, 솔리오_사무실책상_20261125/README.md 7절): 앞 그림에서 새 그림으로 0.38초에 겹쳐 넘어간다. 책상도 직원도 카메라도
+//    미끄러지지 않는다. 새로 놓인 책상은 앞 모서리가 1.4초 동안 밝았다가 가라앉는다(빛만 바뀐다). 첫 그림과 그림판 크기가 바뀔 때는 바로다.
 //  · 움직임 줄이기가 켜져 있으면 모두 멈추고, 장면이 바뀔 때마다 한 번만 그린다.
 // 방이 보이는 동안만 그린다(show). 화면 밀도는 2배까지만 쓴다. 모듈 맨 위에서는 DOM을 건드리지 않는다.
 
-import { countWord } from './office-model.mjs';
+import { countWord, officeDeskPlan } from './office-model.mjs';
 
 export const FLOOR_MOTION = Object.freeze({
   blinkMin: 2400, blinkSpan: 5200, blinkMs: 120,
@@ -26,12 +28,30 @@ export const FLOOR_MOTION = Object.freeze({
   bangPeriod: 1600, bangPx: 2.5, popMs: 420,
   fadeMs: 300, viewTau: 230, frameMs: 33,
   skinMs: 380, skinStep: 60, lampTau: 450,
+  layoutMs: 380, freshMs: 1400, crowd: 40, crowdMs: 50,
 });
 const M = FLOOR_MOTION;
 const INK = '243,241,236';
 const ink = a => `rgba(${INK},${a})`;
 /* 사무실의 치수(시안 값). 부서 좌대 하나가 3.2 × 2.4, 사이 0.6, 직원 반지름 0.3이다 */
 const ZW = 3.2, ZD = 2.4, GAP = 0.6, SLAB = 0.1, R0 = 0.3, STRIP = 1.1, STEP = 1.2;
+/* 책상의 치수(솔리오_사무실책상_20261125/README.md 6절). 3인 책상은 하나일 때 넓은 판(ZW × ZD)이고, 둘부터는 같은 폭의 얕은 책상이다.
+   그래서 넷째 직원이 서면 넓은 판 하나가 같은 자리의 책상 둘이 된다. 자리는 [책상 폭에 대한 몫, 책상 가운데에서 잰 깊이]이고, 등(lamp)은 [폭의 몫, 뒤 모서리에서 잰 깊이, 크기]다.
+   lines: 얕은 책상 몇 줄의 깊이를 쓰는가 */
+const DESK = Object.freeze({
+  1: { w: 1.2, d: 1.2, lines: 1, seats: [[0.5, -0.16]], lamp: [0.15, 0.2, 0.8] },
+  2: { w: 2.2, d: 1.2, lines: 1, seats: [[0.27, -0.16], [0.73, -0.16]], lamp: [0.5, 0.2, 0.9] },
+  3: { w: ZW, d: 1.2, lines: 1, seats: [[0.22, -0.16], [0.5, -0.16], [0.78, -0.16]], lamp: [0.075, 0.2, 1] },
+  4: { w: 2.2, d: 2.4, lines: 2, seats: [[0.27, -0.74], [0.73, -0.74], [0.27, 0.42], [0.73, 0.42]], lamp: [0.5, 0.2, 0.9] },
+});
+const WIDE_LAMP = [0.075, 0.22, 1];
+/* 책상 사이, 한 부서가 줄에서 차지하는 가장 좁은 폭(이름이 들어갈 만큼), 앞 바닥에 쓰는 이름의 깊이, 띠의 줄 사이, 한 줄 띠의 자리와 한 줄로 돌아가는 자리, 무리와 띠의 줄 수 한도 */
+const DESK_GAP = 0.2, SLOT_MIN = 2, LABEL_ROOM = 0.95, STRIP_ROW = 1.25, STRIP_ONE = 8, STRIP_BACK = 6, OTHER_MAX = 24, ROWS_MAX = 4;
+/* 지금 줄 수의 크기가 가장 큰 짝의 이만큼이면 바꾸지 않는다. 직원이 오갈 때마다 배치가 뒤집히지 않게 한다 */
+const PACK_KEEP = 0.92;
+/* 직원 반지름이 5.4px(배율 125% 화면에서 6.75px) 아래로 가면 줄이지 말고 앉히는 수를 줄인다(설계 검토 P1-1). [띠, 부서 하나]의 한도를 앞에서부터 본다. 끝은 11-25까지의 한도(여덟, 여섯)다.
+   BIG_S보다 커지려고 줄을 더 쌓지는 않는다(넉넉한 창에서 띠가 네 줄 바둑판이 되지 않게) */
+const MIN_S = 18, BIG_S = 64, CAPS = Object.freeze([[40, 24], [24, 24], [16, 24], [8, 24], [8, 18], [8, 12], [8, 6]]);
 /* 상태마다의 밝기와 높이. 소식이 없는 직원도 점선 테두리 없이 흐린 테두리로 둔다(빽빽한 점 무늬를 쓰지 않는다) */
 const LOOK = Object.freeze({
   working: { rim: 0.5, glow: 0.16, lift: 0.14, eye: 0.9, mode: 'open' },
@@ -56,7 +76,7 @@ const SKIN = Object.freeze({
 });
 export const FLOOR_SKINS = Object.freeze(Object.keys(SKIN));
 const LAMP_ON = new Set(['working', 'asked', 'silent']);
-const FLOOR_PAD = 0.45, LABEL_FRONT = 0.36;
+const FLOOR_PAD = 0.45, LABEL_FRONT = 0.36, BANG_BACK = 0.5, LABEL_TOP = 0.45, TILT_CA = Math.cos(47 * Math.PI / 180);
 const PLANE_MIN_S = 40, PLANE_PX = 29, PLANE_FONT = `500 ${PLANE_PX}px SUIT, "Malgun Gothic", sans-serif`;
 const rng = seed => () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const mixRGB = (a, b, k) => { if (a === b || k <= 0) return a; if (k >= 1) return b; const x = a.split(',').map(Number), y = b.split(',').map(Number); return x.map((v, i) => Math.round(v + (y[i] - v) * k)).join(','); };
@@ -109,42 +129,130 @@ function seated(staff, n, before) {
   return seats.map(s => s || fresh.shift());
 }
 
-/* 자리 잡기: 부서는 셋씩 두 줄, 그 아래 한 띠에 「부서 없는 일」과 「그 밖」을 나란히 둔다. 빈 부서도 그린다 */
-export function floorLayout(scene, prev = null) {
+/* 부서 하나의 책상 무리: 뒤에서 앞으로 한 열을 채우고 오른쪽 열로 간다. 열의 길이가 그대로면 책상이 늘어도 먼저 놓인 책상은 무리 안에서 움직이지 않는다.
+   wide: 3인 책상이 하나뿐인 넓은 판. 이름은 넓은 판이면 판 위에, 그 밖에는 무리 앞 바닥에 쓴다 */
+function clusterOf(plan, lines) {
+  const kind = DESK[plan.size], wide = plan.size === 3 && plan.desks === 1, d = wide ? ZD : kind.d;
+  // 한 열의 책상 수: 무리가 네모에 가깝게, 사무실이 고른 깊이(lines) 안에서
+  const most = Math.max(1, Math.min(Math.floor(lines / kind.lines), Math.round(Math.sqrt(plan.desks * kind.w / kind.d))));
+  const rows = Math.min(most, plan.desks), cols = Math.ceil(plan.desks / most);
+  const width = cols * kind.w + (cols - 1) * DESK_GAP, depth = rows * d + (rows - 1) * DESK_GAP;
+  return { plan, wide, w: kind.w, d, most, width, depth, slot: Math.max(SLOT_MIN, width), foot: depth + (wide ? 0 : LABEL_ROOM) };
+}
+const threes = list => { const out = []; for (let i = 0; i < list.length; i += 3) out.push(list.slice(i, i + 3)); return out; };
+/* 띠가 앉히는 수: 여덟까지는 모두, 그 위로는 일하거나 느낌표가 붙은 직원이 다 보일 만큼만(쉬는 직원 서른이 그림을 채우지 않게, 설계 검토 P2-10).
+   넷씩 늘리고, 줄일 때는 여덟이 남아야 줄인다. 한 명이 조용해질 때마다 띠의 폭이 바뀌지 않게 한다. was는 지난 배치의 자리 수다 */
+const STRIP_STEP = 4;
+function stripSeats(z, cap, was = 0) {
+  const busy = z.staff.filter(s => LAMP_ON.has(s?.status) || s?.alert).length, need = Math.ceil(busy / STRIP_STEP) * STRIP_STEP, want = Math.max(STRIP_ONE, need);
+  return Math.min(z.staff.length, z.kind === 'other' ? Math.min(cap, OTHER_MAX) : cap, was > want && was - need < STRIP_STEP * 2 ? was : want);
+}
+const stripLines = (n, lines, two) => (n <= STRIP_ONE && !(two && n > STRIP_BACK) ? 1 : lines);
+const stripPer = (n, lines) => Math.max(1, Math.ceil(n / lines));
+const stripNeed = (n, lines) => Math.max(2, stripPer(n, lines)) * STEP + 0.8;
+/* 무리 줄 수(desk)와 띠 줄 수(strip)를 정했을 때의 사무실 크기 */
+function packSize(plans, strips, desk, strip, two) {
+  let width = 0, depth = 0;
+  for (const row of threes(plans.map(p => clusterOf(p, desk)))) {
+    width = Math.max(width, row.reduce((a, c) => a + c.slot, 0) + GAP * (row.length - 1));
+    depth += (depth ? GAP : 0) + Math.max(...row.map(c => c.foot));
+  }
+  if (strips.length) {
+    const lines = strips.map(n => stripLines(n, strip, two));
+    width = Math.max(width, strips.reduce((a, n, i) => a + stripNeed(n, lines[i]), 0) + GAP * (strips.length - 1));
+    depth += (depth ? 0.65 : 0) + STRIP + (Math.max(...lines) - 1) * STRIP_ROW + LABEL_ROOM;
+  }
+  return { width, depth };
+}
+/* 그 크기가 그림판에 얼마나 크게 들어가는가(비스듬히 보기의 어림: 몸을 16도 틀고 47도로 내려다본다). 보기를 바꿔도 같은 배치를 쓴다 */
+function packScale({ width, depth }, box) {
+  const pw = 0.96 * width + 0.28 * depth, ph = (0.28 * width + 0.96 * depth) * 0.73 + 0.72;
+  return Math.min((box.w - 20) / pw, (box.h - 20) / ph, BIG_S);
+}
+/* 앉히는 한도와 줄 수를 고른다. 크기를 모르는 그림판(아직 안 보이는 방)에서는 한도를 줄이지 않고, 그때 고른 것은 다음에 잇지 않는다 */
+function packOf(depts, bottom, scene, box, before, wasSeats) {
+  const known = !!box, frame = box || { w: 920, h: 320 }, prev = before && before.known ? before : null, two = !!prev?.two;
+  for (let cap = 0; cap < CAPS.length; cap++) {
+    const [lobbyCap, deptCap] = CAPS[cap];
+    const plans = depts.map(z => officeDeskPlan(z.desk, z.staff.length, scene?.seats, { held: z.held, cap: deptCap }));
+    const strips = bottom.map(z => stripSeats(z, lobbyCap, wasSeats(z.key)));
+    const deskMax = Math.min(ROWS_MAX, Math.max(1, ...plans.map(p => p.desks * DESK[p.size].lines)));
+    const stripMax = strips.some(n => stripLines(n, 2, two) > 1) ? ROWS_MAX : 1;
+    let best = null, kept = null;
+    for (let desk = 1; desk <= deskMax; desk++) for (let strip = 1; strip <= stripMax; strip++) {
+      const k = packScale(packSize(plans, strips, desk, strip, two), frame), one = { desk, strip, k };
+      if (prev && prev.desk === desk && prev.strip === strip) kept = one;
+      if (!best || k > best.k + 1e-9) best = one;
+    }
+    const pick = kept && kept.k >= best.k * PACK_KEEP ? kept : best;
+    const enough = MIN_S * (!prev ? 1 : cap < prev.cap ? 1.06 : cap === prev.cap ? 0.94 : 1);
+    if (!known || pick.k >= enough || cap === CAPS.length - 1) return { desk: pick.desk, strip: pick.strip, cap, known, two: strips.some(n => stripLines(n, pick.strip, two) > 1), plans, strips, lines: strips.map(n => stripLines(n, pick.strip, two)) };
+  }
+  return null;
+}
+/* 자리 잡기: 부서는 셋씩 두 줄이고, 줄마다 왼쪽 끝과 뒷모서리를 맞춘다. 그 아래 한 띠에 「부서 없는 일」과 「그 밖」을 나란히 둔다. 빈 부서도 그린다.
+   box: 그림판의 크기(px). 무리와 띠의 줄 수, 앉히는 한도를 여기에 맞춘다. 부서마다 책상 하나(직원 셋 이하, 고르지 않음)면 11-24 C판과 같은 자리다 */
+export function floorLayout(scene, prev = null, box = null) {
   const was = key => (Array.isArray(prev) ? prev.find(p => p && p.key === key) : null);
   const zones = Array.isArray(scene?.zones) ? scene.zones : [];
   const depts = zones.filter(z => z.kind === 'dept'), bottom = zones.filter(z => z.kind !== 'dept');
-  const seats = Math.max(1, Math.min(3, Number(scene?.seats) || 1));
-  const cols = Math.min(3, Math.max(1, depts.length)), rows = depts.length ? Math.ceil(depts.length / cols) : 0;
+  const pack = packOf(depts, bottom, scene, box && box.w > 40 && box.h > 40 ? box : null, Array.isArray(prev) ? prev.pack : null, key => was(key)?.spots?.length || 0);
+  const rows = threes(depts.map((z, i) => ({ z, c: clusterOf(pack.plans[i], pack.desk) })));
+  const wide = Math.max(0, ...rows.map(row => row.reduce((a, { c }) => a + c.slot, 0) + GAP * (row.length - 1))), deep = rows.map(row => Math.max(...row.map(({ c }) => c.foot)));
+  const depthAll = deep.reduce((a, b) => a + b, 0) + GAP * Math.max(0, rows.length - 1);
   const out = [];
-  depts.forEach((z, i) => {
-    const col = i % cols, row = Math.floor(i / cols);
-    const cx = (col - (cols - 1) / 2) * (ZW + GAP), cz = (row - (rows - 1) / 2) * (ZD + GAP);
-    const n = Math.min(6, Math.max(seats, z.staff.length));
-    const spots = [];
-    const line = (k, z0) => { const f = k === 1 ? [0.5] : k === 2 ? [0.34, 0.66] : [0.22, 0.5, 0.78]; for (const x of f) spots.push({ x: cx - ZW / 2 + ZW * x, z: z0 }); };
-    if (n <= 3) line(n, cz - 0.18); else { line(Math.ceil(n / 2), cz - 0.55); line(n - Math.ceil(n / 2), cz + 0.35); }
-    const shown = seated(z.staff, n, was(z.key));
-    out.push({ ...z, staff: shown, hidden: z.staff.length - shown.length, active: workingOf(z.staff), rect: { x0: cx - ZW / 2, x1: cx + ZW / 2, z0: cz - ZD / 2, z1: cz + ZD / 2 }, spots });
+  let z0 = -depthAll / 2;
+  rows.forEach((row, r) => {
+    let x0 = -wide / 2;
+    row.forEach(({ z, c }, j) => {
+      const desks = [], spots = [];
+      // 넓은 판 하나의 자리는 11-24와 같다(하나 · 둘 · 셋)
+      const at = c.wide ? (c.plan.seats === 1 ? [0.5] : c.plan.seats === 2 ? [0.34, 0.66] : [0.22, 0.5, 0.78]).map(f => [f, -0.18]) : DESK[c.plan.size].seats;
+      for (let k = 0; k < c.plan.desks; k++) {
+        const q = { key: z.key + '#' + k, x0: x0 + Math.floor(k / c.most) * (c.w + DESK_GAP), z0: z0 + (k % c.most) * (c.d + DESK_GAP) };
+        q.x1 = q.x0 + c.w; q.z1 = q.z0 + c.d;
+        for (const [f, dz] of at) spots.push({ x: q.x0 + c.w * f, z: (q.z0 + q.z1) / 2 + dz, desk: k });
+        desks.push(q);
+      }
+      const shown = seated(z.staff, spots.length, was(z.key));
+      out.push({
+        ...z, plan: c.plan, staff: shown, hidden: z.staff.length - shown.length, active: workingOf(z.staff), desks, spots, wide: c.wide, slot: c.slot,
+        rect: { x0, x1: x0 + c.width, z0, z1: z0 + c.depth },
+        // 앞 바닥에 쓰는 이름은 오른쪽 부서 앞까지 쓴다. 1인 책상 하나뿐인 부서의 이름이 두 글자에서 잘리지 않게
+        labelMax: j < row.length - 1 ? c.slot + GAP - 0.2 : c.slot + 1.6,
+      });
+      x0 += c.slot + GAP;
+    });
+    z0 += deep[r] + GAP;
   });
   if (bottom.length) {
-    const gridHalf = depts.length ? (cols * ZW + (cols - 1) * GAP) / 2 : 0;
-    const need = bottom.map(z => Math.max(2, Math.min(8, z.staff.length)) * STEP + 0.8);
-    const half = Math.max(gridHalf, (need.reduce((a, b) => a + b, 0) + GAP * (bottom.length - 1)) / 2);
-    const z0 = rows ? (rows * ZD + (rows - 1) * GAP) / 2 + 0.65 : -STRIP / 2;
+    const need = bottom.map((z, i) => stripNeed(pack.strips[i], pack.lines[i]));
+    const half = Math.max(wide / 2, (need.reduce((a, b) => a + b, 0) + GAP * (bottom.length - 1)) / 2);
+    const height = STRIP + (Math.max(...pack.lines) - 1) * STRIP_ROW, top = rows.length ? depthAll / 2 + 0.65 : -height / 2;
     // 남는 폭은 구역마다 필요한 폭에 비례해 나눈다. 고르게 나누면 직원이 많은 구역의 구슬이 좌대 밖으로 나간다(0.5.2 공개 검수 A5)
     const total = need.reduce((a, b) => a + b, 0), spare = Math.max(0, 2 * half - GAP * (bottom.length - 1) - total);
     let x = -half;
     bottom.forEach((z, i) => {
       const width = need[i] + spare * (need[i] / total);
-      const x0 = x, x1 = x0 + width, mid = (x0 + x1) / 2, n = Math.min(8, z.staff.length);
+      const x0 = x, x1 = x0 + width, mid = (x0 + x1) / 2, n = pack.strips[i], per = stripPer(n, pack.lines[i]);
       x = x1 + GAP;
-      const spots = Array.from({ length: n }, (_, k) => ({ x: mid + (k - (n - 1) / 2) * STEP, z: z0 + STRIP / 2 - 0.05 }));
+      const spots = Array.from({ length: n }, (_, k) => ({ x: mid + (k % per - (per - 1) / 2) * STEP, z: top + STRIP / 2 - 0.05 + Math.floor(k / per) * STRIP_ROW }));
       const shown = seated(z.staff, n, was(z.key));
-      out.push({ ...z, staff: shown, hidden: z.staff.length - shown.length, active: workingOf(z.staff), rect: { x0, x1, z0, z1: z0 + STRIP }, spots });
+      out.push({ ...z, staff: shown, hidden: z.staff.length - shown.length, active: workingOf(z.staff), rect: { x0, x1, z0: top, z1: top + height }, spots });
     });
   }
+  Object.defineProperty(out, 'pack', { value: { desk: pack.desk, strip: pack.strip, cap: pack.cap, known: pack.known, two: pack.two } });
   return out;
+}
+/* 그림에 보일 자리 수(그림판이 넉넉할 때). 화면이 그림 칸의 높이를 정할 때 쓴다 */
+export function floorSeatCount(scene) {
+  let n = 0;
+  for (const z of Array.isArray(scene?.zones) ? scene.zones : []) {
+    if (z.kind !== 'dept') { n += stripSeats(z, CAPS[0][0]); continue; }
+    const p = officeDeskPlan(z.desk, z.staff.length, scene.seats, { held: z.held });
+    n += p.desks * p.seats;
+  }
+  return n;
 }
 
 /* canvas: 그림을 그릴 캔버스(자리 요소 안에 꽉 찬다). reduced(): 움직임 줄이기. isOpen(key): 그 부서 줄이 열려 있는가.
@@ -158,12 +266,15 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   let view = 1, viewTo = 1, viewSeq = null, shown = false, frame = 0, lastDraw = -1e9, W = 0, H = 0;
   let hot = { zone: null, staff: null }, ptr = { x: -1e4, y: -1e4 }, over = { zone: null, staff: null };
   const life = new Map(); // 직원마다: 나타난 때, 깜빡임, 느낌표가 붙은 때
-  let first = true;
+  let first = true, crowded = false;
   const cam = { cy: 1, sy: 0, ca: 0, sa: 1, k: 0, S: 50, ox: 0, oy: 0 };
   let zonesOnScreen = [], staffOnScreen = [];
   // 꾸미기: 지금 스킨과 넘어가는 중인 앞 스킨, 부서마다 탁상 등의 밝기, 나뭇결 모음
   let skinFrom = 'black', skinTo = 'black', skinT0 = -1e9, skinSeq = null, rectKey = '';
   const lampK = new Map(), TEX = new Map();
+  // 부서별 책상: 겹쳐 넘어갈 앞 그림과 그때, 새로 놓인 책상의 때, 손님이 책상을 고른 차례
+  let ghost = null, ghostAt = -1e9, ghostOn = false, deskSeq = null;
+  const deskBorn = new Map();
 
   function setCam(t) {
     const e = t * t * (3 - 2 * t);
@@ -176,13 +287,19 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     return [xr * s, (zr * cam.sa - y * cam.ca) * s, d, s];
   }
   const P = (x, y, z) => { const p = P0(x, y, z); return [cam.ox + p[0] * cam.S, cam.oy + p[1] * cam.S, p[2], p[3]]; };
+  // 위에서 보기에 얼마나 가까운가(비스듬히 0, 위에서 1)
+  const topness = () => 1 - Math.min(1, cam.ca / TILT_CA);
+  // 위에서 볼 때 이름을 앞으로 더 내리는 구역: 얕은 책상의 부서와 두 줄부터의 띠(직원이 앞 모서리 가까이 앉는다)
+  const lowLabel = z => (z.kind === 'dept' ? !z.wide : z.rect.z1 - z.rect.z0 > STRIP + 0.01);
   /* fl: 스킨의 바닥 한 판(있으면 그 두께까지 잰다). hatOn: 모자를 쓴 직원이 있으면 모자와 그 위의 느낌표까지 잰다(설계 검토 12) */
   function fit(fl = null, hatOn = false) {
     let a = 1e9, b = -1e9, c = 1e9, e = -1e9;
     const take = (x, y, zz) => { const p = P0(x, y, zz); a = Math.min(a, p[0]); b = Math.max(b, p[0]); c = Math.min(c, p[1]); e = Math.max(e, p[1]); };
-    // 검정의 띠 이름은 띠 앞 바닥에 서므로 그 자리까지 잰다
-    const ahead = z => (skinTo === 'black' && z.kind !== 'dept' ? LABEL_FRONT + 0.12 : 0);
-    for (const z of layout) for (const x of [z.rect.x0, z.rect.x1]) for (const zz of [z.rect.z0, z.rect.z1 + ahead(z)]) for (const y of [0, hatOn ? 1.45 : 1.05]) take(x, y, zz);
+    // 검정의 띠 이름과 얕은 책상 무리의 이름은 앞 바닥에 서므로 그 자리까지 잰다
+    const ahead = z => (z.kind === 'dept' ? !z.wide : skinTo === 'black') ? LABEL_FRONT + 0.12 + (lowLabel(z) ? LABEL_TOP * topness() : 0) : 0;
+    // 위에서 보면 얕은 책상에 앉은 직원의 느낌표가 책상 뒷모서리를 넘는다. 비스듬히 보기에서는 아래의 높이(1.05)가 그 몫까지 잰다
+    const behind = z => (z.kind === 'dept' && !z.wide ? BANG_BACK * topness() : 0);
+    for (const z of layout) for (const x of [z.rect.x0, Math.max(z.rect.x1, z.rect.x0 + (z.slot || 0))]) for (const zz of [z.rect.z0 - behind(z), z.rect.z1 + ahead(z)]) for (const y of [0, hatOn ? 1.45 : 1.05]) take(x, y, zz);
     if (fl) for (const x of [fl.x0, fl.x1]) for (const zz of [fl.z0, fl.z1]) for (const y of [0, -SKIN.walnut.floor.thick]) take(x, y, zz);
     if (!(b > a) || !(e > c)) return false;
     const pad = 10;
@@ -220,7 +337,8 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   function bang(x, y, R, s, life1, now, still) {
     const k = still || first ? 1 : Math.min(1, (now - (life1.popAt ?? -1e9)) / M.popMs);
     const e = 1 + 2.70158 * Math.pow(k - 1, 3) + 1.70158 * Math.pow(k - 1, 2);
-    const r = Math.max(6.5, R * 0.42) * e;
+    // 구슬이 작은 그림에서는 느낌표도 작게 둔다(구슬보다 커지면 무엇에 붙었는지 모른다, 책상 설계 검토 P1-1)
+    const r = Math.max(Math.min(6.5, R * 0.8), R * 0.42) * e;
     const cy = y - R - 4 - r - (s.status === 'asked' && !still ? Math.abs(Math.sin(now * Math.PI / M.bangPeriod)) * M.bangPx : 0);
     if (r < 1) return;
     ctx.save();
@@ -254,7 +372,8 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     e.addColorStop(0, oink(edge)); e.addColorStop(0.5, oink(edge * 0.28)); e.addColorStop(1, oink(isHot ? edge * 0.22 : 0));
     ctx.strokeStyle = e; ctx.lineWidth = s.status === 'asked' ? 1.3 : 1;
     ctx.stroke();
-    if (R < 5) return;
+    // 아주 작은 구슬에는 눈과 모자를 그리지 않는다. 느낌표는 작아도 그린다(Fable 최종 F1)
+    if (R < 5) { if (s.alert) bang(x, y, R, s, one || {}, now, still); return; }
     let gx = 0, gy = 0, mode = L.mode === 'look' ? 'open' : L.mode;
     if (s.picked && s.status !== 'asked') mode = 'smile';
     if (L.mode === 'look') {
@@ -312,26 +431,29 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
   }
-  /* 재질의 결: 나뭇결, 마루의 널과 이음매. 세계 좌표로 한 번 만들어 두고, 배치가 바뀌면 비운다(설계 검토 11) */
-  function tex(id, part, q) {
-    const key = [id, part, q.x0, q.z0, q.x1, q.z1].map(v => (typeof v === 'number' ? v.toFixed(2) : v)).join('|');
+  /* 재질의 결: 나뭇결, 마루의 널과 이음매. 책상의 결은 책상 안 좌표로, 마루의 널은 세계에 붙인 격자로 만든다. 그래서 책상이 늘어 둘레가 비켜 앉아도
+     같은 책상은 같은 결이고 널 이음매가 제자리다(책상 설계 검토 P2-8). 한 번 만들어 두고 배치가 바뀌면 비운다(설계 검토 11) */
+  const seedOf = text => { let h = 7; for (let i = 0; i < text.length; i++) h = Math.imul(h, 31) + text.charCodeAt(i) | 0; return Math.abs(h); };
+  function tex(id, part, q, seed) {
+    const key = [id, part, seed, ...(part === 'floor' ? [q.x0, q.z0, q.x1, q.z1] : [q.x1 - q.x0, q.z1 - q.z0]).map(v => v.toFixed(2))].join('|');
     if (TEX.has(key)) return TEX.get(key);
-    const out = [], r = rng(Math.round(Math.abs(q.x0 * 31 + q.z0 * 17) * 100) + part.length * 7 + id.length);
+    const out = [];
     const L = (c, pts, w) => out.push({ c, pts, w }), F = (c, pts) => out.push({ c, pts, fill: true });
     const rect = (x0, z0, x1, z1) => [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
     if (id === 'walnut') {
-      const pl = part === 'floor' ? 0.44 : 0.2;
-      for (let z = q.z0; z < q.z1 - 0.02; z += pl) {
-        const z1 = Math.min(q.z1, z + pl);
-        if (part === 'floor') {
-          if (r() < 0.5) F('tone', rect(q.x0, z, q.x1, z1));
-          if (z > q.z0) L('seam', [[q.x0, z], [q.x1, z]]);
-          let x = q.x0 + 0.4 + r() * 2.4;
-          while (x < q.x1 - 0.4) { L('seam', [[x, z], [x, z1]]); x += 2.3 + r() * 1.9; }
+      const floor = part === 'floor', pl = floor ? 0.44 : 0.2, X0 = floor ? q.x0 : 0, X1 = floor ? q.x1 : q.x1 - q.x0, Z0 = floor ? q.z0 : 0, Z1 = floor ? q.z1 : q.z1 - q.z0;
+      for (let i = Math.floor(Z0 / pl); i * pl < Z1 - 0.02; i++) {
+        const z = Math.max(Z0, i * pl), z1 = Math.min(Z1, (i + 1) * pl), r = rng(seedOf(seed + ':' + i));
+        if (z1 - z < 0.01) continue;
+        if (floor) {
+          if (r() < 0.5) F('tone', rect(X0, z, X1, z1));
+          if (z > Z0) L('seam', [[X0, z], [X1, z]]);
+          let x = -60 + r() * 2.4;
+          while (x < X1 - 0.4) { if (x > X0 + 0.4) L('seam', [[x, z], [x, z1]]); x += 2.3 + r() * 1.9; }
         }
-        for (const f of part === 'floor' ? [0.3, 0.7] : [0.5]) {
-          const zz = z + (z1 - z) * f, ph = r() * 6, amp = part === 'floor' ? 0.03 : 0.016, pts = [];
-          for (let x = q.x0; x <= q.x1 + 0.01; x += 0.4) pts.push([x, zz + Math.sin(x * 1.3 + ph) * amp]);
+        for (const f of floor ? [0.3, 0.7] : [0.5]) {
+          const zz = z + (z1 - z) * f, ph = r() * 6, amp = floor ? 0.03 : 0.016, pts = [];
+          for (let x = X0; x <= X1 + 0.01; x += 0.4) pts.push([x, zz + Math.sin(x * 1.3 + ph) * amp]);
           L('grain', pts, 0.8);
         }
       }
@@ -339,13 +461,15 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     TEX.set(key, out);
     return out;
   }
-  function paintTex(id, part, q, y) {
-    const st = part === 'floor' ? SKIN[id].floor : SKIN[id].ped;
-    for (const t of tex(id, part, q)) {
-      wpath(t.pts, y);
+  function paintTex(id, part, q, y, seed = part) {
+    const st = part === 'floor' ? SKIN[id].floor : SKIN[id].ped, dx = part === 'floor' ? 0 : q.x0, dz = part === 'floor' ? 0 : q.z0;
+    for (const t of tex(id, part, q, seed)) {
+      wpath(dx || dz ? t.pts.map(([x, z]) => [x + dx, z + dz]) : t.pts, y);
       if (t.fill) { ctx.closePath(); ctx.fillStyle = st[t.c]; ctx.fill(); } else { ctx.strokeStyle = st[t.c]; ctx.lineWidth = t.w || 1; ctx.stroke(); }
     }
   }
+  /* 무리에 켜진 불의 세기: 책상 가운데 가장 밝은 것 */
+  const litOf = z => (z.desks || []).reduce((n, q) => Math.max(n, lampK.get(q.key) || 0), 0);
   /* 스킨의 바닥: 부서 자리와 부서 없는 일의 자리까지 덮는 마루 한 판. 등이 켜진 부서 아래에 둥근 빛이 번진다 */
   function paintFloor(id, a, q, t3) {
     const f = SKIN[id].floor;
@@ -356,18 +480,20 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     poly(top); ctx.fillStyle = depthGrad(top, f.top[0], f.top[1]); ctx.fill();
     ctx.save(); poly(top); ctx.clip();
     paintTex(id, 'floor', q, 0);
+    // 바닥에 번진 빛은 무리에 하나다. 책상마다 더하면 1인 책상 여럿에서 바닥이 하얗게 뜬다(책상 설계 검토 P2-4)
     for (const z of layout) {
-      const lk = lampK.get(z.key) || 0;
-      if (z.kind === 'dept' && lk > 0.01) pool((z.rect.x0 + z.rect.x1) / 2, 0, (z.rect.z0 + z.rect.z1) / 2, 3.1, '255,168,92', 0.09 * lk, 'lighter');
+      const lk = litOf(z);
+      if (lk > 0.01) pool((z.rect.x0 + z.rect.x1) / 2, 0, (z.rect.z0 + z.rect.z1) / 2, Math.max(3.1, Math.hypot(z.rect.x1 - z.rect.x0, z.rect.z1 - z.rect.z0) * 0.6), '255,168,92', 0.09 * lk, 'lighter');
     }
     ctx.restore();
     seg(top[3], top[2], f.edge);
     ctx.restore();
   }
   /* 호두나무 책상의 탁상 등. 그 부서에 일하는 직원이 있는 동안만 켜진다 */
-  function deskLamp(q, slab, lk, t3) {
-    // 책상 뒤 왼쪽 귀퉁이에 낮게 둔다. 시안 자리(0.36 · 0.34, 높이 0.72)에서는 첫 직원의 모자와 등불이 겹쳐 뭉개졌다(미학 맹검 11-23 C137)
-    const lx = q.x0 + 0.24, lz = q.z0 + 0.22, b = P(lx, slab, lz), t = P(lx, slab + 0.6, lz), s = 1.4 * cam.S * t[3] / 50;
+  function deskLamp(q, at, slab, lk, t3) {
+    // 책상 뒤 왼쪽 귀퉁이에 낮게 둔다. 시안 자리(0.36 · 0.34, 높이 0.72)에서는 첫 직원의 모자와 등불이 겹쳐 뭉개졌다(미학 맹검 11-23 C137).
+    // 2인 · 4인 책상은 왼쪽 직원이 귀퉁이에 가까워 두 직원 사이 가운데에 둔다(책상 설계 검토 P2-4)
+    const lx = q.x0 + (q.x1 - q.x0) * at[0], lz = q.z0 + at[1], b = P(lx, slab, lz), t = P(lx, slab + 0.6 * at[2], lz), s = 1.4 * at[2] * cam.S * t[3] / 50;
     if (t3 > 0.3) {
       seg(b, t, 'rgba(16,10,5,.95)', Math.max(1, 1.3 * s));
       ctx.save(); ctx.translate(b[0], b[1]); ctx.scale(1, Math.max(0.3, cam.sa)); ctx.beginPath(); ctx.arc(0, 0, 3.6 * s, 0, Math.PI * 2); ctx.fillStyle = '#1a1009'; ctx.fill(); ctx.restore();
@@ -389,21 +515,33 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       seg([cx - hw1, by], [cx + hw1, by], `rgba(255,220,168,${0.9 * lk})`, Math.max(1, 1.3 * s));
     }
   }
-  /* 호두나무 책상(부서 자리) */
-  function paintPed(id, a, z, q, slab, hotZ, t3) {
-    const p = SKIN[id].ped, lk = lampK.get(z.key) || 0;
+  /* 책상 하나. fin은 책상의 재질(부서가 고른 것, 없으면 스킨), skin은 사무실 스킨이다. 면과 모서리는 재질을, 불빛(위에서 내리는 빛 · 탁상 등)은 스킨을 따른다.
+     일하는 중의 표시가 부서마다 달라지지 않게 한다(책상 설계 검토 C3). lamp는 이 책상의 탁상 등 자리([폭의 몫, 깊이, 크기], 없으면 null), glow는 새로 놓인 책상의 밝기 */
+  function paintDesk(fin, skin, a, z, q, slab, hotZ, t3, lk, lamp, lampLit, glow) {
+    const p = SKIN.walnut.ped, wood = fin === 'walnut', cx = (q.x0 + q.x1) / 2, cz = (q.z0 + q.z1) / 2;
     ctx.save(); ctx.globalAlpha *= a;
     const top = HQ(q, slab);
-    if (slab > 0.004 && t3 > 0.02) for (const fc of faces(q, 0, slab)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? p.front : p.left; ctx.fill(); ctx.strokeStyle = p.line; ctx.lineWidth = 1; ctx.stroke(); }
-    poly(top); ctx.fillStyle = depthGrad(top, p.top[0], p.top[1]); ctx.fill();
+    if (slab > 0.004 && t3 > 0.02) for (const fc of faces(q, 0, slab)) {
+      poly(fc.pts); ctx.fillStyle = wood ? (fc.kind === 'front' ? p.front : p.left) : fc.kind === 'front' ? 'rgb(30,30,28)' : 'rgb(12,12,11)'; ctx.fill();
+      if (wood) { ctx.strokeStyle = p.line; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+    poly(top);
+    ctx.fillStyle = wood ? depthGrad(top, p.top[0], p.top[1]) : depthGrad(top, hotZ ? 'rgb(48,48,45)' : 'rgb(40,40,37)', hotZ ? 'rgb(26,26,24)' : 'rgb(19,19,18)');
+    ctx.fill();
+    // 일하는 직원이 있는 책상에만 빛이 떨어진다. 빛은 책상 윗면 안에서만 퍼진다
     ctx.save(); poly(top); ctx.clip();
-    paintTex(id, 'ped', q, slab);
-    pool(q.x0 + 1, slab, q.z0 + 0.8, 2.1, '255,176,100', 0.28 * lk, 'lighter');
-    if (hotZ) { ctx.fillStyle = p.hotFill; poly(top); ctx.fill(); }
+    if (wood) paintTex('walnut', 'ped', q, slab, q.key);
+    if (skin === 'walnut') { if (lamp && lampLit > 0.01) pool(q.x0 + Math.min(1, (q.x1 - q.x0) * 0.5), slab, q.z0 + Math.min(0.8, (q.z1 - q.z0) * 0.5), 2.1, '255,176,100', 0.28 * lampLit, 'lighter'); else if (lk > 0.01) pool(cx, slab, cz, 1.4, '255,176,100', 0.16 * lk, 'lighter', true); }
+    else if (lk > 0.01) pool(cx, slab, cz - 0.1, Math.max(q.x1 - q.x0, q.z1 - q.z0) * 0.62, '255,236,212', (wood ? 0.08 : 0.16) * lk, 'lighter', true); // 검은 방의 나무 책상은 같은 빛에서 더 튄다
+    if (glow > 0.01) pool(cx, slab, cz, Math.max(q.x1 - q.x0, q.z1 - q.z0) * 0.7, '255,236,212', 0.16 * glow, 'lighter', true);
+    if (wood && hotZ) { ctx.fillStyle = p.hotFill; poly(top); ctx.fill(); }
     ctx.restore();
-    poly(top); ctx.strokeStyle = hotZ ? p.hot : z.urgent ? p.urgent : p.line; ctx.lineWidth = 1; ctx.stroke();
-    seg(top[3], top[2], hotZ ? p.hot : p.edge); // 앞 모서리에 빛이 맺힌다
-    deskLamp(q, slab, lk, t3);
+    // 둘레는 아주 흐리게, 빛을 받는 앞 모서리만 밝다(두께 있는 판의 모서리에 빛이 맺힌다).
+    // 길을 다시 잡는다. 빛과 그림자를 그린 동그라미 길이 남아 있으면 그 둘레가 고리로 그어진다(11-24 시안 첫 캡처)
+    poly(top); ctx.strokeStyle = wood ? (hotZ ? p.hot : z.urgent ? p.urgent : p.line) : ink(hotZ ? 0.42 : z.urgent ? 0.3 : 0.07); ctx.lineWidth = 1; ctx.stroke();
+    seg(top[3], top[2], wood ? (hotZ ? p.hot : p.edge) : ink(hotZ ? 0.62 : 0.2 + 0.18 * lk));
+    if (glow > 0.01) seg(top[3], top[2], `rgba(255,236,212,${0.7 * glow})`, 1.4);
+    if (skin === 'walnut' && lamp) deskLamp(q, lamp, slab, lampLit, t3);
     ctx.restore();
   }
   /* 부서 없는 일과 「그 밖」의 자리: 스킨에서는 바닥 위의 깔개다 */
@@ -414,27 +552,28 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx.strokeStyle = `rgba(${SKIN[id].label},${hotZ ? 0.5 : z.urgent ? 0.36 : 0.22})`; ctx.lineWidth = 1; ctx.stroke();
     ctx.restore();
   }
-  /* 기본 「검정」의 자리: 검은 판과 가는 선. 11-23부터 부서 좌대는 옆면을 칠하고 윗면이 뒤에서 앞으로 어두워져 두께 있는 판으로 보인다
-     (선만 있던 판은 맹검이 「얇은 회색 선 사각형」 · 「와이어프레임」이라 했다) */
-  function zoneBlack(a, z, q, slab, hotZ, t3 = 1) {
+  /* 바닥에 지는 것: 자리가 바닥에 놓인 그림자와 앞 바닥에 번진 빛. 모든 자리의 것을 책상보다 먼저 그린다. 책상마다 그림자부터 면까지 한 번에 그리면
+     붙은 책상의 그림자가 먼저 그린 책상을 덮는다(책상 설계 7절) */
+  function groundBlack(a, q, dept, lk, t3) {
     ctx.save(); ctx.globalAlpha *= a;
-    const dept = z.kind === 'dept', y = dept ? slab : 0.012 * t3, topF = HQ(q, y), lk = lampK.get(z.key) || 0;
     const cx = (q.x0 + q.x1) / 2, cz = (q.z0 + q.z1) / 2;
-    // 책상이 바닥에 놓인 그림자. 바닥에 닿은 둘레가 어두워야 판이 떠 보이지 않는다
+    // 바닥에 닿은 둘레가 어두워야 판이 떠 보이지 않는다
     shade(cx, cz + 0.15, (q.x1 - q.x0) * 0.62, Math.max(0.5, (q.z1 - q.z0) * 0.62), dept ? 0.7 : 0.5);
-    if (y > 0.004 && t3 > 0.02) for (const fc of faces(q, 0, y)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? `rgb(${dept ? '30,30,28' : '19,19,18'})` : 'rgb(12,12,11)'; ctx.fill(); }
-    poly(topF);
-    ctx.fillStyle = dept ? depthGrad(topF, hotZ ? 'rgb(48,48,45)' : 'rgb(40,40,37)', hotZ ? 'rgb(26,26,24)' : 'rgb(19,19,18)') : depthGrad(topF, 'rgb(24,24,23)', 'rgb(14,14,13)'); ctx.fill();
-    // 일하는 직원이 있는 자리에만 위에서 빛이 떨어진다. 빛은 책상 윗면 안에서만 퍼진다
-    ctx.save(); poly(topF); ctx.clip();
-    if (dept && lk > 0.01) pool(cx, y, cz - 0.1, Math.max(q.x1 - q.x0, q.z1 - q.z0) * 0.62, '255,236,212', 0.16 * lk, 'lighter', true);
-    if (!dept) for (let i = 0; i < Math.min(z.staff.length, z.spots.length); i++) if (LAMP_ON.has(z.staff[i].status)) pool(z.spots[i].x, y, z.spots[i].z - 0.05, 0.62, '255,236,212', 0.07, 'lighter', true);
-    ctx.restore();
-    // 둘레는 아주 흐리게, 빛을 받는 앞 모서리만 밝다(두께 있는 판의 모서리에 빛이 맺힌다).
-    // 길을 다시 잡는다. 빛과 그림자를 그린 동그라미 길이 남아 있으면 그 둘레가 고리로 그어진다(11-24 시안 첫 캡처)
-    poly(topF); ctx.strokeStyle = ink(hotZ ? 0.42 : z.urgent ? 0.3 : dept ? 0.07 : 0.05); ctx.lineWidth = 1; ctx.stroke();
-    seg(topF[3], topF[2], ink(hotZ ? 0.62 : dept ? 0.2 + 0.18 * lk : 0.1));
     if (dept && lk > 0.01 && t3 > 0.02) pool(cx, 0, q.z1 + 0.35, (q.x1 - q.x0) * 0.42, '255,236,212', 0.035 * lk * t3, 'lighter', true); // 앞 바닥에 번진 빛
+    ctx.restore();
+  }
+  /* 기본 「검정」의 띠(부서 없는 일 · 그 밖): 검은 판과 가는 선. 11-23부터 윗면이 뒤에서 앞으로 어두워져 두께 있는 판으로 보인다
+     (선만 있던 판은 맹검이 「얇은 회색 선 사각형」 · 「와이어프레임」이라 했다) */
+  function stripBlack(a, z, q, hotZ, t3) {
+    ctx.save(); ctx.globalAlpha *= a;
+    const y = 0.012 * t3, topF = HQ(q, y);
+    if (y > 0.004 && t3 > 0.02) for (const fc of faces(q, 0, y)) { poly(fc.pts); ctx.fillStyle = fc.kind === 'front' ? 'rgb(19,19,18)' : 'rgb(12,12,11)'; ctx.fill(); }
+    poly(topF); ctx.fillStyle = depthGrad(topF, 'rgb(24,24,23)', 'rgb(14,14,13)'); ctx.fill();
+    ctx.save(); poly(topF); ctx.clip();
+    for (let i = 0; i < Math.min(z.staff.length, z.spots.length); i++) if (LAMP_ON.has(z.staff[i].status)) pool(z.spots[i].x, y, z.spots[i].z - 0.05, 0.62, '255,236,212', 0.07, 'lighter', true);
+    ctx.restore();
+    poly(topF); ctx.strokeStyle = ink(hotZ ? 0.42 : z.urgent ? 0.3 : 0.05); ctx.lineWidth = 1; ctx.stroke();
+    seg(topF[3], topF[2], ink(hotZ ? 0.62 : 0.1));
     ctx.restore();
   }
   /* 검정의 바닥: 자리를 모두 덮는 넓은 판이 가장자리로 갈수록 어둠에 묻힌다. 경계선을 긋지 않는다 */
@@ -490,23 +629,39 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx.fillText(s, 0, 0);
     ctx.restore();
   }
-  /* 부서 이름과 빈 자리의 가는 선. 스킨마다 글의 색이 다르다 */
-  function zoneText(id, a, z, q, y, hotZ, labelFits, labelForm) {
-    const lc = SKIN[id].label, dark = id === 'black';
+  /* 이름이 서는 자리: 넓은 판은 판 위, 얕은 책상 무리와 검정의 띠는 앞 바닥(띠 안에 쓰면 노트북이 글을 덮었다, 11-24 시안), 스킨의 띠는 띠 위다 */
+  function labelAt(z, skin, y) {
+    const q = z.rect, dept = z.kind === 'dept', front = dept ? !z.wide : skin === 'black', inset = dept && front ? 0.06 : 0.2;
+    // 위에서 본 작은 그림에서는 똑바로 쓴 이름이 책상 앞 모서리에 걸린다. 글 높이만큼 앞으로 내린다(비스듬히 보면 앞줄 직원의 머리가 그 자리에 온다)
+    const more = front && lowLabel(z) && cam.S < PLANE_MIN_S ? Math.max(0, Math.min(LABEL_TOP, 15 / cam.S - LABEL_FRONT)) * topness() : 0;
+    const at = { front, x: q.x0 + inset, y: front ? 0 : y, z: front ? q.z1 + LABEL_FRONT + more : q.z1 - 0.2, max: dept && front ? z.labelMax - inset : q.x1 - q.x0 - inset * 2 };
+    // 오른쪽 끝 부서의 이름은 무리보다 넓게 쓸 수 있다. 그림판 밖으로 나가지 않게 오른쪽 끝까지만 쓴다
+    if (dept && front) { const l = P(at.x, at.y, at.z)[0], r = P(at.x + at.max, at.y, at.z)[0]; if (r > W - 10) at.max = Math.max(0.4, at.max * (W - 10 - l) / (r - l)); }
+    return at;
+  }
+  /* 부서 이름과 빈 자리의 가는 선. 바닥에 쓴 이름은 스킨의 색, 책상 위의 것은 재질의 색이다 */
+  /* late: 작은 그림에서 앞 바닥에 똑바로 쓰는 부서 이름은 직원 다음에 쓴다. 앞줄 직원의 머리와 느낌표가 이름을 가리지 않게 한다(Fable 최종 F4) */
+  function zoneText(id, a, z, y, hotZ, labelFits, labelForm, late = false) {
+    const fin = z.plan?.finish || id, at = labelAt(z, id, y), lc = SKIN[at.front ? id : fin].label, dark = (at.front ? id : fin) === 'black';
+    const over = cam.S < PLANE_MIN_S && at.front && z.kind === 'dept';
+    if (late && !over) return;
     ctx.save(); ctx.globalAlpha *= a;
-    // 검정의 좁은 띠(부서 없는 일 · 그 밖)는 이름을 띠 앞 바닥에 쓴다. 띠 안에 쓰면 노트북이 글을 덮었다(11-24 시안)
-    const front = dark && z.kind !== 'dept', ly = front ? 0 : y, lz = front ? q.z1 + LABEL_FRONT : q.z1 - 0.2;
-    const lp = P(q.x0 + 0.2, ly, lz), lr = P(q.x1 - 0.2, ly, lz);
+    const lp = P(at.x, at.y, at.z), lr = P(at.x + at.max, at.y, at.z);
     ctx.fillStyle = `rgba(${lc},${hotZ || z.urgent ? 0.95 : dark ? 0.62 : 0.72})`;
     const room = Math.max(24, lr[0] - lp[0]), label = floorZoneLabel(z, labelFits(z), labelForm);
     // 그림이 작으면(좁은 창) 눕힌 글이 뭉개져 똑바로 쓴다(미학 맹검 2회차). 검정도 11-24부터 판 위에 눕힌다 —
     // 두께 있는 책상과 띠가 서자 똑바른 글이 판 모서리를 가로질렀다(맹검 「수평 글자가 판 테두리를 침범」)
-    if (cam.S < PLANE_MIN_S) ctx.fillText(label.clip ? clipText(label.text, room) : label.text, lp[0], lp[1]);
-    else planeText(label.text, q.x0 + 0.2, ly, lz, q.x1 - q.x0 - 0.4);
+    if (over && !late) { /* 이름은 직원 다음에 */ } else if (cam.S < PLANE_MIN_S) {
+      const text = label.clip ? clipText(label.text, room) : label.text;
+      // 작은 그림에서는 앞줄 직원의 머리가 이름 자리에 닿는다. 글 둘레를 어둡게 눌러 글자가 먼저 읽히게 한다
+      if (at.front) { ctx.lineJoin = 'round'; ctx.lineWidth = 3.5; ctx.strokeStyle = id === 'black' ? 'rgba(0,0,0,.8)' : 'rgba(20,12,7,.75)'; ctx.strokeText(text, lp[0], lp[1]); }
+      ctx.fillText(text, lp[0], lp[1]);
+    } else planeText(label.text, at.x, at.y, at.z, at.max);
     // 빈 자리는 가는 짧은 선 하나다
-    for (let i = z.staff.length; i < z.spots.length; i++) {
+    const sc = SKIN[fin].label, sd = fin === 'black';
+    if (!late) for (let i = z.staff.length; i < z.spots.length; i++) {
       const c = z.spots[i], s0 = P(c.x - 0.17, y, c.z + 0.3), s1 = P(c.x + 0.17, y, c.z + 0.3);
-      seg(s0, s1, `rgba(${lc},${dark ? (hotZ ? 0.22 : 0.12) : (hotZ ? 0.5 : 0.3)})`);
+      seg(s0, s1, `rgba(${sc},${sd ? (hotZ ? 0.22 : 0.12) : (hotZ ? 0.5 : 0.3)})`);
     }
     ctx.restore();
   }
@@ -594,10 +749,14 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     zonesOnScreen = []; staffOnScreen = [];
     if (!layout.length) return;
     const t3 = view * view * (3 - 2 * view);
-    // 탁상 등: 그 부서에 일하는(승인을 물은 · 소식 없는) 직원이 있으면 켠다. 첫 그림과 움직임 줄이기에서는 바로(설계 검토 10)
+    // 책상의 불: 그 책상에 일하는(승인을 물은 · 소식 없는) 직원이 있으면 켠다. 첫 그림과 움직임 줄이기에서는 바로(설계 검토 10)
     for (const z of layout) {
-      const want = z.kind === 'dept' && z.staff.some(s => LAMP_ON.has(s.status)) ? 1 : 0, was = lampK.get(z.key);
-      lampK.set(z.key, still || first || was === undefined ? want : was + (want - was) * (1 - Math.exp(-dt / M.lampTau)));
+      const on = new Set();
+      z.staff.forEach((s, i) => { if (LAMP_ON.has(s.status) && z.spots[i]) on.add(z.spots[i].desk); });
+      (z.desks || []).forEach((q, k) => {
+        const want = on.has(k) ? 1 : 0, was = lampK.get(q.key);
+        lampK.set(q.key, still || first || was === undefined ? want : was + (want - was) * (1 - Math.exp(-dt / M.lampTau)));
+      });
     }
     const A = skinFrom, B = skinTo, order = [...layout].sort((a, b) => P0(0, 0, a.rect.z0)[2] - P0(0, 0, b.rect.z0)[2]);
     if (A !== B && skinK(1 + order.length, now, still) >= 1) skinFrom = skinTo;
@@ -609,26 +768,35 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx.font = '400 12.5px SUIT, "Malgun Gothic", sans-serif'; ctx.textBaseline = 'alphabetic';
     // 이름표 폭. 한 장면 안에서는 빠진 수를 한 꼴로 적는다: 어느 구역이든 긴 꼴이 안 들어가면 모두 그다음 꼴이다(검수 solio-office-ga1b-20261122 F2)
     const slabB = SKIN[B].slab * t3;
-    const labelFits = z => { const q = z.rect, y = z.kind === 'dept' ? slabB : 0, room = Math.max(24, P(q.x1 - 0.2, y, q.z1 - 0.2)[0] - P(q.x0 + 0.2, y, q.z1 - 0.2)[0]); return t => ctx.measureText(t).width <= room; };
+    const labelFits = z => { const at = labelAt(z, B, z.kind === 'dept' ? slabB : 0), room = Math.max(24, P(at.x + at.max, at.y, at.z)[0] - P(at.x, at.y, at.z)[0]); return t => ctx.measureText(t).width <= room; };
     const labelForm = floorLabelForm(layout, labelFits);
     // 검정 스킨: 가장자리로 갈수록 어둠에 묻히는 바닥 한 판(11-24 「불 켜진 자리」). 다른 스킨의 바닥보다 먼저 그려야 둘레 지우기가 그것만 지운다
     const blackK = mix(skinK(0, now, still)).reduce((n, [id, a]) => n + (id === 'black' ? a : 0), 0);
     if (blackK > 0.01) floorBlack(blackK, t3);
     if (fl) { const k0 = skinK(0, now, still); for (const [id, a] of mix(k0)) paintFloor(id, a, fl, t3); }
-    const kZ = new Map(), yZ = new Map();
+    const kZ = new Map(), yZ = new Map(), hotOf = new Map(), desks = [];
     order.forEach((z, i) => {
-      const q = z.rect, hotZ = hot.zone === z.key || over.zone === z.key || isOpen(z.key) || z.staff.some(s => s.picked);
-      const k = A === B ? 1 : skinK(1 + i, now, still), sl = (SKIN[A].slab * (1 - k) + SKIN[B].slab * k) * t3, y = z.kind === 'dept' ? sl : 0;
+      const k = A === B ? 1 : skinK(1 + i, now, still), slabOf = id => SKIN[z.plan?.finish || id].slab, y = z.kind === 'dept' ? (slabOf(A) * (1 - k) + slabOf(B) * k) * t3 : 0;
       kZ.set(z.key, k); yZ.set(z.key, y);
-      for (const [id, a] of mix(k)) {
-        if (a < 0.003) continue;
-        if (id === 'black') zoneBlack(a, z, q, sl, hotZ, t3);
-        else if (z.kind === 'dept') paintPed(id, a, z, q, sl, hotZ, t3);
-        else paintMat(id, a, z, q, hotZ);
-        zoneText(id, a, z, q, y, hotZ, labelFits, labelForm);
-      }
-      zonesOnScreen.push({ key: z.key, pts: HQ(q, y) });
+      hotOf.set(z.key, hot.zone === z.key || over.zone === z.key || isOpen(z.key) || z.staff.some(s => s.picked));
+      // 얕은 책상(1인 · 2인)은 무리에 등 하나(첫 책상)다. 작은 등이 줄지어 서지 않게 한다(책상 설계 검토 P2-4)
+      (z.desks || []).forEach((q, n) => desks.push({ z, q, n, k, y, depth: P0((q.x0 + q.x1) / 2, 0, (q.z0 + q.z1) / 2)[2], lamp: z.wide ? WIDE_LAMP : z.plan.size >= 3 || n === 0 ? DESK[z.plan.size].lamp : null, lone: !z.wide && z.plan.size < 3 }));
+      zonesOnScreen.push({ key: z.key, pts: HQ(z.rect, y) });
     });
+    desks.sort((a, b) => a.depth - b.depth);
+    // 바닥에 지는 것 → 띠와 책상(뒤에서 앞으로) → 이름과 빈자리 → 직원
+    for (const z of order) if (z.kind !== 'dept') for (const [id, a] of mix(kZ.get(z.key))) if (id === 'black' && a >= 0.003) groundBlack(a, z.rect, false, 0, t3);
+    for (const { z, q, k } of desks) for (const [id, a] of mix(k)) {
+      if (a < 0.003) continue;
+      const fin = z.plan.finish || id;
+      if (fin === 'black' || id === 'black') groundBlack(a, q, true, id === 'black' ? lampK.get(q.key) || 0 : 0, t3);
+    }
+    for (const z of order) if (z.kind !== 'dept') for (const [id, a] of mix(kZ.get(z.key))) { if (a < 0.003) continue; if (id === 'black') stripBlack(a, z, z.rect, hotOf.get(z.key), t3); else paintMat(id, a, z, z.rect, hotOf.get(z.key)); }
+    for (const { z, q, k, y, lamp, lone } of desks) {
+      const lk = lampK.get(q.key) || 0, age = now - (deskBorn.get(q.key) ?? -1e9), glow = still || age >= M.freshMs ? 0 : Math.pow(1 - Math.max(0, age) / M.freshMs, 1.6);
+      for (const [id, a] of mix(k)) if (a >= 0.003) paintDesk(z.plan.finish || id, id, a, z, q, y, hotOf.get(z.key), t3, lk, lamp, lone ? litOf(z) : lk, glow);
+    }
+    for (const z of order) for (const [id, a] of mix(kZ.get(z.key))) if (a >= 0.003) zoneText(id, a, z, yZ.get(z.key), hotOf.get(z.key), labelFits, labelForm);
     const list = [];
     for (const z of layout) {
       const base = yZ.get(z.key) || 0;
@@ -656,13 +824,40 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       ctx.restore();
       staffOnScreen.push({ id: s.id, zone: s.zone, x: p[0], y: p[1], r: R });
     }
+    for (const z of order) for (const [id, a] of mix(kZ.get(z.key))) if (a >= 0.003) zoneText(id, a, z, yZ.get(z.key), hotOf.get(z.key), labelFits, labelForm, true);
+    crowded = list.length > M.crowd;
+    crossFade(now, still);
     first = false;
+  }
+  /* 앞 그림에서 새 그림으로 겹쳐 넘어간다. 새 그림을 e만큼, 앞 그림을 1 − e만큼 남겨 더한다 */
+  function crossFade(now, still) {
+    if (!ghostOn) return;
+    const p = (now - ghostAt) / M.layoutMs;
+    if (still || first || !ghost || !(p < 1) || ghost.width !== canvas.width || ghost.height !== canvas.height) { ghostOn = false; return; }
+    const t = Math.max(0, p), e = t * t * (3 - 2 * t);
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'destination-in'; ctx.fillStyle = `rgba(0,0,0,${e})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 1 - e; ctx.drawImage(ghost, 0, 0);
+    ctx.restore();
+  }
+  /* 지금 그림을 앞 그림으로 떠 둔다 */
+  function keepFrame() {
+    ghostOn = false;
+    if (!ctx || !canvas.width || !canvas.height) return;
+    try {
+      if (!ghost) ghost = canvas.ownerDocument?.createElement?.('canvas') || null;
+      const g = ghost?.getContext?.('2d');
+      if (!g) return;
+      ghost.width = canvas.width; ghost.height = canvas.height;
+      g.drawImage(canvas, 0, 0);
+      ghostAt = clock(); ghostOn = true;
+    } catch { ghost = null; }
   }
   function loop(t) {
     frame = 0;
     if (!shown || reduced()) return;
     frame = raf(loop);
-    if (t - lastDraw >= M.frameMs) draw(t);
+    if (t - lastDraw >= (crowded && !ghostOn ? M.crowdMs : M.frameMs)) draw(t);
   }
   function kick() {
     if (!shown) return;
@@ -677,7 +872,17 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     const cw = Math.max(1, Math.round(W * dpr)), ch = Math.max(1, Math.round(H * dpr));
     if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
     ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ghostOn = false;
+    place();
     if (shown) draw();
+  }
+  /* 배치를 다시 잡는다. 자리가 바뀌었으면 나뭇결 모음을 비우고 참을 돌려준다 */
+  function place() {
+    layout = floorLayout(scene, layout, { w: W, h: H });
+    const rk = layout.map(z => (z.desks || [z.rect]).map(q => [q.x0, q.x1, q.z0, q.z1].map(v => v.toFixed(2)).join(',')).join('/')).join(';');
+    if (rk === rectKey) return false;
+    rectKey = rk; TEX.clear();
+    return true;
   }
   const ro = typeof win.ResizeObserver === 'function' && canvas?.parentElement ? new win.ResizeObserver(() => resize()) : null;
   ro?.observe(canvas.parentElement);
@@ -715,7 +920,16 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       const want = s.view === 'top' ? 0 : 1;
       if (viewSeq === null || s.viewSeq === viewSeq || reduced()) { view = viewTo = want; } else viewTo = want;
       viewSeq = s.viewSeq;
-      layout = floorLayout(s, layout);
+      // 책상이 늘거나 줄거나 손님이 책상을 고르면 앞 그림에서 새 그림으로 겹쳐 넘어간다. 첫 그림, 숨은 방, 움직임 줄이기에서는 바로다
+      const still = reduced(), before = new Set(layout.map(z => z.key)), picked = deskSeq !== null && (s.deskSeq ?? 0) !== deskSeq, live = shown && !first && !still;
+      const look = layout.map(z => z.plan?.finish || '').join();
+      deskSeq = s.deskSeq ?? 0;
+      // 자리를 다시 잡아도 캔버스에는 아직 앞 그림이 있다. 바뀐 것이 있을 때만 떠 두어, 넘어가는 중에 온 상태 바뀜이 넘어가기를 끊지 않는다
+      const moved = place();
+      if (live && (moved || (picked && look !== layout.map(z => z.plan?.finish || '').join()))) keepFrame();
+      const t0 = clock(), keys = new Set();
+      for (const z of layout) for (const q of z.desks || []) { keys.add(q.key); if (!deskBorn.has(q.key)) deskBorn.set(q.key, live && before.has(z.key) ? t0 : -1e9); }
+      for (const k of [...deskBorn.keys()]) if (!keys.has(k)) deskBorn.delete(k);
       // 스킨은 손님이 고른 때(skinSeq가 바뀜)만 겹쳐 넘어가고, 그 밖에는 바로 그 스킨이다(설계 검토 10)
       const skin = Object.hasOwn(SKIN, s.skin) ? s.skin : 'black';
       // 넘어가는 중에 같은 skinSeq의 다른 장면(직원 상태 바뀜)이 와도 넘어가기를 끊지 않는다. 스킨까지 다르면 판을 따라 바로 바꾼다(최종 검수 F3)
@@ -723,9 +937,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       else if (s.skinSeq === skinSeq) { if (skin !== skinTo) { skinFrom = skinTo = skin; skinT0 = -1e9; } }
       else if (skin !== skinTo) { skinFrom = skinTo; skinTo = skin; skinT0 = clock(); }
       skinSeq = s.skinSeq ?? 0;
-      const rk = layout.map(z => [z.rect.x0, z.rect.x1, z.rect.z0, z.rect.z1].map(v => v.toFixed(2)).join(',')).join(';');
-      if (rk !== rectKey) { rectKey = rk; TEX.clear(); }
-      for (const k of [...lampK.keys()]) if (!layout.some(z => z.key === k)) lampK.delete(k);
+      for (const k of [...lampK.keys()]) if (!keys.has(k)) lampK.delete(k);
       const t = clock(), ids = new Set();
       for (const z of layout) for (const st of z.staff) {
         ids.add(st.id);
@@ -753,6 +965,11 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     /* 시험이 본다: 지금 스킨(넘어가는 중이면 앞 스킨도)과 나뭇결 모음의 크기 */
     skin: () => ({ from: skinFrom, to: skinTo }),
     texSize: () => TEX.size,
+    /* 시험이 본다: 놓인 책상의 열쇠, 앞 그림과 겹쳐 넘어가는 중인가, 불 모음의 크기, 고른 줄 수와 한도 */
+    desks: () => layout.flatMap(z => (z.desks || []).map(q => q.key)),
+    fading: () => ghostOn,
+    lampSize: () => lampK.size,
+    pack: () => layout.pack || null,
     dispose() {
       shown = false;
       if (frame) { unraf(frame); frame = 0; }

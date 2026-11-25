@@ -421,3 +421,29 @@ export function officeCapacity({ cores, totalMemGb, subscriptions = {}, manual =
 }
 /* 부서 하나의 자리: 수용 인원을 셋으로 나눠 올린 수, 하나부터 셋까지 */
 export const officeSeats = cap => Math.min(3, Math.max(1, Math.ceil((Number(cap) || 0) / 3)));
+
+/* ── 부서의 책상(솔리오_사무실책상_20261125/README.md 6절) ──
+   책상 하나에 앉는 수(size)와 책상 수(count)는 부서마다 고른다. 직원이 자리보다 많으면 같은 책상이 저절로 더 놓인다.
+   그림(office-floor.mjs)과 부서 줄(office-room.mjs)이 같은 함수를 쓴다. 3인 책상 하나인 부서(고르지 않은 부서)는 지금처럼 수용 인원에 따른 자리(1~3)만 보인다.
+   held: 조금 전까지 놓였던 수. 직원이 떠나도 바로 줄이지 않는다(office-room.mjs가 3분 들고 있다). cap: 그림이 앉히는 한도. 저절로 느는 책상만 줄이고 손님이 정한 책상 수는 지킨다.
+   돌려주는 값: { size, base, desks 놓인 수, grown 저절로 더 놓인 수, seats 책상마다 보이는 자리, finish 재질(null은 사무실 스킨) } */
+export const OFFICE_DESK_SIZES = Object.freeze([1, 2, 3, 4]);
+export const OFFICE_DESK_COUNT_MAX = 6;
+export const OFFICE_DESK_FINISHES = Object.freeze(['black', 'walnut']);
+export const OFFICE_DEPT_SEATS = 24; // 그림에서 부서 하나가 앉히는 직원의 위 끝
+export function officeDeskPlan(desk, staffCount, seats = 1, { held = 0, cap = OFFICE_DEPT_SEATS } = {}) {
+  const d = desk && typeof desk === 'object' ? desk : {};
+  const size = OFFICE_DESK_SIZES.includes(d.size) ? d.size : 3;
+  const base = Number.isInteger(d.count) && d.count >= 1 && d.count <= OFFICE_DESK_COUNT_MAX ? d.count : 1;
+  const n = Math.max(0, Math.floor(Number(staffCount) || 0));
+  const most = Math.max(1, Math.floor(Math.min(OFFICE_DEPT_SEATS, Math.max(1, Number(cap) || 1)) / size));
+  const desks = Math.max(base, Math.min(most, Math.max(Math.ceil(n / size), Math.floor(Number(held) || 0))));
+  return {
+    size, base, desks, grown: desks - base, spare: desks - Math.max(base, Math.min(most, Math.ceil(n / size))),
+    seats: size === 3 && desks === 1 ? Math.min(3, Math.max(1, Math.floor(Number(seats) || 1), n)) : size,
+    finish: OFFICE_DESK_FINISHES.includes(d.finish) ? d.finish : null,
+  };
+}
+/* 「책상」 줄의 글: 지금 놓인 것 */
+/* 직원이 떠난 뒤 들고 있는 동안에는 「직원이 늘어」가 맞지 않는다. 남는 책상을 곧 치운다고 쓴다(Fable 최종 F3) */
+export const officeDeskLine = p => `${p.size}인 책상 ${countWord(p.desks)}` + (p.spare > 0 ? ` · 빈 책상 ${neun(countWord(p.spare))} 잠시 뒤 치움` : p.grown ? ` · 직원이 늘어 ${countWord(p.grown)} 더 놓음` : '');
