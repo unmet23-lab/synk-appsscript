@@ -54,7 +54,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  storage=env.localStorage,workerUrl,scopeUrl,now=()=>Date.now(),onChange=()=>{}}={}){
  let owner=null,epoch=0,registration=null,subscription=null,publicKey=null,attempt=null,mutation=null,disposed=false,syncTimer=null,pendingSync=null,lastSync=null;
  // 차례: status · sync · subscribe · unsubscribe가 한 번호를 쓴다. 계정 상태(켜짐 · 계획 · 판)는 가장 늦게 시작한 요청의 응답만, 기기 상태는 기기 칸이 있는 응답
- // (status · 켜기 · 끄기 — sync 응답에는 기기 칸이 없다) 가운데 가장 늦게 시작한 것만 적는다. 켜기 · 끄기가 끝나면 그 전에 시작한 요청의 응답은 옛것이다(GPT push-versions-world GA5).
+ // (status · 켜기 · 끄기 — sync 응답에는 기기 칸이 없다) 가운데 가장 늦게 시작한 것만 적는다. 켜기 · 끄기가 끝나면 그 전에 시작한 요청의 응답은 옛것이다(push-versions-world GA5).
  let order=0;const shown={account:0,device:0};
  // binding: 1단 설정 묶음(world-reminder-device가 건다 — read · adopt · digest). owedDigest: 아직 받히지 않은 요약({item, tries}).
  // jobs: 진행 중인 sync(토큰 갱신을 기다리는 요청은 sent가 거짓). closing: 로그아웃 중 — 계정이 바뀔 때까지 새 요청과 판 키 쓰기를 막는다. leavingNow: flush 안.
@@ -116,7 +116,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 편집의 바탕을 옮긴다.
  const rebase=(edit,base,extra={})=>({...edit,base,...extra});
  // 편집이 지금 서버 계획과 다른 계획 때 적은 것인가 — 다른 기기가 마지막 기기를 끄고 다시 켰다. 다시 켜며 고른 설정이 옛 계획 때 편집보다 뒤의 뜻이라
- // 옛 편집은 지난 것으로 본다(설계 주인 11-22 규칙 4 (나), GPT world-r5 GA7 · r4 GA4). 계획은 정체(planId — 계획 줄을 만든 때)로 가린다. 판은 범위를
+ // 옛 편집은 지난 것으로 본다(설계 주인 11-22 규칙 4 (나), world-r5 GA7 · r4 GA4). 계획은 정체(planId — 계획 줄을 만든 때)로 가린다. 판은 범위를
  // 넘으면 새 시작으로 넘어가므로 쓰지 않는다. 어느 쪽이든 정체를 모르면 같은 계획으로 본다.
  const otherPlan=(edit,planId)=>!!edit?.planId&&!!planId&&edit.planId!==planId;
  const serverVersions=data=>{const v=data?.versions;return v&&typeof v==='object'?{settings:positive(v.settings),digest:positive(v.digest),reviews:positive(v.reviews)}:null;};
@@ -234,7 +234,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(claimRead?.id===edit.id&&state.seenSeq<=claimRead.after)return;
    if(claimRead?.id!==edit.id&&edit.known&&edit.base!=null&&server!=null&&edit.base>server&&!otherPlan(edit,state.planId)){claimRead={id:edit.id,after:order};readClaim();return;}
    // 바탕이 서버 판과 다르면 서버 판이 바탕보다 한 칸 위이고 서버 값이 그 탭의 앞 설정과 같아도 들인다 — 그 탭의 앞 요청이 받힌 것인지 다른 기기가 같은
-   // 값을 먼저 쓴 것인지 기기만으로는 가를 수 없고, 잘못 짐작하면 다른 기기의 쓰기를 덮는다(설계 주인 11-22 규칙 5 (가), GPT world-r6 GA1 · GA5).
+   // 값을 먼저 쓴 것인지 기기만으로는 가를 수 없고, 잘못 짐작하면 다른 기기의 쓰기를 덮는다(설계 주인 11-22 규칙 5 (가), world-r6 GA1 · GA5).
    if(state.versioning&&edit.known&&edit.base===server)rewrite(edit,rebase(edit,server,{page,at:now(),tries:1}));
    else rewrite(edit,null);
    if(same(readEdit(),edit))return;
@@ -418,10 +418,10 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const seq=++order,mark=JSON.stringify(readRecord()),data=await request('status',sub?{endpoint:sub.endpoint}:{});
    if(!applyRead(seq,data,expected,'ready',tidy))return snapshot();   // 화면 맞추기 읽기는 기기 응답이 아니라 여기서 멈춘다(정리하지 않는다)
    // 읽기가 날아가는 사이 같은 브라우저의 다른 탭이 기기 기록을 바꿨으면(켜기 · 끄기) 이 응답으로 정리하지 않는다 — 그 탭이 방금 켠 구독의
-   // 기록을 지우고 서버에서 끄게 된다(r17 Fable 설계 검토: 화면은 「켜짐」인데 알림이 오지 않는다). 정리는 다음 평소 읽기가 한다.
+   // 기록을 지우고 서버에서 끄게 된다(r17 설계 검토: 화면은 「켜짐」인데 알림이 오지 않는다). 정리는 다음 평소 읽기가 한다.
    const next=snapshot(),record=readRecord();if(JSON.stringify(record)!==mark)return snapshot();
    // 이 브라우저 구독의 주인 기록이 이 계정이면, 기록의 주소가 지금 구독과 달라도(다른 탭의 늦은 등록이 옛 주소를 남겼다) 다시 잇는다 — 다음 평소 읽기가 늘
-   // 바로잡는다(GPT r19 GA2, 설계 주인 11-23 불변식 1). 다른 계정 기록이면 그 계정 구독이라 두지 않는다.
+   // 바로잡는다(r19 GA2, 설계 주인 11-23 불변식 1). 다른 계정 기록이면 그 계정 구독이라 두지 않는다.
    if(sub&&!next.device.subscribed&&record?.accountId===owner)return reconnect(sub,reg,expected);
    else if(!sub&&record?.accountId===owner){writeRecord(null);try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}
    return snapshot();
@@ -432,7 +432,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 서버에 다시 올린다(켜기와 같은 길 — 설정은 1단 값, 요약은 1단이 지금 기록으로 짓는다). 그래서 낡은 응답이 와도 끝은 「켜짐 + 서버에 오른 구독」이다.
  // 다시 올린 구독도 서버가 곧바로 없다고 하면 한 번만 더 해 보고 멈춘다 — 켜기가 남긴 오류와 꺼진 기기 칸이 설정 화면에 보여 학생이 다시 켠다.
  // 알림 기능이 꺼졌거나(비상 스위치) 권한이 허용이 아니거나 이 탭이 켜기 · 끄기 중이면 하지 않는다(지우지도 않는다). 1단 설정 묶음이 아직 붙지 않아 보낼
- // 설정 · 요약이 없을 때도 하지 않는다 — 서버가 빈 설정을 거절해 두 번 다 실패하고 구독만 지운다(GPT r18 GA4). 묶음이 붙은 뒤의 평소 읽기가 다시 잇는다.
+ // 설정 · 요약이 없을 때도 하지 않는다 — 서버가 빈 설정을 거절해 두 번 다 실패하고 구독만 지운다(r18 GA4). 묶음이 붙은 뒤의 평소 읽기가 다시 잇는다.
  async function reconnect(sub,reg,expected){
   if(!current(expected)||closing||mutation||attempt||!state.enabled||worldPushSupport(env).permission!=='granted')return snapshot();
   const settings=liveSettings(null);let made=null;try{made=binding?.digest?.()||null;}catch{}
@@ -442,7 +442,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(sub){await removeLocal(sub,reg);sub=null;}
    if(!current(expected))return snapshot();
    // 요약은 켜기를 부르기 바로 앞에 다시 짓는다 — 옛 구독을 지우는 동안 sync가 더 새 요약을 저장했으면, 앞서 지은 옛 요약이 그 뒤의 판을 바탕으로
-   // 실려 서버 판 검사를 지나 요약을 되돌린다(GPT r19 GA3). 켜기는 부른 그때의 판을 바탕으로 잡는다.
+   // 실려 서버 판 검사를 지나 요약을 되돌린다(r19 GA3). 켜기는 부른 그때의 판을 바탕으로 잡는다.
    try{made=binding?.digest?.()||made;}catch{}
    const value=await api.enable({settings,digest:made.digest,handover:Array.isArray(made.handover)?made.handover:[]});
    if(!current(expected)||value.device?.subscribed)return value;
@@ -531,7 +531,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
       if(fresh?.digest&&now){digest=fresh.digest;if(Array.isArray(fresh.handover))handover=fresh.handover;base=now;}}
      const item={digest,...(Array.isArray(handover)&&handover.length?{handover}:{})};
      const versions=state.versioning&&base?{digest:base.digest,...(Array.isArray(digest.reviews)?{reviews:base.reviews}:{})}:null;
-     // 보낼 설정은 보낼 때의 1단 값이다 — 권한 창이 열린 사이 이 탭이나 다른 탭에서 바꾼 설정이 누를 때의 값에 지지 않게(GPT push-versions-world-r3 GA1).
+     // 보낼 설정은 보낼 때의 1단 값이다 — 권한 창이 열린 사이 이 탭이나 다른 탭에서 바꾼 설정이 누를 때의 값에 지지 않게(push-versions-world-r3 GA1).
      const sent=liveSettings(settings);
      const payload={subscription:{endpoint:json.endpoint,keys:{p256dh:json.keys?.p256dh,auth:json.keys?.auth}},settings:sent,digest,handover,consent:1};
      let data,based=!!versions;
@@ -553,7 +553,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      if(!still){writeRecord(mine);throw Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'});}
      if(still.endpoint===sub.endpoint)writeRecord(mine);
      else{
-      // 서버는 한 로그인 세션에 주소 하나를 두고 마지막 subscribe로 덮는다. 이 요청이 그 탭의 새 주소 등록 뒤에 닿았으면 서버에는 옛 주소만 남는다(GPT r18
+      // 서버는 한 로그인 세션에 주소 하나를 두고 마지막 subscribe로 덮는다. 이 요청이 그 탭의 새 주소 등록 뒤에 닿았으면 서버에는 옛 주소만 남는다(r18
       // GA2 · GA6). 지금 구독으로 한 번 더 올리고 그 주소로 기록을 쓴다. 실패하면 그 탭의 기록을 둔다.
       subscription=still;
       const now=still.toJSON?still.toJSON():{endpoint:still.endpoint,keys:still.keys};
@@ -605,12 +605,12 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const run=(async()=>{
     // 지금 브라우저 구독을 먼저 읽는다 — 다른 탭이 새 구독으로 다시 이었으면 이 탭이 기억한 옛 구독만 끄고 새 구독이 남는다(r18). 읽지 못하면 기억한 구독.
     // 기록이 다른 계정 것이면(다른 탭이 다른 계정으로 이 브라우저 구독을 켰다) 그 구독과 기록은 건드리지 않는다. 이 계정이 끌 것은 이 탭이 기억한 다른 주소뿐이고,
-    // 이 브라우저에는 이 계정 구독이 없다(GPT r18 GA1 — 그 탭의 서버 구독 · 브라우저 구독 · 기록을 지웠다).
+    // 이 브라우저에는 이 계정 구독이 없다(r18 GA1 — 그 탭의 서버 구독 · 브라우저 구독 · 기록을 지웠다).
     const reg=await existing(),fresh=reg?await bounded(reg.pushManager.getSubscription()).catch(()=>null):null,record=readRecord(),theirs=!!record&&record.accountId!==owner;
     const sub=theirs?(subscription&&subscription.endpoint!==record.endpoint?subscription:null):fresh||subscription;
     let result=null;
     if(sub){try{result=await request('unsubscribe',{endpoint:sub.endpoint});}catch{if(!theirs&&record?.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}}}
-    // 끄기 요청이 날아가는 사이 다른 계정 탭이 이 브라우저 구독을 가져갔으면(기록이 그 계정 것으로 바뀌었다) 그 구독과 기록을 지우지 않는다(GPT r19 GA1).
+    // 끄기 요청이 날아가는 사이 다른 계정 탭이 이 브라우저 구독을 가져갔으면(기록이 그 계정 것으로 바뀌었다) 그 구독과 기록을 지우지 않는다(r19 GA1).
     const after=readRecord(),taken=!theirs&&!!after&&after.accountId!==owner;
     const removed=theirs||taken?true:await removeLocal(sub,reg);
     if(removed&&!theirs&&!taken)writeRecord(null);
@@ -641,7 +641,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(settings&&!legacy)noteSettings(settings);
    if(!state.account.active)return;
    const expected=epoch,time=stamp();
-   // 요약 · 설정 요청은 모두 keepalive로 보낸다(deliver). 보낸 뒤 응답 전에 앱을 닫아도 계정 정리(stop)가 끊지 않는다(11-20 GPT 끝 판 GA1 ·
+   // 요약 · 설정 요청은 모두 keepalive로 보낸다(deliver). 보낸 뒤 응답 전에 앱을 닫아도 계정 정리(stop)가 끊지 않는다(11-20 끝 판 GA1 ·
    // 다시 검수 GA1 · GA2 · GA3). 받히지 않으면 받을 때까지 다시 보낸다. 보낸 차례(seq)를 붙여 늦게 온 앞 응답은 뒤 응답이 그린 계획을 덮지 않는다.
    const make=value=>({item:value,tries:0,base:digestBase()});
    const send=value=>{if(value)owedDigest=value;return deliver(expected,{digest:value});};

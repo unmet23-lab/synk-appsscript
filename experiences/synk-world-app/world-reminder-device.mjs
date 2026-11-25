@@ -445,7 +445,7 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
    const state=load(),{supported,permission}=support(),on=(state.enabled&&supported&&permission==='granted')||pushDevice();
    if(toggle){toggle.checked=on;if(!supported||permission==='denied')toggle.disabled=true;}
    if(choices)choices.hidden=!(on||pushActive());if(line)line.innerHTML=statusMarkup();
-   // 횟수 · 시각 단추도 지금 값으로 맞춘다 — 다른 기기의 설정을 들였을 때 열린 화면이 옛 값을 보이지 않게(GPT push-versions-world GA11).
+   // 횟수 · 시각 단추도 지금 값으로 맞춘다 — 다른 기기의 설정을 들였을 때 열린 화면이 옛 값을 보이지 않게(push-versions-world GA11).
    for(const input of current.querySelectorAll?.('input[name="reminder-count"],input[name="reminder-hour"]')||[])
     input.checked=input.name==='reminder-count'?Number(input.value)===state.frequency:input.value==='auto'?state.hour===null:Number(input.value)===state.hour;
   };
