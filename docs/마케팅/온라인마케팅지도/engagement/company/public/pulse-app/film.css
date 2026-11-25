@@ -163,6 +163,8 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-pane-cast img,.sx-pane-cuts img{width:100%;height:100%;object-fit:cover;display:block;min-height:0}
 /* 가로 2:1 장면 열 장(도담중공업, 2026-11-26): 넓은 화면은 두 줄씩 다섯 층, 휴대폰은 세 칸씩 세 층(열째는 숨김) — 칸 꼴이 그림 꼴에 가깝게. */
 .sx-pane-cuts{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(5,1fr)}
+/* 머리 줄이 오른쪽 맨 위 장면(용접 불꽃의 연기) 위에 놓여, 이 판만 위 그늘을 더 깔았다. */
+.sx-pane-cuts::before{content:'';position:absolute;left:0;right:0;top:0;height:clamp(96px,14vh,140px);background:linear-gradient(180deg,rgba(0,0,0,.72) 0,rgba(0,0,0,.6) 52%,rgba(0,0,0,0) 100%);pointer-events:none;z-index:1}
 .sx-pane-word{display:flex;flex-direction:column;justify-content:center;gap:clamp(24px,5vh,48px);padding:clamp(28px,6vw,88px);background:#0e0e0e;color:var(--sx-ink)}
 .sx-pane-one{font-size:clamp(28px,3.2vw,46px);line-height:1.26;max-width:13em;text-wrap:balance}
 .sx-pane-word ol{display:grid;gap:10px;max-width:520px}
@@ -186,7 +188,7 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-p.is-maker{justify-content:flex-start}
 .sx-maker{max-width:560px}
 .on-maker .sx-layer-reel{transform:translateX(24vw)}
-.on-maker .sx-shade{background:linear-gradient(90deg,#000 24vw,rgba(0,0,0,.7) 34vw,rgba(0,0,0,0) 54vw),linear-gradient(180deg,rgba(0,0,0,.44) 0,rgba(0,0,0,0) 15%)}
+.on-maker .sx-shade{background:linear-gradient(90deg,#000 24vw,rgba(0,0,0,.7) max(34vw,470px),rgba(0,0,0,0) max(54vw,778px)),linear-gradient(180deg,rgba(0,0,0,.56) 0,rgba(0,0,0,0) 17%),linear-gradient(0deg,rgba(0,0,0,.6) 0,rgba(0,0,0,0) 16%)}
 .sx-maker .sx-body{max-width:520px;margin-top:16px;color:var(--sx-ink)}
 .sx-maker-credits{margin-top:14px;display:grid;gap:1px}
 .sx-maker-credits .sx-small{color:var(--sx-ink)}
@@ -375,6 +377,7 @@ html.sx.view-entry .app-header{display:none!important}
   .sx-check-stage{flex:none;width:100%;height:32vh;height:32dvh}
   .sx-pane-cuts{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr)}
   .sx-pane-cuts img:nth-child(n+10){display:none}
+  .sx-pane-cuts::before{display:none}
   .sx-pane-word{padding:18px var(--sx-m);gap:12px;justify-content:center}
   .sx-pane-one{font-size:var(--sx-t2)}
   .sx-pane-word li{grid-template-columns:44px 1fr}
