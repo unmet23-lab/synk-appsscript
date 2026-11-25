@@ -439,7 +439,7 @@ export function roomView(p,{bar=true,top='',after='',entries='',journal='',tail=
   const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona))+keep:!p.persona&&p.keep?.state==='reuse'?personaReuseLine():!p.persona&&p.personaRemoved?personaRemovedLine(p.personaRemoved):'';
   const propose=!main&&p.state==='model'&&!!p.proposal,stage=roomStage(p,{main,ui});
   // 고른 방향 카드: 방향을 정하고 글 콘티를 기다리는 동안은 펼치고, 그 밖에는 접어 두었다가 모델 · 방향 칩으로 편다.
-  const chosen=p.direction?.chosen?`<div class="sx-room-chosen" id="room-chosen"${p.state==='prepare'?'':' hidden'}>${chosenCard(p.direction)}</div>`:'';
+  const chosen=p.direction?.chosen&&(!main||p.state==='prepare')?`<div class="sx-room-chosen" id="room-chosen"${p.state==='prepare'?'':' hidden'}>${chosenCard(p.direction,{road:p.state==='prepare'})}</div>`:'';
   const action=propose?modelGo(p.proposal,ui):copy.action?`<div class="sx-room-go" data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:'';
   const due=main?'':dueLine(p);
   return `<div class="sx-room" data-state="${esc(p.state)}" data-room-a${propose?` data-propose-key="${esc(p.proposal.key||p.proposal.id)}"`:''}>
@@ -451,9 +451,9 @@ export function roomView(p,{bar=true,top='',after='',entries='',journal='',tail=
           <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}${main&&pc.confirm?`<span>${esc(t('맞춤 인물 확인'))} <b class="sx-no">${pc.confirm}</b></span>`:''}</p>
           <h1 class="sx-display" data-room-title>${esc(t(copy.title))}</h1>
           <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>${main?'':wordCard(p)+roomFolds(p)}
-          ${p.state==='ask'?askList(p):''}${p.state==='pay'?payCard(p):''}${p.state==='done'?doneCard(p):''}${propose?proposeCard(p.proposal,ui):''}${chosen}${below}
+          ${p.state==='ask'?askList(p):''}${p.state==='pay'?payCard(p):''}${p.state==='done'?doneCard(p):''}${propose?proposeCard(p.proposal,ui):''}${main?'':chosen}${below}
           ${after}
-          ${action}${main?personaCard(p.persona,{main:true})+keep:''}
+          ${action}${main?personaCard(p.persona,{main:true})+keep+chosen:''}
           ${entries}
         </div>
         ${due?`<div class="sx-room-side-foot">${due}</div>`:''}
@@ -545,11 +545,12 @@ function doneCard(p){
   return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(p?.photo?t('같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요'):t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol>${p?.people?`<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-go="people">${esc(t('이 영상을 다른 채널에도 실어 보기'))}</button></p>`:''}<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-do="journal" data-journal-say="${esc(p?.photo?t('다음 사진을 이어 만들고 싶어요.'):t('다음 편을 이어 만들고 싶어요.'))}">${esc(p?.photo?t('다음 사진 묻기'):t('다음 편 묻기'))}</button></p><p class="sx-small">${esc(p?.peopleOpen?t('광고가 끝날 때까지 이 방은 열려 있어요. 받은 파일은 따로 보관해 주세요.'):t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
 }
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
-function chosenCard(d){
+// road: 「방향 → 글 콘티 → 장면 이미지 → 영상」 줄은 글 콘티를 기다리는 차례에만 맞는다 — 뒤 차례에 칩으로 펼친 카드에는 그리지 않는다.
+function chosenCard(d,{road=true}={}){
   const o=d.chosen;
   // 옷 · 머리(11-10): 그때 고른 모델 · 옷 · 머리 한 줄(서버가 기록을 남긴 판만 — 없으면 전처럼).
   const look=d.picked&&d.model?`<p class="sx-small sx-dp-chosen-look">${esc(t('모델 {name} · {look}',{name:nameOf(d.model.name),look:lookLine(d.picked)}))}</p>`:'';
-  return `<section class="sx-dp-chosen" data-room-in><p class="sx-small">${esc(t('고르신 방향'))}${d.status==='settled'?` · ${esc(t('담당자와 정함'))}`:''}</p><h2 class="sx-serif">${esc(o.name)}</h2><p class="sx-body">${esc(o.sentence)}</p>${look}${d.note?`<p class="sx-small">${esc(d.status==='settled'?t('담당자와 정한 내용: {note}',{note:d.note}):t('덧붙이신 말: {note}',{note:d.note}))}</p>`:''}${termsOf(d)}<ol class="sx-dp-road sx-small"><li class="is-done">${esc(t('방향'))}</li><li class="is-now">${esc(t('글 콘티'))}</li><li>${esc(t('장면 이미지'))}</li><li>${esc(t('영상'))}</li></ol>${d.canPick?`<button type="button" class="sx-quiet" data-room-go="pick">${esc(t('다시 고르기'))}</button>`:''}</section>`;
+  return `<section class="sx-dp-chosen" data-room-in><p class="sx-small">${esc(t('고르신 방향'))}${d.status==='settled'?` · ${esc(t('담당자와 정함'))}`:''}</p><h2 class="sx-serif">${esc(o.name)}</h2><p class="sx-body">${esc(o.sentence)}</p>${look}${d.note?`<p class="sx-small">${esc(d.status==='settled'?t('담당자와 정한 내용: {note}',{note:d.note}):t('덧붙이신 말: {note}',{note:d.note}))}</p>`:''}${termsOf(d)}${road?`<ol class="sx-dp-road sx-small"><li class="is-done">${esc(t('방향'))}</li><li class="is-now">${esc(t('글 콘티'))}</li><li>${esc(t('장면 이미지'))}</li><li>${esc(t('영상'))}</li></ol>`:''}${d.canPick?`<button type="button" class="sx-quiet" data-room-go="pick">${esc(t('다시 고르기'))}</button>`:''}</section>`;
 }
 // 되묻기: 칸마다 글로 답하거나 파일을 보낸다. 파일만, 글만 보내도 된다.
 function askList(p){return `<ul class="sx-asks" data-room-in>${p.asks.map(item=>`<li><div class="sx-ask-head"><b class="sx-serif">${esc(item.label)}</b>${item.why?`<p class="sx-small">${esc(item.why)}</p>`:''}</div><form class="sx-ask-reply" data-form="ask" data-id="${esc(item.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="${esc(t('글로 답하거나 파일을 보내 주세요'))}" aria-label="${esc(t('{label} 답',{label:item.label}))}"></textarea><div class="sx-ask-tools"><label class="sx-small sx-link"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>${esc(t('파일 고르기'))}</span></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button></div></form></li>`).join('')}${(p.answered||[]).map(item=>`<li class="is-answered"><div class="sx-ask-head"><b>${esc(item.label)}</b><p class="sx-small">${esc(item.answer||item.fileName||t('파일을 보내 주셨어요.'))}</p></div><span class="sx-small">${esc(t('보냈어요'))}</span></li>`).join('')}</ul>`;}

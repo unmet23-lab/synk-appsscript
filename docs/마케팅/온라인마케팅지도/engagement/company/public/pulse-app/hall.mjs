@@ -82,7 +82,7 @@ export function mountHall(host,{items=hallItems(),onFilm,still=()=>false,quiet=(
   const n=items.length;
   let cur=Number(box.dataset.first)||n,timer=0,pause=0,held=false,alone=false,video=null,gone=false;
   const num=name=>parseFloat(getComputedStyle(box).getPropertyValue(name))||0;
-  const wide=()=>{const w=box.clientWidth,h=box.clientHeight;if(alone)return Math.min(h*9/16,w);return Math.min(h*9/16,w*(w<520?.62:.46));};
+  const wide=()=>{const w=box.clientWidth,h=box.clientHeight;if(alone)return Math.min(h*9/16,w);return Math.min(h*(center?.8:9/16),w*(w<520?.62:.46));};
   const anchor=()=>box.clientWidth<520?.2:.3;
   function place(animate=true){
     const w1=wide(),w0=num('--sx-w0'),gap=num('--sx-gap');
@@ -122,6 +122,8 @@ export function mountHall(host,{items=hallItems(),onFilm,still=()=>false,quiet=(
     const i=Number(strip.dataset.hallI),item=items[i%n];hold();
     if(item.kind==='film'&&i===cur){onFilm?.(item.id);return;}
     if(i!==cur){set(i);picked();}
+    // 양옆 벌(화면 읽기에서 뺀 띠)을 마우스 · 손가락으로 누르면 브라우저가 그 띠에 초점을 준다 — 가운데 벌의 같은 사람으로 옮겨 Enter · Tab이 이어지게.
+    const at=document.activeElement;if(at!==strips[cur]&&strips.includes(at))strips[cur].focus({preventScroll:true});
   });
   // 좌우 화살표는 초점이 복도 안에 있을 때만 받는다(쪽 넘김은 위아래 화살표라 겹치지 않는다).
   box.addEventListener('keydown',event=>{if(alone||!['ArrowLeft','ArrowRight'].includes(event.key)||event.target===holdButton)return;event.preventDefault();event.stopPropagation();hold();set(cur+(event.key==='ArrowRight'?1:-1));picked();});

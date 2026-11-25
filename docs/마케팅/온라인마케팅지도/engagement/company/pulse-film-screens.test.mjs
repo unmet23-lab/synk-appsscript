@@ -385,7 +385,7 @@ test('on a portrait phone the first page keeps its copy off the faces in the ree
   assert.ok(narrow.includes('@media (max-width:359.98px) and (max-aspect-ratio:1/1){.sx-home .sx-display{font-size:32px}}'),'the narrowest phones keep the title at three lines');
   const html=entryView({});
   // 2026-11-24 시안 A: 1쪽 제목은 문 판의 「내 광고 방」(문서의 h1 하나), 승인 원고의 세 줄 제목은 끝 쪽에 그대로다.
-  assert.deepEqual(html.match(/<h1[^>]*>[^<]*<\/h1>/g),['<h1 class="sx-display sx-door-title" data-door-title>내 광고 방</h1>']);
+  assert.deepEqual(html.match(/<h1\b[\s\S]*?<\/h1>/g),['<h1 class="sx-display sx-door-title" data-door-title>내 광고 방</h1>']);
   assert.match(html,/<div class="sx-end"><p class="sx-display">(<span class="sx-ln"><span>[^<]+<\/span><\/span>){3}<\/p>/,'the approved three-line title stays on the end page');
 });
 // 11-10 큰 모니터 인물 장면 배율 시험은 저장소 시험 tests/pulse-film-scale.test.mjs에 있다 — 저장소 전용 도구 tools/화면배율.mjs를

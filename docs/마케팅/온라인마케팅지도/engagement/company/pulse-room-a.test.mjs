@@ -277,3 +277,18 @@ test('Fable follow-ups: a language switch redraws the stage strip, prep alerts o
   assert.ok(css.includes('.sx-room[data-room-a]:has(.sx-turn>i.is-you) .sx-room-stage{height:28vh;height:28dvh;min-height:200px}'));
   assert.ok(css.includes('.sx-room[data-room-a]:has(.sx-turn>i.is-you) .sx-room-main>.sx-folds{order:1}'));
 });
+
+test('merged review fixes: the stage strip fits its stage on a phone, a press on an outer copy hands its focus to the middle copy, and the chosen-direction card tells only the step it can tell',()=>{
+  const css=read('film.css'),hall=read('hall.mjs');
+  // C1: 휴대폰 첫 화면의 고정 높이(40dvh · 280px)가 방 무대의 복도에 남으면 낮은 무대(28dvh)에서 이름표가 잘린다.
+  assert.ok(css.includes('.sx-room-stage :is(.sx-room-hall,.sx-hall){position:absolute;inset:0;height:auto;min-height:0}'));
+  assert.ok(css.includes('@container (max-width:560px){.sx-room-stage .sx-hall-tag{padding:40px 16px 14px}}'));
+  assert.ok(hall.includes('Math.min(h*(center?.8:9/16),w*(w<520?.62:.46))'),'a low stage keeps the width of the centre model');
+  // C2: 양옆 벌을 눌렀을 때만 초점을 가운데 벌로 옮긴다(저절로 넘길 때는 옮기지 않는다).
+  assert.match(hall,/if\(i!==cur\)\{set\(i\);picked\(\);\}[\s\S]{0,220}if\(at!==strips\[cur\]&&strips\.includes\(at\)\)strips\[cur\]\.focus\(\{preventScroll:true\}\);/);
+  // B1: 「방향 → 글 콘티 → …」 줄은 글 콘티를 기다리는 차례에만 있다.
+  const chosen=project({r:{status:'confirmed',directionProposal:direction()},assets:[asset('d1'),asset('d2')]});
+  assert.match(room(chosen,{state:'prepare'}),/<ol class="sx-dp-road/);
+  const later=room(chosen,{state:'make'});
+  assert.match(later,/id="room-chosen" hidden>/);assert.doesNotMatch(later,/sx-dp-road/);
+});

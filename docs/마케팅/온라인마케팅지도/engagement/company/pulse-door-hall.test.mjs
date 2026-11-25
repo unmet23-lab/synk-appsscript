@@ -16,7 +16,7 @@ const doorOf=html=>{const at=html.indexOf('<section class="sx-p is-door"');retur
 test('1쪽은 문 판과 복도다 — 제목 하나, 다시 여는 양식 한 벌(앱이 찾는 속성 그대로), 링크 칸은 제 단추로 펼친다',()=>{
   const html=entryView({}),door=doorOf(html);
   assert.match(html,/<section class="sx-p is-door" data-i="0" data-layer="none">/);
-  assert.deepEqual(html.match(/<h1[^>]*>[^<]*<\/h1>/g),['<h1 class="sx-display sx-door-title" data-door-title>내 광고 방</h1>']);
+  assert.deepEqual(html.match(/<h1\b[\s\S]*?<\/h1>/g),['<h1 class="sx-display sx-door-title" data-door-title>내 광고 방</h1>']);
   assert.ok(door.includes('의뢰서에 적은 메일만 넣으면 열려요. 가입도 비밀번호도 없어요.'));
   assert.equal((html.match(/data-form="mail-open"/g)||[]).length,1);assert.equal((html.match(/data-form="invite"/g)||[]).length,1);
   for(const attr of ['data-entry-mail','data-mail-step="email"','data-mail-step="code"','data-mail-step="pick"','data-mail-go','data-mail-help','data-action="mail-again"','name="website"'])assert.ok(door.includes(attr),attr);
