@@ -1,5 +1,5 @@
 import { beginOAuth } from './core.mjs';
-import { PATH_INTERVIEW_URL } from './applications.mjs';
+import { PATH_APP_URL } from './applications.mjs';
 import { platformPublicEntry } from './platform-entry.mjs';
 import { platformRoute } from './platform-home.mjs';
 import { solioLegacyHash } from './platform-solio.mjs';
@@ -133,7 +133,7 @@ export function resolveWebPurposeTarget(purposeId, { identity = null } = {}) {
       id: 'path',
       kind: 'same-tab',
       external: false,
-      href: PATH_INTERVIEW_URL,
+      href: PATH_APP_URL,
       trackAppId: 'path',
     };
   }

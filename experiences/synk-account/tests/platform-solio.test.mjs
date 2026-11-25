@@ -59,7 +59,7 @@ test('home and discover: SOLIO has one home cell, and search finds the moved pla
   const platform = source('../src/platform.mjs');
   assert.match(platform, /const shelfItems=\[\.\.\.mine,solioHomeItem\(!mine\.length\)\];/);
   assert.match(platform, /'SYNK 앱과 솔리오,<br><span>한 ID로 열어요\.<\/span>'/);
-  assert.match(platform, /<p class="shelf-note">솔리오 소개와 웹에서 여는 면접 연습을 먼저 두었어요\.<\/p>/);
+  assert.match(platform, /<p class="shelf-note">솔리오 소개와 웹에서 여는 PATH를 먼저 두었어요\.<\/p>/);
   assert.doesNotMatch(platform, /'insight','subscriptions'\]|세 가지 회원 혜택|설치 없이 열 수 있는 것부터 모았어요/);
 });
 

@@ -70,7 +70,7 @@ export const PORTAL_PURPOSE_ITEMS = Object.freeze([
     id: 'path',
     index: '04',
     name: 'PATH',
-    description: '실전 면접 연습',
+    description: '한국 유학 준비',
     external: false,
   }),
 ]);

@@ -1,7 +1,7 @@
 import { LIBRARY_ITEMS, libraryItemRoute } from './library.mjs';
 import { publicBenefitEntry, localBenefitPreview } from './member-benefits.mjs';
 import { platformPublicEntry } from './platform-entry.mjs';
-import { messengerDestination, PATH_INTERVIEW_URL } from './applications.mjs';
+import { messengerDestination, PATH_APP_URL } from './applications.mjs';
 
 // 2026-11-13 솔리오 판: 솔리오(#solio/…)와 내 계정(#account, 맞춤 정보 #account/insight)을 더했다. 옛 #benefits/insight · #benefits/subscriptions는 platform-solio.mjs가 새 주소로 바꾼다.
 const pages = new Set(['home', 'solio', 'benefits', 'account', 'discover', 'library', 'updates', 'downloads', 'settings', 'help', 'app']);
@@ -20,7 +20,7 @@ export function searchRoute(page, query) {
 // Resolve from the current catalog and installation state, never a saved URL.
 // The library stores selections, not application progress or authorization.
 export function shortcutDestination(id, { base, clients = [], learningUrl, messengerUrl, preferredMode } = {}) {
-  if(id==='path')return {kind:'web',href:PATH_INTERVIEW_URL,label:'면접 연습 열기 ↗'};
+  if(id==='path')return {kind:'web',href:PATH_APP_URL,label:'PATH 열기 ↗'};
   if(id==='teacher'){
     const destination=messengerDestination(messengerUrl,base);
     if(!destination)return null;
