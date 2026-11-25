@@ -134,16 +134,20 @@ test('채움 판은 부분 판 목록의 담지 않는 폴더를 묻지 않고, 
   assert.deepEqual([r.outcome, r.asked, fills.at(-1)], ['fill', 1, [through(aws)]]);
 });
 
-/** 다른 프로그램처럼 나눠 쓰지 않게 쥔다(파일 · 폴더). 접근 권한이 아니라 공유로 막히므로 관리자 권한의 restic도 열지 못한다 */
+/** 다른 프로그램처럼 나눠 쓰지 않게 쥔다. 접근 권한이 아니라 공유로 막히므로 관리자 권한의 restic도 열지 못한다. 파일은 engine.test.cjs의 쥔 파일과 같은 길로 쥔다 —
+ *  CreateFileW로 쥔 파일은 GitHub Windows(관리자)에서 코드 0으로 끝났다(11-26, conditional-qa 45672943629 — 까닭은 재지 못했다) */
 async function hold(holds, p) {
-  const script = `$s='[DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)] public static extern IntPtr CreateFileW(string n,uint a,uint s,IntPtr p,uint d,uint f,IntPtr t);';`
-    + `$k=Add-Type -MemberDefinition $s -Name K -Namespace H -PassThru;$h=$k::CreateFileW('${p.replaceAll("'", "''")}',1,0,[IntPtr]::Zero,3,0x02000000,[IntPtr]::Zero);`
-    + `if($h -eq [IntPtr](-1)){'fail'}else{'held'};[Console]::In.ReadLine()|Out-Null`;
+  const quoted = p.replaceAll("'", "''"), folder = (await fs.lstat(p)).isDirectory();
+  const script = !folder ? `$f=[IO.File]::Open('${quoted}','Open','ReadWrite','None');'held';[Console]::In.ReadLine()|Out-Null;$f.Close()`
+    : `$s='[DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)] public static extern IntPtr CreateFileW(string n,uint a,uint s,IntPtr p,uint d,uint f,IntPtr t);';`
+    + `$k=Add-Type -MemberDefinition $s -Name K -Namespace H -PassThru;$h=$k::CreateFileW('${quoted}',1,0,[IntPtr]::Zero,3,0x02000000,[IntPtr]::Zero);`
+    + `if($h -is [IntPtr] -and $h -ne [IntPtr](-1)){'held'}else{'fail'};[Console]::In.ReadLine()|Out-Null`;
   const child = spawn('powershell.exe', ['-NoProfile', '-Command', script], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
   const release = async () => { if (!child.stdin.writableEnded) child.stdin.end('\n'); if (child.exitCode === null) await new Promise((y) => child.once('exit', y)); };
   holds.push(release);
   const told = await new Promise((y) => { let s = ''; child.stdout.on('data', (b) => { s += b; if (/held|fail/.test(s)) y(s.trim()); }); child.once('exit', () => y('exit')); });
   assert.equal(told, 'held', p);
+  await assert.rejects(folder ? fs.readdir(p) : fs.readFile(p), `${p}: 실제로 쥐었다`);
   return release;
 }
 
