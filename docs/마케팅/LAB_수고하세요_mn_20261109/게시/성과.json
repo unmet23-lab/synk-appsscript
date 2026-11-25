@@ -221,6 +221,17 @@
         }
       },
       {
+        "계정": "lab-vn-tiktok",
+        "채널": "틱톡 @synklab.vn",
+        "주소": "https://www.tiktok.com/@synklab.vn/video/7711610509266652468?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
+        "형식": "tiktok-video",
+        "게시": "2026-11-25T06:00:00.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-mm-tiktok",
         "채널": "틱톡 @synklab.mm",
         "주소": "https://www.tiktok.com/@synklab.mm/video/7707315218837196050?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
@@ -417,6 +428,17 @@
             "completionRatePct": 19.9
           }
         }
+      },
+      {
+        "계정": "lab-my-youtube",
+        "채널": "유튜브 @synklabmalaysia",
+        "주소": "https://www.youtube.com/watch?v=l8CzFZwdupc",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-25T05:00:20.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
       },
       {
         "계정": "lab-tw-youtube",
