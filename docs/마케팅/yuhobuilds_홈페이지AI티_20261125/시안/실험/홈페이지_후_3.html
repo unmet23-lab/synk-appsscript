@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘꽃</title>
+<style>
+  :root {
+    --black: #111;
+    --white: #fff;
+    --accent: #c2261f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--white);
+    color: var(--black);
+    font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  header {
+    padding: 28px 0 20px;
+    border-bottom: 1px solid var(--black);
+  }
+  header .name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .hero {
+    padding: 96px 0 72px;
+  }
+  .hero h1 {
+    margin: 0 0 24px;
+    font-size: clamp(36px, 7vw, 64px);
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero p {
+    margin: 0 0 40px;
+    max-width: 30em;
+    font-size: 18px;
+  }
+  .order {
+    display: inline-block;
+    padding: 16px 36px;
+    background: var(--accent);
+    color: var(--white);
+    border: 0;
+    border-radius: 0;
+    font: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .order:hover { background: var(--black); }
+  .order:focus-visible { outline: 3px solid var(--black); outline-offset: 3px; }
+
+  section {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 16px 40px;
+    padding: 48px 0;
+    border-top: 1px solid var(--black);
+  }
+  section h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  section h3 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  section p { margin: 0 0 16px; }
+  section p:last-child { margin-bottom: 0; }
+
+  .rows > div {
+    padding: 20px 0;
+    border-top: 1px solid #d0d0d0;
+  }
+  .rows > div:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+  .rows > div:last-child { padding-bottom: 0; }
+
+  ol.steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  ol.steps li {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    padding: 14px 0;
+    border-top: 1px solid #d0d0d0;
+  }
+  ol.steps li:first-child { border-top: 0; padding-top: 0; }
+  ol.steps li:last-child { padding-bottom: 0; }
+  ol.steps .no { font-weight: 700; color: var(--accent); }
+
+  footer {
+    padding: 28px 0 48px;
+    border-top: 1px solid var(--black);
+    font-size: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 64px 0 48px; }
+    section { grid-template-columns: 1fr; padding: 36px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="name">오늘꽃</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <h1>오늘 필요한 꽃을,<br><em>오늘 피어 있는 꽃</em>으로.</h1>
+    <p>동네 꽃집 오늘꽃은 그날 들어온 꽃으로 꽃다발을 묶습니다. 한 번만 주문하셔도 되고, 한 달 동안 집이나 사무실로 받아 보셔도 됩니다.</p>
+    <button class="order" type="button">꽃다발 주문하기</button>
+  </div>
+
+  <section>
+    <h2>꽃다발 주문</h2>
+    <div class="rows">
+      <div>
+        <h3>그날 들어온 꽃으로 묶습니다</h3>
+        <p>생일, 기념일, 병문안, 감사 인사처럼 쓰임새와 예산을 알려 주시면 그에 맞춰 꽃을 고릅니다. 색과 분위기만 말씀하셔도 됩니다.</p>
+      </div>
+      <div>
+        <h3>받으실 곳과 시간을 정합니다</h3>
+        <p>매장에서 찾아가셔도 되고, 원하는 날짜와 시간에 보내 드리기도 합니다. 카드에 적을 문구도 함께 남겨 주세요.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>한 달 정기 배송</h2>
+    <div class="rows">
+      <div>
+        <h3>한 달 동안, 매주 새 꽃으로</h3>
+        <p>한 달 동안 정해진 요일에 꽃을 보내 드립니다. 매주 그 주에 가장 좋은 꽃으로 바뀌어서, 같은 꽃병이 매번 다른 모습이 됩니다.</p>
+      </div>
+      <div>
+        <h3>필요하면 쉬어 가세요</h3>
+        <p>여행이나 출장이 있는 주는 미리 말씀해 주시면 배송일을 옮기거나 건너뜁니다. 한 달이 끝나면 이어 갈지 그만할지 직접 정하시면 됩니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>주문 방법</h2>
+    <ol class="steps">
+      <li><span class="no">01</span><span>위의 주문 버튼을 눌러 꽃다발인지 정기 배송인지 고릅니다.</span></li>
+      <li><span class="no">02</span><span>받을 날짜, 받을 곳, 예산과 원하는 분위기를 적습니다.</span></li>
+      <li><span class="no">03</span><span>오늘꽃이 내용을 확인하고 가격과 배송 시간을 안내해 드립니다.</span></li>
+    </ol>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">오늘꽃 &middot; 동네 꽃집</div>
+</footer>
+
+</body>
+</html>

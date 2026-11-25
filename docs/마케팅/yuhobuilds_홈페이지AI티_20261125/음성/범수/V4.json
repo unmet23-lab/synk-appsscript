@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "버튼은 하나만 남고, 카드 상자와 이모지가 다 빠졌어요.",
+ "dur": 2.963,
+ "words": [
+  {
+   "text": "버튼은",
+   "start": 0.02,
+   "end": 0.328
+  },
+  {
+   "text": "하나만",
+   "start": 0.373,
+   "end": 0.638
+  },
+  {
+   "text": "남고,",
+   "start": 0.681,
+   "end": 0.931
+  },
+  {
+   "text": "카드",
+   "start": 1.373,
+   "end": 1.55
+  },
+  {
+   "text": "상자와",
+   "start": 1.593,
+   "end": 1.902
+  },
+  {
+   "text": "이모지가",
+   "start": 1.961,
+   "end": 2.24
+  },
+  {
+   "text": "다",
+   "start": 2.285,
+   "end": 2.343
+  },
+  {
+   "text": "빠졌어요.",
+   "start": 2.388,
+   "end": 2.963
+  }
+ ],
+ "source": {
+  "key": "af2ba110d7c4205bc2408221605e7a6b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

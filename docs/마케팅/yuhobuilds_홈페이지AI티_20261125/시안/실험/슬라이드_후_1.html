@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF는 글로 바꿔 올리자</title>
+<style>
+  :root {
+    --black: #000000;
+    --white: #ffffff;
+    --accent: #e8420c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--black); }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Pretendard", "Malgun Gothic", sans-serif;
+  }
+  .slide {
+    container-type: size;
+    width: min(100vw, calc(100vh * 16 / 9));
+    aspect-ratio: 16 / 9;
+    background: var(--white);
+    color: var(--black);
+    padding: 6cqw 7cqw;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+  }
+  h1 {
+    font-size: 4.2cqw;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .hero .number {
+    font-size: 17cqw;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+  .hero .label {
+    margin-top: 1.2cqw;
+    font-size: 2.2cqw;
+    font-weight: 500;
+  }
+  .compare {
+    border-top: 0.25cqw solid var(--black);
+    padding-top: 2cqw;
+  }
+  .compare .number {
+    font-size: 2.6cqw;
+    font-weight: 700;
+  }
+  .compare .label {
+    margin-top: 0.5cqw;
+    font-size: 2.2cqw;
+    font-weight: 500;
+  }
+  .conclusion {
+    font-size: 2.6cqw;
+    font-weight: 700;
+    padding-left: 1.6cqw;
+    border-left: 0.6cqw solid var(--accent);
+  }
+</style>
+</head>
+<body>
+  <main class="slide">
+    <h1>약관 PDF는 글로 바꿔서 올리면<br>토큰이 절반 가까이 줄어듭니다</h1>
+
+    <section class="hero">
+      <div class="number">23,596</div>
+      <div class="label">토큰 · 8쪽짜리 약관 PDF를 클로드에 그대로 올렸을 때</div>
+    </section>
+
+    <section class="compare">
+      <div class="number">10,917 토큰</div>
+      <div class="label">같은 내용을 글로 복사해서 올렸을 때</div>
+    </section>
+
+    <p class="conclusion">앞으로 PDF는 글로 바꿔 올리자</p>
+  </main>
+</body>
+</html>

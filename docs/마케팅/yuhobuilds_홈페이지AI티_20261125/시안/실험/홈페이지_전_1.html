@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘꽃 | 동네 꽃집</title>
+<meta name="description" content="오늘꽃은 꽃다발 주문과 한 달 정기 배송을 하는 동네 꽃집입니다.">
+<style>
+  :root{
+    --bg:#fffaf5; --ink:#2b2423; --muted:#6f6360; --line:#eadfd6;
+    --accent:#d9526b; --accent-dark:#b73c54; --leaf:#4f7a5a; --soft:#fbe9ec; --card:#ffffff;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#1d1818; --ink:#f4ebe6; --muted:#b9aaa4; --line:#3a2f2e;
+      --accent:#ee7a90; --accent-dark:#f598aa; --leaf:#8fc29b; --soft:#34252a; --card:#262020;
+    }
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.7;word-break:keep-all}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+
+  header{border-bottom:1px solid var(--line)}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-size:1.35rem;font-weight:800;letter-spacing:-.02em}
+  .logo span{color:var(--accent)}
+  nav{display:flex;gap:22px;font-size:.95rem;color:var(--muted)}
+  nav a:hover{color:var(--ink)}
+
+  .hero{padding:64px 0 56px}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+  .tag{display:inline-block;background:var(--soft);color:var(--accent-dark);font-size:.85rem;font-weight:600;padding:4px 12px;border-radius:99px}
+  h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.25;letter-spacing:-.03em;margin:16px 0}
+  h1 em{font-style:normal;color:var(--accent)}
+  .lead{color:var(--muted);font-size:1.05rem;max-width:30em}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+  .btn{display:inline-block;padding:13px 24px;border-radius:99px;font-weight:700;font-size:1rem;border:2px solid var(--accent)}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+  .btn.ghost{color:var(--accent-dark)}
+  .btn.ghost:hover{background:var(--soft)}
+  :root:not([data-x]) .btn.primary{color:#fff}
+  @media (prefers-color-scheme:dark){.btn.primary{color:#1d1818}}
+  .art{background:var(--soft);border-radius:28px;aspect-ratio:1/1;display:grid;place-items:center}
+  .art svg{width:82%;height:auto}
+
+  section{padding:56px 0}
+  h2{font-size:1.6rem;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--muted);margin-bottom:28px}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px}
+  .card .icon{font-size:2rem}
+  .card h3{font-size:1.25rem;margin:10px 0 6px}
+  .card p{color:var(--muted)}
+  .card ul{list-style:none;padding:0;margin:16px 0 22px}
+  .card li{padding-left:22px;position:relative;margin:4px 0}
+  .card li::before{content:"✿";position:absolute;left:0;color:var(--accent)}
+  .card.sub-card{border-color:var(--accent)}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:s}
+  .step{padding:22px;border-radius:18px;background:var(--soft)}
+  .step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--leaf);color:#fff;font-weight:700;margin-bottom:10px}
+  @media (prefers-color-scheme:dark){.step::before{color:#1d1818}}
+  .step b{display:block;margin-bottom:2px}
+  .step span{color:var(--muted);font-size:.95rem}
+
+  .order{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  form{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:720px}
+  label{display:grid;gap:5px;font-size:.9rem;font-weight:600}
+  input,select,textarea{font:inherit;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .full{grid-column:1/-1}
+  form button{grid-column:1/-1;cursor:pointer;font:inherit;font-weight:700}
+  .note{grid-column:1/-1;color:var(--muted);font-size:.85rem}
+
+  footer{padding:32px 0;color:var(--muted);font-size:.9rem}
+  footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+
+  @media (max-width:760px){
+    nav{display:none}
+    .hero .wrap,.two,.steps,form{grid-template-columns:1fr}
+    .hero{padding-top:36px}
+    .art{max-width:320px;margin:0 auto}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="#">오늘<span>꽃</span></a>
+    <nav>
+      <a href="#menu">꽃다발·정기 배송</a>
+      <a href="#how">이용 방법</a>
+      <a href="#order">주문하기</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <span class="tag">동네 꽃집 오늘꽃</span>
+        <h1>오늘 하루에<br><em>꽃 한 송이</em>를 더해요</h1>
+        <p class="lead">그날 들어온 꽃으로 그날 만든 꽃다발을 보내 드려요. 선물할 때는 꽃다발로, 내 방을 위해서는 한 달 정기 배송으로 만나 보세요.</p>
+        <div class="cta">
+          <a class="btn primary" href="#order">꽃다발 주문하기</a>
+          <a class="btn ghost" href="#menu">한 달 정기 배송 보기</a>
+        </div>
+      </div>
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#4f7a5a" stroke-width="4" stroke-linecap="round" fill="none">
+            <path d="M100 190 C100 150 70 120 60 80"/>
+            <path d="M100 190 C100 140 100 110 100 60"/>
+            <path d="M100 190 C100 150 130 120 142 85"/>
+          </g>
+          <path d="M100 160 C80 150 70 140 72 128 C88 130 98 142 100 160Z" fill="#6c9a77"/>
+          <path d="M100 150 C120 140 130 130 128 118 C112 120 102 132 100 150Z" fill="#6c9a77"/>
+          <g id="f">
+            <circle cx="100" cy="42" r="13" fill="#f2a0b0"/><circle cx="116" cy="54" r="13" fill="#f2a0b0"/>
+            <circle cx="84" cy="54" r="13" fill="#f2a0b0"/><circle cx="108" cy="72" r="13" fill="#f2a0b0"/>
+            <circle cx="92" cy="72" r="13" fill="#f2a0b0"/><circle cx="100" cy="58" r="9" fill="#ffd66b"/>
+          </g>
+          <g transform="translate(-40 38) scale(.8)">
+            <circle cx="100" cy="42" r="13" fill="#d9526b"/><circle cx="116" cy="54" r="13" fill="#d9526b"/>
+            <circle cx="84" cy="54" r="13" fill="#d9526b"/><circle cx="108" cy="72" r="13" fill="#d9526b"/>
+            <circle cx="92" cy="72" r="13" fill="#d9526b"/><circle cx="100" cy="58" r="9" fill="#ffd66b"/>
+          </g>
+          <g transform="translate(42 30) scale(.85)">
+            <circle cx="100" cy="42" r="13" fill="#fff3d6"/><circle cx="116" cy="54" r="13" fill="#fff3d6"/>
+            <circle cx="84" cy="54" r="13" fill="#fff3d6"/><circle cx="108" cy="72" r="13" fill="#fff3d6"/>
+            <circle cx="92" cy="72" r="13" fill="#fff3d6"/><circle cx="100" cy="58" r="9" fill="#e8963c"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <section id="menu">
+    <div class="wrap">
+      <h2>오늘꽃에서 하는 일</h2>
+      <p class="sub">필요한 때에 맞춰 두 가지 방식으로 꽃을 받아 보세요.</p>
+      <div class="two">
+        <div class="card">
+          <div class="icon">💐</div>
+          <h3>꽃다발 주문</h3>
+          <p>생일, 기념일, 감사 인사에 어울리는 꽃다발을 만들어 드려요.</p>
+          <ul>
+            <li>색과 분위기를 말씀해 주시면 맞춰 구성해요</li>
+            <li>메시지 카드를 함께 넣을 수 있어요</li>
+            <li>픽업이나 배송 중에 고르세요</li>
+          </ul>
+          <a class="btn primary" href="#order">꽃다발 주문하기</a>
+        </div>
+        <div class="card sub-card">
+          <div class="icon">🌿</div>
+          <h3>한 달 정기 배송</h3>
+          <p>한 달 동안 정해진 요일마다 신선한 꽃을 문 앞으로 보내 드려요.</p>
+          <ul>
+            <li>집, 사무실, 가게 어디든 받을 수 있어요</li>
+            <li>계절에 맞는 꽃을 매번 다르게 구성해요</li>
+            <li>한 달 단위라 부담 없이 시작할 수 있어요</li>
+          </ul>
+          <a class="btn primary" href="#order">정기 배송 신청하기</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="padding-top:0">
+    <div class="wrap">
+      <h2>이용 방법</h2>
+      <p class="sub">주문서만 보내 주시면 나머지는 저희가 연락드려요.</p>
+      <div class="steps">
+        <div class="step"><b>주문서 작성</b><span>원하는 방식과 날짜, 받을 곳을 적어 주세요.</span></div>
+        <div class="step"><b>확인 연락</b><span>구성과 일정을 확인한 뒤 연락드려요.</span></div>
+        <div class="step"><b>꽃 받기</b><span>그날 만든 꽃을 약속한 날짜에 보내 드려요.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="order" class="order">
+    <div class="wrap">
+      <h2>주문하기</h2>
+      <p class="sub">남겨 주신 내용을 확인한 뒤 연락드릴게요.</p>
+      <form onsubmit="event.preventDefault();alert('주문서가 접수되었어요. 곧 연락드릴게요.');this.reset();">
+        <label>이름
+          <input name="name" required autocomplete="name">
+        </label>
+        <label>연락처
+          <input name="phone" type="tel" required autocomplete="tel" placeholder="010-0000-0000">
+        </label>
+        <label>주문 종류
+          <select name="type">
+            <option>꽃다발 주문</option>
+            <option>한 달 정기 배송</option>
+          </select>
+        </label>
+        <label>받고 싶은 날짜
+          <input name="date" type="date" required>
+        </label>
+        <label class="full">받을 곳
+          <input name="addr" placeholder="배송 주소 또는 매장 픽업">
+        </label>
+        <label class="full">원하는 분위기와 요청 사항
+          <textarea name="memo" rows="4" placeholder="예) 분홍색 계열로, 부모님 생신 선물이에요"></textarea>
+        </label>
+        <button class="btn primary" type="submit">주문서 보내기</button>
+        <p class="note">이 화면은 첫 화면 시안이라 접수 내용은 실제로 전송되지 않아요. 운영할 때는 주문 접수 방식에 연결해 주세요.</p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 오늘꽃 · 동네 꽃집</span>
+    <span>꽃다발 주문 · 한 달 정기 배송</span>
+  </div>
+</footer>
+
+</body>
+</html>

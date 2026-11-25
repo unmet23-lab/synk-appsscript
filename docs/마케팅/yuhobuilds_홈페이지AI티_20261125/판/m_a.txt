@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, cool early-morning flower-shop mood, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny wooden flower-shop counter seen from the front, slightly below the counter top, so we look a little UP at Mongle. The background is a plain deep navy-blue felt wall that becomes almost black toward the top, with nothing on it. Cool pale morning light comes from a window out of frame on the RIGHT and falls across the counter top; the left side is a little darker.
+- The TOP 38% of the image is plain, very dark navy wall with nothing in it — keep it empty and dark for titles.
+- The counter top (light oak felt) is a flat ledge at 64% of the image height. Its front face (darker oak felt) fills the image below the ledge down to the bottom edge. One small bunch of three felt tulips in a tiny clay pot stands at the far LEFT end of the counter, partly cut off by the left edge.
+- THREE IDENTICAL BOARDS: on the counter top, LEFT of centre, three small upright felt boards standing side by side in a row like little shop signs, centred at 22%, 36% and 50% of the image width, each about 12% of the image width wide and a little taller than wide. All three are EXACTLY the same: the same pastel pink felt, the same soft round darker-pink felt blob in the upper right corner, and the same row of three tiny felt flower stickers along the bottom. They look like copies of each other. No letters, no numbers, no lines of text on them.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the counter top on the RIGHT, centred at 74% of the image width, about 22% of the image width wide, its top at about 47% of the image height. Mongle is turned a little toward the LEFT and is LOOKING at the three identical boards: two round glossy black bead eyes placed a little low on its face, each with a tiny highlight — it looks puzzled that they are all the same.
+- Keep Mongle and the boards between 10% and 86% of the image width.
+
+Exactly ONE Mongle, nobody else, no laptop, no phone, no screens, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.

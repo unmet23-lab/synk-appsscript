@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, cool morning flower-shop mood, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a close view of the top of a tiny wooden flower-shop counter, seen from the front at counter-top height, much closer than a wide shot. The background is a plain deep navy-blue felt wall that becomes almost black toward the top, with nothing on it. Cool pale morning light comes from out of frame on the LEFT.
+- The TOP 40% of the image is plain, very dark navy wall with nothing in it — keep it empty and dark for titles.
+- The counter top (light oak felt) is a flat ledge at 74% of the image height.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the counter top slightly RIGHT of centre, centred at 63% of the image width, about 34% of the image width wide, its top at about 47% of the image height, facing the viewer directly: two round glossy black bead eyes, open, each with a tiny highlight, calm and pleased.
+- THE ONE WHITE BOARD: on the counter top just LEFT of Mongle, centred at 26% of the image width, ONE small upright plain white felt board (about 17% of the image width wide, a little taller than wide) standing in a tiny oak felt holder. On it, only two short thin charcoal stitched lines near the top and ONE small solid red felt rectangle near the bottom left. Nothing else on it — no blobs, no stickers, no flowers.
+- Lying flat on the counter top behind the white board: three small pastel pink felt boards stacked neatly face down in a small pile, set aside.
+- The BOTTOM 22% of the image is the counter front in soft focus, plain oak felt.
+- Keep Mongle and the board between 10% and 88% of the image width.
+
+Exactly ONE Mongle, nobody else, no laptop, no phone, no screens, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.

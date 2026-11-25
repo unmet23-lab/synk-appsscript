@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF는 글로 바꿔 올리자</title>
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --ink: #1c1b19;
+    --muted: #6b675f;
+    --pdf: #c8553d;
+    --text: #2f6f5e;
+    --track: #e7e3da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181a;
+      --ink: #f2efe8;
+      --muted: #a29d92;
+      --pdf: #e07a62;
+      --text: #5fc2a6;
+      --track: #2a2c2f;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #000;
+    display: grid;
+    place-items: center;
+    font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  }
+  .slide {
+    width: min(100vw, 100vh * 16 / 9);
+    aspect-ratio: 16 / 9;
+    container-type: inline-size;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 6cqw 7cqw;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .kicker { font-size: 1.6cqw; color: var(--muted); letter-spacing: .02em; }
+  h1 { font-size: 4.6cqw; line-height: 1.25; font-weight: 800; margin-top: 1.2cqw; }
+  h1 em { font-style: normal; color: var(--text); }
+
+  .bars { display: grid; gap: 2.4cqw; }
+  .row { display: grid; grid-template-columns: 17cqw 1fr; align-items: center; gap: 2cqw; }
+  .label { font-size: 1.9cqw; line-height: 1.35; }
+  .label small { display: block; font-size: 1.4cqw; color: var(--muted); }
+  .track { background: var(--track); border-radius: 1cqw; height: 6.4cqw; }
+  .bar {
+    height: 100%;
+    border-radius: 1cqw;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 1.8cqw;
+    font-size: 2.7cqw;
+    font-weight: 800;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .bar.pdf  { width: 100%;  background: var(--pdf); }
+  .bar.text { width: 46.3%; background: var(--text); }
+  @media (prefers-color-scheme: dark) { .bar { color: #101112; } }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 3cqw;
+    border-top: .2cqw solid var(--track);
+    padding-top: 2cqw;
+  }
+  .takeaway { font-size: 2.4cqw; font-weight: 700; line-height: 1.4; }
+  .takeaway span { color: var(--text); }
+  .note { font-size: 1.3cqw; color: var(--muted); text-align: right; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <main class="slide">
+    <header>
+      <p class="kicker">클로드에 문서 올리는 법</p>
+      <h1>PDF는 그대로 올리지 말고<br><em>글로 바꿔서</em> 올리자</h1>
+    </header>
+
+    <section class="bars" aria-label="토큰 사용량 비교">
+      <div class="row">
+        <div class="label">PDF 그대로 업로드<small>약관 8쪽</small></div>
+        <div class="track"><div class="bar pdf">23,596 토큰</div></div>
+      </div>
+      <div class="row">
+        <div class="label">글로 복사해서 업로드<small>같은 내용</small></div>
+        <div class="track"><div class="bar text">10,917 토큰</div></div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p class="takeaway">같은 내용인데 토큰은 <span>절반 이하</span>(약 54% 적음)<br>앞으로 PDF는 글로 바꿔 올립니다.</p>
+      <p class="note">막대 길이는 토큰 수에 비례<br>23,596 − 10,917 = 12,679 토큰 차이</p>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2",
+ "text": "붙여 넣을 다섯 줄, 댓글에 홈페이지라고 남기면 보내 드려요.",
+ "dur": 2.993,
+ "words": [
+  {
+   "text": "붙여",
+   "start": 0.08,
+   "end": 0.26
+  },
+  {
+   "text": "넣을",
+   "start": 0.298,
+   "end": 0.452
+  },
+  {
+   "text": "다섯",
+   "start": 0.49,
+   "end": 0.671
+  },
+  {
+   "text": "줄,",
+   "start": 0.709,
+   "end": 0.875
+  },
+  {
+   "text": "댓글에",
+   "start": 1.261,
+   "end": 1.505
+  },
+  {
+   "text": "홈페이지라고",
+   "start": 1.544,
+   "end": 2.044
+  },
+  {
+   "text": "남기면",
+   "start": 2.083,
+   "end": 2.404
+  },
+  {
+   "text": "보내",
+   "start": 2.442,
+   "end": 2.597
+  },
+  {
+   "text": "드려요.",
+   "start": 2.635,
+   "end": 2.993
+  }
+ ],
+ "source": {
+  "key": "54356eb13c6ef24797d62f5e34c67985",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

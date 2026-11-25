@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P1",
+ "text": "클로드가 만든 홈페이지, 에이아이 티 나죠? 다섯 줄이면 빠져요.",
+ "dur": 3.206,
+ "words": [
+  {
+   "text": "클로드가",
+   "start": 0.02,
+   "end": 0.321
+  },
+  {
+   "text": "만든",
+   "start": 0.364,
+   "end": 0.579
+  },
+  {
+   "text": "홈페이지,",
+   "start": 0.622,
+   "end": 1.052
+  },
+  {
+   "text": "에이아이",
+   "start": 1.396,
+   "end": 1.626
+  },
+  {
+   "text": "티",
+   "start": 1.668,
+   "end": 1.74
+  },
+  {
+   "text": "나죠?",
+   "start": 1.783,
+   "end": 1.969
+  },
+  {
+   "text": "다섯",
+   "start": 2.213,
+   "end": 2.385
+  },
+  {
+   "text": "줄이면",
+   "start": 2.442,
+   "end": 2.657
+  },
+  {
+   "text": "빠져요.",
+   "start": 2.701,
+   "end": 3.206
+  }
+ ],
+ "source": {
+  "key": "0c2ea616250a334f5c39fe037ee0aa7c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}

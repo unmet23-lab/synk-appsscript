@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "꽃집 홈페이지를 세 번 맡겼더니, 세 번 다 같은 분홍에 이모지 카드였어요.",
+ "dur": 3.655,
+ "words": [
+  {
+   "text": "꽃집",
+   "start": 0.03,
+   "end": 0.27
+  },
+  {
+   "text": "홈페이지를",
+   "start": 0.308,
+   "end": 0.736
+  },
+  {
+   "text": "세",
+   "start": 0.774,
+   "end": 0.837
+  },
+  {
+   "text": "번",
+   "start": 0.875,
+   "end": 0.963
+  },
+  {
+   "text": "맡겼더니,",
+   "start": 1.001,
+   "end": 1.417
+  },
+  {
+   "text": "세",
+   "start": 1.809,
+   "end": 1.872
+  },
+  {
+   "text": "번",
+   "start": 1.922,
+   "end": 2.011
+  },
+  {
+   "text": "다",
+   "start": 2.048,
+   "end": 2.099
+  },
+  {
+   "text": "같은",
+   "start": 2.149,
+   "end": 2.376
+  },
+  {
+   "text": "분홍에",
+   "start": 2.413,
+   "end": 2.691
+  },
+  {
+   "text": "이모지",
+   "start": 2.792,
+   "end": 3.007
+  },
+  {
+   "text": "카드였어요.",
+   "start": 3.044,
+   "end": 3.655
+  }
+ ],
+ "source": {
+  "key": "b84b43d1631af7cb1dc8d1d6028b05ba",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 167
+ }
+}

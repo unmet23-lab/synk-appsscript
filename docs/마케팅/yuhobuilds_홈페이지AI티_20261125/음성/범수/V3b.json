@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3b",
+ "text": "이모지랑 장식은 빼고, 색은 세 가지만 쓰라고요.",
+ "dur": 2.461,
+ "words": [
+  {
+   "text": "이모지랑",
+   "start": 0.05,
+   "end": 0.398
+  },
+  {
+   "text": "장식은",
+   "start": 0.44,
+   "end": 0.774
+  },
+  {
+   "text": "빼고,",
+   "start": 0.817,
+   "end": 1.025
+  },
+  {
+   "text": "색은",
+   "start": 1.29,
+   "end": 1.499
+  },
+  {
+   "text": "세",
+   "start": 1.541,
+   "end": 1.624
+  },
+  {
+   "text": "가지만",
+   "start": 1.666,
+   "end": 1.917
+  },
+  {
+   "text": "쓰라고요.",
+   "start": 1.958,
+   "end": 2.461
+  }
+ ],
+ "source": {
+  "key": "261d972c3f547507daacb74ceb2569b4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

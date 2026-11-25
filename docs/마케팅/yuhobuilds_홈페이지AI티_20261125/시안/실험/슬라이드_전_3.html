@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF는 글로 바꿔 올리자</title>
+<style>
+  :root {
+    --bg: #f6f4ef;
+    --ink: #1d1b19;
+    --muted: #6b665e;
+    --track: #e4e0d6;
+    --bad: #c4553a;
+    --good: #2f6f5e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #111;
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    color: var(--ink);
+  }
+  body { display: grid; place-items: center; }
+
+  .slide {
+    width: min(100vw, 100vh * 16 / 9);
+    aspect-ratio: 16 / 9;
+    container-type: size;
+    background: var(--bg);
+    padding: 7cqw 7cqw 5cqw;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .kicker {
+    font-size: 1.7cqw;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  h1 {
+    font-size: 5.4cqw;
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-top: 1.2cqw;
+  }
+  h1 em { font-style: normal; color: var(--good); }
+
+  .chart { display: grid; gap: 2.6cqw; }
+  .row { display: grid; grid-template-columns: 17cqw 1fr; align-items: center; gap: 2cqw; }
+  .label { font-size: 2.1cqw; font-weight: 600; line-height: 1.35; }
+  .label small { display: block; font-size: 1.5cqw; font-weight: 400; color: var(--muted); }
+  .track { background: var(--track); border-radius: 1cqw; height: 7.5cqw; }
+  .bar {
+    height: 100%;
+    border-radius: 1cqw;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 2cqw;
+    color: #fff;
+    font-size: 3.4cqw;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .bar small { font-size: 1.8cqw; font-weight: 600; margin-left: 0.8cqw; opacity: 0.9; }
+  .bar.pdf  { width: 100%;  background: var(--bad); }
+  .bar.text { width: 46.3%; background: var(--good); }
+
+  .foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 3cqw; }
+  .takeaway { font-size: 2.4cqw; line-height: 1.5; font-weight: 600; }
+  .takeaway b { color: var(--good); }
+  .note { font-size: 1.4cqw; color: var(--muted); text-align: right; line-height: 1.5; white-space: nowrap; }
+</style>
+</head>
+<body>
+  <main class="slide">
+    <header>
+      <div class="kicker">클로드 사용 팁 · 토큰 비교</div>
+      <h1>PDF는 글로 바꿔 올리자.<br><em>토큰이 절반 아래로</em> 줄어든다.</h1>
+    </header>
+
+    <section class="chart" aria-label="같은 약관 8쪽을 올릴 때 쓰는 토큰 수">
+      <div class="row">
+        <div class="label">PDF 그대로<small>8쪽 약관</small></div>
+        <div class="track"><div class="bar pdf">23,596<small>토큰</small></div></div>
+      </div>
+      <div class="row">
+        <div class="label">글로 복사<small>같은 내용</small></div>
+        <div class="track"><div class="bar text">10,917<small>토큰</small></div></div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p class="takeaway">같은 내용인데 <b>12,679토큰, 약 54%</b>를 아낀다.<br>앞으로 PDF는 글로 바꿔서 올린다.</p>
+      <p class="note">8쪽짜리 약관 PDF 기준</p>
+    </footer>
+  </main>
+</body>
+</html>

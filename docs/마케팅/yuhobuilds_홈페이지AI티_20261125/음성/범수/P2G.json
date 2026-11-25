@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2G",
+ "text": "붙여 넣을 다섯 줄, 게시글에 다 적어 뒀어요.",
+ "dur": 2.294,
+ "words": [
+  {
+   "text": "붙여",
+   "start": 0.02,
+   "end": 0.193
+  },
+  {
+   "text": "넣을",
+   "start": 0.233,
+   "end": 0.406
+  },
+  {
+   "text": "다섯",
+   "start": 0.446,
+   "end": 0.645
+  },
+  {
+   "text": "줄,",
+   "start": 0.686,
+   "end": 0.818
+  },
+  {
+   "text": "게시글에",
+   "start": 1.125,
+   "end": 1.484
+  },
+  {
+   "text": "다",
+   "start": 1.538,
+   "end": 1.604
+  },
+  {
+   "text": "적어",
+   "start": 1.67,
+   "end": 1.83
+  },
+  {
+   "text": "뒀어요.",
+   "start": 1.87,
+   "end": 2.294
+  }
+ ],
+ "source": {
+  "key": "0d01a20ed9d06dc5cc645ba8283baa7a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 134
+ }
+}

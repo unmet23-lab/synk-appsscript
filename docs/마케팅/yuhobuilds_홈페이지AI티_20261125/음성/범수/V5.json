@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "꽃 그림까지 빠지니까, 사진 자리 한 줄을 더 붙이면 돼요.",
+ "dur": 2.908,
+ "words": [
+  {
+   "text": "꽃",
+   "start": 0.06,
+   "end": 0.189
+  },
+  {
+   "text": "그림까지",
+   "start": 0.228,
+   "end": 0.588
+  },
+  {
+   "text": "빠지니까,",
+   "start": 0.627,
+   "end": 1.052
+  },
+  {
+   "text": "사진",
+   "start": 1.4,
+   "end": 1.606
+  },
+  {
+   "text": "자리",
+   "start": 1.644,
+   "end": 1.786
+  },
+  {
+   "text": "한",
+   "start": 1.825,
+   "end": 1.89
+  },
+  {
+   "text": "줄을",
+   "start": 1.929,
+   "end": 2.083
+  },
+  {
+   "text": "더",
+   "start": 2.121,
+   "end": 2.199
+  },
+  {
+   "text": "붙이면",
+   "start": 2.25,
+   "end": 2.585
+  },
+  {
+   "text": "돼요.",
+   "start": 2.624,
+   "end": 2.908
+  }
+ ],
+ "source": {
+  "key": "7289018b9aa1f64c95023eab0a3a46f9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}
