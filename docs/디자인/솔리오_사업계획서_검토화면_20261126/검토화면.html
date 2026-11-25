@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500&display=swap">
 <style>
 /* 솔리오 사무실 기획부 「사업계획서」 검토 화면 새 시안(2026-11-26, 유호님 「조금 더 트렌디하고 세련되고 기능적으로 간편했으면 … 아직 조잡함이 꽤 남아있네」)
-   한 문장: 파일을 놓으면 직원이 고칠 곳을 한 번에 하나씩 묻는다. 정한 것은 README.md */
+   한 문장: 파일을 놓으면 직원이 고칠 곳을 한 번에 하나씩 묻는다. 계획서가 없으면 일곱 물음으로 먼저 쓴다(11-26 「사업계획서 없으면 직접 작성하는 칸」). 정한 것은 README.md */
 @font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
 @font-face{font-family:'DM Mono';font-weight:400;font-display:swap;src:url(../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf) format('truetype');}
 :root{
@@ -56,7 +56,7 @@ h1{position:relative;z-index:1;margin:0;font:300 clamp(27px,3.5vw,46px)/1.25 var
 /* 무대: 구운 장면 한 장(팀 고르기 4판 결) 위에 눈만 얹는다 */
 .hero{position:relative;width:min(720px,100%,76vh);aspect-ratio:3/2;margin:-22px auto -66px;transition:opacity .5s ease,filter .5s ease;pointer-events:none}
 .hero > div{position:absolute;inset:0;transform:translateX(10.4%)}
-.app[data-stage=done] .hero{width:min(430px,86%,44vh);margin:-8px auto -36px}
+.app.drafted .hero,.app[data-stage=done] .hero{width:min(430px,86%,44vh);margin:-8px auto -36px}
 .hero img{width:100%;height:100%;display:block;object-fit:cover;
   -webkit-mask-image:radial-gradient(ellipse 41% 60% at 40% 50%,#000 52%,transparent 100%),linear-gradient(#000 66%,transparent 92%);-webkit-mask-composite:source-in;
   mask-image:radial-gradient(ellipse 41% 60% at 40% 50%,#000 52%,transparent 100%),linear-gradient(#000 66%,transparent 92%);mask-composite:intersect}
@@ -152,6 +152,29 @@ kbd{min-width:20px;padding:3px 6px;border-radius:6px;background:rgba(0,0,0,.09);
 .opt b{display:block;font:600 16px/1.4 var(--sans)}
 .opt span{display:block;margin-top:5px;font:400 15px/1.55 var(--serif);color:var(--soft)}
 
+/* 직접 쓰기: 같은 한 줄에 물음 하나와 쓰는 칸 하나 */
+.alt{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;margin:22px auto 0;font:400 14px/1.4 var(--sans);color:var(--dim)}
+.alt .mono{font:400 12.5px/1 var(--mono);color:var(--dim)}
+.writing .body{justify-content:center;padding-bottom:5vh}
+.writing .stagearea{flex:none}
+.qhead{align-content:end;min-height:0;padding:clamp(28px,7vh,72px) 6px clamp(22px,4vh,36px)}
+.qno{margin:0;font:500 13.5px/1 var(--sans);color:var(--dim)}
+.qno span{margin-right:8px;font:400 13px/1 var(--mono);letter-spacing:.04em}
+.qno.where{margin-bottom:20px}
+.qq{margin:14px 0 0;font:300 clamp(26px,3.1vw,40px)/1.3 var(--sans);letter-spacing:-.022em;text-wrap:balance;outline:0}
+.tip{display:block;min-height:1.45em;margin-top:5px;font:400 13.5px/1.45 var(--sans);color:var(--dim);transition:color .3s}
+.ans{display:block;width:100%;min-height:136px;max-height:46vh;margin:0 0 12px;padding:15px 18px 16px;border:0;border-radius:17px;background:var(--fill);font:400 19px/1.6 var(--serif);color:var(--paper);resize:none;outline:0;caret-color:var(--meadow);transition:background-color .2s}
+.ans:focus{background:rgba(243,241,236,.09)}
+.ans::placeholder{color:var(--off)}
+.steps button.seg.skip::after{background:repeating-linear-gradient(90deg,rgba(243,241,236,.4) 0 5px,transparent 5px 9px)}
+.chaps{width:min(720px,100%);margin:18px auto 0;padding:0;list-style:none}
+.chaps .row{grid-template-columns:14px 7.2em minmax(0,1fr) auto}
+.chaps .row b{font:500 14.5px/1.55 var(--sans);color:var(--soft)}
+.chaps .row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--soft)}
+.chaps .row.skip i{width:10px;height:2px;border-radius:1px;margin-bottom:.3em;background:rgba(243,241,236,.4)}
+.chaps .row.skip span{font:400 14px/1.55 var(--sans);color:var(--dim)}
+.hole{font:400 .62em/1 var(--sans);color:var(--dim);letter-spacing:0}
+
 /* 끝 */
 .diffs{width:min(720px,100%);margin:20px auto 0;padding:0;list-style:none}
 .diffs li{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:4px 14px;padding:8px 26px;font:400 16px/1.55 var(--serif);color:var(--soft)}
@@ -186,6 +209,8 @@ kbd{min-width:20px;padding:3px 6px;border-radius:6px;background:rgba(0,0,0,.09);
   .place{font-size:16px;padding:10px 8px 16px}
   .chip{padding:0 13px}.menu{min-width:240px}
   .note{margin-top:0}.ask p{font-size:15.5px}.stagearea{padding:20px 2px;min-height:170px}
+  .qhead{min-height:0;padding:22px 2px 18px}.qq{font-size:24px}.ans{font-size:17px;min-height:120px}
+  .chaps .row{grid-template-columns:14px minmax(0,1fr) auto;gap:2px 12px}.chaps .row i{grid-column:1;grid-row:1}.chaps .row b{grid-column:2;grid-row:1}.chaps .row span{grid-column:2;grid-row:2}.chaps .row small{grid-column:3;grid-row:1/span 2;align-self:center}
   .opts{grid-template-columns:1fr}
   .acts .go{flex:1 0 100%;height:50px}.acts .chip{flex:1;justify-content:center;padding:0 10px}kbd{display:none}
   .done .bar .file{flex:1 0 100%}
@@ -211,31 +236,53 @@ kbd{min-width:20px;padding:3px 6px;border-radius:6px;background:rgba(0,0,0,.09);
   <main class="main" id="main"></main>
 </div>
 <div class="toast" id="toast" role="status"><span id="toastT"></span><button type="button" id="undo">되돌리기</button></div>
-<div class="demo" aria-label="시안 조작"><button type="button" data-demo="reset">처음부터</button><button type="button" data-demo="note">고칠 곳</button><button type="button" data-demo="limit">한도 찬 때</button></div>
+<div class="demo" aria-label="시안 조작"><button type="button" data-demo="reset">처음부터</button><button type="button" data-demo="draft">다 쓴 뒤</button><button type="button" data-demo="note">고칠 곳</button><button type="button" data-demo="limit">한도 찬 때</button></div>
 <div class="sr" id="live" aria-live="polite"></div>
 <script>
 {
 /* ── 예시: 시험 계획서와 11-23에 GPT 직원이 실제로 낸 메모 ── */
 const IMG = {write:'../솔리오_사업계획서_첫화면_20261123/그림/write.jpg', orb:'그림/orb.webp'};
-const PLAN = {
-  1:['왜 이 일을 하나', ['바쁜 직장인은 아침을 거르기 쉽습니다.', '시중 그래놀라는 설탕이 많아 매일 먹기 어렵습니다.']],
-  2:['지금까지 한 일', ['2025년 9월부터 온라인으로 팔아 왔습니다.', '2025년 매출 10억 원을 달성했습니다.', '단골 손님 300명이 매달 다시 삽니다.']],
-  3:['주문하는 법', ['홈페이지에서 주문합니다.', '휴대폰 앱에서 바로 주문할 수 있습니다.']],
-  4:['성장 전략', ['3년 뒤 매출 5억 원을 목표로 합니다.']],
-  5:['함께하는 사람', ['대표가 직접 굽고, 포장은 동네 자활센터와 함께합니다.']],
-};
-const NOTES = [
-  {s:2, i:1, bad:'10억 원', say:'회사 자료에는 2025년 매출이 3억 2천만 원으로 적혀 있어요.', ev:'3억 2천만 원', fix:'2025년 매출은 3억 2천만 원입니다.', hi:'3억 2천만 원', mood:'look'},
-  {s:2, i:2, bad:'300명', say:'10월에 다시 산 손님은 112명이에요. 300명과 맞지 않아요.', ev:'112명', fix:'10월에 다시 구매한 손님은 112명입니다.', hi:'112명', mood:'curious'},
-  {s:2, i:0, bad:'2025년 9월', say:'온라인 판매를 시작한 때는 회사 자료에서 찾지 못했어요.', fix:'홈페이지에서 판매하고 있습니다.', hi:'홈페이지에서', mood:'side'},
-  {s:3, i:1, bad:'휴대폰 앱', say:'회사 자료에는 PC 홈페이지만 있어요. 앱 주문을 만들면 이 문장이 사실이 돼요.', hand:'개발부에 맡기기', mood:'curious'},
-  {s:5, i:0, bad:'동네 자활센터', say:'자활센터와 함께한다는 자료를 찾지 못했어요. 빼면 이렇게 돼요.', fix:'대표가 직접 굽습니다.', hi:'직접 굽습니다', mood:'side'},
-  {s:4, weak:'성장 전략', say:'심사위원이 가장 궁금해할 게 빠졌어요. 매출을 무엇으로 늘리나요?', opts:[['정기 배송', '정기 배송 손님을 늘려 매출을 키웁니다.'], ['회사 납품', '근처 회사의 아침 간식으로 납품해 매출을 키웁니다.']], mood:'open'},
-  {s:5, weak:'팀 구성', say:'하나만 더요. 온라인 주문은 누가 챙기나요?', opts:[['대표', '온라인 주문과 출고 전 확인은 대표가 직접 맡습니다.'], ['새 직원', '온라인 주문과 출고 전 확인을 맡을 직원을 한 명 뽑습니다.']], mood:'happy'},
+/* 일곱 장은 사업계획서 쓰기 시안(../솔리오_사업계획서_첫화면_20261123)의 물음과 같다. 예시는 그래놀라 가게 하나로 잇는다 */
+const CH = [
+  {name:'문제 인식', q:'누가, 어떤 불편을 겪고 있나요?', num:true, why:'다 쓰면 직원이 이 계획서를 읽는데, 가장 먼저 보는 장이에요. 누가, 얼마나 불편한지 숫자 하나만 있어도 문제가 진짜로 보여요.'},
+  {name:'해결책', q:'그 불편을 어떻게 풀어 주나요?', why:'문제와 해결이 짝이 맞는지 보는 장이에요. 손님이 겪게 될 하루를 그려 주시면 돼요.'},
+  {name:'고객과 시장', q:'누가 사고, 지금까지 얼마나 팔았나요?', num:true, why:'처음 살 사람이 분명해야 첫 매출이 보여요. 그 숫자를 어디서 셌는지도 같이 적어 주세요.'},
+  {name:'경쟁과 차별점', q:'이미 있는 것과 무엇이 다른가요?', why:'「이미 있지 않나요?」는 심사에서 꼭 나오는 물음이에요. 손님이 지금 쓰는 것과 견줘 주세요.'},
+  {name:'비즈니스 모델', q:'누가, 얼마를, 왜 내나요?', num:true, why:'누가 얼마를 내고 그 돈이 남는지 보여야 해요. 받는 돈과 나가는 돈을 같이 적어 주세요.'},
+  {name:'팀', q:'이 일을 해낼 사람은 누구인가요?', why:'같은 계획이라도 해낼 사람이 보이면 믿음이 달라져요. 맡을 일과 해 본 일을 짝지어 주세요.'},
+  {name:'실행 계획과 자금', q:'앞으로 무엇을 하고, 돈은 얼마가 필요한가요?', num:true, why:'마지막이에요! 언제 무엇을 하고 돈이 어디에 드는지 보이면 계획이 현실이 돼요.'},
 ];
+const PLAN = {
+  1:['바쁜 직장인은 아침을 거르기 쉽습니다.', '시중 그래놀라는 설탕이 많아 매일 먹기 어렵습니다.'],
+  2:['설탕을 절반으로 줄인 그래놀라를 매일 굽습니다.', '홈페이지에서 주문합니다.', '휴대폰 앱에서 바로 주문할 수 있습니다.'],
+  3:['2025년 9월부터 온라인으로 팔아 왔습니다.', '2025년 매출 10억 원을 달성했습니다.', '단골 손님 300명이 매달 다시 삽니다.'],
+  4:['마트 그래놀라보다 설탕이 절반이고, 그날 구운 것을 보냅니다.'],
+  5:['한 봉지 9,800원에 팝니다.', '재료와 포장에 한 봉지 4,100원이 듭니다.'],
+  6:['대표가 직접 굽고, 포장은 동네 자활센터와 함께합니다.'],
+  7:['3년 뒤 매출 5억 원을 목표로 합니다.'],
+};
+for (const k in PLAN) PLAN[k] = [CH[k - 1].name, PLAN[k]];
+/* data: 회사 자료와 맞춰 본 메모. 회사 자료 없이 읽으면 나오지 않는다 */
+const NOTES = [
+  {s:3, i:1, data:true, bad:'10억 원', say:'회사 자료에는 2025년 매출이 3억 2천만 원으로 적혀 있어요.', ev:'3억 2천만 원', fix:'2025년 매출은 3억 2천만 원입니다.', hi:'3억 2천만 원', mood:'look'},
+  {s:3, i:2, data:true, bad:'300명', say:'10월에 다시 산 손님은 112명이에요. 300명과 맞지 않아요.', ev:'112명', fix:'10월에 다시 구매한 손님은 112명입니다.', hi:'112명', mood:'curious'},
+  {s:3, i:0, data:true, bad:'2025년 9월', say:'온라인 판매를 시작한 때는 회사 자료에서 찾지 못했어요.', fix:'홈페이지에서 판매하고 있습니다.', hi:'홈페이지에서', mood:'side'},
+  {s:2, i:2, data:true, bad:'휴대폰 앱', say:'회사 자료에는 PC 홈페이지만 있어요. 앱 주문을 만들면 이 문장이 사실이 돼요.', hand:'개발부에 맡기기', mood:'curious'},
+  {s:6, i:0, data:true, bad:'동네 자활센터', say:'자활센터와 함께한다는 자료를 찾지 못했어요. 빼면 이렇게 돼요.', fix:'대표가 직접 굽습니다.', hi:'직접 굽습니다', mood:'side'},
+  {s:7, weak:'실행 계획', say:'심사위원이 가장 궁금해할 게 빠졌어요. 매출을 무엇으로 늘리나요?', opts:[['정기 배송', '정기 배송 손님을 늘려 매출을 키웁니다.'], ['회사 납품', '근처 회사의 아침 간식으로 납품해 매출을 키웁니다.']], mood:'open'},
+  {s:6, weak:'팀', say:'하나만 더요. 온라인 주문은 누가 챙기나요?', opts:[['대표', '온라인 주문과 출고 전 확인은 대표가 직접 맡습니다.'], ['새 직원', '온라인 주문과 출고 전 확인을 맡을 직원을 한 명 뽑습니다.']], mood:'happy'},
+];
+let NS = NOTES;
+/* 직접 쓴 초안의 빈 장을 회사 자료로 채울 수 있는 문장(회사자료.csv에 있는 값만) */
+const FILL = {3:['2025년 매출은 3억 2천만 원이고, 10월에 다시 산 손님은 112명입니다.', '3억 2천만 원 · 112명'], 5:['한 봉지 9,800원에 팔고, 재료와 포장에 4,100원이 듭니다.', '9,800원 · 4,100원']};
+const sentences = t => t.trim() ? t.trim().split(/(?<=[.!?])\s+/).filter(Boolean) : [];
 const CRIT = [['창업 지원사업 기준', '문제 인식 · 실현 가능성 · 성장 전략 · 팀 구성'], ['공고문 기준', '붙여 넣은 공고의 평가 항목에 맞춰 봅니다']];
 const STAFF = [['Claude 직원', '내 Claude 구독으로 읽습니다'], ['GPT 직원', '내 ChatGPT 구독으로 읽습니다']];
 const NUM = ['영', '한', '두', '세', '네', '다섯', '여섯', '일곱'];
+const CNT = ['없음', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱'];
+const DRAFT = '사업계획서_초안.docx';
+const 을 = w => (w.charCodeAt(w.length - 1) - 0xAC00) % 28 ? '을' : '를';
+const 이 = w => (w.charCodeAt(w.length - 1) - 0xAC00) % 28 ? '이' : '가';
 
 /* ── 구의 눈(사업계획서 시안의 부품 그대로, 11-25 4판 결) ── */
 let orbSeq = 0;
@@ -262,6 +309,7 @@ const I = {
   plus:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>',
   x:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="m3 3 8 8M11 3l-8 8"/></svg>',
   down:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 5.5 3.5 3.5 3.5-3.5"/></svg>',
+  pen:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M12.6 3.8 16.2 7.4 7.4 16.2H3.8v-3.6Z"/><path d="m10.8 5.6 3.6 3.6"/></svg>',
   back:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m10 3-5 5 5 5"/></svg>',
 };
 
@@ -270,14 +318,16 @@ const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>
 const kindOf = n => /\.(csv|xlsx?|tsv)$/i.test(n) ? 'data' : 'plan';
 let S, timers = [], hero = null, gorb = null;
 const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
-const fresh = () => ({stage:'drop', files:[], crit:0, staff:0, menu:null, at:0, state:NOTES.map(() => null), text:JSON.parse(JSON.stringify(PLAN)), added:{}, saved:false});
+const fresh = () => { NS = NOTES; return {stage:'drop', files:[], crit:0, staff:0, menu:null, at:0, state:NS.map(() => null), text:JSON.parse(JSON.stringify(PLAN)), added:{}, saved:false, draft:CH.map(() => ''), skip:[], q:0}; };
+const written = () => S.draft.filter(t => t.trim()).length;
+const outName = () => (S.files.find(f => kindOf(f) === 'plan') || '사업계획서.docx').replace(/\.[^.]+$/, '') + '_고침.docx';
 const say = t => { $('#live').textContent = t; };
 function stop() { timers.forEach(clearTimeout); timers = []; }
-function set(stage) { if (stage !== 'note') $('#toast').classList.remove('on'); S.stage = stage; app.dataset.stage = stage; stop(); render(); window.scrollTo(0, 0); }
+function set(stage) { if (stage !== 'note') $('#toast').classList.remove('on'); busy = false; S.stage = stage; app.dataset.stage = stage; stop(); render(); window.scrollTo(0, 0); }
 
 const heroHTML = () => `<div class="hero" aria-hidden="true"><div><img src="${IMG.write}" alt=""><span class="eyes" id="heyes">${orbSVG()}</span></div></div>`;
 const backHTML = t => `<button class="back" type="button" data-a="back">${I.back}${t}</button>`;
-const fileHTML = (f, k) => `<div class="file">${kindOf(f) === 'plan' ? I.doc : I.tab}<span><b>${esc(f)}</b><small>${kindOf(f) === 'plan' ? '계획서' : '회사 자료'}</small></span><button class="x" type="button" data-a="rm" data-k="${k}" aria-label="${esc(f)} 빼기">${I.x}</button></div>`;
+const fileHTML = (f, k) => `<div class="file">${kindOf(f) === 'plan' ? I.doc : I.tab}<span><b>${esc(f)}</b><small>${f === DRAFT ? `직접 쓴 초안 · 일곱 장 중 ${written()}장` : kindOf(f) === 'plan' ? '계획서' : '회사 자료'}</small></span><button class="x" type="button" data-a="rm" data-k="${k}" aria-label="${esc(f)} 빼기">${I.x}</button></div>`;
 const menuHTML = (id, list, cur) => S.menu !== id ? '' : `<div class="menu" role="menu">${list.map((c, k) => `<button type="button" role="menuitemradio" aria-checked="${k === cur}" data-a="${id}" data-k="${k}">${c[0]}<i></i><small>${c[1]}</small></button>`).join('')}</div>`;
 const pick = (id, list, cur) => `<span style="position:relative"><button class="chip" type="button" data-a="menu" data-k="${id}" aria-haspopup="menu" aria-expanded="${S.menu === id}">${list[cur][0]}${I.down}</button>${menuHTML(id, list, cur)}</span>`;
 
@@ -293,9 +343,15 @@ function heroStage(title, sub, under) {
 }
 function render() {
   const st = S.stage;
+  app.classList.toggle('drafted', st === 'drop' && S.files.includes(DRAFT));
   if (st === 'drop') {
     const plan = S.files.some(f => kindOf(f) === 'plan'), data = S.files.some(f => kindOf(f) === 'data');
-    main.innerHTML = plan ? heroStage('읽을 준비가 됐습니다.', data ? '회사 자료와 맞춰 보고 고칠 곳을 찾습니다.' : '회사 자료를 더하면 숫자도 맞춰 봅니다.', composer()) : heroStage('계획서를 놓아 주세요.', '직원이 읽고 고칠 곳을 하나씩 묻습니다.', composer());
+    const n = written(), draft = S.files.includes(DRAFT), gap = CH.length - n;
+    const alt = plan ? '' : `<div class="alt"><span>${n ? '쓰던 계획서가 있습니다' : '계획서가 아직 없으면'}</span><button class="chip" type="button" data-a="write">${I.pen}${n ? `이어서 쓰기<span class="mono">${n} / ${CH.length}</span>` : '직접 쓰기'}</button></div>`;
+    const chaps = !draft ? '' : `<ul class="chaps" aria-label="쓴 장">${CH.map((c, k) => { const t = S.draft[k].trim(); return `<li><button class="row ${t ? 'ok' : 'skip'}" type="button" data-a="wjump" data-k="${k}"><i></i><b>${c.name}</b><span>${t ? esc(t) : '비워 두었습니다'}</span><small>${t ? '고치기' : '채우기'}</small></button></li>`; }).join('')}</ul>`;
+    main.innerHTML = draft ? heroStage('사업계획서 초안이 생겼습니다.', gap ? `${NUM[gap]} 장을 비워 두었습니다. 읽으면 빈 곳도 함께 묻습니다.` : data ? '회사 자료와 맞춰 보고 고칠 곳을 찾습니다.' : '회사 자료를 더하면 숫자도 맞춰 봅니다.', composer() + chaps)
+      : plan ? heroStage('읽을 준비가 됐습니다.', data ? '회사 자료와 맞춰 보고 고칠 곳을 찾습니다.' : '회사 자료를 더하면 숫자도 맞춰 봅니다.', composer())
+      : heroStage('계획서를 놓아 주세요.', '직원이 읽고 고칠 곳을 하나씩 묻습니다.', composer() + alt);
   } else if (st === 'read') {
     main.innerHTML = heroStage('읽고 있습니다.', '다른 일을 하셔도 됩니다. 끝나면 알려 드립니다.', `<div class="comp"><div class="read"><div><span class="shine" id="rt"></span><span class="mono" id="clk">0:00</span></div><button class="chip" type="button" data-a="stop">멈추기</button><div class="segs">${Object.keys(PLAN).map(() => '<span class="seg"><i></i></span>').join('')}</div></div></div>`);
   } else if (st === 'limit') {
@@ -303,15 +359,16 @@ function render() {
   } else if (st === 'done') {
     const ch = changes();
     main.innerHTML = heroStage(S.saved ? '새 파일로 저장했습니다.' : doneTitle(ch), S.saved ? '원본은 그대로 있습니다.' : '원본은 그대로 두고 새 파일로 저장합니다.',
-      `<div class="comp done"><div class="bar"><div class="file" style="background:none">${I.doc}<span><b>사업계획서_시험_고침.docx</b><small>${S.saved ? '방금 저장' : '원본과 같은 폴더'}</small></span></div>${S.saved ? `<button class="chip" type="button" data-a="home">다른 계획서</button><button class="go" type="button" data-a="folder">폴더 열기</button>` : `<button class="chip" type="button" data-a="again">다시 보기</button><button class="go" type="button" data-a="save" ${ch.some(c => !c.hand) ? '' : 'disabled'}>저장</button>`}</div></div>`
+      `<div class="comp done"><div class="bar"><div class="file" style="background:none">${I.doc}<span><b>${esc(outName())}</b><small>${S.saved ? '방금 저장' : '원본과 같은 폴더'}</small></span></div>${S.saved ? `<button class="chip" type="button" data-a="home">다른 계획서</button><button class="go" type="button" data-a="folder">폴더 열기</button>` : `<button class="chip" type="button" data-a="again">다시 보기</button><button class="go" type="button" data-a="save" ${ch.some(c => !c.hand) ? '' : 'disabled'}>저장</button>`}</div></div>`
       + `<ul class="diffs">${ch.map(c => `<li${c.hand ? ' class="hand"' : ''}><span>${esc(c.t)}</span><small>${c.tag || ''}</small></li>`).join('')}</ul>`);
-  } else renderNote();
+  } else if (st === 'write') renderWrite();
+  else renderNote();
   const he = $('#heyes'); hero = he ? makeOrb(he) : null;
   if (hero) hero.mood(st === 'limit' ? 'sleepy' : st === 'done' ? 'happy' : st === 'read' ? 'readL' : S.files.length ? 'drop' : 'open');
   if (st === 'read') runRead();
 }
 function changes() {
-  return NOTES.map((n, k) => S.state[k] !== 'ok' ? null : n.hand ? (S.hand ? {t:PLAN[n.s][1][n.i], tag:'개발부에 맡김', hand:true} : {t:S.text[n.s][1][n.i]}) : {t:n.weak ? S.added[n.s + ':' + k] : S.text[n.s][1][n.i]}).filter(Boolean);
+  return NS.map((n, k) => S.state[k] !== 'ok' ? null : n.hand ? (S.hand ? {t:PLAN[n.s][1][n.i], tag:'개발부에 맡김', hand:true} : {t:S.text[n.s][1][n.i]}) : {t:n.weak ? S.added[n.s + ':' + k] : S.text[n.s][1][n.i]}).filter(Boolean);
 }
 function doneTitle(ch) {
   const f = ch.filter(c => !c.hand).length, h = ch.length - f;
@@ -321,12 +378,13 @@ function runRead() {
   const keys = Object.keys(PLAN), segs = [...document.querySelectorAll('.read .seg')], rt = $('#rt'), t0 = Date.now();
   const tick = () => { const s = Math.floor((Date.now() - t0) / 1000); const c = $('#clk'); if (c) { c.textContent = `0:${String(s).padStart(2, '0')}`; later(tick, 500); } };
   tick();
-  keys.forEach((k, j) => later(() => { rt.textContent = `「${PLAN[k][0]}」을 보고 있습니다`.replace('나」을', '나」를'); segs[j].classList.add('full'); hero.mood(j % 2 ? 'readR' : 'readL'); later(() => hero && hero.mood(j % 2 ? 'readL' : 'readR'), 560); }, j * 1150));
-  later(() => { S.at = 0; set('note'); say('고칠 곳이 일곱 있습니다.'); }, keys.length * 1150 + 300);
+  keys.forEach((k, j) => later(() => { rt.textContent = `「${PLAN[k][0]}」${을(PLAN[k][0])} 보고 있습니다`; segs[j].classList.add('full'); hero.mood(j % 2 ? 'readR' : 'readL'); later(() => hero && hero.mood(j % 2 ? 'readL' : 'readR'), 560); }, j * 900));
+  later(() => { S.at = 0; set('note'); say(`고칠 곳이 ${CNT[NS.length]} 있습니다.`); }, keys.length * 900 + 300);
 }
 /* 한 번에 하나 */
 function paraHTML(n) {
   const list = S.text[n.s][1];
+  if (n.empty && !list.length) return '<span class="t" id="tgt"><span class="hole">비어 있습니다</span></span><span id="addto"></span>';
   return list.map((t, i) => {
     if (i !== n.i || n.weak) return esc(t);
     const bad = n.bad && t.includes(n.bad) ? esc(t).replace(esc(n.bad), `<span class="bad">${esc(n.bad)}</span>`) : esc(t);
@@ -334,22 +392,56 @@ function paraHTML(n) {
   }).map((h, i) => n.weak && !String(list[i]).startsWith('+') ? `<span style="color:var(--paper)">${h}</span>` : h).join(' ') + '<span id="addto"></span>';
 }
 function renderNote() {
-  const n = NOTES[S.at], done = S.state[S.at];
-  main.innerHTML = backHTML('기획부') + `<section class="note"><div class="steps"><div class="segs">${NOTES.map((_, k) => `<button type="button" class="seg ${k === S.at ? 'on' : S.state[k] || ''}" data-a="jump" data-k="${k}" aria-label="${k + 1}번째"></button>`).join('')}</div><span class="count">${S.at + 1} / ${NOTES.length}</span><button class="chip" type="button" data-a="all">전체 보기</button></div>`
-    + `<div class="body" id="body"><div class="stagearea"><p class="para" aria-label="계획서">${paraHTML(n)}</p></div>`
+  const n = NS[S.at], done = S.state[S.at];
+  main.innerHTML = backHTML('기획부') + `<section class="note"><div class="steps"><div class="segs">${NS.map((_, k) => `<button type="button" class="seg ${k === S.at ? 'on' : S.state[k] || ''}" data-a="jump" data-k="${k}" aria-label="${k + 1}번째"></button>`).join('')}</div><span class="count">${S.at + 1} / ${NS.length}</span><button class="chip" type="button" data-a="all">전체 보기</button></div>`
+    + `<div class="body" id="body"><div class="stagearea"><p class="qno where"><span>${String(n.s).padStart(2, '0')}</span>${PLAN[n.s][0]}</p><p class="para" aria-label="계획서">${paraHTML(n)}</p></div>`
     + `<div class="comp"><div class="ask"><span class="sprite" id="gorb">${spriteHTML()}</span><div><p tabindex="-1" id="q">${esc(n.say)}</p>${n.ev ? `<span class="ev">${I.tab}회사자료.csv<b>${esc(n.ev)}</b></span>` : ''}</div></div>`
     + (n.opts ? `<div class="opts">${n.opts.map((o, k) => `<button class="opt" type="button" data-a="opt" data-k="${k}"><b>${o[0]}</b><span>${o[1]}</span></button>`).join('')}</div><div class="acts"><button class="chip" type="button" data-a="keep">그대로 두기<kbd>→</kbd></button></div>`
       : (n.fix ? `<div class="fix">${esc(n.fix).replace(esc(n.hi), `<span class="new nw">${esc(n.hi)}</span>`)}</div>` : '')
-      + `<div class="acts"><button class="chip" type="button" data-a="keep">그대로 두기<kbd>→</kbd></button><button class="chip" type="button" data-a="edit">직접 쓰기</button><span class="sp"></span>${n.fix ? '<button class="go" type="button" data-a="fix">이렇게 고치기<kbd>Enter</kbd></button>' : `<button class="go" type="button" data-a="hand">${n.hand}<kbd>Enter</kbd></button>`}</div>`)
+      + `<div class="acts"><button class="chip" type="button" data-a="keep">그대로 두기<kbd>→</kbd></button>${n.fix || n.hand ? '<button class="chip" type="button" data-a="edit">직접 쓰기</button>' : ''}<span class="sp"></span>${n.fix ? `<button class="go" type="button" data-a="fix">${n.empty ? '이렇게 채우기' : '이렇게 고치기'}<kbd>Enter</kbd></button>` : n.hand ? `<button class="go" type="button" data-a="hand">${n.hand}<kbd>Enter</kbd></button>` : '<button class="go" type="button" data-a="edit">직접 쓰기<kbd>Enter</kbd></button>'}</div>`)
     + `</div></div></section>`;
   gorb = makeOrb($('#gorb')).mood(n.mood);
   say(`${S.at + 1}번째. ${n.say}`);
 }
+/* 직접 쓰기: 물음 하나, 쓰는 칸 하나. 솔리오가 그 장이 왜 필요한지 말한다(쓰기 시안의 안내 그대로) */
+function coach(q, v) {
+  const t = String(v || '').trim();
+  if (!t) return ['open', ''];
+  if (t.length < 16) return ['look', '듣고 있어요.'];
+  if (CH[q].num && !/\d/.test(t)) return ['curious', '숫자를 하나 넣으면 훨씬 잘 믿어요.'];
+  return ['happy', CH[q].num ? '숫자가 들어갔어요.' : '좋아요. 이대로 넘어가도 돼요.'];
+}
+const grow = a => { a.style.height = 'auto'; a.style.height = Math.min(a.scrollHeight + 2, innerHeight * .46) + 'px'; };
+function renderWrite() {
+  const q = S.q, c = CH[q], v = S.draft[q], last = q === CH.length - 1;
+  main.innerHTML = backHTML('기획부') + `<section class="note writing"><div class="steps"><div class="segs">${CH.map((x, k) => `<button type="button" class="seg ${k === q ? 'on' : S.draft[k].trim() ? 'ok' : S.skip.includes(k) ? 'skip' : ''}" data-a="wjump" data-k="${k}" aria-label="${x.name}"></button>`).join('')}</div><span class="count">${q + 1} / ${CH.length}</span><button class="chip" type="button" data-a="wlater">나중에 쓰기</button></div>`
+    + `<div class="body" id="body"><div class="stagearea qhead"><p class="qno"><span>${String(q + 1).padStart(2, '0')}</span>${c.name}</p><h2 class="qq" id="q" tabindex="-1">${c.q}</h2></div>`
+    + `<div class="comp"><div class="ask"><span class="sprite" id="gorb">${spriteHTML()}</span><div><p>${c.why}</p><span class="tip" id="tip"></span></div></div>`
+    + `<textarea class="ans" id="ans" rows="4" spellcheck="false" aria-labelledby="q" placeholder="예: ${esc(PLAN[q + 1][1].join(' '))}">${esc(v)}</textarea>`
+    + `<div class="acts"><button class="chip" type="button" data-a="wskip">이 장 건너뛰기</button><span class="sp"></span><button class="go" type="button" id="wnext" data-a="wnext" ${v.trim() ? '' : 'disabled'}>${last ? '다 썼습니다' : '다음'}<kbd>Ctrl Enter</kbd></button></div></div></div></section>`;
+  gorb = makeOrb($('#gorb')).mood('open'); let mood = 'open';
+  const a = $('#ans'), tip = () => { const [m, t] = coach(q, a.value); if (m !== mood) { gorb.mood(m); mood = m; } $('#tip').textContent = t; };
+  grow(a); tip();
+  a.oninput = () => { S.draft[q] = a.value; grow(a); $('#wnext').disabled = !a.value.trim(); tip(); };
+  a.onkeydown = e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !e.isComposing) { e.preventDefault(); ACT.wnext(); } };
+  if (matchMedia('(pointer:fine)').matches) a.focus({preventScroll:true});
+  say(`${q + 1}번째 장, ${c.name}. ${c.q}`);
+}
+function wMove(v) {
+  const q = S.q, seg = document.querySelectorAll('.steps .seg')[q]; seg.className = 'seg ' + v;
+  const open = k => !S.draft[k].trim() && !S.skip.includes(k);
+  let k = q + 1; while (k < CH.length && !open(k)) k++;
+  leave(() => { busy = false; if (k < CH.length) { S.q = k; stop(); render(); window.scrollTo(0, 0); } else finishWrite(); }, v === 'ok' ? 520 : 200);
+}
+function finishWrite() {
+  if (!S.files.includes(DRAFT)) S.files.unshift(DRAFT);
+  set('drop'); say('사업계획서 초안이 생겼습니다.');
+}
 let last = null, toastT = null;
-function toast(t) { $('#toastT').textContent = t; $('#toast').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => $('#toast').classList.remove('on'), 4200); }
+function toast(t, undo = true) { $('#undo').hidden = !undo; $('#toastT').textContent = t; $('#toast').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => $('#toast').classList.remove('on'), 4200); }
 function leave(then, ms = 700) { later(() => { const b = $('#body'); if (b) b.classList.add('out'); later(then, 230); }, ms); }
 function next() {
-  let k = S.at; for (let j = 1; j <= NOTES.length; j++) { const c = (S.at + j) % NOTES.length; if (!S.state[c]) { k = c; break; } }
+  let k = S.at; for (let j = 1; j <= NS.length; j++) { const c = (S.at + j) % NS.length; if (!S.state[c]) { k = c; break; } }
   if (S.state.every(Boolean)) return set('done');
   S.at = k; stop(); render();
 }
@@ -357,14 +449,14 @@ let busy = false;
 function mark(v) { const seg = document.querySelectorAll('.steps .seg')[S.at]; seg.className = 'seg ' + v; S.state[S.at] = v; }
 function remember(label) { last = {at:S.at, state:[...S.state], text:JSON.stringify(S.text), added:{...S.added}, hand:S.hand}; toast(label); }
 function apply(t, html) {
-  if (busy) return; busy = true; const n = NOTES[S.at]; remember('고쳤습니다');
+  if (busy) return; busy = true; const n = NS[S.at]; remember('고쳤습니다');
   const tg = $('#tgt'); tg.classList.add('gone');
   later(() => { tg.innerHTML = html; tg.classList.remove('gone'); gorb.mood('happy'); const f = $('.fix'); if (f) f.style.opacity = 0; }, 250);
   S.text[n.s][1][n.i] = t; mark('ok'); leave(() => { busy = false; next(); }, 1250);
 }
 function keep() { if (busy) return; busy = true; remember('그대로 두었습니다'); mark('kept'); leave(() => { busy = false; next(); }, 120); }
 function edit() {
-  const tg = $('#tgt'); if (!tg || busy) return; const n = NOTES[S.at], before = S.text[n.s][1][n.i];
+  const tg = $('#tgt'); if (!tg || busy) return; const n = NS[S.at], before = S.text[n.s][1][n.i] || '';
   tg.textContent = n.fix || before; tg.contentEditable = 'plaintext-only'; tg.focus();
   const r = document.createRange(); r.selectNodeContents(tg); r.collapse(false); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
   const f = $('.fix'); if (f) f.hidden = true;
@@ -374,24 +466,44 @@ function edit() {
 function editOk() { const tg = $('#tgt'), t = tg.textContent.trim(); if (!t) return tg.focus(); tg.contentEditable = 'false'; tg.onkeydown = null; apply(t, `<span class="new">${esc(t)}</span>`); }
 function sheet() {
   const d = document.createElement('div'); d.className = 'sheet'; d.id = 'sheet'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', '고칠 곳 전체');
-  d.innerHTML = `<div><h2>고칠 곳 일곱<button class="x" type="button" data-a="close" aria-label="닫기">${I.x}</button></h2>${NOTES.map((n, k) => `<button class="row ${S.state[k] || ''}" type="button" data-a="jump" data-k="${k}"><i></i><span>${esc(n.weak ? PLAN[n.s][0] + '에 빠진 내용' : PLAN[n.s][1][n.i])}</span><small>${S.state[k] === 'ok' ? (n.hand && S.hand ? '맡김' : '고침') : S.state[k] ? '그대로' : ''}</small></button>`).join('')}</div>`;
+  d.innerHTML = `<div><h2>고칠 곳 ${CNT[NS.length]}<button class="x" type="button" data-a="close" aria-label="닫기">${I.x}</button></h2>${NS.map((n, k) => `<button class="row ${S.state[k] || ''}" type="button" data-a="jump" data-k="${k}"><i></i><span>${esc(n.weak ? PLAN[n.s][0] + '에 빠진 내용' : n.empty ? PLAN[n.s][0] + ' · 비어 있던 장' : S.text[n.s][1][n.i])}</span><small>${S.state[k] === 'ok' ? (n.hand && S.hand ? '맡김' : '고침') : S.state[k] ? '그대로' : ''}</small></button>`).join('')}</div>`;
   document.body.append(d); d.querySelector('.x').focus();
 }
 const closeSheet = () => { const d = $('#sheet'); if (d) d.remove(); };
 
+function begin() {
+  const data = S.files.some(f => kindOf(f) === 'data');
+  S.text = JSON.parse(JSON.stringify(PLAN));
+  if (S.files.includes(DRAFT)) {
+    CH.forEach((c, k) => { S.text[k + 1][1] = sentences(S.draft[k]); });
+    const empty = CH.map((c, k) => k + 1).filter(k => !S.text[k][1].length);
+    NS = [
+      ...NOTES.filter(n => n.data && data && !n.weak && String(S.text[n.s][1][n.i] || '').includes(n.bad)),
+      ...empty.map(k => { const nm = PLAN[k][0], f = data && FILL[k]; return {s:k, i:0, empty:true, say:f ? `${nm}${이(nm)} 비어 있어요. 회사 자료로 채워 봤어요.` : `${nm}${이(nm)} 비어 있어요. 한두 문장만 적어 주세요.`, ev:f ? f[1] : null, fix:f ? f[0] : null, hi:f ? f[0] : null, mood:'curious'}; }),
+      ...NOTES.filter(n => n.weak && !empty.includes(n.s)),
+    ];
+  } else NS = data ? NOTES : NOTES.filter(n => !n.data);
+  S.state = NS.map(() => null); S.at = 0; S.added = {}; S.hand = false; S.saved = false; last = null;
+  set('read');
+}
 const ACT = {
-  add() { for (const f of ['사업계획서_시험.docx', '회사자료.csv']) if (!S.files.includes(f)) S.files.push(f); S.menu = null; render(); },
+  add() { const plan = S.files.some(f => kindOf(f) === 'plan'); for (const f of plan ? ['회사자료.csv'] : ['사업계획서_시험.docx', '회사자료.csv']) if (!S.files.includes(f)) S.files.push(f); S.menu = null; render(); },
   rm(k) { S.files.splice(k, 1); if (S.stage === 'limit' && !S.files.some(f => kindOf(f) === 'plan')) return set('drop'); render(); },
   menu(k) { S.menu = S.menu === k ? null : k; render(); const m = $('.menu button'); if (m) m.focus(); },
   crit(k) { S.crit = +k; S.menu = null; render(); }, staff(k) { S.staff = +k; S.menu = null; render(); },
-  start() { if (S.files.some(f => kindOf(f) === 'plan')) { S.menu = null; set('read'); } },
-  gpt() { S.staff = 1; set('read'); }, stop() { set('drop'); }, home() { S = fresh(); set('drop'); },
-  back() { if (S.stage === 'note' || S.stage === 'done') { set('drop'); } else { S = fresh(); set('drop'); } },
-  fix() { const n = NOTES[S.at]; apply(n.fix, esc(n.fix).replace(esc(n.hi), `<span class="new nw">${esc(n.hi)}</span>`)); },
+  start() { if (S.files.some(f => kindOf(f) === 'plan')) { S.menu = null; begin(); } },
+  gpt() { S.staff = 1; begin(); }, stop() { set('drop'); }, home() { S = fresh(); set('drop'); },
+  back() { if (S.stage === 'note' || S.stage === 'done' || S.stage === 'write') { set('drop'); } else { S = fresh(); set('drop'); } },
+  write() { const k = S.draft.findIndex((t, j) => !t.trim() && !S.skip.includes(j)); S.q = k < 0 ? Math.max(0, S.draft.findIndex(t => !t.trim())) : k; S.skip = []; S.menu = null; set('write'); },
+  wjump(k) { if (busy) return; S.q = +k; S.skip = S.skip.filter(j => j !== +k); if (S.stage !== 'write') set('write'); else { stop(); render(); } },
+  wnext() { if (busy || !S.draft[S.q].trim()) return; busy = true; S.skip = S.skip.filter(j => j !== S.q); gorb.mood('happy'); wMove('ok'); },
+  wskip() { if (busy) return; busy = true; if (!S.draft[S.q].trim()) S.skip.push(S.q); gorb.mood('sleepy'); wMove(S.draft[S.q].trim() ? 'ok' : 'skip'); },
+  wlater() { const n = written(); set('drop'); if (n) toast(`쓴 ${n}장은 저장해 두었습니다`, false); },
+  fix() { const n = NS[S.at]; apply(n.fix, esc(n.fix).replace(esc(n.hi), `<span class="new nw">${esc(n.hi)}</span>`)); },
   hand() { if (busy) return; busy = true; remember('개발부에 맡겼습니다'); S.hand = true; gorb.mood('happy'); mark('ok'); leave(() => { busy = false; next(); }, 700); },
   keep, edit, editok:editOk, editno() { render(); }, all:sheet, close:closeSheet,
   jump(k) { if (busy) return; closeSheet(); S.at = +k; if (S.stage !== 'note') S.stage = app.dataset.stage = 'note'; stop(); render(); },
-  opt(k) { if (busy) return; busy = true; const n = NOTES[S.at], t = n.opts[k][1]; remember('넣었습니다'); S.added[n.s + ':' + S.at] = t; S.text[n.s][1].push(t); $('#addto').innerHTML = ` <span class="add new">${esc(t)}</span>`; gorb.mood('happy'); document.querySelector('.opts').style.opacity = .25; mark('ok'); leave(() => { busy = false; next(); }, 1350); },
+  opt(k) { if (busy) return; busy = true; const n = NS[S.at], t = n.opts[k][1]; remember('넣었습니다'); S.added[n.s + ':' + S.at] = t; S.text[n.s][1].push(t); $('#addto').innerHTML = ` <span class="add new">${esc(t)}</span>`; gorb.mood('happy'); document.querySelector('.opts').style.opacity = .25; mark('ok'); leave(() => { busy = false; next(); }, 1350); },
   save() { S.saved = true; render(); say('저장했습니다'); }, folder() { toast('시안에서는 폴더를 열지 않습니다'); },
   again() { S.at = 0; set('note'); },
 };
@@ -401,12 +513,12 @@ document.addEventListener('click', e => {
   const f = ACT[b.dataset.a]; if (f) f(b.dataset.k);
 });
 $('#undo').onclick = () => { if (!last) return; stop(); busy = false; S.state = last.state; S.text = JSON.parse(last.text); S.added = last.added; S.hand = last.hand; S.at = last.at; last = null; $('#toast').classList.remove('on'); set('note'); };
-document.querySelector('.demo').onclick = e => { const d = e.target.dataset.demo; if (!d) return; stop(); busy = false; closeSheet(); $('#toast').classList.remove('on'); S = fresh(); if (d !== 'reset') S.files = ['사업계획서_시험.docx', '회사자료.csv']; set(d === 'limit' ? 'limit' : d === 'note' ? 'note' : 'drop'); };
+document.querySelector('.demo').onclick = e => { const d = e.target.dataset.demo; if (!d) return; stop(); busy = false; closeSheet(); $('#toast').classList.remove('on'); S = fresh(); if (d === 'draft') { S.draft = CH.map((_, k) => PLAN[k + 1][1].join(' ')); S.files = [DRAFT]; } else if (d !== 'reset') S.files = ['사업계획서_시험.docx', '회사자료.csv']; set(d === 'limit' ? 'limit' : d === 'note' ? 'note' : 'drop'); };
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { if ($('#sheet')) return closeSheet(); if (S.menu) { S.menu = null; render(); } return; }
   if ($('#sheet') || S.stage !== 'note' || e.target.isContentEditable || e.ctrlKey || e.metaKey || e.altKey) return;
-  const n = NOTES[S.at];
-  if (e.key === 'Enter' && !e.target.closest('button')) { e.preventDefault(); if (n.fix) ACT.fix(); else if (n.hand) ACT.hand(); }
+  const n = NS[S.at];
+  if (e.key === 'Enter' && !e.target.closest('button')) { e.preventDefault(); if (n.fix) ACT.fix(); else if (n.hand) ACT.hand(); else if (n.empty) ACT.edit(); }
   if (e.key === 'ArrowRight') { e.preventDefault(); keep(); }
   if (e.key === 'ArrowLeft' && S.at) ACT.jump(S.at - 1);
 });
