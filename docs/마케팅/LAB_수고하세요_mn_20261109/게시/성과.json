@@ -14,6 +14,17 @@
         "화면필요": []
       },
       {
+        "계정": "lab-np-facebook",
+        "채널": "페북 @synklab.np",
+        "주소": "https://www.facebook.com/reel/2218236682384661/",
+        "형식": "facebook-reels",
+        "게시": "2026-11-25T07:15:38.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-facebook",
         "채널": "페북 @synkworld",
         "주소": "https://www.facebook.com/reel/2589174838222409/",
@@ -428,6 +439,17 @@
             "completionRatePct": 19.9
           }
         }
+      },
+      {
+        "계정": "lab-kg-youtube",
+        "채널": "유튜브 @synklabkyrgyzstan",
+        "주소": "https://www.youtube.com/watch?v=OTAfEfLWVS8",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-25T07:00:32.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
       },
       {
         "계정": "lab-my-youtube",
