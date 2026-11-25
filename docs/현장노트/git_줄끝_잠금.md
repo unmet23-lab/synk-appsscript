@@ -155,6 +155,12 @@ ode_modules`로 끊고 공용 `node_modules`가 남았는지 본 뒤, 커밋이 
 - **고침:** 시험을 건너뛰지 않고 PowerShell `New-Item -ItemType Junction`으로 사본의 `experiences/solo-backup-rust/engine/node_modules`를 공용 작업본의 같은 폴더에 이었다. `--시험건너뜀`은 예약 회차의 자동 판정기가 막았다.
 - **다시 확인:** 이은 뒤 `node --test experiences/solo-backup-rust/engine/tests/engine-select.test.cjs`가 13/13이고, 같은 올리기가 멈추지 않고 올라갔다. `들기`가 이 연결도 만들게 고치면 이 절은 지운다.
 
+### 공용 `.git/config`에 `core.sparseCheckout=true`가 들어가면, sparse가 아닌 워크트리의 바로올리기가 「가볍게로 뺀 자리의 바뀐 파일을 꺼내지 못했다」로 멈춘다 (2026-11-25 Claude)
+- 증상: 11-25 10시 앱 회차 사본(D: 워크트리)에서 `바로올리기 --모두`가 「가볍게로 뺀 자리의 바뀐 파일 58개를 꺼내지 못했다 — fatal: unable to load existing sparse-checkout patterns」로 멈췄다. 같은 사본에서 07시대 올리기는 됐다.
+- 원인: 공용 `.git/config`(그날 08:22에 바뀜)에 `core.sparseCheckout=true`가 들어 있었다. `extensions.worktreeConfig=true`라 sparse 설정은 워크트리마다 `config.worktree`에 있어야 한다. 공용 설정에 있으면 sparse 파일이 없는 워크트리도 모두 이 값을 물려받는다. 바로올리기(`tools/lib/git-publish-core.cjs` 「가린자리꺼내기」)는 이 값이 true면 `git sparse-checkout add`를 부르고, sparse 파일이 없는 사본에서 git이 거절한다. 공용 작업본도 `git sparse-checkout list`가 「this worktree is not sparse」였다. 누가 넣었는지는 확인하지 못했다.
+- 고침: 그 사본에서 `git config --worktree core.sparseCheckout false`를 하고 다시 올렸다. 다른 세션의 가볍게 사본이 기대는지 몰라 공용 설정은 건드리지 않았다.
+- 다시 확인: 그 사본에서 `git config --get core.sparseCheckout`이 false로 나오고, 같은 올리기가 이 단계를 넘었다.
+
 ## 줄끝(CRLF·LF)
 
 ### 작업본이 CRLF인 문서로 「HEAD 판 + 내 줄」을 만들면 제목 비교가 전부 어긋난다

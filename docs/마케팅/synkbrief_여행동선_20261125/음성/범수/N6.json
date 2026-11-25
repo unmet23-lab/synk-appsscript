@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N6",
+ "text": "이 한 줄을 빼면, 먼 곳까지 다 넣어서 하루 일정이 꽉 차요.",
+ "dur": 3.121,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.05,
+   "end": 0.063
+  },
+  {
+   "text": "한",
+   "start": 0.117,
+   "end": 0.211
+  },
+  {
+   "text": "줄을",
+   "start": 0.252,
+   "end": 0.427
+  },
+  {
+   "text": "빼면,",
+   "start": 0.467,
+   "end": 0.804
+  },
+  {
+   "text": "먼",
+   "start": 0.912,
+   "end": 1.046
+  },
+  {
+   "text": "곳까지",
+   "start": 1.1,
+   "end": 1.396
+  },
+  {
+   "text": "다",
+   "start": 1.45,
+   "end": 1.545
+  },
+  {
+   "text": "넣어서",
+   "start": 1.612,
+   "end": 1.881
+  },
+  {
+   "text": "하루",
+   "start": 2.056,
+   "end": 2.218
+  },
+  {
+   "text": "일정이",
+   "start": 2.258,
+   "end": 2.501
+  },
+  {
+   "text": "꽉",
+   "start": 2.541,
+   "end": 2.676
+  },
+  {
+   "text": "차요.",
+   "start": 2.716,
+   "end": 3.121
+  }
+ ],
+ "source": {
+  "key": "56fd0e8c6e3066d6d115d19cb0ff9707",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

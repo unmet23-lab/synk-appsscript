@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N3",
+ "text": "다 못 넣는 곳은, 까닭까지 달아서 빼 줬고요.",
+ "dur": 2.492,
+ "words": [
+  {
+   "text": "다",
+   "start": 0.03,
+   "end": 0.097
+  },
+  {
+   "text": "못",
+   "start": 0.179,
+   "end": 0.287
+  },
+  {
+   "text": "넣는",
+   "start": 0.328,
+   "end": 0.518
+  },
+  {
+   "text": "곳은,",
+   "start": 0.558,
+   "end": 0.802
+  },
+  {
+   "text": "까닭까지",
+   "start": 1.196,
+   "end": 1.616
+  },
+  {
+   "text": "달아서",
+   "start": 1.656,
+   "end": 1.914
+  },
+  {
+   "text": "빼",
+   "start": 1.955,
+   "end": 2.05
+  },
+  {
+   "text": "줬고요.",
+   "start": 2.09,
+   "end": 2.492
+  }
+ ],
+ "source": {
+  "key": "0f57b67dc277f2034f4cd3f2ac173edf",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

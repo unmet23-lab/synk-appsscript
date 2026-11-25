@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N9",
+ "text": "지도가 안 나오면, 지도로도 보여 줘, 이렇게 이어서 보내 보세요.",
+ "dur": 3.368,
+ "words": [
+  {
+   "text": "지도가",
+   "start": 0.02,
+   "end": 0.306
+  },
+  {
+   "text": "안",
+   "start": 0.354,
+   "end": 0.417
+  },
+  {
+   "text": "나오면,",
+   "start": 0.465,
+   "end": 0.894
+  },
+  {
+   "text": "지도로도",
+   "start": 1.133,
+   "end": 1.498
+  },
+  {
+   "text": "보여",
+   "start": 1.546,
+   "end": 1.705
+  },
+  {
+   "text": "줘,",
+   "start": 1.753,
+   "end": 1.816
+  },
+  {
+   "text": "이렇게",
+   "start": 2.214,
+   "end": 2.437
+  },
+  {
+   "text": "이어서",
+   "start": 2.516,
+   "end": 2.723
+  },
+  {
+   "text": "보내",
+   "start": 2.77,
+   "end": 2.914
+  },
+  {
+   "text": "보세요.",
+   "start": 2.961,
+   "end": 3.368
+  }
+ ],
+ "source": {
+  "key": "ead699f3c8afad043be0eaaee2f11c01",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}

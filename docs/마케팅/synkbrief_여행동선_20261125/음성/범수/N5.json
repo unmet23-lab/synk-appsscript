@@ -1,0 +1,100 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N5",
+ "text": "붙일 한 줄은 이거예요. 하루에 세 곳만, 이동은 삼십 분 안으로 묶어 줘.",
+ "dur": 4.131,
+ "words": [
+  {
+   "text": "붙일",
+   "start": 0.02,
+   "end": 0.261
+  },
+  {
+   "text": "한",
+   "start": 0.321,
+   "end": 0.381
+  },
+  {
+   "text": "줄은",
+   "start": 0.441,
+   "end": 0.602
+  },
+  {
+   "text": "이거예요.",
+   "start": 0.662,
+   "end": 1.023
+  },
+  {
+   "text": "하루에",
+   "start": 1.524,
+   "end": 1.724
+  },
+  {
+   "text": "세",
+   "start": 1.784,
+   "end": 1.865
+  },
+  {
+   "text": "곳만,",
+   "start": 1.925,
+   "end": 2.225
+  },
+  {
+   "text": "이동은",
+   "start": 2.727,
+   "end": 2.967
+  },
+  {
+   "text": "삼십",
+   "start": 3.027,
+   "end": 3.208
+  },
+  {
+   "text": "분",
+   "start": 3.268,
+   "end": 3.328
+  },
+  {
+   "text": "안으로",
+   "start": 3.388,
+   "end": 3.569
+  },
+  {
+   "text": "묶어",
+   "start": 3.629,
+   "end": 3.829
+  },
+  {
+   "text": "줘.",
+   "start": 3.889,
+   "end": 4.131
+  }
+ ],
+ "source": {
+  "key": "ea9be1f18a256437d140ad5b7651911f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N1a",
+ "text": "가고 싶은 곳이, 날짜별 동선 지도로 나왔어요.",
+ "dur": 2.34,
+ "words": [
+  {
+   "text": "가고",
+   "start": 0.05,
+   "end": 0.216
+  },
+  {
+   "text": "싶은",
+   "start": 0.271,
+   "end": 0.464
+  },
+  {
+   "text": "곳이,",
+   "start": 0.506,
+   "end": 0.685
+  },
+  {
+   "text": "날짜별",
+   "start": 0.85,
+   "end": 1.209
+  },
+  {
+   "text": "동선",
+   "start": 1.25,
+   "end": 1.499
+  },
+  {
+   "text": "지도로",
+   "start": 1.54,
+   "end": 1.733
+  },
+  {
+   "text": "나왔어요.",
+   "start": 1.775,
+   "end": 2.34
+  }
+ ],
+ "source": {
+  "key": "3615eff1656a2b1a573eb12362aab896",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

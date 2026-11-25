@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N8",
+ "text": "여행 가기 전에, 도시만 바꿔서 붙여 보세요.",
+ "dur": 2.782,
+ "words": [
+  {
+   "text": "여행",
+   "start": 0.02,
+   "end": 0.222
+  },
+  {
+   "text": "가기",
+   "start": 0.282,
+   "end": 0.443
+  },
+  {
+   "text": "전에,",
+   "start": 0.503,
+   "end": 0.725
+  },
+  {
+   "text": "도시만",
+   "start": 1.248,
+   "end": 1.59
+  },
+  {
+   "text": "바꿔서",
+   "start": 1.65,
+   "end": 1.972
+  },
+  {
+   "text": "붙여",
+   "start": 2.033,
+   "end": 2.214
+  },
+  {
+   "text": "보세요.",
+   "start": 2.274,
+   "end": 2.782
+  }
+ ],
+ "source": {
+  "key": "0b0933b358a950167e947d0e30e0f93a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

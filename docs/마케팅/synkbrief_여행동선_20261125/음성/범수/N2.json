@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N2",
+ "text": "첫날은 해운대 쪽, 둘째 날은 남포동 쪽, 셋째 날은 영도 쪽.",
+ "dur": 3.766,
+ "words": [
+  {
+   "text": "첫날은",
+   "start": 0.02,
+   "end": 0.412
+  },
+  {
+   "text": "해운대",
+   "start": 0.457,
+   "end": 0.713
+  },
+  {
+   "text": "쪽,",
+   "start": 0.773,
+   "end": 1.014
+  },
+  {
+   "text": "둘째",
+   "start": 1.375,
+   "end": 1.601
+  },
+  {
+   "text": "날은",
+   "start": 1.691,
+   "end": 1.887
+  },
+  {
+   "text": "남포동",
+   "start": 1.932,
+   "end": 2.278
+  },
+  {
+   "text": "쪽,",
+   "start": 2.323,
+   "end": 2.519
+  },
+  {
+   "text": "셋째",
+   "start": 2.745,
+   "end": 2.955
+  },
+  {
+   "text": "날은",
+   "start": 3.031,
+   "end": 3.211
+  },
+  {
+   "text": "영도",
+   "start": 3.256,
+   "end": 3.452
+  },
+  {
+   "text": "쪽.",
+   "start": 3.527,
+   "end": 3.766
+  }
+ ],
+ "source": {
+  "key": "a8f1b72d6120ba48d3240e848619aa45",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

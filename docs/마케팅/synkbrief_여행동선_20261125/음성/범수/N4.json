@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N4",
+ "text": "카카오맵 자동차 길찾기로 다시 재 보니, 구간마다 다 삼십 분 안이었어요.",
+ "dur": 3.81,
+ "words": [
+  {
+   "text": "카카오맵",
+   "start": 0.06,
+   "end": 0.491
+  },
+  {
+   "text": "자동차",
+   "start": 0.536,
+   "end": 0.863
+  },
+  {
+   "text": "길찾기로",
+   "start": 0.923,
+   "end": 1.339
+  },
+  {
+   "text": "다시",
+   "start": 1.384,
+   "end": 1.563
+  },
+  {
+   "text": "재",
+   "start": 1.607,
+   "end": 1.667
+  },
+  {
+   "text": "보니,",
+   "start": 1.741,
+   "end": 1.935
+  },
+  {
+   "text": "구간마다",
+   "start": 2.247,
+   "end": 2.634
+  },
+  {
+   "text": "다",
+   "start": 2.679,
+   "end": 2.753
+  },
+  {
+   "text": "삼십",
+   "start": 2.813,
+   "end": 3.021
+  },
+  {
+   "text": "분",
+   "start": 3.066,
+   "end": 3.14
+  },
+  {
+   "text": "안이었어요.",
+   "start": 3.2,
+   "end": 3.81
+  }
+ ],
+ "source": {
+  "key": "11da70d7951136b7d1f9b8767d7e682a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N1b",
+ "text": "목록을 몽땅 붙이고, 한 줄만 더했거든요.",
+ "dur": 2.44,
+ "words": [
+  {
+   "text": "목록을",
+   "start": 0.02,
+   "end": 0.338
+  },
+  {
+   "text": "몽땅",
+   "start": 0.384,
+   "end": 0.656
+  },
+  {
+   "text": "붙이고,",
+   "start": 0.702,
+   "end": 1.02
+  },
+  {
+   "text": "한",
+   "start": 1.353,
+   "end": 1.444
+  },
+  {
+   "text": "줄만",
+   "start": 1.489,
+   "end": 1.731
+  },
+  {
+   "text": "더했거든요.",
+   "start": 1.777,
+   "end": 2.44
+  }
+ ],
+ "source": {
+  "key": "3fed6278f2afc6b46bfcd9f1fe376ac8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1125,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}

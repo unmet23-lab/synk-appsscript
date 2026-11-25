@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1125,
+  "lufs": -17
+ },
+ "made": "2026-11-25T00:57:32.262Z",
+ "lines": [
+  {
+   "id": "N1a",
+   "text": "가고 싶은 곳이, 날짜별 동선 지도로 나왔어요.",
+   "dur": 2.34,
+   "syllablesPerSec": 7.69,
+   "src": "N1a.wav",
+   "key": "3615eff1656a2b1a573eb12362aab896",
+   "words": 7
+  },
+  {
+   "id": "N1b",
+   "text": "목록을 몽땅 붙이고, 한 줄만 더했거든요.",
+   "dur": 2.44,
+   "syllablesPerSec": 6.56,
+   "src": "N1b.wav",
+   "key": "3fed6278f2afc6b46bfcd9f1fe376ac8",
+   "words": 6
+  },
+  {
+   "id": "N2",
+   "text": "첫날은 해운대 쪽, 둘째 날은 남포동 쪽, 셋째 날은 영도 쪽.",
+   "dur": 3.766,
+   "syllablesPerSec": 5.84,
+   "src": "N2.wav",
+   "key": "a8f1b72d6120ba48d3240e848619aa45",
+   "words": 11
+  },
+  {
+   "id": "N3",
+   "text": "다 못 넣는 곳은, 까닭까지 달아서 빼 줬고요.",
+   "dur": 2.492,
+   "syllablesPerSec": 6.82,
+   "src": "N3.wav",
+   "key": "0f57b67dc277f2034f4cd3f2ac173edf",
+   "words": 8
+  },
+  {
+   "id": "N4",
+   "text": "카카오맵 자동차 길찾기로 다시 재 보니, 구간마다 다 삼십 분 안이었어요.",
+   "dur": 3.81,
+   "syllablesPerSec": 7.61,
+   "src": "N4.wav",
+   "key": "11da70d7951136b7d1f9b8767d7e682a",
+   "words": 11
+  },
+  {
+   "id": "N6",
+   "text": "이 한 줄을 빼면, 먼 곳까지 다 넣어서 하루 일정이 꽉 차요.",
+   "dur": 3.121,
+   "syllablesPerSec": 7.05,
+   "src": "N6.wav",
+   "key": "56fd0e8c6e3066d6d115d19cb0ff9707",
+   "words": 12
+  },
+  {
+   "id": "N5",
+   "text": "붙일 한 줄은 이거예요. 하루에 세 곳만, 이동은 삼십 분 안으로 묶어 줘.",
+   "dur": 4.131,
+   "syllablesPerSec": 6.54,
+   "src": "N5.wav",
+   "key": "ea9be1f18a256437d140ad5b7651911f",
+   "words": 13
+  },
+  {
+   "id": "N8",
+   "text": "여행 가기 전에, 도시만 바꿔서 붙여 보세요.",
+   "dur": 2.782,
+   "syllablesPerSec": 6.11,
+   "src": "N8.wav",
+   "key": "0b0933b358a950167e947d0e30e0f93a",
+   "words": 7
+  },
+  {
+   "id": "N9",
+   "text": "지도가 안 나오면, 지도로도 보여 줘, 이렇게 이어서 보내 보세요.",
+   "dur": 3.368,
+   "syllablesPerSec": 7.42,
+   "src": "N9.wav",
+   "key": "ead699f3c8afad043be0eaaee2f11c01",
+   "words": 10
+  }
+ ]
+}
