@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, bright clear late-morning daylight, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny felt shopping street seen straight from the front, at street level.
+- The TOP 36% of the image is a plain, soft pale-blue felt sky with nothing in it — keep it empty for titles.
+- THREE IDENTICAL SHOPS stand side by side in a row with small gaps, filling the width from 6% to 94%, their flat roofs at 38% and their feet at 70% of the image height. All three are EXACTLY the same, like copies of each other: the same pastel-pink felt front, the same slightly darker pink felt awning with a straight edge, the same rounded cream door in the middle, the same single round pink felt flower standing on the roof in the middle. No letters, no signs, no numbers on them.
+- The street in front is plain light warm-grey felt pavement from 70% to the bottom edge, with soft daylight shadows falling to the lower right.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle stands on the pavement in the foreground, a little LEFT of centre, centred at 36% of the image width, about 34% of the image width wide, its top at 56% and its hem at 84% of the image height, so it overlaps the lower part of the shops behind it. Mongle faces the viewer: two round glossy black bead eyes placed a little low on its face, each with a tiny highlight, calm and a bit puzzled. Its coral red is clearly deeper and redder than the pale pink shops.
+- Mongle is in crisp focus, the shops just behind are nearly in focus so it is obvious that all three are the same.
+
+Exactly ONE Mongle, nobody else, no cars, no trees, no phone, no screens, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.

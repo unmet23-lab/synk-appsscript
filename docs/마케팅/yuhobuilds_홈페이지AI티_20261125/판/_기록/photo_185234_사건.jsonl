@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a2121f-1596-7e11-aeb4-41fa2a68ad5d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one portrait photograph with the natural bouquet, cool left-side daylight, and quiet shop setting you described.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A natural red-and-white bouquet in a clear glass jar, softly lit by morning daylight on a worn oak florist’s table."}}
+{"type":"turn.completed","usage":{"input_tokens":39039,"cached_input_tokens":29440,"cache_write_input_tokens":0,"output_tokens":511,"reasoning_output_tokens":0}}

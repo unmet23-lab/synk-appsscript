@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Attached images in order: (1) the scene to edit, (2) mascot reference.
+
+EDIT image 1. Keep EVERYTHING exactly as it is — the framing, the pale-blue felt sky, the daylight, the three identical pink shops with their awnings, doors and roof flowers, the grey felt pavement, the colours, and Mongle's position, size, body shape and wool texture. Portrait 2:3, same crop.
+
+Change ONLY Mongle's eyes: the two glossy black bead eyes become a little LARGER and WIDER OPEN, placed slightly higher on its face, each with one bright tiny highlight — a surprised look, as if it just noticed that all three shops are the same. No white sclera. No eyebrows, no blush marks, no sparkles.
+
+Mongle still has NO arms, NO legs, NO hands, NO mouth. Exactly ONE Mongle. Absolutely no text, letters, numbers, symbols or watermarks anywhere.

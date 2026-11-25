@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5b",
+ "text": "거기에 가게 사진만 넣으면, 이렇게 돼요.",
+ "dur": 1.823,
+ "words": [
+  {
+   "text": "거기에",
+   "start": 0.02,
+   "end": 0.275
+  },
+  {
+   "text": "가게",
+   "start": 0.351,
+   "end": 0.543
+  },
+  {
+   "text": "사진만",
+   "start": 0.581,
+   "end": 0.888
+  },
+  {
+   "text": "넣으면,",
+   "start": 0.926,
+   "end": 1.232
+  },
+  {
+   "text": "이렇게",
+   "start": 1.283,
+   "end": 1.488
+  },
+  {
+   "text": "돼요.",
+   "start": 1.526,
+   "end": 1.823
+  }
+ ],
+ "source": {
+  "key": "181c680110fb4c93dbd0d901abe8fcae",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 128
+ }
+}

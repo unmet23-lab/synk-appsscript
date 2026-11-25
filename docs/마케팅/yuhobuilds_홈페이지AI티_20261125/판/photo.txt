@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a real-looking editorial photograph for a small neighbourhood florist's website, portrait 2:3.
+
+SCENE: one generous hand-tied bouquet stands upright in a simple clear glass jar on a worn pale-oak work table in a small flower shop. The bouquet is loose and natural, not a perfect ball: deep red ranunculus and red garden roses, a few white anemones with dark centres, and long soft green stems and eucalyptus leaves that reach up and to the sides. A short length of undyed twine and a pair of plain black florist scissors lie on the table beside the jar, with two cut stems and one fallen red petal.
+- Background: a plain off-white plaster wall, slightly out of focus, with a soft diagonal window shadow. Nothing hangs on the wall.
+- Light: soft cool morning daylight from a tall window on the LEFT, so the right side of the bouquet falls into gentle shadow. Real shadows on the table. True-to-life colours, slightly muted, no filter.
+- Camera: straight on at flower height, 50 mm lens look, shallow depth of field, the front flowers in crisp focus, fine film grain.
+- The bouquet fills the middle of the frame: flower heads between 18% and 62% of the image height, the jar down to 84%, the table edge at the bottom. Leave a little plain wall above.
+
+No people, no hands, no text, no letters, no numbers, no labels, no logos, no watermark anywhere. No pink walls, no emoji, no illustration look — it must look like a photograph taken in a real shop.

@@ -1,72 +1,72 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "V2",
- "text": "꽃집 홈페이지를 세 번 맡겼더니, 세 번 다 같은 분홍에 이모지 카드였어요.",
- "dur": 3.655,
+ "text": "꽃집 홈페이지를 세 번 맡겼더니, 세 번 다 같은 분홍에 카드 상자였어요.",
+ "dur": 3.519,
  "words": [
   {
    "text": "꽃집",
-   "start": 0.03,
-   "end": 0.27
+   "start": 0.05,
+   "end": 0.279
   },
   {
    "text": "홈페이지를",
-   "start": 0.308,
-   "end": 0.736
+   "start": 0.339,
+   "end": 0.773
   },
   {
    "text": "세",
-   "start": 0.774,
-   "end": 0.837
+   "start": 0.809,
+   "end": 0.869
   },
   {
    "text": "번",
-   "start": 0.875,
-   "end": 0.963
+   "start": 0.918,
+   "end": 1.014
   },
   {
    "text": "맡겼더니,",
-   "start": 1.001,
-   "end": 1.417
+   "start": 1.05,
+   "end": 1.472
   },
   {
    "text": "세",
-   "start": 1.809,
-   "end": 1.872
+   "start": 1.761,
+   "end": 1.833
   },
   {
    "text": "번",
-   "start": 1.922,
-   "end": 2.011
+   "start": 1.881,
+   "end": 1.966
   },
   {
    "text": "다",
-   "start": 2.048,
-   "end": 2.099
+   "start": 2.002,
+   "end": 2.038
   },
   {
    "text": "같은",
-   "start": 2.149,
-   "end": 2.376
+   "start": 2.098,
+   "end": 2.328
   },
   {
    "text": "분홍에",
-   "start": 2.413,
-   "end": 2.691
+   "start": 2.364,
+   "end": 2.605
   },
   {
-   "text": "이모지",
-   "start": 2.792,
-   "end": 3.007
+   "text": "카드",
+   "start": 2.701,
+   "end": 2.845
   },
   {
-   "text": "카드였어요.",
-   "start": 3.044,
-   "end": 3.655
+   "text": "상자였어요.",
+   "start": 2.894,
+   "end": 3.519
   }
  ],
  "source": {
-  "key": "b84b43d1631af7cb1dc8d1d6028b05ba",
+  "key": "36d5df0a36c973eec3df68b8ce4725f2",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -90,6 +90,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 167
+  "topPitchHz": 148
  }
 }

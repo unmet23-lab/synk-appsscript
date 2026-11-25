@@ -15,7 +15,7 @@
   "seed": 2103,
   "lufs": -17
  },
- "made": "2026-11-25T00:13:59.177Z",
+ "made": "2026-11-25T10:05:55.845Z",
  "lines": [
   {
    "id": "P1",
@@ -28,11 +28,11 @@
   },
   {
    "id": "V2",
-   "text": "꽃집 홈페이지를 세 번 맡겼더니, 세 번 다 같은 분홍에 이모지 카드였어요.",
-   "dur": 3.655,
-   "syllablesPerSec": 7.93,
+   "text": "꽃집 홈페이지를 세 번 맡겼더니, 세 번 다 같은 분홍에 카드 상자였어요.",
+   "dur": 3.519,
+   "syllablesPerSec": 7.96,
    "src": "V2.wav",
-   "key": "b84b43d1631af7cb1dc8d1d6028b05ba",
+   "key": "36d5df0a36c973eec3df68b8ce4725f2",
    "words": 12
   },
   {
@@ -70,6 +70,15 @@
    "src": "V5.wav",
    "key": "7289018b9aa1f64c95023eab0a3a46f9",
    "words": 10
+  },
+  {
+   "id": "V5b",
+   "text": "거기에 가게 사진만 넣으면, 이렇게 돼요.",
+   "dur": 1.823,
+   "syllablesPerSec": 8.78,
+   "src": "V5b.wav",
+   "key": "181c680110fb4c93dbd0d901abe8fcae",
+   "words": 6
   },
   {
    "id": "P2",

@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, bright clear late-morning daylight, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny felt shopping street seen straight from the front, at street level, closer than a wide shot.
+- The TOP 36% of the image is a plain, soft pale-blue felt sky with nothing in it — keep it empty for titles.
+- THE ONE WHITE SHOP: in the middle-left, from 14% to 66% of the image width, one clean white felt shop front with a flat roof at 38% and its foot at 72% of the image height. It is simple and elegant: plain white walls, one thin straight black felt line under the roof, one plain deep-red door on the right side of the shop, and ONE big square window on the left with a generous felt bouquet of deep red flowers, a few white flowers and green leaves standing inside it. No awning, no flower on the roof, nothing else.
+- At both outer edges of the image, slightly blurred and partly cut off, stand the neighbouring pastel-pink shops with their pink awnings — they only show a little so the white shop clearly stands out.
+- The street in front is plain light warm-grey felt pavement from 72% to the bottom edge, with soft daylight shadows falling to the lower right.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle stands on the pavement in the foreground on the RIGHT, centred at 70% of the image width, about 32% of the image width wide, its top at 56% and its hem at 84% of the image height, facing the viewer: two round glossy black bead eyes, open, each with a tiny highlight, calm and pleased. Mongle does not cover the window with the bouquet.
+- Keep Mongle and the white shop's window between 10% and 88% of the image width.
+
+Exactly ONE Mongle, nobody else, no cars, no trees, no phone, no screens, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.
