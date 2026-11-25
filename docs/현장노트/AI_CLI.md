@@ -1980,17 +1980,18 @@
 - 판단 쪽 첫 회차(11-16 12:06, 구독, 생각 깊이 high, 지도 · 장면 판 지시문)는 세 줄에 추정 1.37달러였다(10-22 뒤 크레딧 회차 평균 5.8달러). 이 회차에서 카드 커밋(`참고카드_커밋.js` → 바로올리기의 관련 시험)이 명령 한도 10분을 다 써서 텔레그램이 12:20에야 갔고 「커밋 결과를 읽지 못함」이 붙었다(커밋 `8358b065a`는 origin에 올라가 있었다). 그래서 실행기가 텔레그램을 카드 커밋보다 먼저 보내게 바꿨다.
 - 11-17부터는 그림을 열었는지를 사람이 다음 공유까지 기다려 보지 않는다. 판단 실행기(`tools/크레딧작업/팁적용안.js`의 `받기그림확인`)가 회차마다 그 줄들을 받던 동안(첫 `intake.json` 20분 전부터 마지막 것 1분 뒤까지)의 `tool vision_analyze completed` 줄을 센다. 한 번이라도 있으면 텔레그램 「확인할 것」에 알리고, 실행 기록 JSON에 `받기그림` 수를 남긴다. 실제 기록으로 시험하니 고치기 전 공유를 11-16 02:55에 7번, 11-15 밤 두 건에 12번과 24번으로 셌다. 알림이 오면 이 절의 원인부터 다시 본다.
 
-### 휴대폰에서 맡긴 작업이 11-04부터 모두 준비 단계에서 끝났다 — npm 용량 검사가 2분을 넘기고, 공용 장부가 1분마다 바뀌었다 (2026-11-25 Claude)
-- 증상: `/synk_claude`로 맡긴 작업 네 건(11-04, 11-14 두 건, 11-23)이 모두 `launch_failed`였다. 실패 코드는 `SECRET_OR_EMBEDDED_MEDIA`, `GIT_FAILED`, `SOURCE_CHANGED`, `STORAGE_GUARD_FAILED`였다. 첫 건은 11-14에 고친 base64 규칙 앞의 일이다.
-- 원인: 용량 검사를 `npm run check:storage`로 부르면 이 PC에서 2분 8초가 걸렸다. 검사 자체는 32초였고, 나머지는 npm 시작 시간이었다. 제한이 2분이라 검사가 끊겼다. 그 고비를 넘겨도 공용 작업본의 `docs/_ops/트랙.md` · `결정.md`가 1분에 한 번꼴로 바뀌고 HEAD도 움직여서, 캡처 뒤 다시 보는 확인이 세 번 다 `SOURCE_CHANGED`로 끝났다. 느린 PC에서는 git이 제한을 넘겨 `GIT_FAILED`로도 보였다.
-- 고침: `tools/hermes-synk/workspace.cjs`가 package.json에 적힌 같은 검사를 node로 바로 부른다. 준비 제한은 300초, 플러그인 대기는 360초다. 시간 초과는 `PREPARATION_TIME_LIMIT`으로 적는다. 캡처 뒤의 두 확인은 두 장부와 HEAD의 변화를 넘긴다. 첫 캡처와 다른 파일의 변화는 지금처럼 엄격하다([README](../../tools/hermes-synk/README.md#workspace-prepare-1125)).
-- 다시 확인: 공용 작업본에서 `node tools/hermes-synk/workspace.cjs prepare --repo C:/Users/q1212/Documents/SYNK-appsscript --task-dir <임시폴더>/synk-<12자 16진수> --task-id synk-<같은 값>`이 `"state":"ready"`를 내는지 본다(11-25에 62초). 다 보면 `git worktree remove --force <임시폴더>/…/workspace`로 치운다.
+### 휴대폰에서 맡긴 작업의 준비가 시간 제한이나 바뀌는 원본 때문에 끊긴다 (2026-11-25 Claude · 저녁 정정)
+- 증상: 11월에 맡긴 다섯 건 가운데 네 건이 `launch_failed`였다(11-04 `SECRET_OR_EMBEDDED_MEDIA`, 11-14 `GIT_FAILED`와 `SOURCE_CHANGED`, 11-23 `STORAGE_GUARD_FAILED`). 11-14 20:40의 Codex 한 건은 끝까지 돌았다. 10-21에도 `SECRET_OR_EMBEDDED_MEDIA`가 한 건 있다.
+- 원인: 11-23 것은 용량 검사 시작 121초 뒤에 났고 그때 제한이 120초였다. 11-14 `GIT_FAILED`는 요청 151초 뒤에 났고 그때 전체 제한이 150초여서 시간 제한으로 추정한다. `SOURCE_CHANGED`는 준비하는 사이 원본이 바뀐 것인데 어느 파일인지 기록이 없다. `SECRET_OR_EMBEDDED_MEDIA`의 원인은 모른다.
+- 고침: 전체 제한 300초, 한 명령의 제한 240초, 플러그인 대기 360초로 늘렸다. 캡처 뒤의 두 확인은 트랙 · 결정 장부와 HEAD의 변화를 넘긴다. 용량 검사는 npm 없이 바로 부른다([README](../../tools/hermes-synk/README.md#workspace-prepare-1125)).
+- 틀렸던 진단: 아침에는 「npm 시작이 1분 반을 먹는다」고 적었다. PC가 바쁠 때 npm으로 한 번 잰 128초와, 캐시가 데워진 뒤 직접 한 번 잰 32초를 견준 탓이다. 번갈아 세 번씩 재니 직접 9~19초, npm 12~90초였다. 느린 원인을 적기 전에 번갈아 여러 번 잰다. 커밋 `0917888115`의 건너뛴 까닭에 적은 「workspace 31 통과」도 통째로 돌린 값이 아니었다. 전체를 돌리니 30개가 통과했고, 그 커밋에서 새로 넣은 시험 하나가 시험 속 60초 제한 때문에 실패해 고쳤다.
+- 다시 확인: 공용 작업본에서 `node tools/hermes-synk/workspace.cjs prepare --repo C:/Users/q1212/Documents/SYNK-appsscript --task-dir <임시폴더>/synk-<12자 16진수> --task-id synk-<같은 값>`이 `"state":"ready"`를 내는지 본다. 11-25에는 다섯 번 가운데 네 번 `ready`였고(62~108초), 한 번은 CPU가 100%일 때 300초 제한에 걸렸다. 실패해도 작업본이 남을 수 있으니 `git worktree list`를 보고 `git worktree remove --force <임시폴더>/…/workspace`로 치운다.
 
-### 감시 알림이 하루 일곱 통씩 소리를 내며 왔다 — 하루 한 번 무음 묶음으로 바꾸고 원인 · 해결을 붙였다 (2026-11-25 Claude)
-- 증상: 11-10~11-24에 감시 알림이 101통 왔다. 가장 많은 것은 「운영 사본 갱신이 멈춤」 27통과 팁 처리 16통이었다. 같은 사건이 하룻밤에 몇 번씩 새로 왔다.
-- 원인: 감시는 사건이 생기는 대로 보냈다. Hermes 예약 프로세스의 기본 발송기에는 무음 선택이 없어서 모두 소리가 났다.
-- 고침: 사건은 outbox에 두었다가 KST 09시 뒤 첫 회차에 묶음 하나로 합친다. 크레딧 작업 「알림해결」이 원인과 해결을 붙이고, `automation.py`가 Bot API에 `disable_notification`을 실어 보낸다([README](../../tools/hermes-synk/README.md#daily-silent-digest)).
-- 다시 확인: 09시 뒤 `%LOCALAPPDATA%/hermes/runtime/synk-automation/outbox`에 `digest` 칸이 있는 초안 하나가 생기는지 본다. 그다음 `runtime/synk-automation/diagnosis/<같은 id>.json`이 생기고, 초안 옆에 `.claim`과 `sent` 영수증이 생기는지 본다. 작업 기록은 운영 사본 `output/크레딧작업/알림해결/`에 있다.
+### 감시 알림이 하루 일곱 통씩 왔다 — 하루 한 번 묶음으로 바꿨다 (2026-11-25 Claude · 저녁 정정)
+- 증상: 11-10~11-24(KST)에 실제로 보낸 감시 알림이 101통이었다. 「운영 사본 갱신이 멈춤」이 든 알림이 27통, 팁 처리가 든 알림이 18통이었다. 같은 사건이 하룻밤에 몇 번씩 새로 왔다.
+- 원인: 감시는 사건이 생기는 대로 보냈다. Hermes 예약 프로세스의 기본 발송기에는 무음 선택이 없다.
+- 고침: 사건은 outbox에 두었다가 KST 09시 뒤 첫 회차에 묶음 하나로 합친다. 크레딧 작업 「알림해결」이 읽기 도구만으로 원인과 해결 방안을 붙이고, `automation.py`가 Bot API에 `disable_notification`을 실어 보낸다([README](../../tools/hermes-synk/README.md#daily-silent-digest)).
+- 다시 확인: 09시 뒤 `%LOCALAPPDATA%/hermes/runtime/synk-automation/outbox`에 `digest` 칸이 있는 초안 하나가 생기는지 본다. 그다음 `runtime/synk-automation/diagnosis/<같은 id>.json`이 생기고, 초안 옆에 `.claim`과 `sent` 영수증이 생기는지 본다. 작업 기록은 운영 사본 `output/크레딧작업/알림해결/`에 있다. 11-25에는 09시에 열린 새 사건이 없어 묶음이 없었다. 그래서 무음 발송과 진단은 아직 실제로 돈 적이 없고, 토큰 읽기와 `getMe`만 확인했다.
 
 ## Codex 예약
 
