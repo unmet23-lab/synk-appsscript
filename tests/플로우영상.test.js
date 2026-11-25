@@ -9,7 +9,7 @@ const { spawnSync } = require('node:child_process');
 const { 점검, jpg크기 } = require('../tools/플로우영상.js');
 
 const TOOL = path.join(__dirname, '..', 'tools', '플로우영상.js');
-const 공통 = 'Mongle has NO mouth, NO arms, NO legs, ever.';
+const 공통 = fs.readFileSync(path.join(__dirname, '..', 'docs', '마케팅', 'LAB_하루두편_설계_20261110', '영상_공통글.txt'), 'utf8').trim();
 
 /** 가로 · 세로만 맞춘 최소 JPEG(SOI + SOF0 + EOI) */
 function jpeg(w, h) {
@@ -63,15 +63,26 @@ test('시작 · 끝 그림이 없거나 9:16이 아니면 걸린다', () => {
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
 });
 
-test('key는 제 글에 한 번만, 다른 칸 글에는 없어야 하고, 몽글 「NO mouth」 공통 글이 있어야 한다', () => {
+test('key는 제 글에 한 번만, 다른 칸 글에는 없어야 하고, 몽글 기본 얼굴(코 · 입 없음) 글이 있어야 한다', () => {
   const { base, 편폴더 } = 편({ S1: 칸({ key: 'shock' }), S2: 칸({ key: 'missing phrase' }) },
     { 공통: 'No text.', 클립: [{ id: 'S1', prompt: 'Mongle jumps up in shock.' }, { id: 'S2', prompt: 'Friends laugh in shock.' }] });
   try {
     const r = 점검(편폴더).문제.join('\n');
     assert.match(r, /S1: key가 S2 글에도 있음/);
     assert.match(r, /S2: key가 이 칸 글에 한 번이 아님/);
-    assert.match(r, /S1: 지시문에 몽글의 「NO mouth」가 없음/);
+    assert.match(r, /S1: 지시문에 몽글의 기본 얼굴\(코 · 입 없음\) 글이 없음/);
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('영상 공통 글은 표정을 막지 않고, 「NO mouth … ever」가 든 글은 멈추지 않고 알린다(11-25 유호님)', () => {
+  const { base, 편폴더 } = 편({ S1: 칸() }, 글());
+  const 옛 = 편({ S1: 칸() }, { 공통: 'Mongle has NO mouth, NO arms, NO legs, NO hands and NO neck, ever.', 클립: 글().클립 });
+  try {
+    assert.deepEqual(점검(편폴더).알림, []);
+    const r = 점검(옛.편폴더);
+    assert.deepEqual(r.문제, []);
+    assert.match(r.알림.join('\n'), /S1: 「NO mouth … ever」가 표정을 막는다/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); fs.rmSync(옛.base, { recursive: true, force: true }); }
 });
 
 test('계획 · 지시문이 없으면 읽기 걸림만 내고, 명령줄 「점검」은 종료 1 · 맞으면 0', () => {
