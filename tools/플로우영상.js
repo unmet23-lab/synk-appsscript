@@ -16,6 +16,9 @@
  *   계획.json   { "_예산": 180, "_누적상한": <없으면 뺀다>, "<칸>": { "model": "Omni 1.2 Flash", "n": 1, "cost": "12", "dur": "4초", "proj": "omni", "start": "<시작 그림 이름>", "end": "<끝 그림 이름 — 없으면 뺀다>", "key": "<지시문 속 한 번만 나오는 구절>" } }
  *   지시문.json { "공통": "<모든 칸 뒤에 붙는 글>", "클립": [{ "id": "<칸>", "prompt": "<칸 글>" }] }
  *   시작/<start>.jpg · 시작/<end>.jpg  1080×1920(9:16) 시작 · 끝 그림 — 그 샷의 GPT 판을 맞춘 것
+ *   계획.json의 _배우는말(11-26 편부터 꼭): [{ "말": "시려", "한글": "손 시려…", "읽기": "сон сирё…", "뜻": "Гар даарч байна…", "초": 3.5, "칸": ["s04"], "음성": ["f2", "f2b"] }]
+ *     배우는 말 칸은 3.5초 넘게, 글(한글 · 읽기 · 뜻)은 초당 13자 안, 뜻은 한 줄, 목소리는 초당 3.5음절 안으로 두 번(제작 절차 「배우는 말 칸은 천천히」 — 11-26 유호님).
+ *     편 코드(remotion/src)와 목소리(public/vo의 vo.json)가 있으면 실제 at · to와 음절 빠르기까지 본다. 그래서 렌더하기 전에 점검을 한 번 더 돌린다.
  * 지키는 것: 모델은 Omni 1.2 Flash만, 값은 720p 1초 3크레딧(4초 12 · 8초 24)이라 계획 값이 「길이 × 3」이 아니면 멈춘다.
  *   접수 뒤 계정에 남을 크레딧이 1,000 밑이면 내지 않는다(실행기 FLOOR — 그 편은 정지 그림 판으로).
  *   _예산(기본 180)은 첫 굽기 계획 합의 상한이라 점검만 본다. 떨어진 샷은 계정 바닥까지 다시 굽는다(11-25 유호님 「크레딧 모자라는거 아니면 끝까지 진행해」).
@@ -31,6 +34,8 @@ const 실행기 = path.join(__dirname, '플로우영상');
 const OMNI = 'Omni 1.2 Flash';
 const 초당 = 3;
 const 기본예산 = 180;
+// 배우는 말 칸(11-26 유호님 「너무 빨라서 조금만 천천히」 → 「넣어 줘」). 글 빠르기 13자는 넷플릭스 어린이 자막 상한(여러 언어 판 — 빈칸까지 센다)이다
+const 배움 = { 시작일: '20261126', 초: 3.5, 글: 13, 음절: 3.5, 틈: 0.05 };
 
 const 슬래시 = (p) => path.resolve(p).split(path.sep).join('/');
 const 읽기 = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
@@ -82,7 +87,85 @@ function 점검(편) {
     }
   }
   if (합 > 예산) 문제.push(`계획 합 ${합}이 편 예산 ${예산}을 넘음`);
+  배움점검(편, 계획, 문제, 알림);
   return { 문제, 알림, 칸, 예산, 합 };
+}
+
+const 글자수 = (s) => [...String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim()].length;
+const 둘째자리 = (n) => Math.round(n * 100) / 100;
+
+function 파일들(뿌리, 맞음, 깊이 = 5) {
+  let 이름 = [];
+  try { 이름 = fs.readdirSync(뿌리, { withFileTypes: true }); } catch { return []; }
+  return 이름.flatMap((e) => {
+    const f = path.join(뿌리, e.name);
+    if (e.isDirectory()) return 깊이 > 0 && e.name !== 'node_modules' ? 파일들(f, 맞음, 깊이 - 1) : [];
+    return 맞음(e.name) ? [f] : [];
+  });
+}
+
+/** 편 코드에서 key가 그 말인 글 칸의 길이(초) — at · to가 숫자인 것만. 같은 말이 다시 나오면 가장 긴 칸 */
+function 코드칸초(글들, 말) {
+  const 길이 = [];
+  for (const 글 of 글들) {
+    for (const [칸글] of 글.matchAll(/\{[^{}]*\}/g)) {
+      const k = 칸글.match(/\bkey:\s*(['"`])(.*?)\1/);
+      if (!k || k[2] !== 말) continue;
+      const at = 칸글.match(/\bat:\s*(\d+(?:\.\d+)?)\s*[,}]/);
+      const to = 칸글.match(/\bto:\s*(\d+(?:\.\d+)?)\s*[,}]/);
+      if (at && to) 길이.push(Number(to[1]) - Number(at[1]));
+    }
+  }
+  return 길이.length ? Math.max(...길이) : null;
+}
+
+/** 배우는 말 칸은 천천히(제작 절차 lab-learn-pace) — 크레딧을 쓰기 전에 계획으로, 렌더 전에 편 코드와 목소리로 본다 */
+function 배움점검(편, 계획, 문제, 알림) {
+  const 날짜 = (path.basename(path.resolve(편)).match(/_(\d{8})$/) || [])[1];
+  const 말들 = 계획._배우는말;
+  if (말들 == null) {
+    if (!날짜 || 날짜 >= 배움.시작일) 문제.push('_배우는말이 없음 — 배우는 말마다 한글 · 읽기 · 뜻 · 초 · 칸 · 음성을 적는다(제작 절차 「배우는 말 칸은 천천히」)');
+    return;
+  }
+  if (!Array.isArray(말들) || !말들.length) { 문제.push('_배우는말이 빈 목록이거나 목록이 아님'); return; }
+  const 코드 = 파일들(path.join(편, 'remotion', 'src'), (n) => /\.(ts|tsx|js|jsx)$/.test(n)).map((f) => fs.readFileSync(f, 'utf8'));
+  const 목소리 = {};
+  for (const f of 파일들(path.join(편, 'remotion', 'public', 'vo'), (n) => n === 'vo.json', 2)) {
+    try { for (const l of 읽기(f).lines || []) 목소리[l.id] ||= l; } catch { 알림.push(`목소리 기록을 못 읽음: ${path.basename(path.dirname(f))}/vo.json`); }
+  }
+  for (const [i, w] of 말들.entries()) {
+    const 이름 = `배우는 말 「${(w && w.말) || i + 1}」`;
+    if (!w || !w.말 || !w.한글 || !w.뜻) { 문제.push(`${이름}: 말 · 한글 · 뜻을 적는다`); continue; }
+    const 초 = Number(w.초);
+    if (!(초 >= 배움.초)) 문제.push(`${이름}: 칸이 ${배움.초}초 넘어야 함(지금 ${w.초})`);
+    const 수 = 글자수(w.한글) + 글자수(w.읽기) + 글자수(w.뜻);
+    const 필요 = Math.ceil((수 / 배움.글) * 10) / 10;
+    if (초 > 0 && 수 / 초 > 배움.글 + 배움.틈) 문제.push(`${이름}: 글 ${수}자가 초당 ${둘째자리(수 / 초)}자 — ${배움.글}자 안이 되게 글을 줄이거나 ${필요}초로 늘림`);
+    if (/[\r\n]|\(\s*=/.test(String(w.뜻).trim())) 문제.push(`${이름}: 뜻은 한 줄만 — 둘째 줄과 「(= …)」 풀이를 뺌`);
+    const 샷들 = [].concat(w.칸 == null ? [] : w.칸);
+    const 없는 = 샷들.filter((id) => !계획[id]);
+    if (!샷들.length || 없는.length) 문제.push(`${이름}: 칸에 계획의 샷 이름을 적음${없는.length ? `(없는 샷: ${없는.join(', ')})` : ''}`);
+    else {
+      const 합 = 샷들.reduce((s, id) => s + (Number(String(계획[id].dur || '').replace(/[^0-9]/g, '')) || 0), 0);
+      if (초 > 합) 문제.push(`${이름}: ${초}초인데 샷(${샷들.join(' + ')})은 ${합}초 — 샷을 늘림`);
+    }
+    const 편초 = 코드칸초(코드, w.말);
+    if (편초 != null) {
+      if (편초 < Math.max(배움.초, 필요) - 배움.틈) 문제.push(`${이름}: 편 코드의 칸이 ${둘째자리(편초)}초 — ${Math.max(배움.초, 필요)}초 넘게`);
+    } else if (코드.length) 알림.push(`${이름}: 편 코드에서 key가 이 말인 칸의 at · to(숫자)를 못 찾음 — 칸 길이를 눈으로 잼`);
+    const 음성 = [].concat(w.음성 == null ? [] : w.음성);
+    if (음성.length < 2) 문제.push(`${이름}: 음성에 첫째와 천천히 한 번 더, 두 줄을 적음`);
+    const 빠르기 = 음성.map((id) => {
+      const l = 목소리[id];
+      if (!l) { 알림.push(`${이름}: 목소리 ${id}를 아직 못 잼(vo.json에 없음)`); return null; }
+      const 음절 = (String(l.text || '').match(/[가-힣]/g) || []).length;
+      const v = Number(l.syllablesPerSec) || (l.dur > 0 ? 음절 / l.dur : 0);
+      if (!(v > 0)) { 알림.push(`${이름}: 목소리 ${id}의 빠르기를 못 잼`); return null; }
+      if (v > 배움.음절 + 배움.틈) 문제.push(`${이름}: 목소리 ${id}가 초당 ${둘째자리(v)}음절 — ${배움.음절} 안으로`);
+      return v;
+    });
+    if (빠르기[0] && 빠르기[1] && 빠르기[1] > 빠르기[0] + 0.2) 문제.push(`${이름}: 둘째 목소리가 첫째보다 빠름(${둘째자리(빠르기[1])} > ${둘째자리(빠르기[0])}음절)`);
+  }
 }
 
 /** JPEG 머리에서 가로 · 세로 */

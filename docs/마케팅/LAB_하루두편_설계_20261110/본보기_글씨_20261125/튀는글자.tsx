@@ -15,11 +15,11 @@ const READ = '#FFE9B8';
 export type 감정 = '기쁨' | '당황' | '웃음' | '놀람' | '슬픔' | '화남' | '졸림' | '담담';
 export type 말 = {
   at: number; // 시작 초
-  to: number; // 끝 초(1.2초 넘게 — 제작 절차 「화면 글은 읽을 만큼」)
+  to: number; // 끝 초(1.2초 넘게 — 제작 절차 「화면 글은 읽을 만큼」 · 배우는 말 칸은 3.5초 넘게)
   ko: string[]; // 한글 줄(두 줄까지)
   key?: string; // 배우는 낱말(있을 때만 노랑)
   read?: string; // 읽기(키릴 · 로마자)
-  mean: string; // 뜻
+  mean: string; // 뜻 — 배우는 말 칸은 한 줄만(제작 절차 lab-learn-pace)
   x: number; // 글자 덩어리 가운데 x
   y: number; // 글자 덩어리 아래 y
   감정: 감정;
