@@ -101,11 +101,14 @@
     return u.toString();
   }
 
-  function worldUrl(lang) {
-    return `/world/?lang=${lang}`;
+  /** 1회용 체험(src/play/) 주소 — 로그인과 이 기기 기록을 쓰지 않는다. 들어온 곳은 사전예약 쪽으로 돌아올 때까지 이어 준다. */
+  function playUrl(lang, from) {
+    const q = new URLSearchParams({ lang });
+    if (from && from !== 'direct') q.set('from', from);
+    return `/reserve/play/?${q}`;
   }
 
-  const api = { pickLang, fromKey, validEmail, validate, interestRecord, buildBody, buildPayload, shareUrl, worldUrl };
+  const api = { pickLang, fromKey, validEmail, validate, interestRecord, buildBody, buildPayload, shareUrl, playUrl };
   if (typeof document === 'undefined') return api;
 
   /* ───────── 화면 ───────── */
@@ -138,7 +141,7 @@
     $$('[data-t-attr]').forEach(el => el.dataset.tAttr.split(',').forEach(pair => { const [attr, key] = pair.split(':'); if (t[key] != null) el.setAttribute(attr, t[key]); }));
     $$('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === state.lang)));
     $('#notice').hidden = !state.notice;
-    $$('[data-world]').forEach(a => a.setAttribute('href', worldUrl(state.lang)));
+    $$('[data-world]').forEach(a => a.setAttribute('href', playUrl(state.lang, state.from)));
     renderScenes();
 
     const picked = new Set($$('input[name="interest"]:checked').map(i => i.value));

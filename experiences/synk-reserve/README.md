@@ -11,6 +11,7 @@
 | 구조와 모양 | `src/index.html`, `src/reserve.css` (synk.im 새 홈 v11의 값과 마을 그림 `/assets/v11/town-road.webp`) |
 | 아래 단락의 장면 사진 | `src/img/<gate·cafeteria·fair·taeo·idol>.webp`, 동아리 친구 얼굴 `src/img/face-<seoha·taeo·yuna>.webp` — WORLD 원천 그림(seoul-arrival 정문 · 데뷔 무대, 드라마 시범판 학생 식당 · 동아리 박람회, world-front 동아리 친구)을 폭 900px로 줄인 판. 학생 식당 · 박람회는 `Documents/synk-vendor/drama-showcase-20261031`의 큰 원본(`taeo-still.png` · 칸 15 박람회)에서 줄였다. 높이는 `copy.js` 장면의 `h`이고 시험이 파일과 대조한다 |
 | 아래 단락의 실제 화면 캡처 | `src/shots/<ko·en·mn>/<name·road>.webp` (아래 「화면 캡처」) |
+| 1회용 체험 `/reserve/play/` (아래 「해 보기」) | `src/play/index.html` · `play.css` · `play.mjs` |
 | 링크 미리보기 원고 | `src/og.html` → `reserve/og.jpg` |
 | 철수한 `/lab/topik4/` 자리 | `src/lab-topik4.html` → `lab/topik4/index.html` |
 | 빌드 → `dist/` | `node experiences/synk-reserve/build.mjs` |
@@ -25,8 +26,19 @@
 | `/mn/`의 카드와 아래 링크 | `synk-mn` |
 | 옛 TOPIK 4급 반 주소(대학 · 모임 안내문의 QR과 링크 포함) | `topik4-<옛 from>`, 없으면 `lab-topik4`. 화면 위에 「TOPIK 4급 온라인 반은 열지 않기로 했습니다」를 보인다(`?notice=topik4`) |
 | 완료 판의 「친구에게 보내기」 | `friend` |
+| 1회용 체험(`/reserve/play/`)에서 온 사람 — 체험에 들어온 `from`이 있으면 그것 | `play-ep1` |
 
 게시물마다 링크를 나누려면 `?from=<영소문자 · 숫자 · 하이픈 40자까지>`를 붙인다. 언어는 `&lang=ko|en|mn`으로 고정한다. 없으면 기기 언어(몽골어 · 한국어)를 따르고, 그 밖은 영어다.
+
+## 해 보기(1회용 체험)
+
+「서울행 무료로 해 보기」와 「SYNK WORLD에서 해 보기」는 `/reserve/play/`로 간다(11-25 유호님 「지금 플레이하면 로그인 정보가 계속 이어지는데 1회성으로 플레이할수있게 바꿔줘」). 그 전에는 `/world/`로 가서 로그인과 이 기기의 기록이 이어졌다.
+
+- 이야기(`/world/seoul-arrival/`)와 1화(`/world/drama/`)는 공개된 WORLD의 틀을 그대로 열고, 이 쪽은 부모 통로(`SYNKSeoulHost` · `SYNKDramaHost`)만 둔다. WORLD 앱 셸과 계정 모듈은 받지 않는다. 그래서 로그인을 읽지 않고, 틀이 넘기는 저장은 버린다. 열 때마다 · 새로고침할 때마다 · 뒤로 올 때마다 타이틀부터 시작한다. 이름 · 얼굴 · 학생증 · 내 팬도 남지 않는다. 소리 켜고 끄기(`synk.world.seoul.sound`)만 그 기기에 남는다.
+- 통로의 꼴은 `experiences/synk-world-app/seoul-entry.mjs`의 host다. 그 host에 칸이 늘거나 1화 끝을 아는 `seoul-watch.mjs`가 바뀌면 여기도 함께 본다. 1화 끝 띠의 글은 그 파일의 TEXT와 글자가 같아야 한다(시험이 대조한다).
+- 1화는 손님 통로다. 받아쓰기 서버를 부르지 않고 녹음을 들어 보고 스스로 확인한다. 내 사진 · 동아리장 알림 · 우리 동네는 계정 기능이라 없다.
+- 들어온 곳(`from`)은 체험을 거쳐 사전예약으로 돌아올 때까지 이어진다. `from` 없이 온 사람은 `play-ep1`로 적는다.
+- 흐름 시험: `node experiences/synk-reserve/qa/체험.mjs [--폭 390x844] [--언어 ko|en|mn] [--꿈 idol|actor] [--찍기] [--라이브]`. 앞 학생의 로그인과 기록을 심어 두고, 체험이 그것을 읽지도 바꾸지도 않는지 본다.
 
 ## 등록이 가는 곳
 

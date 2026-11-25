@@ -52,8 +52,12 @@ for (const f of ['index.html', 'copy.js', 'app.js', 'reserve.css']) fs.writeFile
   for (const lang of C.LANGS) for (const { shot } of C.SCENES) if (shot) need(path.join(SRC, 'shots', lang, `${shot}.webp`), path.join(OUT, 'shots', lang, `${shot}.webp`));
 }
 
+// 1회용 체험(/reserve/play/ — 11-25). 글은 play.mjs에 있다.
+fs.mkdirSync(path.join(OUT, 'play'), { recursive: true });
+for (const f of ['index.html', 'play.css', 'play.mjs']) fs.writeFileSync(path.join(OUT, 'play', f), fs.readFileSync(path.join(SRC, 'play', f), 'utf8').replace(/\r\n/g, '\n'), 'utf8');
+
 // 2) 글꼴. 키릴 밖 글자는 SUIT(빠진 한글이 있으면 멈춤), 몽골어 화면의 라틴 · 숫자 · 키릴은 Inter Tight 둘(500 · 700).
-const pageText = ['index.html', 'copy.js', 'app.js', 'og.html'].map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('');
+const pageText = ['index.html', 'copy.js', 'app.js', 'og.html', 'play/index.html', 'play/play.mjs'].map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('');
 const chars = new Set([...ascii(), ...EXTRA]);
 for (const ch of pageText) if (ch.codePointAt(0) > 0x7e && !/[\u0400-\u04ff]/.test(ch)) chars.add(ch);
 const sans = path.join(ASSETS, 'reserve-sans.woff2');
@@ -82,6 +86,20 @@ subset(path.join(FONTS, 'InterTight/InterTight-Bold.ttf'), ascii() + EXTRA + CYR
     if (s === before) throw new Error(`index.html에서 ${f} 참조를 찾지 못했어요`);
   }
   fs.writeFileSync(html, s, 'utf8');
+  // 체험 쪽도 같은 글꼴 지문과 자기 css · js 지문을 단다.
+  const playCss = path.join(OUT, 'play/play.css'), playHtml = path.join(OUT, 'play/index.html');
+  let pc = fs.readFileSync(playCss, 'utf8'), ph = fs.readFileSync(playHtml, 'utf8');
+  for (const f of fs.readdirSync(ASSETS).filter(n => n.endsWith('.woff2'))) {
+    if (!pc.includes(`url(../assets/${f})`)) throw new Error(`play.css에서 ${f} 참조를 찾지 못했어요`);
+    pc = pc.split(`url(../assets/${f})`).join(`url(../assets/${f}?v=${sha(path.join(ASSETS, f)).slice(0, 12)})`);
+  }
+  fs.writeFileSync(playCss, pc, 'utf8');
+  for (const f of ['play.css', 'play.mjs']) {
+    const before = ph;
+    ph = ph.replace(`"${f}"`, `"${f}?v=${sha(path.join(OUT, 'play', f)).slice(0, 12)}"`);
+    if (ph === before) throw new Error(`play/index.html에서 ${f} 참조를 찾지 못했어요`);
+  }
+  fs.writeFileSync(playHtml, ph, 'utf8');
 }
 
 // 4) 철수한 TOPIK 4급 반 주소 → 사전예약으로 넘기는 쪽.

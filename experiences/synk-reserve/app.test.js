@@ -94,6 +94,37 @@ test('들어온 곳: 짧은 영소문자 이름만, 아니면 direct', () => {
   assert.equal(A.fromKey(''), 'direct');
 });
 
+test('해 보기 단추는 1회용 체험으로 간다(11-25 유호님 「1회성으로 플레이할수있게」): 언어와 들어온 곳을 이어 주고 WORLD 앱으로 바로 보내지 않는다', async () => {
+  assert.equal(A.playUrl('ko', 'direct'), '/reserve/play/?lang=ko');
+  assert.equal(A.playUrl('mn', 'synk-mn'), '/reserve/play/?lang=mn&from=synk-mn');
+  const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
+  assert.equal((html.match(/data-world href="\/reserve\/play\/\?lang=ko"/g) || []).length, 2);
+  assert.ok(!/href="\/world\//.test(html), '로그인이 이어지는 /world/로 보내는 링크가 없다');
+  const P = await import(pathToFileURL(path.join(__dirname, 'src/play/play.mjs')).href);
+  for (const [q, navs] of [['?lang=mn', ['ko-KR']], ['?lang=es', ['ko']], ['', ['en-US', 'mn-MN']], ['', ['ru-RU']], ['', []]]) assert.equal(P.pickLang(q, navs), A.pickLang(q, navs), q);
+  // 돌아가는 주소: 들어온 곳이 있으면 그대로, 없으면 이 체험에서 왔다고 적는다.
+  assert.equal(P.reserveUrl('?lang=ko&from=synk-mn', 'ko'), '/reserve/?from=synk-mn&lang=ko');
+  assert.equal(P.reserveUrl('?lang=ko', 'mn'), '/reserve/?from=play-ep1&lang=mn');
+  assert.equal(P.reserveUrl('?from=<script>', 'en'), '/reserve/?from=play-ep1&lang=en');
+});
+
+test('1회용 체험은 로그인을 읽지 않고 이 기기에 저장하지 않는다', async () => {
+  const src = fs.readFileSync(path.join(__dirname, 'src/play/play.mjs'), 'utf8');
+  for (const word of ['localStorage', 'sessionStorage', 'indexedDB', 'document.cookie', 'app-shell', 'seoul-entry.mjs\'', 'world-account', 'supabase']) assert.ok(!src.includes(word), word);
+  assert.match(src, /save\(\) \{\}/, '틀이 넘기는 저장은 버린다');
+  assert.match(src, /api\.start\(\{ at: 'title', arrival: null \}\)/, '늘 처음부터');
+  assert.ok(!/SYNKLearningHost|SYNKFrontClub|SYNKPlayHost/.test(src), '계정 기록 통로를 두지 않는다');
+  assert.match(src, /dramaEnabled: false/, '1화는 받아쓰기 서버를 부르지 않는 손님 통로');
+});
+
+test('1회용 체험의 글은 앱의 1화 끝 글과 같다', async () => {
+  for (const [name, value] of Object.entries({ location: { search: '', hostname: 'synk.im' } })) if (!(name in globalThis)) Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
+  const { seoulText } = await import(pathToFileURL(path.join(__dirname, '../synk-world-app/seoul-entry.mjs')).href);
+  const P = await import(pathToFileURL(path.join(__dirname, 'src/play/play.mjs')).href);
+  for (const key of ['dramaTitle', 'trialEnd', 'trialMore', 'reserve', 'toCrowd', 'failed']) for (const l of P.LANGS) assert.equal(P.TEXT[key][l], seoulText(key, l), `${key}.${l}`);
+  for (const [key, row] of Object.entries(P.TEXT)) for (const l of P.LANGS) assert.ok(typeof row[l] === 'string' && row[l].trim(), `${key}.${l}`);
+});
+
 test('이메일 미리 보기', () => {
   for (const ok of ['a@b.co', 'name.last+tag@example.mn']) assert.ok(A.validEmail(ok), ok);
   for (const bad of ['', 'a@b', 'a@@b.co', '.a@b.co', 'a..b@c.co', 'a@-b.co', 'a b@c.co', 'a@b.c', '홍길동@example.com', 'kimㅎ@example.com', 'аbc@example.com']) assert.ok(!A.validEmail(bad), bad);
