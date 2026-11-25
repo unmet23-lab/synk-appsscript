@@ -395,7 +395,12 @@ html.is-staff .ppl-check{display:flex;align-items:center;gap:8px}html.is-staff .
 html.is-staff #main .ppl-check input[type=checkbox]{width:18px;height:18px;min-height:0;flex:none;margin:0;padding:0}
 html.is-staff .ppl-edit-act{display:flex;gap:10px;margin-top:16px}
 html.is-staff .ppl-preview{display:grid;gap:10px;justify-items:start}
-html.is-staff .ppl-preview h2{font:600 17px/1.3 var(--st-sans);margin:0}
-html.is-staff .ppl-preview-box{width:100%;max-height:760px;overflow:auto;border:1px solid var(--st-line);background:#000;color:var(--sx-ink)}html.is-staff .ppl-preview-box :is(h1,h2,h3){color:var(--sx-ink)}
+html.is-staff .ppl-preview>h2{font:600 17px/1.3 var(--st-sans);margin:0}
+html.is-staff .ppl-preview-box{width:100%;max-height:760px;overflow:auto;border:1px solid var(--st-line);background:#000;color:var(--sx-ink)}
+/* 미리 보기 칸은 손님 방 규칙(film.css)으로 그린다. 그 파일의 초기화는 손님 화면(html.sx)에만 걸리므로 같은 값을 이 칸 안에서 다시 건다(11-25: 칩 글자가 흰 바탕에 흰 글자였다). */
+html.is-staff .ppl-preview-box{font:400 15px/1.6 var(--sx-sans);letter-spacing:-.012em;word-break:keep-all;overflow-wrap:anywhere}
+:where(html.is-staff .ppl-preview-box) button{font:inherit;color:inherit;letter-spacing:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+:where(html.is-staff .ppl-preview-box) :is(ul,ol,dl,dd,figure,h1,h2,h3,h4,p){margin:0;padding:0}
+:where(html.is-staff .ppl-preview-box) :is(h1,h2,h3,h4){font:inherit;color:inherit;letter-spacing:inherit}
 html.is-staff .ppl-foot{color:var(--st-ink-56)}
 @media (max-width:760px){html.is-staff .ppl-row{grid-template-columns:48px 1fr}html.is-staff .ppl-face{width:48px;height:48px}html.is-staff .ppl-row-act{grid-column:1/-1;justify-content:flex-start}html.is-staff .ppl-edit-grid{grid-template-columns:1fr}html.is-staff .ppl-switch{flex-direction:column;align-items:flex-start}}

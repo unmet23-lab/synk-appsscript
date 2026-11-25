@@ -162,7 +162,11 @@ test('연결: 쉬기 칸 · 단계 탭 · 알림 숫자 · 직원 CSS는 직원 
   const selectors=list=>{const out=[];let depth=0,part='';for(const ch of list){if(ch==='(')depth++;if(ch===')')depth--;if(ch===','&&!depth){out.push(part);part='';}else part+=ch;}out.push(part);return out.map(x=>x.trim()).filter(Boolean);};
   const rules=css.replace(/\/\*[\s\S]*?\*\//g,'').match(/[^{}]+(?=\{)/g).map(x=>x.trim()).filter(x=>x&&!x.startsWith('@'));
   assert.ok(rules.length>100,'규칙을 다 읽었다');
-  for(const rule of rules)for(const one of selectors(rule))assert.match(one,/^html\.is-staff\b/,`직원 화면 밖으로 새지 않는다: ${one}`);
+  // 「:where(html.is-staff …)」도 직원 화면 안이다. 우선순위만 0이라 손님 방 규칙(film.css)을 덮지 않는다(「손님 화면 미리 보기」 칸의 초기화).
+  for(const rule of rules)for(const one of selectors(rule))assert.match(one,/^(?:html\.is-staff\b|:where\(html\.is-staff\b[^(),]*\) )/,`직원 화면 밖으로 새지 않는다: ${one}`);
+  // 손님 방의 단추 초기화는 html.sx에만 걸린다. 직원 화면의 미리 보기 칸에도 같은 값을 건다(11-25: 칩 글자가 흰 바탕에 흰 글자였다).
+  const reset=/:where\(html\.sx\) button\{([^}]*)\}/.exec(read('film.css'))[1],inPreview=/:where\(html\.is-staff \.ppl-preview-box\) button\{([^}]*)\}/.exec(css)[1].split(';');
+  for(const value of reset.split(';'))assert.ok(inPreview.includes(value),`미리 보기 칸의 단추 초기화: ${value}`);
   // 13px로 올리는 것은 옛 판에서 12px이던 둘뿐 — 본문 크기를 물려받던 다른 .desk-at(브랜드 · 인물 설명 · 경고)은 줄이지 않는다(Fable F1).
   assert.ok(css.includes('html.is-staff .desk-pay .desk-at,html.is-staff .desk-progress .desk-at{font-size:13px}'));
   assert.doesNotMatch(css,/html\.is-staff \.desk \.desk-at\{/);
