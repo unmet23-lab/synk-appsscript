@@ -48,3 +48,17 @@ test('영어 사전: 손님 화면의 t() · k() 문장은 빠짐없이 있고, 
     for(const form of forms)for(const name of names(form).split(',').filter(Boolean))assert.ok(names(source).split(',').includes(name)||passes(name),`${key}: 영어에만 있는 자리표 {${name}}를 넘기지 않는 자리가 있다`);
   }
 });
+
+// 2026-11-26 정지 그림 말(결정 11-18 · 11-26): 영어는 샷마다 먼저 보이는 정지 그림을 still image로 쓴다. 서버 메일 · 알림 사전(pulse-locale.mjs)이
+// 「…」로 앱 단추 이름을 가리키면 그 영어 안내도 앱 사전의 단추 이름을 “…”로 그대로 쓴다(따옴표 없이 풀어 쓴 문장은 그대로 둔다). 한쪽만 바꾸면 메일과 앱 단추가 어긋난다.
+test('영어 사전: scene image를 쓰지 않고, 메일 · 알림이 따옴표로 부르는 단추 이름은 앱 단추와 같다',async()=>{
+  const {SERVER_DICTIONARIES}=await import('./pulse-locale.mjs');
+  const server=SERVER_DICTIONARIES.en,forms=value=>typeof value==='string'?[value]:Object.values(value);
+  for(const dict of [en,server])for(const [key,value]of Object.entries(dict))for(const form of forms(value))assert.doesNotMatch(form,/scene image/i,key);
+  let checked=0;
+  for(const [key,value]of Object.entries(server))for(const form of forms(value)){
+    if(!form.includes('“'))continue;
+    for(const [,name]of key.matchAll(/「([^」]+)」/g))if(typeof en[name]==='string'){checked++;assert.ok(form.includes('“'+en[name]+'”'),`${key}: 앱 단추 “${en[name]}”와 다르다 — ${form}`);}
+  }
+  assert.ok(checked>=10,'대조한 단추 이름 수 '+checked);
+});
