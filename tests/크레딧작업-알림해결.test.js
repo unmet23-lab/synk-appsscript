@@ -129,8 +129,14 @@ test('백업 영수증은 알림이 가리키는 것의 실패한 단계만 싣�
     감시(status, checkedAt);
     assert.equal(백업영수증(['backup-server'], 창고), '매일 백업 · 시작 2026-11-25T00:00:00Z · 끝 없음 · 지금 도는 중', 까닭);
   }
+  // 예약 실패만 본 칸, 칸이 빠진 감시, 못 읽은 감시로는 끊겼다고 하지 않는다
+  const 모름 = ['매일 백업 · 시작 2026-11-25T00:00:00Z · 끝 없음 · 도는지 확인 불가', 'retention | 보존 규칙 | 도는지 확인 불가 | 코드 없음'];
+  감시('attention', '2026-11-25T00:30:00Z');
+  assert.deepEqual(백업영수증(['backup-server'], 창고).split('\n'), 모름);
+  쓰기('backup-health.json', { schemaVersion: 1, checkedAt: '2026-11-25T00:30:00Z', components: [] });
+  assert.deepEqual(백업영수증(['backup-server'], 창고).split('\n'), 모름);
   fs.rmSync(path.join(창고, 'backup-health.json'));
-  assert.match(백업영수증(['backup-server'], 창고), /지금 도는 중$/, '감시를 못 읽으면 끊겼다고 하지 않는다');
+  assert.deepEqual(백업영수증(['backup-server'], 창고).split('\n'), 모름);
   fs.writeFileSync(path.join(창고, 'backup-status.json'), '{ 끊긴');
   assert.equal(백업영수증(['backup-server'], 창고), '');
 });

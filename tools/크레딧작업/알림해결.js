@@ -136,12 +136,14 @@ function 백업영수증(ids, 창고 = path.join(os.homedir(), 'Documents', 'SYN
   const 글 = Object.entries(영수증들).filter(([id]) => ids.includes(id)).map(([id, [이름, 파일]]) => {
     const j = JSON읽기(path.join(창고, 파일));
     if (!Array.isArray(j?.steps)) return '';
-    // PC를 다시 켜서 끊긴 회차도 영수증과 마지막 단계는 running으로 남는다. 감시가 도는 중이라고 하거나 감시가 본 뒤에 시작한 회차만 도는 것이다.
-    const 도는중 = j.status === 'running' && (칸상태.get(id) === 'running' || !(Date.parse(j.startedAt) <= Date.parse(감시?.checkedAt)));
-    const 줄 = j.steps.filter((x) => x?.status !== 'success' && !(도는중 && x?.status === 'running')).slice(0, 12)
-      .map((x) => [x?.id, x?.label, x?.status === 'running' ? '여기서 끊김' : x?.status, x?.code || '코드 없음'].map((v) => 짧게(v, 60)).join(' | '));
-    const 상태 = j.status !== 'running' ? 짧게(j.status, 40) : 도는중 ? '지금 도는 중' : '끊김';
-    return [`${이름} · 시작 ${짧게(j.startedAt, 40)} · 끝 ${짧게(j.finishedAt, 40) || '없음'} · ${상태}`, ...줄].join('\n');
+    // PC를 다시 켜서 끊긴 회차도 영수증과 마지막 단계는 running으로 남는다. 감시가 도는 중이라고 하거나 감시가 본 뒤에 시작했으면 도는 것이고,
+    // 감시가 중단이라고 한 때만 끊긴 것이다. 예약 실패만 본 칸(attention)이나 칸이 없을 때는 가릴 수 없다(따로 돌린 업무 문서 백업이 돌고 있을 수 있다).
+    const 시작 = Date.parse(j.startedAt), 본때 = Date.parse(감시?.checkedAt), 칸 = 칸상태.get(id);
+    const 판 = j.status !== 'running' ? '' : 칸 === 'running' || 시작 > 본때 ? '지금 도는 중' : 칸 === 'interrupted' ? '끊김' : '도는지 확인 불가';
+    const 단계 = { 끊김: '여기서 끊김', '도는지 확인 불가': '도는지 확인 불가' };
+    const 줄 = j.steps.filter((x) => x?.status !== 'success' && !(x?.status === 'running' && 판 === '지금 도는 중')).slice(0, 12)
+      .map((x) => [x?.id, x?.label, x?.status === 'running' ? 단계[판] || 'running' : x?.status, x?.code || '코드 없음'].map((v) => 짧게(v, 60)).join(' | '));
+    return [`${이름} · 시작 ${짧게(j.startedAt, 40)} · 끝 ${짧게(j.finishedAt, 40) || '없음'} · ${판 || 짧게(j.status, 40)}`, ...줄].join('\n');
   });
   return 가린글(글.filter(Boolean).join('\n'), 2400).trim();
 }
