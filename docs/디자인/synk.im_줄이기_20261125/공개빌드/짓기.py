@@ -52,13 +52,14 @@ L = {
         og='세 칸으로 나뉜 첫 화면. 「끝까지 책임지는 한국 유학」 마을, 「실전 AI 활용 강의」 강의장, 「브랜드를 드라마로 만드는 광고」 장면 — SYNK 홈페이지 첫 화면',
         h1='SYNK — 끝까지 책임지는 한국 유학, 실전 AI 활용 강의, 브랜드를 드라마로 만드는 광고',
         a=('끝까지 책임지는', '한국 유학'), b=('실전', 'AI 활용 강의'), c=('브랜드를 드라마로 만드는', '광고'),
-        town='집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을', hall='강사가 큰 화면을 가리키며 청중을 보고 이야기하는 강의장',
+        town='집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을', hall='강사가 청중을 보며 큰 화면을 가리키는 강의장. 화면 글은 「synk는 지금도 일합니다. 이렇게 30여 가지가 사람 없이 돕니다」',
         film='도담중공업 홍보영상의 장면', pins='한국 유학의 다섯 가지 일',
         pin=('한국어', '교실', '유학', '취업', '모임'),
         scr=('synk는 지금도 일합니다', '서울 지금', '이렇게 30여 가지가 사람 없이 돕니다'),
-        quick='바로 가기', askgo='무엇이든 물어보세요', reserve='사전예약하기', solio='솔리오 받기', news='새 소식', me='내 홈',
+        quick='바로 가기', askgo='무엇이든 물어보세요', reserve='한국 유학 사전예약', solio='솔리오 받기', news='새 소식', me='내 홈',
         foot='바닥 메뉴', founder='회사', atlas='아틀라스', privacy='개인정보처리방침', terms='이용약관', delete='데이터 삭제',
         biz=('사업자등록번호를 알려주세요.', '사업자 정보'), close='닫기',
+        pf=('한국어 연습과 솔리오를 계정 하나로 씁니다.', '혼자 일하는 사람의 AI 업무 앱 솔리오와 한국어 연습이 이 앱에 들어 있습니다.'),
         ask=('묻기', '무엇이든<br>물어보세요'), now=('소식', '최근에<br>새로 연 것'),
     ),
     'en': dict(
@@ -69,13 +70,14 @@ L = {
         og='A first screen in three panels: a town for “Study in Korea”, a lecture hall for “AI training”, and a film scene for “Advertising” — the first screen of the SYNK homepage',
         h1='SYNK — With you all the way: study in Korea. Hands-on AI training. Advertising that turns brands into drama.',
         a=('With you all the way', 'Study in Korea'), b=('Hands-on', 'AI training'), c=('Turning brands into drama', 'Advertising'),
-        town='A town where a home, a classroom, a university gate, an office and a café stand along one road', hall='A lecture hall where the speaker faces the audience and points to a large screen',
+        town='A town where a home, a classroom, a university gate, an office and a café stand along one road', hall='A lecture hall where the speaker faces the audience and points to a large screen that reads “synk is working right now. 30-plus jobs run like this on their own”',
         film='A scene from a Dodam Heavy Industries film', pins='Five parts of studying in Korea',
         pin=('Korean', 'Class', 'University', 'Job', 'Community'),
         scr=('synk is working right now', 'Seoul time', '30-plus jobs run like this on their own'),
-        quick='Quick links', askgo='Ask us anything', reserve='Reserve', solio='Get SOLIO', news='What’s new', me='My home (Korean)',
+        quick='Quick links', askgo='Ask us anything', reserve='Study in Korea pre-registration', solio='Get SOLIO', news='What’s new', me='My home (Korean)',
         foot='Footer menu', founder='Company', atlas='Atlas', privacy='Privacy policy', terms='Terms', delete='Data deletion',
         biz=('What is your business registration number?', 'Business information'), close='Close',
+        pf=('Korean practice and SOLIO on one account.', 'SOLIO, the AI work app for people who work alone, and Korean practice are both in this app.'),
         ask=('Ask', 'Ask us<br>anything'), now=('News', 'What’s<br>new'),
     ),
 }
@@ -95,6 +97,9 @@ def page(k):
     count = one(head, r'<script type="module" src="/assets/v10/visit-count\.js\?v=[0-9a-f]+"></script>')
     social = one(head, r'<script type="module" src="/social-conversion\.js\?v=[0-9a-f]+"></script>')
     moved = one(head, r"<script>\(\(\)=>\{const a=document\.documentElement\.lang.*?</script>")
+    # 열린 창 안은 home.js가 맨 위에 맞춘다. 주소 자리 맞추기가 창 안을 다시 끌어올리지 않게 한다
+    assert moved.count('if(el)el.scrollIntoView') == 1
+    moved = moved.replace('if(el)el.scrollIntoView', "if(el&&!el.closest('dialog'))el.scrollIntoView")
     site = one(head, r'<script type="module" src="/assets/v10/site\.js\?v=[0-9a-f]+"></script>')
     links = one(t, r'<div class="ask-links">.*?</div>')
     lead = one(t, r'<h2 id="ask-t">.*?</h2>\s*<p>(.*?)</p>')
@@ -107,6 +112,10 @@ def page(k):
     news, n = re.subn(r'(<summary>[^<]*<span>)\d+(</span></summary>)', rf'\g<1>{past}\g<2>', news)
     assert n == 1, ('지난 소식 수', n)
     pf = one(t, r'<section class="pf" id="platform".*?</section>')
+    # 창의 이름은 dialog가 말한다. 안쪽 구역에 같은 이름을 또 붙이지 않는다
+    pf = pf.replace(' aria-labelledby="pf-t"', '', 1)
+    assert pf.count(s['pf'][0]) == 1, '솔리오 안내 줄'
+    pf = pf.replace(*s['pf'])
     doc = one(t, r'<dialog class="doc-dialog" id="doc-dialog".*?</dialog>')
     toast = one(t, r'<div class="toast" id="toast"[^>]*></div>')
     client = one(t, r'<script defer src="/desktop/releases/client\.js\?v=[0-9a-f]+"></script>')
@@ -160,7 +169,7 @@ def page(k):
   </article>
 </div>
 
-<section class="end" aria-label="{s['quick']}">
+<section class="end">
   <p class="ask"><button type="button" data-sheet="ask" aria-haspopup="dialog">{s['askgo']}</button> <a href="mailto:hello@synk.im">hello@synk.im</a></p>
   <nav aria-label="{s['quick']}"><a href="{reserve}">{s['reserve']}</a><button type="button" data-sheet="platform" aria-haspopup="dialog">{s['solio']}</button><button type="button" data-sheet="now" aria-haspopup="dialog">{s['news']}</button><a href="/account/platform.html#home">{s['me']}</a></nav>
 </section>
@@ -186,7 +195,7 @@ def page(k):
 </dialog>
 
 <dialog class="sheet" id="sheet-now" aria-labelledby="news-t">{x}
-  <section class="sheet-in" id="news" aria-labelledby="news-t">
+  <section class="sheet-in" id="news">
     <div class="head">
       <p class="tag">{s['now'][0]}</p>
       <h2 id="news-t">{s['now'][1]}</h2>

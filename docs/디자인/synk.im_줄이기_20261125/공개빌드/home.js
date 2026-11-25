@@ -60,24 +60,35 @@ const sheetOf = id => Object.keys(SHEET).find(k => SHEET[k].includes(id));
 let back = null;
 function open(k, from) {
   const d = $('#sheet-' + k);
-  if (!d || d.open) return d;
+  if (!d) return d;
+  /* 이미 열린 창을 다시 부르면(답의 「문의하기」) 맨 위로 올리고 첫 링크에 선다 */
+  if (d.open) { d.scrollTop = 0; $('.head a, .pf-get a, li a', d)?.focus({ preventScroll: true }); return d; }
   $$('.sheet[open]').forEach(x => x.close());
-  back = from || null;
+  back = from || back;
   d.showModal(); d.scrollTop = 0;
   return d;
 }
 $$('.sheet').forEach(d => {
-  d.addEventListener('close', () => { if (sheetOf(location.hash.slice(1))) history.replaceState(null, '', location.pathname + location.search); back?.focus?.(); back = null; });
+  d.addEventListener('close', () => { if ($('.sheet[open]')) return; if (sheetOf(location.hash.slice(1))) history.replaceState(null, '', location.pathname + location.search); back?.focus?.(); back = null; });
 });
 $$('[data-sheet]').forEach(b => b.addEventListener('click', () => open(b.dataset.sheet, b)));
-/* 창 안의 #platform-get 같은 주소는 그 창으로, 사업자 정보 단추는 묻기 창으로 */
+/* 창을 닫되 초점을 돌려보내지 않는다(쪽의 다른 자리로 갈 때) */
+const leave = () => { const d = $('.sheet[open]'); if (d) { back = null; d.close(); } };
+/* 같은 쪽 주소: 창을 가리키면 그 창으로, 쪽의 자리를 가리키면 창을 닫고 그 자리로. 사업자 정보 단추는 묻기 창으로 */
 document.addEventListener('click', e => {
   if (e.target.closest('[data-ask-q],[data-ask-record]') && !e.target.closest('#sheet-ask')) open('ask', e.target.closest('button'));
-  const a = e.target.closest('a[href^="#"]'), k = a && sheetOf(a.getAttribute('href').slice(1));
-  if (k) { e.preventDefault(); open(k); }
+  const a = e.target.closest('a[href*="#"]');
+  if (!a || a.target || a.origin !== location.origin || a.pathname !== location.pathname || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  const k = sheetOf(a.hash.slice(1));
+  if (k) { e.preventDefault(); open(k); } else leave();
 }, true);
-const byHash = () => { const k = sheetOf(decodeURIComponent(location.hash.slice(1))); if (k) open(k); };
-addEventListener('hashchange', byHash); byHash();
+const byHash = () => { const k = sheetOf(location.hash.slice(1)); if (k) open(k); else leave(); };
+/* 브라우저도 주소 자리로 창 안을 내린다 — 다 불러온 뒤 한 번 맨 위로 되돌린다(그사이 사람이 움직였으면 그대로 둔다) */
+let touched = false;
+for (const e of ['wheel', 'touchstart', 'keydown', 'pointerdown']) addEventListener(e, () => { touched = true; }, { passive: true, once: true });
+const toTop = () => { const d = $('.sheet[open]'); if (d && !touched) d.scrollTop = 0; };
+addEventListener('hashchange', () => { byHash(); requestAnimationFrame(toTop); }); byHash();
+addEventListener('load', () => requestAnimationFrame(() => requestAnimationFrame(toTop)));
 
 const out = $('#ask-out');
 $('#ask-copy')?.addEventListener('click', async () => {
