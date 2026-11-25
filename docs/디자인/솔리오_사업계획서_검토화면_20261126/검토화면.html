@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>솔리오 사업계획서 검토</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500&display=swap">
+<style>
+/* 솔리오 사무실 기획부 「사업계획서」 검토 화면 새 시안(2026-11-26, 유호님 「조금 더 트렌디하고 세련되고 기능적으로 간편했으면 … 아직 조잡함이 꽤 남아있네」)
+   한 문장: 파일을 놓으면 직원이 고칠 곳을 한 번에 하나씩 묻는다. 정한 것은 README.md */
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+@font-face{font-family:'DM Mono';font-weight:400;font-display:swap;src:url(../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf) format('truetype');}
+:root{
+  color-scheme:dark;
+  --void:#000;--paper:#F3F1EC;--soft:rgba(243,241,236,.74);--dim:rgba(243,241,236,.5);--off:rgba(243,241,236,.26);
+  --glass:rgba(30,30,29,.58);--edge:rgba(243,241,236,.11);--fill:rgba(243,241,236,.07);--fill2:rgba(243,241,236,.12);
+  --lapis:#C5D6F5;--meadow:#7DB45A;--meadow-soft:#D3E8BE;
+  --sans:'SUIT Variable',SUIT,Pretendard,'Malgun Gothic',system-ui,sans-serif;
+  --serif:'Noto Serif KR','Nanum Myeongjo',Batang,serif;--mono:'DM Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--paper);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word;overflow-x:hidden}
+button,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{appearance:none;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:1.5px solid rgba(243,241,236,.6);outline-offset:3px}
+::selection{background:rgba(243,241,236,.24)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.app{position:relative;min-height:100%;overflow-x:clip;display:flex;flex-direction:column;isolation:isolate}
+.app::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(ellipse 62% 52% at 10% -6%,rgba(197,214,245,.13),rgba(197,214,245,0) 72%),
+  radial-gradient(ellipse 55% 45% at 104% 108%,rgba(243,241,236,.055),rgba(243,241,236,0) 70%)}
+
+/* 머리 막대: PC 앱 그대로 */
+.head{display:flex;align-items:center;gap:30px;padding:26px clamp(20px,8.4vw,168px) 0;min-height:72px}
+.brand{display:flex;align-items:center;gap:13px;font:400 14px/1 var(--sans);letter-spacing:.16em;color:var(--soft)}
+.brand .sprite{width:34px}
+.objs{display:flex;align-items:center;gap:26px;color:rgba(243,241,236,.55)}
+.objs svg{width:20px;height:20px;display:block}
+.objs .on{display:flex;align-items:center;gap:11px;color:var(--paper);font:500 15px/1 var(--sans)}
+.todo{margin-left:auto;display:flex;align-items:center;gap:20px;font:400 14px/1 var(--sans);color:var(--dim)}
+.todo span{height:40px;padding:0 22px;border-radius:999px;background:var(--paper);color:#000;font:500 14px/40px var(--sans)}
+
+/* 짜임: 가운데 한 줄 */
+.main{flex:1;display:flex;flex-direction:column;width:100%;padding:clamp(14px,2.6vh,28px) clamp(20px,8.4vw,168px) clamp(40px,7vh,72px)}
+.back{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;height:36px;margin-left:-12px;padding:0 14px 0 10px;border-radius:999px;font:500 14px/1 var(--sans);color:var(--soft);transition:background-color .2s,color .2s}
+.back:hover{background:var(--fill);color:var(--paper)}
+.back svg{width:16px;height:16px}
+h1{position:relative;z-index:1;margin:0;font:300 clamp(27px,3.5vw,46px)/1.25 var(--sans);letter-spacing:-.022em;text-align:center;text-wrap:balance}
+.sub{position:relative;z-index:1;margin:12px auto 0;max-width:34em;text-align:center;font:400 clamp(15px,1.25vw,17px)/1.5 var(--sans);color:var(--soft);text-wrap:balance}
+.swap{animation:swap .5s var(--ease)}
+@keyframes swap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 무대: 구운 장면 한 장(팀 고르기 4판 결) 위에 눈만 얹는다 */
+.hero{position:relative;width:min(720px,100%,76vh);aspect-ratio:3/2;margin:-22px auto -66px;transition:opacity .5s ease,filter .5s ease;pointer-events:none}
+.hero > div{position:absolute;inset:0;transform:translateX(10.4%)}
+.app[data-stage=done] .hero{width:min(430px,86%,44vh);margin:-8px auto -36px}
+.hero img{width:100%;height:100%;display:block;object-fit:cover;
+  -webkit-mask-image:radial-gradient(ellipse 41% 60% at 40% 50%,#000 52%,transparent 100%),linear-gradient(#000 66%,transparent 92%);-webkit-mask-composite:source-in;
+  mask-image:radial-gradient(ellipse 41% 60% at 40% 50%,#000 52%,transparent 100%),linear-gradient(#000 66%,transparent 92%);mask-composite:intersect}
+.hero .eyes{position:absolute;left:19.7%;top:22.175%;width:24.9%;aspect-ratio:1}
+.eyes .orb,.sprite .orb{width:100%;height:100%}
+.app[data-stage=limit] .hero{filter:brightness(.62) saturate(.7)}
+.sprite{position:relative;display:block;aspect-ratio:1;flex:none}
+.sprite > img{position:absolute;inset:0;width:100%;height:100%}
+.sprite > .orb{position:absolute;inset:0}
+.orb{display:block;overflow:visible}
+.orb .o-eyes{fill:#FFFAF3;stroke:#FFFAF3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 1.4px rgba(243,241,236,.55))}
+.orb .o-blink{transform-box:fill-box;transform-origin:50% 50%;transition:transform .07s ease}
+.orb.blink .o-blink{transform:scaleY(.12)}
+.orb .o-look{transition:transform .6s var(--ease)}
+
+/* 놓는 자리 하나 */
+.comp{position:relative;width:min(720px,100%);margin:0 auto;padding:14px;border-radius:26px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--edge),inset 0 1px 0 rgba(255,255,255,.07),0 40px 90px -40px #000;-webkit-backdrop-filter:blur(26px) saturate(1.2);backdrop-filter:blur(26px) saturate(1.2);transition:box-shadow .3s,background-color .3s}
+.comp.over{background:rgba(48,48,46,.72);box-shadow:inset 0 0 0 1.5px rgba(243,241,236,.5),0 40px 90px -40px #000}
+.place{display:block;width:100%;padding:13px 12px 19px;text-align:left;font:400 17px/1.45 var(--sans);color:var(--dim);border-radius:14px}
+.place b{font-weight:500;color:var(--paper)}
+.files{display:flex;flex-wrap:wrap;gap:8px;padding:4px 4px 16px}
+.file{display:flex;align-items:center;gap:11px;max-width:100%;height:52px;padding:0 8px 0 12px;border-radius:16px;background:var(--fill);animation:swap .45s var(--ease)}
+.file svg{width:20px;height:20px;flex:none;color:var(--soft)}
+.file span{min-width:0;font:500 14px/1.25 var(--sans)}
+.file span b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file small{display:block;font:400 12.5px/1.3 var(--sans);color:var(--dim)}
+.x{width:28px;height:28px;border-radius:50%;color:var(--dim);display:grid;place-items:center;flex:none;transition:background-color .2s,color .2s}
+.x:hover{background:var(--fill2);color:var(--paper)}.x svg{width:13px;height:13px;color:inherit}
+.bar{display:flex;align-items:center;gap:8px}
+.sp{flex:1}
+.chip{position:relative;display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 15px;border-radius:999px;background:var(--fill);font:500 14px/1 var(--sans);color:var(--soft);white-space:nowrap;transition:background-color .2s,color .2s}
+.chip:hover,.chip[aria-expanded=true]{background:var(--fill2);color:var(--paper)}
+.chip svg{width:14px;height:14px;flex:none}
+.chip.round{width:40px;padding:0;justify-content:center}
+.chip.round svg{width:17px;height:17px}
+.go{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:44px;padding:0 22px;border-radius:999px;background:var(--paper);color:#000;font:600 15px/1 var(--sans);white-space:nowrap;transition:background-color .2s,opacity .2s,transform .2s var(--ease)}
+.go:hover{background:#fff}.go:active{transform:scale(.98)}
+.go:disabled{opacity:.18;cursor:default;background:var(--paper)}
+.menu{position:absolute;left:0;bottom:calc(100% + 10px);z-index:5;min-width:270px;padding:7px;border-radius:18px;background:rgba(38,38,36,.96);box-shadow:inset 0 0 0 1px var(--edge),0 24px 60px -20px #000;animation:swap .25s var(--ease)}
+.menu button{display:grid;grid-template-columns:1fr auto;gap:2px 14px;align-items:center;width:100%;padding:10px 13px;border-radius:12px;text-align:left;font:500 14.5px/1.35 var(--sans)}
+.menu button:hover{background:var(--fill)}
+.menu small{grid-column:1;font:400 12.5px/1.4 var(--sans);color:var(--dim)}
+.menu i{grid-row:1/span 2;grid-column:2;width:7px;height:7px;border-radius:50%;background:var(--meadow);opacity:0}
+.menu button[aria-checked=true] i{opacity:1}
+.foot{margin:14px auto 0;text-align:center;font:400 13px/1.5 var(--sans);color:var(--dim)}
+
+/* 읽는 중: 같은 자리가 상태 하나로 바뀐다 */
+.read{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:10px 8px 8px 12px}
+.shine{font:500 17px/1.4 var(--sans);color:transparent;background:linear-gradient(100deg,rgba(243,241,236,.66) 35%,#fff 50%,rgba(243,241,236,.66) 65%) 0 0/260% 100%;-webkit-background-clip:text;background-clip:text;animation:shine 2.6s linear infinite}
+@keyframes shine{from{background-position:130% 0}to{background-position:-130% 0}}
+.read .mono{margin-left:10px;font:400 13px/1 var(--mono);color:var(--dim)}
+.segs{display:flex;gap:5px}
+.read .segs{grid-column:1/-1}
+.seg{flex:1;height:3px;border-radius:2px;background:rgba(243,241,236,.13);overflow:hidden;transition:background-color .4s}
+.seg i{display:block;height:100%;width:0;border-radius:2px;background:var(--paper);transition:width 1s linear}
+.seg.on{background:rgba(243,241,236,.55)}.seg.ok{background:var(--meadow)}.seg.kept{background:rgba(243,241,236,.34)}
+.seg.full i{width:100%}
+
+/* 고칠 곳: 한 번에 하나. 놓던 자리가 묻는 자리가 된다 */
+.note{flex:1;display:flex;flex-direction:column;width:min(720px,100%);margin:-40px auto 0}
+.steps{display:flex;align-items:center;gap:16px}
+.steps .segs{flex:1}
+.steps button.seg{height:24px;background:none;position:relative;overflow:visible}
+.steps button.seg::after{content:"";position:absolute;inset:10.5px 0;border-radius:2px;background:rgba(243,241,236,.13);transition:background-color .4s}
+.steps button.seg:hover::after{background:rgba(243,241,236,.4)}
+.steps button.seg.on::after{background:var(--paper)}.steps button.seg.ok::after{background:var(--meadow)}.steps button.seg.kept::after{background:rgba(243,241,236,.4)}
+.count{font:400 13px/1 var(--mono);color:var(--dim);white-space:nowrap}
+.body{flex:1;display:flex;flex-direction:column;animation:swap .45s var(--ease)}
+.body.out{opacity:0;transform:translateY(-8px);transition:opacity .22s,transform .22s}
+.stagearea{flex:1;display:grid;align-content:center;min-height:200px;padding:30px 6px}
+.para{margin:0;font:400 clamp(22px,2.4vw,34px)/1.66 var(--serif);letter-spacing:-.014em;color:var(--off);text-wrap:pretty}
+.para .t{color:var(--paper);transition:color .4s,filter .24s,opacity .24s}
+.para .t.gone{opacity:0;filter:blur(7px)}
+.para .t .bad{color:var(--lapis)}
+.bad,.new.nw{white-space:nowrap}
+.para .new,.fix .new{color:var(--meadow-soft)}
+.para .add{animation:swap .5s var(--ease)}
+.para [contenteditable]{outline:0;color:var(--paper);caret-color:var(--meadow);background:var(--fill);border-radius:10px;padding:.1em .3em;margin:0 -.3em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.ask{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:center;padding:8px 10px 14px}
+.ask .sprite{width:44px}
+.ask p{margin:0;font:500 16.5px/1.45 var(--sans)}
+.ev{display:inline-flex;align-items:center;gap:7px;margin-top:4px;font:400 13px/1.4 var(--sans);color:var(--dim)}
+.ev svg{width:14px;height:14px;flex:none}
+.ev b{font-weight:500;color:var(--soft)}
+.fix{margin:0 0 12px;padding:15px 18px 16px;border-radius:17px;background:var(--fill);font:400 19px/1.55 var(--serif);transition:opacity .3s}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.acts .chip{height:44px;padding:0 17px}
+kbd{min-width:20px;padding:3px 6px;border-radius:6px;background:rgba(0,0,0,.09);font:500 11.5px/1 var(--sans);color:rgba(0,0,0,.6)}
+.chip kbd{background:var(--fill2);color:var(--dim)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;transition:opacity .3s}
+.opt{display:flex;flex-direction:column;justify-content:flex-start;padding:15px 18px 16px;border-radius:17px;background:var(--fill);text-align:left;transition:background-color .2s,transform .2s var(--ease)}
+.opt:hover{background:var(--fill2)}.opt:active{transform:scale(.99)}
+.opt b{display:block;font:600 16px/1.4 var(--sans)}
+.opt span{display:block;margin-top:5px;font:400 15px/1.55 var(--serif);color:var(--soft)}
+
+/* 끝 */
+.diffs{width:min(720px,100%);margin:20px auto 0;padding:0;list-style:none}
+.diffs li{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:4px 14px;padding:8px 26px;font:400 16px/1.55 var(--serif);color:var(--soft)}
+.diffs li::before{content:"";width:7px;height:7px;margin-top:.55em;border-radius:50%;background:var(--meadow)}
+.diffs li.hand::before{background:var(--lapis)}
+.diffs small{font:400 13px/1 var(--sans);color:var(--dim)}
+.done .file{flex:1;min-width:0}
+.toast{position:fixed;left:50%;top:152px;z-index:20;display:flex;align-items:center;gap:6px;padding:6px 6px 6px 20px;border-radius:999px;background:rgba(46,46,44,.94);box-shadow:inset 0 0 0 1px var(--edge),0 20px 50px -16px #000;font:500 14px/1 var(--sans);transform:translate(-50%,-12px);opacity:0;pointer-events:none;transition:opacity .25s,transform .35s var(--ease)}
+.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{height:34px;padding:0 14px;border-radius:999px;font:500 14px/1 var(--sans);color:var(--soft)}
+.toast button:hover{background:var(--fill2);color:var(--paper)}
+/* 전체 보기 */
+.sheet{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.62);animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.sheet > div{width:min(720px,100%);max-height:min(720px,88vh);overflow:auto;padding:26px 14px 14px;border-radius:28px;background:#1B1B1A;box-shadow:inset 0 0 0 1px var(--edge),0 50px 120px -30px #000}
+.sheet h2{display:flex;justify-content:space-between;align-items:center;margin:0 6px 12px 14px;font:600 19px/1.3 var(--sans)}
+.row{display:grid;grid-template-columns:14px 1fr auto;gap:14px;align-items:baseline;width:100%;padding:13px 14px;border-radius:16px;text-align:left}
+.row:hover{background:var(--fill)}
+.row i{width:8px;height:8px;border-radius:50%;background:rgba(243,241,236,.22)}
+.row.ok i{background:var(--meadow)}.row.kept i{background:rgba(243,241,236,.5)}
+.row span{font:400 15.5px/1.55 var(--serif)}
+.row small{font:400 13px/1 var(--sans);color:var(--dim);white-space:nowrap}
+.demo{position:fixed;right:18px;bottom:16px;z-index:10;display:flex;gap:2px;padding:4px;border-radius:999px;background:rgba(20,20,19,.8);box-shadow:inset 0 0 0 1px var(--edge);font:400 12px/1 var(--sans);color:var(--dim)}
+.demo button{white-space:nowrap;height:30px;padding:0 12px;border-radius:999px;font:400 12px/1 var(--sans);color:var(--dim)}
+.demo button:hover{background:var(--fill);color:var(--paper)}
+@media (max-width:760px){
+  .head{gap:16px;padding:16px 16px 0;min-height:56px}.objs > svg,.todo > em{display:none}.objs{margin-left:-6px}.todo span{height:36px;padding:0 15px;font:500 13px/36px var(--sans)}
+  .brand .b{display:none}
+  .main{padding:8px 16px 84px}
+  .hero{width:100%;margin:-6px auto -38px}
+  .bar{flex-wrap:wrap}.bar .go{flex:1 0 100%;margin-top:4px;height:48px}.sp{display:none}
+  .place{font-size:16px;padding:10px 8px 16px}
+  .chip{padding:0 13px}.menu{min-width:240px}
+  .note{margin-top:0}.ask p{font-size:15.5px}.stagearea{padding:20px 2px;min-height:170px}
+  .opts{grid-template-columns:1fr}
+  .acts .go{flex:1 0 100%;height:50px}.acts .chip{flex:1;justify-content:center;padding:0 10px}kbd{display:none}
+  .done .bar .file{flex:1 0 100%}
+  .steps{gap:10px;margin-top:4px}
+  .demo{right:50%;transform:translateX(50%)}.toast{top:156px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}.shine{color:var(--paper);background:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-stage="drop">
+  <header class="head">
+    <div class="brand"><span class="sprite" id="borb"></span><span class="b">SOLIO</span></div>
+    <div class="objs" aria-hidden="true">
+      <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg>
+      <svg viewBox="0 0 20 20"><path d="M6.2 3.6v11l3-2.8 2 4.4 2-.9-2-4.3h4.1Z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="14.7" cy="5.3" r="1.9" fill="currentColor"/></svg>
+      <svg viewBox="0 0 20 20"><path d="M2.5 10.5h3.2l1.8-4.5 3 8 2-5.5 1.2 2h3.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="on"><svg viewBox="0 0 20 20"><rect x="3.4" y="5" width="13.2" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="7.6" cy="10" r="1.2" fill="currentColor"/><circle cx="12.4" cy="10" r="1.2" fill="currentColor"/></svg>사무실</span>
+    </div>
+    <div class="todo" aria-hidden="true"><em style="font-style:normal">할 일 1</em><span>1순위부터 처리</span></div>
+  </header>
+  <main class="main" id="main"></main>
+</div>
+<div class="toast" id="toast" role="status"><span id="toastT"></span><button type="button" id="undo">되돌리기</button></div>
+<div class="demo" aria-label="시안 조작"><button type="button" data-demo="reset">처음부터</button><button type="button" data-demo="note">고칠 곳</button><button type="button" data-demo="limit">한도 찬 때</button></div>
+<div class="sr" id="live" aria-live="polite"></div>
+<script>
+{
+/* ── 예시: 시험 계획서와 11-23에 GPT 직원이 실제로 낸 메모 ── */
+const IMG = {write:'../솔리오_사업계획서_첫화면_20261123/그림/write.jpg', orb:'그림/orb.webp'};
+const PLAN = {
+  1:['왜 이 일을 하나', ['바쁜 직장인은 아침을 거르기 쉽습니다.', '시중 그래놀라는 설탕이 많아 매일 먹기 어렵습니다.']],
+  2:['지금까지 한 일', ['2025년 9월부터 온라인으로 팔아 왔습니다.', '2025년 매출 10억 원을 달성했습니다.', '단골 손님 300명이 매달 다시 삽니다.']],
+  3:['주문하는 법', ['홈페이지에서 주문합니다.', '휴대폰 앱에서 바로 주문할 수 있습니다.']],
+  4:['성장 전략', ['3년 뒤 매출 5억 원을 목표로 합니다.']],
+  5:['함께하는 사람', ['대표가 직접 굽고, 포장은 동네 자활센터와 함께합니다.']],
+};
+const NOTES = [
+  {s:2, i:1, bad:'10억 원', say:'회사 자료에는 2025년 매출이 3억 2천만 원으로 적혀 있어요.', ev:'3억 2천만 원', fix:'2025년 매출은 3억 2천만 원입니다.', hi:'3억 2천만 원', mood:'look'},
+  {s:2, i:2, bad:'300명', say:'10월에 다시 산 손님은 112명이에요. 300명과 맞지 않아요.', ev:'112명', fix:'10월에 다시 구매한 손님은 112명입니다.', hi:'112명', mood:'curious'},
+  {s:2, i:0, bad:'2025년 9월', say:'온라인 판매를 시작한 때는 회사 자료에서 찾지 못했어요.', fix:'홈페이지에서 판매하고 있습니다.', hi:'홈페이지에서', mood:'side'},
+  {s:3, i:1, bad:'휴대폰 앱', say:'회사 자료에는 PC 홈페이지만 있어요. 앱 주문을 만들면 이 문장이 사실이 돼요.', hand:'개발부에 맡기기', mood:'curious'},
+  {s:5, i:0, bad:'동네 자활센터', say:'자활센터와 함께한다는 자료를 찾지 못했어요. 빼면 이렇게 돼요.', fix:'대표가 직접 굽습니다.', hi:'직접 굽습니다', mood:'side'},
+  {s:4, weak:'성장 전략', say:'심사위원이 가장 궁금해할 게 빠졌어요. 매출을 무엇으로 늘리나요?', opts:[['정기 배송', '정기 배송 손님을 늘려 매출을 키웁니다.'], ['회사 납품', '근처 회사의 아침 간식으로 납품해 매출을 키웁니다.']], mood:'open'},
+  {s:5, weak:'팀 구성', say:'하나만 더요. 온라인 주문은 누가 챙기나요?', opts:[['대표', '온라인 주문과 출고 전 확인은 대표가 직접 맡습니다.'], ['새 직원', '온라인 주문과 출고 전 확인을 맡을 직원을 한 명 뽑습니다.']], mood:'happy'},
+];
+const CRIT = [['창업 지원사업 기준', '문제 인식 · 실현 가능성 · 성장 전략 · 팀 구성'], ['공고문 기준', '붙여 넣은 공고의 평가 항목에 맞춰 봅니다']];
+const STAFF = [['Claude 직원', '내 Claude 구독으로 읽습니다'], ['GPT 직원', '내 ChatGPT 구독으로 읽습니다']];
+const NUM = ['영', '한', '두', '세', '네', '다섯', '여섯', '일곱'];
+
+/* ── 구의 눈(사업계획서 시안의 부품 그대로, 11-25 4판 결) ── */
+let orbSeq = 0;
+function eyesSVG(shape, k = 1, sk = 1) {
+  const R = 50, X = 0.19 * R * sk, f = n => +n.toFixed(2);
+  const pill = (cx, hh) => { const w = 0.062 * R * k, h = hh * k; return `<rect x="${f(cx - w)}" y="${f(-h)}" width="${f(2 * w)}" height="${f(2 * h)}" rx="${f(Math.min(w, h))}"/>`; };
+  const arc = cx => { const r = 0.1 * R * k, dx = f(0.894 * r), y0 = f(0.015 * R * k), sw = f(0.028 * R * k); return `<path d="M${f(cx - dx)} ${y0} A${f(r)} ${f(r)} 0 0 1 ${f(cx + dx)} ${y0}" fill="none" stroke-width="${sw}"/>`; };
+  const one = cx => shape === 'smile' ? arc(cx) : pill(cx, R * (shape === 'half' ? 0.034 : shape === 'shut' ? 0.012 : 0.062));
+  return one(-X) + one(X);
+}
+const MOOD = {open:['calm', 0, 0], look:['calm', 3, 5], happy:['smile', 0, 0], curious:['calm', 5, -3], side:['calm', 6, 2], sleepy:['half', 0, 4], drop:['calm', 2, 9], readL:['calm', -3, 10], readR:['calm', 9, 10]};
+const orbSVG = () => { const id = 'o' + (++orbSeq); return `<svg class="orb" viewBox="-50 -50 100 100" aria-hidden="true"><defs><clipPath id="${id}"><circle r="48.5"/></clipPath></defs><g clip-path="url(#${id})"><g transform="translate(-0.3 -2.9)"><g class="o-look"><g class="o-blink"><g class="o-eyes">${eyesSVG('calm')}</g></g></g></g></g></svg>`; };
+const spriteHTML = () => `<img src="${IMG.orb}" alt="">${orbSVG()}`;
+function makeOrb(host) {
+  const svg = host.querySelector('svg.orb'), o = {shape:'calm', mood(m) {
+    const [eye, dx, dy] = MOOD[m] || MOOD.open, t = Math.min(1, Math.max(0, ((svg.getBoundingClientRect().width || 100) / 2 - 14) / 46)), small = 1 - t * t * (3 - 2 * t);
+    svg.querySelector('.o-eyes').innerHTML = eyesSVG(eye, 1 + .85 * small, 1 + .12 * small); svg.querySelector('.o-look').setAttribute('style', `transform:translate(${dx}px,${dy}px)`); o.shape = eye; return o; }};
+  const blink = () => { if (!svg.isConnected) return; if (o.shape !== 'smile') { svg.classList.add('blink'); setTimeout(() => svg.classList.remove('blink'), 130); } setTimeout(blink, 2600 + Math.random() * 3600); };
+  setTimeout(blink, 1400); return o;
+}
+const I = {
+  doc:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M5 2.8h6.6L15.4 6.6v10.6H5Z"/><path d="M11.4 3v3.8h3.8M7.6 10.4h5M7.6 13.2h3.4" stroke-linecap="round"/></svg>',
+  tab:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="3.2" y="4" width="13.6" height="12" rx="1.6"/><path d="M3.2 8.2h13.6M8.6 8.2V16"/></svg>',
+  plus:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>',
+  x:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="m3 3 8 8M11 3l-8 8"/></svg>',
+  down:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 5.5 3.5 3.5 3.5-3.5"/></svg>',
+  back:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m10 3-5 5 5 5"/></svg>',
+};
+
+const $ = (s, r = document) => r.querySelector(s), app = $('#app'), main = $('#main');
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
+const kindOf = n => /\.(csv|xlsx?|tsv)$/i.test(n) ? 'data' : 'plan';
+let S, timers = [], hero = null, gorb = null;
+const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+const fresh = () => ({stage:'drop', files:[], crit:0, staff:0, menu:null, at:0, state:NOTES.map(() => null), text:JSON.parse(JSON.stringify(PLAN)), added:{}, saved:false});
+const say = t => { $('#live').textContent = t; };
+function stop() { timers.forEach(clearTimeout); timers = []; }
+function set(stage) { if (stage !== 'note') $('#toast').classList.remove('on'); S.stage = stage; app.dataset.stage = stage; stop(); render(); window.scrollTo(0, 0); }
+
+const heroHTML = () => `<div class="hero" aria-hidden="true"><div><img src="${IMG.write}" alt=""><span class="eyes" id="heyes">${orbSVG()}</span></div></div>`;
+const backHTML = t => `<button class="back" type="button" data-a="back">${I.back}${t}</button>`;
+const fileHTML = (f, k) => `<div class="file">${kindOf(f) === 'plan' ? I.doc : I.tab}<span><b>${esc(f)}</b><small>${kindOf(f) === 'plan' ? '계획서' : '회사 자료'}</small></span><button class="x" type="button" data-a="rm" data-k="${k}" aria-label="${esc(f)} 빼기">${I.x}</button></div>`;
+const menuHTML = (id, list, cur) => S.menu !== id ? '' : `<div class="menu" role="menu">${list.map((c, k) => `<button type="button" role="menuitemradio" aria-checked="${k === cur}" data-a="${id}" data-k="${k}">${c[0]}<i></i><small>${c[1]}</small></button>`).join('')}</div>`;
+const pick = (id, list, cur) => `<span style="position:relative"><button class="chip" type="button" data-a="menu" data-k="${id}" aria-haspopup="menu" aria-expanded="${S.menu === id}">${list[cur][0]}${I.down}</button>${menuHTML(id, list, cur)}</span>`;
+
+function composer() {
+  const plan = S.files.some(f => kindOf(f) === 'plan');
+  return `<div class="comp" id="comp">`
+    + (S.files.length ? `<div class="files">${S.files.map(fileHTML).join('')}</div>` : `<button class="place" type="button" data-a="add"><b>계획서</b>와 <b>회사 자료</b>를 여기에 놓으세요</button>`)
+    + `<div class="bar"><button class="chip round" type="button" data-a="add" aria-label="파일 고르기">${I.plus}</button>${pick('crit', CRIT, S.crit)}${pick('staff', STAFF, S.staff)}<span class="sp"></span><button class="go" type="button" data-a="start" ${plan ? '' : 'disabled'}>읽기</button></div></div>`
+    + `<p class="foot">${S.files.length ? `내 ${S.staff ? 'ChatGPT' : 'Claude'} 구독으로 읽고, SYNK로는 보내지 않습니다.` : '워드와 글 파일을 읽고, 원본은 고치지 않습니다.'}</p>`;
+}
+function heroStage(title, sub, under) {
+  return backHTML('기획부') + `<div class="swap"><h1 tabindex="-1">${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>` + heroHTML() + under;
+}
+function render() {
+  const st = S.stage;
+  if (st === 'drop') {
+    const plan = S.files.some(f => kindOf(f) === 'plan'), data = S.files.some(f => kindOf(f) === 'data');
+    main.innerHTML = plan ? heroStage('읽을 준비가 됐습니다.', data ? '회사 자료와 맞춰 보고 고칠 곳을 찾습니다.' : '회사 자료를 더하면 숫자도 맞춰 봅니다.', composer()) : heroStage('계획서를 놓아 주세요.', '직원이 읽고 고칠 곳을 하나씩 묻습니다.', composer());
+  } else if (st === 'read') {
+    main.innerHTML = heroStage('읽고 있습니다.', '다른 일을 하셔도 됩니다. 끝나면 알려 드립니다.', `<div class="comp"><div class="read"><div><span class="shine" id="rt"></span><span class="mono" id="clk">0:00</span></div><button class="chip" type="button" data-a="stop">멈추기</button><div class="segs">${Object.keys(PLAN).map(() => '<span class="seg"><i></i></span>').join('')}</div></div></div>`);
+  } else if (st === 'limit') {
+    main.innerHTML = heroStage('이번 주 Claude를 다 썼습니다.', '11월 30일 저녁 7시에 다시 쓸 수 있습니다. 지금은 GPT 직원이 읽을 수 있습니다.', `<div class="comp"><div class="files">${S.files.map(fileHTML).join('')}</div><div class="bar">${pick('crit', CRIT, S.crit)}<span class="sp"></span><button class="chip" type="button" data-a="home">나중에</button><button class="go" type="button" data-a="gpt">GPT로 읽기</button></div></div>`);
+  } else if (st === 'done') {
+    const ch = changes();
+    main.innerHTML = heroStage(S.saved ? '새 파일로 저장했습니다.' : doneTitle(ch), S.saved ? '원본은 그대로 있습니다.' : '원본은 그대로 두고 새 파일로 저장합니다.',
+      `<div class="comp done"><div class="bar"><div class="file" style="background:none">${I.doc}<span><b>사업계획서_시험_고침.docx</b><small>${S.saved ? '방금 저장' : '원본과 같은 폴더'}</small></span></div>${S.saved ? `<button class="chip" type="button" data-a="home">다른 계획서</button><button class="go" type="button" data-a="folder">폴더 열기</button>` : `<button class="chip" type="button" data-a="again">다시 보기</button><button class="go" type="button" data-a="save" ${ch.some(c => !c.hand) ? '' : 'disabled'}>저장</button>`}</div></div>`
+      + `<ul class="diffs">${ch.map(c => `<li${c.hand ? ' class="hand"' : ''}><span>${esc(c.t)}</span><small>${c.tag || ''}</small></li>`).join('')}</ul>`);
+  } else renderNote();
+  const he = $('#heyes'); hero = he ? makeOrb(he) : null;
+  if (hero) hero.mood(st === 'limit' ? 'sleepy' : st === 'done' ? 'happy' : st === 'read' ? 'readL' : S.files.length ? 'drop' : 'open');
+  if (st === 'read') runRead();
+}
+function changes() {
+  return NOTES.map((n, k) => S.state[k] !== 'ok' ? null : n.hand ? (S.hand ? {t:PLAN[n.s][1][n.i], tag:'개발부에 맡김', hand:true} : {t:S.text[n.s][1][n.i]}) : {t:n.weak ? S.added[n.s + ':' + k] : S.text[n.s][1][n.i]}).filter(Boolean);
+}
+function doneTitle(ch) {
+  const f = ch.filter(c => !c.hand).length, h = ch.length - f;
+  return !ch.length ? '모두 그대로 두었습니다.' : !f ? '개발부에 한 곳을 맡겼습니다.' : h ? `${NUM[f]} 곳을 고치고 한 곳을 맡겼습니다.` : `${NUM[f]} 곳을 고쳤습니다.`;
+}
+function runRead() {
+  const keys = Object.keys(PLAN), segs = [...document.querySelectorAll('.read .seg')], rt = $('#rt'), t0 = Date.now();
+  const tick = () => { const s = Math.floor((Date.now() - t0) / 1000); const c = $('#clk'); if (c) { c.textContent = `0:${String(s).padStart(2, '0')}`; later(tick, 500); } };
+  tick();
+  keys.forEach((k, j) => later(() => { rt.textContent = `「${PLAN[k][0]}」을 보고 있습니다`.replace('나」을', '나」를'); segs[j].classList.add('full'); hero.mood(j % 2 ? 'readR' : 'readL'); later(() => hero && hero.mood(j % 2 ? 'readL' : 'readR'), 560); }, j * 1150));
+  later(() => { S.at = 0; set('note'); say('고칠 곳이 일곱 있습니다.'); }, keys.length * 1150 + 300);
+}
+/* 한 번에 하나 */
+function paraHTML(n) {
+  const list = S.text[n.s][1];
+  return list.map((t, i) => {
+    if (i !== n.i || n.weak) return esc(t);
+    const bad = n.bad && t.includes(n.bad) ? esc(t).replace(esc(n.bad), `<span class="bad">${esc(n.bad)}</span>`) : esc(t);
+    return `<span class="t" id="tgt">${bad}</span>`;
+  }).map((h, i) => n.weak && !String(list[i]).startsWith('+') ? `<span style="color:var(--paper)">${h}</span>` : h).join(' ') + '<span id="addto"></span>';
+}
+function renderNote() {
+  const n = NOTES[S.at], done = S.state[S.at];
+  main.innerHTML = backHTML('기획부') + `<section class="note"><div class="steps"><div class="segs">${NOTES.map((_, k) => `<button type="button" class="seg ${k === S.at ? 'on' : S.state[k] || ''}" data-a="jump" data-k="${k}" aria-label="${k + 1}번째"></button>`).join('')}</div><span class="count">${S.at + 1} / ${NOTES.length}</span><button class="chip" type="button" data-a="all">전체 보기</button></div>`
+    + `<div class="body" id="body"><div class="stagearea"><p class="para" aria-label="계획서">${paraHTML(n)}</p></div>`
+    + `<div class="comp"><div class="ask"><span class="sprite" id="gorb">${spriteHTML()}</span><div><p tabindex="-1" id="q">${esc(n.say)}</p>${n.ev ? `<span class="ev">${I.tab}회사자료.csv<b>${esc(n.ev)}</b></span>` : ''}</div></div>`
+    + (n.opts ? `<div class="opts">${n.opts.map((o, k) => `<button class="opt" type="button" data-a="opt" data-k="${k}"><b>${o[0]}</b><span>${o[1]}</span></button>`).join('')}</div><div class="acts"><button class="chip" type="button" data-a="keep">그대로 두기<kbd>→</kbd></button></div>`
+      : (n.fix ? `<div class="fix">${esc(n.fix).replace(esc(n.hi), `<span class="new nw">${esc(n.hi)}</span>`)}</div>` : '')
+      + `<div class="acts"><button class="chip" type="button" data-a="keep">그대로 두기<kbd>→</kbd></button><button class="chip" type="button" data-a="edit">직접 쓰기</button><span class="sp"></span>${n.fix ? '<button class="go" type="button" data-a="fix">이렇게 고치기<kbd>Enter</kbd></button>' : `<button class="go" type="button" data-a="hand">${n.hand}<kbd>Enter</kbd></button>`}</div>`)
+    + `</div></div></section>`;
+  gorb = makeOrb($('#gorb')).mood(n.mood);
+  say(`${S.at + 1}번째. ${n.say}`);
+}
+let last = null, toastT = null;
+function toast(t) { $('#toastT').textContent = t; $('#toast').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => $('#toast').classList.remove('on'), 4200); }
+function leave(then, ms = 700) { later(() => { const b = $('#body'); if (b) b.classList.add('out'); later(then, 230); }, ms); }
+function next() {
+  let k = S.at; for (let j = 1; j <= NOTES.length; j++) { const c = (S.at + j) % NOTES.length; if (!S.state[c]) { k = c; break; } }
+  if (S.state.every(Boolean)) return set('done');
+  S.at = k; stop(); render();
+}
+let busy = false;
+function mark(v) { const seg = document.querySelectorAll('.steps .seg')[S.at]; seg.className = 'seg ' + v; S.state[S.at] = v; }
+function remember(label) { last = {at:S.at, state:[...S.state], text:JSON.stringify(S.text), added:{...S.added}, hand:S.hand}; toast(label); }
+function apply(t, html) {
+  if (busy) return; busy = true; const n = NOTES[S.at]; remember('고쳤습니다');
+  const tg = $('#tgt'); tg.classList.add('gone');
+  later(() => { tg.innerHTML = html; tg.classList.remove('gone'); gorb.mood('happy'); const f = $('.fix'); if (f) f.style.opacity = 0; }, 250);
+  S.text[n.s][1][n.i] = t; mark('ok'); leave(() => { busy = false; next(); }, 1250);
+}
+function keep() { if (busy) return; busy = true; remember('그대로 두었습니다'); mark('kept'); leave(() => { busy = false; next(); }, 120); }
+function edit() {
+  const tg = $('#tgt'); if (!tg || busy) return; const n = NOTES[S.at], before = S.text[n.s][1][n.i];
+  tg.textContent = n.fix || before; tg.contentEditable = 'plaintext-only'; tg.focus();
+  const r = document.createRange(); r.selectNodeContents(tg); r.collapse(false); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  const f = $('.fix'); if (f) f.hidden = true;
+  $('.acts').innerHTML = '<button class="chip" type="button" data-a="editno">취소<kbd>Esc</kbd></button><span class="sp"></span><button class="go" type="button" data-a="editok">이 문장으로<kbd>Enter</kbd></button>';
+  tg.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); editOk(); } if (e.key === 'Escape') { e.preventDefault(); render(); } };
+}
+function editOk() { const tg = $('#tgt'), t = tg.textContent.trim(); if (!t) return tg.focus(); tg.contentEditable = 'false'; tg.onkeydown = null; apply(t, `<span class="new">${esc(t)}</span>`); }
+function sheet() {
+  const d = document.createElement('div'); d.className = 'sheet'; d.id = 'sheet'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', '고칠 곳 전체');
+  d.innerHTML = `<div><h2>고칠 곳 일곱<button class="x" type="button" data-a="close" aria-label="닫기">${I.x}</button></h2>${NOTES.map((n, k) => `<button class="row ${S.state[k] || ''}" type="button" data-a="jump" data-k="${k}"><i></i><span>${esc(n.weak ? PLAN[n.s][0] + '에 빠진 내용' : PLAN[n.s][1][n.i])}</span><small>${S.state[k] === 'ok' ? (n.hand && S.hand ? '맡김' : '고침') : S.state[k] ? '그대로' : ''}</small></button>`).join('')}</div>`;
+  document.body.append(d); d.querySelector('.x').focus();
+}
+const closeSheet = () => { const d = $('#sheet'); if (d) d.remove(); };
+
+const ACT = {
+  add() { for (const f of ['사업계획서_시험.docx', '회사자료.csv']) if (!S.files.includes(f)) S.files.push(f); S.menu = null; render(); },
+  rm(k) { S.files.splice(k, 1); if (S.stage === 'limit' && !S.files.some(f => kindOf(f) === 'plan')) return set('drop'); render(); },
+  menu(k) { S.menu = S.menu === k ? null : k; render(); const m = $('.menu button'); if (m) m.focus(); },
+  crit(k) { S.crit = +k; S.menu = null; render(); }, staff(k) { S.staff = +k; S.menu = null; render(); },
+  start() { if (S.files.some(f => kindOf(f) === 'plan')) { S.menu = null; set('read'); } },
+  gpt() { S.staff = 1; set('read'); }, stop() { set('drop'); }, home() { S = fresh(); set('drop'); },
+  back() { if (S.stage === 'note' || S.stage === 'done') { set('drop'); } else { S = fresh(); set('drop'); } },
+  fix() { const n = NOTES[S.at]; apply(n.fix, esc(n.fix).replace(esc(n.hi), `<span class="new nw">${esc(n.hi)}</span>`)); },
+  hand() { if (busy) return; busy = true; remember('개발부에 맡겼습니다'); S.hand = true; gorb.mood('happy'); mark('ok'); leave(() => { busy = false; next(); }, 700); },
+  keep, edit, editok:editOk, editno() { render(); }, all:sheet, close:closeSheet,
+  jump(k) { if (busy) return; closeSheet(); S.at = +k; if (S.stage !== 'note') S.stage = app.dataset.stage = 'note'; stop(); render(); },
+  opt(k) { if (busy) return; busy = true; const n = NOTES[S.at], t = n.opts[k][1]; remember('넣었습니다'); S.added[n.s + ':' + S.at] = t; S.text[n.s][1].push(t); $('#addto').innerHTML = ` <span class="add new">${esc(t)}</span>`; gorb.mood('happy'); document.querySelector('.opts').style.opacity = .25; mark('ok'); leave(() => { busy = false; next(); }, 1350); },
+  save() { S.saved = true; render(); say('저장했습니다'); }, folder() { toast('시안에서는 폴더를 열지 않습니다'); },
+  again() { S.at = 0; set('note'); },
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]');
+  if (!b) { if (S.menu && !e.target.closest('.menu')) { S.menu = null; render(); } if (e.target.id === 'sheet') closeSheet(); return; }
+  const f = ACT[b.dataset.a]; if (f) f(b.dataset.k);
+});
+$('#undo').onclick = () => { if (!last) return; stop(); busy = false; S.state = last.state; S.text = JSON.parse(last.text); S.added = last.added; S.hand = last.hand; S.at = last.at; last = null; $('#toast').classList.remove('on'); set('note'); };
+document.querySelector('.demo').onclick = e => { const d = e.target.dataset.demo; if (!d) return; stop(); busy = false; closeSheet(); $('#toast').classList.remove('on'); S = fresh(); if (d !== 'reset') S.files = ['사업계획서_시험.docx', '회사자료.csv']; set(d === 'limit' ? 'limit' : d === 'note' ? 'note' : 'drop'); };
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if ($('#sheet')) return closeSheet(); if (S.menu) { S.menu = null; render(); } return; }
+  if ($('#sheet') || S.stage !== 'note' || e.target.isContentEditable || e.ctrlKey || e.metaKey || e.altKey) return;
+  const n = NOTES[S.at];
+  if (e.key === 'Enter' && !e.target.closest('button')) { e.preventDefault(); if (n.fix) ACT.fix(); else if (n.hand) ACT.hand(); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); keep(); }
+  if (e.key === 'ArrowLeft' && S.at) ACT.jump(S.at - 1);
+});
+/* 창 어디에 놓아도 받는다. 구는 놓는 쪽을 본다 */
+let depth = 0;
+addEventListener('dragenter', e => { e.preventDefault(); depth++; if (S.stage === 'drop') { const c = $('#comp'); c && c.classList.add('over'); hero && hero.mood('drop'); } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('dragleave', () => { if (--depth <= 0) { depth = 0; const c = $('#comp'); c && c.classList.remove('over'); } });
+addEventListener('drop', e => { e.preventDefault(); depth = 0; if (S.stage !== 'drop') return; for (const f of e.dataTransfer.files) if (!S.files.includes(f.name)) S.files.push(f.name); render(); });
+addEventListener('pointermove', e => { if (S.stage !== 'drop' || S.files.length || !hero) return; const s = $('#heyes').getBoundingClientRect(), dx = (e.clientX - s.left - s.width / 2) / innerWidth, dy = (e.clientY - s.top - s.height / 2) / innerHeight; $('#heyes .o-look').setAttribute('style', `transform:translate(${(dx * 12).toFixed(1)}px,${(dy * 12).toFixed(1)}px)`); });
+$('#borb').innerHTML = spriteHTML(); makeOrb($('#borb')).mood('open');
+S = fresh(); set('drop');
+}
+</script>
+</body>
+</html>
