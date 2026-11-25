@@ -49,9 +49,6 @@
 .nav .lang{grid-column:3;justify-self:end;display:flex;gap:4px;font:600 14px/1 var(--sans)}
 .nav .lang>*{padding:12px 8px;opacity:.78}.nav .lang [aria-current]{opacity:1;font-weight:800}
 .tri .t{top:calc(68px + clamp(8px,1vw,18px))}
-/* 지금 공개본 */
-.no{position:relative;background:#000}.no img{width:100%;height:auto}
-.no p{position:absolute;left:50%;top:84px;transform:translateX(-50%);background:#fff;color:#111;border-radius:999px;padding:10px 18px;font:600 14px/1.3 var(--sans);white-space:nowrap}
 /* 맨 아래: 묻는 곳 한 줄, 잔글씨 한 줄, 큰 synk */
 .end{padding:clamp(44px,5vw,76px) var(--gut) 0;display:grid;grid-template-columns:1fr auto;gap:18px 40px;align-items:end}
 .end .ask{font:600 clamp(19px,1.7vw,25px)/1.4 var(--sans);letter-spacing:-.02em}
@@ -82,21 +79,13 @@
   <a class="k2" href="shift.html"><span class="sc"><div class="m hall"><img src="a/hall-front-port.webp" alt="강사가 큰 화면을 가리키며 청중을 보고 이야기하는 강의장"><div class="scr" aria-hidden="true"><p class="hd">synk는 지금도 일합니다</p><div class="ck"><b><span class="now">00:00</span><i class="sec">00</i></b><span class="wh">서울 지금</span></div><div class="pg"><i></i></div><ol class="jb"></ol><p class="ft">이렇게 30여 가지가 사람 없이 돕니다</p></div></div></span><span class="t"><small>실전</small><b>AI 활용 강의</b></span></a>
   <a class="k3" href="pulse.html"><span class="sc"><video src="a/dodam-port.mp4" poster="a/dodam-port.webp" muted loop autoplay playsinline></video></span><span class="t"><small>브랜드를 드라마로 만드는</small><b>광고</b></span></a>
 </section>
-<section class="hero no" data-v="now" hidden><img src="a/now.webp" alt="지금 공개된 첫 화면"><p>지금 공개본 · 1536×730 창에서 찍음</p></section>
-
 </main>
 <section class="end"><p class="ask">무엇이든 물어보세요 <a href="mailto:hello@synk.im">hello@synk.im</a></p><nav><a href="https://synk.im/#platform-get" target="_blank" rel="noopener">솔리오 받기</a><a href="https://synk.im/#now" target="_blank" rel="noopener">새 소식</a><a href="https://synk.im/account/platform.html#home" target="_blank" rel="noopener">내 홈</a></nav></section>
 <footer class="foot"><nav><a href="founder.html">회사</a><a href="https://synk.im/atlas/" target="_blank" rel="noopener">아틀라스</a><a href="https://synk.im/privacy/" target="_blank" rel="noopener">개인정보처리방침</a><a href="https://synk.im/terms/" target="_blank" rel="noopener">이용약관</a><a href="https://synk.im/data-deletion/" target="_blank" rel="noopener">데이터 삭제</a></nav><span>© 2026 SYNK</span></footer>
 <div class="wm" aria-hidden="true"><span>synk</span></div>
 
-<div class="rev" role="group" aria-label="시안 보기"><button type="button" data-go="a" aria-pressed="true">첫 화면</button><button type="button" data-go="now" aria-pressed="false">지금</button><i></i><a href="pulse.html">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html">창업자</a></div>
-
 <script>
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const nav=$('#nav');
-function show(k){$$('[data-v]').forEach(h=>h.hidden=h.dataset.v!==k);$$('[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===k));scrollTo(0,0);paint()}
-$$('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
-function paint(){nav.hidden=!$('[data-v=now]').hidden;$$('.end,.foot,.wm').forEach(e=>e.hidden=nav.hidden)}
 /* 실제 예약표(docs/_ops/관문_자동화.md, 2026-11-26). 광고 의뢰 확인은 10분마다 5분에 돈다 */
 const J=[['03:30','회사 자료 백업'],['04:00','복원본 만들기'],['05:00','잘된 콘텐츠 조사'],['05:10','지원사업 공고 읽기'],['05:30','서버 암호화 백업'],['06:00','앱 새 판 올리기'],['07:00','오늘 영상 만들기'],['08:30','공모전 찾기'],['09:00','게시물 성과 모으기'],['09:10','나라별 말로 옮기기'],['10:30','여행 자료 다시 확인'],['10:40','유학 접수 마감 확인'],['12:30','영상 원본 백업'],['13:10','지원사업 공고 읽기'],['14:00','SNS 검수와 게시'],['15:00','오늘 영상 만들기'],['17:00','앱 새 판 올리기'],['18:30','메일 훑어보기'],['19:30','내일 주제 찾기'],['20:00','인기 영상 조사'],['21:00','스레드 글 올리기'],['22:10','나라별 말로 옮기기'],['23:00','브랜드 광고 조사']].map(x=>[+x[0].slice(0,2)*60+ +x[0].slice(3),x[0],x[1]]);
 const p2=n=>String(n).padStart(2,'0'),ago=m=>m>=60?Math.floor(m/60)+'시간'+(m%60?' '+m%60+'분':'')+' 뒤':m+'분 뒤';
@@ -110,5 +99,5 @@ $('.jb').innerHTML=[first,[b[1],b[2],ago(gap(b[0]))],[c[1],c[2],ago(gap(c[0]))]]
 $('.pg i').style.width=past(a[0])/(past(a[0])+gap(b[0]))*100+'%'}
 tick();setInterval(tick,1000);
 const wm=$('.wm');if('IntersectionObserver'in window){wm.classList.add('io');new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){wm.classList.add('on');o.disconnect()}},{threshold:.25}).observe(wm)}
-show('a');
+
 </script>

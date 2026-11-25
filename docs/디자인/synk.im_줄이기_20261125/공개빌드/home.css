@@ -1,0 +1,216 @@
+/* synk.im 홈 v12: 세 칸(한국 유학 · AI 강의 · 광고), 묻는 곳 한 줄, 큰 synk. 질문창 · 소식 · PC 앱 받기는 창으로 연다. */
+@font-face{font-family:'DM Mono 500';src:url(/assets/v12/dm-mono-500.woff2) format('woff2');font-weight:500;font-display:swap}
+:root{--ink:#1d1d1f;--sub:#56565b;--panel:#F6F4F1;--coral:#f96859;--coral-ink:#c2402f;--gut:max(20px,env(safe-area-inset-left,0px),min(5vw,72px),calc((100vw - 1240px)/2));--sans:'SYNK Sans','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;--mono:'DM Mono 500',ui-monospace,Consolas,monospace;--ease:cubic-bezier(.22,.8,.22,1)}
+*{box-sizing:border-box}
+html{background:#fff}
+body{margin:0;background:#fff;color:var(--ink);font:400 clamp(16px,1.2vw,18px)/1.6 var(--sans);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+img,video{display:block}
+h1,h2,h3,p,ul,ol{margin:0;padding:0}
+ul,ol{list-style:none}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--coral);outline-offset:4px;border-radius:8px}
+.sr,.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.anchor{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+
+/* 윗줄: 그림 위에 synk 하나와 언어만 */
+.nav{position:absolute;z-index:5;inset:12px 12px auto;height:68px;padding:0 clamp(20px,2vw,34px);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;color:#fff;pointer-events:none}
+.nav>*{pointer-events:auto}
+.nav .logo{grid-column:2;font:800 28px/1 var(--sans);letter-spacing:-.04em;padding:10px 8px}
+.nav .lang{grid-column:3;justify-self:end;display:flex;gap:4px;font:600 14px/1 var(--sans)}
+.nav .lang>*{padding:15px 8px;white-space:nowrap}
+.nav .lang [aria-current]{font-weight:800}
+.nav .lang a:hover{text-decoration:underline;text-underline-offset:5px}
+
+/* 세 칸 */
+.tri{position:relative;display:flex;gap:10px;height:100vh;height:100svh;min-height:600px;max-height:1180px;padding:12px}
+.pn{position:relative;flex:1 1 0;min-width:0;border-radius:26px;overflow:hidden;background:#010101;color:#fff}
+.k1{color:#14120f;background:#c5d3ed}
+.k3::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.66),transparent 46%);pointer-events:none}
+.pn h2{position:absolute;z-index:1;inset:0;font:inherit}
+.pn h2 a{position:absolute;inset:0;padding:calc(68px + clamp(8px,1vw,18px)) 20px 0 clamp(20px,2vw,34px);border-radius:26px}
+.pn h2 a:focus-visible{outline-offset:-6px;border-radius:26px}
+.pn h2 small{display:block;font:600 clamp(16px,1.25vw,21px)/1.3 var(--sans);letter-spacing:-.01em}
+.pn h2 b{display:flex;align-items:center;gap:.34em;margin-top:8px;font:800 clamp(30px,3.15vw,56px)/1.1 var(--sans);letter-spacing:-.04em;white-space:nowrap}
+.pn h2 b::after{content:"";flex:none;width:.24em;height:.24em;border-right:.085em solid;border-top:.085em solid;transform:rotate(45deg);transition:translate .4s var(--ease)}
+.pn:hover h2 b::after{translate:.16em 0}
+.k3 h2{z-index:2}
+.sc{position:absolute;inset:0;overflow:hidden;container-type:size}
+.sc .m{position:absolute;container-type:inline-size;left:50%;transform:translateX(-50%)}
+.sc .m>img{position:absolute;inset:0;width:100%;height:100%}
+.sc>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+/* 칸이 넓고 낮을수록 풀밭과 천장을 더 잘라 마을과 화면이 제목 아래에 선다 */
+.sc .town,.pins .town{width:max(100cqw,84cqh*1040/1604);aspect-ratio:1040/1604;bottom:calc(-1*clamp(0px,154.2cqw - 100cqh,34cqw))}
+.sc .hall{width:max(100cqw,90cqh*1024/1536);aspect-ratio:1024/1536;top:calc(3cqh - clamp(0px,150cqw - 130cqh,30cqw));left:34%;transform:translateX(-34%)}
+/* 마을 이름표는 칸 링크 위에 따로 놓인 링크다 */
+.pins{position:absolute;z-index:2;inset:0;container-type:size;pointer-events:none}
+.pins .town{position:absolute;left:50%;transform:translateX(-50%);container-type:inline-size}
+.pin{position:absolute;pointer-events:auto;transform:translate(-50%,-100%);padding:.5em .8em;border-radius:999px;background:#fff;color:#1b1a12;font:700 clamp(12px,2.9cqi,16px)/1 var(--sans);white-space:nowrap;box-shadow:0 8px 22px rgba(60,50,10,.2);transition:background .25s,color .25s}
+.pin::before{content:"";position:absolute;inset:-9px -2px}
+.pin:hover,.pin:focus-visible{background:#1b1a12;color:#fff}
+
+/* 강의장 화면: 지금 시각과 예약된 일. 강사 손이 오른쪽 아래를 덮어 줄은 왼쪽만 쓴다 */
+.scr{position:absolute;left:8.2%;top:31.2%;width:68%;height:27.1%;padding:3.4cqi 4.2cqi 0;color:#2b1f12;font:600 max(12px,2.62cqi)/1.2 var(--sans);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;visibility:hidden}
+.scr.on{visibility:visible}
+.scr .hd{font:800 max(14px,3.75cqi)/1.25 var(--sans);letter-spacing:-.03em}
+.scr .ck{display:flex;align-items:flex-end;gap:2.6cqi;margin-top:1.7cqi}
+.scr .ck b{display:flex;align-items:flex-start;font:500 10.2cqi/.9 var(--mono);letter-spacing:-.06em}
+.scr .sec{margin:.12em 0 0 .3em;font:500 .3em/1 var(--mono);letter-spacing:0;color:var(--coral-ink)}
+.scr .wh{padding-bottom:.35em;color:#6f5a3c}
+.scr .pg{height:2px;margin:1.9cqi 0 1.2cqi;background:rgba(43,31,18,.16)}
+.scr .pg i{display:block;height:100%;width:0;background:var(--coral)}
+.scr .jb{width:86%}
+.scr .jb li{display:grid;grid-template-columns:3.5em minmax(0,1fr) auto;gap:.4em;padding:.24em 0}
+.scr .jb span{overflow:hidden;text-overflow:ellipsis}
+.scr .jb time{font:500 1em/1.2 var(--mono);color:#6f5a3c}
+.scr .jb em{font-style:normal;font-weight:500;color:#6f5a3c}
+.scr .jb li:first-child{font-weight:800}
+.scr .ft{margin-top:.5em;font-size:.92em;color:#6f5a3c}
+@container (max-width:420px){.scr .ft{display:none}}
+@container (max-width:345px){.scr .jb li:nth-child(3){display:none}}
+.scr.tight .jb em{display:none}
+
+@media (hover:hover) and (min-width:901px) and (prefers-reduced-motion:no-preference){.pn{transition:flex-grow .7s var(--ease)}.tri:has(.pn:hover) .pn:not(:hover){flex-grow:.91}.pn:hover{flex-grow:1.18}}
+@media (prefers-reduced-motion:no-preference){.pn{animation:rise .9s var(--ease) both}.k2{animation-delay:.1s}.k3{animation-delay:.2s}@keyframes rise{from{translate:0 40px;opacity:0}to{translate:0 0;opacity:1}}}
+@media (min-width:901px) and (max-width:1240px){.tri{height:min(100svh,66vw)}}
+
+/* 맨 아래: 묻는 곳 한 줄, 잔글씨, 큰 synk */
+.end{padding:clamp(44px,5vw,76px) var(--gut) 0;display:grid;grid-template-columns:1fr auto;gap:18px 40px;align-items:end}
+.end .ask{font:600 clamp(19px,1.7vw,25px)/1.4 var(--sans);letter-spacing:-.02em}
+.end .ask button{font:inherit;letter-spacing:inherit}
+.end .ask button:hover{text-decoration:underline;text-underline-offset:6px}
+.end .ask a{font-weight:800;white-space:nowrap}
+.end nav{display:flex;flex-wrap:wrap;gap:4px 24px;font:700 16px/1.4 var(--sans)}
+.end nav>*{padding:8px 0}
+.end nav>*:hover,.foot nav>*:hover{text-decoration:underline;text-underline-offset:5px}
+.foot{padding:clamp(18px,2vw,30px) var(--gut) clamp(8px,1vw,18px);font-size:14px;color:var(--sub)}
+.foot nav{display:flex;flex-wrap:wrap;gap:2px 24px}
+.foot nav>*{padding:6px 0}
+.foot-bottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 28px;margin-top:8px}
+.foot-bottom a{text-decoration:underline;text-underline-offset:3px}
+.wm{position:relative;height:30.4vw;overflow:hidden}
+.wm span{position:absolute;left:50%;top:-12.6vw;transform:translateX(-51%);font:800 46vw/1 var(--sans);letter-spacing:-.07em;white-space:nowrap;color:#0b0b0c;user-select:none}
+@media (prefers-reduced-motion:no-preference){.wm.io span{translate:0 22%;opacity:0;transition:translate 1s var(--ease),opacity .6s}.wm.on span{translate:0 0;opacity:1}}
+
+/* 창: 묻기 · 새 소식 · 솔리오 받기 */
+.sheet{border:0;padding:0;width:min(1040px,calc(100vw - 32px));max-height:min(88vh,940px);border-radius:28px;background:var(--panel);color:var(--ink);overflow:auto;overscroll-behavior:contain}
+.sheet::backdrop{background:rgba(8,9,12,.55)}
+.sheet-x{position:sticky;z-index:2;top:0;height:0}
+.sheet-x button{position:absolute;right:16px;top:16px;width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.sheet-x button::before,.sheet-x button::after{content:"";position:absolute;left:14px;top:21px;width:16px;height:2px;border-radius:2px;background:#1d1d1f;transform:rotate(45deg)}
+.sheet-x button::after{transform:rotate(-45deg)}
+.sheet-in{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(24px,4vw,64px);align-items:start;padding:clamp(28px,4.4vw,60px)}
+.sheet .head{display:grid;gap:14px;justify-items:start;align-content:start;padding-right:24px;position:sticky;top:clamp(28px,4.4vw,60px)}
+.sheet h2{text-wrap:balance}
+.sheet .head h2{font:700 clamp(30px,3.6vw,48px)/1.14 var(--sans);letter-spacing:-.035em}
+.sheet .head>p:not(.tag){font:500 clamp(16px,1.3vw,18px)/1.6 var(--sans)}
+.sheet .tag{font:700 15px/1.2 var(--sans)}
+.ask-links{display:grid;gap:14px;justify-items:start;margin-top:6px}
+.ask-links a,.ask-links button{display:inline-flex;gap:8px;align-items:center;font:600 16px/1.3 var(--sans);padding-bottom:3px;border-bottom:1px solid currentColor}
+.ask-links .ask-out{font:600 15px/1.5 var(--sans)}
+.ask-out:empty{display:none}
+.ask-k{font:700 15px/1 var(--sans);margin-bottom:14px}
+.faq{display:grid;gap:8px}
+.faq li{background:#fff;border-radius:18px}
+.faq .faq-q{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:baseline;padding:16px 20px;font:600 clamp(17px,1.4vw,20px)/1.35 var(--sans);letter-spacing:-.02em}
+.faq .no{font:600 14px/1 var(--sans);font-variant-numeric:tabular-nums}
+.faq .faq-q i{font-style:normal;font-weight:500;transition:transform .25s var(--ease)}
+.faq .faq-q[aria-expanded="true"] i{transform:rotate(45deg)}
+.faq-a{display:grid;gap:16px;justify-items:start;padding:2px 20px 22px 50px}
+.faq-a p{font:500 16px/1.65 var(--sans);max-width:34em}
+#messages{display:grid;gap:8px;margin-top:8px}
+#messages:empty{display:none}
+.ask-form{margin-top:14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;background:#fff;border-radius:28px;padding:8px 8px 8px 24px;border:1.5px solid #1d1d1f}
+.ask-form textarea{border:0;outline:0;resize:none;min-width:0;height:44px;padding:10px 0;background:none;color:inherit;font:500 17px/1.35 var(--sans)}
+.ask-form:focus-within{outline:3px solid var(--coral);outline-offset:3px}
+.ask-form textarea::placeholder{color:#4a4744;opacity:1}
+.ask-form button{height:46px;padding:0 22px;border-radius:999px;background:#1d1d1f;color:#fff;font:600 16px/1 var(--sans);display:inline-flex;gap:8px;align-items:center}
+.ask-form button:disabled{cursor:default}
+.ask-note{margin-top:14px;font:500 14px/1.5 var(--sans);color:#4a4744}
+.qa-a{width:100%}
+.qa-rail{display:none}
+.qa-body{display:grid;gap:14px;justify-items:start;min-width:0}
+.qa-body p{font:500 16px/1.65 var(--sans);max-width:34em}
+.qa-sub{font:700 17px/1.35 var(--sans);margin-top:6px}
+.faq button.qa-term,.qa-term{font:inherit;color:inherit;letter-spacing:inherit;border-bottom:1px dashed currentColor;display:inline;width:auto;height:auto;text-align:inherit}
+.qa-more summary{cursor:pointer;list-style:none;display:inline-flex;gap:8px;align-items:center;font:600 15px/1 var(--sans);padding:6px 0}
+.qa-more summary::-webkit-details-marker{display:none}
+.qa-more>div{display:grid;gap:12px;margin-top:10px}
+.qa-count{color:#4a4744}
+.qa-go{display:flex;flex-wrap:wrap;gap:10px 22px}
+.qa-go a{display:inline-flex;gap:8px;align-items:center;font:600 16px/1.3 var(--sans);padding-bottom:3px;border-bottom:1.5px solid currentColor}
+.qa-next{display:grid;gap:10px;width:100%}
+.qa-body .qa-label{font:700 14px/1.2 var(--sans);color:#4a4744}
+.qa-next ul{display:flex;flex-wrap:wrap;gap:8px}
+.faq .qa-next button,.qa-next button{display:inline-flex;gap:8px;align-items:center;width:auto;height:auto;padding:10px 16px;border-radius:999px;background:var(--panel);color:#1d1d1f;font:600 15px/1.35 var(--sans);letter-spacing:0}
+.qa-body .qa-meta{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font:500 13px/1.4 var(--sans);color:#4a4744}
+.faq .qa-meta button,.qa-meta button{display:inline;width:auto;height:auto;padding:0;font:inherit;color:inherit;letter-spacing:0;text-decoration:underline;text-underline-offset:3px}
+.qa-entry{background:#fff;border-radius:18px;padding:18px 20px;display:grid;gap:14px;scroll-margin-top:72px}
+.qa-q{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:baseline}
+.qa-no{font:600 14px/1 var(--sans);font-variant-numeric:tabular-nums}
+.qa-q-text{font:600 clamp(17px,1.4vw,20px)/1.35 var(--sans);letter-spacing:-.02em}
+.qa-tag{font:600 13px/1 var(--sans);color:#4a4744}
+.qa-entry .qa-a{padding-left:30px}
+.doc-dialog{border:0;border-radius:24px;padding:0;width:min(720px,92vw);max-height:84vh;color:#1d1d1f;background:#fff;overflow:auto}
+.doc-dialog::backdrop{background:rgba(8,9,12,.5)}
+.doc-head{display:flex;justify-content:space-between;gap:16px;align-items:start;padding:24px 28px;border-bottom:1px solid #E2DED9;position:sticky;top:0;background:#fff}
+.doc-head .mono{font:600 13px/1.3 var(--sans);color:#4a4744}
+.doc-head h2{font:700 22px/1.3 var(--sans);margin-top:6px}
+.doc-close{flex:none;width:44px;height:44px;border-radius:50%;background:var(--panel);font:500 22px/1 var(--sans);color:#1d1d1f;text-align:center}
+.doc-body{padding:20px 28px 28px;display:grid;gap:22px}
+.doc-body h3{font:700 17px/1.35 var(--sans)}
+.doc-body p{font:500 16px/1.65 var(--sans);margin-top:8px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;background:#1d1d1f;color:#fff;padding:12px 20px;border-radius:999px;font:600 15px/1.3 var(--sans);max-width:calc(100vw - 40px)}
+.news>ol,.news>details>ol{border-top:1px solid #E2DED9}
+.news li a{display:grid;grid-template-columns:104px 72px minmax(0,1fr) auto;gap:6px 14px;align-items:baseline;padding:16px 0;border-bottom:1px solid #E2DED9}
+.news time{font:500 15px/1.3 var(--sans);font-variant-numeric:tabular-nums}
+.news .who{font:700 14px/1.3 var(--sans)}
+.news b{font:600 clamp(17px,1.4vw,20px)/1.35 var(--sans);letter-spacing:-.02em}
+.news summary{cursor:pointer;list-style:none;display:inline-flex;gap:10px;align-items:center;padding:20px 0;font:600 16px/1 var(--sans)}
+.news summary::-webkit-details-marker{display:none}
+.news summary::after{content:"+";font-weight:500}
+.news details[open] summary::after{content:"−"}
+.pf{position:relative;padding:clamp(28px,4.4vw,60px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px clamp(24px,4vw,64px);align-items:start}
+.pf-say{padding-right:24px}
+.pf h2{font:700 clamp(28px,3vw,42px)/1.18 var(--sans);letter-spacing:-.03em;margin-top:14px}
+.pf-say>p:not(.tag){text-wrap:pretty;font:500 clamp(15px,1.2vw,18px)/1.6 var(--sans);color:#4a4744;margin-top:12px;max-width:26em}
+.pf-get{border-top:2px solid #1d1d1f;margin-top:8px}
+.pf-get a{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:18px;align-items:center;padding:18px 0;border-bottom:1px solid rgba(29,29,31,.2);font:600 clamp(17px,1.5vw,22px)/1.3 var(--sans);transition:padding .3s var(--ease)}
+.pf-get a:hover{padding-left:12px}
+.pf-get small{font:500 14px/1 var(--sans);color:#4a4744;font-variant-numeric:tabular-nums}
+.pf-get .arr{font-size:22px}
+.pf-more{grid-column:2;display:flex;flex-wrap:wrap;gap:12px 28px;font:600 15px/1.3 var(--sans)}
+.pf-more a{display:inline-flex;gap:8px;align-items:center;padding-bottom:3px;border-bottom:1px solid currentColor}
+.pf-help{grid-column:2;font:500 15px/1.6 var(--sans);color:#4a4744}
+.pf-help summary{cursor:pointer;list-style:none;display:inline-flex;gap:10px;align-items:center;font:600 15px/1 var(--sans);color:#1d1d1f;padding:6px 0}
+.pf-help summary::-webkit-details-marker{display:none}
+.pf-help summary::after{content:"+";font-weight:500}
+.pf-help[open] summary::after{content:"−"}
+.pf-help ul{display:grid;gap:10px;margin-top:12px;max-width:40em}
+.pf-help b{display:block;color:#1d1d1f;font-weight:700}
+
+@media (max-width:900px){
+  .tri{flex-direction:column;height:auto;max-height:none;padding:10px}
+  .pn{flex:1 0 auto;height:min(122vw,560px)}
+  .k1{height:min(138vw,620px)}
+  .nav{inset:10px 10px auto;height:60px;color:#14120f}
+  .nav .logo{font-size:25px}
+  .nav .lang{gap:0}
+  .nav .lang>*{padding:15px 6px}
+  .pn h2 a{padding-top:clamp(20px,2.1vw,34px)}
+  .k1 h2 a{padding-top:72px}
+  .end{grid-template-columns:1fr}
+  .sheet{width:100vw;max-width:100vw;max-height:88vh;max-height:88svh;margin:auto 0 0;border-radius:26px 26px 0 0}
+  .sheet-in,.pf{grid-template-columns:minmax(0,1fr)}
+  .sheet .head{position:static}
+  .pf-more,.pf-help{grid-column:1}
+  .news li a{grid-template-columns:auto minmax(0,1fr)}
+  .news li a b{grid-column:1 / -1}
+  .news .arr{display:none}
+  .faq-a{padding-left:20px}
+  .qa-entry .qa-a{padding-left:0}
+  .qa-q{grid-template-columns:auto minmax(0,1fr)}
+  .qa-tag{grid-column:2}
+}
+@media (max-width:350px){.nav{padding:0 12px 0 20px}.nav .lang>*{padding:15px 4px}}

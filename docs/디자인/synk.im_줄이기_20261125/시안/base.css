@@ -6,7 +6,7 @@
   --ink:#1d1d1f;--paper:#ffffff;--panel:#f6f4f1;--night:#08080a;--sub:#56565b;--line:rgba(29,29,31,.14);
   --coral:#f96859;
   --gut:max(20px,env(safe-area-inset-left,0px),min(5vw,72px),calc((100vw - 1240px)/2));
-  --S:clamp(84px,10vw,150px);--rev:44px;--vh:calc(100svh - var(--rev));
+  --S:clamp(84px,10vw,150px);--rev:0px;--vh:calc(100svh - var(--rev));
   --sans:"SYNK Sans","SUIT Variable",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --serif:"SYNK Serif","Noto Serif KR","Apple SD Gothic Neo",serif;
   --mono:"DM Mono",ui-monospace,Consolas,monospace;
