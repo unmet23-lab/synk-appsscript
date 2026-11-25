@@ -359,14 +359,14 @@
     },
     {
       "계정": "lab-id-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-23T13:00:00+07:00",
       "지문": "d50f72cbb3fc3d46d3cc30a11e7ba34fa4dd11ad7e7cdc45f7aa3b2cbf3a67d2",
       "게시글지문": "9bcbc4c0f6e1f5d57c3606c1738d5bd08226aadfc67ef368e4f61c0cba438fb7",
       "방법": "ego-browser · Profile 15 · 공간 「틱톡 synklab.id 1119-1900」(262) · TikTok Studio 업로드(파일 docs/마케팅/LAB_사층F_mn_20261101/게시/판본/ID/video.mp4, 판 지문 일치) → 표지(Edit cover → Upload cover → Save) → 예약 · AI 표시 끔 · 스크립트 C:/Users/q1212/ego/tiktok-20261119-1900/run-id-1123-15.mjs",
       "게시물ID": "7709824523264183604",
       "주소": "https://www.tiktok.com/@synklab.id/video/7709824523264183604",
-      "확인": "TikTok Studio 콘텐츠 목록(@synklab.id, Profile 15) 줄 「Nov 23, 3:00 PM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「Dalam bahasa Korea, angka 4 dibaca 사 (sa), dan 死 yang artinya “mati” juga dibaca 사 (sa). Makanya di banyak gedung di Kor」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 23, 2026 15:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 9, 첫 장면과 12) · 누르기 전 표지 유지 true",
+      "확인": "틱톡에 로그인하지 않은 ego 프로필로 영상 쪽을 열어 statusCode 0 · 비공개 아님 · createTime 2026-11-23 15:00 KST · 글 첫 줄 「Dalam bahasa Korea, angka 4 dibaca 사 (sa」 · 2026-11-25 19:33 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-19 18시 회차 — 8장 띠 · 음량 · 게시글 대조 · 링크 200 · 올리기 전 검사 고칠 것 0)",
       "기록시각": "2026-11-19T10:53:05.086Z"
     },
