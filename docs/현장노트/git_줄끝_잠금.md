@@ -855,6 +855,7 @@ ode_modules`로 끊고 공용 `node_modules`가 남았는지 본 뒤, 커밋이 
 - 고침: 그 워크트리에서 `npm ci --prefix packages/atlas --no-audit --no-fund`(잠금 파일 그대로, `node_modules`는 Git 밖) 뒤 다시 올린다. 깔 수 없으면 두 시험만 깨진 것을 확인하고 `--시험건너뜀 "<까닭>"`.
 - 다시 확인: 깐 뒤 두 시험 91/91, 다시 올린 `--실행`이 관련 시험을 건너뛰지 않고 통과.
 - 11-19에는 공모 지도 작업본에 루트 의존성 `parse5`가 빠져 공개 도구의 CSP 시험이 시작하자마자 실패했다. 작업본 루트에서 `npm ci`를 실행한 뒤 `node --test tests/공개-importmap-csp.test.cjs` 10건이 모두 통과했다.
+- 11-26 덧붙임(Claude, D: 워크트리에서 WORLD 앞면 올리기): 관련 시험 171파일이 세 번 멈췄다. 새 워크트리에 빠진 것이 셋이었다. ① `packages/atlas/node_modules`(위 `npm ci`) ② 뿌리 `node_modules` — `study-build-portability` · `company-release-closed-parent`가 떨어진다. PowerShell `New-Item -ItemType Junction`으로 공용 작업본의 `node_modules`에 잇고, 워크트리를 지우기 전에 링크부터 끊는다. ③ D:의 임시 폴더 — `path-app/server.test.mjs`가 떨어진다([시험 노트](시험_화면확인.md)의 TEMP 덧붙임). 셋을 갖추고 올리니 깨진 시험 없이 올라갔다. D:에서 올릴 때는 `--실행` 전에 셋을 먼저 갖춘다.
 
 ### 맞는 키인데 `git fetch` · `바로올리기`가 「Permission denied (publickey)」를 번갈아 낸다 — GitHub 쪽 성능 저하일 때가 있다 (2026-11-04 Claude)
 - 증상: 11-04 19시대에 `git fetch` · `ls-remote` · `바로올리기 따라가기`가 `git@github.com: Permission denied (publickey).`로 끝났다. 같은 키로 `ssh -T git@github.com`이 몇 초 간격으로 「Hi unmet23-lab!」와 실패를 번갈아 냈고, `ssh -v`에는 `Offering public key` 뒤 `Authentications that can continue`만 남았다. 바로 앞 시각까지 같은 명령이 됐다.

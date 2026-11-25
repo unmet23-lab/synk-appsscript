@@ -458,7 +458,7 @@ async function result({host, C, K, t, res, live, onDone, root, finished}) {
   if (tested.length || !hg?.ok) { await C.say(t, line, 850); if (!live()) return; }
   await C.say(t, S.bell, 750); if (!live()) return;
   const go = ctaButton(K, K.L(UI.go), fin.minutes || 0); C.add(go); go.focus?.({preventScroll: true});
-  go.onclick = async () => { if (!live()) return; root.querySelectorAll('button').forEach(b => { b.disabled = true; }); K.snd('paper'); const next = await host.clubDone?.(); leave(root, onDone, next); };
+  go.onclick = async () => { if (!live()) return; root.querySelectorAll('button').forEach(b => { b.disabled = true; }); K.snd('paper'); let next = null; try { next = await host.clubDone?.(); } catch {} leave(root, onDone, next); };
 }
 
 /* ── 다음 날부터: 튜터 알림 한 가지 ── */
