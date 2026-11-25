@@ -55,7 +55,7 @@ export const TAGS: { from: number; to: number; b: string; i: string }[] = [
   { from: S.kakao, to: S.legs, b: '카카오맵', i: '가장 먼 구간을 다시 쟀어요' },
   { from: S.legs, to: S.without, b: '카카오맵', i: '여섯 구간을 다 쟀어요' },
   { from: S.without, to: S.line, b: 'ChatGPT', i: '한 줄 없이 보냈더니' },
-  { from: S.line, to: S.end, b: '붙일 한 줄', i: '도시만 바꿔서 쓰면 돼요' },
+  { from: S.line, to: S.end, b: '붙일 한 줄', i: '도시와 날짜는 앞에 적어요' }, // 최종 확인(11-25) 「큰 글의 한 줄에는 도시가 없다(말풍선의 「부산 2박 3일이야.」에만)」
   { from: S.end, to: 99, b: 'ChatGPT', i: '지도 없이 온 답에 이어서' },
 ];
 
@@ -107,9 +107,10 @@ export const SCENE_DUR = 6.0;
 export const SCENE_CUTS: { at: number; n: string }[] = [{ at: 0, n: 'draw' }];
 // 카카오맵 자동차 길찾기로 잰 구간 시간(2026-11-25 아침, 기획.md 「실험」) — 지도 좌표(map_all) 기준 자리
 // yl = 본편 「구간마다」 장면(판 윗변 LEGS_PT)에서 쓰는 자리 — 글자 아래 끝이 화면 아래 캡션 자리(1428px) 위에 오게
-export const LEG_LABELS: { d: number; text: string; x: number; y: number; yl?: number }[] = [
-  { d: 1, text: '18분 · 16분', x: 700, y: 410 },
-  { d: 2, text: '10분 · 6분', x: 250, y: 752 },
+// xl = 본편 「구간마다」 장면의 가로 자리 — 최종 확인(11-25) 「「18분 · 16분」은 1번 핀에, 「10분 · 6분」은 5 · 6번 핀에 닿는다」로 핀에서 뗀다
+export const LEG_LABELS: { d: number; text: string; x: number; y: number; xl?: number; yl?: number }[] = [
+  { d: 1, text: '18분 · 16분', x: 700, y: 410, xl: 640, yl: 380 },
+  { d: 2, text: '10분 · 6분', x: 250, y: 752, xl: 292 },
   { d: 3, text: '21분 · 13분', x: 480, y: 955, yl: 925 },
 ];
 export const LEGS_PT = 420;

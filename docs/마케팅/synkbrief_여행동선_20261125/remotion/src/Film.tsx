@@ -91,7 +91,7 @@ const RoutePanel: React.FC<{ draws: Draw[]; legs?: boolean }> = ({ draws, legs }
 };
 // 「구간마다」 — 다 그려진 원래 화면(모든 날짜) 위에 카카오맵으로 잰 구간 시간을 길 옆에(장면 심사 v7 「선마다 이동 시간」)
 // 올리기 전 검사 「아래 앱 글자 자리」 — 우리가 얹은 「10분 · 6분」 · 「21분 · 13분」이 화면 아래 캡션 자리에 들어 판을 위로 올렸다(판 윗변 LEGS_PT).
-// 판 위쪽은 큰 글 밑에 들어가니 그늘을 얹는다
+// 판 위쪽은 큰 글 밑에 들어가니 그늘을 얹는다 — 최종 확인(11-25) 「큰 글 둘째 줄 뒤에 지도 단추 「현재 영업 중」이 비친다」로 그늘을 더 짙고 길게
 const LegsPanel: React.FC = () => {
   const f = useCurrentFrame();
   const t = S.legs + f / FPS;
@@ -99,11 +99,11 @@ const LegsPanel: React.FC = () => {
   return (
     <>
       <Pic n="map_all_tall" x={0} y={0} k={k} />
-      <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 330, background: `linear-gradient(to bottom, rgba(${SHADE},0.97) 0%, rgba(${SHADE},0.9) 45%, rgba(${SHADE},0) 100%)` }} />
+      <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 330, background: `linear-gradient(to bottom, rgba(${SHADE},0.99) 0%, rgba(${SHADE},0.97) 52%, rgba(${SHADE},0) 100%)` }} />
       {LEG_LABELS.map((l, i) => {
         const p = inAt(t, S.legs + 0.1 + i * 0.12, 0.2);
         return p <= 0 ? null : (
-          <div key={l.d} style={{ position: 'absolute', left: l.x * k, top: (l.yl ?? l.y) * k + (1 - p) * 14, opacity: p, fontFamily: KO, fontWeight: 800, fontSize: 50, letterSpacing: '-0.02em', color: '#fff', whiteSpace: 'nowrap', textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.9)' }}>{l.text}</div>
+          <div key={l.d} style={{ position: 'absolute', left: (l.xl ?? l.x) * k, top: (l.yl ?? l.y) * k + (1 - p) * 14, opacity: p, fontFamily: KO, fontWeight: 800, fontSize: 50, letterSpacing: '-0.02em', color: '#fff', whiteSpace: 'nowrap', textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.9)' }}>{l.text}</div>
         );
       })}
     </>
@@ -166,15 +166,17 @@ const KakaoPanel: React.FC = () => {
   );
 };
 // 한 줄 없이 보낸 답(E06) — 날마다 네 곳 표 → 「먼 곳까지」에 화면을 올려 열두 곳 지도(해동용궁사까지)를 크게(미학 맹검 「지도가 손톱만 하다」)
+// 최종 확인 미흡(11-25 19:20) — 1.04배 표가 판의 다가감으로 「3일 차」 · 「이기대 해안산책」을 화면 끝에 걸었고, 화면을 올린 뒤 표 아래 줄이 판 윗변에 반쯤 잘려 남았다.
+// 표는 0.96배(다가감 drift 0.012에도 좌우 여백 50px), 올리는 거리는 표가 판 윗변 위로 다 넘어가도록(ym - 20) 잡는다 — 표 줄이 반만 보이는 장이 없다
 const WithoutPanel: React.FC = () => {
   const f = useCurrentFrame();
   const t = S.without + f / FPS;
-  const kt = 1.04;
+  const kt = 0.96;
   const km = 0.95;
   const yt = 30;
   const ym = yt + SZ.e06_table[1] * kt + 26;
   const at = 16.15 + 0.912;
-  const up = interpolate(t, [at - 0.05, at + 0.45], [0, ym - 150], { ...clamp, easing: EASE_OUT });
+  const up = interpolate(t, [at - 0.05, at + 0.45], [0, ym - 20], { ...clamp, easing: EASE_OUT });
   return (
     <div style={{ position: 'absolute', left: 0, top: -up, width: 1080, height: 2400 }}>
       <Pic n="e06_table" x={center('e06_table', kt)} y={yt} k={kt} />
@@ -184,16 +186,20 @@ const WithoutPanel: React.FC = () => {
 };
 // 5 붙인 한 줄 — 말풍선 끝 줄을 「하루에」에 크게, 그 아래 답의 「관광지 사이 이동이 30분 이내가 되도록 계획했어」
 const FADE_TOP: React.CSSProperties = { WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 34%)', maskImage: 'linear-gradient(to bottom, transparent 0%, #000 34%)' };
+// 최종 확인 미흡(11-25 19:20) — 1.06배로 너비를 꽉 채운 답 두 줄과 1.42배 말풍선이 판의 다가감(origin 70%)으로 왼쪽 끝 밖으로 나가 첫 글자가 잘렸다.
+// 답 두 줄은 0.98배, 말풍선은 1.36배(오른쪽 끝 1010)로 줄이고, 이 판의 다가감을 가운데에서 작게(Boards · drift 0.012) 한다 — 마지막 장에서도 좌우 여백이 50px 넘게 남는다
+const LINE_K = 1.36;
+const INTRO2_K = 0.98;
 const LinePanel: React.FC = () => {
   const f = useCurrentFrame();
   const t = S.line + f / FPS;
-  const g = interpolate(t, [S.lineIn - 0.05, S.lineIn + 0.3], [1.15, 1.42], { ...clamp, easing: EASE_OUT });
-  const y2 = 90 + SZ.bubble_line[1] * 1.42 + 70;
+  const g = interpolate(t, [S.lineIn - 0.05, S.lineIn + 0.3], [1.12, LINE_K], { ...clamp, easing: EASE_OUT });
+  const y2 = 90 + SZ.bubble_line[1] * LINE_K + 70;
   return (
     <>
       {/* 보낸 말풍선의 아래 끝(실제 화면) — 위 가장자리는 말풍선이 위로 이어지게 흐린다(미학 맹검 「오려 붙인 띠」) */}
-      <Pic n="bubble_line" x={right('bubble_line', g)} y={90} k={g} style={FADE_TOP} />
-      <Rise n="intro2" x={center('intro2', 1.06)} y={y2} k={1.06} p={inAt(t, 19.55 + 2.727)} />
+      <Pic n="bubble_line" x={right('bubble_line', g, 1010)} y={90} k={g} style={FADE_TOP} />
+      <Rise n="intro2" x={center('intro2', INTRO2_K)} y={y2} k={INTRO2_K} p={inAt(t, 19.55 + 2.727)} />
       <Composer />
     </>
   );
@@ -303,8 +309,8 @@ const Boards: React.FC<{ v: Variant }> = ({ v }) => (
     <Seq a={S.excl} b={S.kakao}><Board drift={0.012} origin="50% 45%"><ExclPanel /></Board></Seq>
     <Seq a={S.kakao} b={S.legs}><Board drift={0.016} origin="20% 15%" bg={WHITE}><KakaoPanel /></Board></Seq>
     <Seq a={S.legs} b={S.without}><Board pt={LEGS_PT} drift={0.03} origin="45% 45%"><LegsPanel /></Board></Seq>
-    <Seq a={S.without} b={S.line}><Board drift={0.025} origin="50% 30%"><WithoutPanel /></Board></Seq>
-    <Seq a={S.line} b={S.end}><Board drift={0.03} origin="70% 15%"><LinePanel /></Board></Seq>
+    <Seq a={S.without} b={S.line}><Board drift={0.012} origin="50% 30%"><WithoutPanel /></Board></Seq>
+    <Seq a={S.line} b={S.end}><Board drift={0.012} origin="50% 15%"><LinePanel /></Board></Seq>
     <Seq a={S.end} b={totalOf(v)}><Board drift={0.02} origin="50% 40%" bg={LIGHT} front={<EndAsk />}><EndPanel v={v} /></Board></Seq>
   </>
 );
