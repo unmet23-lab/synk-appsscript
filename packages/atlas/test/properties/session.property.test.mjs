@@ -261,6 +261,16 @@ function checkHeld(run, rows, top) {
     );
     break;
   }
+  // 5-3 전 고침 GB3(설계 주인 11-25): 이유가 idle(채우기 · 「다시」를 기다리는 사이의 채우기 · 낼 것 없음)이면, 돌아온 것이 남았는지(시험이
+  // 따로 센 run.due)를 근거 칸 left가 그대로 말한다 — 남았는데 「오늘 돌아온 것은 다 만났어요」라 하지 않는다.
+  if (top.why.code === 'idle') {
+    const left = [...run.learner.memory.keys()].some(run.due);
+    if ((top.why.slots.left === true) !== left)
+      run.fail(
+        '사. idle의 문장이 남은 복습과 다름',
+        `left ${top.why.slots.left} · 남은 복습 ${left}`,
+      );
+  }
   if (!top.idle) return;
   let want = 'idle';
   if (top.capped) want = 'day.capped';
@@ -464,7 +474,10 @@ function reasonWrong(run, top) {
         slots.to === top.item.difficulty
       );
     case 'unit.new':
-      return run.has(top.target);
+      // 5-3 전 고침 GB4(설계 주인 11-25): 「다시 배울래요」로 비운 단위(줄이 { empty })면 근거 칸 relearn — 처음 만나는 것이 아니다.
+      return (
+        run.has(top.target) || (slots.relearn === true) !== (run.mem(top.target)?.empty === true)
+      );
     default:
       return false;
   }

@@ -1,6 +1,7 @@
 // 장면 단정(설계 §11 가상 학습자 관문 1) — 시제품 6판 prototype/scenarios.mjs의 장면 ①~⑯을 옮겼다. 장면 하나가 test() 하나이고,
 // 단정(claim)은 설계서가 말하는 값이다 — 하나라도 어긋나면 그 장면이 실패한다. ①~⑤는 검수(2026-11-10)에서 재현된 결함 장면,
-// ⑥~⑯은 설계 검토(아르곤 · 아스트라 네 번, Fable 구조 검토 한 번)가 시제품에서 짚은 장면이다. 장면의 글은 ATLAS_VERBOSE=1로 본다.
+// ⑥~⑯은 설계 검토(아르곤 · 아스트라 네 번, Fable 구조 검토 한 번)가 시제품에서 짚은 장면이다. ⑰ · ⑱은 5-3 전 고침(검수 -s3d
+// GB3 · GB4)의 장면이다. 장면의 글은 ATLAS_VERBOSE=1로 본다.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { subject } from '../support/subject.mjs';
@@ -17,6 +18,7 @@ const {
   reasonLine,
   foldServer,
   overlay,
+  planActivities,
 } = await subject();
 const note = (...parts) => {
   if (process.env.ATLAS_VERBOSE) console.log(...parts);
@@ -1210,4 +1212,145 @@ test('⑯ 3 · 4차 검토와 구조 검토가 짚은 모서리(아르곤 · 아
     );
   }
   note('⑯ 3 · 4차 검토와 구조 검토가 짚은 모서리\n   ' + lines.join('\n   '));
+});
+
+// ⑰ 돌아온 말이 남았는데 「다 만났어요」라고 하지 않는다(5-3 전 고침 GB3 — 설계 주인 11-25). 이유 종류는 idle 그대로이고 근거 칸 left가
+// 남은 것을 말한다. 넓게 본다 — 새것 한도에 묶인 문항의 돌아온 단위, 이 활동의 후보 밖에 있는 돌아온 단위, 「다시」를 기다리는 사이의 채우기.
+test('⑰ 돌아온 말이 남은 채우기의 이유(5-3 전 고침 GB3)', () => {
+  const ALL = '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.';
+  const LEFT = '돌아온 말은 이번 판에 여기까지예요. 남은 말은 다음에 만나요.';
+  const mixed = word('D+N7', 7, { units: ['word:D', 'word:N7'] });
+  const light = word('K', 8);
+  // 첫날 D를 맞히고 K는 「이미 알아요」 — 사흘 뒤 새 판에서 D가 돌아와 있다.
+  const dueLater = (params = PARAMS) => {
+    const learner = createLearner();
+    let now = T0;
+    startSession(learner, now, params);
+    play(learner, word('D', 0), true, now, {}, params);
+    now += 20000;
+    say(learner, memory, 'word:K', 'known', now, params);
+    now = T0 + 3 * DAY;
+    learner.session = null;
+    startSession(learner, now, params);
+    return { learner, now };
+  };
+  // 사흘 뒤 판에서 새 표현을 한 판 한도(newPerSession)만큼 먼저 낸다 — 돌아온 D가 든 문항은 새 단위 N7 때문에 이 판에 낼 수 없다.
+  const sixNew = (params = PARAMS) => {
+    const at = dueLater(params);
+    for (let i = 1; i <= params.newPerSession; i += 1) {
+      const item = word(`N${i}`, i);
+      const row = choose([item], at.learner, memory, at.now, { params })[0];
+      present(at.learner, row, params);
+      play(at.learner, item, true, at.now, { target: row.target }, params);
+      at.now += 20000;
+    }
+    return at;
+  };
+  {
+    const { learner, now } = sixNew();
+    claim('⑰ 장면: D가 돌아왔다', memory.isDue(learner.memory.get('word:D'), now));
+    const rows = choose([mixed, light], learner, memory, now);
+    claim(
+      '⑰ 장면: D가 든 문항은 새것 한도로 9층',
+      rows.find(row => row.item.itemKey === 'D+N7').tier === 9,
+    );
+    const top = rows[0];
+    assert.equal(top.item.itemKey, 'K');
+    assert.deepEqual(
+      [top.idle, top.backlog, top.why.code],
+      [true, 1, 'idle'],
+      '⑰ idle 판정과 이유 종류는 그대로',
+    );
+    assert.deepEqual(top.why.slots, { left: true });
+    assert.equal(reasonLine(top.why, bare), LEFT, '⑰ 새것 한도에 묶인 문항에 돌아온 단위가 남았다');
+    const plan = planActivities(
+      [
+        { id: 'lesson-review', candidates: [mixed] },
+        { id: 'light-game', candidates: [light] },
+      ],
+      learner,
+      memory,
+      now,
+    );
+    assert.equal(plan[0].id, 'light-game');
+    assert.equal(reasonLine(plan[0].why, bare), LEFT, '⑰ 홈 plan의 가벼운 활동도 같은 문장');
+  }
+  {
+    const { learner, now } = dueLater();
+    const top = choose([light], learner, memory, now)[0];
+    assert.deepEqual([top.idle, top.backlog], [true, 1]);
+    assert.equal(reasonLine(top.why, bare), LEFT, '⑰ 돌아온 D가 이 활동의 후보 밖에만 있다');
+  }
+  {
+    const { learner, now: start } = dueLater();
+    let now = start;
+    const x = word('X', 3);
+    const first = choose([x, light], learner, memory, now)[0];
+    assert.equal(first.item.itemKey, 'X');
+    present(learner, first);
+    play(learner, x, false, now, { target: first.target });
+    now += 20000;
+    const top = choose([x, light], learner, memory, now)[0];
+    assert.equal(top.item.itemKey, 'K');
+    assert.equal(top.idle, false, '⑰ 장면: 놓친 X가 「다시」를 기다린다');
+    assert.equal(top.why.code, 'idle');
+    assert.equal(reasonLine(top.why, bare), LEFT, '⑰ 「다시」를 기다리는 사이의 채우기');
+  }
+  {
+    // 돌아온 것이 정말 없으면 지금 문장 그대로다 — 고침이 넓어지지 않게.
+    const learner = createLearner();
+    let now = T0;
+    startSession(learner, now);
+    say(learner, memory, 'word:K', 'known', now);
+    now += DAY;
+    learner.session = null;
+    startSession(learner, now);
+    const top = choose([light], learner, memory, now)[0];
+    assert.deepEqual([top.idle, top.backlog], [true, 0]);
+    assert.deepEqual(top.why, { code: 'idle', slots: {}, evidence: {} });
+    assert.equal(reasonLine(top.why, bare), ALL);
+  }
+  {
+    // 하루 복습 상한이면 그 이유가 먼저다.
+    const params = { ...PARAMS, reviewsPerDay: 0 };
+    const { learner, now } = sixNew(params);
+    const top = choose([mixed, light], learner, memory, now, { params })[0];
+    assert.deepEqual([top.capped, top.why.code], [true, 'day.capped']);
+  }
+});
+
+// ⑱ 「다시 배울래요」로 비운 단위를 새것으로 다시 들일 때 「처음 만나요」라고 하지 않는다(5-3 전 고침 GB4 — 설계 주인 11-25). 줄을 비우고
+// 새것(2층)으로 다시 들이는 것은 설계대로다(설계 §3-2). 이유 종류는 unit.new 그대로이고 근거 칸 relearn이 그것을 말한다.
+test('⑱ 다시 배울래요 뒤 새것으로 다시 들인 단위의 이유(5-3 전 고침 GB4)', () => {
+  const U = word('bank', 0);
+  const learner = createLearner();
+  let now = T0;
+  startSession(learner, now);
+  play(learner, U, true, now);
+  now += DAY;
+  learner.session = null;
+  startSession(learner, now);
+  play(learner, U, true, now);
+  now += 20000;
+  say(learner, memory, 'word:bank', 'relearn', now);
+  now += DAY;
+  learner.session = null;
+  startSession(learner, now);
+  claim('⑱ 장면: 비운 줄(설계대로)', learner.memory.get('word:bank')?.empty === true);
+  const row = choose([U], learner, memory, now)[0];
+  assert.equal(row.tier, 2, '⑱ 새것으로 다시 들인다(설계대로)');
+  assert.deepEqual(
+    [row.why.code, row.why.slots],
+    ['unit.new', { unit: 'word:bank', relearn: true }],
+  );
+  assert.equal(reasonLine(row.why, bare), '「bank」 처음부터 다시 만나요.');
+  const fresh = createLearner();
+  startSession(fresh, T0);
+  const first = choose([U], fresh, memory, T0)[0];
+  assert.deepEqual(
+    first.why.slots,
+    { unit: 'word:bank' },
+    '⑱ 한 번도 만나지 않은 단위는 근거 칸에 relearn이 없다',
+  );
+  assert.equal(reasonLine(first.why, bare), '「bank」 처음 만나요.');
 });

@@ -1272,4 +1272,29 @@ export const BRAIN_MUTANTS = [
     '  session.blank.delete(item.itemKey);\n',
     '',
   ],
+  // ── 5-3 전 고침 GB3 · GB4(설계 주인 11-25) — 이유의 근거 칸 left · relearn ──
+  [
+    P,
+    '이유',
+    '채우기의 이유가 돌아온 말이 남은 것을 말하지 않는다 — 남았는데 「오늘 돌아온 것은 다 만났어요」(5-3 전 고침 GB3)',
+    CHOOSE,
+    '  return { tier: need >= 0.03 ? 3 : 4, need, promote: 0, why: idleReason(ctx.backlog) };\n',
+    '  return { tier: need >= 0.03 ? 3 : 4, need, promote: 0, why: idleReason() };\n',
+  ],
+  [
+    P,
+    '이유',
+    '낼 것 없는 줄(9층)의 이유가 돌아온 말이 남은 것을 말하지 않는다(5-3 전 고침 GB3)',
+    CHOOSE,
+    '    return { tier, need: -(item.order ?? 0), promote: 0, why: idleReason(ctx.backlog) };\n',
+    '    return { tier, need: -(item.order ?? 0), promote: 0, why: idleReason() };\n',
+  ],
+  [
+    P,
+    '이유',
+    '「다시 배울래요」로 비운 단위를 새것으로 다시 들일 때 「처음 만나요」라고 한다(5-3 전 고침 GB4)',
+    CHOOSE,
+    '    why: freshReason(target, item, previous, ability, relearned),\n',
+    '    why: freshReason(target, item, previous, ability, false),\n',
+  ],
 ];

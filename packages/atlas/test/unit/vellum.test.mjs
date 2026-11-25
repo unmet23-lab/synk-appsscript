@@ -56,6 +56,7 @@ function cases() {
     out.push({ code: 'unit.due', slots: { unit, days: 8 }, name, id: unit });
     out.push({ code: 'unit.due', slots: { unit, days: 0 }, name, id: unit });
     out.push({ code: 'unit.new', slots: { unit }, name, id: unit });
+    out.push({ code: 'unit.new', slots: { unit, relearn: true }, name, id: unit }); // 다시 배우기(5-3 전 고침 GB4)
     out.push({
       code: 'skill.up',
       slots: { skill, unit, streak: 4, from: 1, to: 2 },
@@ -67,6 +68,7 @@ function cases() {
   }
   for (const code of ['idle', 'day.capped', 'pace.stubborn'])
     out.push({ code, slots: {}, name: '', id: null });
+  out.push({ code: 'idle', slots: { left: true }, name: '', id: null }); // 돌아온 말이 남음(5-3 전 고침 GB3)
   return out;
 }
 
@@ -87,6 +89,40 @@ test('한국어 기능 글은 reasonLine과 같다 — 다른 것은 받침 뒤�
 });
 
 // 말하지 않는 종류(제품 순서 host.order)는 이유 종류이지만 문장이 없다 — 이 시험은 말하는 종류만 본다(단계 4 §20-6의 4 · 설계 검토 H17).
+// 5-3 전 고침 GB3 · GB4(설계 주인 11-25): 돌아온 말이 남은 채우기(idle의 left)와 다시 배우기(unit.new의 relearn)는 한국어 줄만 있다.
+// 영어 · 몽골어 줄은 세 겹 대조 전까지 없고(null), 언어는 물러서지 않는다. 근거 칸이 없는 줄은 지금 문장 그대로다.
+test('돌아온 말이 남은 채우기 · 다시 배우기 — 한국어는 정한 문장, 영어 · 몽골어는 세 겹 대조 전까지 null(5-3 전 고침 GB3 · GB4)', () => {
+  const left = { code: 'idle', slots: { left: true } };
+  const relearn = { code: 'unit.new', slots: { unit: 'u1', relearn: true } };
+  assert.equal(
+    render(left, { label }),
+    '돌아온 말은 이번 판에 여기까지예요. 남은 말은 다음에 만나요.',
+  );
+  assert.equal(render(relearn, { label }), '「이름:u1」 처음부터 다시 만나요.');
+  assert.equal(
+    render({ code: 'idle', slots: {} }, { label }),
+    '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.',
+  );
+  assert.equal(
+    render({ code: 'unit.new', slots: { unit: 'u1' } }, { label }),
+    '「이름:u1」 처음 만나요.',
+  );
+  for (const lang of ['en', 'mn']) {
+    assert.equal(render(left, { lang, label }), null, `${lang} idle left`);
+    assert.equal(render(relearn, { lang, label }), null, `${lang} unit.new relearn`);
+    assert.equal(
+      typeof render({ code: 'idle', slots: {} }, { lang, label }),
+      'string',
+      `${lang} idle`,
+    );
+    assert.equal(
+      typeof render({ code: 'unit.new', slots: { unit: 'u1' } }, { lang, label }),
+      'string',
+      `${lang} unit.new`,
+    );
+  }
+});
+
 test('reasonLine이 다루는 이유 종류는 모두 표에 있다', () => {
   const host = new Set(['host.resume', 'host.prerequisite', 'host.homework', 'goal.match']);
   assert.deepEqual([...SILENT_CODES], ['host.order']);

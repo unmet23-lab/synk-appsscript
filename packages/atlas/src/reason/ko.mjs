@@ -1,5 +1,13 @@
 // 이유 문장 — 한국어 기본 말투 한 벌. 단계 4의 문장 표(Vellum: 종류 × 화면 언어 × 눈높이 × 말하는 사람 — 설계 §7)가 이 자리를 넓힌다.
 // 지금은 장면 단정(시험)과 시제품이 낸 꼴을 지키려고 둔다. label(단위 · 능력 id) → 화면에 보일 이름.
+// 새것의 문장 — 「다시 배울래요」로 비운 단위(근거 칸 relearn)는 처음이 아니라 처음부터 다시다(5-3 전 고침 GB4 · 설계 주인 11-25).
+const newLine = (s, name) =>
+  s.relearn ? `「${name}」 처음부터 다시 만나요.` : `「${name}」 처음 만나요.`;
+// 채우기의 문장 — 돌아온 말이 남았으면(근거 칸 left) 다 만났다고 하지 않는다(5-3 전 고침 GB3 · 설계 주인 11-25).
+const idleLine = s =>
+  s.left
+    ? '돌아온 말은 이번 판에 여기까지예요. 남은 말은 다음에 만나요.'
+    : '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.';
 export function reasonLine(why, label = id => id) {
   const s = why.slots;
   let name = '';
@@ -27,7 +35,7 @@ export function reasonLine(why, label = id => id) {
     case 'skill.ease':
       return `「${name}」 조금 쉬운 것부터 다시 잡아 볼게요.`;
     case 'unit.new':
-      return `「${name}」 처음 만나요.`;
+      return newLine(s, name);
     case 'pace.breather':
       return `${s.misses}번 이어서 놓쳤어요. 잘 아는 「${name}」로 숨을 고르고 가요.`;
     case 'day.capped':
@@ -35,6 +43,6 @@ export function reasonLine(why, label = id => id) {
     case 'pace.stubborn':
       return '자꾸 놓치는 말은 이번 판에 여기까지 만나요. 다음 판에 다른 방법으로 다시 만나요.';
     default:
-      return '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.';
+      return idleLine(s);
   }
 }

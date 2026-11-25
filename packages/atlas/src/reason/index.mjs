@@ -76,7 +76,8 @@ export function dueReason(unit, state, now, day = {}) {
 // 새것(2층). 이유가 능력 이야기여도 겨눈 단위는 근거 칸에 늘 싣는다 — 서버는 사건만 보고 실패를 적을 단위를 알아야 한다.
 //   skill.up   처음 본 문항을 둘 이상 이어서 혼자 맞힌 뒤 실제로 난도가 오른 문항
 //   skill.ease 방금 놓친 뒤(이어서 맞힌 수 0) 실제로 난도가 내려간 문항
-export function freshReason(unit, item, previous, ability) {
+//   unit.new   그 밖 — relearned: 「다시 배울래요」로 비운 단위다(줄이 { empty } — 처음이 아니라 처음부터 다시, -s3d GB4)
+export function freshReason(unit, item, previous, ability, relearned = false) {
   const streak = ability?.streak || 0;
   const evidence = { n: ability?.n ?? 0, streak, from: previous ?? null, to: item.difficulty };
   if (previous != null && item.difficulty > previous && streak >= 2) {
@@ -93,7 +94,11 @@ export function freshReason(unit, item, previous, ability) {
       evidence,
     };
   }
-  return { code: REASON_CODES.fresh, slots: { unit }, evidence };
+  return {
+    code: REASON_CODES.fresh,
+    slots: relearned ? { unit, relearn: true } : { unit },
+    evidence,
+  };
 }
 
 export const breatherReason = (unit, misses) => ({
@@ -102,8 +107,12 @@ export const breatherReason = (unit, misses) => ({
   evidence: { misses },
 });
 
-// 할 것이 없을 때 채우기(3 · 4층)의 이유 — 「오늘 돌아온 것은 다 만났어요. 가볍게 이어가요」.
-export const idleReason = () => ({ code: REASON_CODES.idle, slots: {}, evidence: {} });
+// 할 것이 없을 때 채우기(3 · 4층)의 이유 — 「오늘 돌아온 것은 다 만났어요. 가볍게 이어가요」. backlog: 이 판에서 아직 안 만난 돌아온
+// 단위 수(고르기의 ctx.backlog). 1 이상이면 다 만난 것이 아니다 — 다른 활동 몫이거나, 새것 한도에 걸린 문항 · 판정 못 한 문항에 묶였다(-s3d GB3).
+export const idleReason = (backlog = 0) =>
+  backlog > 0
+    ? { code: REASON_CODES.idle, slots: { left: true }, evidence: { backlog } }
+    : { code: REASON_CODES.idle, slots: {}, evidence: {} };
 // 하루 복습 상한에 걸렸다 — 「오늘은 여기까지예요」.
 export const cappedReason = () => ({ code: REASON_CODES.capped, slots: {}, evidence: {} });
 // 끈질긴 단위의 이 판 몫을 다 썼다 — 남은 할 것이 그것뿐일 때.

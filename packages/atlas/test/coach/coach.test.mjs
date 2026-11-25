@@ -289,3 +289,56 @@ test('층 0~2 문항에서 코치가 채운 겨눈 단위는 choose의 값과 �
   for (const seed of seedRange({ count: 30 })) checked += compareAims(seed);
   assert.ok(checked > 100, `견준 줄 ${checked}`);
 });
+
+// 5-3 전 고침 GB3(설계 주인 11-25): 돌아온 말이 남았는데 채우기의 이유가 「오늘 돌아온 것은 다 만났어요」였다. 같은 코치의 due()가 남은
+// 단위를 내는 날에는 recommend의 문장도 남은 것을 말한다(이유 종류는 idle 그대로 — 근거 칸 left).
+test('돌아온 말이 남았으면 채우기의 문장이 남은 것을 말한다 — recommend의 문장과 같은 코치의 due()가 어긋나지 않는다(5-3 전 고침 GB3)', async () => {
+  const DAY = 86_400_000;
+  const word = (id, order, units = [`ko.word.${id.toLowerCase()}`]) =>
+    Object.freeze({
+      itemKey: id,
+      familyKey: id,
+      units,
+      skillId: 'ko.reading.vocabulary',
+      difficulty: 1,
+      responseFormat: 'single-choice',
+      order,
+      modality: 'reading',
+    });
+  const items = [
+    word('D', 0),
+    word('K', 1),
+    ...[1, 2, 3, 4, 5, 6].map(i => word(`N${i}`, 1 + i)),
+    word('D+N7', 8, ['ko.word.d', 'ko.word.n7']),
+  ];
+  const byKey = new Map(items.map(item => [item.itemKey, item]));
+  const time = clock();
+  const { coach } = await openCoach({ items, time });
+  const answer = async key => {
+    const pid = coach.present(byKey.get(key));
+    await coach.answer(pid, { correct: true, assessable: true }).stored;
+    time.advance(20_000);
+  };
+  try {
+    await answer('D');
+    coach.tell('ko.word.k', 'known');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    time.advance(3 * DAY);
+    for (let i = 1; i <= 6; i += 1) await answer(`N${i}`);
+    const picked = coach.recommend([byKey.get('D+N7'), byKey.get('K')]);
+    assert.deepEqual(
+      coach.due().map(row => row.unit),
+      ['ko.word.d'],
+      '장면: 돌아온 d가 남았다',
+    );
+    assert.equal(picked.status, 'idle');
+    assert.equal(picked.facts.limited, true, '장면: d가 든 문항은 새것 한도에 묶였다');
+    assert.equal(picked.why.code, 'idle');
+    assert.equal(picked.why.line, '돌아온 말은 이번 판에 여기까지예요. 남은 말은 다음에 만나요.');
+    // 근거 칸 left가 든 이유도 제시 사건의 이유 검사를 지나 저장된다.
+    const pid = coach.present(picked.selected);
+    assert.equal(await coach.answer(pid, { correct: true, assessable: true }).stored, true);
+  } finally {
+    coach.dispose();
+  }
+});

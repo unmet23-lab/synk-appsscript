@@ -90,7 +90,9 @@ export const KO = Object.freeze({
   'unit.retry': one(retry),
   'unit.shaky': one(shaky),
   'unit.due': one(due),
-  'unit.new': one((_, name) => `「${name}」 처음 만나요.`),
+  'unit.new': one((s, name) =>
+    s.relearn ? `「${name}」 처음부터 다시 만나요.` : `「${name}」 처음 만나요.`,
+  ),
   'skill.up': one(
     (s, name) => `「${name}」 ${s.streak}번 이어서 혼자 맞혔어요. 한 단계 올려 볼게요.`,
   ),
@@ -99,7 +101,11 @@ export const KO = Object.freeze({
     (s, name, j) =>
       `${s.misses}번 이어서 놓쳤어요. 잘 아는 「${name}」${j(`「${name}」`, '으로', '로')} 숨을 고르고 가요.`,
   ),
-  idle: one(() => '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.'),
+  idle: one(s =>
+    s.left
+      ? '돌아온 말은 이번 판에 여기까지예요. 남은 말은 다음에 만나요.'
+      : '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.',
+  ),
   'day.capped': one(() => '오늘은 여기까지예요. 남은 것은 내일 만나요.'),
   'pace.stubborn': one(
     () => '자꾸 놓치는 말은 이번 판에 여기까지 만나요. 다음 판에 다른 방법으로 다시 만나요.',

@@ -153,11 +153,13 @@ function dueShape(item, target, facts, ctx) {
 function freshShape(item, target, ctx) {
   const ability = ctx.learner.ability.get(item.skillId);
   const previous = ability?.level ?? null; // 마지막 측정 답의 난도(접힌 값 — 다시 켜도 남는다)
+  // 「다시 배울래요」로 비운 단위(줄이 { empty })를 새것으로 다시 들인다 — 처음 만나는 것이 아니다(-s3d GB4).
+  const relearned = ctx.learner.memory.get(target)?.empty === true;
   // 새것은 제품이 정한 진도 순(같은 묶음 안에서는 난도 맞음으로 고른다)
   return {
     need: -(item.order ?? 0),
     promote: 0,
-    why: freshReason(target, item, previous, ability),
+    why: freshReason(target, item, previous, ability, relearned),
   };
 }
 
@@ -170,7 +172,8 @@ function fillShape(facts, ctx) {
       : 1 - memory.retrievability(facts.states[i], now),
   );
   const need = Math.max(...faded);
-  return { tier: need >= 0.03 ? 3 : 4, need, promote: 0, why: idleReason() };
+  // 돌아온 것이 남았으면(ctx.backlog) 「다 만났어요」가 아니다(-s3d GB3) — 하루 상한 · 끈질긴 단위는 markTop이 덮는다.
+  return { tier: need >= 0.03 ? 3 : 4, need, promote: 0, why: idleReason(ctx.backlog) };
 }
 
 // 채우기 차례의 「마지막으로 만난 때」 — 문항 단위들의 마지막 사건 시각(latestAt)과 이번 판에서 그 계열을 낸 시각 가운데 늦은 것. 만난 적
@@ -183,7 +186,8 @@ function touchedOf(item, facts, ctx) {
 }
 
 function shapeOf(item, tier, target, facts, ctx) {
-  if (tier === 9) return { tier, need: -(item.order ?? 0), promote: 0, why: idleReason() };
+  if (tier === 9)
+    return { tier, need: -(item.order ?? 0), promote: 0, why: idleReason(ctx.backlog) };
   if (tier === 0 || tier === 5) return { tier, ...retryShape(item, target, ctx) };
   if (tier === 1) return { tier, ...dueShape(item, target, facts, ctx) };
   if (tier === 2) return { tier, ...freshShape(item, target, ctx) };
