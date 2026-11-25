@@ -1,6 +1,6 @@
 import { Composition } from 'remotion';
 import './lib/fonts';
-import { Film, Scene, SCENE_FROM, SCENE_TO, TOTAL } from './hp/Film';
+import { Film, Scene, SCENE_LEN, TOTAL } from './hp/Film';
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -11,6 +11,6 @@ export const RemotionRoot: React.FC = () => (
     {/* 음악만(음악층 검사) */}
     <Composition id="musiconly" component={Film} durationInFrames={TOTAL} fps={30} width={1080} height={1920} defaultProps={{ bgm: true, voice: false }} />
     {/* 핵심 장면만(장면 심사 · 제목 없이) */}
-    <Composition id="scene" component={Scene} durationInFrames={Math.round((SCENE_TO - SCENE_FROM) * 30)} fps={30} width={1080} height={1920} />
+    <Composition id="scene" component={Scene} durationInFrames={Math.round(SCENE_LEN * 30)} fps={30} width={1080} height={1920} />
   </>
 );
