@@ -279,7 +279,7 @@ test('시범판 파일을 고치지 않았다: 서울행은 부모 쪽에서만 
 
 // 내 팬 한마디(팬설계.md §12-3): 문장 원천은 Vellum이고, 공개 묶음에는 도구가 구운 fan-lines.mjs만 실린다. 원천을 고치고 다시 굽지 않으면 여기서 걸린다.
 test('내 팬 한마디: 생성 파일이 Vellum 원천에서 다시 구운 것과 같고, 칸 밖이면 null이다', async () => {
- const {buildFanLines,serialize,fanRows,DESTINATION,MAX_LINES}=await import('../tools/build-seoul-fan-lines.mjs');
+ const {buildFanLines,serialize,fanRows,DESTINATION,MAX_LINES,HOLD}=await import('../tools/build-seoul-fan-lines.mjs');
  assert.equal(fs.readFileSync(DESTINATION,'utf8').replace(/\r\n/g,'\n'),serialize(buildFanLines()),'낡음 — node tools/build-seoul-fan-lines.mjs');
  const {spawnSync}=await import('node:child_process');
  const check=spawnSync(process.execPath,['tools/build-seoul-fan-lines.mjs','--check'],{cwd:ROOT,encoding:'utf8'});
@@ -296,10 +296,19 @@ test('내 팬 한마디: 생성 파일이 Vellum 원천에서 다시 구운 것�
   assert.deepEqual(Object.keys(table),fanRows().map(([key])=>key),lang);
   for(const [key,why] of fanRows()){
    assert.equal(fanLine(lang,why),table[key],`${lang} ${key}`);
-   assert.equal(fanLine(lang,why),render(why,{lang,speaker:'fan'}),`${lang} ${key}: Vellum과 같다`);
+   assert.equal(fanLine(lang,why),HOLD[lang]?.[why.code]??render(why,{lang,speaker:'fan'}),`${lang} ${key}: Vellum과 같다(HOLD 칸만 다르다)`);
   }
  }
  assert.equal(fanLine('ko',{code:'scene.step',slots:{step:'take2',state:'wait'}}),'「한 번 더」는 기다릴게요. 하면 자리 하나가 켜져요.');
+ // n은 소리가 들린 대사 줄의 수다(같은 줄을 다시 녹음해도 늘지 않는다). 몽골어가 횟수(удаа) · 낱말(үг N) · 문장(өгүүлбэр)으로 세면 사실과 다르다
+ assert.deepEqual(Object.keys(HOLD),['mn']);assert.deepEqual(Object.keys(HOLD.mn),['scene.lines'],'따로 두는 글은 몽골어 scene.lines 하나뿐이다');
+ for(let n=1;n<=MAX_LINES;n+=1)assert.doesNotMatch(fanLine('mn',{code:'scene.lines',slots:{n}}),/\d|удаа|өгүүлбэр/,`mn scene.lines ${n}`);
+ const mnUi=TEXT_TABLES.UI.mn;
+ for(const k of ['말한 줄마다 내 팬이 한 사람씩 자리에 앉아요.','말한 줄마다 내 팬의 불빛이 하나씩 켜져요.','대사 한 줄마다 한 명, 「한 번 더」와 「처음 보는 말」에 한 명씩 와요.'])
+  assert.match(mnUi[k],/шинэ хэсгийг хэлэх бүрд/,`${k}: 다시 말한 줄은 세지 않는다`);
+ // 객석의 수는 켜진 자리(사람 + 친구) 수라 팬 수로 부른다
+ const crowd=/async function crowdScene[\s\S]*?\n\}\n/.exec(read('experiences/seoul-arrival/app.mjs').replace(/\r\n/g,'\n'))?.[0]??'';
+ assert.equal((crowd.match(/count\.textContent=[^;]*L\('팬 \{n\}명'/g)||[]).length,2);assert.doesNotMatch(crowd,/말한 줄 \{n\}개/);
  const bad=[
   {code:'scene.lines',slots:{n:0}},{code:'scene.lines',slots:{n:11}},{code:'scene.lines',slots:{n:-1}},{code:'scene.lines',slots:{n:1.5}},
   {code:'scene.lines',slots:{n:'2'}},{code:'scene.lines',slots:{n:[2]}},{code:'scene.lines',slots:{n:2,extra:1}},{code:'scene.lines',slots:{}},{code:'scene.lines'},

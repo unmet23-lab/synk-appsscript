@@ -1363,13 +1363,13 @@ async function crowdScene({n=0,t2=false,tr=false}={}){
     :[{lab:'1화 끝',seats:[...P.slice(was.n,next.n),...(next.t2&&!was.t2?[F[0]]:[]),...(next.tr&&!was.tr?[F[1]]:[])]}].filter(b=>b.seats.length);
   const total=next.n+(next.t2?1:0)+(next.tr?1:0);
   if(!beats.length){
-    lab.textContent=L('1화 끝');count.textContent=total?L('말한 줄 {n}개',{n:total}):L('오늘은 들어 본 날이에요');
+    lab.textContent=L('1화 끝');count.textContent=total?L('팬 {n}명',{n:total}):L('오늘은 들어 본 날이에요');
     drawCinema(litSeats(H,next),[]);foot.classList.add('on');return;
   }
   let shown=first?[]:litSeats(H,was),said=first?0:total-beats[0].seats.length,opening=true;
   for(const b of beats){
     if(run!==crowdRun)return;
-    said+=b.seats.length;lab.textContent=L(b.lab);plus.textContent='+'+b.seats.length;void plus.offsetWidth;count.textContent=L('말한 줄 {n}개',{n:said});
+    said+=b.seats.length;lab.textContent=L(b.lab);plus.textContent='+'+b.seats.length;void plus.offsetWidth;count.textContent=L('팬 {n}명',{n:said});
     plus.classList.remove('on');drawCinema(shown,b.seats,!opening);opening=false;shown=[...shown,...b.seats];
     const hasFriend=b.seats.some(s=>F.includes(s));
     await sleep(reduce?300:900+b.seats.length*650+(hasFriend?1500:500));
