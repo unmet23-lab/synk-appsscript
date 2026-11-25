@@ -1,0 +1,5 @@
+/* synk.im 홈(v11)에만 덧붙이는 스타일 — 짓기.mjs가 홈 스타일에서 덧.css 뒤에 붙인다. 상세 쪽 스타일(detail.css)에는 붙지 않는다.
+   PC 앱 받기 줄(덧.css .pf-get): 이름 · 판 · 화살표가 한 줄에 서지 않는 좁은 휴대폰에서만 판을 이름 아래에 둔다.
+   폭은 판 글자가 「Preview 0.10.11」로 길어져도 이름이 접히지 않게 잡았다(2026-11-25에 잰 이름 폭: 영어 184px, 한국어 173px). */
+@media (max-width:374px){.pf-get a{grid-template-columns:minmax(0,1fr) auto;row-gap:8px}.pf-get small{grid-column:1;grid-row:2}.pf-get .arr{grid-column:2;grid-row:1/3}}
+@media (max-width:389px){html[lang="en"] .pf-get a{grid-template-columns:minmax(0,1fr) auto;row-gap:8px}html[lang="en"] .pf-get small{grid-column:1;grid-row:2}html[lang="en"] .pf-get .arr{grid-column:2;grid-row:1/3}}
