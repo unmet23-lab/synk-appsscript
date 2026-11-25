@@ -12,6 +12,7 @@ let assignmentHold=null,assignmentRelease=null;
 let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[],visits=null,health=null,backup=null,backupOneClick=null;
 // 「이 PC에 맞춘 것」 판(main.cjs synk:pc-profile*). 정하지 않으면 두 드라이브 노트북 견본이다(값은 꾸민 것)
 const pcSample=()=>{const G=1024**3,t=new Date(Date.now()-60e3).toISOString();return {ok:true,available:true,reading:false,changed:[],profile:{readAt:t,slowAt:t,cpu:{cores:16},mem:{totalGb:31.7,freeGb:12.3},gpu:{adapters:1,memMb:8192},drives:{shown:[{letter:'C',size:953*G,free:118*G},{letter:'D',size:1907*G,free:299*G}],hidden:[{letter:'G',why:'virtual'}],unread:0,removable:0,network:0},power:{laptop:true,battery:true},net:{kind:'wifi',metered:false},os:{build:26100,version:'Windows 11 24H2',arm:false},screen:{width:2560,height:1600,scale:150,narrow:false},tools:{claude:{installed:true,signedIn:true},codex:{installed:true,signedIn:true},gemini:{installed:false,signedIn:false},vscode:true,cursor:false,node:true,python:true,git:true,wsl:false},failed:[]}};};
+const pcBlank=()=>({ok:true,available:true,reading:false,changed:[],profile:null});
 let pcSnap=null;
 const listeners=new Set(),subsListeners=new Set(),calls=[];
 // 계정 관리 방(2단계 둘째 조각)이 부르는 구독 다리. 부른 것을 적고, 저장은 이 창의 합성 자료에만 고쳐 넣는다(실제 로그인 · 설치 · 브라우저 열기는 없다)
@@ -49,6 +50,7 @@ const prefSnap=()=>({ok:true,preferences:{...prefs},capabilities:{launchAtLogin:
 // 본체처럼 다른 앱이 잡은 단축키는 거절한다. 시험에서는 Ctrl+Alt+K를 그런 단축키로 친다
 const prefUpdate=patch=>{if(patch?.globalShortcut==='Ctrl+Alt+K')return {ok:false,code:'SHORTCUT_UNAVAILABLE'};prefs={...prefs,...patch};const snap=prefSnap();setTimeout(()=>tell(prefListeners,snap),0);return snap;};
 const draftStatus=owner=>({ok:true,available:true,enabled:Boolean(owner)&&auth.signedIn===true&&drafts.enabled});
+let updateHeld=false,updateDone=null;
 const setUpdate=patch=>{update={...update,...patch};tell(updateListeners,{...update});return {...update};};
 // 솔리오 「사무실」(사무실 구현설계 14.2): 본체(main.cjs synk:office-*)의 답 모양만 흉내 낸다. 세션은 짧은 꼴(sessions)로 받아, 읽을 때마다 지금 시각에 맞춰
 // 상태 규칙(office-model.mjs)이 읽는 칸으로 짓는다. 폴더 고르기 창은 열지 않고 정해 둔 가짜 폴더를 고른 것으로 친다. 정하지 않으면 볼 계정이 아닌 답이다
@@ -159,7 +161,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   draftRecoverySave:async()=>({ok:true}),
   draftRecoveryClear:async()=>({ok:true}),
   updateStatus:async()=>{calls.push('update-status');return {...update};},
-  checkForUpdate:async()=>{calls.push('update-check');setTimeout(()=>setUpdate({state:'current',code:null}),300);return setUpdate({state:'checking',code:null});},
+  checkForUpdate:async()=>{calls.push('update-check');const done=()=>setUpdate({state:'current',code:null});if(updateHeld)updateDone=done;else setTimeout(done,300);return setUpdate({state:'checking',code:null});},
   downloadUpdate:async()=>{calls.push('update-download');return setUpdate({state:'downloading',progress:35});},
   installUpdate:async()=>{calls.push('update-install');return setUpdate({state:'opening'});},
   onUpdateChanged:fn=>{updateListeners.add(fn);return ()=>updateListeners.delete(fn);},
@@ -207,10 +209,10 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     dismiss:async()=>{calls.push('backup-dismiss');return {ok:true};},
     oneClick:async()=>{calls.push('backup-oneclick');return backupOneClick?backupOneClick():{ok:true};},
   }),
-  // 「이 PC에 맞춘 것」 판(main.cjs synk:pc-profile*). 로그인과 상관없이 PC마다 답한다. 본 것으로 알리면 바뀜을 지운다
+  // 「내 PC 진단」 판(main.cjs synk:pc-profile*). 본체처럼 로그인한 회원에게만 재고, 로그인하지 않았으면 재지 않고 지금 값만 준다(PC 0.5.11). 정한 값이 없으면 손님에게는 아직 재지 않은 PC다. 본 것으로 알리면 바뀜을 지운다
   pcProfile:Object.freeze({
-    snapshot:async()=>{calls.push('pc-snapshot');return pcSnap||pcSample();},
-    again:async()=>{calls.push('pc-again');return pcSnap||pcSample();},
+    snapshot:async()=>{calls.push('pc-snapshot');return pcSnap||(auth.signedIn===true?pcSample():pcBlank());},
+    again:async()=>{calls.push('pc-again');return pcSnap||(auth.signedIn===true?pcSample():pcBlank());},
     seen:async()=>{calls.push('pc-seen');if(pcSnap)pcSnap={...pcSnap,changed:[]};return {ok:true};},
     openStorage:async()=>{calls.push('pc-storage');return {ok:true};},
   }),
@@ -393,6 +395,9 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   setBackupOneClick:value=>{backupOneClick=value?()=>value:null;},
   // 설정 방: 업데이트 판을 바꿔 알리고, 데스크톱 설정 · 쓰던 글 되살리기 · 복사한 진단 정보를 읽는다
   setUpdate:value=>setUpdate(value||{}),
+  // 다음 「지금 확인」을 확인 중에 붙잡아 둔다(바쁜 PC에서도 확인 중의 글을 본다). releaseUpdateCheck가 최신 판으로 끝낸다
+  holdUpdateCheck:()=>{updateHeld=true;},
+  releaseUpdateCheck:()=>{const done=updateDone;updateHeld=false;updateDone=null;done?.();},
   prefs:()=>({...prefs}),
   drafts:()=>({...drafts}),
   diag:()=>(diag?JSON.parse(JSON.stringify(diag)):null),
