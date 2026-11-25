@@ -50,7 +50,8 @@ function start() {
   const reserve = reserveUrl(location.search, lang);
   const FRAME_WAIT_MS = 15000;
   // 1화 끝을 아는 모듈. 공개된 1화 틀과 같은 공개본에서 받아야 꼬리표가 어긋나지 않는다. 못 받으면 1화는 그대로 하고 끝 띠만 없다.
-  const watching = import('/world/seoul-watch.mjs').catch(() => null);
+  // 한 번 못 받으면 주소를 달리해 다시 받는다(같은 주소의 실패는 브라우저가 기억한다).
+  const watching = import('/world/seoul-watch.mjs').catch(() => import('/world/seoul-watch.mjs?again=1')).catch(() => null);
 
   document.documentElement.lang = lang;
   document.title = t('title');
@@ -152,9 +153,9 @@ function start() {
     ready(frameApi) {
       if (api) return;
       api = frameApi;
-      clearTimeout(waiting);
       try { api.setLang(lang); } catch { /* 틀 언어는 주소의 ?lang으로도 정해진다 */ }
       api.start({ at: 'title', arrival: null });
+      clearTimeout(waiting);   // 시작까지 된 뒤에 끈다 — 시작이 던지면 15초 안내가 뜬다
       $('#fail').hidden = true;
       story.classList.add('on');
       story.focus();

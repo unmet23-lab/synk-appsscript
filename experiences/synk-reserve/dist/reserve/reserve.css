@@ -2,7 +2,7 @@
  * 원본: SYNK-appsscript/experiences/synk-reserve/src/reserve.css
  * 글꼴: 한글 · 라틴은 SUIT를 이 쪽 글자만 줄인 판(v11 홈과 같다). 몽골어 화면은 키릴 · 라틴 · 숫자를 모두 Inter Tight로 쓴다 —
  *   SUIT에는 키릴이 없고, 「SYNK-д」처럼 라틴과 키릴이 붙는 자리에서 두 글꼴의 굵기가 달라 보이지 않게(11-23 미리 보기). build.mjs가 굽는다. */
-@font-face{font-family:'Reserve Sans';src:url(assets/reserve-sans.woff2?v=56deae686eb9) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Reserve Sans';src:url(assets/reserve-sans.woff2?v=8a42ffad05e5) format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-500.woff2?v=f336f52afb3d) format('woff2');font-weight:400 500;font-display:swap}
 @font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-700.woff2?v=27e0264fe7d1) format('woff2');font-weight:600 900;font-display:swap}
 

@@ -34,8 +34,8 @@
 
 「서울행 무료로 해 보기」와 「SYNK WORLD에서 해 보기」는 `/reserve/play/`로 간다(11-25 유호님 「지금 플레이하면 로그인 정보가 계속 이어지는데 1회성으로 플레이할수있게 바꿔줘」). 그 전에는 `/world/`로 가서 로그인과 이 기기의 기록이 이어졌다.
 
-- 이야기(`/world/seoul-arrival/`)와 1화(`/world/drama/`)는 공개된 WORLD의 틀을 그대로 열고, 이 쪽은 부모 통로(`SYNKSeoulHost` · `SYNKDramaHost`)만 둔다. WORLD 앱 셸과 계정 모듈은 받지 않는다. 그래서 로그인을 읽지 않고, 틀이 넘기는 저장은 버린다. 열 때마다 · 새로고침할 때마다 · 뒤로 올 때마다 타이틀부터 시작한다. 이름 · 얼굴 · 학생증 · 내 팬도 남지 않는다. 소리 켜고 끄기(`synk.world.seoul.sound`)만 그 기기에 남는다.
-- 통로의 꼴은 `experiences/synk-world-app/seoul-entry.mjs`의 host다. 그 host에 칸이 늘거나 1화 끝을 아는 `seoul-watch.mjs`가 바뀌면 여기도 함께 본다. 1화 끝 띠의 글은 그 파일의 TEXT와 글자가 같아야 한다(시험이 대조한다).
+- 이야기(`/world/seoul-arrival/`)와 1화(`/world/drama/`)는 공개된 WORLD의 틀을 그대로 열고, 이 쪽은 부모 통로(`SYNKSeoulHost` · `SYNKDramaHost`)만 둔다. WORLD 앱 셸과 계정 모듈은 받지 않는다. 그래서 로그인을 읽지 않고, 틀이 넘기는 저장은 버린다. 열 때마다 · 새로고침할 때마다 · 뒤로 올 때마다 타이틀부터 시작한다. 이름 · 얼굴 · 학생증 · 내 팬도 남지 않는다. 소리 켜고 끄기(`synk.world.seoul.sound`)만 그 기기에 남는다. 1화에서 녹음하는 동안에는 다른 창의 소리를 줄이는 마이크 알림(`synk.world.mic*`)을 잠깐 쓰고 끝나면 지운다.
+- 통로의 꼴은 `experiences/synk-world-app/seoul-entry.mjs`의 host다. 그 host에 칸이 늘거나 두 틀이 부모에서 새 통로를 찾으면 시험이 걸린다. `seoul-arrival` · `drama` · `seoul-watch.mjs`를 synk.im에 공개한 뒤에는 `node experiences/synk-reserve/qa/체험.mjs --라이브`를 한 번 돌린다. 1화 끝 띠의 글은 그 파일의 TEXT와 글자가 같아야 한다(시험이 대조한다).
 - 1화는 손님 통로다. 받아쓰기 서버를 부르지 않고 녹음을 들어 보고 스스로 확인한다. 내 사진 · 동아리장 알림 · 우리 동네는 계정 기능이라 없다.
 - 들어온 곳(`from`)은 체험을 거쳐 사전예약으로 돌아올 때까지 이어진다. `from` 없이 온 사람은 `play-ep1`로 적는다.
 - 흐름 시험: `node experiences/synk-reserve/qa/체험.mjs [--폭 390x844] [--언어 ko|en|mn] [--꿈 idol|actor] [--찍기] [--라이브]`. 앞 학생의 로그인과 기록을 심어 두고, 체험이 그것을 읽지도 바꾸지도 않는지 본다.

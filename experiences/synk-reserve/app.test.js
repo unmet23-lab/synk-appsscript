@@ -117,6 +117,33 @@ test('1회용 체험은 로그인을 읽지 않고 이 기기에 저장하지 �
   assert.match(src, /dramaEnabled: false/, '1화는 받아쓰기 서버를 부르지 않는 손님 통로');
 });
 
+test('1회용 체험의 부모 통로는 두 틀이 부르는 것을 모두 갖추고 계정 기능만 뺀다 — 앱의 통로가 바뀌면 여기서 걸린다', () => {
+  const read = rel => fs.readFileSync(path.join(__dirname, '..', rel), 'utf8').replace(/\r\n/g, '\n');
+  const play = read('synk-reserve/src/play/play.mjs');
+  const block = play.slice(play.indexOf('window.SYNKSeoulHost = Object.freeze({'), play.indexOf('const waiting'));
+  const has = (text, name) => new RegExp(`(^|[\\s,{])${name}\\s*(\\(|:|,)`, 'm').test(text);
+  const account = ['photo', 'openPhoto'];
+  // 이야기 틀이 부르는 통로 칸
+  const asked = [...new Set([...read('seoul-arrival/app.mjs').matchAll(/HOST\??\.([A-Za-z]+)/g)].map(m => m[1]))];
+  assert.ok(asked.length >= 8);
+  for (const name of asked) assert.equal(has(block, name), !account.includes(name), `HOST.${name}`);
+  // 앱 host에 있는 칸 = 이 쪽의 칸 + 계정 기능
+  const entry = read('synk-world-app/seoul-entry.mjs');
+  const app = entry.slice(entry.indexOf('const host=Object.freeze({'), entry.indexOf('function installHost'));
+  for (const name of ['ready', 'reduced', 'insets', 'save', 'prepareEpisode', 'openEpisode', 'front', 'leave', ...account]) assert.ok(has(app, name), `앱 host.${name}`);
+  // 두 틀이 부모에서 찾는 통로 이름 — 새 이름이 생기면 이 쪽에도 둘지 정한다(앞 셋은 계정 기록 · 동아리장 · 오늘 한 장이라 두지 않는다)
+  const hooks = new Set();
+  for (const rel of ['seoul-arrival/app.mjs', 'seoul-arrival/club-call.mjs', 'drama/pilot/pilot.mjs', 'drama/pilot/learning-entry.cjs', 'drama/pilot/today/gather.mjs', 'drama/pilot/today/screen.mjs'])
+    for (const m of read(rel).matchAll(/parent\.(SYNK[A-Za-z]+)/g)) hooks.add(m[1]);
+  assert.deepEqual([...hooks].sort(), ['SYNKDramaHost', 'SYNKFrontClub', 'SYNKLearningHost', 'SYNKSeoulHost', 'SYNKTodayHost']);
+  // 1화의 손님 통로는 앱의 손님 통로와 같은 꼴
+  const flat = text => text.replace(/\s+/g, '');
+  const guest = "Object.freeze({status:async()=>({ok:true,guest:true,dramaEnabled:false}),take:async()=>({ok:true,status:'off'})})";
+  assert.ok(flat(read('synk-world-app/app-shell.mjs')).includes(guest), '앱 손님 통로');
+  assert.ok(flat(play).includes(guest), '체험 손님 통로');
+  assert.match(read('synk-world-app/seoul-watch.mjs'), /export const EPISODE=[\s\S]*export function watchEpisode\(/);
+});
+
 test('1회용 체험의 글은 앱의 1화 끝 글과 같다', async () => {
   for (const [name, value] of Object.entries({ location: { search: '', hostname: 'synk.im' } })) if (!(name in globalThis)) Object.defineProperty(globalThis, name, { value, configurable: true, writable: true });
   const { seoulText } = await import(pathToFileURL(path.join(__dirname, '../synk-world-app/seoul-entry.mjs')).href);
