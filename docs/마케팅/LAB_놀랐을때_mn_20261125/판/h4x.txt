@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+TASK — Image 1 is a tall portrait 9:16 photo of a handmade needle-felt miniature set at night: a tall shut brown felt door with a soft green glow under it and a dim amber lantern on the left, and the coral-pink felt blob Mongle on the right, in a cute felt haunted house. Make the SAME photo a moment later, as one tall portrait 9:16 photo (1080 x 1920): same camera, same framing, same door, same knob, same lantern, same wall, same floor, same size of Mongle, Mongle in the same place on the right. Make the scene a little brighter than image 1 so that Mongle, the door and the floor read clearly on a phone, still a night scene with a warm amber light on Mongle's side.
+
+WHAT CHANGED — Mongle has turned its face toward the camera and is panicking, about to cry, because the door will not open:
+- its two eyes are big, round, wet-looking glossy black beads, looking at us;
+- below and between them a wide wavy open felt mouth, one simple wobbly hole of dark burgundy felt, wider than tall, trembling shape, no teeth, no lips, no tongue;
+- two pale-blue felt teardrops, one under each eye, and a soft rosy blush on both cheeks;
+- its dome leans a little away from the door.
+
+Mongle has NO nose, NO arms, NO legs and NO neck; its scalloped hem with cream stitching sits flat on the floor. Everything is matte needle-felted wool. No speed lines, no motion lines, no stars, no effects. Absolutely no text, letters, numbers, symbols or watermarks. The top 30% of the photo stays plain plum wool felt wall.

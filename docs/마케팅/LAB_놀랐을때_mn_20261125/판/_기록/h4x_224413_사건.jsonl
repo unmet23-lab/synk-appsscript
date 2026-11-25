@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a212f3-245b-7d23-8b8d-08da56484b3f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one edited image, keeping the set and framing fixed while turning Mongle toward the camera with a panicked, tearful expression.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle faces the camera in tearful panic beside the shut door, softly illuminated by warm amber light."}}
+{"type":"turn.completed","usage":{"input_tokens":73853,"cached_input_tokens":59136,"cache_write_input_tokens":0,"output_tokens":800,"reasoning_output_tokens":70}}

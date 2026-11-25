@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+TASK — Image 1 is a tall portrait 9:16 photo of a handmade needle-felt miniature set: a white felt house ghost sitting on a little stool on the left, slurping felt noodles from a bowl with chopsticks, and the coral-pink felt blob Mongle on the right, in a cute felt haunted house. Make the SAME photo again, as one tall portrait 9:16 photo (1080 x 1920): same camera, same framing, same ghost, stool, bowl, noodles and chopsticks, same lantern, same wall, same floor, same light and colours, Mongle in the same place, same size, same upright pose.
+
+ONLY MONGLE'S FACE CHANGES — it is dumbfounded, deadpan, staring at the ghost in disbelief:
+- its two glossy black bead eyes are half covered from above by two flat coral felt eyelids (a straight horizontal lid edge across the upper half of each eye), so the look is flat and unimpressed; the visible half is still a plain black bead with a tiny shine;
+- below and between the eyes a small straight, slightly crooked stitched mouth, one short dark burgundy thread line, closed, no teeth, no lips;
+- one small pale-blue felt sweat drop on the side of its head, on the right.
+
+Mongle has NO nose, NO arms, NO legs and NO neck. Everything is matte needle-felted wool. No speed lines, no motion lines, no stars, no effects. Absolutely no text, letters, numbers, symbols or watermarks. The top 30% of the photo stays plain plum wool felt wall.

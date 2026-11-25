@@ -117,7 +117,7 @@ export const 튀는글자: React.FC<{ w: 말 }> = ({ w }) => {
         {w.ko.map((ln, li) => {
           const 마지막 = li === w.ko.length - 1 && w.ko.length > 1;
           return (
-            <div key={li} style={{ whiteSpace: 'pre', marginBottom: -4 }}>
+            <div key={li} data-synk-line="" style={{ whiteSpace: 'pre', marginBottom: -4 }}>
               {Array.from(ln).map((ch, i) => {
                 const 안 = w.key && ln.includes(w.key) && i >= ln.indexOf(w.key) && i < ln.indexOf(w.key) + w.key.length;
                 return <글자하나 key={i} ch={ch} i={i} n={Array.from(ln).length} 줄={li} w={w} size={마지막 ? Math.round(size * 1.15) : size} fill={안 ? KEY : PAPER} />;

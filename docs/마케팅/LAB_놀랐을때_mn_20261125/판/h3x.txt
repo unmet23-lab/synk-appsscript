@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+TASK — Image 1 is a tall portrait 9:16 photo of a handmade needle-felt miniature set: a big round charcoal felt spider hanging on a straight thread next to the coral-pink felt blob Mongle, in a cute felt haunted house. Make the SAME photo again, as one tall portrait 9:16 photo (1080 x 1920): same camera, same framing, same lanterns, same windows, same wall, same floor, same light and colours, same spider on the same thread, Mongle in the same place, same size, same squashed-low pose.
+
+ONLY TWO THINGS CHANGE:
+- the spider hangs a little further to the left so that there is a clear gap of plum wall between the spider and Mongle's body, and the spider does not cover Mongle's face at all;
+- Mongle's face is crying out in fright: both eyes are squeezed shut into two short dark stitched lines (like > and <), and right below and between them is a wide-open felt mouth, one simple rounded wobbly oval hole of dark burgundy felt, wider than tall, about as wide as the space between the two eyes, with a soft felt edge, no teeth, no lips, no tongue; a rosy blush on both cheeks and one small pale-blue felt teardrop at the outer corner of the eye on the right.
+
+Mongle has NO nose, NO arms, NO legs and NO neck. Everything is matte needle-felted wool. No speed lines, no motion lines, no stars, no effects. Absolutely no text, letters, numbers, symbols or watermarks. The top 30% of the photo stays plain plum wool felt wall with the thread.
