@@ -375,14 +375,14 @@
     },
     {
       "계정": "lab-mx-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-24T13:00:00-06:00",
       "지문": "94cbdb052391aebc21f503957c5a4ae73025fcbbba6d73d519869935c8ffdf23",
       "게시글지문": "b41100c4d2326952346fd000849024e003f11d686742f48e5d9ba2d1fb8a7c64",
       "방법": "ego-browser · Profile 12 · 공간 「틱톡 synklab.mx 1119-1900」(268) · TikTok Studio 업로드(파일 docs/마케팅/LAB_물고기_mn_20261102/게시/판본/MX/video.mp4, 판 지문 일치) → 표지(Edit cover → Upload cover → Save) → 예약 · AI 표시 끔 · 스크립트 C:/Users/q1212/ego/tiktok-20261119-1900/run-mx-1125-04.mjs",
       "게시물ID": "7709824537625382165",
       "주소": "https://www.tiktok.com/@synklab.mx/video/7709824537625382165",
-      "확인": "TikTok Studio 콘텐츠 목록(@synklab.mx, Profile 12) 줄 「Nov 25, 4:00 AM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「En coreano se juntan palabras cortitas para armar palabras nuevas: 물 (mul) agua + 고기 (go-gi) carne = 물고기 (mul-go-gi), pe」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 25, 2026 04:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 5.4, 첫 장면과 41) · 누르기 전 표지 유지 true",
+      "확인": "틱톡에 로그인하지 않은 ego 프로필로 영상 쪽을 열어 statusCode 0 · 비공개 아님 · createTime 2026-11-25 04:00 KST · 글 첫 줄 「En coreano se juntan palabras cortitas p」 · 2026-11-25 19:33 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-19 18시 회차 — 8장 띠 · 음량 · 게시글 대조 · 링크 200 · 올리기 전 검사 고칠 것 0)",
       "기록시각": "2026-11-19T10:53:07.097Z"
     },
@@ -401,17 +401,19 @@
     },
     {
       "계정": "lab-lk-facebook",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-24T13:00:00+05:30",
       "지문": "702a50a2e32c6dea385d229e170f121c4e5820c9493d01bbbbfcbe2c734974c1",
       "게시글지문": "ac55ff1156b283b30c401b4a0db598f16b31091663f5be8ac7f460eef853dbe2",
       "방법": "ego · Profile 5 · 공간 264 「LAB 메타 bs 1119-1900」 · Business Suite 나라 페이지 예약(latest/reels_composer?asset_id=1322127544319220) · 스크립트 C:/Users/q1212/ego/bs-20261119-1900/run.sh(bs-a·b·c·v.mjs, cur-lk.json)",
-      "확인": "예약됨 목록(latest/posts/scheduled_posts?asset_id=1322127544319220) 맨 위 줄 「2026년 11월 24일 화요일 4:30 전체 공개」(Facebook 표시 · 「처리 중…」 · 오후 4:30 — 누르기 전 칸 aria-valuetext 「오후」, 값 「오후,4,30」 · 2026년 11월 24일 · 시간대 Asia/Jayapura = UTC+9라 한국 시각 그대로 넣음 = 현지 2026-11-24 13:00 +05:30) · 글 첫 줄 「කොරියන් භාෂාවේ පොඩි වචන එකතු කරලා අලුත් වචන හදනවා:」가 판본/LK/원고_facebook.json caption 첫 줄과 같음 · 게시할 위치 「SYNK LAB Sri Lanka」 한 곳(자산 1322127544319220) · 완료 창 「릴스가 처리 완료 후 2026. 11. 24.에 게시되도록 예약되었습니다.」 · 캡션 줄 단위 일치(7줄 · 331/330자) · 표지 판본/LK/cover.png · 영상 판본/LK/video.mp4(sha256 702a50a2e32c…가 plates.json 지문과 같음) · AI 표시 켜지 않음(원고 alteredContent false · 작성기에 칸 없음) · 걸기 전 목록은 11-20~11-23 4:30 넷뿐이라 같은 칸 없었음 · 2026-11-19 19:17 KST",
+      "확인": "Business Suite 「게시됨」 목록 페북 줄 「2026년 11월 24일 화요일 4:30」(목록은 오전/오후를 안 보임) · 글 첫 줄 「කොරියන් භාෂාවේ පොඩි වචන එකතු කරලා අලුත් වචන හදනවා:」 · 인사이트 쪽 글 전체가 원고와 같음(공백 뺌) · 공개 범위는 이 목록에 안 보임",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-19 18시 회차 — 8장 띠 · 음량 · 게시글 대조 · 링크 200 · 올리기 전 검사 고칠 것 0)",
       "기록시각": "2026-11-19T10:53:08.384Z",
       "후속": [
         "공개 주소(facebook.com/reel/<숫자>/)는 게시 뒤 그 회차 세션이 적는다"
-      ]
+      ],
+      "주소": "https://www.facebook.com/reel/1667590595034937/",
+      "게시물ID": "122130692817475802"
     },
     {
       "계정": "lab-kh-facebook",

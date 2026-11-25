@@ -13,6 +13,9 @@ import {
   nameOf,
   printed,
   htmlTraps,
+  inlineModules,
+  NOT_GAME_PAGES,
+  notGamePageProblems,
   scriptSrcs,
   urlText,
 } from '../support/game-closure.mjs';
@@ -22,7 +25,7 @@ import { Flow } from '../flow/legacy.mjs';
 // 이 시험이 내보내기 전의 관문이다(설계 주인 11-21 — r3 GPT GA2). 판을 열 때 비로소 정의하는 게임이면 엔진의 던짐은 사용자 앞에서 게임이
 // 멈추는 일이라, 그 전에 잡는다. 글자를 훑지 않고 모듈을 실제로 불러, 실행된 값을 정의해 본다 — `export { FLOW_X }` 꼴도, 이름으로 넘긴
 // 문항 난도(`items: LEVELS`)도 그대로 본다.
-// - 불러 볼 파일은 열한 게임 입구에서 import를 따라가 정한다(test/support/game-closure.mjs — 게임 목록은 셸의 게임 표 GAME_BANKS). 폴더 밖
+// - 불러 볼 파일은 셸의 게임 표에 든 게임의 입구에서 import를 따라가 정한다(test/support/game-closure.mjs — 게임 목록은 셸의 게임 표 GAME_BANKS). 폴더 밖
 //   공유 모듈도 저절로 든다. 그 가운데 FLOW_를 적고 무엇인가를 내보내는 모듈을 모두 불러, 내보낸 FLOW_ 값 가운데 NOT_CONTENT 밖의 것을
 //   정의한다.
 // - node에서 불러지지 않는 모듈은 UNLOADABLE에 까닭을 적어야 지나간다. 그 모듈만 아래 글자 맞추기로 대신한다(지금은 없다).
@@ -59,7 +62,7 @@ function* sources(dir) {
   }
 }
 
-// 열한 게임 입구에서 따라간 파일 가운데 FLOW_를 적고 내보내는 모듈을 불러 내보낸 FLOW_ 값을 모은다.
+// 게임 입구에서 따라간 파일 가운데 FLOW_를 적고 내보내는 모듈을 불러 내보낸 FLOW_ 값을 모은다.
 async function gameContents() {
   const { games, files } = await gameClosure();
   const found = { games, files, contents: [], values: [], skipped: new Set(), unloaded: [] };
@@ -107,8 +110,8 @@ test('제품 내용은 모두 막기를 지나 정의된다 — 셸의 게임 �
   const { games, contents, values, skipped, unloaded } = await gameContents();
   assert.equal(
     games.length,
-    11,
-    '셸의 게임 표가 열한 곳이 아니다 — 게임이 늘거나 줄었으면 이 수를 고친다',
+    12,
+    '셸의 게임 표가 열두 곳이 아니다(4-7에 한글 만나기를 더함) — 게임이 늘거나 줄었으면 이 수를 고친다',
   );
   assert.deepEqual(
     unloaded,
@@ -160,9 +163,58 @@ test('제품 내용은 모두 막기를 지나 정의된다 — 셸의 게임 �
   );
 });
 
+// 게임 폴더의 게임이 아닌 화면(4-7 — 한글 만나기를 게임 표에 더하며, 단계 4 계획 §26-12). 입구로 따라가지 않되, 싣는 것이 적어 둔 꼴과 같고
+// 게임 입구가 따라간 파일 안일 때만 지나간다 — 그래서 빼도 따라간 파일이 같다. 게임 화면의 인라인 스크립트는 그대로 함정이다(아래 htmlTraps 시험).
+test('게임이 아닌 화면은 입구로 따라가지 않고, 싣는 것이 적어 둔 꼴과 같고 게임 입구가 따라간 파일 안일 때만 지나간다(4-7 §26-12)', async () => {
+  const { files } = await gameClosure();
+  const reached = new Set(files);
+  for (const [name, page] of Object.entries(NOT_GAME_PAGES)) {
+    assert.ok(page.why.length > 0, name);
+    const html = fs.readFileSync(path.join(EXPERIENCES, name), 'utf8');
+    assert.deepEqual(await notGamePageProblems(name, html, reached), [], name);
+  }
+  const name = 'hangul-stage/voice-check.html';
+  const html = fs.readFileSync(path.join(EXPERIENCES, name), 'utf8');
+  const problems = async (text, given = reached) =>
+    (await notGamePageProblems(name, text, given)).length;
+  // 아래 호출 자리 검사는 게임 파일만 본다. 이 화면의 인라인 글은 같은 검사로 따로 보아 코치의 live · declaredFrom을 부르지도 읽지도 않게
+  // 한다(4-7 엔진 검수 GA1 — src · import가 같아도 옛 엔진 전역으로 코치를 열 수 있다).
+  const coachUse = text =>
+    inlineModules(text).flatMap(code => {
+      const found = { used: new Set(), stray: [] };
+      scanCode(name, readCode(code), new Map(), found);
+      return found.stray;
+    });
+  for (const page of Object.keys(NOT_GAME_PAGES))
+    assert.deepEqual(coachUse(fs.readFileSync(path.join(EXPERIENCES, page), 'utf8')), [], page);
+  for (const extra of [
+    'window.SynkLearning.createCoach().live({ items: {} });',
+    "const open = window.SynkLearning.createCoach()['live'];",
+    'const { live } = window.SynkLearning.createCoach();',
+  ])
+    assert.ok(coachUse(html.replace('const pack', `${extra}\nconst pack`)).length > 0, extra);
+  const head = "import { createPack } from './pack.mjs';";
+  assert.ok(
+    html.includes(head),
+    '소리 듣기 확인 화면의 인라인 module 첫 줄이 바뀌었다 — 이 시험의 장면을 고친다',
+  );
+  // 게임 입구가 따라간 파일이라도 import를 하나 더 들이면 멈춘다 — 코치를 부를 수 있다.
+  assert.equal(
+    await problems(html.replace(head, `${head}\nimport { createCoach } from './learning.mjs';`)),
+    1,
+  );
+  // 인라인 module 말고 도는 코드(고전 인라인 스크립트 · 이벤트 속성)가 생기면 멈춘다.
+  assert.equal(await problems(html.replace('</body>', '<script>window.x = 1;</script></body>')), 1);
+  assert.equal(await problems(html.replace('<main>', '<main onclick="go()">')), 1);
+  // 실은 파일을 게임 입구가 따라가지 않으면 멈춘다.
+  assert.equal(await problems(html, new Set()), 1);
+  // 적지 않은 화면은 게임 화면이다.
+  assert.equal((await notGamePageProblems('hangul-stage/index.html', html, reached)).length, 1);
+});
+
 // ── 게임 파일이 코치에 넘기는 내용(설계 주인 11-21 설계 관문 답) ──
 // 일곱 게임은 live를 try/catch로 감싸, 엔진이 정의할 때 던져도 게임은 멈추지 않고 순간 맞춤만 소리 없이 꺼진다. 내보낸 FLOW_ 값만 정의해
-// 보면 화면 파일이 바꿔 넘기는 내용(`coach.live({ ...FLOW_RACE, knobs: [...] })`)을 놓친다. 그래서 열한 게임 입구에서 따라간 파일에서 코치
+// 보면 화면 파일이 바꿔 넘기는 내용(`coach.live({ ...FLOW_RACE, knobs: [...] })`)을 놓친다. 그래서 게임 입구에서 따라간 파일에서 코치
 // 호출 `.live(` · `.live?.(` · `.declaredFrom(`을 모두 찾는다. 첫 인자가 불러 본 FLOW_ 내용의 이름이거나 까닭을 적은 넘기기 이름일 때만
 // 지나간다. 모르는 꼴(객체 글자 · 펼치기 · 함수 호출 · 표에 없는 이름)이면 멈춘다. live · declaredFrom이 호출이 아닌 꼴(부르지 않고 읽기 ·
 // 대괄호 이름 · 풀어 받기)으로 나와도 멈춘다 — 꼭 필요한 자리는 READS에 까닭과 함께 적는다. 글은 esbuild로 주석을 걷고 다시 찍어 보므로

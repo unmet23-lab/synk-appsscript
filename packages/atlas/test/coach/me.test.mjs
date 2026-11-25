@@ -477,7 +477,7 @@ test('「다시 배울래요」 뒤 새것으로 다시 들인 단위 — recomm
     modality: 'reading',
   });
   const time = clock(T0);
-  const { coach } = await openCoach({ items: [item], time });
+  const { coach, port } = await openCoach({ items: [item], time });
   try {
     for (const step of [DAY, 20_000]) {
       const pid = coach.present(item);
@@ -493,9 +493,18 @@ test('「다시 배울래요」 뒤 새것으로 다시 들인 단위 — recomm
     assert.deepEqual([picked.why.code, picked.why.slots.relearn], ['unit.new', true]);
     assert.equal(picked.why.line, '「bank」 처음부터 다시 만나요.');
     assert.equal(entry.why.line, '「bank」 처음부터 다시 만나요.', '홈의 다음 레슨 줄');
-    // 근거 칸 relearn이 든 이유도 제시 사건의 이유 검사를 지나 저장된다.
+    // 근거 칸 relearn이 든 이유도 제시 사건의 이유 검사를 지나 저장되고, 저장된 제시 사건에 그대로 실린다(앞 사슬 GA2).
     const pid = coach.present(picked.selected);
     assert.equal(await coach.answer(pid, { correct: true, assessable: true }).stored, true);
+    const stored = (await port.read())
+      .map(row => row.value?.event)
+      .filter(event => event?.type === 'practice.presented')
+      .at(-1);
+    assert.deepEqual(
+      [stored.reason.code, stored.reason.slots],
+      ['unit.new', { unit: 'ko.word.bank', relearn: true }],
+      '저장된 제시 사건의 이유',
+    );
   } finally {
     coach.dispose();
   }

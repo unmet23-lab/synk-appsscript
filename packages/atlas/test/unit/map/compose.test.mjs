@@ -419,3 +419,94 @@ test('단계 3 접기 어댑터가 받는 색인 꼴 — foldIndex { edition, lo
   assert.deepEqual(map.foldIndex.lookup('a').units, ['ko.grammar.G201']);
   assert.equal(map.foldIndex.lookup('nope'), null);
 });
+
+// 4-7 계열 줄 levels(단계 4 계획 §26-4): 계열 줄은 그 계열이 실제로 내는 문항 난도의 집합을 싣는다. levels 밖 난도는 null이고 계열 단위
+// 문항으로 새지 않는다(4-7 설계 검토 1회차 P1-2). levels가 없는 계열 줄(드라마 시범 · 서버가 든 옛 색인)은 1~3을 받는다. 옛 꼴 사건의
+// 다시 찾기(familyRow · foldIndex.family — §26-6)는 levels를 보지 않는다.
+const hangulRow = (familyKey, extra = {}) => ({
+  familyKey,
+  skillId: 'ko.hangul.sound',
+  ruleUnits: ['ko.hangul.v-a'],
+  audioRequired: true,
+  ...extra,
+});
+const ask = (map, familyKey, difficulty) =>
+  map.item({
+    itemKey: `${familyKey}.x${difficulty}`,
+    familyKey,
+    skillId: 'ko.hangul.sound',
+    difficulty,
+    responseFormat: 'single-choice',
+  });
+
+test('계열 줄 levels — 밖의 난도는 null이고 계열 단위로 새지 않으며, levels 없는 줄은 1~3을 받는다(4-7 §26-4)', () => {
+  const out = compose([
+    {
+      bank: 'h',
+      template: true,
+      items: [hangulRow('h.match.v-a', { levels: [1, 2] }), hangulRow('h.old')],
+    },
+  ]);
+  assert.deepEqual(
+    out.templates.map(row => row.levels),
+    [[1, 2], null],
+  );
+  assert.equal(TEMPLATE_FIELDS.at(-1), 'levels', '칸 끝에 더한다 — 앞 칸 자리는 그대로');
+  const map = openMap({ index: indexOf(out) });
+  assert.deepEqual(ask(map, 'h.match.v-a', 2).units, ['ko.hangul.v-a']);
+  assert.equal(ask(map, 'h.match.v-a', 3), null, 'levels 밖 — family: 단위로 새지 않는다');
+  assert.equal(ask(map, 'h.match.v-a', 9), null);
+  assert.deepEqual(ask(map, 'h.old', 3).units, ['ko.hangul.v-a'], 'levels 없는 계열 줄은 1~3');
+  assert.deepEqual(
+    ask(map, 'h.loose', 3).units,
+    ['family:h.loose'],
+    '계열 줄이 없는 계열(낱말 읽기)은 계열 단위 그대로',
+  );
+});
+
+test('옛 꼴 다시 찾기 — 계열 → 계열 줄의 지금 이름과 단위, 능력 · levels는 보지 않고 옛 이름도 따라간다(4-7 §26-6)', () => {
+  const out = compose([
+    { bank: 'h', template: true, items: [hangulRow('h.match.v-a', { levels: [1, 2] })] },
+  ]);
+  const index = indexOf(out);
+  const map = openMap({
+    index: { ...index, renames: { ...index.renames, families: { 'h.pair.old': 'h.match.v-a' } } },
+  });
+  const row = { familyKey: 'h.match.v-a', units: ['ko.hangul.v-a'] };
+  assert.deepEqual(map.familyRow('h.match.v-a'), row);
+  assert.deepEqual(map.familyRow('h.pair.old'), row, '옛 이름으로 물어도 지금 이름의 줄');
+  assert.deepEqual(map.foldIndex.family('h.match.v-a'), row, '서버 접기가 받는 색인에도 든다');
+  assert.equal(map.familyRow('h.loose'), null);
+  assert.ok(Object.isFrozen(map.familyRow('h.match.v-a').units));
+});
+
+test('계열 줄 levels 검사 — 1 · 2 · 3 오름차순만, 빈 배열 · 겹침 · 밖의 값은 멈춘다', () => {
+  // 빈 자리만 있는 배열(hole)도 멈춘다 — every는 빈 자리를 건너뛴다(4-7 엔진 검수 GA3).
+  const holey = [];
+  holey.length = 1;
+  for (const levels of [[], [0, 1], [2, 1], [1, 1], [1, 4], '1,2', [1.5], holey])
+    assert.throws(
+      () => compose([{ bank: 'h', template: true, items: [hangulRow('h.x', { levels })] }]),
+      /levels/,
+      JSON.stringify(levels),
+    );
+  // 같은 계열 줄을 은행 둘이 levels만 달리 들면 멈춘다(두뇌가 받는 문항이 달라진다).
+  assert.throws(
+    () =>
+      compose([
+        { bank: 'h', template: true, items: [hangulRow('h.x', { levels: [1, 2] })] },
+        { bank: 'k', template: true, items: [hangulRow('h.x', { levels: [1, 2, 3] })] },
+      ]),
+    /칸이 다르다/,
+  );
+});
+
+test('빌드 검사는 계열 줄의 levels도 센다 — levels 없는 계열 줄은 세지 않는다(4-7 §26-4)', () => {
+  const rows = [
+    { familyKey: 't1', skillId: 's1', units: ['u1'], bank: 'h', template: true, levels: [1] },
+    { familyKey: 't2', skillId: 's2', units: ['u1'], bank: 'h', template: true, levels: [1, 2, 3] },
+    { familyKey: 't3', skillId: 's3', units: ['u1'], bank: 'h', template: true, levels: null },
+  ];
+  const audit = auditMap(rows, [{ id: 'u1', kind: 'hangul' }]);
+  assert.deepEqual(audit.oneDifficulty, [{ skillId: 's1', difficulty: 1 }]);
+});

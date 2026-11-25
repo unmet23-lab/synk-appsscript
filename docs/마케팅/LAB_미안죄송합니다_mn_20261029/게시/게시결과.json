@@ -542,7 +542,7 @@
     },
     {
       "계정": "lab-mx-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-23T13:00:00-06:00",
       "지문": "3e7dbbb8b2e91839c44302974057a3244eef1714619d27e2fc65909255aa7a4d",
       "게시글지문": "5852586a141248b94d7fbd5ab125055374e0056d179639876f5bed5d2093c3b5",
@@ -563,7 +563,7 @@
       ],
       "게시물ID": "7710017018556206354",
       "주소": "https://www.tiktok.com/@synklab.mx/video/7710017018556206354",
-      "확인": "예약 한국 시각 2026-11-24 04:00 · TikTok Studio 콘텐츠 목록(@synklab.mx, Profile 12) 줄 「Nov 24, 4:00 AM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「En coreano, “perdón” cambia según con quién hablas: 미안 (mi-an) con amigos, 죄송합니다 (joe-song-ham-ni-da) con maestros y jef」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 24, 2026 04:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 7.1, 첫 장면과 62.9) · 영상 undefined(새 색 판, 준비.json 지문과 같음) · 11-20 KST",
+      "확인": "틱톡에 로그인하지 않은 ego 프로필로 영상 쪽을 열어 statusCode 0 · 비공개 아님 · createTime 2026-11-24 04:00 KST · 글 첫 줄 「En coreano, “perdón” cambia según con qu」 · 2026-11-25 19:33 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 11-20 「응, 점검해」(바뀐 판본으로 다시 걸기) · 자체검수 통과",
       "기록시각": "2026-11-19T22:44:19.143Z"
     },

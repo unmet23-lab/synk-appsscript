@@ -169,10 +169,23 @@ export const HANGUL_TYPES = Object.freeze([
   'pair',
   'teach',
 ]);
+// 계열이 실제로 내는 문항 난도(levels — 단계 4 계획 §26-4. 진도의 「단」이 아니다). core.mjs에서 읽은 규칙이다: 짝 맞추기는
+// min(단, 2), 짝 고르기는 늘 1, U7 받침(ㄱ · ㄷ · ㅂ · ㅅ · ㅈ — core.mjs hardByEar)은 1단에서 소리로 묻지 않아 듣고 고르기 · 가르쳐 주기 ·
+// 음절 만들기가 2단부터다. 나머지는 min(단, 보기 수 − 1)이거나 단 그대로라 1~3이다. 빌드 시험(test/build/hangul-levels.test.mjs)이
+// core.mjs를 진도 차례의 앞머리 · 단 · 회차로 돌려 나온 난도와 맞댄다.
+const HARD_BY_EAR_UNIT = 'U7';
+const BY_EAR_FROM_TWO = new Set(['listen_pick', 'teach', 'build']);
+function hangulLevels(type, hardByEar) {
+  if (type === 'match') return [1, 2];
+  if (type === 'pair') return [1];
+  return hardByEar && BY_EAR_FROM_TWO.has(type) ? [2, 3] : [1, 2, 3];
+}
 async function hangulTemplates(root) {
-  const letters = readJson(root, 'strata/hangul.json').letters;
+  const layer = readJson(root, 'strata/hangul.json');
+  const byEar = new Set(layer.units.find(unit => unit.id === HARD_BY_EAR_UNIT)?.letters ?? []);
+  if (!byEar.size) throw new Error(`한글 층에 ${HARD_BY_EAR_UNIT} 단원 글자가 없다(levels 규칙)`);
   const rows = [];
-  for (const [id, , role] of letters) {
+  for (const [id, , role] of layer.letters) {
     for (const type of HANGUL_TYPES) {
       if (type === 'match' && role === 'final') continue;
       rows.push({
@@ -180,6 +193,7 @@ async function hangulTemplates(root) {
         skillId: type === 'see_pick' ? 'ko.hangul.read' : 'ko.hangul.sound',
         ruleUnits: [`ko.hangul.${id}`],
         audioRequired: type !== 'see_pick',
+        levels: hangulLevels(type, byEar.has(id)),
       });
     }
   }

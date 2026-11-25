@@ -51,7 +51,7 @@ export const FOLD_CAP = 2000;
 export const ISSUED_KEEP_MS = 2 * 86_400_000;
 
 // 기록 · 어댑터 · 근거 줄 규칙의 판 — 이 폴더의 접기 규칙을 고치면 올린다(옛 줄이 새 규칙으로 다시 접히게).
-export const RECORD_EDITION = 'record-4'; // 2: 2판 제시의 firstExposure false를 장부 만남으로(11-11) · 3: 옛 꼴 차례 열쇠를 적힌 시각 먼저로(11-11 GPT GA1) · 4: 첫 답 뒤의 도움은 도움 만남을 세우지 않는다(11-12 Fable 5.2 최종 F1)
+export const RECORD_EDITION = 'record-5'; // 2: 2판 제시의 firstExposure false를 장부 만남으로(11-11) · 3: 옛 꼴 차례 열쇠를 적힌 시각 먼저로(11-11 GPT GA1) · 4: 첫 답 뒤의 도움은 도움 만남을 세우지 않는다(11-12 Fable 5.2 최종 F1) · 5: 열쇠로 못 찾은 옛 꼴 제시를 계열 줄로 다시 찾는다 — 옛 한글 답이 글자 단위로(11-25 단계 4 계획 §26-6)
 
 // 세대 표지(단계 4 계획 §18-5-4) — 머리를 만들 때 단다. `<머리 만든 서버 시각 13자리>.<난수 8자>`라 견줄 수 있다(시각이 큰 쪽이
 // 새 머리 — 기기는 summary.mjs headOrder로 가른다). 같은 판 묶음 이름의 머리를 다시 지어도(비우기 · A → B → A) 기기의 옛 since가

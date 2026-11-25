@@ -28,6 +28,8 @@ export const GAME_BANKS = Object.freeze({
   'talk-rally': Object.freeze(['talk-rally']),
   'word-magic': Object.freeze(['word-magic']),
   'snap-words': Object.freeze(['snap-words']),
+  // 한글 만나기(4-7 — 단계 4 계획 §26-3). 문이 서도 한글 앱이 새 길 모듈로 문을 찾기 전까지는 옛 길 그대로다(게임 세션 몫).
+  'hangul-stage': Object.freeze(['hangul-stage']),
 });
 
 const COACH_METHODS = Object.freeze([

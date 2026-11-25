@@ -6,6 +6,7 @@
 //   key   같은 시각의 차례 열쇠(글자). 2판 = 사건 id(a.<만든 시각>.…), 옛 꼴 = a.<적힌 시각>.s<서버 차례 15자리> · a.<적힌 시각>.l<기기 로그 순서 9자리>
 //   atMs  접는 시각. 서버는 min(사건 at, 받은 시각), 기기는 사건 at
 // index.lookup(itemKey) → { familyKey, skillId, difficulty, responseFormat, units, unknownOption? } | null  (단계 1의 문항 색인)
+// index.family(familyKey) → { familyKey, units } | null  (계열 줄 — 없는 색인은 다시 찾지 않는다)
 import { BITS, EVENT_FORM, EVENT_TYPES } from './events.mjs';
 import { assessable } from './judge.mjs';
 
@@ -27,17 +28,33 @@ export const orderOf = (a, b) => a.atMs - b.atMs || (a.key < b.key ? -1 : a.key 
 
 const isCurrent = event => event.schema === EVENT_FORM.current;
 
+// 열쇠로 못 찾은 옛 꼴 제시의 계열 줄(단계 4 계획 §26-6). 색인에 있는 문항 · 2판 · 계열 줄 찾기가 없는 색인은 null.
+function familyRowOf(presented, indexed, index) {
+  if (indexed || isCurrent(presented)) return null;
+  const familyKey = presented.measure?.familyKey;
+  return typeof familyKey === 'string' ? (index.family?.(familyKey) ?? null) : null;
+}
+
+// 색인에 문항이 있으면 단위도 색인 것이다 — 색인이 단위를 비웠으면 사건에 적힌 옛 단위로 돌아가지 않는다(아르곤 끝 판 B4).
+function unitsOf(presented, indexed, family) {
+  if (indexed) return indexed.units;
+  if (family) return family.units;
+  return isCurrent(presented) ? presented.units : undefined;
+}
+
 // 문항 — 접는 때의 문항 색인이 먼저다(설계 §4). 색인에 없으면 사건에 적힌 값(2판 units · 옛 꼴 measure).
+// 옛 꼴 제시를 열쇠로 못 찾으면 measure의 계열로 계열 줄(판마다 열쇠가 생기는 은행 — 한글 단계)을 다시 찾아 그 줄의 단위를 쓴다
+// (단계 4 계획 §26-6 — 옛 한글 답이 꼴마다 계열 단위에 쌓이던 것). 능력 · 난도 · 꼴은 사건에 적힌 값이다 — 계열 줄의 능력으로
+// 바꾸지 않는다(4-7 엔진 검수 GA2). levels는 보지 않는다(levels 밖 null 길을 타지 않게). 2판 사건은 단위를 스스로 들어 다시 찾지 않는다.
 export function itemOf(presented, index = EMPTY_INDEX) {
   const indexed = index.lookup(presented.itemKey);
-  const measure = isCurrent(presented) ? presented : presented.measure;
-  const base = indexed ?? measure;
+  const family = familyRowOf(presented, indexed, index);
+  const base = indexed ?? (isCurrent(presented) ? presented : presented.measure);
   if (!base?.familyKey || !base.skillId) return null;
-  // 색인에 문항이 있으면 단위도 색인 것이다 — 색인이 단위를 비웠으면 사건에 적힌 옛 단위로 돌아가지 않는다(아르곤 끝 판 B4).
-  const units = indexed ? indexed.units : isCurrent(presented) ? presented.units : undefined;
+  const units = unitsOf(presented, indexed, family);
   return {
     itemKey: presented.itemKey,
-    familyKey: base.familyKey,
+    familyKey: family?.familyKey ?? base.familyKey,
     skillId: base.skillId,
     difficulty: base.difficulty,
     responseFormat: base.responseFormat || 'unknown',

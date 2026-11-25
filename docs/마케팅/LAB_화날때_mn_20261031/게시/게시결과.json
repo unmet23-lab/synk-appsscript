@@ -481,14 +481,14 @@
     },
     {
       "계정": "lab-vn-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-24T13:00:00+07:00",
       "지문": "fb89d10e3a858ddf689870d075b46b40636951d55e639240b31a761cd9afda00",
       "게시글지문": "45d2f26985a418b9bc9af213d171fd2a3d5cbb17b8aed1041e3c4cc7500214aa",
       "방법": "ego-browser · Profile 11 · 공간 「틱톡 synklab.vn 1119-1900」(266) · TikTok Studio 업로드(파일 docs/마케팅/LAB_화날때_mn_20261031/게시/판본/VN/video.mp4, 판 지문 일치) → 표지(Edit cover → Upload cover → Save) → 예약 · AI 표시 끔 · 스크립트 C:/Users/q1212/ego/tiktok-20261119-1900/run-vn-1124-15.mjs",
       "게시물ID": "7709823660151803142",
       "주소": "https://www.tiktok.com/@synklab.vn/video/7709823660151803142",
-      "확인": "TikTok Studio 콘텐츠 목록(@synklab.vn, Profile 11) 줄 「Nov 24, 3:00 PM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「4 câu tiếng Hàn thân mật cho một ngày xui xẻo:」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 24, 2026 15:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 6.4, 첫 장면과 28.3) · 누르기 전 표지 유지 true",
+      "확인": "틱톡에 로그인하지 않은 ego 프로필로 영상 쪽을 열어 statusCode 0 · 비공개 아님 · createTime 2026-11-24 15:00 KST · 글 첫 줄 「4 câu tiếng Hàn thân mật cho một ngày xu」 · 2026-11-25 19:33 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-19 18시 회차 — 8장 띠 · 음량 · 게시글 대조 · 링크 200 · 올리기 전 검사 고칠 것 0)",
       "기록시각": "2026-11-19T10:53:05.664Z"
     },

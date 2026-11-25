@@ -420,6 +420,16 @@
       "원고": "게시/판본/UZ/원고_instagram.json",
       "AI표시": false,
       "지문": "24b140a77c42f672394ed31569a2c886ecf7448325912efa3e1cbcb21392cad9"
+    },
+    {
+      "계정": "lab-uz-telegram",
+      "파일": "게시/판본/UZ/video.mp4",
+      "시각": "2026-11-26T13:00:00+05:00",
+      "언어": "uz",
+      "돌림": true,
+      "표지": "게시/판본/UZ/cover.png",
+      "AI표시": false,
+      "지문": "24b140a77c42f672394ed31569a2c886ecf7448325912efa3e1cbcb21392cad9"
     }
   ],
   "미룰편": [],

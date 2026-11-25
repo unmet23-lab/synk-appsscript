@@ -313,7 +313,7 @@ test('돌아온 말이 남았으면 채우기의 문장이 남은 것을 말한�
   ];
   const byKey = new Map(items.map(item => [item.itemKey, item]));
   const time = clock();
-  const { coach } = await openCoach({ items, time });
+  const { coach, port } = await openCoach({ items, time });
   const answer = async key => {
     const pid = coach.present(byKey.get(key));
     await coach.answer(pid, { correct: true, assessable: true }).stored;
@@ -335,9 +335,19 @@ test('돌아온 말이 남았으면 채우기의 문장이 남은 것을 말한�
     assert.equal(picked.facts.limited, true, '장면: d가 든 문항은 새것 한도에 묶였다');
     assert.equal(picked.why.code, 'idle');
     assert.equal(picked.why.line, '돌아온 말은 이번 판에 여기까지예요. 남은 말은 다음에 만나요.');
-    // 근거 칸 left가 든 이유도 제시 사건의 이유 검사를 지나 저장된다.
+    // 근거 칸 left가 든 이유도 제시 사건의 이유 검사를 지나 저장되고, 저장된 제시 사건에 그대로 실린다(앞 사슬 GA2 — 추천 결과만 보면
+    // 사건에서 칸이 빠져도 지나간다).
     const pid = coach.present(picked.selected);
     assert.equal(await coach.answer(pid, { correct: true, assessable: true }).stored, true);
+    const stored = (await port.read())
+      .map(row => row.value?.event)
+      .filter(event => event?.type === 'practice.presented')
+      .at(-1);
+    assert.deepEqual(
+      [stored.itemKey, stored.reason.code, stored.reason.slots],
+      [picked.selected.itemKey, 'idle', { left: true }],
+      '저장된 제시 사건의 이유',
+    );
   } finally {
     coach.dispose();
   }

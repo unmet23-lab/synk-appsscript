@@ -17,7 +17,7 @@
     },
     {
       "계정": "lab-us-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-24T21:00:00-05:00",
       "지문": "ca23a5bd5b6e57547c15cc827cc063ace0e38e7bd46f3575e574db052bc1b9cf",
       "게시글지문": "cd82331b1360bb1ac49d1a6100fcedc7c9f7ecee8df510c08ea5690aceed3e8a",
@@ -31,9 +31,12 @@
       ],
       "게시물ID": "ZskLRGK_dpI",
       "주소": "https://youtube.com/shorts/ZskLRGK_dpI",
-      "확인": "예약 한국 시각 2026-11-25 11:00 = 현지 21:00 · My Korean roommate left me a note… 🍰😳 #learnkorean · 쇼츠 목록(SYNK LAB USA | Korean Made Fun): 「My Korean roommate left me a note… 🍰😳 #learnkorean」 · 예약됨 · 2026. 11. 25. 예약 날짜 · 예약 창 2026. 11. 25. 오전 11:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 영어로 저장됨 · 동영상 언어: 영어 · 방법 ego Profile 7(unmet23) · 공간 「게시 1122-1400 youtube」 · 채널 전환 C:/Users/q1212/ego/publish-20261122-1400/youtube/sw.mjs → 올리기 C:/Users/q1212/ego/publish-20261122-1400/youtube/yt.mjs → 제목 및 설명 언어 C:/Users/q1212/ego/publish-20261122-1400/youtube/editlang.mjs",
+      "확인": "로그인 없이 oEmbed 200 · 채널 「SYNK LAB USA | Korean Made Fun」 · 제목 「My Korean roommate left me a note… 🍰😳 #learnkorean」 · 2026-11-25 18:53 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-22 14시 회차 — 띠 · 음량 · 올리기 전 검사)",
-      "기록시각": "2026-11-22T07:48:03.368Z"
+      "기록시각": "2026-11-22T07:48:03.368Z",
+      "후속": [
+        "고정 댓글: 11-25 20:31 @synklabusa 이름으로 댓글은 달았다(글 원고와 같음). 고정은 못 했다 — 「고급 기능 이용하기: 댓글을 고정하려면 YouTube 스튜디오에서 간단한 일회성 인증을 완료하세요」가 뜬다(채널 인증은 유호님 손). 스크립트 C:/Users/q1212/ego/pin-20261125-1840/"
+      ]
     }
   ]
 }

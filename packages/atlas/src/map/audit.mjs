@@ -47,13 +47,23 @@ function untaggedOf(rows) {
   return { total, untagged, ratio: ratio(untagged, total), byBank };
 }
 
-// 계열 줄은 난도를 판마다 제품이 정하므로(난도 null) 세지 않는다.
+// 계열 줄은 난도를 판마다 제품이 정한다(난도 null) — 그 계열이 내는 난도(levels, 단계 4 계획 §26-4)가 있으면 그 값들을 센다. levels가
+// 없는 계열 줄(드라마 시범)은 세지 않는다.
+const levelsOf = row =>
+  row.template
+    ? Array.isArray(row.levels)
+      ? row.levels
+      : []
+    : row.difficulty === null || row.difficulty === undefined
+      ? []
+      : [row.difficulty];
 function difficultiesOf(rows) {
   const bySkill = new Map();
   for (const row of rows) {
-    if (row.difficulty === null || row.difficulty === undefined) continue;
+    const levels = levelsOf(row);
+    if (!levels.length) continue;
     if (!bySkill.has(row.skillId)) bySkill.set(row.skillId, new Set());
-    bySkill.get(row.skillId).add(row.difficulty);
+    for (const level of levels) bySkill.get(row.skillId).add(level);
   }
   return sorted(bySkill.keys())
     .filter(skill => bySkill.get(skill).size === 1)

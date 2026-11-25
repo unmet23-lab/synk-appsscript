@@ -128,3 +128,43 @@ test('이름 붙인 조각 표 — 꼴 · 이름 규칙 · 은행 둘에 걸침 
     keys: ['korean-racing:w3:v1', 'korean-racing:w1:v1'],
   });
 });
+
+// 함께 싣는 계열 줄(4-7 — 단계 4 계획 §26-6): WORLD 홈이 늘 받는 조각(world-life)에 한글 단계의 계열 줄을 싣는다. 손님 기기는 판 묶음
+// (RECORD_EDITION)이 바뀐 요약을 읽을 때 한 번 다시 접는데, 그때 묶은 색인에 한글 계열 줄이 있어야 옛 한글 답이 글자 단위로 접힌다.
+// 문항 줄 · 다른 은행 조각 · 판 표지는 그대로다.
+test('world-life 조각은 한글 단계의 계열 줄을 함께 싣고, 다른 조각 · 판 표지는 그대로다(4-7 §26-6)', () => {
+  const index = {
+    ...INDEX,
+    items: [...INDEX.items, row(6, 'world-life')],
+    templates: [
+      ...INDEX.templates,
+      [91, 'ko.hangul.sound', ['ko.hangul.v-a'], 0, 'hangul-stage', 17],
+      [92, 'ko.speaking.explain', [], 0, 'drama-pilot', 0],
+    ],
+    families: [...INDEX.families, [6, 'fam6'], [91, 'hangul-stage.listen_pick.v-a'], [92, 'fam92']],
+  };
+  const tAt = field => index.templateFields.indexOf(field);
+  const home = sliceOf(index, 'world-life', null, new Map());
+  assert.deepEqual(
+    home.templates.map(t => t[tAt('bank')]),
+    ['hangul-stage'],
+    '홈 조각에 한글 계열 줄 — 드라마 시범 · 레이싱 틀 줄은 아니다',
+  );
+  assert.deepEqual(
+    home.items.map(item => item[0]),
+    [6],
+    '문항 줄은 그 은행 것만',
+  );
+  assert.ok(
+    home.families.some(([n]) => n === 91),
+    '함께 실은 계열 줄의 계열 번호도 든다',
+  );
+  assert.deepEqual([home.edition, home.hash], [index.edition, index.hash], '판 표지는 색인 그대로');
+  const own = sliceOf(index, 'hangul-stage', null, new Map());
+  assert.deepEqual(own.templates, home.templates, '한글 단계 조각의 계열 줄과 같다');
+  assert.deepEqual(
+    sliceOf(index, 'talk-rally', null, new Map()).templates,
+    [],
+    '다른 은행 조각에는 싣지 않는다',
+  );
+});
