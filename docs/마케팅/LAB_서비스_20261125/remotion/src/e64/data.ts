@@ -1,3 +1,5 @@
+import type { 말풍선말 } from './말풍선';
+
 // LAB 영어 E64 「서비스」(11-25 07시 회차) — 편 전체를 영상으로(제작 절차 lab-whole-video)의 첫 LAB 편.
 // 샷은 Flow Omni 1.2 Flash로 구운 720×1280 영상(public/vid — git 밖, tools/플로우영상.js 「넣기」)이고, 글 · 소리는 그 위에 얹는다.
 export const FPS = 30;
@@ -37,15 +39,15 @@ export const SFX: [number, string, number][] = [
   [15.4, 'pop.wav', 0.16], // 몽글이 흔들기 시작
 ];
 
-// 화면 글 — 말풍선(말한 사람 머리 곁 · 꼬리를 그 사람에게, 교훈 L21 · L08), 머리 글, 뜻 카드
-export type Say = { at: number; to: number; ko?: string; en: string; x: number; y: number; tail?: number; koSize?: number; enSize?: number };
-export const SAYS: Say[] = [
-  { at: 0.85, to: 3.2, ko: '서비스~!', en: '“Service”~!', x: 400, y: 735, tail: 0.18 },
-  { at: 3.9, to: 7.2, ko: '얼마예요…?', en: 'How much is it…? 👛', x: 640, y: 1150, tail: 0.5 },
-  { at: 7.85, to: 9.9, ko: '아니 아니~ 서비스!', en: 'No, no~ it’s 서비스!', x: 400, y: 660, tail: 0.3, koSize: 78 },
-  { at: 13.15, to: 14.4, ko: '서비스~!', en: '“Service”~!', x: 640, y: 640, tail: 0.45, koSize: 76, enSize: 48 },
-  { at: 14.4, to: 15.6, en: 'Uh… how much? 👛😰', x: 250, y: 770, tail: 0.25 },
-  { at: 15.6, to: 18.2, ko: '서비스예요~!', en: 'It’s on the house~!', x: 760, y: 1135, tail: 0.5, koSize: 80 },
+// 화면 글 — 온전한 말풍선(제작 절차 lab-lettering, 11-26 유호님 「이런 식으로 안짤리고 잘 나오는거는 이렇게 써줘도 좋을것같아」), 머리 글, 뜻 카드
+// v5: 말 · 뜻 · 시간은 v4 그대로다. 꼬리를 몸과 한 획으로 그리고, 관광객 말풍선은 사장님 얼굴을, 끝 말풍선은 사장님 손을 가리지 않게 옮겼다.
+export const SAYS: 말풍선말[] = [
+  { at: 0.85, to: 3.2, ko: ['서비스~!'], mean: '“Service”~!', x: 700, y: 800, 꼬리x: 480 },
+  { at: 3.9, to: 7.2, ko: ['얼마예요…?'], mean: 'How much is it…? 👛', x: 640, y: 1188, 꼬리x: 690 },
+  { at: 7.85, to: 9.9, ko: ['아니 아니~ 서비스!'], mean: 'No, no~ it’s 서비스!', x: 520, y: 612, 꼬리x: 340, 크기: 78 },
+  { at: 13.15, to: 14.4, ko: ['서비스~!'], mean: '“Service”~!', x: 640, y: 640, 꼬리x: 610, 크기: 76, 뜻크기: 48 },
+  { at: 14.4, to: 15.6, mean: 'Uh… how much?\n👛😰', x: 290, y: 735, 꼬리x: 235, 뜻크기: 50 },
+  { at: 15.6, to: 18.2, ko: ['서비스예요~!'], mean: 'It’s on the house~!', x: 735, y: 1140, 꼬리x: 765, 크기: 72, 뜻크기: 46 },
 ];
 export const HEAD = { at: 0.05, to: 3.2, l1: 'In Korea, when you hear', l2: '서비스…' };
 // 뜻 카드 — v2: 위쪽 종이 카드(아까워와 같은 꼴 — 이해 시험 v1 haiku · GPT 「같아 보임」) 대신 사장님 옆 벽에 걸린 가격표 「₩0」
