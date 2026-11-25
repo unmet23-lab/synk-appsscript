@@ -1,7 +1,9 @@
 // 동아리장 알림 → 튜터 고르기 → 실력 파악 → 맞춤(club.mjs · world-front-club.mjs, 11-24) 실제 앱 흐름 시험.
 // 로컬 WORLD 리허설 서버(서울행 qa/서버.mjs)에서 손님이 1화 전 내 길에 있는 기록을 심고, 내 길의 동아리장 알림을 눌러
 // 앞면의 처음 만남을 끝까지 간다. 문항 넷은 실제 엔진(「내 위치」 짧은 진단과 같은 고르기 · 세션 · 끝 기록)이 낸다. 운영 계정 · talk는 건드리지 않는다.
-//   node experiences/world-front/qa/동아리흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--튜터 seoha|taeo|yuna] [--못읽음] [--찍기]
+//   node experiences/world-front/qa/동아리흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--튜터 seoha|taeo|yuna] [--못읽음] [--찍기] [--라이브] [--날]
+// --라이브: 로컬 서버 대신 synk.im/world 공개본을 손님으로 연다(공개본은 안 바꾼다. GET이 아닌 요청이 나가면 실패).
+// --날: 처음 만난 날을 앞으로 옮겨 이튿날 복습 알림과 사흘째 내 위치 알림까지 본다.
 // --못읽음: 한글 「커피」에서 「아직 못 읽어요」 — 문항 없이 한글 길로 끝나는지 본다.
 // 기록: .tmp/world-front-qa/club-<폭>-<언어>/ (찍기와 결과.json)
 import fs from 'node:fs';
@@ -16,23 +18,24 @@ const MAIN = path.join(os.homedir(), 'Documents', 'SYNK-appsscript');
 const require = createRequire(path.join(fs.existsSync(path.join(ROOT, 'node_modules')) ? ROOT : MAIN, 'x.js'));
 const {chromium} = require('playwright');
 const args = process.argv.slice(2), opt = (n, d = null) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; }, has = n => args.includes(n);
-const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), TUTOR = opt('--튜터', 'taeo'), NOREAD = has('--못읽음');
-const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `club-${W}x${H}-${LANG}${NOREAD ? '-noread' : ''}`); fs.mkdirSync(OUT, {recursive: true});
+const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), TUTOR = opt('--튜터', 'taeo'), NOREAD = has('--못읽음'), LIVE = has('--라이브'), DAYS = has('--날');
+const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${LIVE ? '라이브-' : ''}club-${W}x${H}-${LANG}${NOREAD ? '-noread' : ''}`); fs.mkdirSync(OUT, {recursive: true});
 const PORT = Number(opt('--포트', String(5100 + Math.floor(Math.random() * 300))));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = [], fail = [];
 const check = (ok, what, detail = '') => { log.push(`${ok ? '통과' : '실패'} ${what}${detail ? ` — ${detail}` : ''}`); if (!ok) fail.push(what); console.log(log.at(-1)); };
 
 const data = path.join(ROOT, '.tmp', 'world-front-qa', `db-${PORT}`);
-const server = spawn(process.execPath, [path.join(ROOT, 'experiences/seoul-arrival/qa/서버.mjs'), String(PORT)], {env: {...process.env, SYNK_WORLD_DATA_DIR: data}, stdio: 'ignore'});
+const server = LIVE ? {kill() {}} : spawn(process.execPath, [path.join(ROOT, 'experiences/seoul-arrival/qa/서버.mjs'), String(PORT)], {env: {...process.env, SYNK_WORLD_DATA_DIR: data}, stdio: 'ignore'});
 process.on('exit', () => { try { server.kill(); } catch {} });
-const base = `http://127.0.0.1:${PORT}`;
-for (let i = 0; i < 120; i++) { try { const r = await fetch(base + '/health'); if (r.ok) break; } catch {} await sleep(500); }
+const base = LIVE ? 'https://synk.im/world' : `http://127.0.0.1:${PORT}`;
+for (let i = 0; !LIVE && i < 120; i++) { try { const r = await fetch(base + '/health'); if (r.ok) break; } catch {} await sleep(500); }
 
 const browser = await chromium.launch({channel: 'msedge', args: ['--autoplay-policy=no-user-gesture-required']});
 const context = await browser.newContext({viewport: {width: W, height: H}, deviceScaleFactor: SHOTS ? 2 : 1, hasTouch: W < 700, locale: LANG === 'ko' ? 'ko-KR' : LANG === 'mn' ? 'mn-MN' : 'en-US'});
 const page = await context.newPage();
-const errors = [], bad = [];
+const errors = [], bad = [], posts = [];
+if (LIVE) page.on('request', q => { if (!['GET', 'HEAD', 'OPTIONS'].includes(q.method())) posts.push(`${q.method()} ${q.url().slice(0, 120)}`); });
 page.on('pageerror', e => errors.push('페이지 ' + String(e).slice(0, 300)));
 page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('콘솔 ' + m.text().slice(0, 300)); });
 page.on('response', r => { const u = r.url(); if (r.status() >= 400 && !/\/api\//.test(u)) bad.push(`${r.status()} ${u.replace(base, '')}`); });
@@ -47,6 +50,7 @@ const waitPress = (what, sel, text = '', ms = 30000) => until(what, () => press(
 async function finish() {
   check(!errors.length, '콘솔 · 페이지 오류 0', errors.slice(0, 4).join(' | '));
   check(!bad.length, '404 · 400대 응답 0', bad.slice(0, 4).join(' | '));
+  if (LIVE) check(!posts.length, 'GET 아닌 요청 없음', posts.slice(0, 4).join(' | '));
   fs.writeFileSync(path.join(OUT, '결과.json'), JSON.stringify({폭: `${W}x${H}`, 언어: LANG, 튜터: TUTOR, 못읽음: NOREAD, 통과: log.filter(l => l.startsWith('통과')).length, 실패: fail, 기록: log}, null, 1));
   console.log(fail.length ? `실패 ${fail.length}건` : '모두 통과');
   await browser.close(); server.kill(); process.exit(fail.length ? 1 : 0);
@@ -54,7 +58,7 @@ async function finish() {
 
 // ── 1화 전 내 길에 선 손님(학생증까지 받음) ──
 const arrival = {version: 1, stage: 'card', dream: 'idol', name: '볼로르', nameEn: 'Bolor', call: '언니', from: '몽골', look: 'mn_f', scenes: [], updatedAt: Date.now() - 60e3};
-await page.goto(`${base}/mobile.html?frontAuto=1`, {waitUntil: 'domcontentloaded'});
+await page.goto(`${base}/mobile.html${LIVE ? '' : '?frontAuto=1'}`, {waitUntil: 'domcontentloaded'});
 await page.evaluate(({lang, arrival}) => {
   if (lang !== 'ko') localStorage.setItem('synk.world.lang', lang);
   localStorage.setItem('synk.world.arrival.v1:guest', JSON.stringify(arrival));
@@ -145,4 +149,29 @@ log.push(`참고 한글 답 ${hangul}`);
 // 판이 떴으면(오늘 할 일을 바로 연다) 닫고 앞면으로
 await sleep(1500);
 if (await page.evaluate(() => document.querySelector('#world-panel')?.open)) { await shot('8-오늘할일판'); log.push('참고 오늘 할 일 판이 열림'); }
+
+// ── 이튿날 · 사흘째 알림(기기 표의 처음 만난 날만 앞으로 옮긴다) ──
+if (DAYS) for (const [days, level] of [[1, false], [3, true]]) {
+  await page.evaluate(d => { const k = 'synk.world.front.v1:guest', m = JSON.parse(localStorage.getItem(k)); m.club.at = Date.now() - d * 864e5; delete m.club.last; localStorage.setItem(k, JSON.stringify(m)); }, days);
+  await page.goto(`${base}/mobile.html${LIVE ? '' : '?frontAuto=1'}`, {waitUntil: 'domcontentloaded'});
+  // 앞면에 다녀온 학생은 앞면이 바로 열린다. 내 길에 서면 「오늘은 여기까지」로 간다
+  const frontOpen = async () => (await page.evaluate(() => !!document.querySelector('#front-layer')?.open)) && !!F();
+  const at = await until(`${days}일째 앞면 또는 내 길`, async () => (await frontOpen()) ? 'front' : (await onRoad()) ? 'road' : (await page.evaluate(() => window.__synkOpening?.stage?.() === 'title')) ? 'title' : null, 40000);
+  if (!at) continue;
+  if (at === 'title') { await sleep(900); await page.mouse.click(W / 2, H * .55); }
+  if (at !== 'front') {
+    await until(`${days}일째 앞면 또는 내 길`, async () => (await frontOpen()) || onRoad(), 30000);
+    if (!(await frontOpen())) { await sleep(1800); await S().evaluate(() => { setTimeout(() => document.querySelector('#goHome')?.click(), 0); }).catch(() => {}); }
+    if (!await until(`${days}일째 앞면`, frontOpen, 30000)) continue;
+  }
+  const got = await until(`${days}일째 알림`, () => F().evaluate(() => !!document.querySelector('.cl-host-note')?.shadowRoot?.querySelector('.cl-isl')), 20000);
+  await sleep(1500); await shot(`${days}일-1알림`);
+  if (!got) continue;
+  check(true, `${days}일째 튜터 알림이 뜸`, await F().evaluate(() => (document.querySelector('.cl-host-note').shadowRoot.querySelector('.cl-isl').innerText || '').replace(/\s+/g, ' ').slice(0, 80)));
+  await F().evaluate(() => document.querySelector('.cl-host-note').shadowRoot.querySelector('.cl-isl').click());
+  if (!await until(`${days}일째 대화`, () => inClub(() => !!document.querySelector('.cl-host')?.shadowRoot?.querySelector('.cl-cta')), 20000)) continue;
+  await sleep(4500); await shot(`${days}일-2대화`);
+  const cells = await inClub(() => document.querySelector('.cl-host').shadowRoot.querySelectorAll('.cells i').length);
+  check(level ? cells === 16 : cells === 0, level ? '사흘째 대화에 내 위치 칸 16' : '이튿날은 복습 대화(칸 없음)', String(cells));
+}
 await finish();
