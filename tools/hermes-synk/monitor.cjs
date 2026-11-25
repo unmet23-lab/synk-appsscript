@@ -64,11 +64,16 @@ function plan(previous, overview, now = new Date(), {delivered: sent = () => tru
     && state.attentionObserved[x.id] !== x.incident);
   // Only a present, healthy row proves recovery, and only for an incident someone was actually told about.
   // An alert withdrawn before sending (its source healed first) leaves nothing to recover from.
+  // A newer alert of the same source may still wait for its digest, or be withdrawn, after an older one was read: `heard` keeps that one.
   const told = id => { const value = state.attentionAlerted[id]; return typeof value === 'string' ? {incident:value} : value || null; };
+  const heard = id => [told(id), told(id)?.heard].find(value => value && (!value.notice || sent(value.notice))) || null;
   const healed = first ? [] : events.filter(x => !x.needs_attention && x.notify_recovery && told(x.id));
-  const recovered = healed.filter(x => !told(x.id).notice || sent(told(x.id).notice)).map(x => ({...x,...told(x.id)}));
+  const recovered = healed.filter(x => heard(x.id)).map(x => ({...x,incident:heard(x.id).incident,notice:heard(x.id).notice}));
   const alert = urgent.length ? attentionNotification(urgent) : null;
-  for (const event of urgent) if (event.notify_recovery) state.attentionAlerted[event.id] = {incident:event.incident,notice:alert.id};
+  for (const event of urgent) if (event.notify_recovery) {
+    const before = heard(event.id);
+    state.attentionAlerted[event.id] = {incident:event.incident,notice:alert.id,...(before ? {heard:{incident:before.incident,notice:before.notice}} : {})};
+  }
   for (const event of healed) delete state.attentionAlerted[event.id];
   // Absence is never completion: failed/partial readers must not erase evidence.
   state.observed = {...state.observed, ...current};
@@ -149,50 +154,83 @@ function suppressDraft(outbox, item, now) {
   if (!fs.existsSync(receipt)) writeJSON(receipt,{id:item.id,status:'suppressed',policy:POLICY,
     reason:'notification_policy_attention_only_v1',suppressedAt:now.toISOString(),sendAttempted:false});
 }
-// 11-25 유호님 「너무 알림이 잦아서 … 특정 시간에 한번만 몰아서 보고해줘」 · 「알람만 끄게하고 이 알람들을 모아서 왜 막혔는지
-// 그리고 해결방안이 뭔지」: drafts wait in the outbox and go out once a day, from the first round at or after this KST hour
-// (a PC asleep at 09:00 sends when it wakes). Anything that healed before then is withdrawn by the replacement step, so the
-// digest lists only what is still open. The digest itself waits up to DIGEST_HOLD_MS for the credit job 「알림해결」
-// (tools/크레딧작업/알림해결.js) to leave its cause/fix lines in runtime/synk-automation/diagnosis/<id>.json, then goes out
-// as one message with them, or without them once the hold ends.
+// 11-25 유호님 「너무 알림이 잦아서 10/1토막 내던지 특정 시간에 한번만 몰아서 보고해줘」: drafts wait in the outbox and one message a
+// day tells what is still open. The hour, the hold and the diagnosis are Claude's choices, not yet confirmed (README 「하루 한 번 무음 묶음」).
+// One message per KST day by construction: the digest id is made from the day, and the sender's claim file lets an id out once.
+// The drafts stay in the outbox until that claim exists. A crash, a sleeping PC or a changed set of events only means that a later
+// round composes the message again from the drafts still waiting; nothing is carried over from a digest that was not sent.
+// The first round at or after DIGEST_HOUR_KST leaves diagnosis/request.json for the credit job 「알림해결」 (tools/크레딧작업/알림해결.js)
+// and waits up to DIGEST_HOLD_MS for diagnosis/<digest id>.json. Nothing is composed after DIGEST_LAST_HOUR_KST, so a round
+// cannot cross midnight between composing and sending.
 const DIGEST_HOUR_KST = 9;
+const DIGEST_LAST_HOUR_KST = 23;
 const DIGEST_HOLD_MS = 120 * 60_000;
 const DIGEST_HEADING = 'SYNK · 오늘 확인할 일';
-function digestDue(state, now, digestHour) {
-  if (digestHour === null || digestHour === undefined) return true;
-  const {day, hour} = kst(now);
-  return hour >= digestHour && state.digestDay !== day;
-}
-function digestDraft(item) {
-  return item && item.policy === POLICY && item.kind === 'attention' && item.needs_attention === true && item.digest
-    && Array.isArray(item.digest.items) && typeof item.digest.holdUntil === 'string';
-}
-const DIAGNOSIS_STATES = new Set(['고침', '유호님 차례', '확인 필요']);
+const digestId = day => 'event-' + hash([POLICY, 'digest', day]).slice(0, 24);
+const DIAGNOSIS_STATES = new Set(['유호님 차례', '확인 필요']);
 function readDiagnosis(folder, id) {
-  const value = readJSON(path.join(folder, 'diagnosis', id + '.json'), null);
+  let value;
+  // An unreadable diagnosis must not stop the collector; the digest then goes out without it.
+  try { value = readJSON(path.join(folder, 'diagnosis', id + '.json'), null); } catch { return null; }
   if (!value || value.id !== id || !Array.isArray(value.items)) return null;
-  return {items: value.items.slice(0, 20).filter(x => x && typeof x.id === 'string').map(x => ({id: clean(x.id, 180),
+  return {items: value.items.slice(0, 20).filter(x => x && typeof x.id === 'string').map(x => ({id: clean(x.id, 180), incident: clean(x['사건'], 60),
     cause: clean(x['원인'], 200), fix: clean(x['해결'], 260), state: DIAGNOSIS_STATES.has(x['상태']) ? x['상태'] : '확인 필요'})),
     note: clean(value.note, 240)};
 }
-// healedNow: ids whose current row is healthy at send time (the digest may have waited two hours for its diagnosis).
-function digestText(draft, diagnosis, healedNow = new Set()) {
-  const byId = new Map((diagnosis?.items || []).map(x => [x.id, x]));
-  const items = draft.digest.items;
-  const lines = items.slice(0, 6).map(x => {
-    const found = byId.get(x.id);
-    return '- ' + x.title + (x.detail ? '\n  ' + x.detail : '')
-      + (found ? (found.cause ? '\n  원인: ' + found.cause : '') + (found.fix ? '\n  ' + (found.state === '고침' ? '고친 것: ' : '해결: ') + found.fix : '')
-        + (found.state === '유호님 차례' && !healedNow.has(x.id) ? '\n  → 유호님 차례' : '') : '')
-      + (healedNow.has(x.id) ? '\n  지금은 풀렸어요.' : '');
-  });
-  const recoveries = draft.digest.recoveries || [];
-  const id = draft.id.slice(6, 14);
-  return DIGEST_HEADING + '\n' + lines.join('\n')
-    + (items.length > 6 ? '\n그 밖에 ' + (items.length - 6) + '건 · /synk_today 에서 전체 확인' : '')
-    + (recoveries.length ? '\n\n풀린 일\n' + recoveries.slice(0, 6).map(x => '- ' + x).join('\n') : '')
-    + (diagnosis ? (diagnosis.note ? '\n\n' + diagnosis.note : '') : '\n\n원인 진단은 이번에 오지 않았어요.')
-    + '\n\n이 알림의 번호는 ' + id + '입니다. 자세한 내용은 /synk_attention ' + id + ' 로 볼 수 있습니다.\n이 알림에 「자세히」라고 답장해도 됩니다.';
+// automation.py sends the first 3400 characters. The alert number at the end is reserved first; then whole items are added while
+// they fit, shortened to their title when the diagnosis does not fit, and counted as 「그 밖에」 when even the title does not.
+const DIGEST_LIMIT = 3300;
+function digestText({id, items, recoveries = []}, diagnosis) {
+  // A diagnosis belongs to one incident; the same source failing anew since then is told without it.
+  const found = x => (diagnosis?.items || []).find(y => y.id === x.id && y.incident === x.incident);
+  const full = x => {
+    const y = found(x);
+    return '\n- ' + x.title + (x.detail ? '\n  ' + x.detail : '')
+      + (y ? (y.cause ? '\n  원인: ' + y.cause : '') + (y.fix ? '\n  해결: ' + y.fix : '') + (y.state === '유호님 차례' ? '\n  → 유호님 차례' : '') : '');
+  };
+  const code = id.slice(6, 14);
+  const tail = (recoveries.length ? '\n\n풀린 일\n' + recoveries.slice(0, 6).map(x => '- ' + x).join('\n')
+      + (recoveries.length > 6 ? '\n그 밖에 ' + (recoveries.length - 6) + '건' : '') : '')
+    // The note speaks about the diagnosed items; without any of them here it would explain something else.
+    + (diagnosis ? (diagnosis.note && (!diagnosis.items.length || items.some(found)) ? '\n\n' + diagnosis.note : '') : '\n\n원인 진단은 이번에 오지 않았어요.')
+    + '\n\n이 알림의 번호는 ' + code + '입니다. 자세한 내용은 /synk_attention ' + code + ' 로 볼 수 있습니다.\n이 알림에 「자세히」라고 답장해도 됩니다.';
+  const room = DIGEST_LIMIT - tail.length - 60; // 60: the 「그 밖에 N건」 line
+  let body = DIGEST_HEADING, shown = 0;
+  for (const x of items.slice(0, 6)) {
+    const line = [full(x), '\n- ' + x.title].find(text => body.length + text.length <= room);
+    if (!line) break;
+    body += line; shown++;
+  }
+  return body + (items.length > shown ? '\n그 밖에 ' + (items.length - shown) + '건 · /synk_today 에서 전체 확인' : '') + tail;
+}
+// A source missing from this round is not proof it healed: it stays as its draft announced it.
+const unseen = source => ({id: source.id, attention_fingerprint: source.fingerprint, incident: source.incident,
+  title: '이전에 잡힌 일 · ' + source.id, detail: '이번 조회에 자료가 없습니다', needs_attention: true, notify: true});
+// What today's message would say right now, from the drafts that are still waiting and this round's rows.
+function composeDigest(drafts, overview, state) {
+  const current = new Map((overview.events || []).map(eventView).map(event => [event.id, {...event, incident: state.attentionIncidents[event.id]?.id || ''}]));
+  const open = new Map(), healed = new Map();
+  for (const draft of drafts) for (const source of draft.events) {
+    const row = current.get(source.id);
+    if (draft.kind === 'recovery') healed.set(source.id, {id: source.id, incident: source.incident, notice: source.notice,
+      title: clean(row?.title || source.id, 150), detail: clean(row?.detail, 240)});
+    else open.set(source.id, row || unseen(source)); // the newest draft of a missing source stands
+  }
+  const active = [...open.values()].filter(event => event.needs_attention && event.notify);
+  return {active, healed: [...healed.values()].filter(x => !active.some(event => event.id === x.id)), absorbed: drafts.map(draft => draft.id)};
+}
+// The drafts a digest told leave the outbox only once the sender has claimed that digest.
+function settleDigest(state, outbox, now, today) {
+  // The first 11-25 version kept only the day of the finished round.
+  if (!state.digest && state.digestDay) state.digest = {day: state.digestDay, id: digestId(state.digestDay), status: 'done'};
+  delete state.digestDay;
+  const settle = digest => {
+    for (const id of readJSON(path.join(outbox, digest.id + '.json'), null)?.digest?.absorbed || []) suppressDraft(outbox, {id}, now);
+    state.digest = {day: digest.day, id: digest.id, status: 'done'};
+  };
+  if (state.digest?.status === 'sending' && delivered(outbox, state.digest.id)) settle(state.digest);
+  // The state can be older than the sender's claim (a killed collector). The claim decides.
+  if (!(state.digest?.day === today && state.digest.status === 'done') && delivered(outbox, digestId(today))) settle({day: today, id: digestId(today)});
 }
 async function collect({home, root, now = new Date(), readOverview, initial = false, digestHour = null, holdMs = DIGEST_HOLD_MS}) {
   const folder = path.join(home, 'runtime/synk-automation');
@@ -205,28 +243,44 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
     const overview=await readOverview({root,hermesHome:home,now,remoteRefresh:refresh,persistState:true});
     const result=plan(previous, overview, now, {delivered:id=>delivered(path.join(folder,'outbox'),id)});
     result.state.remoteRefreshAt = refresh ? now.toISOString() : previous.remoteRefreshAt;
+    const outbox=path.join(folder,'outbox');
+    const bundling = digestHour !== null && digestHour !== undefined, today = kst(now).day;
+    const rows = new Map((overview.events || []).map(eventView).map(event=>[event.id,event]));
     for(const item of result.notifications) {
-      const output=path.join(folder,'outbox',item.id+'.json');
-      if(!fs.existsSync(output)) writeJSON(output,{...item,createdAt:now.toISOString()});
+      // A digest names recoveries one by one, so in digest mode each source waits in a draft of its own.
+      const drafts = bundling && item.kind==='recovery' ? item.events.map(source=>recoveryNotification([{...rows.get(source.id),...source}])) : [item];
+      for(const draft of drafts) {
+        const output=path.join(outbox,draft.id+'.json');
+        if(!fs.existsSync(output)) writeJSON(output,{...draft,createdAt:now.toISOString()});
+      }
     }
+    if (bundling) settleDigest(result.state, outbox, now, today); // repeatable, so it may precede the state
     // Outbox precedes cursor commit: a crash can repeat preparation, never lose its draft.
     writeJSON(stateFile,result.state);
-    const outbox=path.join(folder,'outbox');
     const drafts=fs.existsSync(outbox)?fs.readdirSync(outbox)
       .filter(x=>/^(?:event-[a-f0-9]{24}|daily-\d{4}-\d{2}-\d{2})\.json$/.test(x))
       .filter(x=>!fs.existsSync(path.join(outbox,x.slice(0,-5)+'.claim')))
       .map(x=>readJSON(path.join(outbox,x),null)).filter(Boolean)
       .sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt))):[];
-    const notifications=[], heldDigests=[];
+    // Immediate alerts keep their per-round cap. A digest must see every waiting draft, or the 21st open item is never reported.
+    const cap = bundling ? Infinity : 20, notifications=[];
     for (const draft of drafts) {
-      // A digest already went through the replacement step when it was built; it only waits for its diagnosis.
-      if (digestDraft(draft)) { heldDigests.push(draft); continue; }
+      // A composed digest is only ever offered to the sender by the round that composed it; its drafts are here too.
+      if (draft.digest?.version === 2) continue;
       if (recoveryDraft(draft)) {
         // A queued recovery must not arrive after the same source broke again.
         const broken = new Set((overview.events || []).map(eventView).filter(event=>event.needs_attention).map(event=>event.id));
+        const again = draft.events.some(source=>broken.has(source.id));
         // Nor may it announce something nobody heard about: every source's alert must have actually gone out.
-        if (draft.events.some(source=>broken.has(source.id)) || !draft.events.every(source=>!source.notice || delivered(outbox,source.notice))) suppressDraft(outbox,draft,now);
-        else if (notifications.length < 20) notifications.push(draft);
+        const heard = draft.events.every(source=>!source.notice || delivered(outbox,source.notice));
+        // Waiting for a digest, a source that broke again keeps its untold recovery until it heals or until the newer alert was told:
+        // that alert may be withdrawn before anyone reads it, and then this recovery is still the one to tell.
+        const replaced = again && draft.events.every(source=>{
+          const newer = result.state.attentionAlerted[source.id];
+          return newer?.notice && newer.incident!==source.incident && delivered(outbox,newer.notice);
+        });
+        if (!heard || replaced || again && !bundling) suppressDraft(outbox,draft,now);
+        else if (!again && notifications.length<cap) notifications.push(draft);
         continue;
       }
       if (!attentionDraft(draft)) suppressDraft(outbox,draft,now);
@@ -235,69 +289,62 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
         const sources = draft.events.map(source=>current.get(source.id));
         // Only positive, current resolution may retire a queued attention item.
         // Missing records still do not imply success or deletion.
-        if (sources.every(Boolean)) {
-          const active = sources.filter(event=>event.needs_attention && event.notify);
+        // A waiting digest draft is narrowed source by source: one seen healthy leaves at once, one that failed anew has a newer draft,
+        // a missing one stays. Alone, a draft's text names all its sources, so it is narrowed only when every one is in the round.
+        if (bundling || sources.every(Boolean)) {
+          const active = (bundling ? draft.events.map((source,i)=>sources[i] ? sources[i].incident===source.incident && sources[i] : unseen(source)) : sources)
+            .filter(event=>event && event.needs_attention && event.notify);
           const replacement = active.length ? attentionNotification(active) : null;
-          if (!replacement || replacement.id !== draft.id) {
+          // An id already used cannot carry this alert again; then the draft itself stays and the digest reads the current rows.
+          const used = bundling && replacement && replacement.id !== draft.id && fs.existsSync(path.join(outbox,replacement.id+'.claim'));
+          if (!replacement || replacement.id !== draft.id && !used) {
             if (replacement) {
               const replacementPath=path.join(outbox,replacement.id+'.json');
               if(!fs.existsSync(replacementPath)) writeJSON(replacementPath,{...replacement,createdAt:now.toISOString()});
-              if(!fs.existsSync(path.join(outbox,replacement.id+'.claim')) && !notifications.some(item=>item.id===replacement.id) && notifications.length<20) notifications.push(replacement);
+              if(!fs.existsSync(path.join(outbox,replacement.id+'.claim')) && !notifications.some(item=>item.id===replacement.id) && notifications.length<cap) notifications.push(replacement);
             }
             suppressDraft(outbox,draft,now);
             continue;
           }
         }
-        if (notifications.length < 20 && !notifications.some(item=>item.id===draft.id)) notifications.push(draft);
+        if (notifications.length<cap && !notifications.some(item=>item.id===draft.id)) notifications.push(draft);
       }
     }
     const done = extra => ({first:result.first,checkedAt:now.toISOString(),policy:POLICY,coverage:overview.coverage,...extra});
-    if (digestHour === null || digestHour === undefined) return done({notifications:[...notifications,...heldDigests]});
-    // A held digest goes out with its diagnosis as soon as that arrives, or without it once the hold ends.
-    const ready = [];
-    // Only a present, healthy row counts as healed; a missing row stays as it was announced.
-    const healedNow = new Set((overview.events || []).map(eventView).filter(event=>!event.needs_attention).map(event=>event.id));
-    for (const draft of heldDigests) {
-      const diagnosis = readDiagnosis(folder, draft.id);
-      if (diagnosis || now.getTime() >= Date.parse(draft.digest.holdUntil)) ready.push({...draft, text: digestText(draft, diagnosis, healedNow), diagnosed: !!diagnosis});
+    if (!bundling) return done({notifications});
+    const id = digestId(today), hour = kst(now).hour, last = result.state.digest;
+    const stage = last?.day === today ? last.status : 'none';
+    const hold = extra => done({notifications:[],held:notifications.length,...extra});
+    if (hour < digestHour || hour >= DIGEST_LAST_HOUR_KST || stage === 'done') return hold();
+    const {active, healed, absorbed} = composeDigest(notifications, overview, result.state);
+    const save = (status, extra) => { result.state.digest = {day:today,id,status,...extra}; writeJSON(stateFile,result.state); };
+    // Nothing to tell: today's round is over, and whatever comes later waits for tomorrow.
+    if (!active.length && !healed.length) { save('done'); return hold({digest:true}); }
+    const diagnosis = active.length ? readDiagnosis(folder, id) : null;
+    // Ask for a diagnosis once a day. After a day that ended without its message, do not wait again.
+    if (active.length && stage === 'none' && !(last && last.status !== 'done')) {
+      const holdUntil = new Date(now.getTime() + holdMs).toISOString();
+      writeJSON(path.join(folder,'diagnosis','request.json'),{version:1,id,day:today,createdAt:now.toISOString(),holdUntil,
+        items:active.map(x=>({id:x.id,incident:x.incident,title:x.title,detail:x.detail})),recoveries:healed.map(x=>x.title)});
+      save('waiting',{holdUntil});
+      return hold({waiting:true});
     }
-    // Every other draft stays unclaimed in the outbox until the digest round, so nothing is lost meanwhile.
-    if (!digestDue(result.state, now, digestHour)) return done({notifications:ready,held:notifications.length,waitingDigests:heldDigests.length-ready.length});
-    result.state.digestDay = kst(now).day;
-    const current = new Map((overview.events || []).map(eventView).map(event=>[event.id,{...event,incident:result.state.attentionIncidents[event.id]?.id||''}]));
-    const attention = notifications.filter(item=>item.kind==='attention'), recoveries = notifications.filter(item=>item.kind==='recovery');
-    const healedTitles = recoveries.flatMap(item=>item.events.map(source=>clean(current.get(source.id)?.title || source.id, 150)));
-    const seen = new Map();
-    for (const item of attention) for (const source of item.events) {
-      const event = current.get(source.id);
-      // A source missing from this round is not proof it healed; keep it as it was announced.
-      if (!seen.has(source.id)) seen.set(source.id, event ? event : {id:source.id,attention_fingerprint:source.fingerprint,incident:source.incident,title:'이전에 잡힌 일 · '+source.id,detail:'이번 조회에 자료가 없습니다',needs_attention:true,notify:true});
+    if (active.length && stage === 'waiting' && !diagnosis && now.getTime() < Date.parse(last.holdUntil)) return hold({waiting:true});
+    const digest = {version:2,day:today,items:active.map(x=>({id:x.id,incident:x.incident,title:x.title,detail:x.detail})),recoveries:healed.map(x=>x.title),
+      healed:healed.map(x=>({id:x.id,incident:x.incident})),absorbed};
+    const item = {...(active.length ? attentionNotification(active, DIGEST_HEADING) : recoveryNotification(healed)), id, digest};
+    if (active.length) item.text = digestText({id,...digest}, diagnosis);
+    // The recovery bookkeeping points at the message that actually goes out.
+    for (const event of active) {
+      const value = result.state.attentionAlerted[event.id];
+      if (value) result.state.attentionAlerted[event.id] = {...(typeof value === 'object' ? value : {}),incident:event.incident,notice:id};
     }
-    const active = [...seen.values()].filter(event=>event.needs_attention && event.notify);
-    if (active.length) {
-      const base = attentionNotification(active, DIGEST_HEADING);
-      const merged = {...base, digest:{day:kst(now).day, holdUntil:new Date(now.getTime()+holdMs).toISOString(),
-        items:active.map(x=>({id:x.id,title:x.title,detail:x.detail})), recoveries:healedTitles}};
-      merged.text = digestText(merged, null);
-      const mergedPath = path.join(outbox, merged.id+'.json');
-      // The same set of items gives the same id as the alert already waiting; that unsent draft becomes the digest.
-      if (!fs.existsSync(path.join(outbox, merged.id+'.claim'))) writeJSON(mergedPath,{...merged,createdAt:now.toISOString()});
-      // The recovery bookkeeping points at the notice that actually goes out.
-      for (const event of active) if (result.state.attentionAlerted[event.id]) result.state.attentionAlerted[event.id] = {incident:event.incident,notice:merged.id};
-      for (const item of notifications) if (item.id !== merged.id) suppressDraft(outbox,item,now);
-    } else if (recoveries.length) {
-      // Only good news: nothing to diagnose, so it goes out at once.
-      const merged = recoveryNotification(recoveries.flatMap(item=>item.events.map(source=>({...source,...(current.get(source.id)||{title:source.id})}))));
-      const mergedPath = path.join(outbox, merged.id+'.json');
-      if (!fs.existsSync(mergedPath)) writeJSON(mergedPath,{...merged,createdAt:now.toISOString()});
-      if (!fs.existsSync(path.join(outbox, merged.id+'.claim'))) ready.push(merged);
-      for (const item of recoveries) if (item.id !== merged.id) suppressDraft(outbox,item,now);
-    }
-    writeJSON(stateFile,result.state);
-    return done({notifications:ready,digest:true});
+    writeJSON(path.join(outbox,id+'.json'),{...item,createdAt:now.toISOString()});
+    save('sending');
+    return done({notifications:[item],digest:true});
   } finally {release();}
 }
-module.exports={STALE_LOCK_MS,DIGEST_HOUR_KST,DIGEST_HOLD_MS,digestDue,digestDraft,digestText,readDiagnosis,plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,recoveryDraft,suppressDraft,attentionNotification,recoveryNotification,awakeSince,AWAKE_GAP_MS,POLICY};
+module.exports={STALE_LOCK_MS,DIGEST_HOUR_KST,DIGEST_LAST_HOUR_KST,DIGEST_HOLD_MS,digestId,digestText,readDiagnosis,plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,recoveryDraft,suppressDraft,attentionNotification,recoveryNotification,awakeSince,AWAKE_GAP_MS,POLICY};
 if(require.main===module) {
   const home=process.env.HERMES_HOME || path.join(process.env.LOCALAPPDATA,'hermes');
   const {readOverview}=require('./overview.cjs');

@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {plan,collect,kst,clean,awakeSince,POLICY,STALE_LOCK_MS}=require('../tools/hermes-synk/monitor.cjs');
+const {plan,collect,kst,clean,awakeSince,attentionNotification,digestId,POLICY,STALE_LOCK_MS}=require('../tools/hermes-synk/monitor.cjs');
 const event=(fingerprint='a',extra={})=>({id:'task:one',kind:'task',severity:'info',needs_attention:false,title:'작업 응답',detail:'검증 대기',fingerprint,...extra});
 const at=x=>new Date(x);
 const {tipStatusEvents}=require('../tools/hermes-synk/overview.cjs');
@@ -360,72 +360,81 @@ test('private accounts, credentials and media directives are neutralized',()=>{
 });
 
 
-// 11-25 하루 한 번 모아 보내기: KST 09시 이후 첫 회차에 한 통으로 묶고, 알림해결 회차의 진단을 기다렸다가 함께 보낸다.
-// 진단이 120분 안에 오지 않으면 진단 없이 보낸다. 그 전에 풀린 일은 보내지 않는다.
+// 11-25 하루 한 번 모아 보내기: KST 09시 이후 첫 회차가 진단을 부탁하고, 진단이 오거나 120분이 지나면 그때 열린 일만 한 통으로 보낸다.
+// 알림 초안은 그 한 통이 실제로 나간 뒤에만 거둔다. 묶음 번호는 날짜에서 나오므로 하루에 한 통뿐이다.
 function digestFixture(prefix){
   const home=fs.mkdtempSync(path.join(os.tmpdir(),prefix));
-  const outbox=path.join(home,'runtime/synk-automation/outbox');
+  const folder=path.join(home,'runtime/synk-automation'),outbox=path.join(folder,'outbox');
   const ok=id=>({id,kind:'task',severity:'info',needs_attention:false,title:id+' 정상',fingerprint:'ok',notify_recovery:true});
   const bad=(id,fp)=>({id,kind:'task',severity:'error',needs_attention:true,notify_recovery:true,title:id+' 멈춤',detail:'확인 필요',fingerprint:fp});
   const box={rows:[]};
   const reader=async()=>({events:box.rows});
-  // The sender (automation.py) claims what it sends; claimed drafts are never offered again.
+  // The sender (automation.py) claims an id exactly once; claim:false is a sender that died before it.
   const sent=[];
-  const run=async(iso,extra={})=>{const r=await collect({home,root:home,now:at(iso),readOverview:reader,digestHour:9,...extra});
-    for(const n of r.notifications){fs.writeFileSync(path.join(outbox,n.id+'.claim'),'sent');sent.push(n);}return r;};
-  const diagnose=(id,items,note='')=>{const dir=path.join(home,'runtime/synk-automation/diagnosis');fs.mkdirSync(dir,{recursive:true});
-    fs.writeFileSync(path.join(dir,id+'.json'),JSON.stringify({id,items,note}));};
-  const unclaimed=()=>fs.readdirSync(outbox).filter(x=>/^event-[0-9a-f]{24}\.json$/.test(x)).filter(x=>!fs.existsSync(path.join(outbox,x.slice(0,-5)+'.claim')));
-  return {home,outbox,ok,bad,box,run,sent,diagnose,unclaimed};
+  const run=async(iso,{claim=true,...extra}={})=>{const r=await collect({home,root:home,now:at(iso),readOverview:reader,digestHour:9,...extra});
+    if(claim)for(const n of r.notifications){try{fs.writeFileSync(path.join(outbox,n.id+'.claim'),'sent',{flag:'wx'});}catch{continue;}sent.push({...n,day:kst(at(iso)).day});}
+    return r;};
+  const state=()=>JSON.parse(fs.readFileSync(path.join(folder,'state.json'),'utf8'));
+  const request=()=>{try{return JSON.parse(fs.readFileSync(path.join(folder,'diagnosis/request.json'),'utf8'));}catch{return null;}};
+  // What 「알림해결」 leaves behind: one line per requested item, with the incident it read.
+  const diagnose=(lines,note='')=>{const q=request();fs.writeFileSync(path.join(folder,'diagnosis',q.id+'.json'),JSON.stringify({id:q.id,note,
+    items:q.items.filter(x=>lines[x.id]).map(x=>({id:x.id,'사건':x.incident,...lines[x.id]}))}));};
+  // Drafts still waiting for a message (a composed digest is not one).
+  const waiting=()=>fs.readdirSync(outbox).filter(x=>/^event-[0-9a-f]{24}\.json$/.test(x)).filter(x=>!fs.existsSync(path.join(outbox,x.slice(0,-5)+'.claim')))
+    .map(x=>JSON.parse(fs.readFileSync(path.join(outbox,x),'utf8'))).filter(x=>x.digest?.version!==2);
+  return {home,folder,outbox,ok,bad,box,run,sent,state,request,diagnose,waiting};
 }
-test('daily digest holds alerts until 09:00 KST, waits for the diagnosis and sends one message with it',async()=>{
-  const f=digestFixture('synk-monitor-digest-');
-  f.box.rows=[f.ok('a'),f.ok('b'),f.ok('c')];
+test('one message a day: held until 09:00 KST, asks for a diagnosis, then tells what is still open',async()=>{
+  const f=digestFixture('synk-digest-');
+  f.box.rows=[f.ok('a'),f.ok('b'),f.ok('c'),f.ok('d')];
   await f.run('2026-11-24T15:00:00Z'); // 00:00 KST, baseline
-  f.box.rows=[f.bad('a','1'),f.ok('b'),f.ok('c')];
+  f.box.rows=[f.bad('a','1'),f.ok('b'),f.ok('c'),f.ok('d')];
   assert.equal((await f.run('2026-11-24T16:00:00Z')).notifications.length,0,'01:00 KST is held');
-  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.bad('c','1')];
+  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.bad('c','1'),f.bad('d','1')];
   assert.equal((await f.run('2026-11-24T18:00:00Z')).notifications.length,0,'03:00 KST is held');
-  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.ok('c')];
+  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.ok('c'),f.bad('d','1')];
   assert.equal((await f.run('2026-11-24T23:55:00Z')).notifications.length,0,'08:55 KST is held');
-  const round=await f.run('2026-11-25T00:05:00Z'); // 09:05 KST builds the digest and waits for its diagnosis
-  assert.equal(round.notifications.length,0);assert.equal(round.digest,true);
-  const [digestFile]=f.unclaimed();assert.ok(digestFile,'one digest draft waits');
-  const digest=JSON.parse(fs.readFileSync(path.join(f.outbox,digestFile),'utf8'));
-  assert.deepEqual(digest.digest.items.map(x=>x.id),['a','b'],'c healed before the digest');
-  assert.equal(f.unclaimed().length,1,'the separate drafts were withdrawn into the digest');
-  assert.equal((await f.run('2026-11-25T00:10:00Z')).notifications.length,0,'still waiting for the diagnosis');
-  f.diagnose(digest.id,[{id:'a','원인':'예약 잠금이 남았다','해결':'잠금을 풀고 다시 돌렸다','상태':'고침'},{id:'b','원인':'계정 저장 공간이 찼다','해결':'Drive를 비우거나 요금제를 올린다','상태':'유호님 차례'}]);
-  f.box.rows=[f.ok('a'),f.bad('b','1'),f.ok('c')]; // the diagnosis run fixed a while the digest waited
+  assert.equal((await f.run('2026-11-25T00:05:00Z')).waiting,true,'09:05 KST asks for the diagnosis and waits');
+  assert.deepEqual(f.request().items.map(x=>x.id),['a','b','d'],'c healed before the digest');
+  assert.equal(f.request().id,digestId('2026-11-25'));
+  assert.equal((await f.run('2026-11-25T00:10:00Z')).notifications.length,0,'still waiting');
+  f.diagnose({a:{'원인':'예약 잠금이 남았다','해결':'잠금을 푼다','상태':'확인 필요'},b:{'원인':'계정 저장 공간이 찼다','해결':'Drive를 비운다','상태':'유호님 차례'},d:{'원인':'이미 풀린 일','해결':'-','상태':'확인 필요'}});
+  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.ok('c'),f.ok('d')]; // d healed while the message waited
   const out=await f.run('2026-11-25T00:15:00Z');
-  assert.equal(out.notifications.length,1);assert.equal(out.notifications[0].id,digest.id);
+  assert.equal(out.notifications.length,1);assert.equal(out.notifications[0].id,digestId('2026-11-25'));
   const text=out.notifications[0].text;
-  assert.match(text,/오늘 확인할 일/);assert.match(text,/a 멈춤/);assert.match(text,/원인: 예약 잠금이 남았다/);assert.match(text,/고친 것: 잠금을 풀고 다시 돌렸다\n  지금은 풀렸어요/);
-  assert.match(text,/b 멈춤[\s\S]*해결: Drive를 비우거나[\s\S]*유호님 차례/);assert.doesNotMatch(text,/b 멈춤[^-]*지금은 풀렸어요/);assert.doesNotMatch(text,/c 멈춤/);
-  assert.match(text,/\/synk_attention /);
-  f.box.rows=[f.ok('a'),f.bad('b','1'),f.bad('c','2')];
+  assert.match(text,/오늘 확인할 일/);assert.match(text,/a 멈춤[\s\S]*원인: 예약 잠금이 남았다\n  해결: 잠금을 푼다/);
+  assert.match(text,/b 멈춤[\s\S]*해결: Drive를 비운다\n  → 유호님 차례/);assert.doesNotMatch(text,/c 멈춤|d 멈춤|이미 풀린 일|고친 것/);
+  assert.match(text,new RegExp('/synk_attention '+digestId('2026-11-25').slice(6,14)));
+  assert.equal(f.waiting().length,2,'the drafts stay until the message has gone out');
+  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.bad('c','2'),f.ok('d')];
   assert.equal((await f.run('2026-11-25T06:00:00Z')).notifications.length,0,'15:00 KST waits for tomorrow');
+  assert.deepEqual(f.waiting().map(x=>x.events.map(e=>e.id).join()),['c'],'the told drafts were withdrawn, the new one waits');
   await f.run('2026-11-26T00:10:00Z');
   const next=await f.run('2026-11-26T02:15:00Z'); // no diagnosis came: the hold ends after 120 minutes
   assert.equal(next.notifications.length,1);assert.match(next.notifications[0].text,/c 멈춤/);assert.match(next.notifications[0].text,/원인 진단은 이번에 오지 않았어요/);
   assert.doesNotMatch(next.notifications[0].text,/a 멈춤/,'yesterday’s items are not repeated');
-  assert.deepEqual(f.unclaimed(),[],'every draft is either sent or withdrawn');
+  await f.run('2026-11-26T02:20:00Z');
+  assert.deepEqual(f.waiting(),[],'every draft was told or withdrawn');
   assert.equal(f.sent.length,2,'two days, two messages');
 });
-test('a digest of only good news goes out at once without waiting',async()=>{
-  const f=digestFixture('synk-monitor-digest-good-');
+test('a day with only good news does not wait for a diagnosis, and a day with nothing sends nothing',async()=>{
+  const f=digestFixture('synk-digest-good-');
   f.box.rows=[f.ok('a')];
   await f.run('2026-11-24T15:00:00Z');
   f.box.rows=[f.bad('a','1')];
   await f.run('2026-11-24T16:00:00Z');
-  await f.run('2026-11-25T00:05:00Z');
-  const [digestFile]=f.unclaimed();
-  f.diagnose(digestFile.slice(0,-5),[]);
-  assert.equal((await f.run('2026-11-25T00:10:00Z')).notifications.length,1,'the first digest goes out with its diagnosis');
+  await f.run('2026-11-25T00:05:00Z');f.diagnose({});
+  assert.equal((await f.run('2026-11-25T00:10:00Z')).notifications.length,1,'an empty diagnosis still releases the message');
   f.box.rows=[f.ok('a')];
   await f.run('2026-11-25T03:00:00Z');
   const good=await f.run('2026-11-26T00:05:00Z');
-  assert.equal(good.notifications.length,1);assert.equal(good.notifications[0].kind,'recovery');assert.match(good.notifications[0].text,/풀린 일/);
+  assert.equal(good.notifications.length,1);assert.equal(good.notifications[0].kind,'recovery');assert.match(good.notifications[0].text,/풀린 일\n- a 정상/);
+  assert.equal((await f.run('2026-11-27T00:05:00Z')).digest,true);
+  f.box.rows=[f.bad('a','2')];
+  assert.equal((await f.run('2026-11-27T05:00:00Z')).waiting,undefined,'the round of the 27th is over; this waits for the 28th');
+  assert.equal((await f.run('2026-11-28T00:05:00Z')).waiting,true);
+  assert.equal(f.sent.length,2);
 });
 test('without a digest hour the monitor still alerts at once',async()=>{
   const home=fs.mkdtempSync(path.join(os.tmpdir(),'synk-monitor-nodigest-'));
@@ -433,4 +442,246 @@ test('without a digest hour the monitor still alerts at once',async()=>{
   await collect({home,root:home,now:at('2026-11-24T16:00:00Z'),readOverview:reader});
   rows=[event('b',{severity:'error',needs_attention:true})];
   assert.equal((await collect({home,root:home,now:at('2026-11-24T16:05:00Z'),readOverview:reader})).notifications.length,1);
+});
+test('a message that never went out is composed again the next day from what is still open',async()=>{
+  for(const how of ['asleep','killed']){
+    const f=digestFixture('synk-digest-missed-');
+    f.box.rows=[f.ok('a'),f.ok('b'),f.ok('c')];
+    await f.run('2026-11-24T15:00:00Z');
+    f.box.rows=[f.bad('a','1'),f.ok('b'),f.ok('c')];await f.run('2026-11-24T16:00:00Z');
+    f.box.rows=[f.bad('a','1'),f.ok('b'),f.bad('c','1')];await f.run('2026-11-24T17:00:00Z');
+    await f.run('2026-11-25T00:05:00Z'); // 25일 09:05 KST waits for the diagnosis
+    if(how==='killed')assert.equal((await f.run('2026-11-25T02:10:00Z',{claim:false})).notifications.length,1,'composed, but the sender died');
+    f.diagnose({a:{'원인':'어제의 원인','해결':'-','상태':'확인 필요'}});
+    f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.ok('c')]; // c healed overnight: only a (told by nobody yet) and b remain
+    assert.equal((await f.run('2026-11-25T23:00:00Z')).notifications.length,0,'26일 08:00 KST');
+    const out=await f.run('2026-11-26T00:05:00Z');
+    assert.equal(out.notifications.length,1,'after a day without its message the next one does not wait');
+    assert.deepEqual(out.notifications[0].digest.items.map(x=>x.id).sort(),['a','b']);
+    assert.doesNotMatch(out.notifications[0].text,/어제의 원인/,'yesterday’s diagnosis is not attached');
+    await f.run('2026-11-26T08:00:00Z');
+    assert.deepEqual(f.sent.map(x=>x.day),['2026-11-26'],how);assert.deepEqual(f.waiting(),[]);
+  }
+});
+test('the same day composes again when the sender died, and never sends twice',async()=>{
+  const f=digestFixture('synk-digest-again-');
+  f.box.rows=[f.ok('a'),f.ok('b')];await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1'),f.ok('b')];await f.run('2026-11-24T16:00:00Z');
+  await f.run('2026-11-25T00:05:00Z');
+  await f.run('2026-11-25T02:10:00Z',{claim:false});
+  f.box.rows=[f.bad('a','1'),f.bad('b','1')];
+  assert.equal((await f.run('2026-11-25T02:15:00Z')).notifications.length,1);
+  assert.equal((await f.run('2026-11-25T02:20:00Z')).notifications.length,0);
+  assert.equal(f.sent.length,1);assert.deepEqual(f.sent[0].digest.items.map(x=>x.id),['a','b']);
+  assert.deepEqual(f.waiting(),[]);
+});
+test('a state older than the sender’s claim does not repeat the message',async()=>{
+  const f=digestFixture('synk-digest-oldstate-');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1')];await f.run('2026-11-24T16:00:00Z');
+  await f.run('2026-11-25T00:05:00Z');
+  const before=fs.readFileSync(path.join(f.folder,'state.json'));
+  assert.equal((await f.run('2026-11-25T02:10:00Z')).notifications.length,1);
+  fs.writeFileSync(path.join(f.folder,'state.json'),before);
+  assert.equal((await f.run('2026-11-25T02:15:00Z')).notifications.length,0);
+  assert.deepEqual(f.waiting(),[]);assert.equal(f.state().digest.status,'done');
+  await f.run('2026-11-26T00:05:00Z');assert.equal(f.sent.length,1);
+});
+test('the digest reports every open item, also the 21st draft',async()=>{
+  const f=digestFixture('synk-digest-many-');
+  const ids=Array.from({length:25},(_,i)=>'e'+String(i).padStart(2,'0'));
+  f.box.rows=ids.map(f.ok);
+  await f.run('2026-11-24T15:00:00Z');
+  for(let i=0;i<ids.length;i++){f.box.rows=ids.map((id,k)=>k<=i?f.bad(id,'1'):f.ok(id));await f.run(new Date(Date.parse('2026-11-24T15:05:00Z')+i*300000).toISOString());}
+  await f.run('2026-11-25T00:05:00Z');
+  const out=await f.run('2026-11-25T02:10:00Z');
+  assert.equal(out.notifications[0].digest.items.length,25);assert.match(out.notifications[0].text,/그 밖에 19건/);
+});
+test('the alert number survives a full diagnosis within the 3400 characters that are sent',async()=>{
+  const f=digestFixture('synk-digest-long-');
+  const ids=['a','b','c','d','e','f'];const long=n=>'가'.repeat(n);
+  const bad=id=>({...f.bad(id,'1'),title:id+' '+long(58),detail:long(150)});
+  f.box.rows=ids.map(f.ok);
+  await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=ids.map(bad);
+  await f.run('2026-11-24T16:00:00Z');
+  await f.run('2026-11-25T00:05:00Z');
+  f.diagnose(Object.fromEntries(ids.map(x=>[x,{'원인':long(200),'해결':long(250),'상태':'유호님 차례'}])),long(200));
+  const text=(await f.run('2026-11-25T00:15:00Z')).notifications[0].text;
+  assert.ok(text.length<=3400,'길이 '+text.length);
+  assert.match(text.slice(0,3400),new RegExp('/synk_attention '+digestId('2026-11-25').slice(6,14)));
+  for(const x of ids)assert.match(text,new RegExp('- '+x+' '),x+' 제목은 남는다');
+});
+test('a recovery is told once, waits while its source is broken again, and only after its alert was told',async()=>{
+  const f=digestFixture('synk-digest-recover-');
+  f.box.rows=[f.ok('a'),f.ok('b'),f.ok('c')];await f.run('2026-11-10T15:00:00Z');
+  f.box.rows=[f.bad('a','1'),f.bad('b','1'),f.ok('c')];
+  await f.run('2026-11-11T20:00:00Z');await f.run('2026-11-12T00:05:00Z');await f.run('2026-11-12T02:10:00Z');
+  assert.equal(f.sent.length,1,'a and b were told on the 12th');
+  f.box.rows=[f.ok('a'),f.ok('b'),f.bad('c','1')];
+  await f.run('2026-11-12T05:00:00Z'); // both healed in one round
+  f.box.rows=[f.bad('a','2'),f.ok('b'),f.bad('c','1')]; // a broke again before the next message
+  await f.run('2026-11-12T22:00:00Z');await f.run('2026-11-13T00:05:00Z');
+  f.box.rows=[f.bad('a','2'),f.ok('b'),f.ok('c')]; // c healed before anyone heard about it
+  const out=(await f.run('2026-11-13T02:10:00Z')).notifications[0];
+  assert.deepEqual(out.digest.items.map(x=>x.id),['a']);assert.deepEqual(out.digest.recoveries,['b 정상'],'b alone; a is broken again, c was never told');
+  f.box.rows=[f.ok('a'),f.ok('b'),f.ok('c')];
+  await f.run('2026-11-13T05:00:00Z');
+  const good=(await f.run('2026-11-14T00:05:00Z')).notifications[0];
+  assert.deepEqual(good.digest.recoveries,['a 정상'],'one line for a');
+  await f.run('2026-11-15T00:05:00Z');
+  assert.equal(f.sent.length,3);assert.deepEqual(f.waiting(),[]);
+});
+test('a source that healed, broke and healed again between two messages is still told as healed',async()=>{
+  const f=digestFixture('synk-digest-flap-');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-10T15:00:00Z');
+  f.box.rows=[f.bad('a','1')];await f.run('2026-11-11T20:00:00Z');await f.run('2026-11-12T00:05:00Z');await f.run('2026-11-12T02:10:00Z');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-12T05:00:00Z');
+  f.box.rows=[f.bad('a','2')];await f.run('2026-11-12T08:00:00Z');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-12T11:00:00Z');
+  const out=(await f.run('2026-11-13T00:05:00Z')).notifications;
+  assert.equal(out.length,1);assert.deepEqual(out[0].digest.recoveries,['a 정상']);assert.deepEqual(out[0].digest.items,[]);
+});
+test('an alert that was read is closed with a recovery even when a newer untold alert replaced it',async()=>{
+  const f=digestFixture('synk-digest-heard-');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-10T15:00:00Z');
+  f.box.rows=[f.bad('a','1')];await f.run('2026-11-11T20:00:00Z');await f.run('2026-11-12T00:05:00Z');await f.run('2026-11-12T02:10:00Z');
+  f.box.rows=[f.bad('a','2')];await f.run('2026-11-12T05:00:00Z'); // a new incident, not told yet
+  f.box.rows=[f.ok('a')];await f.run('2026-11-12T08:00:00Z');
+  const out=(await f.run('2026-11-13T00:05:00Z')).notifications;
+  assert.equal(out.length,1);assert.deepEqual(out[0].digest.recoveries,['a 정상']);
+});
+test('a source missing from the round keeps its newest draft, and every told draft leaves',async()=>{
+  const f=digestFixture('synk-digest-missing-');
+  f.box.rows=[f.ok('a'),f.ok('b')];await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1'),f.bad('b','1')];await f.run('2026-11-24T16:00:00Z'); // one draft with both
+  const b=f.state().attentionIncidents.b.id,old=f.state().attentionIncidents.a.id;
+  f.box.rows=[f.bad('a','2')];await f.run('2026-11-24T20:00:00Z'); // b is not in the round, a fails differently: a second draft
+  const a=f.state().attentionIncidents.a.id;assert.notEqual(a,old);assert.equal(f.waiting().length,2);
+  f.box.rows=[];await f.run('2026-11-25T00:05:00Z');
+  const out=(await f.run('2026-11-25T02:10:00Z')).notifications[0];
+  assert.deepEqual(out.digest.items.map(x=>[x.id,x.incident]).sort(),[['a',a],['b',b]]);
+  f.box.rows=[f.bad('a','2'),f.bad('b','1')];await f.run('2026-11-25T05:00:00Z');await f.run('2026-11-26T00:05:00Z');await f.run('2026-11-26T02:10:00Z');
+  assert.equal(f.sent.length,1,'the same incidents are not told again');assert.deepEqual(f.waiting(),[]);
+});
+test('a source seen healthy leaves a shared draft at once, even while another of it is missing',async()=>{
+  const f=digestFixture('synk-digest-shared-');
+  f.box.rows=[f.ok('a'),f.ok('b')];await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1'),f.bad('b','1')];await f.run('2026-11-24T16:00:00Z'); // one draft with both
+  f.box.rows=[f.ok('a')];assert.equal((await f.run('2026-11-25T00:05:00Z')).waiting,true);
+  assert.deepEqual(f.request().items.map(x=>x.id),['b'],'a is healthy, b is not in the round');
+  f.box.rows=[f.bad('b','1')]; // now a is missing: it was already seen healthy
+  const out=(await f.run('2026-11-25T02:10:00Z')).notifications[0];
+  assert.deepEqual(out.digest.items.map(x=>x.id),['b']);
+  await f.run('2026-11-25T02:15:00Z');assert.deepEqual(f.waiting(),[]);
+});
+test('a source is never told as open and as healed in one message',async()=>{
+  const f=digestFixture('synk-digest-both-');
+  f.box.rows=[f.ok('a'),f.ok('b')];await f.run('2026-11-10T15:00:00Z');
+  f.box.rows=[f.bad('a','1'),f.ok('b')];await f.run('2026-11-11T20:00:00Z');await f.run('2026-11-12T00:05:00Z');await f.run('2026-11-12T02:10:00Z');
+  f.box.rows=[f.ok('a'),f.bad('b','1')];await f.run('2026-11-12T05:00:00Z');
+  await f.run('2026-11-13T00:05:00Z');
+  f.box.rows=[f.bad('a','2'),f.bad('b','1')];await f.run('2026-11-13T00:10:00Z'); // a broke again while the message waited
+  f.box.rows=[f.bad('b','1')]; // and is not in the sending round
+  const out=(await f.run('2026-11-13T02:10:00Z')).notifications[0];
+  assert.deepEqual(out.digest.items.map(x=>x.id).sort(),['a','b']);assert.deepEqual(out.digest.recoveries,[]);
+});
+test('a draft whose narrowed id was already used still carries its alert',async()=>{
+  const f=digestFixture('synk-digest-used-');
+  f.box.rows=[f.ok('a'),f.ok('b')];await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1'),f.bad('b','1')];await f.run('2026-11-24T16:00:00Z');
+  const draft=f.waiting()[0],a=draft.events.find(e=>e.id==='a');
+  // What the first 11-25 version left behind: the narrowed id was withdrawn into a digest that never went out.
+  const used=attentionNotification([{id:'a',attention_fingerprint:a.fingerprint,incident:a.incident,title:'a 멈춤'}]).id;
+  fs.writeFileSync(path.join(f.outbox,used+'.claim'),JSON.stringify({status:'suppressed'}));
+  f.box.rows=[f.bad('a','1'),f.ok('b')];await f.run('2026-11-25T00:05:00Z');
+  const out=(await f.run('2026-11-25T02:10:00Z')).notifications[0];
+  assert.deepEqual(out.digest.items.map(x=>x.id),['a']);
+  await f.run('2026-11-25T02:15:00Z');assert.deepEqual(f.waiting(),[]);
+});
+test('a diagnosis belongs to the incident it read',async()=>{
+  const f=digestFixture('synk-digest-incident-');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1')];await f.run('2026-11-24T16:00:00Z');
+  await f.run('2026-11-25T00:05:00Z');
+  f.diagnose({a:{'원인':'앞 사건의 원인','해결':'-','상태':'확인 필요'}},'둘의 까닭은 하나예요.');
+  f.box.rows=[f.bad('a','2')]; // it failed anew, differently, before the message went out
+  const out=(await f.run('2026-11-25T00:15:00Z')).notifications[0];
+  assert.match(out.text,/a 멈춤/);assert.doesNotMatch(out.text,/앞 사건의 원인|둘의 까닭은 하나/,'neither its lines nor its note');
+});
+test('nothing is composed after 23:00 KST, so a message never crosses midnight',async()=>{
+  const f=digestFixture('synk-digest-late-');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1')];
+  assert.equal((await f.run('2026-11-25T12:30:00Z')).waiting,true,'21:30 KST: the PC just woke, then sleeps again');
+  for(const iso of ['2026-11-25T14:30:01Z','2026-11-25T14:59:59Z'])assert.equal((await f.run(iso)).notifications.length,0,iso+': the hold is over, but it is past 23:00');
+  assert.equal((await f.run('2026-11-25T23:59:00Z')).notifications.length,0,'26일 08:59 KST');
+  assert.equal((await f.run('2026-11-26T00:05:00Z')).notifications.length,1);
+  assert.deepEqual(f.sent.map(x=>x.day),['2026-11-26']);
+});
+test('a state from the first 11-25 version keeps its finished day',async()=>{
+  const f=digestFixture('synk-digest-legacy-');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-24T15:00:00Z');
+  const state=f.state();delete state.digest;state.digestDay='2026-11-25';fs.writeFileSync(path.join(f.folder,'state.json'),JSON.stringify(state));
+  f.box.rows=[f.bad('a','1')];
+  assert.equal((await f.run('2026-11-25T12:10:00Z')).waiting,undefined,'21:10 KST, after today’s round');
+  assert.equal(f.state().digestDay,undefined);
+  assert.equal((await f.run('2026-11-26T00:05:00Z')).waiting,true);
+});
+test('an unreadable diagnosis file does not stop the collector; the message goes out without it',async()=>{
+  const f=digestFixture('synk-digest-broken-');
+  f.box.rows=[f.ok('a')];await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.bad('a','1')];await f.run('2026-11-24T16:00:00Z');await f.run('2026-11-25T00:05:00Z');
+  fs.writeFileSync(path.join(f.folder,'diagnosis',f.request().id+'.json'),'{ 끊긴 글');
+  assert.equal((await f.run('2026-11-25T00:15:00Z')).notifications.length,0);
+  const out=await f.run('2026-11-25T02:10:00Z');
+  assert.equal(out.notifications.length,1);assert.match(out.notifications[0].text,/원인 진단은 이번에 오지 않았어요/);
+});
+// Random days, a sleeping PC, a collector killed between any two writes and a sender that dies before its claim.
+test('random timelines with crashes: one message a day, nothing lost, nothing told twice',async()=>{
+  const seeds=(process.env.SYNK_DIGEST_SEEDS||'1,2,3').split(',').map(Number),sync=fs.fsyncSync;
+  fs.fsyncSync=()=>{}; // only speed: the order of writes is unchanged
+  try{for(const seed of seeds){
+    let x=(seed*2654435761+12345)>>>0||1;const rand=()=>{x^=x<<13;x>>>=0;x^=x>>>17;x^=x<<5;x>>>=0;return x/4294967296;};
+    const f=digestFixture('synk-digest-random-');const ids=['a','b','c','d'];
+    const world=Object.fromEntries(ids.map(id=>[id,{bad:false,fp:0,missing:false}]));
+    let now=Date.parse('2026-11-20T15:00:00Z');
+    const step=async({crash=false,claim=true}={})=>{
+      f.box.rows=ids.filter(id=>!world[id].missing).map(id=>world[id].bad?f.bad(id,'f'+world[id].fp):f.ok(id));
+      const real={renameSync:fs.renameSync,openSync:fs.openSync,writeFileSync:fs.writeFileSync};
+      let budget=1+Math.floor(rand()*14),dead=false;
+      if(crash)for(const name of Object.keys(real))fs[name]=(...args)=>{
+        if(!String(args[0]).includes('monitor.lock')){if(dead||--budget<0){dead=true;throw new Error('CRASH');}}
+        return real[name](...args);
+      };
+      const r=await (async()=>{try{return await collect({home:f.home,root:f.home,now:new Date(now),readOverview:async()=>({events:f.box.rows}),digestHour:9});}
+        catch(error){if(error.message!=='CRASH')throw error;return null;}finally{Object.assign(fs,real);}})();
+      for(const n of claim&&r?r.notifications:[]){try{fs.writeFileSync(path.join(f.outbox,n.id+'.claim'),'sent',{flag:'wx'});}catch{continue;}f.sent.push({...n,day:kst(new Date(now)).day});}
+      if(rand()<0.3&&f.request()&&!fs.existsSync(path.join(f.folder,'diagnosis',f.request().id+'.json')))f.diagnose(Object.fromEntries(ids.map(id=>[id,{'원인':'x','해결':'y','상태':'확인 필요'}])));
+    };
+    await step();
+    for(let i=0;i<60;i++){
+      for(const id of ids){const w=world[id];
+        if(rand()<0.10){if(!w.bad){w.bad=true;w.fp++;}else if(rand()<0.6)w.bad=false;else w.fp++;}
+        if(rand()<0.05)w.missing=!w.missing;}
+      now+=rand()<0.06?(8+rand()*30)*3600000:(5+rand()*175)*60000;
+      await step({crash:rand()<0.12,claim:rand()>=0.08});
+    }
+    for(const id of ids)world[id].missing=false;
+    for(let i=0;i<30;i++){now+=2*3600000;await step();} // two and a half quiet days
+    assert.equal(new Set(f.sent.map(m=>m.day)).size,f.sent.length,'seed '+seed+': one message a day');
+    const told=new Map(),healed=new Map();
+    f.sent.forEach((m,k)=>{
+      for(const e of m.digest.items){const key=e.id+'/'+e.incident;assert.ok(!told.has(key),'seed '+seed+': told twice '+key);told.set(key,k);}
+      assert.ok(!m.digest.healed.some(e=>m.digest.items.some(x=>x.id===e.id)),'seed '+seed+': open and healed in one message');
+      for(const e of m.digest.healed){const key=e.id+'/'+e.incident;assert.ok(!healed.has(key)&&told.get(key)<k,'seed '+seed+': recovery '+key);healed.set(key,k);}
+    });
+    const last=(map,id)=>Math.max(-1,...[...map].filter(([key])=>key.startsWith(id+'/')).map(([,k])=>k));
+    for(const id of ids){
+      if(world[id].bad)assert.ok(told.has(id+'/'+f.state().attentionIncidents[id].id),'seed '+seed+': open but never told '+id);
+      else assert.ok(last(told,id)<0||last(healed,id)>=last(told,id),'seed '+seed+': told, healed, but the recovery was lost '+id);
+    }
+    assert.deepEqual(f.waiting(),[],'seed '+seed+': nothing waits after quiet days');
+    fs.rmSync(f.home,{recursive:true,force:true});
+  }}finally{fs.fsyncSync=sync;}
 });

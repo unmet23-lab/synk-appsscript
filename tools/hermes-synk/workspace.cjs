@@ -524,7 +524,7 @@ async function prepareWorkspace({ repo, taskDir, taskId, scope: requestedScope, 
     try {
       snapshot = execFileSync('git', ['-c', 'core.hooksPath=' + path.join(os.tmpdir(), 'synk-disabled-hooks'), 'commit-tree', tree, '-p', captured.head],
         { cwd: repo, env: commitEnv, input: Buffer.from('SYNK isolated workspace snapshot\n'), encoding: 'utf8', timeout: commitTimeout, maxBuffer: 4096, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }).trim();
-    } catch { throw new Hold('SNAPSHOT_COMMIT_FAILED'); }
+    } catch (error) { throw new Hold(error.code === 'ETIMEDOUT' ? 'PREPARATION_TIME_LIMIT' : 'SNAPSHOT_COMMIT_FAILED'); }
     if (!OID.test(snapshot)) throw new Hold('SNAPSHOT_COMMIT_FAILED');
     await waitForGitLock(repo, limits, lockWaitMs);
     git(repo, ['worktree', 'add', '--detach', '--no-checkout', workspace, snapshot], { limits, filterArgs });
