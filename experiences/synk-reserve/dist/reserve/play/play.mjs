@@ -58,7 +58,13 @@ function start() {
   $('#ep-title').textContent = t('dramaTitle');
   $('#ep-close').setAttribute('aria-label', t('close'));
 
-  // 뒤로 가기로 되살아난 화면은 앞 이야기가 남아 있다 — 다시 받아 처음부터 시작한다.
+  // 뒤로 가기 저장(bfcache)으로 되살아나면 다시 받아 처음부터 시작한다. 새로 받는 동안 앞 이야기가 보이지 않게 떠날 때 먼저 걷는다.
+  addEventListener('pagehide', e => {
+    if (!e.persisted) return;
+    if (ep.open) ep.close();
+    body.replaceChildren();
+    story?.remove();
+  });
   addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 
   function insets() {

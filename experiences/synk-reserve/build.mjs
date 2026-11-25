@@ -62,7 +62,7 @@ const chars = new Set([...ascii(), ...EXTRA]);
 for (const ch of pageText) if (ch.codePointAt(0) > 0x7e && !/[\u0400-\u04ff]/.test(ch)) chars.add(ch);
 const sans = path.join(ASSETS, 'reserve-sans.woff2');
 subset(path.join(FONTS, 'SUIT/SUIT-Variable.woff2'), [...chars].join(''), sans);
-const miss = run('python', ['-c', 'import sys\nfrom fontTools.ttLib import TTFont\ncm=TTFont(sys.argv[1]).getBestCmap()\nt=open(sys.argv[2],encoding="utf-8").read()\nprint("".join(sorted({c for c in t if "\\uac00"<=c<="\\ud7a3" and ord(c) not in cm})))', sans, path.join(SRC, 'copy.js')]).stdout.trim();
+const miss = run('python', ['-c', 'import sys\nfrom fontTools.ttLib import TTFont\ncm=TTFont(sys.argv[1]).getBestCmap()\nt="".join(open(f,encoding="utf-8").read() for f in sys.argv[2:])\nprint("".join(sorted({c for c in t if "\\uac00"<=c<="\\ud7a3" and ord(c) not in cm})))', sans, ...['copy.js', 'play/index.html', 'play/play.mjs'].map(f => path.join(SRC, f))]).stdout.trim();
 if (miss) throw new Error(`SUIT 서브셋에 한글이 빠졌어요: ${miss}`);
 subset(path.join(FONTS, 'InterTight/InterTight-Medium.ttf'), ascii() + EXTRA + CYRILLIC, path.join(ASSETS, 'reserve-inter-500.woff2'));
 subset(path.join(FONTS, 'InterTight/InterTight-Bold.ttf'), ascii() + EXTRA + CYRILLIC, path.join(ASSETS, 'reserve-inter-700.woff2'));
