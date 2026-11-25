@@ -1203,6 +1203,7 @@ Object.assign(ACT, {
       }
     }
     const studyId = studyAcctId;
+    trReturnClear(); // 로그아웃하는 동안 손님 화면을 다시 그리며 번역 쪽이 열리거나, 다음 사람에게 남지 않게 먼저 지운다.
     const r = await session.signOut();
     // 준비 글 쪽 사정으로 로그아웃이 거절되면 조건 초안도 그대로 둔다. 로그아웃한 뒤에만 이 계정의 초안 · 복구 기록을 지운다.
     if (!accOk(r)) { render(false); return; }

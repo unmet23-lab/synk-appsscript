@@ -42,7 +42,8 @@ function 점검(편) {
   let 계획 = null; let 지시 = null;
   try { 계획 = 읽기(path.join(V, '계획.json')); } catch (e) { 문제.push(`영상칸/계획.json을 못 읽음 — ${e.message}`); }
   try { 지시 = 읽기(path.join(V, '지시문.json')); } catch (e) { 문제.push(`영상칸/지시문.json을 못 읽음 — ${e.message}`); }
-  if (!계획 || !지시) return { 문제, 칸: [], 예산: 0, 합: 0 };
+  const 알림 = [];
+  if (!계획 || !지시) return { 문제, 알림, 칸: [], 예산: 0, 합: 0 };
   const 예산 = 계획._예산 == null ? 기본예산 : Number(계획._예산);
   if (!(예산 > 0)) 문제.push(`_예산이 수가 아님: ${계획._예산}`);
   const 칸 = Object.keys(계획).filter((k) => !k.startsWith('_'));
@@ -75,11 +76,13 @@ function 점검(편) {
     else {
       if (!p.key || 글[id].split(p.key).length - 1 !== 1) 문제.push(`${id}: key가 이 칸 글에 한 번이 아님`);
       for (const [oid, t] of Object.entries(글)) if (oid !== id && p.key && t.includes(p.key)) 문제.push(`${id}: key가 ${oid} 글에도 있음`);
-      if (!/no mouth/i.test(글[id])) 문제.push(`${id}: 지시문에 몽글의 「NO mouth」가 없음(제작 절차 「LAB 영상 칸」 공통 글을 쓴다)`);
+      // 기본 상태의 몽글은 코와 입이 없고, 감정이 바뀌면 입까지 바뀌어도 된다(11-25 유호님 — 제작 절차 「몽글 표정」)
+      if (!/no mouth/i.test(글[id])) 문제.push(`${id}: 지시문에 몽글의 기본 얼굴(코 · 입 없음) 글이 없음(제작 절차 「편 전체를 영상으로」의 영상 공통 글을 쓴다)`);
+      if (/no mouth[^.]{0,80}\bever\b/i.test(글[id])) 알림.push(`${id}: 「NO mouth … ever」가 표정을 막는다 — 영상 공통 글로 바꾼다(제작 절차 「몽글 표정」)`);
     }
   }
   if (합 > 예산) 문제.push(`계획 합 ${합}이 편 예산 ${예산}을 넘음`);
-  return { 문제, 칸, 예산, 합 };
+  return { 문제, 알림, 칸, 예산, 합 };
 }
 
 /** JPEG 머리에서 가로 · 세로 */
@@ -154,6 +157,7 @@ function main(argv) {
   const 본 = 점검(편);
   console.log(`점검 — 칸 ${본.칸.length}개 · 계획 합 ${본.합} / 편 예산 ${본.예산}`);
   for (const p of 본.문제) console.log(`  ✗ ${p}`);
+  for (const p of 본.알림) console.log(`  · ${p}`);
   if (본.문제.length) return 1;
   if (명령 === '점검') return 0;
 

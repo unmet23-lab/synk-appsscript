@@ -199,6 +199,8 @@ function og주소(이름) { const f = path.join(여기, 'og', 이름 + '.jpg'); 
 
 // ── 홈 ──────────────────────────────────────────────────────────────
 const 덧css = LF(fs.readFileSync(path.join(여기, '덧.css'), 'utf8'));
+// 홈에만 붙는 덧 — 상세 쪽의 detail.css는 이 글을 받지 않아, 홈만 고치면 상세 쪽 열넷의 ?v=가 바뀌지 않는다
+const 덧홈css = LF(fs.readFileSync(path.join(여기, '덧홈.css'), 'utf8'));
 const 홈글 = {
   ko: { who: { 플랫폼: '플랫폼', LAB: '한국어', PULSE: '광고', SHIFT: 'AI 강의', PATH: '유학', SYNK: 'SYNK' }, more: '지난 소식', copy: '문의 메일 주소 복사', q: '질문 입력', ph: '다른 질문을 입력해 보세요', ask: '묻기',
     pf: { tag: 'SYNK 플랫폼', h: 'SYNK ID 하나로 전부 씁니다', p: '한국어 연습과 솔리오를 계정 하나로 씁니다. 미리보기판입니다(Windows 64비트 · macOS 13 이상).', win: 'Windows용 다운로드', arm: 'Mac용 · Apple Silicon', x64: 'Mac용 · Intel', web: '웹에서 열기', sha: '파일 확인값(SHA-256)', help: '설치 안내',
@@ -294,7 +296,7 @@ function 홈짓기(lang) {
   const 넘김 = `<script>(()=>{const a=document.documentElement.lang==='en'?'/en':'',m={'#atlas':a+'/atlas/','#principles':a+'/atlas/','#philosophy':a+'/atlas/','#drama':a+'/lab/#drama','#founder':a+'/founder/','#founder-quote':a+'/founder/'},go=()=>{const t=m[location.hash];if(t)location.replace(t)};go();addEventListener('hashchange',go);let moved=0;for(const e of ['wheel','touchstart','keydown','pointerdown'])addEventListener(e,()=>{moved=1},{passive:true,once:true});const settle=()=>{if(moved||!location.hash)return;let id;try{id=decodeURIComponent(location.hash.slice(1))}catch(e){return}const el=document.getElementById(id);if(el)el.scrollIntoView({block:'start',behavior:'instant'})};addEventListener('load',()=>{for(const ms of [0,400,1000,1800,2800])setTimeout(settle,ms)})})()</script>`;
   const 머리 = 머리글({ lang, title: 홈머리[lang].title, desc: 홈머리[lang].desc, 주소: 앞 + '/', 대안, og: og주소('home-' + lang), ogAlt: 홈머리[lang].alt,
     더: [하늘, 넘김, `<script type="module" src="${I.site}"></script>`].join('\n') });
-  글 = 머리바꿈(글, 머리, Object.assign(lang === 'en' ? ['home-en', 'en-fix'] : ['home'], { 덧: 덧css }));
+  글 = 머리바꿈(글, 머리, Object.assign(lang === 'en' ? ['home-en', 'en-fix'] : ['home'], { 덧: 덧css + 덧홈css }));
   if (I.확인) 글 = 바꿈(글, '<meta charset="utf-8">', I.확인 + '\n<meta charset="utf-8">', 1, '검색 확인 줄');
   // 질문창의 안내 자료 창과 알림(site.js가 쓴다), 쪽 끝의 PC 판 자료 줄
   const 닫기 = T.close;

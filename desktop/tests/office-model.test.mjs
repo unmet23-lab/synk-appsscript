@@ -395,10 +395,10 @@ test('headline: sessions without hook news, Codex included, are counted as unkno
   assert.deepEqual([c.say, c.then, c.unknown], ['지금 일하는 중으로 보이는 직원은 없습니다.', '하나는 승인 요청이 여기에 뜨지 않습니다.', 1]);
   // 승인을 물은 직원이 있어도 둘째 줄은 모르는 수를 말한다
   assert.equal(headOf([ask(T0, at('l', 'C:\\law')), rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + M).then, '하나는 승인 요청이 여기에 뜨지 않습니다.');
-  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev')), rec(T0, at('u2', 'C:\\dev'))], T0 + 5 * M).then, '승인 요청은 Claude Code 창에서 확인해 주세요.');
-  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev'))], T0 + 5 * M).then, '승인 요청은 Claude Code 창에서 확인해 주세요.');
-  assert.equal(headOf([rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + 5 * M).then, '승인 요청은 Codex 창에서 확인해 주세요.');
-  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev')), rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + 5 * M).then, '승인 요청은 Claude Code와 Codex 창에서 확인해 주세요.');
+  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev')), rec(T0, at('u2', 'C:\\dev'))], T0 + 5 * M).then, '이 PC에서 따로 켠 AI가 허락을 물으면 그 AI 화면에서 답해 주세요.');
+  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev'))], T0 + 5 * M).then, '이 PC에서 따로 켠 AI가 허락을 물으면 그 AI 화면에서 답해 주세요.');
+  assert.equal(headOf([rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + 5 * M).then, '이 PC에서 따로 켠 AI가 허락을 물으면 그 AI 화면에서 답해 주세요.');
+  assert.equal(headOf([rec(T0, at('u1', 'C:\\dev')), rec(T0, { ...at('cx', 'C:\\dev'), tool: 'codex' })], T0 + 5 * M).then, '이 PC에서 따로 켠 AI가 허락을 물으면 그 AI 화면에서 답해 주세요.');
   assert.equal(headOf([], T0, { hooksOn: false }).hint, '승인 요청은 설정에서 켜면 여기에 뜹니다.');
   assert.equal(headOf([], T0, { hooksOn: true }).hint, '');
 });

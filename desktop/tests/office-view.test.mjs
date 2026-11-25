@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { officeState, officeReduce, officeCapacity } from '../renderer/office-model.mjs';
 import { officeRoom, officeSubscriptions, officeCapacityRow, officeGroupStatus, officeFloorScene, createOfficeRoom, OFFICE_REST_SAY, OFFICE_FLOOR_DEPTS, modelWord,
   officeSettingsRow, officeRo } from '../renderer/office-room.mjs';
-import { floorLayout, floorZoneLabel, floorShortForm, FLOOR_MOTION } from '../renderer/office-floor.mjs';
+import { floorLayout, floorZoneLabel, floorLabelForm, FLOOR_MOTION } from '../renderer/office-floor.mjs';
 import { createOrbRooms } from '../renderer/orb-rooms.mjs';
 
 const NOW = Date.UTC(2026, 10, 20, 3, 0, 0);
@@ -88,12 +88,31 @@ test('department rows: the lead session\'s activity, a short status, the mark an
   assert.deepEqual([rowOf(empty, 'd:dlaw').mid, rowOf(empty, 'd:dlaw').val, rowOf(empty, 'd:dlaw').flag], ['이 부서 폴더에서 일을 시작하면 직원이 섭니다', '빈 자리', false], 'no path on the closed row (11-23 blind review)');
 });
 
-test('closed rows show no path: a folder other than the department\'s reads 「… 폴더」, an empty department says how staff arrive (11-23 blind review)', () => {
+test('closed rows show no path: a folder other than the department\'s reads 「… 폴더에서」, an empty department says how staff arrive (11-23 blind review)', () => {
   const room = officeRoom(snapOf(), {}, NOW, { subs: SUBS });
-  assert.equal(rowOf(room, 'lobby').mid, '회의록 폴더 · 읽기 · 회의록.txt');
+  assert.equal(rowOf(room, 'lobby').mid, '회의록 폴더에서 읽기 · 회의록.txt');
   // 부서 폴더 아래의 다른 폴더에서 일하면 그 폴더 이름은 남긴다
   const sub = officeRoom(snapOf({ state: stateOf([hook('PostToolUse', 'sess-sub-0001', MKT + '\\보고서', NOW - 20 * S, { toolName: 'Edit', toolDetail: '보고.md' })]) }), {}, NOW, { subs: SUBS });
-  assert.equal(rowOf(sub, 'd:dmkt').mid, '보고서 폴더 · 쓰기 · 보고.md');
+  assert.equal(rowOf(sub, 'd:dmkt').mid, '보고서 폴더에서 쓰기 · 보고.md');
+  // 하는 일을 모르면 폴더 이름을 쓰지 않는다(11-23 둘째 맹검 「SYNK-appsscript 폴더」, 11-25 맹검 「AI를 켠 폴더 · SYNK-appsscript」)
+  const idle = officeRoom(snapOf({ state: stateOf([hook('SessionStart', 'sess-idl-0001', 'C:\\work\\회의록', NOW - 20 * S)]) }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(idle, 'lobby').mid, '이 PC에서 따로 켠 AI');
+  const many = officeRoom(snapOf({ state: stateOf([hook('SessionStart', 'sess-idl-0001', 'C:\\work\\회의록', NOW - 20 * S), hook('SessionStart', 'sess-idl-0002', 'C:\\work\\회의록', NOW - 30 * S), hook('SessionStart', 'sess-idl-0003', 'C:\\work\\초안', NOW - 40 * S)]) }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(many, 'lobby').mid, '이 PC에서 따로 켠 AI');
+  const own = officeRoom(snapOf({ state: stateOf([hook('SessionStart', 'sess-own-0001', 'C:\\Users\\a\\AppData\\Roaming\\SYNK\\OfficeWork\\member_1024', NOW - 20 * S)]) }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(own, 'lobby').mid, '솔리오에서 맡긴 일', 'a task without a department runs in OfficeWork, so the row does not say it was started outside');
+  const ownRead = officeRoom(snapOf({ state: stateOf([hook('PostToolUse', 'sess-own-0002', 'C:\\Users\\a\\AppData\\Roaming\\SYNK\\OfficeWork\\member_1024', NOW - 20 * S, { toolName: 'Read', toolDetail: 'a.txt' })]) }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(ownRead, 'lobby').mid, '솔리오에서 맡긴 일 · 읽기 · a.txt', 'the numbered work folder stays off the closed row (Carbon A2)');
+  const sent = officeRoom(snapOf({ state: stateOf([hook('PostToolUse', 'sess-own-0002', 'C:\\Users\\a\\AppData\\Roaming\\SYNK\\OfficeWork\\member_1024', NOW - 20 * S, { toolName: 'Read', toolDetail: 'a.txt' })]), assignments: { 'sess-own-0002': 'dmkt' } }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(sent, 'd:dmkt').mid, '읽기 · a.txt', 'nor on the row of the department it was sent to (Fable F4)');
+  const mixed = officeRoom(snapOf({ state: stateOf([record('sess-out-0001', 'C:\\work\\회의록', 'claude', NOW - 20 * S), record('sess-own-0003', 'C:\\Users\\a\\AppData\\Roaming\\SYNK\\OfficeWork\\member_1024', 'claude', NOW - 30 * S)]) }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(mixed, 'lobby').mid, '따로 켠 AI와 맡긴 일', 'the closed row tells where the whole group comes from, not only its first member (Fable F1)');
+  const theirs = officeRoom(snapOf({ state: stateOf([record('sess-thr-0001', 'C:\\OfficeWork\\견적', 'claude', NOW - 20 * S)]) }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(theirs, 'lobby').mid, '이 PC에서 따로 켠 AI', 'a customer folder named OfficeWork is not ours (Fable F3)');
+  const root = officeRoom(snapOf({ state: stateOf([record('sess-rot-0001', 'C:\\', 'claude', NOW - 20 * S)]) }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(root, 'lobby').mid, '이 PC에서 따로 켠 AI', 'a session at a drive root has no folder name (Carbon A2)');
+  const deptSub = officeRoom(snapOf({ state: stateOf([record('sess-dsb-0001', MKT + '\\보고서', 'codex', NOW - 20 * S)]) }), {}, NOW, { subs: SUBS });
+  assert.equal(rowOf(deptSub, 'd:dmkt').mid, 'Codex', 'a department row with nothing known says which AI it is');
   // 부서 폴더 안의 Claude Code 작업 사본은 이름이 부서 폴더로 읽히므로 그 이름을 다시 쓰지 않는다(카본 solio-room-content A1)
   const wt = officeRoom(snapOf({ state: stateOf([hook('PostToolUse', 'sess-wtr-0001', SHOP + '\\.claude\\worktrees\\vigilant-jackson-a5f00e', NOW - 20 * S, { toolName: 'Read', toolDetail: 'a.md' })]) }), {}, NOW, { subs: SUBS });
   assert.equal(rowOf(wt, 'd:ddev').mid, '읽기 · a.md');
@@ -269,17 +288,17 @@ test('subscription remaining comes from the default login rows only; account fol
   assert.equal(officeSubscriptions({ rows: [weekly('gpt', 90, { live: { weekly: { usedPercent: 90, resetsAt: NOW - 1 } } })] }, NOW).codex.leftPercent, 100);
 });
 
-test('the settings row offers the two views and the watched folders, and no hooks switch in this build', () => {
+test('the settings row offers the two views and the watched folders, its closed line says only the view, and no hooks switch in this build', () => {
   const room = officeRoom(snapOf({ roots: { claude: ['C:\\Users\\a\\.claude', 'D:\\other\\.claude'], codex: ['C:\\Users\\a\\.codex\\sessions'], added: ['d:\\other\\.claude'] } }), {}, NOW, { subs: SUBS });
   const cfg = rowOf(room, 'cfg');
-  assert.equal(cfg.mid, '비스듬히 보기 · 기록을 읽는 폴더 셋');
+  assert.equal(cfg.mid, '그림 각도 · 비스듬히', 'the folder count is not on the closed line (11-23 blind review, twice)');
   const pick = cfg.more.find(m => m[0] === 'pick');
-  assert.deepEqual([pick[2], pick[3], pick[5]], [[['비스듬히', 'tilted'], ['위에서', 'top']], 'tilted', 'view']);
+  assert.deepEqual([pick[1], pick[2], pick[3], pick[5]], ['그림 각도', [['비스듬히', 'tilted'], ['위에서', 'top']], 'tilted', 'view']);
   const folders = cfg.more.filter(m => m[0] === 'row');
   assert.deepEqual(folders.map(m => [m[1], m[2], Array.isArray(m[3]) ? m[3][1] : '']), [['Claude Code', 'C:\\Users\\a\\.claude', ''], ['Claude Code', 'D:\\other\\.claude', 'root-remove'], ['Codex', 'C:\\Users\\a\\.codex\\sessions', '']], 'only an added folder can be taken out');
   assert.ok(cfg.more.some(m => m[0] === 'acts' && m[1][0][1] === 'root-add'));
   assert.ok(!JSON.stringify(cfg.more).includes('승인 물음'), 'no hooks switch in the first piece');
-  assert.equal(rowOf(officeRoom(snapOf(), { view: 'top' }, NOW), 'cfg').mid, '위에서 보기 · 기록을 읽는 폴더 둘', 'the chosen view shows before the save comes back');
+  assert.equal(rowOf(officeRoom(snapOf(), { view: 'top' }, NOW), 'cfg').mid, '그림 각도 · 위에서', 'the chosen view shows before the save comes back');
 });
 
 test('the floor draws up to six departments and bundles the rest into one 「그 밖」 zone, with the lobby in the bottom strip', () => {
@@ -347,21 +366,33 @@ test('the floor draws up to six departments and bundles the rest into one 「그
   const full = floorLayout({ seats: 1, zones: crowd(busy) })[0];
   assert.equal(full.hidden, 15);
   const wide = () => true, upTo = n => t => t.length <= n;
-  assert.deepEqual(floorZoneLabel(full, wide), { text: '부서 없는 일 · 직원 열다섯 더', clip: false, form: 'long' });
-  // 이름이 먼저다: 짧은 표시(+15)로 바꾸고, 그래도 안 들어가면 이름만 둔다(검수 solio-office-ga1 F1)
-  assert.deepEqual(floorZoneLabel(full, upTo(11)), { text: '부서 없는 일 +15', clip: false, form: 'short' });
+  assert.deepEqual(floorZoneLabel(full, wide), { text: '부서 없는 일 · 일하는 직원 열둘 중 여덟만 보임', clip: false, form: 'full' }, 'the same count of working staff as the headline (11-23 second and 11-25 blind reviews)');
+  // 다 안 들어가면 「넷 더 일함」, 그다음 짧은 표시(+4)다. 이름이 먼저라 그래도 안 들어가면 이름만 둔다(검수 solio-office-ga1 F1)
+  assert.deepEqual(floorZoneLabel(full, upTo(18)), { text: '부서 없는 일 · 넷 더 일함', clip: false, form: 'long' });
+  assert.deepEqual(floorZoneLabel(full, upTo(11)), { text: '부서 없는 일 +4', clip: false, form: 'short' });
   assert.deepEqual(floorZoneLabel(full, upTo(6)), { text: '부서 없는 일', clip: true, form: 'none' });
   assert.deepEqual(floorZoneLabel(floorLayout({ seats: 1, zones: crowd(few) })[0], wide), { text: '부서 없는 일', clip: true, form: 'none' }, 'nothing is added when everyone has a seat');
   // 한 장면이 짧은 꼴이면 넓은 구역도 짧은 꼴로 쓴다(검수 solio-office-ga1b F2)
-  assert.deepEqual(floorZoneLabel(full, wide, true), { text: '부서 없는 일 +15', clip: false, form: 'short' });
+  assert.deepEqual(floorZoneLabel(full, wide, 'short'), { text: '부서 없는 일 +4', clip: false, form: 'short' });
+  assert.equal(floorZoneLabel(full, wide, 'long').text, '부서 없는 일 · 넷 더 일함');
+  // 일하는 직원이 다 앉아 있고 조용한 직원만 그림에 없으면 수를 적지 않는다. 같은 「+N」이 때에 따라 다른 것을 뜻하지 않게(카본 A1)
+  const calm = floorLayout({ seats: 1, zones: crowd(Array.from({ length: 12 }, (_, i) => ({ id: 'c' + i, status: i < 3 ? 'working' : 'quiet' }))) })[0];
+  assert.equal(calm.hidden, 4);
+  for (const from of ['full', 'long', 'short']) assert.deepEqual(floorZoneLabel(calm, wide, from), { text: '부서 없는 일', clip: true, form: 'none' }, from);
+  assert.equal(floorLabelForm([calm, full], z => (z === calm ? upTo(0) : wide)), 'full', 'a zone without hidden working staff does not shorten the scene');
+  // 느낌표가 붙은 끝낸 직원이 자리를 다 차지하면 앉은 일하는 직원이 없다
+  const doneAll = floorLayout({ seats: 1, zones: crowd([...Array.from({ length: 8 }, (_, i) => ({ id: 'd' + i, status: 'done', alert: true })), { id: 'w1', status: 'working' }]) })[0];
+  assert.equal(floorZoneLabel(doneAll, wide).text, '부서 없는 일 · 일하는 직원 하나 더');
   // 「그 밖 셋」의 셋은 부서 수라 빠진 것이 직원임을 적는다(F4)
-  assert.equal(floorZoneLabel({ name: '그 밖 셋', kind: 'other', hidden: 6 }, wide).text, '그 밖 셋 · 직원 여섯 더');
-  assert.equal(floorZoneLabel({ name: '그 밖 셋', kind: 'other', hidden: 6 }, wide, true).text, '그 밖 셋 · 직원 +6', 'the short form keeps 「직원」 too (검수 -r2 FA1)');
-  // 장면의 꼴: 긴 꼴이 안 들어가고 짧은 꼴은 들어가는 구역이 있으면 짧은 꼴. 어느 꼴도 안 들어가는 구역은 판단에서 뺀다
-  const longName = { name: '아주아주긴부서이름', kind: 'dept', hidden: 2 }, roomy = { name: '개발', kind: 'dept', hidden: 1 };
-  assert.equal(floorShortForm([longName, roomy], z => (z === longName ? upTo(3) : wide)), false, 'a zone that cannot show any count does not switch the scene');
-  assert.equal(floorShortForm([longName, roomy], z => (z === longName ? upTo(12) : wide)), true, 'a zone that fits only the short form switches the scene');
-  assert.equal(floorShortForm([{ name: 'x', kind: 'dept', hidden: 0 }], () => () => false), false);
+  assert.equal(floorZoneLabel({ name: '그 밖 셋', kind: 'other', staff: [1, 2, 3].map(id => ({ id, status: 'working' })), hidden: 6, active: 9 }, wide).text, '그 밖 셋 · 일하는 직원 아홉 중 셋만 보임');
+  assert.equal(floorZoneLabel({ name: '그 밖 셋', kind: 'other', staff: [{ id: 1, status: 'working' }], hidden: 6, active: 7 }, wide, 'long').text, '그 밖 셋 · 직원 여섯 더 일함');
+  assert.equal(floorZoneLabel({ name: '그 밖 셋', kind: 'other', staff: [], hidden: 6, active: 6 }, wide, 'short').text, '그 밖 셋 · 직원 +6', 'the short form keeps 「직원」 too (검수 -r2 FA1)');
+  // 장면의 꼴: 구역마다 들어가는 가장 긴 꼴 가운데 가장 짧은 것. 어느 꼴도 안 들어가는 구역은 판단에서 뺀다
+  const longName = { name: '아주아주긴부서이름', kind: 'dept', hidden: 2, active: 2 }, roomy = { name: '개발', kind: 'dept', hidden: 1, active: 1 };
+  assert.equal(floorLabelForm([longName, roomy], z => (z === longName ? upTo(3) : wide)), 'full', 'a zone that cannot show any count does not switch the scene');
+  assert.equal(floorLabelForm([longName, roomy], z => (z === longName ? upTo(12) : wide)), 'short', 'a zone that fits only the short form switches the scene');
+  assert.equal(floorLabelForm([longName, roomy], z => (z === longName ? upTo(18) : wide)), 'long', 'a zone that fits only the middle form keeps the words for the whole scene');
+  assert.equal(floorLabelForm([{ name: 'x', kind: 'dept', hidden: 0 }], () => () => false), 'full');
   // 느낌표가 붙은 직원(오래 걸린 일을 끝냄)은 일하는 직원보다 먼저 앉는다(F3)
   const doneLong = [...Array.from({ length: 8 }, (_, i) => ({ id: 'k' + i, status: 'working' })), { id: 'd1', status: 'done', alert: true }];
   assert.ok(floorLayout({ seats: 1, zones: crowd(doneLong) })[0].staff.some(s => s.id === 'd1'), 'a finished staff member with an alert stays in the picture');
@@ -522,7 +553,7 @@ test('설계 검토 be7 고칠 것 1: an added folder that is not watched still 
   assert.ok(line, 'the folder has its line');
   assert.deepEqual(line[3], ['빼기', 'root-remove', share, '']);
   assert.ok(row.more.some(m => m[0] === 'note' && m[1].includes('지금은 보지 않음')), 'one line says why');
-  assert.equal(row.mid, '비스듬히 보기 · 기록을 읽는 폴더 하나', 'the count is the folders watched now');
+  assert.equal(row.more.filter(m => m[0] === 'row').length, 2, 'one line for each folder, watched or not');
   const watched = officeSettingsRow({ roots: { claude: ['C:\\Users\\a\\.claude', share], codex: [], added: [share] } });
   assert.equal(watched.more.filter(m => m[0] === 'row' && m[2] === share).length, 1, 'a watched folder is not listed twice');
   assert.ok(!watched.more.some(m => m[0] === 'note' && m[1].includes('지금은 보지 않음')));
@@ -545,19 +576,19 @@ test('records only: no staff line repeats 「승인 요청은 여기에 뜨지 �
   ];
   const room = officeRoom(snapOf({ state: stateOf(only) }), {}, NOW, { subs: SUBS });
   assert.equal(room.say, '직원 둘이 일하고 있습니다.');
-  assert.equal(room.then, '승인 요청은 Claude Code와 Codex 창에서 확인해 주세요.');
+  assert.equal(room.then, '이 PC에서 따로 켠 AI가 허락을 물으면 그 AI 화면에서 답해 주세요.');
   assert.equal(room.hint, '');
   assert.equal(room.alert, false, 'no alert without hook news');
   const staff = room.rows.flatMap(r => (r.more || []).filter(m => m[0] === 'staff'));
   assert.equal(staff.length, 3);
   assert.ok(staff.every(m => !m[5].includes('승인 요청')), 'the note is not repeated on every line');
   const one = officeRoom(snapOf({ state: stateOf(only.slice(0, 1)) }), {}, NOW, { subs: SUBS });
-  assert.equal(one.then, '승인 요청은 Claude Code 창에서 확인해 주세요.');
+  assert.equal(one.then, '이 PC에서 따로 켠 AI가 허락을 물으면 그 AI 화면에서 답해 주세요.');
   // 훅 소식을 받은 세션이 하나라도 있으면(둘째 조각) 모르는 세션의 줄에 그 말이 다시 붙는다
   const mixed = officeRoom(snapOf(), {}, NOW, { subs: SUBS });
   assert.ok(mixed.rows.flatMap(r => (r.more || []).filter(m => m[0] === 'staff')).some(m => m[5].endsWith('승인 요청은 여기에 뜨지 않습니다')));
   const cfg = rowOf(room, 'cfg');
-  assert.equal(cfg.mid, '비스듬히 보기 · 기록을 읽는 폴더 둘');
+  assert.equal(cfg.mid, '그림 각도 · 비스듬히');
   assert.ok(!JSON.stringify(cfg.more).includes('승인 요청'));
 });
 

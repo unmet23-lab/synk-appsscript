@@ -5,7 +5,7 @@
 //   ['item', 이름, 한 문장, 열림, 묶음 이름, 오른쪽] — 부서의 기능 줄(담은 것 16). 누르면 바로 아래 묶음(grp)이 열린다
 // 「꾸미기」 줄(솔리오_사무실스킨_20261123/PC앱_설계.md): 스킨과 자리마다의 모자 · 이름. 모두 무료다. 모습은 세션이 아니라 자리(부서마다 시작 시각 차례)에 붙는다.
 // 줄의 flag가 참이면 이름 옆에 느낌표가 붙는다(7절). 부서 줄과 「부서 없는 일」은 watch 줄이라, 열었다 닫으면 seen을 부른다(4.1 끝냄).
-import { officeSessions, officeHeadline, officeCapacity, officeSeats, countWord, officeFolderName } from './office-model.mjs';
+import { officeSessions, officeHeadline, officeCapacity, officeSeats, countWord, officeFolderName, officeOwnWorkCwd } from './office-model.mjs';
 import { createOfficeTaskRoom, officeTaskHeadline } from './office-task-room.mjs';
 import { createBizplanRoom } from './office-bizplan-room.mjs';
 import { bizplanLine, attachesBizplan } from './office-bizplan-model.mjs';
@@ -115,16 +115,25 @@ function staffItems(v, tasking) {
 }
 const rowLabel = parts => parts.filter(Boolean).join(', ');
 /* 닫힌 줄 가운데 칸의 「하는 일」. officeActivity(「shop · 읽기 · auth.ts」)의 맨 앞 폴더 이름을, 부서 줄에서는 그 부서의 폴더면 빼고
-   그 밖에는 「shop 폴더」로 쓴다. 폴더 이름이 덩그러니 놓이면 처음 보는 사람은 그것이 무엇인지 모른다(11-23 맹검) */
+   그 밖에는 「shop 폴더에서 읽기 · auth.ts」처럼 일하는 곳으로 쓴다. 하는 일을 모르면 폴더 이름을 쓰지 않는다. 처음 보는 사람은 그 폴더가 왜 거기
+   있는지 모른다(11-23 두 번 · 11-25 맹검). 부서 줄은 어느 AI인지를, 「부서 없는 일」은 어디서 켠 AI인지를 쓴다. 폴더는 줄을 열면 직원마다 보인다 */
 const samePath = (a, b) => { const n = p => String(p ?? '').trim().replace(/[\\/]+/g, '\\').replace(/\\$/, '').toLowerCase(); return n(a) === n(b); };
-function rowActivity(v, deptFolder = null) {
+function rowActivity(v, deptFolder = null, staff = [v]) {
   const act = String(v.activity || ''), folder = String(v.folder || '');
   const rest = folder && (act === folder || act.startsWith(folder + ' · ')) ? act.slice(folder.length).replace(/^ · /, '') : act;
+  // 부서를 정하지 않고 솔리오에 맡긴 일의 폴더 이름은 회원 번호라 어느 줄에도 쓰지 않는다(카본 solio-office-words A2, Fable F4)
+  const own = officeOwnWorkCwd(v.cwd);
+  if (deptFolder == null) {
+    if (rest) return (own ? '솔리오에서 맡긴 일 · ' : folder ? folder + ' 폴더에서 ' : '') + rest;
+    // 하는 일을 모르면 줄의 글은 묶음의 출처로 읽히므로 앞선 직원 하나가 아니라 모두를 본다(Fable F1)
+    const ours = staff.filter(s => officeOwnWorkCwd(s.cwd)).length;
+    return !ours ? '이 PC에서 따로 켠 AI' : ours === staff.length ? '솔리오에서 맡긴 일' : '따로 켠 AI와 맡긴 일';
+  }
   // 부서 폴더 안의 작업 사본(「shop/.claude/worktrees/…」)은 이름이 부서 폴더와 같게 읽히므로 그것도 자기 폴더다(카본 solio-room-content A1)
-  const mine = folder && deptFolder != null && (samePath(v.cwd, deptFolder) || folder.toLowerCase() === officeFolderName(deptFolder).toLowerCase());
+  const mine = own || samePath(v.cwd, deptFolder) || folder.toLowerCase() === officeFolderName(deptFolder).toLowerCase();
+  if (rest) return (folder && !mine ? folder + ' 폴더에서 ' : '') + rest;
   // 하는 일을 모르면 오른쪽 칸(「하나 일하는 중」 · 「승인을 물었습니다」)과 겹치지 않게 어느 AI인지 쓴다(「Claude Code · Opus」, Fable solio-room-content F3)
-  const who = [TOOL_NAME[v.tool] || '', modelWord(v.model)].filter(Boolean).join(' · ');
-  return [folder && !mine ? folder + ' 폴더' : '', rest].filter(Boolean).join(' · ') || who || v.say;
+  return [TOOL_NAME[v.tool] || '', modelWord(v.model)].filter(Boolean).join(' · ') || v.say;
 }
 
 /* ── 꾸미기(PC앱_설계.md 2~3절 · 6절) ── 값의 꼴은 본체(office-store.cjs)와 같다 */
@@ -266,10 +275,9 @@ export function officeSettingsRow({ view = 'tilted', roots = {}, ui = {} } = {})
   // 본체가 보낸 목록(roots.resting)을 먼저 쓴다. 본체가 같은 열쇠로 가른 것이다
   const resting = Array.isArray(roots.resting) ? roots.resting : added.filter(a => !claude.some(c => same(c, a)));
   const shown = view === 'top' ? '위에서' : '비스듬히';
-  const count = claude.length + codex.length;
   const more = [
-    ['pick', '보기', [['비스듬히', 'tilted'], ['위에서', 'top']], view === 'top' ? 'top' : 'tilted', '', 'view'],
-    ['note', '같은 사무실을 보는 각도입니다. 고른 보기는 다음에 열 때도 그대로입니다.'],
+    ['pick', '그림 각도', [['비스듬히', 'tilted'], ['위에서', 'top']], view === 'top' ? 'top' : 'tilted', '', 'view'],
+    ['note', '같은 사무실을 보는 각도입니다. 고른 각도는 다음에 열 때도 그대로입니다.'],
     ...claude.map(dir => ['row', 'Claude Code', String(dir), addedOf(dir) != null ? ['빼기', 'root-remove', String(addedOf(dir)), ui.busy ? 'off' : ''] : '', '']),
     ...resting.map(dir => ['row', 'Claude Code', String(dir) + ' · 지금은 보지 않음', ['빼기', 'root-remove', String(dir), ui.busy ? 'off' : ''], '']),
     ...(resting.length ? [['note', '「지금은 보지 않음」은 구독 방의 계정 폴더이거나, 2초 안에 답하지 않거나 실제 위치를 알 수 없는 폴더입니다.']] : []),
@@ -278,8 +286,9 @@ export function officeSettingsRow({ view = 'tilted', roots = {}, ui = {} } = {})
     ['note', 'Claude Code의 기본 설정 폴더와 Codex의 기록 폴더는 늘 봅니다. 다른 설정 폴더를 쓰면 더해 주세요.'],
     ['live', note],
   ];
-  // 「보기 · 비스듬히 · 보는 폴더 둘」은 처음 보는 사람이 읽지 못했다(11-23 맹검). 무엇을 고른 것인지 말로 쓴다
-  const mid = `${shown} 보기 · 기록을 읽는 폴더 ${countWord(count)}`;
+  // 닫힌 줄에는 고른 각도만 쓴다. 「보는 폴더 둘」도 「기록을 읽는 폴더 둘」도 처음 보는 사람은 읽지 못했고(11-23 맹검 두 번),
+  // 폴더는 다른 설정 폴더를 쓰는 사람만 찾는다. 줄을 열면 폴더마다 한 줄과 무엇인지 적은 글이 있다. 「비스듬히 보기」는 무엇을 보는지 몰랐다(11-25 맹검)
+  const mid = `그림 각도 · ${shown}`;
   return { key: 'cfg', nm: '설정', mid, val: '', when: '', label: rowLabel(['설정', mid]), more };
 }
 
@@ -304,7 +313,7 @@ function featureTask(tasks, feature, departmentId) {
 function departmentRow(d, staff, ui, tasking, tasks = []) {
   const key = 'd:' + d.id, lead = officeLead(staff), alert = staff.some(v => v.alert);
   // 닫힌 줄에는 경로를 쓰지 않는다(11-23 맹검이 「inapp\기획부」를 짚었다). 빈 부서는 직원이 서는 길을 말하고, 온전한 경로는 부서 설정의 「폴더」 줄에 있다
-  const mid = lead ? rowActivity(lead, d.folder) : tasking ? '일을 맡기면 직원이 자리에 앉습니다' : '이 부서 폴더에서 일을 시작하면 직원이 섭니다';
+  const mid = lead ? rowActivity(lead, d.folder || '') : tasking ? '일을 맡기면 직원이 자리에 앉습니다' : '이 부서 폴더에서 일을 시작하면 직원이 섭니다';
   const val = officeGroupStatus(staff);
   const staffMore = staff.flatMap(v => staffItems(v, tasking));
   if (tasking) staffMore.push(['acts', [['이 부서에 일 맡기기', 'task-open', '']]]);
@@ -337,7 +346,7 @@ function suggestName(v, departments) {
 /* 「부서 없는 일」: 솔리오 밖에서 연 일 가운데 부서 폴더 밖의 것(5절). 세션마다 그 작업 폴더로 부서를 만들거나 보낼 부서를 고른다 */
 function lobbyRow(staff, departments, ui, tasking) {
   const lead = officeLead(staff), alert = staff.some(v => v.alert);
-  const mid = rowActivity(lead), val = officeGroupStatus(staff);
+  const mid = rowActivity(lead, null, staff), val = officeGroupStatus(staff);
   const more = [];
   for (const v of staff) {
     more.push(...staffItems(v, tasking));
