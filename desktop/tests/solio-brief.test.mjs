@@ -1082,3 +1082,75 @@ test('report: the 「모자람」 diagnosis gives its reason before the price (�
   assert.equal(d.say, '지난 4주 동안 주간 한도 8번 가운데 8번이 초기화 하루 넘게 전에 바닥났습니다.');
   assert.match(d.then, /계정을 하나 더하면 월 약 [\d,]+원입니다\.$/);
 });
+
+/* ── 계정판의 Gemini 칸(11-26 유호님, 설계 11.10) ──
+   Gemini 사용량 조회는 꺼져 있다(11-21). 본체가 usageDisabled를 붙인 줄에서 회원이 기입한 Flow 크레딧과 Cloud 크레딧만 보인다. 계정 이름은 지어낸 것이다 */
+const GEM_PRICES = { services: { ...PRICES.services, gemini: { checked: '2026-11-02', currency: 'KRW', tax: 'included', plans: { ultra20x: { month: 300000, apiCredit: 100, flowCredits: 25000 } } } } };
+const flowRow = (email, flowCredit, flowCreditUntil, apiCredit = null, extra = {}) => row({ service: 'gemini', label: 'Gemini', state: 'manual', usageDisabled: true, live: null, plan: 'ultra_20x', email,
+  flowCredit, flowCreditUntil, flowCreditAt: NOW - 20 * 60e3, apiCredit, apiCreditAt: apiCredit === null ? null : NOW - D, ...extra });
+const withCodex = () => { const { rows, stats } = sevenOfTen(), cx = codexShut(); for (const r of cx) stats[r.id] = 10; return { rows: [...rows, ...cx], stats }; };
+
+test('board: Gemini with Flow credits typed in stands third after Claude and Codex, with the sum, a bar per account, one 「먼저 쓰세요」 and the Cloud line (설계 11.10)', () => {
+  const { rows, stats } = withCodex();
+  const a = flowRow('gma@example.com', 5923, new Date(2026, 10, 25, 21, 29).getTime(), 100), b = flowRow('gmb@example.com', 25050, new Date(2026, 11, 20, 6, 37).getTime(), 0);
+  const c = brief(snap([...rows, b, a], stats, { prices: GEM_PRICES })).board.cols;
+  assert.deepEqual(c.map(x => x.key), ['claude', 'gpt', 'gemini']);
+  const g = c[2];
+  assert.deepEqual([g.name, g.sub, g.alarm, g.urgent, g.fold], ['Gemini', 'Ultra 20x 계정 2개', '', false, null]);
+  assert.deepEqual(g.big, { value: '30,973', unit: '', label: '남은 Flow 크레딧' });
+  assert.equal(g.label, 'Gemini Ultra 20x 계정 2개에 남은 Flow 크레딧은 모두 30,973개입니다.');
+  // 먼저 다시 차는 계정이 먼저다. 막대는 남은 개수 ÷ 한 달 양(25,000)이고 넘으면 100에서 멈춘다. 「먼저 쓰세요」는 7일 안에 다시 차는데 20% 넘게 남은 계정 하나
+  assert.deepEqual(g.rows.map(r => [r.name, r.tone, r.bar, r.pct, r.note, r.first]), [
+    ['gma', 'open', 23, '5,923', '11월 25일 21:29에 다시 참 · 11월 20일 확인', true],
+    ['gmb', 'open', 100, '25,050', '12월 20일 06:37에 다시 참 · 11월 20일 확인', false]]);
+  // Cloud 크레딧은 칸 아래 한 줄. 모든 계정이 기입했으면 계정 순서대로 금액만 쓴다
+  assert.equal(g.foot, 'Cloud 크레딧 $100 · $0');
+});
+
+test('board: without Flow credits typed in there is no Gemini column, and Gemini alone never raises a board (설계 11.10)', () => {
+  const { rows, stats } = withCodex();
+  const bare = [flowRow('gma@example.com', null, null, 100), flowRow('gmb@example.com', null, null)];
+  assert.deepEqual(brief(snap([...rows, ...bare], stats, { prices: GEM_PRICES })).board.cols.map(x => x.key), ['claude', 'gpt']);
+  // 계정판이 없는 자료(한도형 구독이 없음)에 Gemini 칸 하나로 계정판을 세우면 보고와 맨 위가 바뀐다. 세우지 않는다
+  const only = snap([flowRow('gma@example.com', 5923, NOW + 5 * D, 100)], {}, { prices: GEM_PRICES });
+  assert.equal(briefBoard(only, briefGroups(only, NOW), NOW), null);
+});
+
+test('board: a Flow refill time already past empties the bar and asks to check Flow, and the sum keeps only values still true (설계 11.10)', () => {
+  const { rows, stats } = withCodex();
+  const past = flowRow('old@example.com', 4000, NOW - H, 100), fresh = flowRow('new@example.com', 25050, NOW + 20 * D, 0), blank = flowRow('none@example.com', null, null);
+  const g = brief(snap([...rows, past, fresh, blank], stats, { prices: GEM_PRICES })).board.cols[2];
+  assert.deepEqual(g.big, { value: '25,050', unit: '', label: '남은 Flow 크레딧 · 계정 1개' });
+  assert.deepEqual(g.rows.map(r => [r.name, r.tone, r.bar, r.pct, r.note]), [
+    ['new', 'open', 100, '25,050', '12월 10일 03:00에 다시 참 · 11월 20일 확인'],
+    ['old', 'idle', null, '', '다시 차는 때 지남 · Flow에서 확인해 기입'],
+    ['none', 'idle', null, '', '아직 기입하지 않았습니다']]);
+  assert.equal(g.label, 'Gemini 계정 3개 가운데 1개에 남은 Flow 크레딧은 25,050개입니다. 1개는 다시 차는 때가 지났습니다. Flow에서 확인해 기입하세요. 1개는 Flow 크레딧을 아직 기입하지 않았습니다.');
+  // Cloud 크레딧을 기입한 계정이 일부면 이름을 붙인다
+  assert.equal(g.foot, 'Cloud 크레딧 new $0 · old $100');
+  // 한 달 양을 모르면(요금표 없음) 지난 때를 굴리지 않고 같은 말을 쓴다. 아직 맞는 값은 막대 없이 개수만 쓴다
+  const noPrice = brief(snap([...rows, flowRow('old@example.com', 4000, NOW - H), flowRow('new@example.com', 900, NOW + 3 * D)], stats)).board.cols[2];
+  assert.deepEqual(noPrice.rows.map(r => [r.name, r.tone, r.bar, r.pct, r.first]), [['new', 'open', null, '900', false], ['old', 'idle', null, '', undefined]]);
+  // 남은 값이 모두 지났으면 큰 글은 붉지 않은 「–」다(quiet)
+  const allPast = brief(snap([...rows, flowRow('old@example.com', 4000, NOW - H)], stats, { prices: GEM_PRICES })).board.cols[2];
+  assert.deepEqual(allPast.big, { value: '–', unit: '', label: '남은 Flow 크레딧', quiet: true });
+  assert.equal(allPast.label, 'Gemini Ultra 20x 계정 1개가 있습니다. 1개는 다시 차는 때가 지났습니다. Flow에서 확인해 기입하세요.');
+});
+
+test('board: the Gemini column only shows; the Claude and Codex columns, the top line, the report and the diagnosis stay as they were (설계 11.10)', () => {
+  const { rows, stats } = withCodex();
+  // 다시 차는 때는 일주일 밖이다. 일주일 안이면 다가오는 일에 Flow 줄이 서는데, 그것은 이 칸과 상관없는 옛 동작이다
+  const typed = [flowRow('gma@example.com', 5923, NOW + 9 * D, 100), flowRow('gmb@example.com', 25050, NOW + 20 * D, 0)];
+  const bare = typed.map(r => ({ ...r, flowCredit: null, flowCreditUntil: null, flowCreditAt: null }));
+  const on = brief(snap([...rows, ...typed], stats, { prices: GEM_PRICES })), off = brief(snap([...rows, ...bare], stats, { prices: GEM_PRICES }));
+  assert.deepEqual(on.board.cols.map(c => c.key), ['claude', 'gpt', 'gemini']);
+  assert.deepEqual({ ...on, board: { cols: on.board.cols.slice(0, 2) } }, off);
+  // Gemini 줄이 아예 없는 자료와도 계정판의 두 칸 · 맨 위 · 보고가 같다
+  const none = brief(snap(rows, stats, { prices: GEM_PRICES }));
+  assert.deepEqual(on.board.cols.slice(0, 2), none.board.cols);
+  assert.deepEqual([on.head, on.report], [none.head, none.report]);
+  // 판정은 Gemini 줄을 읽지 않는다. 묶음은 Claude · Codex뿐이고 맨 위 갈래도 같다
+  const s = snap([...rows, ...typed], stats, { prices: GEM_PRICES }), s0 = snap(rows, stats, { prices: GEM_PRICES });
+  assert.deepEqual(briefGroups(s, NOW).map(x => x.service), ['claude', 'gpt']);
+  assert.equal(briefHead(s, briefGroups(s, NOW), NOW).kind, briefHead(s0, briefGroups(s0, NOW), NOW).kind);
+});
