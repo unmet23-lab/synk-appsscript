@@ -221,6 +221,17 @@
         }
       },
       {
+        "계정": "lab-ru-rutube",
+        "채널": "RUTUBE LAB · 러시아 · rutube · 81398864",
+        "주소": "https://rutube.ru/video/f08ae0fad86c061304e0122bc52fff0e/",
+        "형식": "rutube-video",
+        "게시": "2026-11-25T10:01:20.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-telegram",
         "채널": "텔레그램 @synkmn",
         "주소": "https://t.me/synkmn/20",
