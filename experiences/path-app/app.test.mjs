@@ -128,7 +128,7 @@ function fixture() {
   }, '2026-11-09T10:01:00.000Z');
 }
 
-async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null } = {}) {
+async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null, studyGate = null } = {}) {
   const initial = raw ?? JSON.stringify(legacy ? fixture() : { ...createPathDocument('ko'), state: fixture() });
   const originalKey = legacy ? LEGACY_KEY : GUEST_KEY;
   const records = new Map([[originalKey, initial]]);
@@ -159,7 +159,7 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
   const studyReply = () => ({ ok: true, scope: 'synk-path', resource: 'path-study', accountId: owner, revision: studyRow.revision, updatedAt: '2026-11-22T00:00:00.000Z', state: structuredClone(studyRow.state) });
   async function studyServer(operation, values) {
     if (!study) throw studyFault('PATH_STUDY_UNAVAILABLE');
-    if (operation === 'pathLoad') { if (studyRow.loadDown) throw studyFault(studyRow.loadDown); return studyReply(); }
+    if (operation === 'pathLoad') { if (studyGate) await studyGate; if (studyRow.loadDown) throw studyFault(studyRow.loadDown); return studyReply(); }
     const expected = values.expected_revision;
     if (operation === 'pathDelete') {
       if (studyRow.state === null && expected === studyRow.revision - 1) return studyReply();
@@ -1173,6 +1173,21 @@ test('번역 초안: 손님이 로그인하고 돌아오면 같은 서류의 번
     await settle();
     assert.equal(app.root.querySelector('#tr-text'), null, what);
     assert.equal(app.record(KEY), undefined, `${what}은 지운다`);
+  }
+  // 계정 조건을 읽는 동안에는 열지 않고 기다린다. 그사이 다른 쪽에 다녀오면 「오늘」로 와도 끌고 가지 않는다.
+  for (const [what, moves] of [['그대로 기다림', []], ['「오늘」을 다시 누름', ['today']], ['채널에 다녀옴', ['channels', 'today']], ['내 정보에 다녀옴', ['profile', 'today']]]) {
+    let loaded = null;
+    const app = await comeBack(JSON.stringify({ id: 'wku-ug-grad', at: Date.now() }), { study: true, studyGate: new Promise(resolve => { loaded = resolve; }) });
+    await settle();
+    assert.equal(app.root.querySelector('#tr-text'), null, `${what}: 읽는 동안은 열지 않는다`);
+    assert.ok(app.record(KEY), `${what}: 읽는 동안은 남긴다`);
+    const stay = !moves.some(page => page !== 'today');
+    for (const page of moves) app.click('nav', `[data-page="${page}"]`);
+    loaded();
+    await settle();
+    assert.equal(!!app.root.querySelector('#tr-text'), stay, what);
+    if (!stay) { app.click('nav', '[data-page="today"]'); assert.equal(app.root.querySelector('#tr-text'), null, `${what}: 「오늘」을 다시 눌러도`); }
+    assert.equal(app.record(KEY), undefined, `${what}: 남기지 않는다`);
   }
   const noProgram = await boot(t, { raw: studyGoalDocument(), programs: real, signedIn: true, seed: { [KEY]: JSON.stringify({ id: 'wku-ug-grad', at: Date.now() }) } });
   await settle();

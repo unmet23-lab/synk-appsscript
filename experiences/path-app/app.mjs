@@ -676,6 +676,8 @@ function trRender() {
 const TR_RETURN_KEY = 'synk-path-translate-return', TR_RETURN_MS = 10 * 60 * 1000;
 const trReturnSet = (id) => { try { tabStorage()?.setItem(TR_RETURN_KEY, JSON.stringify({ id, at: Date.now() })); } catch { /* 저장이 막힌 탭: 돌아오기만 없다 */ } };
 const trReturnClear = () => { try { tabStorage()?.removeItem(TR_RETURN_KEY); } catch { /* 위와 같음 */ } };
+// 로그인한 뒤 번역 쪽이 열리기 전에 저절로 거치는 쪽. 학생이 다른 쪽으로 가면 돌아올 값을 지운다(go · nav).
+const TR_WAIT_PAGES = ['today', 'onboard', 'profile', 'studyConsent', 'translate'];
 function trReturnGet() {
   let raw = null;
   try { raw = tabStorage()?.getItem(TR_RETURN_KEY) ?? null; } catch { return null; }
@@ -772,7 +774,7 @@ function go(page) {
     if (S.tr?.phase === 'draft' && !confirm(state.lang === 'en' ? 'Leaving this page deletes the draft. It is not stored anywhere. Leave?' : '이 화면을 떠나면 초안이 지워져요. 어디에도 저장하지 않아요. 떠날까요?')) return;
     if (S.tr?.phase === 'sending' && !confirm(state.lang === 'en' ? 'The draft is still being made. If you leave, it is discarded and one of today’s 10 may still be used. Leave?' : '초안을 만드는 중이에요. 지금 떠나면 초안은 버려지고 오늘 한 장이 쓰일 수 있어요. 떠날까요?')) return;
     S.tr = null; trReturnClear();
-  }
+  } else if (!TR_WAIT_PAGES.includes(page)) trReturnClear();
   S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.dateNote = null; S.docFull = false; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }
 
 function ensureTask(oppId) {
@@ -820,7 +822,7 @@ const ACT = {
     if (id == null) { render(false); return; }
     S.taskId = id; go('editor');
   },
-  nav: (el) => { if (el.dataset.page === 'channels') S.channelId = null; go(el.dataset.page); },
+  nav: (el) => { if (el.dataset.page === 'channels') S.channelId = null; if (el.dataset.page !== 'today' && S.page !== 'translate') trReturnClear(); go(el.dataset.page); },
   univOpen(el) { S.univId = el.dataset.id; go('univDetail'); },
   channelOpen(el) { S.channelId = el.dataset.id || null; go('channels'); },
   postOpen(el) { S.postId = el.dataset.id; go('post'); },
