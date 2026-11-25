@@ -668,7 +668,8 @@ test('도움 요청 부호 목록: every error code the engine, the worker and t
     assert.ok(files.length > before, `${d} was read`);
   }
   const missing = new Set();
-  const shapes = [/code:\s*'([A-Z][A-Z0-9_]{1,40})'/g, /(?:failure|err|ServerError)\(\s*'([A-Z][A-Z0-9_]{1,40})'/g];
+  // The third shape is a function that answers a code it raises elsewhere (first-range.cjs blocker(), GPT P2): `return 'RANGE_BUSY'`.
+  const shapes = [/code:\s*'([A-Z][A-Z0-9_]{1,40})'/g, /(?:failure|err|ServerError)\(\s*'([A-Z][A-Z0-9_]{1,40})'/g, /\breturn\s+'([A-Z][A-Z0-9_]{1,40})'/g];
   for (const f of files) {
     const text = fs.readFileSync(f, 'utf8');
     // `EXIT_<number>` is an installer's exit code in a program's reinstall result (move-service.cjs), not a code anything

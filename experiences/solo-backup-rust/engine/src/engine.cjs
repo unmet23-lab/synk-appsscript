@@ -187,13 +187,14 @@ async function lockedVolumes(items) {
 }
 /** restic's JSON error lines, however they are split into chunks: each `item` goes to onItem with the step it was met
  *  in (`during`: scan, archival). A line past 4 MB is not held — onItem(null) says an item may be lost, so the list is
- *  marked cut (GPT GA4). */
-function errorItems(onItem) {
+ *  marked cut (GPT GA4). Every other line goes to onOther, if one is given: 'error' for an error that names no item, 'text'
+ *  for anything else (restic tells a folder it was given and cannot find that way, in plain words). The closing exit_error is none. */
+function errorItems(onItem, onOther) {
   let rest = '';
   const lines = text => {
     const all = (rest + text).split('\n'); rest = all.pop();
     if (rest.length > 4194304) { rest = ''; onItem(null); }
-    for (const line of all) { let m = null; try { m = JSON.parse(line); } catch { } if (m?.message_type === 'error' && typeof m.item === 'string' && m.item) onItem(m.item, typeof m.during === 'string' ? m.during : null); }
+    for (const line of all) { let m = null; try { m = JSON.parse(line); } catch { } if (m?.message_type === 'error' && typeof m.item === 'string' && m.item) onItem(m.item, typeof m.during === 'string' ? m.during : null, typeof m.error?.message === 'string' ? m.error.message : ''); else if (line.trim() && m?.message_type !== 'exit_error') onOther?.(m?.message_type === 'error' ? 'error' : 'text', line.trim()); }
   };
   return { push: lines, end: () => lines('\n') };
 }
@@ -374,18 +375,30 @@ const AI_LOGIN_EXCLUDES = Object.freeze(AI_LOGIN_FILES.flatMap(p => ['--iexclude
 //   폴더가 말없이 빠진다(GPT GA1). 무늬는 `node_modules/*`다 — 그 폴더의 안쪽만 빠지고 폴더는 빈 채로 남는다. 같은 이름의 보통
 //   파일(시험 자료 따위)은 담긴다(다시 검수 GA1).
 // - 로그인 폴더: 진단이 열쇠 자리로 보는 이름(.ssh · .gnupg · .aws · .azure). 넣은 작업 폴더 안에 있어도 담지 않는다(GA2).
-//   무늬는 이름 그대로다 — restic이 그 폴더를 열지 않아, 목록 권한이 막힌 .ssh가 백업을 「일부 못 읽음」으로 끝내지 않는다(r3 GA1).
+//   무늬는 `.ssh/*`처럼 안쪽만이다. 이름째 빼면 같은 이름의 보통 파일(`.aws`라는 시험 자료 따위)이 말없이 빠진다(r4 GA1 · GA2).
+// - restic은 안쪽을 빼려고 그 폴더를 열어 본다. 목록 권한이 막혀 있으면 코드 3으로 끝나고 그 폴더 경로 하나만 「읽지 못함」으로 알린다(r3 GA1).
+//   그 폴더는 어차피 담지 않으므로, 읽지 못한 것이 그런 폴더 자체뿐이면 완료로 친다(leftOutFolder). 같은 이름의 파일은 지금처럼 부분이다.
 // - 이 규칙이 통째로 먹는 자리(node_modules 안 · 로그인 폴더 자체나 그 안)는 지킬 폴더로 받지 않는다 — 받으면 빈 폴더로 성공한다
 //   (Fable 설계 검토 자리 1).
 const REBUILDABLE_DIRS = Object.freeze(['node_modules']);
 const LOGIN_DIRS = Object.freeze(['.ssh', '.gnupg', '.aws', '.azure']);
-const REBUILDABLE_EXCLUDES = Object.freeze(['--exclude-caches', ...REBUILDABLE_DIRS.flatMap(n => ['--iexclude', `${n}/*`]), ...LOGIN_DIRS.flatMap(n => ['--iexclude', n])]);
-const REBUILDABLE_SET = new Set(REBUILDABLE_DIRS), LOGIN_SET = new Set(LOGIN_DIRS);
+const LEFT_OUT_DIRS = Object.freeze([...REBUILDABLE_DIRS, ...LOGIN_DIRS]);
+const REBUILDABLE_EXCLUDES = Object.freeze(['--exclude-caches', ...LEFT_OUT_DIRS.flatMap(n => ['--iexclude', `${n}/*`])]);
+const LEFT_OUT_SET = new Set(LEFT_OUT_DIRS);
 const pathParts = p => String(p).split(/[\\/]/).filter(Boolean).map(x => x.toLowerCase());
-/** 파일 경로가 이 규칙에 빠지는가 — 채움 판 목록을 거를 때(node_modules는 폴더 안의 것만, 로그인 이름은 어느 마디든) */
-const inSkippedDir = p => { const s = pathParts(p); return s.slice(0, -1).some(x => REBUILDABLE_SET.has(x)) || s.some(x => LOGIN_SET.has(x)); };
+/** 그 경로가 담지 않는 폴더의 안쪽인가 — 채움 판 목록을 거를 때(마지막 마디는 보지 않는다: 같은 이름의 보통 파일은 담는다) */
+const inSkippedDir = p => pathParts(p).slice(0, -1).some(x => LEFT_OUT_SET.has(x));
+/** 그 경로가 담지 않는 폴더 자체인가 — 이름으로 가르고, 파일이 아니라 폴더인지 실제로 본다(연결 폴더와 볼 수 없는 것은 아니다) */
+async function leftOutFolder(p) {
+  if (!LEFT_OUT_SET.has(pathParts(p).at(-1))) return false;
+  try { return (await fs.lstat(p)).isDirectory(); } catch { return false; }
+}
+// restic 0.19.1이 폴더의 목록을 열지 못했다고 하는 말(internal/fs Readdirnames). 파일을 못 읽은 것과 도중에 종류가 바뀐 것은 이 말로 시작하지 않는다
+const LISTING = /^(?:openfile for readdirnames failed: |readdirnames .+ failed: )/s;
+// 캐시 표식 파일을 읽지 못했다는 말 — 그 폴더는 빼지 않고 담는다(restic exclude.go)
+const TAG_FILE = /^(?:could not (?:access|open|read signature from) |invalid signature in )exclusion tagfile\b/;
 /** 폴더 경로가 이 규칙에 통째로 먹히는가 — 어느 마디(마지막 포함)가 node_modules이거나 로그인 이름이면 지킬 폴더로 받지 않는다 */
-const skippedPlace = p => pathParts(p).some(x => REBUILDABLE_SET.has(x) || LOGIN_SET.has(x));
+const skippedPlace = p => pathParts(p).some(x => LEFT_OUT_SET.has(x));
 const SKIPPED_MESSAGE = 'node_modules 안이나 로그인 정보 폴더(.ssh · .aws 등)는 백업에 담지 않아 고를 수 없습니다. 그 바깥 폴더를 골라 주세요.';
 /** 새로 시작한 백업의 폴더 목록에 그런 자리가 있으면 거절한다 */
 function refuseSkipped(sources) {
@@ -625,7 +638,7 @@ class BackupEngine extends EventEmitter {
     } finally { this.transientSecrets = []; this.job = null; this.emitState(); this.emit('idle'); }
   }
   clean(message) { return b2.redact(message, [this.secret, this.cloudCredentials?.keyId, this.cloudCredentials?.applicationKey, this.connection?.credentials.keyId, this.connection?.credentials.applicationKey, ...this.transientSecrets]); }
-  async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly, onErrorItem = null, stdinText = null, stderrFails = false } = {}) {
+  async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly, onErrorItem = null, onErrorOther = null, stdinText = null, stderrFails = false } = {}) {
     if (this.stopping && !this.job) throw new Error('앱을 종료하고 있습니다. 이전 정상 백업은 유지됩니다.');
     if (this.job?.cancelled) throw Object.assign(new Error('되살리기를 그만두었습니다. 만들다 만 폴더는 그대로 두었습니다.'), { code: 'CANCELED' });
     const { env, args: providerArgs } = b2.childOptions(provider, credentials, this.workDir || this.stateDir, process.env, password);
@@ -635,7 +648,7 @@ class BackupEngine extends EventEmitter {
       providerArgs.push('--no-lock');
     }
     if (this.resticStartedAt === null) this.resticStartedAt = Date.now();
-    if (this.runner) return this.runner(args, { repository, password, engine: this, consumeStdout, provider, credentials, env, providerArgs, onErrorItem, stdinText, stderrFails });
+    if (this.runner) return this.runner(args, { repository, password, engine: this, consumeStdout, provider, credentials, env, providerArgs, onErrorItem, onErrorOther, stdinText, stderrFails });
     return new Promise((resolve, reject) => {
       const child = spawn(this.resticPath, ['--repo', repository, ...providerArgs, '--retry-lock', '10s', ...args], { env, windowsHide: true, shell: false, stdio: [stdinText === null ? 'ignore' : 'pipe', 'pipe', 'pipe'] });
       this.child = child;
@@ -655,7 +668,7 @@ class BackupEngine extends EventEmitter {
       if (!consumeStdout) child.stdout.on('data', b => capture.accept(b));
       child.stdout.on('error', () => {});
       // Every unreadable item from restic's JSON error lines, however many — the tail kept below is only for the message.
-      const items = onErrorItem ? errorItems(onErrorItem) : null;
+      const items = onErrorItem ? errorItems(onErrorItem, onErrorOther) : null;
       child.stderr.on('data', b => { const text = errorDecoder.write(b); items?.push(text); errors = (errors + text).slice(-12000); });
       child.once('error', e => { consumerError ||= e; child.stdout.destroy(e); });
       child.once('close', async (code, signal) => {
@@ -1076,17 +1089,33 @@ class BackupEngine extends EventEmitter {
       // goes in no list of what was not read, and is told as a name this backup cannot hold (4.2 「이 백업에 담지 못하는
       // 이름」). Told while reading too, it stays what it was.
       const unreadable = [], odd = new Set(), read = new Set(); let partial = false, cut = false, oddCut = false;
-      const onErrorItem = (item, during) => {
+      // 담지 않는 폴더의 목록을 못 연 것 말고 다른 오류가 있었던 항목과, 무엇을 못 읽었는지 말하지 않은 줄(4.17)
+      const otherwise = new Set(); let blind = false, unsure = false, vague = false;
+      const onErrorOther = (kind, text) => { if (kind === 'error') blind = true; else if (!TAG_FILE.test(text)) unsure = true; };
+      const onErrorItem = (item, during, message = '') => {
+        // 담지 않는 이름만, 목록과 같은 상한까지 적는다
+        if (item !== null && this.config.skipRebuildable === true && otherwise.size < UNREADABLE_MAX && !LISTING.test(message) && LEFT_OUT_SET.has(pathParts(item).at(-1))) otherwise.add(item);
         if (item !== null && oddName(item) && during === 'scan') { if (odd.size < UNREADABLE_MAX) odd.add(item); else oddCut = true; return; }
         if (item !== null && oddName(item)) read.add(item);
         if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true;
       };
       try {
         await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, ...AI_LOGIN_EXCLUDES, ...(this.config.skipRebuildable === true ? REBUILDABLE_EXCLUDES : []), '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
-          { onErrorItem });
+          { onErrorItem, onErrorOther });
       } catch (e) {
         if (e.exitCode !== 3 || !unreadable.length) throw e;
         partial = true;
+        // 새로 시작한 백업이 담지 않는 폴더의 목록을 restic이 열지 못한 것은 빠뜨린 것이 아니다(4.17) — 그것만이면 완료다. 하나라도 다른 것이
+        // 있으면 부분이고 그것만 적는다. 무엇을 못 읽었는지 말하지 않은 줄이 있으면(restic이 찾지 못한 지킬 폴더 따위) 완료로 치지 않고
+        // 목록을 그대로 둔 채 다 세지 못한 것으로 적는다(Fable 설계 검토 · 0.7.5 GPT GA1 · GA2 · GA5)
+        if (this.config.skipRebuildable === true) {
+          const kept = [];
+          for (const item of unreadable) if (otherwise.has(item) || !(await leftOutFolder(item))) kept.push(item);
+          if (kept.length) { unreadable.length = 0; for (const item of kept) unreadable.push(item); }
+          else if (cut || blind || unsure) { cut = true; vague = true; }
+          else { unreadable.length = 0; partial = false; }
+          if (blind) cut = true;
+        }
       }
       for (const item of read) odd.delete(item);
       const pending = await this.snapshots([runTag, 'pending']);
@@ -1124,7 +1153,7 @@ class BackupEngine extends EventEmitter {
         }
         this.lastSummary = s.summary || null; this.lastRun = 'partial';
         // No promise that an earlier backup holds them: a file made since the last complete one is in none (GPT GA2).
-        const warn = () => [`다른 프로그램이 쓰는 중인 파일 ${unreadable.length}${cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.`, oddWarning(this.config.leftOutNames), missingWarning(missing)].filter(Boolean).join(' ');
+        const warn = () => [vague ? '이번 백업에서 읽지 못한 것이 무엇인지 다 확인하지 못했습니다. 다음 백업에서 다시 확인합니다.' : `다른 프로그램이 쓰는 중인 파일 ${unreadable.length}${cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.`, oddWarning(this.config.leftOutNames), missingWarning(missing)].filter(Boolean).join(' ');
         // Written down before the walk, which may take minutes (설계 검토 F7), with the names as known so far (r2 GA1).
         const before = await this.oddPending(s, present, odd, oddCut);
         this.config.warning = warn(); await this.save();
@@ -1465,7 +1494,7 @@ class BackupEngine extends EventEmitter {
     for (const item of list.unreadable) {
       const mapped = linked(roots, item);
       if (!mapped) continue;
-      if (this.config.skipRebuildable === true && inSkippedDir(mapped)) continue;
+      if (this.config.skipRebuildable === true && (inSkippedDir(mapped) || await leftOutFolder(mapped))) continue;
       try { await fs.lstat(mapped); } catch (e) { if (e.code === 'ENOENT' || e.code === 'ENOTDIR') continue; }
       asked.push(item); targets.push(mapped);
     }
@@ -2754,4 +2783,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, customerVault, AI_LOGIN_EXCLUDES, REBUILDABLE_EXCLUDES, LOGIN_DIRS, inSkippedDir, skippedPlace, refuseSkipped, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, oddName, walkOdd, stillThere, oddReads, topMost, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };
+module.exports = { BackupEngine, customerVault, AI_LOGIN_EXCLUDES, REBUILDABLE_EXCLUDES, LOGIN_DIRS, inSkippedDir, leftOutFolder, skippedPlace, refuseSkipped, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, oddName, walkOdd, stillThere, oddReads, topMost, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };

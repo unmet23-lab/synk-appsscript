@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 234);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 133, linux: 16, local: 85 });
+  assert.equal(check(root), 242);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 141, linux: 16, local: 85 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -133,11 +133,12 @@ test('S129–S137 run on the Windows host with the forked engine, the run execut
   // subtests of one test (11-16 `079c05b673`) their skips still counted as unregistered in wide-tests.
   // S157–S207 are the 대량 삭제 · 변경 멈춤 tests (`mass-hold.test.cjs`), which read Windows paths as the engine does:
   // from 11-20 `9ddcbeb409` they ran on Linux unregistered and 38 failed in wide-tests (experiences).
-  // S223 is the window worker's start (11-25 `12a6a2b40f`); S225–S231, S235 and S236 are the first protection range
-  // (`first-range.test.cjs`, Windows paths): from 11-25 `00c8649cf` those nine ran on Linux unregistered and failed there.
+  // S223–S240 are the window worker's start (11-25 `12a6a2b40f`), the folders a new backup leaves out, and the first
+  // protection range (`first-range.test.cjs`, Windows paths): from 11-25 `00c8649cf` nine of those ran on Linux
+  // unregistered and failed in wide-tests (experiences).
   const moveFiles = ['S146', 'S147', 'S148', 'S149', 'S150', 'S151', 'S152'];
   const massHold = Array.from({ length: 51 }, (_, i) => 'S' + (157 + i));
-  const firstRange = ['S223', 'S225', 'S226', 'S227', 'S228', 'S229', 'S230', 'S231', 'S235', 'S236'];
+  const firstRange = Array.from({ length: 18 }, (_, i) => 'S' + (223 + i));
   const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S145', ...moveFiles, ...massHold, ...firstRange, 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(workflow, /npm ci --prefix experiences\/solo-backup-rust\/engine /);

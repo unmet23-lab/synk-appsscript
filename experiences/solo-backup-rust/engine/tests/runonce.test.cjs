@@ -1360,6 +1360,10 @@ test('every unreadable item is read from restic error lines, however the chunks 
   for (let i = 0; i < text.length; i += 65537) reader.push(text.slice(i, i + 65537));
   reader.end();
   assert.deepEqual(got, ['C:\\work\\long.pst', 'C:\\work\\short.xlsx'], 'a line split across chunks and the last one without a newline');
+  // An error that names no item is told apart from the items (4.17): the closing exit_error line is not one.
+  const other = [], seen = []; const quiet = errorItems((item, during, message) => seen.push([item, message.slice(0, 6)]), (kind, line) => other.push([kind, line.slice(0, 8)]));
+  quiet.push(text); quiet.push('\nD:\\gone does not exist, skipping\n'); quiet.end();
+  assert.deepEqual([other, seen], [[['text', '{not jso'], ['error', '{"messag'], ['text', 'D:\\gone ']], [[got[0], 'xxxxxx'], [got[1], 'locked']]]);
   const lost = [];
   const big = errorItems(item => lost.push(item));
   big.push('x'.repeat(4194305)); big.push(`\n${short}\n`); big.end();

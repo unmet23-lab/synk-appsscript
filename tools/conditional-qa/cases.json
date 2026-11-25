@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 234,
+  "expectedCount": 242,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1791,6 +1791,14 @@
       "profile": "default"
     },
     {
+      "id": "S224",
+      "file": "experiences/solo-backup-rust/engine/tests/left-out.test.cjs",
+      "name": "고정 판 restic: 같은 이름의 보통 파일은 본 백업과 채움 목록에 담기고, 목록이 막힌 .ssh는 백업을 부분으로 만들지 않는다",
+      "group": "업무 백업 1단계 — 새 백업이 담지 않는 폴더(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
       "id": "S225",
       "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
       "name": "범위 고르기: 알려진 폴더, 찾아낸 작업 폴더, AI 폴더, 넣지 않는 자리",
@@ -1847,6 +1855,30 @@
       "profile": "default"
     },
     {
+      "id": "S232",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "GPT 다시 검수(GA2 · GA3 · GA4 · GA5): 다시 넣기의 30곳 검사, 빼 둔 바깥 줄 더하기, 없어진 줄 안의 줄, 손님 줄만으로 30곳 넘김",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S233",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "r4 GA3: 고를 때 바탕화면 · 문서와 빠져 있는 손님 줄의 몫을 남겨, 다시 찾아 저절로 들어와도 30곳을 넘지 않는다",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S234",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "Fable 설계 검토가 더하라고 한 시험: 저절로 넣은 줄이 찬 30곳, 바깥 줄을 뺀 뒤, 모두 없어진 뒤, 새 창, 뺀 안쪽 줄",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
       "id": "S235",
       "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
       "name": "진단이 실패하면 「다 읽지 못했습니다」로 두고 추가 보호로 고른다 · 1.5배를 넘거나 세는 중이면 시작을 막는다",
@@ -1858,6 +1890,38 @@
       "id": "S236",
       "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
       "name": "사용자 폴더 맨 위의 프로젝트: 그 폴더나 바로 아래에 프로젝트 표시가 있으면 낸다(Fable F9)",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S237",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "Fable 설계 검토 P2: 저절로 넣은 바깥 줄이 손님 줄을 품고 있다가 다시 세어 빠져도 30곳을 넘지 않는다",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S238",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "0.7.5 GPT GA3 · GA4: 찾을 수 없는 바깥 줄 안에 더하기, 뽑은 드라이브의 AI 폴더 — 다시 꽂아도 30곳을 넘지 않는다",
+      "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S239",
+      "file": "experiences/solo-backup-rust/engine/tests/left-out.test.cjs",
+      "name": "채움 판은 부분 판 목록의 담지 않는 폴더를 묻지 않고, 같은 이름의 보통 파일만 묻는다(fillNow)",
+      "group": "업무 백업 1단계 — 새 백업이 담지 않는 폴더(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S240",
+      "file": "experiences/solo-backup-rust/engine/tests/first-range.test.cjs",
+      "name": "0.7.5 GPT r2 GA1: 바깥 폴더를 더했다 빼도 손님이 뺀 안쪽의 미리 채운 줄은 뺀 채로 남는다",
       "group": "업무 백업 1단계 — 첫 보호 범위(Windows 경로)",
       "route": "windows",
       "profile": "default"

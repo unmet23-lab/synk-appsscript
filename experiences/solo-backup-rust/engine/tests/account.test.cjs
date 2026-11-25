@@ -940,7 +940,7 @@ test('a protection started now leaves out node_modules, cache-tagged folders and
   assert.ok(!args.includes('--exclude-if-present'));
   assert.ok(!args.includes('pyvenv.cfg'), '파이썬 가상 환경은 담는다(Fable F1)');
   const left = args.flatMap((a, i) => a === '--iexclude' ? [args[i + 1]] : []);
-  for (const m of ['node_modules/*', '.ssh', '.gnupg', '.aws', '.azure']) assert.ok(left.includes(m), m);
+  for (const m of ['node_modules/*', '.ssh/*', '.gnupg/*', '.aws/*', '.azure/*']) assert.ok(left.includes(m), m);
   // AI 구독 로그인 파일은 그대로 빠진다
   for (const m of ['.credentials.json', '.codex/auth.json', '.gemini/oauth_creds.json']) assert.ok(left.includes(m), m);
   // 그 규칙에 통째로 먹히는 자리(node_modules 안 · 로그인 폴더)는 설정 서랍에서도 지킬 폴더로 받지 않는다 — 빈 폴더로 성공하므로(Fable 설계 검토 자리 1)
@@ -949,9 +949,9 @@ test('a protection started now leaves out node_modules, cache-tagged folders and
   // 표시가 없는 설정(이 판 전에 시작한 백업)에는 주지 않는다 — 보호 중인 범위를 말없이 바꾸지 않는다
   delete e.config.skipRebuildable;
   args = await backupArgs();
-  assert.ok(!args.includes('--exclude-caches') && !args.includes('node_modules/*') && !args.includes('.ssh'));
-  // node_modules는 그 폴더의 안쪽만 뺀다 — 같은 이름의 보통 파일은 담긴다(다시 검수 GA1). 로그인 폴더는 이름째 빼서 restic이 열지 않는다(r3 GA1)
-  assert.deepEqual(REBUILDABLE_EXCLUDES, ['--exclude-caches', '--iexclude', 'node_modules/*', '--iexclude', '.ssh', '--iexclude', '.gnupg', '--iexclude', '.aws', '--iexclude', '.azure']);
+  assert.ok(!args.includes('--exclude-caches') && !args.includes('node_modules/*') && !args.includes('.ssh/*'));
+  // 다섯 이름 모두 그 폴더의 안쪽만 뺀다 — 같은 이름의 보통 파일은 담긴다(다시 검수 GA1 · r4 GA1 · GA2). 목록이 막힌 그런 폴더는 left-out.test.cjs가 본다(r3 GA1)
+  assert.deepEqual(REBUILDABLE_EXCLUDES, ['--exclude-caches', '--iexclude', 'node_modules/*', '--iexclude', '.ssh/*', '--iexclude', '.gnupg/*', '--iexclude', '.aws/*', '--iexclude', '.azure/*']);
 });
 
 test('a first protection that stopped before its repository takes the folders chosen since (4.17, Fable F12)', async () => {
@@ -976,7 +976,7 @@ test('a backup leaves out what an unfinished move left; a move that fails is the
   assert.equal(backup.args[backup.args.indexOf('--exclude') + 1], '~synk-*.part');
   // AI 도구의 구독 로그인 파일은 어떤 백업에도 담지 않는다(2026-11-24 결정)
   // 이 판부터 새로 시작한 백업은 node_modules와 로그인 폴더도 뺀다(4.17) — 그 다섯을 뺀 나머지가 로그인 파일 셋이다
-  const marks = ['node_modules/*', '.ssh', '.gnupg', '.aws', '.azure'];
+  const marks = ['node_modules/*', '.ssh/*', '.gnupg/*', '.aws/*', '.azure/*'];
   const leftOut = backup.args.flatMap((a, i) => a === '--iexclude' ? [backup.args[i + 1]] : []).filter((m) => !marks.includes(m));
   assert.deepEqual(leftOut, ['.credentials.json', '.codex/auth.json', '.gemini/oauth_creds.json']);
   e.config.lastError = '지난 백업 실패';
