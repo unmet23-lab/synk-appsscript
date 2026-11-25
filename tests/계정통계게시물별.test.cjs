@@ -307,7 +307,7 @@ test('VK 봉투와 네이버 블로그 주인 글 목록 봉투가 바뀐 서버
   }
   const manifestPath=path.join(dir,'manifest.json');fs.writeFileSync(manifestPath,JSON.stringify({version:1,batches}));
   const report=await 수집.run({manifestPath,env:{},logDir:dir,connect:()=>{throw new Error('미리 보기에서 로그인하면 안 된다');}});
-  // 네이버 블로그 주인 글 목록(blog.naver.com/<아이디>, creator-screen)을 받는 서버 규칙이 이 저장소에 실렸다(11-23). 수집기의 네이버 길은 그 판이 운영에 오른 뒤 켠다.
+  // 네이버 블로그 주인 글 목록(blog.naver.com/<아이디>, creator-screen)을 받는 서버 규칙이 회사 판 86(11-25)으로 운영에 올랐고, 수집기의 네이버 길을 켰다.
   assert.deepEqual(report.results.map(r=>[r.accountId,r.status,r.code]),[['lab-ru-vk','ready',null],['shift-naverblog','ready',null]]);
 });
 
@@ -354,8 +354,8 @@ test('네이버 페이지 함수: 쪽을 넘겨 끝까지 읽고 \\\' 이스케�
   assert.deepEqual(await naverBlogPostsPage(p,{entry:'https://blog.naver.com/synkshift',handle:'synkshift'}),{reason:'need_owner'});
 });
 
-test('postLifetime: VK 길은 회사 판 76부터 켜져 ego와 커뮤니티 번호에서 돌고, 네이버 길은 서버 규칙 전이라 꺼져 있다(켜면 Aside 계정에서만 돈다)',async()=>{
-  assert.deepEqual([ROUTES.vk.live,ROUTES['naver-blog'].live,ROUTES.douyin.live,ROUTES.threads.live],[true,false,true,true]);
+test('postLifetime: VK 길은 회사 판 76부터 ego와 커뮤니티 번호에서, 네이버 길은 회사 판 86부터 Aside 계정에서만 돈다',async()=>{
+  assert.deepEqual([ROUTES.vk.live,ROUTES['naver-blog'].live,ROUTES.douyin.live,ROUTES.threads.live],[true,true,true,true]);
   const stages=[];
   const ctx=(id,platform,handle,profile,publicUrl)=>({account:{id,platform,handle,publicUrl},profile,setStage:async s=>{stages.push(s);}});
   const vkCtx=(profile={browser:'ego',profileId:'Profile 5',communityId:'243082040'},url='https://vk.ru/synklab_ru')=>ctx('lab-ru-vk','vk','synklab_ru',profile,url);
@@ -363,7 +363,7 @@ test('postLifetime: VK 길은 회사 판 76부터 켜져 ego와 커뮤니티 번
   const at=sec('2026-11-17T10:00:56Z');let saved=null;const args=[];
   const helpers={pageJob:async(c,name,fn,a)=>{args.push([name,a]);return name==='vk-clips'?vk(['456239018'],[clip('456239018',at)]):naver([blog('224478068429','1')],{'224478068429':'2026-11-18T12:10:00.000Z'});},
     storeBatch:async(c,name,raw,envelope)=>{saved={name,envelope};}};
-  assert.equal(await postLifetime(nbCtx(),helpers),null);assert.equal(saved,null);
+  assert.equal(await postLifetime(nbCtx(),helpers),'limited');assert.equal(saved.name,'naver-blog-list-posts');saved=null;
   assert.equal(await postLifetime(vkCtx(),helpers),'limited');assert.equal(saved.name,'vk-clips-posts');saved=null;
   const on=Object.fromEntries(Object.entries(ROUTES).map(([k,r])=>[k,{...r,live:true}]));
   assert.equal(await postLifetime(vkCtx(),helpers,on),'limited');
@@ -371,7 +371,7 @@ test('postLifetime: VK 길은 회사 판 76부터 켜져 ego와 커뮤니티 번
   assert.deepEqual(args.at(-1),['vk-clips',{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',limit:0,days:0,communityId:'243082040'}]);
   assert.equal(await postLifetime(nbCtx(),helpers,on),'limited');
   assert.equal(saved.name,'naver-blog-list-posts');assert.equal(saved.envelope.sourceType,'creator-screen');
-  assert.deepEqual(stages,['public-page','public-page','creator-screen']);
+  assert.deepEqual(stages,['creator-screen','public-page','public-page','creator-screen']);
   saved=null;
   assert.equal(await postLifetime(vkCtx({browser:'ego',profileId:'Profile 5'}),helpers,on),'need_owner');
   assert.equal(await postLifetime(vkCtx(undefined,'https://vk.ru/other'),helpers,on),'need_owner');

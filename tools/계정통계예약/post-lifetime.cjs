@@ -219,7 +219,7 @@ async function naverBlogPostsPage(p,args){
   return {observedAt,sourceUrl:at,total:list.total,rows:list.rows,times};
 }
 
-// live:false인 길은 서버(회사 판)가 그 주소를 받기 전이라 돌지 않는다. VK 클립은 회사 판 76(11-20 06:00 묶음)이 서버 규칙을 실어 켰다. 네이버 글 목록은 서버 규칙을 따로 싣기 전까지 꺼 둔다.
+// live:false인 길은 서버(회사 판)가 그 주소를 받기 전이라 돌지 않는다. VK 클립은 회사 판 76(11-20 06:00 묶음)이, 네이버 글 목록은 회사 판 86(11-25 17:00 묶음)이 서버 규칙을 실어 켰다.
 const ROUTES=Object.freeze({
   douyin:{name:'douyin-works',browser:'ego',live:true,page:douyinWorksPage,parse:parseDouyinWorks,handle:/^[0-9]{6,20}$/,entry:()=>'https://creator.douyin.com/creator-micro/content/manage'},
   threads:{name:'threads-insights',browser:'ego',live:true,page:threadsInsightsPage,parse:parseThreadsInsights,handle:/^[A-Za-z0-9_.]{1,40}$/,entry:()=>'https://www.threads.com/insights/'},
@@ -230,7 +230,7 @@ const ROUTES=Object.freeze({
   tistory:{name:'tistory-daily',page:tistoryDailyPage,parse:parseTistoryDaily,handle:/^[a-z0-9-]{1,63}\.tistory\.com$/,browsers:['aside'],days:45,
     entry:handle=>'https://'+handle+'/manage/statistics/blog'},
   vk:{name:'vk-clips',browser:'ego',live:true,stage:'public-page',page:vkClipsPage,parse:parseVkClips,handle:/^[A-Za-z0-9_.]{2,64}$/,entry:h=>'https://vk.ru/clips/'+h,community:true},
-  'naver-blog':{name:'naver-blog-list',browser:'aside',live:false,page:naverBlogPostsPage,parse:parseNaverBlogPosts,handle:/^[a-z0-9_-]{2,40}$/,entry:h=>'https://blog.naver.com/'+h},
+  'naver-blog':{name:'naver-blog-list',browser:'aside',live:true,page:naverBlogPostsPage,parse:parseNaverBlogPosts,handle:/^[a-z0-9_-]{2,40}$/,entry:h=>'https://blog.naver.com/'+h},
 });
 // 길마다 쓰는 브라우저(browser 하나 또는 browsers 여럿)와 개인 설정의 브라우저가 맞아야 읽는다. Aside는 계정, ego는 프로필이 있어야 한다.
 const usable=(route,profile)=>(route.browsers||[route.browser||'ego']).includes(profile?.browser)&&(profile.browser==='aside'?!!profile.account:!!profile.profileId);
