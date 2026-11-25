@@ -32,7 +32,7 @@ EXE = os.path.join(HOME, "dreamina-canvas.exe")
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
 PROFILE = None   # CLI 로그인 칸 — main()의 --계정이 정한다
 PROJECT = open(os.path.join(HOME, "캔버스.txt"), encoding="utf-8").read().strip()   # 내는 캔버스 id — 공개 저장소라 git 밖에 둔다(칸이 있으면 캔버스_<칸>.txt)
-PER_SEC_OF = {None: 37, "ultra": 19, "unmet23": 22}   # unmet23 = Advanced 분기(11-17 CLI 720p 초당 22)
+PER_SEC_OF = {None: 37, "ultra": 19, "unmet23": 37}   # unmet23 = Advanced 분기(11-17 CLI 720p 초당 22 → 11-26 01:40 `node quote` 4초 148 · 5초 185로 초당 37)
 PER_SEC_RES = {("unmet23", "480p"): 17}   # 11-18 CLI 상한 1로 물은 최소 상한: 480p 6초 102 · 7초 119
 PER_SEC_MODEL = {("ultra", "480p", "seedance_2.5_flash"): 8, ("unmet23", "480p", "seedance_2.5_flash"): 8}   # --모델 seedance_2.5_flash(빠른 판) — 480p 초당 8(울트라 S54 실측 · unmet23 11-19 상한 1로 물은 최소 상한 5초 40 · 6초 48). 없는 칸은 표준 값으로 넉넉히 잡는다
 MODEL = "seedance_2.5"   # --모델(11-19 꿈 무대 촬영 시험판 · 빠른 판 480p) — seedance_2.5 · seedance_2.5_flash
