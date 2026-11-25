@@ -65,7 +65,7 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
   const c = CELLS[i];
   // 판본 글(판본/<KEY>.json): 뜻 · 꼬리는 말풍선 차례 c.b로, 읽는 법은 배울 세 낱말(단계 1~3)만
   const read = typeof c.level === 'number' && c.level <= L.reads.length ? L.reads[c.level - 1] : undefined;
-  const tip = c.who === 'g' ? G_TAIL_TIP : TAIL_TIP;
+  const tip = c.close?.tip ?? (c.who === 'g' ? G_TAIL_TIP : TAIL_TIP);
   const mean = L.means[c.b];
   const meanSize = L.meanSizes[c.b];
   const tag = L.tags[c.b] || undefined;
@@ -215,10 +215,11 @@ export const Film: React.FC<{ L: LocPack; bare?: boolean }> = ({ L, bare }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: '#2a1d16' }}>
       {/* 칸 안의 아주 느린 다가감 + 핵심 장면 카메라(CAM — 「근데…」부터 끝까지 다가가고, 커피를 뿜을 때 살짝 흔들림) */}
+      {/* 몽글 쪽 가까운 판(CELLS의 close — 11-25 원본 고칠 것): 그 칸 동안은 CAM 대신 몽글 쪽 기준점으로 당긴다. 칸이 바뀌는 박에 바로 바뀐다 */}
       <AbsoluteFill
         style={{
-          transformOrigin: '48% 34%', // 두 인형 사이(할아버지 약 250 · 몽글 약 820px, 얼굴 높이 약 650px)
-          transform: `translateX(${frame >= fr(CAM.shakeFrom) && frame < fr(CAM.shakeTo) ? Math.sin(frame * 2.1) * 5 : 0}px) scale(${1 + CAM.zoom * interpolate(frame, [fr(CAM.from), fr(CAM.to)], [0, 1], { ...clamp, easing: Easing.inOut(Easing.quad) })})`,
+          transformOrigin: CELLS[i].close ? `${CELLS[i].close!.ox}px ${CELLS[i].close!.oy}px` : '48% 34%', // 두 인형 사이(할아버지 약 250 · 몽글 약 820px, 얼굴 높이 약 650px)
+          transform: `translateX(${frame >= fr(CAM.shakeFrom) && frame < fr(CAM.shakeTo) ? Math.sin(frame * 2.1) * 5 : 0}px) scale(${CELLS[i].close ? CELLS[i].close!.s : 1 + CAM.zoom * interpolate(frame, [fr(CAM.from), fr(CAM.to)], [0, 1], { ...clamp, easing: Easing.inOut(Easing.quad) })})`,
         }}
       >
         <Plate src={CELLS[i].img} push={interpolate(frame, [fr(CELLS[i].at), fr(i + 1 < CELLS.length ? CELLS[i + 1].at : TOTAL)], [1, 1.035], clamp)} />
