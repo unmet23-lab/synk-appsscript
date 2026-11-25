@@ -14,7 +14,8 @@ const SAY = {
 };
 const say = code => (code in SAY ? SAY[code] : '하지 못했습니다. 잠시 뒤 다시 해 주세요.');
 
-export function createBizplanRoom({ api = null, changed = () => {}, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout } = {}) {
+// hidden(): 앱 창이 가려져 있는가. 가려진 동안은 읽는 진행을 다시 묻지 않는다
+export function createBizplanRoom({ api = null, changed = () => {}, hidden = () => false, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout } = {}) {
   const fresh = () => ({ departmentId: null, snap: null, busy: null, live: '', sel: null, edit: null, editText: null, hand: null, handDept: null, handProvider: null,
     ask: null, answers: {}, provider: null, criteriaOpen: false, criteriaMode: null, criteriaText: null, clearAsk: false, loadedAt: 0, sig: '' });
   let st = fresh(), gen = 0, timer = null;
@@ -44,8 +45,8 @@ export function createBizplanRoom({ api = null, changed = () => {}, now = () => 
   }
   function schedule(running) {
     if (timer) { clearTimer(timer); timer = null; }
-    if (!running || !st.departmentId) return;
-    timer = setTimer(() => { timer = null; void load(); }, 1500);
+    if (!running || !st.departmentId || hidden()) return;
+    timer = setTimer(() => { timer = null; if (!hidden()) void load(); }, 1500);
   }
   return {
     open(departmentId) { gen += 1; st = { ...fresh(), departmentId }; void load(); changed(); },

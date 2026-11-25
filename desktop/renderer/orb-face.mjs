@@ -186,8 +186,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   let backupPoll = null, backupPollMs = 0, backupNotice = null;
   /* 솔리오 「사무실」(사무실 구현설계 11절). 판은 읽기 프로그램처럼 읽고(reads.office), 방의 동작과 화면 상태는 office-room.mjs가 가진다.
    * 방이 보이는 동안 기록 살피기를 켜고(watch), 분 글은 15초마다 다시 쓴다. 솔리오가 보이는 동안은 1분마다와 바뀜 알림 때 다시 읽어 오브제의 느낌표를 맞춘다 */
-  const office = createOfficeRoom({ api: readApi.office, snapshot: () => reads.office.result, reread: () => syncRead('office', { again: true }), changed: () => render(), todoDone: () => (reads.office.account ? todoMemo(reads.office.account).done : null) });
-  let officeWatching = false, officeClock = null, officePoll = null, officeChange = null, officeOff = null;
+  const office = createOfficeRoom({ api: readApi.office, snapshot: () => reads.office.result, reread: () => syncRead('office', { again: true }), changed: () => render(), hidden: () => isHidden(), todoDone: () => (reads.office.account ? todoMemo(reads.office.account).done : null) });
+  let officeWatching = false, officeKept = false, officeClock = null, officePoll = null, officeChange = null, officeOff = null;
 
   const machine = createPortalStateMachine({
     status: options.initialState?.status ?? 'restoring',
@@ -961,11 +961,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   }
   /* 사무실(구현설계 3.4의 8, 7절). 방이 보이는 동안만 본체의 기록 살피기를 켜고 15초마다 다시 그린다(분 글). 방을 떠나면 끄고 방의 화면 상태를 지운다.
    * 솔리오가 보이고 이 계정이 사무실을 볼 수 있으면 1분마다 판을 다시 읽는다. 다른 프로그램을 보고 있어도 오브제의 느낌표가 맞는다.
-   * scene이 null이면(창이 가려짐, 끝냄) 모두 끈다 */
+   * scene이 null이면(창이 가려짐, 끝냄) 모두 끈다. 창이 가려졌을 뿐이면 사업계획서 작업 화면은 두고, 가려진 동안 방을 떠나면 그때 지운다 */
   function syncOffice(scene) {
     const api = readApi.office;
     const app = !!scene && !disposed && scene.mode === 'app' && space === 'solio' && !isHidden();
-    const shown = app && scene.layer === 'app' && scene.room?.prog === 'office' && !aside;
+    const inRoom = !!scene && !disposed && scene.mode === 'app' && space === 'solio' && scene.layer === 'app' && scene.room?.prog === 'office' && !aside;
+    const shown = inRoom && !isHidden();
     if (api && typeof api.onChanged === 'function' && officeOff === null && !disposed) {
       try {
         const off = api.onChanged(() => {
@@ -982,12 +983,13 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     }
     if (shown !== officeWatching) {
       officeWatching = shown;
-      if (!shown) office.close();
+      officeKept = !shown && !disposed && (!scene || inRoom);
+      if (!shown) office.close({ keepFeature: officeKept });
       let pending;
       try { pending = typeof api?.watch === 'function' ? Promise.resolve(api.watch(shown)) : null; } catch { pending = null; }
       // 켠 뒤에는 살핀 결과를 한 번 더 읽는다(첫 살피기가 끝난 판)
       if (shown && pending) pending.catch(() => null).then(() => { if (!disposed && officeWatching) syncRead('office', { again: true }); });
-    }
+    } else if (officeKept && scene && !inRoom) { officeKept = false; office.close(); }
     if (shown && officeClock === null && typeof setTick === 'function') officeClock = setTick(() => { if (!isHidden()) render(); }, OFFICE_TIMING.clock);
     else if (!shown && officeClock !== null) { clearTick(officeClock); officeClock = null; }
     const poll = app && reads.office.result?.available === true;

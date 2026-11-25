@@ -466,9 +466,9 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
    snapshot(): 지금 가진 사무실 판. reread(): 판을 다시 읽게 한다. changed(): 다시 그린다.
    한 번에 한 일만 보낸다(orb-rooms.mjs의 run과 같다). 계정이 바뀌면(reset) 늦게 온 답을 버린다 */
 // todoDone: 「한 번에 처리」가 끝냈다고 적은 일({ [열쇠]: 때 }). 대화 목록의 「확인 기다림」이 같은 기록을 본다(Fable 최종 F4)
-export function createOfficeRoom({ api = null, snapshot = () => null, reread = () => {}, changed = () => {}, todoDone = () => null } = {}) {
+export function createOfficeRoom({ api = null, snapshot = () => null, reread = () => {}, changed = () => {}, hidden = () => false, todoDone = () => null } = {}) {
   const tasks = createOfficeTaskRoom({ api, reread, changed });
-  const biz = createBizplanRoom({ api, changed });
+  const biz = createBizplanRoom({ api, changed, hidden });
   const fresh = () => ({ grps: new Set(), asking: null, notes: new Map(), busy: null, addName: '', addSeq: 0, view: null, viewSeq: 0, roomNote: '',
     skinWant: null, skinSeq: 0, lookWant: new Map(), pick: null, lookSeq: 0, lookOpen: false,
     // 부서별 책상: 눌렀지만 아직 판에 오지 않은 값, 조금 전까지 놓였던 수와 남기 시작한 때, 손님이 고른 차례
@@ -838,8 +838,9 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
       const feature = biz.departmentId ? biz.scene(featureTask(snap.tasking.tasks, 'bizplan', deptId), { departments: depts, deptName: dept.name }) : null;
       return room.visible ? { ...room, ...(tasking ? {tasking} : {}), ...(feature ? { feature } : {}), ...(chat ? { chat } : {}), focus: focusReq, opening: openReq } : room;
     },
-    /* 방을 떠날 때: 열어 둔 묶음과 물음, 알림 줄을 지운다(보기 고른 것은 남긴다) */
-    close() { leaveChat(seenAt ?? Date.now(), { again: false }); st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; st.lookOpen = false; st.addOpen = false; st.deskHold.clear(); focusReq = null; openReq = null; biz.close(); },
+    /* 방을 떠날 때: 열어 둔 묶음과 물음, 알림 줄을 지운다(보기 고른 것은 남긴다).
+       keepFeature: 앱 창이 가려졌을 뿐이면 사업계획서 작업 화면은 둔다. 읽는 동안 다른 창을 보고 와도 그 화면이고 쓰던 글이 남는다(11-26 개발판에서 닫히던 것) */
+    close({ keepFeature = false } = {}) { leaveChat(seenAt ?? Date.now(), { again: false }); st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; st.lookOpen = false; st.addOpen = false; st.deskHold.clear(); focusReq = null; openReq = null; if (!keepFeature) biz.close(); },
     /* 계정이 바뀌면 다 비운다 */
     reset() { gen += 1; tasks.reset(); biz.reset(); st = fresh(); focusReq = null; openReq = null; },
     busy: () => st.busy,

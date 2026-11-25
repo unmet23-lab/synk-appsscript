@@ -31,8 +31,8 @@ function claudeArgs(schema,model){
 function classify(text,fallback){
   const s=String(text||'');
   if(/failed to authenticate|oauth|not logged in|please run \/login|invalid api key|unauthori[sz]ed|\b401\b/i.test(s))return 'LOGIN';
-  // overloaded는 한도가 아니라 그 차례의 실패다(설계 검토 16)
-  if(/usage limit|rate limit|limit reached|quota|\b429\b|credit balance/i.test(s))return 'LIMIT';
+  // overloaded는 한도가 아니라 그 차례의 실패다(설계 검토 16). 구독 한도를 다 쓰면 「You've hit your weekly limit · resets …」가 온다(11-26 실측)
+  if(/usage limit|rate limit|limit reached|(?:hit|reached) your .{0,30}\blimit\b|quota|\b429\b|credit balance/i.test(s))return 'LIMIT';
   return fallback;
 }
 function stopTree(child,{spawn,platform=process.platform}={}){
@@ -63,7 +63,7 @@ async function claudeAccount({file,cwd,env,signal,exec=promisify(execFile)}){
 
 function claudeSchemaTurn({file,env,spawn,cwd,prompt,schema,model=null,signal,timeoutMs=90_000,codes,platform=process.platform}){
   return new Promise((resolve,reject)=>{
-    let child,done=false,out='',result=null,inited=false;
+    let child,done=false,out='',result=null,inited=false,limited=false;
     const finish=(err,value)=>{
       if(done)return;done=true;clearTimeout(timer);signal?.removeEventListener('abort',onAbort);
       if(err){stopTree(child,{spawn,platform});reject(err);}else resolve(value);
@@ -86,6 +86,8 @@ function claudeSchemaTurn({file,env,spawn,cwd,prompt,schema,model=null,signal,ti
         return;
       }
       if(!inited){finish(fail(codes.ai));return;}
+      // 구독이 거절한 차례. 한도 글의 말이 바뀌어도 한도로 안다(11-26 실측). 추가 사용량으로 넘어간 차례는 한도가 아니다
+      if(m?.type==='rate_limit_event')limited=m.rate_limit_info?.status==='rejected'&&m.rate_limit_info?.isUsingOverage!==true;
       if(m?.type==='result')result=m;
     }
     child.stdout.setEncoding('utf8');
@@ -103,8 +105,8 @@ function claudeSchemaTurn({file,env,spawn,cwd,prompt,schema,model=null,signal,ti
       if(done)return;
       if(tail.trim())line(tail.trim());
       if(done)return;
-      if(!result)return finish(fail(codes.ai));
-      if(result.is_error||result.subtype!=='success')return finish(fail(classify(result.result,codes.ai)));
+      if(!result)return finish(fail(limited?'LIMIT':codes.ai));
+      if(result.is_error||result.subtype!=='success')return finish(fail(classify(result.result,limited?'LIMIT':codes.ai)));
       const v=result.structured_output;
       if(!v||typeof v!=='object'||Array.isArray(v))return finish(fail(codes.ai));
       if(JSON.stringify(v).length>MAX_ANSWER)return finish(fail(codes.ai));

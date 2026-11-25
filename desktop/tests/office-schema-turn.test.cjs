@@ -62,6 +62,9 @@ test('Claude: init 전에 다른 소식이 오면 끝낸다', async () => {
 for(const [text,code] of [
   ['Failed to authenticate: OAuth session expired and could not be refreshed','LOGIN'],
   ['Claude AI usage limit reached|1700000000','LIMIT'],
+  ["You've hit your weekly limit · resets Nov 30, 7pm (Asia/Seoul)",'LIMIT'],
+  ['You’ve reached your limit · resets 3pm','LIMIT'],
+  ['Your prompt hit an error','FEATURE_AI'],
   ['something else','FEATURE_AI'],
   ['API Error: 529 overloaded_error','FEATURE_AI'],
 ]){
@@ -70,6 +73,19 @@ for(const [text,code] of [
     await assert.rejects(run(f.spawn),{code});
   });
 }
+
+test('Claude: 구독이 거절한 차례는 글이 어떻든 LIMIT이고, 로그인 글은 LOGIN 그대로다. 거절이 아니면 글로만 가른다', async () => {
+  const limit=(status,more={})=>({type:'rate_limit_event',rate_limit_info:{status,...more}});
+  const bad=text=>({type:'result',subtype:'success',is_error:true,result:text});
+  await assert.rejects(run(fakeClaude([INIT,limit('rejected'),bad('새 말')]).spawn),{code:'LIMIT'});
+  await assert.rejects(run(fakeClaude([INIT,limit('rejected')]).spawn),{code:'LIMIT'});
+  await assert.rejects(run(fakeClaude([INIT,limit('rejected'),bad('Failed to authenticate')]).spawn),{code:'LOGIN'});
+  await assert.rejects(run(fakeClaude([INIT,limit('allowed_warning'),bad('새 말')]).spawn),{code:'FEATURE_AI'});
+  await assert.rejects(run(fakeClaude([INIT,limit('rejected'),limit('allowed'),bad('새 말')]).spawn),{code:'FEATURE_AI'});
+  // 추가 사용량을 켠 구독은 거절 뒤에도 차례가 돈다. 그때의 다른 실패(529)는 한도가 아니다
+  await assert.rejects(run(fakeClaude([INIT,limit('rejected',{isUsingOverage:true}),bad('API Error: 529 Overloaded')]).spawn),{code:'FEATURE_AI'});
+  assert.deepEqual(await run(fakeClaude([INIT,limit('rejected'),{type:'result',subtype:'success',is_error:false,structured_output:{notes:[]}}]).spawn),{notes:[]});
+});
 
 test('Claude: structured_output이 없거나 배열이면, 결과가 없으면 FEATURE_AI', async () => {
   await assert.rejects(run(fakeClaude([INIT,{type:'result',subtype:'success',is_error:false,result:'{}'}]).spawn),{code:'FEATURE_AI'});

@@ -2276,6 +2276,63 @@ test('a hidden window stops watching the records and the room watches again when
   assert.equal(office.calls.filter(c => c.startsWith('watch:')).at(-1), 'watch:true');
 });
 
+test('a covered window keeps the 사업계획서 screen and what was typed; leaving the room, also while covered, clears it', async t => {
+  const board = { ...officeBoard({ asked: false }), departments: [{ id: 'dplan', name: '기획부', folder: OFFICE_SHOP }], tasking: { tasks: [] } };
+  const office = officeFake(board);
+  office.api.featureSnapshot = async () => ({ ok: true, list: { plan: null, data: [], criteria: { mode: 'default' } }, read: null, drafts: {} });
+  const h = harness(t, { options: { office: office.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const open = async () => {
+    h.face.handle('prog', 'office');
+    await settle(20);
+    assert.equal(h.face.handle('room', { room: 'solio-office', key: 'd:dplan', act: 'feature-open', arg: 'bizplan' }), true);
+    await settle(20);
+    assert.equal(h.view.last().room.office.feature?.departmentId, 'dplan');
+  };
+  const feature = () => h.view.last().room?.office?.feature ?? null;
+  const cover = async () => { h.view.isHidden = () => true; h.face.handle('hidden'); await settle(10); };
+  const uncover = async () => { h.view.isHidden = () => false; h.face.handle('visible'); await settle(20); };
+  await open();
+  h.face.handle('room', { room: 'solio-office', key: 'd:dplan', act: 'biz-criteria-open' });
+  await settle(10);
+  const typed = JSON.stringify(feature());
+  await cover();
+  office.emit();
+  await settle(10);
+  assert.equal(office.calls.filter(c => c.startsWith('watch:')).at(-1), 'watch:false', 'covered: the records are not watched');
+  await uncover();
+  assert.equal(JSON.stringify(feature()), typed, 'back on the same screen in the same state');
+  assert.equal(office.calls.filter(c => c.startsWith('watch:')).at(-1), 'watch:true');
+  // 방을 떠나면 지운다
+  h.face.handle('prog', 'subs');
+  await settle(10);
+  h.face.handle('prog', 'office');
+  await settle(20);
+  assert.equal(feature(), null, 'another program closes it');
+  // 가려진 동안 다른 프로그램으로 가도 그때 지운다(한 번에 처리가 방을 옮기는 따위)
+  await open();
+  await cover();
+  h.face.handle('prog', 'subs');
+  await settle(10);
+  h.face.handle('prog', 'office');
+  await settle(10);
+  await uncover();
+  assert.equal(feature(), null, 'the room was left while covered');
+  // 가려진 동안 로그아웃하면 그때 지운다
+  await open();
+  await cover();
+  h.face.setState({ status: 'signed-out', accountKey: null, generation: 2 });
+  await settle(10);
+  await uncover();
+  h.face.setState(signedIn(ACCOUNT, 3));
+  await settle(20);
+  h.face.handle('prog', 'office');
+  await settle(20);
+  assert.equal(feature(), null, 'signed out while covered: nothing is left');
+});
+
 test('the view draws the office room with the house row rules and the floor keeps its motion small', async () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
   assert.match(src, /data-orb-prog="office" aria-current="false" style="--k:4"/, 'the object stands after 계정 건강');

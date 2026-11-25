@@ -96,6 +96,31 @@ test('방: 열면 기능 판을 읽고, 단추는 정해 둔 동작과 칸만 �
   assert.ok(changes > 0);
 });
 
+test('앱 창이 가려진 동안은 읽는 진행을 다시 묻지 않고, 다시 보이면 묻는다', async () => {
+  let reads = 0, hidden = false;
+  const timers = [];
+  const room = createBizplanRoom({ api: { featureSnapshot: async () => { reads++; return snap({ read: null }); } }, hidden: () => hidden, setTimer: fn => timers.push(fn), clearTimer: () => {} });
+  const task = { id: 't1', status: 'running', updatedAt: 1 };
+  room.open('plan01');
+  await new Promise(r => setTimeout(r, 0));
+  room.scene(task, { departments: depts });
+  await new Promise(r => setTimeout(r, 0));
+  const before = reads;
+  assert.equal(timers.length, 1);
+  hidden = true;
+  timers[0]();
+  room.scene(task, { departments: depts });
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(reads, before, '걸어 둔 물음도 가려졌으면 보내지 않는다');
+  assert.equal(timers.length, 1);
+  hidden = false;
+  room.scene(task, { departments: depts });
+  assert.equal(timers.length, 2);
+  timers[1]();
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(reads, before + 1);
+});
+
 test('코드 검수: 저장 안 한 평가 항목을 먼저 저장하고 읽으며, 기능 판을 못 읽으면 기록 지우기를 보인다', async () => {
   const sent = [];
   const api = {
