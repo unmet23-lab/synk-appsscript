@@ -1,0 +1,115 @@
+{
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 0.95,
+  "seed": 1003,
+  "lufs": -17
+ },
+ "out": "vo",
+ "trim": "both",
+ "lines": [
+  {
+   "id": "hello",
+   "text": "안녕하세요."
+  },
+  {
+   "id": "thank-you",
+   "text": "감사합니다."
+  },
+  {
+   "id": "i-am-sujin",
+   "text": "저는 수진이에요."
+  },
+  {
+   "id": "i-am-seoha",
+   "text": "저는 서하예요."
+  },
+  {
+   "id": "one-warm-tea",
+   "text": "따뜻한 차 한 잔 주세요."
+  },
+  {
+   "id": "drink-here",
+   "text": "여기서 마실게요."
+  },
+  {
+   "id": "to-go",
+   "text": "포장해 주세요."
+  },
+  {
+   "id": "want-warm-tea",
+   "text": "따뜻한 차를 마시고 싶어요."
+  },
+  {
+   "id": "juice-sold-out",
+   "text": "주스는 품절이에요."
+  },
+  {
+   "id": "tea-instead",
+   "text": "주스 대신 따뜻한 차로 바꿔 주세요."
+  },
+  {
+   "id": "one-more-cup",
+   "text": "한 잔 더 주세요."
+  },
+  {
+   "id": "two-warm-teas",
+   "text": "따뜻한 차 두 잔 주세요."
+  },
+  {
+   "id": "how-much",
+   "text": "이거 얼마예요?"
+  },
+  {
+   "id": "one-bag",
+   "text": "봉투 하나 주세요."
+  },
+  {
+   "id": "pay-by-card",
+   "text": "카드로 계산할게요."
+  },
+  {
+   "id": "where-is-the-park",
+   "text": "공원이 어디에 있어요?"
+  },
+  {
+   "id": "go-right",
+   "text": "오른쪽으로 가세요."
+  },
+  {
+   "id": "next-to-the-bank",
+   "text": "은행 옆에 있어요."
+  },
+  {
+   "id": "this-bus-to-the-park",
+   "text": "이 버스는 공원에 가요?"
+  },
+  {
+   "id": "get-off-next-stop",
+   "text": "다음 정류장에서 내려요."
+  },
+  {
+   "id": "tap-your-card",
+   "text": "교통카드를 찍으세요."
+  },
+  {
+   "id": "meet-tomorrow-three",
+   "text": "내일 오후 세 시에 만나요."
+  },
+  {
+   "id": "where-shall-we-meet",
+   "text": "어디에서 만날까요?"
+  },
+  {
+   "id": "a-little-late",
+   "text": "조금 늦을 것 같아요."
+  }
+ ]
+}
