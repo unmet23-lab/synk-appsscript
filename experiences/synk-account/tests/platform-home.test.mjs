@@ -32,7 +32,7 @@ test('teacher shortcut opens the teaching view of the configured Messenger witho
   assert.equal(shortcutDestination('teacher',{base:'http://127.0.0.1:4280/'}).href,'http://127.0.0.1:4191/?tab=teaching');
 });
 
-test('PATH always opens its fixed standalone HTTPS interview instead of company or installed-client routes',()=>{
+test('PATH always opens its fixed standalone HTTPS app instead of company or installed-client routes',()=>{
  for(const options of [{},{base:'http://127.0.0.1:4280/'},{base:'https://synk.im/account/platform.html',messengerUrl:'https://workspace.synk.im/?tab=messenger',clients:[{id:'path',canLaunch:true}],preferredMode:'client'}]){
   assert.deepEqual(shortcutDestination('path',options),{kind:'web',href:'https://synk.im/path/app/',label:'PATH 열기 ↗'});
  }
