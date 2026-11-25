@@ -10,7 +10,8 @@ const [cand, shots] = process.argv.slice(2);
 fs.mkdirSync(shots, { recursive: true });
 const files = cand === '-' ? {} : {
   '/account/dist/platform.js': ['account/dist/platform.js', 'text/javascript'],
-  '/path/': ['path/index.html', 'text/html'], '/en/path/': ['en/path/index.html', 'text/html'],
+  ...(fs.existsSync(path.join(cand, 'path/index.html')) ? { '/path/': ['path/index.html', 'text/html'], '/en/path/': ['en/path/index.html', 'text/html'] } : {}),
+  ...(fs.existsSync(path.join(cand, 'account/assets/path-app-cards.webp')) ? { '/account/assets/path-app-cards.webp': ['account/assets/path-app-cards.webp', 'image/webp'] } : {}),
 };
 const APP = 'https://synk.im/path/app/';
 const browser = await chromium.launch({ channel: 'chrome' });
