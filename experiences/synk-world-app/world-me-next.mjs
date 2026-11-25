@@ -2,10 +2,14 @@
 // 코치 요약의 단위 줄(summary().units — kind · label · last · state · lapses · lastAt, §22-2)을 받아 흔들리는 말(shaky) · 또렷한 말(clear) · 내가 안다고
 // 한 말(said — 직접 말함) 셋으로 나눈다. 익히는 중(learning)은 싣지 않는다. 이름은 「내 위치」와 같은 단위 길(unitRoutes가 지은 Map — 단위 → { label })에서
 // 고르고, 그 길에 이름이 없으면 요약 줄의 label을 쓴다. 둘 다 없는 단위(family: 계열 · 받지 않은 은행의 낱말)는 목록과 수에서 빼고 그 수만 센다(N3).
+// 한글 글자 단위(요약 줄의 kind가 hangul)는 세 목록과 수에서 빼고 unnamed에도 세지 않는다(§26-12 — 설계 주인 11-25). 목록 이름이 「말」이고, 글자가 설
+// 자리는 한글 앱의 새 길이 올 때 정한다. 가르는 것은 지도의 단위 갈래(kind)다. 드라마 시범 같은 계열 단위(kind family)는 그대로다.
 // 차례: 흔들리는 말은 급한 것부터 — 놓친 수가 많은 것, 같으면 마지막 자리가 오래된 것(지금 떠올릴 확률이 더 낮다). 나머지 둘은 이름 차례다. 끝에 단위
 // 이름으로 가른다(같은 입력이면 늘 같은 차례).
 
 export const ME_STATES = Object.freeze(['shaky', 'clear', 'said']);
+// 「말」이 아니라 싣지 않는 단위 갈래(지도 units.json의 kind).
+const LETTER = 'hangul';
 
 const labelOf = (row, names) => {
   const routed = names instanceof Map ? names.get(row.unit)?.label : null;
@@ -24,6 +28,7 @@ export function meUnits(summary, names = null) {
   let unnamed = 0;
   for (const row of Array.isArray(summary?.units) ? summary.units : []) {
     if (typeof row?.unit !== 'string' || !ME_STATES.includes(row.state)) continue;
+    if (row.kind === LETTER) continue;
     const label = labelOf(row, names);
     if (!label) {
       unnamed += 1;

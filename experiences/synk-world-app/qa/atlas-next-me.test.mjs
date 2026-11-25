@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
+import { openMap } from '../../../packages/atlas/src/index.mjs';
 import { sourceStatements } from '../../../tests/lib/source-statements.cjs';
 import { positionPlanner } from '../world-atlas-next.mjs';
 
@@ -72,6 +73,57 @@ test('meUnits — 흔들림 · 또렷함 · 직접 말함만 나누고 익히는
   );
   assert.deepEqual(me.counts, { shaky: 1, clear: 1, said: 2 });
   assert.equal(me.unnamed, 2, 'family: 단위와 이름 없는 단위 둘이 빠졌다');
+});
+
+// 단위 갈래와 이름은 진짜 지도에서 읽는다 — 코치 요약 줄의 kind · label이 이 값이다(packages/atlas/src/coach/index.mjs summary).
+const mapJson = name => JSON.parse(fs.readFileSync(new URL(`../../../packages/atlas/map/${name}.json`, import.meta.url), 'utf8'));
+const MAP = openMap({ index: mapJson('index'), units: mapJson('units') });
+const mapRow = (unit, state, more = {}) => {
+  const { kind, label } = MAP.unit(unit);
+  return row(unit, state, { kind, label, ...more });
+};
+
+test('meUnits — 한글 글자 단위는 세 목록과 수에서 빼고 이름 없는 단위로도 세지 않는다. 드라마 시범의 계열 단위와 낱말 · 문법 · 생활 단위는 그대로다(§26-12)', () => {
+  const letters = mapJson('units').units.map(([unit]) => unit).filter(unit => unit.startsWith('ko.hangul.'));
+  assert.equal(letters.length, 49);
+  // 지도의 갈래 이름이 바뀌면 여기서 먼저 안다 — 글자 단위는 모두 이 갈래이고, 이 갈래는 글자 단위뿐이다.
+  assert.ok(letters.every(unit => MAP.unit(unit).kind === 'hangul' && MAP.unit(unit).label));
+  assert.ok(mapJson('units').units.every(([unit, kind]) => (kind === 'hangul') === unit.startsWith('ko.hangul.')));
+  // 이름이 있는 글자 · 이름 사전이 없는 글자 · 「내 위치」 단위 길이 이름을 대는 글자 — 셋 다 싣지 않는다.
+  // 가르는 것은 갈래다(단위 이름의 앞머리가 아니다): 앞머리만 글자인 갈래 모르는 줄은 남고, 앞머리가 다른 글자 갈래는 빠진다.
+  const states = ['shaky', 'clear', 'said'];
+  const me = meUnits(
+    {
+      units: [
+        ...letters.map((unit, i) => mapRow(unit, states[i % 3])),
+        mapRow('ko.hangul.v-a', 'shaky', { label: null }),
+        row('ko.hangul.later', 'said', { kind: null, label: '갈래 모름' }),
+        row('u.letter', 'shaky', { kind: 'hangul', label: 'ㄱ' }),
+        mapRow('ko.grammar.G201', 'shaky'),
+        row('ko.word.w1', 'clear', { label: '사과' }),
+        row('life.greetings', 'said', { kind: 'life', label: '인사' }),
+        mapRow('family:s1e01-6', 'shaky'),
+        mapRow('family:s1e01-7', 'clear', { label: '부탁하는 말' }),
+      ],
+    },
+    new Map([['ko.hangul.v-eo', { label: 'ㅓ' }]]),
+  );
+  assert.deepEqual(
+    states.map(state => me[state].map(r => [r.unit, r.kind])),
+    [
+      [['ko.grammar.G201', 'grammar']],
+      [
+        ['family:s1e01-7', 'family'],
+        ['ko.word.w1', 'word'],
+      ],
+      [
+        ['ko.hangul.later', null],
+        ['life.greetings', 'life'],
+      ],
+    ],
+  );
+  assert.deepEqual(me.counts, { shaky: 1, clear: 2, said: 2 });
+  assert.equal(me.unnamed, 1, '드라마 시범의 이름 없는 계열 단위는 전처럼 수만 세고, 글자는 세지 않는다');
 });
 
 test('meUnits — 흔들리는 말은 놓친 수가 많은 것부터, 같으면 마지막 자리가 오래된 것부터. 나머지 둘은 이름 차례다', () => {
