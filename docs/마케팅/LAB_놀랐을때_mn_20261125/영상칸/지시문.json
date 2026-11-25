@@ -1,0 +1,26 @@
+{
+ "모델": "M76 놀랐을 때 네 마디 — LAB 편 전체를 영상으로(제작 절차 lab-whole-video). 공통 글은 영상시험_20261125/지시문.json의 공통 글에서 그 편만의 소품(양머리 수건) · 빛 색을 빼고, 만화 효과 · 김 · 몸에서 튀어나옴을 막는 줄을 더했다(E64에서 팔 · 다리 · 입이 돋은 판)",
+ "공통": "One continuous shot, no cuts. The camera is locked off exactly as in the start frame: no zoom, no pan, no tilt, no shake. Keep the exact handmade needle-felt miniature look of the start frame in every frame: fine wool felt fibres, visible stitches, matte felt and wool; every object keeps its shape, size and colour and never turns into a realistic thing. MONGLE is the coral-pink felt blob. Mongle has NO mouth, NO arms, NO legs, NO hands and NO neck, ever: no mouth ever opens or appears on it, no limbs ever grow, nothing ever sticks out of its body. It moves only by tilting, squashing, stretching and bouncing its whole soft dome body, and shows feeling only with its two glossy black bead eyes (they can grow bigger and rounder, or squeeze shut into two short dark stitched lines) and by its coral wool flushing red. LOOK: the same light and colours as the start frame, unchanged to the last frame. Nothing new appears that is not in the start frame. No speed lines, no motion lines, no cartoon effects, no steam, no smoke. No text, no letters, no numbers, no logos. No sound.",
+ "클립": [
+  {
+   "id": "h1",
+   "prompt": "Room 1 of the felt haunted house from the start frame: the closed mustard-yellow felt jack-in-the-box on the left and Mongle sitting on the teal floor on the right. ACTION: From 0 to 1.0 s Mongle leans a little toward the box, curious. At about 1.1 s the teal lid flips open and a cute white felt SKELETON puppet on a felt spring pops straight up out of the box, bobbing on its spring. At the same moment Mongle jolts backward away from the box, squashing low, its bead eyes popping big and round, its coral wool flushing red. From 2.0 s to the end the skeleton keeps bobbing gently on its spring while Mongle stays leaned back, frozen in shock, trembling slightly; its hem stays on the floor. Mongle never grows arms or legs and never opens a mouth."
+  },
+  {
+   "id": "h2",
+   "prompt": "Room 2 of the felt haunted house from the start frame: the white felt house ghost sitting on a little stool on the left with a bowl of felt noodles and chopsticks, Mongle on the right. ACTION: From 0 to 1.5 s the house ghost lifts a bundle of felt noodles with its chopsticks and slurps them, completely relaxed. At about 1.6 s the ghost notices Mongle, turns its head and gives a lazy, casual little wave with the chopsticks, then goes back to eating. Mongle does not move at all the whole time — it just stares at the ghost with flat half-lidded unimpressed bead eyes, then at about 2.5 s slowly blinks once, deadpan. Mongle never grows arms or legs and never opens a mouth."
+  },
+  {
+   "id": "h3",
+   "prompt": "Room 3 of the felt haunted house from the start frame: the fuzzy charcoal felt spider hanging on its wool thread just in front of Mongle's face, Mongle sitting on the floor with its eyes squeezed shut. ACTION: From 0 to 0.8 s the spider drops a little further down on its thread with a small bounce, its eight bendy felt legs wiggling, right in front of Mongle. From 0.5 s to the end Mongle squashes down low and trembles hard, eyes squeezed shut into two short dark stitched lines, its coral wool flushing deep red; at about 1.8 s it shuffles backward a little on the floor without lifting. The spider keeps dangling and gently swinging on its thread. Mongle never grows arms or legs and never opens a mouth."
+  },
+  {
+   "id": "h4",
+   "prompt": "Room 4 of the felt haunted house from the start frame: almost dark, one faint amber lantern, the tall shut brown felt door on the left with a soft green glow under it, Mongle on the right with a small pale-blue felt teardrop bead. ACTION: From 0 to 1.0 s the lantern flickers twice and dims a little more. From 1.0 to 2.0 s Mongle slides forward to the door and bumps the front of its body softly against the bottom of the door twice; the door stays firmly shut and does not move. From 2.2 s to the end Mongle backs away, turns its dome left and right looking around the dark room, bead eyes big, round and worried, trembling. Mongle never grows arms or legs and never opens a mouth."
+  },
+  {
+   "id": "h5",
+   "prompt": "The dark corner by the exit from the start frame: the staff member in the white sheet-ghost costume with the hood pushed back, his face visible, peeking around the corner on the left, and Mongle on the right with its coral wool softly glowing. ACTION: From 0 to 1.0 s the staff member waits, crouching, ready to jump out at visitors. At about 1.2 s he turns his head and sees Mongle right beside him in the dark; his eyes go wide, he flinches backward with both hands up in fright, his white costume flapping. From 2.2 s to the end he turns and runs away to the left out of the frame, his costume billowing behind him. Mongle stays sitting on the floor the whole time and only blinks its bead eyes, puzzled, tilting its dome a little. Mongle never grows arms or legs and never opens a mouth."
+  }
+ ]
+}

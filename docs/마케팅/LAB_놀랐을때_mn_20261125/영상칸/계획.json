@@ -1,0 +1,48 @@
+{
+  "_예산": 180,
+  "h1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "h1",
+    "key": "pops straight up out of the box"
+  },
+  "h2": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "h2n",
+    "key": "gives a lazy, casual little wave with the chopsticks"
+  },
+  "h3": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "h3",
+    "key": "the spider drops a little further down on its thread"
+  },
+  "h4": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "h4",
+    "key": "bumps the front of its body softly against the bottom of the door twice"
+  },
+  "h5": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "15",
+    "dur": "5초",
+    "proj": "omni",
+    "start": "h5n",
+    "key": "turns and runs away to the left out of the frame"
+  }
+}

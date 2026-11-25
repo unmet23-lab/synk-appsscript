@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a21073-4926-7030-8ded-2ed4db72e4f8"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one felt-diorama panel with Mongle’s still, deadpan stare and the ghost enjoying its noodles.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle stares deadpan at a noodle-slurping ghost in a cozy felt haunted house."}}
+{"type":"turn.completed","usage":{"input_tokens":103451,"cached_input_tokens":91776,"cache_write_input_tokens":0,"output_tokens":1466,"reasoning_output_tokens":237}}

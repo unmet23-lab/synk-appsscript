@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "깜짝이야!",
+ "dur": 0.89,
+ "words": [
+  {
+   "text": "깜짝이야!",
+   "start": 0.03,
+   "end": 0.89
+  }
+ ],
+ "source": {
+  "key": "26d209c03553e230f3886d5735e779c9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1125,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "출구 앞 어두운 모퉁이, 손님을 놀래 주려고 숨어 있던 귀신 분장 직원이 어둠 속에서 분홍빛으로 빛나는 몽글과 딱 마주친다. 직원이 오히려 기겁해서 목소리가 뒤집히며 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 277
+ }
+}

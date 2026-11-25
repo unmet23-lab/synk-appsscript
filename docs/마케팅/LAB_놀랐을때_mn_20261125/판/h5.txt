@@ -1,0 +1,18 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photo, portrait 2:3, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and scale of the felt reference photo — NOT its room, NOT its people).
+
+WORLD (same in every panel): the inside of a cute, bright-ish amusement-park HAUNTED HOUSE made entirely of needle felt — walls of plain deep plum-purple felt, a floor of dark teal felt, soft warm light from small round amber felt lanterns inside the scene plus a gentle mint-green glow, playful rather than truly scary. Every prop is matte wool felt (no shine, nothing realistic).
+MATERIAL RULE: everything is needle-felted wool, completely matte; nothing looks like real plastic, bone or fur. No blood, no gore, nothing grotesque.
+MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO neck and NO mouth, ever — its head and body are one soft dome. It moves by tilting, squashing, stretching and bouncing its whole body. Mongle sits on the teal felt floor.
+
+Attached images in order: (1) mascot reference — Mongle's shape and colour, (2) felt craft-style reference.
+
+END — CAMERA: MEDIUM-WIDE, at about chest height of a person, fixed — a dark corner of the same haunted house by the exit.
+- The TOP 18% of the image is plain dark plum-purple felt wall — keep it empty for titles.
+- THE STAFF MEMBER: a Korean felt doll young man in his twenties dressed in a white felt sheet-ghost costume with the hood pushed back off his head, so his round face, short black felt hair and small black bead eyes are clearly visible, and a mint-green felt staff lanyard card hanging on his chest (the card is plain, with no writing). He stands on the LEFT, centred at 34% of the width, seen from the knees up, his head at about 26–38% of the height, crouching a little and peeking around the corner of the wall, ready to jump out and scare visitors.
+- MONGLE sits on the floor on the RIGHT, centred at 70% of the width, its bottom hem at about 84% of the height, about 22% of the image width wide and a little WIDER than it is tall (a low, soft dome exactly like the mascot reference proportions), coming around the same corner from the other side, its coral wool glowing softly in the dark, bead eyes round and innocent.
+- One small amber felt lantern glows above them; a soft green glow comes from the exit on the far right.
+Only the staff member and Mongle in this panel, nobody else.
+
+Keep every character between 12% and 88% of the image width. Absolutely no text, letters, numbers, symbols, question marks or watermarks anywhere — no signs with writing. No real brand, no logos. No dense dotted or ring patterns anywhere. Mongle's eyes stay plain glossy black beads with no white sclera.

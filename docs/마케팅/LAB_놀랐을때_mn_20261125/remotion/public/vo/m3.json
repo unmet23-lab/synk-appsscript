@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "엄마야!",
+ "dur": 0.665,
+ "words": [
+  {
+   "text": "엄마야!",
+   "start": 0.02,
+   "end": 0.665
+  }
+ ],
+ "source": {
+  "key": "d44c5cab392fdd0eec2b028f9a47b96d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1125,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "갑자기 큰 거미가 눈앞으로 쑥 내려온다. 몽글이 눈을 꼭 감고 덜덜 떨며 높은 목소리로 비명을 지른다.",
+   "next": "어떡해!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 460
+ }
+}

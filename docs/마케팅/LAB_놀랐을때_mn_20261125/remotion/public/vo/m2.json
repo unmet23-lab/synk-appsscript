@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "헐…",
+ "dur": 0.691,
+ "words": [
+  {
+   "text": "헐…",
+   "start": 0.03,
+   "end": 0.112
+  }
+ ],
+ "source": {
+  "key": "b267fa647efa9b6cd5ff72688c5a83c0",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1125,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "다음 방에서는 유령이 겁을 주기는커녕 의자에 앉아 국수를 먹다가 젓가락으로 손을 흔든다. 몽글이 어이없어서 낮고 짧게, 김빠진 목소리로 말한다.",
+   "next": "엄마야!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 542
+ }
+}

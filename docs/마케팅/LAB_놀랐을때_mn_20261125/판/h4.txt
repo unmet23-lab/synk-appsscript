@@ -1,0 +1,18 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photo, portrait 2:3, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and scale of the felt reference photo — NOT its room, NOT its people).
+
+WORLD (same in every panel): the inside of a cute, bright-ish amusement-park HAUNTED HOUSE made entirely of needle felt — walls of plain deep plum-purple felt, a floor of dark teal felt, soft warm light from small round amber felt lanterns inside the scene plus a gentle mint-green glow, playful rather than truly scary. Every prop is matte wool felt (no shine, nothing realistic).
+MATERIAL RULE: everything is needle-felted wool, completely matte; nothing looks like real plastic, bone or fur. No blood, no gore, nothing grotesque.
+MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO neck and NO mouth, ever — its head and body are one soft dome. It moves by tilting, squashing, stretching and bouncing its whole body. Mongle sits on the teal felt floor.
+
+Attached images in order: (1) mascot reference — Mongle's shape and colour, (2) mascot reference — Mongle's teary worried eyes, (3) felt craft-style reference.
+
+ROOM 4 — CAMERA: MEDIUM, at Mongle's eye level, fixed — the last room of the same haunted house, now very dark.
+- The TOP 22% of the image is plain dark plum-purple felt wall — keep it empty for titles.
+- The lights are almost out: only one small amber felt lantern glows faintly at the upper left; everything else is deep shadowy plum and teal.
+- On the LEFT side stands a tall dark-brown felt DOOR (centred at 30% of the width, from 30% to 85% of the height) with a round brass-coloured felt knob, firmly shut — a small soft green glow leaks from its bottom edge.
+- MONGLE sits on the floor on the RIGHT, centred at 66% of the width, its bottom hem at about 84% of the height, about 24% of the image width wide, turned toward the shut door, bead eyes big, round and worried, with one small matte pale-blue felt teardrop bead at the corner of an eye (wool, not transparent), lit softly by the lantern.
+Only Mongle in this panel, nobody else.
+
+Keep every character between 12% and 88% of the image width. Absolutely no text, letters, numbers, symbols, question marks or watermarks anywhere — no signs with writing. No real brand, no logos. No dense dotted or ring patterns anywhere. Mongle's eyes stay plain glossy black beads with no white sclera.

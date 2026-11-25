@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "어떡해!",
+ "dur": 1,
+ "words": [
+  {
+   "text": "어떡해!",
+   "start": 0.04,
+   "end": 1
+  }
+ ],
+ "source": {
+  "key": "29d4a6725ebedfc3e4cee2d49d188c4e",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2211,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "불이 깜박이다 꺼지고, 몽글이 문에 몸을 부딪쳐도 문이 열리지 않는다. 몽글이 울먹이며 다급하게 말한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 495
+ }
+}
