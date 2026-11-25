@@ -656,7 +656,10 @@ test('WORLD 입구 — 브라우저가 저장소를 막아 localStorage를 읽�
         },
       }),
     });
-    assert.equal(await next.practiceCoach(BANK.slice(0, 3)), made, '새 길 코치를 돌려준다');
+    // 입구는 기록부 쓰기를 세는 겉을 씌워 돌려준다(4-6e-2 createWriteCount) — 겉은 그 코치의 칸을 그대로 넘긴다.
+    const coach = await next.practiceCoach(BANK.slice(0, 3));
+    assert.equal(coach?.ready, made.ready, '새 길 코치를 돌려준다');
+    assert.equal(coach?.dispose, made.dispose, '새 길 코치를 돌려준다');
     assert.equal(captured.host.legacy, null, '옛 기록 읽개 없이 연다');
     assert.deepEqual(notes, [
       ['save', { ok: false, code: 'LEGACY_STORAGE' }],
