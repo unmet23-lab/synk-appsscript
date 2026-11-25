@@ -165,7 +165,8 @@ test('앱 연결: 운영판은 직원만 늦게 불러오고(목록 밖), 결제
   assert.match(app,/ledgerViewLoading\|\|=import\('\.\/ledger-view\.mjs'\)\.then\(module=>\{s\.ledgerView=module\.ledgerDesk;s\.ledgerPlace=module\.placeLedger;\},error=>\{ledgerViewLoading=null;throw error;\}\);/,'모듈을 못 받으면 다음에 다시 받는다(카본 A1)');
   assert.match(app,/:s\.error\?`<section class="staff-home staff-ledger" aria-label="운영판">\$\{ledgerAlert\(\)\}<div class="ledger-retry"><button type="button" class="button" data-action="ledger">운영판 다시 불러오기<\/button><\/div><\/section>`:/,'모듈 없이도 오류 · 다시 불러오기');
   assert.match(app,/if\(s\.ledger===ask\)\{s\.error=error\.message;if\(ask\.data\)s\.ledger=\{month:ask\.data\.month,data:ask\.data\};\}/,'다른 달이 실패하면 보던 달로 되돌린다(카본 A2)');
-  assert.match(app,/mountScreens\(\);syncRosterShots\(main\);placeTimeline\(\);if\(s\.ledger\)s\.ledgerPlace\?\.\(main\);/,'그릴 때마다 막대 · 띠 자리를 넣는다');
+  // 화면을 다시 그린 바로 뒤다. 「채널 명단」의 그림 줄 맞추기(인플루언서 조각 ③)는 그 사이에 올 수 있다.
+  assert.match(app,/mountScreens\(\);(?:syncRosterShots\(main\);)?placeTimeline\(\);if\(s\.ledger\)s\.ledgerPlace\?\.\(main\);/,'그릴 때마다 막대 · 띠 자리를 넣는다');
   assert.match(app,/request\('\/api\/pulse\/ledger'\+\(month\?'\?month='\+encodeURIComponent\(month\):''\)\)/);
   assert.match(app,/if\(s\.ledger!==ask\)return;/,'늦게 온 앞 달 답은 버린다');
   assert.match(app,/\(s\.brands\?brandsView\(\):s\.ledger\?ledgerView\(\):s\.roster\?rosterView\(\):picker\(s\)\)/);
