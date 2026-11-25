@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""PULSE 새 의뢰 텔레그램 알림 — 회사 주 노드의 systemd 타이머 synk-pulse-request-alert.timer가 1분마다 부른다(2026-11-14).
+"""PULSE 새 의뢰 · 고객 소식 텔레그램 알림 — 회사 주 노드의 systemd 타이머 synk-pulse-request-alert.timer가 1분마다 부른다(2026-11-14).
 
 PC 예약 작업 「SYNK PULSE 의뢰 확인」이 보내던 「새 의뢰」 한 줄을 회사 서버로 옮겼다. 그 작업은 10분마다 PC에서만 돌아서,
 PC가 꺼져 있으면 의뢰가 들어와도 알림이 늦었다. 의뢰서는 회사 DB에 바로 저장되므로 같은 서버가 1분 안에 알린다.
@@ -12,7 +12,10 @@ PC가 꺼져 있으면 의뢰가 들어와도 알림이 늦었다. 의뢰서는 
   보관(archived)된 프로젝트는 알리지 않는다.
 - 글에는 번호와 제목(손님이 적은 제품 · 브랜드 이름)만 넣는다. 링크와 손님 연락처는 넣지 않고, 제목 속 주소 · 메일 · 전화번호 꼴도 지운다.
 - 보내지 못하면 장부에 적지 않고 다음 회차에 다시 보낸다. 의뢰 목록을 20분 넘게 못 읽으면 그 사실을 한 번 알리고, 다시 읽히면 한 번 알린다.
-- 손님에게는 아무것도 보내지 않는다. 운영 쓰기는 없다. 상태 파일에는 번호와 시각만 남긴다.
+- 고객 소식(2026-11-26, 유호님 「응, 만들어」): 고객이 글을 남기거나 답 · 승인을 하면 프로젝트마다 한 통으로 묶어 알린다. 앱이 이미 남기는
+  내용 없는 사건(clientProjects.notificationEvents)만 읽고 글 본문은 읽지 않는다. 담당자가 작업실에서 그 알림을 이미 읽었으면 보내지 않는다.
+  고객 소식 쪽이 막혀도 새 의뢰 알림은 그대로 간다.
+- 손님에게는 아무것도 보내지 않는다. 운영 쓰기는 없다. 상태 파일에는 번호와 시각, 사건 번호의 해시만 남긴다.
 
   python3 -I alert.py                 한 회차(타이머가 부른다)
   python3 -I alert.py --dry-run       알릴 번호만 보인다(보내지 않고 장부도 안 쓴다)
@@ -20,6 +23,7 @@ PC가 꺼져 있으면 의뢰가 들어와도 알림이 늦었다. 의뢰서는 
   python3 -I alert.py --test          시험 한 줄을 보낸다(의뢰 · 장부와 상관없음)
   python3 -I alert.py --seed -        처음 설치 때 PC 장부({"P-…": "시각"})를 표준 입력으로 받아 장부를 연다(장부가 있으면 거절)
 """
+import hashlib
 import json
 import os
 import pathlib
@@ -58,8 +62,47 @@ SEND_BUDGET_SECONDS = 40
 
 FOOTER = '작업실 PULSE에 들어왔어요. 1차 확인 메모는 PC가 켜져 있을 때 이어서 남겨요.'
 TEST_TEXT = 'PULSE 새 의뢰 알림 시험이에요. 회사 서버에서 보냈고, 손님 의뢰가 아니에요.'
-TROUBLE_TEXT = 'PULSE 새 의뢰 알림이 회사 서버에서 의뢰 목록을 {minutes}분째 읽지 못하고 있어요(까닭 {code}). 그동안 새 의뢰는 작업실 PULSE에서 직접 봐 주세요.'
-RECOVERED_TEXT = 'PULSE 새 의뢰 알림이 다시 의뢰 목록을 읽어요. 그사이 들어온 의뢰는 이어서 알려 드려요.'
+TROUBLE_TEXT = 'PULSE 새 의뢰 알림이 회사 서버에서 의뢰 목록을 {minutes}분째 읽지 못하고 있어요(까닭 {code}). 그동안 새 의뢰와 고객 글은 작업실 PULSE에서 직접 봐 주세요.'
+RECOVERED_TEXT = 'PULSE 새 의뢰 알림이 다시 의뢰 목록을 읽어요. 그사이 들어온 의뢰와 고객 글은 이어서 알려 드려요.'
+TALK_TROUBLE_TEXT = 'PULSE 고객 소식 알림이 회사 서버에서 고객 소식을 {minutes}분째 읽지 못하고 있어요(까닭 {code}). 새 의뢰 알림은 그대로 가요. 그동안 고객 글은 작업실 PULSE에서 직접 봐 주세요.'
+TALK_RECOVERED_TEXT = 'PULSE 고객 소식 알림이 다시 고객 소식을 읽어요. 그사이 온 소식은 이어서 알려 드려요.'
+TALK_FOOTER = '작업실 PULSE에서 확인해 주세요.'
+
+# 고객 소식 — 앱의 사건 종류(client-notifications.mjs)와 알림에 쓰는 말. 여기 없는 종류는 보내지 않는다.
+# 고객이 하는 일의 사건이 새로 생기면 alert.test.py가 이 표나 아래 TALK_SILENT에 넣으라고 멈춘다.
+TALK_LABELS = {
+    'customer_support': '문의',
+    'customer_feedback': '시안 수정 의견',
+    'customer_feedback_round': '모아 보낸 수정 의견',
+    'customer_approval': '시안 승인',
+    'customer_comment': '기획 의견',
+    'customer_scene': '장면 의견',
+    'customer_reference': '참고 자료 의견',
+    'customer_concept': '콘셉트 고름',
+    'customer_strategy_confirmed': '제작 설계 확인',
+    'customer_request_answer': '되물은 내용의 답',
+    'customer_request_file': '자료 보냄',
+    'customer_request_edit': '의뢰서 고침',
+    'customer_model_answer': '모델 답',
+    'customer_direction_answer': '방향 답',
+    'customer_draft_review': '1차안 의견',
+    'customer_draft_approved': '1차안 확인',
+    'customer_people_request': '인플루언서 광고 의뢰',
+    'customer_people_agree': '인플루언서 광고 값 동의',
+    'customer_people_cancel': '인플루언서 광고 의뢰 거둠',
+    'customer_delivery_receipt': '최종본 받음',
+}
+# 새 의뢰는 위의 「새 의뢰」 한 줄이 맡는다. 취향 · 제작 설계는 고객이 칸을 채우며 여러 번 저장하는 것이라 알리지 않는다.
+TALK_SILENT = {'request_received', 'customer_preferences', 'customer_strategy'}
+# 고객이 이어서 쓰는 동안은 기다렸다가 한 통으로 묶는다 — 마지막 글 뒤 1분 조용하거나 첫 글 뒤 3분이 지나면 보낸다.
+TALK_QUIET = timedelta(seconds=60)
+TALK_WAIT_MAX = timedelta(seconds=180)
+# 같은 프로젝트는 5분에 한 통까지.
+TALK_GAP = timedelta(minutes=5)
+TALK_MAX_KINDS = 4
+# 고객 소식 읽기가 길어져 새 의뢰 알림까지 막지 않게(서비스 제한 90초 안에서) 이 시간이 지나면 읽기를 끊는다.
+TALK_READ_SECONDS = 15
+MARK = re.compile(r'^[0-9a-f]{24}$')
 
 # 보이지 않는 글자 · 방향 바꿈 글자 — 소스에는 \u 꼴로만 적는다.
 CONTROL = re.compile('[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u2069\ufeff]')
@@ -110,6 +153,22 @@ def message(number, title):
     return f'PULSE 새 의뢰 {number}' + (f' · {title}' if title else '') + '\n' + FOOTER
 
 
+def mark(value):
+    """사건 · 프로젝트 번호의 해시 — 장부에는 이것만 남긴다."""
+    return hashlib.sha256(value.encode('utf-8', 'surrogatepass')).hexdigest()[:24]
+
+
+def talk_message(group):
+    """프로젝트 하나에 한 통. 번호 · 제목 · 사건 종류와 수만 싣고 글 본문 · 이름 · 연락처 · 링크는 넣지 않는다."""
+    head = ' · '.join(part for part in (group['number'], group['title']) if part) or '의뢰 번호 없는 프로젝트'
+    counts = list(group['kinds'].items())
+    shown = [f'{label} {count}건' for label, count in counts[:TALK_MAX_KINDS]]
+    rest = sum(count for _, count in counts[TALK_MAX_KINDS:])
+    if rest:
+        shown.append(f'그 밖 {rest}건')
+    return f'PULSE 고객 소식 {head}\n' + ' · '.join(shown) + '\n' + TALK_FOOTER
+
+
 def read_config(path=CONFIG):
     """TELEGRAM_BOT_TOKEN · TELEGRAM_CHAT_ID 두 줄. 틀리면 ValueError(코드만)."""
     values = {}
@@ -156,8 +215,49 @@ def send_telegram(config, text, opener=None):
     return (True, 'OK') if isinstance(data, dict) and data.get('ok') is True else (False, 'TELEGRAM_NOT_OK')
 
 
+# 고객이 한 일의 사건만. 글 본문은 읽지 않고, 담당자의 읽음 기록이 있는지만 함께 본다.
+# 「담당자가 그 뒤 답했으면 보내지 않는다」는 두지 않는다 — 답 하나를 그 일과 상관없는 다른 고객 글의 답으로 보아 글을 놓치게 된다(검수 GA2 · c GA1 · d GA2).
+TALK_SQL = (
+    "SELECT json_extract(d.body,'$.id'), json_extract(d.body,'$.studio.request.number'), json_extract(d.body,'$.stage'), json_extract(d.body,'$.title'),"
+    " json_extract(e.value,'$.id'), json_extract(e.value,'$.type'), json_extract(e.value,'$.createdAt'),"
+    " EXISTS(SELECT 1 FROM documents r WHERE r.kind='clientNotificationReads'"
+    "  AND r.id=json_extract(d.body,'$.ownerId')||'|'||json_extract(e.value,'$.id'))"
+    " FROM documents d, json_each(d.body,'$.notificationEvents') e"
+    " WHERE d.kind='clientProjects' AND json_extract(d.body,'$.updatedAt')>=?"
+    " AND json_extract(e.value,'$.actorId')='customer' AND json_extract(e.value,'$.createdAt')>=?"
+)
+
+
+def open_db(db, connect, exists):
+    """앱이 열어 둔 DB만 읽기 전용으로 연다. → (연결, None) 또는 (None, 코드)"""
+    if not all(exists(db + side) for side in ('', '-wal', '-shm')):
+        return None, 'DB_NOT_OPEN_BY_APP'
+    try:
+        return connect(pathlib.Path(db).as_uri() + '?mode=ro', uri=True, timeout=5), None
+    except sqlite3.Error:
+        return None, 'DB_OPEN_FAILED'
+
+
+def read_talk(db, now, connect=sqlite3.connect, exists=os.path.isfile, steps=20000):
+    """→ {'talk': […]} 또는 {'talkCode': …}. 새 의뢰를 다 보낸 뒤에 따로 부른다 — 오래 걸려도 새 의뢰를 늦추지 않게(검수 GA1)."""
+    connection, code = open_db(db, connect, exists)
+    if code:
+        return {'talkCode': code}
+    cutoff, deadline = iso(now - MAX_AGE), time.monotonic() + TALK_READ_SECONDS
+    try:
+        connection.execute('PRAGMA query_only=ON')
+        connection.set_progress_handler(lambda: 1 if time.monotonic() > deadline else 0, steps)
+        found = connection.execute(TALK_SQL, (cutoff, cutoff)).fetchall()
+    except (sqlite3.Error, MemoryError):
+        return {'talkCode': 'TALK_READ_TIMEOUT' if time.monotonic() > deadline else 'TALK_READ_FAILED'}
+    finally:
+        connection.close()
+    return {'talk': [{'project': r[0], 'number': r[1], 'stage': r[2], 'title': r[3], 'event': r[4], 'type': r[5], 'at': r[6], 'read': bool(r[7])}
+                     for r in found]}
+
+
 def read_rows(run=subprocess.run, connect=sqlite3.connect, exists=os.path.isfile):
-    """→ {'ok': True, 'rows': […]} 또는 {'ok': False, 'code': …}. 컨테이너가 돌고 앱이 DB를 연 뒤에만 읽는다."""
+    """→ {'ok': True, 'rows': […], 'db': 자리} 또는 {'ok': False, 'code': …}. 컨테이너가 돌고 앱이 DB를 연 뒤에만 읽는다."""
     try:
         inspected = run(['docker', 'inspect', CONTAINER], capture_output=True, text=True, timeout=20)
     except (OSError, subprocess.SubprocessError):
@@ -173,12 +273,9 @@ def read_rows(run=subprocess.run, connect=sqlite3.connect, exists=os.path.isfile
     if not isinstance(mount, str) or not os.path.isabs(mount):
         return {'ok': False, 'code': 'DATA_MOUNT_MISSING'}
     db = os.path.join(mount, 'company.sqlite')
-    if not all(exists(db + side) for side in ('', '-wal', '-shm')):
-        return {'ok': False, 'code': 'DB_NOT_OPEN_BY_APP'}
-    try:
-        connection = connect(pathlib.Path(db).as_uri() + '?mode=ro', uri=True, timeout=5)
-    except sqlite3.Error:
-        return {'ok': False, 'code': 'DB_OPEN_FAILED'}
+    connection, code = open_db(db, connect, exists)
+    if code:
+        return {'ok': False, 'code': code}
     try:
         connection.execute('PRAGMA query_only=ON')
         connection.execute('BEGIN')
@@ -194,7 +291,7 @@ def read_rows(run=subprocess.run, connect=sqlite3.connect, exists=os.path.isfile
         finally:
             connection.close()
     rows = [{'number': r[0], 'status': r[1], 'submittedAt': r[2], 'stage': r[3], 'title': r[4]} for r in found]
-    return {'ok': True, 'rows': rows}
+    return {'ok': True, 'rows': rows, 'db': db}
 
 
 def pending(rows, alerted, now):
@@ -217,8 +314,70 @@ def pending(rows, alerted, now):
     return out
 
 
+def talk_groups(rows, talk, now):
+    """→ (프로젝트마다 묶은 소식, 보내지 않고 본 것으로 적을 해시). 이미 알렸거나 72시간이 지났거나 보관한 프로젝트의 사건은 뺀다.
+    담당자가 작업실에서 읽은 사건과 다시 연 시각까지의 사건은 본 것으로 적는다. 묶음의 ready는 지금 보낼 때가 됐는지다."""
+    reopen, groups, quiet, taken = parse_time(talk.get('reopen')), {}, [], set()
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        project, event, kind = row.get('project'), row.get('event'), row.get('type')
+        label = TALK_LABELS.get(kind) if isinstance(kind, str) else None
+        if not label or not isinstance(project, str) or not project or not isinstance(event, str) or not event:
+            continue
+        at = parse_time(row.get('at'))
+        if at is None or at > now + FUTURE_SLACK or now - at > MAX_AGE:
+            continue
+        key = mark(event)
+        if key in talk['seen'] or key in taken:
+            continue
+        taken.add(key)
+        # 다시 연 시각까지의 사건은 보관한 프로젝트의 것도 적는다 — 나중에 보관을 풀어도 켜기 전 글을 보내지 않게(검수 GA3).
+        if (reopen and at <= reopen) or row.get('read') is True:
+            quiet.append(key)
+            continue
+        if row.get('stage') == 'archived':
+            continue
+        number = row.get('number')
+        group = groups.setdefault(project, {
+            'project': mark(project), 'number': number if isinstance(number, str) and NUMBER.match(number) else '',
+            'title': clean_title(row.get('title')), 'kinds': {}, 'keys': [], 'first': at, 'last': at})
+        group['kinds'][label] = group['kinds'].get(label, 0) + 1
+        group['keys'].append(key)
+        group['first'], group['last'] = min(group['first'], at), max(group['last'], at)
+    for group in groups.values():
+        group['settled'] = now - group['last'] >= TALK_QUIET or now - group['first'] >= TALK_WAIT_MAX
+        group['ready'] = group['settled'] and gap_ok(talk, group, now)
+    return sorted(groups.values(), key=lambda group: group['first']), quiet
+
+
+def gap_ok(talk, group, moment):
+    """같은 프로젝트는 보낸 때부터 5분이 지나야 다음 한 통이다."""
+    before = parse_time(talk['lastSent'].get(group['project']))
+    return before is None or moment - before >= TALK_GAP
+
+
+def empty_talk():
+    return {'seen': {}, 'lastSent': {}, 'lastFailure': None, 'trouble': None, 'reopen': None}
+
+
+def normalize_talk(value):
+    """없거나 꼴이 틀리면 None — 다음 회차가 그 시각을 다시 연 시각으로 적는다."""
+    if not isinstance(value, dict) or not isinstance(value.get('seen'), dict):
+        return None
+    talk = empty_talk()
+    for name in ('seen', 'lastSent'):
+        found = value.get(name) if isinstance(value.get(name), dict) else {}
+        talk[name] = {k: v for k, v in found.items() if isinstance(k, str) and MARK.match(k) and parse_time(v)}
+    talk['lastFailure'] = value['lastFailure'] if isinstance(value.get('lastFailure'), dict) else None
+    trouble = value.get('trouble')
+    talk['trouble'] = trouble if isinstance(trouble, dict) and parse_time(trouble.get('since')) else None
+    talk['reopen'] = value.get('reopen') if parse_time(value.get('reopen')) else None
+    return talk
+
+
 def empty_state():
-    return {'version': 1, 'alerted': {}, 'failures': {}, 'trouble': None, 'lastReadOkAt': None, 'reopen': None}
+    return {'version': 1, 'alerted': {}, 'failures': {}, 'trouble': None, 'lastReadOkAt': None, 'reopen': None, 'talk': None}
 
 
 def normalize(state):
@@ -234,6 +393,7 @@ def normalize(state):
     base['lastReadOkAt'] = state.get('lastReadOkAt') if isinstance(state.get('lastReadOkAt'), str) else None
     # 다시 연 시각 — 이 시각 전에 접수된 의뢰만 보내지 않고 알린 것으로 적는다(그 뒤 의뢰는 보낸다, 검수 b A4).
     base['reopen'] = state.get('reopen') if parse_time(state.get('reopen')) else None
+    base['talk'] = normalize_talk(state.get('talk'))
     return base
 
 
@@ -242,6 +402,11 @@ def prune(state, now):
     state['alerted'] = dict(sorted(kept, key=lambda item: item[1])[-HARD_CAP:])
     state['failures'] = {k: v for k, v in state['failures'].items()
                          if k not in state['alerted'] and (parse_time(v.get('at')) or now) > now - MAX_AGE}
+    talk = state.get('talk')
+    if talk:
+        for name in ('seen', 'lastSent'):
+            kept = [(k, v) for k, v in talk[name].items() if now - (parse_time(v) or now) <= KEEP_FOR]
+            talk[name] = dict(sorted(kept, key=lambda item: item[1])[-HARD_CAP:])
     return state
 
 
@@ -255,10 +420,98 @@ def _safe(send, text):
     return bool(result[0]), str(result[1])[:40]
 
 
-def tick(state, read, now, send, save=None, out_of_time=lambda: False):
+def note_trouble(trouble, code, now, send, text):
+    """읽기 장애를 적고 20분이 넘으면 한 번 알린다. → (장애 기록, 이번에 알렸나)"""
+    code = str(code or 'UNKNOWN')[:40]
+    trouble = trouble or {'since': iso(now), 'code': code, 'notified': None}
+    trouble['code'] = code
+    since = parse_time(trouble.get('since')) or now
+    if trouble.get('notified') or now - since < TROUBLE_AFTER:
+        return trouble, False
+    ok, _ = _safe(send, text.format(minutes=int((now - since).total_seconds() // 60), code=code))
+    if ok:
+        trouble['notified'] = iso(now)
+    return trouble, ok
+
+
+def talk_result(read):
+    return {'read': read, 'sent': 0, 'failed': 0, 'waiting': 0, 'notice': None}
+
+
+def talk_round(state, talker, now, send, save, can_send, clock):
+    """고객 소식 한 회차. 여기서 무엇이 던져져도 새 의뢰 장부와 회차는 그대로 끝난다. 던지기 전에 보낸 수는 요약에 남긴다(검수 c GA3)."""
+    before, result = state['talk']['trouble'], talk_result('ok')
+    try:
+        return talk_step(state, talker(), now, send, save, can_send, clock, result)
+    except Exception as error:  # noqa: BLE001 — 고객 소식의 고장이 새 의뢰 알림을 막지 않게
+        result['read'] = ('TALK_STEP_' + type(error).__name__.upper())[:40]
+        if result['notice'] == 'recovered':
+            before = None  # 이번 회차에 이미 복구 알림을 보냈다 — 다음 회차가 다시 보내지 않게(Fable 설계 검토 F2)
+        state['talk']['trouble'], told = note_trouble(before, result['read'], now, send if can_send() else _later, TALK_TROUBLE_TEXT)
+        if told:
+            result['notice'] = 'trouble'
+        return result
+
+
+def _later(text):
+    return False, 'LATER'
+
+
+def talk_step(state, read, now, send, save, can_send, clock, result=None):
+    """can_send()가 거짓이면 이번에는 보내지 않고 다음 회차로 넘긴다. → 요약"""
+    result, talk = result if result is not None else talk_result('ok'), state['talk']
+    if not isinstance(read.get('talk'), list):
+        result['read'] = str(read.get('talkCode') or 'TALK_MISSING')[:40]
+        talk['trouble'], told = note_trouble(talk['trouble'], result['read'], now, send if can_send() else _later, TALK_TROUBLE_TEXT)
+        if told:
+            result['notice'] = 'trouble'
+        return result
+    groups, quiet = talk_groups(read['talk'], talk, now)
+    if talk['trouble'] and talk['trouble'].get('notified'):
+        if can_send() and _safe(send, TALK_RECOVERED_TEXT)[0]:
+            talk['trouble'] = None
+            result['notice'] = 'recovered'
+    else:
+        talk['trouble'] = None
+    for key in quiet:
+        talk['seen'][key] = iso(now)
+    # 다시 연 시각은 72시간 동안 둔다 — 그 시각 전에 때가 정해진 사건이 늦게 DB에 들어와도 보내지 않게(검수 c GA6 · d GA3).
+    # 그보다 오래된 사건은 어차피 보내지 않는다.
+    if talk['reopen'] and now - (parse_time(talk['reopen']) or now) > MAX_AGE:
+        talk['reopen'] = None
+    for group in groups:
+        # 5분은 지금 보내려는 때로 다시 잰다 — 회차 시작이 아니라(검수 GA4 · c GA2).
+        if not group['settled'] or not gap_ok(talk, group, clock()) or result['failed'] or result['sent'] >= MAX_PER_RUN or not can_send():
+            result['waiting'] += 1
+            continue
+        ok, code = _safe(send, talk_message(group))
+        if not ok:
+            talk['lastFailure'] = {'code': code, 'at': iso(now)}
+            result['failed'] += 1
+            result['waiting'] += 1
+            continue
+        for key in group['keys']:
+            talk['seen'][key] = iso(now)
+        talk['lastSent'][group['project']] = iso(clock())  # 회차를 시작한 때가 아니라 보낸 때부터 5분을 센다(검수 GA4)
+        talk['lastFailure'] = None
+        result['sent'] += 1
+        if save:
+            save(state)
+    return result
+
+
+def tick(state, read, now, send, save=None, out_of_time=lambda: False, talker=None, clock=None):
     """한 회차. send(text) → (보냄, 코드). save(state)는 한 건을 보낼 때마다 장부를 바로 쓴다
-    (systemd가 회차를 끊어도 보낸 번호가 남아 다시 보내지 않게, 검수 A2). → (새 상태, 요약)."""
+    (systemd가 회차를 끊어도 보낸 번호가 남아 다시 보내지 않게, 검수 A2). talker()는 새 의뢰를 다 보낸 뒤 고객 소식을 읽는다. → (새 상태, 요약)."""
     state = normalize(state)
+    calls = []
+
+    def counted(text):
+        calls.append(1)
+        return send(text)
+    if state['talk'] is None:
+        # 고객 소식을 처음 켜는 회차(또는 이 칸을 잃은 장부) — 지금까지의 소식은 보내지 않고, 읽히는 첫 회차에 본 것으로 적는다.
+        state['talk'] = {**empty_talk(), 'reopen': iso(now)}
     summary = {'checkedAt': iso(now), 'read': 'ok' if read.get('ok') else read.get('code', 'UNKNOWN'), 'sent': [], 'failed': [], 'waiting': 0, 'notice': None}
     if read.get('ok'):
         if state['reopen']:
@@ -272,7 +525,7 @@ def tick(state, read, now, send, save=None, out_of_time=lambda: False):
             summary['notice'] = 'reopened'
         trouble = state['trouble']
         if trouble and trouble.get('notified'):
-            ok, _ = _safe(send, RECOVERED_TEXT)
+            ok, _ = _safe(counted, RECOVERED_TEXT)
             if ok:
                 state['trouble'] = None
                 summary['notice'] = 'recovered'
@@ -283,7 +536,7 @@ def tick(state, read, now, send, save=None, out_of_time=lambda: False):
         for index, item in enumerate(todo[:MAX_PER_RUN]):
             if index and out_of_time():
                 break  # 첫 건은 늘 시도한다 — 읽기가 느려도 알림이 소리 없이 밀리지 않게(검수 b A3)
-            ok, code = _safe(send, message(item['number'], item['title']))
+            ok, code = _safe(counted, message(item['number'], item['title']))
             if ok:
                 state['alerted'][item['number']] = iso(now)
                 state['failures'].pop(item['number'], None)
@@ -296,17 +549,16 @@ def tick(state, read, now, send, save=None, out_of_time=lambda: False):
             summary['failed'].append(item['number'])
             break  # 한 번 실패하면 이 회차는 멈춘다 — 열쇠 · 망이 막혔으면 뒤 의뢰도 같이 막힌다(검수 A2)
         summary['waiting'] = len(todo) - len(summary['sent'])
+        if talker:
+            # 새 의뢰가 먼저다. 의뢰 보내기가 막혔거나(열쇠 · 망) 시간이 다 갔으면 고객 소식은 읽지도 않고 다음 회차로 넘긴다.
+            # 이번 회차의 첫 보내기는 늘 시도한다.
+            in_time = lambda: not (calls and out_of_time())  # noqa: E731
+            summary['talk'] = talk_result('later') if summary['failed'] or not in_time() else \
+                talk_round(state, talker, now, counted, save, in_time, clock or (lambda: now))
     else:
-        code = str(read.get('code') or 'UNKNOWN')[:40]
-        trouble = state['trouble'] or {'since': iso(now), 'code': code, 'notified': None}
-        trouble['code'] = code
-        since = parse_time(trouble.get('since')) or now
-        if not trouble.get('notified') and now - since >= TROUBLE_AFTER:
-            ok, _ = _safe(send, TROUBLE_TEXT.format(minutes=int((now - since).total_seconds() // 60), code=code))
-            if ok:
-                trouble['notified'] = iso(now)
-                summary['notice'] = 'trouble'
-        state['trouble'] = trouble
+        state['trouble'], told = note_trouble(state['trouble'], read.get('code'), now, counted, TROUBLE_TEXT)
+        if told:
+            summary['notice'] = 'trouble'
     return prune(state, now), summary
 
 
@@ -345,7 +597,8 @@ def write_json(path, value):
 
 def latest_of(state, summary):
     return {**summary, 'alertedCount': len(state['alerted']), 'failures': {k: v.get('code') for k, v in state['failures'].items()},
-            'trouble': state['trouble'], 'lastReadOkAt': state['lastReadOkAt']}
+            'trouble': state['trouble'], 'lastReadOkAt': state['lastReadOkAt'],
+            'talkState': {'seenCount': len(state['talk']['seen']), 'lastFailure': state['talk']['lastFailure'], 'trouble': state['talk']['trouble']}}
 
 
 def seed(text, now):
@@ -364,7 +617,7 @@ def emit(event, **fields):
     print(json.dumps({'event': event, **fields}, ensure_ascii=False, sort_keys=True), flush=True)
 
 
-def main(argv, *, state_dir=STATE_DIR, config_path=CONFIG, reader=read_rows, sender=send_telegram, clock=utc_now, stdin=sys.stdin):
+def main(argv, *, state_dir=STATE_DIR, config_path=CONFIG, reader=read_rows, talk_reader=read_talk, sender=send_telegram, clock=utc_now, stdin=sys.stdin):
     mode = argv[0] if argv else ''
     if mode not in ('', '--dry-run', '--status', '--test', '--seed'):
         emit('SYNK_PULSE_ALERT_USAGE')
@@ -383,9 +636,13 @@ def main(argv, *, state_dir=STATE_DIR, config_path=CONFIG, reader=read_rows, sen
         if not read.get('ok'):
             emit('SYNK_PULSE_ALERT_DRY_RUN', read=read.get('code'))
             return 0
-        alerted = normalize(loaded if isinstance(loaded, dict) else None)['alerted']
+        current = normalize(loaded if isinstance(loaded, dict) else None)
+        talk_read = talk_reader(read['db'], clock()) if read.get('db') else {}
+        talk = talk_groups(talk_read.get('talk'), current['talk'], clock())[0] if current['talk'] else None
         emit('SYNK_PULSE_ALERT_DRY_RUN', read='ok', state='ok' if isinstance(loaded, dict) else (loaded or 'none'),
-             requests=len(read['rows']), wouldSend=[item['number'] for item in pending(read['rows'], alerted, clock())])
+             requests=len(read['rows']), wouldSend=[item['number'] for item in pending(read['rows'], current['alerted'], clock())],
+             talkRead='ok' if isinstance(talk_read.get('talk'), list) else talk_read.get('talkCode', 'TALK_MISSING'), talkEvents=len(talk_read.get('talk') or []),
+             talkWaiting=None if talk is None else [{'number': g['number'], 'kinds': g['kinds'], 'ready': g['ready']} for g in talk])
         return 0
     os.makedirs(state_dir, mode=0o700, exist_ok=True)
     with open(os.path.join(state_dir, 'lock'), 'a') as lock:
@@ -422,12 +679,16 @@ def main(argv, *, state_dir=STATE_DIR, config_path=CONFIG, reader=read_rows, sen
             # 옛 의뢰를 한꺼번에 다시 알리지 않는다. 그 사이 읽기가 실패해도 장애 알림 시계가 돈다(검수 A3).
             emit('SYNK_PULSE_ALERT_STATE_REOPENING', was=loaded or 'none')
             loaded = {**empty_state(), 'reopen': iso(now)}
-        state, summary = tick(loaded, reader(), now, send, save=lambda current: write_json(state_path, current),
-                              out_of_time=lambda: time.monotonic() - started > SEND_BUDGET_SECONDS)
+        read = reader()
+        state, summary = tick(loaded, read, now, send, save=lambda current: write_json(state_path, current),
+                              out_of_time=lambda: time.monotonic() - started > SEND_BUDGET_SECONDS,
+                              talker=(lambda: talk_reader(read['db'], now)) if read.get('db') else None, clock=clock)
         write_json(state_path, state)
         write_json(os.path.join(state_dir, 'latest.json'), latest_of(state, summary))
-        if summary['sent'] or summary['failed'] or summary['waiting'] or summary['notice'] or summary['read'] != 'ok':
-            emit('SYNK_PULSE_ALERT', **{k: summary[k] for k in ('read', 'sent', 'failed', 'waiting', 'notice')})
+        talk = summary.get('talk') or {}
+        if summary['sent'] or summary['failed'] or summary['waiting'] or summary['notice'] or summary['read'] != 'ok' \
+                or talk.get('sent') or talk.get('failed') or talk.get('notice') or talk.get('read', 'ok') not in ('ok', 'later'):
+            emit('SYNK_PULSE_ALERT', **{k: summary[k] for k in ('read', 'sent', 'failed', 'waiting', 'notice')}, talk=talk or None)
         return 0
 
 

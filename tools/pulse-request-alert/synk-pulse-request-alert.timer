@@ -1,5 +1,5 @@
 [Unit]
-Description=SYNK PULSE new request Telegram alert every minute
+Description=SYNK PULSE new request and customer news Telegram alert every minute
 
 [Timer]
 OnCalendar=*-*-* *:*:20

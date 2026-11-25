@@ -145,3 +145,58 @@ test('미리 보기와 오류 글에 열쇠가 찍히지 않는다', () => {
   assert.match(글, /"헤르메스열쇠":"있음"/);
   assert.equal(설치.가리기(`실패 bot${열쇠}/sendMessage`), '실패 bot<열쇠>/sendMessage');
 });
+
+test('앱이 남기는 실제 고객 사건을 서버 스크립트가 읽어 알림 글로 만든다', async () => {
+  const { DatabaseSync } = require('node:sqlite');
+  const { pathToFileURL } = require('node:url');
+  const 회사 = path.join(__dirname, '..', 'docs', '마케팅', '온라인마케팅지도', 'engagement', 'company');
+  const { appendClientNotificationEvents } = await import(pathToFileURL(path.join(회사, 'client-notifications.mjs')).href);
+  const 때 = new Date(Date.now() - 120000).toISOString();
+  const 앞 = { id: '11111111-1111-4111-8111-111111111111', revision: 4, updatedAt: 때, ownerId: 'u-1', title: '오미톡', stage: 'review', messages: [], versions: [], history: [{ id: 'h1', actor: 'u-1', action: '고객 답변' }], notificationEvents: [], studio: { request: { number: 'P-1126-AB12', status: 'confirmed', submittedAt: '2026-11-01T00:00:00.000Z' } } };
+  const 문의 = { ...앞, revision: 5, history: [...앞.history, { id: 'h2', actor: 'customer', action: '고객 문의' }], messages: [{ id: 'm1', author: 'customer', action: 'support', visibility: 'customer', at: 때, text: '비밀 글' }] };
+  const 사건있음 = appendClientNotificationEvents(앞, 문의);
+  const 답 = { ...사건있음, revision: 6, history: [...사건있음.history, { id: 'h3', actor: 'customer', action: 'PULSE 기획 answer_direction' }] };
+  const 끝 = appendClientNotificationEvents(사건있음, 답);
+  // 서버 스크립트는 시각을 글자로 비교한다 — 앱이 남기는 시각이 Z로 끝나는 꼴이어야 한다(Fable 설계 검토 F5).
+  const 앱시각 = fs.readFileSync(path.join(회사, 'client-projects.mjs'), 'utf8');
+  assert.match(앱시각, /clock=\(\)=>new Date\(\)\.toISOString\(\)/, '앱 시계가 toISOString이 아니면 alert.py의 72시간 글자 비교를 다시 본다');
+  for (const 사건 of 끝.notificationEvents) assert.match(사건.createdAt, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/);
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'pulse-alert-app-'));
+  const db = new DatabaseSync(path.join(방, 'company.sqlite'));
+  try {
+    db.exec('PRAGMA journal_mode=WAL; CREATE TABLE documents (kind TEXT NOT NULL, id TEXT NOT NULL, body TEXT NOT NULL, PRIMARY KEY(kind,id));');
+    db.prepare('INSERT INTO documents VALUES (?,?,?)').run('clientProjects', 끝.id, JSON.stringify(끝));
+    const 부름 = [
+      'import importlib.util,json,subprocess,sys',
+      "spec=importlib.util.spec_from_file_location('a',sys.argv[1]);A=importlib.util.module_from_spec(spec);spec.loader.exec_module(A)",
+      "box=json.dumps([{'State':{'Running':True},'Mounts':[{'Destination':'/data','Source':sys.argv[2]}]}])",
+      "got=A.read_rows(run=lambda a,**k:subprocess.CompletedProcess(a,0,box,''))",
+      'got["talk"]=A.read_talk(got["db"],A.utc_now())',
+      'groups,quiet=A.talk_groups(got["talk"].get("talk"),A.empty_talk(),A.utc_now())',
+      'print(json.dumps({"rows":got,"texts":[A.talk_message(g) for g in groups],"ready":[g["ready"] for g in groups],"quiet":len(quiet)}))',
+    ].join('\n');
+    const 읽기 = () => {
+      const r = spawnSync(python, ['-X', 'utf8', '-B', '-c', 부름, path.join(폴더, 'alert.py'), 방], { encoding: 'utf8', windowsHide: true, timeout: 60000 });
+      assert.equal(r.status, 0, r.stderr);
+      assert.doesNotMatch(r.stdout, /비밀 글/);
+      return JSON.parse(r.stdout);
+    };
+    const 결과 = 읽기();
+    assert.deepEqual(결과.texts, ['PULSE 고객 소식 P-1126-AB12 · 오미톡\n문의 1건 · 방향 답 1건\n작업실 PULSE에서 확인해 주세요.']);
+    assert.deepEqual([결과.ready, 결과.quiet], [[true], 0]);
+    // 담당자의 답(장면 댓글이든 대화 글이든)은 그 일과 상관없는 다른 고객 글을 가리지 않는다 — 작업실에서 알림을 읽었을 때만 뺀다(검수 c GA1 · d GA2).
+    const 지금 = new Date().toISOString();
+    const 댓글 = { ...끝, revision: 7, updatedAt: 지금, history: [...끝.history, { id: 'h4', actor: 'u-1', action: 'PULSE 기획 comment' }],
+      studio: { ...끝.studio, comments: [{ id: 'c1', visibility: 'customer', targetType: 'scene', targetId: 's1' }] } };
+    const 댓글뒤 = appendClientNotificationEvents(끝, 댓글);
+    const 대화 = { ...댓글뒤, revision: 8, updatedAt: 지금, history: [...댓글뒤.history, { id: 'h5', actor: 'u-1', action: '고객 답변' }],
+      messages: [...댓글뒤.messages, { id: 'm2', author: 'staff', visibility: 'customer', at: 지금, text: '답' }] };
+    db.prepare('UPDATE documents SET body=? WHERE id=?').run(JSON.stringify(appendClientNotificationEvents(댓글뒤, 대화)), 끝.id);
+    const 답한뒤 = 읽기();
+    assert.deepEqual([답한뒤.texts, 답한뒤.quiet], [결과.texts, 0]);
+    const 문의사건 = 끝.notificationEvents.find((event) => event.type === 'customer_support');
+    db.prepare('INSERT INTO documents VALUES (?,?,?)').run('clientNotificationReads', `u-1|${문의사건.id}`, JSON.stringify({ id: `u-1|${문의사건.id}`, userId: 'u-1', eventId: 문의사건.id, readAt: 지금 }));
+    const 읽은뒤 = 읽기();
+    assert.deepEqual([읽은뒤.texts, 읽은뒤.quiet], [['PULSE 고객 소식 P-1126-AB12 · 오미톡\n방향 답 1건\n작업실 PULSE에서 확인해 주세요.'], 1]);
+  } finally { db.close(); }
+});

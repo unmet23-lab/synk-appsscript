@@ -8,6 +8,7 @@ import io
 import json
 import os
 import pathlib
+import re
 import sqlite3
 import subprocess
 import sys
@@ -479,6 +480,337 @@ class Main(unittest.TestCase):
         if os.name != 'nt':
             self.assertEqual(os.stat(os.path.join(self.state_dir, 'state.json')).st_mode & 0o777, 0o600)
             self.assertEqual(os.stat(self.state_dir).st_mode & 0o777, 0o700)
+
+
+def talk_row(event, seconds_ago=120, project='pr-1', **more):
+    return {'project': project, 'number': 'P-1114-AB12', 'stage': 'review', 'title': '오미톡', 'event': event, 'type': 'customer_support',
+            'at': A.iso(NOW - timedelta(seconds=seconds_ago)), 'read': False, **more}
+
+
+def talk_state(**more):
+    return {**A.empty_state(), 'talk': {**A.empty_talk(), **more}}
+
+
+def talk_read(*rows):
+    return {'ok': True, 'rows': [], 'talk': list(rows)}
+
+
+def tick(state, read, now, send, **more):
+    """새 의뢰 읽기와 고객 소식 읽기를 나눠 넘긴다(서버에서는 새 의뢰를 다 보낸 뒤 read_talk를 부른다)."""
+    read = dict(read)
+    talk = {name: read.pop(name) for name in ('talk', 'talkCode') if name in read}
+    return A.tick(state, read, now, send, talker=(lambda: talk) if talk else None, **more)
+
+
+class TalkMessage(unittest.TestCase):
+    def test_one_line_per_project_with_kinds_and_counts_only(self):
+        groups, quiet = A.talk_groups([talk_row('e1'), talk_row('e2', 100), talk_row('e3', 90, type='customer_feedback')], A.empty_talk(), NOW)
+        self.assertEqual((len(groups), quiet), (1, []))
+        self.assertEqual(A.talk_message(groups[0]), 'PULSE 고객 소식 P-1114-AB12 · 오미톡\n문의 2건 · 시안 수정 의견 1건\n' + A.TALK_FOOTER)
+
+    def test_contact_looking_title_and_odd_number_are_left_out(self):
+        groups, _ = A.talk_groups([talk_row('e1', title='kim@omitok.com', number='P-1')], A.empty_talk(), NOW)
+        self.assertEqual(A.talk_message(groups[0]).splitlines()[0], 'PULSE 고객 소식 의뢰 번호 없는 프로젝트')
+        groups, _ = A.talk_groups([talk_row('e1', number=None)], A.empty_talk(), NOW)
+        self.assertEqual(A.talk_message(groups[0]).splitlines()[0], 'PULSE 고객 소식 오미톡')
+        text = A.talk_message(A.talk_groups([talk_row('e1', title='https://x.kr 010-1234-5678')], A.empty_talk(), NOW)[0][0])
+        self.assertNotRegex(text, r'https?:|@|www\.|1234')
+
+    def test_many_kinds_are_folded(self):
+        kinds = ['customer_support', 'customer_feedback', 'customer_comment', 'customer_scene', 'customer_approval', 'customer_request_file']
+        groups, _ = A.talk_groups([talk_row(f'e{i}', 120 - i, type=kind) for i, kind in enumerate(kinds)], A.empty_talk(), NOW)
+        self.assertEqual(A.talk_message(groups[0]).splitlines()[1], '문의 1건 · 시안 수정 의견 1건 · 기획 의견 1건 · 장면 의견 1건 · 그 밖 2건')
+
+
+class TalkGroups(unittest.TestCase):
+    def test_skips_bad_silent_old_future_archived_and_seen(self):
+        seen = {A.mark('seen'): A.iso(NOW)}
+        rows = ['x', None, talk_row('a', type='customer_strategy'), talk_row('b', type='request_received'), talk_row('c', type=['customer_support']),
+                talk_row('d', stage='archived'), talk_row('e', at='어제'), talk_row('f', 60 * 60 * 73), talk_row('g', -60 * 30), talk_row('seen'),
+                talk_row(None), talk_row(''), talk_row('h', project=None), talk_row('i', project='')]
+        self.assertEqual(A.talk_groups(rows, {**A.empty_talk(), 'seen': seen}, NOW), ([], []))
+        self.assertEqual(A.talk_groups(None, A.empty_talk(), NOW), ([], []))
+
+    def test_only_events_the_owner_read_are_quiet(self):
+        groups, quiet = A.talk_groups([talk_row('read', read=True), talk_row('unread'), talk_row('odd', read='yes')], A.empty_talk(), NOW)
+        self.assertEqual(quiet, [A.mark('read')])
+        self.assertEqual(groups[0]['keys'], [A.mark('unread'), A.mark('odd')])
+
+    def test_waits_while_the_customer_keeps_writing_then_sends_by_three_minutes(self):
+        ready = lambda *rows, **talk: A.talk_groups(rows, {**A.empty_talk(), **talk}, NOW)[0][0]['ready']  # noqa: E731
+        self.assertFalse(ready(talk_row('a', 59)))
+        self.assertTrue(ready(talk_row('a', 60)))
+        self.assertFalse(ready(talk_row('a', 170), talk_row('b', 10)))
+        self.assertTrue(ready(talk_row('a', 180), talk_row('b', 10)))
+
+    def test_same_project_at_most_once_in_five_minutes(self):
+        sent = lambda minutes: {'lastSent': {A.mark('pr-1'): at(minutes)}}  # noqa: E731
+        self.assertFalse(A.talk_groups([talk_row('a')], {**A.empty_talk(), **sent(4)}, NOW)[0][0]['ready'])
+        self.assertTrue(A.talk_groups([talk_row('a')], {**A.empty_talk(), **sent(5)}, NOW)[0][0]['ready'])
+        self.assertTrue(A.talk_groups([talk_row('a', project='pr-2')], {**A.empty_talk(), **sent(1)}, NOW)[0][0]['ready'])
+
+    def test_same_event_twice_counts_once(self):
+        groups, _ = A.talk_groups([talk_row('a'), talk_row('a')], A.empty_talk(), NOW)
+        self.assertEqual(groups[0]['kinds'], {'문의': 1})
+
+
+class TalkTick(unittest.TestCase):
+    def test_first_run_marks_the_past_and_sends_only_what_comes_after(self):
+        send = Sender()
+        state, summary = tick(A.empty_state(), talk_read(talk_row('old')), NOW, send)
+        self.assertEqual((send.sent, summary['talk']['notice'], state['talk']['reopen']), ([], None, A.iso(NOW)))
+        # 켠 시각 전에 때가 정해졌지만 한참 뒤에 DB에 들어온 사건도 보내지 않는다(검수 c GA6 · d GA3).
+        state, summary = tick(state, talk_read(talk_row('old'), talk_row('late-commit', 1)), NOW + timedelta(hours=1), send)
+        self.assertEqual((send.sent, state['talk']['reopen']), ([], A.iso(NOW)))
+        state, _ = tick(state, talk_read(), NOW + timedelta(hours=73), send)
+        self.assertIsNone(state['talk']['reopen'], '72시간이 지나면 다시 연 시각을 지운다')
+        state['talk']['reopen'] = A.iso(NOW)
+        later = NOW + timedelta(minutes=3)
+        state, summary = tick(state, talk_read(talk_row('old'), talk_row('new', -60)), later, send)
+        self.assertEqual((len(send.sent), summary['talk']['sent'], summary['talk']['notice']), (1, 1, None))
+        self.assertIn('문의 1건', send.sent[0])
+        state, summary = tick(state, talk_read(talk_row('old'), talk_row('new', -60)), later + timedelta(minutes=10), send)
+        self.assertEqual(len(send.sent), 1, '같은 사건은 한 번만')
+
+    def test_old_ledger_without_talk_opens_at_the_first_run_even_if_reading_fails(self):
+        old = {'version': 1, 'alerted': {'P-1114-0001': at(9)}, 'failures': {}, 'trouble': None, 'lastReadOkAt': at(1), 'reopen': None}
+        send = Sender()
+        state, _ = tick(old, {'ok': False, 'code': 'APP_NOT_RUNNING'}, NOW, send)
+        self.assertEqual(state['talk']['reopen'], A.iso(NOW))
+        self.assertEqual(state['alerted'], {'P-1114-0001': at(9)})
+        state, _ = tick(state, talk_read(talk_row('during', -60 * 4), talk_row('before', 60)), NOW + timedelta(minutes=5), send)
+        self.assertEqual(len(send.sent), 1, '읽지 못하는 동안 온 글은 이어서 알린다')
+        self.assertIn('문의 1건', send.sent[0])
+
+    def test_failed_send_is_kept_and_retried_and_stops_the_run(self):
+        send = Sender([(False, 'URLERROR')])
+        rows = [talk_row('a', 200), talk_row('b', 100, project='pr-2', number='P-1114-CD34')]
+        state, summary = tick(talk_state(), talk_read(*rows), NOW, send)
+        self.assertEqual((len(send.sent), summary['talk']['sent'], summary['talk']['failed'], summary['talk']['waiting']), (1, 0, 1, 2))
+        self.assertEqual((state['talk']['seen'], state['talk']['lastFailure']['code']), ({}, 'URLERROR'))
+        state, summary = tick(state, talk_read(*rows), NOW + timedelta(minutes=1), send)
+        self.assertEqual((summary['talk']['sent'], summary['talk']['waiting'], state['talk']['lastFailure']), (2, 0, None))
+
+    def test_new_request_goes_first_and_its_failure_holds_talk(self):
+        send = Sender()
+        read = {'ok': True, 'rows': [row('P-1114-0001')], 'talk': [talk_row('a')]}
+        tick(talk_state(), read, NOW, send)
+        self.assertTrue(send.sent[0].startswith('PULSE 새 의뢰'))
+        self.assertTrue(send.sent[1].startswith('PULSE 고객 소식'))
+        send = Sender([(False, 'HTTP_401')])
+        state, summary = tick(talk_state(), read, NOW, send)
+        self.assertEqual((len(send.sent), summary['failed'], summary['talk']['sent'], summary['talk']['waiting']), (1, ['P-1114-0001'], 0, 0))
+        self.assertEqual(state['talk']['seen'], {})
+
+    def test_talk_is_read_only_after_every_new_request_is_sent(self):
+        order = []
+        send = Sender()
+
+        def deliver(text):
+            order.append(text.split('\n')[0])
+            return send(text)
+
+        def talker():
+            order.append('읽기')
+            return {'talk': [talk_row('a')]}
+        A.tick(talk_state(), {'ok': True, 'rows': [row('P-1114-0001', 3), row('P-1114-0002', 2)]}, NOW, deliver, talker=talker)
+        self.assertEqual(order, ['PULSE 새 의뢰 P-1114-0001 · 오미톡 스파클링', 'PULSE 새 의뢰 P-1114-0002 · 오미톡 스파클링', '읽기', 'PULSE 고객 소식 P-1114-AB12 · 오미톡'])
+        # 보내기가 막혔거나 시간이 다 갔으면 읽지도 않는다.
+        for sender, late in ((Sender([(False, 'HTTP_401')]), lambda: False), (Sender(), lambda: True)):
+            order.clear()
+            state, summary = A.tick(talk_state(), {'ok': True, 'rows': [row('P-1114-0001')]}, NOW, sender, talker=talker, out_of_time=late)
+            self.assertEqual((order, summary['talk']['read']), ([], 'later'))
+
+    def test_broken_talk_never_breaks_the_run(self):
+        def boom():
+            raise RuntimeError('고객 소식 고장')
+        send = Sender()
+        state = talk_state()
+        for minute in range(0, 21):
+            state, summary = A.tick(state, {'ok': True, 'rows': [row('P-1114-0001', 1)]}, NOW + timedelta(minutes=minute), send, talker=boom)
+        self.assertEqual(summary['talk']['read'], 'TALK_STEP_RUNTIMEERROR')
+        self.assertEqual(len(send.sent), 2, '새 의뢰 한 줄과 장애 한 줄')
+        self.assertIn('20분째', send.sent[1])
+        self.assertEqual(set(state['alerted']), {'P-1114-0001'})
+
+    def test_gap_counts_from_the_moment_of_sending(self):
+        sent_at = NOW + timedelta(seconds=20)
+        state, _ = tick(talk_state(), talk_read(talk_row('a')), NOW, Sender(), clock=lambda: sent_at)
+        self.assertEqual(state['talk']['lastSent'][A.mark('pr-1')], A.iso(sent_at))
+        later = NOW + timedelta(minutes=5)
+        state, summary = tick(state, talk_read(talk_row('b', -60)), later, Sender(), clock=lambda: later + timedelta(seconds=10))
+        self.assertEqual((summary['talk']['sent'], summary['talk']['waiting']), (0, 1))
+        # 회차는 5분 전에 시작했어도 보낼 때가 5분 뒤면 보낸다(검수 c GA2).
+        state, summary = tick(state, talk_read(talk_row('b', -60)), later, Sender(), clock=lambda: later + timedelta(seconds=25))
+        self.assertEqual(summary['talk']['sent'], 1)
+
+    def test_counts_sent_before_a_crash_stay_in_the_summary(self):
+        def save(state):
+            raise OSError('disk')
+        state, summary = tick(talk_state(), talk_read(talk_row('a')), NOW, Sender(), save=lambda st: None)
+        self.assertEqual(summary['talk']['sent'], 1)
+        state, summary = A.tick(talk_state(), {'ok': True, 'rows': []}, NOW, Sender(), save=save, talker=lambda: {'talk': [talk_row('a')]})
+        self.assertEqual((summary['talk']['sent'], summary['talk']['read']), (1, 'TALK_STEP_OSERROR'))
+
+    def test_events_before_opening_stay_quiet_even_after_unarchiving(self):
+        send = Sender()
+        state, _ = tick(A.empty_state(), talk_read(talk_row('old', stage='archived')), NOW, send)
+        state, _ = tick(state, talk_read(talk_row('old', stage='received')), NOW + timedelta(minutes=5), send)
+        self.assertEqual(send.sent, [])
+        # 켠 뒤 온 글은 보관된 동안 기다렸다가 보관을 풀면 간다.
+        state, _ = tick(state, talk_read(talk_row('new', -60, stage='archived')), NOW + timedelta(minutes=6), send)
+        self.assertEqual(send.sent, [])
+        state, _ = tick(state, talk_read(talk_row('new', -60, stage='received')), NOW + timedelta(minutes=7), send)
+        self.assertEqual(len(send.sent), 1)
+
+    def test_time_budget_holds_talk_after_the_first_send_only(self):
+        send = Sender()
+        rows = [talk_row('a', 200), talk_row('b', 100, project='pr-2')]
+        state, summary = tick(talk_state(), talk_read(*rows), NOW, send, out_of_time=lambda: True)
+        self.assertEqual((summary['talk']['sent'], summary['talk']['waiting']), (1, 1))
+        read = {'ok': True, 'rows': [row('P-1114-0001')], 'talk': rows}
+        state, summary = tick(talk_state(), read, NOW, Sender(), out_of_time=lambda: True)
+        self.assertEqual((summary['sent'], summary['talk']['sent'], summary['talk']['waiting']), (['P-1114-0001'], 0, 0))
+
+    def test_each_talk_success_is_saved_at_once_and_five_per_run(self):
+        saved = []
+        rows = [talk_row(f'e{i}', 300 - i, project=f'pr-{i}') for i in range(7)]
+        state, summary = tick(talk_state(), talk_read(*rows), NOW, Sender(), save=lambda st: saved.append(len(st['talk']['seen'])))
+        self.assertEqual((saved, summary['talk']['sent'], summary['talk']['waiting']), ([1, 2, 3, 4, 5], 5, 2))
+
+    def test_talk_trouble_is_separate_and_new_requests_keep_going(self):
+        send = Sender()
+        state = talk_state()
+        broken = {'ok': True, 'rows': [], 'talkCode': 'TALK_READ_FAILED'}
+        for minute in range(0, 20):
+            state, summary = tick(state, broken, NOW + timedelta(minutes=minute), send)
+        self.assertEqual(send.sent, [])
+        state, summary = tick(state, {**broken, 'rows': [row('P-1114-0001', -20)]}, NOW + timedelta(minutes=20), send)
+        self.assertTrue(send.sent[0].startswith('PULSE 새 의뢰 P-1114-0001'))
+        self.assertIn('20분째', send.sent[1])
+        self.assertIn('TALK_READ_FAILED', send.sent[1])
+        self.assertEqual((summary['talk']['notice'], state['trouble']), ('trouble', None))
+        state, summary = tick(state, broken, NOW + timedelta(minutes=30), send)
+        self.assertEqual(len(send.sent), 2)
+        state, summary = tick(state, talk_read(talk_row('late', -60 * 25)), NOW + timedelta(minutes=31), send)
+        self.assertEqual(send.sent[2], A.TALK_RECOVERED_TEXT)
+        self.assertTrue(send.sent[3].startswith('PULSE 고객 소식'), '못 읽는 동안 온 글은 이어서 알린다')
+        self.assertIsNone(state['talk']['trouble'])
+
+    def test_ledger_holds_hashes_only_and_is_pruned(self):
+        state, _ = tick(talk_state(), talk_read(talk_row('client:11111111-aaaa:3:customer_support:m1', project='11111111-aaaa')), NOW, Sender())
+        text = json.dumps(state, ensure_ascii=False)
+        for leaked in ('11111111', 'customer_support', '오미톡', 'm1'):
+            self.assertNotIn(leaked, text)
+        state['talk']['seen']['0' * 24] = A.iso(NOW - timedelta(days=5))
+        state, _ = tick(state, talk_read(), NOW, Sender())
+        self.assertNotIn('0' * 24, state['talk']['seen'])
+        self.assertEqual(len(state['talk']['seen']), 1)
+
+    def test_normalize_talk(self):
+        self.assertIsNone(A.normalize_talk(None))
+        self.assertIsNone(A.normalize_talk({'seen': []}))
+        got = A.normalize_talk({'seen': {'0' * 24: at(1), '../x': at(1), '1' * 24: '어제'}, 'lastSent': 3, 'trouble': {'since': '어제'}, 'reopen': '어제'})
+        self.assertEqual(got, {**A.empty_talk(), 'seen': {'0' * 24: at(1)}})
+
+
+class ReadTalk(unittest.TestCase):
+    def build(self, project, extra=()):
+        folder = tempfile.mkdtemp(prefix='pulse-alert-talk-')
+        self.db, writer = make_db(folder, [('clientProjects', project['id'], project), *extra])
+        self.addCleanup(writer.close)
+        return folder
+
+    def project(self, **more):
+        def event(ident, kind, minutes, actor='customer', **more):
+            return {'id': ident, 'type': kind, 'createdAt': at(minutes), 'actorId': actor, 'audiences': ['owner'], **more}
+        return {'id': 'pr-1', 'title': '오미톡', 'stage': 'review', 'ownerId': 'u-1', 'updatedAt': at(2), 'customerName': '김오미', 'contact': 'kim@omitok.com',
+                'studio': {'request': {'number': 'P-1114-AB12'}},
+                'messages': [{'id': 'm1', 'author': 'staff', 'visibility': 'internal', 'at': at(1), 'text': '내부 메모'},
+                             {'id': 'm3', 'author': 'customer', 'visibility': 'customer', 'at': at(2), 'text': '비밀 글 010-1234-5678'}],
+                'notificationEvents': [event('e-support', 'customer_support', 2), event('e-read', 'customer_feedback', 3), event('e-staff', 'staff_reply', 30, 'u-1', messageId='m0'), event('e-comment', 'staff_reply', 1, 'u-1', commentId='c1'),
+                                       event('e-auto', 'auto_reply', 1, 'pulse-auto-reply'), event('e-old', 'customer_support', 60 * 80)], **more}
+
+    def test_reads_customer_events_without_message_text(self):
+        folder = self.build(self.project(), [('clientNotificationReads', 'u-1|e-read', {'id': 'u-1|e-read'}), ('clientNotificationReads', 'u-2|e-support', {'id': 'x'}),
+                                             ('clientProjects', 'b', {'id': 'b', 'title': '사건 없음', 'updatedAt': at(1), 'studio': {}})])
+        base = A.read_rows(run=docker(folder))
+        self.assertTrue(base['ok'], base)
+        got = A.read_talk(base['db'], NOW)
+        rows = {item['event']: item for item in got['talk']}
+        self.assertEqual(set(rows), {'e-support', 'e-read'})
+        self.assertEqual(rows['e-support'], {'project': 'pr-1', 'number': 'P-1114-AB12', 'stage': 'review', 'title': '오미톡', 'event': 'e-support',
+                                             'type': 'customer_support', 'at': at(2), 'read': False})
+        self.assertTrue(rows['e-read']['read'], '담당자가 읽은 사건')
+        text = json.dumps([base, got], ensure_ascii=False)
+        for leaked in ('비밀 글', '010-1234', 'kim@', '김오미', '내부 메모'):
+            self.assertNotIn(leaked, text)
+
+    def test_talk_failure_does_not_stop_new_requests(self):
+        project = self.project()
+        project['studio']['request'].update({'status': 'submitted', 'submittedAt': at(2)})
+        project['notificationEvents'] = ['{깨진 사건']
+        folder = self.build(project)
+        got = A.read_rows(run=docker(folder))
+        self.assertEqual((got['ok'], [item['number'] for item in got['rows']]), (True, ['P-1114-AB12']))
+        self.assertEqual(A.read_talk(got['db'], NOW), {'talkCode': 'TALK_READ_FAILED'})
+
+    def test_closed_db_and_slow_read_are_codes(self):
+        folder = self.build(self.project())
+        db = os.path.join(folder, 'company.sqlite')
+        self.assertEqual(A.read_talk(db, NOW, exists=lambda path: not path.endswith('-shm')), {'talkCode': 'DB_NOT_OPEN_BY_APP'})
+        old = A.TALK_READ_SECONDS
+        A.TALK_READ_SECONDS = -1
+        try:
+            self.assertEqual(A.read_talk(db, NOW, steps=1), {'talkCode': 'TALK_READ_TIMEOUT'})
+        finally:
+            A.TALK_READ_SECONDS = old
+
+    def test_main_reads_talk_after_requests_and_dry_run_shows_it(self):
+        folder = self.build(self.project())
+        state_dir, config = os.path.join(folder, 'state'), os.path.join(folder, 'telegram.env')
+        with open(config, 'w', encoding='utf-8') as handle:
+            handle.write(f'TELEGRAM_BOT_TOKEN={TOKEN}\nTELEGRAM_CHAT_ID=6017495834\n')
+        sent, moment = [], [NOW - timedelta(minutes=10)]
+
+        def run_main(argv):
+            out, old = io.StringIO(), sys.stdout
+            sys.stdout = out
+            try:
+                A.main(argv, state_dir=state_dir, config_path=config, reader=lambda: A.read_rows(run=docker(folder)),
+                       sender=lambda c, text: (sent.append(text), (True, 'OK'))[1], clock=lambda: moment[0])
+            finally:
+                sys.stdout = old
+            return [json.loads(line) for line in out.getvalue().splitlines()]
+        run_main([])
+        moment[0] = NOW
+        dry = run_main(['--dry-run'])[-1]
+        self.assertEqual((dry['talkRead'], dry['talkEvents'], dry['talkWaiting']),
+                         ('ok', 2, [{'number': 'P-1114-AB12', 'kinds': {'문의': 1, '시안 수정 의견': 1}, 'ready': True}]))
+        lines = run_main([])
+        self.assertEqual(len(sent), 1)
+        self.assertEqual(sorted(sent[0].splitlines()[1].split(' · ')), ['문의 1건', '시안 수정 의견 1건'])
+        self.assertEqual((lines[-1]['talk']['sent'], '오미톡' in json.dumps(lines, ensure_ascii=False)), (1, False))
+        self.assertEqual(run_main([]), [], '조용한 회차는 한 줄도 찍지 않는다')
+
+
+class TalkContract(unittest.TestCase):
+    def test_every_customer_event_of_the_app_is_listed(self):
+        source = (HERE.parent.parent / 'docs/마케팅/온라인마케팅지도/engagement/company/client-notifications.mjs').read_text(encoding='utf-8')
+        kinds = set(re.findall(r"\b(customer_[a-z_]+)\b", source))
+        # 이름이 customer_로 시작하지 않는 고객 사건도 잡는다 — 고객 동작 표, 고객 의뢰 표, 고객이 한 일로 적는 사건(검수 GA7).
+        def table(name):
+            found = re.search(name + r"\s*=\s*\{(.*?)\}\s*[;,]", source, re.S)
+            self.assertIsNotNone(found, f'앱의 {name} 표를 찾지 못했다 — 이 시험의 읽는 식을 앱 꼴에 맞춘다')
+            return found.group(1)
+        kinds |= set(re.findall(r"\[\s*'([a-z_]+)'\s*,", table('customerActions')))
+        kinds |= set(re.findall(r":\s*'([a-z_]+)'", table('PEOPLE_STAFF')))
+        kinds |= set(re.findall(r"add\(\s*'([a-z_]+)'[^\n]*?actorId\s*:\s*'customer'", source))
+        self.assertGreater(len(kinds), 15)
+        self.assertIn('request_received', kinds)
+        known = set(A.TALK_LABELS) | A.TALK_SILENT
+        self.assertEqual(kinds - known, set(), '새 고객 사건 — alert.py의 TALK_LABELS(알림에 쓸 말)나 TALK_SILENT에 넣는다')
+        self.assertEqual(known - kinds, set(), '앱에 없는 사건 이름')
 
 
 class UnitFiles(unittest.TestCase):

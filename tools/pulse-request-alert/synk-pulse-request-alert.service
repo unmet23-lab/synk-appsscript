@@ -1,5 +1,5 @@
 [Unit]
-Description=SYNK PULSE new request Telegram alert (read-only company DB, one line per request number)
+Description=SYNK PULSE new request and customer news Telegram alert (read-only company DB)
 Documentation=https://github.com/unmet23-lab/synk-appsscript/blob/master/tools/pulse-request-alert/README.md
 After=network-online.target docker.service
 Wants=network-online.target
