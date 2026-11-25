@@ -923,7 +923,7 @@ if(!process.versions.electron){
           await chat(w,'lobby');await wait(800);
           const lobbyStaff=await w.js("[..."+ROOM+".querySelectorAll('[data-off-center] .row.staff')].map(r=>r.dataset.staff+'|'+r.querySelector('.nm').firstChild.textContent+'|'+r.querySelector('.mid b').textContent+'|'+(r.querySelector('.mid small')?.textContent||''))");
           const staff=[...devStaff,...lobbyStaff];
-          check('22 staff lines say the state, the folder and tool, the helpers, and that a Codex session cannot tell about questions',staff.includes('sess-qa-dev-01|Claude Code|3분 전에 승인을 물었습니다|shop · 명령 · npm')&&staff.some(s=>s.startsWith('sess-qa-cdx-01|Codex|일하는 중|api'))&&staff.some(s=>s.startsWith('sess-qa-lob-01|')&&s.includes('도우미 둘')),{staff});
+          check('22 staff lines say the state, the folder and tool, the helpers, and that a Codex session cannot tell about questions',staff.includes('sess-qa-dev-01|Claude Code|3분 전에 승인을 물었습니다|명령 · npm')&&staff.some(s=>s.startsWith('sess-qa-cdx-01|Codex|일하는 중|api'))&&staff.some(s=>s.startsWith('sess-qa-lob-01|')&&s.includes('도우미 둘')),{staff});
           const l1b=await look(w);
           check('22 부서 없는 일 puts its sessions in the middle with no composer and no side column',l1b.sel==='lobby'&&JSON.stringify(l1b.center)===JSON.stringify(['lobby'])&&!l1b.compose&&l1b.side.length===0,l1b);
           await capture(w,'office-lobby');

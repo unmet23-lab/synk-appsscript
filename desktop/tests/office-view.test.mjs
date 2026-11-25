@@ -141,11 +141,16 @@ test('closed rows show no path: a folder other than the department\'s reads 「�
 test('staff lines: tool and model, the state in bold, the activity small, helpers and the note for sessions without hooks', () => {
   const room = officeRoom(snapOf(), {}, NOW, { subs: SUBS });
   const dev = rowOf(room, 'd:ddev').more, lobby = rowOf(room, 'lobby').more;
-  assert.deepEqual(dev.find(m => m[0] === 'staff'), ['staff', 'sess-dev-0002', 'Claude Code', '', '3분 전에 승인을 물었습니다', 'shop', 'alert now']);
+  assert.deepEqual(dev.find(m => m[0] === 'staff'), ['staff', 'sess-dev-0002', 'Claude Code', '', '3분 전에 승인을 물었습니다', '', 'alert now'], 'the department folder name is not repeated on its own staff line');
   const codex = dev.find(m => m[0] === 'staff' && m[1] === 'sess-cdx-0003');
-  assert.deepEqual(codex.slice(2), ['Codex', '', '일하는 중', 'api · 승인 요청은 여기에 뜨지 않습니다', ''], 'a Codex session under the department folder belongs to it and says it cannot tell about questions');
+  assert.deepEqual(codex.slice(2), ['Codex', '', '일하는 중', 'api 폴더에서 켬 · 승인 요청은 여기에 뜨지 않습니다', ''], 'a Codex session under the department folder belongs to it and says it cannot tell about questions');
   const helped = lobby.find(m => m[0] === 'staff' && m[1] === 'sess-lob-0004');
-  assert.equal(helped[5], '회의록 · 읽기 · 회의록.txt · 도우미 둘과 함께');
+  assert.equal(helped[5], '회의록 폴더에서 읽기 · 회의록.txt · 도우미 둘과 함께');
+  // 하는 일을 모르면 덩그런 폴더 이름 대신 「… 폴더에서 켬」이다. 번호 폴더는 쓰지 않고, 작업 사본은 저장소 이름이다(11-25 맹검)
+  const bare = rowOf(officeRoom(snapOf({ state: stateOf([record('sess-bar-0002', 'C:\\work\\회의록', 'claude', NOW - 20 * S), record('sess-own-0009', 'C:\\Users\\a\\AppData\\Roaming\\SYNK\\OfficeWork\\member_1024', 'claude', NOW - 30 * S), record('sess-wtr-0009', 'D:\\worktrees\\blog\\vigilant-jackson-a5f00e', 'claude', NOW - 40 * S)]) }), {}, NOW, { subs: SUBS }), 'lobby').more;
+  assert.deepEqual(Object.fromEntries(bare.filter(m => m[0] === 'staff').map(m => [m[1], m[5]])), { 'sess-bar-0002': '회의록 폴더에서 켬', 'sess-own-0009': '', 'sess-wtr-0009': 'blog 폴더에서 켬' });
+  // 단추에는 폴더 이름을 적지 않는다. 작업 사본이면 부서에 묶이는 폴더의 이름이 아니다(Fable F1)
+  assert.deepEqual([...new Set(bare.filter(m => m[0] === 'acts' && m[1][0][1] === 'grp').map(m => m[1][0][0]))], ['이 폴더로 부서 만들기']);
   assert.equal(modelWord('claude-opus-4-5-20251101'), 'Opus');
   assert.equal(modelWord('gpt-5.2-codex'), 'gpt-5.2-codex');
 });

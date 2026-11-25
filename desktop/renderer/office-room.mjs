@@ -94,19 +94,22 @@ export function officeGroupStatus(staff) {
   if (n(['resting'])) return '쉬는 중';
   return '조용합니다';
 }
-/* 직원 줄의 작은 글: 작업 폴더와 마지막 도구, 도우미 수, 모르는 것 */
-export function officeStaffDetail(v) {
+/* 직원 줄의 작은 글: 하는 일, 도우미 수, 모르는 것. 하는 일을 모르면 「shop 폴더에서 켬」이다. 덩그런 폴더 이름은 처음 보는 사람이 무엇인지 몰랐다
+   (11-25 맹검). 바로 아래 「이 폴더로 부서 만들기」의 「이 폴더」가 이 글이다. 단추에는 이름을 적지 않는다: 작업 사본이면 이름은 저장소인데
+   부서에 묶이는 것은 작업 사본 폴더다(Fable solio-office-staff-words F1) */
+export function officeStaffDetail(v, deptFolder = null) {
   const helpers = v.subagents > 0 ? wa('도우미 ' + countWord(v.subagents)) + ' 함께' : '';
-  return [v.activity, helpers, v.note].filter(Boolean).join(' · ');
+  const place = v.folder && !ownFolder(v, deptFolder) ? v.folder + ' 폴더에서 켬' : '';
+  return [activitySay(v, deptFolder) || place, helpers, v.note].filter(Boolean).join(' · ');
 }
-function staffItem(v) {
+function staffItem(v, deptFolder) {
   // 이름을 바꾼 직원은 이름 칸에 그 이름, 작은 글에 도구와 모델이다(꾸미기 6절)
   const tool = TOOL_NAME[v.tool] || v.tool || '', model = modelWord(v.model);
   const nm = v.lookName || tool, small = v.lookName ? [tool, model].filter(Boolean).join(' · ') : model;
-  return ['staff', v.id, nm, small, v.say, officeStaffDetail(v), flags(v.alert && 'alert', v.status === 'asked' && 'now')];
+  return ['staff', v.id, nm, small, v.say, officeStaffDetail(v, deptFolder), flags(v.alert && 'alert', v.status === 'asked' && 'now')];
 }
-function staffItems(v, tasking) {
-  const rows = [staffItem(v)];
+function staffItems(v, tasking, deptFolder = null) {
+  const rows = [staffItem(v, deptFolder)];
   if (tasking && Object.hasOwn(TOOL_NAME, v.tool)) {
     const name = v.tool === 'codex' ? 'GPT (Codex)' : TOOL_NAME[v.tool];
     rows.push(['acts', [[name + '에게 새 일 맡기기', 'task-open', v.tool]]]);
@@ -114,26 +117,30 @@ function staffItems(v, tasking) {
   return rows;
 }
 const rowLabel = parts => parts.filter(Boolean).join(', ');
-/* 닫힌 줄 가운데 칸의 「하는 일」. officeActivity(「shop · 읽기 · auth.ts」)의 맨 앞 폴더 이름을, 부서 줄에서는 그 부서의 폴더면 빼고
-   그 밖에는 「shop 폴더에서 읽기 · auth.ts」처럼 일하는 곳으로 쓴다. 하는 일을 모르면 폴더 이름을 쓰지 않는다. 처음 보는 사람은 그 폴더가 왜 거기
-   있는지 모른다(11-23 두 번 · 11-25 맹검). 부서 줄은 어느 AI인지를, 「부서 없는 일」은 어디서 켠 AI인지를 쓴다. 폴더는 줄을 열면 직원마다 보인다 */
 const samePath = (a, b) => { const n = p => String(p ?? '').trim().replace(/[\\/]+/g, '\\').replace(/\\$/, '').toLowerCase(); return n(a) === n(b); };
-function rowActivity(v, deptFolder = null, staff = [v]) {
+/* 이름을 적지 않는 폴더. 부서 줄에서 그 부서의 폴더다. 부서 폴더 안의 작업 사본(「shop/.claude/worktrees/…」)은 이름이 부서 폴더와 같게 읽히므로 그것도 자기 폴더다
+   (카본 solio-room-content A1). 부서를 정하지 않고 솔리오에 맡긴 일의 폴더는 이름이 회원 번호라 어느 줄에도 쓰지 않는다(카본 solio-office-words A2, Fable F4) */
+function ownFolder(v, deptFolder = null) {
+  return officeOwnWorkCwd(v.cwd) || (deptFolder != null && (samePath(v.cwd, deptFolder) || String(v.folder || '').toLowerCase() === officeFolderName(deptFolder).toLowerCase()));
+}
+/* 하는 일의 글: officeActivity(「shop · 읽기 · auth.ts」)의 맨 앞 폴더 이름을 「shop 폴더에서 읽기 · auth.ts」처럼 일하는 곳으로 쓴다. 폴더밖에 모르면 빈 글이다 */
+function activitySay(v, deptFolder = null) {
   const act = String(v.activity || ''), folder = String(v.folder || '');
   const rest = folder && (act === folder || act.startsWith(folder + ' · ')) ? act.slice(folder.length).replace(/^ · /, '') : act;
-  // 부서를 정하지 않고 솔리오에 맡긴 일의 폴더 이름은 회원 번호라 어느 줄에도 쓰지 않는다(카본 solio-office-words A2, Fable F4)
-  const own = officeOwnWorkCwd(v.cwd);
+  return rest && folder && !ownFolder(v, deptFolder) ? folder + ' 폴더에서 ' + rest : rest;
+}
+/* 닫힌 줄 가운데 칸의 「하는 일」. 하는 일을 모르면 폴더 이름을 쓰지 않는다. 처음 보는 사람은 그 폴더가 왜 거기 있는지 모른다(11-23 두 번 · 11-25 맹검).
+   부서 줄은 어느 AI인지를, 「부서 없는 일」은 어디서 켠 AI인지를 쓴다 */
+function rowActivity(v, deptFolder = null, staff = [v]) {
+  const say = activitySay(v, deptFolder);
   if (deptFolder == null) {
-    if (rest) return (own ? '솔리오에서 맡긴 일 · ' : folder ? folder + ' 폴더에서 ' : '') + rest;
+    if (say) return (officeOwnWorkCwd(v.cwd) ? '솔리오에서 맡긴 일 · ' : '') + say;
     // 하는 일을 모르면 줄의 글은 묶음의 출처로 읽히므로 앞선 직원 하나가 아니라 모두를 본다(Fable F1)
     const ours = staff.filter(s => officeOwnWorkCwd(s.cwd)).length;
     return !ours ? '이 PC에서 따로 켠 AI' : ours === staff.length ? '솔리오에서 맡긴 일' : '따로 켠 AI와 맡긴 일';
   }
-  // 부서 폴더 안의 작업 사본(「shop/.claude/worktrees/…」)은 이름이 부서 폴더와 같게 읽히므로 그것도 자기 폴더다(카본 solio-room-content A1)
-  const mine = own || samePath(v.cwd, deptFolder) || folder.toLowerCase() === officeFolderName(deptFolder).toLowerCase();
-  if (rest) return (folder && !mine ? folder + ' 폴더에서 ' : '') + rest;
   // 하는 일을 모르면 오른쪽 칸(「하나 일하는 중」 · 「승인을 물었습니다」)과 겹치지 않게 어느 AI인지 쓴다(「Claude Code · Opus」, Fable solio-room-content F3)
-  return [TOOL_NAME[v.tool] || '', modelWord(v.model)].filter(Boolean).join(' · ') || v.say;
+  return say || [TOOL_NAME[v.tool] || '', modelWord(v.model)].filter(Boolean).join(' · ') || v.say;
 }
 
 /* ── 꾸미기(PC앱_설계.md 2~3절 · 6절) ── 값의 꼴은 본체(office-store.cjs)와 같다 */
@@ -315,7 +322,7 @@ function departmentRow(d, staff, ui, tasking, tasks = []) {
   // 닫힌 줄에는 경로를 쓰지 않는다(11-23 맹검이 「inapp\기획부」를 짚었다). 빈 부서는 직원이 서는 길을 말하고, 온전한 경로는 부서 설정의 「폴더」 줄에 있다
   const mid = lead ? rowActivity(lead, d.folder || '') : tasking ? '일을 맡기면 직원이 자리에 앉습니다' : '이 부서 폴더에서 일을 시작하면 직원이 섭니다';
   const val = officeGroupStatus(staff);
-  const staffMore = staff.flatMap(v => staffItems(v, tasking));
+  const staffMore = staff.flatMap(v => staffItems(v, tasking, d.folder || ''));
   if (tasking) staffMore.push(['acts', [['이 부서에 일 맡기기', 'task-open', '']]]);
   else if (!staff.length) staffMore.push(['note', '이 폴더에서 Claude Code나 Codex를 켜면 여기에 섭니다.']);
   const more = [];
@@ -362,7 +369,7 @@ function lobbyRow(staff, departments, ui, tasking) {
       ], !open]);
     }
   }
-  more.push(['note', '솔리오 밖에서 직접 연 일은 여기에 섭니다. 작업 폴더가 부서의 폴더이거나 그 아래이면 그 부서로 갑니다.']);
+  more.push(['note', '이 PC에서 따로 켠 AI(Claude Code, Codex)는 여기에 섭니다. 켠 폴더가 부서의 폴더이거나 그 아래이면 그 부서로 갑니다.']);
   more.push(['live', ui.notes?.get?.('lobby') || '']);
   return { key: 'lobby', nm: '부서 없는 일', flag: alert, mid, val, when: '', now: staff.some(v => v.status === 'asked'), watch: true, label: rowLabel(['부서 없는 일', alert && '새 소식', mid, val]), more };
 }
