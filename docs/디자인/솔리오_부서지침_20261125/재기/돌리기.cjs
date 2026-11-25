@@ -2,7 +2,9 @@
 // 개발부 지침 묶음 재기: 같은 과제를 「지침 없는 Claude(plain)」와 「지침 묶음을 얹은 Claude(pack)」로 돌려 결과를 모은다.
 //   node 돌리기.cjs <결과 폴더> [--과제 T1,T2] [--팔 plain,pack] [--횟수 1 | --회 2] [--동시 3]
 // 두 팔의 차이는 묶음 플래그(--append-system-prompt-file 지침.md, --plugin-dir plugin) 하나다. 둘 다 이 PC 사람의 CLAUDE.md를 빼고
-// (claudeMdExcludes), 과제마다 새 임시 폴더에서 같은 도구 허락(파일 읽고 쓰기, 명령 실행)으로 돈다. 무인 실행이라 묻는 말은 답에 남는다.
+// (claudeMdExcludes), 과제마다 새 임시 폴더에서 같은 도구 허락으로 돈다. 무인 실행이라 묻는 말은 답에 남는다.
+// 환경변수는 솔리오가 직원을 띄울 때처럼(office-task-runtime.cjs employeeEnv) 지운다. 이 도구를 Claude 앱 안에서 부르면 앱의 변수가 새어 들어가
+// 게시 도구와 앱의 임시 폴더를 쓰게 된다(11-25 1차에서 그랬다). 거절된 도구는 meta.json에 남긴다. 채점.cjs가 오류 · 한도 · 시간 초과 · 거절이 있는 쌍을 뺀다.
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os');
 const { spawn, execFileSync } = require('node:child_process');
 const 과제들 = require('./과제.cjs'), { walk, sha } = 과제들;
@@ -20,6 +22,14 @@ fs.mkdirSync(out, { recursive: true });
 const settings = path.join(out, 'settings.json');
 fs.writeFileSync(settings, JSON.stringify({ claudeMdExcludes: ['**/CLAUDE.md', '**/.claude/CLAUDE.md'] }));
 
+function employeeEnv() {
+  const env = { ...process.env };
+  for (const k of Object.keys(env)) if (/^(?:CLAUDE|ANTHROPIC|CODEX|OPENAI|ELECTRON|SOLIO_MAIL)/i.test(k) || /^NODE_OPTIONS$/i.test(k)) delete env[k];
+  env.CLAUDE_CODE_USE_POWERSHELL_TOOL = '0'; // 명령 도구를 두 팔 모두 Bash 하나로 맞춘다
+  return env;
+}
+const BASH = ['cd', 'ls', 'pwd', 'cat', 'head', 'tail', 'echo', 'grep', 'find', 'wc', 'diff', 'test', 'node', 'npm test', 'npm run', 'mkdir', 'mv', 'cp', 'rm', 'rmdir', 'sed', 'git status', 'git diff'];
+const TOOLS = ['Read', 'Write', 'Edit', 'Glob', 'Grep', 'Skill', ...BASH.map(c => `Bash(${c}:*)`)].join(',');
 function writeSeed(dir, seed) {
   for (const [f, body] of Object.entries(seed)) { const p = path.join(dir, f); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, body); }
 }
@@ -39,15 +49,15 @@ function runOne(task, arm, rep) {
     fs.mkdirSync(where, { recursive: true });
     const seedDir = path.join(out, task.id, 'seed');
     if (!fs.existsSync(seedDir)) { fs.mkdirSync(seedDir, { recursive: true }); writeSeed(seedDir, task.seed); }
-    const work = fs.mkdtempSync(path.join(os.tmpdir(), `solio-dev-${task.id}-${arm}-`));
+    const work = fs.mkdtempSync(path.join(os.tmpdir(), 'solio-dev-'));
     writeSeed(work, task.seed);
     const seedHash = Object.fromEntries(walk(work).map(f => [f, sha(fs.readFileSync(path.join(work, f)))]));
     const args = ['-p', '--output-format', 'json', '--setting-sources', 'project', '--settings', settings,
-      '--permission-mode', 'acceptEdits', '--allowedTools', 'Bash,Read,Write,Edit,Glob,Grep,Skill'];
+      '--permission-mode', 'acceptEdits', '--allowedTools', TOOLS];
     if (arm === 'pack') args.push('--append-system-prompt-file', path.join(PACK, '지침.md'), '--plugin-dir', path.join(PACK, 'plugin'));
     args.push('--', task.요청);
     const started = Date.now();
-    const child = spawn(claude, args, { cwd: work, windowsHide: true, shell: false, env: { ...process.env, CLAUDECODE: '' } });
+    const child = spawn(claude, args, { cwd: work, windowsHide: true, shell: false, env: employeeEnv() });
     let stdout = '', stderr = '', timedOut = false;
     child.stdout.on('data', d => { stdout += d; });
     child.stderr.on('data', d => { stderr += d; });
@@ -64,12 +74,12 @@ function runOne(task, arm, rep) {
       fs.writeFileSync(path.join(where, 'answer.md'), answer);
       fs.writeFileSync(path.join(where, 'diff.patch'), diff(seedDir, path.join(where, 'files')).slice(0, 80000));
       fs.writeFileSync(path.join(where, 'checks.json'), JSON.stringify(checks, null, 2));
-      const meta = { task: task.id, arm, rep, code, timedOut, seconds: Math.round((Date.now() - started) / 1000), turns: res?.num_turns ?? null,
+      const meta = { task: task.id, arm, rep, packSha256: arm === 'pack' ? sha(fs.readFileSync(path.join(PACK, '지침.md'))) : null, code, timedOut, seconds: Math.round((Date.now() - started) / 1000), turns: res?.num_turns ?? null,
         isError: res?.is_error ?? null, models: res?.modelUsage ? Object.keys(res.modelUsage) : null, costUsdEquivalent: res?.total_cost_usd ?? null,
-        passed: checks.filter(c => c.ok).length, total: checks.length, stderr: stderr.slice(-2000) };
+        passed: checks.filter(c => c.ok).length, total: checks.length, denials: (res?.permission_denials || []).map(d => `${d.tool_name}: ${String(d.tool_input?.command || d.tool_input?.file_path || '').replace(/\s+/g, ' ').slice(0, 120)}`), stderr: stderr.slice(-2000) };
       fs.writeFileSync(path.join(where, 'meta.json'), JSON.stringify(meta, null, 2));
       fs.rmSync(work, { recursive: true, force: true });
-      console.log(`${task.id} ${arm}-${rep}: 검사 ${meta.passed}/${meta.total} · ${meta.seconds}초 · 차례 ${meta.turns}${timedOut ? ' · 시간 초과' : ''}${res ? '' : ' · 답 없음'}`);
+      console.log(`${task.id} ${arm}-${rep}: 검사 ${meta.passed}/${meta.total} · ${meta.seconds}초 · 차례 ${meta.turns}${meta.denials.length ? ` · 거절 ${meta.denials.length}` : ''}${timedOut ? ' · 시간 초과' : ''}${res ? '' : ' · 답 없음'}`);
       resolve(meta);
     });
   });
