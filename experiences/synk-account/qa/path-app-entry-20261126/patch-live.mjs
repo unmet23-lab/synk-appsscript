@@ -52,11 +52,11 @@ const inline = text => `<a href="/path/app/" style="color:inherit;text-decoratio
 const swap = (s, pairs) => pairs.reduce((t, [a, b]) => { assert.equal(t.split(a).length, 2, a); return t.replace(a, () => b); }, s);
 const rows = (s, keys) => keys.map(([key, pairs]) => { const line = s.split('\n').find(one => one.includes(key)); assert.ok(line, key); return [line, swap(line, pairs)]; });
 
-const koDesc = [['유학과 일자리 준비는 차례로 엽니다', '유학 준비는 PATH 앱에서 하고, 일자리 준비는 차례로 엽니다']];
+const koDesc = [['유학과 일자리 준비는 차례로 엽니다', '유학 준비는 PATH 앱에서 합니다. 일자리 준비는 이어서 엽니다']];
 apply('path/index.html', rows(read(path.join(live, 'path/index.html')), [
   ['<meta name="description"', koDesc],
   ['property="og:description"', koDesc],
-  ['data-intro', [['유학과 일자리 준비는 차례로 엽니다.', `유학 준비는 ${inline('PATH 앱')}에서 하고, 일자리 준비는 차례로 엽니다.`]]],
+  ['data-intro', [['유학과 일자리 준비는 차례로 엽니다.', `유학 준비는 ${inline('PATH 앱')}에서 합니다. 일자리 준비는 이어서 엽니다.`]]],
   ['id="road-title"', [['지금 열린 것은 둘, 면접 연습과 서울 하루입니다. 나머지 넷은', '지금 열린 것은 셋, 서울 하루와 유학 준비, 면접 연습입니다. 나머지 셋은']]],
   ['<ol class="pa-stations">', [
     ['<li class="pa-st" id="study">', '<li class="pa-st is-live" id="study">'],
@@ -65,7 +65,7 @@ apply('path/index.html', rows(read(path.join(live, 'path/index.html')), [
   ]],
 ]));
 
-const enDesc = [['study and job preparation open one at a time', 'prepare to study in the PATH app, and job preparation opens next']];
+const enDesc = [['study and job preparation open one at a time', 'study preparation is in the PATH app, and job preparation opens next']];
 apply('en/path/index.html', rows(read(path.join(live, 'en/path/index.html')), [
   ['<meta name="description"', enDesc],
   ['property="og:description"', enDesc],
