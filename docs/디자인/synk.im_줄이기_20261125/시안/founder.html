@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>창업자 해 온 일 — synk 줄인 판</title>
+<link rel="stylesheet" href="base.css">
+<style>
+/* 보내신 캡처의 구역만 바꾼다. 나머지 창업자 쪽은 그대로 */
+.b{padding:clamp(110px,12vw,150px) var(--gut) clamp(70px,8vw,120px)}
+.b>header{display:grid;grid-template-columns:1fr 1.2fr;gap:24px clamp(28px,5vw,80px)}
+.b h1{font-size:var(--big)}
+.b header p{font-size:var(--lead);line-height:1.65}
+.tb{margin-top:clamp(40px,5vw,70px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-block:1px solid var(--line)}
+.tb section{padding:30px 26px 40px;border-left:1px solid var(--line)}
+.tb section:first-child{padding-left:0;border-left:0}
+.tb h2{font:700 24px/1.2 var(--sans);margin-bottom:8px}
+.tb dl{margin:0}.tb dt{margin-top:22px;font:600 15px/1.3 var(--sans);color:var(--sub);font-variant-numeric:tabular-nums}
+.tb dd{margin:6px 0 0;font-weight:700;line-height:1.45}
+.tb dd+dd{font-weight:400;color:#3c3c40;margin-top:2px;font-size:16px}
+.tb .go{background:var(--panel);margin:-1px 0;padding-left:26px!important}
+.tb .go h2{display:flex;align-items:center;gap:10px}
+.tb .go h2::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--coral)}
+@media (prefers-reduced-motion:no-preference){.tb .go h2::before{animation:b 2.6s ease-in-out infinite}@keyframes b{50%{opacity:.35}}}
+.ab{display:flex;gap:8px;margin-bottom:34px}
+.ab button{height:46px;padding:0 20px;border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--line);font:600 16px/1 var(--sans)}
+.ab button[aria-pressed=true]{background:var(--ink);color:#fff;box-shadow:none}
+@media (max-width:820px){.b>header,.tb{grid-template-columns:1fr}.tb section{border-left:0;padding:26px 0;border-top:1px solid var(--line)}.tb section:first-child{border-top:0}.tb .go{padding-inline:20px!important}}
+</style></head><body>
+<header class="nav solid" id="nav"><a class="logo" href="index.html">synk</a><ul><li><a href="path.html">한국어와 유학</a></li><li><a href="shift.html">AI 강의</a></li><li><a href="pulse.html">광고</a></li><li><a href="founder.html" aria-current="page">회사</a></li></ul><div class="r"><span>EN</span><span class="me">내 홈</span></div></header>
+<main class="b">
+  <div class="ab" role="group" aria-label="견주기"><button type="button" data-k="new" aria-pressed="true">바꾼 칸</button><button type="button" data-k="old" aria-pressed="false">지금 공개본</button></div>
+  <header><h1>지금까지 해 온 일</h1><p>건축과 심리학을 공부했고, 무대와 영상에서 퍼포머로 활동했고, 몽골의 학원에서 부원장으로 일했습니다. 지금은 이 경험을 모두 SYNK를 만드는 데 씁니다.</p></header>
+  <div class="tb" data-k="new">
+    <section class="go"><h2>진행 중</h2><dl><dt>2026</dt><dd>모두의 창업 프로젝트</dd><dd>중소벤처기업부 · 1라운드 진출</dd><dt>2026</dt><dd>의왕시 청년 e-Room 창업아이디어 공모전</dd><dd>본선 진출</dd><dt>2026</dt><dd>CTS 국제 AI 단편영화 제작지원사업</dd><dd>1차 통과</dd><dt>2027. 2</dt><dd>SYNK 정식 출시</dd><dd>사전예약 받는 중</dd></dl></section>
+    <section><h2>수상</h2><dl><dt>2026</dt><dd>서울로미디어캔버스 단편 애니메이션 공모</dd><dd>「다리가 기억하는 것」 당선 · 2026.12 ~ 2027.2 전시</dd><dt>2019</dt><dd>Fine Art Photography Awards</dd><dd>Open Theme 부문 · Winner</dd><dt>2017</dt><dd>MK Challenge · 매일경제 주최</dd><dd>프로젝트 리더 · 준우승</dd></dl></section>
+    <section><h2>퍼포먼스 · 프로젝트</h2><dl><dt>2023</dt><dd>RCA · Royal College of Art</dd><dd>영국 왕립예술대학 졸업 프로젝트 · 메인 퍼포머</dd><dt>2023</dt><dd>드라마 「보라! 데보라」 · 넷플릭스</dd><dd>오프닝 시퀀스</dd><dt>2014</dt><dd>LOEN Entertainment</dd><dd>퍼포머</dd></dl></section>
+    <section><h2>교육 · 운영</h2><dl><dt>2026</dt><dd>몽골 Skyline Edu 전 부원장</dd><dd>학생 성장 · 교육 운영 · 마케팅</dd></dl></section>
+  </div>
+  <div class="tb" data-k="old" hidden>
+    <section><h2>교육 · 운영</h2><dl><dt>2026</dt><dd>몽골 Skyline Edu 전 부원장</dd><dd>학생 성장 · 교육 운영 · 마케팅</dd></dl></section>
+    <section><h2>퍼포먼스 · 프로젝트</h2><dl><dt>2023</dt><dd>RCA · Royal College of Art</dd><dd>영국 왕립예술대학 졸업 프로젝트 · 메인 퍼포머</dd><dt>2023</dt><dd>드라마 「보라! 데보라」 · 넷플릭스</dd><dd>오프닝 시퀀스</dd><dt>2014</dt><dd>LOEN Entertainment</dd><dd>퍼포머</dd></dl></section>
+    <section><h2>수상</h2><dl><dt>2026</dt><dd>서울로미디어캔버스 단편 애니메이션 공모</dd><dd>「다리가 기억하는 것」 당선 · 2026.12 ~ 2027.2 전시</dd><dt>2019</dt><dd>Fine Art Photography Awards</dd><dd>Open Theme 부문 · Winner</dd><dt>2017</dt><dd>MK Challenge · 매일경제 주최</dd><dd>프로젝트 리더 · 준우승</dd></dl></section>
+    <section><h2>학력</h2><dl><dt></dt><dd>중앙대학교 심리학과</dd></dl></section>
+  </div>
+</main>
+<div class="rev" role="group" aria-label="시안 보기"><a href="index.html">홈</a><i></i><a href="pulse.html">광고</a><a href="shift.html">AI 강의</a><a href="path.html">유학</a><a href="founder.html" aria-current="page">창업자</a></div>
+<script>document.querySelectorAll('.ab button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.ab button').forEach(x=>x.setAttribute('aria-pressed',x===b));document.querySelectorAll('.tb').forEach(t=>t.hidden=t.dataset.k!==b.dataset.k)})</script>
+<style>[hidden]{display:none!important}</style>
+</body></html>
