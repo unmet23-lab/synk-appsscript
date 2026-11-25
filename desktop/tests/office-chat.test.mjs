@@ -143,6 +143,31 @@ test('removing the picked department goes to 사무실; an emptied 부서 없는
   assert.equal(h.scene().chat.sel, 'all');
 });
 
+test('after sending one of two sessions, the other ending later does not move the chat or the keyboard (0.5.12 FA1)', async () => {
+  const two = stateOf([...EVENTS, record('sess-lob-0005', 'C:\work\회의록', 'claude', NOW - 50 * S)]);
+  const h = harness({ tasking: { tasks: TASKS }, state: two });
+  h.scene();
+  await h.room.handle({ act: 'chat-pick', arg: 'lobby' });
+  await h.room.handle({ key: 'lobby', act: 'assign', arg: 'sess-lob-0004|ddev' });
+  h.setSnap(snapOf({ tasking: { tasks: TASKS }, state: two, assignments: { 'sess-lob-0004': 'ddev' } }));
+  assert.equal(h.scene().chat.sel, 'lobby', 'one session is still in 부서 없는 일');
+  h.setSnap(snapOf({ tasking: { tasks: TASKS }, assignments: { 'sess-lob-0004': 'ddev' } }));
+  const gone = h.scene();
+  assert.equal(gone.chat.sel, 'all', 'nobody sent the last one, so the chat does not go to the department of the earlier one');
+  assert.notEqual(gone.focus?.say, true, 'and the keyboard stays where it was');
+  // 보낸 뒤 다른 상대를 고르면 따라가지 않는다
+  const k = harness({ tasking: { tasks: TASKS } });
+  k.scene();
+  await k.room.handle({ act: 'chat-pick', arg: 'lobby' });
+  await k.room.handle({ key: 'lobby', act: 'assign', arg: 'sess-lob-0004|ddev' });
+  await k.room.handle({ act: 'chat-pick', arg: 'd:dmkt' });
+  await k.room.handle({ act: 'chat-pick', arg: 'lobby' });
+  k.setSnap(snapOf({ tasking: { tasks: TASKS }, assignments: { 'sess-lob-0004': 'ddev' } }));
+  const back = k.scene();
+  assert.equal(back.chat.sel, 'all');
+  assert.notEqual(back.focus?.say, true);
+});
+
 test('leaving 사무실 takes back the staff picked in 꾸미기 and the open 직접 정하기 (0.5.12 Fable F1)', async () => {
   const h = harness();
   const cap = s => JSON.stringify(s.rows.find(r => r.key === 'cap').more.slice(0, -1)), first = cap(h.scene());
