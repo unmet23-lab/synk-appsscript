@@ -2665,6 +2665,16 @@ test('섞임 표 3 · 새 셸 + 옛 world-push: 로그아웃이 실패하면 옛
  assert.equal(reads(),before+1,'옛 판은 요청을 막지 않는다');
 });
 
+test('섞임 · 푸시가 꺼진 셸(worldPush가 null — 지금 운영): 망이 돌아오거나 화면이 다시 보이면 계정을 다시 읽고, 떠날 때와 숨을 때 1단 다시 잡기가 바로 돌며, 로그아웃은 실패 안내까지 간다',async()=>{
+ const shell=shellHandlers(null);
+ shell.handlers['window:online']();assert.deepEqual(shell.refreshed,[false],'망이 돌아오면 계정을 다시 읽는다');
+ shell.handlers['document:visibilitychange']();assert.deepEqual(shell.refreshed,[false,false],'화면이 다시 보이면 계정을 다시 읽는다');
+ shell.document.hidden=true;shell.handlers['document:visibilitychange']();assert.deepEqual(shell.flushedReminders,[1],'숨을 때 1단 다시 잡기가 바로 돈다');
+ shell.handlers['window:pagehide']();assert.deepEqual(shell.flushedReminders,[1,1],'떠날 때 1단 다시 잡기가 바로 돈다');
+ assert.equal(shell.refreshed.length,2,'숨을 때와 떠날 때는 계정을 다시 읽지 않는다');
+ const leaving=shellLogout(null,offline);await leaving.run();assert.deepEqual(leaving.toasts,['account.logoutFailed']);
+});
+
 test('섞임 · 같은 판끼리(새 셸 + 새 world-push): 망이 돌아올 때와 화면이 다시 보일 때 둘 다 retry를 부르고 계정을 다시 읽는다',async()=>{
  const push=on(versionedServer());await push.setAccount('acc-1');
  let retries=0;const retry0=push.retry;push.retry=(...args)=>{retries++;return retry0(...args);};
