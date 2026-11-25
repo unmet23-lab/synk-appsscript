@@ -741,8 +741,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    leftOwner=owner;leaves++;
    return unsubscribeOwner();
   },
-  // 로그아웃이 실패해 계정이 그대로다: 막기를 풀고 상태를 다시 읽는다(맞추기가 남은 설정을 보낸다).
-  resume(){if(!closing)return Promise.resolve(snapshot());closing=false;holdPage();return owner?refresh():Promise.resolve(snapshot());},
+  // 로그아웃이 실패해 계정이 그대로다: 막기를 풀고 상태를 다시 읽는다(맞추기가 남은 설정을 보낸다). 멈춘 켜기 · 끄기는 busy를 풀지 못하므로 여기서 푼다.
+  resume(){if(!closing)return Promise.resolve(snapshot());closing=false;holdPage();emit({busy:false});return owner?refresh():Promise.resolve(snapshot());},
   dispose(){disposed=true;epoch++;releasePageHold();try{env.removeEventListener?.('storage',onStorage);}catch{}clearTimeout(syncTimer);syncTimer=null;clearTimeout(retryTimer);retryTimer=null;jobs.clear();binding=null;if(attempt){attempt.stop();attempt=null;}mutation=null;},
  };
  return api;

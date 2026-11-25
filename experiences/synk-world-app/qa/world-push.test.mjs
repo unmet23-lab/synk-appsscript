@@ -2960,3 +2960,18 @@ test('섞임 표 4 · 불변식: 옵션 없는 logout이 실패한 뒤 학생이
  assert.equal(JSON.parse(storage.getItem(PUSH_RECORD_KEY)).endpoint,b.current.endpoint);
  push.dispose();
 });
+
+test('섞임 · 같은 판끼리(새 셸 + 새 world-push): 켜기가 날아가는 사이 로그아웃이 실패하면, 멈춘 켜기가 「동의하고 켜기」를 잠근 채 두지 않는다(설계 검토 push-mix53-r3 P2)',async()=>{
+ for(const spot of ['prompt','subscribe']){
+  const b=spot==='prompt'?browser({registered:true,permission:'default',answer:'hang'}):browser({registered:true,permission:'granted'}),s=server({device:false,active:false}),held=[];
+  const request=(action,body,options)=>spot==='subscribe'&&action==='subscribe'?new Promise(resolve=>held.push(()=>resolve(s.request(action,body,options)))):s.request(action,body,options);
+  const push=make(b,s,{request});push.bindSettings(withDigest(reminderSettings()));await push.setAccount('acc-1');await push.ready();
+  const turning=push.enable({settings:{frequency:2,hour:null,since:null},digest:DIGEST('2026-10-21')});await settled();
+  assert.equal(push.snapshot().busy,true,`${spot}: 켜는 중이다`);
+  await shellLogout(push,()=>Promise.reject(Object.assign(Error('offline'),{code:'NETWORK'}))).run();
+  held.shift()?.();b.resolvePrompt();await turning;await settled();await settled();
+  assert.equal(push.snapshot().busy,false,`${spot}: 로그아웃이 실패해 계정이 그대로면 단추를 다시 쓸 수 있다`);
+  assert.equal(push.snapshot().publicReady,true,`${spot}: 다시 켤 수 있다`);
+  push.dispose();
+ }
+});
