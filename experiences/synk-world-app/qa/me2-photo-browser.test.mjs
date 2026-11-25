@@ -360,7 +360,10 @@ test('「제2의 나」 사진 화면: 초대 → 동의 → 고르기 → 누�
   assert.ok(seen()>=1,'본 것을 알렸다');
   // 도착한 옷 — 움직임을 켜면 봉 아래로 상자가 내려와 열리고 그 옷을 입은 폴라로이드가 고리에 걸린다(11-06, 한 옷에 한 번)
   await page.emulateMedia({reducedMotion:'no-preference'});
+  // 느린 기기 — 가게를 연 뒤 첫 그리기가 1.5초 늦어도 상자가 열린다(11-25 CI에서 한 번: 상자 차례가 옷이 걸리기 전에 지나가 도착한 사진이 숨은 채 남았다)
+  await page.evaluate(()=>{const raw=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=fn=>setTimeout(()=>raw(fn),1500);window.__rafBack=()=>{window.requestAnimationFrame=raw;delete window.__rafBack;};});
   await openShop();
+  await page.evaluate(()=>window.__rafBack());
   await page.locator(`${SHOP} .m2s-unbox.is-open`).waitFor({timeout:8000});
   await page.waitForTimeout(420);const unboxShot='11-가게-도착상자-390.png';await page.screenshot({path:path.join(out,unboxShot)});shots.push(unboxShot);
   await page.waitForFunction(sel=>!document.querySelector(sel+' .m2s-print-tag.is-boxed')&&document.querySelector(sel+' .m2s-unbox').hidden,SHOP,{timeout:20000});

@@ -690,8 +690,8 @@ export function createMe2Shop({doc=globalThis.document,win=globalThis,lang=()=> 
     const imgs=hangers.map(h=>h.querySelector('img'));
     await Promise.race([Promise.all(imgs.map(img=>img.decode?img.decode().catch(()=>{}):null)),new Promise(r=>later(r,1500))]);
     if(!isOpen())return;
-    win.requestAnimationFrame(()=>{if(isOpen())enter();});
-    later(runUnbox,80+items.length*70+520); // 옷이 다 걸린 뒤 도착 상자를 연다
+    // 옷이 다 걸린 뒤 도착 상자를 연다. 차례는 옷이 걸리기 시작한 때(enter)부터 센다 — 따로 세면 첫 그리기가 늦은 기기에서 상자 차례가 먼저 와 버려지고, 도착한 사진이 그 방문 내내 숨은 채 남는다(11-26)
+    win.requestAnimationFrame(()=>{if(!isOpen())return;enter();later(runUnbox,80+items.length*70+520);});
     later(()=>{for(const item of items){const im=new win.Image();im.src=art(item,'back');}for(const im of dialog?.querySelectorAll('.m2s-parcel img')||[])im.decode?.().catch(()=>{}); /* 도착 상자는 같은 그림이라 따로 풀지 않는다(요소마다 GPU에 한 번 더 올려 입구 끝 장이 무거워졌다) */},1200);
     rail.focus({preventScroll:true});
     for(const item of items){const e=entry(item.id);if(e.arrived?.new&&e.arrived.url)later(()=>seen(e.arrived),1600);}
