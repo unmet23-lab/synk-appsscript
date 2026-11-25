@@ -10,7 +10,7 @@ const BACK = svg('<path d="M12.5 4.5 7 10l5.5 5.5"/>');
 const ON = svg('<path d="m5 10.4 3.2 3.1L15 6.6"/>');
 export const PRIVACY_URL = 'https://synk.im/privacy/#path-translate';
 // 영어 문단은 처리방침의 접힌 영어 칸 안에 있다. 조각으로 칸을 열지 않는 브라우저도 있어 영어 칸 머리로 잇는다.
-const PRIVACY_URL_EN = 'https://synk.im/privacy/#synk-id-en';
+export const PRIVACY_URL_EN = 'https://synk.im/privacy/#synk-id-en';
 
 // [한국어, 영어, 몽골어]
 const M = {
@@ -98,6 +98,8 @@ export const ERROR_TEXT = {
   lost: ['결과를 받지 못했어요. 오늘 한 장이 쓰였을 수 있어요. 다시 만들면 한 장을 더 써요.', 'The result did not arrive. One of today’s 10 may have been used. Making it again uses one more.', 'Үр дүн ирсэнгүй. Өнөөдрийн нэг хуудсыг ашигласан байж магадгүй. Дахин гаргавал нэг хуудсыг нэмж ашиглана.'],
   account: ['계정이 바뀌어 초안을 지웠어요.', 'Your account changed, so the draft was cleared.', 'Бүртгэл солигдсон тул ноорог устгагдлаа.'],
 };
+/** 서류 점검 쪽도 쓰는 문장(동의 · 나이 · 글 가져오는 법). */
+export const CONSENT_TEXT = Object.freeze(Object.fromEntries(['how1', 'how2', 'consentTitle', 'what', 'whatText', 'who', 'keep', 'no', 'ask', 'age', 'adult', 'teen', 'under14', 'under14Note', 'guardian', 'agree'].map((k) => [k, M[k]])));
 const pick3 = (en, a) => (en ? a[1] : a[0]);
 const mnLine = (a) => `<span class="sx-mn" lang="mn">${esc(a[2])}</span>`;
 /** 화면 글(한국어나 영어)과 몽골어를 함께. */

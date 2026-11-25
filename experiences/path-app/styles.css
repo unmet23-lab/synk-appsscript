@@ -528,6 +528,7 @@ button.pass:hover{transform:translateY(-3px)}
 .sx-card h2,.sx-card h3{margin:0;font:700 18.5px/1.4 var(--kr);letter-spacing:-.01em}
 .sx-card p{margin:6px 0 0;font-size:15px;line-height:1.6;color:var(--ink-2)}
 .sx-card.lapis .sx-btn2{margin-top:14px;background:#fff}
+.sx-card .sx-btn2 svg{flex:none;width:17px;height:17px;margin-left:6px}
 .sx-k{margin:0 0 6px!important;font-size:13.5px!important;font-weight:700;color:var(--lapis-deep)!important}
 .sx-card.meadow .sx-k{color:var(--meadow-deep)!important}
 .sx-big{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0!important}
@@ -809,7 +810,21 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 /* ── 서류 번역 초안(2026-11-24): 몽골어 문장은 화면 글 아래 작은 줄, 「초안」 띠는 모델 글과 떨어진 버터색 띠, 줄은 원문 · 초안 · 역번역을 쌓은 카드 ── */
 .sx-mn{display:block;margin-top:2px;font-size:13px;font-weight:500;line-height:1.5;color:var(--gray)}
-.sx-trlink{margin-top:2px;font-size:14px;text-align:left}
+.sx-trlink{display:flex;width:fit-content;margin-top:2px;font-size:14px;text-align:left}
+.sx-dc-list{margin:0;padding:0;list-style:none}
+.sx-dc-list .sx-check{margin-top:8px;font-weight:500}
+.sx-dc-list .sx-check:has(input:checked){background:var(--soft)}
+.sx-dc .sx-tr-band{margin:18px 0 10px}
+.sx-dc .sx-unclear{margin-top:24px}
+.sx-dc .sx-unclear p+p{margin-top:8px}
+.sx-dc-find{margin-top:36px;padding-top:8px;border-top:1px solid var(--line)}
+.sx-dc-rows{margin:8px 0 18px;padding:0;list-style:none}
+.sx-dc-row{padding:16px 0;border-bottom:1px solid var(--line)}
+.sx-dc-label{margin:0;font:700 16.5px/1.45 var(--kr);color:var(--ink)}
+.sx-dc-row .sx-fine{margin-top:8px}
+.sx-dc-quote{margin:8px 0 0;padding:0;list-style:none}
+.sx-dc-quote li{padding:10px 14px;border-radius:12px;background:var(--soft);font-size:15px;line-height:1.55;color:var(--ink);overflow-wrap:anywhere}
+.sx-dc-quote li+li{margin-top:6px}
 .sx-tr fieldset{min-width:0;margin:26px 0 0;padding:0;border:0}
 .sx-tr legend{margin:0 0 8px;padding:0;font-size:15.5px;font-weight:700}
 .sx-choice{display:inline-flex;align-items:flex-start;gap:10px;min-height:44px;margin:0 8px 8px 0;padding:10px 16px;border:1px solid var(--line-2);border-radius:14px;background:#fff;font-size:15px;font-weight:650;line-height:1.4;cursor:pointer}

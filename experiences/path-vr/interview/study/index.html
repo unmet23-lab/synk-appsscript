@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex">
+<title>SYNK PATH · 대학 입학 면접 연습</title>
+<link rel="icon" href="../../assets/logo-path-320.webp">
+<link rel="stylesheet" href="../film/rehearsal.css?v=6">
+<link rel="stylesheet" href="./study.css">
+<script src="/assets/launch-notice.js" defer></script>
+</head>
+<body>
+  <header class="bar"><div class="bar-in">
+    <a class="brand" href="/path/app/" aria-label="PATH 앱으로"><img src="../../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a>
+    <span class="bar-title">대학 입학 면접 연습</span>
+  </div></header>
+  <main class="room">
+    <section class="studio interview" aria-label="대학 입학 면접 연습">
+      <div class="stage">
+        <div class="screen" id="screen">
+          <div id="film-stage"><video id="film" muted playsinline loop preload="none" crossorigin="anonymous" hidden></video></div>
+          <img id="reference" src="../../assets/interview/film/room-poster-1920.jpg" srcset="../../assets/interview/film/room-poster-1280.jpg 1280w, ../../assets/interview/film/room-poster-1920.jpg 1920w" sizes="(max-width: 900px) 100vw, 720px" width="3840" height="2160" fetchpriority="high" decoding="async" alt="면접관 세 명이 책상 앞에 앉아 있는 면접실이에요.">
+          <div class="screen-top"><span class="chip phase"><span id="phase-label">면접 시작 전</span></span><span id="timer" class="chip timer"></span></div>
+          <div id="pause-overlay" class="overlay" hidden><p>잠깐 쉬어요</p><span>「이어서 진행」을 누르면 다시 이어져요.</span></div>
+          <div id="complete-overlay" class="overlay" hidden><p>면접을 마쳤어요.</p><span>여섯 질문에 모두 답했어요.</span></div>
+          <div class="caption" id="question-caption" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="side">
+        <section class="hero" id="hero" aria-labelledby="room-title">
+          <p class="eyebrow"><span class="eyebrow-tag">면접 연습 · 대학 입학</span></p>
+          <h1 id="room-title" tabindex="-1"><span>여섯 질문에</span> <span>한국어로 답해 봐요.</span></h1>
+          <p class="intro">지원한 이유, 공부할 계획, 한국 생활을 물어요. 답을 들으면 한 번 더 물어요. 연습이에요. 점수와 합격은 말하지 않아요.</p>
+          <dl class="gauges">
+            <div><dt>질문</dt><dd>6개</dd></div>
+            <div><dt>답하는 법</dt><dd>글 · 말</dd></div>
+            <div><dt>걸리는 시간</dt><dd>5분쯤</dd></div>
+          </dl>
+        </section>
+
+        <section class="study-setup" id="setup" aria-label="시작 전에 고르기">
+          <div class="study-field"><label for="program">연습할 대학</label><select id="program" autocomplete="off"></select><p class="small">요강에 면접이나 면접 동영상이 있는 과정이에요. 실제 질문은 대학마다 달라요.</p></div>
+          <fieldset class="study-choice"><legend>꼬리 질문</legend>
+            <label><input type="radio" autocomplete="off" name="kind" value="fixed" checked><span><b>정해 둔 질문으로</b><small>AI를 부르지 않아요. 로그인하지 않아도 돼요.</small></span></label>
+            <label><input type="radio" autocomplete="off" name="kind" value="ai"><span><b>AI가 내 답을 듣고 묻기</b><small>만 18세 이상, SYNK ID로 로그인한 사람만 써요.</small></span></label>
+          </fieldset>
+          <div id="ai-box" class="study-ai" hidden>
+            <p id="ai-signin" hidden>로그인이 필요해요. <a href="/path/app/">PATH 앱에서 로그인</a>하고, 「내 길」의 「면접 연습」으로 다시 들어오세요.</p>
+            <div id="ai-consent" hidden>
+              <div class="study-field"><label for="topik">내 TOPIK 급수</label><select id="topik" autocomplete="off"><option value="0">아직 없음</option><option value="1">1급</option><option value="2">2급</option><option value="3">3급</option><option value="4">4급</option><option value="5">5급</option><option value="6">6급</option></select></div>
+              <div class="study-notice">
+                <p><b>보내기 전에 확인해 주세요</b></p>
+                <dl id="consent-ko">
+                  <div id="consent-ask"><dt>문의</dt><dd><a href="mailto:hello@synk.im">hello@synk.im</a> · <a href="https://synk.im/privacy/#path-assist" target="_blank" rel="noopener noreferrer">개인정보 처리방침</a></dd></div>
+                </dl>
+                <p class="study-rule">질문과 평가는 AI가 만들어요. 사람이 아니에요. 이름, 주소, 건강, 가족 이야기는 말하지 마세요.</p>
+                <details><summary lang="mn">Монголоор унших</summary><div lang="mn" id="consent-mn"></div></details>
+              </div>
+              <label class="study-check"><input type="checkbox" autocomplete="off" id="adult"><span>만 18세 이상이에요</span></label>
+              <label class="study-check"><input type="checkbox" autocomplete="off" id="agree"><span>위 내용을 읽었고, 내 답을 보내는 데 동의해요</span></label>
+            </div>
+          </div>
+        </section>
+
+        <div class="console">
+          <div class="status-row"><p id="status" role="status" aria-live="polite">대학을 고르고 「면접 시작」을 누르세요.</p><span class="turn" id="turn-label"></span></div>
+          <div class="mode-row">
+            <fieldset class="segmented"><legend>답변 방식</legend><label><input type="radio" autocomplete="off" name="mode" value="text" checked><span>직접 입력</span></label><label><input type="radio" autocomplete="off" name="mode" value="voice"><span>마이크로 답변</span></label></fieldset>
+            <div class="voice-steps"><button id="voice-prepare" class="subtle" type="button" hidden>1. 한국어 음성 준비</button><button id="microphone-check" class="subtle" type="button" hidden>2. 마이크 확인</button></div>
+            <span id="voice-status"></span>
+            <meter id="mic-meter" min="0" max="1" value="0" aria-label="마이크 음량" hidden></meter>
+            <p id="mic-check-result" role="status" hidden></p>
+            <p class="voice-hint">처음 한 번 한국어 음성 모델(약 103MB)을 내려받아요. 말한 내용은 이 기기 안에서 글로 바꿔요.</p>
+          </div>
+          <div id="answer-area" hidden>
+            <label id="answer-label" for="answer">내 답변</label>
+            <textarea id="answer" autocomplete="off" rows="3" maxlength="600" placeholder="질문에 답을 써 주세요."></textarea>
+            <p id="partial" class="partial" aria-live="off"></p>
+          </div>
+          <div class="actions">
+            <button id="start" class="primary" type="button">면접 시작</button>
+            <button id="listen" class="primary" type="button" hidden>답하기</button>
+            <button id="submit" class="primary" type="button" hidden>답변 완료</button>
+            <button id="confirm" class="primary" type="button" hidden>이 말이 맞아요</button>
+            <button id="retry" type="button" hidden>다시 말하기</button>
+            <button id="repeat" type="button" hidden>질문 다시 보기</button>
+            <button id="pause" class="quiet" type="button" hidden>일시 정지</button>
+            <button id="stop" class="quiet" type="button" hidden>종료</button>
+          </div>
+          <div class="row tools"><button id="room-preview" class="subtle" type="button">방 둘러보기</button><button id="vr" class="subtle" type="button" disabled>VR 지원 확인 중</button></div>
+          <p id="vr-status" class="small">VR 기기에서는 말로 답해요. PC와 휴대폰에서는 글로도 답할 수 있어요.</p>
+          <details class="more">
+            <summary>VR 기기, 소리, 저장 안내 보기</summary>
+            <p class="small" id="speech-note"></p>
+            <p class="small">VR 기기(Meta Quest)에서는 「한국어 음성 준비」와 「마이크 확인」을 마친 뒤 들어가요. 의자에 앉아서 하고, 어지러우면 바로 멈추세요. VR 기기는 따로 로그인해야 AI 질문을 쓸 수 있어요.</p>
+            <ul class="privacy" aria-label="음성과 답변 처리"><li>마이크만 쓰고 카메라는 켜지 않아요.</li><li>말한 내용은 이 기기 안에서 글로 바꿔요. 소리는 보내지 않아요.</li><li>답과 질문은 이 화면에만 있어요. 화면을 닫으면 사라져요.</li></ul>
+          </details>
+        </div>
+
+        <section id="result" class="result" aria-labelledby="result-title" hidden>
+          <p class="kicker">면접을 마쳤어요</p>
+          <h2 id="result-title" tabindex="-1">오늘의 면접</h2>
+          <div id="review" hidden><p class="small">AI가 쓴 글이에요. 점수나 합격 판단이 아니에요.</p><dl><div><dt>잘 전해진 말</dt><dd id="review-good"></dd></div><div><dt>다음에 고칠 말</dt><dd id="review-next"></dd></div></dl></div>
+          <p id="review-none" class="small" hidden></p>
+          <ol id="transcript" class="study-transcript" aria-label="질문과 내 답"></ol>
+        </section>
+      </div>
+    </section>
+    <div id="vr-stage" aria-hidden="true"></div>
+  </main>
+  <footer><span>SYNK PATH · 대학 입학 면접 연습 · 면접관과 방은 생성 영상이에요. 실제 대학의 면접이 아니에요.</span><a href="/path/app/">PATH 앱</a></footer>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 import { createPlatformEntry } from './platform-entry.mjs';
 const AUTH_ERRORS = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
+// PATH의 AI 요청과 앱이 기다리는 시간. 서버 마감보다 조금 길다.
+const PATH_AI_WAIT_MS = Object.freeze({ translate: 125000, check: 125000, doc_check: 60000, interview_turn: 30000, interview_review: 30000 });
 const fault = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
 const missingAsset = error => ['ASSET_NOT_FOUND','ASSET_NOT_CONFIRMED'].includes(error?.code) && typeof error?.assetId === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(error.assetId) ? { assetId:error.assetId } : {};
 const publicError = error => ({ code: error.code || 'ACCOUNT_UNAVAILABLE', message: error.message || '계정 연결을 확인하지 못했어요.', retryable: error.retryable === true, ...(error.status ? { status: error.status } : {}), ...missingAsset(error) });
@@ -349,14 +351,14 @@ export function createProductAccount({
       return { ok: true, scope: data.scope, accountId: ownerId, enabled: data.enabled, hour: data.hour, minute: data.minute, timeZone: data.timeZone, publicKey: data.publicKey, ...(typeof data.deviceId === 'string' ? { deviceId: data.deviceId } : {}) };
     } catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }
-  // PATH 「서류 번역 초안」 — 웹 PATH 앱만 여는 고정 요청 하나(translate · check). 서버가 모델을 부르느라 1분 가까이 걸려
-  // 이 요청만 125초를 기다린다(서버 마감 110초 뒤). 다시 보내기는 401 토큰 갱신 한 번뿐이고 같은 몸(같은 request_id)이다.
+  // PATH의 AI 요청(서류 번역 초안 · 서류 점검 · 면접 연습) — 웹 PATH 화면만 여는 고정 요청이다. 서버가 모델을 부르느라 번역은 1분 가까이 걸려
+  // 125초를 기다리고(서버 마감 110초 뒤), 점검은 60초, 면접은 30초를 기다린다. 다시 보내기는 401 토큰 갱신 한 번뿐이고 같은 몸(같은 request_id)이다.
   async function requestTranslate(body) {
-    if (!pathApp || native) throw fault('TRANSLATE_UNSUPPORTED', '번역 초안은 PATH 웹에서만 만들 수 있어요.');
-    if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 번역 초안을 만들어 주세요.');
-    if (!body || typeof body !== 'object' || Array.isArray(body) || !['translate', 'check'].includes(body.action)) throw fault('INVALID_REQUEST', '번역 요청 형식이 맞지 않아요.');
-    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 65536) throw fault('INVALID_REQUEST', '번역할 글이 너무 길어요.');
-    const expected = epoch, ownerId = snapshot.accountId, wait = { timeoutMs: 125000 };
+    if (!pathApp || native) throw fault('TRANSLATE_UNSUPPORTED', '이 기능은 PATH 웹에서만 쓸 수 있어요.');
+    if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 다시 눌러 주세요.');
+    if (!body || typeof body !== 'object' || Array.isArray(body) || !Object.hasOwn(PATH_AI_WAIT_MS, body.action)) throw fault('INVALID_REQUEST', '요청 형식이 맞지 않아요.');
+    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 65536) throw fault('INVALID_REQUEST', '보낼 글이 너무 길어요.');
+    const expected = epoch, ownerId = snapshot.accountId, wait = { timeoutMs: PATH_AI_WAIT_MS[body.action] };
     try {
       guard(expected);
       let token = session?.access_token;
@@ -370,9 +372,9 @@ export function createProductAccount({
         result = await send(url, token, body, wait); guard(expected);
       }
       const data = result.data;
-      if (!result.response.ok || data?.ok !== true) throw fault(data?.error?.code || (result.response.status === 401 ? 'AUTH_REQUIRED' : 'TRANSLATE_UNAVAILABLE'), '번역 초안을 만들지 못했어요.', { status: result.response.status, retryable: false });
-      if (data.accountId !== ownerId) throw fault('ACCOUNT_CHANGED', '계정이 바뀌어 번역 초안을 보이지 않았어요.');
-      if (data.scope !== 'synk-path' || data.action !== body.action) throw fault('INVALID_RESPONSE', '번역 초안의 형식을 확인하지 못했어요.');
+      if (!result.response.ok || data?.ok !== true) throw fault(data?.error?.code || (result.response.status === 401 ? 'AUTH_REQUIRED' : 'TRANSLATE_UNAVAILABLE'), '요청을 처리하지 못했어요.', { status: result.response.status, retryable: false });
+      if (data.accountId !== ownerId) throw fault('ACCOUNT_CHANGED', '계정이 바뀌어 결과를 보이지 않았어요.');
+      if (data.scope !== 'synk-path' || data.action !== body.action) throw fault('INVALID_RESPONSE', '결과의 형식을 확인하지 못했어요.');
       return data;
     } catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }

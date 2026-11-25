@@ -1,6 +1,7 @@
 // PATH 3단계 「내 길」 화면. 상태를 받아 HTML 글을 내는 순수 함수만 둔다(창, DOM, 저장소를 쓰지 않는다).
 // 결: 시안 2판(.sx). 공개 CSP(style-src 'self')라 인라인 스타일을 쓰지 않는다(진행 줄은 <progress>).
 import { docsFor, visaFor, translateKindOf } from './docs-data.mjs';
+import { INTERVIEW_PROGRAMS } from './interview-shape.mjs';
 import { programById } from './study-data.mjs';
 import { programImage } from './study-ui.mjs';
 import { renderDates } from './channel-ui.mjs';
@@ -66,7 +67,7 @@ function docRow(d, T, done) {
   const unclear = !d.unclear ? '' : visa
     ? `<div class="sx-unclear"><p><b>${T.L('KVAC에 확인할 것', 'Check with KVAC')}</b> ${esc(T.pick(d.unclear))}</p></div>`
     : `<div class="sx-unclear"><p><b>${T.L('요강에서 두 가지로 읽혀요', 'The guide can be read two ways')}</b> ${esc(T.pick(d.unclear))}</p><p>${T.L('대학에 먼저 물어보세요.', 'Ask the university first.')}</p></div>`;
-  return `<li class="sx-docrow"><div class="sx-doc-main"><b class="sx-doc-name">${esc(T.pick(d.name))}</b>${T.en ? `<small class="sx-doc-ko" lang="ko">${esc(d.name.ko)}</small>` : ''}${d.only ? `<p class="sx-doc-line"><b>${T.L('해당자', 'Who')}</b> ${esc(T.pick(d.only.cond))}</p>` : ''}${line(T.L('구하는 곳', 'Where to get it'), d.from)}${line(T.L('날짜 조건', 'Date rule'), d.when)}${d.note ? `<p class="sx-doc-note">${esc(T.pick(d.note))}</p>` : ''}${unclear}${translateKindOf(d.id) ? `<button type="button" class="sx-link sx-trlink" data-action="trOpen" data-id="${esc(d.id)}">${T.L('몽골어 서류의 번역 초안 만들기', 'Make a translation draft of the Mongolian document')}<span class="sr-only"> · ${esc(T.pick(d.name))}</span>${GO}</button>` : ''}</div><button type="button" class="sx-btn2 sm sx-docbtn" aria-pressed="${on}" data-action="docToggle" data-id="${esc(d.id)}"><span class="sx-on">${ON}</span>${T.L('준비했어요', 'Ready')}<span class="sr-only"> ${esc(T.pick(d.name))}</span></button></li>`;
+  return `<li class="sx-docrow"><div class="sx-doc-main"><b class="sx-doc-name">${esc(T.pick(d.name))}</b>${T.en ? `<small class="sx-doc-ko" lang="ko">${esc(d.name.ko)}</small>` : ''}${d.only ? `<p class="sx-doc-line"><b>${T.L('해당자', 'Who')}</b> ${esc(T.pick(d.only.cond))}</p>` : ''}${line(T.L('구하는 곳', 'Where to get it'), d.from)}${line(T.L('날짜 조건', 'Date rule'), d.when)}${d.note ? `<p class="sx-doc-note">${esc(T.pick(d.note))}</p>` : ''}${unclear}${visa ? '' : `<button type="button" class="sx-link sx-trlink" data-action="dcOpen" data-id="${esc(d.id)}">${T.L('서류 점검', 'Check this document')}<span class="sr-only"> · ${esc(T.pick(d.name))}</span>${GO}</button>`}${translateKindOf(d.id) ? `<button type="button" class="sx-link sx-trlink" data-action="trOpen" data-id="${esc(d.id)}">${T.L('몽골어 서류의 번역 초안 만들기', 'Make a translation draft of the Mongolian document')}<span class="sr-only"> · ${esc(T.pick(d.name))}</span>${GO}</button>` : ''}</div><button type="button" class="sx-btn2 sm sx-docbtn" aria-pressed="${on}" data-action="docToggle" data-id="${esc(d.id)}"><span class="sx-on">${ON}</span>${T.L('준비했어요', 'Ready')}<span class="sr-only"> ${esc(T.pick(d.name))}</span></button></li>`;
 }
 
 function stageBlock(stage, t, T, done, counts) {
@@ -102,6 +103,12 @@ function storeNote(T) {
     : `<p class="sx-store is-warn">${T.L('이 브라우저에서는 저장할 수 없어서 표시를 지금 화면에서만 기억해요. 새로 고치면 사라져요.', 'This browser cannot store marks, so they are remembered on this screen only and are lost on reload.')}</p>`;
 }
 
+/** 요강에 면접이나 면접 동영상이 있는 과정이면 「면접 연습」으로 가는 상자. 연습 쪽은 한국어다. */
+function interviewCard(program, T) {
+  if (!Object.hasOwn(INTERVIEW_PROGRAMS, program.id)) return '';
+  return `<section class="sx-card lapis" aria-labelledby="sx-interview-h"><h2 id="sx-interview-h">${T.L('면접을 한국어로 연습해 봐요', 'Practice the interview in Korean')}</h2><p>${T.L('여섯 질문에 글이나 말로 답해요. 실제 질문은 대학마다 달라요. 연습이고, 점수나 합격을 말하지 않아요.', 'Answer six questions by typing or speaking. Real questions differ by university. It is practice and gives no score or admission result.')}</p><button type="button" class="sx-btn2" data-action="interviewOpen" data-id="${esc(program.id)}">${T.L('면접 연습', 'Interview practice')}${GO}</button></section>`;
+}
+
 /** 「내 길」 화면. */
 export function renderPath(view) {
   const T = ctx(view), t = pathTarget(view);
@@ -124,6 +131,7 @@ export function renderPath(view) {
 <p class="sx-note">${T.L('「준비했어요」는 내가 표시한 것이에요. 대학이나 비자신청센터(KVAC)가 확인한 것이 아니에요.', '“Ready” is your own mark. It is not a check by the university or the visa center (KVAC).')}</p>
 ${storeNote(T)}${view.docFull ? `<p class="sx-store is-warn">${T.L('표시가 예순 개라 더 넣을 수 없어요. 다른 과정의 표시를 뺀 뒤 넣어 주세요.', 'You already have 60 marks. Remove some from another program first.')}</p>` : ''}
 ${renderDates(view, post, T.L('이 과정의 날짜', 'Dates for this program'))}
+${interviewCard(program, T)}
 ${['apply', 'admitted', 'visa'].map((s) => stageBlock(s, t, T, done, counts)).join('')}
 <div class="sx-row2"><button type="button" class="sx-btn2" data-action="univOpen" data-id="${esc(program.id)}">${T.L('과정 자세히 보기', 'Program details')}</button><button type="button" class="sx-btn2 line" data-action="pathPick" data-id="${esc(program.id)}">${T.L('준비 그만하기', 'Stop preparing')}</button></div>
 <p class="sx-fine">${T.L('이 목록은 입학이나 비자를 약속하지 않아요. 마지막 판단은 대학과 출입국이 해요.', 'This list does not promise admission or a visa. The university and immigration office make the final decision.')}</p></div>`;

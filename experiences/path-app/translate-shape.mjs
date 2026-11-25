@@ -127,7 +127,7 @@ export function mongolianEnough(lines) {
 }
 
 /* ── 요청 몸 ── 앱은 보내기 전에, 서버는 받은 뒤에 같은 함수로 본다. 정한 꼴과 다르면 code를 단 오류를 던진다. */
-function checkLines(lines, bad) {
+export function checkLines(lines, bad) {
   if (!Array.isArray(lines) || !lines.length || lines.length > MAX_LINES) bad();
   let total = 0;
   for (const line of lines) {

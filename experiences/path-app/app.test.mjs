@@ -21,6 +21,9 @@ import * as consentUi from './consent-ui.mjs';
 import * as studyShape from './study-shape.mjs';
 import * as translateUi from './translate-ui.mjs';
 import * as translateShape from './translate-shape.mjs';
+import * as docCheck from './doc-check.mjs';
+import * as docCheckUi from './doc-check-ui.mjs';
+import * as interviewShape from './interview-shape.mjs';
 
 // The real app runs unchanged apart from its static ESM imports. This small DOM
 // provides only element parsing, selectors, live input values and event bubbling;
@@ -192,7 +195,7 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
   }) : undefined;
   const root = new Element('div', { id: 'app' });
   const announcer = new Element('div', { id: 'announcer' });
-  const timers = [], revoked = [], downloads = [], confirmations = [];
+  const timers = [], revoked = [], downloads = [], confirmations = [], visits = [];
   let confirmation = true;
   const body = new Element('body');
   const document = {
@@ -218,6 +221,9 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
     splitPasted: translateShape.splitPasted, maskLines: translateShape.maskLines, validateTranslateRequest: translateShape.validateTranslateRequest,
     validateTranslateReply: translateShape.validateTranslateReply, validateCheckReply: translateShape.validateCheckReply, draftRows: translateShape.draftRows,
     TRANSLATE_CONSENT_VERSION: translateShape.TRANSLATE_CONSENT_VERSION, crypto: globalThis.crypto,
+    docCheckItems: docCheck.docCheckItems, docCheckRows: docCheck.docCheckRows, validateDocCheckRequest: docCheck.validateDocCheckRequest, validateDocCheckReply: docCheck.validateDocCheckReply, DOC_CHECK_CONSENT_VERSION: docCheck.DOC_CHECK_CONSENT_VERSION,
+    renderDocCheck: docCheckUi.renderDocCheck, dcCanSend: docCheckUi.dcCanSend, dcMarkKey: docCheckUi.dcMarkKey, DC_ERROR_TEXT: docCheckUi.DC_ERROR_TEXT, INTERVIEW_PROGRAMS: interviewShape.INTERVIEW_PROGRAMS,
+    location: { assign: to => { visits.push(to); } },
     createPathSession: options => {
       sessionOptions = options;
       session = createPathSession({ ...options, storage, fetcher, lang: 'ko', ...(accountFactory ? { accountFactory } : {}),
@@ -258,7 +264,7 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
     notifyStatus: () => sessionOptions.onStatus(session.status()),
     switchOwner: id => { owner = id; remote = { ...createPathDocument('ko'), state: fixture() }; accountOptions.onStatus(status()); },
     flushTimers: (maximum = 0) => { for (const timer of timers.splice(0)) { if (timer.cancelled) continue; if (timer.delay <= maximum) timer.callback(); else timers.push(timer); } },
-    revoked, downloads, confirmations, document, timers,
+    revoked, downloads, confirmations, visits, document, timers,
     setConfirmation: value => { confirmation = value; },
     setConfirmHook: callback => { confirmHook = callback; },
     setStatusOverride: value => { statusOverride = value; },
@@ -1239,4 +1245,178 @@ test('번역 초안: 한도 · 쉼 · 대조 실패를 알리고, 계정이 바�
   await settle();
   third.notifyStatus();
   assert.doesNotMatch(pageText(third), /번역 초안 — 번역본이 아니에요/, '계정이 바뀌면 초안을 지운다');
+});
+
+// ── 서류 점검(2026-11-25). 이름 · 학교는 지어낸 값이다. ──
+function fakeDocCheckServer({ status = 'done', gate = null } = {}) {
+  const calls = [];
+  const server = async (body, owner) => {
+    calls.push(structuredClone(body));
+    if (gate) await gate;
+    const head = { ok: true, scope: 'synk-path', action: 'doc_check', prompt: 'path-doc-check-v1', accountId: owner };
+    if (status !== 'done') return { ...head, status, remaining: status === 'limit' ? 0 : 9, items: [] };
+    return { ...head, status: 'done', remaining: 9, items: docCheck.docCheckItems(body.doc).map((it, i) => ({ key: it.key, lines: i === 0 ? [0] : i === 2 ? [2] : [] })) };
+  };
+  return { server, calls };
+}
+function fillDocCheck(app, { age = 'adult', agree = true, text = PASTE } = {}) {
+  const area = app.root.querySelector('#dc-text');
+  area.value = text; app.event('input', area);
+  const radio = app.root.querySelector(`input[data-action="dcAge"][value="${age}"]`);
+  radio.checked = true; app.event('change', radio);
+  if (age === 'teen') { const g = app.root.querySelector('#dc-guardian'); g.checked = true; app.event('change', g); }
+  if (agree && age !== 'under14') { const a = app.root.querySelector('#dc-agree'); a.checked = true; app.event('change', a); }
+}
+
+test('서류 점검: 대학 서류 줄마다 단추가 있고 비자 줄에는 없다. 글을 받지 않는 서류는 조건만 보인다', async t => {
+  const app = await openTranslate(t);
+  const ids = app.root.querySelectorAll('button[data-action="dcOpen"]').map(b => b.getAttribute('data-id'));
+  assert.deepEqual(ids.sort(), docsData.PROGRAM_DOCS['wku-ug'].docs.map(d => d.id).sort());
+  app.click('dcOpen', '[data-id="wku-ug-bank"]');
+  assert.match(app.root.querySelector('h1').textContent, /재정능력 입증서류/);
+  assert.equal(app.root.querySelector('#dc-text'), null);
+  assert.equal(app.root.querySelector('button[data-action="dcSend"]'), null);
+  const first = app.root.querySelector('#dc-m-0');
+  first.checked = true; app.event('change', first);
+  app.click('setLang', '[data-id="en"]');
+  assert.equal(app.root.querySelector('#dc-m-0').checked, false, '문장 수가 다른 언어의 줄로 표시를 옮기지 않는다');
+  app.click('setLang', '[data-id="ko"]');
+  assert.equal(app.root.querySelector('#dc-m-0').checked, true, '돌아오면 누른 표시가 그대로다');
+  app.click('dcLeave');
+  assert.equal(app.confirmations.length, 0, '표시만 있으면 묻지 않고 나간다');
+  app.click('dcOpen', '[data-id="wku-ug-bank"]');
+  assert.equal(app.root.querySelector('#dc-m-0').checked, false, '나가면 표시가 사라진다');
+});
+
+test('서류 점검: 나이 · 동의 전에는 보내지 않고, 등록번호를 가려 보내며, 찾은 줄은 붙여 넣은 글 그대로 보인다', async t => {
+  const { server, calls } = fakeDocCheckServer();
+  const app = await openTranslate(t, { signedIn: true, translateServer: server });
+  app.click('dcOpen', '[data-id="wku-ug-grad"]');
+  assert.equal(app.root.querySelector('button[data-action="dcSend"]').disabled, true);
+  assert.doesNotMatch(pageText(app), /Google|Gemini/);
+  fillDocCheck(app, { age: 'under14', agree: false });
+  assert.match(pageText(app), /만 14세 미만은 이 기능을 쓸 수 없어요/);
+  fillDocCheck(app, { age: 'teen' });
+  assert.equal(app.root.querySelector('button[data-action="dcSend"]').disabled, false);
+  app.click('dcSend');
+  await settle();
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].action, 'doc_check');
+  assert.equal(calls[0].doc, 'wku-ug-grad');
+  assert.deepEqual(calls[0].consent, { v: 1, age: 'teen', guardian: true, lang: 'ko' });
+  assert.ok(!JSON.stringify(calls[0]).includes('УБ01234567'), '등록번호는 보내지 않는다');
+  assert.equal(app.document.activeElement?.getAttribute('id'), 'dc-result', '결과 제목에 초점');
+  const text = pageText(app);
+  assert.match(text, /Регистрийн дугаар: УБ01234567/, '내 화면에는 붙여 넣은 줄 그대로');
+  assert.match(text, /대학이나 비자신청센터\(KVAC\)의 확인이 아니에요/);
+  assert.match(text, /오늘 9번 더 찾을 수 있어요/);
+  for (const key of app.keys()) assert.doesNotMatch(String(app.record(key)), /УБ01234567|Тэмүүлэн/, `${key}에 글을 남기지 않는다`);
+  app.setConfirmation(false);
+  app.click('dcLeave');
+  assert.match(app.confirmations.at(-1), /찾은 줄과 붙여 넣은 글이 지워져요/);
+  assert.ok(app.root.querySelector('#dc-result'), '「아니요」면 그 쪽에 남는다');
+  app.click('dcEdit');
+  assert.equal(app.root.querySelector('#dc-text').value, PASTE);
+  app.click('dcSend');
+  await settle();
+  app.click('dcFresh');
+  assert.equal(app.root.querySelector('#dc-text').value, '');
+  assert.equal(app.root.querySelector('button[data-action="dcSend"]').disabled, true, '동의를 다시 받는다');
+});
+
+test('서류 점검: 몽골어가 아닌 글도 받고, 길이가 어긋나면 보내지 않고 칸에서 알린다', async t => {
+  const { server, calls } = fakeDocCheckServer();
+  const app = await openTranslate(t, { signedIn: true, translateServer: server });
+  app.click('dcOpen', '[data-id="wku-ug-transcript"]');
+  fillDocCheck(app, { text: '짧다' });
+  app.click('dcSend');
+  assert.equal(calls.length, 0);
+  assert.match(pageText(app), /글이 너무 짧아요/);
+  assert.equal(app.root.querySelector('#dc-text').getAttribute('aria-invalid'), 'true');
+  fillDocCheck(app, { text: 'Academic transcript\nMade-up school No. 99\nGrade 10 Mathematics 85' });
+  app.click('dcSend');
+  await settle();
+  assert.equal(calls.length, 1);
+  assert.ok(app.root.querySelector('#dc-result'));
+});
+
+test('서류 점검: 한도 · 쉼 · 끊김을 알리고, 보내는 중에 계정이 바뀌면 결과를 버리고 글을 지운다', async t => {
+  const limit = fakeDocCheckServer({ status: 'limit' });
+  const app = await openTranslate(t, { signedIn: true, translateServer: limit.server });
+  app.click('dcOpen', '[data-id="wku-ug-grad"]');
+  fillDocCheck(app);
+  app.click('dcSend');
+  await settle();
+  assert.match(pageText(app), /오늘은 글에서 찾기를 더 쓸 수 없어요/);
+  assert.equal(app.root.querySelector('#dc-text').value, PASTE);
+  const off = await openTranslate(t, { signedIn: true });
+  off.click('dcOpen', '[data-id="wku-ug-grad"]');
+  fillDocCheck(off);
+  off.click('dcSend');
+  await settle();
+  assert.match(pageText(off), /글에서 찾기는 잠시 쉬어요/);
+  const lost = await openTranslate(t, { signedIn: true, translateServer: async () => ({ ok: true }) });
+  lost.click('dcOpen', '[data-id="wku-ug-grad"]');
+  fillDocCheck(lost);
+  lost.click('dcSend');
+  await settle();
+  assert.match(pageText(lost), /결과를 받지 못했어요/);
+  let release = null;
+  const held = fakeDocCheckServer({ gate: new Promise(resolve => { release = resolve; }) });
+  const other = await openTranslate(t, { signedIn: true, translateServer: held.server });
+  other.click('dcOpen', '[data-id="wku-ug-grad"]');
+  fillDocCheck(other);
+  other.click('dcSend');
+  assert.equal(other.document.activeElement?.getAttribute('id'), 'dc-wait', '찾는 동안 초점은 기다림 안내에 있다');
+  other.setConfirmation(false);
+  other.click('dcLeave');
+  assert.match(other.confirmations.at(-1) || '', /글에서 찾는 중이에요/, '찾는 중에 떠나면 먼저 묻는다');
+  other.switchOwner('other-account');
+  await settle();
+  other.notifyStatus();
+  release();
+  await settle();
+  assert.equal(other.root.querySelector('#dc-result'), null, '앞 계정의 결과를 보이지 않는다');
+  assert.doesNotMatch(pageText(other), /УБ01234567/);
+});
+
+test('서류 점검: 손님이 로그인하고 돌아오면 같은 서류의 점검 쪽을 연다', async t => {
+  const KEY = 'synk-path-translate-return';
+  const guest = await openTranslate(t);
+  guest.click('dcOpen', '[data-id="wku-ug-grad"]');
+  assert.match(pageText(guest), /SYNK ID로 로그인하면 글에서 찾기를 쓸 수 있어요/);
+  guest.click('accountSignIn');
+  const kept = JSON.parse(guest.record(KEY));
+  assert.deepEqual(Object.keys(kept).sort(), ['at', 'id', 'to']);
+  assert.equal(kept.to, 'doccheck');
+  await settle();
+  const seed = Object.fromEntries(guest.keys().map(key => [key, guest.record(key)]));
+  const real = studyData.programsFor(studyData.PROGRAMS, true);
+  const comeBack = value => boot(t, { raw: studyGoalDocument(), programs: real, signedIn: true, seed: { ...seed, [KEY]: JSON.stringify(value) } });
+  const back = await comeBack({ id: 'wku-ug-grad', at: Date.now() - 1000, to: 'doccheck' });
+  await settle();
+  assert.equal(back.document.activeElement?.getAttribute('id'), 'dc-title');
+  assert.equal(back.root.querySelector('#dc-text').value, '');
+  assert.equal(back.record(KEY), undefined);
+  for (const value of [{ id: 'wku-ug-bank', at: Date.now(), to: 'doccheck' }, { id: 'visa-d2-school', at: Date.now(), to: 'doccheck' }, { id: 'wku-ug-grad', at: Date.now(), to: 'editor' }, { id: 'wku-ug-grad', at: Date.now() - 11 * 60 * 1000, to: 'doccheck' }]) {
+    const app = await comeBack(value);
+    await settle();
+    assert.equal(app.root.querySelector('#dc-title'), null, JSON.stringify(value));
+    assert.equal(app.record(KEY), undefined);
+  }
+});
+
+test('면접 연습: 요강에 면접이 있는 과정에만 상자가 있고, 같은 탭에서 과정과 급수만 넘긴다', async t => {
+  const app = await openTranslate(t);
+  assert.match(pageText(app), /면접을 한국어로 연습해 봐요/);
+  app.click('interviewOpen', '[data-id="wku-ug"]');
+  assert.deepEqual(app.visits, ['../interview/study/']);
+  assert.deepEqual(JSON.parse(app.record('synk-path-interview')), { program: 'wku-ug', topik: 0 });
+  app.click('nav', '[data-page="univ"]');
+  app.click('univOpen', '[data-id="jbnu-lang"]');
+  app.setConfirmation(true);
+  app.click('pathPick', '[data-id="jbnu-lang"]');
+  app.click('nav', '[data-page="path"]');
+  assert.match(app.root.querySelector('h1').textContent, /전북대학교/);
+  assert.equal(app.root.querySelector('button[data-action="interviewOpen"]'), null);
 });

@@ -14,6 +14,9 @@ import { renderPath, renderPathCard, renderPathPick, pathTarget, stageCounts } f
 import { docsFor, translateKindOf, translateKindChoice } from './docs-data.mjs';
 import { renderTranslate, draftText, countText as trCountText, ERROR_TEXT } from './translate-ui.mjs';
 import { splitPasted, maskLines, validateTranslateRequest, validateTranslateReply, validateCheckReply, draftRows, TRANSLATE_CONSENT_VERSION } from './translate-shape.mjs';
+import { docCheckItems, docCheckRows, validateDocCheckRequest, validateDocCheckReply, DOC_CHECK_CONSENT_VERSION } from './doc-check.mjs';
+import { renderDocCheck, dcCanSend, dcMarkKey, DC_ERROR_TEXT } from './doc-check-ui.mjs';
+import { INTERVIEW_PROGRAMS } from './interview-shape.mjs';
 import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, studyCountSay, condHint, STUDY_FILTERS, GRADE_MAX, FUNDS_MAX_MAN } from './study-ui.mjs';
 
 void SCHEMA_VERSION; void STORAGE_KEY;
@@ -656,6 +659,46 @@ async function trSend() {
   say(accL('번역 초안이 나왔어요. 번역본이 아니에요. 이어서 다시 몽골어로 옮겨 견줘요.', 'The translation draft is ready. It is not a translation for submission. Next, it is translated back into Mongolian for a check.'));
   void trRunCheck(tr);
 }
+// 서류 점검(서류점검_모의면접_설계.md 1절). 붙여 넣은 글 · 찾은 줄 · 누른 표시는 이 메모리(S.dc)에만 둔다. 지우는 때는 번역 초안과 같다.
+const dcDoc = () => {
+  const t = S.dc && pathTarget(channelView());
+  const doc = t ? t.set.all.find((x) => x.id === S.dc.docId && x.stage !== 'visa') : null;
+  return doc ? { doc, src: t.set.program, program: t.program } : null;
+};
+const doccheck = () => {
+  const found = dcDoc();
+  return found ? renderDocCheck({ lang: state.lang, signedIn: session.status().signedIn === true, now: new Date(), doc: found.doc, src: found.src, programName: found.program.name, dc: S.dc }) : '';
+};
+const dcMsg = (key) => (DC_ERROR_TEXT[key] || DC_ERROR_TEXT.unavailable)[state.lang === 'en' ? 1 : 0];
+const newDc = (docId) => ({ owner: ownerKey(), docId, text: '', age: null, guardian: false, agree: false, phase: 'edit', error: null, notice: null, remaining: null, rows: null, marks: new Set(), seq: 0 });
+async function dcSend() {
+  const dc = S.dc;
+  if (!dc || !docCheckItems(dc.docId) || !dcCanSend(dc)) return;
+  // 글의 언어는 가리지 않는다(답이 줄 번호뿐이다). 나머지 한도와 가리기는 번역 초안과 같다.
+  const split = splitPasted(dc.text);
+  if (split.error && split.error !== 'language') { dc.error = split.error; render(false); root.querySelector('#dc-text')?.focus(); say(dcMsg(split.error)); return; }
+  let body;
+  try {
+    body = validateDocCheckRequest({ action: 'doc_check', request_id: crypto.randomUUID(), doc: dc.docId, lines: maskLines(split.lines).lines,
+      consent: { v: DOC_CHECK_CONSENT_VERSION, age: dc.age, guardian: dc.age === 'teen', lang: state.lang === 'en' ? 'en' : 'ko' } });
+  } catch { dc.notice = 'unavailable'; render(false); root.querySelector('[data-action="dcSend"]')?.focus(); say(dcMsg(dc.notice)); return; }
+  const seq = ++dc.seq;
+  Object.assign(dc, { phase: 'sending', error: null, notice: null });
+  // 보내는 동안 단추가 막혀 초점이 사라지므로 기다림 안내로 옮긴다.
+  render(false); root.querySelector('#dc-wait')?.focus(); say(accL('글에서 찾는 중이에요. 이 화면을 열어 두세요.', 'Looking through the text. Keep this screen open.'));
+  let reply = null, failed = null;
+  try { reply = validateDocCheckReply(await session.translate(body), dc.docId, body.lines.length); } catch (err) { failed = err; }
+  if (S.dc !== dc || dc.seq !== seq || dc.owner !== ownerKey()) return;
+  if (reply && reply.remaining !== null) dc.remaining = reply.remaining;
+  if (failed || reply.status !== 'done') {
+    dc.phase = 'edit'; dc.notice = failed ? (['NETWORK', 'INVALID_DOC_CHECK_REPLY', 'INVALID_RESPONSE'].includes(failed.code) ? 'lost' : 'unavailable') : reply.status;
+    render(false); root.querySelector('[data-action="dcSend"]')?.focus(); say(dcMsg(dc.notice)); return;
+  }
+  // 화면에는 학생이 붙여 넣은 줄 그대로를 보인다(가린 번호는 보낼 때만 가린다).
+  Object.assign(dc, { phase: 'done', rows: docCheckRows(dc.docId, reply.items, split.lines) });
+  render(false); root.querySelector('#dc-result')?.focus();
+  say(accL('글에서 찾은 줄이 나왔어요. 대학의 확인이 아니에요. 종이 서류와 맞춰 보세요.', 'The lines found in the text are ready. This is not a check by the university. Compare with the paper document.'));
+}
 // 대조가 끝나 쪽을 다시 그리면 id 없는 단추의 초점이 사라진다. 누르던 단추를 다시 찾아 돌려준다.
 // data-action만으로는 탭 · 언어처럼 같은 동작의 다른 단추가 걸리므로 data-page · data-id까지 견주고, 같은 단추가 위아래에 둘이면 몇 번째였는지로 가른다.
 function trFocusTarget(el) {
@@ -671,35 +714,41 @@ function trRender() {
   render(false);
   if (target) [...root.querySelectorAll(target.sel)][target.at]?.focus();
 }
-// 손님이 번역 쪽에서 로그인하면 웹 로그인이 쪽을 새로 연다. 돌아온 뒤 같은 서류의 번역 쪽을 다시 연다.
+// 손님이 번역 쪽이나 서류 점검 쪽에서 로그인하면 웹 로그인이 쪽을 새로 연다. 돌아온 뒤 같은 서류의 그 쪽을 다시 연다.
 // 이 탭에 두는 것은 서류 줄 id와 누른 때뿐이다(글 · 초안 · 동의는 없다). 10분이 지나거나 다른 쪽으로 가거나 손님으로 돌아오면 지운다.
 const TR_RETURN_KEY = 'synk-path-translate-return', TR_RETURN_MS = 10 * 60 * 1000;
-const trReturnSet = (id) => { try { tabStorage()?.setItem(TR_RETURN_KEY, JSON.stringify({ id, at: Date.now() })); } catch { /* 저장이 막힌 탭: 돌아오기만 없다 */ } };
+const trReturnSet = (id, to) => { try { tabStorage()?.setItem(TR_RETURN_KEY, JSON.stringify(to ? { id, at: Date.now(), to } : { id, at: Date.now() })); } catch { /* 저장이 막힌 탭: 돌아오기만 없다 */ } };
 const trReturnClear = () => { try { tabStorage()?.removeItem(TR_RETURN_KEY); } catch { /* 위와 같음 */ } };
 // 로그인한 뒤 번역 쪽이 열리기 전에 저절로 거치는 쪽. 학생이 다른 쪽으로 가면 돌아올 값을 지운다(go · nav).
-const TR_WAIT_PAGES = ['today', 'onboard', 'profile', 'studyConsent', 'translate'];
+const TR_WAIT_PAGES = ['today', 'onboard', 'profile', 'studyConsent', 'translate', 'doccheck'];
 function trReturnGet() {
   let raw = null;
   try { raw = tabStorage()?.getItem(TR_RETURN_KEY) ?? null; } catch { return null; }
   if (raw === null) return null;
   try {
     const v = JSON.parse(raw), age = Date.now() - v.at;
-    if (typeof v.id === 'string' && Number.isFinite(age) && age >= 0 && age <= TR_RETURN_MS && translateKindOf(v.id)) return v.id;
+    const known = typeof v.id === 'string' && (v.to === 'doccheck' ? docCheckItems(v.id) : v.to === undefined && translateKindOf(v.id));
+    if (known && Number.isFinite(age) && age >= 0 && age <= TR_RETURN_MS) return { id: v.id, to: v.to === 'doccheck' ? 'doccheck' : 'translate' };
   } catch { /* 깨진 값은 지운다 */ }
   trReturnClear();
   return null;
 }
-/** 돌아올 서류가 있고 계정과 조건이 준비됐으면 번역 쪽을 연다(빈 쪽). 열었으면 true. 계정의 과정이 달라 그 서류가 없으면 열지 않는다. */
+/** 돌아올 서류가 있고 계정과 조건이 준비됐으면 그 쪽을 연다(빈 쪽). 열었으면 true. 계정의 과정이 달라 그 서류가 없으면 열지 않는다. */
 function trResume() {
-  if (S.page === 'translate') { if (session.status().signedIn) trReturnClear(); return false; }
-  if (S.tr || S.page !== 'today' || !session.status().signedIn || !session.document()?.state || !state.onboarded) return false;
-  const id = trReturnGet();
+  if (S.page === 'translate' || S.page === 'doccheck') { if (session.status().signedIn) trReturnClear(); return false; }
+  if (S.tr || S.dc || S.page !== 'today' || !session.status().signedIn || !session.document()?.state || !state.onboarded) return false;
+  const back = trReturnGet();
   // 계정의 조건을 아직 못 읽었거나 고르기를 기다리는 동안에는 열지 않고 기다린다.
-  if (!id || studyLocked() || studyAcct.snapshot().phase === 'loading') return false;
+  if (!back || studyLocked() || studyAcct.snapshot().phase === 'loading') return false;
   trReturnClear();
-  S.tr = newTr(id);
-  if (!trDoc()) { S.tr = null; return false; }
-  S.page = 'translate';
+  if (back.to === 'doccheck') {
+    S.dc = newDc(back.id);
+    if (!dcDoc()) { S.dc = null; return false; }
+  } else {
+    S.tr = newTr(back.id);
+    if (!trDoc()) { S.tr = null; return false; }
+  }
+  S.page = back.to;
   return true;
 }
 async function trRunCheck(tr) {
@@ -719,7 +768,7 @@ async function trRunCheck(tr) {
   const n = tr.rows.filter((r) => r.verdict === 'differs' || r.verdict === 'unsure').length;
   say(reply.compared ? accL(`견주기를 마쳤어요. 뜻이 달라 보이는 줄 ${n}곳.`, `Check finished. ${n} line(s) may differ in meaning.`) : accL('자동 대조를 하지 못했어요. 원문과 다시 옮긴 몽골어를 직접 견줘 보세요.', 'The automatic check did not run. Compare the original and the back-translation yourself.'));
 }
-const PAGES = { today, path, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile, studyConsent, translate };
+const PAGES = { today, path, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile, studyConsent, translate, doccheck };
 const LOCKED_ACTIONS = ['pickGoal', 'step2', 'toggle', 'finish', 'skip', 'prepareThis', 'confirm', 'body', 'loc', 'setLang', 'changeGoal', 'prepareJob', 'saveJob', 'removeJob'];
 function render(focus = true) {
   if (composingEl && root.contains(composingEl) && document.activeElement === composingEl) { deferredRender = true; deferredFocus = deferredFocus || focus; return; }
@@ -735,6 +784,12 @@ function render(focus = true) {
     if (had) { S.tr = null; if (S.page === 'translate') S.flash = esc(trMsg('account')); } else S.tr = newTr(S.tr.docId);
   }
   if (S.page === 'translate' && (!S.tr || !trDoc())) { S.tr = null; S.page = STUDY_ON ? 'path' : 'today'; }
+  // 서류 점검도 같다: 계정이 바뀌면 붙여 넣은 글과 찾은 줄을 지운다. 글이 없으면 새 계정의 빈 쪽으로 남긴다.
+  if (S.dc && S.dc.owner !== ownerKey()) {
+    const had = S.dc.phase !== 'edit' || S.dc.text;
+    if (had) { S.dc = null; if (S.page === 'doccheck') S.flash = esc(dcMsg('account')); } else S.dc = newDc(S.dc.docId);
+  }
+  if (S.page === 'doccheck' && (!S.dc || !dcDoc())) { S.dc = null; S.page = STUDY_ON ? 'path' : 'today'; }
   if (trResume()) focus = true;
   const accSt = session.status();
   const ae = document.activeElement;
@@ -774,6 +829,10 @@ function go(page) {
     if (S.tr?.phase === 'draft' && !confirm(state.lang === 'en' ? 'Leaving this page deletes the draft. It is not stored anywhere. Leave?' : '이 화면을 떠나면 초안이 지워져요. 어디에도 저장하지 않아요. 떠날까요?')) return;
     if (S.tr?.phase === 'sending' && !confirm(state.lang === 'en' ? 'The draft is still being made. If you leave, it is discarded and one of today’s 10 may still be used. Leave?' : '초안을 만드는 중이에요. 지금 떠나면 초안은 버려지고 오늘 한 장이 쓰일 수 있어요. 떠날까요?')) return;
     S.tr = null; trReturnClear();
+  } else if (S.page === 'doccheck' && page !== 'doccheck') {
+    if (S.dc?.phase === 'done' && !confirm(accL('이 화면을 떠나면 찾은 줄과 붙여 넣은 글이 지워져요. 어디에도 저장하지 않아요. 떠날까요?', 'Leaving this page deletes the result and the pasted text. They are not stored anywhere. Leave?'))) return;
+    if (S.dc?.phase === 'sending' && !confirm(accL('글에서 찾는 중이에요. 지금 떠나면 결과는 버려지고 오늘 한 번이 쓰일 수 있어요. 떠날까요?', 'The search is still running. If you leave, the result is discarded and one of today’s 10 may still be used. Leave?'))) return;
+    S.dc = null; trReturnClear();
   } else if (!TR_WAIT_PAGES.includes(page)) trReturnClear();
   S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.dateNote = null; S.docFull = false; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }
 
@@ -822,7 +881,7 @@ const ACT = {
     if (id == null) { render(false); return; }
     S.taskId = id; go('editor');
   },
-  nav: (el) => { if (el.dataset.page === 'channels') S.channelId = null; if (el.dataset.page !== 'today' && S.page !== 'translate') trReturnClear(); go(el.dataset.page); },
+  nav: (el) => { if (el.dataset.page === 'channels') S.channelId = null; if (el.dataset.page !== 'today' && S.page !== 'translate' && S.page !== 'doccheck') trReturnClear(); go(el.dataset.page); },
   univOpen(el) { S.univId = el.dataset.id; go('univDetail'); },
   channelOpen(el) { S.channelId = el.dataset.id || null; go('channels'); },
   postOpen(el) { S.postId = el.dataset.id; go('post'); },
@@ -929,6 +988,31 @@ const ACT = {
     const id = el.dataset.id;
     if (!translateKindOf(id)) return;
     S.tr = newTr(id); go('translate');
+  },
+  dcOpen(el) {
+    S.dc = newDc(el.dataset.id);
+    if (!dcDoc()) { S.dc = null; return; }
+    go('doccheck');
+  },
+  dcLeave() { go(STUDY_ON ? 'path' : 'today'); },
+  dcSend: () => dcSend(),
+  dcEdit() {
+    if (S.dc?.phase !== 'done') return;
+    Object.assign(S.dc, { phase: 'edit', rows: null, notice: null, seq: S.dc.seq + 1 });
+    render(false); root.querySelector('#dc-text')?.focus();
+  },
+  dcFresh() {
+    if (S.dc?.phase !== 'done') return;
+    Object.assign(S.dc, { phase: 'edit', rows: null, notice: null, text: '', agree: false, guardian: false, seq: S.dc.seq + 1 });
+    render(false); root.querySelector('#dc-text')?.focus();
+  },
+  // 면접 연습은 다른 쪽이다. 같은 탭에서 옮겨야 로그인이 이어진다. 넘기는 것은 고른 과정과 TOPIK 급수뿐이다.
+  interviewOpen(el) {
+    const program = el.dataset.id;
+    if (!Object.hasOwn(INTERVIEW_PROGRAMS, program)) return;
+    const topik = studyProfile().topik;
+    try { tabStorage()?.setItem('synk-path-interview', JSON.stringify({ program, topik: Number.isInteger(topik) ? topik : 0 })); } catch { /* 저장이 막힌 탭: 연습 쪽에서 다시 고른다 */ }
+    location.assign('../interview/study/');
   },
   trLeave() { go(STUDY_ON ? 'path' : 'today'); },
   trSend: () => trSend(),
@@ -1192,6 +1276,7 @@ Object.assign(ACT, {
   },
   accountSignIn: async () => {
     if (S.page === 'translate' && S.tr) trReturnSet(S.tr.docId);
+    else if (S.page === 'doccheck' && S.dc && docCheckItems(S.dc.docId)) trReturnSet(S.dc.docId, 'doccheck');
     try { if (!(await session.signIn())) trReturnClear(); } catch (err) { trReturnClear(); throw err; }
   },
   accountSignOut: async () => {
@@ -1314,6 +1399,14 @@ root.addEventListener('input', (e) => {
     if (S.tr.error) { S.tr.error = null; e.target.removeAttribute('aria-invalid'); e.target.setAttribute('aria-describedby', 'tr-count'); root.querySelector('#tr-err')?.remove(); }
     return;
   }
+  if (e.target.dataset.action === 'dcText') {
+    if (!S.dc || S.dc.phase === 'sending') return;
+    S.dc.text = e.target.value;
+    const cnt = root.querySelector('#dc-count'); if (cnt) cnt.textContent = trCountText(S.dc.text, state.lang === 'en');
+    const btn = root.querySelector('[data-action="dcSend"]'); if (btn) btn.disabled = !dcCanSend(S.dc);
+    if (S.dc.error) { S.dc.error = null; e.target.removeAttribute('aria-invalid'); e.target.setAttribute('aria-describedby', 'dc-count'); root.querySelector('#dc-err')?.remove(); }
+    return;
+  }
   if (e.target.dataset.action === 'studyInput') {
     try { studyInput(e.target); } catch (err) { const m = getAccountErrorMessage(err, state.lang); S.flash = esc(m); render(false); say(m); }
     return;
@@ -1336,6 +1429,18 @@ root.addEventListener('change', (e) => {
   else if (a === 'jobBoard') { S.jobBoard = e.target.value || 'all'; S.jobPage = 0; render(false); root.querySelector('[data-action="jobBoard"]')?.focus(); }
   else if (a === 'savedJobs') { S.onlySaved = !!e.target.checked; S.jobPage = 0; render(false); root.querySelector('[data-action="savedJobs"]')?.focus(); }
   else if (a === 'topic') { S.help = e.target.value; S.copyMsg = null; render(false); root.querySelector('#topic')?.focus(); }
+  // 점검 줄의 표시는 다시 그리지 않는다(칸이 스스로 보인다). 번호만 이 메모리에 둔다.
+  else if (S.dc && a === 'dcMark') {
+    const i = Number(e.target.dataset.value);
+    if (Number.isInteger(i) && i >= 0) { const key = dcMarkKey(state.lang, i); if (e.target.checked) S.dc.marks.add(key); else S.dc.marks.delete(key); }
+  }
+  else if (S.dc && S.dc.phase !== 'sending' && ['dcAge', 'dcGuardian', 'dcAgree'].includes(a)) {
+    if (a === 'dcAge' && ['adult', 'teen', 'under14'].includes(e.target.value)) { S.dc.age = e.target.value; if (S.dc.age !== 'teen') S.dc.guardian = false; if (S.dc.age === 'under14') S.dc.agree = false; }
+    else if (a === 'dcGuardian') S.dc.guardian = !!e.target.checked;
+    else if (a === 'dcAgree') S.dc.agree = !!e.target.checked;
+    const id = e.target.id;
+    render(false); if (id) root.querySelector('#' + id)?.focus();
+  }
   else if (S.tr && S.tr.phase !== 'sending' && ['trKind', 'trAge', 'trGuardian', 'trAgree'].includes(a)) {
     if (a === 'trKind' && translateKindChoice(S.tr.docId) && ['grad', 'transcript'].includes(e.target.value)) S.tr.kind = e.target.value;
     else if (a === 'trAge' && ['adult', 'teen', 'under14'].includes(e.target.value)) { S.tr.age = e.target.value; if (S.tr.age !== 'teen') S.tr.guardian = false; if (S.tr.age === 'under14') S.tr.agree = false; }

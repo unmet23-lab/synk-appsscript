@@ -1,0 +1,40 @@
+/* 대학 입학 면접 연습 — 면접실(../film/rehearsal.css)의 결을 그대로 쓰고, 이 쪽에만 있는 고르기 · 동의 · 결과만 더한다. */
+#film-stage{position:relative;overflow:hidden}
+#film-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.study-setup{display:grid;gap:18px}
+body[data-phase]:not([data-phase=idle]) .study-setup{display:none}
+body[data-phase=complete] .side{display:flex;flex-direction:column}
+body[data-phase=complete] .result{order:-1}
+body[data-phase=complete] .mode-row{display:none}
+.study-field{display:grid;gap:8px}
+.study-choice{display:grid;gap:8px;margin:0;padding:0;border:0}
+.study-choice legend{padding:0;margin-bottom:8px;font-size:14px;font-weight:700;color:var(--ink-2)}
+.study-choice label{display:block;position:relative;cursor:pointer}
+.study-choice input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.study-choice label>span{display:grid;gap:2px;padding:14px 16px;border:1.5px solid var(--line-2);border-radius:var(--r-md);background:#fff}
+.study-choice b{font-size:16px;font-weight:700;color:var(--ink)}
+.study-choice small{font-size:14px;font-weight:400;line-height:1.55;color:var(--ink-2)}
+.study-choice input:checked+span{border-color:var(--lapis);background:var(--lapis-wash)}
+.study-choice input:focus-visible+span{outline:3px solid var(--lapis);outline-offset:2px}
+.study-choice input:disabled+span{opacity:.55}
+.study-ai{display:grid;gap:14px}
+.study-ai>p{margin:0;padding:14px 16px;border-radius:var(--r-md);background:var(--butter-wash);font-size:15px;line-height:1.6}
+#ai-consent{display:grid;gap:14px}
+.study-notice{display:grid;gap:10px;padding:16px;border-radius:var(--r-md);background:var(--soft);font-size:15px;line-height:1.6}
+.study-notice p{margin:0}
+.study-notice dl{display:grid;gap:10px;margin:0}
+.study-notice dt{font-size:13px;font-weight:700;color:var(--gray)}
+.study-notice dd{margin:2px 0 0;color:var(--ink-2)}
+.study-notice summary{cursor:pointer;font-weight:700}
+.study-notice details>div{display:grid;gap:8px;margin-top:10px}
+.study-rule{font-weight:700;color:var(--ink)}
+.study-check{display:flex;align-items:flex-start;gap:10px;padding:4px 0;font-size:16px;font-weight:400;color:var(--ink);cursor:pointer}
+.study-check input{flex:none;width:24px;height:24px;margin:0;accent-color:var(--lapis)}
+.result dl{display:grid;gap:14px;margin:14px 0 0}
+.result dt{font-size:13px;font-weight:700;color:var(--gray)}
+.result dd{margin:4px 0 0;font-size:17px;line-height:1.65}
+.study-transcript{display:grid;gap:14px;margin:22px 0 0;padding:22px 0 0;border-top:1px solid var(--line);list-style:none}
+.study-transcript p{margin:0}
+.study-transcript .q{font-weight:700}
+.study-transcript .q small{margin-left:8px;font-size:13px;font-weight:700;color:var(--lapis-deep)}
+.study-transcript .a{margin-top:4px;color:var(--ink-2);overflow-wrap:anywhere}
