@@ -4,6 +4,8 @@
 //   - 판 정한 값을 제시 사건에 싣지 않는다 — 2판 제시 사건에 그 칸이 없다(Fable F2 · 설계 주인 11-19 밤). 값은 trace와 내용 기억에만 있다.
 //   - 한 제시는 Flow를 한 번만 움직인다 — 그 제시의 첫 판정 답, 또는 게임이 flow.outcome(시간 초과 등)을 준 관찰 가운데 먼저 온 하나.
 //     다시 서빙(같은 제시의 뒤 답)은 움직이지 않는다(23-5와 같은 뜻 — 옛 판과 다른 자리, 대조 시험은 「의도한 차이」로 단언).
+//   - 「모르겠어요」(unknown — 접기가 놓침으로 매긴 답, §3-2)는 실패로 관찰하고 그 제시의 한 번을 쓴다. 옛 겉은 void로 보냈다 — 옛 겉은 답마다
+//     Flow를 움직였지만, 여기서는 그 제시가 열린 채 남아 뒤 답의 맞힘이 첫 성공으로 섰다(5-3 ① 엔진 d 카본 B).
 //   - 도움 여부(assisted)는 그 답의 접기 값, 다시 본 문항(repeat)은 제시할 때 동기에 정한다(Fable F5 · 카본 A6 · 카본 다시 검토 A1).
 //   - 앞선 값(옛 priorFromSummary)은 쓰지 않는다 — 내용 기억이 없으면 내용의 시작값에서 연다.
 // 오늘 · 표시 설정은 셸이 넘기는 읽개(host.prefs.today · .presentation)를 읽는다. 바꾸기는 지금처럼 WORLD 화면이 한다.
@@ -19,7 +21,7 @@ const presentationOf = value =>
     ([key, choice]) =>
       Object.hasOwn(PRESENTATION, key) && (choice === null || PRESENTATION[key].includes(choice)),
   );
-const JUDGED = { correct: 'success', incorrect: 'fail' };
+const JUDGED = { correct: 'success', incorrect: 'fail', unknown: 'fail' };
 // Flow의 근거가 되는 결과 — 이것만 그 제시의 한 번을 쓴다. void · skip은 관찰해도 몫을 쓰지 않는다(소리를 다 듣기 전에 서빙한 주문 뒤의
 // 첫 판정 답이 막히지 않게, GPT 다시 검토 GA3).
 const EVIDENCE = new Set(['success', 'fail', 'timeout']);

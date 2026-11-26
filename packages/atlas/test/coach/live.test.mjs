@@ -305,3 +305,37 @@ test('소리 전달이 안 된 답은 게임이 맞음이라 해도 Flow의 몫�
   );
   coach.dispose();
 });
+
+test('「모르겠어요」(unknown — 접기가 놓침으로 매긴 답)는 그 제시의 첫 판정 답이다 — 실패로 관찰하고, 뒤 답의 맞힘이 첫 성공으로 서지 않는다(5-3 ① 엔진 d 카본 B)', async () => {
+  const marked = items.map((item, i) => (i === 0 ? { ...item, unknownOption: true } : item));
+  const time = clock(T0);
+  const port = memoryPort();
+  const { coach } = await openCoach({
+    items: marked,
+    time,
+    port,
+    host: {
+      guest: true,
+      port,
+      now: time.now,
+      key: `synk-atlas:live-unknown-${process.pid}`,
+      prefs: { storage: fakeStorage() },
+    },
+  });
+  const live = coach.live(RUSH());
+  const pid = live.present(marked[0]);
+  time.advance(4_000);
+  const first = live.answer(pid, { correct: null, unknown: true });
+  assert.equal(first.recorded.verdict, 'unknown');
+  assert.equal(first.evidence, true, '「모르겠어요」는 Flow의 근거다');
+  assert.deepEqual(
+    live.trace().map(row => row.outcome),
+    ['fail'],
+    '놓침으로 본다(§3-2 「모르겠어요 = 놓침」)',
+  );
+  time.advance(4_000);
+  const again = live.answer(pid, { correct: true, assessable: true, attemptNo: 2 });
+  assert.equal(again.evidence, false, '같은 제시의 뒤 답은 Flow의 근거가 아니다');
+  assert.equal(live.trace().length, 1, '맞힐 때까지 다시 답해도 첫 성공으로 서지 않는다');
+  coach.dispose();
+});

@@ -35,12 +35,20 @@ const ROW_TYPES = new Set([
   EVENT_TYPES.excluded,
 ]);
 
+// 창의 출처 — 문서의 출처(window.origin)를 먼저 읽는다. srcdoc · about:blank 틀은 주소의 출처(location.origin)가 "null"이어도 위 창의
+// 출처를 물려받는다(loader의 srcdoc 판 주소 M2와 같은 자리 — 5-3 ① 엔진 d 카본 C). origin이 없는 창(시험의 가짜 창)은 location.origin이다.
+const originOf = scope =>
+  typeof scope.origin === 'string' ? scope.origin : scope.location?.origin;
+// 불투명 출처(샌드박스 틀) — 어느 창과도 같은 출처가 아니다(글로 「null」끼리 같아 보여도 오르지 않는다).
+const OPAQUE = 'null';
+
 // 같은 출처의 가장 위 창(지금 판의 쓰기 임대 주인 __synkAtlasHistoryLease와 같은 자리).
 export function hostScope(scope = globalThis) {
   let top = scope;
   try {
+    const mine = originOf(scope);
     for (let frame = scope; frame.parent && frame.parent !== frame; frame = frame.parent) {
-      if (frame.parent.location?.origin !== scope.location?.origin) break;
+      if (mine === OPAQUE || originOf(frame.parent) !== mine) break;
       top = frame.parent;
     }
   } catch {

@@ -2751,4 +2751,37 @@ export const COACH_MUTANTS = [
     '        const row = map.familyRow?.(familyKey) ?? null;\n',
     '        const row = null;\n',
   ],
+  // ── 5-3 ① 엔진 d 카본 고침(B P1 · C P2) — 코치 시험(live · host-scope)이 잡는다 ──
+  [
+    'coach',
+    '순간 맞춤(4-6b)',
+    '「모르겠어요」를 Flow가 보지 않는다 — 그 제시를 닫지 않아 뒤 답의 맞힘이 첫 성공으로 선다(5-3 ① 엔진 d 카본 B)',
+    'src/coach/flow.mjs',
+    "const JUDGED = { correct: 'success', incorrect: 'fail', unknown: 'fail' };",
+    "const JUDGED = { correct: 'success', incorrect: 'fail' };",
+  ],
+  [
+    'coach',
+    '순간 맞춤(4-6b)',
+    '「모르겠어요」를 맞힘으로 본다(5-3 ① 엔진 d 카본 B)',
+    'src/coach/flow.mjs',
+    "const JUDGED = { correct: 'success', incorrect: 'fail', unknown: 'fail' };",
+    "const JUDGED = { correct: 'success', incorrect: 'fail', unknown: 'success' };",
+  ],
+  [
+    'coach',
+    '호스트',
+    '위 창 찾기가 주소의 출처만 본다 — srcdoc · about:blank 틀이 셸 창의 호스트에 닿지 못한다(5-3 ① 엔진 d 카본 C)',
+    'src/coach/host.mjs',
+    "  typeof scope.origin === 'string' ? scope.origin : scope.location?.origin;",
+    '  scope.location?.origin;',
+  ],
+  [
+    'coach',
+    '호스트',
+    '불투명 출처(「null」)끼리를 같은 출처로 쳐 샌드박스 틀이 위 창으로 오른다(5-3 ① 엔진 d 카본 C)',
+    'src/coach/host.mjs',
+    '      if (mine === OPAQUE || originOf(frame.parent) !== mine) break;',
+    '      if (originOf(frame.parent) !== mine) break;',
+  ],
 ];
