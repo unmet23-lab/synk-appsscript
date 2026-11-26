@@ -180,7 +180,7 @@
   "ruleElder": "Con maestros y jefes",
   "ruleSize": 42,
   "ruleTop": 990,
-  "gag": "Al revés, sí está bien",
+  "gag": "Él sí te lo dice",
   "gagSize": 54,
   "b2Mean": "¡Trabaja bien!",
   "end": "Al maestro:",
@@ -212,7 +212,7 @@
     "b1Mean": "그래, 잘 가",
     "ruleFriend": "네 친구 · 동료(compas)에게",
     "ruleElder": "선생님 · 상사에게",
-    "gag": "반대로는(선생님이 학생에게는) 괜찮아요",
+    "gag": "그분(선생님)은 너에게 그 말을 해",
     "end": "선생님께:",
     "b2Mean": "일 잘해!(수고해요의 뜻 — 편한 말)"
   }
