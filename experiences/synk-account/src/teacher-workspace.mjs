@@ -4,7 +4,7 @@ import {createClassRecords} from '../../teacher-world/class-records.mjs';
 
 // All server-approved classes are visible; individual work uses one scoped host.
 export function createTeacherWorkspace({root,transport,guard,notice,documentObject=document,windowObject=window,locationHref=location.href,pollMs=15000}){
-  let stopped=false,epoch=0,requestVersion=0,overviewVersion=0,selected=null,selectedLearnerId=null,frame=null,host=null,records=null,recordsStale=false,timer=null,classes=[],online=true,overviewData=null,framePermissions=new Map();
+  let stopped=false,epoch=0,requestVersion=0,overviewVersion=0,selected=null,selectedLearnerId=null,frame=null,host=null,records=null,recordsStale=false,staleFrom=0,timer=null,classes=[],online=true,overviewData=null,framePermissions=new Map();
   const make=(tag,text)=>{const element=documentObject.createElement(tag);if(text)element.textContent=text;return element;};
   const controls=make('div'),label=make('label','담당 반'),select=make('select'),refresh=make('button','반 목록 새로고침'),status=make('p'),overviewRoot=make('section'),mount=make('div');
   controls.className='teacher-class-controls';select.setAttribute('aria-label','담당 반');refresh.type='button';refresh.className='plain';status.className='small';mount.className='teacher-class-mount';
@@ -64,11 +64,18 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     const empty=make('option',classes.length?'전체 반 보기':'담당 반이 없어요');empty.value='';select.replaceChildren(empty);
     for(const row of classes){const option=make('option',row.name);option.value=row.id;select.append(option);}select.value=selected?.id||'';
   }
-  function canLeave(){try{return !frame?.contentWindow?.SYNKTeacherView?.hasDraft?.()&&!records?.hasDraft()||windowObject.confirm?.('쓰던 과제·관찰·챙길 일이나 저장하지 않은 출결이 닫혀요. 다른 학생으로 넘어갈까요?')===true;}catch{return false;}}
+  // 같은 반 안에서 학생만 바꿀 때는 띠(출결 · TOPIK)가 닫히지 않으니 수업 화면(iframe)에 쓰던 것만 묻는다.
+  function canLeave(closesRecords=true){
+    try{
+      const frameDraft=frame?.contentWindow?.SYNKTeacherView?.hasDraft?.()===true,recordsDraft=closesRecords&&records?.hasDraft()===true;if(!frameDraft&&!recordsDraft)return true;
+      return windowObject.confirm?.(frameDraft&&recordsDraft?'쓰던 과제·관찰·챙길 일과 저장하지 않은 출결 · TOPIK 성적이 닫혀요. 넘어갈까요?':frameDraft?'쓰던 과제·관찰·챙길 일이 닫혀요. 다른 학생으로 넘어갈까요?':'저장하지 않은 출결 · TOPIK 성적이 닫혀요. 넘어갈까요?')===true;
+    }catch{return false;}
+  }
   async function choose(row,{learnerId=null,userInitiated=false,refreshScope=false}={}){
-    active();if(userInitiated&&!canLeave()){picker();return;}
-    if(row&&selected?.id===row.id&&frame&&!refreshScope&&!permissionChanged(framePermissions.get(learnerId),permission(knownLearner(learnerId)))){
-      selectedLearnerId=learnerId;windowObject.SYNKClassroomSelection={classId:row.id,learnerId};frame.contentWindow?.postMessage?.({type:'synk-teacher-select',classId:row.id,learnerId},new URL(locationHref).origin);picker();renderOverview();if(records&&learnerId){mount.scrollIntoView({block:'start',behavior:'instant'});records.focus(learnerId);}else frame.scrollIntoView({block:'start',behavior:'instant'});return;
+    active();const stay=!!row&&selected?.id===row.id&&!!frame&&!refreshScope&&!permissionChanged(framePermissions.get(learnerId),permission(knownLearner(learnerId)));
+    if(userInitiated&&!canLeave(!stay)){picker();return;}
+    if(stay){
+      selectedLearnerId=learnerId;windowObject.SYNKClassroomSelection={classId:row.id,learnerId};frame.contentWindow?.postMessage?.({type:'synk-teacher-select',classId:row.id,learnerId},new URL(locationHref).origin);picker();renderOverview();mount.scrollIntoView({block:'start',behavior:'instant'});records?.focus(learnerId);return;
     }
     clearFrame();selected=row;selectedLearnerId=learnerId;picker();renderOverview();const version=epoch;
     if(!row){status.textContent=classes.length?'담당 반 전체를 보고 있어요. 학생을 누르면 그 학생의 기록과 과제가 열려요.':'기관에서 담당 반을 등록하면 여기에 보여요.';return;}
@@ -85,7 +92,7 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     windowObject.SYNKClassroomHost=host;windowObject.SYNKClassroomSelection={classId:row.id,learnerId};
     // 「오늘 출결」 띠와 학생 줄 TOPIK 칸. 서버가 이 반 응답에 출결을 싣지 않으면(기능 스위치 꺼짐) 그리지 않는다.
     // 저장하면 개요를 다시 받고, 받은 개요로 띠의 연속 결석 · TOPIK 배지도 바꾼다(load 안에서 recordsStale을 본다).
-    const recordsRoot=make('section');records=createClassRecords({root:recordsRoot,request:(path,body)=>client.request(path,body),guard:check,notice,documentObject,onSaved:()=>{recordsStale=true;void load().catch(report);}});
+    const recordsRoot=make('section');records=createClassRecords({root:recordsRoot,request:(path,body)=>client.request(path,body),guard:check,notice,documentObject,onSaved:()=>{recordsStale=true;staleFrom=requestVersion+1;void load().catch(report);}});
     if(records.render(workspace,row.id,{learnerId}))mount.append(recordsRoot);else{records.stop();records=null;}
     frame=make('iframe');frame.title=row.name+' · 학생별 기록과 과제';frame.src=new URL('../teacher-world/?account=1',locationHref).href;mount.append(frame);status.textContent='학생이 공유한 학습 기록으로 다음 수업과 과제를 준비해요.';
     if(userInitiated)mount.scrollIntoView({block:'start',behavior:'instant'});
@@ -125,7 +132,8 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     const allowed=new Set(rows.map(row=>row.id));overviewData=restrictOverview({...data,classes:data.classes.map(row=>({...row,name:row.name||rows.find(member=>member.id===row.id)?.name,learners:Array.isArray(row.learners)?row.learners:[]}))},allowed);overviewVersion=version;
     const visible=new Set(overviewData.classes.map(row=>row.id));classes=rows.filter(row=>visible.has(row.id));
     // 띠: 저장 뒤에는 개요로 파생 표시까지, 그 밖의 주기적 다시 받기에서는 명부와 공유 상태만 바꾼다.
-    if(records){records.refresh(overviewData,{sharingOnly:!recordsStale});recordsStale=false;}
+    // 저장 뒤에 출발한 개요(순번 staleFrom 이상)만 파생 표시까지 바꾸고 표식을 지운다. 그보다 먼저 출발한 개요는 공유 상태만 본다.
+    if(records){const fresh=recordsStale&&version>=staleFrom;records.refresh(overviewData,{sharingOnly:!fresh});if(fresh)recordsStale=false;}
     // 담당이 풀려 고른 반이 지워졌으면 아래 길로 내려가 상태 줄까지 맞춘다(여는 중이던 열기는 epoch가 바뀌어 끝난다).
     if(!reselect&&selected){picker();renderOverview();return;}
     const prior=selected&&classes.find(row=>row.id===selected.id),row=prior||(classes.length===1?classes[0]:null);

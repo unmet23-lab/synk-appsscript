@@ -58,7 +58,10 @@ export function classSummaryModel(data,model){
   const owners=new Map(model.classes.flatMap(classroom=>classroom.learners.map(learner=>[classroom.id+':'+learner.id,{classroom,learner}])));
   const known=row=>owners.has(row.classId+':'+row.learnerId);
   const named=row=>{const owner=owners.get(row.classId+':'+row.learnerId);return {...row,name:owner?.learner.name||'이름 확인 필요',className:owner?.classroom.name||''};};
-  return {basisDate:attendance?.basisDate||topik?.basisDate||null,
+  // 요약은 학습 공유를 켠 학생만 센다. 빈 칸 문구가 그 기준을 드러내도록 공유 학생 수와 전체 학생 수를 함께 둔다.
+  const visible=new Set(model.classes.map(classroom=>classroom.id));
+  const sharedCount=list(data?.classes).filter(classroom=>visible.has(classroom.id)).reduce((n,classroom)=>n+list(classroom.learners).filter(learner=>learner?.topik?.shared===true).length,0);
+  return {sharedCount,learnerCount:model.classes.reduce((n,classroom)=>n+classroom.learners.length,0),basisDate:attendance?.basisDate||topik?.basisDate||null,
     absent:list(attendance?.absentToday).filter(known).map(named),late:list(attendance?.lateToday).filter(known).map(named),streaks:list(attendance?.consecutiveAbsences).filter(known).map(named),
     expiring:list(topik?.expiring).filter(known).map(named),expired:list(topik?.expired).filter(known).map(named),noLevel4:list(topik?.withoutValidLevel4).filter(known).map(named),
     recorded:list(attendance?.classes).filter(row=>model.classes.some(c=>c.id===row.classId)).reduce((sum,row)=>sum+['present','late','absent','excused'].reduce((n,key)=>n+number(row.counts?.[key]),0),0)};
@@ -72,8 +75,8 @@ export function classSummaryHtml(data,model,{unavailable=false}={}){
   return '<section class="class-summary" aria-label="담당 반 요약"><header><div><h3>담당 반 요약</h3><p>계정을 잇고 학습 공유를 켠 학생만 세어요. TOPIK 성적은 발표일로부터 2년 뒤에 만료돼요.</p></div><span class="ovs-basis">기준일 '+escape(s.basisDate||'확인 필요')+'</span></header><div class="ovs-grid">'
     +summaryBlock('오늘 결석 · 지각',s.absent.length+s.late.length,absent,s.recorded?'오늘 찍은 출결에 결석 · 지각이 없어요.':'오늘 출결을 아직 찍지 않았어요.')
     +summaryBlock('최근 수업 3회 연속 결석',s.streaks.length,s.streaks.map(row=>summaryButton(row,row.count+'회 연속 · '+row.since+'부터',unavailable)),'연속 결석인 학생이 없어요.')
-    +summaryBlock('TOPIK 만료 90일 안 · 만료',s.expiring.length+s.expired.length,[...s.expiring.map(row=>summaryButton(row,topikText(row)+' · '+TOPIK_STATE[row.state]+' · D-'+row.daysLeft,unavailable)),...s.expired.map(row=>summaryButton(row,topikText(row)+' · '+row.expiresOn+' 만료',unavailable))],'90일 안에 만료되는 성적이 없어요.')
-    +summaryBlock('유효한 4급 이상 없음',s.noLevel4.length,s.noLevel4.map(row=>summaryButton(row,REASON[row.reason]+(row.best?' · '+topikText(row.best):''),unavailable)),'모든 학생이 유효한 4급 이상을 갖고 있어요.')
+    +summaryBlock('TOPIK 만료 90일 안 · 만료',s.expiring.length+s.expired.length,[...s.expiring.map(row=>summaryButton(row,topikText(row)+' · '+TOPIK_STATE[row.state]+' · D-'+row.daysLeft,unavailable)),...s.expired.map(row=>summaryButton(row,topikText(row)+' · '+row.expiresOn+' 만료',unavailable))],'90일 안에 만료되거나 이미 만료된 성적이 없어요.')
+    +summaryBlock('유효한 4급 이상 없음',s.noLevel4.length,s.noLevel4.map(row=>summaryButton(row,REASON[row.reason]+(row.best?' · '+topikText(row.best):''),unavailable)),s.sharedCount===0?'학습 공유를 켠 학생이 아직 없어요.':s.sharedCount<s.learnerCount?'학습 공유를 켠 학생 '+s.sharedCount+'명은 모두 유효한 4급 이상을 갖고 있어요.':'모든 학생이 유효한 4급 이상을 갖고 있어요.')
     +'</div></section>';
 }
 

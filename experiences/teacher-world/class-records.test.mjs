@@ -81,8 +81,12 @@ function liveRoot(){
   const listeners={},focused=[];
   return {innerHTML:'',className:'',attributes:{},listeners,focused,setAttribute(k,v){this.attributes[k]=v;},addEventListener(type,fn){listeners[type]=fn;},removeEventListener(type){delete listeners[type];},replaceChildren(){this.innerHTML='';},contains(){return true;},
     querySelector(selector){
-      const wanted=[...selector.matchAll(/\[([\w-]+)(?:="([^"]*)")?\]/g)].map(([,name,value])=>value===undefined?' '+name+'="':' '+name+'="'+value+'"');
-      const tag=[...this.innerHTML.matchAll(/<(?:button|input|select|li|form|small|p)\b[^>]*>/g)].map(m=>m[0]).find(t=>wanted.every(w=>t.includes(w)));
+      // 「앞 뒤」처럼 띄어 쓴 선택자는 앞 태그 뒤에서 뒤 태그를 찾는다(TOPIK 칸 안의 입력칸).
+      const tags=[...this.innerHTML.matchAll(/<(?:button|input|select|li|form|small|p)\b[^>]*>/g)];let from=0,tag=null;
+      for(const part of selector.split(/\s+(?![^\[]*\])/)){
+        const wanted=[...part.matchAll(/\[([\w-]+)(?:="([^"]*)")?\]/g)].map(([,name,value])=>value===undefined?' '+name+'="':' '+name+'="'+value+'"');
+        const found=tags.find(m=>m.index>=from&&wanted.every(w=>m[0].includes(w)));if(!found){tag=null;break;}from=found.index;tag=found[0];
+      }
       if(!tag)return null;const disabled=/\sdisabled(?=[\s>])/.test(tag);
       // small · p는 안을 바꾸거나 지울 수 있다(메모를 쓰는 동안 줄 표시와 안내만 바꿔 넣는 것을 본다).
       const root=this,name=tag.match(/^<(\w+)/)[1],swap=html=>{const at=root.innerHTML.indexOf(tag),end=root.innerHTML.indexOf('</'+name+'>',at)+name.length+3;root.innerHTML=root.innerHTML.slice(0,at)+html+root.innerHTML.slice(end);};
@@ -129,7 +133,7 @@ test('TOPIK edit keeps the original kind and round in the heading; cancel carrie
   root.listeners.change({target:{dataset:{attTopikKind:'a'},form:formFor('a',{kind:'I',round:'',level:'4',announcedOn:'2025-01-10'})}});
   assert.match(root.innerHTML,/<legend>TOPIK II 제96회 고치기<\/legend>/);assert.match(root.innerHTML,/<option value="I" selected>/);assert.match(root.innerHTML,/<option value="1" selected>1급/);
   root.listeners.submit({target:formFor('a',{kind:'I',round:'',level:'1',announcedOn:'2025-01-10'}),preventDefault(){}});
-  assert.match(root.innerHTML,/회차\(숫자\) · 급수 · 성적 발표일을 확인해 주세요/);assert.match(root.innerHTML,/<legend>TOPIK II 제96회 고치기<\/legend>/);
+  assert.match(root.innerHTML,/role="alert" id="att-topik-error-a">회차는 1에서 999 사이 숫자로 적어 주세요/);assert.match(root.innerHTML,/<legend>TOPIK II 제96회 고치기<\/legend>/);
   const cancel=tagOf(root,'data-att-topik-cancel');assert.match(cancel,/data-att-topik-cancel="a" data-learner="a"/);assert.doesNotMatch(cancel,/disabled/);
   // 저장 중에는 취소할 수 없다.
   root.listeners.submit({target:formFor('a',{kind:'II',round:'97',level:'5',announcedOn:'2025-06-10'}),preventDefault(){}});
@@ -213,8 +217,8 @@ test('clearing the only note again lifts the row mark and the status-first notic
   view.render(workspace([learner('a',{name:'가온'}),learner('b',{name:'나래'})]),'c');
   const note=(id,value)=>root.listeners.input({target:{dataset:{attNote:id},value}});
   note('a','병원');assert.match(root.innerHTML,/data-att-meta="a">아직 안 찍음 · <b class="att-changed">저장 전 · 출결 상태를 골라 주세요/,'the mark follows the note while typing');
-  note('b','지각 예정');press(root,{attSave:'1'});await later();assert.match(root.innerHTML,/data-att-message="1">가온 외 1명의 출결 상태를 먼저 골라 주세요/);
-  note('a','');assert.match(root.innerHTML,/data-att-message="1">나래의 출결 상태를 먼저 골라 주세요/);assert.doesNotMatch(root.innerHTML,/data-att-meta="a">[^<]*<b/);
+  note('b','지각 예정');press(root,{attSave:'1'});await later();assert.match(root.innerHTML,/data-att-message="1"[^>]*>가온 외 1명의 출결 상태를 먼저 골라 주세요/);
+  note('a','');assert.match(root.innerHTML,/data-att-message="1"[^>]*>나래의 출결 상태를 먼저 골라 주세요/);assert.doesNotMatch(root.innerHTML,/data-att-meta="a">[^<]*<b/);
   note('b','');assert.doesNotMatch(root.innerHTML,/data-att-message/);assert.doesNotMatch(root.innerHTML,/상태를 골라 주세요/);
   assert.match(tagOf(root,'data-att-save'),/disabled/);assert.equal(view.hasDraft(),false);assert.equal(calls.length,0);view.stop();
 });
@@ -257,4 +261,50 @@ test('a TOPIK edit whose record was deleted elsewhere keeps the typed values as 
   view.render(workspace([learner('a',{topik:topik([topikRecord()])})]),'c');press(root,{attTopikOpen:'a'});press(root,{attTopikDelete:'t1',learner:'a'});await later();
   assert.deepEqual(calls.map(([path])=>path),['/api/teacher/topik','/api/workspace']);assert.match(root.innerHTML,/바뀐 내용을 확인하고 다시 지워 주세요/);assert.match(root.innerHTML,/<td>5급<\/td>/);
   press(root,{attTopikDelete:'t1',learner:'a'});await later();assert.equal(calls.at(-2)[1].revision,4,'the next delete carries the reloaded revision');view.stop();
+});
+
+test('moving the band to another class, or to a class without attendance, drops the TOPIK form, notices and any request still in flight',async()=>{
+  const root=liveRoot();let finish;
+  const view=createClassRecords({root,request:(path,body)=>body.action==='save'?new Promise(r=>{finish=r;}):Promise.resolve({sessionDate:body.sessionDate,attendance:[]}),documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  const other=()=>({classes:[{id:'d',name:'합성 B반',attendance:{basisDate:'2026-11-27',sessionDate:'2026-11-27',rows:[]},learners:[learner('x')]}]});
+  view.render(workspace([learner('a')]),'c');press(root,{attTopikOpen:'a'});root.listeners.input({target:{dataset:{},form:formFor('a',{kind:'II',round:'7',level:'4',announcedOn:''})}});
+  press(root,{attStatus:'present',learner:'a'});press(root,{attSave:'1'});assert.match(tagOf(root,'data-att-save'),/disabled/,'a save is in flight');assert.equal(view.hasDraft(),true);
+  view.render(other(),'d');
+  assert.equal(view.hasDraft(),false,'nothing typed in class B');assert.doesNotMatch(root.innerHTML,/att-topik-panel|att-message/);assert.doesNotMatch(tagOf(root,'data-att-all'),/disabled/,'not busy in class B');
+  finish({sessionDate:'2026-11-27',attendance:[{learnerId:'a',sessionDate:'2026-11-27',status:'present',note:'',revision:5}]});await later();
+  assert.doesNotMatch(root.innerHTML,/저장했어요/,'the late answer from class A is dropped');assert.match(root.innerHTML,/data-att-row="x"/);
+  press(root,{attTopikOpen:'x'});assert.match(root.innerHTML,/att-topik-panel/,'opening a TOPIK panel in class B asks nothing');
+  assert.equal(view.render({classes:[{id:'e',learners:[]}]},'e'),false);assert.equal(view.hasDraft(),false);view.stop();
+});
+test('a TOPIK form error shows inside that panel as an alert, raises a notice and moves focus to the wrong field',()=>{
+  const root=liveRoot(),notices=[];
+  const view=createClassRecords({root,request:async()=>{throw Error('no call');},notice:(...args)=>notices.push(args),documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a'),learner('b')]),'c');press(root,{attTopikOpen:'b'});
+  root.listeners.submit({target:formFor('b',{kind:'II',round:'105',level:'4',announcedOn:''}),preventDefault(){}});
+  assert.match(root.innerHTML,/<input name="announcedOn"[^>]*aria-invalid="true" aria-describedby="att-topik-error-b">/);
+  assert.match(root.innerHTML,/<div class="att-topik-panel" id="att-topik-b">.*<p class="att-message" role="alert" id="att-topik-error-b">성적 발표일을 골라 주세요\.<\/p>/);
+  assert.deepEqual(notices.at(-1),['성적 발표일을 골라 주세요.',true]);assert.equal(root.focused.at(-1),'[data-att-topik-form="b"] [name="announcedOn"]');
+  root.listeners.submit({target:formFor('b',{kind:'II',round:'105',level:'4',announcedOn:'2026-12-25'}),preventDefault(){}});
+  assert.match(root.innerHTML,/성적 발표일은 2000-01-01부터 2026-11-28까지 고를 수 있어요/);
+  root.listeners.submit({target:formFor('b',{kind:'II',round:'0',level:'4',announcedOn:'2026-10-01'}),preventDefault(){}});assert.equal(root.focused.at(-1),'[data-att-topik-form="b"] [name="round"]');view.stop();
+});
+test('focus remembered before a busy repaint comes back afterwards: date, save (to the result line) and delete (to the TOPIK button)',async()=>{
+  const doc={activeElement:null,defaultView:{confirm:()=>true}},root=liveRoot();let finish;
+  const view=createClassRecords({root,request:(path,body)=>{doc.activeElement=null;return new Promise(r=>{finish=()=>r(path==='/api/teacher/topik'?{topik:topik([])}:body.action==='save'?{sessionDate:body.sessionDate,attendance:body.rows.map(row=>({...row,sessionDate:body.sessionDate,revision:9}))}:{sessionDate:body.sessionDate,attendance:[]});});},documentObject:doc,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a',{topik:topik([{id:'t1',kind:'II',round:96,level:4,announcedOn:'2025-01-10',expiresOn:'2027-01-10',state:'within90',daysLeft:44,passed:true,revision:1}])})]),'c');
+  doc.activeElement={dataset:{attDate:'1'},value:'2026-11-20'};root.listeners.change({target:doc.activeElement});finish();await later();
+  assert.equal(root.focused.at(-1),'[data-att-date="1"]','back on the date field after the day loads');
+  press(root,{attStatus:'late',learner:'a'});doc.activeElement={dataset:{attSave:'1'}};press(root,{attSave:'1'});finish();await later();
+  assert.equal(root.focused.at(-1),'[data-att-message]','the save button is off after saving, so focus lands on the result line');assert.match(root.innerHTML,/data-att-message="1" tabindex="-1">1명의/);
+  press(root,{attTopikOpen:'a'});doc.activeElement={dataset:{attTopikDelete:'t1',learner:'a'}};press(root,{attTopikDelete:'t1',learner:'a'});finish();await later();
+  assert.equal(root.focused.at(-1),'[data-att-topik-open="a"]','the deleted row is gone, so focus goes to the learner TOPIK button');view.stop();
+});
+test('the empty text of 「유효한 4급 이상 없음」 follows how many learners share, and the expiry block names both cases',()=>{
+  const plain=(learners)=>({classes:[{id:'c',name:'합성 A반',learners}],topik:{basisDate:'2026-11-27',expiring:[],expired:[],withoutValidLevel4:[]},attendance:{basisDate:'2026-11-27',classes:[],absentToday:[],lateToday:[],consecutiveAbsences:[]}});
+  const hidden={shared:false,records:[],representative:null,level4:null};
+  const html=data=>classSummaryHtml(data,teacherOverviewModel(data));
+  assert.match(html(plain([])),/학습 공유를 켠 학생이 아직 없어요/);
+  assert.match(html(plain([learner('a',{sharing:{enabled:false,revision:1},topik:hidden})])),/학습 공유를 켠 학생이 아직 없어요/);
+  assert.match(html(plain([learner('a'),learner('b',{sharing:{enabled:false,revision:1},topik:hidden})])),/학습 공유를 켠 학생 1명은 모두 유효한 4급 이상을 갖고 있어요/);
+  const all=html(plain([learner('a'),learner('b')]));assert.match(all,/모든 학생이 유효한 4급 이상을 갖고 있어요/);assert.match(all,/90일 안에 만료되거나 이미 만료된 성적이 없어요/);
 });

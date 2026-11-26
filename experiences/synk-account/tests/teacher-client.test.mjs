@@ -215,6 +215,32 @@ test('picking a student in the class already open scrolls to the band first and 
   await page.workspace.load();assert.ok(page.root.children[3].children[0].innerHTML.includes('오늘 출결'));order.length=0;
   await selectOverview(page,'student-b');assert.deepEqual(order,['mount','row']);assert.deepEqual(page.windowObject.SYNKClassroomSelection,{classId:'a',learnerId:'student-b'});
 });
+test('switching students inside the open class asks nothing about the band draft, leaving the class still asks',async t=>{
+  const page=classroom(t,{handlers:bandHandlers(()=>[bandLearner('student-a'),bandLearner('student-b')])});await page.workspace.load();
+  const band=page.root.children[3].children[0];let prompts=0;page.windowObject.confirm=()=>{prompts++;return false;};page.root.children[3].children[1].contentWindow={postMessage(){},SYNKTeacherView:{hasDraft:()=>false}};
+  band.listeners.get('click')({target:{closest:()=>({disabled:false,dataset:{attStatus:'absent',learner:'student-a'}})}});
+  await selectOverview(page,'student-b');assert.equal(prompts,0);assert.deepEqual(page.windowObject.SYNKClassroomSelection,{classId:'a',learnerId:'student-b'});
+  await pickClass(page,'');assert.equal(prompts,1,'leaving the class closes the band, so it asks');assert.equal(page.windowObject.SYNKClassroomHost.classId,'a','declined, so the class stays open');
+});
+test('「반 열기」 on the open class clears the student highlight in the band and scrolls to the band like a first open',async t=>{
+  const order=[],createElement=tag=>{const node=new Node(tag);node.scrollIntoView=()=>order.push(tag==='div'?'mount':tag);if(tag==='section')node.querySelector=selector=>selector.startsWith('[data-att-row=')?{scrollIntoView:()=>order.push('row')}:null;return node;};
+  const page=classroom(t,{createElement,handlers:bandHandlers(()=>[bandLearner('student-a'),bandLearner('student-b')])});await page.workspace.load();
+  await selectOverview(page,'student-b');const band=page.root.children[3].children[0];assert.match(band.innerHTML,/att-row is-focused" data-att-row="student-b"/);order.length=0;
+  page.root.children[2].listeners.get('click')({target:{closest:()=>({disabled:false,dataset:{overviewClass:'a'}})}});await settle();
+  assert.doesNotMatch(band.innerHTML,/is-focused/);assert.deepEqual(order,['mount']);assert.deepEqual(page.windowObject.SYNKClassroomSelection,{classId:'a',learnerId:null});
+});
+test('an overview that left before a save cannot undo the band refresh that the save asked for',async t=>{
+  let streak=3,hold=null;const held=[];
+  const page=classroom(t,{handlers:{...bandHandlers(()=>[bandLearner('student-a',streak)]),
+    teacherOverview:()=>{const reply={mode:'account-linked',classes:[bandClass('a',[bandLearner('student-a',streak)])],care:[],assignments:[]};if(!hold)return reply;const wait=hold;hold=null;held.push(()=>wait(reply));return new Promise(r=>{held.at(-1).resolve=r;});},
+    attendanceSave:({body})=>{if(body.action==='save')streak=0;return {mode:'account-linked',sessionDate:body.sessionDate,attendance:body.action==='save'?body.rows.map(row=>({...row,sessionDate:body.sessionDate,revision:9000001})):[]};}}});
+  await page.workspace.load();const band=page.root.children[3].children[0];assert.match(band.innerHTML,/연속 결석 3회/);
+  hold=reply=>reply;const poll=page.workspace.load().catch(()=>{});await settle();assert.equal(held.length,1,'a poll is waiting with the old overview');
+  const old=held[0]();
+  band.listeners.get('click')({target:{closest:()=>({disabled:false,dataset:{attStatus:'present',learner:'student-a'}})}});band.listeners.get('click')({target:{closest:()=>({disabled:false,dataset:{attSave:'1'}})}});await settle();
+  assert.doesNotMatch(band.innerHTML,/연속 결석/,'the load started by the save refreshed the band');
+  held[0].resolve(old);await poll;await settle();assert.doesNotMatch(band.innerHTML,/연속 결석/,'the older overview does not bring the badge back');
+});
 
 test('two real sixteen-member classes open together and selecting one student preserves a single class-scoped detail',async t=>{
   const page=classroom(t),rows=[{id:'a',name:'오전반',role:'teacher'},{id:'b',name:'오후반',role:'teacher'}];page.rows(rows);

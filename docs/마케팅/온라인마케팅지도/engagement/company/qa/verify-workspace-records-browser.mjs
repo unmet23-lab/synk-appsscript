@@ -114,6 +114,7 @@ try{
   await band.locator('[data-att-save]').click();await band.locator('.att-message',{hasText:'출결을 저장했어요'}).waitFor();
   const rows=await fx.sql`select learner_id,status,note,revision,recorded_by from engine.synk_class_attendance where class_id=${fx.cls.class_id}::uuid and session_date=${d}::date`;
   check('one batch saved six rows with the teacher as recorder and table-wide revisions',rows.length===6&&rows.every(r=>r.recorded_by===fx.users.teacher.id&&Number.isSafeInteger(r.revision)&&r.revision>0)&&new Set(rows.map(r=>r.revision)).size===6&&rows.find(r=>r.learner_id===A.다솜.id)?.note==='버스 지연 10분',rows);
+  check('after saving, keyboard focus lands on the result line instead of dropping to the page',await page.evaluate(()=>document.activeElement?.dataset?.attMessage==='1'));
   check('saved rows show who recorded them',(await band.locator(`[data-att-row="${A.마루.id}"] .att-name small`).textContent()).includes('저장'));
   await band.locator(`[data-att-row="${A.마루.id}"] .att-streak`,{hasText:'4회'}).waitFor();
   check('after saving, the streak badge in the band follows the new result without reload, and rows stay recordable',(await band.locator(`[data-att-row="${A.마루.id}"] .att-streak`).textContent()).includes('연속 결석 4회')&&await pressed(A.마루.id)==='absent'&&await band.locator('.att-row.is-off').count()===2);
@@ -128,7 +129,11 @@ try{
   check('a second save sends back the received revisions: only the changed row gets a newer revision',again.length===6&&again.every(r=>r.learner_id===A.다솜.id?r.note==='버스 지연 15분'&&r.revision>before.get(r.learner_id):r.revision===before.get(r.learner_id)),again);
   // ── TOPIK 칸: 마루에게 성적 넣기 ──
   await page.locator(`[data-att-topik-open="${A.마루.id}"]`).click();const form=page.locator(`[data-att-topik-form="${A.마루.id}"]`);
-  await form.locator('select[name=kind]').selectOption('II');await form.locator('input[name=round]').fill('105');await form.locator('select[name=level]').selectOption('4');await form.locator('input[name=announcedOn]').fill(addDays(d,-30));
+  await form.locator('select[name=kind]').selectOption('II');await form.locator('input[name=round]').fill('105');await form.locator('select[name=level]').selectOption('4');
+  // 발표일을 비운 채 저장하면 그 패널 안에 알리고 발표일 칸으로 초점을 옮긴다.
+  await form.locator('button[type=submit]').click();await form.locator('[role=alert]',{hasText:'성적 발표일을 골라 주세요'}).waitFor();
+  check('a TOPIK form error shows inside the panel and focuses the wrong field',await page.evaluate(()=>document.activeElement?.name==='announcedOn'&&document.activeElement.getAttribute('aria-invalid')==='true'));
+  await form.locator('input[name=announcedOn]').fill(addDays(d,-30));
   await page.locator(`[data-att-row="${A.마루.id}"]`).scrollIntoViewIfNeeded();await capture('topik-form-1440.png');
   await form.locator('button[type=submit]').click();await page.locator('.class-records .att-message',{hasText:'제105회'}).waitFor();
   const [stored]=await fx.sql`select kind,round,level,announced_on::text as a,expires_on::text as e,(announced_on+interval '2 years')::date::text as expected from engine.synk_learner_topik where learner_id=${A.마루.id}::uuid`;

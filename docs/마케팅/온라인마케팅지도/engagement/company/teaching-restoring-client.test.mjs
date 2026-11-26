@@ -17,9 +17,9 @@ const TEACHING_HOST_BUILDS=new Map([
   // 회사 운영(사슬 27~): a85da04a6 원천에 28dfe3234 고침만 얹어 지은 판 — b4b28e17a 글은 10-31 현재 회사에 나가지 않았다.
   ['143eb4b84073d70b388bbe37e9913678cd6db28cac12aebbe9071e45f53fe395','운영 사슬 27'],
   // 학원 운영 최소판 claude/attendance-topik(11-27): 반 화면 「오늘 출결」 띠 · TOPIK 칸, 담당 반 요약, attendanceSave · topikSave 두 요청.
-  // 카본 화면 검수(ws-attendance-topik-20261127) A1~A7 고침, talk a5a48776 응답 맞춤, 재검수(ws-attendance-topik-r2-20261127) A1 · A2 고침을 담은 판이다.
-  // 운영에 나간 적 없는 앞 판(eaea920e…, 10715f50…, c491b0ea…)은 지웠다. 재검수 전이다.
-  ['e97f9e05394ffbdaff8c79ed5b95cbe38c11491e09f0b78bf702d7f7c382f02b','학원 운영 최소판 attendance-topik 재검수 r2 고침(재검수 전)'],
+  // 카본 화면 검수(ws-attendance-topik-20261127) A1~A7, talk a5a48776 응답 맞춤, 재검수 r2(A1 · A2) · 전체 검수 r3(A1~A6 · B1~B5) 고침을 담은 판이다.
+  // 운영에 나간 적 없는 앞 판(eaea920e…, 10715f50…, c491b0ea…, e97f9e05…)은 지웠다. 재검수 전이다.
+  ['3368b2d3745a0301dfa461158d00733ae815bc1c90f7b924ca887b782dce2117','학원 운영 최소판 attendance-topik 전체 검수 r3 고침(재검수 전)'],
 ]);
 function teachingHostBytes(){
   const raw=readFileSync(new URL('./public/teaching-host.js',import.meta.url)),text=raw.toString('latin1');
