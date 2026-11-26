@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const { FirstRange: Range, pickRange, decide, totals, homeProjects, GB } = require('../src/first-range.cjs');
+const { FirstRange: Range, run, pickRange, decide, totals, homeProjects, GB } = require('../src/first-range.cjs');
 
 // 시험이 어떻게 끝나든 만든 범위를 닫고 쓰던 저장까지 기다린 뒤 폴더를 지운다 — 늦은 저장이 지운 폴더를 다시 만들지 않게(Fable 설계 검토 · 0.7.5 GPT r3 GA4)
 const made = [], bases = [];
@@ -638,4 +638,50 @@ test('사용자 폴더 맨 위의 프로젝트: 그 폴더나 바로 아래에 �
   await fs.writeFile(path.join(home, 'node_modules', 'left-pad', 'package.json'), '{}');
   const found = (await homeProjects(home, [path.join(home, 'Documents')])).map((p) => path.basename(p)).sort();
   assert.deepEqual(found, ['code', 'repo-top']);
+});
+
+// 끊은 진단이 띄운 자식이 진단의 출력 연결을 물려받아 붙들고 있어도 창은 곧 닫힌다. 진단(WorkBackupInventory.exe)이 Get-AppxPackage로
+// 띄운 Windows PowerShell이 그랬다: 진단은 끝났는데 연결이 그 PowerShell이 끝날 때까지 열려 있어, 0.7.4부터 CI backup 갈래의 창 워커
+// 닫기가 21 ~ 36초 걸려 30초 한도에 닿았다(QA 「창 닫기가 진단의 PowerShell을 기다리던 것」). 실행기는 run 그대로이고, 진단 대신 셸을 돌린다.
+// 셸의 자식은 진단의 PowerShell처럼 셸이 물려받은 연결을 함께 물려받는다(node가 띄운 node는 물려받지 않아 이 일을 재현하지 못한다).
+// 그 자식은 20초 동안 0.05초마다 그 연결에 쓴다(GPT r2 GA1). 「started」는 자식을 띄운 뒤에 찍는다 — 자식이 뜨기 전에 끊으면 고치기 전 판도
+// 통과하므로(GPT GA2). stay면 셸도 그 자식이 끝날 때까지 남는다
+const HOLD = 20;
+const holding = (stay) => {
+  if (process.platform !== 'win32') return ['/bin/sh', ['-c', `(i=0; while [ $i -lt ${HOLD * 20} ]; do echo x; sleep 0.05; i=$((i+1)); done) & echo started${stay ? '; wait' : ''}`]];
+  const writer = Buffer.from(`1..${HOLD * 20} | ForEach-Object { 'x'; Start-Sleep -Milliseconds 50 }`, 'utf16le').toString('base64');
+  return [process.env.ComSpec || 'cmd.exe', ['/d', '/c', `start /b powershell -NoProfile -NonInteractive -EncodedCommand ${writer} & echo started${stay ? ` & ping -n ${HOLD + 1} 127.0.0.1 >nul` : ''}`]];
+};
+
+test('창을 닫아 끊은 진단은 그 자식이 출력 연결을 붙들고 계속 써도 곧 끝난다(0.7.4 CI backup APP_EXIT)', async () => {
+  const [shell, args] = holding(true);
+  const state = await temp('swb-range-hold-');
+  let ready;
+  const writing = new Promise((y) => { ready = y; });
+  // 셸이 「started」를 찍은 뒤 그 자식이 쓰기 시작하면 닫는다
+  const exec = (exe, a, o) => run(shell, args, { ...o, onChild: (c, alive) => {
+    o.onChild(c, alive);
+    let seen = '';
+    if (alive) c.stdout.on('data', (b) => { seen += b; if (/started[\s\S]*x/.test(seen)) ready(); });
+  } });
+  const r = new FirstRange({ root: state, inventoryPath: 'inventory', plannerPath: 'planner', exec, home: state });
+  await r.open();
+  const finding = r.find();
+  // 대신 띄운 셸이 자식을 띄우기 전에 끝나면 기다리지 않고 떨어진다
+  await Promise.race([writing, finding.then(() => { throw new Error(`자식이 쓰기 전에 끝났다: ${r.state().status}`); })]);
+  const at = Date.now();
+  await r.stop();
+  await finding;
+  const took = Date.now() - at;
+  assert.ok(took < HOLD * 1000 / 4, `창을 닫는 데 ${took}ms — 남은 자식이 끝날 때까지 기다렸다`);
+  assert.equal(r.state().status, 'idle');
+});
+
+test('스스로 끝난 실행 파일은 그 자식이 출력 연결을 붙들고 계속 써도 다 읽은 출력으로 곧 끝난다(0.7.5 닫기 고침 GPT GA1 · r2 GA1)', async () => {
+  const [shell, args] = holding(false);
+  const at = Date.now();
+  const out = await run(shell, args, { timeoutMs: 60000 });
+  const took = Date.now() - at;
+  assert.match(out, /started/);
+  assert.ok(took < HOLD * 1000 / 4, `끝나는 데 ${took}ms — 남은 자식이 끝날 때까지 기다렸다`);
 });

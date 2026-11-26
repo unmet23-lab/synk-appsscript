@@ -178,7 +178,13 @@ function run(executable, args, { input, timeoutMs, onChild } = {}) {
     child.stderr.setEncoding('utf8'); child.stderr.on('data', (b) => { error = (error + b).slice(-2000); });
     child.on('error', (e) => { clearTimeout(timer); onChild?.(child, false); reject(e); });
     child.stdin.on('error', () => {});
-    child.on('close', (code) => { clearTimeout(timer); onChild?.(child, false); output += decoder.end(); if (code !== 0 || large) reject(Object.assign(new Error(error.trim() || `exit ${code}`), { exitCode: code })); else resolve(output); });
+    // 프로세스가 끝났는데 출력 연결이 열려 있으면 그 자식이 물려받아 붙든 것이다 — 진단이 띄운 Windows PowerShell(Get-AppxPackage)이
+    // 그랬다. 'close'가 그 자식이 끝날 때까지 오지 않아 창 닫기가 늦었다(CI backup 갈래 21 ~ 36초, 이 PC 3.7초 — QA 「창 닫기가 진단의
+    // PowerShell을 기다리던 것」). 끝난 뒤 정한 때에 연결을 닫는다: 끊은 것(창 닫기 · 시간 넘김 · 출력 상한)은 0.2초, 스스로 끝난 것은 남은
+    // 출력을 다 읽도록 2초. 그 자식이 계속 써도 미루지 않는다(GPT r2 GA1). 남은 자식은 스스로 끝나고, 창 앱은 끝낼 때 워커의 작업 개체째 거둔다
+    let quiet = null;
+    child.once('exit', () => { quiet = setTimeout(() => { child.stdout.destroy(); child.stderr.destroy(); }, child.killed ? 200 : 2000); quiet.unref(); });
+    child.on('close', (code) => { clearTimeout(timer); clearTimeout(quiet); onChild?.(child, false); output += decoder.end(); if (code !== 0 || large) reject(Object.assign(new Error(error.trim() || `exit ${code}`), { exitCode: code })); else resolve(output); });
     child.stdin.end(input === undefined ? undefined : JSON.stringify(input));
   });
 }
@@ -507,7 +513,12 @@ class FirstRange {
     if (s.total.count > ON_MAX) return 'RANGE_FULL';
     return null;
   }
-  async stop() { this.closing = true; this.queue = []; for (const c of this.children) { try { c.kill(); } catch { } } await this.finding?.catch(() => {}); }
+  async stop() {
+    this.closing = true; this.queue = [];
+    // 이미 스스로 끝났는데 자식이 출력 연결을 붙들어 아직 닫히지 않은 것은 기다리지 않고 바로 닫는다(0.7.5 닫기 고침 GPT GA1)
+    for (const c of this.children) { try { c.kill(); } catch { } if (c.exitCode !== null || c.signalCode !== null) { c.stdout?.destroy(); c.stderr?.destroy(); } }
+    await this.finding?.catch(() => {});
+  }
 }
 
-module.exports = { FirstRange, pickRange, decide, totals, outermost, homeProjects, hiddenPlace, GB, BIG, BUDGET, CAP, STOP, INNER, LIST_MAX, ON_MAX };
+module.exports = { FirstRange, run, pickRange, decide, totals, outermost, homeProjects, hiddenPlace, GB, BIG, BUDGET, CAP, STOP, INNER, LIST_MAX, ON_MAX };
