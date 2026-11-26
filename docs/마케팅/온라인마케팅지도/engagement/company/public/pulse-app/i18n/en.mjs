@@ -2287,4 +2287,6 @@ export default {
   "혹시 {mail}인가요?":"Did you mean {mail}?",
   "바꾸기":"Change",
   "이미 「{slot}」에 넣은 파일이에요":"You already added this file to “{slot}”",
+  "{date}로 받아 두고, 기간은 담당자와 정해요.":"We’ll note {date}, and your producer agrees the timing with you.",
+  "어떤 제품인지 하나 골라 주세요":"Pick the kind of product",
 };

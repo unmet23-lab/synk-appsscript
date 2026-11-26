@@ -98,7 +98,12 @@ test('three-act finish: only a custom finish carries the end card, the line only
   const notes=extra=>carryToStrategy({revision:1,data:{castingSelection:{modelId:''},channels:[]},request:null,confirmation:null,history:[]},normalizeRequestAnswers(answers(extra)),{at:'2026-11-26T12:00:00.000Z',author:'staff',authorName:'담당자',authorId:'u'}).data.notes||'';
   const back=notes({finish:'rec',endCard:'line',endLine:'바다에서도 안심',approver:'many',approverName:'김'});
   assert.match(back,/마무리: 추천대로/);assert.doesNotMatch(back,/마지막 화면:|바다에서도 안심/);
-  assert.ok(back.indexOf('여러 명이 확인')<back.indexOf('마무리: 추천대로'),'the finish line follows the older lines');
+  assert.ok(back.indexOf('여러 명이 확인')>=0&&back.indexOf('여러 명이 확인')<back.indexOf('마무리: 추천대로'),'the finish line follows the older lines');
+  // 문구만 적고 마지막 화면은 아직 안 골랐어도 문구는 옮긴다(GPT 다시 GA2). 사진 주문의 추천대로는 마지막 화면 · 문구를 말하지 않는다(GA3).
+  assert.match(notes({finish:'custom',endLine:'바다에서도 안심'}),/마지막 화면 문구: 바다에서도 안심/);
+  const photo=notes({finish:'rec',package:'photo',channels:['store']});
+  assert.match(photo,/마무리: 추천대로\(느낌은/);assert.doesNotMatch(photo,/마지막 화면/);
+  assert.doesNotMatch(notes({finish:'custom',package:'photo',channels:['store'],endCard:'line',endLine:'숨은 문구'}),/마지막 화면|숨은 문구/);
   const logo=notes({finish:'custom',endCard:'logo',endLine:'숨은 문구'});
   assert.match(logo,/마지막 화면: 로고만/);assert.doesNotMatch(logo,/숨은 문구|추천대로/);
   const line=notes({finish:'custom',endCard:'line',endLine:'바다에서도 안심'});

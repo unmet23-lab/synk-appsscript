@@ -142,14 +142,14 @@ const todayKst=()=>{const now=new Date(Date.now()+9*3600000);return Date.UTC(now
 const isoOf=time=>new Date(time).toISOString().slice(0,10);
 const dayLabel=iso=>{const at=new Date(iso+'T00:00:00Z');return Number.isFinite(at.getTime())?new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',day:'numeric',weekday:'long',timeZone:'UTC'}).format(at):iso;};
 const needDays=a=>pkgOf(a)?.days||0;
-const recDay=a=>isoOf(todayKst()+(needDays(a)||14)*DAY_MS);
+const recDay=a=>needDays(a)?isoOf(todayKst()+needDays(a)*DAY_MS):'';
 function calendarView(a,page){
-  const today=todayKst(),first=today-new Date(today).getUTCDay()*DAY_MS+page*35*DAY_MS,need=needDays(a)||14;
+  const today=todayKst(),first=today-new Date(today).getUTCDay()*DAY_MS+page*35*DAY_MS,need=needDays(a);
   const month=time=>new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',timeZone:'UTC'}).format(new Date(time));
   const head=month(first)===month(first+34*DAY_MS)?month(first):`${month(first)} · ${month(first+34*DAY_MS)}`;
   const week=Array.from({length:7},(_,i)=>new Intl.DateTimeFormat(intlLocale(locale()),{weekday:'narrow',timeZone:'UTC'}).format(new Date(Date.UTC(2026,10,22+i))));
-  const days=Array.from({length:35},(_,i)=>{const time=first+i*DAY_MS,iso=isoOf(time),n=Math.round((time-today)/DAY_MS),d=new Date(time).getUTCDate(),tag=n===0?t('오늘'):n===need?t('{days}일 뒤',{days:need}):'';
-    return `<button type="button" class="sx-cal-day${n>=need?' is-ok':''}${tag?' has-tag':''}" data-do="day" data-id="${iso}" aria-pressed="${a.date===iso?'true':'false'}" aria-label="${esc(dayLabel(iso))}"${n<=0?' disabled':''}>${d===1&&i?`${new Date(time).getUTCMonth()+1}.1`:d}${tag?`<small>${esc(tag)}</small>`:''}</button>`;}).join('');
+  const days=Array.from({length:35},(_,i)=>{const time=first+i*DAY_MS,iso=isoOf(time),n=Math.round((time-today)/DAY_MS),d=new Date(time).getUTCDate(),tag=n===0?t('오늘'):need&&n===need?t('{days}일 뒤',{days:need}):'';
+    return `<button type="button" class="sx-cal-day${need&&n>=need?' is-ok':''}${tag?' has-tag':''}" data-do="day" data-id="${iso}" aria-pressed="${a.date===iso?'true':'false'}" aria-label="${esc(dayLabel(iso))}"${n<=0?' disabled':''}>${d===1&&i?`${new Date(time).getUTCMonth()+1}.1`:d}${tag?`<small>${esc(tag)}</small>`:''}</button>`;}).join('');
   return `<div class="sx-cal" data-cal data-in><div class="sx-cal-head"><b>${esc(head)}</b><span><button type="button" class="sx-cal-move" data-do="calmove" data-id="-1" aria-label="${esc(t('앞 다섯 주'))}"${page<=0?' disabled':''}>‹</button><button type="button" class="sx-cal-move" data-do="calmove" data-id="1" aria-label="${esc(t('다음 다섯 주'))}"${page>=3?' disabled':''}>›</button></span></div><div class="sx-cal-grid" role="group" aria-label="${esc(t('받고 싶은 날'))}">${week.map(day=>`<span class="sx-cal-wd" aria-hidden="true">${esc(day)}</span>`).join('')}${days}</div></div>`;
 }
 // 확인 단계는 손님이 고친 것을 다시 찾는 줄만 둔다(11-26 세 막). 전체 의뢰서는 위 「적은 내용」에 그대로 있다.
@@ -162,9 +162,9 @@ const DOOR_AT={name:0,files:.36,more:.72,model:.72,who:1.08};
 const stageMedia=()=>`<div class="sx-q-media" aria-hidden="true"><div class="sx-q-solio" data-solio>${SOLIO_SCENES.map(id=>`<div class="sx-q-scene" data-scene="${id}"><img src="${ASSET}solio-${id}.webp" alt="" decoding="async"><span class="sx-eyes"><i></i><i></i></span></div>`).join('')}</div><video class="sx-q-door" data-door src="${ASSET}door-opalin.mp4" muted playsinline preload="auto" disablepictureinpicture disableremoteplayback tabindex="-1"></video><img class="sx-q-sky" src="${ASSET}sky-opalin.webp" alt="" decoding="async"><i class="sx-q-shade"></i><p class="sx-q-skydate" data-sky-date></p></div>`;
 // 메일 주소 오타(11-26): 흔한 메일 주소와 한두 글자만 다르면 고친 주소를 돌려준다.
 const MAIL_DOMAINS=['gmail.com','naver.com','daum.net','hanmail.net','kakao.com','nate.com','outlook.com','icloud.com','hotmail.com','yahoo.com']; // i18n-skip
-const MAIL_OK=new Set([...MAIL_DOMAINS,'mail.com','me.com','live.com','msn.com','aol.com','gmx.com','proton.me','protonmail.com','korea.com','hanmir.com']); // i18n-skip
+const MAIL_OK=new Set([...MAIL_DOMAINS,'mail.com','me.com','live.com','msn.com','aol.com','gmx.com','proton.me','protonmail.com','korea.com','hanmir.com','ymail.com','email.com']); // i18n-skip
 const editDistance=(x,y)=>{const row=Array.from({length:y.length+1},(_,j)=>j);for(let i=1;i<=x.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=y.length;j++){const keep=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(x[i-1]===y[j-1]?0:1));prev=keep;}}return row[y.length];};
-export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_OK.has(domain))return '';const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]===1||best[1]===2&&domain.length>=9?`${m[1]}@${best[0]}`:'';};
+export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_OK.has(domain))return '';const base=domain.split('.')[0],same=MAIL_DOMAINS.find(item=>item.split('.')[0]===base);if(same)return `${m[1]}@${same}`;const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]===1||best[1]===2&&domain.length>=9?`${m[1]}@${best[0]}`:'';};
 // 같은 이름(11-26 중복 확인): 이 기기에서 보낸 의뢰의 이름과 날을 남겨 두고(최근 20개 · 이 브라우저에만), 같은 이름을 다시 쓰면 그 날을 알린다.
 const SENT_KEY='pulse-sent-requests';
 const nameKey=value=>String(value||'').toLowerCase().replace(/[\s·.,'"「」()\-]/g,'');
@@ -253,7 +253,7 @@ const views={
   when(a,step,i,n,ctx={}){
     return ask(step,i,n,t('언제까지 받고 싶으세요?'),'',
       calendarView(a,ctx.page||0)+`<p class="sx-small sx-q-advice" data-date-advice role="status"></p>`+
-      `<div class="sx-duo is-picks" data-in><button type="button" class="sx-chip" data-do="recdate" aria-pressed="${a.date&&a.date===recDay(a)?'true':'false'}">${esc(t('추천 날짜 · {date}',{date:dayLabel(recDay(a))}))}</button>${chip(t('정해진 날짜는 없어요'),a.dateFree,'data-do="datefree"')}</div>`+
+      `<div class="sx-duo${recDay(a)?' is-picks':''}" data-in>${recDay(a)?`<button type="button" class="sx-chip" data-do="recdate" aria-pressed="${a.date&&a.date===recDay(a)?'true':'false'}">${esc(t('추천 날짜 · {date}',{date:dayLabel(recDay(a))}))}</button>`:''}${chip(t('정해진 날짜는 없어요'),a.dateFree,'data-do="datefree"')}</div>`+
       (ctx.seat?`<p class="sx-small sx-q-seat" data-in>${esc(seatText(ctx.seat))}</p>`:''));
   },
   review(a,step,i,n,ctx={}){
@@ -499,8 +499,9 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     if(a.dateFree){note.textContent=t('날짜는 저희가 먼저 제안할게요.');return;}
     if(!a.date){note.textContent=need?t('색이 칠해진 날은 넉넉해요. 고르신 길이는 보통 {days}일 걸려요.',{days:need}):t('기간은 담당자와 정해요. 원하시는 날을 골라 주세요.');return;}
     const days=Math.round((Date.parse(a.date+'T00:00:00Z')-todayKst())/DAY_MS);
-    note.classList.toggle('is-tight',days<(need||14));
-    note.textContent=days<0?t('지난 날짜예요. 다시 골라 주세요.'):days<(need||14)?t('{date}은 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.',{date:dayLabel(a.date)}):t('{date}, 넉넉한 날이에요.',{date:dayLabel(a.date)});
+    if(!need){note.textContent=days<0?t('지난 날짜예요. 다시 골라 주세요.'):t('{date}로 받아 두고, 기간은 담당자와 정해요.',{date:dayLabel(a.date)});return;}
+    note.classList.toggle('is-tight',days<need);
+    note.textContent=days<0?t('지난 날짜예요. 다시 골라 주세요.'):days<need?t('{date}은 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.',{date:dayLabel(a.date)}):t('{date}, 넉넉한 날이에요.',{date:dayLabel(a.date)});
   }
   // 메일 주소 오타(11-26 추천): 흔한 메일 주소와 한두 글자 다르면 고친 주소를 제안한다. 누르면 바꾼다.
   function mailFix(){
@@ -538,6 +539,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
       }
       // 같은 이름(11-26 중복 확인): 이 기기에서 같은 이름으로 보낸 의뢰가 있으면 한 번 알리고, 「새 의뢰로 계속」을 누르면 넘어간다.
       if(step().id==='name'&&!view.nameOk){const at=sentBefore(a.name);if(at&&view.sameName!==at){view.sameName=at;render(0,{focus:false});form.querySelector('[data-same-name]')?.focus?.({preventScroll:true});return;}}
+      if(step().id==='what'&&view.group==='product'&&!a.kind){showError(t('어떤 제품인지 하나 골라 주세요'));form.querySelector('[data-do="kind"]')?.focus({preventScroll:true});return;}
       if(step().id==='more'&&!a.finish){a.finish='rec';saved();}
       go(index+1,1);
     },
@@ -562,7 +564,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     goto(el){const to=steps.findIndex(item=>item.id===el.dataset.id);if(to>=0)go(to,-1);},
     async later(){if(await writeNow()){backend.later?.(a,step().id);toast(t('저장했어요. 이 기기에서 다시 열면 여기부터 이어서 쓸 수 있어요.'));}else toast(t('지금은 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));},
     sheet(){setSheet(!host.classList.contains('sheet-open'));},
-    kind(el){a.kind=el.dataset.id;form.querySelectorAll('[data-do="kind"]').forEach(item=>setChip(item,item.dataset.id===a.kind));lookAt(el);renderSlate();saved();},
+    kind(el){a.kind=el.dataset.id;showError('');form.querySelectorAll('[data-do="kind"]').forEach(item=>setChip(item,item.dataset.id===a.kind));lookAt(el);renderSlate();saved();},
     channel(el){toggleIn(a.channels,el.dataset.id);setChip(el,a.channels.includes(el.dataset.id));lookAt(el);renderSlate();saved();},
     package(el){a.package=el.dataset.id;setRows('package',a.package);lookAt(el);renderSlate();saved();},
     action(el){a.action=a.action===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="action"]').forEach(item=>setChip(item,item.dataset.id===a.action));renderSlate();saved();},
@@ -796,7 +798,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     event.preventDefault();next.focus();next.click();
   });
   // 다시 올리기가 끝나 초점을 둔 상태 줄(data-status)에서 누른 Enter는 다음 단계로 넘기지 않는다 — 반응을 기다리다 다시 누른 키보드 손님이 단계를 건너뛰지 않게(최종 검수 Q1).
-  host.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&!['TEXTAREA','BUTTON','A'].includes(event.target.tagName)&&!['file','checkbox'].includes(event.target.type)&&event.target.dataset?.status===undefined&&step().id!=='review'){event.preventDefault();actions.next();}});
+  host.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&event.target.matches?.('[data-guess]')){event.preventDefault();actions.guessgo();return;}if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&!['TEXTAREA','BUTTON','A'].includes(event.target.tagName)&&!['file','checkbox'].includes(event.target.type)&&event.target.dataset?.status===undefined&&step().id!=='review'){event.preventDefault();actions.next();}});
   // 휴대폰 뒤로 가기는 앞 질문으로 간다. 기록에는 한 칸만 더 쌓아 두고 누를 때마다 다시 채운다.
   // 이미 그 칸 위면 더 쌓지 않는다 — 의뢰서를 다시 열어도 덫이 두 겹이 되지 않게(예시에서 의뢰서 장면을 거듭 누를 때).
   const trap=()=>{try{if(!history.state?.requestFlow)history.pushState({requestFlow:true},'');}catch{}};

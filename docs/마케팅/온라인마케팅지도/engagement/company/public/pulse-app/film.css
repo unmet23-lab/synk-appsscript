@@ -1933,6 +1933,7 @@ html.has-brief-open{overflow:hidden}
 .sx-q[data-act="2"][data-step=model] .sx-q-screen{background:#0a0a0a}
 /* 모델 단계는 오른쪽 무대가 검다 — 그 위의 머리 오른쪽 글(적은 내용 · 나중에 이어서)은 흰 글로(카본 A1). */
 .sx-q[data-act="2"][data-step=model] .sx-q-top-right{color:#fff}
+.sx-q[data-act="1"] .sx-q-screen::before,.sx-q[data-act="1"] .sx-q-screen::after{content:none}
 .sx-q[data-act="2"] .sx-q-title{font-size:clamp(38px,3.9vw,58px);line-height:1.22;letter-spacing:-.05em}
 /* 3막: 하늘 */
 .sx-q[data-act="3"] .sx-q-stage{grid-template-columns:minmax(0,1fr) minmax(0,600px);column-gap:5vw;padding:0 var(--q-pad) 0 0}
@@ -1999,6 +2000,7 @@ html.has-brief-open{overflow:hidden}
 .sx-tile-meta{padding:0 6px;margin-top:3px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}.sx-tile-meta>span{display:block}.sx-tile-meta .sx-row-terms{font-weight:400}
 .sx-tile.is-on{background:#111;color:#fff}
 .sx-tile.is-on small{color:#d6d6d2}
+.sx-tile.is-on .sx-tile-meta .sx-small{color:#fff}.sx-tile.is-on .sx-tile-meta .sx-row-terms{color:#d6d6d2}
 .sx-tile.is-on .sx-tile-pic{background:#2a2a2a;color:#fed027}
 .sx-scr{display:block;border-radius:5px;background:currentColor}
 .sx-scr.is-916{width:24px;height:42px}.sx-scr.is-169{width:58px;height:33px}.sx-scr.is-11{width:38px;height:38px}
@@ -2096,6 +2098,7 @@ html.has-brief-open{overflow:hidden}
   .sx-q[data-act="2"] .sx-q-foot{background:#fff}
   .sx-q[data-act="2"] .sx-q-top{color:#0a0a0a}
   .sx-q[data-act="2"][data-step=model]:not(.is-scrolled) .sx-q-top{color:#fff}
+  .sx-q[data-act="2"][data-step=model].is-scrolled .sx-q-top-right{color:#0a0a0a}
   .sx-q[data-act="2"][data-step=model]:not(.is-scrolled) .sx-logo .sx-logo-ink{display:none}
   .sx-q[data-act="2"][data-step=model]:not(.is-scrolled) .sx-logo .sx-logo-white{display:block}
   .sx-q[data-act="3"] .sx-q-screen{position:fixed;inset:0;height:auto}

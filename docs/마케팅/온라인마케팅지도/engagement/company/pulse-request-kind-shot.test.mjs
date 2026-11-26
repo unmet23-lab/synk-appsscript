@@ -92,7 +92,7 @@ test('the first step’s screen shows the same picture whole, never past 1.47× 
   const flow=read('request-flow.mjs'),css=read('film.css');
   // 세 막(11-26): 첫 막의 그림은 고른(가리킨) 갈래의 솔리오 — 업종을 바꿔도 그림을 갈지 않고 솔리오의 눈이 그 칸을 본다.
   assert.ok(flow.includes("host.querySelectorAll('[data-scene]').forEach(scene=>scene.classList.toggle('is-on',scene.dataset.scene===group));"),'the first act shows the picked group');
-  assert.ok(flow.includes("kind(el){a.kind=el.dataset.id;form.querySelectorAll('[data-do=\"kind\"]').forEach(item=>setChip(item,item.dataset.id===a.kind));lookAt(el);"),'changing the business keeps the picture and turns the eyes');
+  assert.ok(flow.includes("kind(el){a.kind=el.dataset.id;showError('');form.querySelectorAll('[data-do=\"kind\"]').forEach(item=>setChip(item,item.dataset.id===a.kind));lookAt(el);"),'changing the business keeps the picture and turns the eyes');
   // 첫 막의 솔리오 그림(1200px 정사각)은 칸이 816px을 넘지 않아, 화소비 2까지 실제 화소의 1.47배 안이다(카본 C2, 11-26).
   assert.ok(css.includes('.sx-q-solio{left:0;right:0;bottom:0;height:min(76%,calc(100% - 300px),816px)}'),'the Solio stage is capped');
   for(const id of ['hello','product','place','app','brand']){const [w,h]=webpSize(readFileSync(new URL(`assets/request/solio-${id}.webp`,appDir)));assert.ok(Math.min(w,h)*1.47>=816*2,`solio-${id}: ${w}×${h} covers 816px at pixel ratio 2`);}

@@ -224,7 +224,9 @@ export const guessGroup=text=>{const line=String(text||'').toLowerCase(),flat=li
 // 마무리(11-26): 기본은 「추천대로」. 직접 고르면 마지막 화면 · 문구 한 줄이 더 생긴다(서버 pulse-requests.mjs ENDS와 같은 ID).
 export const ENDS=Object.freeze([{id:'logo',label:k('로고만')},{id:'line',label:k('로고 + 한 줄')},{id:'info',label:k('로고 + 안내')}]);
 // 지금 화면에 보이는 마무리 고름(사진 주문은 마지막 화면 칸이 없고, 로고만이면 문구 칸이 숨는다 — 숨은 옛 값은 요약에 쓰지 않는다, 카본 B4).
-export const endShown=a=>{if(pkgOf(a)?.photo)return [];const end=ENDS.find(item=>item.id===a.endCard);return [end?t(end.label):'',end&&end.id!=='logo'?a.endLine:''].filter(Boolean);};
+export const endShown=a=>{if(pkgOf(a)?.photo)return [];const end=ENDS.find(item=>item.id===a.endCard);return [end?t(end.label):'',a.endCard!=='logo'?a.endLine:''].filter(Boolean);};
+// 보이는 날짜는 달력과 같은 꼴(「12월 6일 일요일」). 저장값은 YYYY-MM-DD 그대로다.
+const dateText=iso=>{if(!iso)return '';const at=new Date(iso+'T00:00:00Z');return Number.isFinite(at.getTime())?new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',day:'numeric',weekday:'long',timeZone:'UTC'}).format(at):iso;};
 // 느낌 칩의 말(값은 WIN ID 그대로 — 11-25 「무엇으로 오래 남을까요?」의 말투를 고침).
 export const FEEL_LABELS=Object.freeze({story:k('뭉클하게'),impact:k('「와」 하게'),laugh:k('웃으며 보내게')});
 export const emptyAnswers=()=>({
@@ -292,7 +294,7 @@ export function briefRows(a){
     // 내 모델 다시 쓰기(판 4): 내 모델 화면에서 붙인 인물이면 그 이름(화면에만 있는 a.personaPick), 서버 답만 있으면(고객 방 · 직원 확인) 「내 모델 다시 쓰기」.
     {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?(a.personaPick?.name?t('내 모델 · {name}',{name:a.personaPick.name}):t('내 모델 다시 쓰기')):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
     ...(pkg?.photo?[]:[{key:k('목소리'),step:a.modelChoice==='persona'||a.modelChoice==='custom'?'model':'more',value:VOICES.find(item=>item.id===a.voice)?t(VOICES.find(item=>item.id===a.voice).label):undefined,missing:a.voice?'':k('저희가 제안해요')}]),
-    {key:k('받고 싶은 날'),step:'when',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':k('미정')},
+    {key:k('받고 싶은 날'),step:'when',value:a.dateFree?t('정해진 날짜 없음'):dateText(a.date),missing:(a.date||a.dateFree)?'':k('미정')},
     {key:k('최종 확인'),step:'who',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':k('미정')},
     {key:k('연락처'),step:'who',value:[a.contactName,a.company,a.email,a.phone].filter(Boolean).join(' · '),missing:a.contactName&&(a.email||a.phone)?'':k('성함과 이메일이나 휴대폰이 있어야 연락드릴 수 있어요')},
   ];
