@@ -208,7 +208,7 @@ test('a stop that comes after the last file still stops it; once it is writing i
   engine.job = { kind: 'restore', cancelled: true }; assert.throws(() => engine.restoreFinal(), e => e.code === 'CANCELED'); assert.equal(engine.job.final, undefined);
   engine.job = null;
 });
-test('a stop while a failing restore writes its failure changes nothing; a recommended restore names its folder when stopped (카본 끝판 A1 · A2 · GPT GA1)', async () => {
+test('a stop while a failing restore writes its failure changes nothing; a recommended restore names its folder when stopped (카본 끝판 A1 · A2 · GPT GA1)', async t => {
   const f = await fixture(), { engine, fake } = f, args = await f.selected();
   // The read fails; the stop comes while the failure is being written.
   fake.fail = 'dump';
@@ -231,7 +231,14 @@ test('a stop while a failing restore writes its failure changes nothing; a recom
   const listing = [{ message_type: 'snapshot' }, { message_type: 'node', path: '/a.txt', type: 'file', size: 3 }].map(x => JSON.stringify(x)).join('\n');
   const stub = { config: { sources: [] }, forbidden: () => [], identity: async () => {}, assertNoRemoteMaintenance: async () => {}, stage() {}, now: () => Date.now(), save: async () => {},
     run: async (a, o) => { if (a[0] === 'ls') { await o.consumeStdout(Readable.from([Buffer.from(listing)])); return ''; } throw Object.assign(new Error('stopped'), { code: 'CANCELED' }); } };
-  const stopped = await restoreWhole(stub, out, { id: 'c'.repeat(64), tags: [RECOMMENDED], paths: [path.join(base, 'src')] }).then(() => null, e => e);
+  // The drive is the test's, not this PC's: a whole restore keeps a tenth of its drive free, so a nearly full temp drive
+  // refused it before it read anything (11-26, C: 7% free). That floor still refuses, and makes no folder.
+  const drive = percentFree => async () => { const blocks = 1n << 28n, free = blocks * percentFree / 100n; return { type: 0n, bsize: 4096n, blocks, bfree: free, bavail: free, files: 0n, ffree: 0n }; };
+  const statfs = t.mock.method(fs, 'statfs', drive(9n)), snapshot = { id: 'c'.repeat(64), tags: [RECOMMENDED], paths: [path.join(base, 'src')] };
+  await assert.rejects(restoreWhole(stub, out, snapshot), /여유 공간 10%/);
+  assert.deepEqual(await fs.readdir(out), []);
+  statfs.mock.mockImplementation(drive(50n));
+  const stopped = await restoreWhole(stub, out, snapshot).then(() => null, e => e);
   assert.equal(stopped?.code, 'CANCELED');
   assert.equal(path.dirname(stopped.restorePath), await fs.realpath(out));
   assert.match(path.basename(stopped.restorePath), /^추천복구-/);
