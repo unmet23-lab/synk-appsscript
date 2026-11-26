@@ -147,7 +147,7 @@ test('PULSE 초대 손님의 펼침에는 여는 길이 있어도 PATH가 서지
   assert.deepEqual(h.view.last().fan.names.map(n => n.space), ['pulse']);
 });
 
-test('PATH 열기 실패가 늦게 오면, 그사이 연 설정 방을 닫고 펼침을 열지 않는다(PC 0.5.14 Fable F3)', async t => {
+test('PATH 열기 실패가 늦게 오면, 그사이 연 설정 방은 그대로 두고 펼침을 열지 않는다(PC 0.5.14 Fable F3)', async t => {
   let fail;
   const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { onOpenPath: () => new Promise(resolve => { fail = () => resolve({ ok: false, code: 'PUBLIC_APP_OPEN_FAILED' }); }) } });
   await settle();
@@ -166,6 +166,39 @@ test('PATH 열기 실패가 늦게 오면, 그사이 연 설정 방을 닫고 �
   assert.equal(after.fan.error || '', '');
   assert.ok(before.rooms?.settings, 'the settings room is open');
   assert.ok(after.rooms?.settings, 'the settings room stays open');
+});
+
+test('PATH 열기 실패가 늦게 오면, 그사이 옮긴 공간에서는 말하지 않는다(PC 0.5.14 검수 pc-path-followups Fable F1)', async t => {
+  let fail;
+  const { h } = await enteredWithBoth(t, { onOpenPath: () => new Promise(resolve => { fail = () => resolve({ ok: false }); }) });
+  h.face.handle('open-switch'); await settle();
+  h.face.handle('go', 'path'); await settle();
+  h.face.handle('open-switch'); await settle();
+  h.face.handle('go', 'workspace'); await settle();
+  assert.equal(h.view.last().space, 'workspace');
+  fail(); await settle();
+  const last = h.view.last();
+  assert.equal(last.space, 'workspace', 'Workspace stays');
+  assert.equal(last.fan.open, false, 'the fan does not open over Workspace');
+  assert.doesNotMatch(last.fan.error || '', /PATH/);
+});
+
+test('PATH 열기 실패가 늦게 오면, 다른 일이 도는 동안에는 말하지 않는다(PC 0.5.14 검수 pc-path-followups Fable F1)', async t => {
+  let fail;
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: {
+    onEnter: () => ({ ok: true, action: 'purpose', purposeMode: 'existing', destinations: [], assignmentCheck: { status: 'unavailable' } }),
+    onRecheckSpaces: () => new Promise(() => {}),
+    onOpenPath: () => new Promise(resolve => { fail = () => resolve({ ok: false }); }),
+  } });
+  await settle(); h.face.setState(signedIn()); await settle();
+  h.face.handle('open-switch'); await settle();
+  h.face.handle('go', 'path'); await settle();
+  h.face.handle('open-switch'); await settle();
+  h.face.handle('foot', 'recheck-spaces'); await settle();
+  fail(); await settle();
+  const last = h.view.last();
+  assert.doesNotMatch(last.fan.error || '', /PATH/, 'the fan does not say it while the recheck runs');
+  assert.doesNotMatch(JSON.stringify(last.room || {}), /PATH를 브라우저로/, 'the room error line does not say it either');
 });
 
 test('an existing account goes from the first orb to Solio with no text and no ask scene', async t => {
