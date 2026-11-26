@@ -73,6 +73,10 @@ test('taking out any one change fails a property', () => {
 
 test('the Start menu change is one switch, off by default: off, the installer makes the shortcut as before', () => {
   assert.equal(REMOVE_START_MENU, false, 'off until the notification test T-한몸1 passes on Windows 10 22H2 and 11 (SOLIO_ONE_CLIENT.md 2.7 · F8)');
+  // The clean-Windows install check runs with test-support/ only and carries its own copy of the switch.
+  const check = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'test-support', 'installer-check.ps1'), 'utf8');
+  assert.match(check, new RegExp(`^\\$noStartMenu = \\$${REMOVE_START_MENU}\\r?$`, 'm'), 'installer-check.ps1 follows REMOVE_START_MENU');
+  assert.doesNotMatch(check, /nsis-template\.cjs'?\)/, 'the install check does not read the template: the CI job has test-support/ only');
   assert.deepEqual(changes(true), [...CHANGES, START_MENU]);
   assert.deepEqual(changes(false), CHANGES);
   const off = patched(upstream, false), on = patched(upstream, true);

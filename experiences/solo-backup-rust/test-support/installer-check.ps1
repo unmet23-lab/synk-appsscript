@@ -92,8 +92,9 @@ Expect ($writers.Count -eq 0) "nobody else may write the install folder ($($writ
 $entry = Get-ItemProperty -LiteralPath $uninstallKey -ErrorAction SilentlyContinue
 Expect ($entry.DisplayName -eq $product -and $entry.DisplayVersion -eq $built.version) "uninstall entry $($entry.DisplayName) $($entry.DisplayVersion)"
 # SYNK 솔리오 하나로(SOLIO_ONE_CLIENT.md 3.4): while scripts/nsis-template.cjs has REMOVE_START_MENU on, the installer makes no
-# Start menu shortcut and each run writes the notices' name under the account instead (notify.rs NAME_KEY).
-$noStartMenu = (& node -e "process.stdout.write(String(require(process.argv[1]).REMOVE_START_MENU))" (Join-Path $PSScriptRoot '..\scripts\nsis-template.cjs')) -eq 'true'
+# Start menu shortcut and each run writes the notices' name under the account instead (notify.rs NAME_KEY). The CI job checks
+# out test-support/ only, so the switch is copied here; tests/nsis-template.test.cjs keeps the two the same.
+$noStartMenu = $false
 if ($noStartMenu) {
   Expect (-not (Test-Path -LiteralPath $startMenu)) 'no Start menu shortcut (REMOVE_START_MENU)'
 } else {
