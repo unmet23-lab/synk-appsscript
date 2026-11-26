@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>질문창 시안 둘째 판</title>
+<style>
+@font-face{font-family:'SYNK Sans Draft';src:url(f/sans.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'DM Mono';src:url(f/mono.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Inter Tight';src:url(f/latin.woff2) format('woff2');font-weight:500;font-display:swap}
+:root{--ko:'SYNK Sans Draft',system-ui,sans-serif;--sans:'Inter Tight','SYNK Sans Draft',system-ui,sans-serif;--mono:'DM Mono',ui-monospace,monospace;--ink:#111113;--ink2:#3c3c41;--mute:#6e6e73;--line:#e7e7ea;--coral:#f96859;--ease:cubic-bezier(.22,.8,.22,1);color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#fff}
+body{font:400 16px/1.6 var(--ko);color:var(--ink);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere;overflow:hidden}
+button,input,textarea{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer;text-align:left}
+a{color:inherit;text-decoration:none}
+h2,h3,h4,p,ol,ul{margin:0;padding:0}
+ol,ul{list-style:none}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:6px}
+kbd{font:500 11px/1 var(--mono);letter-spacing:.02em}
+
+/* 뒤의 홈 · 시안 고르기 */
+.home{position:fixed;inset:0;background:#fff url(a/home-1440.webp) 50% 0/cover no-repeat}
+@media (max-width:700px){.home{background-image:url(a/home-390.webp)}}
+.looks{position:fixed;z-index:50;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:rgba(17,17,19,.86);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;font:600 13px/1 var(--ko);white-space:nowrap;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.looks .tag{padding:0 10px 0 12px;opacity:.55;font-weight:500}
+.looks button{padding:10px 13px;border-radius:999px;opacity:.75}
+.looks button[aria-pressed="true"]{background:#fff;color:#111;opacity:1}
+.looks b{font-weight:700;margin-right:5px;opacity:.6}
+@media (max-width:560px){.looks .tag,.looks .long{display:none}.looks button{padding:10px 14px}}
+.reopen{position:fixed;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);padding:16px 24px;border-radius:999px;background:var(--ink);color:#fff;font:600 17px/1 var(--ko);box-shadow:0 12px 40px rgba(0,0,0,.25)}
+
+/* 지금: 지금 후보(책장)의 캡처 */
+.now{position:fixed;inset:0;z-index:10;overflow:auto;background:#f2f2f4;padding:48px 4vw 96px}
+.now h2{font:700 22px/1.3 var(--ko)}
+.now>p{color:var(--mute);margin:6px 0 22px}
+.now .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.now figure{margin:0}
+.now img{width:100%;height:auto;display:block;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.1)}
+.now figcaption{font:600 14px/1.4 var(--ko);margin-top:8px;color:var(--ink2)}
+@media (max-width:800px){.now .two{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+<link rel="stylesheet" href="look-a.css">
+<link rel="stylesheet" href="look-b.css">
+<link rel="stylesheet" href="look-c.css">
+</head>
+<body>
+<div class="home" aria-hidden="true"></div>
+<button class="reopen" type="button" hidden>무엇이든 물어보세요</button>
+<nav class="looks" aria-label="시안 고르기">
+  <span class="tag">시안 비교</span>
+  <button type="button" data-go="now">지금<span class="long"> 책장</span></button>
+  <button type="button" data-go="a"><b>가</b><span class="long">고객센터</span></button>
+  <button type="button" data-go="b"><b>나</b><span class="long">명령창</span></button>
+  <button type="button" data-go="c"><b>다</b><span class="long">옆 창</span></button>
+</nav>
+<section class="now" data-look="now" hidden>
+  <h2>지금 후보 — 책장</h2>
+  <p>아래 가 · 나 · 다를 눌러 견주어 보세요. 세 판 모두 synk.im 공개 안내에서 실제로 찾아 답합니다.</p>
+  <div class="two">
+    <figure><img src="a/now-1440-open.webp" alt="지금 후보의 묻기 창: 책장 여덟 권과 입력칸"><figcaption>처음 연 모습</figcaption></figure>
+    <figure><img src="a/now-1440-answer.webp" alt="지금 후보의 답: 책이 나와 두 쪽으로 펼쳐진 모습"><figcaption>답한 모습</figcaption></figure>
+  </div>
+</section>
+<div data-look="a" hidden></div>
+<div data-look="b" hidden></div>
+<div data-look="c" hidden></div>
+<script type="module">
+import { mount as a } from './look-a.js';
+import { mount as b } from './look-b.js';
+import { mount as c } from './look-c.js';
+import { load } from './ask-core.js';
+const MOUNT = { a, b, c }, ctl = {};
+let cur = 'a';
+const reopen = document.querySelector('.reopen');
+const hooks = { close: () => { if (ctl[cur]) ctl[cur].close(); document.querySelector(`[data-look="${cur}"]`).hidden = true; reopen.hidden = false; } };
+function show(k) {
+  if (!['now', 'a', 'b', 'c'].includes(k)) k = 'a';
+  cur = k; reopen.hidden = true;
+  document.querySelectorAll('[data-look]').forEach(s => s.hidden = s.dataset.look !== k);
+  document.querySelectorAll('[data-go]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.go === k)));
+  const root = document.querySelector(`[data-look="${k}"]`);
+  if (MOUNT[k] && !ctl[k]) ctl[k] = MOUNT[k](root, hooks);
+  ctl[k]?.open?.();
+  try { history.replaceState(null, '', '#' + k); } catch {}
+}
+document.querySelectorAll('[data-go]').forEach(x => x.addEventListener('click', () => show(x.dataset.go)));
+reopen.addEventListener('click', () => show(cur));
+show(location.hash.slice(1));
+load();
+</script>
+</body>
+</html>

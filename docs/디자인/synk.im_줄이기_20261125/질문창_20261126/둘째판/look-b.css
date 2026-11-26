@@ -1,0 +1,55 @@
+/* 나 · 명령창 — 어두운 창 하나, 줄과 글자만. 색은 사업 표시 점과 행동 단추에만 */
+[data-look="b"]{position:fixed;inset:0;z-index:10}
+.b-scrim{position:absolute;inset:0;background:rgba(10,10,12,.38);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:a-fade .18s ease both}
+.b-pal{--bg:#161618;--tx:#ededef;--mu:#8d8d93;--ln:rgba(255,255,255,.08);--hi:rgba(255,255,255,.065);position:absolute;left:50%;top:11vh;transform:translateX(-50%);width:min(680px,calc(100vw - 32px));max-height:74vh;display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid rgba(255,255,255,.09);border-radius:14px;box-shadow:0 0 0 1px rgba(0,0,0,.4),0 40px 100px rgba(0,0,0,.45);overflow:hidden;animation:b-in .22s var(--ease) both}
+@keyframes b-in{from{opacity:0;scale:.985}}
+.b-pal :focus-visible{outline-color:#fff}
+.b-bar{flex:none;display:grid;grid-template-columns:20px auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:0 14px 0 20px;height:60px;border-bottom:1px solid var(--ln)}
+.b-ico{width:18px;height:18px;fill:none;stroke:var(--mu);stroke-width:1.7;stroke-linecap:round}
+.b-scope{padding:5px 9px;border-radius:6px;background:rgba(255,255,255,.09);font:600 13px/1 var(--ko);white-space:nowrap}
+.b-ico{grid-column:1}.b-scope{grid-column:2}.b-bar input{grid-column:3}.b-esc{grid-column:4}
+.b-bar:has(.b-scope[hidden]){grid-template-columns:20px 0 minmax(0,1fr) auto;column-gap:12px}
+.b-bar:has(.b-scope[hidden]) input{margin-left:-12px}
+.b-bar input{border:0;outline:0;background:none;min-width:0;font:400 18px/1.4 var(--ko);color:var(--tx)}
+.b-bar input::placeholder{color:#6c6c72}
+.b-esc kbd,.b-foot kbd,.b-go kbd{display:inline-block;min-width:20px;padding:4px 6px;border-radius:5px;background:rgba(255,255,255,.08);color:var(--mu);text-align:center}
+.b-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:8px}
+.b-sect+.b-sect{margin-top:8px}
+.b-h{padding:10px 12px 6px;font:500 12px/1 var(--ko);color:var(--mu);letter-spacing:.01em}
+.b-opt{display:flex;align-items:center;gap:12px;min-height:44px;padding:9px 12px;border-radius:8px;cursor:pointer;font:400 15.5px/1.4 var(--ko)}
+.b-opt[aria-selected="true"]{background:var(--hi)}
+.b-t{flex:1;min-width:0}
+.b-s{flex:none;font:400 13px/1 var(--ko);color:var(--mu)}
+.b-dot{flex:none;width:8px;height:8px;border-radius:2px;background:#6c6c72}
+.d-path{background:#9fb3da}.d-shift{background:#e6dfcf}.d-pulse{background:#97a3b0}.d-lab{background:#a8b86f}.d-company{background:#f96859}.d-guide{background:#bfb6a5}.d-vision{background:#7d8db0}.d-philosophy{background:#d6c095}
+
+.b-ans{padding:14px 16px 18px;animation:a-fade .2s ease both}
+.b-atop{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.b-crumb{display:flex;align-items:center;gap:8px;font:500 13px/1 var(--ko);color:var(--mu)}
+.b-back{padding:6px 8px;border-radius:6px;font:500 13px/1 var(--ko);color:var(--mu)}
+.b-back:hover{background:var(--hi);color:var(--tx)}
+.b-q{margin-top:14px;font:600 23px/1.35 var(--ko);letter-spacing:-.02em}
+.b-abody{margin-top:12px;display:grid;gap:12px;font:400 15.5px/1.75 var(--ko);color:#c4c4c9;max-width:36em}
+.b-lead{font:500 17px/1.65 var(--ko);color:var(--tx)}
+.b-more summary{cursor:pointer;list-style:none;font:500 14px/1 var(--ko);color:var(--tx);padding:6px 0}
+.b-more summary::-webkit-details-marker{display:none}
+.b-more[open]{display:grid;gap:12px}
+.b-go{display:inline-flex;align-items:center;gap:10px;margin-top:20px;padding:11px 12px 11px 16px;border-radius:8px;background:var(--coral);color:#1a0c08;font:600 15px/1 var(--ko)}
+.b-goarr{font:500 15px/1 var(--sans)}
+.b-go:hover{background:#ff7a6c}
+.b-rel{margin-top:22px;border-top:1px solid var(--ln);padding-top:4px}
+.b-rel .b-h{padding-left:0}
+.b-relq{display:flex;justify-content:space-between;gap:12px;width:100%;padding:11px 10px 11px 0;border-radius:6px;font:400 15px/1.4 var(--ko);color:var(--tx)}
+.b-relq:hover{background:var(--hi);padding-left:10px}
+
+.b-foot{flex:none;display:flex;align-items:center;gap:16px;height:42px;padding:0 16px;border-top:1px solid var(--ln);font:400 12px/1 var(--ko);color:var(--mu)}
+.b-foot kbd{margin-right:4px;padding:3px 5px}
+.b-mail{margin-left:auto;color:var(--mu)}
+.b-mail:hover{color:var(--tx)}
+
+@media (max-width:700px){
+  .b-pal{top:12px;max-height:calc(100dvh - 92px);border-radius:14px}
+  .b-foot span{display:none}
+  .b-bar input{font-size:17px}
+  .b-q{font-size:21px}
+}
