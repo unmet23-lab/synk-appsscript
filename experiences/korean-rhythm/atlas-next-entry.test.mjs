@@ -159,7 +159,7 @@ const OLD_START = ['account.ready', 'createGame', 'syncPort', 'recommend', 'summ
 
 test('app.mjs 원문 — 키트만 정적으로 싣고, 새 길 모듈은 문 · 개발 깃발이 있을 때 한 자리에서 동적으로 싣는다. 옛 코치는 지금 인수 그대로', () => {
   const statics = [...SOURCE.matchAll(/^import\s[^;]*?from\s+'([^']+)'/gm)].map(m => m[1]);
-  assert.ok(statics.includes('./kit/atlas-next.mjs'), '키트는 정적으로(맨 위는 정의뿐)');
+  assert.ok(!statics.includes('./kit/atlas-next.mjs'), '키트는 정적으로 싣지 않는다 — 새 길 모듈이 부른다(5-3 게임)');
   assert.ok(!statics.some(s => s.includes('atlas-next-play')), '새 길 모듈은 정적 import에 없다');
   const code = SOURCE.split('\n').filter(line => !line.trimStart().startsWith('//')).join('\n');
   assert.equal(code.match(/atlas-next-play/g).length, 1, '새 길 모듈을 부르는 자리는 하나');

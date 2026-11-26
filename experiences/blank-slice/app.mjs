@@ -8,7 +8,6 @@ import { GAME_ID, rankItems, createReadingConfirmation, skillReport, assignmentI
 import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, FEEL } from './stage.mjs';
-import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 
 // WORLD 캠퍼스 판(world-host.js가 붙인 data-host=world)에서만 겉 · 소리를 갈아 끼운다. 규칙 · 문항 · 판정 · 기록은 그대로다.
 const world = document.documentElement.dataset.host === 'world' ? await import('./world-play.mjs') : null;
@@ -47,7 +46,27 @@ const save = () => { try { progressStorage.setItem(KEY, JSON.stringify(progress)
 // 셸이 코치를 준비하는 동안에도 입구는 먼저 그린다(coachOpening) — 시작 단추가 그 열기를 기다린다.
 // slice: 새 길(판 · 고르기 · 순간 맞춤의 제시 번호). oldPath: 옛 코치의 길. quiet: 문이 닫히는 중(RUN_ENDED) — 옛 길을 열지 않고 안내 없이 놀기만 한다.
 let coach = null, slice = null, quiet = false, coachOpening = null;
-const atlasNext = !!(nextDoor(window) || devFlag(window));
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+const atlasNext = atlasGate(window);
 let oldPath = !atlasNext;
 function openOldCoach() {
   try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
@@ -65,7 +84,7 @@ async function openNextCoach() {
   try {
     slice = await (await import('./atlas-next-play.mjs')).openSlice({ win: window });
     if (slice) coach = slice.coach; else { oldPath = true; openOldCoach(); listenStorage(); }
-  } catch (error) { slice = null; coach = null; quiet = ended(error); }   // 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다
+  } catch (error) { slice = null; coach = null; quiet = error?.code === 'RUN_ENDED'; }   // 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다
   coachOpening = null;
   hosted = hostedOf();
   // 옛 길로 돌아오면 새 길이 숨긴 이유 줄을 다시 보인다(셸이 지금 판이라고 한 때 · 판을 다시 정한 뒤)

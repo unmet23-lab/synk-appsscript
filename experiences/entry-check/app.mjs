@@ -7,13 +7,32 @@ import * as sound from './audio.mjs';
 import { fitText, preloadImages } from './kit/lab.mjs';
 import { josa } from './kit/josa.mjs';
 import { choiceId, choiceCorrection, immediateCheck, followUpResult } from './correction.mjs';
-import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 // WORLD 안(2026-11-04 캠퍼스 판): world-host.js가 붙인 data-host=world일 때만 원고 겉(world-content.mjs — 손님 · 근무지 · 날짜 글)과
 // 연출(world-play.mjs — 입장 부스 사진 · 소리 · 음악 · 움직임)을 불러온다. 판정 · 학습 기록 · 코인은 같은 객체를 id로 쓰므로 그대로다. LAB 화면은 그대로다.
 const WORLD = globalThis.document?.documentElement?.dataset?.host === 'world';
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
 // 새 길(Atlas 재설계 4-6d): WORLD 셸의 게임 문이나 로컬 개발 깃발이 있으면 셸이 코치를 준비하는 동안 WORLD 모듈 · 계정 준비를 함께 기다린다
 // (받는 곳은 아래 「아틀라스」). 문이 없으면 아무것도 하지 않는다.
-const atlasNext = !!(nextDoor(window) || devFlag(window));
+const atlasNext = atlasGate(window);
 const nextOpening = atlasNext ? openNextPath() : null;
 if (WORLD) (await import('./world-content.mjs')).applyWorld({ VENUES, CAST, TUTORIAL });
 const worldPlay = WORLD ? (await import('./world-play.mjs')).createWorldPlay({ sound, CAST, view: () => structuredClone({ venue: state.venue, item: state.cur?.item || null, done: !!state.cur?.done, index: state.index, queue: state.queue.map((c) => c.who),
@@ -55,7 +74,7 @@ function openNextPath() {
 }
 /** 새 길을 연 결과를 받는다. 겉이면 새 길, null이면 옛 길, 거절이면 옛 길을 열지 않는다(새 길이 맡은 판 — 새 길 계정에 옛 동기가 켜지지 않게). */
 function takeNext({ opened = null, error = null }) {
-  shiftCoach = opened; coach = opened?.coach ?? null; quiet = !!error && ended(error); oldPath = !opened && !error;
+  shiftCoach = opened; coach = opened?.coach ?? null; quiet = !!error && error?.code === 'RUN_ENDED'; oldPath = !opened && !error;
   if (error && !quiet) console.error(error);
   if (!opened && !error) openOldCoach();
 }

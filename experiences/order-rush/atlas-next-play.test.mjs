@@ -55,7 +55,7 @@ test('원문 — 정적 import에 새 길 모듈이 없고 키트만 더했다, 
     const text = source(file);
     const imports = staticImports(text);
     assert.ok(!imports.includes('./atlas-next-play.mjs'), `${file}: 새 길 모듈은 정적으로 싣지 않는다`);
-    assert.ok(imports.includes('./kit/atlas-next.mjs'), `${file}: 문 찾기는 키트(맨 위는 정의뿐)`);
+    assert.ok(!imports.includes('./kit/atlas-next.mjs'), `${file}: 키트는 정적으로 싣지 않는다 — 새 길 모듈이 부른다(5-3 게임)`);
     assert.equal(text.match(/import\('\.\/atlas-next-play\.mjs'\)/g)?.length, 1, `${file}: 동적 import 한 자리`);
     assert.doesNotMatch(text, /['"`]\/atlas\//, `${file}: /atlas/ 요청 없음`);
   }
@@ -84,16 +84,14 @@ function opening(file) {
   const to = text.indexOf('\n', text.indexOf('SynkLearning?.createGame(', from));
   const body = text.slice(from, to).replace("import('./atlas-next-play.mjs')", '__load()');
   return new AsyncFunction(
-    'nextDoor',
-    'devFlag',
-    'ended',
     'window',
     'localStorage',
     '__load',
     `let coach = null, learningFailed = false;\n${body}\nreturn { coach, atlasNext, learningFailed };`,
   );
 }
-const kitEnded = error => error?.code === 'RUN_ENDED';
+// 토막이 보는 창 — 문이 없는 창 · 위 창에 게임 문이 있는 창 · 로컬 개발 깃발 창(앱은 키트 없이 창을 본다 — 5-3 게임).
+const NO_DOOR = {}, DOOR = { parent: { SYNKAtlasGame: { open() {} } }, top: {} }, DEV = { location: { hostname: 'localhost', search: '?atlas=next' } };
 const pending = promise => Promise.race([promise.then(() => 'settled'), new Promise(resolve => setTimeout(() => resolve('pending'), 30))]);
 
 function fakeEngine() {
@@ -115,7 +113,7 @@ for (const [file, open, args] of [
     const made = fakeEngine();
     const storage = {};
     const loads = [];
-    const run = opening(file)(() => null, () => false, kitEnded, {}, storage, () => loads.push(1));
+    const run = opening(file)(NO_DOOR, storage, () => loads.push(1));
     assert.deepEqual(made, [args(storage)], '부르는 동안 동기로(앞에 await 없음)');
     const result = await run;
     assert.deepEqual(result.coach, { old: true });
@@ -125,11 +123,11 @@ for (const [file, open, args] of [
   });
 
   test(`${file} 진입 — 문이 있고 open이 null이면 기다린 뒤 옛 길로 정상 시작한다(개발 깃발도 같다)`, async () => {
-    for (const [door, flag] of [[() => ({}), () => false], [() => null, () => true]]) {
+    for (const win of [DOOR, DEV]) {
       const made = fakeEngine();
       const storage = {};
       const loads = [];
-      const run = opening(file)(door, flag, kitEnded, {}, storage, async () => {
+      const run = opening(file)(win, storage, async () => {
         loads.push(1);
         return { [open]: async () => null };
       });
@@ -143,7 +141,7 @@ for (const [file, open, args] of [
 
   test(`${file} 진입 — open이 RUN_ENDED로 거절하면 옛 길(createGame)을 열지 않는다`, async () => {
     const made = fakeEngine();
-    const run = opening(file)(() => ({}), () => false, kitEnded, {}, {}, async () => ({
+    const run = opening(file)(DOOR, {}, async () => ({
       [open]: async () => {
         throw Object.assign(new Error('closed'), { code: 'RUN_ENDED' });
       },
@@ -157,7 +155,7 @@ for (const [file, open, args] of [
   test(`${file} 진입 — 새 겉이면 그 겉을 코치 자리에 두고 옛 코치를 만들지 않는다`, async () => {
     const made = fakeEngine();
     const play = { next: true };
-    const result = await opening(file)(() => ({}), () => false, kitEnded, {}, {}, async () => ({ [open]: async () => play }));
+    const result = await opening(file)(DOOR, {}, async () => ({ [open]: async () => play }));
     assert.equal(result.coach, play);
     assert.equal(result.atlasNext, play);
     assert.deepEqual(made, []);

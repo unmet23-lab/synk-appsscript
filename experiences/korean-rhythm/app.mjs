@@ -10,7 +10,6 @@ import { josa } from './kit/josa.mjs';
 import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine, RHYTHM_CANDIDATES, missedRhythm, returnLine } from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
 import {createSupplementalPanel} from './supplemental-player.mjs';
-import { nextDoor, devFlag, ended } from './kit/atlas-next.mjs';
 
 let gameTutor=null;
 const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
@@ -52,10 +51,30 @@ function openOldCoach() { oldWay = true; try { coach = globalThis.SynkLearning?.
 function openNextCoach() {
   return import('./atlas-next-play.mjs').then((m) => m.openRhythm({ win: window }))
     // 새 길이 맡은 판이라 RUN_ENDED가 아닌 실패에도 옛 길을 열지 않는다 — 기록을 연결하지 못했다고만 안내한다.
-    .then((opened) => { nextPlay = opened; if (opened) coach = opened.coach; else openOldCoach(); }, (error) => { nextPlay = null; coach = null; quiet = ended(error); })
+    .then((opened) => { nextPlay = opened; if (opened) coach = opened.coach; else openOldCoach(); }, (error) => { nextPlay = null; coach = null; quiet = error?.code === 'RUN_ENDED'; })
     .finally(() => { nextOpening = null; });
 }
-const atlasNext = !!(nextDoor(window) || devFlag(window));
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+const atlasNext = atlasGate(window);
 if (atlasNext) nextOpening = openNextCoach(); else openOldCoach();
 // 새 길: 판을 다시 정해 겉이 닫혔으면(onRetired) 다음 판 앞에서 문을 다시 연다 — 새 겉이면 새 길, 지금 판이면 옛 길. 곡 시작, 새 문장 확인,
 // 보충 연습 · 며칠 뒤 다시 확인의 첫 대화 앞에서 부른다(4-6 끝 판 F5 · B3). 판 안에서 판을 다시 정했으면 그 판은 기록 없이 잇는다.

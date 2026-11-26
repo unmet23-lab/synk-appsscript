@@ -545,12 +545,12 @@ test('판을 다시 정하면 이번 판은 기록 없이 잇고, 다음 판은 
 test('원문 — 꺼진 판은 새 길 모듈을 싣지 않고 옛 코치를 지금 자리에서 같은 인수로 만든다', () => {
   const source = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const imports = [...source.matchAll(/^import\s[^;]*?from\s+'([^']+)'/gm)].map((match) => match[1]);
-  assert.ok(imports.includes('./kit/atlas-next.mjs'), '키트는 정의뿐이라 정적으로 싣는다');
+  assert.ok(!imports.includes('./kit/atlas-next.mjs'), '키트는 정적으로 싣지 않는다 — 새 길 모듈이 부른다(5-3 게임)');
   assert.ok(!imports.some((path) => path.includes('atlas-next-play')), '새 길 모듈은 정적 import에 없다');
   assert.equal([...source.matchAll(/import\('\.\/atlas-next-play\.mjs'\)/g)].length, 1, '새 길 모듈을 부르는 곳은 하나');
   assert.match(source, /async function openNextCoach\(\) \{\n  let opened = null;\n  try \{ opened = await \(await import\('\.\/atlas-next-play\.mjs'\)\)\.openRunner\(/, '문 · 개발 깃발이 있을 때만 동적으로 부른다');
   assert.ok(source.includes("try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-runner', storage: localStorage }) || null; } catch { learningFailed = true; }"), '옛 코치는 지금과 같은 인수');
-  assert.match(source, /const atlasNext = !!\(nextDoor\(window\) \|\| devFlag\(window\)\);/);
+  assert.match(source, /const atlasNext = atlasGate\(window\);/);
   assert.match(source, /\nif \(!atlasNext\) openOldCoach\(\);\n/, '문이 없으면 이 자리에서 동기로 옛 코치');
   assert.match(source, /\nif \(atlasNext\) await openNextCoach\(\);\n/, '문이 있을 때만 기다린다');
   // 세 줄이 모두 있는지 먼저 본다 — 없으면 indexOf가 -1이라 차례 단언이 늘 참이다. 그리기 고리는 frame 함수 안의 다음 프레임 요청이 아니라

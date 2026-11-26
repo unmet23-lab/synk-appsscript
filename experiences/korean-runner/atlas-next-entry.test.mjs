@@ -114,7 +114,7 @@ test('꺼진 판 — 문이 없으면 옛 코치를 지금과 같은 인수 · �
   assert.equal(page.created[0].gameId, 'korean-runner');
   assert.equal(page.created[0].storage, page.local, '이 창의 localStorage');
   const touched = page.specifiers();
-  assert.ok(touched.includes('./kit/atlas-next.mjs'), '키트는 정의뿐이라 정적으로 싣는다');
+  assert.ok(!touched.includes('./kit/atlas-next.mjs'), '키트는 정적으로 싣지 않는다 — 새 길 모듈이 부른다(5-3 게임)');
   assert.equal(touched.some((specifier) => specifier.includes('atlas-next-play')), false, '새 길 모듈을 싣지 않는다');
   assert.equal(touched.some((specifier) => specifier.includes('/atlas/')), false, '입구를 싣지 않는다');
   assert.equal(page.log.some((entry) => entry.startsWith('fetch') || entry === 'indexedDB.open'), false);

@@ -367,10 +367,10 @@ test('createMagic만으로도(개발 깃발의 혼자 뜨는 코치) 같은 겉�
 test('원문 — 꺼진 판은 새 길 모듈을 싣지 않고 옛 코치를 지금 자리에서 같은 인수로 만든다', () => {
   const source = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8');
   const imports = [...source.matchAll(/^import\s[^;]*?from\s*'([^']+)'/gm)].map((match) => match[1]);
-  assert.ok(imports.includes('./kit/atlas-next.mjs'), '키트는 정의뿐이라 정적으로 싣는다');
+  assert.ok(!imports.includes('./kit/atlas-next.mjs'), '키트는 정적으로 싣지 않는다 — 새 길 모듈이 부른다(5-3 게임)');
   assert.ok(!imports.some((path) => path.includes('atlas-next-play')), '새 길 모듈은 정적 import에 없다');
   assert.equal([...source.matchAll(/import\('\.\/atlas-next-play\.mjs'\)/g)].length, 1, '새 길 모듈을 부르는 곳은 하나');
-  assert.match(source, /const atlasNext=!!\(nextDoor\(window\)\|\|devFlag\(window\)\);\r?\nconst voice=new VoiceBank\(\);let learning=atlasNext\?new MagicLearning\(null\):new MagicLearning\(globalThis\.SynkLearning,storage\),learningOpening=atlasNext\?openLearning\(\):null;/, '문이 없으면 이 자리에서 동기로 옛 코치(지금과 같은 인수)');
+  assert.match(source, /const atlasNext=atlasGate\(window\);\r?\nconst voice=new VoiceBank\(\);let learning=atlasNext\?new MagicLearning\(null\):new MagicLearning\(globalThis\.SynkLearning,storage\),learningOpening=atlasNext\?openLearning\(\):null;/, '문이 없으면 이 자리에서 동기로 옛 코치(지금과 같은 인수)');
   assert.equal(source.includes('/atlas/'), false, '게임이 입구를 직접 부르지 않는다');
   assert.equal(source.match(/await learningReady\(\)/g)?.length, 2);
   for (const line of source.split(/\r?\n/).filter((text) => text.includes('learningReady()') && !text.startsWith('function')))

@@ -10,7 +10,6 @@ import { M, motionOn, spatial, effect, wait, finished, flyTo, rollTo, mmss } fro
 import { STR } from './strings.mjs';
 import { GAME_ID, createLearning } from './learning.mjs';
 import { josa } from './kit/josa.mjs';
-import { devFlag, nextDoor } from './kit/atlas-next.mjs';
 
 const query = new URLSearchParams(location.search);
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -43,7 +42,27 @@ const rng = query.has('seed') ? makeRng(Number(query.get('seed'))) : Math.random
 // 준비하는 동안에도 입구는 그린다 — 판을 시작할 때(startPlace) 기다린다. 문의 open이 null이면(지금 판) 옛 길, 거절하면(RUN_ENDED) 옛 길을
 // 열지 않고 기록 없이 논다(atlas-next-play.mjs openLearning). 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다.
 const oldLearning = () => createLearning(() => window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }));
-const atlasNext = Boolean(nextDoor(window) || devFlag(window));
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+const atlasNext = atlasGate(window);
 let learn = atlasNext ? createLearning(() => null) : oldLearning();
 let learnReady = atlasNext ? import('./atlas-next-play.mjs').then((m) => m.openLearning({ win: window, old: oldLearning })).catch((error) => { console.error(error); return createLearning(() => null); }).then((made) => { learn = made; }) : null;
 

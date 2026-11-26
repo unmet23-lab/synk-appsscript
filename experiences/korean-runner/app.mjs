@@ -14,7 +14,6 @@ import { missedCheck, createListeningCheckRound } from './listening-check.mjs';
 import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD, runReason } from './report.mjs?v=runner-next-way-20261104';
 import { drawHeroRoad } from './hero.mjs';
 import { preloadImages } from './kit/lab.mjs';
-import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 import {runnerSupport,obstacleSupport,runnerCheckSupport} from '../brand-opening/game-tutor-support.mjs';
 
 let gameTutor=null;
@@ -58,7 +57,27 @@ let coach = null, learningFailed = false, nextPlan = null;
 // runner: 새 길(달리기 판 · 게임 차례 · 듣기 확인 판 · 순간 맞춤의 제시 번호). quiet: 문이 닫히는 중(RUN_ENDED) — 옛 길을 열지 않고 안내 없이 놀기만 한다.
 // oldWay: 옛 코치로 열었다(문이 없거나 셸이 지금 판이라고 함) — 기록 지우기 단추는 이 길에만 있다.
 let runner = null, quiet = false, reopening = null, oldWay = false;
-const atlasNext = !!(nextDoor(window) || devFlag(window));
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+const atlasNext = atlasGate(window);
 function openOldCoach() {
   oldWay = true;
   try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-runner', storage: localStorage }) || null; } catch { learningFailed = true; }
@@ -66,7 +85,7 @@ function openOldCoach() {
 async function openNextCoach() {
   let opened = null;
   try { opened = await (await import('./atlas-next-play.mjs')).openRunner({ win: window }); }
-  catch (error) { runner = null; coach = null; quiet = ended(error); return; }   // 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다
+  catch (error) { runner = null; coach = null; quiet = error?.code === 'RUN_ENDED'; return; }   // 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다
   quiet = false; runner = opened;
   if (runner) coach = runner.coach; else { openOldCoach(); showReasons(); }
 }

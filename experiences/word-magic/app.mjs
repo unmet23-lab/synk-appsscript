@@ -3,7 +3,6 @@ import {clone,SAVE_KEY,initialProgress,restoreProgress,restoreResume,tutorialObj
 import {VoiceBank} from './audio.mjs';
 import {MagicStage} from './stage.mjs';
 import {MagicLearning} from './learning.mjs';
-import {devFlag,nextDoor} from './kit/atlas-next.mjs';
 import {MagicShop} from './shop.mjs';
 import {collectPractice,practiceStatus} from './practice.mjs';
 import {recallRound,recallView} from './recall.mjs';
@@ -16,11 +15,31 @@ const progressStorage = globalThis.SynkPlayAccount.storage();
 const $=q=>document.querySelector(q),el=(tag,cls,text)=>{const n=document.createElement(tag);n.className=cls||'';if(text)n.textContent=text;return n;};
 let storage;try{storage=localStorage;}catch{}
 let saved,lastProgressRaw=null;try{lastProgressRaw=progressStorage.getItem(SAVE_KEY);saved=restoreProgress(lastProgressRaw);}catch{saved=initialProgress();}
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
 // 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): 위 창의 게임 문(window.SYNKAtlasGame)이나 로컬 개발 깃발(?atlas=next)이 있으면 새 길 모듈
 // (atlas-next-play.mjs)을 동적으로 불러 새 코치로 기록한다. 셸이 지금 판이라고 하면(null) 옛 코치를 만든다. 문이 없으면 옛 코치를 지금처럼
 // 이 자리에서 동기로 만든다. 새 길을 여는 동안과 열지 못했을 때(RUN_ENDED 등)는 기록하지 않는 겉(new MagicLearning(null))이다 — 옛 길을
 // 열지 않고 놀기만 한다. 맨 위에서 기다리지 않고, 소리 확인을 내기 전(begin · startCheck)에만 기다린다.
-const atlasNext=!!(nextDoor(window)||devFlag(window));
+const atlasNext=atlasGate(window);
 const voice=new VoiceBank();let learning=atlasNext?new MagicLearning(null):new MagicLearning(globalThis.SynkLearning,storage),learningOpening=atlasNext?openLearning():null;
 function openLearning(){return import('./atlas-next-play.mjs').then(m=>m.openMagic({win:window,old:()=>new MagicLearning(globalThis.SynkLearning,storage)})).catch(error=>{console.error(error);return null;}).then(next=>{learning=next||new MagicLearning(null);learningOpening=null;});}
 // 새 길만: 코치가 열릴 때까지 기다린다. 판을 다시 정했고 앞 판이 끝났으면(stale) 다음 판 앞에서 문을 다시 연다.

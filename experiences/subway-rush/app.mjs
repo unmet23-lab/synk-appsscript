@@ -12,7 +12,6 @@ import { createPickPanel } from './pickpanel.mjs?v=sign20261111';
 import { createSound, haptic } from './audio.mjs?v=map20261110';
 import { createMusic } from './music.mjs';
 import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney, missedPractice, entryNote } from './learning.mjs?v=return-20261105';
-import { nextDoor, devFlag } from './kit/atlas-next.mjs';
 
 const $ = (id) => document.getElementById(id);
 const query = new URLSearchParams(location.search);
@@ -69,7 +68,27 @@ const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tw
 // 기록의 길(Atlas 단계 4 §23-7): WORLD 셸의 게임 문(또는 로컬 개발 깃발)이 있을 때만 새 길 모듈을 동적으로 싣는다. 없으면 지금 그대로 옛 코치를 동기로 만든다.
 // 문의 open이 null이면(지금 판) 옛 길, 거절하면(RUN_ENDED) 옛 길을 열지 않고 기록 없이 논다(atlas-next-play.mjs openLearning).
 const oldCoach = () => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } };
-let { coach, nextPlay } = nextDoor(window) || devFlag(window) ? await import('./atlas-next-play.mjs?v=next20261119').then((m) => m.openLearning({ win: window, old: oldCoach })).catch((error) => { console.error(error); return { coach: null, nextPlay: null }; }) : { coach: oldCoach(), nextPlay: null };
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+let { coach, nextPlay } = atlasGate(window) ? await import('./atlas-next-play.mjs?v=next20261119').then((m) => m.openLearning({ win: window, old: oldCoach })).catch((error) => { console.error(error); return { coach: null, nextPlay: null }; }) : { coach: oldCoach(), nextPlay: null };
 // 결정 · 만남 하나의 기록: 새 길이면 새 코치, 아니면 지금 그대로 옛 코치.
 const exchangeOf = (meta) => nextPlay ? nextPlay.exchange(meta) : createExchange(coach, meta);
 

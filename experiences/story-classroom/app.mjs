@@ -10,7 +10,6 @@ import { StoryVoice } from './voice.mjs';
 import { VOICE_LINE_BY_ID, voiceForMission } from './voice-lines.mjs';
 import { createStoryLearning, skillReport, assignmentMissions, storyTargetLabel, missionMetadata, SKILL_LABELS, returnLine } from './learning.mjs';
 import { $, $$, esc, fitText } from './kit/lab.mjs';
-import { devFlag, nextDoor } from './kit/atlas-next.mjs';
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
@@ -25,7 +24,27 @@ async function openNextLearning() {
   try { return await (await import('./atlas-next-play.mjs')).openStoryLearning({ win: window, old: openOldLearning }); }
   catch { return createStoryLearning({ runtime: {} }); }   // 새 길 모듈을 싣지 못했다 — 새 길이 맡은 판이라 옛 길을 열지 않고 기록 없이 논다
 }
-let learning = nextDoor(window) || devFlag(window) ? await openNextLearning() : openOldLearning();
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+let learning = atlasGate(window) ? await openNextLearning() : openOldLearning();
 const initialScope = learning.progressScope();
 const STORAGE = initialScope.persistent ? initialScope.key : null;
 const STORY_MISSIONS = EPISODE.acts.flatMap((a) => a.missions), ALL_MISSIONS = [...STORY_MISSIONS, ...EPISODE.review];

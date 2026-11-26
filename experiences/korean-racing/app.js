@@ -39,7 +39,6 @@ import { wireGameLinks } from './links.js';
 import { bindSoundToggles } from './kit/lab.mjs';
 import { installQaHook } from './qa-hook.js';
 import { createRaceController, LANES } from './race-controller.js';
-import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
@@ -63,11 +62,31 @@ if (!['listening', 'reading'].includes(requestedModality)) requestedModality = n
 function openOldCoach() {
   try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-racing', storage: localStorage }) || null; } catch { learningAvailable = false; }
 }
-if (nextDoor(window) || devFlag(window)) learningOpening = openNextRace(); else openOldCoach();
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+if (atlasGate(window)) learningOpening = openNextRace(); else openOldCoach();
 // 새 길을 연다(위 — 문 · 개발 깃발이 있을 때만). 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다(기록을 쓸 수 없다고만 알린다).
 async function openNextRace() {
   try { nextRace = await (await import('./atlas-next-play.mjs')).openRace({ win: window }); }
-  catch (error) { nextRace = null; learningQuiet = ended(error); nextFailed = !learningQuiet; if (nextFailed) console.error(error); }
+  catch (error) { nextRace = null; learningQuiet = error?.code === 'RUN_ENDED'; nextFailed = !learningQuiet; if (nextFailed) console.error(error); }
   learningOpening = null;
   if (nextRace) { coach = nextRace.coach; hosted = nextRace.hosted; }
   else if (!learningQuiet && !nextFailed) { openOldCoach(); hosted = learn((c) => typeof c.assignment === 'function', false); watchStorage(); }

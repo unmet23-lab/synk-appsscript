@@ -13,7 +13,6 @@ import { fitText, preloadImages } from './kit/lab.mjs';
 import { DAILY_KEY, seoulDate, dailyRound, dailyOptions, emptyRecords, normalizeRecords, recordDaily, dailyStatus, recentDays } from './daily.mjs';
 import { NARRATION, NARRATION_LINES, resultLine } from './narration.mjs';
 import { createGearPanel, DEFAULT_GEAR } from './gear.mjs';
-import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 
 // ── WORLD 안(2026-11-04 캠퍼스 판): world-host.js가 붙인 data-host=world일 때만 동아리 탁구장 · 상대 태오(world-play.mjs — 문항 음성 · 안내 음성 파일 자리도 거기서 바꾼다).
 // LAB 화면(몽글 · 펠트)은 그대로다 — WORLD 모듈 · 그림 · 소리는 LAB에서 불러오지 않는다.
@@ -71,13 +70,33 @@ function openOldCoach() {
 async function openNextCoach() {
   let opened = null;
   try { opened = await (await import('./atlas-next-play.mjs')).openRally({ win: window, audio: () => sound.isOn() }); }
-  catch (error) { rally = null; coach = null; quiet = ended(error); showReasons(); return; }   // 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다
+  catch (error) { rally = null; coach = null; quiet = error?.code === 'RUN_ENDED'; showReasons(); return; }   // 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다
   rally = opened;
   if (rally) coach = rally.coach; else { openOldCoach(); showReasons(); }
 }
 // 새 길이 숨긴 이유 줄을 옛 길로 돌아올 때 다시 보인다(판을 다시 정한 뒤 셸이 지금 판이라고 한 때).
 function showReasons() { for (const id of ['#l-reason', '#r-next-reason']) { const n = document.querySelector(id); if (n) n.hidden = false; } }
-const atlasNext = !!(nextDoor(window) || devFlag(window));
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+const atlasNext = atlasGate(window);
 if (atlasNext) await openNextCoach(); else openOldCoach();
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
 // SYNK WORLD 안에서는 계정의 기록이다. 이 브라우저가 아니라 WORLD 계정 설정에서 공유·삭제를 관리한다. 새 길은 기록 지우기를 쓰지 않는다.

@@ -11,7 +11,6 @@ import { CafeStage, FlatStage } from './stage.mjs';
 import { CafeAudio } from './audio.mjs';
 import { customerOf, customerName, cupLabel } from './cafe.mjs';
 import { $, $$, el, esc, preloadImages, bindSoundToggles } from './kit/lab.mjs';
-import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
@@ -37,9 +36,29 @@ let coach = null, learningFailed = false, nextPlan = null, audioTicket = null;
 // open이 null이면(지금 판) 아래 옛 코치로 시작하고, RUN_ENDED면 옛 길을 열지 않고 시작 화면에 멈춘다. 새 길의 다른 실패는 기록 없이 논다.
 // 문이 없으면 옛 코치를 지금과 같은 때 · 같은 인수로 만든다. nextFailed: 새 길로 정해진 판인데 코치를 열지 못했다(옛 길을 열지 않는다).
 let atlasNext = null, nextWhy = null, nextFailed = false;
-if (nextDoor(window) || devFlag(window)) {
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+
+if (atlasGate(window)) {
   try { atlasNext = await (await import('./atlas-next-play.mjs')).openCafe({ win: window }); }
-  catch (error) { if (ended(error)) await new Promise(() => {}); learningFailed = true; nextFailed = true; }
+  catch (error) { if (error?.code === 'RUN_ENDED') await new Promise(() => {}); learningFailed = true; nextFailed = true; }
   coach = atlasNext;
 }
 if (!atlasNext && !learningFailed) try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage, followups:true }) || null; } catch { learningFailed = true; }

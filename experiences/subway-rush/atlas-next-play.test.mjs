@@ -7,7 +7,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createGameDoor, GAME_BANKS } from '../synk-world-app/world-atlas-game.mjs';
-import { devFlag, nextDoor } from './kit/atlas-next.mjs';
 import { BANKS, createNextPlay, openLearning } from './atlas-next-play.mjs';
 import { GAME_ID, answerPayload, decisionMeta, meetingMeta } from './learning.mjs';
 import { buildJourney } from './journeys.mjs';
@@ -118,7 +117,7 @@ test('은행 이름은 셸의 게임 은행 표와 같고, 은행에 든 결정�
 
 test('app.mjs 원문 — 새 길 모듈은 정적 import에 없고 문 · 개발 깃발이 있을 때만 동적으로 싣는다, 옛 코치는 지금 자리 · 인수 그대로', () => {
   const statics = [...APP.matchAll(/^import\s[^;]*?from\s+'([^']+)'/gm)].map((m) => m[1]);
-  assert.ok(statics.includes('./kit/atlas-next.mjs'), '키트는 정적으로(맨 위는 정의뿐)');
+  assert.ok(!statics.includes('./kit/atlas-next.mjs'), '키트는 정적으로 싣지 않는다 — 새 길 모듈이 부른다(5-3 게임)');
   assert.ok(!statics.some((s) => s.includes('atlas-next-play')), '새 길 모듈은 정적 import에 없다');
   const code = APP.split('\n').filter((line) => !line.trimStart().startsWith('//')).join('\n');
   assert.equal(code.match(/atlas-next-play/g).length, 1, '새 길 모듈을 부르는 자리는 하나');
@@ -128,7 +127,7 @@ test('app.mjs 원문 — 새 길 모듈은 정적 import에 없고 문 · 개발
   assert.ok(APP.includes('const oldCoach = () => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } };'), '옛 코치는 지금 인수 그대로');
   const scene = APP.indexOf('const scene = await readyOrAsk('), open = APP.indexOf('let { coach, nextPlay } = '), cars = APP.indexOf('const availableCars');
   assert.ok(scene >= 0 && scene < open && open < cars, '옛 코치를 만드는 자리는 지금과 같다(장면을 만든 뒤, 나머지 정의 앞)');
-  assert.match(APP, /let \{ coach, nextPlay \} = nextDoor\(window\) \|\| devFlag\(window\) \? await import\([^)]*\)\.then\(\(m\) => m\.openLearning\(\{ win: window, old: oldCoach \}\)\)\.catch\([^\n]*\) : \{ coach: oldCoach\(\), nextPlay: null \};/);
+  assert.match(APP, /let \{ coach, nextPlay \} = atlasGate\(window\) \? await import\([^)]*\)\.then\(\(m\) => m\.openLearning\(\{ win: window, old: oldCoach \}\)\)\.catch\([^\n]*\) : \{ coach: oldCoach\(\), nextPlay: null \};/);
   // 결정 · 만남의 기록은 한 자리를 거친다 — 꺼진 판은 지금처럼 createExchange(coach, meta).
   assert.ok(APP.includes('const exchangeOf = (meta) => nextPlay ? nextPlay.exchange(meta) : createExchange(coach, meta);'));
   assert.equal(APP.match(/createExchange\(/g).length, 1);
@@ -150,9 +149,12 @@ const AsyncFunction = (async () => {}).constructor;
 function appOpening() {
   const lines = APP.split('\n').filter((line) => line.startsWith('const oldCoach = ') || line.startsWith('let { coach, nextPlay } = '));
   assert.equal(lines.length, 2);
-  const body = lines.join('\n').replace(/import\('\.\/atlas-next-play\.mjs\?v=[\w-]+'\)/, 'load()');
+  // 앱 안의 문 확인 함수도 그대로 뗀다(원본과 같은 글자인지는 play-common/atlas-gate.test.mjs가 본다 — 5-3 게임).
+  const gate = /function atlasGate\(win\) \{[\s\S]*?\r?\n\}\r?\n/.exec(APP)?.[0];
+  assert.ok(gate);
+  const body = [gate, ...lines].join('\n').replace(/import\('\.\/atlas-next-play\.mjs\?v=[\w-]+'\)/, 'load()');
   assert.ok(body.includes('load()'));
-  return new AsyncFunction('window', 'nextDoor', 'devFlag', 'GAME_ID', 'load', 'console', `${body}\nreturn { coach, nextPlay };`);
+  return new AsyncFunction('window', 'GAME_ID', 'load', 'console', `${body}\nreturn { coach, nextPlay };`);
 }
 function gameWindow({ parent = null } = {}) {
   const created = [];
@@ -167,7 +169,7 @@ test('꺼진 판 — 문이 없으면 옛 코치를 지금 인수로 기다림 �
   const run = appOpening();
   const { win, created, storage } = gameWindow();
   let loads = 0;
-  const pending = run(win, nextDoor, devFlag, GAME_ID, () => { loads += 1; return realModule(); }, console);
+  const pending = run(win, GAME_ID, () => { loads += 1; return realModule(); }, console);
   assert.equal(created.length, 1, '부른 그 차례에(기다림 없이) 옛 코치를 만든다');
   assert.deepEqual(created[0], { gameId: 'subway-rush', storage });
   assert.equal(created[0].storage, storage);
@@ -185,14 +187,14 @@ test('문이 있고 open이 null(지금 판)이면 옛 길로 정상 시작, RUN
   for (const [open, want, olds] of cases) {
     const { win, created } = gameWindow({ parent: { SYNKAtlasGame: { open } } });
     let loads = 0;
-    const out = await run(win, nextDoor, devFlag, GAME_ID, () => { loads += 1; return realModule(); }, console);
+    const out = await run(win, GAME_ID, () => { loads += 1; return realModule(); }, console);
     assert.equal(loads, 1);
     assert.deepEqual(out, want);
     assert.equal(created.length, olds);
   }
   const { win, created } = gameWindow({ parent: { SYNKAtlasGame: { open: async () => null } } });
   const errors = [];
-  const out = await run(win, nextDoor, devFlag, GAME_ID, () => Promise.reject(Object.assign(new Error('load'), { code: 'X' })), { error: (e) => errors.push(e) });
+  const out = await run(win, GAME_ID, () => Promise.reject(Object.assign(new Error('load'), { code: 'X' })), { error: (e) => errors.push(e) });
   assert.deepEqual(out, { coach: null, nextPlay: null });
   assert.equal(created.length, 0, '새 길로 정해진 계정에 옛 길을 열지 않는다');
   assert.equal(errors.length, 1);
@@ -207,7 +209,7 @@ test('문을 거친 진짜 코치로 한 여정 — 고르기(set: {}) · 제시
   const { win, created } = gameWindow({ parent: { SYNKAtlasGame: door.api } });
   const listeners = [];
   win.addEventListener = (type, fn) => listeners.push([type, fn]);
-  const { coach: old, nextPlay: play } = await run(win, nextDoor, devFlag, GAME_ID, realModule, console);
+  const { coach: old, nextPlay: play } = await run(win, GAME_ID, realModule, console);
   assert.equal(old, null);
   assert.equal(created.length, 0, '새 길이면 옛 코치를 만들지 않는다');
   assert.deepEqual(listeners.map(([type]) => type), ['pagehide', 'pagehide'], '키트의 leave가 먼저, 게임의 떠날 때 답이 뒤');

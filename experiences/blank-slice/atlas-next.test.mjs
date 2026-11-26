@@ -411,12 +411,12 @@ test('판을 다시 정하면 이번 판은 기록 없이 잇고, 다음 판은 
 test('원문 — 꺼진 판은 새 길 모듈을 싣지 않고 옛 코치를 지금 자리에서 같은 인수로 만든다', () => {
   const source = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8');
   const imports = [...source.matchAll(/^import\s[^;]*?from\s+'([^']+)'/gm)].map((match) => match[1]);
-  assert.ok(imports.includes('./kit/atlas-next.mjs'), '키트는 정의뿐이라 정적으로 싣는다');
+  assert.ok(!imports.includes('./kit/atlas-next.mjs'), '키트는 정적으로 싣지 않는다 — 새 길 모듈이 부른다(5-3 게임)');
   assert.ok(!imports.some((path) => path.includes('atlas-next-play')), '새 길 모듈은 정적 import에 없다');
   assert.equal([...source.matchAll(/import\('\.\/atlas-next-play\.mjs'\)/g)].length, 1, '새 길 모듈을 부르는 곳은 하나');
   assert.match(source, /async function openNextCoach\(\) \{[\s\S]{0,120}?slice = await \(await import\('\.\/atlas-next-play\.mjs'\)\)\.openSlice\(/, '문 · 개발 깃발이 있을 때만 동적으로 부른다');
   assert.ok(source.includes("try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }"), '옛 코치는 지금과 같은 인수');
-  assert.match(source, /const atlasNext = !!\(nextDoor\(window\) \|\| devFlag\(window\)\);[\s\S]{0,400}?\r?\nif \(atlasNext\) coachOpening = openNextCoach\(\); else openOldCoach\(\);/, '문이 없으면 이 자리에서 동기로 옛 코치');
+  assert.match(source, /const atlasNext = atlasGate\(window\);[\s\S]{0,400}?\r?\nif \(atlasNext\) coachOpening = openNextCoach\(\); else openOldCoach\(\);/, '문이 없으면 이 자리에서 동기로 옛 코치');
   assert.equal(/await openNextCoach\(\)/.test(source), false, '맨 위에서 셸의 코치를 기다리지 않는다(입구를 먼저 그린다)');
   assert.equal(source.includes('/atlas/'), false, '게임이 입구를 직접 부르지 않는다');
   // 이 폴더의 다른 파일도 새 길 모듈을 정적으로 싣지 않는다.
