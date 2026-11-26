@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photographed with a macro lens, portrait 9:16, gentle depth of field, cosy handmade felt-and-wool textures everywhere, cute but not babyish (for young adults learning Korean).
+
+WORLD (same in every elevator panel): the ground-floor elevator lobby of a Korean university dormitory, made of felt and wool: one elevator with two brushed-silver felt sliding doors in a warm beige felt wall, a slim vertical button panel beside the doors with plain round felt buttons (no symbols, no numbers), a plain dark strip above the doors (no digits), a grey felt tiled floor, soft warm ceiling light. No signs, no posters, no plants, no windows.
+CHARACTERS (keep identical in every panel they appear in):
+- MONGLE: the coral needle-felted wool ghost-shaped mascot in the mascot reference image — use it ONLY for its body shape (a soft round dome about as wide as it is tall), coral wool colour, fine short smooth felted fuzz, scalloped bottom hem with one thin continuous cream running stitch, and glossy black bead eyes with NO whites. At rest Mongle has NO nose and NO mouth. Mongle has NO arms, NO legs, NO hands, NO fingers and NO neck, ever — its sides are always smooth and round; it presses buttons and doors only by leaning the side of its whole dome body against them.
+- THE OFFICE WORKER: a needle-felted Korean office worker in his thirties, short neat black wool hair, black bead eyes, small felt nose, a navy felt suit with a plain white shirt and plain dark tie, a small brown felt briefcase. He has real little felt arms and hands. He looks busy and in a hurry, not angry.
+LAYOUT: keep the TOP 22% of the image calm and plain (soft out-of-focus wall or ceiling) — titles will be added there later.
+
+Attached images in order: (1) the mascot reference (body shape, wool, hem stitch and bead eyes only).
+
+SCENE:
+WIDE shot at EYE LEVEL from the lobby, the whole elevator in view: the two sliding doors are only HALF open (still opening), and INSIDE the elevator THE OFFICE WORKER already stabs one round button on the inner panel with his index finger, leaning forward, eyebrows tight, in a rush. OUTSIDE in the lobby, a little to the left of the doors, MONGLE sits calmly on the floor facing the doors, completely relaxed, eyes softly closed into two gentle happy curved stitched lines, a faint rosy blush, no mouth. Mongle is about knee height of the office worker.
+
+Only the characters named in this panel, nobody else. Everything is needle-felt and wool craft, no glossy realistic surfaces. Absolutely no text, letters, numbers, digits, symbols, arrows, question marks, speech bubbles, emoji or watermarks anywhere (no writing on buttons, display windows, doors or walls). No real brand, no logos. No rings, holes or dense dot patterns anywhere (no polka dots, no speckles, no perforated grilles, no tapioca pearls, no bubbles). Keep open bead eyes plain glossy black with no whites. Mongle never has arms, hands or legs.

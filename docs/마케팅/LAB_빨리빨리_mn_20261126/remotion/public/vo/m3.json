@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "헉!",
+ "dur": 0.291,
+ "words": [
+  {
+   "text": "헉!",
+   "start": 0.02,
+   "end": 0.103
+  }
+ ],
+ "source": {
+  "key": "bc3c12eb669e1b2cf0433fc9d70141f3",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1128,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "엘리베이터 닫힘 버튼을 누르다가, 밖에서 느긋한 새 친구를 보고 예전의 자기 모습이 떠올라 깜짝 놀라 숨을 들이켠다.",
+   "next": "내가 저랬었는데…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 526
+ }
+}

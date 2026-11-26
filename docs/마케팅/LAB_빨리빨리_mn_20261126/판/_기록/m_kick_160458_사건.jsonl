@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a216ab-f79d-7ab1-ad19-24a7cd9a7dd4"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one image matching the kitchen reference, with Mongle squashed against the halfway-open microwave door.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle squashes against the halfway-open microwave door, eyes squeezed shut, in the cosy felt kitchen."}}
+{"type":"turn.completed","usage":{"input_tokens":105236,"cached_input_tokens":77824,"cache_write_input_tokens":0,"output_tokens":1289,"reasoning_output_tokens":222}}

@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "천천히~",
+ "dur": 0.956,
+ "words": [
+  {
+   "text": "천천히~",
+   "start": 0.02,
+   "end": 0.956
+  }
+ ],
+ "source": {
+  "key": "2d6c1119f3f8cf6caecf5a857c901359",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 0.85,
+   "seed": 1128,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "엘리베이터 안의 바쁜 사람이 문이 다 열리기도 전에 닫힘 버튼을 누른다. 그걸 보며 전혀 서두르지 않고, 졸린 듯 느긋하고 다정하게 말한다.",
+   "next": "괜찮아요, 다음 거 타면 돼요."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 507
+ }
+}

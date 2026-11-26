@@ -1,0 +1,89 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 0.85,
+  "seed": 1128,
+  "lufs": -16
+ },
+ "made": "2026-11-26T06:47:42.058Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "천천히~",
+   "dur": 0.956,
+   "syllablesPerSec": 3.14,
+   "src": "m1.wav",
+   "key": "2d6c1119f3f8cf6caecf5a857c901359",
+   "words": 1
+  },
+  {
+   "id": "m1b",
+   "text": "천… 천… 히…",
+   "dur": 2.035,
+   "syllablesPerSec": 1.47,
+   "src": "m1b.wav",
+   "key": "b2de9a46ba0af4e2c36135e6dcf3b35a",
+   "words": 3
+  },
+  {
+   "id": "m2",
+   "text": "빨리빨리!",
+   "dur": 1.427,
+   "syllablesPerSec": 2.8,
+   "src": "m2.wav",
+   "key": "e81be0f47be2e7721fc8b2908e2b47ea",
+   "words": 1
+  },
+  {
+   "id": "m2b",
+   "text": "빨리… 빨리…",
+   "dur": 1.62,
+   "syllablesPerSec": 2.47,
+   "src": "m2b.wav",
+   "key": "01246aebcaedece0f64ce9c5588eef9f",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "헉!",
+   "dur": 0.291,
+   "syllablesPerSec": 3.44,
+   "src": "m3.wav",
+   "key": "bc3c12eb669e1b2cf0433fc9d70141f3",
+   "words": 1
+  },
+  {
+   "id": "m4",
+   "text": "하하하!",
+   "dur": 0.864,
+   "syllablesPerSec": 3.47,
+   "src": "m4.wav",
+   "key": "de3abba843b402220e14ed1a144a76a9",
+   "words": 1
+  },
+  {
+   "id": "n1",
+   "text": "천천히~",
+   "dur": 1.262,
+   "src": "n1.wav",
+   "voice": "ElevenLabs v4 Taehyung"
+  },
+  {
+   "id": "n2",
+   "text": "빨리빨리!",
+   "dur": 0.815,
+   "src": "n2.wav",
+   "voice": "ElevenLabs v4 Taehyung"
+  }
+ ]
+}

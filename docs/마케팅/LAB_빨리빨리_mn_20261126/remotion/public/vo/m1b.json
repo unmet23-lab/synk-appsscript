@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1b",
+ "text": "천… 천… 히…",
+ "dur": 2.035,
+ "words": [
+  {
+   "text": "천…",
+   "start": 0.19,
+   "end": 0.591
+  },
+  {
+   "text": "천…",
+   "start": 0.779,
+   "end": 1.039
+  },
+  {
+   "text": "히…",
+   "start": 1.134,
+   "end": 2.035
+  }
+ ],
+ "source": {
+  "key": "b2de9a46ba0af4e2c36135e6dcf3b35a",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 0.7,
+   "seed": 1128,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "외국인 친구가 따라 할 수 있게, 한 글자씩 아주 천천히 늘어지게 되뇐다.",
+   "next": "그게 좋아요."
+  },
+  "speed": 0.85,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 436
+ }
+}
