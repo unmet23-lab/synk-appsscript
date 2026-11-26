@@ -52,6 +52,12 @@ async function seedStudent(classId,name,{registered=true,share=true}={}){
 async function capture(name,{full=false}={}){const path=join(out,name);await page.screenshot({path,fullPage:full});report.screenshots.push(path);}
 async function fits(width){const result=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));check('no horizontal overflow at '+width,result.width===result.scroll,result);}
 async function openClass(name){await page.locator('.overview-class',{hasText:name}).locator('[data-overview-class]').click();await page.locator('.class-records .att-row').first().waitFor();}
+// 일부러 낸 실패 응답(교사 중계의 409 · 403)은 「오류 없음」 검사에서 따로 센다. 그 밖의 실패 응답 · 콘솔 오류는 그대로 걸린다.
+async function expectRelayFailure(status,act){
+  const httpBefore=report.httpErrors.length,consoleBefore=report.consoleErrors.length;await act();
+  for(const row of report.httpErrors.splice(httpBefore))(row.status===status&&row.url.endsWith('/api/teaching/request')?report.expectedConflicts:report.httpErrors).push(row);
+  report.consoleErrors.push(...report.consoleErrors.splice(consoleBefore).filter(text=>!text.includes('status of '+status)));
+}
 const pressed=async learnerId=>page.locator(`.class-records [data-att-row="${learnerId}"] [data-att-status][aria-pressed="true"]`).getAttribute('data-att-status').catch(()=>null);
 try{
   await mkdir(out,{recursive:true});fx=await createFixture();
@@ -143,17 +149,21 @@ try{
   await page.locator(`[data-att-topik-edit][data-learner="${A.마루.id}"]`).click();
   const [mine]=await fx.sql`select topik_id,revision,announced_on::text as a from engine.synk_learner_topik where learner_id=${A.마루.id}::uuid`;
   await api('teacher',fx.cls.class_id,'/api/teacher/topik',{action:'save',learnerId:A.마루.id,id:mine.topik_id,revision:mine.revision,kind:'II',round:105,level:5,announcedOn:mine.a});
-  const httpBefore=report.httpErrors.length,consoleBefore=report.consoleErrors.length;
-  await form.locator('select[name=level]').selectOption('3');await form.locator('button[type=submit]').click();
-  await page.locator('.class-records .att-message',{hasText:'다른 화면에서 이 성적이 먼저 바뀌었어요'}).waitFor();
-  // 일부러 낸 409 한 번은 아래 「오류 없음」 검사에서 따로 센다(그 밖의 실패 응답 · 콘솔 오류는 그대로 걸린다).
-  for(const row of report.httpErrors.splice(httpBefore))(row.status===409&&row.url.endsWith('/api/teaching/request')?report.expectedConflicts:report.httpErrors).push(row);
-  report.consoleErrors.push(...report.consoleErrors.splice(consoleBefore).filter(text=>!/status of 409/.test(text)));
+  await expectRelayFailure(409,async()=>{await form.locator('select[name=level]').selectOption('3');await form.locator('button[type=submit]').click();await page.locator('.class-records .att-message',{hasText:'다른 화면에서 이 성적이 먼저 바뀌었어요'}).waitFor();});
   check('the TOPIK conflict is exactly one 409 from the teaching relay',report.expectedConflicts.length===1,report.expectedConflicts);
   check('a TOPIK edit conflict reloads that learner and keeps the typed level',(await page.locator(`#att-topik-${A.마루.id} .att-topik-table`).textContent()).includes('5급')&&await form.locator('select[name=level]').inputValue()==='3'&&(await form.locator('legend').textContent())==='TOPIK II 제105회 고치기');
   await form.locator('button[type=submit]').click();await page.locator('.class-records .att-message',{hasText:'제105회 성적을 저장했어요'}).waitFor();
   const [fixed]=await fx.sql`select level from engine.synk_learner_topik where learner_id=${A.마루.id}::uuid`;
   check('the second save goes through with the reloaded revision',fixed.level===3,fixed);
+  // 고치는 사이 다른 화면이 그 성적을 지우면 서버는 403 FORBIDDEN을 준다. 띠는 다시 받아 줄을 걷고, 적던 값은 「성적 넣기」로 남아 다시 넣을 수 있다.
+  await page.locator(`[data-att-topik-edit][data-learner="${A.마루.id}"]`).click();
+  const [doomed]=await fx.sql`select topik_id,revision from engine.synk_learner_topik where learner_id=${A.마루.id}::uuid`;
+  await api('teacher',fx.cls.class_id,'/api/teacher/topik',{action:'delete',learnerId:A.마루.id,id:doomed.topik_id,revision:doomed.revision});
+  await expectRelayFailure(403,async()=>{await form.locator('button[type=submit]').click();await page.locator('.class-records .att-message',{hasText:'이 성적은 다른 화면에서 이미 지워졌어요'}).waitFor();});
+  check('a TOPIK edit of a record deleted elsewhere (403) drops the row and keeps the typed values as a new record',report.expectedConflicts.length===2&&report.expectedConflicts[1].status===403&&await page.locator(`#att-topik-${A.마루.id} .att-topik-table`).count()===0&&(await form.locator('legend').textContent())==='성적 넣기'&&await form.locator('input[name=round]').inputValue()==='105',report.expectedConflicts);
+  await form.locator('button[type=submit]').click();await page.locator('.class-records .att-message',{hasText:'제105회 성적을 저장했어요'}).waitFor();
+  const again4=await fx.sql`select level from engine.synk_learner_topik where learner_id=${A.마루.id}::uuid`;
+  check('the kept values save again as a new record',again4.length===1&&again4[0].level===3,again4);
   // ── 390 폭 ──
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);await fits(390);
   const top=async selector=>{await page.locator(selector).first().evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));await page.waitForTimeout(100);};

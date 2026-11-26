@@ -15,9 +15,9 @@ const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]
 const random=()=>randomBytes(32).toString('base64url');
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const fail=(status,code,message,retryable=false)=>Object.assign(new Error(message),{status,code:'TEACHING_'+code,...(retryable?{retryable:true}:{})});
-// 출결 · TOPIK 저장의 409는 까닭마다 화면이 다르게 답한다(판 충돌은 그날을 다시 받고, 명단 잠금 RECORDS_BUSY는 잠시 뒤 다시 보낸다).
+// 출결 · TOPIK 저장의 400 · 403 · 409는 까닭마다 화면이 다르게 답한다(판 충돌은 다시 받고, 명단 잠금은 잠시 뒤 다시, 지워진 성적(403 FORBIDDEN)은 줄을 걷는다).
 // 그 두 경로만 서버 코드를 TEACHING_CLASSROOM_ 뒤에 붙여 넘긴다. 다른 경로는 지금처럼 TEACHING_CLASSROOM이다.
-const recordConflict=(path,status,data)=>{const code=data?.error?.code||data?.code;return status===409&&['/api/teacher/attendance','/api/teacher/topik'].includes(path)&&typeof code==='string'&&/^[A-Z][A-Z0-9_]{0,60}$/.test(code)?'CLASSROOM_'+code:'CLASSROOM';};
+const recordConflict=(path,status,data)=>{const code=data?.error?.code||data?.code;return [400,403,409].includes(status)&&['/api/teacher/attendance','/api/teacher/topik'].includes(path)&&typeof code==='string'&&/^[A-Z][A-Z0-9_]{0,60}$/.test(code)?'CLASSROOM_'+code:'CLASSROOM';};
 const rejected=()=>fail(401,'AUTH_REQUIRED','내 수업의 SYNK ID로 다시 로그인해 주세요.');
 const unavailable=()=>fail(503,'UNAVAILABLE','수업 연결을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.',true);
 const credential=value=>typeof value==='string'&&value.length>=10&&value.length<=16384&&!/\s/.test(value);

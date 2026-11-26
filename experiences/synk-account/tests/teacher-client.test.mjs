@@ -109,6 +109,14 @@ for(const [name,view] of [['an older frame without in-place fencing',{hasDraft:(
     assert.notEqual(page.windowObject.SYNKClassroomHost,old);assert.notEqual(frameOf(page),frame);assert.equal(opened.prompts(),0);assert.throws(()=>old.request('/api/workspace'),{code:'ACCOUNT_CHANGED'});
     assert.match(page.notices.at(-1)[0],/공유 상태가 바뀌어 수업 화면을 새로 열었어요\. 저장하지 않은 내용은 닫혔어요/);assert.equal(page.notices.at(-1)[1],true);
   });
+test('a rebuilt class after a withdrawal also announces unsaved attendance or TOPIK in the band',async t=>{
+  let rows=[bandLearner('student-a'),bandLearner('student-b')];
+  const page=classroom(t,{handlers:bandHandlers(()=>rows)});await page.workspace.load();await selectOverview(page,'student-a');
+  const band=page.root.children[3].children[0];page.root.children[3].children[1].contentWindow={postMessage(){},SYNKTeacherView:{hasDraft:()=>false}};
+  band.listeners.get('click')({target:{closest:()=>({disabled:false,dataset:{attStatus:'absent',learner:'student-b'}})}});
+  rows=[{...privacyLearner('student-a',3,false),topik:{shared:false,records:[],representative:null,level4:null},absentStreak:0},bandLearner('student-b')];await page.workspace.load();
+  assert.match(page.notices.at(-1)[0],/공유 상태가 바뀌어 수업 화면을 새로 열었어요\. 저장하지 않은 출결 · TOPIK은 닫혔어요/);assert.equal(page.notices.at(-1)[1],true);
+});
 test('incomplete sharing metadata never asks the frame to keep a withdrawn scope',async t=>{
   const page=classroom(t),before=privacyLearner('student-a'),after=privacyLearner('student-a',3,false),unknown={id:'student-b',name:'student-b',sharing:{revision:1,enabled:true},skills:[]};
   page.learners({a:[before,unknown]});page.snapshots({a:[before,unknown]});await page.workspace.load();await selectOverview(page,'student-a');

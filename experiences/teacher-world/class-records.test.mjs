@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {classRecordsModel,attendanceRows,attendanceDirty,attendanceMissingStatus,attendanceCounts,topikBadge,levelLabel,localDate,addDays,TOPIK_LEVELS,createClassRecords} from './class-records.mjs';
+import {classRecordsModel,attendanceRows,attendanceDirty,attendanceMissingStatus,attendanceCounts,reasonText,topikBadge,levelLabel,localDate,addDays,TOPIK_LEVELS,createClassRecords} from './class-records.mjs';
 import {classSummaryModel,classSummaryHtml,teacherOverviewModel,createTeacherOverview} from './workspace-overview.mjs';
 
 // 서버(SYNK-talk learnerTopik)와 같은 꼴: level4는 유효한 4급 이상 가운데 가장 늦게 만료되는 성적이다.
@@ -251,10 +251,11 @@ test('a TOPIK edit that hits a revision conflict reloads that learner, keeps the
 });
 test('a TOPIK edit whose record was deleted elsewhere keeps the typed values as a new record; a delete conflict reloads and asks again',async()=>{
   const gone=liveRoot();
-  const editView=createClassRecords({root:gone,request:async path=>{if(path==='/api/workspace')return workspace([learner('a',{topik:topik([])})]);throw topikError('REVISION_CONFLICT');},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  // 실제 서버는 지워진 성적을 고치면 403 FORBIDDEN을 준다(talk synk-classroom-records.js · 회사 중계는 TEACHING_CLASSROOM_FORBIDDEN).
+  const editView=createClassRecords({root:gone,request:async path=>{if(path==='/api/workspace')return workspace([learner('a',{topik:topik([])})]);throw Object.assign(new Error('FORBIDDEN'),{code:'TEACHING_CLASSROOM_FORBIDDEN',status:403});},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
   editView.render(workspace([learner('a',{topik:topik([topikRecord()])})]),'c');press(gone,{attTopikOpen:'a'});press(gone,{attTopikEdit:'t1',learner:'a'});
   const typed={kind:'II',round:'96',level:'5',announcedOn:'2025-01-10'};gone.listeners.submit({target:formFor('a',typed),preventDefault(){}});await later();
-  assert.match(gone.innerHTML,/다른 화면에서 이 성적이 먼저 지워졌어요\. 적던 내용은 「성적 넣기」에 남겨 두었어요/);assert.match(gone.innerHTML,/<legend>성적 넣기<\/legend>/);
+  assert.match(gone.innerHTML,/이 성적은 다른 화면에서 이미 지워졌어요\. 적던 내용은 「성적 넣기」에 남겨 두었어요/);assert.doesNotMatch(gone.innerHTML,/data-att-topik-edit="t1"/,'the deleted row is gone');assert.match(gone.innerHTML,/<legend>성적 넣기<\/legend>/);
   assert.match(gone.innerHTML,/value="96"/);assert.match(gone.innerHTML,/<option value="5" selected>5급/);editView.stop();
   const root=liveRoot(),calls=[];
   const view=createClassRecords({root,request:async(path,body)=>{calls.push([path,body]);if(path==='/api/workspace')return workspace([learner('a',{topik:topik([topikRecord({level:5,revision:4})])})]);throw topikError('REVISION_CONFLICT');},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
@@ -307,4 +308,32 @@ test('the empty text of 「유효한 4급 이상 없음」 follows how many lear
   assert.match(html(plain([learner('a',{sharing:{enabled:false,revision:1},topik:hidden})])),/학습 공유를 켠 학생이 아직 없어요/);
   assert.match(html(plain([learner('a'),learner('b',{sharing:{enabled:false,revision:1},topik:hidden})])),/학습 공유를 켠 학생 1명은 모두 유효한 4급 이상을 갖고 있어요/);
   const all=html(plain([learner('a'),learner('b')]));assert.match(all,/모든 학생이 유효한 4급 이상을 갖고 있어요/);assert.match(all,/90일 안에 만료되거나 이미 만료된 성적이 없어요/);
+});
+
+test('deleting a TOPIK record someone already removed (403 FORBIDDEN) reloads, drops the row and says it is gone; a 403 on a record still there shows its reason',async()=>{
+  for(const code of ['FORBIDDEN','TEACHING_CLASSROOM_FORBIDDEN']){
+    const root=liveRoot(),calls=[];
+    const view=createClassRecords({root,request:async(path,body)=>{calls.push(path);if(path==='/api/workspace')return workspace([learner('a',{topik:topik([])})]);throw Object.assign(new Error('계정 요청을 완료하지 못했어요.'),{code,status:403});},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+    view.render(workspace([learner('a',{topik:topik([topikRecord()])})]),'c');press(root,{attTopikOpen:'a'});press(root,{attTopikDelete:'t1',learner:'a'});await later();
+    assert.deepEqual(calls,['/api/teacher/topik','/api/workspace']);assert.match(root.innerHTML,/이 성적은 다른 화면에서 이미 지워졌어요\./);assert.doesNotMatch(root.innerHTML,/data-att-topik-delete="t1"/);assert.match(root.innerHTML,/아직 넣은 TOPIK 성적이 없어요/);view.stop();
+  }
+  const root=liveRoot(),view=createClassRecords({root,request:async path=>{if(path==='/api/workspace')return workspace([learner('a',{topik:topik([topikRecord()])})]);throw Object.assign(new Error('이 수업의 교사 권한을 확인하지 못했어요.'),{code:'TEACHING_CLASSROOM_FORBIDDEN',status:403});},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a',{topik:topik([topikRecord()])})]),'c');press(root,{attTopikOpen:'a'});press(root,{attTopikDelete:'t1',learner:'a'});await later();
+  assert.match(root.innerHTML,/이 수업의 교사 권한을 확인하지 못했어요/);assert.doesNotMatch(root.innerHTML,/이미 지워졌어요/);view.stop();
+});
+test('known reason codes show their own text even when the PC app path wipes the server message, and a lost connection says nothing was saved',async()=>{
+  const wiped=code=>Object.assign(new Error('계정 요청을 완료하지 못했어요.'),{code,status:code==='NETWORK_ERROR'?undefined:code==='SHARING_DISABLED'?403:code==='DATE_OUT_OF_RANGE'?400:409});
+  const attendance=async code=>{const root=liveRoot(),view=createClassRecords({root,request:async(path,body)=>{if(body.action==='save')throw wiped(code);return {sessionDate:body.sessionDate,attendance:[]};},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+    view.render(workspace([learner('a')]),'c');press(root,{attStatus:'present',learner:'a'});press(root,{attSave:'1'});await later();const html=root.innerHTML,draft=view.hasDraft();view.stop();return {html,draft};};
+  assert.match((await attendance('SHARING_DISABLED')).html,/학습 공유를 끈 학생이 있어 저장하지 못했어요/);
+  assert.match((await attendance('ATTENDANCE_CAPACITY')).html,/이 반의 출결 기록이 가득 찼어요/);
+  assert.match((await attendance('DATE_OUT_OF_RANGE')).html,/출결 날짜는 오늘부터 400일 전까지/);
+  const offline=await attendance('NETWORK_ERROR');assert.match(offline.html,/연결을 확인하지 못했어요\. 고르던 내용은 그대로 있어요\. 다시 저장해 주세요\./);assert.doesNotMatch(offline.html,/연결되면 다시 보냅니다|계정 요청을 완료하지 못했어요/);assert.equal(offline.draft,true);
+  const topikSave=async code=>{const root=liveRoot(),view=createClassRecords({root,request:async()=>{throw wiped(code);},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+    view.render(workspace([learner('a')]),'c');press(root,{attTopikOpen:'a'});root.listeners.submit({target:formFor('a',{kind:'II',round:'105',level:'4',announcedOn:'2026-10-28'}),preventDefault(){}});await later();const html=root.innerHTML;view.stop();return html;};
+  assert.match(await topikSave('TOPIK_DUPLICATE'),/같은 회차 TOPIK 성적이 이미 있어요/);
+  assert.match(await topikSave('TOPIK_CAPACITY'),/TOPIK 성적이 20회로 가득 찼어요/);
+  assert.match(await topikSave('SHARING_DISABLED'),/이 학생이 학습 공유를 꺼서 TOPIK 성적을 남길 수 없어요/);
+  assert.match(await topikSave('DATE_OUT_OF_RANGE'),/성적 발표일은 2000-01-01부터 내일까지 고를 수 있어요/);
+  assert.equal(reasonText('TEACHING_CLASSROOM'),null);
 });

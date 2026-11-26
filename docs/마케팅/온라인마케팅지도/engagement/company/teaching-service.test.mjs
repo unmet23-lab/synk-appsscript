@@ -35,7 +35,7 @@ async function fixture(t,{enabled=true}={}){
     if(url.pathname==='/functions/v1/synk-classroom/api/workspace')return response({ok:true,mode:'account-linked',classes:[{id:'teacher-class',name:'담당 수업',learners:[]}],content:[],assignments:[],observations:[]});
     // 교사 저장 경로의 409를 흉내 낸다(본문 fixtureConflict에 서버 코드를 싣는다).
     const conflict=url.pathname.startsWith('/functions/v1/synk-classroom/api/teacher/')&&JSON.parse(options.body||'{}').fixtureConflict;
-    if(conflict){const message='반 명단이 방금 바뀌었어요. 다시 저장해 주세요.';return response({ok:false,code:conflict,message,error:{code:conflict,message}},409);}
+    if(conflict){const message='반 명단이 방금 바뀌었어요. 다시 저장해 주세요.',status=JSON.parse(options.body).fixtureStatus||409;return response({ok:false,code:conflict,message,error:{code:conflict,message}},status);}
     if(url.pathname.startsWith('/functions/v1/synk-classroom/api/'))return response({ok:true,record:{...JSON.parse(options.body||'{}')}});
     throw Error('Unexpected fixture URL: '+url.href);
   }
@@ -101,6 +101,10 @@ test('records saves keep the classroom 409 reason so the class band can tell a r
   const busy=await send({operation:'attendanceSave',classId:'teacher-class',body:{fixtureConflict:'RECORDS_BUSY'}});
   assert.equal(busy.status,409);assert.equal(busy.data.code,'TEACHING_CLASSROOM_RECORDS_BUSY');assert.match(busy.data.error,/반 명단이 방금 바뀌었어요/);
   assert.equal((await send({operation:'topikSave',classId:'teacher-class',body:{fixtureConflict:'REVISION_CONFLICT'}})).data.code,'TEACHING_CLASSROOM_REVISION_CONFLICT');
+  // 지워진 성적(403 FORBIDDEN)과 날짜 범위(400 DATE_OUT_OF_RANGE)도 까닭이 남는다.
+  const gone=await send({operation:'topikSave',classId:'teacher-class',body:{fixtureConflict:'FORBIDDEN',fixtureStatus:403}});assert.equal(gone.status,403);assert.equal(gone.data.code,'TEACHING_CLASSROOM_FORBIDDEN');
+  assert.equal((await send({operation:'attendanceSave',classId:'teacher-class',body:{fixtureConflict:'DATE_OUT_OF_RANGE',fixtureStatus:400}})).data.code,'TEACHING_CLASSROOM_DATE_OUT_OF_RANGE');
+  assert.equal((await send({operation:'homeworkSave',classId:'teacher-class',body:{fixtureConflict:'FORBIDDEN',fixtureStatus:403}})).data.code,'TEACHING_CLASSROOM');
   // 다른 경로와 꼴이 맞지 않는 코드는 지금처럼 TEACHING_CLASSROOM이다.
   assert.equal((await send({operation:'homeworkSave',classId:'teacher-class',body:{fixtureConflict:'REVISION_CONFLICT'}})).data.code,'TEACHING_CLASSROOM');
   assert.equal((await send({operation:'attendanceSave',classId:'teacher-class',body:{fixtureConflict:'bad code'}})).data.code,'TEACHING_CLASSROOM');

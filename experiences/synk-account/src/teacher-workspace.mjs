@@ -143,7 +143,9 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
       // 고른 학생의 공유가 바뀌면 그 학생의 기록은 묻지 않고 바로 내린다. iframe이 그 자리에서 걸렀다고 답하면 그대로 두고
       // (명부 기준인 과제 첨삭 초안이 남는다), 답하지 못하면 지금처럼 다시 만든다 — 그때 닫힌 작성 내용이 있으면 알린다.
       if(focused&&permissionChanged(framePermissions.get(focused),permission(knownLearner(focused)))){
-        if(!fenceFrame()){const unsaved=frameHasDraft(),reopened=choose(prior,{learnerId:knownLearner(focused)?focused:null,refreshScope:true});if(unsaved&&!stopped)notice('학생의 공유 상태가 바뀌어 수업 화면을 새로 열었어요. 저장하지 않은 내용은 닫혔어요.',true);await reopened;return;}
+        // 다시 열면 띠(출결 · TOPIK)도 닫히니, 띠에 저장 전 내용이 있었어도 알린다(다시 열기 전에 잰다).
+        if(!fenceFrame()){const frameDraft=frameHasDraft(),recordsDraft=records?.hasDraft()===true,reopened=choose(prior,{learnerId:knownLearner(focused)?focused:null,refreshScope:true});
+          if((frameDraft||recordsDraft)&&!stopped)notice('학생의 공유 상태가 바뀌어 수업 화면을 새로 열었어요. 저장하지 않은 '+(frameDraft&&recordsDraft?'내용과 출결 · TOPIK은':recordsDraft?'출결 · TOPIK은':'내용은')+' 닫혔어요.',true);await reopened;return;}
         if(!knownLearner(focused)){selectedLearnerId=null;windowObject.SYNKClassroomSelection={classId:prior.id,learnerId:null};}
       }
       selected=prior;picker();renderOverview();status.textContent='학생이 공유한 학습 기록으로 다음 수업과 과제를 준비해요.';if(reconnecting)notice('다시 연결됐어요. 열어 둔 반에서 이어서 하면 돼요.');return;

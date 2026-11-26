@@ -15,6 +15,19 @@ const reasonOf=error=>String(error?.code||'').replace(/^TEACHING_CLASSROOM_/,'')
 const NOT_CONFLICT=['RECORDS_BUSY','ATTENDANCE_CAPACITY','IDEMPOTENCY_CONFLICT'];
 const TOPIK_NOT_CONFLICT=['RECORDS_BUSY','IDEMPOTENCY_CONFLICT','TOPIK_DUPLICATE','TOPIK_CAPACITY'];
 const BUSY_TEXT='반 명단이 방금 바뀌었어요. 고르던 내용은 그대로 있어요. 잠시 뒤 다시 저장해 주세요.';
+// 코드별 문구. PC 앱 통로는 서버 문구를 지우고 코드만 넘기므로, 아는 코드는 어느 통로든 이 글로 까닭을 보인다. scope는 'attendance' · 'day' · 'topik'.
+export function reasonText(reason,scope='attendance'){
+  switch(reason){
+    case 'RECORDS_BUSY':return BUSY_TEXT;
+    case 'NETWORK_ERROR':return scope==='day'?'연결을 확인하지 못했어요. 날짜를 다시 골라 주세요.':'연결을 확인하지 못했어요. 고르던 내용은 그대로 있어요. 다시 저장해 주세요.';
+    case 'TOPIK_DUPLICATE':return '같은 회차 TOPIK 성적이 이미 있어요. 표에서 그 성적을 고쳐 주세요.';
+    case 'TOPIK_CAPACITY':return '이 학생의 TOPIK 성적이 20회로 가득 찼어요. 지난 성적을 지운 뒤 넣어 주세요.';
+    case 'ATTENDANCE_CAPACITY':return '이 반의 출결 기록이 가득 찼어요. 이미 찍은 날은 이어서 고칠 수 있어요.';
+    case 'SHARING_DISABLED':return scope==='topik'?'이 학생이 학습 공유를 꺼서 TOPIK 성적을 남길 수 없어요.':'학습 공유를 끈 학생이 있어 저장하지 못했어요. 명단을 확인한 뒤 다시 저장해 주세요.';
+    case 'DATE_OUT_OF_RANGE':return scope==='topik'?'성적 발표일은 2000-01-01부터 내일까지 고를 수 있어요.':'출결 날짜는 오늘부터 400일 전까지, 내일까지만 고를 수 있어요.';
+    default:return null;
+  }
+}
 const missingText=missing=>(missing.length===1?missing[0].name:missing[0].name+' 외 '+(missing.length-1)+'명')+'의 출결 상태를 먼저 골라 주세요. 사유 메모는 상태와 함께 저장돼요.';
 const dateValue=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value);
 export const addDays=(value,days)=>{const [y,m,d]=value.split('-').map(Number);return new Date(Date.UTC(y,m-1,d)+days*86400000).toISOString().slice(0,10);};
@@ -71,22 +84,22 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
   const confirm=text=>{const view=documentObject?.defaultView;return typeof view?.confirm!=='function'||view.confirm(text)===true;};
   function setSaved(rows){saved=new Map(list(rows).map(row=>[row.learnerId,row]));}
   function clearTopikForm(){editing=null;topikDraft=null;topikTouched=false;topikError=null;}
-  function fail(error){
+  function fail(error,scope){
     if(stopped||error?.code==='ACCOUNT_CHANGED')return;const text=String(error?.message||'');
-    message=reasonOf(error)==='RECORDS_BUSY'?BUSY_TEXT:text&&!/^[A-Z][A-Z0-9_]*$/.test(text)?text:'저장하지 못했어요. 잠시 뒤 다시 해 주세요.';notice(message,true);
+    message=reasonText(reasonOf(error),scope)||(text&&!/^[A-Z][A-Z0-9_]*$/.test(text)?text:'저장하지 못했어요. 잠시 뒤 다시 해 주세요.');notice(message,true);
   }
   async function call(path,body){guard();const result=await request(path,body);guard();if(stopped)throw Object.assign(new Error('닫힌 화면이에요.'),{code:'ACCOUNT_CHANGED'});return result;}
   // 한 번에 하나만 보낸다. 뒤에 시작한 요청이 있으면 앞 요청의 답은 버린다.
   // busy로 다시 그리면 조작 요소가 꺼져 초점이 빠진다. 그 전에 초점 자리를 기억해 두었다가 끝난 뒤 그 자리로(없어졌거나 꺼졌으면 다음 자리로) 돌려놓는다.
-  async function run(task,{fallback=null}={}){
+  async function run(task,{fallback=null,scope='attendance'}={}){
     if(busy)return;const back=activeSelector();busy=true;paint();const ticket=++version;
-    try{await task(()=>ticket===version);}catch(error){if(ticket===version)fail(error);}
+    try{await task(()=>ticket===version);}catch(error){if(ticket===version)fail(error,scope);}
     finally{if(ticket===version){busy=false;paint(null,back,fallback,'[data-att-message]');}}
   }
   const loadDay=date=>run(async current=>{
     const result=await call('/api/teacher/attendance',{action:'day',sessionDate:date});if(!current())return;
     sessionDate=result.sessionDate;setSaved(result.attendance);draft=new Map();key=null;message='';
-  });
+  },{scope:'day'});
   const save=()=>{
     const missing=attendanceMissingStatus(model.learners,saved,draft);
     if(missing.length){
@@ -124,24 +137,28 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
     return run(async current=>{
       try{const result=await call('/api/teacher/topik',body);if(!current())return;const l=learner(learnerId);if(l)l.topik=result.topik;clearTopikForm();message='TOPIK '+kind+' 제'+round+'회 성적을 저장했어요.';notice(message);onSaved();}
       catch(error){await topikFailed(error,current,learnerId,null);}
-    });
+    },{scope:'topik'});
   };
   const removeTopik=(learnerId,record)=>{
     if(!confirm('TOPIK '+record.kind+' 제'+record.round+'회 성적을 지울까요?'))return;
     return run(async current=>{
       try{const result=await call('/api/teacher/topik',{action:'delete',learnerId,id:record.id,revision:record.revision});if(!current())return;const l=learner(learnerId);if(l)l.topik=result.topik;clearTopikForm();message='TOPIK '+record.kind+' 제'+record.round+'회 성적을 지웠어요.';notice(message);onSaved();}
       catch(error){await topikFailed(error,current,learnerId,record);}
-    },{fallback:'[data-att-topik-open="'+learnerId+'"]'});
+    },{fallback:'[data-att-topik-open="'+learnerId+'"]',scope:'topik'});
   };
   // 출결 save()와 같은 규칙: 멱등 키 충돌이면 다음 저장에 새 키를 쓰고, 명단 잠금 · 같은 회차 · 상한은 안내만 한다(입력값은 남는다).
   // 고치기 · 지우기의 판 충돌이면 그 반을 다시 받아 그 학생 성적과 고치기 상태를 바로잡는다.
+  // 다른 화면이 먼저 지운 성적을 고치거나 지우면 서버는 403 FORBIDDEN을 준다(회사 중계는 TEACHING_CLASSROOM_FORBIDDEN). 그때도 다시 받아 본다.
   async function topikFailed(error,current,learnerId,removing){
     const reason=reasonOf(error),target=removing||editing;if(reason==='IDEMPOTENCY_CONFLICT'&&topikDraft)topikDraft={...topikDraft,key:null};
-    if(error?.status!==409||!current()||TOPIK_NOT_CONFLICT.includes(reason)||!target)throw error;
+    const conflict=error?.status===409&&!TOPIK_NOT_CONFLICT.includes(reason),gone=error?.status===403&&['FORBIDDEN','TEACHING_CLASSROOM'].includes(reason);
+    if(!current()||!target||!conflict&&!gone)throw error;
     const fresh=await call('/api/workspace');if(!current())return;absorb(fresh,false);
     const now=list(learner(learnerId)?.topik?.records).find(r=>r.id===target.id);
+    // 성적이 그대로인데 403이면 권한 같은 다른 까닭이다. 그 글을 그대로 보인다.
+    if(gone&&now)throw error;
     if(editing?.id===target.id){if(now)editing={...now};else{editing=null;if(topikDraft)topikDraft={...topikDraft,key:null};}}
-    message=now?'다른 화면에서 이 성적이 먼저 바뀌었어요. 바뀐 내용을 확인하고 다시 '+(removing?'지워':'저장해')+' 주세요.':removing?'이 성적은 다른 화면에서 이미 지워졌어요.':'다른 화면에서 이 성적이 먼저 지워졌어요. 적던 내용은 「성적 넣기」에 남겨 두었어요.';
+    message=now?'다른 화면에서 이 성적이 먼저 바뀌었어요. 바뀐 내용을 확인하고 다시 '+(removing?'지워':'저장해')+' 주세요.':removing?'이 성적은 다른 화면에서 이미 지워졌어요.':'이 성적은 다른 화면에서 이미 지워졌어요. 적던 내용은 「성적 넣기」에 남겨 두었어요.';
     notice(message,true);
   }
   function topikPanel(l){
