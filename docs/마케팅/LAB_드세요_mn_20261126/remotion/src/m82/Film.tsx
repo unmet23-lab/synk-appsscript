@@ -3,7 +3,7 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, getStaticFiles, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { CUTS, Cut, END, FILM, FPS, fr, HEAD, SAYS, SCENE_FROM, SCENE_TO, SFX, VO } from './data';
+import { CUTS, Cut, END, FILM, FPS, fr, HEAD, SAYS, SCENE_FROM, SCENE_TO, SFX, VO, 글고름, 판본키 } from './data';
 import { 말풍선, OK } from './말풍선';
 
 export { FPS };
@@ -44,7 +44,7 @@ const Cuts: React.FC<{ from?: number; to?: number }> = ({ from = 0, to = FILM })
 );
 
 // 머리 글 — 얻는 것의 약속(원본 성함 · 계세요의 위 한 줄 자리)
-const Head: React.FC = () => {
+const Head: React.FC<{ HEAD: typeof HEAD & { l2Size?: number; lh?: number } }> = ({ HEAD }) => {
   const frame = useCurrentFrame();
   if (frame < fr(HEAD.at) || frame >= fr(HEAD.to)) return null;
   const p = pop(frame, HEAD.at);
@@ -52,14 +52,14 @@ const Head: React.FC = () => {
   return (
     <div style={{ position: 'absolute', left: 70, right: 70, top: 285, textAlign: 'center', opacity: o, transform: `scale(${0.9 + 0.1 * p})` }}>
       <div style={{ display: 'inline-block', background: PAPER, border: `6px solid ${INK}`, borderRadius: 30, padding: '14px 34px 18px', boxShadow: '0 10px 26px rgba(0,0,0,0.35)' }}>
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 60, color: INK, lineHeight: 1.15 }}>{HEAD.l1}</div>
-        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 84, color: INK, lineHeight: 1.12 }}>{HEAD.l2}</div>
+        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 60, color: INK, lineHeight: Math.max(1.15, HEAD.lh ?? 0) }}>{HEAD.l1}</div>
+        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: HEAD.l2Size ?? 84, color: INK, lineHeight: Math.max(1.12, HEAD.lh ?? 0) }}>{HEAD.l2}</div>
       </div>
     </div>
   );
 };
 
-const End: React.FC = () => {
+const End: React.FC<{ END: typeof END }> = ({ END }) => {
   const frame = useCurrentFrame();
   if (frame < fr(END.at) || frame >= fr(END.to)) return null;
   const p = pop(frame, END.at);
@@ -96,12 +96,16 @@ export const SceneBare: React.FC = () => (
   </AbsoluteFill>
 );
 
-export const Film: React.FC = () => (
-  <AbsoluteFill style={{ backgroundColor: '#1d2238' }}>
-    <Cuts />
-    <Head />
-    {SAYS.map((s, i) => <말풍선 key={i} w={s} />)}
-    <End />
-    <Sound from={0} to={FILM} music />
-  </AbsoluteFill>
-);
+// k = 판본(MN 몽골 정본 · CN 간체 · MM 버마어) — 글만 바뀌고 그림 · 소리 · 박자는 같다. 판본 글꼴은 --kids-font(lib/fonts EN)로 깐다.
+export const Film: React.FC<{ k?: 판본키 }> = ({ k = 'MN' }) => {
+  const g = 글고름(k);
+  return (
+    <AbsoluteFill style={{ backgroundColor: '#1d2238', ...(g.font ? ({ '--kids-font': g.font } as React.CSSProperties) : {}) }}>
+      <Cuts />
+      <Head HEAD={g.HEAD} />
+      {g.SAYS.map((s, i) => <말풍선 key={i} w={s} />)}
+      <End END={g.END} />
+      <Sound from={0} to={FILM} music />
+    </AbsoluteFill>
+  );
+};

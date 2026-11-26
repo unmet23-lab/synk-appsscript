@@ -59,3 +59,55 @@ export const SAYS: 말풍선말[] = [
 export const HEAD = { at: 0.05, to: 2.2, l1: 'Эмээд', l2: '“먹어” гэвэл…? 🥞' };
 // 끝 줄 — 제목만 한 크기 한 줄(가장 센 장면 위, 제작 절차 「끝 3초」)
 export const END = { at: 17.4, to: 20, l1: 'Ахмад хүнд: 드세요 ✓' }; // 「→」는 이 글꼴에서 「>」로 그려져(다시 시험 v2 s) 쌍점으로
+
+// 두 채널 판(11-26 15시 회차 — 장부 머리말 「두 채널 판」 2번 「그날 만든 몽골 편」): 샤오훙수 간체 CN · 틱톡 버마어 MM.
+// 그림 · 한국어(말풍선 한글 · 목소리) · 소리 · 박자는 몽골판 정본 그대로이고, 머리 글 · 알약 · 읽기 · 뜻 · 끝 줄만 바꾼다.
+// 읽는 법은 로마자(장부 「읽는 법 줄은 영어 로마자로」), 뜻은 번역이 아니라 그 나라 학습자의 말로 다시 썼다(게시/검문/zhs.txt · my.txt 세 겹 검수).
+export type 판본키 = 'MN' | 'CN' | 'MM';
+type 판글줄 = { read?: string; mean: string; pill?: string };
+type 판글 = { font: string; lh: number; head: { l1: string; l2: string; l2Size?: number }; end: string; says: 판글줄[] };
+export const 판본: Record<'CN' | 'MM', 판글> = {
+  CN: {
+    font: "'Inter Tight', 'Microsoft YaHei', 'SUIT', sans-serif", // 로마자 읽기 줄은 Inter Tight로(야헤이가 먼저면 로마자가 넓어져 말풍선 밖으로 넘침 — 반 크기 시안 v1)
+    lh: 1.2,
+    head: { l1: '对奶奶说', l2: '“먹어”的话…？🥞' },
+    end: '对长辈：드세요 ✓',
+    says: [
+      { pill: '✗ 不能对奶奶这么说', read: 'hal-meo-ni, meo-geo!', mean: '奶奶，吃！' },
+      { mean: '哼… 😒' }, // v3에서 「没礼貌」를 붙여 다시 시험했으나 점수가 내려 v2로 되돌림
+      { pill: '🤔 是不是给少了？', read: 'meo-geo!!', mean: '吃!! 🥞🥞' },
+      { read: 'meo-geo!!!', mean: '快吃啊!!! 🥞🥞🥞🥞🥞' },
+      { read: '“deu-se-yo” hae-ya-ji!', mean: '要说“드세요”才对！' },
+      { pill: '✓ 对长辈', read: 'hal-meo-ni, deu-se-yo!', mean: '奶奶，您慢用！' },
+      { read: 'a-i-go~ ye-ppeo-ra!', mean: '哎哟~ 真乖！' },
+      { pill: '✓ 对晚辈', read: 'neo-do meo-geo~', mean: '你也吃吧~' },
+    ],
+  },
+  MM: {
+    font: "'Inter Tight', 'SUIT', 'Myanmar Text', sans-serif",
+    lh: 1.45,
+    head: { l1: 'အဖွားကို', l2: '“먹어” လို့ပြောရင်…? 🥞', l2Size: 68 }, // 84면 🥞가 아랫줄로 밀림(반 크기 시안 v1)
+    end: 'လူကြီးကို: 드세요 ✓',
+    says: [
+      { pill: '✗ အဖွားကို ဒီလိုမပြောရဘူး', read: 'hal-meo-ni, meo-geo!', mean: 'အဖွား၊ စား!' },
+      { mean: 'ဟွန့်… 😒' }, // v3에서 「ရိုင်းလိုက်တာ」를 붙여 다시 시험했으나 점수가 내려 v2로 되돌림
+      { pill: '🤔 နည်းလို့လား?', read: 'meo-geo!!', mean: 'စား!! 🥞🥞' },
+      { read: 'meo-geo!!!', mean: 'စားစမ်းပါ!!! 🥞🥞🥞🥞🥞' },
+      { read: '“deu-se-yo” hae-ya-ji!', mean: '“드세요” လို့ ပြောရမှာလေ!' },
+      { pill: '✓ လူကြီးကို', read: 'hal-meo-ni, deu-se-yo!', mean: 'အဖွား၊ သုံးဆောင်ပါ!' },
+      { read: 'a-i-go~ ye-ppeo-ra!', mean: 'အမလေး~ လိမ္မာလိုက်တာ!' },
+      { pill: '✓ ငယ်သူကို', read: 'neo-do meo-geo~', mean: 'မင်းလည်း စားလေ~' },
+    ],
+  },
+};
+export const 글고름 = (k: 판본키) => {
+  if (k === 'MN') return { HEAD, END, SAYS, font: undefined as string | undefined };
+  const g = 판본[k];
+  if (g.says.length !== SAYS.length) throw new Error(`판본 ${k}: 말풍선 글 ${g.says.length}줄 — 몽골판은 ${SAYS.length}줄`);
+  return {
+    HEAD: { ...HEAD, ...g.head, lh: g.lh },
+    END: { ...END, l1: g.end },
+    SAYS: SAYS.map((s, i) => ({ ...s, read: s.read ? g.says[i].read : undefined, mean: g.says[i].mean, pill: s.pill ? { ...s.pill, t: g.says[i].pill ?? '' } : undefined, lh: g.lh })),
+    font: g.font,
+  };
+};

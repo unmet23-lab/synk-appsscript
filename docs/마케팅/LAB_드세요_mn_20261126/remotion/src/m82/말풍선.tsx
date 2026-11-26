@@ -32,6 +32,7 @@ export type 말풍선말 = {
   크기?: number; // 한글 크기(안 적으면 86)
   뜻크기?: number; // 뜻 크기(안 적으면 한글이 있을 때 52, 없을 때 58)
   바탕?: string; // 몸 색(문자 말풍선은 흰색)
+  lh?: number; // 그 나라 글 줄 높이 하한(두 채널 판 — 버마 1.45 · 한자 1.2). 몽골판은 없음
 };
 
 const 폭 = (t: string, f: string, w: string, s: number) => measureText({ text: t, fontFamily: f, fontWeight: w, fontSize: s }).width;
@@ -57,7 +58,8 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
     w.pill ? 폭(w.pill.t, 'Inter Tight', '800', 알) + 56 : 0,
   );
   const W = Math.ceil(글폭) + 72;
-  const H = Math.ceil((w.head ? 머 * 1.3 : 0) + (w.pill ? 알 * 1.55 : 0) + parts.length * 크 * 1.12 + (w.read ? 읽 * 1.2 : 0) + 뜻줄.length * 뜻 * 1.18 + 34);
+  const lh = w.lh ?? 1;
+  const H = Math.ceil((w.head ? 머 * 1.3 : 0) + (w.pill ? 알 * Math.max(1.55, lh + 0.35) : 0) + parts.length * 크 * 1.12 + (w.read ? 읽 * 1.2 : 0) + 뜻줄.length * 뜻 * Math.max(1.18, lh) + 34);
   const 꼬리 = 40;
   const left = Math.min(Math.max(w.x - W / 2, 28), width - 28 - W);
   const top = w.y - 꼬리 - H;
@@ -75,7 +77,7 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
       <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: H, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
         {w.head ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 머, color: '#6B5647', lineHeight: 1.3, whiteSpace: 'pre' }}>{w.head}</div> : null}
         {w.pill ? (
-          <div style={{ display: 'inline-block', background: 색(w.pill.c), color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 알, lineHeight: 1.2, padding: '2px 26px 4px', borderRadius: 999, marginBottom: 6 }}>{w.pill.t}</div>
+          <div style={{ display: 'inline-block', background: 색(w.pill.c), color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 알, lineHeight: Math.max(1.2, lh), padding: '2px 26px 4px', borderRadius: 999, marginBottom: 6 }}>{w.pill.t}</div>
         ) : null}
         {parts.map((l, i) => (
           <div key={i} style={{ fontFamily: KO, fontWeight: 800, fontSize: 크, color: INK, lineHeight: 1.12, whiteSpace: 'pre' }}>
@@ -85,7 +87,7 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
           </div>
         ))}
         {w.read ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 읽, color: '#4A3A30', lineHeight: 1.2, whiteSpace: 'pre' }}>{w.read}</div> : null}
-        {w.mean ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 뜻, color: parts.length ? MEAN : INK, lineHeight: 1.18, whiteSpace: 'pre' }}>{w.mean}</div> : null}
+        {w.mean ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 뜻, color: parts.length ? MEAN : INK, lineHeight: Math.max(1.18, lh), whiteSpace: 'pre' }}>{w.mean}</div> : null}
       </div>
     </div>
   );
