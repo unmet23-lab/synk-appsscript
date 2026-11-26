@@ -165,8 +165,11 @@ test('연결: 쉬기 칸 · 단계 탭 · 알림 숫자 · 직원 CSS는 직원 
   // 「:where(html.is-staff …)」도 직원 화면 안이다. 우선순위만 0이라 손님 방 규칙(film.css)을 덮지 않는다(「손님 화면 미리 보기」 칸의 초기화).
   for(const rule of rules)for(const one of selectors(rule))assert.match(one,/^(?:html\.is-staff\b|:where\(html\.is-staff\b[^(),]*\) )/,`직원 화면 밖으로 새지 않는다: ${one}`);
   // 손님 방의 단추 초기화는 html.sx에만 걸린다. 직원 화면의 미리 보기 칸에도 같은 값을 건다(11-25: 칩 글자가 흰 바탕에 흰 글자였다).
-  const reset=/:where\(html\.sx\) button\{([^}]*)\}/.exec(read('film.css'))[1],inPreview=/:where\(html\.is-staff \.ppl-preview-box\) button\{([^}]*)\}/.exec(css)[1].split(';');
-  for(const value of reset.split(';'))assert.ok(inPreview.includes(value),`미리 보기 칸의 단추 초기화: ${value}`);
+  // film.css는 단추 초기화를 두 규칙(글꼴 · 색 · 자간을 받는 :is(button,…)와 바탕 · 테두리 · 여백을 지우는 button)에 나눠 적는다. 둘 다 견준다(카본 pulse-preview-reset A1).
+  const film=read('film.css'),resets=[/:where\(html\.sx\) :is\(button[^)]*\)\{([^}]*)\}/,/:where\(html\.sx\) button\{([^}]*)\}/].map(pattern=>pattern.exec(film)?.[1]);
+  assert.ok(resets.every(Boolean),'film.css의 단추 초기화 두 규칙을 찾았다');
+  const inPreview=/:where\(html\.is-staff \.ppl-preview-box\) button\{([^}]*)\}/.exec(css)[1].split(';');
+  for(const value of resets.join(';').split(';'))assert.ok(inPreview.includes(value),`미리 보기 칸의 단추 초기화: ${value}`);
   // 13px로 올리는 것은 옛 판에서 12px이던 둘뿐 — 본문 크기를 물려받던 다른 .desk-at(브랜드 · 인물 설명 · 경고)은 줄이지 않는다(Fable F1).
   assert.ok(css.includes('html.is-staff .desk-pay .desk-at,html.is-staff .desk-progress .desk-at{font-size:13px}'));
   assert.doesNotMatch(css,/html\.is-staff \.desk \.desk-at\{/);
