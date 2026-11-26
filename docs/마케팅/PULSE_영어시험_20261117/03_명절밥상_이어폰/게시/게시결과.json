@@ -2,38 +2,55 @@
   "판": [
     {
       "계정": "pulse-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-27T08:00+09:00",
       "지문": "08dbfd336a0aed66acd0b593c871f5cae5beab48ca620efd91fc333012b4aee1",
       "게시글지문": "3da003f61045a440ac9f3d35e70d2c2695771c0ee0b2ea40a070bd75f6eacd4b",
       "방법": "ego",
       "게시물ID": "BHbfUKxqEsk",
       "주소": "https://youtube.com/shorts/BHbfUKxqEsk",
-      "확인": "11-23 스튜디오 완료 창 「동영상 예약됨 2026년 11월 27일 8:00에 동영상이 공개 상태로 설정됩니다」 · 0:27 쇼츠 · 제목 · 설명 원고와 같음 · 아동용 아님 · 변경/합성 예 · 영어 · 현지 시간 GMT+0900",
+      "확인": "11-27 08:01 로그아웃 읽기 — playabilityStatus OK, isPrivate false, isUnlisted false, publishDate 2026-11-26T15:00:24-08:00(08:00:24 KST), 26초, oEmbed 200(SYNK PULSE). 고정 댓글은 @synkpulse 이름으로 원고 글 그대로 달았다(08:07). 고정은 「고급 기능 이용하기 — 댓글을 고정하려면 YouTube 스튜디오에서 일회성 인증」 창이 떠 하지 않았다(인증은 유호님 차례)",
       "승인": "유호님 11-23 「Current end screen」(11-27 08:00 네 곳 게시 — 결정 표 11-23)",
-      "기록시각": "2026-11-22T21:20:58.059Z"
+      "기록시각": "2026-11-26T23:11:02.932Z"
     },
     {
       "계정": "yuho-linkedin-primary",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-27T08:00+09:00",
       "지문": "08dbfd336a0aed66acd0b593c871f5cae5beab48ca620efd91fc333012b4aee1",
       "게시글지문": "7bd5b5992d2f3913d9fcc3c7f1c93141f2320144c5ba4902b69135652e2df64e",
       "방법": "ego",
-      "확인": "링크드인 share/management 예약함 목록에 「금, 2026년 11월 27일 오전 8:00」과 첫 줄 「Noise cancelling, tested at the hardest level」이 함께 보임(11-23 06:23)",
+      "확인": "11-27 08:02 recent-activity 맨 위 글 머리 「Noise cancelling, tested at the hardest level」(1분 전), 활동 번호 시각 08:00:05 KST, 로그아웃 주소 200에 같은 글",
       "승인": "유호님 11-23 「Current end screen」(11-27 08:00 네 곳 게시 — 결정 표 11-23)",
-      "기록시각": "2026-11-22T21:24:37.197Z"
+      "기록시각": "2026-11-26T23:11:03.680Z",
+      "게시물ID": "urn:li:activity:7531854323912167424",
+      "주소": "https://www.linkedin.com/feed/update/urn:li:activity:7531854323912167424/"
     },
     {
       "계정": "yuhobuilds-x",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-27T08:00+09:00",
       "지문": "08dbfd336a0aed66acd0b593c871f5cae5beab48ca620efd91fc333012b4aee1",
       "게시글지문": "b29122895e1293f95c406b313843ed3e4d40e89641cc76775e6e965f194718c9",
       "방법": "ego",
-      "확인": "compose/post/unsent/scheduled 「Will send on Fri, Nov 27, 2026 at 8:00 AM Noise cancelling, tested at the hardest level…」 · 영상 붙음 · Made with AI 켬(11-23 06:26). 타래 둘째 · 셋째 글은 첫 글이 나간 뒤 답글로 단다",
+      "확인": "첫 글 08:00:03 공개(영상 · Made with AI). 타래 답글 둘째 https://x.com/synk_pulse/status/2126089534932930770(08:03:40, 그림 · Made with AI) · 셋째 https://x.com/synk_pulse/status/2126089679103770755(08:04:14). 셋째 글 화면에서 첫 글→둘째→셋째로 이어짐, 세 글 모두 로그아웃 oEmbed 200",
       "승인": "유호님 11-23 「Current end screen」(11-27 08:00 네 곳 게시 — 결정 표 11-23)",
-      "기록시각": "2026-11-22T21:26:19.709Z"
+      "기록시각": "2026-11-26T23:11:03.480Z",
+      "게시물ID": "2126088623854358947",
+      "주소": "https://x.com/synk_pulse/status/2126088623854358947"
+    },
+    {
+      "계정": "pulse-instagram",
+      "상태": "게시됨",
+      "시각": "2026-11-27T08:00+09:00",
+      "지문": "08dbfd336a0aed66acd0b593c871f5cae5beab48ca620efd91fc333012b4aee1",
+      "게시글지문": "2faa7c127b59c862e5432085d65c039497505818df22920ff0ff7134f1345fbc",
+      "방법": "ego",
+      "게시물ID": "DgOPCV5Bkrm",
+      "주소": "https://www.instagram.com/synkpulse/reel/DgOPCV5Bkrm/",
+      "확인": "11-27 08:00:02 KST에 Share 한 번 → 「Your reel has been shared.」. 프로필 게시물 3→4, 새 릴스 /synkpulse/reel/DgOPCV5Bkrm/에 이 편 글. 캡션 7줄 원고와 같음, 원본 비율, Add AI label 켬, 페북 공유 끔. 로그아웃 주소 200에 같은 글",
+      "승인": "유호님 11-23 「Current end screen」(11-27 08:00 네 곳 게시 — 결정 표 11-23)",
+      "기록시각": "2026-11-26T23:11:03.292Z"
     }
   ]
 }
