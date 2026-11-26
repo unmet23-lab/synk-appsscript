@@ -1,0 +1,61 @@
+/* 나 유리 검색. 값은 apple.com/kr 검색을 잰 것에서 왔다(판 #fafafc, 입력 24px/600 → 30px/600) */
+.B{position:fixed;inset:0;z-index:20;color:#1d1d1f}
+.b-veil{position:absolute;inset:0;background:rgba(246,246,248,.78);backdrop-filter:blur(22px) saturate(1.15);-webkit-backdrop-filter:blur(22px) saturate(1.15)}
+.B.in .b-veil{animation:b-fade .5s var(--ease) both}
+@keyframes b-fade{from{opacity:0;backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}}
+.b-sheet{position:absolute;left:0;right:0;top:0;max-height:100%;overflow:hidden;background:rgba(250,250,252,.96);backdrop-filter:blur(30px) saturate(1.8);-webkit-backdrop-filter:blur(30px) saturate(1.8);box-shadow:0 1px 0 rgba(0,0,0,.06),0 48px 90px -50px rgba(0,0,0,.35)}
+.B.in .b-sheet{animation:b-drop .52s var(--ease) both}
+@keyframes b-drop{from{opacity:0;transform:translateY(-28px)}}
+.b-in{width:min(980px,calc(100% - 48px));margin:0 auto;padding:38px 0 46px}
+
+.b-field{display:flex;align-items:center;gap:14px}
+.b-field>.ic{display:grid;color:#6e6e73;flex:none}
+.b-field{padding-bottom:18px;border-bottom:1px solid rgba(0,0,0,.08)}
+.b-field input{flex:1;min-width:0;border:0;outline:0;background:none;padding:4px 0;caret-color:#f96859;font:600 30px/1.25 var(--sans);letter-spacing:-.022em;color:#1d1d1f}
+.b-field input::placeholder{color:#86868b}
+.b-x{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.05);color:#424245;transition:background .2s}
+.b-x .ic{display:grid}
+.b-x:hover{background:rgba(0,0,0,.1)}
+.b-body{margin-top:24px;overflow:auto;max-height:calc(100vh - 160px - var(--tool,0px));transition:height .42s var(--ease);scrollbar-width:thin}
+.b-body[style*="height"]{overflow:hidden}
+.b-view{animation:b-view .38s var(--ease) both}
+@keyframes b-view{from{opacity:0;transform:translateY(6px)}}
+.b-home{display:grid;grid-template-columns:1fr 1fr;gap:56px}
+.b-k{font:600 12px/1.2 var(--sans);color:#6e6e73;margin-bottom:10px}
+.b-row{display:flex;align-items:center;gap:14px;width:calc(100% + 20px);margin:0 -10px;padding:8px 10px;border-radius:9px;font:600 15px/1.45 var(--sans);color:#333336;transition:background .18s,color .18s}
+.b-row>.ic{display:grid;flex:none;color:#86868b;transition:transform .25s var(--ease),color .18s}
+.b-rt{flex:1;min-width:0}
+.b-row:hover,.b-row.on{background:rgba(0,0,0,.045);color:#000}
+.b-row:hover>.ic,.b-row.on>.ic{transform:translateX(3px);color:#1d1d1f}
+.b-tag{flex:none;display:flex;align-items:center;gap:7px;font:500 12.5px/1 var(--sans);color:#6e6e73}
+.b-dot{flex:none;width:7px;height:7px;border-radius:50%}
+.b-row .b-sub{display:block;margin-top:2px;font:400 13.5px/1.5 var(--sans);color:#6e6e73;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b-live .b-row{align-items:flex-start}.b-live .b-row>.ic{margin-top:7px}.b-live .b-tag{margin-top:5px}
+.b-ask{margin-top:10px;display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:#1d1d1f;color:#fff;font:600 14px/1 var(--sans)}
+.b-ask kbd{padding:3px 6px;border-radius:5px;background:rgba(255,255,255,.16);color:#fff}
+/* 답: 지원 글처럼 */
+.b-art{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:72px;padding:4px 0 6px}
+.b-crumb{display:flex;align-items:center;gap:8px;font:600 12.5px/1.2 var(--sans);color:#6e6e73}
+.b-lead{margin-top:14px;max-width:34em;font:500 clamp(19px,1.5vw,21px)/1.65 var(--sans);letter-spacing:-.015em;color:#1d1d1f}
+.b-text{margin-top:14px;font:400 17px/1.72 var(--sans);color:#424245}
+.b-text p+p,.b-text div p{margin-top:12px}
+.b-more{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font:600 15px/1 var(--sans);color:#1d1d1f;padding:6px 0}
+.b-more .ic{display:grid;transform:rotate(90deg)}
+.b-side{padding-top:28px}
+.b-go{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 20px;border-radius:999px;background:#1d1d1f;color:#fff;font:600 15px/1.2 var(--sans);transition:background .2s}
+.b-go:hover{background:#000}
+.b-side .b-k{margin-top:30px}
+.b-note{margin-top:26px;font:400 13px/1.6 var(--sans);color:#6e6e73}
+.b-note a{color:#1d1d1f;font-weight:600}
+.w{display:inline-block;animation:w-in .42s var(--ease) both}
+@media (max-width:760px){
+  .b-sheet{bottom:0}
+  .b-in{width:calc(100% - 36px);padding:22px 0 90px}
+  .b-field input{font-size:22px}
+  .b-field>.ic svg{width:22px;height:22px}
+  .b-body{margin-top:22px;max-height:calc(100vh - 110px)}
+  .b-home{grid-template-columns:1fr;gap:28px}
+  .b-art{grid-template-columns:1fr;gap:0}
+  .b-lead{font-size:18px}
+  .b-text{font-size:16px}
+}

@@ -1,0 +1,705 @@
+{
+  "scopes": [
+    {
+      "id": "study",
+      "name": "Study in Korea",
+      "mark": [
+        "study",
+        "studying",
+        "study in korea",
+        "admissions",
+        "topik",
+        "korean class",
+        "learn korean",
+        "korean lecture",
+        "korean lesson",
+        "korean language",
+        "drama class",
+        "drama lesson",
+        "visa"
+      ]
+    },
+    {
+      "id": "ai",
+      "name": "AI training",
+      "mark": [
+        "lecture",
+        "ai class",
+        "ai training",
+        "training"
+      ]
+    },
+    {
+      "id": "ads",
+      "name": "Advertising",
+      "mark": [
+        "ad",
+        "advertising",
+        "commercial"
+      ]
+    },
+    {
+      "id": "company",
+      "name": "Company"
+    }
+  ],
+  "starters": [
+    "study-what",
+    "ai-what",
+    "ads-what",
+    "company-what",
+    "company-contact"
+  ],
+  "records": [
+    {
+      "id": "study-what",
+      "s": "study",
+      "t": "What makes studying in Korea with SYNK different?",
+      "q": [
+        "How far do you help with studying in Korea?",
+        "How are you different from other agencies?",
+        "I want advice on studying in Korea",
+        "I want to study in Korea",
+        "How do I prepare to study in Korea?"
+      ],
+      "k": [
+        "study",
+        "agency",
+        "university",
+        "prepare",
+        "path",
+        "mongolia",
+        "all the way",
+        "manage"
+      ],
+      "a": [
+        "We look after you in one place all the way: learning Korean, getting into a university, settling into life in Korea, and finding work after you graduate. We start with students from Mongolia.",
+        "AI and apps that SYNK built itself handle the repeated advice and paperwork, so people can spend their time teaching Korean and helping with life in Korea. You can already use the Korean app and the interview practice; admissions support and settling-in support open step by step."
+      ],
+      "go": {
+        "label": "See Study in Korea",
+        "href": "/en/study-abroad/"
+      },
+      "rel": [
+        "study-now",
+        "study-korean"
+      ]
+    },
+    {
+      "id": "study-now",
+      "s": "study",
+      "t": "What can I try right now?",
+      "q": [
+        "Is there anything I can use now?",
+        "Can I sign up now?",
+        "How do I pre-register?",
+        "Where can I practise interviews?",
+        "Can I try it for free?",
+        "How do I get started?",
+        "When does it launch?"
+      ],
+      "k": [
+        "now",
+        "try",
+        "sign up",
+        "pre-register",
+        "pre-registration",
+        "register",
+        "free",
+        "interview",
+        "vr",
+        "care worker",
+        "app",
+        "get started",
+        "how do i start",
+        "launch",
+        "release"
+      ],
+      "a": [
+        "In SYNK WORLD you become a student in a drama and practise TOPIK by speaking Korean. You can rehearse a care worker job interview at synk.im/en/path/.",
+        "Pre-registration for our February 2027 launch is open at synk.im/reserve/. It costs nothing."
+      ],
+      "go": {
+        "label": "Open SYNK WORLD",
+        "href": "/world/?lang=en"
+      },
+      "rel": [
+        "study-korean",
+        "study-cost"
+      ]
+    },
+    {
+      "id": "study-korean",
+      "s": "study",
+      "t": "How do I learn Korean?",
+      "q": [
+        "I am new to Korean",
+        "How do I prepare for TOPIK level 4?",
+        "I want to study for TOPIK",
+        "Do you have Korean classes?",
+        "What does learning Korean through drama mean?",
+        "What is SYNK WORLD?"
+      ],
+      "k": [
+        "korean",
+        "topik",
+        "level 4",
+        "drama",
+        "k-drama",
+        "class",
+        "classroom",
+        "teacher",
+        "native",
+        "lab",
+        "world",
+        "synk world"
+      ],
+      "a": [
+        "Through K-drama scenes. You play an international student in a drama and speak Korean in each scene, learning the TOPIK level 4 patterns you need for university life.",
+        "In Ulaanbaatar we are preparing a classroom where Korean teachers teach in person: TOPIK on weekdays and K-drama conversation at weekends."
+      ],
+      "go": {
+        "label": "Open SYNK WORLD",
+        "href": "/world/?lang=en"
+      },
+      "rel": [
+        "study-now",
+        "study-after"
+      ]
+    },
+    {
+      "id": "study-cost",
+      "s": "study",
+      "t": "How do I pay for the admissions process?",
+      "q": [
+        "How much does it cost to study in Korea?",
+        "What is the admissions fee?",
+        "When do I pay?",
+        "Can I get a refund?",
+        "What happens if I am not accepted?"
+      ],
+      "k": [
+        "cost",
+        "price",
+        "fee",
+        "how much",
+        "pay",
+        "payment",
+        "deposit",
+        "refund",
+        "accepted",
+        "rejected",
+        "money",
+        "study"
+      ],
+      "a": [
+        "We are preparing a fixed price that we show in full at the start. You pay part of it when you sign the contract and the rest only after a university accepts you. If you are not accepted, you do not pay the rest.",
+        "If we receive a fee from a university, we tell you before you sign. Admissions support has not opened yet; we will announce it in What’s new when it does."
+      ],
+      "go": {
+        "label": "Pre-register",
+        "href": "/reserve/?lang=en"
+      },
+      "rel": [
+        "study-what",
+        "study-after"
+      ]
+    },
+    {
+      "id": "study-after",
+      "s": "study",
+      "t": "Do you help after I arrive in Korea and after I graduate?",
+      "q": [
+        "Who helps me when I arrive in Korea?",
+        "Do you help me find housing?",
+        "Do you help me find a job after I graduate?",
+        "I want to work in Korea",
+        "Do you guarantee a visa or a job?"
+      ],
+      "k": [
+        "arrive",
+        "arrival",
+        "settle",
+        "housing",
+        "home",
+        "life",
+        "mentor",
+        "job",
+        "graduate",
+        "visa",
+        "guarantee",
+        "work in korea",
+        "korean companies",
+        "admission guarantee",
+        "admission guaranteed",
+        "guaranteed admission",
+        "acceptance guaranteed",
+        "guaranteed acceptance"
+      ],
+      "a": [
+        "After you arrive, we plan to have a settling-in mentor help with finding a home and adjusting to life, with sports meet-ups and TOPIK expiry reminders to keep you on track. We will open this step by step with universities.",
+        "After graduation, we aim to connect you with Korean companies using your study records and interview practice. We will start once we are registered as a job placement agency. SYNK does not guarantee admission, visas or jobs."
+      ],
+      "go": null,
+      "rel": [
+        "study-what",
+        "study-now"
+      ]
+    },
+    {
+      "id": "ai-what",
+      "s": "ai",
+      "t": "What kind of AI training is it?",
+      "q": [
+        "I want to book an AI lecture",
+        "What is hands-on AI training?",
+        "We want AI training at our company",
+        "Do you teach AI at schools?",
+        "Who is the trainer?"
+      ],
+      "k": [
+        "training",
+        "lecture",
+        "course",
+        "hands-on",
+        "trainer",
+        "shift",
+        "staff",
+        "school",
+        "ai class",
+        "ai lecture",
+        "teach ai"
+      ],
+      "a": [
+        "Hands-on training taught in person by someone who runs a company with AI. We only teach methods we have already paid for and spent time on ourselves.",
+        "When the class ends, everyone leaves with one AI prompt they can use from the next day."
+      ],
+      "go": {
+        "label": "See AI training",
+        "href": "/en/ai/"
+      },
+      "rel": [
+        "ai-jobs",
+        "ai-class"
+      ]
+    },
+    {
+      "id": "ai-jobs",
+      "s": "ai",
+      "t": "What can I ask you to do?",
+      "q": [
+        "What topics do you teach?",
+        "Do you automate work too?",
+        "Can you recommend a trainer?",
+        "Do you teach vibe coding?",
+        "Do you teach AI video?"
+      ],
+      "k": [
+        "topic",
+        "automation",
+        "automate",
+        "recommend",
+        "vibe coding",
+        "ai video",
+        "staff training",
+        "school talk"
+      ],
+      "a": [
+        "Four things: staff training, school talks, trainer recommendations and work automation.",
+        "Topics are AI talks, an introduction to work automation, vibe coding and AI video. If a company that took the training wants it, we pick one repeated task and automate it with AI."
+      ],
+      "go": {
+        "label": "Book a lecture",
+        "href": "/en/shift/#ask"
+      },
+      "rel": [
+        "ai-class",
+        "ai-cost"
+      ]
+    },
+    {
+      "id": "ai-class",
+      "s": "ai",
+      "t": "How does a class run?",
+      "q": [
+        "How long is a lecture?",
+        "What happens in class?",
+        "Is it hands-on?",
+        "Do I need a laptop?"
+      ],
+      "k": [
+        "class",
+        "run",
+        "practice",
+        "50 minutes",
+        "laptop",
+        "prompt",
+        "smartphone",
+        "how long is a class",
+        "how long is a lecture",
+        "class length"
+      ],
+      "a": [
+        "A 50-minute class goes like this: ask the same question twice (10 minutes), a fill-in-the-blank test (15), match it line by line (15), and write your own AI prompt (10).",
+        "Everyone follows along on a phone or laptop and makes something they can use in their own work."
+      ],
+      "go": {
+        "label": "See AI training",
+        "href": "/en/ai/"
+      },
+      "rel": [
+        "ai-jobs",
+        "ai-cost"
+      ]
+    },
+    {
+      "id": "ai-cost",
+      "s": "ai",
+      "t": "How much does a lecture cost?",
+      "q": [
+        "What is the lecture fee?",
+        "I want a quote",
+        "How do we schedule a lecture?",
+        "Can I book a class?",
+        "What does AI training cost?",
+        "What is the price of AI training?"
+      ],
+      "k": [
+        "lecture fee",
+        "cost",
+        "quote",
+        "schedule",
+        "how much",
+        "price",
+        "lecture",
+        "book a class",
+        "book a lecture",
+        "request a lecture",
+        "training fee",
+        "training cost",
+        "training price"
+      ],
+      "a": [
+        "We give you a quote once we know who will attend, how long it runs and where. Send the details through the lecture request form."
+      ],
+      "go": {
+        "label": "Book a lecture",
+        "href": "/en/shift/#ask"
+      },
+      "rel": [
+        "ai-jobs",
+        "company-contact"
+      ]
+    },
+    {
+      "id": "ads-what",
+      "s": "ads",
+      "t": "What kind of ads do you make?",
+      "q": [
+        "I want to order an ad",
+        "Do you make brand ads?",
+        "Can you make an ad video for us?",
+        "What is PULSE?"
+      ],
+      "k": [
+        "ad",
+        "advertising",
+        "brand",
+        "drama",
+        "story",
+        "pulse",
+        "commercial"
+      ],
+      "a": [
+        "Ads that turn your brand into a drama. Viewers follow the story and remember the product name at the end.",
+        "The story starts from what the brand name means. An actor with ten years in front of the camera directs the AI models."
+      ],
+      "go": {
+        "label": "See advertising",
+        "href": "/en/studio/"
+      },
+      "rel": [
+        "ads-works",
+        "ads-how"
+      ]
+    },
+    {
+      "id": "ads-works",
+      "s": "ads",
+      "t": "Can I see your work?",
+      "q": [
+        "Do you have a portfolio?",
+        "Show me your work",
+        "What have you made?",
+        "Have you won any awards?"
+      ],
+      "k": [
+        "portfolio",
+        "dodam",
+        "the bridge remembers",
+        "see-through",
+        "opalin",
+        "award",
+        "selected",
+        "music video",
+        "animation",
+        "your work",
+        "see work",
+        "our work",
+        "actors",
+        "real actors",
+        "real people"
+      ],
+      "a": [
+        "You can watch three pieces: a film for Dodam Heavy Industries; “What the Bridge Remembers”, a short animation selected in the 2026 Seoullo Media Canvas open call; and OPALIN’s music video “See-Through”.",
+        "Dodam Heavy Industries is a made-up brand, and the people and voices in the films are AI models."
+      ],
+      "go": {
+        "label": "See our work",
+        "href": "/en/pulse/#works"
+      },
+      "rel": [
+        "ads-how",
+        "ads-cost"
+      ]
+    },
+    {
+      "id": "ads-how",
+      "s": "ads",
+      "t": "How is an ad made?",
+      "q": [
+        "What is the production process?",
+        "Can I check it along the way?",
+        "How do I choose a model?",
+        "How do you add our logo?",
+        "How do you make ads?",
+        "What is the PULSE app?"
+      ],
+      "k": [
+        "process",
+        "steps",
+        "check",
+        "storyboard",
+        "model",
+        "casting",
+        "logo",
+        "scene",
+        "revision",
+        "how do you make",
+        "how are ads made",
+        "production",
+        "pulse app",
+        "delivery"
+      ],
+      "a": [
+        "We check three times with you before making the video: the story direction and the model who will appear, a written storyboard up to the moment the name appears, and an image of every shot.",
+        "Everything from the request to delivery happens in one PULSE app. You review drafts, leave notes on the exact frame you paused, and download the final files there.",
+        "We use the product, logo and on-screen text exactly from the files you send. You choose a model from the 21 in our casting book."
+      ],
+      "go": {
+        "label": "See the casting book (Korean)",
+        "href": "/pulse/casting/"
+      },
+      "rel": [
+        "ads-cost",
+        "ads-works"
+      ]
+    },
+    {
+      "id": "ads-cost",
+      "s": "ads",
+      "t": "How do I find out what an ad costs?",
+      "q": [
+        "How much does an ad cost?",
+        "I want a quote for an ad",
+        "What do I need to prepare?"
+      ],
+      "k": [
+        "ad cost",
+        "production cost",
+        "quote",
+        "price",
+        "prepare",
+        "request form",
+        "ad",
+        "how much",
+        "cost",
+        "order an ad",
+        "book an ad",
+        "ad request"
+      ],
+      "a": [
+        "Choose the length and format in the request form and the price appears right there. One product photo and where you will post it are enough to start."
+      ],
+      "go": {
+        "label": "Order an ad",
+        "href": "/en/studio/"
+      },
+      "rel": [
+        "ads-how",
+        "company-contact"
+      ]
+    },
+    {
+      "id": "company-what",
+      "s": "company",
+      "t": "What kind of company is SYNK?",
+      "q": [
+        "What does SYNK do?",
+        "Tell me about the company",
+        "What does SYNK mean?",
+        "What businesses do you run?"
+      ],
+      "k": [
+        "synk",
+        "company",
+        "about",
+        "meaning",
+        "business"
+      ],
+      "a": [
+        "A company that uses AI to see students through studying in Korea from start to finish. With the same AI we run hands-on AI training for companies and schools, and make ads that turn brands into drama.",
+        "SYNK joins Synchronize and K: getting in sync with Korea. AI and apps we built ourselves take the repeated work, and people spend their time teaching and helping."
+      ],
+      "go": null,
+      "rel": [
+        "company-founder",
+        "study-what"
+      ]
+    },
+    {
+      "id": "company-founder",
+      "s": "company",
+      "t": "Who started SYNK?",
+      "q": [
+        "Who is the CEO?",
+        "Tell me about the founder",
+        "Who is Yang Yuho?",
+        "Who made SYNK?",
+        "Who runs SYNK?"
+      ],
+      "k": [
+        "ceo",
+        "founder",
+        "yuho",
+        "yang yuho",
+        "who started",
+        "who made",
+        "who runs"
+      ],
+      "a": [
+        "Yang Yuho, our CEO. He is an actor who has appeared on Netflix and tvN and has worked in K-entertainment and advertising for more than ten years. In 2026 he was vice director at a study-abroad agency in Mongolia, teaching Korean and advising students.",
+        "SYNK’s AI and apps were built in-house, without outsourcing."
+      ],
+      "go": {
+        "label": "Founder’s story",
+        "href": "/en/founder/"
+      },
+      "rel": [
+        "company-what",
+        "company-solio"
+      ]
+    },
+    {
+      "id": "company-solio",
+      "s": "company",
+      "t": "What is the SOLIO PC app?",
+      "q": [
+        "What is SOLIO?",
+        "I want the PC app",
+        "Where do I get the SYNK app?",
+        "Is there an app to manage AI subscriptions?"
+      ],
+      "k": [
+        "solio",
+        "pc app",
+        "app",
+        "download",
+        "install",
+        "subscription",
+        "windows",
+        "mac"
+      ],
+      "a": [
+        "A PC app that shows how much is left on each of your AI subscriptions and when each one renews, on one screen. Members use it for free.",
+        "Get the Windows and Mac installers from “Get SOLIO” at the bottom of the home page."
+      ],
+      "go": {
+        "label": "Get SOLIO",
+        "href": "/en/#platform"
+      },
+      "rel": [
+        "company-what",
+        "company-contact"
+      ]
+    },
+    {
+      "id": "company-contact",
+      "s": "company",
+      "t": "How do I contact you?",
+      "q": [
+        "I want to get in touch",
+        "What is your contact address?",
+        "I want advice",
+        "What is your email?",
+        "Does this chat send my request?"
+      ],
+      "k": [
+        "contact",
+        "touch",
+        "email",
+        "mail",
+        "advice",
+        "consultation",
+        "request",
+        "privacy",
+        "phone",
+        "phone number",
+        "call",
+        "personal information",
+        "personal data",
+        "human"
+      ],
+      "a": [
+        "Email hello@synk.im. Study advice and requests for training or ads all go to the same address.",
+        "This window only finds answers in our public notes and does not take requests. Conversations are not saved, so please do not type personal information."
+      ],
+      "go": {
+        "label": "Send an email",
+        "href": "mailto:hello@synk.im"
+      },
+      "rel": [
+        "company-what",
+        "study-what"
+      ]
+    },
+    {
+      "id": "company-biz",
+      "s": "company",
+      "t": "What is your business registration number?",
+      "q": [
+        "Business information",
+        "Company registration number",
+        "What does the copyright line mean?"
+      ],
+      "k": [
+        "business registration",
+        "registration number",
+        "business information",
+        "copyright"
+      ],
+      "a": [
+        "The site does not yet show a business registration number. We are preparing a new business registration and will publish the actual registration details once it is complete. If you need confirmation, write to hello@synk.im.",
+        "“© 2026 SYNK” at the bottom is the copyright notice. If you want to use our work, logos or characters, please ask about the permitted scope separately."
+      ],
+      "go": {
+        "label": "Send an email",
+        "href": "mailto:hello@synk.im"
+      },
+      "rel": [
+        "company-contact",
+        "company-what"
+      ]
+    }
+  ]
+}

@@ -3,9 +3,10 @@
 쓰임: python 짓기.py <공개본 폴더> <시안 폴더> <출력 폴더>
   공개본 폴더: index.html · en.html (지금 공개본. 질문창 · 소식 · PC 앱 받기 조각을 여기서 옮긴다)
   시안 폴더: a/town-port.webp · a/hall-front-port.webp · a/dodam-port.mp4 · a/dodam-port.webp · f/mono.woff2
+  묻기 창 자료는 이 폴더의 묻기_ko.json · 묻기_en.json, 명조는 PULSE 고객 앱의 NotoSerifKR-300과 브랜드 폰트의 Noto Serif Display Light다.
   출력 폴더: index.html · en/index.html · assets/v12/…  (og 그림은 og.mjs가 뒤에 넣고 다시 짓는다)
 """
-import hashlib, re, shutil, sys
+import hashlib, json, re, shutil, sys
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding='utf-8')
@@ -31,10 +32,23 @@ HALL = put(DRAFT / 'a/hall-front-port.webp', 'home/hall.webp')
 FILM = put(DRAFT / 'a/dodam-port.mp4', 'home/drama.mp4')
 POSTER = put(DRAFT / 'a/dodam-port.webp', 'home/drama.webp')
 MONO = put(DRAFT / 'f/mono.woff2', 'dm-mono-500.woff2')
+REPO = HERE.parents[3]
+SERIF = put(REPO / 'docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/NotoSerifKR-300.woff2', 'serif-ko.woff2')
+SERIFL = put(REPO / 'docs/브랜드_폰트/NotoSerifDisplay/NotoSerifDisplay-Light-latin.woff2', 'serif-latin.woff2')
 css = (HERE / 'home.css').read_text('utf8').replace('url(/assets/v12/dm-mono-500.woff2)', f'url({MONO})')
+for a, b in (('url(/assets/v12/serif-ko.woff2)', f'url({SERIF})'), ('url(/assets/v12/serif-latin.woff2)', f'url({SERIFL})')):
+    assert css.count(a) == 1, a
+    css = css.replace(a, b)
 (V / 'home.css').write_text(css, 'utf8', newline='\n')
 (V / 'home.js').write_text((HERE / 'home.js').read_text('utf8'), 'utf8', newline='\n')
 CSS, JS = f'/assets/v12/home.css?v={sha(V / "home.css")}', f'/assets/v12/home.js?v={sha(V / "home.js")}'
+# 묻기 창 자료: 메모 칸을 빼고 한 줄로 싣는다
+ASK = {}
+for k in ('ko', 'en'):
+    j = json.loads((HERE / f'묻기_{k}.json').read_text('utf8'))
+    j.pop('note', None)
+    (V / f'ask-{k}.json').write_text(json.dumps(j, ensure_ascii=False, separators=(',', ':')), 'utf8', newline='\n')
+    ASK[k] = f'/assets/v12/ask-{k}.json?v={sha(V / f"ask-{k}.json")}'
 
 
 def one(t, pat):
@@ -61,12 +75,7 @@ L = {
         biz=('사업자등록번호를 알려주세요.', '사업자 정보'), close='닫기',
         pf=('한국어 연습과 솔리오를 계정 하나로 씁니다.', '혼자 일하는 사람의 AI 업무 앱 솔리오와 한국어 연습이 이 앱에 들어 있습니다.'),
         ask=('묻기', '무엇이든<br>물어보세요'), now=('소식', '최근에<br>새로 연 것'),
-        shelf='공개 안내 여덟 권', hint='책을 누르거나 아래에 물어보세요. 답이 든 책이 앞으로 나와 펼쳐집니다.',
-        find='찾기', ph='궁금한 것을 적어 보세요', qlabel='질문', marks='자주 묻는 질문',
-        books=(('company', '회사', 'SYNK'), ('path', '한국 유학', 'PATH'), ('lab', '한국어', 'LAB'), ('shift', 'AI 강의', 'SHIFT'),
-               ('pulse', '광고', 'PULSE'), ('vision', '비전', ''), ('philosophy', '일하는 방식', ''), ('guide', '공개 안내', '')),
-        starters=(('synk-intro', 'SYNK는 어떤 회사인가요?'), ('path-support', '한국 유학은 어디까지 도와주나요?'), ('shift-services', 'AI 강의를 맡기고 싶어요'),
-                  ('pulse-studio', '광고 영상을 맡길 수 있나요?'), ('synk-platform', '솔리오와 PC 앱은 무엇인가요?'), ('guide-contact', '어디로 문의하나요?')),
+        st=('자주 묻는 질문', '어느 사업이 궁금하세요'), ph='질문을 적거나 위에서 고르세요', qlabel='질문', sendl='묻기',
     ),
     'en': dict(
         src='en.html', url='https://synk.im/en/', base='/en', html='<html lang="en">', home='SYNK home', langs='Language',
@@ -85,12 +94,7 @@ L = {
         biz=('What is your business registration number?', 'Business information'), close='Close',
         pf=('Korean practice and SOLIO on one account.', 'SOLIO, the AI work app for people who work alone, and Korean practice are both in this app.'),
         ask=('Ask', 'Ask us<br>anything'), now=('News', 'What’s<br>new'),
-        shelf='Eight books of public notes', hint='Pick a book or ask below. The book with the answer comes forward and opens.',
-        find='Find', ph='Type your question', qlabel='Question', marks='Common questions',
-        books=(('company', 'Company', 'SYNK'), ('path', 'Study in Korea', 'PATH'), ('lab', 'Korean', 'LAB'), ('shift', 'AI training', 'SHIFT'),
-               ('pulse', 'Ads', 'PULSE'), ('vision', 'Vision', ''), ('philosophy', 'How we work', ''), ('guide', 'Public notes', '')),
-        starters=(('synk-intro', 'What does SYNK do?'), ('path-support', 'How far do you help with studying in Korea?'), ('shift-services', 'I want to book an AI lecture'),
-                  ('pulse-studio', 'Can you make an ad video for us?'), ('synk-platform', 'What are SOLIO and the PC app?'), ('guide-contact', 'How do I contact you?')),
+        st=('Common questions', 'Which part are you curious about?'), ph='Type a question or pick one above', qlabel='Question', sendl='Ask',
     ),
 }
 PINS = [(19.5, 59.4, 'korean'), (32.1, 44.7, 'classroom'), (63.5, 41.2, 'study-abroad'), (86, 51.4, 'job'), (75.6, 62.9, 'community')]
@@ -116,8 +120,6 @@ def page(k):
     links = one(t, r'<div class="ask-links">.*?</div>')
     lead = one(t, r'<h2 id="ask-t">.*?</h2>\s*<p>(.*?)</p>')
     main = one(t, r'<div class="ask-main" id="questions".*?\n    </div>')
-    engine = one(main, r'data-engine="(/(?:en/)?knowledge-engine\.js\?v=[0-9a-f]+)"')
-    know = one(main, r'data-knowledge="(/(?:en/)?knowledge\.json\?v=[0-9a-f]+)"')
     note = one(main, r'<p class="ask-note">(.*?)</p>')
     news = one(t, r'<div class="news" id="now">.*?</details>\s*</div>')
     # 10월 22일 공모전 출품 줄은 홈 작품에서 내린 작품이라 뺀다
@@ -140,8 +142,6 @@ def page(k):
     x = f'<p class="sheet-x"><button type="button" data-close aria-label="{s["close"]}"></button></p>'
     pins = ''.join(f'<a class="pin" style="left:{l}%;top:{p}%" href="{u}/{d}/">{n}</a>' for (l, p, d), n in zip(PINS, s['pin']))
     title = lambda x2: f'<small>{x2[0]}</small> <b>{x2[1]}</b>'
-    books = ''.join(f'<li><button type="button" class="sh-book b-{i}" data-book="{i}" aria-pressed="false"><span class="sh-name">{n}</span><span class="sh-sub">{b}</span><span class="sh-n"></span></button></li>' for i, n, b in s['books'])
-    marks = ''.join(f'<li><button type="button" data-ask-record="{i}" data-ask-q="{q}">{q}</button></li>' for i, q in s['starters'])
     reserve = one(t, r'<a [^>]*href="(/reserve/\?from=synk-(?:en-)?home&amp;lang=(?:ko|en))"')
     nl = '\n'
     return f'''<!doctype html>
@@ -182,7 +182,7 @@ def page(k):
   </article>
   <article class="pn k3" id="pulse">{anchors('showroom')}
     <div class="sc"><video src="{FILM}" poster="{POSTER}" width="720" height="900" muted loop playsinline preload="none" aria-label="{s['film']}"></video></div>
-    <h2><a href="{u}/pulse/">{title(s['c'])}</a></h2>
+    <h2><a href="{u}/studio/">{title(s['c'])}</a></h2>
   </article>
 </div>
 
@@ -193,26 +193,23 @@ def page(k):
 </main>
 
 <footer class="foot">
-  <nav aria-label="{s['foot']}"><a href="{u}/founder/">{s['founder']}</a><a href="{u}/atlas/">{s['atlas']}</a><a href="/privacy/">{s['privacy']}</a><a href="/terms/">{s['terms']}</a><a href="/data-deletion/">{s['delete']}</a><button type="button" data-ask-q="{s['biz'][0]}" aria-haspopup="dialog">{s['biz'][1]}</button><span>© 2026 SYNK</span></nav>
+  <nav aria-label="{s['foot']}"><a href="{u}/founder/">{s['founder']}</a><a href="{u}/atlas/">{s['atlas']}</a><a href="/privacy/">{s['privacy']}</a><a href="/terms/">{s['terms']}</a><a href="/data-deletion/">{s['delete']}</a><button type="button" data-ask-record="company-biz" data-ask-q="{s['biz'][0]}" aria-haspopup="dialog">{s['biz'][1]}</button><span>© 2026 SYNK</span></nav>
   {bottom}
 </footer>
 <div class="wm" aria-hidden="true"><span>synk</span></div>
 
-<dialog class="sheet sheet-shelf" id="sheet-ask" aria-labelledby="ask-t">{x}
-  <div class="sheet-in shelf" id="questions" data-shelf data-engine="{engine}" data-knowledge="{know}">
-    <div class="head">
-      <p class="tag">{s['ask'][0]}</p>
-      <h2 id="ask-t">{s['ask'][1]}</h2>
-      <p>{lead}</p>
-      {links}
+<dialog class="sheet sheet-stage" id="sheet-ask" aria-labelledby="ask-t">
+  <div class="st" id="questions" data-stage data-src="{ASK[k]}">
+    <header class="st-top"><span class="st-mark" aria-hidden="true">synk</span><button type="button" class="st-x" data-close>{s['close']} <kbd>esc</kbd></button></header>
+    <div class="st-stage">
+      <div class="st-pick">
+        <div class="st-t"><h2 id="ask-t">{s['askgo']}</h2> <p>{lead}</p></div>
+        <div class="st-main"><p class="st-k" id="st-k" aria-live="polite">{s['st'][0]}</p><ul class="st-qs" id="st-qs" role="listbox" aria-labelledby="st-k"></ul></div>
+        <aside class="st-side"><p class="st-k">{s['st'][1]}</p><ul class="st-scopes" aria-label="{s['st'][1]}"></ul><div class="st-mail">{links}<p class="st-note">{note}</p></div></aside>
+      </div>
+      <article class="st-art" hidden aria-live="polite"></article>
     </div>
-    <div class="sh-room">
-      <ul class="sh-books" aria-label="{s['shelf']}">{books}</ul>
-      <div class="sh-board" aria-live="polite"><p class="sh-hint">{s['hint']}</p></div>
-    </div>
-    <form class="sh-form" autocomplete="off"><label class="vh" for="sh-q">{s['qlabel']}</label><textarea id="sh-q" rows="1" maxlength="500" placeholder="{s['ph']}"></textarea><button type="submit" disabled>{s['find']}</button></form>
-    <p class="sh-note">{note}</p>
-    <div class="sh-marks"><p class="sh-k">{s['marks']}</p><ul>{marks}</ul></div>
+    <form class="st-dock" autocomplete="off"><label class="vh" for="st-in">{s['qlabel']}</label><input id="st-in" type="text" maxlength="200" enterkeyhint="send" placeholder="{s['ph']}" role="combobox" aria-controls="st-qs" aria-expanded="true" aria-autocomplete="list"><button type="submit" class="st-send" aria-label="{s['sendl']}" disabled><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></form>
   </div>
   {toast}
 </dialog>

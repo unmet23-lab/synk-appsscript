@@ -1,0 +1,17 @@
+Generate one image with your image tool. Landscape 16:9.
+
+Match the look of the attached reference images exactly: the same small satin-black "orb employee" characters, the same soft studio lighting, the same calm animated feel. This is a friendly animated still, not a realistic product photo and not an obvious hard-edged 3D render.
+
+Style: very dark charcoal background (#0C0C0B to pure black) that fades to pure black at all four edges, so the image melts into a black web page. One soft warm-white key light from the upper left, a faint cool rim light from behind. Monochrome palette: black, graphite and soft warm white, with at most a few tiny warm accents. Soft, rounded, toy-like shapes everywhere.
+
+Scene: "a small bookshelf of four books". Seen from a gentle three-quarter angle, front right and a little above, so each book shows its front cover, its rounded spine and its page edge. In the middle of the frame floats one short shelf board: smooth satin black, softly rounded edges, thin. On the shelf stand exactly four hardcover books, upright, side by side, with small even gaps; heights differ a little (the second book is slightly taller, the fourth slightly shorter) so they read clearly as books on a shelf, not blocks. Together the four books take up the middle 56% of the image width and stand on the horizontal center line. Each book is a chunky, softly rounded toy-like hardcover: satin black covers with a soft highlight and a thin bright rim of light along the edges, a softly rounded spine, and a visible page block between the covers that is one smooth soft cream surface (no individual page lines). The covers stick out a little beyond the page block, like a real hardcover, with rounded corners.
+
+Each book is told apart only by one tiny, simple, rounded object resting on top of it (no text):
+1. Leftmost book: a tiny folded white paper airplane.
+2. Second book: a tiny closed graphite laptop.
+3. Third book: a tiny round graphite camera with one lens.
+4. Rightmost book: a tiny satin-black orb employee sitting on top of the book, looking toward the other three books.
+
+The orb employee is a perfect sphere of smooth satin black with exactly two eyes: small solid soft-white rounded dots, side by side. No mouth, no arms, no legs.
+
+Never draw text, letters, numbers, logos, brand marks or UI. Nothing written on the covers or spines. No grooves, rings, stripes, holes, dot grids, perforations or patterns on any surface. No wood grain. Keep generous dark empty space above and below the shelf, and keep the bottom 20% calm and empty.

@@ -1,0 +1,93 @@
+/* 가 흰 입력창. 값은 refs.js의 잰 값에서 왔다 */
+.A{--ink:#0d0d0d;--ink2:#3d3d41;--mute:#76767b;--line:rgba(0,0,0,.1);--soft:#f4f4f5;position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;background:#fff;color:var(--ink)}
+.A.in{animation:a-in .42s var(--ease) both}
+@keyframes a-in{from{opacity:0}}
+.A.in .a-hero,.A.in .a-dock{animation:a-up .56s var(--ease) both}
+.A.in .a-dock{animation-delay:.05s}
+@keyframes a-up{from{opacity:0;transform:translateY(10px)}}
+.a-top{flex:none;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 28px}
+.a-logo{font:800 22px/1 var(--sans);letter-spacing:-.045em}
+.a-x{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--ink2);transition:background .2s}
+.a-x:hover{background:var(--soft)}
+.a-x .ic,.a-send .ic,.a-tool .ic,.a-rq .ic{display:grid}
+.a-scroll{flex:1;overflow:auto;display:flex;flex-direction:column;justify-content:flex-end;scrollbar-width:thin}
+.A:not(.has-thread) .a-scroll{flex:0 1 auto;margin-top:auto}
+.a-hero{text-align:center;padding:0 24px 30px}
+.a-hero h2{font:300 clamp(32px,3.35vw,48px)/1.15 var(--sans);letter-spacing:-.04em}
+.a-sub{margin-top:14px;font:400 16px/1.6 var(--sans);color:var(--mute)}
+.has-thread .a-hero{display:none}
+.a-thread{width:min(720px,calc(100% - 40px));margin:0 auto;padding:24px 0 8px}
+.A:not(.has-thread) .a-thread{display:none}
+/* 입력 판 */
+.a-dock{flex:none;padding:0 20px 18px;display:flex;flex-direction:column;align-items:center}
+.A:not(.has-thread) .a-dock{margin-bottom:auto;padding-bottom:14vh}
+.has-thread .a-dock{padding-bottom:calc(18px + var(--tool,0px))}
+.has-thread .a-dock{padding-top:8px;background:linear-gradient(rgba(255,255,255,0),#fff 22px)}
+.a-box{position:relative;width:min(720px,100%);display:flex;flex-direction:column;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:22px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 18px 44px -22px rgba(0,0,0,.16);transition:border-color .2s,box-shadow .2s}
+.a-box:focus-within{border-color:rgba(0,0,0,.24);box-shadow:0 1px 2px rgba(0,0,0,.05),0 22px 52px -22px rgba(0,0,0,.22)}
+.a-box textarea{display:block;width:100%;min-height:58px;max-height:168px;resize:none;border:0;outline:0;background:none;padding:19px 22px 4px;font:400 17px/1.55 var(--sans);letter-spacing:-.005em;color:var(--ink)}
+.a-box textarea::placeholder{color:#9b9ba0}
+.a-row{display:flex;align-items:center;gap:10px;padding:8px 10px 10px 12px}
+.a-scope{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--soft);overflow-x:auto;scrollbar-width:none}
+.a-scope button{flex:none;padding:6px 12px;border-radius:999px;font:600 13px/1.2 var(--sans);color:#5b5b60;transition:background .2s,color .2s,box-shadow .2s}
+.a-scope button:hover{color:var(--ink)}
+.a-scope [aria-checked="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1),0 0 0 .5px rgba(0,0,0,.06)}
+.a-send{margin-left:auto;flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;transition:background .2s,transform .2s var(--spring)}
+.a-send:disabled{background:#e6e6e8;cursor:default}
+.a-send:not(:disabled):hover{transform:scale(1.06)}
+/* 적는 동안 맞는 질문 */
+.a-sug{order:1;margin:4px 8px 0;padding:6px 0;border-top:1px solid var(--line)}
+.has-thread .a-sug{order:-1;border-top:0;border-bottom:1px solid var(--line);margin:8px 8px 0}
+.a-opt{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;cursor:pointer;font:500 15.5px/1.4 var(--sans)}
+.a-opt[aria-selected="true"]{background:var(--soft)}
+.a-oq{flex:1;min-width:0}
+.a-dot{flex:none;width:7px;height:7px;border-radius:50%}
+.a-ob{flex:none;font:500 12.5px/1 var(--sans);color:var(--mute)}
+.a-row{order:2}
+.a-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px;width:min(720px,100%)}
+.a-chip{padding:9px 15px;border-radius:999px;border:1px solid var(--line);font:500 14px/1.3 var(--sans);color:var(--ink2);transition:background .2s,border-color .2s}
+.a-chip:hover{background:#f7f7f8;border-color:rgba(0,0,0,.16)}
+.has-thread .a-chips{display:none}
+.a-fine{margin-top:12px;font:400 12px/1.5 var(--sans);color:#a0a0a5;text-align:center}
+.A:not(.has-thread) .a-fine{position:absolute;left:0;right:0;bottom:calc(18px + var(--tool,0px))}
+/* 대화 */
+.a-turn{display:flex;flex-direction:column;padding-bottom:40px}
+.a-turn+.a-turn{padding-top:8px}
+.a-q{align-self:flex-end;max-width:78%;padding:12px 18px;border-radius:22px;background:var(--soft);font:400 16px/1.55 var(--sans)}
+.a-ans{margin-top:26px}
+.a-think{font:500 14px/1 var(--sans);color:var(--mute);background:linear-gradient(90deg,#8a8a8f 0,#d4d4d8 40%,#8a8a8f 80%) 0 0/200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:a-sh 1.2s linear infinite}
+@keyframes a-sh{to{background-position:-200% 0}}
+.a-src{display:flex;align-items:center;gap:8px;font:500 13px/1.3 var(--sans);color:var(--mute)}
+.a-srcn{font-weight:400;color:var(--mute)}
+.a-srcn::before{content:"·";margin-right:8px;color:#c2c2c6}
+.a-lead{margin-top:12px;font:400 18.5px/1.75 var(--sans);letter-spacing:-.012em;color:var(--ink)}
+.a-body{margin-top:10px;font:400 16.5px/1.8 var(--sans);color:#55555a}
+.a-body p+p,.a-rest p{margin-top:12px}
+.a-more{margin-top:10px;font:600 14px/1 var(--sans);color:var(--ink);padding:8px 0}
+.a-more:hover{color:#000}
+.a-acts{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:22px}
+.a-go{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;background:var(--ink);color:#fff;font:600 15px/1 var(--sans);transition:transform .2s var(--spring)}
+.a-go:hover{transform:translateY(-1px)}
+.a-go .arr{font-family:var(--sans)}
+.a-tool{display:inline-flex;align-items:center;gap:6px;padding:9px 12px;border-radius:999px;font:500 13px/1 var(--sans);color:var(--mute)}
+.a-tool:hover{background:var(--soft);color:var(--ink)}
+.a-rel{margin-top:34px}
+.a-k{font:600 13px/1 var(--sans);color:var(--mute);margin-bottom:6px}
+.a-rq{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:14px 2px;border-top:1px solid var(--line);font:500 16px/1.45 var(--sans);color:var(--ink);transition:color .2s}
+.a-rq .ic{color:var(--mute);transition:transform .25s var(--spring)}
+.a-rq:hover .ic{transform:rotate(90deg);color:var(--ink)}
+.w{display:inline-block;animation:w-in .42s var(--ease) both}
+@keyframes w-in{from{opacity:0;filter:blur(3px);transform:translateY(3px)}}
+@media (max-width:640px){
+  .a-top{padding:0 8px 0 20px;height:56px}
+  .a-hero h2{font-size:30px}
+  .a-sub{font-size:15px}
+  .A:not(.has-thread) .a-dock{padding-bottom:9vh}
+  .a-box{border-radius:20px}
+  .a-box textarea{font-size:16px;padding:16px 18px 2px}
+  .a-chips{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;padding:0 2px}
+  .a-chip{flex:none}
+  .a-lead{font-size:17.5px}
+  .a-q{max-width:88%}
+  .A:not(.has-thread) .a-fine{position:static;margin-top:14px}
+}

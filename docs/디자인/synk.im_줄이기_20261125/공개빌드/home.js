@@ -1,4 +1,4 @@
-/* synk.im 홈 v12. 강의장 화면(서울 시각과 예약된 일), 창 셋(묻기 · 새 소식 · 솔리오 받기), 들어오는 주소, 영상과 큰 synk, 묻기 창의 책장. */
+/* synk.im 홈 v12. 강의장 화면(서울 시각과 예약된 일), 창 셋(묻기 · 새 소식 · 솔리오 받기), 들어오는 주소, 영상과 큰 synk, 묻기 창의 검정 무대. */
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const en = document.documentElement.lang === 'en';
 const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -62,11 +62,14 @@ function open(k, from) {
   const d = $('#sheet-' + k);
   if (!d) return d;
   /* 이미 열린 창을 다시 부르면(답의 「문의하기」) 맨 위로 올리고 첫 링크에 선다 */
-  if (d.open) { d.scrollTop = 0; $('.head a, .pf-get a, li a', d)?.focus({ preventScroll: true }); return d; }
+  if (d.open) {
+    if (k === 'ask') { $('[data-stage]')?.toList?.(); const a = $('.st-mail a', d); a?.focus({ preventScroll: true }); a?.scrollIntoView({ block: 'nearest' }); return d; }
+    d.scrollTop = 0; $('.head a, .pf-get a, li a', d)?.focus({ preventScroll: true }); return d;
+  }
   $$('.sheet[open]').forEach(x => x.close());
   back = from || back;
   d.showModal(); d.scrollTop = 0;
-  if (k === 'ask') $('[data-shelf]')?.load?.();
+  if (k === 'ask') $('[data-stage]')?.load?.();
   return d;
 }
 $$('.sheet').forEach(d => {
@@ -97,173 +100,196 @@ $('#ask-copy')?.addEventListener('click', async () => {
   catch { out.textContent = en ? 'Copying is not available. The address is hello@synk.im.' : '복사하지 못했습니다. 주소는 hello@synk.im입니다.'; }
 });
 
-/* 묻기 창 · 책장. 공개 안내 여덟 묶음이 책이다. 답은 공개본 질문 엔진(/knowledge-engine.js)이 고르고, 답이 든 책이 나와 펼쳐진다.
-   첫 장에는 질문과 답의 첫 문장을, 다음 장에는 이어지는 문단 하나와 행동 · 이어 물을 것을 둔다. 나머지는 「다음 쪽」에 접는다. */
-const shelf = $('[data-shelf]');
-if (shelf) {
+/* 묻기 창 · 검정 무대(유호님 11-26 「다로 하돼」). 질문 줄이 곧 큰 글자이고, 고르면 그 질문이 제목이 되어 답이 열린다.
+   자료는 /assets/v12/ask-ko.json · ask-en.json의 질문 열여덟 개다(한국 유학 · AI 강의 · 광고 · 회사). 한국 유학은 LAB과 PATH를 하나로 합쳤다.
+   공개본 질문 엔진은 옛 질문 128개의 이름에 묶여 있어 줄인 자료로는 돌지 않는다. 그래서 작은 검색기로 고른다. */
+const stage = $('[data-stage]');
+if (stage) {
   const S = en
-    ? { found: b => `Found in “${b}”`, pick: 'Which one do you mean?', none: 'No matching answer', reply: 'From SYNK', more: n => `Read more (+${n})`, next: 'Ask next', often: 'Often asked in this book',
-        count: n => ['', `${n}`, n === 1 ? ' answer in this book' : ' answers in this book'], fail: 'Could not load the notes. Please ask again in a moment.', notes: 'Public notes',
-        copy: 'Copy answer', copied: 'Answer copied.', nocopy: 'Copy is not available here. Select the answer to copy it.' }
-    : { found: b => `「${b}」 책에서 찾음`, pick: '어느 쪽이 궁금하신가요', none: '맞는 답을 찾지 못했어요', reply: 'SYNK 안내', more: n => `더 읽기 (+${n})`, next: '이어서 물어보기', often: '이 책에서 자주 묻는 것',
-        count: n => ['이 책의 답 ', `${n}`, '개'], fail: '안내 자료를 불러오지 못했어요. 잠시 뒤 다시 물어봐 주세요.', notes: '공개 안내',
-        copy: '답 복사', copied: '답을 복사했어요.', nocopy: '복사를 쓸 수 없어요. 답을 선택해 복사해 주세요.' };
-  const board = $('.sh-board', shelf), form = $('.sh-form', shelf), input = $('#sh-q', shelf), go = $('button', form);
-  const books = $$('.sh-book', shelf), toastEl = $('#toast');
-  const BR = ['lab', 'shift', 'pulse', 'path'];
-  let ready = null, eng = null, recs = null, docs = null, ctx = { brand: 'synk' }, busy = false, toastTimer;
+    ? { all: 'All', faq: 'Common questions', inScope: n => `Common questions in ${n}`, match: 'Matching questions', none: 'No matching question yet. Try other words, or pick a part above.',
+        hello: 'What would you like to know?', back: 'All questions', from: n => `From our ${n} notes`, found: 'Where we found it', next: 'Ask next', more: 'Keep reading',
+        missT: 'We could not find an answer to this in our public notes.', missB: 'Pick Study in Korea, AI training, Advertising or Company and ask again, or write to hello@synk.im.', missSrc: 'Not in our public notes', missIn: n => `We could not find this in our ${n} notes.`, missInB: 'Pick All and ask again, or write to hello@synk.im.',
+        ph: 'Type a question or pick one above', ph2: 'Ask a follow-up', fail: 'Could not load the questions. Please try again in a moment.', mail: 'Send an email' }
+    : { all: '전체', faq: '자주 묻는 질문', inScope: n => `${n}에서 자주 묻는 질문`, match: '맞는 질문', none: '맞는 질문이 아직 없어요. 다른 말로 적어 보시거나 위에서 사업을 골라 보세요.',
+        hello: '무엇이 궁금하세요?', back: '질문 목록', from: n => `${n} 안내에서 찾았어요`, found: '찾은 곳', next: '이어서', more: '이어서 읽기',
+        missT: '공개한 안내에서 이 질문에 맞는 답을 찾지 못했어요.', missB: '한국 유학, AI 강의, 광고, 회사 가운데 궁금한 쪽을 골라 다시 물어보시거나, hello@synk.im으로 메일을 보내 주세요.', missSrc: '공개한 안내에 없는 질문', missIn: n => `${n} 안내에서는 이 질문에 맞는 답을 찾지 못했어요.`, missInB: '「전체」를 골라 다시 물어보시거나, hello@synk.im으로 메일을 보내 주세요.',
+        ph: '질문을 적거나 위에서 고르세요', ph2: '이어서 물어보세요', fail: '질문을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.', mail: '메일 보내기' };
+  const pick = $('.st-pick', stage), art = $('.st-art', stage), list = $('.st-qs', stage), label = $('.st-main>.st-k', stage), scopesEl = $('.st-scopes', stage);
+  const form = $('.st-dock', stage), input = $('#st-in', stage), send = $('.st-send', stage), toastEl = $('#toast');
   const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x !== undefined) n.textContent = x; return n; };
+  let ready = null, data = null, recs = null, scope = 'all', items = [], active = -1, keyed = false, toastTimer;
+  const fine = () => matchMedia('(pointer:fine)').matches;
   const say = t => { if (!toastEl) return; toastEl.textContent = t; toastEl.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2600); };
-  /* site.js와 같은 행동 링크 규칙: 같은 사이트 주소와 허락한 바깥 주소만 */
-  const OUT = new Set(['https://www.youtube.com/@synkkorean/live', 'https://www.youtube.com/@synkkorean', 'https://www.instagram.com/synk.mn/', 'https://t.me/synkmn', 'mailto:hello@synk.im', 'https://synk.im/name/', 'https://synk.im/privacy/#website-questions', 'https://synk.im/privacy/#ko']);
-  const safe = h => typeof h === 'string' && !!h && !/[\s\\\u0000-\u001f\u007f]/u.test(h) && (OUT.has(h) || /^#[A-Za-z][A-Za-z0-9_-]*$/.test(h) || (/^\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]*(?:#[A-Za-z][A-Za-z0-9_-]*)?$/.test(h) && !h.split(/[\/#]/).some(x => x === '.' || x === '..')));
-  /* 문장 나누기: 마침표 · 물음표 · 느낌표 뒤에 빈칸이 올 때만(메일 주소 · 판 번호의 점은 그대로) */
-  function sentences(t) {
-    const out = []; let a = 0; t = String(t || '');
-    for (let i = 0; i < t.length; i++) if ('.?!'.includes(t[i]) && (i + 1 === t.length || /\s/.test(t[i + 1]))) { out.push(t.slice(a, i + 1).trim()); a = i + 1; }
-    if (t.slice(a).trim()) out.push(t.slice(a).trim());
-    return out;
+  /* 같은 사이트 주소와 메일만 링크로 단다 */
+  const safe = h => typeof h === 'string' && (h === 'mailto:hello@synk.im' || (/^\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]*(?:\?[A-Za-z0-9=&_-]+)?(?:#[A-Za-z][A-Za-z0-9_-]*)?$/.test(h) && !h.split(/[\/#?]/).some(x => x === '.' || x === '..')));
+
+  /* 작은 검색기: 낱말 끝의 조사를 떼어 견주고, 열쇠말 · 질문 낱말 · 두 글자 조각이 겹치는 만큼 점수를 준다 */
+  const END = /(인가요|이에요|예요|해요|하나요|할까요|되나요|있나요|없나요|주세요|싶어요|은요|는요|나요|까요|에서|으로|부터|까지|은|는|이|가|을|를|에|로|도|와|과|의|요|랑)$/;
+  const norm = s => String(s).toLowerCase().replace(/[^0-9a-z가-힣]/g, '');
+  const toks = s => String(s).toLowerCase().split(/[^0-9a-z가-힣]+/).filter(Boolean).map(w => { let x = w; for (let i = 0; i < 2; i++) { const y = x.replace(END, ''); if (y && y !== x) x = y; } return x; });
+  const grams = s => { const t = words(s).join(''), g = new Set(); for (let i = 0; i < t.length - 1; i++) g.add(t.slice(i, i + 2)); return g; };
+  const dice = (a, b) => { if (!a.size || !b.size) return 0; let n = 0; for (const x of a) if (b.has(x)) n++; return 2 * n / (a.size + b.size); };
+  const GREET = /^(안녕|안녕하세요|하이|hi|hello|hey|hithere|hellothere|howdoesitwork|howdoesthiswork|처음왔어요|반가워요|반갑습니다|사용법|어떻게써요|어떻게쓰나요|어떻게사용하나요)$/;
+  /* 군말: 낱말은 어미를 뗀 뒤에 견주므로 뗀 꼴도 함께 넣는다(「궁금해요」 → 「궁금」) */
+  const STOP = new Set(['되나요', '있나요', '없나요', '주세요', '알려', '보여', '해요', '하나요', '인가요', '뭐예요', '어떻게', '무엇', '뭐', '좀', '수', '있어요', '싶어요', '싶어', '해', '알고', '알고싶어요',
+    '궁금해요', '궁금해', '궁금', '있어', '어때', '어때요', '거예요', '건가요', '돼요',
+    'how', 'what', 'is', 'the', 'a', 'an', 'do', 'does', 'i', 'you', 'your', 'can', 'to', 'of', 'in', 'for', 'me', 'my', 'we', 'our', 'it', 'are', 'and', 'with', 'there', 'please', 'tell', 'about',
+    'where', 'when', 'who', 'why', 'which', 'have', 'has', 'had', 'be', 'am', 'was', 'were', 'this', 'that', 'from', 'at', 'on', 'by', 'or', 'if', 'any', 'will', 'would', 'should', 'could', 'want', 'get', 'know', 'like', 'much', 'many', 'so', 'just', 'use', 'using', 'anything', 'something'].flatMap(w => [w, ...toks(w)]));
+  const words = s => toks(s).filter(w => !STOP.has(w));
+  /* 열쇠말: 영어는 낱말 경계로, 한 글자 한국어는 낱말 그대로일 때만, 그 밖은 띄어쓰기를 뺀 글에 들어 있으면 */
+  const key = k => {
+    k = String(k).toLowerCase().trim();
+    const re = /^[0-9a-z ]+$/.test(k) ? new RegExp('(?<![0-9a-z])' + k.replace(/ +/g, '[^0-9a-z]+') + '(?:e?s)?(?![0-9a-z])') : null;
+    const n = Math.max(norm(k).length, 2);
+    return { k, re, w: 3 * Math.min(1, n / 3) + Math.min(n, 12) / 12 };
+  };
+  const hit = (o, flat, low, qt) => o.re ? o.re.test(low) : o.k.length === 1 ? qt.includes(o.k) : flat.includes(norm(o.k));
+  /* 질문에 적힌 사업 이름(유학 · 강의 · 광고 …): 있으면 그 사업 안에서만 답을 고른다 */
+  const named = q => { const flat = norm(q), low = String(q).toLowerCase(), qt = words(q); return data.scopes.filter(x => (x._m || []).some(o => hit(o, flat, low, qt))).map(x => x.id); };
+  /* 고를 자리: 질문에 사업 이름이 있으면 그 사업 답과 회사 일 답(문의 · 대표 · 사업자 정보 · 솔리오)에서 고른다.
+     회사 소개(company-what)는 이때 빼서, 넓은 열쇠말(SYNK · 소개 · 사업)이 사업 답을 이기지 않게 한다.
+     사업을 골라 두었으면 그 사업 답을 먼저 주고, 문턱을 넘는 답이 없을 때만 회사 답에서 고른다 */
+  const work = x => x.r.s === 'company' && x.r.id !== 'company-what';
+  const fits = (x, ns) => ns.length ? ns.includes(x.r.s) || work(x) : scope === 'all' || x.r.s === scope || x.r.s === 'company';
+  const best = (all, ns) => {
+    if (ns.length || scope === 'all') return all.find(x => fits(x, ns));
+    const mine = all.find(x => x.r.s === scope);
+    return mine && mine.s >= 1.6 ? mine : all.find(x => x.r.s === 'company');
+  };
+  let df = null;
+  function score(q, only) {
+    const flat = norm(q), low = String(q).toLowerCase(), qt = words(q), qg = grams(q);
+    if (!df) { df = new Map(); for (const r of recs.values()) for (const t of r._t) df.set(t, (df.get(t) || 0) + 1); }
+    const out = [];
+    for (const r of recs.values()) {
+      if (only && r.s !== only) continue;
+      let s = 0;
+      for (const o of r._k) if (hit(o, flat, low, qt)) s += o.w;
+      const k = s;
+      for (const t of qt) if (r._t.has(t)) s += 1.2 * Math.log(1 + recs.size / (df.get(t) || 1)) / 3;
+      s += 3 * Math.max(...r._g.map(g => dice(qg, g)));
+      out.push({ r, s, k });
+    }
+    return out.sort((a, b) => b.s - a.s);
   }
-  const cut = t => { const s = sentences(t); const n = s.length > 2 && s[0].length < 45 ? 2 : 1; return [s.slice(0, n).join(' '), s.slice(n).join(' ')]; };
-  /* 책임 범위를 밝히는 문단(결과를 보장하지 않음)은 지우지 않고 접힌 쪽 맨 뒤로 보낸다 */
-  const late = t => /보장하지 않|책임지지 않|guarantee|does not replace|not a substitute/i.test(t);
-  const nameOf = id => $(`.sh-book[data-book="${id}"] .sh-name`, shelf)?.textContent || S.notes;
 
   function load() {
-    ready ??= Promise.all([
-      fetch(shelf.dataset.knowledge).then(r => { if (!r.ok) throw new Error('knowledge'); return r.json(); }),
-      import(shelf.dataset.engine),
-    ]).then(([j, m]) => {
-      if (!j || !Array.isArray(j.docs) || !Array.isArray(j.records)) throw new Error('knowledge');
-      recs = new Map(j.records.map(r => [r.id, r])); docs = new Map(j.docs.map(d => [d.id, d]));
-      eng = m.createKnowledgeEngine(j);
-      const n = {}; for (const r of j.records) n[r.sourceId] = (n[r.sourceId] || 0) + 1;
-      books.forEach(b => {
-        const c = n[b.dataset.book] || 0, k = $('.sh-n', b), small = el('small', '', en ? '' : '답');
-        k.replaceChildren(...(en ? [] : [small]), String(c));
-        b.setAttribute('aria-label', `${$('.sh-name', b).textContent}${$('.sh-sub', b).textContent ? ' (' + $('.sh-sub', b).textContent + ')' : ''} — ${en ? c + (c === 1 ? ' answer' : ' answers') : '답 ' + c + '개'}`);
-      });
+    ready ??= fetch(stage.dataset.src).then(r => { if (!r.ok) throw new Error('ask'); return r.json(); }).then(j => {
+      if (!j || !Array.isArray(j.records) || !Array.isArray(j.scopes)) throw new Error('ask');
+      data = j; recs = new Map(j.records.map(r => [r.id, r]));
+      for (const x of j.scopes) x._m = (x.mark || []).map(key);
+      for (const r of j.records) { r._k = r.k.map(key); r._t = new Set([r.t, ...r.q].flatMap(words)); r._g = [r.t, ...r.q].map(grams); }
+      const shown = j.records.filter(r => r.id !== 'company-biz'), n = { all: shown.length }; for (const r of shown) n[r.s] = (n[r.s] || 0) + 1;
+      scopesEl.replaceChildren(...[{ id: 'all', name: S.all }, ...j.scopes].map(x => {
+        const li = el('li'), b = el('button', 'st-sc'); b.type = 'button'; b.dataset.k = x.id; b.setAttribute('aria-pressed', String(x.id === scope));
+        const c = n[x.id] || 0;
+        b.append(el('span', '', x.name), el('span', 'st-scc', String(c)));
+        b.lastChild.setAttribute('aria-hidden', 'true'); b.setAttribute('aria-label', en ? `${x.name}, ${c} questions` : `${x.name}, 질문 ${c}개`);
+        b.addEventListener('click', e => { setScope(x.id); if (fine() && e.detail > 0) input.focus({ preventScroll: true }); });
+        li.append(b); return li;
+      }));
+      setScope(scope);
     }).catch(e => { ready = null; throw e; });
     return ready;
   }
-  shelf.load = () => load().catch(() => {});
+  /* 창을 새로 열면 질문 목록으로 돌아가고, 마우스 · 자판이면 입력칸에 선다(휴대폰은 자판이 목록을 덮어 서지 않는다) */
+  stage.toList = () => { if (!data) return; input.value = ''; send.disabled = true; input.placeholder = S.ph; setScope('all'); $('.st-stage', stage).scrollTop = 0; };
+  stage.load = () => load().then(() => { stage.toList(); if (fine()) input.focus({ preventScroll: true }); }).catch(() => say(S.fail));
+  const scopeName = id => data.scopes.find(x => x.id === id)?.name || '';
 
-  function pull(id) { books.forEach(b => { const on = b.dataset.book === id; b.classList.toggle('out', on); b.setAttribute('aria-pressed', String(on)); }); }
-  function book(id) { const o = el('div', 'sh-open o-' + id), l = el('section', 'sh-page sh-left'), r = el('section', 'sh-page sh-right'); o.append(l, r); return [o, l, r]; }
-  const relBtn = (id, label) => { const r = recs.get(id); if (!r) return null; const b = el('button', 'sh-rel'); b.type = 'button'; b.dataset.askRecord = id; b.dataset.askQ = label || r.title; b.append(el('span', '', label || r.title), el('span', 'arr', '→')); b.querySelector('.arr').setAttribute('aria-hidden', 'true'); return b; };
-  /* 책을 바꿔 펴면 누른 단추가 사라진다 — 초점을 새 책의 제목으로 옮겨 Tab이 책 안으로 이어지게 한다(입력칸에서 물었으면 입력칸에 둔다) */
-  function show(node, from) {
-    const lost = from && from !== input && (board.contains(from) || from === go || from.closest?.('.sh-marks,.sh-books'));
-    board.replaceChildren(node); board.classList.remove('turning');
-    if (lost) { const h = $('.sh-q', board); h.tabIndex = -1; h.focus({ preventScroll: true }); }
-    const d = board.closest('dialog'), top = board.getBoundingClientRect().top, dt = d.getBoundingClientRect().top;
-    if (top - dt > d.clientHeight * .55 || top < dt) board.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+  function show(xs, k) {
+    items = xs; label.textContent = k;
+    list.replaceChildren(...xs.map((r, i) => {
+      const li = el('li', 'st-q'); li.id = 'st-o' + i; li.setAttribute('role', 'option'); li.style.animationDelay = i * 40 + 'ms';
+      const arr = el('span', 'st-arr', '→'); arr.setAttribute('aria-hidden', 'true');
+      li.append(arr, el('span', '', r.t));
+      li.addEventListener('click', () => answer(r, r.t));
+      li.addEventListener('mousemove', () => { keyed = false; mark(i); });
+      return li;
+    }));
+    keyed = false; mark(-1);
+  }
+  function mark(i) {
+    active = i;
+    $$('.st-q', list).forEach((o, k) => o.setAttribute('aria-selected', String(k === i)));
+    if (i >= 0) { input.setAttribute('aria-activedescendant', 'st-o' + i); $('#st-o' + i, list)?.scrollIntoView({ block: 'nearest', behavior: calm ? 'auto' : 'smooth' }); }
+    else input.removeAttribute('aria-activedescendant');
+    input.setAttribute('aria-expanded', String(!pick.hidden && items.length > 0));
+  }
+  function toPick() { if (!art.hidden) { art.hidden = true; pick.hidden = false; input.placeholder = S.ph; } }
+  function setScope(k) {
+    scope = k;
+    $$('.st-sc', scopesEl).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === k)));
+    toPick();
+    if (input.value.trim()) { suggest(); return; }
+    const xs = k === 'all' ? data.starters.map(id => recs.get(id)).filter(Boolean) : [...recs.values()].filter(r => r.s === k && r.id !== 'company-biz');
+    show(xs, k === 'all' ? S.faq : S.inScope(scopeName(k)));
+  }
+  function suggest() {
+    const q = input.value.trim();
+    if (!q) { setScope(scope); return; }
+    toPick();
+    const ns = named(q);
+    const xs = score(q).filter(x => x.s >= 1.2 && fits(x, ns)).slice(0, 6).map(x => x.r);
+    show(xs, xs.length ? S.match : S.none);
+  }
+  /* 적은 글로 답하기: 인사면 목록을, 맞는 답이 없으면 못 찾았다고 말한다 */
+  function ask(q, keep = false) {
+    if (GREET.test(norm(q))) { input.value = ''; send.disabled = true; setScope('all'); label.textContent = S.hello; return; }
+    /* 질문에 사업 이름이 있으면 그 사업 안에서 고른다(「광고 환불」이 유학 수속 돈 답으로 가지 않게).
+       사업을 골라 두었고 다른 사업 이름이 없으면 그 사업 안에서만 답하고, 없으면 그 사업 안내에는 없다고 알린다 */
+    const top = best(score(q), named(q));
+    answer(top && top.s >= 1.6 ? top.r : null, q, keep);
   }
 
-  /* 왼쪽 쪽은 답이다: 질문, 첫 문장, 엔진이 짚은 문단(focus — 공개본 site.js처럼 늘 펼쳐 둔다), 나머지는 「더 읽기」.
-     기록이 여럿이면 기록마다 제목과 첫 문장을 보인다. 오른쪽 쪽은 다음에 할 일이다: 행동 링크, 이어 물을 것, 답 복사. */
-  function render(q, res, from) {
-    const list = res.records || [], first = list[0];
-    /* 되묻기는 고를 질문들이 든 책을 꺼낸다(「강의」 → AI 강의) */
-    const id = first?.sourceId || (res.status === 'clarify' && recs.get(res.relatedIds?.[0])?.sourceId) || res.sourceIds?.[0] || (res.status === 'courtesy' ? 'company' : 'guide');
-    pull(id);
-    const [o, l, r] = book(id);
-    const msg = String(res.message || '').split(/\n\n/).filter(Boolean);
-    const kick = res.status === 'courtesy' ? S.reply : res.status === 'clarify' ? S.pick : first ? S.found(nameOf(id)) : S.none;
-    l.append(el('p', 'sh-kick', kick), el('h3', 'sh-q', q));
-    const folded = [];
-    if (!first) {
-      l.append(el('p', 'sh-lead', msg[0] || S.none), ...msg.slice(1).map(t => el('p', '', t)));
-    } else {
-      l.append(...msg.map(t => el('p', '', t)));
-      list.forEach((x, k) => {
-        const parts = String(x.answer || '').split(/\n\n/).filter(Boolean), f = res.focus?.[x.id];
-        const [head, tail] = cut(parts[0]);
-        let rest = [tail, ...parts.filter((_, i) => i > 0 && i !== f)].filter(Boolean);
-        rest = [...rest.filter(t => !late(t)), ...rest.filter(late)];
-        if (k) l.append(el('h4', 'sh-also', x.title));
-        l.append(el('p', k ? '' : 'sh-lead', head));
-        if (f > 0 && f < parts.length) l.append(el('p', '', parts[f]));
-        else if (!k && rest[0] && !late(rest[0])) l.append(el('p', '', rest.shift()));
-        if (rest.length) folded.push([list.length > 1 ? x.title : null, rest]);
-      });
+  function answer(r, q, keep = false) {
+    input.value = ''; send.disabled = true; input.placeholder = S.ph2;
+    pick.hidden = true; art.hidden = false; art.replaceChildren(); mark(-1);
+    const back = el('button', 'st-back', S.back); back.type = 'button';
+    back.addEventListener('click', () => { input.placeholder = S.ph; setScope(scope); mark(-1); if (fine()) input.focus({ preventScroll: true }); else $('.st-sc[aria-pressed="true"]', scopesEl)?.focus({ preventScroll: true }); });
+    const h = el('h3', 'st-asked', r ? r.t : q), lead = el('p', 'st-lead'), grid = el('div', 'st-grid'), text = el('div', 'st-text'), side = el('aside', 'st-aside');
+    const paras = r ? r.a : scope === 'all' ? [S.missT, S.missB] : [S.missIn(scopeName(scope)), S.missInB];
+    String(paras[0]).split(/(\s+)/).forEach((w, i) => { if (/^\s+$/.test(w)) lead.append(w); else { const s = el('span', 'w', w); s.style.animationDelay = calm ? '0ms' : Math.min(i * 7, 600) + 'ms'; lead.append(s); } });
+    text.append(...paras.slice(1, 3).map(t => el('p', '', t)));
+    if (paras.length > 3) { const rest = el('div'); rest.hidden = true; rest.append(...paras.slice(3).map(t => el('p', '', t))); const m = el('button', 'st-more', S.more); m.type = 'button'; m.addEventListener('click', () => { rest.hidden = false; const p = rest.firstChild; p.tabIndex = -1; p.focus({ preventScroll: true }); m.remove(); }); text.append(rest, m); }
+    const src = el('p', 'st-src'); src.append(el('span', 'st-dot'), r ? S.from(scopeName(r.s)) : S.missSrc);
+    side.append(el('p', 'st-k', S.found), src);
+    const go = r ? r.go : { label: S.mail, href: 'mailto:hello@synk.im' };
+    if (go && safe(go.href)) { const a = el('a', 'st-go'); a.href = go.href; a.append(el('span', '', go.label), el('span', '', '→')); a.lastChild.setAttribute('aria-hidden', 'true'); side.append(a); }
+    const rel = r ? r.rel.map(id => recs.get(id)).filter(Boolean) : data.starters.slice(0, 3).map(id => recs.get(id)).filter(Boolean);
+    if (rel.length) {
+      side.append(el('p', 'st-k st-k2', S.next));
+      const ul = el('ul', 'st-rel'); rel.forEach(x => { const li = el('li'), b = el('button', '', x.t); b.type = 'button'; b.dataset.askRecord = x.id; li.append(b); ul.append(li); }); side.append(ul);
     }
-    const n = folded.reduce((a, [, t]) => a + t.length, 0);
-    if (n) {
-      const d = el('details', 'sh-more'); d.append(el('summary', '', S.more(n)));
-      for (const [t, ps] of folded) { if (t) d.append(el('h4', 'sh-also', t)); d.append(...ps.map(x => el('p', '', x))); }
-      l.append(d);
-    }
-    const seen = new Set();
-    for (const x of list) {
-      const a = x.action;
-      if (!a?.href || seen.has(a.href) || typeof a.label !== 'string' || !a.label.trim() || !safe(a.href) || seen.size > 1) continue;
-      seen.add(a.href);
-      const link = el('a', seen.size === 1 ? 'sh-go' : 'sh-go2'); link.href = a.href; link.append(el('span', '', a.label), el('span', '', '→')); link.lastChild.setAttribute('aria-hidden', 'true');
-      r.append(link);
-    }
-    const rel = [...list.slice(1).map(x => x.id), ...(res.relatedIds || []).slice(0, res.status === 'clarify' ? 3 : 2)].filter((x, i, a) => a.indexOf(x) === i && x !== first?.id).slice(0, 3).map(x => relBtn(x)).filter(Boolean);
-    if (rel.length) { const w = el('div', 'sh-rels'); r.append(el('p', 'sh-label', res.status === 'clarify' ? S.pick : S.next)); w.append(...rel); r.append(w); }
-    if (first) {
-      const c = el('button', 'sh-copy', S.copy); c.type = 'button';
-      c.addEventListener('click', async () => { try { await navigator.clipboard.writeText([...msg, ...list.map(x => x.answer)].filter(Boolean).join('\n\n')); say(S.copied); } catch { say(S.nocopy); } });
-      r.append(c);
-    }
-    show(o, from);
+    grid.append(text, side);
+    art.append(back, h, lead, grid);
+    $('.st-stage', stage).scrollTop = 0;
+    if (keep) input.focus({ preventScroll: true }); else { h.tabIndex = -1; h.focus({ preventScroll: true }); }
   }
 
-  async function browse(id, from) {
-    pull(id);
-    /* 사업 책을 펴면 다음 질문은 그 사업 문맥으로 읽는다 */
-    ctx = { brand: BR.includes(id) ? id : 'synk' };
-    try { await load(); } catch { pull(null); say(S.fail); return; }
-    const d = docs.get(id), rs = [...recs.values()].filter(r => r.sourceId === id);
-    const [o, l, r] = book(id);
-    const [c0, c1, c2 = ''] = S.count(rs.length), c = el('p', 'sh-count', c0); c.append(el('b', '', c1), c2);
-    l.append(el('p', 'sh-kick', nameOf(id)), el('h3', 'sh-q', d ? (d.title.split(' — ').slice(1).join(' — ') || d.title) : nameOf(id)), c);
-    const w = el('div', 'sh-rels'); w.append(...rs.slice(0, 3).map(x => relBtn(x.id)).filter(Boolean));
-    r.append(el('p', 'sh-label', S.often), w);
-    show(o, from);
-  }
-
-  async function ask(text, record, typed) {
-    const q = String(text || '').trim();
-    if (busy || (!q && !record)) return;
-    const from = document.activeElement;
-    busy = true; form.setAttribute('aria-busy', 'true'); go.disabled = true; board.classList.add('turning');
-    try {
-      await load();
-      const r = record && recs.get(record);
-      let res;
-      if (r) {
-        res = { status: 'matched', records: [r], sourceIds: [r.sourceId], relatedIds: (r.relatedIds || []).slice(0, 2), brand: r.brand };
-        ctx = { brand: BR.includes(r.brand) ? r.brand : ctx.brand, recordIds: [r.id] };
-      } else {
-        res = await eng.answer(q, ctx);
-        if (['matched', 'needs_confirmation'].includes(res.status)) ctx = { brand: BR.includes(res.brand) ? res.brand : ctx.brand, recordIds: (res.records || []).map(x => x.id) };
-        else if (!['clarify', 'courtesy'].includes(res.status)) ctx = { brand: ctx.brand };
-      }
-      render(q || r.title, res, from);
-      if (typed) { input.value = ''; size(); }
-    } catch {
-      board.classList.remove('turning'); say(S.fail);
-    } finally {
-      busy = false; form.setAttribute('aria-busy', 'false'); go.disabled = !input.value.trim();
-    }
-  }
-
-  function size() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 140) + 'px'; go.disabled = busy || !input.value.trim(); }
-  input.addEventListener('focus', () => shelf.load());
-  input.addEventListener('input', size);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (input.value.trim()) form.requestSubmit(); } });
-  form.addEventListener('submit', e => { e.preventDefault(); ask(input.value, null, true); });
-  books.forEach(b => b.addEventListener('click', () => browse(b.dataset.book, b)));
-  /* 책갈피 · 이어 물을 것 · 바닥의 사업자 정보 단추: 창 밖에서 누르면 위의 창 열기가 먼저 돈다 */
-  document.addEventListener('click', e => {
+  /* 입력칸 초점은 자료만 불러온다 — 목록으로 되돌리는 일은 창을 열 때만(고른 사업 · 답을 지우지 않게) */
+  input.addEventListener('focus', () => { if (!data) load().catch(() => say(S.fail)); });
+  input.addEventListener('input', () => { send.disabled = !input.value.trim(); if (data) suggest(); });
+  input.addEventListener('keydown', e => {
+    if (e.isComposing) return;
+    if (!data) { if (e.key === 'Enter') { e.preventDefault(); form.requestSubmit(); } return; }
+    if (e.key === 'ArrowDown' && items.length && !pick.hidden) { e.preventDefault(); keyed = true; mark((active + 1) % items.length); }
+    else if (e.key === 'ArrowUp' && items.length && !pick.hidden) { e.preventDefault(); keyed = true; mark(active < 0 ? items.length - 1 : (active - 1 + items.length) % items.length); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (!pick.hidden && keyed && active >= 0 && items[active]) answer(items[active], items[active].t, true); else if (input.value.trim()) ask(input.value.trim(), true); }
+  });
+  /* 자료를 못 불러왔으면 보낼 때 다시 불러 보고, 그래도 안 되면 알린다 */
+  form.addEventListener('submit', e => {
+    e.preventDefault(); const q = input.value.trim(); if (!q) return;
+    if (data) ask(q, true); else load().then(() => ask(q, true)).catch(() => say(S.fail));
+  });
+  /* 이어 물을 것 · 바닥의 사업자 정보 단추: 창 밖에서 누르면 위의 창 열기가 먼저 돈다 */
+  document.addEventListener('click', async e => {
     const b = e.target.closest('[data-ask-q],[data-ask-record]');
     if (!b) return;
     e.preventDefault();
-    ask(b.dataset.askQ, b.dataset.askRecord || null);
+    try { await load(); } catch { say(S.fail); return; }
+    const r = b.dataset.askRecord && recs.get(b.dataset.askRecord);
+    if (r) answer(r, r.t); else ask(b.dataset.askQ || '');
   });
-  if ($('#sheet-ask')?.open) shelf.load();
+  if ($('#sheet-ask')?.open) stage.load();
 }
