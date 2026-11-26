@@ -113,7 +113,7 @@ function maskNativeSynkCompany(mask){
   const content=document.querySelector('#app');if(!content)return;
   if(mask&&!synkNativeMask){
     const note=document.createElement('div');note.className='initial-loading synk-id-mask-note';note.setAttribute('role','status');note.setAttribute('aria-live','polite');
-    const logo=document.createElement('img');logo.className='brand-logo';logo.src='/wordmark.svg';logo.alt='SYNK';
+    const logo=document.createElement('img');logo.className='brand-logo';logo.src='/brand-logo.svg';logo.alt='SYNK';
     const text=document.createElement('p');text.textContent='플랫폼의 SYNK ID 연결을 확인하고 있어요.';
     const line=document.createElement('span');line.className='loading-line';note.append(logo,text,line);content.before(note);
     const nodes=['#app','#overlay','#toast','#workspace-messenger','#workspace-teaching','#workspace-call'].map(selector=>document.querySelector(selector)).filter(Boolean).map(node=>({node,hidden:Boolean(node.hidden),masked:Boolean(node.classList?.contains('synk-native-hidden')),inert:node.inert}));

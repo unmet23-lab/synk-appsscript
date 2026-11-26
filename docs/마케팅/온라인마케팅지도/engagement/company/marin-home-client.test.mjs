@@ -892,11 +892,11 @@ test('11-25 한 번에 처리: 모든 내 차례를 한 줄로 세운다 — 고
   assert.equal(why['work:w1'],'오늘 일정');
   const short=day(3).slice(5).split('-').map(Number).join('.');
   assert.equal(why['chat:t3'],`${short}까지`,'이번 주 기한은 「오늘 안에」로 부르지 않는다(카본 H2)');
-  // 첫 화면: 1순위 한 장 · 단추 하나 · 2순위부터 다섯 줄 · 나머지는 수로만.
+  // 첫 화면: 1순위 한 장 · 단추 하나 · 2순위부터 세 장(그 카드 뒤에 머리 줄로 겹친다, 11-26 로비 겉) · 나머지는 수로만.
   const office=f.run('wsOfficeTurnHtml(workspaceTurnModel())');
   assert.match(office.lead,/1순위[\s\S]*편집본 확인[\s\S]*data-action="ws-queue-start"[\s\S]*1순위부터 처리/);
-  assert.equal([...office.rest.matchAll(/data-action="ws-queue-open"/g)].length,5);
-  assert.match(office.rest,/그 밖에 <span class="ws-num">3<\/span>개/);
+  assert.equal([...office.rest.matchAll(/data-action="ws-queue-open"/g)].length,3);
+  assert.match(office.rest,/그 밖에 <span class="ws-num">5<\/span>개/);
   assert.match(f.run('wsHelloHtml(workspaceTurnModel())'),/처리할 일이 <span class="ws-num">9<\/span>개 있어요/);
 });
 

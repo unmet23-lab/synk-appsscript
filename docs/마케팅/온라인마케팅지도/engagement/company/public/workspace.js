@@ -65,7 +65,7 @@ function workspaceSideNav(demoMode=false){
   const row=(label,glyph,action,attrs,{current=false,href='',extra='',sub='',mark=''}={})=>{const tag=href?'a':'button',open=href?`<a class="ws-side-link" href="${href}"`:'<button type="button" class="ws-side-link"';return `<li>${open} data-action="${action}" ${attrs} ${current?'aria-current="page"':''}><span class="ws-side-ic">${mark||workspaceShellGlyph(glyph)}</span><span class="ws-side-label">${escape(label)}</span>${extra}</${tag}>${sub}</li>`;};
   const sub=rows=>rows.length?`<ul class="ws-side-sub">${rows.join('')}</ul>`:'';
   const subRow=(label,action,attrs,current,extra='')=>`<li><button type="button" class="ws-side-sublink" data-action="${action}" ${attrs} ${current?'aria-current="page"':''}><span>${escape(label)}</span>${extra}</button></li>`;
-  const brand=`<a class="ws-side-brand" href="/?tab=home" data-action="tab" data-tab="home" aria-label="SYNK Workspace 사무실"><img class="brand-logo" src="/wordmark.svg" alt="" width="46" height="27"><span>Workspace</span></a>`;
+  const brand=`<a class="ws-side-brand" href="/?tab=home" data-action="tab" data-tab="home" aria-label="SYNK Workspace 사무실"><img class="brand-logo" src="/brand-logo.svg" alt="" width="42" height="30"><span>Workspace</span></a>`;
   if(demoMode){
     const demoRows=[['overview','이번 주 비교','sns'],['history','전체 추이','file'],['analysis','상세 분석','admin']].map(([id,label,glyph])=>row(label,glyph,'report-view',`data-view="${id}"`,{current:state.tab===id})).join('');
     const exits=[['home','사무실','office'],['messenger','메신저','chat'],['workroom','만들기','make'],['handbook','회사 안내','file']].map(([id,label,glyph])=>row(label,glyph,'tab',`data-tab="${id}"`)).join('');
@@ -464,7 +464,7 @@ function mountWorkspaceModule(){
   // With calls enabled the frame is loaded in the background so invitations ring and a call survives every menu.
   if((shown||workspaceModule.preload)&&!workspaceModule.host){
     const host=document.createElement('section');host.id='workspace-messenger';host.className='workspace-messenger';host.setAttribute('aria-label','팀 메신저');
-    const frame=document.createElement('iframe');frame.id='messenger-frame';frame.title='싱ㅋ 팀 메신저';frame.allow='microphone; display-capture; autoplay; fullscreen';frame.src='/messenger/';frame.setAttribute('referrerpolicy','same-origin');
+    const frame=document.createElement('iframe');frame.id='messenger-frame';frame.title='SYNK 팀 메신저';frame.allow='microphone; display-capture; autoplay; fullscreen';frame.src='/messenger/';frame.setAttribute('referrerpolicy','same-origin');
     host.append(frame);document.body.append(host);workspaceModule.host=host;workspaceModule.frame=frame;
     startWorkspaceModuleLoading();
     frame.addEventListener('load',()=>{if(workspaceModule.frame!==frame)return;syncWorkspaceModuleGeometry();sendWorkspaceMessage({type:'workspace:ready-check'});sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceBlocksBackground()});});

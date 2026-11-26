@@ -58,7 +58,7 @@ function ensureTeachingWorkspace(){
 function renderTeachingOnly(){
   teachingPrepareRender();
   app.classList?.remove('boot-shell');
-  app.innerHTML='<div class="teaching-only-shell"><header class="teaching-only-bar"><a href="/" aria-label="싱크 워크스페이스"><img src="/wordmark.svg" alt="SYNK" width="92" height="38"></a><span>내 수업</span><a class="teaching-company-entry" href="/">회사 업무로 이동</a></header><main id="main" tabindex="-1">'+teachingWorkspacePage()+'</main></div>';
+  app.innerHTML='<div class="teaching-only-shell"><header class="teaching-only-bar"><a href="/" aria-label="싱크 워크스페이스"><img src="/brand-logo.svg" alt="SYNK" width="54" height="38"></a><span>내 수업</span><a class="teaching-company-entry" href="/">회사 업무로 이동</a></header><main id="main" tabindex="-1">'+teachingWorkspacePage()+'</main></div>';
   resetWorkspaceModule();ensureTeachingWorkspace();
 }
 async function logoutTeachingForCompany(){

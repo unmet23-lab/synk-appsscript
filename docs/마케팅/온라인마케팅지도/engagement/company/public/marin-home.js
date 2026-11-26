@@ -457,13 +457,13 @@ function wsSourceText(item){
   return 'SNS 검토';
 }
 function wsSourceMark(item){return item.kind==='client'?workspaceCompanyMark('PULSE'):item.kind==='schedule'?workspaceCompanyMark(item.row.company):'';}
-// 첫 화면(설계 13절): 1순위 한 장과 단추 하나. 2순위부터 다섯 줄, 나머지는 수로만. 무리 · 방별 수는 쓰지 않는다.
-const WS_QUEUE_PREVIEW=5;
+// 첫 화면(설계 13절): 1순위 한 장과 단추 하나. 2순위부터 세 장은 그 카드 뒤에 머리 줄로 겹쳐 서고(11-26 로비 겉), 나머지는 수로만. 무리 · 방별 수는 쓰지 않는다.
+const WS_QUEUE_PREVIEW=3;
 function wsOfficeTurnHtml(model){
   const first=model.items[0],{failed}=wsTurnState(model);
   const leadHtml=first
     ?`<li class="ws-turn-lead"><span class="ws-turn-k"><b class="ws-qn">1순위</b>${wsSourceMark(first)}${escape(wsSourceText(first))}</span><p class="ws-turn-t">${escape(first.title)}</p><p class="ws-turn-d">${escape(first.why||'')}</p><span class="ws-turn-a"><a class="ws-btn ws-btn-primary ws-btn-go" href="/?tab=home&section=inbox" data-action="ws-queue-start">1순위부터 처리${workspaceShellGlyph('chev')}</a><span class="ws-turn-of">모두 <span class="ws-num">${model.total}</span>개 · 끝내면 다음 일이 열려요</span></span></li>`
-    :`<li class="ws-turn-lead is-done"><span class="ws-turn-k">내 차례</span>${wsTurnState(model).loading.length||failed.length?`<p class="ws-turn-t">${escape(wsEmptyText(model))}</p><p class="ws-turn-d">${failed.length?'아래에서 다시 불러와 주세요. 0개라는 뜻이 아니에요.':'잠시만 기다려 주세요.'}</p>`:'<p class="ws-turn-t">새 일이 오면 여기에 1순위로 보여요</p>'}</li>`;
+    :`<li class="ws-turn-lead is-done"><span class="ws-turn-k">내 차례</span>${wsTurnState(model).loading.length||failed.length?`<p class="ws-turn-t">${escape(wsEmptyText(model))}</p><p class="ws-turn-d">${failed.length?'「다시」를 눌러 불러와 주세요. 0개라는 뜻이 아니에요.':'잠시만 기다려 주세요.'}</p>`:'<p class="ws-turn-t">새 일이 오면 여기에 1순위로 보여요</p>'}</li>`;
   const next=model.items.slice(1,1+WS_QUEUE_PREVIEW).map((item,i)=>`<li><a class="ws-trow ws-qrow" href="/?tab=home&section=inbox" data-action="ws-queue-open" data-key="${escape(item.key)}"><span class="ws-qn">${i+2}</span><span class="ws-turn-k">${wsSourceMark(item)}${escape(wsSourceText(item))}</span><span class="ws-turn-t">${escape(item.title)}</span><span class="ws-turn-d">${escape(item.why||'')}</span><span class="ws-go">열기${workspaceShellGlyph('chev')}</span></a></li>`).join('');
   const more=model.total>1+WS_QUEUE_PREVIEW?`<li><a class="ws-trow ws-qmore" href="/?tab=home&section=inbox" data-action="ws-inbox" data-room=""><span class="ws-turn-t">그 밖에 <span class="ws-num">${model.total-1-WS_QUEUE_PREVIEW}</span>개</span><span class="ws-go">순서 모두 보기${workspaceShellGlyph('chev')}</span></a></li>`:'';
   return {lead:leadHtml,rest:next+more
@@ -495,21 +495,28 @@ function wsOfficeExtraHtml(){
   const health=[['예약 문제',`${(D.problems||[]).length}건`,(D.problems||[]).length>0],['나갈 시각이 지난 검토',`${late}개`,late>0],['오늘 수집한 SNS 계정',`${Number(H.collectOk)||0} / ${Number(H.collectTotal)||0}`,false],['다시 연결할 계정',`${Number(H.needsReconnect)||0}개`,Number(H.needsReconnect)>0]];
   return `${going}<h3>운영 상태</h3><dl class="ws-health">${health.map(([label,value,warn])=>`<div><dt>${escape(label)}</dt><dd class="${warn?'is-warn':''}">${escape(value)}</dd></div>`).join('')}</dl>`;
 }
+// 사무실의 큰 시계(11-26 로비 겉): 분이 바뀌면 그 자리 글만 바꾼다. 화면을 다시 그리지 않고, 한 번만 건다.
+function wsClockNow(){return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());}
+function wsDayNow(){return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'long'}).format(new Date());}
+function wsClockStart(){
+  if(typeof window==='undefined'||typeof document==='undefined'||typeof document.querySelectorAll!=='function'||typeof setInterval!=='function'||window.__wsClockTimer)return;
+  // 자정을 넘기면 날짜 · 요일도 같이 바뀐다(카본 A5)
+  const timer=setInterval(()=>{const now=wsClockNow(),day=wsDayNow();for(const node of document.querySelectorAll('[data-ws-clock]'))if(node.textContent!==now)node.textContent=now;for(const node of document.querySelectorAll('[data-ws-day]'))if(node.textContent!==day)node.textContent=day;},15000);
+  timer?.unref?.();window.__wsClockTimer=timer;
+}
 function wsOfficeHtml(){
   const model=workspaceTurnModel(),turn=wsOfficeTurnHtml(model);
+  wsClockStart();
   // 소속 글 · 미지정 안내 띠 · 업무 링크 안내는 인사 아래에 둔다. 회사별 업무 입구(예전 waHomeTools)는 왼쪽 메뉴 · 「더보기」 시트가 맡는다.
   const scope=typeof waScopeBar==='function'?waScopeBar():'',notice=typeof waWorkTargetNoticeHtml==='function'?waWorkTargetNoticeHtml():'';
+  // 넓은 화면은 왼쪽에 시계 · 인사 · 방 · 운영 상태, 오른쪽에 1순위 카드와 그 뒤에 겹쳐 선 다음 일. 읽는 차례(DOM)는 시계 → 인사 → 1순위 → 방 → 운영 상태이고,
+  // 좁은 화면은 같은 차례로 한 줄에 선다(카본 A3: 보이는 차례와 Tab 차례가 같다). 카드 안에서는 1순위가 먼저다.
   return `<section class="next-home ws-office" id="ws-office" aria-labelledby="ws-office-hello">
+    <p class="ws-office-date"><span class="ws-clock" data-ws-clock>${escape(wsClockNow())}</span><span class="ws-day" data-ws-day>${escape(wsDayNow())}</span></p>
     <div class="ws-office-hello"><h1 id="ws-office-hello" class="ws-hello">${wsHelloHtml(model)}</h1><div class="ws-office-notes">${scope}${notice}</div></div>
-    <div class="ws-office-t1"><h2 class="ws-office-date">${wsDateLabel()}</h2><ol class="ws-turn" id="ws-office-lead" aria-label="1순위">${turn.lead}</ol><ol class="ws-turn ws-turn-rest" id="ws-office-rest" aria-label="다음 순서">${turn.rest}</ol></div>
-    <div class="ws-office-map">
-      <div class="ws-office-figure" id="ws-office-rooms" role="group" aria-label="사무실 그림. 위층에 LAB 한국어 교실, SHIFT AI 강의실, PULSE 영상 스튜디오, 아래층에 PATH 유학 상담실, 라운지, 제작 책상이 있어요."><span class="ws-office-img" aria-hidden="true"></span>${wsOfficeRoomsHtml()}</div>
-      <p class="ws-office-cap">방을 누르면 그 방의 일만 같은 순서로 볼 수 있어요.</p>
-    </div>
-    <div class="ws-office-t2">
-      <div class="ws-office-extra" id="ws-office-extra">${wsOfficeExtraHtml()}</div>
-      <div class="ws-office-next"><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div></div>
-    </div>
+    <div class="ws-office-t1"><ol class="ws-turn" id="ws-office-lead" aria-label="1순위">${turn.lead}</ol><ol class="ws-turn ws-turn-rest" id="ws-office-rest" aria-label="다음 순서">${turn.rest}</ol><div class="ws-office-next"><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div></div></div>
+    <div class="ws-office-map"><p class="ws-office-cap" id="ws-office-rooms-cap">방별로 보기</p><div class="ws-office-figure" id="ws-office-rooms" role="group" aria-labelledby="ws-office-rooms-cap">${wsOfficeRoomsHtml()}</div></div>
+    <div class="ws-office-extra" id="ws-office-extra">${wsOfficeExtraHtml()}</div>
     <div class="ws-office-more">${staffStoriesHomeHtml()}<details class="next-assistant" ${marinNext.asking?'open':''}><summary><span class="next-assistant-title"><span class="marin-assistant-avatar" aria-hidden="true">${icon('chat')}</span><span>마린에게 직접 묻기</span></span>${icon('right')}</summary>${marinConversationPage()}</details></div>
   </section>`;
 }
@@ -650,7 +657,7 @@ function workspaceTurnPaint(){
     const turn=wsOfficeTurnHtml(model);
     const hello=document.getElementById('ws-office-hello');if(hello){const html=wsHelloHtml(model);if(hello.innerHTML!==html)hello.innerHTML=html;}
     set('ws-office-lead',turn.lead);set('ws-office-rest',turn.rest);set('ws-office-extra',wsOfficeExtraHtml());
-    const rooms=document.getElementById('ws-office-rooms');if(rooms){const html=`<span class="ws-office-img" aria-hidden="true"></span>${wsOfficeRoomsHtml()}`;if(rooms.innerHTML!==html)rooms.innerHTML=html;}
+    const rooms=document.getElementById('ws-office-rooms');if(rooms){const html=wsOfficeRoomsHtml();if(rooms.innerHTML!==html)rooms.innerHTML=html;}
   }
   // 적용해 · 버림을 누르면 그 자리에 되돌리기가, 되돌리면 적용해가 온다. 보내는 동안은 단추가 꺼져 있으니 제목에 잠시 두고,
   // 답이 오면 tipSharesMutate가 남긴 tipShares.focus(undo:행 · apply:행)를 받아 새 단추로 옮긴다.
