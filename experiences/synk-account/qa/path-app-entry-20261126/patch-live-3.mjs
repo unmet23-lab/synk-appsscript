@@ -97,6 +97,7 @@ for (const [a, b] of [
   ['- 서울 하루 일정 · 무료, 가입 없이', '- PATH 앱 · 대학 비교, 서류 준비, 입학 면접 연습(https://synk.im/path/app/)\n- 서울 하루 일정 · 무료, 가입 없이'],
   ['- 유학 준비와 일자리 조건 알아보기(준비 중)', '- 일자리 조건 알아보기(준비 중)'],
   ['Study-abroad and job preparation open next, one at a time. “A day in Seoul” and caregiver interview practice are available now; help with preparing to study, finding out job requirements', 'Prepare to study in the PATH app (https://synk.im/path/app/); job preparation opens next. The PATH app, “A day in Seoul” and caregiver interview practice are available now; finding out job requirements'],
+  ['and settling into life in Korea is in preparation. We do not guarantee', 'and settling into life in Korea are in preparation. We do not guarantee'],
 ]) { assert.equal(llms.split(a).length, 2, a.slice(0, 40)); llms = llms.replace(a, () => b); }
 fs.writeFileSync(path.join(out, 'llms.txt'), llms);
 console.log('llms.txt', llmsBefore.length, '→', llms.length);
