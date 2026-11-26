@@ -203,6 +203,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   // fresh: 막 연결한 줄. 도는 확인이 그 줄을 덮었어도 연결 앞의 로그인으로 읽은 값일 수 있어(Gemini는 계정을 바꾸는 사이 앞 계정의 답이 늦게 온다) 끝난 뒤 다시 읽는다(GPT A4)
   async function check({ids,quiet=false,fresh=false}={}){
     const wanted=()=>load().rows.filter(row=>row.source==='auto'&&(!Array.isArray(ids)||ids.includes(row.id))).map(row=>row.id);
+    // 읽을 줄이 없으면 확인 알림 · 저장 없이 돌려준다. 계정을 아직 잇지 않은 PC에 빈 판 파일이 생겨 자동 확인이 돌기 시작하지 않게
+    // (0b8d8be6bc에 있던 가드, 되살리며 빠졌던 것 — 카본 pc-0513-publish-20261126 B2)
+    if(!wanted().length)return publicSnapshot();
     if(checking){
       // 자동 읽기 중에 회원이 「지금 확인」을 누르면 그때부터 진행이 보이게 한다.
       if(!quiet&&checkQuiet){checkQuiet=false;emit();}

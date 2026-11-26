@@ -315,11 +315,11 @@
 @media (min-width:900px){
   #portal-entry .b-cols{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
 }
-/* Gemini 칸이 서면 900~1099px 창(앱 최소 창 960×680 포함)에서는 세 칸을 한 줄에 둔다. 셋째 칸이 아래 줄로 내려가면 「다시 읽기」가 화면 밖으로 밀렸다.
+/* 칸이 셋 서면(Gemini 칸이 더해진 판) 900~1099px 창(앱 최소 창 960×680 포함)에서는 세 칸을 한 줄에 둔다. 칸이 하나나 둘이면 전처럼 둔다(카본 pc-0513-publish A1). 셋째 칸이 아래 줄로 내려가면 「다시 읽기」가 화면 밖으로 밀렸다.
    칸이 좁아지는 만큼 계정 이름 칸과 사이를 줄여 막대 길이를 지킨다 */
 @media (min-width:900px) and (max-width:1099px){
-  #portal-entry .b-cols:has(> .b-flow){grid-template-columns:repeat(3,minmax(0,1fr));column-gap:32px}
-  #portal-entry .b-cols:has(> .b-flow) .b-row{grid-template-columns:minmax(4.5em,6.5em) minmax(40px,1fr) 4em;column-gap:10px}
+  #portal-entry .b-cols:has(> .b-col:nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr));column-gap:32px}
+  #portal-entry .b-cols:has(> .b-col:nth-child(3)) .b-row{grid-template-columns:minmax(4.5em,6.5em) minmax(40px,1fr) 4em;column-gap:10px}
   /* 좁은 칸의 Gemini 줄은 작은 글(초기화 때, 다른 계정 로그인 중 · 읽은 날)을 이름 아래부터 줄 끝까지 써서 한 줄에 든다 */
   #portal-entry .b-flow .b-row.b-open,#portal-entry .b-flow .b-row.b-away{grid-template-areas:"name bar pct" "note note note"}
 }
@@ -327,16 +327,16 @@
    보고 셋과 「보고 n개가 더」 줄이 서도 「다시 읽기」까지 든다(흐름 20의 960×680 · 761 · 800 · 901) */
 @media (min-width:900px) and (max-width:1099px) and (max-height:1000px){
   /* 머리마다 무료 크레딧 소제목 한 줄이 더해졌다(11-26). 방을 조금 더 위에서 시작하고 머리 줄 사이를 붙여 그만큼을 되찾는다 */
-  #portal-entry .room-top.boarded:has(.b-flow){top:clamp(68px,10vh,150px);max-height:calc(100% - clamp(68px,10vh,150px) - 70px)}
-  #portal-entry .b-cols:has(> .b-flow) .b-big{font-size:28px}
-  #portal-entry .b-cols:has(> .b-flow) .b-head{padding-bottom:4px;row-gap:0}
-  #portal-entry .b-cols:has(> .b-flow) .b-credit{margin-top:1px;line-height:1.25}
-  #portal-entry .b-cols:has(> .b-flow) .b-row{padding:2px 0}
-  #portal-entry .b-cols:has(> .b-flow) .b-fold{padding:4px 0}
-  #portal-entry .room.boarded:has(.b-flow) .rep-h{margin-top:6px}
-  #portal-entry .room.boarded:has(.b-flow) .r-item{margin-top:4px;padding-top:4px}
-  #portal-entry .room.boarded:has(.b-flow) .brief::before{margin-top:6px}
-  #portal-entry .room.boarded:has(.b-flow) .live{margin-top:5px}
+  #portal-entry .room-top.boarded:has(.b-cols > .b-col:nth-child(3)){top:clamp(68px,10vh,150px);max-height:calc(100% - clamp(68px,10vh,150px) - 70px)}
+  #portal-entry .b-cols:has(> .b-col:nth-child(3)) .b-big{font-size:28px}
+  #portal-entry .b-cols:has(> .b-col:nth-child(3)) .b-head{padding-bottom:4px;row-gap:0}
+  #portal-entry .b-cols:has(> .b-col:nth-child(3)) .b-credit{margin-top:1px;line-height:1.25}
+  #portal-entry .b-cols:has(> .b-col:nth-child(3)) .b-row{padding:2px 0}
+  #portal-entry .b-cols:has(> .b-col:nth-child(3)) .b-fold{padding:4px 0}
+  #portal-entry .room.boarded:has(.b-cols > .b-col:nth-child(3)) .rep-h{margin-top:6px}
+  #portal-entry .room.boarded:has(.b-cols > .b-col:nth-child(3)) .r-item{margin-top:4px;padding-top:4px}
+  #portal-entry .room.boarded:has(.b-cols > .b-col:nth-child(3)) .brief::before{margin-top:6px}
+  #portal-entry .room.boarded:has(.b-cols > .b-col:nth-child(3)) .live{margin-top:5px}
 }
 /* 넓은 창(1100px 이상): 계정판은 왼쪽에 서비스를 위아래로 쌓고, 솔리오 보고와 단추는 오른쪽 칸에 둔다.
    쌍 맹검(11-24)에서 보고를 아래에 둔 판(오른쪽 아래가 빈다)과 세 칸 판(막대가 짧다)을 둘 다 이겼다. 보고 머리는 서비스 머리와 같은 목소리, 꼬리표는 글 위에 */
@@ -358,12 +358,12 @@
   #portal-entry .room.boarded .r-item .r-tag{display:block;padding:0 0 4px}
   #portal-entry .room.boarded .rep-more,#portal-entry .room.boarded .rep-cost{padding-left:0}
   #portal-entry .room.reported .say,#portal-entry .room.boarded .report,#portal-entry .room.boarded .rep-more,#portal-entry .room.boarded .rep-cost{max-width:none}
-  /* Gemini 칸이 서면 왼쪽 칸에 세 서비스가 쌓인다. 방을 낮은 창 자리에서 시작하고 칸 사이 · 머리 · 큰 숫자를 줄인다.
+  /* 칸이 셋 서면 왼쪽 칸에 세 서비스가 쌓인다. 방을 낮은 창 자리에서 시작하고 칸 사이 · 머리 · 큰 숫자를 줄인다.
      쓸 수 있는 계정이 적은 판(흐름 20)은 1440×900 · 1100×760에서 Gemini 두 계정까지 든다. Claude 줄이 넷 넘게 서면 Gemini 줄은 방을 내려야 보인다(설계 11.10) */
-  #portal-entry .room-top.boarded:has(.b-flow){top:clamp(72px,11vh,150px);max-height:calc(100% - clamp(72px,11vh,150px) - 70px)}
-  #portal-entry .room.boarded:has(.b-flow) .b-cols{row-gap:clamp(16px,2.4vh,24px)}
-  #portal-entry .room.boarded:has(.b-flow) .b-head{padding-bottom:8px;row-gap:2px}
-  #portal-entry .room.boarded:has(.b-flow) .b-big{font-size:clamp(28px,2.6vw,36px)}
+  #portal-entry .room-top.boarded:has(.b-cols > .b-col:nth-child(3)){top:clamp(72px,11vh,150px);max-height:calc(100% - clamp(72px,11vh,150px) - 70px)}
+  #portal-entry .room.boarded:has(.b-cols > .b-col:nth-child(3)) .b-cols{row-gap:clamp(16px,2.4vh,24px)}
+  #portal-entry .room.boarded:has(.b-cols > .b-col:nth-child(3)) .b-head{padding-bottom:8px;row-gap:2px}
+  #portal-entry .room.boarded:has(.b-cols > .b-col:nth-child(3)) .b-big{font-size:clamp(28px,2.6vw,36px)}
 }
 /* 한 칸으로 쌓는 창: 맨 위가 말한 서비스(급한 쪽)를 먼저 둔다(설계 검토 12) */
 @media (max-width:899px){

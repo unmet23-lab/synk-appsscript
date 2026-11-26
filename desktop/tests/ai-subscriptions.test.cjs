@@ -1481,3 +1481,12 @@ test('a leftover agy log that appears after a check found none, with the folder 
     }finally{service.dispose();fs.rmSync(base,{recursive:true,force:true});}
   }
 });
+
+test('a check with no connected account returns at once without writing a board file (카본 pc-0513-publish-20261126 B2)',async()=>{
+  const base=fs.mkdtempSync(path.join(os.tmpdir(),'synk-subs-empty-')),root=path.join(base,'AiSubscriptions');
+  const service=createAiSubscriptions({root,platform:'win32',env:{},home:path.join(base,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>Date.now()});
+  try{
+    const snap=await service.check();
+    assert.equal(snap.checking,false);assert.equal(fs.existsSync(path.join(root,'board.json')),false);
+  }finally{service.dispose();fs.rmSync(base,{recursive:true,force:true});}
+});
