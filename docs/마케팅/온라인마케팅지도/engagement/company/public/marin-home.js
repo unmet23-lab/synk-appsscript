@@ -732,7 +732,8 @@ async function wsChatPatch(item,stage){
   if(!WS_CHAT_DONE[stage]||workspaceTurn.busy.has(key)||!task?.messageId||!wsChatActions(task,item.reasons).acts.some(act=>act.stage===stage))return;
   const stamp=typeof companyAuthSnapshot==='function'?companyAuthSnapshot():{userId:state.user?.id};
   const current=()=>typeof companyAuthCurrent==='function'?companyAuthCurrent(stamp):state.user?.id===stamp.userId;
-  workspaceTurn.busy.add(key);wsInboxPaint();
+  // 시작할 때의 busy · 계정만 정리한다. 그사이 계정이 바뀌면 새 계정의 busy · 확인 창은 건드리지 않는다(검수 FA2).
+  const busy=workspaceTurn.busy;busy.add(key);wsInboxPaint();
   let done=false,message='';
   try{
     const response=await fetch(`/messenger/api/messages/${encodeURIComponent(task.messageId)}/task`,{method:'PATCH',credentials:'same-origin',headers:{'Content-Type':'application/json',Accept:'application/json',...(state.csrf?{'X-CSRF-Token':state.csrf}:{})},body:JSON.stringify({revision:task.revision,stage})});
@@ -742,8 +743,12 @@ async function wsChatPatch(item,stage){
     else message=response.status===409?'그사이 다른 사람이 이 일을 바꿨어요. 새로 불러왔으니 다시 확인해 주세요.':response.status===401?'메신저 로그인이 끝났어요. 새로고침한 뒤 다시 해 주세요.':String(body.error||'바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
   }catch{if(!current())return;message='메신저에 닿지 못했어요. 잠시 뒤 다시 해 주세요.';}
   finally{
-    workspaceTurn.busy.delete(key);workspaceInbox.chatConfirm='';
-    if(current()){const slot=workspaceTurn.messenger;slot.at=0;slot.request++;slot.loading=false;await wsLoadMessenger();}
+    busy.delete(key);
+    const sameUser=Boolean(state.user)&&state.user.id===stamp.userId;
+    if(sameUser&&workspaceInbox.chatConfirm===key)workspaceInbox.chatConfirm='';
+    // 같은 계정이면 로그인 세대가 바뀌었어도 새로 읽고 다시 그린다(검수 FA1). 다른 계정이면 꺼진 단추만 걷어 낸다.
+    if(sameUser){const slot=workspaceTurn.messenger;slot.at=0;slot.request++;slot.loading=false;await wsLoadMessenger();}
+    else if(state.user)wsInboxPaint();
   }
   if(!current())return;
   if(!done){

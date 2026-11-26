@@ -1039,6 +1039,22 @@ test('11-25 메신저 할 일 단계 바꾸기는 회사 CSRF로 메신저 PATCH
   // 같은 계정의 로그인 세대가 바뀌어도 단추가 꺼진 채 남지 않는다(Fable F1).
   const gen=await chatFixture({reply:[chatTask('t1','requested',['accepted'])]});gen.f.context.companyAuthCurrent=()=>false;
   await gen.f.run("wsChatPatch(wsFindItem('chat:t1'),'accepted')");assert.equal(gen.f.run('workspaceTurn.busy.size'),0);assert.equal(gen.f.notifications.length,0,'다른 세대의 결과는 알리지 않는다');
+  assert.equal(gen.calls.slice(gen.calls.findIndex(call=>call.method==='PATCH')+1).filter(call=>call.url==='/messenger/api/workday').length,1,'같은 계정이면 세대가 바뀌어도 새로 읽어 다시 그린다(검수 FA1)');
+});
+
+test('11-26 PATCH 도중 계정이 바뀌면 옛 응답이 새 계정의 busy · 수정 요청 확인 창을 건드리지 않는다(검수 FA2)',async()=>{
+  const {f,calls}=await chatFixture({review:[chatTask('t2','review',['changes','done'],{reviewerId:'me'})]});
+  let release;const gate=new Promise(resolve=>{release=resolve;});
+  const plainFetch=f.context.fetch;f.context.fetch=async(url,options={})=>{if(options.method==='PATCH')await gate;return plainFetch(url,options);};
+  f.run("workspaceInbox.chatConfirm='chat:t2'");
+  const pending=f.run("wsChatPatch(wsFindItem('chat:t2'),'done')");
+  f.run("state.user={...state.user,id:'crew-b',name:'다른 직원'};wsTurnIdentity();workspaceTurn.busy.add('chat:t2');workspaceInbox.chatConfirm='chat:t2'");
+  const reads=calls.filter(call=>call.url==='/messenger/api/workday').length;
+  release();await pending;
+  assert.equal(f.run("workspaceTurn.busy.has('chat:t2')"),true,'새 계정의 busy는 그대로');
+  assert.equal(f.run('workspaceInbox.chatConfirm'),'chat:t2','새 계정이 연 확인 창은 그대로');
+  assert.equal(calls.filter(call=>call.url==='/messenger/api/workday').length,reads,'다른 계정의 할 일을 옛 응답으로 읽지 않는다');
+  assert.equal(f.notifications.length,0);
 });
 
 test('11-25 메신저 할 일 단계 바꾸기가 409 · 401이면 알리고 새로 읽되 회사 로그인은 그대로이고, 수정 요청은 바꾼 뒤 그 대화를 연다',async()=>{
