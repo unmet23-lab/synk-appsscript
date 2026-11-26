@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>창업자 · SYNK가 일하는 방식 — 시안</title>
+<link rel="icon" href="data:,">
+<style>
+/* 창업자 쪽 시안(11-26). 겉은 워크스페이스 로그인 「사원증」 판을 그대로 잇는다.
+   글자: 큰 문장 = Noto Serif KR 300 / 본문 · 단추 = SUIT / 시각 · 숫자 = Inter Tight
+   색: 노랑 = 바탕 · 먹 = 단추 하나와 숫자 띠 · 크림 = 카드 종이 · 회사 색 = 카드 머리의 작은 칩 */
+@font-face{font-family:'SUIT';src:url('../../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/SUIT.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Noto Serif KR';src:url('../../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/NotoSerifKR-300.woff2') format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'Inter Tight';src:url('../../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/InterTight.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{--edge:max(var(--gut),calc((100vw - 1360px)/2 + var(--gut)));--y:#FED027;--ink:#141414;--mute:rgba(20,20,20,.64);--card:#FFFCF3;--wait:#E5401F;--ease:cubic-bezier(.2,.7,.2,1);
+  --label:#1D1D1F;--label2:rgba(60,60,67,.82);--glass:rgba(255,254,250,.93);--hair:rgba(0,0,0,.08);
+  --lift:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 10px 24px -12px rgba(90,64,0,.32),0 36px 64px -36px rgba(90,64,0,.5);
+  --serif:'Noto Serif KR',serif;--sans:'SUIT',system-ui,sans-serif;--num:'Inter Tight','SUIT',sans-serif;--gut:max(20px,4.2vw)}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--y);color:var(--ink);font:400 16px/1.65 var(--sans);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+img{display:block;max-width:100%}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.wrap{max-width:1360px;margin:0 auto;padding-left:var(--gut);padding-right:var(--gut)}
+.eye{font:600 13px/1 var(--sans);letter-spacing:.02em;color:var(--mute);margin:0}
+h1,h2{font-family:var(--serif);font-weight:300;letter-spacing:-.03em;margin:0;text-wrap:balance}
+.btn{display:inline-flex;align-items:center;gap:12px;height:52px;padding:0 24px;border-radius:12px;font:700 15px/1 var(--sans);text-decoration:none;transition:background .2s}
+.btn.go{background:var(--ink);color:var(--y)}
+.btn.go:hover{background:#000}
+.btn svg{width:18px;height:18px}
+
+/* 머리 */
+.top{position:absolute;inset:0 0 auto;z-index:6;height:64px;display:flex;align-items:center;gap:44px;padding:0 var(--edge)}
+.top .logo{font:800 22px/1 var(--num);letter-spacing:-.04em;text-decoration:none}
+.top nav{display:flex;gap:24px;font-size:14px;color:var(--mute)}
+.top nav a{text-decoration:none}
+.top nav a:hover,.top nav a[aria-current]{color:var(--ink)}
+.top nav a[aria-current]{font-weight:700}
+
+/* 첫 화면: 사원증 */
+.hero{position:relative;min-height:max(760px,100svh);overflow:hidden}
+.hero .txt{position:absolute;left:var(--edge);bottom:clamp(40px,7vh,84px);z-index:3;max-width:min(760px,56vw)}
+.hero h1{font-size:clamp(46px,6.4vw,100px);line-height:1.08}
+.hero .lede{margin:24px 0 0;max-width:540px;font-size:17px;line-height:1.75;color:rgba(20,20,20,.78)}
+.hero .row{display:flex;gap:18px;align-items:center;margin-top:30px;flex-wrap:wrap}
+.hero .row a.soft{font:600 15px/1 var(--sans);color:var(--mute);text-decoration:none}
+.hero .row a.soft:hover{color:var(--ink)}
+.badge{position:absolute;z-index:2;right:clamp(140px,17vw,280px);top:0;display:flex;flex-direction:column;align-items:center}
+.lanyard{position:absolute;left:50%;top:-20px;width:400px;height:300px;transform:translateX(-50%);pointer-events:none}
+.lanyard i{position:absolute;top:0;width:16px;height:258px;background:var(--ink);border-radius:2px}
+.lanyard i:first-child{left:68px;transform-origin:top;transform:rotate(-17deg)}
+.lanyard i:last-child{right:68px;transform-origin:top;transform:rotate(17deg)}
+.swing{transform-origin:50% -200px;animation:sway 7s ease-in-out infinite;display:flex;flex-direction:column;align-items:center;padding-top:200px}
+@keyframes sway{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1deg)}}
+.clip{width:54px;height:30px;border-radius:6px;background:linear-gradient(#c9c6bf,#8d8a84);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);margin-bottom:-8px;position:relative;z-index:2}
+.idcard{width:340px;background:var(--card);border-radius:22px;padding:24px 26px 22px;box-shadow:0 40px 60px -30px rgba(70,50,0,.55),0 2px 0 rgba(0,0,0,.04)}
+.idcard .h{display:flex;justify-content:space-between;align-items:center;font:700 11px/1 var(--num);letter-spacing:.14em;color:var(--mute)}
+.idcard .h b{font:800 18px/1 var(--num);letter-spacing:-.04em;color:var(--ink)}
+.idcard .ph{margin-top:18px;display:grid;grid-template-columns:104px 1fr;gap:18px;align-items:end}
+.idcard .face{width:104px;height:128px;border-radius:12px;overflow:hidden;background:#1b1b1b}
+.idcard .face img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.idcard .nm{font:300 30px/1.15 var(--serif);letter-spacing:-.02em}
+.idcard .rl{font-size:13px;color:var(--mute);margin-top:6px;line-height:1.45}
+.idcard .line{margin-top:20px;padding-top:12px;border-top:1.5px solid rgba(20,20,20,.18);display:flex;justify-content:space-between;font:500 11px/1 var(--num);letter-spacing:.08em;color:var(--mute)}
+.orb{position:absolute;z-index:1;width:250px;height:250px;right:24px;bottom:20px;pointer-events:none;overflow:hidden}
+.orb img{width:100%;height:100%;object-fit:cover;object-position:28% 62%;transform:scale(1.55);transform-origin:28% 62%}
+.eyes{position:absolute;left:39%;top:47%;width:15%;height:6%;display:flex;justify-content:space-between;transform:translate(var(--ex,0),var(--ey,0));transition:transform .35s var(--ease)}
+.eyes i{width:34%;border-radius:50%;background:#FFF6DD;box-shadow:0 0 10px rgba(255,232,170,.6);transition:transform .09s}
+.blink .eyes i{transform:scaleY(.1)}
+
+/* 하루 */
+.sec{padding:clamp(72px,8vw,120px) 0}
+.day .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(32px,6vw,96px);align-items:start;margin-top:48px}
+.sec h2{font-size:clamp(34px,4.2vw,62px);line-height:1.16;margin-top:16px}
+.clockbox{position:sticky;top:40px}
+.now{font:500 14px/1 var(--num);color:var(--mute);font-variant-numeric:tabular-nums}
+.clock{font:200 clamp(110px,15vw,220px)/.84 var(--num);letter-spacing:-.055em;margin:18px 0 0;font-variant-numeric:tabular-nums}
+.what{margin:30px 0 0;font:300 clamp(24px,2.3vw,32px)/1.4 var(--serif);letter-spacing:-.02em;max-width:520px;min-height:3em}
+.how{margin-top:14px;display:flex;gap:10px;align-items:center;font:600 13px/1 var(--sans);color:var(--mute)}
+.how i{width:10px;height:10px;border-radius:3px;background:var(--c,var(--ink))}
+.times{list-style:none;margin:0;padding:0;border-top:1.5px solid rgba(20,20,20,.22)}
+.times li{border-bottom:1px solid rgba(20,20,20,.16)}
+.times button{width:100%;display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:16px;align-items:baseline;padding:17px 4px;text-align:left;transition:padding .25s var(--ease)}
+.times .t{font:500 17px/1 var(--num);font-variant-numeric:tabular-nums}
+.times .w{font-size:15.5px;line-height:1.5;color:var(--mute)}
+.times .k{font:600 12px/1 var(--sans);color:rgba(20,20,20,.5);white-space:nowrap}
+.times button:hover .w{color:var(--ink)}
+.times button[aria-pressed="true"]{padding-left:14px}
+.times button[aria-pressed="true"] .w{color:var(--ink);font-weight:700}
+.times button[aria-pressed="true"] .t{font-weight:800}
+.every{margin-top:44px}
+.every h3{font:700 15px/1.3 var(--sans);margin:0}
+.every ul{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.every li{background:var(--glass);border-radius:16px;padding:16px 18px;box-shadow:var(--lift)}
+.every b{display:block;font:300 34px/1 var(--num);letter-spacing:-.03em}
+.every b small{font:600 13px/1 var(--sans);letter-spacing:0;margin-left:4px}
+.every span{display:block;margin-top:8px;font-size:14px;line-height:1.5;color:var(--label2)}
+.foot{margin-top:18px;font-size:14px;color:var(--mute)}
+
+/* 직원 앱 */
+.ws .grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(32px,5vw,80px);align-items:center}
+.ws p.body{margin:24px 0 0;max-width:470px;font-size:17px;line-height:1.75;color:rgba(20,20,20,.78)}
+.ws .row{margin-top:28px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.ws .row .cnt{font:500 14px/1 var(--num);color:var(--mute)}
+.deck{position:relative;height:670px}
+.card{position:absolute;left:0;right:0;margin:0 auto;top:var(--top,0);width:min(640px,100%);height:440px;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px);border-radius:26px;box-shadow:var(--lift);transform-origin:50% 0;display:grid;grid-template-rows:52px 1fr;overflow:hidden;transition:transform .55s var(--ease),top .55s var(--ease),opacity .45s;text-align:left;cursor:pointer}
+.card .hd{display:flex;align-items:center;gap:10px;padding:0 20px 0 14px;border-bottom:.5px solid var(--hair)}
+.card .n{width:20px;font:600 12px/1 var(--num);color:rgba(60,60,67,.7);text-align:right;font-variant-numeric:tabular-nums}
+.card .chip{display:inline-flex;align-items:center;gap:8px;font:600 11px/1 var(--num);letter-spacing:.06em;color:var(--label2)}
+.card .chip i{width:24px;height:24px;border-radius:7px;background:linear-gradient(155deg,color-mix(in srgb,var(--c) 72%,#fff),var(--c) 70%);box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08)}
+.card .tt{flex:1;min-width:0;font:600 14.5px/1.2 var(--sans);color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .d{flex:none;font:500 12.5px/1 var(--num);color:var(--label2)}
+.card .chip,.card .n{flex:none}
+.card .bd{display:grid;grid-template-columns:44% 1fr;min-height:0}
+.card .pic{position:relative;overflow:hidden;background:var(--c)}
+.card .pic img{width:100%;height:100%;object-fit:cover}
+.card .tx{padding:26px 28px;display:flex;flex-direction:column}
+.card .flag{display:inline-flex;align-items:center;gap:8px;font:700 13px/1 var(--sans)}
+.card .flag i{width:8px;height:8px;border-radius:50%;background:var(--wait)}
+.card .flag.calm i{background:rgba(20,20,20,.35)}
+.card h4{font:300 28px/1.3 var(--serif);letter-spacing:-.02em;margin:14px 0 0}
+.card .who{margin:8px 0 0;color:var(--mute);font-size:14px}
+.card .act{margin-top:auto;display:inline-flex;align-self:flex-start;height:42px;align-items:center;padding:0 18px;border-radius:10px;background:var(--ink);color:var(--y);font:700 14px/1 var(--sans)}
+.card:not(.front) .bd{visibility:hidden}
+.card.front .tt{visibility:hidden}
+.card.front{cursor:default}
+.cap{margin-top:4px;font-size:13px;color:var(--mute);text-align:center}
+
+/* 숫자 띠(먹) */
+.band{background:var(--ink);color:#F6F1E4}
+.band .eye{color:rgba(246,241,228,.6)}
+.band h2{color:#F6F1E4}
+.nums{margin-top:56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid rgba(246,241,228,.22)}
+.nums div{padding:30px 24px 8px 0}
+.nums div+div{padding-left:24px;border-left:1px solid rgba(246,241,228,.16)}
+.nums b{display:block;font:200 clamp(64px,6.4vw,104px)/.9 var(--num);letter-spacing:-.05em;color:var(--y)}
+.nums b small{font:500 .3em/1 var(--sans);letter-spacing:0;margin-left:6px;color:#F6F1E4}
+.nums p{margin:18px 0 0;font-size:15px;line-height:1.6;color:rgba(246,241,228,.78)}
+.next{margin-top:96px;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(32px,5vw,80px)}
+.next ol{list-style:none;margin:0;padding:0;border-top:1px solid rgba(246,241,228,.22)}
+.next li{display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px;padding:22px 0;border-bottom:1px solid rgba(246,241,228,.16)}
+.next li span{font:500 15px/1.5 var(--num);color:var(--y)}
+.next li b{display:block;font:300 24px/1.35 var(--serif);letter-spacing:-.02em;color:#F6F1E4}
+.next li p{margin:8px 0 0;font-size:15px;line-height:1.6;color:rgba(246,241,228,.72)}
+
+/* 만든 사람 */
+.who .grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(32px,6vw,96px)}
+.who p.body{margin:22px 0 0;max-width:500px;font-size:17px;line-height:1.75;color:rgba(20,20,20,.78)}
+.cv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px 40px}
+.cv h3{font:700 14px/1 var(--sans);margin:0 0 12px;padding-bottom:12px;border-bottom:1.5px solid rgba(20,20,20,.22)}
+.cv ul{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.cv li{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;font-size:15px;line-height:1.5}
+.cv li span{font:500 14px/1.5 var(--num);color:var(--mute)}
+.cv li small{display:block;color:var(--mute);font-size:13.5px}
+.end{padding:64px 0 72px;border-top:1.5px solid rgba(20,20,20,.22);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.end p{margin:0;font:300 26px/1.3 var(--serif);letter-spacing:-.02em}
+.end .mail{font:600 15px/1 var(--num);user-select:all}
+
+@media (max-width:900px){
+  .top nav{display:none}
+  .hero{min-height:auto;padding-bottom:40px}
+  .badge{position:relative;right:auto;margin:0 auto}
+  .lanyard{width:300px}.lanyard i:first-child{left:48px}.lanyard i:last-child{right:48px}
+  .swing{padding-top:150px}
+  .lanyard i{height:200px}
+  .idcard{width:min(310px,calc(100vw - 40px))}
+  .idcard .ph{grid-template-columns:88px 1fr}.idcard .face{width:88px;height:108px}.idcard .nm{font-size:24px}
+  .hero .txt{position:relative;left:auto;bottom:auto;max-width:none;padding:40px var(--gut) 0}
+  .orb{display:none}
+  .day .grid,.ws .grid,.next,.who .grid{grid-template-columns:1fr}
+  .clockbox{position:static}
+  .every ul{grid-template-columns:1fr}
+  .deck{height:640px}
+  .card{height:480px}
+  .card .bd{grid-template-columns:1fr;grid-template-rows:180px 1fr}
+  .nums{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nums div:nth-child(3){padding-left:0;border-left:0}
+  .nums div:nth-child(n+3){border-top:1px solid rgba(246,241,228,.16)}
+  .next li{grid-template-columns:1fr;gap:6px}
+  .cv{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="https://synk.im/">synk</a>
+  <nav aria-label="쪽"><a href="https://synk.im/study-abroad/">한국 유학</a><a href="https://synk.im/ai/">AI 강의</a><a href="https://synk.im/studio/">광고</a><a href="#" aria-current="page">창업자</a></nav>
+</header>
+
+<main>
+<section class="hero" aria-labelledby="h1">
+  <div class="badge" aria-hidden="true">
+    <div class="lanyard"><i></i><i></i></div>
+    <div class="swing"><span class="clip"></span>
+      <div class="idcard">
+        <div class="h"><b>synk</b><span>STAFF</span></div>
+        <div class="ph"><div class="face"><img src="https://synk.im/assets/yuho-founder-20260919.png" alt=""></div><div><div class="nm">양유호</div><div class="rl">창업자 · 시스템 설계</div></div></div>
+        <div class="line"><span>SYNK WORKSPACE</span><span>No. 001</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p class="eye">창업자 · SYNK가 일하는 방식</p>
+    <h1 id="h1" style="margin-top:18px">사업의 모든 일을<br>기술로 바꿉니다</h1>
+    <p class="lede">SYNK는 콘텐츠 제작과 게시, 검수, 백업, 고장 고치기까지 AI 시스템이 맡는 회사입니다. 사람은 학생을 가르치고 곁에서 돕는 일에 시간을 씁니다.</p>
+    <div class="row"><a class="btn go" href="#day">SYNK의 하루 보기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v15M6 13l6 6 6-6"/></svg></a><a class="soft" href="#who">만든 사람</a></div>
+  </div>
+  <div class="orb" id="orb" aria-hidden="true"><img src="../../PULSE고객앱_다시짓기_20261124/그림/솔리오_hello_노랑.webp" alt=""><span class="eyes"><i></i><i></i></span></div>
+</section>
+
+<section class="sec day" id="day" aria-labelledby="h-day">
+  <div class="wrap">
+    <p class="eye">SYNK의 하루</p>
+    <h2 id="h-day">사람이 출근하기 전에<br>시스템이 먼저 일합니다</h2>
+    <div class="grid">
+      <div class="clockbox">
+        <p class="now" id="now"></p>
+        <p class="clock" id="clock">07:00</p>
+        <p class="what" id="what" aria-live="polite"></p>
+        <p class="how" id="how"><i></i><span></span></p>
+      </div>
+      <div>
+        <ul class="times" id="times"></ul>
+        <div class="every">
+          <h3>쉬지 않고 도는 일</h3>
+          <ul>
+            <li><b>1<small>분마다</small></b><span>컴퓨터와 서버의 상태를 기록합니다.</span></li>
+            <li><b>5<small>분마다</small></b><span>운영 서버를 가장 새 코드로 맞춥니다.</span></li>
+            <li><b>10<small>분마다</small></b><span>새 광고 의뢰서와 파일을 받아 직원용 확인 메모를 씁니다.</span></li>
+            <li><b>15<small>분마다</small></b><span>고장 알림을 진단하고, 고칠 수 있는 것은 고쳐서 올립니다.</span></li>
+          </ul>
+        </div>
+        <p class="foot">정해진 때에 사람 손 없이 도는 일이 60가지가 넘습니다. 여기에는 그 일부를 옮겼습니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec ws" id="ws" aria-labelledby="h-ws">
+  <div class="wrap grid">
+    <div>
+      <p class="eye">직원 앱 · SYNK Workspace</p>
+      <h2 id="h-ws">출근하면 할 일이<br>한 장씩 옵니다</h2>
+      <p class="body">메신저, 할 일, SNS 승인, 고객 편집본이 한 화면에 모입니다. 고객이 기다리는 일이 맨 앞에 오고, 한 장을 끝내면 다음 장이 앞으로 나옵니다.</p>
+      <p class="body">앱은 외주 없이 직접 만들었습니다. 일하다 막히는 곳이 보이면 그 자리를 바로 고칩니다.</p>
+      <div class="row"><button class="btn go" type="button" id="nextCard">다음 장 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button><span class="cnt" id="cnt"></span></div>
+    </div>
+    <div>
+      <div class="deck" id="deck" aria-label="오늘 할 일 카드"></div>
+      <p class="cap">직원 앱 화면을 옮긴 예시입니다. 고객과 대화는 지어낸 것입니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" aria-labelledby="h-num">
+  <div class="wrap">
+    <p class="eye">지금까지</p>
+    <h2 id="h-num">작은 팀이 큰 회사처럼 일합니다</h2>
+    <div class="nums">
+      <div><b>60<small>가지+</small></b><p>정해진 때에 사람 손 없이 도는 일</p></div>
+      <div><b>0<small>원</small></b><p>몽골어 SNS 세 계정의 광고비. 팔로워 2,703명(11월 26일)</p></div>
+      <div><b>0<small>원</small></b><p>외주 개발비. 직원 앱, 학습 앱, 유학 앱, SNS 자동화를 직접 만들었습니다</p></div>
+      <div><b>2<small>번</small></b><p>synk.im에 올리기 전, 서로 다른 AI가 따로 하는 검수</p></div>
+    </div>
+    <div class="next">
+      <div><p class="eye">다음 차례</p><h2 style="font-size:clamp(30px,3.2vw,46px)">남은 일도 차례로<br>기술로 바꿉니다</h2></div>
+      <ol>
+        <li><span>지금</span><div><b>유학 서류</b><p>몽골어 서류의 번역 초안과, 성적표에서 모집요강 조건을 찾는 서류 점검이 유학 앱에 열렸습니다.</p></div></li>
+        <li><span>2027. 10</span><div><b>유학 수속 전체</b><p>모집요강 대조부터 접수 준비까지 유학 앱 안에서 이어집니다.</p></div></li>
+        <li><span>2028~</span><div><b>입국 뒤 정착</b><p>반복되는 안내와 기록은 앱이 맡고, 사람은 협약 대학과 함께 주거와 적응을 곁에서 돕습니다.</p></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="sec who" id="who" aria-labelledby="h-who">
+  <div class="wrap grid">
+    <div>
+      <p class="eye">만든 사람</p>
+      <h2 id="h-who">양유호</h2>
+      <p class="body">건축과 심리학을 공부했고, 무대와 영상에서 퍼포머로 활동했고, 몽골의 학원에서 부원장으로 일했습니다. 지금은 SYNK의 시스템을 직접 설계하고 만듭니다.</p>
+    </div>
+    <div class="cv">
+      <div><h3>진행 중</h3><ul>
+        <li><span>2026</span><div>모두의 창업 프로젝트<small>중소벤처기업부 · 1라운드 진출</small></div></li>
+        <li><span>2026</span><div>의왕시 청년 e-Room 창업아이디어 공모전<small>본선 진출</small></div></li>
+        <li><span>2026</span><div>CTS 국제 AI 단편영화 제작지원사업<small>1차 통과</small></div></li>
+        <li><span>2027. 2</span><div>SYNK 정식 출시<small>사전예약 받는 중</small></div></li>
+      </ul></div>
+      <div><h3>수상</h3><ul>
+        <li><span>2026</span><div>서울로미디어캔버스 단편 애니메이션 공모<small>「다리가 기억하는 것」 당선 · 2026.12 ~ 2027.2 전시</small></div></li>
+        <li><span>2019</span><div>Fine Art Photography Awards<small>Open Theme 부문 · Winner</small></div></li>
+        <li><span>2017</span><div>MK Challenge · 매일경제 주최<small>프로젝트 리더 · 준우승</small></div></li>
+      </ul></div>
+      <div><h3>교육 · 운영</h3><ul>
+        <li><span>2026</span><div>몽골 Skyline Edu 전 부원장<small>학생 성장 · 교육 운영 · 마케팅</small></div></li>
+      </ul></div>
+      <div><h3>퍼포먼스 · 프로젝트</h3><ul>
+        <li><span>2023</span><div>RCA · Royal College of Art<small>영국 왕립예술대학 졸업 프로젝트 · 메인 퍼포머</small></div></li>
+        <li><span>2023</span><div>드라마 「보라! 데보라」 · 넷플릭스<small>오프닝 시퀀스</small></div></li>
+        <li><span>2014</span><div>LOEN Entertainment<small>퍼포머</small></div></li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="wrap"><div class="end" style="margin-top:96px"><p>함께 일하실 곳은 메일로 연락 주세요.</p><span class="mail">hello@synk.im</span></div></div>
+</section>
+</main>
+
+<script>
+const ARROW='';
+// 하루: 관문·자동화 한 장(docs/_ops/관문_자동화.md)의 실제 예약에서 옮겼다.
+const DAY=[
+  {t:'05:30',w:'회사 서버와 앱의 자료를 백업합니다.',k:'매일',c:'#1B1A17'},
+  {t:'06:00',w:'검사를 마친 고침을 묶어 회사 서버에 올립니다.',k:'하루 두 번',c:'#1B1A17'},
+  {t:'07:00',w:'며칠 뒤 올릴 SNS 편을 기획부터 영상까지 만듭니다.',k:'하루 두 번',c:'#F96859'},
+  {t:'09:10',w:'몽골어로 만든 편을 다른 나라 말 판본으로 옮깁니다.',k:'하루 두 번',c:'#F96859'},
+  {t:'10:40',w:'유학 앱에서 접수 마감이 다가온 대학을 찾아 알립니다.',k:'매일',c:'#526956'},
+  {t:'14:00',w:'계정마다 오늘 편을 검사하고 올립니다.',k:'매일',c:'#F96859'},
+  {t:'18:30',w:'지난 하루 메일에서 공모와 심사 결과, 계정 경고를 골라 보고합니다.',k:'매일',c:'#1B1A17'},
+  {t:'19:30',w:'잘된 영상과 댓글을 읽고 다음 기획 후보를 고릅니다.',k:'매일',c:'#99295D'},
+  {t:'21:00',w:'스레드에 오늘 글을 올립니다.',k:'매일',c:'#3D6BC9'},
+];
+const ul=document.getElementById('times'),clock=document.getElementById('clock'),what=document.getElementById('what'),how=document.getElementById('how'),now=document.getElementById('now');
+const btns=DAY.map((d,i)=>{const li=document.createElement('li');const b=document.createElement('button');b.type='button';
+  b.innerHTML=`<span class="t">${d.t}</span><span class="w">${d.w}</span><span class="k">${d.k}</span>`;b.addEventListener('click',()=>pick(i));li.append(b);ul.append(li);return b;});
+function pick(i){const d=DAY[i];btns.forEach((b,k)=>b.setAttribute('aria-pressed',String(k===i)));clock.textContent=d.t;what.textContent=d.w;how.style.setProperty('--c',d.c);how.querySelector('span').textContent=d.k;}
+// 처음에는 서울의 지금 시각에 가장 가까운 지난 일을 고른다
+const seoul=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).replace(/\s/g,'');
+const hm=seoul.match(/(\d{1,2}):(\d{2})/);const cur=hm?String(hm[1]).padStart(2,'0')+':'+hm[2]:'07:00';
+now.textContent=`지금 서울 ${cur}`;
+let start=0;DAY.forEach((d,i)=>{if(d.t<=cur)start=i;});if(cur<DAY[0].t)start=DAY.length-1;pick(start);
+
+// 직원 앱 카드 더미
+const CARDS=[
+  {co:'PULSE',c:'#99295D',kind:'고객 편집본',why:'고객이 기다려요',hot:true,title:'카페 봄날 광고, 2차 편집본 확인',who:'PULSE 광고 · 카페 봄날 사장님 · 오늘',d:'오늘',img:'../../PULSE고객앱_다시짓기_20261124/assets/cut-05.webp',act:'사장님께 보내기'},
+  {co:'LAB',c:'#F96859',kind:'메신저 할 일',why:'동료가 답을 기다려요',title:'몽골 유튜브 오후 1시 게시물 자막 확인',who:'LAB 한국어 · 오늘',d:'오늘',img:'../../워크스페이스_다시짓기_20261124/시안/img/cover-lab-gyeseyo.jpg',act:'수락하기'},
+  {co:'LAB',c:'#F96859',kind:'SNS 승인',why:'게시 전에 승인이 필요해요',title:'릴스 「뜨거워!」 내일 아침 게시',who:'LAB 릴스 · 내일 07:00',d:'내일 07:00',img:'../../워크스페이스_다시짓기_20261124/시안/img/cover-lab-deopda.jpg',act:'승인하기'},
+  {co:'SHIFT',c:'#3D6BC9',kind:'강의 자료',why:'확인 날짜가 지났어요',title:'중소기업 AI 업무 자동화 강의 자료 확인',who:'SHIFT AI 강의 · 11.24',d:'11.24',img:'',act:'확인했어요'},
+  {co:'PATH',c:'#526956',kind:'상담',why:'오늘 15:00',title:'신입생 체류 서류 안내 상담',who:'PATH 유학 · 오늘 15:00',d:'오늘 15:00',img:'',act:'상담 열기'},
+];
+const deck=document.getElementById('deck'),cnt=document.getElementById('cnt');
+let order=CARDS.map((_,i)=>i);
+const els=CARDS.map((x,i)=>{const el=document.createElement('article');el.className='card';el.style.setProperty('--c',x.c);el.tabIndex=0;
+  el.innerHTML=`<div class="hd"><span class="n"></span><span class="chip"><i></i>${x.co}</span><span class="tt">${x.title}</span><span class="d">${x.d}</span></div>
+  <div class="bd"><div class="pic">${x.img?`<img src="${x.img}" alt="">`:''}</div><div class="tx"><span class="flag ${x.hot?'':'calm'}"><i></i>${x.kind} · ${x.why}</span><h4>${x.title}</h4><p class="who">${x.who}</p><span class="act">${x.act}</span></div></div>`;
+  el.addEventListener('click',()=>{if(order[0]!==i){order=[i,...order.filter(k=>k!==i)];lay();}});
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'&&order[0]!==i){order=[i,...order.filter(k=>k!==i)];lay();}});
+  deck.append(el);return el;});
+function lay(){const narrow=matchMedia('(max-width:900px)').matches,step=narrow?40:50,base=(CARDS.length-1)*step;
+  order.forEach((idx,pos)=>{const el=els[idx];el.classList.toggle('front',pos===0);el.style.zIndex=String(10-pos);
+    el.style.setProperty('--top',(base-pos*step)+'px');el.style.transform=`scale(${1-pos*0.035})`;el.querySelector('.n').textContent=String(pos+1).padStart(2,'0');
+    el.setAttribute('aria-label',pos===0?`지금 할 일: ${CARDS[idx].title}`:`${pos+1}번째: ${CARDS[idx].title}`);});
+  cnt.textContent=`오늘 ${CARDS.length}장 중 맨 앞: ${CARDS[order[0]].co}`;}
+document.getElementById('nextCard').addEventListener('click',()=>{order=[...order.slice(1),order[0]];lay();});
+addEventListener('resize',lay);lay();
+
+// 솔리오: 눈만 움직인다
+const orb=document.getElementById('orb'),eyes=orb.querySelector('.eyes');
+addEventListener('pointermove',e=>{const o=orb.getBoundingClientRect();const dx=e.clientX-(o.left+o.width*.47),dy=e.clientY-(o.top+o.height*.5);const k=Math.hypot(dx,dy)||1;eyes.style.setProperty('--ex',(dx/k*9).toFixed(1)+'px');eyes.style.setProperty('--ey',(dy/k*6).toFixed(1)+'px');},{passive:true});
+setInterval(()=>{if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;orb.classList.add('blink');setTimeout(()=>orb.classList.remove('blink'),140);},4200);
+</script>
+</body>
+</html>
