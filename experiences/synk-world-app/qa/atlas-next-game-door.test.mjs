@@ -625,3 +625,34 @@ test('키트의 GAME_NAMELESS는 셸 world-today.mjs의 이름 없는 게임 줄
   };
   assert.equal(block('../../play-common/kit/atlas-next.mjs'), block('../world-today.mjs'));
 });
+
+// 엔진이 실제로 짓는 줄 — 단위 이름은 어느 화면 언어에서나 한국어다(‘그대로’ · «그대로»). 이름 없는 줄은 그 화면 언어로 나온다(다시 보기 FA1).
+// 다시 배우기(relearn)는 처음 만나는 말이 아니라 줄을 비운다(FA2).
+test('키트 — 실제 엔진 줄로: 영어 · 몽골어 화면도 그 언어의 이름 없는 줄이고, 다시 배우기는 줄 없음(5-3 게임 GE1 · 다시 보기 FA1 · FA2)', async () => {
+  const { renderReason } = await import('../../../packages/atlas/src/index.mjs');
+  const { namelessLine } = await import('../../play-common/kit/atlas-next.mjs');
+  const label = () => '그대로';
+  const slots = {
+    'unit.new': { unit: 'w:그대로' },
+    'unit.due': { unit: 'w:그대로', days: 3 },
+    'unit.shaky': { unit: 'w:그대로', misses: 1, reviews: 2, days: 0 },
+    'unit.retry': { unit: 'w:그대로', misses: 1, reviews: 1, other: false },
+  };
+  const want = {
+    ko: { back: '게임에서 만난 말이 돌아왔어요. 잊기 전에 한 번 더 만나요.', first: '새로운 말을 처음 만나요.' },
+    en: { back: 'Something you met in a game is back. Let’s review it once more before it fades.', first: 'Meeting something new for the first time.' },
+    mn: { back: 'Тоглоомд үзсэн үг хэллэг эргэн ирлээ. Мартахаасаа өмнө дахин нэг давтъя.', first: null },
+  };
+  for (const lang of ['ko', 'en', 'mn']) {
+    for (const [code, s] of Object.entries(slots)) {
+      const why = { code, slots: s, line: renderReason({ code, slots: s }, { lang, label }) };
+      assert.ok(why.line.includes('그대로'), `${lang} ${code}: 엔진 줄에 한국어 이름이 든다 — ${why.line}`);
+      assert.equal(namelessLine(why), code === 'unit.new' ? want[lang].first : want[lang].back, `${lang} ${code}`);
+    }
+    const relearn = { code: 'unit.new', slots: { unit: 'w:그대로', relearn: true } };
+    const line = renderReason(relearn, { lang, label });
+    assert.equal(namelessLine({ ...relearn, line }), null, `${lang} 다시 배우기는 줄 없음(엔진 줄: ${line})`);
+  }
+  // 한국어 줄의 다시 배우기는 엔진이 줄을 짓는다 — 키트는 그 줄도 비운다.
+  assert.equal(renderReason({ code: 'unit.new', slots: { unit: 'w:그대로', relearn: true } }, { lang: 'ko', label }), '「그대로」 처음부터 다시 만나요.');
+});

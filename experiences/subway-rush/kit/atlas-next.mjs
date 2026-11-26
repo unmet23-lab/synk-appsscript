@@ -106,7 +106,7 @@ function originals(result, candidates) {
 // 이유 줄은 그 판이 평가할 단위를 그 단위의 첫 평가 전에 이름으로 말하지 않는다(5-3 게임 GE1 — 설계 주인 11-26). 게임의 문항은 그 단위를
 // 묻는다 — 첫 평가 전에 이름을 보이면 답을 미리 알려 주고, 그 답이 「도움 없이 맞힘」 근거로 남는다. 그 자리는 이름 없는 제품 문장이다.
 // 돌아온 · 흔들리는 · 방금 놓친 단위는 GAME_NAMELESS(셸 world-today.mjs와 같은 글), 처음 만나는 단위는 이름 없는 처음 문장(몽골어는 검수 전이라
-// 없음), 그 밖(난도 · 숨 고르기 · 목표)은 줄 없음 — 게임은 기본 안내를 둔다. 평가 = 엔진이 등급을 매긴 답(grade). 판(startSet · finishSet)이
+// 없음), 그 밖(다시 배우기 · 난도 · 숨 고르기 · 목표)은 줄 없음 — 게임은 기본 안내를 둔다. 평가 = 엔진이 등급을 매긴 답(grade). 판(startSet · finishSet)이
 // 바뀌면 다시 센다. 감싼 코치의 recommend · live().pick 한 자리라 아홉 게임이 함께 받는다(입구의 곡 · 손님 추천처럼 판 밖 recommend도).
 const GAME_NAMELESS = Object.freeze({
   ko: '게임에서 만난 말이 돌아왔어요. 잊기 전에 한 번 더 만나요.',
@@ -115,11 +115,17 @@ const GAME_NAMELESS = Object.freeze({
 });
 const FIRST_NAMELESS = Object.freeze({ ko: '새로운 말을 처음 만나요.', en: 'Meeting something new for the first time.' });
 const NAMELESS = Object.freeze({ 'unit.due': GAME_NAMELESS, 'unit.shaky': GAME_NAMELESS, 'unit.retry': GAME_NAMELESS, 'unit.new': FIRST_NAMELESS });
-// 줄의 언어 — 셸이 화면 언어로 지은 줄의 글자로 가른다(한글 · 키릴 · 그 밖은 영어).
-const lineLang = line => (/[\uAC00-\uD7A3]/.test(line) ? 'ko' : /[\u0400-\u04FF]/.test(line) ? 'mn' : 'en');
+// 줄의 언어 — 셸이 화면 언어로 지은 줄의 글자로 가른다. 단위 이름은 어느 언어 줄에서나 한국어라(‘그대로’ · «그대로» · 「그대로」) 따옴표 안을 빼고
+// 본다(키릴 · 한글 · 그 밖은 영어).
+const NAME_QUOTE = /「[^」]*」|‘[^’]*’|«[^»]*»|“[^”]*”/g;
+const lineLang = line => {
+  const rest = line.replace(NAME_QUOTE, '');
+  return /[\u0400-\u04FF]/.test(rest) ? 'mn' : /[\uAC00-\uD7A3]/.test(rest) ? 'ko' : 'en';
+};
 // 이름 없는 자리의 줄 — 이 판에서 아직 평가하지 않은 단위를 겨눈 이유의 줄을 바꾼 것(namesGuard가 부른다). 단위 칸이나 줄이 없으면 그대로다.
 export function namelessLine(why) {
   if (typeof why?.slots?.unit !== 'string' || typeof why.line !== 'string') return why?.line ?? null;
+  if (why.slots.relearn) return null; // 다시 배우기(「다시 배울래요」로 비운 단위)는 처음 만나는 말이 아니다 — 줄 없음
   return NAMELESS[why.code]?.[lineLang(why.line)] ?? null;
 }
 function namesGuard() {
