@@ -1,6 +1,6 @@
 {
   "name": "solo-work-backup-rust",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "private": true,
   "description": "Rust/Tauri Windows host with the existing verified backup compatibility engine",
   "scripts": {
