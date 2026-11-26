@@ -80,9 +80,10 @@ test('the photo list shape is checked on its own, before any other rule',()=>{
 });
 
 // ── 서버 길 ──
-async function fixture(t){
+// writes: 늦춘 지우기(studio-media-trash.mjs)를 켠 다음 판으로 띄운다(이 판은 꺼짐 — 거둔 사진은 바탕처럼 바로 지운다).
+async function fixture(t,{writes=false}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-message-photo-'));
-  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3};
+  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3,...(writes?{mediaTrashWrites:true}:{})};
   const app=createCompanyApp(options),address=await app.start(),base='http://127.0.0.1:'+address.port;
   const owner=app.store.createUser({name:'담당자',email:'owner@pulse-synthetic.test',role:'admin'}),token=app.store.mint('session',owner.id,{csrfToken:'staff-csrf'},120);
   t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});
@@ -106,7 +107,10 @@ async function fixture(t){
   const row=()=>app.store.get('clientProjects',id);
   const put=change=>{const current=row();app.store.put('clientProjects',id,change(current));};
   const cookie=()=>[...jar].map(([k,v])=>`${k}=${v}`).join('; ');
-  return {app,options,base,cookie,call,staff,photo,ask,disk,row,put,id,room,owner};
+  // 켠 판: 거둔 사진 파일은 같은 커밋에서 지울 목록에 적히고 하루 동안 남는다. drain은 하루가 찬 것으로 두고 정리를 돌린다.
+  const trashed=name=>!!app.store.get('studioMediaTrash',name);
+  const drain=async()=>{for(const item of app.store.all('studioMediaTrash'))app.store.put('studioMediaTrash',item.id,{...item,counting:true,agedMs:86400000});return app.mediaTrash.sweep();};
+  return {app,options,base,cookie,call,staff,photo,ask,disk,row,put,id,room,owner,trashed,drain};
 }
 
 test('a customer attaches photos to a question: upload one at a time, send with or without text, both sides see them',async t=>{
@@ -201,8 +205,8 @@ test('the photo route checks session, origin, type, signature and size, and leav
   const archived=await f.photo();assert.equal(archived.status,401,'an archived project has no customer session left');assert.equal(await f.disk(),before);
 });
 
-test('limits: eight unsent at a time, forty per project, the shared asset cap; an hour-old unsent photo is swept from disk',async t=>{
-  const f=await fixture(t);const before=await f.disk();
+for(const writes of [false,true])test(`limits: eight unsent at a time, forty per project, the shared asset cap; an hour-old unsent photo is swept from disk${writes?' — with the delayed delete switched on (next release)':''}`,async t=>{
+  const f=await fixture(t,{writes});const before=await f.disk();
   const ids=[];for(let i=0;i<MESSAGE_PHOTOS.pending;i+=1){const result=await f.photo();assert.equal(result.status,201);ids.push(result.data.photo.id);}
   const ninth=await f.photo();assert.equal(ninth.status,409);assert.equal(ninth.data.error,'아직 보내지 않은 사진이 많아요. 문의를 먼저 보내 주세요.');
   assert.equal(await f.disk(),before+8,'the refused ninth photo is discarded');
@@ -216,6 +220,12 @@ test('limits: eight unsent at a time, forty per project, the shared asset cap; a
   const fresh=await f.photo();assert.equal(fresh.status,201,JSON.stringify(fresh.data));
   assert.deepEqual(f.row().studio.messageUploads.map(item=>item.id),[fresh.data.photo.id]);
   assert.deepEqual(f.row().studio.assets.filter(isMessagePhoto).map(asset=>asset.id).sort(),ids.slice(0,4).sort(),'sent photos stay');
+  if(writes){
+    assert.equal(await f.disk(),before+10,'swept photos stay on disk for a day so a backup that listed them can still read them');
+    for(const name of sweptDisk)assert.ok(f.trashed(name),'and wait in the delayed delete list');
+    assert.equal(workspaceMediaNames(f.app.store.db).some(name=>sweptDisk.includes(name)),false,'they leave the backup list at once');
+    assert.equal((await f.drain()).removed,5);
+  }
   const files=await readdir(join(f.options.dataDir,'studio-media'));
   for(const name of sweptDisk)assert.equal(files.includes(name),false,'swept photos leave the disk');
   assert.equal(await f.disk(),before+5);
@@ -236,14 +246,20 @@ test('limits: eight unsent at a time, forty per project, the shared asset cap; a
   assert.equal(await f.disk(),diskBefore);
 });
 
-test('the maintenance sweep clears hour-old unsent photos and their files without moving the project clock (end-pass A2)',async t=>{
-  const f=await fixture(t);
+for(const writes of [false,true])test(`the maintenance sweep clears hour-old unsent photos and their files without moving the project clock (end-pass A2)${writes?' — with the delayed delete switched on (next release)':''}`,async t=>{
+  const f=await fixture(t,{writes});
   const a=(await f.photo()).data.photo.id,b=(await f.photo()).data.photo.id;
   const old=new Date(Date.now()-2*3600000).toISOString();
   f.put(current=>({...current,studio:{...current.studio,messageUploads:current.studio.messageUploads.map(item=>item.id===a?{...item,at:old}:item)}}));
   const stale=f.row().studio.messageUploads.find(item=>item.id===a).diskName,kept=f.row().studio.messageUploads.find(item=>item.id===b).diskName,{revision,updatedAt}=f.row();
   await f.app.sweepPulseMessageUploads();
   assert.deepEqual(f.row().studio.messageUploads.map(item=>item.id),[b]);
+  if(writes){
+    assert.ok(f.trashed(stale),'the stale file waits a day in the delayed delete list');assert.equal(f.trashed(kept),false);
+    assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).includes(stale),true,'the sweep leaves the file for a day so a backup that listed it can still read it (GPT pulse-media-trash GA4)');
+    assert.equal(workspaceMediaNames(f.app.store.db).includes(stale),false,'and drops it from the backup list at once');
+    await f.drain();
+  }
   const files=await readdir(join(f.options.dataDir,'studio-media'));assert.equal(files.includes(stale),false);assert.equal(files.includes(kept),true);
   assert.equal(f.row().revision,revision,'cleaning is not a change anyone made');assert.equal(f.row().updatedAt,updatedAt,'and does not reset the 90-day quiet clock');
   await f.app.sweepPulseMessageUploads();assert.deepEqual(f.row().studio.messageUploads.map(item=>item.id),[b],'a second pass with nothing stale changes nothing');
@@ -261,11 +277,16 @@ test('a request file that a question points at cannot be taken back',async t=>{
   assert.equal((await f.call('/pulse/api/studio/request-file/'+file.data.file.id,{method:'DELETE',csrf:room.csrf})).status,409);
 });
 
-test('message photos are in the backup list and leave with the rest when an unconfirmed request retires',async t=>{
-  const f=await fixture(t);
+for(const writes of [false,true])test(`message photos are in the backup list and leave with the rest when an unconfirmed request retires${writes?' — with the delayed delete switched on (next release)':''}`,async t=>{
+  const f=await fixture(t,{writes});
   const one=await f.photo();assert.equal(one.status,201);assert.equal((await f.ask({text:'사진 문의',photos:[one.data.photo.id]})).status,200);
   const diskName=f.row().studio.assets.find(asset=>asset.id===one.data.photo.id).diskName;
   const two=await f.photo();assert.equal(two.status,201);const unsent=f.row().studio.messageUploads[0].diskName;
+  // 한 시간 넘게 안 보낸 사진을 정리가 먼저 거뒀다. 켠 판에서는 이 의뢰 몫으로 늦춘 지우기에 남아 있다가 「지운 의뢰」와 함께 바로 지운다(GPT pulse-media-trash-20261127 GB1).
+  const three=await f.photo();assert.equal(three.status,201);
+  f.put(current=>({...current,studio:{...current.studio,messageUploads:current.studio.messageUploads.map(item=>item.id===three.data.photo.id?{...item,at:new Date(Date.now()-2*3600000).toISOString()}:item)}}));
+  const swept=f.row().studio.messageUploads.find(item=>item.id===three.data.photo.id).diskName;
+  await f.app.sweepPulseMessageUploads();assert.equal(f.trashed(swept),writes);
   const names=workspaceMediaNames(f.app.store.db);
   assert.equal(names.includes(diskName),true,'backups carry sent message photos');assert.equal(names.includes(unsent),true,'and photos waiting to be sent');
   // 의뢰 기록 90일 시계(판 4 설계 11-7): 15일 전에 예고가 나간 의뢰.
@@ -274,6 +295,7 @@ test('message photos are in the backup list and leave with the rest when an unco
   assert.equal(f.row().studio.assets.length,0);
   assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).includes(diskName),false,'the photo file leaves too');
   assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).includes(unsent),false,'and so does the unsent one');
+  assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).includes(swept),false,'and the photo the sweep took earlier, without waiting a day');assert.equal(f.trashed(swept),false);
   assert.equal(f.row().studio.messageUploads,undefined);
 });
 

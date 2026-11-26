@@ -11,6 +11,7 @@ import {createCompanyApp} from './server.mjs';
 import {requestClock,paymentEverConfirmed,stoppedNoticeDue,stoppedDeleteDue,kstDayEnd,kstToday,withOriginActivity,legacyOriginActivity,backfillOriginActivity} from './pulse-personas.mjs';
 import {deskView} from './public/pulse-app/desk-view.mjs';
 import {applyRequestAction} from './pulse-requests.mjs';
+import {MEDIA_TRASH_KIND,trashMedia} from './studio-media-trash.mjs';
 
 const DAY=86400000,isoOf=ms=>new Date(ms).toISOString(),endOf=ms=>kstDayEnd(kstToday(isoOf(ms)));
 const afterDay=ms=>Date.parse(endOf(ms))+60000;
@@ -256,6 +257,19 @@ test('파일 지우기가 도중에 멈춘 지운 의뢰는 다음 보통 회차
   assert.equal(f.row(id).retirePendingUnlink,undefined);
   assert.equal(f.row(other).studio.assets.length,1);
   assert.deepEqual(await f.sweep(),{retired:0});
+});
+
+// 늦춘 지우기에 적힌 이 의뢰의 파일(거둔 소식 그림 · 문의 사진 · 손님이 지운 의뢰 파일)도 「지운 의뢰」와 함께 바로 지운다(GPT pulse-media-trash-20261127 GB1).
+test('지운 의뢰는 늦춘 지우기에 적힌 자기 파일을 가져가 함께 지운다 — 다른 의뢰 몫은 지울 목록에 남는다',async t=>{
+  const f=await fixture(t),{store}=f.app;
+  const id=await f.send(),other=await f.send(),mine=randomUUID()+'.jpg',theirs=randomUUID()+'.png',at=new Date(f.stamp).toISOString();
+  for(const name of [mine,theirs])await writeFile(join(f.media(),name),png);
+  store.transaction(()=>{trashMedia(store,[mine],{from:'message-photo',at,owner:'project:'+id});trashMedia(store,[theirs],{from:'progress',at,owner:'project:'+other});});
+  store.transaction(()=>f.app.clientProjects.retireRequestWithin(id,{request:{schemaVersion:1,number:'P-1',status:'retired',retiredAt:at,answers:{},files:[],asks:[],notes:[],rounds:[]}}));
+  assert.ok(f.row(id).retirePendingUnlink.includes(mine),'지운 의뢰의 남은 이름 목록에 든다');
+  assert.equal(store.get(MEDIA_TRASH_KIND,mine),null,'지울 목록에서는 뗀다');assert.ok(store.get(MEDIA_TRASH_KIND,theirs));
+  assert.deepEqual(await f.sweep(),{retired:0,requests:{resumed:1}});
+  await assert.rejects(stat(join(f.media(),mine)));assert.ok(await stat(join(f.media(),theirs)),'다른 의뢰 몫은 하루를 기다린다');
 });
 
 test('방 안 의뢰서의 실제 제출 길(request_submit)이 동의 때를 적어 시계에 든다 — 저장만 한 의뢰서는 동의가 아니다(카본 서버 검수 A3)',()=>{

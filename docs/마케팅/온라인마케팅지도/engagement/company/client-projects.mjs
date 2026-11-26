@@ -12,6 +12,7 @@ import {buildSceneRequests,customerSceneRequests,applySceneRequestAction} from '
 import {buildClientSchedule,applyClientScheduleAction} from './client-schedule.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {PERSONA_MEDIA_KINDS,personaMediaOf} from './workspace-media.mjs';
+import {takeTrash} from './studio-media-trash.mjs';
 import {photoList,supportPhotos,attachUploads} from './pulse-message-photos.mjs';
 
 // 초대 링크는 만든 때부터 30일 동안 새 연결을 받는다(2026-10-19: 2~4주 제작 동안 고객이 새 링크 없이 돌아오게). 새 초대·접근 종료는 그대로 이전 연결을 끝낸다.
@@ -144,7 +145,9 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   function retireRequestWithin(id,studio){
     const row=store.get('clientProjects',id);if(!row)return [];
     const persona=new Set(PERSONA_MEDIA_KINDS.flatMap(kind=>store.all(kind).flatMap(doc=>personaMediaOf(kind,doc))));
-    const names=[...(row.studio?.assets||[]),...(row.studio?.messageUploads||[]),...(row.intake?.files||[])].map(file=>file?.diskName)
+    // 늦춘 지우기에 적힌 이 프로젝트의 파일(거둔 소식 그림 · 거둔 문의 사진 · 손님이 지운 의뢰 파일)도 함께 지운다 — 「지운 의뢰」는 그 파일까지 바로 지운다
+    // (studio-media-trash.mjs takeTrash, GPT pulse-media-trash-20261127 GB1). 그 문서는 인물이 가진 이름이어도 떼고, 그 이름은 아래 거름으로 인물 쪽에 맡긴다(Fable 설계 검토 11-27 P2-4).
+    const names=[...[...(row.studio?.assets||[]),...(row.studio?.messageUploads||[]),...(row.intake?.files||[])].map(file=>file?.diskName),...takeTrash(store,'project:'+id)]
       .filter(name=>typeof name==='string'&&name&&!persona.has(name));
     const kept=Object.fromEntries(RETIRE_KEEP.filter(key=>Object.hasOwn(row,key)).map(key=>[key,row[key]]));
     const retired=append({...kept,history:withoutPersonaName(row.history)},'보존 기한이 끝나 의뢰 자료를 지움','system');

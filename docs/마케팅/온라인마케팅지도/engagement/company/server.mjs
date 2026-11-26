@@ -56,6 +56,7 @@ import { createPulseFeatures } from './pulse-features.mjs';
 import { createPulsePeople } from './pulse-people.mjs';
 import { createPulsePeopleRoutes } from './pulse-people-routes.mjs';
 import { receivePeopleImage, commitPeopleImage, discardPeopleImage, removePeopleImageFile } from './pulse-people-media.mjs';
+import { createMediaTrash } from './studio-media-trash.mjs';
 import { createPulseCapacity } from './pulse-capacity.mjs';
 import { createPersonaService } from './pulse-personas.mjs';
 import { createWorkspaceService } from './pulse-workspaces.mjs';
@@ -307,7 +308,10 @@ export function createCompanyApp(options={}) {
   const pulseFeatures=createPulseFeatures({store,clock}),projectLocale=createProjectLocale(pulseFeatures);
   const clientProjects=automationReadScope.service(createClientProjectsService({store,clock,localeOf:projectLocale}),['workspace']);
   // 고객 전용 인물(판 3): 접수 · 직원 검토 · 승인. 스위치(personaRequest · personaReal)를 서버가 강제하고, 인물 문서가 없으면 손님 응답은 판 3 전과 같다.
-  const pulsePersonas=createPersonaService({store,clientProjects,features:pulseFeatures,localeOf:projectLocale,clock});
+  // 작업실 파일의 늦춘 지우기(studio-media-trash.mjs): 문서에서 뗀 파일을 서버 가동 시간으로 하루 뒤에 지운다(백업이 아직 읽을 파일을 지우지 않게).
+  // 이 판은 지울 목록을 읽기만 한다(쓰기 스위치 MEDIA_TRASH_WRITES가 꺼짐 — defer가 이름을 그대로 돌려줘 지우는 길은 바탕처럼 커밋 뒤 바로 지운다). 서버 시험은 options.mediaTrashWrites로 켠다.
+  const mediaTrash=createMediaTrash({store,...(typeof options.mediaTrashWrites==='boolean'?{writes:options.mediaTrashWrites}:{})});
+  const pulsePersonas=createPersonaService({store,clientProjects,features:pulseFeatures,localeOf:projectLocale,clock,deferMedia:mediaTrash.defer});
   // 고객 브랜드 · 내 모델 · 다시 쓰기 · 만료 · 사용 중지 · 삭제(판 4). 손님 쪽 새 길은 스위치 myModels가 켜졌을 때만 열고, 직원 경로는 늘 열린다(설계 5판 D15).
   const pulseWorkspaces=createWorkspaceService({store,clientProjects,features:pulseFeatures,localeOf:projectLocale,clock});
   const deliveryFileInspector=options.deliveryFileInspector??createDeliveryFileInspector({directory:store.directory,ffprobe:options.deliveryFfprobe});
@@ -337,7 +341,7 @@ export function createCompanyApp(options={}) {
   const pulseCapacity=createPulseCapacity({store,clock});
   // 채널 명단(조각 ①)은 스튜디오보다 먼저 짓는다 — 인플루언서 광고 의뢰(조각 ②)가 보낼 때 같은 트랜잭션에서 명단을 읽는다.
   const pulsePeople=createPulsePeople({store,clientProjects,features:pulseFeatures,clock,...(typeof options.pulsePeopleMediaWrites==='boolean'?{mediaWrites:options.pulsePeopleMediaWrites}:{})});
-  const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,personaService:pulsePersonas,seats:pulseCapacity,people:pulsePeople,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
+  const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,personaService:pulsePersonas,seats:pulseCapacity,people:pulsePeople,deferMedia:mediaTrash.defer,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
   const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes,personas:pulsePersonas,workspaces:pulseWorkspaces,intakePaused:()=>pulseCapacity.paused(),intakeFull:()=>pulseCapacity.full()});
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
@@ -354,7 +358,11 @@ export function createCompanyApp(options={}) {
   // 같은 회차에 문의 사진(운영 조각 8-B): 붙지 않은 채 한 시간 지난 올려 둔 사진을 거두고 커밋 뒤 파일을 지운다(서버 끝판 카본 A2).
   // 채널 명단 그림 정리(조각 ③)도 같은 6시간 예약에 싣는다 — 명단을 아무도 고치지 않아도 지우는 중인 그림의 파일이 하루 뒤 지워진다.
   const sweepPeopleMedia=async()=>{let names=[];try{names=pulsePeople.sweep();}catch{return;}const done=[];for(const name of names){try{await removePeopleImageFile(store.directory,name);done.push(name);}catch{}}if(done.length)try{pulsePeople.forgetMedia(done);}catch{}};
-  const sweepPulseMessageUploads=async()=>{await sweepPeopleMedia();let removed=[];try{removed=pulseStudio.sweepMessageUploads();}catch{return;}for(const file of removed)await pulseRequests.discardProjectFile(file).catch(()=>{});};
+  // 늦춘 지우기(studio-media-trash.mjs)도 같은 회차에 나이를 쌓고 하루가 찬 파일을 지운다. 지우지 못한 파일이 있으면 로그에 남긴다(문서는 남아 다음 회차가 다시 지운다).
+  const sweepMediaTrash=async()=>{const swept=await mediaTrash.sweep().catch(error=>({error}));if(swept?.error||swept?.failed>0)console.error(`SYNK_COMPANY_MEDIA_TRASH_FAILED ${swept?.error?String(swept.error?.code||swept.error?.message||swept.error).slice(0,120):`failed=${swept.failed}`}`);};
+  // 도는 중인 회차는 하나만 둔다. 정상 종료는 도는 회차가 끝난 뒤 저장소를 닫는다(GPT pulse-media-trash-20261127-a GA3 — 닫힌 저장소에 지운 파일의 문서를 남기지 않게).
+  let pulseSweeping=null;
+  const sweepPulseMessageUploads=()=>pulseSweeping||(pulseSweeping=(async()=>{await sweepPeopleMedia();let removed=[];try{removed=pulseStudio.sweepMessageUploads();}catch{removed=[];}for(const file of removed)await pulseRequests.discardProjectFile(file).catch(()=>{});await sweepMediaTrash();})().finally(()=>{pulseSweeping=null;}));
   const retirePulseRequests=()=>pulseRequests.retireUnconfirmed().catch(()=>{}).then(sweepPulseMessageUploads);
   clientProjects.subscribeChanges(()=>{if(!pulseAutoReplyTimer||pulseAutoReplySoonTimer)return;pulseAutoReplySoonTimer=setTimeout(()=>{pulseAutoReplySoonTimer=null;void scanPulseAutoReplies();},1500);pulseAutoReplySoonTimer.unref?.();});
   const clientStartupTemplates=createClientStartupTemplatesService({store,clientProjects,clock});
@@ -1173,7 +1181,8 @@ export function createCompanyApp(options={}) {
       if(method==='DELETE'&&requestFileRemove){
         if(req.headers.origin!==origin)throw httpError('PULSE 고객 화면에서 다시 시도해 주세요.',403);
         const {removed,...result}=pulseStudio.removeRequestFile(customerToken,req.headers['x-pulse-csrf'],requestFileRemove[1]);
-        await pulseRequests.discardProjectFile(removed);renewCustomerDevice();return send(res,200,result);
+        // 쓰기가 켜진 판에서는 파일이 같은 트랜잭션에서 늦춘 지우기에 적혀 removed가 비어 온다(studio-media-trash.mjs).
+        if(removed)await pulseRequests.discardProjectFile(removed);renewCustomerDevice();return send(res,200,result);
       }
       if(method==='POST'){
         if(req.headers.origin!==origin)throw httpError('PULSE 고객 화면에서 다시 시도해 주세요.',403);
@@ -2464,6 +2473,10 @@ export function createCompanyApp(options={}) {
     shutdownTask=(async()=>{
       await Promise.all([dmRegistration.close(),websiteInquiries.close(),websiteInquiryTick,pulseAutoReply.stop(),pulseMail.stop(),pulseMailOpen.stop(),pulseWaitlist.stop(),socialPublishMedia.stop(),socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
+      // 정상 종료: 마지막 정리 뒤 흐른 가동 시간을 지우는 중인 파일의 나이에 남긴다(명단 그림 · 늦춘 지우기 — GPT pulse-people-media-routes-20261123-b GA2).
+      // 요청을 더 받지 않는 때라 한 번만 센다. 하루가 찬 파일은 다음 프로세스의 정리가 지운다.
+      await pulseSweeping?.catch(()=>{});
+      try{pulsePeople.sweep();}catch{}try{mediaTrash.account();}catch{}
       try{await messenger.close();}finally{synkIdentity.dispose();customerIdentity.dispose();teaching.dispose();store.close();}
     })();
     return shutdownTask;
@@ -2501,7 +2514,7 @@ export function createCompanyApp(options={}) {
     return startTask;
   }
   async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();mediaCloud?.stop();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,mediaCloud,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,staffStories,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  return {server,store,mediaCloud,mediaTrash,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,staffStories,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

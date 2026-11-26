@@ -14,9 +14,14 @@ const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 // media(조각 ③): {receive(req), commit(upload), discard(upload), remove(diskName), serve(req,res,doc,authorize)} — server.mjs가 작업실 파일 자리로 묶어 준다.
 export function createPulsePeopleRoutes({service,body,send,session,origin,audit,isStopped=()=>false,media=null}){
   function running(){if(isStopped())throw fail('서버가 잠시 멈추는 중이에요. 조금 뒤 다시 해 주세요.',503);}
-  // 정리된 그림 파일을 지우고, 지운 것만 문서에서 뗀다. 지우지 못한 파일은 문서가 남아 다음 정리 때 다시 지운다(GPT 검수 GA8).
-  // 실제로 지운 이름을 돌려준다 — 감사 기록에는 시도한 수가 아니라 지운 수를 적는다(서버 끝 판 카본 A2).
-  async function dropFiles(names=[]){if(!media||!names.length)return [];const done=[];for(const name of names){try{await media.remove(name);done.push(name);}catch{}}if(done.length)service.forgetMedia(done);return done;}
+  // 정리된 그림 파일을 지우고, 지웠거나 이미 없던 것만 문서에서 뗀다. 지우지 못한 파일은 문서가 남아 다음 정리 때 다시 지운다(GPT 검수 GA8).
+  // 이번에 실제로 지운 수(deleted)와 이미 없던 수(missing)를 돌려준다 — 감사 기록에는 시도한 수가 아니라 지운 수를 적는다(서버 끝 판 카본 A2),
+  // 이미 없던 파일(서버가 먼저 비움 등)은 지운 수에 세지 않는다(감사 기록 검수 GA1). remove가 참 · 거짓을 돌려주지 않으면 지운 것으로 본다.
+  async function dropFiles(names=[]){
+    const out={deleted:0,missing:0};if(!media||!names.length)return out;const done=[];
+    for(const name of names){try{const removed=await media.remove(name);done.push(name);if(removed===false)out.missing++;else out.deleted++;}catch{}}
+    if(done.length)service.forgetMedia(done);return out;
+  }
   return async function pulsePeopleRoutes(req,res,{url,demoRequest=false}){
     const match=ROUTE.exec(url.pathname);if(!match)return false;
     running();
@@ -56,7 +61,7 @@ export function createPulsePeopleRoutes({service,body,send,session,origin,audit,
         if(!still||still.hash!==auth.hash||still.user.id!==auth.user.id)throw fail('로그인 상태를 다시 확인해 주세요.',401);
         const added=service.addMedia(still.user,upload.metadata);upload=null;
         const dropped=await dropFiles(added.removed);
-        audit(still.user,'pulse-people-media-uploaded','pulse-people',{ref:added.ref,removed:dropped.length});
+        audit(still.user,'pulse-people-media-uploaded','pulse-people',{ref:added.ref,removed:dropped.deleted,...(dropped.missing?{missing:dropped.missing}:{})});
         send(res,201,{ref:added.ref,url:added.url});return true;
       }finally{if(upload)await media.discard(upload).catch(()=>{});}
     }
@@ -65,7 +70,9 @@ export function createPulsePeopleRoutes({service,body,send,session,origin,audit,
     const latest=session(req);
     if(!latest||latest.hash!==auth.hash||latest.user.id!==auth.user.id)throw fail('로그인 상태를 다시 확인해 주세요.',401);
     if(typeof latest.body?.csrfToken!=='string'||!latest.body.csrfToken||req.headers['x-csrf-token']!==latest.body.csrfToken)throw fail('회사 프로그램 화면에서 요청해 주세요.',403);
-    const {removed=[],...result}=service.save(latest.user,input);
+    // 찾지 못한 그림으로 저장하면(SYNK_PEOPLE_MEDIA_GONE) 그 그림의 참조를 함께 내린다 — 화면이 그 그림만 뺀다(GPT pulse-people-followups-20261127 GA1).
+    let saved;try{saved=service.save(latest.user,input);}catch(error){if(error?.code==='SYNK_PEOPLE_MEDIA_GONE'&&Array.isArray(error.gone)){send(res,400,{error:error.message,code:error.code,gone:error.gone});return true;}throw error;}
+    const {removed=[],...result}=saved;
     // 정리가 돌려준 파일(지우는 중으로 표시한 지 하루 지난 그림)은 저장이 커밋된 뒤 디스크에서 지운다. 응답에는 싣지 않는다.
     await dropFiles(removed);
     // 손님에게 보이는 칸이 바뀌는 쓰기라 판 번호 · 칸 수 · 고를 수 있는 칸 수(켜짐 · 예시 아님) · 지금 손님에게 보이는지(스위치까지 본 값)를 감사 기록에 남긴다(GPT GA2).

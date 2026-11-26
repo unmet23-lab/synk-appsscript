@@ -3,7 +3,7 @@
 // 실제 학습 · 생성 · 결제 · 고객 연락은 부르지 않는다(합성 프로젝트 · 합성 계정만).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,rm,readFile,stat} from 'node:fs/promises';
+import {mkdtemp,rm,readFile,stat,writeFile as writeSynthetic} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
@@ -11,6 +11,7 @@ import {createCompanyApp} from './server.mjs';
 import {createPersonaGuard,openPersonaProjectIds,kstDayEnd,reuseUntil,effectivePersonaStatus,personaUsability,PERSONA_SETTLED,requestClock} from './pulse-personas.mjs';
 import {applyRequestAction} from './pulse-requests.mjs';
 import {workspaceMediaNames} from './workspace-media.mjs';
+import {trashMedia} from './studio-media-trash.mjs';
 
 const origin='https://company.example.test',issuer='https://identity.example.test';
 const ids={a:'11111111-1111-4111-8111-111111111111',a2:'55555555-5555-4555-8555-555555555555',b:'22222222-2222-4222-8222-222222222222',c:'33333333-3333-4333-8333-333333333333'};
@@ -423,7 +424,14 @@ test('삭제(설계 5-6 · 5판 D10): 끝나지 않은 참조가 있으면 막�
   const names=[...f.store().all('pulsePersonaSources').filter(item=>item.personaId===x.personaId).map(item=>item.diskName),...f.store().get('pulsePersonaRevisions',x.revisionId).assets.map(item=>item.diskName)];
   const media=name=>join(f.store().directory,'studio-media',name);
   for(const name of names)assert.ok(await stat(media(name)));
+  // 앞서 판에서 빼 늦춘 지우기에 적힌 이 인물의 파일도 인물을 지울 때 함께 바로 지운다(GPT pulse-media-trash-20261126-b GA2 · GA3, -20261127 GA1). 다른 주인의 지울 목록은 그대로 둔다.
+  // 이 판은 늦춘 지우기에 쓰지 않지만(MEDIA_TRASH_WRITES) 다음 판이 적은 이름을 읽는다 — 다음 판을 되돌려도 인물 지우기가 그 파일을 놓치지 않는다.
+  const dropped=randomUUID()+'.png',other=randomUUID()+'.png';
+  for(const name of [dropped,other])await writeSynthetic(media(name),'synthetic');
+  f.store().transaction(()=>{trashMedia(f.store(),[dropped],{from:'persona-asset',at:new Date().toISOString(),owner:'persona:'+x.personaId});trashMedia(f.store(),[other],{from:'progress',at:new Date().toISOString(),owner:'project:'+randomUUID()});});
   const deleted=await f.personaAct(x.personaId,{action:'delete',note:'고객 요청 · 관리자 확인'});assert.equal(deleted.status,200,JSON.stringify(deleted.data));
+  await assert.rejects(stat(media(dropped)),'판에서 뺀 파일도 인물과 함께 지웠다');assert.equal(f.store().get('studioMediaTrash',dropped),null,'그 이름은 지울 목록에서 뗐다');
+  assert.ok(await stat(media(other)),'다른 길의 지울 파일은 하루를 기다린다');assert.ok(f.store().get('studioMediaTrash',other));
   const tomb=f.store().get('pulsePersonas',x.personaId);
   assert.equal(tomb.status,'deleted');assert.ok(tomb.deletedAt);assert.deepEqual(tomb.pendingUnlink,[]);assert.equal(tomb.request,undefined,'손님 요청 글은 지운다');assert.equal(tomb.displayName,'');
   assert.deepEqual(tomb.revisionIds,[x.revisionId]);
@@ -526,7 +534,7 @@ test('로그인 돌아오기(5판 D1): PULSE 로그인은 /pulse-app/으로, 실
 test('유료 생성 · 학습 · 네트워크를 부르지 않는다: 브랜드 모듈 · 회원 경로의 import 목록',async()=>{
   const source=await readFile(new URL('./pulse-workspaces.mjs',import.meta.url),'utf8');
   const imports=[...source.matchAll(/^import\s.+?from\s+'([^']+)';/gm)].map(match=>match[1]).sort();
-  assert.deepEqual(imports,['./public/pulse-app/casting-choice.mjs','./pulse-personas.mjs','./pulse-translations.mjs','./workspace-media.mjs','node:crypto','node:fs/promises','node:path']);
+  assert.deepEqual(imports,['./public/pulse-app/casting-choice.mjs','./pulse-personas.mjs','./pulse-translations.mjs','./studio-media-trash.mjs','./workspace-media.mjs','node:crypto','node:fs/promises','node:path']);
   assert.doesNotMatch(source,/\bfetch\s*\(|child_process|spawn\(|exec\(|https?:\/\/|import\(/);
   const routes=await readFile(new URL('./pulse-workspace-routes.mjs',import.meta.url),'utf8');
   assert.deepEqual([...routes.matchAll(/^import\s.+?from\s+'([^']+)';/gm)].map(match=>match[1]),['./request-security.mjs']);

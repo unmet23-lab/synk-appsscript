@@ -2,12 +2,14 @@
 // 이 시험의 사람 · 채널 · 그림은 모두 합성이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,rm,stat} from 'node:fs/promises';
+import {mkdtemp,rm,stat,readFile,writeFile,mkdir} from 'node:fs/promises';
+import {readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
+import {randomUUID} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
 import {workspaceMediaNames,MEDIA_READ_WINDOW_MS} from './workspace-media.mjs';
-import {PEOPLE_MEDIA_KIND,PEOPLE_MEDIA_LIMITS,PEOPLE_MEDIA_WRITES,PEOPLE_MEDIA_DELETE_FILES,peopleMediaName} from './pulse-people-media.mjs';
+import {PEOPLE_MEDIA_KIND,PEOPLE_MEDIA_LIMITS,PEOPLE_MEDIA_WRITES,PEOPLE_MEDIA_DELETE_FILES,peopleMediaName,removePeopleImageFile} from './pulse-people-media.mjs';
 import {createPulsePeopleRoutes} from './pulse-people-routes.mjs';
 import {PEOPLE_SEED,createPulsePeople} from './pulse-people.mjs';
 
@@ -39,7 +41,8 @@ async function server(t,{writes}={}){
   const save=async entries=>{const view=await staff(admin,'/api/pulse-people');return staff(admin,'/api/pulse-people/roster',{body:{version:view.data.version,entries}});};
   const disk=id=>app.store.get(PEOPLE_MEDIA_KIND,id)?.diskName;
   const exists=async name=>!!(await stat(join(options.dataDir,'studio-media',name)).catch(()=>null));
-  return {app,base,admin,member,staff,upload,call,save,disk,exists,tick:ms=>{offset+=ms;}};
+  const file=name=>readFile(join(options.dataDir,'studio-media',name));
+  return {app,base,admin,member,staff,upload,call,save,disk,exists,file,dataDir:options.dataDir,tick:ms=>{offset+=ms;}};
 }
 
 test('올리기: 관리자만, PNG · JPEG 2MB까지, 속이 그림이 아니면 415. 이름과 속이 다르면 속을 따른다',async t=>{
@@ -183,4 +186,100 @@ test('경로 모듈: 파일을 옮기는 사이 세션이 끝나면 그림 문�
   assert.equal(await ok(req,{}, {url:new URL('http://o/api/pulse-people/media')}),true);
   assert.deepEqual(calls,['commit','add','remove:a.png','forget:a.png'],'지운 파일의 문서만 뗀다');assert.deepEqual(sent,[201]);
   assert.deepEqual(audits,[{action:'pulse-people-media-uploaded',ref:'media:x',removed:1}],'감사 기록에는 시도한 둘이 아니라 실제로 지운 하나를 적는다(서버 끝 판 카본 A2)');
+});
+
+test('JPEG는 첫 그림 한 장만 남기고 끝 표식 뒤는 모두 뗀다(Ultra HDR 보정 그림 · 영상도). 끝 표식이 없거나 압축 자료가 빈 JPEG는 받지 않는다. 점진 JPEG(SOS 여럿)는 받는다(Fable 설계 검토 P3-2)',async t=>{
+  const f=await server(t);
+  const tailed=Buffer.concat([jpeg,Buffer.from('synthetic-trailer')]);
+  const sent=await f.upload(f.admin,tailed,'image/jpeg');assert.equal(sent.status,201,sent.text);
+  const doc=f.app.store.get(PEOPLE_MEDIA_KIND,sent.data.ref.slice(6));
+  assert.equal(doc.byteSize,jpeg.length,'적는 크기는 그림까지다');assert.deepEqual(await f.file(doc.diskName),jpeg,'디스크에도 그림까지만 둔다');
+  // Ultra HDR(보정 그림이 바로 뒤 · 패딩 뒤), 움직이는 사진(영상 머리)도 첫 그림 한 장만 남는다(Fable 설계 검토 「명단 JPEG 꼬리」 11-27, GPT -b2 GA1 · -b3 GA1 · GA2). 합성 바이트다.
+  const kept=async bytes=>{const sent=await f.upload(f.admin,bytes,'image/jpeg');assert.equal(sent.status,201,sent.text);const doc=f.app.store.get(PEOPLE_MEDIA_KIND,sent.data.ref.slice(6));assert.equal(doc.byteSize,jpeg.length);return f.file(doc.diskName);};
+  assert.deepEqual(await kept(Buffer.concat([jpeg,jpeg])),jpeg,'바로 뒤의 둘째 그림도 뗀다');
+  assert.deepEqual(await kept(Buffer.concat([jpeg,Buffer.alloc(4),jpeg])),jpeg,'패딩 뒤의 둘째 그림도 뗀다');
+  assert.deepEqual(await kept(Buffer.concat([jpeg,jpeg,Buffer.from([0,0,0,0x18]),Buffer.from('ftypmp42synthetic-video')])),jpeg,'영상 꼬리도 뗀다');
+  // 이름은 PNG인데 속이 꼬리 붙은 JPEG여도 속을 따르고 꼬리를 뗀다.
+  const swapped=await f.upload(f.admin,tailed,'image/png');assert.equal(swapped.status,201,swapped.text);
+  const swappedDoc=f.app.store.get(PEOPLE_MEDIA_KIND,swapped.data.ref.slice(6));assert.equal(swappedDoc.mimeType,'image/jpeg');assert.equal(swappedDoc.byteSize,jpeg.length);
+  assert.equal((await f.upload(f.admin,jpeg.subarray(0,jpeg.length-2),'image/jpeg')).status,415,'끝 표식 없이 압축 자료에서 끝나는 JPEG');
+  const sos=jpeg.indexOf(Buffer.from([0xff,0xda])),header=jpeg.subarray(sos,sos+2+jpeg.readUInt16BE(sos+2));
+  assert.equal((await f.upload(f.admin,Buffer.concat([jpeg.subarray(0,sos),header,Buffer.from([0xff,0xd9])]),'image/jpeg')).status,415,'SOS 뒤 압축 자료가 비었다');
+  // 산술 부호화 프레임(SOF10)의 스캔은 압축 자료가 0바이트일 수 있다(T.81 D.1.8, 검수 pulse-people-followups-20261127 GA2).
+  const arithmetic=Buffer.from(jpeg);arithmetic[jpeg.indexOf(Buffer.from([0xff,0xc0]))+1]=0xca;
+  assert.equal((await f.upload(f.admin,Buffer.concat([arithmetic.subarray(0,sos),header,Buffer.from([0xff,0xd9])]),'image/jpeg')).status,201,'산술 부호화 스캔은 빈 압축 자료도 받는다');
+  assert.equal((await f.upload(f.admin,Buffer.concat([jpeg.subarray(0,sos),header,Buffer.from([0x12,0xff])]),'image/jpeg')).status,415,'압축 자료 끝의 홀로 남은 FF');
+  // 다시 시작 표식(RST)만 든 압축 자료는 빈 자료다(GPT pulse-media-trash GA2).
+  assert.equal((await f.upload(f.admin,Buffer.concat([jpeg.subarray(0,sos),header,Buffer.from([0xff,0xd0,0xff,0xd9]),Buffer.from('tail')]),'image/jpeg')).status,415,'RST만 든 압축 자료');
+  // 점진 JPEG: 프레임 표식을 SOF2로 바꾸고 SOS를 하나 더 둔다(GPT pulse-media-trash GA3 — SOF0 그대로면 SOF2를 빼는 회귀를 못 잡는다).
+  const sof=jpeg.indexOf(Buffer.from([0xff,0xc0]));assert.ok(sof>0,'시험 그림에 SOF0이 있다');
+  const sof2=Buffer.from(jpeg);sof2[sof+1]=0xc2;
+  // 둘째 스캔의 다시 시작 표식 앞에 채움 FF를 하나 둔다(GPT pulse-media-trash-20261127 GA3 — 채움 분기를 빼면 이 그림을 거절한다).
+  const progressive=Buffer.concat([sof2.subarray(0,sof2.length-2),header,Buffer.from([0x12,0xff,0x00,0x34,0xff,0xff,0xd0,0x56]),Buffer.from([0xff,0xd9])]);
+  assert.equal((await f.upload(f.admin,progressive,'image/jpeg')).status,201,'SOF2 · 둘째 SOS와 채움 · 다시 시작 표식을 지나 끝 표식까지 걷는다');
+  const noFrame=Buffer.from(jpeg);noFrame[sof+1]=0xc4;
+  assert.equal((await f.upload(f.admin,noFrame,'image/jpeg')).status,415,'프레임 표식이 없으면 받지 않는다');
+  assert.equal((await f.upload(f.admin,Buffer.concat([png,Buffer.from('tail')]),'image/png')).status,415,'PNG 꼬리는 그대로 받지 않는다');
+});
+
+test('저장: 올린 뒤 한 시간 넘게 저장하지 않아 지우는 중이 된(또는 지운) 그림을 고르면 까닭과 할 일을 말한다. 화면은 그 그림만 고르기 목록과 쓰던 값에서 뺀다(화면 최종 검수 F1)',async t=>{
+  const f=await server(t);
+  const ref=(await f.upload(f.admin)).data.ref,id=ref.slice(6);
+  f.tick(PEOPLE_MEDIA_LIMITS.graceMs+1000);await f.app.sweepPulseMessageUploads();
+  assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,id).gone,true);
+  const message='2번째 칸의 올린 그림을 찾지 못했어요. 올린 뒤 한 시간 안에 저장하지 않은 그림은 지워요. 그림을 다시 올린 뒤 저장해 주세요.';
+  const first=await f.save([real(),real({name:'합성 둘째 채널',url:'https://www.youtube.com/@synthetic',samples:[ref]})]);
+  assert.equal(first.status,400);assert.equal(first.data.code,'SYNK_PEOPLE_MEDIA_GONE');assert.equal(first.data.error,message);
+  assert.deepEqual(first.data.gone,[ref],'찾지 못한 그림의 참조를 함께 내린다(화면이 그 그림만 뺀다)');
+  f.app.store.remove(PEOPLE_MEDIA_KIND,id);
+  const later=await f.save([real(),real({name:'합성 둘째 채널',url:'https://www.youtube.com/@synthetic',image:ref})]);
+  assert.equal(later.data.code,'SYNK_PEOPLE_MEDIA_GONE','파일을 지우고 문서를 뗀 뒤에도 같은 문장');assert.equal(later.data.error,message);assert.deepEqual(later.data.gone,[ref]);
+  assert.equal((await f.save([real({image:PEOPLE_SEED[0].image})])).data.code,undefined,'다른 그림 오류는 예전 문장 그대로');
+  // 장면 그림이 한도(셋)를 넘는 칸은 찾지 못한 그림 검사에서 보지 않는다 — 칸 검사가 400으로 막는다(GPT pulse-people-followups-20261127-b GA3).
+  let lookups=0;const get=f.app.store.get.bind(f.app.store);t.mock.method(f.app.store,'get',(kind,key)=>{if(kind===PEOPLE_MEDIA_KIND)lookups++;return get(kind,key);});
+  const flood=await f.save([real(),real({name:'합성 셋째 채널',url:'https://www.youtube.com/@synthetic3',samples:Array.from({length:400},()=>ref)})]);t.mock.restoreAll();
+  assert.equal(flood.status,400);assert.equal(flood.data.code,undefined);assert.ok(lookups<=8,'그림 문서를 한도 안에서만 찾는다: '+lookups);
+  // 화면(public/pulse-app/app.mjs saveRoster)을 그대로 떼어 가짜 화면 상태로 돌린다(검수 pulse-media-trash-20261127 GA2 · GA4, pulse-people-followups-20261127 GA1 · GA3).
+  const app=readFileSync(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8').replace(/\r/g,'');
+  const from=app.indexOf('async function saveRoster('),to=app.indexOf('\nasync function rosterAct(',from);assert.ok(from>0&&to>from,'saveRoster가 있다');
+  // 요청은 실제 api.mjs request로 보내고 fetch만 가짜다 — 400 응답의 gone이 오류에 옮겨지는 데까지 본다(GPT pulse-people-followups-20261127-b GA2).
+  const {request:apiRequest}=await import('./public/pulse-app/api.mjs');
+  const goneRef='media:'+randomUUID(),keptRef='media:'+randomUUID(),newRef='media:'+randomUUID();
+  const run=async({gone})=>{
+    const editing={index:1},values={image:goneRef,sample0:keptRef,sample1:'https://www.youtube.com/@synthetic',sample2:'../not-a-ref'},busyLog=[],calls=[],notices=[];let renders=0;
+    const env={busy:false,loading:false,s:{error:'',roster:{version:3,editing,uploads:[{ref:newRef},{ref:goneRef},{ref:keptRef},{ref:'../not-a-ref'}]}},drafts:new Map([['k',{values,revision:1}]]),
+      draftKey:()=>'k',setBusy:value=>{env.busy=value;busyLog.push(value);},options:()=>({}),clearDraft(){},forgetRosterDrafts(){},render:()=>{renders++;},notice:text=>{notices.push(text);},connectionExpired(){},
+      loadRoster:async()=>{calls.push('loadRoster');},
+      request:async(path,settings)=>{calls.push(path);
+        t.mock.method(globalThis,'fetch',async()=>new Response(JSON.stringify({error:message,code:'SYNK_PEOPLE_MEDIA_GONE',...(gone?{gone}:{})}),{status:400,headers:{'Content-Type':'application/json'}}));
+        try{return await apiRequest(path,settings);}finally{t.mock.restoreAll();}}};
+    const saveRoster=new Function('env','with(env){return '+app.slice(from,to)+'}')(env);
+    await saveRoster([],'저장했어요',{});
+    return {env,editing,values,busyLog,calls,notices,renders};
+  };
+  // 서버가 알려 준 그림만 고르기 목록과 쓰던 값에서 빼고, 오류를 보이고, 저장 단추를 바로 푼다. 목록을 다시 받지 않는다 — 그사이 올린 그림(newRef)이 남는다.
+  const done=await run({gone:[goneRef,'../not-a-ref']});
+  assert.deepEqual(done.busyLog,[true,false],'저장 단추가 풀린다');assert.deepEqual(done.calls,['/api/pulse-people/roster'],'목록을 다시 받지 않는다');
+  assert.equal(done.env.s.error,message);assert.deepEqual(done.notices,[message]);assert.equal(done.renders,1);
+  assert.equal(done.env.s.roster.editing,done.editing,'고치던 칸을 닫지 않는다');
+  // 꼴이 틀린 참조('../not-a-ref')는 api.mjs가 걸러 화면 상태에서 빠지지 않는다(-b2 GA2).
+  assert.deepEqual(done.env.s.roster.uploads.map(item=>item.ref),[newRef,keptRef,'../not-a-ref'],'지운 그림만 고르기 목록에서 빠진다');
+  assert.deepEqual(done.values,{image:'',sample0:keptRef,sample1:'https://www.youtube.com/@synthetic',sample2:'../not-a-ref'},'쓰던 값에서 지운 그림만 비운다');
+  // 옛 서버처럼 gone 없이 오면 아무것도 빼지 않고 오류만 보인다.
+  const plain=await run({});
+  assert.deepEqual(plain.busyLog,[true,false]);assert.equal(plain.env.s.error,message);assert.equal(plain.values.image,goneRef);assert.equal(plain.env.s.roster.uploads.length,4);
+});
+test('감사 기록의 지운 수에는 이미 없던 파일을 세지 않는다. 이미 없던 파일도 문서는 뗀다(감사 기록 검수 GA1)',async t=>{
+  const live={user:{id:'u1'},hash:'h1',body:{csrfToken:'c1'}},forgotten=[],audits=[];
+  const service={mediaOpen:()=>true,assertAdmin:()=>{},addMedia:()=>({ref:'media:x',url:'/x',removed:['a.png','b.png','c.png']}),forgetMedia:names=>forgotten.push(...names)};
+  const media={receive:async()=>({temporary:'t',metadata:{id:'x',diskName:'x.png'}}),commit:async()=>{},discard:async()=>{},remove:async name=>{if(name==='c.png')throw new Error('잠김');return name==='a.png';},serve:async()=>{}};
+  const routes=createPulsePeopleRoutes({service,body:async()=>({}),send:()=>{},session:()=>live,origin:'http://o',audit:(user,action,target,detail)=>audits.push({action,...detail}),media});
+  assert.equal(await routes({method:'POST',headers:{origin:'http://o','x-csrf-token':'c1'}},{}, {url:new URL('http://o/api/pulse-people/media')}),true);
+  assert.deepEqual(forgotten,['a.png','b.png'],'지웠거나 이미 없던 그림의 문서만 뗀다');
+  assert.deepEqual(audits,[{action:'pulse-people-media-uploaded',ref:'media:x',removed:1,missing:1}]);
+  // 실제 지우기 함수: 지웠으면 참, 이미 없었으면 거짓을 돌려준다.
+  const directory=await mkdtemp(join(tmpdir(),'synk-people-remove-'));
+  t.after(async()=>{assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});
+  const name='42345678-1234-4123-8123-123456789abc.png';await mkdir(join(directory,'studio-media'));await writeFile(join(directory,'studio-media',name),'synthetic');
+  assert.equal(await removePeopleImageFile(directory,name),true);assert.equal(await removePeopleImageFile(directory,name),false);
 });

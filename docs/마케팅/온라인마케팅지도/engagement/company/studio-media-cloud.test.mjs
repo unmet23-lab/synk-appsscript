@@ -116,6 +116,26 @@ test('upload: a file nobody references and a name outside the rule are never upl
   assert.deepEqual(await ctx.cloud.tick(),{idle:true});assert.equal(ctx.gcs.objects.size,0);
 });
 
+// 틱이 목록을 읽은 뒤 문서에서 뗀 파일(늦춘 지우기로 하루 남는 파일)은 올리지 않는다(GPT pulse-media-trash-20261127 GB2).
+test('upload: a file that loses its reference after the tick read the list is not sent and gets no ledger row',async t=>{
+  const ctx=await setup(t),a=await ctx.file(),b=await ctx.file();
+  ctx.gcs.setHook(async(_,session)=>{if(session.name==='studio-media/'+a.name)ctx.list.delete(b.name);});
+  assert.deepEqual((await ctx.cloud.tick()).uploaded,[a.name]);
+  assert.ok(existsSync(localPath(ctx,b.name)));
+  assert.equal(ctx.gcs.objects.has('studio-media/'+b.name),false);assert.equal(ctx.store.get(MEDIA_CLOUD_KIND,b.name),null);
+  assert.equal(await ctx.cloud.uploadOne(b.name),'unreferenced');assert.equal(ctx.gcs.calls.upload,1);
+});
+
+// 올리는 사이 손님이 지워 이름과 로컬 파일이 함께 사라졌다(쓰기가 꺼진 판의 바로 지우기). 보낸 사본은 장부에 남아 하루 대조가 끊긴 이름으로 센다(GPT pulse-media-trash-20261127-a GA1).
+test('upload: a file deleted from disk while it is sent keeps its ledger row, so the daily check counts the remote copy',async t=>{
+  const ctx=await setup(t),{name,bytes}=await ctx.file();
+  ctx.gcs.setHook(async()=>{ctx.list.delete(name);unlinkSync(localPath(ctx,name));});
+  assert.deepEqual((await ctx.cloud.tick()).uploaded,[name]);
+  assert.equal(existsSync(localPath(ctx,name)),false);assert.deepEqual(ctx.gcs.objects.get('studio-media/'+name).bytes,bytes);
+  const row=ctx.store.get(MEDIA_CLOUD_KIND,name);assert.equal(row.state,'verified');assert.equal(row.sha256,sha(bytes));
+  assert.equal((await ctx.cloud.reconcile()).unreferenced,1,'the daily check sees the copy as unreferenced');
+});
+
 test('upload: an existing object with the same bytes is verified, with other bytes it is a conflict that is never evicted',async t=>{
   const ctx=await setup(t),a=await ctx.file(),b=await ctx.file();
   ctx.gcs.objects.set('studio-media/'+a.name,{bytes:a.bytes,generation:7,created:'2026-11-19T12:00:00Z'});

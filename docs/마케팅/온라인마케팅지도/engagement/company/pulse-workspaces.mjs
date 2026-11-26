@@ -11,6 +11,7 @@ import {PERSONA_KINDS,PERSONA_SETTLED,REUSE_MONTHS,BACKUP_MAX_MONTHS,withPersona
 import {personaRefOf} from './public/pulse-app/casting-choice.mjs';
 import {withTranslation} from './pulse-translations.mjs';
 import {workspaceMediaNames} from './workspace-media.mjs';
+import {takeTrash} from './studio-media-trash.mjs';
 
 const K=PERSONA_KINDS,CLAIMS='pulseWorkspaceClaims',DRAFTS='pulseRequests',PROJECTS='clientProjects',PROOF='pulse-proof';
 export const WORKSPACE_KINDS=Object.freeze({workspaces:K.workspaces,claims:CLAIMS});
@@ -612,6 +613,9 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     for(const source of store.all(K.sources).filter(item=>item.personaId===persona.id&&live(item))){if(typeof source.diskName==='string')names.push(source.diskName);store.put(K.sources,source.id,{id:source.id,personaId:source.personaId,projectId:source.projectId,purpose:source.purpose,diskName:null,deletedAt:now});}
     for(const revision of store.all(K.revisions).filter(item=>item.personaId===persona.id&&live(item))){for(const entry of revision.assets||[])if(typeof entry?.diskName==='string')names.push(entry.diskName);store.put(K.revisions,revision.id,{...revision,assets:[],reference:null,motion:null,method:null,deletedAt:now});}
     if(names.some(name=>!hashes?.has(name)))throw fail('그사이 인물 파일이 바뀌었어요. 다시 해 주세요.',409);
+    // 판에서 빼 늦춘 지우기에 적힌 이 인물의 파일도 지금 함께 지운다 — 인물 지우기는 그 인물의 파일을 모두 바로 지운다(GPT pulse-media-trash GB1 · -b GA2 · GA3).
+    // 그 본문 해시는 뺄 때 removedNoVault에 남겼고 아래에서 묘비 noVault로 옮긴다.
+    for(const name of takeTrash(store,'persona:'+persona.id))names.push(name);
     // 앞서 판 파일만 뺄 때 남긴 해시(removedNoVault)도 묘비로 옮긴다 — 묘비는 정해진 칸만 남기므로 여기서 합친다.
     const noVault=[...new Set([...(persona.deletion?.noVault||[]),...(Array.isArray(persona.removedNoVault)?persona.removedNoVault:[]),...names.map(name=>hashes.get(name))])].filter(hash=>typeof hash==='string'&&SHA256.test(hash)).sort();
     store.remove(K.consents,persona.id);

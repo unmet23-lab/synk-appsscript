@@ -53,26 +53,49 @@ function pngShape(b){
   }
   return false;
 }
-// JPEG: 시작 표식 SOI, 길이가 맞는 표식 덩어리들, 가로 · 세로가 0이 아닌 SOF, 그 뒤 SOS와 압축 자료, 끝 표식 EOI.
+// JPEG: 시작 표식 SOI, 길이가 맞는 표식 덩어리들, 가로 · 세로가 0이 아닌 SOF, 그 뒤 SOS와 압축 자료(비지 않음), 끝 표식 EOI.
+// 압축 자료는 FF 00(자료의 FF) · FF D0~D7(다시 시작 — 자료로 세지 않음) · FF FF(채움)를 건너 다음 표식까지 걷는다. 점진 JPEG처럼 SOS가 여럿이면 덩어리를 이어 걷는다.
+// EOI 뒤에 붙은 자료(Ultra HDR 보정 그림, 움직이는 사진의 영상 · 녹음, 편집기의 덧붙임)는 받되 저장할 때 모두 뗀다(Fable 설계 검토 P3-2).
+// 명단 그림은 손님 카드의 작은 그림이라 첫 그림(SDR) 한 장만 둔다. HDR 표시를 잃는 것은 정한 한계다(Fable 설계 검토 「명단 JPEG 꼬리」 11-27 — 뒤 자료 가운데 남길 것을 가리지 않는다).
+// 그림이 끝나는 자리(EOI 다음 바이트)를 돌려준다. 그림이 아니면 0이다.
 const JPEG_FRAMES=new Set([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf]);
-function jpegShape(b){
-  if(b.length<4||b[0]!==0xff||b[1]!==0xd8||b[b.length-2]!==0xff||b[b.length-1]!==0xd9)return false;
-  let offset=2,frame=false;
-  while(offset+4<=b.length){
-    if(b[offset]!==0xff)return false;
+// 산술 부호화 프레임. 이 스캔은 끝의 0 바이트를 생략해 압축 자료가 0바이트일 수 있다(T.81 D.1.8, GPT pulse-people-followups-20261127 GA2).
+const JPEG_ARITHMETIC=new Set([0xc9,0xca,0xcb,0xcd,0xce,0xcf]);
+function jpegEnd(b){
+  if(b.length<4||b[0]!==0xff||b[1]!==0xd8)return 0;
+  let offset=2,frame=false,scan=false,arithmetic=false;
+  while(offset+2<=b.length){
+    if(b[offset]!==0xff)return 0;
     const marker=b[offset+1];
     if(marker===0xff){offset++;continue;}
+    if(marker===0xd9)return frame&&scan?offset+2:0;
     if(marker===0x01||marker>=0xd0&&marker<=0xd7){offset+=2;continue;}
-    if(marker===0x00||marker===0xd8||marker===0xd9)return false;
+    if(marker===0x00||marker===0xd8||offset+4>b.length)return 0;
     const length=b.readUInt16BE(offset+2),end=offset+2+length;
-    if(length<2||end>b.length)return false;
-    if(JPEG_FRAMES.has(marker)){if(length<8||!b.readUInt16BE(offset+5)||!b.readUInt16BE(offset+7))return false;frame=true;}
-    if(marker===0xda)return frame&&end<b.length-2;
+    if(length<2||end>b.length)return 0;
+    if(JPEG_FRAMES.has(marker)){if(length<8||!b.readUInt16BE(offset+5)||!b.readUInt16BE(offset+7))return 0;frame=true;arithmetic=JPEG_ARITHMETIC.has(marker);}
     offset=end;
+    if(marker!==0xda)continue;
+    if(!frame)return 0;
+    let data=false;
+    while(offset<b.length){
+      if(b[offset]!==0xff){offset++;data=true;continue;}
+      if(offset+1>=b.length)return 0;
+      const next=b[offset+1];
+      // FF 00은 자료 바이트 FF다. 다시 시작 표식(RST)은 자료로 세지 않는다 — RST만 든 빈 압축 자료를 받지 않게(GPT pulse-media-trash GA2).
+      if(next===0x00){offset+=2;data=true;continue;}
+      if(next>=0xd0&&next<=0xd7){offset+=2;continue;}
+      if(next===0xff){offset++;continue;}
+      break;
+    }
+    // 허프만 스캔만 빈 압축 자료를 받지 않는다.
+    if(!data&&!arithmetic)return 0;
+    scan=true;
   }
-  return false;
+  return 0;
 }
-const SHAPES={'image/png':pngShape,'image/jpeg':jpegShape};
+// 형식마다 첫 그림이 끝나는 자리(0이면 그 형식의 그림이 아니다). PNG는 IEND 뒤에 아무것도 없어야 한다(꼬리 자료를 받지 않는다).
+const ENDS={'image/png':b=>pngShape(b)?b.length:0,'image/jpeg':jpegEnd};
 
 // 받기: 형식 · 크기를 머리(Content-Length)와 흐름 양쪽에서 본다. 이름과 속이 다르면(.png인데 JPEG) 속을 따른다.
 export async function receivePeopleImage(req,directory){
@@ -91,14 +114,18 @@ export async function receivePeopleImage(req,directory){
       parts.push(chunk);
       let offset=0;while(offset<chunk.length){const {bytesWritten}=await handle.write(chunk,offset,chunk.length-offset);offset+=bytesWritten;}
     }
-    const bytes=Buffer.concat(parts,size),whole=type=>Object.hasOwn(SHAPES,type)&&SHAPES[type](bytes);
-    const actual=whole(mimeType)?mimeType:Object.keys(TYPES).find(whole);
+    const bytes=Buffer.concat(parts,size),fit=type=>Object.hasOwn(ENDS,type)?ENDS[type](bytes):0;
+    const actual=fit(mimeType)?mimeType:Object.keys(TYPES).find(type=>fit(type));
     if(!size||!actual)throw fail('그림 파일이 아니에요. PNG · JPEG 그림을 골라 주세요.',415);
+    // JPEG는 첫 그림 한 장만 남기고 첫 끝 표식 뒤는 디스크에서도 뗀다 — 손님 그림 조회는 저장 파일 전체를 내주므로 영상 · 녹음 · 덧붙인 그림이 손님에게 가지 않게(GPT pulse-people-followups-20261127-b2 GA1 · -b3 GA2).
+    const kept=actual==='image/jpeg'?jpegEnd(bytes):size;
+    if(kept<size)await handle.truncate(kept);
     await handle.close();
-    return {temporary,metadata:{id,diskName:`${id}.${TYPES[actual]}`,mimeType:actual,byteSize:size}};
+    return {temporary,metadata:{id,diskName:`${id}.${TYPES[actual]}`,mimeType:actual,byteSize:kept}};
   }catch(error){await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
 }
 export async function commitPeopleImage(upload,directory){await rename(upload.temporary,located(directory,upload.metadata.diskName));upload.committed=true;}
 export async function discardPeopleImage(upload,directory){if(!upload)return;await unlink(upload.committed?located(directory,upload.metadata.diskName):upload.temporary).catch(()=>{});}
 // 지우기: 없는 파일은 이미 지운 것으로 본다. 다른 실패는 던진다 — 부른 쪽이 그 그림 문서를 남겨 다음 정리 때 다시 지운다(GPT 검수 GA8).
-export async function removePeopleImageFile(directory,diskName){try{await unlink(located(directory,diskName));}catch(error){if(error?.code!=='ENOENT')throw error;}}
+// 이번에 실제로 지웠으면 참, 이미 없었으면 거짓을 돌려준다(감사 기록의 지운 수에 이미 없던 파일을 세지 않게 — 감사 기록 검수 GA1).
+export async function removePeopleImageFile(directory,diskName){try{await unlink(located(directory,diskName));return true;}catch(error){if(error?.code!=='ENOENT')throw error;return false;}}

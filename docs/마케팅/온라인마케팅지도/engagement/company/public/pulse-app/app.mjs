@@ -716,7 +716,14 @@ async function saveRoster(entries,message,form=null){
   if(busy||loading||!s.roster)return;
   const key=form?draftKey(form):'',revision=drafts.get(key)?.revision;setBusy(true);
   try{const result=await request('/api/pulse-people/roster',{...options(),body:{version:s.roster.version,entries}});if(key)clearDraft(key,revision);if(!form)forgetRosterDrafts();s.roster={...result,editing:null,preview:s.roster.preview,previewFilter:s.roster.previewFilter};s.error='';render();notice(message);}
-  catch(error){if(error.status===401){connectionExpired();return;}if(error.status===409){try{await loadRoster();}catch{}}s.error=error.message;render();notice(error.message);}
+  catch(error){
+    if(error.status===401){connectionExpired();return;}
+    if(error.status===409){try{await loadRoster();}catch{}}
+    // 저장하지 않은 채 한 시간이 지나 지운 그림을 골랐으면, 서버가 알려 준 그 그림(gone)만 고르기 목록과 쓰던 값에서 빼고 오류를 보인다(화면 최종 검수 F1).
+    // 목록을 다시 받지 않는다 — 기다리지 않아 저장 단추가 바로 풀리고, 그사이 새로 올린 그림이 오래된 목록에 덮이지 않는다(검수 pulse-media-trash-20261127 GA2 · pulse-people-followups-20261127 GA1). 고치던 칸은 그대로 둔다.
+    else if(error.code==='SYNK_PEOPLE_MEDIA_GONE'){const gone=new Set(Array.isArray(error.gone)?error.gone:[]),values=key?drafts.get(key)?.values:null;if(s.roster&&gone.size){s.roster.uploads=(s.roster.uploads||[]).filter(item=>!gone.has(item?.ref));if(values)for(const name of ['image','sample0','sample1','sample2'])if(gone.has(values[name]))values[name]='';}}
+    s.error=error.message;render();notice(error.message);
+  }
   finally{setBusy(false);}
 }
 async function rosterAct(action,button){

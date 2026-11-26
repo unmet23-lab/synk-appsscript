@@ -5,6 +5,7 @@ import {readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {createCompanyApp} from './server.mjs';
+import {workspaceMediaNames} from './workspace-media.mjs';
 import {normalizeRequestAnswers,requestFileKind,validRequestFile,REQUEST_LIMITS,carryToStrategy,finishLines} from './pulse-requests.mjs';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
@@ -433,8 +434,9 @@ test('requests with a brief retire after 90 quiet days and a 14-day notice, conf
   assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:0},'nothing left to do');
 });
 const openRoom=async(f,extra={})=>{const draft=await f.start();const sent=await f.call('/pulse/api/request/submit',{body:{answers:answers(extra)},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));return {sent,room:(await f.call('/pulse/api/project')).data,id:sent.data.projectId};};
-test('after sending, a customer can still send files of every accepted kind, read them back and take them away',async t=>{
-  const f=await fixture(t),{room,id}=await openRoom(f);
+// writes: 늦춘 지우기(studio-media-trash.mjs)를 켠 다음 판(이 판은 꺼짐 — 손님이 지운 파일은 바탕처럼 바로 지운다).
+for(const writes of [false,true])test(`after sending, a customer can still send files of every accepted kind, read them back and take them away${writes?' — with the delayed delete switched on (next release)':''}`,async t=>{
+  const f=await fixture(t,writes?{mediaTrashWrites:true}:{}),{room,id}=await openRoom(f);
   assert.equal(room.project.requestFlow,true);
   const send=(opts)=>f.call('/pulse/api/studio/request-file',{raw:opts.bytes??png,csrf:room.csrf,headers:{'Content-Type':opts.type||'image/png','X-File-Name':encodeURIComponent(opts.name||'more.png'),'X-Request-Slot':opts.slot||'etc'}});
   assert.equal((await send({bytes:Buffer.from('not a png')})).status,415,'signatures are checked here too');
@@ -453,6 +455,15 @@ test('after sending, a customer can still send files of every accepted kind, rea
   const removed=await f.call('/pulse/api/studio/request-file/'+logo.data.file.id,{method:'DELETE',csrf:room.csrf});assert.equal(removed.status,200,JSON.stringify(removed.data));
   assert.equal(removed.data.project.studio.request.files.length,1);
   assert.equal(Object.hasOwn(removed.data,'removed'),false,'the disk name is not sent back');
+  if(writes){
+    // 켠 판: 파일은 그 전에 잡힌 백업이 읽도록 하루 동안 남고, 같은 커밋에서 이 의뢰 몫으로 지울 목록에 적힌다.
+    const logoDisk=(await readdir(join(f.options.dataDir,'studio-media'))).find(name=>name.endsWith('.intake'));
+    assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).length,2,'the file stays on disk for a day');
+    assert.deepEqual(f.app.store.get('studioMediaTrash',logoDisk)?.owners,['project:'+id],'and is listed for the delayed delete in the same commit');
+    assert.equal(workspaceMediaNames(f.app.store.db).includes(logoDisk),false,'it leaves the backup list at once');
+    for(const item of f.app.store.all('studioMediaTrash'))f.app.store.put('studioMediaTrash',item.id,{...item,counting:true,agedMs:86400000});
+    assert.equal((await f.app.mediaTrash.sweep()).removed,1);
+  }
   assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).length,1,'the file is gone from disk');
   assert.equal((await f.staff('/api/client-projects/'+id+'/studio')).data.project.intake.files.length,0);
   assert.equal((await f.call('/pulse/api/studio/request-file/'+image.data.file.id,{method:'DELETE',csrf:'wrong'})).status,403);

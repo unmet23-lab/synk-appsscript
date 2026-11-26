@@ -321,7 +321,9 @@ const USAGE_TEXT={brand:80,product:120,purpose:200,media:200,regions:120,period:
 const NEXT_LINE={submitted:'손님 사진과 글을 보고 검토를 시작하거나 자료를 더 요청해요',needs_materials:'손님이 자료를 더 보내기를 기다려요',rights_pending:'당사자 동의를 확인해요(실제 인물)',reviewing:'만들 수 있는지 보고 견적 · 범위를 보내요',quote_review:'손님이 견적 · 범위를 확인하기를 기다려요',reference_making:'기준 얼굴 판을 올려 손님에게 보내요',reference_review:'손님이 기준 얼굴을 확인하기를 기다려요',building:'학습 · 검증을 하고 동작 시안을 올려 보내요',motion_review:'손님이 동작 시안을 확인하기를 기다려요',withdrawn:'거둔 요청이에요',retired:'사용을 마친 인물이에요',paused:'사용 중지된 인물이에요 — 브랜드 화면에서 풀거나 지워요',deleting:'지우는 중이에요 — 브랜드 화면에서 삭제 이어 하기를 눌러요'};
 
 // features: pulseFeatures 서비스(read). localeOf(row): 프로젝트 소통 언어. 이 서비스는 고객 세션 · 직원 권한을 clientProjects로만 확인한다.
-export function createPersonaService({store,clientProjects,features=null,localeOf=()=>DEFAULT_LOCALE,clock=()=>new Date().toISOString()}){
+// deferMedia(names,{from,at,owner}): 판에서 뺀 파일을 지금 지울지 늦춰 지울지 정한다(studio-media-trash.mjs createMediaTrash().defer — server.mjs가 넣어 준다).
+// 돌려준 이름만 부른 쪽이 커밋 뒤 바로 지운다. 기본값은 모두 돌려주기(바탕 동작). 늦춰 지우는 이름은 인물 id를 주인으로 적어, 인물을 지울 때 함께 바로 지운다.
+export function createPersonaService({store,clientProjects,features=null,localeOf=()=>DEFAULT_LOCALE,clock=()=>new Date().toISOString(),deferMedia=names=>[...names]}){
   const flags=()=>{try{const f=features?.read?.();return {personaRequest:f?.personaRequest===true,personaReal:f?.personaRequest===true&&f?.personaReal===true,myModels:f?.myModels===true};}catch{return {personaRequest:false,personaReal:false,myModels:false};}};
   const held=persona=>PERSONA_HELD.includes(persona?.status);
   const heldFail=()=>fail('사용 중지됐거나 지우는 중인 인물이에요. 브랜드 화면에서 다뤄 주세요.',409);
@@ -658,7 +660,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
           if(kept.length>PERSONA_LIMITS.removedNoVault)throw fail('이 인물에서 뺀 파일이 너무 많아요. 새 인물 요청으로 이어 가 주세요.',409);
           next.removedNoVault=kept;
         }
-        store.put(K.revisions,revision.id,{...revision,assets:revision.assets.filter(item=>item.id!==found.id)});discard.push(found.diskName);label='전용 인물 판 파일 지움';
+        store.put(K.revisions,revision.id,{...revision,assets:revision.assets.filter(item=>item.id!==found.id)});discard.push(...deferMedia([found.diskName],{from:'persona-asset',at,owner:'persona:'+persona.id}));label='전용 인물 판 파일 지움';
       }else if(action==='set_method'){
         const revision=revisionOf(input.revisionId);
         if(!['reference','lora','other'].includes(input.kind))throw fail('만드는 방식을 골라 주세요.');

@@ -16,9 +16,10 @@ const heic=Buffer.concat([Buffer.from([0,0,0,24]),Buffer.from('ftypheic'),Buffer
 const answers=(extra={})=>({name:'합성 탄산수',kind:'food',channels:['shorts'],package:'s15',audience:'운동 끝난 20대',oneThing:'한 캔에 맛이 다섯 번',action:'buy',contactName:'김합성',email:'buyer@pulse-synthetic.test',consent:true,rights:true,...extra});
 const custom=(request={})=>({modelChoice:'custom',personaRequest:{kind:'virtual',look:'20대 후반, 짧은 머리, 웃는 얼굴',use:'매장 진열대 앞 장면',keep:'once',...request}});
 
-async function fixture(t){
+// writes: 늦춘 지우기(studio-media-trash.mjs)를 켠 다음 판으로 띄운다(이 판은 꺼짐 — 판에서 뺀 파일은 바탕처럼 바로 지운다).
+async function fixture(t,{writes=false}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-persona3-'));
-  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3};
+  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3,...(writes?{mediaTrashWrites:true}:{})};
   const app=createCompanyApp(options),address=await app.start(),base='http://127.0.0.1:'+address.port;
   const owner=app.store.createUser({name:'담당자',email:'owner@pulse-synthetic.test',role:'admin'}),token=app.store.mint('session',owner.id,{csrfToken:'staff-csrf'},120);
   const member=app.store.createUser({name:'남의 크루',email:'crew@pulse-synthetic.test',role:'member'}),memberToken=app.store.mint('session',member.id,{csrfToken:'crew-csrf'},120);
@@ -228,8 +229,8 @@ test('끝까지: 견적 → 기준 얼굴 → 동작 시안 → 이번 광고 �
   assert.ok(approvals.every(item=>item.authMethod==='invite-link'&&item.actorKind==='invite'),'초대 링크 승인을 신원 확인으로 적지 않는다');
 });
 
-test('판 파일 하나만 빼도 그 본문의 해시가 인물 문서에 남는다 — 백업이 같은 바이트를 계속 오래 두는 보관 사본에서 뺀다(판 4 설계 11-2)',async t=>{
-  const f=await fixture(t);
+for(const writes of [false,true])test(`판 파일 하나만 빼도 그 본문의 해시가 인물 문서에 남는다 — 백업이 같은 바이트를 계속 오래 두는 보관 사본에서 뺀다(판 4 설계 11-2)${writes?' — 늦춘 지우기를 켠 다음 판':''}`,async t=>{
+  const f=await fixture(t,{writes});
   await f.features({personaRequest:true});
   const {projectId}=await f.send(custom());
   const personaId=f.personaOf(projectId).id;
@@ -247,6 +248,13 @@ test('판 파일 하나만 빼도 그 본문의 해시가 인물 문서에 남�
   const removed=await f.act(personaId,{action:'remove_asset',revisionId,assetId:a.id});assert.equal(removed.status,200,JSON.stringify(removed.data));
   assert.deepEqual(f.app.store.get('pulsePersonas',personaId).removedNoVault,[hash(png)]);
   assert.deepEqual(f.app.store.get('pulsePersonaRevisions',revisionId).assets.map(item=>item.id),[b.id]);
+  if(writes){
+    // 켠 판: 그 전에 잡힌 백업이 읽도록 파일은 하루 동안 남고, 같은 트랜잭션에서 이 인물 몫으로 늦춘 지우기에 적힌다(인물을 지우면 그 몫을 가져가 바로 지운다).
+    assert.ok(await stat(join(f.app.store.directory,'studio-media',a.diskName)),'파일은 하루 동안 남는다');
+    assert.deepEqual(f.app.store.get('studioMediaTrash',a.diskName)?.owners,['persona:'+personaId]);
+    for(const item of f.app.store.all('studioMediaTrash'))f.app.store.put('studioMediaTrash',item.id,{...item,counting:true,agedMs:86400000});
+    assert.equal((await f.app.mediaTrash.sweep()).removed,1);
+  }
   await assert.rejects(stat(join(f.app.store.directory,'studio-media',a.diskName)),{code:'ENOENT'});
   // 둘째 파일도 빼면 해시가 쌓인다(같은 해시는 한 번만).
   assert.equal((await f.act(personaId,{action:'remove_asset',revisionId,assetId:b.id})).status,200);

@@ -134,6 +134,13 @@ export function createPulsePeople({store,clientProjects,features,clock=()=>new D
     const newId=()=>{for(let i=0;i<20;i++){const id='ch_'+String(randomId()).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12);if(CHANNEL_ID.test(id)&&!used.has(id)){used.add(id);return id;}}throw fail('새 칸의 id를 만들지 못했어요. 다시 저장해 주세요.',500);};
     // 쓰기를 열기 전에는 새 그림을 받지 않고, 지금 명단에 이미 있는 그림만 그대로 다시 저장할 수 있다(뒤 판에서 되돌렸을 때도 명단을 고칠 수 있게).
     const kept=new Set(doc.entries.flatMap(item=>[item.image,...item.samples]).map(mediaIdOf).filter(Boolean));
+    // 올린 뒤 저장하지 않은 채 한 시간이 지나 지우는 중이 된(또는 이미 지운) 그림을 고른 칸은 까닭과 할 일을 말한다(화면 최종 검수 F1).
+    // 찾지 못한 그림의 참조(gone)를 오류에 싣는다. 화면은 그 그림만 고르기 목록과 쓰던 값에서 빼고, 고치던 칸은 그대로 둔다(public/pulse-app/app.mjs saveRoster).
+    // 목록을 다시 받지 않는다 — 다시 받는 사이 새로 올린 그림이 오래된 목록에 덮이지 않게(GPT pulse-people-followups-20261127 GA1).
+    // 장면 그림이 한도(셋)를 넘는 칸은 보지 않는다 — 아래 칸 검사가 400으로 막는다(한도 밖 참조를 하나씩 찾지 않게, GPT pulse-people-followups-20261127-b GA3).
+    const sourcesOf=item=>isObject(item)?[item.image,...(Array.isArray(item.samples)&&item.samples.length<=PEOPLE_LIMITS.samples?item.samples:[])]:[],goneRef=src=>{const id=mediaIdOf(src);return !!id&&!mediaDoc(id);};
+    const lost=input.entries.findIndex(item=>sourcesOf(item).some(goneRef));
+    if(lost>=0)throw Object.assign(fail(`${lost+1}번째 칸의 올린 그림을 찾지 못했어요. 올린 뒤 한 시간 안에 저장하지 않은 그림은 지워요. 그림을 다시 올린 뒤 저장해 주세요.`),{code:'SYNK_PEOPLE_MEDIA_GONE',gone:[...new Set(input.entries.flatMap(sourcesOf).filter(goneRef).map(src=>'media:'+mediaIdOf(src)))]});
     const entries=input.entries.map((item,i)=>entry(item,i+1,newId,false,id=>!!mediaDoc(id)&&(mediaWrites===true||kept.has(id))));
     if(new Set(entries.map(item=>item.id)).size!==entries.length)throw fail('같은 id의 칸이 둘 있어요. 새로 불러온 뒤 다시 저장해 주세요.');
     // 진행 중인 의뢰가 있는 칸은 지울 수 없고, 채널 주소(# 뒤 제외)와 플랫폼도 바꿀 수 없다. 「켜 둠」을 끄면 새 의뢰만 막힌다.

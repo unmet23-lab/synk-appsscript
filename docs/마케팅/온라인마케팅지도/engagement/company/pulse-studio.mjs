@@ -38,7 +38,9 @@ function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion
 // seats(운영 조각 6-B): 제작 정원(pulse-capacity.mjs createPulseCapacity — seatFor · seatsNow). 손님 · 직원 보기에 그 프로젝트의 자리(project.seat — 결제 전이고 자리가 모자랄 때만),
 // 직원 보기에 종류별 자리 수(project.seats)를 싣고, 의뢰서 동작(방향 제안)에 seat를 넘긴다. 없으면(옛 조립 · 시험) 싣지 않는다.
 // people(조각 ② · 11-23): 인플루언서 채널 명단(pulse-people.mjs createPulsePeople — visible · read). 새 의뢰를 보낼 때 같은 트랜잭션에서 스위치 · 칸 · 명단 판을 본다. 없으면 새 의뢰만 막힌다.
-export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null,localeOf=()=>'ko',personaService=null,seats=null,people=null}){
+// deferMedia(names,{from,at,owner}): 기록에서 뗀 파일을 지금 지울지 늦춰 지울지 정한다(studio-media-trash.mjs createMediaTrash().defer — server.mjs가 넣어 준다).
+// 돌려준 이름만 부른 쪽(server.mjs)이 커밋 뒤 바로 지운다. 기본값은 모두 돌려주기(바탕 동작 — 서비스를 직접 짓는 시험).
+export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null,localeOf=()=>'ko',personaService=null,seats=null,people=null,deferMedia=names=>[...names]}){
   // 의뢰서 액션이 전용 인물로 가는 프로젝트의 인물 판을 다시 볼 때 쓴다(방향 제안 · 제작 시작, pulse-requests.mjs).
   const personas=createPersonaGuard(store,{clock});
   function customer(token){return clientProjects.session(token);}
@@ -103,8 +105,9 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const extension=object(input)?extensions.find(value=>value.fields(input.action)):null;
     if(!object(input)||!Object.hasOwn(fields,input.action)&&!extension)throw fail('기획 요청을 확인해 주세요.');keys(input,[...base,...(extension?extension.fields(input.action):fields[input.action])]);
     const action=input.action;
-    // 확장 동작이 돌려준 removed(작업 소식에서 거둔 그림의 파일 이름)는 커밋 뒤에 지우도록 부른 쪽으로 넘긴다.
-    if(extension){const outcome=extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row),seat:seats?seatRow=>seats.seatFor(seatRow):null,people});if(action==='request_submit'&&personaService)personaService.afterProjectSubmit(row,studio.request.answers);commit(row,studio,'PULSE 제작 '+action,who);return Array.isArray(outcome?.removed)&&outcome.removed.length?{removed:outcome.removed}:undefined;}
+    // 확장 동작이 돌려준 removed(작업 소식에서 거둔 그림의 파일 이름)는 deferMedia에 넘기고, 돌려받은 이름만 커밋 뒤에 지우도록 부른 쪽으로 넘긴다
+    // (쓰기가 켜졌으면 같은 트랜잭션에서 늦춘 지우기에 적혀 하루 뒤 지워진다 — studio-media-trash.mjs).
+    if(extension){const outcome=extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row),seat:seats?seatRow=>seats.seatFor(seatRow):null,people});if(action==='request_submit'&&personaService)personaService.afterProjectSubmit(row,studio.request.answers);commit(row,studio,'PULSE 제작 '+action,who);const now=Array.isArray(outcome?.removed)&&outcome.removed.length?deferMedia(outcome.removed.map(file=>file.diskName),{from:'progress',at,owner:'project:'+row.id}):[];return now.length?{removed:now.map(diskName=>({diskName}))}:undefined;}
     // 담당자 글 번역 하나 넣기 · 고치기(다국어 판 2). 키는 지금 손님에게 보이는 직원 글 칸이어야 하고, 빈 글자면 그 번역을 지운다.
     if(action==='save_translation'){
       if(!user)throw fail('담당자 화면에서만 할 수 있어요.',403);
@@ -189,7 +192,7 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     commit(intake?{...row,intake}:row,studio,'PULSE 제작 request_file',who);
     return {...customerState(token),file:shown};
   });}
-  // 손님이 잘못 올린 파일을 지운다. 확인이 끝난 뒤에는 저희가 쓰고 있을 수 있어 막는다. 돌려준 이름의 실제 파일은 부른 쪽이 트랜잭션 밖에서 지운다.
+  // 손님이 잘못 올린 파일을 지운다. 확인이 끝난 뒤에는 저희가 쓰고 있을 수 있어 막는다. 돌려준 이름(늦춰 지우면 null)의 실제 파일은 부른 쪽이 트랜잭션 밖에서 지운다.
   function removeRequestFile(token,csrf,fileId){return store.transaction(()=>{
     const {row}=customerWrite(token,csrf),studio=studioOf(row),who=actor(row),request=studio.request;
     if(!request?.files?.some(item=>item.id===fileId))throw fail('파일을 찾지 못했어요.',404);
@@ -199,7 +202,8 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     if((asset&&asset.author!=='customer')||!diskName)throw fail('파일을 찾지 못했어요.',404);
     studio.assets=studio.assets.filter(item=>item.id!==fileId);studio.request={...request,files:request.files.filter(item=>item.id!==fileId)};
     commit(attached?{...row,intake:{...row.intake,files:row.intake.files.filter(item=>item.id!==fileId)}}:row,studio,'PULSE 제작 request_file_remove',who);
-    return {...customerState(token),removed:{diskName}};
+    const [now]=deferMedia([diskName],{from:'request-file',at:clock(),owner:'project:'+row.id});
+    return {...customerState(token),removed:now?{diskName:now}:null};
   });}
   // 문의 사진 한 장을 올려 둔다(운영 조각 8-B — pulse-message-photos.mjs). 자산이 아니라 손님만의 올려 둔 목록(studio.messageUploads)에 두고,
   // 글에 붙이는 것(자산으로 옮김)은 문의 보내기(support의 photos)가 한다. 붙지 않은 채 한 시간 지난 사진은 먼저 거두고(removed — 부른 쪽이 커밋 뒤 지움),
@@ -212,7 +216,7 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     if(swept.uploads.length>=MESSAGE_PHOTOS.pending)throw fail('아직 보내지 않은 사진이 많아요. 문의를 먼저 보내 주세요.',409);
     studio.messageUploads=[...swept.uploads,{id:file.id,diskName:file.diskName,fileName:file.fileName,mimeType:file.mimeType,byteSize:file.byteSize,...who,at:file.at}];
     commit(row,studio,'PULSE 문의 사진',who);
-    return {...customerState(token),photo:{id:file.id},removed:swept.removed};
+    return {...customerState(token),photo:{id:file.id},removed:deferMedia(swept.removed.map(item=>item.diskName),{from:'message-photo',at:clock(),owner:'project:'+row.id}).map(diskName=>({diskName}))};
   });}
   // 정리 예약(6시간마다 — 서버 끝판 카본 A2): 모든 프로젝트에서 붙지 않은 채 한 시간 지난 올려 둔 사진을 뺀다. 지울 파일 이름을 돌려준다(부른 쪽이 커밋 뒤 지움).
   // 손님 · 직원이 한 일이 아니므로 판 번호 · 마지막 움직임(90일 정리의 시계)은 건드리지 않는다.
@@ -221,7 +225,7 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     for(const {id} of store.all('clientProjects'))store.transaction(()=>{
       const row=store.get('clientProjects',id),uploads=messageUploadsOf(row?.studio);if(!uploads.length)return;
       const swept=sweepUnsentPhotos(uploads,now);if(swept.uploads.length===uploads.length)return;
-      store.put('clientProjects',id,{...row,studio:{...row.studio,messageUploads:swept.uploads}});removed.push(...swept.removed);
+      store.put('clientProjects',id,{...row,studio:{...row.studio,messageUploads:swept.uploads}});removed.push(...deferMedia(swept.removed.map(item=>item.diskName),{from:'message-photo',at:new Date(now).toISOString(),owner:'project:'+id}).map(diskName=>({diskName})));
     });
     return removed;
   }

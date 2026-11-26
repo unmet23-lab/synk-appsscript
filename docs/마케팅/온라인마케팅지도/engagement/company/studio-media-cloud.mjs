@@ -152,9 +152,13 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
     try{
       const before=await handle.stat();if(!before.isFile())throw fail('보통 파일이 아니에요.',409,'MEDIA_NOT_REGULAR');
       const size=Number(before.size),{sha256,md5}=await digestsOf(handle,size),target=await bucket();
+      // 올리기 직전에 문서가 아직 이 이름을 가리키는지 다시 본다. 틱이 목록을 읽은 뒤 문서에서 뗀 파일(늦춘 지우기로 하루 남는 파일 — studio-media-trash.mjs)의 새 원격 사본을 만들지 않는다(GPT pulse-media-trash-20261127 GB2).
+      // 올리는 중에 뗀 파일(그사이 디스크에서도 지워진 파일 포함)은 장부에 적는다 — 하루 대조가 끊긴 이름으로 세고 오래된 객체로 알린다(GPT pulse-media-trash-20261127-a GA1).
+      if(!new Set(namesOf()).has(name))return 'unreferenced';
       const sent=await gcs.upload(target,objectName,{size,md5,body:()=>handle.createReadStream({start:0,autoClose:false,emitClose:false}),signal:abort.signal});
-      const after=await handle.stat(),onDisk=await lstat(path);
-      if(!sameStamp(stampOf(before),stampOf(after))||!sameStamp(stampOf(before),stampOf(onDisk)))throw fail('올리는 중에 파일이 바뀌었어요.',409,'MEDIA_CHANGED');
+      // 연 핸들로 보낸 바이트는 그대로다. 올리는 사이 그 이름이 디스크에서 지워졌으면(ENOENT) 장부는 남긴다 — 장부 없는 원격 사본이 생기지 않게.
+      const after=await handle.stat(),onDisk=await lstat(path).catch(error=>{if(error?.code==='ENOENT')return null;throw error;});
+      if(!sameStamp(stampOf(before),stampOf(after))||onDisk&&!sameStamp(stampOf(before),stampOf(onDisk)))throw fail('올리는 중에 파일이 바뀌었어요.',409,'MEDIA_CHANGED');
       const remote=sent||await gcs.stat(target,objectName);
       // 이미 있던 객체가 이틀 넘었으면 받아들이지 않고 새 이름으로 올린다 — 장부 없이 남아 PC 정리의 후보가 됐을 수 있다(3판 검토 7-가).
       if(!sent&&remote&&remote.created&&clock()-Date.parse(remote.created)>2*DAY&&!/~[0-9]+$/.test(objectName)){
@@ -258,7 +262,7 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       const failed=[],resting=name=>clock()-(failedAt.get(name)||-Infinity)<10*60000;
       for(const name of names){
         if(stopped||uploaded.length>=20||clock()-began>45000)break;if(!MEDIA_NAME.test(name)||resting(name))continue;const row=ledger(name);if(row)continue;
-        try{if(await exists(pathOf(name))){await uploadOne(name);uploaded.push(name);}}catch(error){noteError(error);failedAt.set(name,clock());failed.push(name);}
+        try{if(await exists(pathOf(name))&&await uploadOne(name)!=='unreferenced')uploaded.push(name);}catch(error){noteError(error);failedAt.set(name,clock());failed.push(name);}
       }
       if(uploaded.length||failed.length)return {uploaded,...(failed.length?{failed}:{})};
       if(current==='hydrate'){
@@ -294,7 +298,7 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       const row=rows.get(name);if(!row)continue;if(row.state==='conflict'){result.conflict++;continue;}
       // 아직 가리키는 lost 줄은 회차마다 센다(하루 한 번 경보, GPT 검수 GA4). 로컬에 같은 바이트가 다시 있으면 새 이름으로 올려 되살린다.
       if(row.state==='lost'){const local=await lstat(pathOf(name)).catch(()=>null);
-        if(local?.isFile()){const again=await rehash(name);if(again.sha256===row.sha256){try{if(await uploadOne(name,{objectName:nextObject(row.object,listed)})==='verified'){result.reuploaded++;continue;}}catch(error){noteError(error);}}}
+        if(local?.isFile()){const again=await rehash(name);if(again.sha256===row.sha256){try{const outcome=await uploadOne(name,{objectName:nextObject(row.object,listed)});if(outcome==='verified'){result.reuploaded++;continue;}if(outcome==='unreferenced')continue;}catch(error){noteError(error);}}}
         result.lost++;continue;}
       if(row.state!=='verified')continue;
       const remote=listed.get(row.object),local=await lstat(pathOf(name)).catch(()=>null);

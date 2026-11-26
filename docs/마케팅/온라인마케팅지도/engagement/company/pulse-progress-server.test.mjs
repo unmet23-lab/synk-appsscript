@@ -32,10 +32,11 @@ function relay(getNow){
   return {props,sent,fetch:async(url,init)=>{if(init.method==='POST'){answer=ctx.doPost({postData:{contents:init.body}}).text;return respond(302,'',{location:'https://script.googleusercontent.com/macros/echo?user_content_key=k'});}const body=answer;answer=null;return respond(200,body);}};
 }
 
-async function fixture(t){
+// writes: 늦춘 지우기(studio-media-trash.mjs)를 켠 다음 판으로 띄운다(이 판은 꺼짐 — 지우는 길이 바탕처럼 바로 지운다).
+async function fixture(t,{writes=false}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-progress-'));let offset=0;
   const clock=()=>new Date(Date.now()+offset).toISOString(),fake=relay(()=>Date.now()+offset);
-  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3,clock,pulseMailFetch:fake.fetch};
+  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3,clock,pulseMailFetch:fake.fetch,...(writes?{mediaTrashWrites:true}:{})};
   const app=createCompanyApp(options),address=await app.start(),base='http://127.0.0.1:'+address.port;
   const admin=app.store.createUser({name:'관리자 비공개이름',email:'founder@pulse-synthetic.test',role:'admin'});
   const token=app.store.mint('session',admin.id,{csrfToken:'staff-csrf'},120);
@@ -80,11 +81,15 @@ async function fixture(t){
   const exists=async name=>!!(await stat(mediaPath(name)).catch(()=>null));
   // 백업이 멈추지 않는 조건: 기록이 가리키는 파일은 모두 디스크에 있다(backup.mjs가 목록의 파일을 하나라도 못 읽으면 멈춘다).
   const backupConsistent=async()=>{const names=workspaceMediaNames(app.store.db);for(const name of names)assert.ok(await exists(name),'백업 목록의 파일이 디스크에 있다: '+name);return names;};
-  return {app,call,staff,fake,connect,order,mediaPath,exists,backupConsistent,advance:ms=>{offset+=ms;}};
+  // 켠 판: 기록에서 뺀 파일은 같은 커밋에서 지울 목록에 적히고 하루 동안 디스크에 남는다. drain은 하루가 찬 것으로 두고 정리를 돌린다.
+  const trashed=name=>!!app.store.get('studioMediaTrash',name);
+  const gone=async name=>writes?trashed(name)&&await exists(name):!(await exists(name));
+  const drain=async()=>{for(const item of app.store.all('studioMediaTrash'))app.store.put('studioMediaTrash',item.id,{...item,counting:true,agedMs:86400000});return app.mediaTrash.sweep();};
+  return {app,call,staff,fake,connect,order,mediaPath,exists,backupConsistent,trashed,gone,drain,writes,advance:ms=>{offset+=ms;}};
 }
 
-test('작업 소식 · 손님은 초안 · 거둔 소식 · 그 그림을 못 받고, 올린 소식만 허용 목록으로 받는다 — 거두면 알림 · 그림 · 파일까지 빠진다',async t=>{
-  const f=await fixture(t),o=await f.order();
+for(const writes of [false,true])test(`작업 소식 · 손님은 초안 · 거둔 소식 · 그 그림을 못 받고, 올린 소식만 허용 목록으로 받는다 — 거두면 알림 · 그림 · 파일까지 빠진다${writes?' — 늦춘 지우기를 켠 다음 판':''}`,async t=>{
+  const f=await fixture(t,{writes}),o=await f.order();
   assert.equal(o.row.studio.request.progressFeed,true,'직원 보기의 서버 능력 표시');
   assert.deepEqual(o.row.studio.request.progress,[],'처음에는 빈 목록');
   const p1=await o.image('비공개-작업화면-파일이름.png');
@@ -144,8 +149,9 @@ test('작업 소식 · 손님은 초안 · 거둔 소식 · 그 그림을 못 �
   assert.equal(withdrawn.data.removed,undefined,'지운 파일 이름은 응답에 싣지 않는다');
   assert.equal(o.progress()[0].state,'withdrawn');assert.deepEqual(o.progress()[0].assets,[],'거둔 소식은 지운 그림을 가리키지 않는다');
   assert.equal(o.asset(p1),undefined,'자산 기록에서 빠졌다');
-  assert.equal(await f.exists(diskName),false,'커밋 뒤 파일을 지웠다');
+  assert.ok(await f.gone(diskName),writes?'파일은 그 전에 잡힌 백업이 다 읽도록 하루 동안 남고 같은 커밋에서 늦춘 지우기에 적혔다':'커밋 뒤 파일을 지웠다');
   assert.ok(!(await f.backupConsistent()).includes(diskName),'백업 목록에서도 빠졌다');
+  if(writes){assert.equal((await f.drain()).removed,1);assert.equal(await f.exists(diskName),false,'하루가 차면 파일을 지운다');assert.equal(f.trashed(diskName),false,'지운 뒤 목록에서도 뗀다');}
   room=await o.room();
   assert.equal(room.project.studio.request.progress,undefined);
   assert.equal((await o.media(p1)).status,404);
@@ -197,8 +203,8 @@ test('작업 소식 · 상한: 글 600자 · 그림 넷 · 소식 그림 40장 �
   assert.ok(o.progress().some(item=>item.id===oldest&&item.state==='withdrawn'));
 });
 
-test('작업 소식 · 다른 참조가 있는 그림은 거둬도 지우지 않는다(숨기기만) — 장면 · 다른 소식 · 일반 그림, 초안에서 뺀 그림과 붙이지 못한 그림은 정리한다',async t=>{
-  const f=await fixture(t),o=await f.order();
+for(const writes of [false,true])test(`작업 소식 · 다른 참조가 있는 그림은 거둬도 지우지 않는다(숨기기만) — 장면 · 다른 소식 · 일반 그림, 초안에서 뺀 그림과 붙이지 못한 그림은 정리한다${writes?' — 늦춘 지우기를 켠 다음 판':''}`,async t=>{
+  const f=await fixture(t,{writes}),o=await f.order();
   // ① 장면(내부 공개)이 같이 쓰는 소식 그림: 거두면 손님에게서만 숨는다.
   const shared=await o.image('shared.png');
   await o.act({action:'save_scene',title:'컷 1',description:'벤치 위 캔',narration:'',screenText:'',duration:3,visibility:'internal',assetId:shared});
@@ -221,7 +227,7 @@ test('작업 소식 · 다른 참조가 있는 그림은 거둬도 지우지 않
   await o.withdraw(b1);
   assert.ok(o.asset(both)&&await f.exists(bothDisk),'다른 소식이 쓰면 남는다');assert.equal((await o.media(both)).status,200,'둘째 소식으로 여전히 보인다');
   await o.withdraw(b2);
-  assert.equal(o.asset(both),undefined);assert.equal(await f.exists(bothDisk),false);
+  assert.equal(o.asset(both),undefined);assert.ok(await f.gone(bothDisk));
   // ③ 소식 전용이 아닌 그림(일반 올리기)은 거둬도 지우지 않는다.
   const plain=(await o.upload('plain.png',{purpose:null})).data.asset.id;
   await o.save({text:'일반 그림',assets:[plain]});const c=o.progress().at(-1).id;await o.post(c);await o.withdraw(c);
@@ -230,20 +236,26 @@ test('작업 소식 · 다른 참조가 있는 그림은 거둬도 지우지 않
   const keep=await o.image('keep.png'),drop=await o.image('drop.png');
   await o.save({text:'초안',assets:[keep,drop]});const d=o.progress().at(-1).id;const dropDisk=o.disk(drop);
   await o.save({id:d,text:'초안 고침',assets:[keep]});
-  assert.equal(o.asset(drop),undefined);assert.equal(await f.exists(dropDisk),false);assert.ok(o.asset(keep));
+  assert.equal(o.asset(drop),undefined);assert.ok(await f.gone(dropDisk));assert.ok(o.asset(keep));
   // ⑤ 올리고 소식에 붙이지 못한 그림: 한 시간 안에는 그대로, 한 시간이 지나면 다음 소식 동작 때 정리한다.
   const stray=await o.image('stray.png');const strayDisk=o.disk(stray);
   await o.save({id:d,text:'초안 또 고침',assets:[keep]});
   assert.ok(o.asset(stray),'한 시간 안에는 붙이는 중일 수 있어 남긴다');
   f.advance(61*60000);
   await o.save({id:d,text:'한 시간 뒤',assets:[keep]});
-  assert.equal(o.asset(stray),undefined);assert.equal(await f.exists(strayDisk),false);
+  assert.equal(o.asset(stray),undefined);assert.ok(await f.gone(strayDisk));
   assert.ok(o.asset(keep),'초안에 붙은 그림은 오래돼도 남는다');assert.ok(o.asset(shared),'장면이 쓰는 그림은 남는다');
   await f.backupConsistent();
+  if(writes){
+    // 하루가 차면 뗀 셋의 파일만 지운다. 남긴 그림(장면 · 다른 소식 · 일반 그림 · 초안)은 목록에 오르지 않았다.
+    assert.equal((await f.drain()).removed,3);
+    for(const name of [bothDisk,dropDisk,strayDisk])assert.equal(await f.exists(name),false,name);
+    for(const id of [shared,keep,plain])assert.ok(await f.exists(o.disk(id)),id);
+  }
 });
 
-test('작업 소식 · 90일 정리(확인 안 된 접수) 뒤에는 소식 · 그림이 남지 않고, 일반 보관에서는 남는다',async t=>{
-  const f=await fixture(t);
+for(const writes of [false,true])test(`작업 소식 · 90일 정리(확인 안 된 접수) 뒤에는 소식 · 그림이 남지 않고, 일반 보관에서는 남는다${writes?' — 늦춘 지우기를 켠 다음 판':''}`,async t=>{
+  const f=await fixture(t,{writes});
   const kept=await f.order();
   const keptImage=await kept.image('kept.png');await kept.save({text:'보관해도 남는 소식',assets:[keptImage]});await kept.post(kept.progress()[0].id);
   // 일반 보관(stage archived — 파일을 지우지 않는다, client-projects.mjs). 제작을 시작한 프로젝트라 의뢰 기록 90일 시계(판 4 설계 11-7)도 없다.
@@ -251,6 +263,9 @@ test('작업 소식 · 90일 정리(확인 안 된 접수) 뒤에는 소식 · �
   const gone=await f.order({},{confirm:false});
   const goneImage=await gone.image('gone.png');await gone.save({text:'정리되는 소식',assets:[goneImage]});await gone.post(gone.progress()[0].id);
   const goneDisk=gone.disk(goneImage),keptDisk=kept.disk(keptImage);
+  // 앞서 거둔 소식의 그림: 켠 판에서는 늦춘 지우기에 이 프로젝트 몫으로 적혀 있다가 「지운 의뢰」와 함께 바로 지운다(GPT pulse-media-trash-20261127 GB1).
+  const dropped=await gone.image('dropped.png');await gone.save({text:'거둔 소식',assets:[dropped]});const droppedNews=gone.progress().at(-1).id;await gone.post(droppedNews);
+  const droppedDisk=gone.disk(dropped);await gone.withdraw(droppedNews);assert.ok(await f.gone(droppedDisk));
   // 의뢰 기록 90일 시계(판 4 설계 11-7): 77일째 예고 → 14일 뒤 지움.
   f.advance(77*86400000);
   assert.equal((await f.app.pulseRequests.retireUnconfirmed()).requests?.noticed,1);
@@ -260,6 +275,7 @@ test('작업 소식 · 90일 정리(확인 안 된 접수) 뒤에는 소식 · �
   const after=f.app.store.get('clientProjects',gone.id);
   assert.equal(after.studio.request.status,'retired');assert.equal(after.studio.progress,undefined,'소식이 남지 않는다');
   assert.ok(!after.studio.assets.length);assert.equal(await f.exists(goneDisk),false,'소식 그림 파일도 지운다');
+  assert.equal(await f.exists(droppedDisk),false,'거둔 소식 그림도 하루를 기다리지 않고 지운다');assert.equal(f.trashed(droppedDisk),false);
   const archived=f.app.store.get('clientProjects',kept.id);
   assert.equal(archived.studio.progress.length,1,'일반 보관은 소식을 지우지 않는다');assert.ok(await f.exists(keptDisk));
   await f.backupConsistent();

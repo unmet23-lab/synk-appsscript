@@ -30,7 +30,7 @@ export async function request(path,{body,csrf='',staff=false,member=false,file,h
   catch(error){if(error.name==='AbortError')throw error;throw new PulseError(t('연결하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.'));}
   const result=await response.json().catch(()=>({}));
   // 서버가 문장을 주지 않았을 때의 대신 글은 serverError(errorText)가 지금 언어로 옮긴다.
-  if(!response.ok){const error=serverError(result,response.status,k('요청을 저장하지 못했어요. 다시 시도해 주세요.'));if(result?.offer&&typeof result.offer==='object')error.offer=result.offer;throw error;}
+  if(!response.ok){const error=serverError(result,response.status,k('요청을 저장하지 못했어요. 다시 시도해 주세요.'));if(result?.offer&&typeof result.offer==='object')error.offer=result.offer;if(Array.isArray(result?.gone))error.gone=result.gone.filter(ref=>typeof ref==='string'&&/^media:[a-f0-9-]{36}$/.test(ref));throw error;}
   return result;
 }
 // 마케팅 성과(11-16 계약 docs/마케팅/PULSE_마케팅성과_20261116/계약.md): 직원이 올린 리포트를 고객이 읽기만 한다. 두 GET 모두 고객 세션 쿠키로 그 프로젝트 하나만 본다.
