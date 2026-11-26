@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "잘된 세 편은 팔로워 밖으로 퍼졌고, 안된 두 편은 몇천 회에서 멈췄대요.",
+ "dur": 3.553,
+ "words": [
+  {
+   "text": "잘된",
+   "start": 0.02,
+   "end": 0.297
+  },
+  {
+   "text": "세",
+   "start": 0.331,
+   "end": 0.401
+  },
+  {
+   "text": "편은",
+   "start": 0.458,
+   "end": 0.653
+  },
+  {
+   "text": "팔로워",
+   "start": 0.688,
+   "end": 0.952
+  },
+  {
+   "text": "밖으로",
+   "start": 0.999,
+   "end": 1.24
+  },
+  {
+   "text": "퍼졌고,",
+   "start": 1.275,
+   "end": 1.598
+  },
+  {
+   "text": "안된",
+   "start": 1.954,
+   "end": 2.162
+  },
+  {
+   "text": "두",
+   "start": 2.196,
+   "end": 2.242
+  },
+  {
+   "text": "편은",
+   "start": 2.3,
+   "end": 2.495
+  },
+  {
+   "text": "몇천",
+   "start": 2.53,
+   "end": 2.714
+  },
+  {
+   "text": "회에서",
+   "start": 2.749,
+   "end": 2.91
+  },
+  {
+   "text": "멈췄대요.",
+   "start": 2.955,
+   "end": 3.553
+  }
+ ],
+ "source": {
+  "key": "8411519dbc9f4495320e691254fc976b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

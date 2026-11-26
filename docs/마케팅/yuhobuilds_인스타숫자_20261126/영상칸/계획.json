@@ -1,0 +1,21 @@
+{
+  "_예산": 180,
+  "o1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "i_open",
+    "key": "its two bead eyes grow bigger and rounder"
+  },
+  "e1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "i_end",
+    "key": "its eyes curve into two happy dark stitched arcs"
+  }
+}

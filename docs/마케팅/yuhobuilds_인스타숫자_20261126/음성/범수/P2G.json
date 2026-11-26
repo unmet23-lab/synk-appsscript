@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2G",
+ "text": "찍을 화면이랑 물어볼 한 줄은, 게시글에 그대로 있어요.",
+ "dur": 2.796,
+ "words": [
+  {
+   "text": "찍을",
+   "start": 0.07,
+   "end": 0.32
+  },
+  {
+   "text": "화면이랑",
+   "start": 0.359,
+   "end": 0.727
+  },
+  {
+   "text": "물어볼",
+   "start": 0.767,
+   "end": 1.003
+  },
+  {
+   "text": "한",
+   "start": 1.043,
+   "end": 1.122
+  },
+  {
+   "text": "줄은,",
+   "start": 1.161,
+   "end": 1.398
+  },
+  {
+   "text": "게시글에",
+   "start": 1.765,
+   "end": 2.121
+  },
+  {
+   "text": "그대로",
+   "start": 2.16,
+   "end": 2.397
+  },
+  {
+   "text": "있어요.",
+   "start": 2.436,
+   "end": 2.796
+  }
+ ],
+ "source": {
+  "key": "32caee551c13ac3931a89f8166f03f77",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 163
+ }
+}

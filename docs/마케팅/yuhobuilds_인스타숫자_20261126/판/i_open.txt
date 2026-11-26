@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 9:16, bright clear morning daylight from a window on the left, gentle depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny felt home desk by a sunny window, seen from the front at desk height, medium wide.
+- The TOP 30% of the image is a plain, soft, out-of-focus warm-white felt wall with nothing on it — keep it empty for titles.
+- A light oak felt desk top runs across the image from 58% of the image height down to the bottom edge.
+- On the desk, in a neat row from left to right between 8% and 92% of the image width, stand FIVE small upright felt picture cards, each the same size (portrait, about 13% of the image width wide), propped on tiny felt easels, their bottoms at 66% of the image height. Each card is a plain soft felt picture with no drawing: the first, third and fifth cards are warm butter-yellow, the second and fourth are pale grey-blue. No letters, no numbers, no pictures on the cards.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fine short felted fuzz, scalloped bottom hem with one thin continuous cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the desk in front of the row of cards, a little RIGHT of centre, centred at 58% of the image width, about 30% of the image width wide, its top at 56% and its hem at 82% of the image height, turned three-quarters toward the cards on the left, looking at them with two round glossy black bead eyes, curious, face at rest.
+- Beside Mongle on the right, a chunky felt smartphone in a dark-grey felt case leans on a tiny felt stand, its screen a plain softly glowing pale rectangle with NOTHING on it.
+
+Exactly ONE Mongle, nobody else. Everything is needle-felt and wool craft, no glossy realistic surfaces. Absolutely no text, letters, numbers, symbols, icons, charts or watermarks anywhere, and the phone screen stays a plain glow. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no polka dots, no perforations.

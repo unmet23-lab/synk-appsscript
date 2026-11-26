@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2",
+ "text": "찍을 화면이랑 물어볼 한 줄, 캡처라고 댓글 주시면 DM으로 드릴게요.",
+ "dur": 3.644,
+ "words": [
+  {
+   "text": "찍을",
+   "start": 0.03,
+   "end": 0.254
+  },
+  {
+   "text": "화면이랑",
+   "start": 0.307,
+   "end": 0.689
+  },
+  {
+   "text": "물어볼",
+   "start": 0.729,
+   "end": 0.98
+  },
+  {
+   "text": "한",
+   "start": 1.033,
+   "end": 1.124
+  },
+  {
+   "text": "줄,",
+   "start": 1.164,
+   "end": 1.296
+  },
+  {
+   "text": "캡처라고",
+   "start": 1.836,
+   "end": 2.193
+  },
+  {
+   "text": "댓글",
+   "start": 2.232,
+   "end": 2.43
+  },
+  {
+   "text": "주시면",
+   "start": 2.47,
+   "end": 2.773
+  },
+  {
+   "text": "DM으로",
+   "start": 2.839,
+   "end": 3.169
+  },
+  {
+   "text": "드릴게요.",
+   "start": 3.208,
+   "end": 3.644
+  }
+ ],
+ "source": {
+  "key": "0c4290d4b184d59a4d77cf776b6b8283",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

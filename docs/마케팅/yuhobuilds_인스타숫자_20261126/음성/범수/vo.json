@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 2103,
+  "lufs": -17
+ },
+ "made": "2026-11-26T01:57:21.881Z",
+ "lines": [
+  {
+   "id": "P1",
+   "text": "제일 잘된 릴스는, 구십구 퍼센트가 팔로워가 아닌 사람이었어요.",
+   "dur": 3.31,
+   "syllablesPerSec": 7.85,
+   "src": "P1.wav",
+   "key": "0464c30329caa02a8ab816620cdf0f82",
+   "words": 8
+  },
+  {
+   "id": "V2",
+   "text": "같은 주에 올린 다섯 편을 캡처해서, 잘된 편과 안된 편이 어디서 갈렸냐고 물었어요.",
+   "dur": 4.173,
+   "syllablesPerSec": 7.91,
+   "src": "V2.wav",
+   "key": "e309c1b981c7eb288b281b9c3fb1cf92",
+   "words": 13
+  },
+  {
+   "id": "V4",
+   "text": "잘된 세 편은 팔로워 밖으로 퍼졌고, 안된 두 편은 몇천 회에서 멈췄대요.",
+   "dur": 3.553,
+   "syllablesPerSec": 7.88,
+   "src": "V4.wav",
+   "key": "8411519dbc9f4495320e691254fc976b",
+   "words": 12
+  },
+  {
+   "id": "V5",
+   "text": "갈린 건 장면이었어요. 잘된 편은 한 장면에 한 마디, 안된 편은 읽어야 아는 설명이었어요.",
+   "dur": 4.622,
+   "syllablesPerSec": 7.57,
+   "src": "V5.wav",
+   "key": "51f263c646d694ebbd654facd6031c74",
+   "words": 14
+  },
+  {
+   "id": "V6",
+   "text": "여섯 번을 물어도, 같은 답이었어요.",
+   "dur": 1.941,
+   "syllablesPerSec": 7.21,
+   "src": "V6.wav",
+   "key": "9c3623732dfe3d864508bd6306efc256",
+   "words": 5
+  },
+  {
+   "id": "P2",
+   "text": "찍을 화면이랑 물어볼 한 줄, 캡처라고 댓글 주시면 DM으로 드릴게요.",
+   "dur": 3.644,
+   "syllablesPerSec": 7.14,
+   "src": "P2.wav",
+   "key": "0c4290d4b184d59a4d77cf776b6b8283",
+   "words": 10
+  },
+  {
+   "id": "P2G",
+   "text": "찍을 화면이랑 물어볼 한 줄은, 게시글에 그대로 있어요.",
+   "dur": 2.796,
+   "syllablesPerSec": 7.87,
+   "src": "P2G.wav",
+   "key": "32caee551c13ac3931a89f8166f03f77",
+   "words": 8
+  }
+ ]
+}

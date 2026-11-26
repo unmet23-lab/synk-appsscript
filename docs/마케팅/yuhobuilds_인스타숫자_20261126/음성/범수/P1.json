@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P1",
+ "text": "제일 잘된 릴스는, 구십구 퍼센트가 팔로워가 아닌 사람이었어요.",
+ "dur": 3.31,
+ "words": [
+  {
+   "text": "제일",
+   "start": 0.02,
+   "end": 0.28
+  },
+  {
+   "text": "잘된",
+   "start": 0.324,
+   "end": 0.584
+  },
+  {
+   "text": "릴스는,",
+   "start": 0.671,
+   "end": 0.975
+  },
+  {
+   "text": "구십구",
+   "start": 1.192,
+   "end": 1.496
+  },
+  {
+   "text": "퍼센트가",
+   "start": 1.539,
+   "end": 1.901
+  },
+  {
+   "text": "팔로워가",
+   "start": 1.974,
+   "end": 2.364
+  },
+  {
+   "text": "아닌",
+   "start": 2.408,
+   "end": 2.539
+  },
+  {
+   "text": "사람이었어요.",
+   "start": 2.582,
+   "end": 3.31
+  }
+ ],
+ "source": {
+  "key": "0464c30329caa02a8ab816620cdf0f82",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}
