@@ -4,6 +4,8 @@
 // 게임마다 보는 것: ① 게임이 열린 동안 위 창에 window.SYNKAtlasGame(문) ② 틀이 그 게임의 atlas-next-play.mjs를 받고 옛 SynkLearning.createGame을
 // 부르지 않음 ③ 정답 · 오답을 섞어 판 끝 화면까지 ④ 새 엔진 저장소(IndexedDB synk-atlas:*)에 그 게임 판(setId)의 제시 · 답 사건, 계정이면 리허설
 // 서버 trail에 올라감 ⑤ 콘솔 오류 · 페이지 오류 · 4xx/5xx 없음 ⑥ 1440 × 900 · 390 × 844 화면 한 장씩과 가로 넘침.
+// 게임 앞 장면 둘(결과의 world): 닫힌 패널에서 연 틀에 문이 선다(closedPanelLaunch). 놀이 목록에서 연 게임을 셸이 문을 세우기 전에
+// Escape로 닫으면, 응답이 닫기 전환(160ms) 안에 와도 다시 열리지 않는다(escapeWhileWaiting — 5-3 ② 넷째 검수 GA3 · 설계 주인 11-26).
 //
 // 띄우기(리허설 서버는 따로 띄운다 — 이 대본은 띄우지 않는다):
 //   SYNK_WORLD_MODE=rehearsal SYNK_WORLD_FEATURES=atlasNext,atlasNextGuest SYNK_WORLD_PORT=4392 SYNK_ATLAS_DEV_OUT=<엔진 판 묶음 폴더>
@@ -923,6 +925,72 @@ function uploadsOf(log, from, to) {
   return log.filter(e => e.kind === 'trail-post' && e.at >= from && e.at <= to);
 }
 
+async function escapeWhileWaiting(page, game, account, log, result) {
+  // 붙잡은 요청은 Escape 뒤에 장면이 놓는다(시간으로 놓으면 페이지가 서는 동안 끝나 장면이 서지 않았다). 늦어도 limit 뒤에는 놓는다.
+  const limit = Number(arg('hold-ms', 60000));
+  const gets = [];
+  let release;
+  const gate = new Promise(resolve => (release = resolve));
+  const holdLife = async route => {
+    if (route.request().method() !== 'GET') return route.continue().catch(() => {});
+    const row = { at: Date.now(), released: null };
+    gets.push(row);
+    await Promise.race([gate, sleep(limit)]);
+    row.released = Date.now();
+    return route.continue().catch(() => {});
+  };
+  const scene = (result.world.escapeWhileWaiting = { game, holdLimitMs: limit });
+  const t0 = Date.now();
+  const ofGame = e => {
+    try {
+      return new URL(e.text).pathname.startsWith(`/${game}/`);
+    } catch {
+      return false;
+    }
+  };
+  try {
+    // 입장은 생활 세션이 선 뒤에 끝난다 — 입장을 마친 뒤에 붙잡는다. 창으로 돌아옴(focus)은 패널이 닫혀 있을 때 계정 진도를 다시 읽어
+    // 생활 세션을 새로 세운다(셸 refreshTutorAccount → life.refresh → reload). 그 진도 읽기를 붙잡은 사이에 게임을 연다.
+    await enterWorld(page, account);
+    await page.route('**/api/world/life-progress*', holdLife);
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    scene.reloadHeld = await until(() => gets.length > 0, { timeout: 10000, what: '진도 다시 읽기' }).then(() => true, () => false);
+    await launchFromPanel(page, SHELL_ID[game]);
+    await sleep(800);
+    scene.lifeHeldAtEscape = gets.some(r => r.released === null);
+    scene.atEscape = await page.evaluate(() => ({ frame: !!document.querySelector('.game-frame'), panel: window.__synkHome?.openPanel?.() ?? null }));
+    // 닫기 전환(160ms) 안에 진도 응답이 끝나야 셸의 gameLaunch가 아직 그대로다 — Escape 바로 뒤에 놓는다(4c 검수 GA3의 재현).
+    const answered = [];
+    const onResponse = response => { if (response.url().includes('/api/world/life-progress')) answered.push(Date.now()); };
+    page.on('response', onResponse);
+    await page.keyboard.press('Escape');
+    const escapedAt = Date.now();
+    release();
+    await until(() => answered.length > 0, { timeout: 10000, what: '진도 응답' }).catch(() => false);
+    page.off('response', onResponse);
+    scene.answerAfterEscapeMs = answered.length ? answered[0] - escapedAt : null;
+    await until(() => gets.every(r => r.released !== null), { timeout: 15000, what: '생활 진도 놓기' }).catch(() => false);
+    await sleep(5000); // 셸이 기다림 뒤 차례를 마칠 때까지
+    scene.after = await page.evaluate(() => ({
+      frame: !!document.querySelector('.game-frame'),
+      door: typeof window.SYNKAtlasGame?.open === 'function',
+      panelOpen: document.querySelector('#world-panel, #panel')?.open === true,
+      panel: window.__synkHome?.openPanel?.() ?? null,
+    }));
+    scene.gameRequestsAfterEscape = log.filter(e => e.kind === 'request' && e.at >= escapedAt && ofGame(e)).map(e => e.text).slice(0, 10);
+  } catch (error) {
+    scene.error = String(error?.message ?? error).split('\n')[0];
+  } finally {
+    release();
+    scene.lifeGets = gets.map(r => ({ at: r.at - t0, released: r.released == null ? null : r.released - t0 }));
+    await page.unroute('**/api/world/life-progress*', holdLife).catch(() => {});
+  }
+  // 장면이 섰고(붙잡은 동안 · 틀이 아직 없을 때 Escape, 응답이 닫기 전환 160ms 안), 놓은 뒤에도 틀 · 문 · 패널이 없고 그 게임 파일을 받지 않았다.
+  scene.stood = scene.lifeHeldAtEscape === true && scene.atEscape?.frame === false && scene.answerAfterEscapeMs != null && scene.answerAfterEscapeMs < 160;
+  scene.pass = scene.stood && !scene.error && scene.after?.frame === false && scene.after?.door === false && scene.after?.panelOpen === false && (scene.gameRequestsAfterEscape ?? []).length === 0;
+  console.log(`Escape 장면(${game}): ${scene.pass ? '통과' : scene.stood ? '틀림 — 다시 열림' : '장면이 서지 않음'} ${JSON.stringify({ reload: scene.reloadHeld, held: scene.lifeHeldAtEscape, answerAfterEscapeMs: scene.answerAfterEscapeMs, gets: scene.lifeGets, atEscape: scene.atEscape, after: scene.after, requests: scene.gameRequestsAfterEscape?.length, error: scene.error })}`);
+}
+
 async function runWorld(browser, games, result) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   context.setDefaultTimeout(15000);
@@ -961,6 +1029,9 @@ async function runWorld(browser, games, result) {
       await sleep(1500);
     }
   }
+  // 놀이 목록에서 연 게임을, 셸이 문을 세우기 전(생활 세션을 기다리는 사이)에 Escape로 닫으면 게임이 다시 열리지 않는다(5-3 ② 넷째 검수 GA3 ·
+  // 설계 주인 11-26). 생활 진도 요청(GET /api/world/life-progress)을 잠시 붙잡아 그 사이를 만든다. 붙잡은 동안 Escape를 눌렀는지도 적는다(장면이 섰는가).
+  await escapeWhileWaiting(page, games[0], account, log, result);
   // --launch closed: 게임마다 패널이 닫힌 동네 화면에서 연다(openLearningGame). 기본은 놀이 패널을 연 채 연다.
   const launchClosed = arg('launch') === 'closed';
 
