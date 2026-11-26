@@ -1,4 +1,4 @@
-/* synk.im 홈 v12. 강의장 화면(서울 시각과 예약된 일), 창 셋(묻기 · 새 소식 · 솔리오 받기), 들어오는 주소, 영상과 큰 synk. */
+/* synk.im 홈 v12. 강의장 화면(서울 시각과 예약된 일), 창 셋(묻기 · 새 소식 · 솔리오 받기), 들어오는 주소, 영상과 큰 synk, 묻기 창의 책장. */
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const en = document.documentElement.lang === 'en';
 const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -66,6 +66,7 @@ function open(k, from) {
   $$('.sheet[open]').forEach(x => x.close());
   back = from || back;
   d.showModal(); d.scrollTop = 0;
+  if (k === 'ask') $('[data-shelf]')?.load?.();
   return d;
 }
 $$('.sheet').forEach(d => {
@@ -95,3 +96,174 @@ $('#ask-copy')?.addEventListener('click', async () => {
   try { await navigator.clipboard.writeText('hello@synk.im'); out.textContent = en ? 'Email address copied.' : '이메일 주소를 복사했습니다.'; }
   catch { out.textContent = en ? 'Copying is not available. The address is hello@synk.im.' : '복사하지 못했습니다. 주소는 hello@synk.im입니다.'; }
 });
+
+/* 묻기 창 · 책장. 공개 안내 여덟 묶음이 책이다. 답은 공개본 질문 엔진(/knowledge-engine.js)이 고르고, 답이 든 책이 나와 펼쳐진다.
+   첫 장에는 질문과 답의 첫 문장을, 다음 장에는 이어지는 문단 하나와 행동 · 이어 물을 것을 둔다. 나머지는 「다음 쪽」에 접는다. */
+const shelf = $('[data-shelf]');
+if (shelf) {
+  const S = en
+    ? { found: b => `Found in “${b}”`, pick: 'Which one do you mean?', none: 'No matching answer', reply: 'From SYNK', more: n => `Read more (+${n})`, next: 'Ask next', often: 'Often asked in this book',
+        count: n => ['', `${n}`, n === 1 ? ' answer in this book' : ' answers in this book'], fail: 'Could not load the notes. Please ask again in a moment.', notes: 'Public notes',
+        copy: 'Copy answer', copied: 'Answer copied.', nocopy: 'Copy is not available here. Select the answer to copy it.' }
+    : { found: b => `「${b}」 책에서 찾음`, pick: '어느 쪽이 궁금하신가요', none: '맞는 답을 찾지 못했어요', reply: 'SYNK 안내', more: n => `더 읽기 (+${n})`, next: '이어서 물어보기', often: '이 책에서 자주 묻는 것',
+        count: n => ['이 책의 답 ', `${n}`, '개'], fail: '안내 자료를 불러오지 못했어요. 잠시 뒤 다시 물어봐 주세요.', notes: '공개 안내',
+        copy: '답 복사', copied: '답을 복사했어요.', nocopy: '복사를 쓸 수 없어요. 답을 선택해 복사해 주세요.' };
+  const board = $('.sh-board', shelf), form = $('.sh-form', shelf), input = $('#sh-q', shelf), go = $('button', form);
+  const books = $$('.sh-book', shelf), toastEl = $('#toast');
+  const BR = ['lab', 'shift', 'pulse', 'path'];
+  let ready = null, eng = null, recs = null, docs = null, ctx = { brand: 'synk' }, busy = false, toastTimer;
+  const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x !== undefined) n.textContent = x; return n; };
+  const say = t => { if (!toastEl) return; toastEl.textContent = t; toastEl.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastEl.hidden = true; }, 2600); };
+  /* site.js와 같은 행동 링크 규칙: 같은 사이트 주소와 허락한 바깥 주소만 */
+  const OUT = new Set(['https://www.youtube.com/@synkkorean/live', 'https://www.youtube.com/@synkkorean', 'https://www.instagram.com/synk.mn/', 'https://t.me/synkmn', 'mailto:hello@synk.im', 'https://synk.im/name/', 'https://synk.im/privacy/#website-questions', 'https://synk.im/privacy/#ko']);
+  const safe = h => typeof h === 'string' && !!h && !/[\s\\\u0000-\u001f\u007f]/u.test(h) && (OUT.has(h) || /^#[A-Za-z][A-Za-z0-9_-]*$/.test(h) || (/^\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]*(?:#[A-Za-z][A-Za-z0-9_-]*)?$/.test(h) && !h.split(/[\/#]/).some(x => x === '.' || x === '..')));
+  /* 문장 나누기: 마침표 · 물음표 · 느낌표 뒤에 빈칸이 올 때만(메일 주소 · 판 번호의 점은 그대로) */
+  function sentences(t) {
+    const out = []; let a = 0; t = String(t || '');
+    for (let i = 0; i < t.length; i++) if ('.?!'.includes(t[i]) && (i + 1 === t.length || /\s/.test(t[i + 1]))) { out.push(t.slice(a, i + 1).trim()); a = i + 1; }
+    if (t.slice(a).trim()) out.push(t.slice(a).trim());
+    return out;
+  }
+  const cut = t => { const s = sentences(t); const n = s.length > 2 && s[0].length < 45 ? 2 : 1; return [s.slice(0, n).join(' '), s.slice(n).join(' ')]; };
+  /* 책임 범위를 밝히는 문단(결과를 보장하지 않음)은 지우지 않고 접힌 쪽 맨 뒤로 보낸다 */
+  const late = t => /보장하지 않|책임지지 않|guarantee|does not replace|not a substitute/i.test(t);
+  const nameOf = id => $(`.sh-book[data-book="${id}"] .sh-name`, shelf)?.textContent || S.notes;
+
+  function load() {
+    ready ??= Promise.all([
+      fetch(shelf.dataset.knowledge).then(r => { if (!r.ok) throw new Error('knowledge'); return r.json(); }),
+      import(shelf.dataset.engine),
+    ]).then(([j, m]) => {
+      if (!j || !Array.isArray(j.docs) || !Array.isArray(j.records)) throw new Error('knowledge');
+      recs = new Map(j.records.map(r => [r.id, r])); docs = new Map(j.docs.map(d => [d.id, d]));
+      eng = m.createKnowledgeEngine(j);
+      const n = {}; for (const r of j.records) n[r.sourceId] = (n[r.sourceId] || 0) + 1;
+      books.forEach(b => {
+        const c = n[b.dataset.book] || 0, k = $('.sh-n', b), small = el('small', '', en ? '' : '답');
+        k.replaceChildren(...(en ? [] : [small]), String(c));
+        b.setAttribute('aria-label', `${$('.sh-name', b).textContent}${$('.sh-sub', b).textContent ? ' (' + $('.sh-sub', b).textContent + ')' : ''} — ${en ? c + (c === 1 ? ' answer' : ' answers') : '답 ' + c + '개'}`);
+      });
+    }).catch(e => { ready = null; throw e; });
+    return ready;
+  }
+  shelf.load = () => load().catch(() => {});
+
+  function pull(id) { books.forEach(b => { const on = b.dataset.book === id; b.classList.toggle('out', on); b.setAttribute('aria-pressed', String(on)); }); }
+  function book(id) { const o = el('div', 'sh-open o-' + id), l = el('section', 'sh-page sh-left'), r = el('section', 'sh-page sh-right'); o.append(l, r); return [o, l, r]; }
+  const relBtn = (id, label) => { const r = recs.get(id); if (!r) return null; const b = el('button', 'sh-rel'); b.type = 'button'; b.dataset.askRecord = id; b.dataset.askQ = label || r.title; b.append(el('span', '', label || r.title), el('span', 'arr', '→')); b.querySelector('.arr').setAttribute('aria-hidden', 'true'); return b; };
+  /* 책을 바꿔 펴면 누른 단추가 사라진다 — 초점을 새 책의 제목으로 옮겨 Tab이 책 안으로 이어지게 한다(입력칸에서 물었으면 입력칸에 둔다) */
+  function show(node, from) {
+    const lost = from && from !== input && (board.contains(from) || from === go || from.closest?.('.sh-marks,.sh-books'));
+    board.replaceChildren(node); board.classList.remove('turning');
+    if (lost) { const h = $('.sh-q', board); h.tabIndex = -1; h.focus({ preventScroll: true }); }
+    const d = board.closest('dialog'), top = board.getBoundingClientRect().top, dt = d.getBoundingClientRect().top;
+    if (top - dt > d.clientHeight * .55 || top < dt) board.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  /* 왼쪽 쪽은 답이다: 질문, 첫 문장, 엔진이 짚은 문단(focus — 공개본 site.js처럼 늘 펼쳐 둔다), 나머지는 「더 읽기」.
+     기록이 여럿이면 기록마다 제목과 첫 문장을 보인다. 오른쪽 쪽은 다음에 할 일이다: 행동 링크, 이어 물을 것, 답 복사. */
+  function render(q, res, from) {
+    const list = res.records || [], first = list[0];
+    /* 되묻기는 고를 질문들이 든 책을 꺼낸다(「강의」 → AI 강의) */
+    const id = first?.sourceId || (res.status === 'clarify' && recs.get(res.relatedIds?.[0])?.sourceId) || res.sourceIds?.[0] || (res.status === 'courtesy' ? 'company' : 'guide');
+    pull(id);
+    const [o, l, r] = book(id);
+    const msg = String(res.message || '').split(/\n\n/).filter(Boolean);
+    const kick = res.status === 'courtesy' ? S.reply : res.status === 'clarify' ? S.pick : first ? S.found(nameOf(id)) : S.none;
+    l.append(el('p', 'sh-kick', kick), el('h3', 'sh-q', q));
+    const folded = [];
+    if (!first) {
+      l.append(el('p', 'sh-lead', msg[0] || S.none), ...msg.slice(1).map(t => el('p', '', t)));
+    } else {
+      l.append(...msg.map(t => el('p', '', t)));
+      list.forEach((x, k) => {
+        const parts = String(x.answer || '').split(/\n\n/).filter(Boolean), f = res.focus?.[x.id];
+        const [head, tail] = cut(parts[0]);
+        let rest = [tail, ...parts.filter((_, i) => i > 0 && i !== f)].filter(Boolean);
+        rest = [...rest.filter(t => !late(t)), ...rest.filter(late)];
+        if (k) l.append(el('h4', 'sh-also', x.title));
+        l.append(el('p', k ? '' : 'sh-lead', head));
+        if (f > 0 && f < parts.length) l.append(el('p', '', parts[f]));
+        else if (!k && rest[0] && !late(rest[0])) l.append(el('p', '', rest.shift()));
+        if (rest.length) folded.push([list.length > 1 ? x.title : null, rest]);
+      });
+    }
+    const n = folded.reduce((a, [, t]) => a + t.length, 0);
+    if (n) {
+      const d = el('details', 'sh-more'); d.append(el('summary', '', S.more(n)));
+      for (const [t, ps] of folded) { if (t) d.append(el('h4', 'sh-also', t)); d.append(...ps.map(x => el('p', '', x))); }
+      l.append(d);
+    }
+    const seen = new Set();
+    for (const x of list) {
+      const a = x.action;
+      if (!a?.href || seen.has(a.href) || typeof a.label !== 'string' || !a.label.trim() || !safe(a.href) || seen.size > 1) continue;
+      seen.add(a.href);
+      const link = el('a', seen.size === 1 ? 'sh-go' : 'sh-go2'); link.href = a.href; link.append(el('span', '', a.label), el('span', '', '→')); link.lastChild.setAttribute('aria-hidden', 'true');
+      r.append(link);
+    }
+    const rel = [...list.slice(1).map(x => x.id), ...(res.relatedIds || []).slice(0, res.status === 'clarify' ? 3 : 2)].filter((x, i, a) => a.indexOf(x) === i && x !== first?.id).slice(0, 3).map(x => relBtn(x)).filter(Boolean);
+    if (rel.length) { const w = el('div', 'sh-rels'); r.append(el('p', 'sh-label', res.status === 'clarify' ? S.pick : S.next)); w.append(...rel); r.append(w); }
+    if (first) {
+      const c = el('button', 'sh-copy', S.copy); c.type = 'button';
+      c.addEventListener('click', async () => { try { await navigator.clipboard.writeText([...msg, ...list.map(x => x.answer)].filter(Boolean).join('\n\n')); say(S.copied); } catch { say(S.nocopy); } });
+      r.append(c);
+    }
+    show(o, from);
+  }
+
+  async function browse(id, from) {
+    pull(id);
+    /* 사업 책을 펴면 다음 질문은 그 사업 문맥으로 읽는다 */
+    ctx = { brand: BR.includes(id) ? id : 'synk' };
+    try { await load(); } catch { pull(null); say(S.fail); return; }
+    const d = docs.get(id), rs = [...recs.values()].filter(r => r.sourceId === id);
+    const [o, l, r] = book(id);
+    const [c0, c1, c2 = ''] = S.count(rs.length), c = el('p', 'sh-count', c0); c.append(el('b', '', c1), c2);
+    l.append(el('p', 'sh-kick', nameOf(id)), el('h3', 'sh-q', d ? (d.title.split(' — ').slice(1).join(' — ') || d.title) : nameOf(id)), c);
+    const w = el('div', 'sh-rels'); w.append(...rs.slice(0, 3).map(x => relBtn(x.id)).filter(Boolean));
+    r.append(el('p', 'sh-label', S.often), w);
+    show(o, from);
+  }
+
+  async function ask(text, record, typed) {
+    const q = String(text || '').trim();
+    if (busy || (!q && !record)) return;
+    const from = document.activeElement;
+    busy = true; form.setAttribute('aria-busy', 'true'); go.disabled = true; board.classList.add('turning');
+    try {
+      await load();
+      const r = record && recs.get(record);
+      let res;
+      if (r) {
+        res = { status: 'matched', records: [r], sourceIds: [r.sourceId], relatedIds: (r.relatedIds || []).slice(0, 2), brand: r.brand };
+        ctx = { brand: BR.includes(r.brand) ? r.brand : ctx.brand, recordIds: [r.id] };
+      } else {
+        res = await eng.answer(q, ctx);
+        if (['matched', 'needs_confirmation'].includes(res.status)) ctx = { brand: BR.includes(res.brand) ? res.brand : ctx.brand, recordIds: (res.records || []).map(x => x.id) };
+        else if (!['clarify', 'courtesy'].includes(res.status)) ctx = { brand: ctx.brand };
+      }
+      render(q || r.title, res, from);
+      if (typed) { input.value = ''; size(); }
+    } catch {
+      board.classList.remove('turning'); say(S.fail);
+    } finally {
+      busy = false; form.setAttribute('aria-busy', 'false'); go.disabled = !input.value.trim();
+    }
+  }
+
+  function size() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 140) + 'px'; go.disabled = busy || !input.value.trim(); }
+  input.addEventListener('focus', () => shelf.load());
+  input.addEventListener('input', size);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (input.value.trim()) form.requestSubmit(); } });
+  form.addEventListener('submit', e => { e.preventDefault(); ask(input.value, null, true); });
+  books.forEach(b => b.addEventListener('click', () => browse(b.dataset.book, b)));
+  /* 책갈피 · 이어 물을 것 · 바닥의 사업자 정보 단추: 창 밖에서 누르면 위의 창 열기가 먼저 돈다 */
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-ask-q],[data-ask-record]');
+    if (!b) return;
+    e.preventDefault();
+    ask(b.dataset.askQ, b.dataset.askRecord || null);
+  });
+  if ($('#sheet-ask')?.open) shelf.load();
+}

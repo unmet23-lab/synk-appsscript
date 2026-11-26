@@ -61,6 +61,12 @@ L = {
         biz=('사업자등록번호를 알려주세요.', '사업자 정보'), close='닫기',
         pf=('한국어 연습과 솔리오를 계정 하나로 씁니다.', '혼자 일하는 사람의 AI 업무 앱 솔리오와 한국어 연습이 이 앱에 들어 있습니다.'),
         ask=('묻기', '무엇이든<br>물어보세요'), now=('소식', '최근에<br>새로 연 것'),
+        shelf='공개 안내 여덟 권', hint='책을 누르거나 아래에 물어보세요. 답이 든 책이 앞으로 나와 펼쳐집니다.',
+        find='찾기', ph='궁금한 것을 적어 보세요', qlabel='질문', marks='자주 묻는 질문',
+        books=(('company', '회사', 'SYNK'), ('path', '한국 유학', 'PATH'), ('lab', '한국어', 'LAB'), ('shift', 'AI 강의', 'SHIFT'),
+               ('pulse', '광고', 'PULSE'), ('vision', '비전', ''), ('philosophy', '일하는 방식', ''), ('guide', '공개 안내', '')),
+        starters=(('synk-intro', 'SYNK는 어떤 회사인가요?'), ('path-support', '한국 유학은 어디까지 도와주나요?'), ('shift-services', 'AI 강의를 맡기고 싶어요'),
+                  ('pulse-studio', '광고 영상을 맡길 수 있나요?'), ('synk-platform', '솔리오와 PC 앱은 무엇인가요?'), ('guide-contact', '어디로 문의하나요?')),
     ),
     'en': dict(
         src='en.html', url='https://synk.im/en/', base='/en', html='<html lang="en">', home='SYNK home', langs='Language',
@@ -79,6 +85,12 @@ L = {
         biz=('What is your business registration number?', 'Business information'), close='Close',
         pf=('Korean practice and SOLIO on one account.', 'SOLIO, the AI work app for people who work alone, and Korean practice are both in this app.'),
         ask=('Ask', 'Ask us<br>anything'), now=('News', 'What’s<br>new'),
+        shelf='Eight books of public notes', hint='Pick a book or ask below. The book with the answer comes forward and opens.',
+        find='Find', ph='Type your question', qlabel='Question', marks='Common questions',
+        books=(('company', 'Company', 'SYNK'), ('path', 'Study in Korea', 'PATH'), ('lab', 'Korean', 'LAB'), ('shift', 'AI training', 'SHIFT'),
+               ('pulse', 'Ads', 'PULSE'), ('vision', 'Vision', ''), ('philosophy', 'How we work', ''), ('guide', 'Public notes', '')),
+        starters=(('synk-intro', 'What does SYNK do?'), ('path-support', 'How far do you help with studying in Korea?'), ('shift-services', 'I want to book an AI lecture'),
+                  ('pulse-studio', 'Can you make an ad video for us?'), ('synk-platform', 'What are SOLIO and the PC app?'), ('guide-contact', 'How do I contact you?')),
     ),
 }
 PINS = [(19.5, 59.4, 'korean'), (32.1, 44.7, 'classroom'), (63.5, 41.2, 'study-abroad'), (86, 51.4, 'job'), (75.6, 62.9, 'community')]
@@ -104,6 +116,9 @@ def page(k):
     links = one(t, r'<div class="ask-links">.*?</div>')
     lead = one(t, r'<h2 id="ask-t">.*?</h2>\s*<p>(.*?)</p>')
     main = one(t, r'<div class="ask-main" id="questions".*?\n    </div>')
+    engine = one(main, r'data-engine="(/(?:en/)?knowledge-engine\.js\?v=[0-9a-f]+)"')
+    know = one(main, r'data-knowledge="(/(?:en/)?knowledge\.json\?v=[0-9a-f]+)"')
+    note = one(main, r'<p class="ask-note">(.*?)</p>')
     news = one(t, r'<div class="news" id="now">.*?</details>\s*</div>')
     # 10월 22일 공모전 출품 줄은 홈 작품에서 내린 작품이라 뺀다
     news, n = re.subn(r'<li><a href="[^"]*"><time datetime="2026-10-22">2026\.10\.22</time><span class="who">[^<]*</span><b>[^<]*(?:1억 년의 빛|100 Million Years|Hwaseong)[^<]*</b><span class="arr" aria-hidden="true">→</span></a></li>', '', news)
@@ -125,6 +140,8 @@ def page(k):
     x = f'<p class="sheet-x"><button type="button" data-close aria-label="{s["close"]}"></button></p>'
     pins = ''.join(f'<a class="pin" style="left:{l}%;top:{p}%" href="{u}/{d}/">{n}</a>' for (l, p, d), n in zip(PINS, s['pin']))
     title = lambda x2: f'<small>{x2[0]}</small> <b>{x2[1]}</b>'
+    books = ''.join(f'<li><button type="button" class="sh-book b-{i}" data-book="{i}" aria-pressed="false"><span class="sh-name">{n}</span><span class="sh-sub">{b}</span><span class="sh-n"></span></button></li>' for i, n, b in s['books'])
+    marks = ''.join(f'<li><button type="button" data-ask-record="{i}" data-ask-q="{q}">{q}</button></li>' for i, q in s['starters'])
     reserve = one(t, r'<a [^>]*href="(/reserve/\?from=synk-(?:en-)?home&amp;lang=(?:ko|en))"')
     nl = '\n'
     return f'''<!doctype html>
@@ -176,20 +193,26 @@ def page(k):
 </main>
 
 <footer class="foot">
-  <nav aria-label="{s['foot']}"><a href="{u}/founder/">{s['founder']}</a><a href="{u}/atlas/">{s['atlas']}</a><a href="/privacy/">{s['privacy']}</a><a href="/terms/">{s['terms']}</a><a href="/data-deletion/">{s['delete']}</a><button type="button" data-ask-q="{s['biz'][0]}">{s['biz'][1]}</button><span>© 2026 SYNK</span></nav>
+  <nav aria-label="{s['foot']}"><a href="{u}/founder/">{s['founder']}</a><a href="{u}/atlas/">{s['atlas']}</a><a href="/privacy/">{s['privacy']}</a><a href="/terms/">{s['terms']}</a><a href="/data-deletion/">{s['delete']}</a><button type="button" data-ask-q="{s['biz'][0]}" aria-haspopup="dialog">{s['biz'][1]}</button><span>© 2026 SYNK</span></nav>
   {bottom}
 </footer>
 <div class="wm" aria-hidden="true"><span>synk</span></div>
 
-<dialog class="sheet" id="sheet-ask" aria-labelledby="ask-t">{x}
-  <div class="sheet-in">
+<dialog class="sheet sheet-shelf" id="sheet-ask" aria-labelledby="ask-t">{x}
+  <div class="sheet-in shelf" id="questions" data-shelf data-engine="{engine}" data-knowledge="{know}">
     <div class="head">
       <p class="tag">{s['ask'][0]}</p>
       <h2 id="ask-t">{s['ask'][1]}</h2>
       <p>{lead}</p>
       {links}
     </div>
-    {main}
+    <div class="sh-room">
+      <ul class="sh-books" aria-label="{s['shelf']}">{books}</ul>
+      <div class="sh-board" aria-live="polite"><p class="sh-hint">{s['hint']}</p></div>
+    </div>
+    <form class="sh-form" autocomplete="off"><label class="vh" for="sh-q">{s['qlabel']}</label><textarea id="sh-q" rows="1" maxlength="500" placeholder="{s['ph']}"></textarea><button type="submit" disabled>{s['find']}</button></form>
+    <p class="sh-note">{note}</p>
+    <div class="sh-marks"><p class="sh-k">{s['marks']}</p><ul>{marks}</ul></div>
   </div>
   {toast}
 </dialog>
