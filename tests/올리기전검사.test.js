@@ -652,6 +652,26 @@ test('⑭ 목소리 엉킴 — 목소리마다 프레임 가중 평균, 기본�
   assert.deepEqual(검사.tangledVoices(files, m), [{ voice: '하나', pct: 16.2, f0: 480, lines: 2 }], '범수 57%는 남자 목소리라 넘기고, 소진 0%는 깨끗하다');
 });
 
+test('⑭ 목소리 엉킴 — 기본음이 높게 잡히는 남자 목소리(일레븐 v4 Taehyung)는 이름으로 빼고, vo.json 「voice」 이름으로 묶는다(11-27 「키읔」)', (t) => {
+  const out = [
+    'C:/k/vo/f2.wav\t엉킨 프레임  49.4% · 최악 3프레임 0.60 · 중앙 0.35 · 프레임 77 · 최고 음높이 - · 중앙 기본음 308Hz',
+    'C:/k/vo/f4.wav\t엉킨 프레임  47.8% · 최악 3프레임 0.65 · 중앙 0.34 · 프레임 67 · 최고 음높이 - · 중앙 기본음 271Hz',
+    'C:/k/vo/n1.wav\t엉킨 프레임  28.6% · 최악 3프레임 0.53 · 중앙 0.13 · 프레임 28 · 최고 음높이 517Hz · 중앙 기본음 480Hz',
+  ].join('\n');
+  const m = 검사.parseTangle(out);
+  const files = [{ wav: 'C:/k/vo/f2.wav', voice: 'ElevenLabs v4 Taehyung' }, { wav: 'C:/k/vo/f4.wav', voice: 'ElevenLabs v4 Taehyung' }, { wav: 'C:/k/vo/n1.wav', voice: '하나' }];
+  assert.deepEqual(검사.tangledVoices(files, m), [{ voice: '하나', pct: 28.6, f0: 480, lines: 1 }], 'Taehyung 48%는 남자 목소리라 넘기고, 하나는 그대로 걸린다');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '목소리이름-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const vo = path.join(dir, 'remotion', 'public', 'vo');
+  fs.mkdirSync(vo, { recursive: true });
+  for (const f of ['m1.wav', 'f1.wav']) fs.writeFileSync(path.join(vo, f), 'RIFF');
+  fs.writeFileSync(path.join(vo, 'vo.json'), JSON.stringify({ tool: 'tools/나레이션굽기.mjs', lines: [{ id: 'm1', src: 'm1.wav' }, { id: 'f1', src: 'f1.wav', voice: 'ElevenLabs v4 Taehyung' }] }));
+  const got = 검사.voiceFiles({ dir, repo: dir, prep: {} });
+  assert.equal(got.find((v) => v.id === 'f1').declared, 'ElevenLabs v4 Taehyung');
+  assert.equal(got.find((v) => v.id === 'm1').declared, undefined);
+});
+
 test('⑰ 소리 빈자리 — 합계 · 최장이 다 넘으면 고칠 것, 하나만 넘으면 확인할 것, 말 사이 쉼은 넘긴다(10-31 M19 · E17)', () => {
   const { gaps, judge } = require('../tools/소리빈자리.js');
   const 판정 = (runs, duration) => judge(gaps(runs.map(([start, end]) => ({ start, end })), duration));

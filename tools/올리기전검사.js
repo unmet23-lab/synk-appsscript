@@ -566,6 +566,10 @@ function homageFindings(bundle, videoFiles, { homage = homageOf(bundle), measure
 // 없으면 엉킴만 확인할 것으로 남긴다.
 const TANGLE_LIMIT = 15;
 const TANGLE_MIN_F0 = 165;
+// 남자 목소리는 이름으로도 뺀다(11-27). 기본음만으로 가르면 일레븐 v4 Taehyung(LAB 친구, 11-26 유호님이 들어 보고 「A로 하자」)이
+// 웃음 줄 · 보통 줄 모두 190~410Hz로 잡혀 문턱 안에 든다. 고르신 판(「추울 때」 v4b 다섯 줄)이 이 셈으로 23.6%, 「키읔」 웃음 줄 넷이 56.9%였다.
+// 이 문턱은 Typecast 여자 목소리의 모음 지지직(하나 25~33%)을 가르려고 맞춘 것이다. 음높이 · 잘림 검사는 남자 목소리에도 그대로 한다.
+const MALE_VOICES = /^(범수|ElevenLabs v4 (Taehyung|MrK))$/;
 
 // 목소리엉킴.py 출력 「<경로>\t엉킨 프레임  12.1% · … · 프레임 66 · 최고 음높이 525Hz · 중앙 기본음 240Hz」 → { 경로: {pct, frames, f0} }
 function parseTangle(text) {
@@ -591,7 +595,7 @@ function tangledVoices(files, measured) {
   return [...groups.values()].map((g) => {
     const f0s = g.f0s.sort((a, b) => a - b);
     return { voice: g.voice, pct: Math.round((g.sum / g.frames) * 10) / 10, f0: f0s[Math.floor(f0s.length / 2)], lines: g.lines };
-  }).filter((g) => g.f0 >= TANGLE_MIN_F0 && g.pct > TANGLE_LIMIT);
+  }).filter((g) => g.f0 >= TANGLE_MIN_F0 && !MALE_VOICES.test(String(g.voice)) && g.pct > TANGLE_LIMIT);
 }
 // 줄 파일 찾기: 준비.json 「목소리」(편 폴더 기준 폴더 · 파일 목록)가 있으면 그것만, 없으면 편 폴더의 나레이션굽기 vo.json 줄과
 // remotion/public/vo 아래 wav(관용구 퀴즈처럼 vo.json 없이 굽는 편). 시험 · 후보 폴더(억양시험 등)는 영상에 안 들어가니 뺀다.
@@ -600,8 +604,8 @@ const VOICE_TOOL = 'tools/나레이션굽기.mjs';
 
 function voiceFiles(bundle) {
   const found = new Map();
-  const add = (wav, json = null, made = null) => {
-    if (!found.has(wav) && fs.existsSync(wav)) found.set(wav, { wav, json: json && fs.existsSync(json) ? json : null, id: path.basename(wav, path.extname(wav)), made });
+  const add = (wav, json = null, made = null, declared = null) => {
+    if (!found.has(wav) && fs.existsSync(wav)) found.set(wav, { wav, json: json && fs.existsSync(json) ? json : null, id: path.basename(wav, path.extname(wav)), made, ...(declared ? { declared } : {}) });
   };
   const listed = [].concat(bundle.prep.목소리 || []).filter((x) => typeof x === 'string' && x.trim());
   const walk = (dir, depth, { all, skip }) => {
@@ -612,7 +616,8 @@ function voiceFiles(bundle) {
       try {
         const m = 묶음.readJson(path.join(dir, 'vo.json'));
         const made = Date.parse(m.made || '') || null;
-        if (m.tool === VOICE_TOOL) for (const l of m.lines || []) add(path.join(dir, path.basename(l.src || `${l.id}.wav`)), path.join(dir, `${l.id}.json`), made);
+        // 다른 도구(일레븐.py)가 더한 줄은 줄 기록 json이 없고 vo.json 「voice」에 목소리 이름만 있다 — 그 이름으로 묶는다(11-27)
+        if (m.tool === VOICE_TOOL) for (const l of m.lines || []) add(path.join(dir, path.basename(l.src || `${l.id}.wav`)), path.join(dir, `${l.id}.json`), made, typeof l.voice === 'string' && l.voice.trim() ? l.voice.trim() : null);
       } catch { /* 깨진 목록은 아래 wav 훑기로 */ }
     }
     for (const e of entries) {
@@ -648,7 +653,7 @@ async function voiceFindings(bundle, videoFiles, { files = voiceFiles(bundle), s
     let meta = null;
     try { meta = v.json ? 묶음.readJson(v.json) : null; } catch { /* 줄 기록 없이 wav만 본다 */ }
     const voiceKey = meta?.source?.voice?.name || meta?.source?.voice?.id || (typeof meta?.source?.voice === 'string' ? meta.source.voice : null);
-    v.voice = voiceKey || path.relative(bundle.dir, path.dirname(v.wav)).split(path.sep).join('/') || '.';
+    v.voice = voiceKey || v.declared || path.relative(bundle.dir, path.dirname(v.wav)).split(path.sep).join('/') || '.';
     const pitch = 굽기.topPitch(x);
     if (pitch !== null) top = Math.max(top ?? 0, pitch);
     if (pitch > 굽기.PITCH_WARN) high.push(`${v.id} ${pitch}Hz`);
