@@ -69,8 +69,23 @@ module.exports = async function checkSolioTodo({ open, boot, signedIn, until, wa
       s.card && s.rooms.join() === 'solio-todo' && s.rank === '1순위' && s.why === '고객이 기다립니다' && s.where === '견적부'
       && s.say === '한가람님의 견적 문의에 보낼 답장 초안이 있습니다.' && s.acts.join('|') === '*초안 복사|사무실에서 보기' && s.focus === '초안 복사' && s.left === '남은 일 3개 · AI 직원 둘이 일하고 있습니다.' && !s.bar, s);
     await capture(w, 'todo-card-1440');
-    w.win.setContentSize(960, 680); await wait(380); await capture(w, 'todo-card-960');
-    w.win.setContentSize(1440, 900); await wait(300);
+    // 3b. 뒤 카드는 왼쪽 위 「SOLIO」 이름 단추에 닿지 않는다 — 앱 최소 창과 그 150%(Fable F4)
+    const deckClear = () => w.js("(()=>{const n=document.querySelector('#portal-entry .here-name').getBoundingClientRect();return [...document.querySelectorAll('#portal-entry .todo-back')].filter(b=>getComputedStyle(b).display!=='none'&&b.getClientRects().length).every(b=>{const r=b.getBoundingClientRect();return r.top>=n.bottom+4||r.left>=n.right+4;});})()");
+    const sizeTo = async (W, Hh) => { w.win.setContentSize(W, Hh); for (let i = 0; i < 40 && (await w.js("innerWidth+'x'+innerHeight")) !== W + 'x' + Hh; i++) await wait(50); await wait(380); };
+    await sizeTo(960, 680); await capture(w, 'todo-card-960'); const clear960 = await deckClear();
+    await sizeTo(640, 453); await capture(w, 'todo-card-640'); const clear640 = await deckClear();
+    check('todo 3b the cards stacked behind never reach the SOLIO name button at 960×680 or 640×453', clear960 && clear640, { clear960, clear640 });
+    await sizeTo(1440, 900);
+    // 3c. 카드가 선 채 공간 펼침을 열면 로비(노란 바탕)가 꺼진다 — 펼침 글자는 검정 바탕용이다. 닫으면 다시 노랗다(Fable F1)
+    const lobby = () => w.js("document.querySelector('#portal-entry .orb-stage').dataset.lobby||''");
+    await w.js("document.querySelector('#portal-entry .here-orb').click();true");
+    for (let i = 0; i < 30 && (await w.js("document.querySelector('#portal-entry .orb-stage').dataset.fan||''")) !== '1'; i++) await wait(60);
+    await wait(500); const fanLobby = await lobby(); const fanCard = await w.js("getComputedStyle(document.querySelector('#portal-entry .room-todo')).visibility"); await capture(w, 'todo-card-fan-1440');
+    await key(w, 'Escape');
+    for (let i = 0; i < 30 && (await w.js("document.querySelector('#portal-entry .orb-stage').dataset.fan||''")) === '1'; i++) await wait(60);
+    await wait(300); const backLobby = await lobby(); const backCard = await w.js("getComputedStyle(document.querySelector('#portal-entry .room-todo')).visibility");
+    check('todo 3c opening the space fan over a card turns the yellow lobby off and hides the card instead of moving it, and closing it brings both back', fanLobby === '' && backLobby === 'todo' && fanCard === 'hidden' && backCard === 'visible', { fanLobby, backLobby, fanCard, backCard });
+    await w.js("document.querySelector('#portal-entry .todo-main')?.focus();true");
 
     // 4. Enter: 복사하고, 같은 자리의 꽉 찬 단추가 「보냈어요」가 된다. Enter: 이 PC에 적고 다음 카드로
     await key(w, 'Return');

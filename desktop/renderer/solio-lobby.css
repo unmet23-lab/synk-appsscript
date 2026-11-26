@@ -1,0 +1,137 @@
+/* 솔리오 로비 — 로그인을 묻는 동안과 「한 번에 처리」 카드가 선 동안만 솔리오 노랑 위에 선다.
+   유호님 11-26 「사원증과 하루 카드가 디자인적으로 훌륭해보이네」 · 「두 화면만 바꿔」. 시안: docs/디자인/워크스페이스_다시짓기_20261124/시안2/3-사원증.html
+   그 밖의 방(사무실 · 구독 · 원클릭 …)은 검정 그대로다. 바탕색은 구 그리기(orb-stage의 setBg)가 칠하고, 이 파일은 글과 종이만 맡는다.
+   글자: 라틴 한 낱말 「Solio」 = Noto Serif Display 300 / 한글 = SUIT / 숫자 = Inter Tight
+   색: 노랑 = 바탕 · 먹 면 = 그 순간 먼저 할 일 단추 하나 · 흰 종이 = 사원증과 카드 · 흐린 먹 = 둘째 줄과 꼬리표
+   보기(orb-face-view)가 .orb-stage에 data-lobby="ask"|"todo"를 붙인다. 모든 선택자를 #portal-entry 아래에 둔다 */
+@font-face{font-family:'Solio Display';src:url('/assets/launcher/NotoSerifDisplay-Light-latin.woff2') format('woff2');font-weight:300;font-display:swap;unicode-range:U+0000-00FF}
+
+#portal-entry{--lobby-y:#FED027;--lobby-ink:#141414;--lobby-mute:rgba(20,20,20,.66);--lobby-win:rgba(20,20,20,.78);--lobby-line:rgba(20,20,20,.12);
+  /* 카드와 사원증은 애플 지갑 · 알림 결(유호님 11-26 「상단 프론트들 … 애플 감성」): 맑은 유리, 큰 모서리, 0.5px 테, 겹친 부드러운 그림자 */
+  --lobby-glass:rgba(255,254,250,.92);--lobby-label:#1D1D1F;--lobby-label2:rgba(60,60,67,.8);--lobby-label3:rgba(60,60,67,.72);--lobby-hair:rgba(0,0,0,.07);
+  --lobby-lift:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 10px 24px -12px rgba(90,64,0,.32),0 36px 64px -36px rgba(90,64,0,.5)}
+#portal-entry .orb-stage[data-lobby]{background:var(--lobby-y)}
+#portal-entry .orb-stage[data-lobby]::after{opacity:0}
+/* 그리기가 없을 때의 정적 구도 노란 바탕 위에 선다 */
+#portal-entry .orb-stage[data-lobby] .orb-canvas[data-orb-mode="static"]{background:radial-gradient(circle var(--orb-sr,0px) at var(--orb-sx,50%) var(--orb-sy,50%),#0E0D0B calc(100% - 1.5px),rgba(20,20,20,.45) calc(100% - .5px),transparent 100%),var(--orb-bg,var(--lobby-y))}
+#portal-entry .orb-stage[data-lobby] ::selection{background:rgba(20,20,20,.16);color:var(--lobby-ink)}
+
+/* ── 로그인: 목에 거는 사원증 ── */
+#portal-entry [data-layer="ask"]{color:var(--lobby-ink);--lan:clamp(118px,24vh,236px)}
+#portal-entry [data-layer="ask"] .lobby-word{position:absolute;left:clamp(24px,4vw,64px);bottom:-.2em;margin:0;font:300 clamp(110px,min(23vh,21.9vw - 105px),214px)/1 'Solio Display','Noto Serif Display',Georgia,serif;letter-spacing:-.045em;color:var(--lobby-ink);pointer-events:none;white-space:nowrap}
+#portal-entry [data-layer="ask"] .ask-in{top:0;bottom:0;transform:translateX(-50%);justify-content:flex-start;padding-top:var(--lan);padding-left:24px;padding-right:24px;width:min(440px,100% - 8px);overflow-y:auto;scrollbar-width:thin}
+/* 묶음은 어느 높이에서나 스크롤된다(오류 · 안내 글이 붙으면 낮은 창에서 넘친다, Fable c). 양옆 24px 여백은 사원증 그림자가 잘리지 않게 둔다 */
+#portal-entry [data-layer="ask"] .lanyard{position:absolute;top:0;left:50%;width:2px;height:var(--lan);pointer-events:none}
+#portal-entry [data-layer="ask"] .lanyard i{position:absolute;bottom:4px;width:15px;height:calc(var(--lan) * 1.08);background:var(--lobby-ink);border-radius:2px;transform-origin:50% 100%}
+#portal-entry [data-layer="ask"] .lanyard i:first-child{left:-26px;transform:rotate(-17deg)}
+#portal-entry [data-layer="ask"] .lanyard i:last-child{left:11px;transform:rotate(17deg)}
+#portal-entry [data-layer="ask"] .badge{position:relative;width:100%;display:flex;flex-direction:column;align-items:stretch;text-align:left;background:var(--lobby-glass);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px);color:var(--lobby-label);border-radius:26px;padding:26px 28px 18px;
+  box-shadow:var(--lobby-lift)}
+#portal-entry [data-layer="ask"] .clip{position:absolute;left:50%;top:-15px;width:58px;height:30px;transform:translateX(-50%);border-radius:7px;background:linear-gradient(#D2CFC8,#8E8B85);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+#portal-entry [data-layer="ask"] .badge-h{display:flex;justify-content:space-between;align-items:center}
+/* 사원증 머리는 영문 SYNK 로고다(유호님 11-26 「싱ㅋ 이것도 이제 별로야. 삭제시켜줘」) */
+#portal-entry [data-layer="ask"] .badge-h .badge-logo{display:block;height:40px;width:auto;margin:-6px 0 -6px -10px}
+#portal-entry [data-layer="ask"] .badge-k{font:700 11px/1 'Inter Tight',var(--orb-sans);letter-spacing:.16em;color:var(--lobby-mute)}
+#portal-entry [data-layer="ask"] .badge-id{display:grid;grid-template-columns:82px minmax(0,1fr);gap:18px;align-items:end;margin-top:20px}
+#portal-entry [data-layer="ask"] .badge-face{position:relative;width:82px;height:102px;border-radius:12px;background:#EFEBE1}
+#portal-entry [data-layer="ask"] .badge-face::after{content:"";position:absolute;left:50%;top:44%;width:30px;height:30px;transform:translate(-50%,-50%);border-radius:50%;background:rgba(20,20,20,.13)}
+#portal-entry [data-layer="ask"] .badge-face::before{content:"";position:absolute;left:50%;bottom:0;width:58px;height:30px;transform:translateX(-50%);border-radius:30px 30px 0 0;background:rgba(20,20,20,.13)}
+#portal-entry [data-layer="ask"] .badge-nm{margin:0;font:300 25px/1.25 var(--orb-sans);letter-spacing:-.02em}
+#portal-entry [data-layer="ask"] .badge-nm span{display:block;margin-top:8px;font:400 13px/1.45 var(--orb-sans);letter-spacing:0;color:var(--lobby-mute)}
+#portal-entry [data-layer="ask"] .ask-unconf{margin:16px 0 0;text-align:left;font-size:14px;color:var(--lobby-ink)}
+#portal-entry [data-layer="ask"] .ask-ways{margin-top:22px;justify-content:stretch}
+#portal-entry [data-layer="ask"] .way-main{flex:1 1 auto;max-width:none;height:52px;border-radius:12px;background:var(--lobby-ink);border-color:var(--lobby-ink);color:var(--lobby-y);font-weight:700}
+#portal-entry [data-layer="ask"] .way-main:hover:not(:disabled){background:#000;border-color:#000}
+#portal-entry [data-layer="ask"] .way:disabled{opacity:.5}
+#portal-entry [data-layer="ask"] .ask-feedback,#portal-entry [data-layer="ask"] .ask-note{text-align:left;color:var(--lobby-ink)}
+/* 비어 있어도 알림 영역은 남긴다(높이만 0). 글이 들어오면 낭독기가 읽는다(Fable F7) */
+#portal-entry [data-layer="ask"] .ask-note:empty{margin:0;height:0;min-height:0;overflow:hidden}
+/* 기다리는 동안에는 단추 자리에 한 줄과 「취소」가 선다(사원증 밖으로 나가지 않는다) */
+#portal-entry [data-layer="ask"] .status{position:static;transform:none;align-items:flex-start;gap:12px;max-height:0;overflow:hidden;transition:opacity .4s ease,max-height 0s linear .4s}
+/* 열리면 초점 테만큼 안쪽 여백을 둔다(「취소」 · 「다시 시도」의 테가 잘리지 않게, Fable F5) */
+#portal-entry .orb-stage[data-wait] [data-layer="ask"] .status{max-height:272px;margin:14px -6px -6px;padding:6px;transition:opacity .4s ease .25s,max-height 0s}
+#portal-entry .orb-stage[data-wait] [data-layer="ask"] .ask-ways{display:none}
+#portal-entry [data-layer="ask"] .status p{text-align:left;color:var(--lobby-ink)}
+#portal-entry [data-layer="ask"] .status-acts{justify-content:flex-start}
+#portal-entry [data-layer="ask"] .badge-f{display:flex;justify-content:space-between;margin:20px 0 0;padding-top:14px;border-top:1px solid var(--lobby-line);font:700 10.5px/1 'Inter Tight',var(--orb-sans);letter-spacing:.16em;color:var(--lobby-mute)}
+#portal-entry [data-layer="ask"] .lobby-more{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:26px}
+#portal-entry [data-layer="ask"] .signup{margin-top:0}
+#portal-entry [data-layer="ask"] .invite{margin-top:0;gap:8px}
+#portal-entry [data-layer="ask"] .invite label{color:var(--lobby-mute)}
+#portal-entry [data-layer="ask"] .invite input{color:var(--lobby-ink);border-bottom-color:rgba(20,20,20,.34)}
+#portal-entry [data-layer="ask"] .invite input::placeholder{color:var(--lobby-mute)}
+#portal-entry [data-layer="ask"] .invite input:hover{border-bottom-color:rgba(20,20,20,.6)}
+#portal-entry [data-layer="ask"] .invite input:focus{border-bottom-color:var(--lobby-ink)}
+#portal-entry [data-layer="ask"] .quiet,#portal-entry .orb-stage[data-lobby] .room-todo .quiet{color:var(--lobby-ink);border-bottom-color:rgba(20,20,20,.36)}
+#portal-entry [data-layer="ask"] .quiet:hover:not(:disabled),#portal-entry .orb-stage[data-lobby] .room-todo .quiet:hover:not(:disabled){color:#000;border-bottom-color:#000}
+#portal-entry [data-layer="ask"] .way:focus-visible,#portal-entry [data-layer="ask"] .quiet:focus-visible,#portal-entry [data-layer="ask"] .invite input:focus-visible,
+#portal-entry .orb-stage[data-lobby] .room-todo button:focus-visible{outline:2px solid var(--lobby-ink);outline-offset:4px}
+
+/* ── 「한 번에 처리」: 흰 카드 한 장과 그 뒤에 겹쳐 선 다음 일 ── */
+#portal-entry .todo-deck{display:none}
+#portal-entry .orb-stage[data-lobby="todo"]{--tc-top:clamp(176px,28vh,262px);--tc-left:clamp(20px,9.5vw,168px);--tc-w:min(780px,calc(100% - 2 * clamp(20px,9.5vw,168px) - 80px))}
+#portal-entry .orb-stage[data-lobby="todo"] .here-name{color:rgba(20,20,20,.72)}
+#portal-entry .orb-stage[data-lobby="todo"] .here-name:hover,#portal-entry .orb-stage[data-lobby="todo"] .here-name:focus-visible{color:var(--lobby-ink)}
+#portal-entry .orb-stage[data-lobby] .here-orb:focus-visible,#portal-entry .orb-stage[data-lobby] .here-name:focus-visible{outline:2px solid var(--lobby-ink);outline-offset:2px}
+/* 노란 바탕 위의 창 단추(최소화 · 최대화 · 닫기)는 먹색이다. 흰 단추는 노랑 위 1.3:1이었다(Fable F2) */
+/* 공간 펼침이 열린 동안 로비가 꺼지면 카드와 더미는 숨는다. 검정 방의 기본 자리로 옮겨 가 뛰지 않게 한다(Fable b P2) */
+#portal-entry .orb-stage[data-todo][data-fan="1"] .room-todo{visibility:hidden}
+#portal-entry:has(.orb-stage[data-lobby]) .portal-window-actions button{color:var(--lobby-win)}
+#portal-entry:has(.orb-stage[data-lobby]) .portal-window-actions button:hover:not(:disabled),#portal-entry:has(.orb-stage[data-lobby]) .portal-window-actions button:focus-visible{background:rgba(20,20,20,.1);color:var(--lobby-ink)}
+#portal-entry:has(.orb-stage[data-lobby]) .portal-window-actions button.window-close:hover:not(:disabled){background:#E5484D;color:#FFFFFF}
+#portal-entry:has(.orb-stage[data-lobby]) .portal-window-actions button:focus-visible{outline:2px solid var(--lobby-ink);outline-offset:-2px}
+#portal-entry .orb-stage[data-lobby="todo"] .room-todo{left:var(--tc-left);right:auto;top:var(--tc-top);width:var(--tc-w);transform:none;max-height:calc(100% - var(--tc-top) - 32px);z-index:3;
+  background:var(--lobby-glass);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px);color:var(--lobby-label);border-radius:26px;padding:30px 36px 26px;box-shadow:var(--lobby-lift);-webkit-mask-image:none;mask-image:none}
+#portal-entry .orb-stage[data-lobby="todo"] .room-todo .say{font:300 clamp(24px,min(2.7vw,4.6vh),40px)/1.32 var(--orb-sans);max-width:none}
+#portal-entry .orb-stage[data-lobby="todo"] .room-todo .say .then{color:var(--lobby-mute);font-size:clamp(16px,1.4vw,20px)}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-meta{color:var(--lobby-mute)}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-meta b{color:var(--lobby-ink)}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-meta span::before{color:var(--lobby-mute)}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-main{background:var(--lobby-ink);border-color:var(--lobby-ink);color:var(--lobby-y);font-weight:700;border-radius:12px}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-main:hover{background:#000;border-color:#000}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-alt{border-color:rgba(20,20,20,.32);color:var(--lobby-ink);border-radius:12px}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-alt:hover{border-color:var(--lobby-ink)}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-note{color:var(--lobby-ink)}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-foot kbd,#portal-entry .orb-stage[data-lobby="todo"] .todo-left{color:var(--lobby-mute)}
+#portal-entry .orb-stage[data-lobby="todo"] .todo-deck:not([hidden]){display:block;position:absolute;left:var(--tc-left);top:var(--tc-top);width:var(--tc-w);height:0;z-index:2;pointer-events:none}
+/* 뒤 카드는 지갑처럼 같은 폭으로 위로 쌓이고, 뒤로 갈수록 아주 조금 줄어든다(대각선으로 밀지 않는다) */
+#portal-entry .todo-back{position:absolute;left:0;right:0;top:0;height:140px;display:flex;align-items:flex-start;gap:12px;padding:16px 22px 0 18px;
+  background:var(--lobby-glass);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px);color:var(--lobby-label);border-radius:24px;box-shadow:var(--lobby-lift);
+  font:600 14.5px/1.2 var(--orb-sans);letter-spacing:-.012em;transform-origin:50% 0;
+  transform:translateY(calc(var(--k) * -50px)) scale(calc(1 - var(--k) * .035));z-index:calc(10 - var(--k));animation:solio-back-in .45s cubic-bezier(.2,.7,.2,1) both}
+#portal-entry .todo-back b{width:18px;text-align:right;font:600 12px/1.45 'Inter Tight',var(--orb-sans);letter-spacing:-.01em;color:var(--lobby-label3);font-variant-numeric:tabular-nums}
+#portal-entry .todo-back span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .todo-back em{font:500 12.5px/1.45 'Inter Tight',var(--orb-sans);font-style:normal;color:var(--lobby-label2);white-space:nowrap}
+#portal-entry .todo-back em:empty{display:none}
+@keyframes solio-back-in{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#portal-entry .todo-back{animation:none}}
+html[data-motion="reduced"] #portal-entry .todo-back{animation:none}
+
+/* 큰 「Solio」는 사원증 묶음과 가로로 비켜서야 한다(카본 A2: 768×700 · 640×680에서 가입 · 초대 칸과 겹쳤다).
+   글자 크기는 창 폭으로도 줄어(21.9vw - 105px) 오른쪽 끝이 가운데 묶음 왼쪽보다 24px 앞에 선다. 그만큼도 줄일 수 없는 좁은 창 · 낮은 창에서는 뺀다 */
+@media (max-width:1023px),(max-height:699px){#portal-entry [data-layer="ask"] .lobby-word{display:none}}
+@media (max-width:760px){
+  #portal-entry .orb-stage[data-lobby="todo"]{--tc-left:16px;--tc-w:calc(100% - 32px)}
+  #portal-entry .orb-stage[data-lobby="todo"] .room-todo{padding:24px 22px 20px}
+  #portal-entry .todo-back{transform:translateY(calc(var(--k) * -44px)) scale(calc(1 - var(--k) * .04))}
+}
+@media (max-height:620px){
+  #portal-entry [data-layer="ask"]{--lan:96px}
+  #portal-entry [data-layer="ask"] .badge-id{margin-top:12px}
+}
+/* 낮은 창: 사원증을 줄여 초대 코드 칸까지 창 안에 둔다(Fable F3: 640×453에서 잘렸다). 카드 화면은 뒤 카드가 「SOLIO」 이름 단추에 닿지 않게 카드를 내리고 간격을 줄인다(Fable F4) */
+@media (max-height:760px){
+  #portal-entry .orb-stage[data-lobby="todo"]{--tc-top:clamp(206px,30vh,262px)}
+  #portal-entry .todo-back{transform:translateY(calc(var(--k) * -42px)) scale(calc(1 - var(--k) * .035))}
+}
+@media (max-height:560px){
+  #portal-entry [data-layer="ask"]{--lan:44px}
+  #portal-entry [data-layer="ask"] .badge{padding:20px 22px 14px}
+  #portal-entry [data-layer="ask"] .badge-id{grid-template-columns:minmax(0,1fr);margin-top:10px}
+  #portal-entry [data-layer="ask"] .badge-face{display:none}
+  #portal-entry [data-layer="ask"] .ask-ways{margin-top:14px}
+  #portal-entry [data-layer="ask"] .badge-f{margin-top:12px;padding-top:10px}
+  #portal-entry [data-layer="ask"] .lobby-more{margin-top:14px;gap:10px}
+  #portal-entry .orb-stage[data-lobby="todo"]{--tc-top:clamp(160px,34vh,206px)}
+  #portal-entry .todo-back:nth-child(3){display:none}
+}

@@ -44,6 +44,12 @@
       "sha256": "354af8ae232a7132e66a4d023e18b1fbb6e36e0793976cffbe09e82891101f55"
     },
     {
+      "name": "NotoSerifDisplay-Light-latin.woff2",
+      "source": "docs/브랜드_폰트/NotoSerifDisplay/NotoSerifDisplay-Light-latin.woff2",
+      "bytes": 15056,
+      "sha256": "960dbacc752fb81ec5091c8e7e897f9d09479ecb60d4d6552fb57c386c85348c"
+    },
+    {
       "name": "engine.js",
       "source": "atlas/engine.js",
       "bytes": 39947,

@@ -17,7 +17,6 @@ export const QA_GUEST_EVENT = 'synk:qa-guest-entry';
 const EASE = { io: easeIO, ioq: easeIOQ, out: easeOut };
 const NON_HOST_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'LINK', 'META', 'NOSCRIPT']);
 const FOCUSABLE = 'button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])';
-const MARK_SVG = '<svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱크"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>';
 /* 연결한 구독이 없을 때 「구독 연결하기」 아래에 서는 예시 계정판(11-24 짜임 쌍 맹검에서 지금 판 · 빈 계정판을 모두 이김, 유호님 「둘 다 옮겨」,
    docs/디자인/솔리오_방짜임_20261124). 연결한 뒤의 계정 명단(구독비서 설계 11절)과 같은 꼴이고 값은 예시라 낭독하지 않는다 */
 const PEEK_ACCT = (nm, v, when) => `<div class="peek-acct${v ? '' : ' used'}"><span class="peek-nm">${nm}</span><span class="peek-bar"><i style="width:${v}%"></i></span><span class="peek-pc">${v ? v + '%' : ''}</span><span class="peek-when">${when}</span></div>`;
@@ -65,21 +64,30 @@ function markup() {
   <button class="orb-wake" type="button" data-orb-act="wake" aria-label="시작하기"></button>
   <h1 class="sr" data-orb-heading tabindex="-1"></h1>
   <section class="orb-layer" data-layer="ask" aria-label="로그인 방법">
+    <p class="lobby-word" aria-hidden="true">Solio</p>
     <div class="ask-in">
-      ${MARK_SVG}
-      <p class="ask-unconf rise" style="--i:1" data-ask-unconf hidden></p>
-      <div class="ask-ways"><button class="way way-main rise" style="--i:1" type="button" data-orb-act="signin" data-portal-action="signin">로그인</button></div>
-      <p class="ask-feedback" role="alert" data-portal-auth-feedback hidden></p>
-      <button class="quiet signup rise" style="--i:2" type="button" data-orb-act="signup" data-portal-action="signup">처음이라면 가입하기</button>
-      <p class="ask-note" role="status" aria-live="polite" data-ask-note></p>
-      <form class="invite rise" style="--i:4" data-portal-pane="invite" autocomplete="off" novalidate>
-        <label for="portal-invite-input">초대받으셨다면</label>
-        <input id="portal-invite-input" name="code" type="text" placeholder="여기에 코드를 붙여 넣으세요" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="200">
-      </form>
-      <div class="status" data-ask-status-box>
-        <p role="status" aria-live="polite" data-ask-status></p>
-        <p id="portal-invite-error" role="alert" data-portal-invite-error></p>
-        <div class="status-acts" data-ask-actions></div>
+      <div class="lanyard" aria-hidden="true"><i></i><i></i></div>
+      <div class="badge rise" style="--i:1">
+        <span class="clip" aria-hidden="true"></span>
+        <div class="badge-h"><img class="badge-logo" src="/assets/launcher/synk.svg" alt="SYNK" width="57" height="40"><span class="badge-k">SOLIO</span></div>
+        <div class="badge-id"><span class="badge-face" aria-hidden="true"></span><p class="badge-nm">아직 출근 전입니다<span>로그인하면 솔리오 사무실로 들어갑니다.</span></p></div>
+        <p class="ask-unconf" data-ask-unconf hidden></p>
+        <div class="ask-ways"><button class="way way-main" type="button" data-orb-act="signin" data-portal-action="signin">로그인</button></div>
+        <p class="ask-feedback" role="alert" data-portal-auth-feedback hidden></p>
+        <p class="ask-note" role="status" aria-live="polite" data-ask-note></p>
+        <div class="status" data-ask-status-box>
+          <p role="status" aria-live="polite" data-ask-status></p>
+          <p id="portal-invite-error" role="alert" data-portal-invite-error></p>
+          <div class="status-acts" data-ask-actions></div>
+        </div>
+        <p class="badge-f" aria-hidden="true"><span>SYNK</span><span>STAFF</span></p>
+      </div>
+      <div class="lobby-more rise" style="--i:2">
+        <button class="quiet signup" type="button" data-orb-act="signup" data-portal-action="signup">처음이라면 가입하기</button>
+        <form class="invite" data-portal-pane="invite" autocomplete="off" novalidate>
+          <label for="portal-invite-input">초대받으셨다면</label>
+          <input id="portal-invite-input" name="code" type="text" placeholder="여기에 코드를 붙여 넣으세요" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="200">
+        </form>
       </div>
     </div>
   </section>
@@ -189,6 +197,7 @@ function markup() {
       </div>
       <div class="biz-host" data-off-feature hidden></div>
     </div>
+    <div class="todo-deck" data-todo-deck aria-hidden="true" hidden></div>
     <section class="room room-top room-todo" data-room="solio-todo" aria-label="한 번에 처리" hidden>
       <p class="todo-meta" data-todo-meta><b data-todo-rank></b><span data-todo-why></span><span data-todo-where></span></p>
       <p class="say" id="orb-todo-say" tabindex="-1" data-todo-head><span data-todo-say></span><span class="then" data-todo-then></span></p>
@@ -258,7 +267,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     ofc: $('[data-ofc]'), offNm: $('[data-off-nm]'), offChats: $('[data-off-chats]'), offAddBtn: $('[data-off-add-btn]'), offAdd: $('[data-off-add]'), offCap: $('[data-off-cap]'), offCenter: $('[data-off-center]'), offThread: $('[data-off-thread]'),
     offCompose: $('[data-off-compose]'), offOffSay: $('[data-off-offsay]'), offEmpty: $('[data-off-empty]'), offEmptySay: $('[data-off-empty-say]'), offEmptyAdd: $('[data-off-empty-add]'), offSide: $('[data-off-side]'), offSideBtn: $('[data-off-side-btn]'), offNew: $('[data-off-new]'),
     todoBar: $('[data-todo-bar]'), todoN: $('[data-todo-n]'), todoGo: $('[data-todo-go]'),
-    todo: $('[data-room="solio-todo"]'), todoMeta: $('[data-todo-meta]'), todoRank: $('[data-todo-rank]'), todoWhy: $('[data-todo-why]'), todoWhere: $('[data-todo-where]'),
+    todoDeck: $('[data-todo-deck]'), todo: $('[data-room="solio-todo"]'), todoMeta: $('[data-todo-meta]'), todoRank: $('[data-todo-rank]'), todoWhy: $('[data-todo-why]'), todoWhere: $('[data-todo-where]'),
     todoHead: $('[data-todo-head]'), todoSay: $('[data-todo-say]'), todoThen: $('[data-todo-then]'), todoActs: $('[data-todo-acts]'), todoNote: $('[data-todo-note]'), todoFoot: $('[data-todo-foot]'), todoLeft: $('[data-todo-left]'),
     asides: Object.fromEntries(ASIDE_NAMES.map(name => {
       const r = $(`[data-room="${name}"]`);
@@ -762,7 +771,35 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
      머리 줄 오른쪽: 할 일이 있으면 「할 일 N」과 꽉 찬 단추 하나, 없고 AI가 일하면 흐린 한 문장. 카드가 서면 머리 줄의 단추는 물러난다.
      카드는 한 장이다. 일이 바뀌면 아래에서 떠오르고, 끝낸 일이 줄에서 빠지면 왼쪽 위 구가 한 번 웃는다. 카드가 서 있으면 true */
   let todoFlash = null, todoKey = '';
-  function renderTodo(t) {
+  /* 로비: 로그인을 묻는 동안과 「한 번에 처리」 카드가 선 동안만 바탕이 솔리오 노랑이다(유호님 11-26 「두 화면만 바꿔」). 그 밖의 방은 검정 그대로다 */
+  const LOBBY_RGB = [254, 208, 39];
+  let lobbyNow = null;
+  function syncLobby() {
+    const ui = stageEl.dataset.ui;
+    // 공간 펼침이 열린 동안에는 로비를 끈다. 펼침 글자는 검정 바탕용이다(Fable F1)
+    const want = ui === 'ask' ? 'ask' : ui === 'app' && 'todo' in stageEl.dataset && stageEl.dataset.fan !== '1' ? 'todo' : '';
+    if (want === lobbyNow) return;
+    lobbyNow = want;
+    if (want) stageEl.dataset.lobby = want; else delete stageEl.dataset.lobby;
+    stage.setBg?.(want ? LOBBY_RGB : [0, 0, 0]);
+  }
+  function renderTodo(t) { const open = renderTodoCard(t); syncLobby(); return open; }
+  function renderDeck(c) {
+    const next = c && !c.end && Array.isArray(c.next) ? c.next.slice(0, 3) : [];
+    const key = JSON.stringify(next.map(n => [n.key, n.say, n.where]));
+    if (app.todoDeck.dataset.key !== key) {
+      app.todoDeck.dataset.key = key;
+      app.todoDeck.replaceChildren(...next.map((n, i) => {
+        const d = doc.createElement('div'); d.className = 'todo-back'; d.style.setProperty('--k', String(i + 1));
+        const no = doc.createElement('b'); no.textContent = String(i + 2).padStart(2, '0');
+        const say = doc.createElement('span'); say.textContent = n.say || '';
+        const where = doc.createElement('em'); where.textContent = n.where || '';
+        d.append(no, say, where); return d;
+      }));
+    }
+    app.todoDeck.hidden = !next.length;
+  }
+  function renderTodoCard(t) {
     const work = !!t && (t.count > 0 || t.paused);
     app.todoBar.hidden = !t || t.open || (!work && !t.ai && !t.fail);
     // 머리 줄은 짧게 둔다. AI가 하는 일의 문장은 카드 아래 줄과 끝 카드가 말한다(좁은 창에서 잘리지 않게, 카본 A6)
@@ -779,6 +816,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const c = t?.open ? t.card : null;
     app.todo.hidden = !c;
     if (c) { if (stageEl.dataset.todo !== '1') stageEl.dataset.todo = '1'; } else if ('todo' in stageEl.dataset) delete stageEl.dataset.todo;
+    renderDeck(c);
     if (!c) { todoKey = ''; return false; }
     const fresh = c.key !== todoKey;
     todoKey = c.key;
@@ -1726,6 +1764,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     setText(app.fanLead, f?.lead || '');
     const open = Boolean(f?.open) && s.layer === 'app' && s.mode === 'app';
     if (open) { if (stageEl.dataset.fan !== '1') stageEl.dataset.fan = '1'; } else if ('fan' in stageEl.dataset) delete stageEl.dataset.fan;
+    syncLobby();
     for (const b of [app.orbBtn, app.nameBtn]) if (b.getAttribute('aria-expanded') !== String(open)) b.setAttribute('aria-expanded', String(open));
     app.fan.inert = !open;
     // 펼친 동안 물러난 이름 단추와 오브제 줄, 흐린 방은 Tab 차례에서도 빠진다. 그 안에 있던 초점은 보이는 구 단추로 먼저 옮긴다(검수 A1)
@@ -2328,6 +2367,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     stage.setNear(s.mode === 'app' && layer === 'app' && !fanOpen && !s.band && canHover());
 
     renderAsk(s);
+    syncLobby();
     renderSwitch(s);
     renderApp(s);
     renderFan(s);

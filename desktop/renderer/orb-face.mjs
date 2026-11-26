@@ -584,7 +584,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       const rest = ahead.filter(i => i.key !== item.key).length + todo.skipped.filter(k => k !== item.key).length;
       card = { key: item.key, rank: '1순위', why: item.why || '', where: item.where || '', say: item.say, then: item.then, acts, busy: todo.busy === item.key,
         note: todo.note || (todo.waiting === item.key || !item.acts.length ? item.wait || '' : '') || (copied ? item.copied || '' : ''),
-        left: rest ? `남은 일 ${rest}개` : '이 일이 마지막입니다.', ai: aiSay };
+        left: rest ? `남은 일 ${rest}개` : '이 일이 마지막입니다.', ai: aiSay,
+        // 카드 뒤에 겹쳐 서는 다음 일(많아야 셋). 건너뛴 일은 줄 끝이라 넣지 않는다(유호님 11-26 「두 화면만 바꿔」 · 시안 3 카드 더미)
+        next: ahead.filter(i => i.key !== item.key).slice(0, 3).map(i => ({ key: i.key, say: i.say, where: i.where || '' })) };
     } else if (todo.open) {
       const skipped = todo.skipped.length, failed = todoRooms(live.load, 'failed'), checking = todoRooms(live.load, 'checking');
       const close = { id: 'close', label: '닫기', kind: 'close', primary: !failed };

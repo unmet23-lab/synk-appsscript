@@ -169,7 +169,7 @@ test('the small orb grows up to a fifth as the pointer comes near, only while ne
 });
 
 /* Fable 최종 검수 F2 */
-test('entering from the sign-in pose, where the orb has no eyes, never shows the eyes on the way', async () => {
+test('the sign-in lobby orb looks with its eyes, and entering from it pulls the eyes back for good on the way (11-26 로비)', async () => {
   const { canvas, frames } = fakeCanvas();
   let t = 1000;
   canvas.ownerDocument.defaultView.performance.now = () => t;
@@ -177,11 +177,14 @@ test('entering from the sign-in pose, where the orb has no eyes, never shows the
   try {
     stage.setVisiblePlaces(['solio']); stage.eyesCalm({ instant: true });
     stage.snap('ask'); frames.shift()?.(t);
-    assert.equal(stage.state().eyeShown, 0);
+    assert.equal(stage.state().eyeShown, 1, 'the small lobby orb shows its eyes');
+    const s0 = stage.state();
+    assert.ok(s0.cx > s0.W / 2 && s0.top + s0.r > s0.H / 2, 'the lobby orb stands at the lower right');
     stage.setDive('solio'); void stage.tween('inside', 1250);
-    let most = 0;
-    for (let i = 0; i < 40 && frames.length; i++) { t += 40; frames.shift()(t); most = Math.max(most, stage.state().eyeShown); }
-    assert.equal(most, 0, 'the eyes stayed hidden all the way in');
+    const inWay = [];
+    for (let i = 0; i < 40 && frames.length; i++) { t += 40; frames.shift()(t); inWay.push(stage.state().eyeShown); }
+    assert.ok(inWay.every((v, i) => i === 0 || v <= inWay[i - 1] + 1e-9), 'the eyes only fade on the way in: ' + JSON.stringify(inWay.map(v => +v.toFixed(2))));
+    assert.equal(inWay[inWay.length - 1], 0, 'the eyes are gone inside');
     // 눈이 보이는 작은 구에서 지도를 켤 때는 첫머리에 눈이 물러난다
     stage.snap('home'); t += 100; frames.shift()?.(t);
     assert.equal(stage.state().eyeShown, 1);
@@ -190,4 +193,21 @@ test('entering from the sign-in pose, where the orb has no eyes, never shows the
     for (let i = 0; i < 20 && frames.length; i++) { t += 40; frames.shift()(t); seen.push(stage.state().eyeShown); }
     assert.ok(seen.some(v => v > 0 && v < 1) && seen[seen.length - 1] === 0, JSON.stringify(seen.map(v => +v.toFixed(2))));
   } finally { stage.dispose(); }
+});
+
+test('the stage paints a background colour only when asked: setBg hands it to the shader, the 2D fallback and the static CSS (11-26 로비)', () => {
+  const { canvas, props } = fakeCanvas();
+  const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 40 }) });
+  try {
+    assert.deepEqual(stage.bg, [0, 0, 0], 'black by default');
+    stage.setBg([254, 208, 39]);
+    assert.deepEqual(stage.bg, [254, 208, 39]);
+    assert.equal(props['--orb-bg'], 'rgb(254,208,39)');
+    stage.setBg('yellow');
+    assert.deepEqual(stage.bg, [0, 0, 0], 'anything but three numbers goes back to black');
+  } finally { stage.dispose(); }
+  const src = fs.readFileSync(new URL('../renderer/orb-stage.mjs', import.meta.url), 'utf8');
+  assert.match(src, /uniform vec3 uBg;/);
+  assert.match(src, /col = uBg;/, 'far from the orb the shader paints the background');
+  assert.ok(src.includes('c.fillStyle = bgCss(); c.fillRect(0, 0, W, H);'), 'the 2D fallback fills the same colour');
 });

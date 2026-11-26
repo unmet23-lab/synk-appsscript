@@ -186,6 +186,18 @@ if(!process.versions.electron){
           check('1 ask shows sign-in, sign-up and the code field',await w.js("['[data-orb-act=signin]','[data-orb-act=signup]','#portal-invite-input'].every(s=>{const e=document.querySelector(s);const b=e.getBoundingClientRect();return b.width>0&&getComputedStyle(e).visibility!=='hidden';})"));
           check('1 window buttons are on the face',await w.js("!!document.querySelector('#portal-entry .portal-window-bar:not([hidden])')"));
           await captureSizes(w,'auth');
+          // 솔리오 로비(11-26): 왼쪽 아래 큰 「Solio」가 보이는 창이면 사원증 · 가입 · 초대 칸과 8px 넘게 떨어져 있다(카본 A2). 125 · 150% 배율과 앱 최소 창까지 잰다
+          const lobbyGap=[];for(const [W,Hh] of [[1440,900],[1280,800],[1152,720],[1100,760],[1024,768],[1024,700],[960,680],[768,544]]){w.win.setContentSize(W,Hh);for(let i=0;i<40&&(await w.js("innerWidth+'x'+innerHeight"))!==W+'x'+Hh;i++)await wait(50);await wait(250);
+            lobbyGap.push(await w.js("(()=>{const wd=document.querySelector('#portal-entry [data-layer=ask] .lobby-word');const shown=Boolean(wd)&&getComputedStyle(wd).display!=='none';const r=shown?wd.getBoundingClientRect():null;const parts=['.badge','.lobby-more'].map(q=>document.querySelector('#portal-entry [data-layer=ask] '+q)).filter(e=>e&&e.getBoundingClientRect().height>0);const hit=r?parts.some(e=>{const b=e.getBoundingClientRect();return r.left<b.right+8&&r.right>b.left-8&&r.top<b.bottom+8&&r.bottom>b.top-8;}):false;return {W:innerWidth,H:innerHeight,shown,word:r&&[Math.round(r.left),Math.round(r.right),Math.round(r.top)],hit};})()"));
+            if(W===1152)await capture(w,'auth-1152');}
+          w.win.setContentSize(1440,900);await wait(300);
+          check('1 the big Solio word never crowds the badge, sign-up or invite field, and shows on the wide window',lobbyGap.every(g=>!g.hit)&&lobbyGap[0].shown&&!lobbyGap.find(g=>g.W===960).shown,lobbyGap);
+          // 앱 최소 창의 150%(640×453)에서도 초대 코드 칸까지 창 안에 든다(Fable F3). 창 단추는 노랑 위에서 먹색이다(Fable F2)
+          w.win.setContentSize(640,453);for(let i=0;i<40&&(await w.js("innerWidth+'x'+innerHeight"))!=='640x453';i++)await wait(50);await wait(300);
+          const low=await w.js("(()=>{const i=document.getElementById('portal-invite-input').getBoundingClientRect(),s=document.querySelector('#portal-entry [data-orb-act=signin]').getBoundingClientRect();const b=document.querySelector('#portal-entry .portal-window-actions button');return {input:Math.round(i.bottom),signin:Math.round(s.bottom),h:innerHeight,win:b?getComputedStyle(b).color:null,scroll:getComputedStyle(document.querySelector('#portal-entry [data-layer=ask] .ask-in')).overflowY};})()");
+          await capture(w,'auth-640x453');
+          w.win.setContentSize(1440,900);await wait(300);
+          check('1 at 640×453 the invite field ends inside the window, the stack scrolls when an error line makes it longer (Fable c), and the window buttons are dark on the yellow',low.input<=low.h&&low.signin<=low.h&&low.scroll==='auto'&&(!low.win||/^rgba?\(20, 20, 20/.test(low.win)),low);
           await click(w,'[data-orb-act="signin"]');const si=await until(w,s=>s.phase==='signing-in'&&s.wait==='wait');
           check('1 signing-in line',si.ok&&(await text(w,'[data-ask-status]'))==='브라우저에서 로그인을 마치면 이 창으로 돌아옵니다.',si.state);await capture(w,'signing-in');
           await key(w,'Escape');const back=await until(w,s=>s.phase==='auth'&&!s.wait);check('1 Esc cancels the sign-in',back.ok&&(await calls(w)).includes('cancelSignIn'),back.state);

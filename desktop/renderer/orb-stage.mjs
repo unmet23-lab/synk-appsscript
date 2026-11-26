@@ -51,14 +51,15 @@ export const fanR = H => clamp(H * 0.086, 50, 84);
    home은 왼쪽 위의 작은 구 자리(얼굴이 그 단추의 가운데를 알려 준다), dive와 face는 들어갈 공간과 앞에 둘 공간이다 */
 export function orbPoses({ W, H, home = { x: 40, y: 40 }, dive = 'solio', face = 'solio', forgeP = 0 }) {
   const r0 = Math.min(H * 0.21, W * 0.3), fg = forgeGeom(W, H, forgeP);
-  const rAsk = Math.max(H * 1.9, W * 1.25);
+  const rLobby = W < 760 ? clamp(H * 0.11, 44, 90) : clamp(H * 0.15, 64, 140);
   const g = switchGeom(W, H), rIn = Math.hypot(W, H) * 0.56 / RHO, hr = HOME_R, fr = fanR(H);
   return {
     void: { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(-50), lz: 0.5, lit: 0, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0 },
     rest: { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(135), lz: 0.5, lit: 1, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0, eye: 1 },
     /* 새 판을 깎는 동안. 깎는 동안은 어둡고(lit 0.58), 글이 놓일 아래쪽 결은 가라앉힌다. 다 깎이면 얼굴이 빛을 올린다 */
     forge: { cx: W / 2, top: fg.cy - fg.r, r: fg.r, az: rad(128), lz: 0.42, lit: 0.58, focus: 0, ax: AXIS.rest, mark: 0, par: 0.16, calm: 0.85, eye: 1 },
-    ask: { cx: W / 2, top: H * 0.25, r: rAsk, az: rad(150), lz: -0.3, lit: 1, focus: 1, ax: AXIS.top, mark: 0, par: 0, calm: 1 },
+    /* 로그인을 묻는 로비(유호님 11-26 「두 화면만 바꿔」, docs/디자인/워크스페이스_다시짓기_20261124/시안2 시안 3). 노란 바탕의 오른쪽 아래에 작은 구가 서서 눈으로 사원증을 본다 */
+    ask: { cx: W - rLobby - Math.max(28, W * 0.045), top: H - rLobby * 1.62, r: rLobby, az: rad(135), lz: 0.5, lit: 1, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0, eye: 1 },
     /* 들어갈 공간의 별이 창 한가운데에 있고 구가 창보다 훨씬 커진 때다. 거기까지 가는 길은 mixPose가 별을 따라가며 잡는다 */
     inside: { cx: W / 2, top: H / 2 - rIn, r: rIn, az: rad(150), lit: 0, focus: 1, ax: faceAx(dive), spin: -PLACE_LON[dive], mark: 1, par: 0, calm: 0, dive: true },
     home: { cx: home.x, top: home.y - hr, r: hr, az: rad(135), lz: 0.5, lit: 1, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0, eye: 1 },
@@ -153,6 +154,8 @@ precision highp float;
 precision mediump float;
 #endif
 uniform vec2 uRes, uC;
+/* 바탕색. 검정이면 지금 화소 그대로다. 로비(로그인)와 「한 번에 처리」에서만 솔리오 노랑으로 바뀐다(유호님 11-26 「두 화면만 바꿔」) */
+uniform vec3 uBg;
 uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm;
 uniform vec3 uAxis, uOpen;
 uniform float uCut, uCutOn;
@@ -210,7 +213,7 @@ void main(){
   float pulse = 1.0 + 0.5 * uGb;
   vec3 col;
   if (px > 0.4 * uR / uDpr + 48.0) {
-    col = vec3(0.0);
+    col = uBg;
   } else {
     float N1 = 110.0;
     float h = sqrt(max(1.0 - uLz * uLz, 0.0));
@@ -274,7 +277,10 @@ void main(){
     float tool = (exp(-dP * dP / 12.0) + 0.20 * exp(-dP / 22.0)) * smoothstep(-0.03, 0.08, P.z);
     inC += warm * live * (seam * (0.09 + 0.28 * side) + tool * 0.95);
     vec3 outC = warm * uLit * (cres * (line * 0.16 + halo * 0.03) * pulse * soft + edge);
-    col = mix(outC, inC, inside);
+    /* 밝은 바탕이면 새틴 검정 구의 가장자리에 바탕빛이 조금 비치고, 바깥 빛띠는 바탕에 묻히게 줄인다 */
+    float bgk = max(uBg.r, max(uBg.g, uBg.b));
+    inC += uBg * (0.03 + 0.16 * pow(1.0 - z, 2.0));
+    col = mix(uBg + outC * (1.0 - 0.75 * bgk), inC, inside);
   }
   /* 점 눈. uEye는 종류(1 점, 0 없음), 보이는 정도, 뜬 정도, 표정이다. 얼굴(uFace)은 손이 있는 쪽을 보고, 눈은 구 겉에 붙어 얼굴과 함께 돈다.
      점 눈은 구 겉에 뚫은 아주 작은 구멍으로 빛이 새어 나오는 것이라, 꺼지면 구멍도 보이지 않는다(시안 그대로) */
@@ -329,7 +335,7 @@ void main(){
   col += g * 2.8 / 255.0;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }`;
-const UNIFORMS = ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uOpen', 'uCut', 'uCutOn', 'uEye', 'uFace', 'uGaze', 'uSeg0', 'uSeg1', 'uLine'];
+const UNIFORMS = ['uRes', 'uC', 'uBg', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uOpen', 'uCut', 'uCutOn', 'uEye', 'uFace', 'uGaze', 'uSeg0', 'uSeg1', 'uLine'];
 /* 셰이더 원문. 시안과 화소를 견주는 도구(desktop/tools/orb-parity.cjs)가 같은 셰이더를 그린다 */
 export const ORB_SHADER = Object.freeze({ VS, FS, UNIFORMS: Object.freeze([...UNIFORMS]) });
 
@@ -351,6 +357,11 @@ export function createOrbStage(canvas, options = {}) {
   let cut = 1, cutOn = 0, cutOnWant = 0, forgeP = 0;
   /* 점 눈. gate는 눈을 켠 정도, open은 뜬 정도, face는 얼굴이 향한 쪽, gaze는 눈길이 얼굴보다 앞서 간 만큼(점 한 칸이 1)이다(시안 그대로) */
   const MOOD_NO = { calm: 0, smile: 1, sleep: 2, sorry: 3, busy: 4 };
+  /* 바탕색(0~1). setBg로 바라는 색을 주면 0.45초 동안 다가간다. 장의 빠르기와 상관없이 시간으로 잰다(가려진 창이나 느린 장치에서도 같은 때 끝난다) */
+  const bg = [0, 0, 0], bgWant = [0, 0, 0], bgFrom = [0, 0, 0];
+  let bgT0 = 0;
+  const BG_MS = 450;
+  const bgCss = () => `rgb(${bg.map(v => Math.round(v * 255)).join(',')})`;
   const eye = { on: options.eyes === true, gate: 0, gateS: 0, mood: 'sleep', open: 1, face: [0, 0], gaze: [0, 0], lid: null, nextBlink: 0, token: 0 };
   const ptr = { x: 0.5, y: 0.5 }, ptrS = { x: 0.5, y: 0.5 };
   const hot = [0, 0, 0], markXY = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
@@ -505,6 +516,7 @@ export function createOrbStage(canvas, options = {}) {
   }
 
   function draw(t) {
+    { const k = reduced() || still ? 1 : clamp((t - bgT0) / BG_MS, 0, 1), e = 1 - (1 - k) * (1 - k); for (let i = 0; i < 3; i++) bg[i] = k >= 1 ? bgWant[i] : bgFrom[i] + (bgWant[i] - bgFrom[i]) * e; }
     const sec = t / 1000, motion = reduced() || still ? 0 : 1;
     ptrS.x += (ptr.x - ptrS.x) * 0.06; ptrS.y += (ptr.y - ptrS.y) * 0.06;
     stepEye(t);
@@ -553,6 +565,7 @@ export function createOrbStage(canvas, options = {}) {
       gl.uniform2f(U.uC, cx * DPR, (H - cy) * DPR);
       gl.uniform1f(U.uR, rr * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
       gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
+      gl.uniform3f(U.uBg, bg[0], bg[1], bg[2]);
       gl.uniform3f(U.uAxis, ax[0], ax[1], ax[2]);
       gl.uniform1f(U.uMark, mark); gl.uniform1f(U.uCalm, S.calm);
       gl.uniform3f(U.uOpen, ...ORB_PLACES.map(n => (n === dive ? S.open : 0)));
@@ -567,7 +580,7 @@ export function createOrbStage(canvas, options = {}) {
     } else if (ctx2d) {
       // WebGL이 없을 때: 검정 원과 빛 오는 쪽의 가는 호. 지도는 별과 별을 잇는 선만 그린다(점이 날아오는 길은 그리지 않는다)
       const c = ctx2d; c.setTransform(DPR, 0, 0, DPR, 0, 0);
-      c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
+      c.fillStyle = bgCss(); c.fillRect(0, 0, W, H);
       c.beginPath(); c.arc(cx, cy, rr, 0, Math.PI * 2); c.fillStyle = '#030303'; c.fill();
       c.lineWidth = 1.4; c.strokeStyle = 'rgba(243,241,236,' + (0.6 * S.lit).toFixed(3) + ')'; c.beginPath(); c.arc(cx, cy, rr, -az - 1.1, -az + 1.1); c.stroke();
       if (mark > 0.05) {
@@ -587,7 +600,7 @@ export function createOrbStage(canvas, options = {}) {
   }
 
   /* 움직임이 없고 손도 가만히 있으면 초당 30장으로 줄인다. 창이 가려지면 멈춘다. 60장 가운데 40장 넘게 느리면(움직일 때 24ms, 멈춰 있을 때 50ms 넘음) 촘촘함을 한 단 낮춘다 */
-  function idle() { return !tw && !eye.lid && Math.abs(eye.gate - eye.gateS) < 0.01 && Math.abs(cutOnWant - cutOn) < 0.01 && Math.abs(ptr.x - ptrS.x) < 0.001 && Math.abs(ptr.y - ptrS.y) < 0.001 && Math.abs(glintWant - glintBoost) < 0.01 && !autoFace && nearK === nearGoal && hot.every((h, i) => Math.abs(h - (hotWant === i ? 1 : 0)) < 0.01); }
+  function idle() { return !tw && !eye.lid && bg.every((v, i) => v === bgWant[i]) && Math.abs(eye.gate - eye.gateS) < 0.01 && Math.abs(cutOnWant - cutOn) < 0.01 && Math.abs(ptr.x - ptrS.x) < 0.001 && Math.abs(ptr.y - ptrS.y) < 0.001 && Math.abs(glintWant - glintBoost) < 0.01 && !autoFace && nearK === nearGoal && hot.every((h, i) => Math.abs(h - (hotWant === i ? 1 : 0)) < 0.01); }
   function frame(t) {
     frameId = null;
     if (disposed || paused) return;
@@ -635,6 +648,9 @@ export function createOrbStage(canvas, options = {}) {
     setHot(name) { hotWant = name ? ORB_PLACES.indexOf(name) : -1; wake(); },
     setGlint(on) { glintWant = on ? 1 : 0; wake(); },
     setLit(v) { S.lit = v; wake(); },
+    /* 바탕색을 [r, g, b](0~255)로 준다. 움직임을 줄였으면 바로 바뀐다. 정적 구(그리기가 없을 때)는 캔버스의 --orb-bg로 같은 색을 쓴다 */
+    setBg(rgb) { const v = Array.isArray(rgb) && rgb.length === 3 && rgb.every(Number.isFinite) ? rgb.map(n => clamp(n / 255, 0, 1)) : [0, 0, 0]; if (v.some((n, i) => n !== bgWant[i])) { for (let i = 0; i < 3; i++) { bgFrom[i] = bg[i]; bgWant[i] = v[i]; } bgT0 = now(); } try { canvas.style.setProperty('--orb-bg', `rgb(${v.map(n => Math.round(n * 255)).join(',')})`); } catch { /* 무시 */ } wake(); },
+    get bg() { return bgWant.map(n => Math.round(n * 255)); },
     setSpin(v) { S.spin = v; },
     /* 업데이트 뒤의 첫 장면에서 빛줄기와 함께 구가 한 바퀴 돈다(시안 forgeDone의 S.az) */
     setAz(v) { if (Number.isFinite(v)) { S.az = v; wake(); } },

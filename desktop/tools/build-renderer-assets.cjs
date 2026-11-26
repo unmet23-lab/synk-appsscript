@@ -11,6 +11,8 @@ const sources={
   'button.webp':account+'slab-coral-long.webp',
   // 숫자 글꼴 Inter Tight: 700 하나뿐이라 작은 회색 숫자까지 굵게 나왔다. 웹 플랫폼과 같은 400 · 600 조각을 더한다.
   'InterTight-Regular.woff2':'docs/브랜드_폰트/플랫폼_웹/InterTight-Regular.woff2','InterTight-SemiBold.woff2':'docs/브랜드_폰트/플랫폼_웹/InterTight-SemiBold.woff2',
+  // 솔리오 로비의 라틴 한 낱말 「Solio」(유호님 11-26 「두 화면만 바꿔」). PULSE 앱과 같은 승인 사본이다(OFL).
+  'NotoSerifDisplay-Light-latin.woff2':'docs/브랜드_폰트/NotoSerifDisplay/NotoSerifDisplay-Light-latin.woff2',
   'engine.js':'atlas/engine.js','personalization.js':'atlas/personalization.js',
 };
 fs.mkdirSync(target,{recursive:true});

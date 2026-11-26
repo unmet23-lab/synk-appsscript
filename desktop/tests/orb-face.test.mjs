@@ -3010,6 +3010,9 @@ test('한 번에 처리: the bar counts the line, the button opens the first ite
   let c = todo().card;
   assert.deepEqual(pickOf(c, ['key', 'rank', 'why', 'where', 'say', 'left']), { key: 'quote:q1', rank: '1순위', why: '고객이 기다립니다', where: '견적부', say: '한가람님의 견적 문의에 보낼 답장 초안이 있습니다.', left: '남은 일 1개' });
   assert.deepEqual(c.acts.map(a => [a.id, a.primary]), [['copy', true], ['go', false]]);
+  // 카드 뒤에는 다음 일이 겹쳐 선다(지금 일은 빼고 많아야 셋, 유호님 11-26 「두 화면만 바꿔」)
+  assert.deepEqual(c.next.map(n => n.key), ['task:q3:paused']);
+  assert.ok(c.next.every(n => n.say && typeof n.where === 'string'));
   assert.equal(h.view.last().focus, 'todo', 'Enter 한 번이 그 일이다');
   h.face.handle('todo-act', 'copy');
   await settle();
