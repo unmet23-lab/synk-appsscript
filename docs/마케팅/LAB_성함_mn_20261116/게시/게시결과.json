@@ -60,16 +60,29 @@
     },
     {
       "계정": "lab-br-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-25T13:00:00-03:00",
       "지문": "1374baabc5211cab6efe26315ccd42ba6ada30b681c9fb9e1482b5c5f2780d7f",
       "게시글지문": "016cf6ec3cbcf427a25a9703a54af3a45e8005135127f9b21924ad04f4a891d6",
       "방법": "ego",
       "게시물ID": "SuLgvb6BI08",
       "주소": "https://youtube.com/shorts/SuLgvb6BI08",
-      "확인": "예약 한국 시각 2026-11-26 01:00 = 현지 13:00 · Como perguntar o nome de um idoso em coreano ☕ Errou e levou um banho de café 😂 #aprendercoreano · 쇼츠 목록(SYNK LAB Brasil | Coreano divertido): 「Como perguntar o nome de um idoso em coreano ☕ Errou e levou um banho de café 😂 #aprendercoreano」 · 예약됨 · 2026. 11. 26. 예약 날짜 · 예약 창 2026. 11. 26. 오전 1:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 포르투갈어(브라질)로 저장됨 · 동영상 언어: 포르투갈어(브라질)",
+      "확인": "로그인 없이 oEmbed 200 · 채널 「SYNK LAB Brasil | Coreano divertido」 · 제목 「Como perguntar o nome de um idoso em coreano ☕ Errou e levou um banho de café 😂 #aprendercoreano」 · 2026-11-26 14:32 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-24 14시 회차)",
       "기록시각": "2026-11-24T07:21:59.130Z"
+    },
+    {
+      "계정": "lab-cn-douyin",
+      "상태": "예약됨",
+      "시각": "2026-11-28T13:00:00+08:00",
+      "지문": "ef88ce45e0aa9dc8aa86c4fb2800974fce456deff1fefa3de094470c00858095",
+      "게시글지문": "492f18456d9ed8ca7bf980affea3d06700e3d391aaa47255bcd3827656f8c2bc",
+      "방법": "ego",
+      "게시물ID": "7712353488558247222",
+      "주소": "https://www.douyin.com/video/7712353488558247222",
+      "확인": "作品 목록 作品 (10) → (11), 새 줄 「…如果来的是老奶奶，用韩语该怎么问名字？评论区写写看👇 SYNK LAB #学韩语 #韩语学习 #韩语入门 · 2026年11月28日 14:00 审核中」. API 맨 위 작품 7712353488558247222 · timer.public_time 1795842000(2026-11-28 14:00 KST = 베이징 13:00) · timer.status 0(공개 전) · 첫 줄 「韩语问名字，要看你在跟谁说话：」. 그 아래 11-26 · 11-25 14:00 판도 그대로. 계정은 크리에이터 센터 홈 「SYNK LAB 韩语 抖音号：39504393074」. 걸기 전 목록 · API에 11月27日 · 11月28日 줄과 「定时」 줄이 없었다. 예약 칸은 브라우저 시간대(Asia/Seoul) 칸이었다(기본값 2026-11-26 16:50 = 지금+2시간 한국 시각) — 베이징 13:00 판을 한국 2026-11-28 14:00으로 넣었다. 누르기 전 칸: Schedule · Everyone · 게시글이 원고_douyin.json caption과 공백 뺀 글자까지 같음(빈 줄 아닌 줄 모두 같음) · 세로 표지 cover.png(화면으로 판 표지인지 확인) · 제목 칸 비움 · 자주 성명(AI) 칸 고르지 않음. 「Post」 한 번 → 곧바로 作品 목록. 위치 권한 창 · 본인 확인 창 없음.",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과(11-26 14시 회차)",
+      "기록시각": "2026-11-26T06:05:01.324Z"
     }
   ]
 }

@@ -119,14 +119,14 @@
     },
     {
       "계정": "lab-mx-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-25T13:00:00-06:00",
       "지문": "51c396e4ea126d9d1fbf99fa3af6cf0f539bdefa83f4a7a091e882834bcb1796",
       "게시글지문": "fade22bd4cc5c34f4fdf131ee30be2f8b59ff6ad4adb61d62eaebdb7d7a9744f",
       "방법": "ego",
       "게시물ID": "7710505234350525716",
       "주소": "https://www.tiktok.com/@synklab.mx/video/7710505234350525716",
-      "확인": "TikTok Studio 콘텐츠 목록(@synklab.mx) 줄 「Nov 26, 4:00 AM (GMT+9) Seoul Everyone」 · 글 첫 줄 「En español usas verbos distintos cuando viene tu compa, llueve, nieva, te da sueño o suena el teléfono. En coreano se us」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 26, 2026 04:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 끔",
+      "확인": "ego 기본 프로필 공간 187로 영상 쪽을 열어 statusCode 0 · privateItem false(공개) · 작성자 synklab.mx · createTime 2026-11-26 04:00 KST · 글 첫 줄 「En español usas verbos distintos cuando viene tu compa…」 · 2026-11-26 14:33 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
       "기록시각": "2026-11-21T06:25:27.613Z"
     },
