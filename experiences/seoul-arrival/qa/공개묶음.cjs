@@ -20,7 +20,7 @@ const APP = 'experiences/synk-world-app/', BO = 'experiences/brand-opening/', AR
 const 앱폴더 = git('ls-tree', '-r', '--name-only', NEW, ARR).toString().trim().split('\n').map((x) => x.slice(ARR.length))
   .filter((x) => !x.startsWith('qa/') && /\.(mjs|css|html|webp|mp3|jpg|png)$/.test(x));
 const FILES = [
-  ...['app-shell.mjs', 'app-shell.css', 'life-progress.mjs', 'seoul-entry.mjs', 'seoul-watch.mjs', 'seoul-record.mjs'].map((f) => [APP + f, 'world/' + f]),
+  ...['app-shell.mjs', 'app-shell.css', 'life-progress.mjs', 'seoul-entry.mjs', 'seoul-watch.mjs', 'seoul-record.mjs', 'drama-lines.mjs'].map((f) => [APP + f, 'world/' + f]),
   [BO + 'opening.mjs', 'world/brand-opening/opening.mjs'],
   ...앱폴더.map((f) => [ARR + f, 'world/seoul-arrival/' + f]),
 ];

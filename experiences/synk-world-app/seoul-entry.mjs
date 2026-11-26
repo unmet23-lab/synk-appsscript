@@ -2,6 +2,7 @@
 // 판별이 실패하거나 틀을 못 불러오면 조용히 물러나 지금의 입장 관문으로 넘긴다 — 서울행이 앱 입구를 막으면 안 된다.
 import {readArrival} from './seoul-record.mjs';
 import {watchEpisode,EPISODE} from './seoul-watch.mjs';
+import {lineResults} from './drama-lines.mjs';
 import {currentLang,hasChosenLang,setLang,suggestedLang,onLang} from '../brand-opening/world-lang.mjs';
 import {openLangPicker} from '../brand-opening/lang-picker.mjs';
 
@@ -74,7 +75,7 @@ export function photoView(out){
  return {on:true,state,url,paused};
 }
 
-export function createSeoulEntry({dramaPending,restored,client,life,home,worldUrl,launchGame,show,close,selectLanguage,tutorStatus,native,frontOn=()=>false,me2=null}){
+export function createSeoulEntry({dramaPending,restored,client,life,home,worldUrl,launchGame,show,close,selectLanguage,tutorStatus,native,frontOn=()=>false,me2=null,evidence=()=>window.__synkEducation?.townEvidence?.()??null}){
  const owner=()=>client().snapshot?.accountId||'guest';
  const mode=()=>seoulMode({search:location.search,feature:autoOn(),dramaPending:dramaPending()});
  let session=null,decision=null,moveAnswer=null;
@@ -149,11 +150,32 @@ export function createSeoulEntry({dramaPending,restored,client,life,home,worldUr
  // 손님도 로그인 없이 1화를 끝까지 한다(11-23 유호님 「1화까지는 열어두는거」). 받아쓰기(talk · 외부 AI 비용)는 계정만 부르고,
  // 손님 판은 녹음을 들어 보고 스스로 확인하는 길로 간다(app-shell mountDramaHost guest). 저장은 이 기기의 손님 사본이다.
  function prepareEpisode(){return {status:'ok'};}
+ // 1화를 끝낸 판의 줄 결과(팬설계 13-2 「통로」): 닫을 때 부모 창의 학습 기록(townEvidence)을 읽어 {line, result, kind}만 틀에 넘긴다.
+ // 연 때와 읽을 때의 주인이 같아야 하고, 손님은 부르지 않는다. 기록 직후 잠깐 「다 읽힘」이 거짓이라(0.2초쯤) 1초 안에서 다시 읽는다.
+ // 못 읽으면(null · 덜 읽힘 · 예외 · 주인 바뀜) 빈 배열이고 객석은 1차 그대로다.
+ const lastWrap=who=>{let at=-Infinity;for(const s of mine(who)?.scenes||[])if(s?.id===`${EPISODE}.wrap`&&Number.isFinite(s.at))at=Math.max(at,s.at);return at;};
+ async function readLines(who,since,until){
+  if(who==='guest')return [];
+  for(let tries=0;tries<10;tries+=1){
+   if(owner()!==who)return [];
+   let got=null;try{got=evidence();}catch{return [];}
+   if(!got||!Array.isArray(got.events))return [];
+   if(got.evidenceComplete===true){try{return lineResults(got.events,{since,until}).map(({line,result,kind})=>kind?{line,result,kind}:{line,result});}catch{return [];}}
+   await new Promise(res=>setTimeout(res,100));
+  }
+  return [];
+ }
  async function openEpisode({onScene=()=>{}}={}){
-  const panel=document.querySelector('#world-panel');
+  const panel=document.querySelector('#world-panel'),who=owner();
+  // 판의 경계는 완주 시각이다(같은 패널에서 「처음부터 다시」를 하면 판이 바뀐다). 앞 완주는 기록의 마지막 1화 완주부터 센다.
+  const wraps=[lastWrap(who)];
   return new Promise(resolve=>{
    let lines=null,watcher=null,finished=false;
-   const done=()=>{if(finished)return;finished=true;panel.removeEventListener('close',onClose);watcher?.dispose();document.querySelector('.seoul-cta')?.remove();resolve(lines?{status:'wrap',lines}:{status:'closed'});};
+   const done=()=>{
+    if(finished)return;finished=true;panel.removeEventListener('close',onClose);watcher?.dispose();document.querySelector('.seoul-cta')?.remove();
+    if(!lines){resolve({status:'closed'});return;}
+    const read=lines;readLines(who,wraps.at(-2),wraps.at(-1)).then(results=>resolve({status:'wrap',lines:read,results}),()=>resolve({status:'wrap',lines:read,results:[]}));
+   };
    // 패널 내용만 바뀔 때는 닫히지 않는다(불러오는 중 → 게임). 다음 틱에도 닫혀 있으면 끝.
    const onClose=()=>setTimeout(()=>{if(!panel.open)done();},0);
    panel.addEventListener('close',onClose);
@@ -161,7 +183,7 @@ export function createSeoulEntry({dramaPending,restored,client,life,home,worldUr
     const frame=document.querySelector('#panel-content .game-frame');
     if(!panel.open){done();return;}
     if(!frame)return;   // 로그인 · 오류 판: 닫히면 내 길로
-    watcher=watchEpisode(frame,{onScene,onWrap(read){lines=read;try{onScene({id:`${EPISODE}.wrap`,lines:read.n});}catch{}showBand();}});
+    watcher=watchEpisode(frame,{onScene,onWrap(read){lines=read;wraps.push(Date.now());try{onScene({id:`${EPISODE}.wrap`,lines:read.n});}catch{}showBand();}});
    }).catch(()=>{if(!panel.open)done();});
   });
  }

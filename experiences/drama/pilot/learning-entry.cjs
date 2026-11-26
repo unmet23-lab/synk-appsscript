@@ -6,15 +6,15 @@
 const { createMap } = require('../../../strata');
 const learning = require('../../../atlas/game-learning');
 const { createWorldLearningHost } = require('../../synk-account/src/generated/world-learning-host.cjs');
+// 보임마다 시도 · 도움을 잇는 훑기는 서울행 「내 팬」과 함께 쓴다(WORLD 부모 창은 이 묶음을 싣지 않는다 — 팬설계 13-2).
+const { GAME_ID, JUDGED, scanPresentations } = require('../../synk-world-app/drama-lines.mjs');
 // 드라마 말하기 지도(ko.speaking.*)는 WORLD 지도와 따로 둔다(결정 10-31 ②).
 const map = createMap(require('../../../strata/maps/ko-speaking.json'));
-const GAME_ID = 'drama-s1';
 const factory = config => learning.createGame({ ...config, map });
 const engine = Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync });
 // review(11-14, 설계 §18): 첫 화면에서 지난번 틀린 장면 줄을 다시 하는 차례 — 장면처럼 판정 없음(unassessed) + 판정 갈래(choice).
 const PHASES = ['scene', 'retake', 'transfer', 'review'];
-// 판정된 시도의 갈래(choice) — 실수 읽기(review)는 이것만 센다. hold · unclear는 판정 보류라 건너뛴다.
-const JUDGED = ['pass', 'note-ending', 'note-length', 'note-missing'];
+// 판정된 시도의 갈래(choice, drama-lines.mjs JUDGED) — 실수 읽기(review)는 이것만 센다. hold · unclear는 판정 보류라 건너뛴다.
 // explanation: 장면이 끝난 뒤 그 줄에 준 코치 노트(11-03, 몽골 시범 §7 ①). 노트 종류는 그 줄 마지막 판정 시도의 choice가 말한다.
 const HELPS = ['text', 'answer', 'explanation'];
 const NOTE_KINDS = ['ending', 'length', 'missing'];
@@ -62,34 +62,19 @@ function answerOf(outcome) {
 // 대사 전체(answer 도움)를 봤는지. transferAt: 새 상황 B의 판정된 첫 시도 가운데 가장 이른 시각(없으면 null). shown: 남은 사건에 보임이 있는 줄.
 // 받아 적은 글은 원래 기록에 없다. 화면(review)과 집계 도구(tools/드라마시범집계.mjs)가 함께 쓴다.
 function revisitFacts(events, { lineIds = [], transferId = null } = {}) {
-  const lines = new Set(lineIds.filter(identifier)), byId = new Map(events.map(e => [e.id, e]));
-  const gone = new Set(events.filter(e => e.type === 'record.excluded').map(e => e.targetId));
-  const presented = new Map(), shownLines = new Set();
-  for (const e of events) {
-    if (e.type !== 'practice.presented' || gone.has(e.id)) continue;
-    const d = byId.get(e.decisionId), m = /^drama-s1\.(scene|retake|transfer|review)\.([a-zA-Z0-9_.:-]+)$/.exec(e.taskId || '');
-    if (d?.type !== 'decision.made' || d.experienceId !== GAME_ID || !m || m[2] !== e.itemKey) continue;
-    shownLines.add(e.itemKey);
-    presented.set(e.id, { lineId: e.itemKey, phase: m[1], first: null, answers: [] });
-  }
-  // 「그 시도 전에 대사 전체(answer)를 봤나」는 사건 차례(배열 자리)로 가른다 — 시각은 ms가 같을 수 있다(결과 화면이 판정 바로 뒤 도움을 남긴다).
-  events.forEach((e, k) => {
-    const p = presented.get(e.presentationId); if (!p || gone.has(e.id)) return;
-    const at = Date.parse(e.at); if (!Number.isFinite(at)) return;
-    if (e.type === 'practice.helped' && e.level === 'answer') p.answers.push(k);
-    if (e.type !== 'practice.attempted' || !JUDGED.includes(e.choice?.selectedId)) return;
-    if (!p.first || e.attemptNo < p.first.no) p.first = { no: e.attemptNo, choice: e.choice.selectedId, at, k };
-  });
-  const history = {};
+  const lines = new Set(lineIds.filter(identifier)), history = {}, shown = new Set();
   let transferAt = null;
-  for (const p of presented.values()) {
-    if (!p.first) continue;
-    if (p.phase === 'transfer' && p.lineId === transferId) transferAt = transferAt == null ? p.first.at : Math.min(transferAt, p.first.at);
+  for (const p of scanPresentations(events).values()) {
+    shown.add(p.lineId);
+    let first = null;
+    for (const a of p.attempts) if (JUDGED.includes(a.choice) && (!first || a.no < first.no)) first = a;
+    if (!first) continue;
+    if (p.phase === 'transfer' && p.lineId === transferId) transferAt = transferAt == null ? first.at : Math.min(transferAt, first.at);
     if ((p.phase === 'scene' || p.phase === 'review') && lines.has(p.lineId))
-      (history[p.lineId] ||= []).push({ at: p.first.at, choice: p.first.choice, helped: p.answers.some(k => k < p.first.k) });
+      (history[p.lineId] ||= []).push({ at: first.at, choice: first.choice, helped: p.answers.some(k => k < first.k) });
   }
   for (const list of Object.values(history)) list.sort((a, b) => a.at - b.at);
-  return { history, transferAt, shown: shownLines };
+  return { history, transferAt, shown };
 }
 
 // 차례 하나(장면의 한 줄 · 테이크 2 · 새 상황) = Atlas 보임(present) 하나. 그 차례의 테이크가 시도 1, 2, …가 된다.

@@ -1,7 +1,18 @@
 // Generated from atlas/, strata/, experiences/synk-account/src/generated/world-learning-host.cjs and experiences/drama/pilot/learning-entry.cjs. Change those sources; run tools/build-drama-learning.js.
 "use strict";
 var DramaLearning = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __esm = (fn, res, err) => function __init() {
+    if (err) throw err[0];
+    try {
+      return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+    } catch (e) {
+      throw err = [e], e;
+    }
+  };
   var __commonJS = (cb, mod) => function __require() {
     try {
       return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -9,6 +20,19 @@ var DramaLearning = (() => {
       throw mod = 0, e;
     }
   };
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
   // strata/index.js
   var require_strata = __commonJS({
@@ -5677,6 +5701,86 @@ var DramaLearning = (() => {
     }
   });
 
+  // experiences/synk-world-app/drama-lines.mjs
+  var drama_lines_exports = {};
+  __export(drama_lines_exports, {
+    GAME_ID: () => GAME_ID,
+    JUDGED: () => JUDGED,
+    NOTE_ORDER: () => NOTE_ORDER,
+    judgePresentation: () => judgePresentation,
+    lineResults: () => lineResults,
+    pickLines: () => pickLines,
+    scanPresentations: () => scanPresentations
+  });
+  function scanPresentations(events) {
+    const list = Array.isArray(events) ? events : [];
+    const byId = new Map(list.map((e) => [e?.id, e]));
+    const gone = new Set(list.filter((e) => e?.type === "record.excluded").map((e) => e.targetId));
+    const out = /* @__PURE__ */ new Map();
+    for (const e of list) {
+      if (e?.type !== "practice.presented" || gone.has(e.id)) continue;
+      const d = byId.get(e.decisionId), m = TASK.exec(e.taskId || "");
+      if (d?.type !== "decision.made" || d.experienceId !== GAME_ID || !m || m[2] !== e.itemKey) continue;
+      out.set(e.id, { id: e.id, lineId: e.itemKey, phase: m[1], at: Date.parse(e.at), attempts: [], answers: [], dropped: 0 });
+    }
+    list.forEach((e, k) => {
+      const p = out.get(e?.presentationId);
+      if (!p) return;
+      if (gone.has(e.id)) {
+        if (e.type === "practice.attempted") p.dropped += 1;
+        return;
+      }
+      const at = Date.parse(e.at);
+      if (!Number.isFinite(at)) return;
+      if (e.type === "practice.helped" && e.level === "answer") p.answers.push(k);
+      if (e.type === "practice.attempted") p.attempts.push({ no: e.attemptNo, choice: e.choice?.selectedId ?? null, unanswered: e.reason === "unanswered", at, k });
+    });
+    return out;
+  }
+  function judgePresentation(p) {
+    const judged = (p?.attempts || []).filter((a) => JUDGED.includes(a.choice)).sort((a, b) => a.no - b.no || a.k - b.k);
+    if (!judged.length) return null;
+    const first = judged[0], last = judged.at(-1), sawAnswer = (k) => p.answers.some((x) => x < k);
+    if (noteKind(last.choice)) return { result: "todo", kind: noteKind(last.choice) };
+    const one = p.attempts.find((a) => a.no === 1);
+    if (one?.choice === "pass" && !sawAnswer(one.k) && !p.dropped) return { result: "clean" };
+    if (noteKind(first.choice)) {
+      const pass = judged.find((a) => a.choice === "pass" && a.no > first.no);
+      if (pass && !sawAnswer(pass.k)) return { result: "fixed", kind: noteKind(first.choice) };
+    }
+    if (one?.unanswered && first.choice === "pass" && !sawAnswer(first.k)) return { result: "heard" };
+    return null;
+  }
+  function lineResults(events, { since = -Infinity, until = Infinity } = {}) {
+    const last = /* @__PURE__ */ new Map();
+    for (const p of scanPresentations(events).values()) {
+      if (p.phase !== "scene" || !Number.isFinite(p.at) || !(p.at > since && p.at <= until)) continue;
+      const was = last.get(p.lineId);
+      if (!was || p.at >= was.at) last.set(p.lineId, p);
+    }
+    return [...last.values()].sort((a, b) => a.at - b.at).flatMap((p) => {
+      const r = judgePresentation(p);
+      return r ? [{ line: p.lineId, ...r }] : [];
+    });
+  }
+  function pickLines(results, { goal = null } = {}) {
+    const list = Array.isArray(results) ? results : [], at = new Map(list.map((r, i) => [r, i]));
+    const goalFirst = (a, b) => (b.line === goal) - (a.line === goal) || at.get(a) - at.get(b);
+    const praise = list.find((r) => r.result === "fixed") || list.filter((r) => r.result === "clean").sort(goalFirst)[0] || list.find((r) => r.result === "heard") || null;
+    const todo = list.filter((r) => r.result === "todo" && NOTE_ORDER.includes(r.kind)).sort((a, b) => NOTE_ORDER.indexOf(a.kind) - NOTE_ORDER.indexOf(b.kind) || goalFirst(a, b))[0] || null;
+    return { praise, todo };
+  }
+  var GAME_ID, JUDGED, NOTE_ORDER, TASK, noteKind;
+  var init_drama_lines = __esm({
+    "experiences/synk-world-app/drama-lines.mjs"() {
+      GAME_ID = "drama-s1";
+      JUDGED = Object.freeze(["pass", "note-ending", "note-length", "note-missing"]);
+      NOTE_ORDER = Object.freeze(["ending", "length", "missing"]);
+      TASK = /^drama-s1\.(scene|retake|transfer|review)\.([a-zA-Z0-9_.:-]+)$/;
+      noteKind = (choice) => typeof choice === "string" && choice.startsWith("note-") ? choice.slice(5) : null;
+    }
+  });
+
   // strata/maps/ko-speaking.json
   var require_ko_speaking = __commonJS({
     "strata/maps/ko-speaking.json"(exports, module) {
@@ -6916,12 +7020,11 @@ var DramaLearning = (() => {
       var { createMap } = require_strata();
       var learning = require_game_learning();
       var { createWorldLearningHost } = require_world_learning_host();
+      var { GAME_ID: GAME_ID2, JUDGED: JUDGED2, scanPresentations: scanPresentations2 } = (init_drama_lines(), __toCommonJS(drama_lines_exports));
       var map = createMap(require_ko_speaking());
-      var GAME_ID = "drama-s1";
       var factory = (config) => learning.createGame({ ...config, map });
       var engine = Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync });
       var PHASES = ["scene", "retake", "transfer", "review"];
-      var JUDGED = ["pass", "note-ending", "note-length", "note-missing"];
       var HELPS = ["text", "answer", "explanation"];
       var NOTE_KINDS = ["ending", "length", "missing"];
       var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
@@ -6956,41 +7059,25 @@ var DramaLearning = (() => {
         return null;
       }
       function revisitFacts(events, { lineIds = [], transferId = null } = {}) {
-        const lines = new Set(lineIds.filter(identifier)), byId = new Map(events.map((e) => [e.id, e]));
-        const gone = new Set(events.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
-        const presented = /* @__PURE__ */ new Map(), shownLines = /* @__PURE__ */ new Set();
-        for (const e of events) {
-          if (e.type !== "practice.presented" || gone.has(e.id)) continue;
-          const d = byId.get(e.decisionId), m = /^drama-s1\.(scene|retake|transfer|review)\.([a-zA-Z0-9_.:-]+)$/.exec(e.taskId || "");
-          if (d?.type !== "decision.made" || d.experienceId !== GAME_ID || !m || m[2] !== e.itemKey) continue;
-          shownLines.add(e.itemKey);
-          presented.set(e.id, { lineId: e.itemKey, phase: m[1], first: null, answers: [] });
-        }
-        events.forEach((e, k) => {
-          const p = presented.get(e.presentationId);
-          if (!p || gone.has(e.id)) return;
-          const at = Date.parse(e.at);
-          if (!Number.isFinite(at)) return;
-          if (e.type === "practice.helped" && e.level === "answer") p.answers.push(k);
-          if (e.type !== "practice.attempted" || !JUDGED.includes(e.choice?.selectedId)) return;
-          if (!p.first || e.attemptNo < p.first.no) p.first = { no: e.attemptNo, choice: e.choice.selectedId, at, k };
-        });
-        const history = {};
+        const lines = new Set(lineIds.filter(identifier)), history = {}, shown = /* @__PURE__ */ new Set();
         let transferAt = null;
-        for (const p of presented.values()) {
-          if (!p.first) continue;
-          if (p.phase === "transfer" && p.lineId === transferId) transferAt = transferAt == null ? p.first.at : Math.min(transferAt, p.first.at);
+        for (const p of scanPresentations2(events).values()) {
+          shown.add(p.lineId);
+          let first = null;
+          for (const a of p.attempts) if (JUDGED2.includes(a.choice) && (!first || a.no < first.no)) first = a;
+          if (!first) continue;
+          if (p.phase === "transfer" && p.lineId === transferId) transferAt = transferAt == null ? first.at : Math.min(transferAt, first.at);
           if ((p.phase === "scene" || p.phase === "review") && lines.has(p.lineId))
-            (history[p.lineId] ||= []).push({ at: p.first.at, choice: p.first.choice, helped: p.answers.some((k) => k < p.first.k) });
+            (history[p.lineId] ||= []).push({ at: first.at, choice: first.choice, helped: p.answers.some((k) => k < first.k) });
         }
         for (const list of Object.values(history)) list.sort((a, b) => a.at - b.at);
-        return { history, transferAt, shown: shownLines };
+        return { history, transferAt, shown };
       }
       function createRecorder({ win = typeof window === "undefined" ? null : window, owner = findHost(win), onError = () => {
       } } = {}) {
         if (!owner || typeof owner.createGame !== "function") return null;
         let coach = null;
-        const game = () => coach || (coach = owner.createGame({ gameId: GAME_ID }, factory, learning.createLearningSync));
+        const game = () => coach || (coach = owner.createGame({ gameId: GAME_ID2 }, factory, learning.createLearningSync));
         const safe = (fn) => {
           try {
             return fn();
@@ -7005,7 +7092,7 @@ var DramaLearning = (() => {
         function open({ lineId, skillId, phase, lazy = false }) {
           if (!identifier(lineId) || !PHASES.includes(phase) || map.getNode(skillId)?.kind !== "skill") return null;
           const present = () => safe(() => game().present({
-            id: `${GAME_ID}.${phase}.${lineId}`,
+            id: `${GAME_ID2}.${phase}.${lineId}`,
             itemKey: lineId,
             familyKey: lineId,
             skillId,
@@ -7096,7 +7183,7 @@ var DramaLearning = (() => {
         if (win) win.SYNKLearningHost = host;
         return host;
       }
-      module.exports = { GAME_ID, mapVersion: map.map_ver, engine, answerOf, judgedAs, revisitFacts, createRecorder, createRehearsalHost };
+      module.exports = { GAME_ID: GAME_ID2, mapVersion: map.map_ver, engine, answerOf, judgedAs, revisitFacts, createRecorder, createRehearsalHost };
     }
   });
   return require_learning_entry();
