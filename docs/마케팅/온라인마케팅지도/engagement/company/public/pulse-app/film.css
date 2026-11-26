@@ -1898,7 +1898,8 @@ html.has-brief-open{overflow:hidden}
 /* 막의 그림 */
 .sx-q-media{position:absolute;inset:0;pointer-events:none}
 .sx-q-media>*{position:absolute;opacity:0;transition:opacity .6s}
-.sx-q-solio{left:0;right:0;bottom:0;height:min(76%,calc(100% - 300px))}
+/* 솔리오 그림은 1200px — 칸은 816px(1.47배)을 넘지 않는다(큰 화면에서 흐려지지 않게). */
+.sx-q-solio{left:0;right:0;bottom:0;height:min(76%,calc(100% - 300px),816px)}
 .sx-q-scene{position:absolute;left:50%;bottom:-6%;height:100%;aspect-ratio:1;transform:translateX(-50%);opacity:0;transition:opacity .35s}
 .sx-q-scene.is-on{opacity:1}
 .sx-q-scene img{width:100%;height:100%;-webkit-mask:radial-gradient(closest-side,#000 80%,transparent 100%);mask:radial-gradient(closest-side,#000 80%,transparent 100%)}
@@ -1930,6 +1931,8 @@ html.has-brief-open{overflow:hidden}
 .sx-q[data-act="2"] .sx-q-foot{grid-area:3/1/4/2;padding:16px var(--q-pad) clamp(24px,4vh,40px)}
 .sx-q[data-act="2"] .sx-q-screen{grid-area:1/2/4/3;overflow:hidden;background:#d8e6f3;box-shadow:inset 18px 0 34px -20px rgba(20,30,50,.45)}
 .sx-q[data-act="2"][data-step=model] .sx-q-screen{background:#0a0a0a}
+/* 모델 단계는 오른쪽 무대가 검다 — 그 위의 머리 오른쪽 글(적은 내용 · 나중에 이어서)은 흰 글로(카본 A1). */
+.sx-q[data-act="2"][data-step=model] .sx-q-top-right{color:#fff}
 .sx-q[data-act="2"] .sx-q-title{font-size:clamp(38px,3.9vw,58px);line-height:1.22;letter-spacing:-.05em}
 /* 3막: 하늘 */
 .sx-q[data-act="3"] .sx-q-stage{grid-template-columns:minmax(0,1fr) minmax(0,600px);column-gap:5vw;padding:0 var(--q-pad) 0 0}
@@ -1977,6 +1980,7 @@ html.has-brief-open{overflow:hidden}
 .sx-q[data-act] .sx-field>small{display:block;margin-top:6px;font-size:13px}
 .sx-q[data-act] .sx-field.is-big :is(input){min-height:92px;padding-top:36px;font-size:28px;font-weight:700}
 .sx-q[data-act] .sx-field ::placeholder{color:var(--sx-faint)}
+.sx-q[data-act="3"] .sx-field{--sx-ink:#03152e;--sx-dim:rgba(3,21,46,.72);--sx-faint:rgba(3,21,46,.5)}
 .sx-q[data-act="3"] .sx-field :is(input,textarea){background:#fff;color:#03152e}
 .sx-q[data-act] .sx-duo{gap:12px}
 .sx-q[data-act] .sx-link{color:var(--sx-ink);font-weight:700;text-decoration-thickness:1.5px;text-underline-offset:4px;align-self:flex-start}
@@ -2005,7 +2009,7 @@ html.has-brief-open{overflow:hidden}
 .sx-guess{display:flex;gap:8px}
 .sx-guess input{flex:1;min-width:0;height:54px;padding:0 16px;border:0;border-radius:14px;background:var(--q-fill);font-size:16px;font-weight:600;color:var(--sx-ink);outline:0}
 .sx-guess input:focus{box-shadow:inset 0 0 0 2px var(--sx-ink)}
-.sx-guess .sx-chip{background:#111;color:#fff;white-space:nowrap}
+.sx-q[data-act] .sx-guess .sx-chip{background:#111;color:#fff;white-space:nowrap}
 .sx-rec{margin:0}
 .sx-rec div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:15px 0;border-top:1px solid var(--sx-rule);font-size:17px}
 .sx-rec div:last-child{border-bottom:1px solid var(--sx-rule)}
@@ -2016,7 +2020,7 @@ html.has-brief-open{overflow:hidden}
 .sx-q-note{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:18px 20px;border-radius:var(--q-r);background:var(--q-fill)}
 .sx-q-note b{font-size:17px;font-weight:800;letter-spacing:-.03em}
 .sx-q-note p{margin:0;font-size:15px;color:var(--sx-ink)}
-.sx-q-note .sx-chip{background:#111;color:#fff}
+.sx-q[data-act] .sx-q-note .sx-chip{background:#111;color:#fff}
 .sx-q-mailfix .sx-link{margin-left:6px}
 /* 자료 칸: 채운 판 */
 .sx-q[data-act] .sx-slots{gap:10px;border:0}
@@ -2035,7 +2039,7 @@ html.has-brief-open{overflow:hidden}
 .sx-cal-wd{padding:2px 0 4px;text-align:center;font-size:13px;font-weight:600;color:var(--sx-ink)}
 .sx-cal-day{position:relative;display:grid;place-items:center;height:54px;border-radius:999px;font-size:19px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--sx-ink);transition:background .15s,color .15s}
 .sx-cal-day.is-ok{background:var(--q-fill)}
-.sx-cal-day:not(:disabled):hover{background:var(--q-fill-hover)}
+.sx-cal-day:not(:disabled):not([aria-pressed=true]):hover{background:var(--q-fill-hover)}
 .sx-cal-day:disabled{opacity:.42;cursor:default}
 .sx-cal-day[aria-pressed=true]{background:#fff;color:#03152e;font-weight:700}
 .sx-cal-day small{position:absolute;left:0;right:0;bottom:3px;text-align:center;font-size:13px;line-height:1;font-weight:700;white-space:nowrap}
@@ -2091,6 +2095,9 @@ html.has-brief-open{overflow:hidden}
   .sx-q[data-act="2"] .sx-q-body{background:#fff}
   .sx-q[data-act="2"] .sx-q-foot{background:#fff}
   .sx-q[data-act="2"] .sx-q-top{color:#0a0a0a}
+  .sx-q[data-act="2"][data-step=model]:not(.is-scrolled) .sx-q-top{color:#fff}
+  .sx-q[data-act="2"][data-step=model]:not(.is-scrolled) .sx-logo .sx-logo-ink{display:none}
+  .sx-q[data-act="2"][data-step=model]:not(.is-scrolled) .sx-logo .sx-logo-white{display:block}
   .sx-q[data-act="3"] .sx-q-screen{position:fixed;inset:0;height:auto}
   .sx-q[data-act="3"] .sx-q-sky{object-position:43% 100%}
   .sx-q[data-act="3"] .sx-q-shade{background:linear-gradient(180deg,rgba(6,38,80,.22),rgba(6,38,80,.46) 34%,rgba(6,38,80,.5) 78%,rgba(6,38,80,.2))}

@@ -93,8 +93,10 @@ test('the first step’s screen shows the same picture whole, never past 1.47× 
   // 세 막(11-26): 첫 막의 그림은 고른(가리킨) 갈래의 솔리오 — 업종을 바꿔도 그림을 갈지 않고 솔리오의 눈이 그 칸을 본다.
   assert.ok(flow.includes("host.querySelectorAll('[data-scene]').forEach(scene=>scene.classList.toggle('is-on',scene.dataset.scene===group));"),'the first act shows the picked group');
   assert.ok(flow.includes("kind(el){a.kind=el.dataset.id;form.querySelectorAll('[data-do=\"kind\"]').forEach(item=>setChip(item,item.dataset.id===a.kind));lookAt(el);"),'changing the business keeps the picture and turns the eyes');
-  // 말 · 글자 단계의 광고 틀도 같은 그림이다 — 틀 비율이 달라도 자르지 않고 틀 안에 맞춘다. 손님이 올린 사진 · 업종을 고르기 전 예시 그림은 꼴이 없다
-  // (채우던 그대로, 실제 화소의 1.47배까지만 칸을 쓴다 — data-cap, 11-13).
+  // 첫 막의 솔리오 그림(1200px 정사각)은 칸이 816px을 넘지 않아, 화소비 2까지 실제 화소의 1.47배 안이다(카본 C2, 11-26).
+  assert.ok(css.includes('.sx-q-solio{left:0;right:0;bottom:0;height:min(76%,calc(100% - 300px),816px)}'),'the Solio stage is capped');
+  for(const id of ['hello','product','place','app','brand']){const [w,h]=webpSize(readFileSync(new URL(`assets/request/solio-${id}.webp`,appDir)));assert.ok(Math.min(w,h)*1.47>=816*2,`solio-${id}: ${w}×${h} covers 816px at pixel ratio 2`);}
+  // 아래는 작품 그림을 쓰는 다른 화면(예시 프로젝트 · 방)의 꼴 규칙이다.
   assert.ok(css.includes('.sx-q-screen:has(>.sx-q-view>.sx-q-fill[data-shot]){background:#000}'),'only a picture placed straight on the screen turns the screen black — an ad frame keeps its edge');
   // 휴대폰 첫 단계 띠(19dvh, Fable 5.2 P2): 세로 작품 · 모델 장면은 오른쪽에 붙고, 이름 글줄은 그 왼쪽 빈자리에만(그림 폭 ≤ 띠 높이 × .81 — 모델 장면 960×1192가 가장 넓다).
   assert.ok(css.includes('  .sx-q[data-step=what] .sx-q-fill:is([data-shot=tall],[data-shot=scene]){margin-right:var(--sx-m);object-position:100% 50%}'));

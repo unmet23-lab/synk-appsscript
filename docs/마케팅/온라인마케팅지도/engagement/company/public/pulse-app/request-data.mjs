@@ -211,11 +211,20 @@ export const GROUPS=Object.freeze([
   {id:'brand',label:k('회사 · 브랜드'),note:k('회사 소개, 채용, 행사'),kinds:['brand'],packages:['s30','s60','corp'],channel:'youtube',package:'s30',why:k('회사 소개는 가로 30초로 시작하면 15초 · 6초 편집본까지 받아 여러 곳에 써요.')},
 ]);
 export const groupOf=kind=>GROUPS.find(group=>group.kinds.includes(kind));
-// 「어떤 걸 골라야 할지 모르겠어요」: 하시는 일 한 줄에서 갈래를 고른다(앱 · 매장 · 회사를 먼저 보고, 「팔아요」 같은 넓은 말은 제품으로).
-const GUESS_WORDS=Object.freeze([['app',['앱','어플','플랫폼','웹','사이트','프로그램','구독']],['place',['카페','식당','가게','매장','병원','의원','치과','학원','숙소','펜션','호텔','헬스','필라테스','미용실','네일','공방','예약']],['brand',['회사','기업','채용','행사','법인','공장','창립']],['product',['팔','제품','상품','옷','화장품','음료','식품','간식','영양제','가방','신발','가전','쇼핑몰','물건','만들어','app','shop','sell','product']]]); // i18n-skip
-export const guessGroup=text=>{const line=String(text||'').toLowerCase().replace(/\s/g,'');return line?(GUESS_WORDS.find(([,words])=>words.some(word=>line.includes(word)))||[''])[0]:'';};
+// 「어떤 걸 골라야 할지 모르겠어요」: 하시는 일 한 줄에서 갈래를 고른다. 한국어 낱말은 띄어쓰기를 뺀 글 안에서, 영어 낱말은 낱말 경계로 찾는다
+// (「happy」 속 app을 잡지 않게 — 카본 B3). 가장 많이 맞은 갈래를 고르고, 같으면 앱 · 매장 · 회사 · 제품 차례다(「팔아요」 같은 넓은 말은 제품).
+const GUESS_WORDS=Object.freeze([
+  ['app',['앱','어플','플랫폼','웹','사이트','프로그램','구독'],['app','apps','application','website','web','platform','saas','software','subscription']], // i18n-skip
+  ['place',['카페','식당','가게','매장','병원','의원','치과','학원','숙소','펜션','호텔','헬스','필라테스','미용실','네일','공방','예약'],['shop','store','cafe','café','coffee','restaurant','clinic','hospital','dentist','academy','school','hotel','salon','gym','studio','bakery','bar']], // i18n-skip
+  ['brand',['회사','기업','채용','행사','법인','공장','창립'],['company','corporate','hiring','recruiting','event','events','factory','firm']], // i18n-skip
+  ['product',['팔','제품','상품','옷','화장품','음료','식품','간식','영양제','가방','신발','가전','쇼핑몰','물건','만들어'],['sell','selling','product','products','goods','clothes','clothing','cosmetics','drink','drinks','snack','snacks','food','bag','bags','shoes','online']], // i18n-skip
+]); // i18n-skip
+const enHits=(line,words)=>words.filter(word=>new RegExp(`(^|[^a-z])${word}([^a-z]|$)`).test(line)).length;
+export const guessGroup=text=>{const line=String(text||'').toLowerCase(),flat=line.replace(/\s/g,'');if(!flat)return '';let best='',most=0;for(const [id,ko,en] of GUESS_WORDS){const hits=ko.filter(word=>flat.includes(word)).length+enHits(line,en);if(hits>most){best=id;most=hits;}}return best;};
 // 마무리(11-26): 기본은 「추천대로」. 직접 고르면 마지막 화면 · 문구 한 줄이 더 생긴다(서버 pulse-requests.mjs ENDS와 같은 ID).
 export const ENDS=Object.freeze([{id:'logo',label:k('로고만')},{id:'line',label:k('로고 + 한 줄')},{id:'info',label:k('로고 + 안내')}]);
+// 지금 화면에 보이는 마무리 고름(사진 주문은 마지막 화면 칸이 없고, 로고만이면 문구 칸이 숨는다 — 숨은 옛 값은 요약에 쓰지 않는다, 카본 B4).
+export const endShown=a=>{if(pkgOf(a)?.photo)return [];const end=ENDS.find(item=>item.id===a.endCard);return [end?t(end.label):'',end&&end.id!=='logo'?a.endLine:''].filter(Boolean);};
 // 느낌 칩의 말(값은 WIN ID 그대로 — 11-25 「무엇으로 오래 남을까요?」의 말투를 고침).
 export const FEEL_LABELS=Object.freeze({story:k('뭉클하게'),impact:k('「와」 하게'),laugh:k('웃으며 보내게')});
 export const emptyAnswers=()=>({
@@ -265,11 +274,11 @@ export function briefRows(a){
   const fileCount=slotCount(a),written=[a.pageUrl&&k('제품 페이지'),a.driveUrl&&k('드라이브 링크'),a.useNote&&k('쓰는 모습 설명')].filter(Boolean).map(text=>t(text));
   const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).map(point=>t(point)).join(', '),ref.why].filter(Boolean).join(' · ')).filter(Boolean).join(' / ');
   const rows=[
-    {key:k('광고할 것'),step:'what',value:[a.name,kindOf(a)&&t(kindOf(a).label)].filter(Boolean).join(' · '),missing:a.name?'':k('이름을 알려 주세요')},
+    {key:k('광고할 것'),step:'name',value:[a.name,kindOf(a)&&t(kindOf(a).label)].filter(Boolean).join(' · '),missing:a.name?'':k('이름을 알려 주세요')},
     {key:k('올릴 곳'),step:'where',value:[channelText(a),a.paid?t('광고비 집행'):''].filter(Boolean).join(' · '),missing:a.channels.length?'':k('모르면 저희가 제안해요')},
     {key:k('길이 · 구성'),step:'where',value:pkg?t('{label} · {title} · {price}부터 · {terms}',{label:t(pkg.label),title:t(pkg.title),price:price(pkg.price),terms:termsOf(pkg)}):a.package==='ask'?t('추천해 주세요'):'',missing:a.package?'':k('모르면 저희가 제안해요')},
     {key:k('받은 자료'),step:'files',value:[fileCount?t('파일 {count}개',{count:fileCount}):'',...written,missing.length?t('아직 없음: {list}',{list:missing.join(', ')}):''].filter(Boolean).join(' · '),missing:fileCount||written.length?'':k('아직 없어요. 받기 전까지는 자리만 잡아 둘게요')},
-    {key:k('마무리'),step:'more',value:a.finish==='custom'?[ENDS.find(item=>item.id===a.endCard)?t(ENDS.find(item=>item.id===a.endCard).label):'',a.endLine].filter(Boolean).join(' · ')||t('직접 고르는 중'):a.finish==='rec'?t('추천대로'):'',missing:a.finish?'':k('저희가 추천대로 해요')},
+    {key:k('마무리'),step:'more',value:a.finish==='custom'?endShown(a).join(' · ')||t('직접 고른 대로'):a.finish==='rec'?t('추천대로'):'',missing:a.finish?'':k('저희가 추천대로 해요')},
     {key:k('보는 사람'),step:'more',value:a.audience,missing:a.audience?'':k('저희가 제안해요')},
     {key:k('남길 것'),step:'more',value:a.oneThing,missing:a.oneThing?'':k('저희가 한 문장으로 제안해요')},
     {key:k('보고 나서'),step:'more',value:a.action&&ACTIONS.find(item=>item.id===a.action)?t(ACTIONS.find(item=>item.id===a.action).label):undefined,missing:a.action?'':k('저희가 제안해요')},
@@ -281,7 +290,7 @@ export function briefRows(a){
     {key:k('얼마나 과감하게'),step:'more',value:BOLD.find(item=>item.id===a.bold)?t(BOLD.find(item=>item.id===a.bold).label):undefined,missing:a.bold?'':k('저희가 제안해요')},
     {key:k('참고 광고'),step:'more',value:refs,missing:refs?'':k('없음')},
     // 내 모델 다시 쓰기(판 4): 내 모델 화면에서 붙인 인물이면 그 이름(화면에만 있는 a.personaPick), 서버 답만 있으면(고객 방 · 직원 확인) 「내 모델 다시 쓰기」.
-    {key:k('모델'),step:a.modelChoice==='persona'||a.modelChoice==='custom'?'model':'more',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?(a.personaPick?.name?t('내 모델 · {name}',{name:a.personaPick.name}):t('내 모델 다시 쓰기')):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
+    {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?(a.personaPick?.name?t('내 모델 · {name}',{name:a.personaPick.name}):t('내 모델 다시 쓰기')):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
     ...(pkg?.photo?[]:[{key:k('목소리'),step:a.modelChoice==='persona'||a.modelChoice==='custom'?'model':'more',value:VOICES.find(item=>item.id===a.voice)?t(VOICES.find(item=>item.id===a.voice).label):undefined,missing:a.voice?'':k('저희가 제안해요')}]),
     {key:k('받고 싶은 날'),step:'when',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':k('미정')},
     {key:k('최종 확인'),step:'who',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':k('미정')},

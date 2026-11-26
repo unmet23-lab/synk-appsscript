@@ -93,6 +93,22 @@ test('request tabs: sound files are downloads only and their first bytes are che
   assert.equal(sound('m4a',[0,0,0,0x20,...Buffer.from('ftypM4A ')]),true);
   assert.equal(sound('m4a',Buffer.from('not sound at all')),false);
 });
+test('three-act finish: only a custom finish carries the end card, the line only when it is not logo-only, and the finish lines come last',()=>{
+  // GPT 검수 GA1 · GA2(11-26): 「직접」에서 고른 뒤 「추천대로」로 돌아오면 화면에 안 보이는 옛 고름이 메모에 남지 않고, 마무리 줄이 3,000자 자르기에서 앞 항목을 밀어내지 않는다.
+  const notes=extra=>carryToStrategy({revision:1,data:{castingSelection:{modelId:''},channels:[]},request:null,confirmation:null,history:[]},normalizeRequestAnswers(answers(extra)),{at:'2026-11-26T12:00:00.000Z',author:'staff',authorName:'담당자',authorId:'u'}).data.notes||'';
+  const back=notes({finish:'rec',endCard:'line',endLine:'바다에서도 안심',approver:'many',approverName:'김'});
+  assert.match(back,/마무리: 추천대로/);assert.doesNotMatch(back,/마지막 화면:|바다에서도 안심/);
+  assert.ok(back.indexOf('여러 명이 확인')<back.indexOf('마무리: 추천대로'),'the finish line follows the older lines');
+  const logo=notes({finish:'custom',endCard:'logo',endLine:'숨은 문구'});
+  assert.match(logo,/마지막 화면: 로고만/);assert.doesNotMatch(logo,/숨은 문구|추천대로/);
+  const line=notes({finish:'custom',endCard:'line',endLine:'바다에서도 안심'});
+  assert.match(line,/마지막 화면: 로고 \+ 한 줄\n마지막 화면 문구: 바다에서도 안심/);
+  // 모르는 값과 80자를 넘는 문구는 받지 않는다(다른 칸과 같은 400).
+  assert.throws(()=>normalizeRequestAnswers(answers({finish:'later'})),{status:400});
+  assert.throws(()=>normalizeRequestAnswers(answers({endCard:'poster'})),{status:400});
+  assert.throws(()=>normalizeRequestAnswers(answers({endLine:'x'.repeat(81)})),{status:400});
+  assert.equal(normalizeRequestAnswers(answers({endLine:'x'.repeat(80)})).endLine.length,80);
+});
 test('request tabs: what the customer picked reaches the staff notes, and 「해당 없어요」 adds no line',()=>{
   const notes=extra=>carryToStrategy({revision:1,data:{castingSelection:{modelId:''},channels:[]},request:null,confirmation:null,history:[]},normalizeRequestAnswers(answers(extra)),{at:'2026-11-13T12:00:00.000Z',author:'staff',authorName:'담당자',authorId:'u'}).data.notes;
   const full=notes({win:'laugh',bold:'wild',voice:'none',notice:'alcohol',noticeText:'지나친 음주는 건강에 해롭습니다'});

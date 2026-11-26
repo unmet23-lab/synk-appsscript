@@ -135,7 +135,7 @@ const tile=({on,attr,pic,label,note,meta='',rec=false})=>`<button type="button" 
 const groupPrice=group=>Math.min(...group.packages.map(id=>PACKAGES.find(item=>item.id===id)?.price).filter(Number.isFinite));
 const NAME_ASK={product:[k('제품 이름이 무엇인가요?'),k('제품 이름'),k('포장에 적힌 그대로')],place:[k('매장 이름이 무엇인가요?'),k('매장 이름'),k('간판에 적힌 그대로')],app:[k('서비스 이름이 무엇인가요?'),k('서비스 이름'),k('앱스토어에 적힌 그대로')],brand:[k('회사 이름이 무엇인가요?'),k('회사 이름'),k('정식 표기 그대로')]};
 // 「어떤 걸 골라야 할지 모르겠어요」(11-26 추천): 하시는 일 한 줄 → 맞는 갈래에 「추천」. 못 찾으면 가장 가까운 것을 고르시라고만 한다.
-const guessView=guess=>guess.open?`<div class="sx-guess" data-in><input data-guess value="${esc(guess.text||'')}" maxlength="60" placeholder="${esc(t('무엇을 하시나요? 예) 강아지 옷을 팔아요'))}" aria-label="${esc(t('하시는 일'))}"><button type="button" class="sx-chip" data-do="guessgo">${esc(t('추천받기'))}</button></div><p class="sx-small sx-q-hint" data-guess-out role="status">${guess.tried?esc(guess.group?t('{group} 쪽이 맞아 보여요.',{group:t(GROUPS.find(item=>item.id===guess.group).label)}):t('딱 맞는 것을 못 찾았어요. 가장 가까운 것을 고르시면 담당자가 다시 맞춰 드려요.')):''}</p>`:`<button type="button" class="sx-link sx-small sx-q-guess-open" data-do="guessopen" data-in>${esc(t('어떤 걸 골라야 할지 모르겠어요'))}</button>`;
+const guessView=guess=>guess.open?`<div class="sx-guess" data-in><input data-guess value="${esc(guess.text||'')}" maxlength="60" placeholder="${esc(t('무엇을 하시나요? 예) 강아지 옷을 팔아요'))}" aria-label="${esc(t('하시는 일'))}"><button type="button" class="sx-chip" data-do="guessgo">${esc(t('추천받기'))}</button></div><p class="sx-small sx-q-hint" data-guess-out role="status" tabindex="-1">${guess.tried?esc(guess.group?t('{group} 쪽이 맞아 보여요.',{group:t(GROUPS.find(item=>item.id===guess.group).label)}):t('딱 맞는 것을 못 찾았어요. 가장 가까운 것을 고르시면 담당자가 다시 맞춰 드려요.')):''}</p>`:`<button type="button" class="sx-link sx-small sx-q-guess-open" data-do="guessopen" data-in>${esc(t('어떤 걸 골라야 할지 모르겠어요'))}</button>`;
 // 받고 싶은 날 달력(11-26): 이번 주 일요일부터 다섯 주. 지난 날은 고를 수 없고, 고른 길이의 제작 기간(PACKAGES.days)이 지난 날부터 넉넉한 날로 칠한다.
 const DAY_MS=86400000;
 const todayKst=()=>{const now=new Date(Date.now()+9*3600000);return Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());};
@@ -154,7 +154,7 @@ function calendarView(a,page){
 }
 // 확인 단계는 손님이 고친 것을 다시 찾는 줄만 둔다(11-26 세 막). 전체 의뢰서는 위 「적은 내용」에 그대로 있다.
 const REVIEW_KEYS=[k('광고할 것'),k('올릴 곳'),k('길이 · 구성'),k('받은 자료'),k('마무리'),k('모델'),k('받고 싶은 날'),k('연락처')];
-const reviewRows=a=>briefRows(a).filter(item=>REVIEW_KEYS.includes(item.key)&&(item.key!==k('모델')||a.modelChoice||a.models.length));
+const reviewRows=(a,hasModel)=>briefRows(a).filter(item=>REVIEW_KEYS.includes(item.key)&&(item.key!==k('모델')||hasModel&&(a.modelChoice||a.models.length)));
 // 막의 그림(11-26): 솔리오 여섯 장(인사 · 갈래 넷 — 노란 바탕, 눈은 화면이 얹는다), 시스루의 문 장면(5.30~6.46초), 그 문이 선 하늘.
 // 눈 자리는 film.css의 .sx-q-scene[data-scene] .sx-eyes에 있다(굽고 잰 값 — 설계 F판). 앱의 CSP가 인라인 style을 막는다.
 const SOLIO_SCENES=['hello','product','place','app','brand'];
@@ -162,8 +162,9 @@ const DOOR_AT={name:0,files:.36,more:.72,model:.72,who:1.08};
 const stageMedia=()=>`<div class="sx-q-media" aria-hidden="true"><div class="sx-q-solio" data-solio>${SOLIO_SCENES.map(id=>`<div class="sx-q-scene" data-scene="${id}"><img src="${ASSET}solio-${id}.webp" alt="" decoding="async"><span class="sx-eyes"><i></i><i></i></span></div>`).join('')}</div><video class="sx-q-door" data-door src="${ASSET}door-opalin.mp4" muted playsinline preload="auto" disablepictureinpicture disableremoteplayback tabindex="-1"></video><img class="sx-q-sky" src="${ASSET}sky-opalin.webp" alt="" decoding="async"><i class="sx-q-shade"></i><p class="sx-q-skydate" data-sky-date></p></div>`;
 // 메일 주소 오타(11-26): 흔한 메일 주소와 한두 글자만 다르면 고친 주소를 돌려준다.
 const MAIL_DOMAINS=['gmail.com','naver.com','daum.net','hanmail.net','kakao.com','nate.com','outlook.com','icloud.com','hotmail.com','yahoo.com']; // i18n-skip
+const MAIL_OK=new Set([...MAIL_DOMAINS,'mail.com','me.com','live.com','msn.com','aol.com','gmx.com','proton.me','protonmail.com','korea.com','hanmir.com']); // i18n-skip
 const editDistance=(x,y)=>{const row=Array.from({length:y.length+1},(_,j)=>j);for(let i=1;i<=x.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=y.length;j++){const keep=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(x[i-1]===y[j-1]?0:1));prev=keep;}}return row[y.length];};
-export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_DOMAINS.includes(domain))return '';const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]<=2?`${m[1]}@${best[0]}`:'';};
+export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_OK.has(domain))return '';const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]===1||best[1]===2&&domain.length>=9?`${m[1]}@${best[0]}`:'';};
 // 같은 이름(11-26 중복 확인): 이 기기에서 보낸 의뢰의 이름과 날을 남겨 두고(최근 20개 · 이 브라우저에만), 같은 이름을 다시 쓰면 그 날을 알린다.
 const SENT_KEY='pulse-sent-requests';
 const nameKey=value=>String(value||'').toLowerCase().replace(/[\s·.,'"「」()\-]/g,'');
@@ -189,7 +190,7 @@ const views={
   name(a,step,i,n,ctx={}){
     const [q,label,hint]=NAME_ASK[groupOf(a.kind)?.id||'product'];
     return ask(step,i,n,t(q),t('광고 첫 화면에 이 이름이 서요.'),field({bind:'name',label:t(label),value:a.name,placeholder:t(hint),max:120,big:true})+
-      (ctx.sameName?`<div class="sx-q-note" data-same-name data-in role="status"><b>${esc(t('{date}에 같은 이름으로 보낸 의뢰가 있어요',{date:ctx.sameName}))}</b><p class="sx-small">${esc(t('같은 광고라면 받으신 메일의 링크로 그 프로젝트 방에서 이어 가시면 돼요. 다른 광고라면 새 의뢰로 계속하세요.'))}</p><button type="button" class="sx-chip" data-do="nameok">${esc(t('새 의뢰로 계속'))}</button></div>`:''));
+      (ctx.sameName?`<div class="sx-q-note" data-same-name data-in role="status" tabindex="-1"><b>${esc(t('{date}에 같은 이름으로 보낸 의뢰가 있어요',{date:ctx.sameName}))}</b><p class="sx-small">${esc(t('같은 광고라면 받으신 메일의 링크로 그 프로젝트 방에서 이어 가시면 돼요. 다른 광고라면 새 의뢰로 계속하세요.'))}</p><button type="button" class="sx-chip" data-do="nameok">${esc(t('새 의뢰로 계속'))}</button></div>`:''));
   },
   files(a,step,i,n){
     // 사진 상품에는 소리 파일 칸을 두지 않는다 — 이미 올린 소리 파일이 있으면 볼 수 있고 지울 수 있게 남긴다. 크기 칸은 거르기 전 묶음으로 정한다(걸러 낸 배열은 늘 새 배열이다).
@@ -207,7 +208,7 @@ const views={
   // 마무리(11-26): 기본은 「추천대로」 — 고를 것을 저희가 맡는다. 「직접 고를게요」를 누르면 마지막 화면 · 문구 · 표기 · 느낌 · 과감함 · 피할 말이 열리고,
   // 옛 의뢰서의 나머지 칸(누가 찾는지 · 남길 한 가지 · 믿게 할 사실 · 보고 나서 · 자주 걸리는 말 · 참고 광고)은 그 아래 접힌 칸에 그대로 둔다(직원이 쓰는 답이라 지우지 않는다).
   // 꼭 붙일 표시는 법으로 정한 업종이 있어 추천대로여도 묻는다.
-  more(a,step,i,n){
+  more(a,step,i,n,ctx={}){
     const photo=!!pkgOf(a)?.photo;
     if(a.finish!=='custom')return ask(step,i,n,t('나머지는 추천대로 할까요?'),t('보내신 뒤에 바꾸셔도 돼요.'),
       `<dl class="sx-rec" data-in>${[...(photo?[]:[[k('마지막 화면'),k('로고 + 한 줄')],[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]]),[k('느낌'),k('두 가지 안으로 미리 제안해요')],[k('나올 모델'),a.modelChoice==='persona'?k('내 모델에서 고르신 모델'):a.modelChoice==='custom'?k('요청하신 맞춤 인물'):a.models.length?k('고르신 모델'):k('저희가 골라 먼저 보여 드려요')]].map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(t(value))}</dd></div>`).join('')}</dl>`+
@@ -220,7 +221,7 @@ const views={
       `<div class="sx-sub" data-in><span class="sx-small">${esc(t('보고 나서 어떤 마음이 들면 좋을까요?'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('느낌'))}">${WIN.map(item=>chip(t(FEEL_LABELS[item.id]),a.win===item.id,`data-do="win" data-id="${item.id}"`)).join('')}</div></div>`+
       boldBlock(a)+
       // 목소리는 모델 단계가 있는 의뢰(내 모델 · 맞춤 인물)면 그 단계에서 묻는다.
-      (a.modelChoice==='persona'||a.modelChoice==='custom'?'':voiceBlock(a))+
+      (ctx.hasModel?'':voiceBlock(a))+
       noticeBlock(a)+
       `<details class="sx-more" data-in><summary class="sx-small">${esc(t('더 알려 주실 것 · 선택'))}</summary>`+
         field({bind:'audience',label:t('이 제품은 누가, 언제 찾나요?'),value:a.audience,placeholder:t('예) 운동 끝나고 목마른 20대, 출근 전 시간이 없는 직장인'),rows:2,max:300})+
@@ -256,7 +257,7 @@ const views={
       (ctx.seat?`<p class="sx-small sx-q-seat" data-in>${esc(seatText(ctx.seat))}</p>`:''));
   },
   review(a,step,i,n,ctx={}){
-    const rows=withPersonaRow(a,[...reviewRows(a),...contactLocaleRow(a)],ctx);
+    const rows=withPersonaRow(a,[...reviewRows(a,ctx.hasModel),...contactLocaleRow(a)],ctx);
     return ask(step,i,n,t('이대로 보낼까요?'),pkgOf(a)?.photo?t('보내 주시면 저희가 내용을 확인하고 첫 장을 먼저 보내 드려요. 첫 장으로 방향을 맞춘 뒤 나머지 사진을 만들어요.'):t('보내 주시면 저희가 내용을 확인하고 방향 두 안과 값 · 받으실 날을 보내 드려요. 영상을 만들기 전에 방향 · 글 콘티 · 컷마다 장면 이미지를 먼저 보여 드리고, 확인하시기 전에는 영상을 만들지 않아요.'),
       `<div class="sx-q-brief" data-in>${rows.map(item=>`<div class="sx-brief-row ${item.missing?'is-missing':''}"><span class="sx-small">${esc(t(item.key))}</span><span class="sx-brief-val"${item.lang?` lang="${item.lang}"`:''}>${item.missing?`<em>${esc(t(item.missing))}</em>`:esc(item.value)}</span><button type="button" class="sx-small sx-brief-edit" data-do="goto" data-id="${item.step}" aria-label="${esc(t('{label} 고치기',{label:t(item.key)}))}">${esc(t('고치기'))}</button></div>`).join('')}</div>`+
       `${dueLine(a)}${a.modelChoice==='custom'?`<p class="sx-small sx-q-due" data-in>${esc(t('맞춤 인물 값은 검토한 뒤 따로 견적을 보내 드려요. 견적을 확인하시기 전에는 비용이 생기지 않아요.'))}</p>`:a.modelChoice==='persona'?`<p class="sx-small sx-q-due" data-in>${esc(t('내 모델로 의뢰하면 사진을 다시 보내지 않아도 돼요. 이번 광고에 쓸 범위는 담당자가 정리해 따로 확인받아요.'))}</p>`:''}`+
@@ -357,7 +358,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   a.personaPick=a.modelChoice==='persona'?backend.personaPick||null:null;
   if(ctx.flags.request&&a.personaRequest.kind==='real'&&!ctx.flags.real)a.personaRequest.kind='virtual';
   // 세 막(11-26): 모델 단계는 내 모델 · 맞춤 인물로 들어온 의뢰서만 보인다(11-25 결정). 옛 단계 이름으로 저장된 초안은 새 단계에서 연다.
-  const steps=STEPS.filter(item=>item.id!=='model'||a.modelChoice==='persona'||a.modelChoice==='custom');
+  const steps=STEPS.filter(item=>item.id!=='model'||a.modelChoice==='persona'||a.modelChoice==='custom'),hasModel=steps.some(item=>item.id==='model');
   let index=Math.max(0,steps.findIndex(step=>step.id===(OLD_STEPS[backend.step]||backend.step)));
   // 제작 자리 한 줄은 이번에 열어 처음 서는 단계에 — 쓰던 의뢰서는 저장된 단계에서 열린다(6-B 화면 최종 검수 F2).
   const seatAt=index;
@@ -423,7 +424,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     showError('');
     if(s.id==='who'||s.id==='review')defaultContactLocale();
     host.dataset.act=String(s.act||1);
-    form.innerHTML=views[s.id](a,s,index,steps.length,{...ctx,group:view.group,guess:view.guess,sameName:view.sameName,page:view.page,seat:s.id==='when'?backend.seat:null});
+    form.innerHTML=views[s.id](a,s,index,steps.length,{...ctx,hasModel,group:view.group,guess:view.guess,sameName:view.sameName,page:view.page,seat:s.id==='when'?backend.seat:null});
     if(index===seatAt&&backend.seat&&s.id!=='when')(form.querySelector('.sx-q-lead')||form.querySelector('[data-title]'))?.insertAdjacentHTML('afterend',`<p class="sx-small sx-q-seat" data-seat data-in>${esc(seatText(backend.seat))}</p>`);
     // 휴대폰은 질문 칸이 아니라 바깥 칸(.sx-q-stage)이 스크롤된다 — 단계를 바꾸면 그것도 처음으로(모델 단계에서 내린 채 「이전」을 누르면 제목이 위 막대 밑에 있었다).
     form.scrollTop=0;$('.sx-q-ask').scrollTop=0;$('.sx-q-stage').scrollTop=0;
@@ -498,8 +499,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     if(a.dateFree){note.textContent=t('날짜는 저희가 먼저 제안할게요.');return;}
     if(!a.date){note.textContent=need?t('색이 칠해진 날은 넉넉해요. 고르신 길이는 보통 {days}일 걸려요.',{days:need}):t('기간은 담당자와 정해요. 원하시는 날을 골라 주세요.');return;}
     const days=Math.round((Date.parse(a.date+'T00:00:00Z')-todayKst())/DAY_MS);
-    note.classList.toggle('is-tight',days<(need||10));
-    note.textContent=days<0?t('지난 날짜예요. 다시 골라 주세요.'):days<(need||10)?t('{date}은 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.',{date:dayLabel(a.date)}):t('{date}, 넉넉한 날이에요.',{date:dayLabel(a.date)});
+    note.classList.toggle('is-tight',days<(need||14));
+    note.textContent=days<0?t('지난 날짜예요. 다시 골라 주세요.'):days<(need||14)?t('{date}은 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.',{date:dayLabel(a.date)}):t('{date}, 넉넉한 날이에요.',{date:dayLabel(a.date)});
   }
   // 메일 주소 오타(11-26 추천): 흔한 메일 주소와 한두 글자 다르면 고친 주소를 제안한다. 누르면 바꾼다.
   function mailFix(){
@@ -551,13 +552,13 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
       render(0,{focus:false});form.querySelector(`[data-do="group"][data-id="${group.id}"]`)?.focus({preventScroll:true});lookAt(form.querySelector(`[data-do="group"][data-id="${group.id}"]`));blink();saved();
     },
     guessopen(){view.guess={...view.guess,open:true};render(0,{focus:false});form.querySelector('[data-guess]')?.focus();},
-    guessgo(){const box=form.querySelector('[data-guess]'),text=box?.value.trim()||'';if(!text)return;view.guess={open:true,text,tried:true,group:guessGroup(text)};view.peek=view.guess.group;render(0,{focus:false});lookAt(form.querySelector(`[data-do="group"][data-id="${view.guess.group}"]`));blink();},
+    guessgo(){const box=form.querySelector('[data-guess]'),text=box?.value.trim()||'';if(!text)return;view.guess={open:true,text,tried:true,group:guessGroup(text)};view.peek=view.guess.group;render(0,{focus:false});form.querySelector('[data-guess-out]')?.focus({preventScroll:true});lookAt(form.querySelector(`[data-do="group"][data-id="${view.guess.group}"]`));blink();},
     finish(el){a.finish=el.dataset.id;render(0,{focus:false});form.querySelector(`[data-do="finish"]`)?.focus({preventScroll:true});saved();},
     end(el){a.endCard=a.endCard===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="end"]').forEach(item=>setChip(item,item.dataset.id===a.endCard));const line=form.querySelector('[data-end-line]');if(line)line.hidden=a.endCard==='logo';renderSlate();saved();},
     day(el){if(el.disabled)return;a.date=el.dataset.id;a.dateFree=false;form.querySelectorAll('[data-do="day"]').forEach(item=>item.setAttribute('aria-pressed',item===el?'true':'false'));syncDatePicks();updateDateAdvice();skyDate();renderSlate();saved();},
     calmove(el){view.page=Math.max(0,Math.min(3,view.page+Number(el.dataset.id)));const cal=form.querySelector('[data-cal]');if(cal){const box=document.createElement('div');box.innerHTML=calendarView(a,view.page);cal.replaceWith(box.firstElementChild);form.querySelector(`[data-do="calmove"][data-id="${el.dataset.id}"]`)?.focus({preventScroll:true});}},
     recdate(){a.date=recDay(a);a.dateFree=false;const at=Math.floor((Date.parse(a.date+'T00:00:00Z')-todayKst())/DAY_MS/35);if(at!==view.page){view.page=Math.max(0,Math.min(3,at+0));const cal=form.querySelector('[data-cal]');if(cal){const box=document.createElement('div');box.innerHTML=calendarView(a,view.page);cal.replaceWith(box.firstElementChild);}}form.querySelectorAll('[data-do="day"]').forEach(item=>item.setAttribute('aria-pressed',item.dataset.id===a.date?'true':'false'));syncDatePicks();updateDateAdvice();skyDate();renderSlate();saved();},
-    fixmail(el){a.email=el.dataset.id;const input=form.querySelector('[data-bind="email"]');if(input)input.value=a.email;mailFix();renderSlate();saved();},
+    fixmail(el){a.email=el.dataset.id;const input=form.querySelector('[data-bind="email"]');if(input)input.value=a.email;mailFix();input?.focus({preventScroll:true});renderSlate();saved();},
     goto(el){const to=steps.findIndex(item=>item.id===el.dataset.id);if(to>=0)go(to,-1);},
     async later(){if(await writeNow()){backend.later?.(a,step().id);toast(t('저장했어요. 이 기기에서 다시 열면 여기부터 이어서 쓸 수 있어요.'));}else toast(t('지금은 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));},
     sheet(){setSheet(!host.classList.contains('sheet-open'));},
@@ -656,12 +657,14 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     const name=tile.querySelector('.sx-cast-name');if(name)name.before(film);else tile.append(film);
     film.play().catch(()=>{});
   }
-  function updateSlotStatus(id){const box=form.querySelector(`[data-status="${id}"]`),slot=slotOf(id);if(box&&slot)box.innerHTML=slotStatus(a,slot);}
+  function updateSlotStatus(id){const box=form.querySelector(`[data-status="${id}"]`),slot=slotOf(id);if(box&&slot)box.innerHTML=slotStatus(a,slot);updateNext();}
   async function addFiles(id,list){
-    const slot=slotOf(id);if(!slot)return;const state=a.slots[id]||(a.slots[id]={files:[]});state.none=false;
+    const slot=slotOf(id);if(!slot)return;const state=a.slots[id]||(a.slots[id]={files:[]});
+    const shown=new Set([...slotsFor(a.kind),...(a.modelChoice==='custom'?PERSONA_SLOTS:[])].map(item=>item.id));
     for(const file of list){
-      const twin=Object.entries(a.slots).find(([,other])=>(other.files||[]).some(item=>item.fileName===file.name&&item.byteSize===file.size));
+      const twin=Object.entries(a.slots).find(([key,other])=>shown.has(key)&&(other.files||[]).some(item=>!item.error&&item.fileName===file.name&&item.byteSize===file.size));
       if(twin){const where=slotOf(twin[0]);toast(t('이미 「{slot}」에 넣은 파일이에요',{slot:where?t(where.label):''}));continue;}
+      if(state.none){state.none=false;const chip=form.querySelector(`[data-do="none"][data-id="${id}"]`);if(chip){setChip(chip,false);chip.closest('.sx-slot')?.classList.remove('is-none');}}
       const entry={fileName:file.name,byteSize:file.size,mimeType:file.type,uploading:true,progress:0};
       if(file.type.startsWith('image/')&&file.type!=='image/heic'&&file.type!=='image/heif'){try{const url=URL.createObjectURL(file),image=await loadImage(url);blobs.add(url);entry.preview=url;entry.width=image.naturalWidth;entry.height=image.naturalHeight;if(!slot.persona)entry.advice=photoAdvice(entry.width,entry.height,slot.kind);}catch{}}
       state.files.push(entry);redrawSlot(slot);
@@ -751,7 +754,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     else if(bind.startsWith('persona.'))a.personaRequest[bind.slice(8)]=el.value;
     else if(el.type==='checkbox')a[bind]=el.checked;
     else a[bind]=el.value;
-    if(bind==='email')mailFix();
+    if(bind==='email'){const box=$('[data-mail-fix]');if(box&&!box.hidden){box.hidden=true;box.textContent='';}}
     if(bind==='name'&&view.sameName){view.sameName='';form.querySelector('[data-same-name]')?.remove();}
     if(bind==='screenText'||bind==='oneThing'||bind==='name')updateCopy();
     if(bind==='noticeText')updateNoticeLine();
@@ -760,6 +763,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     saved();
   });
   let slateTimer=0;const renderSlateSoon=()=>{clearTimeout(slateTimer);slateTimer=setTimeout(renderSlate,260);};
+  host.addEventListener('change',event=>{if(event.target.dataset?.bind==='email')mailFix();});
   host.addEventListener('change',event=>{const id=event.target.dataset?.file;if(id&&event.target.files?.length){addFiles(id,[...event.target.files]);event.target.value='';}});
   host.addEventListener('dragover',event=>{const slot=event.target.closest?.('.sx-slot');if(slot){event.preventDefault();slot.classList.add('is-over');}});
   host.addEventListener('dragleave',event=>{event.target.closest?.('.sx-slot')?.classList.remove('is-over');});

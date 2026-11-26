@@ -132,8 +132,10 @@ test('the first screen’s third page fetches the model scenes with their large 
 
 test('the request form: customer photos, my-model pictures and the example pictures before a business is chosen keep to their pixels',()=>{
   const flow=read('request-flow.mjs');
-  // 세 막(11-26): 말 단계의 광고 틀 · 자료 단계의 예시 그림은 없다. 자료 칸의 손님 사진은 제 화소대로 그린다.
+  // 세 막(11-26): 말 단계의 광고 틀 · 자료 단계의 예시 그림은 없다(카본 C1). 자료 칸의 손님 사진은 높이 96~108px 칸을 채우는 작은 미리 보기라(object-fit:cover) 늘어나지 않는다.
   assert.doesNotMatch(flow,/sx-q-copy|sx-q-how/);
+  const css=read('film.css');
+  assert.ok(css.includes('.sx-slot-frame img{flex:1;min-width:0;height:100%;object-fit:cover}')&&css.includes('.sx-q[data-act] .sx-slot-frame{height:96px;'),'the customer photo is a small cover thumbnail');
   const mm=myModelsView({view:'list',data:{workspaces:[{id:'w1',name:'가 브랜드',role:'admin',models:[{id:'11111111-1111-4111-8111-111111111111',name:'하루',kind:'virtual',status:'ready',usable:true,reason:null,revisionId:'22222222-2222-4222-8222-222222222222',image:'/api/customer/pulse/asset/x',reuse:true,until:'2027-11-10T14:59:59.999Z',lastUsedAt:'2026-11-10T03:00:00.000Z',deletionRequested:false}],pending:[]}]}});
   assert.match(mm,/<figure class="sx-mm-face "><img src="\/api\/customer\/pulse\/asset\/x" data-cap alt="" loading="lazy" decoding="async"><\/figure>/,'my models: the face');
   // 보관 동의 화면: 이름 줄은 얼굴 칸(3:4 · 넘침 자름) 밖 아래 — 칸 안이면 잘려 안 보였다(Fable 5.2 F3, 이 변경 전부터).
