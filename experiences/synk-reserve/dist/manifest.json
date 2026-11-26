@@ -16,8 +16,8 @@
     "sha256": "27e0264fe7d1ddaff844ccba5cc9d00cddd18a8353a76935ffeafc665091c7f4"
   },
   "reserve/assets/reserve-sans.woff2": {
-    "bytes": 109692,
-    "sha256": "d23c26088e4743f644eb3a98391da361d9a0591e3d63ad39ef08197f3a1c81f3"
+    "bytes": 110180,
+    "sha256": "0d1c52db156cbe31ce7311a3b01b4633cec2e37821b2014da70ddbb8707b8b55"
   },
   "reserve/clips/en/card-actor.mp4": {
     "bytes": 409469,
@@ -51,21 +51,21 @@
     "bytes": 13728,
     "sha256": "58cd7a8a6a780a0a3a7a8d864acadc37d82b7decbc1bd902e3d119d65b06e1a3"
   },
-  "reserve/clips/en/scene.mp4": {
-    "bytes": 567718,
-    "sha256": "c3314212b7db8c56bae77b1b2e88003370e8ca3d0ca3ff2a529a738d518fb616"
+  "reserve/clips/en/special.mp4": {
+    "bytes": 377640,
+    "sha256": "0595e06a42fda3a52e7f91ba663dd292c31626e649ca03933939bfd18438bf1a"
   },
-  "reserve/clips/en/scene.webp": {
-    "bytes": 29828,
-    "sha256": "f710977aa2074ff2db9be8a495af054caae24364135b7dc2956cac08abf7ccda"
+  "reserve/clips/en/special.webp": {
+    "bytes": 14780,
+    "sha256": "52a6f332c11281eec7a66574675c289db08e0a996a3afc4528ce8dc060e034dc"
   },
   "reserve/clips/en/talk.mp4": {
-    "bytes": 617685,
-    "sha256": "96657184ba36237e6a47fbe8a089f8c977a5ca01ba76fa1331b75383d36a1d58"
+    "bytes": 441962,
+    "sha256": "3ca0b1a97f6d7773223fbd6b12f33a552e37d9aea2324ec8fb8276638c0d2ce4"
   },
   "reserve/clips/en/talk.webp": {
-    "bytes": 29408,
-    "sha256": "1d068c4819300da861a1c6feed6f305e79829d9b43211f63e6b609449373c1a2"
+    "bytes": 28696,
+    "sha256": "4aae6b90cb82197fbf596628325fbef113dba7f52d0df1312b09051e8cca9f9c"
   },
   "reserve/clips/en/trace-actor.mp4": {
     "bytes": 108679,
@@ -115,21 +115,21 @@
     "bytes": 12074,
     "sha256": "5b9d53b9ca6ca5b79b2897fa83085e6a34f72d34f481b64bc45776e8f357166e"
   },
-  "reserve/clips/ko/scene.mp4": {
-    "bytes": 587994,
-    "sha256": "14752dd9cb277cb4205bbe179e9c4243776aa7450fb59d49336cf62a6384772d"
+  "reserve/clips/ko/special.mp4": {
+    "bytes": 377640,
+    "sha256": "0595e06a42fda3a52e7f91ba663dd292c31626e649ca03933939bfd18438bf1a"
   },
-  "reserve/clips/ko/scene.webp": {
-    "bytes": 26350,
-    "sha256": "2fec19fbf78968afc18a348bd04bd966e929f7c05f9c81abcdcbc6d010c0a040"
+  "reserve/clips/ko/special.webp": {
+    "bytes": 14780,
+    "sha256": "52a6f332c11281eec7a66574675c289db08e0a996a3afc4528ce8dc060e034dc"
   },
   "reserve/clips/ko/talk.mp4": {
-    "bytes": 564739,
-    "sha256": "60a05653e7d680d9e40498810e63ddd9baf25c0a739b59ee5da795cd32429967"
+    "bytes": 444890,
+    "sha256": "c968ccfe45b6dff4a81e84985a2b5751249982fd1035e6d7612afb76523feb63"
   },
   "reserve/clips/ko/talk.webp": {
-    "bytes": 27204,
-    "sha256": "5bc6fc737d3ba53cc0e7bc02587a2f7e079e72f6a9606be7a26d11269d970a84"
+    "bytes": 27982,
+    "sha256": "45ea840f6455b02e9253f200f870c7f864b0b8ccf1d5b6a0cd70993c9d0c2b76"
   },
   "reserve/clips/ko/trace-actor.mp4": {
     "bytes": 112397,
@@ -179,21 +179,21 @@
     "bytes": 15832,
     "sha256": "1abca53c10f5e02122cc0fc4060d47c85901e616e2faf5c3e73a4085fe5d9678"
   },
-  "reserve/clips/mn/scene.mp4": {
-    "bytes": 620409,
-    "sha256": "2cfec4259dad73888eb6e5d98b55669b987954238e0715925fba062f67fae628"
+  "reserve/clips/mn/special.mp4": {
+    "bytes": 377640,
+    "sha256": "0595e06a42fda3a52e7f91ba663dd292c31626e649ca03933939bfd18438bf1a"
   },
-  "reserve/clips/mn/scene.webp": {
-    "bytes": 31192,
-    "sha256": "61aab87d4262f950c4c7f291dc4f3458d5f26e750b0f223f412ffad2da5e1049"
+  "reserve/clips/mn/special.webp": {
+    "bytes": 14780,
+    "sha256": "52a6f332c11281eec7a66574675c289db08e0a996a3afc4528ce8dc060e034dc"
   },
   "reserve/clips/mn/talk.mp4": {
-    "bytes": 650707,
-    "sha256": "25080046525017b2b93b40c8d6b19d697cf480859f67684bfc12a735b42e0089"
+    "bytes": 403385,
+    "sha256": "4d7efed28ed84b107c320f92c236145ef1369465ff2d4455bd0acb289c03760d"
   },
   "reserve/clips/mn/talk.webp": {
-    "bytes": 29214,
-    "sha256": "ec2e2258c7b9ca1b5e68cfbcaa0af6d0d36140891faedd76dd48b93c01dc40b2"
+    "bytes": 10862,
+    "sha256": "a7eb770b31de7775c8a5cb167c7ff662df0f8b0d7844e6aa38dbd4ff5badbcac"
   },
   "reserve/clips/mn/trace-actor.mp4": {
     "bytes": 112561,
@@ -212,8 +212,8 @@
     "sha256": "fa1bf9c5cdceb720095207576fa94f1baac519a6d271bf7d1a27b56e93d8c021"
   },
   "reserve/copy.js": {
-    "bytes": 21974,
-    "sha256": "9553407a14d1ac5541428cdadb90638751b640c9d61048a109933821c9e93855"
+    "bytes": 22267,
+    "sha256": "50012515b48c3532196e0e24a205a5fdd83f9a82d3c50fd236fe12ba5d8a1275"
   },
   "reserve/img/card-actor.webp": {
     "bytes": 62516,
@@ -233,7 +233,7 @@
   },
   "reserve/index.html": {
     "bytes": 10407,
-    "sha256": "2a3049900eb6048d03730632f544020c1871ee97e8026daf875a16eef37b6b12"
+    "sha256": "d3aa0aa629c84e2896eba0a5cd508d2bb364e531943df761ee718cb02e06d5a6"
   },
   "reserve/og.jpg": {
     "bytes": 95001,
@@ -241,11 +241,11 @@
   },
   "reserve/play/index.html": {
     "bytes": 1311,
-    "sha256": "ec61db7027c8e678275beede182a3f1b3be928cde583b6e00aa0ba9b9cca43cc"
+    "sha256": "e2cf14a769c48609bde7a8d89f1a461fda3177c17264bcfd13a88f4c963cd0c3"
   },
   "reserve/play/play.css": {
     "bytes": 4481,
-    "sha256": "348bb967f449cdb3c6eede5cf528208774030e8e4b1fdca742772bd2532b2be2"
+    "sha256": "2da11ad57529676d5455d5d85a35ce515b72008609f34e9420a155b6de63169a"
   },
   "reserve/play/play.mjs": {
     "bytes": 10078,
@@ -253,6 +253,6 @@
   },
   "reserve/reserve.css": {
     "bytes": 17305,
-    "sha256": "e010b8fd7e8420e04595df78d07bd5c150237ee8f21e064f041fd13d9daa3e0d"
+    "sha256": "2ef09fb4effd21a7253978a8f84d568a50f44996270d8214df468c9ef410db26"
   }
 }
