@@ -1,0 +1,50 @@
+/* 광고(/studio/) 하늘 판 — pulse-y.css 위에 얹는다(2026-11-27, 유호님 「너무 쨍한 느낌이 없지않아 있어서」).
+   겉은 PULSE 의뢰서 3막 「하늘」: 시스루의 문이 선 낮 하늘, 먹 대신 짙은 남색 글, 고른 칸은 남색으로 채운다.
+   첫 화면은 낮 하늘(문이 열리기 전), 끝은 같은 문이 빛나는 밤(시스루 3분 18.5초 장면, 1080p 진열판에서 뽑음)이다. 노랑과 솔리오는 쓰지 않는다. */
+body.s{--y:#EEF3F8;--ink:#0b1b30;--mute:rgba(11,27,48,.64);--paper:#FFFFFF;--hair-y:rgba(11,27,48,.14);
+  --lift:0 0 0 .5px rgba(11,27,48,.06),0 1px 2px rgba(11,27,48,.05),0 12px 28px -14px rgba(20,50,90,.26),0 40px 70px -40px rgba(20,50,90,.38);
+  background:linear-gradient(180deg,#E3EDF7 0,#EEF3F8 1200px,#F3F6FA 100%);color:var(--ink)}
+body.s .nav{background:rgba(236,243,250,.72);color:var(--ink);box-shadow:0 1px 0 rgba(11,27,48,.08)}
+body.s .nav.open,body.s .nav.open ul{background:#fff!important}
+body.s .y-btn{background:var(--ink);color:#fff}
+body.s .y-btn:hover{background:#03152e}
+
+/* 첫 화면: 문이 선 낮 하늘 */
+body.s .y-hero{position:relative;isolation:isolate;color:#03152e;align-items:start;padding-top:calc(60px + clamp(48px,9vh,110px));min-height:min(100svh,940px)}
+body.s .y-hero::before{content:"";position:absolute;z-index:-2;inset:0;background:url(/assets/v11/pulse-sky.webp) 50% 100%/cover no-repeat}
+body.s .y-hero::after{content:"";position:absolute;z-index:-1;inset:auto 0 0 0;height:140px;background:linear-gradient(180deg,rgba(227,237,247,0),#E3EDF7)}
+body.s .y-hero .y-tag,body.s .y-hero .y-lead{color:#03152e}
+body.s .y-hero .y-lead{opacity:.86}
+body.s .y-stack{align-self:start}
+body.s .y-card{background:rgba(255,255,255,.94);-webkit-backdrop-filter:saturate(160%) blur(18px);backdrop-filter:saturate(160%) blur(18px)}
+body.s .y-stack .y-card:not([data-k="0"]){background:rgba(255,255,255,.8)}
+
+/* 만드는 방식 · 앱 · 연출: 옅은 하늘 위 흰 종이 */
+body.s .y-pick button[aria-pressed="true"]{background:var(--ink);color:#fff}
+body.s .y-big i{background:#fff}
+body.s .y-steps button{background:#EFF4FA}
+body.s .y-steps button:hover:not([aria-pressed="true"]){background:#E4ECF5}
+body.s .y-steps button[aria-pressed="true"]{background:var(--ink);color:#fff}
+body.s .y-steps button[aria-pressed="true"] span{color:#9EC3EA}
+body.s .y-cast img{background:#E4ECF5}
+
+/* 끝: 같은 문이 빛나는 밤 */
+body.s .y-end{isolation:isolate;color:#fff;border-top:0;margin-top:clamp(96px,11vw,160px);min-height:clamp(600px,86svh,860px)}
+body.s .y-end::before{content:"";position:absolute;z-index:-2;inset:0;background:#06101f url(/assets/v11/pulse-night.webp) 4% 40%/max(125%,1600px) auto no-repeat}
+body.s .y-end::after{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(180deg,rgba(4,10,24,.55),rgba(4,10,24,.05) 55%,rgba(4,10,24,.35))}
+body.s .y-end .y-p{color:rgba(255,255,255,.8)}
+body.s .y-end .y-btn{background:#fff;color:var(--ink)}
+body.s .y-end .y-btn:hover{background:#E3EDF7}
+body.s .y-word{color:rgba(255,255,255,.92);bottom:.04em}
+body.s .y-orb{display:none}
+body.s .foot{background:#E3EDF7}
+
+@media (max-width:1000px){
+  body.s .y-hero{padding-top:calc(60px + 40px)}
+  body.s .y-hero::before{background-position:43% 100%}
+}
+@media (max-width:640px){
+  body.s .y-end{min-height:620px}
+  body.s .y-end::before{background-size:auto 100%;background-position:50% 50%}
+  body.s .y-end::after{background:linear-gradient(180deg,rgba(4,10,24,.84) 0,rgba(4,10,24,.66) 48%,rgba(4,10,24,.06) 72%,rgba(4,10,24,.32))}
+}
