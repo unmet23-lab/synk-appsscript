@@ -30,7 +30,7 @@ test('text on the yellow and on the glass panels keeps 4.5:1, and the ink button
   assert.ok(css.includes('.ws-side-find kbd{border:0;background:rgba(20,20,20,.06);color:var(--lobby-label2)}'));
   assert.ok(ratio(over(l2.a, l2.rgb, kbdBg), kbdBg) >= 4.5, 'kbd ' + ratio(over(l2.a, l2.rgb, kbdBg), kbdBg).toFixed(2));
   // 목록 줄의 보조 글(노랑 바로 위)
-  const ctx = Number(/\.ws-r-ctx\{color:rgba\(20,20,20,([.\d]+)\)\}/.exec(css)[1]);
+  const ctx = Number(/--lobby-fg2:rgba\(20,20,20,([.\d]+)\)/.exec(css)[1]);
   assert.ok(ratio(over(ctx, ink, y), y) >= 4.5, 'row context on yellow');
   assert.match(css, /--ws-cta:#141414;--ws-cta-hover:#000;--ws-cta-ink:#FED027;--ws-decide:#141414;--ws-decide-hover:#000;--ws-decide-ink:#FED027;/);
 });
@@ -48,7 +48,14 @@ test('every rule stays under the workspace, sign-in, loading or teaching shell',
   const plain = css.replace(/\/\*[\s\S]*?\*\//g, '');
   const selectors = [...plain.matchAll(/(^|[{}])\s*([^{}@]+?)\s*\{/g)].map(m => m[2].trim()).filter(s => s && !/^(from|to)$/.test(s));
   assert.ok(selectors.length > 150);
-  for (const sel of selectors) for (const one of sel.split(',')) assert.match(one.trim(), /^(\.synk-workspace\b|\.app-shell\.synk-workspace\b|\.auth-layout\b|#app\.boot-shell\b|\.teaching-only-shell\b|html:has\(|body:has\()/, 'scoped: ' + one.trim());
+  // 바탕 색은 <html data-lobby-theme="paper|night">를 앞에 붙인 같은 범위다. html에는 바탕 값 하나만 둔다
+  const scope = /^(\.synk-workspace\b|\.app-shell\.synk-workspace\b|\.auth-layout\b|#app\.boot-shell\b|\.teaching-only-shell\b|html:has\(|body:has\()/;
+  for (const sel of selectors) for (const one of sel.split(',')) {
+    const bare = one.trim().replace(/^html\[data-lobby-theme="(?:paper|night)"\]\s+/, '');
+    if (/^html\[data-lobby-theme="(?:paper|night)"\]$/.test(bare)) continue;
+    assert.match(bare, scope, 'scoped: ' + one.trim());
+  }
+  for (const m of plain.matchAll(/html\[data-lobby-theme="(?:paper|night)"\]\{([^}]*)\}/g)) assert.match(m[1], /^--lobby-page:#[0-9A-F]{6}$/i, 'html only takes the page colour');
 });
 
 test('the skin is the last stylesheet, the server serves it, and its fonts are files the server already serves', () => {
@@ -85,4 +92,94 @@ test('the office keeps its live hooks: clock, greeting, rooms, first item, the r
   assert.ok(src.includes("for(const node of document.querySelectorAll('[data-ws-day]'))if(node.textContent!==day)node.textContent=day;"));
   // 시계 타이머는 한 번만 걸고, 시험 같은 Node 실행을 붙잡지 않는다
   assert.match(src, /timer\?\.unref\?\.\(\);window\.__wsClockTimer=timer;/);
+});
+
+// 바탕 색 고르기(11-27 유호님 「계속 노란색을 보고있으면 눈이 아프니까」): 노랑 · 종이 · 밤
+const SCOPES = ['.synk-workspace', '.auth-layout', '#app.boot-shell', '.teaching-only-shell'];
+const block = sel => { const i = css.indexOf(sel + '{'); assert.ok(i >= 0, sel); return css.slice(i + sel.length + 1, css.indexOf('}', i)); };
+const themeBlock = name => block(SCOPES.map(s => `html[data-lobby-theme="${name}"] ${s}`).join(','));
+const themeTokens = name => {
+  const out = {};
+  for (const src of [block(SCOPES.join(',')), name === 'yellow' ? '' : themeBlock(name)]) for (const m of src.matchAll(/--([a-z0-9-]+):([^;]+);?/g)) out[m[1]] = m[2].trim();
+  return out;
+};
+const color = (value, bg) => {
+  let m = /^#([0-9A-F]{6})$/i.exec(value);
+  if (m) return [0, 2, 4].map(i => parseInt(m[1].slice(i, i + 2), 16));
+  m = /^rgba\((\d+),(\d+),(\d+),([.\d]+)\)$/.exec(value);
+  assert.ok(m && bg, 'colour ' + value);
+  return over(Number(m[4]), m.slice(1, 4).map(Number), bg);
+};
+
+test('each background keeps the text on it readable: words 7:1, quiet words and counts 4.5:1, the current pill 7:1', () => {
+  for (const name of ['yellow', 'paper', 'night']) {
+    const t = themeTokens(name), bg = color(t['lobby-bg']);
+    const check = (label, fg, on, min) => { const r = ratio(fg, on); assert.ok(r >= min, `${name} ${label} ${r.toFixed(2)}`); };
+    check('fg', color(t['lobby-fg']), bg, 7);
+    check('mute', color(t['lobby-mute'], bg), bg, 4.5);
+    check('fg2', color(t['lobby-fg2'], bg), bg, 4.5);
+    check('solid pill', color(t['lobby-solid-fg']), color(t['lobby-solid']), 7);
+    const chip = color(t['lobby-chip'], bg), soft = color(t['lobby-soft'], bg);
+    check('row number on chip', color(t['lobby-fg']), chip, 4.5);
+    check('mute on soft', color(t['lobby-mute'], soft), soft, 4.5);
+    // 유리 판은 바탕을 비친다: 판 안의 흐린 글도 바탕마다 4.5:1
+    const glass = color(t['lobby-glass'], bg);
+    for (const name2 of ['lobby-label2', 'lobby-label3']) check(name2 + ' on glass', color(t[name2], glass), glass, 4.5);
+    // 지금 자리 알약은 바탕에서 떨어져 보인다(3:1)
+    check('pill against page', color(t['lobby-solid']), bg, 3);
+    // html 바탕(쪽 끝 · 스크롤 너머)과 틀 바탕이 같다
+    const page = name === 'yellow'
+      ? /html:has\(\.synk-workspace\)[^{]*\{--lobby-page:(#[0-9A-F]{6});/i.exec(css)[1]
+      : new RegExp(`html\\[data-lobby-theme="${name}"\\]\\{--lobby-page:(#[0-9A-F]{6})\\}`, 'i').exec(css)[1];
+    assert.equal(page.toUpperCase(), t['lobby-bg'].toUpperCase(), name + ' page');
+  }
+  // 유리 · 종이 판 안 값은 바탕마다 바꾸지 않는다(판 안 모듈은 밝은 판을 전제로 짜여 있다)
+  for (const name of ['paper', 'night']) for (const fixed of ['lobby-glass', 'lobby-paper', 'lobby-label', 'lobby-ink', 'lobby-y', 'ws-cta']) assert.ok(!themeBlock(name).includes(`--${fixed}:`), `${name} keeps ${fixed}`);
+  // 바탕 위에 선 것은 먹 · 노랑을 직접 쓰지 않고 바탕 값을 쓴다
+  for (const rule of [
+    '.app-shell.synk-workspace{background:var(--lobby-bg);color:var(--lobby-fg)}',
+    '.synk-workspace .ws-side-link[aria-current="page"],.synk-workspace .ws-side-sublink[aria-current="page"]{background:var(--lobby-solid);color:var(--lobby-solid-fg)}',
+    '.synk-workspace .ws-r-ctx{color:var(--lobby-fg2)}',
+    'width:15px;height:62vh;background:var(--lobby-solid);',
+    '.synk-workspace .ws-side-brand .brand-logo{width:auto;height:30px;margin:-4px -2px -4px -8px;filter:var(--lobby-logo)}',
+    '.synk-workspace .ws-row[aria-current="true"] .ws-r-title{color:var(--lobby-label)}',
+  ]) assert.ok(css.includes(rule), rule);
+});
+
+test('the picker is three radio swatches, starts before the first paint, and remembers the choice on this device only', async () => {
+  const html = read('./public/index.html'), server = read('./server.mjs'), ws = read('./public/workspace.js');
+  assert.ok(html.split('</head>')[0].includes('<script src="/workspace-theme.js"></script>'), 'loaded in <head>');
+  assert.ok(server.includes("'/workspace-theme.js':['public/workspace-theme.js','text/javascript; charset=utf-8']"));
+  assert.ok(ws.includes("${workspaceThemePick('side')}${me}"), 'side menu, above the account');
+  assert.ok(ws.includes("계정과 기기</div>${workspaceThemePick('drawer')}"), 'phone: the 더보기 sheet');
+
+  const vm = await import('node:vm');
+  const src = read('./public/workspace-theme.js');
+  const run = (stored, { blocked = false } = {}) => {
+    const attrs = {}, store = new Map(stored === undefined ? [] : [['synk.workspace.lobby-theme', stored]]);
+    const doc = { documentElement: { getAttribute: k => attrs[k] ?? null, setAttribute: (k, v) => { attrs[k] = String(v); } }, querySelectorAll: () => [], addEventListener() {} };
+    const local = { getItem: k => store.has(k) ? store.get(k) : null, setItem: (k, v) => store.set(k, String(v)) };
+    const win = { addEventListener() {} };
+    Object.defineProperty(win, 'localStorage', { get() { if (blocked) throw new Error('blocked'); return local; } });
+    vm.runInNewContext(src, { window: win, document: doc });
+    return { attrs, store, api: win.SynkLobbyTheme };
+  };
+  assert.equal(run().attrs['data-lobby-theme'], 'yellow', 'yellow by default');
+  assert.equal(run('night').attrs['data-lobby-theme'], 'night', 'a remembered choice applies at once');
+  assert.equal(run('pink').attrs['data-lobby-theme'], 'yellow', 'an unknown value falls back');
+  const one = run();
+  one.api.set('paper');
+  assert.equal(one.attrs['data-lobby-theme'], 'paper');
+  assert.equal(one.store.get('synk.workspace.lobby-theme'), 'paper');
+  const markup = one.api.html('side');
+  assert.equal((markup.match(/role="radio"/g) || []).length, 3);
+  assert.match(markup, /role="radiogroup" aria-labelledby="ws-theme-k-side"/);
+  assert.match(markup, /data-lobby-theme-pick="paper" aria-checked="true" tabindex="0" aria-label="종이"/);
+  assert.match(markup, /data-lobby-theme-pick="yellow" aria-checked="false" tabindex="-1" aria-label="노랑"/);
+  assert.match(one.api.html('drawer'), /id="ws-theme-k-drawer">바탕 색</);
+  // 브라우저 저장이 막혀도 노랑으로 그리고, 고르기는 그 탭에서 그대로 된다
+  const shut = run(undefined, { blocked: true });
+  assert.equal(shut.attrs['data-lobby-theme'], 'yellow');
+  shut.api.set('night');
+  assert.equal(shut.attrs['data-lobby-theme'], 'night');
 });

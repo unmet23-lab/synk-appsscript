@@ -8,62 +8,118 @@
 @font-face{font-family:'WS Display';src:url('/pulse-app/assets/NotoSerifDisplay-Light-latin.woff2') format('woff2');font-weight:300;font-display:swap;unicode-range:U+0000-00FF}
 
 .synk-workspace,.auth-layout,#app.boot-shell,.teaching-only-shell{
-  --lobby-y:#FED027;--lobby-ink:#141414;--lobby-mute:rgba(20,20,20,.68);--lobby-soft:rgba(20,20,20,.07);
+  --lobby-y:#FED027;--lobby-ink:#141414;
+  /* 바탕 색(2026-11-27 유호님 「계속 노란색을 보고있으면 눈이 아프니까」): 노랑(기본) · 종이 · 밤. workspace-theme.js가 <html data-lobby-theme>를 붙인다.
+     바탕이 바꾸는 것은 바탕 면과 그 위에 바로 선 글 · 선 · 칩 · 지금 자리 알약 · 사원증 끈 · 로고 색뿐이다. 유리 판과 종이 판 안은 세 바탕 모두 같다 */
+  --lobby-bg:#FED027;--lobby-fg:#141414;--lobby-mute:rgba(20,20,20,.68);--lobby-fg2:rgba(20,20,20,.74);--lobby-soft:rgba(20,20,20,.07);--lobby-line:rgba(20,20,20,.12);--lobby-tagline:rgba(20,20,20,.22);
+  --lobby-chip:rgba(255,254,250,.62);--lobby-rowhover:rgba(255,254,250,.45);--lobby-off:rgba(255,254,250,.4);--lobby-off-fg:rgba(20,20,20,.6);
+  --lobby-solid:#141414;--lobby-solid-fg:#FED027;--lobby-logo:none;--lobby-shade:90,64,0;--lobby-sel:rgba(20,20,20,.16);
   /* 유리 판은 애플 지갑 · 알림 결: 흰빛 92%, 큰 모서리, 0.5px 테, 겹친 부드러운 그림자 */
   --lobby-glass:rgba(255,254,250,.92);--lobby-paper:#FFFEFA;--lobby-label:#1D1D1F;--lobby-label2:rgba(60,60,67,.8);--lobby-label3:rgba(60,60,67,.72);--lobby-hair:rgba(0,0,0,.07);
-  --lobby-lift:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 10px 24px -12px rgba(90,64,0,.32),0 36px 64px -36px rgba(90,64,0,.5);
-  --lobby-float:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 8px 18px -12px rgba(90,64,0,.36);
+  --lobby-lift:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 10px 24px -12px rgba(var(--lobby-shade),.32),0 36px 64px -36px rgba(var(--lobby-shade),.5);
+  --lobby-float:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 8px 18px -12px rgba(var(--lobby-shade),.36);
+  --lobby-raise:0 0 0 .5px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06),0 14px 26px -14px rgba(var(--lobby-shade),.5);
   --lobby-serif:'WS Serif','Noto Serif KR',serif;--lobby-num:'Inter Tight','SUIT Variable',system-ui,sans-serif;--lobby-clock:'WS Display','Noto Serif Display',Georgia,serif;
   /* 주 단추와 결정 단추는 먹 면에 노란 글자 한 가지다(시안의 「먹 면 = 지금 할 일 단추 하나」) */
   --ws-cta:#141414;--ws-cta-hover:#000;--ws-cta-ink:#FED027;--ws-decide:#141414;--ws-decide-hover:#000;--ws-decide-ink:#FED027;
   --ws-accent:#141414;--ws-accent-hover:#000;
 }
-html:has(.synk-workspace),html:has(.auth-layout),html:has(#app.boot-shell),html:has(.teaching-only-shell){background:#FED027}
-body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:has(.teaching-only-shell){background:#FED027}
-.synk-workspace ::selection,.auth-layout ::selection{background:rgba(20,20,20,.16);color:#141414}
+/* 종이: 노랑을 걷어 낸 따뜻한 미색 바탕. 노랑은 먹 단추의 글자에만 남는다 */
+html[data-lobby-theme="paper"] .synk-workspace,html[data-lobby-theme="paper"] .auth-layout,html[data-lobby-theme="paper"] #app.boot-shell,html[data-lobby-theme="paper"] .teaching-only-shell{
+  --lobby-bg:#ECE8DF;--lobby-mute:rgba(20,20,20,.66);--lobby-chip:rgba(255,254,250,.72);--lobby-rowhover:rgba(255,254,250,.55);--lobby-off:rgba(255,254,250,.45);--lobby-shade:70,56,30;
+}
+/* 밤: 솔리오 PC의 검은 방 결. 바탕 위 글은 밝은 미색이고, 지금 자리 알약과 사원증 끈은 노랑이다 */
+html[data-lobby-theme="night"] .synk-workspace,html[data-lobby-theme="night"] .auth-layout,html[data-lobby-theme="night"] #app.boot-shell,html[data-lobby-theme="night"] .teaching-only-shell{
+  --lobby-bg:#161616;--lobby-fg:#F3F1EC;--lobby-mute:rgba(243,241,236,.66);--lobby-fg2:rgba(243,241,236,.76);--lobby-soft:rgba(243,241,236,.08);--lobby-line:rgba(243,241,236,.14);--lobby-tagline:rgba(243,241,236,.32);
+  --lobby-chip:rgba(243,241,236,.1);--lobby-rowhover:rgba(243,241,236,.06);--lobby-off:rgba(243,241,236,.05);--lobby-off-fg:rgba(243,241,236,.5);
+  --lobby-solid:#FED027;--lobby-solid-fg:#141414;--lobby-logo:invert(1);--lobby-shade:0,0,0;--lobby-sel:rgba(254,208,39,.36);
+  /* 유리 판이 검은 바탕을 조금 비쳐 어두워지므로 판 안의 가장 흐린 글만 한 단계 진하게 한다 */
+  --lobby-label3:rgba(60,60,67,.8);
+}
+/* 기본값의 특이도는 아래 고른 바탕(html[data-lobby-theme])과 같아야 뒤의 것이 이긴다. 그래서 #app 대신 .boot-shell로 잡는다(카본 A1) */
+html:has(.synk-workspace),html:has(.auth-layout),html:has(.boot-shell),html:has(.teaching-only-shell){--lobby-page:#FED027;background:var(--lobby-page)}
+html[data-lobby-theme="paper"]{--lobby-page:#ECE8DF}
+html[data-lobby-theme="night"]{--lobby-page:#161616}
+body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:has(.teaching-only-shell){background:var(--lobby-page,#FED027)}
+.synk-workspace ::selection,.auth-layout ::selection{background:var(--lobby-sel)}
 
 /* ── 틀: 노란 바탕, 메뉴는 바탕 위에 바로 선다 ── */
-.app-shell.synk-workspace{background:var(--lobby-y);color:var(--lobby-ink)}
+.app-shell.synk-workspace{background:var(--lobby-bg);color:var(--lobby-fg)}
 .synk-workspace .ws-side{background:transparent;border-right:0;padding:18px 12px 14px 16px}
-.synk-workspace .ws-side-brand{padding:6px 10px 22px;gap:8px;color:var(--lobby-ink)}
-.synk-workspace .ws-side-brand .brand-logo{width:auto;height:30px;margin:-4px -2px -4px -8px}
-.synk-workspace .ws-side-brand span{padding:0;font:500 15px/1 var(--lobby-num);letter-spacing:-.01em;color:var(--lobby-ink)}
+.synk-workspace .ws-side-brand{padding:6px 10px 22px;gap:8px;color:var(--lobby-fg)}
+.synk-workspace .ws-side-brand .brand-logo{width:auto;height:30px;margin:-4px -2px -4px -8px;filter:var(--lobby-logo)}
+.synk-workspace .ws-side-brand span{padding:0;font:500 15px/1 var(--lobby-num);letter-spacing:-.01em;color:var(--lobby-fg)}
 .synk-workspace .ws-side-head{color:var(--lobby-mute)}
 .synk-workspace .ws-side-scope>span{color:var(--lobby-mute)}
 .synk-workspace .ws-side-scope select,.synk-workspace .ws-side-find{border:0;border-radius:12px;background:var(--lobby-glass);box-shadow:var(--lobby-float);color:var(--lobby-label)}
-.synk-workspace .ws-side-find:hover{box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06),0 10px 22px -12px rgba(90,64,0,.42)}
+.synk-workspace .ws-side-find:hover{box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06),0 10px 22px -12px rgba(var(--lobby-shade),.42)}
 .synk-workspace .ws-side-find kbd{border:0;background:rgba(20,20,20,.06);color:var(--lobby-label2)}
-.synk-workspace .ws-side-link,.synk-workspace .ws-side-sublink{color:var(--lobby-ink);border-radius:12px}
-.synk-workspace .ws-side-link:hover,.synk-workspace .ws-side-sublink:hover{background:var(--lobby-soft);color:var(--lobby-ink)}
-.synk-workspace .ws-side-link[aria-current="page"],.synk-workspace .ws-side-sublink[aria-current="page"]{background:var(--lobby-ink);color:var(--lobby-y)}
-.synk-workspace .ws-side-link[aria-current="page"] .ws-side-ic{color:var(--lobby-y)}
-.synk-workspace .ws-side-ic{color:var(--lobby-ink)}
-.synk-workspace .ws-turn-count{background:var(--lobby-ink);color:var(--lobby-y);font-family:var(--lobby-num)}
-/* 안 읽은 수 · 탭의 수는 노랑 위에서 흐린 먹(4.5:1 이상)이다(Fable F6) */
+.synk-workspace .ws-side-link,.synk-workspace .ws-side-sublink{color:var(--lobby-fg);border-radius:12px}
+.synk-workspace .ws-side-link:hover,.synk-workspace .ws-side-sublink:hover{background:var(--lobby-soft);color:var(--lobby-fg)}
+.synk-workspace .ws-side-link[aria-current="page"],.synk-workspace .ws-side-sublink[aria-current="page"]{background:var(--lobby-solid);color:var(--lobby-solid-fg)}
+.synk-workspace .ws-side-link[aria-current="page"] .ws-side-ic{color:var(--lobby-solid-fg)}
+.synk-workspace .ws-side-ic{color:var(--lobby-fg)}
+.synk-workspace .ws-turn-count{background:var(--lobby-solid);color:var(--lobby-solid-fg);font-family:var(--lobby-num)}
+/* 안 읽은 수 · 탭의 수는 바탕 위에서 흐린 글(4.5:1 이상)이다(Fable F6) */
 .synk-workspace .ws-tabchip .ws-num{color:var(--lobby-mute)}
 @media (min-width:961px){
   .synk-workspace .ws-side-link .messenger-unread,.synk-workspace .ws-side-link .nav-badge{color:var(--lobby-mute)}
-  .synk-workspace .ws-side-link[aria-current="page"] .messenger-unread,.synk-workspace .ws-side-link[aria-current="page"] .nav-badge{color:var(--lobby-y)}
+  .synk-workspace .ws-side-link[aria-current="page"] .messenger-unread,.synk-workspace .ws-side-link[aria-current="page"] .nav-badge{color:var(--lobby-solid-fg)}
 }
-/* 글자 없는 좁은 메뉴에서는 수가 그림 위의 먹 알약이다: 노란 글자 */
-@media (max-width:960px){.synk-workspace .ws-side-link .messenger-unread,.synk-workspace .ws-side-link .nav-badge,.synk-workspace .ws-side-link .ws-turn-count{background:var(--lobby-ink);color:var(--lobby-y)}}
-.synk-workspace .ws-side-link[aria-current="page"] .ws-turn-count{background:var(--lobby-y);color:var(--lobby-ink)}
-.synk-workspace .ws-side-foot{border-top-color:rgba(20,20,20,.12)}
-.synk-workspace .ws-side-me{border-radius:14px}
+/* 글자 없는 좁은 메뉴에서는 수가 그림 위의 알약이다 */
+@media (max-width:960px){.synk-workspace .ws-side-link .messenger-unread,.synk-workspace .ws-side-link .nav-badge,.synk-workspace .ws-side-link .ws-turn-count{background:var(--lobby-solid);color:var(--lobby-solid-fg)}}
+.synk-workspace .ws-side-link[aria-current="page"] .ws-turn-count{background:var(--lobby-solid-fg);color:var(--lobby-solid)}
+.synk-workspace .ws-side-foot{border-top-color:var(--lobby-line)}
+.synk-workspace .ws-side-me{border-radius:14px;color:var(--lobby-fg)}
 .synk-workspace .ws-side-me:hover{background:var(--lobby-soft)}
 .synk-workspace .ws-side-me-copy small,.synk-workspace .ws-side-me-copy span+span{color:var(--lobby-mute)}
 .synk-workspace .ws-co{border-radius:3px}
-.synk-workspace :focus-visible{outline-color:var(--lobby-ink)}
+/* 바탕 위의 초점 테는 바탕 글 색, 유리 · 종이 판 안은 먹이다 */
+.synk-workspace :focus-visible{outline-color:var(--lobby-fg)}
+.synk-workspace .ws-turn-lead :focus-visible,.synk-workspace .ws-office-extra :focus-visible,.synk-workspace .next-card :focus-visible,.synk-workspace .ws-office-more :focus-visible,.synk-workspace .ws-inbox-detail :focus-visible,.synk-workspace .ws-tools-drawer :focus-visible,.synk-workspace .ws-tabbar :focus-visible,.synk-workspace .ws-subnav :focus-visible,.synk-workspace:not([data-view="home"]) .workspace-main :focus-visible{outline-color:var(--lobby-ink)}
+/* 사무실 바탕 위에 선 단추 · 링크(추천 막대, 쌓인 다음 일 줄, 추천 아래 단추)도 바탕 글 색이다. marin-home.css의 .next-home a:focus-visible(0,2,1)보다 높게 잡고, 판 안은 그보다 한 단계 더 높여 먹으로 되돌린다(Fable F-2) */
+.synk-workspace .next-home button:focus-visible,.synk-workspace .next-home a:focus-visible,.synk-workspace .next-home summary:focus-visible,.synk-workspace .next-home h2:focus-visible{outline-color:var(--lobby-fg)}
+.synk-workspace .next-home .ws-turn-lead :focus-visible,.synk-workspace .next-home .next-card :focus-visible,.synk-workspace .next-home .ws-office-extra :focus-visible,.synk-workspace .next-home .ws-office-more :focus-visible{outline-color:var(--lobby-ink)}
+
+/* 바탕 고르기: 왼쪽 메뉴 아래(휴대폰은 「더보기」 시트) 동그란 색 셋. 고른 칸에 유리 면이 깔린다 */
+.synk-workspace .ws-theme{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 2px;padding:0 6px 0 10px}
+.synk-workspace .ws-theme-k{font:500 12px/1 var(--ws-sans);color:var(--lobby-mute)}
+.synk-workspace .ws-theme-picks{display:flex;gap:2px;padding:2px;border-radius:12px;background:var(--lobby-soft)}
+.synk-workspace .ws-theme-pick{display:grid;place-items:center;width:32px;height:28px;padding:0;border:0;border-radius:10px;background:transparent;cursor:pointer;transition:background-color .15s,box-shadow .15s}
+.synk-workspace .ws-theme-pick:hover{background:var(--lobby-soft)}
+.synk-workspace .ws-theme-pick[aria-checked="true"]{background:var(--lobby-glass);box-shadow:var(--lobby-float)}
+.synk-workspace .ws-theme-pick i{display:block;width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+.synk-workspace .ws-theme-pick[data-lobby-theme-pick="yellow"] i{background:#FED027}
+.synk-workspace .ws-theme-pick[data-lobby-theme-pick="paper"] i{background:#ECE8DF}
+.synk-workspace .ws-theme-pick[data-lobby-theme-pick="night"] i{background:#161616;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.synk-workspace .ws-theme-pick:focus-visible{outline:2px solid var(--lobby-fg);outline-offset:1px}
+/* 「더보기」 시트는 밝은 종이 판이다 */
+.synk-workspace .ws-tools-drawer .ws-theme{margin:4px 0 6px;padding:10px 12px}
+.synk-workspace .ws-tools-drawer .ws-theme-k{font-size:14px;color:var(--lobby-label)}
+.synk-workspace .ws-tools-drawer .ws-theme-picks{background:rgba(20,20,20,.06)}
+.synk-workspace .ws-tools-drawer .ws-theme-pick{width:44px;height:36px}
+.synk-workspace .ws-tools-drawer .ws-theme-pick:hover{background:rgba(20,20,20,.06)}
+.synk-workspace .ws-tools-drawer .ws-theme-pick[aria-checked="true"]{background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 2px 6px -2px rgba(0,0,0,.18)}
+.synk-workspace .ws-tools-drawer .ws-theme-pick i{width:20px;height:20px}
+.synk-workspace .ws-tools-drawer .ws-theme-pick:focus-visible{outline-color:var(--lobby-ink)}
+/* 761~960px 그림 메뉴: 이름을 감추고 셋을 세로로 쌓는다 */
+@media (min-width:761px) and (max-width:960px){
+  .synk-workspace .ws-side .ws-theme{justify-content:center;padding:0}
+  .synk-workspace .ws-side .ws-theme-k{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .synk-workspace .ws-side .ws-theme-picks{flex-direction:column}
+}
+@media (max-width:760px){.synk-workspace .ws-side .ws-theme{display:none}}
 
 /* 사무실 · 내 차례 밖의 화면은 노란 바탕 위의 종이 한 장 안에 그대로 선다 */
 .synk-workspace .workspace-body{background:transparent}
 .synk-workspace:not([data-view="home"]) .workspace-body{padding:12px 12px 12px 0}
 /* 판의 높이는 .workspace-body(flex, 화면 높이)가 정한다. 메신저처럼 높이를 스스로 정하는 화면을 덮지 않는다(Fable F1: 휴대폰 메신저 목록 아래가 탭에 가려졌다) */
-.synk-workspace:not([data-view="home"]) .workspace-main{background:var(--lobby-paper);border-radius:24px;box-shadow:var(--lobby-lift)}
+/* 판 안의 글은 바탕 색(밤의 밝은 글)을 물려받지 않고 판 글 색에서 시작한다(카본 A2) */
+.synk-workspace:not([data-view="home"]) .workspace-main{background:var(--lobby-paper);border-radius:24px;box-shadow:var(--lobby-lift);color:var(--lobby-label)}
 .synk-workspace[data-view="messenger"] .workspace-main{overflow:hidden}
 /* 761~960px의 하위 메뉴 띠는 종이 판의 윗머리로 붙는다(Fable F4) */
 @media (min-width:761px) and (max-width:960px){
-  .synk-workspace:not([data-view="home"]) .ws-subnav{background:var(--lobby-paper);border-radius:24px 24px 0 0;border-bottom:.5px solid var(--lobby-hair)}
+  .synk-workspace:not([data-view="home"]) .ws-subnav{background:var(--lobby-paper);border-radius:24px 24px 0 0;border-bottom:.5px solid var(--lobby-hair);color:var(--lobby-label)}
   .synk-workspace:not([data-view="home"]) .workspace-body:has(>.ws-subnav) .workspace-main{border-radius:0 0 24px 24px}
 }
 .synk-workspace[data-view="home"] .workspace-main{background:transparent}
@@ -77,15 +133,15 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 .synk-workspace .ws-office>.ws-office-extra{grid-area:extra}
 .synk-workspace .ws-office>.ws-office-more{grid-area:more;margin-top:10px}
 .synk-workspace .ws-office-t1{grid-area:t1;min-width:0;display:flex;flex-direction:column;padding-top:6px}
-.synk-workspace .ws-office-date{margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:16px;color:var(--lobby-ink)}
+.synk-workspace .ws-office-date{margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:16px;color:var(--lobby-fg)}
 .synk-workspace .ws-clock{font:300 clamp(96px,9.6vw,150px)/.84 var(--lobby-clock);letter-spacing:-.04em;font-variant-numeric:lining-nums tabular-nums;margin-left:-.05em}
 .synk-workspace .ws-day{font:500 14px/1 var(--lobby-num);letter-spacing:.01em;color:var(--lobby-mute)}
 .synk-workspace .ws-office-hello{margin:0}
-.synk-workspace .ws-hello{font:300 clamp(26px,2.3vw,34px)/1.36 var(--lobby-serif);letter-spacing:-.025em;color:var(--lobby-ink);text-wrap:pretty}
+.synk-workspace .ws-hello{font:300 clamp(26px,2.3vw,34px)/1.36 var(--lobby-serif);letter-spacing:-.025em;color:var(--lobby-fg);text-wrap:pretty}
 .synk-workspace .ws-hello b{font-weight:300}
 .synk-workspace .ws-hello .ws-num{font:inherit;font-weight:300}
 .synk-workspace .ws-office-notes .wa-scope-label{color:var(--lobby-mute)}
-.synk-workspace .ws-office-notes .wa-scope-summary{color:var(--lobby-ink)}
+.synk-workspace .ws-office-notes .wa-scope-summary{color:var(--lobby-fg)}
 
 /* 다음 일: 지갑처럼 같은 쪽으로 위에 쌓인 머리 줄. 가까운 장일수록 넓고 앞에 선다(대각선으로 밀지 않는다) */
 .synk-workspace .ws-office-t1 .ws-turn-rest{order:-1;position:relative;z-index:1;display:flex;flex-direction:column-reverse;align-items:center;margin:0;border:0}
@@ -95,8 +151,8 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 .synk-workspace .ws-office-t1 .ws-turn-rest>li:nth-child(3){z-index:4;width:calc(100% - 84px)}
 .synk-workspace .ws-office-t1 .ws-turn-rest>li:nth-child(4){z-index:3;width:calc(100% - 112px)}
 .synk-workspace .ws-office-t1 .ws-turn-rest>li:nth-child(n+5){z-index:2;width:calc(100% - 140px)}
-.synk-workspace .ws-office-t1 .ws-turn-rest .ws-trow{display:flex;align-items:center;gap:10px;width:100%;height:62px;margin:0;padding:0 18px 18px 16px;border-radius:22px 22px 0 0;background:var(--lobby-glass);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 -10px 24px -18px rgba(90,64,0,.45);color:var(--lobby-label);transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s}
-.synk-workspace .ws-office-t1 .ws-turn-rest a.ws-trow:hover{background:var(--lobby-glass);transform:translateY(-4px);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 -14px 28px -18px rgba(90,64,0,.55)}
+.synk-workspace .ws-office-t1 .ws-turn-rest .ws-trow{display:flex;align-items:center;gap:10px;width:100%;height:62px;margin:0;padding:0 18px 18px 16px;border-radius:22px 22px 0 0;background:var(--lobby-glass);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 -10px 24px -18px rgba(var(--lobby-shade),.45);color:var(--lobby-label);transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s}
+.synk-workspace .ws-office-t1 .ws-turn-rest a.ws-trow:hover{background:var(--lobby-glass);transform:translateY(-4px);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 -14px 28px -18px rgba(var(--lobby-shade),.55)}
 .synk-workspace .ws-office-t1 .ws-turn-rest .ws-qn{flex:none;align-self:center;width:20px;text-align:right;font:600 12px/1 var(--lobby-num);font-variant-numeric:tabular-nums;color:var(--lobby-label3)}
 .synk-workspace .ws-office-t1 .ws-turn-rest .ws-turn-k{flex:none;max-width:34%;display:flex;align-items:center;gap:7px;overflow:hidden;white-space:nowrap;font:500 12px/1.2 var(--ws-sans);color:var(--lobby-label2)}
 .synk-workspace .ws-office-t1 .ws-turn-rest .ws-turn-k .ws-co{width:18px;height:18px;border-radius:6px;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.35)}
@@ -125,23 +181,23 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 
 /* 방: 사무실 그림 대신 회사 색 둥근 네모가 붙은 유리 단추 여섯 */
 .synk-workspace .ws-office-map{min-width:0}
-.synk-workspace .ws-office-cap{margin:0 0 10px;font:600 13px/1.4 var(--ws-sans);color:var(--lobby-ink)}
+.synk-workspace .ws-office-cap{margin:0 0 10px;font:600 13px/1.4 var(--ws-sans);color:var(--lobby-fg)}
 .synk-workspace .ws-office-figure{position:static;aspect-ratio:auto;border-radius:0;background:none;overflow:visible;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .synk-workspace .ws-office-img{display:none}
 .synk-workspace .ws-room{position:relative;left:auto;top:auto;width:auto;height:auto;min-height:52px;display:flex;align-items:center;padding:0 12px;border-radius:14px;background:var(--lobby-glass);box-shadow:var(--lobby-float);outline:0;transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s}
-.synk-workspace .ws-room:hover:not(:disabled),.synk-workspace .ws-room:focus-visible{background:var(--lobby-paper);transform:translateY(-2px);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06),0 14px 26px -14px rgba(90,64,0,.5)}
-.synk-workspace .ws-room:focus-visible{outline:2px solid var(--lobby-ink);outline-offset:2px}
-.synk-workspace .ws-room:disabled{background:rgba(255,254,250,.4);box-shadow:none}
+.synk-workspace .ws-room:hover:not(:disabled),.synk-workspace .ws-room:focus-visible{background:var(--lobby-paper);transform:translateY(-2px);box-shadow:var(--lobby-raise)}
+.synk-workspace .ws-room:focus-visible{outline:2px solid var(--lobby-fg);outline-offset:2px}
+.synk-workspace .ws-room:disabled{background:var(--lobby-off);box-shadow:none}
 .synk-workspace .ws-room .ws-nametag,.synk-workspace .ws-room[data-room] .ws-nametag{position:static;left:auto;right:auto;top:auto;height:auto;padding:0;gap:9px;background:none;box-shadow:none;color:var(--lobby-label);font:600 13.5px/1.25 var(--ws-sans);white-space:normal}
 .synk-workspace .ws-room:hover:not(:disabled) .ws-nametag,.synk-workspace .ws-room:focus-visible .ws-nametag{background:none;color:var(--lobby-label)}
-.synk-workspace .ws-room:disabled .ws-nametag{color:rgba(20,20,20,.6)}
+.synk-workspace .ws-room:disabled .ws-nametag{color:var(--lobby-off-fg)}
 .synk-workspace .ws-room .ws-co,.synk-workspace .ws-room[data-room="lounge"] .ws-nametag::before,.synk-workspace .ws-room[data-room="desk"] .ws-nametag::before{flex:none;width:24px;height:24px;border-radius:7px;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.35)}
 .synk-workspace .ws-room[data-room="lounge"] .ws-nametag::before,.synk-workspace .ws-room[data-room="desk"] .ws-nametag::before{content:"";display:block}
 .synk-workspace .ws-room[data-room="lounge"] .ws-nametag::before{background:linear-gradient(155deg,#55524C,#141414 70%)}
 .synk-workspace .ws-room[data-room="desk"] .ws-nametag::before{background:linear-gradient(155deg,#D2CFC8,#8E8B85 70%)}
 
 /* 오늘 나가는 SNS · 운영 상태 · 다음 할 일: 위젯처럼 유리 판 한 장씩 */
-.synk-workspace .ws-office-extra{margin:0;padding:20px 22px 14px;border:0;border-radius:22px;background:var(--lobby-glass);box-shadow:var(--lobby-float);gap:10px}
+.synk-workspace .ws-office-extra{margin:0;padding:20px 22px 14px;border:0;border-radius:22px;background:var(--lobby-glass);box-shadow:var(--lobby-float);gap:10px;color:var(--lobby-label)}
 .synk-workspace .ws-office-extra h3{font:600 13px/1.4 var(--ws-sans);color:var(--lobby-label)}
 .synk-workspace .ws-office-extra h3+.ws-going{margin-bottom:6px}
 .synk-workspace .ws-going a{border-radius:12px;background:rgba(20,20,20,.05);color:var(--lobby-label)}
@@ -154,8 +210,8 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 .synk-workspace .ws-office-next{margin-top:26px;padding:0;border:0}
 .synk-workspace .ws-office-next .next-card,.synk-workspace .ws-office-next .next-recommend-bar{border:0;border-radius:18px;background:var(--lobby-glass);box-shadow:var(--lobby-float);color:var(--lobby-label)}
 .synk-workspace .ws-office-next .next-recommend-bar{min-height:56px;padding:0 20px;font:600 14.5px/1 var(--ws-sans);transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s}
-.synk-workspace .ws-office-next .next-recommend-bar:hover:not(:disabled){background:var(--lobby-paper);transform:translateY(-2px);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06),0 14px 26px -14px rgba(90,64,0,.5)}
-.synk-workspace .ws-office-more .next-assistant,.synk-workspace .ws-office-more .staff-stories,.synk-workspace .ws-office-more>section{border:0;border-radius:22px;background:var(--lobby-glass);box-shadow:var(--lobby-float)}
+.synk-workspace .ws-office-next .next-recommend-bar:hover:not(:disabled){background:var(--lobby-paper);transform:translateY(-2px);box-shadow:var(--lobby-raise)}
+.synk-workspace .ws-office-more .next-assistant,.synk-workspace .ws-office-more .staff-stories,.synk-workspace .ws-office-more>section{border:0;border-radius:22px;background:var(--lobby-glass);box-shadow:var(--lobby-float);color:var(--lobby-label)}
 
 /* ── 내 차례: 왼쪽은 노란 바탕 위의 순서, 오른쪽은 지금 고른 일 한 장 ── */
 .synk-workspace[data-home-section="inbox"] .workspace-main{background:transparent}
@@ -164,32 +220,42 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 .synk-workspace .ws-lh{gap:10px;padding:24px 12px 12px;border-bottom:0}
 .synk-workspace .ws-lh-date{font:500 13px/1.2 var(--lobby-num);color:var(--lobby-mute)}
 .synk-workspace .ws-lh-date .ws-mono{font-family:var(--lobby-num)}
-.synk-workspace .ws-lh-title{font:300 36px/1.2 var(--lobby-serif);letter-spacing:-.025em;color:var(--lobby-ink)}
-.synk-workspace .ws-coral-n{height:30px;padding:0 11px;border-radius:999px;background:var(--lobby-ink);color:var(--lobby-y);font:500 16px/1 var(--lobby-num)}
-.synk-workspace .ws-lh-sum{font-size:14.5px;color:var(--lobby-ink)}
-.synk-workspace .ws-backlink,.synk-workspace .ws-alllink{border-radius:10px;color:var(--lobby-ink)}
+.synk-workspace .ws-lh-title{font:300 36px/1.2 var(--lobby-serif);letter-spacing:-.025em;color:var(--lobby-fg)}
+.synk-workspace .ws-coral-n{height:30px;padding:0 11px;border-radius:999px;background:var(--lobby-solid);color:var(--lobby-solid-fg);font:500 16px/1 var(--lobby-num)}
+.synk-workspace .ws-lh-sum{font-size:14.5px;color:var(--lobby-fg)}
+.synk-workspace .ws-backlink,.synk-workspace .ws-alllink{border-radius:10px;color:var(--lobby-fg)}
 .synk-workspace .ws-backlink:hover,.synk-workspace .ws-alllink:hover{background:var(--lobby-soft)}
 .synk-workspace .ws-roomstrip{display:none}
 .synk-workspace .ws-lbody{padding:2px 2px 28px}
 .synk-workspace .ws-grp{padding:14px 12px 8px}
-.synk-workspace .ws-grp b{color:var(--lobby-ink)}
+.synk-workspace .ws-grp b{color:var(--lobby-fg)}
 .synk-workspace .ws-grp span{color:var(--lobby-mute)}
-.synk-workspace .ws-grp.is-note{border-top-color:rgba(20,20,20,.12)}
+.synk-workspace .ws-grp.is-note{border-top-color:var(--lobby-line)}
+/* 「못 불러왔어요」 상자는 밝은 분홍 면이라 바탕 글 색을 쓰지 않는다(Fable F-1) */
+.synk-workspace .ws-grp.is-failed b{color:var(--lobby-label)}
+.synk-workspace .ws-grp.is-failed span{color:var(--ws-danger)}
+.synk-workspace .ws-grp.is-failed :focus-visible{outline-color:var(--lobby-ink)}
 .synk-workspace .ws-row{gap:12px;margin:0 0 4px;padding:12px;border-radius:16px;transition:background-color .15s,box-shadow .2s}
-.synk-workspace .ws-row:hover{background:rgba(255,254,250,.45)}
+.synk-workspace .ws-row:hover{background:var(--lobby-rowhover)}
 .synk-workspace .ws-row[aria-current="true"]{background:var(--lobby-glass);box-shadow:var(--lobby-float)}
-.synk-workspace .ws-r-n{background:rgba(255,254,250,.62);box-shadow:none;font-family:var(--lobby-num);color:var(--lobby-ink)}
+.synk-workspace .ws-r-n{background:var(--lobby-chip);box-shadow:none;font-family:var(--lobby-num);color:var(--lobby-fg)}
 .synk-workspace .ws-row[aria-current="true"] .ws-r-n{background:var(--lobby-ink);color:var(--lobby-y)}
-.synk-workspace .ws-r-ic{border-radius:10px;background:rgba(255,254,250,.62);box-shadow:none;color:var(--lobby-ink)}
+.synk-workspace .ws-r-ic{border-radius:10px;background:var(--lobby-chip);box-shadow:none;color:var(--lobby-fg)}
 .synk-workspace .ws-r-src{color:var(--lobby-mute)}
-.synk-workspace .ws-r-title{color:var(--lobby-ink)}
-.synk-workspace .ws-r-ctx{color:rgba(20,20,20,.74)}
+.synk-workspace .ws-r-title{color:var(--lobby-fg)}
+.synk-workspace .ws-r-ctx{color:var(--lobby-fg2)}
 .synk-workspace .ws-row[aria-current="true"] .ws-r-src,.synk-workspace .ws-row[aria-current="true"] .ws-r-ctx{color:var(--lobby-label2)}
+/* 고른 줄은 유리 판이라 바탕 색과 상관없이 판 안의 글 색을 쓴다 */
+.synk-workspace .ws-row[aria-current="true"] .ws-r-title{color:var(--lobby-label)}
+.synk-workspace .ws-row[aria-current="true"] .ws-r-time{color:var(--lobby-label3)}
+.synk-workspace .ws-row[aria-current="true"] .ws-r-ic{background:rgba(20,20,20,.06);color:var(--lobby-label)}
 .synk-workspace .ws-r-time{color:var(--lobby-mute)}
 .synk-workspace .ws-r-time .ws-mono{font-family:var(--lobby-num)}
-.synk-workspace .ws-empty{color:var(--lobby-ink)}
-.synk-workspace .ws-tag{box-shadow:inset 0 0 0 1px rgba(20,20,20,.22);color:var(--lobby-ink)}
-.synk-workspace .ws-tag.is-warn{box-shadow:none;background:var(--lobby-ink);color:var(--lobby-y)}
+.synk-workspace .ws-empty{color:var(--lobby-fg)}
+.synk-workspace .ws-tag{box-shadow:inset 0 0 0 1px var(--lobby-tagline);color:var(--lobby-fg)}
+.synk-workspace .ws-tag.is-warn{box-shadow:none;background:var(--lobby-solid);color:var(--lobby-solid-fg)}
+.synk-workspace .ws-row[aria-current="true"] .ws-tag,.synk-workspace .ws-inbox-detail .ws-tag{box-shadow:inset 0 0 0 1px rgba(20,20,20,.22);color:var(--lobby-label)}
+.synk-workspace .ws-row[aria-current="true"] .ws-tag.is-warn,.synk-workspace .ws-inbox-detail .ws-tag.is-warn{box-shadow:none;background:var(--lobby-ink);color:var(--lobby-y)}
 .synk-workspace .ws-inbox-detail{overflow:hidden;border-radius:26px;background:var(--lobby-glass);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px);box-shadow:var(--lobby-lift);color:var(--lobby-label)}
 .synk-workspace .ws-dbar{height:56px;padding:0 30px;border-bottom:.5px solid var(--lobby-hair)}
 .synk-workspace .ws-crumb{color:var(--lobby-label2)}
@@ -211,6 +277,9 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 .synk-workspace .ws-btn-line{box-shadow:inset 0 0 0 1.5px rgba(20,20,20,.28);color:var(--lobby-ink)}
 .synk-workspace .ws-btn-line:hover{background:transparent;box-shadow:inset 0 0 0 1.5px var(--lobby-ink)}
 .synk-workspace .ws-btn-text:hover{background:rgba(20,20,20,.06)}
+/* 라운지 목록의 「메신저 열기」는 바탕 위에 선다 */
+.synk-workspace .ws-inbox-list .ws-btn-line{box-shadow:inset 0 0 0 1.5px var(--lobby-tagline);color:var(--lobby-fg)}
+.synk-workspace .ws-inbox-list .ws-btn-line:hover{box-shadow:inset 0 0 0 1.5px var(--lobby-fg)}
 .synk-workspace .ws-hint{color:var(--lobby-label3)}
 .synk-workspace .ws-sent{border-radius:14px;background:rgba(20,20,20,.05)}
 .synk-workspace .ws-ta{border:1.5px solid rgba(20,20,20,.22);border-radius:12px;background:#fff}
@@ -220,7 +289,7 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 .synk-workspace .ws-tabbar{background:rgba(255,254,250,.86);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border-top:.5px solid var(--lobby-hair)}
 .synk-workspace .ws-tab{color:rgba(20,20,20,.7)}
 .synk-workspace .ws-tab[aria-current="page"]{color:var(--lobby-ink)}
-.synk-workspace .ws-tools-drawer{background:var(--lobby-paper);border-radius:24px 24px 0 0}
+.synk-workspace .ws-tools-drawer{background:var(--lobby-paper);border-radius:24px 24px 0 0;color:var(--lobby-label)}
 /* 겹쳐 띄우는 메신저도 종이 판과 같은 모서리다 */
 @media (min-width:761px){body:has(.synk-workspace[data-view="messenger"]) #workspace-messenger{border-radius:24px;overflow:hidden}}
 
@@ -256,25 +325,25 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 }
 
 /* ── 들어오기 전: 목에 거는 사원증 ── */
-#app.boot-shell{background:var(--lobby-y)}
+#app.boot-shell{background:var(--lobby-bg)}
 /* 수업 전용 틀의 머리 줄은 흰 판이라 로고를 뒤집지 않는다(흰 바탕 위 흰 로고였다) */
 .teaching-only-shell .teaching-only-bar img{filter:none;height:30px;width:auto}
 /* 불러오기 실패 화면도 노랑 위 유리 판이다(Fable F2) */
 #app.boot-shell .initial-loading{background:transparent;min-height:0;padding:0}
-#app.boot-shell .initial-loading .empty{border:0;border-radius:22px;background:var(--lobby-glass);box-shadow:var(--lobby-lift)}
+#app.boot-shell .initial-loading .empty{border:0;border-radius:22px;background:var(--lobby-glass);box-shadow:var(--lobby-lift);color:var(--lobby-label)}
 #app.boot-shell .boot-card{background:var(--lobby-glass);border:0;border-radius:22px;box-shadow:var(--lobby-lift);color:var(--lobby-label)}
-.auth-layout{position:relative;overflow:hidden;background:var(--lobby-y);color:var(--lobby-ink);padding:96px 18px 120px}
-.auth-layout::after{content:"Workspace" / "";position:absolute;left:clamp(20px,3.4vw,52px);bottom:-.16em;font:300 clamp(96px,13.5vw,200px)/1 'WS Display','Noto Serif Display',Georgia,serif;letter-spacing:-.05em;color:var(--lobby-ink);pointer-events:none;white-space:nowrap;z-index:0}
+.auth-layout{position:relative;overflow:hidden;background:var(--lobby-bg);color:var(--lobby-fg);padding:96px 18px 120px}
+.auth-layout::after{content:"Workspace" / "";position:absolute;left:clamp(20px,3.4vw,52px);bottom:-.16em;font:300 clamp(96px,13.5vw,200px)/1 'WS Display','Noto Serif Display',Georgia,serif;letter-spacing:-.05em;color:var(--lobby-fg);pointer-events:none;white-space:nowrap;z-index:0}
 .auth-layout .auth-shell-inner{position:static;max-width:420px;gap:0}
 /* 머리 줄은 쪽과 함께 올라가고(고정하지 않는다) 끈보다 앞에 선다(카본 A1) */
 .auth-layout .auth-brand-head{position:absolute;top:22px;left:32px;right:32px;z-index:2;padding:0}
-.auth-layout .auth-brand{gap:8px;color:var(--lobby-ink);font:500 15px/1 var(--lobby-num)}
-.auth-layout .auth-brand .brand-logo{width:auto;height:30px;margin:-4px -2px -4px -8px}
+.auth-layout .auth-brand{gap:8px;color:var(--lobby-fg);font:500 15px/1 var(--lobby-num)}
+.auth-layout .auth-brand .brand-logo{width:auto;height:30px;margin:-4px -2px -4px -8px;filter:var(--lobby-logo)}
 .auth-layout .auth-brand-badge{border:0;background:var(--lobby-glass);box-shadow:var(--lobby-float);color:var(--lobby-label);padding:6px 12px;font:500 12px/1 var(--ws-sans)}
 /* 끈 둘과 집게가 사원증을 위에서 문다 */
 .auth-layout .auth-form-card{position:relative;z-index:1;margin-top:120px;padding:34px 30px 26px;border:0;border-radius:26px;background:var(--lobby-glass);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px);box-shadow:var(--lobby-lift);color:var(--lobby-label)}
 /* 끈은 사원증 윗변에서 끝난다. 유리 카드가 따로 쌓여 z-index로 뒤에 숨길 수 없어 카드 안으로 들이지 않는다(카본 A2) */
-.auth-layout .auth-form-card::before,.auth-layout .auth-form-card::after{content:"";position:absolute;bottom:100%;width:15px;height:62vh;background:var(--lobby-ink);border-radius:2px;transform-origin:50% 100%;pointer-events:none;z-index:-1}
+.auth-layout .auth-form-card::before,.auth-layout .auth-form-card::after{content:"";position:absolute;bottom:100%;width:15px;height:62vh;background:var(--lobby-solid);border-radius:2px;transform-origin:50% 100%;pointer-events:none;z-index:-1}
 .auth-layout .auth-form-card::before{left:calc(50% - 40px);transform:rotate(-17deg)}
 .auth-layout .auth-form-card::after{left:calc(50% + 25px);transform:rotate(17deg)}
 .auth-layout .auth-card-head{position:relative}
@@ -290,7 +359,7 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 .auth-layout .btn.primary{background:var(--lobby-ink);border-color:var(--lobby-ink);color:var(--lobby-y);border-radius:12px;min-height:50px}
 .auth-layout .btn.primary:hover{background:#000;border-color:#000}
 .auth-layout .text-button{color:var(--lobby-label)}
-.auth-layout .auth-form-footer{color:var(--lobby-ink)}
+.auth-layout .auth-form-footer{color:var(--lobby-label2)}
 @media (max-width:760px){
   .auth-layout{padding:84px 16px 96px}
   .auth-layout .auth-brand-head{left:16px;right:16px;top:16px}
