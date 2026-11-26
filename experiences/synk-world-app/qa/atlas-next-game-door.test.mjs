@@ -260,6 +260,11 @@ test('키트 — 문이 없고 개발 깃발도 없으면 null(옛 길), 옛 답
     attemptNo: 2,
     choice: { selectedId: 'a', correctId: 'b' },
   });
+  // 보기 번호는 글자나 유한한 수만 — null · undefined · 참거짓 · NaN은 'null' · 'true' 같은 글로 바뀌어 통과하지 않는다(검수 E1 · F2 · GD3).
+  for (const bad of [null, undefined, true, false, NaN, Infinity, {}, '', 'a b'])
+    assert.deepEqual(answerOf({ correct: false, choice: { selectedId: bad, correctId: 'b' } }), { correct: false, assessable: true }, String(bad));
+  assert.deepEqual(answerOf({ correct: true, choice: { correctId: 'milk' } }), { correct: true, assessable: true });
+  assert.deepEqual(answerOf({ correct: true, choice: { selectedId: 2, correctId: 2 } }).choice, { selectedId: '2', correctId: '2' });
 });
 
 test('셸의 내용 기억 열쇠 앞마디는 엔진의 것과 같고, 읽개는 옛 기기 열쇠를 그 하루 안에서만 읽는다', async () => {

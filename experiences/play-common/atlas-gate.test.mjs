@@ -15,6 +15,12 @@ const GATE_APPS = ['blank-slice/app.mjs', 'entry-check/app.mjs', 'korean-racing/
   'snap-words/app.mjs', 'subway-rush/app.mjs', 'talk-rally/app.mjs', 'story-classroom/app.mjs', 'word-magic/app.mjs'];
 const read = rel => fs.readFileSync(path.join(here, '..', rel), 'utf8').replace(/\r\n/g, '\n');
 const SOURCE = atlasGate.toString().replace(/\r\n/g, '\n');
+// 정적 가져오기 — 이름을 받는 꼴(import { x } from '…')과 실행만 하는 꼴(import '…') 둘 다(검수 GA2).
+const staticImports = source => [...source.matchAll(/^import\s+(?:[^;]*?\sfrom\s+)?['"]([^'"]+)['"]/gm)].map(m => m[1]);
+
+test('정적 가져오기 검사는 이름을 받는 꼴과 실행만 하는 꼴을 모두 잡는다', () => {
+  assert.deepEqual(staticImports("import './kit/atlas-next.mjs';\nimport { a } from './x.mjs';\nimport * as b from \"./y.mjs\";\nconst c = import('./z.mjs');"), ['./kit/atlas-next.mjs', './x.mjs', './y.mjs']);
+});
 
 test('문 확인은 키트의 nextDoor(win) || devFlag(win)와 같은 답을 낸다(위 창의 문 · 다른 출처 · 로컬 개발 깃발 · 학습 허브 안 · 막힌 주소)', () => {
   const door = { open() {} };
@@ -55,7 +61,7 @@ test('문을 받는 게임마다 앱 파일이 목록에 있다(새 게임을 �
 for (const rel of GATE_APPS) {
   test(`${rel} — 키트를 정적으로 부르지 않고, 문 확인을 원본 글자 그대로 한 번 적어 쓴다`, () => {
     const source = read(rel);
-    const statics = [...source.matchAll(/^import\s[^;]*?from\s+['"]([^'"]+)['"]/gm)].map(m => m[1]);
+    const statics = staticImports(source);
     assert.ok(!statics.some(s => s.includes('kit/atlas-next')), '키트를 정적으로 부르지 않는다');
     assert.equal(source.split(SOURCE).length - 1, 1, '원본(play-common/atlas-gate.mjs)과 같은 글자');
     assert.equal(source.match(/\bfunction atlasGate\(/g).length, 1);

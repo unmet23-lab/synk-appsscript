@@ -50,7 +50,7 @@ const DAY = 86_400_000;
 
 const staticImports = text => [...text.matchAll(/^import\s[^;]*?from\s+'([^']+)';/gms)].map(match => match[1]);
 
-test('원문 — 정적 import에 새 길 모듈이 없고 키트만 더했다, 새 길 모듈은 동적으로만 싣는다, /atlas/를 부르지 않는다', () => {
+test('원문 — 정적 import에 새 길 모듈도 키트도 없다, 새 길 모듈은 동적으로만 싣는다, /atlas/를 부르지 않는다', () => {
   for (const file of ['./app.mjs', './beginner.mjs']) {
     const text = source(file);
     const imports = staticImports(text);

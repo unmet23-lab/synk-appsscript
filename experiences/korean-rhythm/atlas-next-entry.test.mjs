@@ -157,7 +157,7 @@ const SONG_SET = { set: { length: 5, newLimit: 15 } };
 // 4-6d 앞의 app.mjs가 시작할 때 옛 코치에 닿는 차례(같은 틀 · 빈 기록에서 잰 값 — 끝의 만남 읽기는 며칠 뒤 확인 대화와 같은 출처 대화).
 const OLD_START = ['account.ready', 'createGame', 'syncPort', 'recommend', 'summary', 'events', 'summary', 'summary', 'events', 'followups', ...Array(34).fill('exposure')];
 
-test('app.mjs 원문 — 키트만 정적으로 싣고, 새 길 모듈은 문 · 개발 깃발이 있을 때 한 자리에서 동적으로 싣는다. 옛 코치는 지금 인수 그대로', () => {
+test('app.mjs 원문 — 키트를 정적으로 싣지 않고, 새 길 모듈은 문 · 개발 깃발이 있을 때 한 자리에서 동적으로 싣는다. 옛 코치는 지금 인수 그대로', () => {
   const statics = [...SOURCE.matchAll(/^import\s[^;]*?from\s+'([^']+)'/gm)].map(m => m[1]);
   assert.ok(!statics.includes('./kit/atlas-next.mjs'), '키트는 정적으로 싣지 않는다 — 새 길 모듈이 부른다(5-3 게임)');
   assert.ok(!statics.some(s => s.includes('atlas-next-play')), '새 길 모듈은 정적 import에 없다');

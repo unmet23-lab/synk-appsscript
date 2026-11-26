@@ -1,7 +1,9 @@
 // 게임의 새 길(단계 4 계획 §23-6 · 4-6c). WORLD 셸이 연 게임 코치를 문(window.SYNKAtlasGame — synk-world-app/world-atlas-game.mjs)으로 받는다.
-// 맨 위는 상수 · 함수 선언뿐이다 — 꺼진 판에도 실리고, 부를 때까지 아무것도 하지 않는다(꺼진 판 시험이 맨 위 문장을 본다).
+// 맨 위는 상수 · 함수 선언뿐이다 — 부를 때까지 아무것도 하지 않는다(꺼진 판 시험이 맨 위 문장을 본다).
+// 게임 앱은 이 키트를 정적으로 부르지 않는다. 새 길 차례는 앱 안의 문 확인(play-common/atlas-gate.mjs의 atlasGate — nextDoor || devFlag와
+// 같은 조건)이 보고, 키트는 새 길 모듈(atlas-next-play.mjs)이 부른다. 꺼진 판에는 실리지 않는다(5-3 게임).
 // 원본은 play-common/kit/ — 게임마다 kit/에 바이트로 복사한다(build-kit.mjs). 사본은 고치지 않는다.
-//   const door = nextDoor(window);            // 없으면 지금 코드 그대로 옛 코치를 동기로 만든다
+//   const door = nextDoor(window);            // 새 길 모듈 안에서 — 없으면 null
 //   const next = await openNext({ gameId, banks });   // null이면 옛 길. RUN_ENDED로 거절하면 옛 길을 열지 않고 멈춘다
 //   const set = setPlay(next, { length: 12 });         // 판 — next(후보, 게임 차례) · end()
 // 오류는 셸 창의 것이라 틀에서 instanceof Error가 거짓이다 — code로만 가른다(ended(error)).
@@ -193,8 +195,9 @@ export function answerOf(old = {}) {
   const out = { correct: old.correct ?? null, assessable: true };
   if (old.unknown === true) out.unknown = true;
   if (Number.isInteger(old.attemptNo)) out.attemptNo = old.attemptNo;
-  const choice = old.choice;
-  if (choice && OPTION.test(String(choice.selectedId)) && OPTION.test(String(choice.correctId)))
-    out.choice = { selectedId: String(choice.selectedId), correctId: String(choice.correctId) };
+  // 고른 보기 · 맞는 보기의 번호 — 글자나 유한한 수만 받는다(null · undefined · 참거짓이 'null' · 'true' 같은 글로 바뀌어 통과하지 않게).
+  const id = value => (typeof value === 'string' || Number.isFinite(value)) && OPTION.test(String(value)) ? String(value) : null;
+  const selectedId = id(old.choice?.selectedId), correctId = id(old.choice?.correctId);
+  if (selectedId && correctId) out.choice = { selectedId, correctId };
   return out;
 }
