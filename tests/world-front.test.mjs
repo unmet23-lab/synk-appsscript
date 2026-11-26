@@ -92,12 +92,13 @@ test('학생: 내 사진 학생은 받은 서명 주소로 얼굴 원을 그리�
   assert.equal(studentOf({...left, photo: 'me'}, null).face, null, '내 사진 표시가 있으면 남은 look을 쓰지 않는다');
 });
 
-test('앞면 다리: 내 사진은 4분 안 주소를 다시 쓰고, 2.5초만 기다린 뒤 받으면 다시 그린다', () => {
+test('앞면 다리: 내 사진은 4분 안 주소를 다시 쓰고, 한 요청은 2.5초만 한 번 기다리며, 늦게 와도 화면을 다시 그리지 않는다', () => {
   const src = fs.readFileSync(new URL('../experiences/synk-world-app/world-front-entry.mjs', import.meta.url), 'utf8');
   assert.match(src, /me2Photo=async\(\)=>null\}\)\{/);
   assert.match(src, /PHOTO_FRESH_MS=240000,PHOTO_RETRY_MS=60000,PHOTO_WAIT_MS=2500/);
   assert.match(src, /if\(!guest&&arrival\?\.photo==='me'\)/);
-  assert.match(src, /s\.owner===who\)show\(s\.view\)/);
+  assert.match(src, /if\(!cur\?\.late\|\|!cur\.ask\)\{photo=await Promise\.race/);
+  assert.doesNotMatch(src, /ask\.then\(u=>\{[^}]*show\(/, '늦게 온 사진으로 show를 다시 부르지 않는다');
   assert.match(src, /student:studentOf\(arrival,photo\)/);
   const shell = fs.readFileSync(new URL('../experiences/synk-world-app/app-shell.mjs', import.meta.url), 'utf8');
   assert.match(shell, /me2:\{status:\(\)=>me2Status\(\),open:/);

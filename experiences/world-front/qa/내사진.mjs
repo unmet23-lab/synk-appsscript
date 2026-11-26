@@ -52,7 +52,8 @@ async function run(name, {status = READY, delay = 0, reject = false, guest = fal
     await context.route('https://qiwxeddwwnzkwalpsuty.supabase.co/storage/v1/object/sign/me2-media/qa/**', route => { photoHits++; return route.fulfill({status: 200, contentType: 'image/png', body: PHOTO}); });
     await context.addInitScript(({status, delay, reject}) => {
       window.__qaCalls = 0;
-      window.__qaMe2 = () => { window.__qaCalls++; return new Promise((res, rej) => setTimeout(() => reject ? rej(new Error('qa status')) : res(JSON.parse(JSON.stringify(status))), delay)); };
+      // delay가 배열이면 n번째 물음이 n번째 값만큼 늦는다(그 뒤는 바로)
+      window.__qaMe2 = () => { const n = window.__qaCalls++, ms = Array.isArray(delay) ? (delay[n] ?? 0) : delay; return new Promise((res, rej) => setTimeout(() => reject ? rej(new Error('qa status')) : res(JSON.parse(JSON.stringify(status))), ms)); };
     }, {status, delay, reject});
     const F = () => page.frames().find(f => f.url().includes('/world-front/'));
     const until = async (what, fn, ms = 30000) => { const t0 = Date.now(); for (;;) { try { const v = await fn(); if (v) return v; } catch {} if (Date.now() - t0 > ms) { check(false, `${name}: ${what}`, '시간 초과'); return null; } await sleep(120); } };
@@ -87,6 +88,7 @@ async function run(name, {status = READY, delay = 0, reject = false, guest = fal
   finally { process.once('exit', () => { try { server.kill(); } catch {} }); }
 }
 
+let answerMs = 0;
 // 1. 사진이 나와 고른 학생: 얼굴 원이 그 사진을 얼굴 자리(1152×1536의 50% · 36%, 폭 34%)로 자른다
 {
   const c = await run('고른 사진');
@@ -97,8 +99,10 @@ async function run(name, {status = READY, delay = 0, reject = false, guest = fal
     // 한글 질문에 답하면 앞면이 state를 다시 짓는다 — 4분 안이라 다시 묻지 않고 같은 사진을 쓴다
     const reads = await c.F().$('[data-hangul="reads"]');
     if (reads) {
+      const t = Date.now();
       await reads.click();
       await c.until('한글 답 뒤 다시 그림', () => c.F().evaluate(() => !document.querySelector('[data-hangul]')), 8000);
+      answerMs = Date.now() - t;   // 기다림 없이 한글 답을 넘기는 데 드는 시간(틀의 움직임 포함) — 늦은 status 경우와 견준다
       await sleep(600);
       const again = await c.faceStyle();
       check(!!again && again.includes(PHOTO_URL), '다시 그려도 얼굴 원에 사진', again || '');
@@ -117,13 +121,35 @@ async function run(name, {status = READY, delay = 0, reject = false, guest = fal
     await c.end();
   }
 }
-// 2. status가 늦는 학생: 앞면은 기다리지 않고 얼굴 없이 뜬 뒤, 사진을 받으면 다시 그린다
+// 2. status가 늦는 학생: 앞면은 2.5초만 기다리고 얼굴 없이 뜬다. 걸린 요청은 다시 기다리지 않고, 늦게 온 사진으로 화면을 다시 그리지 않는다
 {
-  const c = await run('늦은 status', {delay: 5000});
+  const c = await run('늦은 status', {delay: [6000]});
   if (c) {
     check(!(c.first || '').includes('background-image'), '늦으면 얼굴 없이 먼저 뜸', c.first || '(빈 style)');
-    const s = await c.until('받은 뒤 얼굴 원에 사진', async () => { const v = await c.faceStyle(); return v && v.includes(PHOTO_URL) ? v : null; }, 9000);
-    check(!!s, '받으면 다시 그려 사진이 들어감');
+    const t = Date.now();
+    await c.F().click('[data-hangul="reads"]');
+    await c.until('한글 답 뒤 다시 그림', () => c.F().evaluate(() => !document.querySelector('[data-hangul]')), 8000);
+    const ms = Date.now() - t;
+    check(ms < answerMs + 1500, '걸린 요청은 다시 기다리지 않음(기다림 없는 경우와 비슷함)', `${ms}ms · 기다림 없을 때 ${answerMs}ms`);
+    await sleep(1200);
+    await c.F().click('.view.night .me-tag');
+    const open = await c.until('학생증 판이 열림', () => c.F().evaluate(() => !!document.querySelector('.view .sheet.on')), 5000);
+    await c.until('status 응답', async () => Date.now() - c.t0 > 5000, 9000); await sleep(1500);
+    check(!!open && await c.F().evaluate(() => !!document.querySelector('.view .sheet.on')), '늦게 온 사진이 화면을 다시 그리지 않음(열린 학생증 판이 그대로)');
+    check((await c.calls()) === 1, '늦은 요청 하나만 나감', String(await c.calls()));
+    await c.end();
+  }
+}
+{
+  const c = await run('조금 늦은 status', {delay: [3500]});
+  if (c) {
+    check(!(c.first || '').includes('background-image'), '조금 늦어도 얼굴 없이 먼저 뜸', c.first || '(빈 style)');
+    await sleep(2500);
+    await c.F().click('[data-hangul="reads"]');
+    await c.until('한글 답 뒤 다시 그림', () => c.F().evaluate(() => !document.querySelector('[data-hangul]')), 8000);
+    await sleep(600);
+    check(((await c.faceStyle()) || '').includes(PHOTO_URL), '받은 사진은 다음에 화면을 지을 때 들어감');
+    check((await c.calls()) === 1, '받은 주소를 다시 씀', String(await c.calls()));
     await c.end();
   }
 }

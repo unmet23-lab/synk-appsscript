@@ -118,13 +118,13 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  native=()=>false,guestArrival=()=>null,blocked=()=>false,newEngine=()=>false,bypass=()=>false,openSettings=null,hangulReading,setHangulReading,goalConsent=()=>({needed:true,label:'',note:''}),me2Photo=async()=>null}){
  const owner=()=>client().snapshot?.accountId||'guest';
  let session=null;
- // 내 사진 주소: 4분 안에 받은 것은 다시 쓰고(서명 주소는 5분), 못 받았으면 1분 뒤에 다시 묻는다.
+ // 내 사진 주소: 4분 안에 받은 것은 다시 쓰고(서명 주소는 5분), 못 받았으면 1분 뒤에 다시 묻는다. late = 이 요청을 이미 2.5초 기다렸다.
  const PHOTO_FRESH_MS=240000,PHOTO_RETRY_MS=60000,PHOTO_WAIT_MS=2500;
  let shot=null;
  function photoOf(who){
   const s=shot;
   if(s?.who===who&&(s.ask||Date.now()-s.at<(s.url?PHOTO_FRESH_MS:PHOTO_RETRY_MS)))return s.ask||Promise.resolve(s.url);
-  const next={who,url:null,at:0,ask:null};shot=next;
+  const next={who,url:null,at:0,ask:null,late:false};shot=next;
   next.ask=Promise.resolve().then(()=>me2Photo()).then(u=>typeof u==='string'&&/^https:\/\//.test(u)?u:null,()=>null).then(u=>{next.url=u;next.at=Date.now();next.ask=null;return u;});
   return next.ask;
  }
@@ -164,12 +164,13 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  async function stateOf(view){return withClub(await stateBase(view));}
  async function stateBase(view){
   const who=owner(),arrival=arrivalOf(who),guest=who==='guest',pc=!!native();
-  // 앞면은 사진을 오래 기다리지 않는다 — 2.5초 안에 못 받으면 얼굴 없이 그리고, 받으면 그 화면을 다시 그린다.
+  // 앞면은 사진을 오래 기다리지 않는다. 2.5초 안에 못 받으면 얼굴 없이 그리고, 받은 사진은 다음에 화면을 지을 때 들어간다.
+  // 늦게 온 사진으로 화면을 다시 그리지 않는다 — 틀이 화면 안에서 넘긴 단계 · 열린 판 · 동아리 대화가 처음으로 돌아가기 때문이다.
+  // 한 요청은 한 번만 기다린다. 이미 2.5초를 넘긴 요청이 아직 걸려 있으면 바로 얼굴 없이 그린다.
   let photo=null;
   if(!guest&&arrival?.photo==='me'){
-   const ask=photoOf(who);
-   photo=await Promise.race([ask,new Promise(res=>setTimeout(()=>res(undefined),PHOTO_WAIT_MS))]);
-   if(photo===undefined){photo=null;ask.then(u=>{const s=session;if(u&&s?.api&&s.view&&owner()===who&&s.owner===who)show(s.view);});}
+   const ask=photoOf(who),cur=shot;
+   if(!cur?.late||!cur.ask){photo=await Promise.race([ask,new Promise(res=>setTimeout(()=>res(undefined),PHOTO_WAIT_MS))]);if(photo===undefined){photo=null;if(cur?.ask)cur.late=true;}}
   }
   let hangul='ask';try{const answer=await hangulReading(who);hangul=answer?.answer==='new'?'new':answer?.answer==='reads'?'reads':'ask';}catch{hangul='ask';}
   const mark=readMark(who);
