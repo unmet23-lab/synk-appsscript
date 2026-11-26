@@ -221,11 +221,11 @@
   "msgMean": "カラオケ行く？",
   "msgSize": 52,
   "goRead": "ga-ja!",
-  "goMean": "行こ！",
+  "goMean": "行こう！",
   "moreRead": "han gok deo!",
   "moreMean": "もう1曲！",
   "smallSize": 48,
-  "end": "即充電！",
+  "end": "満タン！",
   "endSize": 60,
   "nextRead": "jol-lyeo",
   "nextMean": "また眠い…",
@@ -252,7 +252,7 @@
     "msgMean": "노래방(karaoke) 갈래?",
     "goMean": "가자!",
     "moreMean": "한 곡 더!",
-    "end": "바로 충전!",
+    "end": "가득 찼다(배터리 꽉)!",
     "nextMean": "또 졸려…"
   }
 }
