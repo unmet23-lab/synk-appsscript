@@ -188,9 +188,51 @@ function screenTextFindingsInner(bundle, videoFiles, { run = runTool, save = tru
   }
   for (const file of files) {
     const r = results.get(file);
-    if (r) findings.push(...결과줄(r, prep, hardOk, `화면 글 ${path.basename(path.dirname(file))}/${path.basename(file)}`));
+    const where = `화면 글 ${path.basename(path.dirname(file))}/${path.basename(file)}`;
+    if (r) findings.push(...결과줄(r, prep, hardOk, where), ...배우는말줄(bundle.dir, bundle.name, r, prep, where));
   }
   return findings;
+}
+
+// ── 배우는 말 칸은 천천히(11-26 유호님 — 제작 절차 「배우는 말 칸은 천천히」 #lab-learn-pace) ──
+// LAB 편(폴더 날짜 PACE_FROM부터)은 배우는 말마다 그 한국어 글이 렌더한 화면에 3.5초 넘게, 한글 · 읽기 · 뜻 글자를 초당 13자로 읽을 만큼 머문다.
+// 계획 때의 점검(tools/플로우영상.js 점검)은 편 코드에서 칸의 at · to를 못 찾으면 알림만 내서, 11-26 「키읔」의 「ㅋㅋㅋ」가 계획 3.8초 · 화면 3.3초로 지나갔다.
+// 그래서 렌더한 영상의 시간표로 다시 잰다. 기록은 영상칸/계획.json 「_배우는말」이고, 영상 칸이 없는 편(정지 그림 판)은 게시/준비.json 「배우는말」에 같은 꼴로 적는다.
+const PACE_FROM = '20261126';
+const 배움 = { 초: 3.5, 글: 13, 틈: 0.05 }; // 틈: 시간표가 1/10초 표본이라 3.5초로 잰 칸은 넘긴다
+const 고른글 = (s) => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+const 글자수 = (s) => [...고른글(s)].length;
+
+function 배우는말읽기(편dir, prep) {
+  try {
+    const p = JSON.parse(fs.readFileSync(path.join(편dir, '영상칸', '계획.json'), 'utf8').replace(/^﻿/, ''));
+    if (Array.isArray(p._배우는말) && p._배우는말.length) return p._배우는말;
+  } catch { /* 영상 칸이 없는 편 */ }
+  return Array.isArray(prep.배우는말) && prep.배우는말.length ? prep.배우는말 : null;
+}
+
+function 배우는말줄(편dir, name, r, prep, where) {
+  if (!/^LAB_/.test(String(name)) || (편날짜(name) || '') < PACE_FROM || !r || r.못잼) return [];
+  const why = reasonFor(prep, { 항목: '배우는말' });
+  const 등급 = why ? LOOK : FIX;
+  const 꼬리 = why ? ` · 「화면글판단」: ${why}` : ' — 일부러 다르게 둔 편이면 준비.json 「화면글판단」 {"배우는말": "까닭"}';
+  const 목록 = 배우는말읽기(편dir, prep);
+  if (!목록) return [{ level: 등급, code: 'screen-text-배우는말', where, message: `배우는 말 기록이 없다 — 영상칸/계획.json 「_배우는말」(영상 칸이 없으면 게시/준비.json 「배우는말」)에 말 · 한글 · 읽기 · 뜻 · 초 · 음성을 적는다(제작 절차 「배우는 말 칸은 천천히」)${꼬리}` }];
+  const 표 = (r.시간표 || []).map(([글, 시작, 머묾]) => ({ 글: 고른글(글), 시작, 머묾: Number(머묾) || 0 }));
+  const out = [];
+  for (const m of 목록) {
+    const ko = 고른글(m.한글 || m.말);
+    if (!ko) continue;
+    const 맞음 = 표.filter((e) => e.글.includes(ko));
+    if (!맞음.length) {
+      out.push({ level: LOOK, code: 'screen-text-배우는말', where, message: `배우는 말 「${ko}」을 화면 글에서 못 찾았다 — 1/10초 띠로 머무는 시간을 눈으로 잰다(${배움.초}초 넘게)` });
+      continue;
+    }
+    const 잰 = Math.max(...맞음.map((e) => e.머묾));
+    const 필요 = Math.max(배움.초, Math.round(((글자수(m.한글 || m.말) + 글자수(m.읽기) + 글자수(m.뜻)) / 배움.글) * 10) / 10);
+    if (잰 + 배움.틈 < 필요) out.push({ level: 등급, code: 'screen-text-배우는말', where, message: `배우는 말 「${ko}」이 화면에 ${잰}초만 있다 — ${필요}초 넘게 둔다(제작 절차 「배우는 말 칸은 천천히」 · 11-26 유호님)${꼬리}` });
+  }
+  return out;
 }
 
 // 영상 하나의 결과 → 걸림 줄. 올리기 전 검사 ㉓과 이해 시험 전 검사가 같은 등급을 쓴다
@@ -252,10 +294,10 @@ function 시험전검사(file, { 언어 = null, run = runTool, 기록폴더 = �
       const 원본같음 = (!out.원본지문 || out.원본지문 === src) && sourceStamp(편) === src;
       if (원본같음 && (!r.못잼 || 남길못잼.test(r.못잼))) remember(cacheFile, key, stat, src, cond, r);
     }
-    return { 대상: true, 편, 줄: 결과줄(r, prep, true, where) };
+    return { 대상: true, 편, 줄: [...결과줄(r, prep, true, where), ...배우는말줄(편, name, r, prep, where)] };
   } catch (error) {
     return { 대상: true, 편, 줄: [{ level: LOOK, code: 'screen-text-failed', where, message: `화면 글 검사가 멈췄다(${String(error && error.message).slice(0, 200)}) — 올리기 전 검사 ㉓이 다시 본다` }] };
   }
 }
 
-module.exports = { screenTextFindings, applies, reasonFor, 모으기, 결과줄, 편폴더, 시험전검사, FROM, FIX_FROM, BRANDS, HARD, 남길못잼 };
+module.exports = { screenTextFindings, applies, reasonFor, 모으기, 결과줄, 배우는말줄, 편폴더, 시험전검사, FROM, FIX_FROM, PACE_FROM, BRANDS, HARD, 남길못잼 };

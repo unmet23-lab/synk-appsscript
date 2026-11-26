@@ -30,14 +30,14 @@ function 편(계획, 지시, 그림 = { s1: [1080, 1920] }, 날짜 = '20261125')
 const 칸 = (over = {}) => ({ model: 'Omni 1.2 Flash', n: 1, cost: '12', dur: '4초', proj: 'omni', start: 's1', key: 'jumps up in shock', ...over });
 const 글 = (id = 'S1', prompt = 'Mongle jumps up in shock.') => ({ 공통, 클립: [{ id, prompt }] });
 
-test('맞는 계획은 걸림 없이 지나가고 합과 예산(기본 180)을 센다', () => {
+test('맞는 계획은 걸림 없이 지나가고 합과 예산(기본 360)을 센다', () => {
   const { base, 편폴더 } = 편({ S1: 칸() }, 글());
   try {
     const r = 점검(편폴더);
     assert.deepEqual(r.문제, []);
     assert.deepEqual(r.칸, ['S1']);
     assert.equal(r.합, 12);
-    assert.equal(r.예산, 180);
+    assert.equal(r.예산, 360);
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
 });
 

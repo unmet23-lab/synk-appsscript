@@ -274,3 +274,45 @@ test('이해 시험 전 — 못 잰 영상 · 도구 실패는 확인할 것 한
   const 멈춤 = 시험전검사(video, { run: () => { throw new Error('렌더 멈춤'); }, 기록폴더: 기록폴더(t) });
   assert.deepEqual(codes(멈춤.줄), ['확인:screen-text-failed']);
 });
+
+// 배우는 말 칸은 천천히(11-26 유호님) — 렌더한 화면 시간표로 배우는 말 한국어 글이 3.5초 넘게 머무는지 잰다
+const 배움편 = (t, { 계획 = null, prep = {} } = {}) => {
+  const f = fixture(t, { name: 'LAB_키읔_20261126', prep });
+  if (계획) { fs.mkdirSync(path.join(f.bundle.dir, '영상칸'), { recursive: true }); fs.writeFileSync(path.join(f.bundle.dir, '영상칸', '계획.json'), JSON.stringify(계획)); }
+  return f;
+};
+const ㅋ = { 말: 'ㅋㅋㅋ', 한글: 'ㅋㅋㅋ', 읽기: 'keu-keu-keu', 뜻: 'Korean “lol”', 초: 3.8, 칸: ['s5'], 음성: ['m2', 'm2b'] };
+const 시간표 = (머묾) => [['ㅋㅋㅋㅋ', 4, 1.6], ['ㅋㅋㅋㅋㅋㅋㅋㅋ', 5.8, 1.6], ['ㅋㅋㅋ', 7.6, 머묾]];
+
+test('11-26 뒤 LAB 편 — 배우는 말이 화면에 3.5초 넘게 없으면 고칠 것(키읔 3.3초), 3.5초로 잰 칸은 넘긴다', (t) => {
+  const { bundle, video } = 배움편(t, { 계획: { _배우는말: [ㅋ] } });
+  const 짧음 = screenTextFindings(bundle, [video], { run: fake(bundle, video, { 걸림: [], 시간표: 시간표(3.3) }), save: false });
+  assert.deepEqual(codes(짧음), ['고칠:screen-text-배우는말']);
+  assert.match(짧음[0].message, /「ㅋㅋㅋ」이 화면에 3\.3초만 있다 — 3\.5초 넘게/);
+  assert.deepEqual(codes(screenTextFindings(bundle, [video], { run: fake(bundle, video, { 걸림: [], 시간표: 시간표(3.5) }), save: false })), []);
+});
+
+test('배우는 말 — 기록이 없으면 고칠 것, 정지 그림 판은 준비.json 「배우는말」을 읽고, 「화면글판단」 까닭이 있으면 확인할 것', (t) => {
+  const 없음 = 배움편(t);
+  const r1 = screenTextFindings(없음.bundle, [없음.video], { run: fake(없음.bundle, 없음.video, { 걸림: [], 시간표: 시간표(3.6) }), save: false });
+  assert.deepEqual(codes(r1), ['고칠:screen-text-배우는말']);
+  assert.match(r1[0].message, /배우는 말 기록이 없다/);
+  const 준비 = 배움편(t, { prep: { 배우는말: [ㅋ] } });
+  assert.deepEqual(codes(screenTextFindings(준비.bundle, [준비.video], { run: fake(준비.bundle, 준비.video, { 걸림: [], 시간표: 시간표(3.6) }), save: false })), []);
+  const 까닭 = 배움편(t, { prep: { 배우는말: [ㅋ], 화면글판단: { 배우는말: '노래 칸이라 박자에 맞춤' } } });
+  const r3 = screenTextFindings(까닭.bundle, [까닭.video], { run: fake(까닭.bundle, 까닭.video, { 걸림: [], 시간표: 시간표(2.0) }), save: false });
+  assert.deepEqual(codes(r3), ['확인:screen-text-배우는말']);
+  assert.match(r3[0].message, /노래 칸이라/);
+});
+
+test('배우는 말 — 긴 글은 초당 13자로 더 두고, 화면에서 못 찾으면 확인할 것, 11-25 편은 묻지 않는다', (t) => {
+  const 긴 = { 말: '드세요', 한글: '할머니, 드세요!', 읽기: 'хальмони, тысэё!', 뜻: 'Эмээ, зооглоорой! (ахмад хүнд)', 초: 3.8 };
+  const { bundle, video } = 배움편(t, { 계획: { _배우는말: [긴] } });
+  const r = screenTextFindings(bundle, [video], { run: fake(bundle, video, { 걸림: [], 시간표: [['할머니, 드세요!', 9, 3.6]] }), save: false });
+  assert.deepEqual(codes(r), ['고칠:screen-text-배우는말']);
+  assert.match(r[0].message, /3\.6초만 있다 — 4\.\d초 넘게/);
+  const 못찾음 = screenTextFindings(bundle, [video], { run: fake(bundle, video, { 걸림: [], 시간표: [['할머니,', 9, 3.6], ['드세요!', 9, 3.6]] }), save: false });
+  assert.deepEqual(codes(못찾음), ['확인:screen-text-배우는말']);
+  const 옛 = fixture(t, { name: 'LAB_서비스_20261125' });
+  assert.deepEqual(codes(screenTextFindings(옛.bundle, [옛.video], { run: fake(옛.bundle, 옛.video, { 걸림: [], 시간표: [] }), save: false })), []);
+});
