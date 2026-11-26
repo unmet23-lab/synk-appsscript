@@ -779,8 +779,41 @@ function 자리설정(root, 자리) {
  *  자리: 위 「자리」 — 시험이 { 폴더, 수, 기다림ms, 간격ms }를 주거나 false로 끈다. 결과의 자리 = { 번호, 수, 기다린초 }. */
 const 몰이파일 = path.join(__dirname, 'lib', '관련시험몰이.cjs');
 
-function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, 새파일 = [], 자리 = undefined }) {
+/** 일꾼: tools/일꾼시험.js 준비()가 돌려준 것({ 실행, 한도ms }). 주면 일꾼 서버에서 먼저 돈다(2026-11-26).
+ *  기준: 일꾼은 관문을 일꾼 이전(이 PC 작업본으로 한 번)보다 약하게 만들지 않는다(Fable 설계 검토 일꾼몰이).
+ *  서버도 같은 몰이(tools/lib/관련시험몰이.cjs)로 파일마다 돌고, 판정은 이 PC와 같은 몰이판정이다. 서버 몰이가 종료 0과 장부 끝 줄로 끝나지
+ *  않았으면 판정이 통과여도 서버 판을 믿지 않는다(일꾼으로).
+ *  일꾼에서 통과 → 그 결과를 쓰되, 이 PC가 봐야 할 파일(이PC볼파일 — 서버에 없는 준비물에 기대는 파일과 서버에서 건너뛴 시험이 있는 파일)은
+ *  이 PC에서 한 번 더 돌고 거기서 깨지면 깨짐이다(Fable 설계 검토 11-26 A′ · 일꾼몰이 GPT GA3).
+ *  일꾼에서 깨짐 · 시간 넘김 → 고른 시험 전부를 이 PC에서 다시 돌려 그 결과를 쓴다(리눅스에서만 깨진 것으로 막지 않는다). 다만 서버 TAP에
+ *  실제 실패가 찍혔으면 이 PC가 끝까지 통과해야만 올린다 — 결과에 면제없음을 붙여 시간 넘김 주의도, 공용 작업본의 남의 미커밋 면제도 쓰지 않게 한다
+ *  (git-publish-core, 일꾼몰이-3 GA1 · GA6 · GA8).
+ *  일꾼에서 시험이 안 돌았으면(되돌림) 이 PC에서 돈다. 결과의 일꾼 = { 결과, 초, 건너뜀, 이PC, 깨진시험 | 까닭 }.
+ *  push가 거절돼 다시 쌓은 판은 여기서 다시 돌지 않는다 — git-publish-core가 첫 판의 결과로 올린다(일꾼 이전과 같다). */
+function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, 새파일 = [], 자리 = undefined, 일꾼 = null }) {
   if (!시험.length) return { 통과함: true, 시험: 0, 통과: 0, 실패수: 0, 실패: [], 초: 0 };
+  if (일꾼 && typeof 일꾼.실행 === 'function') {
+    const 여기서 = (목록) => 돌리기({ root, 시험: 목록, 워크트리, 한도ms, 새파일, 자리 });
+    let 원격;
+    try { 원격 = 일꾼으로({ root, 시험, 새파일, 한도ms, 일꾼 }); } catch (e) { 원격 = { 되돌림: `일꾼 오류 — ${e.message}` }; }
+    if (원격.되돌림) return { ...여기서(시험), 일꾼: { 결과: '못 씀', 까닭: 원격.되돌림 } };
+    const 표 = { 결과: 판정글(원격), 초: 원격.초, ...(원격.건너뜀 ? { 건너뜀: 원격.건너뜀 } : {}) };
+    if (원격.통과함) {
+      const 볼것 = 이PC볼파일(root, 시험, 원격);
+      if (!볼것.length) return { ...원격, 일꾼: 표 };
+      const 여기 = 여기서(볼것);
+      const 판 = { ...표, 이PC: { 파일: 볼것.length, 결과: 판정글(여기), 초: 여기.초 } };
+      return 여기.통과함 ? { ...원격, 초: 원격.초 + 여기.초, 일꾼: 판 } : { ...여기, 일꾼: 판 };
+    }
+    const 깨진 = { ...표, 깨진시험: 원격.실패.slice(0, 5).map((x) => x.이름) };
+    const 여기 = 여기서(시험);
+    const 실제실패 = 원격.실패.filter((x) => !x.기록없음);
+    const 초 = 원격.초 + 여기.초;
+    if (!실제실패.length || 여기.통과함) return { ...여기, 초, 일꾼: 깨진 };
+    // 서버 실패를 결과의 실패에도 넣는다 — 요약이 「시간 넘김 · 0개 깨짐」으로 보이지 않게(일꾼몰이-4 GA1)
+    const 서버글 = `서버에서 깨진 시험(${실제실패.slice(0, 3).map((x) => x.이름).join(', ')}${실제실패.length > 3 ? ' …' : ''})을 이 PC가 끝까지 통과로 뒤집지 못했다`;
+    return { ...여기, 초, 실패: [...실제실패, ...여기.실패], 시험: (여기.시험 || 0) + 실제실패.length, 실패수: (여기.실패수 || 0) + 실제실패.length, 면제없음: true, 이유: [서버글, 여기.이유].filter(Boolean).join(' · '), 일꾼: 깨진 };
+  }
   const env = { ...process.env };
   // node --test 안에서 부르면(시험·훅) 부모 실행기의 표시가 따라와 자식이 TAP 파일 대신 부모에게 결과를 보낸다 — 0건으로 읽힌다.
   delete env.NODE_TEST_CONTEXT;
@@ -815,6 +848,58 @@ function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, �
     }
   }
   return { ...판정, 초: Math.round(경과ms() / 1000), ...(잡음 ? { 자리: { 번호: 잡음.번호, 수: 잡음.수, 기다린초: 잡음.기다린초 } } : {}) };
+}
+
+/** 서버에 없는 준비물에 기대는 시험 파일 — 그 파일과 그 파일이 불러오는 파일 전부(tests/ 도우미 · 도구)의 글에 이 무늬가 있으면 그렇다고 본다.
+ *  도구의 process.platform 윈도우 갈래도 서버(리눅스)에서는 돌지 않는다(Fable 설계 검토 일꾼몰이 — tools/git잠금.js ↔ tests/git잠금.test.js).
+ *  못 읽으면 기댄다고 본다(이 PC에서 한 번 더 도는 쪽이 안전하다). */
+const 환경무늬 = /SYNK-talk|SYNK_TALK|SYNK_REQUIRE_TALK|SYNK_CHROME|크롬|chrome|chromium|playwright|process[.]platform|\bplatform\s*\(\s*\)|win32|_git밖/i;
+function 환경시험(root, 시험) {
+  return 시험.filter((t) => {
+    const 이어진 = 불러오는파일(root, t);
+    const 볼것 = [String(t).replace(/\\/g, '/'), ...(이어진 ? [...이어진] : [])];
+    return 볼것.some((p) => { try { return 환경무늬.test(fs.readFileSync(path.join(root, p), 'utf8')); } catch { return true; } });
+  });
+}
+/** 이 PC가 봐야 할 파일 — 이 PC 작업본의 환경시험, 서버가 그 커밋에서 셈한 환경시험(원격.서버환경), 서버에서 건너뛴 시험이 있는 파일
+ *  (원격.건너뛴파일). 고른 시험 안에서, 고른 차례대로. */
+function 이PC볼파일(root, 시험, 원격) {
+  const 볼 = new Set([...환경시험(root, 시험), ...(원격.서버환경 || []), ...(원격.건너뛴파일 || [])]);
+  return 시험.filter((p) => 볼.has(p));
+}
+
+const 판정글 = (r) => (r.통과함 ? '통과' : 시간만넘김(r) ? '시간 넘김' : '깨짐');
+
+/** 몰이 장부가 끝 줄({"끝":true})로 끝났나. 몰이판정이 끝 줄 뒤의 줄은 따로 막는다. */
+function 장부끝(글) {
+  if (typeof 글 !== 'string' || !글.endsWith('\n')) return false;
+  try { return JSON.parse(글.slice(0, -1).split('\n').pop()).끝 === true; } catch { return false; }
+}
+/** TAP에 건너뛴 시험이 있나 — 완료 요약의 skipped, 요약이 없으면 # SKIP 지시어 줄. */
+function 건너뜀있나(글) {
+  const P = 보고서판정(글);
+  return Boolean(P.요약 && P.요약.건너뜀 > 0) || /^ *ok \d+\b.* # SKIP\b/m.test(글);
+}
+
+/** 일꾼에서 한 판 — 서버의 몰이 장부와 파일별 TAP을 이 PC와 같은 몰이판정으로 가른다. 시험이 안 돌았으면 { 되돌림 }.
+ *  서버는 자기 한도(일꾼.한도ms, 5분)로 끊는다 — 시간 넘김 까닭도 그 한도로 쓴다.
+ *  몰이는 장부 끝 줄을 쓰고 종료 0으로 끝난다. 그 밖의 종료 · 신호나 끝 줄 없는 장부면 판정이 통과여도 통과로 치지 않는다(일꾼몰이 GPT GA1 · GA2).
+ *  결과에 더하는 것: 건너뛴파일(서버에서 건너뛴 시험이 있는 파일), 서버환경(서버가 그 커밋에서 셈한 환경시험, 못 셈이면 null). */
+function 일꾼으로({ root, 시험, 새파일, 한도ms, 일꾼 }) {
+  const 쓴한도 = Number.isFinite(일꾼.한도ms) && 일꾼.한도ms > 0 ? Math.min(한도ms, 일꾼.한도ms) : 한도ms;
+  const 원격 = 일꾼.실행({ 시험, 새파일, 한도ms: 쓴한도 });
+  if (원격.되돌림) return 원격;
+  const tap = (번호) => (Object.hasOwn(원격.taps || {}, String(번호)) ? 원격.taps[String(번호)] : null);
+  const 몰이 = 원격.몰이 || {};
+  const 판정 = 몰이판정({ 장부글: 원격.장부글, tap, 시험, root, 몰이, 한도ms: 쓴한도 });
+  const 건너뛴파일 = 시험.filter((p, i) => { const g = tap(i); return typeof g === 'string' && 건너뜀있나(g); });
+  const 결과 = { ...판정, 초: 원격.초, 서버환경: Array.isArray(원격.환경) ? 원격.환경 : null, ...(건너뛴파일.length ? { 건너뛴파일 } : {}) };
+  const 끝줄 = 장부끝(원격.장부글);
+  if (몰이.status !== 0 || 몰이.error || 몰이.signal || !끝줄) {
+    const 까닭 = `서버 몰이가 제대로 끝나지 않았다(${몰이.error ? 몰이.error.code || 몰이.error.message : 몰이.signal ? `신호 ${몰이.signal}` : `종료 ${몰이.status}`}${끝줄 ? '' : ' · 장부 끝 줄 없음'})`;
+    return { ...결과, 통과함: false, 이유: [판정.이유, 까닭].filter(Boolean).join(' · ') };
+  }
+  return 결과;
 }
 
 /** 한도만 넘기고 그때까지 깨진 시험은 없었나(돌리기 결과). 바로올리기는 이때 막지 않고 주의만 남긴다(10-22).
@@ -868,4 +953,4 @@ function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 고르기, 돌리기, 시간만넘김, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, 보고서판정, 몰이판정, git무늬, git무늬식, 읽나, 불러오는파일, 지도이름, 지도파일이름 };
+module.exports = { 고르기, 돌리기, 일꾼으로, 환경시험, 이PC볼파일, 시간만넘김, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, 보고서판정, 몰이판정, git무늬, git무늬식, 읽나, 불러오는파일, 지도이름, 지도파일이름 };

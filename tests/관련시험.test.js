@@ -1069,3 +1069,155 @@ test('돌리기 — 공용 git 폴더에서 자리를 잡고 돌고 놓는다 ·
   assert.match(관련.자리글({ 번호: null, 수: 2, 기다린초: 1800 }), /자리 2개가 1800초 동안 안 비어 자리 없이 돌았다/);
   assert.equal(관련.자리글(undefined), '');
 });
+
+// ── 일꾼 서버(11-26) — 일꾼.실행은 가짜로 주고, 이 PC 판은 임시 저장소에서 실제로 돈다 ─────────────
+/** 파일 하나의 TAP — 결과마다 [이름, 됨, 건너뜀?]. */
+const 일꾼TAP = (결과들) => ['TAP version 13', ...결과들.map(([이름, 됨, 건너뜀], i) => `${됨 ? 'ok' : 'not ok'} ${i + 1} - ${이름}${건너뜀 ? ' # SKIP 서버에 없다' : ''}`), `1..${결과들.length}`,
+  `# tests ${결과들.length}`, '# suites 0', `# pass ${결과들.filter((x) => x[1] && !x[2]).length}`, `# fail ${결과들.filter((x) => !x[1]).length}`,
+  '# cancelled 0', `# skipped ${결과들.filter((x) => x[2]).length}`, '# todo 0', '# duration_ms 1', ''].join('\n');
+/** 서버 몰이의 답(tools/일꾼시험.js 응답읽기가 돌려주는 꼴) — 파일마다 [TAP, 종료 코드]. 끊김이면 마지막 파일은 돌던 중이다. */
+function 일꾼답(파일들, { 끊김 = false, 초 = 1, 몰이 = { status: 0, signal: null }, 환경 = [] } = {}) {
+  const 줄 = [{ 몰이판: 1, 수: 파일들.length }], taps = {};
+  파일들.forEach(([tap, 종료], i) => {
+    줄.push({ 번호: i, 시작: true });
+    if (tap !== null) taps[String(i)] = tap;
+    if (!(끊김 && i === 파일들.length - 1)) 줄.push({ 번호: i, 종료, 신호: null });
+  });
+  if (끊김) 줄.push({ 끊김: true });
+  줄.push({ 끝: true });
+  return { 몰이, 장부글: `${줄.map((x) => JSON.stringify(x)).join('\n')}\n`, taps, 환경, 초 };
+}
+
+function 일꾼저장소(t) {
+  return 저장소(t, {
+    'tests/돕는.js': "module.exports = 1;\n",
+    'tests/잇는.test.js': "require('./돕는.js'); require('node:test')('잇는', () => {});\n",
+    'tests/됨.test.js': "require('node:test')('됨', () => {});\n",
+    'tests/깨짐.test.js': "const { test } = require('node:test'); const assert = require('node:assert');\ntest('일부러 깨짐', () => { assert.equal(1, 2); });\n",
+  });
+}
+
+test('일꾼 — 일꾼에서 통과하면 그 결과를 쓰고 이 PC에서는 돌지 않는다', (t) => {
+  const root = 일꾼저장소(t), 받은 = [];
+  // 이 PC에서 돌면 깨지는 시험이다 — 통과함이 참이면 이 PC 판이 돌지 않은 것이다
+  const 일꾼 = { 실행: (입력) => { 받은.push(입력); return 일꾼답([[일꾼TAP([['일부러 깨짐', true]]), 0]], { 초: 7 }); } };
+  const r = 관련.돌리기({ root, 시험: ['tests/깨짐.test.js'], 새파일: ['tests/깨짐.test.js'], 자리: false, 일꾼 });
+  assert.equal(r.통과함, true, JSON.stringify(r));
+  assert.deepEqual(r.일꾼, { 결과: '통과', 초: 7 });
+  assert.equal(r.초, 7);
+  assert.deepEqual(받은.map((x) => [x.시험, x.새파일, x.한도ms]), [[['tests/깨짐.test.js'], ['tests/깨짐.test.js'], 15 * 60e3]]);
+});
+
+test('일꾼 — 일꾼에서 깨지면 고른 시험 전부를 이 PC에서 다시 돌려 그 결과를 따른다(통과면 통과 · 깨지면 깨짐)', (t) => {
+  const root = 일꾼저장소(t);
+  const 깨진일꾼 = { 실행: () => 일꾼답([[일꾼TAP([['리눅스에서만', false]]), 1]], { 초: 3 }) };
+  const 됨 = 관련.돌리기({ root, 시험: ['tests/됨.test.js'], 자리: false, 일꾼: 깨진일꾼 });
+  assert.equal(됨.통과함, true, JSON.stringify(됨));
+  assert.equal(됨.일꾼.결과, '깨짐');
+  assert.deepEqual(됨.일꾼.깨진시험, ['리눅스에서만']);
+  const 깨짐 = 관련.돌리기({ root, 시험: ['tests/깨짐.test.js'], 자리: false, 일꾼: 깨진일꾼 });
+  assert.equal(깨짐.통과함, false);
+  assert.deepEqual(깨짐.실패.map((x) => x.이름), ['리눅스에서만', '일부러 깨짐'], '서버 실패도 결과의 실패에 든다(일꾼몰이-4 GA1)');
+  assert.equal(깨짐.일꾼.결과, '깨짐');
+  assert.equal(깨짐.면제없음, true, '서버에서 실제로 깨졌고 이 PC도 통과하지 못했다 — 시간 넘김 주의 · 미커밋 면제를 쓰지 않는다(일꾼몰이-3 GA1 · GA6 · GA8)');
+  assert.match(깨짐.이유, /서버에서 깨진 시험\(리눅스에서만\)을 이 PC가 끝까지 통과로 뒤집지 못했다/);
+  assert.equal(됨.면제없음, undefined, '이 PC가 끝까지 통과하면 그 판을 쓴다');
+  const 지어낸 = 관련.돌리기({ root, 시험: ['tests/깨짐.test.js'], 자리: false, 일꾼: { 실행: () => 일꾼답([['', 0]]) } });
+  assert.equal(지어낸.통과함, false);
+  assert.equal(지어낸.면제없음, undefined, 'TAP 없이 지어낸 서버 실패뿐이면 일꾼 이전과 같은 이 PC 판이다');
+  // 서버에서 깨끗이 통과한 파일도 이 PC에서 다시 돈다 — 깨진 판의 서버 기록만으로 파일을 가르지 않는다(일꾼몰이-2 설계 다시 보기)
+  const 둘 = 관련.돌리기({ root, 시험: ['tests/깨짐.test.js', 'tests/됨.test.js'], 자리: false,
+    일꾼: { 실행: () => 일꾼답([[일꾼TAP([['일부러 깨짐', true]]), 0], [일꾼TAP([['됨', false]]), 1]]) } });
+  assert.equal(둘.통과함, false, JSON.stringify(둘));
+  assert.deepEqual(둘.실패.map((x) => x.이름), ['됨', '일부러 깨짐']);
+});
+
+test('일꾼 — 시험이 안 돌았거나(되돌림) 일꾼이 던지거나 시간을 넘기거나 장부 · TAP을 믿을 수 없으면 이 PC에서 돈다', (t) => {
+  const root = 일꾼저장소(t);
+  const 되돌림 = 관련.돌리기({ root, 시험: ['tests/깨짐.test.js'], 자리: false, 일꾼: { 실행: () => ({ 되돌림: '일꾼 준비 실패 202' }) } });
+  assert.equal(되돌림.통과함, false, '이 PC 판이 돌아 깨짐을 잡는다');
+  assert.deepEqual(되돌림.일꾼, { 결과: '못 씀', 까닭: '일꾼 준비 실패 202' });
+  const 던짐 = 관련.돌리기({ root, 시험: ['tests/됨.test.js'], 자리: false, 일꾼: { 실행: () => { throw new Error('ssh 없음'); } } });
+  assert.equal(던짐.통과함, true);
+  assert.match(던짐.일꾼.까닭, /ssh 없음/);
+  const 중간 = ['TAP version 13', 'ok 1 - 앞 시험', ''].join('\n');
+  const 넘김 = 관련.돌리기({ root, 시험: ['tests/깨짐.test.js'], 자리: false, 일꾼: { 실행: () => 일꾼답([[중간, null]], { 끊김: true, 초: 300 }) } });
+  assert.equal(넘김.통과함, false, '서버 시간 넘김은 통과로 치지 않고 이 PC 판이 깨짐을 잡는다');
+  assert.deepEqual(넘김.실패.map((x) => x.이름), ['일부러 깨짐']);
+  assert.equal(넘김.일꾼.결과, '시간 넘김');
+  const 됨TAP = 일꾼TAP([['됨', true]]);
+  for (const [이름, 답] of [
+    ['빈 TAP', 일꾼답([['', 0]])],
+    ['TAP이 없음', 일꾼답([[null, 0]])],
+    ['장부 머리 수가 다름', { ...일꾼답([[됨TAP, 0]]), 장부글: '{"몰이판":1,"수":2}\n{"번호":0,"시작":true}\n{"번호":0,"종료":0,"신호":null}\n{"끝":true}\n' }],
+    ['장부 없음', { ...일꾼답([[됨TAP, 0]]), 장부글: null }],
+  ]) {
+    const r = 관련.돌리기({ root, 시험: ['tests/됨.test.js'], 자리: false, 일꾼: { 실행: () => 답 } });
+    assert.equal(r.통과함, true, `${이름}: 일꾼 통과가 아니다 — 이 PC에서 다시 돌아 통과한다 ${JSON.stringify(r)}`);
+    assert.equal(r.일꾼.결과, '깨짐', 이름);
+  }
+});
+
+test('일꾼으로 — 서버 몰이가 종료 0과 장부 끝 줄로 끝나지 않았으면 판정이 통과여도 통과로 치지 않는다(일꾼몰이 GPT GA1 · GA2)', (t) => {
+  const root = 일꾼저장소(t);
+  const 됨 = [[일꾼TAP([['됨', true]]), 0]];
+  const 끝없는 = (답) => ({ ...답, 장부글: 답.장부글.replace('{"끝":true}\n', '') });
+  for (const [이름, 답] of [['종료 137', { ...일꾼답(됨), 몰이: { status: 137, signal: null } }], ['신호', { ...일꾼답(됨), 몰이: { status: null, signal: 'SIGKILL' } }], ['끝 줄 없음', 끝없는(일꾼답(됨))]]) {
+    const r = 관련.일꾼으로({ root, 시험: ['tests/됨.test.js'], 새파일: [], 한도ms: 300e3, 일꾼: { 실행: () => 답 } });
+    assert.equal(r.통과함, false, 이름);
+    assert.match(r.이유, /서버 몰이가 제대로 끝나지 않았다/, 이름);
+  }
+  // 이 PC에서 돌면 깨지는 파일을 서버가 통과로 적었지만 몰이가 137로 끝났다 — 통과로 치지 않고 이 PC에서 다시 돌아 깨짐을 잡는다
+  const r = 관련.돌리기({ root, 시험: ['tests/깨짐.test.js'], 자리: false, 일꾼: { 실행: () => ({ ...일꾼답([[일꾼TAP([['일부러 깨짐', true]]), 0]]), 몰이: { status: 137, signal: null } }) } });
+  assert.equal(r.통과함, false, JSON.stringify(r));
+  assert.deepEqual(r.실패.map((x) => x.이름), ['일부러 깨짐']);
+});
+
+test('일꾼 — 서버에서 통과해도 서버에 없는 준비물(SYNK-talk · 크롬 · 윈도우 · git 밖 자료)에 기대거나 서버에서 건너뛴 시험이 있는 파일은 이 PC에서 한 번 더 돈다(Fable 11-26 A′ · 일꾼몰이 GPT GA3)', (t) => {
+  const root = 저장소(t, {
+    'tests/형제.test.js': "// ../SYNK-talk가 없으면 건너뛴다\nconst { test } = require('node:test'); const assert = require('node:assert');\ntest('형제 꼴', () => { assert.equal(1, 2); });\n",
+    'tests/도우미.js': "module.exports = { 크롬있음: false };\n",
+    'tests/도우미씀.test.js': "require('./도우미.js'); require('node:test')('도우미씀', () => {});\n",
+    'tests/보통.test.js': "const { test } = require('node:test'); const assert = require('node:assert');\ntest('보통 깨짐', () => { assert.equal(1, 2); });\n",
+    'tools/잠금.js': "module.exports = process.platform === 'win32' ? 'win' : 'posix';\n",
+    'tests/도구씀.test.js': "require('../tools/잠금.js'); require('node:test')('도구씀', () => {});\n",
+    'tools/os갈래.js': "module.exports = require('node:os').platform() === 'win' + '32';\n",
+    'tests/os씀.test.js': "require('../tools/os갈래.js'); require('node:test')('os씀', () => {});\n",
+  });
+  assert.deepEqual(관련.환경시험(root, ['tests/형제.test.js', 'tests/도우미씀.test.js', 'tests/도구씀.test.js', 'tests/os씀.test.js', 'tests/보통.test.js', 'tests/없음.test.js']),
+    ['tests/형제.test.js', 'tests/도우미씀.test.js', 'tests/도구씀.test.js', 'tests/os씀.test.js', 'tests/없음.test.js'],
+    '파일 글과 그 파일이 불러오는 도우미 · 도구의 글을 보고(도구의 process.platform 갈래 — Fable 설계 검토 일꾼몰이), 못 읽으면 기댄다고 본다');
+  const 서버통과 = (결과들) => ({ 실행: () => 일꾼답(결과들.map((x) => [일꾼TAP([x]), 0]), { 초: 5 }) });
+  const 깨짐 = 관련.돌리기({ root, 시험: ['tests/형제.test.js', 'tests/보통.test.js'], 자리: false, 일꾼: 서버통과([['형제 꼴', true], ['보통 깨짐', true]]) });
+  assert.equal(깨짐.통과함, false, '준비물에 기대는 파일이 이 PC에서 깨지면 깨짐이다');
+  assert.deepEqual(깨짐.실패.map((x) => x.이름), ['형제 꼴'], '이 PC에서는 그 파일만 돈다');
+  assert.deepEqual([깨짐.일꾼.이PC.파일, 깨짐.일꾼.이PC.결과], [1, '깨짐']);
+  const 됨 = 관련.돌리기({ root, 시험: ['tests/도우미씀.test.js', 'tests/보통.test.js'], 자리: false, 일꾼: 서버통과([['도우미씀', true], ['보통 깨짐', true]]) });
+  assert.equal(됨.통과함, true, JSON.stringify(됨));
+  assert.deepEqual([됨.일꾼.결과, 됨.일꾼.이PC.결과], ['통과', '통과']);
+  // 무늬가 없어도 서버가 건너뛴 시험이 있는 파일은 이 PC에서 돈다 — 보통.test.js는 이 PC에서 깨진다
+  const 건너뜀 = 관련.돌리기({ root, 시험: ['tests/도우미씀.test.js', 'tests/보통.test.js'], 자리: false, 일꾼: 서버통과([['도우미씀', true], ['보통 깨짐', true, true]]) });
+  assert.equal(건너뜀.통과함, false, JSON.stringify(건너뜀));
+  assert.deepEqual(건너뜀.실패.map((x) => x.이름), ['보통 깨짐']);
+  assert.deepEqual(관련.이PC볼파일(root, ['tests/도우미씀.test.js', 'tests/보통.test.js'], { 건너뛴파일: ['tests/보통.test.js'] }), ['tests/도우미씀.test.js', 'tests/보통.test.js']);
+  // 서버가 그 커밋에서 셈한 이 PC 파일도 이 PC에서 돈다(일꾼몰이-5 GA3) — 이 PC 작업본에는 무늬가 없는 보통.test.js
+  const 서버셈 = 관련.돌리기({ root, 시험: ['tests/보통.test.js'], 자리: false, 일꾼: { 실행: () => 일꾼답([[일꾼TAP([['보통 깨짐', true]]), 0]], { 환경: ['tests/보통.test.js'] }) } });
+  assert.equal(서버셈.통과함, false, JSON.stringify(서버셈));
+  assert.deepEqual(서버셈.실패.map((x) => x.이름), ['보통 깨짐']);
+});
+
+test('일꾼으로 — 서버 판정도 이 PC와 같은 몰이판정이다: 끊기기 전 깨진 파일은 깨짐 · 시간 넘김 까닭은 서버 한도(일꾼.한도ms)', (t) => {
+  const root = 일꾼저장소(t);
+  let 받은한도 = null;
+  const 넘김 = 관련.일꾼으로({ root, 시험: ['tests/됨.test.js'], 새파일: [], 한도ms: 15 * 60e3,
+    일꾼: { 한도ms: 300e3, 실행: ({ 한도ms }) => { 받은한도 = 한도ms; return { 몰이: { status: null, error: { code: 'ETIMEDOUT' } }, 장부글: null, taps: {}, 초: 300 }; } } });
+  assert.equal(받은한도, 300e3);
+  assert.match(넘김.이유, /5분 안에 끝나지 않았다/);
+  assert.equal(넘김.통과함, false);
+  // 앞 파일은 깨져 끝났고 뒤 파일은 돌던 중에 끊겼다 — 앞 파일의 실패는 그대로 깨짐이다(11-26 몰이 설계)
+  const 끊김 = 관련.일꾼으로({ root, 시험: ['tests/깨짐.test.js', 'tests/됨.test.js'], 새파일: [], 한도ms: 300e3,
+    일꾼: { 실행: () => 일꾼답([[일꾼TAP([['일부러 깨짐', false]]), 1], ['TAP version 13\n', null]], { 끊김: true, 초: 300 }) } });
+  assert.equal(끊김.통과함, false);
+  assert.equal(관련.시간만넘김(끊김), false, '깨진 파일이 보였으니 시간만 넘긴 것이 아니다');
+  assert.deepEqual(끊김.실패.map((x) => [x.이름, x.파일]), [['일부러 깨짐', 'tests/깨짐.test.js']]);
+});
