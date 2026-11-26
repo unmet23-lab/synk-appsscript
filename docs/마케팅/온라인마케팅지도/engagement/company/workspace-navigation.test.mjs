@@ -13,7 +13,7 @@ const workroomSource=readFileSync(new URL('./public/workroom.js',import.meta.url
 const accessSource=readFileSync(new URL('./public/workspace-access.js',import.meta.url),'utf8');
 const appSource=readFileSync(new URL('./public/app.js',import.meta.url),'utf8');
 
-function accessFormFixture({realApi=false,user=null}={}){
+function accessFormFixture({realApi=false,user=null,globals={}}={}){
   const handlers=new Map(),nodes=new Map(),calls=[],notifications=[],state={user,tab:'lectures',authMode:'login',modalRequest:0};
   let response={},failure=null,implementation=null;
   const context=vm.createContext({state,URL,URLSearchParams,location:new URL('https://workspace.example.test/'),
@@ -22,6 +22,7 @@ function accessFormFixture({realApi=false,user=null}={}){
     api:async(path,input)=>{calls.push({path,input});if(implementation)return implementation(path,input);if(failure)throw failure;return response;},
     crypto:{randomUUID},queueMicrotask,escape:value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),icon:()=>'',button:()=>'',
     renderAuth(){},closeModal(){},loadState:async()=>{},renderBackground(){},notify:message=>notifications.push(message),
+    ...globals,
   });
   if(realApi){
     const transport=context.api;
@@ -93,6 +94,64 @@ test('a PULSE customer invite pasted into the staff entry goes to the customer r
   const pending=moved.submit('wa-code',{code:token});await new Promise(resolve=>setImmediate(resolve));
   moved.state.authMode='reset';finish({version:1,kind:'customer',destination:'/pulse-app/'});await pending;await new Promise(resolve=>setImmediate(resolve));
   assert.equal(moved.context.location.href,home);
+});
+
+// 브라우저처럼 주소를 옮기면 pagehide가 오고, PC의 Workspace 앱 창처럼 막히면 오지 않는다. 기다림은 바로 끝낸다.
+function routingGlobals({leaves}){
+  const listeners=new Map(),waits=[];
+  const location=new URL('https://workspace.example.test/');
+  location.assign=target=>{location.href=target;if(leaves)for(const handler of listeners.get('pagehide')||[])handler();};
+  return {waits,location,addEventListener(type,handler){listeners.set(type,[...(listeners.get(type)||[]),handler]);},
+    removeEventListener(type,handler){listeners.set(type,(listeners.get(type)||[]).filter(item=>item!==handler));},
+    setTimeout(callback,ms){waits.push(ms);queueMicrotask(callback);return waits.length;}};
+}
+const settle=async()=>{for(let i=0;i<6;i++)await new Promise(resolve=>setImmediate(resolve));};
+
+test('the common lookup failing is not reported as an expired invite; a refusal still is',async()=>{
+  const token='synthetic-customer-invite-token-123456',staff='초대가 만료됐거나 이미 사용·취소됐어요.';
+  for(const [status,expected] of [[429,/초대 종류를 확인하지 못했어요/],[500,/초대 종류를 확인하지 못했어요/],[undefined,/초대 종류를 확인하지 못했어요/],[403,new RegExp(staff)],[400,new RegExp(staff)]]){
+    const f=accessFormFixture();
+    f.handle(path=>{if(path==='/api/workspace-invite/inspect')throw Object.assign(new Error(staff),{status:403});throw Object.assign(new Error('조회 실패'),{status});});
+    const sent=await f.submit('wa-code',{code:token});
+    assert.match(sent.error.textContent,expected,'status '+status);assert.equal(f.context.location.href,'https://workspace.example.test/');
+  }
+});
+
+test('a customer invite opened as a /#invite= link goes to the customer room, and a late answer after the view changes does not',async()=>{
+  const token='synthetic-customer-invite-token-123456';
+  const refuses=reply=>path=>{if(path==='/api/workspace-invite/inspect')throw Object.assign(new Error('초대가 만료됐거나 이미 사용·취소됐어요.'),{status:403});return reply();};
+  const g=routingGlobals({leaves:true}),f=accessFormFixture({globals:g});f.handle(refuses(()=>({version:1,kind:'customer',destination:'/pulse-app/'})));
+  f.run("state.authMode='join';state.authToken='"+token+"';waInspectInvite()");await settle();
+  assert.deepEqual(f.calls.map(call=>call.path),['/api/workspace-invite/inspect','/api/invite/inspect']);
+  assert.equal(g.location.href,'https://workspace.example.test/pulse-app/#invite='+token);assert.equal(f.run('wa.inviteError'),'');
+  // 공통 조회를 기다리는 사이 다른 화면으로 가면 옮기지 않고 글도 남기지 않는다.
+  for(const change of ["state.authMode='login'","state.authToken='another-synthetic-token-1234567890'"]){
+    const h=routingGlobals({leaves:true}),late=accessFormFixture({globals:h});let finish;
+    late.handle(refuses(()=>new Promise(resolve=>{finish=resolve;})));
+    late.run("state.authMode='join';state.authToken='"+token+"';waInspectInvite()");await settle();
+    late.run(change);finish({version:1,kind:'customer',destination:'/pulse-app/'});await settle();
+    assert.equal(h.location.href,'https://workspace.example.test/',change);assert.equal(late.run('wa.inviteError'),'',change);
+  }
+  // 공통 조회가 실패하면 만료가 아니라 다시 해 보라는 글이다.
+  const down=accessFormFixture({globals:routingGlobals({leaves:true})});down.handle(refuses(()=>{throw Object.assign(new Error('잠시 후'),{status:503});}));
+  down.run("state.authMode='join';state.authToken='"+token+"';waInspectInvite()");await settle();
+  assert.match(down.run('wa.inviteError'),/초대 종류를 확인하지 못했어요/);
+});
+
+test('when the window refuses to leave (PC Workspace app) the customer is told to open the invite in a browser',async()=>{
+  const token='synthetic-customer-invite-token-123456',customer=path=>{if(path==='/api/workspace-invite/inspect')throw Object.assign(new Error('초대가 만료됐거나 이미 사용·취소됐어요.'),{status:403});return {version:1,kind:'customer',destination:'/pulse-app/'};};
+  const stuck=routingGlobals({leaves:false}),f=accessFormFixture({globals:stuck});f.handle(customer);
+  const sent=await f.submit('wa-code',{code:token});await settle();
+  assert.deepEqual(stuck.waits,[2000]);
+  assert.match(sent.error.textContent,/^PULSE 고객 초대예요\. 고객 방이 열리지 않았다면 .*workspace\.example\.test\/pulse-app\/ 을 열고 「담당자에게 받은 링크로 열기」에 붙여 넣어 주세요\.$/);
+  assert.doesNotMatch(sent.error.textContent,new RegExp(token),'the invite code itself is not repeated on screen');
+  const link=accessFormFixture({globals:routingGlobals({leaves:false})});link.handle(customer);
+  link.run("state.authMode='join';state.authToken='"+token+"';waInspectInvite()");await settle();
+  assert.match(link.run('wa.inviteError'),/고객 방이 열리지 않았다면/);
+  // 브라우저처럼 문서가 떠나면 안내를 쓰지 않는다.
+  const moved=routingGlobals({leaves:true}),ok=accessFormFixture({globals:moved});ok.handle(customer);
+  const left=await ok.submit('wa-code',{code:token});await settle();
+  assert.equal(left.error.textContent,'');assert.equal(moved.location.href,'https://workspace.example.test/pulse-app/#invite='+token);
 });
 
 test('member form submits concurrent roles with a revision and displays assignment warnings',async()=>{

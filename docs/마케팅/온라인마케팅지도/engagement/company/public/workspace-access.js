@@ -262,13 +262,26 @@ function waPaintInvite(){
 // 직원 입구에 PULSE 고객 초대를 넣은 손님을 고객 방으로 보낸다.
 // 직원 초대 확인이 거절(403)한 뒤에만 부른다. 공통 초대 조회가 「고객」과 고정 목적지 하나를 답할 때만 옮기고, 그 밖에는 원래 오류를 그대로 보인다.
 // 초대 값은 주소의 # 뒤에만 싣는다(서버 기록과 리퍼러에 남지 않는다). 수락과 세션 생성은 고객 방의 기존 API가 다시 검증한다.
+// 돌려주는 값: true(옮겼거나 화면이 바뀜) · false(고객 초대가 아님 — 직원 거절을 그대로) · 글(그 글을 오류 자리에 보인다).
+// 공통 조회의 거절(400 · 403)만 「고객 초대가 아님」이다. 한도(429) · 장애(5xx) · 연결 끊김은 초대 종류를 모르는 것이라 만료라고 말하지 않는다.
+// PC의 SYNK Workspace 앱 창은 고객 방 주소로 옮기지 못하고(첫 화면 경로만 허락한다), Platform 창 안의 Workspace 뷰는 옮기지 않고 시스템 브라우저로 연다.
+// 둘 다 이 문서가 남는다. 옮긴 뒤에도 문서가 남아 있으면 브라우저로 여는 길을 알리되, 브라우저가 이미 열었거나 느린 망일 수 있어 단정하지 않는다.
+// 고객 방 첫 화면에는 「초대 코드」 칸이 없다. 초대는 「담당자에게 받은 링크로 열기」에 붙여 넣는다(pulse-app/film-home.mjs).
+const WA_INVITE_LOOKUP_FAILED='초대 종류를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.',WA_ROUTE_WAIT_MS=2000;
+const waCustomerInviteElsewhere=()=>`PULSE 고객 초대예요. 고객 방이 열리지 않았다면 받은 초대 링크를 휴대폰이나 컴퓨터의 브라우저에서 열어 주세요. 코드만 있다면 브라우저에서 ${location.host}/pulse-app/ 을 열고 「담당자에게 받은 링크로 열기」에 붙여 넣어 주세요.`;
 async function waRouteCustomerInvite(token,still=()=>true){
   let result;
-  try{result=await api('/api/invite/inspect',{token});}catch{return false;}
+  try{result=await api('/api/invite/inspect',{token});}
+  catch(error){if(error?.code==='SESSION_CHANGED'||!still())return false;return [400,403].includes(error?.status)?false:WA_INVITE_LOOKUP_FAILED;}
   if(!result||result.version!==1||result.kind!=='customer'||result.destination!=='/pulse-app/'||!still())return false;
   const target=new URL('/pulse-app/#invite='+encodeURIComponent(token),location.href).href;
+  let left=false;const leave=()=>{left=true;};
+  if(typeof addEventListener==='function')addEventListener('pagehide',leave,{once:true});
   if(typeof location.assign==='function')location.assign(target);else location.href=target;
-  return true;
+  if(typeof setTimeout!=='function')return true;
+  await new Promise(resolve=>setTimeout(resolve,WA_ROUTE_WAIT_MS));
+  if(typeof removeEventListener==='function')removeEventListener('pagehide',leave);
+  return left||!still()?true:waCustomerInviteElsewhere();
 }
 async function waInspectInvite(){
   const token=state.authToken,form=document.getElementById('auth-form');
@@ -280,9 +293,9 @@ async function waInspectInvite(){
   try{const result=await api('/api/workspace-invite/inspect',{token});if(!current())return;wa.invite=result;}
   catch(error){
     if(error?.code==='SESSION_CHANGED'||!current())return;
-    if(error?.status===403&&await waRouteCustomerInvite(token,current))return;
-    if(!current())return;
-    wa.inviteError=error.message||'초대를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.';
+    const routed=error?.status===403?await waRouteCustomerInvite(token,current):false;
+    if(routed===true||!current())return;
+    wa.inviteError=routed||error.message||'초대를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
   finally{if(current()){wa.inviteLoading=false;waPaintInvite();}}
 }
@@ -619,7 +632,9 @@ document.addEventListener('submit',event=>{
       const request=++wa.inviteRequest;let details;
       try{details=await api('/api/workspace-invite/inspect',{token});}
       catch(inspectError){
-        if(inspectError?.status===403&&await waRouteCustomerInvite(token,()=>request===wa.inviteRequest&&ownsModal()&&!state.user&&state.authMode==='login'))return;
+        const routed=inspectError?.status===403?await waRouteCustomerInvite(token,()=>request===wa.inviteRequest&&ownsModal()&&!state.user&&state.authMode==='login'):false;
+        if(routed===true)return;
+        if(routed)throw new Error(routed);
         throw inspectError;
       }
       if(request!==wa.inviteRequest||!ownsModal()||state.user||state.authMode!=='login')return;
