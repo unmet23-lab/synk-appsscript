@@ -3,7 +3,7 @@
 # 준비하고있다는걸 … 3000시간 및 5천만원 …」에 따라, 쪽 바탕(가) 위에 솔리오가 맡는 일 여섯을 고르는 줄과 실제 화면을 둔다.
 #   python -X utf8 짓기.py <작업 폴더>
 # <작업 폴더>/live/ai/index.html 에 공개본 사본, <작업 폴더>/img 에 그림(solio-tour-<열쇠>.webp · solio-tour-<열쇠>-m.webp)이 있어야 한다.
-# 결과는 <작업 폴더>/tour/ai/index.html 과 그림이다.
+# <작업 폴더>/live/en/ai/index.html 도 있으면 영어 쪽도 짓는다. 결과는 <작업 폴더>/tour/(ai · en/ai)/index.html 과 그림이다.
 import os
 import shutil
 import sys
@@ -26,7 +26,7 @@ def once(s, a, b, name):
 
 REAL = '솔리오의 실제 화면입니다. 이름과 숫자는 예시 값입니다.'
 # (열쇠, 줄 이름, 한 줄, 아래 작은 글, 대체 글)
-TOUR = [
+TOUR = {'ko': [
     ('todo', '한 번에 처리', '흩어진 할 일을 급한 순서로 줄 세웁니다. 단추 하나로 1순위부터 한 장씩 끝냅니다.', REAL,
      '솔리오의 「한 번에 처리」 화면. 맨 앞 카드는 1순위 「고객이 기다립니다 · 견적부」로, 견적 문의에 보낼 답장 초안이 있다고 알리고 「초안 복사」 단추를 둔다. 뒤에 다음 일 셋이 겹쳐 있다.'),
     ('office', '사무실', '부서마다 AI 직원이 무엇을 하는지, 누가 내 승인을 기다리는지 한 화면에 보입니다.', REAL,
@@ -39,7 +39,33 @@ TOUR = [
      '솔리오의 계정 관리 화면. 연결한 계정마다 남은 한도와 요금이 보이고, 로그인이 풀린 계정 하나에 「다시 로그인해야 합니다」가 떠 있다.'),
     ('subs', '구독', '구독마다 남은 양과 다시 차는 때를 모아, 지금 쓸 계정을 골라 줍니다.', REAL,
      '솔리오의 AI 구독 관리 화면. 서비스마다 지금 쓸 수 있는 계정 수와 남은 양이 막대로 보이고, 오른쪽 「솔리오 보고」는 다 쓴 구독이 언제 다시 열리는지와 그동안 쓸 계정을 알린다.'),
+]}
+
+REAL_EN = 'An actual SOLIO screen (in Korean). Names and numbers are example values.'
+TOUR['en'] = [
+    ('todo', 'One-click to-dos', 'Scattered tasks are lined up by urgency. One button takes you through them, top priority first, one card at a time.', REAL_EN,
+     'SOLIO’s one-click to-do screen. The front card is priority 1, a customer waiting on the quotes department: a reply draft for a quote request is ready, with a button to copy it. Three more tasks are stacked behind it.'),
+    ('office', 'Office', 'See what the AI staff in each department are doing, and who is waiting for your approval, on one screen.', REAL_EN,
+     'SOLIO’s office screen. Departments such as marketing and development are listed on the left; in the middle, an AI worker at the development desk asked for approval three minutes ago.'),
+    ('plan', 'Business plan', 'Hand in your plan and three judges score every item, then help you fix the weakest part first.', 'A screen we are still refining (in Korean). The scores are example values.',
+     'SOLIO’s business plan review screen. Three judges sit at a desk and have scored the plan; a line shows an average of 3.1 and credibility as the weakest point.'),
+    ('backup', 'One-click backup', 'One button backs up your files, test-restores them, frees up space and checks for updates.', REAL_EN,
+     'SOLIO’s one-click screen. Under “Backing up now (57%)”, 118.2 GB left on the C: drive is shown large, with four steps on the right: backup, restore check, space and update check.'),
+    ('safe', 'Security', 'Flags any account that has been logged out. API keys stay encrypted on this PC, and login details and usage never leave it.', REAL_EN,
+     'SOLIO’s account screen. Each connected account shows its remaining limit and price, and one logged-out account says it needs to sign in again.'),
+    ('subs', 'Subscriptions', 'Gathers what is left on each subscription and when it refills, then picks the account to use right now.', REAL_EN,
+     'SOLIO’s AI subscription screen. Each service shows how many accounts are usable now and what is left on a bar; on the right, the SOLIO report says when a used-up subscription reopens and which account to use meanwhile.'),
 ]
+HEAD = {
+    'ko': ('솔리오 앱', 'AI 1인 기업가에게 필요한 것을<br>솔리오 하나에 준비하고&nbsp;있습니다',
+           '3,000시간과 5천만 원을 들여 AI로 일하며 시험한 방법을 솔리오가 자동으로 적용합니다. 번거로운 설정 없이 가장 알맞은 AI로 일합니다.',
+           '솔리오가 맡는 일', '/#platform', 'PC 앱 받기', '회원은 무료입니다. Windows와 Mac에서 쓰며, 지금은 미리보기판입니다.'),
+    'en': ('SOLIO app', 'Everything a one-person AI company needs,<br>coming together in SOLIO',
+           'SOLIO applies what we learned from 3,000 hours and 50 million won of working and testing with AI. No fiddly setup, just the right AI for the job.',
+           'What SOLIO handles', '/en/#platform', 'Get the PC app', 'Free for members. Runs on Windows and Mac, now in preview.'),
+}
+# 쪽마다 걷을 옛 솔리오 칸의 머리와 강사 구역 꼬리표
+PAGE = {'ko': ('ai/index.html', '솔리오 앱', '강사'), 'en': ('en/ai/index.html', 'SOLIO app', 'Teacher')}
 SIZE = {'w': (1440, 820), 'm': (820, 640)}
 
 AI_CSS = '''<style>
@@ -97,14 +123,15 @@ addEventListener('resize',()=>place(now(),false));document.fonts&&document.fonts
 '''
 
 
-def ai_section():
+def ai_section(lang):
     w, h = SIZE['w']
     mw, mh = SIZE['m']
     tabs = ''.join(
         f'<button type="button" role="tab" id="tour-t-{k}" aria-controls="tour-p-{k}" aria-selected="{str(i == 0).lower()}"{"" if i == 0 else " tabindex=\"-1\""}>{name}</button>'
-        for i, (k, name, *_rest) in enumerate(TOUR))
+        for i, (k, name, *_rest) in enumerate(TOUR[lang]))
     panels = ''
-    for i, (k, name, line, small, alt) in enumerate(TOUR):
+    tag, h2, lead, label, href, go, fine = HEAD[lang]
+    for i, (k, name, line, small, alt) in enumerate(TOUR[lang]):
         hid = '' if i == 0 else ' hidden'
         load = 'eager' if i == 0 else 'lazy'
         panels += f'''
@@ -114,34 +141,39 @@ def ai_section():
     </figure>'''
     return f'''  <section class="sec app-sec" id="solio" aria-labelledby="solio-title">
     <div class="sec-head">
-      <p class="tag">솔리오 앱</p>
-      <h2 id="solio-title">AI 1인 기업가에게 필요한 것을<br>솔리오 하나에 준비하고&nbsp;있습니다</h2>
-      <p>3,000시간과 5천만 원을 들여 AI로 일하며 시험한 방법을 솔리오가 자동으로 적용합니다. 번거로운 설정 없이 가장 알맞은 AI로 일합니다.</p>
+      <p class="tag">{tag}</p>
+      <h2 id="solio-title">{h2}</h2>
+      <p>{lead}</p>
     </div>
-    <div class="tour-tabs" role="tablist" aria-label="솔리오가 맡는 일"><span class="jelly" aria-hidden="true"></span>{tabs}</div>{panels}
-    <div class="app-go"><a class="pill" href="/#platform">PC 앱 받기 <span class="arr" aria-hidden="true">→</span></a><small>회원은 무료입니다. Windows와 Mac에서 쓰며, 지금은 미리보기판입니다.</small></div>
+    <div class="tour-tabs" role="tablist" aria-label="{label}"><span class="jelly" aria-hidden="true"></span>{tabs}</div>{panels}
+    <div class="app-go"><a class="pill" href="{href}">{go} <span class="arr" aria-hidden="true">→</span></a><small>{fine}</small></div>
   </section>
 {AI_JS}'''
 
 
-def build_ai():
-    s = rd('ai/index.html')
-    a = s.index('      <li class="e"><div class="e-say"><span class="e-no">솔리오 앱</span>')
+def build_ai(lang):
+    path, old, teacher = PAGE[lang]
+    s = rd(path)
+    a = s.index(f'      <li class="e"><div class="e-say"><span class="e-no">{old}</span>')
     b = s.index('</li>\n', a) + len('</li>\n')
     s = s[:a] + s[b:]
     # 강사 구역 바로 앞에 단락을 둔다
-    s = once(s, '  <section class="sec">\n    <div class="sec-head">\n      <p class="tag">강사</p>', ai_section() + '\n  <section class="sec">\n    <div class="sec-head">\n      <p class="tag">강사</p>', 'ai 강사 앞')
-    s = once(s, '<link rel="stylesheet" href="/assets/v11/detail.css', AI_CSS + '<link rel="stylesheet" href="/assets/v11/detail.css', 'ai css')
+    head = f'  <section class="sec">\n    <div class="sec-head">\n      <p class="tag">{teacher}</p>'
+    s = once(s, head, ai_section(lang) + '\n' + head, lang + ' 강사 앞')
+    s = once(s, '<link rel="stylesheet" href="/assets/v11/detail.css', AI_CSS + '<link rel="stylesheet" href="/assets/v11/detail.css', lang + ' css')
     return s
 
 
 out = os.path.join(W, 'tour')
-p = os.path.join(out, 'ai', 'index.html')
-os.makedirs(os.path.dirname(p), exist_ok=True)
-with open(p, 'w', encoding='utf-8', newline='') as f:
-    f.write(build_ai())
+for lang, (path, *_r) in PAGE.items():
+    if not os.path.exists(os.path.join(LIVE, path)):
+        continue
+    p = os.path.join(out, path)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p, 'w', encoding='utf-8', newline='') as f:
+        f.write(build_ai(lang))
+    print('ok', p)
 os.makedirs(os.path.join(out, 'assets', 'v11'), exist_ok=True)
-for k, *_ in TOUR:
+for k, *_ in TOUR['ko']:
     for suf in ('', '-m'):
         shutil.copyfile(os.path.join(W, 'img', f'solio-tour-{k}{suf}.webp'), os.path.join(out, 'assets', 'v11', f'solio-tour-{k}{suf}-{DAY}.webp'))
-print('ok', p)
