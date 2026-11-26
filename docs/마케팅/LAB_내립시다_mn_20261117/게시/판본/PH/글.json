@@ -51,8 +51,8 @@
     {
       "id": "hook",
       "칸": "머리",
-      "글": "Siksikan!\nMay aleng sumigaw:",
-      "원문": "꽉 찼다!\n한 아주머니가 외쳤다:",
+      "글": "Siksikan!\nMay aleng nagsabi:",
+      "원문": "꽉 찼다!\n한 아주머니가 말했다:",
       "초": [
         0,
         1.92
@@ -422,7 +422,7 @@
     {
       "id": "youSmall",
       "칸": "진행",
-      "글": "Kapag bababa ka, sabihin:",
+      "글": "Kapag bababa ka, sabihin mo:",
       "원문": "네가 내릴 때는 이렇게 말해:",
       "초": [
         20.91,
@@ -556,8 +556,8 @@
     {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
-      "글": "Sumigaw ang isang ale ng “내립시다!” kaya sumabay akong bumaba… 😭 #learnkorean",
-      "원문": "한 아주머니가 「내립시다!」라고 외쳐서 나도 같이 내려 버렸다… 😭 #learnkorean"
+      "글": "Sabi ng isang ale “내립시다!” kaya sumabay akong bumaba… 😭 #learnkorean",
+      "원문": "한 아주머니가 「내립시다!」라고 말해서 나도 같이 내려 버렸다… 😭 #learnkorean"
     },
     {
       "id": "게시글.youtube.본문.1",

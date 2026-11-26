@@ -93,8 +93,8 @@
   "lang": "uz",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "title": "Koreys tilingiz\noʻsganining 3 belgisi",
-  "titleSize": 40,
+  "title": "Koreys tilingiz\nyaxshilanyapti: 3 ta belgi",
+  "titleSize": 34,
   "signLabel": "{n}",
   "signs": [
     "Doramani subtitrsiz\nkoʻrib kulasiz",
@@ -124,7 +124,7 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "title": "한국어가 늘었다는\n신호 3가지",
+    "title": "네 한국어가\n좋아지고 있다: 신호 3가지",
     "signs.0": "드라마를 자막 없이\n보고 웃는다",
     "signs.1": "뛰면서 한국어로\n센다",
     "signs.2": "아플 때…(그 아래 「아이고!」로 이어진다)",

@@ -93,12 +93,12 @@
   "lang": "vi",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "title": "3 dấu hiệu tiếng Hàn\ncủa bạn đã tiến bộ",
-  "titleSize": 44,
+  "title": "3 dấu hiệu bạn\nđã lên trình tiếng Hàn",
+  "titleSize": 40,
   "signLabel": "{n}",
   "signs": [
     "Xem phim Hàn không sub\nvẫn cười được",
-    "Nhảy cũng đếm\nbằng tiếng Hàn",
+    "Nhảy mà cũng đếm\nbằng tiếng Hàn",
     "Thay vì “Ui da!”…"
   ],
   "signSizes": [
@@ -108,14 +108,14 @@
   ],
   "reads": [
     "dae-bak = Đỉnh!",
-    "ha-na! dul! set!",
+    "hana dul set=1,2,3",
     "a-i-go!"
   ],
   "endMean": "Hả? Mình… thành\nngười Hàn rồi à?!",
   "endMeanSize": 48,
   "endCard": "",
   "endSize": 44,
-  "ask": "Bạn dính mấy cái?\nComment nha!",
+  "ask": "Bạn có mấy ✓?\nComment nha!",
   "askSize": 42,
   "coverAt": 6.3,
   "hello": "",
@@ -124,14 +124,14 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "title": "네 한국어가 늘었다는\n신호 3가지",
+    "title": "네 한국어 실력이\n레벨업했다는 신호 3가지",
     "signs.0": "한국 드라마를 자막 없이\n봐도 웃을 수 있다",
-    "signs.1": "뛸 때도 숫자를\n한국어로 센다",
+    "signs.1": "뛰면서도 숫자를\n한국어로 센다",
     "signs.2": "「아야!」 대신…",
     "reads.0": "대박 = 최고!",
-    "reads.1": "하나! 둘! 셋!(읽는 법)",
+    "reads.1": "하나 둘 셋(읽는 법)=1, 2, 3",
     "reads.2": "아이고!(읽는 법)",
     "endMean": "어? 나… 한국 사람이\n된 거야?!",
-    "ask": "몇 개 해당돼?\n댓글 달아 줘!"
+    "ask": "너는 ✓ 몇 개야?\n댓글 달아 줘!"
   }
 }

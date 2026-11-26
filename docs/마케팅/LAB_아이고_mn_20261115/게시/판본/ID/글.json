@@ -167,8 +167,8 @@
     {
       "id": "signs.2",
       "칸": "뜻",
-      "글": "Pas lompat, ngitung\npake bahasa Korea",
-      "원문": "뛸 때도 숫자를\n한국어로 센다",
+      "글": "Ngitung\npake bahasa Korea",
+      "원문": "센다\n한국어로",
       "초": [
         2.5,
         4.75
@@ -188,8 +188,8 @@
     {
       "id": "reads.2",
       "칸": "뜻",
-      "글": "hana dul set",
-      "원문": "하나 둘 셋(읽는 법)",
+      "글": "hana dul set=1,2,3",
+      "원문": "하나 둘 셋(읽는 법)=1, 2, 3",
       "초": [
         2.5,
         4.75
@@ -304,8 +304,8 @@
     {
       "id": "ask",
       "칸": "끝질문",
-      "글": "Benar berapa dari 3?\nKomen angkanya!",
-      "원문": "3개 중 몇 개 맞아?\n숫자를 댓글로!",
+      "글": "Kamu dapet berapa ✓?\nKomen angkanya!",
+      "원문": "너는 ✓ 몇 개 받았어?\n숫자를 댓글로!",
       "초": [
         9.3,
         11
@@ -344,8 +344,8 @@
     {
       "id": "게시글.tiktok.본문.4",
       "칸": "게시글",
-      "글": "Kamu kena berapa dari 3 tanda? Komen angkanya ya 👇",
-      "원문": "신호 3가지 중에 몇 개 해당돼? 숫자를 댓글로 남겨 줘 👇"
+      "글": "Dari 3 tanda ini, kamu ngalamin berapa? Komen angkanya ya 👇",
+      "원문": "이 신호 3가지 중에 너는 몇 개 겪어 봤어? 숫자를 댓글로 남겨 줘 👇"
     },
     {
       "id": "게시글.youtube.제목.1",
