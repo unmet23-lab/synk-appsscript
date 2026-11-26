@@ -9,7 +9,7 @@ test('company generated teacher bridge forwards course and legacy homework opera
  const source=readFileSync(new URL('../../../docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js',import.meta.url),'utf8');
  const generated=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
  const p=fixture(t,url=>response(url.endsWith('status')?{configured:true,signedIn:true,account:{synk_user_id:'teacher-a'},sessionGeneration:1,csrfToken:'csrf'}:{ok:true}),generated.createBrowserTeacherBridge);
- for(const operation of ['courseRead','courseAssign','courseFeedback','coursePlan','homework','homeworkSave','homeworkKey']){
+ for(const operation of ['courseRead','courseAssign','courseFeedback','coursePlan','homework','homeworkSave','homeworkKey','attendanceSave','topikSave']){
   const input={operation,classId:'my-class',...(['courseRead','homework','homeworkKey'].includes(operation)?{}:{body:{taskId:'synthetic'}})};
   assert.equal((await p.bridge.accountRequest('classroom',input)).ok,true);
   assert.equal(p.calls.at(-1)[0],'/api/teaching/request');assert.deepEqual(JSON.parse(p.calls.at(-1)[1].body),input);

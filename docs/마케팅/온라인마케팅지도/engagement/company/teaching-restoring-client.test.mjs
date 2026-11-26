@@ -16,6 +16,8 @@ const TEACHING_HOST_BUILDS=new Map([
   ['a6523a7edfec01267becc707b23f5a771ceb566151a3bd82fd99a0dcac114b03','PATH a556b16bd · path-live-ui-20261110 → r3'],
   // 회사 운영(사슬 27~): a85da04a6 원천에 28dfe3234 고침만 얹어 지은 판 — b4b28e17a 글은 10-31 현재 회사에 나가지 않았다.
   ['143eb4b84073d70b388bbe37e9913678cd6db28cac12aebbe9071e45f53fe395','운영 사슬 27'],
+  // 학원 운영 최소판 claude/attendance-topik(11-27): 반 화면 「오늘 출결」 띠 · TOPIK 칸, 담당 반 요약, attendanceSave · topikSave 두 요청. 카본 화면 검수 전이다.
+  ['eaea920e3529c66e16e77c2b0f5214f610be38daf8ef23931f9d00b733ba00a0','학원 운영 최소판 attendance-topik(검수 전)'],
 ]);
 function teachingHostBytes(){
   const raw=readFileSync(new URL('./public/teaching-host.js',import.meta.url)),text=raw.toString('latin1');
