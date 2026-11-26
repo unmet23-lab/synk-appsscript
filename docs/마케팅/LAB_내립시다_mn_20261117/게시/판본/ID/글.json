@@ -51,8 +51,8 @@
     {
       "id": "hook",
       "칸": "머리",
-      "글": "Kereta sesak.\nIbu-ibu teriak:",
-      "원문": "열차가 꽉 찼다.\n어떤 아주머니가 외친다:",
+      "글": "Kereta sesak.\nAda seorang ibu bilang:",
+      "원문": "열차가 꽉 찼다.\n한 아주머니가 말한다:",
       "초": [
         0,
         1.92
@@ -103,8 +103,8 @@
     {
       "id": "heardSmall",
       "칸": "진행",
-      "글": "Yang aku dengar (내립시다!):",
-      "원문": "내가 들은 것(내립시다!):",
+      "글": "Aku kira “내립시다!” artinya:",
+      "원문": "나는 「내립시다!」가 이런 뜻인 줄 알았다:",
       "초": [
         1.92,
         5.3
@@ -231,7 +231,7 @@
     {
       "id": "noLook",
       "칸": "진행",
-      "글": "Si ibu nggak noleh.",
+      "글": "Ibu itu nggak noleh.",
       "원문": "그 아주머니는 돌아보지 않았다.",
       "초": [
         9.42,
@@ -358,8 +358,8 @@
     {
       "id": "meantSmall",
       "칸": "진행",
-      "글": "Arti aslinya (내립시다!):",
-      "원문": "진짜 뜻(내립시다!):",
+      "글": "Padahal “내립시다!” artinya:",
+      "원문": "사실 「내립시다!」의 뜻은:",
       "초": [
         17.6,
         20.91
@@ -380,8 +380,8 @@
     {
       "id": "meant",
       "칸": "뜻",
-      "글": "“Mau turun,\nminggir!”",
-      "원문": "「내려요,\n비켜요!」",
+      "글": "“Mau turun,\nnumpang lewat!”",
+      "원문": "「내려요,\n좀 지나갈게요!」",
       "초": [
         17.6,
         20.91
@@ -401,8 +401,8 @@
     {
       "id": "fair",
       "칸": "진행",
-      "글": "Pas sesak.",
-      "원문": "붐빌 때.",
+      "글": "Diucapkan saat ramai.",
+      "원문": "붐빌 때 하는 말이다.",
       "초": [
         19,
         20.91
@@ -422,7 +422,7 @@
     {
       "id": "youSmall",
       "칸": "진행",
-      "글": "Pas mau turun, bilang:",
+      "글": "Kalau mau turun, bilang:",
       "원문": "내릴 때는 이렇게 말해:",
       "초": [
         20.91,
@@ -536,8 +536,8 @@
     {
       "id": "pracRead",
       "칸": "진행",
-      "글": "(lagi latihan)",
-      "원문": "(연습하는 중)",
+      "글": "(lagi latihan ngomong)",
+      "원문": "(말하기 연습하는 중)",
       "초": [
         25.75,
         28
@@ -556,8 +556,8 @@
     {
       "id": "게시글.tiktok.본문.1",
       "칸": "게시글",
-      "글": "내립시다! (nae-rip-si-da) kedengarannya kayak “ayo turun bareng”, tapi di kereta yang sesak artinya “saya turun, minggir dulu!”.",
-      "원문": "내립시다!(nae-rip-si-da)는 「같이 내리자」처럼 들리지만, 꽉 찬 열차에서는 「저 내려요, 좀 비켜 주세요!」라는 뜻이다."
+      "글": "내립시다! (nae-rip-si-da) kedengarannya kayak “ayo turun bareng”, tapi di kereta yang sesak artinya “saya mau turun, numpang lewat!”.",
+      "원문": "내립시다!(nae-rip-si-da)는 「같이 내리자」처럼 들리지만, 꽉 찬 열차에서는 「저 내려요, 좀 지나갈게요!」라는 뜻이다."
     },
     {
       "id": "게시글.tiktok.본문.2",

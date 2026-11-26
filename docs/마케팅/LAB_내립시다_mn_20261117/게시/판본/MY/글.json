@@ -51,8 +51,8 @@
     {
       "id": "hook",
       "칸": "머리",
-      "글": "MRT padat.\nAda makcik jerit:",
-      "원문": "MRT가 꽉 찼다.\n한 아주머니가 외친다:",
+      "글": "MRT sesak.\nAda mak cik cakap:",
+      "원문": "MRT가 붐빈다.\n한 아주머니가 말한다:",
       "초": [
         0,
         1.92
@@ -146,7 +146,7 @@
     {
       "id": "together",
       "칸": "진행",
-      "글": "Sama-sama?!",
+      "글": "Bersama-sama?!",
       "원문": "같이?!",
       "초": [
         2.8,
@@ -160,7 +160,7 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": true,
-        "글자크기": 96,
+        "글자크기": 86,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -210,7 +210,7 @@
     {
       "id": "callAunt",
       "칸": "진행",
-      "글": "Makcik?",
+      "글": "Mak cik?",
       "원문": "아주머니?",
       "초": [
         9.42,
@@ -336,7 +336,7 @@
     {
       "id": "line",
       "칸": "진행",
-      "글": "Sini bukan pun\nstesen aku.",
+      "글": "Ini bukan\nstesen aku pun.",
       "원문": "여기는 내 역도\n아니었다.",
       "초": [
         14.59,
@@ -358,7 +358,7 @@
     {
       "id": "meantSmall",
       "칸": "진행",
-      "글": "Sebenarnya “내립시다!”:",
+      "글": "Sebenarnya, “내립시다!” bermaksud:",
       "원문": "사실 「내립시다!」는:",
       "초": [
         17.6,
@@ -574,7 +574,7 @@
     {
       "id": "게시글.youtube.본문.3",
       "칸": "게시글",
-      "글": "Mongle ikut makcik turun, pintu tertutup dan tren pun pergi 😭",
+      "글": "Mongle ikut mak cik itu turun, pintu tertutup dan tren pun berlalu pergi 😭",
       "원문": "몽글은 아주머니를 따라 내렸고, 문이 닫히고 열차도 떠나 버렸다 😭"
     },
     {
