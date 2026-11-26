@@ -12,7 +12,10 @@
    끝낸 카드는 솔리오 곁에 눕는다. 솔리오는 눈만 움직여 지금 카드를 본다.
    글자: 시계 = Inter Tight 200 / 문장 · 카드 제목 = Noto Serif KR 300 / 본문 · 단추 = SUIT / 순번 · 날짜 = Inter Tight
    색: 노랑 = 바탕 · 먹 면 = 지금 할 일 단추 하나 · 다홍 점 = 사람이 기다림 · 회사 색 = 카드 머리의 작은 칩 · 흰 종이 = 카드 */
-:root{--y:#FED027;--ink:#141414;--mute:rgba(20,20,20,.62);--card:#FFFCF3;--wait:#E5401F;--ease:cubic-bezier(.2,.7,.2,1)}
+:root{--y:#FED027;--ink:#141414;--mute:rgba(20,20,20,.62);--card:#FFFCF3;--wait:#E5401F;--ease:cubic-bezier(.2,.7,.2,1);
+  /* 카드 더미는 애플 지갑 · 알림 결(유호님 11-26 「상단 프론트들 … 애플 감성」): 반투명 유리, 연속 곡률에 가까운 큰 모서리, 0.5px 테, 겹친 부드러운 그림자 */
+  --label:#1D1D1F;--label2:rgba(60,60,67,.8);--label3:rgba(60,60,67,.72);--glass:rgba(255,254,250,.92);--hair:rgba(0,0,0,.07);
+  --lift:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 10px 24px -12px rgba(90,64,0,.32),0 36px 64px -36px rgba(90,64,0,.5)}
 body{background:var(--y);color:var(--ink);font:400 15px/1.6 'SUIT',sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 .app{position:relative;display:grid;grid-template-columns:500px 1fr;grid-template-rows:56px 1fr;height:100vh;overflow:clip}
 .top{grid-column:1/-1;display:flex;align-items:center;gap:28px;padding:0 36px;position:relative;z-index:5}
@@ -21,8 +24,8 @@ body{background:var(--y);color:var(--ink);font:400 15px/1.6 'SUIT',sans-serif;-w
 .top nav a{color:inherit;text-decoration:none}
 .top nav a[aria-current]{color:var(--ink);font-weight:700}
 .top .me{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px}
-.top .me .badge{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:8px;padding:5px 10px 5px 5px;box-shadow:0 6px 16px -8px rgba(0,0,0,.4)}
-.top .me .badge b{display:grid;place-items:center;width:24px;height:24px;border-radius:5px;background:var(--ink);color:var(--y);font-size:12px}
+.top .me .badge{display:flex;align-items:center;gap:8px;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-radius:999px;padding:4px 14px 4px 4px;box-shadow:var(--lift);font:500 13px/1 'SUIT';color:var(--label)}
+.top .me .badge b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--y);font-size:12px}
 [data-screen="login"] .top nav,[data-screen="login"] .top .me{visibility:hidden}
 .side{position:relative;z-index:3;padding:36px 0 44px 56px;display:flex;flex-direction:column;min-height:0}
 .clock{font:200 150px/.86 'Inter Tight';letter-spacing:-.05em;margin:0}
@@ -78,13 +81,14 @@ h1 em{font:300 1em 'Inter Tight';font-style:normal}
 .blink .eyes i{transform:scaleY(.1)}
 /* 카드 더미 */
 .deck{position:relative;min-width:0}
-.card{position:absolute;left:40px;top:236px;width:min(680px,calc(100% - 200px));height:480px;background:var(--card);border-radius:22px;box-shadow:0 30px 50px -28px rgba(70,50,0,.55);display:grid;grid-template-rows:auto 1fr;overflow:hidden;transition:transform .55s var(--ease),opacity .45s,box-shadow .3s;cursor:pointer;text-align:left}
-.card .hd{display:flex;align-items:center;gap:12px;height:46px;padding:0 22px;border-bottom:1px solid rgba(20,20,20,.08);font-size:14px}
-.card .hd .n{font:600 14px/1 'Inter Tight'}
-.card .hd .chip{display:inline-flex;align-items:center;gap:6px;font:700 12px/1 'SUIT';color:var(--mute)}
-.card .hd .chip i{width:10px;height:10px;border-radius:3px;background:var(--c)}
-.card .hd .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card .hd .d{font:500 13px/1 'Inter Tight';color:var(--mute)}
+.card{position:absolute;left:40px;top:262px;width:min(680px,calc(100% - 200px));height:470px;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px);border-radius:26px;box-shadow:var(--lift);transform-origin:50% 0;display:grid;grid-template-rows:auto 1fr;overflow:hidden;transition:transform .55s var(--ease),opacity .45s,box-shadow .3s;cursor:pointer;text-align:left}
+.card .hd{display:flex;align-items:center;gap:10px;height:52px;padding:0 20px 0 14px;border-bottom:.5px solid var(--hair)}
+.card .hd .n{width:18px;font:600 12px/1 'Inter Tight';letter-spacing:-.01em;color:var(--label3);font-variant-numeric:tabular-nums;text-align:right}
+/* 회사 표시는 앱 아이콘처럼: 회사 색의 둥근 네모 하나(글자는 넣지 않는다) */
+.card .hd .chip{display:inline-flex;align-items:center;gap:8px;font:600 11px/1 'Inter Tight';letter-spacing:.06em;color:var(--label2)}
+.card .hd .chip i{width:24px;height:24px;border-radius:7px;background:linear-gradient(155deg,color-mix(in srgb,var(--c) 72%,#fff),var(--c) 70%);box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.35)}
+.card .hd .t{flex:1;min-width:0;font:600 14.5px/1.2 'SUIT';letter-spacing:-.012em;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .hd .d{font:500 12.5px/1 'Inter Tight';color:var(--label2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .card .bd{display:grid;grid-template-columns:42% 1fr;min-height:0}
 .card .pic{position:relative;overflow:hidden;background:var(--c)}
 .card .pic img.full{width:100%;height:100%;object-fit:cover}
@@ -101,12 +105,14 @@ h1 em{font:300 1em 'Inter Tight';font-style:normal}
 .card .meta button:hover{color:var(--ink)}
 .card .open{margin-top:auto;font:600 14px/1 'SUIT';color:var(--mute)}
 .card.front{cursor:default}
+/* 뒤 카드는 머리 줄만 읽힌다. 몸통의 그림이 앞 카드의 유리 너머로 비쳐 색 띠가 되지 않게 감춘다 */
+.card:not(.front) .bd{visibility:hidden}
 .card.front .hd .t{visibility:hidden}
 [data-screen="work"] .card.front .body,[data-screen="work"] .card.front .meta{display:flex}
 [data-screen="work"] .card.front .body{display:block}
 [data-screen="work"] .card.front .acts{display:block;margin-top:auto;padding-top:16px}
 [data-screen="work"] .card.front .open{display:none}
-.card:not(.front):hover{box-shadow:0 30px 50px -20px rgba(70,50,0,.7)}
+.card:not(.front):hover{box-shadow:0 0 0 .5px rgba(0,0,0,.06),0 2px 4px rgba(0,0,0,.06),0 16px 32px -12px rgba(90,64,0,.4),0 40px 70px -36px rgba(90,64,0,.55)}
 .card.gone{opacity:0;pointer-events:none}
 .note{margin-top:14px;display:grid;gap:10px}
 .note textarea{width:100%;min-height:84px;background:#fff;border:1.5px solid rgba(20,20,20,.18);border-radius:10px;padding:10px 12px;resize:vertical;outline:none;font-size:15px}
@@ -210,7 +216,7 @@ function paintDeck(frontId){
     if(doneAt>=0){el.classList.add('gone');el.style.transform=`translate(${deck.clientWidth-520}px, 330px) scale(.3) rotate(${(doneAt%3-1)*4}deg)`;el.style.zIndex='1';return;}
     el.classList.remove('gone');
     const mob=matchMedia('(max-width:760px)').matches,most=mob?3:4,k=Math.min(at,most+1);el.style.zIndex=String(100-at);el.style.opacity=at>most?'0':'1';el.style.pointerEvents=at>most?'none':'';
-    el.style.transform=mob?`translate(0px, ${-k*44}px) scale(${1-k*.04})`:`translate(${k*26}px, ${-k*46}px) scale(${1-k*.03})`;
+    el.style.transform=`translateY(${-k*(mob?44:50)}px) scale(${1-k*.035})`;el.style.filter=k?`brightness(${1-k*.006})`:'';
     const n=String(list.findIndex(i=>i.id===id)+1).padStart(2,'0');
     el.querySelector('.n').textContent=n;const big=el.querySelector('.pic .big');if(big)big.textContent=n;
     el.querySelector('.cnt').textContent=`${list.findIndex(i=>i.id===id)+1} / ${list.length}`;
