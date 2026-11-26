@@ -9,6 +9,7 @@ import {createCompanyApp} from './server.mjs';
 import {createPulsePeople,PEOPLE_SEED,PULSE_PEOPLE_KIND,castingImage,CASTING_IMAGES} from './pulse-people.mjs';
 import {createPulsePeopleRoutes} from './pulse-people-routes.mjs';
 import {readPulseFeatures,PULSE_FEATURE_DEFAULTS,createPulseFeatures} from './pulse-features.mjs';
+import {PEOPLE_MEDIA_KIND,PEOPLE_MEDIA_LIMITS} from './pulse-people-media.mjs';
 
 const memoryStore=(users={u1:{id:'u1',active:true,role:'admin'},u2:{id:'u2',active:true,role:'member'}})=>{const map=new Map();return {map,get:(kind,id)=>kind==='users'?users[id]??null:map.get(kind+'/'+id)??null,put:(kind,id,value)=>map.set(kind+'/'+id,value)};};
 const realChannel=(extra={})=>({id:'',name:'합성 카페 채널',platform:'instagram',handle:'@synthetic.cafe',url:'https://www.instagram.com/synthetic.cafe/',topics:['food'],audience:'합성 시청자',followers:12000,avgViews:3400,prices:{post:300000,review:null},image:'',samples:[],virtual:false,example:false,active:true,...extra});
@@ -192,4 +193,32 @@ test('경로 모듈: 다른 주소는 넘기고, 멈추는 중이면 503, 몸통
   assert.equal(saved,0);
   const stopped=createPulsePeopleRoutes({service:{},body:async()=>({}),send:()=>{},session:()=>sessionNow,origin:'http://o',audit:()=>{},isStopped:()=>true});
   await assert.rejects(stopped({method:'GET',headers:{}},{}, {url:new URL('http://o/api/pulse-people')}),error=>error.status===503);
+});
+
+test('그림 정리: 되돌린 거래는 흐른 시간을 잃지 않는다 — 올리기가 막혀 거래가 되돌려져도 다음 정리가 그 시간을 센다(그림 둘째 판 다시 검수 GA1)',async t=>{
+  const f=await server(t);
+  const id='32345678-1234-4123-8123-123456789abc',disk=id+'.png';
+  f.app.store.put(PEOPLE_MEDIA_KIND,id,{id,diskName:disk,mimeType:'image/png',byteSize:1,at:'2026-11-20T01:00:00.000Z',by:f.admin.id});
+  let steadyNow=5000;
+  const people=createPulsePeople({store:f.app.store,clientProjects:f.app.clientProjects,features:{read:()=>({people:false})},clock:()=>'2026-11-23T03:00:00.000Z',steady:()=>steadyNow,mediaWrites:false});
+  assert.deepEqual(people.sweep(),[]);assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,id).gone,true,'명단이 가리키지 않고 한 시간이 지난 그림은 지우는 중으로 표시한다');
+  steadyNow+=PEOPLE_MEDIA_LIMITS.goneMs-3600000;
+  refuses(()=>people.addMedia(f.admin.row,{id:'42345678-1234-4123-8123-123456789abc',diskName:'42345678-1234-4123-8123-123456789abc.png',mimeType:'image/png',byteSize:1}),/아직 열리지 않았어요/,404);
+  assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,id).agedMs,0,'되돌린 거래가 쌓은 나이는 남지 않는다');
+  steadyNow+=2*3600000;assert.deepEqual(people.sweep(),[disk],'되돌린 거래 동안의 23시간도 세어 모두 25시간 — 하루를 넘었다');
+});
+
+test('그림 정리: 거래가 없는 저장소에서는 막힌 올리기가 쌓은 나이가 남으므로, 같은 시간을 다음 정리에서 다시 더하지 않는다(그림 둘째 판 다시 검수 GA1의 다음 회차 GA1)',()=>{
+  const map=new Map(),users={u1:{id:'u1',active:true,role:'admin'}};
+  const store={get:(kind,id)=>kind==='users'?users[id]??null:map.get(kind+'/'+id)??null,put:(kind,id,value)=>map.set(kind+'/'+id,value),remove:(kind,id)=>map.delete(kind+'/'+id),all:kind=>[...map].filter(([key])=>key.startsWith(kind+'/')).map(([,value])=>value)};
+  const id='52345678-1234-4123-8123-123456789abc',disk=id+'.png',hour=3600000;
+  store.put(PEOPLE_MEDIA_KIND,id,{id,diskName:disk,mimeType:'image/png',byteSize:1,at:'2026-11-20T01:00:00.000Z',by:'u1'});
+  let steadyNow=5000;
+  const people=createPulsePeople({store,clientProjects:{session:()=>({row:{id:'p1'}})},features:{read:()=>({people:false})},clock:()=>'2026-11-23T03:00:00.000Z',steady:()=>steadyNow,mediaWrites:false});
+  assert.deepEqual(people.sweep(),[]);assert.equal(store.get(PEOPLE_MEDIA_KIND,id).gone,true);
+  steadyNow+=13*hour;
+  refuses(()=>people.addMedia(users.u1,{id:'62345678-1234-4123-8123-123456789abc',diskName:'62345678-1234-4123-8123-123456789abc.png',mimeType:'image/png',byteSize:1}),/아직 열리지 않았어요/,404);
+  assert.equal(store.get(PEOPLE_MEDIA_KIND,id).agedMs,13*hour,'거래가 없으니 막힌 올리기 앞의 정리가 쌓은 13시간이 남는다');
+  steadyNow+=hour;assert.deepEqual(people.sweep(),[],'한 시간 뒤 모두 14시간 — 13시간을 다시 더하지 않는다');
+  assert.equal(store.get(PEOPLE_MEDIA_KIND,id).agedMs,14*hour);
 });

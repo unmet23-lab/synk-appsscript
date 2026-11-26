@@ -100,12 +100,14 @@ const customerEntry=item=>({id:item.id,name:item.name,platform:item.platform,han
 // steady: 지우는 중인 그림의 나이를 재는 단조 시계(밀리초). 시험이 가짜를 준다.
 export function createPulsePeople({store,clientProjects,features,clock=()=>new Date().toISOString(),randomId=()=>Math.random().toString(36).slice(2,10),mediaWrites=PEOPLE_MEDIA_WRITES,steady=()=>performance.now()}){
   if(!store||!clientProjects||!features)throw new TypeError('채널 명단 설정이 이상해요.');
-  let accountedAt=steady();
+  let accountedAt=steady(),pending=null;
   // 지우는 중(gone — 파일을 지운 뒤 문서를 뗀다)인 그림은 없는 것으로 친다.
   const mediaDoc=id=>{const doc=typeof id==='string'?store.get(PEOPLE_MEDIA_KIND,id):null;return doc&&!doc.gone?doc:null;};
   const mediaDocs=()=>(store.all?.(PEOPLE_MEDIA_KIND)||[]).filter(item=>item&&typeof item.id==='string');
   const current=()=>readDoc(store.get(PULSE_PEOPLE_KIND,ID),id=>!!mediaDoc(id));
-  const tx=fn=>typeof store.transaction==='function'?store.transaction(fn):fn();
+  // 정리가 나이를 쌓은 시각(accountedAt)은 감싼 거래가 커밋된 뒤에만 옮긴다. 거래가 되돌려지면(올리기 409 · 404 등) 쌓은 agedMs도 되돌려지므로,
+  // 시각을 먼저 옮기면 그만큼 하루에서 빠진다(다시 검수 GA1). 거래가 없는 저장소는 되돌리지 않으므로 실패해도 옮긴다(같은 시간을 두 번 더하지 않게 — 다시 검수 GA1의 다음 회차 GA1).
+  const tx=fn=>{pending=null;const atomic=typeof store.transaction==='function';let done=false;try{const result=atomic?store.transaction(fn):fn();done=true;return result;}finally{if((done||!atomic)&&pending!==null&&pending>accountedAt)accountedAt=pending;pending=null;}};
   const enabled=()=>features.read().people===true;
   const selectable=()=>current().entries.filter(item=>item.active&&!item.example);
   // 손님 방 자료의 features.people: 스위치가 켜졌고 고를 수 있는 칸이 하나 이상일 때만 참이다.
@@ -167,7 +169,7 @@ export function createPulsePeople({store,clientProjects,features,clock=()=>new D
   function sweep(){
     const doc=readDoc(store.get(PULSE_PEOPLE_KIND,ID),()=>true);if(doc.broken)return [];
     const used=new Set(doc.entries.flatMap(item=>[item.image,...item.samples]).map(mediaIdOf).filter(Boolean)),now=Date.parse(clock()),removed=[];
-    const tick=steady(),step=tick-accountedAt>0?tick-accountedAt:0;if(tick>accountedAt)accountedAt=tick;
+    const tick=steady(),step=tick-accountedAt>0?tick-accountedAt:0;if(tick>accountedAt)pending=tick;
     for(const item of mediaDocs()){
       // 지우기가 실패하면 문서가 남아 다음 정리가 다시 지운다(GPT 검수 GA8). 파일을 지운 뒤 문서는 forgetMedia가 뗀다.
       if(item.gone){
@@ -205,5 +207,6 @@ export function createPulsePeople({store,clientProjects,features,clock=()=>new D
     if(!doc)throw fail('그림을 찾지 못했어요.',404);
     return doc;
   }
-  return {visible,adminView,save,customerList,read:()=>current(),addMedia,adminMedia,customerMedia,sweep,forgetMedia,mediaOpen:()=>mediaWrites===true,assertAdmin:user=>{admin(user);}};
+  // 예약 정리(server.mjs)는 거래 밖에서 부르므로 여기서 거래로 감싼다 — 표시와 나이가 한꺼번에 적히고, 커밋된 뒤에만 시각이 옮겨진다.
+  return {visible,adminView,save,customerList,read:()=>current(),addMedia,adminMedia,customerMedia,sweep:()=>tx(sweep),forgetMedia,mediaOpen:()=>mediaWrites===true,assertAdmin:user=>{admin(user);}};
 }
