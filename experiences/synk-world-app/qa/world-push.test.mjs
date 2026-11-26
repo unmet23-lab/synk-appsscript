@@ -2593,6 +2593,161 @@ test('판: 섞기 — 탭 두세 개와 다른 기기 하나의 차례를 섞어
  assert.deepEqual(failed,[]);
 });
 
+// ── 꺼진 계정 · PC 앱 창의 판 키(5-3 ② 카본 E1, 설계 주인 11-26 09시) ──
+test('판: 상태를 읽기 전에 적은 편집은 2단이 꺼진 계정임을 읽으면 비운다 — 뒤에 다른 기기가 켠 계획을 그 옛 편집이 덮지 않는다(5-3 ② 카본 E1)',async()=>{
+ const s=versionedServer(),storage=memory(),rem=reminderSettings(),push=on(s,{storage});push.bindSettings(rem);
+ s.active=false;s.failWhen=action=>action==='status'?fault(0,'PUSH_UNAVAILABLE'):null;   // 로그인 직후 상태를 못 읽었다(오프라인)
+ await push.setAccount('acc-1');
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});
+ assert.equal(EDIT_OF(storage).known,false,'상태를 모를 때 바꾼 9시는 판 키에 적힌다');
+ s.failWhen=()=>null;await push.refresh();await settled();
+ assert.equal(push.snapshot().account.active,false);
+ assert.equal(EDIT_OF(storage),null,'꺼진 계정임을 읽어 비웠다');
+ // 다른 기기가 20시로 켰다 — 이 탭이 다시 읽어도 옛 9시를 보내지 않고 서버의 20시를 들인다.
+ s.active=true;s.stored.settings={frequency:2,hour:20,since:V0};
+ await push.refresh();await settled();
+ assert.equal(s.syncs().filter(call=>call.body.settings?.hour===9).length,0,'옛 편집을 보내지 않았다');
+ assert.equal(s.stored.settings.hour,20);assert.equal(rem.value.hour,20);
+});
+
+test('판: 마지막 기기를 끄면 끄기 직전에 보내지 못한 편집을 비우고, 꺼진 계정에서 바꾼 설정도 적지 않는다 — 판 키에 옛 편집이 묶이지 않는다(5-3 ② 카본 E1 · 둘째 검수 E2)',async()=>{
+ const s=versionedServer(),m=manual(s),storage=memory(),rem=reminderSettings(),push=on(s,{storage,request:m.request});push.bindSettings(rem);
+ await push.setAccount('acc-1');
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await flush();   // 9시를 보내는 중에
+ const result=await push.disable();   // 마지막 기기를 껐다
+ assert.equal(result.settings,undefined,'보내지 못한 편집이 있어 서버 설정을 돌려주지 않는다(1단이 9시를 지킨다)');
+ assert.equal(EDIT_OF(storage),null,'끌 때 끄기 직전의 편집을 비웠다');
+ m.queue.shift().fail(fault(0,'PUSH_UNAVAILABLE'));await settled();
+ assert.equal(EDIT_OF(storage),null,'날아가던 보내기가 끈 뒤에 실패해도 편집을 되살리지 않는다');
+ rem.set({hour:21});push.sync({settings:{frequency:2,hour:21}});
+ assert.equal(EDIT_OF(storage),null,'꺼진 계정에서 바꾼 설정은 적지 않는다');
+ assert.equal(m.queue.length,0,'꺼진 계정에는 보내지 않는다');
+});
+
+test('판: 꺼진 계정임을 읽어도 열려 있는 다른 탭의 편집은 그 탭에 맡기고, 닫힌 탭의 편집은 비운다(편집의 주인 규칙 4 · 5-3 ② 카본 E1)',async()=>{
+ const s=versionedServer(),storage=memory(),locks=fakeLocks(),remA=reminderSettings(),remB=reminderSettings();
+ s.active=false;s.failWhen=action=>action==='status'?fault(0,'PUSH_UNAVAILABLE'):null;
+ const a=on(s,{storage,browser:{locks}}),b=on(s,{storage,browser:{locks}});a.bindSettings(remA);b.bindSettings(remB);
+ await a.setAccount('acc-1');await b.setAccount('acc-1');
+ remB.set({hour:9});b.sync({settings:{frequency:2,hour:9}});   // B가 상태를 모를 때 적었다
+ s.failWhen=()=>null;await a.refresh();await settled();
+ assert.equal(EDIT_OF(storage)?.hour,9,'B가 열려 있어 A는 B의 편집을 두었다');
+ b.dispose();await flush();   // B를 닫았다(잠금을 놓았다)
+ await a.refresh();await settled();
+ assert.equal(EDIT_OF(storage),null,'주인이 닫힌 편집은 비운다');
+});
+
+test('판: PC 앱 창은 판 키에 편집을 적지 않고 남은 편집도 비운다 — 상태를 읽지 않아 보낼 길이 없다(5-3 ② 카본 E1)',async()=>{
+ const s=versionedServer(),storage=memory(),rem=reminderSettings();
+ storage.setItem(KEY_V,JSON.stringify({settings:{frequency:2,hour:9,base:null,known:false,tries:0,id:'old'}}));
+ const push=makeV(browser({extra:{synkDesktop:{accountRequest(){}}}}),s,{storage,now:()=>V0});push.bindSettings(rem);
+ await push.setAccount('acc-1');
+ assert.equal(push.snapshot().phase,'unsupported');
+ assert.equal(EDIT_OF(storage),null,'남은 편집을 비웠다');
+ rem.set({hour:20});push.sync({settings:{frequency:2,hour:20}});
+ assert.equal(EDIT_OF(storage),null,'적지 않는다');
+ await push.ready();await push.fresh(0);
+ assert.equal(s.calls.length,0,'상태도 읽지 않는다');
+});
+
+test('판: 이 탭의 켜기가 날아가는 동안 꺼진 계정임을 다시 읽어도 그사이 적은 편집은 켜기가 정한다(5-3 ② 카본 E1 · r7 GA4)',async()=>{
+ const s=versionedServer(),b=browser({answer:'hang'}),rem=reminderSettings({frequency:2,hour:9,since:null}),storage=memory();
+ s.active=false;
+ const push=makeV(b,s,{now:()=>V0,storage});push.bindSettings(rem);
+ await push.setAccount('acc-1');await push.ready();
+ const turning=push.enable({settings:{frequency:2,hour:9,since:null},digest:DIGEST('2026-10-21')});   // 권한 창이 열렸다
+ rem.set({hour:20});push.sync({settings:{frequency:2,hour:20}});
+ assert.equal(EDIT_OF(storage)?.hour,20,'켜기가 날아가는 동안 바꾼 설정은 판 키에 적힌다(r7 GA4)');
+ await push.refresh();await settled();   // 그사이 다시 읽은 상태도 꺼진 계정이다
+ assert.equal(EDIT_OF(storage)?.hour,20,'켜기가 날아가는 동안은 비우지 않는다');
+ b.resolvePrompt();await turning;await settled();
+ assert.equal(push.snapshot().device.subscribed,true);
+ assert.equal(s.stored.settings.hour,20);assert.equal(EDIT_OF(storage),null);
+});
+
+test('판: 상태를 읽기 전에는 꺼진 계정으로 보지 않는다 — 그때 적은 편집은 2단이 켜진 계정임을 읽으면 보낸다(5-3 ② 카본 E1)',async()=>{
+ const s=versionedServer(),storage=memory(),rem=reminderSettings(),push=on(s,{storage});push.bindSettings(rem);
+ s.failWhen=action=>action==='status'?fault(0,'PUSH_UNAVAILABLE'):null;   // 로그인 직후 상태를 못 읽었다
+ await push.setAccount('acc-1');
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});
+ push.bindSettings(rem);   // 1단 묶음을 다시 걸어 맞추기가 돈다(상태는 아직 모른다)
+ assert.equal(EDIT_OF(storage)?.hour,9,'상태를 모르는 동안은 비우지 않는다');
+ s.failWhen=()=>null;await push.refresh();await settled();
+ assert.equal(s.stored.settings.hour,9,'켜진 계정임을 읽어 상태를 모를 때 바꾼 9시를 보냈다');
+ assert.equal(EDIT_OF(storage),null);
+});
+
+test('판: 푸시를 받을 수 없는 브라우저에서 설정을 바꾸면 상태를 한 번 읽어, 꺼진 계정이면 판 키의 편집을 비우고 켜진 계정이면 보낸다(5-3 ② 둘째 검수 E1)',async()=>{
+ for(const active of [false,true]){
+  const s=versionedServer(),storage=memory(),rem=reminderSettings();s.active=active;
+  const push=makeV(browser({userAgent:IPHONE}),s,{storage,now:()=>V0});push.bindSettings(rem);
+  await push.setAccount('acc-1');
+  assert.equal(s.calls.filter(call=>call.action==='status').length,0,'처음에는 상태를 읽지 않는다(받을 수 없는 브라우저)');
+  rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await settled();
+  assert.equal(s.calls.filter(call=>call.action==='status').length,1,'설정을 적고 상태를 한 번 읽었다');
+  if(active)assert.equal(s.stored.settings.hour,9,'켜진 계정이면 보냈다');
+  assert.equal(EDIT_OF(storage),null,active?'보낸 편집을 비웠다':'꺼진 계정이면 판 키의 편집을 비웠다');
+  push.dispose();
+ }
+});
+
+test('판: 처음 상태 응답 전에 바꾼 설정을 보내지 못한 채 마지막 기기를 끄면 판 키의 편집을 바로 비운다 — 뒤에 다른 기기가 켠 계획을 그 옛 편집이 덮지 않는다(5-3 ② 둘째 검수 E2)',async()=>{
+ const s=versionedServer(),r=rollback(s),storage=memory(),rem=reminderSettings(),push=on(s,{storage,request:r.request});push.bindSettings(rem);
+ r.holdStatus=[];   // 로그인 직후의 상태 응답을 붙잡는다
+ const entering=push.setAccount('acc-1');await settled();
+ assert.equal(r.holdStatus.length,1,'상태를 읽는 중이다');
+ s.failWhen=action=>action==='sync'?fault(0,'PUSH_UNAVAILABLE'):null;   // 보내기는 망 오류로 실패한다
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});   // 처음 상태 응답 전에 9시로 바꿨다
+ const release=r.holdStatus.shift();r.holdStatus=null;release();await entering;await settled();
+ assert.equal(EDIT_OF(storage)?.hour,9,'보내지 못한 편집이 남았다');
+ assert.equal(EDIT_OF(storage)?.planId,null,'편집 앞에 보낸 읽기라 바탕만 매기고 계획 정체는 없다');
+ s.failWhen=()=>null;
+ const result=await push.disable();   // 마지막 기기를 껐다
+ assert.equal(result.settings,undefined,'보내지 못한 편집이 있어 서버 설정을 돌려주지 않는다(1단이 9시를 지킨다)');
+ assert.equal(EDIT_OF(storage),null,'꺼진 계정의 판 키에 옛 편집을 남기지 않는다');
+ // 다른 기기가 20시로 켰다 — 이 탭이 다시 읽어도 옛 9시를 보내지 않고 서버의 20시를 들인다.
+ await s.request('subscribe',{settings:{frequency:2,hour:20,since:null},digest:DIGEST('2026-10-21')});
+ await push.refresh();await settled();
+ assert.equal(s.stored.settings.hour,20,'다른 기기가 고른 20시를 덮지 않았다');
+ assert.equal(rem.value.hour,20,'서버의 20시를 1단에 들였다');
+});
+
+test('판: 받을 수 없는 브라우저에서 처음 상태 응답 전에 고친 설정은, 그 편집 앞에 보낸 읽기의 꺼짐 응답으로 지우지 않는다 — 편집 뒤에 보낸 읽기가 정한다(5-3 ② 셋째 검수 GA2)',async()=>{
+ const s=versionedServer(),r=rollback(s),storage=memory(),rem=reminderSettings();s.active=false;
+ const push=makeV(browser({userAgent:IPHONE}),s,{storage,now:()=>V0,request:r.request});push.bindSettings(rem);
+ await push.setAccount('acc-1');
+ r.holdStatus=[];
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await settled();   // 9시로 바꾸고 상태를 읽는다 — 그때는 꺼진 계정이고 응답이 늦다
+ assert.equal(r.holdStatus.length,1,'설정을 적고 상태를 한 번 읽었다');
+ await s.request('subscribe',{settings:{frequency:2,hour:20,since:null},digest:DIGEST('2026-10-21')});   // 다른 기기가 20시로 켰다
+ rem.set({hour:10});push.sync({settings:{frequency:2,hour:10}});await settled();   // 아이폰에서 다시 10시로 바꿨다 — 상태를 또 읽는다(켜진 계정)
+ assert.equal(r.holdStatus.length,2,'두 번째 읽기도 날아가는 중이다');
+ r.holdStatus.shift()();await settled();   // 앞 읽기의 꺼짐 응답이 먼저 온다
+ assert.equal(EDIT_OF(storage)?.hour,10,'편집 앞에 보낸 읽기의 꺼짐 응답으로 10시 편집을 지우지 않는다');
+ const rest=r.holdStatus;r.holdStatus=null;for(const release of rest)release();await settled();await settled();
+ assert.equal(s.stored.settings.hour,10,'편집 뒤에 보낸 읽기가 켜진 계정임을 알려 10시를 보냈다');
+ assert.equal(rem.value.hour,10,'아이폰 설정이 20시로 돌아가지 않았다');
+ assert.equal(EDIT_OF(storage),null,'보낸 편집을 비웠다');
+ push.dispose();
+});
+
+test('판: 끄기 요청을 보낸 뒤에 적힌 편집은 끄기 응답으로 바로 비우지 않고 상태를 다시 읽어 정한다 — 다시 읽기도 꺼짐이면 비운다(5-3 ② 셋째 검수 GA2)',async()=>{
+ const s=versionedServer(),r=rollback(s),storage=memory(),rem=reminderSettings(),push=on(s,{storage,request:r.request});push.bindSettings(rem);
+ await push.setAccount('acc-1');await settled();
+ r.holdUnsubscribe=[];
+ const off=push.disable();await settled();   // 마지막 기기를 끄는 요청이 날아가는 중이다
+ assert.equal(r.holdUnsubscribe.length,1,'끄기 요청이 서버에 닿았고 응답만 늦다');
+ r.holdSync=true;   // 그 설정을 싣는 보내기는 붙잡아 둔다(끄기 응답이 먼저 온다)
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await settled();   // 그사이 9시로 바꿨다(아직 켜진 계정으로 안다)
+ const before=s.calls.filter(call=>call.action==='status').length;
+ r.holdUnsubscribe.shift()();r.holdUnsubscribe=null;const result=await off;
+ assert.equal(result.settings,undefined,'보내지 못한 편집이 있어 서버 설정을 돌려주지 않는다(1단이 9시를 지킨다)');
+ await settled();await settled();
+ assert.ok(s.calls.filter(call=>call.action==='status').length>before,'끄기 요청 뒤의 편집이라 상태를 다시 읽었다');
+ assert.equal(EDIT_OF(storage),null,'다시 읽어도 꺼진 계정이라 판 키의 편집을 비웠다');
+ push.dispose();
+});
+
 // ── 5-3 켜기 공개의 캐시 섞임(4c 5-3 섞임 표 3 · 4, 설계 주인 11-25) ─────────────────────────────────────────────────────────────────────────
 // 맨 주소로 불리는 world-push는 HTML · 셸과 캐시 판이 갈린다. 옛 판은 라이브(synk-policy abd09dc) world-push.mjs를 그대로 둔 live-world-push-20261125.mjs다.
 // 셸은 node에서 못 올리므로 app-shell.mjs의 진짜 문장을 떼어 돈다. 표 3(새 셸 + 옛 판)은 셸이 견딘다. 표 4(옛 셸 + 새 판)는 코드로 막지 않고 차례로 막는다 —

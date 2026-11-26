@@ -141,9 +141,11 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 학생이 설정을 바꿨다: 값과 그때 알던 서버 판(바탕)을 한 번에 적는다. 2단이 꺼진 계정이면 적지 않는다(보낼 계획이 없다 — 켤 때 1단 설정이 간다).
  function noteSettings(value){
   if(!owner||closing||!Number.isFinite(value?.frequency))return;
+  // PC 앱 창은 2단을 받지 못하고 상태도 읽지 않아 이 편집을 보낼 길이 없다 — 적지 않고 남은 편집도 비운다(5-3 ② E1).
+  if(worldPushSupport(env).reason==='desktop'){dropEdits();return;}
   // 2단이 꺼진 계정이면 적지 않는다 — 다만 이 탭의 켜기가 날아가는 동안(권한 창 · 응답 기다림)은 적는다. 1단에만 두면 그사이 다른 탭이 서버 설정을 1단에
-  // 들여 지운다(r7 GA4). 켜기 응답이 이 편집을 새 계획 바탕으로 옮기거나 비운다.
-  const known=!!state.checkedAt;if(known&&!state.account.active&&!attempt)return;
+  // 들여 지운다(r7 GA4). 켜기 응답이 이 편집을 새 계획 바탕으로 옮기거나 비운다. 꺼진 계정에 남은 편집(끄기 직전의 편집 따위)은 이때 비운다(dropIdle).
+  const known=!!state.checkedAt;if(known&&!state.account.active&&!attempt){dropIdle(epoch);return;}
   const base=known?state.versions?.settings??null:null;
   // 새 편집은 옛 서버에 미뤄 둔 설정보다 새것이다(r5 GA4).
   legacyPending=null;
@@ -185,7 +187,10 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // — 상태를 모를 때 바꾼 것은 지금 판을 바탕으로 보내고(열린 탭의 뜻), 바탕이 지금 판과 같으면 보낸다. 다르면 그사이 다른 쓰기가 있었다는 뜻이라 서버
  // 것을 들이고 편집을 비운다. 우리 요청이 날아가는 중이면 그 응답을 기다린다. 판을 모르는 옛 서버면 지금 라이브처럼 판 키를 쓰지 않는다.
  function reconcile(expected){
-  if(!binding||!current(expected)||closing||!state.account.active)return;
+  if(!current(expected)||closing)return;
+  // 2단이 꺼진 계정임을 읽었으면 보낼 계획이 없다 — 판 키의 편집을 비운다(dropIdle). 이 탭의 켜기가 날아가는 동안은 그 켜기가 정한다.
+  if(!state.account.active){if(state.checkedAt&&!attempt)dropIdle(expected);return;}
+  if(!binding)return;
   let mine=readEdit();
   if(mine&&mine.page!==page){claim(expected,mine);return;}
   // 옛 서버: 이 페이지가 상태를 모를 때 적은 편집은 버린다 — 지금 라이브 WORLD처럼(설계 주인 규칙 6, 설계 검토 1).
@@ -209,6 +214,22 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    rewrite(mine,null);
   }
   adopt(state.plan);
+ }
+ // 꺼진 계정의 편집 비우기(5-3 ② E1): 2단이 꺼진 계정에는 보낼 계획이 없다(켤 때는 1단 설정이 간다). 남겨 두면 나중에 다른 기기가 켠 새 계획으로
+ // 바탕을 옮겨 실려 그 기기에서 고른 설정을 덮는다. 이 페이지가 쓴 편집은 바로 비우고, 다른 페이지의 편집은 주인이 닫혔을 때만 비운다 — 주인이 열려
+ // 있으면 그 페이지가 자기 상태를 읽을 때 비운다(편집의 주인 규칙 4). 그사이 더 새 편집이 적혔으면 두지 않는다(rewrite).
+ // at: 꺼진 계정임을 알려 준 요청의 차례(기본은 지금 상태를 적은 응답의 차례). 이 페이지의 편집이 그 요청을 보낸 뒤에 적혔으면 그 꺼짐은 편집 앞의 일이다
+ // — 그사이 다른 기기가 켰을 수 있다. 그때는 편집을 두고 상태를 다시 읽는다. 편집 뒤에 보낸 그 읽기가 꺼짐이면 그때 비우고, 켜짐이면 맞추기가 보낸다
+ // (5-3 ② 셋째 검수 GA2). 한 편집의 다시 읽기는 하나씩 한다.
+ let idleRead=null;
+ function dropIdle(expected,at=state.seenSeq){
+  const mine=readEdit();if(!mine)return;
+  if(mine.page===page){
+   const seen=noted.get(mine.id);
+   if(seen!=null&&at<=seen){if(idleRead!==mine.id){idleRead=mine.id;const done=()=>{if(idleRead===mine.id)idleRead=null;};void refresh().then(done,done);}return;}
+   rewrite(mine,null);return;
+  }
+  ownerAlive(mine).then(alive=>{if(!alive&&current(expected)&&!closing&&!state.account.active&&!!state.checkedAt&&!attempt)rewrite(mine,null);},()=>{});
  }
  // 주인이 닫힌 편집(다른 페이지가 쓰고 닫았다): 다음에 열 때의 규칙 5 — 판을 아는 서버이고 바탕을 알고 지금 서버 판과 같으면 이 페이지가 넘겨받아
  // 보내고, 다르거나 모르면 지우고 서버 것을 들인다(설계 검토 1 · 2). 넘겨받은 편집은 다시 보내기를 이미 쓴 것으로 적는다 — 닫힌 탭의 뜻은 한 번만
@@ -408,6 +429,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   const expected=epoch;if(!current(expected)||closing)return snapshot();
   const support=worldPushSupport(env);
   if(!support.supported){
+   if(support.reason==='desktop')dropEdits();   // PC 앱 창 — 보낼 길이 없는 편집을 남기지 않는다(5-3 ② E1)
    if(initial||support.reason==='desktop')return emit({phase:'unsupported',enabled:false});
    try{const seq=++order,data=await request('status',{});applyRead(seq,data,expected,'unsupported');return emit({enabled:false});}
    catch(error){if(current(expected))emit({phase:'unsupported',enabled:false,error:error.code||'PUSH_UNAVAILABLE'});return snapshot();}
@@ -608,8 +630,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
     // 이 브라우저에는 이 계정 구독이 없다(r18 GA1 — 그 탭의 서버 구독 · 브라우저 구독 · 기록을 지웠다).
     const reg=await existing(),fresh=reg?await bounded(reg.pushManager.getSubscription()).catch(()=>null):null,record=readRecord(),theirs=!!record&&record.accountId!==owner;
     const sub=theirs?(subscription&&subscription.endpoint!==record.endpoint?subscription:null):fresh||subscription;
-    let result=null;
-    if(sub){try{result=await request('unsubscribe',{endpoint:sub.endpoint});}catch{if(!theirs&&record?.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}}}
+    // asked: 끄기 요청의 차례. 그 뒤에 적힌 편집은 끄기 앞의 편집이 아니다(아래 dropIdle — 5-3 ② 셋째 검수 GA2).
+    let result=null,asked=0;
+    if(sub){asked=++order;try{result=await request('unsubscribe',{endpoint:sub.endpoint});}catch{if(!theirs&&record?.endpoint===sub.endpoint){try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}}}
     // 끄기 요청이 날아가는 사이 다른 계정 탭이 이 브라우저 구독을 가져갔으면(기록이 그 계정 것으로 바뀌었다) 그 구독과 기록을 지우지 않는다(r19 GA1).
     const after=readRecord(),taken=!theirs&&!!after&&after.accountId!==owner;
     const removed=theirs||taken?true:await removeLocal(sub,reg);
@@ -623,6 +646,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
       // 마지막 기기였다 — 기기 쪽이 서버 설정을 1단에 넣는다. 그때 이 브라우저에 보내지 못한 편집이 있으면(끄기 직전의 편집 · 다른 탭의 편집) 편집을
       // 두고 서버 설정을 돌려주지 않는다 — 1단이 그 편집을 지킨다(설계 검토 6 · r2 GA4).
       keep=!account.active&&!!result.settings&&!!readEdit();
+      // 마지막 기기를 꺼 2단이 꺼진 계정이 됐다 — 판 키에 남은 보내지 않은 편집을 비운다. keep이 섰으면 서버 설정을 돌려주지 않아 1단이 그 편집을
+      // 지킨다(5-3 ② 둘째 검수 E2). 끄기 요청을 보낸 뒤에 적힌 편집은 상태를 다시 읽어 정한다(셋째 검수 GA2).
+      if(!account.active&&state.checkedAt&&!attempt)dropIdle(expected,asked);
      }
     }
     const {settings:returned,...rest}=result||{};
@@ -639,6 +665,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    // 그 밖에는 설정 편집을 덩어리로 적어 둔다 — 상태를 몰라도(망이 끊김 · 상태를 아직 못 읽음) 상태가 서면 맞추기가 보낸다(설계 검토 P2-7).
    const legacy=!!state.checkedAt&&!state.versioning;
    if(settings&&!legacy)noteSettings(settings);
+   // 푸시를 받을 수 없는 브라우저는 처음 상태 읽기를 건너뛴다. 그런 브라우저에서 설정 편집을 적었는데 상태를 한 번도 읽지 않았으면 여기서 한 번 읽어,
+   // 꺼진 계정이면 맞추기가 편집을 비우고 켜진 계정이면 보내게 한다. PC 앱 창은 편집을 적지 않아 읽지 않는다(5-3 ② 둘째 검수 E1).
+   if(settings&&!legacy&&!state.checkedAt){const support=worldPushSupport(env);if(!support.supported&&support.reason!=='desktop')void refresh();}
    if(!state.account.active)return;
    const expected=epoch,time=stamp();
    // 요약 · 설정 요청은 모두 keepalive로 보낸다(deliver). 보낸 뒤 응답 전에 앱을 닫아도 계정 정리(stop)가 끊지 않는다(11-20 끝 판 GA1 ·
