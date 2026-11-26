@@ -375,6 +375,17 @@
             "completionRatePct": 26.1
           }
         }
+      },
+      {
+        "계정": "lab-tw-youtube",
+        "채널": "유튜브 @synklabtaiwan",
+        "주소": "https://www.youtube.com/watch?v=qe11ua0DsQU",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-26T05:00:38.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
       }
     ]
   }

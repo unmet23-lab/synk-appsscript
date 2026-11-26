@@ -443,6 +443,17 @@
             "completionRatePct": 18.5
           }
         }
+      },
+      {
+        "계정": "lab-ph-youtube",
+        "채널": "유튜브 @synklabphilippines",
+        "주소": "https://www.youtube.com/watch?v=pN9odBddFqU",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-26T05:00:06.000Z",
+        "훅": null,
+        "역할": "전환",
+        "시점": {},
+        "화면필요": []
       }
     ]
   }
