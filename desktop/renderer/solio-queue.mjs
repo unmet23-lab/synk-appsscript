@@ -194,11 +194,11 @@ function officeItems(snap, now) {
   return out;
 }
 
-/* 구독 스냅숏에서: 다시 로그인 · 못 읽음 · 로그인 기한. Gemini처럼 사용량을 읽지 않는 계정과 다른 PC 계정은 세지 않는다 */
+/* 구독 스냅숏에서: 다시 로그인 · 못 읽음 · 로그인 기한. 지금 이 PC에 로그인되어 있지 않은 계정(Gemini의 다른 계정 등)은 세지 않는다 */
 function subsItems(snapshot, now) {
   const out = [];
   for (const r of Array.isArray(snapshot?.rows) ? snapshot.rows : []) {
-    if (!r || r.source !== 'auto' || r.service === 'gemini' || r.usageDisabled || r.state === 'elsewhere') continue;
+    if (!r || r.source !== 'auto' || r.state === 'elsewhere') continue;
     const svc = SOLIO_TODAY_NAMES[r.service] || String(r.label || '').trim() || '구독', nm = nameOf(r), acct = [svc, nm].filter(Boolean).join(' ') + ' 계정';
     const go = { id: 'go', label: '계정 관리 열기', kind: 'go', run: { aside: 'manage' } };
     const since = num(r.live?.readAt);

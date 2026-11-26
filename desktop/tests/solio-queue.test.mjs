@@ -143,7 +143,7 @@ test('office sessions with hook news: an approval question waits on me, a finish
   assert.deepEqual(r.queue[1].acts, [{ id: 'seen', label: '확인했어요', kind: 'do', run: { office: { room: 'solio-office', act: 'row-fold', key: 'lobby' } } }]);
 });
 
-test('subscriptions: sign in again, unreadable accounts and a login deadline soon; Gemini and other-PC rows never', () => {
+test('subscriptions: sign in again, unreadable accounts and a login deadline soon, Gemini included (11-26); other-PC rows never', () => {
   const row = (id, extra) => ({ id, service: 'claude', source: 'auto', label: 'Claude', kind: 'weekly', state: 'ok', email: id + '@example.com', live: { readAt: NOW - 10 * 60e3 }, ...extra });
   const subs = { rows: [
     row('relog', { state: 'needs-login' }),
@@ -158,14 +158,15 @@ test('subscriptions: sign in again, unreadable accounts and a login deadline soo
   ] };
   const r = solioQueue(solioTodoItems({ subs }, NOW), NOW);
   // 오늘 끝나거나 지난 기한은 ③, 내일 기한은 ④에서 기한이 있는 일이라 앞에 선다. 같은 때에 읽은 두 계정은 열쇠 차례
-  assert.deepEqual(keys(r), ['until:past', 'until:today', 'until:soon', 'login:relog', 'read:broken']);
-  assert.deepEqual(r.queue.map(i => [i.tier, i.why]), [[3, '기한이 지났습니다'], [3, '오늘까지입니다'], [4, ''], [4, ''], [4, '']], '지난 기한의 머리 줄이 본문과 어긋나지 않는다(카본 A5)');
+  assert.deepEqual(keys(r), ['until:past', 'until:today', 'until:soon', 'login:gem', 'login:relog', 'read:broken']);
+  assert.deepEqual(r.queue.map(i => [i.tier, i.why]), [[3, '기한이 지났습니다'], [3, '오늘까지입니다'], [4, ''], [4, ''], [4, ''], [4, '']], '지난 기한의 머리 줄이 본문과 어긋나지 않는다(카본 A5)');
   assert.equal(r.queue[0].say, 'Claude past 계정의 로그인 기한이 지났습니다.');
   assert.equal(r.queue[2].say, 'Claude soon 계정의 로그인 기한이 내일 오전 11시에 끝납니다.');
-  assert.equal(r.queue[4].say, 'Codex broken 계정의 남은 양을 읽지 못했습니다.');
-  assert.equal(r.queue[3].say, 'Claude relog 계정에 다시 로그인해야 합니다.');
-  assert.deepEqual(r.queue.map(i => i.obj), ['acct:past', 'acct:today', 'acct:soon', 'acct:relog', 'acct:broken'], '상태가 바뀌어도 대상은 계정 하나다');
-  assert.deepEqual(r.queue[3].acts, [{ id: 'go', label: '계정 관리 열기', kind: 'go', run: { aside: 'manage' } }]);
+  assert.equal(r.queue[3].say, 'Gemini gem 계정에 다시 로그인해야 합니다.');
+  assert.equal(r.queue[5].say, 'Codex broken 계정의 남은 양을 읽지 못했습니다.');
+  assert.equal(r.queue[4].say, 'Claude relog 계정에 다시 로그인해야 합니다.');
+  assert.deepEqual(r.queue.map(i => i.obj), ['acct:past', 'acct:today', 'acct:soon', 'acct:gem', 'acct:relog', 'acct:broken'], '상태가 바뀌어도 대상은 계정 하나다');
+  assert.deepEqual(r.queue[4].acts, [{ id: 'go', label: '계정 관리 열기', kind: 'go', run: { aside: 'manage' } }]);
 });
 
 test('backup: setup and attention are one-click items that open the engine window; protected and installing are not', () => {

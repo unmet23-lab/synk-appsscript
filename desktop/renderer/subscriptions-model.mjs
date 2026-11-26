@@ -120,8 +120,9 @@ const TIER = { max20x: 10, max5x: 9, max: 8, promax: 7, ultra20x: 6.6, ultra: 6,
 export const planKey = plan => String(plan || '').toLowerCase().replace(/[\s_-]/g, '');
 export const planName = (plan, service = null) => (plan ? (service === 'gpt' && GPT_PLAN[planKey(plan)]) || PLAN[planKey(plan)] || String(plan) : '');
 // 계정 이름: 메일 앞부분(Gemini도 — 본체가 agy 기록에서 지금 로그인된 계정 메일을 읽는다, 10-22) → API 키 끝 네 글자(서비스가 이미 Typecast라
-// 「키」는 붙이지 않는다) → 아직 메일을 못 읽은 Gemini 줄(새 판으로 처음 읽기 전)은 이 PC 로그인 → 직접 넣은 구독 이름.
-export const nameOf = row => (row?.email ? row.email.split('@')[0] : row?.keyHint ? row.keyHint : row?.source === 'auto' && row.service === 'gemini' ? (row.usageDisabled ? String(row.label || '').trim() || '저장된 계정' : '이 PC 로그인') : row?.label || '');
+// 「키」는 붙이지 않는다) → 아직 메일을 못 읽은 Gemini 줄(새 판으로 처음 읽기 전)은 이 PC 로그인, 넣은 값이 있어 다른 계정에 넘기지 않고 남은 옛 줄(elsewhere)은
+// 메일 모르는 옛 계정(GPT solio-subs-agy-be-20261126 A3) → 직접 넣은 구독 이름.
+export const nameOf = row => (row?.email ? row.email.split('@')[0] : row?.keyHint ? row.keyHint : row?.source === 'auto' && row.service === 'gemini' ? (row.state === 'elsewhere' ? '메일 모르는 옛 계정' : '이 PC 로그인') : row?.label || '');
 
 // 계정 하나의 지금 상태.
 //  ok 넉넉 · low 10% 이하 남음이나 크레딧 부족 · out 다 씀(unblock = 다시 열리는 때) · login 다시 로그인 ·
@@ -178,6 +179,10 @@ export function passesOf(row, now) {
 // 받지 못하는 요금제(Claude Pro · GPT Plus · Gemini Plus 등)는 말하지 않고, 등급을 못 읽은 Claude Max · 등급을 고르지 않은 Gemini Ultra는 「모름」(unknown)이다.
 // 공식 요금처럼(officialPrice) 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 세지 않는다(최종 검수 P3).
 export const API_CREDIT_SERVICES = ['claude', 'gpt', 'gemini'];
+// 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다). 요금 · 들어오는 크레딧을 채우지 않는다.
+// Gemini는 요금제를 공식 프로그램이 아니라 회원이 고른다. 다른 계정이 Antigravity에 로그인되어 있거나(elsewhere) agy가 없어 못 읽어도
+// 회원이 고른 요금제의 요금과 한 달 양은 그대로 둔다(카본 solio-subs-agy-20261126 B1, GPT solio-subs-agy-be-20261126 A6)
+const lapsed = (row, now) => row.service !== 'gemini' && row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS;
 // 크레딧을 받는 요금제(공식): Claude는 Max(등급 모름 포함), GPT는 Pro 세 등급, Gemini는 Pro · Ultra(등급 모름 포함). 화면의 「API 크레딧」 단추가 이 기준이다.
 export const apiCreditPlan = row => (row?.service === 'claude' ? /^max/.test(planKey(row.plan)) : row?.service === 'gpt' ? ['prolite', 'pro', 'promax'].includes(planKey(row.plan)) : row?.service === 'gemini' ? ['pro', 'ultra', 'ultra5x', 'ultra20x'].includes(planKey(row.plan)) : false);
 // 크레딧이 결제 주기 끝에 한꺼번에 사라져 만료 날짜를 받는 서비스(Claude · GPT — 그 날이 곧 결제일이다). Gemini Cloud 크레딧은 받은 달마다 12개월이라 받지 않는다.
@@ -186,7 +191,7 @@ export const apiCreditEndsAtBill = row => apiCreditPlan(row) && row.service !== 
 const UNKNOWN_TIER = { claude: 'max', gemini: 'ultra' };
 function grantOf(prices, row, now) {
   if (row?.source !== 'auto' || !API_CREDIT_SERVICES.includes(row.service)) return null;
-  if (!(row.service === 'gemini' && row.usageDisabled === true) && row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
+  if (lapsed(row, now)) return null;
   const table = priceTable(prices, row.service, now), key = planKey(row.plan);
   if (!table) return null;
   const v = num(table.plans?.[key]?.apiCredit);
@@ -232,7 +237,7 @@ export function apiCredits(prices, rows, now, service = 'claude') {
 // 한 달 양을 모르면(등급 모름 · 가족 공유) 굴리지 않고 「다시 찼어요」(expired)만 말한다. 한 달 양은 요금제 사실이라 요금표 60일 문 밖에서 읽는다(monthCredits처럼 — P2-3).
 function flowGrantOf(prices, row, now) {
   if (row?.source !== 'auto' || row.service !== 'gemini') return null;
-  if (!(row.service === 'gemini' && row.usageDisabled === true) && row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
+  if (lapsed(row, now)) return null;
   const key = planKey(row.plan), v = num(prices?.services?.gemini?.plans?.[key]?.flowCredits);
   return v > 0 ? { grant: v } : key === 'ultra' ? { unknown: true } : null;
 }
@@ -277,7 +282,7 @@ export function flowCredits(prices, rows, now) {
 export function serviceGroups(rows, now, checkAt = null) {
   const map = new Map();
   for (const row of rows || []) {
-    if (row.usageDisabled || (row.kind !== 'weekly' && row.kind !== 'credit')) continue;
+    if (row.kind !== 'weekly' && row.kind !== 'credit') continue;
     const auto = row.source === 'auto' && Object.hasOwn(SHORT, row.service), label = String(row.label || '').trim();
     const key = auto ? row.service : `m-${row.kind}-${label.toLowerCase()}`;
     if (!map.has(key)) map.set(key, { key, service: auto ? row.service : null, label: auto ? SHORT[row.service] : label || '직접 넣은 구독', kind: row.kind, accounts: [] });
@@ -373,7 +378,7 @@ export function planPrice(t, key) { const p = t?.plans?.[key]; return p && Numbe
 // 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 채우지 않는다(3차 시안 검수 P3-1).
 export function officialPrice(prices, row, now) {
   if (row.source !== 'auto' || num(row.price) !== null) return null;
-  if (!(row.service === 'gemini' && row.usageDisabled === true) && row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
+  if (lapsed(row, now)) return null;
   const table = priceTable(prices, row.service, now), plan = planPrice(table, planKey(row.plan));
   return plan ? { price: row.cycle === 'annual' && plan.year ? plan.year / 12 : plan.month, currency: table.currency, table } : null;
 }

@@ -1,8 +1,8 @@
 // 솔리오 구독 방의 비서 판(2026-11-20, docs/디자인/솔리오_구독비서_20261120/설계.md 3절과 7절 설계 검토 반영). DOM이 없다.
 // 유호님 11-20 「딱 하나만 봤으면 좋겠어」, 「급한것 중요한것 위주로 맨 위로」, 「토큰 출력량이 실시간으로」, 「하루에 한번씩 총 사용량 진단」.
 // 맨 위 한 가지(briefHead), 다가오는 일(briefSoon), 지금 출력(briefLive), 오늘 진단(briefDiag), 줄 안쪽 결론(poolSay)을 만든다.
-import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, planName, passTip, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, flowCreditOf, apiCreditOf, nameOf, num, DAY_MS } from './subscriptions-model.mjs';
-import { SOLIO_TODAY_NAMES, whenWords, josa, joinNames } from './solio-today.mjs';
+import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, planName, passTip, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, flowCreditOf, apiCreditOf, apiCreditPlan, nameOf, num, DAY_MS } from './subscriptions-model.mjs';
+import { SOLIO_TODAY_NAMES, whenWords, josa, joinNames, benefitInfo } from './solio-today.mjs';
 import { tokenDay, tokenText } from './subscriptions-tokens.mjs';
 /* 풀 모의와 계정 사실은 subscriptions-model.mjs 한 곳에 있다(구조 다시 보기 5절). 시험과 옛 호출을 위해 이름을 그대로 내보낸다 */
 export { poolRunout };
@@ -360,7 +360,7 @@ export function todayOut(tokens, now) {
   const day = tokenDay(now), by = {};
   let out = 0;
   for (const r of Array.isArray(tokens?.cells) ? tokens.cells : []) {
-    if (!Array.isArray(r) || r[0] !== day || r[1] === 'gemini') continue;
+    if (!Array.isArray(r) || r[0] !== day) continue;
     const v = Number(r[4]) || 0;
     out += v; by[r[1]] = (by[r[1]] || 0) + v;
   }
@@ -482,14 +482,18 @@ export function briefDial(snapshot, groups, now, focusService = null) {
 }
 
 /* ── 계정판(11-24 유호님 「어떤 계정이 남아있는지 먼저」, 설계 11절 · 설계 검토 11.8) ──
-   자동으로 읽는 한도형 서비스(Claude, Codex)마다 머리(쓸 수 있는 계정 수 / 이 PC 계정 수)와 계정 줄을 만든다.
+   자동으로 읽는 한도형 서비스(Claude, Codex, Gemini)마다 머리(쓸 수 있는 계정 수 / 이 PC 계정 수)와 계정 줄을 만든다.
    계정 줄의 막대는 그 계정의 주간 남은 양(shareOf)이다. 금색은 지금 쓸 수 있는 계정에만 쓴다(tone open).
-   쓸 수 있는 계정과 손볼 계정은 접지 않는다. 접는 것은 다 쓴 계정 한 가지다(설계 검토 9) */
+   쓸 수 있는 계정과 손볼 계정은 접지 않는다. 접는 것은 다 쓴 계정 한 가지다(설계 검토 9).
+   머리의 큰 글이 지금 사용량이고, 그 아래 약한 소제목 한 줄(credit)이 무료 크레딧이다(11-26 유호님 「제목,소제목처럼 아래 약하게 소제목으로」, 설계 11.10).
+   Claude · Codex는 무료 API 크레딧이 있는지와 남은 금액, Gemini는 Flow 크레딧이다. Gemini의 Cloud 크레딧은 계정 관리의 「API 크레딧」 줄에 있다 */
 export const BOARD_ROWS = 4;
-const BOARD_SUB = Object.freeze({ gpt: 'ChatGPT 구독' });
+const BOARD_SUB = Object.freeze({ gpt: 'ChatGPT 구독', gemini: 'Antigravity 한도' });
 const ORDER_OF = g => ['claude', 'gpt', 'gemini'].indexOf(g.service);
 // 막대: 주간 초기화가 지나 다시 찼을 계정은 100이다. shareOf는 어림 주간을 버리고 5시간 창으로 떨어진다(Fable 최종 F5)
 const barOf = (a, prices) => (a.projected && a.g?.weekly?.guess ? 100 : shareOf(a, prices) ?? 0);
+const monthDay = t => { const d = new Date(t); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; };
+const usd = n => '$' + (Math.round(Number(n) * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
 function boardRow(a, g, prices, now) {
   const base = { id: a.row.id, name: a.name || '이름 없는 계정' }; // 접힌 줄 · 솔리오 보고와 같은 이름(PC 0.5.10 공개 후보 카본 F6)
   const week = a.g?.weekly && !a.g.weekly.guess ? a.g.weekly : null;
@@ -514,6 +518,14 @@ function boardRow(a, g, prices, now) {
   else note = week?.resetsAt ? soonWhen(week.resetsAt, now) + ' 초기화' : week && week.used === 0 ? '이번 주 아직 쓰지 않음' : '';
   return { ...base, tone: 'open', bar: v, pct: v + '%', note, first };
 }
+/* 지금 이 PC의 Antigravity에 다른 계정이 로그인되어 있는 Gemini 계정(본체 state 'elsewhere'). Antigravity는 한 번에 한 계정만 로그인된다.
+   마지막으로 읽은 주간 남은 양을 흐린 막대와 흐린 %로 두고 읽은 날을 쓴다. 금색으로 쓰지 않고 쓸 수 있는 계정으로 세지 않는다 */
+function awayRow(a) {
+  const base = { id: a.row.id, name: a.name || '이름 없는 계정' }, at = num(a.row.live?.readAt), week = a.g?.weekly;
+  if (!at || !week) return { ...base, away: true, tone: 'idle', bar: null, pct: '', note: '다른 계정 로그인 중 · 아직 읽지 않음' };
+  if (week.guess) return { ...base, away: true, tone: 'idle', bar: null, pct: '', note: '다른 계정 로그인 중 · 그 뒤 주간 초기화됨' };
+  return { ...base, away: true, tone: 'away', bar: week.left, pct: week.left + '%', note: '다른 계정 로그인 중 · ' + monthDay(at) + ' 값' };
+}
 /* 서비스 머리의 붉은 말. serviceFacts의 판정 하나만 읽는다(설계 검토 4) */
 function boardAlarm(f) {
   if (f.kind === 'allOut') return '지금 모두 막힘';
@@ -523,36 +535,97 @@ function boardAlarm(f) {
   if (f.kind === 'error') return '읽지 못함';
   return '';
 }
+/* 다른 계정 로그인 중인 Gemini 계정이 있는 칸의 붉은 말. serviceFacts는 그 계정을 세지 않으므로 「지금 모두 막힘」 · 「다시 로그인 필요」로 말하면
+   그 계정까지 막힌 것처럼 읽힌다. 이 PC에 로그인된 계정에서 본 것만 수로 센다(카본 solio-subs-agy-20261126 A1) */
+function countAlarm(f) {
+  return [f.out.length ? f.out.length + '개 ' + (blocked(f.out) ? '막힘' : '다 씀') : '', f.login.length ? f.login.length + '개 다시 로그인' : '', f.error.length ? f.error.length + '개 못 읽음' : ''].filter(Boolean).join(' · ');
+}
+/* 머리 아래 약한 소제목(11-26 유호님 「밑에 작게 소제목으로 무료 api크레딧 여부」). 계정판에 선 계정만 센다.
+   남은 금액을 넣은 계정이 있으면 그 합이다. 넣지 않았지만 받는 계정도 있으면 「계정 n개에 넣은 값」을 붙인다.
+   넣은 값이 없으면 요금제로 매달 들어오는 금액이다. 칸의 모든 계정이 같은 금액을 받을 때만 「계정마다」라고 쓰고, 일부만 받으면 받는 계정 수와 합을 쓴다.
+   받는 요금제(apiCreditPlan)인데 금액을 모르면(요금표가 없거나 오래됨, 등급 모름) 그 수를 따로 쓰고, 받는 계정이 하나도 없을 때만 「없음」이다.
+   공식 화면에서 「미연결」로 확인한 계정은 금액이 들어오지 않아 받는 계정으로 세지 않는다(카본 solio-subs-agy-20261126 A2 · A4) */
+function apiCreditLine(prices, rows, now) {
+  let left = 0, entered = 0, monthly = 0, granted = 0, unknown = 0, linked = 0, noPlan = 0;
+  const grants = new Set();
+  for (const row of rows) {
+    const c = apiCreditOf(prices, row, now);
+    if (c && c.left !== null) { left += c.left; entered++; continue; }
+    // 요금제를 아직 모르면 「없음」이 아니다(Fable solio-subs-agy-20261126 F4)
+    if (!apiCreditPlan(row)) { if (!planKey(row.plan)) noPlan++; continue; }
+    const status = benefitInfo(row)?.status;
+    if (status === 'unlinked') continue;
+    if (status === 'linked') linked++;
+    if (c?.grant) { monthly += c.grant; granted++; grants.add(c.grant); } else unknown++;
+  }
+  const head = '무료 API 크레딧 ';
+  if (entered) return head + usd(left) + ' 남음' + (granted || unknown ? ' · 계정 ' + entered + '개에 넣은 값' : '');
+  // 「있음」은 공식 화면에서 연결을 확인한 계정에만 쓴다. 요금제만으로는 Console 조직 연결 여부를 모른다(설계 머리, Fable F3).
+  // 확인한 계정이 없으면 「확인 전」, 일부면 확인 전인 계정 수를 붙인다
+  const counted = granted + unknown, word = linked ? '있음' : '확인 전';
+  const unsure = linked && linked < counted ? ' · ' + (counted - linked) + '개는 확인 전' : '';
+  const rest = unknown ? ' · ' + unknown + '개는 금액 모름' : '';
+  if (granted) {
+    // 같은 금액을 여러 계정이 받으면 계정 하나의 금액에 「마다」 · 「씩」을 쓰고, 금액이 섞이면 「합쳐서」를 쓴다.
+    // 합계에 「씩」을 붙이면 계정마다 그만큼 받는 것으로 읽힌다(Fable solio-subs-agy-20261126 F1)
+    const all = granted === rows.length, each = grants.size === 1 && granted > 1;
+    const who = all ? (each ? '계정마다 ' : '') : '계정 ' + granted + '개에 ';
+    return head + word + ' · ' + who + (!each && granted > 1 ? '합쳐서 ' : '') + '매달 ' + usd(each ? monthly / granted : monthly) + (each && !all ? '씩' : '') + rest + unsure;
+  }
+  if (unknown) return head + word + ' · ' + (unknown === rows.length ? '' : '계정 ' + unknown + '개 · ') + '금액은 공식 화면에서 확인' + unsure;
+  return head + (noPlan ? '아직 모름' : '없음');
+}
+/* Gemini의 소제목: 회원이 기입한 Flow 크레딧(남은 개수의 합). 다시 차는 때가 지나 굴린 값은 숫자로 쓰지 않는다(설계 11.10).
+   유호님은 Gemini 칸 소제목을 Flow 크레딧으로 정하셨다(11-26). Cloud 크레딧은 넣지 않는다.
+   아직 맞는 값이 없으면 까닭을 가른다: 넣은 값의 다시 차는 때가 지났으면 「다시 기입」, 받는 요금제인데 넣지 않았으면 「기입 전」,
+   받는 요금제가 없으면(Plus 아래 · 가족 공유 등) 「없음」이다(카본 solio-subs-agy-20261126 A3).
+   요금제를 고르지 않았으면 「요금제를 고르면 보임」, 받는 요금제인데 요금표가 없으면 「아직 모름」이다(Fable F4) */
+function geminiCreditLine(prices, rows, now) {
+  let flow = 0, typed = 0, stale = 0, eligible = 0, noPlan = 0, noTable = 0;
+  for (const row of rows) {
+    const f = flowCreditOf(prices, row, now);
+    if (!f) { if (!planKey(row.plan)) noPlan++; else if (apiCreditPlan(row)) noTable++; continue; }
+    eligible++;
+    if (f.left !== null && !f.refilled) { flow += f.left; typed++; } else if (f.refilled || f.expired || f.old) stale++;
+  }
+  if (typed) return 'Flow 크레딧 ' + fmt(flow) + '개 남음' + (typed < eligible ? ' · 계정 ' + typed + '개에 넣은 값' : '');
+  if (stale) return 'Flow 크레딧 다시 차는 때 지남 · 새로 기입';
+  if (eligible) return 'Flow 크레딧 기입 전';
+  return noTable ? 'Flow 크레딧 아직 모름' : noPlan ? 'Flow 크레딧은 요금제를 고르면 보임' : 'Flow 크레딧 없음';
+}
 export function briefBoard(snapshot, groups, now, focus = null) {
   const prices = snapshot?.prices || null;
   const cols = [];
   for (const g of groups) {
     if (g.kind !== 'weekly' || !g.service) continue;
     const f = serviceFacts(g, prices), list = f.list;
-    if (!list.length) continue;
+    // Gemini는 한 번에 한 계정만 Antigravity에 로그인된다. 다른 계정 로그인 중인 계정도 칸에 세운다(11-26 유호님 「unmet23 제미나이랑 77yuhbs 제미나이 확인할수있게」)
+    const away = g.service === 'gemini' ? (g.away || []).filter(a => a.row.source === 'auto') : [];
+    if (!list.length && !away.length) continue;
     const mine = a => !a.away && a.row.source === 'auto';
     // 쓸 수 있는 계정(f.open과 같은 묶음): 남은 양이 큰 것부터, 같으면 확인한 값을 먼저
     const open = [...g.usable, ...g.projected].filter(mine).map(a => ({ a, v: barOf(a, prices) })).sort((x, y) => y.v - x.v || Boolean(x.a.projected) - Boolean(y.a.projected)).map(x => x.a);
     const fix = [...g.login, ...g.error, ...g.pending].filter(mine), out = g.out.filter(mine);
-    const row = a => boardRow(a, g, prices, now);
+    const row = a => (a.away ? awayRow(a) : boardRow(a, g, prices, now));
     let rows, folded, foldLabel = '';
     if (open.length) {
-      rows = [...open, ...fix]; folded = out;
+      rows = [...open, ...fix, ...away]; folded = out;
       const first = out.find(a => a.unblock);
       // 다시 열리는 때를 문장으로: 「다 쓴 7개 · 오늘 07:00에 kai부터 열림」. 계정 이름은 접힌 계정이 둘 이상일 때만(카본 B5, 미학 맹검 2차)
       foldLabel = out.length ? (blocked(out) ? '막힌 ' : '다 쓴 ') + out.length + '개' + (first ? ' · ' + soonWhen(first.unblock, now) + '에 ' + (out.length > 1 ? who(first) + '부터 ' : '') + '열림' : '') : '';
     } else {
-      const room = Math.max(1, BOARD_ROWS - fix.length);
-      rows = [...fix, ...out.slice(0, room)]; folded = out.slice(room);
+      const room = Math.max(1, BOARD_ROWS - fix.length - away.length);
+      rows = [...fix, ...out.slice(0, room), ...away]; folded = out.slice(room);
       foldLabel = folded.length ? (blocked(folded) ? '막힌 ' : '다 쓴 ') + folded.length + '개 더' : '';
     }
-    const one = list.length === 1, name = svcName(g);
-    // 요금제 이름은 모든 계정의 요금제가 같을 때만(serviceFacts.countable), 「합쳐서」는 합칠 수 있을 때만(share)
+    const all = [...list, ...away], one = all.length === 1, name = svcName(g);
+    // 요금제 이름은 모든 계정의 요금제가 같을 때만, 「합쳐서」는 합칠 수 있을 때만(share). 다른 계정 로그인 중인 계정이 있으면 합치지 않는다
     // 「Ultra 10개」만으로는 무엇이 열 개인지 몰랐다. 요금제 이름 뒤에 「계정」을 붙인다(쌍 맹검 11-24)
-    const plan = f.countable && list[0].row.plan ? planName(list[0].row.plan, g.service) + ' 계정 ' + list.length + '개' : '계정 ' + list.length + '개';
-    const share = !one && f.share !== null ? '합쳐서 ' + f.share + '% 남음' : '';
+    const plans = new Set(all.map(a => planKey(a.row.plan)));
+    const plan = plans.size === 1 && all[0].row.plan ? planName(all[0].row.plan, g.service) + ' 계정 ' + all.length + '개' : '계정 ' + all.length + '개';
+    const share = !one && !away.length && f.share !== null ? '합쳐서 ' + f.share + '% 남음' : '';
     // 계정 하나면 큰 글과 그 이름표가 상태를 말한다. 머리의 붉은 말을 겹쳐 쓰지 않는다(카본 B4)
-    const alarm = one ? '' : boardAlarm(f);
+    const alarm = one ? '' : away.length ? countAlarm(f) : boardAlarm(f);
     let big, label;
     if (one) {
       // 계정 하나: 상태를 먼저 가른다. 막혔으면 큰 글이 「막힘」이고 주간 남은 양은 작은 글이다(설계 검토 3)
@@ -560,70 +633,24 @@ export function briefBoard(snapshot, groups, now, focus = null) {
       big = r.tone === 'open' ? { value: String(r.bar), unit: '%', label: '남음' }
         : r.tone === 'held' ? { value: '막힘', unit: '', label: r.pct ? r.pct + ' 남음' : '' }
         : r.tone === 'out' ? { value: '다 씀', unit: '', label: '' }
-        : { value: '–', unit: '', label: r.note };
+        : { value: '–', unit: '', label: r.away ? '다른 계정 로그인 중' : r.note, ...(r.tone === 'idle' || r.tone === 'away' ? { quiet: true } : {}) };
+      // 읽기 전 · 다른 계정 로그인 중인 계정의 「–」는 손볼 일이 아니라 붉게 쓰지 않는다(quiet). 다른 계정 로그인 중이면 이름표는 짧게, 자세한 말은 줄에(카본 A5)
       // 큰 글과 작은 글이 같은 말로 시작하면 작은 글만 읽는다(「다 씀, 다 씀 · …」가 되지 않게, Fable 최종 F6)
       const dup = big.value === '–' || String(r.note || '').startsWith(big.value);
       label = name + ' ' + [r.tone === 'open' ? r.pct + ' 남음' : dup ? '' : big.value, r.note].filter(Boolean).join(', ') + '.';
     } else {
-      big = { value: String(open.length), unit: '/' + list.length, label: '지금 쓸 수 있는 계정' };
-      label = name + ' 계정 ' + list.length + '개 가운데 ' + open.length + '개를 지금 쓸 수 있습니다.' + (share ? ' ' + share + '.' : '') + (alarm ? ' ' + alarm + '.' : '');
+      big = { value: String(open.length), unit: '/' + all.length, label: '지금 쓸 수 있는 계정' };
+      label = name + ' 계정 ' + all.length + '개 가운데 ' + open.length + '개를 지금 쓸 수 있습니다.' + (share ? ' ' + share + '.' : '') + (alarm ? ' ' + alarm + '.' : '')
+        + (away.length ? ' ' + away.length + '개는 다른 계정이 로그인되어 있습니다.' : '');
     }
     // 펼친 다 쓴 계정 줄에는 「다 씀 · 」을 되풀이하지 않는다. 접은 줄이 이미 「다 쓴 n개」라고 말한다(미학 맹검 11-24 3차).
     // 쓸 계정이 없어 다 쓴 계정 넷이 바로 보이는 칸에서는 빼지 않는다. 같은 칸에서 같은 상태가 두 꼴로 서지 않게(Fable 다시 검수 P2)
     const foldRows = folded.map(row).map(r => (r.tone === 'out' && open.length > 0 && foldLabel.startsWith('다 쓴') && r.note.startsWith('다 씀 · ') ? { ...r, note: r.note.replace('다 씀 · ', '') } : r));
-    cols.push({ key: g.service, name, sub: [BOARD_SUB[g.service], plan, share].filter(Boolean).join(' · '), alarm, big, label, urgent: g.service === focus,
-      rows: rows.map(row), fold: folded.length ? { label: foldLabel, rows: foldRows } : null });
+    const credit = g.service === 'gemini' ? geminiCreditLine(prices, all.map(a => a.row), now) : apiCreditLine(prices, all.map(a => a.row), now);
+    cols.push({ key: g.service, name, sub: [BOARD_SUB[g.service], plan, share].filter(Boolean).join(' · '), alarm, big, credit, label: label + ' ' + credit.replace(/ · /g, ', ') + '.', urgent: g.service === focus,
+      rows: rows.map(row), fold: folded.length ? { label: foldLabel, rows: foldRows } : null, ...(g.service === 'gemini' ? { flow: true } : {}) });
   }
-  // Gemini 칸은 Claude · Codex 칸 다음에 붙기만 한다. 계정판이 없는 자료에 칸을 세우면 보고와 맨 위가 바뀌므로 세우지 않는다(설계 11.10)
-  if (cols.length && !cols.some(c => c.key === 'gemini')) { const gm = geminiFlowCol(snapshot, now); if (gm) cols.push(gm); }
   return cols.length ? { cols } : null;
-}
-
-/* ── 계정판의 Gemini 칸(11-26 유호님 「unmet23 제미나이랑 77yuhbs 제미나이 확인할수있게 띄워줄래?」, 설계 11.10) ──
-   Gemini 사용량 조회는 11-21 결정으로 꺼져 있다. 새로 읽지 않고 회원이 기입한 Flow 크레딧(남은 개수 · 다시 차는 때 · 확인한 날)과 Cloud 크레딧만 보인다.
-   보이기만 한다. 판정(serviceFacts) · 솔리오 보고 · 진단은 이 칸을 읽지 않는다. 막대는 남은 개수 ÷ 그 요금제의 한 달 양이다(Ultra 20x 25,000).
-   다시 차는 때가 지난 계정은 한 달 양으로 굴린 값을 숫자로 쓰지 않는다. 기입한 값만 합한다 */
-const FLOW_FIRST_MS = 7 * DAY_MS, FLOW_FIRST_SHARE = 0.2;
-const monthDay = t => { const d = new Date(t); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; };
-// 시각을 기입하지 않은 다시 차는 때는 그날 23:59로 저장된다. 그때는 날짜만 쓴다(상세내역의 Flow 칸과 같다)
-const monthDayTime = t => { const d = new Date(t), hm = pad(d.getHours()) + ':' + pad(d.getMinutes()); return monthDay(t) + (hm === '23:59' ? '' : ' ' + hm); };
-const usd = n => '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
-function geminiFlowCol(snapshot, now) {
-  const prices = snapshot?.prices || null;
-  const list = (snapshot?.rows || []).filter(r => r?.source === 'auto' && r.service === 'gemini');
-  if (!list.some(r => num(r.flowCredit) !== null)) return null;
-  const all = list.map(row => ({ row, name: nameOf(row) || '이름 없는 계정', f: flowCreditOf(prices, row, now) }));
-  // typed: 기입한 값이 아직 맞는 계정. stale: 기입한 다시 차는 때가 지난 계정(굴린 값 · 너무 오래된 값 · 한 달 양을 몰라 못 굴린 값). blank: 기입하지 않은 계정
-  const typed = all.filter(x => x.f && x.f.left !== null && !x.f.refilled).sort((x, y) => (x.f.until ?? Infinity) - (y.f.until ?? Infinity));
-  const stale = all.filter(x => x.f && (x.f.refilled || x.f.expired)), blank = all.filter(x => !typed.includes(x) && !stale.includes(x));
-  // 「먼저 쓰세요」: 7일 안에 다시 차는데 한 달 양의 20% 넘게 남은 계정 하나(가장 먼저 다시 차는 것). 다시 차면 남은 양은 이월되지 않는다
-  const first = typed.find(x => x.f.until && x.f.until - now <= FLOW_FIRST_MS && x.f.grant && x.f.left >= x.f.grant * FLOW_FIRST_SHARE) || null;
-  const rowOf = x => {
-    const base = { id: x.row.id, name: x.name };
-    if (stale.includes(x)) return { ...base, tone: 'idle', bar: null, pct: '', note: '다시 차는 때 지남 · Flow에서 확인해 기입' };
-    if (!typed.includes(x)) return { ...base, tone: 'idle', bar: null, pct: '', note: '아직 기입하지 않았습니다' };
-    const { left, grant, until, at } = x.f;
-    const bar = grant ? Math.min(100, Math.floor((left / grant) * 100 + 1e-6)) : null;
-    const note = [until ? monthDayTime(until) + '에 다시 참' : '', at ? monthDay(at) + ' 확인' : ''].filter(Boolean).join(' · ');
-    return { ...base, tone: 'open', bar, pct: fmt(left), note, first: x === first };
-  };
-  const ordered = [...typed, ...stale, ...blank], n = list.length;
-  const keys = new Set(list.map(r => planKey(r.plan)));
-  const plan = keys.size === 1 && list[0].plan ? planName(list[0].plan, 'gemini') + ' 계정 ' + n + '개' : '계정 ' + n + '개';
-  const sum = typed.reduce((s, x) => s + x.f.left, 0);
-  const big = typed.length ? { value: fmt(sum), unit: '', label: typed.length === n ? '남은 Flow 크레딧' : '남은 Flow 크레딧 · 계정 ' + typed.length + '개' }
-    : { value: '–', unit: '', label: '남은 Flow 크레딧', quiet: true };
-  // Cloud 크레딧은 칸 아래 한 줄로만. 기입한 계정이 모두면 계정 순서대로 금액만, 일부면 계정 이름을 붙인다
-  const cloud = ordered.map(x => ({ name: x.name, left: apiCreditOf(prices, x.row, now)?.left ?? null })).filter(c => c.left !== null);
-  const foot = cloud.length ? 'Cloud 크레딧 ' + cloud.map(c => (cloud.length === n ? '' : c.name + ' ') + usd(c.left)).join(' · ') : '';
-  const label = [
-    typed.length === n ? 'Gemini ' + plan + '에 남은 Flow 크레딧은 ' + (n > 1 ? '모두 ' : '') + fmt(sum) + '개입니다.'
-      : typed.length ? 'Gemini 계정 ' + n + '개 가운데 ' + typed.length + '개에 남은 Flow 크레딧은 ' + fmt(sum) + '개입니다.'
-      : 'Gemini ' + plan + '가 있습니다.',
-    stale.length ? stale.length + '개는 다시 차는 때가 지났습니다. Flow에서 확인해 기입하세요.' : '',
-    blank.length ? blank.length + '개는 Flow 크레딧을 아직 기입하지 않았습니다.' : '',
-  ].filter(Boolean).join(' ');
-  return { key: 'gemini', flow: true, name: 'Gemini', sub: plan, alarm: '', big, label, urgent: false, rows: ordered.map(rowOf), fold: null, foot };
 }
 
 /* ── 솔리오 보고(설계 11.3 · 설계 검토 6 · 7 · 8): 할 일을 중요한 차례로 ──

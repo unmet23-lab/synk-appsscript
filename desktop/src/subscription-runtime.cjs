@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('node:fs');
+const path=require('node:path');
 const {READ_TIMEOUT,OUTPUT_LIMIT,SERVICES,candidatePaths,cleanText,stripAnsi,commandFor}=require('./subscription-common.cjs');
 const {providerPolicy}=require('./subscription-catalog.cjs');
 // 프로세스·환경·도구 캐시는 실행 계층 한 곳에서 관리한다.
@@ -74,7 +75,6 @@ function createSubscriptionRuntime({platform,env,spawn,now,home}) {
     const searchEnv=childEnv();
     const next={};
     for(const [key,spec] of Object.entries(SERVICES)){
-      if(spec.manualOnly){next[key]={path:null,version:null};continue;}
       if(!spec.bin){next[key]={path:null,version:null,api:true};continue;}
       const found=candidatePaths(spec.bin,{platform,env:searchEnv,home}).find(p=>{try{return fs.statSync(p).isFile();}catch{return false;}})||null;
       let version=null;
@@ -93,8 +93,21 @@ function createSubscriptionRuntime({platform,env,spawn,now,home}) {
   // macOS에는 따로 여는 검은 창이 없어 터미널 앱에 고정 명령을 넘긴다. 값은 셸 작은따옴표로 감싼다.
   const shQuote=value=>"'"+String(value).replace(/'/g,"'\\''")+"'";
   const asString=value=>'"'+String(value).replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
-  function spawnMacTerminal(file,args,extraEnv,cwd){
-    const line=[cwd?`cd ${shQuote(cwd)} &&`:'',...Object.entries(extraEnv).map(([key,value])=>`${key}=${shQuote(value)}`),shQuote(file),...args.map(shQuote)].filter(Boolean).join(' ');
+  // runDir: 로그인마다 앱이 만든 빈 폴더. 그 안에 POSIX sh 스크립트(run.sh)를 쓰고 Terminal에는 `/bin/sh '<run.sh>'` 한 줄만 보낸다.
+  // 회원의 셸(zsh · bash · fish)이 무엇이든 같은 문법으로 돌고, CLI 경로에 `=`가 있어도 env가 잘못 읽지 않는다(GPT -c GA2 · -f GA1).
+  // 스크립트는 먼저 자기 시작 시각(C 로캘 · UTC — 회원의 로캘과 시간대에 따라 글이 바뀌지 않게)을 stamp에 적고(번호가 다른 프로그램에 다시 쓰였는지 앱이 가르는 기준), 자기 번호를 pid에 다 쓴 뒤, 앱이 둔 go 표식이 아직 있을 때만 exec로 CLI가 된다(번호가 그대로 CLI의 번호다).
+  // 표식이 없으면(앱이 지웠거나 폴더가 없음) 스스로 끝난다. go는 앱이 Terminal을 열기 전에 둔다(subscription-login.cjs)
+  // 앱은 osascript만 보여 창이 닫혔는지, 취소 때 무엇을 끌지 몰랐다(GPT solio-subs-agy-be-20261126-b GA4). 취소 순서는 subscription-login.cjs의 stopLogin
+  function spawnMacTerminal(file,args,extraEnv,cwd,runDir=null){
+    let line;
+    if(runDir){
+      const script=['#!/bin/sh',cwd?`cd ${shQuote(cwd)} || exit 1`:'',`LC_ALL=C TZ=UTC /bin/ps -o lstart= -p $$ > ${shQuote(path.join(runDir,'stamp'))} || exit 1`,`echo $$ > ${shQuote(path.join(runDir,'pid'))} || exit 1`,`[ -e ${shQuote(path.join(runDir,'go'))} ] || exit 0`,
+        ...Object.entries(extraEnv).filter(([key])=>/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)).map(([key,value])=>`export ${key}=${shQuote(value)}`),`exec ${[file,...args].map(shQuote).join(' ')}`].filter(Boolean).join('\n')+'\n';
+      const run=path.join(runDir,'run.sh');
+      fs.writeFileSync(run,script,{mode:0o700});
+      line=`/bin/sh ${shQuote(run)}`;
+    }
+    else line=[cwd?`cd ${shQuote(cwd)} &&`:'',...Object.entries(extraEnv).map(([key,value])=>`${key}=${shQuote(value)}`),shQuote(file),...args.map(shQuote)].filter(Boolean).join(' ');
     return spawn('osascript',['-e',`tell application "Terminal" to do script ${asString(line)}`,'-e','tell application "Terminal" to activate'],{env:childEnv(),shell:false,detached:true,stdio:'ignore'});
   }
 

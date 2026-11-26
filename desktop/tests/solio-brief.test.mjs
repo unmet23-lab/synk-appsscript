@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { solioBrief, briefHead, briefSoon, briefDiag, briefDial, briefBoard, briefGroups, REPORT_SHOWN, poolRunout, poolSay, dailyDiag, diagWhen, briefLive, tokSample, todayOut, recentOut, soonWhen, SOON_SHOWN, RECENT_MS, DIAL_MS } from '../renderer/solio-brief.mjs';
 import { tokenSummary } from '../renderer/subscriptions-tokens.mjs';
 import { solioToday } from '../renderer/solio-today.mjs';
-import { serviceFacts, poolTimeline, POOL_SHORT } from '../renderer/subscriptions-model.mjs';
+import { serviceFacts, serviceGroups, poolTimeline, POOL_SHORT, flowCreditOf, officialPrice } from '../renderer/subscriptions-model.mjs';
 
 const D = 864e5, H = 3600e3, W = 7 * D;
 const NOW = new Date(2026, 10, 20, 3, 0).getTime(); // 2026-11-20(금) 03:00
@@ -412,13 +412,14 @@ test('diagnosis once a day: kept through the day, counted again on a new day rea
   assert.equal(diagWhen(NOW - 4 * H, NOW), '어제 23:00에 읽은 기록으로');
 });
 
-test('Gemini tokens recorded earlier today stay in dated history and do not count toward live output', () => {
+// Gemini 사용량 조회를 다시 켰다(11-26 결정). Gemini CLI 기록의 토큰은 지금 출력에도 들어간다
+test('Gemini tokens recorded today count toward live output and stay in dated history', () => {
   const day = '2026-11-20';
   const tokens = { cells: [
     [day, 'gemini', 'gemini-3.5-flash', 1, 50, 0, 0, 0, 1],
     [day, 'gpt', 'gpt-test', 1, 9, 0, 0, 0, 1],
   ] };
-  assert.deepEqual(todayOut(tokens, NOW), { day, by: { gpt: 9 }, out: 9 });
+  assert.deepEqual(todayOut(tokens, NOW), { day, by: { gemini: 50, gpt: 9 }, out: 59 });
   const stored = tokenSummary(tokens, 'week', NOW).models.find(model => model.service === 'gemini');
   assert.equal(stored.daily[day], 50);
 });
@@ -872,7 +873,9 @@ test('board: every Claude account with room is a gold row, the used-up seven fol
   assert.equal(c.rows[0].note, '수요일 03:00 초기화');
   assert.equal(c.fold.label, '다 쓴 7개 · 오늘 09:00에 out0부터 열림');
   assert.deepEqual(c.fold.rows.map(r => [r.name, r.tone, r.bar, r.note]).slice(0, 2), [['out0', 'out', null, '오늘 09:00 열림'], ['out1', 'out', null, '내일 19:00 열림']]);
-  assert.equal(c.label, 'Claude 계정 10개 가운데 3개를 지금 쓸 수 있습니다. 합쳐서 29% 남음.');
+  assert.equal(c.label, 'Claude 계정 10개 가운데 3개를 지금 쓸 수 있습니다. 합쳐서 29% 남음. 무료 API 크레딧 확인 전, 금액은 공식 화면에서 확인.');
+  // 요금표에 API 크레딧 금액이 없어도 Max는 받는 요금제라 「있음」이다(11-26 소제목)
+  assert.equal(c.credit, '무료 API 크레딧 확인 전 · 금액은 공식 화면에서 확인');
 });
 
 test('board: a 5-hour block is a dim weekly share with a red when, mixed Codex plans never pool, all shut is said in red', () => {
@@ -892,7 +895,7 @@ test('board: a service of one account says its state before a number (설계 검
   const h = one(held);
   assert.deepEqual(h.big, { value: '막힘', unit: '', label: '주간 67% 남음' });
   assert.equal(h.sub, 'Ultra 계정 1개');
-  assert.equal(h.label, 'Claude 막힘, 5시간 한도 · 오늘 05:00 풀림.');
+  assert.equal(h.label, 'Claude 막힘, 5시간 한도 · 오늘 05:00 풀림. 무료 API 크레딧 확인 전, 금액은 공식 화면에서 확인.');
   assert.deepEqual(one(weekly('claude', 100, NOW + 2 * D)).big, { value: '다 씀', unit: '', label: '' });
 });
 
@@ -946,7 +949,7 @@ test('report: urgent lines come first and the overflow is counted for the screen
 
 test('board: one used-up account is read once, not 「다 씀, 다 씀」 (Fable 최종 F6)', () => {
   const a = weekly('claude', 100, NOW + 2 * D, { email: 'solo@example.com' }), s = snap([a]);
-  assert.equal(briefBoard(s, briefGroups(s, NOW), NOW).cols[0].label, 'Claude 다 씀 · 모레 03:00 열림.');
+  assert.equal(briefBoard(s, briefGroups(s, NOW), NOW).cols[0].label, 'Claude 다 씀 · 모레 03:00 열림. 무료 API 크레딧 확인 전, 금액은 공식 화면에서 확인.');
 });
 
 test('board: accounts with room and accounts to fix never fold; only the used-up ones do, and with none open the first four show', () => {
@@ -1083,74 +1086,133 @@ test('report: the 「모자람」 diagnosis gives its reason before the price (�
   assert.match(d.then, /계정을 하나 더하면 월 약 [\d,]+원입니다\.$/);
 });
 
-/* ── 계정판의 Gemini 칸(11-26 유호님, 설계 11.10) ──
-   Gemini 사용량 조회는 꺼져 있다(11-21). 본체가 usageDisabled를 붙인 줄에서 회원이 기입한 Flow 크레딧과 Cloud 크레딧만 보인다. 계정 이름은 지어낸 것이다 */
+/* ── 계정판의 제목과 소제목(11-26 유호님 「agy가 첫번쨰로있어야해. 제목,소제목처럼 아래 약하게 소제목으로 플로우 크레딧 표기」, 설계 11.10) ──
+   Gemini 사용량 조회를 다시 켰다(11-26 결정). Gemini 칸의 큰 글은 Antigravity 한도이고, 약한 소제목이 회원이 기입한 Flow 크레딧이다(Cloud 크레딧은 쓰지 않는다).
+   Claude · Codex 칸의 소제목은 무료 API 크레딧이 있는지와 남은 금액이다. 계정 이름은 지어낸 것이다 */
 const GEM_PRICES = { services: { ...PRICES.services, gemini: { checked: '2026-11-02', currency: 'KRW', tax: 'included', plans: { ultra20x: { month: 300000, apiCredit: 100, flowCredits: 25000 } } } } };
-const flowRow = (email, flowCredit, flowCreditUntil, apiCredit = null, extra = {}) => row({ service: 'gemini', label: 'Gemini', state: 'manual', usageDisabled: true, live: null, plan: 'ultra_20x', email,
-  flowCredit, flowCreditUntil, flowCreditAt: NOW - 20 * 60e3, apiCredit, apiCreditAt: apiCredit === null ? null : NOW - D, ...extra });
+const API_PRICES = { services: { ...GEM_PRICES.services, claude: { ...PRICES.services.claude, plans: { ...PRICES.services.claude.plans, max20x: { month: 200, apiCredit: 200 } } }, gpt: { checked: '2026-11-01', currency: 'USD', plans: { pro: { apiCredit: 200 } } } } };
+// 지금 이 PC의 Antigravity에 로그인된 Gemini 계정(agy로 읽음)과 다른 계정이 로그인되어 있는 계정(state elsewhere)
+const gemRow = (email, used, extra = {}) => row({ service: 'gemini', label: 'Gemini', plan: 'ultra_20x', email, live: used === null ? null : { readAt: NOW - 5 * 60e3, weekly: { usedPercent: used, resetsAt: NOW + 4 * D } }, ...extra });
+const typedFlow = (flowCredit, flowCreditUntil, apiCredit = null) => ({ flowCredit, flowCreditUntil, flowCreditAt: NOW - 20 * 60e3, apiCredit, apiCreditAt: apiCredit === null ? null : NOW - D });
 const withCodex = () => { const { rows, stats } = sevenOfTen(), cx = codexShut(); for (const r of cx) stats[r.id] = 10; return { rows: [...rows, ...cx], stats }; };
 
-test('board: Gemini with Flow credits typed in stands third after Claude and Codex, with the sum, a bar per account, one 「먼저 쓰세요」 and the Cloud line (설계 11.10)', () => {
+test('board: Gemini stands third with its Antigravity limit as the title, the other signed-in account dim, and the Flow credits as the weak subtitle (설계 11.10)', () => {
   const { rows, stats } = withCodex();
-  const a = flowRow('gma@example.com', 5923, new Date(2026, 10, 25, 21, 29).getTime(), 100), b = flowRow('gmb@example.com', 25050, new Date(2026, 11, 20, 6, 37).getTime(), 0);
+  const a = gemRow('gma@example.com', 37, typedFlow(5923, new Date(2026, 10, 25, 21, 29).getTime(), 100));
+  const b = gemRow('gmb@example.com', null, { state: 'elsewhere', ...typedFlow(25050, new Date(2026, 11, 20, 6, 37).getTime(), 0) });
   const c = brief(snap([...rows, b, a], stats, { prices: GEM_PRICES })).board.cols;
   assert.deepEqual(c.map(x => x.key), ['claude', 'gpt', 'gemini']);
   const g = c[2];
-  assert.deepEqual([g.name, g.sub, g.alarm, g.urgent, g.fold], ['Gemini', 'Ultra 20x 계정 2개', '', false, null]);
-  assert.deepEqual(g.big, { value: '30,973', unit: '', label: '남은 Flow 크레딧' });
-  assert.equal(g.label, 'Gemini Ultra 20x 계정 2개에 남은 Flow 크레딧은 모두 30,973개입니다.');
-  // 먼저 다시 차는 계정이 먼저다. 막대는 남은 개수 ÷ 한 달 양(25,000)이고 넘으면 100에서 멈춘다. 「먼저 쓰세요」는 7일 안에 다시 차는데 20% 넘게 남은 계정 하나
-  assert.deepEqual(g.rows.map(r => [r.name, r.tone, r.bar, r.pct, r.note, r.first]), [
-    ['gma', 'open', 23, '5,923', '11월 25일 21:29에 다시 참 · 11월 20일 확인', true],
-    ['gmb', 'open', 100, '25,050', '12월 20일 06:37에 다시 참 · 11월 20일 확인', false]]);
-  // Cloud 크레딧은 칸 아래 한 줄. 모든 계정이 기입했으면 계정 순서대로 금액만 쓴다
-  assert.equal(g.foot, 'Cloud 크레딧 $100 · $0');
-});
-
-test('board: without Flow credits typed in there is no Gemini column, and Gemini alone never raises a board (설계 11.10)', () => {
-  const { rows, stats } = withCodex();
-  const bare = [flowRow('gma@example.com', null, null, 100), flowRow('gmb@example.com', null, null)];
-  assert.deepEqual(brief(snap([...rows, ...bare], stats, { prices: GEM_PRICES })).board.cols.map(x => x.key), ['claude', 'gpt']);
-  // 계정판이 없는 자료(한도형 구독이 없음)에 Gemini 칸 하나로 계정판을 세우면 보고와 맨 위가 바뀐다. 세우지 않는다
-  const only = snap([flowRow('gma@example.com', 5923, NOW + 5 * D, 100)], {}, { prices: GEM_PRICES });
-  assert.equal(briefBoard(only, briefGroups(only, NOW), NOW), null);
-});
-
-test('board: a Flow refill time already past empties the bar and asks to check Flow, and the sum keeps only values still true (설계 11.10)', () => {
-  const { rows, stats } = withCodex();
-  const past = flowRow('old@example.com', 4000, NOW - H, 100), fresh = flowRow('new@example.com', 25050, NOW + 20 * D, 0), blank = flowRow('none@example.com', null, null);
-  const g = brief(snap([...rows, past, fresh, blank], stats, { prices: GEM_PRICES })).board.cols[2];
-  assert.deepEqual(g.big, { value: '25,050', unit: '', label: '남은 Flow 크레딧 · 계정 1개' });
+  assert.deepEqual([g.name, g.sub, g.alarm, g.urgent, g.fold, g.flow], ['Gemini', 'Antigravity 한도 · Ultra 20x 계정 2개', '', false, null, true]);
+  // 큰 글은 지금 쓸 수 있는 계정 수다. 다른 계정이 로그인되어 있는 계정은 쓸 수 있는 계정으로 세지 않고, 몫을 합치지 않는다
+  assert.deepEqual(g.big, { value: '1', unit: '/2', label: '지금 쓸 수 있는 계정' });
   assert.deepEqual(g.rows.map(r => [r.name, r.tone, r.bar, r.pct, r.note]), [
-    ['new', 'open', 100, '25,050', '12월 10일 03:00에 다시 참 · 11월 20일 확인'],
-    ['old', 'idle', null, '', '다시 차는 때 지남 · Flow에서 확인해 기입'],
-    ['none', 'idle', null, '', '아직 기입하지 않았습니다']]);
-  assert.equal(g.label, 'Gemini 계정 3개 가운데 1개에 남은 Flow 크레딧은 25,050개입니다. 1개는 다시 차는 때가 지났습니다. Flow에서 확인해 기입하세요. 1개는 Flow 크레딧을 아직 기입하지 않았습니다.');
-  // Cloud 크레딧을 기입한 계정이 일부면 이름을 붙인다
-  assert.equal(g.foot, 'Cloud 크레딧 new $0 · old $100');
-  // 한 달 양을 모르면(요금표 없음) 지난 때를 굴리지 않고 같은 말을 쓴다. 아직 맞는 값은 막대 없이 개수만 쓴다
-  const noPrice = brief(snap([...rows, flowRow('old@example.com', 4000, NOW - H), flowRow('new@example.com', 900, NOW + 3 * D)], stats)).board.cols[2];
-  assert.deepEqual(noPrice.rows.map(r => [r.name, r.tone, r.bar, r.pct, r.first]), [['new', 'open', null, '900', false], ['old', 'idle', null, '', undefined]]);
-  // 남은 값이 모두 지났으면 큰 글은 붉지 않은 「–」다(quiet)
-  const allPast = brief(snap([...rows, flowRow('old@example.com', 4000, NOW - H)], stats, { prices: GEM_PRICES })).board.cols[2];
-  assert.deepEqual(allPast.big, { value: '–', unit: '', label: '남은 Flow 크레딧', quiet: true });
-  assert.equal(allPast.label, 'Gemini Ultra 20x 계정 1개가 있습니다. 1개는 다시 차는 때가 지났습니다. Flow에서 확인해 기입하세요.');
+    ['gma', 'open', 63, '63%', '화요일 03:00 초기화'],
+    ['gmb', 'idle', null, '', '다른 계정 로그인 중 · 아직 읽지 않음']]);
+  // 소제목은 기입한 Flow 크레딧의 합이다. Cloud 크레딧과 칸 아래 줄(foot)은 없다
+  assert.equal(g.credit, 'Flow 크레딧 30,973개 남음');
+  assert.equal(g.foot, undefined);
+  assert.equal(g.label, 'Gemini 계정 2개 가운데 1개를 지금 쓸 수 있습니다. 1개는 다른 계정이 로그인되어 있습니다. Flow 크레딧 30,973개 남음.');
 });
 
-test('board: the Gemini column only shows; the Claude and Codex columns, the top line, the report and the diagnosis stay as they were (설계 11.10)', () => {
+test('board: a Gemini account read before another signed in keeps its last weekly share dim with the day it was read, and Gemini alone raises a board (설계 11.10)', () => {
+  const a = gemRow('gma@example.com', 10), b = gemRow('gmb@example.com', 20, { state: 'elsewhere', live: { readAt: NOW - 2 * D, weekly: { usedPercent: 20, resetsAt: NOW + 3 * D } } });
+  const s = snap([a, b], {}, { prices: GEM_PRICES }), bd = briefBoard(s, briefGroups(s, NOW), NOW);
+  assert.deepEqual(bd.cols.map(x => x.key), ['gemini']);
+  const g = bd.cols[0];
+  assert.deepEqual(g.rows.map(r => [r.name, r.tone, r.bar, r.pct, r.note]), [
+    ['gma', 'open', 90, '90%', '화요일 03:00 초기화'],
+    ['gmb', 'away', 80, '80%', '다른 계정 로그인 중 · 11월 18일 값']]);
+  // 받는 요금제인데 기입한 Flow 크레딧이 없으면 「기입 전」이다
+  assert.equal(g.credit, 'Flow 크레딧 기입 전');
+  // 마지막으로 읽은 뒤 주간 초기화 때가 지났으면 그때의 %를 쓰지 않는다
+  const past = gemRow('gmc@example.com', 20, { state: 'elsewhere', live: { readAt: NOW - 6 * D, weekly: { usedPercent: 20, resetsAt: NOW - D } } });
+  const s2 = snap([a, past], {}, { prices: GEM_PRICES });
+  assert.deepEqual(briefBoard(s2, briefGroups(s2, NOW), NOW).cols[0].rows[1], { id: past.id, name: 'gmc', away: true, tone: 'idle', bar: null, pct: '', note: '다른 계정 로그인 중 · 그 뒤 주간 초기화됨' });
+  // 판정과 맨 위도 Gemini 줄을 읽는다(11-21 앞의 동작으로 돌아옴)
+  assert.deepEqual(briefGroups(s, NOW).map(x => x.service), ['gemini']);
+});
+
+test('board: with an account signed in elsewhere the Gemini head counts what it saw instead of 「모두 막힘」 or 「다시 로그인 필요」 (카본 solio-subs-agy-20261126 A1)', () => {
+  const away = gemRow('gmb@example.com', null, { state: 'elsewhere' });
+  const col = list => { const s = snap(list, {}, { prices: GEM_PRICES }); return briefBoard(s, briefGroups(s, NOW), NOW).cols[0]; };
+  const out = col([gemRow('gma@example.com', 100, { live: { readAt: NOW - 5 * 60e3, weekly: { usedPercent: 100, resetsAt: NOW + 4 * D } } }), away]);
+  assert.deepEqual([out.big.value + out.big.unit, out.alarm], ['0/2', '1개 다 씀']);
+  assert.equal(out.label, 'Gemini 계정 2개 가운데 0개를 지금 쓸 수 있습니다. 1개 다 씀. 1개는 다른 계정이 로그인되어 있습니다. Flow 크레딧 기입 전.');
+  assert.equal(col([gemRow('gma@example.com', 30, { state: 'needs-login' }), away]).alarm, '1개 다시 로그인');
+  // 다른 계정 로그인 중인 계정이 없으면 옛 말 그대로다
+  const solo = col([gemRow('gma@example.com', 100, { live: { readAt: NOW - 5 * 60e3, weekly: { usedPercent: 100, resetsAt: NOW + 4 * D } } }), gemRow('gmc@example.com', 100, { live: { readAt: NOW - 5 * 60e3, weekly: { usedPercent: 100, resetsAt: NOW + 5 * D } } })]);
+  assert.equal(solo.alarm, '지금 모두 막힘');
+  // 계정 하나가 다른 계정 로그인 중이면 머리 이름표는 짧게, 자세한 말은 줄에 쓴다(카본 A5). 이 PC 계정이 없는 묶음은 briefGroups가 거르므로 묶음을 바로 준다
+  const lone = snap([gemRow('gmz@example.com', 20, { state: 'elsewhere', live: { readAt: NOW - 6 * D, weekly: { usedPercent: 20, resetsAt: NOW - D } } })], {}, { prices: GEM_PRICES });
+  assert.equal(briefBoard(lone, briefGroups(lone, NOW), NOW), null);
+  const one = briefBoard(lone, serviceGroups(lone.rows, NOW, lone.check.at), NOW).cols[0];
+  assert.deepEqual(one.big, { value: '–', unit: '', label: '다른 계정 로그인 중', quiet: true });
+  assert.equal(one.rows[0].note, '다른 계정 로그인 중 · 그 뒤 주간 초기화됨');
+});
+
+test('board: the Gemini subtitle sums only Flow values still true, says how many accounts they cover, and names why there is no number (설계 11.10, 카본 A3 · A4)', () => {
   const { rows, stats } = withCodex();
-  // 다시 차는 때는 일주일 밖이다. 일주일 안이면 다가오는 일에 Flow 줄이 서는데, 그것은 이 칸과 상관없는 옛 동작이다
-  const typed = [flowRow('gma@example.com', 5923, NOW + 9 * D, 100), flowRow('gmb@example.com', 25050, NOW + 20 * D, 0)];
-  const bare = typed.map(r => ({ ...r, flowCredit: null, flowCreditUntil: null, flowCreditAt: null }));
-  const on = brief(snap([...rows, ...typed], stats, { prices: GEM_PRICES })), off = brief(snap([...rows, ...bare], stats, { prices: GEM_PRICES }));
-  assert.deepEqual(on.board.cols.map(c => c.key), ['claude', 'gpt', 'gemini']);
-  assert.deepEqual({ ...on, board: { cols: on.board.cols.slice(0, 2) } }, off);
-  // Gemini 줄이 아예 없는 자료와도 계정판의 두 칸 · 맨 위 · 보고가 같다
-  const none = brief(snap(rows, stats, { prices: GEM_PRICES }));
-  assert.deepEqual(on.board.cols.slice(0, 2), none.board.cols);
-  assert.deepEqual([on.head, on.report], [none.head, none.report]);
-  // 판정은 Gemini 줄을 읽지 않는다. 묶음은 Claude · Codex뿐이고 맨 위 갈래도 같다
-  const s = snap([...rows, ...typed], stats, { prices: GEM_PRICES }), s0 = snap(rows, stats, { prices: GEM_PRICES });
-  assert.deepEqual(briefGroups(s, NOW).map(x => x.service), ['claude', 'gpt']);
-  assert.equal(briefHead(s, briefGroups(s, NOW), NOW).kind, briefHead(s0, briefGroups(s0, NOW), NOW).kind);
+  const past = gemRow('old@example.com', 30, typedFlow(4000, NOW - H, 100)), fresh = gemRow('new@example.com', 30, { state: 'elsewhere', ...typedFlow(25050, NOW + 20 * D, 0) }), blank = gemRow('none@example.com', 30, { state: 'elsewhere' });
+  const g = brief(snap([...rows, past, fresh, blank], stats, { prices: GEM_PRICES })).board.cols[2];
+  // 다시 차는 때가 지나 한 달 양으로 굴린 값은 숫자로 쓰지 않는다. 받는 계정 셋 가운데 넣은 값이 맞는 계정은 하나다
+  assert.equal(g.credit, 'Flow 크레딧 25,050개 남음 · 계정 1개에 넣은 값');
+  assert.deepEqual(g.big, { value: '1', unit: '/3', label: '지금 쓸 수 있는 계정' });
+  const line = list => { const s = snap(list, {}, { prices: GEM_PRICES }); return briefBoard(s, briefGroups(s, NOW), NOW).cols[0].credit; };
+  // 넣은 값이 모두 다시 차는 때를 지났으면 「기입 전」이 아니라 다시 기입하라고 쓴다
+  assert.equal(line([gemRow('old@example.com', 30, typedFlow(4000, NOW - H))]), 'Flow 크레딧 다시 차는 때 지남 · 새로 기입');
+  // 받는 요금제가 없으면(가족 공유) 「없음」
+  assert.equal(line([gemRow('fam@example.com', 30, { plan: 'family' })]), 'Flow 크레딧 없음');
+  // 모르는 것은 「없음」이라 하지 않는다: 요금제를 고르지 않은 계정, 요금표를 받지 못한 판의 Ultra 20x(Fable solio-subs-agy-20261126 F4)
+  assert.equal(line([gemRow('new@example.com', 30, { plan: null })]), 'Flow 크레딧은 요금제를 고르면 보임');
+  const noTable = (() => { const s = snap([gemRow('u@example.com', 30)], {}, {}); return briefBoard(s, briefGroups(s, NOW), NOW).cols[0].credit; })();
+  assert.equal(noTable, 'Flow 크레딧 아직 모름');
+});
+
+test('board: the Claude and Codex subtitle says whether there is free API credit and what is left (설계 11.10, 카본 A2 · A4)', () => {
+  const credit = (list, prices = API_PRICES) => { const s = snap(list, {}, { prices }); return briefBoard(s, briefGroups(s, NOW), NOW).cols.map(c => [c.key, c.credit]); };
+  const cl = (email, extra = {}) => weekly('claude', 20, NOW + 5 * D, { email, ...extra });
+  // 넣은 금액이 없으면 요금제로 매달 들어오는 금액. 칸의 모든 계정이 같은 금액을 받으면 「계정마다」.
+  // 공식 화면에서 연결을 확인하지 않았으면 「있음」이 아니라 「확인 전」이다(Fable solio-subs-agy-20261126 F3)
+  const linked = email => ({ apiBenefit: { status: 'linked', account: email, plan: 'max_20x', checkedAt: NOW - D } });
+  assert.deepEqual(credit([cl('c1@example.com'), cl('c2@example.com')]), [['claude', '무료 API 크레딧 확인 전 · 계정마다 매달 $200']]);
+  assert.deepEqual(credit([cl('c1@example.com', linked('c1@example.com')), cl('c2@example.com', linked('c2@example.com'))]), [['claude', '무료 API 크레딧 있음 · 계정마다 매달 $200']]);
+  assert.deepEqual(credit([cl('c1@example.com', linked('c1@example.com')), cl('c2@example.com')]), [['claude', '무료 API 크레딧 있음 · 계정마다 매달 $200 · 1개는 확인 전']]);
+  // 일부만 받으면 받는 계정 수와 계정 하나의 금액에 「씩」을 쓴다. 합계에 「씩」을 붙이지 않는다(Fable F1).
+  // 미연결과 받지 않는 요금제는 받는 계정으로 세지 않는다
+  const unlinked = { apiBenefit: { status: 'unlinked', account: 'c9@example.com', plan: 'max_20x', checkedAt: NOW - D } };
+  assert.deepEqual(credit([cl('c1@example.com'), cl('c2@example.com'), cl('c9@example.com', unlinked)]), [['claude', '무료 API 크레딧 확인 전 · 계정 2개에 매달 $200씩']]);
+  assert.deepEqual(credit([cl('c1@example.com'), cl('c2@example.com'), cl('c5@example.com'), cl('c3@example.com', { plan: 'pro' })]), [['claude', '무료 API 크레딧 확인 전 · 계정 3개에 매달 $200씩']]);
+  assert.deepEqual(credit([cl('c1@example.com'), cl('c3@example.com', { plan: 'pro' })]), [['claude', '무료 API 크레딧 확인 전 · 계정 1개에 매달 $200']]);
+  // 금액이 섞이면 「합쳐서」
+  const mixed = { services: { ...API_PRICES.services, claude: { ...API_PRICES.services.claude, plans: { ...API_PRICES.services.claude.plans, max5x: { month: 100, apiCredit: 100 } } } } };
+  assert.deepEqual(credit([cl('c1@example.com'), cl('c6@example.com', { plan: 'max_5x' })], mixed), [['claude', '무료 API 크레딧 확인 전 · 합쳐서 매달 $300']]);
+  // 넣은 금액이 있으면 그 합. 넣지 않았지만 받는 계정도 있으면 넣은 계정 수를 붙인다. 만료가 지난 값은 세지 않는다
+  assert.deepEqual(credit([cl('c1@example.com', { apiCredit: 197.5, apiCreditUntil: NOW + 9 * D, apiCreditAt: NOW - D }), cl('c2@example.com', { apiCredit: 200, apiCreditUntil: NOW + 3 * D, apiCreditAt: NOW - D }), cl('c3@example.com', { apiCredit: 150, apiCreditUntil: NOW - D, apiCreditAt: NOW - 9 * D })]),
+    [['claude', '무료 API 크레딧 $397.5 남음 · 계정 2개에 넣은 값']]);
+  assert.deepEqual(credit([cl('c1@example.com', { apiCredit: 12, apiCreditUntil: NOW + 9 * D, apiCreditAt: NOW - D }), cl('c2@example.com')]), [['claude', '무료 API 크레딧 $12 남음 · 계정 1개에 넣은 값']]);
+  assert.deepEqual(credit([cl('c1@example.com', { apiCredit: 12, apiCreditUntil: NOW + 9 * D, apiCreditAt: NOW - D })]), [['claude', '무료 API 크레딧 $12 남음']]);
+  // 모두 미연결이거나 받는 요금제가 없으면 「없음」. 요금제를 아직 모르면 「아직 모름」(Fable F4)
+  assert.deepEqual(credit([cl('c9@example.com', unlinked)]), [['claude', '무료 API 크레딧 없음']]);
+  assert.deepEqual(credit([cl('c1@example.com', { plan: 'pro' })]), [['claude', '무료 API 크레딧 없음']]);
+  assert.deepEqual(credit([cl('c1@example.com', { plan: null })]), [['claude', '무료 API 크레딧 아직 모름']]);
+  // 요금표에 금액이 없어도 받는 요금제면 「있음」이다. 금액을 아는 계정과 모르는 계정이 섞이면 모르는 수를 따로 쓴다
+  assert.deepEqual(credit([cl('c1@example.com')], PRICES), [['claude', '무료 API 크레딧 확인 전 · 금액은 공식 화면에서 확인']]);
+  assert.deepEqual(credit([cl('c1@example.com'), cl('c4@example.com', { plan: 'max' })]), [['claude', '무료 API 크레딧 확인 전 · 계정 1개에 매달 $200 · 1개는 금액 모름']]);
+  assert.deepEqual(credit([weekly('gpt', 30, NOW + 5 * D, { plan: 'pro', email: 'g1@example.com' })]), [['gpt', '무료 API 크레딧 확인 전 · 매달 $200']]);
+  assert.deepEqual(credit([weekly('gpt', 30, NOW + 5 * D, { plan: 'plus', email: 'g2@example.com' })]), [['gpt', '무료 API 크레딧 없음']]);
+});
+
+test('a Gemini account signed in elsewhere or never read keeps its plan price and credits (카본 solio-subs-agy-20261126 B1, GPT A6)', () => {
+  const never = gemRow('gmb@example.com', null, { state: 'elsewhere', price: null, ...typedFlow(25050, NOW + 20 * D, 0) });
+  assert.equal(flowCreditOf(GEM_PRICES, never, NOW).grant, 25000);
+  assert.equal(officialPrice(GEM_PRICES, never, NOW).price, 300000);
+  // agy가 없어 오래 못 읽힌 Gemini 줄도 회원이 고른 요금제라 한 달 양을 지킨다(GPT solio-subs-agy-be-20261126 A6)
+  const broken = { ...never, state: 'error' };
+  assert.equal(flowCreditOf(GEM_PRICES, broken, NOW).grant, 25000);
+  assert.equal(officialPrice(GEM_PRICES, broken, NOW).price, 300000);
+  // 공식 프로그램이 요금제를 알려 주는 Claude는 30일 넘게 못 읽히면 요금을 채우지 않는다(구독을 끊었을 수 있다)
+  const claude = row({ state: 'error', live: { readAt: NOW - 40 * D } });
+  assert.equal(officialPrice(PRICES, claude, NOW), null);
+  assert.ok(officialPrice(PRICES, { ...claude, state: 'ok' }, NOW));
 });

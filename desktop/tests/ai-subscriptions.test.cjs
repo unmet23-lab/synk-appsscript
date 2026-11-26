@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
 const {EventEmitter}=require('node:events');
-const {createAiSubscriptions,parseClaudeUsage,parseResetText,codexWindows,codexResets,parseAgyUsage,loginUrl,claudeNeedsLogin,commandFor,HELP_LINKS}=require('../src/ai-subscriptions.cjs');
+const {createAiSubscriptions,parseClaudeUsage,parseResetText,codexWindows,codexResets,parseAgyUsage,loginUrl,claudeNeedsLogin,commandFor,candidatePaths,HELP_LINKS}=require('../src/ai-subscriptions.cjs');
 
 const USAGE=`You are currently using your subscription to power your Claude Code usage
 
@@ -73,6 +73,9 @@ test('reads the Antigravity quota groups: Gemini as the main limit, Claude·GPT 
   assert.equal(parseAgyUsage('Not signed in'),null);
   const noFraction=parseAgyUsage(JSON.stringify({status:'SUCCESS',command:{data:{groups:[{name:'Gemini Models',buckets:[{window:'weekly',reset_time:'2026-10-24T02:25:55Z'}]}]}}}));
   assert.equal(noFraction.weekly,null);
+  // 공식 설치 위치와 winget 링크 폴더에서도 agy를 찾는다.
+  const found=candidatePaths('agy',{platform:'win32',env:{LOCALAPPDATA:'C:\\L'},home:'C:\\H'});
+  assert.ok(found.includes(path.join('C:\\L','agy','bin','agy.exe')));assert.ok(found.includes(path.join('C:\\L','Microsoft','WinGet','Links','agy.exe')));
 });
 
 test('accepts login pages only from the official sign-in domains',()=>{
@@ -91,15 +94,17 @@ test('npm shims run through cmd with fixed quoted arguments and executables run 
 });
 
 /* ---------- 가짜 공식 프로그램 ---------- */
-function fakeSystem({claudeLoggedIn=true,fetch=null,secrets=null,withNpm=true,creditPortal,now=()=>NOW}={}){
+function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=null,withNpm=true}={}){
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-subs-'));
   const home=path.join(root,'home'),bin=path.join(home,'.local','bin'),npm=path.join(root,'npm'),agyBin=path.join(root,'local','agy','bin');
   fs.mkdirSync(bin,{recursive:true});fs.mkdirSync(npm,{recursive:true});fs.mkdirSync(agyBin,{recursive:true});
-  for(const file of [path.join(bin,'claude.exe'),path.join(npm,'codex.cmd'),path.join(npm,'higgsfield.exe'),...(withNpm?[path.join(npm,'npm.cmd')]:[]),path.join(agyBin,'agy.exe'),path.join(npm,'agy.exe')])fs.writeFileSync(file,'');
+  for(const file of [path.join(bin,'claude.exe'),path.join(npm,'codex.cmd'),path.join(npm,'higgsfield.exe'),...(withNpm?[path.join(npm,'npm.cmd')]:[]),path.join(agyBin,'agy.exe')])fs.writeFileSync(file,'');
   // higgsHomes: 홈 폴더(USERPROFILE)마다 Higgsfield 로그인. 기본 홈은 77@example.com.
   // consoles: 숨긴 PowerShell 런처가 Start-Process로 띄운 검은 창(스크립트·환경). freshPath: 다시 읽는 사용자·시스템 PATH.
   const calls=[],stdinWrites=[];let loginChild=null,pidSeq=4000;
-  const state={claudeLoggedIn,higgsHomes:{},nextHiggsEmail:'second@example.com',claudeEmail:'member@example.com',freshPath:'',codexEmptyLimits:false,defaultHiggsNoWorkspace:false,consoles:[],killed:[],online:true,reachCalls:[],codexNoAccountTimes:0,claudeExpiredTimes:0,claudeUsageOverride:null,claudeAuthOverride:null};
+  // geminiEmail: agy에 지금 로그인된 계정(기록의 인증 줄, null이면 그 줄이 없다). geminiUsage: /usage 답(비우면 AGY_USAGE).
+  // geminiNoLogFlag: `--log-file`을 모르는 옛 agy. agyUsageCalls: /usage를 부른 인자.
+  const state={claudeLoggedIn,geminiLoggedIn,geminiEmail:'ultra@example.com',geminiUsage:null,geminiNoLogFlag:false,agyUsageCalls:[],higgsHomes:{},nextHiggsEmail:'second@example.com',claudeEmail:'member@example.com',freshPath:'',codexEmptyLimits:false,defaultHiggsNoWorkspace:false,consoles:[],killed:[],online:true,reachCalls:[],codexNoAccountTimes:0,claudeExpiredTimes:0,claudeUsageOverride:null,claudeAuthOverride:null};
   function spawn(command,argv,options){
     const child=new EventEmitter();child.stdout=new EventEmitter();child.stderr=new EventEmitter();
     // 실제 ChildProcess처럼 끝나기 전에는 exitCode가 null이다(본체는 살아 있는 프로세스만 PID로 끈다).
@@ -118,7 +123,18 @@ function fakeSystem({claudeLoggedIn=true,fetch=null,secrets=null,withNpm=true,cr
     else if(command==='powershell.exe')reply(argv.some(a=>/GetEnvironmentVariable/.test(a))?state.freshPath:'');
     else if(command==='taskkill'){state.killed.push(argv.join(' '));reply('');}
     else if(joined.includes('--version'))reply(command.endsWith('claude.exe')?'2.1.301 (Claude Code)\n':'1.0.0\n');
-    else if(command.endsWith('agy.exe'))reply('unexpected test invocation',1);
+    else if(command.endsWith('agy.exe')){
+      // 실제 agy 1.4.4·1.4.5처럼 `--log-file` 자리에 CLI 기록을 남긴다 — 로그인돼 있으면 인증 줄(10-22 실측 모양)이 들어간다.
+      if(!argv.includes('/usage'))return child;
+      state.agyUsageCalls.push(argv.slice());
+      const log=argv.includes('--log-file')?argv[argv.indexOf('--log-file')+1]:null;
+      if(log&&state.geminiNoLogFlag){setImmediate(()=>{child.stderr.emit('data','Error: unknown flag: --log-file\n');child.emit('close',1);});return child;}
+      if(log)fs.writeFileSync(log,'I1022 14:20:08.610133      31 server.go:1790] Language server version: 1.4.5\n'+(state.geminiLoggedIn&&state.geminiEmail?`I1022 14:20:09.140210       1 server_oauth.go:224] applyAuthResult: email=${state.geminiEmail}, authMethod=consumer, quotaProject=\nI1022 14:20:09.141833       1 server_oauth.go:229] OAuth: authenticated successfully as ${state.geminiEmail}\n`:''));
+      const out=state.geminiLoggedIn?state.geminiUsage||AGY_USAGE:'Error: not signed in. Run agy to sign in.\n',code=state.geminiLoggedIn?0:1;
+      // holdNextAgy: 다음 /usage 하나의 답을 시험이 releaseAgy()를 부를 때까지 붙든다(부른 때의 계정과 숫자로 답한다)
+      if(state.holdNextAgy){state.holdNextAgy=false;state.releaseAgy=()=>{child.stdout.emit('data',out);child.emit('close',code);};return child;}
+      reply(out,code);
+    }
     // claudeUsageByDir: 계정 폴더마다 다른 /usage 답(종료 코드 1, usageDelay만큼 늦게).
     else if(joined.includes('/usage')&&state.claudeUsageByDir?.[options.env.CLAUDE_CONFIG_DIR]!=null)reply(state.claudeUsageByDir[options.env.CLAUDE_CONFIG_DIR],1,state.usageDelay||0);
     else if(joined.includes('/usage')&&state.claudeExpiredTimes>0){state.claudeExpiredTimes--;reply('OAuth token has expired. Please obtain a new token or refresh your existing token.\n',1);}
@@ -155,14 +171,14 @@ function fakeSystem({claudeLoggedIn=true,fetch=null,secrets=null,withNpm=true,cr
   // 「로그인 필요」 뒤 인터넷이 닿는지 보는 고정 주소는 여기서 답한다(시험은 실제 망에 나가지 않는다). 나머지는 넘겨받은 가짜로.
   const reach=new Set(['https://api.anthropic.com/','https://auth.openai.com/','https://higgsfield.ai/','https://oauth2.googleapis.com/']);
   const fakeFetch=async(url,options)=>{if(reach.has(url)){state.reachCalls.push(url);if(!state.online)throw new TypeError('fetch failed');return {ok:true,status:200};}return fetch?fetch(url,options):{ok:false,status:404,json:async()=>({})};};
-  const service=createAiSubscriptions({root:path.join(root,'data'),platform:'win32',env:{PATH:npm,APPDATA:path.join(root,'appdata'),LOCALAPPDATA:path.join(root,'local'),ComSpec:'cmd.exe',CLAUDECODE:'1',CLAUDE_CONFIG_DIR:'X'},home,spawn,fetch:fakeFetch,creditPortal,retryDelay:0,...(secrets?{secrets}:{}),now,openExternal:async url=>opened.push(url),onChange:s=>changes.push(s)});
+  const service=createAiSubscriptions({root:path.join(root,'data'),platform:'win32',env:{PATH:npm,APPDATA:path.join(root,'appdata'),LOCALAPPDATA:path.join(root,'local'),ComSpec:'cmd.exe',CLAUDECODE:'1',CLAUDE_CONFIG_DIR:'X'},home,spawn,fetch:fakeFetch,retryDelay:0,...(secrets?{secrets}:{}),now:()=>NOW,openExternal:async url=>opened.push(url),onChange:s=>changes.push(s)});
   return {root,service,calls,stdinWrites,changes,opened,state,get loginChild(){return loginChild;}};
 }
 
 test('finds the official tools, reads existing logins and keeps tokens out of the snapshot',async()=>{
   const f=fakeSystem();
   const snap=await f.service.snapshot();
-  assert.deepEqual(Object.keys(snap.tools).filter(k=>snap.tools[k].installed).sort(),['claude','gpt','higgsfield','typecast']);
+  assert.deepEqual(Object.fromEntries(Object.entries(snap.tools).map(([k,v])=>[k,v.installed])),{claude:true,gpt:true,higgsfield:true,gemini:true,typecast:true});
   assert.equal(snap.tools.typecast.api,true);
   const claude=await f.service.useExisting('claude');assert.equal(claude.ok,true);
   const gpt=await f.service.useExisting('gpt');assert.equal(gpt.ok,true);
@@ -388,132 +404,246 @@ test('a renewal that lands while a full check is reading the old folder keeps th
   assert.equal(row.loginUntil,Date.parse(second));assert.equal(row.folder,true);
 });
 
-test('existing Gemini credits survive a refresh and editing without opening a CLI, browser or sign-in', async t => {
-  const portalCalls = [];
-  const f = fakeSystem({creditPortal:async (...args) => { portalCalls.push(args); return {ok:false}; }});
-  t.after(() => { f.service.dispose(); fs.rmSync(f.root, {recursive:true,force:true}); });
-  const row = {
-    id:'google', service:'gemini', source:'auto', kind:'weekly', email:'member@example.com',
-    plan:'ultra_20x', apiCredit:100, apiCreditAt:NOW-86400000, flowCredit:70, price:200, note:'member note',
-    state:'ok', stateAt:NOW-10000, live:{readAt:NOW-10000, weekly:{usedPercent:95,resetsAt:NOW+60000}},
-    apiBenefit:{account:'member@example.com', plan:'ultra_20x', status:'linked', checkedAt:NOW-10000, source:'official'},
-    flowUsage:{account:'member@example.com', from:'2026-10-01', to:'2026-10-15', used:12, wallet:15, checkedAt:NOW-10000, source:'official'},
-  };
-  writeBoard(f,[row, {...row,id:'other',email:'other@example.com',state:'elsewhere',live:null,apiBenefit:null,flowUsage:null}]);
-
-  const before = await f.service.snapshot({refreshTools:true});
-  const record = before.rows.find(r => r.id === row.id);
-  assert.deepEqual([record.service, record.source, record.usageDisabled, record.state, record.live], ['gemini','auto',true,'manual',null]);
-  for (const key of ['email','plan','price','apiCredit','apiCreditAt','flowCredit','apiBenefit','flowUsage','note']) {
-    assert.deepEqual(record[key],row[key],key);
-  }
-  assert.ok(before.rows.every(r => r.usageDisabled && r.state === 'manual' && r.live === null));
-  assert.equal(await f.service.autoDue(NOW),null);
-  assert.equal(await f.service.autoTick(),null);
-  await f.service.check({ids:[row.id]});
-  await f.service.check();
-  for (const attempt of [
-    () => f.service.useExisting('gemini'), () => f.service.startLogin('gemini'),
-    () => f.service.startLogin('gemini',{console:true}), () => f.service.openInstaller('gemini'),
-    () => f.service.save({creditRead:{id:row.id,email:row.email,plan:row.plan,kind:'api'}}),
-    () => f.service.save({creditRead:{id:row.id,email:row.email,plan:row.plan,kind:'flow'}}),
-  ]) assert.deepEqual(await attempt(),{ok:false,code:'USAGE_DISABLED'});
-
-  const updated = await f.service.save({row:{id:row.id,apiCredit:91.75}});
-  assert.equal(updated.rows.find(r => r.id === row.id).apiCredit,91.75);
-  const persisted = JSON.parse(fs.readFileSync(path.join(f.root,'data','board.json'),'utf8')).rows;
-  assert.deepEqual(persisted.map(r => r.id),[row.id,'other']);
-  assert.deepEqual([persisted[0].apiCredit,persisted[0].apiCreditAt],[91.75,NOW]);
-  for (const key of ['service','source','email','plan','price','flowCredit','flowUsage','apiBenefit','note']) {
-    assert.deepEqual(persisted[0][key],row[key],key);
-  }
-  assert.deepEqual(portalCalls,[]);
-  assert.deepEqual(f.opened,[]);
-  assert.deepEqual(f.state.consoles,[]);
-  assert.deepEqual(f.state.reachCalls,[]);
-  assert.ok(f.calls.every(c => !/agy(?:\.exe)?$/i.test(c.command)));
-  assert.equal(fs.existsSync(path.join(f.root,'data','history.jsonl')),false);
+test('Gemini reads the Antigravity quota from the app data folder and signs in through a console window',async t=>{
+  const f=fakeSystem({geminiLoggedIn:false});
+  t.mock.timers.enable({apis:['setTimeout']});
+  assert.deepEqual(await f.service.useExisting('gemini'),{ok:false,code:'NOT_LOGGED_IN'});
+  assert.deepEqual(await f.service.startLogin('gemini',{email:'member@example.com'}),{ok:false,code:'INVALID_EMAIL'});
+  const started=await f.service.startLogin('gemini');assert.equal(started.ok,true);
+  // agy는 로그인 명령이 없어 인자 없이 검은 창으로 켠다. 창은 숨긴 런처가 Start-Process로 띄우고(창이 닫힐 때까지 기다림),
+  // 실행 폴더는 이 혜택의 데이터 폴더다.
+  const win=f.state.consoles.at(-1),re=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  assert.match(win.script,new RegExp(`^\\$p=Start-Process -FilePath '${re(path.join(f.root,'local','agy','bin','agy.exe'))}' -WorkingDirectory '${re(path.join(f.root,'data'))}' -PassThru;`));
+  assert.match(win.script,/\$p\.WaitForExit\(\)$/);assert.ok(!f.calls.some(c=>c.options?.detached));
+  assert.equal(f.changes.at(-1).login.stage,'console');assert.equal(f.changes.at(-1).login.console,true);
+  f.state.geminiLoggedIn=true;
+  t.mock.timers.tick(6000);
+  for(let i=0;i<60&&f.changes.at(-1)?.login?.stage!=='done';i++)await new Promise(r=>setImmediate(r));
+  assert.equal(f.changes.at(-1).login.stage,'done');
+  const snap=await f.service.check();
+  const row=snap.rows.find(r=>r.service==='gemini');
+  // 계정 메일은 agy가 그 실행의 CLI 기록에 남긴 인증 줄에서 읽는다(10-22).
+  assert.equal(row.state,'ok');assert.equal(row.email,'ultra@example.com');assert.equal(row.folder,false);
+  assert.equal(row.live.weekly.usedPercent,36);assert.equal(row.live.session.usedPercent,90);assert.equal(row.live.models[0].name,'Claude·GPT 모델');
+  const usageCall=f.calls.find(c=>c.command.endsWith('agy.exe')&&c.argv.includes('/usage'));
+  assert.deepEqual(usageCall.argv.slice(0,5),['-p','/usage','--output-format','json','--log-file']);assert.equal(usageCall.options.cwd,path.join(f.root,'data'));assert.equal(usageCall.options.shell,false);
+  // 기록은 이 혜택 데이터 폴더 안에 읽기마다 새 이름으로 만들고, 읽은 뒤 바로 지운다.
+  assert.equal(path.dirname(usageCall.argv[5]),path.join(f.root,'data'));assert.match(path.basename(usageCall.argv[5]),/^agy-[a-z0-9]{8}\.log$/);
+  assert.deepEqual(fs.readdirSync(path.join(f.root,'data')).filter(n=>n.endsWith('.log')),[]);
 });
 
-test('manual, scheduled and overlapping checks still read Claude and Codex, excluding Gemini from their totals', async t => {
-  const f = fakeSystem();
-  t.after(() => { f.service.dispose(); fs.rmSync(f.root,{recursive:true,force:true}); });
-  writeBoard(f,[
-    {id:'claude-row',service:'claude',source:'auto',kind:'weekly'},
-    {id:'gpt-row',service:'gpt',source:'auto',kind:'weekly'},
-    {id:'google',service:'gemini',source:'auto',kind:'weekly',state:'needs-login'},
-  ]);
-  f.state.usageDelay=20;
-  const scheduled = f.service.autoTick();
-  const [checked, manual] = await Promise.all([scheduled, f.service.check({ids:['claude-row','gpt-row','google']})]);
-  assert.deepEqual([checked.check.total,checked.check.ok],[2,2]);
-  assert.equal(manual.checking,false);
-  assert.deepEqual(manual.rows.map(r=>[r.id,r.state]),[['claude-row','ok'],['gpt-row','ok'],['google','manual']]);
-  assert.equal(checked.rows.find(r => r.service === 'gemini').state,'manual');
-  assert.equal(checked.rows.find(r => r.service === 'claude').state,'ok');
-  assert.equal(checked.rows.find(r => r.service === 'gpt').state,'ok');
-  assert.equal(f.calls.filter(c => c.command.endsWith('claude.exe') && c.argv.includes('/usage')).length,1);
-  assert.equal(f.stdinWrites.filter(line => line.includes('account/rateLimits/read')).length,1);
-  assert.ok(f.calls.every(c => !/agy(?:\.exe)?$/i.test(c.command)));
-  const history = fs.readFileSync(path.join(f.root,'data','history.jsonl'),'utf8').trim().split('\n').map(line => JSON.parse(line));
-  assert.ok(history.length > 0);
-  assert.ok(history.every(sample => sample.s !== 'gemini'));
+/* ---------- Gemini 계정별 줄(10-22): agy는 한 번에 한 계정, 읽은 값은 그 메일의 줄에만 ---------- */
+// remaining: Gemini 묶음 주간 남은 비율.
+const agyUsage=remaining=>JSON.stringify({status:'SUCCESS',usage:{total_tokens:0},command:{name:'usage',data:{groups:[{name:'Gemini Models',buckets:[{window:'weekly',remaining_fraction:remaining,reset_time:'2026-10-24T03:06:00Z'},{window:'5h',remaining_fraction:1,reset_time:'2026-10-17T08:41:00Z'}]}]}}});
+const geminiRows=snap=>snap.rows.filter(r=>r.service==='gemini');
+// 연결 뒤 저절로 도는 확인이 끝날 때까지 기다린다. 끝나기 전에 시험을 마치면 그 확인이 다음 시험의 가짜 시계에서
+// 자기 타이머 번호로 clearTimeout을 불러, 번호가 겹친 다음 시험의 타이머를 지운다(10-22 실측: 기다리기 첫 확인이 울리지 않음).
+const settleChecks=async service=>{for(let i=0;i<400&&(await service.snapshot()).checking;i++)await new Promise(r=>setImmediate(r));};
+
+test('Gemini rows split by the signed-in account: an old row takes the first mail, a new mail gets its own row, the other keeps its last value',async()=>{
+  const f=fakeSystem();
+  // 새 판 전의 Gemini 줄: 메일이 비어 있고 지난 값이 있다.
+  writeBoard(f,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok',stateAt:NOW-3600e3,live:{readAt:NOW-3600e3,weekly:{usedPercent:20,resetsAt:Date.parse('2026-10-24T03:06:00Z')},session:null,models:[]}},
+    {id:'r-cla00001',service:'claude',source:'auto',label:'Claude',kind:'weekly',state:'ok'}]);
+  f.state.geminiEmail='77yuhbs@example.com';f.state.geminiUsage=agyUsage(0.18);
+  let snap=await f.service.check();
+  // 옛 줄이 그 메일을 받고 값이 들어간다. 「지금 확인」 한 번에 agy /usage는 한 번이다.
+  assert.equal(geminiRows(snap).length,1);
+  let main=snap.rows.find(r=>r.id==='r-gem00001');
+  assert.equal(main.email,'77yuhbs@example.com');assert.equal(main.state,'ok');assert.equal(main.live.weekly.usedPercent,82);
+  assert.equal(f.state.agyUsageCalls.length,1);
+  // 유호님이 agy를 둘째 계정으로 바꿨다: 처음 보는 메일이라 자동 줄이 새로 생기고, 앞 계정 줄은 마지막 값을 지킨 채 「다른 계정 로그인」이다.
+  f.state.geminiEmail='unmet25@example.com';f.state.geminiUsage=agyUsage(0.95);
+  snap=await f.service.check();
+  assert.equal(f.state.agyUsageCalls.length,2);
+  assert.equal(geminiRows(snap).length,2);
+  const family=geminiRows(snap).find(r=>r.email==='unmet25@example.com');
+  assert.equal(family.source,'auto');assert.equal(family.state,'ok');assert.equal(family.live.weekly.usedPercent,5);assert.match(family.id,/^r-[a-z0-9]{8}$/);
+  main=snap.rows.find(r=>r.id==='r-gem00001');
+  assert.equal(main.state,'elsewhere');assert.equal(main.stateMessage,'지금 이 PC의 Antigravity에는 다른 계정이 로그인되어 있습니다.');
+  assert.equal(main.live.weekly.usedPercent,82);assert.equal(main.email,'77yuhbs@example.com');
+  // 읽을 수 없는 게 맞는 줄은 「못 읽음」으로 세지 않는다(제목 아래 「n개 못 읽음」이 늘 뜨지 않게).
+  assert.deepEqual([snap.check.total,snap.check.ok],[2,2]);
+  // 다시 본 계정으로 돌아오면 그 줄에 이어서 넣고, 둘째 계정 줄이 마지막 값(5%)을 지킨다.
+  f.state.geminiEmail='77yuhbs@example.com';f.state.geminiUsage=agyUsage(0.4);
+  snap=await f.service.check();
+  assert.equal(geminiRows(snap).length,2);
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live.weekly.usedPercent]),[['77yuhbs@example.com','ok',60],['unmet25@example.com','elsewhere',5]]);
+  // 기록에는 읽은 계정의 줄만 남는다(앞 계정의 마지막 값이 다른 계정 숫자로 섞이지 않는다).
+  const samples=fs.readFileSync(path.join(f.root,'data','history.jsonl'),'utf8').trim().split('\n').map(l=>JSON.parse(l)).filter(s=>s.s==='gemini');
+  assert.deepEqual(samples.map(s=>[s.id===family.id?'family':s.id,s.w]),[['r-gem00001',82],['family',5],['r-gem00001',60]]);
+  // 한 계정만 다시 읽어도(다른 계정 줄의 「다시 읽기」 등) agy는 한 번 불러 Gemini 줄 전부에 나눈다.
+  const claudeBefore=f.calls.length;
+  snap=await f.service.check({ids:[family.id]});
+  assert.equal(f.state.agyUsageCalls.length,4);
+  // 한 줄만 읽을 때 다른 공급자는 부르지 않는다(GPT solio-subs-agy-be-20261126 A11 — 앞 시험은 배열을 넘겨 전체 확인이 돌았다)
+  assert.equal(f.calls.slice(claudeBefore).filter(c=>c.argv.includes('/usage')&&!/agy/i.test(c.command)).length,0);
+  assert.deepEqual(geminiRows(snap).map(r=>r.state),['ok','elsewhere']);
+  assert.deepEqual(fs.readdirSync(path.join(f.root,'data')).filter(n=>n.endsWith('.log')),[]);
 });
 
-test('old Solio usage logs expire without reading their contents or following links', async t => {
-  let clock = NOW;
-  const f = fakeSystem({now:()=>clock});
-  t.after(() => { f.service.dispose(); fs.rmSync(f.root,{recursive:true,force:true}); });
-  writeBoard(f,[]);
-  const dir = path.join(f.root,'data');
-  const outside = path.join(f.root,'other-program');
-  fs.mkdirSync(outside);
-  const staleAt = new Date(NOW-11*60000);
-  function writeLog(parent,name,when=staleAt) {
-    const file=path.join(parent,name);
-    fs.writeFileSync(file,'fixture');
-    fs.utimesSync(file,when,when);
-    return file;
-  }
-  const old = writeLog(dir,'agy-abc12345.log');
-  const recent = writeLog(dir,'agy-new12345.log',new Date(NOW));
-  const unrelated = writeLog(dir,'agy-not-the-app.log');
-  const external = writeLog(outside,'agy-ext12345.log');
-  const folder = path.join(dir,'agy-dir12345.log');
-  fs.mkdirSync(folder);
-  const nested = writeLog(folder,'agy-sub12345.log');
-  const link = path.join(dir,'agy-lnk12345.log');
-  fs.symlinkSync(outside,link,process.platform === 'win32' ? 'junction' : 'dir');
-  const followedLinks=[];
-  for (const [api,method] of [[fs,'statSync'],[fs,'stat'],[fs.promises,'stat'],[fs,'realpathSync'],[fs,'realpath'],[fs.promises,'realpath']]) {
-    const original=api[method];
-    t.mock.method(api,method,function(file,...args) {
-      if (file === link) followedLinks.push(method);
-      return original.call(this,file,...args);
-    });
-  }
-  const accesses=[];
-  for (const [api,method] of [[fs,'readFileSync'],[fs,'openSync'],[fs,'createReadStream'],[fs.promises,'readFile'],[fs.promises,'open']]) {
-    const original=api[method];
-    t.mock.method(api,method,function(file,...args) {
-      if (typeof file === 'string' && file.endsWith('.log')) accesses.push(file);
-      return original.call(this,file,...args);
-    });
-  }
-  await f.service.snapshot();
-  assert.equal(fs.existsSync(old),false);
-  assert.equal(fs.existsSync(recent),true);
-  clock+=10*60000;
-  await f.service.autoTick();
-  assert.equal(fs.existsSync(recent),true);
-  clock+=1;
-  await f.service.autoTick();
-  assert.equal(fs.existsSync(recent),false);
-  for (const kept of [unrelated,external,folder,nested,link]) assert.ok(fs.existsSync(kept),kept);
-  assert.ok(fs.lstatSync(link).isSymbolicLink());
-  assert.deepEqual(followedLinks,[]);
-  assert.deepEqual(accesses,[]);
-  assert.ok(f.calls.every(c=>!c.command.endsWith('agy.exe')));
+test('an old Gemini row without a mail keeps the plan and credits typed into it when a different account is read first (GPT solio-subs-agy-be-20261126 A3)',async()=>{
+  const f=fakeSystem();
+  writeBoard(f,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok',plan:'ultra_20x',apiCredit:55,apiCreditAt:NOW-864e5,flowCredit:900,flowCreditUntil:NOW+5*864e5,flowCreditAt:NOW-864e5,live:{readAt:NOW-3600e3,weekly:{usedPercent:20,resetsAt:null}}}]);
+  f.state.geminiEmail='other@example.com';f.state.geminiUsage=agyUsage(0.7);
+  const snap=await f.service.check();
+  const rows=geminiRows(snap);
+  assert.equal(rows.length,2);
+  const old=rows.find(r=>r.id==='r-gem00001'),fresh=rows.find(r=>r.id!=='r-gem00001');
+  // 넣은 값은 옛 줄에 남고 그 줄은 「다른 계정」이다. 읽힌 계정은 새 줄로 서고 넣은 값을 물려받지 않는다
+  assert.deepEqual([old.email,old.state,old.plan,old.apiCredit,old.flowCredit],[null,'elsewhere','ultra_20x',55,900]);
+  assert.deepEqual([fresh.email,fresh.state,fresh.plan,fresh.apiCredit,fresh.flowCredit,fresh.live.weekly.usedPercent],['other@example.com','ok',null,null,null,30]);
+  await settleChecks(f.service);f.service.dispose();
+});
+
+test('connecting a Gemini account while a check still waits on the previous account reads the new account afterwards (GPT solio-subs-agy-be-20261126 A4)',async()=>{
+  const f=fakeSystem();
+  writeBoard(f,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok',email:'77yuhbs@example.com',live:{readAt:NOW-60e3,weekly:{usedPercent:82,resetsAt:null}}},
+    {id:'r-gem00002',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'elsewhere',email:'unmet25@example.com',live:{readAt:NOW-864e5,weekly:{usedPercent:5,resetsAt:null}}}]);
+  // 앞 계정(77yuhbs)으로 도는 확인의 agy 답이 늦는다
+  f.state.geminiEmail='77yuhbs@example.com';f.state.geminiUsage=agyUsage(0.4);f.state.holdNextAgy=true;
+  const running=f.service.check();
+  for(let i=0;i<200&&!f.state.releaseAgy;i++)await new Promise(r=>setImmediate(r));
+  assert.equal(typeof f.state.releaseAgy,'function');
+  // 그 사이 회원이 agy를 unmet25로 바꾸고 「이 PC의 기존 로그인 쓰기」를 누른다
+  f.state.geminiEmail='unmet25@example.com';f.state.geminiUsage=agyUsage(0.9);
+  const connecting=f.service.useExisting('gemini');
+  for(let i=0;i<200&&f.state.agyUsageCalls.length<2;i++)await new Promise(r=>setImmediate(r));
+  assert.equal(f.state.agyUsageCalls.length,2);
+  // 연결 쪽 읽기가 끝나 도는 확인을 기다리기 시작한 뒤에 앞 계정의 답을 놓는다
+  for(let i=0;i<50;i++)await new Promise(r=>setImmediate(r));
+  f.state.releaseAgy();
+  await running;
+  const done=await connecting;
+  assert.equal(done.ok,true);
+  // 늦게 온 앞 계정의 답이 unmet25를 「다른 계정」으로 돌려놓아도, 연결 뒤 다시 읽어 unmet25가 지금 값이다
+  const snap=await f.service.snapshot();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live.weekly.usedPercent]),[['77yuhbs@example.com','elsewhere',60],['unmet25@example.com','ok',10]]);
+  await settleChecks(f.service);f.service.dispose();
+});
+
+test('when the account mail cannot be read, Gemini numbers go nowhere they might not belong',async()=>{
+  // 메일 없는 옛 줄 하나뿐이면 지금처럼 그 줄에 넣는다.
+  const one=fakeSystem();
+  writeBoard(one,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok'}]);
+  one.state.geminiEmail=null;
+  let snap=await one.service.check();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live?.weekly?.usedPercent]),[[null,'ok',36]]);
+  // 메일을 아는 줄이 하나뿐이어도 메일을 못 읽은 숫자는 넣지 않는다. agy를 다른 계정으로 바꾼 뒤의 숫자가 그 줄의 값과 기록에 남는다(GPT solio-subs-agy-be-20261126 A2 · B1, Fable 10-22 P3-1을 바꿈).
+  // 줄의 앞 값과 기록은 그대로 두고 알린다
+  const solo=fakeSystem();
+  writeBoard(solo,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok',email:'77yuhbs@example.com',live:{readAt:NOW-60e3,weekly:{usedPercent:12,resetsAt:null}}}]);
+  solo.state.geminiEmail=null;
+  snap=await solo.service.check();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live?.weekly?.usedPercent]),[['77yuhbs@example.com','error',12]]);
+  assert.match(geminiRows(snap)[0].stateMessage,/어느 계정이 로그인되어 있는지 확인하지 못해 이번 값은 넣지 않았습니다/);
+  const soloHistory=path.join(solo.root,'data','history.jsonl');
+  assert.ok(!fs.existsSync(soloHistory)||!fs.readFileSync(soloHistory,'utf8').includes('"w":36'));
+  // 계정 메일을 아는 줄이 있으면 어느 계정의 숫자인지 모르니 넣지 않고 알린다. 「다른 계정」 줄은 그대로 둔다.
+  const two=fakeSystem();
+  writeBoard(two,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok',email:'77yuhbs@example.com',live:{readAt:NOW-60e3,weekly:{usedPercent:82,resetsAt:null}}},
+    {id:'r-gem00002',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'elsewhere',stateMessage:'x',email:'unmet25@example.com',live:{readAt:NOW-864e5,weekly:{usedPercent:5,resetsAt:null}}}]);
+  two.state.geminiEmail=null;
+  snap=await two.service.check();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live.weekly.usedPercent]),[['77yuhbs@example.com','error',82],['unmet25@example.com','elsewhere',5]]);
+  assert.match(snap.rows[0].stateMessage,/어느 계정이 로그인되어 있는지 확인하지 못해 이번 값은 넣지 않았습니다/);
+  // agy 로그인이 풀리면 지금 계정 줄만 「다시 로그인」이고(다시 확인한 뒤), 다른 계정 줄은 마지막 값 그대로 두되
+  // 「다른 계정이 로그인돼 있어요」가 아니라 「로그인된 계정이 없어요」로 알린다(Fable 10-22 P2-1).
+  two.state.geminiLoggedIn=false;
+  snap=await two.service.check();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.state,r.live.weekly.usedPercent,r.awayReason]),[['needs-login',82,null],['elsewhere',5,'none']]);
+  assert.equal(snap.rows[1].stateMessage,'지금 이 PC의 Antigravity에 로그인된 계정이 없습니다.');
+  assert.deepEqual(two.state.reachCalls,['https://oauth2.googleapis.com/','https://oauth2.googleapis.com/']);
+  // 둘째 계정으로 로그인하면 그 줄이 지금 계정이 되고, 앞 계정 줄은 「다른 계정이 로그인돼 있음」이다.
+  two.state.geminiLoggedIn=true;two.state.geminiEmail='unmet25@example.com';two.state.geminiUsage=agyUsage(0.9);
+  snap=await two.service.check();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.awayReason,r.live.weekly.usedPercent]),[['77yuhbs@example.com','elsewhere',null,82],['unmet25@example.com','ok',null,10]]);
+  assert.equal(snap.rows[0].stateMessage,'지금 이 PC의 Antigravity에는 다른 계정이 로그인되어 있습니다.');
+  // `--log-file`을 모르는 옛 agy는 그 인자 없이 한 번 더 읽는다(메일은 모른 채, 줄이 메일 없는 하나뿐이라 넣는다).
+  const old=fakeSystem();
+  writeBoard(old,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok'}]);
+  old.state.geminiNoLogFlag=true;
+  snap=await old.service.check();
+  assert.deepEqual(old.state.agyUsageCalls.map(a=>a.includes('--log-file')),[true,false]);
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live.weekly.usedPercent]),[[null,'ok',36]]);
+  // 앱이 읽는 사이에 꺼져 남은 기록은 10분이 지나면 다음 읽기가 지운다(막 생긴 것은 둔다).
+  const data=path.join(one.root,'data'),stale=path.join(data,'agy-oldoldol.log'),fresh=path.join(data,'agy-newnewne.log');
+  fs.writeFileSync(stale,'x');fs.writeFileSync(fresh,'x');const past=(Date.now()-20*60e3)/1000;fs.utimesSync(stale,past,past);
+  await one.service.check();
+  assert.equal(fs.existsSync(stale),false);assert.equal(fs.existsSync(fresh),true);
+});
+
+test('connecting Gemini reports the account mail, and switching accounts waits until another account signs in',async t=>{
+  const f=fakeSystem();
+  t.mock.timers.enable({apis:['setTimeout']});
+  f.state.geminiEmail='77yuhbs@example.com';
+  assert.equal((await f.service.useExisting('gemini')).ok,true);
+  let snap=await f.service.snapshot();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state]),[['77yuhbs@example.com','ok']]);
+  // 「계정 바꾸기」: 창이 뜰 때 이미 로그인된 계정은 연결로 치지 않고 기다린다.
+  const started=await f.service.startLogin('gemini');assert.equal(started.ok,true);
+  const pump=async()=>{for(let i=0;i<40;i++)await new Promise(r=>setImmediate(r));};
+  await pump();t.mock.timers.tick(6000);await pump();t.mock.timers.tick(4000);await pump();
+  assert.equal(f.changes.at(-1).login.stage,'console');
+  // 창에서 /logout → /login으로 둘째 계정이 로그인되면 그때 연결하고, 앞 계정 줄은 마지막 값으로 남는다.
+  f.state.geminiEmail='unmet25@example.com';f.state.geminiUsage=agyUsage(0.95);
+  t.mock.timers.tick(4000);
+  for(let i=0;i<80&&f.changes.at(-1)?.login?.stage!=='done';i++)await new Promise(r=>setImmediate(r));
+  assert.equal(f.changes.at(-1).login.stage,'done');assert.match(f.changes.at(-1).login.message,/unmet25@example\.com 계정을 연결했습니다/);
+  for(let i=0;i<80&&(await f.service.snapshot()).checking;i++)await new Promise(r=>setImmediate(r));
+  snap=await f.service.snapshot();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live.weekly.usedPercent]),[['77yuhbs@example.com','elsewhere',36],['unmet25@example.com','ok',5]]);
+  // 같은 계정 그대로 창을 닫으면 그 계정으로 마친다.
+  const again=await f.service.startLogin('gemini');assert.equal(again.ok,true);
+  await pump();f.state.consoles.at(-1).close();
+  for(let i=0;i<80&&f.changes.at(-1)?.login?.stage==='console';i++)await new Promise(r=>setImmediate(r));
+  assert.equal(f.changes.at(-1).login.stage,'done');assert.match(f.changes.at(-1).login.message,/unmet25@example\.com 계정을 연결했습니다/);
+  await settleChecks(f.service);f.service.dispose();
+});
+
+test('switching Gemini also finishes after /logout → /login without a mail, and a window left open ends connected at ten minutes',async t=>{
+  t.mock.timers.enable({apis:['setTimeout']});
+  const pump=async()=>{for(let i=0;i<40;i++)await new Promise(r=>setImmediate(r));};
+  // 기록에서 메일을 못 읽는 agy(옛 판 흉내)라도 기다리는 사이 「로그인 필요」를 본 뒤 다시 읽히면 바꾼 것으로 본다(Fable 10-22 P3-2).
+  const f=fakeSystem();
+  f.state.geminiEmail=null;
+  assert.equal((await f.service.useExisting('gemini')).ok,true);
+  assert.equal((await f.service.startLogin('gemini')).ok,true);
+  await pump();t.mock.timers.tick(6000);await pump();
+  assert.equal(f.changes.at(-1).login.stage,'console');
+  f.state.geminiLoggedIn=false;t.mock.timers.tick(4000);await pump();
+  assert.equal(f.changes.at(-1).login.stage,'console');
+  f.state.geminiLoggedIn=true;t.mock.timers.tick(4000);
+  for(let i=0;i<400&&f.changes.at(-1)?.login?.stage!=='done';i++)await new Promise(r=>setImmediate(r));
+  assert.equal(f.changes.at(-1).login.stage,'done');
+  await settleChecks(f.service);f.service.dispose();
+  // 같은 계정 그대로 창을 연 채 두면 10분째에 로그인이 살아 있는지 보고 그 계정으로 마친다 — 회원이 쓰는 중일 수 있어 창은 끄지 않는다.
+  const g=fakeSystem();
+  g.state.geminiEmail='77yuhbs@example.com';
+  assert.equal((await g.service.useExisting('gemini')).ok,true);
+  assert.equal((await g.service.startLogin('gemini')).ok,true);
+  await pump();t.mock.timers.tick(10*60*1000);
+  for(let i=0;i<400&&g.changes.at(-1)?.login?.stage!=='done';i++)await new Promise(r=>setImmediate(r));
+  assert.equal(g.changes.at(-1).login.stage,'done');assert.match(g.changes.at(-1).login.message,/77yuhbs@example\.com 계정을 연결했습니다/);
+  assert.deepEqual(g.state.killed,[]);
+  await settleChecks(g.service);g.service.dispose();
+});
+
+test('a Gemini account the member removed is not brought back by the next check, only by connecting it again',async()=>{
+  const f=fakeSystem();
+  writeBoard(f,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok',email:'77yuhbs@example.com',live:{readAt:NOW-60e3,weekly:{usedPercent:82,resetsAt:null}}},
+    {id:'r-gem00002',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'elsewhere',email:'unmet25@example.com',live:{readAt:NOW-864e5,weekly:{usedPercent:5,resetsAt:null}}}]);
+  f.state.geminiEmail='77yuhbs@example.com';
+  // 지금 agy에 로그인된 계정의 줄을 지워도 다음 「지금 확인」이 그 줄을 다시 만들지 않는다(Fable 10-22 P2-2) — 남은 줄은 「다른 계정 로그인」.
+  let snap=await f.service.save({remove:'r-gem00001'});
+  assert.deepEqual(snap.settings.geminiHidden,['77yuhbs@example.com']);
+  snap=await f.service.check();
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state]),[['unmet25@example.com','elsewhere']]);
+  // 회원이 다시 연결하면(「이 PC의 기존 로그인 쓰기」) 줄이 돌아오고, 지운 계정 목록에서 빠져 그다음부터는 자동 확인이 그 줄에 넣는다.
+  assert.equal((await f.service.useExisting('gemini')).ok,true);
+  snap=await f.service.snapshot();
+  assert.deepEqual(snap.settings.geminiHidden,[]);
+  assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state]).sort(),[['77yuhbs@example.com','ok'],['unmet25@example.com','elsewhere']]);
 });
 
 /* ---------- Higgsfield 여러 계정 ---------- */
@@ -688,26 +818,32 @@ test('credit observations require the same provider account and plan and never f
   assert.equal(changed.rows[2].flowUsage, null);
 });
 
-test('official API benefit reads preserve account identity and a newer manual observation', async t => {
+test('official credit reads only save a verified account, and the monthly Flow statement read stays off (GPT solio-subs-agy-be-20261126 A5)', async t => {
   const f = fakeSystem();
   t.after(() => { f.service.dispose(); fs.rmSync(f.root, { recursive:true, force:true }); });
-  const row = {id:'api', source:'auto', service:'gpt', email:'lab@example.com', plan:'pro'};
+  const row = {id:'google', source:'auto', service:'gemini', email:'lab@example.com', plan:'pro'};
   writeBoard(f, [row]);
-  let respond, entered;
+  let respond, entered, portalCalls = 0;
   const started = () => new Promise(resolve => { entered=resolve; });
-  const bridge = createAiSubscriptions({root:path.join(f.root,'data'),platform:'linux',home:f.root,env:{},spawn:()=>{throw Error('offline test');},now:()=>NOW,creditPortal:(_system,_row,query) => new Promise(resolve=>{respond=resolve; entered(query);})});
+  const bridge = createAiSubscriptions({root:path.join(f.root,'data'),platform:'linux',home:f.root,env:{},spawn:()=>{throw Error('offline test');},now:()=>NOW,creditPortal:(_system,_row,query) => new Promise(resolve=>{portalCalls++;respond=resolve; entered(query);})});
   t.after(()=>bridge.dispose());
   const req={id:row.id,email:row.email,plan:row.plan,kind:'api'};
+  // 「이번 달 Flow 사용량」 읽기는 환급을 빼지 않는 흠을 고칠 때까지 공식 화면을 부르지 않고 거절한다. 저장된 Flow 값은 그대로다
+  assert.equal((await bridge.save({creditRead:{...req,kind:'flow'}})).code,'INVALID_CREDIT_CHECK');
+  assert.equal(portalCalls,0);
+  assert.equal((await bridge.snapshot()).rows[0].flowUsage,null);
+  // 혜택 연결 확인: 도는 동안 둘째 요청은 바쁨, 같은 계정이면 저장한다
   let called=started();
   const pending=bridge.save({creditRead:req});
-  await called;
+  const query=await called;
+  assert.equal(query.kind,'api');
   assert.equal((await bridge.save({creditRead:req})).code,'CREDIT_CHECK_BUSY');
   respond({ok:true,account:row.email,status:'linked'});
-  const current=await pending;
-  assert.deepEqual(current.rows[0].apiBenefit,{account:row.email,plan:row.plan,status:'linked',checkedAt:NOW,source:'official'});
+  assert.deepEqual((await pending).rows[0].apiBenefit,{account:row.email,plan:row.plan,checkedAt:NOW,status:'linked',source:'official'});
+  // 다른 계정의 답이나, 기다리는 사이 회원이 바꾼 값은 덮지 않는다
   called=started();
   const cross=bridge.save({creditRead:req});
-  await called; respond({ok:true,account:'elsewhere@example.com',status:'linked'});
+  await called; respond({ok:true,account:'elsewhere@example.com',status:'unlinked'});
   assert.equal((await cross).code,'CREDIT_ACCOUNT_CHANGED');
   called=started();
   const late=bridge.save({creditRead:req});
@@ -716,6 +852,7 @@ test('official API benefit reads preserve account identity and a newer manual ob
   respond({ok:true,account:row.email,status:'linked'});
   assert.equal((await late).code,'CREDIT_ACCOUNT_CHANGED');
   assert.deepEqual((await bridge.snapshot()).rows[0].apiBenefit,{account:row.email,plan:row.plan,status:'unlinked',checkedAt:NOW});
+  assert.equal(portalCalls,3);
 });
 
 test('inherited service names in a damaged board cannot stop checking or removing accounts',async t=>{
@@ -840,13 +977,13 @@ test('a board file that cannot be read is never replaced by an empty board',asyn
 });
 
 test('closing the console window without signing in ends the login, and cancel closes a live window',async()=>{
-  const f=fakeSystem({claudeLoggedIn:false});
-  assert.equal((await f.service.startLogin('claude',{console:true})).ok,true);
+  const f=fakeSystem({geminiLoggedIn:false});
+  assert.equal((await f.service.startLogin('gemini')).ok,true);
   f.state.consoles.at(-1).close();
   for(let i=0;i<60&&f.changes.at(-1)?.login?.stage==='console';i++)await new Promise(r=>setImmediate(r));
   const last=f.changes.at(-1).login;assert.equal(last.stage,'error');assert.match(last.message,/검은 창이 닫혔/);
   // 취소는 런처가 살아 있을 때(창 프로세스를 쥐고 있어 PID가 재사용되지 않을 때)만 창 PID를 묶음째 끈다.
-  const again=await f.service.startLogin('claude',{console:true}),win=f.state.consoles.at(-1);
+  const again=await f.service.startLogin('gemini'),win=f.state.consoles.at(-1);
   assert.deepEqual(f.service.cancelLogin(again.id),{ok:true});
   for(let i=0;i<20&&!f.state.killed.length;i++)await new Promise(r=>setImmediate(r));
   assert.deepEqual(f.state.killed,[`/PID ${win.windowPid} /T /F`]);
@@ -1122,7 +1259,7 @@ test('API credits are typed in by the member on Claude and GPT rows, rounded to 
 
 test('Gemini rows take a member-picked plan, Flow credits with a refill time and Cloud credits without an expiry',async()=>{
   const f=fakeSystem(),D=864e5;
-  writeBoard(f,[{id:'legacy',service:'gemini',source:'auto',kind:'weekly',email:'member@example.com'}]);
+  assert.equal((await f.service.useExisting('gemini')).ok,true);
   let snap=await f.service.snapshot();
   const id=snap.rows.find(r=>r.service==='gemini').id,get=()=>snap.rows.find(r=>r.id===id);
   // 요금제(11-02 — agy는 등급을 알려 주지 않는다): 정해진 이름만(가족 공유 포함), 모르는 값이면 아무것도 바꾸지 않고 거절한다. 비우면(null) 고르지 않음.
@@ -1132,7 +1269,7 @@ test('Gemini rows take a member-picked plan, Flow credits with a refill time and
   snap=await f.service.save({row:{id,plan:'family'}});assert.equal(get().plan,'family');
   snap=await f.service.save({row:{id,plan:null}});assert.equal(get().plan,null);
   // 읽기는 Gemini 요금제를 주지 않아 고른 값이 남는다.
-  snap=await f.service.save({row:{id,plan:'ultra_20x'}});snap=await f.service.check({ids:[id]});assert.deepEqual([get().state,get().plan],['manual','ultra_20x']);
+  snap=await f.service.save({row:{id,plan:'ultra_20x'}});snap=await f.service.check([id]);assert.deepEqual([get().state,get().plan],['ok','ultra_20x']);
   // Flow 크레딧: 정수 개수와 다시 차는 때, 넣은 때는 본체가 찍는다. 비우면 다시 차는 때도 비우고, 범위를 벗어난 개수는 받지 않는다.
   const flow=()=>[get().flowCredit,get().flowCreditUntil,get().flowCreditAt];
   snap=await f.service.save({row:{id,flowCredit:25038.4,flowCreditUntil:NOW+29*D}});assert.deepEqual(flow(),[25038,NOW+29*D,NOW]);
@@ -1141,10 +1278,12 @@ test('Gemini rows take a member-picked plan, Flow credits with a refill time and
   // Cloud(API) 크레딧: 금액만 — 받은 달마다 12개월씩 차례로 사라져 만료 날짜는 Gemini 줄에 저장하지 않는다(Fable 설계 검토 P1-1).
   const api=()=>[get().apiCredit,get().apiCreditUntil,get().apiCreditAt];
   snap=await f.service.save({row:{id,apiCredit:55.5,apiCreditUntil:NOW+7*D}});assert.deepEqual(api(),[55.5,null,NOW]);
+  // 다른 Google 계정으로 agy를 바꾸면 그 계정 줄이 새로 생기고, 앞 계정 줄은 고른 요금제 · 넣은 크레딧을 그대로 둔 채 「지금 로그인 안 됨」이 된다.
   snap=await f.service.save({row:{id,flowCredit:900,flowCreditUntil:NOW+9*D}});
-  snap=await f.service.check();
-  assert.equal(snap.rows.filter(r=>r.service==='gemini').length,1);
-  assert.deepEqual([get().state,get().plan,get().flowCredit,get().apiCredit],['manual','ultra_20x',900,55.5]);
+  f.state.geminiEmail='family@example.com';snap=await f.service.check();
+  const other=snap.rows.find(r=>r.service==='gemini'&&r.email==='family@example.com');
+  assert.deepEqual([other.plan,other.flowCredit,other.apiCredit],[null,null,null]);
+  assert.deepEqual([get().state,get().plan,get().flowCredit,get().apiCredit],['elsewhere','ultra_20x',900,55.5]);
   // 다른 서비스 줄은 요금제를 손으로 바꾸지 못한다(Claude · GPT는 공식 프로그램이 알려 준다).
   assert.equal((await f.service.useExisting('claude')).ok,true);snap=await f.service.snapshot();
   const claude=snap.rows.find(r=>r.service==='claude');
@@ -1324,4 +1463,21 @@ test('Typecast keeps the monthly credits of its plan for the monthly summary',as
   // 기록 한 줄에는 여전히 숫자 칸만(한 달 크레딧은 판에만 둔다).
   const lines=fs.readFileSync(path.join(f.root,'data','history.jsonl'),'utf8').trim().split('\n').map(line=>JSON.parse(line));
   assert.ok(lines.every(line=>Object.keys(line).every(key=>['t','id','s','p','w','wr','c','h'].includes(key))));
+});
+
+test('a leftover agy log that appears after a check found none, with the folder empty or not yet there, is still removed ten minutes after it expires (GPT solio-subs-agy-be-20261126-b GA3 · -c GA7 · -j GA1)',async()=>{
+  for(const folderAtFirst of [true,false]){
+    // 첫 확인 때 폴더가 비어 있었거나(있음) 아직 없었다(ENOENT)
+    const base=fs.mkdtempSync(path.join(os.tmpdir(),'synk-subs-log-')),root=path.join(base,'AiSubscriptions');let clock=Date.now();
+    if(folderAtFirst)fs.mkdirSync(root);
+    const service=createAiSubscriptions({root,platform:'win32',env:{},home:path.join(root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>clock});
+    try{
+      await service.snapshot();
+      // 그 뒤 읽는 사이 agy가 죽어 기록이 남았다
+      fs.mkdirSync(root,{recursive:true});const log=path.join(root,'agy-leftover.log');fs.writeFileSync(log,'OAuth: authenticated successfully as a@example.com');
+      const old=(clock-20*60e3)/1000;fs.utimesSync(log,old,old);
+      clock+=11*60e3;await service.snapshot();
+      assert.equal(fs.existsSync(log),false,folderAtFirst?'empty folder':'missing folder');
+    }finally{service.dispose();fs.rmSync(base,{recursive:true,force:true});}
+  }
 });

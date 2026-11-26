@@ -522,9 +522,6 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     // 다른 단추를 누르면 앞의 물음을 거둔다
     if (st.armed && !(st.armed.key === key && st.armed.act === act)) disarm();
     const snap = snapshot(), t = now(), id = idOf(key), row = id ? rowOf(snap, id) : null;
-    const isGeminiSvc = (svc) => String(svc || '').trim().toLowerCase() === 'gemini';
-    const rowUsageOff = Boolean(row && (isGeminiSvc(row.service) || row.usageDisabled));
-    const addGemini = isGeminiSvc(arg || (key === 'add' ? st.add.svc : ''));
     if (act !== 'grp' && act !== 'kind-pick') note(key, '');
     if (act === 'pc-again' || act === 'pc-storage') return pcAct(key, act);
     switch (act) {
@@ -541,7 +538,6 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         changed(); return true;
       }
       case 'install': {
-        if (rowUsageOff || addGemini) return true;
         const res = await run(key, act, () => subs.install(arg));
         if (res === null) return true;
         if (res.ok === false) return failed(key, res), true;
@@ -550,7 +546,6 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         changed(); return true;
       }
       case 'recheck-tools': {
-        if (rowUsageOff || addGemini) return true;
         const res = await run(key, act, () => subs.snapshot({ refreshTools: true }));
         if (res === null) return true;
         if (!hasRows(res)) return failed(key, res), true;
@@ -568,7 +563,6 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         return true;
       }
       case 'existing': {
-        if (rowUsageOff || addGemini) return true;
         const res = await run(key, act, () => subs.useExisting(arg));
         if (res === null) return true;
         if (res.ok === false) return failed(key, res), true;
@@ -578,7 +572,6 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         changed(); return true;
       }
       case 'login': case 'console-login': {
-        if (rowUsageOff || addGemini) return true;
         const email = arg === 'claude' ? (act === 'login' ? checkEmail(fields.email) : { ok: true, value: loginEmail }) : { ok: true, value: undefined };
         if (!email.ok) { note(key, email.say); changed(); return true; }
         if (key === 'add') st.relogin = null;
@@ -636,7 +629,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         return true;
       }
       case 'relogin': {
-        if (!row || rowUsageOff || isGeminiSvc(arg)) return true;
+        if (!row) return true;
         st.relogin = row.id; st.ended = null;
         if (row.service === 'typecast') { focusReq = ask({ key, field: 'key' }); changed(); return true; }
         loginEmail = row.service === 'claude' ? row.email || undefined : undefined;
@@ -646,7 +639,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         changed(); return true;
       }
       case 'reread-one': {
-        if (!row || rowUsageOff || isGeminiSvc(arg)) return true;
+        if (!row) return true;
         const res = await run(key, act, () => subs.check([row.id]));
         if (res === null) return true;
         if (!hasRows(res)) return failed(key, res), true;
@@ -666,20 +659,25 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         await save(key, act, { row: { id: row.id, ...v.patch } }, () => saved(key, 'pass'));
         return true;
       }
-      case 'read-credit-flow': return true;
-      case 'read-credit-api': {
-        if (!row || rowUsageOff || isGeminiSvc(arg)) return true;
+      case 'read-credit-api':
+      case 'read-credit-flow': {
+        if (!row) return true;
+        const kind = act === 'read-credit-flow' ? 'flow' : 'api';
+        if (kind === 'flow' && row.service && row.service !== 'gemini') return true;
         const creditArg = parseCreditReadArg(arg);
         if (!creditArg) {
           note(key, CREDIT_CODE_SAY.CREDIT_SOURCE_UNKNOWN);
           changed();
           return true;
         }
+        const doneText = kind === 'flow'
+          ? '이번 달 Flow 사용량을 읽었습니다.'
+          : '공식 화면에서 혜택 연결 상태를 읽었습니다.';
         await save(
           key,
           act,
-          { creditRead: { kind: 'api', id: row.id, email: creditArg.email, plan: creditArg.plan } },
-          () => saved(key, '', '공식 화면에서 혜택 연결 상태를 읽었습니다.'),
+          { creditRead: { kind, id: row.id, email: creditArg.email, plan: creditArg.plan } },
+          () => saved(key, '', doneText),
         );
         return true;
       }

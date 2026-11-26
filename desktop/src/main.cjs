@@ -383,8 +383,10 @@ function subscriptionCall(operation){const service=subscriptions();if(!service)r
 // 읽을 때는 ai-subscriptions.cjs의 autoDue가 정한다(마지막 확인 6시간 뒤 · 계정마다 주간 초기화 10분 전 · 결제일 아침). 끄는 중에는 새로 읽지 않는다.
 // 타이머는 node:timers에서 가져와 unref한다(앱은 창이 살아 있는 동안 돌고, main.cjs를 setInterval 없는 VM에서 돌리는 시험도 붙잡지 않는다).
 const subscriptionBoardFile=()=>path.join(app.getPath('userData'),'AiSubscriptions','board.json');
+// 첫 연결의 확인 중에 앱이 꺼져 판 파일 없이 agy 임시 기록(계정 메일 줄이 든다)만 남은 PC도 자동 확인이 돌아 그 기록을 지우게 한다(GPT solio-subs-agy-be-20261126-b GA3)
+const subscriptionUsageLogLeft=()=>{try{return fs.readdirSync(path.dirname(subscriptionBoardFile())).some(name=>/^agy-[a-z0-9]{8}\.log$/.test(name));}catch{return false;}};
 // 모델별 토큰(11-15)도 같은 틱에서: 켜 둔 회원이면 3시간마다 뒤에서 센다(Claude Code가 오래된 대화를 지우기 전에 — 설계 검토 7). 판단은 ai-tokens.cjs auto.
-require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())&&!fs.existsSync(path.join(app.getPath('userData'),'AiSubscriptions','token-usage.json'))))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});void Promise.resolve(subscriptions()?.tokensAuto?.()).catch(()=>{});},2*60*1000).unref?.();
+require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())&&!fs.existsSync(path.join(app.getPath('userData'),'AiSubscriptions','token-usage.json'))&&!subscriptionUsageLogLeft()))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});void Promise.resolve(subscriptions()?.tokensAuto?.()).catch(()=>{});},2*60*1000).unref?.();
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();handoffCover?.prepareForQuit();});
 app.on('before-quit',()=>aiSubscriptions?.dispose());
 app.on('before-quit',()=>{chatgptConnection?.close();chatgptConnection=undefined;});

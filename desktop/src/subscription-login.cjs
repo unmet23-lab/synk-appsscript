@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('node:fs');
+const os=require('node:os');
 const path=require('node:path');
 const {EMAIL,randomId,commandFor,OUTPUT_LIMIT,loginUrl,LOGIN_TIMEOUT}=require('./subscription-common.cjs');
 // 로그인 한 회차의 프로세스·타이머·취소를 소유한다. 공급자는 명령/확인, 계정 포트는 연결/정리만 담당한다.
@@ -8,15 +9,68 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
   const {accountsDir,agyCwd,homeEnv,rows,add:addRow,refresh:check,removeFolder}=accounts;
   const {platform,env,spawn}=system;
   const {verifyLogin}=providers;
+  const kill=system.kill||((pid,signal)=>process.kill(pid,signal));
+  const ended=current=>['done','error','cancelled'].includes(current.stage);
   let login=null;
+  // 프로세스의 시작 시각(ps lstart). 같은 번호가 다른 프로그램에 다시 쓰였는지 가르는 데 쓴다. exec 뒤에도 바뀌지 않는다.
+  // 스크립트와 같이 C 로캘 · UTC로 읽어 Terminal과 앱의 로캘 · 시간대가 달라도 같은 글이 된다. 공백은 하나로 맞춘다.
+  // 읽지 못하면 null(모름)이다(GPT -n GA1 · -r GA1 · -t GA1)
+  const stampText=text=>String(text||'').trim().replace(/\s+/g,' ')||null;
+  const stampOf=system.processStamp||(pid=>{try{return stampText(require('node:child_process').execFileSync('/bin/ps',['-o','lstart=','-p',String(pid)],{encoding:'utf8',timeout:3000,env:{...process.env,LC_ALL:'C',TZ:'UTC'},stdio:['ignore','pipe','ignore']}));}catch{return null;}});
+  // macOS Terminal 창 안의 로그인 CLI 번호와 시작 시각. 창의 스크립트가 자기 자신일 때 stamp(시작 시각)를 먼저 쓰고 pid(번호)를 쓴다.
+  // 그래서 번호가 보이면 시작 시각은 이미 다 쓰여 있다. 앱이 처음 읽기 전에 번호가 재사용돼도 기준은 스크립트가 적은 값이다(GPT -n GA3)
+  function macPid(current){
+    if(!current.macPid&&current.runDir){try{
+      const pid=Number(fs.readFileSync(path.join(current.runDir,'pid'),'utf8').trim());
+      if(Number.isInteger(pid)&&pid>1){current.macStamp=stampText(fs.readFileSync(path.join(current.runDir,'stamp'),'utf8'));current.macPid=pid;}
+    }catch{}}
+    return current.macPid||null;
+  }
+  const alive=pid=>{try{kill(pid,0);return true;}catch(error){return error?.code==='EPERM';}};
+  // 번호의 지금 주인: 'ours'(이 회차의 CLI) · 'gone'(끝났거나 다른 프로그램이 받음) · 'unknown'(살아 있으나 시작 시각을 읽지 못함).
+  // 신호는 ours에만 보낸다. 끝난 것으로 보는 것은 gone뿐이다. unknown은 바쁜 것으로 두어 둘째 CLI를 열지 않는다(GPT -c GA1 · -g GA4 · -k GA3 · -n GA1)
+  function owner(current){
+    const pid=macPid(current);
+    if(!pid)return null;
+    if(!alive(pid))return 'gone';
+    const now=stampText(stampOf(pid));
+    if(now===null||!current.macStamp)return 'unknown';
+    return now===current.macStamp?'ours':'gone';
+  }
+  const ours=current=>owner(current)==='ours';
+  // 로그인 프로그램을 끈다. 끝난 회차는 건드리지 않는다(그 번호는 이미 다른 프로그램에 다시 쓰였을 수 있다, -c GA1).
+  // macOS 차례: ① 회차 폴더의 go 표식을 지운다 ② 번호를 읽어 살아 있으면 끈다. 스크립트는 번호를 다 쓴 뒤 go가 있을 때만 exec한다.
+  // 스크립트의 확인이 ①보다 앞섰으면 번호는 그 전에 다 쓰였으므로 ②에서 읽힌다. ①보다 뒤면 go가 없어 스스로 끝난다.
+  // 번호 파일을 연 뒤 쓰기 전의 틈이나 폴더를 지우는 도중의 틈도 이 순서로 닫힌다(GPT -g GA1 · GA5 · GA6, -i GA1).
+  // go를 지우지 못하면 폴더 이름을 바꿔 그 자리의 go를 없앤다. finishLogin이 폴더를 지운다
+  function stopLogin(current){
+    if(ended(current))return;
+    stopProcess(current.child,current.pid||current.child?.pid);
+    if(!current.runDir)return;
+    const go=path.join(current.runDir,'go');
+    try{fs.rmSync(go,{force:true});}catch{}
+    if(fs.existsSync(go)){const moved=current.runDir+'-stop';try{fs.renameSync(current.runDir,moved);current.runDir=moved;}catch{}}
+    if(ours(current))stopMacCli(current.macPid);
+  }
+  // 창 안의 CLI와 그 프로세스 묶음(CLI가 띄운 자식)에 SIGTERM과 SIGHUP(창을 닫을 때 Terminal이 보내는 신호)을 같은 때 보낸다.
+  // 늦게 보내는 SIGKILL은 그사이 번호가 다른 프로그램에 다시 쓰일 수 있어 두지 않는다(설계 검토 P2-1, GPT -g GA2 · GA3 · GA4)
+  function stopMacCli(pid){
+    for(const signal of ['SIGTERM','SIGHUP'])for(const target of [-pid,pid]){try{kill(target,signal);}catch{}}
+  }
   async function startLogin(service,{email,console:useConsole=false}={}){
-    const adapter=providers.get(service),spec=adapter?.spec,behavior=adapter?.policy.login;
-    if(spec?.manualOnly)return {ok:false,code:'USAGE_DISABLED'};
-    if(!spec||!behavior)return {ok:false,code:'UNKNOWN_SERVICE'};
+    const adapter=providers.get(service),spec=adapter?.spec,behavior=adapter?.policy.login;if(!spec||!behavior)return {ok:false,code:'UNKNOWN_SERVICE'};
     if(spec.consoleLogin)useConsole=true;
-    if(login&&!['done','error','cancelled'].includes(login.stage))return {ok:false,code:'LOGIN_BUSY'};
+    // 진행 중인 로그인이 있으면 막는다. macOS Terminal 로그인은 창 안의 CLI가 살아 있을 때만 막고, 번호를 모르거나 이미 끝났으면
+    // 새 로그인이 바꾼다(회원이 창을 닫은 뒤 10분 동안 다음 연결이 막히지 않게, GPT solio-subs-agy-be-20261126 A8).
+    // 바꾸기는 새 요청이 CLI 확인과 메일 확인을 통과한 뒤에 한다. 먼저 끝내면 새 요청이 TOOL_MISSING으로 끝날 때 앞 로그인만 잃었다(-b GA1)
+    const busy=()=>login&&!ended(login);
+    const replaceable=current=>platform==='darwin'&&current.stage==='console'&&!current.pid&&[null,'gone'].includes(owner(current));
+    let stale=null;
+    if(busy()){if(replaceable(login))stale=login;else return {ok:false,code:'LOGIN_BUSY'};}
     await detectTools();if(!runtime.tools[service].path)return {ok:false,code:'TOOL_MISSING'};
     if(email!==undefined&&email!==null&&email!==''&&!(behavior.acceptsEmail&&EMAIL.test(String(email))))return {ok:false,code:'INVALID_EMAIL'};
+    if(busy()&&(login!==stale||!replaceable(login)))return {ok:false,code:'LOGIN_BUSY'};
+    if(stale&&!ended(stale)){stopLogin(stale);finishLogin(stale,'cancelled','로그인을 새로 시작했습니다.');}
     const folder=spec.folders?service+'-'+randomId():null;
     if(folder)fs.mkdirSync(path.join(accountsDir,folder),{recursive:true});
     // agy는 로그인 명령이 따로 없고, 처음 켜면 로그인 화면이 나온다.
@@ -29,7 +83,7 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
     if(behavior.trackPrevious)current.before=verifyLogin(service,null).catch(()=>({ok:false}));
     const cwd=behavior.dataCwd?agyCwd():undefined;
     try{
-      if(useConsole&&platform==='darwin')current.child=spawnMacTerminal(runtime.tools[service].path,args,homeEnv(service,folder),cwd);
+      if(useConsole&&platform==='darwin'){current.runDir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-login-'));fs.writeFileSync(path.join(current.runDir,'go'),'');current.child=spawnMacTerminal(runtime.tools[service].path,args,homeEnv(service,folder),cwd,current.runDir);}
       else if(useConsole&&platform==='win32'){
         const opened=await openWindowsConsole(runtime.tools[service].path,args,{extraEnv:homeEnv(service,folder),cwd,wait:true});
         if(!opened.ok)throw new Error('console');
@@ -54,7 +108,16 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
         const v=await verifyLogin(service,folder);
         if(v.ok)connected(current,v);else finishLogin(current,'error','검은 창이 닫혔는데 로그인이 확인되지 않았습니다. 다시 시도해 주세요.');
       });
-      else current.child.unref?.();
+      else{
+        current.child.unref?.();
+        // macOS: osascript가 실패로 끝나면(Terminal 제어 허용을 거절함 등) 창이 열리지 않은 것이다. 10분을 기다리지 않고 알린다(설계 검토 P2-3)
+        if(current.runDir)current.child.on('close',code=>{
+          // 0으로 끝난 때부터 「번호 없이 30초」를 센다. 처음 쓸 때 macOS가 Terminal 제어 허용을 묻는 동안은 osascript가 끝나지 않는다(GPT -n GA2)
+          if(!code){current.openedAt=now();return;}
+          if(login!==current||ended(current)||macPid(current))return;
+          finishLogin(current,'error','Terminal 창을 열지 못했습니다. 시스템 설정의 「개인정보 보호 및 보안」 › 「자동화」에서 SYNK가 Terminal을 제어하도록 허용한 뒤 다시 시도해 주세요.');
+        });
+      }
       pollLogin(current);
     }
     else{
@@ -78,7 +141,7 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
     current.timer=setTimeout(async()=>{
       if(['done','error','cancelled'].includes(current.stage))return;
       if(behavior.acceptAtTimeout){const v=await verifyLogin(service,folder).catch(()=>({ok:false}));if(v.ok){connected(current,v);return;}if(['done','error','cancelled'].includes(current.stage))return;}
-      stopProcess(current.child,current.pid||current.child?.pid);finishLogin(current,'error','10분 동안 로그인이 끝나지 않아 멈췄습니다. 다시 시도해 주세요.');
+      stopLogin(current);finishLogin(current,'error','10분 동안 로그인이 끝나지 않아 멈췄습니다. 다시 시도해 주세요.');
     },LOGIN_TIMEOUT);
     emit();
     return {ok:true,id:current.id};
@@ -93,6 +156,25 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
   function pollLogin(current){
     const tick=async()=>{
       if(login!==current||['done','error','cancelled'].includes(current.stage))return;
+      // macOS: 창 안의 CLI가 끝났으면(창을 닫았다) Windows처럼 한 번 확인하고 마친다. 10분을 기다리지 않는다(GA4).
+      // 30초가 지나도 스크립트가 번호를 쓰지 않았으면 창이 뜨자마자 닫혔거나 스크립트가 돌지 않은 것이다. 같은 방법으로 마친다(GPT -g GA6)
+      const pid=macPid(current);
+      // osascript가 창을 연 뒤 30초가 지나도 번호가 없으면 스크립트가 돌지 않은 것이다(창이 뜨자마자 닫힘 등). 확인하지 않고 끝낸다.
+      // stopLogin이 go를 먼저 지우므로 그 사이 늦게 뜬 스크립트는 CLI가 되지 않고, 이미 go를 지났으면 번호가 있어 꺼진다(GPT -k GA1 · GA4 · -n GA2 · GA4)
+      if(current.runDir&&!pid&&current.openedAt&&now()-current.openedAt>30000){
+        stopLogin(current);
+        if(ended(current))return;
+        finishLogin(current,'error','Terminal 창에서 로그인이 시작되지 않았습니다. 창을 닫았다면 다시 시도해 주세요.');
+        return;
+      }
+      if(pid&&owner(current)==='gone'){
+        const v=await verifyLogin(current.service,current.folder).catch(()=>({ok:false}));
+        if(login!==current||ended(current))return;
+        if(v.ok){connected(current,v);return;}
+        stopLogin(current);
+        finishLogin(current,'error','Terminal 창이 닫혔는데 로그인이 확인되지 않았습니다. 다시 시도해 주세요.');
+        return;
+      }
       const v=await verifyLogin(current.service,current.folder);
       if(!v.ok&&v.state==='needs-login')current.sawLogout=true;
       if(v.ok&&await switched(current,v)){connected(current,v);return;}
@@ -116,12 +198,13 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
     const row=addRow(current.service,current.folder,v);
     if(wanted&&got&&wanted!==got)finishLogin(current,'error',`${current.email} 대신 브라우저에 로그인되어 있던 ${v.email} 계정으로 연결됐습니다. ${current.email} 계정을 연결하려면 브라우저에서 그 계정으로 바꾼 뒤 다시 시도해 주세요.`);
     else finishLogin(current,'done',`${v.email||providers.get(current.service).spec.label} 계정을 연결했습니다.`);
-    check({ids:[row.id]}).catch(()=>{});
+    check({ids:[row.id],fresh:true}).catch(()=>{});
   }
   function finishLogin(current,stage,message){
     if(!current||['done','error','cancelled'].includes(current.stage))return;
     current.stage=stage;current.message=message;current.needsCode=false;
     clearTimeout(current.timer);clearTimeout(current.poll);
+    if(current.runDir){macPid(current);try{fs.rmSync(current.runDir,{recursive:true,force:true});}catch{}}
     // 판을 못 읽으면 그 폴더를 쓰는 줄이 있는지 모르므로 지우지 않는다.
     let used=true;try{used=rows().some(row=>row.folder===current.folder);}catch{}
     if(stage!=='done'&&current.folder&&!used)removeFolder(current.folder);
@@ -137,7 +220,8 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
   }
   function cancelLogin(id){
     if(!login||login.id!==id)return {ok:false,code:'NO_LOGIN'};
-    const current=login;stopProcess(current.child,current.pid||current.child?.pid);
+    if(ended(login))return {ok:true};
+    const current=login;stopLogin(current);
     finishLogin(current,'cancelled','로그인을 취소했습니다.');
     return {ok:true};
   }
@@ -147,6 +231,6 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
   }
 
 
-  return {get state(){return login;},startLogin,submitCode,cancelLogin,openLoginUrl,dispose(){if(login){if(!['done','error','cancelled'].includes(login.stage))stopProcess(login.child,login.pid||login.child?.pid);clearTimeout(login.timer);clearTimeout(login.poll);}}};
+  return {get state(){return login;},startLogin,submitCode,cancelLogin,openLoginUrl,dispose(){if(login){if(!['done','error','cancelled'].includes(login.stage))stopLogin(login);clearTimeout(login.timer);clearTimeout(login.poll);if(login.runDir)try{fs.rmSync(login.runDir,{recursive:true,force:true});}catch{}}}};
 }
 module.exports={createSubscriptionLogin};

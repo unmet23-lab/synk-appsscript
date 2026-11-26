@@ -98,74 +98,6 @@ function fakeHome() {
   return { home, write, root: path.join(home, 'AppData', 'AiSubscriptions') };
 }
 
-test('Gemini transcript and Antigravity directories are never opened during a full scan, rescan or live update', async t => {
-  const { home, write, root } = fakeHome();
-  const googleDir = path.join(home,'.gemini');
-  const chat = '.gemini/tmp/test/chats/session-test.json';
-  write(chat,JSON.stringify({ messages:[{type:'gemini',id:'one',timestamp:iso(T),model:'gemini-test',tokens:{output:7}}] }));
-  fs.mkdirSync(path.join(googleDir,'antigravity-cli','conversations'),{recursive:true});
-  write('.claude/projects/test/active.jsonl',claudeRow({id:'active',out:6})+'\n');
-
-  const touched = [];
-  for (const [api, methods] of [[fs,['existsSync','watch','statSync']], [fs.promises,['readdir','readFile','open','stat']]]) {
-    for (const name of methods) {
-      const original = api[name];
-      t.mock.method(api,name,function(file,...args) {
-        if (typeof file === 'string' && (file === googleDir || file.startsWith(googleDir+path.sep))) {
-          touched.push([name,file]);
-        }
-        return original.call(this,file,...args);
-      });
-    }
-  }
-  const usage = createTokenUsage({root,home,env:{},now:()=>T+1000});
-  try {
-    await usage.setEnabled(true);
-    const first = await usage.scan({force:true});
-    assert.ok(first.cells.some(cell=>cell[1]==='claude'));
-    assert.ok(first.cells.every(cell=>cell[1]!=='gemini'));
-    assert.equal(usage.live(true).live,true);
-    write(chat,JSON.stringify({ messages:[{type:'gemini',id:'two',timestamp:iso(T),model:'gemini-test',tokens:{output:70}}] }));
-    const again = await usage.scan({force:true});
-    assert.ok(again.cells.every(cell=>cell[1]!=='gemini'));
-    assert.deepEqual(touched,[]);
-  } finally {
-    usage.dispose();
-    fs.rmSync(home,{recursive:true,force:true});
-  }
-});
-
-test('an upgraded cache keeps the dated Gemini total without counting a newer transcript', async () => {
-  const { home, write, root } = fakeHome();
-  const yesterday = T-86400000;
-  const day = dayKey(yesterday);
-  const session = write('.gemini/tmp/example/chats/session-changed.json',JSON.stringify({
-    messages:[{type:'gemini',id:'later',timestamp:iso(T),model:'gemini-new',tokens:{output:999}}],
-  }));
-  const numbers = [2,7,0,0,0,1];
-  const cachedFile = {
-    service:'gemini', path:session, mode:'whole', size:10, mtime:yesterday,
-    agg:{[day+'|gemini|gemini-old']:numbers},
-  };
-  fs.mkdirSync(root,{recursive:true});
-  fs.writeFileSync(path.join(root,'token-usage.json'),JSON.stringify({
-    schemaVersion:3, enabled:true, enabledAt:yesterday, scannedAt:yesterday,
-    files:{[session]:cachedFile}, goneAgg:{}, tools:{gemini:1,agy:true},
-  }));
-  const usage = createTokenUsage({root,home,env:{},now:()=>T});
-  try {
-    for (const snapshot of [usage.state(), await usage.scan({force:true})]) {
-      assert.deepEqual(snapshot.cells,[[day,'gemini','gemini-old',...numbers]]);
-      assert.equal(snapshot.sinceBy.gemini,day);
-      assert.equal(Object.hasOwn(snapshot.tools,'gemini'),false);
-      assert.equal(Object.hasOwn(snapshot.tools,'agy'),false);
-    }
-  } finally {
-    usage.dispose();
-    fs.rmSync(home,{recursive:true,force:true});
-  }
-});
-
 test('본체: 켜야 세고, 파일을 가로질러 날짜 · 도구 · 모델로 모으고, 이어 읽기 · 줄어든 파일 · 지워진 파일 · 끄기를 지킨다', async () => {
   const { home, write, root } = fakeHome();
   try {
@@ -192,7 +124,7 @@ test('본체: 켜야 세고, 파일을 가로질러 날짜 · 도구 · 모델�
     assert.equal(cell('claude', 'claude-sonnet-5-5')[4], 5);
     assert.deepEqual(cell('gpt', 'gpt-6-astra').slice(3, 5), [10, 4]);
     assert.deepEqual(cell('grok', 'grok-4.7-build').slice(3, 5), [10, 6]);
-    assert.deepEqual(s.tools, { claude:2, gpt:1, grok:1 });
+    assert.deepEqual([s.tools.claude, s.tools.gpt, s.tools.grok, s.tools.gemini, s.tools.agy], [2, 1, 1, 0, true]);
     assert.ok(events.some(e => e.progress && e.progress.total === 4));
     // 저장 파일에는 숫자와 자리만 — 대화 글은 없다.
     const saved = fs.readFileSync(path.join(root, 'token-usage.json'), 'utf8');

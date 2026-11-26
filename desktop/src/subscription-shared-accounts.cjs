@@ -20,7 +20,8 @@ function createSharedAccounts({service,policy,load,now,applyRead,addRow}){
     }
     const all=rows(),maybe=all.filter(row=>row.state!=='elsewhere');
     if(result.state==='ok'){
-      if(all.length===1&&maybe.length===1){applyRead(all[0],result);return;}
+      // 메일을 못 읽은 답은 메일이 없는 옛 줄 하나뿐일 때만 넣는다. 메일을 아는 줄에 넣으면 agy를 다른 계정으로 바꾼 뒤의 숫자가 그 줄의 값과 기록으로 남는다(GPT solio-subs-agy-be-20261126 A2 · B1)
+      if(all.length===1&&maybe.length===1&&!all[0].email){applyRead(all[0],result);return;}
       for(const row of maybe)applyRead(row,{state:'error',message:policy.unknownMessage});
       return;
     }

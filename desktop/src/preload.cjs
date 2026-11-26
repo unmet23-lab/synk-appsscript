@@ -1,7 +1,7 @@
 'use strict';
 const {contextBridge,ipcRenderer}=require('electron');
 // Fixed operations only. Tokens, raw IPC, paths, URLs and commands stay in main.
-const SUBSCRIPTION_SERVICES=['claude','gpt','higgsfield'],SUBSCRIPTION_KEY_SERVICES=['typecast'],SUBSCRIPTION_HELP=['node','claude-plans','chatgpt-plans','claude-install','codex-install','higgsfield-install','gemini-plans','typecast-api','higgsfield-credits','codex-resets','claude-resets','claude-usage','claude-api-credits','claude-console-billing','claude-benefit-settings','gpt-api-credits','gpt-credit-grants','gpt-benefit-settings','gemini-api-credits','gemini-ai-studio-billing','gemini-studio-usage','gemini-dev-benefits','flow-app','flow-activity','flow-credits','higgsfield-pricing','higgsfield-annual','typecast-api-pricing'];
+const SUBSCRIPTION_SERVICES=['claude','gpt','higgsfield','gemini'],SUBSCRIPTION_KEY_SERVICES=['typecast'],SUBSCRIPTION_HELP=['node','claude-plans','chatgpt-plans','claude-install','codex-install','higgsfield-install','gemini-plans','antigravity-install','typecast-api','higgsfield-credits','codex-resets','claude-resets','claude-usage','claude-api-credits','claude-console-billing','claude-benefit-settings','gpt-api-credits','gpt-credit-grants','gpt-benefit-settings','gemini-api-credits','gemini-ai-studio-billing','gemini-studio-usage','gemini-dev-benefits','flow-app','flow-activity','flow-credits','higgsfield-pricing','higgsfield-annual','typecast-api-pricing'];
 const unknownSubscription=code=>Promise.resolve({ok:false,code});
 // The entry portal names a visit purpose; main opens that purpose's fixed page.
 const PORTAL_PURPOSES=['shift'];

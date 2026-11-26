@@ -590,8 +590,6 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const bar = el('span', 'b-bar');
     bar.setAttribute('aria-hidden', 'true');
     if (r.bar !== null && r.bar !== undefined) { const f = el('i'); f.style.setProperty('--v', String(Math.max(0, Math.min(100, Number(r.bar) || 0)) / 100)); bar.append(f); }
-    // 한 달 양을 모르는 Gemini 줄(요금제 모름)은 남은 개수만 쓴다. 빈 막대가 「0」으로 읽히지 않게 막대 자리를 비운다
-    else if (r.tone === 'open') bar.hidden = true;
     const note = el('span', 'b-note', r.note);
     if (r.first) note.append(el('em', 'b-go', '먼저 쓰세요'));
     li.append(el('span', 'b-name', r.name), bar, el('span', 'b-pct', r.pct), note);
@@ -600,7 +598,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   function boardColEl(c) {
     const col = el('section', 'b-col' + (c.urgent ? ' b-urgent' : '') + (c.flow ? ' b-flow' : ''));
     col.setAttribute('aria-label', c.label);
-    // 숫자(천 단위 쉼표 포함)가 아닌 큰 글은 상태 글(붉은 「막힘」 · 「다 씀」)이다. Gemini 칸의 「–」는 막힘이 아니라 붉게 쓰지 않는다(quiet)
+    // 숫자(천 단위 쉼표 포함)가 아닌 큰 글은 상태 글(붉은 「막힘」 · 「다 씀」)이다. 읽기 전 · 다른 계정 로그인 중인 「–」는 막힘이 아니라 붉게 쓰지 않는다(quiet)
     const big = el('p', 'b-big' + (/^[\d,]+$/.test(c.big.value) || c.big.quiet ? '' : ' b-word'));
     big.append(el('b', '', c.big.value));
     if (c.big.unit) big.append(el('small', '', c.big.unit));
@@ -609,6 +607,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const head = el('div', 'b-head');
     head.setAttribute('aria-hidden', 'true');
     head.append(el('p', 'b-svc', c.name), big, sub, el('p', 'b-cap', c.big.label));
+    // 제목(지금 사용량) 아래 약한 소제목: 무료 API 크레딧, Gemini는 Flow 크레딧(11-26 유호님, 설계 11.10)
+    if (c.credit) head.append(el('p', 'b-credit', c.credit));
     const rows = el('ol', 'b-rows');
     rows.append(...c.rows.map(boardRowEl));
     col.append(head, rows);
@@ -622,8 +622,6 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       more.append(...c.fold.rows.map(boardRowEl));
       col.append(btn, more);
     }
-    // Gemini 칸 아래 한 줄: 기입한 Cloud 크레딧(설계 11.10)
-    if (c.foot) col.append(el('p', 'b-foot', c.foot));
     return col;
   }
   /* 계정판 안의 초점이 갈 곳을 잃으면 상세내역(없으면 다시 읽기)으로 옮긴다. body로 빠지지 않게(카본 solio-subs-accounts-20261124 A1) */

@@ -12,6 +12,8 @@
 //    파일은 경로가 아니라 rollout 이름으로 알아본다(옮기거나 압축해도 한 세션). 응답마다의 token_usage_record로 세고, 그 기록이 처음 나오기 전의 응답(옛 판)만 token_count 사건으로 센다.
 //    모델은 바로 앞 turn_context의 model이다. input_tokens에 캐시 읽기가 들어 있어 빼서 둔다.
 //  · Grok CLI: ~/.grok/sessions/<폴더>/<세션>/usage.json. 회차(turns)마다 끝난 때와 모델별 토큰이 있다. 파일이 통째로 다시 쓰여 바뀌면 다시 읽는다.
+//  · Gemini CLI(옛 명령줄 도구): ~/.gemini/tmp/<프로젝트>/chats/session-*.json(l). 메시지마다 model과 tokens가 있다. output에 생각(thoughts)이 빠져 있어 더한다.
+//  · Antigravity CLI(agy)는 대화를 이진 형식으로 두고 토큰 칸을 읽을 수 있는 형태로 남기지 않아 세지 않는다(화면이 그렇게 알린다).
 // 다른 도구와 같은 자로 보이게 칸을 맞춘다: in = 캐시가 아닌 입력, out = 출력(생각 포함), cr = 캐시 읽기, cw = 캐시 쓰기, rs = 출력 가운데 생각, n = 응답 수.
 const fs = require('node:fs');
 const fsp = fs.promises;
@@ -37,7 +39,7 @@ const LIVE_MAX_WAIT = 1500;
 const LIVE_SAFETY = 15 * 60e3; // 지켜보는 동안 다 훑는 다시 세기 간격 — 놓친 알림(알림 넘침 · 지켜보기 전에 바뀐 파일)을 메운다. 지켜보지 않을 때는 5분.
 const LIVE_SAVE = 30e3; // 지켜보며 더한 숫자를 저장해 두는 간격(그 사이 앱이 꺼지면 저장된 자리부터 다시 읽어 같은 숫자가 된다).
 const FIELDS = ['in', 'out', 'cr', 'cw', 'rs', 'n'];
-const SERVICES = Object.freeze(['claude', 'gpt', 'grok']);
+const SERVICES = Object.freeze(['claude', 'gpt', 'grok', 'gemini']);
 
 const count = v => (Number.isFinite(Number(v)) && Number(v) > 0 ? Math.round(Number(v)) : 0);
 const dayKey = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -253,6 +255,9 @@ function sourceRoots({ home, env, claudeDirs = [] }) {
     claude: [...new Set(claude.map(d => path.resolve(d)))].map(d => ({ dir: path.join(d, 'projects'), match: n => n.endsWith('.jsonl'), key: name => name, mode: () => 'lines', parse: claudeLine, ids: true })),
     gpt: [codexSrc(path.join(codex, 'sessions')), codexSrc(path.join(codex, 'archived_sessions'))],
     grok: [{ dir: path.join(home, '.grok', 'sessions'), match: n => n === 'usage.json', key: name => name, mode: () => 'whole', parse: grokFile }],
+    gemini: [{ dir: path.join(home, '.gemini', 'tmp'), match: (n, rel) => /(^|[\\/])chats[\\/]/.test(rel) && /\.jsonl?$/.test(n), key: name => name, mode: () => 'whole', parse: geminiFile }],
+    // 읽지 못하는 도구: 있으면 화면이 「세지 못해요」로 알린다.
+    unreadable: { agy: path.join(home, '.gemini', 'antigravity-cli', 'conversations') },
   };
 }
 
@@ -453,7 +458,7 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
     }
     const jobs = [...byKey.values()];
     // 찾은 파일 수는 세기 전에 판에 올린다 — 처음 세는 몇 분 동안 화면이 「기록을 찾지 못했어요」로 읽지 않게(검수 지적).
-    const tools2 = Object.fromEntries(SERVICES.map(s => [s, tools[s] || 0]));
+    const tools2 = { ...Object.fromEntries(SERVICES.map(s => [s, tools[s] || 0])), agy: fs.existsSync(roots.unreadable.agy) };
     const toolsBefore = JSON.stringify(d.tools);
     d.tools = tools2;
     progress = { done: 0, total: jobs.length };
@@ -664,7 +669,7 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
     const by = sinceBy(), days = Object.values(by).sort();
     // live: 화면이 실시간을 부탁했고 지켜보는 기록 폴더가 하나라도 있는지(폴더가 하나도 없으면 「실시간」이라 하지 않는다 — 검수 지적),
     // liveAt: 실시간으로 마지막으로 더한 때(화면의 「마지막으로 센 때」는 scannedAt과 이것 중 늦은 것).
-    return { ok: true, enabled: true, ...order, scanning: !!scanning || !!progress, progress: progress ? { ...progress } : null, scannedAt: d.scannedAt, enabledAt: d.enabledAt, live: isLive() && tracker?.watchers.size > 0, liveAt, since: days[0] || null, sinceBy: by, tools: Object.fromEntries(SERVICES.map(service => [service, d.tools[service] || 0])), failed: d.failed || 0, error: lastError, fields: FIELDS, cells: cells() };
+    return { ok: true, enabled: true, ...order, scanning: !!scanning || !!progress, progress: progress ? { ...progress } : null, scannedAt: d.scannedAt, enabledAt: d.enabledAt, live: isLive() && tracker?.watchers.size > 0, liveAt, since: days[0] || null, sinceBy: by, tools: { ...d.tools }, failed: d.failed || 0, error: lastError, fields: FIELDS, cells: cells() };
   }
 
   // 켜기 · 끄기는 차례로 한다 — 끄는 동안(읽던 파일을 그만 읽기를 기다리는 동안) 온 켜기가 끄기에 묻히지 않게(0.4.93 검수 B1).

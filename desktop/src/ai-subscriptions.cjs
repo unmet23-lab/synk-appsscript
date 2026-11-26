@@ -11,7 +11,8 @@ const {createSharedAccounts,groupSubscriptionReads}=require('./subscription-shar
 // - Claude: Claude Code `claude -p /usage` · `claude auth status --json`
 // - GPT: Codex app-server `account/read` · `account/rateLimits/read`(한도와 초기화권 개수·만료일. 초기화권을 쓰는 요청은 보내지 않는다)
 // - Higgsfield: `higgsfield account status --json` (계정마다 홈 폴더를 나눠 여러 계정)
-// - Gemini는 회원이 기록해 둔 요금제와 크레딧을 보관한다.
+// - Gemini: Antigravity CLI `agy -p /usage --output-format json --log-file <임시>`(모델 호출 없음, 토큰 0). 지금 로그인된 계정 메일은
+//   그 실행이 남긴 CLI 기록의 `OAuth: authenticated successfully as <메일>` 줄에서 읽고 기록은 바로 지운다
 // - Typecast: 공식 API `GET /v1/users/me/subscription` — 회원이 넣은 API 키로만, 키는 이 PC에 암호화해 둔다
 // 토큰·자격 파일은 열지 않는다. 실행 대상과 인자는 고정이며, 화면에서 받은 값은 검증한 이메일과
 // 로그인 코드(표준입력)·회원이 붙여 넣은 API 키뿐이다. 기록은 이 PC의 앱 데이터 폴더에만 둔다.
@@ -106,53 +107,16 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       state,awayReason:state==='elsewhere'&&row.awayReason==='none'?'none':null,stateMessage:cleanText(row.stateMessage,200),stateAt:clampNumber(row.stateAt,0,9e15),
     };
   }
-  const usageDisabled=row=>serviceSpec(row.service)?.manualOnly===true;
-  const readsUsage=row=>row.source==='auto'&&!usageDisabled(row);
-  function publicRow({keyId,...row}){
-    const result={...row,folder:!!row.folder};
-    if(!usageDisabled(row))return result;
-    // 예전 한도와 로그인 상태를 새 값처럼 보이지 않는다. 계정에 적은 금액과 확인 날짜는 그대로 보낸다.
-    return {...result,usageDisabled:true,state:'manual',stateMessage:'',stateAt:null,awayReason:null,
-      live:null,loginUntil:null,usedUpAt:null,resetDay:null,resetHour:null,resetMinute:null};
-  }
-  // seq: 화면이 알림과 응답을 받은 순서와 관계없이 최신 판을 쓴다.
+  // seq: 화면은 알림(send)과 응답(invoke)을 따로 받아 도착 순서가 바뀔 수 있다. 번호가 작은 옛 스냅숏은 버리게 한다.
   function publicSnapshot(){
-    const b=load(),active=b.rows.filter(readsUsage);
-    const checked=active.filter(row=>row.state!=='elsewhere');
-    const check=b.check?{...b.check,total:checked.length,ok:checked.filter(row=>row.state==='ok').length}:null;
+    const b=load();
     return {ok:true,seq:++seq,platform,tools:runtime.tools?Object.fromEntries(Object.entries(runtime.tools).map(([k,v])=>[k,{installed:!!v.path||!!v.api,version:v.version||null,npm:providerPolicy(k)?.requiresNpm?!!v.npm:undefined,api:v.api?true:undefined}])):null,
-      rows:b.rows.map(publicRow),settings:b.settings,check,
-      usage:usageSummary({rows:active,history:loadHistory(),now:now()}),prices:loadPrices(),
+      rows:b.rows.map(({keyId,...row})=>({...row,folder:row.folder?true:false})),settings:b.settings,check:b.check,
+      usage:usageSummary({rows:b.rows,history:loadHistory(),now:now()}),prices:loadPrices(),
       login:loginCoordinator.state?{id:loginCoordinator.state.id,service:loginCoordinator.state.service,stage:loginCoordinator.state.stage,url:loginCoordinator.state.url,needsCode:loginCoordinator.state.needsCode,message:loginCoordinator.state.message,console:!!loginCoordinator.state.console}:null,
       checking:!!checking&&!checkQuiet,progress:checking&&!checkQuiet&&checkProgress?{...checkProgress}:null,quiet:checkQuiet};
   }
   const emit=()=>{try{onChange(publicSnapshot());}catch{}};
-
-  // 이전 버전이 비정상 종료하면서 남긴 앱 전용 임시 로그를 정리한다. 내용은 읽지 않는다.
-  let nextLegacyLogCheck=0;
-  function removeExpiredUsageLogs(){
-    const at=now();
-    if(at<nextLegacyLogCheck)return;
-    nextLegacyLogCheck=Infinity;
-    try{
-      if(!fs.lstatSync(root).isDirectory())return;
-      for(const name of fs.readdirSync(root)){
-        if(!AGY_LOG.test(name))continue;
-        const file=path.join(root,name);
-        try{
-          const stat=fs.lstatSync(file);
-          if(!stat.isFile())continue;
-          const expires=stat.mtimeMs+AGY_LOG_STALE+1;
-          if(at>=expires)fs.unlinkSync(file);
-          else nextLegacyLogCheck=Math.min(nextLegacyLogCheck,expires);
-        }catch(error){
-          if(error.code!=='ENOENT')nextLegacyLogCheck=Math.min(nextLegacyLogCheck,at+AGY_LOG_STALE);
-        }
-      }
-    }catch(error){
-      if(error.code!=='ENOENT')nextLegacyLogCheck=at+AGY_LOG_STALE;
-    }
-  }
 
   // agy는 실행 폴더를 작업 공간으로 본다. 회원 파일이 있는 곳이 아니라 이 혜택의 데이터 폴더에서 돌린다.
   const agyCwd=()=>{try{fs.mkdirSync(root,{recursive:true});return root;}catch{return undefined;}};
@@ -206,22 +170,48 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(result.live.credits!==undefined&&result.live.credits!==null){row.credits=result.live.credits;row.creditsAt=now();}
     remember(row);
   }
+  // 앱이 agy를 읽는 사이에 꺼져 남은 임시 기록(계정 메일 줄이 든다)을 지운다. 내용은 읽지 않고, 이 혜택 데이터 폴더 바로 아래의 앱 이름 꼴 파일만 본다.
+  // 읽기(gemini 어댑터의 sweepAgyLogs)만으로는 Gemini 줄을 지우거나 agy를 지운 PC에 기록이 남았다(GPT solio-subs-agy-be-20261126 A7). 계정판을 열 때와 자동 확인 때도 지운다
+  let nextLegacyLogCheck=0;
+  function removeExpiredUsageLogs(){
+    const at=now();
+    if(at<nextLegacyLogCheck)return;
+    // 다음 확인은 늦어도 10분 뒤다. 지울 기록이 없거나 폴더가 아직 없을 때도 그렇다. 그 뒤 생긴 기록(읽는 사이 agy가 죽어 남은 것)을
+    // 놓치지 않게(GPT solio-subs-agy-be-20261126-b GA3 · -c GA7)
+    nextLegacyLogCheck=at+AGY_LOG_STALE;
+    try{
+      if(!fs.lstatSync(root).isDirectory())return;
+      for(const name of fs.readdirSync(root)){
+        if(!AGY_LOG.test(name))continue;
+        const file=path.join(root,name);
+        try{
+          const stat=fs.lstatSync(file);
+          if(!stat.isFile())continue;
+          const expires=stat.mtimeMs+AGY_LOG_STALE+1;
+          if(at>=expires)fs.unlinkSync(file);
+          else nextLegacyLogCheck=Math.min(nextLegacyLogCheck,expires);
+        }catch(error){
+          if(error.code!=='ENOENT')nextLegacyLogCheck=Math.min(nextLegacyLogCheck,at+AGY_LOG_STALE);
+        }
+      }
+    }catch(error){
+      if(error.code!=='ENOENT')nextLegacyLogCheck=at+AGY_LOG_STALE;
+    }
+  }
   // 돌려주는 스냅숏은 `checking`을 비운 뒤에 만든다. 안에서 만들면 「확인 중」인 채로 마지막 알림보다 늦게 도착해 화면이 멈춘다.
   // 확인 중에 들어온 확인은 끝나기를 기다린 뒤, 그 확인이 읽지 않은 줄(도는 사이 새로 연결한 계정 등)만 이어서 읽는다.
-  async function check({ids,quiet=false}={}){
-    const full=!Array.isArray(ids);
-    const matches=row=>readsUsage(row)&&(full||ids.includes(row.id));
-    const wanted=()=>load().rows.filter(matches).map(row=>row.id);
-    if(!load().rows.some(matches))return publicSnapshot();
+  // fresh: 막 연결한 줄. 도는 확인이 그 줄을 덮었어도 연결 앞의 로그인으로 읽은 값일 수 있어(Gemini는 계정을 바꾸는 사이 앞 계정의 답이 늦게 온다) 끝난 뒤 다시 읽는다(GPT A4)
+  async function check({ids,quiet=false,fresh=false}={}){
+    const wanted=()=>load().rows.filter(row=>row.source==='auto'&&(!Array.isArray(ids)||ids.includes(row.id))).map(row=>row.id);
     if(checking){
       // 자동 읽기 중에 회원이 「지금 확인」을 누르면 그때부터 진행이 보이게 한다.
       if(!quiet&&checkQuiet){checkQuiet=false;emit();}
       const covered=checkingIds;await checking.catch(()=>{});
-      const missing=wanted().filter(id=>!covered.has(id));
+      const missing=fresh?wanted():wanted().filter(id=>!covered.has(id));
       return missing.length?check({ids:missing,quiet}):publicSnapshot();
     }
     checkQuiet=!!quiet;
-    const b=load(),targets=b.rows.filter(matches);
+    const full=!Array.isArray(ids),b=load(),targets=b.rows.filter(row=>row.source==='auto'&&(full||ids.includes(row.id)));
     const {groups,covered}=groupSubscriptionReads(targets,b.rows,sharedAccounts);
     checkingIds=covered;checkProgress={done:0,total:targets.length};
     checking=(async()=>{
@@ -243,7 +233,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       await Promise.all([worker(),worker()]);
       // 요약은 지금 판 전체로 센다. 한 줄만 다시 읽었을 때는 「마지막 확인」 시각을 전체 확인 때 것으로 둔다.
       // 지금 로그인되지 않은 Gemini 계정(elsewhere)은 읽을 수 없는 게 맞아 「못 읽음」으로 세지 않는다.
-      const autos=b.rows.filter(row=>readsUsage(row)&&row.state!=='elsewhere');
+      const autos=b.rows.filter(row=>row.source==='auto'&&row.state!=='elsewhere');
       b.check={at:full||!b.check?.at?now():b.check.at,total:autos.length,ok:autos.filter(row=>row.state==='ok').length};
       persist();
     })();
@@ -262,8 +252,11 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     // 지운 뒤 다시 연결한 Gemini 계정은 「지운 계정」 목록에서 뺀다(그다음부터는 자동 확인이 그 줄에 넣는다).
     sharedAccounts[service]?.reconnect(email);
     const mine=row=>row.source==='auto'&&row.service===service;
+    // 메일이 빈 옛 줄에 회원이 넣은 요금제 · 크레딧 · 확인이 있으면 처음 읽힌 계정이 그 줄을 가져가지 않는다. 넣은 값이 그 계정 것인지 모른다.
+    // 새 줄을 만들고 옛 줄은 그 값을 지닌 채 「다른 계정」으로 남아 회원이 고르게 한다(GPT solio-subs-agy-be-20261126 A3)
+    const entered=row=>['plan','apiCredit','flowCredit','apiBenefit','flowUsage'].some(key=>row[key]!==null&&row[key]!==undefined);
     const same=b.rows.find(row=>mine(row)&&(email&&String(row.email||'').toLowerCase()===email||!email&&row.folder===folder&&(spec.folders||!row.email)))
-      ||(!spec.folders?b.rows.find(row=>mine(row)&&!row.email)||(!email?b.rows.find(mine):null):null);
+      ||(!spec.folders?b.rows.find(row=>mine(row)&&!row.email&&!(email&&entered(row)))||(!email?b.rows.find(mine):null):null);
     if(same){
       // 폴더를 옮긴 줄이 지금 도는 확인에 들어 있으면 그 확인의 몫에서 뺀다 — 옛 폴더로 읽은 결과는 버리고(check), 연결 뒤의 읽기가 새 폴더로 다시 읽는다(검수 F3).
       if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;checkingIds?.delete(same.id);}
@@ -301,13 +294,12 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     setTimeout(again,1000).unref?.();
   }
   async function useExisting(service){
-    const spec=serviceSpec(service);if(spec?.manualOnly)return {ok:false,code:'USAGE_DISABLED'};
-    if(!spec||spec.apiKey)return {ok:false,code:'UNKNOWN_SERVICE'};
+    const spec=serviceSpec(service);if(!spec||spec.apiKey)return {ok:false,code:'UNKNOWN_SERVICE'};
     await detectTools();if(!runtime.tools[service].path)return {ok:false,code:'TOOL_MISSING'};
     const v=await verifyLogin(service,null);
     if(!v.ok)return {ok:false,code:v.code||'NOT_LOGGED_IN'};
     const row=addRow(service,null,v);
-    await check({ids:[row.id]});
+    await check({ids:[row.id],fresh:true});
     return {ok:true,id:row.id,snapshot:publicSnapshot()};
   }
   /* API 키 연결 — 키는 확인한 뒤에만 이 PC에 암호화해 두고, 화면·기록·로그에는 끝 네 글자만 남긴다 */
@@ -335,7 +327,6 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
 
   /* 설치 도움 */
   async function openInstaller(service){
-    if(serviceSpec(service)?.manualOnly)return {ok:false,code:'USAGE_DISABLED'};
     if(!serviceSpec(service)||!Object.hasOwn(INSTALLERS,service))return {ok:false,code:'UNKNOWN_SERVICE'};
     if(providerPolicy(service)?.requiresNpm){await detectTools(true);if(platform==='win32'&&!runtime.tools[service].npm)return {ok:false,code:'NODE_REQUIRED'};}
     else await refreshPath(true);
@@ -365,8 +356,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     return publicSnapshot();
   }
   async function readPortal(row,input){
-    if(usageDisabled(row))return {ok:false,code:'USAGE_DISABLED'};
-    if(input.kind!=='api')return {ok:false,code:'INVALID_CREDIT_CHECK'};
+    // 공식 화면의 「이번 달 Flow 사용량」 읽기는 실패한 생성의 환급(+)을 빼지 않아 사용량을 부풀리고, 쪽이 바뀌는 사이의 섞인 줄을 받는다(GPT solio-subs-agy-be-20261126 A5 · A9).
+    // 고칠 때까지 켜지 않는다. Flow 크레딧은 회원이 기입한 값을 쓴다. 혜택 연결 확인(api)만 읽는다
+    if(input?.kind!=='api')return {ok:false,code:'INVALID_CREDIT_CHECK'};
     const today=localDay(new Date(now()));
     const query={id:row.id,kind:input.kind,email:input.email,plan:input.plan,from:today.slice(0,8)+'01',to:today};
     const check=checkForSave(row,{...query,status:'linked',used:0},now());
@@ -380,7 +372,10 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       const current=load().rows.find(r=>r.id===query.id);
       if(current!==row||receipt.account!==check.value.account||JSON.stringify(current[check.field])!==previous)return {ok:false,code:'CREDIT_ACCOUNT_CHANGED'};
       const checkedAt=now();
-      const result=checkForSave(current,{...query,status:receipt.status},checkedAt,true);
+      if(query.kind==='flow'&&(localDay(new Date(checkedAt))!==query.to||receipt.from!==query.from||receipt.to!==query.to||!Number.isSafeInteger(receipt.wallet)||receipt.wallet<0||receipt.wallet>10000000))return {ok:false,code:'CREDIT_SOURCE_UNKNOWN'};
+      const previousFlow=current.flowUsage;
+      if(query.kind==='flow'&&previousFlow?.source==='official'&&previousFlow.from===query.from&&previousFlow.to<=query.to&&receipt.used<previousFlow.used)return {ok:false,code:'CREDIT_SOURCE_UNKNOWN'};
+      const result=checkForSave(current,{...query,status:receipt.status,used:receipt.used,wallet:receipt.wallet},checkedAt,true);
       return storeCredit(current,result);
     }finally{portalBusy=false;}
   }
@@ -455,13 +450,13 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   // 지금 읽을 때인지: 마지막 전체 확인에서 6시간 · 결제일 아침 9시 뒤 첫 확인 · 자정 10분 전 · 날짜가 바뀐 뒤 첫 때 → 전체, 주간 초기화 10분 전에 그 뒤로 안 읽은 계정 → 그 계정만.
   // 앱이 꺼져 있던 동안은 읽지 않는다(그 구간은 기록에서 「모르는 구간」으로 남는다).
   function autoDue(at=now()){
-    const b=load(),autos=b.rows.filter(readsUsage);
+    const b=load(),autos=b.rows.filter(row=>row.source==='auto');
     if(!autos.length)return null;
     const last=b.check?.at||0;
     if(at-last>=AUTO_EVERY)return {};
     const morning=new Date(at);morning.setHours(BILL_HOUR,0,0,0);
     const billToday=day=>{const d=new Date(at),lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return d.getDate()===Math.min(Number(day),lastDay);};
-    if(at>=morning.getTime()&&last<morning.getTime()&&b.rows.some(row=>!usageDisabled(row)&&row.billDay&&billToday(row.billDay)))return {};
+    if(at>=morning.getTime()&&last<morning.getTime()&&b.rows.some(row=>row.billDay&&billToday(row.billDay)))return {};
     // 하루 막대(11-02 검수 F1): 자정 10분 전에 한 번, 날짜가 바뀐 뒤 첫 때에 한 번 전체를 읽는다 —
     // 6시간마다만 읽으면 자정 앞 마지막 읽기 뒤의 저녁 소비가 다음 날 막대에 실린다(경계 오차를 2분 tick + 10분 안으로).
     const today=new Date(at);today.setHours(0,0,0,0);
