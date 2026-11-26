@@ -1,0 +1,71 @@
+diff --git a/docs/마케팅/LAB_수고하세요_mn_20261109/remotion/src/film/Film.tsx b/docs/마케팅/LAB_수고하세요_mn_20261109/remotion/src/film/Film.tsx
+index 625b0c1d3f..b0fca157ae 100644
+--- a/docs/마케팅/LAB_수고하세요_mn_20261109/remotion/src/film/Film.tsx
++++ b/docs/마케팅/LAB_수고하세요_mn_20261109/remotion/src/film/Film.tsx
+@@ -212,16 +212,9 @@ const Rays: React.FC<{ t: number; from: number }> = ({ t, from }) => {
+ 
+ const Plate: React.FC<{ t: number }> = ({ t }) => {
+   const ice = iceAt(t);
+-  // 칸 고르기
+-  if (t >= T.close && t < T.why) {
+-    const z = interpolate(t, [T.close, T.why], [1.0, 1.07], clamp);
+-    const sx = 2.4 * Math.sin(t * 41) * interpolate(t, [T.close, T.close + 0.4], [1, 0], clamp);
+-    return (
+-      <AbsoluteFill style={{ transform: `translate(${sx}px, 0) scale(${z})`, transformOrigin: '540px 1150px' }}>
+-        <Img src={staticFile('img/profIce.jpg')} style={FULL} />
+-      </AbsoluteFill>
+-    );
+-  }
++  // 칸 고르기 — 3.85~5.5초 언 교수님 얼굴 클로즈업(img/profIce)은 뺐다(11-26 원본 고침): 나라 판본 다섯(KH · UZ · KZ · TH · ID)에서
++  // 시험관 둘이 「윗사람을 놀리는 그림」으로 읽었다. 그림은 그대로 두고 그 칸도 언 방 전체(몽글 포함)를 보이며 땡 소리에 맞춰 살짝 다가간다.
++  // 이미 나간 몽골 · 영어 원본과 이미 통과한 판본 영상은 옛 칸 그대로다.
+   if (t >= T.rule && t < T.gag) return <Split t={t} />;
+   const inSun = (t >= T.sun && t < T.rule) || t >= T.gag;
+   const base = inSun ? 'sun' : 'room';
+@@ -229,8 +222,15 @@ const Plate: React.FC<{ t: number }> = ({ t }) => {
+   let z = 1;
+   let oy = 1100;
+   let ox = 540;
++  let jolt = 0;
+   if (t < T.close) z = interpolate(t, [0, T.freeze, T.close], [1.0, 1.015, 1.06], clamp);
+-  else if (t < T.rewind) {
++  else if (t < T.why) {
++    // 땡(T.close)에 한 번 움찔하고 두 인형 사이로 천천히 — 1.1배에서도 몽글 · 교수님이 다 화면 안이다(기준점 420 · 1200)
++    z = interpolate(t, [T.close, T.why], [1.06, 1.1], clamp);
++    ox = interpolate(t, [T.close, T.why], [540, 420], clamp);
++    oy = interpolate(t, [T.close, T.why], [1100, 1200], clamp);
++    jolt = 2.4 * Math.sin(t * 41) * interpolate(t, [T.close, T.close + 0.4], [1, 0], clamp);
++  } else if (t < T.rewind) {
+     z = interpolate(t, [T.why, T.rewind], [1.03, 1.1], clamp);
+     ox = 380;
+     oy = 1300;
+@@ -244,7 +244,7 @@ const Plate: React.FC<{ t: number }> = ({ t }) => {
+   } else if (t >= T.a4) z = interpolate(t, [T.a4, T.a4 + 0.1, T.a4 + 0.6], [1.06, 1.1, 1.0], clamp);
+   const shake = t >= T.freeze && t < T.frozen + 0.15 ? 3 * Math.sin(t * 73) : 0;
+   return (
+-    <AbsoluteFill style={{ transform: `translate(${shake}px, ${shake * 0.6}px) scale(${z})`, transformOrigin: `${ox}px ${oy}px` }}>
++    <AbsoluteFill style={{ transform: `translate(${shake + jolt}px, ${shake * 0.6}px) scale(${z})`, transformOrigin: `${ox}px ${oy}px` }}>
+       <Scene t={t} base={base} ice={ice} />
+       {inSun ? <Rays t={t} from={t >= T.gag ? T.gag - 1 : T.sun} /> : null}
+     </AbsoluteFill>
+diff --git a/docs/마케팅/LAB_수고하세요_mn_20261109/판본지도.json b/docs/마케팅/LAB_수고하세요_mn_20261109/판본지도.json
+index 530dbbce7f..df82d18a00 100644
+--- a/docs/마케팅/LAB_수고하세요_mn_20261109/판본지도.json
++++ b/docs/마케팅/LAB_수고하세요_mn_20261109/판본지도.json
+@@ -1,6 +1,6 @@
+ {
+   "꼴": "판본지도/1",
+-  "_설명": "판본 글(remotion/src/film/판본/<KEY>.json)을 검수 도구의 판본글/1(게시/판본/<KEY>/글.json)로 잇는 지도 — tools/lib/판본잇기.js 머리말. 자리 값은 remotion/src/film/Film.tsx에서 옮겼다(1080×1920, 상자 x · y는 글 상자 왼쪽 위). 쪽빛 띠는 왼쪽 60 · 폭 960px · 안 여백 30(위 24)이라 글 폭 900px이고, y는 띠 안 글 줄의 위 끝에서 반행간만큼 내린 값이다(몽골판 크기 · 줄 높이 1.18로 셈). 말풍선 읽는 법 · 뜻 줄은 말풍선 폭에서 바늘땀 안쪽 30px씩을 뺀 폭이고, y는 말풍선 안 세 줄(한글 · 읽는 법 · 뜻 줄)을 세로 가운데에 둔 셈이다. 팻말 두 줄과 끝 띠는 그 나라 글 뒤에 한글(: 수고하세요 · : 안녕히 계세요 · 안녕히 계세요!)이 같은 줄에 붙어 줄 전체가 가운데로 놓이므로 x · y를 적지 않고 한글 몫을 뺀 폭만 둔다. 팻말 위 끝은 판본 글 ruleTop(몽골 · 간체 872 · 버마어 850)이라 판본마다 다르다. 「수고해요」 말풍선은 뜻 줄(b2Mean)이 있으면 커지고, 「안녕히 계세요!!」 말풍선은 3도 기울어 튀어나오므로 그 두 말풍선의 읽는 법 · 뜻 줄도 x · y를 적지 않는다. 장면 설명은 11-18 옮기기 전 렌더(옛 m32-mn)의 프레임과 기획.md를 보고 썼다. 최종 판정은 렌더 뒤 글자 검사.",
++  "_설명": "판본 글(remotion/src/film/판본/<KEY>.json)을 검수 도구의 판본글/1(게시/판본/<KEY>/글.json)로 잇는 지도 — tools/lib/판본잇기.js 머리말. 자리 값은 remotion/src/film/Film.tsx에서 옮겼다(1080×1920, 상자 x · y는 글 상자 왼쪽 위). 쪽빛 띠는 왼쪽 60 · 폭 960px · 안 여백 30(위 24)이라 글 폭 900px이고, y는 띠 안 글 줄의 위 끝에서 반행간만큼 내린 값이다(몽골판 크기 · 줄 높이 1.18로 셈). 말풍선 읽는 법 · 뜻 줄은 말풍선 폭에서 바늘땀 안쪽 30px씩을 뺀 폭이고, y는 말풍선 안 세 줄(한글 · 읽는 법 · 뜻 줄)을 세로 가운데에 둔 셈이다. 팻말 두 줄과 끝 띠는 그 나라 글 뒤에 한글(: 수고하세요 · : 안녕히 계세요 · 안녕히 계세요!)이 같은 줄에 붙어 줄 전체가 가운데로 놓이므로 x · y를 적지 않고 한글 몫을 뺀 폭만 둔다. 팻말 위 끝은 판본 글 ruleTop(몽골 · 간체 872 · 버마어 850)이라 판본마다 다르다. 「수고해요」 말풍선은 뜻 줄(b2Mean)이 있으면 커지고, 「안녕히 계세요!!」 말풍선은 3도 기울어 튀어나오므로 그 두 말풍선의 읽는 법 · 뜻 줄도 x · y를 적지 않는다. 장면 설명은 11-18 옮기기 전 렌더(옛 m32-mn)의 프레임과 기획.md를 보고 썼다. 최종 판정은 렌더 뒤 글자 검사. 11-26 원본 고침: literal 장면(3.85~5.5초)은 교수님 얼굴 클로즈업을 빼고 언 방 전체로 바꿨다(../LAB_하루두편_설계_20261110/원본고칠것.md).",
+   "틀": "이야기",
+   "판본폴더": "remotion/src/film/판본",
+   "낼곳": "게시/판본",
+@@ -57,7 +57,7 @@
+       "상자": { "폭": 680, "굵기": 800, "줄높이": 1.16, "판본줄높이": true, "최대줄": 1, "줄바꿈": "nowrap", "가운데": true, "x": 80, "y": 877 } },
+ 
+     { "id": "literal", "칸": "뜻", "값": "literal", "크기": "literalSize", "원문": "수고하세요 = 「일 잘하세요!」", "초": [5.5, 8.7],
+-      "장면": "3.25~5.5초에는 글 없이 언 방을 보여 준다 — 3.85초부터 얼어붙은 교수님 얼굴을 가까이(굳은 미소 · 성에 낀 안경 · 펜을 든 채, 땡 소리). 5.5초에 다시 넓게, 꽁꽁 언 연구실에서 얼음 몽글이 부들부들 떨고 입김이 나고 눈송이가 내린다(바람 · 떨림 소리). 위 쪽빛 띠 첫 줄에 한글 수고하세요와 그 낱말 그대로의 뜻",
++      "장면": "3.25~5.5초에는 글 없이 언 방 전체를 보여 준다 — 3.85초 땡 소리에 화면이 한 번 움찔하고, 몽글과 교수님이 함께 보이는 채로 천천히 조금 다가간다(교수님은 굳은 미소 · 성에 낀 안경 · 펜을 든 채 의자에 앉아 있고, 얼굴을 가까이 잡지 않는다). 5.5초에 다시 넓게, 꽁꽁 언 연구실에서 얼음 몽글이 부들부들 떨고 입김이 나고 눈송이가 내린다(바람 · 떨림 소리). 위 쪽빛 띠 첫 줄에 한글 수고하세요와 그 낱말 그대로의 뜻",
+       "상자": { "폭": 900, "굵기": 800, "줄높이": 1.18, "판본줄높이": true, "최대줄": 2, "가운데": true, "x": 90, "y": 291 } },
+     { "id": "literalNote", "칸": "진행", "값": "literalNote", "크기": "literalSize", "원문": "윗사람께 말하면 어색하게 들릴 때가 있어요", "초": [5.5, 8.7],
+       "장면": "같은 띠 둘째 줄(첫 줄 바로 아래) — 왜 방이 얼었는지 푸는 한 줄",
