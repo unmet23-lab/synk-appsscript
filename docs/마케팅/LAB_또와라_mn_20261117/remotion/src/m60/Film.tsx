@@ -1,9 +1,13 @@
 // LAB 몽골 M60 「-어라 · 또 와라」(11-17 07시 회차) — 판 일곱 장(판/_판짜기.py가 1080×1920으로 짠 판), 칸마다 밀어 들어가는 고정 카메라.
 // 화면 글: 말은 말하는 이의 머리 위 말풍선(한글 + 키릴 읽기 + 몽골 뜻 세 줄), 위 빈 벽 자리에 「-어라」 카드와 「돌아가는 날」 한 줄.
+// 11-26 판본 틀: 그 나라 글(말풍선의 읽는 법 · 뜻, 이름표의 「= 뜻」 줄, 공항 한 줄)과 글꼴 · 글자 크기 · 줄 높이 하한은 판본 꾸러미 p(./판본/<KEY>.json — ./판본.ts)에서 받는다.
+// 그림 · 한국어 · 소리 · 박자 · 카메라는 그대로다(옛 data.ts MN은 판본 MN.json으로 옮겼다). 말풍선 · 이름표 글은 원래대로 한 줄(nowrap)이고,
+// 공항 한 줄만 줄 바꿈 문자와 폭 760px 자동 줄 바꿈을 받는다(pre-line · maxWidth — 판본 지도 상자와 같은 셈, 몽골판 두 줄은 760px보다 좁아 화면이 같다).
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { EN, KO } from '../lib/fonts';
-import { CELLS, FPS, MN, SFX, SHAKES, T, TOTAL, VO } from './data';
+import { KO } from '../lib/fonts';
+import { CELLS, FPS, KO_LINES, KO_TEXT, SFX, SHAKES, T, TOTAL, VO } from './data';
+import { LocPack } from './판본';
 
 const fr = (sec: number) => Math.round(sec * FPS);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -26,35 +30,35 @@ const cellAt = (sec: number) => {
 
 const pop = (frame: number, at: number) => interpolate(frame, [fr(at), fr(at) + 6], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.7)) });
 
-type Line = { ko: string; cyr: string; mn: string };
 // 말풍선 — 말하는 이 머리 위, 꼬리가 그 머리를 가리킨다(tail = 꼬리 자리 비율). 키릴 읽기 줄은 52px(미학 맹검 11-17 카본 「휴대폰에서 뭉개질 만큼 작은 발음 줄」로 46px에서 키움)
-const Bubble: React.FC<{ at: number; to: number; line: Line; x: number; bottom: number; tail?: number; koSize?: number; soft?: boolean }> = ({ at, to, line, x, bottom, tail = 0.5, koSize = 92, soft }) => {
+// k = 말풍선 차례(data.ts KO_LINES · 판본 reads · means). 한글 줄은 정본, 읽는 법 · 뜻은 판본 글(글꼴 · 크기 · 줄 높이 하한까지)
+const Bubble: React.FC<{ p: LocPack; k: number; at: number; to: number; x: number; bottom: number; tail?: number; koSize?: number; soft?: boolean }> = ({ p, k, at, to, x, bottom, tail = 0.5, koSize = 92, soft }) => {
   const frame = useCurrentFrame();
   if (frame < fr(at) || frame >= fr(to)) return null;
-  const p = pop(frame, at);
+  const a = pop(frame, at);
   return (
-    <div style={{ position: 'absolute', left: x, top: bottom, transform: `translate(-${tail * 100}%, -100%) scale(${0.85 + 0.15 * p})`, transformOrigin: `${tail * 100}% 100%`, opacity: Math.min(1, p * 1.5) }}>
+    <div style={{ position: 'absolute', left: x, top: bottom, transform: `translate(-${tail * 100}%, -100%) scale(${0.85 + 0.15 * a})`, transformOrigin: `${tail * 100}% 100%`, opacity: Math.min(1, a * 1.5) }}>
       <div style={{ position: 'relative', background: PAPER, borderRadius: soft ? 46 : 34, padding: '16px 34px 18px', textAlign: 'center', boxShadow: '0 10px 26px rgba(0,0,0,0.35)', border: `5px solid ${INK}` }}>
-        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: koSize, color: INK, lineHeight: 1.08, whiteSpace: 'nowrap' }}>{line.ko}</div>
-        <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 52, color: GREY, lineHeight: 1.15, marginTop: 4, whiteSpace: 'nowrap' }}>{line.cyr}</div>
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 52, color: WARM, lineHeight: 1.15, marginTop: 2, whiteSpace: 'nowrap' }}>{line.mn}</div>
+        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: koSize, color: INK, lineHeight: 1.08, whiteSpace: 'nowrap' }}>{KO_LINES[k]}</div>
+        <div style={{ fontFamily: p.font, fontWeight: 600, fontSize: p.readSizes[k], color: GREY, lineHeight: Math.max(1.15, p.lineH), marginTop: 4, whiteSpace: 'nowrap' }}>{p.reads[k]}</div>
+        <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.meanSizes[k], color: WARM, lineHeight: Math.max(1.15, p.lineH), marginTop: 2, whiteSpace: 'nowrap' }}>{p.means[k]}</div>
         <div style={{ position: 'absolute', left: `${tail * 100}%`, bottom: -26, width: 0, height: 0, transform: 'translateX(-50%)', borderLeft: '20px solid transparent', borderRight: '20px solid transparent', borderTop: `26px solid ${INK}` }} />
       </div>
     </div>
   );
 };
 
-// 이름표 — 「-어라 · -아라 = -аарай」와 이 편의 다섯 말(검은 바탕 · 꼬리가 말하는 할머니를 가리킨다)
-const Label: React.FC<{ at: number; to: number; x: number; bottom: number; tail?: number }> = ({ at, to, x, bottom, tail = 0.5 }) => {
+// 이름표 — 「-어라 = -аарай」와 이 편의 네 말(검은 바탕 · 꼬리가 말하는 할머니를 가리킨다). 한국어 두 줄은 정본, 「= 뜻」 줄은 판본 글
+const Label: React.FC<{ p: LocPack; at: number; to: number; x: number; bottom: number; tail?: number }> = ({ p, at, to, x, bottom, tail = 0.5 }) => {
   const frame = useCurrentFrame();
   if (frame < fr(at) || frame >= fr(to)) return null;
-  const p = pop(frame, at);
+  const a = pop(frame, at);
   return (
-    <div style={{ position: 'absolute', left: x, top: bottom, transform: `translate(-${tail * 100}%, -100%) scale(${0.85 + 0.15 * p})`, transformOrigin: `${tail * 100}% 100%`, opacity: Math.min(1, p * 1.5) }}>
+    <div style={{ position: 'absolute', left: x, top: bottom, transform: `translate(-${tail * 100}%, -100%) scale(${0.85 + 0.15 * a})`, transformOrigin: `${tail * 100}% 100%`, opacity: Math.min(1, a * 1.5) }}>
       <div style={{ position: 'relative', background: INK, borderRadius: 30, padding: '16px 36px 18px', textAlign: 'center', boxShadow: '0 10px 26px rgba(0,0,0,0.4)' }}>
-        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 92, color: PAPER, lineHeight: 1.05, whiteSpace: 'nowrap' }}>{MN.cardBig}</div>
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 70, color: '#FFB27A', lineHeight: 1.1, marginTop: 4, whiteSpace: 'nowrap' }}>= -аарай</div>
-        <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 46, color: '#D9D0E0', lineHeight: 1.2, marginTop: 8, whiteSpace: 'nowrap' }}>{MN.cardEx}</div>
+        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 92, color: PAPER, lineHeight: 1.05, whiteSpace: 'nowrap' }}>{KO_TEXT.cardBig}</div>
+        <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.cardEqSize, color: '#FFB27A', lineHeight: Math.max(1.1, p.lineH), marginTop: 4, whiteSpace: 'nowrap' }}>{p.cardEq}</div>
+        <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 46, color: '#D9D0E0', lineHeight: 1.2, marginTop: 8, whiteSpace: 'nowrap' }}>{KO_TEXT.cardEx}</div>
         <div style={{ position: 'absolute', left: `${tail * 100}%`, bottom: -24, width: 0, height: 0, transform: 'translateX(-50%)', borderLeft: '20px solid transparent', borderRight: '20px solid transparent', borderTop: `26px solid ${INK}` }} />
       </div>
     </div>
@@ -95,7 +99,8 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC<{ bare?: boolean }> = ({ bare }) => {
+// p = 판본 글(./판본/<KEY>.json). 장면 심사용(bare)에는 위 글 · 카드를 빼고 그림 · 말풍선 · 소리만 남긴다
+export const Film: React.FC<{ p: LocPack; bare?: boolean }> = ({ p, bare }) => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
   const i = cellAt(t);
@@ -119,22 +124,22 @@ export const Film: React.FC<{ bare?: boolean }> = ({ bare }) => {
         <Img src={staticFile(`img/${cell.img}`)} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1920 }} />
       </AbsoluteFill>
       {/* 하숙집 잔소리 셋 — 할머니 머리 위 */}
-      <Bubble at={T.h1} to={T.h1To} line={MN.h1} x={800} bottom={830} tail={0.6} />
-      <Bubble at={T.h2} to={T.h2To} line={MN.h2} x={780} bottom={820} tail={0.6} />
-      <Bubble at={T.h3} to={T.h3To} line={MN.h3} x={720} bottom={800} tail={0.62} />
+      <Bubble p={p} k={0} at={T.h1} to={T.h1To} x={800} bottom={830} tail={0.6} />
+      <Bubble p={p} k={1} at={T.h2} to={T.h2To} x={780} bottom={820} tail={0.6} />
+      <Bubble p={p} k={2} at={T.h3} to={T.h3To} x={720} bottom={800} tail={0.62} />
       {/* 「-어라」 이름표(원본 7.7초 팻말 자리) — 장면을 덮지 않고 할머니 머리 위에 단다(이해 시험 v2 「카드가 이야기를 끊음」 · haiku 「지난 편 뜻 카드와 같은 순서」, GPT 두 번 「가라 · 와라와 어떻게 이어지나」) */}
-      {!bare ? <Label at={T.card} to={T.cardTo} x={560} bottom={780} tail={0.72} /> : null}
+      {!bare ? <Label p={p} at={T.card} to={T.cardTo} x={560} bottom={780} tail={0.72} /> : null}
       {/* 공항 — 돌아가는 날 한 줄 */}
       {!bare ? (
         <Card at={T.cap} to={T.capTo} top={290}>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 66, color: INK, lineHeight: 1.15, whiteSpace: 'pre' }}>{MN.cap}</div>
+          <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.capSize, color: INK, lineHeight: Math.max(1.15, p.lineH), whiteSpace: 'pre-line', maxWidth: 760 }}>{p.cap}</div>
         </Card>
       ) : null}
-      <Bubble at={T.h4} to={T.h4To} line={MN.h4} x={300} bottom={560} tail={0.35} koSize={110} />
-      <Bubble at={T.h5} to={T.h5To} line={MN.h5} x={330} bottom={760} tail={0.3} koSize={100} />
-      <Bubble at={T.h6} to={T.h6To} line={MN.h6} x={420} bottom={520} tail={0.3} soft />
-      <Bubble at={T.m1} to={T.m1To} line={MN.m1} x={800} bottom={740} tail={0.5} soft />
-      <Bubble at={T.h7} to={TOTAL + 1} line={MN.h3} x={380} bottom={700} tail={0.3} />
+      <Bubble p={p} k={3} at={T.h4} to={T.h4To} x={300} bottom={560} tail={0.35} koSize={110} />
+      <Bubble p={p} k={4} at={T.h5} to={T.h5To} x={330} bottom={760} tail={0.3} koSize={100} />
+      <Bubble p={p} k={5} at={T.h6} to={T.h6To} x={420} bottom={520} tail={0.3} soft />
+      <Bubble p={p} k={6} at={T.m1} to={T.m1To} x={800} bottom={740} tail={0.5} soft />
+      <Bubble p={p} k={7} at={T.h7} to={TOTAL + 1} x={380} bottom={700} tail={0.3} />
       <Sound />
     </AbsoluteFill>
   );

@@ -1,0 +1,37 @@
+{
+  "판본": "MN",
+  "컴포지션": "m60-MN",
+  "언어": "mn",
+  "글": "docs/마케팅/LAB_또와라_mn_20261117/remotion/src/m60/판본/MN.json",
+  "글sha256": "3a4890a6fdfe8f00dd51def295f07a1a8d4da6ccf61a82637de9b15dec13b9bf",
+  "시각": "2026-11-26T15:27:37.235Z",
+  "영상": "docs/마케팅/LAB_또와라_mn_20261117/게시/판본/MN/video.mp4",
+  "표지": "docs/마케팅/LAB_또와라_mn_20261117/게시/판본/MN/cover.png",
+  "표지초": 13.6,
+  "돌림판본": {
+    "언어": "mn",
+    "파일": "게시/판본/MN/video.mp4",
+    "표지": "게시/판본/MN/cover.png",
+    "글": "게시/판본/MN/글.json",
+    "원고": {
+      "facebook": "게시/01-ig-fb-mn/원고.json",
+      "instagram": "게시/01-ig-fb-mn/원고.json",
+      "tiktok": "게시/01-ig-fb-mn/원고.json",
+      "youtube": "게시/02-youtube-mn/원고.json"
+    }
+  },
+  "음량": {
+    "LUFS": -14.6,
+    "봉우리dBFS": -1.4,
+    "리미터": 0.84
+  },
+  "길이초": 20.608,
+  "프레임": 618,
+  "영상Mbps": 11.07,
+  "소리kbps": 325,
+  "영상sha256": "aabecc04f9b0596a44b90ef5cbc8a7ede7e900cc06a6f3d20f6f7d39277ae56c",
+  "자산sha256": "2fd5926630bf681ac44e5ff0160e7b2ac56bc40be3e00530faf0ade7246d7528",
+  "자산수": 53,
+  "구운때": "2026-11-26T15:27:36.096Z",
+  "표지프레임": 408
+}
