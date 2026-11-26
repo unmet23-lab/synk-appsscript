@@ -52,20 +52,20 @@
     "sha256": "58cd7a8a6a780a0a3a7a8d864acadc37d82b7decbc1bd902e3d119d65b06e1a3"
   },
   "reserve/clips/en/special.mp4": {
-    "bytes": 377640,
-    "sha256": "0595e06a42fda3a52e7f91ba663dd292c31626e649ca03933939bfd18438bf1a"
+    "bytes": 372933,
+    "sha256": "aad853944c355697b888fd9fcacafbb6418e49ac7789fd6b7ea064bf2bb5bdc2"
   },
   "reserve/clips/en/special.webp": {
-    "bytes": 14780,
-    "sha256": "52a6f332c11281eec7a66574675c289db08e0a996a3afc4528ce8dc060e034dc"
+    "bytes": 21408,
+    "sha256": "dee84187f0416563a76b10be4f36f5316610c7df67f193a222887c7fb090cdbd"
   },
   "reserve/clips/en/talk.mp4": {
-    "bytes": 441962,
-    "sha256": "3ca0b1a97f6d7773223fbd6b12f33a552e37d9aea2324ec8fb8276638c0d2ce4"
+    "bytes": 479963,
+    "sha256": "7b5aa3227b2dacbe4dd5ad827935f2bec358e74d18eec4a03ef8e6a63a6c8a01"
   },
   "reserve/clips/en/talk.webp": {
-    "bytes": 28696,
-    "sha256": "4aae6b90cb82197fbf596628325fbef113dba7f52d0df1312b09051e8cca9f9c"
+    "bytes": 33088,
+    "sha256": "47b028d9e4fbd3f8335577e1056e38300e577db56c5ee75b939dd95007d2b616"
   },
   "reserve/clips/en/trace-actor.mp4": {
     "bytes": 108679,
@@ -116,20 +116,20 @@
     "sha256": "5b9d53b9ca6ca5b79b2897fa83085e6a34f72d34f481b64bc45776e8f357166e"
   },
   "reserve/clips/ko/special.mp4": {
-    "bytes": 377640,
-    "sha256": "0595e06a42fda3a52e7f91ba663dd292c31626e649ca03933939bfd18438bf1a"
+    "bytes": 372933,
+    "sha256": "aad853944c355697b888fd9fcacafbb6418e49ac7789fd6b7ea064bf2bb5bdc2"
   },
   "reserve/clips/ko/special.webp": {
-    "bytes": 14780,
-    "sha256": "52a6f332c11281eec7a66574675c289db08e0a996a3afc4528ce8dc060e034dc"
+    "bytes": 21408,
+    "sha256": "dee84187f0416563a76b10be4f36f5316610c7df67f193a222887c7fb090cdbd"
   },
   "reserve/clips/ko/talk.mp4": {
-    "bytes": 444890,
-    "sha256": "c968ccfe45b6dff4a81e84985a2b5751249982fd1035e6d7612afb76523feb63"
+    "bytes": 526893,
+    "sha256": "c9ae21eb08f6dc4ddb15c9e93e092d2be2fee14783c82f26ff65ee5f0bc4e494"
   },
   "reserve/clips/ko/talk.webp": {
-    "bytes": 27982,
-    "sha256": "45ea840f6455b02e9253f200f870c7f864b0b8ccf1d5b6a0cd70993c9d0c2b76"
+    "bytes": 31468,
+    "sha256": "a137cdeea73cb2b576b974ce1527e95ac985fe5ca5dedf04955a331cfb821e47"
   },
   "reserve/clips/ko/trace-actor.mp4": {
     "bytes": 112397,
@@ -180,20 +180,20 @@
     "sha256": "1abca53c10f5e02122cc0fc4060d47c85901e616e2faf5c3e73a4085fe5d9678"
   },
   "reserve/clips/mn/special.mp4": {
-    "bytes": 377640,
-    "sha256": "0595e06a42fda3a52e7f91ba663dd292c31626e649ca03933939bfd18438bf1a"
+    "bytes": 372933,
+    "sha256": "aad853944c355697b888fd9fcacafbb6418e49ac7789fd6b7ea064bf2bb5bdc2"
   },
   "reserve/clips/mn/special.webp": {
-    "bytes": 14780,
-    "sha256": "52a6f332c11281eec7a66574675c289db08e0a996a3afc4528ce8dc060e034dc"
+    "bytes": 21408,
+    "sha256": "dee84187f0416563a76b10be4f36f5316610c7df67f193a222887c7fb090cdbd"
   },
   "reserve/clips/mn/talk.mp4": {
-    "bytes": 403385,
-    "sha256": "4d7efed28ed84b107c320f92c236145ef1369465ff2d4455bd0acb289c03760d"
+    "bytes": 479318,
+    "sha256": "f000a9cf58badc5b33ba25643160568e05ddb0cadea9ca30dff15120098be8b3"
   },
   "reserve/clips/mn/talk.webp": {
-    "bytes": 10862,
-    "sha256": "a7eb770b31de7775c8a5cb167c7ff662df0f8b0d7844e6aa38dbd4ff5badbcac"
+    "bytes": 33876,
+    "sha256": "59b2d4aed45d143c24484f0e6d03191bc03e514a91920c63e73435514782d1f7"
   },
   "reserve/clips/mn/trace-actor.mp4": {
     "bytes": 112561,
