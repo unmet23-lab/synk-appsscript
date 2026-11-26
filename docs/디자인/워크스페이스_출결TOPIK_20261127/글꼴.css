@@ -1,0 +1,18 @@
+/* 승인 서체. 파일은 워크스페이스 로비 · PULSE 고객 앱 공개본의 것을 그대로 부른다.
+   역할: 반 이름 · 큰 날짜 = Noto Serif KR 300(로비 WS Serif) / 본문 · 단추 · 학생 이름 = SUIT /
+   숫자 · 날짜 · 회차 = Inter Tight / 학생 모국어(키릴) = Inter Tight / 키 안내 = DM Mono */
+@font-face{font-family:'SUIT';src:url('../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/SUIT.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'WS Serif';src:url('../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/NotoSerifKR-300.woff2') format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'WS Display';src:url('../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/NotoSerifDisplay-Light-latin.woff2') format('woff2');font-weight:300;font-display:swap;unicode-range:U+0000-00FF}
+@font-face{font-family:'Inter Tight';src:url('../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/InterTight.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'DM Mono';src:url('../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/DMMono.ttf') format('truetype');font-weight:400 500;font-display:swap}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+input,select{border:0;background:none;outline:0}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
