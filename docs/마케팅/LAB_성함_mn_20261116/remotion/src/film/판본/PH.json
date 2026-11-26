@@ -181,8 +181,8 @@
   ],
   "means": [
     "Pangalan mo?",
-    "Ano po'ng pangalan mo?",
-    "Ano po ang pangalan ninyo?",
+    "Pangalan mo po?",
+    "Sa nakatatanda:\nAno po ang pangalan ninyo?",
     "Ako si Kim Cheolsu.",
     "Heto po ang kape n'yo~",
     "Pero…",
@@ -195,7 +195,7 @@
   "meanSizes": [
     56,
     56,
-    48,
+    44,
     56,
     56,
     66,
@@ -207,16 +207,16 @@
   ],
   "tags": [
     "Sa kaibigan",
-    "Magalang",
+    "Sa di kakilala",
     "",
     "",
     "",
-    "Pa-close…",
-    "Pangkaibigan",
+    "Aasarin ko!",
+    "✗ Pambarkada",
     "",
     "",
     "",
-    "✓ -nim = galang (Sir)"
+    "✓ Pangalan+nim = galang"
   ],
   "endCard": "",
   "endSize": 44,
@@ -232,8 +232,8 @@
     "scene": "할아버지(Lolo)의 이름은\n어떻게 물을까?",
     "level": "존중 {n}",
     "means.0": "네 이름?",
-    "means.1": "이름이 뭐예요(po)?",
-    "means.2": "성함이 어떻게 되세요(po + 높임 ninyo)?",
+    "means.1": "네 이름이요(po)?",
+    "means.2": "어른께:\n성함이 어떻게 되세요?(po + 높임 ninyo)",
     "means.3": "나는 김철수예요.",
     "means.4": "여기 커피 나왔어요(po)~",
     "means.5": "근데…",
@@ -243,12 +243,12 @@
     "means.9": "김철수 씨(Sir)?",
     "means.10": "그래~",
     "tags.0": "친구에게",
-    "tags.1": "공손한 말",
+    "tags.1": "잘 모르는 사람에게",
     "tags.2": "👴 어른께: 이름 → 성함 ✓",
-    "tags.5": "친한 척하려고…",
-    "tags.6": "친구에게 쓰는 말",
+    "tags.5": "놀려 줘야지!",
+    "tags.6": "✗ 친구끼리 쓰는 말",
     "tags.8": "✗ po(높임 말끝)가 없다!",
     "tags.9": "👴 어른께: 이름 + 님 ✓",
-    "tags.10": "✓ -nim(님) = 존중(Sir 같은 높임)"
+    "tags.10": "✓ 이름 + 님(nim) = 높임"
   }
 }
