@@ -24,7 +24,7 @@
       "작업": "7303c9d4a81456f75714e44521be96f35d206b966c21ffc99bf106447c53a605",
       "지문": "16d79e211001d47721bdbf09387716f4a749f15b5f409836c7cb91571c69ecda",
       "후속": [
-        "고정 댓글은 게시 뒤 손으로(API에 고정 기능 없음)",
+        "고정 댓글 달고 고정함(11-26 23:31 KST · 예약 작업 synk-daily-threads · ego Profile 7 · 다른 세션이 둔 활성 채널 SYNK PULSE를 같은 계정 안에서 SYNK 브리핑으로 바꾸고 댓글 칸 프로필 「SYNK 브리핑」 확인 · 「@synkbrief님이 고정함」 · 글이 원고 pinnedComment와 같음 · 끝에 활성 채널 SYNK LAB으로 되돌림 · 기록 C:/Users/q1212/ego/pin-20261126-21h/pin-ylHc1r7USXg.log)",
         "유튜브 표지 그림은 서버가 못 올린다 — 첫 화면이 표지"
       ],
       "편ID": "synkbrief_프로필사진_20261121",
@@ -48,14 +48,14 @@
     },
     {
       "계정": "shift-naverblog",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-26T21:10:00+09:00",
-      "주소": "https://blog.naver.com/synkshift",
+      "주소": "https://blog.naver.com/synkshift/224487030464",
       "방법": "Aside 기본 프로필(Default, u0:aec20a23…) 예약 발행 — aside mcp 상주 실행기(mcpd.cjs · send.cjs), 11-21 nv-gen.cjs 사본(워크트리만 confident-jang으로 · ### 소제목 · 글자 수 +2/+0 허용과 글자 단위 대조를 발행 단계에 더함, --heads=rev) dry 30단계 + 빈 칸 지우기(empty-fix-del2.js) 뒤 confirm.js(창 안 「발행」 한 번) · 확인 res-list2.js · C:/Users/q1212/ego/publish-20261122-1400/blog/ (단계 파일 nv-프로필사진_20261121-dry/)",
       "확인": "건 뒤 14:42 synkshift 글쓰기 화면 「예약 발행 5건 · 저장 0」 목록 맨 위: 「셀카 한 장을 프로필 사진으로 바꾸는 ChatGPT 명령어 — 직접 보내 본 것만 정리했어요 2026.11.26 21:10」. 걸기 전 14:36 목록은 4건(11-22~11-25 각 21:10)이라 11-26 칸이 비어 있었다. 계정: MyBlog 넘김 → blog.naver.com/synkshift, 탭 제목 「SYNK 브리핑 · AI 때문에 벌어진 일」. 누르기 전 점검: 제목 원고 그대로 · 소제목 10/10(「### 제미나이로 해 보면」도 소제목 — tools/블로그붙여넣기.js의 #{2,4}와 같게) · 그림 7/7(01~07, 저장소 파일 그대로 바이트 일치) · 그림 설명 7/7 원고 그대로 · 인용 2 · 짜임 image,sectionTitle,sectionTitle,quotation,image,sectionTitle,image,sectionTitle,image,sectionTitle,quotation,image,sectionTitle,sectionTitle,image,sectionTitle,image,sectionTitle,sectionTitle,horizontalLine(원고와 같음, 끝 구분선 아래 「확인한 곳」 여섯 줄) · 본문 글이 원고와 같음(공백 뺀 3510자, 글자 단위 대조) · 남은 〔〕 0 · youtu 글자 0 · 영상 칸 0 · 빈 문단 0(그림 5가 인용 바로 뒤라 남은 빈 글 칸 하나는 Delete로 지우고 칸 수 −1 · 인용 · 그림 · 글자 수 그대로를 봄) · 카테고리 작업 기록(원고 「지난 synkbrief 활용 글과 같은 곳」 — 지난 synkbrief 글 모두 작업 기록, 「AI 활용」 칸은 블로그에 없음) · 전체공개 · 댓글 허용 · 공지 아님 · 태그 7/7(#ChatGPT #챗지피티 #프로필사진 #셀카보정 #AI프로필 #AI활용 #SYNK브리핑, 원고 순서 그대로) · 예약 2026. 11. 26 21:10(달력에서 26일 고름). 누른 뒤 탭 주소가 blog.naver.com/synkshift로 넘어갔고 목록에 한 줄만 생겼다. 예약 글이라 글 번호는 발행 시각 전까지 나오지 않는다. 후속: 쇼츠 공개 뒤 영상 칸 넣기(〔유튜브 쇼츠〕 자리 — 첫 문단 「…명령어만 적었어요.」 뒤)",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-22 14시 회차 — 띠 · 음량 · 올리기 전 검사)",
       "후속": [
-        "쇼츠 공개 뒤 영상 칸 넣기 — 첫 문단 「…명령어만 적었어요.」 뒤(11-22 14시 회차는 쇼츠 칸을 빼고 걸었다)"
+        "쇼츠 영상 칸 넣고 수정 발행함(11-26 23:14 KST · 예약 작업 synk-daily-threads · Aside 기본 프로필 u0 · 첫 문단 「…명령어만 적었어요.」 뒤에 ylHc1r7USXg · dry 뒤 go · 발행 창 카테고리 작업 기록 · 전체공개 · 태그 7 그대로 · 로그인 없이 공개 글 영상 칸 1 · 남은 〔〕 0 · 소제목 10 · 그림 7 · 인용 2 · 제목 그대로 · C:/Users/q1212/aside/shorts-slot-20261126-21h/)"
       ]
     }
   ]

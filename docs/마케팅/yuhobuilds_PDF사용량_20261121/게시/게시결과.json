@@ -24,7 +24,7 @@
       "작업": "eca67759a010843861d1e7bdf26447ecf3fa8ae7e17027f3e9e4c1898089f351",
       "지문": "885b9382d2c36eb4494e63af1e07b7b3f4e724c8bd9848bb9b0c85a12fca12d0",
       "후속": [
-        "고정 댓글은 게시 뒤 손으로(API에 고정 기능 없음)"
+        "고정 댓글 달고 고정함(11-26 23:33 KST · 예약 작업 synk-daily-threads · ego Profile 7 · 활성 채널을 같은 계정 안에서 「유호 · AI와 회사 만들기」로 바꾸고 댓글 칸 프로필 확인 · 「@yuhobuilds님이 고정함」 · 글이 원고 pinnedComment와 같음 · 끝에 활성 채널 SYNK LAB으로 되돌림 · 기록 C:/Users/q1212/ego/pin-20261126-21h/pin-tGjYBEGCrsI.log)"
       ],
       "편ID": "yuhobuilds_PDF사용량_20261121",
       "원고ID": "a7c445b0-f5fe-48f4-bfe7-96bca2d46fac",
@@ -47,7 +47,7 @@
     },
     {
       "계정": "shift-tistory",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-26T21:30+09:00",
       "주소": "https://yuhobuilds.tistory.com/35",
       "방법": "Aside 기본 프로필(Default, u0:aec20a23…) — aside mcp 상주 실행기(mcpd.cjs · send.cjs) · ts-probe.js(로그인 풀림) → ts-login2.js(카카오 간편로그인 계정 줄 a.wrap_profile 한 번) → ts-open.js → res-1(겹침 · 새 글 · 제목 · 본문 · 카테고리) → ts-check(표 · 인용 · 목록 · 링크 수) → res-2(공개 · 현재 → 예약 · 달력 26일 · 21:30) → res-3(값 다시 읽고 「공개 발행」 한 번 · 글 관리 읽기). 본문은 tools/블로그붙여넣기.js --티스토리(영상 ID 없이 — 〔유튜브 쇼츠〕 줄 빠짐) · res-gen.cjs · C:/Users/q1212/ego/publish-20261123-1400/blog/",
@@ -55,7 +55,7 @@
       "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과(11-23 14시 회차 — 24장 · 음량 · 캡션 · 링크 200 · 올리기 전 검사 고칠 것 0) · 최종 확인 「작은 흠 — 등록 가능」",
       "기록시각": "2026-11-23T06:20:48.176Z",
       "후속": [
-        "쇼츠 공개 뒤 영상 칸 넣기(〔유튜브 쇼츠〕 문단은 빼고 걸었다 — 11-26 21:38 손질 작업)"
+        "쇼츠 영상 칸 넣고 수정 발행함(11-26 23:15 KST · 예약 작업 synk-daily-threads · Aside 기본 프로필 Default, 로그인 유지 중이라 다시 로그인 안 함 · 첫 문단 「…글로 바꾸면 내용이 사라졌습니다.」 뒤, 첫 소제목 「왜 차이가 나나」 앞에 tGjYBEGCrsI · dry 뒤 go · 본문 글 그대로 · 공개 · 예약 아님 · 카테고리 AI 사용법 · 로그인 없이 /35 embed 1 · 남은 〔〕 0 · 제목 그대로 · C:/Users/q1212/aside/shorts-slot-20261126-21h/)"
       ]
     },
     {
