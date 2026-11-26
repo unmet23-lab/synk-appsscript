@@ -155,6 +155,7 @@ ode_modules`로 끊고 공용 `node_modules`가 남았는지 본 뒤, 커밋이 
 - **원인:** 엔진은 제 `package.json`(tar-stream 3.2.2)과 제 `node_modules`를 쓴다. `예약사본.js 들기`는 뿌리 `node_modules`만 공용 작업본에 잇고, 엔진의 `node_modules`는 잇지 않는다. 그래서 사본에서만 모듈을 못 찾는다.
 - **고침:** 시험을 건너뛰지 않고 PowerShell `New-Item -ItemType Junction`으로 사본의 `experiences/solo-backup-rust/engine/node_modules`를 공용 작업본의 같은 폴더에 이었다. `--시험건너뜀`은 예약 회차의 자동 판정기가 막았다.
 - **다시 확인:** 이은 뒤 `node --test experiences/solo-backup-rust/engine/tests/engine-select.test.cjs`가 13/13이고, 같은 올리기가 멈추지 않고 올라갔다. `들기`가 이 연결도 만들게 고치면 이 절은 지운다.
+- 11-26 덧붙임(Claude): 데스크톱 앱의 세션 워크트리(D:)에서도 같았다. 관련 시험 `mass-hold` · `runonce`가 같은 까닭으로 깨져 같은 junction으로 잇고 올렸다(`7d9495ec0`). 올린 뒤에는 [junction 절](#junction이-든-워크트리를-통째로-지우면-공용-node_modules가-지워질-수-있다)대로 링크만 끊었다.
 
 ### 공용 `.git/config`에 `core.sparseCheckout=true`가 들어가면, sparse가 아닌 워크트리의 바로올리기가 「가볍게로 뺀 자리의 바뀐 파일을 꺼내지 못했다」로 멈춘다 (2026-11-25 Claude)
 - 증상: 11-25 10시 앱 회차 사본(D: 워크트리)에서 `바로올리기 --모두`가 「가볍게로 뺀 자리의 바뀐 파일 58개를 꺼내지 못했다 — fatal: unable to load existing sparse-checkout patterns」로 멈췄다. 같은 사본에서 07시대 올리기는 됐다.
