@@ -13,10 +13,11 @@
 
 /* 짜임: 솔리오 첫 팀 고르기 7판(무대 하나 + 문장 하나)의 검정 방을 그대로 잇는다.
    쓰기는 왼쪽 흰 종이가 무대다. 답을 넣을 때마다 그 글이 종이의 그 장 자리로 옮겨 앉는다.
-   심사는 발표자 하나를 뒷모습의 심사위원 셋이 보는 장면이 무대이고, 오른쪽 채점표 칸에 점수가 들어온다.
-   글자: 계획서 종이 안의 글은 명조(손님의 문서), 솔리오와 직원의 말은 SUIT, 점수와 장 번호는 DM Mono.
-   색: 검정은 방, 흰 종이와 먹은 손님의 계획서, 청금석은 심사위원이 짚은 곳(가장 약한 항목),
-   버터는 의견이 갈린 곳, 메도우는 정리된 것(쓴 장, 고친 곳, 오른 점수), 흰 알약은 그 순간 먼저 할 일 하나. */
+   심사는 발표자 하나를 뒷모습의 심사위원 셋이 보는 장면이 무대이고, 오른쪽 채점표 칸에 ○ △ ✕ 표시가 들어온다.
+   점수 대신 세 단계 표시와 한마디를 준다(11-27 유호님 「점수보다 … 간략하게 하고 한마디 얹어서 도움되는 피드백」).
+   글자: 계획서 종이 안의 글은 명조(손님의 문서), 솔리오와 직원의 말과 표시 수는 SUIT, 장 번호는 DM Mono.
+   색: 검정은 방, 흰 종이와 먹은 손님의 계획서. 메도우는 ○(갖춘 것, 쓴 장, 고친 곳), 버터는 △(보완할 것),
+   청금석은 ✕(빠진 것, 가장 약한 항목). 흰 알약은 그 순간 먼저 할 일 하나. */
 :root{
   color-scheme:dark;
   --void:#000;
@@ -225,20 +226,37 @@ body.narrow #stage{--sw:420px;outline:1px solid var(--hair)}
 .rb b{display:block;font:600 15px/1.3 var(--sans)}
 .rb small{display:block;margin-top:3px;font:400 12.5px/1.4 var(--sans);color:var(--dim)}
 .rb .anch{display:none;margin-top:8px;font:400 12.5px/1.6 var(--sans);color:var(--soft)}
-.rb .anch .mono{display:inline-block;width:2.2em;color:var(--dim)}
+.rb .anch div{display:flex;align-items:flex-start;gap:9px}
+.rb .anch .mk{width:13px;height:13px;margin-top:.3em}
 .rubric.anchors .rb .anch{display:block}
-.sl{height:34px;display:grid;place-items:center;border:1px solid transparent;border-radius:8px;font:400 15px/1 var(--mono);color:var(--paper)}
+.sl{height:34px;display:grid;place-items:center;border:1px solid transparent;border-radius:8px}
+.sl .mk{width:19px;height:19px}
 .sl:empty::before{content:'';width:14px;height:1px;background:var(--hair-strong)}
 .sl.in{border-color:rgba(243,241,236,.5);animation:pop .42s cubic-bezier(.2,1.5,.4,1) both}
-.sl.up{border-color:var(--meadow);color:var(--meadow-soft)}
+.sl.up{border-color:var(--meadow)}
 @keyframes pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+
+/* 표시: ○ 갖춤 메도우 · △ 보완 버터 · ✕ 빠짐 청금석. 색은 표시 한 가지에만 쓴다 */
+.mk{display:inline-block;flex:none;width:1em;height:1em;stroke:currentColor;vertical-align:-.13em}
+.mk-o{color:var(--meadow)}
+.mk-t{color:var(--butter)}
+.mk-x{color:var(--lapis-soft)}
+.tally{display:inline-flex;align-items:center;gap:.75em}
+.tl{display:inline-flex;align-items:center;gap:.28em}
+.tl b{font:500 1em/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--paper)}
+.chg{font-family:var(--sans);font-variant-numeric:tabular-nums}
+.mks{display:inline-flex;align-items:center;gap:3px}
+.mks .mk{width:13px;height:13px}
 
 /* 결과 */
 .res-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(22px,4cqw,64px);align-items:end;margin-top:clamp(20px,4vh,46px)}
 .total{display:flex;flex-direction:column;gap:8px}
-.total-n{display:flex;align-items:baseline;gap:12px;font:200 clamp(76px,8.4cqw,120px)/.9 var(--sans);letter-spacing:-.035em;font-variant-numeric:tabular-nums}
-.total-n small{font:400 .2em/1 var(--mono);letter-spacing:0;color:var(--dim)}
-.total-d{font:400 15px/1 var(--mono);color:var(--meadow-soft)}
+.total-n{font-size:clamp(38px,4.4cqw,60px);line-height:1}
+.total-n .tally{gap:.62em}
+.total-n .tl{display:grid;grid-template-columns:auto auto;align-items:center;gap:.16em .2em}
+.total-n .tl b{font-weight:300;letter-spacing:-.02em}
+.total-n .tl small{grid-column:1/-1;font:500 12.5px/1.2 var(--sans);letter-spacing:.04em;color:var(--dim)}
+.total-d{font:500 15px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--meadow-soft)}
 .total .lab{font-size:12.5px}
 .fine{margin:14px 0 0;font:400 12.5px/1.5 var(--sans);color:var(--dim)}
 .res{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);gap:clamp(26px,4.4cqw,72px);margin-top:clamp(26px,4vh,46px);align-items:start}
@@ -259,22 +277,19 @@ tr.open .crit .chev{transform:rotate(90deg)}
 .tag{display:inline-flex;align-items:center;gap:6px;font:500 12px/1.2 var(--sans)}
 .tag::before{content:'';width:10px;height:2px;background:currentColor}
 .tag.weak{color:var(--lapis-soft)}
-.tag.split{color:var(--butter)}
+.tag.split{color:var(--soft)}
 .tag.fixed{color:var(--meadow-soft)}
 tr.weak .crit b{color:var(--lapis-soft)}
-.d{display:inline-block;margin-left:3px;font:400 10.5px/1 var(--mono);color:var(--meadow-soft);vertical-align:super}
-.avg{display:flex;align-items:center;gap:10px;justify-content:flex-end}
-.avg .mono{font-size:15px;min-width:2.2em;text-align:right}
-.avg i{display:block;width:72px;height:10px;background:var(--hair);position:relative}
-.avg i::after{content:'';position:absolute;inset:0 auto 0 0;width:var(--w);background:rgba(243,241,236,.55);transition:width .7s var(--ease)}
-tr.weak .avg i::after{background:var(--lapis-soft)}
-tr.weak .avg .mono{color:var(--lapis-soft)}
+.cell{display:inline-grid;place-items:center;width:36px;height:36px;border:1px solid transparent;border-radius:8px}
+.cell .mk{width:19px;height:19px}
+.cell.up{border-color:var(--meadow)}
 tr.more td{padding:4px 0 18px;text-align:left;font-family:var(--sans)}
 .why{display:grid;grid-template-columns:86px 26px minmax(0,1fr);gap:6px 10px;align-items:start;padding:9px 0}
 .why + .why{border-top:1px dashed var(--hair)}
 .why .who{font:600 13px/1.4 var(--sans)}
 .why .who small{display:block;font:400 11.5px/1.3 var(--sans);color:var(--dim)}
-.why .pt{font:400 15px/1.3 var(--mono)}
+.why .pt{padding-top:1px}
+.why .pt .mk{width:18px;height:18px}
 .why p{margin:0;font:400 14px/1.55 var(--sans);color:rgba(243,241,236,.9)}
 .qs{display:flex;width:fit-content;max-width:100%;align-items:baseline;gap:10px;margin-top:8px;padding:2px 0 2px 12px;border-left:2px solid rgba(243,241,236,.5);color:rgba(243,241,236,.92);font:400 14.5px/1.6 var(--serif)}
 .res-acts{display:flex;align-items:center;flex-wrap:wrap;gap:12px 22px;margin-top:18px}
@@ -286,7 +301,7 @@ tr.more td{padding:4px 0 18px;text-align:left;font-family:var(--sans)}
 .verdict .who{font:600 15px/1.3 var(--sans)}
 .verdict .who .mono{font-size:11px;font-weight:400;letter-spacing:.12em;color:var(--dim);margin-right:8px}
 .verdict .who small{font-size:12.5px;font-weight:400;color:var(--dim);margin-left:8px}
-.verdict .g{grid-row:span 2;align-self:center;font:400 22px/1 var(--mono)}
+.verdict .g{grid-row:span 2;align-self:center;font-size:15px}
 .verdict p{margin:0;font:400 14.5px/1.55 var(--sans);color:rgba(243,241,236,.9)}
 
 /* 최종 솔루션: 먼저 고칠 셋 */
@@ -324,7 +339,7 @@ tr.more td{padding:4px 0 18px;text-align:left;font-family:var(--sans)}
 .endlist li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px 0;border-bottom:1px solid var(--hair)}
 .endlist b{font:500 15px/1.4 var(--sans)}
 .endlist small{display:block;font:400 12.5px/1.4 var(--sans);color:var(--dim)}
-.endlist .mono{font-size:15px;color:var(--meadow-soft)}
+.endlist .mono,.endlist .chg{font-size:15px;color:var(--meadow-soft)}
 
 /* ── 마스코트: 솔리오의 검은 구 직원. 몸은 거의 움직이지 않고 눈과 빛으로만 표정을 낸다 ── */
 /* 구 몸은 블렌더로 구운 그림(그림/무대)이고, 눈만 그 위에 얹어 표정을 낸다 */
@@ -402,17 +417,21 @@ tr.more td{padding:4px 0 18px;text-align:left;font-family:var(--sans)}
 @keyframes dot{40%{opacity:1}}
 .pd{position:absolute;inset:0;opacity:0;transform:translateY(4%);transition:opacity .25s ease,transform .55s cubic-bezier(.2,1.5,.4,1)}
 .pd.on{opacity:1;transform:none}
-.pd-n{position:absolute;aspect-ratio:1;mix-blend-mode:multiply;display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 clamp(13px,3.1cqw,38px)/1 var(--mono);color:var(--sheet-ink);letter-spacing:-.02em}
-.pd-n small{margin-top:.35em;font:600 clamp(7px,.9cqw,11px)/1 var(--sans);letter-spacing:.12em;color:#6b6a66;text-transform:uppercase}
-.pd-n .up{margin-top:.3em;font:400 clamp(8px,1cqw,13px)/1 var(--mono);color:#4f8a32}
+.pd-n{position:absolute;aspect-ratio:1;mix-blend-mode:multiply;display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 clamp(8px,1.45cqw,18px)/1 var(--mono);color:var(--sheet-ink)}
+.pd-n .tally{flex-direction:column;align-items:flex-start;gap:.22em}
+.pd-n .tl b{color:var(--sheet-ink)}
+.pd-n .mk-o{color:#4f8a32}
+.pd-n .mk-t{color:#a87d0c}
+.pd-n .mk-x{color:var(--lapis)}
+.pd-n small{margin-top:.5em;font:600 clamp(7px,.9cqw,11px)/1 var(--sans);letter-spacing:.12em;color:#6b6a66;text-transform:uppercase}
 .pd0 .pd-n{left:6.448%;top:33.36%;width:10.884%}
 .pd1 .pd-n{left:43.413%;top:33.556%;width:10.942%}
 .pd2 .pd-n{left:80.775%;top:33.757%;width:11%}
 .stot{position:absolute;left:50%;top:4%;translate:-50% 0;text-align:center;opacity:0;transform:scale(.88);transition:opacity .35s ease,transform .6s cubic-bezier(.2,1.4,.4,1)}
 .stot.on{opacity:1;transform:none}
-.stot b{display:block;font:200 clamp(34px,6.2cqw,76px)/1 var(--sans);letter-spacing:-.03em}
+.stot b{display:block;font-size:clamp(17px,3cqw,36px);line-height:1}
 .stot small{display:block;margin-top:.35em;font:400 clamp(10px,1.15cqw,13px)/1.2 var(--sans);color:var(--soft)}
-.stot .mono{color:var(--meadow-soft)}
+.stot .chg{color:var(--meadow-soft)}
 .caption{min-height:1.6em;margin:14px 0 0;font:400 15px/1.55 var(--sans);color:rgba(243,241,236,.9)}
 .caption b{font-weight:600;color:var(--paper)}
 .caption.swap{animation:swap .35s var(--ease)}
@@ -451,7 +470,9 @@ tr.more td{padding:4px 0 18px;text-align:left;font-family:var(--sans)}
   .jc b{font-size:16px}
   .sc th{padding:0 3px 10px}
   .sc td{padding:12px 3px;font-size:15px}
-  .avg i{display:none}
+  .cell{width:30px;height:30px}
+  .pd-n small{display:none}
+  .total-n{font-size:34px}
   .why{grid-template-columns:70px 22px minmax(0,1fr);gap:6px 8px}
   .guide{grid-template-columns:58px minmax(0,1fr);gap:12px}
   .stage{margin:0 -4%;border-radius:12px}
@@ -500,7 +521,7 @@ const CH = [
    ex:'1월에 30세대로 시험 배송을 하고 3월까지 300세대로 늘립니다. 보냉함과 배송 차량에 2천만 원이 필요합니다.'},
 ];
 
-/* ── 채점표: 항목마다 1점 · 3점 · 5점이 무엇인지 정해 둔다(같은 계획서에 점수가 흔들리지 않게) ── */
+/* ── 채점표: 항목마다 ✕ · △ · ○가 무엇인지 정해 둔다(같은 계획서에 표시가 흔들리지 않게). a는 ✕, △, ○ 순서 ── */
 const CRIT = [
   {id:'problem', name:'문제 인식', d:'누가 언제 얼마나 불편한지 보이는가', a:['누가 불편한지 없다','불편은 있으나 크기가 없다','누가, 언제, 얼마나 불편한지 숫자로 보인다']},
   {id:'real', name:'현실성', d:'지금의 사람, 돈, 시간으로 해낼 수 있는가', a:['할 사람과 돈이 없다','순서는 있으나 사람이나 돈 계획이 빠졌다','달마다 할 일과 사람과 돈이 맞물린다']},
@@ -523,20 +544,21 @@ const JUDGES = [
    say2:'출처가 붙었습니다. 설문 62명은 작으니, 다음 판에서는 더 넓게 물어보면 좋겠습니다.'},
 ];
 
-/* 점수와 까닭. [점수, 까닭, 장 번호(0부터), 인용]. 인용은 계획서에 그대로 있는 글만 받는다(아래 확인) */
+/* 표시와 한마디. [표시(o ○ 갖춤 · t △ 보완 · x ✕ 빠짐), 한마디, 장 번호(0부터), 인용].
+   한마디는 무엇을 하면 ○가 되는지까지 말한다. 인용은 계획서에 그대로 있는 글만 받는다(아래 확인) */
 const S = {
-  problem:{opus:[4,'누가 언제 불편한지 분명합니다. 시장 크기와 이어지면 더 좋습니다.',0,'늦게 퇴근하는 사람은 살 수 없습니다'], sol:[4,'불편한 순간이 구체적입니다.',0,'저녁 7시면 문을 닫아'], sonnet:[5,'동네 생활 문제를 숫자로 세웠습니다.',0,'하루 평균 50분을 씁니다']},
-  real:{opus:[4,'반찬은 이미 있는 가게가 만들어서, 새로 만들 것이 적습니다.',1,'동네 반찬가게의 반찬 세 가지를'], sol:[2,'300세대로 늘릴 때 배송을 누가 하는지 없습니다. 하루 300곳을 오후 6시 전에 돌기 어렵습니다.',6,'3월까지 300세대로 늘립니다'], sonnet:[3,'시험 배송부터 하는 순서는 좋습니다. 사람 계획이 빠졌습니다.',6,'1월에 30세대로 시험 배송을 하고']},
-  trust:{opus:[2,'4,200세대가 어디서 나온 숫자인지 없습니다.',2,'약 4,200세대'], sol:[3,'숫자는 구체적이지만 두 곳에 출처가 없습니다.',0,'하루 평균 50분'], sonnet:[2,'출처 없는 통계는 공공 심사에서 낮게 봅니다.',0,'하루 평균 50분을 씁니다']},
-  market:{opus:[3,'첫 단지는 분명하지만, 넓혀 갈 단지의 수가 없습니다.',2,'같은 짜임의 단지로 넓혀 갑니다'], sol:[4,'첫 고객이 한곳에 모여 있어 배송 길이 짧습니다.',2,'아파트 세 단지의 맞벌이 가구'], sonnet:[4,'새벽 배송과 겹치지 않는 시간을 잡았습니다.',3,'그날 저녁에 받게 합니다']},
-  money:{opus:[2,'30%로 배송비를 내고 남는지 셈이 없습니다.',4,'남는 30%로 배송과 운영을 합니다'], sol:[3,'값과 나누는 몫은 분명합니다. 배송 한 번의 값이 빠졌습니다.',4,'월 12만 원을 받습니다'], sonnet:[3,'가게와 나누는 구조라 동네 가게에 돈이 돕니다. 남는 돈의 셈이 필요합니다.',4,'매출의 70%는 반찬가게에 주고']},
-  crew:{opus:[4,'가게를 직접 해 본 대표라 반찬을 대는 쪽을 압니다.',5,'반찬가게를 5년 운영했습니다'], sol:[4,'주문 앱을 직접 만들 사람이 있습니다.',5,'공동창업자가 직접 만듭니다'], sonnet:[3,'앱과 가게는 있는데 배송을 맡을 사람이 없습니다.',5,'주문 앱은 공동창업자가 직접 만듭니다']},
+  problem:{opus:['o','누가 언제 불편한지 분명합니다. 3장의 4,200세대와 이어 시장 크기로 말하면 더 셉니다.',0,'늦게 퇴근하는 사람은 살 수 없습니다'], sol:['o','불편한 순간이 구체적입니다. 이대로 두셔도 됩니다.',0,'저녁 7시면 문을 닫아'], sonnet:['o','문제를 숫자로 세웠습니다. 50분의 출처만 붙이면 더할 것이 없습니다.',0,'하루 평균 50분을 씁니다']},
+  real:{opus:['o','반찬은 이미 있는 가게가 만들어, 새로 만들 것이 적습니다. 이대로 두셔도 됩니다.',1,'동네 반찬가게의 반찬 세 가지를'], sol:['x','300세대로 늘릴 때 배송할 사람이 없습니다. 누가 하루 몇 곳을 도는지 한 줄 적어 주세요.',6,'3월까지 300세대로 늘립니다'], sonnet:['t','시험 배송부터 하는 순서는 좋습니다. 달마다 필요한 사람 수를 붙이면 ○입니다.',6,'1월에 30세대로 시험 배송을 하고']},
+  trust:{opus:['x','4,200세대가 어디서 나온 숫자인지 없습니다. 관리사무소 세대 수처럼 출처를 괄호로 붙여 주세요.',2,'약 4,200세대'], sol:['t','숫자는 구체적인데 두 곳에 출처가 없습니다. 출처 두 개만 붙이면 됩니다.',0,'하루 평균 50분'], sonnet:['x','출처 없는 통계는 공공 심사에서 낮게 봅니다. 조사한 곳과 때를 함께 적어 주세요.',0,'하루 평균 50분을 씁니다']},
+  market:{opus:['t','첫 단지는 분명한데 다음에 넓힐 단지 수가 없습니다. 같은 짜임의 단지가 몇 곳인지 적어 주세요.',2,'같은 짜임의 단지로 넓혀 갑니다'], sol:['o','첫 고객이 한곳에 모여 배송 길이 짧습니다. 이 점을 앞에 내세우세요.',2,'아파트 세 단지의 맞벌이 가구'], sonnet:['o','새벽 배송과 겹치지 않는 시간을 잡았습니다. 이대로 두셔도 됩니다.',3,'그날 저녁에 받게 합니다']},
+  money:{opus:['x','30%로 배송비를 내고 남는지 셈이 없습니다. 배송 한 번에 쓸 수 있는 돈을 셈해 주세요.',4,'남는 30%로 배송과 운영을 합니다'], sol:['t','값과 나누는 몫은 분명합니다. 배송 한 번에 드는 돈을 넣으면 ○입니다.',4,'월 12만 원을 받습니다'], sonnet:['t','가게와 나누는 구조라 동네에 돈이 돕니다. 남는 돈의 셈을 한 줄 붙여 주세요.',4,'매출의 70%는 반찬가게에 주고']},
+  crew:{opus:['o','가게를 5년 해 본 대표라 반찬을 대는 쪽을 압니다. 이대로 두셔도 됩니다.',5,'반찬가게를 5년 운영했습니다'], sol:['o','주문 앱을 직접 만들 사람이 있습니다. 이대로 두셔도 됩니다.',5,'공동창업자가 직접 만듭니다'], sonnet:['t','앱과 가게는 있는데 배송을 맡을 사람이 없습니다. 7장에 배송 담당을 적어 주세요.',5,'주문 앱은 공동창업자가 직접 만듭니다']},
 };
 /* 고친 뒤 다시 심사하면 바뀌는 칸. 고침마다 어느 칸이 바뀌는지 적는다(CREW는 고른 답의 문장을 인용한다) */
 const S2 = {
-  src:{trust:{opus:[3,'4,200세대에 출처가 붙었습니다. 단지마다 몇 세대인지도 있으면 더 좋습니다.',2,'약 4,200세대'], sol:[4,'출처가 필요한 두 숫자에 모두 출처가 있습니다.',0,'하루 평균 50분'], sonnet:[3,'출처가 생겼습니다. 다만 설문 62명은 작아서 4점은 아닙니다.',0,'하루 평균 50분을 씁니다']}},
-  crew:{real:{sol:[4,'배송할 사람이 생겨 300세대까지 이어집니다.',6,null], sonnet:[4,'시험 배송과 사람 계획이 같이 있습니다.',6,null]}, crew:{sonnet:[4,'배송을 맡을 사람이 생겼습니다.',6,null]}},
-  money:{money:{opus:[3,'남는 셈이 생겼습니다. 1,800원으로 배송이 되는지가 다음 물음입니다.',4,'한 번에 1,800원 안이어야 남습니다'], sol:[3,'셈은 맞습니다. 배송 방식과 같이 보면 더 분명합니다.',4,'한 달 배송은 스무 번이라'], sonnet:[4,'남는 돈의 셈이 보입니다.',4,'한 달에 3만 6천 원이 남고']}},
+  src:{trust:{opus:['t','4,200세대에 출처가 붙었습니다. 단지마다 몇 세대인지 나눠 적으면 ○입니다.',2,'약 4,200세대'], sol:['o','출처가 필요한 두 숫자에 모두 출처가 있습니다.',0,'하루 평균 50분'], sonnet:['t','출처가 생겼습니다. 설문 62명은 작으니 더 넓게 물어보면 ○입니다.',0,'하루 평균 50분을 씁니다']}},
+  crew:{real:{sol:['o','배송할 사람이 생겨 300세대까지 이어집니다.',6,null], sonnet:['o','시험 배송과 사람 계획이 같이 있습니다.',6,null]}, crew:{sonnet:['o','배송을 맡을 사람이 생겼습니다.',6,null]}},
+  money:{money:{opus:['t','남는 셈이 생겼습니다. 배송 한 번을 1,800원 안에 하는 방법을 적으면 ○입니다.',4,'한 번에 1,800원 안이어야 남습니다'], sol:['t','셈은 맞습니다. 배송을 어떻게 하는지 같이 적으면 ○입니다.',4,'한 달 배송은 스무 번이라'], sonnet:['o','남는 돈의 셈이 보입니다.',4,'한 달에 3만 6천 원이 남고']}},
 };
 const CREW_OPTS = [
   '배송은 3월 전에 뽑는 배송 기사 두 명이 맡습니다.',
@@ -545,14 +567,14 @@ const CREW_OPTS = [
 ];
 const MONEY_LINE = '반찬가게 몫을 빼면 한 달에 3만 6천 원이 남고, 한 달 배송은 스무 번이라 배송과 운영을 합쳐 한 번에 1,800원 안이어야 남습니다.';
 
-/* 최종 솔루션: 먼저 고칠 셋. 가장 약한 항목, 의견이 갈린 항목, 그다음 낮은 항목 순서 */
+/* 최종 솔루션: 먼저 고칠 셋. 가장 약한 항목, 의견이 갈린 항목, 그다음 약한 항목 순서 */
 const FIX = [
   {id:'src', crit:'trust', title:'1장과 3장 숫자에 출처 넣기', quotes:[[0,'하루 평균 50분을 씁니다'],[2,'약 4,200세대']],
    why:'심사위원 셋이 모두 짚었습니다. 출처가 없으면 숫자를 믿지 않습니다.', btn:'출처 넣기'},
   {id:'crew', crit:'real', title:'300세대로 늘릴 때 배송할 사람 적기', quotes:[[6,'3월까지 300세대로 늘립니다']],
-   why:'Opus는 4점, Sol은 2점을 줬습니다. 배송할 사람이 빠진 것이 갈린 까닭입니다.', btn:'같이 쓰기'},
+   why:'Opus는 ○, Sol은 ✕를 줬습니다. 배송할 사람이 빠진 것이 갈린 까닭입니다.', btn:'같이 쓰기'},
   {id:'money', crit:'money', title:'배송 한 번에 쓸 수 있는 돈 셈하기', quotes:[[4,'남는 30%로 배송과 운영을 합니다']],
-   why:'Opus가 2점을 준 까닭입니다. 30%로 배송비를 내고 남는지가 보이지 않습니다.', btn:'기획부에 맡기기'},
+   why:'Opus가 ✕를 준 까닭입니다. 30%로 배송비를 내고 남는지가 보이지 않습니다.', btn:'기획부에 맡기기'},
 ];
 const SRC_DEFAULT = ['우리 단지 맞벌이 가구 설문 62명, 2026년 10월', '세 단지 관리사무소 세대 수, 2026년 11월'];
 
@@ -709,16 +731,30 @@ function entry(cid, jid, fixSet) {
   }
   return e;
 }
+/* 표시: o ○ 갖춤 · t △ 보완 · x ✕ 빠짐. 숫자 점수는 쓰지 않는다 */
+const MK = {o:{t:'○', name:'갖춤'}, t:{t:'△', name:'보완'}, x:{t:'✕', name:'빠짐'}};
+const MKS = ['o', 't', 'x'], RANK = {o:2, t:1, x:0};
+const tally = a => ({o:a.filter(m => m === 'o').length, t:a.filter(m => m === 't').length, x:a.filter(m => m === 'x').length});
+function markSVG(m, cls = '') {
+  const g = m === 'o' ? '<circle cx="10" cy="10" r="6.3" fill="none" stroke-width="2.4"/>'
+    : m === 't' ? '<path d="M10 3.4 16.9 15.6H3.1Z" fill="none" stroke-width="2.3" stroke-linejoin="round"/>'
+    : '<path d="M4.6 4.6 15.4 15.4M15.4 4.6 4.6 15.4" fill="none" stroke-width="2.5" stroke-linecap="round"/>';
+  return `<svg class="mk mk-${m}${cls ? ' ' + cls : ''}" viewBox="0 0 20 20" role="img" aria-label="${MK[m].t} ${MK[m].name}">${g}</svg>`;
+}
+/* 세 표시의 수를 한 줄로(○ 8 · △ 6 · ✕ 4). label이면 갖춤 · 보완 · 빠짐도 붙인다 */
+const tallyHTML = (n, label) => `<span class="tally">${MKS.map(m => `<span class="tl tl-${m}">${markSVG(m)}<b class="mono">${n[m]}</b>${label ? `<small>${MK[m].name}</small>` : ''}</span>`).join('')}</span>`;
+const tallyText = n => MKS.map(m => `${MK[m].t} ${n[m]}`).join(' · ');
+const marksHTML = pts => `<span class="mks">${pts.map(m => markSVG(m)).join('')}</span>`;
 function board(fixSet) {
   const rows = CRIT.map(c => {
-    const pts = JUDGES.map(j => entry(c.id, j.id, fixSet)[0]);
-    const avg = pts.reduce((a, b) => a + b, 0) / pts.length;
-    return {c, pts, avg, spread:Math.max(...pts) - Math.min(...pts)};
+    const pts = JUDGES.map(j => entry(c.id, j.id, fixSet)[0]), n = tally(pts);
+    return {c, pts, n, sev:n.x * 2 + n.t, rank:pts.reduce((a, m) => a + RANK[m], 0), split:n.o > 0 && n.x > 0};
   });
-  const total = rows.reduce((a, r) => a + r.avg, 0) / rows.length;
-  const weak = rows.reduce((m, r) => r.avg < m.avg - 1e-9 ? r : m, rows[0]);
-  return {rows, total, weak};
+  const n = tally(rows.flatMap(r => r.pts));
+  const weak = rows.reduce((m, r) => r.sev > m.sev ? r : m, rows[0]);
+  return {rows, n, weak};
 }
+const judgeTally = (b, k) => tally(b.rows.map(r => r.pts[k]));
 /* 인용 확인: 모든 인용이 그 장의 글에 그대로 있어야 한다(제품에서는 코드가 버리는 규칙) */
 (function checkQuotes() {
   const t = planText(new Set());
@@ -740,7 +776,7 @@ function renderIntro(anim) {
     + c('p', 'i-no', '처음 시작 · 사업계획서')
     + c('h2', 'i-name', '사업계획서 초안')
     + c('p', 'i-tag', '문제 인식부터 비즈니스 모델까지, 일곱 장을 씁니다.')
-    + c('dl', 'meters', '<dt>걸리는 시간</dt><dd>10분쯤</dd><dt>저장되는 곳</dt><dd>이 PC에만 저장됩니다</dd><dt>고치기</dt><dd>나중에 언제든 고칠 수 있습니다</dd><dt>다 쓰면</dt><dd>AI 심사위원 셋이 점수와 고칠 곳을 줍니다</dd>')
+    + c('dl', 'meters', '<dt>걸리는 시간</dt><dd>10분쯤</dd><dt>저장되는 곳</dt><dd>이 PC에만 저장됩니다</dd><dt>고치기</dt><dd>나중에 언제든 고칠 수 있습니다</dd><dt>다 쓰면</dt><dd>AI 심사위원 셋이 항목마다 ○ △ ✕와 한마디를 줍니다</dd>')
     + c('div', 'i-go', '<button class="go main" type="button" data-begin>쓰기 시작</button><button class="go" type="button" data-skipall>준비가 안 됐어요 · 다음에 하기</button>')
     + `<div class="pc">${c('h3', '', '일곱 장')}${CH.map(ch => c('p', 'ch-ln', `<i>${ch.no}</i><span>${esc(ch.name)}<small>${esc(ch.what)}</small></span>`)).join('')}</div>`
     + `</div></section>`;
@@ -872,7 +908,7 @@ function renderTeam(anim) {
 /* ══ 3. 첫 업무: 심사 ══
    무대: 조명 아래 발표자 구(계획서를 쓴 대표님의 분신) 하나, 앞쪽에 뒷모습의 심사위원 구 셋.
    장마다 이젤의 종이가 넘어가고, 심사위원은 「…」로 생각하다가 한 명이 반응한다(오! · 물음). 발표자는 그 반응에 표정이 바뀐다.
-   끝에는 셋이 고개를 돌려 점수를 맞추고, 점수판을 하나씩 든다. 몸은 크게 움직이지 않는다(눈, 빛, 말풍선, 작은 뜀). */
+   끝에는 셋이 고개를 돌려 표시를 맞추고, ○ △ ✕의 수를 적은 판을 하나씩 든다. 몸은 크게 움직이지 않는다(눈, 빛, 말풍선, 작은 뜀). */
 const REACT1 = [
   {ch:0, j:2, k:'oh', t:'오! 문제를 숫자로 세웠네요.', p:'happy', c:'Sonnet 심사위원이 문제를 숫자로 세운 점을 좋게 봤습니다.'},
   {ch:1, j:0, k:'oh', t:'가게가 이미 만드는 반찬이군요.', p:'open', c:'Opus 심사위원이 가게가 이미 만드는 반찬이라는 점을 짚었습니다.'},
@@ -918,13 +954,12 @@ function judgeHeadHTML() {
 function setRead(k, n) { room.querySelector(`[data-j="${k}"]`)?.querySelectorAll('.read i').forEach((x, i) => x.classList.toggle('on', i < n)); }
 function setStatus(k, t, fin) { const jc = room.querySelector(`[data-j="${k}"]`); if (!jc) return; jc.querySelector('.st').textContent = t; jc.classList.toggle('fin', !!fin); }
 function rubricHTML() {
-  return `<div class="rubric${anchors ? ' anchors' : ''}" id="rubric"><div class="rub-top"><h3>채점표 · 항목마다 1~5점</h3><button class="quiet" type="button" data-anchors>${anchors ? '채점 기준 접기' : '채점 기준 보기'}</button></div>`
+  return `<div class="rubric${anchors ? ' anchors' : ''}" id="rubric"><div class="rub-top"><h3>채점표 · 항목마다 ○ △ ✕</h3><button class="quiet" type="button" data-anchors>${anchors ? '채점 기준 접기' : '채점 기준 보기'}</button></div>`
     + `<div class="rub-head"><span></span>${JUDGES.map(j => `<span>${j.name}</span>`).join('')}</div>`
     + CRIT.map((c, i) => `<div class="rb"><div><b>${esc(c.name)}</b><small>${esc(c.d)}</small>`
-      + `<div class="anch">${c.a.map((a, k) => `<div><span class="mono">${[1,3,5][k]}점</span>${esc(a)}</div>`).join('')}</div></div>`
+      + `<div class="anch">${c.a.map((a, k) => `<div>${markSVG(['x', 't', 'o'][k])}<span>${esc(a)}</span></div>`).join('')}</div></div>`
       + JUDGES.map((_, k) => `<span class="sl" data-sl="${i}-${k}"></span>`).join('') + `</div>`).join('') + `</div>`;
 }
-const avgOf = (b, k) => b.rows.reduce((a, r) => a + r.pts[k], 0) / b.rows.length;
 
 function startJudging() {
   stopTimers();
@@ -933,14 +968,14 @@ function startJudging() {
   prevJudged = judged; judged = fixedSet();
   const again = prevJudged != null, b = board(judged), prevB = again ? board(prevJudged) : null;
   room.innerHTML = `<div class="top"><div><p class="chips"><b>${esc(TEAMS[team].name)} 팀</b> · 사무실의 첫 업무</p>`
-    + say(again ? '고친 계획서로 다시 심사받습니다.' : '첫 업무로 사업계획서 심사를 받습니다.', again ? '심사위원 셋이 고친 장을 다시 듣고 점수를 고칩니다. 15초쯤 걸려요.' : 'AI 심사위원 셋이 발표를 듣고 항목마다 점수를 매깁니다. 30초쯤 걸려요.', true) + `</div></div>`
+    + say(again ? '고친 계획서로 다시 심사받습니다.' : '첫 업무로 사업계획서 심사를 받습니다.', again ? '심사위원 셋이 고친 장을 다시 듣고 표시를 고칩니다. 15초쯤 걸려요.' : 'AI 심사위원 셋이 발표를 듣고 항목마다 ○ △ ✕와 한마디를 남깁니다. 30초쯤 걸려요.', true) + `</div></div>`
     + `<section class="jgrid"><div>${stageHTML(false)}<p class="caption" id="cap" aria-live="polite"></p>`
     + `<div class="stage-go"><button class="quiet" type="button" data-toresult>기다리지 않고 결과 보기</button></div></div><div>${rubricHTML()}</div></section>`;
   const prEl = document.getElementById('pr'), P = makeOrb(prEl), J = JUDGES.map((_, k) => makeOrb(document.getElementById('jd' + k)));
   const drop = k => CRIT.forEach((c, i) => setTimeout(() => {
     const el = room.querySelector(`[data-sl="${i}-${k}"]`); if (!el) return;
-    const v = b.rows[i].pts[k], up = prevB && v > prevB.rows[i].pts[k];
-    el.textContent = v; el.classList.add('in'); if (up) el.classList.add('up');
+    const v = b.rows[i].pts[k], up = prevB && RANK[v] > RANK[prevB.rows[i].pts[k]];
+    el.innerHTML = markSVG(v); el.classList.add('in', 'm-' + v); if (up) el.classList.add('up');
   }, still ? 0 : i * 80));
 
   let t = 250;
@@ -974,9 +1009,9 @@ function startJudging() {
   });
   t += list.length * D;
   at(t, () => {
-    cap('심사위원들이 고개를 맞대고 점수를 맞추고 있습니다.');
+    cap('심사위원들이 고개를 맞대고 표시를 맞추고 있습니다.');
     J[0].turn(1); J[1].turn(-1); J[2].turn(-1);
-    JUDGES.forEach((_, k) => { bubble('j' + k, DOTS); setStatus(k, '점수를 맞추는 중'); setRead(k, 7); });
+    JUDGES.forEach((_, k) => { bubble('j' + k, DOTS); setStatus(k, '표시를 맞추는 중'); setRead(k, 7); });
     play('dots'); P.mood('closed'); bubble('p', '두근두근…');
   });
   at(t + 900, () => { J[1].turn(1); play('dots'); });
@@ -984,24 +1019,24 @@ function startJudging() {
   at(t + 2500, () => { J.forEach(o => o.turn(0)); JUDGES.forEach((_, k) => unbubble('j' + k)); unbubble('p'); P.mood('nervous'); });
   t += 2900;
   JUDGES.forEach((j, k) => at(t + k * 560, () => {
-    const a = avgOf(b, k), d = prevB ? a - avgOf(prevB, k) : 0;
+    const n = judgeTally(b, k);
     const pd = document.getElementById('pd' + k);
-    pd.querySelector('b').innerHTML = `${f1(a)}${d > .04 ? `<span class="up">+${f1(d)}</span>` : ''}<small>${j.name}</small>`;
-    pd.classList.add('on'); play('paddle'); drop(k); setStatus(k, `평균 ${f1(a)}점을 줬습니다`, true);
+    pd.querySelector('b').innerHTML = `${tallyHTML(n)}<small>${j.name}</small>`;
+    pd.classList.add('on'); play('paddle'); drop(k); setStatus(k, `${tallyText(n)}를 줬습니다`, true);
     P.mood(k === 2 ? 'surprised' : 'nervous');
   }));
   t += 3 * 560 + 500;
   at(t, () => {
     const st = document.getElementById('stot');
-    st.querySelector('b').textContent = f1(b.total);
-    st.querySelector('small').innerHTML = '세 심사위원 평균' + (prevB && b.total - prevB.total > .04 ? ` <span class="mono">+${f1(b.total - prevB.total)}</span>` : '');
+    st.querySelector('b').innerHTML = tallyHTML(b.n);
+    st.querySelector('small').innerHTML = '세 심사위원의 표시' + (prevB && b.n.x < prevB.n.x ? ` · <span class="chg">고치기 전 ✕ ${prevB.n.x}</span>` : '');
     st.classList.add('on'); play('chime');
-    if (again) { P.mood('happy'); P.hop(); bubble('p', '올랐어요! 고친 보람이 있네요.'); }
+    if (again) { P.mood('happy'); P.hop(); bubble('p', '✕가 줄었어요! 고친 보람이 있네요.'); }
     else { P.mood('firm'); bubble('p', `${b.weak.c.name}부터 고쳐 볼게요!`); }
-    cap(again ? `심사가 끝났습니다. 평균이 ${f1(prevB.total)}점에서 <b>${f1(b.total)}점</b>으로 올랐습니다.` : `심사가 끝났습니다. 평균 <b>${f1(b.total)}점</b>이고, 가장 약한 곳은 ${b.weak.c.name}입니다.`);
+    cap(again ? `심사가 끝났습니다. ✕가 ${prevB.n.x}개에서 <b>${b.n.x}개</b>로 줄었습니다.` : `심사가 끝났습니다. 빠진 곳(✕)이 <b>${b.n.x}개</b>이고, 가장 약한 곳은 ${b.weak.c.name}입니다.`);
     room.querySelector('.stage-go').innerHTML = '<button class="go main" type="button" data-toresult>결과 보기</button><span class="lab">곧 결과 화면으로 넘어갑니다.</span>';
     const h1 = room.querySelector('.top .say');
-    if (h1) h1.outerHTML = say('심사가 끝났습니다.', again ? '고친 곳이 점수에 들어갔습니다. 결과 화면에서 바뀐 칸을 볼 수 있어요.' : '결과 화면에서 항목별 점수와 먼저 고칠 셋을 봅니다.', true);
+    if (h1) h1.outerHTML = say('심사가 끝났습니다.', again ? '고친 곳이 표시에 들어갔습니다. 결과 화면에서 바뀐 칸을 볼 수 있어요.' : '결과 화면에서 항목별 표시와 한마디, 먼저 고칠 셋을 봅니다.', true);
   });
   at(t + 4200, () => renderResult(true));
 }
@@ -1021,7 +1056,7 @@ function renderEmpty(anim) {
   at(1600, idle, 'empty');
 }
 
-/* 결과: 큰 숫자 하나(평균)와 가장 약한 항목 → 항목별 점수표 → 최종 솔루션 */
+/* 결과: ○ △ ✕의 수와 가장 약한 항목 → 항목별 표시와 한마디 → 최종 솔루션 */
 function renderResult(anim) {
   stopTimers(); mode = 'result'; setStep('처음 시작 · 3 / 3 · 심사 결과');
   const b = board(judged), prevB = prevJudged ? board(prevJudged) : null;
@@ -1031,38 +1066,37 @@ function renderResult(anim) {
     head = `${b.weak.c.name}${이(b.weak.c.name)} 가장 약합니다.`;
     sub = '1장과 3장의 숫자에 출처가 없습니다.\n아래 셋을 고친 뒤 다시 심사받으세요.';
   } else {
-    const gains = b.rows.map((r, i) => ({r, g:r.avg - prevB.rows[i].avg})).sort((x, y) => y.g - x.g);
-    head = b.total > prevB.total + .04 ? `${f1(prevB.total)}점에서 ${f1(b.total)}점으로 올랐습니다.` : '점수가 그대로입니다.';
-    sub = (gains[0].g > .04 ? `가장 많이 오른 것은 ${gains[0].r.c.name}입니다.\n` : '') + `지금 가장 약한 것은 ${b.weak.c.name}입니다.`;
+    const gains = b.rows.map((r, i) => ({r, g:r.rank - prevB.rows[i].rank})).sort((x, y) => y.g - x.g);
+    head = b.n.x < prevB.n.x ? `✕가 ${prevB.n.x}개에서 ${b.n.x}개로 줄었습니다.` : b.n.o > prevB.n.o ? `○가 ${prevB.n.o}개에서 ${b.n.o}개로 늘었습니다.` : '표시가 그대로입니다.';
+    sub = (gains[0].g > 0 ? `가장 많이 나아진 것은 ${gains[0].r.c.name}입니다.\n` : '') + `지금 가장 약한 것은 ${b.weak.c.name}입니다.`;
   }
-  const dT = again ? b.total - prevB.total : 0;
-  room.innerHTML = `<section class="res-top"><div class="me"><div class="g-orb breath" id="gorb">${spriteHTML()}</div><div class="total"><span class="lab">세 심사위원 평균</span><div class="total-n">${f1(b.total)}<small>/ 5</small></div>`
-    + (again && Math.abs(dT) > .04 ? `<span class="total-d">${dT > 0 ? '+' : ''}${f1(dT)}</span>` : '') + `</div></div>`
+  const better = again && (b.n.x < prevB.n.x || b.n.o > prevB.n.o);
+  room.innerHTML = `<section class="res-top"><div class="me"><div class="g-orb breath" id="gorb">${spriteHTML()}</div><div class="total"><span class="lab">세 심사위원의 표시 ${b.rows.length * JUDGES.length}개</span><div class="total-n">${tallyHTML(b.n, true)}</div>`
+    + (better ? `<span class="total-d">고치기 전 ${tallyText(prevB.n)}</span>` : '') + `</div></div>`
     + `<div>${say(head, sub, anim)}<div class="res-acts"><button class="go main" type="button" data-tofix>${again ? '최종 솔루션 보기' : '먼저 고칠 셋 보기'}</button><button class="quiet" type="button" data-plan>심사한 계획서 보기</button></div></div></section>`
-    + `<section class="res"><div><div class="rub-top"><h3 class="res-h">항목별 점수 · 항목을 누르면 까닭과 근거 문장</h3></div>${tableHTML(b, prevB)}</div>`
+    + `<section class="res"><div><div class="rub-top"><h3 class="res-h">항목별 표시 · 항목을 누르면 심사위원의 한마디와 근거 문장</h3></div>${tableHTML(b, prevB)}</div>`
     + `<div class="jside"><h3 class="res-h">심사위원 셋의 한 줄</h3>`
     + JUDGES.map((j, k) => {
         const line = judged.has(j.fix) ? j.say2 : j.say;
-        return `<div class="verdict"><span class="who"><span class="mini">${spriteHTML()}</span><span class="mono">심사위원 ${j.no}</span>${j.name}<small>${j.co} · ${j.eye}</small></span><span class="g mono">${f1(avgOf(b, k))}</span><p>${esc(line)}</p></div>`;
+        return `<div class="verdict"><span class="who"><span class="mini">${spriteHTML()}</span><span class="mono">심사위원 ${j.no}</span>${j.name}<small>${j.co} · ${j.eye}</small></span><span class="g">${tallyHTML(judgeTally(b, k))}</span><p>${esc(line)}</p></div>`;
       }).join('') + `</div></section>`
     + `<section class="fixes" id="fixes">${fixesHTML(b)}</section>`
     + `<p class="fine">연습 심사입니다. 실제 지원사업의 결과를 미리 알려 주지 않습니다. 심사는 고르신 팀의 구독 사용량을 씁니다.</p>`;
-  mountGuide(again && dT > .04 ? 'happy' : 'firm');
-  if (again && dT > .04 && anim) guide.hop();
+  mountGuide(better ? 'happy' : 'firm');
+  if (better && anim) guide.hop();
 }
 function tableHTML(b, prevB) {
-  return `<table class="sc"><thead><tr><th>항목</th>${JUDGES.map(j => `<th><span class="mono">심사위원 ${j.no}</span><b>${j.name}</b></th>`).join('')}<th>평균</th></tr></thead><tbody>`
+  return `<table class="sc"><thead><tr><th>항목</th>${JUDGES.map(j => `<th><span class="mono">심사위원 ${j.no}</span><b>${j.name}</b></th>`).join('')}</tr></thead><tbody>`
     + b.rows.map((r, i) => {
-      const weak = r === b.weak, split = r.spread >= 2, open = openRow === r.c.id;
+      const weak = r === b.weak, open = openRow === r.c.id;
       const was = prevB?.rows[i];
-      const tags = (weak ? '<span class="tag weak">가장 약함</span>' : '') + (split ? '<span class="tag split">의견이 갈림</span>' : '') + (was && r.avg > was.avg + .04 ? '<span class="tag fixed">고친 뒤 오름</span>' : '');
+      const tags = (weak ? '<span class="tag weak">가장 약함</span>' : '') + (r.split ? '<span class="tag split">의견이 갈림</span>' : '') + (was && r.rank > was.rank ? '<span class="tag fixed">고친 뒤 나아짐</span>' : '');
       let h = `<tr class="${weak ? 'weak' : ''}${open ? ' open' : ''}"><td><button class="crit" type="button" data-row="${r.c.id}" aria-expanded="${open}"><span class="chev">›</span><b>${esc(r.c.name)}</b>${tags}</button></td>`
-        + r.pts.map((p, k) => `<td>${p}${was && p > was.pts[k] ? `<span class="d">+${p - was.pts[k]}</span>` : ''}</td>`).join('')
-        + `<td><span class="avg"><span class="mono">${f1(r.avg)}</span><i style="--w:${r.avg / 5 * 100}%"></i></span></td></tr>`;
+        + r.pts.map((p, k) => `<td><span class="cell${was && RANK[p] > RANK[was.pts[k]] ? ' up' : ''}">${markSVG(p)}</span></td>`).join('') + `</tr>`;
       if (open) {
-        h +=`<tr class="more"><td colspan="5">${JUDGES.map(j => {
+        h +=`<tr class="more"><td colspan="4">${JUDGES.map(j => {
           const e = entry(r.c.id, j.id, judged);
-          return `<div class="why"><span class="who">${j.name}<small>${j.eye}</small></span><span class="pt">${e[0]}</span><div><p>${esc(e[1])}</p><div class="qs"><span class="mono">${CH[e[2]].no} ${esc(CH[e[2]].name)}</span><span>${esc(e[3])}</span></div></div></div>`;
+          return `<div class="why"><span class="who">${j.name}<small>${j.eye}</small></span><span class="pt">${markSVG(e[0])}</span><div><p>${esc(e[1])}</p><div class="qs"><span class="mono">${CH[e[2]].no} ${esc(CH[e[2]].name)}</span><span>${esc(e[3])}</span></div></div></div>`;
         }).join('')}</td></tr>`;
       }
       return h;
@@ -1077,20 +1111,20 @@ function fixesHTML(b) {
   return closed
     ? `<h2>최종 솔루션 · 셋을 고쳤습니다</h2><p>다음에 고칠 곳은 ${esc(b.weak.c.name)}입니다. ${esc(NEXT[b.weak.c.id] || '')} 기획부에서 언제든 이어서 고치고 다시 심사받을 수 있습니다.</p>`
     + `<div class="fx-grid">${FIX.map(f => fixCard(f, b, false, t)).join('')}</div>` + resGo(all, any, pending, cur)
-    : `<h2>최종 솔루션 · 먼저 고칠 셋</h2><p>점수가 낮은 까닭을 계획서 문장에서 찾았습니다. 고친 뒤 다시 심사받으면 바뀐 점수를 보여 드립니다.</p>`
+    : `<h2>최종 솔루션 · 먼저 고칠 셋</h2><p>✕와 △를 받은 까닭을 계획서 문장에서 찾았습니다. 고친 뒤 다시 심사받으면 바뀐 표시를 보여 드립니다.</p>`
     + `<div class="fx-grid">${FIX.map(f => fixCard(f, b, f.id === cur, t)).join('')}</div>` + resGo(all, any, pending, cur);
 }
 function resGo(all, any, pending, cur) {
   return `<div class="res-go"><button class="go${all && pending ? ' main' : ''}" type="button" data-rejudge ${pending ? '' : 'disabled'}>다시 심사받기</button>`
     + `<button class="${!cur && !pending ? 'go main' : 'quiet'}" type="button" data-toend>사무실로 가기</button>`
-    + (any && !pending ? '<span class="lab">고친 곳은 모두 다시 심사했습니다.</span>' : pending ? '<span class="lab">고친 곳이 아직 점수에 들어가지 않았습니다.</span>' : '') + `</div>`;
+    + (any && !pending ? '<span class="lab">고친 곳은 모두 다시 심사했습니다.</span>' : pending ? '<span class="lab">고친 곳이 아직 표시에 들어가지 않았습니다.</span>' : '') + `</div>`;
 }
-const NEXT = {trust:'설문 62명은 작아서, 더 넓게 물어본 숫자가 있으면 오릅니다.', money:'배송 한 번을 1,800원 안에 할 수 있는지 보이면 오릅니다.'};
+const NEXT = {trust:'설문 62명은 작아서, 더 넓게 물어본 숫자가 있으면 ○가 됩니다.', money:'배송 한 번을 1,800원 안에 할 수 있는지 보이면 ○가 됩니다.'};
 function fixCard(f, b, isCur, t) {
-  const row = b.rows.find(r => r.c.id === f.crit), weak = row === b.weak, split = row.spread >= 2;
+  const row = b.rows.find(r => r.c.id === f.crit), weak = row === b.weak, split = row.split;
   const st = fixed[f.id] ? 'done' : (fx[f.id] || 'idle');
-  const tag = fixed[f.id] ? (judged.has(f.id) ? `<span class="tag fixed">${esc(row.c.name)} · 고친 뒤 ${f1(row.avg)}점</span>` : `<span class="tag fixed">${esc(row.c.name)} · 고쳤습니다</span>`)
-    : `<span class="tag ${weak ? 'weak' : split ? 'split' : ''}">${esc(row.c.name)}${weak ? ' · 가장 약함' : split ? ' · 의견이 갈림' : ''} · ${f1(row.avg)}점</span>`;
+  const tag = fixed[f.id] ? (judged.has(f.id) ? `<span class="tag fixed">${esc(row.c.name)} · 고친 뒤 ${marksHTML(row.pts)}</span>` : `<span class="tag fixed">${esc(row.c.name)} · 고쳤습니다</span>`)
+    : `<span class="tag ${weak ? 'weak' : split ? 'split' : ''}">${esc(row.c.name)}${weak ? ' · 가장 약함' : split ? ' · 의견이 갈림' : ''} · ${marksHTML(row.pts)}</span>`;
   const qs = (list, fresh) => list.map(([i, q]) => `<div class="qs${fresh ? ' fresh' : ''}"><span class="mono">${CH[i].no} ${esc(CH[i].name)}</span><span>${esc(q)}</span></div>`).join('');
   let act = '';
   if (st === 'done') {
@@ -1137,7 +1171,7 @@ function renderEnd(anim) {
     + `<section class="show"><div class="hero-art" role="img" aria-label="${esc(ART.write[1])}"><img class="on" src="${ART.write[0]}" alt="" decoding="async"><div class="hero-eyes" id="heyes">${orbSVG()}</div></div>`
     + `<div class="info in"><p class="i-no">기획부</p><ul class="endlist" style="margin-top:14px">`
     + `<li><span><b>사업계획서 초안</b><small>${done ? '받아들인 고침 ' + fixedSet().size + '개' : '비어 있음'}</small></span><span class="mono">${ans.filter(Boolean).length} / 7장</span></li>`
-    + (done ? `<li><span><b>사업계획서 심사</b><small>${prevJudged ? '두 번 받았습니다' : '한 번 받았습니다'}</small></span><span class="mono">${f1(done.total)} / 5</span></li>` : '')
+    + (done ? `<li><span><b>사업계획서 심사</b><small>${prevJudged ? '두 번 받았습니다' : '한 번 받았습니다'}</small></span><span class="chg">${tallyText(done.n)}</span></li>` : '')
     + `</ul><div class="i-go"><button class="go" type="button" data-reset>처음부터 다시 보기</button></div></div></section>`;
   makeOrb(document.getElementById('heyes')).mood('happy');
 }
