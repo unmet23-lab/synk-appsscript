@@ -30,7 +30,7 @@ const accountPublic = new Set(['index.html', 'client.html', 'teacher.html', 'tea
   'id.css', 'portal-entry.css', 'src/platform-library.css', 'theme.js',
   'assets/SYNKSans-rest.woff2', 'assets/SYNKSans-ui.woff2', 'assets/SYNKArrow.woff2', 'assets/DMMono-Medium.woff2',
   'assets/InterTight-Regular.woff2', 'assets/InterTight-Medium.woff2', 'assets/InterTight-SemiBold.woff2',
-  'assets/world-annyeong.webp', 'assets/laptop.webp', 'assets/path-vr-felt.webp', 'assets/world-qr.svg',
+  'assets/world-annyeong.webp', 'assets/laptop.webp', 'assets/path-vr-felt.webp', 'assets/path-app-cards.webp', 'assets/world-qr.svg',
   'wardrobe.css', 'dist/wardrobe-three.js',
   ...['mongle-basic.webp', 'marin-basic.webp', 'kkamong-base.webp', 'kkamong-scarf.webp', 'kkamong-headphones.webp', 'kkamong-apron.webp', 'kkamong-summer-deel.webp', 'kkamong-winter-deel.webp', 'felt-paper.webp', 'felt-night.webp', 'felt-lapis.webp', 'cushion-cream.webp', 'cushion-blush.webp'].map(name => `assets/wardrobe/${name}`),
   'benefits.css', 'member-insight.css', 'assets/member/world-book.avif', ...['gift', 'insight', 'subscriptions', 'care', 'fortune'].map(id => `assets/member/benefit-${id}.webp`), 'assets/member/solio-object.webp', 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp',
