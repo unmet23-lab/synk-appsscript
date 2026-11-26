@@ -84,7 +84,7 @@ test('저희 차례 큰 그림 칸: 차례가 넘어온 뒤 올린 최근 소식
   const screen=html.match(/<div class="sx-room-stage" data-room-stage>[\s\S]*?<\/div>\n/)?.[0]||'';assert.ok(screen);
   assert.match(screen,/<div class="sx-room-files" data-count="2">/);assert.match(screen,/작업 중인 화면이에요 · 완성본이 아니에요/);
   assert.match(screen,new RegExp(`data-room-do="journal" data-journal-target="n:${N(2)}"`));
-  assert.doesNotMatch(screen,/w-gift/,'예시 그림 대신');
+  assert.doesNotMatch(screen,/[wt]-vest/,'예시 그림 대신');
   // 차례가 넘어오기 전(확인 전)에 올린 소식만 있으면 지난 판 · 예시로 돌아간다.
   assert.equal(roomNews(project({approvedAt:T(3),rounds,progress:[{id:N(1),at:T(2),text:'앞 단계 소식',assets:[A(1)]}]},{stage:'producing'},assets)),null);
   // 손님 차례(글 콘티 판이 왔다)에는 소식 그림을 띄우지 않는다.

@@ -11,21 +11,22 @@ const read=name=>readFileSync(new URL('./public/pulse-app/'+name,import.meta.url
 const flow=read('request-flow.mjs');
 const view=name=>{const from=flow.indexOf(`  ${name}(a,step,i,n`);assert.ok(from>0,name);return flow.slice(from,flow.indexOf('\n  },',from));};
 
-test('words to avoid are asked once on the words screen and the feel to avoid once on the feel screen',()=>{
-  const words=view('words'),feel=view('feel');
-  assert.match(words,/bind:'avoidNote',label:t\('그 밖에 쓰면 안 되는 말'\),value:a\.avoidNote,placeholder:t\('예\) 경쟁사 이름, 이제 쓰지 않는 제품 이름'\)/);
-  assert.doesNotMatch(words,/표정|느낌/,'말 칸의 예시에 느낌이 없다');
-  assert.match(feel,/bind:'avoidFeel',label:t\('이런 느낌은 피해 주세요 · 선택'\),value:a\.avoidFeel,placeholder:t\('예\) 홈쇼핑 같은 느낌, 과한 표정'\)/);
+test('words to avoid are asked once and the feel to avoid once, both on the finishing screen',()=>{
+  // 세 막(11-26): 말 · 글자 · 느낌 화면이 「나머지는 추천대로」 한 화면(more)이 됐다. 직접 고르면 열리고, 옛 칸은 「더 알려 주실 것」 안에 그대로 있다.
+  const more=view('more');
+  assert.equal(more.match(/bind:'avoidNote'/g).length,1);
+  assert.match(more,/bind:'avoidNote',label:t\('그 밖에 쓰면 안 되는 말'\),value:a\.avoidNote,placeholder:t\('예\) 경쟁사 이름, 이제 쓰지 않는 제품 이름'\)/);
+  assert.equal(more.match(/bind:'avoidFeel'/g).length,1);
+  assert.match(more,/bind:'avoidFeel',label:t\('이런 느낌은 피해 주세요 · 선택'\),value:a\.avoidFeel,placeholder:t\('예\) 홈쇼핑 같은 느낌, 과한 표정'\)/);
 });
 
-test('the facts that back the one line sit right under it, not on the exact on-screen words screen',()=>{
-  const words=view('words'),message=view('message');
-  assert.doesNotMatch(words,/bind:'facts'/);
-  assert.match(message,/bind:'oneThing'[^\n]*\n\s+field\(\{bind:'facts',label:t\('그 말을 믿게 할 사실 · 선택'\)/);
+test('the facts that back the one line sit right under it',()=>{
+  const more=view('more');
+  assert.match(more,/bind:'oneThing'[^\n]*\n\s+field\(\{bind:'facts',label:t\('그 말을 믿게 할 사실 · 선택'\)/);
   // 저장 칸은 그대로라 서버는 바뀌지 않는다. 요약 줄은 칸과 같은 이름으로 그 칸이 선 화면으로 데려간다(Fable F5).
   assert.equal(emptyAnswers().facts,'');
   const row=briefRows({...emptyAnswers(),facts:'누적 12만 개'}).find(item=>item.key==='믿게 할 사실');
-  assert.equal(row.step,'message');assert.equal(row.value,'누적 12만 개');
+  assert.equal(row.step,'more');assert.equal(row.value,'누적 12만 개');
 });
 
 test('the two rare file slots fold into one line that opens by itself once they hold a file',()=>{
@@ -57,7 +58,12 @@ test('drinks and cosmetics ask for a photo of what is inside through the same us
 });
 
 test('the brief form never promises a video to a photo order: the lines a photo order also reads say 「미리」',()=>{
-  for(const line of ['저희가 한 문장으로 다듬어 미리 보여 드려요.','제품에 맞는 쪽을 미리 제안해요','이 말을 한 문장으로 다듬어 미리 보여 드려요','미리 보여 드리는 장면 이미지는 이런 모습이에요.','들어갈 문구와 자리를 미리 넣어 보여 드리고, 최종 문구는 확인을 받아요.'])assert.ok(flow.includes(line),line);
+  for(const line of ['두 가지 안으로 미리 제안해요','담당자가 써서 미리 보여 드려요','들어갈 문구와 자리를 미리 넣어 보여 드리고, 최종 문구는 확인을 받아요.'])assert.ok(flow.includes(line),line);
+  // 사진 주문의 마무리에는 마지막 화면 · 그 문구가 없다(영상의 끝 화면이다).
+  const more=view('more');
+  assert.match(more,/const photo=!!pkgOf\(a\)\?\.photo;/);
+  assert.match(more,/\.\.\.\(photo\?\[\]:\[\[k\('마지막 화면'\),k\('로고 \+ 한 줄'\)\],\[k\('문구 한 줄'\),k\('담당자가 써서 미리 보여 드려요'\)\]\]\)/);
+  assert.match(more,/\(photo\?'':`<div class="sx-sub" data-in><span class="sx-small">\$\{esc\(t\('마지막 화면'\)\)\}/);
 });
 
 test('every new customer line has its English',()=>{

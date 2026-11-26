@@ -34,7 +34,7 @@ test('the request form shows days and revisions next to the price and before sen
   assert.ok(flow.includes("meta:`<span class=\"sx-small\">${esc(t('{price}부터',{price:price(item.price)}))}</span><span class=\"sx-small sx-row-terms\">${esc(termsOf(item))}</span>`"));
   assert.ok(flow.includes("boldAt(t('오늘 다 모이면 {day}이에요.',{day:MARK}),dueDay(pkg))"),'only the check before sending names a day, and only on a condition');
   assert.ok(flow.includes("[k('받으실 날'),pkg?.days?t('자료가 다 모인 날부터 {days}일',{days:pkg.days})"),'the receipt carries the rule, not a date');
-  assert.match(flow,/data-cuts-line \$\{pkg\?'':'hidden'\}/,'no 「컷 0」 before a length is picked');
+  assert.doesNotMatch(flow,/data-cuts-line/,'세 막(11-26): 길이는 그림 칸의 막대로 보여 「컷 0」 줄이 없다');
   assert.ok(flow.includes("[k('수정'),pkg&&!pkg.days?t('구성에 맞춰 함께 정해요'):revisionNote(pkg)]"),'a company campaign receipt still says how revisions are agreed (argon A4)');
   const a={...emptyAnswers(),name:'오미톡',kind:'food',package:'s15'};
   assert.equal(briefRows(a).find(row=>row.key==='길이 · 구성').value,'15초 · 한 편 · 29만원부터 · 10일 · 수정 2회');

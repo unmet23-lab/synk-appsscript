@@ -85,7 +85,8 @@
 // film-home.mjs · app.mjs · film.css · i18n/en.mjs가 바뀌었다. 모델 그림 · 걷는 영상은 캐스팅북(synk.im) 주소라 미리 받지 않는다.
 // v79(11-24): 2판 ① 방 틀과 머리 — 방을 시안 A의 검정 왼쪽 판 + 무대로(낮 판을 거둠), 머리 다섯 칸 막대 · 아이콘 셋(의뢰서 서랍 · 나눈 말 서랍 · 「더 보기」), 무대의 복도 · 한 명 띠(hall.mjs). 미리 받는 목록은 그대로다.
 // v80(11-26): 남길 작품만(「다리가 기억하는 것」 · 오팔린 「시스루」 · 도담중공업) — 완성 광고 목록 · 쇼릴 시간표 · 의뢰서 업종 그림과 「무엇으로 남길지」 예시 · 3쪽 장면. 목록은 그대로다.
-const CACHE = 'synk-pulse-shell-v80-works-20261126';
+// v81(11-26): 예시 프로젝트와 옛 체험을 「첨벙댕」 한 편으로 바꾸고, 첫 화면 5쪽 · 7쪽 그림(shard.webp · end.webp)과 의뢰서의 예시 그림을 남긴 작품으로 바꿨다. 목록은 그대로이고 바뀐 화면 모듈을 새로 받게 판만 올린다.
+const CACHE = 'synk-pulse-shell-v81-example-20261126';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','entry-handoff.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

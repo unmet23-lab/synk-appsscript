@@ -7,32 +7,35 @@ import {mountReview} from './film-review.mjs';
 import {esc} from './api.mjs';
 import {play} from './motion.mjs';
 
-// 예시 프로젝트(2026-11-05 시사실 판): 서버 없이 도는 둘러보기. 대표작 「霜の肌理」(11-06 옛 이름 유리결에서 바꿈) 한 편이 의뢰서에서 납품까지 어떻게 흘렀는지 보여 준다. 霜の肌理는 가상 브랜드로 만든 자체 작품이다.
+// 예시 프로젝트(2026-11-05 시사실 판): 서버 없이 도는 둘러보기. 「첨벙댕」 반려견 구명조끼 광고 한 편이 의뢰서에서 납품까지 어떻게 흘렀는지 보여 준다(2026-11-26 작품을 바꿈). 첨벙댕은 가상 브랜드로 만든 자체 작품이다.
 const S='./assets/request/';
 const still=name=>`${S}${name}.webp`;
-export const DEMO_FILES=[{src:still('file-gift-set'),label:'세트 정면',size:'3024 × 4032'},{src:still('file-gift-ampoule'),label:'앰플',size:'3024 × 4032'},{src:still('file-gift-jar'),label:'크림',size:'3024 × 4032'}];
-export const DEMO_BRIEF=[['광고할 것','霜の肌理 홀리데이 세트 · 화장품 · 뷰티'],['올릴 곳','릴스 · 쇼츠 · 틱톡'],['길이 · 구성','15초 · 한 편 · 29만원부터'],['보는 사람','연말 선물로 화장품 세트를 고르는 사람'],['남길 것','서리꽃이 피는 순간'],['화면 글자','霜の肌理\n美容液とクリームのホリデーコフレ'],['피할 말','재생, 치료, 주름 제거'],['무엇으로','한 장면의 임팩트로'],['모델','사람 없이 제품만'],['받고 싶은 날','11월 21일 (토)'],['최종 확인','의뢰하신 분']];
-const ROOM={title:'霜の肌理 홀리데이 세트 15초 광고',number:'P-1104-7F3A',manager:'김하늘',brief:DEMO_BRIEF.slice(0,6),files:DEMO_FILES,others:[],answered:[],canEdit:true,asks:[{id:'demo-logo',label:'로고 파일',why:'끝 화면에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.'},{id:'demo-top',label:'크림 뚜껑을 위에서 찍은 사진',why:'결정이 내려앉는 컷의 기준이에요. 원본이 있으면 보내 주세요.'}]};
+export const DEMO_FILES=[{src:still('file-vest-worn'),label:'입은 모습',size:'1792 × 2400'},{src:still('file-vest-top'),label:'조끼 등쪽',size:'1792 × 2400'},{src:still('file-vest-dog'),label:'주인공이 될 개',size:'1792 × 2400'}];
+export const DEMO_BRIEF=[['광고할 것','첨벙댕 반려견 구명조끼 · 생활용품 · 가전'],['올릴 곳','릴스 · 쇼츠 · 틱톡'],['길이 · 구성','30초 · 30초 + 15초 · 6초 편집본 · 59만원부터 · 14일 · 수정 3회'],['보는 사람','개와 물놀이를 가려는 보호자'],['남길 것','등에 손잡이가 두 개라 물에서도 번쩍 건져요'],['화면 글자','첨벙댕\n반려견 구명조끼'],['피할 말','절대 안전, 사고 예방, 인증 완료'],['무엇으로','웃음으로 퍼지게'],['모델','추천해 주세요'],['받고 싶은 날','11월 21일 (토)'],['최종 확인','의뢰하신 분']];
+const ROOM={title:'첨벙댕 반려견 구명조끼 30초 광고',number:'P-1104-7F3A',manager:'김하늘',brief:DEMO_BRIEF.slice(0,6),files:DEMO_FILES,others:[],answered:[],canEdit:true,asks:[{id:'demo-logo',label:'로고 파일',why:'끝 화면에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.'},{id:'demo-grip',label:'손잡이를 쥔 사진',why:'번쩍 드는 컷의 기준이에요. 손으로 잡은 모습을 찍어 보내 주세요.'}]};
 const CUTS=[
-  {seconds:1.5,what:'깜깜한 유리 위에서 눈 결정 하나가 자라요. 얼음에 금이 가는 작은 소리로 시작해요.',say:'',text:'',shot:'sheet-gift-01'},
-  {seconds:1.5,what:'결정이 화면을 채울 만큼 자라요. 뒤에는 빛망울만 남아요.',say:'',text:'',shot:'sheet-gift-03'},
-  {seconds:1.5,what:'카메라가 물러나면 결정은 유리구슬 겉에 붙어 있어요.',say:'',text:'',shot:'sheet-gift-04'},
-  {seconds:1.5,what:'서리가 번지고 구슬 안에 앰플과 크림이 보여요.',say:'',text:'',shot:'sheet-gift-05'},
-  {seconds:2.5,what:'구슬이 깨지는 순간 소리가 사라지고 조각과 두 제품이 허공에 멈춰요.',say:'',text:'',shot:'sheet-gift-06'},
-  {seconds:2.5,what:'카메라만 멈춘 조각 사이를 지나가요.',say:'',text:'',shot:'sheet-gift-07'},
-  {seconds:2,what:'시간이 다시 흐르고 떨어진 결정이 크림 뚜껑에 앉아 피어나요.',say:'',text:'',shot:'sheet-gift-11'},
-  {seconds:2,what:'두 제품이 나란히 서고 이름이 떠요.',say:'',text:'霜の肌理 / 美容液とクリームのホリデーコフレ',shot:'sheet-gift-12'},
+  {seconds:2.2,what:'해변에서 털 없는 개가 정색하고 쳐다봐요. 두 귀가 레이더처럼 따로 돌아요.',say:'외계인 닮은 우리 개는 바닷가에서',text:'외계인',shot:'sheet-vest-01'},
+  {seconds:1.6,what:'달에서 뛰듯 너무 오래 떠 있어요. 글자도 느리게 떠요.',say:'뛰어노는 걸 제일 좋아해요',text:'뛰어노는 걸',shot:'sheet-vest-02'},
+  {seconds:3,what:'개가 막대기처럼 솟아 공중에 서요. 두 사람이 놀라 달아나요.',say:'근데 사람들이 보면 깜짝 놀라요',text:'당황 98%',shot:'sheet-vest-03'},
+  {seconds:.9,what:'개의 눈이 초록으로 켜지고 상자 속 조끼가 떠올라요.',say:'그래서 올해는',text:'',shot:'sheet-vest-04'},
+  {seconds:1.3,what:'조끼가 날아와 철썩 붙고 끈이 촉수처럼 꿀렁여요.',say:'특별한 걸 준비했어요',text:'',shot:'sheet-vest-05'},
+  {seconds:2.7,what:'아무 일 없다는 듯 조끼를 입고 앉아 있어요. 이름 딱지가 쿵 붙어요.',say:'첨벙댕 구명조끼! 값도 착하고',text:'첨벙댕 구명조끼!',shot:'sheet-vest-06'},
+  {seconds:2.1,what:'두 손이 등 손잡이를 쥐고, 고개가 빙글빙글 돌다 뚝 멈춰요.',say:'튼튼해요. 등에 손잡이가 두 개라',text:'튼튼',shot:'sheet-vest-07'},
+  {seconds:1.7,what:'오락실 뽑기 집게가 내려와 손잡이를 물고 번쩍 들어요.',say:'물에서도 번쩍 건져요',text:'번쩍!',shot:'sheet-vest-08'},
+  {seconds:1.9,what:'향수 광고처럼 검은 띠 사이에 고글 쓴 개가 앉아 있어요.',say:'올해는 진짜 멋있을 거예요',text:'멋있게\n※ 고글 별매',shot:'sheet-vest-09'},
+  {seconds:2.8,what:'천장에서 초록 빛이 내려와 개가 떠오르고 방에 물이 차요.',say:'아무도 외계인인 줄 모를걸요? 물놀이 가는 날엔',text:'외계인?',shot:'sheet-vest-10'},
+  {seconds:3.7,what:'빛이 뚝 끊겨 첨벙 떨어져요. 조끼 덕에 도로 떠올라 정색해요.',say:'첨벙댕',text:'첨벙댕\n반려견 구명조끼\n※ 우주에서도 뜹니다',shot:'sheet-vest-11'},
 ].map(({shot,...cut})=>({...cut,src:still(shot)}));
-const ONE_LINE='서리꽃이 피는 순간을 담은 홀리데이 세트';
+const ONE_LINE='외계인 닮은 우리 개도 물에 뜨는 구명조끼';
 const DRAFT={round:2,oneLine:ONE_LINE,cuts:CUTS,model:null,ratio:'9:16'};
 const SCRIPT={round:1,oneLine:ONE_LINE,cuts:CUTS.map(({src,...cut})=>cut),model:null,ratio:'9:16'};
-// 판 4 B5: 영상 전 확인 1/3은 「방향과 모델」이다(11-07부터 실제 앱). 霜の肌理는 사람 없이 제품만이라 모델 칸 없이 두 갈래 — 그림은 이 작품의 장면 이미지다.
-const DIRECTION_SHOTS={'demo-snow':still('w-gift-snow'),'demo-sphere':still('w-gift-sphere')};
-const DIRECTION={round:1,lead:'「서리꽃이 피는 순간」을 두 갈래로 나눴어요. 둘 다 사람 없이 제품만으로 가요.',modelId:'',price:290000,dueDate:'2026-11-21',revisions:2,options:[
-  {id:'demo-snow',name:'서리꽃',sentence:'눈 결정 하나가 자라 크림 뚜껑 위에 피어나요.',flow:[{at:'0:00',text:'깜깜한 유리 위에서 결정 하나가 자라요'},{at:'0:06',text:'유리구슬이 깨지는 순간 소리가 사라지고 모두 멈춰요'},{at:'0:11',text:'결정이 뚜껑에 앉아 피고, 두 제품이 나란히 서요'}],why:'남기실 말 「서리꽃이 피는 순간」을 그림 그대로 옮겨요. 한 장면의 임팩트로 가요.',recommended:true},
-  {id:'demo-sphere',name:'얼음 구슬',sentence:'서리 낀 유리구슬 속에서 세트가 천천히 모습을 드러내요.',flow:[{at:'0:00',text:'서리 낀 구슬 안에 두 제품이 희미하게 보여요'},{at:'0:05',text:'서리가 걷히며 앰플과 크림이 또렷해져요'},{at:'0:11',text:'구슬 앞에 이름이 떠요'}],why:'선물 상자를 여는 기대를 구슬 하나에 담아요. 움직임이 적어 차분하게 보여요.',recommended:false}]};
+// 판 4 B5: 영상 전 확인 1/3은 「방향과 모델」이다(11-07부터 실제 앱). 첨벙댕은 개가 주인공이라 모델 칸 없이 두 갈래 — 그림은 실제로 만들어 본 두 판의 장면이다.
+const DIRECTION_SHOTS={'demo-alien':still('w-vest-alien'),'demo-water':still('w-vest-water')};
+const DIRECTION={round:1,lead:'「물에서도 번쩍 건져요」를 두 갈래로 나눴어요. 둘 다 개가 주인공이라 모델은 따로 고르지 않았어요.',modelId:'',price:590000,dueDate:'2026-11-21',revisions:3,options:[
+  {id:'demo-alien',name:'외계인 개',sentence:'목소리는 끝까지 진지한데 개는 말이 안 되는 일만 해요.',flow:[{at:'0:00',text:'해변에서 개가 너무 오래 떠 있어 사람들이 달아나요'},{at:'0:13',text:'뽑기 집게가 손잡이를 물고 번쩍 들어요'},{at:'0:20',text:'방에 물이 차고, 조끼 덕에 개가 떠올라요'}],why:'「웃음으로 퍼지게」를 고르셨어요. 손잡이와 뜨는 힘을 우스운 장면으로 한 번씩 보여 드려요.',recommended:true},
+  {id:'demo-water',name:'물이 차는 방',sentence:'조끼를 입고 앉은 개의 방에 물이 차오르고, 개가 그대로 떠올라요.',flow:[{at:'0:00',text:'보호자가 상자에서 조끼를 꺼내 입혀요'},{at:'0:13',text:'손잡이 둘을 잡아 가방처럼 들어요'},{at:'0:20',text:'방에 물이 차고 화면이 물 위와 물속으로 갈려요'}],why:'제품이 하는 일을 한 장면으로 차분하게 보여 드려요. 웃음은 덜해요.',recommended:false}]};
 // 결제 차례(판 4 B5): 글 콘티를 승인한 뒤 크몽에서 결제하는 카드 — 실제 방과 같은 payCard. 오른쪽에는 승인한 글 콘티가 선다.
-const PAY={status:'',requestedDay:'',price:'29만원',days:10,revisions:2,number:ROOM.number,photo:false};
+const PAY={status:'',requestedDay:'',price:'59만원',days:14,revisions:3,number:ROOM.number,photo:false};
 const demoBackend=()=>({answers:emptyAnswers(),step:'',save:async()=>{},later:()=>{},
   upload:(slot,file,onProgress)=>new Promise(resolve=>{let p=0;const timer=setInterval(()=>{p+=.2;onProgress(Math.min(1,p));if(p>=1){clearInterval(timer);resolve({id:String(Date.now())});}},140);}),
   submit:async()=>({number:'P-1104-7F3A',at:new Date().toISOString(),link:location.href})});
@@ -43,17 +46,17 @@ const KST=(day,hm)=>`2026-11-0${day}T${hm}:00+09:00`;
 const EXAMPLE_ORDER=['room','ask','direction','script','pay','draft','review','history'];
 function exampleRequest(scene){
   const upto=EXAMPLE_ORDER.indexOf(scene),has=id=>upto>=EXAMPLE_ORDER.indexOf(id);
-  // castingLooks: 실제 서버와 같은 표식(옷 · 머리 고르기). 이 작품은 사람 없이 제품만이라 방향 화면에 옷 · 머리 줄은 서지 않는다.
-  const request={status:'submitted',number:ROOM.number,submittedAt:KST(1,'10:12'),answers:{name:'霜の肌理 홀리데이 세트',kind:'beauty',channels:['shorts'],package:'s15'},files:[],asks:[],rounds:[],castingLooks:true};
+  // castingLooks: 실제 서버와 같은 표식(옷 · 머리 고르기). 이 작품은 개가 주인공이라 방향 화면에 옷 · 머리 줄은 서지 않는다.
+  const request={status:'submitted',number:ROOM.number,submittedAt:KST(1,'10:12'),answers:{name:'첨벙댕 반려견 구명조끼',kind:'living',channels:['shorts'],package:'s30'},files:[],asks:[],rounds:[],castingLooks:true};
   if(scene==='ask')request.asks=ROOM.asks.map(ask=>({...ask,status:'open',at:KST(1,'15:20')}));
   if(has('direction')){
-    request.asks=ROOM.asks.map((ask,i)=>({...ask,status:'answered',at:KST(1,'15:20'),answer:i?'원본이 있어 함께 보내요.':'배경 없는 PNG로 보냈어요.',answeredAt:KST(1,'16:05')}));
+    request.asks=ROOM.asks.map((ask,i)=>({...ask,status:'answered',at:KST(1,'15:20'),answer:i?'쥔 사진 두 장 함께 보내요.':'배경 없는 PNG로 보냈어요.',answeredAt:KST(1,'16:05')}));
     Object.assign(request,{status:'confirmed',confirmedAt:KST(1,'17:40'),confirmedBy:'김하늘'});
-    request.directionProposal={...DIRECTION,status:scene==='direction'?'open':'chosen',at:KST(2,'10:10'),by:'김하늘',...(scene==='direction'?{}:{chosenId:'demo-snow',answeredAt:KST(2,'11:02')})};
+    request.directionProposal={...DIRECTION,status:scene==='direction'?'open':'chosen',at:KST(2,'10:10'),by:'김하늘',...(scene==='direction'?{}:{chosenId:'demo-alien',answeredAt:KST(2,'11:02')})};
   }
-  if(has('script'))request.rounds.push({round:1,kind:'script',oneLine:ONE_LINE,note:'첫 1.5초는 음악 없이, 결정이 자라는 소리만 남겨요.',sentAt:KST(2,'16:30'),by:'김하늘',scenes:[],...(has('pay')?{approvedAt:KST(2,'18:05')}:{})});
+  if(has('script'))request.rounds.push({round:1,kind:'script',oneLine:ONE_LINE,note:'내레이션은 끝까지 진지하게 읽어요. 우스운 건 그림이 맡아요.',sentAt:KST(2,'16:30'),by:'김하늘',scenes:[],...(has('pay')?{approvedAt:KST(2,'18:05')}:{})});
   if(has('pay'))request.scriptApprovedAt=KST(2,'18:05');
-  if(has('draft'))request.payment={status:'confirmed',amount:290000,requestedAt:KST(2,'18:40'),confirmedAt:KST(2,'19:20'),dueDate:'2026-11-21'};
+  if(has('draft'))request.payment={status:'confirmed',amount:590000,requestedAt:KST(2,'18:40'),confirmedAt:KST(2,'19:20'),dueDate:'2026-11-21'};
   if(has('draft'))request.rounds.push({round:2,kind:'images',oneLine:ONE_LINE,note:'',sentAt:KST(3,'11:20'),by:'김하늘',scenes:[],...(has('review')?{approvedAt:KST(3,'14:10')}:{})});
   if(has('review'))request.approvedAt=KST(3,'14:10');
   return request;
@@ -105,17 +108,17 @@ const AT='2026-11-04T05:00:00.000Z';
 // 영상 상자의 한 장은 views.mjs가 safeUrl로 원점 기준에 풀므로 영상처럼 절대 경로로 둔다.
 const POSTER=name=>`/pulse-app/assets/request/${name}.webp`;
 function exampleState(){
-  const v1={id:'demo-v1',kind:'preview',label:'1차 시안',guide:'제품이 떠 있는 시간과 끝 장면을 중심으로 봐 주세요.',createdAt:KST(3,'19:00'),poster:POSTER('sheet-gift-12'),media:{url:BASE+'preview-v1.mp4',mimeType:'video/mp4',fileName:'霜の肌理_1차.mp4'}};
-  const v2={id:'demo-v2',kind:'preview',label:'2차 시안',guide:'제품이 떠 있는 시간을 줄이고, 결정이 뚜껑에 피어나는 순간을 접사로 크게 보여 드려요.',createdAt:AT,poster:POSTER('sheet-gift-11'),media:{url:BASE+'preview-v2.mp4',mimeType:'video/mp4',fileName:'霜の肌理_2차.mp4'}};
-  const asked={id:'demo-m1',author:'customer',authorName:'예시 고객',action:'feedback',versionId:'demo-v1',seconds:8,text:'떠 있는 시간이 길어요. 뚜껑 위 결정을 더 크게 보여 주세요.',resolved:true,at:AT};
-  const scenes=[['결정이 자라요',3],['서리가 구슬을 덮어요',3],['깨지고, 멈춰요',5],['이름을 남겨요',4]].map(([title,duration],i)=>({id:`demo-s${i}`,title,duration,visibility:'customer'}));
-  const talk=[{id:'demo-q1',author:'customer',authorName:'예시 고객',action:'support',text:'연말 선물 시즌 전에 받을 수 있을까요?',at:KST(4,'10:02')},{id:'demo-q2',author:'staff',authorName:'김하늘',text:'네, 11월 21일에 맞춰 드려요. 2차 시안은 오늘 오후에 올려요.',at:KST(4,'10:30')}];
+  const v1={id:'demo-v1',kind:'preview',label:'1차 시안',guide:'말과 그림이 맞는지, 끝 장면이 어떤지 중심으로 봐 주세요.',createdAt:KST(3,'19:00'),poster:POSTER('sheet-vest-11'),media:{url:BASE+'preview-v1.mp4',mimeType:'video/mp4',fileName:'첨벙댕_1차.mp4'}};
+  const v2={id:'demo-v2',kind:'preview',label:'2차 시안',guide:'「우주에서도 뜹니다」를 목소리로도 말하고, 끝에 우주에 뜬 장면을 더했어요.',createdAt:AT,poster:POSTER('still-vest-float'),media:{url:BASE+'preview-v2.mp4',mimeType:'video/mp4',fileName:'첨벙댕_2차.mp4'}};
+  const asked={id:'demo-m1',author:'customer',authorName:'예시 고객',action:'feedback',versionId:'demo-v1',seconds:22.5,text:'「우주에서도 뜹니다」가 글자로만 지나가서 아쉬워요. 우주에서 떠다니는 장면이 있으면 좋겠어요.',resolved:true,at:AT};
+  const scenes=[['바닷가의 외계인',7],['조끼가 날아와요',5],['번쩍 들어요',4],['첨벙, 떠올라요',8],['우주에서도 떠요',2]].map(([title,duration],i)=>({id:`demo-s${i}`,title,duration,visibility:'customer'}));
+  const talk=[{id:'demo-q1',author:'customer',authorName:'예시 고객',action:'support',text:'반려동물 박람회 전에 받을 수 있을까요?',at:KST(4,'10:02')},{id:'demo-q2',author:'staff',authorName:'김하늘',text:'네, 11월 21일에 맞춰 드려요. 2차 시안은 오늘 오후에 올려요.',at:KST(4,'10:30')}];
   return {mode:'customer',demo:false,example:true,tab:'review',versionId:'',compare:false,reviewPanel:'note',error:'',rememberOffer:false,journalAll:false,journalTalk:false,project:{id:'demo-film',title:ROOM.title,ownerName:'김하늘',stage:'review',revision:1,requestFlow:true,versions:[v1,v2],messages:[asked,...talk],
-    closeout:{deliveryKey:'demo',canConfirm:true,files:[{id:'demo-final',label:'15초 광고 최종본'}]},
+    closeout:{deliveryKey:'demo',canConfirm:true,files:[{id:'demo-final',label:'26초 광고 최종본'}]},
     studio:{scenes,assets:[],comments:[],sceneReviews:[],request:exampleRequest('review'),
-      feedbackRounds:{latestVersionId:'demo-v2',latestVersionLabel:'2차 시안',canDraft:true,maxItems:30,nextNumber:2,drafts:[],rounds:[{id:'demo-r1',number:1,versionId:'demo-v1',versionLabel:'1차 시안',representativeName:'예시 고객',submittedAt:KST(4,'09:40'),items:[{id:'demo-i1',messageId:'demo-m1',seconds:8,text:asked.text,resolved:true,classification:{label:'합의한 범위 안의 수정',scopeNote:'제품이 떠 있는 시간과 끝 컷',scheduleNote:'2차 시안에 반영'}}]}]}}}};
+      feedbackRounds:{latestVersionId:'demo-v2',latestVersionLabel:'2차 시안',canDraft:true,maxItems:30,nextNumber:2,drafts:[],rounds:[{id:'demo-r1',number:1,versionId:'demo-v1',versionLabel:'1차 시안',representativeName:'예시 고객',submittedAt:KST(4,'09:40'),items:[{id:'demo-i1',messageId:'demo-m1',seconds:22.5,text:asked.text,resolved:true,classification:{label:'합의한 범위 안의 수정',scopeNote:'끝에 한 컷 더하기(12컷 안)',scheduleNote:'2차 시안에 반영'}}]}]}}}};
 }
-const asFinal=state=>{const v2=state.project.versions[1];state.project.stage='delivered';state.project.versions=[...state.project.versions.map(v=>({...v,approvedAt:v.id==='demo-v2'?KST(4,'16:00'):undefined})),{id:'demo-final',kind:'final',label:'15초 광고 최종본',guide:'릴스 · 쇼츠 · 틱톡에 그대로 올릴 수 있는 9:16 파일이에요.',createdAt:KST(4,'18:20'),poster:v2.poster,media:{...v2.media,fileName:'霜の肌理_15초.mp4'}}];return state;};
+const asFinal=state=>{const v2=state.project.versions[1];state.project.stage='delivered';state.project.versions=[...state.project.versions.map(v=>({...v,approvedAt:v.id==='demo-v2'?KST(4,'16:00'):undefined})),{id:'demo-final',kind:'final',label:'26초 광고 최종본',guide:'릴스 · 쇼츠 · 틱톡에 그대로 올릴 수 있는 9:16 파일이에요. 예시에는 본편만 실었고, 실제로는 15초 · 6초 편집본과 자막 없는 판도 함께 드려요.',createdAt:KST(4,'18:20'),poster:v2.poster,media:{...v2.media,fileName:'첨벙댕_26초.mp4'}}];return state;};
 
 // 둘러보기. 시안은 extra로 첫 화면 · 내부 확인 같은 장면을 앞에 더한다. 손님 예시에는 내부 화면을 싣지 않는다.
 export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}){

@@ -2,8 +2,8 @@ import {esc,dropSrcset,aboutDay} from './api.mjs';
 import {t,k,locale,intlLocale,htmlLang} from './i18n.mjs';
 import {localeMenu,offeredLocales,LOCALE_EVENT} from './locale-menu.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
-import {KINDS,CHANNELS,PACKAGES,slotsFor,WATCH_WORDS,claimText,ACTIONS,WIN,BOLD,NOTICE_KINDS,noticeLabel,noticeOn,VOICES,REFERENCE_POINTS,MODEL_LINES,MODEL_PICKS,STEPS,emptyAnswers,photoAdvice,price,DRAFT_FILES_GONE,pkgOf,kindOf,channelText,modelOf,modelList,filesOf,slotCount,briefRows,ratioOf,termsOf,dueDay,revisionNote,PERSONA_SLOTS,isPersonaSlot,PERSONA_KINDS,PERSONA_KEEPS,PERSONA_RELATIONS,PERSONA_CONSENTS,personaKindLabel,sceneSet} from './request-data.mjs';
-import {rise,riseAll,sink,revealWords,roll,typeIn,play,ease,reduced} from './motion.mjs';
+import {KINDS,CHANNELS,PACKAGES,slotsFor,WATCH_WORDS,claimText,ACTIONS,WIN,BOLD,NOTICE_KINDS,noticeLabel,noticeOn,VOICES,REFERENCE_POINTS,MODEL_LINES,MODEL_PICKS,STEPS,OLD_STEPS,GROUPS,groupOf,guessGroup,ENDS,FEEL_LABELS,emptyAnswers,photoAdvice,price,DRAFT_FILES_GONE,pkgOf,kindOf,channelText,modelOf,modelList,filesOf,slotCount,briefRows,ratioOf,termsOf,dueDay,revisionNote,PERSONA_SLOTS,isPersonaSlot,PERSONA_KINDS,PERSONA_KEEPS,PERSONA_RELATIONS,PERSONA_CONSENTS,personaKindLabel,sceneSet} from './request-data.mjs';
+import {rise,riseAll,sink,revealWords,typeIn,play,ease,reduced} from './motion.mjs';
 
 // 고객이 초대 없이 직접 시작하는 의뢰서(2026-11-04 — 의뢰 → 준비할 것 작성 → 함께 확인 → 1차 전달 뒤 수정 → 제작).
 // 시사실 판(2026-11-05): 왼쪽은 묻는 말 하나, 오른쪽은 온 화면 스크린이다. 고른 답이 스크린에서 바로 어떻게 되는지 보이고, 답은 크레딧처럼 스크린 아래에 쌓인다. 어떤 칸도 보내기를 막지 않고, 없으면 무엇이 달라지는지만 말한다.
@@ -64,17 +64,15 @@ const canHover=()=>typeof matchMedia==='function'&&matchMedia('(hover:hover)').m
 // 계속 도는 영상(큰 칸 lead · 예시 작품 win)의 멈춤 · 재생 단추. 보이는 글은 「멈춤」 · 「재생」, 읽는 이름에는 무엇을 멈추는지까지 담는다.
 const holdName=(kind,paused)=>kind==='lead'?(paused?t('모델 영상 재생'):t('모델 영상 멈춤')):(paused?t('예시 작품 영상 재생'):t('예시 작품 영상 멈춤'));
 const holdButton=(kind,paused)=>`<button type="button" class="sx-film-hold sx-small" data-do="filmhold" data-hold="${kind}"${paused?' data-paused':''} aria-label="${esc(holdName(kind,paused))}">${esc(paused?t('재생'):t('멈춤'))}</button>`;
-// 예시 작품 한 줄: 「작품」 · 무엇으로 이기는지 · 출처.
-const winCap=pick=>t(pick.cap);
-// 「무엇으로 남길지」의 화면: 남긴 작품이 있는 길은 소리 없는 영상, 없는 길(웃음)은 예시 장면 사진 한 장.
-const winMedia=pick=>pick.film?`<video class="sx-q-fill" data-win-film src="${esc(pick.film)}" poster="${esc(pick.poster)}" muted loop playsinline preload="metadata" ${reduced()?'':'autoplay'}></video>`:`<img class="sx-q-fill" data-win-still src="${esc(pick.poster)}" data-cap alt="">`;
 
 const part=(step,index,total)=>`<p class="sx-q-part"><span class="sx-no">${String(index+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}</span><b>${esc(t(step.part))}</b></p>`;
-const ask=(step,index,total,title,lead,body)=>`${part(step,index,total)}<h1 class="sx-q-title sx-serif" tabindex="-1" data-title>${esc(title)}</h1>${lead?`<p class="sx-body sx-q-lead" data-in>${esc(lead)}</p>`:''}${body}`;
+// 세 막(11-26): 질문 머리(.sx-q-head — 단계 · 제목 · 한 줄)와 답하는 칸(.sx-q-body)을 나눠 그린다. 막마다 둘의 자리가 다르다(film.css .sx-q[data-act]).
+const ask=(step,index,total,title,lead,body)=>`<div class="sx-q-head">${part(step,index,total)}<h1 class="sx-q-title sx-serif" tabindex="-1" data-title>${esc(title)}</h1>${lead?`<p class="sx-body sx-q-lead" data-in>${esc(lead)}</p>`:''}</div><div class="sx-q-body">${body}</div>`;
+const badge=on=>on?`<span class="sx-badge">${esc(t('추천'))}</span>`:'';
 // 보내기 전 확인의 받으실 날 · 수정 한 줄(결정 11-07). 날은 달력 기준이고 자료가 다 모인 날부터 센다.
 const dueLine=a=>{const pkg=pkgOf(a);if(!pkg)return '';return `<p class="sx-small sx-q-due" data-in>${pkg.days?`${esc(t('받으실 날은 사진 · 로고 · 꼭 넣을 말이 다 모인 날부터 {days}일이에요(주말 · 공휴일 포함).',{days:pkg.days}))} ${boldAt(t('오늘 다 모이면 {day}이에요.',{day:MARK}),dueDay(pkg))} ${esc(t('수정은 {note}.',{note:revisionNote(pkg)}))}`:esc(t('받으실 날과 수정 횟수는 구성에 맞춰 함께 정해요.'))}</p>`;};
-const row=({i,label,note,on,attr,meta=''})=>`<button type="button" class="sx-row ${on?'is-on':''}" role="radio" aria-checked="${on?'true':'false'}" ${attr} data-in><span class="sx-no">${String(i+1).padStart(2,'0')}</span><span class="sx-row-main"><b class="sx-serif">${esc(label)}</b>${note?`<small class="sx-small">${esc(note)}</small>`:''}</span>${meta?`<span class="sx-row-meta">${meta}</span>`:''}<span class="sx-row-mark" aria-hidden="true"></span></button>`;
-const field=({bind,label,value,placeholder='',help='',type='text',rows=0,max=400,auto=''})=>`<label class="sx-field" data-in><span class="sx-small">${esc(label)}</span>${rows?`<textarea data-bind="${bind}" rows="${rows}" maxlength="${max}" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`:`<input data-bind="${bind}" type="${type}" value="${esc(value)}" maxlength="${max}" placeholder="${esc(placeholder)}" ${auto?`autocomplete="${auto}"`:''}>`}${help?`<small class="sx-small">${esc(help)}</small>`:''}</label>`;
+const row=({i,label,note,on,attr,meta='',rec=false})=>`<button type="button" class="sx-row ${on?'is-on':''}" role="radio" aria-checked="${on?'true':'false'}" ${attr} data-in><span class="sx-no">${String(i+1).padStart(2,'0')}</span><span class="sx-row-main"><b class="sx-serif">${esc(label)}${badge(rec)}</b>${note?`<small class="sx-small">${esc(note)}</small>`:''}</span>${meta?`<span class="sx-row-meta">${meta}</span>`:''}<span class="sx-row-mark" aria-hidden="true"></span></button>`;
+const field=({bind,label,value,placeholder='',help='',type='text',rows=0,max=400,auto='',big=false})=>`<label class="sx-field${big?' is-big':''}" data-in><span class="sx-small">${esc(label)}</span>${rows?`<textarea data-bind="${bind}" rows="${rows}" maxlength="${max}" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`:`<input data-bind="${bind}" type="${type}" value="${esc(value)}" maxlength="${max}" placeholder="${esc(placeholder)}" ${auto?`autocomplete="${auto}"`:''}>`}${help?`<small class="sx-small">${esc(help)}</small>`:''}</label>`;
 // 칩 글은 부르는 자리에서 번역해 넘긴다(저장값 칩은 data-id에 한국어 값 그대로).
 const chip=(label,on,attr)=>`<button type="button" class="sx-chip ${on?'is-on':''}" aria-pressed="${on?'true':'false'}" ${attr}>${esc(label)}</button>`;
 // 모델 고르기: 제작사가 이 광고에 고른 넷을 크게 보여 준다. 고른 모델이 넷 밖이면 앞에 세우고, 손을 올리거나 고른 한 명이 크게 선다. 21명은 손님이 열 때만 펼친다.
@@ -117,7 +115,7 @@ const contactLocaleView=a=>{
   return `<div class="sx-sub" data-in><span class="sx-small">${esc(t('안내 · 메일 언어'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('안내 · 메일 언어'))}">${list.map(value=>`<button type="button" class="sx-chip ${a.contactLocale===value?'is-on':''}" aria-pressed="${a.contactLocale===value?'true':'false'}" lang="${htmlLang(value)}" data-do="contactlocale" data-id="${value}">${esc(LANG_NAMES[value]||value)}</button>`).join('')}</div></div>`;
 };
 // 확인 단계 요약의 한 줄(허락 언어가 둘 이상일 때만).
-const contactLocaleRow=a=>offeredLocales().length>1&&LANG_NAMES[a.contactLocale]?[{key:k('안내 · 메일 언어'),step:'contact',value:LANG_NAMES[a.contactLocale],missing:'',lang:htmlLang(a.contactLocale)}]:[];
+const contactLocaleRow=a=>offeredLocales().length>1&&LANG_NAMES[a.contactLocale]?[{key:k('안내 · 메일 언어'),step:'who',value:LANG_NAMES[a.contactLocale],missing:'',lang:htmlLang(a.contactLocale)}]:[];
 
 // ── 의뢰서 탭(11-13): 과감함 · 꼭 붙일 표시 · 목소리. 모두 눌러 고르고, 고르지 않아도 넘어간다. ──
 const boldNote=a=>{const item=BOLD.find(item=>item.id===a.bold),note=pkgOf(a)?.photo&&item?.photoNote||item?.note;return note?t(note):'';};
@@ -129,17 +127,69 @@ const noticeBlock=a=>`<div class="sx-sub" data-in><span class="sx-small">${esc(t
 const voiceNote=a=>{const note=VOICES.find(item=>item.id===a.voice)?.note;return note?t(note):'';};
 const voiceBlock=a=>pkgOf(a)?.photo?'':`<div class="sx-sub" data-in data-voice-block><span class="sx-small">${esc(t('목소리는 어떻게 할까요? · 선택'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('목소리'))}">${VOICES.filter(item=>item.id!=='model'||a.modelChoice!=='none').map(item=>chip(t(item.label),a.voice===item.id,`data-do="voice" data-id="${item.id}"`)).join('')}</div><small class="sx-small sx-q-hint" data-voice-note${voiceNote(a)?'':' hidden'}>${esc(voiceNote(a))}</small></div>`;
 
+// 세 막의 그림 칸(11-26): 올릴 곳은 그 화면 비율의 판, 길이는 막대 길이, 사진은 작은 장 다섯.
+const screenPic=item=>item.id==='screen'?'<span class="sx-stand"><span class="sx-scr is-169"></span><i></i><u></u></span>':`<span class="sx-scr is-${item.ratio.replace(':','')}"></span>`;
+const LEN_BARS={s15:[25],s30:[50,25,10],s60:[100],corp:[100,50,25]};
+const lenPic=pkg=>pkg.photo?'<span class="sx-shots"><i></i><i></i><i></i><i></i><i></i></span>':`<span class="sx-bars">${(LEN_BARS[pkg.id]||[50]).map(width=>`<i class="w${width}"></i>`).join('')}</span>`;
+const tile=({on,attr,pic,label,note,meta='',rec=false})=>`<button type="button" class="sx-tile ${on?'is-on':''}" ${attr}><span class="sx-tile-pic" aria-hidden="true">${pic}</span><b>${esc(label)}${badge(rec)}</b>${note?`<small>${esc(note)}</small>`:''}${meta?`<span class="sx-tile-meta">${meta}</span>`:''}</button>`;
+const groupPrice=group=>Math.min(...group.packages.map(id=>PACKAGES.find(item=>item.id===id)?.price).filter(Number.isFinite));
+const NAME_ASK={product:[k('제품 이름이 무엇인가요?'),k('제품 이름'),k('포장에 적힌 그대로')],place:[k('매장 이름이 무엇인가요?'),k('매장 이름'),k('간판에 적힌 그대로')],app:[k('서비스 이름이 무엇인가요?'),k('서비스 이름'),k('앱스토어에 적힌 그대로')],brand:[k('회사 이름이 무엇인가요?'),k('회사 이름'),k('정식 표기 그대로')]};
+// 「어떤 걸 골라야 할지 모르겠어요」(11-26 추천): 하시는 일 한 줄 → 맞는 갈래에 「추천」. 못 찾으면 가장 가까운 것을 고르시라고만 한다.
+const guessView=guess=>guess.open?`<div class="sx-guess" data-in><input data-guess value="${esc(guess.text||'')}" maxlength="60" placeholder="${esc(t('무엇을 하시나요? 예) 강아지 옷을 팔아요'))}" aria-label="${esc(t('하시는 일'))}"><button type="button" class="sx-chip" data-do="guessgo">${esc(t('추천받기'))}</button></div><p class="sx-small sx-q-hint" data-guess-out role="status">${guess.tried?esc(guess.group?t('{group} 쪽이 맞아 보여요.',{group:t(GROUPS.find(item=>item.id===guess.group).label)}):t('딱 맞는 것을 못 찾았어요. 가장 가까운 것을 고르시면 담당자가 다시 맞춰 드려요.')):''}</p>`:`<button type="button" class="sx-link sx-small sx-q-guess-open" data-do="guessopen" data-in>${esc(t('어떤 걸 골라야 할지 모르겠어요'))}</button>`;
+// 받고 싶은 날 달력(11-26): 이번 주 일요일부터 다섯 주. 지난 날은 고를 수 없고, 고른 길이의 제작 기간(PACKAGES.days)이 지난 날부터 넉넉한 날로 칠한다.
+const DAY_MS=86400000;
+const todayKst=()=>{const now=new Date(Date.now()+9*3600000);return Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());};
+const isoOf=time=>new Date(time).toISOString().slice(0,10);
+const dayLabel=iso=>{const at=new Date(iso+'T00:00:00Z');return Number.isFinite(at.getTime())?new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',day:'numeric',weekday:'long',timeZone:'UTC'}).format(at):iso;};
+const needDays=a=>pkgOf(a)?.days||0;
+const recDay=a=>isoOf(todayKst()+(needDays(a)||14)*DAY_MS);
+function calendarView(a,page){
+  const today=todayKst(),first=today-new Date(today).getUTCDay()*DAY_MS+page*35*DAY_MS,need=needDays(a)||14;
+  const month=time=>new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',timeZone:'UTC'}).format(new Date(time));
+  const head=month(first)===month(first+34*DAY_MS)?month(first):`${month(first)} · ${month(first+34*DAY_MS)}`;
+  const week=Array.from({length:7},(_,i)=>new Intl.DateTimeFormat(intlLocale(locale()),{weekday:'narrow',timeZone:'UTC'}).format(new Date(Date.UTC(2026,10,22+i))));
+  const days=Array.from({length:35},(_,i)=>{const time=first+i*DAY_MS,iso=isoOf(time),n=Math.round((time-today)/DAY_MS),d=new Date(time).getUTCDate(),tag=n===0?t('오늘'):n===need?t('{days}일 뒤',{days:need}):'';
+    return `<button type="button" class="sx-cal-day${n>=need?' is-ok':''}${tag?' has-tag':''}" data-do="day" data-id="${iso}" aria-pressed="${a.date===iso?'true':'false'}" aria-label="${esc(dayLabel(iso))}"${n<=0?' disabled':''}>${d===1&&i?`${new Date(time).getUTCMonth()+1}.1`:d}${tag?`<small>${esc(tag)}</small>`:''}</button>`;}).join('');
+  return `<div class="sx-cal" data-cal data-in><div class="sx-cal-head"><b>${esc(head)}</b><span><button type="button" class="sx-cal-move" data-do="calmove" data-id="-1" aria-label="${esc(t('앞 다섯 주'))}"${page<=0?' disabled':''}>‹</button><button type="button" class="sx-cal-move" data-do="calmove" data-id="1" aria-label="${esc(t('다음 다섯 주'))}"${page>=3?' disabled':''}>›</button></span></div><div class="sx-cal-grid" role="group" aria-label="${esc(t('받고 싶은 날'))}">${week.map(day=>`<span class="sx-cal-wd" aria-hidden="true">${esc(day)}</span>`).join('')}${days}</div></div>`;
+}
+// 확인 단계는 손님이 고친 것을 다시 찾는 줄만 둔다(11-26 세 막). 전체 의뢰서는 위 「적은 내용」에 그대로 있다.
+const REVIEW_KEYS=[k('광고할 것'),k('올릴 곳'),k('길이 · 구성'),k('받은 자료'),k('마무리'),k('모델'),k('받고 싶은 날'),k('연락처')];
+const reviewRows=a=>briefRows(a).filter(item=>REVIEW_KEYS.includes(item.key)&&(item.key!==k('모델')||a.modelChoice||a.models.length));
+// 막의 그림(11-26): 솔리오 여섯 장(인사 · 갈래 넷 — 노란 바탕, 눈은 화면이 얹는다), 시스루의 문 장면(5.30~6.46초), 그 문이 선 하늘.
+// 눈 자리는 film.css의 .sx-q-scene[data-scene] .sx-eyes에 있다(굽고 잰 값 — 설계 F판). 앱의 CSP가 인라인 style을 막는다.
+const SOLIO_SCENES=['hello','product','place','app','brand'];
+const DOOR_AT={name:0,files:.36,more:.72,model:.72,who:1.08};
+const stageMedia=()=>`<div class="sx-q-media" aria-hidden="true"><div class="sx-q-solio" data-solio>${SOLIO_SCENES.map(id=>`<div class="sx-q-scene" data-scene="${id}"><img src="${ASSET}solio-${id}.webp" alt="" decoding="async"><span class="sx-eyes"><i></i><i></i></span></div>`).join('')}</div><video class="sx-q-door" data-door src="${ASSET}door-opalin.mp4" muted playsinline preload="auto" disablepictureinpicture disableremoteplayback tabindex="-1"></video><img class="sx-q-sky" src="${ASSET}sky-opalin.webp" alt="" decoding="async"><i class="sx-q-shade"></i><p class="sx-q-skydate" data-sky-date></p></div>`;
+// 메일 주소 오타(11-26): 흔한 메일 주소와 한두 글자만 다르면 고친 주소를 돌려준다.
+const MAIL_DOMAINS=['gmail.com','naver.com','daum.net','hanmail.net','kakao.com','nate.com','outlook.com','icloud.com','hotmail.com','yahoo.com']; // i18n-skip
+const editDistance=(x,y)=>{const row=Array.from({length:y.length+1},(_,j)=>j);for(let i=1;i<=x.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=y.length;j++){const keep=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(x[i-1]===y[j-1]?0:1));prev=keep;}}return row[y.length];};
+export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_DOMAINS.includes(domain))return '';const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]<=2?`${m[1]}@${best[0]}`:'';};
+// 같은 이름(11-26 중복 확인): 이 기기에서 보낸 의뢰의 이름과 날을 남겨 두고(최근 20개 · 이 브라우저에만), 같은 이름을 다시 쓰면 그 날을 알린다.
+const SENT_KEY='pulse-sent-requests';
+const nameKey=value=>String(value||'').toLowerCase().replace(/[\s·.,'"「」()\-]/g,'');
+function sentBefore(name){const key=nameKey(name);if(key.length<2)return '';try{const hit=(JSON.parse(localStorage.getItem(SENT_KEY)||'[]')||[]).find(item=>item?.key===key);if(!hit)return '';const at=new Date(hit.at);return Number.isFinite(at.getTime())?new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',day:'numeric'}).format(at):'';}catch{return '';}}
+function rememberSent(name,at){const key=nameKey(name);if(key.length<2)return;try{const list=(JSON.parse(localStorage.getItem(SENT_KEY)||'[]')||[]).filter(item=>item?.key!==key);list.unshift({key,at:at||new Date().toISOString()});localStorage.setItem(SENT_KEY,JSON.stringify(list.slice(0,20)));}catch{}}
 const views={
-  what(a,step,i,n){
-    return ask(step,i,n,t('무엇을 광고할까요?'),t('종류에 따라 준비하실 것이 달라져요. 맞는 것 하나만 골라 주세요.'),
-      field({bind:'name',label:t('제품이나 브랜드 이름'),value:a.name,placeholder:t('예) 오미톡 오미자 스파클링'),max:120})+
-      `<div class="sx-rows is-kinds" role="radiogroup" aria-label="${esc(t('광고할 것의 종류'))}">${KINDS.map((item,index)=>row({i:index,label:t(item.label),note:t(item.note),on:a.kind===item.id,attr:`data-do="kind" data-id="${item.id}"`})).join('')}</div>`);
+  what(a,step,i,n,ctx={}){
+    const group=ctx.group||groupOf(a.kind)?.id||'',guess=ctx.guess||{},product=GROUPS[0];
+    return ask(step,i,n,t('무엇을 만들까요?'),t('고르신 것에 따라 준비하실 것이 달라져요.'),
+      `<div class="sx-rows is-groups" role="radiogroup" aria-label="${esc(t('만들 것'))}">${GROUPS.map((item,index)=>row({i:index,label:t(item.label),note:t(item.note),on:group===item.id,rec:guess.tried&&guess.group===item.id,attr:`data-do="group" data-id="${item.id}"`,meta:`<span class="sx-small">${esc(t('{price}부터',{price:price(groupPrice(item))}))}</span>`})).join('')}</div>`+
+      (group==='product'?`<div class="sx-sub" data-in data-kind-more><span class="sx-small">${esc(t('어떤 제품인가요?'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('제품 업종'))}">${product.kinds.map(id=>chip(t(KINDS.find(item=>item.id===id).label),a.kind===id,`data-do="kind" data-id="${id}"`)).join('')}</div></div>`:'')+
+      guessView(guess));
   },
   where(a,step,i,n){
-    return ask(step,i,n,t('어디에 올리고, 얼마나 길게 할까요?'),t('올릴 곳에 따라 화면 비율이 정해져요. 모르면 비워 두셔도 저희가 제안해요.'),
-      `<div class="sx-chips" data-in role="group" aria-label="${esc(t('올릴 곳'))}">${CHANNELS.map(item=>chip(t(item.label),a.channels.includes(item.id),`data-do="channel" data-id="${item.id}"`)).join('')}</div>`+
-      `<div class="sx-rows is-tight" role="radiogroup" aria-label="${esc(t('길이와 구성'))}">${PACKAGES.map((item,index)=>row({i:index,label:t(item.label),note:item.note?`${t(item.title)} · ${t(item.note)}`:t(item.title),on:a.package===item.id,attr:`data-do="package" data-id="${item.id}"`,meta:`<span class="sx-small">${esc(t('{price}부터',{price:price(item.price)}))}</span><span class="sx-small sx-row-terms">${esc(termsOf(item))}</span>`})).join('')}${row({i:PACKAGES.length,label:t('추천해 주세요'),note:t('올릴 곳을 보고 맞는 구성을 말씀드려요'),on:a.package==='ask',attr:'data-do="package" data-id="ask"'})}</div>`+
+    const group=groupOf(a.kind)||GROUPS[0],ids=[...new Set([...(a.package&&a.package!=='ask'&&!group.packages.includes(a.package)?[a.package]:[]),...group.packages])],pkgs=ids.map(id=>PACKAGES.find(item=>item.id===id)).filter(Boolean);
+    const shape=item=>item.ratio==='9:16'?t('세로 화면'):item.ratio==='1:1'?t('정사각 화면'):t('가로 화면');
+    return ask(step,i,n,t('어디에 올리고, 얼마나 길게 할까요?'),t('모르시면 추천대로 두셔도 돼요.'),
+      `<p class="sx-small sx-q-sub" data-in>${esc(t('올릴 곳 · 여러 곳을 고를 수 있어요'))}</p><div class="sx-tiles is-four" data-in role="group" aria-label="${esc(t('올릴 곳'))}">${CHANNELS.map(item=>tile({on:a.channels.includes(item.id),attr:`data-do="channel" data-id="${item.id}" aria-pressed="${a.channels.includes(item.id)?'true':'false'}"`,pic:screenPic(item),label:t(item.label),note:shape(item),rec:group.channel===item.id})).join('')}</div>`+
+      `<p class="sx-small sx-q-sub" data-in>${esc(t('길이'))}</p><div class="sx-tiles${pkgs.length===4?' is-four':''}" data-in role="radiogroup" aria-label="${esc(t('길이와 구성'))}">${pkgs.map(item=>tile({on:a.package===item.id,attr:`data-do="package" data-id="${item.id}" role="radio" aria-checked="${a.package===item.id?'true':'false'}"`,pic:lenPic(item),label:t(item.label),note:t(item.title),meta:`<span class="sx-small">${esc(t('{price}부터',{price:price(item.price)}))}</span><span class="sx-small sx-row-terms">${esc(termsOf(item))}</span>`,rec:group.package===item.id})).join('')}</div>`+
+      `<p class="sx-small sx-q-why" data-in>${esc(t(group.why))}</p>`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="paid" ${a.paid?'checked':''}><span>${esc(t('광고비를 써서 돌릴 거예요'))}</span><small class="sx-small">${esc(t('심사에 필요한 표시와 규격까지 함께 챙겨 드려요.'))}</small></label>`);
+  },
+  name(a,step,i,n,ctx={}){
+    const [q,label,hint]=NAME_ASK[groupOf(a.kind)?.id||'product'];
+    return ask(step,i,n,t(q),t('광고 첫 화면에 이 이름이 서요.'),field({bind:'name',label:t(label),value:a.name,placeholder:t(hint),max:120,big:true})+
+      (ctx.sameName?`<div class="sx-q-note" data-same-name data-in role="status"><b>${esc(t('{date}에 같은 이름으로 보낸 의뢰가 있어요',{date:ctx.sameName}))}</b><p class="sx-small">${esc(t('같은 광고라면 받으신 메일의 링크로 그 프로젝트 방에서 이어 가시면 돼요. 다른 광고라면 새 의뢰로 계속하세요.'))}</p><button type="button" class="sx-chip" data-do="nameok">${esc(t('새 의뢰로 계속'))}</button></div>`:''));
   },
   files(a,step,i,n){
     // 사진 상품에는 소리 파일 칸을 두지 않는다 — 이미 올린 소리 파일이 있으면 볼 수 있고 지울 수 있게 남긴다. 크기 칸은 거르기 전 묶음으로 정한다(걸러 낸 배열은 늘 새 배열이다).
@@ -154,29 +204,36 @@ const views={
       ((KINDS.find(item=>item.id===a.kind)?.group||'product')==='product'?field({bind:'size',label:t('손에 들면 어느 정도 크기인가요?'),value:a.size,placeholder:t('예) 355ml 캔, 손바닥 안에 들어와요'),max:120}):'')+
       field({bind:'driveUrl',label:t('파일이 크면 드라이브 링크로'),value:a.driveUrl,placeholder:'https://',type:'url',max:1000}));
   },
-  message(a,step,i,n){
-    return ask(step,i,n,t('보는 사람에게 무엇을 남길까요?'),t('광고 문장이 아니어도 돼요. 평소 하시는 말로 적어 주시면 저희가 한 문장으로 다듬어 미리 보여 드려요.'),
-      field({bind:'audience',label:t('이 제품은 누가, 언제 찾나요?'),value:a.audience,placeholder:t('예) 운동 끝나고 목마른 20대, 출근 전 시간이 없는 직장인'),rows:2,max:300})+
-      field({bind:'oneThing',label:t('딱 하나만 남긴다면요?'),value:a.oneThing,placeholder:t('예) 한 캔에 맛이 다섯 번 바뀐다'),rows:2,max:300})+
-      field({bind:'facts',label:t('그 말을 믿게 할 사실 · 선택'),value:a.facts,placeholder:t('예) 누적 판매 12만 개, ○○ 인증'),help:t('자료가 있는 것만 적어 주세요. 그 자료도 준비물에 함께 넣어 주시면 좋아요.'),max:300})+
-      `<div class="sx-sub" data-in><span class="sx-small">${esc(t('보고 나서 무엇을 하면 좋을까요?'))}</span><div class="sx-chips">${ACTIONS.map(item=>chip(t(item.label),a.action===item.id,`data-do="action" data-id="${item.id}"`)).join('')}</div></div>`);
-  },
-  words(a,step,i,n){
-    const watch=WATCH_WORDS[a.kind]||WATCH_WORDS.brand;
-    return ask(step,i,n,t('화면에 정확히 나와야 할 글자가 있나요?'),t('제품명 표기, 가격, 기간, 꼭 넣어야 할 안내처럼 한 글자도 바뀌면 안 되는 말이에요. 화면에 바로 얹어 볼게요.'),
-      field({bind:'screenText',label:t('화면에 나올 글자'),value:a.screenText,placeholder:t('예) 다섯 가지 맛, 톡.\n11월 편의점 출시'),rows:3,max:300})+
-      `<div class="sx-sub" data-in><span class="sx-small">${esc(t('쓰면 안 되는 말 · 업종마다 자주 걸리는 말이에요. 빼야 하는 말을 눌러 주세요.'))}</span><div class="sx-chips">${watch.map(word=>chip(claimText(word),a.avoid.includes(word),`data-do="avoid" data-id="${esc(word)}"`)).join('')}</div></div>`+
-      field({bind:'avoidNote',label:t('그 밖에 쓰면 안 되는 말'),value:a.avoidNote,placeholder:t('예) 경쟁사 이름, 이제 쓰지 않는 제품 이름'),max:300})+
-      noticeBlock(a));
-  },
-  feel(a,step,i,n){
-    const ref=a.refs[0]||{url:'',points:[],why:''};
-    return ask(step,i,n,t('무엇으로 오래 남을까요?'),t('광고는 보통 셋 중 하나로 이겨요. 기획 첫 줄에 이것부터 정해요.'),
-      `<div class="sx-rows" role="radiogroup" aria-label="${esc(t('무엇으로 남길지'))}">${WIN.map((item,index)=>row({i:index,label:t(item.label),note:t(item.note),on:a.win===item.id,attr:`data-do="win" data-id="${item.id}"`})).join('')}${row({i:WIN.length,label:t('맡길게요'),note:t('제품에 맞는 쪽을 미리 제안해요'),on:a.win==='ask',attr:'data-do="win" data-id="ask"'})}</div>`+
+  // 마무리(11-26): 기본은 「추천대로」 — 고를 것을 저희가 맡는다. 「직접 고를게요」를 누르면 마지막 화면 · 문구 · 표기 · 느낌 · 과감함 · 피할 말이 열리고,
+  // 옛 의뢰서의 나머지 칸(누가 찾는지 · 남길 한 가지 · 믿게 할 사실 · 보고 나서 · 자주 걸리는 말 · 참고 광고)은 그 아래 접힌 칸에 그대로 둔다(직원이 쓰는 답이라 지우지 않는다).
+  // 꼭 붙일 표시는 법으로 정한 업종이 있어 추천대로여도 묻는다.
+  more(a,step,i,n){
+    const photo=!!pkgOf(a)?.photo;
+    if(a.finish!=='custom')return ask(step,i,n,t('나머지는 추천대로 할까요?'),t('보내신 뒤에 바꾸셔도 돼요.'),
+      `<dl class="sx-rec" data-in>${[...(photo?[]:[[k('마지막 화면'),k('로고 + 한 줄')],[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]]),[k('느낌'),k('두 가지 안으로 미리 제안해요')],[k('나올 모델'),a.modelChoice==='persona'?k('내 모델에서 고르신 모델'):a.modelChoice==='custom'?k('요청하신 맞춤 인물'):a.models.length?k('고르신 모델'):k('저희가 골라 먼저 보여 드려요')]].map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(t(value))}</dd></div>`).join('')}</dl>`+
+      `<button type="button" class="sx-link sx-small" data-do="finish" data-id="custom" data-in>${esc(t('직접 고를게요'))}</button>`+noticeBlock(a));
+    const watch=WATCH_WORDS[a.kind]||WATCH_WORDS.brand,ref=a.refs[0]||{url:'',points:[],why:''};
+    return ask(step,i,n,t('원하시는 것만 골라 주세요'),t('비워 두신 것은 저희가 골라 보여 드려요.'),
+      (photo?'':`<div class="sx-sub" data-in><span class="sx-small">${esc(t('마지막 화면'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('마지막 화면'))}">${ENDS.map(item=>chip(t(item.label),a.endCard===item.id,`data-do="end" data-id="${item.id}"`)).join('')}</div></div>`+
+      `<div data-end-line${a.endCard==='logo'?' hidden':''}>${field({bind:'endLine',label:t('문구 한 줄 · 비워 두면 담당자가 써요'),value:a.endLine,max:80})}</div>`)+
+      field({bind:'screenText',label:t('한 글자도 바뀌면 안 되는 표기 · 선택'),value:a.screenText,placeholder:t('예) 2,500원 · 12월 한정'),max:300})+
+      `<div class="sx-sub" data-in><span class="sx-small">${esc(t('보고 나서 어떤 마음이 들면 좋을까요?'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('느낌'))}">${WIN.map(item=>chip(t(FEEL_LABELS[item.id]),a.win===item.id,`data-do="win" data-id="${item.id}"`)).join('')}</div></div>`+
       boldBlock(a)+
-      field({bind:'refUrl',label:t('이런 광고면 좋겠어요 · 링크'),value:ref.url,placeholder:'https://',type:'url',max:1000,help:t('반응이 좋았던 광고의 짜임을 재서 뼈대로 쓰기 때문에, 참고 영상 하나가 말 열 줄보다 큰 힘이 돼요.')})+
-      `<div class="sx-sub" data-in><span class="sx-small">${esc(t('그 광고의 어디가 좋았나요?'))}</span><div class="sx-chips">${REFERENCE_POINTS.map(point=>chip(t(point),ref.points.includes(point),`data-do="refpoint" data-id="${esc(point)}"`)).join('')}</div></div>`+
-      field({bind:'avoidFeel',label:t('이런 느낌은 피해 주세요 · 선택'),value:a.avoidFeel,placeholder:t('예) 홈쇼핑 같은 느낌, 과한 표정'),max:200}));
+      // 목소리는 모델 단계가 있는 의뢰(내 모델 · 맞춤 인물)면 그 단계에서 묻는다.
+      (a.modelChoice==='persona'||a.modelChoice==='custom'?'':voiceBlock(a))+
+      noticeBlock(a)+
+      `<details class="sx-more" data-in><summary class="sx-small">${esc(t('더 알려 주실 것 · 선택'))}</summary>`+
+        field({bind:'audience',label:t('이 제품은 누가, 언제 찾나요?'),value:a.audience,placeholder:t('예) 운동 끝나고 목마른 20대, 출근 전 시간이 없는 직장인'),rows:2,max:300})+
+        field({bind:'oneThing',label:t('딱 하나만 남긴다면요?'),value:a.oneThing,placeholder:t('예) 한 캔에 맛이 다섯 번 바뀐다'),rows:2,max:300})+
+        field({bind:'facts',label:t('그 말을 믿게 할 사실 · 선택'),value:a.facts,placeholder:t('예) 누적 판매 12만 개, ○○ 인증'),max:300})+
+        `<div class="sx-sub"><span class="sx-small">${esc(t('보고 나서 무엇을 하면 좋을까요?'))}</span><div class="sx-chips">${ACTIONS.map(item=>chip(t(item.label),a.action===item.id,`data-do="action" data-id="${item.id}"`)).join('')}</div></div>`+
+        `<div class="sx-sub"><span class="sx-small">${esc(t('쓰면 안 되는 말 · 업종마다 자주 걸리는 말이에요. 빼야 하는 말을 눌러 주세요.'))}</span><div class="sx-chips">${watch.map(word=>chip(claimText(word),a.avoid.includes(word),`data-do="avoid" data-id="${esc(word)}"`)).join('')}</div></div>`+
+        field({bind:'avoidNote',label:t('그 밖에 쓰면 안 되는 말'),value:a.avoidNote,placeholder:t('예) 경쟁사 이름, 이제 쓰지 않는 제품 이름'),max:300})+
+        field({bind:'refUrl',label:t('이런 광고면 좋겠어요 · 링크'),value:ref.url,placeholder:'https://',type:'url',max:1000})+
+        `<div class="sx-sub"><span class="sx-small">${esc(t('그 광고의 어디가 좋았나요?'))}</span><div class="sx-chips">${REFERENCE_POINTS.map(point=>chip(t(point),ref.points.includes(point),`data-do="refpoint" data-id="${esc(point)}"`)).join('')}</div></div>`+
+        field({bind:'avoidFeel',label:t('이런 느낌은 피해 주세요 · 선택'),value:a.avoidFeel,placeholder:t('예) 홈쇼핑 같은 느낌, 과한 표정'),max:200})+
+      `</details>`+
+      `<button type="button" class="sx-link sx-small" data-do="finish" data-id="rec" data-in>${esc(t('추천대로 할게요'))}</button>`);
   },
   // ctx(판 3): {flags:{request,real} — 서버가 허락한 맞춤 인물 스위치, photos — 인물 사진을 받는 길(공개 의뢰서)}. 스위치가 꺼져 있으면 판 3 전과 같은 화면이다.
   model(a,step,i,n,ctx={}){
@@ -184,18 +241,24 @@ const views={
       `<div class="sx-chips" data-in role="group" aria-label="${esc(t('모델을 어떻게 정할지'))}">${a.modelChoice==='persona'?chip(pickedLabel(a),true,'data-do="modelchoice" data-id="persona"'):''}${chip(t('추천해 주세요'),a.modelChoice==='ask','data-do="modelchoice" data-id="ask"')}${chip(t('사람 없이 제품만'),a.modelChoice==='none','data-do="modelchoice" data-id="none"')}${ctx.flags?.request?chip(t('맞춤 인물 요청하기'),a.modelChoice==='custom','data-do="modelchoice" data-id="custom"'):''}</div>`+
       modelDetail(a,ctx)+voiceBlock(a));
   },
-  contact(a,step,i,n){
-    return ask(step,i,n,t('언제까지, 누구에게 연락드릴까요?'),'',
-      `<div class="sx-duo">${field({bind:'date',label:t('받고 싶은 날'),value:a.date,type:'date'})}<div class="sx-sub is-end" data-in>${chip(t('정해진 날짜는 없어요'),a.dateFree,'data-do="datefree"')}</div></div><p class="sx-small sx-q-advice" data-date-advice hidden></p>`+
-      `<div class="sx-sub" data-in><span class="sx-small">${esc(t('최종 확인은 누가 하나요?'))}</span><div class="sx-chips">${chip(t('제가 정해요'),a.approver==='one','data-do="approver" data-id="one"')}${chip(t('여러 명이 봐요'),a.approver==='many','data-do="approver" data-id="many"')}</div><div data-approver-more>${approverMore(a)}</div></div>`+
+  who(a,step,i,n){
+    return ask(step,i,n,t('누구에게 연락드릴까요?'),'',
       `<div class="sx-duo">${field({bind:'contactName',label:t('성함'),value:a.contactName,auto:'name',max:80})}${field({bind:'company',label:t('회사 · 브랜드 · 선택'),value:a.company,auto:'organization',max:120})}</div>`+
       `<div class="sx-duo">${field({bind:'email',label:t('이메일'),value:a.email,type:'email',auto:'email',max:254})}${field({bind:'phone',label:t('휴대폰 · 선택'),value:a.phone,type:'tel',auto:'tel',max:30})}</div>`+
+      `<p class="sx-small sx-q-hint sx-q-mailfix" data-mail-fix role="status" hidden></p>`+
+      `<div class="sx-sub" data-in><span class="sx-small">${esc(t('최종 확인은 누가 하나요?'))}</span><div class="sx-chips">${chip(t('제가 정해요'),a.approver==='one','data-do="approver" data-id="one"')}${chip(t('여러 명이 봐요'),a.approver==='many','data-do="approver" data-id="many"')}</div><div data-approver-more>${approverMore(a)}</div></div>`+
       contactLocaleView(a));
   },
+  when(a,step,i,n,ctx={}){
+    return ask(step,i,n,t('언제까지 받고 싶으세요?'),'',
+      calendarView(a,ctx.page||0)+`<p class="sx-small sx-q-advice" data-date-advice role="status"></p>`+
+      `<div class="sx-duo is-picks" data-in><button type="button" class="sx-chip" data-do="recdate" aria-pressed="${a.date&&a.date===recDay(a)?'true':'false'}">${esc(t('추천 날짜 · {date}',{date:dayLabel(recDay(a))}))}</button>${chip(t('정해진 날짜는 없어요'),a.dateFree,'data-do="datefree"')}</div>`+
+      (ctx.seat?`<p class="sx-small sx-q-seat" data-in>${esc(seatText(ctx.seat))}</p>`:''));
+  },
   review(a,step,i,n,ctx={}){
-    const rows=withPersonaRow(a,[...briefRows(a),...contactLocaleRow(a)],ctx);
+    const rows=withPersonaRow(a,[...reviewRows(a),...contactLocaleRow(a)],ctx);
     return ask(step,i,n,t('이대로 보낼까요?'),pkgOf(a)?.photo?t('보내 주시면 저희가 내용을 확인하고 첫 장을 먼저 보내 드려요. 첫 장으로 방향을 맞춘 뒤 나머지 사진을 만들어요.'):t('보내 주시면 저희가 내용을 확인하고 방향 두 안과 값 · 받으실 날을 보내 드려요. 영상을 만들기 전에 방향 · 글 콘티 · 컷마다 장면 이미지를 먼저 보여 드리고, 확인하시기 전에는 영상을 만들지 않아요.'),
-      `<div class="sx-brief" data-in>${rows.map(item=>`<div class="sx-brief-row ${item.missing?'is-missing':''}"><span class="sx-small">${esc(t(item.key))}</span><span class="sx-brief-val"${item.lang?` lang="${item.lang}"`:''}>${item.missing?`<em>${esc(t(item.missing))}</em>`:esc(item.value)}</span><button type="button" class="sx-small sx-brief-edit" data-do="goto" data-id="${item.step}" aria-label="${esc(t('{label} 고치기',{label:t(item.key)}))}">${esc(t('고치기'))}</button></div>`).join('')}</div>`+
+      `<div class="sx-q-brief" data-in>${rows.map(item=>`<div class="sx-brief-row ${item.missing?'is-missing':''}"><span class="sx-small">${esc(t(item.key))}</span><span class="sx-brief-val"${item.lang?` lang="${item.lang}"`:''}>${item.missing?`<em>${esc(t(item.missing))}</em>`:esc(item.value)}</span><button type="button" class="sx-small sx-brief-edit" data-do="goto" data-id="${item.step}" aria-label="${esc(t('{label} 고치기',{label:t(item.key)}))}">${esc(t('고치기'))}</button></div>`).join('')}</div>`+
       `${dueLine(a)}${a.modelChoice==='custom'?`<p class="sx-small sx-q-due" data-in>${esc(t('맞춤 인물 값은 검토한 뒤 따로 견적을 보내 드려요. 견적을 확인하시기 전에는 비용이 생기지 않아요.'))}</p>`:a.modelChoice==='persona'?`<p class="sx-small sx-q-due" data-in>${esc(t('내 모델로 의뢰하면 사진을 다시 보내지 않아도 돼요. 이번 광고에 쓸 범위는 담당자가 정리해 따로 확인받아요.'))}</p>`:''}`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="consent" ${a.consent?'checked':''}><span>${esc(t('이 내용과 연락처를 의뢰 확인과 제작에 쓰는 데 동의해요'))}</span><small class="sx-small">${esc(t('제작으로 이어지지 않으면 90일 뒤 지워요.'))}</small></label>`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="rights" ${a.rights?'checked':''}><span>${esc(t('보내는 사진 · 로고 · 음악 · 문구를 쓸 권리가 있어요'))}</span><small class="sx-small">${esc(ctx.flags?.real?t('영상 속 사람과 목소리는 모두 AI로 만들어요. 실제 인물은 출연하실 분의 동의를 확인한 뒤에만 만들어요.'):t('영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.'))}</small></label><p class="sx-small sx-q-terms" data-in>${esc(t('결제는 글 콘티를 보신 뒤 크몽에서 해요. 결제 뒤 장면 이미지를 확정하시기 전에 그만두시면 전액 돌려드리고, 제작을 시작한 뒤에는 맞춤 제작이라 환불 대신 수정 횟수 안에서 고쳐 드려요. 완성한 광고는 공개하신 뒤에 SYNK PULSE 작품으로 소개할 수 있어요 — 원하지 않으시면 담당자에게 알려 주세요.'))}</p>`);
@@ -293,18 +356,20 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   // 내 모델에서 붙인 인물의 이름 · 그림(화면에만). 붙임이 없으면 비운다.
   a.personaPick=a.modelChoice==='persona'?backend.personaPick||null:null;
   if(ctx.flags.request&&a.personaRequest.kind==='real'&&!ctx.flags.real)a.personaRequest.kind='virtual';
-  let index=Math.max(0,STEPS.findIndex(step=>step.id===backend.step));
+  // 세 막(11-26): 모델 단계는 내 모델 · 맞춤 인물로 들어온 의뢰서만 보인다(11-25 결정). 옛 단계 이름으로 저장된 초안은 새 단계에서 연다.
+  const steps=STEPS.filter(item=>item.id!=='model'||a.modelChoice==='persona'||a.modelChoice==='custom');
+  let index=Math.max(0,steps.findIndex(step=>step.id===(OLD_STEPS[backend.step]||backend.step)));
   // 제작 자리 한 줄은 이번에 열어 처음 서는 단계에 — 쓰던 의뢰서는 저장된 단계에서 열린다(6-B 화면 최종 검수 F2).
   const seatAt=index;
   let busy=false,saveTimer=0,saving=null,saveAgain=false,sent=null,closed=false;
   root.innerHTML=`<div class="sx-q" data-step="">
-    <header class="sx-q-top"><a class="sx-logo" href="./" data-do="exit" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a>
-      <ol class="sx-q-parts sx-small" aria-hidden="true">${[...new Set(STEPS.map(step=>step.part))].map(name=>`<li data-part="${name}">${esc(t(name))}</li>`).join('')}</ol>
+    <header class="sx-q-top"><a class="sx-logo" href="./" data-do="exit" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"><img class="sx-logo-ink" src="./assets/request/logo-ink.webp" alt="" width="164" height="44"><img class="sx-logo-white" src="./assets/request/logo-white.webp" alt="" width="164" height="44"></a>
+      <ol class="sx-q-parts sx-small" aria-hidden="true">${[...new Set(steps.map(step=>step.part))].map(name=>`<li data-part="${name}">${esc(t(name))}</li>`).join('')}</ol>
       <div class="sx-q-top-right sx-small">${localeMenu()}<span class="sx-q-saved" data-saved></span><button type="button" class="sx-q-open-credits" data-do="sheet">${esc(t('적은 내용'))} <b class="sx-no" data-slate-count>0</b></button><button type="button" data-do="later">${esc(t('나중에 이어서'))}</button></div>
       <i class="sx-q-progress" aria-hidden="true"><i data-progress></i></i></header>
     <div class="sx-q-stage">
       <section class="sx-q-ask"><form class="sx-q-form" data-ask novalidate></form></section>
-      <aside class="sx-q-screen" aria-label="${esc(t('미리 보기'))}"><div class="sx-q-view" data-mon></div>
+      <aside class="sx-q-screen" aria-label="${esc(t('미리 보기'))}">${stageMedia()}<div class="sx-q-view" data-mon></div>
         <div class="sx-q-credits" data-slate><button type="button" class="sx-small sx-q-credits-head" data-do="sheet">${esc(t('의뢰서'))}</button><div class="sx-q-lines" data-lines></div></div>
       </aside>
       ${ORDER_NOTE}
@@ -314,8 +379,10 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   </div>`;
   // 듣개는 이 화면과 함께 사라지는 래퍼에 건다. root는 앱 전체가 다시 쓰는 칸이라 여기에 걸면 다시 그릴 때마다 겹친다.
   const host=root.querySelector('.sx-q'),$=selector=>host.querySelector(selector),form=$('[data-ask]'),mon=$('[data-mon]'),lines=$('[data-lines]');
+  // 세 막의 손님 상태(서버로 보내지 않는다): 고른 갈래(제품은 업종을 고르기 전까지 kind가 비어 있다) · 갈래 추천 · 같은 이름 알림 · 달력 쪽.
+  const view={group:groupOf(a.kind)?.id||'',peek:'',guess:{},sameName:'',nameOk:false,page:0};
   const blobs=new Set();
-  const step=()=>STEPS[index];
+  const step=()=>steps[index];
   const say=text=>{$('[data-live]').textContent=text;};
   // 휴대폰 의뢰서 시트: 닫힌 시트는 초점 밖(CSS visibility)이라, 열면 시트 머리로 초점을 넣고 닫으면 시트 안에 있던 초점을 여는 단추로 돌린다.
   const setSheet=open=>{host.classList.toggle('sheet-open',open);const sheet=$('[data-slate]');if(open)sheet.querySelector('[data-do="sheet"]')?.focus({preventScroll:true});else if(sheet.contains(document.activeElement))$('.sx-q-open-credits')?.focus({preventScroll:true});};
@@ -354,32 +421,34 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     host.dataset.step=s.id;
     $('.sx-q-screen').setAttribute('aria-label',s.id==='model'?t('모델 고르기'):t('미리 보기'));
     showError('');
-    if(s.id==='contact'||s.id==='review')defaultContactLocale();
-    form.innerHTML=views[s.id](a,s,index,STEPS.length,ctx);
-    if(index===seatAt&&backend.seat)(form.querySelector('.sx-q-lead')||form.querySelector('[data-title]'))?.insertAdjacentHTML('afterend',`<p class="sx-small sx-q-seat" data-seat data-in>${esc(seatText(backend.seat))}</p>`);
+    if(s.id==='who'||s.id==='review')defaultContactLocale();
+    host.dataset.act=String(s.act||1);
+    form.innerHTML=views[s.id](a,s,index,steps.length,{...ctx,group:view.group,guess:view.guess,sameName:view.sameName,page:view.page,seat:s.id==='when'?backend.seat:null});
+    if(index===seatAt&&backend.seat&&s.id!=='when')(form.querySelector('.sx-q-lead')||form.querySelector('[data-title]'))?.insertAdjacentHTML('afterend',`<p class="sx-small sx-q-seat" data-seat data-in>${esc(seatText(backend.seat))}</p>`);
     // 휴대폰은 질문 칸이 아니라 바깥 칸(.sx-q-stage)이 스크롤된다 — 단계를 바꾸면 그것도 처음으로(모델 단계에서 내린 채 「이전」을 누르면 제목이 위 막대 밑에 있었다).
     form.scrollTop=0;$('.sx-q-ask').scrollTop=0;$('.sx-q-stage').scrollTop=0;
     const title=form.querySelector('[data-title]');
     revealWords(title,{delay:40});
     riseAll(form.querySelectorAll('[data-in]'),{start:120,gap:34,y:14*direction});
     if(focus)title.focus({preventScroll:true});
-    const parts=[...new Set(STEPS.map(item=>item.part))];
+    const parts=[...new Set(steps.map(item=>item.part))];
     host.querySelectorAll('[data-part]').forEach(li=>{const at=parts.indexOf(li.dataset.part),now=parts.indexOf(s.part);li.classList.toggle('is-now',at===now);li.classList.toggle('is-done',at<now);});
-    const bar=$('[data-progress]'),to=(index+1)/STEPS.length;
+    const bar=$('[data-progress]'),to=(index+1)/steps.length;
     bar.animate?.([{transform:`scaleX(${bar.dataset.at||0})`},{transform:`scaleX(${to})`}],{duration:620,easing:ease.move,fill:'forwards'});bar.dataset.at=to;
     $('[data-do="back"]').hidden=index===0;
-    renderMonitor(s.id);renderSlate();updateDateAdvice();updateNext();
+    renderMonitor(s.id);renderSlate();updateDateAdvice();updateNext();if(s.id==='who')mailFix();
     say(t('{n}번째 질문 · {title}',{n:index+1,title:form.querySelector('[data-title]').getAttribute('aria-label')}));
   }
   function go(to,direction,after){
-    if(busy||to<0||to>=STEPS.length)return;busy=true;
+    if(busy||to<0||to>=steps.length)return;busy=true;
     Promise.all([...form.children].map(el=>sink(el,{duration:150}))).then(()=>{index=to;render(direction);busy=false;saved();after?.();});
   }
   // 보내기 단추는 막지 않는다. 빠진 게 있으면 단추에 무엇인지 쓰고, 누르면 그 칸으로 데려간다.
-  const missing=()=>!a.name?{step:'what',bind:'name',text:k('광고할 것의 이름을 알려 주세요')}:!(a.contactName&&(a.email||a.phone))?{step:'contact',bind:a.contactName?'email':'contactName',text:k('성함과 연락받을 곳을 알려 주세요')}:!(a.consent&&a.rights)?{step:'review',bind:a.consent?'rights':'consent',text:k('동의 칸을 확인해 주세요')}:null;
+  const missing=()=>!a.name?{step:'name',bind:'name',text:k('광고할 것의 이름을 알려 주세요')}:!(a.contactName&&(a.email||a.phone))?{step:'who',bind:a.contactName?'email':'contactName',text:k('성함과 연락받을 곳을 알려 주세요')}:!(a.consent&&a.rights)?{step:'review',bind:a.consent?'rights':'consent',text:k('동의 칸을 확인해 주세요')}:null;
   function updateNext(){
     const gap=step().id==='review'?missing():null;
-    $('[data-next-label]').textContent=step().id==='review'?(gap?t(gap.text):t('의뢰서 보내기')):t('다음',null,'step');
+    const id=step().id,later=id==='files'&&slotsFor(a.kind).some(slot=>slot.need&&!filesOf(a,slot.id).length&&!a.slots[slot.id]?.none);
+    $('[data-next-label]').textContent=id==='review'?(gap?t(gap.text):t('의뢰서 보내기')):id==='more'&&a.finish!=='custom'?t('추천대로 할게요'):later?t('나중에 보낼게요'):t('다음',null,'step');
     $('[data-do="next"]').classList.toggle('is-gap',!!gap);
   }
   function showError(text){const box=$('[data-error]');box.textContent=text;box.hidden=!text;}
@@ -395,26 +464,47 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   let allModels=false;
   function renderMonitor(id){
     if(id!=='model')allModels=false;
-    // 업종 그림(작품 그림 — 큰 판 없음)은 첫 단계 스크린에서도 꼴(data-shot)대로 늘리지 않고 놓는다(film.css). 업종을 바꾸면 crossfade가 꼴도 바꾼다.
-    if(id==='what'){const kind=kindOf(a),src=kind?.shot||FIRST_SHOT.shot,shape=shotShape(src);monSwap(`<img class="sx-q-fill" data-still src="${esc(src)}"${shape?` data-shot="${shape}"`:''} alt=""><p class="sx-small sx-q-cap" data-still-cap>${esc(t((kind||FIRST_SHOT).who))}</p>`);return;}
-    if(id==='where'){const pkg=pkgOf(a),from=`<small data-price-from ${pkg?'':'hidden'}>${esc(t('부터'))}</small>`,value=`<span data-price>${pkg?price(pkg.price):'—'}</span>`;monSwap(`<div class="sx-q-where"><img class="sx-q-fill" src="${still(RATIO_STILL[ratioOf(a)])}" data-ratio-still alt=""><div class="sx-q-finder" data-frame data-ratio="${ratioOf(a)}"><span class="sx-no" data-ratio-label>${ratioOf(a)}</span></div><div class="sx-q-price"><b class="sx-serif">${fromBefore()?from+value:value+from}</b><span class="sx-small" data-cuts-line ${pkg?'':'hidden'}><span data-cuts-label>${esc(pkg?.photo?t('받으실 사진'):t('영상 전에 먼저 보여 드리는 컷'))}</span> <b class="sx-no" data-cuts>${pkg?pkg.cuts:0}</b></span><span class="sx-small" data-terms ${pkg?'':'hidden'}>${esc(termsOf(pkg))}</span><div class="sx-q-ticks" data-strip aria-hidden="true"></div></div></div>`);fillStrip(pkg?.cuts||0);return;}
-    if(id==='files'){const own=ownPhoto(a);monSwap(`<div class="sx-q-how"><figure><img src="${esc(own||still('file-gift-set'))}" data-cap alt=""><figcaption class="sx-small"><span class="sx-no">01</span> ${esc(own?t('보내 주신 사진'):t('이런 사진이면 돼요'))}</figcaption></figure>${[['02',k('장면 이미지 · 확인'),'sheet-gift-05'],['03',k('완성 영상'),'w-gift']].map(([no,label,name])=>`<figure><img src="${still(name)}" data-cap alt=""><figcaption class="sx-small"><span class="sx-no">${no}</span> ${esc(t(label))}</figcaption></figure>`).join('')}<p class="sx-small sx-q-how-note">${esc(t('제품 · 로고 · 글자는 AI로 그리지 않고 실제 파일을 얹어요. 영상을 만들기 전에 02에서 모든 컷을 먼저 보여 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.'))}</p></div>`);return;}
-    if(id==='message'||id==='words'){const own=ownPhoto(a),shot=kindOf(a)?.shot,shape=own?'':shotShape(shot);/* 판 4 B7: 사진 전에는 고른 업종의 작품 그림 위에 손님 말을 얹는다(음료 손님의 말이 눈 결정 · 화장품 병 위에 얹히던 것). 작품 그림은 광고 틀의 비율이 달라도 자르지 않고 틀 안에 맞춘다(data-shot — 가로 작품은 세로 틀의 위아래가, 세로 작품은 가로 틀의 양옆이 검정). */monSwap(`${frame({channels:a.channels.length?a.channels:['shorts']},`<img class="sx-q-fill" src="${esc(own||shot||still(id==='words'?'w-gift':'w-gift-snow'))}"${shape?` data-shot="${shape}"`:' data-cap'} alt=""><div class="sx-q-copy${id==='words'?' is-top':''}" data-copy></div>${id==='words'?'<p class="sx-q-notice sx-small" data-notice-line hidden></p>':''}`)}<p class="sx-small sx-q-cap">${esc(id==='words'?t('적으신 글자는 이 자리에 그대로 얹어요'):t('이 말을 한 문장으로 다듬어 미리 보여 드려요'))}</p>`);updateCopy();updateNoticeLine();return;}
-    if(id==='feel'){const pick=WIN.find(item=>item.id===a.win)||WIN[1];monSwap(`${frame({channels:[pick.ratio==='16:9'?'youtube':'shorts']},winMedia(pick))}${pick.film?holdButton('win',reduced()):''}<p class="sx-small sx-q-cap"><span data-win-kind>${esc(t(pick.kind))}</span> · <span data-win-cap>${esc(winCap(pick))}</span></p>`);const film=$('[data-win-film]');if(film&&!reduced())film.play().catch(()=>{}).finally(()=>syncHold(film));return;}
-    if(id==='model'){monSwap(allModels?allWall(a):wall(a));if(!allModels&&!choiceText(a))leadFilm(modelOf(a.models[0])||picksOf(a)[0]);return;}
-    if(id==='contact'||id==='review'){monSwap(`${frame({channels:['shorts']},`<img class="sx-q-fill" src="${still(id==='contact'?'still-shards':'still-lid')}" alt="">`)}<p class="sx-small sx-q-cap">${esc(t('미리 보여 드리는 장면 이미지는 이런 모습이에요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요'))}</p>`);return;}
-    monSwap('');
+    if(id==='model'){monSwap(allModels?allWall(a):wall(a));if(!allModels&&!choiceText(a))leadFilm(modelOf(a.models[0])||picksOf(a)[0]);stage();return;}
+    monSwap('');stage();
   }
-  function fillStrip(count){const strip=$('[data-strip]');if(!strip)return;strip.innerHTML=Array.from({length:count},(_,i)=>`<i data-c="${i}"></i>`).join('');[...strip.children].forEach((tick,i)=>play(tick,[{opacity:0},{opacity:1}],{delay:i*18,duration:300}));}
+  // 막의 그림(11-26): 1막은 고른(가리킨) 갈래의 솔리오, 2막은 다음을 누를 때마다 문 뒤의 사람이 한 걸음씩 나오는 작품 장면, 3막은 하늘과 고른 날.
+  function stage(){
+    const act=host.dataset.act,group=view.peek||view.group||'hello';
+    host.querySelectorAll('[data-scene]').forEach(scene=>scene.classList.toggle('is-on',scene.dataset.scene===group));
+    const door=$('[data-door]');if(door){const to=DOOR_AT[step().id];if(act==='2'&&to!=null)doorTo(door,to);}
+    skyDate();
+  }
+  function skyDate(){const box=$('[data-sky-date]');if(!box)return;const on=!!a.date&&!a.dateFree;box.classList.toggle('is-on',on);if(on){const [y,m,d]=a.date.split('-').map(Number);box.textContent=`${m}.${String(d).padStart(2,'0')}`;}}
+  // 문 장면: 앞으로 갈 때만 그 자리까지 틀고, 뒤로 가거나 움직임을 줄인 기기에서는 그 자리로 옮기기만 한다.
+  let doorFrame=0;
+  function doorTo(film,to){
+    cancelAnimationFrame(doorFrame);film.pause();
+    if(reduced()||to<=film.currentTime+.02||film.readyState<2){try{film.currentTime=to;}catch{}return;}
+    film.play().then(()=>{const tick=()=>{if(!film.isConnected)return;if(film.currentTime>=to||film.ended){film.pause();return;}doorFrame=requestAnimationFrame(tick);};tick();}).catch(()=>{try{film.currentTime=to;}catch{}});
+  }
+  // 솔리오의 눈: 손님이 가리키거나 고른 칸 쪽을 본다(1막에서만, 눈만 움직인다 — 11-20 큰 움직임 멀미).
+  function lookAt(el){
+    if(host.dataset.act!=='1'||!el)return;const eyes=host.querySelector('[data-scene].is-on .sx-eyes');if(!eyes)return;
+    const r1=el.getBoundingClientRect(),r2=eyes.getBoundingClientRect(),dx=r1.left+r1.width/2-(r2.left+r2.width/2),dy=r1.top+r1.height/2-(r2.top+r2.height/2),d=Math.hypot(dx,dy)||1;
+    eyes.style.setProperty('--ex',`${(dx/d*14).toFixed(1)}%`);eyes.style.setProperty('--ey',`${(dy/d*70).toFixed(1)}%`);
+  }
   function updateCopy(){const box=$('[data-copy]');if(!box)return;const text=step().id==='words'?(a.screenText||a.name||''):(a.oneThing||a.name||'');box.textContent='';text.split('\n').slice(0,3).forEach((line,i)=>{const p=document.createElement('p');p.textContent=line;box.append(p);});}
   // 의뢰서 탭(11-13): 글자 화면 광고 틀 아래쪽의 고지 문구 자리 · 모델 화면의 목소리 칩 다시 그리기(「사람 없이」면 「모델이 직접」이 빠진다).
   function updateNoticeLine(){const line=$('[data-notice-line]');if(!line)return;const on=noticeOn(a);line.hidden=!on;line.textContent=on?(a.noticeText||t('고지 문구가 들어갈 자리')):'';}
   function redrawVoice(){const old=form.querySelector('[data-voice-block]');if(!old)return;const box=document.createElement('div');box.innerHTML=voiceBlock(a);old.replaceWith(box.firstElementChild);}
   function updateDateAdvice(){
     const note=$('[data-date-advice]');if(!note)return;
-    if(!a.date||a.dateFree){note.hidden=true;return;}
-    const today=new Date(Date.now()+9*3600000).toISOString().slice(0,10),days=Math.round((Date.parse(a.date)-Date.parse(today))/86400000);
-    note.hidden=days>=(pkgOf(a)?.days||10);note.textContent=days<0?t('지난 날짜예요. 다시 골라 주세요.'):t('이 날짜는 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.');
+    const need=needDays(a);note.hidden=false;note.classList.remove('is-tight');
+    if(a.dateFree){note.textContent=t('날짜는 저희가 먼저 제안할게요.');return;}
+    if(!a.date){note.textContent=need?t('색이 칠해진 날은 넉넉해요. 고르신 길이는 보통 {days}일 걸려요.',{days:need}):t('기간은 담당자와 정해요. 원하시는 날을 골라 주세요.');return;}
+    const days=Math.round((Date.parse(a.date+'T00:00:00Z')-todayKst())/DAY_MS);
+    note.classList.toggle('is-tight',days<(need||10));
+    note.textContent=days<0?t('지난 날짜예요. 다시 골라 주세요.'):days<(need||10)?t('{date}은 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.',{date:dayLabel(a.date)}):t('{date}, 넉넉한 날이에요.',{date:dayLabel(a.date)});
+  }
+  // 메일 주소 오타(11-26 추천): 흔한 메일 주소와 한두 글자 다르면 고친 주소를 제안한다. 누르면 바꾼다.
+  function mailFix(){
+    const box=$('[data-mail-fix]');if(!box)return;const fix=mailSuggest(a.email);box.hidden=!fix;
+    box.innerHTML=fix?`${esc(t('혹시 {mail}인가요?',{mail:fix}))} <button type="button" class="sx-link" data-do="fixmail" data-id="${esc(fix)}">${esc(t('바꾸기'))}</button>`:'';
   }
   function renderSlate(){
     const rows=slateRows(a);
@@ -443,22 +533,42 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
         const gap=missing();if(!gap)return submit();
         const focusGap=()=>form.querySelector(`[data-bind="${gap.bind}"]`)?.focus();
         if(gap.step==='review')return focusGap();
-        const to=STEPS.findIndex(item=>item.id===gap.step);go(to,-1,focusGap);return;
+        const to=steps.findIndex(item=>item.id===gap.step);go(to,-1,focusGap);return;
       }
+      // 같은 이름(11-26 중복 확인): 이 기기에서 같은 이름으로 보낸 의뢰가 있으면 한 번 알리고, 「새 의뢰로 계속」을 누르면 넘어간다.
+      if(step().id==='name'&&!view.nameOk){const at=sentBefore(a.name);if(at&&view.sameName!==at){view.sameName=at;render(0,{focus:false});form.querySelector('[data-same-name]')?.focus?.({preventScroll:true});return;}}
+      if(step().id==='more'&&!a.finish){a.finish='rec';saved();}
       go(index+1,1);
     },
     back(){go(index-1,-1);},
-    goto(el){const to=STEPS.findIndex(item=>item.id===el.dataset.id);if(to>=0)go(to,-1);},
+    nameok(){view.nameOk=true;view.sameName='';go(index+1,1);},
+    // 갈래(11-26): 제품이면 업종 칩이 열리고, 다른 갈래는 그 업종으로 바로 정한다. 고른 것이 없으면 그 갈래의 추천 올릴 곳 · 길이를 미리 골라 둔다.
+    group(el){
+      const group=GROUPS.find(item=>item.id===el.dataset.id);if(!group)return;
+      const changed=view.group!==group.id;view.group=group.id;view.peek='';
+      if(group.id!=='product')a.kind=group.kinds[0];else if(!group.kinds.includes(a.kind))a.kind='';
+      if(changed||!a.package||!a.channels.length){a.channels=[group.channel];a.package=group.package;}
+      render(0,{focus:false});form.querySelector(`[data-do="group"][data-id="${group.id}"]`)?.focus({preventScroll:true});lookAt(form.querySelector(`[data-do="group"][data-id="${group.id}"]`));blink();saved();
+    },
+    guessopen(){view.guess={...view.guess,open:true};render(0,{focus:false});form.querySelector('[data-guess]')?.focus();},
+    guessgo(){const box=form.querySelector('[data-guess]'),text=box?.value.trim()||'';if(!text)return;view.guess={open:true,text,tried:true,group:guessGroup(text)};view.peek=view.guess.group;render(0,{focus:false});lookAt(form.querySelector(`[data-do="group"][data-id="${view.guess.group}"]`));blink();},
+    finish(el){a.finish=el.dataset.id;render(0,{focus:false});form.querySelector(`[data-do="finish"]`)?.focus({preventScroll:true});saved();},
+    end(el){a.endCard=a.endCard===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="end"]').forEach(item=>setChip(item,item.dataset.id===a.endCard));const line=form.querySelector('[data-end-line]');if(line)line.hidden=a.endCard==='logo';renderSlate();saved();},
+    day(el){if(el.disabled)return;a.date=el.dataset.id;a.dateFree=false;form.querySelectorAll('[data-do="day"]').forEach(item=>item.setAttribute('aria-pressed',item===el?'true':'false'));syncDatePicks();updateDateAdvice();skyDate();renderSlate();saved();},
+    calmove(el){view.page=Math.max(0,Math.min(3,view.page+Number(el.dataset.id)));const cal=form.querySelector('[data-cal]');if(cal){const box=document.createElement('div');box.innerHTML=calendarView(a,view.page);cal.replaceWith(box.firstElementChild);form.querySelector(`[data-do="calmove"][data-id="${el.dataset.id}"]`)?.focus({preventScroll:true});}},
+    recdate(){a.date=recDay(a);a.dateFree=false;const at=Math.floor((Date.parse(a.date+'T00:00:00Z')-todayKst())/DAY_MS/35);if(at!==view.page){view.page=Math.max(0,Math.min(3,at+0));const cal=form.querySelector('[data-cal]');if(cal){const box=document.createElement('div');box.innerHTML=calendarView(a,view.page);cal.replaceWith(box.firstElementChild);}}form.querySelectorAll('[data-do="day"]').forEach(item=>item.setAttribute('aria-pressed',item.dataset.id===a.date?'true':'false'));syncDatePicks();updateDateAdvice();skyDate();renderSlate();saved();},
+    fixmail(el){a.email=el.dataset.id;const input=form.querySelector('[data-bind="email"]');if(input)input.value=a.email;mailFix();renderSlate();saved();},
+    goto(el){const to=steps.findIndex(item=>item.id===el.dataset.id);if(to>=0)go(to,-1);},
     async later(){if(await writeNow()){backend.later?.(a,step().id);toast(t('저장했어요. 이 기기에서 다시 열면 여기부터 이어서 쓸 수 있어요.'));}else toast(t('지금은 저장하지 못했어요. 인터넷 연결을 확인해 주세요.'));},
     sheet(){setSheet(!host.classList.contains('sheet-open'));},
-    kind(el){a.kind=el.dataset.id;setRows('kind',a.kind);crossfade($('[data-still]'),kindOf(a).shot);const cap=$('[data-still-cap]');if(cap)cap.textContent=t(kindOf(a).who);renderSlate();saved();},
-    channel(el){toggleIn(a.channels,el.dataset.id);setChip(el,a.channels.includes(el.dataset.id));const f=$('[data-frame]'),ratio=ratioOf(a);if(f&&f.dataset.ratio!==ratio){f.dataset.ratio=ratio;const label=$('[data-ratio-label]');if(label)label.textContent=ratio;crossfade($('[data-ratio-still]'),still(RATIO_STILL[ratio]));}renderSlate();saved();},
-    package(el){a.package=el.dataset.id;setRows('package',a.package);const pkg=pkgOf(a),p=$('[data-price]');if(p){if(pkg)roll(p,pkg.price,{format:price});else{delete p.dataset.value;p.textContent=t('상담');}$('[data-price-from]').hidden=!pkg;}const cuts=$('[data-cuts]');if(cuts){roll(cuts,pkg?.cuts||0);fillStrip(pkg?.cuts||0);const label=$('[data-cuts-label]');if(label)label.textContent=pkg?.photo?t('받으실 사진'):t('영상 전에 먼저 보여 드리는 컷');const line=$('[data-cuts-line]');if(line)line.hidden=!pkg;const terms=$('[data-terms]');if(terms){terms.hidden=!pkg;terms.textContent=termsOf(pkg);}}renderSlate();saved();},
+    kind(el){a.kind=el.dataset.id;form.querySelectorAll('[data-do="kind"]').forEach(item=>setChip(item,item.dataset.id===a.kind));lookAt(el);renderSlate();saved();},
+    channel(el){toggleIn(a.channels,el.dataset.id);setChip(el,a.channels.includes(el.dataset.id));lookAt(el);renderSlate();saved();},
+    package(el){a.package=el.dataset.id;setRows('package',a.package);lookAt(el);renderSlate();saved();},
     action(el){a.action=a.action===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="action"]').forEach(item=>setChip(item,item.dataset.id===a.action));renderSlate();saved();},
     avoid(el){toggleIn(a.avoid,el.dataset.id);setChip(el,a.avoid.includes(el.dataset.id));saved();},
     // 계속 도는 영상(모델의 4초 · 예시 작품)의 멈춤 · 재생. 큰 칸에서 멈춰 두면 사람을 바꿔도 첫 장면에 선다. 글은 play · pause 사건이 맞춘다.
     filmhold(el){const lead=el.dataset.hold==='lead',film=$(lead?'[data-portrait-film]':'[data-win-film]');if(!film)return;if(lead)filmHeld=!film.paused;if(film.paused)film.play().catch(()=>{});else film.pause();},
-    win(el){a.win=el.dataset.id;setRows('win',a.win);const pick=WIN.find(item=>item.id===a.win);if(pick){const film=$('[data-win-film]');if(!film!==!pick.film){renderMonitor('feel');renderSlate();saved();return;}if(film&&film.getAttribute('src')!==pick.film){film.poster=pick.poster;film.src=pick.film;film.closest('[data-frame]').dataset.ratio=pick.ratio;if(!reduced())film.play().catch(()=>{}).finally(()=>syncHold(film));else syncHold(film);play(film,[{opacity:.3},{opacity:1}],{duration:320});}$('[data-win-cap]').textContent=winCap(pick);$('[data-win-kind]').textContent=t(pick.kind);}renderSlate();saved();},
+    win(el){a.win=a.win===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="win"]').forEach(item=>setChip(item,item.dataset.id===a.win));renderSlate();saved();},
     bold(el){a.bold=a.bold===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="bold"]').forEach(item=>setChip(item,item.dataset.id===a.bold));const note=$('[data-bold-note]');if(note){note.textContent=boldNote(a);note.hidden=!boldNote(a);}renderSlate();saved();},
     notice(el){a.notice=a.notice===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="notice"]').forEach(item=>setChip(item,item.dataset.id===a.notice));const more=$('[data-notice-more]');if(more){more.innerHTML=noticeMore(a);if(more.firstElementChild)rise(more,{y:6});}updateNoticeLine();saved();},
     voice(el){a.voice=a.voice===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="voice"]').forEach(item=>setChip(item,item.dataset.id===a.voice));const note=$('[data-voice-note]');if(note){note.textContent=voiceNote(a);note.hidden=!voiceNote(a);}renderSlate();saved();},
@@ -472,7 +582,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     personarelation(el){pickPersona('relation','personarelation',el);},
     personaconsent(el){pickPersona('consentWay','personaconsent',el);},
     personakeep(el){pickPersona('keep','personakeep',el);},
-    datefree(el){a.dateFree=!a.dateFree;if(a.dateFree){a.date='';const input=form.querySelector('[data-bind="date"]');if(input)input.value='';}setChip(el,a.dateFree);updateDateAdvice();renderSlate();saved();},
+    datefree(el){a.dateFree=!a.dateFree;if(a.dateFree){a.date='';form.querySelectorAll('[data-do="day"]').forEach(item=>item.setAttribute('aria-pressed','false'));}setChip(el,a.dateFree);syncDatePicks();updateDateAdvice();skyDate();renderSlate();saved();},
     approver(el){a.approver=el.dataset.id;form.querySelectorAll('[data-do="approver"]').forEach(item=>setChip(item,item.dataset.id===a.approver));const sub=el.closest('.sx-sub');const more=sub.querySelector('[data-approver-more]');more.innerHTML=approverMore(a);if(more.firstElementChild)rise(more,{y:6});saved();},
     contactlocale(el){a.contactLocale=el.dataset.id;contactPicked=true;form.querySelectorAll('[data-do="contactlocale"]').forEach(item=>setChip(item,item.dataset.id===a.contactLocale));saved();},
     none(el){const id=el.dataset.id,slot=a.slots[id]||(a.slots[id]={files:[]});slot.none=!slot.none;setChip(el,slot.none);el.closest('.sx-slot').classList.toggle('is-none',slot.none);updateSlotStatus(id);saved();},
@@ -497,6 +607,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
       redrawSlot(slot);renderSlate();saved();if(step().id==='files')renderMonitor('files');if(slot.persona)showChoice();
     },
   };
+  function syncDatePicks(){const rec=form.querySelector('[data-do="recdate"]');if(rec)rec.setAttribute('aria-pressed',a.date&&a.date===recDay(a)?'true':'false');const free=form.querySelector('[data-do="datefree"]');if(free){free.classList.toggle('is-on',a.dateFree);free.setAttribute('aria-pressed',a.dateFree?'true':'false');}}
+  function blink(){const box=$('[data-solio]');if(!box||reduced())return;box.classList.add('is-blink');setTimeout(()=>box.classList.remove('is-blink'),130);}
   // 칸 찾기: 업종 준비물 칸, 또는 맞춤 인물 사진 칸(판 3).
   const slotOf=id=>slotsFor(a.kind).find(item=>item.id===id)||PERSONA_SLOTS.find(item=>item.id===id);
   // 내 모델 인물을 풀면(다른 모델 · 다른 길을 고르면) 그 칩을 뺀다 — 저장하면 서버가 붙임을 지우므로 이 화면에서 다시 고를 수 없다. 다시 쓰려면 내 모델에서 다시 고른다(설계 5-4).
@@ -548,6 +660,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   async function addFiles(id,list){
     const slot=slotOf(id);if(!slot)return;const state=a.slots[id]||(a.slots[id]={files:[]});state.none=false;
     for(const file of list){
+      const twin=Object.entries(a.slots).find(([,other])=>(other.files||[]).some(item=>item.fileName===file.name&&item.byteSize===file.size));
+      if(twin){const where=slotOf(twin[0]);toast(t('이미 「{slot}」에 넣은 파일이에요',{slot:where?t(where.label):''}));continue;}
       const entry={fileName:file.name,byteSize:file.size,mimeType:file.type,uploading:true,progress:0};
       if(file.type.startsWith('image/')&&file.type!=='image/heic'&&file.type!=='image/heif'){try{const url=URL.createObjectURL(file),image=await loadImage(url);blobs.add(url);entry.preview=url;entry.width=image.naturalWidth;entry.height=image.naturalHeight;if(!slot.persona)entry.advice=photoAdvice(entry.width,entry.height,slot.kind);}catch{}}
       state.files.push(entry);redrawSlot(slot);
@@ -576,7 +690,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   async function submit(){
     const button=$('[data-do="next"]');button.disabled=true;$('[data-next-label]').textContent=t('보내는 중');showError('');clearTimeout(saveTimer);saveTimer=0;
     defaultContactLocale();
-    try{const receipt=await backend.submit(a);sent=receipt;showReceipt(receipt);}
+    try{const receipt=await backend.submit(a);sent=receipt;rememberSent(a.name,receipt.at);showReceipt(receipt);}
     catch(error){$('[data-next-label]').textContent=t('다시 보내기');button.disabled=false;showError(error.message||t('보내지 못했어요. 다시 시도해 주세요.'));}
   }
   // 접수증(언어를 바꾸면 같은 틀로 다시 그린다 — 접수 시각은 처음 연 때 값).
@@ -637,7 +751,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     else if(bind.startsWith('persona.'))a.personaRequest[bind.slice(8)]=el.value;
     else if(el.type==='checkbox')a[bind]=el.checked;
     else a[bind]=el.value;
-    if(bind==='date'){a.dateFree=false;const free=form.querySelector('[data-do="datefree"]');free?.classList.remove('is-on');free?.setAttribute('aria-pressed','false');updateDateAdvice();}
+    if(bind==='email')mailFix();
+    if(bind==='name'&&view.sameName){view.sameName='';form.querySelector('[data-same-name]')?.remove();}
     if(bind==='screenText'||bind==='oneThing'||bind==='name')updateCopy();
     if(bind==='noticeText')updateNoticeLine();
     if(step().id==='review')updateNext();
@@ -656,6 +771,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const previewCast=event=>{const cast=event.target.closest?.('.sx-cast');if(cast){clearTimeout(castBack);showModel(cast.dataset.id);}};
   const leaveCast=event=>{if(!event.target.closest?.('.sx-cast')||event.relatedTarget?.closest?.('.sx-cast'))return;clearTimeout(castBack);if(!choiceText(a)&&!a.models.length)return;castBack=setTimeout(()=>{if(host.isConnected)showChoice();},160);};
   host.addEventListener('mouseover',previewCast);host.addEventListener('focusin',previewCast);
+  host.addEventListener('mouseover',event=>{if(host.dataset.act!=='1')return;const row=event.target.closest?.('[data-do="group"]'),peek=row?.dataset.id||'';if(row||!event.target.closest?.('.sx-q-body')){if(peek!==view.peek){view.peek=peek;stage();}}const spot=event.target.closest?.('.sx-row,.sx-tile,.sx-chip,.sx-go');if(spot)lookAt(spot);});
+  const blinkTimer=setInterval(()=>{if(host.isConnected&&host.dataset.act==='1')blink();},4300);
   host.addEventListener('mouseout',leaveCast);host.addEventListener('focusout',leaveCast);
   host.addEventListener('mouseover',event=>{const tile=event.target.closest?.('.sx-wall .sx-cast');if(!tile||tile.contains(event.relatedTarget))return;clearTimeout(tileTimer);tileTimer=setTimeout(()=>startTile(tile),150);});
   host.addEventListener('mouseout',event=>{const tile=event.target.closest?.('.sx-wall .sx-cast');if(!tile||tile.contains(event.relatedTarget))return;clearTimeout(tileTimer);tile.querySelectorAll('video').forEach(stopTile);});
@@ -666,6 +783,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const holdLabel=event=>{if(event.target.tagName==='VIDEO')syncHold(event.target);};
   mon.addEventListener('play',holdLabel,true);mon.addEventListener('pause',holdLabel,true);
   form.addEventListener('submit',event=>event.preventDefault());
+  // 휴대폰에서 내린 동안 위 로고 줄에 바탕을 깐다(film.css .is-scrolled). 단계를 바꾸면 render가 처음으로 올려 걷힌다.
+  $('.sx-q-stage').addEventListener('scroll',event=>host.classList.toggle('is-scrolled',event.currentTarget.scrollTop>24),{passive:true});
   form.addEventListener('toggle',event=>{if(event.target.matches?.('[data-slots-more]'))slotsMoreOpen=event.target.open;},true);
   host.addEventListener('keydown',event=>{
     if(!['ArrowDown','ArrowUp'].includes(event.key)||event.target.getAttribute?.('role')!=='radio')return;
@@ -685,6 +804,6 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   };
   trap();addEventListener('popstate',onPop);
   render(1);
-  return {answers:a,goto:id=>{const to=STEPS.findIndex(item=>item.id===id);if(to>=0){index=to;render(1);}},receipt:showReceipt,
-    unmount(){closed=true;removeEventListener('popstate',onPop);removeEventListener(LOCALE_EVENT,onLocale);if(saveTimer)writeNow();clearTimeout(slateTimer);clearTimeout(toastTimer);blobs.forEach(url=>URL.revokeObjectURL(url));blobs.clear();}};
+  return {answers:a,goto:id=>{const to=steps.findIndex(item=>item.id===(OLD_STEPS[id]||id));if(to>=0){index=to;render(1);}},receipt:showReceipt,
+    unmount(){closed=true;clearInterval(blinkTimer);cancelAnimationFrame(doorFrame);removeEventListener('popstate',onPop);removeEventListener(LOCALE_EVENT,onLocale);if(saveTimer)writeNow();clearTimeout(slateTimer);clearTimeout(toastTimer);blobs.forEach(url=>URL.revokeObjectURL(url));blobs.clear();}};
 }

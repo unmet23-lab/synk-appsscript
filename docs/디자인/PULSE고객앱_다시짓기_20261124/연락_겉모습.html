@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PULSE 시안 · 연락 단계 겉모습 세 가지</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./공통.css">
+<style>
+/* 연락 단계 한 장의 겉모습 세 가지. 묻는 것 · 순서 · 눌렀을 때 일어나는 일은 같고 색 · 바탕 · 글자 · 자리만 다르다.
+   E판에서 가져온 것: 한 화면에 한 가지만 묻는다, 값은 아래 띠 한 자리, 고른 칸은 채워서 보인다.
+   강조 순위: ① 지금 질문 ② 고를 칸 · 적을 칸 ③ 다음 단추. 그림은 질문과 이어지는 일을 하나씩 한다.
+   움직임: 다음 질문으로 갈 때 글이 8px 올라오고, 그림은 저마다 한 번만(1 문 뒤에서 나온다 · 2 날짜가 하늘에 적힌다 · 3 눈이 칸을 보고 달력에 날짜가 적힌다). */
+:root{--pad:clamp(24px,5vw,72px);--r:16px}
+html,body{height:100%}
+body{overflow-x:hidden}
+.app{position:relative;min-height:100vh;min-height:100dvh;display:grid;isolation:isolate}
+.media{position:absolute;inset:0;z-index:-2;overflow:hidden}
+.media>*{display:none}
+.top{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.logo{display:block;height:24px;width:auto}
+.later{font-size:15px;font-weight:600}
+.count{margin:0;font-family:var(--mono);font-size:14px}
+h1{margin:0;white-space:pre-line;text-wrap:balance}
+.body{display:flex;flex-direction:column;min-width:0}
+.step{display:none;flex-direction:column;gap:14px}
+.step.on{display:flex;animation:rise .42s var(--ease)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+h1.swap{animation:rise .42s var(--ease)}
+
+/* 달력 */
+.cal{display:flex;flex-direction:column;gap:10px}
+.cal-head{display:flex;align-items:center;justify-content:space-between}
+.cal-head b{font-size:20px;font-weight:700;letter-spacing:-.03em}
+.cal-move{display:flex;gap:6px}
+.cal-move button{display:grid;place-items:center;width:44px;height:44px;border-radius:12px}
+.cal-move button:disabled{opacity:.25}
+.cal-move svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.wd{padding:2px 0 4px;text-align:center;font-size:14px;font-weight:600}
+.day{position:relative;display:grid;place-items:center;height:58px;border-radius:14px;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em;transition:background .15s,color .15s,transform .15s}
+.day small{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;font-weight:700;letter-spacing:-.03em;white-space:nowrap}
+.day.tag{padding-bottom:12px}
+.day:disabled{cursor:default}
+.day:active:not(:disabled){transform:scale(.96)}
+.hint{margin:0;min-height:26px;font-size:16px;font-weight:500}
+
+/* 적는 칸 · 고르는 칸 */
+.f{position:relative;display:block}
+.f span{position:absolute;left:20px;top:12px;font-size:14px;font-weight:600;pointer-events:none}
+.f input{display:block;width:100%;height:74px;padding:26px 20px 6px;border:0;border-radius:var(--r);font-size:20px;font-weight:600;letter-spacing:-.02em;outline:none;transition:box-shadow .15s,background .15s}
+.f .err{display:none;position:absolute;right:18px;top:12px;font-size:14px;font-weight:700;font-style:normal}
+.f.bad .err{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lab{margin:8px 0 0;font-size:16px;font-weight:700;letter-spacing:-.02em}
+.pick{display:flex;align-items:center;justify-content:center;min-height:60px;padding:0 18px;border-radius:var(--r);font-size:17px;font-weight:600;letter-spacing:-.02em;transition:background .15s,color .15s}
+
+/* 아래 띠 */
+.foot{display:flex;align-items:center;gap:18px}
+.back{font-size:17px;font-weight:600;padding:14px 4px}
+.sum{flex:1;min-width:0;text-align:right;line-height:1.35}
+.sum b{display:block;font-size:19px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.sum small{font-size:14px;font-weight:500}
+.go{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-width:190px;min-height:64px;padding:0 28px;border-radius:var(--r);font-size:19px;font-weight:700;letter-spacing:-.03em;transition:transform .15s}
+.go:active{transform:scale(.98)}
+.go svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid currentColor;outline-offset:3px}
+input:focus-visible{outline:none}
+
+/* ── 1 문 뒤에서 ── 왼쪽 양식이 흰 문이고, 사람이 그 문 뒤에서 얼굴을 내민다. */
+[data-look="1"]{--ink:#0a0a0a;background:#fff;color:var(--ink)}
+[data-look="1"] .app{grid-template-columns:50% 1fr;grid-template-rows:auto auto 1fr auto;padding:0}
+[data-look="1"] .app::before{content:'';position:absolute;z-index:-1;left:0;top:0;bottom:0;width:50%;background:#fff;box-shadow:1px 0 0 rgba(10,20,40,.14),18px 0 40px -18px rgba(20,30,50,.42)}
+[data-look="1"] .top,[data-look="1"] .ask,[data-look="1"] .body,[data-look="1"] .foot{grid-column:1;padding-inline:var(--pad)}
+[data-look="1"] .top{padding-top:44px}
+[data-look="1"] .ask{padding-top:clamp(20px,4.2vh,44px)}
+[data-look="1"] .count{display:none}
+[data-look="1"] h1{font-family:var(--serif);font-weight:300;font-size:clamp(38px,3.9vw,58px);line-height:1.22;letter-spacing:-.05em}
+[data-look="1"] .body{padding-top:clamp(18px,3.2vh,32px)}
+[data-look="1"] .foot{padding-block:24px 40px}
+[data-look="1"] .m-door{display:block;position:absolute;top:0;width:max(104vw,177.8vh);height:max(58.5vw,100%);max-width:none;left:50%;object-fit:cover;object-position:50% 0;transform:translateX(-50.3%)}
+[data-look="1"] .day{height:54px}
+[data-look="1"] .day.ok{background:#f1f2f4}
+[data-look="1"] .day.ok:hover,[data-look="1"] .day.tight:hover{background:#e3e5e9}
+[data-look="1"] .day:disabled{color:#b6b8bd}
+[data-look="1"] .day[aria-pressed=true]{background:#0a0a0a;color:#fff}
+[data-look="1"] .cal-move button,[data-look="1"] .pick,[data-look="1"] .f input{background:#f1f2f4}
+[data-look="1"] .pick:hover,[data-look="1"] .cal-move button:hover:not(:disabled){background:#e3e5e9}
+[data-look="1"] .f input:focus{background:#fff;box-shadow:inset 0 0 0 2px #0a0a0a}
+[data-look="1"] .f.bad input{box-shadow:inset 0 0 0 2px #c92a12}
+[data-look="1"] .err,[data-look="1"] .hint.bad{color:#c92a12}
+[data-look="1"] .pick[aria-pressed=true],[data-look="1"] .go{background:#0a0a0a;color:#fff}
+
+/* ── 2 하늘 ── 작품의 하늘이 화면 전체 바탕이다. 고른 날짜가 하늘에 적힌다. */
+[data-look="2"]{--ink:#03152e;background:#3f7fbe;color:#fff}
+[data-look="2"] .m-sky{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:100% 100%}
+[data-look="2"] .m-shade{display:block;position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,38,80,0) 34%,rgba(6,38,80,.34) 60%,rgba(6,38,80,.38))}
+[data-look="2"] .app{grid-template-columns:minmax(0,1fr) minmax(0,600px);grid-template-rows:auto 1fr auto;column-gap:5vw;padding:44px var(--pad) 40px}
+[data-look="2"] .top{grid-column:1/3}
+[data-look="2"] .ask{grid-column:1;grid-row:2/4;padding-top:clamp(28px,7vh,72px);color:var(--ink)}
+[data-look="2"] .body{grid-column:2;grid-row:2;justify-content:center;padding-block:22px}
+[data-look="2"] .foot{grid-column:2;grid-row:3}
+[data-look="2"] .count{display:none}
+[data-look="2"] h1{font-family:var(--serif);font-weight:300;font-size:clamp(40px,4.7vw,72px);line-height:1.2;letter-spacing:-.055em}
+[data-look="2"] .m-date{display:block;position:absolute;left:var(--pad);top:54%;margin:0;font-family:var(--serif);font-weight:300;font-size:clamp(90px,11vw,168px);line-height:1;letter-spacing:-.055em;color:#fff;font-variant-numeric:tabular-nums;opacity:0;transition:opacity .5s}
+[data-look="2"] .m-date.on{opacity:1}
+[data-look="2"] .later{color:#fff}
+[data-look="2"] .day{height:60px;border-radius:999px;color:#fff;font-weight:500;font-size:21px}
+[data-look="2"] .day.ok{background:rgba(255,255,255,.2)}
+[data-look="2"] .day.ok:hover,[data-look="2"] .day.tight:hover{background:rgba(255,255,255,.36)}
+[data-look="2"] .day:disabled{color:rgba(255,255,255,.4)}
+[data-look="2"] .day[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:700}
+[data-look="2"] .cal-move button,[data-look="2"] .pick{background:rgba(255,255,255,.2)}
+[data-look="2"] .pick:hover,[data-look="2"] .cal-move button:hover:not(:disabled){background:rgba(255,255,255,.34)}
+[data-look="2"] .pick,[data-look="2"] .go{border-radius:999px}
+[data-look="2"] .f input{background:#fff;color:var(--ink);border-radius:26px;padding-left:26px}
+[data-look="2"] .f span{left:26px;color:var(--ink)}
+[data-look="2"] .f input:focus{box-shadow:0 0 0 4px rgba(255,255,255,.45)}
+[data-look="2"] .f.bad input{box-shadow:0 0 0 3px #ffd5c9}
+[data-look="2"] .err{color:#b0240f}
+[data-look="2"] .pick[aria-pressed=true],[data-look="2"] .go{background:#fff;color:var(--ink)}
+
+/* ── 3 솔리오 ── 노란 바탕에 솔리오가 서서 묻고, 흰 판에서 답한다. 고른 날짜가 솔리오의 달력에 적힌다. */
+[data-look="3"]{--ink:#111;background:#fed027;color:var(--ink)}
+[data-look="3"] .app{grid-template-columns:minmax(0,1fr) minmax(0,52%);grid-template-rows:auto 1fr auto;padding:20px 20px 20px 0}
+[data-look="3"] .top{grid-column:1;padding:24px 24px 0 var(--pad)}
+[data-look="3"] .ask{grid-column:1;grid-row:2/4;padding:clamp(24px,5.4vh,56px) 0 0 var(--pad)}
+[data-look="3"] .body{grid-column:2;grid-row:1/3;background:#fff;border-radius:36px 36px 0 0;padding:clamp(28px,5vh,52px) clamp(24px,3.6vw,56px) 10px;justify-content:center}
+[data-look="3"] .foot{grid-column:2;grid-row:3;background:#fff;border-radius:0 0 36px 36px;padding:18px clamp(24px,3.6vw,56px) clamp(24px,4vh,40px)}
+[data-look="3"] .count{display:none}
+[data-look="3"] h1{font-family:var(--sans);font-weight:800;font-size:clamp(38px,4.5vw,66px);line-height:1.14;letter-spacing:-.055em}
+[data-look="3"] .m-solio{display:block;position:absolute;left:0;bottom:0;width:48%;height:78%}
+[data-look="3"] .scene{position:absolute;left:50%;bottom:-8%;height:100%;max-height:none;aspect-ratio:1;transform:translateX(-50%);opacity:0;transition:opacity .35s}
+[data-look="3"] .scene.on{opacity:1}
+[data-look="3"] .scene img{width:100%;height:100%;-webkit-mask:radial-gradient(closest-side,#000 82%,transparent 100%);mask:radial-gradient(closest-side,#000 82%,transparent 100%)}
+.scene{container-type:size}
+.eyes{position:absolute;display:flex;justify-content:space-between;width:10.6%;height:4.1%;transform:translate(var(--ex,0),var(--ey,0));transition:transform .35s var(--ease)}
+.eyes i{width:33.5%;border-radius:50%;background:#fff6dd;box-shadow:0 0 1.2vh rgba(255,232,170,.55);transition:transform .09s}
+[data-scene="when"] .eyes{left:39.4%;top:56.4%}
+[data-scene="who"] .eyes{left:38.4%;top:53.4%}
+[data-scene="when"] .wrote{left:59.5%;top:62.4%;width:22%;height:14%;font-size:11.5cqw;transform:skewX(-9deg)}
+[data-scene="who"] .wrote{left:60%;top:70.6%;width:24%;height:6%;font-size:3.6cqw;transform:skewY(1.5deg)}
+.blink .eyes i{transform:scaleY(.08)}
+.wrote{position:absolute;display:grid;place-items:center;text-align:center;font-weight:800;color:#111;letter-spacing:-.05em;line-height:1;opacity:0;transition:opacity .3s}
+.wrote.on{opacity:1}
+[data-look="3"] .day{height:60px;border-radius:18px;font-weight:700;font-size:21px}
+[data-look="3"] .day.ok{background:#fff0b3}
+[data-look="3"] .day.ok:hover{background:#ffe27a}
+[data-look="3"] .day.tight:hover{background:#f3f3f1}
+[data-look="3"] .day:disabled{color:#bdbdb8}
+[data-look="3"] .day[aria-pressed=true]{background:#111;color:#fff}
+[data-look="3"] .cal-move button,[data-look="3"] .pick,[data-look="3"] .f input{background:#f3f3f1}
+[data-look="3"] .pick:hover,[data-look="3"] .cal-move button:hover:not(:disabled){background:#e8e8e4}
+[data-look="3"] .f input{border-radius:20px}
+[data-look="3"] .f input:focus{background:#fff;box-shadow:inset 0 0 0 3px #111}
+[data-look="3"] .f.bad input{box-shadow:inset 0 0 0 3px #d5391f}
+[data-look="3"] .err,[data-look="3"] .hint.bad{color:#c92a12}
+[data-look="3"] .pick,[data-look="3"] .go{border-radius:20px}
+[data-look="3"] .pick[aria-pressed=true]{background:#111;color:#fff}
+[data-look="3"] .go{background:#fed027;color:#111}
+
+/* 휴대폰 */
+@media (max-width:760px){
+  :root{--pad:20px}
+  .app{padding:0!important;display:flex!important;flex-direction:column;min-height:100dvh}
+  .top{padding:18px 20px 0!important;order:0}
+  .logo{height:20px}
+  .ask{order:1}
+  .body{order:2;flex:1}
+  .foot{order:3;position:sticky;bottom:0;z-index:3;gap:12px;padding:12px 20px calc(14px + env(safe-area-inset-bottom))!important}
+  .sum{display:none}
+  .go{flex:1;min-width:0;min-height:58px}
+  .back{padding:14px 10px 14px 0}
+  .day{height:43px!important;font-size:18px!important}
+  .day small{font-size:10px;bottom:3px}
+  .day.tag{padding-bottom:11px}
+  .grid{gap:4px}
+  .f input{height:68px;font-size:18px;padding-top:24px}
+  .f span{top:10px}
+  .two{grid-template-columns:1fr;gap:10px}
+  .two.keep{grid-template-columns:1fr 1fr}
+  .hint{font-size:15px}
+  .cal{gap:4px}
+  .step{gap:10px;padding-bottom:14px}
+  .pick{min-height:54px}
+
+  [data-look="1"] .app::before{top:212px;width:100%;border-radius:26px 26px 0 0;box-shadow:0 -14px 34px -16px rgba(20,30,50,.34)}
+  [data-look="1"] .top{position:absolute;left:0;right:0}
+  [data-look="1"] .ask{padding:232px 20px 0}
+  [data-look="1"] .body{padding:14px 20px 0}
+  [data-look="1"] .foot{background:#fff}
+  [data-look="1"] h1{font-size:33px}
+  [data-look="1"] .m-door{top:0;left:0;height:240px;width:100%;transform:none;object-position:78% 30%}
+
+  [data-look="2"] .m-sky{position:fixed;object-position:43% 100%}
+  [data-look="2"] .m-shade{position:fixed;background:linear-gradient(180deg,rgba(6,38,80,.22),rgba(6,38,80,.46) 34%,rgba(6,38,80,.5) 78%,rgba(6,38,80,.2))}
+  [data-look="2"] .ask{padding:30px 20px 0;color:#fff}
+  [data-look="2"] h1{font-size:40px}
+  [data-look="2"] .body{padding:20px 20px 0;justify-content:flex-start}
+  [data-look="2"] .m-date{display:none}
+  [data-look="2"] .foot{background:linear-gradient(180deg,rgba(38,84,134,0),rgba(30,74,122,.72) 60%)}
+  [data-look="2"] .f input{border-radius:22px}
+
+  [data-look="3"] .ask{padding:16px 20px 0!important;min-height:190px}
+  [data-look="3"] h1{font-size:34px}
+  [data-look="3"] .m-solio{left:auto;right:-20px;top:58px;bottom:auto;width:232px;height:232px}
+  [data-look="3"] .scene{bottom:0}
+  [data-look="3"] .body{border-radius:28px 28px 0 0;padding:24px 20px 0;justify-content:flex-start;margin-top:20px}
+  [data-look="3"] .foot{border-radius:0}
+}
+
+/* 낮은 PC 화면 */
+@media (min-width:761px) and (max-height:840px){
+  .day,[data-look="1"] .day{height:50px}
+  .day small{bottom:4px}
+  [data-look="2"] .day,[data-look="3"] .day{height:50px}
+  .step{gap:10px}.cal{gap:6px}.pick{min-height:52px}.f input{height:66px;padding-top:22px}.f span{top:9px}
+  [data-look="1"] .top{padding-top:28px}
+  [data-look="1"] h1{white-space:normal;font-size:clamp(34px,3.2vw,44px)}
+  [data-look="1"] .foot{padding-block:16px 26px}
+}
+
+/* 시안 고르기: 손님 화면의 일부가 아니다 */
+.looks{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:50;display:flex;gap:4px;padding:5px;border-radius:12px;background:rgba(18,18,18,.9);font-size:13px;color:#fff}
+.looks i{font-style:normal}
+.looks a{padding:7px 12px;border-radius:8px;color:#fff;text-decoration:none;white-space:nowrap}
+.looks a[aria-current=true]{background:#fff;color:#111}
+.is-shot .looks{display:none}
+@media (max-width:760px){.looks{top:10px}.looks i{display:none}.looks a{padding:6px 13px}}
+</style>
+</head>
+<body data-look="1">
+<div class="app">
+  <div class="media" aria-hidden="true">
+    <video class="m-door" src="./그림/연락_문.mp4" muted playsinline preload="auto"></video>
+    <img class="m-sky" src="./그림/연락_하늘.webp" alt=""><i class="m-shade"></i><p class="m-date"></p>
+    <div class="m-solio">
+      <div class="scene" data-scene="when"><img src="./그림/솔리오_달력.webp" alt=""><span class="eyes"><i></i><i></i></span><span class="wrote"></span></div>
+      <div class="scene" data-scene="who"><img src="./그림/솔리오_편지.webp" alt=""><span class="eyes"><i></i><i></i></span><span class="wrote"></span></div>
+    </div>
+  </div>
+  <header class="top"><img class="logo" alt="synk PULSE"><button type="button" class="later">나중에 이어서</button></header>
+  <div class="ask"><p class="count">08 / 09</p><h1></h1></div>
+  <div class="body">
+    <section class="step" data-step="when">
+      <div class="cal">
+        <div class="cal-head"><b data-month></b><div class="cal-move"><button type="button" data-move="-1" aria-label="앞으로"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" data-move="1" aria-label="뒤로"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div></div>
+        <div class="grid" data-grid role="group" aria-label="받고 싶은 날"></div>
+      </div>
+      <p class="hint" data-hint role="status"></p>
+      <button type="button" class="pick" data-free aria-pressed="false">정해진 날짜는 없어요</button>
+    </section>
+    <section class="step" data-step="who">
+      <label class="f" data-f="name"><span>성함</span><input autocomplete="name" maxlength="80"><em class="err">적어 주세요</em></label>
+      <label class="f" data-f="email"><span>이메일</span><input type="email" inputmode="email" autocomplete="email" maxlength="254"><em class="err">이메일이나 휴대폰 하나는 필요해요</em></label>
+      <div class="two"><label class="f" data-f="phone"><span>휴대폰 · 선택</span><input type="tel" autocomplete="tel" maxlength="30"></label><label class="f" data-f="company"><span>회사 · 브랜드 · 선택</span><input autocomplete="organization" maxlength="120"></label></div>
+      <p class="lab">최종 확인은 누가 하나요?</p>
+      <div class="two keep" role="group" aria-label="최종 확인"><button type="button" class="pick" data-approver="one" aria-pressed="false">제가 정해요</button><button type="button" class="pick" data-approver="many" aria-pressed="false">여러 명이 봐요</button></div>
+    </section>
+  </div>
+  <footer class="foot"><button type="button" class="back">이전</button><p class="sum" style="margin:0"><small>첨벙댕 · 30초 · 세로</small><b>59만원부터</b></p><button type="button" class="go"><span></span><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></button></footer>
+</div>
+<nav class="looks" aria-label="시안"><a href="#door">1<i> 문 뒤에서</i></a><a href="#sky">2<i> 하늘</i></a><a href="#solio">3<i> 솔리오</i></a></nav>
+<script>
+const q = new URLSearchParams(location.search), NAMES = { door: '1', sky: '2', solio: '3' };
+let LOOK = q.get('look') || NAMES[location.hash.slice(1)] || '1';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+if (q.has('shot')) document.body.classList.add('is-shot');
+const phone = matchMedia('(max-width:760px)'), logo = () => { $('.logo').src = LOOK === '2' && phone.matches ? './그림/로고_흰.png' : './그림/로고_먹.png'; }; phone.addEventListener('change', logo);
+function setLook(n) {
+  LOOK = n; document.body.dataset.look = n; logo();
+  $$('.looks a').forEach(a => a.setAttribute('aria-current', NAMES[a.hash.slice(1)] === n ? 'true' : 'false'));
+}
+addEventListener('hashchange', () => { const n = NAMES[location.hash.slice(1)]; if (n) { setLook(n); go(s.step, true); } });
+const DAY = 864e5, TODAY = Date.UTC(2026, 10, 26), NEED = 14;      // 30초 편의 제작 기간(앱과 같은 14일)
+const START = TODAY - new Date(TODAY).getUTCDay() * DAY, WD = '일월화수목금토';
+const md = t => { const d = new Date(t); return [d.getUTCMonth() + 1, d.getUTCDate(), WD[d.getUTCDay()]]; };
+const s = { step: 'when', date: null, free: false, page: 0, approver: null };
+const TITLE = { when: '언제까지\n받고 싶으세요?', who: '누구에게\n연락드릴까요?' };
+const video = $('.m-door');
+
+function drawCal() {
+  const first = START + s.page * 35 * DAY, last = first + 34 * DAY;
+  const a = md(first), b = md(last);
+  $('[data-month]').textContent = a[0] === b[0] ? `${a[0]}월` : `${a[0]}월 · ${b[0]}월`;
+  $('[data-move="-1"]').disabled = s.page === 0; $('[data-move="1"]').disabled = s.page === 3;
+  let html = [...WD].map(w => `<span class="wd">${w}</span>`).join('');
+  for (let i = 0; i < 35; i++) {
+    const t = first + i * DAY, [m, d, w] = md(t), n = (t - TODAY) / DAY, past = n <= 0, ok = n >= NEED;
+    const tag = n === 0 ? '오늘' : n === NEED ? '14일 뒤' : '';
+    html += `<button type="button" class="day ${past ? '' : ok ? 'ok' : 'tight'} ${tag ? 'tag' : ''}" data-t="${t}" aria-pressed="${s.date === t}" aria-label="${m}월 ${d}일 ${w}요일" ${past ? 'disabled' : ''}>${d === 1 ? m + '.1' : d}${tag ? `<small>${tag}</small>` : ''}</button>`;
+  }
+  $('[data-grid]').innerHTML = html;
+}
+function hint(text, bad) { const h = $('[data-hint]'); h.textContent = text; h.classList.toggle('bad', !!bad); }
+function tell() {
+  if (s.free) return hint('날짜는 저희가 먼저 제안할게요.');
+  if (!s.date) return hint('색이 칠해진 날은 넉넉해요. 30초 한 편은 보통 14일 걸려요.');
+  const [m, d, w] = md(s.date), ok = (s.date - TODAY) / DAY >= NEED;
+  hint(ok ? `${m}월 ${d}일 ${w}요일, 넉넉한 날이에요.` : `${m}월 ${d}일 ${w}요일은 빠듯해요. 맞출 수 있는지 먼저 말씀드릴게요.`);
+}
+function write() {
+  const date = $('.m-date'), [m, d] = s.date ? md(s.date) : [];
+  if (s.date && !s.free) date.textContent = `${m}.${String(d).padStart(2, '0')}`;
+  date.classList.toggle('on', !!s.date && !s.free);
+  const w = $('[data-scene="when"] .wrote'); if (s.date) w.textContent = d; w.classList.toggle('on', !!s.date && !s.free);
+  const n = $('[data-f="name"] input').value.trim(), e = $('[data-scene="who"] .wrote');
+  if (n) e.textContent = n + ' 님'; e.classList.toggle('on', !!n);
+}
+function look(el) {                                                 // 솔리오의 눈만 고르는 쪽을 본다
+  const box = $(`[data-scene="${s.step}"] .eyes`); if (LOOK !== '3' || !box || !el) return;
+  const r = el.getBoundingClientRect(), v = r.top + r.height / 2 - innerHeight / 2;
+  box.style.setProperty('--ex', '10%'); box.style.setProperty('--ey', `${Math.max(-70, Math.min(90, v / innerHeight * 220))}%`);
+}
+function go(step, first) {
+  s.step = step;
+  $$('.step').forEach(n => n.classList.toggle('on', n.dataset.step === step));
+  $$('.scene').forEach(n => n.classList.toggle('on', n.dataset.scene === step));
+  const h = $('h1'); h.textContent = TITLE[step]; h.classList.remove('swap'); if (!first) { void h.offsetWidth; h.classList.add('swap'); }
+  $('.go span').textContent = step === 'when' ? '다음' : '확인하기';
+  playTo(step === 'when' ? 0 : .66, first);
+  write();
+}
+// 1판: 다음으로 가면 문 뒤의 사람이 한 걸음 나온다(작품 속 그 장면 1초). 되돌아가면 처음 자리로.
+let raf = 0;
+function playTo(t, instant) {
+  cancelAnimationFrame(raf); video.pause();
+  const still = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if (instant || still || t < video.currentTime) { video.currentTime = t; return; }
+  video.play().then(() => { const tick = () => { if (video.currentTime >= t || video.ended) { video.pause(); return; } raf = requestAnimationFrame(tick); }; tick(); }).catch(() => { video.currentTime = t; });
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('button'); if (!el) return;
+  if (el.dataset.t) { s.date = +el.dataset.t; s.free = false; $$('.day').forEach(n => n.setAttribute('aria-pressed', n === el)); $('[data-free]').setAttribute('aria-pressed', 'false'); tell(); write(); look(el); blink(); }
+  else if ('free' in el.dataset) { s.free = !s.free; if (s.free) s.date = null; el.setAttribute('aria-pressed', s.free); $$('.day').forEach(n => n.setAttribute('aria-pressed', 'false')); tell(); write(); look(el); blink(); }
+  else if (el.dataset.move) { s.page += +el.dataset.move; drawCal(); }
+  else if (el.dataset.approver) { s.approver = el.dataset.approver; $$('[data-approver]').forEach(n => n.setAttribute('aria-pressed', n === el)); look(el); }
+  else if (el.classList.contains('back')) { if (s.step === 'who') go('when'); }
+  else if (el.classList.contains('go')) {
+    if (s.step === 'when') { if (!s.date && !s.free) return hint('받고 싶은 날을 골라 주세요. 없으면 아래를 눌러 주세요.', true); return go('who'); }
+    const v = k => $(`[data-f="${k}"] input`).value.trim(), bad = { name: !v('name'), email: !v('email') && !v('phone') };
+    for (const k in bad) $(`[data-f="${k}"]`).classList.toggle('bad', bad[k]);
+    const f = Object.keys(bad).find(k => bad[k]); if (f) return $(`[data-f="${f}"] input`).focus();
+    el.querySelector('span').textContent = '적어 두었어요';
+  }
+});
+document.addEventListener('input', e => { const f = e.target.closest('.f'); if (f) f.classList.remove('bad'); write(); });
+document.addEventListener('focusin', e => { if (e.target.matches('.f input')) look(e.target); });
+document.addEventListener('mouseover', e => { const el = e.target.closest('.day:not(:disabled),.pick'); if (el) look(el); });
+function blink() { const m = $('.m-solio'); m.classList.add('blink'); setTimeout(() => m.classList.remove('blink'), 120); }
+setInterval(() => { if (LOOK === '3') blink(); }, 4200);
+setLook(LOOK); drawCal(); tell(); go('when', true);
+video.addEventListener('loadeddata', () => { if (s.step === 'when') video.currentTime = 0; }, { once: true });
+</script>
+</body>
+</html>

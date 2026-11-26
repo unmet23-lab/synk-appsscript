@@ -56,6 +56,8 @@ export const REQUEST_PACKAGES=['s15','s30','s60','corp','photo','ask'];
 const ACTIONS=['buy','install','visit','ask','remember'],WINS=['story','impact','laugh','ask'],APPROVERS=['one','many'],MODEL_CHOICES=MODEL_CHOICE_KINDS;
 // 의뢰서 탭(2026-11-13 — 더하기만): 얼마나 과감하게 · 광고에 꼭 붙일 표시가 있는 업종(none 해당 없음 · unsure 잘 모름) · 목소리. 화면 request-data.mjs의 BOLD · NOTICES · VOICES와 같은 ID다.
 const BOLDS=['safe','twist','wild'],VOICES=['narration','model','none'];
+// 의뢰서 세 막(2026-11-26 — 더하기만): 마무리를 추천대로(rec) · 직접(custom), 마지막 화면(로고만 · 로고 + 한 줄 · 로고 + 안내), 그 한 줄. 화면 request-data.mjs ENDS와 같은 ID다.
+const FINISHES=['rec','custom'],ENDS=['logo','line','info'];
 const NOTICE_LABEL={'health-food':'건강기능식품',alcohol:'주류','functional-cosmetic':'기능성 화장품','beauty-device':'미용 기기','medical-device':'의료기기',sanitizer:'살균 · 소독 제품',kids:'어린이 제품',finance:'금융 · 투자',game:'게임',clinic:'병의원',academy:'학원','medical-pharma':'의료 · 제약'};
 const NOTICES=[...Object.keys(NOTICE_LABEL),'none','unsure'];
 const POINTS=['전개 · 구성','색감 · 빛','카메라 · 속도','모델 연기','소리 · 음악'];
@@ -65,7 +67,7 @@ const DRAFT_SLOTS=[...REQUEST_SLOTS,...PERSONA_SLOTS];
 // 다국어 · 전용 인물 판 1(2026-11-09, 기획 12-2 「답 구조」 — 더하기만): 고른 모델의 헤어(캐스팅북 헤어 1 · 2 · 3), 소통 언어,
 // 납품 언어, 대상 나라(ISO 두 글자), 견적을 보일 통화(표시만 — 값과 결제는 원화 그대로). 옛 화면이 안 보내면 빈 값으로 채운다.
 // 옷(outfit, 2026-11-10 옷 · 머리 고르기): 고른 모델의 옷 세 벌(fullbody 기본 옷 · look-1 · look-2). 의뢰서에는 칸이 없고 방향을 고를 때 받는다.
-const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','notice','noticeText','win','bold','refs','avoidFeel','models','modelChoice','hair','outfit','voice','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
+const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','notice','noticeText','win','bold','refs','avoidFeel','models','modelChoice','hair','outfit','voice','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest','finish','endCard','endLine'];
 const MODEL_IDS=CASTING_MODELS.map(model=>model.id);
 const HAIRS=HAIR_IDS,OUTFITS=OUTFIT_IDS,CURRENCIES=['KRW','USD','JPY','EUR'];
 // 맞춤 인물 요청(판 3, modelChoice custom일 때만 쓰인다): 인물 종류, 원하는 인상 · 나이대 · 헤어와 참고할 점, 원하는 쓰임, 이번만 / 다음 광고에도,
@@ -79,7 +81,7 @@ function personaRequestOf(value){
 }
 const markets=value=>{const out=many(value,null,8,2);if(out.some(code=>!/^[A-Z]{2}$/.test(code)))throw fail('고른 값을 확인해 주세요.');return out;};
 
-export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',notice:'',noticeText:'',win:'',bold:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',outfit:'',voice:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',personaRequest:emptyPersonaRequest()};}
+export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',notice:'',noticeText:'',win:'',bold:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',outfit:'',voice:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',personaRequest:emptyPersonaRequest(),finish:'',endCard:'',endLine:''};}
 // 저장(strict 아님)은 길이 · 제어문자 · 고르는 값만 본다. 칸을 쓰는 중에 형식 때문에 자동 저장이 끊기면 안 된다.
 // 형식(메일 · 번호 · 주소 · 날짜)은 보낼 때 본다. 파일 목록은 서버가 쥐고, 답에서는 「지금 없어요」 표시만 받는다.
 export function normalizeRequestAnswers(input,{strict=false}={}){
@@ -100,6 +102,7 @@ export function normalizeRequestAnswers(input,{strict=false}={}){
     win:one(input.win,WINS),bold:one(input.bold,BOLDS),refs,avoidFeel:text(input.avoidFeel,200),models:many(input.models,MODEL_IDS,2),modelChoice,hair:one(input.hair,HAIRS),outfit:one(input.outfit,OUTFITS),voice:modelChoice==='none'&&voice==='model'?'':voice,
     date,dateFree:input.dateFree===true,approver:one(input.approver,APPROVERS),approverName:text(input.approverName,80),contactName:text(input.contactName,80),company:text(input.company,100),email,phone,consent:input.consent===true,rights:input.rights===true,
     contactLocale:one(input.contactLocale,LOCALES),outputLocales:many(input.outputLocales,LOCALES,LOCALES.length,8),targetMarket:markets(input.targetMarket),quoteCurrency:one(input.quoteCurrency,CURRENCIES),personaRequest:personaRequestOf(input.personaRequest),
+    finish:one(input.finish,FINISHES),endCard:one(input.endCard,ENDS),endLine:text(input.endLine,80),
   };
 }
 // 업로드 형식. 화면에 바로 띄우는 것은 서명을 재서 확인한 PNG · JPEG · MP4 · WebM뿐이고, 나머지는 내려받기 전용으로만 둔다.
@@ -937,6 +940,7 @@ const CHANNEL_MAP={shorts:['instagram','tiktok','youtube'],youtube:['youtube','w
 const PACKAGE_SECONDS={s15:15,s30:30,s60:60,corp:30};
 const OBJECTIVE={buy:'sales',install:'sales',visit:'sales',ask:'sales',remember:'brand'};
 const WIN_LABEL={story:'이야기로 여운을',impact:'한 장면의 임팩트로',laugh:'웃음으로 퍼지게',ask:'맡김'};
+const END_LABEL={logo:'로고만',line:'로고 + 한 줄',info:'로고 + 안내'};
 const BOLD_LABEL={safe:'정석대로',twist:'조금 다르게',wild:'확 다르게'},VOICE_LABEL={narration:'내레이션',model:'모델이 직접 말함',none:'말 없이 음악과 자막'};
 // 메모의 한 줄은 「항목: 값」 하나다. 손님이 쓴 글에 줄바꿈이 있으면 그 뒤가 서버가 만든 다른 줄처럼 보이므로(11-13 백엔드 검수 GA1) 줄을 나누는 공백을 빈칸 하나로 잇는다.
 const oneLine=value=>String(value).replace(/\s*[^\S \t]+\s*/g,' ');
@@ -951,7 +955,7 @@ export function carryToStrategy(strategy,a,stamp){
   put('durationSeconds',PACKAGE_SECONDS[a.package]||null);put('distribution',a.paid?'paid':'');
   put('screenCopy',a.screenText);put('destinationUrl',/^https:\/\//.test(a.pageUrl||'')?a.pageUrl:'');put('proposedDeadline',a.date);
   const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).join(', '),ref.why].filter(Boolean).join(' — ')).filter(Boolean);
-  const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,a.bold&&`얼마나 과감하게: ${BOLD_LABEL[a.bold]}`,a.voice&&`목소리: ${VOICE_LABEL[a.voice]}`,noticeLine(a),refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`].filter(Boolean).map(oneLine);
+  const lines=[a.finish==='rec'&&'마무리: 추천대로(마지막 화면 · 문구 · 느낌은 담당자 제안)',a.endCard&&`마지막 화면: ${END_LABEL[a.endCard]}`,a.endLine&&`마지막 화면 문구: ${a.endLine}`,a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,a.bold&&`얼마나 과감하게: ${BOLD_LABEL[a.bold]}`,a.voice&&`목소리: ${VOICE_LABEL[a.voice]}`,noticeLine(a),refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`].filter(Boolean).map(oneLine);
   put('notes',lines.join('\n').slice(0,3000));
   // 고른 모델의 헤어는 그 모델이 제작 설계의 모델일 때만 옮긴다(헤어 1 · 2 · 3은 모델마다 다르다). 전용 인물이 붙어 있으면 카탈로그 모델을 넣지 않는다.
   const casting={...data.castingSelection};if(a.models?.[0]&&!casting.modelId&&!personaRefOf(casting.personaRef))casting.modelId=a.models[0];

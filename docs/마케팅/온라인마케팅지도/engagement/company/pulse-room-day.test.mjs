@@ -155,7 +155,7 @@ test('the day look is gone everywhere, and its hooks (address bar colour, echo t
   assert.match(views,/if\(shelf&&!wholeRows\.has\(shelf\.dataset\.journalId\)\)shelf\.classList\.add\('is-on-shelf'\);/);
   assert.match(app,/function openJournal\(\{target='',opener=null\}=\{\}\)\{\s+if\(target\)keepWhole\(target\);/);
   // 캐시 판을 올렸다(바뀐 화면 모듈과 스타일을 새로 받게).
-  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v80-works-20261126';/);
+  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v81-example-20261126';/);
 });
 
 // 처음 보는 사람용 낱말(11-21 「처음 보는 사람이 더 이해하기 좋게」): 맹검이 모른다고 짚은 말을 바꿨다.

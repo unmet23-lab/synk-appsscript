@@ -84,7 +84,7 @@ test('HTTP the finished films in the films folder serve their posters and full f
 const DOWN=[
   ...['omitok-court','modu-course','somchae-room','cheombeong-dang','neujimak-sniper','himkkeot-sale','castingbook-intro','omitok-pour','yurigyeol-holiday','maejin-imbak','hwaseong-cf-light','hwaseong-short-first','hwaseong-cm-song'].flatMap(name=>['assets/films/'+name+'-poster-v1.webp','assets/films/'+name+'-v1.mp4']),
   ...['poster-v1.webp','excerpt-20s-v1.mp4','full-v1.mp4'].map(name=>'assets/casting/video/M03-mv-happy-gangster-'+name),
-  ...['film-gift.mp4','film-maejin.mp4','film-maejin-laugh.mp4','w-maejin.webp','w-maejin-laugh.webp'].map(name=>'assets/request/'+name),
+  ...['film-gift.mp4','film-maejin.mp4','film-maejin-laugh.mp4','w-maejin.webp','w-maejin-laugh.webp','w-gift.webp','w-gift-snow.webp','w-gift-sphere.webp','file-gift-set.webp','file-gift-ampoule.webp','file-gift-jar.webp','still-shards.webp','still-lid.webp','sheet-gift-01.webp','sheet-gift-12.webp'].map(name=>'assets/request/'+name),
 ];
 test('HTTP the works taken down on 2026-11-26 are not served although the files stay, and the list shows exactly what the server gives',async()=>{
   for(const path of DOWN){
@@ -99,9 +99,10 @@ test('HTTP the works taken down on 2026-11-26 are not served although the files 
     assert.equal(response.status,path.endsWith('.mp4')?206:200,path);
     assert.ok(!DOWN.includes(path.slice(2)),path);
   }
-  // 화면 모듈이 내린 작품의 그림 · 영상 주소를 부르지 않는다(예시 프로젝트 demo · demo-film은 따로 바꾼다).
-  for(const name of ['films-view.mjs','film-home.mjs','request-data.mjs','request-flow.mjs','film-views.mjs','room-view.mjs','hall.mjs']){
+  // 화면 모듈이 내린 작품의 그림 · 영상 주소와 이름을 부르지 않는다(예시 프로젝트 · 옛 체험까지).
+  for(const name of ['films-view.mjs','film-home.mjs','request-data.mjs','request-flow.mjs','film-views.mjs','room-view.mjs','hall.mjs','views.mjs','demo.mjs','demo-film.mjs']){
     const source=(await readFile(appFile(name),'utf8'));
+    assert.doesNotMatch(source,/霜|홀리데이|서리꽃|(?:sheet|file|w|film)-gift/,name);
     for(const path of DOWN)assert.ok(!source.includes(path.split('/').at(-1)),name+' → '+path);
   }
 });

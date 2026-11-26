@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
 // 화면 그림을 실제 화소의 1.5배 넘게 늘리지 않는 장치(data-cap, 11-13)와 그것을 단 자리의 약속. 회사 원천만 읽는다.
-// 손님 사진 · 내 모델 그림처럼 크기를 모르는 그림, 큰 판이 모자란 예시 그림(霜の肌理 15초의 장 — 원본 영상 폭 1080이 한계)은
+// 손님 사진 · 내 모델 그림처럼 크기를 모르는 그림, 큰 판이 모자란 예시 그림(첨벙댕의 장 — 원본 영상 폭 1080이 한계)은
 // api.mjs capPixels가 받은 파일의 실제 화소를 --cap-w · --cap-h로 적고, film.css가 칸을 「실제 화소 × 화소비 띠의 몫」 안으로 줄인다.
 // 첫 화면 3쪽 · 고객 방의 모델 장면 사진은 큰 판(폭 1600)을 srcset으로 받고, 그래도 모자란 화면(5K)만 같은 장치가 칸을 줄인다.
 // 화면마다 몇 배인지는 저장소 시험 tests/pulse-pixel-cap-scale.test.mjs, 「추천해 주세요」 가리키기 되돌림은 아래 마지막 시험.
@@ -102,7 +102,7 @@ test('the room screen: the model scene takes its large cut through srcset, and e
   // 무대는 접지 않는다(is-no-screen을 거뒀다) — 판이 오기 전에는 멈춘 복도, 예시 그림은 없다.
   for(const info of [project(),project({state:'make'})]){
     const html=roomView(info);assert.match(html,/<section class="sx-room-a" data-stage="fall">/);assert.match(html,/data-room-title/);assert.doesNotMatch(html,/is-no-screen/);
-    assert.doesNotMatch(html,/w-gift|<div class="sx-room-screen">/,'there is no example or empty screen before actual work arrives');
+    assert.doesNotMatch(html,/w-(?:gift|vest)|<div class="sx-room-screen">/,'there is no example or empty screen before actual work arrives');
   }
   // 받은 자료의 첫 사진은 대체 순서의 한 자리다. 다만 시안처럼 보이지 않는다 — 재생 표 · 「보기」 · 설명 글이 없다.
   const files=roomView(project({files:['/m/a.jpg','/m/b.jpg']}));
@@ -112,7 +112,7 @@ test('the room screen: the model scene takes its large cut through srcset, and e
   assert.match(briefView(project({files:['/m/a.jpg','/m/b.jpg']})),/<img src="\/m\/a\.jpg"[\s\S]*<img src="\/m\/b\.jpg"/,'both attachments remain in the request details (the brief drawer)');
   const views=read('film-views.mjs'),legacy=read('views.mjs'),persona=read('persona-view.mjs');
   assert.ok(views.includes('<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">')&&views.includes('const stageImg=src=>`<img class="sx-q-fill" src="${esc(src)}" data-cap alt="" decoding="async">`;'),'work news and the stage pictures (attachment, direction, first sheet)');
-  assert.equal((legacy.match(/<img class="sx-q-fill" src="\.\/assets\/request\/w-gift(?:-snow)?\.webp" data-cap alt="" decoding="async">/g)||[]).length,3,'the older project screens’ example pictures');
+  assert.equal((legacy.match(/<img class="sx-q-fill" src="\.\/assets\/request\/(?:w-vest|sheet-vest-08)\.webp" data-cap alt="" decoding="async">/g)||[]).length,3,'the older project screens’ example pictures');
   assert.equal((persona.match(/<img class="sx-q-fill" src="\$\{esc\(m\.reference\.assets\[0\]\.url\)\}" data-cap alt="" decoding="async">/g)||[]).length,2,'the persona card’s reference face');
   assert.doesNotMatch(views+legacy+persona,/<img class="sx-q-fill" src="[^"]*"(?![^>]*data-cap)[^>]*>/,'no screen picture left without the cap');
 });
@@ -132,9 +132,8 @@ test('the first screen’s third page fetches the model scenes with their large 
 
 test('the request form: customer photos, my-model pictures and the example pictures before a business is chosen keep to their pixels',()=>{
   const flow=read('request-flow.mjs');
-  assert.ok(flow.includes("${shape?` data-shot=\"${shape}\"`:' data-cap'} alt=\"\"><div class=\"sx-q-copy"),'the ad frame of the words steps: a customer photo or the example picture');
-  assert.ok(flow.includes('<div class="sx-q-how"><figure><img src="${esc(own||still(\'file-gift-set\'))}" data-cap alt="">'),'the files step: the customer’s photo or the example box');
-  assert.ok(flow.includes('`<figure><img src="${still(name)}" data-cap alt=""><figcaption'),'the files step: the example scene and film pictures');
+  // 세 막(11-26): 말 단계의 광고 틀 · 자료 단계의 예시 그림은 없다. 자료 칸의 손님 사진은 제 화소대로 그린다.
+  assert.doesNotMatch(flow,/sx-q-copy|sx-q-how/);
   const mm=myModelsView({view:'list',data:{workspaces:[{id:'w1',name:'가 브랜드',role:'admin',models:[{id:'11111111-1111-4111-8111-111111111111',name:'하루',kind:'virtual',status:'ready',usable:true,reason:null,revisionId:'22222222-2222-4222-8222-222222222222',image:'/api/customer/pulse/asset/x',reuse:true,until:'2027-11-10T14:59:59.999Z',lastUsedAt:'2026-11-10T03:00:00.000Z',deletionRequested:false}],pending:[]}]}});
   assert.match(mm,/<figure class="sx-mm-face "><img src="\/api\/customer\/pulse\/asset\/x" data-cap alt="" loading="lazy" decoding="async"><\/figure>/,'my models: the face');
   // 보관 동의 화면: 이름 줄은 얼굴 칸(3:4 · 넘침 자름) 밖 아래 — 칸 안이면 잘려 안 보였다(Fable 5.2 F3, 이 변경 전부터).

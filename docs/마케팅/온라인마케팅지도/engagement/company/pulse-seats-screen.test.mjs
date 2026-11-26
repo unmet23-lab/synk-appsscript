@@ -64,7 +64,7 @@ test('의뢰서 첫 질문의 한 줄: 찬 종류 · 결제 안내 무렵(모르
   assert.equal(seatText({kinds:['photo'],noticeDate:''}),'지금은 사진 제작 자리가 차 있어요. 의뢰서는 그대로 받고, 결제 안내는 자리가 나는 대로 드려요.');
   assert.equal(seatText({kinds:['video','photo'],noticeDate:D(11,20)}),'지금은 제작 자리가 차 있어요. 의뢰서는 그대로 받고, 결제 안내는 11월 20일쯤 드려요.');
   const flow=read('request-flow.mjs'),app=read('app.mjs');
-  assert.ok(flow.includes("if(index===seatAt&&backend.seat)(form.querySelector('.sx-q-lead')||form.querySelector('[data-title]'))?.insertAdjacentHTML('afterend',"),'열어 처음 서는 질문에만, 안내 글 아래');
+  assert.ok(flow.includes("if(index===seatAt&&backend.seat&&s.id!=='when')(form.querySelector('.sx-q-lead')||form.querySelector('[data-title]'))?.insertAdjacentHTML('afterend',"),'열어 처음 서는 질문에만, 안내 글 아래');
   assert.ok(app.includes("backend.seat=intake?.state==='queue'||intake?.state==='full'?{kinds:intake.kinds,noticeDate:intake.noticeDate}:null;"));
   assert.match(app,/if\(intake\?\.state==='full'&&!backend\.hasDraft\)\{if\(backend\.features\)await applyLocale\(backend\.features\);s\.intake=intake;s\.requestResume=false;.*?throw new PulseError\(t\('지금은 예약이 찼어요\. 자리가 나면 이 화면에서 다시 받아요\.'\),409,'SYNK_PULSE_INTAKE_FULL'\);\}/);
   // 공개 응답 읽기: 찬 종류는 video · photo만, 날짜는 YYYY-MM-DD만(다른 값은 빈 글자).
@@ -229,7 +229,7 @@ test('직원 방향 창: 이 건이 자리 차례를 기다리면 받으실 날�
 
 test('6-B 화면 Fable F2 · F3 · F4 · F5: 쓰던 의뢰서는 연 단계에 자리 한 줄 · 낡은 자리로 409면 프로젝트를 다시 읽음 · 요청을 보낸 뒤 다시 적는 창의 말 · 잡은 자리 메모 필수',()=>{
   const flow=read('request-flow.mjs'),app=read('app.mjs');
-  assert.ok(flow.includes('const seatAt=index;')&&flow.includes("if(index===seatAt&&backend.seat)(form.querySelector('.sx-q-lead')"),'이번에 열어 처음 서는 단계(쓰던 의뢰서는 저장된 단계)');
+  assert.ok(flow.includes('const seatAt=index;')&&flow.includes("if(index===seatAt&&backend.seat&&s.id!=='when')(form.querySelector('.sx-q-lead')"),'이번에 열어 처음 서는 단계(쓰던 의뢰서는 저장된 단계)');
   assert.ok(app.includes(".catch(async error=>{if(error?.code==='SYNK_PULSE_SEAT_WAIT'&&s.project)await loadProject(s.project.id).catch(()=>{});throw error;})"),'자리 확인 409만(판 번호 충돌 409는 아님 — 다시 검수 P3) 다시 읽어 창을 다시 열면 경고가 선다');
   assert.ok(app.includes("seatWarn:model.payment?.status==='requested'?`이 건은 아직 제작 자리 차례가 아니에요(${seatCount(s.project)}). 결제 요청은 이미 보냈어요 — 다시 적어도 자리 수를 넘겨 받아요.`:"),'요청을 보낸 뒤에는 손님 화면 줄 말을 하지 않는다');
   const sheet=picker({...base,staffIntake:INTAKE,seatsSheet:true});

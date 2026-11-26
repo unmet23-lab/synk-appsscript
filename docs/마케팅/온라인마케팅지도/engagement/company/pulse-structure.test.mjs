@@ -52,7 +52,7 @@ test('a project with no work yet leads with its next action and conversation wit
   assert.match(html,/<section class="sx-room-hero is-no-screen">/);
   assert.match(html,/<section class="sx-next-block">[\s\S]*data-action="tab"/);
   assert.match(html,/<aside class="sx-journal sx-legacy-talk"[\s\S]*data-form="support"/);
-  assert.doesNotMatch(html,/<div class="sx-room-screen">|w-gift|<video/);
+  assert.doesNotMatch(html,/<div class="sx-room-screen">|[wt]-vest|<video/);
 });
 
 test('step pages keep the stage title and the refresh tool, and staff also get the manage step',()=>{

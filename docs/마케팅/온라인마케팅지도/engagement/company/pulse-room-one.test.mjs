@@ -158,7 +158,7 @@ test('the video box lays the still from the last picture round under the hold po
   assert.match(html,/<div class="sx-dr-box" data-film-box><video id="review-video"[^>]*><\/video><img class="sx-dr-still" src="[^"]*\/pulse\/api\/media\/img-2"/,'84% of 5s falls in the second cut, right after the video so it covers it');
   assert.match(stillOf(project([scene('s1',2,'/pulse/api/media/img-1'),scene('s2',3,'')])),/\/pulse\/api\/media\/img-1$/,'a cut without a picture falls back to the last pictured cut');
   assert.equal(stillOf(project([scene('s1',2,'/pulse/api/media/img-1'),scene('s2',3,'/pulse/api/media/img-2')],'script')),'','a script round has no pictures');
-  assert.match(stillOf(project([scene('s1',2),scene('s2',3)],'images',{poster:'/pulse-app/assets/request/sheet-gift-11.webp'})),/\/pulse-app\/assets\/request\/sheet-gift-11\.webp$/,'the example version carries its own still');
+  assert.match(stillOf(project([scene('s1',2),scene('s2',3)],'images',{poster:'/pulse-app/assets/request/sheet-vest-11.webp'})),/\/pulse-app\/assets\/request\/sheet-vest-11\.webp$/,'the example version carries its own still');
   assert.equal(stillOf(project([scene('s1',2),scene('s2',3)],'images',{poster:'https://elsewhere.test/a.webp'})),'','no still from another site');
   const review=read('film-review.mjs');
   assert.match(review,/const framed=\(\)=>\{if\(video&&box&&video\.readyState>=2&&!video\.seeking\)box\.classList\.add\('has-frame'\);\};/);

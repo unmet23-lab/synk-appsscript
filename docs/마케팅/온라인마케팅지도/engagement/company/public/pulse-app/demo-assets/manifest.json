@@ -1,65 +1,68 @@
 {
   "kind": "fictional-advertising-project-demo",
-  "brand": "霜の肌理",
+  "brand": "첨벙댕",
   "disclaimer": "PULSE 체험용 · 가상 브랜드로 만든 자체 작품",
-  "origin": "대표작 「霜の肌理」(11-06 옛 이름 유리결에서 바꿈) 홀리데이 세트 15초의 실제 제작 자료. 1차 시안은 4.2판(11-06 일본어 라벨로 다시 구운 판), 수정본은 5.1판(대표작 웹판과 같은 바이트), 콘셉트 B는 기획 때 견준 안 3 「창에 쓴 말」 시안, 그림은 영상에서 뽑은 장면(540×960, 256색).",
+  "origin": "자체 작품 「첨벙댕」 반려견 구명조끼 광고의 실제 제작 자료(11-26에 앞 예시에서 바꿈). 1차 시안은 우주 장면이 없던 11-05 판, 수정본은 우주 장면을 더한 최종본이고 둘 다 1080×1920 원본을 720×1280으로 줄였다. 콘셉트 B는 그 앞에 만든 물이 차는 방 판. 그림은 글자를 얹기 전 화면에서 뽑은 장면(540×960, 256색).",
   "outsideGit": [
     "preview-v1.mp4",
     "preview-v2.mp4"
   ],
-  "durationSeconds": 15,
+  "durationSeconds": {
+    "v1": 23.94,
+    "v2": 26.18
+  },
   "width": 720,
   "height": 1280,
-  "fps": 30,
+  "fps": 24,
   "versions": {
-    "v1": "4.2판 — 제품이 5초 떠 있고 끝에 뚜껑이 작게 보인다",
-    "v2": "5.1판 — 떠 있는 시간 2초, 뚜껑 접사, 다 핀 순간 두 번째 절정"
+    "v1": "우주 장면이 없는 판 — 「우주에서도 뜹니다」가 글자로만 지나간다",
+    "v2": "끝 줄을 목소리로 읽고 우주에 뜬 장면 한 컷을 더한 최종본"
   },
   "assets": [
     {
       "file": "preview-v1.mp4",
-      "bytes": 9596533,
-      "sha256": "1f112208a4328fb552d83f4f0e154cb3141fe2a5c33e27bcce4894fc10a80f87"
+      "bytes": 8469815,
+      "sha256": "323d88512fa507c8f2d805120b56dbcaeb6160d0041c59115e38185c2a5c11bc"
     },
     {
       "file": "preview-v2.mp4",
-      "bytes": 8982498,
-      "sha256": "f0dc4ef3b0992ea7357964540d229b82d3a117e62bc9d6e5bcd4890b9233adf1"
+      "bytes": 8832850,
+      "sha256": "fe8015fa8055bb3c6bb6cbb877d0d3fb52052fa71f12bae1acf8c83043da5799"
     },
     {
       "file": "reference-bold.png",
-      "bytes": 401364,
-      "sha256": "d86af46e76d59f1882b3a7cca5b371587b70cd9335f1cfc19111ee6234ead2e4"
+      "bytes": 215719,
+      "sha256": "e39b0d37478f8e0bc71b1161846a4f89814673f59d4f3cddb00089787cabad5f"
     },
     {
       "file": "reference-calm.png",
-      "bytes": 70724,
-      "sha256": "11c0823f32c64cbd8bc4c0db93b74874dbdf0f50138fc6602d6fd7de0248c78b"
+      "bytes": 254138,
+      "sha256": "0188acbe61d70d958e83659789b03a72300ae49b80a46debe0f62b091bb7d915"
     },
     {
       "file": "reference-warm.png",
-      "bytes": 173256,
-      "sha256": "6d83f70902f5e99a2ea274af383fcc4368bc6bcd35c8708f5adbb782a96e7bd2"
+      "bytes": 283332,
+      "sha256": "896cb397cab8bcc07bb7c3bbf194e73204e1feab4e38c18444785feec239c23e"
     },
     {
       "file": "scene-1.png",
-      "bytes": 121017,
-      "sha256": "406f241ea3f9686ce88606aec09f8cb05ec2f3988055bded46ee7fb986695ee7"
+      "bytes": 236647,
+      "sha256": "468efb24e522d0129b920dae1f76d54763f1b81a32e2cd4308d8f01e959d5894"
     },
     {
       "file": "scene-2.png",
-      "bytes": 203865,
-      "sha256": "b007f544b584c4b9115a236b6279f0d2333097bd3d8d337171ffb319837683be"
+      "bytes": 256848,
+      "sha256": "9d8c7151de793149bf554f2b6a3c78a089619ff24bd96d398061d619135a132f"
     },
     {
       "file": "scene-3.png",
-      "bytes": 162421,
-      "sha256": "894615dfd8fbc0f6e7043d29ac10f22a327eefe49c31386493eedee9eb0ce866"
+      "bytes": 179500,
+      "sha256": "2f7e7a9d7a1c4ad4c132eb718683f5be3e2bebc2b7608e94b65997964e80b391"
     },
     {
       "file": "scene-4.png",
-      "bytes": 60337,
-      "sha256": "e7b25c55166dedeefbfb9315b990e02190ceaba79d3ff31566701e3b23cc2897"
+      "bytes": 188813,
+      "sha256": "873d7e7a1ad6c4e54862632a109006337ffaf56a9fa46d5c35f1c7f171433e67"
     }
   ]
 }

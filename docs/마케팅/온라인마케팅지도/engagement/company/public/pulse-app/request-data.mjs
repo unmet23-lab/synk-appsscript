@@ -194,13 +194,30 @@ export const MODEL_PICKS=Object.freeze({
   place:['F05','F07','M05','F06'],
   brand:['F03','M01','F06','M02'],
 });
+// 세 막(2026-11-26, 설계 docs/디자인/PULSE고객앱_다시짓기_20261124/의뢰서_설계.md 「F판」): 고르기(노란 바탕 · 솔리오) → 적기(흰 문 · 작품 장면) → 보내기(하늘).
+// 모델 단계는 내 모델 · 맞춤 인물로 들어온 의뢰서만 보인다(11-25 결정 「의뢰서에서 모델 질문을 뺀다」 — request-flow가 거른다).
 export const STEPS=Object.freeze([
-  {id:'what',part:k('무엇을')},{id:'where',part:k('무엇을')},
-  {id:'files',part:k('준비물')},
-  {id:'message',part:k('전할 말')},{id:'words',part:k('전할 말')},
-  {id:'feel',part:k('느낌')},{id:'model',part:k('모델')},
-  {id:'contact',part:k('연락')},{id:'review',part:k('확인')},
+  {id:'what',part:k('고르기'),act:1},{id:'where',part:k('고르기'),act:1},
+  {id:'name',part:k('적기'),act:2},{id:'files',part:k('적기'),act:2},{id:'more',part:k('적기'),act:2},{id:'model',part:k('적기'),act:2},{id:'who',part:k('적기'),act:2},
+  {id:'when',part:k('보내기'),act:3},{id:'review',part:k('보내기'),act:3},
 ]);
+// 옛 단계 이름으로 저장된 초안은 새 단계에서 연다.
+export const OLD_STEPS=Object.freeze({message:'more',words:'more',feel:'more',contact:'who'});
+// 만들 것 다섯 갈래 가운데 넷(뮤직비디오는 정가가 정해지면 더한다). 제품은 업종을 한 줄 더 묻는다 — 서버 값(kind)은 그 업종이다.
+export const GROUPS=Object.freeze([
+  {id:'product',label:k('제품 광고'),note:k('먹고, 바르고, 입고, 쓰는 물건'),kinds:['food','beauty','fashion','living'],packages:['s15','s30','s60','photo'],channel:'shorts',package:'s15',why:k('처음이시면 15초 한 편이 무난해요. 릴스 · 쇼츠에 맞는 길이예요.')},
+  {id:'place',label:k('매장 · 공간'),note:k('카페, 식당, 병원, 학원, 숙소'),kinds:['place'],packages:['s15','s30','s60'],channel:'shorts',package:'s15',why:k('처음이시면 세로 15초 한 편이 무난해요. 찾아오는 분이 휴대폰으로 많이 봐요.')},
+  {id:'app',label:k('앱 · 웹 서비스'),note:k('화면으로 쓰는 서비스'),kinds:['app'],packages:['s15','s30','s60'],channel:'shorts',package:'s30',why:k('앱은 화면을 보여 줄 시간이 필요해서 30초를 권해요. 15초 · 6초 편집본도 함께 받아요.')},
+  {id:'brand',label:k('회사 · 브랜드'),note:k('회사 소개, 채용, 행사'),kinds:['brand'],packages:['s30','s60','corp'],channel:'youtube',package:'s30',why:k('회사 소개는 가로 30초로 시작하면 15초 · 6초 편집본까지 받아 여러 곳에 써요.')},
+]);
+export const groupOf=kind=>GROUPS.find(group=>group.kinds.includes(kind));
+// 「어떤 걸 골라야 할지 모르겠어요」: 하시는 일 한 줄에서 갈래를 고른다(앱 · 매장 · 회사를 먼저 보고, 「팔아요」 같은 넓은 말은 제품으로).
+const GUESS_WORDS=Object.freeze([['app',['앱','어플','플랫폼','웹','사이트','프로그램','구독']],['place',['카페','식당','가게','매장','병원','의원','치과','학원','숙소','펜션','호텔','헬스','필라테스','미용실','네일','공방','예약']],['brand',['회사','기업','채용','행사','법인','공장','창립']],['product',['팔','제품','상품','옷','화장품','음료','식품','간식','영양제','가방','신발','가전','쇼핑몰','물건','만들어','app','shop','sell','product']]]); // i18n-skip
+export const guessGroup=text=>{const line=String(text||'').toLowerCase().replace(/\s/g,'');return line?(GUESS_WORDS.find(([,words])=>words.some(word=>line.includes(word)))||[''])[0]:'';};
+// 마무리(11-26): 기본은 「추천대로」. 직접 고르면 마지막 화면 · 문구 한 줄이 더 생긴다(서버 pulse-requests.mjs ENDS와 같은 ID).
+export const ENDS=Object.freeze([{id:'logo',label:k('로고만')},{id:'line',label:k('로고 + 한 줄')},{id:'info',label:k('로고 + 안내')}]);
+// 느낌 칩의 말(값은 WIN ID 그대로 — 11-25 「무엇으로 오래 남을까요?」의 말투를 고침).
+export const FEEL_LABELS=Object.freeze({story:k('뭉클하게'),impact:k('「와」 하게'),laugh:k('웃으며 보내게')});
 export const emptyAnswers=()=>({
   name:'',kind:'',channels:[],paid:false,package:'',
   slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',
@@ -210,6 +227,7 @@ export const emptyAnswers=()=>({
   models:[],modelChoice:'',hair:'',outfit:'',voice:'',
   date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,
   contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',
+  finish:'',endCard:'',endLine:'',
   personaRequest:{kind:'',look:'',use:'',keep:'',relation:'',consentWay:''},
 });
 // 다국어 · 전용 인물 판 1(11-09)에 더한 칸(서버 pulse-requests.mjs ANSWER_FIELDS와 같은 이름). 비어 있으면 보내지 않는다 —
@@ -217,7 +235,8 @@ export const emptyAnswers=()=>({
 // 판 3의 맞춤 인물 요청(personaRequest)도 같다 — 칸이 모두 비어 있으면 보내지 않는다.
 // 옷(outfit, 11-10)은 의뢰서가 아니라 방향을 고를 때 받는 칸이라 의뢰서에서는 늘 비어 있다 — 같은 규칙으로 보내지 않는다.
 // 의뢰서 탭(11-13)의 과감함 · 꼭 붙일 표시 · 고지 문구 · 목소리도 같다.
-const LATER_FIELDS=['bold','notice','noticeText','voice','hair','outfit','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
+// 세 막(11-26)의 마무리 칸(finish · endCard · endLine)도 같다.
+const LATER_FIELDS=['bold','notice','noticeText','voice','hair','outfit','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest','finish','endCard','endLine'];
 const blank=value=>value===''||value==null||Array.isArray(value)&&!value.length||typeof value==='object'&&!Array.isArray(value)&&Object.values(value).every(item=>item===''||item==null);
 // 이미지 원본 점검(브라우저에서 바로). 막지 않고, 어느 컷에 어떤 영향이 있는지만 말한다. 글은 부를 때의 언어다(화면은 그릴 때마다 다시 부른다).
 export function photoAdvice(width,height,kind){
@@ -250,22 +269,23 @@ export function briefRows(a){
     {key:k('올릴 곳'),step:'where',value:[channelText(a),a.paid?t('광고비 집행'):''].filter(Boolean).join(' · '),missing:a.channels.length?'':k('모르면 저희가 제안해요')},
     {key:k('길이 · 구성'),step:'where',value:pkg?t('{label} · {title} · {price}부터 · {terms}',{label:t(pkg.label),title:t(pkg.title),price:price(pkg.price),terms:termsOf(pkg)}):a.package==='ask'?t('추천해 주세요'):'',missing:a.package?'':k('모르면 저희가 제안해요')},
     {key:k('받은 자료'),step:'files',value:[fileCount?t('파일 {count}개',{count:fileCount}):'',...written,missing.length?t('아직 없음: {list}',{list:missing.join(', ')}):''].filter(Boolean).join(' · '),missing:fileCount||written.length?'':k('아직 없어요. 받기 전까지는 자리만 잡아 둘게요')},
-    {key:k('보는 사람'),step:'message',value:a.audience,missing:a.audience?'':k('저희가 제안해요')},
-    {key:k('남길 것'),step:'message',value:a.oneThing,missing:a.oneThing?'':k('저희가 한 문장으로 제안해요')},
-    {key:k('보고 나서'),step:'message',value:a.action&&ACTIONS.find(item=>item.id===a.action)?t(ACTIONS.find(item=>item.id===a.action).label):undefined,missing:a.action?'':k('저희가 제안해요')},
-    {key:k('화면 글자'),step:'words',value:a.screenText,missing:a.screenText?'':k('제품 이름만 얹어요')},
-    {key:k('피할 말'),step:'words',value:[...a.avoid.map(claimText),a.avoidNote].filter(Boolean).join(', '),missing:(a.avoid.length||a.avoidNote)?'':k('없음')},
-    {key:k('꼭 붙일 표시'),step:'words',value:a.notice==='none'?t('해당 없음'):a.notice==='unsure'?t('잘 모르겠어요 · 저희가 확인해요'):noticeOn(a)?[t(noticeLabel(a.notice)),a.noticeText].filter(Boolean).join(' · '):'',missing:a.notice?'':k('저희가 확인해요')},
-    {key:k('믿게 할 사실'),step:'message',value:a.facts,missing:a.facts?'':k('없음')},
-    {key:k('무엇으로'),step:'feel',value:win&&t(win),missing:win?'':k('저희가 제안해요')},
-    {key:k('얼마나 과감하게'),step:'feel',value:BOLD.find(item=>item.id===a.bold)?t(BOLD.find(item=>item.id===a.bold).label):undefined,missing:a.bold?'':k('저희가 제안해요')},
-    {key:k('참고 광고'),step:'feel',value:refs,missing:refs?'':k('없음')},
+    {key:k('마무리'),step:'more',value:a.finish==='custom'?[ENDS.find(item=>item.id===a.endCard)?t(ENDS.find(item=>item.id===a.endCard).label):'',a.endLine].filter(Boolean).join(' · ')||t('직접 고르는 중'):a.finish==='rec'?t('추천대로'):'',missing:a.finish?'':k('저희가 추천대로 해요')},
+    {key:k('보는 사람'),step:'more',value:a.audience,missing:a.audience?'':k('저희가 제안해요')},
+    {key:k('남길 것'),step:'more',value:a.oneThing,missing:a.oneThing?'':k('저희가 한 문장으로 제안해요')},
+    {key:k('보고 나서'),step:'more',value:a.action&&ACTIONS.find(item=>item.id===a.action)?t(ACTIONS.find(item=>item.id===a.action).label):undefined,missing:a.action?'':k('저희가 제안해요')},
+    {key:k('화면 글자'),step:'more',value:a.screenText,missing:a.screenText?'':k('제품 이름만 얹어요')},
+    {key:k('피할 말'),step:'more',value:[...a.avoid.map(claimText),a.avoidNote].filter(Boolean).join(', '),missing:(a.avoid.length||a.avoidNote)?'':k('없음')},
+    {key:k('꼭 붙일 표시'),step:'more',value:a.notice==='none'?t('해당 없음'):a.notice==='unsure'?t('잘 모르겠어요 · 저희가 확인해요'):noticeOn(a)?[t(noticeLabel(a.notice)),a.noticeText].filter(Boolean).join(' · '):'',missing:a.notice?'':k('저희가 확인해요')},
+    {key:k('믿게 할 사실'),step:'more',value:a.facts,missing:a.facts?'':k('없음')},
+    {key:k('무엇으로'),step:'more',value:win&&t(win),missing:win?'':k('저희가 제안해요')},
+    {key:k('얼마나 과감하게'),step:'more',value:BOLD.find(item=>item.id===a.bold)?t(BOLD.find(item=>item.id===a.bold).label):undefined,missing:a.bold?'':k('저희가 제안해요')},
+    {key:k('참고 광고'),step:'more',value:refs,missing:refs?'':k('없음')},
     // 내 모델 다시 쓰기(판 4): 내 모델 화면에서 붙인 인물이면 그 이름(화면에만 있는 a.personaPick), 서버 답만 있으면(고객 방 · 직원 확인) 「내 모델 다시 쓰기」.
-    {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?(a.personaPick?.name?t('내 모델 · {name}',{name:a.personaPick.name}):t('내 모델 다시 쓰기')):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
-    ...(pkg?.photo?[]:[{key:k('목소리'),step:'model',value:VOICES.find(item=>item.id===a.voice)?t(VOICES.find(item=>item.id===a.voice).label):undefined,missing:a.voice?'':k('저희가 제안해요')}]),
-    {key:k('받고 싶은 날'),step:'contact',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':k('미정')},
-    {key:k('최종 확인'),step:'contact',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':k('미정')},
-    {key:k('연락처'),step:'contact',value:[a.contactName,a.company,a.email,a.phone].filter(Boolean).join(' · '),missing:a.contactName&&(a.email||a.phone)?'':k('성함과 이메일이나 휴대폰이 있어야 연락드릴 수 있어요')},
+    {key:k('모델'),step:a.modelChoice==='persona'||a.modelChoice==='custom'?'model':'more',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?(a.personaPick?.name?t('내 모델 · {name}',{name:a.personaPick.name}):t('내 모델 다시 쓰기')):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
+    ...(pkg?.photo?[]:[{key:k('목소리'),step:a.modelChoice==='persona'||a.modelChoice==='custom'?'model':'more',value:VOICES.find(item=>item.id===a.voice)?t(VOICES.find(item=>item.id===a.voice).label):undefined,missing:a.voice?'':k('저희가 제안해요')}]),
+    {key:k('받고 싶은 날'),step:'when',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':k('미정')},
+    {key:k('최종 확인'),step:'who',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':k('미정')},
+    {key:k('연락처'),step:'who',value:[a.contactName,a.company,a.email,a.phone].filter(Boolean).join(' · '),missing:a.contactName&&(a.email||a.phone)?'':k('성함과 이메일이나 휴대폰이 있어야 연락드릴 수 있어요')},
   ];
   return rows;
 }

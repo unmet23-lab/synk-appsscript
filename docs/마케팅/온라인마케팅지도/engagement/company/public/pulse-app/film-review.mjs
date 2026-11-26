@@ -49,11 +49,13 @@ const STRIP=new Map();
 const CELL_W=96,CELL_H=170;
 export const stripCount=duration=>Math.max(6,Math.min(30,Math.ceil(duration)));
 export const canDrawStrip=()=>typeof matchMedia==='function'&&matchMedia('(hover:hover) and (min-width:821px)').matches&&!navigator.connection?.saveData;
-function ensureStrip(version,src,count,onCell){
-  let job=STRIP.get(version);
+// span(초)을 주면 그 길이의 시간 칸대로 찾아간다 — 길이가 다른 앞 판을 지금 판과 같은 초끼리 대 볼 때 쓴다. 앞 판이 먼저 끝난 칸은 비워 둔다(null — 새로 더한 곳).
+const stripKey=(version,count,span)=>span?`${version}@${span.toFixed(2)}x${count}`:version;
+function ensureStrip(version,src,count,onCell,span=0){
+  const key=stripKey(version,count,span);let job=STRIP.get(key);
   if(job){job.listeners.add(onCell);job.frames.forEach((frame,i)=>{if(frame)onCell(i,frame);});if(job.done||job.failed)onCell(-1,null);return job;}
-  job={version,count,frames:Array(count).fill(null),done:false,failed:false,listeners:new Set([onCell])};
-  STRIP.set(version,job);
+  job={key,count,frames:Array(count).fill(null),done:false,failed:false,listeners:new Set([onCell])};
+  STRIP.set(key,job);
   const video=document.createElement('video');video.muted=true;video.playsInline=true;video.preload='auto';video.src=src;
   const once=(type,ms)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>{video.removeEventListener(type,ok);reject(new Error('timeout'));},ms);const ok=()=>{clearTimeout(timer);resolve();};video.addEventListener(type,ok,{once:true});video.addEventListener('error',()=>{clearTimeout(timer);reject(new Error('error'));},{once:true});});
   (async()=>{
@@ -63,7 +65,9 @@ function ensureStrip(version,src,count,onCell){
       for(let i=0;i<count;i++){
         // 이 판의 띠를 보는 화면이 사라지면 멈춘다. 다시 오면 처음부터 받지 않고 이어서 그릴 수 있게 그린 칸은 둔다.
         if(!job.listeners.size){job.paused=true;break;}
-        video.currentTime=Math.min(duration-.05,(i+.5)*duration/count);
+        const at=(i+.5)*(span||duration)/count;
+        if(span&&at>duration-.02){job.listeners.forEach(fn=>fn(i,null));continue;}
+        video.currentTime=Math.min(duration-.05,at);
         await once('seeked',8000);
         const canvas=document.createElement('canvas');canvas.width=CELL_W;canvas.height=Math.round(CELL_W*(video.videoHeight/video.videoWidth||CELL_H/CELL_W));
         canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
@@ -72,7 +76,7 @@ function ensureStrip(version,src,count,onCell){
       job.done=!job.paused;
     }catch{job.failed=true;}
     video.removeAttribute('src');video.load();
-    if(job.paused)STRIP.delete(job.version);
+    if(job.paused)STRIP.delete(job.key);
     job.listeners.forEach(fn=>fn(-1,null));
   })();
   return job;
@@ -83,7 +87,7 @@ export function changedRange(a,b){
   if(!a?.length||a.length!==b?.length)return null;
   const gray=canvas=>{const small=document.createElement('canvas');small.width=24;small.height=24;const ctx=small.getContext('2d',{willReadFrequently:true});ctx.drawImage(canvas,0,0,24,24);const data=ctx.getImageData(0,0,24,24).data,out=[];for(let i=0;i<data.length;i+=4)out.push(data[i]*.3+data[i+1]*.59+data[i+2]*.11);return out;};
   let diffs;
-  try{diffs=a.map((frame,i)=>{const x=gray(frame),y=gray(b[i]);return x.reduce((sum,value,k)=>sum+Math.abs(value-y[k]),0)/x.length;});}catch{return null;}
+  try{diffs=a.map((frame,i)=>{if(!b[i])return 255;const x=gray(frame),y=gray(b[i]);return x.reduce((sum,value,k)=>sum+Math.abs(value-y[k]),0)/x.length;});}catch{return null;}
   return rangeFromDiffs(diffs);
 }
 export function rangeFromDiffs(diffs){
@@ -181,7 +185,7 @@ export function mountReview(root,{previous=null,onError}={}){
     const list=[...cells.children];
     const onCell=(i,frame)=>{
       if(signal.aborted)return;
-      if(i>=0&&list[i]){list[i].width=frame.width;list[i].height=frame.height;list[i].getContext('2d').drawImage(frame,0,0);list[i].classList.add('is-on');}
+      if(i>=0&&frame&&list[i]){list[i].width=frame.width;list[i].height=frame.height;list[i].getContext('2d').drawImage(frame,0,0);list[i].classList.add('is-on');}
       // 한 칸도 못 그리고 끝났으면 칸 자리(회색)를 걷어 선 하나 시간줄로 돌아간다.
       if(i===-1&&STRIP.get(version)?.failed&&!list.some(cell=>cell.classList.contains('is-on'))){cells.replaceChildren();cells.classList.add('is-off');}
       if(i===-1||i===count-1)compareStrips(version);
@@ -190,7 +194,7 @@ export function mountReview(root,{previous=null,onError}={}){
     signal.addEventListener('abort',()=>job.listeners.delete(onCell));
     if(previous?.src&&previous.id){
       const other=(i)=>{if(i===-1||i===count-1)compareStrips(version);};
-      const prior=ensureStrip(previous.id,previous.src,count,other);
+      const prior=ensureStrip(previous.id,previous.src,count,other,total);
       signal.addEventListener('abort',()=>prior.listeners.delete(other));
     }
     compareStrips(version);
@@ -198,8 +202,8 @@ export function mountReview(root,{previous=null,onError}={}){
   // 달라진 곳: 표시만 하고 말로 단정하지 않는다.
   const compareStrips=version=>{
     const label=$('[data-diff]');if(!label||!previous?.id)return;
-    const a=STRIP.get(version),b=STRIP.get(previous.id);
-    if(!a?.done||!b?.done||a.frames.length!==b.frames.length||(previous.duration&&Math.abs(previous.duration-duration())>.6))return;
+    const a=STRIP.get(version),b=STRIP.get(stripKey(previous.id,a?.count||0,duration()));
+    if(!a?.done||!b?.done||a.frames.length!==b.frames.length)return;
     const range=changedRange(a.frames,b.frames);if(!range)return;
     const total=duration(),count=a.frames.length,from=range.from/count,to=range.to/count;
     label.hidden=false;label.style.setProperty('--from',String(from));label.style.setProperty('--to',String(to));
@@ -207,7 +211,7 @@ export function mountReview(root,{previous=null,onError}={}){
     [...(cells?.children||[])].forEach((cell,i)=>cell.classList.toggle('is-diff',i>=range.from&&i<range.to));
     cells?.classList.add('has-diff');
     // 수정본은 달라진 곳에 서서 기다린다.
-    poster?.moveTo(from*total);
+    poster?.moveTo((range.from+.5)/count*total);
   };
   if(video){
     for(const [type,fn] of Object.entries({play(){cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);syncPlaying();},pause(){cancelAnimationFrame(raf);paintTime();syncPlaying();},seeked:paintTime,timeupdate(){if(video.paused)paintTime();},loadedmetadata(){setShape();placeMarks();placeScenes();paintTime();stripTimer=setTimeout(drawStrip,2500);},canplay:drawStrip,error(){box?.classList.add('is-failed');onError?.();}}))video.addEventListener(type,fn,{signal});

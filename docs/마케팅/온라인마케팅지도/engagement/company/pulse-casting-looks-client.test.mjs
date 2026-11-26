@@ -353,11 +353,11 @@ test('a photo order reads as photos from the stage line to the first sheet, and 
   for(const state of ['prepare','make']){
     const shown=roomView({...roomModel(bare),state});
     assert.match(shown,/<section class="sx-room-a" data-stage="fall">/,state);assert.match(shown,/data-hall-one data-hall-key="one:F02"/,state+": the picked model walks on the stage");assert.doesNotMatch(shown,/is-no-screen/,state);assert.match(shown,/data-room-title/,state);
-    assert.doesNotMatch(shown,/w-gift|<div class="sx-room-screen">|저희가 만든 광고의 한 장면이에요|완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
+    assert.doesNotMatch(shown,/[wt]-vest|<div class="sx-room-screen">|저희가 만든 광고의 한 장면이에요|완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
   }
   for(const state of ['make','prepare']){
     const shown=roomView({...roomModel(bareFilm),state});assert.match(shown,/<section class="sx-room-a" data-stage="fall">/,state);assert.match(shown,/data-hall-one data-hall-key="one:F02"/,state+": the picked model walks on the stage");assert.doesNotMatch(shown,/is-no-screen/,state);
-    assert.match(shown,/data-room-title/,state);assert.doesNotMatch(shown,/w-gift|<div class="sx-room-screen">|완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
+    assert.match(shown,/data-room-title/,state);assert.doesNotMatch(shown,/[wt]-vest|<div class="sx-room-screen">|완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
   }
   // 일지의 작업 소식 줄 단계 낱말(F3)과 첫 장 승인 뒤 알림(F1).
   assert.equal(journalModel(photo).photo,true);assert.equal('photo' in journalModel(film),false);

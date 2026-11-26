@@ -84,7 +84,7 @@ test('the room hangs the arrived photos where a film order plays its film, and t
   assert.equal(info.state,'review');assert.deepEqual(info.shots,[{src:'/pulse/api/media/v2',label:'2차 사진'}],'the latest preview only');assert.equal(info.film,null);
   const room=roomView(info);
   assert.match(room,/<div class="sx-room-files is-shots" data-count="1"><img src="http:\/\/localhost\/pulse\/api\/media\/v2" data-cap alt="2차 사진" decoding="async"><\/div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">사진 보기<\/span><\/button><p class="sx-small sx-room-cap">2차 사진<\/p>/);
-  assert.doesNotMatch(room,/저희가 만든 광고의 한 장면이에요|w-gift/);
+  assert.doesNotMatch(room,/저희가 만든 광고의 한 장면이에요|[wt]-vest/);
   const finals=[shot('v1','1차 사진','preview',{approvedAt:at}),...[1,2,3,4,5].map(n=>shot('f'+n,'완성 사진 '+n,'final',{guide:'안내',approvedPreviewId:'v1'}))];
   const delivered=project('photo',{stage:'delivered',versions:finals,extra:{closeout:{deliveryKey:'k1',canConfirm:true,files:[]}}});
   const got=roomModel(delivered);assert.equal(got.state,'deliver');assert.equal(got.shots.length,5);
@@ -95,7 +95,7 @@ test('the room hangs the arrived photos where a film order plays its film, and t
   const zip=roomModel(project('photo',{versions:[{id:'v1',kind:'preview',label:'1차 묶음',createdAt:at,media:{url:'/pulse/api/media/v1',mimeType:'application/zip',fileName:'a.zip'}}]}));
   assert.equal('shots' in zip,false);
   const zipRoom=roomView(zip);assert.match(zipRoom,/data-state="review"/);assert.match(zipRoom,/data-room-go="review"/);
-  assert.doesNotMatch(zipRoom,/w-gift|저희가 만든 광고의 한 장면이에요|<video|<img[^>]+\/pulse\/api\/media\/v1/);
+  assert.doesNotMatch(zipRoom,/[wt]-vest|저희가 만든 광고의 한 장면이에요|<video|<img[^>]+\/pulse\/api\/media\/v1/);
   // 영상 상품의 방은 모양이 전과 같다(키가 없다).
   const film=roomModel(project('s15',{versions:[clip('v1','1차 시안')]}));assert.equal('shots' in film,false);assert.equal(film.film.src,'/pulse/api/media/v1');
   const filmStill=roomModel(project('s15',{versions:[shot('v1','표지')]}));assert.equal('shots' in filmStill,false);

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {rangeFromDiffs,stripCount,holdPoster,POSTER_AT} from './public/pulse-app/film-review.mjs';
+import {rangeFromDiffs,changedRange,stripCount,holdPoster,POSTER_AT} from './public/pulse-app/film-review.mjs';
 import {draftView} from './public/pulse-app/film-views.mjs';
 import {entryView} from './public/pulse-app/film-home.mjs';
 import {projectView} from './public/pulse-app/views.mjs';
@@ -33,15 +33,15 @@ test('the first screen reads only the new stylesheet; the old sheets stay served
 test('the server serves every new file and the service worker caches the shell but not the films',()=>{
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8'),sw=read('sw.js');
   for(const name of ['film-home.mjs','film-review.mjs','hall.mjs'])assert.ok(server.includes(`'${name}'`),name);
-  for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
+  for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-vest-top','file-vest-worn','file-vest-dog','still-vest-space','still-vest-float','still-opalin'","'sheet-vest-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','hall.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v80-works-20261126';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v81-example-20261126';/);
   // 1쪽 복도의 모델 그림 · 걷는 영상은 캐스팅북 주소(synk.im)라 기기에 담지 않는다(2026-11-24).
   assert.doesNotMatch(sw,/-loop\.mp4|wall\.webp/,'the corridor media are not stored on the device');
 });
-test('the step-five still is the sharp re-render and its layer keeps the logo readable on wide monitors',()=>{
-  // 11-10: 1080×864 영상 장면은 유호님 화면(1440 · 1.5배)에서 2배로 늘어나 흐렸다 → 같은 구도를 2520×2016으로 다시 구웠다.
+test('the step-five still is wide enough for a 1440 screen at 1.5× and its layer keeps the logo readable on wide monitors',()=>{
+  // 11-10: 1080×864 장면은 폭 1440 · 1.5배 화면에서 2배로 늘어나 흐렸다 → 2520×2016. 11-26: 「다리가 기억하는 것」 장면으로 바꿈.
   const still=readFileSync(new URL('./public/pulse-app/assets/request/shard.webp',import.meta.url));
   assert.equal(still.toString('ascii',0,4),'RIFF');assert.equal(still.toString('ascii',8,12),'WEBP');
   const kind=still.toString('ascii',12,16);
@@ -96,6 +96,16 @@ test('changed places are marked only when one stretch clearly stands out; otherw
   assert.equal(rangeFromDiffs(Array(15).fill(60)),null,'everything changed: the median rises and nothing stands out');
   assert.equal(rangeFromDiffs([...Array(5).fill(3),...Array(10).fill(40)]),null,'more than a little over half: not a useful mark');
   assert.equal(rangeFromDiffs([]),null);
+  // 길이가 다른 앞 판(11-26): 같은 초끼리 대고, 앞 판이 먼저 끝난 칸은 새로 더한 곳이다.
+  const was=globalThis.document;globalThis.document={createElement:()=>{let gray=0;return {getContext:()=>({drawImage(frame){gray=frame.gray;},getImageData:()=>({data:Uint8ClampedArray.from({length:24*24*4},()=>gray)})})};}};
+  try{
+    const now=Array.from({length:27},()=>({gray:90})),before=[...Array.from({length:24},()=>({gray:92})),null,null,null];
+    assert.deepEqual((({from,to})=>({from,to}))(changedRange(now,before)),{from:24,to:27},'the stretch added after the old ending is the changed place');
+    assert.equal(changedRange(now,before.slice(0,20)),null,'strips of different lengths are never compared');
+  }finally{globalThis.document=was;}
+  const review=read('film-review.mjs');
+  assert.ok(review.includes('ensureStrip(previous.id,previous.src,count,other,total)'),'the older version is read at the same seconds as the current one');
+  assert.ok(review.includes('poster?.moveTo((range.from+.5)/count*total);'),'the player waits on the frame that was measured as different');
   assert.equal(stripCount(15),15);assert.equal(stripCount(3),6);assert.equal(stripCount(200),30);
 });
 const at='2026-11-05T01:00:00.000Z';
@@ -185,7 +195,7 @@ test('delivery draws its own player over the same film and keeps live refresh fr
   assert.ok(app.includes("if(main.querySelector('[data-final]'))finalHandle=mountFinal(main);"));
   assert.ok(app.includes("finalHandle?.unmount();finalHandle=null;"),'the old listeners go when the screen is redrawn');
 });
-const scriptDraft={round:1,oneLine:'서리꽃이 피는 순간',ratio:'9:16',model:null,cuts:[{seconds:1.5,what:'결정이 자라요.',say:'',text:''},{seconds:2,what:'이름이 떠요.',say:'한번 발라 봐요',text:'霜の肌理'}]};
+const scriptDraft={round:1,oneLine:'물에서도 번쩍 건져요',ratio:'9:16',model:null,cuts:[{seconds:1.5,what:'결정이 자라요.',say:'',text:''},{seconds:2,what:'이름이 떠요.',say:'한번 발라 봐요',text:'霜の肌理'}]};
 test('the text script is one lit sheet that reads every cut, with no empty strip',()=>{
   const html=draftView(scriptDraft);
   assert.match(html,/^<div class="sx-draft sx-dr is-script"/);
@@ -302,8 +312,8 @@ test('on narrow screens the ratio label sits inside the frame, and the end page 
   assert.equal((css.match(/\.sx-end \.sx-display\{display:none\}/g)||[]).length,1,'no other rule hides it on tall phones');
   assert.match(css,/\.sx-p\.is-end\{justify-content:flex-end\}\s*\.sx-end\{max-width:none\}/,'on a tablet the end page lines up with the logo and the first page, not pushed to the right');
 });
-// end.webp(1080×1920)에서 화소로 잰 자리: 로고 글자 위 405, 작은 줄(美容液とクリーム…) 아래 끝 658, 뚜껑 빛 678 · 뚜껑 위 693, 상자 바닥 1335, 병 왼쪽 165, 상자 오른쪽 895.
-const END_PHOTO={logoTop:405,lineBottom:658,capGlow:678,capTop:693,boxBottom:1335,left:165,right:895};
+// end.webp(1080×1920, 11-26 도담중공업 배우의 얼굴)에서 잰 자리: 머리 위 690(그 위는 검정), 이마 위 760, 턱 1311, 귀 284, 얼굴 오른쪽 796.
+const END_PHOTO={headTop:690,browTop:760,chin:1311,left:284,right:796};
 const narrowBlock=css=>{const open=['\n','\r\n'].map(nl=>css.indexOf(`@media (max-width:820px),(max-aspect-ratio:1/1){${nl}`)).find(at=>at>=0);return css.slice(open,css.indexOf('/* 제목 어절 나타나기(motion.mjs) */'));};
 const webpSize=bytes=>{
   const kind=bytes.toString('latin1',12,16);
@@ -313,7 +323,7 @@ const webpSize=bytes=>{
   throw new Error(`not a webp: ${kind}`);
 };
 const maskStops=(rule,angle)=>{const found=rule.match(new RegExp(`mask-image:[^;]*linear-gradient\\(${angle},transparent 0,#000 ([\\d.]+)%,#000 ([\\d.]+)%,transparent 100%\\)`));return found?[Number(found[1])/100,Number(found[2])/100]:null;};
-test('on a portrait tablet the end page shows the whole cap and box: one centred column from the logo to the box, while narrow landscape windows keep the base crop',()=>{
+test('on a portrait tablet the end page shows the whole face: one centred column, while narrow landscape windows keep the base crop',()=>{
   const css=read('film.css');
   const narrow=narrowBlock(css);
   const base='  .sx-layer-end img{position:absolute;left:0;top:44px;right:0;width:100%;height:calc(44% - 44px);object-fit:cover;object-position:50% 62%;max-width:100%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 82%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 82%,transparent 100%)}';
@@ -331,11 +341,10 @@ test('on a portrait tablet the end page shows the whole cap and box: one centred
   const band=nw*ratioH/ratioW,start=Number(rule.match(/object-position:50% ([\d.]+)%/)[1])/100*(nh-band);
   const vertical=maskStops(rule,'180deg'),horizontal=maskStops(rule,'90deg');
   assert.ok(vertical&&horizontal,'the fade above and below stays, and a thin one on the sides hides the edge of the warm light at the top');
-  assert.ok(start+vertical[0]*band<=END_PHOTO.logoTop-8,'the logo lettering starts below the top fade');
-  assert.ok(start+vertical[0]*band<=END_PHOTO.capTop-200,'so the cap is never faded');
-  assert.ok(start+vertical[1]*band>=END_PHOTO.boxBottom+8,'the bottom of the box sits above the bottom fade');
+  assert.ok(start+vertical[0]*band<=END_PHOTO.headTop-200,'the head is never faded by the frame');
+  assert.ok(start+vertical[1]*band>=END_PHOTO.chin+8,'the chin sits above the bottom fade');
   assert.ok(start+band<=nh&&start>=0,'the band stays inside the photo');
-  assert.ok(horizontal[0]*nw<=END_PHOTO.left-60&&horizontal[1]*nw>=END_PHOTO.right+60,'the side fade stays clear of the bottle and the box');
+  assert.ok(horizontal[0]*nw<=END_PHOTO.left-60&&horizontal[1]*nw>=END_PHOTO.right+60,'the side fade stays clear of the face');
   assert.match(rule,/-webkit-mask-composite:source-in;mask-image:[^;]*;mask-composite:intersect$/,'the two fades multiply in every engine instead of adding up');
   // 칸 높이는 제목 위 남는 자리: 아래 글 묶음(제목 세 줄 + 단추 · 고지 · 바닥 줄)을 뺀다. 11-10 제목이 synk.im과 같은 세 줄이 됐다.
   assert.match(rule,/height:calc\(100% - 422px - 3\.42\*var\(--sx-t1\)\)/);
@@ -345,7 +354,7 @@ test('on a portrait tablet the end page shows the whole cap and box: one centred
   const hide=css.match(/@media \(max-height:([\d.]+)px\)\{\.sx-end \.sx-display\{display:none\}\}/)[1];
   assert.ok(narrow.includes(`@media (min-width:${from}px) and (max-aspect-ratio:1/1) and (max-height:${hide}px){.sx-layer-end img{height:calc(100% - 359px)}}`),'where the title hides, the frame takes the room down to the button');
 });
-test('on a portrait phone the end page shows the product from just under the small line: the whole cap and box, no ghost of the lettering, the reflection filling down to the title',()=>{
+test('on a portrait phone the end page shows the whole face: the band starts in the dark above the head and fades below the chin',()=>{
   const css=read('film.css');
   const narrow=narrowBlock(css);
   const tabletAt=narrow.indexOf('@media (min-width:520px) and (max-aspect-ratio:1/1){');
@@ -362,11 +371,11 @@ test('on a portrait phone the end page shows the product from just under the sma
   const [nw,nh]=webpSize(readFileSync(new URL('assets/request/end.webp',appDir)));
   const start=Number(vwText)/100*nw,band=nw/ratio;
   assert.ok(Math.abs(Number(heightText)*band-start)<1,'a shrunk frame starts the band at the same row as a full-width one');
-  assert.ok(start>=END_PHOTO.lineBottom+2&&start<=END_PHOTO.capGlow-8,'the band starts in the dark gap under the small line: no ghost of the lettering, the cap glow comes in whole');
+  assert.ok(start<=END_PHOTO.headTop-8&&start>=END_PHOTO.headTop-60,'the band starts in the dark just above the head');
   const [,fadeTop,fadeVw,fadePct]=rule.match(/mask-image:linear-gradient\(180deg,transparent 0,#000 (\d+)px,#000 min\(([\d.]+)vw,([\d.]+)%\),transparent 100%\)/).map(Number);
-  assert.ok(start+fadeTop/(270/nw)<=END_PHOTO.capTop-4,'the short top fade ends above the cap even in a 270px-wide frame');
-  assert.ok(start+fadeVw/100*nw>=END_PHOTO.boxBottom+8,'full width: the bottom fade starts under the box');
-  assert.ok(start+fadePct/100*band>=END_PHOTO.boxBottom+8,'shrunk: the bottom fade starts under the box');
+  assert.ok(start+fadeTop/(270/nw)<=END_PHOTO.browTop-4,'the short top fade ends above the forehead even in a 270px-wide frame');
+  assert.ok(start+fadeVw/100*nw>=END_PHOTO.chin+8,'full width: the bottom fade starts under the chin');
+  assert.ok(start+fadePct/100*band>=END_PHOTO.chin+8,'shrunk: the bottom fade starts under the chin');
   assert.ok(Math.abs(fadeVw/100*nw-fadePct/100*band)<2,'both fade starts point at the same row');
   assert.ok(start+band<=nh,'the shrunk band stays inside the photo');
   // 아래 글 묶음: 휴대폰 제목은 늘 36px(3.9vw가 36px을 넘지 않는다)라 세 줄 3.42 × 36 + 422px, 칸 위를 44px에서 내린 만큼 더 비운다.
