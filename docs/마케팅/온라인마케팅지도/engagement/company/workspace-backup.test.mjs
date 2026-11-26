@@ -11,6 +11,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { Store } from './store.mjs';
 import { createMessenger } from '../../../../../tools/company-messenger/server.mjs';
 import { backupWorkspace } from './workspace-backup.mjs';
+import { MEDIA_READ_WINDOW_MS, mediaReadWindow } from './workspace-media.mjs';
 
 test('workspace backup preserves identities, local attachments, media and Drive registry without original absolute paths', async () => {
   const root = await mkdtemp(join(tmpdir(), 'synk-workspace-backup-'));
@@ -94,6 +95,32 @@ async function mediaFixture(t) {
   const sha=value=>createHash('sha256').update(value).digest('hex');
   return {...f,names:[first,second,twin],expected:new Map([[first,sha('synthetic video body')],[second,sha('synthetic image body')],[twin,sha('synthetic video body')]])};
 }
+
+// Read window (PULSE roster images, 2026-11-23): a delete path may remove a file a day after it left the list, so every
+// backup, a direct run included, must finish its live reads within MEDIA_READ_WINDOW_MS of starting or fail without COMPLETE.
+test('a backup that runs past the read window fails before COMPLETE, in every media mode and at the end too', async t => {
+  const f=await mediaFixture(t),start=Date.parse('2026-11-23T00:00:00.000Z');
+  // Clock that stays at the start for the first `inside` calls, then jumps to the end of the window.
+  const clock=inside=>{let calls=0;return ()=>++calls<=inside?start:start+MEDIA_READ_WINDOW_MS;};
+  // 1: before the first media read · 4: after the three reads, before the list time · 5: after the list time, right before COMPLETE.
+  const runs=[['copy',1],['both',1],['manifest',1],['copy',4],['manifest',4],['copy',5],['manifest',5]];
+  for(const [mode,inside] of runs){
+    const destination=join(f.root,'late-'+mode+'-'+inside);
+    await assert.rejects(backupWorkspace({destination,companyDataDir:f.companyDir,media:mode,now:clock(inside)}),error=>error.code==='MEDIA_READ_WINDOW',mode+' '+inside);
+    for(const name of await readdir(destination))await assert.rejects(access(join(destination,name,'COMPLETE')),{code:'ENOENT'});
+  }
+  // One millisecond inside the window at every check: the run completes.
+  const target=await backupWorkspace({destination:join(f.root,'inside'),companyDataDir:f.companyDir,media:'manifest',now:(()=>{let calls=0;return ()=>start+(calls++?MEDIA_READ_WINDOW_MS-1:0);})()});
+  assert.equal(await readFile(join(target,'COMPLETE'),'utf8'),'ok\n');
+});
+
+test('the read window fails on a broken clock, and a wall clock set back does not stretch it past the steady clock', () => {
+  assert.throws(mediaReadWindow((()=>{let calls=0;return ()=>calls++?Number.NaN:0;})()),{code:'MEDIA_READ_WINDOW'});
+  assert.doesNotThrow(mediaReadWindow((()=>{let calls=0;return ()=>calls++?-3600000:0;})()));
+  const back=(()=>{let calls=0;return ()=>calls++?-2*86400000:0;})(),steady=(()=>{let calls=0;return ()=>calls++?MEDIA_READ_WINDOW_MS:0;})();
+  assert.throws(mediaReadWindow(back,steady),{code:'MEDIA_READ_WINDOW'},'wall clock two days back, six real hours gone');
+  assert.equal(MEDIA_READ_WINDOW_MS,6*3600000);
+});
 
 test('default copy backup keeps the old layout with no media list', async t => {
   const f=await mediaFixture(t),target=await backupWorkspace({destination:join(f.root,'backups'),companyDataDir:f.companyDir});

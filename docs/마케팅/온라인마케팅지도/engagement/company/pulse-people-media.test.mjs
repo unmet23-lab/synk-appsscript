@@ -6,19 +6,20 @@ import {mkdtemp,rm,stat} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {createCompanyApp} from './server.mjs';
-import {workspaceMediaNames} from './workspace-media.mjs';
+import {workspaceMediaNames,MEDIA_READ_WINDOW_MS} from './workspace-media.mjs';
 import {PEOPLE_MEDIA_KIND,PEOPLE_MEDIA_LIMITS,PEOPLE_MEDIA_WRITES,PEOPLE_MEDIA_DELETE_FILES,peopleMediaName} from './pulse-people-media.mjs';
 import {createPulsePeopleRoutes} from './pulse-people-routes.mjs';
-import {PEOPLE_SEED} from './pulse-people.mjs';
+import {PEOPLE_SEED,createPulsePeople} from './pulse-people.mjs';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
 const jpeg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAACAAIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwC1RRRXkn0R/9k=','base64');
 const real=(extra={})=>({id:'',name:'합성 카페 채널',platform:'instagram',handle:'',url:'https://www.instagram.com/synthetic.cafe/',topics:['food'],audience:'',followers:null,avgViews:null,prices:{post:null,review:null},image:'',samples:[],virtual:false,example:false,active:true,...extra});
 
-async function server(t,{writes=true}={}){
+// writes를 주지 않으면 서버 옵션을 넘기지 않아 서버 기본값(PEOPLE_MEDIA_WRITES)을 쓴다(둘째 판 GPT GA3).
+async function server(t,{writes}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-people-media-'));let offset=0;
   const clock=()=>new Date(Date.parse('2026-11-23T03:00:00.000Z')+offset).toISOString();
-  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3,clock,pulsePeopleMediaWrites:writes};
+  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3,clock,...(typeof writes==='boolean'?{pulsePeopleMediaWrites:writes}:{})};
   const app=createCompanyApp(options),address=await app.start(),base='http://127.0.0.1:'+address.port;
   t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});
   const person=(name,email,role,csrf)=>{const row=app.store.createUser({name,email,role,teamId:'team-a'});return {row,id:row.id,csrf,token:app.store.mint('session',row.id,{csrfToken:csrf},120)};};
@@ -50,6 +51,15 @@ test('올리기: 관리자만, PNG · JPEG 2MB까지, 속이 그림이 아니면
   assert.equal((await f.upload(f.admin,png.subarray(0,40),'image/png')).status,415,'끝 덩어리가 없는 PNG(서명만 맞음)는 받지 않는다');
   assert.equal((await f.upload(f.admin,Buffer.concat([Buffer.from([0xff,0xd8,0xff,0xe0]),Buffer.alloc(60)]),'image/jpeg')).status,415,'끝 표식이 없는 JPEG는 받지 않는다');
   assert.equal((await f.upload(f.admin,Buffer.alloc(PEOPLE_MEDIA_LIMITS.bytes+1,1),'image/png')).status,413);
+  // 뼈대를 끝까지 걷는다(둘째 판 GPT GA2): 화소 덩어리(IDAT)가 없는 PNG, 덩어리 길이가 파일 밖을 가리키는 PNG, IEND 뒤에 바이트가 남은 PNG, SOF · SOS 없이 끝나는 JPEG는 받지 않는다.
+  const chunks=[];for(let at=8;at<png.length;){const size=png.readUInt32BE(at);chunks.push(png.subarray(at,at+12+size));at+=12+size;}
+  assert.equal((await f.upload(f.admin,Buffer.concat([png.subarray(0,8),...chunks.filter(chunk=>chunk.toString('latin1',4,8)!=='IDAT')]),'image/png')).status,415,'IDAT가 없는 PNG');
+  const stretched=Buffer.from(png);stretched.writeUInt32BE(1000,8+25);assert.equal((await f.upload(f.admin,stretched,'image/png')).status,415,'IDAT 길이가 파일 밖을 가리키는 PNG');
+  assert.equal((await f.upload(f.admin,Buffer.concat([png,Buffer.from([0])]),'image/png')).status,415,'IEND 뒤에 바이트가 남은 PNG');
+  const emptyData=Buffer.from([0,0,0,0,0x49,0x44,0x41,0x54,0x35,0xaf,0x06,0x1e]);
+  assert.equal((await f.upload(f.admin,Buffer.concat([png.subarray(0,8),...chunks.map(chunk=>chunk.toString('latin1',4,8)==='IDAT'?emptyData:chunk)]),'image/png')).status,415,'자료가 빈 IDAT 하나뿐인 PNG(다시 GA3)');
+  for(const type of ['constructor','__proto__','toString'])assert.equal((await f.upload(f.admin,png,type)).status,415,`물려받은 이름 ${type}은 형식이 아니다(다시 GA1)`);
+  assert.equal((await f.upload(f.admin,Buffer.concat([jpeg.subarray(0,20),Buffer.from([0xff,0xd9])]),'image/jpeg')).status,415,'APP0 뒤 바로 끝나는 JPEG');
   const sent=await f.upload(f.admin);assert.equal(sent.status,201,sent.text);assert.match(sent.data.ref,/^media:[a-f0-9-]{36}$/);
   const swapped=await f.upload(f.admin,jpeg,'image/png');assert.equal(swapped.status,201,swapped.text);
   const swappedId=swapped.data.ref.slice(6);assert.match(f.disk(swappedId),/\.jpg$/);assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,swappedId).mimeType,'image/jpeg');
@@ -82,7 +92,7 @@ test('명단: 실제 채널도 올린 그림은 쓸 수 있고 캐스팅북 얼�
   assert.equal((await fetch(f.base+'/pulse/api/people/media/'+id,{headers:{Origin:f.app.origin}})).status,401,'손님 세션이 없으면 401');
 });
 
-test('정리: 명단이 가리키지 않는 그림은 한 시간 동안 두고, 그 뒤 지우는 중으로 표시해 고르기 · 백업에서 뺀다. 이 판은 파일을 지우지 않는다',async t=>{
+test('정리: 명단이 가리키지 않는 그림은 한 시간 동안 두고, 그 뒤 지우는 중으로 표시해 고르기 · 백업에서 뺀다. 지우는 중으로 하루를 지난 그림은 파일을 지우고 문서를 뗀다',async t=>{
   const f=await server(t);
   const kept=(await f.upload(f.admin)).data.ref,loose=(await f.upload(f.admin)).data.ref;
   const keptId=kept.slice(6),looseId=loose.slice(6),looseDisk=f.disk(looseId);
@@ -95,19 +105,53 @@ test('정리: 명단이 가리키지 않는 그림은 한 시간 동안 두고, 
   assert.equal(workspaceMediaNames(f.app.store.db).includes(looseDisk),false,'표시 뒤의 백업은 그 그림을 세지 않는다');
   assert.equal(await f.exists(looseDisk),true,'파일은 표시 전에 잡힌 백업이 끝나도록 하루 동안 둔다');
   assert.equal((await f.staff(f.admin,'/api/pulse-people')).data.uploads.some(item=>item.ref===loose),false);
-  f.tick(PEOPLE_MEDIA_LIMITS.goneMs+1000);
+  f.tick(PEOPLE_MEDIA_LIMITS.goneMs+60000);
   await f.app.sweepPulseMessageUploads();
-  assert.equal(PEOPLE_MEDIA_DELETE_FILES,false,'이 판은 파일을 지우지 않는다(다섯째 GA3) — 쓰기를 여는 판에서 백업과 맞춰 켠다');
-  assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,looseId).gone,true);assert.equal(await f.exists(looseDisk),true,'하루가 지나도 파일은 그대로다');
-  assert.equal(workspaceMediaNames(f.app.store.db).includes(looseDisk),false);
+  assert.equal(await f.exists(looseDisk),true,'벽시계로 하루가 지나도 지우지 않는다 — 하루는 서버 프로세스의 단조 시계로 잰다');
+  // 지우는 중으로 하루를 지난 그림(agedMs)은 6시간 정리가 파일을 지우고 문서를 뗀다.
+  f.app.store.put(PEOPLE_MEDIA_KIND,looseId,{...f.app.store.get(PEOPLE_MEDIA_KIND,looseId),agedMs:PEOPLE_MEDIA_LIMITS.goneMs});
+  await f.app.sweepPulseMessageUploads();
+  assert.equal(await f.exists(looseDisk),false,'하루를 지나면 6시간 정리가 파일을 지운다');
+  assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,looseId)??null,null,'파일을 지운 뒤 문서를 뗀다');
   assert.ok(f.disk(keptId)&&await f.exists(f.disk(keptId)),'명단이 가리키는 그림은 남는다');
-  // 지우는 중(gone)인 그림은 파일을 지우기 전이라도 백업 목록에서 뺀다(다시 검수 GA1).
-  const gone='32345678-1234-4123-8123-123456789abc';f.app.store.put(PEOPLE_MEDIA_KIND,gone,{id:gone,diskName:gone+'.png',mimeType:'image/png',byteSize:1,at:'2026-11-23T01:00:00.000Z',gone:true});
+  // 지우는 중(gone)인 그림은 파일을 지우기 전이라도 백업 목록에서 뺀다(다시 검수 GA1). 파일이 이미 없으면(서버가 먼저 비움) 지운 것으로 보고, 저장 길에서도 문서를 뗀다.
+  const gone='32345678-1234-4123-8123-123456789abc';f.app.store.put(PEOPLE_MEDIA_KIND,gone,{id:gone,diskName:gone+'.png',mimeType:'image/png',byteSize:1,at:'2026-11-20T01:00:00.000Z',gone:true,goneAt:'2026-11-21T01:00:00.000Z',agedMs:PEOPLE_MEDIA_LIMITS.goneMs});
   assert.equal(workspaceMediaNames(f.app.store.db).includes(gone+'.png'),false);
+  const again=await f.staff(f.admin,'/api/pulse-people');
+  assert.equal((await f.staff(f.admin,'/api/pulse-people/roster',{body:{version:again.data.version,entries:again.data.entries}})).status,200);
+  assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,gone)??null,null);
 });
 
-test('쓰기 스위치: 이 판은 그림 읽기만 싣는다 — 올리기는 404, 새 그림은 저장되지 않고, 이미 저장된 그림 칸은 깨지지 않고 읽힌다(GPT 검수 GA1)',async t=>{
-  assert.equal(PEOPLE_MEDIA_WRITES,false,'쓰기는 다음 판에서 연다');
+test('정리: 지우는 중인 그림의 하루는 서버 프로세스의 단조 시계로 잰다 — 벽시계를 앞뒤로 돌려도 줄지 않고, 서버가 꺼져 있던 시간은 세지 않는다(둘째 판 GPT GA1 · 다시 GA2)',async t=>{
+  const f=await server(t);
+  const id=(await f.upload(f.admin)).data.ref.slice(6),disk=f.disk(id);
+  let wall=Date.parse('2026-11-23T03:00:00.000Z'),steadyNow=5000;
+  const make=()=>createPulsePeople({store:f.app.store,clientProjects:f.app.clientProjects,features:{read:()=>({people:false})},clock:()=>new Date(wall).toISOString(),steady:()=>steadyNow});
+  let people=make();
+  wall+=2*3600000;steadyNow+=2*3600000;assert.deepEqual(people.sweep(),[]);
+  assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,id).gone,true);assert.equal(f.app.store.get(PEOPLE_MEDIA_KIND,id).agedMs,0,'표시한 정리에서 나이는 0이다');
+  wall+=2*86400000;steadyNow+=60000;assert.deepEqual(people.sweep(),[],'벽시계가 이틀 앞으로 가도 실제로는 1분');
+  wall-=3*86400000;steadyNow+=60000;assert.deepEqual(people.sweep(),[],'벽시계가 사흘 뒤로 가도 1분씩 더할 뿐');
+  steadyNow+=PEOPLE_MEDIA_LIMITS.goneMs-3*3600000;assert.deepEqual(people.sweep(),[],'모두 21시간 2분');
+  steadyNow+=10*3600000;people=make();assert.deepEqual(people.sweep(),[],'서버를 다시 띄우면 꺼져 있던 10시간은 세지 않는다');
+  steadyNow+=3*3600000;assert.deepEqual(people.sweep(),[disk],'새 프로세스에서 3시간 — 모두 하루를 넘었다');
+  assert.equal(await f.exists(disk),true,'sweep은 이름만 돌려주고 파일은 부른 쪽이 지운다');
+});
+
+test('지우기와 백업: 이 판은 파일 지우기를 켠다. 표시 뒤 하루는 백업 읽기 한도(6시간)에 뒤 단계(90분)와 시계 차이를 더한 것보다 길다(GPT 다섯째 GA3)',()=>{
+  assert.equal(PEOPLE_MEDIA_DELETE_FILES,true);
+  assert.ok(PEOPLE_MEDIA_LIMITS.goneMs>=3*MEDIA_READ_WINDOW_MS,'하루 ≥ 6시간 × 3');
+});
+
+test('쓰기 스위치: 이 판은 기본으로 올리기를 연다. 대표 화면에 「그림 올리기」 칸이 보인다',async t=>{
+  assert.equal(PEOPLE_MEDIA_WRITES,true);
+  const f=await server(t,{writes:undefined});
+  const view=await f.staff(f.admin,'/api/pulse-people');assert.equal(view.data.mediaOpen,true);
+  const sent=await f.upload(f.admin);assert.equal(sent.status,201,sent.text);
+  assert.ok((await f.staff(f.admin,'/api/pulse-people')).data.uploads.some(item=>item.ref===sent.data.ref),'저장 전 올린 그림도 고르기에 싣는다');
+});
+
+test('쓰기를 닫은 판(이 판을 되돌린 앞 판): 올리기는 404, 새 그림은 저장되지 않고, 이미 저장된 그림 칸은 깨지지 않고 읽힌다(GPT 검수 GA1)',async t=>{
   const f=await server(t,{writes:false});
   assert.equal((await f.upload(f.admin)).status,404);
   const view=await f.staff(f.admin,'/api/pulse-people');assert.equal(view.data.mediaOpen,false);
@@ -135,7 +179,8 @@ test('경로 모듈: 파일을 옮기는 사이 세션이 끝나면 그림 문�
   await assert.rejects(routes(req,{}, {url:new URL('http://o/api/pulse-people/media')}),error=>error.status===401);
   assert.deepEqual(calls,['commit','discard'],'세션이 끝났으면 문서를 적지 않고 옮긴 파일을 지운다');
   calls.length=0;live={user:{id:'u1'},hash:'h1',body:{csrfToken:'c1'}};media.commit=async()=>calls.push('commit');
-  const sent=[];const ok=createPulsePeopleRoutes({service,body:async()=>({}),send:(res,status,body)=>sent.push(status),session:()=>live,origin:'http://o',audit:()=>{},media});
+  const sent=[],audits=[];const ok=createPulsePeopleRoutes({service,body:async()=>({}),send:(res,status,body)=>sent.push(status),session:()=>live,origin:'http://o',audit:(user,action,target,detail)=>audits.push({action,...detail}),media});
   assert.equal(await ok(req,{}, {url:new URL('http://o/api/pulse-people/media')}),true);
   assert.deepEqual(calls,['commit','add','remove:a.png','forget:a.png'],'지운 파일의 문서만 뗀다');assert.deepEqual(sent,[201]);
+  assert.deepEqual(audits,[{action:'pulse-people-media-uploaded',ref:'media:x',removed:1}],'감사 기록에는 시도한 둘이 아니라 실제로 지운 하나를 적는다(서버 끝 판 카본 A2)');
 });

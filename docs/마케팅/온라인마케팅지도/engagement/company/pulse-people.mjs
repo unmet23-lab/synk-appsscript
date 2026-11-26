@@ -97,8 +97,10 @@ const customerSrc=src=>{const id=mediaIdOf(src);return id?`/pulse/api/people/med
 const customerEntry=item=>({id:item.id,name:item.name,platform:item.platform,handle:item.handle,url:item.url,topics:[...item.topics],audience:item.audience,followers:item.followers,avgViews:item.avgViews,prices:{...item.prices},image:customerSrc(item.image),samples:item.samples.map(customerSrc),virtual:item.virtual});
 
 // mediaWrites: 명단 그림 쓰기(조각 ③)를 열었는지. 기본은 pulse-people-media.mjs의 PEOPLE_MEDIA_WRITES(읽기 먼저 · 쓰기는 다음 판 — GPT 검수 GA1).
-export function createPulsePeople({store,clientProjects,features,clock=()=>new Date().toISOString(),randomId=()=>Math.random().toString(36).slice(2,10),mediaWrites=PEOPLE_MEDIA_WRITES}){
+// steady: 지우는 중인 그림의 나이를 재는 단조 시계(밀리초). 시험이 가짜를 준다.
+export function createPulsePeople({store,clientProjects,features,clock=()=>new Date().toISOString(),randomId=()=>Math.random().toString(36).slice(2,10),mediaWrites=PEOPLE_MEDIA_WRITES,steady=()=>performance.now()}){
   if(!store||!clientProjects||!features)throw new TypeError('채널 명단 설정이 이상해요.');
+  let accountedAt=steady();
   // 지우는 중(gone — 파일을 지운 뒤 문서를 뗀다)인 그림은 없는 것으로 친다.
   const mediaDoc=id=>{const doc=typeof id==='string'?store.get(PEOPLE_MEDIA_KIND,id):null;return doc&&!doc.gone?doc:null;};
   const mediaDocs=()=>(store.all?.(PEOPLE_MEDIA_KIND)||[]).filter(item=>item&&typeof item.id==='string');
@@ -154,22 +156,30 @@ export function createPulsePeople({store,clientProjects,features,clock=()=>new D
     // version: 의뢰를 보낼 때 손님이 본 명단 판(조각 ② — 그사이 명단이 바뀌었으면 의뢰가 409).
     const doc=current();return {version:doc.version,entries:doc.entries.filter(item=>item.active&&!item.example).map(customerEntry)};
   }
-  // 올린 그림 정리: 명단이 가리키지 않고 올린 지 한 시간이 지난 그림을 「지우는 중(gone)」으로 표시만 하고, 표시한 지 하루가 지난 그림의 파일 이름을 돌려준다.
+  // 올린 그림 정리: 명단이 가리키지 않고 올린 지 한 시간이 지난 그림을 「지우는 중(gone)」으로 표시만 하고, 지우는 중으로 하루를 지난 그림의 파일 이름을 돌려준다.
   // 부른 쪽이 커밋 뒤 디스크에서 지우고 forgetMedia로 문서를 뗀다. gone은 되돌리지 않는다(되살리면 파일 지우기와 다시 겹친다 — Fable 설계 검토 ④).
   // 명단 문서가 깨졌으면 무엇을 가리키는지 알 수 없어 아무것도 지우지 않는다.
+  // 하루는 벽시계로 재지 않는다(둘째 판 GPT GA1 → 다시 GA2, 설계 다시). 정리 때마다 이 서버 프로세스의 단조 시계가 앞 정리 뒤로 흐른 시간을 지우는 중인 그림의 agedMs에 더한다.
+  // 시계를 앞뒤로 돌려도 하루가 줄지 않고, 서버가 꺼져 있거나 잠든 시간은 세지 않아 지우기가 늦어질 뿐이다. 프로세스의 첫 정리는 그 프로세스가 뜬 때부터 센다.
+  // 같은 데이터 폴더를 쓰는 서버 프로세스는 하나라고 본다. 둘이 함께 돌면 같은 시간을 두 번 센다(운영은 컨테이너 하나를 멈춘 뒤 새로 띄운다 — Fable 설계 검토 P2-1, 한계).
+  // 6시간 정리 예약이 꺼진 서버에서는 명단 저장 · 그림 올리기 때만 나이가 쌓인다(Fable 설계 검토 P2-2, 한계 — 지우기가 늦어질 뿐이다).
+  // 그래서 지우는 중 표시 뒤 실제로 하루가 지나야 파일을 지운다. 표시 전에 잡힌 백업은 실제 6시간 안에 끝난다(workspace-media.mjs MEDIA_READ_WINDOW_MS — 단조 시계 포함, GPT 다섯째 GA3).
   function sweep(){
     const doc=readDoc(store.get(PULSE_PEOPLE_KIND,ID),()=>true);if(doc.broken)return [];
     const used=new Set(doc.entries.flatMap(item=>[item.image,...item.samples]).map(mediaIdOf).filter(Boolean)),now=Date.parse(clock()),removed=[];
-    if(!Number.isFinite(now))return removed;
+    const tick=steady(),step=tick-accountedAt>0?tick-accountedAt:0;if(tick>accountedAt)accountedAt=tick;
     for(const item of mediaDocs()){
-      // 지우는 중(gone)인 그림은 표시한 지 하루가 지난 뒤에만 파일을 지운다 — 표시 뒤의 백업 스냅샷은 그 그림을 세지 않고, 표시 전에 잡힌 백업은 하루 안에 끝난다(GPT 다시 검수 GA1 → 설계 다시).
-      // 파일을 지운 뒤 문서는 forgetMedia가 뗀다. 지우기가 실패하면 문서가 남아 다음 정리가 다시 지운다(GPT 검수 GA8).
-      // 이 판은 파일을 지우지 않는다(GPT 다섯째 GA3): 표시 전에 잡힌 백업이 끝났는지 서버가 알 길이 없어, 하루 유예도 시간 제한 없는 직접 백업과는 겹칠 수 있다.
-      // 이 판은 그림 쓰기가 닫혀 있어 운영에 지울 그림이 생기지 않는다. 파일 지우기는 쓰기를 여는 판에서 백업과 맞춰 짓는다(트랙 남은 일).
-      if(item.gone){if(!Number.isFinite(Date.parse(item.goneAt)))store.put(PEOPLE_MEDIA_KIND,item.id,{...item,goneAt:clock()});if(PEOPLE_MEDIA_DELETE_FILES&&typeof item.diskName==='string'&&now-Date.parse(item.goneAt)>=PEOPLE_MEDIA_LIMITS.goneMs)removed.push(item.diskName);continue;}
-      if(used.has(item.id))continue;
+      // 지우기가 실패하면 문서가 남아 다음 정리가 다시 지운다(GPT 검수 GA8). 파일을 지운 뒤 문서는 forgetMedia가 뗀다.
+      if(item.gone){
+        const aged=(Number.isFinite(item.agedMs)&&item.agedMs>0?item.agedMs:0)+step;
+        if(step>0)store.put(PEOPLE_MEDIA_KIND,item.id,{...item,agedMs:aged});
+        if(PEOPLE_MEDIA_DELETE_FILES&&typeof item.diskName==='string'&&aged>=PEOPLE_MEDIA_LIMITS.goneMs)removed.push(item.diskName);
+        continue;
+      }
+      // 한 시간 유예는 벽시계로 본다. 시계가 망가졌거나 올린 때보다 앞에 있으면 표시하지 않는다(지우기가 늦어질 뿐이다).
+      if(used.has(item.id)||!Number.isFinite(now))continue;
       const at=Date.parse(item.at);if(Number.isFinite(at)&&now-at<PEOPLE_MEDIA_LIMITS.graceMs)continue;
-      store.put(PEOPLE_MEDIA_KIND,item.id,{...item,gone:true,goneAt:clock()});
+      store.put(PEOPLE_MEDIA_KIND,item.id,{...item,gone:true,goneAt:new Date(now).toISOString(),agedMs:0});
     }
     return removed;
   }

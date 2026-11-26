@@ -4,7 +4,7 @@ import { createReadStream } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join, resolve, basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { workspaceMediaNames, personaMediaNameSet, personaRetainedSha } from './workspace-media.mjs';
+import { workspaceMediaNames, personaMediaNameSet, personaRetainedSha, mediaReadWindow } from './workspace-media.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // copy: studio media bytes inside the backup (default, manual backups and tests).
@@ -46,7 +46,8 @@ async function plannedPath(path) {
   try { return await realpath(path); }
   catch (error) { if (error.code !== 'ENOENT' || dirname(path) === path) throw error; return join(await plannedPath(dirname(path)), basename(path)); }
 }
-export async function backupWorkspace({ destination, companyDataDir, messengerDataDir, media = 'copy' } = {}) {
+// now: the wall clock of the read window (workspace-media.mjs MEDIA_READ_WINDOW_MS); tests pass a fake one.
+export async function backupWorkspace({ destination, companyDataDir, messengerDataDir, media = 'copy', now = Date.now } = {}) {
   if (typeof destination !== 'string' || !destination.trim()) throw new Error('백업을 저장할 별도 폴더가 필요합니다.');
   if (!MEDIA_MODES.includes(media)) throw new Error('영상 백업 방식을 확인해 주세요.');
   const company = resolve(companyDataDir || process.env.SYNK_COMPANY_DATA || join(here, 'data'));
@@ -69,6 +70,9 @@ export async function backupWorkspace({ destination, companyDataDir, messengerDa
   const mediaFiles = [];
   let personaNames = new Set(), retained = new Set(), legacyDeleted = 0, effective = media;
   const cloudFiles = [];
+  // Starts before the first snapshot. Each live media read, the list time and COMPLETE must fall inside the window,
+  // so a file that a delete path removes a day after it left the list is never one this run still has to read.
+  const inWindow = mediaReadWindow(now);
   for (const [name, directory, database] of [['company', company, 'company.sqlite'], ['messenger', messenger, 'messenger.sqlite']]) {
     const source = new DatabaseSync(join(directory, database), { readOnly: true });
     try { await backup(source, join(target, name, database)); } finally { source.close(); }
@@ -89,6 +93,7 @@ export async function backupWorkspace({ destination, companyDataDir, messengerDa
             mediaCount++;
             continue;
           }
+          inWindow();
           if (effective !== 'manifest') {
             await mkdir(join(target, name, 'studio-media'), { recursive: true, mode: 0o700 });
             await copyFile(live, copied);
@@ -108,6 +113,7 @@ export async function backupWorkspace({ destination, companyDataDir, messengerDa
       }
     } finally { snapshot.close(); }
   }
+  inWindow();
   const createdAt = new Date().toISOString();
   // The list sits beside integration-manifest.json, outside company/: a restored
   // company volume never carries it into /data.
@@ -131,6 +137,7 @@ export async function backupWorkspace({ destination, companyDataDir, messengerDa
   const mediaNote = cloudNote + (media === 'manifest' || effective === 'manifest' ? '작업실 영상 본문은 이 폴더에 없습니다. 회사 백업 버킷의 <이 폴더 이름>.media-<sha256> 객체(이 압축본의 곁 객체)에 있으니 deploy/backup-media.py hydrate로 company/studio-media를 채운 뒤에 비교·복원하세요.\n' : media === 'both' ? '작업실 영상 본문은 company/studio-media에 있고, 같은 내용이 회사 백업 버킷의 <이 폴더 이름>.media-<sha256> 곁 객체에도 있습니다.\n' : '');
   const retentionNote = media === 'copy' ? '' : RETENTION_FILE + '은 금고 사본을 고를 때만 쓰는 표시(전용 인물 파일의 sha256)라 복원에는 쓰지 않습니다.\n';
   await writeFile(join(target, 'RESTORE.txt'), '싱ㅋ 워크스페이스 백업\n' + mediaNote + retentionNote + '두 DB의 시점을 맞춘 최종 백업은 모든 writer가 중지된 상태에서 실행하세요. 실행 중의 순차 DB 백업은 하나의 동일 시점을 보장하지 않습니다.\n기존 데이터는 덮어쓰지 마세요. workspace-restore-acceptance.mjs로 별도 최신 기준 백업과 비교하고 새 위치에만 복구 후보를 만드세요.\n일반 복구는 company·messenger 형제 폴더이며, --cloud-volume 복구는 회사 DB와 키를 루트에, 메신저를 messenger 하위에 둡니다. 클라우드에서는 SYNK_COMPANY_DATA=/data, MESSENGER_DATA_DIR=/data/messenger를 설정하세요.\n복구 후보의 PREPARATION_INCOMPLETE 표시는 운영 검증 전에 제거하지 마세요. 이 도구는 서버 시작이나 예약 작업을 실행하지 않습니다.\n회사 계정 연결은 SYNK_ID_* 환경변수를 사용합니다. /etc/synk/company.env·Secret Manager 값·로컬 실행기 설정은 백업에 포함하지 않으므로 새 환경에 별도 이관하고 실제 콜백 주소를 검증하세요.\nDrive 파일 본문은 Google Drive에 있으며 이 백업에는 연결 설정과 파일 식별자가 포함됩니다. Drive에서 삭제된 파일은 이 백업만으로 복원할 수 없습니다.\n이 백업 폴더 자체는 암호화되어 있지 않습니다. 원래 DB 암호화 키와 Google 연결 자격증명이 포함되므로 관리자만 접근하게 하고 SSH 전송·암호화된 비공개 외부 저장소에 보관하세요. 원래 키를 바꾸지 마세요.\n', { mode: 0o600 });
+  inWindow();
   await writeFile(join(target, 'COMPLETE'), 'ok\n', { mode: 0o600 });
   return target;
 }
@@ -139,5 +146,5 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const option = process.argv[3], media = option === undefined ? 'copy' : /^--media=(both|manifest)$/.exec(option)?.[1];
     if (!process.argv[2] || process.argv.length > 4 || !media) throw new Error('사용법: node workspace-backup.mjs <백업 폴더> [--media=both|manifest]');
     console.log(await backupWorkspace({ destination: process.argv[2], media }));
-  } catch { console.error('WORKSPACE_BACKUP_FAILED: 백업 원본·설정·별도 저장 위치를 확인해 주세요.'); process.exitCode = 2; }
+  } catch (error) { console.error(error?.code === 'MEDIA_READ_WINDOW' ? 'WORKSPACE_BACKUP_FAILED: 백업이 시작한 지 6시간이 지나 멈췄습니다. 새로 다시 실행해 주세요.' : 'WORKSPACE_BACKUP_FAILED: 백업 원본·설정·별도 저장 위치를 확인해 주세요.'); process.exitCode = 2; }
 }

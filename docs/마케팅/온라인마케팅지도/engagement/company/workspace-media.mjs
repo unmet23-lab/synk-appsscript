@@ -6,6 +6,16 @@
 //   pulsePersonaRevisions — 제작팀이 만든 판 하나에 문서 하나(assets[].diskName)
 // 이 목록은 인물 문서를 처음 쓰는 판보다 먼저 운영에 오른다(한 판 되돌려도 백업 · 복원 대조가 인물 파일을 센다).
 import {peopleMediaName} from './pulse-people-media.mjs';
+// 백업의 읽기 한도(PULSE 채널 명단 그림 조각 ③ 둘째 판, 2026-11-23). DB 스냅샷을 잡은 뒤 그 목록의 파일을 운영 폴더에서 읽는 백업
+// (workspace-backup.mjs · backup.mjs)은 시작한 지 이 시간 안에 끝나야 한다. 넘으면 마칠 표시를 쓰지 않고 실패한다(직접 실행에도 시한이 생긴다).
+// 문서에서 뗀 파일을 늦게 지우는 길(명단 그림은 지우는 중 표시 뒤 하루 — pulse-people-media.mjs)은 이 시간과 뒤 단계(곁 객체 올리기 — 백업 유닛 시한 45분, 재난 백업 덧붙임이 있으면 90분)보다 길어야 한다.
+// 그러면 표시 전에 잡힌 스냅샷도 그 파일을 다 읽은 뒤에야 파일이 지워진다.
+// 걸린 시간은 벽시계(지우는 쪽과 같은 시계 — 잠든 동안도 센다)와 단조 시계(시계를 뒤로 돌려도 센다) 가운데 큰 쪽이다(둘째 판 GPT GA1).
+export const MEDIA_READ_WINDOW_MS=6*3600000;
+export function mediaReadWindow(now=Date.now,steady=()=>performance.now()){
+  const started=now(),steadyStart=steady();
+  return ()=>{if(!(Math.max(now()-started,steady()-steadyStart)<MEDIA_READ_WINDOW_MS))throw Object.assign(new Error('백업이 시작한 지 6시간이 지나 멈췄습니다. 새로 다시 실행해 주세요.'),{code:'MEDIA_READ_WINDOW'});};
+}
 export const PERSONA_MEDIA_KINDS=Object.freeze(['pulsePersonaSources','pulsePersonaRevisions']);
 export function personaMediaOf(kind,doc){
   if(!doc||typeof doc!=='object'||Array.isArray(doc))throw new Error('전용 인물 파일 기록을 확인해 주세요.');
@@ -62,6 +72,7 @@ export function workspaceMediaNames(database){
   }
   for(const kind of PERSONA_MEDIA_KINDS)for(const row of database.prepare('SELECT body FROM documents WHERE kind=?').all(kind))names.push(...personaMediaOf(kind,JSON.parse(row.body)));
   // PULSE 채널 명단 그림(조각 ③ · pulse-people-media.mjs): 그림 하나에 문서 하나. 명단이 가리키지 않아도 문서가 있는 동안은 센다(올린 뒤 저장 전 한 시간 유예).
+  // 지우는 중(gone)인 그림은 세지 않는다. 그 파일은 표시 뒤 하루가 지나야 지워지므로, 표시 전에 잡힌 백업은 읽기 한도 안에 다 읽는다.
   for(const row of database.prepare("SELECT body FROM documents WHERE kind='pulsePeopleMedia'").all()){const name=peopleMediaName(JSON.parse(row.body));if(name)names.push(name);}
   return [...new Set(names)];
 }

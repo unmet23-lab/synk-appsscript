@@ -15,7 +15,8 @@ const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 export function createPulsePeopleRoutes({service,body,send,session,origin,audit,isStopped=()=>false,media=null}){
   function running(){if(isStopped())throw fail('서버가 잠시 멈추는 중이에요. 조금 뒤 다시 해 주세요.',503);}
   // 정리된 그림 파일을 지우고, 지운 것만 문서에서 뗀다. 지우지 못한 파일은 문서가 남아 다음 정리 때 다시 지운다(GPT 검수 GA8).
-  async function dropFiles(names=[]){if(!media||!names.length)return;const done=[];for(const name of names){try{await media.remove(name);done.push(name);}catch{}}if(done.length)service.forgetMedia(done);}
+  // 실제로 지운 이름을 돌려준다 — 감사 기록에는 시도한 수가 아니라 지운 수를 적는다(서버 끝 판 카본 A2).
+  async function dropFiles(names=[]){if(!media||!names.length)return [];const done=[];for(const name of names){try{await media.remove(name);done.push(name);}catch{}}if(done.length)service.forgetMedia(done);return done;}
   return async function pulsePeopleRoutes(req,res,{url,demoRequest=false}){
     const match=ROUTE.exec(url.pathname);if(!match)return false;
     running();
@@ -54,8 +55,8 @@ export function createPulsePeopleRoutes({service,body,send,session,origin,audit,
         const still=session(req);
         if(!still||still.hash!==auth.hash||still.user.id!==auth.user.id)throw fail('로그인 상태를 다시 확인해 주세요.',401);
         const added=service.addMedia(still.user,upload.metadata);upload=null;
-        await dropFiles(added.removed);
-        audit(still.user,'pulse-people-media-uploaded','pulse-people',{ref:added.ref,removed:(added.removed||[]).length});
+        const dropped=await dropFiles(added.removed);
+        audit(still.user,'pulse-people-media-uploaded','pulse-people',{ref:added.ref,removed:dropped.length});
         send(res,201,{ref:added.ref,url:added.url});return true;
       }finally{if(upload)await media.discard(upload).catch(()=>{});}
     }
