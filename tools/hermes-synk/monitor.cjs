@@ -10,11 +10,73 @@ function kst(date) {
   const text = new Date(new Date(date).getTime() + 9 * 3600000).toISOString();
   return {day: text.slice(0, 10), hour: Number(text.slice(11, 13))};
 }
+// 열쇠 표식(access_token · refresh_token · api_key · password 뒤 : 또는 =)마다 표식부터 그 값이 시작한 줄 끝까지의 자리.
+// 값에 빈칸이 들어도 꼬리가 남지 않는다(GPT alert-fix-20261126-r10 GA3). 앞 표식의 자리 안에 든 표식도 따로 센다 — 뒤 표식의 값은
+// 다음 줄에 있을 수 있다(r11 GA1). 줄 끝은 앞으로만 찾는다 — 표식이 많아도 글 길이에 비례한다(r12 GA2).
+function secretSpans(value) {
+  const text = String(value || ''), spans = [], key = /(?:access_token|refresh_token|api_key|password)\s*[:=]\s*/gi, nl = /[\r\n]/g;
+  let lineEnd = -1;
+  for (let m = key.exec(text); m; m = key.exec(text)) {
+    const from = m.index + m[0].length;
+    if (lineEnd < from) { nl.lastIndex = from; const n = nl.exec(text); lineEnd = n ? n.index : text.length; }
+    spans.push([m.index, lineEnd]);
+    key.lastIndex = m.index + 1;
+  }
+  return spans;
+}
+// 가릴 자리들 — 열쇠 · 토큰 · 메일을 모두 원문에서 찾는다. 한 꼴을 먼저 바꾸면 그 자리가 다른 꼴의 일부를 잘라 나머지가 남는다
+// (메일 끝의 password: 따위, r12 GA1). 알림 고침의 다듬기도 이 자리에 경로 자리를 더해 쓴다.
+// 메일은 끝 경계 없이 가장 길게 잡는다 — 바로 뒤에 글자(api_key= 따위)가 붙어도 놓치지 않는다(r13 GA1). 시작은 이어진 글자의 맨 앞에서만 본다 —
+// 긴 값에서도 글 길이에 비례한다(r13 GA2).
+const MASK_RANK = {'[인증값]': 4, '[계정]': 3, '<집>': 2, '<이름>': 1};
+function privateSpans(value) {
+  const text = String(value || ''), spans = secretSpans(text).map(([from, to]) => [from, to, '[인증값]']);
+  for (const m of text.matchAll(/\b(?:sk-|ghp_|gho_|xoxb-)[A-Za-z0-9_-]+/g)) spans.push([m.index, m.index + m[0].length, '[인증값]']);
+  for (const m of text.matchAll(/(?<![A-Z0-9._%+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)) spans.push([m.index, m.index + m[0].length, '[계정]']);
+  return spans;
+}
+// 찾은 자리를 ~로 지운 글에서 다시 찾기를 새 자리가 없을 때까지 되풀이한다 — 맞닿은 꼴이 단어 경계를 가려 못 찾던 꼴도 찾는다(r13 GA1).
+// ~는 단어 글자가 아니고(경계가 생긴다) UNC 앞 글자로도 치지 않는다. 여덟 번을 넘기면 글 전체를 가린다.
+function collectSpans(value, finders) {
+  const text = String(value || ''), spans = [], seen = new Set();
+  let view = text;
+  for (let pass = 0; pass < 8; pass++) {
+    let grew = false;
+    for (const find of finders) for (const [from, to, label] of find(view)) {
+      const key = `${from}:${to}:${label}`;
+      if (to > from && !seen.has(key)) { seen.add(key); spans.push([from, to, label]); grew = true; }
+    }
+    if (!grew) return spans;
+    // 겹친 자리는 한 번만 지운다 — 한 줄에 표식이 많아도 글 길이에 비례한다
+    const chars = text.split('');
+    let reach = 0;
+    for (const [from, to] of spans.map(([a, b]) => [a, b]).sort((a, b) => a[0] - b[0])) {
+      for (let i = Math.max(from, reach); i < to; i++) if (chars[i] !== '\r' && chars[i] !== '\n') chars[i] = '~';
+      reach = Math.max(reach, to);
+    }
+    view = chars.join('');
+  }
+  return text ? [[0, text.length, '[인증값]']] : [];
+}
+// 겹친 자리를 하나로 합쳐 가장 센 표(열쇠 > 메일 > 집 > 이름)로 바꾼다
+function maskSpans(value, spans) {
+  const text = String(value || ''), sorted = spans.filter(([from, to]) => to > from).sort((a, b) => a[0] - b[0] || b[1] - a[1]);
+  let out = '', end = 0;
+  for (let i = 0; i < sorted.length;) {
+    let [from, to, label] = sorted[i], j = i + 1;
+    for (; j < sorted.length && sorted[j][0] < to; j++) {
+      to = Math.max(to, sorted[j][1]);
+      if ((MASK_RANK[sorted[j][2]] || 0) > (MASK_RANK[label] || 0)) label = sorted[j][2];
+    }
+    out += text.slice(end, from) + label;
+    end = to;
+    i = j;
+  }
+  return out + text.slice(end);
+}
 function clean(value, max = 220) {
-  return String(value || '').replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[계정]')
-    .replace(/\b(?:sk-|ghp_|gho_|xoxb-)[A-Za-z0-9_-]+/g, '[인증값]')
-    .replace(/(?:access_token|refresh_token|api_key|password)\s*[:=]\s*\S+/gi, '[인증값]')
-    .replace(/MEDIA:/g, 'MEDIA :').replace(/\[\[(?:as_document|audio_as_voice)\]\]/g, '').slice(0, max);
+  const text = String(value || '');
+  return maskSpans(text, collectSpans(text, [privateSpans])).replace(/MEDIA:/g, 'MEDIA :').replace(/\[\[(?:as_document|audio_as_voice)\]\]/g, '').slice(0, max);
 }
 function eventView(event) {
   return {id: clean(event.id, 180), kind: clean(event.kind, 50), severity: clean(event.severity, 40), notify: event.notify !== false,
@@ -180,7 +242,38 @@ function readDiagnosis(folder, id) {
 // automation.py sends the first 3400 characters. The alert number at the end is reserved first; then whole items are added while
 // they fit, shortened to their title when the diagnosis does not fit, and counted as 「그 밖에」 when even the title does not.
 const DIGEST_LIMIT = 3300;
-function digestText({id, items, recoveries = []}, diagnosis) {
+// An AI fix (tools/크레딧작업/알림고침.js) is told before the items, outside their six-line cap, from its record: what the AI says about
+// before and after, kept apart from what the machine measured.
+function fixReports(folder, items) {
+  const out = new Map();
+  for (const x of items) {
+    // The stop row has no record: it is told as its own line, never as an item waiting for a diagnosis.
+    if (x.id === 'fix-stopped') { out.set(x.id, x.title + (x.detail ? '\n  ' + x.detail : '')); continue; }
+    const rid = String(x.id).startsWith('fix-') ? String(x.id).slice(4) : '';
+    if (!/^\d{12}-[0-9a-f]{6}$/.test(rid)) continue;
+    let r = null;
+    try { r = readJSON(path.join(folder, 'fixes', rid, '기록.json'), null); } catch { r = null; }
+    if (!r || r.version !== 1) continue;
+    const n = v => Number.isSafeInteger(v) && v >= 0 ? v : null;
+    // What the AI wrote goes out as one line without links, even if the record was written by hand.
+    const said = (v, max) => clean(String(v || '').replace(/https?:\/\/\S+/gi, '').replace(/\s+/g, ' ').trim(), max);
+    if (r.상태 === '올림') {
+      const short = /^[0-9a-f]{40}$/.test(r.커밋 || '') ? r.커밋.slice(0, 8) : '';
+      const 전새 = r.전새 || {}, 후 = r.후시험 || {}, 셈 = r.셈 || {}, 검 = r.검수?.셈 || {};
+      const p01 = n(검.P0) !== null && n(검.P1) !== null ? n(검.P0) + n(검.P1) : '?';
+      // The AI's words carry 「(AI 설명)」 on their own lines; the measured line holds only counts and the commit.
+      out.set(x.id, ['AI가 고쳐 올렸어요 · ' + said(r.제목, 120),
+        '  전에는: ' + said(r.전, 160) + ' → 이제는: ' + said(r.후, 160) + ' (AI 설명)',
+        '  바꾼 것: ' + said(r.무엇, 160) + ' (AI 설명)',
+        '  잰 것: 새 시험 ' + (n(전새.시험) ?? '?') + '개가 고치기 전 ' + (n(전새.실패) ?? '?') + '개 실패, 고친 뒤 ' + (n(후.통과) ?? '?') + '/' + (n(후.시험) ?? '?') + ' 통과 · GPT 검수 P0·P1 ' + p01 + '건'
+          + (n(검.P2) ? ' · P2 ' + n(검.P2) + '건' : '') + ' · 파일 ' + (n(셈.파일) ?? '?') + '개(+' + (n(셈.더함) ?? '?') + ' −' + (n(셈.뺌) ?? '?') + ')' + (short ? ' · 커밋 ' + short : ''),
+        ...(r.바이트같음 === false ? ['  올라간 판이 검수한 판과 달라요 — 그사이 다른 커밋과 합쳐져서 알림 고침을 멈췄어요'] : []),
+        short ? '  되돌리려면 Claude 세션에 「알림 고침 ' + short + ' 되돌려」라고 말씀해 주세요.' : ''].filter(Boolean).join('\n'));
+    } else out.set(x.id, 'AI가 고쳐 보았지만 올리지 않았어요 · ' + said(r.제목, 120) + '\n  까닭: ' + said(r.까닭 || (r.상태 === '끊김' ? '도중에 끊겼어요' : '미기록'), 200));
+  }
+  return out;
+}
+function digestText({id, items, recoveries = []}, diagnosis, fixes = new Map()) {
   // A diagnosis belongs to one incident; the same source failing anew since then is told without it.
   const found = x => (diagnosis?.items || []).find(y => y.id === x.id && y.incident === x.incident);
   const full = x => {
@@ -189,19 +282,21 @@ function digestText({id, items, recoveries = []}, diagnosis) {
       + (y ? (y.cause ? '\n  원인: ' + y.cause : '') + (y.fix ? '\n  해결: ' + y.fix : '') + (y.state === '유호님 차례' ? '\n  → 유호님 차례' : '') : '');
   };
   const code = id.slice(6, 14);
+  const told = items.filter(x => fixes.has(x.id)), rest = items.filter(x => !fixes.has(x.id));
   const tail = (recoveries.length ? '\n\n풀린 일\n' + recoveries.slice(0, 6).map(x => '- ' + x).join('\n')
       + (recoveries.length > 6 ? '\n그 밖에 ' + (recoveries.length - 6) + '건' : '') : '')
     // The note speaks about the diagnosed items; without any of them here it would explain something else.
-    + (diagnosis ? (diagnosis.note && (!diagnosis.items.length || items.some(found)) ? '\n\n' + diagnosis.note : '') : '\n\n원인 진단은 이번에 오지 않았어요.')
+    + (diagnosis ? (diagnosis.note && (!diagnosis.items.length || rest.some(found)) ? '\n\n' + diagnosis.note : '') : rest.length ? '\n\n원인 진단은 이번에 오지 않았어요.' : '')
     + '\n\n이 알림의 번호는 ' + code + '입니다. 자세한 내용은 /synk_attention ' + code + ' 로 볼 수 있습니다.\n이 알림에 「자세히」라고 답장해도 됩니다.';
   const room = DIGEST_LIMIT - tail.length - 60; // 60: the 「그 밖에 N건」 line
   let body = DIGEST_HEADING, shown = 0;
-  for (const x of items.slice(0, 6)) {
+  for (const x of told) body += '\n- ' + fixes.get(x.id);
+  for (const x of rest.slice(0, 6)) {
     const line = [full(x), '\n- ' + x.title].find(text => body.length + text.length <= room);
     if (!line) break;
     body += line; shown++;
   }
-  return body + (items.length > shown ? '\n그 밖에 ' + (items.length - shown) + '건 · /synk_today 에서 전체 확인' : '') + tail;
+  return body + (rest.length > shown ? '\n그 밖에 ' + (rest.length - shown) + '건 · /synk_today 에서 전체 확인' : '') + tail;
 }
 // A source missing from this round is not proof it healed: it stays as its draft announced it.
 const unseen = source => ({id: source.id, attention_fingerprint: source.fingerprint, incident: source.incident,
@@ -320,20 +415,22 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
     const save = (status, extra) => { result.state.digest = {day:today,id,status,...extra}; writeJSON(stateFile,result.state); };
     // Nothing to tell: today's round is over, and whatever comes later waits for tomorrow.
     if (!active.length && !healed.length) { save('done'); return hold({digest:true}); }
-    const diagnosis = active.length ? readDiagnosis(folder, id) : null;
+    // AI fix reports (fix-*) are told, never diagnosed: with only those there is nothing to wait for.
+    const asked = active.filter(x => !String(x.id).startsWith('fix-'));
+    const diagnosis = asked.length ? readDiagnosis(folder, id) : null;
     // Ask for a diagnosis once a day. After a day that ended without its message, do not wait again.
-    if (active.length && stage === 'none' && !(last && last.status !== 'done')) {
+    if (asked.length && stage === 'none' && !(last && last.status !== 'done')) {
       const holdUntil = new Date(now.getTime() + holdMs).toISOString();
       writeJSON(path.join(folder,'diagnosis','request.json'),{version:1,id,day:today,createdAt:now.toISOString(),holdUntil,
-        items:active.map(x=>({id:x.id,incident:x.incident,title:x.title,detail:x.detail})),recoveries:healed.map(x=>x.title)});
+        items:asked.map(x=>({id:x.id,incident:x.incident,title:x.title,detail:x.detail})),recoveries:healed.map(x=>x.title)});
       save('waiting',{holdUntil});
       return hold({waiting:true});
     }
-    if (active.length && stage === 'waiting' && !diagnosis && now.getTime() < Date.parse(last.holdUntil)) return hold({waiting:true});
+    if (asked.length && stage === 'waiting' && !diagnosis && now.getTime() < Date.parse(last.holdUntil)) return hold({waiting:true});
     const digest = {version:2,day:today,items:active.map(x=>({id:x.id,incident:x.incident,title:x.title,detail:x.detail})),recoveries:healed.map(x=>x.title),
       healed:healed.map(x=>({id:x.id,incident:x.incident})),absorbed};
     const item = {...(active.length ? attentionNotification(active, DIGEST_HEADING) : recoveryNotification(healed)), id, digest};
-    if (active.length) item.text = digestText({id,...digest}, diagnosis);
+    if (active.length) item.text = digestText({id,...digest}, diagnosis, fixReports(folder, active));
     // The recovery bookkeeping points at the message that actually goes out.
     for (const event of active) {
       const value = result.state.attentionAlerted[event.id];
@@ -344,7 +441,7 @@ async function collect({home, root, now = new Date(), readOverview, initial = fa
     return done({notifications:[item],digest:true});
   } finally {release();}
 }
-module.exports={STALE_LOCK_MS,DIGEST_HOUR_KST,DIGEST_LAST_HOUR_KST,DIGEST_HOLD_MS,digestId,digestText,readDiagnosis,plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,recoveryDraft,suppressDraft,attentionNotification,recoveryNotification,awakeSince,AWAKE_GAP_MS,POLICY};
+module.exports={secretSpans,privateSpans,maskSpans,collectSpans,STALE_LOCK_MS,DIGEST_HOUR_KST,DIGEST_LAST_HOUR_KST,DIGEST_HOLD_MS,digestId,digestText,fixReports,readDiagnosis,plan,collect,kst,clean,writeJSON,readJSON,attentionDraft,recoveryDraft,suppressDraft,attentionNotification,recoveryNotification,awakeSince,AWAKE_GAP_MS,POLICY};
 if(require.main===module) {
   const home=process.env.HERMES_HOME || path.join(process.env.LOCALAPPDATA,'hermes');
   const {readOverview}=require('./overview.cjs');

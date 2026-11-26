@@ -356,6 +356,23 @@ test('9 KST no longer forces a remote read; hourly refresh remains independent o
 test('private accounts, credentials and media directives are neutralized',()=>{
   const text=clean('a@b.com sk-secret access_token=secret MEDIA:/private [[as_document]]');
   assert.doesNotMatch(text,/a@b.com|sk-secret|access_token=secret|MEDIA:|as_document/);
+  // 열쇠 표식 뒤 값은 그 줄 끝까지 — 빈칸 든 값의 꼬리가 남지 않는다(GPT alert-fix-20261126-r10 GA3)
+  assert.equal(clean('a api_key=C:\\Users\\Jane Doe\\sk_live_abc tail\nnext'),'a [인증값]\nnext');
+  // 앞 표식의 자리 안에 든 표식도 따로 센다 — 뒤 표식의 값이 다음 줄에 있어도 남지 않는다(r11 GA1)
+  assert.equal(clean('api_key=sample-one password:\n sample-two\nnext'),'[인증값]\nnext');
+  // 열쇠 · 토큰 · 메일 자리를 원문에서 함께 찾아 합친다 — 메일 끝의 password:가 메일 일부를 남기지 않는다(r12 GA1)
+  assert.equal(clean('회신 주소 my.name@example.password: 확인 필요'),'회신 주소 [인증값]');
+  // 메일 바로 뒤에 글자가 붙어도 메일을 놓치지 않는다(r13 GA1)
+  assert.doesNotMatch(clean('회신 주소 my.name@example.comapi_key=sample'),/my\.name|example|sample/);
+  // 긴 하이픈 값에서도 메일 꼴이 글 길이에 비례한다(r13 GA2)
+  const longValue=Date.now();
+  assert.equal(clean('password='+'a-'.repeat(100000),20),'[인증값]');
+  assert.equal(clean('x '+'a-'.repeat(100000),4),'x a-');
+  assert.ok(Date.now()-longValue<2000,`${Date.now()-longValue}ms`);
+  // 표식이 아주 많아도 글 길이에 비례한다(r12 GA2) — 제곱으로 늘면 수 초가 걸린다
+  const started=Date.now();
+  assert.equal(clean('password=x '.repeat(200000),20),'[인증값]');
+  assert.ok(Date.now()-started<2000,`${Date.now()-started}ms`);
   assert.equal(kst(at('2026-10-18T15:01:00Z')).day,'2026-10-19');
 });
 
@@ -684,4 +701,60 @@ test('random timelines with crashes: one message a day, nothing lost, nothing to
     assert.deepEqual(f.waiting(),[],'seed '+seed+': nothing waits after quiet days');
     fs.rmSync(f.home,{recursive:true,force:true});
   }}finally{fs.fsyncSync=sync;}
+});
+
+// 11-26 알림 고침(무인): 고침 줄은 진단하지 않고, 기록에서 전후를 지어 사건 줄보다 앞에 한 번 싣는다. 고침 줄만 있으면 기다리지 않는다.
+test('an AI fix is told first from its record, is never diagnosed, alone does not wait, and is told once',async()=>{
+  const f=digestFixture('synk-digest-fix-');
+  const rid='202611260930-a1b2c3';
+  const fixRow=(show=true)=>({id:'fix-'+rid,kind:'fix',severity:'info',needs_attention:show,notify_recovery:false,title:'AI가 고쳐 올렸어요 · 팁 적용안 처리 · 실패',detail:'커밋 aaaaaaaa',fingerprint:'f'+show});
+  fs.mkdirSync(path.join(f.folder,'fixes',rid),{recursive:true});
+  fs.writeFileSync(path.join(f.folder,'fixes',rid,'기록.json'),JSON.stringify({version:1,'상태':'올림','제목':'팁 적용안 처리 · 실패','전':'팁 적용안이 빈 값에서 멈췄어요 https://example.com/x','후':'빈 값도 넘겨요',
+    '무엇':'빈 값을 거르는 줄을 더함','커밋':'a'.repeat(40),'전새':{'시험':2,'실패':2},'후시험':{'시험':32,'통과':32},'셈':{'파일':2,'더함':30,'뺌':4},'검수':{'셈':{P0:0,P1:0,P2:1,P3:0}},'바이트같음':true}));
+  f.box.rows=[f.ok('a')];
+  await f.run('2026-11-24T15:00:00Z');
+  f.box.rows=[f.ok('a'),fixRow()];
+  await f.run('2026-11-24T16:00:00Z');
+  const out=await f.run('2026-11-25T00:05:00Z');
+  assert.equal(f.request(),null,'nothing to diagnose');
+  assert.equal(out.notifications.length,1,'sent at once');
+  const text=out.notifications[0].text;
+  assert.match(text,/오늘 확인할 일\n- AI가 고쳐 올렸어요 · 팁 적용안 처리 · 실패\n  전에는: 팁 적용안이 빈 값에서 멈췄어요 → 이제는: 빈 값도 넘겨요 \(AI 설명\)/);
+  // AI가 쓴 말은 줄마다 「(AI 설명)」, 잰 줄에는 셈과 커밋만(GPT alert-fix-20261126 GA17)
+  assert.match(text,/\n  바꾼 것: 빈 값을 거르는 줄을 더함 \(AI 설명\)\n  잰 것: 새 시험 2개가 고치기 전 2개 실패, 고친 뒤 32\/32 통과 · GPT 검수 P0·P1 0건 · P2 1건 · 파일 2개\(\+30 −4\) · 커밋 aaaaaaaa\n/);
+  assert.match(text,/되돌리려면 Claude 세션에 「알림 고침 aaaaaaaa 되돌려」라고 말씀해 주세요/);
+  assert.doesNotMatch(text,/https?:|원인 진단은 이번에 오지 않았어요/,'no links from the model, no missing-diagnosis line');
+  // The next day another item opens: only it is diagnosed, and the fix is not told again.
+  f.box.rows=[f.bad('b','1'),fixRow()];
+  await f.run('2026-11-25T05:00:00Z');
+  assert.equal((await f.run('2026-11-26T00:05:00Z')).waiting,true);
+  assert.deepEqual(f.request().items.map(x=>x.id),['b']);
+  f.diagnose({b:{'원인':'x','해결':'y','상태':'확인 필요'}});
+  const next=await f.run('2026-11-26T00:10:00Z');
+  assert.match(next.notifications[0].text,/b 멈춤/);
+  assert.doesNotMatch(next.notifications[0].text,/AI가 고쳐 올렸어요/);
+  // Three days on the row turns quiet and tells no recovery.
+  f.box.rows=[f.bad('b','1'),fixRow(false)];
+  assert.equal((await f.run('2026-11-26T03:00:00Z')).notifications.length,0);
+  assert.equal(f.state().attentionObserved['fix-'+rid],undefined);
+});
+test('a fix that was tried but not pushed is one line with its reason',()=>{
+  const home=fs.mkdtempSync(path.join(os.tmpdir(),'synk-fix-text-'));
+  const rid='202611260930-b2c3d4';
+  fs.mkdirSync(path.join(home,'fixes',rid),{recursive:true});
+  fs.writeFileSync(path.join(home,'fixes',rid,'기록.json'),JSON.stringify({version:1,'상태':'못 고침','제목':'팁 적용안 처리 · 실패','까닭':'검수: GPT 검수 A 묶음을 받지 못했다(생략)'}));
+  const {digestText,fixReports}=require('../tools/hermes-synk/monitor.cjs');
+  const items=[{id:'fix-'+rid,title:'x',incident:'i'}];
+  const text=digestText({id:digestId('2026-11-26'),items},null,fixReports(home,items));
+  assert.match(text,/- AI가 고쳐 보았지만 올리지 않았어요 · 팁 적용안 처리 · 실패\n  까닭: 검수: GPT 검수 A 묶음을 받지 못했다\(생략\)/);
+  fs.rmSync(home,{recursive:true,force:true});
+});
+
+// 11-26 GA16: 멈춤 줄만 있는 묶음은 진단을 묻지 않았으니 「원인 진단은 이번에 오지 않았어요」를 붙이지 않는다.
+test('a stopped AI fix alone is told as its own line without the missing-diagnosis note',()=>{
+  const {digestText,fixReports}=require('../tools/hermes-synk/monitor.cjs');
+  const items=[{id:'fix-stopped',title:'AI 알림 고침이 멈췄어요',detail:'올린 고침이 되돌려졌어요 · 새 고침을 하지 않아요',incident:'i'}];
+  const text=digestText({id:digestId('2026-11-26'),items},null,fixReports(os.tmpdir(),items));
+  assert.match(text,/오늘 확인할 일\n- AI 알림 고침이 멈췄어요\n  올린 고침이 되돌려졌어요 · 새 고침을 하지 않아요\n/);
+  assert.doesNotMatch(text,/원인 진단은 이번에 오지 않았어요|그 밖에/);
 });

@@ -1359,3 +1359,52 @@ test('운영 사본이 같은 까닭으로 30분 넘게 멈추거나 갱신 예�
   assert.equal(odd.snapshot.ops.available, false);
   assert.equal(odd.events.some(item => item.kind === 'ops'), false);
 });
+
+// 11-26 알림 고침(무인): 끝난 시도는 사흘 동안 확인할 일, 30일까지 정상 줄, 풀림 알림 없음. 멈춤 파일이 있으면 한 줄.
+test('fixSnapshot · fixEvents: a finished AI fix is shown for three days, kept quiet until thirty, and a stop is one line', () => {
+  const { fixSnapshot, fixEvents, FIX_DIR } = require('../tools/hermes-synk/overview.cjs');
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-fix-overview-'));
+  try {
+    const now = new Date('2026-11-27T00:00:00Z');
+    const put = (id, value) => { fs.mkdirSync(path.join(home, FIX_DIR, id), { recursive: true }); fs.writeFileSync(path.join(home, FIX_DIR, id, '기록.json'), JSON.stringify({ version: 1, 제목: '팁 적용안 처리 · 실패', ...value })); };
+    put('202611260930-aaaaaa', { 상태: '올림', 커밋: 'b'.repeat(40), 끝: '2026-11-26T01:00:00Z' });
+    put('202611200930-bbbbbb', { 상태: '못 고침', 까닭: '관문: 새 시험이 없다', 끝: '2026-11-20T01:00:00Z' });
+    put('202610200930-cccccc', { 상태: '올림', 끝: '2026-10-20T01:00:00Z' });
+    put('202611270930-dddddd', { 상태: '도는 중', 시작: '2026-11-26T23:00:00Z' });
+    let rows = fixEvents(fixSnapshot({ hermesHome: home, now }));
+    const row = (id) => rows.find((x) => x.id === id);
+    assert.equal(row('fix-202611260930-aaaaaa').needs_attention, true);
+    assert.match(row('fix-202611260930-aaaaaa').title, /^AI가 고쳐 올렸어요 · /);
+    assert.match(row('fix-202611260930-aaaaaa').detail, /커밋 bbbbbbbb/);
+    assert.equal(row('fix-202611260930-aaaaaa').notify_recovery, false);
+    assert.equal(row('fix-202611200930-bbbbbb').needs_attention, false, 'older than three days: quiet');
+    assert.match(row('fix-202611200930-bbbbbb').title, /올리지 않았어요/);
+    assert.equal(row('fix-202610200930-cccccc'), undefined, 'older than thirty days: gone');
+    assert.equal(row('fix-202611270930-dddddd'), undefined, 'a running attempt is not told');
+    assert.equal(row('fix-stopped').needs_attention, false);
+    fs.writeFileSync(path.join(home, FIX_DIR, '멈춤.json'), '{}');
+    rows = fixEvents(fixSnapshot({ hermesHome: home, now }));
+    assert.equal(row('fix-stopped').needs_attention, true);
+    assert.match(row('fix-stopped').title, /멈췄어요/);
+    assert.deepEqual(fixEvents(fixSnapshot({ hermesHome: path.join(home, '없음'), now })), []);
+  } finally { fs.rmSync(home, { recursive: true, force: true }); }
+});
+
+// 11-26 GA14 · 멈춤 까닭: 되돌린 고침은 「고쳐 올렸어요」로 다시 싣지 않고, 멈춤 줄은 멈춤.json의 까닭을 적는다.
+test('fixEvents: a reverted fix stays quiet and the stop row tells the reason from its file', () => {
+  const { fixSnapshot, fixEvents, FIX_DIR } = require('../tools/hermes-synk/overview.cjs');
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-fix-revert-'));
+  try {
+    const now = new Date('2026-11-27T00:00:00Z');
+    fs.mkdirSync(path.join(home, FIX_DIR, '202611260930-aaaaaa'), { recursive: true });
+    fs.writeFileSync(path.join(home, FIX_DIR, '202611260930-aaaaaa', '기록.json'), JSON.stringify({ version: 1, 제목: '팁 적용안 처리 · 실패', 상태: '올림', 커밋: 'b'.repeat(40),
+      끝: '2026-11-26T01:00:00Z', 되돌림: { 커밋: 'c'.repeat(40), 때: '2026-11-26T05:00:00Z' } }));
+    fs.writeFileSync(path.join(home, FIX_DIR, '멈춤.json'), JSON.stringify({ 까닭: '올라간 판이 검수한 판과 달라 멈췄다(그사이 남의 커밋과 합쳐짐)' }));
+    const rows = fixEvents(fixSnapshot({ hermesHome: home, now }));
+    const row = (id) => rows.find((x) => x.id === id);
+    assert.equal(row('fix-202611260930-aaaaaa').needs_attention, false);
+    assert.match(row('fix-202611260930-aaaaaa').title, /^AI가 올린 고침을 되돌렸어요 · /);
+    assert.equal(row('fix-stopped').needs_attention, true);
+    assert.match(row('fix-stopped').detail, /^올라간 판이 검수한 판과 달라 멈췄다\(그사이 남의 커밋과 합쳐짐\) · 새 고침을 하지 않아요/);
+  } finally { fs.rmSync(home, { recursive: true, force: true }); }
+});

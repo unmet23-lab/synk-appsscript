@@ -477,6 +477,53 @@ function gatewayRecoverySnapshot({ hermesHome, now }) {
     selected: /^[a-f0-9]{32}$/.test(raw.selected || '') ? raw.selected : null, since: iso(raw.since) };
 }
 
+// 알림 고침(무인, 11-26 유호님 「바로 올리고 전후 보고」) — tools/크레딧작업/알림고침.js가 runtime/synk-automation/fixes/<id>/기록.json을 남긴다.
+// 끝난 시도는 사흘 동안 확인할 일(fix-<id>)로 하루 한 통에 한 번 실린다. 전후 글은 monitor.cjs가 기록에서 짓는다. 그 뒤 30일까지 정상 줄로 남아
+// 빠진 줄이 「열린 일」로 남지 않게 한다. 풀림 알림은 내지 않고, 진단 요청과 고침 후보에서는 빠진다.
+const FIX_DIR = 'runtime/synk-automation/fixes';
+const FIX_SHOW_MS = 3 * 24 * 3600_000, FIX_KEEP_MS = 30 * 24 * 3600_000;
+function fixSnapshot({ hermesHome, now }) {
+  let names = [];
+  try { names = fs.readdirSync(path.join(hermesHome, FIX_DIR)).filter(x => /^\d{12}-[0-9a-f]{6}$/.test(x)).sort().reverse().slice(0, 30); }
+  catch { return { available: false, items: [], stopped: false }; }
+  const items = [];
+  for (const id of names) {
+    let r;
+    try { r = readJson(hermesHome, `${FIX_DIR}/${id}/기록.json`, 200_000); } catch { continue; }
+    const end = iso(r?.끝);
+    if (r?.version !== 1 || !['올림', '못 고침', '끊김'].includes(r.상태) || !end) continue;
+    const age = now.getTime() - Date.parse(end);
+    if (age > FIX_KEEP_MS || age < -60_000) continue;
+    // 되돌린 고침은 멈춤 줄이 알린다 — 「고쳐 올렸어요」로 다시 싣지 않는다
+    const reverted = Boolean(r.되돌림);
+    items.push({ id, state: r.상태, end, title: status.plain(r.제목 || '', 120), reason: status.plain(r.까닭 || '', 200),
+      commit: /^[0-9a-f]{40}$/.test(r.커밋 || '') ? r.커밋 : null, reverted, show: age <= FIX_SHOW_MS && !reverted });
+  }
+  let stopped = false, stopReason = '';
+  try {
+    stopped = fs.existsSync(path.join(hermesHome, FIX_DIR, '멈춤.json'));
+    if (stopped) stopReason = status.plain(readJson(hermesHome, `${FIX_DIR}/멈춤.json`, 20_000)?.까닭 || '', 120);
+  } catch {}
+  return { available: true, items, stopped, stopReason };
+}
+function fixEvents(fixes) {
+  if (!fixes?.available) return [];
+  const rows = fixes.items.map(x => {
+    const done = x.state === '올림';
+    const head = x.reverted ? 'AI가 올린 고침을 되돌렸어요 · ' : done ? 'AI가 고쳐 올렸어요 · ' : 'AI가 고쳐 보았지만 올리지 않았어요 · ';
+    const row = attention(event('fix-' + x.id, 'fix', 'info', head + x.title,
+      done ? `커밋 ${x.commit ? x.commit.slice(0, 8) : '미확인'} · ${formatTime(x.end)}` : `${x.reason || (x.state === '끊김' ? '도중에 끊김' : '까닭 미기록')} · ${formatTime(x.end)}`,
+      { state: x.state, commit: x.commit, end: x.end, reverted: x.reverted }), x.show, { id: 'fix-' + x.id, state: x.state, end: x.end });
+    row.notify_recovery = false;
+    return row;
+  });
+  const stop = attention(event('fix-stopped', 'fix', fixes.stopped ? 'warning' : 'info', fixes.stopped ? 'AI 알림 고침이 멈췄어요' : 'AI 알림 고침',
+    fixes.stopped ? `${fixes.stopReason || '올린 고침이 되돌려졌어요'} · 새 고침을 하지 않아요 · 다시 켜려면 Claude 세션에 말씀해 주세요` : '켜져 있음', { stopped: fixes.stopped }),
+  fixes.stopped, { id: 'fix-stopped', stopped: fixes.stopped });
+  stop.notify_recovery = false;
+  return [...rows, stop];
+}
+
 function opsCopySnapshot({ hermesHome, now, opsStatusFile }) {
   // 감시 상태를 못 읽으면 깨어 있던 시간을 지금부터 센다 — 갱신 예약이 멈췄다고 단정하지 않는다.
   let monitor = null;
@@ -875,7 +922,7 @@ function tipStatusEvents(worker, intake) {
   return rows;
 }
 
-function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, backup, sns, gateway, ops, tipWorker, tipIntake }) {
+function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, backup, sns, gateway, ops, tipWorker, tipIntake, fixes }) {
   const events = [];
   if (!track.available || !track.complete) events.push(event('coverage-track', 'coverage', 'warning', '트랙 조회 범위 미완전', '읽지 못한 기록을 삭제·완료로 판정하지 않습니다.'));
   for (const row of track.items) events.push(event(row.id, 'track', 'info', row.title, row.summary, { text: row.fingerprint }));
@@ -952,7 +999,7 @@ function buildEvents({ track, tips, ledger, tasks, research, runtimes, now, back
   }
   for (const runtime of runtimes) events.push(event('runtime-' + runtime.source, 'runtime', 'info', runtime.source + ' 작업 조회', runtime.note,
     { connected: runtime.connected, stale: runtime.stale }));
-  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...snsHealthEvents(sns), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway), ...opsCopyEvents(ops), ...tipStatusEvents(tipWorker, tipIntake));
+  events.push(...backupEvents(backup), ...snsEvents(sns, now), ...snsHealthEvents(sns), ...gatewayRecoveryEvents(gateway), ...gatewayRecoveryTaskEvents(gateway), ...opsCopyEvents(ops), ...tipStatusEvents(tipWorker, tipIntake), ...fixEvents(fixes));
   return events.sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -1047,6 +1094,7 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
   const sns = snsResult.status === 'fulfilled' ? snsResult.value : { available: false, checkedAt: null, stale: true, refreshFailed: true, connections: [], inbox: [], jobs: null };
   const gateway = gatewayRecoverySnapshot({ hermesHome, now: clock });
   const ops = opsCopySnapshot({ hermesHome, now: clock, opsStatusFile });
+  const fixes = fixSnapshot({ hermesHome, now: clock });
   const source = sourceResult.status === 'fulfilled' ? sourceResult.value : {};
   const ledger = ledgerResult.status === 'fulfilled' ? ledgerResult.value : { available: false, stale: true, checkedAt: null, rows: [] };
   const tipWorker = tipWorkerSnapshot({ root, now: clock, sourceRoot: tipWorkerRoot });
@@ -1056,7 +1104,7 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
   const tips = reconcileTips(cards, ledger);
   const tasks = taskResult.status === 'fulfilled' ? taskResult.value : { available: false, complete: false, items: [] };
   const research = researchResult.status === 'fulfilled' ? researchResult.value : { available: false, remoteVerified: false, items: [] };
-  const events = buildEvents({ track, tips, ledger, tasks, research, runtimes: source.runtimes || [], now: clock, backup, sns, gateway, ops, tipWorker, tipIntake });
+  const events = buildEvents({ track, tips, ledger, tasks, research, runtimes: source.runtimes || [], now: clock, backup, sns, gateway, ops, tipWorker, tipIntake, fixes });
   const report = { version: 1, checkedAt: clock.toISOString(), notification_policy: NOTIFICATION_POLICY, integration_policy: INTEGRATION_POLICY,
     fingerprint: hash(events.map(row => [row.id, row.fingerprint, row.needs_attention])), events,
     snapshot: { track, tips, ledger, tasks, research, backup, sns, gateway, ops, tipWorker, tipIntake },
@@ -1085,6 +1133,6 @@ async function main(args = process.argv.slice(2)) {
 if (require.main === module) main().catch(() => { process.stderr.write('SYNK 오늘 조회를 확인하지 못했습니다. 원문·PC 연결을 확인해 주세요.\n'); process.exitCode = 1; });
 
 module.exports = { readOverview, formatOverview, sanitizeLedger, ledgerSnapshot, readLedgerCache, readTaskRecords, readArgonRecords, researchSnapshot, sanitizeArgon, refreshArgon, argonStatusSource, argonRoles, reconcileTips, buildEvents, tipStatusEvents,
-  readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, snsHealthEvents, gatewayRecoverySnapshot, opsCopySnapshot, opsCopyEvents,
+  readBackupHealth, backupSnapshot, sanitizeSns, refreshSns, snsSnapshot, snsHealthEvents, gatewayRecoverySnapshot, opsCopySnapshot, opsCopyEvents, fixSnapshot, fixEvents, FIX_DIR,
   LEDGER_TTL_MS, LEDGER_CACHE, ARGON_TTL_MS, ARGON_CACHE, SNS_CACHE, SNS_REFRESH_MS, SNS_STALE_MS, BACKUP_CACHE, GATEWAY_RECOVERY_STATUS, GATEWAY_RECOVERY_STALE_MS,
   MONITOR_STATE, GATEWAY_RECOVERY_SILENT_MS, OPS_STALL_MS, OPS_UNPUSHED_MS };

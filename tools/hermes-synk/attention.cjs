@@ -87,6 +87,7 @@ function guidance(event) {
   if (id.startsWith('research-')) return '조사 예약 상태는 /synk_today 에서 볼 수 있습니다. 설명은 tools/argon-schedules/README.md 에 있습니다.';
   if (id.startsWith('gateway-')) return '게이트웨이 복구 설명은 tools/hermes-synk/runtime/README.md 에 있습니다.';
   if (id.startsWith('ops-')) return '운영 사본 상태는 PC에서 node tools/운영사본.js 로 확인할 수 있습니다.';
+  if (id.startsWith('fix-')) return 'AI 알림 고침의 기록은 PC의 runtime/synk-automation/fixes 에 있습니다. 되돌리려면 Claude 세션에 커밋 번호와 함께 말씀해 주세요.';
   return '전체 상태는 /synk_today 에서 볼 수 있습니다.';
 }
 function incidentRows(home, state) {

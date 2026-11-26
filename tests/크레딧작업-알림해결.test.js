@@ -44,6 +44,8 @@ test('오늘 요청을 한 번만 집고 진단을 감시가 읽는 꼴로 남�
   const 진단 = monitor.readDiagnosis(path.join(f.집, 'runtime/synk-automation'), f.묶음.id);
   assert.equal(진단.items.length, 1, '요청에 없는 id는 버린다');
   assert.equal(진단.items[0].incident, 'i1', '물은 사건을 적어 다른 사건에 붙지 않게 한다');
+  const 원본진단 = JSON.parse(fs.readFileSync(path.join(f.집, 'runtime/synk-automation/diagnosis', f.묶음.id + '.json'), 'utf8'));
+  assert.equal(원본진단.items[0].고칠수있음, true, '알림고침이 고를 칸');
   assert.doesNotMatch(monitor.digestText({ ...f.묶음, items: [{ ...f.묶음.items[0], incident: 'i2' }] }, 진단), /앞 회차 잠금/, '새 사건에는 붙지 않는다');
   const 글 = monitor.digestText(f.묶음, 진단);
   assert.match(글, /원인: 갱신 예약이 앞 회차 잠금에 막혔다/);
@@ -57,6 +59,7 @@ test('진단 실행은 고쳤다고 말할 수 없다', async () => {
   await f.작업.사후({ 글: JSON.stringify({ items: [{ id: 'ops-copy-task', 원인: 'x', 해결: '고쳐 올렸다', 상태: '고침' }], note: '' }) }, 자료, {});
   const 진단 = monitor.readDiagnosis(path.join(f.집, 'runtime/synk-automation'), f.묶음.id);
   assert.equal(진단.items[0].state, '확인 필요');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(f.집, 'runtime/synk-automation/diagnosis', f.묶음.id + '.json'), 'utf8')).items[0].고칠수있음, false);
   assert.doesNotMatch(monitor.digestText(f.묶음, 진단), /고친 것|고쳐 올렸다/, '고쳤다는 말이 본문에 없다');
 });
 
@@ -217,6 +220,9 @@ test('답에 섞인 비밀 꼴은 본문에 싣지 않는다', async () => {
   const 토큰 = '123456789:' + 'AbCd'.repeat(8);
   assert.equal(답가리기('토큰 ' + 토큰 + ' 끝', 200), '토큰 [인증값] 끝');
   assert.equal(답가리기('SYNK 운영 사본 갱신 예약을 다시 켠다', 200), 'SYNK 운영 사본 갱신 예약을 다시 켠다');
+  // 열쇠 표식 뒤 값에 빈칸이 들어도 꼬리를 남기지 않는다 — 알림 고침이 이 원인 글을 모델에 넘긴다(GPT alert-fix-20261126-r10 GA3)
+  assert.equal(답가리기('원인 api_key=C:\\Users\\Jane Doe\\sk_live_abc', 200), '원인 [인증값]');
+  assert.ok(!답가리기('원인 api_key=sample-one password:\n sample-two', 200).includes('sample-two'), '겹친 표식의 다음 줄 값(r11 GA1)');
   const f = 준비();
   const 자료 = await f.작업.사전확인({ 방: f.방 });
   await f.작업.사후({ 글: JSON.stringify({ items: [{ id: 'ops-copy-task', 원인: '값 ' + 토큰, 해결: '키 ' + 'a1'.repeat(24), 상태: '확인 필요' }], note: '덧붙임 ' + 토큰 }) }, 자료, {});

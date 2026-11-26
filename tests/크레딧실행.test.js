@@ -492,3 +492,24 @@ console.log(JSON.stringify({type:'result',is_error:false,result:'{}',total_cost_
     assert.equal(본.num, null, '글이 아닌 값은 넣지 않는다');
   } finally { t.지우기(); }
 });
+
+// 11-26 알림고침: 작업이 사전 확인에서 고른 격리 사본(자료.작업폴더)에서 claude가 뜨고, 인자도 그 자료로 짓는다.
+test('작업폴더 · 인자: 사전 확인 자료의 작업폴더에서 띄우고 작업.인자는 그 자료를 받는다', async () => {
+  const t = 방만들기([['A', 20, 'sk-ant-test-bbbb']]);
+  try {
+    const 사본 = fs.mkdtempSync(path.join(t.방, '사본-'));
+    const 잡은 = path.join(t.방, '자리.json');
+    fs.writeFileSync(path.join(t.방, 'cwd-claude.js'), `const fs=require('fs');process.stdin.resume();process.stdin.on('end',()=>{
+fs.writeFileSync(${JSON.stringify(잡은)},JSON.stringify({cwd:process.cwd(),args:process.argv.slice(2)}));
+console.log(JSON.stringify({type:'result',is_error:false,result:'{}',total_cost_usd:0,num_turns:1}));});`);
+    let 받은자료 = null;
+    const { 작업 } = 가짜작업({ async 사전확인() { return { 할일: true, 작업폴더: 사본, 표: 'x1' }; },
+      인자({ 자료 }) { 받은자료 = 자료; return ['-p', '--add-dir', 자료.작업폴더]; } });
+    const r = await 실행기.작업돌리기('자리작업', { ...t.실행옵션, 앞인자: [path.join(t.방, 'cwd-claude.js')], 작업, 방: path.join(t.방, 'out'), fetch: 확인200, 알림: () => {} });
+    assert.equal(r.경로, '크레딧');
+    const 본 = JSON.parse(fs.readFileSync(잡은, 'utf8'));
+    assert.equal(fs.realpathSync(본.cwd), fs.realpathSync(사본));
+    assert.equal(받은자료?.표, 'x1');
+    assert.deepEqual(본.args, ['-p', '--add-dir', 사본]);
+  } finally { t.지우기(); }
+});
