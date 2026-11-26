@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-11-26T12:11:42.853Z",
+  "updatedAt": "2026-11-26T17:26:15.050Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -5598,11 +5598,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 유일하고 근거가 분명한 초급 생활 읽기 문항이다. 보기 0과 1이 같은 뜻이라 변별이 조금 약하지만, 학습자에게 해가 없어 통과한다. | 정류장 안내문의 세부 정보를 읽고 하차 시점을 판단하는 기존 게임 문항으로, 레슨 표현을 활용한 오답 설계와 해설이 정확하여 통과에 적합하다.",
-      "hash": "75b085c43c6085bf",
-      "reviewedAt": "2026-11-26T12:02:34.217Z",
+      "reason": "Because 「이번 정류장은 병원입니다」, getting off at this stop (choice 2) is the only correct answer. The level, naturalness and explanation all fit. One minor point: the two distractors mean nearly the same thing, so they can be eliminated together, but this does not harm learners. Pass. | 목적지와 버스 안내 방송의 정류장 정보를 대조해 하차 시점을 고르는 초급 생활 읽기 문항으로, 레슨 표현('다음 정류장에서 내려요.')을 매력적인 오답으로 잘 활용했고 난도·자연스러움·해설 모두 적절함.",
+      "hash": "71d6a0996dab4f83",
+      "reviewedAt": "2026-11-26T17:26:15.050Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126e",
+      "packet": "life-transit-people-20261127k",
       "by": [
         {
           "stage": "claude",
@@ -5620,15 +5620,15 @@
       "itemKey": "life.transit-apply-alight-transfer",
       "source": "life",
       "verdict": "pass",
-      "skillId": "ko.reading.sequence",
+      "skillId": "ko.reading.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 유일하고 1급 생활 낱말로 쓰인 짧은 순서 읽기 문항이에요. 세 번째 보기가 조금 약하지만 학습자에게 해가 없어 통과예요. | 이번 정류장과 다음 정류장의 순서를 구별해 하차 시점을 고르는 문항으로 모든 검수 기준을 충족한다.",
-      "hash": "82250808eb67100e",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답이 유일하고 생활 상황에 맞는 쉬운 세부 정보 문항이다. 2번 오답이 조금 약할 뿐 고칠 것은 없어 통과로 판정한다. | 배운 표현을 새 장소(시장·학교)에 적용한 복습 문항으로, 정답 유일성·오답 매력도·초급 난도·한국어 해설 근거가 모두 명확하여 그대로 사용 가능함.",
+      "hash": "a363316e8615910c",
+      "reviewedAt": "2026-11-26T17:26:15.050Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-transit-people-20261127k",
       "by": [
         {
           "stage": "claude",
@@ -5637,7 +5637,7 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
+          "model": "gemini-4-carbon-high",
           "verdict": "pass"
         }
       ]
@@ -5650,11 +5650,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "「교통카드를 찍다」의 뜻을 묻는 생활 문항입니다. 정답은 유일하고, 「사진을 찍다」 오답이 다의어 함정으로 잘 작동합니다. 해설에 오답 언급이 없는 것은 사소한 점이라 통과합니다. | 다의어 '찍다'의 문맥적 의미를 매력적인 오답과 함께 잘 변별하는 문항으로 그대로 사용 가능함.",
-      "hash": "306c624e07d825c7",
-      "reviewedAt": "2026-11-26T11:38:00.621Z",
+      "reason": "「교통카드를 찍다」의 뜻을 묻는 생활 문항이다. 정답이 하나로 분명하고, 사진을 찍는 오답이 다의어를 잘 노린다. 난도와 능력도 맞아 통과다. | ‘교통카드를 찍다’의 문맥적 의미를 ‘사진을 찍다’ 등 매력적인 오답과 대조해 묻는 기존 생활 레슨 문항으로, 정답 유일성·오답 매력도·어휘 및 난도 단계·해설 모두 기준에 맞아 pass로 판정함.",
+      "hash": "21f48e3e61196156",
+      "reviewedAt": "2026-11-26T17:00:48.046Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126c",
+      "packet": "life-transit-people-20261127h",
       "by": [
         {
           "stage": "claude",
@@ -5702,11 +5702,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "레슨 표현을 목적지만 바꾸어 적용한 생활 문항입니다. 정답이 하나이고 오답 초점(시간·타는 곳)이 분명하며, 수준·해설 모두 적절해 통과입니다. | 레슨에서 배운 행선지 확인 표현을 새 목적지(병원)에 적용하는 문항으로 오답 설계와 해설, 난도 모두 적절하다.",
-      "hash": "d0c30ef96c705825",
-      "reviewedAt": "2026-11-26T12:02:34.217Z",
+      "reason": "The answer is unique and the distractors only change the question point (time, boarding place), so they are suitably plausible. The level and naturalness are fine. Because it changes only the place in the lesson expression, it is very easy, but it suits the purpose of a game item applying an expression to daily life. Pass. | 한국어 발문(‘이 버스가 병원에 가는지 묻는 말’)에 정답 문장이 거의 그대로 노출되어 있고 2급 문형 ‘-는지’가 쓰였으므로 상황 제시형 발문으로 고쳐야 함. | 정답 0번 '이 버스는 병원에 가요?'은 하나뿐입니다. 2번은 버스 오는 때를 묻고, 3번은 타는 곳을 물어서 '병원에 가는지'와 분명히 어긋납니다. 맞춤법·조사·소재에도 문제가 없고, 해설(ko)도 근거를 바르게 짚습니다. 검수자 B의 지적처럼 발문 '이 버스가 병원에 가는지 묻는 말'이 정답 문장과 많이 겹쳐 변별력은 ",
+      "hash": "447835b611526791",
+      "reviewedAt": "2026-11-26T17:00:48.046Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126e",
+      "packet": "life-transit-people-20261127h",
       "by": [
         {
           "stage": "claude",
@@ -5716,6 +5716,11 @@
         {
           "stage": "argon",
           "model": "gemini-4-carbon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
           "verdict": "pass"
         }
       ]
@@ -5724,15 +5729,15 @@
       "itemKey": "life.transit-apply-route-transfer",
       "source": "life",
       "verdict": "pass",
-      "skillId": "ko.reading.vocabulary",
+      "skillId": "ko.reading.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "버스 행선지를 묻는 표현을 고르는 1급 생활 문항입니다. 정답이 하나뿐이고 오답도 같은 상황의 다른 질문이라 적절합니다. 해설도 정확해 통과입니다. | 버스 행선지를 묻는 기초 표현을 고르는 기존 게임 문항으로, 정답 유일성·오답 매력도·어휘 수준 모두 초급 연습용으로 적합하다.",
-      "hash": "5ecfc600cff1b5a2",
-      "reviewedAt": "2026-11-26T12:02:34.217Z",
+      "reason": "정답이 하나이고, 상황 정보로 오답이 분명히 지워지는 1급 생활 상황 문항이다. 게임 꼴 안에서 문제가 없어 통과한다. | 정답 유일성과 오답 구성·해설은 좋으나, 세부 정보 찾기가 아닌 상황 질문 표현 고르기 문항이므로 skillId 재지정이 필요하고 발문도 직접 발화 보기에 맞춰 다듬어야 한다. | 상황 글만 보고 직접 풀어도 정답은 1번(‘이 버스는 학교에 가요?’)이고, 다툴 여지가 없다. ‘학교에 가고 싶어요’가 목적지를 묻게 만들고, ‘정류장에 버스가 왔어요’가 시각을 묻는 보기와 정류장 위치를 묻는 보기를 분명히 지운다. 낱말과 문형은 1급 생활 수준이고 한국어도 자연스럽다. 해설은 정답 근거와 두 오답이 틀린 까닭을 바르게 짚는다. 기존 게임 문항이므로 보기 셋과 한국어만 있는 해설은 허용되고, 문화 편향이나 기출 유사성도 없다. 검수자 B의 발문 분리와 ‘물어요→물어봐요’ 제안은 게임 꼴에서 필요 없는 문체 손질이다. skillId 지적도 받아들이지 않는다. 이 문항은 앞에서 배운 표현의 대상·장소를 바꾼 복습이고, 정답을 가르는 것은 상황 글의 세부 정보(목적지, 버스가 이미 옴)이다. 그래서 ko.reading.detail로 둘 수 있다.",
+      "hash": "98062923997f9ce9",
+      "reviewedAt": "2026-11-26T17:19:21.875Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126e",
+      "packet": "life-transit-people-20261127j",
       "by": [
         {
           "stage": "claude",
@@ -5742,6 +5747,11 @@
         {
           "stage": "argon",
           "model": "gemini-4-carbon-high",
+          "verdict": "fix"
+        },
+        {
+          "stage": "adjudication",
+          "model": "claude-opus-5-5",
           "verdict": "pass"
         }
       ]
@@ -5750,15 +5760,15 @@
       "itemKey": "life.transit-expressions-alight",
       "source": "life",
       "verdict": "pass",
-      "skillId": "ko.reading.sequence",
+      "skillId": "ko.reading.vocabulary",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 유일하고 오답도 ‘다음’의 오해를 겨눈 그럴듯한 보기다. 1급 생활 상황 문항으로 문제없어 통과한다. 레슨 표현 뜻풀이가 답을 거의 알려 주지만, 표현을 먼저 보여 주는 게임 꼴에서는 의도된 구성이다. | 정차 상황을 명시해 ‘다음 정류장’의 순서를 오해 없이 묻게 설계한 좋은 초급 문항이다.",
-      "hash": "fc3ac604ddb06730",
-      "reviewedAt": "2026-11-26T11:49:31.840Z",
+      "reason": "The answer is unique, and the wording and level suit early Level 1. The intro expression's gloss nearly gives the answer away, but that fits the lesson design. Pass. | 버스가 지금 정류장에 멈춘 상황을 기준으로 ‘다음 정류장’의 뜻을 정확히 묻고 오답 대조도 고른 양호한 문항임.",
+      "hash": "986fcb7de2fe7a2e",
+      "reviewedAt": "2026-11-26T17:00:48.046Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126d",
+      "packet": "life-transit-people-20261127h",
       "by": [
         {
           "stage": "claude",
@@ -5806,11 +5816,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "레슨 표현 풀이에서 바로 근거를 찾는 쉬운 낱말 뜻 문항입니다. 「찍다」의 다의성을 노린 오답이 좋고, 정답 유일성·수준·해설 모두 문제없어 통과입니다. | ‘교통카드를 찍다’와 ‘사진을 찍다’의 다의어 구별을 실제 버스 탑승 상황에 녹여 낸 자연스러운 어휘 연습 문항이다.",
-      "hash": "769f96de09c7bae3",
-      "reviewedAt": "2026-11-26T11:49:31.840Z",
+      "reason": "'교통카드를 찍으세요'의 뜻을 상황에 적용하는 게임 레슨 문항이다. 정답은 하나뿐이고, 다의어 '찍다'를 이용한 오답이 적절하다. 해설도 바르다. 통과. | 다의어 ‘찍다’의 기본 의미를 오답으로 잘 활용한 초급 어휘·표현 연습 문항으로 모든 기준을 충족한다.",
+      "hash": "e8e8d0a0abfc3c9b",
+      "reviewedAt": "2026-11-26T16:48:33.945Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126d",
+      "packet": "life-transit-people-20261127g",
       "by": [
         {
           "stage": "claude",
@@ -5858,11 +5868,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 하나로 분명하고 오답도 같은 낱말로 그럴듯하게 짜였다. 1급 앞쪽 생활 표현 문항으로 그대로 써도 된다. | 버스 목적지 확인 표현(‘이 버스는 공원에 가요?’)을 오는 시각·탑승 장소 질문과 대비한 깔끔한 초급 게임 문항으로 그대로 쓸 수 있다.",
-      "hash": "5305e4938e35027c",
-      "reviewedAt": "2026-11-26T11:49:31.840Z",
+      "reason": "This expression item asks which sentence checks whether the bus goes to the park. The answer is unique, the distractors are reasonable, and the level fits early level 1. Because the answer sentence appears word for word in the lesson-start expression list, it works as recall practice. Pass. | 초급 버스 행선지 확인 표현을 묻는 기존 게임 문항으로 정답 유일성, 오답 구성, 난도, 해설 모두 적절하다.",
+      "hash": "87c0904223240be6",
+      "reviewedAt": "2026-11-26T16:48:33.945Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126d",
+      "packet": "life-transit-people-20261127g",
       "by": [
         {
           "stage": "claude",
@@ -5910,11 +5920,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 하나로 분명하고 오답이 글의 말을 바꿔 그럴듯하다. 어휘가 1급 앞쪽에 맞고 해설도 근거를 바르게 짚는다. 로마자 화자 표시만 사소하다. 통과. | 도서관 정류장에서의 행동을 묻는 문항으로, 본문 근거가 명확하고 오답의 수량·행동 대조가 깔끔하여 통과(pass).",
-      "hash": "bb055b092bd530de",
-      "reviewedAt": "2026-11-26T11:38:00.621Z",
+      "reason": "정답이 하나뿐이고 오답이 글의 말을 바꾼 그럴듯한 보기예요. 1급 앞쪽 난도와 세부 정보 능력에도 맞아 그대로 통과예요. | 이야기 속 세부 행동과 수량을 정확히 묻고 오답 구성과 해설도 깔끔하여 그대로 쓸 수 있다.",
+      "hash": "ab6c7eb52e2cd2a1",
+      "reviewedAt": "2026-11-26T16:48:33.945Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126c",
+      "packet": "life-transit-people-20261127g",
       "by": [
         {
           "stage": "claude",
@@ -5931,17 +5941,16 @@
     {
       "itemKey": "life.transit-story-alight-transfer",
       "source": "life",
-      "verdict": "fix",
-      "skillId": "ko.reading.sequence",
+      "verdict": "pass",
+      "skillId": "ko.reading.detail",
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "suggestedSkillId": "ko.reading.detail",
-      "reason": "정답이 유일하고 오답이 그럴듯하며, 1급 생활 상황 순서 읽기로 알맞다. 그대로 통과한다. | 정답 유일성·오답 매력도·난도·해설은 적절하나, 지문의 ‘지금 정류장’ 표현을 ‘지금 있는 정류장’으로 다듬고 대표 능력을 순서(ko.reading.sequence)에서 세부(ko.reading.detail)로 수정해야 한다. | 정답은 「다음 정류장에서 내려요」 하나뿐이다. 상황 글에 다음 정류장이 마루 도서관이라고 나와 있어서, 「학교에서」(지금 있는 곳)와 「두 정류장 더 가서」(한 정류장 더 감)는 글과 분명히 어긋난다. 오답 둘은 글의 정류장 순서를 바꾼 그럴듯한 보기이고, 해설도 근거와 가장 걸리기 쉬운 오답을 바르게 짚는다. B의 두 지적은 고칠 까닭이 약하다. 첫째, 「지금 정류장」은 [상황] 표지판처럼 칸을 나눈 표기라 1급 학습자에게 뜻이 분명하고 틀린 말도 아니다. 둘째, 정답을 가르는 정보는 지금·다음·두 정류장 뒤라는 정류장의 앞뒤 순서이고 오답도 그 순서를 바꾼 꼴이다. 그래서 「순서」 능력 표기도 받아들일 만하다. 장소(세부)로 볼 여지가 있지만 학생 화면에 해가 되지 않는다. 학생 화면에 그대로 나가도 된다.",
-      "hash": "cca06b593d011bb4",
-      "reviewedAt": "2026-11-26T12:11:42.853Z",
+      "reason": "정류장 정보로 내릴 곳을 찾는 쉬운 생활 읽기 문항이다. 정답이 유일하고 오답도 글의 말을 바꿔 써서 그럴듯하다. 해설도 근거를 바르게 짚어 그대로 통과한다. | 정답 유일성, 오답 구성, 1급 어휘·문형 수준, 한국어 해설 모두 기준에 맞는 깔끔한 생활 읽기 연습 문항이다.",
+      "hash": "45b9f180f8482569",
+      "reviewedAt": "2026-11-26T17:19:21.875Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126f",
+      "packet": "life-transit-people-20261127j",
       "by": [
         {
           "stage": "claude",
@@ -5951,11 +5960,6 @@
         {
           "stage": "argon",
           "model": "gemini-4-carbon-high",
-          "verdict": "fix"
-        },
-        {
-          "stage": "adjudication",
-          "model": "claude-opus-5-5",
           "verdict": "pass"
         }
       ]
@@ -5968,11 +5972,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답이 하나로 분명하고 표현 학습과 이어지는 좋은 생활 읽기 문항이에요. 3번 오답이 조금 쉽게 지워지지만 학습자에게 해가 없어 통과로 봐요. | '교통카드를 찍으세요' 안내에 따른 인물의 행동을 확인하는 문항으로, 본문 근거·오답 매력도·해설이 잘 갖춰져 통과(pass).",
-      "hash": "f5aad90f68b62886",
-      "reviewedAt": "2026-11-26T11:38:00.621Z",
+      "reason": "정답 2번이 이야기의 「카드 기계에 교통카드를 대요」로 분명히 뒷받침돼요. 오답도 흔히 하는 오해와 이야기 속 낱말로 그럴듯하게 짜여 있어 그대로 통과해요. | 정답 유일성, 매력적인 오답 설계, 정답 근거와 오답 배제를 함께 담은 해설까지 모두 기준에 잘 맞는다.",
+      "hash": "12c829c7b522c7c6",
+      "reviewedAt": "2026-11-26T16:48:33.945Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126c",
+      "packet": "life-transit-people-20261127g",
       "by": [
         {
           "stage": "claude",
@@ -6020,11 +6024,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "정답(꽃길 공원)이 글에 분명히 드러나고, 오답은 글에 나온 장소를 역할만 바꿔 쓴 그럴듯한 보기다. 게임 꼴 안에서 1급 앞쪽 세부 정보 읽기로 알맞아 통과한다. | 세 친구 이야기를 읽고 버스 이동 목적지를 찾는 초급 생활 읽기 문항으로, 정답 유일성·오답 구성·해설 모두 적절하여 통과(pass).",
-      "hash": "568971589e8d8af6",
-      "reviewedAt": "2026-11-26T11:38:00.621Z",
+      "reason": "목적지를 묻는 세부 정보 문항이다. 정답이 분명하고, 오답은 이야기 속 장소(학교, 도서관)를 써서 적절하다. 수준과 해설도 맞아 통과로 본다. | 레슨의 세 목표 표현을 자연스럽게 녹여낸 이야기 읽기 세부 정보 문항으로 정답 유일성, 오답 매력도, 해설 모두 적절하다.",
+      "hash": "9536c37f8c245373",
+      "reviewedAt": "2026-11-26T16:48:33.945Z",
       "rubric": "topik-review-r1",
-      "packet": "life-transit-people-20261126c",
+      "packet": "life-transit-people-20261127g",
       "by": [
         {
           "stage": "claude",
@@ -6046,11 +6050,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "「마루 도서관행」 안내표에서 목적지를 고르는 단순한 생활 읽기 문항이다. 정답이 하나뿐이고 오답 「마루 카페」도 그럴듯해서 통과로 본다. 해설에 「마루 카페」가 왜 틀린지 한 줄을 더하면 더 좋다. | 버스 안내표(‘마루 도서관행’)를 읽고 목적지를 찾는 문항으로 정답이 명확하고 난도와 유형에 잘 맞음.",
-      "hash": "099915373a3c581d",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "「마루 도서관행」을 읽고 행선지를 고르는 짧은 생활 읽기 문항이다. 정답이 분명하고 해설도 「-행」의 뜻을 정확히 짚는다. 「꽃길 공원」이 약한 오답이지만 게임 꼴에서는 사소하므로 통과. | 버스 행선지 안내표를 읽고 목적지를 고르는 초급 세부 정보 찾기 문항으로 보기 구성과 해설 모두 적절함.",
+      "hash": "0c07dbb40570c1bc",
+      "reviewedAt": "2026-11-26T17:00:48.046Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-transit-people-20261127h",
       "by": [
         {
           "stage": "claude",
@@ -6059,7 +6063,7 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
+          "model": "gemini-4-carbon-high",
           "verdict": "pass"
         }
       ]

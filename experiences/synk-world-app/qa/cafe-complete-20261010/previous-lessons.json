@@ -61,15 +61,15 @@
   },
   {
     "id": "transit-expressions",
-    "sha256": "62e6937014998794ccdf08bbf680ac5eb43eb4621b1495e87e7fdd21732709e8"
+    "sha256": "603a527577274be337a234d763a4ac04b2da017ebd1b0efc4d65180641656b8d"
   },
   {
     "id": "transit-story",
-    "sha256": "b7ba255c83396cee8fdec6a88b32d6491496ff7739a55d9976eebd1417b990b8"
+    "sha256": "bd71c0456e09676b1d30367861353b440172f99d0da7858f0dde34206d2aff4e"
   },
   {
     "id": "transit-apply",
-    "sha256": "049b807ca146891b762bc85fbac9a56e30746e6a7db97d7fed749e3f15eb948a"
+    "sha256": "f7b1bdb1d483bb645a1dfa2bbc967c3d253fb1858b2f7e78871346c2a0cb1d7b"
   },
   {
     "id": "plans-expressions",

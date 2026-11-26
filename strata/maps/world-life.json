@@ -1,9 +1,9 @@
 {
-  "layer_ver": "world-life-1-a875d4a4365a",
+  "layer_ver": "world-life-1-715111475d7a",
   "sources": {
     "world-life": {
       "path": "strata/world-life.json",
-      "sha256": "a875d4a4365aff9d55a3d80b088e40857f90f620add8c778100024f9ca4cccfb"
+      "sha256": "715111475d7a5f472602904e179f05d3654c195b40de6498ef42eed71eb6a246"
     }
   },
   "nodes": [
@@ -640,6 +640,9 @@
           },
           "transit-story-route-transfer": {
             "skill": "ko.reading.detail"
+          },
+          "transit-apply-route-transfer": {
+            "skill": "ko.reading.detail"
           }
         }
       }
@@ -668,20 +671,17 @@
       "material": {
         "skill": "transit-alighting",
         "pack": "transit",
-        "ability": "ko.reading.sequence",
+        "ability": "ko.reading.detail",
         "situations": [
           "sit-travel-transport"
         ],
         "difficulty": 1,
         "format": "single-choice",
         "items": {
-          "transit-story-alight": {
-            "skill": "ko.reading.detail"
-          },
-          "transit-apply-alight": {
-            "skill": "ko.reading.detail"
-          },
           "transit-expressions-alight-transfer": {
+            "skill": "ko.reading.vocabulary"
+          },
+          "transit-expressions-alight": {
             "skill": "ko.reading.vocabulary"
           }
         }
