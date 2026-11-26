@@ -30,7 +30,7 @@
  *   identity {accountId, handle}. 조회수만 넣는다. 게시 시각은 같은 회차 프로필 화면의 time[datetime]이고, 목록의 모든 게시물에 있어야 한다.
  * parseLinkedInPosts(evidence, identity) — https://www.linkedin.com/analytics/post-summary/urn:li:activity:<번호>/ 게시물 분석 화면들(11-19)
  *   evidence {handle, posts:[{activityId, observedAt, sourceUrl, lines}]} → {batches:[{name, evidence, envelope}]}(게시물마다 출처 주소가 달라 봉투 하나씩).
- *   노출수 → views, 회원 도달 → reach, 반응 → likes, 댓글, 저장수 → saves, LinkedIn에서 보내기 → shares(퍼감은 빼고). 게시 시각은 활동 번호의 앞 41비트다.
+ *   동영상 조회 → views(노출수는 조회가 아니라 넣지 않는다. 서버도 이 화면의 views는 「동영상 조회」 이름표만 받는다), 회원 도달 → reach, 반응 → likes, 댓글, 저장수 → saves, LinkedIn에서 보내기 → shares(퍼감은 빼고). 게시 시각은 활동 번호의 앞 41비트다.
  * parseTistoryDaily(evidence, identity) — https://<블로그>.tistory.com/manage/statistics/blog 의 인기글(일간)과 글 목록(11-19)
  *   evidence {observedAt, sourceUrl, host, posts:[{id, published, visibility, scheduled, permalink, comments}], days:[{date, length, entries:[{entryId, count}]}]}
  *   글별 누적 조회수가 화면에 없어 게시한 날부터의 일간 인기글 조회수를 더한다(이름표에 「합」으로 적는다). 하루 목록이 10개 이상이면 거절한다.

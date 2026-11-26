@@ -81,6 +81,14 @@ const XHS_NOTE=/^[0-9a-f]{24}$/;
 const ISO=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(Z|([+-])(\d{2}):(\d{2}))$/;
 const DAY=/^\d{4}-\d{2}-\d{2}$/;
 const POST_ID=/^[\p{L}\p{N}_.:@~-]{1,200}$/u;
+// 링크드인 활동 번호(11-26). 게시물 분석 화면 · /feed/update/ 주소의 urn:li:activity:<번호>와, 공유 주소 /posts/<…>activity-<번호>-<꼬리>의 활동 번호는 같은 게시물이다.
+const LINKEDIN_ACTIVITY=/^urn:li:activity:\d{15,25}$/;
+const LINKEDIN_POST_SLUG=/(?:^|[_-])activity-(\d{15,25})-[A-Za-z0-9_-]{1,16}$/;
+// 링크드인 게시물 분석 화면에서 조회(views) 칸에 받는 화면 이름표. 같은 화면의 「노출수」는 조회가 아니라서 views로 받지 않는다(11-19 GPT 지적).
+const LINKEDIN_VIEW_LABELS=Object.freeze(['동영상 조회','Video views']);
+// 이 계정의 지금 이름(handle). 원장 행에 handle이 있으면 그것만 쓴다. 채널 문서의 handle이 원장과 다르면 계정 이름을 바꾼 뒤 남은 옛 이름이라 계정 근거로 쓰지 않는다
+// (11-26 GPT GA4 — 옛 이름을 다른 사람이 가져가면 그 사람의 공개 화면과 게시물이 이 채널 값으로 들어온다). 원장에 handle이 없을 때만 채널 문서의 handle을 쓴다.
+const currentHandles=(channel,account)=>{const pick=value=>typeof value==='string'&&value.trim()?value.trim():null,own=pick(account?.handle);return own?[own]:[pick(channel?.handle)].filter(Boolean);};
 
 const invalid=(message,code='SYNK_EXTERNAL_INPUT',status=400,details)=>Object.assign(new Error(message),{status,code,...(details?{details}:{})});
 const sha=value=>createHash('sha256').update(value).digest('hex');
@@ -183,7 +191,11 @@ function postRoute(platform,link){
     case 'tiktok':return n===3&&s[0].startsWith('@')&&['video','photo'].includes(low[1])&&num(s[2])?{id:s[2],owner:s[0]}:null;
     case 'threads':return n===3&&s[0].startsWith('@')&&low[1]==='post'?{id:s[2],owner:s[0]}:null;
     case 'x':return n===3&&low[1]==='status'&&num(s[2])?{id:s[2],owner:s[0]}:null;
-    case 'linkedin':return n===2&&low[0]==='posts'?{id:s[1]}:n===3&&low[0]==='feed'&&low[1]==='update'?{id:s[2]}:null;
+    // 공유 주소 /posts/<…>activity-<번호>-<꼬리>는 활동 번호(urn:li:activity:<번호>)로 저장한다. 분석 화면 · /feed/update/ 주소로 읽은 같은 게시물이 두 건으로 갈리지 않게 한다(11-26).
+    // 주소 칸 전체를 번호로 적던 옛 표기도 같은 게시물로 받는다. 활동 번호가 없는 공유 주소(ugcPost 등)는 주소 칸 전체가 번호지만, 링크드인 게시물 값은
+    // 분석 화면(활동 urn)에서만 받으므로 그런 주소는 분석 화면의 게시물과 같음을 보일 수 없어 기록되지 않는다(GPT 2차 GA5). 게시물 주소는 /feed/update/<urn>/을 쓴다.
+    // 공유 주소의 첫 「_」 앞은 작성자(개인 프로필 이름이나 회사 이름)라 owner로 넘겨 rowOf가 이 채널의 이름과 견준다(11-26 GPT GA2). /feed/update/ 주소에는 작성자 칸이 없다.
+    case 'linkedin':{if(n===2&&low[0]==='posts'){const m=LINKEDIN_POST_SLUG.exec(s[1]),cut=s[1].indexOf('_'),author=cut>0?{owner:s[1].slice(0,cut)}:{};return m?{id:'urn:li:activity:'+m[1],aliases:[s[1]],...author}:{id:s[1],...author};}return n===3&&low[0]==='feed'&&low[1]==='update'?{id:s[2]}:null;}
     case 'telegram':case 'kakao-channel':case 'brunch':return n===2&&num(s[1])?{id:s[1],owner:s[0]}:null;
     case 'naver-blog':return n===2&&num(s[1])?{id:s[1],owner:s[0]}:n===1&&low[0]==='postview.naver'&&num(q.get('logNo'))&&q.get('blogId')?{id:q.get('logNo'),owner:q.get('blogId')}:null;
     case 'behance':return (n===2||n===3)&&low[0]==='gallery'&&num(s[1])?{id:s[1]}:null;
@@ -206,7 +218,7 @@ function postRoute(platform,link){
 // 채널 하나의 계정 식별 문맥(11-14 설계 정리). record()에서 한 번 만들고 출처 주소(screenRoute·publicRoute)와 게시물 주소(rowOf)가 같은 기준으로 쓴다.
 // ids: 외부 번호(원장·채널), 그리고 플랫폼 공식 호스트의 등록 주소에서 모양을 확인하고 꺼낸 번호(YouTube /channel/UC…, RedNote /user/profile/<24자리>,
 //      RUTUBE /channel/<숫자>, Facebook profile.php?id=<숫자>). 번호는 글자 그대로 비교하고, 이름에서 번호를 추측하지 않는다.
-// names: 등록 handle과 등록 주소의 이름 칸(Facebook 주소 이름, LinkedIn /company/<이름>). 이름은 대소문자를 가리지 않는다.
+// names: 지금 handle(원장 handle, 원장에 없으면 채널 handle — currentHandles)과 등록 주소의 이름 칸(Facebook 주소 이름, LinkedIn /company/<이름>). 이름은 대소문자를 가리지 않는다.
 // ownSegment: 계정 칸이 주소 첫 칸인 플랫폼(Telegram·네이버 블로그·Kakao·Brunch)에서 실제 등록 주소의 첫 칸 하나. handle 같은 다른 별칭은 섞지 않는다.
 //      Kakao(_로 시작)와 Brunch(@@로 시작)의 인코딩 번호는 글자 그대로, Telegram·네이버 블로그 이름은 대소문자를 가리지 않고 비교한다.
 // 호스트는 www·m을 뗀 이름으로 비교한다(공식 www·모바일 별칭). externalIds에는 외부 번호만 있다(Facebook Business Suite asset_id 비교용).
@@ -216,7 +228,9 @@ function channelIdentity(platform,rule,live,account,ownHost){
   const urls=[[live.publicUrl,false],[live.canonicalUrl,false],[account.publicUrl,true]].flatMap(([value,fromCatalog])=>{try{const url=new URL(String(value));return url.protocol==='https:'&&official.has(hostKey(url.hostname))?[{host:hostKey(url.hostname),segments:decodeURIComponent(url.pathname).split('/').filter(Boolean),query:url.searchParams,fromCatalog}]:[];}catch{return [];}});
   // 옛 Facebook 채널의 저장 번호가 이 원장 계정과 같은 공개 프로필 번호이고 원장의 Business Suite 번호와 다를 때만(facebookLegacyPublicId) 외부 번호(asset_id)에서 뺀다. 원장 번호가 없거나 같으면 저장 번호를 그대로 둔다. 공개 번호는 아래 등록 주소 해석이 ids에 넣는다.
   const externalIds=new Set([facebookLegacyPublicId(live,account)?null:live.externalId,account.externalId].map(text).filter(Boolean)),ids=new Set(externalIds);
-  const names=new Set([live.handle,account.handle].map(text).filter(Boolean).flatMap(value=>{const key=value.toLowerCase();return [key,key.replace(/^@/,'')];}));
+  const names=new Set(currentHandles(live,account).flatMap(value=>{const key=value.toLowerCase();return [key,key.replace(/^@/,'')];}));
+  // 링크드인 공유 주소 /posts/<작성자>_<…>의 작성자 칸과 견줄 개인 프로필 이름: 등록 주소 /in/<이름>의 이름 칸(11-26 GPT GA2). 원장 주소에 있으면 원장 주소의 것만 쓴다.
+  const linkedinProfiles={catalog:new Set(),channel:new Set()};
   // 원장 행의 공식 공개 주소(account.publicUrl)에서 꺼낸 번호와 이름은 catalog에도 따로 모은다(11-15 재검수 P1). bindIdentity는 화면 속 계정 값의 근거로 이것만 더 쓴다. 채널 문서의 주소에서 꺼낸 값은 출처 주소와 게시물 주소 검사에만 쓴다.
   const catalog={ids:new Set(),names:new Set()};
   for(const {segments,query,fromCatalog} of urls){
@@ -229,7 +243,9 @@ function channelIdentity(platform,rule,live,account,ownHost){
     // /people/<표시 이름>/<번호>로 등록된 Facebook 페이지는 번호만 근거로 꺼낸다. 표시 이름은 소유 근거로 쓰지 않는다.
     if(platform==='facebook'&&n===3&&low[0]==='people'&&/^\d{1,30}$/.test(segments[2]))id(segments[2]);
     if(platform==='linkedin'&&n===2&&low[0]==='company')name(low[1]);
+    if(platform==='linkedin'&&n===2&&low[0]==='in')linkedinProfiles[fromCatalog?'catalog':'channel'].add(low[1]);
   }
+  const linkedinAuthors=new Set([...names,...(linkedinProfiles.catalog.size?linkedinProfiles.catalog:linkedinProfiles.channel)]);
   // 계정 칸 플랫폼의 소유자는 등록 주소가 정확한 프로필 경로일 때만 꺼낸다: /<계정>, 또는 공개 미리보기 /<접두 칸>/<계정>(Telegram /s/<채널>). 다른 모양이나 handle은 쓰지 않는다.
   const profileOwner=({segments})=>segments.length===1?segments[0]:segments.length===2&&(rule.publicPrefix||[]).includes(segments[0].toLowerCase())?segments[1]:null;
   const ownSegment=rule.ownerSegment?urls.map(profileOwner).find(Boolean)||null:null,exactOwner=!!ownSegment&&/^(?:_|@@)/.test(ownSegment);
@@ -239,6 +255,7 @@ function channelIdentity(platform,rule,live,account,ownHost){
     ownsVkOwner:value=>typeof value==='string'&&vkOwners.has(value),
     ownsId:value=>typeof value==='string'&&ids.has(value),
     ownsName:value=>typeof value==='string'&&!!value&&(names.has(value.toLowerCase())||names.has(value.toLowerCase().replace(/^@/,''))),
+    ownsLinkedInAuthor:value=>typeof value==='string'&&!!value&&linkedinAuthors.has(value.toLowerCase()),
     ownerIs:value=>!!ownSegment&&typeof value==='string'&&(exactOwner?value===ownSegment:value.toLowerCase()===ownSegment.toLowerCase()),
     registered:(link,count,exact=[])=>link.segments.length>=count&&urls.some(own=>own.host===hostKey(link.host)&&own.segments.length===count&&own.segments.every((segment,index)=>exact.includes(index)?segment===link.segments[index]:segment.toLowerCase()===link.segments[index].toLowerCase()))};
 }
@@ -255,7 +272,9 @@ function screenRoute(platform,link,ctx,sourceType){
     case 'tiktok':return at('tiktokstudio');
     case 'threads':return at('insights');
     case 'x':return at('i','account_analytics');
-    case 'linkedin':return at('analytics','creator')||at('company')&&low[2]==='admin'&&low[3]==='analytics'&&(mine(s[1])||known(s[1]));
+    // 개인 프로필의 게시물 분석 화면(/analytics/post-summary/urn:li:activity:<번호>/)도 받는다(11-26). 화면 하나가 게시물 하나라 record()가 관측을 그 게시물의 누적값으로 좁힌다.
+    // 주소에 계정이 없으니 계정 확인은 화면에서 옮겨 적은 handle 대조(bindIdentity)가 맡는다. 내보내기 파일이 아니라 creator-screen으로만 받는다.
+    case 'linkedin':return at('analytics','creator')||sourceType==='creator-screen'&&at('analytics','post-summary')&&s.length===3&&LINKEDIN_ACTIVITY.test(s[2])||at('company')&&low[2]==='admin'&&low[3]==='analytics'&&(mine(s[1])||known(s[1]));
     case 'telegram':return s.length<=1&&(!s.length||['a','k','z'].includes(low[0]));
     case 'behance':return low[0]==='insights'||mine(s[0])&&low[1]==='insights';
     case 'naver-clip':return h==='creator-advisor.naver.com';
@@ -331,7 +350,8 @@ function rowOf(raw,index,{platform,postHosts,ctx,observedAt,observedDate}){
     if(!route||!POST_ID.test(route.id))throw invalid(`${where}: 이 플랫폼에서 게시물 하나를 여는 공식 주소 모양이 아니에요.`,'SYNK_EXTERNAL_POST');
     // 게시물 주소의 계정 칸: 계정 칸 플랫폼은 실제 등록 주소의 첫 칸과, Facebook 숫자 칸은 아는 번호와, 그 밖의 이름은 등록 handle·등록 주소 이름과 같아야 한다.
     // VK는 소유자 칸을 이 채널의 커뮤니티 번호(-<번호>)와 견준다. 모르는 번호의 글과 클립은 받지 않는다.
-    const ownerOk=ctx.ownerSegment?ctx.ownerIs(route.owner):platform==='vk'?ctx.ownsVkOwner(route.owner):!route.owner||(platform==='facebook'&&/^\d{1,30}$/.test(route.owner)?ctx.ownsId(route.owner):ctx.ownsName(route.owner));
+    // 링크드인 공유 주소의 작성자 칸은 이 채널의 이름(원장 handle, 등록 주소의 회사 이름 · /in/ 프로필 이름)이어야 한다.
+    const ownerOk=ctx.ownerSegment?ctx.ownerIs(route.owner):platform==='vk'?ctx.ownsVkOwner(route.owner):platform==='linkedin'?!route.owner||ctx.ownsLinkedInAuthor(route.owner):!route.owner||(platform==='facebook'&&/^\d{1,30}$/.test(route.owner)?ctx.ownsId(route.owner):ctx.ownsName(route.owner));
     if(!ownerOk)throw invalid(`${where}: 게시물 주소가 이 계정의 게시물이 아니에요.`,'SYNK_EXTERNAL_POST');
     if(route.profile&&!ctx.ownsId(route.profile))throw invalid(`${where}: 게시물 주소에 든 프로필 번호를 이 계정의 번호로 확인하지 못했어요.`,'SYNK_EXTERNAL_POST');
     if(route.id!==value.externalId&&!(route.aliases||[]).includes(value.externalId))throw invalid(`${where}: 게시물 번호가 주소에 든 게시물 번호(${route.id})와 달라요.`,'SYNK_EXTERNAL_POST');
@@ -359,7 +379,7 @@ function bindIdentity(input,channel,account,catalog){
   if(extra.length)throw invalid(`계정 확인에 알 수 없는 칸이 있어요(${extra.slice(0,5).join(', ')}).`,'SYNK_EXTERNAL_IDENTITY');
   if(input.accountId!==account.id)throw invalid('이 채널에 묶인 원장 계정 ID와 달라요.','SYNK_EXTERNAL_IDENTITY');
   const norm=value=>value.trim().replace(/^@/,'').toLowerCase();
-  const handles=new Set([channel.handle,account.handle,...(catalog?.names||[])].filter(value=>typeof value==='string'&&value.trim()).map(norm));
+  const handles=new Set([...currentHandles(channel,account),...(catalog?.names||[])].filter(value=>typeof value==='string'&&value.trim()).map(norm));
   const ids=new Set([channel.externalId,account.externalId,...(catalog?.ids||[])].filter(value=>typeof value==='string'&&value.trim()).map(value=>value.trim()));
   const proof={accountId:account.id,handle:null,externalId:null,matchedBy:[]};
   for(const [key,accepted,normalize,word] of [['handle',handles,norm,'계정 이름'],['externalId',ids,value=>value.trim(),'계정 번호']]){
@@ -408,6 +428,10 @@ export function createExternalObservations({store,clock=()=>new Date().toISOStri
     const snapshotId=`${postId}:${row.observedDate}`,old=store.get('snapshots',snapshotId);
     if(old&&!String(old.source||'').startsWith('external:'))return {state:'kept-separate',reason:'existing-snapshot-other-source',postId};
     if(old&&String(old.checkedAt)>row.observedAt)return {state:'not-projected',reason:'newer-observation-same-day',postId,snapshotId};
+    // 링크드인: 같은 날 앞 외부 관측에 있던 수치가 더 늦은 이번 관측에 없거나 null이면, 그날 스냅숏을 앞 관측 그대로 두고 이번 관측은 기록으로만 남긴다(11-27 GPT 2~4차).
+    // 수집기는 분석 화면을 하루 두 번 읽는데, 한 번 빠진 동영상 조회 · 회원 도달로 그날 값을 비우지 않는다. 값을 섞어 지키면 아침 값에 저녁 시각과 근거가 붙어
+    // 24 · 72시간 판정이 잘못 재므로 섞지 않는다. 거절(409)하면 수집기의 게시물 반복이 끊기므로 받기는 받는다. 다른 플랫폼은 그대로다.
+    if(row.platform==='linkedin'&&old&&EXTERNAL_METRICS['post-lifetime'].some(key=>typeof old[key]==='number'&&(row.metrics[key]===undefined||row.metrics[key]===null)))return {state:'not-projected',reason:'missing-metric-same-day',postId,snapshotId};
     // 게시물 정보(제목, 출처, 마지막 확인 시각, 관측 ID)는 지금까지 가장 늦게 본 관측만 고친다. 더 이른 관측은 자기 날의 기록만 더한다.
     if(!previous||row.observedAt>=String(previous.lastSeenAt||''))store.put('posts',postId,{...previous,id:postId,channelId:channel.id,externalId:row.post.externalId,title:row.post.title||previous?.title||'제목 없음',url:previous?.url||row.post.url,
       publishedDate,publishedAt:previous?.publishedAt||row.post.publishedAt,thumbnailUrl:previous?.thumbnailUrl||null,publicationFormat:previous?.publicationFormat||null,
@@ -493,6 +517,14 @@ export function createExternalObservations({store,clock=()=>new Date().toISOStri
     if(platform==='naver-blog'&&!naverList&&posts.length)throw invalid('네이버 블로그 글의 숫자는 블로그 주인이 로그인해 연 글 목록(https://blog.naver.com/<아이디>, creator-screen)에서만 받아요.','SYNK_EXTERNAL_SOURCE');
     if(naverList&&rows.some(row=>row.kind!=='post-lifetime'))throw invalid('게시물 목록에서는 게시물 누적값(post-lifetime)만 기록해요.','SYNK_EXTERNAL_METRIC_GRAIN');
     if(naverList&&posts.some(row=>typeof row.metrics.views!=='number'))throw invalid('네이버 블로그 주인 글 목록의 글마다 조회수(views)가 있어야 해요. 조회수가 비었다면 주인으로 로그인한 화면이 아니에요.','SYNK_EXTERNAL_SOURCE');
+    // ④ 링크드인 게시물 분석 화면은 게시물 하나의 화면이다(11-26). 그 주소의 활동 번호와 같은 게시물의 누적값만 받는다. 다른 게시물이나 계정 합계로 적지 못한다.
+    //    조회(views)는 화면의 「동영상 조회」 이름표가 붙은 값만 받는다. 같은 화면의 「노출수」를 조회로 넣으면 게시물 조회수 집계가 부풀어서 막는다(11-19 GPT 지적).
+    //    링크드인 게시물 값은 이 분석 화면에서만 받는다. 공개 화면 · 다른 통계 화면의 게시물 값(반응만 있고 조회가 없는 값)이 같은 날 분석 화면의 동영상 조회를 비우지 않게 한다(11-26 GPT GA3).
+    const linkedinPost=platform==='linkedin'&&!publicPage&&seg.length===3&&seg[0]==='analytics'&&seg[1]==='post-summary'?source.segments[2]:null;
+    if(platform==='linkedin'&&!linkedinPost&&posts.length)throw invalid('링크드인 게시물 값은 그 게시물의 분석 화면(https://www.linkedin.com/analytics/post-summary/urn:li:activity:<번호>/, creator-screen)에서만 받아요.','SYNK_EXTERNAL_SOURCE');
+    if(linkedinPost&&rows.some(row=>row.kind!=='post-lifetime'))throw invalid('게시물 분석 화면에서는 그 게시물의 누적값(post-lifetime)만 기록해요.','SYNK_EXTERNAL_METRIC_GRAIN');
+    if(linkedinPost&&posts.some(row=>row.post.externalId!==linkedinPost))throw invalid('게시물 분석 화면에서 읽은 관측은 그 화면 주소의 게시물(urn:li:activity:…)이어야 해요.','SYNK_EXTERNAL_POST');
+    if(linkedinPost&&posts.some(row=>Object.hasOwn(row.metrics,'views')&&!LINKEDIN_VIEW_LABELS.includes(row.labels.metricLabels?.views)))throw invalid('링크드인 게시물 분석 화면의 조회(views)에는 「동영상 조회」만 넣어요. 노출수는 조회가 아니라서 넣지 않아요.','SYNK_EXTERNAL_METRIC_GRAIN');
     const recordedAt=new Date(nowMs).toISOString();
     const drafts=rows.map(row=>({
       id:'xmo_'+sha(JSON.stringify(['v1',live.id,row.kind,row.period?`${row.period.start}..${row.period.end}`:'',row.post?.externalId||'',evidenceSha256])).slice(0,40),
