@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N1",
+ "text": "강아지 사진 한 장에 세 줄을 보냈더니, 연말 카드가 됐어요.",
+ "dur": 3.005,
+ "words": [
+  {
+   "text": "강아지",
+   "start": 0.02,
+   "end": 0.286
+  },
+  {
+   "text": "사진",
+   "start": 0.326,
+   "end": 0.526
+  },
+  {
+   "text": "한",
+   "start": 0.566,
+   "end": 0.645
+  },
+  {
+   "text": "장에",
+   "start": 0.685,
+   "end": 0.871
+  },
+  {
+   "text": "세",
+   "start": 0.925,
+   "end": 0.991
+  },
+  {
+   "text": "줄을",
+   "start": 1.044,
+   "end": 1.204
+  },
+  {
+   "text": "보냈더니,",
+   "start": 1.244,
+   "end": 1.643
+  },
+  {
+   "text": "연말",
+   "start": 1.988,
+   "end": 2.214
+  },
+  {
+   "text": "카드가",
+   "start": 2.254,
+   "end": 2.48
+  },
+  {
+   "text": "됐어요.",
+   "start": 2.52,
+   "end": 3.005
+  }
+ ],
+ "source": {
+  "key": "bed3f40b383ec4613b55ee15e874b7b0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1126,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

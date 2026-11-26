@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N2",
+ "text": "첫 줄은 이거예요. 색연필 그림으로 바꿔 줘, 털 무늬는 그대로.",
+ "dur": 3.53,
+ "words": [
+  {
+   "text": "첫",
+   "start": 0,
+   "end": 0.087
+  },
+  {
+   "text": "줄은",
+   "start": 0.13,
+   "end": 0.346
+  },
+  {
+   "text": "이거예요.",
+   "start": 0.389,
+   "end": 0.735
+  },
+  {
+   "text": "색연필",
+   "start": 1.124,
+   "end": 1.499
+  },
+  {
+   "text": "그림으로",
+   "start": 1.542,
+   "end": 1.83
+  },
+  {
+   "text": "바꿔",
+   "start": 1.873,
+   "end": 2.089
+  },
+  {
+   "text": "줘,",
+   "start": 2.133,
+   "end": 2.219
+  },
+  {
+   "text": "털",
+   "start": 2.579,
+   "end": 2.709
+  },
+  {
+   "text": "무늬는",
+   "start": 2.752,
+   "end": 3.026
+  },
+  {
+   "text": "그대로.",
+   "start": 3.083,
+   "end": 3.53
+  }
+ ],
+ "source": {
+  "key": "a294c9d6771c5dc0542d29251f962097",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1126,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

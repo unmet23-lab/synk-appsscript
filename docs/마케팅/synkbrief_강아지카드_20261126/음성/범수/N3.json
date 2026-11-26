@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N3",
+ "text": "눈가 얼룩도, 앞발 양말 무늬도 그대로예요.",
+ "dur": 2.679,
+ "words": [
+  {
+   "text": "눈가",
+   "start": 0.02,
+   "end": 0.321
+  },
+  {
+   "text": "얼룩도,",
+   "start": 0.381,
+   "end": 0.742
+  },
+  {
+   "text": "앞발",
+   "start": 1.083,
+   "end": 1.324
+  },
+  {
+   "text": "양말",
+   "start": 1.384,
+   "end": 1.625
+  },
+  {
+   "text": "무늬도",
+   "start": 1.685,
+   "end": 1.926
+  },
+  {
+   "text": "그대로예요.",
+   "start": 1.986,
+   "end": 2.679
+  }
+ ],
+ "source": {
+  "key": "1a4874a10da0db7a18ca3a68c3d7fa8f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1126,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}
