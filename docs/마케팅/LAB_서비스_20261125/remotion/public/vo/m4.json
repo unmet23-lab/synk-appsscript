@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "서비스… 공짜!",
+ "dur": 1.503,
+ "words": [
+  {
+   "text": "서비스…",
+   "start": 0.02,
+   "end": 0.586
+  },
+  {
+   "text": "공짜!",
+   "start": 0.869,
+   "end": 1.503
+  }
+ ],
+ "source": {
+  "key": "9b0f4479288c0f2f365820867745fe6d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 0.85,
+   "seed": 2284,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 382
+ }
+}

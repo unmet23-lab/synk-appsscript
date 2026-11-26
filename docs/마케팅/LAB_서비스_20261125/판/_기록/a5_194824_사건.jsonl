@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a21778-8e2e-7c61-a101-01b993781787"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one felt diorama image, matching the restaurant reference and keeping tiny Mongle squeezed among the crowded dishes.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Tiny Mongle sits among crowded dishes as the smiling owner adds jjamppong beneath warm red lanterns."}}
+{"type":"turn.completed","usage":{"input_tokens":120590,"cached_input_tokens":104448,"cache_write_input_tokens":0,"output_tokens":1775,"reasoning_output_tokens":227}}

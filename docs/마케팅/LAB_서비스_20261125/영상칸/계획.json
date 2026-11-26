@@ -1,41 +1,138 @@
 {
- "_예산": 180,
- "s1": {
-  "model": "Omni 1.2 Flash",
-  "n": 1,
-  "cost": "12",
-  "dur": "4초",
-  "proj": "omni",
-  "start": "s1n",
-  "key": "lays it flat, palm down, on the front of the table just left of the wallet",
-  "end": "s1ne"
- },
- "s2": {
-  "model": "Omni 1.2 Flash",
-  "n": 1,
-  "cost": "15",
-  "dur": "5초",
-  "proj": "omni",
-  "start": "s2n",
-  "key": "no plate in its way",
-  "end": "s2ne"
- },
- "s3": {
-  "model": "Omni 1.2 Flash",
-  "n": 1,
-  "cost": "15",
-  "dur": "5초",
-  "proj": "omni",
-  "start": "s3n",
-  "key": "bursts into a hearty warm laugh"
- },
- "s4": {
-  "model": "Omni 1.2 Flash",
-  "n": 1,
-  "cost": "18",
-  "dur": "6초",
-  "proj": "omni",
-  "start": "s4",
-  "key": "keeps facing the camera the whole time and never turns around"
- }
+  "_예산": 180,
+  "s1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "s1n",
+    "key": "lays it flat, palm down, on the front of the table just left of the wallet",
+    "end": "s1ne"
+  },
+  "s2": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "15",
+    "dur": "5초",
+    "proj": "omni",
+    "start": "s2n",
+    "key": "no plate in its way",
+    "end": "s2ne"
+  },
+  "s3": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "15",
+    "dur": "5초",
+    "proj": "omni",
+    "start": "s3n",
+    "key": "bursts into a hearty warm laugh"
+  },
+  "s4": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "18",
+    "dur": "6초",
+    "proj": "omni",
+    "start": "s4",
+    "key": "keeps facing the camera the whole time and never turns around"
+  },
+  "a3": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "a3",
+    "key": "gives one small proud nod"
+  },
+  "a4": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "a4",
+    "key": "three more small gold felt coins slide out"
+  },
+  "a5": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "a5",
+    "key": "onto the last free spot of the table"
+  },
+  "a6": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "a6",
+    "key": "in three short pushes"
+  },
+  "a7": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "a7",
+    "key": "waves palm-out in a friendly 'no, no' twice"
+  },
+  "a8": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "a8",
+    "key": "lets out a long relieved breath"
+  },
+  "a9": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "a9",
+    "key": "tilts the plate on its head toward the owner"
+  },
+  "a10": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "a10",
+    "key": "slides the small cream paper slip forward"
+  },
+  "a11": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "a11",
+    "key": "the empty plate on its head slowly slides"
+  },
+  "_배우는말": [
+    {
+      "말": "서비스",
+      "한글": "서비스는 공짜야~!",
+      "뜻": "서비스 = FREE! 🎁",
+      "초": 3.6,
+      "칸": [
+        "a7"
+      ],
+      "음성": [
+        "o6",
+        "m4"
+      ]
+    }
+  ],
+  "_v6": "s1 · s2는 v1 판을 그대로 쓴다. 이번 굽기는 a3~a11(첫 계획 96크레딧)"
 }

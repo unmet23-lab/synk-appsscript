@@ -15,7 +15,7 @@
   "seed": 1125,
   "lufs": -16
  },
- "made": "2026-11-24T23:14:40.753Z",
+ "made": "2026-11-26T10:46:03.077Z",
  "lines": [
   {
    "id": "o1",
@@ -60,6 +60,69 @@
    "syllablesPerSec": 2.28,
    "src": "o3.wav",
    "key": "8b1998d787d8ae2c9a3e1219da71d20a",
+   "words": 1
+  },
+  {
+   "id": "o4",
+   "text": "또 서비스~!",
+   "dur": 1.1,
+   "syllablesPerSec": 3.64,
+   "src": "o4.wav",
+   "key": "1aaeb7fe5578fa8e4e23f5eedbc8041d",
+   "words": 2
+  },
+  {
+   "id": "o5",
+   "text": "이것도 서비스~!",
+   "dur": 1.468,
+   "syllablesPerSec": 4.09,
+   "src": "o5.wav",
+   "key": "1e3fdc42cc384e20b2027a1145b6ef13",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "다… 얼마예요?",
+   "dur": 1.391,
+   "syllablesPerSec": 3.59,
+   "src": "m3.wav",
+   "key": "b603a17a13e3693396a0fe90d250e5d1",
+   "words": 2
+  },
+  {
+   "id": "o6",
+   "text": "서비스는 공짜야~!",
+   "dur": 2.077,
+   "syllablesPerSec": 3.37,
+   "src": "o6.wav",
+   "key": "c6814640414a6fd10806239b2c5c892a",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "서비스… 공짜!",
+   "dur": 1.503,
+   "syllablesPerSec": 3.33,
+   "src": "m4.wav",
+   "key": "9b0f4479288c0f2f365820867745fe6d",
+   "words": 2
+  },
+  {
+   "id": "m5",
+   "text": "서비스 더 주세요~!",
+   "dur": 1.33,
+   "syllablesPerSec": 5.26,
+   "src": "m5.wav",
+   "key": "5ef9270274305cb6b01ba270b377998a",
+   "words": 3
+  },
+  {
+   "id": "o7",
+   "text": "계산서~",
+   "dur": 1.053,
+   "syllablesPerSec": 2.85,
+   "src": "o7.wav",
+   "key": "f8953461089cffd132e5f8a632e523cb",
    "words": 1
   }
  ]

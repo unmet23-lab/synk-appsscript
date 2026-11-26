@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a2177b-ef34-7563-9a1b-2fe5637531cf"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one image, matching the restaurant and characters to your references and keeping the food and props visibly felted.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The laughing owner waves off payment, returning Mongle’s coins and yellow wallet across the lantern-lit felt table."}}
+{"type":"turn.completed","usage":{"input_tokens":177727,"cached_input_tokens":162688,"cache_write_input_tokens":0,"output_tokens":1911,"reasoning_output_tokens":389}}

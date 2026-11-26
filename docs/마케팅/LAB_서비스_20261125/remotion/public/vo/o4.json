@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "o4",
+ "text": "또 서비스~!",
+ "dur": 1.1,
+ "words": [
+  {
+   "text": "또",
+   "start": 0.02,
+   "end": 0.101
+  },
+  {
+   "text": "서비스~!",
+   "start": 0.223,
+   "end": 1.1
+  }
+ ],
+ "source": {
+  "key": "1aaeb7fe5578fa8e4e23f5eedbc8041d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1131,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "서비스~! 얼마예요…? 손님이 돈을 내려고 지갑을 내밀자, 중국집 사장님이 더 신이 나서 탕수육 한 접시를 더 내려놓으며 뿌듯하게 말한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 239
+ }
+}

@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m5",
+ "text": "서비스 더 주세요~!",
+ "dur": 1.33,
+ "words": [
+  {
+   "text": "서비스",
+   "start": 0.21,
+   "end": 0.593
+  },
+  {
+   "text": "더",
+   "start": 0.653,
+   "end": 0.734
+  },
+  {
+   "text": "주세요~!",
+   "start": 0.794,
+   "end": 1.33
+  }
+ ],
+ "source": {
+  "key": "5ef9270274305cb6b01ba270b377998a",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2255,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "그릇을 다 비운 작은 손님이 신이 나서 빈 접시를 머리에 얹어 사장님께 내밀며, 넉살 좋게 조른다.",
+   "next": "계산서~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 482
+ }
+}

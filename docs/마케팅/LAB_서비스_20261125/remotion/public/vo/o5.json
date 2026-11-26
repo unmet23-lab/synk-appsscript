@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "o5",
+ "text": "이것도 서비스~!",
+ "dur": 1.468,
+ "words": [
+  {
+   "text": "이것도",
+   "start": 0.02,
+   "end": 0.342
+  },
+  {
+   "text": "서비스~!",
+   "start": 0.423,
+   "end": 1.449
+  }
+ ],
+ "source": {
+  "key": "1e3fdc42cc384e20b2027a1145b6ef13",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1132,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "또 서비스~! 손님이 동전까지 꺼내자, 사장님이 짬뽕 큰 그릇까지 들고 와 상을 가득 채우며 신나게 말한다.",
+   "next": "다… 얼마예요?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 233
+ }
+}
