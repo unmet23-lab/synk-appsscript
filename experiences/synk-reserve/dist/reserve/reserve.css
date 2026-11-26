@@ -148,7 +148,7 @@ html[data-my-dream="actor"] .rs-idcard{transform:rotateY(180deg)}
 :lang(mn) .rs-ph-item p{font-size:clamp(16px,1.3vw,20px);letter-spacing:0}
 .rs-ph-item small{display:block;margin-top:6px;font:500 15px/1.45 var(--sans);letter-spacing:-.01em;color:#5c5c5c}
 /* 아직 앱에 없는 일을 말하는 작은 줄 앞의 「곧 열려요」 */
-.rs-ph-soon{height:22px;margin-right:6px;padding:0 9px;font-size:12px;color:var(--ink);vertical-align:1px}
+.rs-ph-soon{height:22px;margin-right:2px;padding:0 9px;font-size:12px;color:var(--ink);vertical-align:1px}
 .rs-phones-go{display:flex;justify-content:center;margin-top:clamp(28px,3.4svh,40px)}
 
 /* 꿈 무대(곧 열려요): 검정 띠 왼쪽에 말, 오른쪽에 장면 그림 */

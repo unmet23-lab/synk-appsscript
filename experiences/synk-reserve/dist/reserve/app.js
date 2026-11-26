@@ -188,7 +188,7 @@
         ? `<img src="shots/${state.lang}/${p.id}.webp" alt="" width="600" height="1307" loading="lazy" decoding="async">`
         : `<video muted playsinline loop preload="none" poster="${clipBase(p)}.webp" data-src="${clipBase(p)}.mp4" width="480" height="1046"></video>`;
       return `<li class="rs-ph-item" data-id="${esc(p.id)}"><span class="rs-ph" aria-hidden="true"><span class="rs-ph-scr">${media}</span></span>`
-        + `<p>${keep(x.p)}<small>${p.soonS ? `<span class="rs-soon rs-ph-soon">${keep(t.soon)}</span>` : ''}${keep(s)}</small></p></li>`;
+        + `<p>${keep(x.p)}<small>${p.soonS ? `<span class="rs-soon rs-ph-soon">${keep(t.soon)}</span> ` : ''}${keep(s)}</small></p></li>`;
     }).join('');
     if (phoneIo) { phoneIo.disconnect(); $$('#phones video').forEach(v => phoneIo.observe(v)); }
     phonesTab();

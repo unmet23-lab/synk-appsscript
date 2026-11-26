@@ -4,8 +4,8 @@
     "sha256": "6708b9296df9c0e019715a548c55979b36d8fb42bd88536f52c660d7e9b113cb"
   },
   "reserve/app.js": {
-    "bytes": 18546,
-    "sha256": "c7a86de7b3cad977c58ecbd3a548e613875e9736cf5977a7a64dab6dd14ad3a1"
+    "bytes": 18547,
+    "sha256": "d5aa35ab335fc8c62dd73b42f66d02e2fe826d253b2129dd86ba21d8365c4bd8"
   },
   "reserve/assets/reserve-inter-500.woff2": {
     "bytes": 29560,
@@ -233,7 +233,7 @@
   },
   "reserve/index.html": {
     "bytes": 10407,
-    "sha256": "5083ae15be6f7b6f2f0665501604686583bb3a24e1587bfcebee3b56c3be9775"
+    "sha256": "2a3049900eb6048d03730632f544020c1871ee97e8026daf875a16eef37b6b12"
   },
   "reserve/og.jpg": {
     "bytes": 95001,
@@ -253,6 +253,6 @@
   },
   "reserve/reserve.css": {
     "bytes": 17305,
-    "sha256": "c066b06b01eb5f78b34905b837972b60ec96cb7ad15201d07ce3a43d7e78afd4"
+    "sha256": "e010b8fd7e8420e04595df78d07bd5c150237ee8f21e064f041fd13d9daa3e0d"
   }
 }
