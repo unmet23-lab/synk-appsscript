@@ -160,7 +160,7 @@
 - **가는 곳.** 사전예약은 `/reserve/?from=synk-study-abroad&lang=ko`와 `/reserve/?from=synk-en-study-abroad&lang=en`이다. 사전예약 쪽 「들어온 곳」에 이 이름으로 세어진다. 인스타그램은 @synk.mn, 페이스북은 facebook.com/synkworld다. 둘 다 채널 성과 장부(11-25)에서 우리 계정 가운데 가장 높다(synk.mn 팔로워 1,296, synkworld 팔로워 1,093 · 조회 합 258,783).
 - **원천.** 같은 줄을 [v11 원천](../synk.im_새로짓기_20261119/시안/detail.html)(한 · 영)과 이 폴더의 `시안/path.html`에도 넣었다. 공개본은 두 쪽 머리의 인라인 스타일이고, 원천에서 다시 지으면 `detail.css`로 들어간다.
 - **공개.** synk-policy `f397f6c2`(11-27). 검수 `study-sns-20261126`에서 카본 P2 1건(좁은 폭의 아이콘 줄맞춤)을 고쳤다. 라이브에서 폭 일곱 가지(320 · 390 · 430 · 480 · 768 · 1440 · 1920) × 한 · 영의 넘침과 콘솔 오류가 0이었다. Firefox · Safari · 실제 휴대폰은 보지 않았다.
-- **후속.** Fable P2 1건: 영어 단추 「Pre-register for the Feb 2027 launch」가 360~375px 휴대폰에서 두 줄이 된다(넘침은 없음). 다음 유학 쪽 공개 때 「Pre-register for Feb 2027」처럼 줄인다.
+- **영어 단추 글(11-27).** Fable P2(영어 단추가 360~375px 휴대폰에서 두 줄)를 받아 글을 「Pre-register for Feb 2027」로 줄였다. 320~390px에서도 한 줄(263×48px)이다. synk-policy `79cbabbf`, 검수 `study-sns-p2-20261127`(카본 0건, 글만 바꿔 Fable 생략).
 
 ### 광고 쪽 하늘 판과 AI 강의 쪽 솔리오 단락 (11-27, 공개 전)
 
