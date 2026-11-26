@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a21504-19d8-7ae0-be88-39893434e22f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the image generation tool to create one close-up whispering scene with your two reference characters.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The friend whispers to wide-eyed Mongle beside the warmly lit felt hotteok cart."}}
+{"type":"turn.completed","usage":{"input_tokens":78502,"cached_input_tokens":55680,"cache_write_input_tokens":0,"output_tokens":1292,"reasoning_output_tokens":180}}

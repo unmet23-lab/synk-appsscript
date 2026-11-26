@@ -1,0 +1,98 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1126,
+  "lufs": -16
+ },
+ "made": "2026-11-25T23:35:46.149Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "할머니, 먹어!",
+   "dur": 1.38,
+   "syllablesPerSec": 3.62,
+   "src": "m1.wav",
+   "key": "456b6b21d64beb381991ea7364485ed5",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "먹어!!",
+   "dur": 0.849,
+   "syllablesPerSec": 2.36,
+   "src": "m2.wav",
+   "key": "40f6556ad2c7500232d83ae7431a0237",
+   "words": 1
+  },
+  {
+   "id": "m3",
+   "text": "먹어어!!!",
+   "dur": 0.904,
+   "syllablesPerSec": 3.32,
+   "src": "m3.wav",
+   "key": "052d915b1e1214e31d8a3a7834582da3",
+   "words": 1
+  },
+  {
+   "id": "m4",
+   "text": "할머니, 드세요!",
+   "dur": 1.817,
+   "syllablesPerSec": 3.3,
+   "src": "m4.wav",
+   "key": "16a6c30a5475bf80361bac8f314d8e5e",
+   "words": 2
+  },
+  {
+   "id": "g1",
+   "text": "흠…",
+   "dur": 1.25,
+   "syllablesPerSec": 0.8,
+   "src": "g1.wav",
+   "key": "602e95d8ecbf8c20e5e76ce9c33cb167",
+   "words": 1
+  },
+  {
+   "id": "g2",
+   "text": "아이고~ 예뻐라!",
+   "dur": 2.096,
+   "syllablesPerSec": 2.86,
+   "src": "g2.wav",
+   "key": "f47fcf832d8966d15a6de5cee1b07386",
+   "words": 2
+  },
+  {
+   "id": "g3",
+   "text": "너도 먹어~",
+   "dur": 1.406,
+   "syllablesPerSec": 2.84,
+   "src": "g3.wav",
+   "key": "678927d05c6a13e42c9a132e48709ba3",
+   "words": 2
+  },
+  {
+   "id": "f1",
+   "text": "드세요, 해야지!",
+   "dur": 2.464,
+   "src": "f1.wav",
+   "voice": "ElevenLabs v4 Taehyung"
+  },
+  {
+   "id": "f2",
+   "text": "드세요~",
+   "dur": 0.89,
+   "src": "f2.wav",
+   "voice": "ElevenLabs v4 Taehyung"
+  }
+ ]
+}

@@ -39,34 +39,33 @@ export const VO: [number, string, number?][] = [
 ];
 // 효과음(초 · 파일 · 크기)
 export const SFX: [number, string, number][] = [
-  [0.55, 'ding.wav', 0.35], // 문자 옴
+  [0.85, 'ding.wav', 0.35], // 문자 옴
   [3.9, 'ding.wav', 0.25],
   [5.65, 'ding.wav', 0.25],
-  [11.1, 'tap.wav', 0.35], // 몸으로 폰 누름
-  [11.35, 'send.wav', 0.3], // 보냄
+  [10.9, 'tap.wav', 0.35], // 몸으로 폰 누름
+  [11.0, 'send.wav', 0.3], // 보냄(말풍선이 뜸)
   [12.9, 'ding.wav', 0.3], // 친구 폰에 ㅋ 하나 도착
   [13.05, 'freeze.wav', 0.32], // 싸늘(반전)
-  [15.5, 'tap.wav', 0.3],
-  [15.85, 'tap.wav', 0.3],
-  [16.2, 'tap.wav', 0.3],
-  [16.55, 'tap.wav', 0.3],
-  [16.9, 'tap.wav', 0.3],
+  // 당황해 마구 누름 — 누를 때마다 말풍선의 ㅋ이 하나씩 는다(TAPS)
+  ...[15.5, 15.7, 15.9, 16.1, 16.3, 16.5, 16.7, 16.9].map((s): [number, string, number] => [s, 'tap.wav', 0.26]),
+  [17.5, 'ding.wav', 0.35], // 친구 폰에 도착
   [17.65, 'pour.wav', 0.4], // ㅋ 폭포
 ];
 
 // 화면 글 — 말풍선(말한 사람 · 보낸 폰 쪽 꼬리, 교훈 L21 · L08)
 export const SAYS: 말풍선말[] = [
-  { at: 0.6, to: 2.2, head: 'Text from Korean friend', ko: ['ㅋㅋ'], read: 'keu-keu', mean: '🙂', x: 700, y: 1430, 꼬리x: 660, 크기: 96, 바탕: '#FFFFFF' },
+  { at: 0.9, to: 2.2, head: 'Text from Korean friend', ko: ['ㅋㅋ'], read: 'keu-keu', mean: '🙂', x: 600, y: 1430, 꼬리x: 660, 크기: 96, 바탕: '#FFFFFF' },
   { at: 2.4, to: 3.8, ko: ['ㅋㅋ…?'], read: 'keu-keu…?', mean: 'What does this mean? 🤔', x: 540, y: 560, 꼬리x: 540 },
   { at: 3.95, to: 5.6, head: 'Text from Korean friend', ko: ['ㅋㅋㅋㅋ'], mean: '😄', x: 540, y: 980, 꼬리x: 560, 크기: 96, 바탕: '#FFFFFF' },
   { at: 5.7, to: 7.4, head: 'Text from Korean friend', ko: ['ㅋㅋㅋㅋㅋㅋㅋㅋ'], mean: '🤣🤣', x: 540, y: 900, 꼬리x: 520, 크기: 96, 바탕: '#FFFFFF' },
   { at: 7.55, to: 10.9, ko: ['ㅋㅋㅋ'], read: 'keu-keu-keu', mean: '= Korean “lol” 😂', x: 540, y: 700, 꼬리x: 560, 크기: 110 },
-  { at: 11.3, to: 12.3, head: 'Mongle texts back', ko: ['ㅋ'], mean: 'just one', x: 540, y: 1250, 꼬리x: 520, 크기: 110, 바탕: '#FFFFFF' },
-  { at: 13.8, to: 15.3, ko: ['…ㅋ?'], read: '…keu?', mean: 'Just ONE ㅋ? 😐 Cold.', x: 520, y: 560, 꼬리x: 600 },
-  { at: 15.6, to: 17.5, head: 'Mongle texts back', ko: ['ㅋㅋㅋㅋㅋㅋㅋㅋ'], mean: 'No no! 🤣🤣🤣', x: 560, y: 900, 꼬리x: 420, 크기: 96, 바탕: '#FFFFFF' },
+  { at: 10.95, to: 12.3, head: 'Me', ko: ['ㅋ'], mean: 'just one — cool, right? 😎', x: 540, y: 1250, 꼬리x: 520, 크기: 110, 바탕: '#FFFFFF' },
+  { at: 13.8, to: 15.3, ko: ['…ㅋ?'], read: '…keu?', mean: 'Just ONE ㅋ = a dry “heh” 😐', x: 520, y: 560, 꼬리x: 600 },
+  { at: 15.45, to: 17.5, head: 'Me', ko: ['ㅋㅋㅋㅋㅋㅋㅋㅋ'], 타자: [15.5, 15.7, 15.9, 16.1, 16.3, 16.5, 16.7, 16.9], mean: 'No no! 🤣🤣🤣', x: 560, y: 900, 꼬리x: 420, 크기: 96, 바탕: '#FFFFFF' },
 ];
-export const HEAD = { at: 0.05, to: 2.2, l1: 'In Korea, we don’t text', l2: 'lol' };
+// 머리 글 — 물음 꼴(이해 시험 v1 셋이 지난 편 「In Korea, when you hear …」와 같은 꼴이라 짚음). 끝 줄 「more ㅋ = more 😂」가 답이다
+export const HEAD = { at: 0.05, to: 2.2, l1: 'Texting a Korean friend…', l2: 'how many ㅋ? 🤔' };
 // 끝 줄 — 가장 센 장면(ㅋ 폭포) 위에 제목만 한 크기 한 줄(제작 절차 「끝 3초」)
 export const END = { at: 20.6, to: 23.0, l1: 'more ㅋ = more 😂' };
 // ㅋ 폭포 — 친구 폰 자리(%)에서 튀어 올라 떨어져 쌓인다. 크고 드문드문(빽빽한 무늬 없음 — 유호님 11-20)
-export const POUR = { at: 17.7, from: { x: 70, y: 83 }, n: 14 };
+export const POUR = { at: 17.7, from: { x: 80, y: 84 }, n: 14 };

@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "g3",
+ "text": "너도 먹어~",
+ "dur": 1.406,
+ "words": [
+  {
+   "text": "너도",
+   "start": 0.06,
+   "end": 0.322
+  },
+  {
+   "text": "먹어~",
+   "start": 0.402,
+   "end": 1.406
+  }
+ ],
+ "source": {
+  "key": "678927d05c6a13e42c9a132e48709ba3",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1126,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b",
+   "prev": "할머니가 호떡을 한 아름 안고, 하나를 알바생에게 손자 대하듯 다정하게 건넨다.",
+   "next": "따뜻할 때 먹어."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 333
+ }
+}

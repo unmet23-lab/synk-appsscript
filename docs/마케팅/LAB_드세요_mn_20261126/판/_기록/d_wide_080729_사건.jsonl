@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a214f6-d4d0-7871-a19f-af0139d65f7e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one portrait dinner scene, matching the three references and leaving the top clear for your title.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A cosy felt dinner scene with Grandma smiling as the friend places meat on Mongle’s rice."}}
+{"type":"turn.completed","usage":{"input_tokens":194183,"cached_input_tokens":175104,"cache_write_input_tokens":0,"output_tokens":1806,"reasoning_output_tokens":355}}

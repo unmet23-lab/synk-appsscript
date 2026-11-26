@@ -86,9 +86,10 @@
   {
    "id": "f4",
    "text": "크하하하하하!",
-   "dur": 5.048,
+   "dur": 3.33,
    "src": "f4.wav",
-   "voice": "ElevenLabs v4 Taehyung"
+   "voice": "ElevenLabs v4 Taehyung",
+   "note": "11-26 다시 구움: [big hearty laugh, low warm voice] · seed 22 · 안정 0.5 — 옛 판 최고 음높이 727Hz"
   }
  ]
 }

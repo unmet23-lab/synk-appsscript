@@ -32,6 +32,7 @@ export type 말풍선말 = {
   크기?: number; // 한글 크기(안 적으면 86)
   뜻크기?: number; // 뜻 크기(안 적으면 한글이 있을 때 52, 없을 때 58)
   바탕?: string; // 몸 색(문자 말풍선은 흰색)
+  타자?: number[]; // 한글 첫 줄을 이 초마다 한 글자씩 드러낸다(누를 때마다 ㅋ이 하나씩 늘어남) — 폭은 다 찬 글로 고정
 };
 
 const 폭 = (t: string, f: string, w: string, s: number) => measureText({ text: t, fontFamily: f, fontWeight: w, fontSize: s }).width;
@@ -76,13 +77,25 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
         {w.pill ? (
           <div style={{ display: 'inline-block', background: 색(w.pill.c), color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 알, lineHeight: 1.2, padding: '2px 26px 4px', borderRadius: 999, marginBottom: 6 }}>{w.pill.t}</div>
         ) : null}
-        {parts.map((l, i) => (
-          <div key={i} style={{ fontFamily: KO, fontWeight: 800, fontSize: 크, color: INK, lineHeight: 1.12, whiteSpace: 'pre' }}>
-            {l.map((p2, j) => (
-              <span key={j} style={{ color: 색(p2.c), textDecoration: p2.c === 'ng' ? 'line-through' : undefined, textDecorationThickness: p2.c === 'ng' ? 8 : undefined, textDecorationColor: NG }}>{p2.t}</span>
-            ))}
-          </div>
-        ))}
+        {parts.map((l, i) => {
+          if (i === 0 && w.타자) {
+            const 글 = l.map((p2) => p2.t).join('');
+            const n = w.타자.filter((s) => f >= fr(s)).length;
+            return (
+              <div key={i} style={{ fontFamily: KO, fontWeight: 800, fontSize: 크, color: INK, lineHeight: 1.12, whiteSpace: 'pre' }}>
+                <span>{글.slice(0, n)}</span>
+                <span style={{ color: 'transparent' }}>{글.slice(n)}</span>
+              </div>
+            );
+          }
+          return (
+            <div key={i} style={{ fontFamily: KO, fontWeight: 800, fontSize: 크, color: INK, lineHeight: 1.12, whiteSpace: 'pre' }}>
+              {l.map((p2, j) => (
+                <span key={j} style={{ color: 색(p2.c), textDecoration: p2.c === 'ng' ? 'line-through' : undefined, textDecorationThickness: p2.c === 'ng' ? 8 : undefined, textDecorationColor: NG }}>{p2.t}</span>
+              ))}
+            </div>
+          );
+        })}
         {w.read ? <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 읽, color: '#6B5647', lineHeight: 1.2, whiteSpace: 'pre' }}>{w.read}</div> : null}
         {w.mean ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 뜻, color: parts.length ? MEAN : INK, lineHeight: 1.18, whiteSpace: 'pre' }}>{w.mean}</div> : null}
       </div>

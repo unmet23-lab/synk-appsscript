@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a214f7-0851-76d0-9760-0b68ac109688"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 참고해, 주신 캐릭터와 구도를 살린 세로 장면 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Grandma tops Mongle’s towering feast with one more piece of jeon in a cosy felt dinner scene."}}
+{"type":"turn.completed","usage":{"input_tokens":203706,"cached_input_tokens":159360,"cache_write_input_tokens":0,"output_tokens":2013,"reasoning_output_tokens":188}}

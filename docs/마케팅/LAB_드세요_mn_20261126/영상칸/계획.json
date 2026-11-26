@@ -1,0 +1,91 @@
+{
+  "_예산": 180,
+  "_배우는말": [
+    {
+      "말": "드세요",
+      "한글": "할머니, 드세요!",
+      "읽기": "хальмони, тысэё!",
+      "뜻": "Эмээ, зооглоорой!",
+      "초": 3.8,
+      "칸": [
+        "s6"
+      ],
+      "음성": [
+        "m4",
+        "f2"
+      ]
+    }
+  ],
+  "s1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "h_wide",
+    "key": "nudges the single paper cup across the counter"
+  },
+  "s2": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "h_grand",
+    "key": "her polite smile fades"
+  },
+  "s3": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "h_two",
+    "key": "lifts her chin higher and turns her face away"
+  },
+  "s4": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "h_tower",
+    "key": "the tall tower of five paper cups sways left and right"
+  },
+  "s5": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "h_whisper",
+    "key": "whispers into the side of Mongle"
+  },
+  "s6": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "15",
+    "dur": "5초",
+    "proj": "omni",
+    "start": "h_offer",
+    "key": "nudges the single cup forward toward Grandma"
+  },
+  "s7": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "h_beam",
+    "key": "pats her chest twice"
+  },
+  "s8": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "15",
+    "dur": "5초",
+    "proj": "omni",
+    "start": "h_give",
+    "key": "sets the single cup down on the counter right in front of Mongle"
+  }
+}

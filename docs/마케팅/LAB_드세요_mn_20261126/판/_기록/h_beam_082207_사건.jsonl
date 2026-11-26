@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a21504-626e-7ea2-84a5-e4cfa453c908"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one close-up of Grandma, keeping her felt likeness and the top area clear for a title.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Grandma beams with delight, eyes closed and hand over her heart, in a warmly lit felt close-up."}}
+{"type":"turn.completed","usage":{"input_tokens":103667,"cached_input_tokens":90880,"cache_write_input_tokens":0,"output_tokens":1063,"reasoning_output_tokens":75}}

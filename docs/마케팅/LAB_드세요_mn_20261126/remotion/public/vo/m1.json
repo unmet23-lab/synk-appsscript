@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "할머니, 먹어!",
+ "dur": 1.38,
+ "words": [
+  {
+   "text": "할머니,",
+   "start": 0.02,
+   "end": 0.466
+  },
+  {
+   "text": "먹어!",
+   "start": 0.547,
+   "end": 1.38
+  }
+ ],
+ "source": {
+  "key": "456b6b21d64beb381991ea7364485ed5",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1126,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "호떡 가게에서 알바를 하다가 손님 할머니께 호떡을 내밀며 친구에게 하듯 밝게 말한다.",
+   "next": "맛있어!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 467
+ }
+}

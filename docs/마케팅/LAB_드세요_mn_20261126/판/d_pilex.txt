@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photographed with a macro lens, portrait 9:16, gentle depth of field, cosy handmade felt-and-wool textures everywhere, cute but not babyish (for young adults learning Korean).
+
+WORLD (same in every panel): dinner time in the friend's family home in Korea, evening. A warm wooden dining table with chairs under a round felt pendant lamp giving warm golden light; behind, a soft butter-yellow felt wall and a blurred felt kitchen counter. On the table: felt bowls of white rice, a small clay pot of red stew, little side-dish plates (green spinach, red kimchi, yellow egg roll) and ONE round plate of golden savoury pancakes (jeon) cut into squares. Everything is needle-felt.
+CHARACTERS (keep identical in every panel they appear in):
+- GRANDMA: the needle-felted Korean grandmother in the grandma reference image — keep her round rosy face, black bead eyes, kind crinkly smile lines, short tight curly silver-grey perm hair, burgundy flower-quilted vest over a cream turtleneck EXACTLY. No glasses. She has real little felt arms and hands and holds wooden chopsticks. Her face must stay clearly visible.
+- THE FRIEND: the needle-felted Korean young man in the friend reference image — keep his face, short straight black wool hair with soft bangs, black bead eyes, straight dark eyebrows, small nose, rosy cheeks and heather-grey felt hoodie EXACTLY, no hat. He has real little felt arms and hands.
+- MONGLE: the coral needle-felted wool ghost-shaped mascot in the mascot reference image — use it ONLY for its body shape, coral wool colour, fine short smooth felted fuzz, scalloped bottom hem with one thin continuous cream running stitch, and glossy black bead eyes with NO whites. At rest Mongle has NO nose and NO mouth. Mongle has NO arms, NO legs, NO hands and NO neck, ever. Mongle sits on a chair on a tall stack of two felt cushions so its whole dome rises above the tabletop; it is about as tall as the friend's head-and-shoulders.
+LAYOUT: keep the TOP 22% of the image calm and plain (soft out-of-focus butter-yellow wall) — titles will be added there later.
+
+Attached images in order: (1) the previous panel to edit — keep everything in it, (2) the grandma reference (face only), (3) the friend reference (face only).
+
+SCENE:
+Recreate the FIRST attached image exactly — same angle, framing, light, table and rice-bowl mountain — and change ONLY these: GRANDMA bursts out laughing, eyes squeezed into happy curves, mouth wide open, one hand over her chest; THE FRIEND covers his forehead with one palm (facepalm) with an embarrassed grin; MONGLE stays proud, eyes in happy arcs.
+
+Only the characters named in this panel, nobody else. Everything is needle-felt and wool craft, no glossy realistic surfaces. Absolutely no text, letters, numbers, symbols, question marks, speech bubbles, emoji or watermarks anywhere. No real brand, no logos. No rings, holes or dense dot patterns anywhere (no polka dots, no speckles, no sesame seeds, no bubbles). Keep open bead eyes plain glossy black with no whites.
