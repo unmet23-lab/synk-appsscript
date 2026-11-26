@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { createOfficeRecords, defaultRoots, SLICE, TAIL_MAX, turnInText } = require('../src/office-records.cjs');
+const { createOfficeRecords, defaultRoots, SLICE, TAIL_MAX, turnInText, titleInText } = require('../src/office-records.cjs');
 const { createOffice, loadOfficeModel } = require('../src/office.cjs');
 
 const S = 1e3, M = 60e3, H = 3600e3;
@@ -52,11 +52,11 @@ test('several roots: two Claude config folders and Codex, each session once with
   assert.deepEqual(Object.keys(found).sort(), [uuid(1), uuid(2), uuid(4)]);
   for (const o of Object.values(found)) assert.equal(o.seenAt, now, 'seenAt is the scan time');
   // 갈래를 가른 줄에 때가 없으면 본 기록의 고친 때를 그 때로 둔다(-r2 GA3)
-  assert.deepEqual(found[uuid(1)], { kind: 'record', sessionId: uuid(1), cwd: 'C:\\work\\shop', tool: 'claude', changedAt: fs.statSync(shop).mtimeMs, turn: 'working', turnAt: fs.statSync(shop).mtimeMs, helperAt: null, seenAt: now });
+  assert.deepEqual(found[uuid(1)], { kind: 'record', sessionId: uuid(1), cwd: 'C:\\work\\shop', tool: 'claude', changedAt: fs.statSync(shop).mtimeMs, turn: 'working', turnAt: fs.statSync(shop).mtimeMs, helperAt: null, seenAt: now, title: null }, 'an old summary line at the head is another conversation, not this work (Fable 최종 F4)');
   assert.equal(found[uuid(2)].cwd, 'C:\\work\\law');
   assert.equal(found[uuid(4)].tool, 'codex');
   assert.equal(found[uuid(4)].cwd, 'C:\\work\\codex');
-  for (const o of Object.values(found)) assert.deepEqual(Object.keys(o).sort(), ['changedAt', 'cwd', 'helperAt', 'kind', 'seenAt', 'sessionId', 'tool', 'turn', 'turnAt'], 'nothing else from the file');
+  for (const o of Object.values(found)) assert.deepEqual(Object.keys(o).sort(), ['changedAt', 'cwd', 'helperAt', 'kind', 'seenAt', 'sessionId', 'title', 'tool', 'turn', 'turnAt'], 'nothing else from the file (the title is the work title Claude Code wrote, 11-26)');
   assert.ok(!JSON.stringify(Object.values(found)).includes('비밀'), 'no content leaves the module');
 });
 
@@ -624,6 +624,31 @@ test('4.5 · the line kind is read with the folder in one open, again only when 
   assert.equal(o.turn, 'working');
   assert.equal(o.cwd, 'C:\\work\\shop');
   assert.equal(calls.open, 1, 'a grown file is opened once; the folder already found is not read again');
+});
+
+test('11-26 · the work title Claude Code writes leaves with the record; the prompt text and Codex lines do not, and an unchanged file is not read again', async () => {
+  let now = Date.now();
+  const root = tmp('title');
+  const dir = path.join(root, 'projects', 'p');
+  const titled = put(path.join(dir, uuid(1) + '.jsonl'), claudeLine('C:\work\shop') + line({ type: 'custom-title', customTitle: '옛 제목' }) + line({ type: 'last-prompt', lastPrompt: '비밀 요청' }) + line({ type: 'custom-title', customTitle: ' 11월‮ 블로그  글 쓰기 ' }) + said('end_turn'), now - 5 * S);
+  put(path.join(dir, uuid(2) + '.jsonl'), claudeLine('C:\work\ai') + line({ type: 'ai-title', aiTitle: '가'.repeat(80) }) + said('end_turn'), now - 5 * S);
+  put(path.join(dir, uuid(3) + '.jsonl'), claudeLine('C:\work\none') + line({ type: 'custom-title', customTitle: '도우미', isSidechain: true }) + said('end_turn'), now - 5 * S);
+  const { fsImpl, calls, reset } = counting();
+  const records = createOfficeRecords({ roots: { claude: [root], codex: [] }, now: () => now, fsImpl });
+  let found = byId(await records.scan());
+  assert.equal(found[uuid(1)].title, '11월 블로그 글 쓰기', 'the latest title, with hidden direction marks and extra spaces gone');
+  assert.equal([...found[uuid(2)].title].length, 60);
+  assert.equal(found[uuid(3)].title, null, 'a helper line is not the session title');
+  assert.ok(!JSON.stringify(found).includes('비밀'), 'the prompt text never leaves');
+  reset(); now += 15 * S;
+  found = byId(await records.scan());
+  assert.equal(calls.open, 0);
+  assert.equal(found[uuid(1)].title, '11월 블로그 글 쓰기', 'the cached read keeps the title');
+  fs.appendFileSync(titled, toolCall('Bash'));
+  fs.utimesSync(titled, (now - S) / 1e3, (now - S) / 1e3);
+  now += 15 * S;
+  assert.equal(byId(await records.scan())[uuid(1)].title, '11월 블로그 글 쓰기', 'a grown file still finds the title in its tail');
+  assert.equal(titleInText(line({ type: 'custom-title', customTitle: '제목' }), 'codex', false), null);
 });
 
 test('4.5 · helperAt is the latest helper record change not dated ahead of the scan, and null without helpers', async () => {

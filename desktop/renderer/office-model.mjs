@@ -88,7 +88,7 @@ export const officeState = () => ({ sessions: {}, ignored: {} });
 const fresh = (id, tool) => ({
   id, tool, cwd: null, model: null, modelAt: null, hooked: false,
   firstAt: null, hookedAt: null, lastHookAt: null, lastRecordAt: null,
-  recordTurn: null, recordTurnAt: null, recordHelperAt: null, // 마지막으로 닿은 기록 살피기가 읽은 끝 줄의 갈래 · 그 줄의 때 · 도우미 기록의 고친 때(4.5)
+  recordTitle: null, recordTurn: null, recordTurnAt: null, recordHelperAt: null, // 마지막으로 닿은 기록 살피기가 읽은 끝 줄의 갈래 · 그 줄의 때 · 도우미 기록의 고친 때(4.5)
   postAt: null, // 마지막 PostToolUse(도우미 것까지)
   askAt: null, clearAt: null, // 승인 물음과 그것을 푸는 소식(도우미 것이 아닌 PostToolUse, Stop)의 마지막 때. 끝(SessionEnd)은 그 앞의 물음을 지운다
   idleAt: null, stopAt: null, turnStartAt: null, seenAt: null,
@@ -191,6 +191,8 @@ export function officeReduce(state, event, ctx = {}) {
     s.recordTurn = RECORD_TURNS.has(event.turn) ? event.turn : null;
     s.recordTurnAt = timeOrNull(event.turnAt);
     s.recordHelperAt = timeOrNull(event.helperAt);
+    // 일의 제목(Claude Code가 기록에 적는 세션 제목). 이번 살피기가 못 찾으면 앞서 찾은 것을 둔다. 본체가 이미 다듬었지만 여기서도 길이와 꼴을 본다
+    if (typeof event.title === 'string' && event.title.trim()) s.recordTitle = [...event.title.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/g, ' ').replace(/\s+/g, ' ').trim()].slice(0, 60).join('');
     s.lastRecordAt = later(s.lastRecordAt, at);
     // 훅을 받기 전의 기록은 모른다(4.1 「훅을 중간에 켠 세션」). Stop 뒤 10초 안의 바뀜은 새 차례가 아니다
     if (s.hooked && at >= s.hookedAt && afterStop(s, at, T.stopGrace)) turnNews(s, at);
@@ -346,7 +348,7 @@ export function officeSessions(state, now, { departments = [], assignments = {} 
     out.push({
       id: s.id, tool: s.tool, hooked: s.hooked, model: s.model, ...v,
       note: s.hooked ? '' : UNKNOWN_NOTE, askedAt: v.status === 'asked' ? s.askAt : null,
-      activity: officeActivity(s), subagents: s.hooked ? subagentCount(s) : 0,
+      activity: officeActivity(s), title: s.recordTitle || null, subagents: s.hooked ? subagentCount(s) : 0,
       departmentId, departmentName: departmentId == null ? null : list.find(d => d && d.id === departmentId)?.name ?? null,
       folder: folderName(s.cwd), cwd: s.cwd, since: s.firstAt,
     });

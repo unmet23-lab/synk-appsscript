@@ -15,7 +15,10 @@
 //  · 스킨을 바꾸거나 첫 모자를 씌우면 바닥과 모자까지 들어가게 그림 크기를 한 번 바로 맞춘다(움직이지 않는다).
 //  · 책상이 늘거나 줄거나 바뀔 때(부서별 책상, 솔리오_사무실책상_20261125/README.md 7절): 앞 그림에서 새 그림으로 0.38초에 겹쳐 넘어간다. 책상도 직원도 카메라도
 //    미끄러지지 않는다. 새로 놓인 책상은 앞 모서리가 1.4초 동안 밝았다가 가라앉는다(빛만 바뀐다). 첫 그림과 그림판 크기가 바뀔 때는 바로다.
-//  · 움직임 줄이기가 켜져 있으면 모두 멈추고, 장면이 바뀔 때마다 한 번만 그린다.
+//  · 다가가기(솔리오_사무실한마디_20261126): 방이 보이는 동안 손님이 대화 상대를 바꿀 때만, 그림이 0.62초에 한 번 그 부서 책상 쪽으로 다가간다(크기 1.12~1.35배).
+//    「사무실」을 고르면 전체로 돌아온다. 방을 다시 열면 늘 전체에서 시작한다.
+//  · 한마디: 눌린 직원이 0.34초 동안 반지름의 1.2배쯤 일어서며 조금 커지고 눈을 떠 손 쪽을 본다. 말이 끝나면 앉는다. 말풍선은 화면이 그린다(onTalk이 머리 자리를 준다).
+//  · 움직임 줄이기가 켜져 있으면 모두 멈추고, 장면이 바뀔 때마다 한 번만 그린다. 다가가지 않고 일어서지 않는다.
 // 방이 보이는 동안만 그린다(show). 화면 밀도는 2배까지만 쓴다. 모듈 맨 위에서는 DOM을 건드리지 않는다.
 
 import { countWord, officeDeskPlan } from './office-model.mjs';
@@ -29,6 +32,7 @@ export const FLOOR_MOTION = Object.freeze({
   fadeMs: 300, viewTau: 230, frameMs: 33,
   skinMs: 380, skinStep: 60, lampTau: 450,
   layoutMs: 380, freshMs: 1400, crowd: 40, crowdMs: 50,
+  leanMs: 620, leanMin: 1.12, leanMax: 1.35, leanPull: 0.6, leanEdge: 44, leanHead: 62, talkMs: 340, talkUp: 0.36, talkGrow: 0.2,
 });
 const M = FLOOR_MOTION;
 const INK = '243,241,236';
@@ -256,8 +260,9 @@ export function floorSeatCount(scene) {
 }
 
 /* canvas: 그림을 그릴 캔버스(자리 요소 안에 꽉 찬다). reduced(): 움직임 줄이기. isOpen(key): 그 부서 줄이 열려 있는가.
-   onHover(zone, staff): 손이 가리키는 부서 열쇠와 직원 번호(바뀔 때만). onPress(zone, staff): 눌린 부서와 직원(빈 곳이면 null) */
-export function createOfficeFloor(canvas, { win = globalThis, reduced = () => false, isOpen = () => false, onHover = () => {}, onPress = () => {} } = {}) {
+   onHover(zone, staff): 손이 가리키는 부서 열쇠와 직원 번호(바뀔 때만). onPress(zone, staff): 눌린 부서와 직원(빈 곳이면 null).
+   onTalk({ id, x, y, r, endY }): 말하는 직원의 머리 자리(그릴 때마다). endY는 다가가기가 끝났을 때의 높이다(말풍선이 위아래로 뒤집히지 않게). 그 직원이 그림에 없으면 null */
+export function createOfficeFloor(canvas, { win = globalThis, reduced = () => false, isOpen = () => false, onHover = () => {}, onPress = () => {}, onTalk = () => {} } = {}) {
   const ctx = canvas?.getContext?.('2d') || null;
   const raf = fn => (typeof win.requestAnimationFrame === 'function' ? win.requestAnimationFrame(fn) : setTimeout(() => fn(Date.now()), M.frameMs));
   const unraf = id => (typeof win.cancelAnimationFrame === 'function' ? win.cancelAnimationFrame(id) : clearTimeout(id));
@@ -267,7 +272,11 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   let hot = { zone: null, staff: null }, ptr = { x: -1e4, y: -1e4 }, over = { zone: null, staff: null };
   const life = new Map(); // 직원마다: 나타난 때, 깜빡임, 느낌표가 붙은 때
   let first = true, crowded = false;
-  const cam = { cy: 1, sy: 0, ca: 0, sa: 1, k: 0, S: 50, ox: 0, oy: 0 };
+  const cam = { cy: 1, sy: 0, ca: 0, sa: 1, k: 0, S: 50, S0: 50, ox: 0, oy: 0 };
+  // 다가가기: 고른 부서(to)와 떠난 때의 크기 · 자리(z, x, y). 한마디: 말하는 직원과, 일어서거나 앉는 중인 직원들
+  const lean = { to: null, at: -1e9, z0: 1, x0: 0, y0: 0, z: 1, x: 0, y: 0, goal: { z: 1, x: 0, y: 0 } };
+  let talkId = null;
+  const rises = new Map();
   let zonesOnScreen = [], staffOnScreen = [];
   // 꾸미기: 지금 스킨과 넘어가는 중인 앞 스킨, 부서마다 탁상 등의 밝기, 나뭇결 모음
   let skinFrom = 'black', skinTo = 'black', skinT0 = -1e9, skinSeq = null, rectKey = '';
@@ -306,8 +315,39 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     cam.S = Math.max(1, Math.min((W - pad * 2) / (b - a), (H - pad * 2) / (e - c), 120));
     cam.ox = W / 2 - (a + b) / 2 * cam.S;
     cam.oy = pad + (H - pad * 2 - (e - c) * cam.S) * 0.3 - c * cam.S;
+    cam.S0 = cam.S;
     return true;
   }
+  /* 다가가기의 끝 모습: 고른 부서를 그림 가운데 쪽으로 데려오며 키운다. 아주 큰 무리는 조금만, 작은 책상은 1.35배까지 */
+  function leanGoal() {
+    const z = lean.to && layout.find(q => q.key === lean.to);
+    if (!z) return { z: 1, x: 0, y: 0 };
+    const pts = [[z.rect.x0, z.rect.z0], [z.rect.x1, z.rect.z0], [z.rect.x1, z.rect.z1], [z.rect.x0, z.rect.z1]].flatMap(([x, zz]) => [P(x, 0, zz), P(x, 1, zz)]);
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const k = Math.max(M.leanMin, Math.min(M.leanMax, W * 0.5 / Math.max(1, x1 - x0), H * 0.82 / Math.max(1, y1 - y0)));
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, fx = cx + (W / 2 - cx) * M.leanPull;
+    // 높이는 조금만 옮긴다: 머리 위에 말풍선이 들어갈 만큼 내리고, 이름이 잘리지 않을 만큼 올린다. 둘이 부딪치면 말풍선이 먼저다
+    const fy = Math.max(Math.min(M.leanHead, H * 0.34) + (cy - y0) * k, Math.min(cy + (H / 2 - cy) * 0.4, H - 20 - (y1 - cy) * k));
+    return { z: k, x: fx - cx * k, y: fy - cy * k };
+  }
+  const ease3 = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const backOut = t => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
+  function applyLean(now, still) {
+    const t = still ? 1 : Math.min(1, Math.max(0, (now - lean.at) / M.leanMs)), e = ease3(t), g = lean.goal = still ? { z: 1, x: 0, y: 0 } : leanGoal();
+    lean.z = lean.z0 + (g.z - lean.z0) * e; lean.x = lean.x0 + (g.x - lean.x0) * e; lean.y = lean.y0 + (g.y - lean.y0) * e;
+    cam.S *= lean.z; cam.ox = cam.ox * lean.z + lean.x; cam.oy = cam.oy * lean.z + lean.y;
+  }
+  /* 일어선 만큼(0~1). 일어설 때만 아주 조금 넘쳤다 돌아온다 */
+  function riseOf(id, now, still) {
+    const r = rises.get(id);
+    if (!r) return 0;
+    if (still) { if (!r.to) rises.delete(id); return 0; } // 움직임 줄이기: 일어서지 않는다(카본 A3)
+    const t = Math.min(1, Math.max(0, (now - r.at) / M.talkMs));
+    if (t >= 1 && r.to === 0) { rises.delete(id); return 0; }
+    return r.from + (r.to - r.from) * (r.to ? backOut(t) : ease3(t));
+  }
+  const setRise = (id, to) => { const now = clock(), k = riseOf(id, now, reduced()); if (!to && !rises.has(id)) return; rises.set(id, { from: k, to, at: now }); };
+  const moving = now => now - lean.at < M.leanMs + 60 || [...rises.values()].some(r => now - r.at < M.talkMs + 60);
   function poly(pts) { ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath(); }
   function clipText(text, max) {
     if (ctx.measureText(text).width <= max) return text;
@@ -352,8 +392,8 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx.restore();
   }
   /* rimInk · boost: 스킨의 테두리 빛과 그 세기. 꾸미기 줄에서 고른 직원(picked)은 테두리가 밝고 눈웃음을 짓는다 */
-  function orb(x, y, R, s, now, t3, still, rimInk = INK, boost = 1) {
-    const L = lookOf(s.status), one = life.get(s.id), isHot = hot.staff === s.id || over.staff === s.id || !!s.picked;
+  function orb(x, y, R, s, now, t3, still, rimInk = INK, boost = 1, up = 0) {
+    const L = up > 0.35 ? { ...LOOK.asked, mode: 'look' } : lookOf(s.status), one = life.get(s.id), isHot = up > 0.1 || hot.staff === s.id || over.staff === s.id || !!s.picked;
     const oink = a => `rgba(${rimInk},${a})`;
     // 몸: 왼쪽 위에서 빛을 받은 검은 구(첫 팀 고르기 6판의 구운 직원, 유호님 11-23 「깔끔하다」). 테두리를 고르게 긋지 않는다 —
     // 둘레 전체에 같은 선을 그으면 선으로 그린 밑그림(고리)처럼 보였다(11-23 맹검 「와이어프레임」)
@@ -366,23 +406,25 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     ctx.fillStyle = g; ctx.fill();
     // 일하는 중은 빛 받은 쪽 가장자리의 밝기만 천천히 오간다(빛줄기 · 고리 없음). 가장자리 빛은 왼쪽 위에서 오른쪽 아래로 사라진다
     let rim = L.rim;
-    if (s.status === 'working') rim = still ? (M.rimLow + M.rimHigh) / 2 : M.rimLow + (M.rimHigh - M.rimLow) * (0.5 + 0.5 * Math.sin(now * 2 * Math.PI / M.rimPeriod + (one?.phase || 0)));
+    if (s.status === 'working' && up < 0.35) rim = still ? (M.rimLow + M.rimHigh) / 2 : M.rimLow + (M.rimHigh - M.rimLow) * (0.5 + 0.5 * Math.sin(now * 2 * Math.PI / M.rimPeriod + (one?.phase || 0)));
     const edge = Math.min(1, (isHot ? Math.max(rim, 0.85) : rim) * boost);
     const e = ctx.createLinearGradient(x - R * 0.8, y - R * 0.9, x + R * 0.7, y + R * 0.8);
     e.addColorStop(0, oink(edge)); e.addColorStop(0.5, oink(edge * 0.28)); e.addColorStop(1, oink(isHot ? edge * 0.22 : 0));
     ctx.strokeStyle = e; ctx.lineWidth = s.status === 'asked' ? 1.3 : 1;
     ctx.stroke();
     // 아주 작은 구슬에는 눈과 모자를 그리지 않는다. 느낌표는 작아도 그린다(Fable 최종 F1)
-    if (R < 5) { if (s.alert) bang(x, y, R, s, one || {}, now, still); return; }
+    const told = s.alert && up < 0.2; // 말하는 동안에는 말풍선이 느낌표를 대신한다
+    if (R < 5) { if (told) bang(x, y, R, s, one || {}, now, still); return; }
     let gx = 0, gy = 0, mode = L.mode === 'look' ? 'open' : L.mode;
-    if (s.picked && s.status !== 'asked') mode = 'smile';
+    if (s.picked && s.status !== 'asked' && up < 0.35) mode = 'smile';
     if (L.mode === 'look') {
       const dx = ptr.x - x, dy = ptr.y - y, m = Math.hypot(dx, dy) || 1, k = ptr.x < -9000 || still ? 0 : Math.min(1, m / 120) * R * M.look;
       gx = dx / m * k; gy = dy / m * k;
     } else if (mode === 'open') { gy = R * 0.16; gx = still ? 0 : Math.sin(now * 2 * Math.PI / M.gazePeriod + (one?.phase || 0)) * R * M.gaze; }
     eyes(x, y, R, mode, gx, gy, one?.blink || 0, L.eye);
     const lift = hat(x, y, R, s.hat);
-    if (s.alert) bang(x, y - lift, R, s, one || {}, now, still);
+    if (told) bang(x, y - lift, R, s, one || {}, now, still);
+    return lift;
   }
   /* 도우미: 구 오른쪽 아래에 꽉 찬 작은 점, 셋까지. 움직이지 않는다 */
   function helpers(x, y, R, n) {
@@ -633,7 +675,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   function labelAt(z, skin, y) {
     const q = z.rect, dept = z.kind === 'dept', front = dept ? !z.wide : skin === 'black', inset = dept && front ? 0.06 : 0.2;
     // 위에서 본 작은 그림에서는 똑바로 쓴 이름이 책상 앞 모서리에 걸린다. 글 높이만큼 앞으로 내린다(비스듬히 보면 앞줄 직원의 머리가 그 자리에 온다)
-    const more = front && lowLabel(z) && cam.S < PLANE_MIN_S ? Math.max(0, Math.min(LABEL_TOP, 15 / cam.S - LABEL_FRONT)) * topness() : 0;
+    const more = front && lowLabel(z) && cam.S0 < PLANE_MIN_S ? Math.max(0, Math.min(LABEL_TOP, 15 / cam.S0 - LABEL_FRONT)) * topness() : 0;
     const at = { front, x: q.x0 + inset, y: front ? 0 : y, z: front ? q.z1 + LABEL_FRONT + more : q.z1 - 0.2, max: dept && front ? z.labelMax - inset : q.x1 - q.x0 - inset * 2 };
     // 오른쪽 끝 부서의 이름은 무리보다 넓게 쓸 수 있다. 그림판 밖으로 나가지 않게 오른쪽 끝까지만 쓴다
     if (dept && front) { const l = P(at.x, at.y, at.z)[0], r = P(at.x + at.max, at.y, at.z)[0]; if (r > W - 10) at.max = Math.max(0.4, at.max * (W - 10 - l) / (r - l)); }
@@ -643,7 +685,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
   /* late: 작은 그림에서 앞 바닥에 똑바로 쓰는 부서 이름은 직원 다음에 쓴다. 앞줄 직원의 머리와 느낌표가 이름을 가리지 않게 한다(Fable 최종 F4) */
   function zoneText(id, a, z, y, hotZ, labelFits, labelForm, late = false) {
     const fin = z.plan?.finish || id, at = labelAt(z, id, y), lc = SKIN[at.front ? id : fin].label, dark = (at.front ? id : fin) === 'black';
-    const over = cam.S < PLANE_MIN_S && at.front && z.kind === 'dept';
+    const over = cam.S0 < PLANE_MIN_S && at.front && z.kind === 'dept';
     if (late && !over) return;
     ctx.save(); ctx.globalAlpha *= a;
     const lp = P(at.x, at.y, at.z), lr = P(at.x + at.max, at.y, at.z);
@@ -651,7 +693,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     const room = Math.max(24, lr[0] - lp[0]), label = floorZoneLabel(z, labelFits(z), labelForm);
     // 그림이 작으면(좁은 창) 눕힌 글이 뭉개져 똑바로 쓴다(미학 맹검 2회차). 검정도 11-24부터 판 위에 눕힌다 —
     // 두께 있는 책상과 띠가 서자 똑바른 글이 판 모서리를 가로질렀다(맹검 「수평 글자가 판 테두리를 침범」)
-    if (over && !late) { /* 이름은 직원 다음에 */ } else if (cam.S < PLANE_MIN_S) {
+    if (over && !late) { /* 이름은 직원 다음에 */ } else if (cam.S0 < PLANE_MIN_S) {
       const text = label.clip ? clipText(label.text, room) : label.text;
       // 작은 그림에서는 앞줄 직원의 머리가 이름 자리에 닿는다. 글 둘레를 어둡게 눌러 글자가 먼저 읽히게 한다
       if (at.front) { ctx.lineJoin = 'round'; ctx.lineWidth = 3.5; ctx.strokeStyle = id === 'black' ? 'rgba(0,0,0,.8)' : 'rgba(20,12,7,.75)'; ctx.strokeText(text, lp[0], lp[1]); }
@@ -770,6 +812,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     const slabB = SKIN[B].slab * t3;
     const labelFits = z => { const at = labelAt(z, B, z.kind === 'dept' ? slabB : 0), room = Math.max(24, P(at.x + at.max, at.y, at.z)[0] - P(at.x, at.y, at.z)[0]); return t => ctx.measureText(t).width <= room; };
     const labelForm = floorLabelForm(layout, labelFits);
+    applyLean(now, still);
     // 검정 스킨: 가장자리로 갈수록 어둠에 묻히는 바닥 한 판(11-24 「불 켜진 자리」). 다른 스킨의 바닥보다 먼저 그려야 둘레 지우기가 그것만 지운다
     const blackK = mix(skinK(0, now, still)).reduce((n, [id, a]) => n + (id === 'black' ? a : 0), 0);
     if (blackK > 0.01) floorBlack(blackK, t3);
@@ -801,8 +844,8 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     for (const z of layout) {
       const base = yZ.get(z.key) || 0;
       z.staff.slice(0, z.spots.length).forEach((s, i) => {
-        const c = z.spots[i], L = lookOf(s.status), y = base + R0 + L.lift * (0.25 + 0.75 * t3), p = P(c.x, y, c.z);
-        list.push({ s, z, c, base, y, p, R: R0 * cam.S * p[3], depth: p[2] });
+        const c = z.spots[i], L = lookOf(s.status), up = riseOf(s.id, now, still), y = base + R0 + L.lift * (0.25 + 0.75 * t3) + M.talkUp * up * (0.25 + 0.75 * t3), p = P(c.x, y, c.z);
+        list.push({ s, z, c, base, y, p, up, R: R0 * cam.S * p[3] * (1 + M.talkGrow * up), depth: p[2] + (up > 0.02 ? 1e3 : 0) });
         const one = life.get(s.id);
         if (one && !still) {
           if (one.blink > 0) one.blink = Math.max(0, one.blink - dt / M.blinkMs);
@@ -811,13 +854,15 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       });
     }
     list.sort((a, b) => a.depth - b.depth);
-    for (const { s, z, c, base, y, p, R } of list) {
+    let told = null;
+    for (const { s, z, c, base, y, p, R, up } of list) {
       const one = life.get(s.id), k = kZ.get(z.key) ?? 1, near = k < 0.5 ? A : B;
       const alpha = still || first || !one ? 1 : Math.min(1, (now - one.bornAt) / M.fadeMs);
       ctx.save(); ctx.globalAlpha = alpha;
       for (const [id, a] of mix(k)) underOrb(id, a, c, base, y, t3);
       if (s.subagents > 0) helpers(p[0], p[1], R, s.subagents);
-      orb(p[0], p[1], R, s, now, t3, still, mixRGB(SKIN[A].rim, SKIN[B].rim, k), SKIN[near].boost || 1);
+      const hatUp = orb(p[0], p[1], R, s, now, t3, still, mixRGB(SKIN[A].rim, SKIN[B].rim, k), SKIN[near].boost || 1, up) || 0;
+      if (s.id === talkId) told = { id: s.id, x: p[0], y: p[1] - hatUp, r: R, endY: (p[1] - hatUp - lean.y) / lean.z * lean.goal.z + lean.goal.y };
       // 검정에서는 일하는 직원 앞에 노트북이 열려 있다(직원보다 앞이라 직원 뒤에 그린다)
       const lapA = (A === 'black' ? 1 - k : 0) + (B === 'black' ? k : 0);
       if (lapA > 0.01) { ctx.save(); ctx.globalAlpha *= lapA; laptop(c, base, s, now, still, t3); ctx.restore(); }
@@ -826,8 +871,20 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     }
     for (const z of order) for (const [id, a] of mix(kZ.get(z.key))) if (a >= 0.003) zoneText(id, a, z, yZ.get(z.key), hotOf.get(z.key), labelFits, labelForm, true);
     crowded = list.length > M.crowd;
+    softEdge();
     crossFade(now, still);
     first = false;
+    if (talkId) onTalk(told);
+  }
+  /* 다가간 그림은 칸 밖으로 잘린다. 잘린 자리가 칼로 벤 듯 보이지 않게 네 가장자리를 바탕으로 흐린다 */
+  function softEdge() {
+    const a = Math.min(1, Math.max(0, (lean.z - 1) / 0.1));
+    if (a < 0.01) return;
+    ctx.save(); ctx.globalCompositeOperation = 'destination-out';
+    const wipe = (x0, y0, x1, y1, w, h, n) => { const g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(0.35, `rgba(0,0,0,${a * 0.6})`); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(Math.min(x0, x1), Math.min(y0, y1), w || n, h || n); };
+    const n = Math.min(M.leanEdge, W * 0.08), v = Math.min(M.leanEdge * 0.6, H * 0.12);
+    wipe(0, 0, n, 0, n, H); wipe(W, 0, W - n, 0, n, H); wipe(0, 0, 0, v, W, v); wipe(0, H, 0, H - v, W, v);
+    ctx.restore();
   }
   /* 앞 그림에서 새 그림으로 겹쳐 넘어간다. 새 그림을 e만큼, 앞 그림을 1 − e만큼 남겨 더한다 */
   function crossFade(now, still) {
@@ -857,7 +914,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     frame = 0;
     if (!shown || reduced()) return;
     frame = raf(loop);
-    if (t - lastDraw >= (crowded && !ghostOn ? M.crowdMs : M.frameMs)) draw(t);
+    if (t - lastDraw >= (moving(t) ? 0 : crowded && !ghostOn ? M.crowdMs : M.frameMs)) draw(t);
   }
   function kick() {
     if (!shown) return;
@@ -952,13 +1009,36 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       for (const id of [...life.keys()]) if (!ids.has(id)) life.delete(id);
       if (shown) { draw(); kick(); }
     },
+    /* 대화 상대가 바뀌었다: 그 부서로 다가간다. zone이 없거나 그림에 없으면 전체로 돌아온다. now: 움직이지 않고 바로(방을 다시 열 때) */
+    lean(zone, { now = false } = {}) {
+      const to = zone && layout.some(z => z.key === zone) ? zone : null;
+      if (to === lean.to && !now) return;
+      lean.to = to;
+      if (now || reduced() || !shown) { lean.at = -1e9; lean.z0 = 1; lean.x0 = lean.y0 = 0; if (!to) { lean.z = 1; lean.x = lean.y = 0; } }
+      else { lean.at = clock(); lean.z0 = lean.z; lean.x0 = lean.x; lean.y0 = lean.y; }
+      if (shown) { draw(); kick(); }
+    },
+    /* 직원 하나가 말한다(null이면 앉는다) */
+    talk(id) {
+      const next = id || null;
+      // 같은 직원을 다시 누르면 말이 바뀌므로 말풍선 자리를 다시 잰다(카본 A1)
+      if (next === talkId) { if (shown) draw(); return; }
+      if (talkId) setRise(talkId, 0);
+      talkId = next;
+      if (talkId) setRise(talkId, 1);
+      if (shown) { draw(); kick(); }
+    },
+    leaning: () => ({ to: lean.to, z: lean.z }),
+    talking: () => talkId,
+    /* 시험이 본다: 그 직원이 일어선 만큼(0~1) */
+    standing: id => riseOf(id, clock(), reduced()),
     setHot(next) { const h = { zone: next?.zone || null, staff: next?.staff || null }; if (h.zone === hot.zone && h.staff === hot.staff) return; hot = h; if (shown && reduced()) draw(); },
     /* 방이 보이는 동안만 그린다 */
     show(on) {
       const want = !!on;
       if (want === shown) { if (want) kick(); return; }
       shown = want;
-      if (!want) { if (frame) { unraf(frame); frame = 0; } first = true; return; }
+      if (!want) { if (frame) { unraf(frame); frame = 0; } first = true; talkId = null; rises.clear(); lean.to = null; lean.at = -1e9; lean.z = lean.z0 = 1; lean.x = lean.x0 = lean.y = lean.y0 = 0; return; }
       resize();
       draw();
       kick();

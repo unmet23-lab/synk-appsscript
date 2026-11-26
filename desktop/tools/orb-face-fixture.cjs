@@ -62,7 +62,7 @@ const officeDeptOf=spec=>{if(Object.hasOwn(office?.assignments||{},spec.id))retu
 // kind: work(일하는 중) · ask(승인을 물음) · done(2분 넘게 걸려 끝냄) · rest(쉬는 중) · silent(소식 없음). Codex는 훅 소식이 없는 세션이다(기록만)
 function officeSession(spec,t){
   const at=t-(Number(spec.ago)||0),hooked=spec.tool!=='codex'&&spec.hooked!==false;
-  const s={id:spec.id,tool:spec.tool==='codex'?'codex':'claude',cwd:spec.cwd||null,model:spec.model||null,hooked,firstAt:at-600e3,hookedAt:null,lastHookAt:null,lastRecordAt:null,postAt:null,askAt:null,clearAt:null,idleAt:null,stopAt:null,turnStartAt:null,doneLong:false,seenAt:null,endedAt:null,agents:{},anonAgents:0,lastTool:spec.toolName?{name:spec.toolName,detail:spec.detail||''}:null,lastToolAt:spec.toolName?at:null};
+  const s={id:spec.id,tool:spec.tool==='codex'?'codex':'claude',cwd:spec.cwd||null,model:spec.model||null,hooked,firstAt:at-600e3,hookedAt:null,lastHookAt:null,lastRecordAt:null,postAt:null,askAt:null,clearAt:null,idleAt:null,stopAt:null,turnStartAt:null,doneLong:false,seenAt:null,endedAt:null,agents:{},anonAgents:0,recordTitle:spec.title||null,lastTool:spec.toolName?{name:spec.toolName,detail:spec.detail||''}:null,lastToolAt:spec.toolName?at:null};
   for(let i=0;i<(Number(spec.helpers)||0);i++)s.agents['qa-agent-'+i]=at-30e3;/* 상태 규칙은 도우미를 시작한 때(숫자)로 센다 */
   if(!hooked){s.lastRecordAt=at;return s;}
   s.hookedAt=s.firstAt;s.lastHookAt=at;

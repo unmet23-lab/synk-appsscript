@@ -174,7 +174,7 @@ function markup() {
               <button class="quiet ofc-side-btn" type="button" data-off-side-btn aria-expanded="false" aria-controls="ofc-side">이 부서</button>
             </div>
             <p class="more-note off-hint" data-off-hint hidden></p>
-            <div class="off-slot" role="img" aria-label="부서마다 직원이 앉아 있는 사무실 그림. 같은 내용이 왼쪽 목록과 오른쪽 칸에 글로 있습니다." data-off-slot hidden><canvas aria-hidden="true" data-off-floor></canvas></div>
+            <div class="off-slot" role="img" aria-label="부서마다 직원이 앉아 있는 사무실 그림. 같은 내용이 왼쪽 목록과 오른쪽 칸에 글로 있습니다." data-off-slot hidden><canvas aria-hidden="true" data-off-floor></canvas><p class="off-bubble" aria-hidden="true" data-off-bubble hidden><b></b><span></span></p></div>
             <div class="ofc-thread ofc-scroll" data-off-thread>
               <div class="rows off ofc-now" role="group" aria-label="지금 선 직원" data-off-center hidden></div>
               <div data-off-tasks></div>
@@ -1048,17 +1048,72 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   let featureWas = '';
   const officeTasks = createOfficeTaskView(taskHost, payload => onAction('room', { room: 'solio-office', ...payload }), { formHost: app.offCompose });
   const pickChat = (key, extra = {}) => onAction('room', { room: 'solio-office', act: 'chat-pick', arg: key, ...extra });
+  /* ── 눌린 직원의 한마디와 방 옮기기(솔리오_사무실한마디_20261126) ──
+     방을 옮길 때: 앞 대화가 0.12초 동안 흐려지고(leaving) 새 대화가 0.3초 동안 아래에서 8px 올라온다. 그림은 그 부서로 다가간다(office-floor의 lean).
+     한마디: 그림에서 직원이나 책상을 누르면 그 직원이 일어서고 머리 위에 말풍선이 뜬다. 6.5초 뒤나 다른 곳을 누르면 앉는다 */
+  const SWAP_MS = 120, TALK_MS = 6500, TALK_OVER = 30;
+  let greets = null, talkTimer = 0, talkGone = 0, swapTimer = 0, swapNow = null, talkTurn = new Map();
+  const bubble = $('[data-off-bubble]');
+  const swapParts = () => [$('[data-off-head]'), app.offThread, app.offSide];
+  function swapTo(key, go) {
+    if (swapNow) { clearTimeout(swapTimer); swapNow = null; }
+    if (reduced() || !key || key === chatSel) {
+      app.ofc.classList.remove('leaving'); go();
+      // 이미 고른 상대를 눌러도 그림이 전체이면 그 부서로 다가간다. 방을 다시 열면 급한 부서가 골라진 채 전체에서 시작한다(Fable 최종 F2)
+      if (key && key === chatSel) officeFloor.lean(key !== 'all' ? key : null);
+      return;
+    }
+    app.ofc.classList.add('leaving');
+    swapNow = go;
+    swapTimer = setTimeout(() => { const run = swapNow; swapNow = null; if (!disposed && run) run(); app.ofc.classList.remove('leaving'); }, SWAP_MS);
+  }
+  function arrive() {
+    if (reduced()) return;
+    swapParts().forEach((n, i) => n?.animate?.([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 300, delay: i * 40, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'backwards' }));
+  }
+  function hush({ now = false } = {}) {
+    clearTimeout(talkTimer); clearTimeout(talkGone);
+    officeFloor.talk(null);
+    bubble.classList.remove('on');
+    if (now || reduced()) bubble.hidden = true; else talkGone = setTimeout(() => { bubble.hidden = true; }, 220);
+  }
+  function speak(id) {
+    const g = id && greets?.by?.[id];
+    if (!g) { hush(); return; }
+    clearTimeout(talkTimer); clearTimeout(talkGone);
+    const turn = talkTurn.get(id) || 0;
+    talkTurn.set(id, turn + 1);
+    setText(bubble.firstElementChild, g.name);
+    setText(bubble.lastElementChild, g.lines[turn % g.lines.length]);
+    bubble.classList.remove('on');
+    bubble.hidden = false;
+    officeFloor.talk(id);
+    win.requestAnimationFrame?.(() => bubble.classList.add('on'));
+    talkTimer = setTimeout(() => hush(), TALK_MS);
+  }
+  /* 말풍선은 말하는 직원의 머리 위에 선다. 그림 칸 위로 30px까지는 나가도 되고(그 자리는 방 머리 오른쪽의 빈 곳이다), 그래도 모자라면 아래에 선다 */
+  function placeBubble(p) {
+    if (bubble.hidden) return;
+    if (!p) { hush(); return; }
+    const W = app.offSlot.clientWidth, w = bubble.offsetWidth, h = bubble.offsetHeight, gap = 9;
+    const x = Math.max(2, Math.min(W - w - 2, p.x - w / 2)), above = p.y - p.r - gap - h, low = p.endY - p.r - gap - h < -TALK_OVER;
+    bubble.classList.toggle('low', low);
+    bubble.style.transform = `translate(${Math.round(x)}px,${Math.round(low ? p.y + p.r + gap : above)}px)`;
+    bubble.style.setProperty('--tail', Math.max(14, Math.min(w - 14, p.x - x)).toFixed(1) + 'px');
+  }
   const officeFloor = createOfficeFloor(app.offFloor, {
     win,
     reduced,
     isOpen: key => !!key && key === chatSel,
     onHover: (zone, staff) => { markOfficeStaff(staff); },
+    onTalk: placeBubble,
     onPress: (zone, staff) => {
+      speak(staff || (zone ? greets?.lead?.[zone] : null));
       if (staff && assignmentFloor) {
         for (const group of assignmentFloor.zones) {
           const worker = group.staff.find(person => person.id === staff);
           if (worker?.provider) {
-            onAction('room', { room: 'solio-office', act: 'task-open', key: worker.zone, arg: worker.provider });
+            swapTo(worker.zone === 'lobby' ? 'all' : worker.zone, () => onAction('room', { room: 'solio-office', act: 'task-open', key: worker.zone, arg: worker.provider }));
             return;
           }
         }
@@ -1066,7 +1121,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (!zone) return;
       // 「그 밖」(일곱째 부서부터)은 「사무실」을 고르고 목록을 일곱째 부서로 내린다
       if (zone === 'other') { pickChat('all'); const b = [...app.offChats.querySelectorAll('[data-chat^="d:"]')][6]; if (b) b.scrollIntoView?.({ block: 'nearest' }); return; }
-      pickChat(zone);
+      swapTo(zone, () => pickChat(zone));
     },
   });
   const onOfficeOver = event => {
@@ -1160,12 +1215,14 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onOfficeClick = event => {
     const t = event.target?.nodeType === 1 ? event.target : event.target?.parentElement;
     if (!t) return;
+    // 그림 밖을 누르면 말하던 직원이 앉는다. 그림 안의 누름은 그림이 맡는다(카본 A2)
+    if (!t.closest('[data-off-floor]')) hush();
     // 서랍 밖을 누르면 서랍을 닫고 그 누름은 그대로 한다. 서랍 안의 「닫기」는 닫고 단추로 초점을 돌린다(카본 화면 검수 A1)
     if (t.closest('[data-off-side-close]')) { event.preventDefault(); event.stopPropagation(); setSide(false); return; }
     if (drawerOpen() && !app.offSide.contains(t) && !t.closest('[data-off-side-btn]') && !t.closest('[data-off-cap]')) setSide(false, { focus: false });
     const c = t.closest('[data-chat]');
     if (c && app.offChats.contains(c)) {
-      event.preventDefault(); event.stopPropagation(); inRoom = true; app.ofc.classList.add('in-room'); pickChat(c.dataset.chat);
+      event.preventDefault(); event.stopPropagation(); inRoom = true; app.ofc.classList.add('in-room'); { const key = c.dataset.chat; swapTo(key, () => pickChat(key)); }
       // 좁은 방에서는 목록이 통째로 숨는다. 누른 줄에 있던 초점을 방 머리로 옮긴다(0.5.12 공개 후보 카본 B1)
       if (c.offsetParent === null) focusEl(app.offHead);
       return;
@@ -1195,6 +1252,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     bizView.render(feature);
     const fkey = feature ? feature.departmentId : '';
     if (fkey !== featureWas) { featureWas = fkey; if (feature) bizView.focusHead(); }
+    greets = on ? v.greets || null : null;
+    if (feature || !shown) hush({ now: true });
     if (feature) { officeFloor.show(false); return; }
     const c = on && v.chat ? v.chat : null;
     const sel = c ? c.sel : null, selChanged = sel !== chatSel;
@@ -1229,6 +1288,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (dense ? seatCount <= 12 : seatCount > 18) app.offSlot.classList.toggle('dense', !dense);
     officeFloor.setScene(on ? v.floor : null);
     officeFloor.show(shown && zones.length > 0);
+    // 방이 보이는 동안 상대가 바뀌면 그 부서로 다가간다. 방을 처음 열거나 다시 열 때는 전체에서 시작한다
+    if (shown && officeShown && selChanged && zones.length) { officeFloor.lean(sel && sel !== 'all' ? sel : null); arrive(); }
     // 고른 책상이 밝아진다. 움직임 줄이기에서는 그림이 저절로 다시 그려지지 않으므로 고른 상대가 바뀔 때 한 번 그린다(설계 검토 10)
     if (selChanged && reduced()) officeFloor.redraw();
     // 대화: 맡긴 일(고른 부서만 보이고 나머지는 숨긴다). 「부서 없는 일」과 맡기기가 꺼진 판은 가운데에 직원 줄을 세운다
@@ -2770,6 +2831,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       clearTimeout(subLeave);
       clearTimeout(fanTimer);
       clearTimeout(fanLeave);
+      clearTimeout(swapTimer); clearTimeout(talkTimer); clearTimeout(talkGone);
       officeFloor.dispose();
       officeTasks.dispose();
       for (const box of [app.offChats, app.offRows, app.offCenter]) { box.removeEventListener('pointerover', onOfficeOver); box.removeEventListener('pointerleave', onOfficeLeave); }

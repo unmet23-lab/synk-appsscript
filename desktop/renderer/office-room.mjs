@@ -12,6 +12,7 @@ import { bizplanLine, attachesBizplan } from './office-bizplan-model.mjs';
 import { limitGauge } from './subscriptions-model.mjs';
 import { josa, whenWords } from './solio-today.mjs';
 import { OFFICE_CHAT_ALL, officeChatContacts, officeChatFirst, officeChatPanes, officeChatKeyOk, officeChatDepartment, officeTaskChatKey } from './office-chat-model.mjs';
+import { officeGreets } from './office-greet.mjs';
 
 export const OFFICE_NAME = '사무실';
 /* 방이 보이는 동안 분 글을 다시 쓰는 사이, 솔리오가 보이는 동안 오브제의 느낌표를 맞추려고 다시 읽는 사이, 바뀜 알림을 모으는 시간(ms).
@@ -492,6 +493,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     return res && typeof res === 'object' ? res : { ok: false };
   }
   const departments = () => (Array.isArray(snapshot()?.departments) ? snapshot().departments : []);
+  let holdDept = 0;
   const deptOf = id => departments().find(d => d.id === id) || null;
   /* 이름을 먼저 여기서 본다(본체도 다시 본다). 틀리면 그 줄에 까닭을 쓰고 보내지 않는다 */
   function nameProblem(name, id = null) {
@@ -574,11 +576,14 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
 
   async function handle(p = {}) {
     if (typeof p.act === 'string' && p.act.startsWith('task-')) {
-      const was = tasks.current().departmentId;
-      await tasks.handle(p);
+      const was = tasks.current().departmentId, moves = p.act === 'task-open' || p.act === 'task-follow' || p.act === 'task-retry' || p.act === 'task-department';
+      // 부서가 바뀌는 누름은 일 방이 먼저 다시 그린다(changed). 그때 고른 대화는 아직 앞 상대라, 장면이 보낼 부서를 앞 상대로 되돌리면
+      // 「사무실」에서 누른 직원의 부서로 가지 못한다. 옮기는 동안에는 장면이 되돌리지 않는다(11-26)
+      if (moves) holdDept += 1;
+      try { await tasks.handle(p); } finally { if (moves) holdDept -= 1; }
       // 그림의 직원 · 「이어서 맡기기」 · 「다시 맡기기」 · 「사무실」 입력칸의 부서 칸이 부서를 바꾸면 고른 대화도 그 부서로 간다(설계 검토 1, Fable 최종 F1).
       // 부서가 없으면 「사무실」
-      if (p.act === 'task-open' || p.act === 'task-follow' || p.act === 'task-retry' || p.act === 'task-department') {
+      if (moves) {
         const now = tasks.current().departmentId, key = now && deptOf(now) ? 'd:' + now : OFFICE_CHAT_ALL;
         if (key !== st.chat && (now !== was || p.act === 'task-open')) { leaveChat(); st.chat = key; st.chatSeen.set(key, seenAt ?? Date.now()); }
         changed();
@@ -813,7 +818,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     if (!st.chat) { pickChat(officeChatFirst(list), now); list = contacts(); }
     const panes = officeChatPanes(room, st.chat, { tasking: Array.isArray(plain?.tasks), contacts: list });
     // 「사무실」과 부서를 고른 동안 보낼 부서는 늘 고른 상대와 같다(장면마다 맞춘다. 맡기기가 꺼진 판에서는 일이 없다)
-    if (st.chat !== 'lobby' && tasks.current().departmentId !== officeChatDepartment(st.chat)) tasks.pickDepartment(officeChatDepartment(st.chat));
+    if (!holdDept && st.chat !== 'lobby' && tasks.current().departmentId !== officeChatDepartment(st.chat)) tasks.pickDepartment(officeChatDepartment(st.chat));
     return { ...panes, sel: st.chat, contacts: list, addOpen: st.addOpen, foot: room.foot };
   }
 
@@ -835,8 +840,10 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
       const dept = deptId && depts.find(d => d.id === deptId);
       // 작업 화면은 일 맡기기가 켜진 판에서 부서가 남아 있을 때만 선다. 부서를 빼면 사무실로 돌아간다
       if (deptId && (!room.visible || !dept || !Array.isArray(snap?.tasking?.tasks))) biz.close();
+      // 눌린 직원의 한마디(office-greet.mjs). 그림의 자료와 따로 둔다 — 분이 바뀔 때마다 그림을 다시 짓지 않게
+      const greets = room.visible ? officeGreets(room.seated, { tasks: Array.isArray(plain?.tasks) ? plain.tasks : null, now, done: todoDone() }) : null;
       const feature = biz.departmentId ? biz.scene(featureTask(snap.tasking.tasks, 'bizplan', deptId), { departments: depts, deptName: dept.name }) : null;
-      return room.visible ? { ...room, ...(tasking ? {tasking} : {}), ...(feature ? { feature } : {}), ...(chat ? { chat } : {}), focus: focusReq, opening: openReq } : room;
+      return room.visible ? { ...room, greets, ...(tasking ? {tasking} : {}), ...(feature ? { feature } : {}), ...(chat ? { chat } : {}), focus: focusReq, opening: openReq } : room;
     },
     /* 방을 떠날 때: 열어 둔 묶음과 물음, 알림 줄을 지운다(보기 고른 것은 남긴다).
        keepFeature: 앱 창이 가려졌을 뿐이면 사업계획서 작업 화면은 둔다. 읽는 동안 다른 창을 보고 와도 그 화면이고 쓰던 글이 남는다(11-26 개발판에서 닫히던 것) */

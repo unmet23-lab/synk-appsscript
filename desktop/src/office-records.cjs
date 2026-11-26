@@ -11,7 +11,7 @@
 //    작업 폴더와 그 갈래 · 그 줄의 때 말고는 아무것도 남기지도 돌려주지도 않는다. 크기나 고친 때가 바뀐 파일만 다시 읽는다.
 //  · 이 PC의 기록은 6,000개쯤이다(3.1). 모두 훑기(파일마다 stat)는 2분에 한 번이다. 15초 틱에는 최근 파일과 고친 때가 바뀐 폴더만 본다.
 //    새 세션 파일이 생기면 그 폴더의 고친 때가 바뀐다. 오래 쉬던 파일에 다시 적히는 것은 다음 모두 훑기(2분 안)에 잡힌다.
-//  · 돌려주는 것: { kind:'record', sessionId, cwd, tool:'claude'|'codex', changedAt, turn, turnAt, helperAt, seenAt } — 고친 때(도우미 기록까지)가 30분 안인 세션만.
+//  · 돌려주는 것: { kind:'record', sessionId, cwd, tool:'claude'|'codex', changedAt, turn, turnAt, helperAt, seenAt, title } — 고친 때(도우미 기록까지)가 30분 안인 세션만.
 //    turn은 위의 갈래(모르면 null), turnAt은 그 줄에 적힌 때(없으면 null), helperAt은 도우미 기록의 가장 늦은 고친 때(살핀 때를 넘지 않음, 없으면 null), seenAt은 살핀 때.
 //  · 이 PC의 Codex 기록은 자라는 동안에도 고친 때(mtime)가 만든 때에 머문다. 바뀐 때(ctime)는 줄을 적을 때마다 움직인다.
 //    그래서 Codex 파일은 고친 때 칸에 max(mtime, ctime)를 넣는다. Claude 파일은 내용 없이 ctime이 한꺼번에 바뀐 적이 있어 mtime 그대로다
@@ -124,6 +124,29 @@ function turnInText(text, tool, dropFirst) {
     if (tool === 'codex' && o.type === 'response_item') item = true;
   }
   return item ? { turn: 'working', at: latest } : null;
+}
+
+/* 일의 제목: Claude Code가 기록에 적는 세션 제목 한 줄(앱이나 손님이 붙인 custom-title · agent-name, CLI가 지은 ai-title).
+   summary 줄은 쓰지 않는다. 예전 Claude Code는 새 기록 첫머리에 다른 대화의 요약을 그 꼴로 적었다(Fable 최종 F4).
+   끝에서 앞으로 가장 늦은 것 하나를 쓴다. 손님의 요청 원문(last-prompt)은 길고 남이 보면 안 될 말이 섞일 수 있어 쓰지 않는다.
+   눈에 안 보이는 글자와 방향 바꿈 글자는 지우고 60자로 자른다. Codex 기록에는 제목 줄이 없다(11-26 솔리오_사무실한마디) */
+const TITLE_KEYS = Object.freeze({ 'custom-title': 'customTitle', 'agent-name': 'agentName', 'ai-title': 'aiTitle' });
+const HIDDEN = /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/g;
+function titleInText(text, tool, dropFirst) {
+  if (tool !== 'claude') return null;
+  const lines = text.split('\n');
+  if (dropFirst) lines.shift();
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i].trim();
+    if (!line.startsWith('{') || !/"type":"(?:custom-title|agent-name|ai-title)"/.test(line)) continue;
+    let o; try { o = JSON.parse(line); } catch { continue; }
+    if (!o || typeof o !== 'object' || o.isSidechain) continue;
+    const key = Object.hasOwn(TITLE_KEYS, o.type) ? TITLE_KEYS[o.type] : null, raw = key ? o[key] : null;
+    if (typeof raw !== 'string') continue;
+    const clean = [...raw.replace(HIDDEN, ' ').replace(/\s+/g, ' ').trim()];
+    if (clean.length) return clean.length > 60 ? clean.slice(0, 59).join('') + '…' : clean.join('');
+  }
+  return null;
 }
 
 async function eachLimit(items, fn, limit = PARALLEL) {
@@ -339,17 +362,20 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
   /* 마지막 차례 줄의 갈래. 끝 64KB에서 못 가르면 512KB를 한 번 더 읽는다. stat한 크기까지만 읽으므로, 그 뒤에 덧붙는 줄은 다음 살피기가 본다 */
   /* @returns { found, ok } — ok가 아니면(읽다 실패) 캐시하지 않고 다음 살피기가 다시 읽는다(GPT 검수 solio-office-turn GA6).
      줄 가운데부터 읽지 않게 시작점 한 바이트 앞부터 읽어 첫 줄바꿈까지 버린다. 시작점이 줄의 첫 바이트면 그 줄은 남는다(GA5) */
+  /* 같은 끝 글에서 일의 제목도 찾는다. 갈래를 끝 64KB에서 가르면 제목도 그 안에서만 찾는다(더 읽지 않는다) */
   async function readTurn(handle, tool, size) {
+    let title = null;
     try {
       for (const want of [SLICE, TAIL_MAX]) {
         const len = Math.max(0, Math.min(want, size)), from = size - len, start = from > 0 ? from - 1 : 0;
         const buf = Buffer.alloc(size - start);
         const { bytesRead } = await handle.read(buf, 0, buf.length, start);
-        const found = turnInText(buf.toString('utf8', 0, bytesRead), tool, start > 0);
-        if (found || from === 0) return { found, ok: true };
+        const text = buf.toString('utf8', 0, bytesRead), found = turnInText(text, tool, start > 0);
+        title = titleInText(text, tool, start > 0) ?? title;
+        if (found || from === 0) return { found, title, ok: true };
       }
-    } catch { return { found: null, ok: false }; }
-    return { found: null, ok: true };
+    } catch { return { found: null, title: null, ok: false }; }
+    return { found: null, title, ok: true };
   }
 
   /* 작업 폴더와 끝 줄의 갈래. 둘 다 앞서 읽은 것을 쓸 수 있으면 파일을 열지 않고, 아니면 한 번 열어 필요한 것만 읽는다.
@@ -359,7 +385,7 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
     const c = cwdCache.get(s.file), k = turnCache.get(s.file);
     const cwdKnown = !!c && s.size >= c.size && (c.cwd !== null || s.size === c.size);
     const turnKnown = !!k && k.size === s.size && k.mtimeMs === s.mtimeMs;
-    if (cwdKnown && turnKnown) return { cwd: c.cwd, turn: k.found };
+    if (cwdKnown && turnKnown) return { cwd: c.cwd, turn: k.found, title: k.title ?? null };
     const grownFrom = c && c.cwd === null && s.size > c.size ? Math.min(c.upTo ?? c.size, c.size) : 0;
     let handle = null;
     try { handle = await fsp.open(s.file, 'r'); } catch { handle = null; }
@@ -375,15 +401,15 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
         cwdCache.set(s.file, { cwd, size: s.size, upTo: read.upTo, rootKey });
         while (cwdCache.size > MAX_CACHE) cwdCache.delete(cwdCache.keys().next().value);
       }
-      let turn = turnKnown ? k.found : null;
+      let turn = turnKnown ? k.found : null, title = turnKnown ? k.title ?? null : null;
       if (!turnKnown) {
-        const read = handle ? await readTurn(handle, s.tool, s.size) : { found: null, ok: false };
-        turn = read.found;
+        const read = handle ? await readTurn(handle, s.tool, s.size) : { found: null, title: null, ok: false };
+        turn = read.found; title = read.title ?? null;
         turnCache.delete(s.file);
-        if (read.ok) turnCache.set(s.file, { size: s.size, mtimeMs: s.mtimeMs, found: turn, rootKey });
+        if (read.ok) turnCache.set(s.file, { size: s.size, mtimeMs: s.mtimeMs, found: turn, title, rootKey });
         while (turnCache.size > MAX_CACHE) turnCache.delete(turnCache.keys().next().value);
       }
-      return { cwd, turn };
+      return { cwd, turn, title };
     } finally {
       try { await handle?.close(); } catch { /* 닫지 못해도 넘어간다 */ }
     }
@@ -432,6 +458,7 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
       const facts = await factsOf(f.s, f.rootKey);
       f.cwd = facts.cwd;
       f.turn = facts.turn;
+      f.title = facts.title ?? null;
     });
     const byId = new Map();
     for (const f of found) {
@@ -449,9 +476,9 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
       // 갈래를 가른 줄에 때가 없으면 본 기록의 고친 때(도우미 기록은 빼고, 살핀 때를 넘지 않게)를 그 줄의 때로 둔다.
       // changedAt에는 도우미 기록이 들어 있어, 그것으로 견주면 끝 뒤에 적은 도우미를 가리지 못한다(GPT 검수 solio-office-turn-r2 GA3)
       const turnAt = f.turn ? f.turn.at ?? Math.min(f.s.mtimeMs, t) : null;
-      const obs = { kind: 'record', sessionId: f.s.id, cwd: f.cwd, tool: f.s.tool, changedAt: f.changedAt, turn: f.turn?.turn ?? null, turnAt, helperAt, seenAt: t };
+      const obs = { kind: 'record', sessionId: f.s.id, cwd: f.cwd, tool: f.s.tool, changedAt: f.changedAt, turn: f.turn?.turn ?? null, turnAt, helperAt, seenAt: t, title: f.title ?? null };
       if (!prev) byId.set(f.s.id, obs);
-      else byId.set(f.s.id, { ...(obs.changedAt > prev.changedAt ? obs : prev), cwd: prev.cwd ?? obs.cwd });
+      else byId.set(f.s.id, { ...(obs.changedAt > prev.changedAt ? obs : prev), cwd: prev.cwd ?? obs.cwd, title: (obs.changedAt > prev.changedAt ? obs.title : prev.title) ?? prev.title ?? obs.title });
     }
     return [...byId.values()].sort((a, b) => b.changedAt - a.changedAt);
   }
@@ -491,7 +518,7 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
    * 기록을 한 번 살핀다. 처음과 2분마다는 모두 훑고, 그 사이는 틱이다.
    * @param full 모두 훑기를 부탁한다(방이 열릴 때). 앞 모두 훑기가 15초 안이면 틱으로 갈음한다
    * @param roots 이번에 볼 폴더 { claude:[설정 폴더…], codex:[sessions 폴더…] }. 없으면 만들 때 받은 것
-   * @returns Promise<{ kind:'record', sessionId, cwd, tool, changedAt, turn, turnAt, helperAt, seenAt }[]> — 살피는 중에 다시 부르면 그 살피기를 같이 기다린다
+   * @returns Promise<{ kind:'record', sessionId, cwd, tool, changedAt, turn, turnAt, helperAt, seenAt, title }[]> — 살피는 중에 다시 부르면 그 살피기를 같이 기다린다
    */
   function scan({ full = false, roots: given } = {}) {
     if (!running) running = run(full, given).catch(() => []).finally(() => { running = null; });
@@ -500,4 +527,4 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
   return { scan };
 }
 
-module.exports = { createOfficeRecords, defaultRoots, RECORD_TIMES, SLICE, TAIL_MAX, turnInText };
+module.exports = { createOfficeRecords, defaultRoots, RECORD_TIMES, SLICE, TAIL_MAX, turnInText, titleInText };
