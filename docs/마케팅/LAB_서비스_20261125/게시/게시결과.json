@@ -4,14 +4,28 @@
       "계정": "lab-us-youtube",
       "상태": "예약됨",
       "시각": "2026-11-30T21:00:00-05:00",
-      "지문": "93e12fbb9d39466558d2742d238546d83c3aefc332356db79c63cf7eb22ec8c2",
-      "게시글지문": "419367165c745a522a084719eb8956d4e8cc7c5cb686e0b9719d6ca2faed0e77",
+      "지문": "db17b3d0b99b7fa0b3081f2440a08e8db5f13271fa65cd3cd9d83debec0a6db3",
+      "게시글지문": "13baaee5fdbe6b7313fe7dee284b65590310b2ab6b50293dc13db35b61fd6f63",
       "방법": "ego",
-      "게시물ID": "KexrQf7U9zo",
-      "주소": "https://youtube.com/shorts/KexrQf7U9zo",
-      "확인": "예약 한국 시각 2026-12-01 11:00 = 현지 21:00 · 서비스 in Korea = FREE 🥟 (not \"service\") #learnkorean · 쇼츠 목록(SYNK LAB USA | Korean Made Fun): 「서비스 in Korea = FREE 🥟 (not \"service\") #learnkorean」 · 예약됨 · 2026. 12. 1. 예약 날짜 · 예약 창 2026. 12. 1. 오전 11:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 영어로 저장됨 · 동영상 언어: 영어 · 고정 댓글은 지금 달지 않음(공개 뒤 따로)",
-      "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과(11-26 14시 회차)",
-      "기록시각": "2026-11-26T06:05:00.512Z"
+      "앞시도": [
+        {
+          "상태": "실패",
+          "시각": "2026-11-30T21:00:00-05:00",
+          "지문": "93e12fbb9d39466558d2742d238546d83c3aefc332356db79c63cf7eb22ec8c2",
+          "게시글지문": "419367165c745a522a084719eb8956d4e8cc7c5cb686e0b9719d6ca2faed0e77",
+          "방법": "ego",
+          "게시물ID": "KexrQf7U9zo",
+          "주소": "https://youtube.com/shorts/KexrQf7U9zo",
+          "확인": "11-27 06:22 유튜브 스튜디오 SYNK LAB USA | Korean Made Fun · KexrQf7U9zo(서비스 in Korea = FREE 🥟 (not \"service\")) 편집 화면 공개 상태 「예약됨」 → 「비공개」 저장 뒤 다시 읽음 — v7로 바꿔 걸기(유호님 11-27 「고친 뒤 바꿔」)",
+          "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과(11-26 14시 회차)",
+          "기록시각": "2026-11-26T21:23:02.227Z"
+        }
+      ],
+      "게시물ID": "-uyNGLV6Piw",
+      "주소": "https://youtube.com/shorts/-uyNGLV6Piw",
+      "확인": "예약 한국 시각 2026-12-01 11:00 = 현지 21:00 · 서비스 in Korea = FREE 🥟 (just don't ask for more 😅) #learnkorean · 쇼츠 목록(SYNK LAB USA | Korean Made Fun): 예약됨 · 2026. 12. 1. 예약 날짜 · 예약 창 2026. 12. 1. 오전 11:00 현지 시간대(GMT+0900) · 제목 및 설명 언어 영어로 저장됨 · 동영상 언어 영어 · 옛 v5(KexrQf7U9zo)는 비공개로 내림 · 고정 댓글은 지금 달지 않음(공개 뒤 따로)",
+      "승인": "유호님 11-27 「고친 뒤 바꿔」 · 올리기 전 검사 고칠 것 0(11-27)",
+      "기록시각": "2026-11-26T21:27:24.737Z"
     }
   ]
 }

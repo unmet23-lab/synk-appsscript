@@ -1,0 +1,21 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photo, portrait 2:3, warm evening light from a red felt lantern just out of frame, shallow depth of field, cosy handmade texture, slightly playful.
+
+WORLD (same as the attached images — the same restaurant table and the same bill): a tiny felt Korean-Chinese neighbourhood restaurant in the evening. The table top is dark walnut-brown felt. The bill is the same small plain cream felt paper slip that the owner holds out in the second attached image.
+MATERIAL RULE: everything is needle-felted wool or stitched felt. The writing on the bill is EMBROIDERED in thick dark-brown wool thread, chunky and hand-stitched, like a child's felt craft — not printed, not a font.
+
+Attached images in order: (1) the same restaurant table — match its walnut felt colour and light, (2) the same cream felt bill slip held by the owner — match its colour and shape, (3) felt craft-style reference.
+
+CAMERA: VERY CLOSE, looking straight down at the table from above (top-down), fixed.
+- The cream felt bill lies FLAT on the walnut felt table, perfectly square to the frame, centred, filling 12% to 88% of the width and 26% to 84% of the height. The TOP 22% of the image is plain walnut felt table, slightly out of focus — keep it empty.
+- The bill has FOUR rows, separated by three thin stitched dark-brown thread lines. Each row has, on the LEFT, one tiny needle-felted food item sewn onto the slip, and on the RIGHT, the price embroidered in big chunky dark-brown thread:
+  - Row 1: three tiny golden-brown felt pan-fried dumplings — price "₩0"
+  - Row 2: a tiny white felt plate of orange-gold felt sweet-and-sour pork chunks — price "₩0"
+  - Row 3: a tiny white felt bowl of red jjamppong noodle soup — price "₩0"
+  - Row 4: one tiny EMPTY plain white felt plate — price "₩8,000", and a hand-stitched dark-brown thread circle drawn around "₩8,000".
+- The three "₩0" prices are the same size and line up in one column; "₩8,000" sits in the same column and is the same height, only longer, inside its stitched circle.
+- At the RIGHT edge of the frame, just outside the bill next to row 4, the tip of the owner's felt hand with the white felt cuff of his chef's jacket rests on the table, pointing at the circled price, not covering it.
+Nobody's face in this panel. MONGLE is not in this panel.
+
+The ONLY writing anywhere in the image is exactly these four embroidered prices: "₩0", "₩0", "₩0", "₩8,000" — spelled exactly like that, with the won sign. No other letters, words, numbers, totals, dates or logos anywhere — not on the bill, not on the table. No real brand. No dense dotted or ring patterns anywhere. Keep every food icon and price fully inside the bill, nothing cut off by the frame.

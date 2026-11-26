@@ -20,7 +20,8 @@ const CellLayer: React.FC<{ c: Cell }> = ({ c }) => {
   const frame = useCurrentFrame(); // Sequence 안이라 칸 첫머리가 0
   const n = fr(c.to) - fr(c.at);
   // 흔들림 칸은 4% 키운 채 시작한다 — 흔들 때 화면 가장자리에 바탕색 줄이 비치지 않게(시험 렌더 13.07초)
-  const z = interpolate(frame, [0, n], [c.shake ? 1.04 : 1, c.z], { ...clamp, easing: Easing.inOut(Easing.sin) });
+  // z0: 처음부터 당겨 잡을 칸(v7 계산서 칸 — 9:16으로 늘린 위 띠의 세로 결을 화면 밖으로)
+  const z = interpolate(frame, [0, n], [c.z0 ?? (c.shake ? 1.04 : 1), c.z], { ...clamp, easing: Easing.inOut(Easing.sin) });
   const sx = c.shake && frame < 10 ? Math.sin(frame * 2.6) * 14 * (1 - frame / 10) : 0;
   const sy = c.shake && frame < 10 ? Math.cos(frame * 3.1) * 6 * (1 - frame / 10) : 0;
   return (

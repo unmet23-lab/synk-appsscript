@@ -134,5 +134,15 @@
       ]
     }
   ],
-  "_v6": "s1 · s2는 v1 판을 그대로 쓴다. a3~a11은 샷마다 두 판(첫 판 _v6계획쓰기.py · 둘째 판 _v6계획쓰기_b.py)을 굽고 고른다"
+  "_v6": "s1 · s2는 v1 판을 그대로 쓴다. a3~a11은 샷마다 두 판(첫 판 _v6계획쓰기.py · 둘째 판 _v6계획쓰기_b.py)을 굽고 고른다",
+  "b1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "b1",
+    "key": "gives two small light knocks on the table next to the ringed price"
+  },
+  "_v7": "b1은 끝 반전 칸(계산서 가까이) — 판 a · b(_v7계획쓰기.py a | b)를 굽고 고른다(11-27 유호님 「고친 뒤 바꿔」)"
 }
