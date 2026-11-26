@@ -6,6 +6,7 @@ import { measureText } from '@remotion/layout-utils';
 import { EN, KO } from '../lib/fonts';
 
 const INK = '#2B1B12';
+const SUB = '#6B5647'; // 읽기 · 뜻 둘째 줄(언제 쓰는지)
 const PAPER = '#FFF8EC';
 const MEAN = '#2F4BA0';
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -22,9 +23,14 @@ export type 말풍선말 = {
   y: number; // 꼬리 끝 y
   꼬리x: number; // 꼬리 끝 x(말한 사람 쪽)
   크기?: number; // 한글 크기(안 적으면 86)
-  뜻크기?: number; // 뜻 크기(안 적으면 한글이 있을 때 52, 없을 때 58)
+  뜻크기?: number; // 뜻 크기(안 적으면 한글이 있을 때 52, 없을 때 58). 뜻 둘째 줄부터는 0.8배 · 밤색
+  글꼴?: string; // 읽기 · 뜻 글꼴(나라 판본 — 안 적으면 EN)
+  줄높이?: number; // 읽기 · 뜻 줄 높이(나라 판본 — 안 적으면 1.18)
+  한문장?: boolean; // 뜻 여러 줄이 한 문장일 때(끝 속말) — 둘째 줄도 같은 크기 · 색
 };
 
+// 글자 폭은 첫 글꼴 이름으로 잰다(var() · 여러 이름 줄은 measureText가 못 읽는다)
+const 첫글꼴 = (f?: string) => (f ? f.replace(/var\([^,]*,\s*/, '').split(',')[0].replace(/['")]/g, '').trim() : 'Inter Tight');
 const 폭 = (t: string, f: string, w: string, s: number) => measureText({ text: t, fontFamily: f, fontWeight: w, fontSize: s }).width;
 
 export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
@@ -35,10 +41,13 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
   const 크 = w.크기 ?? 86;
   const 뜻 = w.뜻크기 ?? (ko.length ? 52 : 58);
   const 읽 = 40;
+  const 높 = w.줄높이 ?? 1.18;
+  const 글 = 첫글꼴(w.글꼴);
   const 뜻줄 = w.mean.split('\n');
-  const 글폭 = Math.max(0, ...ko.map((t) => 폭(t, 'SUIT', '800', 크)), ...뜻줄.map((t) => 폭(t, 'Inter Tight', '700', 뜻)), w.read ? 폭(w.read, 'Inter Tight', '600', 읽) : 0);
-  const W = Math.ceil(글폭) + 72;
-  const H = Math.ceil(ko.length * 크 * 1.12 + (w.read ? 읽 * 1.2 : 0) + 뜻줄.length * 뜻 * 1.18 + 34);
+  const 뜻크 = (i: number) => (i === 0 || w.한문장 ? 뜻 : Math.round(뜻 * 0.8));
+  const 글폭 = Math.max(0, ...ko.map((t) => 폭(t, 'SUIT', '800', 크)), ...뜻줄.map((t, i) => 폭(t, 글, '700', 뜻크(i))), w.read ? 폭(w.read, 글, '600', 읽) : 0);
+  const W = Math.ceil(글폭 * 1.04) + 72;
+  const H = Math.ceil(ko.length * 크 * 1.12 + (w.read ? 읽 * 높 : 0) + 뜻줄.reduce((s, _, i) => s + 뜻크(i) * 높, 0) + 34);
   const 꼬리 = 40;
   const left = Math.min(Math.max(w.x - W / 2, 28), width - 28 - W);
   const top = w.y - 꼬리 - H;
@@ -56,8 +65,10 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
         {ko.map((t, i) => (
           <div key={i} style={{ fontFamily: KO, fontWeight: 800, fontSize: 크, color: INK, lineHeight: 1.12, whiteSpace: 'pre' }}>{t}</div>
         ))}
-        {w.read ? <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 읽, color: '#6B5647', lineHeight: 1.2, whiteSpace: 'pre' }}>{w.read}</div> : null}
-        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 뜻, color: ko.length ? MEAN : INK, lineHeight: 1.18, whiteSpace: 'pre' }}>{w.mean}</div>
+        {w.read ? <div style={{ fontFamily: w.글꼴 ?? EN, fontWeight: 600, fontSize: 읽, color: SUB, lineHeight: 높, whiteSpace: 'pre' }}>{w.read}</div> : null}
+        {뜻줄.map((t, i) => (
+          <div key={i} style={{ fontFamily: w.글꼴 ?? EN, fontWeight: 700, fontSize: 뜻크(i), color: i > 0 && !w.한문장 ? SUB : ko.length ? MEAN : INK, lineHeight: 높, whiteSpace: 'pre' }}>{t}</div>
+        ))}
       </div>
     </div>
   );

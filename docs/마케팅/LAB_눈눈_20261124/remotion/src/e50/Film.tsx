@@ -1,11 +1,11 @@
 // LAB 영어 E50 「눈 = eye · snow」 — 편 하나(판본 틀 없음, 영어 판). 장면 정본은 data.ts.
-// 11-25 15시 회차: 정지 판 대신 Flow 영상 샷을 ShotLayer로 깐다(영상시험_20261125/본보기_Film.tsx — 카메라 밀기 없음).
-// 말 글씨: 「튀는 글자」(제작 절차 lab-lettering — 유호님 11-25 「B로 가자」, 본보기를 ./튀는글자.tsx로 복사). 배우는 낱말 「눈」만 노랑. 머리 글 · 이름표 · 끝 글은 크림 글자 + 그늘.
+// 11-25 15시 회차: 정지 판 대신 Flow 영상 샷을 ShotLayer로 깐다(영상시험_20261125/본보기_Film.tsx).
+// 말 글씨: 온전한 말풍선(제작 절차 lab-lettering — 11-26 유호님 「말풍선이 조각나서 꺠져보이지만않으면 돼」 · 「이런 식으로 안짤리고 잘 나오는거는 이렇게 써줘도 좋을것같아」). 머리 글 · 이름표 · 끝 글은 크림 글자 + 그늘.
 import React from 'react';
 import { AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
 import { FLAKE2, FPS, fr, HIT1, HIT2, SCENE, SFX, Shot, SHOTS, TAG_EYE, TAG_SNOW, TOTAL, TXT, VO } from './data';
-import { 말, 튀는글자 } from './튀는글자';
+import { 말풍선, 말풍선말 } from './말풍선';
 
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const MASTER = 0.8;
@@ -34,15 +34,15 @@ const Flake2: React.FC<{ t: number }> = ({ t }) => {
   return <Img src={staticFile('img/flake2.png')} style={{ position: 'absolute', left: at(FLAKE2.x) - FLAKE2.w / 2, top: at(FLAKE2.y) - FLAKE2.w / 2, width: FLAKE2.w, transform: `rotate(${at(FLAKE2.rot)}deg)`, filter: 'drop-shadow(0 10px 12px rgba(10,16,40,0.35))' }} />;
 };
 
-// 말 — 튀는 글자(감정마다 글자가 튄다). y는 글자 덩어리 아래, tip은 말한 사람 머리 쪽
-const SAY: 말[] = [
-  { at: 0.85, to: 3.0, ko: [TXT.m1], key: '눈', mean: 'snow?', 뜻크기: 68, x: 800, y: 1050, tip: [790, 1110], 감정: '기쁨', 크기: 120 },
-  { at: 1.72, to: 3.0, ko: [TXT.f1], key: '눈', mean: 'eye?', 뜻크기: 68, x: 610, y: 870, tip: [430, 820], 감정: '담담', 크기: 120 },
-  { at: 3.08, to: 6.5, ko: [TXT.f2], key: '눈', read: TXT.f2r, mean: TXT.f2m, x: 470, y: 520, tip: [400, 600], 감정: '담담', 폭: 780 },
-  { at: 6.58, to: 9.25, ko: [TXT.m2], key: '눈', read: TXT.m2r, mean: TXT.m2m, x: 360, y: 800, tip: [420, 900], 감정: '기쁨', 폭: 560 }, // 위의 큰 눈송이를 가리지 않게 왼쪽 아래
-  { at: 10.12, to: 12.65, ko: [TXT.m3], key: '눈', read: TXT.m3r, mean: TXT.m3m, x: 560, y: 790, tip: [520, 960], 감정: '놀람', 크기: 150, 폭: 780 },
-  { at: 12.7, to: 14.65, ko: [TXT.f3], key: '눈', read: TXT.f3r, mean: TXT.f3m, x: 470, y: 530, tip: [480, 620], 감정: '웃음', 폭: 780 },
-  { at: 18.68, to: 20.5, ko: [TXT.m4], read: TXT.m4r, mean: TXT.m4m, x: 500, y: 830, tip: [520, 960], 감정: '당황', 크기: 140, 폭: 780 },
+// 말 — 온전한 말풍선. x는 말풍선 가운데, y는 꼬리 끝, 꼬리x는 꼬리 끝 x(말한 사람 머리 쪽)
+const SAY: 말풍선말[] = [
+  { at: 0.85, to: 3.0, ko: [TXT.m1], mean: 'snow?', 뜻크기: 60, x: 840, y: 1085, 꼬리x: 790, 크기: 100 },
+  { at: 1.72, to: 3.0, ko: [TXT.f1], mean: 'eye?', 뜻크기: 60, x: 610, y: 905, 꼬리x: 470, 크기: 100 },
+  { at: 3.08, to: 6.5, ko: [TXT.f2], read: TXT.f2r, mean: TXT.f2m, x: 470, y: 565, 꼬리x: 400, 크기: 100 },
+  { at: 6.58, to: 9.25, ko: [TXT.m2], read: TXT.m2r, mean: TXT.m2m, 한문장: true, x: 380, y: 850, 꼬리x: 420, 크기: 100 }, // 위의 큰 눈송이를 가리지 않게 왼쪽 아래
+  { at: 10.12, to: 12.65, ko: [TXT.m3], read: TXT.m3r, mean: TXT.m3m, x: 560, y: 830, 꼬리x: 520, 크기: 110 },
+  { at: 12.7, to: 14.65, ko: [TXT.f3], read: TXT.f3r, mean: TXT.f3m, x: 480, y: 570, 꼬리x: 480, 크기: 100 },
+  { at: 18.68, to: 20.5, ko: [TXT.m4], read: TXT.m4r, mean: TXT.m4m, x: 520, y: 870, 꼬리x: 520, 크기: 104 },
 ];
 
 // 이름표 — 가는 선 하나로 그림 속 자리를 가리킨다(점 · 고리 없음)
@@ -120,7 +120,7 @@ export const Film: React.FC = () => {
           <div style={{ position: 'relative', fontFamily: EN, fontWeight: 800, fontSize: 60, color: PINK, lineHeight: 1.2 }}>snow in your eye</div>
         </div>
       ) : null}
-      {SAY.map((w) => <튀는글자 key={w.at} w={w} />)}
+      {SAY.map((w) => <말풍선 key={w.at} w={w} />)}
       <Sound from={0} to={TOTAL} music />
     </AbsoluteFill>
   );
