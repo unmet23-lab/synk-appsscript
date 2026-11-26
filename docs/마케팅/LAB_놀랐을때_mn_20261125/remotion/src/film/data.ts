@@ -2,7 +2,6 @@
 // 편 전체를 영상으로(제작 절차 lab-whole-video): 샷 다섯은 Flow Omni 1.2 Flash로 구운 720×1280 영상(public/vid — git 밖, tools/플로우영상.js 「넣기」)이고 글 · 소리를 그 위에 얹는다.
 // 귀신의 집 방 넷(깜짝 상자 해골 · 국수 먹는 유령 · 거미 · 안 열리는 문)에서 몽글이 한 마디씩 놀라고, 마지막에는 겁주려던 직원이 몽글을 보고 첫 마디 「깜짝이야!」를 외치며 달아난다.
 // 그 나라 글(머리 글 · 방마다 한 줄 · 말 읽는 법 · 뜻 · 끝 줄)은 판본 글 하나(./판본/<KEY>.json — ./판본.ts)가 원천이다.
-import type { 감정 } from './튀는글자';
 
 export const FPS = 30;
 export const fr = (s: number) => Math.round(s * FPS);
@@ -23,16 +22,16 @@ export const SHOTS: Shot[] = [
 export const FILM = 23.55;
 export const SCENE = { from: 14.8, to: 23.55 }; // 한 장면 먼저(장면 심사) — h5
 
-// 몽글의 네 마디와 직원의 한 마디 — 말 글씨는 「튀는 글자」(제작 절차 lab-lettering · 유호님 11-25 「B로 가자」). x는 글자 덩어리 가운데, y는 덩어리 아래, tip은 말한 사람 머리 쪽(1080×1920 좌표)
-export type Phrase = { n: number; at: number; to: number; ko: string; key: string; x: number; y: number; tip: [number, number]; 감정: 감정; 크기?: number };
+// 몽글의 네 마디와 직원의 한 마디 — 온전한 말풍선(제작 절차 lab-lettering · 11-26 유호님 「이런 식으로 안짤리고 잘 나오는거는 이렇게 써줘도 좋을것같아」). x는 말풍선 가운데, y는 꼬리 끝, 꼬리x는 꼬리 끝 x(1080×1920 좌표)
+export type Phrase = { n: number; at: number; to: number; ko: string; key: string; x: number; y: number; 꼬리x: number; 크기?: number };
 export const PHRASES: Phrase[] = [
-  { n: 1, at: 1.1, to: 4.0, ko: '깜짝이야!', key: '깜짝이야', x: 690, y: 880, tip: [815, 1110], 감정: '놀람', 크기: 108 },
-  { n: 2, at: 5.25, to: 7.7, ko: '헐…', key: '헐', x: 590, y: 850, tip: [760, 1150], 감정: '졸림', 크기: 150 },
-  { n: 3, at: 8.55, to: 11.25, ko: '엄마야!', key: '엄마야', x: 600, y: 975, tip: [690, 1200], 감정: '놀람', 크기: 124 },
-  { n: 4, at: 12.55, to: 14.8, ko: '어떡해!', key: '어떡해', x: 560, y: 1170, tip: [740, 1280], 감정: '당황', 크기: 132 },
+  { n: 1, at: 1.1, to: 4.0, ko: '깜짝이야!', key: '깜짝이야', x: 690, y: 960, 꼬리x: 800, 크기: 96 },
+  { n: 2, at: 5.25, to: 7.7, ko: '헐…', key: '헐', x: 640, y: 985, 꼬리x: 760, 크기: 110 },
+  { n: 3, at: 8.55, to: 11.25, ko: '엄마야!', key: '엄마야', x: 668, y: 1000, 꼬리x: 660, 크기: 100 },
+  { n: 4, at: 12.55, to: 14.8, ko: '어떡해!', key: '어떡해', x: 690, y: 1240, 꼬리x: 760, 크기: 100 },
 ];
 // 직원 — 첫 마디가 그대로 돌아온다(읽는 법은 첫 마디 것)
-export const STAFF = { at: 17.15, to: 19.05, ko: '깜짝이야!', key: '깜짝이야', x: 495, y: 688, tip: [500, 790] as [number, number], 감정: '놀람' as 감정, 크기: 98 };
+export const STAFF = { at: 17.15, to: 19.05, ko: '깜짝이야!', key: '깜짝이야', x: 540, y: 790, 꼬리x: 520, 크기: 92 };
 // 위 한 줄 — 방 2 · 3 · 4와 끝 방(판본 글 sits 차례)
 export const SITS: { at: number; to: number }[] = [
   { at: 4.05, to: 7.7 },
@@ -41,7 +40,7 @@ export const SITS: { at: number; to: number }[] = [
   { at: 14.85, to: 19.05 },
 ];
 export const HOOK = { at: 0, to: 4.0 };
-export const END = { at: 20.7, to: FILM, base: 500, tip: [530, 965] as [number, number] }; // 몽글의 속말 — 꼬리가 몽글 머리로
+export const END = { at: 20.7, to: FILM, x: 560, y: 975, 꼬리x: 560 }; // 몽글의 속말 — 꼬리가 몽글 머리로
 
 // 목소리(초 · 파일) — public/vo
 export const VO: [number, string][] = [

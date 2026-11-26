@@ -1,11 +1,11 @@
-// LAB 몽골 M76 「놀랐을 때 네 마디」(11-25) — 편 전체를 영상으로. 샷은 ShotLayer로 깔고(영상시험_20261125/본보기_Film.tsx) 말풍선 · 위 한 줄 · 소리를 얹는다. 카메라 밀기는 넣지 않는다.
-// 글 꼴: 위 한 줄은 짙은 띠, 말은 「튀는 글자」(제작 절차 lab-lettering — 배우는 말만 노랑, 꼬리는 말한 사람 쪽 · 교훈 L21). 읽는 줄 앞 「n/4」는 머리 글 「4 хэллэг」의 몇째 마디인지(교훈 L11).
+// LAB 몽골 M76 「놀랐을 때 네 마디」(11-25) — 편 전체를 영상으로. 샷은 ShotLayer로 깔고(영상시험_20261125/본보기_Film.tsx) 말풍선 · 위 한 줄 · 소리를 얹는다.
+// 글 꼴: 위 한 줄은 짙은 띠, 말은 온전한 말풍선(제작 절차 lab-lettering — 11-26 유호님 「말풍선이 조각나서 꺠져보이지만않으면 돼」, 꼬리는 말한 사람 쪽 · 교훈 L21). 읽는 줄 앞 「n/4」는 머리 글 「4 хэллэг」의 몇째 마디인지(교훈 L11).
 // 한글 · [읽는 법] · 뜻 세 줄(교훈 L08). 읽는 법은 [ ]로 감싼다 — 「хөл」이 몽골어 「발」로 읽히지 않게(11-25 Fable · Opus가 같이 짚음).
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { BGM_VOL, END, FILM, FPS, fr, HOOK, PHRASES, SCENE, SFX, Shot, SHOTS, SITS, STAFF, VO } from './data';
 import { LocPack } from './판본';
-import { 꼬리, 튀는글자 } from './튀는글자';
+import { 말풍선 } from './말풍선';
 
 export { FPS };
 export const TOTAL_FRAMES = fr(FILM);
@@ -52,17 +52,7 @@ const Sit: React.FC<{ pk: LocPack; i: number }> = ({ pk, i }) => {
 };
 
 // 끝 줄 — 혼자 남은 몽글의 속말(꼬리가 몽글 머리로)
-const EndLine: React.FC<{ pk: LocPack }> = ({ pk }) => {
-  const frame = useCurrentFrame();
-  if (frame < fr(END.at)) return null;
-  const p = pop(frame, END.at);
-  return (
-    <div style={{ position: 'absolute', inset: 0, opacity: Math.min(1, p * 1.5), transform: `scale(${0.88 + 0.12 * p})`, transformOrigin: `${END.tip[0]}px ${END.tip[1]}px` }}>
-      <꼬리 기점={[END.base, 796]} tip={END.tip} p={p} />
-      <div style={{ position: 'absolute', left: 65, right: 160, bottom: 1920 - 790, textAlign: 'center', color: '#fff', WebkitTextStroke: `13px ${INK}`, paintOrder: 'stroke fill', filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.35))', fontFamily: pk.font, fontWeight: 800, fontSize: pk.endSize, lineHeight: Math.max(1.18, pk.lineH), whiteSpace: 'pre-line' }}>{pk.end}</div>
-    </div>
-  );
-};
+const EndLine: React.FC<{ pk: LocPack }> = ({ pk }) => <말풍선 w={{ at: END.at, to: FILM, mean: pk.end, x: END.x, y: END.y, 꼬리x: END.꼬리x, 뜻크기: Math.round(pk.endSize * 0.86), 글꼴: pk.font, 줄높이: Math.max(1.18, pk.lineH), 한문장: true }} />;
 
 const Sound: React.FC<{ from: number; to: number; music: boolean }> = ({ from, to, music }) => (
   <>
@@ -94,8 +84,8 @@ export const Film: React.FC<{ p: LocPack }> = ({ p }) => (
     {SHOTS.map((s, i) => <ShotLayer key={i} s={s} />)}
     <Hook pk={p} />
     {SITS.map((_, i) => <Sit key={i} pk={p} i={i} />)}
-    {PHRASES.map((b) => <튀는글자 key={b.n} w={{ at: b.at, to: b.to, ko: [b.ko], key: b.key, read: `${b.n}/4  [${p.reads[b.n - 1]}]`, mean: p.means[b.n - 1], x: b.x, y: b.y, tip: b.tip, 감정: b.감정, 크기: b.크기, 글꼴: p.font, 뜻크기: p.meanSize, 줄높이: Math.max(1.16, p.lineH) }} />)}
-    <튀는글자 w={{ at: STAFF.at, to: STAFF.to, ko: [STAFF.ko], key: STAFF.key, read: `[${p.reads[0]}]`, mean: p.staffMean, x: STAFF.x, y: STAFF.y, tip: STAFF.tip, 감정: STAFF.감정, 크기: STAFF.크기, 글꼴: p.font, 뜻크기: p.meanSize, 줄높이: Math.max(1.16, p.lineH) }} />
+    {PHRASES.map((b) => <말풍선 key={b.n} w={{ at: b.at, to: b.to, ko: [b.ko], read: `${b.n}/4  [${p.reads[b.n - 1]}]`, mean: p.means[b.n - 1], x: b.x, y: b.y, 꼬리x: b.꼬리x, 크기: b.크기, 글꼴: p.font, 뜻크기: p.meanSize, 줄높이: Math.max(1.16, p.lineH) }} />)}
+    <말풍선 w={{ at: STAFF.at, to: STAFF.to, ko: [STAFF.ko], read: `[${p.reads[0]}]`, mean: p.staffMean, x: STAFF.x, y: STAFF.y, 꼬리x: STAFF.꼬리x, 크기: STAFF.크기, 글꼴: p.font, 뜻크기: p.meanSize, 줄높이: Math.max(1.16, p.lineH) }} />
     <EndLine pk={p} />
     <Sound from={0} to={FILM} music />
   </AbsoluteFill>
