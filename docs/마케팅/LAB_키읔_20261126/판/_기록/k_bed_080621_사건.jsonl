@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a214f5-cb69-78c3-ad26-d4ee601be69e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one portrait felt-diorama image, using Mongle’s reference for its shape and texture.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle leans curiously toward a glowing phone on its mint quilt in a cosy peach felt bedroom."}}
+{"type":"turn.completed","usage":{"input_tokens":67246,"cached_input_tokens":56704,"cache_write_input_tokens":0,"output_tokens":1009,"reasoning_output_tokens":83}}

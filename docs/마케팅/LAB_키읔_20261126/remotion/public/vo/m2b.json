@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2b",
+ "text": "크, 크, 크…",
+ "dur": 1.604,
+ "words": [
+  {
+   "text": "크,",
+   "start": 0.02,
+   "end": 0.244
+  },
+  {
+   "text": "크,",
+   "start": 0.383,
+   "end": 0.578
+  },
+  {
+   "text": "크…",
+   "start": 0.746,
+   "end": 1.604
+  }
+ ],
+ "source": {
+  "key": "35916ab3933a7579782de1ca04e47d6c",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 5120,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "한 글자씩 또박또박 아주 천천히, 차분하고 낮은 목소리로 다시 따라 읽어 본다.",
+   "next": "아, 웃음이구나!"
+  },
+  "speed": 0.72,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 489
+ }
+}

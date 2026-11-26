@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a214f5-f4c3-7d82-8f4b-6b4c63fd59a3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one close-up of the friend, preserving his reference features and the clear space above him.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The felt friend smiles expectantly at his glowing phone in his cosy sage-green room."}}
+{"type":"turn.completed","usage":{"input_tokens":82715,"cached_input_tokens":67712,"cache_write_input_tokens":0,"output_tokens":853,"reasoning_output_tokens":76}}

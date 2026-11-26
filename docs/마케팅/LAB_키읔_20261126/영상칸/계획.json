@@ -1,0 +1,92 @@
+{
+  "_예산": 180,
+  "_배우는말": [
+    {
+      "말": "ㅋㅋㅋ",
+      "한글": "ㅋㅋㅋ",
+      "읽기": "keu-keu-keu",
+      "뜻": "Korean “lol”",
+      "초": 3.8,
+      "칸": [
+        "s5"
+      ],
+      "음성": [
+        "m2",
+        "m2b"
+      ]
+    }
+  ],
+  "s1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "k_bed",
+    "key": "the phone screen glows a little brighter for a moment"
+  },
+  "s2": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "k_puzzle",
+    "key": "tilts its whole dome slowly to the left"
+  },
+  "s3": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "k_friend",
+    "key": "his small smile grows into a chuckle"
+  },
+  "s4": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "k_laugh",
+    "key": "rocking forward and back on the cushion"
+  },
+  "s5": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "18",
+    "dur": "6초",
+    "proj": "omni",
+    "start": "k_tap",
+    "key": "bobs its whole dome down once onto the phone"
+  },
+  "s6": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "k_cold",
+    "end": "k_coldx",
+    "key": "his face slowly goes flat and cold"
+  },
+  "s7": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "k_panic",
+    "key": "presses its whole dome down onto the edge of the phone again and again"
+  },
+  "s8": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "15",
+    "dur": "5초",
+    "proj": "omni",
+    "start": "k_roll",
+    "key": "rocks and rolls from side to side on his back"
+  }
+}

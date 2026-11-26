@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "어… 아니 아니, 크크크크크!",
+ "dur": 2.243,
+ "words": [
+  {
+   "text": "어…",
+   "start": 0.02,
+   "end": 0.06
+  },
+  {
+   "text": "아니",
+   "start": 0.282,
+   "end": 0.504
+  },
+  {
+   "text": "아니,",
+   "start": 0.605,
+   "end": 0.806
+  },
+  {
+   "text": "크크크크크!",
+   "start": 1.088,
+   "end": 2.243
+  }
+ ],
+ "source": {
+  "key": "28fadc9905bc75bb9bc04a1360b534cb",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 3301,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "친구 얼굴이 싸늘해졌다. 당황해서 낮은 목소리로 허둥지둥 중얼거리며 웃음 글자를 서둘러 보낸다. 소리를 지르지 않는다.",
+   "next": "제발 웃어 줘!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 506
+ }
+}

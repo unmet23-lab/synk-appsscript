@@ -1,0 +1,94 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1126,
+  "lufs": -16
+ },
+ "made": "2026-11-25T23:58:06.136Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "크크…?",
+   "dur": 0.809,
+   "syllablesPerSec": 2.47,
+   "src": "m1.wav",
+   "key": "be153465ea914f508d6429488cece012",
+   "words": 1
+  },
+  {
+   "id": "m2",
+   "text": "크크크!",
+   "dur": 0.893,
+   "syllablesPerSec": 3.36,
+   "src": "m2.wav",
+   "key": "37f9935bc04d6668563c11ed35909143",
+   "words": 1
+  },
+  {
+   "id": "m2b",
+   "text": "크, 크, 크…",
+   "dur": 1.604,
+   "syllablesPerSec": 1.87,
+   "src": "m2b.wav",
+   "key": "35916ab3933a7579782de1ca04e47d6c",
+   "words": 3
+  },
+  {
+   "id": "m3",
+   "text": "크!",
+   "dur": 0.447,
+   "syllablesPerSec": 2.24,
+   "src": "m3.wav",
+   "key": "564b41d45ca2680ebcea6b5dd96b7320",
+   "words": 1
+  },
+  {
+   "id": "m4",
+   "text": "어… 아니 아니, 크크크크크!",
+   "dur": 2.243,
+   "syllablesPerSec": 4.46,
+   "src": "m4.wav",
+   "key": "28fadc9905bc75bb9bc04a1360b534cb",
+   "words": 4
+  },
+  {
+   "id": "f1",
+   "text": "크크.",
+   "dur": 1.897,
+   "src": "f1.wav",
+   "voice": "ElevenLabs v4 Taehyung"
+  },
+  {
+   "id": "f2",
+   "text": "크크크크크!",
+   "dur": 3.434,
+   "src": "f2.wav",
+   "voice": "ElevenLabs v4 Taehyung"
+  },
+  {
+   "id": "f3",
+   "text": "…크.",
+   "dur": 1.432,
+   "src": "f3.wav",
+   "voice": "ElevenLabs v4 Taehyung"
+  },
+  {
+   "id": "f4",
+   "text": "크하하하하하!",
+   "dur": 5.048,
+   "src": "f4.wav",
+   "voice": "ElevenLabs v4 Taehyung"
+  }
+ ]
+}

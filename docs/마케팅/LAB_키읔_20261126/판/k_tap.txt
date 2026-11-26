@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photographed with a macro lens, portrait 9:16, gentle depth of field, cosy handmade felt-and-wool textures everywhere, cute but not babyish (for young adults learning Korean).
+
+WORLD: late evening at home, two different small rooms that are texting each other.
+- MONGLE'S ROOM: a tiny cosy bedroom with warm PEACH felt walls, a low bed with a puffy mint-green quilt, a small wooden desk lamp giving warm yellow light, a felt bookshelf far behind. Night outside a small window (deep blue, no stars, no dots).
+- THE FRIEND'S ROOM: a different small room with SAGE-GREEN felt walls, a round grey floor cushion on a warm wooden floor, a low bed with a navy quilt behind, a warm floor lamp.
+- THE PHONE: a chunky felt smartphone with a dark-grey felt case. Its screen is a plain softly glowing pale-blue rectangle with NOTHING on it — no text, no icons, no bubbles. Chat text will be added later.
+CHARACTERS (keep identical in every panel they appear in):
+- THE FRIEND: the needle-felted Korean young man in the friend reference image — keep his face, short straight black wool hair with soft bangs, black bead eyes, straight dark eyebrows, small nose and rosy cheeks EXACTLY. At home he wears a soft heather-grey felt hoodie and dark-navy felt sweatpants, no hat. He has real little felt arms and hands. His face must stay clearly visible.
+- MONGLE: the coral needle-felted wool ghost-shaped mascot in the mascot reference image — use it ONLY for its body shape, coral wool colour, fine short smooth felted fuzz, scalloped bottom hem with one thin continuous cream running stitch, and glossy black bead eyes with NO whites. At rest Mongle has NO nose and NO mouth. Mongle has NO arms, NO legs, NO hands and NO neck, ever. Mongle is about the size of a big pillow.
+LAYOUT: keep the TOP 22% of the image calm and plain (soft out-of-focus wall) — titles will be added there later.
+
+Attached images in order: (1) the mascot reference (body shape, wool, hem stitch and bead eyes only).
+
+SCENE:
+CLOSE LOW-ANGLE shot on the mint-green quilt in MONGLE'S ROOM: THE PHONE lies face-up in the near foreground, its plain screen glowing; MONGLE is right behind it, big in frame, its dome tilted slightly forward over the phone, eyes curved into two happy dark stitched arcs (delighted), a tiny simple open smiling felt mouth. Warm lamp light from the side. No friend in this panel.
+
+Only the characters named in this panel, nobody else. Everything is needle-felt and wool craft, no glossy realistic surfaces. Absolutely no text, letters, numbers, symbols, question marks, speech bubbles, emoji or watermarks anywhere, and the phone screen stays a plain glow. No real brand, no logos. No rings, holes or dense dot patterns anywhere (no polka dots, no speckles, no bubbles). Keep open bead eyes plain glossy black with no whites.

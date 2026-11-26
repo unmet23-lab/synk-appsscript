@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a21501-1a32-7f91-ab66-5f5369ae524e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one felt-diorama panel, keeping the friend’s likeness and the top area clear for titles.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The felt friend laughs over his phone on a grey cushion in his cosy sage-green room."}}
+{"type":"turn.completed","usage":{"input_tokens":113137,"cached_input_tokens":97792,"cache_write_input_tokens":0,"output_tokens":1268,"reasoning_output_tokens":233}}

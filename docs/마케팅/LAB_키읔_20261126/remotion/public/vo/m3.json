@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "크!",
+ "dur": 0.447,
+ "words": [
+  {
+   "text": "크!",
+   "start": 0.02,
+   "end": 0.081
+  }
+ ],
+ "source": {
+  "key": "564b41d45ca2680ebcea6b5dd96b7320",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "신이 나서 친구에게 딱 한 글자만 자신 있게 보낸다. 짧고 당당하게.",
+   "next": "보냈다!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}
