@@ -57,10 +57,13 @@ export function recordOf(arrival){
  const mom=!!arrival?.momAnswer&&arrival.momAnswer!=='later';
  return {spoke:n+(t2?1:0)+(tr?1:0),n,t2,tr,mom,momAnswer:mom?(arrival.momAnswer==='ok'?'ok':'fix'):null,wrap:scenes.some(s=>s.id==='s1e01.wrap')};
 }
-export function studentOf(arrival){
- const look=arrival?.look||null,crop=look?LOOK_FACES[look]:null;
+// 내 사진 학생(arrival.photo==='me', 제2의 나 사진 시범)은 얼굴 원에 고른 사진을 쓴다. 주소(5분 서명)는 기록에 없어 다리가 그때그때 받아 photo로 넘긴다 — 못 받으면 얼굴 없이.
+const ME_CROP={fx:.5,fy:.36,fw:.34,w:1152,h:1536};   // 서울행 app.mjs ME와 같은 값(기준 사진 세로 3:4)
+export function studentOf(arrival,photo=null){
+ const mine=arrival?.photo==='me',look=mine?null:arrival?.look||null,crop=look?LOOK_FACES[look]:null;
+ const url=mine&&typeof photo==='string'&&/^https:\/\//.test(photo)?photo:null;
  return {name:arrival?.name||'',nameEn:arrival?.nameEn||'',nameCy:'',call:arrival?.call||'',from:arrival?.from||'',
-  face:look?`../seoul-arrival/assets/img/look-${look.replace('_','-')}.webp`:null,faceCrop:crop?{fx:crop.fx,fy:crop.fy,fw:crop.fw}:null,card:null};
+  face:url||(look?`../seoul-arrival/assets/img/look-${look.replace('_','-')}.webp`:null),faceCrop:url?{...ME_CROP}:crop?{fx:crop.fx,fy:crop.fy,fw:crop.fw}:null,card:null};
 }
 // 할 일 하나 → 틀의 Item. 사진 · 다루는 것은 시안 10z6의 표(그 레슨이 실제로 가르치는 말), 표에 없는 것은 비워 둔다.
 const PACK_PHOTO={greetings:'ph9-greet',cafe:'ph8-cafe',store:'ph6-store',directions:'ph3-way',plans:'ph3-plan',transit:'ph9-travel'};
@@ -112,9 +115,19 @@ export function goalPatch(saved,reason){
 // 둘째 날 목표 저장 값: 처음 동의하면 동의 전에 고른 동아리 튜터의 스타일(도움 방식 · 설명 길이)을 함께 넣고, 이미 동의한 학생의 값은 덮지 않는다
 export function consentValues(profile,values,tutor){return profile?.consent?values:{...values,...(tutor&&typeof tutor==='object'?tutor:{})};}
 export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,signIn,openStory,profile,storage=globalThis.localStorage,
- native=()=>false,guestArrival=()=>null,blocked=()=>false,newEngine=()=>false,bypass=()=>false,openSettings=null,hangulReading,setHangulReading,goalConsent=()=>({needed:true,label:'',note:''})}){
+ native=()=>false,guestArrival=()=>null,blocked=()=>false,newEngine=()=>false,bypass=()=>false,openSettings=null,hangulReading,setHangulReading,goalConsent=()=>({needed:true,label:'',note:''}),me2Photo=async()=>null}){
  const owner=()=>client().snapshot?.accountId||'guest';
  let session=null;
+ // 내 사진 주소: 4분 안에 받은 것은 다시 쓰고(서명 주소는 5분), 못 받았으면 1분 뒤에 다시 묻는다.
+ const PHOTO_FRESH_MS=240000,PHOTO_RETRY_MS=60000,PHOTO_WAIT_MS=2500;
+ let shot=null;
+ function photoOf(who){
+  const s=shot;
+  if(s?.who===who&&(s.ask||Date.now()-s.at<(s.url?PHOTO_FRESH_MS:PHOTO_RETRY_MS)))return s.ask||Promise.resolve(s.url);
+  const next={who,url:null,at:0,ask:null};shot=next;
+  next.ask=Promise.resolve().then(()=>me2Photo()).then(u=>typeof u==='string'&&/^https:\/\//.test(u)?u:null,()=>null).then(u=>{next.url=u;next.at=Date.now();next.ask=null;return u;});
+  return next.ask;
+ }
  const accountArrival=()=>{try{return life.progress?.arrival?.()??null;}catch{return null;}};
  const arrivalOf=who=>who==='guest'?guestArrival():accountArrival();
  const markKey=who=>`${FRONT_MARK_KEY}${who}`;
@@ -151,13 +164,20 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  async function stateOf(view){return withClub(await stateBase(view));}
  async function stateBase(view){
   const who=owner(),arrival=arrivalOf(who),guest=who==='guest',pc=!!native();
+  // 앞면은 사진을 오래 기다리지 않는다 — 2.5초 안에 못 받으면 얼굴 없이 그리고, 받으면 그 화면을 다시 그린다.
+  let photo=null;
+  if(!guest&&arrival?.photo==='me'){
+   const ask=photoOf(who);
+   photo=await Promise.race([ask,new Promise(res=>setTimeout(()=>res(undefined),PHOTO_WAIT_MS))]);
+   if(photo===undefined){photo=null;ask.then(u=>{const s=session;if(u&&s?.api&&s.view&&owner()===who&&s.owner===who)show(s.view);});}
+  }
   let hangul='ask';try{const answer=await hangulReading(who);hangul=answer?.answer==='new'?'new':answer?.answer==='reads'?'reads':'ask';}catch{hangul='ask';}
   const mark=readMark(who);
   const {plan,alts}=planState(currentPlan(),{label:entry=>home.planLabel?.(entry)||entry?.label||''});
   let consent={needed:true,label:'',note:''};try{consent={...consent,...(goalConsent()||{})};}catch{}
   // 이미 학습 목표 저장에 동의한 학생에게는 체크 상자를 다시 그리지 않는다(학습 목표 창과 같다).
   if(profileOf()?.consent)consent={...consent,needed:false};
-  return {view,lang:currentLang(),who:pc?'pc':guest?'guest':'login',dream:arrival?.dream||'idol',student:studentOf(arrival),record:recordOf(arrival),
+  return {view,lang:currentLang(),who:pc?'pc':guest?'guest':'login',dream:arrival?.dream||'idol',student:studentOf(arrival,photo),record:recordOf(arrival),
    day:dayIndex(arrival,Date.now(),firstOf(arrival,mark)),recordToday:wrapToday(arrival),hangul,after:!!mark.after,goal:view==='front'?(accountGoal()||mark.goal||''):'',step:'',plan,alts,today:todayOf(arrival,mark,{guest,pc,view}),position:null,consent,reduced:!!home.state?.reduced};
  }
  // 「오늘 한 것」: 있는 사실만. card · lines · heard · mom은 틀이 세 언어 글로 쓰고, practice는 그 활동의 화면 언어 이름을 그대로 쓴다.

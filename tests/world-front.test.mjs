@@ -81,6 +81,29 @@ test('학생: 얼굴 그림과 자르기 값', () => {
   assert.equal(studentOf({...left, look: null}).face, null);
 });
 
+test('학생: 내 사진 학생은 받은 서명 주소로 얼굴 원을 그리고, 못 받으면 얼굴 없이', () => {
+  const me = {...left, look: null, photo: 'me'}, url = 'https://qiwxeddwwnzkwalpsuty.supabase.co/storage/v1/object/sign/me2-media/x.webp?token=t';
+  const s = studentOf(me, url);
+  assert.equal(s.face, url);
+  assert.deepEqual(s.faceCrop, {fx: .5, fy: .36, fw: .34, w: 1152, h: 1536});
+  assert.equal(studentOf(me).face, null, '주소를 못 받음');
+  assert.equal(studentOf(me, 'http://x/y.webp').face, null, 'https만');
+  assert.equal(studentOf(left, url).face, '../seoul-arrival/assets/img/look-mn-f.webp', '고른 얼굴 학생은 주소가 와도 그 얼굴');
+  assert.equal(studentOf({...left, photo: 'me'}, null).face, null, '내 사진 표시가 있으면 남은 look을 쓰지 않는다');
+});
+
+test('앞면 다리: 내 사진은 4분 안 주소를 다시 쓰고, 2.5초만 기다린 뒤 받으면 다시 그린다', () => {
+  const src = fs.readFileSync(new URL('../experiences/synk-world-app/world-front-entry.mjs', import.meta.url), 'utf8');
+  assert.match(src, /me2Photo=async\(\)=>null\}\)\{/);
+  assert.match(src, /PHOTO_FRESH_MS=240000,PHOTO_RETRY_MS=60000,PHOTO_WAIT_MS=2500/);
+  assert.match(src, /if\(!guest&&arrival\?\.photo==='me'\)/);
+  assert.match(src, /s\.owner===who\)show\(s\.view\)/);
+  assert.match(src, /student:studentOf\(arrival,photo\)/);
+  const shell = fs.readFileSync(new URL('../experiences/synk-world-app/app-shell.mjs', import.meta.url), 'utf8');
+  assert.match(shell, /me2:\{status:\(\)=>me2Status\(\),open:/);
+  assert.match(shell, /me2Photo:async\(\)=>\{const v=photoView\(await me2Status\(\)\);return v\?\.on\?v\.url:null;\}/);
+});
+
 test('할 일: 레슨은 사진 · 다루는 것 · 세 마디, 마스코트 이름은 빼고', () => {
   const greet = itemOf({id: 'world.life.greetings-expressions', label: '첫 인사 세 마디', route: 'lesson', lessonId: 'greetings-expressions', minutes: 2});
   assert.equal(greet.title, '첫 인사 세 마디');

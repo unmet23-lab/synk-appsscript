@@ -50,7 +50,7 @@
 }
 ```
 
-- `student.face` = 서울행 전신 그림 주소(예: `../seoul-arrival/assets/img/look-mn-f.webp`, 941×1672). `student.faceCrop = { fx, fy, fw }`는 `seoul-arrival/data.mjs`의 `LOOK_FACES`와 같은 값이다(fx · fw는 그림 폭, fy는 그림 높이에 대한 비율). 틀은 동그란 얼굴 칸을 얼굴 폭이 원의 1/1.3이 되게 잘라 보인다. 그림 크기가 941×1672가 아니면 `faceCrop.w` · `faceCrop.h`를 같이 준다.
+- `student.face` = 서울행 전신 그림 주소(예: `../seoul-arrival/assets/img/look-mn-f.webp`, 941×1672). `student.faceCrop = { fx, fy, fw }`는 `seoul-arrival/data.mjs`의 `LOOK_FACES`와 같은 값이다(fx · fw는 그림 폭, fy는 그림 높이에 대한 비율). 틀은 동그란 얼굴 칸을 얼굴 폭이 원의 1/1.3이 되게 잘라 보인다. 그림 크기가 941×1672가 아니면 `faceCrop.w` · `faceCrop.h`를 같이 준다. 제2의 나 사진 시범에서 내 사진을 고른 학생(`arrival.photo==='me'`)은 `face`가 고른 사진의 5분 서명 주소(1152×1536)이고 `faceCrop`은 `{fx:.5, fy:.36, fw:.34, w:1152, h:1536}`이다. 주소를 못 받으면 `face`는 null이다.
 - `student.card` = 학생증 사진 주소. 없으면(null) 학생증의 사진 칸을 그리지 않는다. `nameCy`가 비면 몽골어 화면은 `nameEn`을 쓴다.
 - `record.momAnswer` = 서울행 `arrival.momAnswer`(`'fix'` · `'ok'`). 엄마 쪽지 판의 내 답(「있어. ㅅ 두 개!」 · 「맞아.」)을 고른다. 없으면 `'fix'`로 본다.
 - `preview.hangul`: 한글 질문의 두 답 카드 아래 「그 답이면 무엇부터」 한 줄. 없거나 두 Item의 title이 같으면 줄을 뺀다. `preview.goals`: 목표 질문의 「고르면 오늘은 ‘…’부터」 한 줄. 없으면 그 줄을 뺀다.

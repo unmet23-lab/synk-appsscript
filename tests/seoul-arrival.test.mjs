@@ -110,7 +110,9 @@ test('내 사진 칸: 손님 · 다른 주인은 서버에 묻지 않고, 사진
  assert.match(entrySource,/const photoOwner=\(\)=>\{const s=session,who=owner\(\);return s&&who!=='guest'&&who===s\.owner&&me2\?who:null;\};/);
  assert.match(entrySource,/if\(panel\?\.open\)\{close\(\);if\(panel\.open\)panel\.close\(\);\}\r?\n  try\{await me2\.open\(\);\}catch\{\}/);
  assert.match(entrySource,/photo,openPhoto,\r?\n  leave\(\)\{finish\(\);\},/);
- assert.match(read('experiences/synk-world-app/app-shell.mjs'),/me2:\{status:async\(\)=>\{if\(!me2Allowed\(\)\)return \{status:'not_invited'\};const owner=client\.snapshot\?\.accountId,out=await account\.me2Request\(\{action:'status'\}\);/);
+ const shell=read('experiences/synk-world-app/app-shell.mjs');
+ assert.match(shell,/async function me2Status\(\)\{if\(!me2Allowed\(\)\)return \{status:'not_invited'\};const owner=client\.snapshot\?\.accountId,out=await account\.me2Request\(\{action:'status'\}\);/);
+ assert.match(shell,/me2:\{status:\(\)=>me2Status\(\),open:\(\)=>openMe2\(\)\}/);
  const app=read('experiences/seoul-arrival/app.mjs').replace(/\r\n/g,'\n');
  assert.match(app,/function meTile\(\)\{\n  if\(!PHOTO\.on\)return '';/);
  assert.match(app,/rail\.innerHTML=meTile\(\)\+order\.map/);

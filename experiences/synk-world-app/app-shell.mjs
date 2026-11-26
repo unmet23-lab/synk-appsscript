@@ -22,7 +22,7 @@ import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 // 화면 언어(10-19 1판): 계정 연결·로그인 안내·저장 확인·오류는 고른 언어로. 첫 문장 놀이·타운·노래 화면은 2판까지 한국어다.
 import {t,tMessage,currentLang,setLang,hasString,situationName,meText} from '../brand-opening/world-lang.mjs';
 import {restoreDisplayLanguage,commitDisplayLanguage} from './display-language-sync.mjs';
-import {createSeoulEntry,seoulText} from './seoul-entry.mjs';
+import {createSeoulEntry,seoulText,photoView} from './seoul-entry.mjs';
 import {createFrontEntry} from './world-front-entry.mjs';
 import {installLearnSoon} from './world-learn-soon.mjs';
 const $=s=>document.querySelector(s);
@@ -634,6 +634,8 @@ let me2Module=null,me2=null,me2Owner=null;
 const ME2_PENDING='synk.world.me2.pending';
 const me2Requested=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('me2')==='1')sessionStorage.setItem(ME2_PENDING,String(Date.now()));else if(q.get('wardrobe')==='1'||q.get('cafe')==='1'||q.has('exam')||q.get('drama')==='1'){sessionStorage.removeItem(ME2_PENDING);return false;}const at=Number(sessionStorage.getItem(ME2_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(ME2_PENDING);}catch{return new URLSearchParams(location.search).get('me2')==='1';}return false;})();
 const me2Allowed=()=>operating&&!!account?.supportsMe2&&!!client.snapshot;
+// 서울행 「내 사진으로」 칸과 맞춤 앞면의 얼굴 원이 함께 쓰는 status. 기다리는 사이 계정이 바뀌었으면 null(앞 계정의 사진을 새 계정에 넣지 않는다).
+async function me2Status(){if(!me2Allowed())return {status:'not_invited'};const owner=client.snapshot?.accountId,out=await account.me2Request({action:'status'});return client.snapshot?.accountId===owner&&!(out?.accountId&&out.accountId!==owner)?out:null;}
 async function me2Host(){
  if(!me2Allowed())return null;
  me2Module??=await import('./me2-photo.mjs');
@@ -1226,12 +1228,13 @@ commands['device-records']=button=>{const line=document.querySelector('[data-dev
 seoul=createSeoulEntry({dramaPending:()=>dramaRequested||me2Requested,restored:initialRestoreReady,client:()=>client,life,home,worldUrl,launchGame,show,close,selectLanguage,tutorStatus,native:()=>operating&&account?.supportsSpeaking===false,frontOn:()=>!!front?.soon(),
  // 서울행 얼굴 고르기의 「내 사진으로」 칸(설계 seoul-arrival 5절 「사진」): 내 정보 시트의 제2의 나 줄과 같은 조건 · 같은 판을 쓴다.
  // 시범 밖(계정 모드 아님 · PC 창)은 정해진 「아님」, 다른 계정의 응답은 버려 모름(null)으로 돌려준다.
- me2:{status:async()=>{if(!me2Allowed())return {status:'not_invited'};const owner=client.snapshot?.accountId,out=await account.me2Request({action:'status'});return client.snapshot?.accountId===owner&&!(out?.accountId&&out.accountId!==owner)?out:null;},open:()=>openMe2()}});
+ me2:{status:()=>me2Status(),open:()=>openMe2()}});
 // 첫날 끝 · 맞춤 앞면(1차, 결정 11-19): 서울행을 끝낸 학생은 튜터 고르기 · 펠트 동네 대신 앞면을 홈으로 쓴다. 스위치(FRONT_AUTO)를 끄면 지금 길 그대로다.
 front=createFrontEntry({client:()=>client,life,home,worldUrl,launchGame,openLife:(...v)=>openLife(...v),signIn,profile,openStory:()=>seoul.openRoad(),native:()=>operating&&account?.supportsSpeaking===false,
  guestArrival:()=>seoul.arrival?.('guest')||null,newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),bypass:()=>!!(dramaRequested||me2Requested||wardrobeRequested||examRequested),
  openSettings:()=>{if(!home.showSettings)return false;home.showSettings();const actions=document.querySelector('#world-panel .panel-actions');if(actions){const b=document.createElement('button');b.type='button';b.className='quiet-button';b.textContent=t(client.snapshot?'account.meTitle':'account.title');b.addEventListener('click',()=>{if(client.snapshot)profile();else signIn();});actions.append(b);}return true;},blocked:()=>{try{return !!tutorStatus(client.snapshot?.accountId||'guest')?.blocked;}catch{return true;}},hangulReading:(...v)=>hangulReading(...v),setHangulReading:(...v)=>setHangulReading(...v),
- goalConsent:()=>{let scoped=false;try{scoped=!!life.progress?.status?.()?.scoped;}catch{}return {needed:true,label:t(scoped?'goal.consent.account':'goal.consent.device'),note:t('goal.consent.note')};}});
+ goalConsent:()=>{let scoped=false;try{scoped=!!life.progress?.status?.()?.scoped;}catch{}return {needed:true,label:t(scoped?'goal.consent.account':'goal.consent.device'),note:t('goal.consent.note')};},
+ me2Photo:async()=>{const v=photoView(await me2Status());return v?.on?v.url:null;}});
 entryGate=createWorldEntryGate({
  restore:async()=>{await initialRestoreReady;if(sessionTask)await sessionTask;else if(!sessionConfirmed)await restoreSession();},
  prepare:prepareWorldTutor,
