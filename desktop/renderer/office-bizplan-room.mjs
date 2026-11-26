@@ -1,15 +1,16 @@
 /* 기획부 「사업계획서」 작업 화면의 상태와 동작(사업계획서_설계.md 2, 6절).
    api: window.synkDesktop.office(featureSnapshot, featureAction). 본체가 파일을 고르고 쓰며, 이 방은 이름과 번호만 보낸다.
    한 번에 한 동작만 보낸다. 방을 닫거나 계정이 바뀌면 늦게 온 답을 버린다 */
-import { bizplanScene } from './office-bizplan-model.mjs';
+import { bizplanScene, nextWrite } from './office-bizplan-model.mjs';
 
 const FEATURE = 'bizplan';
 const SAY = {
   CANCELLED: '', BUSY: '이미 읽고 있습니다.', PLAN_FORMAT: '한글과 PDF는 아직 읽지 못합니다. Word(.docx)로 저장해 넣어 주세요.',
   DATA_FORMAT: '회사 자료는 txt, md, csv, docx, xlsx 파일을 받습니다.', DATA_COUNT: '회사 자료는 열 개까지 고를 수 있습니다.',
-  PLAN_MISSING: '계획서 파일을 찾지 못했습니다. 다시 골라 주세요.', PLAN_CHANGED: '계획서 파일이 읽은 뒤에 바뀌었습니다. 다시 읽은 뒤 저장할 수 있습니다.',
+  PLAN_MISSING: '계획서 파일을 찾지 못했습니다. 다시 골라 주세요.', PLAN_CHANGED: '계획서가 읽은 뒤에 바뀌었습니다. 다시 읽은 뒤 저장할 수 있습니다.',
   NOTHING: '바꾼 문장이 없어 저장할 것이 없습니다.', SAVE: '저장하지 못했습니다. 원본은 그대로입니다.', CRITERIA: '평가 항목을 한 줄에 하나씩 적어 주세요.',
   BROKEN: '목록 파일을 읽지 못했습니다. 기록 지우기를 누르면 처음부터 할 수 있습니다.', NOT_FOUND: '그 메모를 찾지 못했습니다. 화면을 다시 읽었습니다.',
+  WRITE_EMPTY: '한 장 이상 써야 초안을 만들 수 있습니다.',
   AUTH_CHANGED: '계정이 바뀌어 멈췄습니다.', NOT_AVAILABLE: '이 판에서는 쓸 수 없습니다.', STORAGE_FULL: '업무 기록이 가득 찼습니다.',
 };
 const say = code => (code in SAY ? SAY[code] : '하지 못했습니다. 잠시 뒤 다시 해 주세요.');
@@ -18,7 +19,7 @@ const say = code => (code in SAY ? SAY[code] : '하지 못했습니다. 잠시 �
 export function createBizplanRoom({ api = null, changed = () => {}, hidden = () => false, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout } = {}) {
   const fresh = () => ({ departmentId: null, snap: null, busy: null, live: '', sel: null, edit: null, editText: null, hand: null, handDept: null, handProvider: null,
     ask: null, answers: {}, provider: null, criteriaOpen: false, criteriaMode: null, criteriaText: null, clearAsk: false, loadedAt: 0, sig: '',
-    menu: null, sheet: false, toast: null });
+    menu: null, sheet: false, toast: null, write: null, writeText: {}, writeSeen: [] });
   let st = fresh(), gen = 0, timer = null, toastTimer = null;
   /* 고른 뒤 잠깐 「되돌리기」를 보인다(14.1). 고른 장은 비워 다음 고칠 곳이 앞에 선다 */
   const toast = (text, key) => { if (toastTimer) clearTimer(toastTimer); st.toast = { text, key }; st.live = text; toastTimer = setTimer(() => { toastTimer = null; st.toast = null; if (st.live === text) st.live = ''; changed(); }, 4200); };
@@ -38,6 +39,16 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
     }
     st.loadedAt = now();
     changed();
+  }
+  // 쓰던 장 가운데 본체 글과 다른 것을 남긴다. 결과를 기다리지 않는다(닫기 · 창 가림)
+  function sendTexts(fields) {
+    if (st.write == null || !st.departmentId) return;
+    const q = st.write, dept = st.departmentId, dr = st.snap?.draft;
+    const texts = { ...st.writeText, ...(fields && typeof fields['answer-' + q] === 'string' ? { [q]: fields['answer-' + q] } : {}) };
+    for (const [k, t] of Object.entries(texts)) {
+      const n = Number(k);
+      if (n >= 0 && n < 7 && String(t) !== (dr?.chapters?.[n] ?? '')) Promise.resolve().then(() => call('featureAction', FEATURE, dept, 'write-save', { chapter: n, text: String(t).slice(0, 4000) })).catch(() => {});
+    }
   }
   async function act(action, args = {}, okText = '') {
     if (st.busy) { st.live = '앞의 일을 하는 중입니다.'; changed(); return null; }
@@ -59,7 +70,11 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
   }
   return {
     open(departmentId) { gen += 1; st = { ...fresh(), departmentId }; void load(); changed(); },
-    close() { gen += 1; if (timer) clearTimer(timer); if (toastTimer) clearTimer(toastTimer); timer = null; toastTimer = null; st = fresh(); },
+    close({ fields = null } = {}) {
+      sendTexts(fields);
+      gen += 1; if (timer) clearTimer(timer); if (toastTimer) clearTimer(toastTimer); timer = null; toastTimer = null; st = fresh(); },
+    /* 창이 가려지거나 닫힐 때(계정 생명주기 flushDraft) 쓰던 장을 남긴다. 화면은 그대로 둔다(설계 검토 지적 3) */
+    flush() { sendTexts(null); },
     get departmentId() { return st.departmentId; },
     /* 사무실 판이 바뀔 때(업무 줄의 상태) 기능 판도 다시 읽는다. 읽는 동안은 1.5초마다 진행을 읽는다 */
     scene(task, { departments = [], deptName = '기획부' } = {}) {
@@ -93,6 +108,7 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
         }
         case 'biz-provider': st.provider = arg === 'codex' ? 'codex' : 'claude'; st.menu = null; changed(); return true;
         case 'biz-start': {
+          st.write = null; st.writeText = {};
           const s = st.snap, unsaved = s?.read?.notes?.some(n => n.choice && n.choice.kind !== 'handed') && !s.saved;
           // 저장 안 한 고름이 있으면 한 번 묻고, 두 번째 누름은 다시 읽는다(코드 검수 P1-2)
           if (unsaved && arg !== 'yes' && !st.startAsk) { st.live = '고른 것이 아직 저장되지 않았습니다. 다시 읽으면 사라집니다. 한 번 더 누르면 다시 읽습니다.'; st.startAsk = true; changed(); return true; }
@@ -173,6 +189,62 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
         case 'biz-menu': st.menu = st.menu === arg ? null : (['crit', 'staff'].includes(arg) ? arg : null); changed(); return true;
         case 'biz-sheet': st.sheet = !st.sheet; changed(); return true;
         case 'biz-go': if (st.busy) return true; st.sel = arg; st.sheet = false; st.edit = null; st.hand = null; st.ask = null; changed(); return true;
+        /* 직접 쓰기(사업계획서_설계.md 14.2). 쓰는 칸 이름은 장마다 다르다(answer-<장>) */
+        case 'biz-write-open': {
+          const k = Number(arg);
+          if (!Number.isInteger(k) || k < 0 || k > 6) return true;
+          const s = st.snap, kept = (s?.read?.notes || []).filter(n => ['fix', 'edit'].includes(n.choice?.kind)).length + Object.keys(s?.drafts || {}).length;
+          if (s?.read && kept && !s.saved && st.writeAsk !== k) {
+            st.writeAsk = k; st.live = `고른 고침 ${kept}개는 초안을 다시 만들면 다시 읽어야 해서 사라집니다. 먼저 저장하거나, 그래도 쓰려면 「직접 쓰기」를 한 번 더 누르세요.`; changed(); return true;
+          }
+          Object.assign(st, { write: k, writeAsk: null, writeSeen: [], menu: null, sheet: false, edit: null, hand: null, ask: null });
+          changed(); return true;
+        }
+        case 'biz-write-type': {
+          if (st.write == null || Number(arg) !== st.write) return true;
+          st.writeText = { ...st.writeText, [st.write]: String(fields['answer-' + st.write] ?? '').slice(0, 4000) };
+          return true;
+        }
+        case 'biz-write-go': {
+          const k = Number(arg);
+          if (st.write == null || !Number.isInteger(k) || k < 0 || k > 6) return true;
+          st.writeText = { ...st.writeText, [st.write]: String(fields['answer-' + st.write] ?? st.writeText[st.write] ?? '') };
+          st.write = k; changed(); return true;
+        }
+        case 'biz-write-next': case 'biz-write-skip': case 'biz-write-later': {
+          if (st.write == null || st.busy) return true;
+          const q = st.write, text = String(fields['answer-' + q] ?? st.writeText[q] ?? '').slice(0, 4000);
+          st.writeText = { ...st.writeText, [q]: text };
+          const later = act_ === 'biz-write-later';
+          const res = await act('write-save', { chapter: q, text, ...(act_ === 'biz-write-skip' ? { skipped: true } : {}) }, later ? '쓴 데까지 남겨 두었습니다.' : '');
+          // 깨진 기록만 「기록 지우기」를 가리킨다. 잠시 읽지 못한 것은 지우게 하지 않는다(GPT 다시 검수 r3 GA2)
+          const broken = r => {
+            if (!['BROKEN', 'STORAGE'].includes(r?.code)) return;
+            if (r.code === 'BROKEN') { st.write = null; st.sel = null; st.live = '쓰던 초안 기록이 깨져 읽지 못했습니다. 아래 「기록 지우기」로 지운 뒤 다시 써 주세요.'; }
+            else st.live = '쓰던 초안 기록을 지금 읽지 못했습니다. 쓴 글은 그대로 있으니 잠시 뒤 다시 눌러 주세요.';
+            changed();
+          };
+          if (!res?.ok) { broken(res); return true; }
+          // 막대로 옮겨 다니며 쓴 다른 장도 닫거나 초안을 만들기 전에 남긴다(카본 A1)
+          const unsaved = () => Object.entries(st.writeText).map(([k, t]) => [Number(k), String(t ?? '')]).filter(([k, t]) => k !== q && k >= 0 && k < 7 && t !== (st.snap?.draft?.chapters?.[k] ?? ''));
+          const flush = async () => { for (const [k, t] of unsaved()) { const r = await act('write-save', { chapter: k, text: t.slice(0, 4000) }); if (!r?.ok) { broken(r); return false; } } return true; };
+          if (later) { if (await flush()) { st.write = null; st.writeText = {}; st.live = '쓴 데까지 남겨 두었습니다.'; changed(); } return true; }
+          // 이번 쓰기에서 지나간 장은 다시 들르지 않는다(r4 P1)
+          st.writeSeen = [...new Set([...(st.writeSeen || []), q])];
+          const k = nextWrite(q, st.snap?.draft, st.writeText, (st.snap?.read?.empty || []).map(e => e.chapter), st.writeSeen);
+          if (k >= 0) { st.write = k; changed(); return true; }
+          if (!await flush()) return true;
+          const hadRead = !!st.snap?.read, provider = st.provider || st.snap?.read?.provider || 'claude';
+          const done = await act('write-done', {}, '사업계획서 초안을 만들었습니다.');
+          if (!done?.ok) return true;
+          st.write = null; st.writeText = {}; st.sel = null;
+          const kept = done.kept ? ' 앞 초안 파일은 그대로 두었습니다.' : '';
+          if (done.kept) st.live = '사업계획서 초안을 새로 만들었습니다.' + kept;
+          else if (done.edited) st.live = '화면 글이 그대로라, 파일에서 고친 초안을 그대로 계획서로 둡니다.';
+          if (hadRead && done.changed) await act('start', { provider }, '초안을 새로 만들어 다시 읽습니다.' + kept);
+          changed();
+          return true;
+        }
         case 'biz-clear-ask': st.clearAsk = !st.clearAsk; changed(); return true;
         case 'biz-clear': st.clearAsk = false; await act('clear', { confirm: true }, '읽은 결과와 고른 것을 지웠습니다.'); return true;
         default: return false;

@@ -42,6 +42,8 @@ accountLifecycle.register('device-preferences',{onAccountChange:({ownerChanged})
 accountLifecycle.register('account',{render:()=>renderAuth()});
 // 계정 · 세션이 바뀌면 새 얼굴의 내 계정 방이 보이던 자료와 오는 중인 답을 버린다(2단계 둘째 조각 설계 1.3절)
 accountLifecycle.register('orb-rooms',{onAccountChange:()=>orbRooms?.accountChanged?.()});
+// 사무실 사업계획서의 쓰던 장은 창이 가려지거나 닫힐 때 남긴다. 묻는 창(hasUnsavedDrafts)은 아직 두지 않는다 — 닫기를 조용히 막지 않게
+accountLifecycle.register('office-write',{flushDraft:()=>orbRooms?.flushDrafts?.()});
 // 밤낮 값은 옛 내 계정 화면의 색에만 쓴다. 고르는 자리는 거뒀고 전에 고른 값은 그대로 따른다
 const THEME_KEY='synk-platform-theme',THEMES=['night','day','system'];
 function readTheme(){try{const value=localStorage.getItem(THEME_KEY);return THEMES.includes(value)?value:'day';}catch{return 'day';}}

@@ -335,7 +335,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     signOut: () => { if (!disposed) void options.onSignOut?.(); },
     openOld: () => openLegacy('account'),
   });
-  try { roomOptions.bind?.({ accountChanged: () => { if (!disposed) rooms.accountChanged(); } }); } catch { /* 런처의 일이다 */ }
+  try { roomOptions.bind?.({ accountChanged: () => { if (!disposed) rooms.accountChanged(); }, flushDrafts: () => { if (!disposed) office.flushDrafts(); } }); } catch { /* 런처의 일이다 */ }
 
   function prefersReducedMotion() {
     if (hostReducedMotion) return true;

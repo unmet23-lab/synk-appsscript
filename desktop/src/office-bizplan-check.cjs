@@ -46,6 +46,18 @@ const NUM=/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g;
 const key=v=>String(Number(v.toPrecision(15)));
 function unitMul(units){let m=1;for(const u of units)m*=UNIT[u];return m;}
 /* 글의 숫자 값 모음. sino:true면 읽지 못하는 한자어 수가 있다는 뜻 */
+/* 문단 맨 앞의 차례 표시는 숫자 근거가 아니다. 「## 05 비즈니스 모델」의 05, 「## 5. 성장 전략」의 5, 「1. 」, 「2) 」, 「(3) 」, 「제3장」.
+   모든 계획서에서 숫자 근거를 모을 때 뺀다. 제목 줄은 마침표 없는 번호(「05 」)도 뺀다(설계 검토 bizplan-write-design 지적 1) */
+function ordinalFree(text,heading=false){
+  let t=String(text||'').normalize('NFKC');
+  const head=heading||/^\s*#/.test(t);
+  t=t.replace(/^\s*#{1,6}\s*/,'');
+  t=t.replace(/^\s*제\s*\d{1,3}\s*(?:장|절|부|편)\s*/,'');
+  t=t.replace(/^\s*\(?\d{1,3}[.)]\s+/,'');
+  // 마침표 · 괄호 뒤에 빈칸이나 끝이 와야 차례 표시다. 「## 3.5억 원 매출」의 3.은 숫자다(GPT 다시 검수 r4 GA1)
+  if(head)t=t.replace(/^\s*\d{1,3}(?:[.)](?=\s|$)|\s)\s*/,'');
+  return t;
+}
 function numbers(text,{scale=1}={}){
   const s=String(text||'').normalize('NFKC').replace(/^[^\n]*? · \d+행: /gm,'');
   const out=new Set();
@@ -118,12 +130,13 @@ function isHeading(p){
   const t=p.text.trim();
   return t.length<=60&&HEAD_RE.test(t)&&!/[다요]\.$/.test(t);
 }
-/* paragraphs: [{text, level, toc, inTable}] → [{id, title, paras:[index], chars}] */
-function sections(paragraphs){
+/* paragraphs: [{text, level, toc, inTable}] → [{id, title, paras:[index], chars}].
+   headOf(p, i)로 제목 줄을 고른다. 솔리오가 만든 초안은 장 제목 줄만 제목으로 본다(설계 14.2, 설계 검토 16) */
+function sections(paragraphs,headOf=isHeading){
   const out=[];let cur=null;
   paragraphs.forEach((p,i)=>{
     if(p.toc)return;
-    if(isHeading(p)){cur={id:out.length+1,title:p.text.trim().replace(/^#+\s*/,'').slice(0,80),head:i,paras:[],chars:0};out.push(cur);return;}
+    if(headOf(p,i)){cur={id:out.length+1,title:p.text.trim().replace(/^#+\s*/,'').slice(0,80),head:i,paras:[],chars:0};out.push(cur);return;}
     if(!p.text.trim())return;
     if(!cur){cur={id:out.length+1,title:'앞부분',head:null,paras:[],chars:0};out.push(cur);}
     cur.paras.push(i);cur.chars+=p.text.length;
@@ -178,11 +191,12 @@ function chunkPrompt({chunk,paragraphs,title,files,items,guides}){
     GUARD,
     JSON.stringify({평가항목:items,양식안내:guides.slice(0,40),계획서묶음:{제목:title,문단},회사자료:files})].join('\n');
 }
-function itemsPrompt({secs,paragraphs,items,guides}){
+function itemsPrompt({secs,paragraphs,items,guides,draft=false}){
   const 묶음=secs.map(s=>({번호:s.id,제목:s.title,앞부분:s.paras.map(i=>paragraphs[i].text).join(' ').slice(0,300),글자수:s.chars}));
   return ['당신은 회원 회사의 기획부 직원이다. 정부 지원사업 사업계획서가 평가 항목을 얼마나 다루는지 본다. 점수는 매기지 않는다.',
     '- items: 평가 항목마다 하나. item에는 평가 항목 이름을 그대로, secs에는 그 항목을 맡는 묶음 번호를 쓴다. 맡는 묶음이 없으면 빈 배열.',
     '- thin: 그 항목의 내용이 빈약하면(예: 목표 숫자 한 줄뿐) true. why에 무엇이 빠졌는지 「~습니다」로 끝나는 한 문장.',
+    ...(draft?['- 이 계획서는 손님이 물음에 답해 직접 쓴 초안이라 장마다 짧다. 글자 수가 적다는 것만으로 thin으로 보지 않는다.']:[]),
     '- asks: thin일 때만 손님에게 물을 것 둘이나 셋. 보기마다 label(짧은 답)과 sentence(그 답을 고르면 계획서에 들어갈 한 문장). sentence에 계획서에 없는 숫자를 쓰지 않는다. thin이 아니면 빈 배열.',
     GUARD,
     JSON.stringify({평가항목:items,묶음,양식안내:guides.slice(0,40)})].join('\n');
@@ -248,7 +262,7 @@ function checkItems(answer,ctx){
     const name=it.item.trim();seen.add(name);
     const secs=(Array.isArray(it.secs)?it.secs:[]).filter(v=>Number.isInteger(v)&&ids.has(v));
     const chars=ctx.secs.filter(s=>secs.includes(s.id)).reduce((n,s)=>n+s.chars,0);
-    const thin=it.thin===true&&(secs.length===0||chars<600);
+    const thin=it.thin===true&&(secs.length===0||chars<(ctx.minChars??600));
     let why='';
     if(thin){
       why=typeof it.why==='string'?it.why.trim().slice(0,200):'';
@@ -288,4 +302,4 @@ function pastedItems(text){
   return out;
 }
 
-module.exports={fold,rawSpan,numbers,within,fileScale,findOnce,cutsNumber,isHeading,sections,chunks,excerpt,chunkPrompt,itemsPrompt,checkNotes,checkItems,handoffText,pastedItems,DEFAULT_ITEMS,MSG};
+module.exports={fold,rawSpan,numbers,ordinalFree,within,fileScale,findOnce,cutsNumber,isHeading,sections,chunks,excerpt,chunkPrompt,itemsPrompt,checkNotes,checkItems,handoffText,pastedItems,DEFAULT_ITEMS,MSG};

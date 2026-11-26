@@ -572,5 +572,12 @@ test('preload: the feature bridge passes only the feature name, department, an a
   await refused(office.featureAction('bizplan', 'plan01', 'choose', { key: 'n1', kind: 'edit', text: 'a\u0001b' }), 'a control character');
   await refused(office.featureAction('bizplan', 'plan01', 'draft', { item: '성장 전략', answers: [0, 9] }), 'an answer out of range');
   await refused(office.featureAction('bizplan', 'plan01', 'criteria', { mode: 'pasted', text: 'x'.repeat(4001) }), 'criteria too long');
+  // 직접 쓰기(사업계획서_설계.md 14.2): 장 번호와 글만, 장은 일곱 안에서
+  await office.featureAction('bizplan', 'plan01', 'write-save', { chapter: 3, text: '', skipped: true });
+  assert.deepEqual(last(), ['synk:office-feature-action', 'bizplan', 'plan01', 'write-save', { chapter: 3, text: '', skipped: true }]);
+  await office.featureAction('bizplan', 'plan01', 'write-done');
+  assert.deepEqual(last(), ['synk:office-feature-action', 'bizplan', 'plan01', 'write-done', {}]);
+  await refused(office.featureAction('bizplan', 'plan01', 'write-save', { chapter: 7, text: 'a' }), 'a chapter out of range');
+  await refused(office.featureAction('bizplan', 'plan01', 'write-save', { chapter: 0, text: 'x'.repeat(4001) }), 'a chapter too long');
   await refused(office.featureSnapshot('bizplan', 'x'), 'a short department id');
 });

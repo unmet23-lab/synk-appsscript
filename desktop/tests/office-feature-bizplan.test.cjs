@@ -269,7 +269,7 @@ test('코드 검수: 계획서를 못 연 실패 기록도 판이 서고, 깨진
 
 test('코드 검수: 한 문단의 고침 둘을 한 번에 넣고, 링크가 안 되는 드라이브에서는 덮지 않는 복사로 저장한다', async () => {
   const s=await setup();
-  const io={...require('node:fs/promises'),link:async()=>{throw Object.assign(new Error('no link'),{code:'EXDEV'});}};
+  const io={...require('node:fs/promises'),linkSync:()=>{throw Object.assign(new Error('no link'),{code:'EXDEV'});}};
   const features=createOfficeFeatures({userData:s.userData,io,departments:async()=>[s.dept],
     pick:async({multi})=>multi?[path.join(s.docs,'영수증.csv')]:[path.join(s.docs,'사업계획서_v3.docx')],
     tasks:{submitFeature:async(a,x)=>({ok:true,id:x.id})}});
@@ -308,4 +308,414 @@ test('미학 맹검 반영: 계획서를 고를 때 목차를 읽어 처음 화�
   const snap=await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
   assert.deepEqual(snap.list.plan.outline,[P[0],P[3]]);
   assert.equal('path' in snap.list.plan,false,'화면에는 경로를 보내지 않는다');
+});
+
+test('직접 쓰기(설계 14.2): 장마다 저장하고, 다 쓰면 부서 폴더에 .md 초안을 만들어 계획서로 세운다. 다시 끝내면 앞 초안은 그대로 두고 새 이름으로 만든다', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  const snap=()=>s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  assert.deepEqual(await call('write-done'),{ok:false,code:'WRITE_EMPTY'},'쓴 장이 없으면 만들지 않는다');
+  assert.deepEqual(await call('write-save',{chapter:7,text:'a'}),{ok:false,code:'VALUE'});
+  assert.deepEqual(await call('write-save',{chapter:0,text:'바쁜 직장인은 아침을 거르기 쉽습니다.\n1. 온라인 판매\n# 내 제목'}),{ok:true});
+  assert.deepEqual(await call('write-save',{chapter:2,text:'2025년 9월부터 팔았습니다. 단골 손님 300명이 매달 다시 삽니다.'}),{ok:true});
+  assert.deepEqual(await call('write-save',{chapter:3,text:'',skipped:true}),{ok:true});
+  assert.deepEqual(await call('write-save',{chapter:5,text:'가'.repeat(5000)}),{ok:true});
+  let sn=await snap();
+  assert.equal(sn.draft.chapters[0].split('\n').length,3);
+  assert.equal(sn.draft.chapters[5].length,4000,'장마다 4천 자');
+  assert.deepEqual(sn.draft.skipped,[3]);
+  assert.equal(sn.draft.isPlan,false);
+  assert.equal(sn.list.plan,null);
+  const done=await call('write-done');
+  assert.equal(done.ok,true,JSON.stringify(done));
+  assert.match(done.name,/^사업계획서_초안_\d{8}-\d{4}\.md$/);
+  const md=await fs.readFile(path.join(s.docs,done.name),'utf8');
+  assert.match(md,/^# 사업계획서 초안\n\n## 01 문제 인식\n\n바쁜 직장인은 아침을 거르기 쉽습니다\.\n1\. 온라인 판매\n\x5c# 내 제목\n/,'손님 줄의 맨 앞 #은 막는다');
+  assert.match(md,/## 04 경쟁과 차별점\n\n## 05 비즈니스 모델/,'비운 장은 제목만');
+  sn=await snap();
+  assert.equal(sn.list.plan.name,done.name);
+  assert.equal(sn.draft.isPlan,true);
+  // 글이 바뀌면 앞 초안은 바이트 그대로 두고 새 이름으로 만든다. 손님 폴더의 파일은 덮지 않는다(GPT 다시 검수 GA4, 설계 14.2를 다시 봄)
+  await call('write-save',{chapter:1,text:'설탕을 절반으로 줄인 그래놀라를 굽습니다.'});
+  const again=await call('write-done');
+  assert.notEqual(again.name,done.name);
+  assert.equal(again.kept,done.name,'화면이 「앞 초안은 그대로 두었습니다」를 말하게');
+  assert.equal(await fs.readFile(path.join(s.docs,done.name),'utf8'),md);
+  assert.match(await fs.readFile(path.join(s.docs,again.name),'utf8'),/## 02 해결책\n\n설탕을 절반으로/);
+  assert.equal((await snap()).list.plan.name,again.name);
+  // 손님이 고친 앞 초안도 그대로 둔다
+  await fs.appendFile(path.join(s.docs,again.name),'\n손님이 덧붙인 줄\n');
+  await call('write-save',{chapter:4,text:'한 봉에 9천 원에 팝니다.'});
+  const third=await call('write-done');
+  assert.notEqual(third.name,again.name);
+  assert.match(await fs.readFile(path.join(s.docs,again.name),'utf8'),/손님이 덧붙인 줄/);
+  // 읽기: 장 제목 줄로만 가르고(손님의 「1. 온라인 판매」는 장이 아니다), 빈 장은 AI 없이 세운다
+  const started=await call('start',{provider:'codex'});
+  assert.equal(started.ok,true);
+  const prompts=[];
+  const receipt=await s.features.run(spec(s),hooks(),{turn:async(prompt,schema)=>{prompts.push(prompt);return turnWith()(prompt,schema);}});
+  sn=await snap();
+  assert.equal(sn.read.fromDraft,true);
+  assert.deepEqual(sn.read.sections.map(x=>x.title),['01 문제 인식','02 해결책','03 고객과 시장','04 경쟁과 차별점','05 비즈니스 모델','06 팀','07 실행 계획과 자금']);
+  assert.deepEqual(sn.read.empty.map(x=>[x.chapter,x.name]),[[3,'경쟁과 차별점'],[6,'실행 계획과 자금']]);
+  assert.ok(sn.read.empty.every(x=>Number.isInteger(x.sec)));
+  assert.match(prompts.at(-1),/직접 쓴 초안이라 장마다 짧다/);
+  assert.match(receipt.summary,/고칠 곳 \d+곳/);
+  // 기록 지우기는 쓰던 초안도 지운다. 만든 초안 파일은 남긴다
+  assert.deepEqual(await call('clear',{confirm:true}),{ok:true});
+  sn=await snap();
+  assert.deepEqual(sn.draft.chapters,['','','','','','','']);
+  assert.equal(sn.read,null);
+  for(const n of [done.name,again.name,third.name])assert.ok((await fs.readdir(s.docs)).includes(n),'만든 초안 파일은 모두 남긴다(GA11): '+n);
+  assert.deepEqual((await fs.readdir(s.docs)).filter(n=>n.endsWith('.tmp')),[]);
+});
+
+test('직접 쓰기: 부서 폴더가 없으면 기능 폴더에 초안을 둔다', async () => {
+  const s=await setup();
+  const gone={id:'plan02',name:'기획부',folder:path.join(s.root,'없는 폴더')};
+  const features=createOfficeFeatures({userData:s.userData,departments:async()=>[gone]});
+  const call=(action,args={})=>features.act(s.a,{feature:'bizplan',departmentId:gone.id,action,args});
+  await call('write-save',{chapter:0,text:'누가 불편한가'});
+  const done=await call('write-done');
+  assert.equal(done.ok,true,JSON.stringify(done));
+  const where=path.join(s.userData,'Office',s.member,'features','bizplan',gone.id,done.name);
+  assert.match(await fs.readFile(where,'utf8'),/누가 불편한가/);
+});
+
+test('GPT 검수: 글 빠진 저장 · 깨진 초안 · 같은 글 다시 끝내기 · 계정 바뀜 · 덮기 직전 바뀐 앞 초안 · 앞 자리에 못 씀 · 기록 실패 뒤 지움', async () => {
+  const s=await setup();
+  const call=(action,args={},cur)=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args},cur);
+  const draftFile=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id,'draft.json');
+  await call('write-save',{chapter:0,text:'첫 장'});
+  assert.deepEqual(await call('write-save',{chapter:0}),{ok:false,code:'VALUE'},'글이 빠진 요청은 저장된 글을 지우지 않는다(GA5)');
+  // GA7: 같은 글로 다시 끝내면 파일을 다시 쓰지 않는다
+  const first=await call('write-done');
+  const at=(await fs.stat(path.join(s.docs,first.name))).mtimeMs;
+  await new Promise(r=>setTimeout(r,30));
+  assert.equal((await call('write-done')).name,first.name);
+  assert.equal((await fs.stat(path.join(s.docs,first.name))).mtimeMs,at);
+  // GA2: 확정 전에 계정이 바뀌면 파일을 바꾸지 않는다
+  await call('write-save',{chapter:1,text:'둘째 장'});
+  const before=await fs.readFile(path.join(s.docs,first.name),'utf8');
+  assert.deepEqual(await call('write-done',{},()=>false),{ok:false,code:'AUTH_CHANGED'});
+  assert.equal(await fs.readFile(path.join(s.docs,first.name),'utf8'),before);
+  // GA6: 깨진 draft.json은 덮지 않는다
+  const good=await fs.readFile(draftFile,'utf8');
+  await fs.writeFile(draftFile,'{깨짐');
+  assert.deepEqual(await call('write-save',{chapter:2,text:'셋째'}),{ok:false,code:'BROKEN'});
+  assert.equal(await fs.readFile(draftFile,'utf8'),'{깨짐');
+  assert.equal((await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id})).draft.broken,true,'화면이 「기록 지우기」 길을 보이게');
+  await fs.writeFile(draftFile,good);
+});
+
+test('GPT 검수: 덮기 직전에 손님이 앞 초안을 고치면 새 이름으로(GA1), 앞 자리에 못 쓰면 다음 자리로(GA8), 기록에 못 이은 새 파일은 지우지 않고 남긴다(r4 GA4 · r5 GA1)', async () => {
+  const s=await setup();
+  const real=require('node:fs/promises');
+  let edit=null,lockDocs=false,failDraftOnce=false,failListOnce=false;
+  const io={...real,
+    open:async(p,...r)=>{if(p.includes('.solio-')){if(lockDocs&&p.startsWith(s.docs))throw Object.assign(new Error('locked'),{code:'EACCES'});if(edit){const e=edit;edit=null;await real.appendFile(e,'\n손님이 덧붙임\n');}}return real.open(p,...r);},
+    renameSync:(a,b)=>{if(failDraftOnce&&b.endsWith('draft.json')){failDraftOnce=false;throw Object.assign(new Error('no'),{code:'EACCES'});}
+      if(failListOnce&&b.endsWith('list.json')){failListOnce=false;throw Object.assign(new Error('no'),{code:'EACCES'});}return require('node:fs').renameSync(a,b);}};
+  const features=createOfficeFeatures({userData:s.userData,io,departments:async()=>[s.dept]});
+  const call=(action,args={})=>features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  await call('write-save',{chapter:0,text:'첫 장'});
+  const first=await call('write-done');
+  assert.equal(first.ok,true,JSON.stringify(first));
+  await call('write-save',{chapter:1,text:'둘째 장'});
+  edit=path.join(s.docs,first.name);
+  const second=await call('write-done');
+  assert.notEqual(second.name,first.name,'덮기 직전에 바뀐 앞 초안은 덮지 않는다');
+  assert.match(await fs.readFile(path.join(s.docs,first.name),'utf8'),/손님이 덧붙임/);
+  await call('write-save',{chapter:2,text:'셋째 장'});
+  lockDocs=true;
+  const third=await call('write-done');
+  assert.equal(third.ok,true,JSON.stringify(third));
+  assert.ok((await fs.readdir(path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id))).includes(third.name),'부서 폴더에 못 쓰면 기능 폴더에');
+  lockDocs=false;
+  const featDir=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id);
+  // 앞 초안(기능 폴더)을 손님이 고쳐 두면 다음 끝내기는 부서 폴더에 새 파일을 만든다 — 그 새 파일이 기록에 못 이으면 지운다(GA10, 다시 검수 GA3)
+  await fs.appendFile(path.join(featDir,third.name),String.fromCharCode(10)+'손님 줄'+String.fromCharCode(10));
+  await call('write-save',{chapter:3,text:'넷째 장'});
+  failDraftOnce=true;
+  const before=new Set(await fs.readdir(s.docs));
+  assert.deepEqual(await call('write-done'),{ok:false,code:'SAVE'});
+  const orphan=(await fs.readdir(s.docs)).filter(n=>!before.has(n));
+  assert.equal(orphan.length,1,'손님 폴더에서는 지우지 않는다. 기록에 못 이은 새 초안은 남는다(r4 GA4)');
+  // 다시 끝내면 새 이름이 된다. 기록에 못 이은 앞 파일을 다시 잇지 않는다(r5 GA1). 기록을 못 쓰는 장애 때 파일이 하나 더 남는 것은 받아들인 한계
+  failListOnce=true;
+  assert.deepEqual(await call('write-done'),{ok:false,code:'SAVE'});
+  const now=(await fs.readdir(s.docs)).filter(n=>!before.has(n));
+  assert.equal(now.length,2);
+  assert.ok(now.includes(orphan[0]),'앞 파일은 그대로');
+  // 목록만 못 썼으면 draft.json은 그 새 파일을 가리킨다. 다시 끝내면 같은 글이라 목록에 잇는다
+  const pointed=path.basename(JSON.parse(await fs.readFile(path.join(featDir,'draft.json'),'utf8')).file.path);
+  assert.ok(now.includes(pointed));
+  const last=await call('write-done');
+  assert.equal(last.ok,true,JSON.stringify(last));
+  assert.equal(last.name,pointed);
+  assert.equal(last.changed,false);
+});
+
+test('GPT 검수: 빈 장은 계획서 파일 내용으로 보고(GA3), 솔리오가 붙인 장 번호는 숫자 근거가 아니다(GA4)', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  for(const [k,t] of [[0,'바쁜 직장인은 아침을 거릅니다.'],[1,'설탕을 줄여 굽습니다.'],[2,'단골이 있습니다.'],[5,'대표가 굽습니다.'],[6,'목표를 세웁니다.']])await call('write-save',{chapter:k,text:t});
+  await call('write-done');
+  await call('write-save',{chapter:3,text:'파일에는 아직 없는 글'});
+  await call('write-save',{chapter:0,text:''});
+  await call('start',{provider:'codex'});
+  const items={items:[{item:'성장 전략',secs:[7],thin:true,why:'늘릴 방법이 빠졌습니다.',asks:[{q:'어디서 늘리나요?',opts:[{label:'매장',sentence:'매장 5곳을 운영합니다.'},{label:'온라인',sentence:'온라인에서 팝니다.'},{label:'지인',sentence:'지인 소개로 늘립니다.'}]}]}]};
+  await s.features.run(spec(s),hooks(),{turn:async(prompt,schema)=>schema.properties.notes?{notes:[]}:items});
+  const sn=await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  assert.deepEqual(sn.read.empty.map(x=>x.chapter),[3,4],'쓰는 중인 draft.json이 아니라 파일 내용으로');
+  const opts=sn.read.items.find(x=>x.item==='성장 전략').asks[0].opts.map(o=>o.sentence);
+  assert.ok(!opts.includes('매장 5곳을 운영합니다.'),'05장 번호로 「5곳」이 통과하지 않는다');
+  assert.equal(opts.length,2);
+  // 「기록 지우기」로 draft.json이 없어도 초안 짜임으로 알아본다(다시 검수 GA6)
+  await call('clear',{confirm:true});
+  await call('start',{provider:'codex'});
+  await s.features.run(spec(s),hooks(),{turn:async(prompt,schema)=>schema.properties.notes?{notes:[]}:items});
+  const again=await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  assert.equal(again.read.fromDraft,true);
+  assert.ok(!again.read.items.find(x=>x.item==='성장 전략').asks[0].opts.some(o=>o.sentence==='매장 5곳을 운영합니다.'));
+  // 내용이 null인 draft.json은 깨진 것으로 보고 덮지 않는다(다시 검수 GA7)
+  const draftFile=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id,'draft.json');
+  await fs.writeFile(draftFile,'null');
+  assert.deepEqual(await call('write-save',{chapter:0,text:'새 글'}),{ok:false,code:'BROKEN'});
+  assert.equal(await fs.readFile(draftFile,'utf8'),'null');
+});
+
+test('GPT 다시 검수 GA5: 계정은 잇기 · 지우기 바로 그 차례에 본다. 본 뒤에 바뀌면 아무것도 잇거나 지우지 않는다', async () => {
+  const s=await setup();
+  const real=require('node:fs');
+  let session=1;
+  const calls=[];
+  // 파일을 다 쓴 뒤(sync) 계정이 바뀐다. 그다음 잇기 앞의 확인이 막아야 한다
+  const io={...require('node:fs/promises'),
+    open:async(p,...r)=>{const h=await require('node:fs/promises').open(p,...r);if(!p.includes('.solio-'))return h;return {writeFile:(...a)=>h.writeFile(...a),close:()=>h.close(),sync:async()=>{await h.sync();if(switchOnSync)session=2;}};},
+    linkSync:(a,b)=>{calls.push(['link',path.basename(b)]);return real.linkSync(a,b);},
+    rmSync:(p,o)=>{calls.push(['rm',path.basename(p)]);if(switchOnRm&&path.basename(p)==='reads')session=2;return real.rmSync(p,o);}};
+  let switchOnSync=false,switchOnRm=false;
+  const features=createOfficeFeatures({userData:s.userData,io,departments:async()=>[s.dept]});
+  const call=(action,args={})=>{const mine=session;return features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args},()=>session===mine);};
+  await call('write-save',{chapter:0,text:'첫 장'});
+  const first=await call('write-done');
+  assert.equal(first.ok,true,JSON.stringify(first));
+  await call('write-save',{chapter:1,text:'둘째 장'});
+  const docsBefore=new Set(await fs.readdir(s.docs));
+  switchOnSync=true;calls.length=0;
+  assert.deepEqual(await call('write-done'),{ok:false,code:'AUTH_CHANGED'});
+  switchOnSync=false;
+  assert.deepEqual(calls.filter(c=>c[0]==='link'),[],'계정이 바뀐 뒤에는 잇지 않는다');
+  assert.deepEqual(new Set(await fs.readdir(s.docs)),docsBefore,'새 파일도 임시 파일도 남지 않는다');
+  // 기록 지우기: 첫 지우기 동안 계정이 바뀌면 다음 것은 지우지 않는다
+  session=1;
+  await call('write-save',{chapter:2,text:'셋째 장'});
+  const featDir=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id);
+  switchOnRm=true;calls.length=0;
+  assert.deepEqual(await call('clear',{confirm:true}),{ok:false,code:'AUTH_CHANGED'});
+  switchOnRm=false;
+  assert.deepEqual(calls.map(c=>c[1]),['reads'],'바뀐 뒤에는 state.json · draft.json을 지우지 않는다');
+  assert.ok((await fs.readdir(featDir)).includes('draft.json'));
+});
+
+test('Opus 대체 검수 r3: 읽은 뒤 초안을 새 이름으로 다시 만들면 계획서가 바뀐 것으로 보고, 앞 파일의 고친 판을 만들지 않는다', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  const snap=()=>s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  for(const [k,t] of [[0,'바쁜 직장인은 아침을 거릅니다.'],[1,'설탕을 줄여 굽습니다.']])await call('write-save',{chapter:k,text:t});
+  await call('write-done');
+  await call('start',{provider:'codex'});
+  await s.features.run(spec(s),hooks(),{turn:async(prompt,schema)=>schema.properties.notes?{notes:[]}:{items:[]}});
+  assert.equal((await snap()).planChanged,false);
+  await call('write-save',{chapter:2,text:'단골이 있습니다.'});
+  const again=await call('write-done');
+  assert.equal(again.changed,true);
+  assert.equal((await snap()).planChanged,true,'읽은 파일과 목록의 계획서가 다르다');
+  assert.deepEqual(await call('save'),{ok:false,code:'PLAN_CHANGED'});
+});
+
+test('GPT 다시 검수 r3: 손님이 더한 제목은 묶음을 가르고(GA1), 표제를 바꿔도 초안으로 알아보며(GA6), 앞 초안이 없으면 「그대로 두었다」고 하지 않는다(GA3)', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  const snap=()=>s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  for(const [k,t] of [[0,'바쁜 직장인은 아침을 거릅니다.'],[1,'설탕을 줄여 굽습니다.'],[2,'단골이 있습니다.'],[5,'대표가 굽습니다.']])await call('write-save',{chapter:k,text:t});
+  const done=await call('write-done');
+  const file=path.join(s.docs,done.name);
+  const nl=String.fromCharCode(10);
+  const md=(await fs.readFile(file,'utf8')).replace('# 사업계획서 초안','# 그래놀라랩 사업계획서')
+    .replace('## 03 고객과 시장'+nl+nl+'단골이 있습니다.','## 03 고객과 시장'+nl+nl+'### 단골'+nl+'단골이 있습니다.')+nl+'## 부록'+nl+'매장 사진을 붙입니다.'+nl;
+  await fs.writeFile(file,md);
+  await call('start',{provider:'codex'});
+  const items={items:[{item:'성장 전략',secs:[7],thin:true,why:'늘릴 방법이 빠졌습니다.',asks:[{q:'어디서 늘리나요?',opts:[{label:'매장',sentence:'매장 5곳을 운영합니다.'},{label:'온라인',sentence:'온라인에서 팝니다.'},{label:'지인',sentence:'지인 소개로 늘립니다.'}]}]}]};
+  await s.features.run(spec(s),hooks(),{turn:async(prompt,schema)=>schema.properties.notes?{notes:[]}:items});
+  const sn=await snap();
+  assert.equal(sn.read.fromDraft,true,'표제를 바꿔도 일곱 장 제목 줄로 알아본다');
+  assert.ok(sn.read.sections.some(x=>x.title==='부록'),'손님이 더한 「## 부록」은 따로 묶음');
+  assert.deepEqual(sn.read.empty.map(x=>x.chapter),[3,4,6],'「### 단골」 아래 글은 03장의 글, 부록은 07장의 글이 아니다');
+  assert.ok(!sn.read.items.find(x=>x.item==='성장 전략').asks[0].opts.some(o=>o.sentence==='매장 5곳을 운영합니다.'),'05장 번호는 숫자 근거가 아니다');
+  // 앞 초안을 지운 뒤 같은 분에 다시 끝내면 「그대로 두었다」고 하지 않는다
+  await call('write-save',{chapter:4,text:'한 봉에 9천 원에 팝니다.'});
+  const next=await call('write-done');
+  await fs.rm(path.join(s.docs,next.name));
+  await call('write-save',{chapter:6,text:'목표를 세웁니다.'});
+  const third=await call('write-done');
+  assert.equal(third.kept,null);
+});
+
+test('GPT 다시 검수 r3 · r4: 기록에 못 이어도 새 파일을 지우지 않고(GA4), 읽지 못한 초안은 깨진 것으로 보이지 않는다(GA2)', async () => {
+  const s=await setup();
+  const real=require('node:fs');
+  let failList=false,failRestore=false,editAside=false,failRead=false,draftWrites=0;
+  const io={...require('node:fs/promises'),
+    readFile:async(p,...r)=>{if(failRead&&String(p).endsWith('draft.json'))throw Object.assign(new Error('no'),{code:'EACCES'});return require('node:fs/promises').readFile(p,...r);},
+    renameSync:(a,b)=>{
+      if(b.endsWith('draft.json')){draftWrites++;if(failRestore&&draftWrites===2)throw Object.assign(new Error('no'),{code:'EACCES'});if(editAside&&draftWrites===1)throw Object.assign(new Error('no'),{code:'EACCES'});}
+      if(failList&&b.endsWith('list.json'))throw Object.assign(new Error('no'),{code:'EACCES'});
+      if(editAside&&b.endsWith('.old'))real.appendFileSync(a,'손님이 그사이 고침');
+      return real.renameSync(a,b);}};
+  const features=createOfficeFeatures({userData:s.userData,io,departments:async()=>[s.dept]});
+  const call=(action,args={})=>features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  const featDir=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id);
+  await call('write-save',{chapter:0,text:'첫 장'});
+  failList=true;failRestore=true;draftWrites=0;
+  assert.deepEqual(await call('write-done'),{ok:false,code:'SAVE'});
+  failList=false;failRestore=false;
+  const pointed=JSON.parse(await fs.readFile(path.join(featDir,'draft.json'),'utf8')).file.path;
+  await fs.stat(pointed);
+  const again=await call('write-done');
+  assert.equal(again.ok,true);
+  assert.equal(again.name,path.basename(pointed),'같은 글이라 남은 파일을 잇는다');
+  // draft.json을 못 쓰면 새 파일은 지우지 않고 남긴다. 거두기를 없앴다(r4 GA4)
+  await call('write-save',{chapter:1,text:'둘째 장'});
+  editAside=true;draftWrites=0;
+  const before=new Set(await fs.readdir(s.docs));
+  assert.deepEqual(await call('write-done'),{ok:false,code:'SAVE'});
+  editAside=false;
+  const after=await fs.readdir(s.docs);
+  const added=after.filter(n=>!before.has(n));
+  assert.equal(added.length,1,'지우지 않는다');
+  assert.match(await fs.readFile(path.join(s.docs,added[0]),'utf8'),/둘째 장/);
+  assert.ok(!after.some(n=>n.endsWith('.old')||n.endsWith('.tmp')),'숨긴 파일이나 임시 파일이 남지 않는다');
+  // 읽지 못한 초안(STORAGE)은 깨진 것(BROKEN)으로 보이지 않는다
+  failRead=true;
+  const sn=await features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  failRead=false;
+  assert.equal(sn.draft.broken,false);
+  assert.equal(sn.draft.unread,true);
+});
+
+test('Opus 설계 검토(bizplan-write-design): 차례 표시는 어느 계획서에서도 숫자 근거가 아니고(지적 1), 초안 파일이 생긴 뒤에는 파일이 정본이며(지적 2), 「### 세부」는 그 장 안이다(지적 4)', async () => {
+  const nl=String.fromCharCode(10);
+  const items=sec=>({items:[{item:'성장 전략',secs:[sec],thin:true,why:'늘릴 방법이 빠졌습니다.',asks:[{q:'어디서 늘리나요?',opts:[{label:'매장',sentence:'매장 5곳을 운영합니다.'},{label:'온라인',sentence:'온라인에서 팝니다.'},{label:'지인',sentence:'지인 소개로 늘립니다.'}]}]}]});
+  const optsOf=sn=>sn.read.items.find(x=>x.item==='성장 전략')?.asks?.[0]?.opts.map(o=>o.sentence)||[];
+  // 장 제목 한 줄을 고쳐 초안 알아보기가 무너져도 05는 숫자 근거가 아니다
+  {
+    const s=await setup();
+    const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+    for(const [k,t] of [[0,'바쁜 직장인은 아침을 거릅니다.'],[1,'설탕을 줄여 굽습니다.'],[2,'단골이 있습니다.'],[5,'대표가 굽습니다.']])await call('write-save',{chapter:k,text:t});
+    const done=await call('write-done');
+    const file=path.join(s.docs,done.name);
+    await fs.writeFile(file,(await fs.readFile(file,'utf8')).replace('## 06 팀','## 06 팀 구성'));
+    await call('start',{provider:'codex'});
+    await s.features.run(spec(s),hooks(),{turn:async(p,schema)=>schema.properties.notes?{notes:[]}:items(7)});
+    const sn=await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+    assert.equal(sn.read.fromDraft,false);
+    assert.ok(!optsOf(sn).includes('매장 5곳을 운영합니다.'));
+  }
+  // 초안이 아닌 손님 계획서의 「## 5. 성장 전략」도
+  {
+    const s=await setup();
+    const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+    const plan=path.join(s.docs,'내계획서.md');
+    await fs.writeFile(plan,['# 그래놀라랩','','## 1. 문제 인식','','바쁜 직장인은 아침을 거릅니다.','','## 5. 성장 전략','','온라인에서 팝니다.',''].join(nl));
+    const featDir=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id);
+    await fs.mkdir(featDir,{recursive:true});
+    await fs.writeFile(path.join(featDir,'list.json'),JSON.stringify({plan:{path:plan,outline:[]},data:[],criteria:{mode:'default',text:''}}));
+    await call('start',{provider:'codex'});
+    await s.features.run(spec(s),hooks(),{turn:async(p,schema)=>schema.properties.notes?{notes:[]}:items(3)});
+    assert.ok(!optsOf(await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id})).includes('매장 5곳을 운영합니다.'));
+  }
+  // 파일을 고친 뒤 화면 글 그대로 다시 끝내면 고친 파일을 그대로 계획서로 둔다. 화면은 「파일에서 고쳤다」를 안다
+  {
+    const s=await setup();
+    const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+    const snap=()=>s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+    await call('write-save',{chapter:0,text:'첫 장'});
+    const first=await call('write-done');
+    assert.equal((await snap()).draft.edited,false);
+    await new Promise(r=>setTimeout(r,20));
+    await fs.appendFile(path.join(s.docs,first.name),nl+'손님이 메모장에서 더한 긴 글'+nl);
+    assert.equal((await snap()).draft.edited,true);
+    const again=await call('write-done');
+    assert.equal(again.changed,false);
+    assert.equal(again.edited,true);
+    assert.equal(again.name,first.name);
+    assert.equal((await snap()).list.plan.name,first.name);
+    assert.match(await fs.readFile(path.join(s.docs,first.name),'utf8'),/손님이 메모장에서/);
+  }
+  // 「### 단골」은 따로 묶음이 되지 않는다
+  {
+    const s=await setup();
+    const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+    for(const [k,t] of [[0,'바쁜 직장인은 아침을 거릅니다.'],[2,'단골이 있습니다.']])await call('write-save',{chapter:k,text:t});
+    const done=await call('write-done');
+    const file=path.join(s.docs,done.name);
+    await fs.writeFile(file,(await fs.readFile(file,'utf8')).replace('## 03 고객과 시장'+nl+nl+'단골이 있습니다.','## 03 고객과 시장'+nl+nl+'### 단골'+nl+'단골이 있습니다.'));
+    await call('start',{provider:'codex'});
+    await s.features.run(spec(s),hooks(),{turn:async(p,schema)=>schema.properties.notes?{notes:[]}:{items:[]}});
+    const sn=await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+    assert.ok(!sn.read.empty.some(x=>x.chapter===2));
+    assert.ok(!sn.read.sections.some(x=>x.title==='단골'));
+    assert.ok(sn.read.sections.find(x=>x.title==='03 고객과 시장').paras.length>0);
+  }
+});
+
+test('GPT 다시 검수 r4: 「## 3.5억 원 매출」의 3.은 차례 표시가 아니고(GA1), 01장 앞에 손님이 넣은 「## 기업 개요」는 따로 묶음이며(GA2), 크기를 적지 않은 앞 판 기록도 파일에서 고친 것을 안다(GA3)', async () => {
+  const ck2=require('../src/office-bizplan-check.cjs');
+  assert.equal(ck2.ordinalFree('## 3.5억 원 매출',true),'3.5억 원 매출');
+  assert.ok(ck2.numbers(ck2.ordinalFree('## 3.5억 원 매출',true)).set.size>0);
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  const snap=()=>s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  const nl=String.fromCharCode(10);
+  for(const [k,t] of [[0,'바쁜 직장인은 아침을 거릅니다.'],[1,'설탕을 줄여 굽습니다.']])await call('write-save',{chapter:k,text:t});
+  const done=await call('write-done');
+  const file=path.join(s.docs,done.name);
+  const md=(await fs.readFile(file,'utf8')).replace('# 사업계획서 초안','# 그래놀라랩'+nl+nl+'## 기업 개요'+nl+'작은 공방입니다.'+nl+nl+'## 자금 요청'+nl+'오븐이 필요합니다.');
+  await fs.writeFile(file,md);
+  await call('start',{provider:'codex'});
+  await s.features.run(spec(s),hooks(),{turn:async(p,schema)=>schema.properties.notes?{notes:[]}:{items:[]}});
+  const sn=await snap();
+  assert.equal(sn.read.fromDraft,true);
+  const titles=sn.read.sections.map(x=>x.title);
+  assert.ok(titles.includes('기업 개요')&&titles.includes('자금 요청'),JSON.stringify(titles));
+  assert.ok(!titles.includes('그래놀라랩'),'「#」 표제는 묶음이 아니다');
+  // 크기 · 시각을 적지 않은 앞 판의 기록
+  const featDir=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id);
+  const dj=JSON.parse(await fs.readFile(path.join(featDir,'draft.json'),'utf8'));
+  delete dj.file.size;delete dj.file.mtimeMs;
+  await fs.writeFile(path.join(featDir,'draft.json'),JSON.stringify(dj));
+  assert.equal((await snap()).draft.edited,true,'지문으로 본다');
+});
+
+test('GPT 다시 검수 r5 GA1: 글을 A → B → A로 바꿔 끝내도 앞 A 파일을 다시 계획서로 세우지 않는다. 앞 읽기의 고른 것은 저장되지 않는다', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  const snap=()=>s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
+  await call('write-save',{chapter:0,text:'글 A'});
+  const a=await call('write-done');
+  await call('start',{provider:'codex'});
+  await s.features.run(spec(s),hooks(),{turn:async(p,schema)=>schema.properties.notes?{notes:[]}:{items:[]}});
+  await call('write-save',{chapter:0,text:'글 B'});
+  const b=await call('write-done');
+  await call('write-save',{chapter:0,text:'글 A'});
+  const a2=await call('write-done');
+  for(const r of [a,b,a2])assert.equal(r.ok,true,JSON.stringify(r));
+  assert.equal(a2.changed,true);
+  assert.notEqual(a2.name,a.name,'앞 A 파일을 다시 잇지 않는다');
+  assert.notEqual(a2.name,b.name);
+  assert.equal((await snap()).list.plan.name,a2.name,'목록은 새 A를 가리킨다');
+  assert.equal((await snap()).planChanged,true);
+  assert.deepEqual(await call('save'),{ok:false,code:'PLAN_CHANGED'});
 });

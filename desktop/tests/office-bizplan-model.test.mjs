@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bizplanScene, bizplanLine, reasonText, privacyLine, countWord, iga, attachesBizplan } from '../renderer/office-bizplan-model.mjs';
+import { bizplanScene, bizplanLine, reasonText, privacyLine, countWord, iga, attachesBizplan, nextWrite } from '../renderer/office-bizplan-model.mjs';
 import { createBizplanRoom } from '../renderer/office-bizplan-room.mjs';
 
 const list = (o = {}) => ({ plan: { name: '사업계획서_v3.docx' }, data: [{ name: '영수증.csv' }], criteria: { mode: 'default', text: '' }, items: ['문제 인식', '실현 가능성', '성장 전략', '팀 구성'], ...o });
@@ -270,4 +270,205 @@ test('Opus 대체 검수 반영: 다시 읽은 결과는 첫 고칠 곳부터, �
     { ...r.notes[0], key: 'b', para: 1, from: t.indexOf(qb), to: t.indexOf(qb) + qb.length, quote: qb, choice: null }];
   const sc = bizplanScene(snap({ read: r }), null, { sel: 'b' }, { departments: depts });
   assert.equal(sc.notes.find(n => n.key === 'b').place.before, '매출은 3억 원입니다. ');
+});
+
+test('직접 쓰기(14.2): 한 장에 물음 하나, 건너뛴 장은 넘기고, 다 쓰면 초안을 만들어 계획서로 세운다. 빈 장은 「직접 쓰기」 장이 된다', async () => {
+  const draft = { chapters: ['바쁜 직장인은 아침을 거르기 쉽습니다.', '', '', '', '', '', ''], skipped: [2], isPlan: false };
+  const noPlan = o => snap({ read: null, list: list({ plan: null, data: [] }), draft, ...o });
+  const w = bizplanScene(noPlan(), null, { write: 1 }, { departments: depts });
+  assert.equal(w.stage, 'write');
+  assert.equal(w.chapter.name, '해결책');
+  assert.deepEqual(w.segs.map(s => s.state), ['ok', 'on', 'skip', '', '', '', '']);
+  assert.equal(w.last, false);
+  assert.equal(bizplanScene(noPlan(), null, { write: 6 }, { departments: depts }).last, true);
+  { const w = bizplanScene(noPlan(), null, {}, { departments: depts }).writing; assert.deepEqual({ written: w.written, resume: w.resume, isPlan: w.isPlan, edited: w.edited }, { written: 1, resume: 1, isPlan: false, edited: false }); }
+  const ready = bizplanScene(snap({ read: null, list: list({ plan: { name: '사업계획서_초안_20261127-0100.md' } }), draft: { ...draft, isPlan: true } }), null, {}, { departments: depts });
+  assert.equal(ready.draftReady, true);
+  assert.equal(ready.head[0], '사업계획서 초안이 생겼습니다.');
+  assert.equal(ready.chapters[0].first, '바쁜 직장인은 아침을 거르기 쉽습니다.');
+  // 빈 장: 본체가 세운 empty를 「직접 쓰기」 장으로
+  const r = read({ fromDraft: true, empty: [{ chapter: 3, name: '경쟁과 차별점', sec: 2 }] });
+  const sc = bizplanScene(snap({ read: r, draft }), null, { sel: 'e:3' }, { departments: depts });
+  const e = sc.notes.find(n => n.key === 'e:3');
+  assert.equal(e.kind, 'empty');
+  assert.deepEqual(e.acts, [['직접 쓰기', 'biz-write-open', 3, 'main']]);
+  assert.equal(e.place.title, '04 경쟁과 차별점');
+  const wrote = { ...draft, chapters: draft.chapters.map((t, k) => (k === 3 ? '마트보다 설탕이 절반입니다.' : t)) };
+  assert.equal(bizplanScene(snap({ read: r, draft: wrote }), null, {}, { departments: depts }).notes.find(n => n.key === 'e:3').state, 'open', '「나중에 쓰기」만 하면 계획서 파일은 그대로라 아직 빈 장(카본 A2)');
+  const filled = bizplanScene(snap({ read: r, draft: wrote, planChanged: true }), null, {}, { departments: depts });
+  assert.equal(filled.notes.find(n => n.key === 'e:3').state, 'done');
+  // 방: 「다음」은 장마다 남기고 건너뛴 장을 넘기며, 마지막에 초안을 만든다
+  const sent = [];
+  let now = noPlan();
+  const api = {
+    featureSnapshot: async () => now,
+    featureAction: async (f, d, action, args) => { sent.push([action, args]); if (action === 'write-save') { now = noPlan({ draft: { ...now.draft, chapters: now.draft.chapters.map((t, k) => (k === args.chapter ? args.text : t)) } }); } return { ok: true }; },
+  };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(res => setTimeout(res, 0));
+  await room.handle({ act: 'biz-write-open', arg: '1' });
+  assert.equal(room.state().write, 1);
+  await room.handle({ act: 'biz-write-next', fields: { 'answer-1': '설탕을 절반으로 줄여 굽습니다.' } });
+  assert.deepEqual(sent.at(-1), ['write-save', { chapter: 1, text: '설탕을 절반으로 줄여 굽습니다.' }]);
+  assert.equal(room.state().write, 3, '건너뛴 셋째 장(2)은 넘긴다');
+  await room.handle({ act: 'biz-write-go', arg: '5', fields: { 'answer-3': '아직 쓰는 중' } });
+  assert.equal(room.state().writeText[3], '아직 쓰는 중', '막대로 옮겨도 쓰던 글은 화면에 남는다');
+  assert.equal(sent.length, 1, '막대로 옮길 때는 본체에 보내지 않는다');
+  await room.handle({ act: 'biz-write-skip', fields: { 'answer-5': '' } });
+  assert.deepEqual(sent.at(-1), ['write-save', { chapter: 5, text: '', skipped: true }]);
+  await room.handle({ act: 'biz-write-next', fields: { 'answer-6': '3년 뒤 매출 5억 원을 목표로 합니다.' } });
+  assert.deepEqual(sent.map(s => s[0]).slice(-2), ['write-save', 'write-done'], '마지막 장 뒤에 초안을 만든다');
+  assert.equal(room.state().write, null);
+  assert.ok(sent.some(s => s[0] === 'write-save' && s[1].chapter === 3 && s[1].text === '아직 쓰는 중'), '막대로 옮기며 쓴 장도 초안을 만들기 전에 남긴다(카본 A1)');
+  assert.ok(sent.findIndex(s => s[1]?.chapter === 3) < sent.findIndex(s => s[0] === 'write-done'));
+  await room.handle({ act: 'biz-write-open', arg: '2' });
+  await room.handle({ act: 'biz-write-go', arg: '4', fields: { 'answer-2': '반쯤' } });
+  await room.handle({ act: 'biz-write-later', fields: { 'answer-4': '넷째 장' } });
+  assert.deepEqual(sent.slice(-2).map(s => s[1]), [{ chapter: 4, text: '넷째 장' }, { chapter: 2, text: '반쯤' }], '나중에 쓰기도 막대로 옮기며 쓴 장까지 남긴다');
+  assert.equal(room.state().write, null, '나중에 쓰기는 남기고 닫는다');
+});
+
+test('Opus 대체 검수(쓰기 화면): 쓰는 글은 방에 남고, 닫아도 쓰던 장을 남기며, 고른 고침이 있으면 빈 장 쓰기 전에 한 번 묻는다', async () => {
+  const draft = { chapters: ['첫 장', '', '', '', '', '', ''], skipped: [], isPlan: true };
+  const sent = [];
+  let now = snap({ draft, read: read({ fromDraft: true, empty: [{ chapter: 3, name: '경쟁과 차별점', sec: 2 }], notes: read().notes.map((n, i) => (i === 0 ? { ...n, choice: { kind: 'fix' } } : n)) }) });
+  const api = { featureSnapshot: async () => now, featureAction: async (f, d, action, args) => { sent.push([action, args]); return action === 'write-done' ? { ok: false, code: 'WRITE_EMPTY' } : { ok: true }; } };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(res => setTimeout(res, 0));
+  const sc = room.scene(null, { departments: depts });
+  assert.equal(sc.notes[0].kind, 'empty', '빈 장이 고칠 곳 앞에 선다');
+  assert.equal(sc.notes[0].place.before, '이미 있는 것과 무엇이 다른가요?');
+  await room.handle({ act: 'biz-write-open', arg: '3' });
+  assert.equal(room.state().write, null, '첫 누름은 묻기만 한다');
+  assert.match(room.state().live, /고른 고침 1개는/);
+  await room.handle({ act: 'biz-write-open', arg: '3' });
+  assert.equal(room.state().write, 3);
+  await room.handle({ act: 'biz-write-type', arg: '3', fields: { 'answer-3': '마트보다 설탕이 절반입니다.' } });
+  assert.equal(room.scene(null, { departments: depts }).text, '마트보다 설탕이 절반입니다.', '다시 그려도 쓰던 글이 남는다');
+  assert.equal(sent.length, 0, '쓰는 동안은 본체에 보내지 않는다');
+  room.close({ fields: { 'answer-3': '마트보다 설탕이 절반이고 그날 굽습니다.' } });
+  await new Promise(res => setTimeout(res, 0));
+  assert.deepEqual(sent, [['write-save', { chapter: 3, text: '마트보다 설탕이 절반이고 그날 굽습니다.' }]], '「← 사무실」로 닫아도 쓰던 장을 남긴다');
+  // 일곱 장을 다 건너뛰면 까닭을 바로 말한다
+  now = snap({ read: null, list: list({ plan: null, data: [] }), draft: { chapters: ['', '', '', '', '', '', ''], skipped: [0, 1, 2, 3, 4, 5], isPlan: false } });
+  const r2 = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  r2.open('plan01');
+  await new Promise(res => setTimeout(res, 0));
+  await r2.handle({ act: 'biz-write-open', arg: '6' });
+  await r2.handle({ act: 'biz-write-skip', fields: { 'answer-6': '' } });
+  assert.equal(r2.state().live, '한 장 이상 써야 초안을 만들 수 있습니다.');
+});
+
+test('Opus 대체 다시 검수(쓰기 화면): 읽은 뒤 초안을 다시 만들면 바로 다시 읽고(FA3), 막대로 쓴 장이 깨진 기록에 막혀도 같은 안내(FA1), 빈 장 카드는 한 말투(FA2)', async () => {
+  const draft = { chapters: ['첫 장', '', '', '', '', '', ''], skipped: [1, 2, 4, 5, 6], isPlan: true };
+  const sent = [];
+  let now = snap({ draft, read: read({ fromDraft: true, provider: 'codex', empty: [{ chapter: 3, name: '경쟁과 차별점', sec: 2 }] }) });
+  let brokenAt = null;
+  const api = {
+    featureSnapshot: async () => now,
+    featureAction: async (f, d, action, args) => {
+      sent.push([action, args]);
+      if (action === 'write-save' && args.chapter === brokenAt) { now = { ...now, draft: { ...now.draft, broken: true } }; return { ok: false, code: 'BROKEN' }; }
+      if (action === 'write-save') now = { ...now, draft: { ...now.draft, chapters: now.draft.chapters.map((t, k) => (k === args.chapter ? args.text : t)) } };
+      if (action === 'write-done') return { ok: true, name: '사업계획서_초안_20261127-0300-2.md', changed: true, kept: '사업계획서_초안_20261127-0300.md' };
+      return { ok: true };
+    },
+  };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(res => setTimeout(res, 0));
+  await room.handle({ act: 'biz-write-open', arg: '3' });
+  await room.handle({ act: 'biz-write-next', fields: { 'answer-3': '마트보다 설탕이 절반입니다.' } });
+  assert.deepEqual(sent.map(s => s[0]), ['write-save', 'write-done', 'start'], '앞 읽기의 고칠 곳은 바뀐 파일에 저장할 수 없어 바로 다시 읽는다');
+  assert.deepEqual(sent.at(-1)[1], { provider: 'codex' });
+  assert.match(room.state().live, /앞 초안 파일은 그대로 두었습니다/);
+  // 막대로 옮겨 쓴 다른 장이 깨진 기록에 막히면 쓰기를 닫고 「기록 지우기」를 가리킨다
+  sent.length = 0; brokenAt = 0;
+  await room.handle({ act: 'biz-write-open', arg: '3' });
+  await room.handle({ act: 'biz-write-go', arg: '0', fields: { 'answer-3': '마트보다 설탕이 절반입니다.' } });
+  await room.handle({ act: 'biz-write-go', arg: '3', fields: { 'answer-0': '첫 장을 고침' } });
+  await room.handle({ act: 'biz-write-next', fields: { 'answer-3': '마트보다 설탕이 절반이고 그날 굽습니다.' } });
+  assert.equal(room.state().write, null);
+  assert.match(room.state().live, /「기록 지우기」로 지운 뒤/);
+  const sc = room.scene(null, { departments: depts });
+  assert.equal(sc.broken, true, '고칠 곳 화면도 「기록 지우기」를 보인다');
+  // 빈 장 카드의 두 글은 같은 말투
+  const filled = bizplanScene(snap({ read: read({ fromDraft: true, empty: [{ chapter: 3, name: '경쟁과 차별점', sec: 2 }] }), draft: { ...draft, chapters: draft.chapters.map((t, k) => (k === 3 ? '글' : t)) }, planChanged: true }), null, {}, { departments: depts });
+  assert.equal(filled.notes.find(n => n.key === 'e:3').done, '「경쟁과 차별점」 장을 썼어요. 다시 읽으면 반영돼요.');
+});
+
+test('Opus 대체 검수 r3: 빈 장이 둘 이상이면 「다음」이 건너뛴 빈 장과 앞쪽 빈 장에도 들러 한 번에 다시 읽는다', () => {
+  const dr = { chapters: ['첫 장', '둘째', '', '', '다섯째', '여섯째', ''], skipped: [2, 6] };
+  assert.equal(nextWrite(3, dr, { 3: '넷째' }, [2, 3, 6]), 6, '건너뛴 장도 읽은 뒤 빈 장이면 들른다');
+  assert.equal(nextWrite(6, dr, { 3: '넷째', 6: '일곱째' }, [2, 3, 6]), 2, '앞쪽 빈 장으로 돌아간다');
+  assert.equal(nextWrite(2, dr, { 2: '셋째', 3: '넷째', 6: '일곱째' }, [2, 3, 6]), -1);
+  assert.equal(nextWrite(3, dr, { 3: '넷째' }, []), -1, '읽기 전 처음 쓰기는 건너뛴 장을 다시 묻지 않는다');
+  const r = read({ fromDraft: true, empty: [{ chapter: 3, name: '경쟁과 차별점', sec: 2 }, { chapter: 6, name: '실행 계획과 자금', sec: 5 }] });
+  const sc = bizplanScene(snap({ read: r, draft: { ...dr, isPlan: true } }), null, { write: 3, writeText: { 3: '넷째' } }, { departments: depts });
+  assert.equal(sc.last, false, '6장이 비어 있으면 3장 단추는 「다 썼습니다」가 아니다');
+});
+
+test('GPT 다시 검수 r3 GA2: 잠시 읽지 못한 기록(STORAGE)은 쓰기 화면을 닫거나 「기록 지우기」를 가리키지 않는다', async () => {
+  const api = { featureSnapshot: async () => snap({ read: null, list: list({ plan: null, data: [] }), draft: { chapters: ['', '', '', '', '', '', ''], skipped: [], isPlan: false } }), featureAction: async (f, d, action) => (action === 'write-save' ? { ok: false, code: 'STORAGE' } : { ok: true }) };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(res => setTimeout(res, 0));
+  await room.handle({ act: 'biz-write-open', arg: '1' });
+  await room.handle({ act: 'biz-write-next', fields: { 'answer-1': '설탕을 줄여 굽습니다.' } });
+  assert.equal(room.state().write, 1, '쓰기 화면이 그대로');
+  assert.equal(room.state().writeText[1], '설탕을 줄여 굽습니다.');
+  assert.match(room.state().live, /잠시 뒤 다시 눌러/);
+  assert.doesNotMatch(room.state().live, /기록 지우기/);
+});
+
+test('Opus 설계 검토(bizplan-write-design 지적 2 · 3): 파일에서 고친 초안을 화면이 알리고, 창이 가려지면 쓰던 장을 남긴다', async () => {
+  const dr = { chapters: ['첫 장', '', '', '', '', '', ''], skipped: [], isPlan: true, edited: true, name: '사업계획서_초안_20261127-0300.md' };
+  const start = bizplanScene(snap({ read: null, list: list({ plan: { name: dr.name } }), draft: dr }), null, {}, { departments: depts });
+  assert.equal(start.writing.edited, true);
+  assert.equal(start.writing.name, dr.name);
+  const w = bizplanScene(snap({ read: null, list: list({ plan: { name: dr.name } }), draft: dr }), null, { write: 1 }, { departments: depts });
+  assert.equal(w.edited, true);
+  const sent = [];
+  const api = { featureSnapshot: async () => snap({ read: null, list: list({ plan: null, data: [] }), draft: { ...dr, isPlan: false, edited: false } }), featureAction: async (f, d, action, args) => { sent.push([action, args]); return { ok: true }; } };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(res => setTimeout(res, 0));
+  await room.handle({ act: 'biz-write-open', arg: '1' });
+  await room.handle({ act: 'biz-write-type', arg: '1', fields: { 'answer-1': '설탕을 줄여 굽습니다.' } });
+  room.flush();
+  await new Promise(res => setTimeout(res, 0));
+  assert.deepEqual(sent, [['write-save', { chapter: 1, text: '설탕을 줄여 굽습니다.' }]]);
+  assert.equal(room.state().write, 1, '쓰기 화면은 그대로');
+});
+
+test('Opus 대체 다시 검수 r4: 빈 장 둘에서 건너뛰기만 눌러도 오가지 않고 끝에 닿으며(P1), 파일 이름 뒤 조사가 맞고, 실패한 읽기에는 「다시 읽은 뒤 저장」 띠가 없다', async () => {
+  const draft = { chapters: ['첫 장', '둘째', '', '넷째', '다섯째', '여섯째', ''], skipped: [], isPlan: true };
+  const sent = [];
+  let now = snap({ draft, read: read({ fromDraft: true, empty: [{ chapter: 2, name: '고객과 시장', sec: 3 }, { chapter: 6, name: '실행 계획과 자금', sec: 7 }] }) });
+  const api = {
+    featureSnapshot: async () => now,
+    featureAction: async (f, d, action, args) => {
+      sent.push([action, args]);
+      if (action === 'write-save' && args.skipped) now = { ...now, draft: { ...now.draft, skipped: [...new Set([...now.draft.skipped, args.chapter])] } };
+      return action === 'write-done' ? { ok: false, code: 'WRITE_EMPTY' } : { ok: true };
+    },
+  };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(res => setTimeout(res, 0));
+  await room.handle({ act: 'biz-write-open', arg: '2' });
+  await room.handle({ act: 'biz-write-skip', fields: { 'answer-2': '' } });
+  assert.equal(room.state().write, 6);
+  assert.equal(room.scene(null, { departments: depts }).last, true, '6장에서는 「다 썼습니다」');
+  await room.handle({ act: 'biz-write-skip', fields: { 'answer-6': '' } });
+  assert.equal(sent.at(-1)[0], 'write-done', '2장으로 돌아가지 않고 끝에 닿는다');
+  // 조사
+  const dr = { ...draft, edited: true, name: '사업계획서_초안_20261127-0300.md' };
+  const sc = bizplanScene(snap({ read: null, list: list({ plan: { name: dr.name } }), draft: dr }), null, {}, { departments: depts });
+  assert.match(sc.writing.note, /0300\.md는 그대로 둡니다/);
+  // 실패한 읽기
+  const failed = bizplanScene(snap({ read: read({ status: 'failed', reason: 'LIMIT' }), planChanged: true }), null, {}, { departments: depts });
+  assert.equal(failed.planChanged, false);
 });

@@ -4,6 +4,9 @@
    글은 모두 textContent로 넣는다. 다시 그릴 때 쓰던 칸의 글과 초점을 지킨다 */
 
 const ART = { desk: '/assets/bizplan/desk.jpg', orb: '/assets/bizplan/orb.webp' };
+/* 쓰는 동안 솔리오의 한마디(쓰기 시안 coach와 같다). 숫자가 필요한 장은 숫자를 묻는다 */
+const HAS_NUM = t => /[0-9]/.test(t) || /(?:한|두|세|네|다섯|여섯|일곱|여덟|아홉|열|스무|서른|마흔|쉰|백|천|만|억)\s?(?:명|개|곳|원|번|달|해|배|가지|살|시간|년|퍼센트)/.test(t);
+const coach = (num, v) => { const t = String(v || '').trim(); if (!t) return ['open', '']; if (t.length < 16) return ['look', '듣고 있어요.']; if (num && !HAS_NUM(t)) return ['curious', '숫자를 하나 넣으면 훨씬 잘 믿어요.']; return ['happy', num ? '숫자가 들어갔어요.' : '좋아요. 이대로 넘어가도 돼요.']; };
 const DEFAULT_ITEMS = ['문제 인식', '실현 가능성', '성장 전략', '팀 구성']; // 본체 office-bizplan-check.cjs와 같다
 const SVG = 'http://www.w3.org/2000/svg';
 /* 구의 눈(팀 고르기 4판 결: 작고 둥근 점 눈). 표정은 눈 모양과 보는 곳만 바꾼다 */
@@ -76,6 +79,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
   });
   /* 자판(14.1): 고칠 곳에서 Enter는 주 단추, →는 그대로 두기, ←는 앞 장. 단추나 글 칸에 초점이 있으면 받지 않는다(설계 검토 18) */
   host.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !e.isComposing && e.target.closest?.('[data-biz-write]')) { e.preventDefault(); host.querySelector('.biz-write .go:not([disabled])')?.click(); return; }
     if (e.key === 'Escape' && cur?.menu) { e.preventDefault(); send({ act: 'biz-menu', arg: cur.menu, fields: {} }); return; }
     if (e.key === 'Escape' && cur?.sheet) { e.preventDefault(); send({ act: 'biz-sheet', arg: '', fields: {} }); return; }
     if (!cur || cur.stage !== 'notes' || cur.sheet || cur.busy || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
@@ -90,7 +94,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
       return;
     }
     if (e.key === 'Enter') { const m = host.querySelector('.biz-card .go:not([disabled])'); if (m) { e.preventDefault(); m.click(); } }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); if (n.kind !== 'thin') send({ act: 'biz-choose', arg: n.key + '|keep', fields: {} }); else send({ act: 'biz-go', arg: nextOf(cur, n)[0], fields: {} }); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); if (n.kind !== 'thin' && n.kind !== 'empty') send({ act: 'biz-choose', arg: n.key + '|keep', fields: {} }); else send({ act: 'biz-go', arg: nextOf(cur, n)[0], fields: {} }); }
     else if (e.key === 'ArrowLeft' && cur.at > 0) { e.preventDefault(); send({ act: 'biz-go', arg: cur.notes[cur.at - 1].key, fields: {} }); }
   });
   /* 창에 파일을 놓으면 고르기 창을 연다. 놓은 경로는 받지 않는다(본체만 파일을 고른다, 설계 검토 18) */
@@ -151,9 +155,9 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const bar = el('div', 'biz-bar');
     const add = btn('', 'biz-pick-data', '', 'chip round', !!sc.busy); add.setAttribute('aria-label', '회사 자료 더하기'); add.append(el('span', '', '+'));
     bar.append(add,
-      menu('crit', sc.criteria.mode === 'pasted' ? '공고문 기준' : '창업 지원사업 기준', [['창업 지원사업 기준', 'default', sc.criteria.mode === 'default', DEFAULT_ITEMS.join(' · ')], ['공고문 기준', 'pasted', sc.criteria.mode === 'pasted', sc.criteria.mode === 'pasted' && sc.criteria.text ? `붙여 넣은 평가 항목 ${sc.list.items.length}개` : '공고의 평가 항목을 붙여 넣습니다']], 'biz-criteria', sc),
+      menu('crit', sc.criteria.mode === 'pasted' ? '공고문 기준' : '창업 지원사업 기준', [['창업 지원사업 기준', 'default', sc.criteria.mode === 'default', DEFAULT_ITEMS.join(' · ')], ['공고문 기준', 'pasted', sc.criteria.mode === 'pasted', sc.list.criteria?.mode === 'pasted' && sc.list.criteria.text ? `붙여 넣은 평가 항목 ${sc.list.items.length}개` : '공고의 평가 항목을 붙여 넣습니다']], 'biz-criteria', sc),
       menu('staff', sc.provider === 'codex' ? 'GPT 직원' : 'Claude 직원', [['Claude 직원', 'claude', sc.provider === 'claude', '내 Claude 구독으로 읽습니다'], ['GPT 직원', 'codex', sc.provider === 'codex', '내 ChatGPT 구독으로 읽습니다']], 'biz-provider', sc),
-      el('span', 'sp'), btn('읽기', 'biz-start', '', 'go', !plan || !!sc.busy));
+      el('span', 'sp'), btn(sc.draftReady ? '고치기 · 채우기' : '읽기', 'biz-start', '', 'go', !plan || !!sc.busy));
     comp.append(bar);
     if (sc.criteria.mode === 'pasted' && (sc.criteria.open || !sc.criteria.text)) {
       const crit = el('div', 'biz-crit');
@@ -173,7 +177,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     if (n.place?.mark) para.append(el('span', n.place.changed ? 'mark new' : n.state === 'kept' ? 'mark' : 'mark bad', n.place.mark));
     if (n.place?.after) para.append(el('span', 'dim', ' ' + n.place.after));
     if (n.kind === 'thin' && n.draft) para.append(el('span', 'mark new', ' ' + n.draft));
-    if (!para.childNodes.length) para.append(el('span', 'dim', '이 항목을 다룬 곳이 계획서에 없습니다.'));
+    if (!para.childNodes.length) para.append(el('span', 'dim', n.kind === 'empty' ? '이 장은 아직 비어 있습니다.' : '이 항목을 다룬 곳이 계획서에 없습니다.'));
     if (!para.querySelector('.mark')) para.classList.add('plain');
     const stage = el('div', 'stagearea'); stage.append(para); box.append(stage);
 
@@ -236,12 +240,13 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const hand = n.acts.find(x => x[1] === 'biz-hand');
     const fix = n.acts.find(x => x[2] === n.key + '|fix');
     const ask = n.acts.find(x => x[1] === 'biz-ask');
+    const write = n.acts.find(x => x[1] === 'biz-write-open');
     if (edit && (fix || hand)) acts.append(btn('직접 쓰기', edit[1], edit[2], 'chip', !!sc.busy));
     if (hand && fix) acts.append(btn(hand[0], hand[1], hand[2], 'chip', !!sc.busy));
     // 빈약한 항목은 그대로 두기가 없다. 쓰지 않고 다음 장으로 넘어갈 수 있게 한다
-    if (n.kind === 'thin') { const [nk, nl] = nextOf(sc, n); acts.append(key(btn(nl, 'biz-go', nk, 'chip'), '→')); }
+    if (n.kind === 'thin' || n.kind === 'empty') { const [nk, nl] = nextOf(sc, n); acts.append(key(btn(nl, 'biz-go', nk, 'chip'), '→')); }
     acts.append(el('span', 'sp'));
-    const main = fix ? ['이렇게 고치기', fix[1], fix[2]] : hand ? [hand[0], hand[1], hand[2]] : edit ? ['직접 쓰기', edit[1], edit[2]] : ask ? ['같이 쓰기', ask[1], ask[2]] : null;
+    const main = fix ? ['이렇게 고치기', fix[1], fix[2]] : hand ? [hand[0], hand[1], hand[2]] : edit ? ['직접 쓰기', edit[1], edit[2]] : ask ? ['같이 쓰기', ask[1], ask[2]] : write ? ['직접 쓰기', write[1], write[2]] : null;
     if (main) acts.append(key(btn(main[0], main[1], main[2], 'go', !!sc.busy), 'Enter'));
     comp.append(acts); box.append(comp);
     for (const b of acts.querySelectorAll('button')) b.setAttribute('aria-describedby', 'biz-card-where biz-card-para biz-card-say');
@@ -286,6 +291,31 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     }
   }
 
+  /* 직접 쓰기(14.2): 물음 하나, 쓰는 칸 하나. 솔리오가 그 장이 왜 필요한지 말한다 */
+  function writeStage(sc, root) {
+    const steps = el('div', 'biz-steps'), segs = el('div', 'segs');
+    sc.segs.forEach((s, k) => { const b = btn('', 'biz-write-go', k, 'seg' + (s.state ? ' ' + s.state : ''), !!sc.busy); b.setAttribute('aria-label', `${k + 1}번째 장 · ${s.name}${s.state === 'ok' ? ' · 씀' : s.state === 'skip' ? ' · 건너뜀' : ''}`); if (s.state === 'on') b.setAttribute('aria-current', 'step'); segs.append(b); });
+    steps.append(segs, el('span', 'count', `${sc.q + 1} / ${sc.segs.length}`), btn('나중에 쓰기', 'biz-write-later', '', 'chip', !!sc.busy));
+    const box = el('section', 'biz-card biz-write'); box.tabIndex = -1;
+    const head = el('div', 'stagearea qhead');
+    const no = el('p', 'qno'); no.append(el('span', '', sc.chapter.no), doc.createTextNode(sc.chapter.name));
+    const qq = el('h2', 'qq', sc.chapter.q); qq.id = 'biz-write-q'; qq.tabIndex = -1; qq.dataset.bizHead = '';
+    head.append(no, qq);
+    const comp = el('div', 'biz-comp ask');
+    const [mood, tip] = coach(sc.chapter.num, sc.text);
+    const row = el('div', 'ask-row'), sp = sprite(mood); sp.dataset.mood = mood;
+    const words = el('div'); words.append(el('p', 'say-line', sc.chapter.why), el('span', 'tip', tip));
+    row.append(sp, words);
+    const ta = field('answer-' + sc.q, sc.text, sc.chapter.q, 4, 'biz-ta serif ans');
+    ta.dataset.bizWrite = ''; ta.placeholder = '예: ' + sc.chapter.ex; ta.maxLength = 4000; ta.setAttribute('aria-labelledby', 'biz-write-q'); ta.removeAttribute('aria-label');
+    const acts = el('div', 'acts');
+    acts.append(btn('이 장 건너뛰기', 'biz-write-skip', '', 'chip', !!sc.busy), el('span', 'sp'), key(btn(sc.last ? '다 썼습니다' : '다음', 'biz-write-next', '', 'go', !!sc.busy || !sc.text.trim()), 'Ctrl Enter'));
+    comp.append(row, ta, acts);
+    box.append(head, comp);
+    root.append(steps, box);
+    if (sc.edited) root.append(el('p', 'biz-foot', sc.editedNote));
+  }
+
   function sheetNode(sc) {
     const s = el('div', 'biz-sheet'); s.setAttribute('role', 'dialog'); s.setAttribute('aria-modal', 'true'); s.setAttribute('aria-label', '고칠 곳 전체');
     const in_ = el('div', 'in');
@@ -303,6 +333,21 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
   // 알림 자리는 한 번 만들어 두고 글만 바꾼다. 그릴 때마다 새로 만들면 화면 읽기 프로그램이 알림을 놓친다(코드 검수 P2-9)
   const body = doc.createElement('div');
   const liveEl = doc.createElement('p'); liveEl.className = 'more-note biz-live'; liveEl.setAttribute('role', 'status'); liveEl.setAttribute('aria-live', 'polite');
+  function syncWrite() {
+    const a = host.querySelector('[data-biz-write]'); if (!a || cur?.stage !== 'write') return;
+    const [mood, tip] = coach(cur.chapter.num, a.value);
+    const t = host.querySelector('.biz-write .tip'); if (t) t.textContent = tip;
+    const s = host.querySelector('.biz-write .biz-sprite'); if (s && s.dataset.mood !== mood) { s.dataset.mood = mood; s.querySelector('.biz-eyes')?.replaceWith(eyes(mood, 1.6)); }
+    const g = host.querySelector('.biz-write .go'); if (g) { const off = !!cur.busy || !a.value.trim(); g.disabled = off; if (off) g.setAttribute('aria-disabled', 'true'); else g.removeAttribute('aria-disabled'); }
+  }
+  let typeTimer = 0;
+  host.addEventListener('input', e => {
+    const a = e.target.closest?.('[data-biz-write]'); if (!a || cur?.stage !== 'write') return;
+    syncWrite();
+    // 쓰던 글을 방에 남긴다(다시 그리지 않는다). 사무실이 다시 그려도, 방을 떠나도 글이 남는다
+    const q = cur.q; clearTimeout(typeTimer);
+    typeTimer = setTimeout(() => send({ act: 'biz-write-type', arg: String(q), fields: { ['answer-' + q]: a.value } }), 300);
+  });
   host.addEventListener('compositionstart', () => { composing = true; });
   host.addEventListener('compositionend', () => { composing = false; if (pending !== undefined) { const p = pending; pending = undefined; render(p); } });
   function render(sc) {
@@ -322,7 +367,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const root = el('div', 'biz');
     const top = el('div', 'biz-top'); top.append(btn(sc.back, 'biz-close', '', 'biz-back'));
     root.append(top);
-    if (sc.planChanged) { const w = el('div', 'biz-warn'); w.append(el('p', '', '계획서 파일이 읽은 뒤에 바뀌었습니다. 다시 읽은 뒤 저장할 수 있습니다.'), btn('다시 읽기', 'biz-start', '', 'chip', !!sc.busy)); root.append(w); }
+    if (sc.planChanged && sc.stage !== 'write') { const w = el('div', 'biz-warn'); w.append(el('p', '', '계획서가 읽은 뒤에 바뀌었습니다. 다시 읽은 뒤 저장할 수 있습니다.'), btn('다시 읽기', 'biz-start', '', 'chip', !!sc.busy)); root.append(w); }
 
     if (sc.stage === 'notes') notesStage(sc, root);
     else if (sc.stage === 'reading' || sc.stage === 'waiting') {
@@ -335,14 +380,31 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
       if (sc.taskId) r.append(btn('멈추기', 'biz-cancel', sc.taskId, 'chip', !!sc.busy));
       if (sc.progress?.total) { const segs = el('div', 'segs'); for (let i = 1; i <= sc.progress.total; i++) segs.append(el('i', i < sc.progress.part ? 'full' : i === sc.progress.part ? 'on' : '')); r.append(segs); }
       comp.append(r); root.append(comp, el('p', 'biz-foot', '다른 일을 하셔도 됩니다. 끝나면 사무실 맨 위 문장과 이 화면이 알려 드립니다.'));
+    } else if (sc.stage === 'write') {
+      writeStage(sc, root);
     } else if (sc.stage === 'start' || sc.stage === 'failed' || sc.stage === 'stopped') {
-      root.append(say(sc), hero(sc.stage === 'start' ? (sc.list?.plan ? 'drop' : 'open') : 'sleepy'), composer(sc), el('p', 'biz-foot', sc.privacy));
+      root.append(say(sc), hero(sc.stage === 'start' ? (sc.draftReady ? 'happy' : sc.list?.plan ? 'drop' : 'open') : 'sleepy', !!sc.draftReady), composer(sc));
+      if (sc.chapters) {
+        const ol = el('ol', 'biz-chapters');
+        sc.chapters.forEach((c, k) => { const li = el('li', c.first ? '' : 'blank'); li.append(el('span', 'no', String(k + 1).padStart(2, '0')), el('b', '', c.name), el('span', 'first', c.first || '비어 있음')); ol.append(li); });
+        root.append(ol);
+      }
+      const w = sc.writing;
+      if (w && (!sc.list?.plan || w.isPlan)) {
+        const p = el('p', 'biz-write-link');
+        p.append(el('span', '', w.isPlan ? '초안을 더 쓰거나 고치려면' : '계획서가 아직 없으면'),
+          btn(w.isPlan ? '초안 고쳐 쓰기' : w.written ? `쓰던 초안 이어 쓰기 (${w.written}/7)` : '직접 쓰기', 'biz-write-open', w.isPlan ? 0 : w.resume, 'link', !!sc.busy));
+        root.append(p);
+        // 파일이 정본이다. 파일에서 고친 글은 이 쓰기 화면에 없다(설계 검토 지적 2)
+        if (w.edited) root.append(el('p', 'biz-foot', w.note));
+      }
+      root.append(el('p', 'biz-foot', sc.privacy));
     } else {
       root.append(say(sc));
     }
-    if (sc.stage !== 'loading' && sc.stage !== 'reading' && sc.stage !== 'waiting' && (sc.stage !== 'start' || sc.broken) && !(sc.stage === 'notes' && sc.notes.some(n => n.sel) && sc.notes.some(n => n.state === 'open'))) {
+    if (sc.stage !== 'loading' && sc.stage !== 'reading' && sc.stage !== 'waiting' && sc.stage !== 'write' && (sc.stage !== 'start' || sc.broken) && !(sc.stage === 'notes' && !sc.broken && sc.notes.some(n => n.sel) && sc.notes.some(n => n.state === 'open'))) {
       const c = el('div', 'biz-clear');
-      if (sc.clearAsk) c.append(el('p', '', '읽은 결과와 고른 것을 지웁니다. 계획서와 회사 자료 파일은 그대로 둡니다.'), btn('지우기', 'biz-clear', '', 'chip', !!sc.busy), btn('그만두기', 'biz-clear-ask', '', 'link'));
+      if (sc.clearAsk) c.append(el('p', '', '읽은 결과, 고른 것, 쓰던 초안을 지웁니다. 만든 초안 파일과 계획서 · 회사 자료 파일은 그대로 둡니다.'), btn('지우기', 'biz-clear', '', 'chip', !!sc.busy), btn('그만두기', 'biz-clear-ask', '', 'link'));
       else c.append(btn('기록 지우기', 'biz-clear-ask', '', 'link'));
       root.append(c);
     }
@@ -363,12 +425,14 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
       // 누른 단추가 사라지면 초점이 문서 처음으로 날아가지 않게, 지금 장의 주 단추나 머리글로 옮긴다
       else (host.querySelector('.biz-card .go:not([disabled])') || host.querySelector('.biz-card .opts .opt') || host.querySelector('[data-biz-head]') || host.querySelector('.biz-card'))?.focus({ preventScroll: true });
     }
+    syncWrite();
     if (!hadEdit && sc.stage === 'notes' && sc.notes.find(n => n.sel)?.editing) host.querySelector('[data-biz-f="edit"]')?.focus({ preventScroll: true });
     if (sc.stage === 'notes' && sc.sheet && !host.querySelector('.biz-sheet')?.contains(doc.activeElement)) host.querySelector('.biz-sheet .row, .biz-sheet button')?.focus({ preventScroll: true });
-    const k2 = sc.stage + ':' + (sc.sel || '');
+    const k2 = sc.stage + ':' + (sc.stage === 'write' ? sc.q : sc.sel || '');
     if (k2 !== lastKey) {
       const first = lastKey === '' || lastKey.startsWith('loading:');
       lastKey = k2;
+      if (sc.stage === 'write' && globalThis.matchMedia?.('(pointer:fine)').matches) host.querySelector('[data-biz-write]')?.focus({ preventScroll: true });
       if (!first) host.querySelector('.biz-steps, .biz-say')?.scrollIntoView?.({ block: 'nearest' });
     }
   }

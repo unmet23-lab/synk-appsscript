@@ -619,7 +619,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     }
     // 기능의 작업 화면: 부서 줄의 기능 줄을 누르면 열리고, 「← 사무실」로 닫는다
     if (p.act === 'feature-open' && String(p.key || '').startsWith('d:') && p.arg === 'bizplan') { biz.open(String(p.key).slice(2)); changed(); return true; }
-    if (p.act === 'biz-close') { const back = biz.departmentId; biz.close(); if (back && deptOf(back)) pickChat('d:' + back); focusReq = ask({ say: true }); changed(); return true; }
+    if (p.act === 'biz-close') { const back = biz.departmentId; biz.close({ fields: p.fields }); if (back && deptOf(back)) pickChat('d:' + back); focusReq = ask({ say: true }); changed(); return true; }
     if (typeof p.act === 'string' && p.act.startsWith('biz-')) { await biz.handle(p); return true; }
     const key = String(p.key || ''), act = String(p.act || ''), arg = p.arg == null ? '' : String(p.arg), fields = p.fields && typeof p.fields === 'object' ? p.fields : {};
     if (act === 'disarm') return true;
@@ -850,6 +850,8 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     close({ keepFeature = false } = {}) { leaveChat(seenAt ?? Date.now(), { again: false }); st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; st.lookOpen = false; st.addOpen = false; st.deskHold.clear(); focusReq = null; openReq = null; if (!keepFeature) biz.close(); },
     /* 계정이 바뀌면 다 비운다 */
     reset() { gen += 1; tasks.reset(); biz.reset(); st = fresh(); focusReq = null; openReq = null; },
+    // 창이 가려지거나 닫힐 때 사업계획서 쓰기 화면의 쓰던 장을 남긴다(계정 생명주기 flushDraft)
+    flushDrafts() { biz.flush(); },
     busy: () => st.busy,
   };
 }
