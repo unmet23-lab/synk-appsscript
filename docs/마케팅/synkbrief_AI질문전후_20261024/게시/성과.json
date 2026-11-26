@@ -81,6 +81,19 @@
         }
       },
       {
+        "계정": "shift-naverblog",
+        "채널": "네이버 블로그 @synkshift",
+        "주소": "https://blog.naver.com/synkshift/224453280606",
+        "형식": "naver-blog-post",
+        "게시": "2026-10-25T10:02:42.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "shift-tistory",
         "채널": "티스토리 @yuhobuilds.tistory.com",
         "주소": "https://yuhobuilds.tistory.com/8",

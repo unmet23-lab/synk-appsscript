@@ -111,6 +111,19 @@
         }
       },
       {
+        "계정": "shift-naverblog",
+        "채널": "네이버 블로그 @synkshift",
+        "주소": "https://blog.naver.com/synkshift/224478062485",
+        "형식": "naver-blog-post",
+        "게시": "2026-11-16T12:10:00.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "synkbrief-tiktok",
         "채널": "틱톡 @synkbrief",
         "주소": "https://www.tiktok.com/@synkbrief/video/7708324070869224725?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
