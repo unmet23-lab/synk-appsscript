@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>워크스페이스 시안 1 · 업무 복도</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./글꼴.css">
+<style>
+/* 시안 1 「업무 복도」 — PULSE 고객 앱 시안 A(캐스팅 복도)의 문법을 그대로 잇는다.
+   일이 세로 띠로 늘어서고, 지금 할 일 하나만 넓어진다. 끝낸 일은 왼쪽 끝에 얇게 접힌다.
+   글자: 문장 · 일 제목 = Noto Serif KR 300 / 본문 · 단추 = SUIT / 순번 · 개수 = Inter Tight / 시각 = DM Mono
+   색: 검정 = 바탕 · 미색 면 = 지금 할 일 단추 하나 · 다홍 = 사람이 기다림 · 회사 색 = 띠 아래 얇은 줄 · 연두 = 끝낸 일 */
+:root{--bg:#060606;--ink:#F4F1EA;--mute:rgba(244,241,234,.62);--faint:rgba(244,241,234,.14);--wait:#FF5B3A;--done:#B9F27C;--ease:cubic-bezier(.2,.7,.2,1)}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.6 'SUIT',sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+.app{display:grid;grid-template-columns:440px 1fr;grid-template-rows:56px 1fr;height:100vh}
+.top{grid-column:1/-1;display:flex;align-items:center;gap:28px;padding:0 28px;border-bottom:1px solid var(--faint);position:relative;z-index:3;background:var(--bg)}
+.top img{height:24px}
+.top nav{display:flex;gap:22px;font-size:14px;color:var(--mute)}
+.top nav a{color:inherit;text-decoration:none}
+.top nav a[aria-current]{color:var(--ink);font-weight:600}
+.top .me{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mute)}
+.top .me b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#1c1b19;color:var(--ink);font-weight:600}
+[data-screen="login"] .top nav,[data-screen="login"] .top .me{visibility:hidden}
+.side{padding:44px 40px 36px;display:flex;flex-direction:column;min-height:0;overflow:auto;border-right:1px solid var(--faint)}
+.when{font:400 13px/1 'DM Mono',monospace;color:var(--mute);letter-spacing:.02em}
+h1{font:300 46px/1.22 'Noto Serif KR',serif;letter-spacing:-.02em;margin:18px 0 0}
+h1 em{font-style:normal;font-family:'Inter Tight';font-weight:300}
+.lede{color:var(--mute);margin:14px 0 0;font-size:15px}
+.flag{display:inline-flex;align-items:center;gap:8px;font:600 13px/1 'SUIT';color:var(--ink)}
+.flag i{width:7px;height:7px;border-radius:50%;background:var(--wait)}
+.flag.calm i{background:var(--mute)}
+.first{margin-top:auto;padding-top:28px;border-top:1px solid var(--faint)}
+.first h2{font:700 22px/1.35 'SUIT';margin:12px 0 6px;letter-spacing:-.01em}
+.first p{margin:0;color:var(--mute);font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 24px;border-radius:2px;font:600 15px/1 'SUIT';transition:background .2s,transform .2s}
+.btn.go{background:var(--ink);color:#0B0B0C}
+.btn.go:hover{background:#fff}
+.btn.line{border:1px solid rgba(244,241,234,.32);color:var(--ink)}
+.btn.line:hover{border-color:var(--ink)}
+.btn svg{width:18px;height:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:22px}
+.hint{font:400 12px/1.4 'DM Mono',monospace;color:rgba(244,241,234,.42);margin-top:14px}
+.field{margin-top:30px}
+.field label{display:block;font-size:13px;color:var(--mute);margin-bottom:6px}
+.field input{width:100%;background:none;border:0;border-bottom:1px solid rgba(244,241,234,.32);padding:10px 0 12px;font-size:20px;outline:none;color:var(--ink)}
+.field input:focus{border-bottom-color:var(--ink)}
+.field input::placeholder{color:rgba(244,241,234,.3)}
+.small{display:flex;gap:18px;margin-top:22px;font-size:14px;color:var(--mute)}
+.small button:hover{color:var(--ink)}
+.foot{margin-top:auto;padding-top:24px;border-top:1px solid var(--faint);display:flex;justify-content:space-between;font-size:13px;color:var(--mute)}
+/* 복도 */
+.hall{position:relative;display:flex;gap:4px;padding:4px;min-width:0;overflow:hidden}
+.strip{position:relative;flex:1 1 0;min-width:0;overflow:hidden;border-radius:2px;background:#141413;transition:flex-grow .55s var(--ease),opacity .4s,filter .4s;cursor:pointer;color:var(--ink);text-align:left}
+.strip img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease),filter .4s}
+.strip::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,6,6,.55),rgba(6,6,6,0) 26%,rgba(6,6,6,0) 52%,rgba(6,6,6,.86));pointer-events:none}
+.strip:not(.wide) img{filter:saturate(.75) brightness(.62)}
+.strip:not(.wide):hover{flex-grow:1.7}
+.strip:not(.wide):hover img{filter:saturate(1) brightness(.85)}
+.strip .no{position:absolute;z-index:1;top:14px;left:0;right:0;text-align:center;font:500 13px/1 'Inter Tight';letter-spacing:.04em}
+.strip .vt{position:absolute;z-index:1;top:44px;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;font:600 14px/1.3 'SUIT';max-height:calc(100% - 120px);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;transition:opacity .3s}
+.strip .bar{position:absolute;z-index:1;left:0;right:0;bottom:0;height:3px}
+.strip .due{position:absolute;z-index:1;left:0;right:0;text-align:center;bottom:16px;font:500 11px/1.2 'Inter Tight';letter-spacing:-.02em;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .3s}
+.strip.plain{background:var(--c)}
+.strip.plain::after{background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,0) 40%,rgba(0,0,0,.35))}
+.strip .cap{position:absolute;z-index:1;left:32px;right:32px;bottom:36px;opacity:0;transform:translateY(10px);transition:opacity .35s .15s,transform .45s .15s var(--ease)}
+.strip .cap .big{font:200 72px/1 'Inter Tight';letter-spacing:-.03em;display:block;margin-bottom:18px}
+.strip .cap h3{font:300 36px/1.25 'Noto Serif KR',serif;margin:12px 0 8px;letter-spacing:-.02em;max-width:620px}
+.strip .cap p{margin:0;color:var(--mute);font-size:14px}
+.strip.wide{flex-grow:12;cursor:default}
+.strip.wide .vt,.strip.wide .due{opacity:0}
+.strip.wide .cap{opacity:1;transform:none}
+.strip.plain.wide .cap .big{font-size:120px}
+[data-screen="work"] .strip.wide .cap .flag,[data-screen="work"] .strip.wide .cap h3,[data-screen="work"] .strip.wide .cap p{display:none}
+.strip .poster{position:absolute;z-index:1;top:40px;bottom:40px;right:40px;height:auto;width:auto;aspect-ratio:9/16;max-width:46%;object-fit:cover;inset:auto;opacity:0;transform:translateY(12px);transition:opacity .35s .15s,transform .45s .15s var(--ease);box-shadow:0 24px 60px rgba(0,0,0,.55);border-radius:2px}
+.strip.tall.wide>img:first-child{filter:blur(26px) brightness(.32) saturate(.8);transform:scale(1.15)}
+.strip.tall.wide .poster{opacity:1;transform:none;top:40px;bottom:auto;right:40px;left:auto;height:58%;max-width:none}
+.strip.done{flex:0 0 16px;cursor:default;background:#10120d}
+.strip.done img,.strip.done .vt,.strip.done .due,.strip.done .no,.strip.done .cap{opacity:0}
+.strip.done .bar{background:var(--done)!important;height:100%;width:2px;left:7px}
+.strip.gone{display:none}
+.works .strip .cap h3{font-size:30px}
+/* 처리 화면 */
+.work .meta{display:flex;justify-content:space-between;align-items:center;font:500 13px/1 'Inter Tight';color:var(--mute)}
+.work .meta button{font:500 14px/1 'SUIT';color:var(--mute)}
+.work .meta button:hover{color:var(--ink)}
+.work h1{font-size:38px;margin-top:22px}
+.work .who{margin:12px 0 0;color:var(--mute);font-size:14px}
+.work .body{margin:26px 0 0;font-size:16px;line-height:1.75;color:rgba(244,241,234,.88)}
+.note{margin-top:18px;display:grid;gap:10px}
+.note textarea{width:100%;min-height:96px;background:#121211;border:1px solid rgba(244,241,234,.22);border-radius:2px;padding:12px 14px;resize:vertical;outline:none;font-size:15px}
+.note textarea:focus{border-color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:9;display:flex;gap:18px;align-items:center;background:#F4F1EA;color:#0B0B0C;padding:14px 18px;border-radius:2px;font:600 14px/1.3 'SUIT';box-shadow:0 12px 40px rgba(0,0,0,.5);max-width:calc(100vw - 32px)}
+.toast button{font-weight:700;text-decoration:none;border-left:1px solid rgba(0,0,0,.2);padding-left:14px}
+.toast[hidden]{display:none}
+.alldone h1{margin-top:auto}
+@media (max-width:760px){
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;grid-template-rows:52px auto auto;height:auto;min-height:100vh}
+  .top{padding:0 16px;gap:14px}
+  .top nav{display:none}
+  .hall{order:1;height:min(56vh,420px);gap:3px;padding:3px}
+  .side{order:2;padding:28px 16px 32px;border-right:0}
+  h1{font-size:34px}
+  .work h1{font-size:30px}
+  .strip .cap{left:18px;right:18px;bottom:22px}
+  .strip .cap .big{font-size:48px;margin-bottom:10px}
+  .strip.plain.wide .cap .big{font-size:72px}
+  .strip .cap h3{font-size:24px}
+  .strip.tall.wide .poster{top:16px;right:16px;height:46%}
+  .strip .vt{font-size:12px;top:38px}
+  .strip .due{display:none}
+  .strip.wide{flex-grow:9}
+  .first{margin-top:28px}
+  .btn{height:50px}
+  .row .btn.go{flex:1 1 100%}
+}
+@media (min-width:761px){html,body{overflow:clip}}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-screen="login">
+  <header class="top">
+    <img src="./로고_흰.svg" alt="SYNK">
+    <nav aria-label="메뉴"><a href="#" aria-current="page" data-go="home">사무실</a><a href="#">메신저</a><a href="#">SNS</a><a href="#">만들기</a><a href="#">사람</a><a href="#">회사</a></nav>
+    <div class="me"><span>유호</span><b>유</b></div>
+  </header>
+  <section class="side" id="side"></section>
+  <section class="hall" id="hall" aria-label="일 복도"></section>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="./흐름.js"></script>
+<script>
+const ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
+// 로그인 전 복도: 우리가 만든 작품(공개된 것)만 선다. 들어오기 전에는 누구의 일도 보이지 않는다.
+const WORKS=[['cut-01','PULSE','손님을 부르는 모델'],['gyeseyo','LAB','「숙제님이 계세요?」'],['cut-04','PULSE','거리의 얼굴'],['deopda','LAB','「뜨거워!」'],['privacy','SYNK','내 정보 찾기'],['cut-05','PULSE','카페 봄날'],['geojeol','LAB','「싫어요!」'],['tomato','SYNK','세 장 다 꼭지'],['cut-06','PULSE','손님이 머무는 가게'],['deomeogeo','LAB','「조금만 더」']];
+let workAt=2,workTimer;
+const side=document.getElementById('side'),hall=document.getElementById('hall'),app=document.getElementById('app');
+
+function worksHall(){
+  hall.className='hall works';
+  hall.innerHTML=WORKS.map(([k,co,t],i)=>`<div class="strip${k.startsWith('cut-')?'':' tall'}" data-w="${i}"><img src="${img(k)}" alt="">${k.startsWith('cut-')?'':`<img class="poster" src="${img(k)}" alt="">`}<span class="bar" style="background:${CO[co].color}"></span><div class="cap"><p>${esc(CO[co].name)}</p><h3>${esc(t)}</h3></div></div>`).join('');
+  const turn=()=>hall.querySelectorAll('.strip').forEach((s,i)=>s.classList.toggle('wide',i===workAt));
+  turn();clearInterval(workTimer);
+  if(!matchMedia('(prefers-reduced-motion:reduce)').matches)workTimer=setInterval(()=>{workAt=(workAt+1)%WORKS.length;turn();},4000);
+}
+function itemStrip(item){
+  const c=CO[item.co].color,n=String(ITEMS.indexOf(item)+1);
+  const el=document.createElement('button');el.type='button';el.className='strip'+(item.img?'':' plain')+(item.shape==='tall'?' tall':'');el.dataset.id=item.id;el.style.setProperty('--c',shade(c));
+  el.innerHTML=`${item.img?`<img src="${img(item.img)}" alt="">`:''}${item.shape==='tall'?`<img class="poster" src="${img(item.img)}" alt="">`:''}<span class="no"></span><span class="vt">${esc(item.title)}</span><span class="due">${esc(shortDue(item.due))}</span><span class="bar" style="background:${c}"></span><div class="cap"><span class="big"></span><span class="flag ${item.rank<2?'':'calm'}"><i></i>${esc(item.rank<2?item.why:RANK_LABEL[item.rank]+' · '+item.why)}</span><h3>${esc(item.title)}</h3><p>${esc(CO[item.co].name)} · ${esc(item.who)} · ${esc(item.due)}</p></div>`;
+  el.addEventListener('click',()=>{if(!el.classList.contains('wide')&&!el.classList.contains('done'))go('work',{id:item.id,how:'open'});});
+  return el;
+}
+function shortDue(d){if(/^(오늘|내일)/.test(d))return d.slice(0,2);const m=d.match(/(\d+)월 (\d+)일/);return m?`${m[1]}.${m[2]}`:d;}
+function shade(hex){const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255,k=.55;return `rgb(${Math.round(r*k)},${Math.round(g*k)},${Math.round(b*k)})`;}
+function queueHall(wideId){
+  clearInterval(workTimer);
+  if(!hall.classList.contains('queue')){hall.className='hall queue';hall.innerHTML='';ITEMS.forEach(i=>hall.appendChild(itemStrip(i)));}
+  const list=queue();
+  hall.querySelectorAll('.strip').forEach(el=>{
+    const id=el.dataset.id,doneAt=Q.done.indexOf(id),at=list.findIndex(i=>i.id===id);
+    el.classList.toggle('done',doneAt>=0);el.style.order=doneAt>=0?String(doneAt-100):String(at);
+    el.classList.toggle('wide',id===wideId);
+    el.querySelector('.no').textContent=at>=0?String(at+1):'';
+    el.querySelector('.big').textContent=at>=0?String(at+1).padStart(2,'0'):'';
+    el.setAttribute('aria-label',doneAt>=0?'끝낸 일':`${at+1}번째 · ${byId(id).title}`);
+    el.tabIndex=doneAt>=0||id===wideId?-1:0;
+  });
+}
+function loginSide(){
+  side.innerHTML=`<p class="when">SYNK Workspace</p>
+  <div style="margin-top:auto">
+    <h1>오늘의 일터</h1>
+    <p class="lede">회사 계정으로 들어오면, 처리할 일이<br>급한 순서대로 줄을 서 있어요.</p>
+    <div class="field"><label for="mail">회사 메일</label><input id="mail" type="email" placeholder="name@synk.im" autocomplete="off"></div>
+    <div class="row"><button class="btn go" type="button" data-enter>SYNK ID로 들어가기 ${ARROW}</button></div>
+    <div class="small"><button type="button" data-enter>회사 비밀번호로</button><button type="button" data-enter>초대 코드로 합류</button></div>
+  </div>`;
+}
+function homeSide(how){
+  const list=queue(),f=list[0];
+  if(!f){side.innerHTML=`<p class="when">11월 26일 목요일 · 09:12</p><div class="alldone" style="display:flex;flex-direction:column;flex:1"><h1>유호님,<br>오늘 차례를<br>모두 끝냈어요.</h1><p class="lede">새 일이 오면 이 복도 맨 앞에 서요.</p><div class="foot"><span>끝낸 일 <b style="color:var(--done);font-family:'Inter Tight'">${Q.done.length}</b></span><button type="button" data-undo>마지막 일 되돌리기</button></div></div>`;return;}
+  side.innerHTML=`<p class="when">11월 26일 목요일 · 09:12</p>
+  <h1>유호님,<br>처리할 일이 <em>${list.length}</em>개<br>있어요.</h1>
+  <p class="lede">급한 것부터 세워 두었어요. 하나를 끝내면 다음 일이 넓어져요.</p>
+  <div class="first">
+    <div class="row" style="margin-top:0"><button class="btn go" type="button" data-go="work">1순위부터 처리 ${ARROW}</button></div>
+    ${Q.done.length?`<p class="hint">오늘 끝낸 일 ${Q.done.length}</p>`:''}
+  </div>`;
+}
+function workSide(){
+  const item=byId(Q.cur),list=queue(),at=list.findIndex(i=>i.id===item.id);
+  side.innerHTML=`<div class="work" style="display:flex;flex-direction:column;flex:1">
+    <div class="meta"><button type="button" data-go="home">← 사무실</button><span>${at+1} / ${list.length}</span><button type="button" data-skip="${item.id}">건너뛰기</button></div>
+    <div style="margin-top:auto;padding-top:24px">
+      <span class="flag ${item.rank<2?'':'calm'}"><i></i>${esc(item.kind)} · ${esc(item.why)}</span>
+      <h1 id="detail-title" tabindex="-1">${esc(item.title)}</h1>
+      <p class="who">${esc(CO[item.co].name)} · ${esc(item.who)} · ${esc(item.due)}${item.late?' 지남':''}</p>
+      <p class="body">${esc(item.body)}</p>
+      <div class="row">${item.acts.map(a=>`<button class="btn ${a.primary?'go':'line'}" type="button" data-act="${a.k}" data-id="${item.id}">${esc(a.label)}${a.primary?' '+ARROW:''}</button>`).join('')}</div>
+      ${Q.noteFor===item.id?`<div class="note" data-note="${item.id}"><textarea placeholder="무엇을 고치면 될까요?"></textarea><div><button class="btn go" type="button" data-send-note="${item.id}">보내기</button></div></div>`:''}
+      <p class="hint">Enter 처리 · S 건너뛰기 · Esc 사무실</p>
+    </div></div>`;
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('[data-enter]'))return;
+  // 들어가는 순간: 작품 복도가 내 일 복도로 바뀌고 1순위가 넓어진다.
+  hall.style.opacity='0';
+  setTimeout(()=>{go('home',{how:'enter'});hall.style.transition='opacity .45s';hall.style.opacity='1';},320);
+});
+boot(how=>{
+  app.dataset.screen=Q.screen;
+  if(Q.screen==='login'){loginSide();worksHall();return;}
+  document.querySelector('.top nav a').setAttribute('aria-current','page');
+  if(Q.screen==='home'){homeSide(how);queueHall(queue()[0]?.id);}
+  else{workSide();queueHall(Q.cur);}
+  if(Q.screen==='work'&&how!=='note')document.getElementById('detail-title')?.focus({preventScroll:true});
+  if(how==='note')document.querySelector('[data-note] textarea')?.focus();
+});
+</script>
+</body>
+</html>

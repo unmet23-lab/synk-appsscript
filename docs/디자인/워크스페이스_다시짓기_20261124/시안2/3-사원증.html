@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>워크스페이스 시안 3 · 사원증과 하루 카드</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./글꼴.css">
+<style>
+/* 시안 3 「사원증과 하루 카드」 — 솔리오 노랑 위에서 출근한다(참고: Sam Cheng 목걸이 사원증, Deimos 다가오는 카드 더미, Co-Watch 큰 시계).
+   로그인은 목에 거는 사원증에 메일을 적는 일이다. 들어오면 그날 일이 카드 더미로 쌓이고, 맨 앞 한 장이 지금 할 일이다.
+   끝낸 카드는 솔리오 곁에 눕는다. 솔리오는 눈만 움직여 지금 카드를 본다.
+   글자: 시계 = Inter Tight 200 / 문장 · 카드 제목 = Noto Serif KR 300 / 본문 · 단추 = SUIT / 순번 · 날짜 = Inter Tight
+   색: 노랑 = 바탕 · 먹 면 = 지금 할 일 단추 하나 · 다홍 점 = 사람이 기다림 · 회사 색 = 카드 머리의 작은 칩 · 흰 종이 = 카드 */
+:root{--y:#FED027;--ink:#141414;--mute:rgba(20,20,20,.62);--card:#FFFCF3;--wait:#E5401F;--ease:cubic-bezier(.2,.7,.2,1)}
+body{background:var(--y);color:var(--ink);font:400 15px/1.6 'SUIT',sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+.app{position:relative;display:grid;grid-template-columns:500px 1fr;grid-template-rows:56px 1fr;height:100vh;overflow:clip}
+.top{grid-column:1/-1;display:flex;align-items:center;gap:28px;padding:0 36px;position:relative;z-index:5}
+.top img{height:24px}
+.top nav{display:flex;gap:22px;font-size:14px;color:var(--mute)}
+.top nav a{color:inherit;text-decoration:none}
+.top nav a[aria-current]{color:var(--ink);font-weight:700}
+.top .me{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px}
+.top .me .badge{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:8px;padding:5px 10px 5px 5px;box-shadow:0 6px 16px -8px rgba(0,0,0,.4)}
+.top .me .badge b{display:grid;place-items:center;width:24px;height:24px;border-radius:5px;background:var(--ink);color:var(--y);font-size:12px}
+[data-screen="login"] .top nav,[data-screen="login"] .top .me{visibility:hidden}
+.side{position:relative;z-index:3;padding:36px 0 44px 56px;display:flex;flex-direction:column;min-height:0}
+.clock{font:200 150px/.86 'Inter Tight';letter-spacing:-.05em;margin:0}
+.when{font:500 14px/1 'Inter Tight';margin-top:18px;color:var(--mute)}
+h1{font:300 40px/1.28 'Noto Serif KR',serif;letter-spacing:-.025em;margin:34px 0 0}
+h1 em{font:300 1em 'Inter Tight';font-style:normal}
+.lede{color:var(--mute);margin:12px 0 0;max-width:400px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 24px;border-radius:12px;font:700 15px/1 'SUIT';transition:background .2s,transform .2s}
+.btn.go{background:var(--ink);color:var(--y)}
+.btn.go:hover{background:#000}
+.btn.line{box-shadow:inset 0 0 0 1.5px rgba(20,20,20,.3)}
+.btn.line:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn svg{width:18px;height:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:24px}
+.hint{font:500 12px/1.4 'Inter Tight';color:rgba(20,20,20,.48);margin:12px 0 0}
+.flag{display:inline-flex;align-items:center;gap:8px;font:700 13px/1 'SUIT'}
+.flag i{width:8px;height:8px;border-radius:50%;background:var(--wait)}
+.flag.calm i{background:rgba(20,20,20,.35)}
+/* 사원증 */
+.lanyard{position:absolute;left:50%;top:-20px;width:420px;height:300px;transform:translateX(-50%);pointer-events:none}
+.lanyard i{position:absolute;top:0;width:16px;height:262px;background:var(--ink);border-radius:2px}
+.lanyard i:first-child{left:70px;transform-origin:top;transform:rotate(-17deg)}
+.lanyard i:last-child{right:70px;transform-origin:top;transform:rotate(17deg)}
+.idwrap{position:absolute;left:50%;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;transition:transform .6s var(--ease),opacity .5s}
+.idswing{transform-origin:50% -200px;animation:sway 7s ease-in-out infinite;display:flex;flex-direction:column;align-items:center;padding-top:204px}
+@keyframes sway{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1deg)}}
+.clip{width:54px;height:30px;border-radius:6px;background:linear-gradient(#c9c6bf,#8d8a84);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);margin-bottom:-8px;position:relative;z-index:2}
+.idcard{width:360px;background:var(--card);border-radius:22px;padding:26px 28px 24px;box-shadow:0 40px 60px -30px rgba(70,50,0,.55),0 2px 0 rgba(0,0,0,.04)}
+.idcard .h{display:flex;justify-content:space-between;align-items:center;font:700 11px/1 'Inter Tight';letter-spacing:.14em;color:var(--mute)}
+.idcard .h img{height:20px}
+.idcard .ph{margin-top:20px;display:grid;grid-template-columns:88px 1fr;gap:18px;align-items:end}
+.idcard .face{width:88px;height:108px;border-radius:12px;background:#F1EDE2;display:grid;place-items:center;font:300 40px/1 'Noto Serif KR',serif;color:rgba(20,20,20,.35);transition:background .3s,color .3s}
+.idcard .face.on{background:var(--ink);color:var(--y)}
+.idcard .nm{font:300 30px/1.15 'Noto Serif KR',serif;letter-spacing:-.02em;min-height:35px}
+.idcard .rl{font-size:13px;color:var(--mute);margin-top:6px;min-height:21px}
+.idcard .field{margin-top:22px}
+.idcard label{display:block;font-size:12px;color:var(--mute);margin-bottom:4px}
+.idcard input{width:100%;background:none;border:0;border-bottom:1.5px solid rgba(20,20,20,.25);padding:8px 0 10px;font-size:18px;outline:none}
+.idcard input:focus{border-bottom-color:var(--ink)}
+.idcard .no{display:flex;justify-content:space-between;margin-top:18px;font:500 11px/1 'Inter Tight';letter-spacing:.08em;color:var(--mute)}
+.idwrap .row{justify-content:center}
+.idwrap .small{display:flex;gap:18px;margin-top:16px;font-size:14px;color:var(--mute)}
+.idwrap .small button:hover{color:var(--ink)}
+.idwrap .small button{white-space:nowrap}
+.bigword{position:absolute;left:44px;bottom:6px;margin:0;font:300 190px/.9 'Noto Serif KR',serif;letter-spacing:-.05em;color:var(--ink);pointer-events:none;white-space:nowrap}
+[data-screen="login"] .side{display:none}
+[data-screen="login"] .deck{display:none}
+/* 솔리오 */
+.orb{position:absolute;z-index:2;width:300px;height:300px;right:24px;bottom:-26px;pointer-events:none;overflow:hidden}
+.orb img{width:100%;height:100%;object-fit:cover;object-position:28% 62%;transform:scale(1.55);transform-origin:28% 62%}
+.eyes{position:absolute;left:39%;top:47%;width:15%;height:6%;display:flex;justify-content:space-between;transform:translate(var(--ex,0),var(--ey,0));transition:transform .35s var(--ease)}
+.eyes i{width:34%;border-radius:50%;background:#FFF6DD;box-shadow:0 0 10px rgba(255,232,170,.6);transition:transform .09s}
+.blink .eyes i{transform:scaleY(.1)}
+/* 카드 더미 */
+.deck{position:relative;min-width:0}
+.card{position:absolute;left:40px;top:236px;width:min(680px,calc(100% - 200px));height:480px;background:var(--card);border-radius:22px;box-shadow:0 30px 50px -28px rgba(70,50,0,.55);display:grid;grid-template-rows:auto 1fr;overflow:hidden;transition:transform .55s var(--ease),opacity .45s,box-shadow .3s;cursor:pointer;text-align:left}
+.card .hd{display:flex;align-items:center;gap:12px;height:46px;padding:0 22px;border-bottom:1px solid rgba(20,20,20,.08);font-size:14px}
+.card .hd .n{font:600 14px/1 'Inter Tight'}
+.card .hd .chip{display:inline-flex;align-items:center;gap:6px;font:700 12px/1 'SUIT';color:var(--mute)}
+.card .hd .chip i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.card .hd .t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .hd .d{font:500 13px/1 'Inter Tight';color:var(--mute)}
+.card .bd{display:grid;grid-template-columns:42% 1fr;min-height:0}
+.card .pic{position:relative;overflow:hidden;background:var(--c)}
+.card .pic img.full{width:100%;height:100%;object-fit:cover}
+.card .pic .blur{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) brightness(.85);transform:scale(1.2)}
+.card .pic .poster{position:absolute;left:50%;top:50%;height:86%;transform:translate(-50%,-50%);aspect-ratio:9/16;object-fit:cover;border-radius:8px;box-shadow:0 18px 30px -12px rgba(0,0,0,.5)}
+.card .pic .big{position:absolute;left:22px;bottom:14px;font:200 130px/1 'Inter Tight';letter-spacing:-.05em;color:#fff}
+.card .tx{padding:26px 30px;display:flex;flex-direction:column;min-height:0;overflow:auto}
+.card h2{font:300 30px/1.3 'Noto Serif KR',serif;letter-spacing:-.02em;margin:14px 0 0}
+.card .who{margin:8px 0 0;color:var(--mute);font-size:14px}
+.card .body,.card .acts{display:none}
+.card .body{margin:18px 0 0;font-size:15.5px;line-height:1.75}
+.card .meta{display:none;justify-content:space-between;font:500 13px/1 'Inter Tight';color:var(--mute);margin-bottom:6px}
+.card .meta button{font:600 13px/1 'SUIT';color:var(--mute)}
+.card .meta button:hover{color:var(--ink)}
+.card .open{margin-top:auto;font:600 14px/1 'SUIT';color:var(--mute)}
+.card.front{cursor:default}
+.card.front .hd .t{visibility:hidden}
+[data-screen="work"] .card.front .body,[data-screen="work"] .card.front .meta{display:flex}
+[data-screen="work"] .card.front .body{display:block}
+[data-screen="work"] .card.front .acts{display:block;margin-top:auto;padding-top:16px}
+[data-screen="work"] .card.front .open{display:none}
+.card:not(.front):hover{box-shadow:0 30px 50px -20px rgba(70,50,0,.7)}
+.card.gone{opacity:0;pointer-events:none}
+.note{margin-top:14px;display:grid;gap:10px}
+.note textarea{width:100%;min-height:84px;background:#fff;border:1.5px solid rgba(20,20,20,.18);border-radius:10px;padding:10px 12px;resize:vertical;outline:none;font-size:15px}
+.note textarea:focus{border-color:var(--ink)}
+.pile{position:absolute;z-index:1;right:344px;bottom:30px;font:600 13px/1.3 'SUIT';text-align:right}
+.pile b{font:300 44px/1 'Inter Tight';display:block}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:9;display:flex;gap:18px;align-items:center;background:var(--ink);color:var(--y);padding:14px 20px;border-radius:12px;font:700 14px/1.3 'SUIT';box-shadow:0 12px 40px rgba(0,0,0,.3);max-width:calc(100vw - 32px)}
+.toast button{font-weight:800;border-left:1px solid rgba(254,208,39,.35);padding-left:14px}
+.toast[hidden]{display:none}
+@media (max-width:760px){
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;grid-template-rows:52px auto auto;height:auto;min-height:100vh;overflow:hidden}
+  .top{padding:0 16px;gap:14px}.top nav{display:none}
+  .side{padding:20px 16px 8px}
+  .clock{font-size:84px}
+  h1{font-size:28px;margin-top:20px}
+  .deck{height:760px}
+  .card{left:16px;width:calc(100% - 32px);top:170px;height:560px;transform-origin:50% 0}
+  .card .bd{grid-template-columns:1fr;grid-template-rows:200px 1fr}
+  .card .pic .big{font-size:80px}
+  .orb{width:180px;height:180px;right:-20px;bottom:-30px}
+  .pile{right:150px;bottom:10px}
+  .bigword{display:none}
+  .idwrap .row{flex-direction:column}
+  .idwrap{width:calc(100vw - 32px)}
+  .idwrap .small{margin:6px 0 0!important;flex-wrap:wrap;justify-content:center}
+  .lanyard{width:300px}.lanyard i:first-child{left:50px}.lanyard i:last-child{right:50px}
+  .idcard{width:300px}
+  .idcard .nm{font-size:22px}
+  .login-h{min-height:860px}
+}
+@media (min-width:761px){html,body{overflow:clip}}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-screen="login">
+  <header class="top">
+    <img src="./로고_먹.svg" alt="SYNK">
+    <nav aria-label="메뉴"><a href="#" aria-current="page" data-go="home">사무실</a><a href="#">메신저</a><a href="#">SNS</a><a href="#">만들기</a><a href="#">사람</a><a href="#">회사</a></nav>
+    <div class="me"><span class="badge"><b>유</b>유호 · 출근 09:02</span></div>
+  </header>
+  <section class="side" id="side"></section>
+  <section class="deck" id="deck" aria-label="오늘 일 카드"></section>
+  <div id="login" class="login-h"></div>
+  <div class="orb" id="orb" aria-hidden="true"><img src="" alt=""><span class="eyes"><i></i><i></i></span></div>
+  <div class="pile" id="pile" hidden></div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="./흐름.js"></script>
+<script>
+const ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
+const side=document.getElementById('side'),deck=document.getElementById('deck'),app=document.getElementById('app'),loginBox=document.getElementById('login'),orb=document.getElementById('orb'),pile=document.getElementById('pile');
+orb.querySelector('img').src=img('orb');
+function shortDue(d){if(/^(오늘|내일)/.test(d))return d;const m=d.match(/(\d+)월 (\d+)일/);return m?`${m[1]}.${m[2]}`:d;}
+// 솔리오는 눈만 움직인다: 지금 볼 것(입력 칸이나 맨 앞 카드)을 본다.
+function look(el){if(!el)return;const o=orb.getBoundingClientRect(),r=el.getBoundingClientRect();const dx=(r.left+r.width/2)-(o.left+o.width*.47),dy=(r.top+r.height/2)-(o.top+o.height*.5);const k=Math.hypot(dx,dy)||1;const box=orb.querySelector('.eyes');box.style.setProperty('--ex',(dx/k*9).toFixed(1)+'px');box.style.setProperty('--ey',(dy/k*6).toFixed(1)+'px');}
+setInterval(()=>{if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;orb.classList.add('blink');setTimeout(()=>orb.classList.remove('blink'),140);},4200);
+function loginView(){
+  loginBox.hidden=false;loginBox.style.cssText='position:absolute;inset:56px 0 0 0';
+  loginBox.innerHTML=`<p class="bigword">Workspace</p>
+  <div class="lanyard"><i></i><i></i></div>
+  <div class="idwrap" id="idwrap"><div class="idswing"><span class="clip"></span>
+    <div class="idcard">
+      <div class="h"><img src="./로고_먹.svg" alt="SYNK"><span>STAFF</span></div>
+      <div class="ph"><div class="face" id="face">?</div><div><div class="nm" id="nm">회사 메일을<br>적어 주세요</div><div class="rl" id="rl"></div></div></div>
+      <div class="field"><label for="mail">회사 메일</label><input id="mail" type="email" placeholder="name@synk.im" autocomplete="off"></div>
+      <div class="no"><span>SYNK WORKSPACE</span><span>2026</span></div>
+    </div></div>
+    <div class="row"><button class="btn go" type="button" data-enter>출근하기 ${ARROW}</button><span class="small" style="margin:0 0 0 10px"><button type="button" data-enter>회사 비밀번호로</button><button type="button" data-enter>초대 코드로 합류</button></span></div>
+  </div>`;
+  const mail=document.getElementById('mail');
+  mail.addEventListener('input',()=>{const v=mail.value.trim(),ok=/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v);
+    document.getElementById('face').classList.toggle('on',ok);document.getElementById('face').textContent=ok?'유':'?';
+    document.getElementById('nm').innerHTML=ok?'유호':'회사 메일을<br>적어 주세요';document.getElementById('rl').textContent=ok?USER.role:'';look(mail);});
+  mail.addEventListener('focus',()=>look(mail));
+  setTimeout(()=>look(mail),50);
+}
+function cardEl(item){
+  const c=CO[item.co].color;
+  const el=document.createElement('article');el.className='card';el.dataset.id=item.id;el.style.setProperty('--c',c);el.tabIndex=0;
+  const pic=item.img?(item.shape==='tall'?`<img class="blur" src="${img(item.img)}" alt=""><img class="poster" src="${img(item.img)}" alt="">`:`<img class="full" src="${img(item.img)}" alt="">`):`<span class="big"></span>`;
+  el.innerHTML=`<div class="hd"><span class="n"></span><span class="chip"><i></i>${esc(item.co)}</span><span class="t">${esc(item.title)}</span><span class="d">${esc(shortDue(item.due))}</span></div>
+  <div class="bd"><div class="pic">${pic}</div><div class="tx">
+    <div class="meta"><button type="button" data-go="home">← 오늘 카드</button><span class="cnt"></span><button type="button" data-skip="${item.id}">건너뛰기</button></div>
+    <span class="flag ${item.rank<2?'':'calm'}"><i></i>${esc(item.kind)} · ${esc(item.why)}</span>
+    <h2 tabindex="-1">${esc(item.title)}</h2>
+    <p class="who">${esc(CO[item.co].name)} · ${esc(item.who)} · ${esc(item.due)}${item.late?' 지남':''}</p>
+    <p class="body">${esc(item.body)}</p>
+    <div class="acts"><div class="row" style="margin-top:0">${item.acts.map(a=>`<button class="btn ${a.primary?'go':'line'}" type="button" data-act="${a.k}" data-id="${item.id}">${esc(a.label)}${a.primary?' '+ARROW:''}</button>`).join('')}</div><div class="notebox"></div><p class="hint">Enter 처리 · S 건너뛰기 · Esc 오늘 카드</p></div>
+    <span class="open">눌러서 열기 →</span>
+  </div></div>`;
+  el.addEventListener('click',e=>{if(e.target.closest('button'))return;if(!el.classList.contains('front')||Q.screen!=='work')go('work',{id:item.id,how:'open'});});
+  return el;
+}
+function paintDeck(frontId){
+  if(!deck.childElementCount)ITEMS.forEach(i=>deck.appendChild(cardEl(i)));
+  const list=queue(),order=frontId?[byId(frontId),...list.filter(i=>i.id!==frontId)]:list;
+  deck.querySelectorAll('.card').forEach(el=>{
+    const id=el.dataset.id,at=order.findIndex(i=>i.id===id),doneAt=Q.done.indexOf(id);
+    el.classList.toggle('front',at===0);
+    if(doneAt>=0){el.classList.add('gone');el.style.transform=`translate(${deck.clientWidth-520}px, 330px) scale(.3) rotate(${(doneAt%3-1)*4}deg)`;el.style.zIndex='1';return;}
+    el.classList.remove('gone');
+    const mob=matchMedia('(max-width:760px)').matches,most=mob?3:4,k=Math.min(at,most+1);el.style.zIndex=String(100-at);el.style.opacity=at>most?'0':'1';el.style.pointerEvents=at>most?'none':'';
+    el.style.transform=mob?`translate(0px, ${-k*44}px) scale(${1-k*.04})`:`translate(${k*26}px, ${-k*46}px) scale(${1-k*.03})`;
+    const n=String(list.findIndex(i=>i.id===id)+1).padStart(2,'0');
+    el.querySelector('.n').textContent=n;const big=el.querySelector('.pic .big');if(big)big.textContent=n;
+    el.querySelector('.cnt').textContent=`${list.findIndex(i=>i.id===id)+1} / ${list.length}`;
+    el.setAttribute('aria-label',`${n}번째 · ${byId(id).title}`);
+    const nb=el.querySelector('.notebox');nb.innerHTML=Q.noteFor===id?`<div class="note" data-note="${id}"><textarea placeholder="무엇을 고치면 될까요?"></textarea><div><button class="btn go" type="button" data-send-note="${id}">보내기</button></div></div>`:'';
+  });
+  pile.hidden=!Q.done.length;pile.innerHTML=`<b>${Q.done.length}</b>오늘 끝낸 일`;
+}
+function homeSide(){
+  const list=queue();
+  side.innerHTML=`<p class="clock">09:12</p><p class="when">11월 26일 목요일 · 출근 09:02</p>
+  ${list.length&&Q.screen==='work'?`<h1>남은 카드 <em>${list.length}</em>장</h1>`:list.length?`<h1>유호님,<br>오늘 차례는 <em>${list.length}</em>장이에요.</h1><p class="lede">급한 카드가 맨 앞에 있어요. 한 장을 끝내면 다음 카드가 앞으로 나와요.</p>
+  <div style="margin-top:auto"><div class="row"><button class="btn go" type="button" data-go="work">1순위부터 처리 ${ARROW}</button></div></div>`
+  :`<h1>유호님,<br>오늘 카드를 다 넘겼어요.</h1><p class="lede">새 일이 오면 맨 앞에 한 장이 놓여요.</p><div style="margin-top:auto"><div class="row"><button class="btn line" type="button" data-undo>마지막 일 되돌리기</button></div></div>`}`;
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('[data-enter]'))return;
+  const w=document.getElementById('idwrap');if(w){w.style.transform='translate(-50%,-120%)';w.style.opacity='0';}
+  setTimeout(()=>go('home',{how:'enter'}),420);
+});
+boot(how=>{
+  app.dataset.screen=Q.screen;
+  if(Q.screen==='login'){loginView();deck.innerHTML='';return;}
+  loginBox.hidden=true;loginBox.innerHTML='';
+  homeSide();
+  const front=Q.screen==='work'?Q.cur:queue()[0]?.id;
+  paintDeck(front);
+  const fe=deck.querySelector('.card.front');setTimeout(()=>look(fe),80);
+  if(Q.screen==='work'&&how!=='note')fe?.querySelector('h2')?.focus({preventScroll:true});
+  if(how==='note')document.querySelector('[data-note] textarea')?.focus();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+/* 승인 서체 넷. 파일은 PULSE 고객 앱 공개본의 것을 그대로 부른다. */
+@font-face{font-family:'SUIT';src:url('../../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/SUIT.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Noto Serif KR';src:url('../../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/NotoSerifKR-300.woff2') format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'Inter Tight';src:url('../../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/InterTight.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'DM Mono';src:url('../../../마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/DMMono.ttf') format('truetype');font-weight:400 500;font-display:swap}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{word-break:keep-all;overflow-wrap:break-word}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+img{display:block;max-width:100%}
+[tabindex="-1"]:focus{outline:none}
+:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
