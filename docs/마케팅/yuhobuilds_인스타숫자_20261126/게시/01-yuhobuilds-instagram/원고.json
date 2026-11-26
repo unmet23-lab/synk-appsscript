@@ -15,5 +15,21 @@
     "문구": "「캡처」 남겨 주셔서 고마워요! 인스타 숫자 캡처 다섯 장을 클로드에게 맡기는 자료예요.\n캡처할 화면과 칸, 붙여 넣을 질문 한 줄, 저희가 여섯 번 물어 받은 답이 있어요.\nhttps://synk.im/prompts/#insta-insights-five\n자동으로 보낸 메시지예요. 그만 받으려면 '중단'이라고 보내 주세요.",
     "자료주소": "https://synk.im/prompts/#insta-insights-five",
     "등록": "자료 공개 뒤 dm 칸을 넣고, 게시 뒤 댓글DM_제작게시연결.md 「이미 게시된 글에 나중에 걸 때」로 등록한다"
+  },
+  "dm": {
+    "account_id": "17841431575383549",
+    "title": "인스타 숫자 캡처 다섯 장을 클로드에게 맡기는 자료",
+    "keyword": "캡처",
+    "message": "「캡처」 남겨 주셔서 고마워요! 인스타 숫자 캡처 다섯 장을 클로드에게 맡기는 자료예요.\n캡처할 화면과 칸, 붙여 넣을 질문 한 줄, 저희가 여섯 번 물어 받은 답이 있어요.\nhttps://synk.im/prompts/#insta-insights-five\n자동으로 보낸 메시지예요. 그만 받으려면 '중단'이라고 보내 주세요.",
+    "duration_mode": "evergreen",
+    "ends_at": null,
+    "resource": {
+      "kind": "url",
+      "folder_id": "1a_7-bLI1v0r9kFnMFe8yRUiZJrDvLjfo",
+      "library_root": "1aavZGSCHjV1dOgM_z5NUgq2V_rMQJkph",
+      "url": "https://synk.im/prompts/"
+    },
+    "opening_mode": "resource",
+    "public_reply_text": "DM으로 자료 보내 드렸어요 🙌 안 보이면 메시지 요청함을 확인해 주세요!"
   }
 }

@@ -109,17 +109,21 @@ const Hook: React.FC<{ t: number }> = ({ t }) => {
   const bar = interpolate(t, [T.hook + 0.08, T.hook + 0.7], [0, 1], { ...clamp, easing: OUT });
   const box = appear(t, T.nf, 0.3);
   const thumb = appear(t, T.hook, 0.3);
+  // 숫자가 선 뒤에도 화면이 멎지 않게(올리기 전 검사 r7 2.5~3.5초 정지): 첫 화면 속으로 천천히 다가가고, 99%가 조금씩 커진다.
+  const hold = interpolate(t, [T.hook, T.five], [0, 1], clamp);
   return (
     <AbsoluteFill style={{ backgroundColor: IG }}>
       <Tag />
-      <Big t={t} at={T.n99 - 0.05} top={360} size={230} color={BUTTER}>
-        99%
-      </Big>
+      <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transform: `scale(${1 + 0.05 * hold})`, transformOrigin: `${LEFT}px 470px` }}>
+        <Big t={t} at={T.n99 - 0.05} top={360} size={230} color={BUTTER}>
+          99%
+        </Big>
+      </div>
       <Big t={t} at={T.nf} top={630} size={64}>
         팔로워가 아닌 사람
       </Big>
-      <div style={{ position: 'absolute', left: 660, top: 290, width: 260, height: 462, opacity: thumb, transform: `translateY(${(1 - thumb) * 30}px)`, borderRadius: 14, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
-        <Img src={staticFile('img/th_again.jpg')} style={{ width: 260, height: 462, objectFit: 'cover' }} />
+      <div style={{ position: 'absolute', left: 660, top: 290, width: 260, height: 462, opacity: thumb, transform: `translateY(${(1 - thumb) * 30 - 20 * hold}px)`, borderRadius: 14, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+        <Img src={staticFile('img/th_again.jpg')} style={{ width: 260, height: 462, objectFit: 'cover', transform: `scale(${1 + 0.16 * hold})`, transformOrigin: '50% 40%' }} />
       </div>
       <div style={{ position: 'absolute', left: 65, top: 790, width: BLOCK_W, transform: `scale(${push})`, transformOrigin: '420px 260px' }}>
         <Strip src="img/block_again.png" w={BLOCK_W} barY={[460, 483]} p={bar} />
@@ -164,10 +168,13 @@ const FiveAsk: React.FC<{ t: number }> = ({ t }) => {
         const x = gx + (LEFT + i * 128 - gx) * m;
         const y = gy + (380 - gy) * m + (1 - p) * 40;
         const label = 1 - m;
+        // 다섯 장이 다 선 뒤 4.5~5.9초가 통째로 멎었다(r7): 첫 화면마다 속으로 천천히 다가간다.
+        // 붙임 줄로 작아질 때는 다시 첫 화면 전체가 보이게 돌아온다.
+        const kb = 1 + 0.12 * interpolate(t, [T.th0 + i * T.thGap, T.ask, T.ask + 0.45], [0, 1, 0], clamp);
         return (
           <div key={r.k} style={{ position: 'absolute', left: x, top: y, width: w, opacity: p }}>
             <div style={{ width: w, height: h, borderRadius: 12, overflow: 'hidden', boxSizing: 'border-box', border: `2px solid rgba(255,255,255,${0.22 + 0.06 * m})` }}>
-              <Img src={staticFile(`img/th_${r.k}.jpg`)} style={{ width: w, height: h, objectFit: 'cover' }} />
+              <Img src={staticFile(`img/th_${r.k}.jpg`)} style={{ width: w, height: h, objectFit: 'cover', transform: `scale(${kb})`, transformOrigin: '50% 40%' }} />
             </div>
             {label > 0.02 && <div style={{ marginTop: 8, opacity: label, fontFamily: KO, fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', color: WHITE, textAlign: 'center', whiteSpace: 'nowrap' }}>{r.views}회</div>}
           </div>
@@ -195,6 +202,10 @@ export const Bars: React.FC<{ t: number; bare?: boolean }> = ({ t, bare = false 
   const good = appear(t, T.good, 0.3);
   const bad = appear(t, T.bad, 0.3);
   const push = 1 + 0.02 * interpolate(t, [T.bars, T.scene], [0, 1], clamp);
+  // 9.5~12.5초가 멎었다(r7): 짚지 않은 줄은 천천히 물러나고, 짚은 줄의 조회수는 말하는 동안 조금씩 커지고, 첫 화면 속으로 다가간다.
+  const goodSlow = interpolate(t, [T.good, T.bad], [0, 1], clamp);
+  const badSlow = interpolate(t, [T.bad, T.scene], [0, 1], clamp);
+  const kb = 1 + 0.28 * interpolate(t, [T.bar0, T.scene], [0, 1], clamp);
   return (
     <AbsoluteFill style={{ backgroundColor: IG }}>
       {!bare && (
@@ -216,14 +227,15 @@ export const Bars: React.FC<{ t: number; bare?: boolean }> = ({ t, bare = false 
           const a = T.bar0 + T.barGap * i;
           const bar = interpolate(t, [a, a + 0.55], [0, 1], { ...clamp, easing: OUT });
           const on = r.good ? good * (1 - bad) : bad;
-          const dim = r.good ? 1 - 0.35 * bad : 1 - 0.3 * good * (1 - bad);
+          const grow = r.good ? goodSlow * (1 - bad) : badSlow;
+          const dim = r.good ? 1 - 0.55 * badSlow : 1 - 0.45 * goodSlow * (1 - bad);
           const y = ROW_Y + i * ROW_H;
           return (
             <div key={r.k} style={{ position: 'absolute', left: 75, top: y + (1 - p) * 30, opacity: p * dim }}>
               <div style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 178, borderRadius: 10, overflow: 'hidden', boxSizing: 'border-box', border: '2px solid rgba(255,255,255,0.22)' }}>
-                <Img src={staticFile(`img/th_${r.k}.jpg`)} style={{ width: 100, height: 178, objectFit: 'cover' }} />
+                <Img src={staticFile(`img/th_${r.k}.jpg`)} style={{ width: 100, height: 178, objectFit: 'cover', transform: `scale(${kb})`, transformOrigin: '50% 40%' }} />
               </div>
-              <div style={{ position: 'absolute', left: 126, top: -8, transform: `scale(${1 + 0.06 * on})`, transformOrigin: '0 50%', fontFamily: KO, fontSize: 74, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.05, color: r.good ? BUTTER : WHITE, whiteSpace: 'nowrap' }}>
+              <div style={{ position: 'absolute', left: 126, top: -8, transform: `scale(${1 + 0.06 * on + 0.14 * grow})`, transformOrigin: '0 50%', fontFamily: KO, fontSize: 74, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.05, color: r.good ? BUTTER : WHITE, whiteSpace: 'nowrap' }}>
                 {r.views}
                 <span style={{ fontSize: 44, marginLeft: 6 }}>회</span>
               </div>
