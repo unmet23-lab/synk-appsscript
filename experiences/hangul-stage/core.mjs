@@ -512,3 +512,6 @@ export function view(progress, pack, now) {
   return { letters, signs, plate, units, tomorrow, tomorrowFinals, difficulty: p.difficulty, amount: p.amount, skipped: p.skipped, graduated: p.graduated,
     started: letters.some(l => l.state !== 'unmet'), allMet: letters.every(l => l.state !== 'unmet') };
 }
+
+// 새 길 회차(atlas-next-play.mjs)가 같은 규칙으로 문항을 짓는 조각이다. 지금 판의 회차는 planSession이 쓴다.
+export { TYPES, shuffle, weakPairs, metIds, coreIds, hardByEar, pickType, makeItem, makeWordItem, reasonLine };

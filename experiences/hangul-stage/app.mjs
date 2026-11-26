@@ -3,8 +3,10 @@
 // 한국어 화면의 글은 예전과 같다(조사가 붙는 글은 원래 식 그대로 만든다). 판단은 core.mjs, 아틀라스 기록은 learning.mjs, 소리는 audio.mjs가 맡는다.
 import { createPack, compose, decompose } from './pack.mjs';
 import { josa } from './kit/josa.mjs';
-import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs';
-import { createCoach, isHosted, openProgressStorage, createRecorder } from './learning.mjs';
+// core.mjs · learning.mjs는 판 표시(?v=)로 부른다 — 공개 직후 10분 섞임 창에 새 앱이 캐시의 옛 판(새 내보내기가 없는 판)과 섞이면
+// 모듈이 서지 않는다(5-3 게임 GC1과 같은 꼴). 새 길 모듈도 같은 주소로 불러 한 판만 실린다.
+import { readProgress, planSession, answer, meet, finishSession, view, retryItem, canPlayMore, sessionsToday, letterOf, readableWords, graduationReady, graduate, SETTINGS } from './core.mjs?v=atlas-47';
+import { createCoach, isHosted, openProgressStorage, createRecorder, playHostOf } from './learning.mjs?v=atlas-47';
 import * as audio from './audio.mjs';
 import { SONGS, songById, cueAt, EXTRA_CONSONANTS, tileLetters, lettersIn } from './songs.mjs';
 import {hangulSupport} from '../brand-opening/game-tutor-support.mjs';
@@ -75,15 +77,52 @@ const pause = ms => new Promise(r => setTimeout(r, ms));
 const L = window.SynkLearning;
 if (!L?.layer) { $('error').hidden = false; throw new Error('hangul-stage: learning bundle missing'); }
 const pack = createPack(L.layer);
-const coach = createCoach();
-const hosted = isHosted(coach);
+// 새 길(Atlas 재설계 4-7 — 단계4_계획 §26): WORLD 셸이 게임 문을 두었거나 로컬 개발 깃발이 있으면 새 길 모듈(atlas-next-play.mjs)을 불러 셸 창의
+// 게임 코치를 받는다. 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다. 셸이 지금 판이라고 하면(null) 옛 코치를 그때 만든다.
+// next: 새 길. oldPath: 옛 코치의 길. 문이 거절하거나(RUN_ENDED) 새 길을 열지 못하면 옛 길을 열지 않고 기록 없이 논다.
+// 새 길 문 확인 — 키트의 nextDoor · devFlag와 같은 조건을 키트 없이 본다(원본 play-common/atlas-gate.mjs를 글자 그대로 옮김).
+// 꺼진 판은 키트를 받지 않으므로 키트를 못 받아도(404 · 응답 없음 · 깨진 글) 게임이 열린다(5-3 게임). 키트는 새 길 모듈이 부른다.
+function atlasGate(win) {
+  for (const up of [win?.parent, win?.top]) {
+    if (!up || up === win) continue;
+    try {
+      if (up.SYNKAtlasGame && typeof up.SYNKAtlasGame.open === 'function') return true;
+    } catch {
+      // 다른 출처 — 문이 없다
+    }
+  }
+  try {
+    if (!/^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/.test(win.location.hostname)) return false;
+    if (new URLSearchParams(win.location.search).get('atlas') !== 'next') return false;
+    return !(win.parent && win.parent !== win && win.parent.SYNKLearningHost);
+  } catch {
+    return false;
+  }
+}
+const atlasNext = atlasGate(window);
+let coach = atlasNext ? null : createCoach();
+let hosted = isHosted(coach);
+let rec = createRecorder(coach);
+let next = null, oldPath = !atlasNext, nextOpening = null;
+async function openNextPath() {
+  next = null; rec = createRecorder(null);
+  try {
+    next = await (await import('./atlas-next-play.mjs')).openHangul({ win: window });
+    if (next) rec = next.recorder; else { oldPath = true; coach = createCoach(); hosted = isHosted(coach); rec = createRecorder(coach); }
+  } catch (error) { if (error?.code !== 'RUN_ENDED') console.error(error); }   // 문이 닫히는 중(RUN_ENDED)은 오류가 아니다
+  nextOpening = null;
+}
+if (atlasNext) {
+  nextOpening = openNextPath();
+  // 놀이 호스트가 없으면 진도 자리가 옛 코치에 달려 있어(progressKey) 어느 길인지 먼저 안다. 계정은 입구를 먼저 그리고 시작 단추가 기다린다.
+  if (!playHostOf(window)) await nextOpening;
+}
 // WORLD owns the authenticated game store. Wait for its account snapshot before
 // reading; a failed account read must never silently create a guest replacement.
 let progressPort;
 try{progressPort=await openProgressStorage(window,coach);}
 catch(error){$('error').hidden=false;throw error;}
 const accountProgress=progressPort.account,KEY=progressPort.key,progressStorage=progressPort.storage;
-const rec = createRecorder(coach);
 let progress = load(), saved = !!KEY;
 function load() { if (!KEY) return readProgress(null); try { return readProgress(JSON.parse(progressStorage.getItem(KEY) || 'null')); } catch(error) { if(accountProgress)throw error;return readProgress(null); } }
 function save() { if (!KEY) { saved = false; renderSaveStatus();return; } try { progressStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; }renderSaveStatus(); }
@@ -104,7 +143,8 @@ if (new URLSearchParams(location.search).get('qa') === 'silent') audio.setSilent
 audio.initAudio();
 translatePage();
 
-function show(id) { for (const s of ['home', 'session', 'finish', 'graduation', 'song']) $(s).hidden = s !== id; scrollTo(0, 0);
+let screenVisit = 0; // 화면을 보일 때마다 하나씩 — 같은 화면으로 돌아와도 다른 방문이다
+function show(id) { screenVisit += 1; for (const s of ['home', 'session', 'finish', 'graduation', 'song']) $(s).hidden = s !== id; scrollTo(0, 0);
   if (id === 'finish' || id === 'graduation') { const m = $(id); m.classList.remove('enter'); if (celebrate() && !still()) { void m.offsetWidth; m.classList.add('enter'); } } if(id==='home')tutorEvent('lobby');else if(id==='session')tutorEvent('playing');else if(id==='finish')tutorEvent('finish'); }
 
 // ── 입구 ──────────────────────────────────────────────
@@ -185,11 +225,21 @@ let S = null;
 function startSession() {
   if (!audio.voiceReady()) return;
   audio.warm();
+  if (oldPath) return beginSession();
+  // 새 길: 셸의 코치를 기다린다. 판을 다시 정했거나(retired) 앞에서 열지 못했으면 문을 다시 연다. 기다리는 사이 다른 화면으로 갔으면(돌아왔어도)
+  // 시작하지 않는다(검수 GA1 · 카본 A1).
+  const from = screenVisit;
+  if (!nextOpening && (!next || next.retired)) nextOpening = openNextPath();
+  void Promise.resolve(nextOpening).then(() => { if (screenVisit === from) beginSession(); });
+}
+function beginSession() {
   const at = now(), sessionNo = sessionsToday(progress, at);
-  const plan = planSession(progress, pack, { now: at, scope: hosted ? 'account' : 'device', sessionNo });
+  // 새 길의 회차(run)는 문항을 하나씩 정한다. 없으면(옛 길 · 기록 없이 노는 판) 지금 판의 회차 그대로다.
+  const run = next ? next.session({ progress, pack, now: at, scope: accountProgress ? 'account' : 'device', sessionNo }) : null;
+  const plan = run ? run.plan : planSession(progress, pack, { now: at, scope: hosted ? 'account' : 'device', sessionNo });
   const before = view(progress, pack, at);
-  S = { plan, sessionNo, sessionId: `${plan.day}#${sessionNo}`, steps: [{ kind: 'reason' }, ...plan.steps], index: 0,
-    total: plan.steps.filter(s => s.kind === 'item').length, answered: 0, independent: 0, met: [], practiced: new Set(),
+  S = { plan, run, sessionNo, sessionId: `${plan.day}#${sessionNo}`, steps: [{ kind: 'reason' }, ...plan.steps], index: 0,
+    total: run ? run.total : plan.steps.filter(s => s.kind === 'item').length, answered: 0, independent: 0, met: [], practiced: new Set(),
     masteredBefore: new Set(before.letters.filter(l => l.shown === 'mastered').map(l => l.id)), readableBefore: new Set(before.signs.filter(s => s.readable).map(s => s.text)),
     wrongRun: 0, retries: 0, retried: new Set(), open: [], missed: new Set() };
   show('session'); renderStep();
@@ -200,8 +250,14 @@ function cta(label, { tone = 'coral', disc = '', onClick, disabled = false } = {
   return el('button', { class: `felt-cta ${tone}`, type: 'button', disabled, onclick: onClick }, el('span', { class: 'cta-text' }, el('b', {}, label)), el('span', { class: `disc ${disc}`, 'aria-hidden': 'true' }));
 }
 function prompt(text, { mini = true } = {}) { return el('p', { class: 'prompt' }, mini ? el('img', { class: 'mini', src: 'assets/brand/mongle-curious.webp', alt: '' }) : null, text); }
-function nextStep() { audio.stop(); S.open = []; S.index += 1; if (S.index >= S.steps.length) endSession(); else renderStep(); }
+function nextStep() {
+  audio.stop(); S.open = []; S.index += 1;
+  if (S.run && S.index >= S.steps.length) { const step = S.run.step(); if (step) S.steps.push(step); }
+  if (S.index >= S.steps.length) endSession(); else renderStep();
+}
+let stepNo = 0; // 회차의 장을 그릴 때마다 하나씩 — 늦게 내는 소리가 지금 장의 것인지 본다(onThisStep)
 function renderStep() {
+  stepNo += 1;
   scrollTo(0, 0); $('stage').scrollTop = 0; // 새 장은 맨 위에서(긴 만나기 카드를 내려 본 뒤 다음 장이 중간부터 보이지 않게, 가로 화면은 무대 안 스크롤)
   bar();
   const step = S.steps[S.index];
@@ -342,10 +398,17 @@ function renderMeet(id) {
   dock(cta(tr('next'), { onClick: nextStep }));
   setTimeout(() => play(speak, l.voice, true), 350);
 }
+// 늦게 내는 소리(답 뒤의 고른 소리 → 정답 소리, 문항을 그린 뒤 잠깐 쉬고 내는 첫 소리)는 그 장을 보고 있을 때만 낸다. 다음 장이나 다른 화면으로
+// 간 뒤에도 내면 다음 장의 첫 소리를 끊어 그 소리가 실패로 적히고(새 길은 뒤 문항을 보고 고르기로 묶는다), 앞 장의 소리가 새 문제나 홈 위에 난다.
+function onThisStep() {
+  const step = stepNo, visit = screenVisit, here = () => step === stepNo && visit === screenVisit;
+  return { here, say: (text, opts) => (here() ? audio.say(text, opts) : Promise.resolve(false)), wait: ms => (here() ? audio.wait(ms) : Promise.resolve()) };
+}
 async function play(button, text, twice = false, opts = {}) {
   button?.classList.add('playing');
   const ok = twice ? await audio.sayTwice(text) : await audio.say(text, opts);
   button?.classList.remove('playing');
+  if (ok) S?.run?.sounded();
   return ok;
 }
 // 실로 따라 쓰기: 손가락이 지나간 자리에 실이 놓이고 손을 떼면 매듭이 지어진다. 판정하지 않는다.
@@ -407,9 +470,9 @@ function settle(item, { correct, assisted, replays = 0, perLetter = null, confus
   if (counts) { S.answered += 1; if (correct && !assisted) S.independent += 1; bar(); }
   if (listening) S.wrongRun = correct ? 0 : S.wrongRun + 1;
   done(item);
-  // 틀린 글자는 회차 안에서 한 번 더(두 칸 뒤, 회차에 두 번까지, 같은 글자는 한 번).
+  // 틀린 글자는 회차 안에서 한 번 더(두 칸 뒤, 회차에 두 번까지, 같은 글자는 한 번). 새 길은 엔진의 「다시」가 맡는다.
   const letter = item.target.letter;
-  if (!correct && letter && !S.retried.has(letter) && S.retries < 2) {
+  if (!S.run && !correct && letter && !S.retried.has(letter) && S.retries < 2) {
     const again = retryItem(progress, pack, letter, { now: now(), scope: hosted ? 'account' : 'device', sessionNo: S.sessionNo, n: S.retries + 1, avoid: item.type });
     if (again) { S.retried.add(letter); S.retries += 1; S.total += 1; S.steps.splice(Math.min(S.index + 3, S.steps.length), 0, { kind: 'item', item: again }); bar(); }
   }
@@ -493,6 +556,7 @@ function renderListen(item) {
   async function choose(o, b) {
     if (state.answered) return;
     state.answered = true; S.open = [];
+    const then = onThisStep();
     const correct = o.text === item.target.text;
     options.forEach(x => { x.disabled = true; });
     const right = options[item.options.findIndex(x => x.text === item.target.text)];
@@ -507,12 +571,12 @@ function renderListen(item) {
     const react = mongle ? ok => { if (ok) mongle.src = 'assets/brand/teach-smile.webp'; } : null;
     feedback(correct, correct ? tr(item.type === 'teach' ? 'mongleGotIt' : 'ok') : tr('answerIs', { target: item.target.text }),correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heard}),
       { react, reason: correct ? (item.type === 'teach' ? say('why.heard', { target: item.target.text }, `‘${item.target.text}’${josa(item.target.text, '을', '를')} 들었어요.`) : tr('why.sound', { target: item.target.text })) : say('why.compare', { chosen: o.text }, `고른 ‘${o.text}’${josa(o.text, '과', '와')} 정답 소리를 차례로 들려줘요.`) });
-    if (!correct) { await audio.say(o.text, { talker }); await audio.wait(250); await audio.say(item.target.text, { talker }); }
+    if (!correct) { await then.say(o.text, { talker }); await then.wait(250); await then.say(item.target.text, { talker }); }
     // 여러 목소리 음절은 맞혀도 정답 소리를 같은 목소리로 한 번 더(HVPT — 고르자마자 정답 소리를 들려준다)
-    else if (audio.talkerCount(item.target.text) > 1) { await audio.wait(250); await audio.say(item.target.text, { talker }); }
+    else if (audio.talkerCount(item.target.text) > 1) { await then.wait(250); await then.say(item.target.text, { talker }); }
   }
   if (!withDemo(item.type, state, () => [{ node: speak, run: () => hear() }, { node: options[item.options.findIndex(x => x.text === item.target.text)] }]))
-    pause(300).then(() => { if (!state.answered) hear(); });
+    { const at = onThisStep(); pause(300).then(() => { if (!state.answered && at.here()) hear(); }); }
 }
 
 // 보고 고르기: 글자를 보고, 보기를 눌러 소리를 들은 뒤 맞는 소리를 고른다.
@@ -532,6 +596,7 @@ function renderSee(item) {
   async function submit() {
     if (state.answered || state.picked == null) return;
     state.answered = true; S.open = [];
+    const then = onThisStep();
     const o = item.options[state.picked], correct = o.text === item.target.text;
     options.forEach(x => { x.disabled = true; x.classList.remove('picked'); });
     options[item.options.findIndex(x => x.text === item.target.text)].classList.add('right');
@@ -540,8 +605,8 @@ function renderSee(item) {
     settle(item, { correct, assisted: state.assisted, confused: correct ? [] : [[item.target.letter, o.letter]], listening: false });
     feedback(correct, correct ? tr('ok') : say('thisSound', { target: item.target.text }, `${item.target.text}${josa(item.target.text, '은', '는')} 이 소리예요`),correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heardOptions.has(state.picked)}),
       { reason: correct ? tr('why.again', { target: item.target.text }) : tr('why.compareSound') });
-    if (!correct) { await audio.say(o.text); await audio.wait(250); }
-    await audio.say(item.target.text);
+    if (!correct) { await then.say(o.text); await then.wait(250); }
+    await then.say(item.target.text);
   }
   const i = item.options.findIndex(x => x.text === item.target.text);
   withDemo('see_pick', state, () => [{ node: options[i], run: async () => { options[i].classList.add('picked'); await play(null, item.options[i].text); } }, { node: confirm }],
@@ -584,6 +649,7 @@ function renderBuild(item) {
   async function submit() {
     if (state.answered || !ready()) return;
     state.answered = true; S.open = [];
+    const then = onThisStep();
     const cOk = state.c === t.consonant, vOk = state.v === t.vowel, fOk = !withFinal || state.f === t.final, correct = cOk && vOk && fOk;
     const made = pack.syllable(state.c, state.v, withFinal ? state.f : null);
     for (const b of [...cs, ...vs, ...fs]) b.disabled = true;
@@ -595,14 +661,14 @@ function renderBuild(item) {
     if (wrongPart) S.missed.add(wrongPart);
     feedback(correct, correct ? tr('ok') : say('notButIs', { made, target: t.text }, `${made}${josa(made, '이', '가')} 아니라 ${t.text}${josa(t.text, '이에요', '예요')}`),correct?[]:hangulSupport({id:item.id,target:t.text,selected:made,options:[made,t.text],heard:state.heard}),
       { reason: correct ? say('why.built', { target: t.text }, `‘${t.text}’${josa(t.text, '을', '를')} 만들었어요.`) : tr('why.compareBuilt') });
-    if (!correct) { await audio.say(made); await audio.wait(250); await audio.say(t.text); }
+    if (!correct) { await then.say(made); await then.wait(250); await then.say(t.text); }
   }
   const pieceOf = kind => { const [buttons, ids] = rows[kind]; return buttons[ids.indexOf(t[{ c: 'consonant', v: 'vowel', f: 'final' }[kind]])]; };
   const demoSteps = () => [{ node: speak, run: () => hear() }, { node: pieceOf('c'), run: async () => select('c', t.consonant) }, { node: pieceOf('v'), run: async () => select('v', t.vowel) },
     ...(withFinal ? [{ node: pieceOf('f'), run: async () => select('f', t.final) }] : []), { node: slot }];
   if (!withDemo(withFinal ? 'build_final' : 'build', state, demoSteps,
     () => { state.c = state.v = state.f = null; for (const b of [...cs, ...vs, ...fs]) b.setAttribute('aria-pressed', 'false'); slot.textContent = '?'; slot.classList.add('empty'); confirm.disabled = true; }))
-    pause(300).then(() => { if (!state.answered) hear(); });
+    { const at = onThisStep(); pause(300).then(() => { if (!state.answered && at.here()) hear(); }); }
 }
 
 // 짝 맞추기: 소리 카드를 눌러 듣고 맞는 글자 카드를 고른다(순서는 아무렇게나). 시간 제한이 없다.
@@ -624,7 +690,8 @@ function renderMatch(item) {
     if (kind === 'letter') pickSound();
     // 소리가 끝까지 난 뒤에 짝을 본다: 듣기 전에 고른 답은 소리 문항의 근거가 되지 않는다.
     if (kind === 'sound') {
-      state.playing = audio.say(pack.byId.get(letter).voice).then(ok => { if(ok)p.delivered=true; if (!p.heard) { p.heard = true; rec.delivered(p.pid, ok); } });
+      // 다시 들은 소리가 나도 새 길 회차의 소리 실패를 푼다(검수 GA2 — 이 카드는 play()를 거치지 않는다).
+      state.playing = audio.say(pack.byId.get(letter).voice).then(ok => { if(ok){p.delivered=true;S?.run?.sounded();} if (!p.heard) { p.heard = true; rec.delivered(p.pid, ok); } });
     }
     await state.playing;
     if (state.sel[kind]?.button !== button) return;
@@ -664,7 +731,7 @@ function renderMatch(item) {
 // ── 마무리 ──────────────────────────────────────────────
 function endSession() {
   progress = finishSession(progress, { day: S.plan.day, sessionNo: S.sessionNo, total: S.answered, independent: S.independent }); save();
-  rec.flush();
+  rec.flush(); S.run?.end();
   const at = now(), v = view(progress, pack, at);
   const byId = new Map(v.letters.map(l => [l.id, l]));
   const shownToday = S.met.length ? S.met : [...S.practiced].filter(id => byId.has(id)).slice(0, 8);
@@ -729,7 +796,7 @@ $('quit').addEventListener('click', () => {
   audio.stop();
   for (const pid of S?.open || []) rec.leave(pid);
   if (S && S.answered >= 3) progress = finishSession(progress, { day: S.plan.day, sessionNo: S.sessionNo, total: S.answered, independent: S.independent });
-  save(); rec.flush(); S = null; renderHome(); show('home');
+  save(); rec.flush(); S?.run?.end(); S = null; renderHome(); show('home');
 });
 
 // ── 노래 ──────────────────────────────────────────────

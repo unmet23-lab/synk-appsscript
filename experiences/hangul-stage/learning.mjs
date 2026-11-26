@@ -45,13 +45,17 @@ export function progressKey(win = globalThis.window, coach = null) {
 
 // WORLD already owns a verified, guarded game store. This product gets only its
 // one record; no credentials, automatic guest import, or second sync protocol.
-export async function openProgressStorage(win=globalThis.window,coach=null){
+export function playHostOf(win=globalThis.window){
  let host=null;
  try{let scope=win;for(let depth=0;depth<6;depth++){
   if(scope?.SYNKPlayHost){host=scope.SYNKPlayHost;break;}
   if(!scope?.parent||scope.parent===scope)break;
   if(scope.parent.location.origin!==scope.location.origin)break;scope=scope.parent;
  }}catch{/* Cross-origin frames cannot borrow an account. */}
+ return host;
+}
+export async function openProgressStorage(win=globalThis.window,coach=null){
+ const host=playHostOf(win);
  if(!host)return {account:false,key:progressKey(win,coach),storage:win.localStorage,status:()=>null,subscribe:()=>()=>{}};
  await host.ready();const port=host.storage(),key='synk.hangul-stage.v1';
  // An old host/server may not yet support this resource; fail before opening an

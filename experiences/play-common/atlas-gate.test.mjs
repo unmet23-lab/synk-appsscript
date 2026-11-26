@@ -12,7 +12,7 @@ import { devFlag, nextDoor } from './kit/atlas-next.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 // 게임 문을 받는 게임의 앱 파일(주문 러시는 첫걸음 화면도 따로 연다).
 const GATE_APPS = ['blank-slice/app.mjs', 'entry-check/app.mjs', 'korean-racing/app.js', 'korean-rhythm/app.mjs', 'korean-runner/app.mjs', 'order-rush/app.mjs', 'order-rush/beginner.mjs',
-  'snap-words/app.mjs', 'subway-rush/app.mjs', 'talk-rally/app.mjs', 'story-classroom/app.mjs', 'word-magic/app.mjs'];
+  'snap-words/app.mjs', 'subway-rush/app.mjs', 'talk-rally/app.mjs', 'story-classroom/app.mjs', 'word-magic/app.mjs', 'hangul-stage/app.mjs'];
 const read = rel => fs.readFileSync(path.join(here, '..', rel), 'utf8').replace(/\r\n/g, '\n');
 const SOURCE = atlasGate.toString().replace(/\r\n/g, '\n');
 // 정적 가져오기 — 이름을 받는 꼴(import { x } from '…')과 실행만 하는 꼴(import '…') 둘 다(검수 GA2).
@@ -76,6 +76,8 @@ test('5-3 게임에서 바뀐 의존 모듈은 판 표시로 부른다 — 새 �
   const tokened = [
     ['korean-rhythm/app.mjs', './audio.mjs'], ['korean-rhythm/app.mjs', './supplemental-player.mjs'], ['korean-rhythm/world-play.mjs', './audio.mjs'],
     ['korean-runner/app.mjs', './listening-check-ui.mjs'], ['korean-racing/app.js', './race-controller.js'],
+    // 4-7 한글: 라이브와 다른 learning.mjs · 새 내보내기를 더한 core.mjs
+    ['hangul-stage/app.mjs', './core.mjs'], ['hangul-stage/app.mjs', './learning.mjs'], ['hangul-stage/atlas-next-play.mjs', './core.mjs'], ['hangul-stage/atlas-next-play.mjs', './learning.mjs'],
   ];
   for (const [file, dep] of tokened) {
     const statics = staticImports(read(file));
@@ -85,4 +87,9 @@ test('5-3 게임에서 바뀐 의존 모듈은 판 표시로 부른다 — 새 �
   // 리듬은 audio.mjs를 한 주소로만 부른다 — 두 주소면 모듈이 둘이 되어 곡 · 문장 소리 캐시를 나눠 갖는다.
   const audio = ['korean-rhythm/app.mjs', 'korean-rhythm/world-play.mjs'].map(file => staticImports(read(file)).find(p => p.startsWith('./audio.mjs')));
   assert.equal(new Set(audio).size, 1, audio.join(' · '));
+  // 한글은 core.mjs · learning.mjs를 앱과 새 길 모듈이 같은 주소로 부른다(한 판만 실린다).
+  for (const dep of ['./core.mjs', './learning.mjs']) {
+    const urls = ['hangul-stage/app.mjs', 'hangul-stage/atlas-next-play.mjs'].map(file => staticImports(read(file)).find(p => p.startsWith(dep)));
+    assert.equal(new Set(urls).size, 1, urls.join(' · '));
+  }
 });

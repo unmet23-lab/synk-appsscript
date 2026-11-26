@@ -16,9 +16,9 @@ export const JOSA_FILE = 'josa.mjs';
 // 키트 화면은 쓰지 않고 재방문 맞춤 판정만 같은 원본을 쓰는 게임 — kit/에 이 한 파일만 복사한다.
 export const RETURN_ONLY_GAMES = ['subway-rush'];
 export const RETURN_FILE = 'return-practice.mjs';
-// 새 엔진 게임 문(4-6c — 단계4_계획 §23-6)은 키트 게임 모두와, 키트 화면을 쓰지 않는 게임 가운데 이 둘이 받는다.
+// 새 엔진 게임 문(4-6c — 단계4_계획 §23-6)은 키트 게임 모두와, 키트 화면을 쓰지 않는 게임 가운데 이 셋이 받는다(한글 만나기는 4-7 — §26-3).
 export const ATLAS_NEXT_FILE = 'atlas-next.mjs';
-export const ATLAS_NEXT_ALSO = ['snap-words', 'subway-rush'];
+export const ATLAS_NEXT_ALSO = ['snap-words', 'subway-rush', 'hangul-stage'];
 // 키트 일부만 받는 게임의 파일 — 받침 조사나 재방문 판정 한 파일에, 게임 문을 받는 게임이면 그 파일을 더한다.
 export const partialFiles = (game, base) => [base, ...(ATLAS_NEXT_ALSO.includes(game) ? [ATLAS_NEXT_FILE] : [])].sort();
 

@@ -278,19 +278,20 @@ test('한 수 — 답을 낸 뒤 finishSet 전에 패널을 닫아도 셸 창의
   t.next.dispose();
 });
 
-test('한 수 — 열한 게임 각각 한 판 뒤 판 기록에 엔진이 돌려준 형식이 게임 이름과 함께 든다', { timeout: 120_000 }, async () => {
+test('한 수 — 열두 게임 각각 한 판 뒤 판 기록에 엔진이 돌려준 형식이 게임 이름과 함께 든다', { timeout: 120_000 }, async () => {
   const t = tab();
-  // 한글 만나기는 계열 줄로 문항을 내고 앱이 아직 문을 찾지 않는다 — 한글의 한 판은 4-7(계획 §26)에서 본다.
-  const games = Object.keys(door.GAME_BANKS).filter(id => id !== 'hangul-stage');
-  assert.equal(games.length, 11);
+  // 한글 만나기(4-7)는 은행 문항이 없고 계열 줄로 문항을 낸다 — 판마다 제품이 넘긴 난도 · 응답 꼴로 짓는다.
+  const letter = { itemKey: 'hangul-stage.listen_pick.v-a.qa.qa', familyKey: 'hangul-stage.listen_pick.v-a', skillId: 'ko.hangul.sound', modality: 'listening', difficulty: 1, responseFormat: 'binary-choice', audioRequired: true, flags: 1 };
+  const games = Object.keys(door.GAME_BANKS);
+  assert.equal(games.length, 12);
   let at = 0;
   for (const gameId of games) {
     const banks = [...door.GAME_BANKS[gameId]];
-    const row = ROWS.find(item => item.bank === banks[0]);
+    const row = gameId === 'hangul-stage' ? letter : ROWS.find(item => item.bank === banks[0]);
     const face = await t.doorOf(gameId).api.open({ gameId, banks });
     assert.ok(face, `${gameId}: 새 길 겉`);
-    const { recorded } = heard(face, { itemKey: row.itemKey }, { audio: row.flags & 1 ? 'completed' : null });
-    assert.equal(recorded.modality, row.skillId.split('.')[1], `${gameId}: 엔진이 돌려준 형식`);
+    const { recorded } = heard(face, gameId === 'hangul-stage' ? letter : { itemKey: row.itemKey }, { audio: row.flags & 1 ? 'completed' : null });
+    assert.equal(recorded.modality, row.modality ?? row.skillId.split('.')[1], `${gameId}: 엔진이 돌려준 형식`);
     face.finishSet({ record: false });
     at += 1;
     await until(() => t.ends.length === at, `${gameId} 판 끝`);

@@ -101,19 +101,23 @@ export function say(text, { slow = false, talker = 0 } = {}) {
   }
   const synth = globalThis.speechSynthesis;
   if (!synth || !voice) return Promise.resolve(false);
-  return new Promise(resolve => setTimeout(() => {
-    const u = new SpeechSynthesisUtterance(text);
-    u.voice = voice; u.lang = voice.lang; u.rate = slow ? 0.55 : 0.8; u.pitch = 1;
+  // 끝맺음은 말하기를 잡아 두기 전에 건다 — 그 사이 멈추면(stop · 다른 소리) 실패로 끝나고 잡아 둔 말하기도 내지 않는다.
+  return new Promise(resolve => {
     let done = false;
     const finish = ok => { if (!done) { done = true; if (currentFinish === finish) currentFinish = null; resolve(ok); } };
     currentFinish = finish;
-    u.onend = () => finish(true); u.onerror = () => finish(false);
-    // 끝 알림을 주지 않는 음성도 있어 글자 수에 맞춘 넉넉한 시간 뒤에는 끝난 것으로 본다.
-    const duration = 1600 + text.length * 700 * (slow ? 1.6 : 1);
-    const fallback = () => { if (done) return; if (tutorPaused) tutorWaiters.push(() => setTimeout(fallback, duration)); else finish(true); };
-    setTimeout(fallback, duration);
-    synth.speak(u);
-  }, 60)); // 막 멈춘 직후에 말하면 첫 소리를 삼키는 브라우저가 있다
+    setTimeout(() => {
+      if (done) return;
+      const u = new SpeechSynthesisUtterance(text);
+      u.voice = voice; u.lang = voice.lang; u.rate = slow ? 0.55 : 0.8; u.pitch = 1;
+      u.onend = () => finish(true); u.onerror = () => finish(false);
+      // 끝 알림을 주지 않는 음성도 있어 글자 수에 맞춘 넉넉한 시간 뒤에는 끝난 것으로 본다.
+      const duration = 1600 + text.length * 700 * (slow ? 1.6 : 1);
+      const fallback = () => { if (done) return; if (tutorPaused) tutorWaiters.push(() => setTimeout(fallback, duration)); else finish(true); };
+      setTimeout(fallback, duration);
+      synth.speak(u);
+    }, 60); // 막 멈춘 직후에 말하면 첫 소리를 삼키는 브라우저가 있다
+  });
 }
 // 기기 음성은 처음 한 번 깨는 데 2초쯤 걸린다(10-03 Heami 실측: 첫 소리 2.1초 뒤 시작, 그다음은 0.03~0.13초).
 // 「시작」을 누를 때 소리 없이 한 번 말해 두면, 이유 한 줄을 보는 동안 깨어난다.

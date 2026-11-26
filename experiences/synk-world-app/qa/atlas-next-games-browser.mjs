@@ -1,5 +1,5 @@
 // Atlas 재설계 단계 4 · 4-6 브라우저 확인(단계4_계획 §23-10 「브라우저」). 다시 돌릴 수 있는 대본이다.
-//   - WORLD가 여는 아홉 게임: 리허설 WORLD(atlasNext · atlasNextGuest, 엔진 판 묶음)에서 합성 계정으로 로그인해 셸의 게임 문으로 한 판씩 한다.
+//   - WORLD가 여는 열 게임: 리허설 WORLD(atlasNext · atlasNextGuest, 엔진 판 묶음)에서 합성 계정으로 로그인해 셸의 게임 문으로 한 판씩 한다.
 //   - 이야기 교실 · 낱말 마법: 그 게임 폴더의 server.mjs를 로컬 주소로 띄워 ?atlas=next(개발 깃발)로 한 판씩 한다.
 // 게임마다 보는 것: ① 게임이 열린 동안 위 창에 window.SYNKAtlasGame(문) ② 틀이 그 게임의 atlas-next-play.mjs를 받고 옛 SynkLearning.createGame을
 // 부르지 않음 ③ 정답 · 오답을 섞어 판 끝 화면까지 ④ 새 엔진 저장소(IndexedDB synk-atlas:*)에 그 게임 판(setId)의 제시 · 답 사건, 계정이면 리허설
@@ -57,19 +57,19 @@ function loadPlaywright() {
 }
 const { chromium } = loadPlaywright();
 
-// 게임 은행 표(셸의 문이 받는 열두 곳)에서 WORLD가 여는 아홉과 혼자 뜨는 둘을 가른다. 한글 만나기(4-7)는 문이 서지만 한글 앱의 새 길
-// 모듈(게임 세션 몫 — 단계 4 계획 §26-7의 3)이 들어오기 전에는 옛 길로 열려 ②를 지킬 수 없어, 그 모듈이 들어올 때까지 뺀다.
+// 게임 은행 표(셸의 문이 받는 열두 곳)에서 WORLD가 여는 열과 혼자 뜨는 둘을 가른다.
 const { GAME_BANKS } = await import(pathToFileURL(path.join(repo, 'experiences/synk-world-app/world-atlas-game.mjs')).href);
 const SOLO = ['story-classroom', 'word-magic'];
-const NOT_YET = ['hangul-stage'];
-const WORLD = Object.keys(GAME_BANKS).filter(id => !SOLO.includes(id) && !NOT_YET.includes(id));
+const WORLD = Object.keys(GAME_BANKS).filter(id => !SOLO.includes(id));
 // 셸의 게임 표(app-shell.mjs games)의 짧은 이름 — 셸은 주소의 폴더 이름으로 문을 청한다.
-const SHELL_ID = { 'blank-slice': 'blank', 'entry-check': 'entry', 'korean-racing': 'racing', 'korean-rhythm': 'rhythm', 'korean-runner': 'runner', 'order-rush': 'order', 'snap-words': 'snap', 'subway-rush': 'subway', 'talk-rally': 'rally' };
+const SHELL_ID = { 'blank-slice': 'blank', 'entry-check': 'entry', 'hangul-stage': 'hangul', 'korean-racing': 'racing', 'korean-rhythm': 'rhythm', 'korean-runner': 'runner', 'order-rush': 'order', 'snap-words': 'snap', 'subway-rush': 'subway', 'talk-rally': 'rally' };
 // 첫 실행 화면을 건너뛰는 진도 열쇠(기록하지 않는 단계 — 연습 문장 · 연수 · 연습 공 · 조작 연습 · 박자 맞추기).
 const SEEDS = {
   'blank-slice': { 'synk.blank-slice.v1': JSON.stringify({ v: 1, plays: 1, practiced: true, slow: false, best: null }) },
   'entry-check': { 'synk.entry-check.v1': JSON.stringify({ v: 1, stars: {}, plays: 1, tutorial: true, doneDay: null, motion: true }) },
   'talk-rally': { 'synk.talk-rally.v1': JSON.stringify({ v: 1, plays: 1, practiced: true, slow: false, best: null }), 'synk.talk-rally.narration': 'off' },
+  // 시범(꼴마다 처음 한 번)을 건너뛰고, 만난 글자가 있어 꼴이 섞이게 한다.
+  'hangul-stage': { 'synk.hangul-stage.v1': JSON.stringify({ v: 1, letters: Object.fromEntries(['v-a', 'v-eo', 'v-o', 'v-u', 'v-eu', 'v-i', 'c-g', 'c-n'].map(id => [id, { state: 'met', best: 'met', due: '2026-11-01T00:00:00.000Z', metAt: '2026-11-01T00:00:00.000Z' }])), demoSeen: ['listen_pick', 'see_pick', 'build', 'match', 'pair', 'teach', 'build_final'] }) },
   'korean-racing': { SYNK_RACING_TUTORIAL_V1: JSON.stringify({ version: 1, completed: true }) },
   'korean-rhythm': { 'synk.world.rhythm.calibrated': '1' },
 };
@@ -187,6 +187,8 @@ function eventsOf(stores, gameId, since) {
     verdicts: count(attempted, 'verdict'),
     arms: count(presented, 'arm'),
     sets: [...new Set(presented.map(e => e.setId))],
+    // 이번 판의 기기 사건 번호 — 제시와 그 제시에 딸린 답 · 도움 · 전달(계정 실행은 이 번호가 모두 서버에 받아들여져야 한다).
+    eventIds: [...ids, ...['practice.attempted', 'practice.helped', 'practice.delivery'].flatMap(type => linked(type).map(e => e.id))],
     items: [...new Set(presented.map(e => e.itemKey))].slice(0, 20),
   };
 }
@@ -566,6 +568,53 @@ const DRIVERS = {
       await until(async () => (await shown(f(), '#results')) || (await f().evaluate(pid => window.synkCafe.current?.presentationId !== pid, current.presentationId)), { timeout: 15000, what: `${n}번째 서빙` });
     }
     await until(() => shown(f(), '#results'), { timeout: 20000, what: '결과 화면' });
+    return { ended: true, plan };
+  },
+
+  // 한글 만나기(4-7): 첫 보기를 골라 맞고 틀림이 섞인다. 만나기 카드는 다음, 짝 맞추기는 짝이 맞을 때까지 카드를 차례로 본다.
+  async 'hangul-stage'(run) {
+    const f = run.frame;
+    await until(() => shown(f(), '#start'), { timeout: 60000, what: '한글 입구' });
+    await until(() => f().evaluate(() => !document.querySelector('#start').disabled), { timeout: 30000, what: '시작 단추' });
+    await f().locator('#start').click();
+    const plan = [];
+    for (let guard = 0; guard < 60; guard += 1) {
+      const kind = await until(
+        () => f().evaluate(() => {
+          const vis = s => { const n = document.querySelector(s); return !!n && !!n.getClientRects().length; };
+          if (vis('#finish') || vis('#graduation')) return 'end';
+          if (!vis('#session')) return null;
+          if (document.querySelector('#stage .reason') || document.querySelector('#stage .meet')) return 'card';
+          if (document.querySelector('#stage .opt.sound')) return 'see';
+          if (document.querySelector('#stage .opt')) return 'listen';
+          if (document.querySelector('#stage .pieces')) return 'build';
+          if (document.querySelector('#stage .match')) return 'match';
+          return null;
+        }),
+        { timeout: 30000, what: '다음 걸음' },
+      );
+      if (kind === 'end') break;
+      const next = async () => { await until(() => shown(f(), '#dock .felt-cta:not([disabled])'), { timeout: 20000, what: '다음 단추' }); await f().locator('#dock .felt-cta').click(); };
+      if (kind === 'card') { await sleep(600); await next(); await sleep(400); continue; }
+      plan.push({ kind });
+      await sleep(2500); // 소리가 끝까지 난 뒤에 답한다
+      if (kind === 'listen') await f().locator('#stage .opt').first().click();
+      else if (kind === 'see') { await f().locator('#stage .opt').first().click(); await sleep(1800); await next(); }
+      else if (kind === 'build') { for (let i = 0; i < await f().locator('#stage .piece-row').count(); i += 1) await f().locator('#stage .piece-row').nth(i).locator('.piece').first().click(); await next(); }
+      else for (let tries = 0; tries < 24 && !(await shown(f(), '#dock .felt-cta')); tries += 1) {
+        const sound = f().locator('#stage .match .col').nth(0).locator('.card:not(:disabled)').first();
+        const letters = f().locator('#stage .match .col').nth(1).locator('.card:not(:disabled)');
+        await sound.click();
+        await sleep(1800);
+        await letters.nth(tries % Math.max(1, await letters.count())).click();
+        await sleep(900);
+      }
+      if (!run.midDone) await midShots(run);
+      await sleep(1500);
+      if (await shown(f(), '#dock .felt-cta:not([disabled])')) await f().locator('#dock .felt-cta').click();
+      await sleep(400);
+    }
+    await until(() => f().evaluate(() => ['#finish', '#graduation'].some(s => document.querySelector(s)?.getClientRects().length)), { timeout: 15000, what: '마무리 화면' });
     return { ended: true, plan };
   },
 
@@ -1011,7 +1060,7 @@ async function runWorld(browser, games, result) {
       sent = [];
     }
     const body = await response.json().catch(() => null);
-    log.push({ at: Date.now(), kind: 'trail-post', status: response.status(), sent: sent.map(e => ({ id: e.id, type: e.type, setId: e.setId ?? null, presentationId: e.presentationId ?? null })), accepted: body?.accepted?.length ?? 0, rejected: body?.rejected ?? null });
+    log.push({ at: Date.now(), kind: 'trail-post', status: response.status(), sent: sent.map(e => ({ id: e.id, type: e.type, setId: e.setId ?? null, presentationId: e.presentationId ?? null })), accepted: body?.accepted?.length ?? 0, acceptedIds: (body?.accepted ?? []).map(row => row?.id ?? row), rejected: body?.rejected ?? null });
   });
   const account = flag('guest') ? 'guest' : arg('account', 'login-a');
   await enterWorld(page, account);
@@ -1091,13 +1140,21 @@ async function runWorld(browser, games, result) {
       frameAtlasLoader: requests.some(e => !e.top && /\/atlas\/loader/.test(e.text)),
     };
     record.records = eventsOf(await readStores(page).catch(() => ({})), game, started);
-    const uploads = uploadsOf(log, started, ended + 3000);
-    const sets = new Set(record.records.sets);
+    // 계정이면 이번 판의 기기 사건(제시 · 답 · 도움 · 전달)이 모두 서버에 받아들여질 때까지 정한 기한 안에서 기다린 뒤, 그때까지 온 올림 응답
+    // 한 벌로 통계와 판정을 함께 낸다. 다른 판의 받아들임이나 같은 판의 거절된 사건으로 통과하지 않게 사건 번호로 맞춘다(4-7 검수 -b GA1 · GA2 · -c GA1 · GA2).
+    const want = record.records.eventIds ?? [];
+    const acceptedBy = list => new Set(list.flatMap(u => u.acceptedIds ?? []));
+    if (account !== 'guest') await until(() => want.length && want.every(id => acceptedBy(uploadsOf(log, started, Infinity)).has(id)), { timeout: 20000, what: '이번 판 사건의 받아들임' }).catch(() => {});
+    const uploads = uploadsOf(log, started, Date.now());
+    const accepted = acceptedBy(uploads);
+    const mine = new Set(want);
+    const sent = uploads.flatMap(u => u.sent).filter(e => mine.has(e.id));
     record.uploaded = {
       posts: uploads.length,
-      events: uploads.flatMap(u => u.sent).filter(e => (e.setId && sets.has(e.setId)) || e.presentationId).length,
-      presented: uploads.flatMap(u => u.sent).filter(e => e.type === 'practice.presented' && sets.has(e.setId)).length,
-      accepted: uploads.reduce((n, u) => n + u.accepted, 0),
+      events: sent.length,
+      presented: sent.filter(e => e.type === 'practice.presented').length,
+      accepted: want.filter(id => accepted.has(id)).length,
+      missing: want.filter(id => !accepted.has(id)).length,
       rejected: uploads.filter(u => u.rejected).map(u => u.rejected),
     };
     record.problems = problems(log, started, ended);
@@ -1207,7 +1264,8 @@ function verdicts(result) {
       1: r.path === 'solo' ? 'n/a(문 없이 개발 깃발)' : r.doorAtOpen === true && r.doorSeen !== false,
       2: r.requests?.newPathModule === true && (r.oldCreateGame ?? []).length === 0,
       3: r.ended === true && (v.correct ?? 0) > 0 && (v.incorrect ?? 0) > 0,
-      4: (r.records?.presented ?? 0) > 0 && (r.records?.attempted ?? 0) > 0 && (r.path === 'solo' ? r.records.stores.includes('synk-atlas:guest') : true),
+      // 계정 실행은 이번 판의 기기 사건이 하나도 빠짐없이 서버 trail에 받아들여졌는지 번호로 본다(4-7 검수 GB4 · -b GA1 · -c GA1).
+      4: (r.records?.presented ?? 0) > 0 && (r.records?.attempted ?? 0) > 0 && (r.path === 'solo' ? r.records.stores.includes('synk-atlas:guest') : r.account === 'guest' || (r.uploaded?.accepted > 0 && r.uploaded?.missing === 0)),
       5: unknownProblems.length === 0,
       6: Boolean(r.widths?.['1440'] && r.widths?.['390']) && overflowFree,
     };
