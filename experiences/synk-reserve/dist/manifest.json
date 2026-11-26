@@ -4,8 +4,8 @@
     "sha256": "6708b9296df9c0e019715a548c55979b36d8fb42bd88536f52c660d7e9b113cb"
   },
   "reserve/app.js": {
-    "bytes": 18471,
-    "sha256": "ffcf9b24c1971c01301dd359e04ac0e880c04f88e6d9a003e45c9f13d76577e1"
+    "bytes": 18546,
+    "sha256": "c7a86de7b3cad977c58ecbd3a548e613875e9736cf5977a7a64dab6dd14ad3a1"
   },
   "reserve/assets/reserve-inter-500.woff2": {
     "bytes": 29560,
@@ -16,24 +16,24 @@
     "sha256": "27e0264fe7d1ddaff844ccba5cc9d00cddd18a8353a76935ffeafc665091c7f4"
   },
   "reserve/assets/reserve-sans.woff2": {
-    "bytes": 109916,
-    "sha256": "9e5ed3a2ff2563918588398621abbf215bdac28501e6c611ed9b297545aa9021"
+    "bytes": 109692,
+    "sha256": "d23c26088e4743f644eb3a98391da361d9a0591e3d63ad39ef08197f3a1c81f3"
   },
   "reserve/clips/en/card-actor.mp4": {
-    "bytes": 378051,
-    "sha256": "680f426aba0076609fa6842f613e677ef41370a9a5260eb24a5aa903f1b211c4"
+    "bytes": 409469,
+    "sha256": "6d0a4bf682c5ebd9d7d987cd953a9bc3d7f48605274c7867abe150f24d181fda"
   },
   "reserve/clips/en/card-actor.webp": {
-    "bytes": 37326,
-    "sha256": "c76c605768c9a0050748b61f3330f25a442bea2c8d92345243ee587a0de0c0ee"
+    "bytes": 36064,
+    "sha256": "20de07ed4af41a2389f9631c72da828aefd68a99e0ef02d30e5c794123da7344"
   },
   "reserve/clips/en/card-idol.mp4": {
-    "bytes": 352554,
-    "sha256": "959659fea848a213b98560a2acff6f3a7178a81e72d20e6108507115573830f7"
+    "bytes": 345765,
+    "sha256": "24dfb6e9419a49a7c89afcf96f475ae96091004c6e428f0b794c9763a8ae22e1"
   },
   "reserve/clips/en/card-idol.webp": {
-    "bytes": 33434,
-    "sha256": "f144cb6f9612b464e00d08227cee9e79d2cb8a815c5486ad36c62784b110d7c0"
+    "bytes": 37328,
+    "sha256": "0c6bd110debe509551246291c00a7937f20b86ed7e4a739769c0d38c85574a54"
   },
   "reserve/clips/en/fans-actor.mp4": {
     "bytes": 299332,
@@ -50,6 +50,14 @@
   "reserve/clips/en/fans-idol.webp": {
     "bytes": 13728,
     "sha256": "58cd7a8a6a780a0a3a7a8d864acadc37d82b7decbc1bd902e3d119d65b06e1a3"
+  },
+  "reserve/clips/en/scene.mp4": {
+    "bytes": 567718,
+    "sha256": "c3314212b7db8c56bae77b1b2e88003370e8ca3d0ca3ff2a529a738d518fb616"
+  },
+  "reserve/clips/en/scene.webp": {
+    "bytes": 29828,
+    "sha256": "f710977aa2074ff2db9be8a495af054caae24364135b7dc2956cac08abf7ccda"
   },
   "reserve/clips/en/talk.mp4": {
     "bytes": 617685,
@@ -76,20 +84,20 @@
     "sha256": "6985bc77a8a7b9c3960b707992508c38c09fc8d7f00aed8097344e89e4ecdbb2"
   },
   "reserve/clips/ko/card-actor.mp4": {
-    "bytes": 360888,
-    "sha256": "6c67e52701f8709f9cca49ce40dd504c924f34a5bd6f7ba75cb1a89a3b6a0340"
+    "bytes": 464446,
+    "sha256": "99383b366366c7216c41574dfea31a593a205439a3d10bd5df5174de5390827d"
   },
   "reserve/clips/ko/card-actor.webp": {
-    "bytes": 38030,
-    "sha256": "a8d940dc4232bacaebd5d19cc26fbf8b3cb9429a13c8a56aa86594767d118868"
+    "bytes": 37952,
+    "sha256": "305bb6bdba1f97ac5c01e78149da781b5f45a56560110964d732e5c7353799c3"
   },
   "reserve/clips/ko/card-idol.mp4": {
-    "bytes": 371744,
-    "sha256": "e6c9fc46015c83c71986d88d6c7181e986dcf5254c8654d7a269aa626c826304"
+    "bytes": 378444,
+    "sha256": "425b86d4236b2c1db9065c87b95b275e21f3138c61b424afc3ef38a724e1ba7d"
   },
   "reserve/clips/ko/card-idol.webp": {
-    "bytes": 33144,
-    "sha256": "bcfae266645f0787fc196c0107b0490ca4b255a6a3a43822e8995ec8ce6fda22"
+    "bytes": 37976,
+    "sha256": "dd2477862d3d331f65430be1902f444c680090131628c4da812174fe27b40aed"
   },
   "reserve/clips/ko/fans-actor.mp4": {
     "bytes": 235765,
@@ -106,6 +114,14 @@
   "reserve/clips/ko/fans-idol.webp": {
     "bytes": 12074,
     "sha256": "5b9d53b9ca6ca5b79b2897fa83085e6a34f72d34f481b64bc45776e8f357166e"
+  },
+  "reserve/clips/ko/scene.mp4": {
+    "bytes": 587994,
+    "sha256": "14752dd9cb277cb4205bbe179e9c4243776aa7450fb59d49336cf62a6384772d"
+  },
+  "reserve/clips/ko/scene.webp": {
+    "bytes": 26350,
+    "sha256": "2fec19fbf78968afc18a348bd04bd966e929f7c05f9c81abcdcbc6d010c0a040"
   },
   "reserve/clips/ko/talk.mp4": {
     "bytes": 564739,
@@ -132,20 +148,20 @@
     "sha256": "5183fc7527f91d61d289ad435462e8fd5d6c424da5567c04c4f178876a3d181b"
   },
   "reserve/clips/mn/card-actor.mp4": {
-    "bytes": 420268,
-    "sha256": "afad02e26cc76b3979922ee1a05dc0c19d60755af48ab6338231c21f198a6f4a"
+    "bytes": 416836,
+    "sha256": "35921fadda1aa687ad60fbdb1e9cd767f1a135513178bf40c25d5e0c40e201c2"
   },
   "reserve/clips/mn/card-actor.webp": {
-    "bytes": 44692,
-    "sha256": "6a2dbaf0a2df4684fcebdc57775b8e6ab529a5a0930f9ebafec9b076e26d8b56"
+    "bytes": 39914,
+    "sha256": "69e0956a691a5588a167bd826a4562fbb5155bb5e4b5e7ea65907570ab236d4f"
   },
   "reserve/clips/mn/card-idol.mp4": {
-    "bytes": 388088,
-    "sha256": "eaf9e5eb0f8d0b35f6bd7cdfba53449499b46421139919d5fcf98275c35968b8"
+    "bytes": 364004,
+    "sha256": "fb287dfad5a56cde98712c6f948ca3f3a713f233425320d3cb6bb3a8ea0dd60b"
   },
   "reserve/clips/mn/card-idol.webp": {
-    "bytes": 36936,
-    "sha256": "b205d0a4fe02dea51dcc96b44e94fa97011296a03637cb272085899c3b730257"
+    "bytes": 39638,
+    "sha256": "98786e7e28646056337d6ae51a338773e467164695675e1598d4eb0aacf9a317"
   },
   "reserve/clips/mn/fans-actor.mp4": {
     "bytes": 308786,
@@ -162,6 +178,14 @@
   "reserve/clips/mn/fans-idol.webp": {
     "bytes": 15832,
     "sha256": "1abca53c10f5e02122cc0fc4060d47c85901e616e2faf5c3e73a4085fe5d9678"
+  },
+  "reserve/clips/mn/scene.mp4": {
+    "bytes": 620409,
+    "sha256": "2cfec4259dad73888eb6e5d98b55669b987954238e0715925fba062f67fae628"
+  },
+  "reserve/clips/mn/scene.webp": {
+    "bytes": 31192,
+    "sha256": "61aab87d4262f950c4c7f291dc4f3458d5f26e750b0f223f412ffad2da5e1049"
   },
   "reserve/clips/mn/talk.mp4": {
     "bytes": 650707,
@@ -188,8 +212,8 @@
     "sha256": "fa1bf9c5cdceb720095207576fa94f1baac519a6d271bf7d1a27b56e93d8c021"
   },
   "reserve/copy.js": {
-    "bytes": 21383,
-    "sha256": "d182ac3f07983e8c4503637a23b3c75cc640f1f41e2890ad11a3bbf1db11f454"
+    "bytes": 21974,
+    "sha256": "9553407a14d1ac5541428cdadb90638751b640c9d61048a109933821c9e93855"
   },
   "reserve/img/card-actor.webp": {
     "bytes": 62516,
@@ -209,7 +233,7 @@
   },
   "reserve/index.html": {
     "bytes": 10407,
-    "sha256": "15961f3b4b9f2832f65242d96cba7de5990078349d7ed43bae2b231bd28118cd"
+    "sha256": "5083ae15be6f7b6f2f0665501604686583bb3a24e1587bfcebee3b56c3be9775"
   },
   "reserve/og.jpg": {
     "bytes": 95001,
@@ -217,30 +241,18 @@
   },
   "reserve/play/index.html": {
     "bytes": 1311,
-    "sha256": "d559287907a65dc55e8bb39b4caffad527d92ebc5d027ebf9e08d0c6b8d30d21"
+    "sha256": "ec61db7027c8e678275beede182a3f1b3be928cde583b6e00aa0ba9b9cca43cc"
   },
   "reserve/play/play.css": {
     "bytes": 4481,
-    "sha256": "fcc07c5ef89c12ff65266609bfe216114cbc45b763e7e491bfa2a13b60aefb0c"
+    "sha256": "348bb967f449cdb3c6eede5cf528208774030e8e4b1fdca742772bd2532b2be2"
   },
   "reserve/play/play.mjs": {
     "bytes": 10078,
     "sha256": "51af3a7c1074e1cc2363b0b63682762138f716b0a92311611619ed2caf599250"
   },
   "reserve/reserve.css": {
-    "bytes": 17116,
-    "sha256": "ba4a30897b385f19e2fecb14851fe919aa2e0b74e870d499f110e188892803e8"
-  },
-  "reserve/shots/en/quiz.webp": {
-    "bytes": 31038,
-    "sha256": "a229b55e99ae77eb981c13cf1dd87394cc74089dc4ba75ba5d68a337788e9d77"
-  },
-  "reserve/shots/ko/quiz.webp": {
-    "bytes": 24080,
-    "sha256": "f2e8a019f354fdf8b030230f130d7c45f2759ffe137c038522585773ff72ca69"
-  },
-  "reserve/shots/mn/quiz.webp": {
-    "bytes": 29060,
-    "sha256": "73894a20a5c5097189bcb1dc5f75d9913cc677cc755deb507bfcb3f1e924cf30"
+    "bytes": 17305,
+    "sha256": "c066b06b01eb5f78b34905b837972b60ec96cb7ad15201d07ce3a43d7e78afd4"
   }
 }

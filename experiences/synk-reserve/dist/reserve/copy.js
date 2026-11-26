@@ -35,6 +35,8 @@
 
   // 아래 단락의 휴대폰 다섯 대 — 실제 게임 화면이다. clip은 1회용 체험(/reserve/play/)을 391×852로 녹화한 짧은 소리 없는 영상
   // (src/clips/<언어>/<id>-<꿈>.mp4, 첫 장면 그림은 같은 이름의 .webp), one은 꿈과 상관없이 한 벌(<id>.mp4), still은 화면 캡처(src/shots/<언어>/<id>.webp)다.
+  // soonS가 있으면 아래 작은 줄(s)은 아직 앱에 없는 일이라 그 앞에 「곧 열려요」를 단다(11-26 유호님 「이 모습으로 드라마 대사를 해서 영상까지 출력되서 나오는걸 어필」 —
+  // 고른 얼굴로 연기하는 내 장면 영상은 꿈 무대 특별 스토리 끝의 보상으로 만드는 중이다, 결정 11-17).
   // 팬 줄(s · sActor)은 게임 「내 팬」 화면의 글(seoul-arrival strings.mjs)과 같다. 글(p)은 세 언어 모두 줄마다 끝나는 문장이다
   // (쉼표로 이으면 다른 줄과 잘못 이어 읽힌다 — 몽골어대조 · 카본 reserve-da B1). sActor가 있으면 꿈이 배우일 때 그 줄을 쓴다.
   const PHONES = [
@@ -42,18 +44,18 @@
       ko: { p: '한글을 손으로 따라 써요.', s: '획을 따라 쓰면 글자가 완성돼요.' },
       en: { p: 'Trace Hangul with your finger.', s: 'Follow the strokes and the letter comes together.' },
       mn: { p: 'Солонгос үсгийг хуруугаараа дагаж бичнэ.', s: 'Зураасыг дарааллаар нь дагахад үсэг бүтнэ.' } },
-    { id: 'card', clip: true,
-      ko: { p: '내 모습을 골라 학생증을 받아요.', s: '이름은 한글로 직접 써요.' },
-      en: { p: 'Pick your look and get your student ID.', s: 'You write your name in Hangul yourself.' },
-      mn: { p: 'Төрхөө сонгож, оюутны үнэмлэхээ авна.', s: 'Нэрээ солонгос үсгээр өөрөө бичнэ.' } },
+    { id: 'card', clip: true, soonS: true,
+      ko: { p: '내 모습을 골라 학생증을 받아요.', s: '이 얼굴 그대로 드라마 대사를 하는 내 영상이 나와요.' },
+      en: { p: 'Pick your look and get your student ID.', s: 'This face then speaks drama lines in a video of you.' },
+      mn: { p: 'Төрхөө сонгож, оюутны үнэмлэхээ авна.', s: 'Сонгосон төрхөөрөө дүрийнхээ үгийг хэлсэн бичлэг тань гарна.' } },
     { id: 'talk', clip: true, one: true,
       ko: { p: '선배에게 내 목소리로 대답해요.', s: '1화, 개강 첫날. 내 차례가 오면 대사를 소리 내어 말해요.' },
       en: { p: 'Answer a senior in your own voice.', s: 'Ep. 1, the first day of term. When it’s your turn, you say the line out loud.' },
       mn: { p: 'Ахлах курсийнхэндээ өөрийн дуу хоолойгоор хариулна.', s: '1-р анги, хичээлийн эхний өдөр. Ээлж ирэхэд хэлэх үгээ чангаар хэлнэ.' } },
-    { id: 'quiz', still: true,
-      ko: { p: '동아리 튜터와 퀴즈로 연습해요.', s: '맞히면 왜 맞는지 알려 줘요.' },
-      en: { p: 'Practise with your club tutor’s quiz.', s: 'Get it right and they tell you why.' },
-      mn: { p: 'Клубийн туслахтайгаа асуулт хариултаар давтана.', s: 'Зөв хариулбал яагаад зөв болохыг хэлж өгнө.' } },
+    { id: 'scene', clip: true, one: true,
+      ko: { p: '대사를 하면 장면이 이어져요.', s: '내가 한 줄 말하면 선배가 받아 주고, 이야기가 다음으로 넘어가요.' },
+      en: { p: 'Say your line and the scene moves on.', s: 'Your senior answers, and the story carries on.' },
+      mn: { p: 'Үгээ хэлэхэд үзэгдэл үргэлжилнэ.', s: 'Таныг ярихад ахлах курсийнхэн тань хариулж, түүх дараагийн хэсэг рүү шилжинэ.' } },
     { id: 'fans', clip: true,
       ko: { p: '그리고 팬이 생겨요.', s: '말한 줄마다 내 팬의 불빛이 하나씩 켜져요.', sActor: '말한 줄마다 내 팬이 한 사람씩 자리에 앉아요.' },
       en: { p: 'And you gain fans.', s: 'For every line you speak, one more fan’s light comes on.', sActor: 'For every line you speak, one more fan takes a seat.' },
