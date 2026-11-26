@@ -38,6 +38,11 @@
 .seoul li span{display:block;margin-top:4px;color:var(--sub);font-size:16px}
 .seoul h3{font:700 clamp(22px,2.1vw,30px)/1.3 var(--sans);letter-spacing:-.02em;margin-bottom:20px}
 .later{padding:0 var(--gut) clamp(60px,7vw,100px);font:600 var(--lead)/1.6 var(--sans)}
+.study-end{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px;padding:0 var(--gut) clamp(40px,5vw,64px)}
+.sns-ico{display:flex;gap:2px;margin:0 -11px}
+.sns-ico a{display:grid;place-items:center;width:44px;height:44px;border-radius:999px;color:var(--sub);transition:color .2s var(--ease)}
+.sns-ico a:hover{color:var(--ink)}
+.sns-ico svg{width:22px;height:22px}
 .later span{color:var(--sub);font-weight:500}
 @media (max-width:820px){
   .open .c{left:20px}.cards>header,.ans,.seoul{grid-template-columns:1fr}.open>img{object-position:40% 50%}
@@ -57,6 +62,7 @@
   <div class="seoul"><div><h3>하고 싶은 것을 고르면<br>하루가 나옵니다</h3><div class="k" id="k"><button type="button" aria-pressed="false"><img src="a/path-felt-food.webp" alt="">맛집</button><button type="button" aria-pressed="true"><img src="a/path-felt-tea.webp" alt="">차</button><button type="button" aria-pressed="false"><img src="a/path-felt-art.webp" alt="">전시</button><button type="button" aria-pressed="true"><img src="a/path-felt-palace.webp" alt="">궁궐</button><button type="button" aria-pressed="true"><img src="a/path-felt-alley.webp" alt="">골목</button><button type="button" aria-pressed="false"><img src="a/path-felt-market.webp" alt="">시장</button></div></div>
   <div><ol><li><time>10:08</time><div><b>운현궁</b><span>궁궐 · 45분</span></div></li><li><time>11:02</time><div><b>어니언 안국</b><span>차 · 50분</span></div></li><li><time>12:00</time><div><b>북촌 한옥마을</b><span>골목 · 50분</span></div></li></ol><div class="row" style="margin-top:24px"><a class="btn" href="#cards">내 날짜로 짜 보기</a></div></div></div>
 </section>
+<div class="study-end"><a class="btn" href="https://synk.im/reserve/?from=synk-study-abroad&amp;lang=ko">2027년 2월 출시 사전예약</a><p class="sns-ico"><a href="https://www.instagram.com/synk.mn/" target="_blank" rel="noopener" aria-label="SYNK LAB Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none"/></svg></a><a href="https://www.facebook.com/synkworld" target="_blank" rel="noopener" aria-label="SYNK LAB Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M15.3 7.7h-1.5c-1.4 0-2.1.8-2.1 2.2V21M9.3 12.6h5.6"/></svg></a></p></div>
 <p class="later">주거와 정착 동행은 차례로 엽니다 <span>정착 동행 2027년 상반기 시범</span></p>
 <section class="askline"><div><h2>무엇이든 물어보세요</h2><p>공개된 내용은 여기서 바로 답하고, 상담은 메일로 받습니다. <b>hello@synk.im</b></p></div><a class="btn l" href="#cards">질문하기</a></section>
 </main>
