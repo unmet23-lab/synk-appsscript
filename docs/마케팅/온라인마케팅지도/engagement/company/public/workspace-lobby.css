@@ -40,6 +40,10 @@ html[data-lobby-theme="night"] .synk-workspace,html[data-lobby-theme="night"] .a
 html:has(.synk-workspace),html:has(.auth-layout),html:has(.boot-shell),html:has(.teaching-only-shell){--lobby-page:#FED027;background:var(--lobby-page)}
 html[data-lobby-theme="paper"]{--lobby-page:#ECE8DF}
 html[data-lobby-theme="night"]{--lobby-page:#161616}
+/* 밤에는 스크롤 손잡이(style.css의 검정 18%)가 검은 바탕에 묻힌다. 검은 바탕과 밝은 판 위에서 모두 보이는 중간 회색으로 둔다. 쪽 전체 스크롤은 html이 맡는다. 「내 수업」 단독 쪽(.teaching-only-shell)도 같다(Fable ws-lobby-20261127d P2 · ws-lobby-20261127e P2) */
+html[data-lobby-theme="night"]:has(.synk-workspace),html[data-lobby-theme="night"]:has(.auth-layout),html[data-lobby-theme="night"]:has(.teaching-only-shell),html[data-lobby-theme="night"] .synk-workspace *,html[data-lobby-theme="night"] .auth-layout *,html[data-lobby-theme="night"] .teaching-only-shell *{scrollbar-color:rgba(170,170,170,.6) transparent}
+html[data-lobby-theme="night"]:has(.synk-workspace)::-webkit-scrollbar-thumb,html[data-lobby-theme="night"]:has(.auth-layout)::-webkit-scrollbar-thumb,html[data-lobby-theme="night"]:has(.teaching-only-shell)::-webkit-scrollbar-thumb,html[data-lobby-theme="night"] .synk-workspace *::-webkit-scrollbar-thumb,html[data-lobby-theme="night"] .auth-layout *::-webkit-scrollbar-thumb,html[data-lobby-theme="night"] .teaching-only-shell *::-webkit-scrollbar-thumb{background:rgba(170,170,170,.6)}
+html[data-lobby-theme="night"]:has(.synk-workspace)::-webkit-scrollbar-thumb:hover,html[data-lobby-theme="night"]:has(.auth-layout)::-webkit-scrollbar-thumb:hover,html[data-lobby-theme="night"]:has(.teaching-only-shell)::-webkit-scrollbar-thumb:hover,html[data-lobby-theme="night"] .synk-workspace *::-webkit-scrollbar-thumb:hover,html[data-lobby-theme="night"] .auth-layout *::-webkit-scrollbar-thumb:hover,html[data-lobby-theme="night"] .teaching-only-shell *::-webkit-scrollbar-thumb:hover{background:rgba(200,200,200,.8)}
 body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:has(.teaching-only-shell){background:var(--lobby-page,#FED027)}
 .synk-workspace ::selection,.auth-layout ::selection{background:var(--lobby-sel)}
 
@@ -211,6 +215,10 @@ body:has(.synk-workspace),body:has(.auth-layout),body:has(#app.boot-shell),body:
 .synk-workspace .ws-office-next .next-card,.synk-workspace .ws-office-next .next-recommend-bar{border:0;border-radius:18px;background:var(--lobby-glass);box-shadow:var(--lobby-float);color:var(--lobby-label)}
 .synk-workspace .ws-office-next .next-recommend-bar{min-height:56px;padding:0 20px;font:600 14.5px/1 var(--ws-sans);transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s}
 .synk-workspace .ws-office-next .next-recommend-bar:hover:not(:disabled){background:var(--lobby-paper);transform:translateY(-2px);box-shadow:var(--lobby-raise)}
+/* 추천을 받은 뒤 바탕 위에 바로 서는 알림 띠 · 확인 중 · 확인 시각 글도 바탕 값을 쓴다. 오류 띠(is-error)는 불투명 분홍 면이라 그대로 둔다(Fable ws-lobby-20261127d P1) */
+.synk-workspace .ws-office-next .next-status,.synk-workspace .ws-office-next .next-asof{color:var(--lobby-mute)}
+.synk-workspace .ws-office-next .next-warning:not(.is-error){border-color:var(--lobby-line);border-left-color:var(--lobby-fg);background:var(--lobby-soft);color:var(--lobby-fg2)}
+.synk-workspace .ws-office-next .next-warning:not(.is-error)>span{color:var(--lobby-mute)}
 .synk-workspace .ws-office-more .next-assistant,.synk-workspace .ws-office-more .staff-stories,.synk-workspace .ws-office-more>section{border:0;border-radius:22px;background:var(--lobby-glass);box-shadow:var(--lobby-float);color:var(--lobby-label)}
 
 /* ── 내 차례: 왼쪽은 노란 바탕 위의 순서, 오른쪽은 지금 고른 일 한 장 ── */

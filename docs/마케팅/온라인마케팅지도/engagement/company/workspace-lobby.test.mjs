@@ -51,7 +51,8 @@ test('every rule stays under the workspace, sign-in, loading or teaching shell',
   // 바탕 색은 <html data-lobby-theme="paper|night">를 앞에 붙인 같은 범위다. html에는 바탕 값 하나만 둔다
   const scope = /^(\.synk-workspace\b|\.app-shell\.synk-workspace\b|\.auth-layout\b|#app\.boot-shell\b|\.teaching-only-shell\b|html:has\(|body:has\()/;
   for (const sel of selectors) for (const one of sel.split(',')) {
-    const bare = one.trim().replace(/^html\[data-lobby-theme="(?:paper|night)"\]\s+/, '');
+    // html[data-lobby-theme="night"]:has(.synk-workspace)(쪽 전체 스크롤 손잡이)는 html:has( 범위와 같다
+    const bare = one.trim().replace(/^html\[data-lobby-theme="(?:paper|night)"\]\s+/, '').replace(/^html\[data-lobby-theme="(?:paper|night)"\](?=:has\()/, 'html');
     if (/^html\[data-lobby-theme="(?:paper|night)"\]$/.test(bare)) continue;
     assert.match(bare, scope, 'scoped: ' + one.trim());
   }
@@ -122,6 +123,8 @@ test('each background keeps the text on it readable: words 7:1, quiet words and 
     const chip = color(t['lobby-chip'], bg), soft = color(t['lobby-soft'], bg);
     check('row number on chip', color(t['lobby-fg']), chip, 4.5);
     check('mute on soft', color(t['lobby-mute'], soft), soft, 4.5);
+    // 추천 뒤 바탕 위 알림 띠: 글은 fg2 · 덧붙인 줄은 mute, 면은 soft(Fable ws-lobby-20261127d P1)
+    check('fg2 on soft', color(t['lobby-fg2'], soft), soft, 4.5);
     // 유리 판은 바탕을 비친다: 판 안의 흐린 글도 바탕마다 4.5:1
     const glass = color(t['lobby-glass'], bg);
     for (const name2 of ['lobby-label2', 'lobby-label3']) check(name2 + ' on glass', color(t[name2], glass), glass, 4.5);
@@ -143,7 +146,22 @@ test('each background keeps the text on it readable: words 7:1, quiet words and 
     'width:15px;height:62vh;background:var(--lobby-solid);',
     '.synk-workspace .ws-side-brand .brand-logo{width:auto;height:30px;margin:-4px -2px -4px -8px;filter:var(--lobby-logo)}',
     '.synk-workspace .ws-row[aria-current="true"] .ws-r-title{color:var(--lobby-label)}',
+    '.synk-workspace .ws-office-next .next-status,.synk-workspace .ws-office-next .next-asof{color:var(--lobby-mute)}',
+    '.synk-workspace .ws-office-next .next-warning:not(.is-error){border-color:var(--lobby-line);border-left-color:var(--lobby-fg);background:var(--lobby-soft);color:var(--lobby-fg2)}',
+    '.synk-workspace .ws-office-next .next-warning:not(.is-error)>span{color:var(--lobby-mute)}',
   ]) assert.ok(css.includes(rule), rule);
+  // 밤의 스크롤 손잡이는 검은 바탕에서 3:1 이상 보인다(Fable ws-lobby-20261127d P2). 쪽 전체 스크롤(html)도 같은 값이다
+  const thumb = /html\[data-lobby-theme="night"\]:has\(\.synk-workspace\),[^{]*\{scrollbar-color:(rgba\([^)]*\)) transparent\}/.exec(css);
+  assert.ok(thumb, 'night scrollbar colour');
+  const nightBg = color(themeTokens('night')['lobby-bg']);
+  assert.ok(ratio(color(thumb[1], nightBg), nightBg) >= 3, 'night thumb ' + ratio(color(thumb[1], nightBg), nightBg).toFixed(2));
+  assert.ok(css.includes(`html[data-lobby-theme="night"] .synk-workspace *::-webkit-scrollbar-thumb,html[data-lobby-theme="night"] .auth-layout *::-webkit-scrollbar-thumb,html[data-lobby-theme="night"] .teaching-only-shell *::-webkit-scrollbar-thumb{background:${thumb[1]}}`), 'webkit thumb matches');
+  // 밤 바탕을 까는 껍데기(html:has(…))마다 손잡이도 밝힌다 — 「내 수업」 단독 쪽이 빠졌던 일(Fable ws-lobby-20261127e P2)
+  const nightRule = /html\[data-lobby-theme="night"\]:has\(\.synk-workspace\),[^{]*\{scrollbar-color:/.exec(css)[0];
+  for (const shell of ['.synk-workspace', '.auth-layout', '.teaching-only-shell']) {
+    assert.ok(nightRule.includes(`html[data-lobby-theme="night"]:has(${shell})`), 'page scrollbar ' + shell);
+    assert.ok(nightRule.includes(`html[data-lobby-theme="night"] ${shell} *`), 'inner scrollbars ' + shell);
+  }
 });
 
 test('the picker is three radio swatches, starts before the first paint, and remembers the choice on this device only', async () => {
