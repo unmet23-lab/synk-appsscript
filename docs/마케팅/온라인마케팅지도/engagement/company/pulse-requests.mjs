@@ -941,6 +941,20 @@ const PACKAGE_SECONDS={s15:15,s30:30,s60:60,corp:30};
 const OBJECTIVE={buy:'sales',install:'sales',visit:'sales',ask:'sales',remember:'brand'};
 const WIN_LABEL={story:'이야기로 여운을',impact:'한 장면의 임팩트로',laugh:'웃음으로 퍼지게',ask:'맡김'};
 const END_LABEL={logo:'로고만',line:'로고 + 한 줄',info:'로고 + 안내'};
+// 마무리(11-26 세 막)의 제작 메모 줄. 손님이 마무리 화면에서 본 것과 같은 규칙 하나로 낸다(화면 request-data.mjs endShown · request-flow.mjs more의 추천 목록).
+// · 사진 주문: 마지막 화면 칸이 없다. 추천대로면 첫 장을 먼저 보여 드리고 방향을 맞춘다(방향 두 안은 사진 주문에 없다 — 아래 사진 상품 409).
+// · 영상 주문: 추천대로면 화면 추천 목록의 기본값(마지막 화면은 로고 + 한 줄, 문구는 담당자가 써서 미리 보여 드림). 직접이면 지금 고른 마지막 화면과,
+//   로고만이 아니면 그 문구(마지막 화면을 아직 안 골랐어도 문구는 옮긴다).
+// · 직접이면 머리 줄 「마무리: 직접 고름」을 둬, 고른 것이 없어도 미정과 가린다. 마무리를 고르지 않은 초안(옛 단계로 저장된 것)은 줄이 없다.
+// · 「추천대로」로 돌아온 뒤의 숨은 마지막 화면 · 문구는 옮기지 않는다. 느낌 · 과감함 · 목소리 · 화면 글자는 화면 추천 목록에 「고르신 그대로」 보이므로
+//   위 메모 줄(무엇으로 이길지 · 얼마나 과감하게 · 목소리 · screenCopy)이 그대로 옮긴다(request-flow.mjs recList).
+// 메모 끝에 붙여 3,000자 자르기에서 앞의 옛 항목을 밀어내지 않는다.
+export function finishLines(a){
+  const photo=a.package==='photo';
+  if(a.finish==='rec')return [photo?'마무리: 추천대로(사진은 첫 장을 먼저 보여 드리고 방향을 맞춤)':'마무리: 추천대로(마지막 화면은 로고 + 한 줄, 문구는 담당자가 써서 미리 보여 드림)'];
+  if(a.finish!=='custom')return [];
+  return ['마무리: 직접 고름',...(photo?[]:[a.endCard&&`마지막 화면: ${END_LABEL[a.endCard]}`,a.endCard!=='logo'&&a.endLine&&`마지막 화면 문구: ${a.endLine}`])].filter(Boolean);
+}
 const BOLD_LABEL={safe:'정석대로',twist:'조금 다르게',wild:'확 다르게'},VOICE_LABEL={narration:'내레이션',model:'모델이 직접 말함',none:'말 없이 음악과 자막'};
 // 메모의 한 줄은 「항목: 값」 하나다. 손님이 쓴 글에 줄바꿈이 있으면 그 뒤가 서버가 만든 다른 줄처럼 보이므로(11-13 백엔드 검수 GA1) 줄을 나누는 공백을 빈칸 하나로 잇는다.
 const oneLine=value=>String(value).replace(/\s*[^\S \t]+\s*/g,' ');
@@ -955,10 +969,7 @@ export function carryToStrategy(strategy,a,stamp){
   put('durationSeconds',PACKAGE_SECONDS[a.package]||null);put('distribution',a.paid?'paid':'');
   put('screenCopy',a.screenText);put('destinationUrl',/^https:\/\//.test(a.pageUrl||'')?a.pageUrl:'');put('proposedDeadline',a.date);
   const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).join(', '),ref.why].filter(Boolean).join(' — ')).filter(Boolean);
-  // 마무리(11-26 세 막): 「직접 고를게요」에서 고른 마지막 화면 · 문구는 손님이 지금 「직접」일 때만 옮긴다 — 「추천대로」로 돌아오면 화면에 안 보이는 옛 고름이 메모에 남지 않는다.
-  // 문구는 로고만이 아닐 때만. 마무리 줄은 메모 끝에 둬, 3,000자에서 자를 때 앞의 옛 항목을 밀어내지 않는다(GPT 검수 GA1 · GA2).
-  const photo=a.package==='photo',custom=a.finish==='custom'&&!photo,endLine=custom&&a.endCard!=='logo'?a.endLine:'';
-  const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,a.bold&&`얼마나 과감하게: ${BOLD_LABEL[a.bold]}`,a.voice&&`목소리: ${VOICE_LABEL[a.voice]}`,noticeLine(a),refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`,a.finish==='rec'&&(photo?'마무리: 추천대로(사진은 첫 장을 먼저 보여 드리고 방향을 맞춤)':'마무리: 추천대로(마지막 화면과 문구는 담당자가 제안)'),custom&&a.endCard&&`마지막 화면: ${END_LABEL[a.endCard]}`,endLine&&`마지막 화면 문구: ${endLine}`].filter(Boolean).map(oneLine);
+  const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,a.bold&&`얼마나 과감하게: ${BOLD_LABEL[a.bold]}`,a.voice&&`목소리: ${VOICE_LABEL[a.voice]}`,noticeLine(a),refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`,...finishLines(a)].filter(Boolean).map(oneLine);
   put('notes',lines.join('\n').slice(0,3000));
   // 고른 모델의 헤어는 그 모델이 제작 설계의 모델일 때만 옮긴다(헤어 1 · 2 · 3은 모델마다 다르다). 전용 인물이 붙어 있으면 카탈로그 모델을 넣지 않는다.
   const casting={...data.castingSelection};if(a.models?.[0]&&!casting.modelId&&!personaRefOf(casting.personaRef))casting.modelId=a.models[0];

@@ -62,7 +62,8 @@ test('the brief form never promises a video to a photo order: the lines a photo 
   // 사진 주문의 마무리에는 마지막 화면 · 그 문구가 없다(영상의 끝 화면이다).
   const more=view('more');
   assert.match(more,/const photo=!!pkgOf\(a\)\?\.photo;/);
-  assert.match(more,/\.\.\.\(photo\?\[\]:\[\[k\('마지막 화면'\),k\('로고 \+ 한 줄'\)\],\[k\('문구 한 줄'\),k\('담당자가 써서 미리 보여 드려요'\)\]\]\)/);
+  assert.match(more,/recList\(a,photo,ctx\)/);
+  assert.match(flow,/\.\.\.\(photo\?\[\]:\[\[k\('마지막 화면'\),k\('로고 \+ 한 줄'\)\],\[k\('문구 한 줄'\),k\('담당자가 써서 미리 보여 드려요'\)\]\]\)/);
   assert.match(more,/\(photo\?'':`<div class="sx-sub" data-in><span class="sx-small">\$\{esc\(t\('마지막 화면'\)\)\}/);
 });
 
@@ -72,7 +73,9 @@ test('mail typo hints fix only near misses of common addresses, never a real cou
   for(const [mail,fix] of [['a@gmial.com','a@gmail.com'],['a@naver.con','a@naver.com'],['a@hanmail.com','a@hanmail.net'],['a@daum.com','a@daum.net'],['a@naver.co','a@naver.com']])assert.equal(mailSuggest(mail),fix,mail); // 공개허용: 메일 오타 안내 시험의 지어낸 예시 주소(한 글자 a, 실제 사람 아님)
   for(const mail of ['a@gmail.com','a@mail.com','a@nike.com','a@ymail.com','a@email.com','a@yahoo.co.jp','a@hotmail.co.uk','a@outlook.kr','a@yahoo.fr','a@company.co.kr'])assert.equal(mailSuggest(mail),'',mail); // 공개허용: 메일 오타 안내 시험의 지어낸 예시 주소(한 글자 a, 실제 사람 아님)
   // 사진 주문의 추천 목록은 두 안이 아니라 첫 장으로 맞춘다(GPT 다시 GA1 · GA2).
-  assert.match(view('more'),/\[k\('느낌'\),photo\?k\('첫 장을 먼저 보여 드리고 맞춰요'\):k\('두 가지 안으로 미리 제안해요'\)\]/);
+  assert.ok(flow.includes("[k('느낌'),win||(photo?k('첫 장을 먼저 보여 드리고 맞춰요'):k('두 가지 안으로 미리 제안해요'))]"));
+  // 이미 고른 느낌 · 과감함 · 목소리 · 화면 글자는 추천 목록에 그대로 보인다(메모가 그대로 옮기므로 — Fable 설계 검토).
+  assert.ok(flow.includes("...(bold?[[k('과감함'),bold.label]]:[]),...(voice?[[k('목소리'),voice.label]]:[]),...(a.screenText?[[k('화면 글자'),a.screenText.split('\\n')[0],true]]:[]),"));
 });
 
 test('every new customer line has its English',()=>{

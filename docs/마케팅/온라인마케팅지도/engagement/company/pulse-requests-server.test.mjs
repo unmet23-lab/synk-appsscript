@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp,mkdir,rename,rm,stat,readdir,utimes,writeFile} from 'node:fs/promises';
+import {readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {createCompanyApp} from './server.mjs';
-import {normalizeRequestAnswers,requestFileKind,validRequestFile,REQUEST_LIMITS,carryToStrategy} from './pulse-requests.mjs';
+import {normalizeRequestAnswers,requestFileKind,validRequestFile,REQUEST_LIMITS,carryToStrategy,finishLines} from './pulse-requests.mjs';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
 const answers=(extra={})=>({name:'오미톡 오미자 스파클링',kind:'food',channels:['shorts'],package:'s15',audience:'운동 끝나고 목마른 20대',oneThing:'한 캔에 맛이 다섯 번 바뀐다',action:'buy',screenText:'다섯 가지 맛, 톡.',avoid:['갈증 해소'],win:'impact',refs:[{url:'https://youtu.be/example',points:['카메라 · 속도'],why:''}],models:['M06'],date:'2026-11-21',approver:'one',contactName:'김합성',company:'합성 음료',email:'buyer@pulse-synthetic.test',consent:true,rights:true,...extra});
@@ -101,6 +102,8 @@ test('three-act finish: only a custom finish carries the end card, the line only
   assert.ok(back.indexOf('여러 명이 확인')>=0&&back.indexOf('여러 명이 확인')<back.indexOf('마무리: 추천대로'),'the finish line follows the older lines');
   // 문구만 적고 마지막 화면은 아직 안 골랐어도 문구는 옮긴다(GPT 다시 GA2). 사진 주문의 추천대로는 마지막 화면 · 문구를 말하지 않는다(GA3).
   assert.match(notes({finish:'custom',endLine:'바다에서도 안심'}),/마지막 화면 문구: 바다에서도 안심/);
+  // 추천대로로 돌아와도 앞서 고른 느낌은 화면 추천 목록에 「고르신 그대로」 보이고, 메모도 그 값을 옮긴다(설계 검토 보완 확인).
+  assert.match(notes({finish:'rec',win:'laugh'}),/무엇으로 이길지: 웃음으로 퍼지게[\s\S]*마무리: 추천대로\(마지막 화면은 로고 \+ 한 줄/);
   const photo=notes({finish:'rec',package:'photo',channels:['store']});
   assert.match(photo,/마무리: 추천대로\(사진은 첫 장을 먼저/);assert.doesNotMatch(photo,/마지막 화면|두 안/);
   assert.doesNotMatch(notes({finish:'custom',package:'photo',channels:['store'],endCard:'line',endLine:'숨은 문구'}),/마지막 화면|숨은 문구/);
@@ -114,6 +117,27 @@ test('three-act finish: only a custom finish carries the end card, the line only
   assert.throws(()=>normalizeRequestAnswers(answers({endLine:'x'.repeat(81)})),{status:400});
   assert.equal(normalizeRequestAnswers(answers({endLine:'x'.repeat(80)})).endLine.length,80);
 });
+test('finish memo lines follow the same rule as the finish screen for every combination',async()=>{
+  // 설계 관문(11-26): 마무리 메모가 화면 규칙을 따로 옮겨 적다 세 회차 P1을 냈다. 메모 줄을 finishLines 하나로 모으고, 화면의 endShown · 추천 목록 원문과 모든 조합을 견준다(Fable 설계 검토 보완).
+  globalThis.location??=new URL('http://localhost/pulse-app/');
+  const {endShown,emptyAnswers,PACKAGES}=await import('./public/pulse-app/request-data.mjs');
+  const flow=readFileSync(new URL('./public/pulse-app/request-flow.mjs',import.meta.url),'utf8');
+  // 서버는 package==='photo'로 사진을 가린다 — 화면의 pkg.photo와 같은 묶음이어야 한다(사진 상품이 늘면 여기서 깨진다).
+  assert.deepEqual(PACKAGES.filter(item=>item.photo).map(item=>item.id),['photo']);
+  // 추천대로의 메모 말은 화면 추천 목록(recList)의 기본값과 한 쌍이다.
+  for(const [screen,memo] of [["[k('마지막 화면'),k('로고 + 한 줄')]",'마지막 화면은 로고 + 한 줄'],["[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]",'문구는 담당자가 써서 미리 보여 드림'],["k('첫 장을 먼저 보여 드리고 맞춰요')",'사진은 첫 장을 먼저 보여 드리고']]){
+    assert.ok(flow.includes(screen),screen);assert.ok(finishLines({package:memo.startsWith('사진')?'photo':'s15',finish:'rec'})[0].includes(memo),memo);
+  }
+  for(const pkg of [...PACKAGES.map(item=>item.id),'ask',''])for(const finish of ['','rec','custom'])for(const endCard of ['','logo','line','info'])for(const endLine of ['','바다에서도 안심']){
+    const a={...emptyAnswers(),package:pkg,finish,endCard,endLine},got=finishLines(a),photo=!!PACKAGES.find(item=>item.id===pkg)?.photo,at=`${pkg}/${finish}/${endCard}/${endLine}`;
+    if(finish==='rec'){assert.deepEqual(got,[photo?'마무리: 추천대로(사진은 첫 장을 먼저 보여 드리고 방향을 맞춤)':'마무리: 추천대로(마지막 화면은 로고 + 한 줄, 문구는 담당자가 써서 미리 보여 드림)'],at);continue;}
+    if(finish!=='custom'){assert.deepEqual(got,[],at);continue;}
+    // 직접: 머리 줄 다음에 옮기는 값은 손님이 확인 단계 요약에서 본 값(endShown)과 같다 — 사진 주문은 둘 다 비어 있다.
+    assert.equal(got[0],'마무리: 직접 고름',at);
+    assert.deepEqual(got.slice(1).map(line=>line.replace(/^마지막 화면(?: 문구)?: /,'')),endShown(a),at);
+  }
+});
+
 test('request tabs: what the customer picked reaches the staff notes, and 「해당 없어요」 adds no line',()=>{
   const notes=extra=>carryToStrategy({revision:1,data:{castingSelection:{modelId:''},channels:[]},request:null,confirmation:null,history:[]},normalizeRequestAnswers(answers(extra)),{at:'2026-11-13T12:00:00.000Z',author:'staff',authorName:'담당자',authorId:'u'}).data.notes;
   const full=notes({win:'laugh',bold:'wild',voice:'none',notice:'alcohol',noticeText:'지나친 음주는 건강에 해롭습니다'});

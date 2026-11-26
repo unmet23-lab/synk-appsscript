@@ -170,6 +170,16 @@ const SENT_KEY='pulse-sent-requests';
 const nameKey=value=>String(value||'').toLowerCase().replace(/[\s·.,'"「」()\-]/g,'');
 function sentBefore(name){const key=nameKey(name);if(key.length<2)return '';try{const hit=(JSON.parse(localStorage.getItem(SENT_KEY)||'[]')||[]).find(item=>item?.key===key);if(!hit)return '';const at=new Date(hit.at);return Number.isFinite(at.getTime())?new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',day:'numeric'}).format(at):'';}catch{return '';}}
 function rememberSent(name,at){const key=nameKey(name);if(key.length<2)return;try{const list=(JSON.parse(localStorage.getItem(SENT_KEY)||'[]')||[]).filter(item=>item?.key!==key);list.unshift({key,at:at||new Date().toISOString()});localStorage.setItem(SENT_KEY,JSON.stringify(list.slice(0,20)));}catch{}}
+// 마무리 「추천대로」의 목록(11-26 세 막, 설계 검토). 맡기는 것은 저희 기본값으로, 손님이 「직접」에서 이미 고른 것(느낌 · 과감함 · 목소리 · 화면 글자)은 「고르신 그대로」 보인다 —
+// 담당자 제작 메모(서버 pulse-requests.mjs finishLines · carryToStrategy)가 그 고름을 그대로 옮기므로, 손님이 본 목록과 메모가 같다. 사진 주문에는 마지막 화면 · 문구가 없고 첫 장으로 맞춘다.
+// 세 번째 칸이 참이면 값은 손님이 쓴 글(번역하지 않는다).
+const recList=(a,photo,ctx={})=>{
+  const win=FEEL_LABELS[a.win],bold=BOLD.find(item=>item.id===a.bold),voice=!photo&&!ctx.hasModel&&VOICES.find(item=>item.id===a.voice);
+  return [...(photo?[]:[[k('마지막 화면'),k('로고 + 한 줄')],[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]]),
+    [k('느낌'),win||(photo?k('첫 장을 먼저 보여 드리고 맞춰요'):k('두 가지 안으로 미리 제안해요'))],
+    ...(bold?[[k('과감함'),bold.label]]:[]),...(voice?[[k('목소리'),voice.label]]:[]),...(a.screenText?[[k('화면 글자'),a.screenText.split('\n')[0],true]]:[]),
+    [k('나올 모델'),a.modelChoice==='persona'?k('내 모델에서 고르신 모델'):a.modelChoice==='custom'?k('요청하신 맞춤 인물'):a.models.length?k('고르신 모델'):k('저희가 골라 먼저 보여 드려요')]];
+};
 const views={
   what(a,step,i,n,ctx={}){
     const group=ctx.group||groupOf(a.kind)?.id||'',guess=ctx.guess||{},product=GROUPS[0];
@@ -211,7 +221,7 @@ const views={
   more(a,step,i,n,ctx={}){
     const photo=!!pkgOf(a)?.photo;
     if(a.finish!=='custom')return ask(step,i,n,t('나머지는 추천대로 할까요?'),t('보내신 뒤에 바꾸셔도 돼요.'),
-      `<dl class="sx-rec" data-in>${[...(photo?[]:[[k('마지막 화면'),k('로고 + 한 줄')],[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]]),[k('느낌'),photo?k('첫 장을 먼저 보여 드리고 맞춰요'):k('두 가지 안으로 미리 제안해요')],[k('나올 모델'),a.modelChoice==='persona'?k('내 모델에서 고르신 모델'):a.modelChoice==='custom'?k('요청하신 맞춤 인물'):a.models.length?k('고르신 모델'):k('저희가 골라 먼저 보여 드려요')]].map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(t(value))}</dd></div>`).join('')}</dl>`+
+      `<dl class="sx-rec" data-in>${recList(a,photo,ctx).map(([key,value,own])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(own?value:t(value))}</dd></div>`).join('')}</dl>`+
       `<button type="button" class="sx-link sx-small" data-do="finish" data-id="custom" data-in>${esc(t('직접 고를게요'))}</button>`+noticeBlock(a));
     const watch=WATCH_WORDS[a.kind]||WATCH_WORDS.brand,ref=a.refs[0]||{url:'',points:[],why:''};
     return ask(step,i,n,t('원하시는 것만 골라 주세요'),t('비워 두신 것은 저희가 골라 보여 드려요.'),
