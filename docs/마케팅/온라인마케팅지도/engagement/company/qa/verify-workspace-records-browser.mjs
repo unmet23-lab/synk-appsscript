@@ -97,6 +97,13 @@ try{
   check('band starts from today and has no rows recorded yet',(await band.locator('h3').textContent())==='오늘 출결'&&await counts()==='0 0 0 0 6',await counts());
   check('row shows the four TOPIK badge states',(await band.locator(`[data-att-row="${A.다솜.id}"] .status-badge`).textContent())==='유효'&&(await band.locator(`[data-att-row="${A.나래.id}"] .status-badge`).textContent())==='90일 안 만료'&&(await band.locator(`[data-att-row="${A.가온.id}"] .status-badge`).textContent())==='30일 안 만료'&&(await band.locator(`[data-att-row="${A.라온.id}"] .status-badge`).first().textContent())==='만료');
   check('streak badge shows on the learner with three straight absences',(await band.locator(`[data-att-row="${A.마루.id}"] .att-streak`).textContent()).includes('3회'));
+  // 상태 없이 메모만 쓴 줄: 「출결 저장」이 켜지고, 누르면 보내지 않고 상태를 먼저 고르라고 알린다.
+  await band.locator(`[data-att-note="${A.가온.id}"]`).fill('병원 들렀다 옴');
+  check('a note without a status enables 「출결 저장」',await band.locator('[data-att-save]').isEnabled());
+  await band.locator('[data-att-save]').click();await band.locator('.att-message',{hasText:'출결 상태를 먼저 골라 주세요'}).waitFor();
+  const [{n:noteOnly}]=await fx.sql`select count(*)::int as n from engine.synk_class_attendance where class_id=${fx.cls.class_id}::uuid and session_date=${d}::date`;
+  check('note-only save sends nothing and moves focus to the status of that learner',noteOnly===0&&await page.evaluate(id=>document.activeElement?.dataset?.learner===id&&document.activeElement?.dataset?.attStatus==='present',A.가온.id),noteOnly);
+  await band.locator(`[data-att-note="${A.가온.id}"]`).fill('');
   await band.locator('[data-att-all]').click();await band.locator(`[data-att-row="${A.마루.id}"] [data-att-status="absent"]`).click();await band.locator(`[data-att-row="${A.다솜.id}"] [data-att-status="late"]`).click();
   await band.locator(`[data-att-note="${A.다솜.id}"]`).fill('버스 지연 10분');
   check('「모두 출석」 fills every shared learner and the exceptions change only those rows',await counts()==='4 1 1 0 0',await counts());
@@ -105,6 +112,9 @@ try{
   const rows=await fx.sql`select learner_id,status,note,revision,recorded_by from engine.synk_class_attendance where class_id=${fx.cls.class_id}::uuid and session_date=${d}::date`;
   check('one batch saved six rows with the teacher as recorder',rows.length===6&&rows.every(r=>r.recorded_by===fx.users.teacher.id&&r.revision===1)&&rows.find(r=>r.learner_id===A.다솜.id)?.note==='버스 지연 10분',rows);
   check('saved rows show who recorded them',(await band.locator(`[data-att-row="${A.마루.id}"] .att-name small`).textContent()).includes('저장'));
+  await band.locator(`[data-att-row="${A.마루.id}"] .att-streak`,{hasText:'4회'}).waitFor();
+  check('after saving, the streak badge in the band follows the new result without reload, and rows stay recordable',(await band.locator(`[data-att-row="${A.마루.id}"] .att-streak`).textContent()).includes('연속 결석 4회')&&await pressed(A.마루.id)==='absent'&&await band.locator('.att-row.is-off').count()===2);
+  check('「모두 출석」 is disabled once every shared learner has a status',await band.locator('[data-att-all]').isDisabled());
   await page.reload();await page.locator('.class-summary').waitFor();await openClass('합성 A반');
   check('after reload the saved statuses are pressed again',await pressed(A.마루.id)==='absent'&&await pressed(A.다솜.id)==='late'&&await pressed(A.가온.id)==='present'&&(await page.locator(`[data-att-note="${A.다솜.id}"]`).inputValue())==='버스 지연 10분');
   check('summary now lists today absence and the four-session streak',(await page.locator('.class-summary .ovs-block',{has:page.locator('h4',{hasText:'오늘 결석'})}).textContent()).includes('마루 · 합성')&&(await page.locator('.class-summary').textContent()).includes('4회 연속'));
@@ -127,7 +137,7 @@ try{
   await page.setViewportSize({width:1440,height:900});await page.locator('.class-summary button',{hasText:'자람 · 합성'}).first().click();await page.locator(`.class-records [data-att-row="${B.자람.id}"].is-focused`).waitFor();
   check('summary name opens class B and focuses that learner row',(await page.locator('.class-records .att-kicker').textContent()).includes('합성 B반')&&await pressed(B.자람.id)==='late');
   await page.locator(`.class-records [data-att-row="${B.자람.id}"]`).scrollIntoViewIfNeeded();await capture('band-focus-1440.png');
-  check('browser has no page errors',report.errors.length===0,report.errors);check('browser has no console errors',report.consoleErrors.length===0,report.consoleErrors);check('all assets load',report.assetErrors.length===0,report.assetErrors);check('no unexpected external requests',report.unexpectedRequests.length===0,report.unexpectedRequests);check('fixture service has no errors',fx.errors.length===0,fx.errors);
+  check('browser has no page errors',report.errors.length===0,report.errors);check('browser has no console errors',report.consoleErrors.length===0,report.consoleErrors);check('all assets load',report.assetErrors.length===0,report.assetErrors);check('no failed API or document responses',report.httpErrors.length===0,report.httpErrors);check('no unexpected external requests',report.unexpectedRequests.length===0,report.unexpectedRequests);check('fixture service has no errors',fx.errors.length===0,fx.errors);
   report.ok=true;
 }catch(error){report.ok=false;report.failure=error.stack;process.exitCode=1;if(page)try{await capture('failure-viewport.png');report.failureText=(await page.locator('body').innerText()).slice(0,8000);}catch{}}
 finally{if(browser)await browser.close();if(company)await company.stop();if(fx)await fx.close();const safe=resolve(dataDir);assert.ok(safe.startsWith(resolve(tmpdir())+sep)&&safe.split(sep).at(-1).startsWith('synk-workspace-records-ui-'));await rm(safe,{recursive:true,force:true});if(previousJobs===undefined)delete process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED;else process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED=previousJobs;await mkdir(out,{recursive:true});await writeFile(join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({ok:report.ok,passed:report.checks.filter(c=>c.ok).length,total:report.checks.length,failure:report.failure?.split('\n').slice(0,4).join(' | '),out}));}

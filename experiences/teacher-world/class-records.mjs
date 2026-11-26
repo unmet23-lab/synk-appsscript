@@ -44,9 +44,11 @@ export function attendanceRows(learners,saved,draft){
   });
 }
 const effective=(l,saved,draft)=>{const old=saved.get(l.id),next=draft.get(l.id);return {status:next?.status??old?.status??null,note:String(next?.note??old?.note??'').trim(),old};};
-export function attendanceDirty(learners,saved,draft){
-  return learners.some(l=>{if(!l.shared||!draft.has(l.id))return false;const {status,note,old}=effective(l,saved,draft);return status!==(old?.status??null)||note!==(old?.note??'');});
-}
+// 「저장 전」 판정과 저장 대상이 함께 쓰는 한 규칙: 공유 학생 줄의 상태나 메모가 저장본과 다르면 바뀐 줄이다.
+const rowChanged=(l,saved,draft)=>{if(!l.shared||!draft.has(l.id))return false;const {status,note,old}=effective(l,saved,draft);return status!==(old?.status??null)||note!==(old?.note??'');};
+export function attendanceDirty(learners,saved,draft){return learners.some(l=>rowChanged(l,saved,draft));}
+// 바뀐 줄인데 상태가 없는 줄(상태 없이 메모만 쓴 줄). 저장하지 않고 상태를 먼저 고르라고 알린다.
+export function attendanceMissingStatus(learners,saved,draft){return learners.filter(l=>rowChanged(l,saved,draft)&&!effective(l,saved,draft).status);}
 export function attendanceCounts(learners,saved,draft){
   const counts={present:0,late:0,absent:0,excused:0,unrecorded:0};
   for(const l of learners.filter(row=>row.shared)){const {status}=effective(l,saved,draft);if(status)counts[status]++;else counts.unrecorded++;}
@@ -75,6 +77,11 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
     sessionDate=result.sessionDate;setSaved(result.attendance);draft=new Map();key=null;message='';
   });
   const save=()=>{
+    const missing=attendanceMissingStatus(model.learners,saved,draft);
+    if(missing.length){
+      message=(missing.length===1?missing[0].name:missing[0].name+' 외 '+(missing.length-1)+'명')+'의 출결 상태를 먼저 골라 주세요. 사유 메모는 상태와 함께 저장돼요.';notice(message,true);
+      paint('[data-att-status="present"][data-learner="'+missing[0].id+'"]');return;
+    }
     const rows=attendanceRows(model.learners,saved,draft);if(!rows.length)return;
     key??=randomKey();const date=sessionDate;
     return run(async current=>{
@@ -91,7 +98,7 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
   };
   const saveTopik=(learnerId,form)=>{
     const kind=form.kind,round=Number(form.round),level=Number(form.level),announcedOn=form.announcedOn;
-    if(!['I','II'].includes(kind)||!Number.isSafeInteger(round)||round<1||round>999||!TOPIK_LEVELS[kind].includes(level)||!dateValue(announcedOn)){message='회차(숫자) · 급수 · 성적 발표일을 확인해 주세요.';paint();return;}
+    if(!['I','II'].includes(kind)||!Number.isSafeInteger(round)||round<1||round>999||!TOPIK_LEVELS[kind].includes(level)||!dateValue(announcedOn)){topikDraft={...form,key:topikDraft?.key??null};message='회차(숫자) · 급수 · 성적 발표일을 확인해 주세요.';paint();return;}
     if(!editing){topikDraft={...form,key:topikDraft?.key||randomKey()};}
     const body=editing?{action:'save',learnerId,id:editing.id,revision:editing.revision,kind,round,level,announcedOn}:{action:'save',learnerId,kind,round,level,announcedOn,idempotencyKey:topikDraft.key};
     return run(async current=>{const result=await call('/api/teacher/topik',body);if(!current())return;const l=learner(learnerId);if(l)l.topik=result.topik;clearTopikForm();message='TOPIK '+kind+' 제'+round+'회 성적을 저장했어요.';notice(message);onSaved();});
@@ -101,7 +108,8 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
     return run(async current=>{const result=await call('/api/teacher/topik',{action:'delete',learnerId,id:record.id,revision:record.revision});if(!current())return;const l=learner(learnerId);if(l)l.topik=result.topik;clearTopikForm();message='TOPIK '+record.kind+' 제'+record.round+'회 성적을 지웠어요.';notice(message);onSaved();});
   };
   function topikPanel(l){
-    const records=list(l.topik?.records),form=editing?{kind:editing.kind,round:editing.round,level:editing.level,announcedOn:editing.announcedOn}:topikDraft||{kind:'II',round:'',level:4,announcedOn:''};
+    // editing은 고치는 원본 성적(머리글에 쓴다)이고, 입력칸 값은 topikDraft에 따로 둔다.
+    const records=list(l.topik?.records),form=topikDraft||(editing?{kind:editing.kind,round:editing.round,level:editing.level,announcedOn:editing.announcedOn}:{kind:'II',round:'',level:4,announcedOn:''});
     const levels=TOPIK_LEVELS[form.kind]||TOPIK_LEVELS.II,max=addDays(model.basisDate,FUTURE_DAYS);
     return '<div class="att-topik-panel" id="att-topik-'+escape(l.id)+'">'
       +(records.length?'<table class="att-topik-table"><caption class="sr-only">'+escape(l.name)+' TOPIK 성적</caption><thead><tr><th scope="col">시험</th><th scope="col">급수</th><th scope="col">발표일</th><th scope="col">유효기간</th><th scope="col"><span class="sr-only">고치기</span></th></tr></thead><tbody>'
@@ -113,15 +121,15 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
         +'<label>회차<span class="att-round"><span aria-hidden="true">제</span><input name="round" type="number" inputmode="numeric" min="1" max="999" step="1" placeholder="105" value="'+escape(form.round)+'"><span aria-hidden="true">회</span></span></label>'
         +'<label>급수<select name="level">'+levels.map(v=>'<option value="'+v+'"'+(Number(form.level)===v?' selected':'')+'>'+levelLabel(v)+'</option>').join('')+'</select></label>'
         +'<label>성적 발표일<input name="announcedOn" type="date" max="'+escape(max)+'" value="'+escape(form.announcedOn)+'"></label>'
-        +'<div class="att-topik-submit"><button class="btn primary small" type="submit"'+(busy?' disabled':'')+'>'+(editing?'고친 내용 저장':'성적 저장')+'</button>'+(editing?'<button type="button" class="btn small quiet" data-att-topik-cancel="'+escape(l.id)+'">고치기 취소</button>':'')+'</div>'
+        +'<div class="att-topik-submit"><button class="btn primary small" type="submit"'+(busy?' disabled':'')+'>'+(editing?'고친 내용 저장':'성적 저장')+'</button>'+(editing?'<button type="button" class="btn small quiet" data-att-topik-cancel="'+escape(l.id)+'" data-learner="'+escape(l.id)+'"'+(busy?' disabled':'')+'>고치기 취소</button>':'')+'</div>'
         +'</fieldset><p class="att-hint">만료일은 성적 발표일로부터 2년 뒤로 자동으로 정해져요. 만료일 당일부터 「만료」로 보여요.</p></form>')
       +'</div>';
   }
   function rowHtml(l){
     if(!l.shared)return '<li class="att-row is-off" data-att-row="'+escape(l.id)+'"><div class="att-name"><strong>'+escape(l.name)+'</strong><small>'+escape(l.sharing==='unconnected'?'계정 연결 전':l.sharing==='revoked'?'연결 해제':'학습 공유 안 함')+' · 출결과 TOPIK을 남기지 않아요</small></div></li>';
-    const {status,note,old}=effective(l,saved,draft),changed=draft.has(l.id)&&(status!==(old?.status??null)||note!==(old?.note??''));
+    const {status,old}=effective(l,saved,draft),changed=rowChanged(l,saved,draft);
     const badge=topikBadge(l.topik?.representative),open=openTopik===l.id,rawNote=draft.get(l.id)?.note??old?.note??'';
-    const meta=(old?escape(old.recordedByName||'선생님')+' · '+escape(savedTime(old.updatedAt))+' 저장':'아직 안 찍음')+(changed?' · <b class="att-changed">저장 전</b>':'');
+    const meta=(old?escape(old.recordedByName||'선생님')+' · '+escape(savedTime(old.updatedAt))+' 저장':'아직 안 찍음')+(changed?' · <b class="att-changed">'+(status?'저장 전':'저장 전 · 출결 상태를 골라 주세요')+'</b>':'');
     return '<li class="att-row'+(focused===l.id?' is-focused':'')+(open?' is-open':'')+'" data-att-row="'+escape(l.id)+'">'
       +'<div class="att-name"><strong>'+escape(l.name)+'</strong><small>'+meta+'</small>'+(l.streak>=3?'<span class="status-badge bad att-streak">연속 결석 '+l.streak+'회</span>':'')+'</div>'
       +'<div class="segmented att-status" role="group" aria-label="'+escape(l.name)+' 출결">'+STATUSES.map(s=>'<button type="button" data-att-status="'+s+'" data-learner="'+escape(l.id)+'" aria-pressed="'+(status===s)+'"'+(busy?' disabled':'')+'>'+STATUS_LABELS[s]+'</button>').join('')+'</div>'
@@ -141,30 +149,33 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
     root.className='class-records';root.setAttribute?.('aria-label','출결과 TOPIK');
     root.innerHTML='<header class="att-head"><div><span class="att-kicker">'+escape(model.name)+'</span><h3>'+(sessionDate===today()?'오늘 출결':escape(sessionDate)+' 출결')+'</h3><p>계정을 잇고 학습 공유를 켠 학생만 찍어요. 저장하면 줄마다 찍은 사람과 시각이 남아요.</p></div>'
       +'<div class="att-controls"><label class="att-date">날짜<input type="date" data-att-date="1" value="'+escape(sessionDate)+'" min="'+escape(addDays(model.basisDate,-PAST_DAYS))+'" max="'+escape(addDays(model.basisDate,FUTURE_DAYS))+'"'+(busy?' disabled':'')+'></label>'
-      +'<button type="button" class="btn" data-att-all="1"'+(busy||!people?' disabled':'')+'>모두 출석</button><button type="button" class="btn primary" data-att-save="1"'+(busy||!dirty?' disabled':'')+'>출결 저장</button></div></header>'
+      +'<button type="button" class="btn" data-att-all="1"'+(busy||!counts.unrecorded?' disabled':'')+'>모두 출석</button><button type="button" class="btn primary" data-att-save="1"'+(busy||!dirty?' disabled':'')+'>출결 저장</button></div></header>'
       +'<p class="att-counts" role="status" aria-live="polite">'+STATUSES.map(s=>'<span>'+STATUS_LABELS[s]+' <b>'+counts[s]+'</b></span>').join('')+'<span>아직 <b>'+counts.unrecorded+'</b></span><span class="att-basis">TOPIK 만료 기준일 '+escape(model.basisDate)+'</span></p>'
       +(message?'<p class="att-message">'+escape(message)+'</p>':'')
       +(model.capacityReached?'<p class="att-message">이 반의 출결 기록이 가득 찼어요. 이미 찍은 날은 고칠 수 있어요.</p>':'')
       +(people?'':'<p class="att-empty">아직 학습 공유를 켠 학생이 없어요. 학생이 SYNK 계정을 잇고 공유를 켜면 여기서 출결을 찍을 수 있어요.</p>')
       +'<ul class="att-roster">'+model.learners.map(rowHtml).join('')+'</ul>';
-    if(keep)root.querySelector?.(keep)?.focus?.();
+    if(keep)focusFirst(keep);
   }
+  // 비활성 단추로는 초점을 보내지 않는다(보내면 초점이 문서 처음으로 빠진다).
+  function focusFirst(...selectors){for(const selector of selectors){const element=selector&&root.querySelector?.(selector);if(element&&!element.disabled){element.focus?.();return;}}}
   const formValues=form=>({kind:form.elements.kind.value,round:form.elements.round.value,level:form.elements.level.value,announcedOn:form.elements.announcedOn.value});
   function onClick(event){
     const button=event.target.closest?.('button');if(!button||button.disabled||!model||root.contains&&!root.contains(button))return;
     const id=button.dataset.learner;
     if(button.dataset.attStatus){if(!learner(id)?.shared)return;draft.set(id,{...(draft.get(id)||{}),status:button.dataset.attStatus});key=null;message='';paint('[data-att-status="'+button.dataset.attStatus+'"][data-learner="'+id+'"]');return;}
-    if(button.dataset.attAll){for(const l of shared())if(!effective(l,saved,draft).status)draft.set(l.id,{...(draft.get(l.id)||{}),status:'present'});key=null;message='';paint('[data-att-save]');return;}
+    if(button.dataset.attAll){const empty=shared().filter(l=>!effective(l,saved,draft).status);if(!empty.length)return;for(const l of empty)draft.set(l.id,{...(draft.get(l.id)||{}),status:'present'});key=null;message='';paint('[data-att-save]');return;}
     if(button.dataset.attSave){void save();return;}
     if(button.dataset.attTopikOpen){const next=openTopik===button.dataset.attTopikOpen?null:button.dataset.attTopikOpen;if(topikTouched&&!confirm('넣던 TOPIK 성적이 닫혀요. 닫을까요?'))return;openTopik=next;clearTopikForm();paint('[data-att-topik-open="'+button.dataset.attTopikOpen+'"]');return;}
-    if(button.dataset.attTopikEdit){const record=list(learner(id)?.topik?.records).find(r=>r.id===button.dataset.attTopikEdit);if(!record)return;editing={...record};topikTouched=false;paint();root.querySelector?.('[data-att-topik-form="'+id+'"] input[name="round"]')?.focus?.();return;}
-    if(button.dataset.attTopikCancel){clearTopikForm();paint('[data-att-topik-open="'+id+'"]');return;}
+    if(button.dataset.attTopikEdit){const record=list(learner(id)?.topik?.records).find(r=>r.id===button.dataset.attTopikEdit);if(!record)return;clearTopikForm();editing={...record};paint();root.querySelector?.('[data-att-topik-form="'+id+'"] input[name="round"]')?.focus?.();return;}
+    // 취소하면 고치기를 연 그 성적의 「고치기」 단추로 돌아간다. 그 줄이 없으면 학생의 「TOPIK」 단추로.
+    if(button.dataset.attTopikCancel){const record=editing;clearTopikForm();paint();focusFirst(record&&'[data-att-topik-edit="'+record.id+'"][data-learner="'+id+'"]','[data-att-topik-open="'+id+'"]');return;}
     if(button.dataset.attTopikDelete){const record=list(learner(id)?.topik?.records).find(r=>r.id===button.dataset.attTopikDelete);if(record)void removeTopik(id,record);}
   }
   function onInput(event){
     const input=event.target;if(!model)return;
     if(input.dataset?.attNote){const id=input.dataset.attNote;draft.set(id,{...(draft.get(id)||{}),note:String(input.value).slice(0,NOTE_LIMIT)});key=null;const button=root.querySelector?.('[data-att-save]');if(button)button.disabled=busy||!attendanceDirty(model.learners,saved,draft);return;}
-    if(input.form?.dataset?.attTopikForm){const values=formValues(input.form);if(editing)editing={...editing,...values};else topikDraft={...values,key:null};topikTouched=true;}
+    if(input.form?.dataset?.attTopikForm){topikDraft={...formValues(input.form),key:null};topikTouched=true;}
   }
   function onChange(event){
     const input=event.target;if(!model)return;
@@ -174,7 +185,7 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
       if(attendanceDirty(model.learners,saved,draft)&&!confirm('저장하지 않은 출결이 있어요. 다른 날짜로 넘어갈까요?')){input.value=sessionDate;return;}
       void loadDay(input.value);return;
     }
-    if(input.dataset?.attTopikKind){const values=formValues(input.form),levels=TOPIK_LEVELS[values.kind],next={...values,level:levels.includes(Number(values.level))?values.level:String(levels[0])};if(editing)editing={...editing,...next};else topikDraft={...next,key:null};topikTouched=true;paint('[data-att-topik-kind="'+input.dataset.attTopikKind+'"]');}
+    if(input.dataset?.attTopikKind){const values=formValues(input.form),levels=TOPIK_LEVELS[values.kind],next={...values,level:levels.includes(Number(values.level))?values.level:String(levels[0])};topikDraft={...next,key:null};topikTouched=true;paint('[data-att-topik-kind="'+input.dataset.attTopikKind+'"]');}
   }
   function onSubmit(event){const form=event.target;if(!form.dataset?.attTopikForm||!model)return;event.preventDefault();void saveTopik(form.dataset.attTopikForm,formValues(form));}
   root.addEventListener?.('click',onClick);root.addEventListener?.('input',onInput);root.addEventListener?.('change',onChange);root.addEventListener?.('submit',onSubmit);
@@ -188,6 +199,16 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
       // 서버의 오늘(서울)과 이 기기의 오늘이 다르면 이 기기의 날짜로 다시 받는다(학원 현지 날짜).
       if(first&&today()!==sessionDate&&inRange(today()))void loadDay(today());
       return true;
+    },
+    // 저장 뒤 새로 받은 반 자료(교사 개요나 반 응답)로 학생 줄의 파생 표시(연속 결석 · TOPIK 배지 · 공유 상태)만 바꾼다.
+    // 고른 날짜 · 저장본 · 고르던 내용은 그대로 둔다. 달라진 것이 없으면 다시 그리지 않는다(입력 중인 칸을 건드리지 않게).
+    refresh(workspace){
+      if(stopped||!model)return false;const next=classRecordsModel(workspace,model.classId);if(!next)return false;
+      const shape=m=>JSON.stringify([m.name,m.basisDate,m.capacityReached,m.learners.map(l=>[l.id,l.name,l.shared,l.sharing,l.streak,l.topik])]);
+      if(shape(next)===shape(model))return false;
+      model={...model,name:next.name||model.name,basisDate:next.basisDate,capacityReached:next.capacityReached,learners:next.learners};
+      if(openTopik&&!learner(openTopik)?.shared){openTopik=null;clearTopikForm();}
+      paint();return true;
     },
     focus(learnerId){if(!model)return;focused=learnerId;paint();root.querySelector?.('[data-att-row="'+learnerId+'"]')?.scrollIntoView?.({block:'nearest',behavior:'instant'});},
     hasDraft:()=>!!model&&(attendanceDirty(model.learners,saved,draft)||topikTouched),

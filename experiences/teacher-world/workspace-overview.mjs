@@ -69,7 +69,7 @@ function summaryBlock(title,count,rows,empty){const shown=rows.slice(0,6),rest=r
 export function classSummaryHtml(data,model,{unavailable=false}={}){
   const s=classSummaryModel(data,model);if(!s)return '';
   const absent=[...s.absent.map(row=>summaryButton(row,'결석'+(row.note?' · '+row.note:''),unavailable)),...s.late.map(row=>summaryButton(row,'지각'+(row.note?' · '+row.note:''),unavailable))];
-  return '<section class="class-summary" aria-label="담당 반 요약"><header><div><h3>담당 반 요약</h3><p>계정을 잇고 학습 공유를 켠 학생만 셉니다. TOPIK 성적은 발표일로부터 2년 뒤에 만료돼요.</p></div><span class="ovs-basis">기준일 '+escape(s.basisDate||'확인 필요')+'</span></header><div class="ovs-grid">'
+  return '<section class="class-summary" aria-label="담당 반 요약"><header><div><h3>담당 반 요약</h3><p>계정을 잇고 학습 공유를 켠 학생만 세어요. TOPIK 성적은 발표일로부터 2년 뒤에 만료돼요.</p></div><span class="ovs-basis">기준일 '+escape(s.basisDate||'확인 필요')+'</span></header><div class="ovs-grid">'
     +summaryBlock('오늘 결석 · 지각',s.absent.length+s.late.length,absent,s.recorded?'오늘 찍은 출결에 결석 · 지각이 없어요.':'오늘 출결을 아직 찍지 않았어요.')
     +summaryBlock('최근 수업 3회 연속 결석',s.streaks.length,s.streaks.map(row=>summaryButton(row,row.count+'회 연속 · '+row.since+'부터',unavailable)),'연속 결석인 학생이 없어요.')
     +summaryBlock('TOPIK 만료 90일 안 · 만료',s.expiring.length+s.expired.length,[...s.expiring.map(row=>summaryButton(row,topikText(row)+' · '+TOPIK_STATE[row.state]+' · D-'+row.daysLeft,unavailable)),...s.expired.map(row=>summaryButton(row,topikText(row)+' · '+row.expiresOn+' 만료',unavailable))],'90일 안에 만료되는 성적이 없어요.')

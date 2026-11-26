@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {startTeacherClient} from '../src/teacher-session.mjs';
 import {createTeacherWorkspace} from '../src/teacher-workspace.mjs';
+import {localDate} from '../../teacher-world/class-records.mjs';
 
 class Node {
   constructor(tag='div'){this.tagName=tag;this.children=[];this.hidden=false;this.disabled=false;this.value='';}
@@ -57,8 +58,10 @@ test('late login response cannot restore a replaced account or a stopped page',a
   const pending=deferred(),p=await session(t,{authSignIn:()=>pending.promise});await p.start;const login=p.get('connect').onclick();p.emit(signed('replacement',2));await settle();pending.resolve(signed('old',1));await login;assert.equal(p.scopes.length,2);assert.equal(p.scopes[1].stopped,false);
   p.events.get('pagehide')();p.emit(signed('after-close',3));await settle();assert.equal(p.scopes.length,2);assert.equal(p.scopes[1].stopped,true);
 });
-function classroom(t){const page=dom(),root=new Node(),calls=[],notices=[];let rows=[{id:'a',name:'A',role:'teacher'}],reply=null,overviewReply=null,learnerRows={},snapshotRows={},workspaceHold=null,hold=null;
-  const workspace=createTeacherWorkspace({...page,root,guard(){},notice:(...args)=>notices.push(args),locationHref:'http://localhost/synk-account/teacher.html',pollMs:100000,transport:async(operation,params)=>{calls.push([operation,params]);if(operation==='classes'){if(hold)return hold.promise;if(reply)throw reply;return {mode:'account-linked',classes:rows};}if(operation==='teacherOverview'){if(overviewReply)throw overviewReply;return {mode:'account-linked',classes:rows.map(row=>({...row,learners:learnerRows[row.id]||[]})),care:[],assignments:[]};}if(operation==='workspace'&&workspaceHold){const pending=workspaceHold;workspaceHold=null;return pending.promise;}return {mode:'account-linked',classes:[{id:params.classId,learners:snapshotRows[params.classId]||[]}]};}});
+// handlers: 조작 이름별로 답을 바꾼다. createElement: 화면 요소를 바꿔 끼운다(띠의 스크롤 순서를 잴 때).
+function classroom(t,{handlers={},createElement}={}){const page=dom(),root=new Node(),calls=[],notices=[];let rows=[{id:'a',name:'A',role:'teacher'}],reply=null,overviewReply=null,learnerRows={},snapshotRows={},workspaceHold=null,hold=null;
+  if(createElement)page.documentObject.createElement=createElement;
+  const workspace=createTeacherWorkspace({...page,root,guard(){},notice:(...args)=>notices.push(args),locationHref:'http://localhost/synk-account/teacher.html',pollMs:100000,transport:async(operation,params)=>{calls.push([operation,params]);if(handlers[operation])return handlers[operation](params);if(operation==='classes'){if(hold)return hold.promise;if(reply)throw reply;return {mode:'account-linked',classes:rows};}if(operation==='teacherOverview'){if(overviewReply)throw overviewReply;return {mode:'account-linked',classes:rows.map(row=>({...row,learners:learnerRows[row.id]||[]})),care:[],assignments:[]};}if(operation==='workspace'&&workspaceHold){const pending=workspaceHold;workspaceHold=null;return pending.promise;}return {mode:'account-linked',classes:[{id:params.classId,learners:snapshotRows[params.classId]||[]}]};}});
   t.after(()=>workspace.stop());return {...page,root,workspace,calls,notices,rows:value=>rows=value,learners:value=>learnerRows=value,snapshots:value=>snapshotRows=value,workspaceHold:value=>workspaceHold=value,error:value=>reply=value,overviewError:value=>overviewReply=value,hold:value=>hold=value};
 }
 
@@ -182,6 +185,28 @@ test('an overview that still lags behind a withdrawal the frame already applied 
   const host=page.windowObject.SYNKClassroomHost;page.snapshots({a:[after]});assert.equal((await host.request('/api/workspace')).classes[0].learners[0].sharing.revision,3);
   const pending=deferred();page.workspaceHold(pending);const stale=host.request('/api/workspace');
   pending.resolve({mode:'account-linked',classes:[{id:'a',learners:[before]}]});await assert.rejects(stale,{code:'CLASSROOM_SNAPSHOT_CHANGED'});
+});
+
+// 반 「오늘 출결」 띠(teacher-world/class-records.mjs)를 단 반.
+const today=localDate();
+const bandLearner=(id,streak=0)=>({...privacyLearner(id),topik:{shared:true,basisDate:today,records:[],representative:null,validLevel4:false,recordLimit:20,capacityReached:false},absentStreak:streak});
+const bandClass=(id,learners)=>({id,name:'A',role:'teacher',learners,attendance:{basisDate:today,sessionDate:today,rows:[],counts:{},recentDates:[],streaks:[]}});
+const bandHandlers=learners=>({teacherOverview:()=>({mode:'account-linked',classes:[bandClass('a',learners())],care:[],assignments:[]}),workspace:({classId})=>({mode:'account-linked',classes:[bandClass(classId,learners())]})});
+test('saving attendance refreshes the streak badge in the open band from the new overview, without reopening the class',async t=>{
+  let streak=3;const saves=[];
+  const page=classroom(t,{handlers:{...bandHandlers(()=>[bandLearner('student-a',streak)]),attendanceSave:({body})=>{saves.push(body);if(body.action==='save')streak=0;
+    return {mode:'account-linked',sessionDate:body.sessionDate,attendance:body.action==='save'?body.rows.map(row=>({...row,sessionDate:body.sessionDate,revision:1,recordedByName:'교사',updatedAt:new Date().toISOString()})):[]};}}});
+  await page.workspace.load();const band=page.root.children[3].children[0],host=page.windowObject.SYNKClassroomHost;assert.match(band.innerHTML,/연속 결석 3회/);
+  const press=dataset=>band.listeners.get('click')({target:{closest:()=>({disabled:false,dataset})}});
+  press({attStatus:'present',learner:'student-a'});press({attSave:'1'});await settle();
+  assert.equal(saves.filter(body=>body.action==='save').length,1);assert.doesNotMatch(band.innerHTML,/연속 결석/);
+  assert.match(band.innerHTML,/data-att-status="present" data-learner="student-a" aria-pressed="true"/);assert.equal(page.windowObject.SYNKClassroomHost,host,'the class stays open');
+});
+test('picking a student in the class already open scrolls to the band first and leaves the view on that student row',async t=>{
+  const order=[],createElement=tag=>{const node=new Node(tag);node.scrollIntoView=()=>order.push(tag==='div'?'mount':tag);if(tag==='section')node.querySelector=selector=>selector.startsWith('[data-att-row=')?{scrollIntoView:()=>order.push('row')}:null;return node;};
+  const page=classroom(t,{createElement,handlers:bandHandlers(()=>[bandLearner('student-a'),bandLearner('student-b')])});
+  await page.workspace.load();assert.ok(page.root.children[3].children[0].innerHTML.includes('오늘 출결'));order.length=0;
+  await selectOverview(page,'student-b');assert.deepEqual(order,['mount','row']);assert.deepEqual(page.windowObject.SYNKClassroomSelection,{classId:'a',learnerId:'student-b'});
 });
 
 test('two real sixteen-member classes open together and selecting one student preserves a single class-scoped detail',async t=>{
