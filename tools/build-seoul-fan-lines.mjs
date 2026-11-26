@@ -16,9 +16,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const DESTINATION = path.join(ROOT, 'experiences/seoul-arrival/fan-lines.mjs');
 export const MAX_LINES = 10;
 
-// 잠시 따로 두는 글(11-26): Vellum 몽골어 scene.lines는 줄 수를 횟수로 말해 사실과 다르다(Atlas 검수 atlas-53-fan-text-20261125 GA1). 원천은 talk 배포가 끝날 때까지
-// 얼어 있어서(Atlas 4c 세션) 서울행에 내는 글만 여기서 바로잡는다. 수를 센 꼴은 채점에서 어색해 수를 뺐다. 원천을 같은 글로 고치면 이 칸을 비운다.
-export const HOLD = Object.freeze({ mn: Object.freeze({ 'scene.lines': 'Та дүрийнхээ үгийг чангаар хэлж үзлээ.' }) });
+// 잠시 따로 두는 글 — Vellum 원천을 바로 고칠 수 없을 때만 { 언어: { 종류: 글 } }로 쓴다. 지금은 없다(몽골어 scene.lines는 11-26에 원천을 같은 글로 고쳤다).
+export const HOLD = Object.freeze({});
 
 // [열쇠, 이유] — 생성 파일의 fanLine이 같은 열쇠를 이유에서 다시 짓는다.
 export function fanRows() {

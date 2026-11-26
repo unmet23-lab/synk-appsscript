@@ -1348,18 +1348,18 @@
     },
     "topik-items.ti-l-e-019.v1": {
       "units": [
-        "ko.word.w1465",
+        "ko.word.w2006",
         "ko.word.w0153"
       ],
       "by": "product",
       "review": {
-        "rubric": "atlas-tags-r1",
-        "packet": "tags-a",
-        "first": "fix",
+        "rubric": "atlas-tags-r2",
+        "packet": "atlas-53fix-tags-20261126c",
+        "first": "pass",
         "second": "fix",
         "verdict": "fixed",
-        "judge": "2차 — 「차가 고장 났어요」를 정답 「차에 문제가 생겨서」와 잇는 고장·문제. ①(길이 막혀서)은 앞의 「아니요」로 걸러져 -(으)ㄴ/는데는 꼭 필요하지 않음",
-        "at": "2026-11-10"
+        "judge": "정답을 가르는 말은 들려준 「고장(나다)」(故障)이다. 이 문항을 놓치는 학생은 대개 고장을 못 알아들은 학생이라 r2 2대로 이번 판에 더한 w2006(고장11)을 주 단위로 둔다. 정답 보기 「차에 문제가 생겨서」의 「문제」(w0153)는 보기를 알아보는 데 드는 말이라 둘째로 그대로 둔다(설계 주인 11-26 10시 — 「정답 보기의 말이라 그대로 둡니다」). 1차 Opus는 대본과 보기를 잇는 「문제」를 주 단위로 보고 통과시켰으나, 그러면 문제를 아는 학생이 고장을 못 알아들어 놓친 답이 문제에 적힌다(검수 atlas-53fix-engine-20261126 GPT GA2). 2차 카본은 [w2006, w0153]으로 고쳤다.",
+        "at": "2026-11-26"
       }
     },
     "topik-items.ti-l-e-020.v1": {
@@ -3633,16 +3633,16 @@
       "units": [
         "ko.grammar.S466",
         "ko.word.w0174",
-        "ko.grammar.S314"
+        "ko.grammar.S367"
       ],
       "by": "draft:opus",
       "review": {
         "rubric": "atlas-tags-r2",
-        "packet": "g4-a-t2",
-        "first": "pass",
-        "second": "pass",
-        "verdict": "pass",
-        "at": "2026-11-20"
+        "packet": "atlas-53fix-tags-20261126",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-25"
       }
     },
     "topik-items.tii-g4-a-085.v1": {
@@ -5107,16 +5107,16 @@
     "topik-items.tii-l-b-009.v1": {
       "units": [
         "ko.word.w1261",
-        "ko.word.w1465"
+        "ko.grammar.G304"
       ],
       "by": "draft:opus",
       "review": {
-        "rubric": "atlas-tags-r1",
-        "packet": "tags-a",
+        "rubric": "atlas-tags-r2",
+        "packet": "atlas-53fix-tags-20261126c",
         "first": "pass",
         "second": "pass",
         "verdict": "pass",
-        "at": "2026-11-10"
+        "at": "2026-11-26"
       }
     },
     "topik-items.tii-l-b-010.v1": {

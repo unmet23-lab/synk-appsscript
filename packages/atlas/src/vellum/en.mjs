@@ -93,8 +93,9 @@ export const EN = Object.freeze({
       ? `It’s been ${days(s.days)} since you last saw ‘${name}’. Let’s review it once more before it fades.`
       : `You saw ‘${name}’ earlier today. Let’s review it once more before it fades.`,
   ),
-  // relearn(다시 배우기)의 줄은 세 겹 대조 전까지 없다 — 언어는 물러서지 않는다(null).
-  'unit.new': one((s, name) => (s.relearn ? null : `Seeing ‘${name}’ for the first time.`)),
+  'unit.new': one((s, name) =>
+    s.relearn ? `Relearning ‘${name}’ from scratch.` : `Seeing ‘${name}’ for the first time.`,
+  ),
   'skill.up': one(
     (s, name) =>
       `${name}: you got it right on your own ${times(s.streak)} in a row. Let’s step it up a level.`,
@@ -107,10 +108,9 @@ export const EN = Object.freeze({
     (s, name) =>
       `You missed ${s.misses} in a row. Let’s catch our breath with ‘${name}’, one you know well.`,
   ),
-  // left(돌아온 것이 남음)의 줄은 세 겹 대조 전까지 없다(null).
   idle: one(s =>
     s.left
-      ? null
+      ? 'That’s all we’ll review this round. We’ll save the rest for next time.'
       : 'You’ve covered everything due for review today. Let’s keep things light from here.',
   ),
   'day.capped': one(() => 'That’s it for today. We’ll save the rest for tomorrow.'),

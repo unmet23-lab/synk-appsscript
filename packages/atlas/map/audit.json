@@ -1,9 +1,9 @@
 {
-  "edition": 5,
-  "hash": "00e62627231c5d4e",
+  "edition": 6,
+  "hash": "e30e6142c93162f6",
   "onlyItemByKind": {
-    "grammar": 23,
-    "word": 1586,
+    "grammar": 22,
+    "word": 1590,
     "life": 2
   },
   "onlyItem": [
@@ -22,7 +22,6 @@
     "ko.grammar.S222",
     "ko.grammar.S224",
     "ko.grammar.S303",
-    "ko.grammar.S314",
     "ko.grammar.S320",
     "ko.grammar.S323",
     "ko.grammar.S337",
@@ -178,6 +177,7 @@
     "ko.word.w0284",
     "ko.word.w0285",
     "ko.word.w0286",
+    "ko.word.w0287",
     "ko.word.w0288",
     "ko.word.w0289",
     "ko.word.w0290",
@@ -1121,6 +1121,7 @@
     "ko.word.w1462",
     "ko.word.w1463",
     "ko.word.w1464",
+    "ko.word.w1465",
     "ko.word.w1466",
     "ko.word.w1468",
     "ko.word.w1469",
@@ -1617,7 +1618,9 @@
     "ko.word.w1999",
     "ko.word.w2000",
     "ko.word.w2001",
-    "ko.word.w2002"
+    "ko.word.w2002",
+    "ko.word.w2006",
+    "ko.word.w2007"
   ],
   "oneFamily": [
     "ko.life.cafe-add",
@@ -1632,7 +1635,7 @@
   ],
   "noItem": {
     "grammar": {
-      "count": 75,
+      "count": 76,
       "units": [
         "ko.grammar.G412",
         "ko.grammar.G603",
@@ -1669,6 +1672,7 @@
         "ko.grammar.S311",
         "ko.grammar.S312",
         "ko.grammar.S313",
+        "ko.grammar.S314",
         "ko.grammar.S315",
         "ko.grammar.S316",
         "ko.grammar.S317",

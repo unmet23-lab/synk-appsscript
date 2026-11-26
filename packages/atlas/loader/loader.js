@@ -64,20 +64,24 @@
 
   const baseOf = edition => {
     const script = scope.document && scope.document.currentScript;
-    const from =
-      script && script.src
-        ? script.src
-        : scope.location
-          ? new URL('/atlas/loader.js', scope.location.href).href
-          : null;
-    return from ? new URL(`./${edition}/`, from).href : null;
+    try {
+      const from =
+        script && script.src
+          ? script.src
+          : scope.location
+            ? new URL('/atlas/loader.js', scope.location.href).href
+            : null;
+      return from ? new URL(`./${edition}/`, from).href : null;
+    } catch {
+      return null;
+    }
   };
 
   const above = ancestor();
   const conflicts =
     above && above.edition !== EDITION ? [{ edition: EDITION, where: 'ancestor' }] : [];
   const edition = above ? above.edition : EDITION;
-  const base = above ? above.base : baseOf(edition);
+  const base = (above && above.base) || baseOf(edition);
 
   let pending = null;
   const load = (timeoutMs = TIMEOUT_MS) => {

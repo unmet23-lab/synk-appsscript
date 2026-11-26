@@ -259,6 +259,30 @@ export function createCoach(options = {}) {
   assert.equal(left.disposed, true, '닫은 화면의 코치도 닫는다');
 });
 
+test('주소로 삼을 수 없는 문서(srcdoc · about:blank)에서 모듈로 받아도 입구는 서고, 부를 때 LOAD_FAILED(NO_BASE)로 거절한다', async () => {
+  for (const href of ['about:srcdoc', 'about:blank', 'data:text/html,x']) {
+    const context = documentContext();
+    context.location = { href };
+    const atlas = runClassic(context, withEdition('5.0.0'));
+    assert.equal(atlas.base, null, href);
+    await assert.rejects(
+      atlas.coach().ready,
+      error => error.code === 'LOAD_FAILED' && error.reason === 'NO_BASE',
+      href,
+    );
+  }
+});
+
+test('위 창이 주소로 삼을 수 없는 문서(srcdoc)라 판 주소가 비었으면, 틀 안의 입구는 위 창의 판 이름을 따르되 주소는 자기 입구 옆에서 구한다(GPT GA5)', () => {
+  const top = documentContext({ location: 'about:srcdoc' });
+  runClassic(top, withEdition('1.0.0'));
+  assert.equal(top.SynkAtlas.base, null);
+  const frame = documentContext({ scriptSrc: 'https://synk.im/atlas/loader.js', parent: top });
+  const atlas = runClassic(frame, withEdition('1.1.0'));
+  assert.equal(atlas.edition, '1.0.0');
+  assert.equal(atlas.base, 'https://synk.im/atlas/1.0.0/');
+});
+
 test('판 주소를 정할 수 없으면(문서도 주소도 없음) LOAD_FAILED(NO_BASE)', async () => {
   const atlas = runClassic(documentContext(), withEdition('5.0.0'));
   assert.equal(atlas.base, null);

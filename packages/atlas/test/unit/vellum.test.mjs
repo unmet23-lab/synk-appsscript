@@ -72,26 +72,53 @@ function cases() {
   return out;
 }
 
-test('한국어 기능 글은 reasonLine과 같다 — 다른 것은 받침 뒤의 「으로」 하나', () => {
+test('한국어 기능 글은 reasonLine과 같다 — 받침 뒤의 「으로」까지(5-3 ① 앞 검수 C1)', () => {
   let checked = 0;
   for (const row of cases()) {
     const names = row.id ? { [row.id]: row.name } : {};
     const mine = render({ code: row.code, slots: row.slots }, { label: labelOf(names) });
     const theirs = reasonLine({ code: row.code, slots: row.slots }, labelOf(names));
-    const final = finalOf(row.name);
-    if (row.code === 'pace.breather' && final !== 0 && final !== 8) {
-      assert.equal(mine, theirs.replace(`「${row.name}」로`, `「${row.name}」으로`), row.name);
-      assert.notEqual(mine, theirs);
-    } else assert.equal(mine, theirs, `${row.code} · ${row.name}`);
+    assert.equal(mine, theirs, `${row.code} · ${row.name}`);
+    if (row.code === 'pace.breather') {
+      const final = finalOf(row.name);
+      assert.ok(
+        mine.includes(`「${row.name}」${final === 0 || final === 8 ? '로' : '으로'} 숨을`),
+        row.name,
+      );
+    }
     checked += 1;
   }
   assert.ok(checked > 80);
 });
 
 // 말하지 않는 종류(제품 순서 host.order)는 이유 종류이지만 문장이 없다 — 이 시험은 말하는 종류만 본다(단계 4 §20-6의 4 · 설계 검토 H17).
-// 5-3 전 고침 GB3 · GB4(설계 주인 11-25): 돌아온 말이 남은 채우기(idle의 left)와 다시 배우기(unit.new의 relearn)는 한국어 줄만 있다.
-// 영어 · 몽골어 줄은 세 겹 대조 전까지 없고(null), 언어는 물러서지 않는다. 근거 칸이 없는 줄은 지금 문장 그대로다.
-test('돌아온 말이 남은 채우기 · 다시 배우기 — 한국어는 정한 문장, 영어 · 몽골어는 세 겹 대조 전까지 null(5-3 전 고침 GB3 · GB4)', () => {
+// 5-3 전 고침 GB3 · GB4(설계 주인 11-25): 돌아온 말이 남은 채우기(idle의 left)와 다시 배우기(unit.new의 relearn). 영어 두 줄과 몽골어 left 줄은
+// 카본 채점 · 맞춤법 · 직역 역번역으로 확인한 문장을 11-26에 넣었다(유호님 「고치고 올려」). 몽골어 relearn 줄은 B 켜기 전 원어민 확인으로
+// 채운다(null — 검수 atlas-53fix-engine-20261126b · -c, 설계 주인 11-26). 문장이 없으면 WORLD 홈이 이유 아랫줄 없이 줄을 세운다.
+// 근거 칸이 없는 줄은 앞 문장이거나 그 줄의 지금 문장이다.
+// 몽골어 새 말 · 쉼은 확인을 마친 문장 그대로다(카본 채점 · 맞춤법 · 직역 역번역 — 11-26). 쉼은 이어서 놓친 수를 그대로 말한다
+// (5-3 ① 엔진 고침 검수 GPT GA6 — 두 문장을 앞 판으로 되돌리거나 수를 고정한 사본을 이 시험이 잡는다).
+test('몽골어 새 말 · 쉼 — 확인한 문장 그대로이고, 쉼은 세 언어 모두 이어서 놓친 수를 그대로 말한다', () => {
+  assert.equal(
+    render({ code: 'unit.new', slots: { unit: 'u1' } }, { lang: 'mn', label }),
+    'Шинээр үзэх үг хэллэг: «이름:u1».',
+  );
+  for (const misses of [2, 3, 7]) {
+    assert.equal(
+      render({ code: 'pace.breather', slots: { unit: 'u1', misses } }, { lang: 'mn', label }),
+      `Сайн мэддэг үг хэллэг: «이름:u1». Дараалан ${misses} удаа алдсан тул үүнийг давтаад түр амсхийе.`,
+    );
+    for (const lang of ['ko', 'en'])
+      assert.ok(
+        render({ code: 'pace.breather', slots: { unit: 'u1', misses } }, { lang, label }).includes(
+          String(misses),
+        ),
+        `${lang} 쉼 · ${misses}`,
+      );
+  }
+});
+
+test('돌아온 말이 남은 채우기 · 다시 배우기 — 세 언어의 정한 문장(5-3 전 고침 GB3 · GB4)', () => {
   const left = { code: 'idle', slots: { left: true } };
   const relearn = { code: 'unit.new', slots: { unit: 'u1', relearn: true } };
   assert.equal(
@@ -107,9 +134,24 @@ test('돌아온 말이 남은 채우기 · 다시 배우기 — 한국어는 정
     render({ code: 'unit.new', slots: { unit: 'u1' } }, { label }),
     '「이름:u1」 처음 만나요.',
   );
+  const SAID = {
+    en: [
+      'That’s all we’ll review this round. We’ll save the rest for next time.',
+      'Relearning ‘이름:u1’ from scratch.',
+    ],
+    mn: [
+      'Давтах ёстой үг хэллэгээ энэ удаад энд хүргээд өндөрлөе. Үлдсэнийг нь дараагийн удаа давтъя.',
+      null, // 몽골어 다시 배우기 줄은 B 켜기 전 원어민 확인으로 채운다(설계 주인 11-26)
+    ],
+  };
   for (const lang of ['en', 'mn']) {
-    assert.equal(render(left, { lang, label }), null, `${lang} idle left`);
-    assert.equal(render(relearn, { lang, label }), null, `${lang} unit.new relearn`);
+    assert.equal(render(left, { lang, label }), SAID[lang][0], `${lang} idle left`);
+    assert.equal(render(relearn, { lang, label }), SAID[lang][1], `${lang} unit.new relearn`);
+    assert.notEqual(
+      render(relearn, { lang, label }),
+      render({ code: 'unit.new', slots: { unit: 'u1' } }, { lang, label }),
+      `${lang} 다시 배우기와 첫 만남이 갈린다`,
+    );
     assert.equal(
       typeof render({ code: 'idle', slots: {} }, { lang, label }),
       'string',
@@ -737,7 +779,10 @@ test('장면 사실 — scene.lines · scene.step은 세 언어 · default와 fa
     assert.ok(line.trim().length > 5, at);
     assert.doesNotMatch(line, /undefined|null|NaN|\[object/, at);
     if (lang !== 'ko') assert.doesNotMatch(line, /「|」|[가-힣]/, `${at}: 한국어가 없다`);
-    if (code === 'scene.lines') assert.ok(line.includes(String(slots.n)), `${at}: 수`);
+    // 몽골어는 수를 빼고 말한 사실만 쓴다 — 줄 수를 횟수(удаа)로 말하지 않는다(유호님 11-26 「고치고 올려」).
+    if (code === 'scene.lines')
+      if (lang === 'mn') assert.doesNotMatch(line, /\d|удаа/, `${at}: 수가 없다`);
+      else assert.ok(line.includes(String(slots.n)), `${at}: 수`);
   }
   assert.equal(
     render({ code: 'scene.lines', slots: { n: 1 } }, { lang: 'en' }),
@@ -859,6 +904,8 @@ test('장면 사실 — 팬 줄은 다른 눈높이에서 standard의 fan으로 
   );
 });
 
+// 몽골어 scene.lines만 수를 읽지 않는다 — 말한 사실만 쓴다(유호님 11-26 「고치고 올려」).
+const slotsRead = (lang, code, names) => (lang === 'mn' && code === 'scene.lines' ? [] : names);
 test('장면 사실 — 세 언어 · 두 말하는 사람 줄이 칸 표(SCENE_SLOTS)의 칸을 빠짐없이, 그 칸만 쓴다', () => {
   const tables = { ko: KO, en: EN, mn: MN };
   let lines = 0;
@@ -880,7 +927,11 @@ test('장면 사실 — 세 언어 · 두 말하는 사람 줄이 칸 표(SCENE_
             },
           });
           const line = list[0](slots, '', josa);
-          assert.deepEqual([...used].sort(), names, `${lang} ${code} ${speaker}: 읽은 칸`);
+          assert.deepEqual(
+            [...used].sort(),
+            slotsRead(lang, code, names),
+            `${lang} ${code} ${speaker}: 읽은 칸`,
+          );
           assert.equal(render({ code, slots: sample }, { lang, speaker }), line);
           lines += 1;
         }

@@ -296,12 +296,12 @@ test('내 팬 한마디: 생성 파일이 Vellum 원천에서 다시 구운 것�
   assert.deepEqual(Object.keys(table),fanRows().map(([key])=>key),lang);
   for(const [key,why] of fanRows()){
    assert.equal(fanLine(lang,why),table[key],`${lang} ${key}`);
-   assert.equal(fanLine(lang,why),HOLD[lang]?.[why.code]??render(why,{lang,speaker:'fan'}),`${lang} ${key}: Vellum과 같다(HOLD 칸만 다르다)`);
+   assert.equal(fanLine(lang,why),HOLD[lang]?.[why.code]??render(why,{lang,speaker:'fan'}),`${lang} ${key}: Vellum과 같다`);
   }
  }
  assert.equal(fanLine('ko',{code:'scene.step',slots:{step:'take2',state:'wait'}}),'「한 번 더」는 기다릴게요. 하면 자리 하나가 켜져요.');
  // n은 소리가 들린 대사 줄의 수다(같은 줄을 다시 녹음해도 늘지 않는다). 몽골어가 횟수(удаа) · 낱말(үг N) · 문장(өгүүлбэр)으로 세면 사실과 다르다
- assert.deepEqual(Object.keys(HOLD),['mn']);assert.deepEqual(Object.keys(HOLD.mn),['scene.lines'],'따로 두는 글은 몽골어 scene.lines 하나뿐이다');
+ assert.deepEqual(Object.keys(HOLD),[],'따로 두는 글이 없다 — Vellum 원천이 같은 글이다');
  for(let n=1;n<=MAX_LINES;n+=1)assert.doesNotMatch(fanLine('mn',{code:'scene.lines',slots:{n}}),/\d|удаа|өгүүлбэр/,`mn scene.lines ${n}`);
  const mnUi=TEXT_TABLES.UI.mn;
  for(const k of ['말한 줄마다 내 팬이 한 사람씩 자리에 앉아요.','말한 줄마다 내 팬의 불빛이 하나씩 켜져요.','대사 한 줄마다 한 명, 「한 번 더」와 「처음 보는 말」에 한 명씩 와요.'])

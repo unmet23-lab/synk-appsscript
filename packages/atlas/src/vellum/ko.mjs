@@ -1,7 +1,6 @@
 // 한국어 줄 — 보통 눈높이 · 기능 글(말하는 사람 default). 이유 종류마다 문장 틀 하나.
 // 틀 = (slots, name, j) → 문장. name은 그 이유가 가리키는 단위 · 능력 · 주제의 화면 이름(낫표 밖), j는 조사(josa.mjs).
-// 단위 · 능력 이야기(unit.* · skill.* · pace.* · idle · day.capped)는 단계 2의 reasonLine(reason/ko.mjs)과 같은 문장이다 —
-// 다른 것은 받침 뒤의 「으로」 하나다(reasonLine은 「약국」로 — 시험이 이 차이만 허락한다).
+// 단위 · 능력 이야기(unit.* · skill.* · pace.* · idle · day.capped)는 단계 2의 reasonLine(reason/ko.mjs)과 같은 문장이다(시험이 맞댄다).
 // host.* · goal.match는 WORLD의 hostReason(world-learning-plan.mjs)이 쓰던 문장을 옮겼다(host.next는 4-3에서 줄였다). host.missed ·
 // host.bridge는 4-3 홈의 생활 복습 사실이다. host.order(제품 순서)는 문장이 없다.
 const retry = (s, name) =>

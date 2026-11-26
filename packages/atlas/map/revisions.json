@@ -17241,6 +17241,147 @@
         "added": [],
         "retired": []
       }
+    },
+    {
+      "edition": 6,
+      "hash": "e30e6142c93162f6",
+      "items": {
+        "changed": [
+          {
+            "n": 153,
+            "from": {
+              "f": 153,
+              "skillId": "ko.listening.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1465",
+                "ko.word.w0153"
+              ],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 153,
+              "skillId": "ko.listening.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w2006",
+                "ko.word.w0153"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 362,
+            "from": {
+              "f": 362,
+              "skillId": "ko2.listening.inference",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1261",
+                "ko.word.w1465"
+              ],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 362,
+              "skillId": "ko2.listening.inference",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1261",
+                "ko.grammar.G304"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 487,
+            "from": {
+              "f": 487,
+              "skillId": "ko.listening.response",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0287",
+                "ko.word.w0168"
+              ],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 487,
+              "skillId": "ko.listening.response",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w2007",
+                "ko.word.w0168"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2837,
+            "from": {
+              "f": 2750,
+              "skillId": "ko2.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1465",
+                "ko.grammar.G212"
+              ],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2750,
+              "skillId": "ko2.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G212"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 3223,
+            "from": {
+              "f": 3357,
+              "skillId": "ko2.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S466",
+                "ko.word.w0174",
+                "ko.grammar.S314"
+              ],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 3357,
+              "skillId": "ko2.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S466",
+                "ko.word.w0174",
+                "ko.grammar.S367"
+              ],
+              "unknownOption": false
+            }
+          }
+        ],
+        "added": [],
+        "retired": []
+      },
+      "templates": {
+        "changed": [],
+        "added": [],
+        "retired": []
+      }
     }
   ]
 }
