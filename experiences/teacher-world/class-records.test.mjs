@@ -82,9 +82,11 @@ function liveRoot(){
   return {innerHTML:'',className:'',attributes:{},listeners,focused,setAttribute(k,v){this.attributes[k]=v;},addEventListener(type,fn){listeners[type]=fn;},removeEventListener(type){delete listeners[type];},replaceChildren(){this.innerHTML='';},contains(){return true;},
     querySelector(selector){
       const wanted=[...selector.matchAll(/\[([\w-]+)(?:="([^"]*)")?\]/g)].map(([,name,value])=>value===undefined?' '+name+'="':' '+name+'="'+value+'"');
-      const tag=[...this.innerHTML.matchAll(/<(?:button|input|select|li|form)\b[^>]*>/g)].map(m=>m[0]).find(t=>wanted.every(w=>t.includes(w)));
+      const tag=[...this.innerHTML.matchAll(/<(?:button|input|select|li|form|small|p)\b[^>]*>/g)].map(m=>m[0]).find(t=>wanted.every(w=>t.includes(w)));
       if(!tag)return null;const disabled=/\sdisabled(?=[\s>])/.test(tag);
-      return {disabled,focus(){if(!disabled)focused.push(selector);},scrollIntoView(){}};
+      // small · p는 안을 바꾸거나 지울 수 있다(메모를 쓰는 동안 줄 표시와 안내만 바꿔 넣는 것을 본다).
+      const root=this,name=tag.match(/^<(\w+)/)[1],swap=html=>{const at=root.innerHTML.indexOf(tag),end=root.innerHTML.indexOf('</'+name+'>',at)+name.length+3;root.innerHTML=root.innerHTML.slice(0,at)+html+root.innerHTML.slice(end);};
+      return {get disabled(){return disabled;},set disabled(v){root.innerHTML=root.innerHTML.replace(tag,v?(disabled?tag:tag.replace(/>$/,' disabled>')):tag.replace(/\sdisabled(?=[\s>])/,''));},focus(){if(!disabled)focused.push(selector);},scrollIntoView(){},set innerHTML(v){swap(tag+v+'</'+name+'>');},set textContent(v){swap(tag+v+'</'+name+'>');},remove(){swap('');}};
     }};
 }
 const press=(root,dataset)=>root.listeners.click({target:{closest:()=>({dataset,disabled:false})}});
@@ -203,4 +205,56 @@ test('a sharing-only refresh mutes a learner who just turned sharing off, leaves
   assert.equal(view.refresh(workspace([learner('a',{absentStreak:3}),learner('b',{topik:topik([record])})])),false,'an overview from before the change (lower sharing revision) is ignored');
   assert.match(root.innerHTML,/<li class="att-row is-off" data-att-row="b">/);
   assert.equal(view.refresh(workspace([learner('a',{absentStreak:3}),off]),{sharingOnly:true}),false,'nothing changed, nothing repainted');view.stop();
+});
+
+test('clearing the only note again lifts the row mark and the status-first notice together with the save button',async()=>{
+  const root=liveRoot(),calls=[];
+  const view=createClassRecords({root,request:async(path,body)=>{calls.push(body);return {sessionDate:body.sessionDate,attendance:[]};},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a',{name:'가온'}),learner('b',{name:'나래'})]),'c');
+  const note=(id,value)=>root.listeners.input({target:{dataset:{attNote:id},value}});
+  note('a','병원');assert.match(root.innerHTML,/data-att-meta="a">아직 안 찍음 · <b class="att-changed">저장 전 · 출결 상태를 골라 주세요/,'the mark follows the note while typing');
+  note('b','지각 예정');press(root,{attSave:'1'});await later();assert.match(root.innerHTML,/data-att-message="1">가온 외 1명의 출결 상태를 먼저 골라 주세요/);
+  note('a','');assert.match(root.innerHTML,/data-att-message="1">나래의 출결 상태를 먼저 골라 주세요/);assert.doesNotMatch(root.innerHTML,/data-att-meta="a">[^<]*<b/);
+  note('b','');assert.doesNotMatch(root.innerHTML,/data-att-message/);assert.doesNotMatch(root.innerHTML,/상태를 골라 주세요/);
+  assert.match(tagOf(root,'data-att-save'),/disabled/);assert.equal(view.hasDraft(),false);assert.equal(calls.length,0);view.stop();
+});
+const topikRecord=(extra={})=>({id:'t1',kind:'II',round:96,level:4,announcedOn:'2025-01-10',expiresOn:'2027-01-10',state:'within90',daysLeft:44,passed:true,revision:1,...extra});
+const topikError=code=>Object.assign(new Error(code==='REVISION_CONFLICT'?'다른 화면에서 이 성적이 먼저 바뀌었어요. 다시 불러와 주세요.':code),{code:'TEACHING_CLASSROOM_'+code,status:409});
+test('a refused TOPIK key (IDEMPOTENCY_CONFLICT) is not sent again on the next save',async()=>{
+  const root=liveRoot(),calls=[];let refuse=true;
+  const view=createClassRecords({root,request:async(path,body)=>{calls.push(body);if(refuse){refuse=false;throw topikError('IDEMPOTENCY_CONFLICT');}return {topik:topik([topikRecord({round:105})])};},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a')]),'c');press(root,{attTopikOpen:'a'});
+  const values={kind:'II',round:'105',level:'4',announcedOn:'2026-10-28'};root.listeners.input({target:{dataset:{},form:formFor('a',values)}});
+  root.listeners.submit({target:formFor('a',values),preventDefault(){}});await later();
+  assert.match(root.innerHTML,/저장하지 못했어요\. 잠시 뒤 다시 해 주세요/);assert.match(root.innerHTML,/value="105"/);
+  root.listeners.submit({target:formFor('a',values),preventDefault(){}});await later();
+  assert.ok(calls[0].idempotencyKey&&calls[1].idempotencyKey);assert.notEqual(calls[1].idempotencyKey,calls[0].idempotencyKey);assert.match(root.innerHTML,/제105회 성적을 저장했어요/);view.stop();
+});
+test('a TOPIK edit that hits a revision conflict reloads that learner, keeps the typed values and saves next time with the new revision',async()=>{
+  const root=liveRoot(),calls=[];let conflict=true;
+  const view=createClassRecords({root,request:async(path,body)=>{calls.push([path,body]);
+    if(path==='/api/workspace')return workspace([learner('a',{topik:topik([topikRecord({round:97,level:5,revision:2})])})]);
+    if(conflict){conflict=false;throw topikError('REVISION_CONFLICT');}return {topik:topik([topikRecord({round:97,level:3,revision:3})])};},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a',{topik:topik([topikRecord()])})]),'c');press(root,{attTopikOpen:'a'});press(root,{attTopikEdit:'t1',learner:'a'});
+  const typed={kind:'II',round:'96',level:'3',announcedOn:'2025-01-10'};root.listeners.input({target:{dataset:{},form:formFor('a',typed)}});
+  root.listeners.submit({target:formFor('a',typed),preventDefault(){}});await later();
+  assert.deepEqual(calls.map(([path])=>path),['/api/teacher/topik','/api/workspace']);
+  assert.match(root.innerHTML,/다른 화면에서 이 성적이 먼저 바뀌었어요\. 바뀐 내용을 확인하고 다시 저장해 주세요/);
+  assert.match(root.innerHTML,/<legend>TOPIK II 제97회 고치기<\/legend>/,'the heading follows the record as it is now');assert.match(root.innerHTML,/<td>5급<\/td>/);
+  assert.match(root.innerHTML,/<option value="3" selected>3급/,'the typed level stays');assert.equal(view.hasDraft(),true);
+  root.listeners.submit({target:formFor('a',typed),preventDefault(){}});await later();
+  assert.equal(calls.at(-1)[1].revision,2);assert.match(root.innerHTML,/성적을 저장했어요/);assert.doesNotMatch(root.innerHTML,/고치기<\/legend>/);view.stop();
+});
+test('a TOPIK edit whose record was deleted elsewhere keeps the typed values as a new record; a delete conflict reloads and asks again',async()=>{
+  const gone=liveRoot();
+  const editView=createClassRecords({root:gone,request:async path=>{if(path==='/api/workspace')return workspace([learner('a',{topik:topik([])})]);throw topikError('REVISION_CONFLICT');},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  editView.render(workspace([learner('a',{topik:topik([topikRecord()])})]),'c');press(gone,{attTopikOpen:'a'});press(gone,{attTopikEdit:'t1',learner:'a'});
+  const typed={kind:'II',round:'96',level:'5',announcedOn:'2025-01-10'};gone.listeners.submit({target:formFor('a',typed),preventDefault(){}});await later();
+  assert.match(gone.innerHTML,/다른 화면에서 이 성적이 먼저 지워졌어요\. 적던 내용은 「성적 넣기」에 남겨 두었어요/);assert.match(gone.innerHTML,/<legend>성적 넣기<\/legend>/);
+  assert.match(gone.innerHTML,/value="96"/);assert.match(gone.innerHTML,/<option value="5" selected>5급/);editView.stop();
+  const root=liveRoot(),calls=[];
+  const view=createClassRecords({root,request:async(path,body)=>{calls.push([path,body]);if(path==='/api/workspace')return workspace([learner('a',{topik:topik([topikRecord({level:5,revision:4})])})]);throw topikError('REVISION_CONFLICT');},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a',{topik:topik([topikRecord()])})]),'c');press(root,{attTopikOpen:'a'});press(root,{attTopikDelete:'t1',learner:'a'});await later();
+  assert.deepEqual(calls.map(([path])=>path),['/api/teacher/topik','/api/workspace']);assert.match(root.innerHTML,/바뀐 내용을 확인하고 다시 지워 주세요/);assert.match(root.innerHTML,/<td>5급<\/td>/);
+  press(root,{attTopikDelete:'t1',learner:'a'});await later();assert.equal(calls.at(-2)[1].revision,4,'the next delete carries the reloaded revision');view.stop();
 });

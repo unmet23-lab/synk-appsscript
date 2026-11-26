@@ -21,7 +21,7 @@ const out=resolve(process.env.SYNK_WORKSPACE_RECORDS_QA_OUT||join(root,'docs/_op
 const dataDir=await mkdtemp(join(tmpdir(),'synk-workspace-records-ui-')),previousJobs=process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED;
 process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED='0';
 const issuer='https://identity.example.test',clientId='teacher-browser';
-const report={checkedAt:new Date().toISOString(),synthetic:true,production:false,talk,scope:'real Chromium + disposable company SQLite + memory-only canonical PostgreSQL; operating classroom runtime wrapped by SYNK-talk class records with the switch on; invented learners only',checks:[],errors:[],consoleErrors:[],assetErrors:[],httpErrors:[],unexpectedRequests:[],screenshots:[]};
+const report={checkedAt:new Date().toISOString(),synthetic:true,production:false,talk,scope:'real Chromium + disposable company SQLite + memory-only canonical PostgreSQL; operating classroom runtime wrapped by SYNK-talk class records with the switch on; invented learners only',checks:[],errors:[],consoleErrors:[],assetErrors:[],httpErrors:[],unexpectedRequests:[],expectedConflicts:[],screenshots:[]};
 const check=(name,value=true,detail)=>{report.checks.push({name,ok:!!value,...(detail===undefined?{}:{detail})});assert.ok(value,name+(detail===undefined?'':' '+JSON.stringify(detail)));};
 let fx,company,browser,page,base,handler;
 const jwt=()=>['synthetic',Buffer.from(JSON.stringify({iss:issuer+'/auth/v1',client_id:clientId,exp:Math.floor(Date.now()/1000)+3600})).toString('base64url'),'fixture'].join('.');
@@ -106,6 +106,7 @@ try{
   const [{n:noteOnly}]=await fx.sql`select count(*)::int as n from engine.synk_class_attendance where class_id=${fx.cls.class_id}::uuid and session_date=${d}::date`;
   check('note-only save sends nothing and moves focus to the status of that learner',noteOnly===0&&await page.evaluate(id=>document.activeElement?.dataset?.learner===id&&document.activeElement?.dataset?.attStatus==='present',A.가온.id),noteOnly);
   await band.locator(`[data-att-note="${A.가온.id}"]`).fill('');
+  check('clearing that note lifts the row mark and the status-first notice with the save button',await band.locator('[data-att-message]').count()===0&&!(await band.locator(`[data-att-row="${A.가온.id}"] .att-name small`).textContent()).includes('상태를 골라')&&await band.locator('[data-att-save]').isDisabled());
   await band.locator('[data-att-all]').click();await band.locator(`[data-att-row="${A.마루.id}"] [data-att-status="absent"]`).click();await band.locator(`[data-att-row="${A.다솜.id}"] [data-att-status="late"]`).click();
   await band.locator(`[data-att-note="${A.다솜.id}"]`).fill('버스 지연 10분');
   check('「모두 출석」 fills every shared learner and the exceptions change only those rows',await counts()==='4 1 1 0 0',await counts());
@@ -133,6 +134,21 @@ try{
   const [stored]=await fx.sql`select kind,round,level,announced_on::text as a,expires_on::text as e,(announced_on+interval '2 years')::date::text as expected from engine.synk_learner_topik where learner_id=${A.마루.id}::uuid`;
   check('TOPIK save stores kind, integer round and server-made expiry',stored.kind==='II'&&stored.round===105&&stored.level===4&&stored.a===addDays(d,-30)&&stored.e===stored.expected,stored);
   check('row badge turns 유효 for the new record',(await page.locator(`[data-att-row="${A.마루.id}"] .att-topik .status-badge`).textContent())==='유효');
+  // 고치는 사이 다른 화면이 같은 성적을 고치면(판 충돌) 그 학생 성적을 다시 받고, 적던 값을 남긴 채 새 판으로 다시 저장된다.
+  await page.locator(`[data-att-topik-edit][data-learner="${A.마루.id}"]`).click();
+  const [mine]=await fx.sql`select topik_id,revision,announced_on::text as a from engine.synk_learner_topik where learner_id=${A.마루.id}::uuid`;
+  await api('teacher',fx.cls.class_id,'/api/teacher/topik',{action:'save',learnerId:A.마루.id,id:mine.topik_id,revision:mine.revision,kind:'II',round:105,level:5,announcedOn:mine.a});
+  const httpBefore=report.httpErrors.length,consoleBefore=report.consoleErrors.length;
+  await form.locator('select[name=level]').selectOption('3');await form.locator('button[type=submit]').click();
+  await page.locator('.class-records .att-message',{hasText:'다른 화면에서 이 성적이 먼저 바뀌었어요'}).waitFor();
+  // 일부러 낸 409 한 번은 아래 「오류 없음」 검사에서 따로 센다(그 밖의 실패 응답 · 콘솔 오류는 그대로 걸린다).
+  for(const row of report.httpErrors.splice(httpBefore))(row.status===409&&row.url.endsWith('/api/teaching/request')?report.expectedConflicts:report.httpErrors).push(row);
+  report.consoleErrors.push(...report.consoleErrors.splice(consoleBefore).filter(text=>!/status of 409/.test(text)));
+  check('the TOPIK conflict is exactly one 409 from the teaching relay',report.expectedConflicts.length===1,report.expectedConflicts);
+  check('a TOPIK edit conflict reloads that learner and keeps the typed level',(await page.locator(`#att-topik-${A.마루.id} .att-topik-table`).textContent()).includes('5급')&&await form.locator('select[name=level]').inputValue()==='3'&&(await form.locator('legend').textContent())==='TOPIK II 제105회 고치기');
+  await form.locator('button[type=submit]').click();await page.locator('.class-records .att-message',{hasText:'제105회 성적을 저장했어요'}).waitFor();
+  const [fixed]=await fx.sql`select level from engine.synk_learner_topik where learner_id=${A.마루.id}::uuid`;
+  check('the second save goes through with the reloaded revision',fixed.level===3,fixed);
   // ── 390 폭 ──
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);await fits(390);
   const top=async selector=>{await page.locator(selector).first().evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));await page.waitForTimeout(100);};
