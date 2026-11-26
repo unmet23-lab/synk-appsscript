@@ -99,11 +99,83 @@ async function linkedinPostsPage(p,args){
 }
 
 // 티스토리(Aside u0 · 10-26 유호님 규칙): 관리자 방문 통계 화면이 부르는 글 목록과 하루 인기글을 같은 로그인으로 읽는다. Playwright 꼴 페이지(Aside)와 ego에서 같이 돈다.
+// 티스토리 로그인은 몇 시간마다 풀린다. args.relogin이면 게시 예약(14:00 · 21:38)과 같이 카카오 간편로그인의 계정 줄을 한 번 눌러 다시 들어간다
+// (11-26 유호님 「응, 고쳐」). 이메일이 든 계정 줄이 꼭 하나이고 비밀번호 · 인증 칸이 없을 때만 누른다. 무엇도 입력하지 않고, 그 밖의 화면이면 멈춘다.
 async function tistoryDailyPage(p,args){
+  const look=()=>p.evaluate(a=>{const h=location.hostname;return {at:location.origin+location.pathname,where:!h?'blank':h===a.entry.split('/')[2]?'same':a.logins.includes(h)?'login':'other'};},{entry:args.entry,logins:args.logins||[]});
   await p.waitForFunction(()=>document.readyState!=='loading',undefined,{timeout:15000}).catch(()=>{});
-  const {at,where}=await p.evaluate(a=>{const h=location.hostname;return {at:location.origin+location.pathname,where:!h?'blank':h===a.entry.split('/')[2]?'same':a.logins.includes(h)?'login':'other'};},{entry:args.entry,logins:args.logins||[]});
+  let {at,where}=await look(),relogin;
+  if(at!==args.entry&&where==='login'&&args.relogin===true){
+    // Aside 실행 안에는 전역 sleep이 있다(게시 예약의 손 스크립트와 같다). 없으면 setTimeout으로 기다린다.
+    const wait=ms=>typeof sleep==='function'?sleep(ms):new Promise(resolve=>setTimeout(resolve,ms));
+    const host=args.entry.split('/')[2];
+    const home=()=>{try{const u=new URL(p.url());return u.hostname===host&&u.pathname.startsWith('/manage');}catch{return false;}};
+    // 화면이 넘어가는 동안의 evaluate는 실패할 수 있다. 실패는 null(「보지 못함」)이고, 보지 못한 화면에서는 아무것도 누르지 않는다.
+    const read=(fn,arg)=>p.evaluate(fn,arg).catch(()=>null);
+    // 누르는 곳은 두 군데뿐이다. 둘 다 이 한 번의 evaluate가 ① 비밀번호 칸 · 인증번호 글 · 「간편로그인 계정 삭제」 확인 창이 없고
+    // ② 호스트와 경로가 정한 화면과 꼭 같고 ③ 누를 대상이 꼭 하나이고 ④ 그 가운데가 대상 안이며 단추(삭제 단추 등)가 아닐 때만 표시를 단다.
+    // 클릭은 표시가 달린 대상만 누른다.
+    const pick=screen=>read(s=>{
+      const text=document.body.innerText;
+      if(/삭제하시겠습니까/.test(text))return 'relogin_delete';
+      if([...document.querySelectorAll('input[type=password]')].some(x=>x.offsetParent)||/인증번호|verification code/i.test(text))return 'relogin_password';
+      if(s.check)return 'clear';
+      if(location.hostname!==s.host||location.pathname!==s.path)return 'elsewhere';
+      const shown=[...document.querySelectorAll(s.selector)].filter(x=>x.offsetParent);
+      if(!shown.length)return 'elsewhere';
+      // 「새로운 계정으로 로그인」도 같은 꼴(a.wrap_profile)이라 이메일 꼴의 줄만 센다(현장 노트 11-09).
+      const found=s.email?shown.filter(x=>/^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/m.test(x.innerText)&&!/새로운 계정/.test(x.innerText)):shown;
+      if(found.length!==1)return 'count';
+      // 클릭은 대상의 가운데를 누른다. 그 점에 다른 것이 덮였거나 대상 안의 단추(「간편로그인 계정 삭제」)면 누르지 않는다(현장 노트 10-29).
+      const r=found[0].getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+      if(!hit||!found[0].contains(hit)||hit.closest('button'))return 'relogin_target';
+      found[0].setAttribute('data-synk-relogin',s.mark);return 'ready';
+    },screen);
+    const KAKAO_BUTTON={host:'www.tistory.com',path:'/auth/login',selector:'a.btn_login.link_kakao_id',mark:'kakao'};
+    const ACCOUNT_ROW={host:'accounts.kakao.com',path:'/login/simple/',selector:'a.wrap_profile',email:true,mark:'row'};
+    const stopped=r=>r==='relogin_delete'||r==='relogin_password'||r==='relogin_target';
+    // 표시를 단 뒤 화면이 바뀌어 대상이 없으면 오래 기다리지 않고 멈춘다.
+    const press=selector=>p.click(selector,{timeout:3000}).then(()=>true,()=>false);
+    // 브라우저 기본 확인 창(confirm)이 뜨면 「취소」로 닫는다. 확인을 누르는 길은 없다.
+    if(typeof p.on==='function')p.on('dialog',d=>{Promise.resolve().then(()=>d.dismiss()).catch(()=>{});});
+    relogin=await (async()=>{
+      const first=await pick({check:true});
+      if(first!=='clear')return first||'relogin_unchecked';
+      try{await p.goto('https://www.tistory.com/auth/login?redirectUrl='+encodeURIComponent(args.entry),{waitUntil:'domcontentloaded',timeout:25000});}
+      catch{return 'relogin_unchecked';}
+      if(home())return 'back';
+      const button=await pick(KAKAO_BUTTON);
+      if(button!=='ready')return stopped(button)?button:button===null?'relogin_unchecked':'relogin_button';
+      if(!await press('[data-synk-relogin=kakao]'))return 'relogin_unchecked';
+      let row=null;
+      for(let i=0;i<30;i++){
+        await wait(500);
+        if(home())return 'back';
+        row=await pick(ACCOUNT_ROW);
+        if(row==='ready'||stopped(row))break;
+        if(row==='count')return 'relogin_rows';
+      }
+      if(stopped(row))return row;
+      if(row!=='ready')return 'relogin_screen';
+      // 삭제를 묻는 창이 뜨면 아무것도 누르지 않고 멈춘다(창은 탭과 함께 닫힌다).
+      if(!await press('[data-synk-relogin=row]'))return 'relogin_unchecked';
+      for(let i=0;i<40;i++){
+        await wait(500);
+        if(home())return 'clicked';
+        const after=await pick({check:true});
+        if(stopped(after))return after;
+      }
+      return 'relogin_landed';
+    })();
+    if(relogin!=='back'&&relogin!=='clicked')return {reason:'need_owner',step:relogin,where:'login'};
+    await p.goto(args.entry,{waitUntil:'domcontentloaded',timeout:25000}).catch(()=>{});
+    await p.waitForFunction(()=>document.readyState!=='loading',undefined,{timeout:15000}).catch(()=>{});
+    ({at,where}=await look());
+    // 계정 줄을 눌렀는데 통계 화면에 머물지 못해도 누른 사실은 남긴다.
+    if(at!==args.entry)return {reason:'need_owner',step:'relogin_landed',where,relogin};
+  }
   if(at!==args.entry)return {reason:'need_owner',step:'landed',where};
-  return await p.evaluate(async({days})=>{
+  const readAll=()=>p.evaluate(async({days})=>{
     const get=async route=>{const res=await fetch(route,{credentials:'include'});if(!res.ok)throw new Error('HTTP '+res.status+' '+route.split('?')[0]);return res.json();};
     const posts=[];
     for(let page=1;page<=10;page++){
@@ -121,6 +193,13 @@ async function tistoryDailyPage(p,args){
     }
     return {observedAt,sourceUrl:location.origin+location.pathname,host:location.hostname,posts,days:out};
   },{days:args.days});
+  if(!relogin)return await readAll();
+  // 다시 들어간 뒤 읽기가 실패해도 다시 들어간 사실은 남도록, 실패를 정한 낱말로 돌려준다. 시간 초과와 HTTP 오류는 나눠 적는다.
+  try{return {...await readAll(),relogin};}
+  catch(error){
+    const message=String(error?.message||'');
+    return {reason:'retry',step:/timed? ?out|timeout/i.test(message)?'relogin_read_timeout':/\bHTTP \d{3}\b/.test(message)?'relogin_read_http':'relogin_read_failed',relogin};
+  }
 }
 
 // VK 커뮤니티의 공개 클립 목록(vk.ru/clips/<커뮤니티>)에서 클립 번호를 모으고, 클립 화면이 받은 응답에 박힌 조회 · 좋아요 · 댓글 · 공유와 게시 시각을 읽는다(11-19).
@@ -228,8 +307,8 @@ const ROUTES=Object.freeze({
   // 개인 프로필(/in/<이름>/)만 읽는다. 회사 페이지는 다른 화면이라 이 길로 읽지 않는다.
   linkedin:{name:'linkedin-posts',browser:'ego',live:true,page:linkedinPostsPage,parse:parseLinkedInPosts,handle:/^[A-Za-z0-9_-]{3,100}$/,limit:10,
     entry:handle=>'https://www.linkedin.com/in/'+handle+'/',personal:account=>/^https:\/\/www\.linkedin\.com\/in\/[^/]+\/?$/.test(account.publicUrl||'')},
-  // 티스토리는 Aside로 읽는다. 45일 전부터 오늘까지 하루씩 읽는다(판정은 7일까지만 쓴다).
-  tistory:{name:'tistory-daily',page:tistoryDailyPage,parse:parseTistoryDaily,handle:/^[a-z0-9-]{1,63}\.tistory\.com$/,browsers:['aside'],days:45,
+  // 티스토리는 Aside로 읽는다. 45일 전부터 오늘까지 하루씩 읽는다(판정은 7일까지만 쓴다). 로그인이 풀렸으면 카카오 간편로그인으로 한 번 다시 들어간다.
+  tistory:{name:'tistory-daily',page:tistoryDailyPage,parse:parseTistoryDaily,handle:/^[a-z0-9-]{1,63}\.tistory\.com$/,browsers:['aside'],days:45,relogin:true,
     entry:handle=>'https://'+handle+'/manage/statistics/blog'},
   vk:{name:'vk-clips',browser:'ego',live:true,stage:'public-page',page:vkClipsPage,parse:parseVkClips,handle:/^[A-Za-z0-9_.]{2,64}$/,entry:h=>'https://vk.ru/clips/'+h,community:true},
   'naver-blog':{name:'naver-blog-list',browser:'aside',live:true,page:naverBlogPostsPage,parse:parseNaverBlogPosts,handle:/^[a-z0-9_-]{2,40}$/,entry:h=>'https://blog.naver.com/'+h},
@@ -248,8 +327,12 @@ async function postLifetime(ctx,{pageJob,storeBatch},routes=ROUTES){
   // VK 클립 번호의 소유자 칸은 커뮤니티 번호다. 개인 설정(browser-profiles)의 communityId와 등록 공개 주소가 맞아야 읽는다.
   if(route.community&&(!/^[0-9]{1,15}$/.test(String(profile.communityId||''))||a.publicUrl!=='https://vk.ru/'+handle))return stop('need_owner',{step:'community'});
   await ctx.setStage(route.stage||'creator-screen');
-  const data=await pageJob(ctx,route.name,route.page,{entry:route.entry(handle),handle,limit:route.limit||0,days:route.days||0,logins:LOGIN_HOSTS,...(route.community?{communityId:String(profile.communityId)}:{})});
-  if(!data)return stop('retry',{code:'NO_MARKER'});
+  const raw=await pageJob(ctx,route.name,route.page,{entry:route.entry(handle),handle,limit:route.limit||0,days:route.days||0,logins:LOGIN_HOSTS,
+    ...(route.relogin?{relogin:true}:{}),...(route.community?{communityId:String(profile.communityId)}:{})});
+  if(!raw)return stop('retry',{code:'NO_MARKER'});
+  // 다시 로그인한 사실은 값과 떼어 회차 폴더에 적는다. 해석기는 정한 칸만 받는다.
+  const {relogin,...data}=raw;
+  if(relogin!==undefined)relogged(ctx,relogin);
   if(data.reason)return stop(data.reason,{step:data.step,where:data.where});
   let parsed;
   try{parsed=route.parse(data,{accountId:a.id,handle,...(route.community?{communityId:String(profile.communityId)}:{})});}
@@ -275,5 +358,13 @@ function note(ctx,reason,detail){
       step:only(detail?.step,/^[a-z_]{1,24}$/),where:only(detail?.where,/^(?:blank|same|login|other)$/)};
     fs.writeFileSync(path.join(ctx.dir,'post-lifetime-failed.json'),JSON.stringify(record),{flag:'wx'});
   }catch{/* 이미 있으면 첫 실패를 둔다. 쓰기가 막혀도 앞에서 정한 결과를 바꾸지 않는다 */}
+}
+// 로그인이 풀려 다시 들어간 회차를 남긴다. back은 누르지 않고 돌아온 것, clicked는 계정 줄을 한 번 누른 것이다.
+function relogged(ctx,result){
+  if(!ctx.dir)return;
+  try{
+    const word=/^(?:back|clicked)$/.test(String(result))?String(result):'other';
+    fs.writeFileSync(path.join(ctx.dir,'post-lifetime-relogin.json'),JSON.stringify({at:new Date().toISOString(),result:word}),{flag:'wx'});
+  }catch{/* 기록이 막혀도 읽기 결과를 바꾸지 않는다 */}
 }
 module.exports={postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage,tistoryDailyPage,vkClipsPage,naverBlogPostsPage,note,ROUTES,LOGIN_HOSTS};

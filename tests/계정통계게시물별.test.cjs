@@ -468,3 +468,194 @@ test('판정 도구가 VK 클립 · 벽 글과 네이버 블로그 글 주소를
   const {PLATFORMS}=require('../tools/lib/게시성과읽기.cjs');
   assert.deepEqual(['vk','naver-blog'].map(p=>PLATFORMS.includes(p)),[true,true]);
 });
+// 티스토리 다시 로그인(11-26 유호님 「응, 고쳐」): 가짜 창 세 쪽(티스토리 로그인 · 카카오 계정 고르기 · 관리 화면)을 오가며 누르는 곳과 멈추는 곳을 본다.
+const RE_ENTRY='https://yuhobuilds.tistory.com/manage/statistics/blog';
+const RE_LOGIN='https://www.tistory.com/auth/login?redirectUrl='+encodeURIComponent(RE_ENTRY);
+const RE_KAKAO='https://accounts.kakao.com/login/simple/?continue=x';
+// Aside 안에는 전역 sleep이 있다. 시험에서는 기다리지 않게 바로 끝나는 sleep을 둔다(다른 시험은 sleep을 쓰지 않는다).
+globalThis.sleep=async()=>{};
+function reloginBrowser(pages,start,{fetchFails=false,failAt=null}={}){
+  const clicks=[],dialogs=[],realm={location:new URL(start)};
+  // 가운데를 누르면 맞는 것: 기본은 그 대상, hitButton이면 대상 안의 단추(「간편로그인 계정 삭제」), hitOutside면 대상 밖의 것.
+  const el=(sel,text,extra={})=>{
+    const e={sel,innerText:text,offsetParent:extra.hidden?null:{},attrs:{},setAttribute(k,v){this.attrs[k]=v;},
+      closest:()=>null,getBoundingClientRect(){realm.document.measured=this;return {left:0,top:0,width:10,height:10};},...extra};
+    e.button={closest:s=>s==='button'?e.button:null};
+    e.contains=x=>x===e||x===e.button;
+    return e;
+  };
+  const docOf=url=>{
+    const spec=pages[url]||pages[new URL(url).origin+new URL(url).pathname]||{body:''};
+    const elements=(spec.elements||[]).map(e=>el(e.sel,e.text||'',e));
+    const doc={readyState:'complete',body:{innerText:spec.body||''},elements,querySelectorAll:sel=>elements.filter(e=>e.sel===sel),
+      elementFromPoint:()=>{const e=doc.measured;return !e?null:e.hitButton?e.button:e.hitOutside?{closest:()=>null}:e;}};
+    return doc;
+  };
+  realm.document=docOf(start);
+  const fetch=async route=>fetchFails?{ok:false,status:503}:({ok:true,json:async()=>route.startsWith('/manage/posts.json')?{items:[],totalCount:0}:{data:{result:[]}}});
+  const go=url=>{const to=(pages[url]||{}).redirect||url;realm.location=new URL(to);realm.document=docOf(to);};
+  const run=(f,arg)=>vm.runInNewContext('('+f.toString()+')',{...realm,fetch})(arg);
+  const page={clicks,dialogs,typed:[],
+    url:()=>realm.location.href,
+    on(name,fn){if(name==='dialog')dialogs.push(fn);},
+    async waitForFunction(){},
+    async goto(url){go(url);},
+    async click(selector){
+      const m=selector.match(/^\[data-synk-relogin=([a-z]+)\]$/);
+      const target=m&&realm.document.elements.find(e=>e.attrs['data-synk-relogin']===m[1]);
+      // vanish: 표시를 단 뒤 화면이 바뀌어 대상이 사라진 경우
+      if(!target||target.vanish)throw new Error('no element '+selector);
+      clicks.push(target.sel);
+      if(target.go)go(target.go);
+      if(target.then)realm.document.body.innerText=target.then;
+    },
+    async fill(){page.typed.push('fill');},async type(){page.typed.push('type');},
+    async evaluate(f,arg){if(failAt&&failAt(realm.location.href,f.toString()))throw new Error('Execution context was destroyed');const v=await run(f,arg);return v===undefined?undefined:JSON.parse(JSON.stringify(v));}};
+  return page;
+}
+const kakaoButton=to=>({sel:'a.btn_login.link_kakao_id',text:'카카오계정으로 로그인',go:to});
+const row=(text,extra={})=>({sel:'a.wrap_profile',text,...extra});
+const reArgs={entry:RE_ENTRY,days:1,logins:LOGIN_HOSTS,relogin:true};
+
+test('티스토리 다시 로그인: 이메일이 든 계정 줄이 하나면 그 줄만 눌러 들어가 읽고, 무엇도 입력하지 않는다',async()=>{
+  const p=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]},
+    [RE_KAKAO]:{body:'로그인할 카카오계정 선택',elements:[row('유호\nyu***@gmail.com',{go:RE_ENTRY}),row('새로운 계정으로 로그인',{go:'https://accounts.kakao.com/login/'})]}},
+    'https://www.tistory.com/auth/login?redirectUrl=secret');
+  const got=await tistoryDailyPage(p,reArgs);
+  assert.equal(got.relogin,'clicked');assert.equal(got.sourceUrl,RE_ENTRY);assert.equal(got.days.length,2);
+  assert.deepEqual(p.clicks,['a.btn_login.link_kakao_id','a.wrap_profile']);assert.deepEqual(p.typed,[]);
+});
+test('티스토리 다시 로그인: 카카오 세션이 살아 있어 바로 돌아오면 계정 줄을 누르지 않는다',async()=>{
+  const p=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_ENTRY)]}},'https://accounts.kakao.com/login?continue=secret');
+  const got=await tistoryDailyPage(p,reArgs);
+  assert.equal(got.relogin,'back');assert.deepEqual(p.clicks,['a.btn_login.link_kakao_id']);
+});
+test('티스토리 다시 로그인: 비밀번호 · 인증 칸, 계정 줄 여럿, 삭제 확인 창, 다른 화면이면 누르지 않거나 더 누르지 않고 멈춘다',async()=>{
+  const stopAt=async(kakao,want,clicks)=>{
+    const p=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]},[RE_KAKAO]:kakao},RE_LOGIN);
+    assert.deepEqual(await tistoryDailyPage(p,reArgs),{reason:'need_owner',step:want,where:'login'});
+    assert.deepEqual(p.clicks,clicks);assert.deepEqual(p.typed,[]);
+  };
+  const first=['a.btn_login.link_kakao_id'],both=[...first,'a.wrap_profile'];
+  await stopAt({elements:[row('yu***@gmail.com'),{sel:'input[type=password]'}]},'relogin_password',first);
+  await stopAt({body:'카카오톡으로 받은 인증번호를 입력해 주세요',elements:[row('yu***@gmail.com')]},'relogin_password',first);
+  await stopAt({elements:[row('yu***@gmail.com'),row('other***@naver.com')]},'relogin_rows',first);
+  // 보이지 않는 줄과 「새로운 계정으로 로그인」은 세지 않는다. 이메일 줄이 없으면 0개다.
+  await stopAt({elements:[row('a***@gmail.com',{hidden:true}),row('새로운 계정으로 로그인')]},'relogin_rows',first);
+  await stopAt({elements:[row('yu***@gmail.com',{then:'간편로그인 계정을 삭제하시겠습니까?'})]},'relogin_delete',both);
+  // 누른 뒤 비밀번호 화면으로 넘어가도 멈춘다.
+  const p=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]},[RE_KAKAO]:{elements:[row('yu***@gmail.com',{go:'https://accounts.kakao.com/login/'})]},
+    'https://accounts.kakao.com/login/':{elements:[{sel:'input[type=password]'}]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(p,reArgs),{reason:'need_owner',step:'relogin_password',where:'login'});
+  assert.deepEqual(p.clicks,both);
+  // 티스토리 로그인 단추가 없거나 둘이면 아무것도 누르지 않는다.
+  const none=reloginBrowser({[RE_LOGIN]:{elements:[]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(none,reArgs),{reason:'need_owner',step:'relogin_button',where:'login'});assert.deepEqual(none.clicks,[]);
+  const two=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO),kakaoButton(RE_KAKAO)]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(two,reArgs),{reason:'need_owner',step:'relogin_button',where:'login'});assert.deepEqual(two.clicks,[]);
+});
+test('티스토리 다시 로그인: relogin을 주지 않은 길과 로그인 화면이 아닌 곳에서는 전처럼 멈춘다',async()=>{
+  const p=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_ENTRY)]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(p,{...reArgs,relogin:undefined}),{reason:'need_owner',step:'landed',where:'login'});assert.deepEqual(p.clicks,[]);
+  const other=reloginBrowser({},'https://session-marker.example/x');
+  assert.deepEqual(await tistoryDailyPage(other,reArgs),{reason:'need_owner',step:'landed',where:'other'});assert.deepEqual(other.clicks,[]);
+});
+test('postLifetime: 티스토리 길만 relogin을 넘기고, 다시 들어간 사실은 값과 떼어 회차 폴더에 정한 낱말로 남긴다',async()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-relogin-'));
+  try{
+    let asked=null;const parsed=[];
+    const helpers={pageJob:async(c,name,fn,args)=>{asked=args;return {...tistory([tPost('27','2026-11-16 21:30')],tDays('2026-11-05',15)),relogin:'clicked'};},storeBatch:async(c,name,evidence)=>{parsed.push(Object.keys(evidence));}};
+    const ctx={account:{id:'shift-tistory',platform:'tistory',handle:'yuhobuilds.tistory.com'},profile:{browser:'aside',account:'u0'},setStage:async()=>{},dir};
+    assert.equal(await postLifetime(ctx,helpers),'limited');
+    assert.equal(asked.relogin,true);assert.equal(parsed[0].includes('relogin'),false);
+    const saved=JSON.parse(fs.readFileSync(path.join(dir,'post-lifetime-relogin.json'),'utf8'));
+    assert.deepEqual(Object.keys(saved).sort(),['at','result']);assert.equal(saved.result,'clicked');
+    let douyinArgs=null;
+    await postLifetime({account:{id:'lab-cn-douyin',platform:'douyin',handle:'39504393074'},profile:{browser:'ego',profileId:'Profile 9'},setStage:async()=>{}},
+      {pageJob:async(c,name,fn,args)=>{douyinArgs=args;return {reason:'need_owner',step:'owner'};},storeBatch:async()=>{}});
+    assert.equal('relogin' in douyinArgs,false);
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('티스토리 다시 로그인(GPT GA1 · GA2): 도착한 화면이나 고르기 화면에 비밀번호 · 삭제 확인이 이미 보이면, 또 계정 고르기 화면이 아니거나 이메일 꼴이 아니면 누르지 않는다',async()=>{
+  const kakaoPw=reloginBrowser({'https://accounts.kakao.com/login':{elements:[{sel:'input[type=password]'}]},[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]}},'https://accounts.kakao.com/login?continue=secret');
+  assert.deepEqual(await tistoryDailyPage(kakaoPw,reArgs),{reason:'need_owner',step:'relogin_password',where:'login'});assert.deepEqual(kakaoPw.clicks,[]);
+  const askDelete=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]},[RE_KAKAO]:{body:'간편로그인 계정을 삭제하시겠습니까?',elements:[row('yu***@gmail.com',{go:RE_ENTRY})]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(askDelete,reArgs),{reason:'need_owner',step:'relogin_delete',where:'login'});assert.deepEqual(askDelete.clicks,['a.btn_login.link_kakao_id']);
+  const operator=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]},[RE_KAKAO]:{elements:[row('@operator',{go:RE_ENTRY})]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(operator,reArgs),{reason:'need_owner',step:'relogin_rows',where:'login'});assert.deepEqual(operator.clicks,['a.btn_login.link_kakao_id']);
+  const KAKAO_OTHER='https://accounts.kakao.com/login/?continue=x';
+  const other=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(KAKAO_OTHER)]},'https://accounts.kakao.com/login/':{elements:[row('yu***@gmail.com',{go:RE_ENTRY})]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(other,reArgs),{reason:'need_owner',step:'relogin_screen',where:'login'});assert.deepEqual(other.clicks,['a.btn_login.link_kakao_id']);
+});
+test('티스토리 다시 로그인(GPT GA3 · GA4): 로그인 주소가 곧장 관리 화면으로 돌아오면 누르지 않고, 다시 들어간 뒤 읽기가 실패해도 다시 들어간 사실은 남는다',async()=>{
+  const bounce=reloginBrowser({[RE_LOGIN]:{redirect:RE_ENTRY}},'https://www.tistory.com/auth/login?redirectUrl=secret');
+  const got=await tistoryDailyPage(bounce,reArgs);
+  assert.equal(got.relogin,'back');assert.equal(got.sourceUrl,RE_ENTRY);assert.deepEqual(bounce.clicks,[]);
+  const broken=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]},[RE_KAKAO]:{elements:[row('yu***@gmail.com',{go:RE_ENTRY})]}},RE_LOGIN,{fetchFails:true});
+  assert.deepEqual(await tistoryDailyPage(broken,reArgs),{reason:'retry',step:'relogin_read_http',relogin:'clicked'});
+  // 다시 들어가지 않은 읽기의 실패는 전처럼 그대로 던진다.
+  const plain=reloginBrowser({},RE_ENTRY,{fetchFails:true});
+  await assert.rejects(tistoryDailyPage(plain,reArgs),/HTTP 503/);
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-relogin-'));
+  try{
+    const ctx={account:{id:'shift-tistory',platform:'tistory',handle:'yuhobuilds.tistory.com'},profile:{browser:'aside',account:'u0'},setStage:async()=>{},dir};
+    assert.equal(await postLifetime(ctx,{pageJob:async()=>({reason:'retry',step:'relogin_read_http',relogin:'clicked'}),storeBatch:async()=>{throw new Error('저장하면 안 된다');}}),'retry');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(dir,'post-lifetime-relogin.json'),'utf8')).result,'clicked');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(dir,'post-lifetime-failed.json'),'utf8')).step,'relogin_read_http');
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('티스토리 다시 로그인(GPT 다시 GA2 · GA3): 화면 점검이 실패하면 누르지 않고, 계정 고르기 화면은 경로가 꼭 맞아야 한다',async()=>{
+  // 첫 화면을 보지 못하면 로그인 화면으로 옮기지도 않는다.
+  const unseen=reloginBrowser({'https://accounts.kakao.com/login':{elements:[{sel:'input[type=password]'}]}},'https://accounts.kakao.com/login?continue=secret',{failAt:(url,src)=>url.includes('accounts.kakao.com/login?continue')&&src.includes('input[type=password]')});
+  assert.deepEqual(await tistoryDailyPage(unseen,reArgs),{reason:'need_owner',step:'relogin_unchecked',where:'login'});assert.deepEqual(unseen.clicks,[]);
+  assert.equal(unseen.url(),'https://accounts.kakao.com/login?continue=secret');
+  // 티스토리 로그인 화면을 보지 못하면 카카오 단추에 표시가 없어 누르지 않는다.
+  const blind=reloginBrowser({[RE_LOGIN]:{body:'인증번호를 입력해 주세요',elements:[kakaoButton(RE_KAKAO)]}},'https://www.tistory.com/auth/login?redirectUrl=secret',{failAt:(url,src)=>url.includes('redirectUrl=https')&&src.includes('setAttribute')});
+  assert.deepEqual(await tistoryDailyPage(blind,reArgs),{reason:'need_owner',step:'relogin_unchecked',where:'login'});assert.deepEqual(blind.clicks,[]);
+  // 보이면 인증번호 글과 같은 화면의 카카오 단추도 누르지 않는다.
+  const code=reloginBrowser({[RE_LOGIN]:{body:'인증번호를 입력해 주세요',elements:[kakaoButton(RE_KAKAO)]}},'https://www.tistory.com/auth/login?redirectUrl=secret');
+  assert.deepEqual(await tistoryDailyPage(code,reArgs),{reason:'need_owner',step:'relogin_password',where:'login'});assert.deepEqual(code.clicks,[]);
+  const LOOKALIKE='https://accounts.kakao.com/login/simple-other/?continue=x';
+  const lookalike=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(LOOKALIKE)]},'https://accounts.kakao.com/login/simple-other/':{elements:[row('yu***@gmail.com',{go:RE_ENTRY})]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(lookalike,reArgs),{reason:'need_owner',step:'relogin_screen',where:'login'});assert.deepEqual(lookalike.clicks,['a.btn_login.link_kakao_id']);
+});
+test('티스토리 다시 로그인(GPT 다시 GA1 · GA2): 로그인 주소가 카카오 비밀번호 화면으로 곧장 넘어가면 비밀번호로 멈추고, 끝 빗금이 없는 경로에서도 누르지 않는다',async()=>{
+  const toPassword=reloginBrowser({[RE_LOGIN]:{redirect:'https://accounts.kakao.com/login?continue=x'},'https://accounts.kakao.com/login':{elements:[{sel:'input[type=password]'}]}},'https://www.tistory.com/auth/login?redirectUrl=secret');
+  assert.deepEqual(await tistoryDailyPage(toPassword,reArgs),{reason:'need_owner',step:'relogin_password',where:'login'});assert.deepEqual(toPassword.clicks,[]);
+  const NO_SLASH='https://accounts.kakao.com/login/simple?continue=x';
+  const noSlash=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(NO_SLASH)]},'https://accounts.kakao.com/login/simple':{elements:[row('yu***@gmail.com',{go:RE_ENTRY})]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(noSlash,reArgs),{reason:'need_owner',step:'relogin_screen',where:'login'});assert.deepEqual(noSlash.clicks,['a.btn_login.link_kakao_id']);
+});
+test('티스토리 다시 로그인(Fable 설계 검토 P2): 줄 가운데가 삭제 단추거나 덮였으면, 호스트가 다르면, 계정 줄 단계를 보지 못하면, 표시 뒤 대상이 사라지면 누르지 않는다',async()=>{
+  const stop=async(kakaoPage,want,clicks,extra={})=>{
+    const p=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]},[RE_KAKAO]:kakaoPage},RE_LOGIN,extra);
+    assert.deepEqual(await tistoryDailyPage(p,reArgs),{reason:'need_owner',step:want,where:'login'});assert.deepEqual(p.clicks,clicks);
+  };
+  const first=['a.btn_login.link_kakao_id'];
+  await stop({elements:[row('yu***@gmail.com',{go:RE_ENTRY,hitButton:true})]},'relogin_target',first);
+  await stop({elements:[row('yu***@gmail.com',{go:RE_ENTRY,hitOutside:true})]},'relogin_target',first);
+  await stop({elements:[row('yu***@gmail.com',{go:RE_ENTRY})]},'relogin_screen',first,{failAt:(url,src)=>url.includes('/login/simple/')&&src.includes('setAttribute')});
+  await stop({elements:[row('yu***@gmail.com',{go:RE_ENTRY,vanish:true})]},'relogin_unchecked',first);
+  // 같은 경로(/auth/login)라도 호스트가 다르면 카카오 단추를 누르지 않는다.
+  const otherHost=reloginBrowser({[RE_LOGIN]:{redirect:'https://login.tistory.com/auth/login'},'https://login.tistory.com/auth/login':{elements:[kakaoButton(RE_KAKAO)]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(otherHost,reArgs),{reason:'need_owner',step:'relogin_button',where:'login'});assert.deepEqual(otherHost.clicks,[]);
+  // 같은 경로(/login/simple/)라도 호스트가 다르면 계정 줄을 누르지 않는다.
+  const FAKE='https://accounts.kakao.example/login/simple/?continue=x';
+  const fakeKakao=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(FAKE)]},'https://accounts.kakao.example/login/simple/':{elements:[row('yu***@gmail.com',{go:RE_ENTRY})]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(fakeKakao,reArgs),{reason:'need_owner',step:'relogin_screen',where:'login'});assert.deepEqual(fakeKakao.clicks,first);
+  // 카카오 단추에 표시를 단 뒤 대상이 사라져도 멈춘다.
+  const gone=reloginBrowser({[RE_LOGIN]:{elements:[{...kakaoButton(RE_KAKAO),vanish:true}]}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(gone,reArgs),{reason:'need_owner',step:'relogin_unchecked',where:'login'});assert.deepEqual(gone.clicks,[]);
+});
+test('티스토리 다시 로그인(Fable 설계 검토 P2 · P3): 줄을 누른 뒤 통계 화면에서 튕겨도 누른 사실을 싣고, 기본 확인 창은 취소로 닫는다',async()=>{
+  const bounced=reloginBrowser({[RE_LOGIN]:{elements:[kakaoButton(RE_KAKAO)]},[RE_KAKAO]:{elements:[row('yu***@gmail.com',{go:'https://yuhobuilds.tistory.com/manage/posts'})]},
+    [RE_ENTRY]:{redirect:RE_LOGIN}},RE_LOGIN);
+  assert.deepEqual(await tistoryDailyPage(bounced,reArgs),{reason:'need_owner',step:'relogin_landed',where:'login',relogin:'clicked'});
+  assert.equal(bounced.dialogs.length,1);
+  let dismissed=0,accepted=0;
+  bounced.dialogs[0]({dismiss:async()=>{dismissed++;},accept:async()=>{accepted++;}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual([dismissed,accepted],[1,0]);
+  // relogin을 주지 않은 길은 확인 창 처리도 걸지 않는다.
+  const plain=reloginBrowser({},RE_ENTRY);await tistoryDailyPage(plain,{...reArgs,relogin:undefined});assert.equal(plain.dialogs.length,0);
+});
