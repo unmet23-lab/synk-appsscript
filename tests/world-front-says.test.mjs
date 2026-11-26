@@ -27,6 +27,28 @@ test('표와 녹음 파일이 한 벌이다', () => {
   }
 });
 
+test('혼자 여는 판(가짜 host)의 말은 실제 다리와 같은 레슨 원고다', () => {
+  const src = fs.readFileSync(new URL('dev-host.mjs', FRONT), 'utf8');
+  const rows = [...src.matchAll(/^\s*'([^']+)': \{[^\n]*?says: (\w+|\(\)) => \[([^\]]*)\]/gm)];
+  assert.ok(rows.length >= 5, '가짜 host의 레슨 말을 찾지 못함');
+  for (const [, title, arg, list] of rows) {
+    assert.equal(arg, '()', `${title}: 말을 학생 정보로 짓지 않는다`);
+    const lesson = LESSONS.find(l => l.title === title);
+    assert.ok(lesson, `${title}: 레슨 원고에 없는 이름`);
+    const says = [...list.matchAll(/'([^']*)'/g)].map(m => m[1]);
+    assert.deepEqual(says, itemOf({id: lesson.id, lessonId: lesson.id, route: 'lesson', label: lesson.title}).says, title);
+  }
+});
+
+test('녹음을 못 받으면 한 줄로 알리고, 그 글은 영어 · 몽골어 표에 있다', async () => {
+  const src = fs.readFileSync(new URL('app.mjs', FRONT), 'utf8'), line = '소리를 불러오지 못했어요. 다시 눌러 주세요.';
+  const speak = src.slice(src.indexOf('function speakKo('), src.indexOf('\n}\n', src.indexOf('function speakKo(')));
+  assert.match(speak, new RegExp(`toast\\(ui\\('${line.replace(/[.]/g, '\\.')}'\\)\\)`), '실패 때 알림');
+  assert.match(speak, /dog\(8000\)/, '받다가 멎으면 8초 뒤 끝맺음');
+  const {T} = await import('../experiences/world-front/strings.mjs');
+  for (const lang of ['en', 'mn']) assert.ok(T[lang][line], `${lang} 번역`);
+});
+
 test('앞면은 기기 음성을 쓰지 않는다', () => {
   for (const name of ['app.mjs', 'club.mjs', 'index.html']) assert.doesNotMatch(fs.readFileSync(new URL(name, FRONT), 'utf8'), /speechSynthesis|SpeechSynthesisUtterance/, name);
 });

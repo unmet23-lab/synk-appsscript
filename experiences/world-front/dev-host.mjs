@@ -11,8 +11,9 @@ const STUDENTS = {
   actor: {name: '투안', nameEn: 'Tuan', nameCy: 'Туан', look: 'vn_m', call: '누나', from: '베트남'}
 };
 // 할 일마다 자리 사진 하나 · 그 레슨이 실제로 가르치는 말(life-content.mjs의 표현 셋). 말이 없는 활동은 다루는 것만.
+// 말은 실제 다리(world-front-entry.mjs itemOf)처럼 레슨 원고 그대로다 — 학생 이름 문장은 녹음이 없다(검수 world-front-voice-20261126 F3, tests/world-front-says.test.mjs가 대조).
 const LESSON = {
-  '첫 인사 세 마디': {photo: 'ph9-greet', topic: '만남 · 감사 · 소개 · {m}분', says: me => ['안녕하세요.', '감사합니다.', me]},
+  '첫 인사 세 마디': {photo: 'ph9-greet', topic: '만남 · 감사 · 소개 · {m}분', says: () => ['안녕하세요.', '감사합니다.', '저는 수진이에요.']},
   '카페에서 하는 말': {photo: 'ph8-cafe', topic: '주문 · 매장 이용 · 포장 · {m}분', says: () => ['따뜻한 차 한 잔 주세요.', '여기서 마실게요.', '포장해 주세요.']},
   '계산대 앞 세 마디': {photo: 'ph6-store', topic: '가격 · 봉투 · 카드 결제 · {m}분', says: () => ['이거 얼마예요?', '봉투 하나 주세요.', '카드로 계산할게요.']},
   '어디로 가면 될까요?': {photo: 'ph3-way', topic: '위치 묻기 · 방향 · 주변 장소 · {m}분', says: () => ['공원이 어디에 있어요?', '오른쪽으로 가세요.', '은행 옆에 있어요.']},
