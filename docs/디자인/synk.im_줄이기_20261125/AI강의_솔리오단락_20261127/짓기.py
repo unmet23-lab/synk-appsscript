@@ -58,10 +58,10 @@ TOUR['en'] = [
 ]
 HEAD = {
     'ko': ('솔리오 앱', 'AI 1인 기업가에게 필요한 것을<br>솔리오 하나에 준비하고&nbsp;있습니다',
-           '3,000시간과 5천만 원을 들여 AI로 일하며 시험한 방법을 솔리오가 자동으로 적용합니다. 번거로운 설정 없이 가장 알맞은 AI로 일합니다.',
+           '3,000시간과 5천만 원어치 시행착오를 솔리오에 담았습니다. 같은 길을 처음부터 걷지 않아도 됩니다.',
            '솔리오가 맡는 일', '/#platform', 'PC 앱 받기', '회원은 무료입니다. Windows와 Mac에서 쓰며, 지금은 미리보기판입니다.'),
     'en': ('SOLIO app', 'Everything a one-person AI company needs,<br>coming together in SOLIO',
-           'SOLIO applies what we learned from 3,000 hours and 50 million won of working and testing with AI. No fiddly setup, just the right AI for the job.',
+           'We built 3,000 hours and 50 million won of trial and error into SOLIO. You don’t have to walk the same road from the start.',
            'What SOLIO handles', '/en/#platform', 'Get the PC app', 'Free for members. Runs on Windows and Mac, now in preview.'),
 }
 # 쪽마다 걷을 옛 솔리오 칸의 머리와 강사 구역 꼬리표
@@ -73,7 +73,7 @@ AI_CSS = '''<style>
 .app-sec .sec-head p:not(.tag){font:var(--t-lead);max-width:34em;text-wrap:pretty}
 .tour-tabs{position:relative;isolation:isolate;display:inline-flex;gap:2px;max-width:100%;margin:0 0 var(--g3);padding:5px;border-radius:999px;background:#ebe9e4;box-shadow:inset 0 1px 2px rgba(17,17,19,.09),inset 0 0 0 1px rgba(17,17,19,.04);overflow-x:auto;scrollbar-width:none}
 .tour-tabs::-webkit-scrollbar{display:none}
-.tour-tabs button{position:relative;z-index:1;flex:none;font:inherit;font-size:15px;font-weight:500;line-height:1;padding:12px 18px;border:0;border-radius:999px;background:transparent;color:#6a6a70;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .25s var(--ease)}
+.tour-tabs button{position:relative;z-index:1;flex:none;font:inherit;font-size:15px;font-weight:500;line-height:1;padding:12px 18px;border:0;border-radius:999px;background:transparent;color:#56565c;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .25s var(--ease)}
 .tour-tabs button:hover,.tour-tabs button[aria-selected="true"]{color:var(--ink)}
 .tour-tabs button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .tour-tabs:not(.on) button[aria-selected="true"]{background:#fff;box-shadow:0 6px 14px -8px rgba(17,17,19,.4)}
