@@ -103,13 +103,65 @@ function originals(result, candidates) {
   };
 }
 
-// 게임이 쓰는 꼴로 감싼다 — 고른 후보 되맞춤, 손잡이(live)의 pick도 같다.
+// 이유 줄은 그 판이 평가할 단위를 그 단위의 첫 평가 전에 이름으로 말하지 않는다(5-3 게임 GE1 — 설계 주인 11-26). 게임의 문항은 그 단위를
+// 묻는다 — 첫 평가 전에 이름을 보이면 답을 미리 알려 주고, 그 답이 「도움 없이 맞힘」 근거로 남는다. 그 자리는 이름 없는 제품 문장이다.
+// 돌아온 · 흔들리는 · 방금 놓친 단위는 GAME_NAMELESS(셸 world-today.mjs와 같은 글), 처음 만나는 단위는 이름 없는 처음 문장(몽골어는 검수 전이라
+// 없음), 그 밖(난도 · 숨 고르기 · 목표)은 줄 없음 — 게임은 기본 안내를 둔다. 평가 = 엔진이 등급을 매긴 답(grade). 판(startSet · finishSet)이
+// 바뀌면 다시 센다. 감싼 코치의 recommend · live().pick 한 자리라 아홉 게임이 함께 받는다(입구의 곡 · 손님 추천처럼 판 밖 recommend도).
+const GAME_NAMELESS = Object.freeze({
+  ko: '게임에서 만난 말이 돌아왔어요. 잊기 전에 한 번 더 만나요.',
+  en: 'Something you met in a game is back. Let’s review it once more before it fades.',
+  mn: 'Тоглоомд үзсэн үг хэллэг эргэн ирлээ. Мартахаасаа өмнө дахин нэг давтъя.',
+});
+const FIRST_NAMELESS = Object.freeze({ ko: '새로운 말을 처음 만나요.', en: 'Meeting something new for the first time.' });
+const NAMELESS = Object.freeze({ 'unit.due': GAME_NAMELESS, 'unit.shaky': GAME_NAMELESS, 'unit.retry': GAME_NAMELESS, 'unit.new': FIRST_NAMELESS });
+// 줄의 언어 — 셸이 화면 언어로 지은 줄의 글자로 가른다(한글 · 키릴 · 그 밖은 영어).
+const lineLang = line => (/[\uAC00-\uD7A3]/.test(line) ? 'ko' : /[\u0400-\u04FF]/.test(line) ? 'mn' : 'en');
+// 이름 없는 자리의 줄 — 이 판에서 아직 평가하지 않은 단위를 겨눈 이유의 줄을 바꾼 것(namesGuard가 부른다). 단위 칸이나 줄이 없으면 그대로다.
+export function namelessLine(why) {
+  if (typeof why?.slots?.unit !== 'string' || typeof why.line !== 'string') return why?.line ?? null;
+  return NAMELESS[why.code]?.[lineLang(why.line)] ?? null;
+}
+function namesGuard() {
+  const graded = new Set(); // 이 판에서 등급이 매겨진 단위
+  const named = new Map(); // 고른 문항(itemKey) → 이유 줄이 겨눈 단위
+  const shown = new Map(); // 제시(pid) → 그 단위
+  return {
+    picked(result) {
+      const unit = result?.why?.slots?.unit;
+      if (!result?.selected || typeof unit !== 'string') return result;
+      if (typeof result.selected.itemKey === 'string') named.set(result.selected.itemKey, unit);
+      if (graded.has(unit) || typeof result.why.line !== 'string') return result;
+      return { ...result, why: { ...result.why, line: namelessLine(result.why) } };
+    },
+    presented(item, pid) {
+      const unit = named.get(item?.itemKey);
+      if (unit && pid != null) shown.set(pid, unit);
+      return pid;
+    },
+    answered(pid, out) {
+      const recorded = out && typeof out === 'object' && 'recorded' in out ? out.recorded : out; // 손잡이(live)의 답은 { recorded, … }
+      if (recorded?.grade != null && shown.has(pid)) graded.add(shown.get(pid));
+      return out;
+    },
+    reset() {
+      graded.clear();
+      named.clear();
+      shown.clear();
+    },
+  };
+}
+
+// 게임이 쓰는 꼴로 감싼다 — 고른 후보 되맞춤, 손잡이(live)의 pick도 같다. 이유 줄의 이름은 namesGuard가 본다.
 function wrapCoach(coach) {
+  const names = namesGuard();
+  const has = name => typeof coach[name] === 'function';
   const live = (...args) => {
     const handle = coach.live(...args);
     return Object.freeze({
       ...handle,
-      pick: (candidates, options) => originals(handle.pick(candidates, options), candidates),
+      pick: (candidates, options) => names.picked(originals(handle.pick(candidates, options), candidates)),
+      ...(typeof handle.answer === 'function' ? { answer: (pid, ...rest) => names.answered(pid, handle.answer(pid, ...rest)) } : {}),
     });
   };
   return Object.freeze({
@@ -118,7 +170,11 @@ function wrapCoach(coach) {
         .filter(name => typeof coach[name] === 'function')
         .map(name => [name, (...args) => coach[name](...args)]),
     ),
-    recommend: (candidates, options) => originals(coach.recommend(candidates, options), candidates),
+    recommend: (candidates, options) => names.picked(originals(coach.recommend(candidates, options), candidates)),
+    ...(has('present') ? { present: (item, ...rest) => names.presented(item, coach.present(item, ...rest)) } : {}),
+    ...(has('answer') ? { answer: (pid, ...rest) => names.answered(pid, coach.answer(pid, ...rest)) } : {}),
+    ...(has('startSet') ? { startSet: (...args) => (names.reset(), coach.startSet(...args)) } : {}),
+    ...(has('finishSet') ? { finishSet: (...args) => (names.reset(), coach.finishSet(...args)) } : {}),
     live,
   });
 }

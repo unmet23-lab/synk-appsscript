@@ -14,7 +14,7 @@ import { FLOW_RUN, FLOW_WORDS, TIRED_RUN, actionEvidence, instructionMetadata, p
 import { LISTENING_CHECKS, checkMetadata, createListeningCheck } from './listening-check.mjs';
 import { mountListeningCheck } from './listening-check-ui.mjs';
 import { BANKS, CHECK_LENGTH, GAME_ID, createRunner, freshFirst, openRunner } from './atlas-next-play.mjs';
-import { ended } from './kit/atlas-next.mjs';
+import { ended, namelessLine } from './kit/atlas-next.mjs';
 import { createGameDoor, GAME_BANKS } from '../synk-world-app/world-atlas-game.mjs';
 // 원문 토막은 게임 모듈처럼 엄격 모드로 돌린다. 느슨한 모드(with)는 얼린 FLOW_ 값에 쓰는 줄을 조용히 넘겨, 게임에서만 던지는 줄을 시험이 놓친다
 // (4-6e 첫 묶음 Fable F4). env의 이름이 토막의 바깥 이름이다 — 토막이 env에 없는 이름에 쓰면 시험이 던진다.
@@ -262,8 +262,13 @@ test('빈 기억 손님의 듣기 확인 — 문항마다 recommend(3문항 · �
   assert.ok(asked[0].args[0].every((row) => typeof row.itemKey === 'string' && row.checkId), '후보는 자료만 — 문을 지난다');
   assert.equal(asked[0].args[0].length, 12);
   assert.equal(asked[1].args[0].length, 11, '이 판에 낸 확인은 다시 후보가 아니다');
+  // 이유 줄은 이 판에서 아직 평가하지 않은 단위의 이름을 말하지 않는다 — 키트가 이름 없는 줄로 바꾼다(5-3 게임 GE1).
+  // 이 판에서 등급이 매겨진 단위는 다음 고르기부터 이름을 말해도 된다.
+  const graded = new Set();
   out.forEach(({ plan }, i) => {
-    assert.equal(plan.note, asked[i].result.why.line, `문항 ${i + 1}의 이유는 엔진의 why.line`);
+    const why = asked[i].result.why;
+    assert.equal(plan.note, graded.has(why.slots?.unit) ? why.line : namelessLine(why), `문항 ${i + 1}의 이유는 엔진의 why.line(첫 평가 전이면 이름 없이)`);
+    graded.add(why.slots?.unit);
     assert.equal(plan.followup, null, '즉시 확인 바꿔 넣기는 쓰지 않는다');
   });
   assert.deepEqual(out.map(({ result }) => result.verdict), ['correct', 'incorrect', 'correct']);

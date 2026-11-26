@@ -286,7 +286,46 @@ test('원문 — 학습 허브의 듣기 맞춤 코스(?learning=)를 소리를 
   assert.ok(held > start.indexOf('if (starting || !demo && !isUnlocked(round.selectedStage)) return;'));
   assert.ok(held < start.indexOf('if (!ready) {'), '예약한 출발을 실행할 때도 지난다');
   assert.ok(held < start.indexOf('beginPlan('));
-  assert.match(start.slice(held), /^if \(nextRace && !demo && requestHeld\) \{\n    const plan = nextPersonalized\(\);\n    if \(!plan\) \{ lobbyNote\('이번 맞춤 판은 듣기 문항이에요\. 소리를 켜면 바로 시작할 수 있어요\.'\); return; \}\n    selectStage\(plan\.stage\);/);
+  assert.match(start.slice(held), /^if \(nextRace && !demo && requestHeld\) \{\n    const plan = nextPersonalized\(\);\n    if \(!plan\) \{ soundBlocked\(\(\) => start\(demo, bypassTutorial\)\); return; \}\n    selectStage\(plan\.stage\);/);
+});
+
+// 결과 화면의 「이 코스 다시 달리기」 · 「다음 코스」가 소리 때문에 막히면 그 화면에 안내와 「소리 켜고 출발」을 둔다(검수 GB1).
+test('소리를 끈 채 맞춤 판 출발이 막히면 — 결과 화면에 안내와 「소리 켜고 출발」이 보이고, 누르면 소리를 켜고 막혔던 출발을 다시 한다(검수 GB1)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const source = readFileSync(new URL('../app.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const from = source.indexOf('function lobbyNote(text)');
+  const to = source.indexOf('\n', source.indexOf('function hideSoundStart()'));
+  assert.ok(from >= 0 && to > from);
+  const node = (id) => ({ id, textContent: '', hidden: true, listeners: {}, after(n) { made.push(n); }, focus() { this.focused = true; }, addEventListener(type, fn) { this.listeners[type] = fn; } });
+  let made = [];
+  const run = (screen, soundEnabled) => {
+    made = [];
+    const els = { 'l-reason': node('l-reason'), 'r-next-reason': node('r-next-reason') };
+    const said = [], toggled = [], retried = [];
+    const round = { soundEnabled };
+    const api = new Function('$', 'hud', 'currentScreen', 'document', 'round', 'toggleSound', `${source.slice(from, to)}\nreturn { soundBlocked, hideSoundStart };`)(
+      (id) => els[id], { announce: (t) => said.push(t) }, () => screen, { createElement: () => node('button') }, round,
+      async () => { toggled.push(1); round.soundEnabled = !round.soundEnabled; });
+    api.soundBlocked(() => retried.push('start'));
+    return { els, said, toggled, retried, round, api, button: made[0] };
+  };
+  // 입구: 안내 줄과 읽기 영역에만(그 화면이 보인다).
+  const lobby = run('lobby', false);
+  assert.match(lobby.els['l-reason'].textContent, /소리를 켜면 바로 시작할 수 있어요/);
+  assert.equal(lobby.button, undefined, '입구에는 단추를 더하지 않는다');
+  // 결과 화면: 보이는 「다음 레이스」 칸에 안내와 단추.
+  const results = run('results', false);
+  assert.equal(results.els['r-next-reason'].textContent, results.els['l-reason'].textContent);
+  assert.equal(results.els['r-next-reason'].hidden, false);
+  assert.ok(results.button && results.button.hidden === false && results.button.focused, '결과 화면에 「소리 켜고 출발」');
+  assert.equal(results.button.textContent, '소리 켜고 출발');
+  await results.button.listeners.click();
+  assert.deepEqual(results.toggled, [1], '소리를 켠다');
+  assert.equal(results.round.soundEnabled, true);
+  assert.deepEqual(results.retried, ['start'], '막혔던 출발을 다시 한다');
+  assert.equal(results.button.hidden, true);
+  // 출발하면(start가 hideSoundStart를 부른다) 단추를 거둔다.
+  assert.match(source.slice(source.indexOf('async function start('), source.indexOf('\n}\n', source.indexOf('async function start('))), /clearResetNotice\(\); clearTutorial\(\); hideSoundStart\(\);/);
 });
 
 test('로컬 개발 깃발(?atlas=next)은 문이 없어도 새 길로 간다 — 옛 코치를 만들지 않는다', async () => {

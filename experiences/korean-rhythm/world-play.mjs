@@ -4,7 +4,8 @@
 // 누른 순간에 내고, 입구 미리듣기 · 결과 소리는 따로 만든 화면 소리 문맥에서 낸다(곡 문맥은 결과에서 재운다).
 import { createSfx } from './world-sfx.mjs';
 import * as fx from './world-fx.mjs';
-import { loadRecording } from './audio.mjs';
+// app.mjs와 같은 주소로 부른다 — 한 모듈(곡 · 문장 소리 캐시를 나눠 갖지 않게, 검수 GC1).
+import { loadRecording } from './audio.mjs?v=atlas-53';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];

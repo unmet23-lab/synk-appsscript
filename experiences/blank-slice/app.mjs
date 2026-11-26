@@ -186,11 +186,15 @@ function renderLobby() {
 }
 // 기록 안내와 기록 지우기 단추. 지우기는 옛 길에서 계정의 기록이 아닐 때만이다(새 길 · 셸의 코치를 기다리는 동안은 숨긴다). 계정 안내로
 // 바꾸기 전의 처음 글(index.html)을 받아 두고, 계정이 아닌 길로 돌아오면 한 번 되돌린다(4-6 끝 판 A4).
+// 새 길에서 셸의 코치를 기다리는 동안과 열지 못했을 때는 저장 위치가 아직 없다 — 「이 브라우저에 저장」이라 하지 않는다(검수 GA1).
+// 기다리는 동안은 연결 중이라고 쓰고, 열지 못했거나 문이 닫히는 중이면 비운다(열지 못한 까닭은 저장 안내 줄이 말한다).
 let scopeFirst = null;
 function paintScope() {
   $('#reset-learning').hidden = hosted || !oldPath;
   const scope = $('#learning-scope');
-  if (hosted) { scopeFirst ??= scope.textContent; scope.textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'; }
+  const line = hosted ? 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'
+    : oldPath || coach ? null : coachOpening ? '학습 기록을 연결하고 있어요.' : '';
+  if (line != null) { scopeFirst ??= scope.textContent; scope.textContent = line; }
   else if (scopeFirst != null) { scope.textContent = scopeFirst; scopeFirst = null; }
 }
 

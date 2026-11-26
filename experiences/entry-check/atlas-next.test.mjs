@@ -14,7 +14,7 @@ import { composeShift, memoActive, minutes } from './core.mjs';
 import { FLOW_ENTRY, FLOW_WORDS, GAME_ID, answerPayload, caseMetadata, magnifierAfter } from './learning.mjs';
 import { choiceId } from './correction.mjs';
 import { BANKS, GUEST_REASONS, createShiftCoach, openShiftCoach } from './atlas-next-play.mjs';
-import { ended } from './kit/atlas-next.mjs';
+import { ended, namelessLine } from './kit/atlas-next.mjs';
 import { createGameDoor, GAME_BANKS } from '../synk-world-app/world-atlas-game.mjs';
 // 원문 토막은 게임 모듈처럼 엄격 모드로 돌린다. 느슨한 모드(with)는 얼린 FLOW_ 값에 쓰는 줄을 조용히 넘겨, 게임에서만 던지는 줄을 시험이 놓친다
 // (4-6e 첫 묶음 Fable F4). env의 이름이 토막의 바깥 이름이다 — 토막이 env에 없는 이름에 쓰면 시험이 던진다.
@@ -600,7 +600,8 @@ test('추천 근무지 — 열린 근무지의 손님 가운데 엔진이 고른
   assert.deepEqual(asked.args[1], {}, '판을 열지 않는다');
   assert.ok(asked.args[0].every((row) => ['pool', 'library'].includes(row.venueId) && !VENUES.find((v) => v.id === row.venueId).cases.find((c) => c.id === row.caseId).followupOnly));
   assert.equal(asked.result.status, 'ready');
-  assert.deepEqual(rec, { venueId: asked.result.selected.venueId, line: asked.result.why.line });
+  // 이유 줄은 이 판에서 아직 평가하지 않은 단위의 이름을 말하지 않는다 — 키트가 이름 없는 줄로 바꾼다(5-3 게임 GE1).
+  assert.deepEqual(rec, { venueId: asked.result.selected.venueId, line: namelessLine(asked.result.why) });
   coach.dispose();
 });
 

@@ -166,11 +166,13 @@ function paintStorageNote() {
     || (storage?.available === false ? '학습 기록을 저장할 수 없어 기본 순서로 진행해요.' : null) || (!coach && !quiet ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
 }
+/** 옛 길의 추천 순서 — 처음 판은 없다(쉬운 말부터). */
+function rankNow() { return progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() })); }
 /** 입구의 추천·저장 안내만 그린다. 판·소리·3D 무대·화면 전환·포커스는 건드리지 않아 저장 상태가 바뀔 때 다시 불러도 된다. */
 function paintLobbyPlan() {
   // 새 길: 판을 미리 짜지 않는다(공마다 고른다). 처음 판은 쉬운 말만 후보라 그 한 줄만 쓰고, 그 밖에는 이유를 지어내지 않는다.
   if (rally) { const first = progress.plays === 0; $('#l-reason').hidden = !first; $('#l-reason').textContent = first ? '처음이니까 쉬운 말부터 해요. 첫 공은 연습이에요.' : ''; paintStorageNote(); return; }
-  state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() }));
+  state.ranked = rankNow();
   const plan = atlas((c) => missedPractice(c, { audioAvailable: sound.isOn() }));
   $('#l-reason').textContent = plan ? `${plan.why} ${plan.next}` + (progress.practiced ? '' : ' 연습 공을 마치면 바로 나와요.') : progress.plays === 0 ? '처음이니까 쉬운 말부터 해요. 첫 공은 연습이에요.'
     : state.ranked?.reason ? `${state.ranked.reason} 그 말들을 먼저 넣었어요.` : '새 말을 섞어 한 판을 만들어요.';
@@ -232,14 +234,17 @@ async function startRound(mode = 'normal') {
   state.run += 1;
   sound.stopNarration();
   const run = state.run;
+  // 멈춤은 코치를 기다리기 전에 비운다 — 기다리는 동안 누른 멈춤은 판 시작까지 남는다(검수 GF1).
+  state.paused = false;
   // 새 길: 판을 다시 정해 겉이 닫혔으면(onRetired) 이 판을 열 때 문을 다시 연다 — 새 길이면 새 겉, 지금 판이면 옛 길. 소리 열기는 누른 자리에서 먼저.
-  if (rally?.retired) { await Promise.all([sound.unlock(), openNextCoach()]); if (!live(run)) return; }
+  // 옛 길로 돌아왔으면 첫 옛 판도 지금 기록의 추천 순서로 짠다(새 길의 입구 · 결과는 추천 순서를 구하지 않는다 — 검수 GF3).
+  if (rally?.retired) { await Promise.all([sound.unlock(), openNextCoach()]); if (!live(run)) return; if (!rally) state.ranked = rankNow(); }
   const opening = startFlow();
   const daily = mode === 'daily', date = daily ? seoulDate() : null;
   endPlan();
   // 새 길의 판: 보통 판은 공마다 엔진이 고르고(처음 판은 쉬운 말만), 하루 도전은 그날 정해진 차례 그대로 present만 한다.
   state.plan = !rally ? null : daily ? rally.fixed(dailyRound(date)) : rally.round({ firstTime: progress.plays === 0, seed: progress.plays + 1 });
-  Object.assign(state, { index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false, mode: daily ? 'daily' : 'normal', dailyDate: date,
+  Object.assign(state, { index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, mode: daily ? 'daily' : 'normal', dailyDate: date,
     queue: state.plan ? state.plan.queue : daily ? dailyRound(date) : composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1, lead: atlas((c) => missedPractice(c, { audioAvailable: sound.isOn() }))?.target.id ?? null }) });
   $('.game-title').textContent = daily ? '하루 도전' : '말 랠리';
   // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 판만 받는다(그만두면 받지 않는다). 코인은 학습 기록에 쓰지 않는다.
@@ -247,6 +252,7 @@ async function startRound(mode = 'normal') {
   updateHud(); renderCards(null); tip('공을 준비하고 있어요…', { silent: true });
   await sound.unlock();
   world?.start();   // WORLD: 공 두 번 튀기는 소리 · 음악 · 뒤쪽 탁구대의 먼 소리
+  if (state.paused) world?.pause();   // 판을 여는 동안 멈췄으면 시작 박자도 선다(이어 하면 함께 간다)
   try { await Promise.all([ensureStage(), sound.preloadVoices([PRACTICE, ...(state.plan ? state.plan.pool : state.queue)]), sound.preloadNarration(NARRATION_LINES)]); }
   catch {
     renderLobby();
@@ -660,6 +666,7 @@ function nextLine(next) {
 }
 
 function renderSkills(next) {
+  skillsCard(false);
   const ul = $('#r-skills'); ul.textContent = '';
   const report = atlas((c) => skillReport(c.summary(), { focusSkillId: next?.skillId }), []);
   const rows = report.length ? report : Object.keys(SKILL_LABEL).map((id) => ({ id, label: SKILL_LABEL[id], text: '기록을 쓸 수 없어요', tone: 'quiet' }));
@@ -671,13 +678,25 @@ function renderSkills(next) {
   }
   if (atlas(hasEarlierRecord, false)) ul.append(el('li', 'earlier-record', '<span>연습 기록 표가 바뀌기 전에 혼자 답한 기록도 그대로 남아 있어요. 위 숫자는 바뀐 뒤의 기록이에요.</span>'));
 }
-/** 새 길: 학습 항목마다 이번 판에 맞힌 수만 쓴다(칸 줄은 리디자인에서). */
+/**
+ * 새 길: 학습 항목마다 이번 판에서 판정된 답(recorded — 엔진이 등급을 매긴 답)만 센다. 소리를 끄고 글로 읽은 답은 세지 않는다(검수 GF2).
+ * 카드 제목과 설명도 이번 판의 판정된 답에 맞춘다. 옛 길은 renderSkills가 옛 제목과 설명으로 되돌린다.
+ */
 function renderRoundSkills() {
+  skillsCard(true);
   const ul = $('#r-skills'); ul.textContent = '';
   for (const id of Object.keys(SKILL_LABEL)) {
-    const mine = state.results.filter((x) => x.skill === id), ok = mine.filter((x) => x.correct === true).length;
-    ul.append(el('li', '', `<b>${esc(SKILL_LABEL[id])}</b><em>이번 ${ok}/${mine.length}</em>`));
+    const mine = state.results.filter((x) => x.skill === id && x.recorded), ok = mine.filter((x) => x.correct === true).length;
+    ul.append(el('li', '', `<b>${esc(SKILL_LABEL[id])}</b>${mine.length ? `<em>이번 ${ok}/${mine.length}</em>` : '<span>이번 판에 판정한 답이 없어요</span>'}`));
   }
+}
+const SKILLS_CARD = {
+  old: ['듣기 능력 기록', '이 기기에 남은 듣기 기록이에요. 끝까지 듣고 도움 없이 고른 대답만 「혼자 해냄」으로 세요. TOPIK 급수와는 관계없어요.'],
+  next: ['이번 판의 듣기', '소리를 듣고 고른 대답만 셌어요. 소리를 끄고 글로 읽은 대답은 세지 않아요. TOPIK 급수와는 관계없어요.'],
+};
+function skillsCard(next) {
+  const card = $('#r-skills').closest('.skills'), [tag, fine] = SKILLS_CARD[next ? 'next' : 'old'];
+  card.querySelector('.tag').textContent = tag; card.querySelector('.fine').textContent = fine;
 }
 
 /* ── 멈춤 ── */

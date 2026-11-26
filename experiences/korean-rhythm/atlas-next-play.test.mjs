@@ -4,6 +4,7 @@
 //   none(같은 날 넷째 게임 — 게임 차례 · 이유 줄 없음 · 곡 끝까지 기록) · idle, 순간 맞춤은 박자만(듣기 답은 Flow를 움직이지 않는다),
 //   며칠 뒤 다시 확인은 due()의 단위가 든 대화, 다시 듣기는 같은 제시의 도움, 오류는 code로만(RUN_ENDED · 판을 다시 정함 · 그 밖).
 import test from 'node:test';
+import { namelessLine } from './kit/atlas-next.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -134,7 +135,9 @@ test('추천 곡 — 곡 문항 전체 recommend(판 5 · 새것 한도 3n)의 �
   assert.equal(result.status, 'ready', '빈 기억 손님의 첫 곡은 엔진이 고른다');
   assert.equal(picked.trackId, result.selected.trackId);
   assert.ok(result.selected.itemKey.startsWith(`korean-rhythm:t${picked.trackId}q`));
-  assert.equal(picked.line, result.why.line);
+  // 이유 줄은 이 판에서 아직 평가하지 않은 단위의 이름을 말하지 않는다 — 키트가 이름 없는 줄로 바꾼다(5-3 게임 GE1).
+  assert.equal(picked.line, namelessLine(result.why));
+  assert.notEqual(picked.line, result.why.line);
   assert.ok(typeof picked.line === 'string' && picked.line.length > 0);
   assert.equal(picked.held, null);
   assert.ok(!names(spy).includes('present'), '고르기만 한다');

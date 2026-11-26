@@ -4,6 +4,7 @@
 // 문을 거친 그대로 한 판씩 돈다 — 여정 고르기(set: {}), 제시 · 전달 · 도움 · 답의 차례, 은행에 없는 「그대로」는 내지 않음, 판 끝 finishSet,
 // none(같은 날 넷째 게임 — 게임 차례 · 이유 줄 없음) · idle, 떠날 때 열린 제시를 unanswered로 닫고 셸의 판 닫기가 그 뒤, 판을 다시 정하면 다음 여정에서 다시 열기.
 import test from 'node:test';
+import { namelessLine } from './kit/atlas-next.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createGameDoor, GAME_BANKS } from '../synk-world-app/world-atlas-game.mjs';
@@ -224,8 +225,10 @@ test('문을 거친 진짜 코치로 한 여정 — 고르기(set: {}) · 제시
   assert.equal(picked.engine, true);
   assert.ok(journeys.includes(picked.journey));
   assert.ok(picked.journey.decisions.some((d) => d.assessable && decisionMeta(d).itemKey === result.selected.itemKey), '고른 문항이 든 여정');
-  assert.equal(picked.note, result.why.line, '입구 한 줄은 코치의 이유');
+  // 이유 줄은 이 판에서 아직 평가하지 않은 단위의 이름을 말하지 않는다 — 키트가 이름 없는 줄로 바꾼다(5-3 게임 GE1).
+  assert.equal(picked.note, namelessLine(result.why), '입구 한 줄은 코치의 이유 — 첫 평가 전이라 이름 없이');
   assert.ok(typeof picked.note === 'string' && picked.note.length > 0);
+  assert.notEqual(picked.note, result.why.line);
 
   const journey = picked.journey;
   const plan = playThrough(play, journey, clock, { wrong: new Set([1]), help: new Set([0]) });
@@ -345,7 +348,7 @@ test('idle — 같은 날 여정을 이어 하면 엔진이 할 것이 없다고
     assert.deepEqual(options, { set: {} });
     statuses.push(result.status);
     assert.ok(journeys.includes(picked.journey));
-    assert.equal(picked.note, picked.engine ? result.why.line : null, '이유 줄은 엔진이 고른 여정에만');
+    assert.equal(picked.note, picked.engine ? namelessLine(result.why) : null, '이유 줄은 엔진이 고른 여정에만(여정마다 새 판 — 첫 평가 전이면 이름 없이)');
     // idle(채우기)은 엔진이 고른 문항이고, none만 게임 차례다(§23-6 · 키트 setPlay).
     assert.equal(picked.engine, result.status !== 'none');
     playThrough(play, picked.journey, clock);
@@ -425,4 +428,35 @@ test('오류는 code로만 가른다 — RUN_ENDED면 그 겉을 더 부르지 �
   ex.heard(true); ex.help('text'); ex.answer({ correct: true, assessable: true });
   play.end();
   assert.equal(calls.length, before);
+});
+
+// 5-3 게임 GE1(검수 재현: 승차권의 「「그대로」 처음 만나요.」가 첫 듣기 평가의 정답을 짚고, 그 답이 도움 없이 맞힌 근거로 남았다).
+// 승차권 한 줄은 이 여정(판)이 평가할 말의 이름을 첫 평가 전에 보이지 않는다 — 도움 없이 맞힌 답의 근거가 이유 줄로 부풀지 않는다.
+test('승차권 한 줄은 첫 평가 전의 말을 이름으로 알려 주지 않는다 — 도움 없이 맞힌 답 앞에 그 답의 이름이 보이지 않았다(5-3 게임 GE1)', async () => {
+  let rawLeaks = 0;
+  for (const seed of [1234, 4321, 2026, 777, 31]) {
+    const clock = clockAt();
+    const { nextPlay: play, coach, port, spy, door } = await opened({ clock });
+    const journeys = candidates(seed);
+    const picked = play.pick(journeys);
+    const raw = lastRecommend(spy)[2];
+    // 이 여정에서 평가할 문항(은행에 든 결정 · 만남)의 단위 이름
+    const plan = planDay(picked.journey);
+    const keys = bankedOf(picked.journey, plan);
+    const labelsOf = (itemKey) => coach.itemUnits(itemKey).map((u) => u.label).filter(Boolean);
+    const named = (text, itemKey) => typeof text === 'string' && labelsOf(itemKey).some((label) => text.includes(`「${label}」`) || text.includes(`‘${label}’`) || text.includes(`«${label}»`));
+    if (keys.some((itemKey) => named(raw.why?.line, itemKey))) rawLeaks += 1;
+    for (const itemKey of keys) assert.equal(named(picked.note, itemKey), false, `${seed}: 승차권 「${picked.note}」이 평가 전의 ${itemKey}를 짚는다`);
+    playThrough(play, picked.journey, clock);
+    play.end();
+    // 도움 없이 맞힌 답(근거가 서는 답)의 문항 — 그 앞에 보인 줄이 그 이름을 짚지 않았다.
+    const rows = await events(coach, port);
+    const shown = new Map(rows.filter((e) => e.type === 'practice.presented').map((e) => [e.id, e]));
+    const helped = new Set(rows.filter((e) => e.type === 'practice.helped').map((e) => e.presentationId));
+    const unaided = rows.filter((e) => e.type === 'practice.attempted' && e.verdict === 'correct' && !helped.has(e.presentationId));
+    assert.ok(unaided.length > 0, `${seed}: 도움 없이 맞힌 답이 있다`);
+    for (const e of unaided) assert.equal(named(picked.note, shown.get(e.presentationId).itemKey), false, `${seed}: ${shown.get(e.presentationId).itemKey}`);
+    door.dispose();
+  }
+  assert.ok(rawLeaks > 0, '셸 코치의 이유 줄은 그대로면 평가할 말의 이름을 짚는다 — 이 시험이 그 장면을 본다');
 });

@@ -7,6 +7,7 @@
 // 이 파일은 처음 시험이 끝날 때까지 새 길 모듈을 싣지 않는다(맨 위에서 부르지 않는다) — 꺼진 판 시험이 그 모듈의 적재를 본다.
 // 맨 아래 원문 검사: 정적 import에 새 길 모듈이 없고, 옛 코치는 같은 줄 그대로이며, learning.mjs가 내보내는 이름(드라마 「오늘」이 부른다)이 그대로다.
 import test from 'node:test';
+import { namelessLine } from './kit/atlas-next.mjs';
 import assert from 'node:assert/strict';
 import { registerHooks } from 'node:module';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -175,7 +176,9 @@ test('문이 겉을 주면 그 겉으로 연다 — 옛 코치 없음, 추천 �
   assert.equal(page.$('#storage-note').hidden, true);
   const lobby = calls.find((call) => call.name === 'recommend');
   assert.deepEqual(lobby.args[1], {}, '입구는 판을 열지 않고 추천 근무지만 묻는다');
-  assert.equal(page.$('#rec-reason').textContent, lobby.result.why.line, '이유는 엔진의 한 줄');
+  // 이유 줄은 이 판에서 아직 평가하지 않은 단위의 이름을 말하지 않는다 — 키트가 이름 없는 줄로 바꾼다(5-3 게임 GE1).
+  assert.equal(page.$('#rec-reason').textContent, namelessLine(lobby.result.why), '이유는 엔진의 한 줄 — 첫 평가 전이라 이름 없이');
+  assert.notEqual(namelessLine(lobby.result.why), lobby.result.why.line);
   assert.equal(page.$('#rec-practice').hidden, true, '놓친 단위가 없으면 한 손님 연습을 건네지 않는다');
   // 근무 하나 — 열린 근무지는 수영장뿐이다.
   const before = calls.length;

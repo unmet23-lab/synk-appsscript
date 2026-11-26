@@ -4,12 +4,13 @@
 // → 곡이 끝나면 결과(문장 다시 듣기·새 문장 확인·공통 코인). 코인은 곡을 끝까지 마쳤을 때만 받는다.
 // 시험(app-learning.test.mjs)이 이 파일을 가짜 DOM에서 그대로 돌린다: 처음 읽을 때는 getElementById·createElement만 쓴다.
 import { TRACKS, LEVELS, RoundState } from './core.mjs';
-import { MusicPlayer } from './audio.mjs';
+// 5-3 게임에서 바뀐 의존 모듈은 판 표시(?v=)로 부른다 — 공개 직후 10분 섞임 창에 새 앱이 캐시의 옛 판을 받지 않게(검수 GC1 · F1). 이 모듈을 다시 고치면 공개 도구가 토큰을 내용 해시로 바꾼다.
+import { MusicPlayer } from './audio.mjs?v=atlas-53';
 import { Stage } from './stage.mjs';
 import { josa } from './kit/josa.mjs';
 import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine, RHYTHM_CANDIDATES, missedRhythm, returnLine } from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
-import {createSupplementalPanel} from './supplemental-player.mjs';
+import {createSupplementalPanel} from './supplemental-player.mjs?v=atlas-53';
 
 let gameTutor=null;
 const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
@@ -299,22 +300,31 @@ async function start() {
   const opening = nextOpening;
   try {
     if (!window.AudioContext) throw new Error('이 브라우저는 음악 재생을 지원하지 않아요. 최신 Chrome 또는 Edge에서 열어 주세요.');
-    const target = assignment(), track = assignmentTrack(TRACKS[state.track], target);
-    if (!track) throw new Error('과제 문항이 있는 곡을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');
-    // 재방문 맞춤 연습의 곡이면 그 문항이 첫 관문이다. 다른 곡을 직접 골랐으면 그 곡 그대로다(과제에서는 맞춤이 없다).
-    const missed = target ? null : returnPlan(), lead = missed?.target.item.kind === 'song' && missed.target.item.trackId === track.id ? missed.target.item.sourceIndex : null;
-    // 새 길: 곡의 판을 열기 전에 보충 연습을 닫는다 — 답하지 않은 대화가 그 연습의 판에 판정 못 한 답으로 남는다(GB2).
-    if (nextPlay) { supplementalLobby.close(); supplementalPanel.close(); }
-    // 새 길: 문장마다 주장 변형 둘 가운데 코치가 고른 변형으로 보면을 짓는다(문장 소리 길이가 관문 자리를 정해 곡을 열 때 한 번에 고른다).
+    // 곡 · 첫 관문 · 보면은 그때의 코치로 정한다. 코치를 받는 중이면(처음 · 판을 다시 정한 뒤) 받은 뒤에 다시 정한다 — 새 길이면 그 코치가 고른
+    // 변형으로, 옛 길이면 그 옛 코치의 과제 곡과 재방문 맞춤 첫 관문으로(검수 C1 · GC2). 같은 씨앗이라 다시 지어도 보면의 짜임은 같다(GB5).
     const seed = crypto.getRandomValues(new Uint32Array(1))[0];
-    let round = new RoundState(nextPlay ? nextPlay.variants(track) : track, state.level, seed, { lead });
-    // 새 길: 코치를 받는 중이면(처음 · 판을 다시 정한 뒤) 소리 길만 지금 열고, 받은 코치가 새 길이면 같은 씨앗으로 그 코치가 고른 변형의 보면을
-    // 다시 지은 뒤 그 문장 소리를 받는다(GB5). 꺼진 판은 지금처럼 지은 보면의 문장을 바로 넘긴다.
-    const questions = opening ? () => opening.then(() => {
-      if (nextPlay && generation === startGeneration && state.round === round) { round = new RoundState(nextPlay.variants(track), state.level, seed, { lead }); state.round = round; }
-      return round.questions;
-    }) : round.questions;
-    const loading = music.prepare(track, questions);   // 소리 길은 누른 그 순간에 연다(휴대폰 자동 재생 규칙)
+    const pick = () => {
+      const target = assignment();
+      // 과제가 있으면 과제 문항이 든 곡만 연다 — 코치를 받기 전에 고른 곡이 과제 곡이 아니면 과제의 첫 곡으로(입구도 과제 곡만 고르게 둔다).
+      if (target && !assignmentTracks(target).some((c) => c.trackId === state.track)) selectTrack(assignmentTracks(target)[0]?.trackId);
+      const track = assignmentTrack(TRACKS[state.track], target);
+      if (!track) throw new Error('과제 문항이 있는 곡을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');
+      // 재방문 맞춤 연습의 곡이면 그 문항이 첫 관문이다. 다른 곡을 직접 골랐으면 그 곡 그대로다(과제에서는 맞춤이 없다).
+      const missed = target ? null : returnPlan(), lead = missed?.target.item.kind === 'song' && missed.target.item.trackId === track.id ? missed.target.item.sourceIndex : null;
+      // 새 길: 곡의 판을 열기 전에 보충 연습을 닫는다 — 답하지 않은 대화가 그 연습의 판에 판정 못 한 답으로 남는다(GB2).
+      if (nextPlay) { supplementalLobby.close(); supplementalPanel.close(); }
+      // 새 길: 문장마다 주장 변형 둘 가운데 코치가 고른 변형으로 보면을 짓는다(문장 소리 길이가 관문 자리를 정해 곡을 열 때 한 번에 고른다).
+      return { track, round: new RoundState(nextPlay ? nextPlay.variants(track) : track, state.level, seed, { lead }) };
+    };
+    let { track, round } = pick();
+    // 코치를 받는 중이면 소리 길만 누른 그 순간에 열고(휴대폰 자동 재생 규칙), 받은 뒤 그 코치로 곡과 보면을 다시 정해 그 곡과 문장 소리를 받는다.
+    // 꺼진 판은 지금처럼 정한 곡과 보면의 문장을 바로 넘긴다.
+    const settled = opening ? () => opening.then(() => {
+      if (generation !== startGeneration || state.round !== round) throw new DOMException('Cancelled', 'AbortError');
+      ({ track, round } = pick()); state.round = round; resetHud(round);
+      return { track, questions: round.questions };
+    }) : null;
+    const loading = settled ? music.prepare(settled) : music.prepare(track, round.questions);   // 소리 길은 누른 그 순간에 연다(휴대폰 자동 재생 규칙)
     state.round = round; state.pressed.clear(); state.paused = false;
     resetQuestion(); resetHud(round);
     show('game');

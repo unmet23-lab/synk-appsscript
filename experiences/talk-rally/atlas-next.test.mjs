@@ -489,3 +489,81 @@ test('원문 — 꺼진 판은 새 길 모듈을 싣지 않고 옛 코치를 지
   const next = readFileSync(new URL('./atlas-next-play.mjs', import.meta.url), 'utf8').replace(/^\s*\/\/.*$/gm, '');
   for (const word of ['returnPractice', 'missedPractice', 'skillReport', 'hasEarlierRecord', 'rankItems', 'events(', 'syncPort', 'reset(', 'recheck']) assert.equal(next.includes(word), false, word);
 });
+
+// 판 열기 토막 — 셸이 판을 다시 정한 뒤 다음 판을 열 때(겉이 닫힘 → 문을 다시 엶). openNextCoach는 시험이 같은 자리에 둔다(기다림 · 옛 길로 돌아옴).
+function roundOpener() {
+  const text = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const line = (from) => { const at = text.indexOf(from); assert.ok(at >= 0, from); return text.slice(at, text.indexOf('\n', at)); };
+  const from = text.indexOf('async function startRound(');
+  const to = text.indexOf("  $('.game-title')", from);
+  assert.ok(from >= 0 && to > from, 'app.mjs의 판 열기 토막');
+  const reopen = 'async function openNextCoach() { await __wait(); rally = __next; coach = __old; }';
+  return strictEnv(`${line('const atlas = (fn, fallback = null) =>')}\n${line('function rankNow()')}\n${reopen}\n${text.slice(from, to)}}\nreturn startRound;`, text);
+}
+function openerEnv({ next = null, plays = 3 } = {}) {
+  const got = { compose: [] };
+  const state = { run: 0, queue: [], index: 0, results: [], paused: false, ranked: null, plan: null, mode: 'normal' };
+  const env = {
+    coach: null, rally: { retired: true }, state, progress: { plays },
+    __old: { old: true }, __next: next,
+    // 코치를 기다리는 동안 멈춤을 누른다(pause(true)가 하는 일 중 판 상태에 남는 것).
+    __wait: async () => { await settle(); state.paused = true; },
+    clearResetNotice() {}, show() {}, startFlow: () => null, endPlan() {}, live: (run) => run === state.run,
+    sound: { stopNarration() {}, unlock: async () => {}, isOn: () => true },
+    seoulDate, dailyRound, ITEMS, missedPractice: () => null,
+    rankItems: (c, items) => ({ order: [items[3].id, items[1].id], reason: '지난 판에 놓친 말' }),
+    composeRound: (items, options) => { got.compose.push(options); return []; },
+  };
+  return { env, got, state };
+}
+
+test('판을 다시 정한 뒤 다음 판 — 코치를 기다리는 동안 누른 멈춤이 판 시작까지 남는다(검수 GF1)', async () => {
+  const { env, state } = openerEnv();
+  await roundOpener()(env)('normal');
+  assert.equal(state.paused, true, '기다림이 끝난 뒤 판 상태를 다시 채워도 멈춤은 그대로');
+  const source = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const at = source.indexOf('async function startRound(');
+  const start = source.slice(at, source.indexOf('\n}\n', at));
+  assert.ok(start.includes('  stage.pause(state.paused);'), '무대도 그 멈춤으로 연다');
+  assert.ok(start.includes('if (state.paused) world?.pause();'), 'WORLD 시작 박자도 선다');
+});
+
+test('새 길 판 뒤 셸이 옛 판으로 돌리면 — 첫 옛 판도 지금 기록의 추천 순서로 짠다(검수 GF3)', async () => {
+  const { env, got, state } = openerEnv();
+  await roundOpener()(env)('normal');
+  assert.equal(got.compose.length, 1);
+  assert.deepEqual(got.compose[0].ranked, [ITEMS[3].id, ITEMS[1].id], '처음부터 옛 판으로 연 경로와 같은 추천');
+  assert.equal(state.ranked.reason, '지난 판에 놓친 말');
+  // 처음 판(기록 없음)은 추천 없이 쉬운 말부터 — 입구와 같다.
+  const first = openerEnv({ plays: 0 });
+  await roundOpener()(first.env)('normal');
+  assert.equal(first.got.compose[0].ranked, undefined);
+  assert.equal(first.got.compose[0].firstTime, true);
+});
+
+test('새 길 결과의 듣기 카드 — 엔진이 판정한 답만 세고, 제목 · 설명도 이번 판에 맞춘다(검수 GF2)', () => {
+  const text = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const from = text.indexOf('function renderRoundSkills()');
+  const to = text.indexOf('\n}\n', text.indexOf('function skillsCard(', from)) + 3;
+  assert.ok(from >= 0 && to > from);
+  const tag = { textContent: '듣기 능력 기록' }, fine = { textContent: '이 기기에 남은 듣기 기록이에요.' };
+  const card = { querySelector: (sel) => (sel === '.tag' ? tag : fine) };
+  const ul = { textContent: '', rows: [], append(li) { this.rows.push(li.html); }, closest: () => card };
+  const render = (results) => {
+    ul.rows = [];
+    strictEnv(`${text.slice(from, to)}\nrenderRoundSkills();`, text)({
+      state: { results }, SKILL_LABEL: { listen: '듣고 고르기' }, esc: String,
+      $: (sel) => { assert.equal(sel, '#r-skills'); return ul; }, el: (_tag, _cls, html) => ({ html }),
+    });
+    return ul.rows;
+  };
+  // 소리를 끄고 글로 읽어 12공을 다 맞혔다 — 판정된 듣기 답은 없다.
+  const muted = Array.from({ length: 12 }, () => ({ skill: 'listen', correct: true, recorded: false }));
+  assert.deepEqual(render(muted), ['<b>듣고 고르기</b><span>이번 판에 판정한 답이 없어요</span>']);
+  assert.equal(tag.textContent, '이번 판의 듣기');
+  assert.match(fine.textContent, /글로 읽은 대답은 세지 않아요/);
+  assert.doesNotMatch(fine.textContent, /이 기기에 남은/);
+  // 판정된 답 셋 중 둘을 맞혔다 — 판정되지 않은 답은 분모에도 없다.
+  const mixed = [...muted.slice(0, 5), { skill: 'listen', correct: true, recorded: true }, { skill: 'listen', correct: false, recorded: true }, { skill: 'listen', correct: true, recorded: true }];
+  assert.deepEqual(render(mixed), ['<b>듣고 고르기</b><em>이번 2/3</em>']);
+});

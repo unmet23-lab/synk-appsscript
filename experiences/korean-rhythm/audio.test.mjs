@@ -140,3 +140,14 @@ test('받는 중 연결이 끊겨도 영어 오류를 내보내지 않고, 연�
     assert.equal(asked, 1, '실패가 캐시에 남지 않는다');
   } finally { globalThis.fetch = realFetch; }
 });
+test('a deferred song opens the context on the press, then loads the song the function settles on (C1 · GC2)',async()=>withContexts(async(made)=>{
+ const player=new MusicPlayer();const loaded=[];player.recordingSource=async(track)=>{loaded.push(track.sourceId);return {duration:60,sampleRate:44100,numberOfChannels:2}};
+ let settle;const decided=new Promise((r)=>{settle=r});
+ const pending=player.prepare(()=>decided);
+ await new Promise((r)=>setTimeout(r));
+ assert.equal(made.length,1);assert.deepEqual(made[0].calls,['resume'],'the press opens the sound path before the coach answers');
+ assert.deepEqual(loaded,[],'no song is fetched before the coach decides');
+ settle({track:{...song,sourceId:'assigned'},questions:[]});
+ await pending;
+ assert.deepEqual(loaded,['assigned']);assert.equal(player.recording.sourceId,'assigned');
+}));

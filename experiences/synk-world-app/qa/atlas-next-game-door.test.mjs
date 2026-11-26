@@ -558,3 +558,70 @@ test('게임 문 두 방향 — 옛 셸(③ 라이브 줄)과 새 입구는 옛 
   }
   entry.dispose();
 });
+
+// 5-3 게임 GE1(설계 주인 11-26): 이유 줄은 그 판이 평가할 단위를 그 단위의 첫 평가(등급이 매겨진 답) 전에 이름으로 말하지 않는다.
+// 키트가 감싼 코치의 recommend 한 자리에서 바꾼다 — 돌아온 · 흔들리는 · 방금 놓친 단위는 GAME_NAMELESS, 처음 만나는 단위는 이름 없는 처음 문장,
+// 그 밖은 줄 없음. 판(startSet · finishSet)이 바뀌면 다시 센다.
+test('키트 — 이유 줄은 이 판에서 아직 평가하지 않은 단위의 이름을 말하지 않는다(5-3 게임 GE1)', async () => {
+  const coach = fakeCoach();
+  let why = null, grade = null;
+  coach.recommend = candidates => ({ status: 'ready', selected: candidates[0], alternatives: [], why });
+  coach.answer = () => ({ verdict: 'correct', grade });
+  coach.live = () => ({ spec: { id: 'flow' }, pick: candidates => coach.recommend(candidates), answer: (pid, result) => ({ recorded: coach.answer(pid, result), settings: null }) });
+  const door = createGameDoor({ entry: fakeEntry({ coach }), gameId: 'subway-rush' });
+  const top = { SYNKAtlasGame: door.api };
+  const next = await openNext({ win: { parent: top, top, addEventListener() {} }, gameId: 'subway-rush', banks: ['subway-rush'] });
+  const item = { itemKey: 'subway.decision.a' }, other = { itemKey: 'subway.decision.b' };
+  const line = (code, text, unit = 'w:그대로') => (why = { code, slots: { unit }, line: text });
+  const set = setPlay(next, { length: 4 });
+  // 처음 만나는 단위 — 그 이름(곧 답)을 말하지 않는다.
+  line('unit.new', '「그대로」 처음 만나요.');
+  assert.equal(set.next([item]).why.line, '새로운 말을 처음 만나요.');
+  // 제시했지만 등급 없는 답(소리를 끔 · 판정 못 함)은 평가가 아니다 — 여전히 이름 없이.
+  next.answer(next.present(item), { correct: true, assessable: false });
+  line('unit.retry', '방금 놓친 「그대로」 다시 만나요.');
+  assert.equal(set.next([item]).why.line, '게임에서 만난 말이 돌아왔어요. 잊기 전에 한 번 더 만나요.');
+  // 등급이 매겨진 답 뒤에는 이름을 말해도 된다(이미 평가했다). 손잡이(live)의 답 { recorded }도 같다.
+  grade = 'correct';
+  next.live({ id: 'flow' }).answer(next.present(item), { correct: true, assessable: true });
+  assert.equal(set.next([item]).why.line, '방금 놓친 「그대로」 다시 만나요.');
+  // 다른 단위는 그 단위대로 — 평가 전이면 이름 없이.
+  line('unit.due', '돌아온 「왼쪽」, 다시 만나요.', 'w:왼쪽');
+  assert.equal(set.next([other]).why.line, '게임에서 만난 말이 돌아왔어요. 잊기 전에 한 번 더 만나요.');
+  // 판이 바뀌면 다시 센다.
+  set.end();
+  line('unit.shaky', '흔들리는 「그대로」, 다시 만나요.');
+  assert.equal(set.next([item]).why.line, '게임에서 만난 말이 돌아왔어요. 잊기 전에 한 번 더 만나요.');
+  // 화면 언어는 줄의 글자로 가른다. 몽골어 처음 문장은 검수 전이라 줄 없음.
+  line('unit.due', 'Back: ‘left’.', 'w:왼쪽');
+  assert.equal(set.next([other]).why.line, 'Something you met in a game is back. Let’s review it once more before it fades.');
+  line('unit.new', 'Seeing ‘left’ for the first time.', 'w:왼쪽');
+  assert.equal(set.next([other]).why.line, 'Meeting something new for the first time.');
+  line('unit.due', 'Эргэн ирлээ: «зүүн».', 'w:왼쪽');
+  assert.equal(set.next([other]).why.line, 'Тоглоомд үзсэн үг хэллэг эргэн ирлээ. Мартахаасаа өмнө дахин нэг давтъя.');
+  line('unit.new', 'Анх удаа танилцаж байна: «зүүн».', 'w:왼쪽');
+  assert.equal(set.next([other]).why.line, null);
+  // 난도 · 숨 고르기 · 목표처럼 이름 없는 문장이 없는 이유는 줄 없음 — 게임은 기본 안내를 둔다.
+  for (const code of ['skill.up', 'skill.ease', 'pace.breather', 'goal.match']) {
+    line(code, '「왼쪽」 …', 'w:왼쪽');
+    assert.equal(set.next([other]).why.line, null, code);
+  }
+  // 단위 칸이 없는 이유(채우기)는 그대로, 판 밖 recommend(입구의 추천)도 같은 규칙이다.
+  why = { code: 'idle', slots: { left: 0 }, line: '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.' };
+  assert.equal(set.next([other]).why.line, '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.');
+  line('unit.new', '「왼쪽」 처음 만나요.', 'w:왼쪽');
+  assert.equal(next.recommend([other]).why.line, '새로운 말을 처음 만나요.');
+  assert.equal(next.live({ id: 'flow' }).pick([other]).why.line, '새로운 말을 처음 만나요.');
+  door.dispose();
+});
+
+test('키트의 GAME_NAMELESS는 셸 world-today.mjs의 이름 없는 게임 줄과 글자까지 같다', async () => {
+  const { readFileSync } = await import('node:fs');
+  const block = rel => {
+    const text = readFileSync(new URL(rel, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+    const at = text.indexOf('const GAME_NAMELESS = Object.freeze({');
+    assert.ok(at >= 0, rel);
+    return text.slice(at, text.indexOf('});', at)).replace(/\s+/g, ' ');
+  };
+  assert.equal(block('../../play-common/kit/atlas-next.mjs'), block('../world-today.mjs'));
+});

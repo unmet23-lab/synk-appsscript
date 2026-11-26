@@ -38,7 +38,8 @@ import { showScreen, currentScreen, openDialog, closeDialog } from './screens.js
 import { wireGameLinks } from './links.js';
 import { bindSoundToggles } from './kit/lab.mjs';
 import { installQaHook } from './qa-hook.js';
-import { createRaceController, LANES } from './race-controller.js';
+// 5-3 게임에서 바뀐 의존 모듈은 판 표시(?v=)로 부른다 — 공개 직후 10분 섞임 창에 새 앱이 캐시의 옛 판을 받지 않게(검수 GC1 · F1). 이 모듈을 다시 고치면 공개 도구가 토큰을 내용 해시로 바꾼다.
+import { createRaceController, LANES } from './race-controller.js?v=atlas-53';
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
@@ -468,6 +469,28 @@ function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
 function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 function showLobby() { returnLead = null; showScreen('lobby'); worldShown = false; renderLobby(); }
 function lobbyNote(text) { $('l-reason').textContent = text; hud.announce(text); }
+// 새 길의 맞춤 판은 듣기 문항이라 소리를 끈 채로는 출발하지 않는다. 막힌 안내는 지금 보이는 화면에 쓰고, 결과 화면(이 코스 다시 달리기 ·
+// 다음 코스)이면 그 자리에 「소리 켜고 출발」을 둔다 — 누르면 소리를 켜고 막혔던 출발을 다시 한다(검수 GB1).
+const SOUND_FIRST = '이번 맞춤 판은 듣기 문항이에요. 소리를 켜면 바로 시작할 수 있어요.';
+let soundStart = null, soundRetry = null;
+function soundBlocked(retry) {
+  lobbyNote(SOUND_FIRST);
+  if (currentScreen() !== 'results') return;
+  const reason = $('r-next-reason');
+  reason.textContent = SOUND_FIRST; reason.hidden = false;
+  if (!soundStart) {
+    soundStart = document.createElement('button');
+    soundStart.type = 'button'; soundStart.className = 'chip-btn'; soundStart.textContent = '소리 켜고 출발';
+    soundStart.addEventListener('click', async () => {
+      const again = soundRetry; hideSoundStart();
+      if (!round.soundEnabled) await toggleSound();
+      again?.();
+    });
+    reason.after(soundStart);
+  }
+  soundRetry = retry; soundStart.hidden = false; soundStart.focus({ preventScroll: true });
+}
+function hideSoundStart() { soundRetry = null; if (soundStart) soundStart.hidden = true; }
 function selectStage(s) {
   requestHeld = false;   // 코스를 골랐다 — 요청한 맞춤 코스를 기다리지 않는다
   if (assignment()) { const plan = nextPersonalized(); if (!plan) { lobbyNote(targetUnavailable()); return; } s = plan.stage; }
@@ -885,12 +908,12 @@ async function start(demo = false, bypassTutorial = false) {
   // 소리를 켜라고 안내한다(다시 보기 GA3).
   if (nextRace && !demo && requestHeld) {
     const plan = nextPersonalized();
-    if (!plan) { lobbyNote('이번 맞춤 판은 듣기 문항이에요. 소리를 켜면 바로 시작할 수 있어요.'); return; }
+    if (!plan) { soundBlocked(() => start(demo, bypassTutorial)); return; }
     selectStage(plan.stage);
   }
   // 새 길의 맞춤 판: 소리를 끈 채 듣기 문항만 남았으면(엔진도 게임 차례도 듣기 문항을 내지 않는다) 출발 전에 소리 설정을 안내한다(4-6 끝 판 GB7).
   if (nextRace && !demo && round.selectedStage?.personalized && !nextRace.personal({ progress: round.progress, modality: round.selectedStage.modality ?? null, audio: racingAudio() })) {
-    lobbyNote('이번 맞춤 판은 듣기 문항이에요. 소리를 켜면 바로 시작할 수 있어요.'); return;
+    soundBlocked(() => start(demo, bypassTutorial)); return;
   }
   // 3D가 아직 준비 중이면 누른 것을 기억했다가 준비되는 대로 출발한다(소리는 누른 순간에 연다).
   if (!ready) { if (loadState === 'loading') { pendingStart = { demo, bypassTutorial }; if (round.soundEnabled) void ensureAudio(); renderLobby(); } return; }
@@ -901,7 +924,7 @@ async function start(demo = false, bypassTutorial = false) {
     return;
   }
   if (!demo && !bypassTutorial && !tutorialCompleted && !tutorialDismissed) { await startTutorial(); return; }
-  clearResetNotice(); clearTutorial();
+  clearResetNotice(); clearTutorial(); hideSoundStart();
   if (garageOpen) garageUI.close();
   round.garage = loadGarageSafe(); round.roundId = globalThis.crypto?.randomUUID?.() || `race-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   starting = true; round.running = false; round.narrationUnavailable = false; silence(); coastRadio.stop(); renderLobby();

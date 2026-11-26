@@ -69,3 +69,20 @@ for (const rel of GATE_APPS) {
     assert.equal(source.match(/\batlasGate\(window\)/g).length, 1, '문 확인은 한 자리');
   });
 }
+
+// 공개 직후 10분 섞임 창: 앱 파일은 html의 토큰이 바뀌어 곧바로 새 판이 실리지만, 앱이 토큰 없이 부르는 의존 모듈은 캐시의 옛 판이 남는다.
+// 5-3 게임에서 바뀐 의존 모듈은 판 표시(?v=)로 불러 새 앱이 옛 판과 섞이지 않게 한다(검수 GC1 · F1).
+test('5-3 게임에서 바뀐 의존 모듈은 판 표시로 부른다 — 새 앱이 옛 audio.mjs · listening-check-ui.mjs 같은 판과 섞이지 않는다', () => {
+  const tokened = [
+    ['korean-rhythm/app.mjs', './audio.mjs'], ['korean-rhythm/app.mjs', './supplemental-player.mjs'], ['korean-rhythm/world-play.mjs', './audio.mjs'],
+    ['korean-runner/app.mjs', './listening-check-ui.mjs'], ['korean-racing/app.js', './race-controller.js'],
+  ];
+  for (const [file, dep] of tokened) {
+    const statics = staticImports(read(file));
+    assert.equal(statics.includes(dep), false, `${file}가 ${dep}를 토큰 없이 부른다`);
+    assert.ok(statics.some(p => p.startsWith(`${dep}?v=`)), `${file} → ${dep}?v=`);
+  }
+  // 리듬은 audio.mjs를 한 주소로만 부른다 — 두 주소면 모듈이 둘이 되어 곡 · 문장 소리 캐시를 나눠 갖는다.
+  const audio = ['korean-rhythm/app.mjs', 'korean-rhythm/world-play.mjs'].map(file => staticImports(read(file)).find(p => p.startsWith('./audio.mjs')));
+  assert.equal(new Set(audio).size, 1, audio.join(' · '));
+});

@@ -9,7 +9,8 @@ import { INSTRUCTIONS, actionLabel } from './instructions.mjs';
 import { KeyboardInput, KEY_ACTIONS } from './controls.mjs';
 import { InstructionAudio } from './audio.mjs';
 import { instructionMetadata, chooseInstruction, actionEvidence, FLOW_RUN, TIRED_RUN, FLOW_WORDS, paceOf, runObservation } from './learning.mjs';
-import { mountListeningCheck } from './listening-check-ui.mjs';
+// 5-3 게임에서 바뀐 의존 모듈은 판 표시(?v=)로 부른다 — 공개 직후 10분 섞임 창에 새 앱이 캐시의 옛 판을 받지 않게(검수 GC1 · F1). 이 모듈을 다시 고치면 공개 도구가 토큰을 내용 해시로 바꾼다.
+import { mountListeningCheck } from './listening-check-ui.mjs?v=atlas-53';
 import { missedCheck, createListeningCheckRound } from './listening-check.mjs';
 import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD, runReason } from './report.mjs?v=runner-next-way-20261104';
 import { drawHeroRoad } from './hero.mjs';

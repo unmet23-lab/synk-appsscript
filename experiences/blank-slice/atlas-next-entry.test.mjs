@@ -233,7 +233,7 @@ test('기록 안내는 실제로 연 코치로 정한다 — 기다리는 동안
   let release;
   const gate = new Promise((resolve) => (release = resolve));
   const waiting = await boot({ door: { open: async () => { await gate; return null; } }, plays: 3, texts });
-  assert.deepEqual(scope(waiting), { reset: true, text: FIRST_SCOPE }, '기다리는 동안 기록 지우기는 숨기고 계정 안내도 하지 않는다');
+  assert.deepEqual(scope(waiting), { reset: true, text: '학습 기록을 연결하고 있어요.' }, '기다리는 동안 기록 지우기는 숨기고, 저장 위치를 말하지 않는다(검수 GA1)');
   release();
   await settle();
   assert.equal(waiting.log.includes('createGame'), true);
@@ -256,6 +256,19 @@ test('기록 안내는 실제로 연 코치로 정한다 — 기다리는 동안
   assert.equal(page.log.includes('createGame'), true, '다시 연 길은 옛 길');
   assert.deepEqual(scope(page), { reset: false, text: FIRST_SCOPE });
   member.door.dispose();
+});
+
+test('새 길이 코치를 열지 못하면(셸 오류 · 문이 닫히는 중) 「이 브라우저에 저장」이라 하지 않는다 — 열지 못한 까닭은 저장 안내 줄이 말한다(검수 GA1)', async () => {
+  const texts = { '#learning-scope': FIRST_SCOPE };
+  const failed = await boot({ door: { open: async () => { throw Object.assign(new Error('셸 오류'), { code: 'SHELL' }); } }, plays: 3, texts });
+  await settle();
+  assert.equal(failed.$('#learning-scope').textContent, '');
+  assert.equal(failed.$('#reset-learning').hidden, true);
+  assert.match(failed.$('#storage-note').textContent, /학습 기록을 쓸 수 없어서/);
+  const closing = await boot({ door: { open: async () => { throw Object.assign(new Error('닫힘'), { code: 'RUN_ENDED' }); } }, plays: 3, texts });
+  await settle();
+  assert.equal(closing.$('#learning-scope').textContent, '');
+  assert.equal(closing.log.includes('createGame'), false);
 });
 
 test('결과 화면에서 판을 다시 정한 뒤 「다음 판 시작」이 옛 길로 돌아오면 입구를 지나지 않아도 옛 코치의 필요 순서로 판을 짠다(4-6 끝 판 A5)', async () => {

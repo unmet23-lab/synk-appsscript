@@ -16,7 +16,7 @@ import { rhythmSupport } from '../brand-opening/game-tutor-support.mjs';
 import { createSupplementalPanel } from './supplemental-player.mjs';
 import { supplementalItems } from './supplemental.mjs';
 import { josa } from './kit/josa.mjs';
-import { nextDoor, devFlag, ended } from './kit/atlas-next.mjs';
+import { nextDoor, devFlag, ended, namelessLine } from './kit/atlas-next.mjs';
 import { createGameDoor } from '../synk-world-app/world-atlas-game.mjs';
 
 const require = createRequire(import.meta.url);
@@ -50,10 +50,12 @@ function element(tag = 'div') {
 const storageOf = () => { const map = new Map(); return { getItem: k => map.get(k) ?? null, setItem: (k, v) => map.set(k, String(v)), removeItem: k => map.delete(k) }; };
 
 // 옛 코치(진짜 옛 엔진)를 지켜본다 — 부른 메서드 이름과 syncPort 읽기를 차례대로 적는다. 저장 알림을 건 함수는 heard에 남는다.
-function watchedOld(log, heard = []) {
+// extra: 옛 코치에 더할 메서드(과제 assignment 같은 WORLD 계정 코치의 것) — 부르면 그 이름도 적는다.
+function watchedOld(log, heard = [], extra = {}) {
   const real = createGame({ gameId: 'korean-rhythm', map: strata, storage: storageOf() });
   return new Proxy(real, {
     get(target, name) {
+      if (Object.hasOwn(extra, name)) return (...args) => { log.push(name); return extra[name](...args); };
       const value = target[name];
       if (name === 'syncPort') {
         log.push('syncPort');
@@ -68,10 +70,10 @@ function watchedOld(log, heard = []) {
 // 소리 · 무대 흉내 — 곡의 시각은 시험이 정하고, 문장 소리가 끝나는 때 전달을 알린다(audio.mjs의 onDelivery와 같은 꼴).
 class FakeMusic {
   constructor({ onDelivery }) { this.onDelivery = onDelivery; this.time = -5; this.state = 'running'; this.enabled = true; this.questions = []; this.reviews = []; FakeMusic.last = this; }
-  // questions가 함수면 보면이 정해진 뒤(새 길이 코치를 받는 동안 — app.mjs start) 문장 소리를 받는다(audio.mjs prepare와 같은 꼴).
-  prepare(_track, questions) {
-    const take = list => { this.questions = list; return 'buffer'; };
-    return typeof questions === 'function' ? Promise.resolve(questions()).then(take) : Promise.resolve(take(questions));
+  // track이 함수면 곡과 보면이 코치를 받은 뒤 정해진다(app.mjs start — 받은 코치의 과제 · 변형). audio.mjs prepare와 같은 꼴.
+  prepare(track, questions) {
+    const take = (song, list) => { this.track = song; this.questions = list; return 'buffer'; };
+    return typeof track === 'function' ? Promise.resolve(track()).then(got => take(got.track, got.questions)) : Promise.resolve(take(track, questions));
   }
   start() {} stop() {} hit() {} setSound() {} seek() {}
   pause() { return Promise.resolve(); } resume() { return Promise.resolve(); }
@@ -83,7 +85,8 @@ class FakeStage { constructor() { this.ready = Promise.resolve(); this.frames = 
 let boots = 0;
 // 한 페이지를 띄운다. door: 위 창의 window.SYNKAtlasGame(없으면 꺼진 판). search: 주소의 물음(?qa — 자동 치기 고리).
 // wait: false면 본문이 끝나기를 기다리지 않고 돌려준다(done — 코치를 받는 동안의 입구를 본다).
-async function boot({ door = null, search = '', load = () => import('./atlas-next-play.mjs'), wait = true } = {}) {
+// assignment: 옛 코치가 돌려줄 과제(WORLD 계정의 옛 코치 — 없으면 이 브라우저의 옛 코치).
+async function boot({ door = null, search = '', load = () => import('./atlas-next-play.mjs'), wait = true, assignment = null } = {}) {
   boots += 1;
   const log = [];
   const created = [];
@@ -96,7 +99,7 @@ async function boot({ door = null, search = '', load = () => import('./atlas-nex
   const listeners = [];
   const audios = []; // 보충 연습 대화의 소리(연습 하나에 하나) — 시험이 onended로 끝까지 들은 것을 알린다
   const heard = []; // 옛 코치의 저장 알림을 건 함수
-  const old = watchedOld(log, heard);
+  const old = watchedOld(log, heard, assignment ? { assignment: () => assignment } : {});
   const up = door ? { SYNKAtlasGame: door } : undefined;
   let perf = 1000;
   const context = {
@@ -250,7 +253,8 @@ test('문이 진짜 코치를 주면 그 겉으로 연다 — 옛 코치 없음,
   assert.deepEqual(options, { set: { length: 5, newLimit: 15 } }, '곡 하나가 판 하나(5) · 새것 한도 3n');
   assert.equal(result.status, 'ready');
   assert.equal(page.context.synkRhythm.snapshot().track, Number(result.selected.itemKey.match(/:t(\d)q/)[1]), '고른 문항이 든 곡을 고른다');
-  assert.equal(page.$('recommendation-reason').textContent, result.why.line);
+  // 이유 줄은 이 판에서 아직 평가하지 않은 단위의 이름을 말하지 않는다 — 키트가 이름 없는 줄로 바꾼다(5-3 게임 GE1).
+  assert.equal(page.$('recommendation-reason').textContent, namelessLine(result.why));
   assert.equal(page.$('reset-learning').hidden, true, '새 길은 기록 지우기를 쓰지 않는다');
   assert.ok(!shell.calls.some(([name]) => name === 'present'), '입구는 고르기만 한다');
   shell.door.dispose();
@@ -273,7 +277,7 @@ test('코치를 받는 동안 — 곡 고르기와 단추는 먼저 서고, 추�
   release();
   await page.done;
   const [, , result] = shell.calls.find(([name]) => name === 'recommend');
-  assert.equal(page.$('recommendation-reason').textContent, result.why.line, '받은 뒤 추천과 이유를 그린다');
+  assert.equal(page.$('recommendation-reason').textContent, namelessLine(result.why), '받은 뒤 추천과 이유를 그린다(첫 평가 전이라 이름 없이 — GE1)');
   assert.match(page.$('learning-scope').textContent, /이 브라우저에 저장돼요/, '손님 코치는 이 브라우저의 기록이다');
   shell.door.dispose();
 });
@@ -366,6 +370,31 @@ test('코치를 받는 동안 사람이 고른 곡은 받은 뒤에도 그대로
     assert.equal(page.context.synkRhythm.snapshot().track, track.id, `직접 고른 곡 ${track.id}`);
     shell.door.dispose();
   }
+});
+
+// 코치를 받는 동안 시작을 누르면 소리 길만 먼저 열고, 곡 · 첫 관문 · 보면은 받은 코치로 정한다 — 옛 길로 열려도 그 옛 코치의 과제를 쓴다.
+test('코치를 받는 동안 시작을 누르고 셸이 지금 판이라고 하면(null) — 받은 옛 코치의 과제 곡과 과제 문장으로 연다(검수 C1 · GC2)', async () => {
+  const assigned = TRACKS[TRACKS.length - 1];
+  const m = rhythmItem(assigned.id, { sourceIndex: 1, variant: 1 });
+  const target = { ...m, familyKeys: [m.familyKey], itemKeys: [m.itemKey], requiredAttempts: 1 };
+  let release;
+  const gate = new Promise(resolve => (release = resolve));
+  const page = await boot({ door: { open: async () => { await gate; return null; } }, wait: false, assignment: target });
+  await tick(20);
+  assert.notEqual(assigned.id, 0, '코치를 받기 전에 선 곡(첫 곡)은 과제 곡이 아니다');
+  const started = page.$('start-button').click();
+  await tick(20);
+  assert.equal(page.created.length, 0, '아직 옛 코치를 열지 않았다');
+  release();
+  await started;
+  await page.done;
+  const music = FakeMusic.last;
+  assert.equal(page.created.length, 1, '셸이 지금 판이라고 해 옛 코치를 열었다');
+  assert.equal(music.track.id, assigned.id, '받은 옛 코치의 과제 곡으로 소리를 받는다');
+  assert.deepEqual(music.track.variantChoices, assignmentTrack(assigned, target).variantChoices, '과제 문항만 고른 곡');
+  assert.equal(rhythmItem(assigned.id, music.questions[1]).itemKey, m.itemKey, '과제 문장으로 연다');
+  assert.equal(page.context.synkRhythm.snapshot().track, assigned.id);
+  assert.equal(page.$('toast').textContent, '', '곡 준비 실패 안내가 없다');
 });
 
 test('겉이 닫힌 뒤(판을 다시 정함 · RUN_ENDED) 입구는 저장 안내를 비운다 — 「기록을 저장할 수 없어서」라고 하지 않는다(B7)', async () => {
@@ -741,7 +770,8 @@ test('새 길로 곡 하나 — 문장마다 낸 변형 · 제시 · 전달 · �
   assert.ok(nextAt > finished, '판 끝에 다음 곡을 고른다');
   const next = song[nextAt][2];
   assert.equal(next.status, 'ready');
-  assert.equal(page.$('r-next-reason').textContent, nextTrackLine(TRACKS[Number(next.selected.itemKey.match(/:t(\d)q/)[1])].title, next.why.line));
+  // 판이 닫힌 뒤의 다음 곡 추천도 새 판의 첫 평가 전이다(GE1).
+  assert.equal(page.$('r-next-reason').textContent, nextTrackLine(TRACKS[Number(next.selected.itemKey.match(/:t(\d)q/)[1])].title, namelessLine(next.why)));
   await new Promise(resolve => setTimeout(resolve, 20));
   // 처음 만난 문장에 도움 없이 낸 판정된 답 — 첫째(맞음) · 둘째(틀림) · 다섯째(맞음). 셋째는 답하지 않았고, 넷째는 글로 본 뒤의 답이다.
   // 그 수는 저장 뒤 근거가 서야 알므로 판 끝에서 근거를 기다렸다가 다시 쓴다.
