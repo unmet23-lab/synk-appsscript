@@ -45,7 +45,7 @@
     "dur": "4초",
     "proj": "omni",
     "start": "a3",
-    "key": "gives one small proud nod"
+    "key": "dips his head in a single proud nod"
   },
   "a4": {
     "model": "Omni 1.2 Flash",
@@ -54,7 +54,7 @@
     "dur": "3초",
     "proj": "omni",
     "start": "a4",
-    "key": "three more small gold felt coins slide out"
+    "key": "leans a little to the left, then a little to the right"
   },
   "a5": {
     "model": "Omni 1.2 Flash",
@@ -63,7 +63,7 @@
     "dur": "4초",
     "proj": "omni",
     "start": "a5",
-    "key": "onto the last free spot of the table"
+    "key": "into the only empty space left on the table"
   },
   "a6": {
     "model": "Omni 1.2 Flash",
@@ -72,7 +72,7 @@
     "dur": "3초",
     "proj": "omni",
     "start": "a6",
-    "key": "in three short pushes"
+    "key": "lurches forward three times in short bursts"
   },
   "a7": {
     "model": "Omni 1.2 Flash",
@@ -81,7 +81,7 @@
     "dur": "4초",
     "proj": "omni",
     "start": "a7",
-    "key": "waves palm-out in a friendly 'no, no' twice"
+    "key": "until they rest against the front of Mongle"
   },
   "a8": {
     "model": "Omni 1.2 Flash",
@@ -90,7 +90,7 @@
     "dur": "3초",
     "proj": "omni",
     "start": "a8",
-    "key": "lets out a long relieved breath"
+    "key": "breathes out one long relieved sigh"
   },
   "a9": {
     "model": "Omni 1.2 Flash",
@@ -99,7 +99,7 @@
     "dur": "4초",
     "proj": "omni",
     "start": "a9",
-    "key": "tilts the plate on its head toward the owner"
+    "key": "leans its whole dome toward the owner"
   },
   "a10": {
     "model": "Omni 1.2 Flash",
@@ -108,7 +108,7 @@
     "dur": "3초",
     "proj": "omni",
     "start": "a10",
-    "key": "slides the small cream paper slip forward"
+    "key": "pushes the small cream paper slip forward"
   },
   "a11": {
     "model": "Omni 1.2 Flash",
@@ -117,7 +117,7 @@
     "dur": "3초",
     "proj": "omni",
     "start": "a11",
-    "key": "the empty plate on its head slowly slides"
+    "key": "its small mouth falls open into a wide shocked"
   },
   "_배우는말": [
     {
@@ -134,5 +134,5 @@
       ]
     }
   ],
-  "_v6": "s1 · s2는 v1 판을 그대로 쓴다. 이번 굽기는 a3~a11(첫 계획 96크레딧)"
+  "_v6": "s1 · s2는 v1 판을 그대로 쓴다. a3~a11은 샷마다 두 판(첫 판 _v6계획쓰기.py · 둘째 판 _v6계획쓰기_b.py)을 굽고 고른다"
 }
