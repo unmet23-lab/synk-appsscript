@@ -63,6 +63,11 @@ test('아래 단락(11-26 「다」): 학생증 · 휴대폰 다섯 대 · 꿈 �
       }
     }
   }
+  // 캡처도 언어마다 그 언어 화면이다 — 한국어 한 장을 세 언어에 돌려 쓰지 않는다(Fable reserve-da F3).
+  for (const p of C.PHONES.filter(x => x.still)) {
+    const prints = C.LANGS.map(l => fs.readFileSync(path.join(__dirname, 'src/shots', l, `${p.id}.webp`)).toString('base64'));
+    assert.equal(new Set(prints).size, C.LANGS.length, `${p.id}: 세 언어 캡처가 서로 다르다`);
+  }
   for (const k of ['stageIdol', 'stageActor', 'stageBodyIdol', 'stageBodyActor', 'stageFree', 'soon', 'cardAltIdol', 'cardAltActor']) for (const l of C.LANGS) assert.ok(C[l][k], `${l}.${k}`);
   // 꿈 무대(승급 오디션 · 티저 · 촬영장)는 아직 안 열렸다 — 「곧 열려요」를 단다.
   const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');

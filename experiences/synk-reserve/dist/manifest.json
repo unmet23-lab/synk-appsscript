@@ -4,8 +4,8 @@
     "sha256": "6708b9296df9c0e019715a548c55979b36d8fb42bd88536f52c660d7e9b113cb"
   },
   "reserve/app.js": {
-    "bytes": 17505,
-    "sha256": "e641454abe5cdfdd1bdc91bbe0bae28d7679a190e5a9b365ef280caad05d4753"
+    "bytes": 17699,
+    "sha256": "c72aaa9f37af30b18b645607d1ce068d63e9d0007de32c0f7e9013c4eb19fba1"
   },
   "reserve/assets/reserve-inter-500.woff2": {
     "bytes": 29560,
@@ -16,8 +16,8 @@
     "sha256": "27e0264fe7d1ddaff844ccba5cc9d00cddd18a8353a76935ffeafc665091c7f4"
   },
   "reserve/assets/reserve-sans.woff2": {
-    "bytes": 108972,
-    "sha256": "d46699dccdb0c518951a677ec2b506df86f1951a84cfd46aff97ccb0f1689b2e"
+    "bytes": 108412,
+    "sha256": "851e7a2f1229070391fa5361ced02566c375cf4a4b7620dcd0a4d4c00d12f14d"
   },
   "reserve/clips/en/card-actor.mp4": {
     "bytes": 378051,
@@ -189,7 +189,7 @@
   },
   "reserve/copy.js": {
     "bytes": 21383,
-    "sha256": "0af052add9a32dd91c53087483bd5abd92d7de13c65513fd26426c74a2f57432"
+    "sha256": "d182ac3f07983e8c4503637a23b3c75cc640f1f41e2890ad11a3bbf1db11f454"
   },
   "reserve/img/card-actor.webp": {
     "bytes": 62516,
@@ -208,8 +208,8 @@
     "sha256": "0458573d887f76a4d7700389e0e431286eb6d7c4bc057e7970c1edb7171571bc"
   },
   "reserve/index.html": {
-    "bytes": 10376,
-    "sha256": "7c1087777c997f76e21daf41d2bd9d2988ad96ef7187a4ab06134feb54ed457d"
+    "bytes": 10420,
+    "sha256": "8d0990b015b53a27781cddba6015e48024efb1ed3dde73d2395adca6bd8c12c9"
   },
   "reserve/og.jpg": {
     "bytes": 95001,
@@ -217,30 +217,30 @@
   },
   "reserve/play/index.html": {
     "bytes": 1311,
-    "sha256": "d5acfaa32115178c4fdcc5ed61d0ab285d2a913b5bf92ffdda34afdca55a7f6e"
+    "sha256": "f57b12f16c60caeecf0ff9e0a13e12c78e6ba82235640173fb41305841b90d25"
   },
   "reserve/play/play.css": {
     "bytes": 4481,
-    "sha256": "3f5babe86ee4ac723954b260440e0e2fbdb7f91e4c8fe4a67acebe494808fa8e"
+    "sha256": "6739217f847890da013d446f4a81de791505084932e3b55ced345f66b0b6de28"
   },
   "reserve/play/play.mjs": {
     "bytes": 10078,
     "sha256": "51af3a7c1074e1cc2363b0b63682762138f716b0a92311611619ed2caf599250"
   },
   "reserve/reserve.css": {
-    "bytes": 16439,
-    "sha256": "d05ea08cb9e3a4b7e6a34af08b2d7f5a10c84cbb2e441e20fe4fa7a31ddebc2a"
+    "bytes": 17041,
+    "sha256": "9795dc55a72366769306af2421e9952efed822e0c355b10740ba702a125bcea8"
   },
   "reserve/shots/en/quiz.webp": {
-    "bytes": 24080,
-    "sha256": "f2e8a019f354fdf8b030230f130d7c45f2759ffe137c038522585773ff72ca69"
+    "bytes": 31038,
+    "sha256": "a229b55e99ae77eb981c13cf1dd87394cc74089dc4ba75ba5d68a337788e9d77"
   },
   "reserve/shots/ko/quiz.webp": {
     "bytes": 24080,
     "sha256": "f2e8a019f354fdf8b030230f130d7c45f2759ffe137c038522585773ff72ca69"
   },
   "reserve/shots/mn/quiz.webp": {
-    "bytes": 24080,
-    "sha256": "f2e8a019f354fdf8b030230f130d7c45f2759ffe137c038522585773ff72ca69"
+    "bytes": 29060,
+    "sha256": "73894a20a5c5097189bcb1dc5f75d9913cc677cc755deb507bfcb3f1e924cf30"
   }
 }

@@ -93,8 +93,9 @@ img{display:block;max-width:100%}
 /* 첫 화면 아래 끝의 표시(11-26 유호님 「아래로 내리라고 하는 뭔가의 마크」): 학생증 윗부분과 알약이 화면 아래 끝에 걸려 있다가
  * 첫 화면을 다 지나면 함께 올라간다. 첫 화면의 글과 칸은 11-23 판 그대로다. */
 .rs-top{position:relative}
-.rs-cue-rail{position:absolute;z-index:4;inset:0 0 0 auto;width:min(46%,640px);pointer-events:none}
-.rs-cue{position:sticky;top:calc(100svh - 250px);height:250px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:16px;overflow:hidden;pointer-events:auto;text-decoration:none;color:var(--ink)}
+.rs-cue-rail{position:absolute;z-index:4;inset:0 0 0 auto;width:max(320px,min(46%,640px,calc(100% - var(--wide) - 540px)));pointer-events:none}
+.rs-cue{position:sticky;top:calc(100svh - 250px);height:250px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:16px;overflow:hidden;pointer-events:none;text-decoration:none;color:var(--ink)}
+.rs-cue-pill,.rs-cue img{pointer-events:auto}
 .rs-cue-pill{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 20px 0 22px;border-radius:999px;background:var(--ink);color:var(--paper);font:700 16px/1 var(--sans);box-shadow:0 18px 40px -18px rgba(0,0,0,.55)}
 .rs-cue-pill b{display:inline-block;animation:rs-nudge 1.8s var(--ease) infinite}
 @keyframes rs-nudge{0%,100%{transform:none}50%{transform:translateY(4px)}}
@@ -106,7 +107,8 @@ img{display:block;max-width:100%}
  * 글자 역할: 큰 말 SUIT 700 · 설명 SUIT 600 · 게임 이름 줄 회색. 색: 바탕 흰색, 글과 단추 먹, 꿈 무대 띠만 검정. */
 .rs-me{--fs:clamp(64px,min(13.4vw,24svh),236px);position:relative;height:100svh;min-height:640px;overflow:hidden;background:var(--paper);color:#000}
 :lang(en) .rs-me{--fs:clamp(56px,min(10.4vw,20svh),190px)}
-:lang(mn) .rs-me{--fs:clamp(48px,min(8.4vw,16svh),150px)}
+/* 몽골어 첫 줄(Би удахгүй, 글자 크기의 약 5배)이 학생증 왼쪽 끝(52%) 앞에서 끝나게 넓은 창에서는 글자를 더 키우지 않는다. */
+:lang(mn) .rs-me{--fs:clamp(48px,min(8.4vw,16svh,calc(.4vw + 118px)),150px)}
 .rs-me-l1,.rs-me-l2{position:absolute;left:var(--wide);margin:0;font:700 var(--fs)/1 var(--sans);letter-spacing:-.05em;white-space:nowrap}
 :lang(mn) .rs-me-l1,:lang(mn) .rs-me-l2{letter-spacing:-.02em}
 .rs-me-l2{bottom:clamp(36px,6svh,72px)}
@@ -118,7 +120,9 @@ img{display:block;max-width:100%}
 .rs-seg{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:#f1f1f1}
 .rs-seg button{height:44px;padding:0 18px;border-radius:999px;font:700 16px/1 var(--sans);color:#000;transition:background .2s,color .2s}
 .rs-seg button[aria-pressed="true"]{background:#000;color:#fff}
-.rs-hang{position:absolute;z-index:2;top:0;left:52%;width:clamp(300px,41vw,660px);display:grid;justify-items:center;transform-origin:50% 0}
+.rs-hang{--clear:1;position:absolute;z-index:2;top:0;left:52%;width:clamp(260px,min(41vw,calc((87svh - var(--fs) * (var(--clear) + .14) - clamp(36px,6svh,72px) - 74px) / .63)),660px);display:grid;justify-items:center;transform-origin:50% 0}
+/* 영어는 첫 줄(Soon I'm off)도 학생증 밑까지 길다 — 두 줄 위로 비킨다. */
+:lang(en) .rs-hang{--clear:2.04}
 .rs-hang.swing{animation:rs-sway 3.2s var(--ease) both}
 @keyframes rs-sway{0%{transform:rotate(7deg)}30%{transform:rotate(-4deg)}55%{transform:rotate(2deg)}78%{transform:rotate(-.8deg)}100%{transform:rotate(0)}}
 .rs-strap{display:block;width:38px;height:13svh;background:#141414 repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 4px)}
@@ -129,8 +133,9 @@ html[data-my-dream="actor"] .rs-idcard{transform:rotateY(180deg)}
 .rs-back{transform:rotateY(180deg)}
 .rs-card-hint{margin-top:16px;font:500 14px/1.4 var(--sans);color:#6b6b6b;text-align:center}
 
-/* 실제 게임 화면 휴대폰 다섯 대(가운데가 가장 크다). 아래 글 다섯 줄이 이어져 한 문장으로 읽힌다. */
+/* 실제 게임 화면 휴대폰 다섯 대(가운데가 가장 크다). 휴대폰마다 아래에 끝나는 문장 한 줄과 작은 설명 한 줄. */
 .rs-phones{padding:clamp(56px,6svh,72px) var(--gut) clamp(56px,7svh,80px);background:var(--paper);overflow:hidden}
+#phones:focus-visible{outline:2px solid var(--ink);outline-offset:6px}
 #phones{display:flex;justify-content:center;align-items:flex-start;gap:clamp(14px,1.8vw,30px);margin:0;padding:0;list-style:none}
 .rs-ph-item{--w:clamp(140px,12.4vw,196px);display:grid;gap:22px;justify-items:start;flex:none}
 .rs-ph-item:nth-child(2),.rs-ph-item:nth-child(4){--w:clamp(156px,14vw,218px)}
