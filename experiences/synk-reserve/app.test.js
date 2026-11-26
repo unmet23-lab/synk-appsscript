@@ -73,6 +73,13 @@ test('아래 단락(11-26 「다」): 학생증 · 휴대폰 다섯 대 · 꿈 �
   assert.equal(C.ko.tag, '2027년 2월 정식 출시');
   assert.match(html, /<div class="rs-top">\s*<section class="rs-hero"[\s\S]*<\/section>\s*<div class="rs-cue-rail"><a class="rs-cue" href="#me">/);
   assert.match(html, /<section class="rs-me" id="me"[\s\S]*<section class="rs-phones"[\s\S]*id="phones"[\s\S]*<section class="rs-stage"[\s\S]*<\/section>\s*<\/main>/);
+  // 학생증 틀은 첫 화면 사전예약 칸(.rs-card)과 다른 이름이다 — 꿈을 바꿔도 칸이 뒤집히지 않게(카본 reserve-da A1).
+  assert.match(html, /<div class="rs-idcard">/);
+  const css = fs.readFileSync(path.join(__dirname, 'src/reserve.css'), 'utf8');
+  assert.ok(!/data-my-dream[^{]*\.rs-card\b/.test(css), '꿈 선택이 .rs-card를 건드리지 않는다');
+  // 꿈 무대는 스크립트 전에도 제목과 대체 글이 있다(카본 reserve-da A3).
+  assert.match(html, /<h2 id="stage-title" class="rs-stage-big">[^<]+<\/h2>/);
+  assert.match(html, /<img class="rs-stage-pic"[^>]* alt="[^"]+"/);
   // 발은 synk.im 홈처럼 링크 줄과 큰 synk.
   assert.match(html, /<footer class="rs-foot">[\s\S]*<div class="rs-wm" aria-hidden="true">synk<\/div>\s*<\/footer>/);
 });

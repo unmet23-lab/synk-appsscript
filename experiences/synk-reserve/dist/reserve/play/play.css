@@ -1,7 +1,7 @@
 /* 사전예약 쪽의 1회용 체험 — 서울행(이야기)과 1화를 전체 화면으로 연다.
  * 원본: SYNK-appsscript/experiences/synk-reserve/src/play/play.css
  * 이야기와 1화의 겉은 공개된 world/의 것이고, 여기서는 틀 · 1화 머리줄 · 1화 끝 띠만 그린다(값은 앱 셸 .seoul-layer · .seoul-cta를 잇는다). */
-@font-face{font-family:'Reserve Sans';src:url(../assets/reserve-sans.woff2?v=313e3d1ba2d7) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Reserve Sans';src:url(../assets/reserve-sans.woff2?v=d46699dccdb0) format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'Reserve Inter';src:url(../assets/reserve-inter-500.woff2?v=f336f52afb3d) format('woff2');font-weight:400 500;font-display:swap}
 @font-face{font-family:'Reserve Inter';src:url(../assets/reserve-inter-700.woff2?v=27e0264fe7d1) format('woff2');font-weight:600 900;font-display:swap}
 :root{--sky:#050b1a;--bg:#060608;--ink:#f5f5f7;--ink2:#b9b9c0;--line:rgba(255,255,255,.3);

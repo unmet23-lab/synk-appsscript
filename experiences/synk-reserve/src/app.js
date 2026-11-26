@@ -168,6 +168,9 @@
     const t = T();
     document.documentElement.dataset.myDream = state.dream;
     $$('[data-dream]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.dream === state.dream)));
+    // 뒤집혀 안 보이는 학생증 면은 화면 낭독기에서도 숨긴다(backface-visibility는 접근성 트리에서 숨기지 않는다 — 카본 reserve-da A2).
+    const front = $('.rs-front'), back = $('.rs-back');
+    if (front && back) { if (state.dream === 'idol') { front.removeAttribute('aria-hidden'); back.setAttribute('aria-hidden', 'true'); } else { back.removeAttribute('aria-hidden'); front.setAttribute('aria-hidden', 'true'); } }
     const idol = state.dream === 'idol';
     const big = $('.rs-stage-big');
     if (big) big.innerHTML = keep(idol ? t.stageIdol : t.stageActor);
