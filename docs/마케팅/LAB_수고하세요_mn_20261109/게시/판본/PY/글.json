@@ -202,8 +202,8 @@
     {
       "id": "literalNote",
       "칸": "진행",
-      "글": "Con profes o jefes,\na veces suena a orden",
-      "원문": "선생님이나 상사에게는\n가끔 명령처럼 들려요",
+      "글": "Al profe le suena\na que vos le das órdenes",
+      "원문": "선생님에게는\n네가 명령하는 것처럼 들려요",
       "초": [
         7,
         10.2
@@ -352,8 +352,8 @@
     {
       "id": "ruleFriend",
       "칸": "진행",
-      "글": "Al profe no, al amigo sí",
-      "원문": "선생님께는 안 되고, 친구에게는 돼요",
+      "글": "Con amigos y compañeros",
+      "원문": "친구 · 동료에게",
       "초": [
         14.4,
         17.9
@@ -414,8 +414,8 @@
     {
       "id": "gag",
       "칸": "진행",
-      "글": "Al alumno, sí:",
-      "원문": "학생에게는 돼요:",
+      "글": "Al revés, sí se puede",
+      "원문": "반대로는(교수님이 학생에게는) 돼요",
       "초": [
         18,
         19.6
