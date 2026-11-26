@@ -15,7 +15,7 @@ const present=(t,src)=>{if(!process.env.CI||!/\.mp4$/.test(src)||existsSync(new 
 // 2026-11-26 남긴 세 편(「다리가 기억하는 것」 · 오팔린 「시스루」 · 도담중공업)만 둔다. 내린 작품의 판정 · 파일은 docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열(작품.json down)에 있다.
 // [id, kind, title, 파일 이름, 길이, 세로 · 넓은 판, featured, 출연, 구분, 포스터 sha256, 본편 sha256, 출품]
 const OWN=[
-  ['seoullo-bridge','animation','다리가 기억하는 것','seoullo-bridge','2분 58초','pano',true,undefined,'공모전 당선작','9df19497755b40e1486572c21b6148c2b9cfa5abcc785837e3814039db2027f3','706b6c9256f13973b158bc657a99402bc92e24b7cde37bbc421bdc4f00fd8104','2026 서울로미디어캔버스 단편 애니메이션 공모'],
+  ['seoullo-bridge','animation','다리가 기억하는 것','seoullo-bridge','2분 58초','pano',true,undefined,'공모전 당선작','9df19497755b40e1486572c21b6148c2b9cfa5abcc785837e3814039db2027f3','bd35b07c195f5f426bfc79c8d914da262dec3e787fd21956a340cef8c7d4a4ee','2026 서울로미디어캔버스 단편 애니메이션 공모'],
   ['opalin-seethrough','music-video','시스루','opalin-seethrough','3분 27초',undefined,true,'윤슬 · 로하 · 새봄 · 해인','AI 아이돌 뮤직비디오','e006c9e0d683991fc52a5646d0d6997af5a08996c27af0efba83324bcfffc727','497c974c85dd6b88d520350883ba46aad5d7f4156070cd845811f3c004be18ad'],
   ['dodam-heavy','film','이 아이를 보냅니다','dodam-heavy','1분 1초',undefined,true,'준호','가상 브랜드로 만든 자체 작품','6dc8a4c252880328743db47891922aabf6707650903fef7a9d9aa2df005d86c7','e8eb024b412f695548aa29ec016523608c0d95769653337a506fd38c9ddefe7a'],
 ];
