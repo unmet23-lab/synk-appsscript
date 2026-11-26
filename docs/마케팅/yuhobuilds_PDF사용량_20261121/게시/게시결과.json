@@ -57,6 +57,14 @@
       "후속": [
         "쇼츠 공개 뒤 영상 칸 넣기(〔유튜브 쇼츠〕 문단은 빼고 걸었다 — 11-26 21:38 손질 작업)"
       ]
+    },
+    {
+      "계정": "yuhobuilds-threads",
+      "상태": "게시됨",
+      "시각": "2026-11-26T21:00+09:00",
+      "주소": "https://www.threads.com/@yuhobuilds/post/DgNDknvEVJS",
+      "방법": "Windows 예약 작업 「SYNK 스레드 21시 게시」(tools/스레드예약/게시.js → ego 스레드 웹 바로 게시, AI 레이블) 21:00:01~21:01:18 · 받침 회차 synk-daily-threads가 th-post.mjs로 already 확인(프로필 첫 글 같음)",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시)"
     }
   ]
 }
