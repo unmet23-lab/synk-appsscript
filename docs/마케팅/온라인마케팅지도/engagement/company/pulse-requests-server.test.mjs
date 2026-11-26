@@ -1,12 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp,mkdir,rename,rm,stat,readdir,utimes,writeFile} from 'node:fs/promises';
-import {readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {createCompanyApp} from './server.mjs';
 import {workspaceMediaNames} from './workspace-media.mjs';
-import {normalizeRequestAnswers,requestFileKind,validRequestFile,REQUEST_LIMITS,carryToStrategy,finishLines} from './pulse-requests.mjs';
+import {normalizeRequestAnswers,requestFileKind,validRequestFile,REQUEST_LIMITS,carryToStrategy,finishLines,fitNotes} from './pulse-requests.mjs';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
 const answers=(extra={})=>({name:'오미톡 오미자 스파클링',kind:'food',channels:['shorts'],package:'s15',audience:'운동 끝나고 목마른 20대',oneThing:'한 캔에 맛이 다섯 번 바뀐다',action:'buy',screenText:'다섯 가지 맛, 톡.',avoid:['갈증 해소'],win:'impact',refs:[{url:'https://youtu.be/example',points:['카메라 · 속도'],why:''}],models:['M06'],date:'2026-11-21',approver:'one',contactName:'김합성',company:'합성 음료',email:'buyer@pulse-synthetic.test',consent:true,rights:true,...extra});
@@ -118,17 +117,44 @@ test('three-act finish: only a custom finish carries the end card, the line only
   assert.throws(()=>normalizeRequestAnswers(answers({endLine:'x'.repeat(81)})),{status:400});
   assert.equal(normalizeRequestAnswers(answers({endLine:'x'.repeat(80)})).endLine.length,80);
 });
+test('memo over 3,000 characters trims the longest customer line and keeps every item line and the finish lines whole',()=>{
+  // 세 막 후속 P2(11-27): 끝을 자르면 맨 뒤의 마무리 줄 · 드라이브 · 확인하는 사람 줄이 먼저 사라졌다.
+  const rows=['무엇으로 이길지: 이야기로 여운을',`참고 광고: ${'가'.repeat(2600)}`,`쓰는 법: ${'나'.repeat(900)}`,'드라이브: https://drive.google.com/x','여러 명이 확인 · 최종 대표','마무리: 직접 고름','마지막 화면: 로고 + 한 줄',`마지막 화면 문구: ${'다'.repeat(80)}`];
+  const out=fitNotes(rows),lines=out.split('\n');
+  assert.ok(out.length<=3000,String(out.length));assert.equal(lines.length,rows.length);
+  for(const keep of [0,3,4,5,6,7])assert.equal(lines[keep],rows[keep],rows[keep].slice(0,20));
+  assert.ok(lines[1].startsWith('참고 광고: 가')&&lines[1].endsWith('…'));
+  // 넘지 않으면 그대로다.
+  assert.equal(fitNotes(['a','b']),'a\nb');
+  // 가장 긴 줄을 앞 20자까지 줄여도 넘으면 다음으로 긴 줄을 줄인다.
+  const two=fitNotes([`참고 광고: ${'가'.repeat(2990)}`,`쓰는 법: ${'나'.repeat(2990)}`,'마무리: 추천대로']).split('\n');
+  assert.ok(two.join('\n').length<=3000);assert.equal(two[0].length,21);assert.ok(two[0].startsWith('참고 광고: 가'));assert.ok(two[1].endsWith('…'));assert.equal(two[2],'마무리: 추천대로');
+  // 자르는 자리가 이모지의 반쪽이어도 깨진 글자를 남기지 않는다(GPT GA1) — 홀짝 두 가지로 자리를 바꿔 본다.
+  for(const lead of ['','x']){const out=fitNotes([`참고 광고: ${lead}${'🎬'.repeat(1600)}`,'마무리: 추천대로']);assert.ok(out.length<=3000);assert.doesNotMatch(out,/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/,lead);}
+  // 드라이브 줄이 가장 길어도 주소는 줄이지 않고 다른 줄을 줄인다(GA2).
+  const drive=`드라이브: https://drive.google.com/${'d'.repeat(1500)}`,kept=fitNotes([drive,`참고 광고: ${'가'.repeat(1000)}`,`쓰는 법: ${'나'.repeat(800)}`]).split('\n');
+  assert.equal(kept[0],drive);assert.ok(kept.join('\n').length<=3000);assert.ok(kept[1].endsWith('…'));
+  // 제출 검증을 거친 실제 메모(carryToStrategy)에서도 마무리 줄 · 드라이브 · 확인하는 사람 줄이 남는다 — 옛 slice(0,3000)이면 여기서 깨진다(GA4).
+  const long=normalizeRequestAnswers(answers({refs:[0,1,2].map(n=>({url:`https://youtu.be/${String(n).repeat(900)}`,points:[],why:'가'.repeat(290)})),useNote:'나'.repeat(200),driveUrl:`https://drive.google.com/${'d'.repeat(900)}`,approver:'many',approverName:'김',finish:'custom',endCard:'line',endLine:'다'.repeat(80)}));
+  const memo=carryToStrategy({revision:1,data:{castingSelection:{modelId:''},channels:[]},request:null,confirmation:null,history:[]},long,{at:'2026-11-27T06:00:00.000Z',author:'staff',authorName:'담당자',authorId:'u'}).data.notes;
+  assert.ok(memo.length<=3000,String(memo.length));assert.ok(memo.endsWith(`\n마지막 화면 문구: ${'다'.repeat(80)}`));assert.ok(memo.includes(`\n드라이브: ${long.driveUrl}\n`));assert.match(memo,/\n여러 명이 확인 · 최종 김\n/);assert.match(memo,/참고 광고: [^\n]*…\n/);
+});
 test('finish memo lines follow the same rule as the finish screen for every combination',async()=>{
   // 설계 관문(11-26): 마무리 메모가 화면 규칙을 따로 옮겨 적다 세 회차 P1을 냈다. 메모 줄을 finishLines 하나로 모으고, 화면의 endShown · 추천 목록 원문과 모든 조합을 견준다(Fable 설계 검토 보완).
   globalThis.location??=new URL('http://localhost/pulse-app/');
-  const {endShown,emptyAnswers,PACKAGES}=await import('./public/pulse-app/request-data.mjs');
-  const flow=readFileSync(new URL('./public/pulse-app/request-flow.mjs',import.meta.url),'utf8');
+  const {endShown,emptyAnswers,PACKAGES,FEEL_LABELS}=await import('./public/pulse-app/request-data.mjs');
+  const {recList}=await import('./public/pulse-app/request-flow.mjs');
   // 서버는 package==='photo'로 사진을 가린다 — 화면의 pkg.photo와 같은 묶음이어야 한다(사진 상품이 늘면 여기서 깨진다).
   assert.deepEqual(PACKAGES.filter(item=>item.photo).map(item=>item.id),['photo']);
-  // 추천대로의 메모 말은 화면 추천 목록(recList)의 기본값과 한 쌍이다.
-  for(const [screen,memo] of [["[k('마지막 화면'),k('로고 + 한 줄')]",'마지막 화면은 로고 + 한 줄'],["[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]",'문구는 담당자가 써서 미리 보여 드림'],["k('첫 장을 먼저 보여 드리고 맞춰요')",'사진은 첫 장을 먼저 보여 드리고']]){
-    assert.ok(flow.includes(screen),screen);assert.ok(finishLines({package:memo.startsWith('사진')?'photo':'s15',finish:'rec'})[0].includes(memo),memo);
+  // 추천대로의 메모 말은 화면 추천 목록(recList)이 실제로 내는 기본값과 한 쌍이다 — 원문 글자가 아니라 패키지마다 낸 목록으로 견준다(11-27 후속 P2).
+  for(const pkg of PACKAGES){
+    const a={...emptyAnswers(),package:pkg.id,finish:'rec'},rows=Object.fromEntries(recList(a,!!pkg.photo).map(([key,value])=>[key,value])),memo=finishLines(a)[0];
+    if(pkg.photo){assert.equal(rows['마지막 화면'],undefined,pkg.id);assert.equal(rows['문구 한 줄'],undefined,pkg.id);assert.equal(rows['느낌'],'첫 장을 먼저 보여 드리고 맞춰요',pkg.id);assert.match(memo,/^마무리: 추천대로\(사진은 첫 장을 먼저 보여 드리고/,pkg.id);continue;}
+    assert.equal(rows['마지막 화면'],'로고 + 한 줄',pkg.id);assert.equal(rows['문구 한 줄'],'담당자가 써서 미리 보여 드려요',pkg.id);assert.equal(rows['느낌'],'두 가지 안으로 미리 제안해요',pkg.id);
+    assert.ok(memo.includes(`마지막 화면은 ${rows['마지막 화면']}`)&&memo.includes('문구는 담당자가 써서 미리 보여 드림'),pkg.id);
   }
+  // 이미 고른 느낌은 사진 · 영상 모두 「고르신 그대로」 보이고, 메모의 「무엇으로 이길지」 줄이 그대로 옮긴다.
+  for(const pkg of PACKAGES)assert.equal(Object.fromEntries(recList({...emptyAnswers(),package:pkg.id,finish:'rec',win:'story'},!!pkg.photo))['느낌'],FEEL_LABELS.story,pkg.id);
   for(const pkg of [...PACKAGES.map(item=>item.id),'ask',''])for(const finish of ['','rec','custom'])for(const endCard of ['','logo','line','info'])for(const endLine of ['','바다에서도 안심']){
     const a={...emptyAnswers(),package:pkg,finish,endCard,endLine},got=finishLines(a),photo=!!PACKAGES.find(item=>item.id===pkg)?.photo,at=`${pkg}/${finish}/${endCard}/${endLine}`;
     if(finish==='rec'){assert.deepEqual(got,[photo?'마무리: 추천대로(사진은 첫 장을 먼저 보여 드리고 방향을 맞춤)':'마무리: 추천대로(마지막 화면은 로고 + 한 줄, 문구는 담당자가 써서 미리 보여 드림)'],at);continue;}

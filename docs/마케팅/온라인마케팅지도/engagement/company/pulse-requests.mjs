@@ -948,7 +948,7 @@ const END_LABEL={logo:'로고만',line:'로고 + 한 줄',info:'로고 + 안내'
 // · 직접이면 머리 줄 「마무리: 직접 고름」을 둬, 고른 것이 없어도 미정과 가린다. 마무리를 고르지 않은 초안(옛 단계로 저장된 것)은 줄이 없다.
 // · 「추천대로」로 돌아온 뒤의 숨은 마지막 화면 · 문구는 옮기지 않는다. 느낌 · 과감함 · 목소리 · 화면 글자는 화면 추천 목록에 「고르신 그대로」 보이므로
 //   위 메모 줄(무엇으로 이길지 · 얼마나 과감하게 · 목소리 · screenCopy)이 그대로 옮긴다(request-flow.mjs recList).
-// 메모 끝에 붙여 3,000자 자르기에서 앞의 옛 항목을 밀어내지 않는다.
+// 메모 끝에 붙는다. 3,000자를 넘으면 fitNotes가 가장 긴 손님 글 줄부터 줄이므로 마무리 줄도 앞의 항목 줄도 빠지지 않는다.
 export function finishLines(a){
   const photo=a.package==='photo';
   if(a.finish==='rec')return [photo?'마무리: 추천대로(사진은 첫 장을 먼저 보여 드리고 방향을 맞춤)':'마무리: 추천대로(마지막 화면은 로고 + 한 줄, 문구는 담당자가 써서 미리 보여 드림)'];
@@ -959,6 +959,16 @@ const BOLD_LABEL={safe:'정석대로',twist:'조금 다르게',wild:'확 다르�
 // 메모의 한 줄은 「항목: 값」 하나다. 손님이 쓴 글에 줄바꿈이 있으면 그 뒤가 서버가 만든 다른 줄처럼 보이므로(11-13 백엔드 검수 GA1) 줄을 나누는 공백을 빈칸 하나로 잇는다.
 const oneLine=value=>String(value).replace(/\s*[^\S \t]+\s*/g,' ');
 // 꼭 붙일 표시: 「해당 없어요」는 줄을 만들지 않고, 「잘 모르겠어요」는 담당자가 확인할 일로 적는다. 고지 문구는 표시 업종을 골랐을 때만 붙인다.
+// 메모는 3,000자까지다. 넘으면 끝을 자르지 않고 가장 긴 줄(참고 광고 · 쓰는 법 같은 손님 글)부터 줄여 끝에 「…」를 단다 —
+// 끝을 자르면 맨 뒤의 마무리 줄 · 드라이브 · 확인하는 사람 줄이 먼저 사라졌다(11-27 세 막 후속 P2). 줄마다 앞 20자(「항목: 」)는 남긴다.
+// 드라이브 줄은 주소가 잘리면 공유 링크가 쓸모없어져 줄이지 않는다(GPT GA2). 자르는 자리가 이모지의 반쪽이면 그 반쪽도 뺀다(GA1).
+const KEEP_WHOLE=/^드라이브: /;
+const cutAt=(text,end)=>{const out=text.slice(0,end);return /[\uD800-\uDBFF]$/.test(out)?out.slice(0,-1):out;};
+export const fitNotes=(rows,max=3000)=>{rows=[...rows];for(let over=rows.join('\n').length-max;over>0;over=rows.join('\n').length-max){
+  const i=rows.reduce((best,row,j)=>KEEP_WHOLE.test(row)||row.length<=21||best>=0&&row.length<=rows[best].length?best:j,-1);
+  if(i<0)return cutAt(rows.join('\n'),max);
+  rows[i]=cutAt(rows[i],rows[i].length-Math.min(over+1,rows[i].length-20))+'…';}
+  return rows.join('\n');};
 const noticeLine=a=>!a.notice||a.notice==='none'?'':a.notice==='unsure'?'꼭 붙일 표시: 손님이 잘 모름 — 확인 필요':`꼭 붙일 표시: ${[NOTICE_LABEL[a.notice],a.noticeText].filter(Boolean).join(' · ')}`;
 export function carryToStrategy(strategy,a,stamp){
   const data={...strategy.data},put=(key,value)=>{if(value&&(data[key]===undefined||data[key]===''||data[key]===null||Array.isArray(data[key])&&!data[key].length))data[key]=value;};
@@ -970,7 +980,7 @@ export function carryToStrategy(strategy,a,stamp){
   put('screenCopy',a.screenText);put('destinationUrl',/^https:\/\//.test(a.pageUrl||'')?a.pageUrl:'');put('proposedDeadline',a.date);
   const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).join(', '),ref.why].filter(Boolean).join(' — ')).filter(Boolean);
   const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,a.bold&&`얼마나 과감하게: ${BOLD_LABEL[a.bold]}`,a.voice&&`목소리: ${VOICE_LABEL[a.voice]}`,noticeLine(a),refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`,...finishLines(a)].filter(Boolean).map(oneLine);
-  put('notes',lines.join('\n').slice(0,3000));
+  put('notes',fitNotes(lines));
   // 고른 모델의 헤어는 그 모델이 제작 설계의 모델일 때만 옮긴다(헤어 1 · 2 · 3은 모델마다 다르다). 전용 인물이 붙어 있으면 카탈로그 모델을 넣지 않는다.
   const casting={...data.castingSelection};if(a.models?.[0]&&!casting.modelId&&!personaRefOf(casting.personaRef))casting.modelId=a.models[0];
   if(a.hair&&!casting.hair&&casting.modelId&&casting.modelId===a.models?.[0])casting.hair=a.hair;

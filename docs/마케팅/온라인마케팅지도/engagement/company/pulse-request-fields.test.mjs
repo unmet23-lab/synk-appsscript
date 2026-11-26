@@ -71,7 +71,7 @@ test('mail typo hints fix only near misses of common addresses, never a real cou
   // 세 막(11-26) 메일 오타: 칸을 떠날 때만 보고, 고칠 것은 흔한 주소와 한두 글자 다른 것 · 뒤 주소만 틀린 두 마디 주소뿐이다(카본 B9 · Fable F5 · FA1).
   const {mailSuggest}=await import('./public/pulse-app/request-flow.mjs');
   for(const [mail,fix] of [['a@gmial.com','a@gmail.com'],['a@naver.con','a@naver.com'],['a@hanmail.com','a@hanmail.net'],['a@daum.com','a@daum.net'],['a@naver.co','a@naver.com']])assert.equal(mailSuggest(mail),fix,mail); // 공개허용: 메일 오타 안내 시험의 지어낸 예시 주소(한 글자 a, 실제 사람 아님)
-  for(const mail of ['a@gmail.com','a@mail.com','a@nike.com','a@ymail.com','a@email.com','a@yahoo.co.jp','a@hotmail.co.uk','a@outlook.kr','a@yahoo.fr','a@company.co.kr'])assert.equal(mailSuggest(mail),'',mail); // 공개허용: 메일 오타 안내 시험의 지어낸 예시 주소(한 글자 a, 실제 사람 아님)
+  for(const mail of ['a@gmail.com','a@mail.com','a@nike.com','a@ymail.com','a@email.com','a@yahoo.co.jp','a@hotmail.co.uk','a@outlook.kr','a@yahoo.fr','a@company.co.kr','a@hotmail.ca','a@outlook.cl','a@hotmail.cz'])assert.equal(mailSuggest(mail),'',mail); // 공개허용: 메일 오타 안내 시험의 지어낸 예시 주소(한 글자 a, 실제 사람 아님)
   // 사진 주문의 추천 목록은 두 안이 아니라 첫 장으로 맞춘다(GPT 다시 GA1 · GA2).
   assert.ok(flow.includes("[k('느낌'),win||(photo?k('첫 장을 먼저 보여 드리고 맞춰요'):k('두 가지 안으로 미리 제안해요'))]"));
   // 이미 고른 느낌 · 과감함 · 목소리 · 화면 글자는 추천 목록에 그대로 보인다(메모가 그대로 옮기므로 — Fable 설계 검토).

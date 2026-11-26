@@ -161,10 +161,11 @@ const SOLIO_SCENES=['hello','product','place','app','brand'];
 const DOOR_AT={name:0,files:.36,more:.72,model:.72,who:1.08};
 const stageMedia=()=>`<div class="sx-q-media" aria-hidden="true"><div class="sx-q-solio" data-solio>${SOLIO_SCENES.map(id=>`<div class="sx-q-scene" data-scene="${id}"><img src="${ASSET}solio-${id}.webp" alt="" decoding="async"><span class="sx-eyes"><i></i><i></i></span></div>`).join('')}</div><video class="sx-q-door" data-door src="${ASSET}door-opalin.mp4" muted playsinline preload="auto" disablepictureinpicture disableremoteplayback tabindex="-1"></video><img class="sx-q-sky" src="${ASSET}sky-opalin.webp" alt="" decoding="async"><i class="sx-q-shade"></i><p class="sx-q-skydate" data-sky-date></p></div>`;
 // 메일 주소 오타(11-26): 흔한 메일 주소와 한두 글자만 다르면 고친 주소를 돌려준다.
+// 끝이 두 글자 나라 주소(hotmail.ca · outlook.cl)는 .com과 두 글자만 달라도 실제 주소라, 두 글자 차이로는 고치지 않는다(11-27 후속 P2).
 const MAIL_DOMAINS=['gmail.com','naver.com','daum.net','hanmail.net','kakao.com','nate.com','outlook.com','icloud.com','hotmail.com','yahoo.com']; // i18n-skip
 const MAIL_OK=new Set([...MAIL_DOMAINS,'mail.com','me.com','live.com','msn.com','aol.com','gmx.com','proton.me','protonmail.com','korea.com','hanmir.com','ymail.com','email.com']); // i18n-skip
 const editDistance=(x,y)=>{const row=Array.from({length:y.length+1},(_,j)=>j);for(let i=1;i<=x.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=y.length;j++){const keep=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(x[i-1]===y[j-1]?0:1));prev=keep;}}return row[y.length];};
-export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_OK.has(domain))return '';const parts=domain.split('.'),same=parts.length===2&&(parts[1].length>2||parts[1]==='co')&&MAIL_DOMAINS.find(item=>item.split('.')[0]===parts[0]);if(same)return `${m[1]}@${same}`;const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]===1||best[1]===2&&domain.length>=9?`${m[1]}@${best[0]}`:'';};
+export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_OK.has(domain))return '';const parts=domain.split('.'),same=parts.length===2&&(parts[1].length>2||parts[1]==='co')&&MAIL_DOMAINS.find(item=>item.split('.')[0]===parts[0]);if(same)return `${m[1]}@${same}`;const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]===1||best[1]===2&&domain.length>=9&&!/\.[a-z]{2}$/.test(domain)?`${m[1]}@${best[0]}`:'';};
 // 같은 이름(11-26 중복 확인): 이 기기에서 보낸 의뢰의 이름과 날을 남겨 두고(최근 20개 · 이 브라우저에만), 같은 이름을 다시 쓰면 그 날을 알린다.
 const SENT_KEY='pulse-sent-requests';
 const nameKey=value=>String(value||'').toLowerCase().replace(/[\s·.,'"「」()\-]/g,'');
@@ -173,7 +174,7 @@ function rememberSent(name,at){const key=nameKey(name);if(key.length<2)return;tr
 // 마무리 「추천대로」의 목록(11-26 세 막, 설계 검토). 맡기는 것은 저희 기본값으로, 손님이 「직접」에서 이미 고른 것(느낌 · 과감함 · 목소리 · 화면 글자)은 「고르신 그대로」 보인다 —
 // 담당자 제작 메모(서버 pulse-requests.mjs finishLines · carryToStrategy)가 그 고름을 그대로 옮기므로, 손님이 본 목록과 메모가 같다. 사진 주문에는 마지막 화면 · 문구가 없고 첫 장으로 맞춘다.
 // 세 번째 칸이 참이면 값은 손님이 쓴 글(번역하지 않는다).
-const recList=(a,photo,ctx={})=>{
+export const recList=(a,photo,ctx={})=>{
   const win=FEEL_LABELS[a.win],bold=BOLD.find(item=>item.id===a.bold),voice=!photo&&!ctx.hasModel&&VOICES.find(item=>item.id===a.voice);
   return [...(photo?[]:[[k('마지막 화면'),k('로고 + 한 줄')],[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]]),
     [k('느낌'),win||(photo?k('첫 장을 먼저 보여 드리고 맞춰요'):k('두 가지 안으로 미리 제안해요'))],
