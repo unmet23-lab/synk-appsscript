@@ -29,8 +29,8 @@ const 흐름 = "name: syntax-check\non:\n  push:\n    paths-ignore:\n      - 'do
 const 값시험 = "const { test } = require('node:test'); const assert = require('node:assert');\n"
   + "test('tools/값.json 의 값은 1이다', () => { assert.equal(require('../tools/값.json').값, 1); });\n";
 
-/** origin(bare) · 공용 작업본(master) · 워크트리 하나 · 남의 push. */
-function 새판(t) {
+/** origin(bare) · 공용 작업본(master) · 워크트리 하나 · 남의 push. 더할은 바탕 커밋에 더 넣을 파일이다. */
+function 새판(t, 더할 = {}) {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-baro-시간-'));
   t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
   const git = (cwd, ...a) => execFileSync('git', ['-c', 'core.quotepath=false', ...a], { cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
@@ -43,7 +43,7 @@ function 새판(t) {
   git(공용, 'config', 'core.autocrlf', 'false');
   git(공용, 'config', 'extensions.worktreeConfig', 'true');
   쓰기(공용, 'tools/git-storage-policy.json', `${JSON.stringify(정책, null, 2)}\n`);
-  const 파일 = { '.github/workflows/syntax-check.yml': 흐름, 'tests/값.test.js': 값시험, 'tools/값.json': '{"값":1}\n', 'a.txt': '1\n' };
+  const 파일 = { '.github/workflows/syntax-check.yml': 흐름, 'tests/값.test.js': 값시험, 'tools/값.json': '{"값":1}\n', 'a.txt': '1\n', ...더할 };
   for (const [p, v] of Object.entries(파일)) 쓰기(공용, p, v);
   git(공용, 'add', '-A');
   git(공용, 'commit', '-q', '-m', '바탕');
@@ -55,6 +55,7 @@ function 새판(t) {
   const 원격git = (...a) => execFileSync('git', ['--git-dir', 원격, ...a], { encoding: 'utf8', stdio: 'pipe' });
   return {
     워, 쓰기: (p, v) => 쓰기(워, p, v),
+    공용: { 폴더: 공용, 쓰기: (p, v) => 쓰기(공용, p, v) },
     원격머리: () => 원격git('rev-parse', 'master').trim(),
     원격부모: () => 원격git('rev-parse', 'master^').trim(),
     원격파일: (p) => 원격git('show', `master:${p}`),
@@ -104,4 +105,77 @@ test('관련 시험: 바쁜 PC에서 한도만 넘기고 깨진 것이 없으면
   const 글 = 도구._시험.올리기글(r);
   assert.match(글, /관련 시험 시간 넘김 — 끝까지 못 봄 · 900초 · 파일 1개/);
   assert.match(글, /주의: 관련 시험이 15분 안에 끝나지 않았다/);
+});
+
+test('관련 시험(공용 작업본): 한도에 끊긴 실행은 보인 실패의 시험만 보고 남의 미커밋 면제를 가른다 — 느린 앞 시험이 남의 파일을 읽어도 뒤 시험의 실패는 막는다(GPT 11-26 GA3)', async (t) => {
+  const 느림 = "require('../tools/값.json'); require('../tools/남.js');\nrequire('node:test')('오래 걸림', () => {});\n";
+  const 판 = 새판(t, { 'tests/느림.test.js': 느림, 'tools/남.js': 'module.exports = 1;\n' });
+  판.공용.쓰기('tools/남.js', 'module.exports = 2;\n'); // 다른 세션이 고치다 만 파일 — 느린 앞 시험만 읽는다
+  판.공용.쓰기('tools/값.json', '{"값":2}\n');
+  const 전 = 판.원격머리();
+  const 깨짐 = { 이름: 'tools/값.json 의 값은 1이다', 위치: 'tests/값.test.js:2', 파일: 'tests/값.test.js' };
+  let 고른 = null;
+  const r = await 도구.올리기({
+    저장소: 판.공용.폴더, 경로들: ['tools/값.json'], 메시지: '값 2', 실행: true,
+    // 끊긴 실행의 기록은 믿을 수 있다(TAP오류 없음) — 그래야 「깨진 그 시험만 본다」를 잰다(3회차 GPT GA5).
+    관련시험돌리기: ({ 시험 }) => { 고른 = 시험; return { ...끊김, 실패: [깨짐] }; },
+  });
+  assert.deepEqual(고른, ['tests/값.test.js', 'tests/느림.test.js'], '느린 앞 시험도 골랐다');
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(r.이유, /관련 시험이 깨졌다\(1개 깨짐 · 끝까지 못 봄/);
+  assert.equal(판.원격머리(), 전, '아무것도 올라가지 않았다');
+  // 한도가 아닌 실행 오류도 고른 시험 전부로 넓히지 않는다. 깨진 그 시험이 남의 미커밋을 안 읽으면 막는다(Fable 면제 설계 검토).
+  const 오류 = await 도구.올리기({
+    저장소: 판.공용.폴더, 경로들: ['tools/값.json'], 메시지: '값 2', 실행: true,
+    관련시험돌리기: () => ({ 통과함: false, 이유: 'node --test 신호 SIGKILL', 시험: 0, 통과: 0, 실패수: 0, 취소: 0, 초: 30, 실패: [깨짐] }),
+  });
+  assert.equal(오류.결과, '멈춤', JSON.stringify(오류));
+  assert.equal(판.원격머리(), 전, '아무것도 올라가지 않았다');
+});
+
+test('관련 시험(공용 작업본): 깨진 시험이 모두 남의 미커밋을 읽을 때만 면제한다 — 하나라도 안 읽거나, 못 본 파일 · TAP오류 · TAP 없이 지어낸 실패가 있으면 막는다(3회차 GPT GA1 · GA2, Fable 면제 설계 검토)', async (t) => {
+  const 남읽음 = "require('../tools/값.json'); require('../tools/남.js');\nrequire('node:test')('남을 읽음', () => {});\n";
+  const 판짓기 = () => {
+    const 판 = 새판(t, { 'tests/느림.test.js': 남읽음, 'tests/남도.test.js': 남읽음, 'tools/남.js': 'module.exports = 1;\n' });
+    판.공용.쓰기('tools/남.js', 'module.exports = 2;\n'); // 다른 세션이 고치다 만 파일
+    판.공용.쓰기('tools/값.json', '{"값":2}\n');
+    return 판;
+  };
+  const 올리기 = (판, 결과) => 도구.올리기({ 저장소: 판.공용.폴더, 경로들: ['tools/값.json'], 메시지: '값 2', 실행: true, 관련시험돌리기: () => 결과 });
+  const 깨짐 = (파일) => ({ 이름: `${파일}의 시험`, 위치: `${파일}:2`, 파일 });
+  const 안끊김 = { 통과함: false, 시험: 3, 통과: 1, 실패수: 2, 취소: 0, 초: 30 };
+  const 판 = 판짓기(), 전 = 판.원격머리();
+  for (const [이름, 결과] of [
+    ['A · B 가운데 B만 읽음', { ...안끊김, 실패: [깨짐('tests/값.test.js'), 깨짐('tests/느림.test.js')] }],
+    ['끊긴 실행, B만 읽음', { ...끊김, 실패: [깨짐('tests/값.test.js'), 깨짐('tests/느림.test.js')] }],
+    ['끊기지 않았는데 못 본 파일', { ...안끊김, 이유: '관련 시험 몰이가 끝나지 않고 죽었다 (종료 1)', 못봄: { 돌던중: 0, 안돌림: 1 }, 실패: [깨짐('tests/느림.test.js')] }],
+    ['TAP오류', { ...안끊김, TAP오류: 'tests/값.test.js TAP을 읽지 못했다 (EACCES)', 실패: [깨짐('tests/느림.test.js')] }],
+    ['TAP 없이 지어낸 실패', { ...안끊김, 실패: [{ ...깨짐('tests/느림.test.js'), 이름: 'tests/느림.test.js (종료 1)', 기록없음: true }] }],
+    ['끊긴 실행의 지어낸 실패', { ...끊김, 실패: [{ ...깨짐('tests/느림.test.js'), 이름: 'tests/느림.test.js (신호 SIGKILL)', 기록없음: true }] }],
+  ]) {
+    const r = await 올리기(판, 결과);
+    assert.equal(r.결과, '멈춤', `${이름}: ${JSON.stringify(r)}`);
+    assert.equal(판.원격머리(), 전, `${이름}: 아무것도 올라가지 않았다`);
+  }
+  // 깨진 시험이 모두 남의 미커밋을 읽으면 지금처럼 막지 않고 주의를 남긴다 — 끊기지 않은 실행 · 끊긴 실행.
+  for (const 결과 of [{ ...안끊김, 실패: [깨짐('tests/느림.test.js'), 깨짐('tests/남도.test.js')] }, { ...끊김, 실패: [깨짐('tests/느림.test.js')] }]) {
+    const 새 = 판짓기();
+    const r = await 올리기(새, 결과);
+    assert.equal(r.결과, '올림', JSON.stringify(r));
+    assert.match(r.주의, /남의 미커밋\(tools\/남\.js\)/);
+  }
+});
+
+test('관련 시험(공용 작업본): 한도에 끊긴 실행은 실패를 고른 시험으로 다 가를 수 없으면 면제하지 않는다 — 빈 실패 목록 · 고른 시험 밖 파일(2회차 GPT GA1 · GA2)', async (t) => {
+  const 느림 = "require('../tools/값.json'); require('../tools/남.js');\nrequire('node:test')('오래 걸림', () => {});\n";
+  const 판 = 새판(t, { 'tests/느림.test.js': 느림, 'tools/남.js': 'module.exports = 1;\n' });
+  판.공용.쓰기('tools/남.js', 'module.exports = 2;\n'); // 느린 시험만 읽는 남의 미커밋
+  판.공용.쓰기('tools/값.json', '{"값":2}\n');
+  const 전 = 판.원격머리();
+  const 도우미 = { 이름: '도우미 실패', 위치: 'tests/lib/도우미.js:3', 파일: 'tests/lib/도우미.js' };
+  for (const 결과 of [{ ...끊김, TAP오류: '끝까지 못 본 기록을 읽지 못했다', 실패: [] }, { ...끊김, 실패: [도우미] }]) {
+    const r = await 도구.올리기({ 저장소: 판.공용.폴더, 경로들: ['tools/값.json'], 메시지: '값 2', 실행: true, 관련시험돌리기: () => 결과 });
+    assert.equal(r.결과, '멈춤', `${JSON.stringify(결과)} → ${JSON.stringify(r)}`);
+    assert.equal(판.원격머리(), 전, '아무것도 올라가지 않았다');
+  }
 });

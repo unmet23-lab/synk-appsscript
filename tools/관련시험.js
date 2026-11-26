@@ -26,7 +26,8 @@
  *      이 규칙은 조건부 등록의 연결을 추가한다 — PC에만 있는 도구로 도는 시험을 등록 없이 넣은 push가 세 번(11-09 · 11-10 · 11-11)
  *      syntax-check를 20 · 31 · 33회 빨갛게 했다.
  *   기록 전용 경로만 바꾼 push는 고르지 않는다 — CI도 그 push에는 무거운 검사를 안 띄운다(records-check가 돈다).
- * 돌리기: node --test --test-reporter=tap. 워크트리에서는 CI=1이다(git 밖 로컬 자료를 읽는 시험이 건너뛴다 — 현장노트 시험_화면확인).
+ * 돌리기: 시험 파일마다 node --test --test-reporter=tap을 따로 돌린다(tools/lib/관련시험몰이.cjs — 11-26). 한도에 끊겨도 끝난 파일의 판정은
+ *   그 실행기의 종료 코드와 온전한 TAP이다. 워크트리에서는 CI=1이다(git 밖 로컬 자료를 읽는 시험이 건너뛴다 — 현장노트 시험_화면확인).
  *   공용 작업본에서는 주지 않는다. 이번 push로 처음 들어가는 파일은 SYNK_새파일로 넘긴다(git ls-files로 훑는 시험이 보게, 10-22).
  *   한 PC에서 동시에 도는 관련 시험은 자리 파일로 둘까지다(아래 「자리」 — 기다린 시간은 15분 한도에 안 든다, 10-22).
  *   원천과 짝 파일(생성물·사본)이 어긋난 push는 이 시험이 아니라 tools/짝검사.js가 먼저 막는다(CI의 시험 밖 단계까지).
@@ -602,6 +603,85 @@ function 보고서판정(글) {
     까닭: 상태 === '미확인' ? (꼬리 ? 'TAP 마지막 줄이 끝나지 않았다' : 'TAP에 확인한 시험 결과가 없다') : 완료 ? null : 'TAP 완료 요약이 없다(잘렸거나 Node 출력이 바뀌었다)' };
 }
 
+/** 몰이 장부(tools/lib/관련시험몰이.cjs)와 파일별 TAP으로 판정한다 → 돌리기 결과(초 · 자리는 돌리기가 붙인다).
+ *  끝난 파일: 그 실행기의 종료 코드와 TAP이 Node의 판정이다(Node의 실패 셈을 흉내 내지 않는다). 종료 0이고 TAP이 완료 요약까지 깨끗할 때만 통과다.
+ *  한도에 끊긴 때 돌던 파일: TAP에 이미 찍힌 실패가 있으면 깨짐, 없으면 「끝까지 못 봄」이다. 끝나지 않은 시험은 깨진 시험이 아니다.
+ *  끊긴 실행은 끝까지 통과한 파일이나 돌던 파일 TAP의 통과 줄이 하나도 없으면 확인한 것이 없어 막는다(TAP오류 — 10-22 규칙 그대로).
+ *  돌던 파일 TAP의 끝나지 않은 마지막 줄도 막는다(11-15 GPT — 미완결 꼬리는 근거가 아니다). 실패의 파일은 늘 그 시험 파일이다.
+ *  tap: 번호 → TAP 글(없으면 null). 몰이: 몰이를 띄운 spawnSync 결과. */
+function 몰이판정({ 장부글, tap, 시험, root = null, 몰이 = {}, 한도ms = 15 * 60e3 }) {
+  const 합계 = { 시험: 0, 통과: 0, 실패수: 0, 취소: 0, 건너뜀: 0, 할일: 0, 실패: [] };
+  const 상태 = 시험.map(() => ({ 시작: false, 끝: null }));
+  let 장부오류 = null, 끊김 = false, 끝 = false;
+  const 줄들 = typeof 장부글 === 'string' ? 장부글.split('\n') : null;
+  if (!줄들) 장부오류 = '몰이 장부가 없다';
+  else if (줄들.pop() !== '') 장부오류 = '몰이 장부의 마지막 줄이 끝나지 않았다';
+  else {
+    const 읽기 = (줄) => { try { const 값 = JSON.parse(줄); return 값 && typeof 값 === 'object' && !Array.isArray(값) ? 값 : null; } catch { return null; } };
+    const 머리 = 읽기(줄들.shift() ?? '');
+    if (머리?.몰이판 !== 1 || 머리.수 !== 시험.length) 장부오류 = '몰이 장부의 머리 줄이 없다';
+    for (const 줄 of 장부오류 ? [] : 줄들) {
+      const 값 = 읽기(줄);
+      if (!값) { 장부오류 = '몰이 장부에 읽을 수 없는 줄이 있다'; break; }
+      // 몰이는 끊김 뒤에 끝만 적고, 끝 뒤에는 아무것도 적지 않는다(3회차 GPT GA7).
+      if (끝 || 끊김 && 값.끝 !== true) { 장부오류 = '몰이 장부의 줄이 차례에 맞지 않는다'; break; }
+      if (값.끊김 === true) { 끊김 = true; continue; }
+      if (값.끝 === true) { 끝 = true; continue; }
+      const 칸 = Number.isSafeInteger(값.번호) && 값.번호 >= 0 && 값.번호 < 시험.length ? 상태[값.번호] : null;
+      if (칸 && 값.시작 === true && !칸.시작) { 칸.시작 = true; continue; }
+      if (칸 && 칸.시작 && !칸.끝 && (Object.hasOwn(값, '종료') || Object.hasOwn(값, '오류'))) { 칸.끝 = 값; continue; }
+      장부오류 = '몰이 장부의 줄이 차례에 맞지 않는다'; break;
+    }
+  }
+  const 못봄 = { 돌던중: 0, 안돌림: 0 }, 까닭들 = [];
+  let 확인 = 0, 꼬리 = null, 읽기오류 = null;
+  if (!장부오류) for (const [번호, 파일] of 시험.entries()) {
+    const 칸 = 상태[번호];
+    if (!칸.시작) { 못봄.안돌림++; continue; }
+    const 띄움오류 = 칸.끝 && Object.hasOwn(칸.끝, '오류');
+    // TAP 읽기: 없으면 null, 그 밖의 오류는 던진다. 끝난 파일의 TAP이 없거나 어느 파일이든 읽다 오류가 나면 믿을 수 없다(3회차 GPT GA2).
+    let 글 = null, 읽기글 = null;
+    if (!띄움오류) { try { 글 = tap(번호); } catch (e) { 읽기글 = `TAP을 읽지 못했다 (${e?.code || e?.message || e})`; } }
+    if (!읽기글 && 칸.끝 && !띄움오류 && 글 === null) 읽기글 = 'TAP이 없다';
+    if (읽기글) 읽기오류 ??= `${파일} ${읽기글}`;
+    const P = 보고서판정(글);
+    if (P.요약) for (const k of ['시험', '통과', '실패수', '취소', '건너뜀', '할일']) 합계[k] = 합계[k] === null || P.요약[k] === null ? null : 합계[k] + P.요약[k];
+    const 깨짐 = (까닭) => {
+      const 본 = P.본실패 > 0 ? tap읽기(글, root).실패.map((x) => ({ ...x, 파일 })) : [];
+      if (본.length) { 합계.실패.push(...본); return; }
+      // TAP에 실패 줄이 하나도 없이 지어낸 항목은 기록없음이다 — 공용 작업본 면제가 면제하지 않는다(Fable 면제 설계 검토).
+      // 실패 줄은 있는데 공통 파서가 이름을 못 뽑은 때(이름에 든 \# TODO 따위)는 TAP에 찍힌 실패라 표시하지 않는다(4회차 GPT GA1).
+      합계.실패.push({ 이름: `${파일} (${까닭})`, 위치: 파일, 파일, ...(P.본실패 > 0 ? {} : { 기록없음: true }) });
+      까닭들.push(`${파일} ${까닭}`);
+    };
+    const 깨끗 = P.상태 === '완료' && P.요약.실패수 === 0 && P.요약.취소 === 0 && P.본실패 === 0;
+    if (칸.끝) {
+      if (띄움오류) 깨짐(`띄우지 못함 ${칸.끝.오류}`);
+      else if (칸.끝.종료 === 0 && !칸.끝.신호 && 깨끗) 확인++;
+      else 깨짐(칸.끝.신호 ? `신호 ${칸.끝.신호}` : 칸.끝.종료 !== 0 ? `종료 ${칸.끝.종료}` : 읽기글 || P.까닭 || 'TAP에 실패나 취소가 있다');
+      continue;
+    }
+    // 끊긴 때 돌던 파일 — LF로 끝나지 않은 TAP은 실패가 보였어도 믿을 수 없다(3회차 GPT GA4). 이미 찍힌 실패와 요약 줄의 실패 · 취소 단서는
+    // 완료 요약이 다 나오기 전이라도 깨짐이다(3회차 GPT GA3).
+    if (typeof 글 === 'string' && 글 && !글.endsWith('\n')) 꼬리 ??= `${파일} TAP 마지막 줄이 끝나지 않았다`;
+    if (P.본실패 > 0 || P.실패취소단서 || P.상태 === '완료' && !깨끗) { 깨짐('끊기기 전에 깨짐'); continue; }
+    확인 += P.본통과;
+    못봄.돌던중++;
+  }
+  const 시간넘김 = 끊김 || 몰이.error?.code === 'ETIMEDOUT';
+  const 남음 = 못봄.돌던중 + 못봄.안돌림;
+  const 한도글 = 한도ms >= 60e3 ? `${Math.round(한도ms / 60e3)}분` : `${Math.round(한도ms / 1000)}초`;
+  const 몰이까닭 = 시간넘김 ? `${한도글} 안에 끝나지 않았다`
+    : 몰이.error ? `관련 시험 몰이 실행 실패 (${몰이.error.code || 몰이.error.message})`
+    : !장부오류 && (!끝 || 남음) ? `관련 시험 몰이가 끝나지 않고 죽었다 (${몰이.signal ? `신호 ${몰이.signal}` : `종료 ${몰이.status}`}${String(몰이.stderr || '').trim() ? `: ${String(몰이.stderr).trim().split('\n')[0].slice(0, 200)}` : ''})`
+    : null;
+  const TAP오류 = 장부오류 || 읽기오류 || 꼬리 || (시간넘김 && !합계.실패.length && 확인 === 0 ? '한도 안에 확인한 시험 결과가 없다' : null);
+  const 이유 = [몰이까닭, TAP오류, ...까닭들.slice(0, 3), 까닭들.length > 3 ? `그 밖에 ${까닭들.length - 3}개` : null,
+    남음 ? `끝까지 못 본 파일 ${남음}개(돌던 중 ${못봄.돌던중} · 안 돌림 ${못봄.안돌림})` : null].filter(Boolean).join(' · ');
+  const 통과함 = !시간넘김 && !장부오류 && !몰이.error && 끝 && !남음 && !합계.실패.length;
+  return { ...합계, 통과함, ...(시간넘김 ? { 시간넘김: true } : {}), ...(TAP오류 ? { TAP오류 } : {}), ...(이유 ? { 이유 } : {}), ...(남음 ? { 못봄 } : {}) };
+}
+
 // ── 자리(한 PC에서 동시에 도는 push 전 관련 시험 수, 2026-10-22) ─────────────────────────────
 // 10-22 13시 여러 세션의 push 전 관련 시험이 한꺼번에 돌아 CPU 100%·`--test` 프로세스 29개가 되자 모두 15분 한도에 걸렸다
 // (시험 내용이 아니라 동시에 도는 양 탓). 공용 git 폴더(<git-common-dir>/synk-관련시험/자리/ — 이 저장소 워크트리 모두가 같이 본다)에
@@ -697,34 +777,10 @@ function 자리설정(root, 자리) {
 /** 새파일: 이번 push로 처음 들어가는 경로 — SYNK_새파일(JSON 배열)로 넘긴다. push 전 작업본에서는 아직 추적 밖이라
  *  git ls-files로 훑는 시험이 못 본다(10-21 지면폰트 ⑦ 빨강 두 번이 모두 새 지면이었다 — tests/_git밖.js 이번push새파일).
  *  자리: 위 「자리」 — 시험이 { 폴더, 수, 기다림ms, 간격ms }를 주거나 false로 끈다. 결과의 자리 = { 번호, 수, 기다린초 }. */
-// Windows CreateProcess는 전체 명령줄을 UTF-16 32,767자로 제한한다. 모든 인자를
-// 따옴표로 감쌌을 때의 역슬래시/따옴표 이스케이프까지 세어 여유 있는 크기로 나눈다.
-function 명령인자길이(value) {
-  const text = String(value);
-  let extra = 3, slashes = 0; // 여닫는 따옴표와 구분 공백
-  for (const char of text) {
-    if (char === '\\') slashes++;
-    else { if (char === '"') extra += slashes + 1; slashes = 0; }
-  }
-  return text.length + extra + slashes;
-}
-function 시험인자묶음(시험, 고정) {
-  if (process.platform !== 'win32') return [시험];
-  const fixed = [process.execPath, ...고정].reduce((sum, arg) => sum + 명령인자길이(arg), 0) + 20;
-  const batches = []; let batch = [], length = fixed;
-  for (const file of 시험) {
-    const size = 명령인자길이(file);
-    if (fixed + size > 30000) throw new Error('시험 파일 경로가 Windows 명령 길이 한도를 넘는다');
-    if (batch.length && length + size > 30000) { batches.push(batch); batch = []; length = fixed; }
-    batch.push(file); length += size;
-  }
-  if (batch.length) batches.push(batch);
-  return batches;
-}
+const 몰이파일 = path.join(__dirname, 'lib', '관련시험몰이.cjs');
 
 function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, 새파일 = [], 자리 = undefined }) {
   if (!시험.length) return { 통과함: true, 시험: 0, 통과: 0, 실패수: 0, 실패: [], 초: 0 };
-  const tap = path.join(os.tmpdir(), `synk-관련시험-${process.pid}-${Date.now()}.tap`);
   const env = { ...process.env };
   // node --test 안에서 부르면(시험·훅) 부모 실행기의 표시가 따라와 자식이 TAP 파일 대신 부모에게 결과를 보낸다 — 0건으로 읽힌다.
   delete env.NODE_TEST_CONTEXT;
@@ -732,73 +788,37 @@ function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, �
   if (새파일.length) env.SYNK_새파일 = JSON.stringify(새파일);
   // 한 번에 도는 시험 파일 수 — 기본(CPU-1)이면 자리 둘이 함께 돌 때 CPU를 넘겨 서로 느려진다(현장노트 시험_화면확인 동시 실행).
   const 동시 = Math.max(2, Math.floor((os.availableParallelism ? os.availableParallelism() : os.cpus().length) / 3));
-  const 고정 = ['--test', '--test-timeout=120000', `--test-concurrency=${동시}`, '--test-reporter=tap'];
-  let 묶음;
-  try { 묶음 = 시험인자묶음(시험, [...고정, `--test-reporter-destination=${tap}`]); }
-  catch (error) { return { ...tap읽기('', root), 통과함: false, 초: 0, 이유: error.message }; }
   const 설정 = 자리설정(root, 자리);
   const 잡음 = 설정 ? 자리잡기(설정.폴더, 설정) : null;
   const 시작 = process.hrtime.bigint();
   const 경과ms = () => Number((process.hrtime.bigint() - 시작) / 1000000n);
-  const 합계 = { 시험: 0, 통과: 0, 실패수: 0, 취소: 0, 건너뜀: 0, 할일: 0, 실패: [] };
-  let r = { status: 0 }, 실행수 = 0, 완료수 = 0, 읽기오류 = null, 예산소진 = false, 보고서 = 보고서판정(null);
+  let 폴더 = null, 판정;
   try {
-    for (let index = 0; index < 묶음.length; index++) {
-      const remaining = 한도ms === 0 ? 0 : index === 0 ? 한도ms : 한도ms - 경과ms();
-      if (한도ms > 0 && remaining <= 0) { r = { status: null, error: { code: 'ETIMEDOUT' } }; 예산소진 = true; break; }
-      const output = index === 0 ? tap : `${tap}.${index}`;
-      let 글 = null;
-      try {
-        // 같은 pid·시각의 옛 보고서를 이번 실행의 증거로 읽지 않는다.
-        try { fs.rmSync(output, { force: true }); }
-        catch (error) { r = { status: null, error }; 읽기오류 = `${index + 1}번 묶음 TAP 경로 초기화 실패 (${error.code || error.message})`; break; }
-        // 묶음마다 시간을 다시 주지 않는다. 하나의 자리와 전체 한도 안에서 모든 선택 파일을 실행한다.
-        r = spawnSync(process.execPath, [...고정, `--test-reporter-destination=${output}`, ...묶음[index]],
-          { cwd: root, env, encoding: 'utf8', windowsHide: true, timeout: remaining, maxBuffer: 64 << 20 });
-        실행수++;
-        try { 글 = fs.readFileSync(output, 'utf8'); }
-        catch (error) {
-          읽기오류 = `${index + 1}번 묶음 TAP 읽기 실패 (${error.code || error.message})`;
-        }
-      } finally {
-        try { fs.rmSync(output, { force: true }); }
-        catch (error) { console.error(`관련 시험 TAP 임시 파일 정리 실패 (${error.code || 'UNKNOWN'})`); }
-      }
-      const current = tap읽기(글, root);
-      보고서 = 보고서판정(글);
-      if (보고서.요약) for (const k of ['시험', '통과', '실패수', '취소', '건너뜀', '할일']) {
-        합계[k] = 합계[k] === null || 보고서.요약[k] === null ? null : 합계[k] + 보고서.요약[k];
-      }
-      if (보고서.본실패 > 0) 합계.실패.push(...current.실패);
-      // 한 묶음의 실제 실패나 실행 오류를 뒤 묶음의 통과/시간 초과가 가리지 못하게 한다.
-      const 묶음통과 = !읽기오류 && !r.error && r.status === 0 && 보고서.상태 === '완료' &&
-        보고서.요약.실패수 === 0 && 보고서.요약.취소 === 0 && 보고서.본실패 === 0;
-      if (!묶음통과) break;
-      완료수++;
-    }
+    폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-관련시험-'));
+    const 일 = { 시험, 동시, 한도ms, 폴더, 고정: ['--test', '--test-timeout=120000', '--test-reporter=tap'] };
+    fs.writeFileSync(path.join(폴더, '일.json'), JSON.stringify(일));
+    // 몰이가 한도에 끊고 장부를 맺는다. 몰이 자신이 멈추면 30초 뒤 여기서 끝낸다(그때도 시간 넘김으로 본다).
+    const 몰이 = spawnSync(process.execPath, [몰이파일, path.join(폴더, '일.json')],
+      { cwd: root, env, encoding: 'utf8', windowsHide: true, timeout: 한도ms > 0 ? 한도ms + 30e3 : 0, maxBuffer: 64 << 20 });
+    let 장부글 = null;
+    try { 장부글 = fs.readFileSync(path.join(폴더, '장부.jsonl'), 'utf8'); } catch { /* 몰이판정이 「몰이 장부가 없다」로 본다 */ }
+    const tap = (번호) => { try { return fs.readFileSync(path.join(폴더, `${번호}.tap`), 'utf8'); } catch (e) { if (e.code === 'ENOENT') return null; throw e; } };
+    판정 = 몰이판정({ 장부글, tap, 시험, root, 몰이, 한도ms });
+  } catch (error) {
+    const 까닭 = `관련 시험 준비 실패 (${error.code || error.message})`;
+    판정 = { 시험: 0, 통과: 0, 실패수: 0, 취소: 0, 건너뜀: 0, 할일: 0, 실패: [], 통과함: false, TAP오류: 까닭, 이유: 까닭 };
   } finally {
     if (잡음) 잡음.놓기();
+    if (폴더) {
+      try { fs.rmSync(폴더, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); }
+      catch (error) { console.error(`관련 시험 임시 폴더 정리 실패 (${error.code || 'UNKNOWN'})`); }
+    }
   }
-  // 실행 요청을 보내지 않은 뒤 묶음만 센다. 시작한 묶음 안에서 실제 완료된 수는 TAP 집계를 따른다.
-  const 미실행파일 = 묶음.slice(실행수).reduce((sum, batch) => sum + batch.length, 0);
-  const 미실행글 = 미실행파일 ? `전체 ${묶음.length}묶음 중 ${실행수}묶음에서 멈췄다. 남은 ${미실행파일}개 파일은 실행하지 않았다.` : '';
-  const 시간넘김 = 예산소진 || r.error?.code === 'ETIMEDOUT';
-  const 한도글 = 한도ms >= 60e3 ? `${Math.round(한도ms / 60e3)}분` : `${Math.round(한도ms / 1000)}초`;
-  const 프로세스까닭 = 시간넘김 ? `${한도글} 안에 끝나지 않았다` : r.error ? `node --test 실행 실패 (${r.error.code || r.error.message})` :
-    r.status === null ? `node --test 신호 ${r.signal || '알 수 없음'}` : r.status !== 0 && !(보고서.요약?.실패수 > 0) ? `node --test 종료 ${r.status}` : null;
-  const 실패단서 = 보고서.본실패 > 0 || 보고서.실패취소단서 || 합계.실패수 > 0 || 합계.취소 > 0;
-  const 시간예외근거 = 예산소진 || !읽기오류 && !실패단서 && (보고서.상태 === '완료' || 보고서.상태 === '중간' && 보고서.본통과 > 0);
-  const 보고서까닭 = 보고서.본실패 > 0 ? `TAP 본문에 실패 결과 ${보고서.본실패}개가 있다` : 보고서.상태 === '완료' && 실패단서 ? 'TAP에 실패나 취소가 있다' : 보고서.까닭;
-  const 보고서거절 = 시간넘김 ? !시간예외근거 : !r.error && r.status === 0 ? 완료수 !== 묶음.length : 보고서.상태 !== '완료';
-  const TAP오류 = 읽기오류 || (!예산소진 && 보고서거절 ? `${Math.max(실행수, 1)}번 묶음 ${보고서까닭 || 'TAP의 정상 완료를 확인하지 못했다'}` : null);
-  const 이유 = [[프로세스까닭, TAP오류].filter(Boolean).join(' · '), 미실행글].filter(Boolean).join(' ');
-  return { ...합계, 초: Math.round(경과ms() / 1000), 통과함: 실행수 === 묶음.length && 완료수 === 묶음.length,
-    ...(시간넘김 ? { 시간넘김: true } : {}), ...(TAP오류 ? { TAP오류 } : {}), ...(이유 ? { 이유 } : {}),
-    ...(묶음.length > 1 ? { 묶음: { 전체: 묶음.length, 실행: 실행수, 선택파일: 시험.length, 미실행파일 } } : {}),
-    ...(잡음 ? { 자리: { 번호: 잡음.번호, 수: 잡음.수, 기다린초: 잡음.기다린초 } } : {}) };
+  return { ...판정, 초: Math.round(경과ms() / 1000), ...(잡음 ? { 자리: { 번호: 잡음.번호, 수: 잡음.수, 기다린초: 잡음.기다린초 } } : {}) };
 }
 
-/** 한도만 넘기고 그때까지 깨진 시험은 없었나(돌리기 결과). 바로올리기는 이때 막지 않고 주의만 남긴다(10-22). */
+/** 한도만 넘기고 그때까지 깨진 시험은 없었나(돌리기 결과). 바로올리기는 이때 막지 않고 주의만 남긴다(10-22).
+ *  끊긴 실행의 실패에는 먼저 끝난 파일의 실패와 돌던 파일 TAP에 이미 찍힌 실패가 든다. 확인한 것이 없으면 TAP오류에 까닭이 남는다(11-26). */
 function 시간만넘김(r) {
   return Boolean(r && r.시간넘김 && !r.TAP오류 && r.실패수 === 0 && r.취소 === 0 && !(r.실패 || []).length);
 }
@@ -848,4 +868,4 @@ function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { 고르기, 돌리기, 시간만넘김, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, 보고서판정, git무늬, git무늬식, 읽나, 불러오는파일, 지도이름, 지도파일이름 };
+module.exports = { 고르기, 돌리기, 시간만넘김, 자리잡기, 자리글, 지도만들기, 지도읽기, 지도받기, 기록전용인가, 기록경로판정, 기록시험목록, CI시험목록, CI시험무늬, tap읽기, 보고서판정, 몰이판정, git무늬, git무늬식, 읽나, 불러오는파일, 지도이름, 지도파일이름 };
