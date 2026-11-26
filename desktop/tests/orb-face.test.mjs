@@ -2750,6 +2750,17 @@ test('the tray line opens Workspace for an assigned account, and says why for an
   assert.ok(other.sent.every(v => v.visible === false));
 });
 
+test('한 몸: a backup word that comes while Workspace is shown brings the person back to SYNK 솔리오 and opens the room screen (카본 workbackup-solio-one-ui-20261127 A7)', async t => {
+  const b = backupBridge(() => SAFE);
+  const { h, tray } = await enteredWithBoth(t, { solioBackup: b.api });
+  tray({ type: 'open-space', space: 'workspace' }); await settle();
+  assert.equal(h.view.last().space, 'workspace');
+  tray({ type: 'open-backup', topic: 'restore' });
+  await settle(60);
+  assert.equal(h.view.last().space, 'solio', 'back in SYNK 솔리오');
+  assert.deepEqual(b.calls.filter(c => c[0] === 'open'), [['open', 'restore']], 'the room screen opened once, with the word');
+});
+
 test('a tray open or a reveal that comes while the orb is going into another space waits for the arrival (3단계 화면 Fable F1)', async t => {
   const { h, w, tray } = await enteredWithBoth(t);
   h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
@@ -3238,4 +3249,199 @@ test('한 번에 처리: pressing 터미널 열기 twice while the first call ru
   assert.equal(office.calls.filter(c => c.startsWith('task:')).length, 2, '첫 부름이 끝나면 다시 열 수 있다');
   release();
   await settle(20);
+});
+
+/* ── 업무 백업 한 몸(11-26, experiences/solo-backup-rust/SOLIO_ONE_CLIENT.md 2.2 · 2.5): 방 안 엔진 화면 자리와 synk-solio 낱말 ── */
+function backupBridge(snapOf) {
+  const calls = [];
+  let changed = null;
+  const api = {
+    snapshot: async () => snapOf(),
+    open: async topic => { calls.push(['open', topic]); return { ok: true, view: true }; },
+    place: async p => { calls.push(['place', p]); return { ok: true }; },
+    closeView: async () => { calls.push(['close']); return { ok: true }; },
+    update: async () => { calls.push(['update']); return { ok: true }; },
+    openWindow: async () => { calls.push(['window']); return { ok: true }; },
+    start: async () => ({ ok: true }), dismiss: async () => ({ ok: true }), oneClick: async () => ({ ok: true }),
+    onChanged: cb => { changed = cb; return () => {}; },
+  };
+  return { api, calls, changed: v => changed?.(v) };
+}
+const SAFE = { ok: true, available: true, view: 'status', status: { state: 'safe', folders: 3, writer: true }, engine: { installed: true, version: '0.8.0', host: true }, install: { phase: 'idle' }, feed: {} };
+
+test('한 몸: 「보호 시작」 on the card answers ok at once and the room screen opens later — the card folds and the room follows (Fable workbackup-solio-one-ui-20261127 F1)', async t => {
+  let room = null;
+  const SETUP = { ...SAFE, view: 'needs-setup', status: null };
+  const b = backupBridge(() => ({ ...SETUP, room }));
+  const started = [];
+  b.api.start = async mode => { started.push(mode); return { ok: true }; };
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: b.api } });
+  h.view.backupDoorTop = () => 112;
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const todo = () => h.view.last().room?.todo;
+  assert.equal(h.face.handle('todo-start'), true);
+  await settle();
+  assert.equal(todo().card?.key, 'backup:시작 전');
+  const primary = todo().card.acts.find(a => a.label === '보호 시작');
+  h.face.handle('todo-act', primary.id);
+  await settle(20);
+  assert.deepEqual(started, ['protect']);
+  assert.equal(todo().open, true, 'the answer alone does not move the person');
+  // 본체가 방 안에 첫 시작 화면을 열었다
+  room = { open: true, topic: 'start', host: 'ready', code: null, ui: 'ok', ready: true };
+  b.changed({ type: 'changed' });
+  await settle(20);
+  assert.equal(todo().open, false, 'the card folded');
+  assert.equal(h.view.last().room.prog, 'backup', 'in the one-click room');
+  assert.deepEqual(b.calls.filter(c => c[0] === 'place').at(-1), ['place', { shown: true, top: 112 }], 'the screen shows under the path');
+  // 다른 방에 있다가 열려 있던 화면의 다음 답에는 끌려가지 않는다
+  h.face.handle('prog', 'subs');
+  await settle();
+  b.changed({ type: 'changed' });
+  await settle(20);
+  assert.equal(h.view.last().room.prog, 'subs');
+});
+
+test('한 몸: a second word 31 minutes after the first puts the signed-out line back (Fable workbackup-solio-one-ui-20261127 F6)', async t => {
+  let clock = Date.parse('2026-11-27T01:00:00Z'), act = null;
+  const out = backupBridge(() => SAFE);
+  const g = harness(t, { initial: { status: 'signed-out' }, env: { now: () => clock }, options: { solioBackup: out.api, onDesktopAction: cb => { act = cb; return () => {}; } } });
+  await settle();
+  act({ type: 'open-backup', topic: 'restore' });
+  await settle();
+  assert.equal(g.view.last().bakAlone, true);
+  clock += 31 * 60000;
+  act({ type: 'open-backup', topic: 'restore' });
+  await settle();
+  assert.equal(g.view.last().bakAlone, true, 'the second word stands the line again');
+});
+
+test('한 몸: while a word waits and the backup read keeps failing, reads come at most once a second (Fable workbackup-solio-one-ui-20261127 P3)', async t => {
+  let reads = 0, action = null;
+  const b = backupBridge(() => { reads++; throw Error('not now'); });
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: b.api, onDesktopAction: cb => { action = cb; return () => {}; } } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const before = reads;
+  action({ type: 'open-backup', topic: 'restore' });
+  await new Promise(resolve => setTimeout(resolve, 300));
+  await settle(10);
+  assert.ok(reads - before <= 2, `reads in 300 ms: ${reads - before}`);
+});
+
+test('한 몸: the three quiet buttons open the room screen; the path stands under the band and the view is placed below it', async t => {
+  let room = null;
+  const b = backupBridge(() => ({ ...SAFE, room }));
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: b.api } });
+  h.view.backupDoorTop = () => 112;
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(h.face.handle('prog', 'backup'), true);
+  await settle();
+  const scene = () => h.view.last().room?.backup;
+  assert.deepEqual(scene().acts.map(a => [a.label, a.arg]), [['파일 되살리기', 'restore'], ['새 PC로 옮겨 오기', 'move'], ['설정', 'settings']]);
+  h.face.handle('backup-open', 'restore');
+  await settle();
+  assert.deepEqual(b.calls.find(c => c[0] === 'open'), ['open', 'restore']);
+  room = { open: true, topic: 'restore', host: 'ready', code: null, ui: 'ok', ready: true };
+  b.changed({ type: 'changed' });
+  await settle(20);
+  assert.deepEqual(scene().door, { name: '파일 되살리기', ready: true });
+  assert.deepEqual(b.calls.filter(c => c[0] === 'place').at(-1), ['place', { shown: true, top: 112 }], 'the view goes under the path');
+  h.face.handle('backup-view-close');
+  await settle();
+  assert.ok(b.calls.some(c => c[0] === 'close'));
+  room = null;
+  b.changed({ type: 'changed' });
+  await settle(20);
+  assert.equal(scene().door, undefined, 'back on the one-click board');
+  // 다른 방으로 가면 자리를 내린다(호스트는 본체의 5분 시계)
+  h.face.handle('prog', 'subs');
+  await settle();
+  assert.equal(b.calls.filter(c => c[0] === 'place').at(-1)[1].shown, false);
+});
+
+test('한 몸: a synk-solio word opens the room screen once the room is known; a signed-out window shows 「백업 창 따로 열기」 on the sign-in scene', async t => {
+  let action = null;
+  const b = backupBridge(() => SAFE);
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: b.api, onDesktopAction: cb => { action = cb; return () => {}; } } });
+  await settle();
+  action({ type: 'open-backup', topic: 'move' });
+  h.face.setState(signedIn());
+  await settle(30);
+  assert.deepEqual(b.calls.filter(c => c[0] === 'open'), [['open', 'move']], 'opened after entering, with the word');
+  assert.equal(h.view.last().room.prog, 'backup');
+  // 로그아웃: 로그인 화면 위의 한 줄, 누르면 본체가 비상 창을 연다
+  const out = backupBridge(() => SAFE);
+  let act2 = null;
+  const g = harness(t, { initial: { status: 'signed-out' }, options: { solioBackup: out.api, onDesktopAction: cb => { act2 = cb; return () => {}; } } });
+  await settle();
+  act2({ type: 'open-backup', topic: 'restore' });
+  await settle();
+  assert.equal(g.view.last().bakAlone, true);
+  assert.equal(g.face.handle('backup-alone'), true);
+  await settle();
+  assert.deepEqual(out.calls.filter(c => c[0] === 'window'), [['window']]);
+  assert.equal(g.view.last().bakAlone, false, 'gone once the window opened');
+});
+
+test('한 몸: the alone line stays with its account and its scene — not carried to another account or from the sign-in scene into the app (카본 A2)', async t => {
+  let action = null, snap = { ok: true, available: false };
+  const b = backupBridge(() => snap);
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: b.api, onDesktopAction: cb => { action = cb; return () => {}; } } });
+  await settle();
+  h.face.setState(signedIn('acct-none'));
+  await settle(20);
+  action({ type: 'open-backup', topic: 'restore' });
+  await settle(20);
+  assert.equal(h.view.last().bakAlone, true, 'the account without the room');
+  h.face.setState({ status: 'signed-out' });
+  await settle(20);
+  assert.equal(h.view.last().bakAlone, false, 'not on the sign-in scene: no new word came');
+  snap = SAFE;
+  h.face.setState(signedIn('acct-room', 2));
+  await settle(30);
+  assert.equal(h.view.last().bakAlone, false, 'the next account has the room');
+  assert.deepEqual(b.calls.filter(c => c[0] === 'open'), []);
+  // 로그아웃 화면의 줄은 들어온 계정의 앱 화면에 「이 계정에서는 … 열 수 없습니다」로 넘어가지 않는다
+  let act2 = null;
+  const room = backupBridge(() => SAFE);
+  const g = harness(t, { initial: { status: 'signed-out' }, options: { solioBackup: room.api, onDesktopAction: cb => { act2 = cb; return () => {}; } } });
+  await settle();
+  act2({ type: 'open-backup', topic: 'restore' });
+  await settle();
+  assert.equal(g.view.last().bakAlone, true);
+  g.face.setState(signedIn());
+  for (let i = 0; i < 40; i++) { await settle(5); assert.equal(g.view.last().bakAlone, false, `while entering (${i})`); }
+  assert.deepEqual(room.calls.filter(c => c[0] === 'open'), [['open', 'restore']], 'the word still opens the room');
+});
+
+test('한 몸: an account without the room gets the alone line; the update word opens the update card', async t => {
+  let action = null;
+  const none = backupBridge(() => ({ ok: true, available: false }));
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: none.api, onDesktopAction: cb => { action = cb; return () => {}; } } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  action({ type: 'open-backup', topic: 'restore' });
+  await settle(20);
+  assert.equal(h.view.last().bakAlone, true);
+  assert.deepEqual(none.calls.filter(c => c[0] === 'open'), []);
+  let act2 = null;
+  const up = backupBridge(() => ({ ...SAFE, update: { available: '0.8.1', current: '0.8.0', phase: 'idle', code: null } }));
+  const g = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: up.api, onDesktopAction: cb => { act2 = cb; return () => {}; } } });
+  await settle();
+  g.face.setState(signedIn());
+  await settle(20);
+  act2({ type: 'open-backup', topic: 'update' });
+  await settle(20);
+  const card = g.view.last().room.todo.card;
+  assert.equal(card.say, '백업 부품 새 판 0.8.1 — Windows 확인 한 번');
+  g.face.handle('todo-act', card.acts[0].id);
+  await settle(20);
+  assert.deepEqual(up.calls.filter(c => c[0] === 'update'), [['update']]);
 });

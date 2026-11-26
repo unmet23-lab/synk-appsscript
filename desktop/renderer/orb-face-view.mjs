@@ -84,6 +84,7 @@ function markup() {
       </div>
       <div class="lobby-more rise" style="--i:2">
         <button class="quiet signup" type="button" data-orb-act="signup" data-portal-action="signup">처음이라면 가입하기</button>
+        <p class="bak-alone" data-bak-alone hidden><span>업무 백업은 로그인하지 않아도 따로 열 수 있습니다.</span><button class="quiet" type="button" data-orb-act="backup-alone">백업 창 따로 열기</button></p>
         <form class="invite" data-portal-pane="invite" autocomplete="off" novalidate>
           <label for="portal-invite-input">초대받으셨다면</label>
           <input id="portal-invite-input" name="code" type="text" placeholder="여기에 코드를 붙여 넣으세요" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="200">
@@ -112,6 +113,7 @@ function markup() {
       <button class="quiet band-close" type="button" data-orb-act="band-close" hidden>PULSE 닫기</button>
     </div>
     <div class="todo-bar" data-todo-bar hidden><span class="todo-n" data-todo-n></span><button class="todo-go" type="button" data-orb-act="todo-start" data-todo-go>1순위부터 처리</button></div>
+    <p class="bak-alone bak-alone-app" data-bak-alone-app hidden><span>이 계정에서는 업무 백업 방을 열 수 없습니다.</span><button class="quiet" type="button" data-orb-act="backup-alone">백업 창 따로 열기</button></p>
     <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p><p class="fan-lead" role="status" data-fan-lead></p></div>
     <div class="room room-top" data-room="solio">
       <p class="sr" role="status" aria-live="polite" data-solio-status></p>
@@ -146,6 +148,7 @@ function markup() {
       <p class="read rise" style="--i:5"><span data-vis-when></span><span data-vis-scope></span></p>
     </div>
     <div class="room room-top" data-room="solio-backup" hidden>
+      <p class="bak-door-path" data-bak-door hidden><button class="bak-door-back" type="button" data-orb-act="backup-view-close">← 원클릭</button><span class="bak-door-sep" aria-hidden="true">›</span><span class="bak-door-nm" data-bak-door-nm></span></p>
       <p class="say rise" style="--i:1"><span data-bak-say></span><span class="then" data-bak-then></span></p>
       <p class="read acts rise" style="--i:2" role="group" aria-label="원클릭 할 일" data-bak-acts></p>
       <div class="one-board rise" style="--i:3" data-bak-board hidden>
@@ -159,6 +162,7 @@ function markup() {
       </div>
       <div class="rows vis rise" style="--i:3" role="group" aria-label="업무 백업 상태" data-bak-rows></div>
       <p class="read rise" style="--i:5"><span data-bak-when></span><span data-bak-scope></span></p>
+      <p class="read bak-foot rise" style="--i:6" data-bak-foot hidden><span data-bak-foot-say></span><button class="reread" type="button" data-orb-act="backup-update" data-bak-foot-go hidden>업데이트</button></p>
     </div>
     <div class="room room-top" data-room="solio-health" hidden>
       <p class="say rise" style="--i:1"><span data-hea-say></span><span class="then" data-hea-then></span></p>
@@ -262,6 +266,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     visits: $('[data-room="solio-visits"]'), visSay: $('[data-vis-say]'), visThen: $('[data-vis-then]'), visRows: $('[data-vis-rows]'), visWhen: $('[data-vis-when]'), visScope: $('[data-vis-scope]'),
     backup: $('[data-room="solio-backup"]'), bakSay: $('[data-bak-say]'), bakThen: $('[data-bak-then]'), bakActs: $('[data-bak-acts]'), bakRows: $('[data-bak-rows]'), bakWhen: $('[data-bak-when]'), bakScope: $('[data-bak-scope]'),
     bakBoard: $('[data-bak-board]'), bakDrive: $('[data-bak-drive]'), bakFlow: $('[data-bak-flow]'), bakHelper: $('[data-bak-helper]'), bakSum: $('[data-bak-sum]'), bakSteps: $('[data-bak-steps]'), bakGroups: $('[data-bak-groups]'),
+    bakDoor: $('[data-bak-door]'), bakDoorNm: $('[data-bak-door-nm]'), bakDoorBack: $('[data-orb-act="backup-view-close"]'), bakFoot: $('[data-bak-foot]'), bakFootSay: $('[data-bak-foot-say]'), bakFootGo: $('[data-bak-foot-go]'),
+    bakAloneAsk: $('[data-bak-alone]'), bakAloneApp: $('[data-bak-alone-app]'),
     health: $('[data-room="solio-health"]'), heaSay: $('[data-hea-say]'), heaThen: $('[data-hea-then]'), heaRows: $('[data-hea-rows]'), heaWhen: $('[data-hea-when]'), heaScope: $('[data-hea-scope]'),
     office: $('[data-room="solio-office"]'), offHead: $('[data-off-head]'), offSay: $('[data-off-say]'), offThen: $('[data-off-then]'), offHint: $('[data-off-hint]'), offSlot: $('[data-off-slot]'), offFloor: $('[data-off-floor]'), offRows: $('[data-off-rows]'), offFoot: $('[data-off-foot]'),
     ofc: $('[data-ofc]'), offNm: $('[data-off-nm]'), offChats: $('[data-off-chats]'), offAddBtn: $('[data-off-add-btn]'), offAdd: $('[data-off-add]'), offCap: $('[data-off-cap]'), offCenter: $('[data-off-center]'), offThread: $('[data-off-thread]'),
@@ -1390,11 +1396,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   /* 장면은 1분마다 새로 온다(상대 시각, 다시 읽은 요약). 줄의 차례가 같으면 그 자리의 줄을 고쳐 쓰고,
      차례가 달라 새로 지을 때도 펼친 줄, 눌러 고정한 줄, 자판 초점을 줄 이름(key)으로 되살린다(0.4.97 공개 후보 검수 A2) */
   function renderRead(box, v) {
-    const key = v && v.visible ? JSON.stringify([v.say, v.then, v.when, v.scope, v.rows, v.acts || null, v.board || null]) : '';
+    const key = v && v.visible ? JSON.stringify([v.say, v.then, v.when, v.scope, v.rows, v.acts || null, v.board || null, v.door || null, v.foot || null]) : '';
     if (key === box.key) return;
     box.key = key;
     if (box.acts) renderActs(box.acts, key && Array.isArray(v.acts) ? v.acts : [], key && v.board ? v.board.main : null);
-    if (box === readRooms.backup) renderBoard(key && v.board ? v.board : null);
+    if (box === readRooms.backup) { renderBoard(key && v.board ? v.board : null); renderDoor(key && v.door ? v.door : null); renderFoot(key && v.foot ? v.foot : null); }
     clearTimeout(visTimer);
     if (!key) clearTimeout(visLeave);
     setText(box.say, key ? v.say : '');
@@ -1415,6 +1421,26 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (again) { restoringVis = true; try { again.focus({ preventScroll: true }); } catch {} finally { restoringVis = false; } }
     }
     box.rows.hidden = !rows.length;
+  }
+  /* 한 몸(11-26): 방 안에 엔진 화면을 열었으면 띠 아래에 「← 원클릭 › 이름」 길을 세운다. 그 아래를 본체의 엔진 화면 자리가 채운다 */
+  function renderDoor(d) {
+    app.bakDoor.hidden = !d;
+    app.backup.classList.toggle('bak-in-door', !!d);
+    setText(app.bakDoorNm, d ? d.name : '');
+  }
+  /* 원클릭 판 맨 아래 한 줄: 백업 부품 새 판 · 옛 판 안내 · 올리는 중 · 올림 */
+  function renderFoot(f) {
+    app.bakFoot.hidden = !f;
+    app.bakFoot.classList.toggle('done', !!f?.done);
+    setText(app.bakFootSay, f ? f.say : '');
+    app.bakFootGo.hidden = !f?.act;
+    if (f?.act) setText(app.bakFootGo, f.act.label);
+  }
+  /* 길 아래 높이(CSS px). 길이 서 있지 않으면 null이다. 본체는 이 아래에 엔진 화면을 붙인다 */
+  function backupDoorTop() {
+    if (!app.bakDoor || app.bakDoor.hidden || app.backup.hidden) return null;
+    const r = app.bakDoor.getBoundingClientRect?.();
+    return r && r.height > 0 ? Math.ceil(r.bottom + 10) : null;
   }
   /* 백업 방의 할 일 단추. 다시 그려도 누르던 단추(같은 동작과 낱말)에 초점을 되돌린다 */
   function renderActs(box, acts, main = null) {
@@ -2343,6 +2369,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     }
     if (s.orbBusy) root.setAttribute('aria-busy', 'true'); else root.removeAttribute('aria-busy');
     setHostLocked(s.mode === 'portal' || s.mode === 'app');
+    // synk-solio 낱말로 열렸는데 방을 열 수 없을 때(로그아웃 · 방이 없는 계정)의 「백업 창 따로 열기」 한 줄(SOLIO_ONE_CLIENT.md 2.5 F13)
+    app.bakAloneAsk.hidden = !(s.bakAlone === true && s.mode === 'portal');
+    app.bakAloneApp.hidden = !(s.bakAlone === true && s.mode === 'app');
 
     stageEl.dataset.mode = s.mode;
     stageEl.dataset.space = s.space;
@@ -2843,6 +2872,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     getInviteValue: () => ask.input?.value ?? '',
     setInviteValue(value) { if (ask.input && ask.input.value !== value) ask.input.value = value; },
     isHidden: () => doc?.hidden === true,
+    /* 백업 방 안 엔진 화면 자리의 높이와, 띠로 돌아오는 F6의 초점(「← 원클릭」) */
+    backupDoorTop,
+    focusBackupBack() { try { app.bakDoorBack?.focus({ preventScroll: true }); } catch { /* 초점은 사람이 옮길 수 있다 */ } },
     /* 설치 명령과 로그인 주소 복사(옛 구독 판처럼 렌더러의 클립보드를 쓴다). 복사했으면 true */
     copyText(text) {
       try {

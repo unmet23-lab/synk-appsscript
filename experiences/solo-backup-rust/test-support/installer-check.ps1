@@ -91,11 +91,18 @@ $writers = @((Get-Acl -LiteralPath $dir).Access | Where-Object {
 Expect ($writers.Count -eq 0) "nobody else may write the install folder ($($writers -join ', '))"
 $entry = Get-ItemProperty -LiteralPath $uninstallKey -ErrorAction SilentlyContinue
 Expect ($entry.DisplayName -eq $product -and $entry.DisplayVersion -eq $built.version) "uninstall entry $($entry.DisplayName) $($entry.DisplayVersion)"
-Expect (Test-Path -LiteralPath $startMenu) 'Start menu shortcut'
-$shell = New-Object -ComObject Shell.Application
-$aumid = $shell.Namespace((Split-Path -Parent $startMenu)).ParseName((Split-Path -Leaf $startMenu)).ExtendedProperty('System.AppUserModel.ID')
-if (-not $aumid -and (Get-Command Get-StartApps -ErrorAction SilentlyContinue)) { $aumid = @(Get-StartApps | Where-Object { $_.Name -eq $product })[0].AppID }
-Expect ($aumid -eq $identity) "the shortcut carries the notification identity ($aumid)"
+# SYNK 솔리오 하나로(SOLIO_ONE_CLIENT.md 3.4): while scripts/nsis-template.cjs has REMOVE_START_MENU on, the installer makes no
+# Start menu shortcut and each run writes the notices' name under the account instead (notify.rs NAME_KEY).
+$noStartMenu = (& node -e "process.stdout.write(String(require(process.argv[1]).REMOVE_START_MENU))" (Join-Path $PSScriptRoot '..\scripts\nsis-template.cjs')) -eq 'true'
+if ($noStartMenu) {
+  Expect (-not (Test-Path -LiteralPath $startMenu)) 'no Start menu shortcut (REMOVE_START_MENU)'
+} else {
+  Expect (Test-Path -LiteralPath $startMenu) 'Start menu shortcut'
+  $shell = New-Object -ComObject Shell.Application
+  $aumid = $shell.Namespace((Split-Path -Parent $startMenu)).ParseName((Split-Path -Leaf $startMenu)).ExtendedProperty('System.AppUserModel.ID')
+  if (-not $aumid -and (Get-Command Get-StartApps -ErrorAction SilentlyContinue)) { $aumid = @(Get-StartApps | Where-Object { $_.Name -eq $product })[0].AppID }
+  Expect ($aumid -eq $identity) "the shortcut carries the notification identity ($aumid)"
+}
 Expect (-not (Test-Path -LiteralPath $commonDesktop)) 'no desktop shortcut'
 # A click on a notification opens synk-workbackup:open?topic=… in the window app (4.2 「알림」).
 $scheme = 'HKLM:\SOFTWARE\Classes\synk-workbackup'

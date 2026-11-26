@@ -19,9 +19,15 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const stage = $('#stage'), room = $('#room'), topR = $('#top-r'), hereS = $('#here-s'), seg = $('#seg'), segSr = $('#seg-sr'), noteBar = $('#note');
 const drawerWrap = $('#drawer'), drawerPanel = $('#drawer-panel');
+// SYNK 솔리오 안의 엔진 화면 자리(SOLIO_ONE_CLIENT.md 2.2): 그 자리의 preload가 내놓은 통로(bridge.js가 같은 것으로 window.backup을 만든다).
+// 솔리오 띠가 방 이름 줄을 그리므로 머리 줄과 구는 숨기고(style.css), 낱말은 솔리오가 onOpen으로 넘기며, 닫기는 원클릭 판으로 돌아가기다
+const solioHost = (() => { try { const h = window.synkBackupHost; return h && typeof h === 'object' ? h : null; } catch { return null; } })();
+if (solioHost) document.documentElement.dataset.embedded = '1';
 
 let lastHtml = '', screen = 'home', shownId = null, out = null, fixture = null, catalog = null, ui = { pick: 'same' }, noteTimer = 0, findTimer = 0, lit = false;
 let failure = null, queued = null, closing = null, opener = null, lastDrawer = '', lastLive = '', retryTimer = 0, shownQuery = null;
+// 솔리오가 낱말(settings · folders · devices · update)로 연 서랍. 손님이 그 서랍을 닫으면 엔진 화면도 닫고 원클릭 판으로 돌아간다(카본 workbackup-solio-one-ui-20261127 B1)
+let drawerByTopic = false;
 let prevJob = null;
 // 쉬는 Wi-Fi · 가리는 낱말 칸에서 한글을 조합하는 중인지, 그동안 미룬 그리기가 있는지
 let composing = false, composeWait = false;
@@ -963,7 +969,11 @@ async function send(a, el) {
   if (a.flow === 'takeOver') return takeOver();
   if (a.flow === 'openRead') return openRead();
   if (a.flow && MOVE_FLOWS[a.flow]) return MOVE_FLOWS[a.flow]();
-  if (a.call === 'closeWindow') { const w = window.__TAURI__?.window?.getCurrentWindow?.(); return w ? w.close() : window.close(); }
+  if (a.call === 'closeWindow') {
+    // 솔리오 안에서는 자리를 닫고 원클릭 판으로 돌아간다(window.close로 떨어지면 자리만 빈다)
+    if (solioHost) { try { if (typeof solioHost.close === 'function') solioHost.close(); } catch { /* 자리가 이미 닫힘 */ } return; }
+    const w = window.__TAURI__?.window?.getCurrentWindow?.(); return w ? w.close() : window.close();
+  }
   let r;
   const where = ['restoreSelected', 'restoreLatest', 'restoreScope', 'restoreMassBefore'].includes(a.call) ? restorePlace(state(), ui.place, now(), ui.sentDefaultAt) : null;
   const place = where?.mode ?? null;
@@ -1067,7 +1077,7 @@ stage.addEventListener('click', (e) => {
   if (pick) { ui = { ...ui, pick: pick.dataset.pick }; return paint(); }
   const el = e.target.closest('[data-act]'); if (!el || el.getAttribute('aria-disabled') === 'true') return;
   const id = el.dataset.act;
-  if (id === 'drawer-close') return closeDrawer();
+  if (id === 'drawer-close') return dismissDrawer();
   // 옛 PC 백업에서 꺼내기의 안쪽 층은 「뒤로」가 한 칸 위다(화면의 back 값과 맞춘다, 카본 A2)
   if (id === 'back' && screen === 'restore-old' && old?.folder) { if (old.sub) { old = { ...old, sub: oldUp(old.sub) }; return void oldLoad(); } return oldTop(); }
   if (id === 'back') return go(out?.back || 'home');
@@ -1200,12 +1210,20 @@ function openDrawer(from) {
 }
 function closeDrawer() {
   if (drawerWrap.hidden) return;
+  drawerByTopic = false;
   drawerWrap.hidden = true; drawerPanel.innerHTML = ''; lastDrawer = '';
   for (const el of behind()) if (el) el.inert = false;
-  const back = opener && opener.isConnected ? opener : $('#orb-btn'); opener = null;
+  // 솔리오 안에서는 구 단추가 숨어 있어 방으로 돌아간다
+  const back = opener && opener.isConnected ? opener : solioHost ? room : $('#orb-btn'); opener = null;
   back.focus();
 }
-$('#drawer-dim').addEventListener('click', closeDrawer);
+/* 사람이 서랍을 닫았다(닫기 · 바깥 · Esc). 솔리오가 낱말로 연 서랍이면 원클릭 판으로 돌아간다. 화면 안의 단추로 연 서랍은 그 화면으로 돌아간다 */
+function dismissDrawer() {
+  const back = solioHost && drawerByTopic && !drawerWrap.hidden;
+  closeDrawer();
+  if (back) { try { if (typeof solioHost.close === 'function') void Promise.resolve(solioHost.close()).catch(() => {}); } catch { /* 자리가 이미 닫힘 */ } }
+}
+$('#drawer-dim').addEventListener('click', dismissDrawer);
 document.addEventListener('keydown', (e) => {
   const pk = e.target.closest?.('[data-pick]');
   if (pk && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pk.click(); return; }
@@ -1219,7 +1237,7 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault(); return void (e.target.id === 'rest-in' ? restAdd(e.target.value, true) : maskAdd(e.target.value));
   }
   if (e.key !== 'Escape') return;
-  if (!drawerWrap.hidden) return closeDrawer();
+  if (!drawerWrap.hidden) return dismissDrawer();
   if (screen !== 'home' && out?.kind === 'flow' && out.top.some((t) => t.id === 'home')) go('home');
 });
 
@@ -1227,16 +1245,25 @@ document.addEventListener('keydown', (e) => {
 // 누르기만으로 실행되는 화면은 열지 않는다 — 모두 보기 · 고르기 화면이고, 실행은 그 화면의 단추를 손님이 눌러야 한다.
 // 「바뀜」 · 「상태」는 기본 화면이 엔진 상태로 갈래를 고르므로(한꺼번에 지워짐 · 점검 실패 등) 기본 화면이다.
 // 「공간」은 공간 비우기 2판이 열린 PC(시험 표식)에서 그 화면으로, 아니면 기본 화면이다(SPACE_DESIGN.md 12.5).
-const TOPICS = { status: 'home', changes: 'home', restore: 'restore', signin: 'home', space: 'space', folders: 'drawer', devices: 'drawer', update: 'drawer', move: 'move' };
+// 솔리오는 두 낱말을 더 넘긴다(SOLIO_ONE_CLIENT.md 2.2): `settings`는 머리 줄의 「설정」을 대신해 지금 화면 위에 설정 서랍을 열고,
+// `start`는 지금 상태에 맞는 첫 화면이다 — 보호 전이면 첫 시작 화면(기본 화면이 resolve로 고른다).
+const TOPICS = { status: 'home', changes: 'home', restore: 'restore', signin: 'home', space: 'space', folders: 'drawer', devices: 'drawer', update: 'drawer', move: 'move', settings: 'settings', start: 'home' };
 export function openTopic(topic) {
-  const to = TOPICS[topic]; if (!to) return false;
-  if (to === 'drawer') { go('home'); openDrawer(); return true; }
-  if (to === 'move') { const s = state(); if (moveOpen(s)) go(moveJob(s) ? 'move-2' : 'move-1'); else if (s?.configured) go('move-0'); else if (fixture) go('move-1'); else go('home'); return true; }
+  const to = Object.hasOwn(TOPICS, topic) ? TOPICS[topic] : null; if (!to) return false;
+  // 솔리오의 「설정」은 원클릭 판에서만 온다. 다시 쓰는 자리에 앞서 연 화면(되살리기 · 옮겨 오기)이 남아 있지 않게 기본 화면 위에 연다
+  if (to === 'settings') { if (drawerWrap.hidden) { go('home'); openDrawer(); } drawerByTopic = !!solioHost; return true; }
+  if (to === 'drawer') { closeDrawer(); go('home'); openDrawer(); drawerByTopic = !!solioHost; return true; }
+  // 열린 서랍은 먼저 닫는다. 닫지 않으면 옮겨 오기 화면 위에 서랍이 남고 뒤 화면이 inert로 남는다(카본 B2)
+  if (to === 'move') { closeDrawer(); const s = state(); if (moveOpen(s)) go(moveJob(s) ? 'move-2' : 'move-1'); else if (s?.configured) go('move-0'); else if (fixture) go('move-1'); else go('home'); return true; }
   if (to === 'space') { closeDrawer(); go(state()?.solio?.spaceFree?.open ? 'space-free' : 'home'); return true; }
   if (to === 'restore' && screen === 'restore' && catalogScope) go('home');
   closeDrawer(); go(to); return true;
 }
 try { window.__TAURI__?.event?.listen?.('backup:open', (e) => { const t = e && typeof e.payload === 'object' ? e.payload?.topic : e?.payload; if (typeof t === 'string') openTopic(t); }); } catch { /* 알림이 없는 판 */ }
+// 솔리오 안에서는 알림 낱말과 두 낱말을 솔리오가 직접 받아 넘긴다(호스트를 거치지 않는다). 낱말 하나 또는 { topic }
+if (solioHost && typeof solioHost.onOpen === 'function') {
+  try { Promise.resolve(solioHost.onOpen((t) => { const w = t && typeof t === 'object' ? t.topic : t; if (typeof w === 'string') openTopic(w); })).catch(() => {}); } catch { /* 통로가 없는 판 */ }
+}
 
 // 화면 확인용 손잡이 — 시험 · 캡처 · tauri-driver가 예시 상태로 한 화면에 바로 선다. 엔진에 아무것도 보내지 않는다.
 window.__wb = Object.freeze({

@@ -311,3 +311,7 @@ p.done .lnk { margin-left: 14px; }
 /* 설정 서랍 · 이 계정의 다른 기기(내 기기 아래 줄) */
 .dr.sub { padding: 9px 0 9px 14px; }
 .dr.sub .nm { font-size: 14px; }
+
+/* SYNK 솔리오 안의 엔진 화면 자리(SOLIO_ONE_CLIENT.md 2.2 · app.js solioHost): 솔리오 띠가 방 이름 줄을 그리므로 머리 줄과 구를 숨기고, 방이 그 자리까지 쓴다 */
+:root[data-embedded="1"] header.top, :root[data-embedded="1"] canvas#orb { display: none; }
+:root[data-embedded="1"] .room { inset: var(--top) 0 0 0; }

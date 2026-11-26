@@ -6,8 +6,14 @@
 use serde_json::{json, Map, Value};
 use std::{fs, path::Path};
 
-/// Set on the Start menu shortcut by the installer (4.2 「컴퓨터 전체 설치」).
+/// The notifications' identity. Set on the Start menu shortcut by the installers before 0.8 (4.2 「컴퓨터 전체 설치」); the
+/// shortcut goes (SOLIO_ONE_CLIENT.md 3.4), and every run writes the name it shows under this account instead (NAME_KEY).
 pub const AUMID: &str = "im.synk.workbackup";
+/// Where Windows reads the name a notification of AUMID shows, for an app that is not packaged (2.7 나): this account's
+/// `Software\Classes\AppUserModelId\<AUMID>`, its `DisplayName`.
+pub const NAME_KEY: &str = r"Software\Classes\AppUserModelId\im.synk.workbackup";
+/// The name the notices show at their head: SYNK 솔리오's, not the backup part's (2.7).
+pub const DISPLAY_NAME: &str = "솔리오";
 pub const SCHEME: &str = "synk-workbackup";
 pub const LEDGER: &str = "notify.json";
 /// The screens a notification may open (2.2). 「끊기」 · 「되돌리기」 stay a press away on the screen. `move` is the 「새 PC로
@@ -65,15 +71,41 @@ pub fn stale(cause: &str) -> Notice {
     Notice { problem: "stale", topic: "status", title, body, action: Some("확인하기") }
 }
 
-/// 「업데이트 준비됨」 (2.2 · 4.10): a newer signed version is announced. A click asks once and installs it.
+/// The update notice (2.2 · 4.10, SOLIO_ONE_CLIENT.md 3.2): a newer signed version announced for 14 days and still not
+/// installed — SYNK 솔리오's 「할 일」 shows it before that. A click opens that 「할 일」 (topic `update`, handed to SYNK 솔리오),
+/// or without SYNK 솔리오 asks once and installs it.
 pub fn update_ready() -> Notice {
-    Notice { problem: "update", topic: "update", title: "업무 백업 새 판이 나왔습니다", body: "설치할 때 관리자 확인이 한 번 뜨고, 설치하는 동안 자동 백업이 잠시 멈춥니다.", action: Some("설치") }
+    Notice { problem: "update", topic: "update", title: "백업 부품 새 판이 2주째 기다리고 있습니다", body: "설치할 때 관리자 확인이 한 번 뜨고, 설치하는 동안 자동 백업이 잠시 멈춥니다.", action: Some("설치") }
 }
 /// The same for an account that cannot approve the administrator prompt itself: once a week, ask the administrator. A
 /// click still offers the install, where the administrator types their own password (GPT GA2: the text says so).
 pub fn update_ask_admin() -> Notice {
-    Notice { problem: "update-admin", topic: "update", title: "업무 백업 새 판이 나왔습니다", body: "설치에는 관리자 계정의 비밀번호가 필요합니다. 관리자에게 부탁해 이 알림을 눌러 설치해 주세요.", action: None }
+    Notice { problem: "update-admin", topic: "update", title: "백업 부품 새 판이 2주째 기다리고 있습니다", body: "설치에는 관리자 계정의 비밀번호가 필요합니다. 관리자에게 부탁해 이 알림을 눌러 설치해 주세요.", action: None }
 }
+
+/// Writes `name` as the `DisplayName` of `key` under this account, unless it is that already. True when it was written.
+pub fn set_display_name(key: &str, name: &str) -> Result<bool, String> {
+    use windows_sys::Win32::System::Registry::{RegCloseKey, RegCreateKeyExW, RegQueryValueExW, RegSetValueExW, HKEY, HKEY_CURRENT_USER, KEY_QUERY_VALUE, KEY_SET_VALUE, REG_OPTION_NON_VOLATILE, REG_SZ};
+    let wide = |s: &str| s.encode_utf16().chain([0]).collect::<Vec<u16>>();
+    let (key, value) = (wide(key), wide("DisplayName"));
+    let mut handle: HKEY = std::ptr::null_mut();
+    let status = unsafe { RegCreateKeyExW(HKEY_CURRENT_USER, key.as_ptr(), 0, std::ptr::null(), REG_OPTION_NON_VOLATILE, KEY_QUERY_VALUE | KEY_SET_VALUE, std::ptr::null(), &mut handle, std::ptr::null_mut()) };
+    if status != 0 { return Err(format!("NOTIFY_NAME:{status}")); }
+    let mut buffer = [0u16; 128];
+    let (mut size, mut kind) = ((buffer.len() * 2) as u32, 0u32);
+    let read = unsafe { RegQueryValueExW(handle, value.as_ptr(), std::ptr::null(), &mut kind, buffer.as_mut_ptr().cast(), &mut size) };
+    let current = (read == 0 && kind == REG_SZ).then(|| {
+        let text = &buffer[..(size as usize / 2).min(buffer.len())];
+        String::from_utf16_lossy(text.iter().position(|c| *c == 0).map_or(text, |end| &text[..end]))
+    });
+    if current.as_deref() == Some(name) { unsafe { RegCloseKey(handle); } return Ok(false); }
+    let data = wide(name);
+    let status = unsafe { RegSetValueExW(handle, value.as_ptr(), 0, REG_SZ, data.as_ptr().cast(), (data.len() * 2) as u32) };
+    unsafe { RegCloseKey(handle); }
+    if status != 0 { Err(format!("NOTIFY_NAME:{status}")) } else { Ok(true) }
+}
+/// The notices' name under this account (NAME_KEY), written by every run that is not a test's.
+pub fn register_name() -> Result<bool, String> { set_display_name(NAME_KEY, DISPLAY_NAME) }
 
 /// Days since 1970-01-01 of a `YYYY-MM-DD` date (the civil calendar), or none for anything else.
 fn day_number(date: &str) -> Option<i64> {
@@ -219,6 +251,19 @@ fn deliver_waiting(root: &Path, found: &[Notice], judged: &[&str], today: impl F
         // Nothing newer: resolved, and its record goes.
         assert!(plan(&daily, &[], &["update", "update-admin"], "2026-11-21").1["days"].get("update").is_none());
         for notice in [update_ready(), update_ask_admin()] { assert_eq!(topic_of(&open_url(notice.topic)), Some("update")); }
+    }
+    #[test] fn the_notices_name_is_written_once_and_only_when_it_differs() {
+        assert_eq!(NAME_KEY, format!(r"Software\Classes\AppUserModelId\{AUMID}"));
+        // A key of this test's own under this account, taken away after: never the notices' real key.
+        use windows_sys::Win32::System::Registry::{RegDeleteTreeW, HKEY_CURRENT_USER};
+        let key = format!(r"Software\SynkWorkBackupTest-{}", std::process::id());
+        let gone = || { let wide: Vec<u16> = key.encode_utf16().chain([0]).collect(); unsafe { RegDeleteTreeW(HKEY_CURRENT_USER, wide.as_ptr()); } };
+        gone();
+        assert_eq!(set_display_name(&key, DISPLAY_NAME), Ok(true), "written the first time");
+        assert_eq!(set_display_name(&key, DISPLAY_NAME), Ok(false), "the same name is not written again");
+        assert_eq!(set_display_name(&key, "SYNK Platform Preview"), Ok(true), "another name is");
+        assert_eq!(set_display_name(&key, DISPLAY_NAME), Ok(true));
+        gone();
     }
     #[test] fn only_exact_open_addresses_name_a_topic() {
         for topic in TOPICS { assert_eq!(topic_of(&open_url(topic)), Some(topic)); }

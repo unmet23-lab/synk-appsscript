@@ -131,6 +131,12 @@ AllowSkipFiles off
 ; the permission to do so (4.2 「회차 작업」). If it cannot be made the app falls back to the root
 ; folder, so the install goes on; the result is in the install log.
 !macro NSIS_HOOK_POSTINSTALL
+  ; Kept out of the installed apps list: SYNK 솔리오 is the one app people see, and it finds this part by the same key
+  ; (SOLIO_ONE_CLIENT.md 1 · 3.4). Written again by every install, so an update keeps it hidden. The key the template
+  ; writes is the 64-bit machine one; the view is put back as it was.
+  SetRegView 64
+  WriteRegDWORD HKLM "${UNINSTKEY}" "SystemComponent" 1
+  SetRegView lastused
   ExecWait '"$INSTDIR\WorkBackupRun.exe" --install' $0
   ${If} $0 <> 0
     DetailPrint "SYNK: --install exit $0"

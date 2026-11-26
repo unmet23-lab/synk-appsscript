@@ -19,7 +19,7 @@ import { solioBackupView, backupActionNotice, SOLIO_BACKUP_NAME } from './solio-
 import { createOfficeRoom, OFFICE_NAME, OFFICE_TIMING } from './office-room.mjs';
 import { createOrbFaceView } from './orb-face-view.mjs';
 import { createOrbRooms, ASIDE_ROOMS } from './orb-rooms.mjs';
-import { solioQueue, solioQueueMemoPrune, solioTodoItems, solioTodoAiSay, solioTodoEndThen } from './solio-queue.mjs';
+import { solioQueue, solioQueueMemoPrune, solioTodoItems, solioTodoAiSay, solioTodoEndThen, BACKUP_UPDATE_KEY } from './solio-queue.mjs';
 
 /* 구 위의 자리(places)와 점 로고(signature)를 켜고 끄는 값. 하나를 false로 바꾸면 그 모양이 빠진다(설계 12절) */
 /* eyes: 구의 점 눈(유호님 11-17 「점눈으로 하자」, 결정 표 11-16 「구에 눈을 넣는다」). 끄면 셰이더가 눈을 그리지 않는다 */
@@ -275,7 +275,23 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   const embedOff = [];
   // 본체의 단축 동작. 지금은 트레이 줄이 보내는 {type:'open-space', space:'workspace'} 하나만 받는다(4단계 구현 설계 3.5)
   if (typeof options.onDesktopAction === 'function') {
-    try { const off = options.onDesktopAction(action => { if (action && typeof action === 'object' && action.type === 'open-space' && slotOf(action.space)) openFromMain(action.space); }); if (typeof off === 'function') embedOff.push(off); } catch { /* 본체 알림 없이도 연다 */ }
+    try { const off = options.onDesktopAction(action => { if (action && typeof action === 'object' && action.type === 'open-space' && slotOf(action.space)) openFromMain(action.space); else if (action && typeof action === 'object' && action.type === 'open-backup') openBackupFromMain(action.topic); }); if (typeof off === 'function') embedOff.push(off); } catch { /* 본체 알림 없이도 연다 */ }
+  }
+  /* 한 몸(11-26, SOLIO_ONE_CLIENT.md 2.2 · 2.5): 백업 방 안의 엔진 화면 자리. 본체가 호스트 · 화면이 바뀌었다고 알리면 다시 읽는다.
+   * pendingBackupTopic은 synk-solio 낱말로 연 방의 낱말이다(들어온 뒤, 방을 볼 계정인지 읽힌 뒤에 연다).
+   * 그 방을 열 수 없을 때의 「백업 창 따로 열기」 한 줄은 둘이다. aloneAskAt은 로그아웃 화면 위의 줄을 세운 때이고, aloneApp은 방이 없는 계정의 줄이다({ at, account }).
+   * 둘을 따로 두어 앞 로그아웃의 줄이 들어온 계정에, 앞 계정의 줄이 다른 계정에 번지지 않게 한다(카본 workbackup-solio-one-ui-20261127 A2). doorSent는 마지막으로 보낸 자리다 */
+  let pendingBackupTopic = null, aloneAskAt = 0, aloneApp = null, doorSent = '', backupDrain = null, drainReadAt = -Infinity;
+  const BACKUP_ALONE_FOR = 30 * 60000;
+  if (typeof options.solioBackup?.onChanged === 'function') {
+    try {
+      const off = options.solioBackup.onChanged(value => {
+        if (disposed) return;
+        if (value && value.type === 'focus-band') { view.focusBackupBack?.(); return; }
+        syncRead('backup', { again: true });
+      });
+      if (typeof off === 'function') embedOff.push(off);
+    } catch { /* 알림 없이도 주기 읽기로 따라간다 */ }
   }
   for (const [name, slot] of Object.entries(embeds)) {
     const bridge = slot.embed;
@@ -656,6 +672,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       if (todo.current !== key) return;
       todo.busy = null;
       if (res && res.ok === false) todo.note = a.kind === 'open' ? '창을 열지 못했습니다. 그 방에서 확인해 주세요.' : '여기서 끝내지 못했습니다. 그 방에서 확인해 주세요.';
+      // 원클릭 방 안에 그 화면을 열었으면 카드를 접고 그 방으로 간다(「다음 일」로 돌아온다, SOLIO_ONE_CLIENT.md 2.2)
+      if (res?.view === true) { todo.open = false; todo.paused = true; todo.went = key; todo.waiting = null; showProgram('backup'); }
       render();
     });
     return true;
@@ -790,6 +808,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       band: bandOn() ? space : null,
       bandClose: bandOn() && !!slotOf(space)?.open && !slotOf(space).closing && !switchOpen && !aside && !share && typeof slotOf(space).embed.close === 'function',
       bandCloseLabel: bandOn() ? `${SPACE_NAME[space]} 닫기` : '',
+      // synk-solio 낱말로 열렸는데 방을 열 수 없을 때의 「백업 창 따로 열기」 한 줄(30분 동안)
+      bakAlone: !!readApi.backup && (mode === 'portal' ? !state.accountKey && !!aloneAskAt && now() - aloneAskAt < BACKUP_ALONE_FOR : aloneAppShown(state)),
       share: share && mode === 'app' && space === 'workspace' ? { id: share.id, items: share.items } : null,
       focus: focusKey,
       focusSeq,
@@ -956,6 +976,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       view.emitState?.(detail);
     }
     syncEmbed();
+    syncBackupDoor(scene);
+    // synk-solio 낱말로 연 방은 그리기가 끝난 뒤에 잇는다(그리기 안에서 다시 그리지 않게)
+    if (pendingBackupTopic && !backupDrain) backupDrain = setTimer(() => { backupDrain = null; if (drainBackupTopic()) render(); }, 0);
     syncClock(scene);
     syncAuthRecheck(scene);
     // 모델별 토큰의 실시간은 구독 방이 보이는 동안 부탁한다(11-20부터 맨 위 「지금 출력」이 늘 보인다, 솔리오 구독 비서 설계 3.3)
@@ -1015,17 +1038,105 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function backupAction(name, arg, { anywhere = false } = {}) {
     const api = readApi.backup;
     if (!api || space !== 'solio' || (prog !== 'backup' && !anywhere) || clientMode() !== 'app') return false;
-    const call = name === 'backup-start' ? api.start?.(arg) : name === 'backup-open' ? api.open?.(arg) : name === 'backup-oneclick' ? api.oneClick?.() : api.dismiss?.();
+    // 한 몸(11-26): 「← 원클릭」(backup-view-close), 업데이트 카드(backup-update), 「백업 창 따로 열기」(backup-window)
+    const call = name === 'backup-start' ? api.start?.(arg) : name === 'backup-open' ? api.open?.(arg) : name === 'backup-oneclick' ? api.oneClick?.()
+      : name === 'backup-update' ? api.update?.() : name === 'backup-window' ? api.openWindow?.() : name === 'backup-view-close' ? api.closeView?.() : api.dismiss?.();
     backupNotice = null;
+    if (name === 'backup-view-close') { doorSent = ''; focus('here'); }
     const done = Promise.resolve(call).catch(() => ({ ok: false })).then(result => {
       if (disposed) return result;
       const text = backupActionNotice(result);
       backupNotice = text ? { text, at: now() } : null;
+      // 방 안에 화면을 열었으면 원클릭 방으로 간다(「한 번에 처리」 카드 · 다른 방에서 부른 때)
+      if (result?.view === true && prog !== 'backup') showProgram('backup');
       syncRead('backup', { again: true });
       if (text) render();
       return result;
     });
     return anywhere ? done : true;
+  }
+  /* 로그인 화면 위나 방이 없는 계정의 「백업 창 따로 열기」. 방을 거치지 않고 본체가 비상 창을 띄운다(본체는 synk-solio 낱말을 받은 뒤 30분만 받는다) */
+  function backupAlone() {
+    const api = readApi.backup;
+    if (!api || typeof api.openWindow !== 'function') return false;
+    void Promise.resolve(api.openWindow()).catch(() => null).then(result => {
+      if (disposed) return;
+      // 따로 연 창이 그 일을 맡았다. 낱말도 거둔다(로그인한 뒤 방이 또 열리지 않게)
+      if (result?.ok === true) { aloneAskAt = 0; aloneApp = null; pendingBackupTopic = null; }
+      render();
+    });
+    return true;
+  }
+  /* 본체가 synk-solio 낱말로 백업 방을 열라고 했다. 들어오기 전이면 들어온 뒤에, 방을 볼 계정인지 읽힌 뒤에 연다 */
+  function openBackupFromMain(topic) {
+    if (disposed || typeof topic !== 'string' || !/^[a-z]{1,16}$/.test(topic)) return;
+    pendingBackupTopic = topic;
+    // 새 낱말마다 로그아웃 화면의 줄을 다시 세운다. 본체도 새 낱말마다 30분을 다시 연다(Fable workbackup-solio-one-ui-20261127 F6)
+    aloneAskAt = 0;
+    drainBackupTopic();
+    render();
+  }
+  /* 방이 없는 계정의 줄: 그 줄을 세운 계정이 지금 들어와 있고, 그 계정의 지금 답도 방이 없다고 할 때만(30분) */
+  function aloneAppShown(state) {
+    if (!aloneApp || !state.accountKey || aloneApp.account !== state.accountKey || now() - aloneApp.at >= BACKUP_ALONE_FOR) return false;
+    const r = reads.backup;
+    return r.account === state.accountKey && !!r.result && r.result.available !== true;
+  }
+  /* 낱말을 이을 수 있으면 잇는다. 화면이 바뀌었으면 true(그때만 다시 그린다. 로그인을 기다리는 동안 그리기를 되풀이하지 않는다) */
+  function drainBackupTopic() {
+    const topic = pendingBackupTopic;
+    if (!topic || disposed) return false;
+    const state = machine.read();
+    // 로그아웃: 로그인 화면 위에 한 줄. 낱말은 들고 있다가 로그인해 들어오면 그 방을 연다
+    if (clientMode() === 'portal') {
+      if (!state.accountKey && ['auth', 'error', 'signing-in'].includes(state.phase) && !aloneAskAt) { aloneAskAt = now(); return true; }
+      return false;
+    }
+    if (clientMode() !== 'app' || orbTarget === 'inside' || !state.accountKey) return false;
+    // 다른 공간(PULSE · Workspace)을 보는 중이면 솔리오로 돌아온다. 낱말은 들고 있다가 들어온 뒤 연다(카본 workbackup-solio-one-ui-20261127 A7)
+    if (space !== 'solio') { enterSpace('solio', { fromSwitch: true }); return true; }
+    const r = reads.backup;
+    // 답이 아직 없으면 읽기를 부탁하되, 읽기가 거듭 실패하는 동안 그리기 · 읽기가 쉬지 않고 돌지 않게 1초에 한 번까지만(Fable workbackup-solio-one-ui-20261127 상한 밖 P3)
+    if (r.account !== state.accountKey || !r.result) {
+      if (!r.loading && now() - drainReadAt >= ORB_TIMING.busyRetry) { drainReadAt = now(); syncRead('backup', { anywhere: true }); }
+      return false;
+    }
+    pendingBackupTopic = null;
+    aloneAskAt = 0;
+    if (r.result.available !== true) { aloneApp = { at: now(), account: state.accountKey }; return true; }
+    aloneApp = null;
+    if (switchOpen) { switchOpen = false; fanPin = false; }
+    if (aside) { aside = null; rooms.close(); }
+    // update 낱말은 할 일의 업데이트 카드를 연다(3.2). 카드가 없으면 방 안의 그 화면을 연다
+    if (topic === 'update' && openUpdateCard(state)) return true;
+    if (todo.open) { todo.open = false; todo.paused = !!todo.current; }
+    showProgram('backup');
+    backupAction('backup-open', topic, { anywhere: true });
+    return true;
+  }
+  function openUpdateCard(state) {
+    const live = todoLive(state, readScenes(state));
+    if (!live?.queue.some(i => i.key === BACKUP_UPDATE_KEY)) return false;
+    if (!todoStart()) return false;
+    todo.current = BACKUP_UPDATE_KEY;
+    render();
+    return true;
+  }
+  /* 백업 방 안 엔진 화면의 자리. 백업 방이 화면에 있는지와 길(← 원클릭 › 이름) 아래 높이만 본체에 보낸다.
+     엔진 화면은 본체가 화면을 열었고 호스트와 화면 파일이 준비됐을 때만 띄운다. 길이 서 있지 않으면 띄우지 않는다 */
+  function syncBackupDoor(scene) {
+    const api = readApi.backup;
+    if (!api || typeof api.place !== 'function') return;
+    const roomOn = !!scene && !disposed && scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'backup' && !aside && !switchOpen && !legacyKind && !todo.open
+      && busyAction === null && !isHidden() && orbAt === 'home' && orbTarget === 'home' && !!scene.room?.backup?.visible;
+    const door = roomOn ? scene.room?.backup?.door : null;
+    let top = 0;
+    if (door) { let at = null; try { at = view.backupDoorTop?.(); } catch { at = null; } if (Number.isFinite(at)) top = Math.max(0, Math.min(160, Math.round(at))); }
+    const next = { shown: roomOn && (!door || top > 0), top };
+    const key = JSON.stringify(next);
+    if (key === doorSent) return;
+    doorSent = key;
+    try { void Promise.resolve(api.place(next)).catch(() => { doorSent = ''; }); } catch { doorSent = ''; }
   }
 
   function onPhaseChange(state, prev) {
@@ -2156,9 +2267,23 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         return;
       }
       r.retried = false;
+      // 처음 받는 답은 바뀜으로 치지 않는다(창을 다시 열었을 때 열려 있던 화면으로 끌고 가지 않게)
+      const doorWas = key === 'backup' && (r.result ? r.result.room?.open === true : true);
       r.result = res;
+      // 본체가 방 안 화면을 새로 열었다(「보호 시작」 · 「이 PC로 옮겨 오기」는 답보다 늦게 첫 시작 화면을 연다): 원클릭 방으로 간다(Fable workbackup-solio-one-ui-20261127 F1)
+      if (key === 'backup' && !doorWas && res.room?.open === true) followBackupDoor();
       render();
     });
+  }
+  /* 방 안 화면이 열렸을 때 그 방으로 데려간다. 백업 카드를 보던 중이면 카드를 접고(「다음 일」로 돌아온다), 다른 일의 카드나 다른 공간은 건드리지 않는다 */
+  function followBackupDoor() {
+    if (disposed || space !== 'solio' || clientMode() !== 'app' || switchOpen) return;
+    if (todo.open) {
+      const key = todo.current;
+      if (!key || !String(key).startsWith('backup:')) return;
+      todo.open = false; todo.paused = true; todo.went = key; todo.waiting = null; todo.busy = null;
+    }
+    if (prog !== 'backup' || aside) showProgram('backup');
   }
   /* 오브제를 눌렀거나 그 위에 머물렀을 때. 솔리오의 첫 화면에서 회원에게 있는 프로그램만 연다 */
   function showProgram(name) {
@@ -2369,7 +2494,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       case 'todo-skip': return todoSkip();
       case 'todo-later': return todoLater();
       case 'todo-stop': return todoStop();
-      case 'backup-start': case 'backup-open': case 'backup-dismiss': case 'backup-oneclick': return backupAction(action, typeof payload === 'string' ? payload : '');
+      case 'backup-start': case 'backup-open': case 'backup-dismiss': case 'backup-oneclick': case 'backup-update': case 'backup-window': case 'backup-view-close': return backupAction(action, typeof payload === 'string' ? payload : '');
+      case 'backup-alone': return backupAlone();
       case 'recheck-auth': void recheckAuth(); return true;
       case 'reopen-space': void runOpenSpace(space, { reopen: true }); return true;
       case 'room-solio': go('solio'); return true;

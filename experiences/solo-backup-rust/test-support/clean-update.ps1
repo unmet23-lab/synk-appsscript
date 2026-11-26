@@ -172,9 +172,18 @@ Expect ($r.Code -eq 0 -and $record.available -eq '0.7.1') "0.7.1 announced: the 
 $now = @(StateFiles)
 $changedEarly = @($stateBefore | Where-Object { $b = $_; -not ($now | Where-Object { $_.Path -eq $b.Path -and $_.Hash -eq $b.Hash }) } | ForEach-Object Path)
 Expect ($changedEarly.Count -eq 0) "the refused installs left the user state as it was (changed or gone: $($changedEarly -join ', '))"
-# A run now tells 「업데이트 준비됨」 from that record (the check is not due again) against the installed 0.7.0.
+# Announced just now: a run tells nothing yet — SYNK 솔리오's 「할 일」 shows it first, and the engine's own notice waits for
+# 14 days (SOLIO_ONE_CLIENT.md 3.2, run.rs UPDATE_LATE_MS).
 $checkRecord = Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw
-Expect ((Run $runExe @('--run', 'manual')) -eq 0) 'a run with 0.7.1 announced'
+Expect ((Run $runExe @('--run', 'manual')) -eq 0) 'a run with 0.7.1 announced just now'
+$early = LastRunLine
+Expect ($early.updateNotice.available -eq '0.7.1' -and $null -eq $early.updateNotice.notice -and -not (UpdateTold $early)) "announced just now: no notice yet (updateNotice: $($early.updateNotice | ConvertTo-Json -Compress))"
+# The same record 15 days on: a run tells 「업데이트 준비됨」 from it (the check is not due again) against the installed 0.7.0.
+$aged = $checkRecord | ConvertFrom-Json
+$aged.availableSince = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() - 15 * 86400000
+$checkRecord = $aged | ConvertTo-Json -Compress -Depth 8
+[IO.File]::WriteAllText((Join-Path $state 'update.json'), $checkRecord, [Text.UTF8Encoding]::new($false))
+Expect ((Run $runExe @('--run', 'manual')) -eq 0) 'a run with 0.7.1 announced 15 days ago'
 $told = LastRunLine
 # No try at all, failed or not: the record is as the check left it (GPT full GA5).
 $still = Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw

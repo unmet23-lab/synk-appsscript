@@ -11,7 +11,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
-const { stage } = require('../scripts/stage-resources.cjs');
+const { stage, UI_FILES } = require('../scripts/stage-resources.cjs');
 const { setupLocal, setAutomatic, runExe: run } = require('../test-support/run-setup.cjs');
 
 const exe = process.env.SWB_RUN_EXE, restic = process.env.SOLO_BACKUP_RESTIC;
@@ -43,7 +43,13 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   // The run executable does not start the inventory tools; stand-ins keep the manifest whole.
   for (const name of ['WorkBackupInventory.exe', 'WorkBackupPlanner.exe']) fs.writeFileSync(path.join(inventory, name), 'stand-in');
   const resources = path.join(root, 'resources');
-  await stage({ node: process.execPath, restic, output: resources, client: '--none', inventoryBin: inventory });
+  // The engine screen's files (SOLIO_ONE_CLIENT.md 2.2): stand-ins in place of stage-ui's dist/, which a test checkout has not
+  // made. They are part of the bundle, so the run's resource check reads them by the manifest like every other file.
+  const ui = path.join(root, 'ui');
+  for (const name of UI_FILES) { const file = path.join(ui, ...name.split('/')); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, `stand-in ${name}`); }
+  await stage({ node: process.execPath, restic, output: resources, client: '--none', inventoryBin: inventory, ui });
+  const staged = JSON.parse(fs.readFileSync(path.join(resources, 'manifest.json'), 'utf8')).files;
+  for (const name of UI_FILES) assert.deepEqual(staged[`ui/${name}`], { size: Buffer.byteLength(`stand-in ${name}`), sha256: require('node:crypto').createHash('sha256').update(`stand-in ${name}`).digest('hex') }, name);
 
   await setupLocal({ state, restic, data: [data, spare], repoParent: repo, keyFile: path.join(keys, 'recovery.json') });
 

@@ -491,7 +491,7 @@ test('an --office-unhook run ends at once with 0: no lock, no update hand-off, n
 });
 test('the running app opens no window for an --office-unhook second instance and shows it for a normal one', () => {
   const app = new EventEmitter();
-  const ctx = { app, runtime: { clientId: 'platform' }, appLocationReady: true, windows: 0, requestPlatformWindow: () => { ctx.windows += 1; }, window: null, pendingTeachingView: false, sendTeachingView() {}, connectionRecovery: null };
+  const ctx = { app, runtime: { clientId: 'platform' }, appLocationReady: true, windows: 0, requestPlatformWindow: () => { ctx.windows += 1; }, receiveSolioTopic: () => false, window: null, pendingTeachingView: false, sendTeachingView() {}, connectionRecovery: null };
   vm.runInNewContext(source("  app.on('second-instance',"), ctx);
   app.emit('second-instance', {}, ['C:\\Program Files\\SYNK Platform\\SYNK Platform.exe', '--office-unhook'], 'C:\\', { officeUnhook: '0'.repeat(32) });
   assert.equal(ctx.windows, 0);

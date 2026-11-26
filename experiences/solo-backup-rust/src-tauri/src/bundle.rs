@@ -3,7 +3,7 @@
 //! build time; every listed file must match its size and SHA-256.
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::{fs, io::Read, path::{Component, Path}};
+use std::{fs, io::Read, path::{Component, Path, PathBuf}};
 
 /// The run executable leaves restic.exe to the engine, which hashes it against
 /// its own pinned SHA-256 before the first use in every worker (engine.cjs), so
@@ -11,7 +11,29 @@ use std::{fs, io::Read, path::{Component, Path}};
 /// still checked here.
 pub const RUN_SKIP: &[&str] = &["restic.exe"];
 
-const REQUIRED: [&str; 7] = ["node.exe", "restic.exe", "worker/dispatcher.cjs", "worker/handlers.cjs", "worker/runner.cjs", "contract/methods.json", "engine/package.json"];
+/// The engine screen's files are listed too (`ui/`, SOLIO_ONE_CLIENT.md 2.2): SYNK 솔리오 serves them from the installed
+/// folder by this manifest, so a bundle without them is not whole — its page, the bridge it loads first and the module
+/// it starts (`app.js`, which brings the rest; stage-ui.cjs checks index.html loads exactly these two, GPT
+/// workbackup-solio-one-be-20261127 C6).
+const REQUIRED: [&str; 10] = ["node.exe", "restic.exe", "worker/dispatcher.cjs", "worker/handlers.cjs", "worker/runner.cjs", "contract/methods.json", "engine/package.json", "ui/index.html", "ui/bridge.js", "ui/app.js"];
+
+/// Where the window app (and its host mode) finds its resources: beside it, or in a debug build SWB_RESOURCES when set.
+pub fn resources_dir(exe: &Path) -> PathBuf {
+    let beside = exe.parent().map(|dir| dir.join("resources")).unwrap_or_else(|| PathBuf::from("resources"));
+    if cfg!(debug_assertions) { std::env::var_os("SWB_RESOURCES").map(PathBuf::from).unwrap_or(beside) } else { beside }
+}
+/// The window app's start check, for its window and its host mode alike. An install or uninstall replacing this folder's
+/// files opens nothing and holds none of them (`INSTALLING`, review GA1 · GA3). An install that stopped part way and never
+/// reached its failure callback (the PC went off, the installer was ended) can leave this app written and the run
+/// executable only moved aside, or files of two versions: no run starts until the installer runs again, so it is told as
+/// `INSTALL_INCOMPLETE` rather than a bare code.
+pub fn start_check(exe: &Path, resources: &Path) -> Result<(), String> {
+    let folder = exe.parent().ok_or("EXECUTABLE")?;
+    if crate::platform::installing(folder) { return Err("INSTALLING".into()); }
+    let moved_aside = |name: &str| folder.join(format!("{name}.old")).is_file();
+    if !cfg!(debug_assertions) && !folder.join("WorkBackupRun.exe").is_file() && moved_aside("WorkBackupRun.exe") { return Err("INSTALL_INCOMPLETE".into()); }
+    verify(resources, &[]).map_err(|code| if !cfg!(debug_assertions) && (moved_aside("WorkBackupRun.exe") || moved_aside("WorkBackup.exe")) { "INSTALL_INCOMPLETE".into() } else { code })
+}
 
 pub fn verify(root: &Path, skip: &[&str]) -> Result<(), String> {
     let bytes = fs::read(root.join("manifest.json")).map_err(|_| "BUNDLE_MISSING")?;
@@ -58,6 +80,35 @@ pub fn verify(root: &Path, skip: &[&str]) -> Result<(), String> {
         assert_eq!(verify(&dir, RUN_SKIP), Err("BUNDLE_INTEGRITY".into()), "size still checked");
         fs::write(dir.join("node.exe"), b"NODE.EXE").unwrap();
         assert_eq!(verify(&dir, RUN_SKIP), Err("BUNDLE_INTEGRITY".into()), "node is executed, so it is hashed");
+        fs::remove_dir_all(&dir).unwrap();
+    }
+    #[test] fn the_engine_screen_is_part_of_the_bundle_and_an_install_going_opens_nothing() {
+        let dir = std::env::temp_dir().join(format!("swb-bundle-start-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let resources = dir.join("resources"); fs::create_dir_all(&resources).unwrap();
+        let mut files = serde_json::Map::new();
+        for name in REQUIRED { put(&resources, name, name.as_bytes(), &mut files); }
+        put(&resources, "ui/app.js", b"export {};", &mut files);
+        let manifest = |files: &serde_json::Map<String, Value>| fs::write(resources.join("manifest.json"), serde_json::to_vec(&json!({"files": files})).unwrap()).unwrap();
+        manifest(&files);
+        let exe = dir.join("WorkBackup.exe");
+        assert_eq!(start_check(&exe, &resources), Ok(()));
+        // A screen file changed after the build is caught like any other (SYNK 솔리오 serves them by this manifest).
+        fs::write(resources.join("ui/app.js"), b"export {}!").unwrap();
+        assert_eq!(start_check(&exe, &resources), Err("BUNDLE_INTEGRITY".into()));
+        fs::write(resources.join("ui/app.js"), b"export {};").unwrap();
+        // A bundle without the screen's page is not whole.
+        let mut without = files.clone(); without.remove("ui/index.html"); manifest(&without);
+        assert_eq!(verify(&resources, &[]), Err("BUNDLE_INVALID".into()));
+        // Nor one without the module the page starts, even with every other file whole (GPT workbackup-solio-one-be-20261127 C6).
+        let mut without = files.clone(); without.remove("ui/app.js"); manifest(&without);
+        assert_eq!(start_check(&exe, &resources), Err("BUNDLE_INVALID".into()));
+        manifest(&files);
+        // The installer's marker: nothing is opened or held, before the resources are even read.
+        let marker = fs::File::create(dir.join(crate::platform::INSTALLING)).unwrap();
+        assert_eq!(start_check(&exe, &resources), Err("INSTALLING".into()));
+        drop(marker); fs::remove_file(dir.join(crate::platform::INSTALLING)).unwrap();
+        assert_eq!(start_check(&exe, &resources), Ok(()));
         fs::remove_dir_all(&dir).unwrap();
     }
 }

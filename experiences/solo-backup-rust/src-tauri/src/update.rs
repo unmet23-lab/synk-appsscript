@@ -7,7 +7,9 @@
 //! The window app runs this headless (`WorkBackup.exe --update-check` · `--update-install`, and a
 //! click on the 「update」 notice). Nothing here touches the backup state except `update.json` in the
 //! state folder, which says what the last check found — for the run executable's notice and the window:
-//! `{"v":1,"checkedAt":<ms>|null,"triedAt":<ms>,"current":"0.7.0","available":"0.7.1"|null,"error":<code>|null}`.
+//! `{"v":1,"checkedAt":<ms>|null,"triedAt":<ms>,"current":"0.7.0","available":"0.7.1"|null,"error":<code>|null}`, and with a
+//! version announced `"availableSince":<ms>` — when that version was first known (SOLIO_ONE_CLIENT.md 3.2: the run tells it
+//! only once it has waited 14 days). Readers take the fields they know and leave the rest (run.rs, engine/src/solio.cjs).
 //! No feed text other than a checked version number is kept or shown.
 use serde_json::{json, Value};
 use std::{fs, path::Path, time::Duration};
@@ -72,8 +74,23 @@ pub async fn check_for_click<R: Runtime>(app: &AppHandle<R>) -> Result<Option<Up
 /// What `update.json` says (11-20 설계 검토): `checkedAt` is the last check that reached the feed, `triedAt` the last try,
 /// `error` that try's code, and `available` what the last check that reached the feed found — a failed try keeps it, so
 /// a new version once known is not forgotten until a check finds otherwise.
-fn shape(checked: Option<u64>, tried: u64, current: &str, available: Option<String>, error: Option<&str>) -> Value {
-    json!({ "v": 1, "checkedAt": checked, "triedAt": tried, "current": version_text(current), "available": available, "error": error })
+fn shape(previous: &Value, checked: Option<u64>, tried: u64, current: &str, available: Option<String>, error: Option<&str>, published: Option<u64>) -> Value {
+    let since = available.as_deref().map(|version| since(previous, version, tried, published));
+    let mut record = json!({ "v": 1, "checkedAt": checked, "triedAt": tried, "current": version_text(current), "available": available, "error": error });
+    if let Some(since) = since { record["availableSince"] = json!(since); }
+    record
+}
+/// When `version` came out, from which its 14 days count (SOLIO_ONE_CLIENT.md 3.2): the feed's `pub_date` for it whenever
+/// the feed gave a valid one (GPT workbackup-solio-one-be-20261127 GD1 · -r2 GA7); without it, the earlier record's time
+/// while it announced the same version; else now. A time past now (a clock set back, a feed dated ahead) is not taken, so
+/// the 14 days never wait for a clock to catch up.
+fn since(previous: &Value, version: &str, now_ms: u64, published: Option<u64>) -> u64 {
+    let kept = || previous["availableSince"].as_u64().filter(|at| previous["available"].as_str() == Some(version) && *at <= now_ms);
+    published.filter(|at| *at <= now_ms).or_else(kept).unwrap_or(now_ms)
+}
+/// The feed's `pub_date` of a version found, in milliseconds; none before 1970.
+pub fn published_ms(update: &Update) -> Option<u64> {
+    update.date.and_then(|date| u64::try_from(date.unix_timestamp_nanos() / 1_000_000).ok())
 }
 /// What the last check found, kept only while it is still later than this app: once it is installed, a failed try does not
 /// leave it announced (GPT full GA2: SYNK 솔리오 reads any `available` unlike its own version as an update).
@@ -82,13 +99,15 @@ fn known(previous: &Value, current: &str) -> Option<String> {
 }
 /// Written before the feed is asked: the try counts even if the check is ended before it is done.
 pub fn tried(previous: &Value, current: &str, now_ms: u64) -> Value {
-    shape(previous["checkedAt"].as_u64(), now_ms, current, known(previous, current), Some("CHECK_UNFINISHED"))
+    shape(previous, previous["checkedAt"].as_u64(), now_ms, current, known(previous, current), Some("CHECK_UNFINISHED"), None)
 }
 /// Written once the feed answered (`Ok`, with the newer version or none) or the try failed (`Err`, its code).
-pub fn checked(previous: &Value, current: &str, found: Result<Option<&str>, &str>, now_ms: u64) -> Value {
+pub fn checked(previous: &Value, current: &str, found: Result<Option<&str>, &str>, now_ms: u64) -> Value { checked_at(previous, current, found, None, now_ms) }
+/// The same with the feed's `pub_date` of the version found (`published_ms`), from which its 14 days count.
+pub fn checked_at(previous: &Value, current: &str, found: Result<Option<&str>, &str>, published: Option<u64>, now_ms: u64) -> Value {
     match found {
-        Ok(available) => shape(Some(now_ms), now_ms, current, available.and_then(version_text), None),
-        Err(code) => shape(previous["checkedAt"].as_u64(), now_ms, current, known(previous, current), Some(code)),
+        Ok(available) => shape(previous, Some(now_ms), now_ms, current, available.and_then(version_text), None, published),
+        Err(code) => shape(previous, previous["checkedAt"].as_u64(), now_ms, current, known(previous, current), Some(code), None),
     }
 }
 
@@ -304,7 +323,8 @@ pub fn can_approve() -> bool { false }
 /// install folder (`launch`), so no backup or restore of this user starts in between (GPT GA2).
 /// `started` is told the version just before the installer is started — after the file is written, held and compared
 /// and the install folder is checked once more, so a failure before that never follows a 「started」 (카본 끝판 A2).
-pub async fn install<R: Runtime>(app: &AppHandle<R>, root: &Path, started: impl FnOnce(&str)) -> Result<(), &'static str> {
+/// `quiet`: the installer without its window (`installer_args`).
+pub async fn install<R: Runtime>(app: &AppHandle<R>, root: &Path, quiet: bool, started: impl FnOnce(&str)) -> Result<(), &'static str> {
     let _engine = crate::platform::try_lock(root, crate::platform::ENGINE_LOCK).map_err(|_| "STATE_LOCK")?.ok_or("RUN_ACTIVE")?;
     let mut update = find(app, DOWNLOAD_TIMEOUT, None).await?.ok_or("UP_TO_DATE")?;
     // The plugin's download checks the signature and the signed version; its own install is not used (launch).
@@ -321,8 +341,12 @@ pub async fn install<R: Runtime>(app: &AppHandle<R>, root: &Path, started: impl 
     };
     let version = version_text(&update.version).ok_or("UPDATE_FEED")?;
     let folder = std::env::current_exe().ok().and_then(|exe| exe.parent().map(Path::to_path_buf)).ok_or("EXECUTABLE")?;
-    launch(&bytes, &version, &folder, || started(&version))
+    launch(&bytes, &version, &folder, quiet, || started(&version))
 }
+/// The installer's arguments: `/P` is its progress window only; `/S` (`--update-install --quiet`, SYNK 솔리오's 「할 일」,
+/// SOLIO_ONE_CLIENT.md 3.2) no window at all, and without `/R` a silent install opens nothing when it is done. `/UPDATE`
+/// skips what a first install does (the WebView2 check, the reinstall page).
+pub fn installer_args(quiet: bool) -> &'static str { if quiet { "/S /UPDATE" } else { "/P /UPDATE" } }
 
 /// Starts the checked installer so that nothing can change it between the check and the start (GPT GA1): it is
 /// written into a new folder of this user's temp and closed, opened again for reading with no sharing of writes
@@ -335,7 +359,7 @@ pub async fn install<R: Runtime>(app: &AppHandle<R>, root: &Path, started: impl 
 /// The wait has no time limit while the installer runs (GPT -b GA1); it returns `Ok` only once the installer's marker
 /// has been seen, and every other end is an error (`hand_over`).
 #[cfg(windows)]
-fn launch(bytes: &[u8], version: &str, install_folder: &Path, started: impl FnOnce()) -> Result<(), &'static str> {
+fn launch(bytes: &[u8], version: &str, install_folder: &Path, quiet: bool, started: impl FnOnce()) -> Result<(), &'static str> {
     use std::{io::{Read, Write}, os::windows::ffi::OsStrExt};
     use windows_sys::Win32::{Foundation::{CloseHandle, GetLastError, WAIT_OBJECT_0, WAIT_TIMEOUT}, System::Threading::WaitForSingleObject,
         UI::{Shell::{ShellExecuteExW, SEE_MASK_NOASYNC, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW}, WindowsAndMessaging::SW_SHOWNORMAL}};
@@ -356,7 +380,7 @@ fn launch(bytes: &[u8], version: &str, install_folder: &Path, started: impl FnOn
     held.read_to_end(&mut again).map_err(|_| "UPDATE_START")?;
     if again != bytes { return Err("UPDATE_SIGNATURE"); }
     let wide = |s: &std::ffi::OsStr| s.encode_wide().chain([0]).collect::<Vec<u16>>();
-    let (verb, file, parameters) = (wide("open".as_ref()), wide(path.as_os_str()), wide("/P /UPDATE".as_ref()));
+    let (verb, file, parameters) = (wide("open".as_ref()), wide(path.as_os_str()), wide(installer_args(quiet).as_ref()));
     let mut info: SHELLEXECUTEINFOW = unsafe { std::mem::zeroed() };
     info.cbSize = std::mem::size_of::<SHELLEXECUTEINFOW>() as u32;
     info.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC;
@@ -413,7 +437,7 @@ fn hold(path: &Path) -> std::io::Result<fs::File> {
     fs::OpenOptions::new().read(true).share_mode(FILE_SHARE_READ).open(path)
 }
 #[cfg(not(windows))]
-fn launch(_bytes: &[u8], _version: &str, _install_folder: &Path, _started: impl FnOnce()) -> Result<(), &'static str> { Err("UPDATE_START") }
+fn launch(_bytes: &[u8], _version: &str, _install_folder: &Path, _quiet: bool, _started: impl FnOnce()) -> Result<(), &'static str> { Err("UPDATE_START") }
 
 #[cfg(test)]
 mod tests {
@@ -512,11 +536,11 @@ mod tests {
     }
     #[test] fn the_record_keeps_versions_and_a_code_only_and_a_failed_try_keeps_what_was_known() {
         let found = checked(&json!({}), "0.7.0", Ok(Some("0.7.1")), 5);
-        assert_eq!(found, json!({"v":1,"checkedAt":5,"triedAt":5,"current":"0.7.0","available":"0.7.1","error":null}));
+        assert_eq!(found, json!({"v":1,"checkedAt":5,"triedAt":5,"current":"0.7.0","available":"0.7.1","error":null,"availableSince":5}));
         assert_eq!(checked(&json!({}), "0.7.0", Ok(Some("evil text")), 5)["available"], Value::Null);
         // Before the feed: the try is counted, what was known stays. A failed try keeps it too, with its code.
-        assert_eq!(tried(&found, "0.7.0", 9), json!({"v":1,"checkedAt":5,"triedAt":9,"current":"0.7.0","available":"0.7.1","error":"CHECK_UNFINISHED"}));
-        assert_eq!(checked(&found, "0.7.0", Err("UPDATE_FEED"), 9), json!({"v":1,"checkedAt":5,"triedAt":9,"current":"0.7.0","available":"0.7.1","error":"UPDATE_FEED"}));
+        assert_eq!(tried(&found, "0.7.0", 9), json!({"v":1,"checkedAt":5,"triedAt":9,"current":"0.7.0","available":"0.7.1","error":"CHECK_UNFINISHED","availableSince":5}));
+        assert_eq!(checked(&found, "0.7.0", Err("UPDATE_FEED"), 9), json!({"v":1,"checkedAt":5,"triedAt":9,"current":"0.7.0","available":"0.7.1","error":"UPDATE_FEED","availableSince":5}));
         // A check that reached the feed says what it found, nothing newer included.
         assert_eq!(checked(&found, "0.7.1", Ok(None), 12)["available"], Value::Null);
         assert_eq!(checked(&json!({}), "0.7.0", Err("UPDATE_FEED"), 3), json!({"v":1,"checkedAt":null,"triedAt":3,"current":"0.7.0","available":null,"error":"UPDATE_FEED"}));
@@ -526,6 +550,53 @@ mod tests {
             assert_eq!(checked(&found, current, Err("UPDATE_FEED"), 9)["available"], Value::Null, "{current}");
         }
         assert_eq!(checked(&json!({"available": "0.7.3"}), "0.7.2", Err("UPDATE_FEED"), 9)["available"], "0.7.3");
+    }
+    #[test] fn the_time_a_version_was_first_known_is_kept_while_it_is_announced() {
+        // Found at 5, found again at 20 and 30: still 5. A failed try in between keeps it too.
+        let first = checked(&json!({}), "0.7.0", Ok(Some("0.8.0")), 5);
+        assert_eq!(first["availableSince"], 5);
+        let again = checked(&tried(&first, "0.7.0", 20), "0.7.0", Ok(Some("0.8.0")), 20);
+        assert_eq!(again["availableSince"], 5);
+        assert_eq!(checked(&again, "0.7.0", Err("UPDATE_FEED"), 30)["availableSince"], 5);
+        // A newer one in its place starts its own time; none announced takes the time away.
+        let later = checked(&again, "0.7.0", Ok(Some("0.8.1")), 40);
+        assert_eq!(later["availableSince"], 40);
+        let none = checked(&later, "0.7.0", Ok(None), 50);
+        assert!(none.get("availableSince").is_none() && none["available"].is_null(), "{none}");
+        // Installed since: what was known is not kept, nor its time.
+        let installed = tried(&later, "0.8.1", 60);
+        assert!(installed.get("availableSince").is_none(), "{installed}");
+        // The feed's pub_date counts first (GPT workbackup-solio-one-be-20261127 GD1 · -r2 GA7): a version published 15 days
+        // before the first check that saw it is already late; a date past now is not taken; a valid date wins over an earlier
+        // record's first-seen time either way; a failed try keeps what was recorded.
+        let day = 86_400_000u64;
+        assert_eq!(checked_at(&json!({}), "0.7.0", Ok(Some("0.8.0")), Some(100 * day - 15 * day), 100 * day)["availableSince"], 85 * day);
+        assert_eq!(checked_at(&json!({}), "0.7.0", Ok(Some("0.8.0")), Some(101 * day), 100 * day)["availableSince"], 100 * day);
+        let seen = checked_at(&json!({}), "0.7.0", Ok(Some("0.8.0")), None, 10 * day);
+        assert_eq!(checked_at(&seen, "0.7.0", Ok(Some("0.8.0")), Some(12 * day), 20 * day)["availableSince"], 12 * day);
+        assert_eq!(checked_at(&seen, "0.7.0", Ok(Some("0.8.0")), Some(8 * day), 20 * day)["availableSince"], 8 * day);
+        assert!(checked_at(&seen, "0.7.0", Err("UPDATE_FEED"), Some(1), 20 * day)["availableSince"] == 10 * day);
+        // No date this time: the earlier record's time for the same version stays.
+        let dated = checked_at(&json!({}), "0.7.0", Ok(Some("0.8.0")), Some(12 * day), 20 * day);
+        assert_eq!(checked_at(&dated, "0.7.0", Ok(Some("0.8.0")), None, 25 * day)["availableSince"], 12 * day);
+        // A record from before this field (0.7.x) or one dated past now (the clock set back) starts from now.
+        assert_eq!(checked(&json!({"v": 1, "checkedAt": 5, "available": "0.8.0"}), "0.7.0", Ok(Some("0.8.0")), 70)["availableSince"], 70);
+        assert_eq!(checked(&json!({"v": 1, "available": "0.8.0", "availableSince": 900}), "0.7.0", Ok(Some("0.8.0")), 80)["availableSince"], 80);
+        assert_eq!(checked(&json!({"v": 1, "available": "0.8.0", "availableSince": "5"}), "0.7.0", Err("UPDATE_FEED"), 90)["availableSince"], 90);
+        // The record with the field still fits the reader's 4 KB and reads back whole.
+        let root = std::env::temp_dir().join(format!("swb-update-since-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root); fs::create_dir_all(&root).unwrap();
+        let found = checked(&json!({}), "999999999.999999999.999999998", Ok(Some("999999999.999999999.999999999")), u64::MAX);
+        let longest = checked(&found, "999999999.999999999.999999998", Err("CHECK_UNFINISHED"), u64::MAX);
+        assert_eq!(longest["availableSince"], u64::MAX);
+        write(&root, &longest).unwrap();
+        assert_eq!(read(&root), longest);
+        assert!(fs::metadata(root.join(STATE_FILE)).unwrap().len() < 4096);
+        fs::remove_dir_all(&root).unwrap();
+    }
+    #[test] fn a_quiet_install_starts_the_installer_without_its_window() {
+        assert_eq!(installer_args(false), "/P /UPDATE");
+        assert_eq!(installer_args(true), "/S /UPDATE");
     }
     #[test] fn a_check_is_due_at_once_when_the_app_is_not_the_version_that_wrote_the_record() {
         let now = 100 * 3_600_000;

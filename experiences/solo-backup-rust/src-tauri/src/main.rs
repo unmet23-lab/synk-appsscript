@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use backup_native::{notify, platform, protocol, schedule, secret, update, worker::Worker};
+use backup_native::{bundle, host, native::{self,NativeHost}, notify, platform, protocol, schedule, update, worker::Worker};
 use serde_json::{json,Value};
-use std::{collections::VecDeque, fs, io::Write, path::{Path,PathBuf}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}};
+use std::{fs, io::Write, path::{Path,PathBuf}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}};
 use tauri::{Emitter,Manager};
 
 struct AppState { worker:Arc<Worker>, current:Arc<Mutex<Value>>, closing:AtomicBool, opening:Mutex<Opening> }
@@ -50,101 +50,6 @@ fn screen_called(app:&tauri::AppHandle){
         if let Some(topic)=opening.release(){let _=app.emit("backup:open",json!({"topic":topic}));}
     });
 }
-struct NativeHost { root:PathBuf, exe:PathBuf, test:bool, packaged:bool, dialogs:Mutex<VecDeque<Value>>, dialog_busy:AtomicBool, engine:Mutex<Option<fs::File>> }
-impl NativeHost {
-    fn call(&self,method:&str,args:Value)->Result<Value,String> {
-        let args=args.as_array().ok_or("HOST_REQUEST")?;
-        let first=args.first().unwrap_or(&Value::Null);
-        match method {
-            "secret.encrypt"=>Ok(json!(secret::encrypt(first.as_str().ok_or("HOST_REQUEST")?)?)),
-            "secret.decrypt"=>{let value=secret::decrypt(first.as_str().ok_or("HOST_REQUEST")?)?;Ok(json!(value.as_str()))},
-            // The engine lock while one of the window's operations runs (STAGE1_DESIGN.md 4.1).
-            "engine.lock"=>{let mut held=self.engine.lock().unwrap();if held.is_some(){return Ok(json!(true));}
-                match platform::try_lock(&self.root,platform::ENGINE_LOCK)?{Some(file)=>{*held=Some(file);Ok(json!(true))},None=>Ok(json!(false))}},
-            "engine.unlock"=>{*self.engine.lock().unwrap()=None;Ok(json!(true))},
-            "run.progress"=>Ok(backup_native::runlog::live(&self.root)),
-            // The Wi-Fi this PC is on, for 「쉬는 Wi-Fi 고르기」 (4.13): read only when the window asks, never kept or logged —
-            // Windows counts reading it as a location access, and without location permission it is null. Never in tests.
-            "wifi.name"=>Ok(if self.test{Value::Null}else{json!(backup_native::power::wifi_name())}),
-            // The Downloads folder wherever Windows keeps it, for 「되살린 파일」 at its default place (화면 세션 부탁 2).
-            "folders.downloads"=>{let id=&backup_native::folders::KNOWN.iter().find(|(name,_)|*name=="downloads").ok_or("FOLDERS_KNOWN")?.1;Ok(json!(backup_native::folders::known_folder(id)?))},
-            // 「자동 실행 등록」 is now the four run tasks in Task Scheduler (STAGE1_DESIGN.md 4.1 · 4.2).
-            "startup.read"=>Ok(json!(run_tasks_registered(&self.exe,self.test)?)),
-            "startup.set"=>Ok(json!(set_run_tasks(&self.exe,first.as_bool().ok_or("HOST_REQUEST")?,self.test,self.packaged)?)),
-            "openExternal"=>{let value=first.as_str().ok_or("HOST_REQUEST")?;if self.test||!(platform::oauth_allowed(value)||platform::account_page_allowed(value)||backup_native::reinstall::page_allowed(value)){return Err("OPEN_FORBIDDEN".into());}shell_open(value)?;Ok(Value::Null)},
-            "openPath"=>{let value=first.as_str().ok_or("HOST_REQUEST")?;if self.test||!platform::open_directory_allowed(Path::new(value),&self.root){return Err("OPEN_FORBIDDEN".into());}shell_open(value)?;Ok(Value::Null)},
-            "dialog.open"|"dialog.save"|"dialog.message"=>{
-                if self.dialog_busy.swap(true,Ordering::SeqCst){return Err("DIALOG_BUSY".into());}
-                let result=self.dialog(method,first);self.dialog_busy.store(false,Ordering::SeqCst);result
-            },
-            // 옮겨 오기 v1 · v2 (STAGE1_DESIGN.md 4.6 · 4.6b): each module answers its own methods, None for the rest.
-            m if m.starts_with("files.")=>backup_native::files::host(m,args).unwrap_or_else(||Err("HOST_METHOD".into())),
-            m if m.starts_with("folders.")=>backup_native::folders::host(m,args).unwrap_or_else(||Err("HOST_METHOD".into())),
-            m if m.starts_with("reinstall.")=>backup_native::reinstall::host(m,args).unwrap_or_else(||Err("HOST_METHOD".into())),
-            _=>Err("HOST_METHOD".into())
-        }
-    }
-    fn dialog(&self,method:&str,options:&Value)->Result<Value,String>{
-        if self.test {
-            let next=self.dialogs.lock().unwrap().pop_front().ok_or("TEST_DIALOG_MISSING")?;
-            if next["method"]!=method{return Err("TEST_DIALOG_ORDER".into());}
-            return Ok(next["value"].clone());
-        }
-        let title=options["title"].as_str().unwrap_or("업무 백업");
-        let dialog=rfd::FileDialog::new().set_title(title);
-        match method {
-            "dialog.open"=>{
-                let properties=options["properties"].as_array().ok_or("HOST_REQUEST")?;
-                let directory=properties.contains(&json!("openDirectory"));let multi=properties.contains(&json!("multiSelections"));
-                let paths=match(directory,multi){(true,true)=>dialog.pick_folders(),(true,false)=>dialog.pick_folder().map(|p|vec![p]),(false,_)=>dialog.add_filter("JSON",&["json"]).pick_file().map(|p|vec![p])};
-                Ok(json!({"canceled":paths.is_none(),"filePaths":paths.unwrap_or_default().iter().map(|p|p.to_string_lossy().to_string()).collect::<Vec<_>>()}))
-            },
-            "dialog.save"=>{
-                let picked=dialog.set_file_name(options["defaultPath"].as_str().unwrap_or("업무백업-복구키.json")).add_filter("JSON",&["json"]).save_file();
-                Ok(json!({"canceled":picked.is_none(),"filePath":picked.map(|p|p.to_string_lossy().to_string())}))
-            },
-            "dialog.message"=>{
-                let buttons=options["buttons"].as_array().ok_or("HOST_REQUEST")?;let cancel=buttons.first().and_then(Value::as_str).ok_or("HOST_REQUEST")?;
-                let confirm=buttons.get(1).and_then(Value::as_str).ok_or("HOST_REQUEST")?;
-                let text=format!("{}\n\n{}",options["message"].as_str().unwrap_or(""),options["detail"].as_str().unwrap_or(""));
-                // Put Cancel first: rfd/TaskDialog's first button is the default.
-                // Native Escape/close yields Cancel, never a confirmation.
-                let result=rfd::MessageDialog::new().set_title("업무 백업").set_description(text).set_buttons(rfd::MessageButtons::OkCancelCustom(cancel.into(),confirm.into())).show();
-                let accepted=matches!(result,rfd::MessageDialogResult::Custom(ref s) if s==confirm);
-                Ok(json!({"response":if accepted{1}else{0}}))
-            },_=>Err("HOST_METHOD".into())
-        }
-    }
-}
-fn run_exe(app:&Path)->PathBuf{app.with_file_name("WorkBackupRun.exe")}
-fn run_tasks_registered(app:&Path,test:bool)->Result<bool,String>{
-    if test{return Ok(false);}
-    let sid=schedule::current_sid()?;
-    schedule::registered(&run_exe(app),&schedule::account_label(&sid),&sid)
-}
-/// Registers or removes the run tasks. A test or unpackaged build never touches Task
-/// Scheduler. 0.7.0 does not touch the Windows Run entry of the 0.6.1 beta (4.1: it neither
-/// reads nor writes the earlier apps' state).
-fn set_run_tasks(app:&Path,enabled:bool,test:bool,packaged:bool)->Result<bool,String>{
-    if test||!packaged{return Err("STARTUP_TEST_DISABLED".into());}
-    let (run,sid)=(run_exe(app),schedule::current_sid()?);
-    let user=schedule::account_label(&sid);
-    if enabled{
-        if !run.is_file(){return Err("RUN_EXE_MISSING".into());}
-        schedule::register(&run,&user,&sid,&schedule::local_now())?;
-    }else{schedule::remove(&user,&sid)?;}
-    let active=schedule::registered(&run,&user,&sid)?;
-    if active!=enabled{return Err("SCHEDULE_NOT_APPLIED".into());}
-    Ok(active)
-}
-
-fn shell_open(value:&str)->Result<(),String>{
-    use windows_sys::Win32::{UI::{Shell::ShellExecuteW,WindowsAndMessaging::SW_SHOWNORMAL}};
-    let wide:Vec<u16>=value.encode_utf16().chain([0]).collect();let verb:Vec<u16>="open".encode_utf16().chain([0]).collect();
-    let result=unsafe{ShellExecuteW(std::ptr::null_mut(),verb.as_ptr(),wide.as_ptr(),std::ptr::null(),std::ptr::null(),SW_SHOWNORMAL)};
-    if result as isize<=32{Err("OPEN_FAILED".into())}else{Ok(())}
-}
-
 #[tauri::command]
 async fn backup_call(window:tauri::WebviewWindow,state:tauri::State<'_,AppState>,method:String,args:Value)->Result<Value,String>{
     if window.label()!="main"||!window.url().is_ok_and(|u|protocol::local_url(&u))||!protocol::request_allowed(&method,&args){return Ok(json!({"ok":false,"error":"이 화면에서는 실행할 수 없습니다.","code":"INVALID_REQUEST"}));}
@@ -231,8 +136,10 @@ fn updating_folder()->Result<PathBuf,&'static str>{
 /// closing line, `{"ok":true,…}` or `{"ok":false,"error":<code>}` (카본 끝판 A2). Exit 0: checked, already the
 /// newest, or the installer started and took over (its marker is in the install folder); 3: a package whose signature
 /// or signed version is wrong, nothing installed; 75: this user's backup or restore holds the engine, or another update check is going (CHECK_BUSY), try
-/// later; 78: this build has no public key yet; 1: anything else (the line says which).
-fn update_mode(mode:&str)->i32{
+/// later; 78: this build has no public key yet; 1: anything else (the line says which). `quiet`: `--update-install --quiet`,
+/// what SYNK 솔리오's 「할 일」 starts (SOLIO_ONE_CLIENT.md 3.2) — the installer without its window (`/S`), and nothing is
+/// opened when it is done.
+fn update_mode(mode:&str,quiet:bool)->i32{
     let outcome=(||->Result<Value,&'static str>{
         let root=updating_folder()?;
         // One check at a time, whoever starts it (a run, a person, SYNK 솔리오): the lock comes first and is held until
@@ -254,11 +161,13 @@ fn update_mode(mode:&str)->i32{
                 update::write(&root,&update::tried(&update::read(&root),&current,epoch_ms())).map_err(|_|"UPDATE_RECORD")?;
                 let found=update::check(&handle).await;
                 let available=found.as_ref().ok().and_then(|u|u.as_ref()).map(|u|u.version.clone());
-                let record=update::checked(&update::read(&root),&current,found.as_ref().map(|_|available.as_deref()).map_err(|code|*code),epoch_ms());
+                // The version's 14 days count from the feed's date for it (update::checked_at), not from this check.
+                let published=found.as_ref().ok().and_then(|u|u.as_ref()).and_then(update::published_ms);
+                let record=update::checked_at(&update::read(&root),&current,found.as_ref().map(|_|available.as_deref()).map_err(|code|*code),published,epoch_ms());
                 update::write(&root,&record).map_err(|_|"UPDATE_RECORD")?;
                 found.map(|_|record)
             }else{
-                update::install(&handle,&root,|version|println!("{}",json!({"ok":true,"installing":version}))).await.map(|()|json!({}))
+                update::install(&handle,&root,quiet,|version|println!("{}",json!({"ok":true,"installing":version}))).await.map(|()|json!({}))
             }
         })
     })();
@@ -305,7 +214,7 @@ fn ask_update(before_runs:bool)->Result<bool,String>{
             let answer=rfd::MessageDialog::new().set_title("업무 백업 업데이트").set_description(text).set_buttons(rfd::MessageButtons::OkCancelCustom("나중에".into(),"업데이트".into())).show();
             if matches!(answer,rfd::MessageDialogResult::Custom(ref s) if s=="업데이트"){
                 // A started installer opens the window itself when it is done.
-                match tauri::async_runtime::block_on(update::install(&handle,&root,|_|{})){Ok(())=>return Ok(true),Err("UP_TO_DATE")=>{},Err(code)=>say(update_message(code))}
+                match tauri::async_runtime::block_on(update::install(&handle,&root,false,|_|{})){Ok(())=>return Ok(true),Err("UP_TO_DATE")=>{},Err(code)=>say(update_message(code))}
             }
         },
         Ok(None)|Err("UPDATE_NOT_CONFIGURED")=>{},
@@ -336,11 +245,55 @@ fn asks_before_open(test:bool,debug:bool,background:bool,asked:bool,registered:i
     !test&&!debug&&!background&&!asked&&matches!(registered(),Ok(false))
 }
 
+/// What a start of this app is for (SOLIO_ONE_CLIENT.md 2.5). A release build hands a person's start — none of its own
+/// arguments (an old shortcut, Explorer, the installer's end), or one notice's open address — to SYNK 솔리오's backup room,
+/// and opens its own window (the emergency window) only when SYNK 솔리오 is not there, for `--window` (SYNK 솔리오's
+/// 「백업 창 따로 열기」), or in the start opened after an update question (`asked`, open_asked). `--background`, the
+/// window's start at sign-in in earlier versions, does nothing. A debug build keeps its window and its test switches.
+/// Both take `--solio`, the host; only a debug build takes it with `--test-mode`.
+#[derive(Debug,PartialEq,Eq)]
+enum Start{ Solio(&'static str), Window, Host{test:bool}, Nothing }
+fn start_of(args:&[String],debug:bool,asked:bool)->Result<Start,&'static str>{
+    let all:Vec<&str>=args.iter().map(String::as_str).collect();
+    if all.contains(&"--solio"){
+        return match all.as_slice(){
+            ["--solio"]=>Ok(Start::Host{test:false}),
+            ["--solio","--test-mode"]|["--test-mode","--solio"] if debug=>Ok(Start::Host{test:true}),
+            _=>Err("INVALID_ARGUMENT"),
+        };
+    }
+    if debug{return Ok(Start::Window);}
+    let topic=match all.as_slice(){[]=>Some("status"),[one]=>notify::topic_of(one),_=>None};
+    match (all.as_slice(),topic){
+        (_,Some(topic))=>Ok(if asked{Start::Window}else{Start::Solio(topic)}),
+        (["--window"],_)=>Ok(Start::Window),
+        (["--background"],_)=>Ok(Start::Nothing),
+        _=>Err("INVALID_ARGUMENT"),
+    }
+}
+/// Hands this start to SYNK 솔리오's backup room on `topic`'s screen (2.5). False — the window opens instead — when SYNK
+/// 솔리오 is not there, the address could not be opened, or this folder is mid-install (the window code says so, or opens
+/// nothing while an install runs).
+fn to_solio(topic:&str)->bool{
+    let Some(folder)=std::env::current_exe().ok().and_then(|exe|exe.parent().map(Path::to_path_buf)) else{return false};
+    if platform::installing(&folder)||(!folder.join("WorkBackupRun.exe").is_file()&&folder.join("WorkBackupRun.exe.old").is_file()){return false;}
+    host::solio_present()&&host::open_solio(topic).is_ok()
+}
+
 fn run()->Result<(),String>{
     let args:Vec<String>=std::env::args().skip(1).collect();
+    match start_of(&args,cfg!(debug_assertions),std::env::var_os(UPDATE_ASKED).is_some())?{
+        Start::Nothing=>return Ok(()),
+        // The host writes its own lines and ends with its own code; it never shows a dialog.
+        Start::Host{test}=>std::process::exit(host::serve(test)),
+        Start::Solio(topic)=>if to_solio(topic){return Ok(());},
+        Start::Window=>{},
+    }
+    // `--window` opens the window as a start with none of its own arguments did.
+    let args:Vec<String>=args.into_iter().filter(|a|a!="--window").collect();
     if matches!(args.as_slice(),[one] if notify::topic_of(one)==Some("update")){return offer_update();}
     // The test, smoke and 0.5.0 preview switches exist in debug builds only (STAGE1_DESIGN.md 4.2 「알림」);
-    // a release build takes nothing but --background, or one open address.
+    // a release build's window takes nothing but --background, or one open address (start_of).
     #[cfg(debug_assertions)]
     if args.len()==2&&args[0]=="--migration-preview" {
         let source=PathBuf::from(std::env::var_os("APPDATA").ok_or("STATE_ROOT")?).join("SoloWorkBackup");
@@ -355,19 +308,10 @@ fn run()->Result<(),String>{
     let test=args.contains(&"--test-mode".into());let smoke_mode=args.contains(&"--smoke".into());
     if smoke_mode&&!test{return Err("TEST_MODE_REQUIRED".into());}
     let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
-    // An install or uninstall is replacing this folder's files: open nothing and hold none of them (review GA1 · GA3).
-    // The installer opens the app itself once it is done.
-    if exe.parent().is_some_and(platform::installing){return Err("INSTALLING".into());}
-    let resources=if cfg!(debug_assertions){std::env::var_os("SWB_RESOURCES").map(PathBuf::from).unwrap_or(exe.parent().unwrap().join("resources"))}else{exe.parent().unwrap().join("resources")};
-    // An install that stopped part way and never reached its failure callback (the PC went off, the installer
-    // was ended) can leave this window app written and the run executable only moved aside, or files of two
-    // versions: no run starts until the installer runs again. Say that, rather than a bare code.
-    let folder=exe.parent().unwrap();
-    let moved_aside=|name:&str|folder.join(format!("{name}.old")).is_file();
-    if !cfg!(debug_assertions)&&!folder.join("WorkBackupRun.exe").is_file()&&moved_aside("WorkBackupRun.exe"){return Err("INSTALL_INCOMPLETE".into());}
-    if let Err(code)=backup_native::bundle::verify(&resources,&[]){
-        return Err(if !cfg!(debug_assertions)&&(moved_aside("WorkBackupRun.exe")||moved_aside("WorkBackup.exe")){"INSTALL_INCOMPLETE".into()}else{code});
-    }
+    // An install or uninstall replacing this folder's files opens nothing (the installer opens the app itself once it is
+    // done); one that stopped part way is told as such (bundle::start_check, shared with the host).
+    let resources=bundle::resources_dir(&exe);
+    bundle::start_check(&exe,&resources)?;
     // The word is left before the window lock is tried: if a window is already open, state_root wakes it and it takes
     // the word; if this start is the window, it takes its own word back (and clears one a crashed start left).
     if let Some(topic)=topic{if let Ok(dir)=platform::state_dir(test){leave_topic(&dir,topic);}}
@@ -377,7 +321,7 @@ fn run()->Result<(),String>{
     let background=args.contains(&"--background".into());
     // Asked with the window lock held, so a second start meanwhile (another press in SYNK 솔리오) opens no second question.
     // Task Scheduler is asked on a thread of its own: its COM apartment stays off this thread, where the window's is made.
-    let registered=||{let app=exe.clone();std::thread::spawn(move||run_tasks_registered(&app,false)).join().unwrap_or_else(|_|Err("SCHEDULE_THREAD".into()))};
+    let registered=||{let app=exe.clone();std::thread::spawn(move||native::run_tasks_registered(&app,false)).join().unwrap_or_else(|_|Err("SCHEDULE_THREAD".into()))};
     if asks_before_open(test,cfg!(debug_assertions),background,std::env::var_os(UPDATE_ASKED).is_some(),registered){
         let installing=matches!(ask_update(true),Ok(true));
         // A start meanwhile (another press in SYNK 솔리오, a notice) left its word and ended at the held lock, with no
@@ -387,8 +331,8 @@ fn run()->Result<(),String>{
         return if installing{Ok(())}else{open_asked(topic)};
     }
     let signal=Arc::new(platform::InstanceSignal::new(&root)?);
-    let scripted=if test{match std::env::var_os("SOLO_BACKUP_TEST_DIALOGS"){Some(path)=>{let data=fs::read(path).map_err(|_|"TEST_DIALOGS")?;if data.len()>131072{return Err("TEST_DIALOGS".into());}serde_json::from_slice::<VecDeque<Value>>(&data).map_err(|_|"TEST_DIALOGS")?},None=>VecDeque::new()}}else{VecDeque::new()};
-    let native=Arc::new(NativeHost{root:root.clone(),exe,test,packaged:!cfg!(debug_assertions),dialogs:Mutex::new(scripted),dialog_busy:AtomicBool::new(false),engine:Mutex::new(None)});
+    let scripted=native::scripted_dialogs(test)?;
+    let native=Arc::new(NativeHost::window(root.clone(),exe,test,!cfg!(debug_assertions),scripted));
     let current=Arc::new(Mutex::new(Value::Null));
     let app=tauri::Builder::default().invoke_handler(tauri::generate_handler![backup_call]).setup(move|app|{
         let handle=app.handle().clone();let publish_handle=handle.clone();let published=current.clone();
@@ -439,10 +383,18 @@ fn run()->Result<(),String>{
     app.run(|app,event|{if let tauri::RunEvent::ExitRequested{api,code,..}=event{if code.is_none(){api.prevent_exit();shutdown(app.clone());}}});
     Ok(())
 }
-fn main(){
-    if let [mode]=std::env::args().skip(1).collect::<Vec<_>>().as_slice(){
-        if mode=="--update-check"||mode=="--update-check-due"||mode=="--update-install"{std::process::exit(update_mode(mode));}
+/// The update starts of the command line (4.10): `--update-check`, `--update-check-due` or `--update-install` alone, or
+/// `--update-install --quiet` — SYNK 솔리오's 「할 일」 (SOLIO_ONE_CLIENT.md 3.2), the same install with its installer
+/// windowless. The mode and that `quiet`, which update_mode hands to update::install as it is; None for any other start.
+fn update_start(args:&[String])->Option<(&'static str,bool)>{
+    match args{
+        [mode]=>["--update-check","--update-check-due","--update-install"].into_iter().find(|m|*m==mode.as_str()).map(|m|(m,false)),
+        [mode,quiet] if mode=="--update-install"&&quiet=="--quiet"=>Some(("--update-install",true)),
+        _=>None,
     }
+}
+fn main(){
+    if let Some((mode,quiet))=update_start(&std::env::args().skip(1).collect::<Vec<_>>()){std::process::exit(update_mode(mode,quiet));}
     if let Err(code)=run(){
     if (code=="ALREADY_RUNNING"||code=="INSTALLING")&&!std::env::args().any(|a|a=="--test-mode"||a=="--smoke"){return;}
     if code=="INSTALL_INCOMPLETE"{
@@ -457,6 +409,19 @@ fn main(){
 
 #[cfg(test)] mod tests {
     use super::*;
+    #[test] fn an_update_start_reaches_the_installer_with_its_own_arguments(){
+        // GPT workbackup-solio-one-be-20261127 GD4: the command line to the installer's arguments in one line of travel —
+        // update_start's `quiet` is what update_mode hands update::install, which starts the installer with installer_args.
+        let args=|a:&[&str]|a.iter().map(|s|s.to_string()).collect::<Vec<_>>();
+        let installer=|a:&[&str]|update_start(&args(a)).filter(|(mode,_)|*mode=="--update-install").map(|(_,quiet)|update::installer_args(quiet));
+        assert_eq!(installer(&["--update-install","--quiet"]),Some("/S /UPDATE"),"SYNK 솔리오's 「할 일」: windowless");
+        assert_eq!(installer(&["--update-install"]),Some("/P /UPDATE"),"the notice's click: the progress window");
+        assert_eq!(update_start(&args(&["--update-check"])),Some(("--update-check",false)));
+        assert_eq!(update_start(&args(&["--update-check-due"])),Some(("--update-check-due",false)));
+        for other in [&["--update-check","--quiet"][..],&["--quiet","--update-install"],&["--update-install","--Quiet"],&["--update-install","--quiet","x"],&["--update"],&["--window"],&[]]{
+            assert_eq!(update_start(&args(other)),None,"{other:?}");
+        }
+    }
     #[test] fn a_window_start_asks_about_an_update_only_while_no_run_task_checks(){
         let none=||Ok::<bool,String>(false);let there=||Ok::<bool,String>(true);let unknown=||Err::<bool,String>("SCHEDULE_COM:0x1".into());
         assert!(asks_before_open(false,false,false,false,none));
@@ -503,5 +468,33 @@ fn main(){
         let mut opening=Opening::default();
         assert!(!opening.call());
         assert_eq!(opening.arrive("changes"),Some("changes"));
+    }
+    #[test] fn a_release_start_goes_to_solio_and_its_window_is_the_emergency_one(){
+        let args=|list:&[&str]|list.iter().map(|s|s.to_string()).collect::<Vec<_>>();
+        let release=|list:&[&str]|start_of(&args(list),false,false);
+        // SOLIO_ONE_CLIENT.md 2.5: none of its own arguments and a notice's address go to SYNK 솔리오's backup room.
+        assert_eq!(release(&[]),Ok(Start::Solio("status")));
+        for topic in notify::TOPICS{assert_eq!(release(&[&notify::open_url(topic)]),Ok(Start::Solio(topic)),"{topic}");}
+        assert_eq!(release(&["--window"]),Ok(Start::Window));
+        assert_eq!(release(&["--background"]),Ok(Start::Nothing));
+        assert_eq!(release(&["--solio"]),Ok(Start::Host{test:false}));
+        // The start opened after an update question is the window itself, never handed on again.
+        assert_eq!(start_of(&args(&[]),false,true),Ok(Start::Window));
+        assert_eq!(start_of(&args(&[&notify::open_url("restore")]),false,true),Ok(Start::Window));
+        // A release takes nothing else: no test switches, no two at once, no word that is not exactly an open address.
+        for bad in [&["--test-mode"][..],&["--smoke"],&["--solio","--test-mode"],&["--test-mode","--solio"],&["--solio","--window"],&["--window","--background"],
+                    &["--window",&notify::open_url("status")],&["synk-workbackup:open?topic=settings"],&["synk-solio:backup?topic=status"],&["--migration-preview","x"],
+                    &["--update-install","--quiet"],&[""]]{
+            assert_eq!(release(bad),Err("INVALID_ARGUMENT"),"{bad:?}");
+        }
+        // A debug build keeps its window for everything else and takes the host's test mode.
+        let debug=|list:&[&str]|start_of(&args(list),true,false);
+        for window in [&[][..],&["--test-mode"],&["--test-mode","--smoke"],&["--background"],&["--window"],&["--window","--test-mode"],&["--migration-preview","x"],&[&notify::open_url("move")]]{
+            assert_eq!(debug(window),Ok(Start::Window),"{window:?}");
+        }
+        assert_eq!(debug(&["--solio","--test-mode"]),Ok(Start::Host{test:true}));
+        assert_eq!(debug(&["--test-mode","--solio"]),Ok(Start::Host{test:true}));
+        assert_eq!(debug(&["--solio"]),Ok(Start::Host{test:false}));
+        for bad in [&["--solio","--smoke"][..],&["--solio","--test-mode","--smoke"],&["--solio","--solio"]]{assert_eq!(debug(bad),Err("INVALID_ARGUMENT"),"{bad:?}");}
     }
 }

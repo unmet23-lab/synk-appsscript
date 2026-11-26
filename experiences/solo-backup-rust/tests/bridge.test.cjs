@@ -81,3 +81,44 @@ test('bridge, worker and native method contract preserves all existing app actio
   assert.deepEqual([contract.wifiName.mutating,contract.wifiName.dialog,contract.wifiName.allowedReadOnly],[false,false,true]);
   assert.deepEqual([contract.spaceFreeState.mutating,contract.setPressFree.allowedReadOnly,contract.setStartLine.allowedReadOnly],[false,false,false]);
 });
+// SYNK 솔리오's engine screen place (SOLIO_ONE_CLIENT.md 2.2 「다리」): its preload gives window.synkBackupHost — call, onState,
+// onOpen, close — and the bridge makes the same window.backup over it, never touching Tauri.
+function loadInSolio(host,tauri){const context={window:{__TAURI__:tauri,synkBackupHost:host},setTimeout};vm.runInNewContext(fs.readFileSync(path.join(root,'bridge/bridge.js'),'utf8'),context);return context.window.backup;}
+const watchedTauri=()=>{const used=[];return {used,tauri:{core:{invoke:async()=>{used.push('invoke');return {ok:true,value:0};}},event:{listen:async()=>{used.push('listen');return ()=>{};}}}};};
+test('in SYNK 솔리오 every method goes over the host channel with the same envelopes, and Tauri is never used',async()=>{
+  const {used,tauri}=watchedTauri();const calls=[];
+  const api=loadInSolio({call:async(method,args)=>{calls.push([method,Array.from(args)]);return {ok:true,value:method};},onState:async()=>()=>{},onOpen(){},close(){}},tauri);
+  assert.equal(Object.isFrozen(api),true);
+  assert.deepEqual(await api.setAutomatic(false),{ok:true,value:'setAutomatic'});
+  assert.deepEqual(await api.restoreSelected({profile:'local',token:'t',revision:2}),{ok:true,value:'restoreSelected'});
+  assert.deepEqual(calls,[['setAutomatic',[false]],['restoreSelected',[{profile:'local',token:'t',revision:2}]]]);
+  // The same methods as over Tauri: the list is the bridge's own, not the channel's.
+  assert.deepEqual(Object.keys(api).sort(),Object.keys(load({})).sort());
+  const error={ok:false,error:'fixture error',code:'READ_ONLY'};
+  assert.equal(await loadInSolio({call:async()=>error,onState:async()=>()=>{}},tauri).backupNow(),error);
+  for(const response of [null,{},{ok:'true'},{ok:false}]){assert.equal((await loadInSolio({call:async()=>response,onState:async()=>()=>{}},tauri).getState()).ok,false);}
+  const thrown=await loadInSolio({call:async()=>{throw Error('SECRET_DO_NOT_SHOW');},onState:async()=>()=>{}},tauri).getState();
+  assert.equal(thrown.ok,false);assert.ok(!JSON.stringify(thrown).includes('SECRET_DO_NOT_SHOW'));
+  assert.deepEqual(used,[]);
+});
+test('the host channel\'s states come as values, its release goes once, late states stop, and a failed subscription rejects',async()=>{
+  const {used,tauri}=watchedTauri();let push,released=0;const seen=[];
+  const api=loadInSolio({call:async()=>({ok:true}),onState:cb=>{push=cb;return Promise.resolve(()=>{released++;});}},tauri);
+  const off=await api.onState(v=>seen.push(v));
+  push({profiles:{local:{job:null}}});push(2);
+  off();off();push(3);await new Promise(setImmediate);
+  assert.deepEqual(seen,[{profiles:{local:{job:null}}},2]);assert.equal(released,1);
+  for(const onState of [()=>{throw Error('SECRET');},async()=>{throw Error('SECRET');},async()=>'not a function']){
+    let polling=false;
+    try{await loadInSolio({call:async()=>({ok:true}),onState},tauri).onState(()=>{});}catch(e){polling=true;assert.ok(!e.message.includes('SECRET'));}
+    assert.equal(polling,true);
+  }
+  assert.deepEqual(used,[]);
+});
+test('a host channel without call or onState is not taken: the bridge stays on Tauri',async()=>{
+  for(const host of [null,{},{call:async()=>({ok:true,value:'host'})},{onState:async()=>()=>{}},{call:'x',onState:async()=>()=>{}}]){
+    const {used,tauri}=watchedTauri();
+    assert.deepEqual(await loadInSolio(host,tauri).getState(),{ok:true,value:0},JSON.stringify(host));
+    assert.deepEqual(used,['invoke']);
+  }
+});

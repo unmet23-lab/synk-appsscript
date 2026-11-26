@@ -6,7 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { patched, CHANGES, upstream: read } = require('../scripts/nsis-template.cjs');
+const { patched, changes, CHANGES, START_MENU, REMOVE_START_MENU, upstream: read } = require('../scripts/nsis-template.cjs');
 
 const upstream = read();
 // The end must be there too: a missing one would quietly run the block to the end of the file (카본 끝판 D1).
@@ -28,6 +28,7 @@ function properties(out) {
   // Our own assignment at function level (upstream only sets it inside the /P check), before the downgrade check (review GA5).
   const passive = init.search(/\$\{EndIf\}\n\n(?: *;[^\n]*\n)* {2}StrCpy \$PassiveMode 1\n/);
   const success = block(out, 'Function .onInstSuccess', 'FunctionEnd');
+  const install = block(out, 'Section Install', 'SectionEnd');
   return {
     passive: passive > 0 && passive < init.indexOf('!if "${ALLOWDOWNGRADES}" == "false"'),
     programFiles: /\n {2}\$\{EndIf\}\n(?: *;[^\n]*\n)* {2}StrCpy \$INSTDIR "\$PROGRAMFILES64\\\$\{PRODUCTNAME\}"\n/.test(init),
@@ -38,31 +39,53 @@ function properties(out) {
     openApp: /ClearErrors\n {2}\$\{GetOptions\} \$CMDLINE "\/R" \$R0\n {2}\$\{IfNot\} \$\{Silent\}\n {2}\$\{OrIfNot\} \$\{Errors\}\n {4}Exec '"\$INSTDIR\\WorkBackupRun\.exe" --open-app'\n {2}\$\{EndIf\}\n/.test(success)
       && !/nsis_tauri_utils::RunAsUser/.test(success),
     finishPage: /Function RunMainBinary\n(?: *;[^\n]*\n)* {2}Exec '"\$INSTDIR\\WorkBackupRun\.exe" --open-app'\nFunctionEnd/.test(out),
+    // No Start menu shortcut is made, and one that points at this install goes, in any mode (SOLIO_ONE_CLIENT.md 3.4).
+    noStartMenu: !/CreateOrUpdateStartMenuShortcut|CreateShortcut|MUI_STARTMENU_WRITE/.test(install)
+      && /\n {2}!insertmacro IsShortcutTarget "\$SMPROGRAMS\\\$\{PRODUCTNAME\}\.lnk" "\$INSTDIR\\\$\{MAINBINARYNAME\}\.exe"\n {2}Pop \$0\n {2}\$\{If\} \$0 = 1\n {4}!insertmacro UnpinShortcut "\$SMPROGRAMS\\\$\{PRODUCTNAME\}\.lnk"\n {4}Delete "\$SMPROGRAMS\\\$\{PRODUCTNAME\}\.lnk"\n {2}\$\{EndIf\}\n/.test(install),
   };
 }
 
 test('the upstream template is the pinned one and every change applies exactly once', () => {
   const out = patched(upstream);
-  assert.equal(out.split('; SYNK:').length - 1, CHANGES.length);
+  assert.equal(out.split('; SYNK:').length - 1, changes().length);
   assert.throws(() => patched(upstream + '\n'), /upstream NSIS template changed/);
   assert.equal(patched(upstream), out, 'the same input gives the same template');
 });
 
 test('an install shows only progress, lands in Program Files, updates in place and opens the app only as the person at the desktop', () => {
   const out = patched(upstream);
-  assert.deepEqual(properties(out), { passive: true, programFiles: true, inPlace: true, noDesktop: true, openApp: true, finishPage: true });
+  assert.deepEqual(properties(out), { passive: true, programFiles: true, inPlace: true, noDesktop: true, openApp: true, finishPage: true, noStartMenu: REMOVE_START_MENU });
   assert.doesNotMatch(out, /nsis_tauri_utils::RunAsUser/, 'no start that can fall back to the installer token is left');
   // Upstream has none of them, so each property is the change's own doing.
-  assert.deepEqual(properties(upstream), { passive: false, programFiles: false, inPlace: false, noDesktop: false, openApp: false, finishPage: false });
+  assert.deepEqual(properties(upstream), { passive: false, programFiles: false, inPlace: false, noDesktop: false, openApp: false, finishPage: false, noStartMenu: false });
 });
 
 test('taking out any one change fails a property', () => {
-  const names = { 0: 'passive', 1: 'programFiles', 2: 'inPlace', 3: 'noDesktop', 4: 'openApp', 5: 'finishPage' };
-  CHANGES.forEach((change, index) => {
+  const names = { 0: 'passive', 1: 'programFiles', 2: 'inPlace', 3: 'noDesktop', 4: 'openApp', 5: 'finishPage', 6: 'noStartMenu' };
+  const all = changes(true);
+  assert.equal(all.length, 7);
+  all.forEach((change, index) => {
     let out = upstream;
-    CHANGES.forEach((other, at) => { if (at !== index) out = out.replace(other.find, () => other.replace); });
+    all.forEach((other, at) => { if (at !== index) out = out.replace(other.find, () => other.replace); });
     assert.equal(properties(out)[names[index]], false, change.why);
   });
+});
+
+test('the Start menu change is one switch, off by default: off, the installer makes the shortcut as before', () => {
+  assert.equal(REMOVE_START_MENU, false, 'off until the notification test T-한몸1 passes on Windows 10 22H2 and 11 (SOLIO_ONE_CLIENT.md 2.7 · F8)');
+  assert.deepEqual(changes(true), [...CHANGES, START_MENU]);
+  assert.deepEqual(changes(false), CHANGES);
+  const off = patched(upstream, false), on = patched(upstream, true);
+  assert.equal(off.split('; SYNK:').length - 1, CHANGES.length);
+  assert.match(block(off, 'Section Install', 'SectionEnd'), /Call CreateOrUpdateStartMenuShortcut/);
+  assert.equal(properties(off).noStartMenu, false);
+  assert.equal(properties(on).noStartMenu, true);
+  // Only the shortcut: every other change is the same either way.
+  const { noStartMenu: _a, ...restOff } = properties(off), { noStartMenu: _b, ...restOn } = properties(on);
+  assert.deepEqual(restOff, restOn);
+  assert.equal(patched(upstream), off, 'the default is off');
+  // The uninstaller's own clean-up of a shortcut is untouched either way.
+  assert.match(block(on, 'Section Uninstall', 'SectionEnd'), /Delete "\$SMPROGRAMS\\\$\{PRODUCTNAME\}\.lnk"/);
 });
 
 // Every part there, first occurrences in this order — and each exactly once, so a step that comes again
@@ -81,6 +104,11 @@ test('the hooks keep runs from starting, never overwrite a mapped executable, as
   // The helper is asked for after the machine setup and never stops the install: its exit is only written down (4.2 「도우미」).
   assert.match(macro('NSIS_HOOK_POSTINSTALL'), /ExecWait '"\$INSTDIR\\WorkBackupRun\.exe" --register-helper' \$0\n\s*\$\{If\} \$0 <> 0\n\s*DetailPrint "SYNK: --register-helper exit \$0"\n\s*\$\{EndIf\}\n/);
   assert.doesNotMatch(hooks, /ProgramData|\$APPDATA\\\.\.\\SynkWorkBackup|CreateDirectory[^\n]*SynkWorkBackup/i, 'the installer never makes the helper\'s data folder');
+  // Kept out of the installed apps list on every install, in the 64-bit machine key the template writes, the view put back
+  // after (SOLIO_ONE_CLIENT.md 3.4).
+  assert.ok(inOrder(macro('NSIS_HOOK_POSTINSTALL'), ['SetRegView 64\n', 'WriteRegDWORD HKLM "${UNINSTKEY}" "SystemComponent" 1\n', 'SetRegView lastused\n', 'ExecWait \'"$INSTDIR\\WorkBackupRun.exe" --install\' $0']));
+  assert.match(fs.readFileSync(path.join(__dirname, '../src-tauri/nsis/upstream-installer.nsi'), 'utf8'), /!define UNINSTKEY "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\$\{PRODUCTNAME\}"/);
+  assert.doesNotMatch(hooks, /SystemComponent" 0|DeleteRegValue[^\n]*SystemComponent/);
   assert.ok(inOrder(macro('NSIS_HOOK_POSTINSTALL'), ['ExecWait \'"$INSTDIR\\WorkBackupRun.exe" --install\' $0', 'ExecWait \'"$INSTDIR\\WorkBackupRun.exe" --register-helper\' $0','Delete /REBOOTOK "$INSTDIR\\WorkBackupRun.exe.old"',
     'Delete /REBOOTOK "$INSTDIR\\${MAINBINARYNAME}.exe.old"', 'Delete "$INSTDIR\\.installing"']));
   // A stopped install puts the moved executables back, drops a moved copy whose new file was written, and lets runs start again (re-review GA1 · GA3).

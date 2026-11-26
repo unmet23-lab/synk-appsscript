@@ -3310,6 +3310,7 @@ dependencies = [
  "aes-gcm",
  "base64 0.22.1",
  "fs2",
+ "raw-window-handle",
  "rfd",
  "serde",
  "serde_json",

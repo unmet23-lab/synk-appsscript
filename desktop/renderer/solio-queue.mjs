@@ -9,6 +9,7 @@ import { officeSessions, countWord } from './office-model.mjs';
 import { SOLIO_TODAY_NAMES, whenWords, josa } from './solio-today.mjs';
 import { nameOf } from './subscriptions-model.mjs';
 import { classifyCodexTask } from './office-task-room.mjs';
+import { solioBackupView } from './solio-backup-model.mjs';
 
 const HOUR = 3600e3, DAY = 24 * HOUR;
 /* 「나중에」로 미룬 일이 다시 줄에 서기까지 */
@@ -216,19 +217,34 @@ function subsItems(snapshot, now) {
 
 /* 원클릭 장면(solioBackupView)에서. 엔진이 스스로 하는 일(지키는 중 · 첫 백업 준비 · 설치 진행)은 넣지 않는다.
    관리자 확인을 기다리는 설치는 사람이 「예」를 눌러야 이어지므로 ②다 */
-const BACKUP_TODO = new Set(['시작 전', '엔진 없음', '확인 필요', '멈춤', '꺼짐', '업데이트 필요']);
+const BACKUP_TODO = new Set(['시작 전', '백업 부품 없음', '확인 필요', '멈춤', '꺼짐', '업데이트 필요']);
+/* 백업 부품 업데이트 카드의 열쇠. 알림 낱말 update로 솔리오가 열리면 이 카드를 연다(SOLIO_ONE_CLIENT.md 3.2) */
+export const BACKUP_UPDATE_KEY = 'backup:update';
 function backupItems(scene, raw, now) {
   if (!scene || scene.visible !== true) return [];
+  // 방 안 화면(doorScene)은 길과 호스트 상태뿐이다. 할 일과 「AI가 처리 중」은 방 밖의 상태 장면으로 센다.
+  // 화면을 연 채 다른 방으로 가도, 여는 동안에도 할 일이 그대로 남는다(카본 workbackup-solio-one-ui-20261127 A1)
+  if (scene.door && raw?.room?.open === true) scene = solioBackupView({ ...raw, room: null }, now);
   const where = '원클릭', phase = raw?.install?.phase;
-  // 원클릭 방의 「보호 시작」 · 「엔진 창에서 …」만 카드에 옮긴다. 둘 다 엔진 창을 열고, 그 창에서 끝나면 줄에서 빠진다
+  // 원클릭 방의 「보호 시작」 · 그 화면을 여는 단추만 카드에 옮긴다. 그 화면에서 끝나면 줄에서 빠진다
   const toAct = a => ({ id: a.act + ':' + (a.arg || ''), label: a.label, kind: 'open', run: { backup: [a.act, a.arg || ''] } });
   const acts = (scene.acts || []).filter(a => a && !a.disabled && ['backup-start', 'backup-open'].includes(a.act));
-  if (phase === 'admin') return [{ key: 'backup:admin', src: 'backup', where, waiting: true, since: null, say: scene.say, then: scene.then, acts: [], wait: '「예」를 누르면 여기서 다음 일로 넘어갑니다.' }];
-  if (phase === 'error' && acts.length) return [{ key: 'backup:install-error', src: 'backup', where, since: null, say: scene.say, then: scene.then, acts: acts.slice(0, 2).map(toAct), wait: '엔진 창에서 이어서 하면 여기서 다음 일로 넘어갑니다.' }];
-  if (scene.busy) return [{ key: 'backup:busy', ai: true, src: 'backup', who: '백업 엔진', install: !!phase && !['idle', 'opened', 'done', 'error'].includes(phase) }];
-  if (!BACKUP_TODO.has(scene.note) || !acts.length) return [];
+  const out = [];
+  // 백업 부품 새 판(3.2): 「백업 부품 새 판 <판> — Windows 확인 한 번」 한 장. 올리는 중이면 카드를 두지 않는다
+  const update = raw?.update;
+  if (update && typeof update.available === 'string' && !['running', 'installing'].includes(update.phase)) {
+    const failed = update.phase === 'error';
+    out.push({ key: BACKUP_UPDATE_KEY, src: 'backup', where, since: null, say: `백업 부품 새 판 ${update.available} — Windows 확인 한 번`,
+      then: failed ? (update.code === 'RUN_ACTIVE' ? '백업이 끝난 뒤 다시 눌러 주세요.' : update.code === 'UPDATE_START' ? '관리자 확인을 받지 못했습니다. 관리자 계정이 아니면 관리자에게 부탁해 주세요.' : '백업 부품을 올리지 못했습니다. 잠시 뒤 다시 눌러 주세요.')
+        : '누르면 백업 부품을 새 판으로 올립니다. 매시간 백업은 끝나는 대로 그대로 이어집니다.',
+      acts: [{ id: 'backup-update:', label: '업데이트', kind: 'open', run: { backup: ['backup-update', ''] } }], wait: 'Windows가 물으면 「예」를 눌러 주세요. 다 올라가면 여기서 다음 일로 넘어갑니다.' });
+  }
+  if (phase === 'admin') return [...out, { key: 'backup:admin', src: 'backup', where, waiting: true, since: null, say: scene.say, then: scene.then, acts: [], wait: '「예」를 누르면 여기서 다음 일로 넘어갑니다.' }];
+  if (phase === 'error' && acts.length) return [...out, { key: 'backup:install-error', src: 'backup', where, since: null, say: scene.say, then: scene.then, acts: acts.slice(0, 2).map(toAct), wait: '이어서 하면 여기서 다음 일로 넘어갑니다.' }];
+  if (scene.busy || ['running', 'installing'].includes(update?.phase)) return [...out, { key: 'backup:busy', ai: true, src: 'backup', who: '원클릭', install: (!!phase && !['idle', 'opened', 'done', 'error'].includes(phase)) || ['running', 'installing'].includes(update?.phase), stage: typeof raw?.status?.job?.stage === 'string' ? raw.status.job.stage : null }];
+  if (!BACKUP_TODO.has(scene.note) || !acts.length) return out;
   const since = timeOf(raw?.status?.writtenAt);
-  return [{ key: 'backup:' + scene.note, src: 'backup', where, since, say: scene.say, then: scene.then, acts: acts.slice(0, 2).map(toAct), wait: '엔진 창에서 마치면 여기서 다음 일로 넘어갑니다.' }];
+  return [...out, { key: 'backup:' + scene.note, src: 'backup', where, since, say: scene.say, then: scene.then, acts: acts.slice(0, 2).map(toAct), wait: '그 화면에서 마치면 여기서 다음 일로 넘어갑니다.' }];
 }
 
 /* 세 방의 할 일을 한 목록으로 */
@@ -236,10 +252,12 @@ export function solioTodoItems({ subs = null, office = null, backup = null, back
   return [...officeItems(office, now), ...subsItems(subs, now), ...backupItems(backup, backupRaw, now)];
 }
 
+/* 원클릭이 하는 일(상태 파일 job.stage). 되살리기 · 옮겨 오기를 「백업」이라고 하지 않는다(Fable workbackup-solio-one-ui-20261127 F5) */
+const ENGINE_DOING = Object.freeze({ backup: '백업하고 있습니다', check: '백업을 점검하고 있습니다', proof: '되살리기를 확인하고 있습니다', restore: '파일을 되살리고 있습니다', move: '옮겨 오고 있습니다', setup: '처음 설정을 하고 있습니다', free: '공간을 비우고 있습니다', other: '일하고 있습니다' });
 /* 「AI가 처리 중」 한 문장. AI 직원(맡긴 일 · 일하는 세션)과 백업 엔진을 따로 센다 */
 export function solioTodoAiSay(ai = []) {
   const staff = ai.filter(a => a.src === 'office').length, engine = ai.find(a => a.src === 'backup');
-  const parts = [staff ? `AI 직원 ${ga(countWord(staff))} 일하고 있습니다.` : '', engine ? (engine.install ? '백업 엔진이 설치를 이어 가고 있습니다.' : '백업 엔진이 일하고 있습니다.') : ''].filter(Boolean);
+  const parts = [staff ? `AI 직원 ${ga(countWord(staff))} 일하고 있습니다.` : '', engine ? (engine.install ? '백업 부품을 깔고 있습니다.' : `원클릭이 ${ENGINE_DOING[engine.stage] || (engine.stage ? ENGINE_DOING.other : ENGINE_DOING.backup)}.`) : ''].filter(Boolean);
   return parts.join(' ');
 }
 

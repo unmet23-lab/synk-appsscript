@@ -703,11 +703,11 @@ if(!process.versions.electron){
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({view:'no-engine',engine:{installed:false,version:null},status:null,install:{phase:'admin',progress:100,code:null,mode:'protect'}}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(2600);
           const r2=await room(w);
-          check('21 while the administrator prompt is up the room says what to press and offers no button',/관리자 확인/.test(r2.say)&&r2.acts.length===0,r2);
+          check('21 while the administrator prompt is up the room says what Windows will ask and what to press, and offers no button',/Windows가 한 번 묻습니다/.test(r2.say)&&r2.then==='Windows가 「SYNK 업무 백업」을 바꿔도 되는지 물으면 「예」를 눌러 주세요.'&&r2.acts.length===0,r2);
           await capture(w,'backup-admin');
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({}))+')');await wait(2600);
           const r3=await room(w);
-          check('21 a safe status names the folders and the last check, leads with the 원클릭 button and keeps the engine buttons quiet',/업무 폴더 4개를 지키고 있습니다/.test(r3.say)&&/마지막 확인/.test(r3.then)&&r3.acts[0]==='백업하고 상태 보기|backup-oneclick||'&&r3.acts.slice(1).map(a=>a.split('|')[2]).join()==='restore,move,status'&&r3.rows===0,r3);
+          check('21 a safe status names the folders and the last check, leads with the 원클릭 button and keeps 파일 되살리기 · 새 PC로 옮겨 오기 · 설정 quiet',/업무 폴더 4개를 지키고 있습니다/.test(r3.say)&&/마지막 확인/.test(r3.then)&&r3.acts[0]==='백업하고 상태 보기|backup-oneclick||'&&r3.acts.slice(1).map(a=>a.split('|')[0]+':'+a.split('|')[2]).join()==='파일 되살리기:restore,새 PC로 옮겨 오기:move,설정:settings'&&r3.rows===0,r3);
           const b3=await board(w);
           check('21 the 원클릭 board shows the drive, four lines read from the engine and three groups without the helper',!b3.hidden&&b3.free==='118.2'&&/9일 뒤/.test(b3.pred)&&b3.steps.map(x=>x.split('|')[0]).join()==='backup,proof,space,update'&&/23\.4GB를 찾았습니다/.test(b3.steps[2])&&b3.groups.join()==='auto,suggest,view'&&!b3.helper&&!b3.folded&&!b3.overflow,b3);
           await captureSizes(w,'oneclick-ready');
@@ -746,7 +746,7 @@ if(!process.versions.electron){
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({oneclick:OC(300000,'answered',{result:'rested',reason:'battery',answeredAt:new Date(Date.now()-60000).toISOString()})}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
           const r8=await room(w);
-          check('21 a rested answer says why in words and leads with the engine window right after the big button',/배터리/.test(r8.say)&&/지금 백업/.test(r8.then)&&r8.acts[1]==='엔진 창 열기|backup-open|status|',r8);
+          check('21 a rested answer says why in words and leads with 백업 상태 보기 right after the big button',/배터리/.test(r8.say)&&/지금 백업/.test(r8.then)&&r8.acts[1]==='백업 상태 보기|backup-open|status|',r8);
           await capture(w,'oneclick-rested');
           // 카본 A7: 정한 선이 막대 앞쪽에 있으면 「0」 글자를 빼고, 정한 선 글자는 막대 안쪽에 머문다
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({space:{...space,drive:{...space.drive,free:Math.round(900*GBy),startLineGb:50,daysToStartLine:null}}}))+')');
@@ -770,10 +770,10 @@ if(!process.versions.electron){
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...two('off'),lastBackupAt:new Date(Date.now()-60000).toISOString()},oneclick:OC(300000,'answered',{...doneAt,free:FREE({numbers:{preview:true,freed:Math.round(9.6*GBy),items:5,kept:3,busy:1}})})}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
           const f3=await room(w),fb3=await board(w);
-          check('21 2판: before consent a press counts what it would free and points to the engine window (topic space); nothing says freed',/백업을 마쳤습니다/.test(f3.say)&&/누를 때 비우기/.test(f3.then)&&f3.acts[1]==='엔진 창에서 켜기|backup-open|space|'&&!/비웠습니다/.test(JSON.stringify(f3)+JSON.stringify(fb3)),{f3,fb3});
+          check('21 2판: before consent a press counts what it would free and points to the space screen (topic space); nothing says freed',/백업을 마쳤습니다/.test(f3.say)&&/누를 때 비우기/.test(f3.then)&&f3.acts[1]==='공간 화면 열기|backup-open|space|'&&!/비웠습니다/.test(JSON.stringify(f3)+JSON.stringify(fb3)),{f3,fb3});
           await captureSizes(w,'oneclick-free-preview');
           await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-open"]');await wait(300);
-          check('21 2판: 엔진 창에서 켜기 opens the engine with the topic word space only',(await calls(w)).includes('backup-open:space'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          check('21 2판: 공간 화면 열기 asks the main process with the topic word space only',(await calls(w)).includes('backup-open:space'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...two('on'),lastBackupAt:new Date(Date.now()-60000).toISOString()},oneclick:OC(300000,'answered',{...doneAt,free:FREE({numbers:{preview:false,freed:Math.round(7.2*GBy),items:4,kept:1,busy:1}})})}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
           const f4=await room(w),fb4=await board(w);
@@ -815,14 +815,14 @@ if(!process.versions.electron){
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({space:{missing:true,invalid:false,pc:pcDrives}}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
           const drp=await drv(w),dbp=await board(w),atp=await w.js("[...document.querySelectorAll('#portal-entry [data-room=solio-backup] [data-bak-board] .d-pace')].map(x=>x.textContent).join(' | ')");
-          check('21 drives: before the engine measures, the PC app drives fill the card with no line and no prediction',/^C: 드라이브 953GB/.test(drp.lab)&&drp.rows.length===1&&/^D:/.test(drp.rows[0])&&/엔진이 첫 공간 훑기를 마치면/.test(dbp.pred)&&/G: 드라이브는 Google Drive 같은 가상 드라이브로 보여 뺐습니다/.test(atp)&&!dbp.overflow,{drp,pred:dbp.pred,atp});
+          check('21 drives: before the engine measures, the PC app drives fill the card with no line and no prediction',/^C: 드라이브 953GB/.test(drp.lab)&&drp.rows.length===1&&/^D:/.test(drp.rows[0])&&/^첫 공간 훑기를 마치면/.test(dbp.pred)&&/G: 드라이브는 Google Drive 같은 가상 드라이브로 보여 뺐습니다/.test(atp)&&!dbp.overflow,{drp,pred:dbp.pred,atp});
           await capture(w,'oneclick-drives-from-pc');
           await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,state:'attention',attention:['signin']}}))+')');
           await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
           const r4=await room(w);
-          check('21 an attention topic leads with its own engine screen right after the 원클릭 button',/Google 로그인/.test(r4.say)&&r4.acts[1]==='엔진 창에서 확인|backup-open|signin|',r4);
+          check('21 an attention topic leads with its own screen right after the 원클릭 button',/Google 계정/.test(r4.say)&&r4.acts[1]==='Google 계정 확인|backup-open|signin|',r4);
           await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-open"]');await wait(300);
-          check('21 the button opens the engine with the topic word only',(await calls(w)).includes('backup-open:signin'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          check('21 the button asks the main process with the topic word only',(await calls(w)).includes('backup-open:signin'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
           await capture(w,'backup-attention');
           w.win.destroy();
           const v=await open();await boot(v,{subs:subsReady,visits:{ok:true,available:true,summary:visitSummary()}},{restore:signedIn('none')});
@@ -830,6 +830,85 @@ if(!process.versions.electron){
           const o2=await objs(v);
           check('21 an account without the real entry has no backup object',!o2.includes('backup')&&o2.includes('visits'),{objs:o2});
           v.win.destroy();
+        }
+        // 21h. 업무 백업 한 몸(11-26, experiences/solo-backup-rust/SOLIO_ONE_CLIENT.md 2.2 · 4장 1, 시안 가). 호스트가 있는 판(0.8.0)의 원클릭 방:
+        //     조용한 단추 셋(파일 되살리기 · 새 PC로 옮겨 오기 · 설정), 누르면 띠 아래 「← 원클릭 › 이름」 길이 서고 그 아래에 본체가 백업 화면을 붙인다(대역은 밝은 덮개).
+        //     여는 중 · 마무리 중(%) · 멈춤(다시 열기) · 화면 파일이 맞지 않음(따로 열기), 「← 원클릭」으로 판에 돌아옴, 판 맨 아래 새 판 한 줄, 로그아웃 때 「백업 창 따로 열기」
+        if(only('21h')&&mode==='main'){
+          const before=new Date(now-10*60000).toISOString(),later=new Date(now+50*60000).toISOString(),GBy=1024**3;
+          const status={engine:'0.8.0',state:'safe',lastBackupAt:before,proof:{at:new Date(now-3*D).toISOString(),result:'passed'},attention:[],job:null,folders:4,bytes:53687091200,writer:true,nextRunAt:later,writtenAt:before};
+          const space={createdAt:new Date(now-8*3600e3).toISOString(),lapFinishedAt:new Date(now-D).toISOString(),scanningDays:null,drive:{letter:'C',size:Math.round(953*GBy),free:Math.round(118.2*GBy),growthPerDay:Math.round(2.1*GBy),startLineGb:100,daysToStartLine:9},otherDrives:1,
+            groups:[{grade:'auto',group:'temp',bytes:Math.round(12.1*GBy),count:1},{grade:'suggest',group:'worktree',bytes:Math.round(7*GBy),count:2},{grade:'view',group:'ai-history',bytes:Math.round(47.4*GBy),count:1}]};
+          const host=patch=>({ok:true,available:true,view:'status',now:new Date().toISOString(),engine:{installed:true,version:'0.8.0',host:true},status,feed:{state:'current',version:'0.8.0'},install:{phase:'idle',progress:0,code:null,mode:null},oneclick:null,space,app:{state:'current',current:'0.5.8',latest:'0.5.8'},room:null,update:null,...patch});
+          const door=r=>({open:true,topic:'restore',host:'ready',code:null,ui:'ok',ready:true,...r});
+          const show=async(w,snap)=>{await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap)+')');await w.js('window.__orbFixture.backupChanged()');await wait(900);};
+          const look=w=>w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio-backup]');const p=r.querySelector('[data-bak-door]');const f=r.querySelector('[data-bak-foot]');const c=document.getElementById('qa-backup-view');const band=document.querySelector('#portal-entry .orb-stage')?.getBoundingClientRect();return {hidden:r.hidden,inDoor:r.classList.contains('bak-in-door'),path:p.hidden?null:p.textContent.replace(/\\s+/g,' ').trim(),pathTop:Math.round(p.getBoundingClientRect().top),pathBottom:Math.round(p.getBoundingClientRect().bottom),say:r.querySelector('[data-bak-say]').textContent,then:r.querySelector('[data-bak-then]').textContent,acts:[...r.querySelectorAll('[data-bak-acts] button')].map(b=>b.textContent+'|'+b.dataset.orbAct+'|'+(b.dataset.orbArg||'')),foot:f.hidden?null:f.querySelector('[data-bak-foot-say]').textContent,footGo:f.hidden||f.querySelector('[data-bak-foot-go]').hidden?null:f.querySelector('[data-bak-foot-go]').textContent,cover:c?Math.round(c.getBoundingClientRect().top):null,engineWord:/엔진/.test(r.innerText)};})()");
+          const placed=async w=>(await w.js('window.__orbFixture.backupPlaced()')).at(-1)||null;
+          const w=await open();await boot(w,{subs:subsReady,backup:host({})},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
+          const h1=await look(w);
+          check('21h a host engine room keeps 파일 되살리기 · 새 PC로 옮겨 오기 · 설정 quiet after the 원클릭 button and says no 엔진',!h1.hidden&&h1.acts[0]==='백업하고 상태 보기|backup-oneclick|'&&h1.acts.slice(1).join()==='파일 되살리기|backup-open|restore,새 PC로 옮겨 오기|backup-open|move,설정|backup-open|settings'&&!h1.engineWord&&h1.path===null&&h1.cover===null,h1);
+          await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-open"][data-orb-arg="restore"]');await wait(500);
+          check('21h 파일 되살리기 asks the main process with the word restore',(await calls(w)).includes('backup-open:restore'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          await show(w,host({room:door({ready:false,host:'starting',ui:null})}));
+          const h2=await look(w);
+          check('21h while the screen starts the path 「← 원클릭 › 파일 되살리기」 stands under the band and the room says it is opening, with no view yet',h2.inDoor&&h2.path==='← 원클릭›파일 되살리기'&&h2.say==='백업 화면을 여는 중입니다.'&&h2.acts.length===0&&h2.cover===null,h2);
+          await capture(w,'backup-door-starting');
+          await show(w,host({room:door({})}));
+          const h3=await look(w),p3=await placed(w);
+          check('21h a ready screen is placed right under the path (top within the 160 px the main process accepts) and covers the room below it',h3.path==='← 원클릭›파일 되살리기'&&p3?.shown===true&&p3.top>h3.pathBottom&&p3.top<=160&&h3.cover===p3.top&&h3.say==='',{h3,p3});
+          const sent=(await w.js('window.__orbFixture.backupPlaced()')).length-1;
+          await captureSizes(w,'backup-door-ready');
+          const narrow=(await w.js('window.__orbFixture.backupPlaced()')).slice(sent);
+          check('21h at every window size the screen top stays between the path and 160 px',narrow.length>0&&narrow.every(p=>p.shown&&p.top>60&&p.top<=160),{tops:[...new Set(narrow.map(p=>p.top))]});
+          await show(w,host({status:{...status,job:{stage:'backup',percent:42}},room:door({ready:false,host:'busy',ui:null})}));
+          const h4=await look(w);
+          check('21h while the backup part finishes other work the room names the job and its percent and offers no button',h4.path==='← 원클릭›파일 되살리기'&&h4.say==='하던 백업을 마무리하는 중입니다(42%).'&&/저절로 엽니다/.test(h4.then)&&h4.acts.length===0&&h4.cover===null,h4);
+          await capture(w,'backup-door-busy');
+          await show(w,host({room:door({ready:false,host:'failed',code:'HOST_EXITED',ui:null})}));
+          const h5=await look(w);
+          check('21h a stopped screen says so, keeps hourly backup in words and offers 다시 열기 with the same word',h5.say==='백업 화면이 멈췄습니다.'&&/매시간 백업은 따로/.test(h5.then)&&h5.acts.join()==='다시 열기|backup-open|restore'&&h5.cover===null,h5);
+          await capture(w,'backup-door-stopped');
+          await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-open"][data-orb-arg="restore"]');await wait(400);
+          check('21h 다시 열기 asks the main process with the same word again',(await calls(w)).filter(c=>c==='backup-open:restore').length>=2,{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          await show(w,host({room:door({ready:false,host:'ready',ui:'invalid'})}));
+          const h6=await look(w);
+          check('21h screen files that do not match offer 백업 창 따로 열기 first and 다시 열기 second',h6.acts.join()==='백업 창 따로 열기|backup-window|,다시 열기|backup-open|restore'&&!h6.engineWord,h6);
+          await capture(w,'backup-door-files');
+          await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-window"]');await wait(400);
+          check('21h 백업 창 따로 열기 asks the main process for the separate window',(await calls(w)).includes('backup-window'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          await show(w,host({room:door({})}));
+          await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-view-close"]');await wait(400);
+          check('21h 「← 원클릭」 asks the main process to close the screen',(await calls(w)).includes('backup-close-view'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          await show(w,host({update:{available:'0.8.1',current:'0.8.0',phase:'idle',code:null}}));
+          const h7=await look(w);
+          check('21h back on the 원클릭 board: no path, no view, and the last line offers the new backup part with one Windows check',!h7.inDoor&&h7.path===null&&h7.cover===null&&h7.foot==='백업 부품 새 판 0.8.1 — Windows 확인 한 번'&&h7.footGo==='업데이트',h7);
+          await w.js("document.querySelector('#portal-entry [data-room=solio-backup] [data-bak-foot]').scrollIntoView({block:'center'})");await wait(300);
+          await captureSizes(w,'backup-update-line');
+          await w.js("document.querySelector('#portal-entry [data-room=solio-backup]').scrollTop=0");
+          await click(w,'#portal-entry [data-room=solio-backup] [data-bak-foot-go]');await wait(400);
+          check('21h 업데이트 asks the main process to update the backup part',(await calls(w)).includes('backup-update'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          await show(w,host({update:{available:'0.8.1',current:'0.8.0',phase:'error',code:'RUN_ACTIVE'}}));
+          const h8=await look(w);
+          check('21h an update asked while a backup runs says to press again after it',h8.foot==='백업이 끝난 뒤 다시 눌러 주세요.'&&h8.footGo==='업데이트',h8);
+          await show(w,host({engine:{installed:true,version:'0.7.5',host:false},update:{available:'0.8.1',current:'0.7.5',phase:'idle',code:null}}));
+          const h9=await look(w);
+          check('21h an old backup part says the new one does everything in this room and offers 업데이트',h9.foot==='백업 부품을 새 판으로 올리면 이 방에서 모두 할 수 있습니다.'&&h9.footGo==='업데이트'&&!h9.engineWord,h9);
+          await w.js("document.querySelector('#portal-entry [data-room=solio-backup] [data-bak-foot]').scrollIntoView({block:'center'})");await wait(300);
+          await capture(w,'backup-update-old');
+          w.win.destroy();
+          // 로그아웃: synk-solio 낱말이 오면 로그인 화면 아래에 한 줄, 누르면 본체가 따로 창을 연다
+          const g=await open();await boot(g,{subs:subsReady,backup:host({})},{restore:signedOut});
+          await until(g,s=>s.phase==='auth'&&s.ui==='ask',{timeout:12000});await wait(900);
+          await g.js("window.__orbFixture.desktopAction({type:'open-backup',topic:'restore'})");await wait(700);
+          const a1=await g.js("(()=>{const p=document.querySelector('#portal-entry [data-bak-alone]');return {shown:!!p&&!p.hidden&&p.getBoundingClientRect().height>0,text:p?p.textContent.replace(/\\s+/g,' ').trim():''};})()");
+          check('21h signed out, a synk-solio word shows 「백업 창 따로 열기」 under the sign-in',a1.shown&&a1.text==='업무 백업은 로그인하지 않아도 따로 열 수 있습니다.백업 창 따로 열기',a1);
+          await captureSizes(g,'backup-alone-signed-out');
+          await click(g,'#portal-entry [data-bak-alone] [data-orb-act="backup-alone"]');await wait(500);
+          const a2=await g.js("(()=>{const p=document.querySelector('#portal-entry [data-bak-alone]');return {shown:!!p&&!p.hidden};})()");
+          check('21h pressing it asks the main process for the separate window and the line goes away',(await calls(g)).includes('backup-window')&&!a2.shown,{a2,calls:(await calls(g)).filter(c=>c.startsWith('backup'))});
+          g.win.destroy();
         }
         // 「이 PC에 맞춘 것」 판(PC 진단 설계 5.2): 설정 방의 「이 PC」 줄에서 열고, 갈래 여덟 줄, C:가 빠듯할 때의 권함과 Windows 설정 열기,
         // 다시 진단, Esc는 설정 방의 그 단추로 돌아온다. 좁은 창에서도 넘치지 않는다

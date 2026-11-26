@@ -31,9 +31,9 @@ const CHANGES = [
       '  ; every user\'s scheduled runs (STAGE1_DESIGN.md 4.2). Downgrades stop in .onInit (allowDowngrades false).\n  Goto reinst_done\n',
   },
   {
-    why: 'Start menu only (it carries the notification identity); no desktop shortcut',
+    why: 'no desktop shortcut',
     find: '  ; Create desktop shortcut for silent and passive installers\n  ; because finish page will be skipped\n  ${If} $PassiveMode = 1\n  ${OrIf} ${Silent}\n    Call CreateOrUpdateDesktopShortcut\n  ${EndIf}\n',
-    replace: '  ; SYNK: the Start menu shortcut only (it carries the notification identity) — no desktop shortcut\n',
+    replace: '  ; SYNK: no desktop shortcut (SYNK 솔리오 is the app people open, SOLIO_ONE_CLIENT.md 3.4)\n',
   },
   {
     why: 'the app opens at the end as the signed-in user at normal privilege, never with the installer\'s administrator token; a silent install opens it only with /R',
@@ -50,11 +50,27 @@ const CHANGES = [
   },
 ];
 
-function patched(text) {
+// No Start menu shortcut, and the one an earlier version made goes (SOLIO_ONE_CLIENT.md 3.4): SYNK 솔리오 is the one app
+// people see. The notices' name no longer rides on that shortcut — every run writes this account's AppUserModelId key
+// (2.7 나, notify.rs register_name). Off (false) until the notification test T-한몸1 shows on Windows 10 22H2 and 11 that the
+// notices arrive under that name without the shortcut (SOLIO_ONE_CLIENT.md 2.7 · F8, GPT workbackup-solio-one-be-20261127
+// GB2 · GD2): till then the installer makes the shortcut as before, and test-support/installer-check.ps1 follows this switch.
+const REMOVE_START_MENU = false;
+const START_MENU = {
+  why: 'no Start menu shortcut, and an earlier version\'s goes — in every install, an update (/UPDATE) included',
+  find: '  ; Create start menu shortcut\n  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application\n    Call CreateOrUpdateStartMenuShortcut\n  !insertmacro MUI_STARTMENU_WRITE_END\n',
+  replace: '  ; SYNK: no Start menu shortcut, and the one an earlier version made goes (SOLIO_ONE_CLIENT.md 3.4)\n' +
+    '  !insertmacro IsShortcutTarget "$SMPROGRAMS\\${PRODUCTNAME}.lnk" "$INSTDIR\\${MAINBINARYNAME}.exe"\n  Pop $0\n  ${If} $0 = 1\n' +
+    '    !insertmacro UnpinShortcut "$SMPROGRAMS\\${PRODUCTNAME}.lnk"\n    Delete "$SMPROGRAMS\\${PRODUCTNAME}.lnk"\n  ${EndIf}\n',
+};
+/** The changes applied: the fixed ones, and the Start menu one while REMOVE_START_MENU is on. */
+const changes = (removeStartMenu = REMOVE_START_MENU) => (removeStartMenu ? [...CHANGES, START_MENU] : CHANGES);
+
+function patched(text, removeStartMenu = REMOVE_START_MENU) {
   const sha = crypto.createHash('sha256').update(text).digest('hex');
   if (sha !== UPSTREAM_SHA256) throw Error(`upstream NSIS template changed (${sha}); check every change again`);
   let out = text;
-  for (const change of CHANGES) {
+  for (const change of changes(removeStartMenu)) {
     const count = out.split(change.find).length - 1;
     if (count !== 1) throw Error(`template change matched ${count} times: ${change.why}`);
     out = out.replace(change.find, () => change.replace);
@@ -72,7 +88,7 @@ function write(destination) {
   return destination;
 }
 
-module.exports = { patched, write, upstream, CHANGES, UPSTREAM, UPSTREAM_SHA256 };
+module.exports = { patched, write, upstream, changes, CHANGES, START_MENU, REMOVE_START_MENU, UPSTREAM, UPSTREAM_SHA256 };
 if (require.main === module) {
   const [destination] = process.argv.slice(2);
   if (!destination) { console.error('Usage: nsis-template <new output .nsi>'); process.exitCode = 64; }

@@ -18,6 +18,9 @@ const ORIGINAL_ROOT = path.resolve(APP_ROOT, '..', 'solo-backup');
 const TRAY_CANDIDATES = [path.join(ORIGINAL_ROOT, 'ui', 'tray.png'), path.join(ORIGINAL_ROOT, 'assets', 'tray.png')];
 const CSP = `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' ipc: http://ipc.localhost; base-uri 'none'; form-action 'none'`;
 const MODULES = ['app.js', 'state-store.js', 'screen-model.js', 'ko-format.js', 'banned-words.js', 'screen-view.js', 'orb.js', 'fake-screens.js'];
+// What dist/ gets, in this order (main). stage-resources.cjs puts the same files in resources/ui/ for SYNK 솔리오's engine
+// screen (SOLIO_ONE_CLIENT.md 2.2).
+const FILES = ['index.html', 'style.css', 'bridge.js', ...MODULES, 'fonts/SUIT-Variable.woff2', 'fonts/LICENSE_OFL.txt', 'tray.png', 'csp.txt'];
 const PNG = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 const FORBIDDEN_JS = ['fetch(', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'eval(', 'new Function', 'import(', 'http://', 'https://', 'style="', "style='", 'document.write', 'setAttribute(\'style\''];
 const FORBIDDEN_BRIDGE = ['http:', 'https:', 'fetch(', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'eval(', 'new Function', 'import(', '<script'];
@@ -101,6 +104,7 @@ function main() {
     ['fonts/SUIT-Variable.woff2', font], ['fonts/LICENSE_OFL.txt', license],
     ['tray.png', readTray()], ['csp.txt', Buffer.from(CSP + '\n', 'utf8')],
   ];
+  if (outputs.map(([n]) => n).join('\n') !== FILES.join('\n')) refuse('출력 목록이 FILES와 다름');
   const d = statOrNull(DIST);
   if (d && (d.isSymbolicLink() || !d.isDirectory())) refuse('dist가 일반 폴더가 아님');
   for (const [name] of outputs) {
@@ -117,7 +121,7 @@ function main() {
   for (const [name, data] of outputs) console.log(`${hash(data)}  dist/${name}`);
 }
 
-module.exports = { CSP, MODULES };
+module.exports = { CSP, MODULES, FILES, DIST };
 if (require.main === module) {
   try {
     main();

@@ -12,3 +12,5 @@ pub mod update;
 pub mod folders;
 pub mod files;
 pub mod reinstall;
+pub mod native;
+pub mod host;

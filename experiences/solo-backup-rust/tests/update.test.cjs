@@ -32,7 +32,13 @@ test('the release checks one https feed beside the PC app\'s, binds each package
 
 test('the window app takes the update switches alone, and the release still takes nothing else', () => {
   const main = read('src-tauri/src/main.rs');
-  assert.match(main, /if let \[mode\]=std::env::args\(\)\.skip\(1\)\.collect::<Vec<_>>\(\)\.as_slice\(\)\{\n\s+if mode=="--update-check"\|\|mode=="--update-check-due"\|\|mode=="--update-install"/);
+  // One path from the command line to the installer (GPT workbackup-solio-one-be-20261127 GD4): update_start reads the
+  // switches and its `quiet` goes through update_mode into update::install as it is. main.rs's Rust test
+  // an_update_start_reaches_the_installer_with_its_own_arguments holds `--update-install --quiet` → /S and alone → /P.
+  assert.match(main, /\[mode\]=>\["--update-check","--update-check-due","--update-install"\]\.into_iter\(\)\.find\(\|m\|\*m==mode\.as_str\(\)\)\.map\(\|m\|\(m,false\)\),/);
+  assert.match(main, /fn main\(\)\{\r?\n\s+if let Some\(\(mode,quiet\)\)=update_start\(&std::env::args\(\)\.skip\(1\)\.collect::<Vec<_>>\(\)\)\{std::process::exit\(update_mode\(mode,quiet\)\);\}/);
+  assert.match(main, /fn update_mode\(mode:&str,quiet:bool\)->i32\{/);
+  assert.equal([...main.matchAll(/update::install\(&handle,&root,(\w+),/g)].map(m => m[1]).join(), 'quiet,false', 'update_mode hands its own quiet to the install; the notice click in the window installs with the progress window');
   // The run executable starts the check that looks at its due time again under the check lock.
   assert.match(read('src-tauri/src/bin/run.rs'), /Command::new\(app\)\.arg\("--update-check-due"\)/);
   // Not due after all ends with its own exit code, which the run's record keeps apart from a check (GPT run-check GA2):
@@ -44,6 +50,10 @@ test('the window app takes the update switches alone, and the release still take
   assert.match(main, /due_for\(&update::read\(&root\),epoch_ms\(\),own\.as_deref\(\)\)\{return Err\("NOT_DUE"\);\}/);
   assert.match(main, /Err\("NOT_DUE"\)=>\{println!\("\{\}",json!\(\{"ok":true,"result":\{"due":false\}\}\)\);update::NOT_DUE_EXIT\}/);
   assert.match(main, /let switches:&\[&str\]=if cfg!\(debug_assertions\)\{&\["--background","--test-mode","--smoke"\]\}else\{&\["--background"\]\};/);
+  // SYNK 솔리오's 「할 일」 (SOLIO_ONE_CLIENT.md 3.2): `--update-install --quiet`, the same install with its installer windowless.
+  assert.match(main, /\[mode,quiet\] if mode=="--update-install"&&quiet=="--quiet"=>Some\(\("--update-install",true\)\),/);
+  assert.match(read('src-tauri/src/update.rs'), /pub fn installer_args\(quiet: bool\) -> &'static str \{ if quiet \{ "\/S \/UPDATE" \} else \{ "\/P \/UPDATE" \} \}/);
+  assert.match(read('src-tauri/src/update.rs'), /wide\(installer_args\(quiet\)\.as_ref\(\)\)/);
   // The notice's click asks first (cancel is the first button), and installing holds the engine lock.
   assert.match(main, /OkCancelCustom\("나중에"\.into\(\),"업데이트"\.into\(\)\)/);
   assert.match(read('src-tauri/src/update.rs'), /let _engine = crate::platform::try_lock\(root, crate::platform::ENGINE_LOCK\)[^\n]+\.ok_or\("RUN_ACTIVE"\)\?;\n\s+let mut update = find\(app, DOWNLOAD_TIMEOUT, None\)/);

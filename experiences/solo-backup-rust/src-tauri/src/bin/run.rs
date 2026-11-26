@@ -379,6 +379,9 @@ fn run() -> i32 {
     if args.trigger != "manual" { below_normal(); }
     let Ok((root, lock)) = platform::open_state(args.test) else { return 70 };
     let mut line = json!({"v": 1, "trigger": args.trigger, "start": iso(started)});
+    // The notices' name, SYNK 솔리오's (SOLIO_ONE_CLIENT.md 2.7 나): written whenever it is not already there, so the notices
+    // keep it without the Start menu shortcut that carried their identity (3.4). A test run leaves this account's keys alone.
+    if !args.test { if let Err(code) = notify::register_name() { line["notifyName"] = json!(code); } }
     let mut worker = None;
     // A second handle to the same lock file keeps the lock until the record is written, also when
     // execute() fails before or while starting the worker (review C1).
@@ -417,17 +420,18 @@ fn run() -> i32 {
         drop(guard.take());
         line["space"] = space::daily(&root, &places, &today, budget, epoch_ms());
     }
-    // 「업데이트 준비됨」 (4.10): every run tells from the last check's record (update.json) against the installed window app's
-    // own version, before its record is written; what it judged goes into the record (versions only). A test run neither
-    // tells nor checks.
+    // The update notice (4.10, SOLIO_ONE_CLIENT.md 3.2): every run judges from the last check's record (update.json) against
+    // the installed window app's own version, before its record is written, and tells only a version announced for 14
+    // days (UPDATE_LATE_MS) — SYNK 솔리오's 「할 일」 shows it before that; what it judged goes into the record (versions and
+    // the time only). A test run neither tells nor checks.
     let window_app = if args.test { None } else { std::env::current_exe().ok().map(|exe| exe.with_file_name(WINDOW_APP)) };
     let installed = window_app.as_deref().and_then(update::installed_version);
     if window_app.is_some() {
         let record = update::read(&root);
-        let (found, judged) = update_problems(&record, installed.as_deref(), update::can_approve());
+        let (found, judged) = update_problems(&record, installed.as_deref(), update::can_approve(), epoch_ms());
         // Only a plain version number from the record goes into the run's record (GPT -b GA2).
         let available = record["available"].as_str().and_then(update::version_text);
-        line["updateNotice"] = json!({"installed": installed, "available": available, "notice": found.first().map(|n| n.problem)});
+        line["updateNotice"] = json!({"installed": installed, "available": available, "since": record["availableSince"].as_u64(), "notice": found.first().map(|n| n.problem)});
         // Whether the check an earlier run started ran at all (4.10): one that could not start or ran past the wait leaves
         // update.json as it was, so it is told here.
         if let Some(seen) = update::read_run_check(&root) { line["updateCheck"] = seen; }
@@ -491,16 +495,23 @@ fn run_check_text(result: Result<i32, &'static str>) -> String {
     match result { Ok(code) => format!("exit {code}"), Err(why) => why.into() }
 }
 
-/// 「업데이트 준비됨」 (2.2 · 4.10) from the last check's record and the installed window app's version: a later version
-/// announced is told — to an account that cannot approve the administrator prompt as the weekly 「관리자에게 부탁」 one. A
-/// check that found nothing later resolves both. No record, a failed check or an unknown installed version judges
-/// nothing, so an earlier notice's record stays.
-fn update_problems(record: &Value, installed: Option<&str>, approve: bool) -> (Vec<notify::Notice>, Vec<&'static str>) {
+/// How long a newer version waits in SYNK 솔리오's 「할 일」 before the run tells it too (SOLIO_ONE_CLIENT.md 3.2): so a PC
+/// where SYNK 솔리오 is never opened does not keep a fix waiting for good.
+const UPDATE_LATE_MS: u64 = 14 * 86_400_000;
+/// The update notice (2.2 · 4.10 · SOLIO_ONE_CLIENT.md 3.2) from the last check's record and the installed window app's
+/// version: a later version announced more than 14 days ago (`availableSince`) is told — to an account that cannot
+/// approve the administrator prompt as the weekly 「관리자에게 부탁」 one. Before then, nothing is told and both are judged,
+/// so a notice an earlier version showed daily is not left marked; a time past now (a clock set back) is not late. A check
+/// that found nothing later resolves both. No record, a failed check or an unknown installed version judges nothing, so
+/// an earlier notice's record stays.
+fn update_problems(record: &Value, installed: Option<&str>, approve: bool, now: u64) -> (Vec<notify::Notice>, Vec<&'static str>) {
     let Some(installed) = installed else { return (vec![], vec![]) };
     match record["available"].as_str() {
         // A failed try keeps the version the last check found, so it is still told (11-20 설계 검토).
-        Some(available) if update::newer(available, installed) =>
-            (vec![if approve { notify::update_ready() } else { notify::update_ask_admin() }], vec!["update", "update-admin"]),
+        Some(available) if update::newer(available, installed) => {
+            let late = record["availableSince"].as_u64().is_some_and(|since| since <= now && now - since > UPDATE_LATE_MS);
+            (if late { vec![if approve { notify::update_ready() } else { notify::update_ask_admin() }] } else { vec![] }, vec!["update", "update-admin"])
+        }
         _ if record["checkedAt"].is_u64() && record["error"].is_null() => (vec![], vec!["update", "update-admin"]),
         _ => (vec![], vec![]),
     }
@@ -545,21 +556,49 @@ fn main() { std::process::exit(run()); }
     #[test] fn an_update_is_told_from_the_record_against_the_installed_version() {
         let names = |found: &[notify::Notice]| found.iter().map(|n| n.problem).collect::<Vec<_>>();
         let both = vec!["update", "update-admin"];
-        let newer = json!({"v": 1, "checkedAt": 5, "current": "0.7.0", "available": "0.7.1", "error": null});
-        let (found, judged) = update_problems(&newer, Some("0.7.0"), true);
+        // Announced at 5, told once 14 days have passed (SOLIO_ONE_CLIENT.md 3.2).
+        let now = 5 + UPDATE_LATE_MS + 1;
+        let newer = json!({"v": 1, "checkedAt": 5, "current": "0.7.0", "available": "0.7.1", "error": null, "availableSince": 5});
+        let (found, judged) = update_problems(&newer, Some("0.7.0"), true, now);
         assert_eq!((names(&found), judged.clone()), (vec!["update"], both.clone()));
         assert_eq!(found[0].topic, "update");
-        assert_eq!(names(&update_problems(&newer, Some("0.7.0"), false).0), vec!["update-admin"], "a standard account is asked to tell the administrator");
+        assert_eq!(names(&update_problems(&newer, Some("0.7.0"), false, now).0), vec!["update-admin"], "a standard account is asked to tell the administrator");
         // Updated since the check: the installed app is that version, so nothing is told and the notice is resolved.
-        assert_eq!(update_problems(&newer, Some("0.7.1"), true), (vec![], both.clone()));
-        assert_eq!(update_problems(&json!({"v": 1, "checkedAt": 5, "current": "0.7.1", "available": null, "error": null}), Some("0.7.1"), true), (vec![], both));
+        assert_eq!(update_problems(&newer, Some("0.7.1"), true, now), (vec![], both.clone()));
+        assert_eq!(update_problems(&json!({"v": 1, "checkedAt": 5, "current": "0.7.1", "available": null, "error": null}), Some("0.7.1"), true, now), (vec![], both.clone()));
         // A failed check, no record, or an installed version not read: nothing judged, so an earlier notice's record stays.
-        assert_eq!(update_problems(&json!({"v": 1, "checkedAt": 5, "current": "0.7.0", "available": null, "error": "UPDATE_FEED"}), Some("0.7.0"), true), (vec![], vec![]));
-        assert_eq!(update_problems(&json!({}), Some("0.7.0"), true), (vec![], vec![]));
+        assert_eq!(update_problems(&json!({"v": 1, "checkedAt": 5, "current": "0.7.0", "available": null, "error": "UPDATE_FEED"}), Some("0.7.0"), true, now), (vec![], vec![]));
+        assert_eq!(update_problems(&json!({}), Some("0.7.0"), true, now), (vec![], vec![]));
         // A later try that failed keeps the version found before: still told.
-        let failed_after = json!({"v": 1, "checkedAt": 5, "triedAt": 9, "current": "0.7.0", "available": "0.7.1", "error": "UPDATE_FEED"});
-        assert_eq!(names(&update_problems(&failed_after, Some("0.7.0"), true).0), vec!["update"]);
-        assert_eq!(update_problems(&newer, None, true), (vec![], vec![]));
+        let failed_after = json!({"v": 1, "checkedAt": 5, "triedAt": 9, "current": "0.7.0", "available": "0.7.1", "error": "UPDATE_FEED", "availableSince": 5});
+        assert_eq!(names(&update_problems(&failed_after, Some("0.7.0"), true, now).0), vec!["update"]);
+        assert_eq!(update_problems(&newer, None, true, now), (vec![], vec![]));
+    }
+    #[test] fn a_newer_version_is_told_only_after_waiting_14_days() {
+        let names = |found: &[notify::Notice]| found.iter().map(|n| n.problem).collect::<Vec<_>>();
+        let both = vec!["update", "update-admin"];
+        let since = 1_000 * 86_400_000;
+        let record = |since: Value| json!({"v": 1, "checkedAt": 5, "current": "0.7.0", "available": "0.8.0", "error": null, "availableSince": since});
+        // Before 14 days, and at 14 days exactly: nothing told, both judged so an earlier daily notice's mark is let go.
+        for now in [since, since + 86_400_000, since + UPDATE_LATE_MS] {
+            assert_eq!(update_problems(&record(json!(since)), Some("0.7.0"), true, now), (vec![], both.clone()), "{now}");
+        }
+        for approve in [true, false] {
+            let found = update_problems(&record(json!(since)), Some("0.7.0"), approve, since + UPDATE_LATE_MS + 1).0;
+            assert_eq!(names(&found), vec![if approve { "update" } else { "update-admin" }]);
+            assert_eq!(found[0].title, "백업 부품 새 판이 2주째 기다리고 있습니다");
+        }
+        // A time past now (the clock set back), none (a record of 0.7.x), or not a number: not late.
+        for odd in [json!(since + 1), Value::Null, json!("1000")] {
+            assert_eq!(update_problems(&record(odd.clone()), Some("0.7.0"), true, since), (vec![], both.clone()), "{odd}");
+        }
+        // The weekly one for a standard account comes again once its week is over, the daily one the next day (notify::plan).
+        let ask = update_problems(&record(json!(since)), Some("0.7.0"), false, since + 15 * 86_400_000).0;
+        let (show, mut ledger) = notify::plan(&Value::Null, &ask, &both, "2026-12-10");
+        assert_eq!(show.len(), 1);
+        notify::mark(&mut ledger, "update-admin", "2026-12-10");
+        assert!(notify::plan(&ledger, &ask, &both, "2026-12-16").0.is_empty());
+        assert_eq!(notify::plan(&ledger, &ask, &both, "2026-12-17").0.len(), 1);
     }
     #[test] fn a_check_that_cannot_start_says_so() {
         let root = std::env::temp_dir().join(format!("swb-update-check-{}", std::process::id()));

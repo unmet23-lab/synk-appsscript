@@ -201,6 +201,12 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     open:topic=>typeof topic==='string'&&/^[a-z]{1,16}$/.test(topic)?ipcRenderer.invoke('synk:solio-backup-open',topic):Promise.resolve({ok:false,code:'INVALID'}),
     dismiss:()=>ipcRenderer.invoke('synk:solio-backup-dismiss'),
     oneClick:()=>ipcRenderer.invoke('synk:solio-backup-oneclick'),
+    // 한 몸(11-26): 방 안 엔진 화면의 자리는 꼭 {shown, top}으로만 건넌다(본체 workbackup-view.cjs doorPlacement가 다시 거른다)
+    place:input=>input&&typeof input==='object'&&typeof input.shown==='boolean'&&typeof input.top==='number'&&Number.isFinite(input.top)&&input.top>=0&&input.top<=160?ipcRenderer.invoke('synk:solio-backup-place',{shown:input.shown,top:input.top}):Promise.resolve({ok:false,code:'INVALID_INPUT'}),
+    closeView:()=>ipcRenderer.invoke('synk:solio-backup-close-view'),
+    update:()=>ipcRenderer.invoke('synk:solio-backup-update'),
+    openWindow:()=>ipcRenderer.invoke('synk:solio-backup-window'),
+    onChanged:callback=>subscribe('synk:solio-backup-changed',callback),
   }),
   // 솔리오 「내 PC 진단」(11-24): 이 PC의 사양(수와 종류)만 받는다. 넘기는 값은 없다.
   pcProfile:Object.freeze({

@@ -23,6 +23,9 @@ const { spawn } = require('node:child_process');
 const { createBlake2b512 } = require('./blake2b.cjs');
 // 원클릭(11-23): run-now 요청 · 요청 작업 깨우기 · 결과 읽기 · 공간 보고서 합계(docs/디자인/솔리오_원클릭_20261123/PC앱_옮기기.md)
 const oneclickFiles = require('./solio-oneclick.cjs');
+// 한 몸(11-26, experiences/solo-backup-rust/SOLIO_ONE_CLIENT.md): HOST_MIN 이상 엔진은 호스트를 띄워 방 안에 엔진 화면을 연다(door).
+// 그 아래 판은 지금의 열기 주소 길과 setup 요청 · 취소 표식 길을 그대로 쓴다(4장 「넘어오는 길」)
+const { hostCapable, compareVersion, runUpdateInstall, openEmergencyWindow, HOST_MIN } = require('./solio-backup-host.cjs');
 
 const FORMAT = 1;
 const STATUS_MAX = 64 * 1024;
@@ -35,6 +38,13 @@ const DOWNLOAD_FOR = 30 * 60 * 1000;
 const STATES = Object.freeze(['safe', 'starting', 'attention', 'paused', 'off', 'not-set-up', 'moved', 'restore-only']);
 const ATTENTION = Object.freeze(['status', 'folders', 'changes', 'devices', 'restore', 'space', 'signin', 'update']);
 const OPEN_TOPICS = Object.freeze([...ATTENTION, 'move']);
+/* 방 안의 엔진 화면에 넘기는 낱말: 엔진의 아홉 낱말과 방이 여는 화면 둘(설정 · 보호 시작). 옛 엔진에는 가까운 화면 낱말로 바꿔 연다 */
+const VIEW_TOPICS = Object.freeze([...OPEN_TOPICS, 'settings', 'start']);
+const OLD_TOPIC = Object.freeze({ settings: 'folders', start: 'status' });
+const UPDATE_MAX = 16 * 1024;
+const UPDATE_WAIT = 10 * 60000;
+/* 「백업 창 따로 열기」가 방 안의 호스트가 창 잠금을 놓기를 기다리는 횟수와 사이(약 12초) */
+const WINDOW_TRIES = 8, WINDOW_AGAIN = 1500;
 const PROOF_RESULTS = Object.freeze(['passed', 'failed', 'incomplete', 'skipped']);
 const STAGES = Object.freeze(['backup', 'check', 'proof', 'restore', 'move', 'setup', 'free', 'other']);
 /* 공간 비우기 2판(계약 상태 파일 spaceFree): 엔진이 열지 않았거나 칸이 없는 엔진(0.7.0)은 unavailable이다 */
@@ -188,7 +198,21 @@ async function readEngine({ run = runPowerShell, fsImpl = fsp } = {}) {
     const stat = await fsImpl.stat(path.win32.join(loc, 'WorkBackupRun.exe'));
     if (!stat.isFile()) return { installed: false, version: null };
   } catch { return { installed: false, version: null }; }
-  return { installed: true, version: typeof value.ver === 'string' && VERSION.test(value.ver) ? value.ver : null };
+  // 설치 폴더는 본체 안에서만 쓴다(호스트 · 업데이트 · 비상 창을 띄울 실행 파일). 방에 넘기는 값에는 넣지 않는다
+  return { installed: true, version: typeof value.ver === 'string' && VERSION.test(value.ver) ? value.ver : null, location: loc };
+}
+
+/* 엔진 업데이터의 기록(%APPDATA%\SynkWorkBackup\update.json)에서 새 판 하나만 읽는다(엔진 update.rs 「update.json」).
+   없거나 깨졌으면 null이다. 다른 칸은 읽지 않는다 */
+async function readUpdateRecord(paths, fsImpl = fsp) {
+  if (!paths?.root) return null;
+  const file = path.join(paths.root, 'update.json');
+  try {
+    const stat = await fsImpl.lstat(file);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.size > UPDATE_MAX) return null;
+    const value = JSON.parse(String(await fsImpl.readFile(file, 'utf8')).replace(/^﻿/, ''));
+    return isObject(value) && typeof value.available === 'string' && VERSION.test(value.available) ? value.available : null;
+  } catch { return null; }
 }
 
 /* ── minisign(Tauri 업데이터 서명) ── */
@@ -338,8 +362,11 @@ const HOLDER_SCRIPT = [
   "try{$sha=[Security.Cryptography.SHA256]::Create();$hex=([BitConverter]::ToString($sha.ComputeHash($h))).Replace('-','').ToLower()}catch{[Console]::Out.WriteLine('LOCKFAIL');$h.Dispose();exit 3}",
   "[Console]::Out.WriteLine('LOCKED '+$hex+' '+$b.ToString())",
   '$c=[Console]::In.ReadLine()',
-  "if($c -ne 'RUN'){$h.Dispose();exit 0}",
-  "try{$p=Start-Process -FilePath $env:SWB_SETUP -ArgumentList '/P','/R' -Verb RunAs -PassThru}catch{[Console]::Out.WriteLine('DECLINED');$h.Dispose();exit 4}",
+  "if($c -ne 'RUN' -and $c -ne 'RUNOLD'){$h.Dispose();exit 0}",
+  // RUN: 설치 창 없이 깐다(/S). 끝나도 창을 열지 않는다. 호스트가 있는 엔진은 솔리오가 방 안에 첫 시작 화면을 연다(SOLIO_ONE_CLIENT.md 3.1).
+  // RUNOLD: 피드가 아직 호스트 없는 판(HOST_MIN 미만)이면 예전처럼 /P /R로 깔고, 끝나면 엔진 창이 setup 요청을 받는다(GPT workbackup-solio-one-be-20261127 A4)
+  "if($c -eq 'RUN'){$a=@('/S')}else{$a=@('/P','/R')}",
+  "try{$p=Start-Process -FilePath $env:SWB_SETUP -ArgumentList $a -Verb RunAs -PassThru}catch{[Console]::Out.WriteLine('DECLINED');$h.Dispose();exit 4}",
   "[Console]::Out.WriteLine('STARTED')",
   '$p.WaitForExit()',
   "[Console]::Out.WriteLine('EXIT '+$p.ExitCode)",
@@ -392,9 +419,9 @@ function holdSetup(file, { spawnImpl = spawn, timeout = 30000 } = {}) {
           child.once('close', () => { clearTimeout(t); ok(); });
         });
       },
-      /* 띄우고 끝날 때까지 기다린다. declined · started 뒤 exit, 또는 gone */
-      async run(onStarted = () => {}) {
-        try { child.stdin.write('RUN\n'); } catch { return { outcome: 'gone' }; }
+      /* 띄우고 끝날 때까지 기다린다. declined · started 뒤 exit, 또는 gone. quiet가 false면 예전 판의 /P /R로 띄운다 */
+      async run(onStarted = () => {}, { quiet = true } = {}) {
+        try { child.stdin.write(quiet === false ? 'RUNOLD\n' : 'RUN\n'); } catch { return { outcome: 'gone' }; }
         const first = await next();
         if (first === 'DECLINED') return { outcome: 'declined' };
         if (first !== 'STARTED') return { outcome: 'gone' };
@@ -475,7 +502,7 @@ function createSolioBackup({
   platform = process.platform, env = process.env, cacheRoot, now = Date.now,
   run = runPowerShell, request = requestHttps, hold = holdSetup, openExternal = async () => {},
   fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, packaged = false, inRelease = IN_RELEASE, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
-  tag = runTag(), appUpdate = null, pcDrives = () => null,
+  tag = runTag(), appUpdate = null, pcDrives = () => null, door = null, launch = spawn, updateWaitMs = 3000, windowSettleMs = 1500,
 } = {}) {
   const paths = statusPaths(env);
   // 엔진이 있는지는 어디에도 기억해 두지 않는다. 방의 표시 · 누르기 · 열기 · 설치기 띄우기가 모두 그때마다 새로 확인하고 제 답만 쓴다.
@@ -516,15 +543,23 @@ function createSolioBackup({
     if (!allowed(account)) return { ok: true, available: false };
     sweepRequests();
     const { engine: eng, read, view } = await state();
-    if ((view === 'no-engine' || view === 'engine-removed') && install.phase === 'idle') void refreshFeed();
+    // 엔진이 있어도 피드를 10분마다 본다. 업데이트 카드는 엔진 기록(update.json)이 없으면 피드의 판을 쓴다(SOLIO_ONE_CLIENT.md 3.2)
+    if (install.phase === 'idle' && view !== 'windows-only') void refreshFeed();
     const status = read.format === 'ok' ? read.status : null;
+    lastJob = !!status?.job;
     const ready = oneClickReady(view, status);
+    const host = !!eng?.installed && hostCapable(eng?.version);
+    // 엔진이 없어졌거나 호스트가 없는 판으로 바뀌었으면 방 안의 화면을 닫는다
+    if (door && !host && !eng?.error) { try { if (door.state().open || door.state().host !== 'idle') door.reset(); } catch {} }
     return {
       ok: true, available: true, view, now: new Date(now()).toISOString(),
-      engine: { installed: !!eng?.installed, version: eng?.version || null },
+      engine: { installed: !!eng?.installed, version: eng?.version || null, host },
       status,
       feed: { state: feedState.state, version: feedState.version },
       install: { ...install },
+      // 방 안의 엔진 화면(호스트 · 화면 파일)과 업데이트 카드. 경로는 넣지 않는다
+      room: door && host ? roomWords() : null,
+      update: await updateCard(eng),
       // 원클릭 판의 값. 보호 중일 때만 공간 보고서를 읽는다. 앞 누름은 누른 계정에만 보인다
       oneclick: await oneClickSnapshot(account),
       space: ready ? await readSpaceSummary() : null,
@@ -648,7 +683,104 @@ function createSolioBackup({
     } finally { pressing = false; }
   }
 
-  function setInstall(phase, extra = {}) { install = { phase, progress: extra.progress ?? 0, code: extra.code ?? null, mode }; }
+  /* host: 받는 판에 호스트가 있는지(HOST_MIN 이상). 방은 끝난 뒤의 할 일을 이것으로 고른다(방 안에서 이어 가기 · 백업 창 열기) */
+  let installHost = false;
+  function setInstall(phase, extra = {}) { install = { phase, progress: extra.progress ?? 0, code: extra.code ?? null, mode, host: installHost }; }
+
+  /* ── 한 몸(11-26): 방 안의 엔진 화면 · 업데이트 카드 · 비상 창 ── */
+  let lastJob = false, pressAccount = null;
+  let update = { phase: 'idle', code: null, version: null, at: 0 }, updating = false;
+  const ROOM_PHASES = ['idle', 'starting', 'ready', 'busy', 'newer', 'refused', 'failed'];
+  const UI_STATES = ['none', 'loading', 'ok', 'missing', 'invalid', 'version', 'installing'];
+  function roomWords() {
+    let d;
+    try { d = door.state(); } catch { return null; }
+    return {
+      open: d.open === true, topic: VIEW_TOPICS.includes(d.topic) ? d.topic : null,
+      host: ROOM_PHASES.includes(d.host) ? d.host : 'failed', code: typeof d.code === 'string' && /^[A-Z0-9_]{1,64}$/.test(d.code) ? d.code : null,
+      ui: UI_STATES.includes(d.ui) ? d.ui : 'invalid', ready: d.ready === true,
+    };
+  }
+  /* 누른 계정 · 로그인 세대가 아직 그대로인가. 확인 함수가 던지면 아니다 */
+  const still = isCurrent => { try { return isCurrent() === true; } catch { return false; } };
+  /* 방 안에 엔진 화면을 연다. HOST_MIN 이상 엔진만 */
+  function openDoor(who, eng, topic) {
+    if (!door || !eng?.installed || !hostCapable(eng.version) || !eng.location || typeof who !== 'string') return null;
+    return door.open({ account: who, location: eng.location, topic });
+  }
+  /* 업데이트 카드: 깔린 판(제거 등록 DisplayVersion)보다 새 판을 엔진 기록의 available(없으면 피드)에서 본다 */
+  async function updateCard(eng) {
+    if (platform !== 'win32' || !eng?.installed || !eng.version) return null;
+    if (update.phase === 'installing' && (compareVersion(eng.version, update.version) ?? -1) >= 0) update = { phase: 'done', code: null, version: eng.version, at: now() };
+    // 판이 오르지 않은 채 10분이 지나면 카드로 돌아간다. 「올렸습니다」 한 줄도 30분 뒤 내린다
+    if (update.phase === 'installing' && now() - update.at > UPDATE_WAIT) update = { phase: 'idle', code: null, version: null, at: now() };
+    if (update.phase === 'done' && now() - update.at > 3 * UPDATE_WAIT) update = { phase: 'idle', code: null, version: null, at: now() };
+    // 깔린 판보다 새 판을 엔진 기록과 피드에서 따로 구해 둘 가운데 새것을 쓴다(설계 8.1, GPT workbackup-solio-one-be-20261127 A9)
+    const newer = v => (v && (compareVersion(v, eng.version) ?? 0) > 0 ? v : null);
+    const fromRecord = newer(await readUpdateRecord(paths, fsImpl.promises)), fromFeed = newer(feedState.state === 'available' ? feedState.version : null);
+    const available = fromRecord && fromFeed ? ((compareVersion(fromFeed, fromRecord) ?? 0) > 0 ? fromFeed : fromRecord) : fromRecord || fromFeed;
+    return { available, current: eng.version, phase: update.phase, code: update.code, quiet: hostCapable(eng.version) };
+  }
+  /* 「업데이트」: 호스트에 bye → WorkBackup.exe --update-install --quiet(HOST_MIN 미만은 --update-install). 관리자 권한 없이 띄운다.
+     엔진의 설치기가 관리자 확인을 부른다. 기다리지 않고 바로 답하고, 방은 다시 읽어 단계를 보인다 */
+  async function updateEngine(account) {
+    if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
+    if (platform !== 'win32') return { ok: false, code: 'NOT_AVAILABLE' };
+    if (updating || busy) return { ok: false, code: 'BUSY' };
+    // 엔진 확인을 기다리기 전에 잡는다. 겹쳐 누른 둘째가 확인 사이에 들어와 업데이터를 두 번 띄우지 않게 한다(GPT workbackup-solio-one-be-20261127 A5)
+    updating = true;
+    let eng;
+    try { eng = await engineFresh(); } catch { eng = { error: true }; }
+    if (eng.error) { updating = false; return { ok: false, code: 'ENGINE_UNKNOWN' }; }
+    if (!eng.installed || !eng.location) { updating = false; return { ok: false, code: 'NO_ENGINE' }; }
+    update = { phase: 'running', code: null, version: null, at: now() };
+    try { door?.reset(); } catch { /* 호스트가 없다 */ }
+    const executable = path.win32.join(eng.location, 'WorkBackup.exe'), before = eng.version;
+    void (async () => {
+      const result = await runUpdateInstall({ spawn: launch, executable, quiet: hostCapable(before) }).catch(() => ({ outcome: 'error', code: 'UPDATE_FAILED' }));
+      if (result.outcome === 'run-active') update = { phase: 'error', code: 'RUN_ACTIVE', version: null, at: now() };
+      else if (result.outcome === 'declined') update = { phase: 'error', code: 'UPDATE_START', version: null, at: now() };
+      else if (result.outcome === 'up-to-date') update = { phase: 'done', code: null, version: before, at: now() };
+      else if (result.outcome === 'installing' || result.outcome === 'done') {
+        update = { phase: 'installing', code: null, version: result.version || null, at: now() };
+        // 설치기가 넘겨받아 조용히 깐다. 판이 바뀔 때까지 몇 번 다시 본다(판이 오르면 카드가 내려간다)
+        for (let i = 0; i < 20 && update.phase === 'installing'; i++) {
+          await wait(updateWaitMs);
+          const seen = await engineFresh();
+          if (seen.installed && seen.version && (update.version ? (compareVersion(seen.version, update.version) ?? -1) >= 0 : (compareVersion(seen.version, before) ?? 0) > 0)) update = { phase: 'done', code: null, version: seen.version, at: now() };
+        }
+      } else update = { phase: 'error', code: typeof result.code === 'string' && /^[A-Z0-9_]{1,64}$/.test(result.code) ? result.code : 'UPDATE_FAILED', version: null, at: now() };
+    })().finally(() => { updating = false; });
+    return { ok: true };
+  }
+  /* 「백업 창 따로 열기」: HOST_MIN 이상은 비상 창(--window), 옛 엔진은 지금 열기 주소. anyone이면 로그인 전에도(synk-solio 낱말을 받았을 때만, main.cjs) */
+  async function openWindow(account, { anyone = false } = {}) {
+    if (!anyone && !allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
+    if (platform !== 'win32') return { ok: false, code: 'NOT_AVAILABLE' };
+    const eng = await engineFresh();
+    if (eng.error) return { ok: false, code: 'ENGINE_UNKNOWN' };
+    if (!eng.installed || !eng.location) return { ok: false, code: 'NO_ENGINE' };
+    if (hostCapable(eng.version)) {
+      // 방 안의 호스트가 창 잠금(ui.lock)을 쥐고 있으면 창은 곧바로 끝난다. 호스트에 bye를 보내고, 잠금이 풀릴 때까지 몇 번 다시 띄운다.
+      // 호스트가 되살리기 같은 일을 마치는 중이면 그 일이 끝날 때까지 잠금이 남아 BUSY다(GPT workbackup-solio-one-be-20261127 A6)
+      // 이 솔리오가 모르는 호스트(앞서 끈 솔리오의 호스트가 일을 마치는 중)도 잠금을 쥘 수 있어, 곧바로 끝나면 언제나 다시 띄운다(GPT -r2 GA2).
+      // 이미 떠 있던 창이 쥔 경우에는 띄울 때마다 그 창이 앞으로 나오므로, 끝내 BUSY로 답해도 손님은 창을 본다
+      const room = roomWords();
+      if (room && ['ready', 'starting'].includes(room.host)) { try { door.reset(); } catch { /* 자리가 없다 */ } }
+      const executable = path.win32.join(eng.location, 'WorkBackup.exe');
+      for (let i = 0; i < WINDOW_TRIES; i++) {
+        if (i) await wait(WINDOW_AGAIN);
+        const got = await openEmergencyWindow({ spawn: launch, executable, settleMs: windowSettleMs });
+        if (got === 'failed') return { ok: false, code: 'OPEN_FAILED' };
+        if (got === 'open') return { ok: true };
+      }
+      return { ok: false, code: 'BUSY' };
+    }
+    try { await openExternal('synk-workbackup:open?topic=status'); return { ok: true }; } catch { return { ok: false, code: 'OPEN_FAILED' }; }
+  }
+  /* 방의 「← 원클릭」과 자리 알림 */
+  function closeView(account) { if (!allowed(account) || !door) return { ok: false, code: 'NOT_AVAILABLE' }; return door.close(); }
+  function placeView(account, input) { if (!door) return { ok: false, code: 'NOT_AVAILABLE' }; if (!allowed(account)) { door.place({ shown: false, top: 0 }); return { ok: false, code: 'NOT_AVAILABLE' }; } return door.place(input); }
 
   /* 받은 폴더를 지운다. 쥔 PowerShell이 핸들을 놓을 때까지 잠깐 걸릴 수 있어 몇 번 다시 해 본다 */
   const removeDir = dir => fsImpl.promises.rm(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }).catch(() => {});
@@ -843,8 +975,16 @@ function createSolioBackup({
     sweepRequests();
   }
 
-  /* 엔진이 이미 있는 길: setup 요청만 쓰고 엔진 창을 연다 */
-  async function openSetup(mode) {
+  /* 엔진이 이미 있는 길. 호스트가 있는 엔진은 방 안에 첫 시작 화면(start · move)을 연다. setup 요청과 취소 표식을 쓰지 않는다.
+     옛 엔진은 setup 요청만 쓰고 엔진 창을 연다(지금 길) */
+  async function openSetup(mode, eng = null) {
+    if (door && hostCapable(eng?.version) && eng?.location) {
+      if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
+      const opened = openDoor(pressAccount, eng, mode === 'move' ? 'move' : 'start');
+      if (!opened?.ok) throw fault('OPEN_FAILED');
+      setInstall('idle');
+      return;
+    }
     setInstall('opening');
     step = 'request';
     let name;
@@ -870,17 +1010,19 @@ function createSolioBackup({
     const { view } = await state(fresh);
     if (view !== 'needs-setup') throw fault('NOT_NEEDED');
     await beforeOpen();
-    await openSetup(mode);
+    await openSetup(mode, fresh);
     return true;
   }
 
   async function installEngine(mode) {
+    installHost = false;
     setInstall('feed');
     step = 'feed';
     const feed = await refreshFeed(true);
     // 피드를 받지 못했어도 그사이 엔진이 깔렸으면 엔진 창을 연다(GPT 여섯째 검수 GA2)
     if (!feed && await openIfInstalled(mode)) return;
     if (!feed) throw fault(feedState.code || 'NETWORK');
+    installHost = !!door && hostCapable(feed.version);
     step = 'prepare';
     if (typeof cacheRoot !== 'string' || !path.isAbsolute(cacheRoot)) throw fault('STORAGE');
     await fsImpl.promises.mkdir(cacheRoot, { recursive: true });
@@ -932,16 +1074,18 @@ function createSolioBackup({
       // 엔진 확인은 요청을 쓰기 전에 한다. 요청이 놓인 뒤에는 기다리는 일 없이 바로 설치기를 띄운다(GPT 일곱째 검수 GA5).
       // 지금 확인이 실패하면 깔렸는지 모르므로 띄우지 않는다(GPT 다시 검수 GA5)
       if (await openIfInstalled(mode, releaseHolder)) return;
+      // 호스트가 있는 판(HOST_MIN 이상)은 setup 요청과 취소 표식을 쓰지 않는다. 깐 뒤 방 안에 첫 시작 화면을 연다(SOLIO_ONE_CLIENT.md 3.1)
+      const hostFeed = installHost;
       // 요청 쓰기는 로그인 확인과 함께 동기로 한다. 쓴 뒤 로그인이 바뀌면 치우기(sweepRequests)가 그 자리에서 지운다.
       // 쓰지 못하면 INSTALL_REQUEST_FAILED다. 설치 파일 저장 실패(STORAGE)로도, 다시 누르면 요청만 다시 쓰는 엔진이 있는 길의
       // REQUEST_FAILED로도 보이지 않게 한다. 이 길은 다시 누르면 설치 파일을 새로 받는다(카본 pc-0507-publish A1)
       step = 'install-request';
-      try { requestName = await writeRequest(mode); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('INSTALL_REQUEST_FAILED'); }
+      if (!hostFeed) { try { requestName = await writeRequest(mode); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('INSTALL_REQUEST_FAILED'); } }
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       setInstall('admin');
       step = 'install';
       let started = false;
-      const ran = await holder.run(() => { started = true; setInstall('install'); });
+      const ran = await holder.run(() => { started = true; setInstall('install'); }, { quiet: !!hostFeed });
       holder = null;
       if (ran.outcome === 'declined') throw fault('DECLINED');
       if (!started) throw fault('INSTALL_STOPPED');
@@ -955,6 +1099,8 @@ function createSolioBackup({
       if (seen !== 'yes') throw fault(confirmed && seen === 'no' ? 'INSTALL_STOPPED' : 'INSTALL_UNCONFIRMED');
       if (!confirmed) throw fault('INSTALL_UNCONFIRMED');
       setInstall('done');
+      // 깐 엔진에 호스트가 있으면 방 안에 첫 시작 화면을 연다. 로그인이 바뀌었으면 열지 않는다(방은 「깔았습니다」를 보인다)
+      if (hostFeed && stillCurrent()) { const fresh = await engineFresh(); if (stillCurrent()) openDoor(pressAccount, fresh, mode === 'move' ? 'move' : 'start'); }
     } finally {
       await releaseHolder();
       if (requestName && paths && !keepRequest) dropRequest(requestName);
@@ -984,37 +1130,51 @@ function createSolioBackup({
     if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
     step = null;
+    pressAccount = account.synk_user_id;
     stillCurrent = () => { try { return isCurrent() === true; } catch { return false; } };
     sameLogin = () => isSameLogin() === true;
     busy = (async () => {
       // 요청에 Google 주소(hint)를 넣지 않는다. 엔진이 표식을 본 뒤 창에 넘기는 사이나 창이 30분 들고 있는 동안 로그인이 바뀌면
       // 앞 로그인의 주소가 남는다. 앱 쪽 고침으로 닫히지 않는 틈이라 주소 자체를 보내지 않는다(GPT solio-backup-be-20261121 GA1, 11-21)
-      if (view === 'needs-setup') { await openSetup(mode); return; }
+      if (view === 'needs-setup') { await openSetup(mode, fresh); return; }
       await installEngine(mode);
     })().catch(error => { setInstall('error', { code: failureCode(error, step) }); })
       .finally(() => { busy = null; step = null; release(); sweepRequests(); });
     return { ok: true };
   }
 
-  async function open(account, topic) {
+  async function open(account, topic, { isCurrent = () => true } = {}) {
     if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
-    if (!OPEN_TOPICS.includes(topic)) return { ok: false, code: 'INVALID' };
+    if (!VIEW_TOPICS.includes(topic)) return { ok: false, code: 'INVALID' };
     sweepRequests();
     // 여는 순간의 새 확인으로만 정한다(GPT 여섯째 검수 GA3). 확인이 실패하면 「없음」이 아니라 「확인하지 못함」이다(여덟째 GA5)
     const eng = await engineFresh();
+    // 엔진을 확인하는 사이 로그아웃하거나 계정이 바뀌었으면 앞 계정으로 열지 않는다(GPT workbackup-solio-one-be-20261127 A3)
+    if (!still(isCurrent)) return { ok: false, code: 'NOT_AVAILABLE' };
     if (eng.error) return { ok: false, code: 'ENGINE_UNKNOWN' };
     if (!eng.installed) return { ok: false, code: 'NO_ENGINE' };
-    try { await openExternal(`synk-workbackup:open?topic=${topic}`); return { ok: true }; } catch { return { ok: false, code: 'OPEN_FAILED' }; }
+    // 호스트가 있는 엔진은 방 안에 그 화면을 연다(SOLIO_ONE_CLIENT.md 2.2)
+    const inRoom = openDoor(account.synk_user_id, eng, topic);
+    if (inRoom) return inRoom.ok ? { ok: true, view: true } : { ok: false, code: inRoom.code || 'OPEN_FAILED' };
+    // 옛 엔진은 지금처럼 엔진 창을 연다. 방이 여는 두 낱말은 엔진의 가까운 화면으로 바꾼다(4장 1)
+    const word = OLD_TOPIC[topic] || topic;
+    try { await openExternal(`synk-workbackup:open?topic=${word}`); return { ok: true }; } catch { return { ok: false, code: 'OPEN_FAILED' }; }
   }
 
   /* 끝난 설치 결과(오류 · 완료)를 지우고 처음 화면으로 */
-  function dismiss(account) { if (allowed(account) && !busy) setInstall('idle'); return { ok: true }; }
+  function dismiss(account) { if (allowed(account) && !busy) setInstall('idle'); if (allowed(account) && !updating && ['done', 'error'].includes(update.phase)) update = { phase: 'idle', code: null, version: null, at: now() }; return { ok: true }; }
 
-  return { snapshot, start, open, dismiss, oneClick, accountChanged, whenIdle: () => busy || Promise.resolve() };
+  /* 로그인 알림마다: 남은 setup 요청을 치우고, 방 안의 화면이 다른 계정의 것이면 닫는다(bye) */
+  function accountChangedTo(who = undefined) {
+    accountChanged();
+    if (who !== undefined) { try { door?.accountChanged(typeof who === 'string' ? who : null); } catch { /* 자리가 없다 */ } }
+  }
+
+  return { snapshot, start, open, dismiss, oneClick, accountChanged: accountChangedTo, closeView, placeView, openWindow, updateEngine, jobRunning: () => lastJob, whenIdle: () => busy || Promise.resolve(), whenUpdated: async () => { while (updating) await wait(10); } };
 }
 
 module.exports = {
   createSolioBackup, previewAllowed, statusPaths, normalizeStatus, readStatus, decideView, readEngine, parseSignature, verifySignature,
-  validateFeed, fetchFeed, writeSetupRequest, holdSetup, digestFile, publicKey, failureCode,
-  FORMAT, FEED_URL, STATES, ATTENTION, OPEN_TOPICS, ENGINE_KEYS, PREVIEW_SALT, PREVIEW_ACCOUNTS, UNINSTALL_KEY, CHECKING_AFTER, HOLDER_SCRIPT, ENGINE_SCRIPT,
+  validateFeed, fetchFeed, writeSetupRequest, holdSetup, digestFile, publicKey, failureCode, readUpdateRecord,
+  FORMAT, FEED_URL, STATES, ATTENTION, OPEN_TOPICS, VIEW_TOPICS, HOST_MIN, ENGINE_KEYS, PREVIEW_SALT, PREVIEW_ACCOUNTS, UNINSTALL_KEY, CHECKING_AFTER, HOLDER_SCRIPT, ENGINE_SCRIPT,
 };

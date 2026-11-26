@@ -335,13 +335,16 @@ test('every engine answer pair has its own words, an unknown pair gets the fallb
     assert.ok(v.say && !/undefined|null/.test(v.say + v.then), `${result}|${reason}`);
     assert.equal((v.say.match(/[.!?]\s/g) || []).length, 0, `${result}|${reason}: one sentence on top`);
     said.add(v.say);
-    if (result !== 'done') assert.equal(v.acts[0].label, '엔진 창 열기', `${result}|${reason} leads with the engine window`);
+    // 한 몸(11-26): 「엔진 창 열기」 대신 그 화면을 여는 단추(백업 상태 보기)가 앞이다
+    if (result !== 'done') assert.equal(v.acts[0].label, '백업 상태 보기', `${result}|${reason} leads with the status screen`);
     assert.doesNotMatch(JSON.stringify(v), /비웠|지웠|비우는 중|지우는 중/, 'nothing says it freed space');
   }
   assert.ok(said.size >= 18, 'answers are told apart');
   const busy = solioBackupView(SNAP({ oneclick: PRESS(300000, { stage: 'answered', result: 'rejected', reason: 'busy' }), status: { ...STATUS, attention: ['signin'] } }), NOW);
   assert.doesNotMatch(busy.say, /바쁨|바빠/, 'rejected busy is not 「busy」');
-  assert.equal(busy.acts[0].arg, 'signin', 'an attention word picks the engine screen');
+  // 답의 글이 「백업 상태 보기」를 부르므로 그 단추가 앞이다. 주의 낱말의 화면 단추는 줄에 남는다(Fable workbackup-solio-one-ui-20261127 F4)
+  assert.equal(busy.acts[0].arg, 'status', 'the words name 「백업 상태 보기」, so it leads');
+  assert.equal(busy.acts.filter(a => a.act === 'backup-open' && a.arg === 'signin').length, 1, 'the attention screen stays in the row');
 });
 
 test('Fable 1: after a minute without the engine taking it, the room says it waits, slows its polling and lets the person press again', async () => {
@@ -374,8 +377,8 @@ test('Fable 5: lines 02 and 03 are read values; the helper sits only where the e
   assert.equal(idle.board.steps[1].val, '11월 20일 통과');
   assert.match(idle.board.steps[2].mid, /12\.0GB를 찾았습니다/);
   assert.deepEqual(idle.board.groups.map(g => g.k), ['auto', 'suggest', 'view']);
-  assert.match(idle.board.groups[0].mid, /엔진 다음 판부터/);
-  assert.match(idle.board.groups[1].mid, /엔진 다음 판/);
+  assert.match(idle.board.groups[0].mid, /다음 판부터/);
+  assert.match(idle.board.groups[1].mid, /다음 판/);
   const proof = solioBackupView(SNAP({ status: { ...STATUS, job: { stage: 'proof', percent: 40 } } }), NOW);
   assert.equal(proof.board.at, 'proof');
   assert.equal(proof.board.main.label, '되살리기 확인 중');
@@ -417,7 +420,16 @@ test('a finished 원클릭 folds into one line and says the next thing; an updat
   const news = solioBackupView(SNAP({ app: { state: 'available', current: '0.5.8', latest: '0.5.9' }, feed: { state: 'available', version: '0.7.1' } }), NOW);
   assert.equal(news.board.steps[3].state, 'news');
   assert.match(news.board.steps[3].mid, /PC 앱 새 판 0\.5\.9/);
-  assert.match(news.board.steps[3].mid, /엔진 새 판 0\.7\.1/);
+  assert.match(news.board.steps[3].mid, /백업 부품 새 판 0\.7\.1/);
+  // 백업 부품이 적은 update.json의 새 판이 피드보다 앞서면 04 줄도 그 판을 말한다(맨 아래 업데이트 줄과 같은 판)
+  const recorded = solioBackupView(SNAP({ feed: { state: 'current', version: '0.7.0' }, update: { available: '0.7.2', current: '0.7.0', phase: 'idle', code: null } }), NOW);
+  assert.match(recorded.board.steps[3].mid, /백업 부품 새 판 0\.7\.2가 있습니다\(아래에서 올립니다\)/);
+  // 피드에서만 새 판이 보이고 맨 아래 줄에 단추가 없으면 「아래에서 올립니다」라고 하지 않는다(카본 A3)
+  assert.doesNotMatch(news.board.steps[3].mid, /아래에서 올립니다/);
+  const feedOnly = solioBackupView(SNAP({ feed: { state: 'available', version: '0.8.0' }, update: { available: null, current: '0.7.0', phase: 'idle', code: null } }), NOW);
+  assert.match(feedOnly.board.steps[3].mid, /백업 부품 새 판 0\.8\.0이 있습니다(?!\()/);
+  assert.equal(feedOnly.foot?.act ?? null, null);
+  assert.equal(recorded.board.steps[3].state, 'news');
   const paused = solioBackupView(SNAP({ status: { ...STATUS, state: 'paused' } }), NOW);
   assert.equal(paused.board, undefined, 'paused has no board');
   const off = solioBackupView(SNAP({ status: { ...STATUS, state: 'off' } }), NOW);
@@ -433,10 +445,10 @@ test('카본 A1 · A2 · A3 · A4 · A5 · A6 · A8: result words reach the fold
   const failed = solioBackupView(SNAP({ oneclick: PRESS(300000, doneAt), status: { ...STATUS, proof: { at: '2026-11-20T03:00:00Z', result: 'failed' } } }), NOW);
   assert.match(failed.board.sum.mid, /실패/);
   assert.match(failed.then, /실패했습니다/);
-  // A2: 주의 주제가 있어도 「엔진 창 열기」는 하나다
+  // A2: 주의 주제가 있어도 그 화면을 여는 단추는 하나다
   const rested = solioBackupView(SNAP({ oneclick: PRESS(300000, { stage: 'answered', result: 'rested', reason: 'battery' }), status: { ...STATUS, attention: ['folders'] } }), NOW);
-  assert.equal(rested.acts.filter(a => a.label === '엔진 창 열기').length, 1, JSON.stringify(rested.acts));
-  assert.equal(rested.acts[0].arg, 'folders');
+  assert.equal(rested.acts.filter(a => a.act === 'backup-open' && a.arg === 'folders').length, 1, JSON.stringify(rested.acts));
+  assert.equal(rested.acts[0].arg, 'status', 'the rest words name 「백업 상태 보기」 (Fable F4)');
   // A3: 끝난 뒤 새 판이 있으면 접힌 04 줄을 가리키지 않고 그 자리에서 말한다
   const news = solioBackupView(SNAP({ oneclick: PRESS(300000, doneAt), app: { state: 'available', current: '0.5.8', latest: '0.5.9' } }), NOW);
   assert.ok(news.board.sum);
@@ -470,7 +482,8 @@ test('Fable F1 · F2 · F4: an old answer leaves the top after 30 minutes, the d
   const answered = (ago, patch) => PRESS(ago + 60000, { stage: 'answered', answeredAt: new Date(NOW - ago).toISOString(), ...patch });
   // F1: 30분이 지난 「했음」은 지금의 확인할 일을 덮지 않는다
   const stale = solioBackupView(SNAP({ oneclick: answered(ONECLICK_FRESH + 60000, { result: 'done' }), status: { ...STATUS, state: 'attention', attention: ['signin'] } }), NOW);
-  assert.match(stale.say, /확인할 일이 있습니다: Google 로그인/);
+  assert.match(stale.say, /확인할 일이 있습니다: Google 계정/);
+  assert.match(stale.then, /「Google 계정 확인」을 눌러 확인해 주세요/, '받침 있는 단추 이름에는 「을」(카본 A5)');
   assert.equal(stale.note, '확인 필요');
   assert.equal(stale.board.sum, null, 'no folded line from an old press');
   assert.equal(stale.board.steps[0].state, '');
@@ -487,6 +500,19 @@ test('Fable F1 · F2 · F4: an old answer leaves the top after 30 minutes, the d
   assert.equal(changes.acts[0].arg, 'changes');
   const quiet = fresh({ view: 'checking', status: { ...STATUS, nextRunAt: new Date(NOW - 3 * 3600e3).toISOString() } });
   assert.match(quiet.then, /2시간 넘게 없습니다/);
+  // 글이 부르는 단추가 그 판에 있다(Fable workbackup-solio-one-ui-20261127 F4): 소식 없음은 「백업 상태 보기」, 되살리기 실패는 「증명 확인」
+  assert.match(quiet.then, /「백업 상태 보기」/);
+  assert.equal(quiet.acts[0].label, '백업 상태 보기');
+  const proofFail = fresh({ status: { ...STATUS, proof: { result: 'failed', at: new Date(NOW - 3600e3).toISOString() } } });
+  assert.match(proofFail.then, /「증명 확인」/);
+  assert.equal(proofFail.acts[0].label, '증명 확인');
+  for (const v of [quiet, proofFail]) {
+    const labels = v.acts.map(a => a.label);
+    for (const [, named] of `${v.say} ${v.then} ${v.board.steps.map(s => s.mid).join(' ')}`.matchAll(/「([^」]+)」(?:을|를|에서)/g)) {
+      if (['지금 백업', '지금 다시 시작', '자동 백업 켜기', '누를 때 비우기'].includes(named)) continue;
+      assert.ok(labels.includes(named), `「${named}」 is on the board: ${labels.join(' · ')}`);
+    }
+  }
   // F2: 속도를 모르면 「내려가지 않습니다」라고 하지 않는다
   const unknown = solioBackupView(SNAP({ space: { ...SPACE, drive: { ...SPACE.drive, growthPerDay: null, daysToStartLine: null } } }), NOW);
   assert.match(unknown.board.drive.pred, /며칠 더 재어야/);
@@ -591,7 +617,7 @@ test('2판 room: the label follows consent, line 03 says the preview, the freein
   v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, numbers: { preview: true, freed: 3 * GBy, items: 6, kept: 2, busy: 1 } }) }) }), NOW);
   assert.match(v.board.steps[2].mid, /켜면 지금 3\.0GB를 비울 수 있습니다/);
   assert.equal(v.say, '백업을 마쳤습니다.');
-  assert.match(v.then, /엔진 창에서 「누를 때 비우기」를 켜면/);
+  assert.match(v.then, /공간 화면에서 「누를 때 비우기」를 켜면/);
   assert.deepEqual([v.acts[0].act, v.acts[0].arg], ['backup-open', 'space']);
   assert.doesNotMatch(JSON.stringify(v), /비웠습니다/);
   // 실제로 비운 답
@@ -605,7 +631,7 @@ test('2판 room: the label follows consent, line 03 says the preview, the freein
   v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ ...answered, result: 'failed', reason: 'error' }) }) }), NOW);
   assert.equal(v.board.steps[2].state, 'fail');
   // 「다시 만들 수 있는 것」 묶음의 설명도 켜고 끈 것을 따른다
-  assert.equal(solioBackupView(SNAP({ status: st('off') }), NOW).board.groups.find(g => g.k === 'auto').mid, '엔진 창에서 켜면 원클릭이 임시 파일 · 빌드 폴더를 비웁니다');
+  assert.equal(solioBackupView(SNAP({ status: st('off') }), NOW).board.groups.find(g => g.k === 'auto').mid, '공간 화면에서 켜면 원클릭이 임시 파일 · 빌드 폴더를 비웁니다');
   assert.equal(solioBackupView(SNAP({ status: st('on') }), NOW).board.groups.find(g => g.k === 'auto').mid, '임시 파일 · 빌드 폴더는 원클릭을 누를 때 비웁니다');
 });
 
@@ -685,12 +711,12 @@ test('2판 room (Fable 다시 검수 r2 P2): a lost free answer on a PC that tur
   const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
   const answered = { stage: 'answered', result: 'done', answeredAt: new Date(NOW - 60000).toISOString() };
   const v = solioBackupView(SNAP({ status: { ...STATUS, spaceFree: 'on' }, oneclick: PRESS(120000, { ...answered, free: { stage: 'gone', result: null, reason: null, answeredAt: new Date(NOW - 1000).toISOString() } }) }), NOW);
-  assert.equal(v.then, '다만 비우기 결과를 확인하지 못했습니다. 엔진 창의 공간 비우기에서 봐 주세요.');
-  assert.deepEqual([v.note, v.acts[0].label, v.acts[0].arg], ['확인 필요', '엔진 창에서 보기', 'space']);
+  assert.equal(v.then, '다만 비우기 결과를 확인하지 못했습니다. 공간 화면에서 봐 주세요.');
+  assert.deepEqual([v.note, v.acts[0].label, v.acts[0].arg], ['확인 필요', '공간 화면 열기', 'space']);
   // 소식 없음을 말하는 동안에는 비우기 쪽 단추를 내지 않는다(카본 A1)
   const late = solioBackupView(SNAP({ view: 'checking', status: { ...STATUS, spaceFree: 'on' }, oneclick: PRESS(120000, { ...answered, free: { stage: 'gone', result: null, reason: null, answeredAt: new Date(NOW - 1000).toISOString() } }) }), NOW);
   assert.match(late.then, /소식이 2시간 넘게 없습니다/);
-  assert.ok(!late.acts.some(a => a.label === '엔진 창에서 보기'), JSON.stringify(late.acts.map(a => a.label)));
+  assert.ok(!late.acts.some(a => a.label === '공간 화면 열기'), JSON.stringify(late.acts.map(a => a.label)));
 });
 
 test('2판 room (Fable 최종 P1-1 · P2-1 · P2-2): a lead that opens the engine drops only 「엔진 창 열기」; a count answered after turning on says it is on; a lost free answer is said', async () => {
@@ -701,21 +727,21 @@ test('2판 room (Fable 최종 P1-1 · P2-1 · P2-2): a lead that opens the engin
   const free = patch => ({ stage: 'sent', result: null, reason: null, answeredAt: null, ...patch });
   // P1-1: 쉰 답 · 확인할 일 · 미리 보기에서 「파일 되살리기」와 「새 PC로 옮겨 오기」는 남고, 엔진 창을 여는 단추는 하나다
   const rested = solioBackupView(SNAP({ oneclick: PRESS(120000, { stage: 'answered', result: 'rested', reason: 'battery', answeredAt: new Date(NOW - 60000).toISOString() }) }), NOW);
-  assert.deepEqual(labels(rested), ['엔진 창 열기', '파일 되살리기', '새 PC로 옮겨 오기']);
+  assert.deepEqual(labels(rested), ['백업 상태 보기', '파일 되살리기', '새 PC로 옮겨 오기', '설정']);
   const attention = solioBackupView(SNAP({ status: { ...STATUS, attention: ['folders'] }, oneclick: PRESS(120000, answered) }), NOW);
-  assert.ok(labels(attention).includes('파일 되살리기') && labels(attention).includes('새 PC로 옮겨 오기') && !labels(attention).includes('엔진 창 열기'), JSON.stringify(labels(attention)));
+  assert.ok(labels(attention).includes('파일 되살리기') && labels(attention).includes('새 PC로 옮겨 오기') && !labels(attention).includes('백업 상태 보기'), JSON.stringify(labels(attention)));
   const counted = { ...answered, free: free({ ...answered, numbers: { preview: true, freed: 3 * GBy, items: 6, kept: 2, busy: 1 } }) };
   let v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(120000, counted) }), NOW);
-  assert.deepEqual(labels(v), ['엔진 창에서 켜기', '파일 되살리기', '새 PC로 옮겨 오기']);
+  assert.deepEqual(labels(v), ['공간 화면 열기', '파일 되살리기', '새 PC로 옮겨 오기', '설정']);
   // P2-1: 셈 뒤에 엔진 창에서 켰으면 「켜면」이 아니라 켠 것을 말하고 「엔진 창에서 켜기」를 내지 않는다
   v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, counted) }), NOW);
   assert.match(v.board.steps[2].mid, /^켰습니다\. 다음 누름부터 3\.0GB쯤 비웁니다$/);
   assert.match(v.then, /「누를 때 비우기」를 켰습니다/);
-  assert.ok(!labels(v).includes('엔진 창에서 켜기') && !/켜면/.test(JSON.stringify(v)), JSON.stringify(labels(v)));
+  assert.ok(!labels(v).includes('공간 화면 열기') && !/켜면/.test(JSON.stringify(v)), JSON.stringify(labels(v)));
   // P2-2: 비우기 요청의 답을 잃었으면 03 줄이 그렇다고 쓴다
   for (const stage of ['gone', 'expired']) {
     v = solioBackupView(SNAP({ status: st('on'), oneclick: PRESS(120000, { ...answered, free: free({ stage, answeredAt: new Date(NOW - 1000).toISOString() }) }) }), NOW);
-    assert.deepEqual([v.board.steps[2].mid, v.board.steps[2].state], ['비우기 결과를 확인하지 못했습니다. 엔진 창의 공간 비우기에서 봐 주세요', 'wait'], stage);
+    assert.deepEqual([v.board.steps[2].mid, v.board.steps[2].state], ['비우기 결과를 확인하지 못했습니다. 공간 화면에서 봐 주세요', 'wait'], stage);
   }
   v = solioBackupView(SNAP({ status: st('off'), oneclick: PRESS(120000, { ...answered, free: free({ stage: 'gone', answeredAt: new Date(NOW - 1000).toISOString() }) }) }), NOW);
   assert.match(v.board.steps[2].mid, /^셈 결과를 확인하지 못했습니다/);

@@ -2,7 +2,7 @@
 // 공개 저장소라 이름과 메일은 지어낸 것만 쓴다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { solioQueue, solioQueueTier, solioQueueMemoPrune, solioTodoItems, solioTodoAiSay, solioTodoEndThen, QUEUE_TIER, QUEUE_LATER_MS, QUEUE_FAILED_MS } from '../renderer/solio-queue.mjs';
+import { solioQueue, solioQueueTier, solioQueueMemoPrune, solioTodoItems, solioTodoAiSay, solioTodoEndThen, QUEUE_TIER, QUEUE_LATER_MS, QUEUE_FAILED_MS, BACKUP_UPDATE_KEY } from '../renderer/solio-queue.mjs';
 import { solioBackupView } from '../renderer/solio-backup-model.mjs';
 import { officeState, officeReduce } from '../renderer/office-model.mjs';
 
@@ -169,7 +169,7 @@ test('subscriptions: sign in again, unreadable accounts and a login deadline soo
   assert.deepEqual(r.queue[4].acts, [{ id: 'go', label: '계정 관리 열기', kind: 'go', run: { aside: 'manage' } }]);
 });
 
-test('backup: setup and attention are one-click items that open the engine window; protected and installing are not', () => {
+test('backup: setup and attention are one-click items that open their screen; protected and installing are not', () => {
   const base = { ok: true, available: true };
   const setup = { ...base, view: 'no-engine', feed: { state: 'ready' } };
   const items = solioTodoItems({ backup: solioBackupView(setup, NOW), backupRaw: setup }, NOW);
@@ -179,7 +179,8 @@ test('backup: setup and attention are one-click items that open the engine windo
   assert.deepEqual(items[0].acts.map(a => [a.label, a.kind, a.run.backup]), [['보호 시작', 'open', ['backup-start', 'protect']], ['이 PC로 옮겨 오기', 'open', ['backup-start', 'move']]]);
   const paused = { ...base, view: 'status', status: { state: 'paused', writtenAt: new Date(NOW - H).toISOString() } };
   const p = solioTodoItems({ backup: solioBackupView(paused, NOW), backupRaw: paused }, NOW);
-  assert.deepEqual(p.map(i => [i.key, i.acts[0].label, i.since]), [['backup:멈춤', '엔진 창에서 다시 켜기', NOW - H]]);
+  // 「다시 켜기」가 아니라 그 화면을 여는 이름이다. 켜는 것은 그 화면의 「지금 다시 시작」이다(Fable workbackup-solio-one-ui-20261127 F5)
+  assert.deepEqual(p.map(i => [i.key, i.acts[0].label, i.since]), [['backup:멈춤', '백업 상태 보기', NOW - H]]);
   const safe = { ...base, view: 'status', status: { state: 'safe', folders: 3 } };
   assert.deepEqual(solioTodoItems({ backup: solioBackupView(safe, NOW), backupRaw: safe }, NOW), []);
   const admin = { ...base, view: 'no-engine', install: { phase: 'admin' } };
@@ -188,8 +189,58 @@ test('backup: setup and attention are one-click items that open the engine windo
   const busy = { ...base, view: 'no-engine', install: { phase: 'download', progress: 40 } };
   const b = solioTodoItems({ backup: solioBackupView(busy, NOW), backupRaw: busy }, NOW);
   assert.deepEqual(b.map(i => [i.key, i.ai]), [['backup:busy', true]]);
-  assert.equal(solioTodoAiSay(b), '백업 엔진이 설치를 이어 가고 있습니다.');
-  assert.equal(solioTodoAiSay([{ src: 'backup', ai: true, install: false }]), '백업 엔진이 일하고 있습니다.', '설치가 아닌 백업 중에는 설치라고 하지 않는다');
+  assert.equal(solioTodoAiSay(b), '백업 부품을 깔고 있습니다.');
+  assert.equal(solioTodoAiSay([{ src: 'backup', ai: true, install: false }]), '원클릭이 백업하고 있습니다.', '설치가 아닌 백업 중에는 설치라고 하지 않는다');
+});
+
+test('backup: the AI line names the job the engine is doing; the paused and off words name the button that is there (Fable workbackup-solio-one-ui-20261127 F4 · F5)', () => {
+  const base = { ok: true, available: true, view: 'status' };
+  const doing = stage => { const raw = { ...base, status: { state: 'safe', folders: 3, job: { stage, percent: 10 } } }; return solioTodoAiSay(solioTodoItems({ backup: solioBackupView(raw, NOW), backupRaw: raw }, NOW).filter(i => i.ai)); };
+  assert.equal(doing('restore'), '원클릭이 파일을 되살리고 있습니다.');
+  assert.equal(doing('move'), '원클릭이 옮겨 오고 있습니다.');
+  assert.equal(doing('proof'), '원클릭이 되살리기를 확인하고 있습니다.');
+  assert.equal(doing('backup'), '원클릭이 백업하고 있습니다.');
+  assert.equal(doing('something-new'), '원클릭이 일하고 있습니다.');
+  for (const state of ['paused', 'off']) {
+    const v = solioBackupView({ ...base, status: { state, writtenAt: new Date(NOW - H).toISOString() } }, NOW);
+    assert.equal(v.acts[0].label, '백업 상태 보기', state);
+    assert.match(v.then, /「백업 상태 보기」에서 「(지금 다시 시작|자동 백업 켜기)」/, state);
+    assert.doesNotMatch(v.then, /「다시 켜기」|「켜기」/, state);
+  }
+  // 주의 낱말의 이름은 방 안 화면의 길 이름과 같다
+  const att = solioBackupView({ ...base, status: { state: 'attention', attention: ['folders', 'signin', 'space'], writtenAt: new Date(NOW - H).toISOString() } }, NOW);
+  assert.match(att.say, /확인할 일이 있습니다: 지키는 폴더, Google 계정, 공간\./);
+  assert.equal(att.acts[0].label, '지키는 폴더 보기');
+});
+
+test('backup: with the room screen open (or left open in another room) the to-do still counts from the board state, not the path', () => {
+  const base = { ok: true, available: true, view: 'status' };
+  const paused = { ...base, status: { state: 'paused', writtenAt: new Date(NOW - H).toISOString() }, room: { open: true, topic: 'status', host: 'ready', code: null, ui: 'ok', ready: true } };
+  const scene = solioBackupView(paused, NOW);
+  assert.ok(scene.door, 'the room shows only the path');
+  assert.deepEqual(solioTodoItems({ backup: scene, backupRaw: paused }, NOW).map(i => [i.key, i.acts[0].label]), [['backup:멈춤', '백업 상태 보기']]);
+  // 여는 중(준비 전)에는 길이 busy여도 백업 중이라고 하지 않는다
+  const opening = { ...base, status: { state: 'safe', folders: 3 }, room: { open: true, topic: 'restore', host: 'starting', code: null, ui: 'none', ready: false } };
+  assert.equal(solioBackupView(opening, NOW).busy, true);
+  const items = solioTodoItems({ backup: solioBackupView(opening, NOW), backupRaw: opening }, NOW);
+  assert.deepEqual(items, []);
+  assert.equal(solioTodoAiSay(items.filter(i => i.ai)), '');
+  // 백업이 정말 도는 중이면 방 안 화면을 열어 두어도 AI 줄 하나다
+  const running = { ...opening, status: { state: 'safe', folders: 3, job: { stage: 'backup', percent: 30 } } };
+  assert.deepEqual(solioTodoItems({ backup: solioBackupView(running, NOW), backupRaw: running }, NOW).map(i => [i.key, i.install]), [['backup:busy', false]]);
+});
+
+test('backup update card (한 몸 3.2): one card 「백업 부품 새 판 <판> — Windows 확인 한 번」, its button runs the updater; none while it runs', () => {
+  const base = { ok: true, available: true, view: 'status', status: { state: 'safe', folders: 3, writer: true }, engine: { installed: true, version: '0.8.0', host: true } };
+  const card = raw => solioTodoItems({ backup: solioBackupView(raw, NOW), backupRaw: raw }, NOW);
+  const fresh = { ...base, update: { available: '0.8.1', current: '0.8.0', phase: 'idle', code: null } };
+  const items = card(fresh);
+  assert.deepEqual(items.map(i => [i.key, i.say, i.acts.map(a => [a.label, a.kind, a.run.backup])]), [[BACKUP_UPDATE_KEY, '백업 부품 새 판 0.8.1 — Windows 확인 한 번', [['업데이트', 'open', ['backup-update', '']]]]]);
+  assert.equal(card({ ...base, update: { available: '0.8.1', phase: 'error', code: 'RUN_ACTIVE' } })[0].then, '백업이 끝난 뒤 다시 눌러 주세요.');
+  assert.equal(card({ ...base, update: { available: '0.8.1', phase: 'error', code: 'UPDATE_START' } })[0].then, '관리자 확인을 받지 못했습니다. 관리자 계정이 아니면 관리자에게 부탁해 주세요.');
+  assert.deepEqual(card({ ...base, update: { available: '0.8.1', phase: 'installing' } }).map(i => [i.key, i.ai, i.install]), [['backup:busy', true, true]], 'while it goes up there is no card, only the AI line');
+  assert.deepEqual(card({ ...base, update: { available: null, phase: 'idle' } }), []);
+  for (const i of items) assert.doesNotMatch(JSON.stringify(i), /엔진/);
 });
 
 test('the end sentence counts what is left: skipped, held for later with the time it comes back, and AI work', () => {

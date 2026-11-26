@@ -48,6 +48,9 @@ const {yieldToUpdatingInstaller}=require('./platform-update-marker.cjs');
 const {createSiteVisits}=require('./site-visits.cjs');
 const {createSnsHealth}=require('./sns-health.cjs');
 const {createSolioBackup}=require('./solio-backup.cjs');
+// 업무 백업 한 몸(11-26, experiences/solo-backup-rust/SOLIO_ONE_CLIENT.md): 방 안의 엔진 화면 자리, synk-solio: 주소, 원격 디버깅 거절
+const {createWorkbackupDoor}=require('./workbackup-view.cjs');
+const {solioTopic,debugSwitch,SOLIO_SCHEME}=require('./solio-launch.cjs');
 const {createPcProfile}=require('./pc-profile.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
@@ -57,7 +60,8 @@ const {createOffice,loadOfficeModel}=require('./office.cjs');
 const {enabled:officeTasksEnabled,createTaskRuntime}=require('./office-task-runtime.cjs');
 const {createChatGPTConnection}=require('./chatgpt-connection.cjs');
 app.enableSandbox();
-protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
+// workbackup-ui는 백업 방 안 엔진 화면의 파일이다. 처리기는 그 자리의 세션(persist:workbackup-ui)에만 단다(workbackup-view.cjs, 2.2 F12)
+protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}},{scheme:'workbackup-ui',privileges:{standard:true,secure:true}}]);
 const packaged=app.isPackaged;
 let runtime,developmentAuthConfigPath;
 if(packaged)runtime=JSON.parse(fs.readFileSync(path.join(app.getAppPath(),'runtime.json'),'utf8'));
@@ -70,6 +74,9 @@ else {
   if(developmentAuthConfigPath)runtime.auth=JSON.parse(fs.readFileSync(path.resolve(developmentAuthConfigPath),'utf8'));
 }
 if(!Object.hasOwn(CLIENTS,runtime.clientId)||!['development','release'].includes(runtime.mode)||!safeEntry(runtime.entry,runtime.mode,runtime)||(runtime.clientId==='platform'&&runtime.entry!==PLATFORM_ENTRY)||(runtime.clientId!=='platform'&&runtime.entry===PLATFORM_ENTRY))throw Error('Invalid desktop runtime configuration');
+// 포장된 platform 판은 원격 디버깅 · Node 검사기 스위치로 켜지면 아무것도 만들지 않고 끝난다. PC 앱 실행 파일로 백업 방의 엔진 화면을 몰고 가
+// 호스트의 바꾸는 메서드에 닿지 못하게 한다(SOLIO_ONE_CLIENT.md 2.3). 퓨즈(RunAsNode · NODE_OPTIONS · --inspect)는 tools/package.cjs가 끈다
+if(packaged&&runtime.clientId==='platform'&&debugSwitch(process.argv,app.commandLine?name=>app.commandLine.hasSwitch(name):undefined))process.exit(1);
 const smoke=runtime.mode==='development'&&process.argv.includes('--synk-smoke');
 const current=identity(runtime.clientId,runtime.mode,{packaged}),entry=messengerViewEntry(runtime.entry,runtime.clientId,process.argv);
 const localServer=createLocalServerGate({entry:runtime.entry});
@@ -271,7 +278,34 @@ function snsHealthCall(){if(runtime.clientId!=='platform'||smoke)return {ok:fals
 let solioBackupService=null;
 // 원클릭(11-23)의 04 업데이트 확인: PC 앱 업데이터의 상태를 읽고 확인을 부탁한다(받지는 않는다). platformUpdate는 부를 때 읽는다
 const solioAppUpdate=Object.freeze({snapshot:()=>platformUpdate?.snapshot(),checkForUpdate:()=>platformUpdate?.checkForUpdate()});
-function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),pcDrives:pcSpaceDrives,appUpdate:solioAppUpdate});return solioBackupService;}
+function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),pcDrives:pcSpaceDrives,appUpdate:solioAppUpdate,door:solioDoor()});return solioBackupService;}
+// 백업 방 안의 엔진 화면 자리와 호스트(workbackup-view.cjs · solio-backup-host.cjs). Windows의 플랫폼 창에만 있고, 처음 부를 때 만든다.
+// 호스트의 열기(ask)는 본체가 한 번 더 거른 뒤 shell로 연다. 바뀌면 화면에 다시 읽으라고만 알린다(값은 스냅숏으로 간다)
+let solioDoorService=null;
+function solioDoor(){
+  if(runtime.clientId!=='platform'||smoke||process.platform!=='win32')return null;
+  if(!solioDoorService)solioDoorService=createWorkbackupDoor({WebContentsView,session,ipcMain,getWindow:()=>window,createSpaceViewHost,preload:path.join(__dirname,'workbackup-view-preload.cjs'),
+    openExternal:url=>shell.openExternal(url),openPath:dir=>shell.openPath(dir),stateRoot:typeof process.env.APPDATA==='string'&&path.isAbsolute(process.env.APPDATA)?path.join(process.env.APPDATA,'SynkWorkBackup'):null,spawn,packaged,
+    jobRunning:()=>solioBackupService?.jobRunning?.()===true,onChange:value=>sendDesktop('synk:solio-backup-changed',{type:value?.event==='focus-band'?'focus-band':'changed'})});
+  return solioDoorService;
+}
+// synk-solio:backup?topic=<낱말>(엔진이 인자 없이 켜지거나 알림이 눌렸을 때, SOLIO_ONE_CLIENT.md 2.5). 받은 낱말과 때를 둔다.
+// 로그아웃했거나 방이 없는 계정이면 화면이 로그인 화면 위에 「백업 창 따로 열기」 한 줄을 둔다. 그 줄은 받은 뒤 30분 동안만 로그인 없이 비상 창을 연다
+let solioAsk=null;
+const SOLIO_ASK_FOR=30*60000;
+function receiveSolioTopic(argv){
+  if(runtime.clientId!=='platform'||smoke)return false;
+  const topic=solioTopic(argv);if(!topic)return false;
+  solioAsk={topic,at:Date.now()};
+  requestPlatformWindow({type:'open-backup',topic});
+  return true;
+}
+function solioBackupWindow(){
+  if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};
+  const status=accountStatus(),asked=!!solioAsk&&Date.now()-solioAsk.at<SOLIO_ASK_FOR;
+  if(status?.signedIn===true&&status.account)return solioBackup().openWindow(status.account,{anyone:asked});
+  return asked?solioBackup().openWindow(null,{anyone:true}):{ok:false,code:'SIGN_IN_REQUIRED'};
+}
 // 솔리오 「내 PC 진단」(11-24, docs/디자인/솔리오_PC진단_20261123/설계.md): 이 PC의 사양을 읽어 앱 자료 폴더에만 둔다. 계정과 상관없이 PC마다 하나이고, 서버 · 로그로 보내지 않는다
 let pcProfileService=null;
 function pcProfile(){if(runtime.clientId!=='platform'||smoke)return null;if(!pcProfileService)pcProfileService=createPcProfile({userData:app.getPath('userData'),display:()=>{const d=screen.getPrimaryDisplay();return {width:d.size.width,height:d.size.height,scale:d.scaleFactor,workWidth:d.workAreaSize.width};}});return pcProfileService;}
@@ -288,7 +322,8 @@ function pcProfileCall(work){const service=pcProfile();if(!service)return {ok:fa
 let pcProfileWarmed=false;
 function pcProfileWarm(){if(pcProfileWarmed||!pcProfile()||!accountStatus()?.signedIn)return;pcProfileWarmed=true;const timer=setTimeout(()=>{if(accountStatus()?.signedIn)void pcProfile()?.refresh().catch(()=>{});else pcProfileWarmed=false;},8000);timer.unref?.();}
 // 로그인 알림마다 남은 setup 요청을 치운다. 방을 아직 열지 않았어도 서비스를 만들어 치우므로, 앱을 다시 켠 뒤 첫 알림이 앞 실행의 요청을 지운다(Fable 요청 수명 확인 P2)
-function solioBackupSweep(){if(runtime.clientId!=='platform'||smoke)return;try{solioBackup().accountChanged();}catch{}}
+// 방 안의 엔진 화면은 연 계정의 것이다. 다른 계정이거나 로그아웃이면 자리를 닫고 bye를 보낸다. 같은 계정의 토큰 갱신은 그 계정 그대로 본다(officeAccountOf)
+function solioBackupSweep(){if(runtime.clientId!=='platform'||smoke)return;try{solioBackup().accountChanged(officeAccountOf(accountStatus())?.synk_user_id||null);}catch{}}
 function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};return work(solioBackup(),status.account);}
 // 누른 계정과 지금 로그인한 계정이 같을 때만 그 계정의 Google 주소를 준다(GPT 검수 GA2)
 // 솔리오 「사무실」(11-20, docs/디자인/솔리오_사무실_20261119/구현설계.md 11.1 · 13절, 15절 6단계): 플랫폼 창에서 로그인한 계정만 묻는다. 볼 계정인지는 office.cjs가 채널마다 viewers.json으로 본다.
@@ -393,6 +428,8 @@ app.on('before-quit',()=>{chatgptConnection?.close();chatgptConnection=undefined
 app.on('before-quit',()=>estimateWindow?.close());
 app.on('before-quit',()=>officeService?.close());
 app.on('before-quit',()=>officeEmployeeTasks?.close());
+// 앱이 끝날 때 호스트에 bye만 보낸다. 죽이지 않는다. 하던 되살리기 · 옮겨 오기는 호스트가 마친다(SOLIO_ONE_CLIENT.md 2.1 「끝」)
+app.on('before-quit',()=>{try{solioDoorService?.dispose();}catch{}});
 app.on('browser-window-focus',(_event,focused)=>{if(officeTaskSource&&focused===window)sendDesktop('synk:office-changed');});
 app.on('will-quit',event=>{
   if(platformUpdate?.needsInstallHandoff()){
@@ -430,7 +467,8 @@ if(officeUnhook||yielded){/* --office-unhook으로 불렸거나 설치기에 넘
 else if(!app.requestSingleInstanceLock())app.quit();
 else {
   // --office-unhook으로 온 실행은 위치 확인과 창보다 먼저 받아 버린다. 창을 열지 않는다
-  app.on('second-instance',(_event,argv)=>{if(runtime.clientId==='platform'&&Array.isArray(argv)&&argv.includes('--office-unhook'))return;if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();connectionRecovery?.reopen?.();}});
+  // platform은 인자를 synk-solio: 주소로만 읽는다. 마지막 인자가 그 꼴과 글자 그대로 같을 때만 백업 방을 그 낱말로 연다(SOLIO_ONE_CLIENT.md 2.5)
+  app.on('second-instance',(_event,argv)=>{if(runtime.clientId==='platform'&&Array.isArray(argv)&&argv.includes('--office-unhook'))return;if(!appLocationReady)return;if(runtime.clientId==='platform'){if(!receiveSolioTopic(argv))requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();connectionRecovery?.reopen?.();}});
   app.on('window-all-closed',()=>{if(process.platform!=='darwin'&&(!platformTray?.isActive()||platformTray.isQuitting()||desktopPreferences?.snapshot().preferences.closeToTray===false))app.quit();});
   app.on('activate',()=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(platformTray?.isActive())platformTray.show();else if(!window||window.isDestroyed())createWindow();});
   app.whenReady().then(async()=>{
@@ -438,6 +476,10 @@ else {
     if(!location.continueStartup||quittingRequested)return;
     appLocationReady=true;
     if(runtime.clientId==='platform'){
+      // 포장된 Windows 판만 synk-solio: 주소를 맡는다. 첫 실행의 마지막 인자가 그 주소면 창을 연 뒤 백업 방을 그 낱말로 연다
+      if(packaged&&!smoke&&process.platform==='win32'){try{app.setAsDefaultProtocolClient(SOLIO_SCHEME,process.execPath,['--']);}catch{}}
+      const firstTopic=smoke?null:solioTopic(process.argv);
+      if(firstTopic){solioAsk={topic:firstTopic,at:Date.now()};pendingDesktopAction={type:'open-backup',topic:firstTopic};autostartHidden=false;}
       const cacheRoot=path.join(app.getPath('userData'),'PlatformUpdates');
       platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot,onChange:state=>{if(['downloading','opening'].includes(state.state))trayMemory?.cancel();sendDesktop('synk:update-changed',state);startupGate?.observe(state);if(unseenFailureResolved(unseenFailure,state))unseenFailure=null;},
         requestQuit:()=>setImmediate(()=>app.quit()),openDiskImage:file=>shell.openPath(file),
@@ -878,6 +920,8 @@ function createWindow(){
   contents.on('did-finish-load',sendTeachingView);
   if(isPlatform)contents.on('did-stop-loading',deliverPendingAction);
   if(isPlatform){placementControl=windowPlacement.attach(window,{maximized:placement.maximized});contents.on('did-finish-load',()=>desktopPreferences.applyWindow(window));}
+  // 호스트의 확인 창은 이 창을 주인으로 뜬다. 창이 새로 생기면 핸들을 다시 보낸다(SOLIO_ONE_CLIENT.md 2.6 window)
+  if(isPlatform)solioDoorService?.windowChanged();
   // A new document committed in the platform window drops the company assignment its former document confirmed and
   // ends that document's lookup in flight (company-entry-destinations.cjs invalidate). Electron sends did-navigate only
   // for a main-frame document that actually changed: a move inside the same document, a subframe, and a navigation
@@ -1018,10 +1062,15 @@ function createWindow(){
     'synk:solio-backup-snapshot':()=>solioBackupCall((service,account)=>service.snapshot(account)),
     // 누를 때의 계정과 로그인 세대를 잡아 둔다. 같은 계정이라도 다시 로그인했으면 다른 회차로 본다(GPT 셋째 검수 GA4)
     'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>{const generation=accountStatus()?.sessionGeneration;return service.start(account,mode,{isCurrent:()=>{const now=accountStatus();return now?.signedIn===true&&now.account?.synk_user_id===account.synk_user_id&&now.sessionGeneration===generation;},isSameLogin:()=>{const now=accountStatus();if(now?.sessionGeneration!==generation)return false;return now?.signedIn===true?now.account?.synk_user_id===account.synk_user_id:renewingAccount()===account.synk_user_id;}});}),
-    'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>service.open(account,topic)),
+    'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>{const generation=accountStatus()?.sessionGeneration;return service.open(account,topic,{isCurrent:()=>{const now=accountStatus();return now?.signedIn===true&&now.account?.synk_user_id===account.synk_user_id&&now.sessionGeneration===generation;}});}),
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
     // 원클릭(11-23): run-now 요청을 쓰고 엔진의 요청 작업을 깨운다. 본체가 계정 · 엔진 · 보호 상태를 다시 확인한다
     'synk:solio-backup-oneclick':()=>solioBackupCall((service,account)=>service.oneClick(account)),
+    // 한 몸(11-26): 방 안 엔진 화면의 자리(꼭 {shown, top})와 「← 원클릭」, 업데이트 카드, 「백업 창 따로 열기」
+    'synk:solio-backup-place':input=>solioBackupCall((service,account)=>service.placeView(account,input)),
+    'synk:solio-backup-close-view':()=>solioBackupCall((service,account)=>service.closeView(account)),
+    'synk:solio-backup-update':()=>solioBackupCall((service,account)=>service.updateEngine(account)),
+    'synk:solio-backup-window':()=>solioBackupWindow(),
     // 「이 PC에 이렇게 맞췄습니다」(PC 진단 설계 5.2): 넘기는 값은 없다. 저장 위치 열기는 Windows 설정의 정해진 화면 하나만 연다
     'synk:pc-profile':()=>pcProfileCall(service=>pcProfileRead(service)),
     'synk:pc-profile-again':()=>pcProfileCall(service=>pcProfileRead(service,{full:true})),

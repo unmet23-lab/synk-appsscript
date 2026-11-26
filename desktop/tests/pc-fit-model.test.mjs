@@ -212,13 +212,13 @@ test('the oneclick board uses the PC drives while the engine report is missing, 
   const base = { ok: true, available: true, view: 'status', now: new Date(NOW).toISOString(), engine: { installed: true, version: '0.7.1' }, status: STATUS, feed: { state: 'available', version: '0.7.1' }, install: { phase: 'idle' }, oneclick: null, app: null };
   const pc = { readAt: new Date(NOW - 60e3).toISOString(), drives: [d('C', 953, 118), d('D', 1907, 299)].map(x => ({ ...x, growthPerDay: null, startLineGb: null, daysToStartLine: null })), hiddenDrives: [{ letter: 'G', why: 'virtual' }] };
   const card = solioBackupView({ ...base, space: { missing: true, invalid: false, pc } }, NOW).board.drive;
-  assert.deepEqual([card.label, /^PC 앱이 오늘 .+에 잰 값$/.test(card.at), card.linePct, card.lineLabel, card.pred], ['C: 드라이브 953GB', true, null, '', '엔진이 첫 공간 훑기를 마치면 정한 선과 언제 닿을지를 보입니다.']);
+  assert.deepEqual([card.label, /^PC 앱이 오늘 .+에 잰 값$/.test(card.at), card.linePct, card.lineLabel, card.pred], ['C: 드라이브 953GB', true, null, '', '첫 공간 훑기를 마치면 정한 선과 언제 닿을지를 보입니다.']);
   assert.deepEqual(card.rows.map(r => [r.label, r.linePct]), [['D:', null]]);
   assert.equal(card.hidden, 'G: 드라이브는 Google Drive 같은 가상 드라이브로 보여 뺐습니다.');
   // PC 값이 없으면 전처럼 빈 칸 글
-  assert.equal(solioBackupView({ ...base, space: { missing: true, invalid: false } }, NOW).board.drive.empty, '엔진이 아직 공간을 재지 않았습니다. 하루 한 번 잽니다.');
+  assert.equal(solioBackupView({ ...base, space: { missing: true, invalid: false } }, NOW).board.drive.empty, '아직 공간을 재지 않았습니다. 하루 한 번 잽니다.');
   // 보고서가 깨졌으면 PC 값으로 덮지 않는다
-  assert.equal(solioBackupView({ ...base, space: { missing: false, invalid: true, pc } }, NOW).board.drive.empty, '엔진이 남긴 공간 보고서를 읽지 못했습니다.');
+  assert.equal(solioBackupView({ ...base, space: { missing: false, invalid: true, pc } }, NOW).board.drive.empty, '공간 보고서를 읽지 못했습니다.');
 });
 
 test('an account without 원클릭 and 사무실 reads only the measured values, not features it does not have (Fable 최종 P1)', () => {

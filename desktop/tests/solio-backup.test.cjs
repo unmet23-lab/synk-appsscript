@@ -158,7 +158,8 @@ test('the screen picks one view: Mac, no engine, engine removed, set-up, newer f
 test('the engine counts as installed only with the HKLM uninstall entry and WorkBackupRun.exe in its folder', async () => {
   const dir = engineDir();
   const readEngine = run => B.readEngine({ run, fsImpl: engineFiles() });
-  assert.deepEqual(await readEngine(async () => JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' })), { installed: true, version: '0.7.0' });
+  // 설치 폴더는 호스트 · 업데이트 · 비상 창을 띄울 실행 파일을 위해 본체 안에서만 쓴다(방에 넘기지 않는다, 한 몸 11-26)
+  assert.deepEqual(await readEngine(async () => JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' })), { installed: true, version: '0.7.0', location: dir });
   assert.equal((await readEngine(async () => '{}')).installed, false);
   assert.equal((await readEngine(async () => JSON.stringify({ loc: temp(), ver: '0.7.0' }))).installed, false, 'the entry without the runner is not an engine');
   assert.equal((await readEngine(async () => JSON.stringify({ loc: 'relative\\dir' }))).installed, false);
@@ -318,7 +319,7 @@ test('the screen words: one urgent sentence first, safe only when safe, buttons 
     if (name === 'off') continue;
     assert.ok(v.visible && typeof v.say === 'string' && v.say.length > 5 && !/\n/.test(v.say), name);
     assert.equal((v.say.match(/[.!?]\s/g) || []).length, 0, `${name}: the top line is one sentence`);
-    for (const a of v.acts) assert.ok(['backup-start', 'backup-open', 'backup-dismiss'].includes(a.act) && (a.act !== 'backup-open' || B.OPEN_TOPICS.includes(a.arg)) && (a.act !== 'backup-start' || ['protect', 'move'].includes(a.arg)), `${name}: ${JSON.stringify(a)}`);
+    for (const a of v.acts) assert.ok(['backup-start', 'backup-open', 'backup-dismiss'].includes(a.act) && (a.act !== 'backup-open' || B.VIEW_TOPICS.includes(a.arg)) && (a.act !== 'backup-start' || ['protect', 'move'].includes(a.arg)), `${name}: ${JSON.stringify(a)}`);
     if (name !== 'safe') assert.doesNotMatch(v.say, /지키고 있습니다/, `${name} never says safe`);
   }
   assert.match(views.safe.say, /업무 폴더 4개를 지키고 있습니다/);
@@ -330,9 +331,11 @@ test('the screen words: one urgent sentence first, safe only when safe, buttons 
   assert.match(views.newer.then, /솔리오.*업데이트/);
   assert.match(views.checking.say, /확인하는 중/);
   // 보호 중이면 원클릭 판의 큰 단추가 결정 단추이고(11-23), 아래 단추 줄은 모두 조용하다
-  assert.deepEqual(views.attention.acts[0], { label: '엔진 창에서 확인', act: 'backup-open', arg: 'signin', primary: false });
+  assert.deepEqual(views.attention.acts[0], { label: 'Google 계정 확인', act: 'backup-open', arg: 'signin', primary: false });
   assert.equal(views.attention.board.main.label, '백업하고 상태 보기');
-  assert.deepEqual(views.safe.acts.map(a => a.arg), ['restore', 'move', 'status']);
+  // 시안 가(11-26): 조용한 단추 셋은 파일 되살리기 · 새 PC로 옮겨 오기 · 설정이다. 「엔진 창 열기」는 없다
+  assert.deepEqual(views.safe.acts.map(a => [a.label, a.arg]), [['파일 되살리기', 'restore'], ['새 PC로 옮겨 오기', 'move'], ['설정', 'settings']]);
+  for (const v of Object.values(views)) assert.doesNotMatch(JSON.stringify(v), /엔진/, 'no 「엔진」 on the screen');
   assert.ok(views.safe.acts.every(a => !a.primary) && views.safe.board && views.checking.board, 'safe and checking show the board');
   assert.deepEqual(views.failed.acts[0], { label: '다시 받기', act: 'backup-start', arg: 'move', primary: true });
   assert.ok(views.admin.busy);
@@ -459,10 +462,10 @@ test('P2: safe with attention words leads with them; the engine-present failures
   const status = { ...B.normalizeStatus(sample()).status, attention: ['update'] };
   const base = { ok: true, available: true, engine: { installed: true }, feed: {}, install: { phase: 'idle' } };
   const v = solioBackupView({ ...base, view: 'status', status });
-  assert.match(v.then, /엔진 업데이트/);
+  assert.match(v.then, /백업 부품 업데이트/);
   assert.deepEqual([v.acts[0].arg, v.note], ['update', '확인 필요']);
   const failed = solioBackupView({ ...base, view: 'needs-setup', status: null, install: { phase: 'error', code: 'OPEN_FAILED', mode: 'protect' } });
-  assert.match(failed.say, /엔진 창을 열지 못했습니다/);
+  assert.match(failed.say, /백업 화면을 열지 못했습니다/);
   assert.equal(failed.acts[0].label, '다시 하기');
 });
 
@@ -757,7 +760,7 @@ test('GPT r6 GA5: a sign-in change removes the pending request at that moment; m
   assert.equal(requestsIn(env2).length, 1);
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
   assert.match(main, /function publishAuthState\(state\)\{[^}]*solioBackupSweep\(\);/);
-  assert.match(main, /function solioBackupSweep\(\)\{if\(runtime\.clientId!=='platform'\|\|smoke\)return;try\{solioBackup\(\)\.accountChanged\(\);\}catch\{\}\}/, 'the sweep runs even before the room is first opened');
+  assert.match(main, /function solioBackupSweep\(\)\{if\(runtime\.clientId!=='platform'\|\|smoke\)return;try\{solioBackup\(\)\.accountChanged\(officeAccountOf\(accountStatus\(\)\)\?\.synk_user_id\|\|null\);\}catch\{\}\}/, 'the sweep runs even before the room is first opened, and closes the room screen of another account');
   assert.match(main, /auth=createAuthService\([^\n]*\n\s*solioBackupSweep\(\);/, 'and once at start-up');
 });
 
@@ -995,7 +998,7 @@ test('a packaged build with the switch off hides the room and the calls say NOT_
   assert.equal((await shipped.snapshot(ME)).available, true, 'the default is the switch');
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
   const call = main.match(/createSolioBackup\(\{[^}]*\}\)/g) || [];
-  assert.deepEqual(call, ["createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),pcDrives:pcSpaceDrives,appUpdate:solioAppUpdate})"], 'main makes the service once, with the packaged flag and nothing that turns it back on');
+  assert.deepEqual(call, ["createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url),pcDrives:pcSpaceDrives,appUpdate:solioAppUpdate,door:solioDoor()})"], 'main makes the service once, with the packaged flag and nothing that turns it back on');
   assert.doesNotMatch(main, /inRelease/, 'only the IN_RELEASE line in solio-backup.cjs turns the room on');
 });
 
@@ -1449,4 +1452,260 @@ test('pc-0507 P2: the VERIFY_ERROR words no longer send people to an update that
   assert.equal(installRequest.acts[0].label, '다시 받기');
   assert.match(installRequest.then, /「다시 받기」/);
   assert.equal(view('REQUEST_FAILED').acts[0].label, '다시 하기', 'the engine-present path keeps 「다시 하기」');
+});
+
+/* ── 업무 백업 한 몸(11-26, experiences/solo-backup-rust/SOLIO_ONE_CLIENT.md): HOST_MIN 이상 엔진은 방 안에 엔진 화면을 연다 ── */
+function fakeEngineAt(state, version) {
+  return async () => (state.dir ? JSON.stringify({ loc: `"${state.dir}"`, ver: state.ver || version }) : '{}');
+}
+/* 방 안 화면 자리(workbackup-view.cjs)의 대역. 부른 것을 적는다 */
+function fakeDoor() {
+  const calls = [];
+  let open = false, topic = null;
+  return {
+    calls,
+    open(o) { calls.push(['open', o]); open = true; topic = o.topic; return { ok: true, view: true }; },
+    close() { calls.push(['close']); open = false; return { ok: true }; },
+    place(p) { calls.push(['place', p]); return { ok: true }; },
+    reset() { calls.push(['reset']); open = false; },
+    accountChanged(who) { calls.push(['account', who]); },
+    state: () => ({ open, topic, host: open ? 'ready' : 'idle', code: null, ui: open ? 'ok' : 'none', ready: open }),
+  };
+}
+
+test('한 몸: RUN installs without a window (/S); RUNOLD keeps the old passive /P /R for a feed below the host version', () => {
+  assert.match(B.HOLDER_SCRIPT, /if\(\$c -eq 'RUN'\)\{\$a=@\('\/S'\)\}else\{\$a=@\('\/P','\/R'\)\}/);
+  assert.match(B.HOLDER_SCRIPT, /-ArgumentList \$a -Verb RunAs/);
+  assert.match(B.HOLDER_SCRIPT, /if\(\$c -ne 'RUN' -and \$c -ne 'RUNOLD'\)\{\$h\.Dispose\(\);exit 0\}/);
+});
+
+test('한 몸: the install asks the holder for /S only when the feed has the host (GPT workbackup-solio-one-be-20261127 A4)', async () => {
+  const lines = [];
+  const fakeChild = () => {
+    const { PassThrough } = require('node:stream'), { EventEmitter } = require('node:events');
+    const child = new EventEmitter(); child.stdout = new PassThrough(); child.stdin = new PassThrough(); child.exitCode = null; child.signalCode = null; child.kill = () => {};
+    child.stdin.on('data', d => { for (const l of String(d).split('\n').filter(Boolean)) { lines.push(l); if (l.startsWith('RUN')) child.stdout.write('DECLINED\n'); } });
+    setImmediate(() => child.stdout.write(`LOCKED ${'a'.repeat(64)} C:\\x\\setup.exe\n`));
+    return child;
+  };
+  for (const quiet of [true, false]) {
+    lines.length = 0;
+    const holder = await B.holdSetup('C:\\x\\setup.exe', { spawnImpl: fakeChild });
+    assert.deepEqual(await holder.run(() => {}, { quiet }), { outcome: 'declined' });
+    assert.deepEqual(lines, [quiet ? 'RUN' : 'RUNOLD']);
+  }
+});
+
+test('한 몸: with a host engine, 「보호 시작」 opens the start screen in the room and writes no setup request or cancel mark', async () => {
+  const env = appdata(temp()), door = fakeDoor(), dir = engineDir(), opened = [];
+  const service = createBackup({ platform: 'win32', env, run: fakeEngineAt({ dir }, '0.8.0'), door, openExternal: async url => opened.push(url), request: async () => { throw Error('no network'); }, previewAccounts: MINE });
+  assert.equal((await service.snapshot(ME)).view, 'needs-setup');
+  assert.deepEqual(await service.start(ME, 'protect'), { ok: true });
+  await service.whenIdle();
+  assert.deepEqual(door.calls.find(c => c[0] === 'open'), ['open', { account: ME.synk_user_id, location: dir, topic: 'start' }]);
+  assert.deepEqual([requestsIn(env), marksIn(env), opened], [[], [], []], 'no request, no mark, no engine window');
+  const snap = await service.snapshot(ME);
+  assert.equal(snap.install.phase, 'idle');
+  assert.deepEqual(snap.room, { open: true, topic: 'start', host: 'ready', code: null, ui: 'ok', ready: true });
+  assert.equal(snap.engine.host, true);
+  assert.ok(!JSON.stringify(snap).includes(dir.replace(/\\/g, '\\\\')), 'the install folder never goes to the room');
+  await service.start(ME, 'move').then(() => service.whenIdle());
+  assert.equal(door.calls.filter(c => c[0] === 'open').at(-1)[1].topic, 'move');
+});
+
+test('한 몸: a host feed installs with no setup request, then opens the start screen; an old feed keeps the request path', async () => {
+  for (const version of ['0.8.0', '0.7.9']) {
+    const key = minisignKey(), data = crypto.randomBytes(20000), log = [], engineState = { ver: version }, door = fakeDoor();
+    const env = appdata(temp());
+    let atRun = null;
+    const service = createBackup({
+      platform: 'win32', env, cacheRoot: temp(), run: fakeEngineAt(engineState, version), request: fakeNet({ feed: release(key, data, version), file: data }), door,
+      hold: fakeHold(log, { engineState, afterInstall: () => { atRun = requestsIn(env); } }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, wait: async () => {},
+    });
+    await service.start(ME, 'protect');
+    await service.whenIdle();
+    const snap = await service.snapshot(ME);
+    assert.equal(snap.install.phase, 'done', `${version}: ${JSON.stringify(snap.install)}`);
+    if (version === '0.8.0') {
+      assert.deepEqual(atRun, [], 'no setup request while the installer runs');
+      assert.equal(snap.install.host, true);
+      assert.deepEqual(door.calls.filter(c => c[0] === 'open').map(c => c[1].topic), ['start']);
+    } else {
+      assert.equal(atRun.length, 1, 'an engine without a host still gets the setup request');
+      assert.equal(snap.install.host, false);
+      assert.deepEqual(door.calls.filter(c => c[0] === 'open'), []);
+    }
+  }
+});
+
+test('한 몸: 「파일 되살리기 · 새 PC로 옮겨 오기 · 설정」 open in the room for a host engine; an old engine keeps its window, settings → folders', async () => {
+  const door = fakeDoor(), dir = engineDir(), opened = [];
+  const fresh = createBackup({ platform: 'win32', env: appdata(temp(), { status: sample() }), run: fakeEngineAt({ dir }, '0.8.1'), door, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  for (const topic of ['restore', 'move', 'settings', 'signin']) assert.deepEqual(await fresh.open(ME, topic), { ok: true, view: true }, topic);
+  assert.deepEqual(door.calls.filter(c => c[0] === 'open').map(c => c[1].topic), ['restore', 'move', 'settings', 'signin']);
+  assert.deepEqual(opened, []);
+  assert.deepEqual(await fresh.open(ME, 'format'), { ok: false, code: 'INVALID' });
+  const oldDoor = fakeDoor();
+  const old = createBackup({ platform: 'win32', env: appdata(temp(), { status: sample() }), run: fakeEngineAt({ dir: engineDir() }, '0.7.5'), door: oldDoor, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  for (const topic of ['restore', 'settings', 'start']) assert.deepEqual(await old.open(ME, topic), { ok: true });
+  assert.deepEqual(opened, ['synk-workbackup:open?topic=restore', 'synk-workbackup:open?topic=folders', 'synk-workbackup:open?topic=status']);
+  assert.deepEqual(oldDoor.calls.filter(c => c[0] === 'open'), []);
+  assert.equal((await old.snapshot(ME)).room, null, 'no room screen for an old engine');
+  fresh.accountChanged('someone-else');
+  assert.deepEqual(door.calls.at(-1), ['account', 'someone-else']);
+});
+
+test('한 몸: the update card takes the newer of update.json and the feed, and only a newer version than the installed one (GPT workbackup-solio-one-be-20261127 A9)', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(100);
+  const env = appdata(temp(), { status: sample() });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: fakeDoor(), request: fakeNet({ feed: release(key, data, '0.8.2'), file: data }), previewAccounts: MINE });
+  let snap = await service.snapshot(ME);
+  for (let i = 0; i < 50 && snap.feed.state === 'unknown'; i++) { await new Promise(r => setTimeout(r, 10)); snap = await service.snapshot(ME); }
+  assert.deepEqual([snap.update.available, snap.update.current, snap.update.quiet], ['0.8.2', '0.8.0', true], 'no update.json: the feed');
+  fs.writeFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'update.json'), JSON.stringify({ v: 1, checkedAt: 1, triedAt: 1, current: '0.8.0', available: '0.8.1', error: null }));
+  assert.equal((await service.snapshot(ME)).update.available, '0.8.2', 'record 0.8.1, feed 0.8.2: the newer one');
+  fs.writeFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'update.json'), JSON.stringify({ v: 1, checkedAt: 1, triedAt: 1, current: '0.8.0', available: '0.8.3', error: null }));
+  assert.equal((await service.snapshot(ME)).update.available, '0.8.3', 'record 0.8.3, feed 0.8.2: the newer one');
+  fs.writeFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'update.json'), JSON.stringify({ v: 1, available: '0.7.9' }));
+  assert.equal((await service.snapshot(ME)).update.available, '0.8.2', 'a record not newer than the installed version gives way to the feed');
+  fs.writeFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'update.json'), '{broken');
+  assert.equal(await B.readUpdateRecord(B.statusPaths(env)), null);
+  assert.equal((await service.snapshot(ME)).update.available, '0.8.2', 'a broken record falls back to the feed');
+  const none = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({}, '0.8.0'), door: fakeDoor(), request: fakeNet({ feed: null }), previewAccounts: MINE });
+  assert.equal((await none.snapshot(ME)).update, null, 'no engine, no card');
+});
+
+test('한 몸: 「업데이트」 says bye first, runs --update-install --quiet without elevation, and tells RUN_ACTIVE, UPDATE_START and success apart', async () => {
+  const { spawn } = require('node:child_process');
+  const runs = [];
+  const launchWith = lines => (file, args, options) => { runs.push({ file, args, options }); return spawn(process.execPath, ['-e', `for (const l of ${JSON.stringify(lines)}) console.log(l);`], { ...options, env: process.env }); };
+  const make = (lines, ver, engineState = { dir: engineDir() }) => {
+    const door = fakeDoor();
+    const service = createBackup({ platform: 'win32', env: appdata(temp(), { status: sample() }), run: fakeEngineAt(engineState, ver), door, launch: launchWith(lines), updateWaitMs: 5, previewAccounts: MINE, wait: ms => new Promise(r => setTimeout(r, Math.min(ms, 5))) });
+    return { service, door, engineState };
+  };
+  let r = make(['{"ok":false,"error":"RUN_ACTIVE"}'], '0.8.0');
+  assert.deepEqual(await r.service.updateEngine(ME), { ok: true });
+  await r.service.whenUpdated();
+  assert.deepEqual(r.door.calls[0], ['reset'], 'bye before the updater starts');
+  assert.deepEqual([runs[0].args, path.win32.basename(runs[0].file), runs[0].options.detached], [['--update-install', '--quiet'], 'WorkBackup.exe', true]);
+  let snap = await r.service.snapshot(ME);
+  assert.deepEqual([snap.update.phase, snap.update.code], ['error', 'RUN_ACTIVE']);
+  r = make(['{"ok":false,"error":"UPDATE_START"}'], '0.7.5');
+  await r.service.updateEngine(ME); await r.service.whenUpdated();
+  assert.deepEqual(runs.at(-1).args, ['--update-install'], 'an engine without a host has no --quiet');
+  assert.deepEqual([(await r.service.snapshot(ME)).update.code], ['UPDATE_START']);
+  r = make(['{"ok":true,"installing":"0.8.1"}', '{"ok":true,"result":{}}'], '0.8.0');
+  const done = r.service.updateEngine(ME);
+  setTimeout(() => { r.engineState.ver = '0.8.1'; }, 30);
+  await done; await r.service.whenUpdated();
+  snap = await r.service.snapshot(ME);
+  assert.deepEqual([snap.update.phase, snap.engine.version], ['done', '0.8.1']);
+  const { backupUpdateLine } = await import('../renderer/solio-backup-model.mjs');
+  assert.equal(backupUpdateLine(snap).say, '백업 부품을 0.8.1로 올렸습니다. 다시 하실 일은 없습니다.');
+  assert.deepEqual(await r.service.updateEngine(OTHER), { ok: false, code: 'NOT_AVAILABLE' });
+});
+
+test('한 몸: 「백업 창 따로 열기」 is --window for a host engine and the old open address otherwise; without sign-in only when main allows it', async () => {
+  const runs = [], opened = [];
+  const launch = (file, args, options) => { runs.push({ file, args, options }); return { once() {}, unref() {} }; };
+  const host = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), launch, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  assert.deepEqual(await host.openWindow(ME), { ok: true });
+  assert.deepEqual(runs[0].args, ['--window']);
+  assert.deepEqual(await host.openWindow(null), { ok: false, code: 'NOT_AVAILABLE' });
+  assert.deepEqual(await host.openWindow(null, { anyone: true }), { ok: true });
+  const old = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.7.5'), launch, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  assert.deepEqual(await old.openWindow(ME), { ok: true });
+  assert.deepEqual(opened, ['synk-workbackup:open?topic=status']);
+  const none = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({}, '0.8.0'), launch, previewAccounts: MINE });
+  assert.deepEqual(await none.openWindow(ME), { ok: false, code: 'NO_ENGINE' });
+});
+
+test('GPT workbackup-solio-one-be-20261127 A6: with the room host holding the window lock, 「따로 열기」 says bye and tries again until the window stays up', async () => {
+  const { EventEmitter } = require('node:events');
+  const door = fakeDoor(), runs = [];
+  const outcomes = ['held', 'held', 'open'];
+  const launch = (file, args) => { runs.push(args); const c = new EventEmitter(); c.unref = () => {}; const o = outcomes.shift() || 'held'; setImmediate(() => { if (o === 'held') c.emit('exit', 0); }); return c; };
+  const service = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door, launch, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  door.open({ account: ME.synk_user_id, location: 'C:\\x', topic: 'restore' });
+  assert.deepEqual(await service.openWindow(ME), { ok: true });
+  assert.deepEqual(door.calls.filter(c => c[0] === 'reset').length, 1, 'bye to the room host first');
+  assert.equal(runs.length, 3);
+  // 호스트가 일을 마치는 동안 잠금이 끝내 풀리지 않으면 BUSY
+  const busyDoor = fakeDoor(), busyRuns = [];
+  busyDoor.open({ account: ME.synk_user_id, location: 'C:\\x', topic: 'restore' });
+  busyDoor.reset = () => { busyDoor.calls.push(['reset']); };
+  const held = (file, args) => { busyRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 0)); return c; };
+  const busy = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: busyDoor, launch: held, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  assert.deepEqual(await busy.openWindow(ME), { ok: false, code: 'BUSY' });
+  assert.ok(busyRuns.length > 1);
+  // 이 솔리오가 모르는 호스트(앞서 끈 솔리오의 호스트)가 잠금을 쥐어도 다시 띄우다 풀리면 성공, 끝내 안 풀리면 BUSY(GPT -r2 GA2)
+  const idleRuns = [], later = ['held', 'held', 'held', 'open'];
+  const idle = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: fakeDoor(), launch: (file, args) => { idleRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; const o = later.shift() || 'held'; setImmediate(() => { if (o === 'held') c.emit('exit', 0); }); return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  assert.deepEqual(await idle.openWindow(ME), { ok: true });
+  assert.equal(idleRuns.length, 4);
+  const stuck = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: fakeDoor(), launch: () => { const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 0)); return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  assert.deepEqual(await stuck.openWindow(ME), { ok: false, code: 'BUSY' });
+});
+
+test('GPT workbackup-solio-one-be-20261127 A3 · A5 · A9: open checks the login after the engine lookup; two update presses start one updater; the newer of record and feed', async () => {
+  // A3: 엔진을 확인하는 사이 로그인이 바뀌면 열지 않는다
+  const door = fakeDoor();
+  let current = true;
+  const service = createBackup({ platform: 'win32', env: appdata(temp()), run: async () => { current = false; return JSON.stringify({ loc: `"${engineDir()}"`, ver: '0.8.0' }); }, door, previewAccounts: MINE });
+  assert.deepEqual(await service.open(ME, 'restore', { isCurrent: () => current }), { ok: false, code: 'NOT_AVAILABLE' });
+  assert.equal(door.calls.filter(c => c[0] === 'open').length, 0);
+  // A5: 겹쳐 누른 업데이트는 하나만 띄운다
+  const { spawn } = require('node:child_process');
+  const runs = [];
+  let unblock;
+  const gate = new Promise(resolve => { unblock = resolve; });
+  const slow = createBackup({ platform: 'win32', env: appdata(temp()), run: async () => { await gate; return JSON.stringify({ loc: `"${engineDir()}"`, ver: '0.8.0' }); }, door: fakeDoor(), launch: (file, args, options) => { runs.push(args); return spawn(process.execPath, ['-e', 'console.log(JSON.stringify({ok:true,result:{}}))'], { ...options, env: process.env }); }, updateWaitMs: 5, wait: ms => new Promise(r => setTimeout(r, Math.min(ms, 5))), previewAccounts: MINE });
+  const one = slow.updateEngine(ME), two = slow.updateEngine(ME);
+  unblock();
+  assert.deepEqual(await two, { ok: false, code: 'BUSY' });
+  assert.deepEqual(await one, { ok: true });
+  await slow.whenUpdated();
+  assert.equal(runs.length, 1);
+});
+
+test('한 몸 화면: the room screen shows its path and the host state; ready leaves the path only; the foot line has the update card', async () => {
+  const { solioBackupView, backupUpdateLine } = await import('../renderer/solio-backup-model.mjs');
+  const status = B.normalizeStatus(sample()).status, now = Date.parse(status.writtenAt);
+  const base = { ok: true, available: true, view: 'status', status, engine: { installed: true, version: '0.8.0', host: true }, feed: {}, install: { phase: 'idle' } };
+  const room = r => solioBackupView({ ...base, room: { open: true, topic: 'restore', host: 'ready', code: null, ui: 'ok', ready: false, ...r } }, now);
+  const ready = room({ ready: true });
+  assert.deepEqual([ready.door, ready.say, ready.acts, ready.board], [{ name: '파일 되살리기', ready: true }, '', [], undefined]);
+  assert.equal(room({ topic: 'settings', ready: true }).door.name, '설정');
+  assert.equal(room({ host: 'starting', ui: 'none' }).say, '백업 화면을 여는 중입니다.');
+  const busy = room({ host: 'busy' });
+  assert.equal(busy.say, '앞서 하던 일을 마무리하는 중입니다.');
+  const busyJob = solioBackupView({ ...base, status: { ...status, job: { stage: 'restore', percent: 37 } }, room: { open: true, topic: 'restore', host: 'busy', code: null, ui: 'none', ready: false } }, now);
+  assert.equal(busyJob.say, '하던 되살리기를 마무리하는 중입니다(37%).');
+  const failed = room({ host: 'failed', code: 'HOST_EXITED' });
+  assert.deepEqual([failed.say, failed.acts.map(a => [a.label, a.act, a.arg])], ['백업 화면이 멈췄습니다.', [['다시 열기', 'backup-open', 'restore']]]);
+  assert.equal(room({ host: 'newer' }).say, '솔리오를 업데이트해 주세요.');
+  assert.deepEqual(room({ host: 'refused' }).acts.map(a => [a.label, a.act]), [['백업 창 따로 열기', 'backup-window']]);
+  assert.deepEqual(room({ ui: 'version' }).acts.map(a => a.act), ['backup-window', 'backup-open']);
+  assert.match(room({ ui: 'installing' }).say, /새 판으로 바꾸는 중/);
+  for (const v of [ready, busy, failed, room({ host: 'newer' }), room({ host: 'refused' })]) assert.doesNotMatch(JSON.stringify(v), /엔진/);
+  // 맨 아래 한 줄
+  assert.equal(backupUpdateLine({ ...base, update: { available: '0.8.1', current: '0.8.0', phase: 'idle', code: null } }).say, '백업 부품 새 판 0.8.1 — Windows 확인 한 번');
+  assert.deepEqual(backupUpdateLine({ ...base, update: { available: '0.8.1', current: '0.8.0', phase: 'idle' } }).act, { label: '업데이트', act: 'backup-update', arg: '' });
+  assert.equal(backupUpdateLine({ ...base, update: { available: null, current: '0.8.0', phase: 'idle' } }), null);
+  const old = { ...base, engine: { installed: true, version: '0.7.5', host: false } };
+  assert.equal(backupUpdateLine({ ...old, update: { available: null, current: '0.7.5', phase: 'idle' } }).say, '백업 부품을 새 판으로 올리면 이 방에서 모두 할 수 있습니다.');
+  assert.equal(backupUpdateLine({ ...old, update: { available: '0.8.0', current: '0.7.5', phase: 'idle' } }).act.act, 'backup-update');
+  assert.equal(backupUpdateLine({ ...base, update: { available: '0.8.1', phase: 'error', code: 'RUN_ACTIVE' } }).say, '백업이 끝난 뒤 다시 눌러 주세요.');
+  assert.equal(backupUpdateLine({ ...base, update: { available: '0.8.1', phase: 'error', code: 'UPDATE_START' } }).say, '관리자 확인을 받지 못했습니다. 관리자 계정이 아니면 관리자에게 부탁해 주세요.');
+  assert.equal(solioBackupView({ ...base, update: { available: '0.8.1', current: '0.8.0', phase: 'idle' } }, now).foot.act.act, 'backup-update');
+  // 설치: Windows 확인 직전 말과 창 없는 설치
+  const admin = solioBackupView({ ...base, view: 'no-engine', engine: { installed: false }, install: { phase: 'admin', host: true } }, now);
+  assert.equal(admin.then, 'Windows가 「SYNK 업무 백업」을 바꿔도 되는지 물으면 「예」를 눌러 주세요.');
+  const installing = solioBackupView({ ...base, view: 'no-engine', engine: { installed: false }, install: { phase: 'install', host: true } }, now);
+  assert.match(installing.then, /설치 창은 따로 뜨지 않습니다/);
+  const doneHost = solioBackupView({ ...base, view: 'no-engine', engine: { installed: false }, install: { phase: 'done', host: true, mode: 'protect' } }, now);
+  assert.deepEqual(doneHost.acts[0], { label: '이어서 하기', act: 'backup-open', arg: 'start', primary: true });
+  const doneOld = solioBackupView({ ...base, view: 'no-engine', engine: { installed: false }, install: { phase: 'done', host: false, mode: 'protect' } }, now);
+  assert.deepEqual(doneOld.acts[0], { label: '백업 창 열기', act: 'backup-open', arg: 'status', primary: true });
 });

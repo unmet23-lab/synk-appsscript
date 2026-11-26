@@ -85,9 +85,14 @@ function configFor(id,{mode='development',platform='win32',arch='x64'}={}) {
     win:{target:[{target:'nsis',arch:[arch]}],signExecutable:mode==='release',icon:path.join(root,'assets',id+'.ico')},
     nsis:{oneClick:false,perMachine:false,allowElevation:false,allowToChangeInstallationDirectory:false,runAfterFinish:false,deleteAppDataOnUninstall:false,createDesktopShortcut:true,createStartMenuShortcut:true},
     mac:{target:[{target:'dmg',arch:[arch]},{target:'zip',arch:[arch]}],category:id==='world'?'public.app-category.education':'public.app-category.productivity',minimumSystemVersion:'13.0',hardenedRuntime:mode==='release',gatekeeperAssess:false,icon:path.join(root,'assets',id+'.icns'),...(id==='platform'?{signIgnore:['/Contents/Resources/clients/(?:world|messenger)\\.dmg$']}:{}),...(mode==='development'?{identity:'-',notarize:false,preAutoEntitlements:false}:{})},
+    // platform 판은 업무 백업 호스트를 띄우는 부모라, 실행 파일로 임의 스크립트를 돌리는 두 길을 끈다(SOLIO_ONE_CLIENT.md 2.3).
+    // electron-builder 26.15.3의 electronFuses(@electron/fuses 1.8.0)가 포장 뒤 실행 파일의 퓨즈를 바꾼다
+    ...(id==='platform'?{electronFuses:{...PLATFORM_FUSES}}:{}),
     publish:null,
   };
 }
+// 검사기(--inspect)는 켜 둔다. 포장 판 확인 도구(verify-windows-startup-native · connection-package-smoke 등)가 메인 검사기로 들어가기 때문이다(SOLIO_ONE_CLIENT.md 2.3 · 8장).
+const PLATFORM_FUSES=Object.freeze({runAsNode:false,enableNodeOptionsEnvironmentVariable:false});
 function previewEntry(id,options={}){
   const worldFlag=options.worldCloudPreview;
   if(worldFlag!==undefined&&worldFlag!==true)throw Error('WORLD cloud preview requires an explicit true flag.');
@@ -144,4 +149,4 @@ async function main(args=process.argv.slice(2)) {
   }
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.message+'\n');process.exitCode=1;});
-module.exports={configFor,prepare,previewEntry,parseOptions,verifyMemberActivity};
+module.exports={configFor,prepare,previewEntry,parseOptions,verifyMemberActivity,PLATFORM_FUSES};

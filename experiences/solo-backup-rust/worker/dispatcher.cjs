@@ -7,15 +7,20 @@ const MAX_IN=131072,MAX_OUT=2*1024*1024;
 const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,runner=null,mcp=null,ran=false,filled=false,runWork=Promise.resolve(),shutdownIds=null,booting=false,stopping=false,terminating=false;
 function send(value){const text=JSON.stringify({v:1,...value});if(Buffer.byteLength(text)+1>MAX_OUT)fatal('PAYLOAD_TOO_LARGE');else process.stdout.write(text+'\n');}
 function fatal(code){if(terminating)return;terminating=true;stopping=true;process.stdout.write(JSON.stringify({v:1,fatal:code})+'\n',()=>process.exit(1));setTimeout(()=>process.exit(1),1000).unref();}
+// How long a host call is waited for (0: no limit). 「새 PC로 옮겨 오기」's host calls take longer (4.6 · 4.6b): placing a
+// large file compares it by SHA-256, the elevated reinstall waits for each machine-wide program (20 min each, 2 h in all,
+// plus its own margin). An open (openExternal · openPath) waits longer than the windowless host's `ask` to SYNK 솔리오
+// (host.rs ASK_WAIT, 30 s, SOLIO_ONE_CLIENT.md 2.6), so the worker always gets the host's own yes or OPEN_FAILED and a
+// Google sign-in whose browser opened late is not dropped (GPT workbackup-solio-one-be-20261127 C4). The window opens
+// at once, so the longer wait changes nothing there. tests/host-ask-wait.test.cjs holds the two together.
+const hostWait=method=>method.startsWith('dialog.')?0:method.startsWith('secret.')?30000:method.startsWith('files.')?1800000:method.startsWith('folders.')?60000:method.startsWith('reinstall.')?10800000:(method==='openExternal'||method==='openPath')?40000:10000;
 function host(method,args){
   // A graceful stop still lets the current backup persist its final encrypted
   // state. Reject new app operations, not its outstanding native callbacks.
   if(terminating||pending.size>=8)return Promise.reject(new Error('HOST_BUSY'));
   const call=++nextCall;
   return new Promise((resolve,reject)=>{
-    // 「새 PC로 옮겨 오기」's host calls take longer (4.6 · 4.6b): placing a large file compares it by SHA-256, the
-    // elevated reinstall waits for each machine-wide program (20 min each, 2 h in all, plus its own margin).
-    const timeout=method.startsWith('dialog.')?0:method.startsWith('secret.')?30000:method.startsWith('files.')?1800000:method.startsWith('folders.')?60000:method.startsWith('reinstall.')?10800000:10000;
+    const timeout=hostWait(method);
     const timer=timeout?setTimeout(()=>{pending.delete(call);reject(new Error('HOST_TIMEOUT'));},timeout):null;
     pending.set(call,{resolve,reject,timer});send({call,method,args});
   });

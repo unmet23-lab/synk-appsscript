@@ -94,6 +94,15 @@ function pulseCover(value){
   el.style.cssText='position:fixed;left:0;right:0;bottom:0;top:'+value.top+'px;z-index:2147483646;background:#141414;color:#6d6d6d;display:flex;align-items:center;justify-content:center;font:400 13px system-ui,sans-serif';
 }
 const openPulse=()=>{if(!pulseOpen){pulseOpen=true;tellPulse();}};
+// 백업 방 안 업무 백업 화면(SOLIO_ONE_CLIENT.md 2.2)의 대역. 본체는 방에 화면을 열었고(room.open) 호스트와 화면 파일이 준비됐을 때(room.ready)만
+// 길(← 원클릭 › 이름) 아래에 뷰를 띄운다. 같은 자리에 밝은 덮개를 깐다. 시험은 setBackup으로 room을 바꾼 뒤 backupChanged로 알린다
+const backupChanged=new Set(),backupPlaced=[];let backupAt=null;
+function backupCover(){
+  const value=backupAt;let el=document.getElementById('qa-backup-view');
+  if(!value?.shown||!(value.top>0)||backup?.room?.open!==true||backup.room.ready!==true){if(el)el.remove();return;}
+  if(!el){el=document.createElement('div');el.id='qa-backup-view';el.textContent='업무 백업 화면 자리(본체가 붙이는 뷰)';document.body.append(el);}
+  el.style.cssText='position:fixed;left:0;right:0;bottom:0;top:'+value.top+'px;z-index:2147483646;background:#f4f4f2;color:#8a8a8a;display:flex;align-items:center;justify-content:center;font:400 13px system-ui,sans-serif';
+}
 // 창 안의 Workspace 뷰(4단계 구현 설계 3.2)의 대역. PULSE와 같은 덮개를 밝은 바탕으로 깐다. 배정 열기 '/'와 workspaceView.open이 연다.
 // 화면 공유 물음(synk:workspace-share-ask)은 시험이 shareAsk로 보내고, 화면의 답은 shareAnswers로 읽는다
 let workspaceOpen=false;const workspaceChanged=new Set(),workspaceEvents=new Set(),workspacePlaced=[],shareAsks=new Set(),shareAnswers=[];
@@ -207,9 +216,16 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   solioBackup:Object.freeze({
     snapshot:async()=>{calls.push('backup-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return backup||{ok:true,available:false};},
     start:async mode=>{calls.push('backup-start:'+mode);return {ok:true};},
-    open:async topic=>{calls.push('backup-open:'+topic);return {ok:true};},
+    // 호스트가 있는 판(engine.host)은 본체가 방 안에 화면을 연다(view:true). 옛 판은 엔진 창을 띄운다
+    open:async topic=>{calls.push('backup-open:'+topic);return backup?.engine?.host===true?{ok:true,view:true}:{ok:true};},
     dismiss:async()=>{calls.push('backup-dismiss');return {ok:true};},
     oneClick:async()=>{calls.push('backup-oneclick');return backupOneClick?backupOneClick():{ok:true};},
+    // 한 몸(11-26): 화면 자리, 「← 원클릭」, 업데이트 카드, 「백업 창 따로 열기」, 본체 알림
+    place:async value=>{backupPlaced.push({shown:value?.shown===true,top:value?.top});backupAt=value||null;backupCover();return {ok:true};},
+    closeView:async()=>{calls.push('backup-close-view');return {ok:true};},
+    update:async()=>{calls.push('backup-update');return {ok:true};},
+    openWindow:async()=>{calls.push('backup-window');return {ok:true};},
+    onChanged:fn=>{backupChanged.add(fn);return ()=>backupChanged.delete(fn);},
   }),
   // 「내 PC 진단」 판(main.cjs synk:pc-profile*). 본체처럼 로그인한 회원에게만 재고, 로그인하지 않았으면 재지 않고 지금 값만 준다(PC 0.5.11). 정한 값이 없으면 손님에게는 아직 재지 않은 PC다. 본 것으로 알리면 바뀜을 지운다
   pcProfile:Object.freeze({
@@ -392,6 +408,9 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   setHealth:value=>{health=value||null;},
   // 솔리오 백업의 답을 바꾼다(다음 읽기부터)
   setBackup:value=>{backup=value||null;},
+  // 본체의 synk:solio-backup-changed 흉내(방 안 화면이 열리거나 닫힘). 덮개도 지금 room에 맞춘다
+  backupChanged:value=>{backupCover();for(const fn of backupChanged){try{fn(value||{type:'changed'});}catch{}}},
+  backupPlaced:()=>backupPlaced.map(v=>({...v})),
   // 「이 PC에 맞춘 것」 판의 답을 바꾼다(다음 읽기부터). null이면 견본이다
   setPc:value=>{pcSnap=value||null;},
   // 원클릭(11-23): 누름의 답을 바꾸려면 시험이 setBackupOneClick으로 함수 대신 답 하나를 준다

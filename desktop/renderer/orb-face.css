@@ -1500,3 +1500,20 @@ html[data-motion="reduced"] #portal-entry .one-board *,html[data-motion="reduced
 @media (prefers-reduced-motion:reduce){#portal-entry .room-todo.todo-in > *{animation:none}}
 /* 앱 안 「움직임 줄이기」도 같이 막는다(PC 0.5.10 공개 후보 Fable F6) */
 html[data-motion="reduced"] #portal-entry .room-todo.todo-in > *{animation:none}
+/* 업무 백업 한 몸(11-26, 시안 가 · experiences/solo-backup-rust/SOLIO_ONE_CLIENT.md 2.2): 방 안에 엔진 화면을 열면 방은 띠 바로 아래에서 시작하고,
+   맨 위에 「← 원클릭 › 이름」 길을 세운다. 그 길 아래를 본체의 엔진 화면 자리(WebContentsView)가 채운다. 원클릭 판 맨 아래에는 업데이트 한 줄을 둔다 */
+#portal-entry [data-room="solio-backup"].bak-in-door{top:76px;max-height:calc(100% - 76px - 24px);-webkit-mask-image:none;mask-image:none}
+#portal-entry .bak-door-path{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:0 0 30px;font:400 13px/1.4 var(--orb-sans);color:var(--dim)}
+#portal-entry .bak-door-path[hidden]{display:none}
+#portal-entry .bak-door-back{appearance:none;background:none;border:0;border-radius:0;margin:0;padding:4px 0;font:inherit;color:var(--soft);cursor:pointer;transition:color .25s ease}
+#portal-entry .bak-door-back:hover{color:var(--paper)}
+#portal-entry .bak-door-back:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
+#portal-entry .bak-door-nm{color:var(--paper)}
+#portal-entry .bak-foot{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 18px;margin-top:22px;padding-top:16px;border-top:1px solid var(--hair)}
+#portal-entry .bak-foot[hidden]{display:none}
+#portal-entry .bak-foot.done > span::before{content:"✓";margin-right:8px;color:var(--one-meadow)}
+#portal-entry .bak-alone{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:10px 16px;margin:18px 0 0;font:var(--small);color:rgba(243,241,236,.72)}
+#portal-entry .bak-alone[hidden]{display:none}
+/* 노란 로비(solio-lobby.css) 위에서는 먹색으로 쓴다 */
+#portal-entry .orb-stage[data-lobby] .bak-alone{color:var(--lobby-ink,#141414)}
+#portal-entry .bak-alone-app{position:absolute;z-index:5;left:clamp(20px,9.5vw,168px);right:clamp(20px,9.5vw,168px);bottom:16px;margin:0}

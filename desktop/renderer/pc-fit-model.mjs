@@ -56,7 +56,7 @@ function roomyOther(p) {
 
 function diskRow(p, st, f) {
   const d = p.drives;
-  if (!d) return row('disk', '저장', '드라이브를 읽지 못했습니다', [['note', `회사 PC처럼 PowerShell이 막힌 PC에서는 드라이브 목록을 읽지 못합니다.${f.backup ? ' 업무 백업 엔진이 공간을 재면 원클릭 판에는 엔진 값이 보입니다.' : ''}`]]);
+  if (!d) return row('disk', '저장', '드라이브를 읽지 못했습니다', [['note', `회사 PC처럼 PowerShell이 막힌 PC에서는 드라이브 목록을 읽지 못합니다.${f.backup ? ' 원클릭이 공간을 재면 원클릭 판에는 그 값이 보입니다.' : ''}`]]);
   const shown = shownDrives(p), other = roomyOther(p);
   const mid = shown.length ? `드라이브 ${countWord(shown.length)}${other ? ' · C:가 거의 참' : ''}` : '보일 드라이브 없음';
   // 선은 남은 몫을 긋는다. 원클릭 판 막대와 같은 방향이다(Fable 최종 P2-1)
@@ -135,7 +135,7 @@ function screenRow(p, f) {
 function osRow(p, f) {
   const o = p.os;
   const mid = o ? `${o.version}${o.arm ? ' · ARM' : ''}` : '읽지 못했습니다';
-  const apps = f.backup ? 'SYNK 앱과 업무 백업 엔진' : 'SYNK 앱';
+  const apps = f.backup ? 'SYNK 앱과 업무 백업' : 'SYNK 앱';
   // 펼치는 줄에는 늘 내용이 있다(카본 A1)
   return row('os', '운영체제', mid, [['note', !o ? '운영체제 판을 읽지 못했습니다. PowerShell이 막힌 PC에서는 읽지 못합니다.'
     : o.arm ? `ARM PC라 ${apps}이 에뮬레이션으로 돕니다. 느릴 수 있습니다.` : `${apps}은 64비트 Windows 10 · 11에서 돕니다.`]]);
