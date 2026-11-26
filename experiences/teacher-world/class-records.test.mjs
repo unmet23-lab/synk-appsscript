@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {classRecordsModel,attendanceRows,attendanceDirty,attendanceMissingStatus,attendanceCounts,topikBadge,levelLabel,localDate,addDays,TOPIK_LEVELS,createClassRecords} from './class-records.mjs';
 import {classSummaryModel,classSummaryHtml,teacherOverviewModel,createTeacherOverview} from './workspace-overview.mjs';
 
-const topik=(records=[],extra={})=>({shared:true,basisDate:'2026-11-27',records,representative:records[0]||null,validLevel4:records.some(r=>r.level>=4&&r.state!=='expired'),recordLimit:20,capacityReached:false,...extra});
+// 서버(SYNK-talk learnerTopik)와 같은 꼴: level4는 유효한 4급 이상 가운데 가장 늦게 만료되는 성적이다.
+const level4Of=records=>records.filter(r=>r.passed!==false&&r.level>=4&&r.state!=='expired').sort((x,y)=>String(y.expiresOn).localeCompare(String(x.expiresOn)))[0]||null;
+const topik=(records=[],extra={})=>({shared:true,basisDate:'2026-11-27',records,representative:records[0]||null,level4:level4Of(records),validLevel4:!!level4Of(records),recordLimit:20,capacityReached:false,...extra});
 const learner=(id,extra={})=>({id,name:'학생 '+id,accountConnected:true,accountConnectionStatus:'connected',sharing:{enabled:true,revision:2},topik:topik(),attendanceToday:null,absentStreak:0,...extra});
 const workspace=(learners,attendance={})=>({classes:[{id:'c',name:'합성 반',attendance:{basisDate:'2026-11-27',sessionDate:'2026-11-27',rows:[],counts:{},recentDates:[],streaks:[],...attendance},learners}]});
 const fakeRoot=()=>({innerHTML:'',className:'',attributes:{},setAttribute(k,v){this.attributes[k]=v;},addEventListener(){},removeEventListener(){},replaceChildren(){this.innerHTML='';},querySelector(){return null;},contains(){return true;}});
@@ -142,4 +144,63 @@ test('refresh updates derived row marks such as the streak badge and keeps the c
   assert.doesNotMatch(root.innerHTML,/연속 결석/);assert.match(root.innerHTML,/data-att-status="late" data-learner="b" aria-pressed="true"/);assert.equal(view.hasDraft(),true);
   assert.equal(view.refresh(workspace([learner('a',{absentStreak:0}),learner('b')])),false,'nothing changed, nothing repainted');
   assert.equal(view.refresh({classes:[]}),false);view.stop();
+});
+
+test('the row TOPIK badge judges expiry by the latest-expiring valid level 4 first, like the class summary, and falls back to the representative',()=>{
+  const recent={id:'r',kind:'II',round:102,level:3,announcedOn:'2026-11-07',expiresOn:'2028-11-07',state:'valid',daysLeft:711,passed:true};
+  const old4={id:'o',kind:'II',round:95,level:4,announcedOn:'2024-12-17',expiresOn:'2026-12-17',state:'within30',daysLeft:20,passed:true};
+  const root=liveRoot(),view=createClassRecords({root,request:async()=>{throw Error('no call');},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a',{topik:topik([recent,old4])}),learner('b',{topik:topik([recent])})]),'c');
+  const row=id=>root.innerHTML.match(new RegExp('<li class="att-row[^"]*" data-att-row="'+id+'">.*?</li>'))[0];
+  assert.match(row('a'),/TOPIK II 4급<\/span><span class="status-badge bad" title="D-20 · 만료일 2026-12-17">30일 안 만료/);
+  assert.match(row('b'),/TOPIK II 3급<\/span><span class="status-badge good"[^>]*>유효/);view.stop();
+});
+test('a roster lock (RECORDS_BUSY, direct or through the company relay) keeps the choices and the key and asks to save again shortly',async()=>{
+  for(const code of ['RECORDS_BUSY','TEACHING_CLASSROOM_RECORDS_BUSY']){
+    const root=liveRoot(),calls=[];let reply=()=>{throw Object.assign(new Error('반 명단이 방금 바뀌었어요. 다시 저장해 주세요.'),{code,status:409});};
+    const view=createClassRecords({root,request:async(path,body)=>{calls.push(body);return reply(body);},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+    view.render(workspace([learner('a'),learner('b')],{rows:[{learnerId:'b',sessionDate:'2026-11-27',status:'present',note:'',revision:9000123}]}),'c');
+    press(root,{attStatus:'absent',learner:'a'});press(root,{attSave:'1'});await later();
+    assert.equal(calls.length,1,'no day reload after a roster lock');assert.match(root.innerHTML,/잠시 뒤 다시 저장해 주세요/);assert.doesNotMatch(root.innerHTML,/다른 화면에서/);
+    assert.match(root.innerHTML,/data-att-status="absent" data-learner="a" aria-pressed="true"/);assert.equal(view.hasDraft(),true);
+    assert.equal(calls[0].rows.find(r=>r.learnerId==='b').revision,9000123,'the shared table sequence is sent back as received');
+    reply=body=>({sessionDate:body.sessionDate,attendance:body.rows.map((r,i)=>({...r,sessionDate:body.sessionDate,revision:9000200+i}))});
+    press(root,{attSave:'1'});await later();
+    assert.equal(calls[1].idempotencyKey,calls[0].idempotencyKey,'the retry of the same batch keeps its key');assert.equal(view.hasDraft(),false);view.stop();
+  }
+});
+test('only a revision conflict reloads the day; capacity and other 409s show the server text and keep the choices',async()=>{
+  const run=async error=>{const root=liveRoot(),calls=[];
+    const view=createClassRecords({root,request:async(path,body)=>{calls.push(body);if(body.action==='save')throw error;return {sessionDate:body.sessionDate,attendance:[{learnerId:'b',sessionDate:body.sessionDate,status:'late',note:'',revision:77,recordedByName:'다른 교사',updatedAt:'2026-11-27T01:00:00Z'}]};},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+    view.render(workspace([learner('a'),learner('b')]),'c');press(root,{attStatus:'present',learner:'a'});press(root,{attSave:'1'});await later();return {root,calls,view};};
+  const conflict=await run(Object.assign(new Error('다른 화면에서 이 날 출결이 먼저 바뀌었어요. 다시 불러온 뒤 저장해 주세요.'),{code:'TEACHING_CLASSROOM_REVISION_CONFLICT',status:409}));
+  assert.deepEqual(conflict.calls.map(b=>b.action),['save','day']);assert.match(conflict.root.innerHTML,/바뀐 내용을 확인하고 다시 저장해 주세요/);assert.match(conflict.root.innerHTML,/다른 교사/);assert.equal(conflict.view.hasDraft(),true);conflict.view.stop();
+  const full=await run(Object.assign(new Error('이 반의 출결 기록이 가득 찼어요. 이미 찍은 날은 이어서 고칠 수 있어요.'),{code:'ATTENDANCE_CAPACITY',status:409}));
+  assert.deepEqual(full.calls.map(b=>b.action),['save']);assert.match(full.root.innerHTML,/출결 기록이 가득 찼어요/);assert.equal(full.view.hasDraft(),true);full.view.stop();
+  const replay=await run(Object.assign(new Error('IDEMPOTENCY_CONFLICT'),{code:'IDEMPOTENCY_CONFLICT',status:409}));
+  assert.deepEqual(replay.calls.map(b=>b.action),['save']);assert.match(replay.root.innerHTML,/저장하지 못했어요\. 잠시 뒤 다시 해 주세요/);assert.doesNotMatch(replay.root.innerHTML,/IDEMPOTENCY_CONFLICT/);
+  press(replay.root,{attSave:'1'});await later();assert.notEqual(replay.calls.at(-1).idempotencyKey,replay.calls[0].idempotencyKey,'a key the server refused is not reused');replay.view.stop();
+});
+test('a resent batch (duplicate) draws the current server rows and says it was already saved',async()=>{
+  const root=liveRoot(),view=createClassRecords({root,request:async(path,body)=>({sessionDate:body.sessionDate,duplicate:true,attendance:[{learnerId:'a',sessionDate:body.sessionDate,status:'late',note:'다른 교사가 고침',revision:9000301,recordedByName:'다른 교사',updatedAt:'2026-11-27T02:00:00Z'}]}),documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a')]),'c');press(root,{attStatus:'present',learner:'a'});press(root,{attSave:'1'});await later();
+  assert.match(root.innerHTML,/2026-11-27 출결은 이미 저장돼 있어요/);assert.match(root.innerHTML,/data-att-status="late" data-learner="a" aria-pressed="true"/);assert.equal(view.hasDraft(),false);view.stop();
+});
+test('a TOPIK save hit by a roster lock keeps the typed record and asks to save again shortly',async()=>{
+  const root=liveRoot(),view=createClassRecords({root,request:async()=>{throw Object.assign(new Error('반 명단이 방금 바뀌었어요. 다시 저장해 주세요.'),{code:'TEACHING_CLASSROOM_RECORDS_BUSY',status:409});},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a')]),'c');press(root,{attTopikOpen:'a'});
+  const values={kind:'II',round:'105',level:'4',announcedOn:'2026-10-28'};root.listeners.input({target:{dataset:{},form:formFor('a',values)}});
+  root.listeners.submit({target:formFor('a',values),preventDefault(){}});await later();
+  assert.match(root.innerHTML,/잠시 뒤 다시 저장해 주세요/);assert.match(root.innerHTML,/value="105"/);assert.match(root.innerHTML,/value="2026-10-28"/);assert.equal(view.hasDraft(),true);view.stop();
+});
+test('a sharing-only refresh mutes a learner who just turned sharing off, leaves other marks alone, and an older overview cannot bring the row back',()=>{
+  const root=liveRoot(),view=createClassRecords({root,request:async()=>{throw Error('no call');},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  const record={id:'t',kind:'II',round:96,level:4,announcedOn:'2025-01-10',expiresOn:'2027-01-10',state:'within90',daysLeft:44,passed:true};
+  view.render(workspace([learner('a',{absentStreak:3}),learner('b',{topik:topik([record])})]),'c');assert.match(root.innerHTML,/90일 안 만료/);
+  const off=learner('b',{sharing:{enabled:false,revision:3},topik:{shared:false,records:[],representative:null,level4:null}});
+  assert.equal(view.refresh(workspace([learner('a',{absentStreak:0}),off]),{sharingOnly:true}),true);
+  assert.match(root.innerHTML,/<li class="att-row is-off" data-att-row="b">/);assert.doesNotMatch(root.innerHTML,/90일 안 만료/);assert.match(root.innerHTML,/연속 결석 3회/,'other marks wait for a save refresh');
+  assert.equal(view.refresh(workspace([learner('a',{absentStreak:3}),learner('b',{topik:topik([record])})])),false,'an overview from before the change (lower sharing revision) is ignored');
+  assert.match(root.innerHTML,/<li class="att-row is-off" data-att-row="b">/);
+  assert.equal(view.refresh(workspace([learner('a',{absentStreak:3}),off]),{sharingOnly:true}),false,'nothing changed, nothing repainted');view.stop();
 });

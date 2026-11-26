@@ -124,7 +124,8 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     }
     const allowed=new Set(rows.map(row=>row.id));overviewData=restrictOverview({...data,classes:data.classes.map(row=>({...row,name:row.name||rows.find(member=>member.id===row.id)?.name,learners:Array.isArray(row.learners)?row.learners:[]}))},allowed);overviewVersion=version;
     const visible=new Set(overviewData.classes.map(row=>row.id));classes=rows.filter(row=>visible.has(row.id));
-    if(recordsStale&&records){recordsStale=false;records.refresh(overviewData);}
+    // 띠: 저장 뒤에는 개요로 파생 표시까지, 그 밖의 주기적 다시 받기에서는 명부와 공유 상태만 바꾼다.
+    if(records){records.refresh(overviewData,{sharingOnly:!recordsStale});recordsStale=false;}
     // 담당이 풀려 고른 반이 지워졌으면 아래 길로 내려가 상태 줄까지 맞춘다(여는 중이던 열기는 epoch가 바뀌어 끝난다).
     if(!reselect&&selected){picker();renderOverview();return;}
     const prior=selected&&classes.find(row=>row.id===selected.id),row=prior||(classes.length===1?classes[0]:null);

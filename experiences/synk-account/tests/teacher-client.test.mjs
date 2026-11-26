@@ -195,12 +195,19 @@ const bandHandlers=learners=>({teacherOverview:()=>({mode:'account-linked',class
 test('saving attendance refreshes the streak badge in the open band from the new overview, without reopening the class',async t=>{
   let streak=3;const saves=[];
   const page=classroom(t,{handlers:{...bandHandlers(()=>[bandLearner('student-a',streak)]),attendanceSave:({body})=>{saves.push(body);if(body.action==='save')streak=0;
-    return {mode:'account-linked',sessionDate:body.sessionDate,attendance:body.action==='save'?body.rows.map(row=>({...row,sessionDate:body.sessionDate,revision:1,recordedByName:'교사',updatedAt:new Date().toISOString()})):[]};}}});
+    return {mode:'account-linked',sessionDate:body.sessionDate,attendance:body.action==='save'?body.rows.map(row=>({...row,sessionDate:body.sessionDate,revision:9000001,recordedByName:'교사',updatedAt:new Date().toISOString()})):[]};}}});
   await page.workspace.load();const band=page.root.children[3].children[0],host=page.windowObject.SYNKClassroomHost;assert.match(band.innerHTML,/연속 결석 3회/);
   const press=dataset=>band.listeners.get('click')({target:{closest:()=>({disabled:false,dataset})}});
   press({attStatus:'present',learner:'student-a'});press({attSave:'1'});await settle();
   assert.equal(saves.filter(body=>body.action==='save').length,1);assert.doesNotMatch(band.innerHTML,/연속 결석/);
   assert.match(band.innerHTML,/data-att-status="present" data-learner="student-a" aria-pressed="true"/);assert.equal(page.windowObject.SYNKClassroomHost,host,'the class stays open');
+});
+test('an overview poll mutes the band row of another student who turned sharing off, without reopening the class',async t=>{
+  let rows=[bandLearner('student-a'),bandLearner('student-b')];
+  const page=classroom(t,{handlers:bandHandlers(()=>rows)});await page.workspace.load();await selectOverview(page,'student-a');
+  const band=page.root.children[3].children[0],host=page.windowObject.SYNKClassroomHost;assert.doesNotMatch(band.innerHTML,/att-row is-off/);
+  rows=[bandLearner('student-a'),{...privacyLearner('student-b',3,false),topik:{shared:false,records:[],representative:null,level4:null},absentStreak:0}];await page.workspace.load();
+  assert.match(band.innerHTML,/<li class="att-row is-off" data-att-row="student-b">/);assert.equal(page.windowObject.SYNKClassroomHost,host,'the class stays open');
 });
 test('picking a student in the class already open scrolls to the band first and leaves the view on that student row',async t=>{
   const order=[],createElement=tag=>{const node=new Node(tag);node.scrollIntoView=()=>order.push(tag==='div'?'mount':tag);if(tag==='section')node.querySelector=selector=>selector.startsWith('[data-att-row=')?{scrollIntoView:()=>order.push('row')}:null;return node;};

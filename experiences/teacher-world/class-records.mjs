@@ -10,6 +10,10 @@ const STATUSES=Object.keys(STATUS_LABELS);
 export const TOPIK_LEVELS=Object.freeze({I:[1,2,0],II:[3,4,5,6,0]});
 const BADGE=Object.freeze({valid:['유효','good'],within90:['90일 안 만료','warn'],within30:['30일 안 만료','bad'],expired:['만료','bad']});
 const NOTE_LIMIT=200,PAST_DAYS=400,FUTURE_DAYS=1;
+// 통로마다 오류 꼴이 다르다: 계정 포털 · PC 앱은 서버 코드 그대로, 회사 워크스페이스 중계는 TEACHING_CLASSROOM_ 뒤에 서버 코드를 붙인다.
+const reasonOf=error=>String(error?.code||'').replace(/^TEACHING_CLASSROOM_/,'');
+const NOT_CONFLICT=['RECORDS_BUSY','ATTENDANCE_CAPACITY','IDEMPOTENCY_CONFLICT'];
+const BUSY_TEXT='반 명단이 방금 바뀌었어요. 고르던 내용은 그대로 있어요. 잠시 뒤 다시 저장해 주세요.';
 const dateValue=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value);
 export const addDays=(value,days)=>{const [y,m,d]=value.split('-').map(Number);return new Date(Date.UTC(y,m-1,d)+days*86400000).toISOString().slice(0,10);};
 // 학원 현지 날짜(이 기기의 달력). 서버는 범위만 본다.
@@ -31,11 +35,12 @@ export function classRecordsModel(workspace,classId){
   if(!classroom?.attendance||!dateValue(classroom.attendance.basisDate))return null;
   const learners=list(classroom.learners).filter(row=>typeof row.id==='string'&&row.id).map(row=>{
     const sharing=learnerOverview({...row,classId}).sharing;
-    return {id:row.id,name:row.name||'이름 확인 필요',shared:sharing==='shared'&&row.topik?.shared===true,sharing,topik:row.topik||null,streak:Number.isSafeInteger(row.absentStreak)?row.absentStreak:0};
+    return {id:row.id,name:row.name||'이름 확인 필요',shared:sharing==='shared'&&row.topik?.shared===true,sharing,revision:Number.isSafeInteger(row.sharing?.revision)?row.sharing.revision:null,topik:row.topik||null,streak:Number.isSafeInteger(row.absentStreak)?row.absentStreak:0};
   }).sort(compareTeacherRows);
   return {classId,name:classroom.name||'',basisDate:classroom.attendance.basisDate,sessionDate:classroom.attendance.sessionDate||classroom.attendance.basisDate,rows:list(classroom.attendance.rows),learners,capacityReached:classroom.attendance.capacityReached===true};
 }
 // 저장할 묶음: 상태를 고른 공유 학생 모두. 그대로인 줄도 판을 함께 보내, 다른 화면이 먼저 고친 줄을 덮지 않고 409로 알린다.
+// 판(revision)은 표 전체가 함께 쓰는 순번이라 1, 2, 3으로 오르지 않는다. 받은 값을 그대로 돌려보내고, 아직 없는 줄만 0이다.
 export function attendanceRows(learners,saved,draft){
   return learners.filter(l=>l.shared).flatMap(l=>{
     const old=saved.get(l.id),next=draft.get(l.id),status=next?.status??old?.status;
@@ -64,7 +69,10 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
   const confirm=text=>{const view=documentObject?.defaultView;return typeof view?.confirm!=='function'||view.confirm(text)===true;};
   function setSaved(rows){saved=new Map(list(rows).map(row=>[row.learnerId,row]));}
   function clearTopikForm(){editing=null;topikDraft=null;topikTouched=false;}
-  function fail(error){if(stopped||error?.code==='ACCOUNT_CHANGED')return;message=error?.message||'저장하지 못했어요. 잠시 뒤 다시 해 주세요.';notice(message,true);}
+  function fail(error){
+    if(stopped||error?.code==='ACCOUNT_CHANGED')return;const text=String(error?.message||'');
+    message=reasonOf(error)==='RECORDS_BUSY'?BUSY_TEXT:text&&!/^[A-Z][A-Z0-9_]*$/.test(text)?text:'저장하지 못했어요. 잠시 뒤 다시 해 주세요.';notice(message,true);
+  }
   async function call(path,body){guard();const result=await request(path,body);guard();if(stopped)throw Object.assign(new Error('닫힌 화면이에요.'),{code:'ACCOUNT_CHANGED'});return result;}
   // 한 번에 하나만 보낸다. 뒤에 시작한 요청이 있으면 앞 요청의 답은 버린다.
   async function run(task){
@@ -87,9 +95,12 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
     return run(async current=>{
       try{
         const result=await call('/api/teacher/attendance',{action:'save',sessionDate:date,idempotencyKey:key,rows});if(!current())return;
-        setSaved(result.attendance);draft=new Map();key=null;message=rows.length+'명의 '+date+' 출결을 저장했어요.';notice(message);onSaved();
+        // 재전송(duplicate)이면 앞서 저장된 것이고, 받은 기록은 지금 서버의 기록이다.
+        setSaved(result.attendance);draft=new Map();key=null;message=result.duplicate===true?date+' 출결은 이미 저장돼 있어요. 지금 기록으로 보여 드려요.':rows.length+'명의 '+date+' 출결을 저장했어요.';notice(message);onSaved();
       }catch(error){
-        if(error?.status!==409||!current())throw error;
+        // 판 충돌만 그날을 다시 받는다. 명단 잠금(RECORDS_BUSY)은 같은 묶음 · 같은 키로 잠시 뒤 다시 보내면 되고, 고르던 내용은 그대로 둔다.
+        const reason=reasonOf(error);if(reason==='IDEMPOTENCY_CONFLICT')key=null;
+        if(error?.status!==409||!current()||NOT_CONFLICT.includes(reason))throw error;
         // 다른 화면이 먼저 고쳤으면 그날을 다시 받는다. 고르던 내용은 남겨 확인한 뒤 다시 저장할 수 있게 한다.
         const fresh=await call('/api/teacher/attendance',{action:'day',sessionDate:date});if(!current())return;
         setSaved(fresh.attendance);key=null;message='다른 화면에서 이 날 출결이 먼저 바뀌었어요. 바뀐 내용을 확인하고 다시 저장해 주세요.';notice(message,true);
@@ -128,7 +139,8 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
   function rowHtml(l){
     if(!l.shared)return '<li class="att-row is-off" data-att-row="'+escape(l.id)+'"><div class="att-name"><strong>'+escape(l.name)+'</strong><small>'+escape(l.sharing==='unconnected'?'계정 연결 전':l.sharing==='revoked'?'연결 해제':'학습 공유 안 함')+' · 출결과 TOPIK을 남기지 않아요</small></div></li>';
     const {status,old}=effective(l,saved,draft),changed=rowChanged(l,saved,draft);
-    const badge=topikBadge(l.topik?.representative),open=openTopik===l.id,rawNote=draft.get(l.id)?.note??old?.note??'';
+    // 만료 배지는 담당 반 요약과 같은 기준: 유효한 4급 이상 가운데 가장 늦게 만료되는 성적(level4), 없으면 대표 성적.
+    const badge=topikBadge(l.topik?.level4||l.topik?.representative),open=openTopik===l.id,rawNote=draft.get(l.id)?.note??old?.note??'';
     const meta=(old?escape(old.recordedByName||'선생님')+' · '+escape(savedTime(old.updatedAt))+' 저장':'아직 안 찍음')+(changed?' · <b class="att-changed">'+(status?'저장 전':'저장 전 · 출결 상태를 골라 주세요')+'</b>':'');
     return '<li class="att-row'+(focused===l.id?' is-focused':'')+(open?' is-open':'')+'" data-att-row="'+escape(l.id)+'">'
       +'<div class="att-name"><strong>'+escape(l.name)+'</strong><small>'+meta+'</small>'+(l.streak>=3?'<span class="status-badge bad att-streak">연속 결석 '+l.streak+'회</span>':'')+'</div>'
@@ -200,13 +212,22 @@ export function createClassRecords({root,request,notice=()=>{},guard=()=>{},onSa
       if(first&&today()!==sessionDate&&inRange(today()))void loadDay(today());
       return true;
     },
-    // 저장 뒤 새로 받은 반 자료(교사 개요나 반 응답)로 학생 줄의 파생 표시(연속 결석 · TOPIK 배지 · 공유 상태)만 바꾼다.
+    // 새로 받은 반 자료(교사 개요나 반 응답)로 학생 줄의 파생 표시(연속 결석 · TOPIK 배지 · 공유 상태)만 바꾼다.
+    // sharingOnly면 명부와 공유가 바뀐 줄만 받는다(개요를 주기적으로 다시 받을 때. 다른 학생이 공유를 끄면 그 줄을 바로 내린다).
     // 고른 날짜 · 저장본 · 고르던 내용은 그대로 둔다. 달라진 것이 없으면 다시 그리지 않는다(입력 중인 칸을 건드리지 않게).
-    refresh(workspace){
+    refresh(workspace,{sharingOnly=false}={}){
       if(stopped||!model)return false;const next=classRecordsModel(workspace,model.classId);if(!next)return false;
+      const prev=new Map(model.learners.map(l=>[l.id,l]));
+      const learners=next.learners.map(l=>{
+        const old=prev.get(l.id);if(!old)return l;
+        // 늦게 도착한 옛 개요(공유 판이 더 낮음)는 지금 줄을 되돌리지 못한다.
+        if(Number.isSafeInteger(l.revision)&&Number.isSafeInteger(old.revision)&&l.revision<old.revision)return old;
+        return sharingOnly&&old.shared===l.shared&&old.sharing===l.sharing?old:l;
+      });
+      const merged=sharingOnly?{...model,learners}:{...model,name:next.name||model.name,basisDate:next.basisDate,capacityReached:next.capacityReached,learners};
       const shape=m=>JSON.stringify([m.name,m.basisDate,m.capacityReached,m.learners.map(l=>[l.id,l.name,l.shared,l.sharing,l.streak,l.topik])]);
-      if(shape(next)===shape(model))return false;
-      model={...model,name:next.name||model.name,basisDate:next.basisDate,capacityReached:next.capacityReached,learners:next.learners};
+      if(shape(merged)===shape(model))return false;
+      model=merged;
       if(openTopik&&!learner(openTopik)?.shared){openTopik=null;clearTopikForm();}
       paint();return true;
     },

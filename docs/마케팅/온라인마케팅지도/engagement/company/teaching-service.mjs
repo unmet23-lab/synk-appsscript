@@ -15,6 +15,9 @@ const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]
 const random=()=>randomBytes(32).toString('base64url');
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const fail=(status,code,message,retryable=false)=>Object.assign(new Error(message),{status,code:'TEACHING_'+code,...(retryable?{retryable:true}:{})});
+// 출결 · TOPIK 저장의 409는 까닭마다 화면이 다르게 답한다(판 충돌은 그날을 다시 받고, 명단 잠금 RECORDS_BUSY는 잠시 뒤 다시 보낸다).
+// 그 두 경로만 서버 코드를 TEACHING_CLASSROOM_ 뒤에 붙여 넘긴다. 다른 경로는 지금처럼 TEACHING_CLASSROOM이다.
+const recordConflict=(path,status,data)=>{const code=data?.error?.code||data?.code;return status===409&&['/api/teacher/attendance','/api/teacher/topik'].includes(path)&&typeof code==='string'&&/^[A-Z][A-Z0-9_]{0,60}$/.test(code)?'CLASSROOM_'+code:'CLASSROOM';};
 const rejected=()=>fail(401,'AUTH_REQUIRED','내 수업의 SYNK ID로 다시 로그인해 주세요.');
 const unavailable=()=>fail(503,'UNAVAILABLE','수업 연결을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.',true);
 const credential=value=>typeof value==='string'&&value.length>=10&&value.length<=16384&&!/\s/.test(value);
@@ -144,7 +147,7 @@ export function createTeachingService({store,origin,config=null,fetch:fetcher=gl
     const unscoped=['classes','teacherOverview'].includes(operation);
     if(unscoped&&(classId!==undefined||body!==undefined)||!unscoped&&(typeof classId!=='string'||!classId||classId.length>120)||route[1]&&(!body||typeof body!=='object'||Array.isArray(body))||!route[1]&&body!==undefined||body?.classId&&body.classId!==classId)throw fail(400,'CLASS_SCOPE','담당 수업의 요청 범위를 확인해 주세요.');
     const guard=()=>{if(!current(entry))throw rejected();if(closing||entry.blocked)throw unavailable();};
-    async function call(path,method='GET',payload){guard();const target=new URL(config.accountApiUrl);target.pathname='/functions/v1/synk-classroom'+path;if(classId&&path!=='/api/classes')target.searchParams.set('classId',classId);const response=await remote(target,{method,headers:{...functionHeaders(entry.accessToken),...(method==='POST'?{'Content-Type':'application/json'}:{})},...(method==='POST'?{body:JSON.stringify(payload)}:{})});guard();let data;try{data=await response.json();}catch{throw unavailable();}guard();if(!response.ok||data?.ok===false){if(response.status===401)remove(entry.hash);throw fail([400,401,403,404,409,429].includes(response.status)?response.status:503,'CLASSROOM',data?.error?.message||'담당 수업을 확인하지 못했어요.',response.status>=500);}return data;}
+    async function call(path,method='GET',payload){guard();const target=new URL(config.accountApiUrl);target.pathname='/functions/v1/synk-classroom'+path;if(classId&&path!=='/api/classes')target.searchParams.set('classId',classId);const response=await remote(target,{method,headers:{...functionHeaders(entry.accessToken),...(method==='POST'?{'Content-Type':'application/json'}:{})},...(method==='POST'?{body:JSON.stringify(payload)}:{})});guard();let data;try{data=await response.json();}catch{throw unavailable();}guard();if(!response.ok||data?.ok===false){if(response.status===401)remove(entry.hash);throw fail([400,401,403,404,409,429].includes(response.status)?response.status:503,recordConflict(path,response.status,data),data?.error?.message||'담당 수업을 확인하지 못했어요.',response.status>=500);}return data;}
     if(operation==='teacherOverview')return call(route[0]);
     const memberships=await call('/api/classes');if(memberships?.mode!=='account-linked'||!Array.isArray(memberships.classes)||memberships.classes.some(row=>typeof row.id!=='string'||typeof row.name!=='string'||!['teacher','learner'].includes(row.role)))throw unavailable();
     const teacherClasses=memberships.classes.filter(row=>row.role==='teacher');if(operation==='classes')return {...memberships,classes:teacherClasses};
