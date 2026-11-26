@@ -16,7 +16,7 @@ const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const args = process.argv.slice(2), opt = (n, d) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; };
 const END = opt('--끝', 'origin/master'), BASE = 'a9d50abdd97d649ddb2ba1906cad6451f2f29200';
 // 이 일이 마지막으로 공개한 원천(11-26 synk-policy 9961e4f4). 그 뒤 다른 일이 앞면 파일에 먼저 공개한 변경을 지우지 않게 3방향의 바탕으로 쓴다 — 공개할 때마다 새 원천으로 고친다.
-const LAST = opt('--앞판', '9cdbd3c7d0dd667b6bfbc2b231baac2deffa6730');
+const LAST = opt('--앞판', 'b8a663cc54c24d7f9e4c657ea6cf7e688f6e9100');
 const OUT = path.join(ROOT, '.tmp', 'world-front-pub');
 const git = (...a) => execFileSync('git', ['-C', ROOT, '-c', 'core.autocrlf=false', ...a], {maxBuffer: 1 << 30});
 const lf = s => s.replace(/\r\n/g, '\n');
