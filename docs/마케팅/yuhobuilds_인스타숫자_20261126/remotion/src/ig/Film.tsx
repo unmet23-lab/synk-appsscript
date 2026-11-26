@@ -166,7 +166,7 @@ const FiveAsk: React.FC<{ t: number }> = ({ t }) => {
         const label = 1 - m;
         return (
           <div key={r.k} style={{ position: 'absolute', left: x, top: y, width: w, opacity: p }}>
-            <div style={{ width: w, height: h, borderRadius: 12, overflow: 'hidden', border: `2px solid rgba(255,255,255,${0.25 * m})` }}>
+            <div style={{ width: w, height: h, borderRadius: 12, overflow: 'hidden', boxSizing: 'border-box', border: `2px solid rgba(255,255,255,${0.22 + 0.06 * m})` }}>
               <Img src={staticFile(`img/th_${r.k}.jpg`)} style={{ width: w, height: h, objectFit: 'cover' }} />
             </div>
             {label > 0.02 && <div style={{ marginTop: 8, opacity: label, fontFamily: KO, fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', color: WHITE, textAlign: 'center', whiteSpace: 'nowrap' }}>{r.views}회</div>}
@@ -220,7 +220,7 @@ export const Bars: React.FC<{ t: number; bare?: boolean }> = ({ t, bare = false 
           const y = ROW_Y + i * ROW_H;
           return (
             <div key={r.k} style={{ position: 'absolute', left: 75, top: y + (1 - p) * 30, opacity: p * dim }}>
-              <div style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 178, borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 178, borderRadius: 10, overflow: 'hidden', boxSizing: 'border-box', border: '2px solid rgba(255,255,255,0.22)' }}>
                 <Img src={staticFile(`img/th_${r.k}.jpg`)} style={{ width: 100, height: 178, objectFit: 'cover' }} />
               </div>
               <div style={{ position: 'absolute', left: 126, top: -8, transform: `scale(${1 + 0.06 * on})`, transformOrigin: '0 50%', fontFamily: KO, fontSize: 74, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.05, color: r.good ? BUTTER : WHITE, whiteSpace: 'nowrap' }}>
@@ -229,7 +229,7 @@ export const Bars: React.FC<{ t: number; bare?: boolean }> = ({ t, bare = false 
               </div>
               <div style={{ position: 'absolute', left: 112, top: 92, width: NF_W }}>
                 <Strip src={`img/nf_${r.k}.png`} w={NF_W} barY={[70, 93]} p={bar} />
-                <Frame o={on} c={r.good ? BUTTER : WHITE} pad={6} w={5} />
+                <Frame o={on} c={r.good ? BUTTER : WHITE} pad={14} w={5} />
               </div>
             </div>
           );
@@ -258,7 +258,7 @@ const Compare: React.FC<{ t: number }> = ({ t }) => {
         갈린 건 <Gold>장면</Gold>
       </Big>
       <Big t={t} at={T.sGood} out={T.sBad} top={286} size={70}>
-        잘된 편: <Gold>한 장면에 한 마디</Gold>
+        잘된 편: <Gold>한 장면에 한마디</Gold>
       </Big>
       <Big t={t} at={T.sBad} top={286} size={70}>
         안된 편: 읽어야 아는 설명
@@ -279,7 +279,7 @@ const Compare: React.FC<{ t: number }> = ({ t }) => {
         const h = bi < 0 ? H : bh;
         return (
           <div key={r.k} style={{ position: 'absolute', left: bx, top: by + (1 - p) * 30, width: w, height: h, opacity: p * dim, transform: `scale(${bi < 0 ? s : 1})`, zIndex: bi < 0 ? 1 : 2 }}>
-            <div style={{ width: w, height: h, borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ width: w, height: h, borderRadius: 12, overflow: 'hidden', boxSizing: 'border-box', border: '2px solid rgba(255,255,255,0.22)' }}>
               <Img src={staticFile(`img/th_${r.k}.jpg`)} style={{ width: w, height: h, objectFit: 'cover' }} />
             </div>
             <Frame o={on} c={r.good ? BUTTER : WHITE} pad={8} w={5} />
@@ -291,13 +291,14 @@ const Compare: React.FC<{ t: number }> = ({ t }) => {
 };
 
 /** ⑦ 여섯 번 — 같은 질문을 새 클로드에게 여섯 번. 아래 여섯 줄은 답의 글 그대로다(시안/실험/). */
-const QUOTES = [
-  '모두 상황 한 장면에 말 한마디였습니다',
-  '글은 큰 말풍선 한 마디로 줄인다',
-  '설명 없이 감정이 먼저 보여야 하고',
-  '설명 없이 한눈에 읽히는 일상 장면이다',
-  '첫 장면만 봐도 상황이 이해되는 편입니다',
-  '보는 순간 이해되는 생활 장면이고',
+const QUOTES: [string, string, string][] = [
+  // [앞, 노랗게 짚을 낱말, 뒤] — 이어 붙이면 답의 글 그대로다
+  ['모두 상황 ', '한 장면에 말 한마디', '였습니다'],
+  ['글은 큰 말풍선 ', '한 마디', '로 줄인다'],
+  ['', '설명 없이', ' 감정이 먼저 보여야 하고'],
+  ['', '설명 없이', ' 한눈에 읽히는 일상 장면이다'],
+  ['', '첫 장면만 봐도', ' 상황이 이해되는 편입니다'],
+  ['', '보는 순간', ' 이해되는 생활 장면이고'],
 ];
 const Six: React.FC<{ t: number }> = ({ t }) => {
   const q = appear(t, T.quotes, 0.35);
@@ -312,9 +313,11 @@ const Six: React.FC<{ t: number }> = ({ t }) => {
       </Big>
       <div style={{ position: 'absolute', left: LEFT - 14, top: 580 - rise, opacity: q }}>
         <div style={{ fontFamily: KO, fontSize: 40, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.02em', marginBottom: 26 }}>새 대화에서 여섯 번 물은 답</div>
-        {QUOTES.map((line, i) => (
-          <div key={i} style={{ fontFamily: KO, fontSize: 50, fontWeight: 700, color: WHITE, letterSpacing: '-0.04em', lineHeight: 1.16, padding: '16px 0 16px 26px', borderLeft: `4px solid ${i === 0 ? BUTTER : 'rgba(255,255,255,0.35)'}`, marginBottom: 12, whiteSpace: 'nowrap', opacity: interpolate(t, [T.quotes + 0.04 * i, T.quotes + 0.04 * i + 0.2], [0, 1], clamp) }}>
-            「{line}」
+        {QUOTES.map(([pre, key, post], i) => (
+          <div key={i} style={{ fontFamily: KO, fontSize: 50, fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.04em', lineHeight: 1.16, padding: '16px 0 16px 26px', borderLeft: '4px solid rgba(255,255,255,0.35)', marginBottom: 12, whiteSpace: 'nowrap', opacity: interpolate(t, [T.quotes + 0.04 * i, T.quotes + 0.04 * i + 0.2], [0, 1], clamp) }}>
+            「{pre}
+            <span style={{ color: BUTTER }}>{key}</span>
+            {post}」
           </div>
         ))}
       </div>
