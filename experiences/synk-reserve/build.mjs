@@ -2,7 +2,8 @@
 //   node experiences/synk-reserve/build.mjs
 // 그림은 공개본에 이미 있는 synk.im 새 홈 그림(/assets/v11/town-road.webp)을 쓴다. 링크 미리보기(og.jpg)는 그 그림을
 // 공개본 git(SYNK_PUBLISH_GIT, 기본 ~/Documents/synk-vendor/synk-policy-publish.git의 origin/main)에서 꺼내 굽는다.
-// 아래 단락의 서울행 장면은 WORLD 장면 사진(src/img/)과, 장면에 따라 그 언어의 실제 화면 캡처(src/shots/<언어>/<shot>.webp)다(11-24 B안).
+// 아래 단락(11-26 「다」)은 게임 학생증(src/img/card-<꿈>.webp) · 꿈 무대 그림(src/img/stage-<꿈>.webp)과, 휴대폰 다섯 대의 실제 게임 화면이다.
+// 휴대폰은 1회용 체험을 녹화한 짧은 영상(src/clips/<언어>/…mp4와 첫 장면 .webp)이거나 화면 캡처(src/shots/<언어>/<id>.webp)다.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -44,12 +45,17 @@ fs.mkdirSync(ASSETS, { recursive: true });
 // 1) 글 · 코드 · 꼴. 지문(?v=)은 글꼴을 구운 뒤 3)에서 단다.
 // 공용 작업본은 core.autocrlf라 원고가 CRLF일 수 있다 — 공개본과 같은 LF로 쓴다.
 for (const f of ['index.html', 'copy.js', 'app.js', 'reserve.css']) fs.writeFileSync(path.join(OUT, f), fs.readFileSync(path.join(SRC, f), 'utf8').replace(/\r\n/g, '\n'), 'utf8');
-// 아래 단락의 장면 사진과 화면 캡처. copy.js의 SCENES · FRIENDS가 부르는 파일이 모두 있어야 한다.
+// 아래 단락의 그림 · 영상. copy.js의 PHONES · DREAMS가 부르는 파일이 모두 있어야 한다.
 {
   const C = (await import(pathToFileURL(path.join(SRC, 'copy.js')).href)).default;
-  const need = (from, to) => { if (!fs.existsSync(from)) throw new Error(`그림이 없어요: ${path.relative(SRC, from)}`); fs.mkdirSync(path.dirname(to), { recursive: true }); fs.copyFileSync(from, to); };
-  for (const id of [...C.SCENES.map(s => s.id), ...C.FRIENDS.map(f => `face-${f.id}`)]) need(path.join(SRC, 'img', `${id}.webp`), path.join(OUT, 'img', `${id}.webp`));
-  for (const lang of C.LANGS) for (const { shot } of C.SCENES) if (shot) need(path.join(SRC, 'shots', lang, `${shot}.webp`), path.join(OUT, 'shots', lang, `${shot}.webp`));
+  // 영상(mp4)은 저장소 규칙(.gitignore *.mp4)으로 git에 넣지 않는다. 공용 작업본의 src/clips에 있고, 없으면 공개본 git(origin/main)의 같은 파일을 꺼낸다.
+  const fromPublish = (rel, to) => { const r = spawnSync('git', ['--git-dir', PUBLISH_GIT, 'show', `origin/main:${rel}`], { encoding: 'buffer', maxBuffer: 1 << 26 }); if (r.status !== 0 || !r.stdout.length) return false; fs.mkdirSync(path.dirname(to), { recursive: true }); fs.writeFileSync(to, r.stdout); return true; };
+  const need = (from, to, pub) => { if (!fs.existsSync(from)) { if (pub && fromPublish(pub, to)) return; throw new Error(`그림이 없어요: ${path.relative(SRC, from)}`); } fs.mkdirSync(path.dirname(to), { recursive: true }); fs.copyFileSync(from, to); };
+  for (const d of C.DREAMS) for (const id of [`card-${d}`, `stage-${d}`]) need(path.join(SRC, 'img', `${id}.webp`), path.join(OUT, 'img', `${id}.webp`));
+  for (const lang of C.LANGS) for (const p of C.PHONES) {
+    if (p.still) { need(path.join(SRC, 'shots', lang, `${p.id}.webp`), path.join(OUT, 'shots', lang, `${p.id}.webp`)); continue; }
+    for (const name of p.one ? [p.id] : C.DREAMS.map(d => `${p.id}-${d}`)) for (const ext of ['mp4', 'webp']) need(path.join(SRC, 'clips', lang, `${name}.${ext}`), path.join(OUT, 'clips', lang, `${name}.${ext}`), ext === 'mp4' ? `reserve/clips/${lang}/${name}.mp4` : null);
+  }
 }
 
 // 1회용 체험(/reserve/play/ — 11-25). 글은 play.mjs에 있다.

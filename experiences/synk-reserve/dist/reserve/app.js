@@ -127,6 +127,7 @@
     done: null,
     resubmit: false,
     prevEmail: '',
+    dream: 'idol',
   };
   const T = () => C[state.lang];
   const live = msg => { const el = $('#live'); if (el) { el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 40); } };
@@ -142,7 +143,7 @@
     $$('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === state.lang)));
     $('#notice').hidden = !state.notice;
     $$('[data-world]').forEach(a => a.setAttribute('href', playUrl(state.lang, state.from)));
-    renderScenes();
+    renderGame();
 
     const picked = new Set($$('input[name="interest"]:checked').map(i => i.value));
     $('#opt-interest').innerHTML = C.INTERESTS.map(o =>
@@ -156,61 +157,42 @@
     if (state.done) renderDone();
   }
 
-  /* ───────── 아래 단락: 서울행 장면 사진 ───────── */
-  const pic = id => `img/${id}.webp`;
-  const shot = id => `shots/${state.lang}/${id}.webp`;
-  let sceneAt = 0;
+  /* ───────── 아래 단락(11-26 「다」): 게임 학생증 · 휴대폰 다섯 대 · 꿈 무대 ───────── */
+  // 꿈을 고르면 학생증이 뒤집히고(html[data-my-dream]), 휴대폰 영상 · 꿈 무대 글과 사진이 그 꿈으로 바뀐다.
+  // 영상은 소리 없이 화면에 보일 때만 돌고, 움직임을 줄이라는 기기 설정이면 첫 장면 그림만 둔다.
+  const reduceMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clipBase = p => (p.one ? `clips/${state.lang}/${p.id}` : `clips/${state.lang}/${p.id}-${state.dream}`);
+  let phoneIo = null;
 
-  function renderScenes() {
-    const list = $('#chapters');
+  function renderGame() {
+    const t = T();
+    document.documentElement.dataset.myDream = state.dream;
+    $$('[data-dream]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.dream === state.dream)));
+    const idol = state.dream === 'idol';
+    const big = $('.rs-stage-big');
+    if (big) big.innerHTML = keep(idol ? t.stageIdol : t.stageActor);
+    const body = $('.rs-stage-body');
+    if (body) body.innerHTML = `${keep(idol ? t.stageBodyIdol : t.stageBodyActor)} ${keep(t.stageFree)}`;
+    const pic = $('.rs-stage-pic');
+    if (pic) { pic.src = `img/stage-${state.dream}.webp`; pic.alt = idol ? t.stageAltIdol : t.stageAltActor; }
+    const list = $('#phones');
     if (!list) return;
-    const faces = C.FRIENDS.map(f => `<img src="${pic(`face-${f.id}`)}" alt="${esc(f[state.lang])}" width="56" height="56" loading="lazy">`).join('');
-    list.innerHTML = C.SCENES.map((s, i) => {
-      const x = s[state.lang];
-      const line = s.line ? `<p class="rs-line"><small>${keep(x.lineLabel)}</small><span lang="ko">${esc(s.line)}</span>${x.lineMean ? `<span class="rs-mean">${keep(x.lineMean)}</span>` : ''}</p>` : '';
-      return `<li class="rs-chapter${i === sceneAt ? ' on' : ''}" data-i="${i}">`
-        + `<div class="rs-chapter-pic"><img src="${pic(s.id)}" alt="${esc(x.alt)}" width="900" height="${s.h}" loading="lazy" decoding="async">${s.soon ? `<span class="rs-soon" aria-hidden="true">${keep(x.soon)}</span>` : ''}</div>`
-        + `<div class="rs-chapter-say"><span class="rs-num">${keep(x.tag)}${s.soon ? `<em class="rs-soon-tag">${keep(x.soon)}</em>` : ''}</span><h3>${keep(x.name)}</h3><p>${keep(x.body)}</p>${line}${s.friends ? `<div class="rs-faces">${faces}</div>` : ''}</div></li>`;
+    list.innerHTML = C.PHONES.map(p => {
+      const x = p[state.lang];
+      const s = state.dream === 'actor' && x.sActor ? x.sActor : x.s;
+      const media = p.still
+        ? `<img src="shots/${state.lang}/${p.id}.webp" alt="" width="600" height="1307" loading="lazy" decoding="async">`
+        : `<video muted playsinline loop preload="none" poster="${clipBase(p)}.webp" data-src="${clipBase(p)}.mp4" width="480" height="1046"></video>`;
+      return `<li class="rs-ph-item" data-id="${esc(p.id)}"><span class="rs-ph" aria-hidden="true"><span class="rs-ph-scr">${media}</span></span>`
+        + `<p>${keep(x.p)}<small>${keep(s)}</small></p></li>`;
     }).join('');
-    showScene(sceneAt, false);
+    if (phoneIo) { phoneIo.disconnect(); $$('#phones video').forEach(v => phoneIo.observe(v)); }
   }
 
-  /** 넓은 화면의 옆 사진틀에 i번째 장면 사진을 옅게 바꿔 띄우고, 그 장면에 실제 화면이 있으면 작은 휴대폰에 띄운다.
-   * 빨리 내리면 앞서 부른 사진이 늦게 뜰 수 있어, 마지막으로 부른 장면(want)만 띄우고 나머지는 물러난 뒤 지운다. */
-  function showScene(i, animate = true) {
-    sceneAt = i;
-    $$('.rs-chapter').forEach(li => li.classList.toggle('on', Number(li.dataset.i) === i));
-    const stage = $('#stage');
-    if (!stage) return;
-    const s = C.SCENES[i], x = s[state.lang];
-    const tag = $('.rs-stage-tag');
-    if (tag) tag.textContent = x.tag;
-    const phone = $('.rs-stage-phone');
-    if (phone) {
-      phone.classList.toggle('on', !!s.shot);
-      if (s.shot) phone.querySelector('img').src = shot(s.shot);
-    }
-    const want = s.id;
-    stage.dataset.want = want;
-    let img = [...stage.querySelectorAll('img')].find(o => o.dataset.key === want);
-    if (!img) {
-      img = new Image();
-      img.src = pic(s.id); img.width = 900; img.height = s.h; img.decoding = 'async'; img.alt = '';
-      img.dataset.key = want;
-      stage.appendChild(img);
-    }
-    const swap = () => {
-      if (stage.dataset.want !== want) return;
-      img.classList.toggle('now', !animate);
-      void img.offsetWidth; // 받아 둔 그림도 투명한 상태를 한 번 그린 뒤 옅게 들어오게
-      img.classList.add('on');
-      [...stage.querySelectorAll('img')].forEach(o => {
-        if (o === img) return;
-        o.classList.remove('on');
-        setTimeout(() => { if (stage.dataset.want !== o.dataset.key) o.remove(); }, animate ? 760 : 0);
-      });
-    };
-    if (img.complete && img.naturalWidth) swap(); else { img.addEventListener('load', swap, { once: true }); img.addEventListener('error', swap, { once: true }); }
+  function setDream(d) {
+    if (!C.DREAMS.includes(d) || d === state.dream) return;
+    state.dream = d;
+    renderGame();
   }
 
   function values() {
@@ -348,19 +330,27 @@
     $('#form').addEventListener('change', recheck);
     $('#share').addEventListener('click', share);
     $('#again').addEventListener('click', again);
-    const list = $('#chapters');
-    if (list) {
-      if ('IntersectionObserver' in window) {
-        // 화면 가운데 줄을 지나는 장면 글이 지금 장면이다. 언어를 바꾸면 줄을 다시 그리므로 다시 붙인다.
-        const io = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) showScene(Number(e.target.dataset.i)); }, { rootMargin: '-48% 0px -48% 0px' });
-        const watch = () => { io.disconnect(); $$('.rs-chapter').forEach(li => io.observe(li)); };
-        watch();
-        new MutationObserver(watch).observe(list, { childList: true });
-      }
-      // 옆 사진틀이 보이는 넓은 화면이면 장면 사진과 화면 캡처를 미리 받아 둔다(바뀔 때 빈 틀이 없게).
-      const warm = () => { const st = $('#stage'); if (st && st.offsetParent) C.SCENES.forEach(s => { new Image().src = pic(s.id); if (s.shot) new Image().src = shot(s.shot); }); };
-      if (document.readyState === 'complete') warm(); else addEventListener('load', warm, { once: true });
+    $$('[data-dream]').forEach(b => b.addEventListener('click', () => setDream(b.dataset.dream)));
+    // 휴대폰 영상: 반쯤 보이면 처음부터 돌리고, 벗어나면 멈춘다.
+    if ('IntersectionObserver' in window && !reduceMotion) {
+      phoneIo = new IntersectionObserver(es => {
+        for (const e of es) {
+          const v = e.target;
+          if (e.isIntersecting) { if (!v.getAttribute('src')) v.src = v.dataset.src; v.play().catch(() => {}); }
+          else if (!v.paused) v.pause();
+        }
+      }, { threshold: 0.45 });
+      $$('#phones video').forEach(v => phoneIo.observe(v));
     }
+    // 학생증은 단락이 처음 보일 때 한 번만 가볍게 흔들리다 선다.
+    const hang = $('.rs-hang');
+    if (hang && 'IntersectionObserver' in window && !reduceMotion) {
+      const once = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { hang.classList.add('swing'); once.disconnect(); } }, { threshold: 0.35 });
+      once.observe(hang);
+    }
+    // 첫 화면 아래 끝의 표시: 학생증 단락으로 부드럽게 내린다.
+    const cue = $('.rs-cue');
+    if (cue) cue.addEventListener('click', e => { const me = $('#me'); if (!me) return; e.preventDefault(); me.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' }); });
     document.documentElement.classList.add('js');
   }
 

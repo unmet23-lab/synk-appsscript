@@ -33,6 +33,7 @@
 </header>
 
 <main id="main">
+  <div class="rs-top">
   <section class="rs-hero" aria-labelledby="h1">
     <img class="rs-art" src="/assets/v11/town-road.webp" width="1536" height="1024" alt="길 하나가 한 바퀴로 이어진 작은 마을. 길을 따라 집, 교실, 대학 정문, 회사, 카페가 차례로 서 있고 아침 해가 떠오른다. 3D로 그린 그림이다." data-t-attr="alt:imgAlt" fetchpriority="high">
     <div class="rs-say">
@@ -76,23 +77,46 @@
       </div>
     </div>
   </section>
+  <div class="rs-cue-rail"><a class="rs-cue" href="#me"><span class="rs-cue-pill"><span data-t="cue">내 학생증 보기</span> <b aria-hidden="true">↓</b></span><img src="img/card-idol.webp" alt="" width="1320" height="832" decoding="async"></a></div>
+  </div>
 
-  <section class="rs-now" aria-labelledby="now-title">
-    <div class="rs-now-head">
-      <p class="rs-now-tag" data-t="nowTag">지금 해 볼 수 있는 것</p>
-      <h2 id="now-title"><span data-t="nowTitle">봄 학기, 서울로 유학을 왔습니다.</span> <span class="rs-now-sub" data-t="nowSub">한국어로 말하며 이어 가는 이야기 게임, SYNK WORLD</span></h2>
-      <a class="rs-pill" id="world-go" data-world href="/reserve/play/?lang=ko"><span data-t="nowGo">서울행 무료로 해 보기</span> <span aria-hidden="true">→</span></a>
+
+  <!-- 아래 단락(11-26 「다」): 나는 곧 한국으로 가요 + 게임 학생증 → 실제 게임 화면 휴대폰 다섯 대 → 꿈 무대 -->
+  <section class="rs-me" id="me" aria-labelledby="me-title">
+    <h2 class="sr" id="me-title" data-t="meTitle">나는 곧 한국으로 가요.</h2>
+    <p class="rs-me-l1" aria-hidden="true" data-t="me1">나는 곧</p>
+    <p class="rs-me-l2" aria-hidden="true" data-t="me2">한국으로 가요.</p>
+    <div class="rs-me-row">
+      <p class="rs-me-id" data-t="meId">SYNK WORLD · 한국어로 말하며 하는 이야기 게임</p>
+      <p class="rs-me-who" data-t="meWho">한국 유학을 준비하는 학생.
+내 꿈은</p>
+      <div class="rs-seg" role="group" aria-label="내 꿈" data-t-attr="aria-label:dreamLabel"><button type="button" data-dream="idol" aria-pressed="true" data-t="idol">아이돌</button><button type="button" data-dream="actor" aria-pressed="false" data-t="actor">배우</button></div>
+      <a class="rs-pill" id="world-go" data-world href="/reserve/play/?lang=ko"><span data-t="go">1화까지 무료로 해 보기</span> <span aria-hidden="true">→</span></a>
     </div>
-    <div class="rs-story">
-      <ol id="chapters" aria-labelledby="now-title"></ol>
-      <div class="rs-stage-col" aria-hidden="true">
-        <div class="rs-stage-stick"><div id="stage"><p class="rs-stage-tag"></p></div><div class="rs-stage-phone"><img alt="" width="600" height="1301"></div></div>
+    <div class="rs-hang">
+      <span class="rs-strap" aria-hidden="true"></span><span class="rs-clip" aria-hidden="true"></span>
+      <div class="rs-card">
+        <img class="rs-face rs-front" src="img/card-idol.webp" alt="게임에서 받는 새솔대학교 학생증. 이름 볼로르, 몽골에서 온 국제학부 1학년, 꿈은 아이돌." data-t-attr="alt:cardAltIdol" width="1320" height="832" loading="lazy" decoding="async">
+        <img class="rs-face rs-back" src="img/card-actor.webp" alt="게임에서 받는 새솔대학교 학생증. 이름 볼로르, 몽골에서 온 국제학부 1학년, 꿈은 배우." data-t-attr="alt:cardAltActor" width="1320" height="832" loading="lazy" decoding="async">
       </div>
+      <p class="rs-card-hint" data-t="cardHint">게임 속 학생증 · 이름과 얼굴은 내가 정해요</p>
     </div>
-    <div class="rs-now-end">
-      <p data-t="nowEnd">출시 전에도 서울행과 1화는 무료입니다.</p>
-      <a class="rs-pill" data-world href="/reserve/play/?lang=ko"><span data-t="nowGo2">SYNK WORLD에서 해 보기</span> <span aria-hidden="true">→</span></a>
+  </section>
+
+  <section class="rs-phones" aria-labelledby="phones-title">
+    <h2 class="sr" id="phones-title" data-t="phonesTitle">게임에서 하는 일</h2>
+    <ol id="phones"></ol>
+    <div class="rs-phones-go"><a class="rs-pill" data-world href="/reserve/play/?lang=ko"><span data-t="go">1화까지 무료로 해 보기</span> <span aria-hidden="true">→</span></a></div>
+  </section>
+
+  <section class="rs-stage" aria-labelledby="stage-title">
+    <div class="rs-stage-say">
+      <span class="rs-soon" data-t="soon">곧 열려요</span>
+      <h2 id="stage-title" class="rs-stage-big"></h2>
+      <p class="rs-stage-body"></p>
+      <a class="rs-pill rs-pill-w" data-world href="/reserve/play/?lang=ko"><span data-t="go">1화까지 무료로 해 보기</span> <span aria-hidden="true">→</span></a>
     </div>
+    <img class="rs-stage-pic" src="img/stage-idol.webp" alt="" width="900" height="1599" loading="lazy" decoding="async">
   </section>
 </main>
 

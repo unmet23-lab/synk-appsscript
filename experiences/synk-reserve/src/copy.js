@@ -3,6 +3,8 @@
  * 2026-11-23 유호님 「온라인 반 계획은 철수하자. 앱 오픈을 집중해서 사전예약 받자」.
  * 2026-11-24 유호님 정정 「게임으로 이동하는 단락 부분만 바꿔달란거였어」: 첫 화면과 폼은 11-23 판 그대로, 맨 아래 단락만 바꾼다.
  * 같은 날 「게임이 하나도 재미없어보여 … 배경 색도 너무 후졌거든」으로 아래 단락을 미색 바탕의 장면 사진 이야기(B안)로, 발은 홈처럼 큰 synk로.
+ * 2026-11-26 「지금은 너무 길어 … 시안 3개」 뒤 「다 하나만 해줘」: 아래 단락을 흰 바탕 「학생증」 판으로(꿈을 고르면 실제 게임 학생증이 뒤집힌다),
+ * 「더 재밌어보이는 화면이나 공부를 재밌게할수있는 화면」으로 휴대폰 다섯 대(한글 따라 쓰기 · 학생증 · 1화 대답 · 튜터 퀴즈 · 내 팬)와 꿈 무대 띠.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -31,50 +33,34 @@
     { id: 'job', record: '취업', ko: '한국 취업', en: 'Working in Korea', mn: 'Солонгост ажиллах' },
   ];
 
-  // 아래 단락 「지금 해 볼 수 있는 것」 — 서울행 이야기를 장면 사진으로 따라간다(11-24 유호님 B안 「B안으로」).
-  // 사진(src/img/<id>.webp)은 WORLD의 실제 장면 그림이다: 정문 · 내 길 꿈 무대는 seoul-arrival, 학생 식당 · 동아리 박람회는 드라마 시범판, 동아리 친구는 world-front.
-  // shot이 있는 장면은 넓은 화면에서 사진 곁에 그 언어의 실제 화면 캡처(src/shots/<언어>/<shot>.webp)를 작은 휴대폰으로 띄운다.
-  // line은 게임에서 실제로 하는 한국어 한 줄이라 세 언어 모두 한국어로 보이고, 영어 · 몽골어 판은 뜻(lineMean)을 곁에 단다.
-  // 아직 안 열린 화는 soon으로 「곧 열려요」를 단다(아직 없는 기능을 있는 것처럼 말하지 않는다).
-  // 사진은 폭 900px이고 h는 그 높이다(img 크기 속성 — 시험이 파일과 대조한다).
-  const SCENES = [
-    {
-      id: 'gate', h: 1599, shot: 'name',
-      ko: { tag: '01 · 입학', name: '정문에서 「환영」이 기다립니다', body: '내 이름을 한글로 직접 써서 학생증을 받습니다. 얼굴도, 꿈도 내가 고릅니다.', alt: '대학 정문 앞 광장에 털실로 만든 큰 「환영」 글자가 서 있다. 정문 둘레에 벚꽃이 피어 있다.' },
-      en: { tag: '01 · First day', name: 'Giant felt letters 환영 (Welcome) greet you at the gate', body: 'Write your own name in Hangul to get your student ID. You choose your look and your dream, too.', alt: 'Giant felt letters 환영 (Welcome) stand in the square before the university gate, with cherry blossoms around it.' },
-      mn: { tag: '01 · Элсэлт', name: 'Хаалган дээр таныг «환영» (Тавтай морил) гэсэн бичиг угтана', body: 'Нэрээ солонгос үсгээр өөрөө бичиж, оюутны үнэмлэхээ авна. Төрх, мөрөөдлөө ч өөрөө сонгоно.', alt: 'Их сургуулийн хаалганы өмнөх талбайд ноосоор хийсэн «환영» (Тавтай морил) гэсэн том үсэг байна. Хаалганы орчим интоор цэцэглэжээ.' },
-    },
-    {
-      id: 'cafeteria', h: 1612, shot: 'road', line: '혹시 도서관이 어디에 있는지 아세요?',
-      ko: { tag: '1화 · 학생 식당', name: '선배에게 길을 묻습니다', body: '상대가 먼저 말을 걸고, 대답은 내 목소리로 합니다.', lineLabel: '내가 하는 말', alt: '학생 식당에서 식판을 앞에 두고 웃는 태오 선배.' },
-      en: { tag: 'Ep. 1 · Student cafeteria', name: 'Ask a senior for directions', body: 'They speak to you first, and you answer in your own voice.', lineLabel: 'What you say', lineMean: 'Do you know where the library is?', alt: 'Taeo, a senior, smiling over his cafeteria tray.' },
-      mn: { tag: '1-р анги · Оюутны хоолны газар', name: 'Ахлах курсийн оюутнаас зам асууна', body: 'Ярилцагч тань эхэлж ярьж, та өөрийн дуу хоолойгоор хариулна.', lineLabel: 'Таны хэлэх үг', lineMean: 'Номын сан хаана байдгийг мэдэх үү?', alt: 'Оюутны хоолны газарт хоолны тавиурынхаа өмнө инээмсэглэж буй ахлах курсийн Тэо.' },
-    },
-    {
-      id: 'fair', h: 1125, soon: true,
-      ko: { tag: '2화 · 동아리 박람회', name: '동갑 친구와 말을 놓습니다', body: '존댓말에서 반말로 바꾸는 순간을 연습합니다.', soon: '곧 열려요', alt: '동아리 박람회. 부스 사이에서 전단을 든 학생이 손을 흔든다.' },
-      en: { tag: 'Ep. 2 · Club fair', name: 'Switch to casual talk with a friend your age', body: 'Practise the moment you move from polite to casual Korean.', soon: 'Coming soon', alt: 'The club fair: a student holding a flyer waves between the booths.' },
-      mn: { tag: '2-р анги · Клубийн үзэсгэлэн', name: 'Нас чацуу найзтайгаа «чи» гэж ярина', body: 'Хүндэтгэлийн хэллэгээс энгийн яриа руу шилжиж ярих дадлага хийнэ.', soon: 'Удахгүй нээгдэнэ', alt: 'Клубийн үзэсгэлэн. Лангуунуудын дунд сурталчилгааны хуудас барьсан оюутан гар даллаж байна.' },
-    },
-    {
-      id: 'taeo', h: 1199, friends: true, line: '아깝다! ‘빵을’! 한 번 더 말해 봐요!',
-      ko: { tag: '동아리 친구', name: '틀려도 친구가 고쳐 줍니다', body: '다정한 서하, 칭찬하는 태오, 솔직한 유나 가운데 같이 공부할 친구를 고릅니다.', lineLabel: '태오가 고쳐 주는 말', alt: '교실 책상에 기대 앉아 손짓하는 태오.' },
-      en: { tag: 'Club friends', name: 'Get it wrong, and a friend helps you fix it', body: 'Choose who you study with: warm Seoha, upbeat Taeo or straight-talking Yuna.', lineLabel: 'How Taeo corrects you', lineMean: 'So close! 빵을! Say it once more!', alt: 'Taeo leaning on a classroom desk, gesturing.' },
-      mn: { tag: 'Клубийн найзууд', name: 'Алдсан ч найз тань засаж өгнө', body: 'Халамжтай Сөха, магтах дуртай Тэо, шулуун шударга Юна гурвын хэнтэй нь хамт сурахаа сонгоно.', lineLabel: 'Тэогийн засах үг', lineMean: 'Бараг л зөв! «빵을»! Дахиад нэг хэлээд үзээрэй!', alt: 'Ангийн ширээ түшин сууж гараараа дохиж буй Тэо.' },
-    },
-    {
-      id: 'idol', h: 1599,
-      ko: { tag: '꿈의 무대', name: '8화 끝에서, 내 꿈의 무대에 섭니다', body: 'TOPIK 1급부터 4급까지 이어지는 이야기의 끝. 아이돌이면 데뷔 무대, 배우면 첫 주연 시사회입니다.', alt: '공연장 무대 위에 털실로 만든 「데뷔」 글자가 조명을 받고, 무대 옆에 선 사람의 뒷모습이 보인다.' },
-      en: { tag: 'Dream stage', name: 'At the end of Ep. 8, you step onto your dream stage', body: 'The story runs from TOPIK Level 1 to Level 4. If you dream of being an idol, it ends at your debut; if an actor, at your first lead-role premiere.', alt: 'Felt letters 데뷔 (Debut) lit up on a concert stage, with someone watching from the wings.' },
-      mn: { tag: 'Мөрөөдлийн тайз', name: '8-р ангийн төгсгөлд мөрөөдлийн тайзан дээрээ гарна', body: 'TOPIK-ийн 1-ээс 4-р түвшин хүртэл үргэлжлэх түүхийн төгсгөл. Айдол бол дебютийн тайз, жүжигчин бол анхны гол дүрийн нээлт.', alt: 'Концертын тайзан дээр ноосон «데뷔» (Дебют) гэсэн том үсэг гэрэлтэж, тайзны хажууд нэг хүн ар талаасаа харагдана.' },
-    },
+  // 아래 단락의 휴대폰 다섯 대 — 실제 게임 화면이다. clip은 1회용 체험(/reserve/play/)을 391×852로 녹화한 짧은 소리 없는 영상
+  // (src/clips/<언어>/<id>-<꿈>.mp4, 첫 장면 그림은 같은 이름의 .webp), one은 꿈과 상관없이 한 벌(<id>.mp4), still은 화면 캡처(src/shots/<언어>/<id>.webp)다.
+  // 팬 줄(s · sActor)은 게임 「내 팬」 화면의 글(seoul-arrival strings.mjs)과 같다. 글(p · s)은 한국어에서 다섯 줄이 쉼표로 이어져 한 문장으로 읽힌다(영어 · 몽골어는 줄마다 끝나는 문장 — 몽골어대조 11-26). sActor가 있으면 꿈이 배우일 때 그 줄을 쓴다.
+  const PHONES = [
+    { id: 'trace', clip: true,
+      ko: { p: '한글을 손으로 따라 쓰고,', s: '획을 따라 쓰면 글자가 완성돼요.' },
+      en: { p: 'Trace Hangul with your finger.', s: 'Follow the strokes and the letter comes together.' },
+      mn: { p: 'Солонгос үсгийг хуруугаараа дагаж бичнэ.', s: 'Зураасыг дарааллаар нь дагахад үсэг бүтнэ.' } },
+    { id: 'card', clip: true,
+      ko: { p: '내 모습을 골라 학생증을 받고,', s: '이름은 한글로 직접 써요.' },
+      en: { p: 'Pick your look and get your student ID.', s: 'You write your name in Hangul yourself.' },
+      mn: { p: 'Төрхөө сонгож, оюутны үнэмлэхээ авна.', s: 'Нэрээ солонгос үсгээр өөрөө бичнэ.' } },
+    { id: 'talk', clip: true, one: true,
+      ko: { p: '선배에게 내 목소리로 대답하고,', s: '1화, 개강 첫날. 내 차례가 오면 대사를 소리 내어 말해요.' },
+      en: { p: 'Answer a senior in your own voice.', s: 'Ep. 1, the first day of term. When it’s your turn, you say the line out loud.' },
+      mn: { p: 'Ахлах курсийнхэндээ өөрийн дуу хоолойгоор хариулна.', s: '1-р анги, хичээлийн эхний өдөр. Ээлж ирэхэд хэлэх үгээ чангаар хэлнэ.' } },
+    { id: 'quiz', still: true,
+      ko: { p: '동아리 튜터와 퀴즈로 연습하면,', s: '맞히면 왜 맞는지 알려 줘요.' },
+      en: { p: 'Practise with your club tutor’s quiz.', s: 'Get it right and they tell you why.' },
+      mn: { p: 'Клубийн туслахтайгаа асуулт хариултаар давтана.', s: 'Зөв хариулбал яагаад зөв болохыг хэлж өгнө.' } },
+    { id: 'fans', clip: true,
+      ko: { p: '팬이 생겨요.', s: '말한 줄마다 내 팬의 불빛이 하나씩 켜져요.', sActor: '말한 줄마다 내 팬이 한 사람씩 자리에 앉아요.' },
+      en: { p: 'And you gain fans.', s: 'For every line you speak, one more fan’s light comes on.', sActor: 'For every line you speak, one more fan takes a seat.' },
+      mn: { p: 'Тэгээд фэнтэй болно.', s: 'Дүрийнхээ үгийн шинэ хэсгийг хэлэх бүрд тань нэг фэний гэрэлт саваа асдаг.', sActor: 'Дүрийнхээ үгийн шинэ хэсгийг хэлэх бүрд тань нэг фэн ирж суудаг.' } },
   ];
-  // 동아리 친구 셋(장면 taeo의 얼굴 줄). 사진은 src/img/<id>.webp.
-  const FRIENDS = [
-    { id: 'seoha', ko: '서하', en: 'Seoha', mn: 'Сөха' },
-    { id: 'taeo', ko: '태오', en: 'Taeo', mn: 'Тэо' },
-    { id: 'yuna', ko: '유나', en: 'Yuna', mn: 'Юна' },
-  ];
+  // 꿈 둘. 학생증 그림은 src/img/card-<꿈>.webp(게임에서 받는 학생증을 4배로 찍은 것 — 게임 속 학생증은 화면 언어와 상관없이 한국어다),
+  // 꿈 무대 사진은 src/img/stage-<꿈>.webp(seoul-arrival 장면 그림, 폭 900).
+  const DREAMS = ['idol', 'actor'];
 
   const ko = {
     htmlLang: 'ko',
@@ -108,12 +94,28 @@
     share: '친구에게 보내기',
     copied: '주소를 복사했습니다.',
     shareText: 'SYNK가 2027년 2월에 출시합니다. 사전예약은 여기서 할 수 있어요.',
-    nowTag: '지금 해 볼 수 있는 것',
-    nowTitle: '봄 학기, 서울로 유학을 왔습니다.',
-    nowSub: '한국어로 말하며 이어 가는 이야기 게임, SYNK WORLD',
-    nowGo: '서울행 무료로 해 보기',
-    nowEnd: '출시 전에도 서울행과 1화는 무료입니다.',
-    nowGo2: 'SYNK WORLD에서 해 보기',
+    meTitle: '나는 곧 한국으로 가요.',
+    me1: '나는 곧',
+    me2: '한국으로 가요.',
+    meId: 'SYNK WORLD · 한국어로 말하며 하는 이야기 게임',
+    meWho: '한국 유학을 준비하는 학생.\n내 꿈은',
+    dreamLabel: '내 꿈',
+    idol: '아이돌',
+    actor: '배우',
+    go: '1화까지 무료로 해 보기',
+    cue: '내 학생증 보기',
+    cardHint: '게임 속 학생증 · 이름과 얼굴은 내가 정해요',
+    cardAltIdol: '게임에서 받는 새솔대학교 학생증. 이름 볼로르, 몽골에서 온 국제학부 1학년, 꿈은 아이돌.',
+    cardAltActor: '게임에서 받는 새솔대학교 학생증. 이름 볼로르, 몽골에서 온 국제학부 1학년, 꿈은 배우.',
+    phonesTitle: '게임에서 하는 일',
+    soon: '곧 열려요',
+    stageIdol: '그리고 언젠가,\n나의 데뷔 무대.',
+    stageActor: '그리고 언젠가,\n나의 첫 주연.',
+    stageBodyIdol: '급마다 승급 오디션을 보고 티저를 찍어요.',
+    stageBodyActor: '급마다 승급 오디션을 보고 촬영장에 서요.',
+    stageFree: '출시 전에도 1화까지는 무료예요.',
+    stageAltIdol: '공연장 무대 위에 털실로 만든 「데뷔」 글자가 조명을 받고, 무대 옆에 선 사람의 뒷모습이 보인다.',
+    stageAltActor: '밤 레드카펫 끝에 털실로 만든 「주연」 글자가 빛나고, 한 사람이 그쪽으로 걸어간다.',
     home: 'SYNK 홈',
     footLabel: '바닥 메뉴',
     privacyFoot: '개인정보 처리방침',
@@ -152,12 +154,28 @@
     share: 'Send to a friend',
     copied: 'Link copied.',
     shareText: 'SYNK launches in February 2027. You can pre-register here.',
-    nowTag: 'Try it now',
-    nowTitle: 'Spring semester. You’ve come to Seoul to study.',
-    nowSub: 'SYNK WORLD, a story game you play by speaking Korean',
-    nowGo: 'Play the trip to Seoul for free',
-    nowEnd: 'Before launch, the trip to Seoul and Episode 1 are free.',
-    nowGo2: 'Play in SYNK WORLD',
+    meTitle: 'Soon I’m off to Korea.',
+    me1: 'Soon I’m off',
+    me2: 'to Korea.',
+    meId: 'SYNK WORLD · a story game you play by speaking Korean',
+    meWho: 'A student getting ready to study in Korea.\nMy dream:',
+    dreamLabel: 'My dream',
+    idol: 'Idol',
+    actor: 'Actor',
+    go: 'Play free up to Episode 1',
+    cue: 'See my student ID',
+    cardHint: 'Your in-game student ID · you choose the name and face',
+    cardAltIdol: 'The Saesol University student ID you get in the game: Bolor, a first-year international student from Mongolia whose dream is to be an idol.',
+    cardAltActor: 'The Saesol University student ID you get in the game: Bolor, a first-year international student from Mongolia whose dream is to be an actor.',
+    phonesTitle: 'What you do in the game',
+    soon: 'Coming soon',
+    stageIdol: 'And one day,\nmy debut stage.',
+    stageActor: 'And one day,\nmy first lead role.',
+    stageBodyIdol: 'At each level, you take a promotion audition and shoot a teaser.',
+    stageBodyActor: 'At each level, you take a promotion audition and step onto a film set.',
+    stageFree: 'Before launch, you can play up to Episode 1 for free.',
+    stageAltIdol: 'Felt letters 데뷔 (Debut) lit up on a concert stage, with someone watching from the wings.',
+    stageAltActor: 'Felt letters 주연 (Lead role) glow at the end of a red carpet at night as someone walks toward them.',
     home: 'SYNK home',
     footLabel: 'Footer',
     privacyFoot: 'Privacy',
@@ -196,12 +214,28 @@
     share: 'Найздаа илгээх',
     copied: 'Холбоосыг хуулсан.',
     shareText: 'SYNK 2027 оны 2-р сард нээгдэнэ. Эндээс урьдчилан бүртгүүлж болно.',
-    nowTag: 'Одоо туршиж болох зүйл',
-    nowTitle: 'Хаврын улирал. Та Сөүлд суралцахаар ирлээ.',
-    nowSub: 'Солонгосоор ярьж түүхээ үргэлжлүүлдэг тоглоом — SYNK WORLD',
-    nowGo: '«Сөүл рүү хийх аялал» хэсгийг үнэгүй тоглох',
-    nowEnd: 'Албан ёсоор нээгдэхээс өмнө ч «Сөүл рүү хийх аялал» болон 1-р анги үнэгүй.',
-    nowGo2: 'SYNK WORLD дээр тоглох',
+    meTitle: 'Би удахгүй Солонгос руу явна.',
+    me1: 'Би удахгүй',
+    me2: 'Солонгос руу явна.',
+    meId: 'SYNK WORLD · Солонгосоор ярьж түүхээ үргэлжлүүлдэг тоглоом',
+    meWho: 'Солонгост суралцахаар бэлдэж буй оюутан.\nМиний мөрөөдөл:',
+    dreamLabel: 'Миний мөрөөдөл',
+    idol: 'Айдол',
+    actor: 'Жүжигчин',
+    go: '1-р анги хүртэл үнэгүй тоглох',
+    cue: 'Оюутны үнэмлэхээ харах',
+    cardHint: 'Тоглоомын доторх оюутны үнэмлэх · нэр, царайгаа өөрөө сонгоно',
+    cardAltIdol: 'Тоглоомд авдаг Сэсол их сургуулийн оюутны үнэмлэх: Монголоос ирсэн, олон улсын ангийн 1-р курсийн Болор. Мөрөөдөл нь айдол.',
+    cardAltActor: 'Тоглоомд авдаг Сэсол их сургуулийн оюутны үнэмлэх: Монголоос ирсэн, олон улсын ангийн 1-р курсийн Болор. Мөрөөдөл нь жүжигчин.',
+    phonesTitle: 'Тоглоомд юу хийх вэ',
+    soon: 'Удахгүй нээгдэнэ',
+    stageIdol: 'Тэгээд нэг л өдөр\nанхны тайзандаа гарна.',
+    stageActor: 'Тэгээд нэг л өдөр\nанхны гол дүрдээ тоглоно.',
+    stageBodyIdol: 'Түвшин бүрд ахих шалгалт өгч, тизерийн зураг авалтад орно.',
+    stageBodyActor: 'Түвшин бүрд ахих шалгалт өгч, зураг авалтын талбайд гарна.',
+    stageFree: 'Нээлтээс өмнө ч 1-р анги хүртэл үнэгүй тоглож болно.',
+    stageAltIdol: 'Концертын тайзан дээр эсгийгээр хийсэн «데뷔» (Дебют) гэсэн том үсэг гэрэлтэж, тайзны хажууд нэг хүн ар талаасаа харагдана.',
+    stageAltActor: 'Шөнийн улаан хивсний төгсгөлд эсгийгээр хийсэн «주연» (Гол дүр) гэсэн үсэг гэрэлтэж, нэг хүн тийш алхаж байна.',
     home: 'SYNK нүүр хуудас',
     footLabel: 'Доод цэс',
     privacyFoot: 'Хувийн мэдээллийн бодлого',
@@ -209,5 +243,5 @@
     imgAlt: 'Жижиг тосгон. Тойрог хэлбэртэй нэг замын дагуу байшин, сургуулийн байр, их сургуулийн хаалга, оффис, кафе байрлана. Өглөөний нар мандаж байна. 3D зураг.',
   };
 
-  return { FORM, INTERESTS, SCENES, FRIENDS, ko, en, mn, LANGS: ['ko', 'en', 'mn'], LANG_NAMES: { ko: '한국어', en: 'English', mn: 'Монгол' } };
+  return { FORM, INTERESTS, PHONES, DREAMS, ko, en, mn, LANGS: ['ko', 'en', 'mn'], LANG_NAMES: { ko: '한국어', en: 'English', mn: 'Монгол' } };
 });

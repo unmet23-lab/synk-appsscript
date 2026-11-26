@@ -26,9 +26,11 @@ test('폼 고정 값은 구글 폼 선택지 글과 같고, 질문 번호는 같
   for (const k of ['action', 'email', 'type', 'body', 'consent', 'consentValue']) assert.equal(C.FORM[k], T4.FORM[k], k);
 });
 
-test('아래 단락의 서울행 장면: 세 언어 글이 다 있고 사진 · 화면 캡처 파일이 있다', () => {
-  assert.ok(C.SCENES.length >= 4);
+test('아래 단락(11-26 「다」): 학생증 · 휴대폰 다섯 대 · 꿈 무대의 글이 세 언어로 다 있고 그림 · 영상 파일이 있다', () => {
   const webp = f => { assert.ok(fs.existsSync(f), path.relative(__dirname, f)); const b = fs.readFileSync(f); assert.equal(b.toString('ascii', 0, 4) + b.toString('ascii', 8, 12), 'RIFFWEBP', `${path.basename(f)}는 webp`); };
+  // 소리 없는 짧은 영상 — 휴대폰 한 대가 쪽 무게를 키우지 않게 하나에 700KB 아래. mp4는 저장소 규칙(.gitignore *.mp4)으로 git에 없다:
+  // 공용 작업본에 있을 때만 재고, 없는 사본은 빌드가 공개본에서 꺼낸다(build.mjs). 첫 장면 그림(.webp)은 git에 있어 늘 본다.
+  const mp4 = f => { if (!fs.existsSync(f)) return; const b = fs.readFileSync(f); assert.equal(b.toString('ascii', 4, 8), 'ftyp', `${path.basename(f)}는 mp4`); assert.ok(b.length < 700 * 1024, `${path.relative(__dirname, f)} ${b.length}바이트`); };
   // VP8X · VP8 · VP8L 머리에서 가로 · 세로를 읽는다.
   const webpSize = f => {
     const b = fs.readFileSync(f), k = b.toString('ascii', 12, 16);
@@ -37,32 +39,40 @@ test('아래 단락의 서울행 장면: 세 언어 글이 다 있고 사진 · 
     if (k === 'VP8L') { const v = b.readUInt32LE(21); return [1 + (v & 0x3fff), 1 + ((v >> 14) & 0x3fff)]; }
     throw new Error(`${path.basename(f)}: 모르는 webp 머리 ${k}`);
   };
+  assert.deepEqual(C.DREAMS, ['idol', 'actor']);
+  for (const d of C.DREAMS) {
+    const card = path.join(__dirname, 'src/img', `card-${d}.webp`), stage = path.join(__dirname, 'src/img', `stage-${d}.webp`);
+    webp(card); webp(stage);
+    assert.deepEqual(webpSize(card), [1320, 832], `card-${d}.webp 크기 = img 크기 속성`);
+    assert.deepEqual(webpSize(stage), [900, 1599], `stage-${d}.webp 크기 = img 크기 속성`);
+  }
+  assert.equal(C.PHONES.length, 5);
   const ids = new Set();
-  for (const s of C.SCENES) {
-    assert.match(s.id, /^[a-z]+$/);
-    assert.ok(!ids.has(s.id), `장면 이름 겹침: ${s.id}`);
-    ids.add(s.id);
-    webp(path.join(__dirname, 'src/img', `${s.id}.webp`));
-    assert.deepEqual(webpSize(path.join(__dirname, 'src/img', `${s.id}.webp`)), [900, s.h], `${s.id}.webp 크기 = img 크기 속성(900 × h)`);
+  for (const p of C.PHONES) {
+    assert.match(p.id, /^[a-z]+$/);
+    assert.ok(!ids.has(p.id), `휴대폰 이름 겹침: ${p.id}`);
+    ids.add(p.id);
+    assert.ok(p.clip || p.still, `${p.id}: 영상이나 캡처`);
     for (const l of C.LANGS) {
-      for (const f of ['tag', 'name', 'body', 'alt']) assert.ok(typeof s[l][f] === 'string' && s[l][f].trim(), `${s.id}.${l}.${f}`);
-      if (s.shot) webp(path.join(__dirname, 'src/shots', l, `${s.shot}.webp`));
-      if (s.soon) assert.ok(s[l].soon, `${s.id}.${l}.soon`);
-      if (s.line) {
-        assert.ok(s[l].lineLabel, `${s.id}.${l}.lineLabel`);
-        if (l !== 'ko') assert.ok(s[l].lineMean, `${s.id}.${l}.lineMean — 한국어 한 줄의 뜻`);
+      for (const f of ['p', 's']) assert.ok(typeof p[l][f] === 'string' && p[l][f].trim(), `${p.id}.${l}.${f}`);
+      if (p.ko.sActor) assert.ok(p[l].sActor, `${p.id}.${l}.sActor`);
+      if (p.still) { webp(path.join(__dirname, 'src/shots', l, `${p.id}.webp`)); continue; }
+      for (const name of p.one ? [p.id] : C.DREAMS.map(d => `${p.id}-${d}`)) {
+        mp4(path.join(__dirname, 'src/clips', l, `${name}.mp4`));
+        webp(path.join(__dirname, 'src/clips', l, `${name}.webp`));
       }
     }
   }
-  for (const f of C.FRIENDS) { webp(path.join(__dirname, 'src/img', `face-${f.id}.webp`)); for (const l of C.LANGS) assert.ok(f[l], `${f.id}.${l}`); }
-  // 「지금 해 볼 수 있는 것」 안에서 아직 안 열린 화는 「곧 열려요」를 단다 — 2화부터는 아직 없다.
-  for (const s of C.SCENES) if (/^2화/.test(s.ko.tag)) assert.ok(s.soon, `${s.ko.tag}에 「곧 열려요」`);
-  // 11-24 유호님 정정: 첫 화면과 폼은 11-23 판 그대로(머리 글 「SYNK 사전예약」, 마을 그림), 바뀐 것은 아래 단락과 발이다.
+  for (const k of ['stageIdol', 'stageActor', 'stageBodyIdol', 'stageBodyActor', 'stageFree', 'soon', 'cardAltIdol', 'cardAltActor']) for (const l of C.LANGS) assert.ok(C[l][k], `${l}.${k}`);
+  // 꿈 무대(승급 오디션 · 티저 · 촬영장)는 아직 안 열렸다 — 「곧 열려요」를 단다.
   const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
+  assert.match(html, /<section class="rs-stage"[^>]*>\s*<div class="rs-stage-say">\s*<span class="rs-soon" data-t="soon">곧 열려요<\/span>/);
+  // 첫 화면과 폼은 11-23 판 그대로(머리 글 「SYNK 사전예약」, 마을 그림). 11-26: 첫 화면 곁에 아래로 내리라는 표시가 있고 학생증 단락으로 간다.
   assert.match(html, /<h1 id="h1" data-t="h1">SYNK 사전예약<\/h1>/);
   assert.match(html, /src="\/assets\/v11\/town-road\.webp"/);
   assert.equal(C.ko.tag, '2027년 2월 정식 출시');
-  assert.match(html, /<section class="rs-now"[\s\S]*id="chapters"[\s\S]*<\/section>\s*<\/main>/);
+  assert.match(html, /<div class="rs-top">\s*<section class="rs-hero"[\s\S]*<\/section>\s*<div class="rs-cue-rail"><a class="rs-cue" href="#me">/);
+  assert.match(html, /<section class="rs-me" id="me"[\s\S]*<section class="rs-phones"[\s\S]*id="phones"[\s\S]*<section class="rs-stage"[\s\S]*<\/section>\s*<\/main>/);
   // 발은 synk.im 홈처럼 링크 줄과 큰 synk.
   assert.match(html, /<footer class="rs-foot">[\s\S]*<div class="rs-wm" aria-hidden="true">synk<\/div>\s*<\/footer>/);
 });
@@ -98,7 +108,7 @@ test('해 보기 단추는 1회용 체험으로 간다(11-25 유호님 「1회�
   assert.equal(A.playUrl('ko', 'direct'), '/reserve/play/?lang=ko');
   assert.equal(A.playUrl('mn', 'synk-mn'), '/reserve/play/?lang=mn&from=synk-mn');
   const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
-  assert.equal((html.match(/data-world href="\/reserve\/play\/\?lang=ko"/g) || []).length, 2);
+  assert.equal((html.match(/data-world href="\/reserve\/play\/\?lang=ko"/g) || []).length, 3);
   assert.ok(!/href="\/world\//.test(html), '로그인이 이어지는 /world/로 보내는 링크가 없다');
   const P = await import(pathToFileURL(path.join(__dirname, 'src/play/play.mjs')).href);
   for (const [q, navs] of [['?lang=mn', ['ko-KR']], ['?lang=es', ['ko']], ['', ['en-US', 'mn-MN']], ['', ['ru-RU']], ['', []]]) assert.equal(P.pickLang(q, navs), A.pickLang(q, navs), q);

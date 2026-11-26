@@ -90,49 +90,70 @@ img{display:block;max-width:100%}
 .rs-pill:hover{transform:translateY(-2px)}
 .rs-text{padding-bottom:3px;border-bottom:1.5px solid currentColor;font:600 15px/1.3 var(--sans)}
 
-/* 지금 해 볼 수 있는 것: 서울행 장면 사진(11-24 유호님 B안). 첫 화면과 같은 미색 바탕.
- * 글자 역할: 큰 말 SUIT 700 먹 + 회색 둘째 줄 · 장면 이름 SUIT 700 · 게임에서 하는 한국어 한 줄은 흰 말풍선 · 꼬리표만 코랄.
- * 넓은 화면: 장면 글이 화면 가운데를 지나면 옆 사진틀이 그 장면 사진으로 옅게 바뀌고, 실제 화면이 있는 장면은 작은 휴대폰이 곁에 뜬다. */
-.rs-now{background:var(--warm);padding:clamp(80px,9vw,140px) var(--gut) clamp(72px,8vw,120px)}
-.rs-now-head,.rs-now-end{max-width:1240px;margin:0 auto}
-.rs-now-head{display:grid;gap:14px;justify-items:start}
-.rs-now-tag{font:700 15px/1.2 var(--sans);color:var(--acc)}
-.rs-now h2{font:700 clamp(34px,4.4vw,64px)/1.12 var(--sans);letter-spacing:-.035em;max-width:15em}
-.rs-now-sub{display:block;color:var(--grey);font-weight:600}
-:lang(mn) .rs-now h2{font-size:clamp(30px,3.6vw,52px);letter-spacing:-.015em}
-.rs-now .rs-pill{height:54px;padding:0 26px;margin-top:10px;font-weight:700;font-size:17px}
-.rs-story{display:grid;grid-template-columns:minmax(0,440px) minmax(0,560px);justify-content:center;column-gap:clamp(40px,6vw,104px);max-width:1240px;margin:clamp(40px,5vw,72px) auto 0}
-#chapters{margin:0;padding:0;list-style:none}
-.rs-chapter{min-height:78vh;display:grid;align-content:center}
-.rs-chapter-say{display:grid;gap:12px}
-.rs-num{font:700 14px/1.2 var(--sans);color:var(--acc)}
-.rs-soon-tag{display:inline-block;margin-left:8px;padding:3px 9px;border-radius:999px;background:#fff;color:var(--ink);font:700 12px/1.3 var(--sans);font-style:normal;vertical-align:1px}
-.rs-chapter h3{font:700 clamp(28px,2.8vw,42px)/1.16 var(--sans);letter-spacing:-.03em}
-:lang(mn) .rs-chapter h3{font-size:clamp(25px,2.4vw,36px);letter-spacing:-.01em}
-.rs-chapter p{font:500 17px/1.6 var(--sans);color:#47433f;max-width:26em}
-.rs-chapter .rs-line{display:grid;gap:5px;justify-self:start;margin-top:6px;padding:12px 16px;border-radius:16px;background:#fff;box-shadow:0 12px 30px -18px rgba(40,30,20,.5);font:600 17px/1.4 var(--sans);color:var(--ink)}
-/* 게임 속 한국어 한 줄은 화면 언어와 상관없이 SUIT로 — 몽골어 화면에서 문장부호만 Inter로 굵게 그려지지 않게. */
-.rs-line [lang="ko"]{font-family:'Reserve Sans','SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
-.rs-line small{font:700 12px/1.2 var(--sans);color:var(--acc)}
-.rs-line .rs-mean{font:500 14px/1.4 var(--sans);color:var(--grey)}
-.rs-faces{display:flex;gap:10px;margin-top:6px}
-.rs-faces img{width:56px;height:56px;border-radius:16px;object-fit:cover;object-position:50% 22%;box-shadow:0 8px 18px -10px rgba(40,30,20,.6)}
-/* 넓은 화면에서는 옆 사진틀이 사진을 보이므로 장면 속 사진은 눈에서만 숨긴다(화면 읽기는 대체 글을 읽는다). */
-.rs-chapter .rs-chapter-pic{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0)}
-.rs-stage-col{position:relative}
-.rs-stage-stick{position:sticky;top:calc(50vh - min(41vh,380px))}
-#stage{position:relative;height:min(82vh,760px);border-radius:32px;overflow:hidden;background:#d9d2c8;box-shadow:0 40px 80px -40px rgba(40,30,20,.55)}
-#stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s var(--ease)}
-#stage img.on{opacity:1}
-#stage img.now{transition:none}
-.rs-stage-tag{position:absolute;z-index:1;left:18px;top:18px;padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.92);font:700 14px/1 var(--sans)}
-.rs-stage-tag:empty{display:none}
-.rs-stage-phone{position:absolute;right:-28px;bottom:-26px;width:clamp(130px,11vw,170px);padding:6px;border-radius:30px;background:#111;box-shadow:0 30px 60px -24px rgba(0,0,0,.6);opacity:0;transform:translateY(12px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
-.rs-stage-phone.on{opacity:1;transform:none}
-.rs-stage-phone img{width:100%;height:auto;aspect-ratio:600/1301;border-radius:25px;object-fit:cover}
-.rs-chapter-pic .rs-soon{position:absolute;left:14px;top:14px;color:var(--ink);padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.92);font:700 13px/1 var(--sans)}
-.rs-now-end{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;margin-top:clamp(40px,5vw,72px)}
-.rs-now-end p{font:700 clamp(20px,1.8vw,26px)/1.35 var(--sans);letter-spacing:-.02em}
+/* 첫 화면 아래 끝의 표시(11-26 유호님 「아래로 내리라고 하는 뭔가의 마크」): 학생증 윗부분과 알약이 화면 아래 끝에 걸려 있다가
+ * 첫 화면을 다 지나면 함께 올라간다. 첫 화면의 글과 칸은 11-23 판 그대로다. */
+.rs-top{position:relative}
+.rs-cue-rail{position:absolute;z-index:4;inset:0 0 0 auto;width:min(46%,640px);pointer-events:none}
+.rs-cue{position:sticky;top:calc(100svh - 250px);height:250px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:16px;overflow:hidden;pointer-events:auto;text-decoration:none;color:var(--ink)}
+.rs-cue-pill{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 20px 0 22px;border-radius:999px;background:var(--ink);color:var(--paper);font:700 16px/1 var(--sans);box-shadow:0 18px 40px -18px rgba(0,0,0,.55)}
+.rs-cue-pill b{display:inline-block;animation:rs-nudge 1.8s var(--ease) infinite}
+@keyframes rs-nudge{0%,100%{transform:none}50%{transform:translateY(4px)}}
+.rs-cue img{flex:none;width:300px;height:auto;margin-bottom:-120px;transform:rotate(-4deg);filter:drop-shadow(0 24px 30px rgba(0,0,0,.35));transition:margin .5s var(--ease)}
+.rs-cue:hover img{margin-bottom:-100px}
+.rs-pill-w{background:var(--paper);color:var(--ink)}
+
+/* 아래 단락(11-26 「다」, 흰 바탕): 큰 말 「나는 곧 / 한국으로 가요.」와 목걸이에 걸린 게임 학생증. 꿈을 누르면 학생증이 뒤집힌다.
+ * 글자 역할: 큰 말 SUIT 700 · 설명 SUIT 600 · 게임 이름 줄 회색. 색: 바탕 흰색, 글과 단추 먹, 꿈 무대 띠만 검정. */
+.rs-me{--fs:clamp(64px,min(13.4vw,24svh),236px);position:relative;height:100svh;min-height:640px;overflow:hidden;background:var(--paper);color:#000}
+:lang(en) .rs-me{--fs:clamp(56px,min(10.4vw,20svh),190px)}
+:lang(mn) .rs-me{--fs:clamp(48px,min(8.4vw,16svh),150px)}
+.rs-me-l1,.rs-me-l2{position:absolute;left:var(--wide);margin:0;font:700 var(--fs)/1 var(--sans);letter-spacing:-.05em;white-space:nowrap}
+:lang(mn) .rs-me-l1,:lang(mn) .rs-me-l2{letter-spacing:-.02em}
+.rs-me-l2{bottom:clamp(36px,6svh,72px)}
+.rs-me-l1{bottom:calc(clamp(36px,6svh,72px) + var(--fs)*1.04)}
+.rs-me-row{position:absolute;z-index:3;left:var(--wide);top:clamp(48px,8svh,88px);display:grid;gap:16px;justify-items:start;max-width:min(520px,44vw)}
+.rs-me-id{font:600 15px/1.3 var(--sans);color:#5c5c5c}
+.rs-me-who{font:600 clamp(19px,1.6vw,24px)/1.4 var(--sans);letter-spacing:-.02em;white-space:pre-line}
+.rs-me-row .rs-pill{margin-top:6px}
+.rs-seg{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:#f1f1f1}
+.rs-seg button{height:44px;padding:0 18px;border-radius:999px;font:700 16px/1 var(--sans);color:#000;transition:background .2s,color .2s}
+.rs-seg button[aria-pressed="true"]{background:#000;color:#fff}
+.rs-hang{position:absolute;z-index:2;top:0;left:52%;width:clamp(300px,41vw,660px);display:grid;justify-items:center;transform-origin:50% 0}
+.rs-hang.swing{animation:rs-sway 3.2s var(--ease) both}
+@keyframes rs-sway{0%{transform:rotate(7deg)}30%{transform:rotate(-4deg)}55%{transform:rotate(2deg)}78%{transform:rotate(-.8deg)}100%{transform:rotate(0)}}
+.rs-strap{display:block;width:38px;height:13svh;background:#141414 repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 4px)}
+.rs-clip{display:block;width:58px;height:28px;margin-top:-4px;border-radius:7px;background:linear-gradient(180deg,#9a9aa0 0,#e6e6ea 22%,#a4a4aa 55%,#5f5f66 100%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),0 4px 10px rgba(0,0,0,.3)}
+.rs-card{position:relative;width:100%;aspect-ratio:1320/832;margin-top:-8px;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.5,0,.2,1)}
+html[data-my-dream="actor"] .rs-card{transform:rotateY(180deg)}
+.rs-face{position:absolute;inset:0;width:100%;height:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden;filter:drop-shadow(0 30px 34px rgba(0,0,0,.22)) drop-shadow(0 4px 8px rgba(0,0,0,.12))}
+.rs-back{transform:rotateY(180deg)}
+.rs-card-hint{margin-top:16px;font:500 14px/1.4 var(--sans);color:#6b6b6b;text-align:center}
+
+/* 실제 게임 화면 휴대폰 다섯 대(가운데가 가장 크다). 아래 글 다섯 줄이 이어져 한 문장으로 읽힌다. */
+.rs-phones{padding:clamp(56px,6svh,72px) var(--gut) clamp(56px,7svh,80px);background:var(--paper);overflow:hidden}
+#phones{display:flex;justify-content:center;align-items:flex-start;gap:clamp(14px,1.8vw,30px);margin:0;padding:0;list-style:none}
+.rs-ph-item{--w:clamp(140px,12.4vw,196px);display:grid;gap:22px;justify-items:start;flex:none}
+.rs-ph-item:nth-child(2),.rs-ph-item:nth-child(4){--w:clamp(156px,14vw,218px)}
+.rs-ph-item:nth-child(3){--w:clamp(180px,16.6vw,258px)}
+.rs-ph-item:nth-child(odd):not(:nth-child(3)){margin-top:clamp(40px,4.4vw,72px)}
+.rs-ph-item:nth-child(even){margin-top:clamp(18px,2vw,32px)}
+.rs-ph{display:block;width:var(--w);aspect-ratio:600/1307;padding:calc(var(--w)*.028);border-radius:calc(var(--w)*.15);background:#0c0c0d;box-shadow:inset 0 0 0 1.5px #3a3a3c,0 34px 60px -30px rgba(0,0,0,.45)}
+.rs-ph-scr{position:relative;display:block;height:100%;border-radius:calc(var(--w)*.125);overflow:hidden;background:#05050a}
+.rs-ph-scr img,.rs-ph-scr video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0}
+.rs-ph-item p{max-width:var(--w);font:700 clamp(19px,1.7vw,26px)/1.3 var(--sans);letter-spacing:-.03em}
+:lang(mn) .rs-ph-item p{font-size:clamp(16px,1.3vw,20px);letter-spacing:0}
+.rs-ph-item small{display:block;margin-top:6px;font:500 15px/1.45 var(--sans);letter-spacing:-.01em;color:#5c5c5c}
+.rs-phones-go{display:flex;justify-content:center;margin-top:clamp(28px,3.4svh,40px)}
+
+/* 꿈 무대(곧 열려요): 검정 띠 왼쪽에 말, 오른쪽에 장면 그림 */
+.rs-stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:#000;color:#fff}
+.rs-stage-say{display:grid;align-content:center;justify-items:start;gap:22px;padding:72px var(--gut) 72px var(--wide)}
+.rs-soon{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;box-shadow:inset 0 0 0 1.5px currentColor;font:700 14px/1 var(--sans)}
+.rs-stage-big{font:700 clamp(40px,4.6vw,76px)/1.06 var(--sans);letter-spacing:-.05em;white-space:pre-line}
+:lang(mn) .rs-stage-big{font-size:clamp(32px,3.6vw,58px);letter-spacing:-.02em}
+.rs-stage-body{font:500 17px/1.6 var(--sans);color:rgba(255,255,255,.72);max-width:26em}
+.rs-stage-pic{width:100%;height:min(88svh,820px);object-fit:cover;object-position:50% 40%}
+.rs-stage :focus-visible{outline-color:#fff}
 
 /* 발 — synk.im 홈의 발과 같은 짜임(링크 줄과 화면 폭만큼 큰 synk) */
 .rs-foot{background:var(--foot);color:#fafaf9;padding:clamp(40px,6svh,72px) var(--wide) 0;overflow:hidden}
@@ -150,20 +171,27 @@ img{display:block;max-width:100%}
   .rs-say{width:auto;margin:0;padding:6px var(--gut) 44px;gap:14px}
   .rs-hero h1{font-size:clamp(38px,10vw,56px)}
   :lang(mn) .rs-hero h1{font-size:clamp(30px,8vw,44px)}
-  .rs-now{padding:64px var(--gut)}
-  .rs-now h2{font-size:clamp(28px,7.6vw,38px)}
-  :lang(mn) .rs-now h2{font-size:clamp(25px,6.6vw,32px)}
-  .rs-story{grid-template-columns:1fr}
-  .rs-stage-col{display:none}
-  .rs-chapter{min-height:0;margin-top:44px;gap:4px}
-  .rs-chapter .rs-chapter-pic{position:relative;width:auto;height:auto;margin:0 0 12px;overflow:hidden;clip:auto;border-radius:24px;box-shadow:var(--shadow)}
-  .rs-chapter-pic img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover}
-  .rs-chapter h3{font-size:clamp(24px,6.4vw,28px)}
-  .rs-chapter p{font-size:16px}
+  .rs-cue-rail{inset:0 0 auto 0;width:auto;height:calc(100vw*.75)}
+  .rs-cue{position:absolute;inset:auto 0 0;top:auto;height:auto;padding-bottom:16px;overflow:visible}
+  .rs-cue img{display:none}
+  .rs-me{--fs:clamp(52px,17.6vw,96px);height:auto;min-height:0;padding:40px 0 64px;display:grid;overflow:visible}
+  :lang(en) .rs-me{--fs:clamp(44px,13vw,80px)}
+  :lang(mn) .rs-me{--fs:clamp(34px,10vw,60px)}
+  .rs-me-l1,.rs-me-l2,.rs-me-row{position:relative;inset:auto;left:auto;margin:0 var(--gut);max-width:none}
+  .rs-me-l2{margin-top:2px;white-space:normal}
+  .rs-hang{position:relative;order:3;left:auto;width:82vw;margin:8px auto 0}
+  .rs-strap{height:56px}
+  .rs-me-row{order:4;margin-top:28px}
+  #phones{justify-content:flex-start;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 var(--gut) 12px;margin:0 calc(var(--gut)*-1);scrollbar-width:none}
+  .rs-ph-item{scroll-snap-align:center;margin-top:0!important}
+  .rs-ph-item:nth-child(n){--w:58vw}
+  .rs-stage{grid-template-columns:1fr}
+  .rs-stage-pic{order:-1;height:56svh}
+  .rs-stage-say{padding:48px var(--gut) 64px}
 }
 @media (max-width:420px){
   .rs-bar{padding:14px 16px}
   .rs-langs button{padding:0 9px;font-size:13px}
   .rs-card{padding:20px 18px;border-radius:20px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.rs-cue-pill b,.rs-hang.swing{animation:none}}
