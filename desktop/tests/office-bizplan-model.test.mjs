@@ -160,3 +160,114 @@ test('앱 창 확인: 빈약한 평가 항목이 걸린 절도 종이에 짚고,
   const other = bizplanScene(snap({ read: r }), null, { sel: 'n0' }, { departments: depts });
   assert.equal(other.paper.secs.find(s => s.id === r.sections[0].id).pick, false);
 });
+
+test('한 장씩(14.1): 장마다 장 이름과 앞뒤 문장, 고르면 고친 문장, 다 고르면 고른 장이 없고 바뀐 것을 모은다', () => {
+  const long = '가'.repeat(10) + ' ' + '나'.repeat(200) + ' ';
+  const r = read();
+  r.paragraphs[1] = { text: long + '단골 손님 300명이 매달 다시 삽니다.' + ' 다음 문장' + ' 라'.repeat(120) };
+  r.notes[0] = { ...r.notes[0], from: long.length, to: long.length + 22 };
+  const sc = bizplanScene(snap({ read: r }), null, {}, { departments: depts });
+  const p = sc.notes[0].place;
+  assert.equal(p.title, '지금까지 한 일');
+  assert.equal(p.mark, '단골 손님 300명이 매달 다시 삽니다.');
+  assert.ok(p.before.startsWith('… ') && p.before.length <= 153, '앞이 길면 낱말 경계에서 줄인다');
+  assert.ok(p.after.endsWith(' …') && p.after.length <= 153);
+  assert.equal(p.changed, false);
+  assert.equal(sc.notes[2].place.title, '3년 뒤', '빈약한 항목은 걸린 절 이름');
+  assert.deepEqual([sc.sel, sc.at, sc.open], ['n0', 0, 3]);
+  r.notes[0].choice = { kind: 'fix' };
+  const one = bizplanScene(snap({ read: r }), null, { sel: 'n0' }, { departments: depts });
+  assert.equal(one.notes[0].place.mark, '10월에 다시 산 손님은 112명입니다.');
+  assert.equal(one.notes[0].place.changed, true);
+  assert.equal(bizplanScene(snap({ read: r }), null, {}, { departments: depts }).sel, 'n1', '고른 뒤에는 다음 고칠 곳이 앞에 선다');
+  r.notes[1].choice = { kind: 'handed', departmentId: 'dev001' };
+  const done = bizplanScene(snap({ read: r, drafts: { '성장 전략': { answers: [0], text: '인스타그램에서 만납니다.' } } }), null, {}, { departments: depts });
+  assert.equal(done.sel, null, '다 고르면 끝 화면');
+  assert.deepEqual(done.changed, [
+    { text: '10월에 다시 산 손님은 112명입니다.', tag: '' },
+    { text: '매출 5억 원을 목표로 합니다.', tag: '개발부에 맡김', hand: true },
+    { text: '인스타그램에서 만납니다.', tag: '「성장 전략」에 넣음' },
+  ]);
+  assert.equal(bizplanScene(snap({ read: r }), null, { sel: 'n0' }, { departments: depts }).sel, 'n0', '「다시 보기」로 고른 장은 보인다');
+});
+
+test('한 장씩(14.1): 고르면 되돌리기 알림이 뜨고 장이 넘어가며, 되돌리면 그 장으로 돌아온다. 메뉴와 전체 보기는 하나씩 연다', async () => {
+  const sent = [];
+  const timers = [];
+  const api = { featureSnapshot: async () => snap(), featureAction: async (f, d, action, args) => { sent.push([action, args]); return { ok: true }; } };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: fn => { timers.push(fn); return timers.length; }, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(r => setTimeout(r, 0));
+  await room.handle({ act: 'biz-choose', arg: 'n0|fix' });
+  assert.deepEqual(room.state().toast, { text: '고쳤습니다.', key: 'n0' });
+  assert.equal(room.state().sel, null);
+  await room.handle({ act: 'biz-choose', arg: 'n0|undo' });
+  assert.deepEqual(sent.at(-1), ['choose', { key: 'n0', kind: 'undo' }]);
+  assert.equal(room.state().toast, null);
+  assert.equal(room.state().sel, 'n0', '되돌리면 그 장');
+  await room.handle({ act: 'biz-choose', arg: 'n1|keep' });
+  assert.equal(room.state().toast.text, '그대로 두었습니다.');
+  timers.at(-1)();
+  assert.equal(room.state().toast, null, '잠시 뒤 사라진다');
+  await room.handle({ act: 'biz-menu', arg: 'staff' });
+  assert.equal(room.state().menu, 'staff');
+  assert.equal(bizplanScene(snap({ read: null }), null, { menu: 'staff' }).menu, 'staff', '넣기 전 화면에서도 메뉴가 열린다');
+  await room.handle({ act: 'biz-menu', arg: 'crit' });
+  assert.equal(room.state().menu, 'crit', '다른 메뉴를 열면 앞 메뉴는 닫힌다');
+  await room.handle({ act: 'biz-menu', arg: 'nope' });
+  assert.equal(room.state().menu, null);
+  await room.handle({ act: 'biz-menu', arg: 'staff' });
+  await room.handle({ act: 'biz-provider', arg: 'codex' });
+  assert.deepEqual([room.state().provider, room.state().menu], ['codex', null], '고르면 메뉴를 닫는다');
+  await room.handle({ act: 'biz-sheet' });
+  assert.equal(room.state().sheet, true);
+  await room.handle({ act: 'biz-go', arg: 'i:성장 전략' });
+  assert.deepEqual([room.state().sel, room.state().sheet], ['i:성장 전략', false]);
+  room.close();
+  assert.equal(room.state().toast, null);
+});
+
+test('카본 검수 반영: 「끝으로」는 남은 장이 있어도 끝 화면, 같이 쓰기 답을 다시 고르고, 바쁜 동안은 고르기 · 장 옮기기를 받지 않으며, 고른 결과를 알림 자리에 읽는다', async () => {
+  assert.equal(bizplanScene(snap(), null, { sel: '' }, { departments: depts }).sel, null, '「끝으로」(biz-go \'\')');
+  assert.equal(bizplanScene(snap(), null, { sel: null }, { departments: depts }).sel, 'n0');
+  let release;
+  const api = {
+    featureSnapshot: async () => snap({ drafts: { '성장 전략': { answers: [1], text: '지인 소개로 만납니다.' } } }),
+    featureAction: async () => { await new Promise(r => { release = r; }); return { ok: true }; },
+  };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(r => setTimeout(r, 0));
+  await room.handle({ act: 'biz-reanswer', arg: '성장 전략|0' });
+  assert.deepEqual(room.state().answers['성장 전략'], [], '넣은 초안의 답도 그 물음부터 다시 고른다');
+  const pending = room.handle({ act: 'biz-choose', arg: 'n0|fix' });
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(room.state().busy, 'choose');
+  await room.handle({ act: 'biz-go', arg: 'n1' });
+  await room.handle({ act: 'biz-choose', arg: 'n1|keep' });
+  assert.equal(room.state().sel, 'n0', '바쁜 동안 옮기거나 고르지 않는다');
+  release();
+  await pending;
+  assert.equal(room.state().sel, null);
+  assert.equal(room.state().live, '고쳤습니다.', '알림 자리에도 읽는다');
+});
+
+test('Opus 대체 검수 반영: 다시 읽은 결과는 첫 고칠 곳부터, 같은 문단의 앞 고침은 고친 대로 보인다', async () => {
+  let snapNow = snap();
+  const api = { featureSnapshot: async () => snapNow, featureAction: async () => ({ ok: true }) };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {} });
+  room.open('plan01');
+  await new Promise(r => setTimeout(r, 0));
+  await room.handle({ act: 'biz-go', arg: '' });
+  assert.equal(room.scene(null, { departments: depts }).sel, null, '「끝으로」 뒤 끝 화면');
+  snapNow = snap({ read: read({ id: 'r2' }) });
+  await room.handle({ act: 'biz-start', arg: '' });
+  assert.equal(room.scene(null, { departments: depts }).sel, 'n0', '새 읽기 결과는 첫 고칠 곳부터');
+  const r = read();
+  r.paragraphs[1] = { text: '매출은 10억 원입니다. 단골 손님 300명이 매달 다시 삽니다.' };
+  const t = r.paragraphs[1].text, qa = '매출은 10억 원입니다.', qb = '단골 손님 300명이 매달 다시 삽니다.';
+  r.notes = [{ ...r.notes[0], key: 'a', para: 1, from: 0, to: qa.length, quote: qa, fix: '매출은 3억 원입니다.', choice: { kind: 'fix' } },
+    { ...r.notes[0], key: 'b', para: 1, from: t.indexOf(qb), to: t.indexOf(qb) + qb.length, quote: qb, choice: null }];
+  const sc = bizplanScene(snap({ read: r }), null, { sel: 'b' }, { departments: depts });
+  assert.equal(sc.notes.find(n => n.key === 'b').place.before, '매출은 3억 원입니다. ');
+});

@@ -66,6 +66,27 @@ function noteView(n, ui, depts) {
   };
 }
 
+/* 한 장씩 보일 때의 자리: 장 이름과 문단. 짚은 문장 앞뒤가 길면 줄인다(사업계획서_설계.md 14.1) */
+const CUT = 150;
+function placeOf(read, n) {
+  const sec = read.sections.find(s => s.paras.includes(n.para));
+  const text = read.paragraphs[n.para]?.text || '';
+  const c = n.choice, next = c?.kind === 'fix' ? n.fix : c?.kind === 'edit' ? c.text : null;
+  // 같은 문단에서 이미 고친 다른 문장은 고친 대로 보인다(뒤에서부터 바꿔 자리가 밀리지 않게)
+  const rep = o => (o.choice?.kind === 'fix' ? o.fix : o.choice?.kind === 'edit' ? o.choice.text : null);
+  const others = read.notes.filter(o => o !== n && o.para === n.para && rep(o) != null);
+  const put = (seg, base, list) => list.sort((a, b) => b.from - a.from).reduce((s, o) => s.slice(0, o.from - base) + rep(o) + s.slice(o.to - base), seg);
+  let before = put(text.slice(0, n.from), 0, others.filter(o => o.to <= n.from)), after = put(text.slice(n.to), n.to, others.filter(o => o.from >= n.to));
+  if (before.length > CUT) before = '… ' + before.slice(-CUT).replace(/^\S*\s/, '');
+  if (after.length > CUT) after = after.slice(0, CUT).replace(/\s\S*$/, '') + ' …';
+  return { title: sec?.title || '', before, mark: next || n.quote, after, changed: !!next };
+}
+function itemPlaceOf(read, it) {
+  const secs = read.sections.filter(s => it.secs.includes(s.id));
+  const first = secs.map(s => s.paras.map(i => read.paragraphs[i]?.text || '').find(t => t.trim())).find(Boolean) || '';
+  return { title: secs.map(s => s.title).filter(Boolean).join(' · ') || it.item, before: first.length > CUT * 2 ? first.slice(0, CUT * 2).replace(/\s\S*$/, '') + ' …' : first, mark: '', after: '', changed: false };
+}
+
 /* 빈약한 평가 항목 메모(같이 쓰기) */
 function itemView(it, ui, drafts) {
   const draft = drafts[it.item];
@@ -128,7 +149,7 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
     back: '← 사무실', provider, privacy: privacyLine(provider), live: ui.live || '', busy: ui.busy || null,
     list: snap.list, broken: !!snap.broken, planChanged: !!snap.planChanged && !running,
     criteria: { mode: ui.criteriaMode || snap.list.criteria.mode, text: ui.criteriaText ?? snap.list.criteria.text, open: !!ui.criteriaOpen },
-    clearAsk: !!ui.clearAsk,
+    clearAsk: !!ui.clearAsk, menu: ui.menu || null,
   };
   if (running) {
     const reading = task.status === 'running';
@@ -159,11 +180,13 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
     return { ...base, stage: 'failed', head: ['이번에는 읽지 못했습니다.', reasonText(read.reason, { provider: read.provider, failedChunks: read.failedChunks, totalChunks: read.totalChunks, dataName: read.dataName })], paper: null };
   }
   const drafts = snap.drafts || {};
-  const notes = read.notes.map(n => noteView(n, ui, depts));
-  const thin = read.items.filter(it => it.thin).map(it => itemView(it, ui, drafts));
+  const notes = read.notes.map(n => ({ ...noteView(n, ui, depts), place: placeOf(read, n) }));
+  const thin = read.items.filter(it => it.thin).map(it => ({ ...itemView(it, ui, drafts), place: itemPlaceOf(read, it) }));
   const all = [...notes, ...thin];
   const open = all.filter(n => n.state === 'open').length;
-  const sel = ui.sel && all.some(n => n.key === ui.sel) ? ui.sel : all.find(n => n.state === 'open')?.key || all[0]?.key || null;
+  // 다 고른 뒤에는 고른 장이 없다(끝 화면). 「다시 보기」로 한 장을 고르면 그 장을 보인다(14.1)
+  // 「끝으로」(biz-go '')는 남은 고칠 곳이 있어도 끝 화면을 보인다
+  const sel = ui.sel === '' ? null : ui.sel && all.some(n => n.key === ui.sel) ? ui.sel : all.find(n => n.state === 'open')?.key || null;
   for (const n of all) n.sel = n.key === sel;
   const items = read.items.filter(it => !it.unread).map(it => ({ item: it.item, state: it.thin ? '약함' : '있음', secs: it.secs }));
   const unreadItems = read.items.filter(it => it.unread).length;
@@ -175,8 +198,13 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
     partial || (unreadItems ? `평가 항목 ${eunneun(countWord(unreadItems))} 읽지 못했습니다.` : `평가 항목 ${countWord(items.length)} 모두 계획서에 있습니다.`)];
   else if (open) head = [`고칠 곳이 ${countWord(open)} 있습니다.`, partial || '메모를 하나씩 보고 고치면 새 파일로 저장할 수 있습니다.'];
   else head = ['고를 것을 다 골랐습니다.', changes ? '새 파일로 저장하면 원본 옆에 고친 판이 생깁니다.' : '바꾼 문장이 없어 저장할 것이 없습니다.'];
+  const changed = [
+    ...read.notes.filter(n => ['fix', 'edit'].includes(n.choice?.kind)).map(n => ({ text: n.choice.kind === 'fix' ? n.fix : n.choice.text, tag: '' })),
+    ...read.notes.filter(n => n.choice?.kind === 'handed').map(n => ({ text: n.quote, tag: `${eseo(depts.find(d => d.id === n.choice.departmentId)?.name || '다른 부서')} 맡김`, hand: true })),
+    ...Object.entries(drafts).map(([item, d]) => ({ text: d.text, tag: `「${item}」에 넣음` })),
+  ];
   return {
-    ...base, stage: 'notes', head, notes: all, sel, items, changes, saved: snap.saved || null,
+    ...base, stage: 'notes', head, notes: all, sel, at: Math.max(0, all.findIndex(n => n.key === sel)), open, changed, sheet: !!ui.sheet, toast: ui.toast || null, items, changes, saved: snap.saved || null,
     planName: read.plan.name, samePlan: read.plan.samePlan, dataNames: read.dataNames,
     paper: paperOf(read, notes, drafts, null, false, sel),
   };

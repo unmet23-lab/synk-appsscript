@@ -17,8 +17,11 @@ const say = code => (code in SAY ? SAY[code] : '하지 못했습니다. 잠시 �
 // hidden(): 앱 창이 가려져 있는가. 가려진 동안은 읽는 진행을 다시 묻지 않는다
 export function createBizplanRoom({ api = null, changed = () => {}, hidden = () => false, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout } = {}) {
   const fresh = () => ({ departmentId: null, snap: null, busy: null, live: '', sel: null, edit: null, editText: null, hand: null, handDept: null, handProvider: null,
-    ask: null, answers: {}, provider: null, criteriaOpen: false, criteriaMode: null, criteriaText: null, clearAsk: false, loadedAt: 0, sig: '' });
-  let st = fresh(), gen = 0, timer = null;
+    ask: null, answers: {}, provider: null, criteriaOpen: false, criteriaMode: null, criteriaText: null, clearAsk: false, loadedAt: 0, sig: '',
+    menu: null, sheet: false, toast: null });
+  let st = fresh(), gen = 0, timer = null, toastTimer = null;
+  /* 고른 뒤 잠깐 「되돌리기」를 보인다(14.1). 고른 장은 비워 다음 고칠 곳이 앞에 선다 */
+  const toast = (text, key) => { if (toastTimer) clearTimer(toastTimer); st.toast = { text, key }; st.live = text; toastTimer = setTimer(() => { toastTimer = null; st.toast = null; if (st.live === text) st.live = ''; changed(); }, 4200); };
   const call = (name, ...a) => { try { return typeof api?.[name] === 'function' ? Promise.resolve(api[name](...a)) : Promise.resolve({ ok: false, code: 'NOT_AVAILABLE' }); } catch { return Promise.resolve({ ok: false }); } };
   let loadSeq = 0;
   async function load() {
@@ -26,7 +29,13 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
     const my = gen, dept = st.departmentId, seq = ++loadSeq;
     const snap = await call('featureSnapshot', FEATURE, dept);
     if (my !== gen || st.departmentId !== dept || seq !== loadSeq) return;
+    const before = st.snap?.read?.id ?? null;
     st.snap = snap && typeof snap === 'object' ? snap : { ok: false };
+    if ((st.snap.read?.id ?? null) !== before) {
+      if (toastTimer) clearTimer(toastTimer);
+      toastTimer = null;
+      Object.assign(st, { sel: null, edit: null, editText: null, hand: null, ask: null, answers: {}, sheet: false, toast: null });
+    }
     st.loadedAt = now();
     changed();
   }
@@ -50,7 +59,7 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
   }
   return {
     open(departmentId) { gen += 1; st = { ...fresh(), departmentId }; void load(); changed(); },
-    close() { gen += 1; if (timer) clearTimer(timer); timer = null; st = fresh(); },
+    close() { gen += 1; if (timer) clearTimer(timer); if (toastTimer) clearTimer(toastTimer); timer = null; toastTimer = null; st = fresh(); },
     get departmentId() { return st.departmentId; },
     /* 사무실 판이 바뀔 때(업무 줄의 상태) 기능 판도 다시 읽는다. 읽는 동안은 1.5초마다 진행을 읽는다 */
     scene(task, { departments = [], deptName = '기획부' } = {}) {
@@ -70,7 +79,7 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
         case 'biz-criteria-open': st.criteriaOpen = !st.criteriaOpen; changed(); return true;
         case 'biz-criteria': {
           const mode = arg === 'pasted' ? 'pasted' : 'default';
-          st.criteriaMode = mode;
+          st.criteriaMode = mode; st.menu = null; st.criteriaOpen = mode === 'pasted';
           if (mode === 'default') { st.criteriaText = null; await act('criteria', { mode }); }
           else changed();
           return true;
@@ -82,7 +91,7 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
           if (res?.ok) { st.criteriaOpen = false; st.criteriaText = null; st.criteriaMode = null; }
           return true;
         }
-        case 'biz-provider': st.provider = arg === 'codex' ? 'codex' : 'claude'; changed(); return true;
+        case 'biz-provider': st.provider = arg === 'codex' ? 'codex' : 'claude'; st.menu = null; changed(); return true;
         case 'biz-start': {
           const s = st.snap, unsaved = s?.read?.notes?.some(n => n.choice && n.choice.kind !== 'handed') && !s.saved;
           // 저장 안 한 고름이 있으면 한 번 묻고, 두 번째 누름은 다시 읽는다(코드 검수 P1-2)
@@ -99,9 +108,12 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
         }
         case 'biz-sel': st.sel = arg; st.edit = null; st.hand = null; st.ask = null; st.startAsk = false; changed(); return true;
         case 'biz-choose': {
+          if (st.busy) { st.live = '앞의 일을 하는 중입니다.'; changed(); return true; }
           const [key, kind] = arg.split('|');
-          st.sel = key; st.edit = null;
-          await act('choose', { key, kind });
+          st.sel = key; st.edit = null; st.sheet = false;
+          const res = await act('choose', { key, kind });
+          if (res?.ok && kind !== 'undo') { st.sel = null; toast(kind === 'keep' ? '그대로 두었습니다.' : '고쳤습니다.', key); changed(); }
+          else if (res?.ok) { st.toast = null; changed(); }
           return true;
         }
         case 'biz-edit': st.sel = arg; st.edit = arg; st.editText = null; st.hand = null; changed(); return true;
@@ -110,8 +122,9 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
           const text = String(fields.edit ?? '').trim();
           if (!text) { st.live = '고칠 문장을 적어 주세요.'; changed(); return true; }
           st.editText = text;
-          const res = await act('choose', { key: st.edit, kind: 'edit', text: text.slice(0, 2000) }, '종이의 문장을 고쳤습니다.');
-          if (res?.ok) { st.edit = null; st.editText = null; }
+          const key = st.edit;
+          const res = await act('choose', { key, kind: 'edit', text: text.slice(0, 2000) }, '문장을 고쳤습니다.');
+          if (res?.ok) { st.edit = null; st.editText = null; st.sel = null; toast('고쳤습니다.', key); changed(); }
           return true;
         }
         case 'biz-hand': st.sel = arg; st.hand = st.hand === arg ? null : arg; st.edit = null; changed(); return true;
@@ -124,7 +137,7 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
           if (!n?.handing?.dept) { st.live = '맡길 부서를 골라 주세요.'; changed(); return true; }
           const extra = String(fields.extra ?? '').trim().slice(0, 2000);
           const res = await act('handoff', { key, departmentId: n.handing.dept, provider: n.handing.provider, ...(extra ? { extra } : {}) }, '맡겼습니다. 답은 사무실의 업무 카드에 옵니다.');
-          if (res?.ok) st.hand = null;
+          if (res?.ok) { st.hand = null; st.sel = null; changed(); }
           return true;
         }
         case 'biz-ask': st.sel = 'i:' + arg; st.ask = st.ask === arg ? null : arg; st.edit = null; st.hand = null; changed(); return true;
@@ -136,10 +149,16 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
         case 'biz-draft-put': {
           const answers = st.answers[arg] || [];
           const res = await act('draft', { item: arg, answers }, `「${arg}」에 초안을 넣었습니다.`);
-          if (res?.ok) st.ask = null;
+          if (res?.ok) { st.ask = null; st.sel = null; changed(); }
           return true;
         }
-        case 'biz-draft-remove': await act('draft', { item: arg, answers: st.snap?.drafts?.[arg]?.answers || [], remove: true }); return true;
+        case 'biz-draft-remove': st.sel = 'i:' + arg; await act('draft', { item: arg, answers: st.snap?.drafts?.[arg]?.answers || [], remove: true }); return true;
+        case 'biz-reanswer': {
+          const [item, k] = arg.split('|');
+          const had = st.answers[item] || st.snap?.drafts?.[item]?.answers || [];
+          st.answers = { ...st.answers, [item]: had.slice(0, Math.max(0, Number(k) || 0)) };
+          changed(); return true;
+        }
         case 'biz-save': await act('save', {}); return true;
         case 'biz-cancel': {
           if (st.busy) return true;
@@ -150,12 +169,16 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
           await load(); return true;
         }
         case 'biz-reveal': await act('reveal', {}); return true;
+        /* 한 장씩 보기(14.1): 알약 메뉴, 전체 보기, 앞뒤 장 */
+        case 'biz-menu': st.menu = st.menu === arg ? null : (['crit', 'staff'].includes(arg) ? arg : null); changed(); return true;
+        case 'biz-sheet': st.sheet = !st.sheet; changed(); return true;
+        case 'biz-go': if (st.busy) return true; st.sel = arg; st.sheet = false; st.edit = null; st.hand = null; st.ask = null; changed(); return true;
         case 'biz-clear-ask': st.clearAsk = !st.clearAsk; changed(); return true;
         case 'biz-clear': st.clearAsk = false; await act('clear', { confirm: true }, '읽은 결과와 고른 것을 지웠습니다.'); return true;
         default: return false;
       }
     },
-    reset() { gen += 1; if (timer) clearTimer(timer); timer = null; st = fresh(); },
+    reset() { gen += 1; if (timer) clearTimer(timer); if (toastTimer) clearTimer(toastTimer); timer = null; toastTimer = null; st = fresh(); },
     state: () => st,
   };
 }
