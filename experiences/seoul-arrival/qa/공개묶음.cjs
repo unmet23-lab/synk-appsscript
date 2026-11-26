@@ -20,7 +20,7 @@ const APP = 'experiences/synk-world-app/', BO = 'experiences/brand-opening/', AR
 const 앱폴더 = git('ls-tree', '-r', '--name-only', NEW, ARR).toString().trim().split('\n').map((x) => x.slice(ARR.length))
   .filter((x) => !x.startsWith('qa/') && /\.(mjs|css|html|webp|mp3|jpg|png)$/.test(x));
 const FILES = [
-  ...['app-shell.mjs', 'app-shell.css', 'life-progress.mjs', 'seoul-entry.mjs', 'seoul-watch.mjs', 'seoul-record.mjs', 'drama-lines.mjs'].map((f) => [APP + f, 'world/' + f]),
+  ...['app-shell.mjs', 'app-shell.css', 'life-progress.mjs', 'seoul-entry.mjs', 'seoul-watch.mjs', 'seoul-record.mjs', 'drama-lines.mjs', 'world-front-entry.mjs'].map((f) => [APP + f, 'world/' + f]),
   [BO + 'opening.mjs', 'world/brand-opening/opening.mjs'],
   ...앱폴더.map((f) => [ARR + f, 'world/seoul-arrival/' + f]),
 ];
@@ -33,6 +33,8 @@ function 고쳐쓰기(bytes, pub) {
   let text = bytes.toString('utf8');
   text = text.replaceAll('../synk-world-home/', relative.startsWith('brand-opening/') ? '../' : './');
   if (!relative.includes('/')) text = text.replaceAll('../brand-opening/', './brand-opening/');
+  // 맞춤 앞면 다리는 형제 폴더 ../seoul-arrival/의 얼굴 자르기 값을 부른다 — 공개 빌드(build-world-app-public.mjs)와 같은 고쳐 쓰기
+  if (relative === 'world-front-entry.mjs') { const from = "from '../seoul-arrival/"; if (text.split(from).length !== 2) throw Error('앞면 다리의 seoul-arrival import가 바뀜'); text = text.replace(from, "from './seoul-arrival/"); }
   text = text.replace(/(["'`])\/(scene-assets|[a-zA-Z0-9_-]+\.mjs|engine|korean-runner|korean-rhythm|hangul-stage|brand-opening|world-town-client\.mjs)(?=[/"'`])/g, (_, quote, folder) => `${quote}/world/${folder}`);
   if (relative === 'brand-opening/content/life-standalone.mjs') text = text.replaceAll('SUNO_RECORDINGS', 'RECORDINGS').replaceAll('suno-tracks.mjs', 'recording-tracks.mjs');
   return Buffer.from(text, 'utf8');

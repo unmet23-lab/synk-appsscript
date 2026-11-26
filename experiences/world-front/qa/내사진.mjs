@@ -29,9 +29,11 @@ const PHOTO = await (async () => {
   await p.close(); return Buffer.from(b64, 'base64');
 })();
 
+// 경우마다 새 리허설 서버(빈 기록)를 띄운다. 포트는 한 실행 안에서 겹치지 않게 하나씩 올리고, 끝나면 그 서버를 끈다.
+let nextPort = 5200 + Math.floor(Math.random() * 300);
 async function run(name, {status = READY, delay = 0, reject = false, guest = false} = {}) {
   console.log(`── ${name}`);
-  const PORT = 5200 + Math.floor(Math.random() * 400), base = `http://127.0.0.1:${PORT}`;
+  const PORT = nextPort++, base = `http://127.0.0.1:${PORT}`;
   const server = spawn(process.execPath, [path.join(ROOT, 'experiences/seoul-arrival/qa/서버.mjs'), String(PORT)], {env: {...process.env, SYNK_WORLD_DATA_DIR: path.join(OUT, `db-${PORT}`)}, stdio: 'ignore'});
   try {
     for (let i = 0; i < 120; i++) { try { if ((await fetch(base + '/health')).ok) break; } catch {} await sleep(500); }
@@ -80,7 +82,7 @@ async function run(name, {status = READY, delay = 0, reject = false, guest = fal
     await until('첫날 끝 화면', () => F().evaluate(() => !!document.querySelector('.view.night .me-tag')), 20000);
     const t0 = Date.now(), first = await faceStyle();
     return {page, context, errors, first, t0, faceStyle, calls, until, photoHits: () => photoHits, F,
-      async end() { check(!errors.length, `${name}: 콘솔 · 페이지 오류 0`, errors.slice(0, 3).join(' | ')); await context.close(); }};
+      async end() { check(!errors.length, `${name}: 콘솔 · 페이지 오류 0`, errors.slice(0, 3).join(' | ')); await context.close(); server.kill(); }};
   } catch (error) { check(false, `${name}: 실행`, String(error).slice(0, 200)); server.kill(); return null; }
   finally { process.once('exit', () => { try { server.kill(); } catch {} }); }
 }
