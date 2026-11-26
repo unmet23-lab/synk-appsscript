@@ -26,6 +26,12 @@
 - 공개 조각: `patch-live-2.mjs`(조각 셋 + 그림 한 장). 검수 `path-app-cards-20261126` 카본 0건(그림 · 글만이라 Fable 생략).
 - synk.im 공개 synk-policy `84c52cb6`. 바이트 3/3, 배포 점검 45724867952 통과. 공개 뒤 `check.mjs -`로 20화면 넘침 0 · 오류 0.
 
-## 남은 일
+## 셋째 판: 질문창의 PATH 답 (11-26)
 
-- 질문창 답 원고(`knowledge.json`의 `path-intro` · `path-personal`)는 아직 「유학 준비를 준비하고 있습니다」라고 말한다(첫 판 Fable F2, SYNK-website).
+유호님 11-26 「네, 고쳐줘」. /path/ · /en/path/ 질문창의 PATH 답 넷(path-intro, path-personal, path-vision, path-support)과 llms.txt가 「유학 준비를 준비하고 있습니다」라고 하던 것을 PATH 앱 기준으로 고쳤다. 「유학 준비를 어떻게 돕나요?」의 단추는 「PATH 앱 열기」로 앱을 연다. 이 파일들의 정본은 공개본이다.
+
+- 공개 조각: `patch-live-3.mjs`(답 문단과 path 문서 문단을 같은 자리에서 함께 바꾼다). 확인 도구: `check-questions.mjs`.
+- 검수: `path-qa-answers-20261126` 카본 1건(P2 영어 수 일치, 반영) → 다른 세션의 공개(c6277f7d)가 먼저 올라 지금 공개본 위에서 새 사슬 `path-qa-answers-20261126-n` 카본 0건(글만이라 Fable 생략).
+- synk.im 공개 synk-policy `ec71dcf2`. 바이트 19/19, 배포 점검 45812669362 통과. 공개 뒤 질문 넷을 한 · 영 1440 · 390에서 물어 넘침 0 · 오류 0, 「PATH 앱 열기」 단추가 /path/app/로 간다.
+
+남은 일: 없음.
