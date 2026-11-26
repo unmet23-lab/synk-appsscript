@@ -98,6 +98,43 @@ test('솔리오에서 로그인한 회원이 견적 비서 단추를 눌러야 �
   assert.equal(opened,1);
 });
 
+test('펼침 끝의 PATH는 별 없이 한 줄이고, 고르면 구는 그대로 두고 브라우저로 PATH 앱을 연다', async t => {
+  const calls = [];
+  let answer = { ok: true };
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { onOpenPath: async () => { calls.push('path'); return answer; } } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('open-switch');
+  await settle();
+  const fan = h.view.last().fan;
+  assert.deepEqual(fan.names.map(n => n.space), ['solio', 'path']);
+  assert.deepEqual(fan.names.at(-1), { space: 'path', label: 'PATH', desc: '한국 유학 준비 · 브라우저로 엽니다', current: false });
+  assert.ok(!h.view.last().places.includes('path'), 'PATH is not a star on the orb');
+  h.face.handle('go', 'path');
+  await settle();
+  assert.deepEqual(calls, ['path']);
+  assert.equal(h.view.last().space, 'solio', 'the orb stays in Solio');
+  assert.equal(h.view.last().fan.open, false);
+  answer = { ok: false, code: 'PUBLIC_APP_OPEN_FAILED' };
+  h.face.handle('open-switch');
+  await settle();
+  h.face.handle('go', 'path');
+  await settle();
+  assert.equal(h.view.last().fan.open, true);
+  assert.match(h.view.last().fan.error, /PATH를 브라우저로 열지 못했습니다/);
+});
+
+test('PATH는 여는 길이 없거나 PULSE 초대 손님이면 펼침에 서지 않는다', async t => {
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }) });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('open-switch');
+  await settle();
+  assert.deepEqual(h.view.last().fan.names.map(n => n.space), ['solio']);
+});
+
 test('an existing account goes from the first orb to Solio with no text and no ask scene', async t => {
   const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }) });
   await settle();

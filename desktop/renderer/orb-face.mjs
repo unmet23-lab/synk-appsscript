@@ -73,8 +73,11 @@ export const SOLIO_TODO_KEY = 'synk.solio.todo.';
 
 const SPACE_OF_DEST = Object.freeze({ '/': 'workspace', '/pulse-app/': 'pulse' });
 const DEST_OF_SPACE = Object.freeze({ workspace: '/', pulse: '/pulse-app/' });
-const SPACE_LABEL = Object.freeze({ solio: 'SOLIO', workspace: 'WORKSPACE', pulse: 'PULSE' });
-const SPACE_DESC = Object.freeze({ solio: '혼자 하는 사업의 도구', workspace: '팀이 함께 일하는 곳', pulse: '고객과 함께 만드는 곳' });
+const SPACE_LABEL = Object.freeze({ solio: 'SOLIO', workspace: 'WORKSPACE', pulse: 'PULSE', path: 'PATH' });
+const SPACE_DESC = Object.freeze({ solio: '혼자 하는 사업의 도구', workspace: '팀이 함께 일하는 곳', pulse: '고객과 함께 만드는 곳', path: '한국 유학 준비 · 브라우저로 엽니다' });
+/* 펼침 끝의 PATH(2026-11-26 유호님 「pc엡에 path 칸을 넣어야지」). 구 안의 공간이 아니라 브라우저로 여는 웹 앱(synk.im/path/app/)이라
+ * 별(ORB_PLACES)을 새기지 않고, 고르면 구가 들어가지 않고 브라우저를 연다. 손님(로그인 전)과 회원 모두에게 둔다. PULSE 초대 손님에게는 두지 않는다 */
+const EXTERNAL_SPACES = Object.freeze(['path']);
 /* 띠의 닫기 글에 쓰는 공간 이름(「PULSE 닫기」, 「Workspace 닫기」) */
 const SPACE_NAME = Object.freeze({ workspace: 'Workspace', pulse: 'PULSE' });
 const SPACE_ROOM = Object.freeze({
@@ -403,7 +406,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function appSwitchScene(state) {
     // PULSE 초대로 들어온 손님에게는 솔리오가 없다. 펼침에는 PULSE와 「로그인」만 둔다(설계 검토 R1, 옮기기 설계 「정한 것」 4)
     const guestOnPulse = guestPulse && !state.accountKey;
-    const names = [...(guestOnPulse ? [] : ['solio']), ...assignedFor(state)].map(name => ({ space: name, label: SPACE_LABEL[name], desc: SPACE_DESC[name], current: name === space }));
+    const external = guestOnPulse || typeof options.onOpenPath !== 'function' ? [] : EXTERNAL_SPACES;
+    const names = [...(guestOnPulse ? [] : ['solio']), ...assignedFor(state), ...external].map(name => ({ space: name, label: SPACE_LABEL[name], desc: SPACE_DESC[name], current: name === space }));
     const signedIn = memberShown(state);
     const check = signedIn && assignedCheck && assignedAccount === state.accountKey ? assignedCheck : null;
     const recheck = check && typeof options.onRecheckSpaces === 'function' ? [{ action: 'recheck-spaces', label: '다시 확인' }] : [];
@@ -1844,11 +1848,22 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       if (DEST_OF_SPACE[target]) void runSelectWorkspace(DEST_OF_SPACE[target]);
       return;
     }
+    if (EXTERNAL_SPACES.includes(target)) { openPath(); return; }
     // 펼침에서 공간을 고르면 열려 있던 방을 닫는다. 지금 공간을 고르면 그 공간의 첫 화면으로 돌아온다
     if (aside) { aside = null; rooms.close(); if (target === space) focus('here'); }
     if (target === space) { if (switchOpen) closeSwitch(); else render(); return; }
     if (target === 'solio') { enterSpace('solio', { fromSwitch: true }); return; }
     void runOpenSpace(target);
+  }
+
+  /* PATH는 브라우저로 연다. 펼침을 닫고 지금 공간에 남는다. 열지 못하면 그 까닭을 펼침에 말한다 */
+  function openPath() {
+    if (disposed || typeof options.onOpenPath !== 'function') return;
+    closeSwitch({ focusHere: true });
+    void Promise.resolve().then(() => options.onOpenPath()).catch(() => null).then(result => {
+      if (disposed || result?.ok) return;
+      sayInSwitch('PATH를 브라우저로 열지 못했습니다. 잠시 뒤 다시 눌러 주세요.');
+    });
   }
 
   function openLegacy(kind, extra) {
