@@ -1,9 +1,9 @@
 {
-  "layer_ver": "world-life-1-870afe2ed534",
+  "layer_ver": "world-life-1-a875d4a4365a",
   "sources": {
     "world-life": {
       "path": "strata/world-life.json",
-      "sha256": "870afe2ed53408469eae622cf85fd9bd23101b3858a0de786cc245083a9239a9"
+      "sha256": "a875d4a4365aff9d55a3d80b088e40857f90f620add8c778100024f9ca4cccfb"
     }
   },
   "nodes": [
@@ -674,7 +674,17 @@
         ],
         "difficulty": 1,
         "format": "single-choice",
-        "items": {}
+        "items": {
+          "transit-story-alight": {
+            "skill": "ko.reading.detail"
+          },
+          "transit-apply-alight": {
+            "skill": "ko.reading.detail"
+          },
+          "transit-expressions-alight-transfer": {
+            "skill": "ko.reading.vocabulary"
+          }
+        }
       }
     },
     {
@@ -709,9 +719,6 @@
         "format": "single-choice",
         "items": {
           "transit-story-card": {
-            "skill": "ko.reading.detail"
-          },
-          "transit-story-card-transfer": {
             "skill": "ko.reading.detail"
           }
         }

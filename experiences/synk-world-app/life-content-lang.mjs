@@ -1,4 +1,4 @@
-// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24), 편의점 팩(2026-11-25), 길 팩(2026-11-26).
+// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24), 편의점 팩(2026-11-25), 길 팩 · 버스 팩(2026-11-26).
 // 학습 내용(보기·표현·이야기 대사·레슨 제목)은 life-content.mjs의 한국어 그대로다. 여기에는 문제 지시(prompt)·상황(context)·해설(explanation),
 // 표현 설명(meaning)과 답한 뒤 누르는 「뜻 보기」의 보기 뜻만 둔다. 문장 속 ‘한국어 인용’은 학습 내용이라 한국어로 남긴다.
 // ko는 원문의 사본이다: 원문을 고치면 qa/life-content-lang.test.mjs가 이 표가 낡았다고 알린다(번역을 같이 고친다).
@@ -396,6 +396,80 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Choose the sentence that fits where the post office is.',context:'“우체국은 학교 옆에 있어요.”',explanation:'The new landmark is the school, and the post office is next to it.'},
   {prompt:'Шуудангийн байршилд тохирох өгүүлбэрийг сонгоно уу.',context:'«우체국은 학교 옆에 있어요.»',explanation:'Энэ удаад сургуулиар баримжаална. Шуудан сургуулийн хажууд байдаг.'}),
  // 길 팩 — 끝
+ // 버스 팩(11-26 저녁 「네, 이어가」) — 시작
+ 'transit-expressions-route':q(
+  {prompt:'버스가 공원으로 가는지 확인하는 말을 골라요.',context:'',explanation:'‘이 버스는 공원에 가요?’는 이 버스가 공원으로 가는지 묻는 말이에요. 다른 보기는 버스가 오는 시간이나 타는 곳을 물어요.'},
+  {prompt:'Choose the sentence that checks whether the bus goes to the park.',context:'',explanation:'‘이 버스는 공원에 가요?’ asks whether this bus goes to the park. The other choices ask when the bus comes or where to get on.'},
+  {prompt:'Автобус цэцэрлэгт хүрээлэн рүү явдаг эсэхийг асуух өгүүлбэрийг сонгоно уу.',context:'',explanation:'«이 버스는 공원에 가요?» нь энэ автобус цэцэрлэгт хүрээлэн рүү явдаг эсэхийг асуусан өгүүлбэр. Бусад сонголтууд нь автобус хэдэн цагт ирэхийг эсвэл автобусанд хаанаас суухыг асуусан өгүүлбэрүүд.'}),
+ 'transit-expressions-route-transfer':q(
+  {prompt:'버스가 도서관으로 가는지 확인해요.',context:'',explanation:'장소만 도서관으로 바꿔서 ‘이 버스는 도서관에 가요?’라고 물어요. 다른 보기는 타는 곳이나 기다리는 곳을 물어요.'},
+  {prompt:'Check whether the bus goes to the library.',context:'',explanation:'Ask ‘이 버스는 도서관에 가요?’ with only the place changed to the library. The other choices ask where to get on or where to wait.'},
+  {prompt:'Автобус номын сан руу явдаг эсэхийг асууна уу.',context:'',explanation:'Газрын нэрийг номын сан болгоод «이 버스는 도서관에 가요?» гэж асууна. Бусад сонголтууд нь автобусанд хаанаас суухыг эсвэл хаана хүлээхийг асуусан өгүүлбэрүүд.'}),
+ 'transit-expressions-alight':q(
+  {prompt:'‘다음 정류장에서 내려요’에 맞는 행동은 무엇이에요?',context:'버스가 지금 정류장에 멈췄어요.',explanation:'‘다음 정류장’은 지금 멈춘 정류장 바로 뒤에 오는 정류장이에요. 그래서 한 정류장 더 가서 내려요.'},
+  {prompt:'Which action fits ‘다음 정류장에서 내려요’?',context:'The bus has just stopped at a stop.',explanation:'‘다음 정류장’ is the stop right after the one where the bus has stopped now. So ride one more stop and then get off.'},
+  {prompt:'«다음 정류장에서 내려요» гэдэгт аль үйлдэл тохирох вэ?',context:'Автобус одоо нэг буудал дээр зогслоо.',explanation:'«다음 정류장» нь автобус одоо зогсож байгаа буудлын яг дараагийн буудал. Тиймээс дахиад нэг буудал яваад бууна.'}),
+ 'transit-expressions-alight-transfer':q(
+  {prompt:'‘이번 정류장에서 내려요’에 맞는 행동은 무엇이에요?',context:'버스가 이번 정류장에 멈췄어요.',explanation:'‘이번’과 ‘다음’은 달라요. 이번 정류장은 지금 멈춘 곳이에요.'},
+  {prompt:'Which action fits ‘이번 정류장에서 내려요’?',context:'The bus has stopped at this stop.',explanation:'‘이번’ means this one, and ‘다음’ means next. So get off at the stop where the bus has stopped now.'},
+  {prompt:'«이번 정류장에서 내려요» гэдэгт аль үйлдэл тохирох вэ?',context:'Автобус энэ буудал дээр зогслоо.',explanation:'«이번» нь «энэ», «다음» нь «дараагийн» гэсэн үг. Тиймээс автобус одоо зогсож байгаа буудал дээр бууна.'}),
+ 'transit-expressions-card':q(
+  {prompt:'‘교통카드를 찍으세요’에 맞는 행동은 무엇이에요?',context:'버스를 탔어요. 앞에 카드 기계가 있어요.',explanation:'버스에서 ‘카드를 찍다’는 카드 기계에 카드를 댄다는 뜻이에요. 사진을 찍는다는 뜻이 아니에요.'},
+  {prompt:'Which action fits ‘교통카드를 찍으세요’?',context:'You got on the bus. There is a card machine in front of you.',explanation:'On a bus, ‘카드를 찍다’ means holding your card to the card machine. It does not mean taking a photo.'},
+  {prompt:'«교통카드를 찍으세요» гэдэгт аль үйлдэл тохирох вэ?',context:'Автобусанд суулаа. Урд талд карт уншигч байна.',explanation:'«카드를 찍다» гэдэг нь автобусанд суухдаа картаа уншуулахыг хэлнэ. Зураг авна гэсэн үг биш.'}),
+ 'transit-expressions-card-transfer':q(
+  {prompt:'‘내릴 때도 교통카드를 찍으세요’에 맞는 행동을 골라요.',context:'버스가 정류장에 멈췄어요. 문 옆에 안내 글이 있어요.',explanation:'‘내릴 때도 교통카드를 찍으세요’는 내릴 때도 카드 기계에 카드를 대라는 뜻이에요. 가방에 넣거나 사진을 찍는 것이 아니에요.'},
+  {prompt:'Choose the action that fits ‘내릴 때도 교통카드를 찍으세요’.',context:'The bus has stopped at a stop. There is a notice by the door.',explanation:'‘내릴 때도 교통카드를 찍으세요’ means to hold your card to the card machine when you get off, too. It does not mean putting it in your bag or taking a photo.'},
+  {prompt:'«내릴 때도 교통카드를 찍으세요» гэдэгт тохирох үйлдлийг сонгоно уу.',context:'Автобус буудал дээр зогслоо. Хаалганы хажууд санамж бичиг байна.',explanation:'«내릴 때도 교통카드를 찍으세요» гэдэг нь буухдаа ч картаа уншуулах хэрэгтэй гэсэн үг. Цүнхэндээ хийх эсвэл зураг авах гэсэн үг биш.'}),
+ 'transit-story-route':q(
+  {prompt:'친구들은 버스를 타고 어디에 가요?',context:'',explanation:'친구들은 꽃길 공원에 가요. 기사님도 ‘네, 꽃길 공원에 가요.’라고 했어요. 학교는 버스를 탄 곳이고, 도서관은 내리지 않은 정류장이에요.'},
+  {prompt:'Where are your friends going by bus?',context:'',explanation:'Your friends are going to Kkotgil Park. The driver also said ‘네, 꽃길 공원에 가요.’ (Yes, it goes to Kkotgil Park.) They got on in front of the school, and they did not get off at the library.'},
+  {prompt:'Найзууд автобусаар хаашаа явж байгаа вэ?',context:'',explanation:'Найзууд Коткил цэцэрлэгт хүрээлэн рүү явж байна. Жолооч «네, 꽃길 공원에 가요.» (Тийм ээ, Коткил цэцэрлэгт хүрээлэн рүү явна.) гэж хэлсэн. Тэд сургуулийн урд талын буудлаас автобусанд суусан бөгөөд номын сангийн буудал дээр буугаагүй.'}),
+ 'transit-story-route-transfer':q(
+  {prompt:'새 버스 안내표를 읽고 목적지를 골라요.',context:'안내표: “마루 도서관행”',explanation:'‘도서관행’은 도서관 쪽으로 가는 버스라는 뜻이에요.'},
+  {prompt:'Read the new bus sign and choose where it goes.',context:'Bus sign: “마루 도서관행”',explanation:'‘-행’ means ‘going to’. ‘마루 도서관행’ is a bus going to Maru Library.'},
+  {prompt:'Өөр автобусны чиглэлийн самбарыг уншаад хаашаа явдгийг нь сонгоно уу.',context:'Чиглэлийн самбар: «마루 도서관행»',explanation:'«-행» нь «… руу явдаг» гэсэн утгатай. «마루 도서관행» бол Мару номын сан руу явдаг автобус.'}),
+ 'transit-story-alight':q(
+  {prompt:'버스가 도서관 정류장에 왔어요. 친구들은 어떻게 했어요?',context:'',explanation:'서하가 ‘아니요, 다음 정류장에서 내려요.’라고 했어요. 공원은 도서관 다음이라서 한 정류장 더 갔어요.'},
+  {prompt:'The bus came to the library stop. What did your friends do?',context:'',explanation:'Seoha said ‘아니요, 다음 정류장에서 내려요.’ (No, we get off at the next stop.) The park is the stop after the library, so they rode one more stop.'},
+  {prompt:'Автобус номын сангийн буудал дээр ирсэн. Найзууд юу хийсэн бэ?',context:'',explanation:'Сөха «아니요, 다음 정류장에서 내려요.» (Үгүй, дараагийн буудал дээр бууна.) гэж хэлсэн. Цэцэрлэгт хүрээлэн номын сангийн дараагийн буудал учраас тэд дахиад нэг буудал явсан.'}),
+ 'transit-story-alight-transfer':q(
+  {prompt:'어디에서 내려요?',context:'지금 정류장: 학교 / 다음 정류장: 마루 도서관. 마루 도서관에 가요.',explanation:'‘다음 정류장: 마루 도서관’이고 마루 도서관에 가요. 그래서 다음 정류장에서 내려요. 학교는 지금 있는 정류장이라서 아직 내리지 않아요.'},
+  {prompt:'Where do you get off?',context:'This stop: School / Next stop: Maru Library. You are going to Maru Library.',explanation:'It says ‘다음 정류장: 마루 도서관’ (next stop: Maru Library), and you are going to Maru Library. So get off at the next stop. School is the stop you are at now, so you don’t get off yet.'},
+  {prompt:'Хаана буух вэ?',context:'Одоогийн буудал: Сургууль / Дараагийн буудал: Мару номын сан. Та Мару номын сан руу явж байна.',explanation:'«다음 정류장: 마루 도서관» (дараагийн буудал: Мару номын сан) гэж бичсэн бөгөөд та Мару номын сан руу явж байна. Тиймээс дараагийн буудал дээр бууна. Одоогийн «Сургууль» буудал дээр буухгүй.'}),
+ 'transit-story-card':q(
+  {prompt:'기사님이 ‘교통카드를 찍으세요.’라고 했어요. 친구들은 어떻게 했어요?',context:'',explanation:'‘교통카드를 찍으세요.’는 카드 기계에 교통카드를 대라는 말이에요. 그래서 친구들은 카드 기계에 교통카드를 댔어요. 기사님에게 카드를 주지 않았어요.'},
+  {prompt:'The driver said ‘교통카드를 찍으세요.’ What did your friends do?',context:'',explanation:'‘교통카드를 찍으세요.’ means to hold your transit card to the card machine. So your friends held their transit cards to the card machine. They did not give their cards to the driver.'},
+  {prompt:'Жолооч «교통카드를 찍으세요.» (Нийтийн тээврийн картаа уншуулна уу.) гэж хэлсэн. Найзууд юу хийсэн бэ?',context:'',explanation:'«교통카드를 찍으세요.» гэдэг нь нийтийн тээврийн картаа уншуулах хэрэгтэй гэсэн үг. Тиймээс найзууд нийтийн тээврийн картаа уншуулсан. Тэд картаа жолоочид өгөөгүй.'}),
+ 'transit-story-card-transfer':q(
+  {prompt:'안내를 읽고 어떻게 해야 하는지 골라요.',context:'“지하철을 탈 때 교통카드를 찍으세요.”',explanation:'‘교통카드를 찍으세요.’는 교통카드를 카드 기계에 대라는 뜻이에요. 여기에서 ‘찍다’는 사진을 찍는다는 뜻이 아니에요. 역 직원에게 카드를 주지도 않아요.'},
+  {prompt:'Read the notice and choose what to do.',context:'“지하철을 탈 때 교통카드를 찍으세요.”',explanation:'‘교통카드를 찍으세요.’ means to hold your transit card to the card machine. Here, ‘찍다’ does not mean taking a photo. You don’t give your card to a station worker either.'},
+  {prompt:'Санамжийг уншаад юу хийхээ сонгоно уу.',context:'«지하철을 탈 때 교통카드를 찍으세요.»',explanation:'«교통카드를 찍으세요.» гэдэг нь нийтийн тээврийн картаа уншуулах хэрэгтэй гэсэн үг. Энд «찍다» гэдэг нь зураг авна гэсэн үг биш. Картаа метроны ажилтанд ч өгөхгүй.'}),
+ 'transit-apply-route':q(
+  {prompt:'병원에 가고 싶어요. 버스가 어디에 가는지 묻는 말을 골라요.',context:'',explanation:'‘이 버스는 병원에 가요?’는 버스가 병원에 가는지 묻는 말이에요. 다른 보기는 버스가 오는 시간이나 타는 곳을 물어요.'},
+  {prompt:'You want to go to the hospital. Choose the sentence that asks where the bus goes.',context:'',explanation:'‘이 버스는 병원에 가요?’ asks whether the bus goes to the hospital. The other choices ask when the bus comes or where to get on.'},
+  {prompt:'Эмнэлэг рүү явмаар байна. Автобус хаашаа явдгийг асуух өгүүлбэрийг сонгоно уу.',context:'',explanation:'«이 버스는 병원에 가요?» нь автобус эмнэлэг рүү явдаг эсэхийг асуусан өгүүлбэр. Бусад сонголтууд нь автобус хэзээ ирэхийг эсвэл автобусанд хаанаас суухыг асуусан өгүүлбэрүүд.'}),
+ 'transit-apply-route-transfer':q(
+  {prompt:'학교에 가고 싶어요. 버스가 어디에 가는지 묻는 말을 골라요.',context:'',explanation:'‘이 버스는 학교에 가요?’는 버스가 학교에 가는지 묻는 말이에요. 다른 보기는 버스 정류장이 있는지, 버스가 몇 번인지 물어요.'},
+  {prompt:'You want to go to school. Choose the sentence that asks where the bus goes.',context:'',explanation:'‘이 버스는 학교에 가요?’ asks whether the bus goes to school. The other choices ask whether there is a bus stop or what number the bus is.'},
+  {prompt:'Сургууль руу явмаар байна. Автобус хаашаа явдгийг асуух өгүүлбэрийг сонгоно уу.',context:'',explanation:'«이 버스는 학교에 가요?» нь автобус сургууль руу явдаг эсэхийг асуусан өгүүлбэр. Бусад сонголтууд нь автобусны буудал байгаа эсэхийг эсвэл энэ автобус ямар дугаартай болохыг асуусан өгүүлбэрүүд.'}),
+ 'transit-apply-alight':q(
+  {prompt:'지금 어떻게 할까요?',context:'목적지는 병원이에요. 안내문: “이번 정류장은 병원입니다.”',explanation:'이번 정류장이 목적지인 병원이므로 지금 내려요. 다음 정류장에서 내리면 병원을 지나가요.'},
+  {prompt:'What should you do now?',context:'You are going to the hospital. Announcement: “이번 정류장은 병원입니다.”',explanation:'This stop is the hospital, your destination, so get off now. If you get off at the next stop, you will go past the hospital.'},
+  {prompt:'Одоо юу хийх вэ?',context:'Та эмнэлэг рүү явж байна. Мэдээлэл: «이번 정류장은 병원입니다.»',explanation:'Энэ бол эмнэлгийн буудал. Та эмнэлэг рүү явж байгаа учраас одоо бууна. Дараагийн буудал дээр буувал эмнэлгийг өнгөрчихнө.'}),
+ 'transit-apply-alight-transfer':q(
+  {prompt:'지금 어떻게 할까요?',context:'목적지는 학교예요. 안내문: “이번 정류장은 시장입니다. 다음 정류장은 학교입니다.”',explanation:'지금은 시장이에요. 목적지인 학교는 다음 정류장이에요.'},
+  {prompt:'What should you do now?',context:'You are going to school. Announcement: “이번 정류장은 시장입니다. 다음 정류장은 학교입니다.”',explanation:'You are at the market now. School, your destination, is the next stop.'},
+  {prompt:'Одоо юу хийх вэ?',context:'Та сургууль руу явж байна. Мэдээлэл: «이번 정류장은 시장입니다. 다음 정류장은 학교입니다.»',explanation:'Одоо захын буудал дээр байна. Дараагийн буудал бол сургуулийн буудал.'}),
+ 'transit-apply-card':q(
+  {prompt:'승차 안내에 맞는 행동을 골라요.',context:'“교통카드를 찍고 버스 안으로 들어가세요.”',explanation:'이 상황에서 ‘카드를 찍다’는 카드 기계에 대라는 뜻이에요.'},
+  {prompt:'Choose the action that fits the boarding notice.',context:'“교통카드를 찍고 버스 안으로 들어가세요.”',explanation:'Here, ‘카드를 찍다’ means holding your card to the card machine.'},
+  {prompt:'Автобусанд суух үеийн санамжид тохирох үйлдлийг сонгоно уу.',context:'«교통카드를 찍고 버스 안으로 들어가세요.»',explanation:'Энд «카드를 찍다» гэдэг нь картаа уншуулахыг хэлнэ.'}),
+ 'transit-apply-card-transfer':q(
+  {prompt:'버스에서 내릴 때 보는 안내예요. 맞는 행동을 골라요.',context:'“내리기 전에 교통카드를 찍으세요.”',explanation:'‘내리기 전에 교통카드를 찍으세요’는 내리기 전에 카드를 카드 기계에 대라는 뜻이에요. 사진을 찍는 것도, 내린 뒤에 대는 것도 아니에요.'},
+  {prompt:'This is a notice you see when getting off a bus. Choose the action that fits.',context:'“내리기 전에 교통카드를 찍으세요.”',explanation:'‘내리기 전에 교통카드를 찍으세요’ means to hold your card to the card machine before you get off. It is not about taking a photo or tapping after you get off.'},
+  {prompt:'Автобуснаас буух үед харагдах санамж. Тохирох үйлдлийг сонгоно уу.',context:'«내리기 전에 교통카드를 찍으세요.»',explanation:'«내리기 전에 교통카드를 찍으세요» гэдэг нь буухын өмнө картаа уншуулах хэрэгтэй гэсэн үг. Зураг авах ч биш, буусны дараа уншуулах ч биш.'}),
+ // 버스 팩 — 끝
 });
 
 // 표현 익히기 카드의 설명(표현 자체는 한국어 그대로).
@@ -423,6 +497,11 @@ export const LIFE_EXPRESSION_TEXT=Object.freeze({
  'directions-right':q('오른쪽 방향으로 이동하라는 안내예요.','Directions that tell you to go to the right.','Баруун тийш яв гэсэн заавар.'),
  'directions-beside':q('은행 바로 옆에 있는 장소를 설명해요.','Describes a place right next to the bank.','Банкны яг хажууд байдаг газрыг хэлэхэд хэрэглэнэ.'),
  // 길 팩 — 끝
+ // 버스 팩(11-26 저녁 「네, 이어가」) — 시작
+ 'transit-destination':q('타려는 버스가 목적지로 가는지 확인해요.','Checks whether the bus you want to take goes to your destination.','Суух гэж буй автобус очих газар луу тань явдаг эсэхийг асууна.'),
+ 'transit-alight':q('지금 정류장이 아니라 그다음 정류장에서 내려요.','You get off at the stop after this one, not this stop.','Энэ буудал биш, дараагийн буудал дээр бууна.'),
+ 'transit-card':q('버스의 카드 기계에 교통카드를 대라는 안내예요.','An instruction to hold your transit card to the bus’s card machine.','Автобусанд нийтийн тээврийн картаа уншуулах хэрэгтэй гэсэн санамж.'),
+ // 버스 팩 — 끝
 });
 
 // 「뜻 보기」: 답한 뒤에만 보이는 보기의 뜻. 키는 보기 글자 그대로다.
@@ -620,6 +699,57 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '오른쪽으로 가세요.':{en:'Go right.',mn:'Баруун тийш яваарай.'},
  '은행 옆에 있어요.':{en:'It’s next to the bank.',mn:'Банкны хажууд байдаг.'},
  // 길 팩 — 끝
+ // 버스 팩(11-26 저녁 「네, 이어가」) — 시작
+ '이 버스는 공원에 가요?':{en:'Does this bus go to the park?',mn:'Энэ автобус цэцэрлэгт хүрээлэн рүү явдаг уу?'},
+ '이 버스는 도서관에 가요?':{en:'Does this bus go to the library?',mn:'Энэ автобус номын сан руу явдаг уу?'},
+ '지금 정류장에서 내려요.':{en:'Get off at this stop now.',mn:'Одоо зогсож байгаа буудал дээр бууна.'},
+ '한 정류장 더 가서 내려요.':{en:'Ride one more stop, then get off.',mn:'Дахиад нэг буудал яваад бууна.'},
+ '한 정류장 더 가요.':{en:'Ride one more stop.',mn:'Дахиад нэг буудал явна.'},
+ '지금 내려요.':{en:'Get off now.',mn:'Одоо бууна.'},
+ '버스를 다시 타요.':{en:'Get on the bus again.',mn:'Автобусанд дахин сууна.'},
+ '교통카드를 카드 기계에 대요.':{en:'Hold the transit card to the card machine.',mn:'Нийтийн тээврийн картаа уншуулна.'},
+ '교통카드 사진을 찍어요.':{en:'Take a photo of the transit card.',mn:'Нийтийн тээврийн картынхаа зургийг авна.'},
+ '학교':{en:'school',mn:'сургууль'},
+ '도서관':{en:'library',mn:'номын сан'},
+ '꽃길 공원':{en:'Kkotgil Park',mn:'Коткил цэцэрлэгт хүрээлэн'},
+ '마루 도서관':{en:'Maru Library',mn:'Мару номын сан'},
+ '마루 카페':{en:'Maru Café',mn:'Мару кафе'},
+ '한 정류장 더 갔어요.':{en:'They rode one more stop.',mn:'Дахиад нэг буудал явсан.'},
+ '도서관에서 내렸어요.':{en:'They got off at the library.',mn:'Номын сангийн буудал дээр буусан.'},
+ '두 정류장 더 갔어요.':{en:'They rode two more stops.',mn:'Дахиад хоёр буудал явсан.'},
+ '학교에서 내려요.':{en:'Get off at the school.',mn:'Сургуулийн буудал дээр бууна.'},
+ '다음 정류장에서 내려요.':{en:'Get off at the next stop.',mn:'Дараагийн буудал дээр бууна.'},
+ '기사님에게 교통카드를 줬어요.':{en:'They gave their transit cards to the driver.',mn:'Нийтийн тээврийн картаа жолоочид өгсөн.'},
+ '카드 기계에 교통카드를 댔어요.':{en:'They held their transit cards to the card machine.',mn:'Нийтийн тээврийн картаа уншуулсан.'},
+ '도서관에서 교통카드를 샀어요.':{en:'They bought transit cards at the library.',mn:'Номын сангаас нийтийн тээврийн карт худалдаж авсан.'},
+ '이 버스는 병원에 가요?':{en:'Does this bus go to the hospital?',mn:'Энэ автобус эмнэлэг рүү явдаг уу?'},
+ '이 버스는 학교에 가요?':{en:'Does this bus go to school?',mn:'Энэ автобус сургууль руу явдаг уу?'},
+ '이번 정류장에서 내려요.':{en:'Get off at this stop.',mn:'Энэ буудал дээр бууна.'},
+ '시장에서 기다려요.':{en:'Wait at the market.',mn:'Зах дээр хүлээнэ.'},
+ '카드 사진을 찍고 들어가요.':{en:'Take a photo of the card and go in.',mn:'Картынхаа зургийг аваад орно.'},
+ '카드를 카드 기계에 대고 들어가요.':{en:'Hold the card to the card machine and go in.',mn:'Картаа уншуулаад орно.'},
+ '카드를 좌석에 놓고 들어가요.':{en:'Put the card on the seat and go in.',mn:'Картаа суудал дээр тавиад орно.'},
+ '내리기 전에 카드를 카드 기계에 대요.':{en:'Hold the card to the card machine before getting off.',mn:'Буухын өмнө картаа уншуулна.'},
+ '이 버스는 몇 시에 와요?':{en:'What time does this bus come?',mn:'Энэ автобус хэдэн цагт ирдэг вэ?'},
+ '공원에서 버스를 타요?':{en:'Do you get on the bus at the park?',mn:'Цэцэрлэгт хүрээлэнгээс автобусанд суудаг уу?'},
+ '이 버스는 어디에서 타요?':{en:'Where do you get on this bus?',mn:'Энэ автобусанд хаанаас суух вэ?'},
+ '도서관 앞에서 버스를 기다려요?':{en:'Do you wait for the bus in front of the library?',mn:'Номын сангийн өмнө автобус хүлээх үү?'},
+ '두 정류장 더 가서 내려요.':{en:'Ride two more stops, then get off.',mn:'Дахиад хоёр буудал яваад бууна.'},
+ '교통카드를 기사님께 드려요.':{en:'Give the transit card to the driver.',mn:'Нийтийн тээврийн картаа жолоочид өгнө.'},
+ '내릴 때 카드를 가방에 넣어요.':{en:'Put the card in your bag when you get off.',mn:'Буухдаа картаа цүнхэндээ хийнэ.'},
+ '내릴 때 교통카드 사진을 찍어요.':{en:'Take a photo of the transit card when you get off.',mn:'Буухдаа нийтийн тээврийн картынхаа зургийг авна.'},
+ '내릴 때 카드 기계에 카드를 대요.':{en:'Hold the card to the card machine when you get off.',mn:'Буухдаа картаа уншуулна.'},
+ '탈 때 카드 사진을 찍어요.':{en:'Take a photo of the card when you get on.',mn:'Суухдаа картынхаа зургийг авна.'},
+ '탈 때 역 직원에게 카드를 줘요.':{en:'Give the card to a station worker when you get on.',mn:'Суухдаа картаа метроны ажилтанд өгнө.'},
+ '탈 때 카드를 카드 기계에 대요.':{en:'Hold the card to the card machine when you get on.',mn:'Суухдаа картаа уншуулна.'},
+ '이 버스는 언제 와요?':{en:'When does this bus come?',mn:'Энэ автобус хэзээ ирэх вэ?'},
+ '병원에서 버스를 타요?':{en:'Do you get on the bus at the hospital?',mn:'Эмнэлгээс автобусанд суудаг уу?'},
+ '학교 앞에 버스 정류장이 있어요?':{en:'Is there a bus stop in front of the school?',mn:'Сургуулийн өмнө автобусны буудал байдаг уу?'},
+ '이 버스는 몇 번이에요?':{en:'What number is this bus?',mn:'Энэ ямар дугаартай автобус вэ?'},
+ '내리기 전에 카드 사진을 찍어요.':{en:'Take a photo of the card before getting off.',mn:'Буухын өмнө картынхаа зургийг авна.'},
+ '내린 뒤에 카드를 카드 기계에 대요.':{en:'Hold the card to the card machine after getting off.',mn:'Буусны дараа картаа уншуулна.'},
+ '교통카드를 찍으세요.':{en:'Tap your transit card.',mn:'Нийтийн тээврийн картаа уншуулна уу.'},
+ // 버스 팩 — 끝
 });
 
 // 문제 한 개의 화면 언어 글. 이 표에 없는 문제(1판 밖의 팩)는 원문 그대로다.
@@ -768,6 +898,26 @@ export const LIFE_CHOICE_NOTES=Object.freeze({
  'directions-apply-landmark':{a:note('병원 안에 있어요.','병원 건물 속에 있다는 말이에요. 약국은 병원 옆에 있어요.','This means it is inside the hospital. The pharmacy is next to the hospital.','Энэ бол эмнэлэг дотор байдаг гэсэн үг. Эмийн сан эмнэлгийн хажууд байдаг.'),b:note('학교 뒤에 있어요.','학교 뒤에 있다는 말이에요. 안내에 학교는 없어요.','This means it is behind the school. The directions don’t mention a school.','Энэ бол сургуулийн ард байдаг гэсэн үг. Зааварт сургуулийг дурдаагүй.')},
  'directions-apply-landmark-transfer':{b:note('학교 안에 있어요.','학교 건물 속에 있다는 말이에요. 우체국은 학교 옆에 있어요.','This means it is inside the school. The post office is next to the school.','Энэ бол сургууль дотор байдаг гэсэн үг. Шуудан сургуулийн хажууд байдаг.'),c:note('은행 뒤에 있어요.','은행 뒤에 있다는 말이에요. 안내에 은행은 없어요.','This means it is behind the bank. The directions don’t mention a bank.','Энэ бол банкны ард байдаг гэсэн үг. Зааварт банкийг дурдаагүй.')},
  // 길 팩 — 끝
+ // 버스 팩(11-26 저녁 「네, 이어가」) — 시작
+ 'transit-expressions-route':{a:note('이 버스는 몇 시에 와요?','버스가 오는 시간을 물을 때 하는 말이에요. 버스가 가는 곳을 묻는 말이 아니에요.','You say this to ask what time the bus comes. It does not ask where the bus goes.','Энэ бол автобус хэдэн цагт ирэхийг асуусан өгүүлбэр. Автобус хаашаа явдгийг асуусан өгүүлбэр биш.'),c:note('공원에서 버스를 타요?','공원에서 버스를 타는지 물을 때 하는 말이에요. 버스가 가는 곳을 묻는 말이 아니에요.','You say this to ask whether you get on the bus at the park. It does not ask where the bus goes.','Энэ бол цэцэрлэгт хүрээлэнгээс автобусанд суудаг эсэхийг асуусан өгүүлбэр. Автобус хаашаа явдгийг асуусан өгүүлбэр биш.')},
+ 'transit-expressions-route-transfer':{b:note('이 버스는 어디에서 타요?','이 버스를 어디에서 타는지 물을 때 하는 말이에요.','You say this to ask where to get on this bus.','Энэ бол энэ автобусанд хаанаас суухыг асуусан өгүүлбэр.'),c:note('도서관 앞에서 버스를 기다려요?','도서관 앞에서 버스를 기다리는지 물을 때 하는 말이에요.','You say this to ask whether you wait for the bus in front of the library.','Энэ бол номын сангийн өмнө автобус хүлээх эсэхийг асуусан өгүүлбэр.')},
+ 'transit-expressions-alight':{a:note('지금 정류장에서 내려요.','‘이번 정류장에서 내려요’일 때 하는 행동이에요.','This is what you do for ‘이번 정류장에서 내려요’ (get off at this stop).','Энэ бол «이번 정류장에서 내려요» (энэ буудал дээр бууна) гэж хэлэх үед хийдэг үйлдэл.'),b:note('두 정류장 더 가서 내려요.','두 정류장이 아니에요. ‘다음 정류장’은 바로 뒤에 오는 정류장 하나예요.','Not two stops. ‘다음 정류장’ is just the one stop right after this one.','Хоёр буудал явахгүй. Яг дараагийн буудал дээр бууна.')},
+ 'transit-expressions-alight-transfer':{a:note('한 정류장 더 가요.','‘다음 정류장에서 내려요’일 때 하는 행동이에요.','This is what you do for ‘다음 정류장에서 내려요’ (get off at the next stop).','Энэ бол «다음 정류장에서 내려요» (дараагийн буудал дээр бууна) гэж хэлэх үед хийдэг үйлдэл.'),c:note('버스를 다시 타요.','버스에서 내린 뒤 다시 탈 때 하는 행동이에요.','This is what you do when you get back on after getting off.','Энэ бол автобуснаас буугаад дахиж суух үед хийдэг үйлдэл.')},
+ 'transit-expressions-card':{b:note('교통카드 사진을 찍어요.','버스에서 ‘카드를 찍다’는 사진을 찍는 것이 아니에요. 카드 기계에 카드를 대요.','On a bus, ‘카드를 찍다’ does not mean taking a photo. You hold the card to the card machine.','Автобусанд «카드를 찍다» гэдэг нь зураг авахыг хэлэхгүй. Картаа уншуулахыг хэлнэ.'),c:note('교통카드를 기사님께 드려요.','기사님께 카드를 드리지 않아요. 카드 기계에 카드를 대요.','You don’t give the card to the driver. You hold it to the card machine.','Картаа жолоочид өгөхгүй. Картаа уншуулна.')},
+ 'transit-expressions-card-transfer':{a:note('내릴 때 카드를 가방에 넣어요.','카드를 가방에 넣기만 하면 안 돼요. 내릴 때도 카드 기계에 카드를 대요.','Just putting the card in your bag is not enough. When you get off, you hold the card to the card machine too.','Картаа зүгээр л цүнхэндээ хийчихэж болохгүй. Буухдаа ч картаа уншуулна.'),b:note('내릴 때 교통카드 사진을 찍어요.','버스에서 ‘카드를 찍다’는 사진을 찍는 것이 아니에요. 카드 기계에 카드를 대요.','On a bus, ‘카드를 찍다’ does not mean taking a photo. You hold the card to the card machine.','Автобусанд «카드를 찍다» гэдэг нь зураг авахыг хэлэхгүй. Картаа уншуулахыг хэлнэ.')},
+ 'transit-story-route':{a:note('학교','학교는 친구들이 버스를 탄 곳이에요.','The school is where your friends got on the bus.','Найзууд сургуулийн урд талын буудлаас автобусанд суусан.'),b:note('도서관','도서관은 버스가 멈춘 정류장이에요. 친구들은 거기에서 내리지 않았어요.','The bus stopped at the library, but your friends did not get off there.','Автобус номын сангийн буудал дээр зогссон ч найзууд тэнд буугаагүй.')},
+ 'transit-story-route-transfer':{a:note('꽃길 공원','꽃길 공원은 이야기 속 버스가 간 곳이에요. 이 안내표는 ‘마루 도서관행’이에요.','Kkotgil Park is where the bus in the story went. This sign says ‘마루 도서관행’ (to Maru Library).','Энэ түүхэнд автобус Коткил цэцэрлэгт хүрээлэн рүү явсан. Харин энэ чиглэлийн самбарт «마루 도서관행» (Мару номын сан руу) гэж бичсэн байна.'),c:note('마루 카페','안내표에 카페는 없어요. ‘마루 도서관행’이에요.','The sign does not say café. It says ‘마루 도서관행’ (to Maru Library).','Самбарт кафе гэж бичээгүй. «마루 도서관행» (Мару номын сан руу) гэж бичсэн байна.')},
+ 'transit-story-alight':{b:note('도서관에서 내렸어요.','도서관에서 내리려고 한 사람은 태오예요. 서하가 ‘아니요’라고 했어요.','Taeo was the one who wanted to get off at the library. Seoha said ‘아니요’ (no).','Тэо л номын сангийн буудал дээр буух гэсэн. Харин Сөха «아니요» (үгүй) гэж хэлсэн.'),c:note('두 정류장 더 갔어요.','두 정류장이 아니에요. 공원은 도서관 바로 다음 정류장이라서 한 정류장만 더 갔어요.','Not two stops. The park is the very next stop after the library, so they rode only one more stop.','Хоёр буудал яваагүй. Цэцэрлэгт хүрээлэн номын сангийн яг дараагийн буудал учраас дахиад нэг л буудал явсан.')},
+ 'transit-story-alight-transfer':{a:note('학교에서 내려요.','학교는 지금 정류장이에요. 마루 도서관은 다음 정류장이에요.','School is the stop you are at now. Maru Library is the next stop.','Одоо сургуулийн буудал дээр байна. Дараагийн буудал бол Мару номын сангийн буудал.'),b:note('두 정류장 더 가서 내려요.','두 정류장이 아니에요. 마루 도서관은 바로 다음 정류장이에요.','Not two stops. Maru Library is the very next stop.','Хоёр буудал явахгүй. Мару номын сангийн буудал яг дараагийнх нь.')},
+ 'transit-story-card':{a:note('기사님에게 교통카드를 줬어요.','기사님에게 카드를 주지 않았어요. 카드 기계에 댔어요.','They did not give their cards to the driver. They held them to the card machine.','Тэд картаа жолоочид өгөөгүй. Картаа уншуулсан.'),c:note('도서관에서 교통카드를 샀어요.','도서관에서 카드를 사지 않았어요. 버스를 탈 때 카드 기계에 댔어요.','They did not buy cards at the library. They held their cards to the card machine when they got on.','Тэд номын сангаас карт аваагүй. Автобусанд суухдаа картаа уншуулсан.')},
+ 'transit-story-card-transfer':{a:note('탈 때 카드 사진을 찍어요.','여기에서 ‘찍다’는 사진을 찍는 것이 아니에요. 카드 기계에 카드를 대요.','Here, ‘찍다’ does not mean taking a photo. You hold the card to the card machine.','Энд «찍다» гэдэг нь зураг авна гэсэн үг биш. Картаа уншуулна гэсэн үг.'),b:note('탈 때 역 직원에게 카드를 줘요.','역 직원에게 카드를 주지 않아요. 카드 기계에 카드를 대요.','You don’t give the card to a station worker. You hold it to the card machine.','Картаа метроны ажилтанд өгөхгүй. Картаа уншуулна.')},
+ 'transit-apply-route':{b:note('이 버스는 언제 와요?','버스가 언제 오는지 물을 때 하는 말이에요. 버스가 가는 곳을 묻는 말이 아니에요.','You say this to ask when the bus comes. It does not ask where the bus goes.','Энэ бол автобус хэзээ ирэхийг асуусан өгүүлбэр. Автобус хаашаа явдгийг асуусан өгүүлбэр биш.'),c:note('병원에서 버스를 타요?','병원에서 버스를 타는지 물을 때 하는 말이에요. 버스가 가는 곳을 묻는 말이 아니에요.','You say this to ask whether you get on the bus at the hospital. It does not ask where the bus goes.','Энэ бол эмнэлгээс автобусанд суудаг эсэхийг асуусан өгүүлбэр. Автобус хаашаа явдгийг асуусан өгүүлбэр биш.')},
+ 'transit-apply-route-transfer':{a:note('학교 앞에 버스 정류장이 있어요?','학교 앞에 버스 정류장이 있는지 물을 때 하는 말이에요.','You say this to ask whether there is a bus stop in front of the school.','Энэ бол сургуулийн өмнө автобусны буудал байдаг эсэхийг асуусан өгүүлбэр.'),c:note('이 버스는 몇 번이에요?','버스 번호를 물을 때 하는 말이에요. 버스가 가는 곳을 묻는 말이 아니에요.','You say this to ask the bus number. It does not ask where the bus goes.','Энэ бол автобусны дугаарыг асуусан өгүүлбэр. Автобус хаашаа явдгийг асуусан өгүүлбэр биш.')},
+ 'transit-apply-alight':{a:note('한 정류장 더 가요.','이번 정류장이 병원이에요. 한 정류장 더 가면 지나가요.','This stop is the hospital. If you ride one more stop, you will go past it.','Энэ бол эмнэлгийн буудал. Дахиад нэг буудал явбал өнгөрчихнө.'),b:note('다음 정류장에서 내려요.','다음 정류장에서 내리면 병원을 지나가요. 병원은 이번 정류장이에요.','If you get off at the next stop, you will go past the hospital. The hospital is this stop.','Дараагийн буудал дээр буувал эмнэлгийг өнгөрчихнө. Эмнэлгийн буудал бол энэ буудал.')},
+ 'transit-apply-alight-transfer':{b:note('이번 정류장에서 내려요.','이번 정류장은 시장이에요. 학교는 다음 정류장이에요.','This stop is the market. School is the next stop.','Энэ бол захын буудал. Дараагийн буудал бол сургуулийн буудал.'),c:note('시장에서 기다려요.','시장에서 기다리지 않아요. 학교까지 가요.','You don’t wait at the market. You ride on to school.','Зах дээр хүлээхгүй. Сургууль хүртэл явна.')},
+ 'transit-apply-card':{a:note('카드 사진을 찍고 들어가요.','버스에서 ‘카드를 찍다’는 사진을 찍는 것이 아니에요. 카드 기계에 카드를 대요.','On a bus, ‘카드를 찍다’ does not mean taking a photo. You hold the card to the card machine.','Автобусанд «카드를 찍다» гэдэг нь зураг авахыг хэлэхгүй. Картаа уншуулахыг хэлнэ.'),c:note('카드를 좌석에 놓고 들어가요.','좌석에 놓는 것이 아니에요. 카드 기계에 카드를 대요.','You don’t put it on the seat. You hold the card to the card machine.','Картаа суудал дээр тавихгүй, уншуулна.')},
+ 'transit-apply-card-transfer':{a:note('내리기 전에 카드 사진을 찍어요.','여기에서 ‘찍다’는 사진을 찍는 것이 아니에요. 카드 기계에 카드를 대요.','Here, ‘찍다’ does not mean taking a photo. You hold the card to the card machine.','Энд «찍다» гэдэг нь зураг авна гэсэн үг биш. Картаа уншуулна гэсэн үг.'),b:note('내린 뒤에 카드를 카드 기계에 대요.','내린 뒤에는 늦어요. 안내는 내리기 전에 카드를 대라고 했어요.','After you get off is too late. The notice says to tap your card before you get off.','Буусны дараа уншуулбал оройтно. Санамжид буухын өмнө картаа уншуулна уу гэж бичсэн байна.')},
+ // 버스 팩 — 끝
 });
 
 /** 그 문항 보기의 한 줄(화면 언어, 없으면 한국어). 문항이나 보기 글이 바뀌었으면 null. */
