@@ -151,6 +151,8 @@
 /* 펼친 동안 이름 단추와 오브제 줄은 물러나고, 방은 흐리고 눌리지 않는다. 바깥을 눌러 닫을 때 흐린 줄이나 단추가 같이 눌리지 않게 한다(설계 검토 1차 4) */
 #portal-entry .orb-stage[data-fan] .here-name,#portal-entry .orb-stage[data-fan] .rail{opacity:0;pointer-events:none}
 #portal-entry .orb-stage[data-fan] .room{opacity:.14;pointer-events:none}
+/* 펼침 발치 줄(계정 · 설정 · 로그아웃)이 방의 머리 문장 높이에 선다. 큰 글자가 함께 비쳐 섞이지 않게 펼친 동안 머리 문장은 감춘다. 등장 효과(.rise)가 opacity를 쓰므로 filter로 감춘다(PC 0.5.14 Fable F1) */
+#portal-entry .orb-stage[data-fan] .room .say{filter:opacity(0)}
 #portal-entry .say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance;min-height:1.3em}
 #portal-entry .say .then{display:block;color:var(--dim)}
 #portal-entry .say .then:empty{display:none}

@@ -30,19 +30,19 @@ test('PATH requires exact source-mode capability and never masquerade as install
     assert.equal(primaryAction(bad,{native:false,productPreviewsAvailable:[id]}).disabled,true);
     assert.equal(primaryAction(bad,{productPreviewsAvailable:[id]}).action,'product-preview');
     assert.equal(primaryAction(bad,{busy:true,productPreviewsAvailable:[id]}).disabled,true);
-    assert.match(statusLabel(row),id==='path'?/웹에서 연습/:/웹에서 열림/);assert.doesNotMatch(statusLabel(row),/교사/);
+    assert.match(statusLabel(row),/웹에서 열림/);assert.doesNotMatch(statusLabel(row),/교사/);
   }
 });
-test('PATH HTTPS interview takes priority over the legacy local campus only with the native public capability',async()=>{
+test('the PATH web app takes priority over the legacy local campus only with the native public capability',async()=>{
   const {primaryAction,statusLabel,APPS}=await mod;
   const client={id:'path',status:'preview'},capability={publicAppsAvailable:['path'],productPreviewsAvailable:['path']};
-  assert.deepEqual(primaryAction(client,capability),{label:'면접 연습 열기',action:'public-web',disabled:false});
+  assert.deepEqual(primaryAction(client,capability),{label:'PATH 열기',action:'public-web',disabled:false});
   assert.equal(primaryAction(client,{...capability,busy:true}).disabled,true);
   assert.equal(primaryAction(client,{...capability,native:false}).disabled,true);
   for(const publicAppsAvailable of [null,'path',['PATH'],['care'],[]])assert.equal(primaryAction(client,{publicAppsAvailable}).disabled,true);
   assert.equal(statusLabel({...client,publicWebAvailable:true}),'웹에서 열림');
-  assert.match(APPS.path.boundary,/답은 계정에 저장하지 않아요/);
-  assert.match(APPS.path.boundary,/Quest 브라우저에서는 VR로/);
+  assert.match(APPS.path.boundary,/브라우저에서 바로 열려요/);
+  assert.doesNotMatch(APPS.path.boundary+APPS.path.summary+APPS.path.keywords,/VR|Quest|60~90/);
 });
 test('teacher preview needs explicit native capability and never reuses package launch',async()=>{
   const {primaryAction}=await mod;

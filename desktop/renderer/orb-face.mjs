@@ -1973,8 +1973,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function openPath() {
     if (disposed || typeof options.onOpenPath !== 'function') return;
     closeSwitch({ focusHere: true });
+    const from = { space, account: machine.read().accountKey || null };
     void Promise.resolve().then(() => options.onOpenPath()).catch(() => null).then(result => {
       if (disposed || result?.ok) return;
+      // 답이 늦게 오는 사이 사람이 다른 화면을 열었거나 다른 일이 돌거나 계정 · 공간이 바뀌었으면, 그 화면을 닫고 펼침을 열지 않는다(PC 0.5.14 Fable F3)
+      const moved = legacyKind !== null || aside || busyAction !== null || signingOut || space !== from.space || (machine.read().accountKey || null) !== from.account;
+      if (moved) return;
       sayInSwitch('PATH를 브라우저로 열지 못했습니다. 잠시 뒤 다시 눌러 주세요.');
     });
   }

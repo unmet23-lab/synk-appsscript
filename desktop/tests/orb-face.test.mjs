@@ -125,7 +125,7 @@ test('펼침 끝의 PATH는 별 없이 한 줄이고, 고르면 구는 그대로
   assert.match(h.view.last().fan.error, /PATH를 브라우저로 열지 못했습니다/);
 });
 
-test('PATH는 여는 길이 없거나 PULSE 초대 손님이면 펼침에 서지 않는다', async t => {
+test('PATH는 여는 길이 없으면 펼침에 서지 않는다', async t => {
   const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }) });
   await settle();
   h.face.setState(signedIn());
@@ -133,6 +133,39 @@ test('PATH는 여는 길이 없거나 PULSE 초대 손님이면 펼침에 서지
   h.face.handle('open-switch');
   await settle();
   assert.deepEqual(h.view.last().fan.names.map(n => n.space), ['solio']);
+});
+
+test('PULSE 초대 손님의 펼침에는 여는 길이 있어도 PATH가 서지 않는다(PC 0.5.14 카본 A1 · Fable F2)', async t => {
+  const e = pulseEmbed();
+  const h = harness(t, { initial: { status: 'signed-out' }, options: { embed: e.embed, onOpenPath: async () => ({ ok: true }), onInvite: () => { e.setOpen(true); return { ok: true, state: 'received', destination: '/pulse-app/' }; } } });
+  await settle();
+  h.view.type('https://workspace.synk.im/pulse-app/#invite=SyntheticInvite_1234567890');
+  h.face.handle('invite-submit');
+  await settle();
+  assert.equal(h.view.last().space, 'pulse');
+  h.face.handle('open-switch'); await settle();
+  assert.deepEqual(h.view.last().fan.names.map(n => n.space), ['pulse']);
+});
+
+test('PATH 열기 실패가 늦게 오면, 그사이 연 설정 방을 닫고 펼침을 열지 않는다(PC 0.5.14 Fable F3)', async t => {
+  let fail;
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { onOpenPath: () => new Promise(resolve => { fail = () => resolve({ ok: false, code: 'PUBLIC_APP_OPEN_FAILED' }); }) } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('open-switch'); await settle();
+  h.face.handle('go', 'path'); await settle();
+  assert.equal(h.view.last().fan.open, false);
+  h.face.handle('open-switch'); await settle();
+  h.face.handle('foot', 'settings'); await settle();
+  const before = h.view.last();
+  assert.equal(before.fan.open, false);
+  fail(); await settle();
+  const after = h.view.last();
+  assert.equal(after.fan.open, false, 'the fan does not open over the settings room');
+  assert.equal(after.fan.error || '', '');
+  assert.ok(before.rooms?.settings, 'the settings room is open');
+  assert.ok(after.rooms?.settings, 'the settings room stays open');
 });
 
 test('an existing account goes from the first orb to Solio with no text and no ask scene', async t => {

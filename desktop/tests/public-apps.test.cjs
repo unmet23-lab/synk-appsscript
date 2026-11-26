@@ -39,7 +39,7 @@ test('public opening carries only the latest verified platform ID and never auth
  state={...state,signedIn:true,account:{synk_user_id:'not-a-canonical-id'}};await service.open('care');assert.equal(calls[2],'https://synk.im/care/');
 });
 
-test('PATH opens the standalone HTTPS interview without reading or sharing a member identity',async()=>{
+test('PATH opens the PATH web app over HTTPS without reading or sharing a member identity',async()=>{
  const calls=[],service=createPublicApps({clientId:'platform',mode:'development',accountStatus:()=>{throw Error('Standalone PATH must not inspect an account');},openExternal:async url=>calls.push(url)});
  assert.deepEqual(await service.open('path'),{ok:true,id:'path',externalBrowser:true});
  assert.deepEqual(calls,['https://synk.im/path/app/']);
