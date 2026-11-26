@@ -31,7 +31,8 @@ page.on('pageerror', e => errors.push(String(e).slice(0, 300)));
 page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 300)); });
 context.on('response', r => { if (r.status() >= 400) bad.push(`${r.status()} ${r.url()}`); });
 // 계정 · 로그인 · 받아쓰기로 가는 요청, WORLD 앱 묶음
-context.on('request', q => { const u = q.url(); if (/supabase|\/auth\/v1|world-speaking(?:[?#/]|$)|world-account|app-shell|talk\./.test(u)) asked.push(u); });
+// 사전예약 쪽 휴대폰 영상(reserve/clips/<언어>/talk.mp4 · .webp, 11-26 학생증 판)은 받아쓰기 요청이 아니다.
+context.on('request', q => { const u = q.url(); if (!/\/reserve\/clips\//.test(u) && /supabase|\/auth\/v1|world-speaking(?:[?#/]|$)|world-account|app-shell|talk\./.test(u)) asked.push(u); });
 if (!LIVE) await context.route(u => u.origin === 'https://synk.im' && u.pathname.startsWith('/reserve/'), async route => {
   const u = new URL(route.request().url());
   let rel = decodeURIComponent(u.pathname.replace(/^\/reserve\//, ''));
@@ -75,7 +76,7 @@ await page.evaluate(() => {
 });
 const before = await store();
 const links = await page.evaluate(() => [...document.querySelectorAll('[data-world]')].map(a => a.getAttribute('href')));
-check(links.length === 2 && links.every(h => h === `/reserve/play/?lang=${LANG}&from=qa-play`), '해 보기 단추 둘이 1회용 체험으로 간다', links.join(' '));
+check(links.length === 3 && links.every(h => h === `/reserve/play/?lang=${LANG}&from=qa-play`), '해 보기 단추 셋(11-26 학생증 판)이 1회용 체험으로 간다', links.join(' '));
 await page.click('#world-go');
 await page.waitForURL(u => u.pathname === '/reserve/play/');
 await until('이야기 틀', () => page.evaluate(() => document.querySelector('.pl-story')?.classList.contains('on')));
