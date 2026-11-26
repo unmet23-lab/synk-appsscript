@@ -23,7 +23,7 @@
     "dur": "4초",
     "proj": "omni",
     "start": "h_wide",
-    "key": "nudges the single paper cup across the counter"
+    "key": "leans its whole round dome toward Grandma, eyes round and bright"
   },
   "s2": {
     "model": "Omni 1.2 Flash",
@@ -68,7 +68,7 @@
     "dur": "5초",
     "proj": "omni",
     "start": "h_offer",
-    "key": "nudges the single cup forward toward Grandma"
+    "key": "dips its whole round dome forward and down toward Grandma"
   },
   "s7": {
     "model": "Omni 1.2 Flash",

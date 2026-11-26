@@ -83,9 +83,10 @@
   {
    "id": "f1",
    "text": "드세요, 해야지!",
-   "dur": 2.464,
+   "dur": 1.882,
    "src": "f1.wav",
-   "voice": "ElevenLabs v4 Taehyung"
+   "voice": "ElevenLabs v4 Taehyung",
+   "note": "11-26 다시 구움: [low voice, friendly and calm] · seed 22 · 안정 0.5 — 옛 귓속말 판은 목소리 엉킴 100% · 기본음 432Hz"
   },
   {
    "id": "f2",

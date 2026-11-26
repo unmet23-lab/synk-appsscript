@@ -50,7 +50,7 @@ const Head: React.FC = () => {
   const p = pop(frame, HEAD.at);
   const o = interpolate(frame, [fr(HEAD.to) - 5, fr(HEAD.to)], [1, 0], clamp);
   return (
-    <div style={{ position: 'absolute', left: 70, right: 70, top: 220, textAlign: 'center', opacity: o, transform: `scale(${0.9 + 0.1 * p})` }}>
+    <div style={{ position: 'absolute', left: 70, right: 70, top: 285, textAlign: 'center', opacity: o, transform: `scale(${0.9 + 0.1 * p})` }}>
       <div style={{ display: 'inline-block', background: PAPER, border: `6px solid ${INK}`, borderRadius: 30, padding: '14px 34px 18px', boxShadow: '0 10px 26px rgba(0,0,0,0.35)' }}>
         <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 60, color: INK, lineHeight: 1.15 }}>{HEAD.l1}</div>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 84, color: INK, lineHeight: 1.12 }}>{HEAD.l2}</div>

@@ -9,7 +9,7 @@ export const fr = (s: number) => Math.round(s * FPS);
 export type Cut = { at: number; len: number; vid: string; from?: number; zoom?: number; ox?: number; oy?: number; shake?: number; rate?: number; 크기: '넓게' | '가깝게' | '아주 가깝게'; 일: string };
 export const CUTS: Cut[] = [
   { at: 0, len: 2.2, vid: 's1.mp4', from: 0.4, 크기: '넓게', 일: '겨울밤 호떡 노점 — 할머니 손님이 오고 몽글이 호떡 한 컵을 밀며 「할머니, 먹어!」' },
-  { at: 2.2, len: 1.4, vid: 's2.mp4', from: 0.6, 크기: '아주 가깝게', 일: '할머니 미소가 굳고 「흠…」(쌓임 1)' },
+  { at: 2.2, len: 1.4, vid: 's2.mp4', from: 1.55, 크기: '아주 가깝게', 일: '할머니 미소가 굳고 「흠…」(쌓임 1) — 볼 이유 심사가 「웃고 있어 왜 무례한지 안 보인다」고 해 받은 샷의 굳은 뒷부분부터' },
   { at: 3.6, len: 1.5, vid: 's3.mp4', from: 0.1, 크기: '넓게', 일: '몽글이 두 컵을 밀며 「먹어!!」 — 할머니 팔짱 · 고개 돌림(쌓임 2)' },
   { at: 5.1, len: 1.5, vid: 's4.mp4', from: 0.2, 크기: '가깝게', 일: '다섯 컵 탑을 밀며 진땀 「먹어!!!」 — 할머니는 등을 돌림(쌓임 3). 이해 시험 v1에서 둘이 「같은 말 되풀이가 길다」고 해 쌓임 두 칸을 0.3초씩 줄임' },
   { at: 6.6, len: 2.2, vid: 's5.mp4', from: 0, 크기: '아주 가깝게', 일: '친구가 몽글 곁에서 귓속말 「“드세요” 해야지!」' },

@@ -44,7 +44,7 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
   const 크 = w.크기 ?? 86;
   // 이해 시험 v1에서 셋이 「몽골어 뜻 · 읽기 줄이 휴대폰에서 작다」고 짚어 키움(52 → 62 · 40 → 46)
   const 뜻 = w.뜻크기 ?? (parts.length ? 62 : 64);
-  const 읽 = 50;
+  const 읽 = 54;
   const 머 = 47;
   const 알 = 48;
   const 뜻줄 = w.mean ? w.mean.split('\n') : [];
@@ -84,7 +84,7 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
             ))}
           </div>
         ))}
-        {w.read ? <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 읽, color: '#6B5647', lineHeight: 1.2, whiteSpace: 'pre' }}>{w.read}</div> : null}
+        {w.read ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 읽, color: '#4A3A30', lineHeight: 1.2, whiteSpace: 'pre' }}>{w.read}</div> : null}
         {w.mean ? <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 뜻, color: parts.length ? MEAN : INK, lineHeight: 1.18, whiteSpace: 'pre' }}>{w.mean}</div> : null}
       </div>
     </div>
