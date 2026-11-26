@@ -191,6 +191,15 @@
         + `<p>${keep(x.p)}<small>${keep(s)}</small></p></li>`;
     }).join('');
     if (phoneIo) { phoneIo.disconnect(); $$('#phones video').forEach(v => phoneIo.observe(v)); }
+    phonesTab();
+  }
+
+  // 휴대폰 목록은 옆으로 넘길 수 있을 때(좁은 화면)만 Tab으로 닿아 방향키로 넘기게 한다. 넓은 화면에서는 넘기지 않으니 Tab 자리를 두지 않는다.
+  function phonesTab() {
+    const list = $('#phones');
+    if (!list) return;
+    const can = /auto|scroll/.test(getComputedStyle(list).overflowX) && list.scrollWidth > list.clientWidth + 1;
+    if (can) list.setAttribute('tabindex', '0'); else list.removeAttribute('tabindex');
   }
 
   function setDream(d) {
@@ -346,6 +355,9 @@
       }, { threshold: 0.45 });
       $$('#phones video').forEach(v => phoneIo.observe(v));
     }
+    // 창 폭이 바뀌어 목록이 넘기게 되거나 멈추면 Tab 자리를 다시 정한다.
+    if ('ResizeObserver' in window && $('#phones')) new ResizeObserver(phonesTab).observe($('#phones'));
+    else addEventListener('resize', phonesTab, { passive: true });
     // 학생증은 단락이 처음 보일 때 한 번만 가볍게 흔들리다 선다.
     const hang = $('.rs-hang');
     if (hang && 'IntersectionObserver' in window && !reduceMotion) {

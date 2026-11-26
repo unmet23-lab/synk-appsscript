@@ -68,6 +68,9 @@ test('아래 단락(11-26 「다」): 학생증 · 휴대폰 다섯 대 · 꿈 �
     const prints = C.LANGS.map(l => fs.readFileSync(path.join(__dirname, 'src/shots', l, `${p.id}.webp`)).toString('base64'));
     assert.equal(new Set(prints).size, C.LANGS.length, `${p.id}: 세 언어 캡처가 서로 다르다`);
   }
+  // 원천 그림은 지금 쪽이 부르는 것만 둔다(11-24 판 그림 14장은 11-26 유호님 허락으로 지웠다).
+  assert.deepEqual(fs.readdirSync(path.join(__dirname, 'src/img')).sort(), C.DREAMS.flatMap(d => [`card-${d}.webp`, `stage-${d}.webp`]).sort());
+  for (const l of C.LANGS) assert.deepEqual(fs.readdirSync(path.join(__dirname, 'src/shots', l)).sort(), C.PHONES.filter(p => p.still).map(p => `${p.id}.webp`).sort(), `src/shots/${l}`);
   for (const k of ['stageIdol', 'stageActor', 'stageBodyIdol', 'stageBodyActor', 'stageFree', 'soon', 'cardAltIdol', 'cardAltActor']) for (const l of C.LANGS) assert.ok(C[l][k], `${l}.${k}`);
   // 꿈 무대(승급 오디션 · 티저 · 촬영장)는 아직 안 열렸다 — 「곧 열려요」를 단다.
   const html = fs.readFileSync(path.join(__dirname, 'src/index.html'), 'utf8');
@@ -80,6 +83,8 @@ test('아래 단락(11-26 「다」): 학생증 · 휴대폰 다섯 대 · 꿈 �
   assert.match(html, /<section class="rs-me" id="me"[\s\S]*<section class="rs-phones"[\s\S]*id="phones"[\s\S]*<section class="rs-stage"[\s\S]*<\/section>\s*<\/main>/);
   // 학생증 틀은 첫 화면 사전예약 칸(.rs-card)과 다른 이름이다 — 꿈을 바꿔도 칸이 뒤집히지 않게(카본 reserve-da A1).
   assert.match(html, /<div class="rs-idcard">/);
+  // 휴대폰 목록은 넘길 수 있을 때만 app.js가 Tab 자리를 단다 — 넓은 화면에 빈 Tab 자리를 두지 않는다(Fable reserve-da2 FA2).
+  assert.match(html, /<ol id="phones" aria-labelledby="phones-title"><\/ol>/);
   const css = fs.readFileSync(path.join(__dirname, 'src/reserve.css'), 'utf8');
   assert.ok(!/data-my-dream[^{]*\.rs-card\b/.test(css), '꿈 선택이 .rs-card를 건드리지 않는다');
   // 꿈 무대는 스크립트 전에도 제목과 대체 글이 있다(카본 reserve-da A3).

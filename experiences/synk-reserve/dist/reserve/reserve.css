@@ -2,7 +2,7 @@
  * 원본: SYNK-appsscript/experiences/synk-reserve/src/reserve.css
  * 글꼴: 한글 · 라틴은 SUIT를 이 쪽 글자만 줄인 판(v11 홈과 같다). 몽골어 화면은 키릴 · 라틴 · 숫자를 모두 Inter Tight로 쓴다 —
  *   SUIT에는 키릴이 없고, 「SYNK-д」처럼 라틴과 키릴이 붙는 자리에서 두 글꼴의 굵기가 달라 보이지 않게(11-23 미리 보기). build.mjs가 굽는다. */
-@font-face{font-family:'Reserve Sans';src:url(assets/reserve-sans.woff2?v=851e7a2f1229) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Reserve Sans';src:url(assets/reserve-sans.woff2?v=9e5ed3a2ff25) format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-500.woff2?v=f336f52afb3d) format('woff2');font-weight:400 500;font-display:swap}
 @font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-700.woff2?v=27e0264fe7d1) format('woff2');font-weight:600 900;font-display:swap}
 
@@ -106,7 +106,8 @@ img{display:block;max-width:100%}
 /* 아래 단락(11-26 「다」, 흰 바탕): 큰 말 「나는 곧 / 한국으로 가요.」와 목걸이에 걸린 게임 학생증. 꿈을 누르면 학생증이 뒤집힌다.
  * 글자 역할: 큰 말 SUIT 700 · 설명 SUIT 600 · 게임 이름 줄 회색. 색: 바탕 흰색, 글과 단추 먹, 꿈 무대 띠만 검정. */
 .rs-me{--fs:clamp(64px,min(13.4vw,24svh),236px);position:relative;height:100svh;min-height:640px;overflow:hidden;background:var(--paper);color:#000}
-:lang(en) .rs-me{--fs:clamp(56px,min(10.4vw,20svh),190px)}
+/* 영어 첫 줄(Soon I'm off, 글자 크기의 약 4.92배)이 학생증 왼쪽 끝(52%) 앞에서 끝나게 큰 글자에 상한을 둔다. */
+:lang(en) .rs-me{--fs:clamp(56px,min(10.4vw,20svh,calc((52vw - var(--wide) - 34px) / 4.92)),190px)}
 /* 몽골어 첫 줄(Би удахгүй, 글자 크기의 약 5배)이 학생증 왼쪽 끝(52%) 앞에서 끝나게 넓은 창에서는 글자를 더 키우지 않는다. */
 :lang(mn) .rs-me{--fs:clamp(48px,min(8.4vw,16svh,calc(.4vw + 118px)),150px)}
 .rs-me-l1,.rs-me-l2{position:absolute;left:var(--wide);margin:0;font:700 var(--fs)/1 var(--sans);letter-spacing:-.05em;white-space:nowrap}
@@ -120,9 +121,7 @@ img{display:block;max-width:100%}
 .rs-seg{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:#f1f1f1}
 .rs-seg button{height:44px;padding:0 18px;border-radius:999px;font:700 16px/1 var(--sans);color:#000;transition:background .2s,color .2s}
 .rs-seg button[aria-pressed="true"]{background:#000;color:#fff}
-.rs-hang{--clear:1;position:absolute;z-index:2;top:0;left:52%;width:clamp(260px,min(41vw,calc((87svh - var(--fs) * (var(--clear) + .14) - clamp(36px,6svh,72px) - 74px) / .63)),660px);display:grid;justify-items:center;transform-origin:50% 0}
-/* 영어는 첫 줄(Soon I'm off)도 학생증 밑까지 길다 — 두 줄 위로 비킨다. */
-:lang(en) .rs-hang{--clear:2.04}
+.rs-hang{position:absolute;z-index:2;top:0;left:52%;width:clamp(260px,min(41vw,calc((87svh - var(--fs) * 1.14 - clamp(36px,6svh,72px) - 74px) / .63)),660px);display:grid;justify-items:center;transform-origin:50% 0}
 .rs-hang.swing{animation:rs-sway 3.2s var(--ease) both}
 @keyframes rs-sway{0%{transform:rotate(7deg)}30%{transform:rotate(-4deg)}55%{transform:rotate(2deg)}78%{transform:rotate(-.8deg)}100%{transform:rotate(0)}}
 .rs-strap{display:block;width:38px;height:13svh;background:#141414 repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 4px)}
@@ -187,6 +186,7 @@ html[data-my-dream="actor"] .rs-idcard{transform:rotateY(180deg)}
   .rs-hang{position:relative;order:3;left:auto;width:82vw;margin:8px auto 0}
   .rs-strap{height:56px}
   .rs-me-row{order:4;margin-top:28px}
+  #phones:focus-visible{outline-offset:-3px}
   #phones{justify-content:flex-start;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 var(--gut) 12px;margin:0 calc(var(--gut)*-1);scrollbar-width:none}
   .rs-ph-item{scroll-snap-align:center;margin-top:0!important}
   .rs-ph-item:nth-child(n){--w:58vw}

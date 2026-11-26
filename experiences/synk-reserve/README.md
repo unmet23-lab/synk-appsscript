@@ -60,7 +60,7 @@
 - 자르고 줄이는 것은 `.tmp/rsv-sian3-20261126/media.py` · `media2.py`다(폭 480, H.264, 소리 없음, 하나에 700KB 아래 — 시험이 지킨다).
 - 영상(mp4)은 저장소 규칙(`.gitignore`의 `*.mp4`)으로 git에 넣지 않는다. 공용 작업본의 `src/clips/`와 공개본 `reserve/clips/`에 있다. 원본이 없는 사본에서는 빌드가 공개본 git(origin/main)에서 꺼내 온다. 첫 장면 그림(.webp)은 git에 있다.
 - 튜터 퀴즈(quiz)는 WORLD 동아리 튜터 화면(`experiences/world-front/qa/동아리흐름.mjs --폭 391x852 --언어 <언어> --튜터 <튜터> --찍기 --라이브`의 `5-첫문항.png`)을 폭 600으로 줄인 것이다. 언어마다 그 언어 화면을 쓴다(한국어 태오 · 영어 서하 · 몽골어 유나).
-- `src/img`의 cafeteria · fair · gate · idol · taeo · face-* 그림과 `src/shots/<언어>`의 name · road 캡처는 11-24 판에서만 쓰던 것이다. 빌드는 더 부르지 않는다. 지우기는 유호님 허락을 받은 뒤에 한다.
+- 11-24 판에서만 쓰던 그림 14장(`src/img`의 cafeteria · fair · gate · idol · taeo · face-*, `src/shots/<언어>`의 name · road)은 11-26 유호님 허락으로 원천과 공개본에서 지웠다.
 - 서울행 프롤로그 · 1화 · 내 팬 화면이 바뀌면 다시 녹화한다.
 
 ## 공개
