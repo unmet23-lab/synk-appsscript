@@ -2289,4 +2289,5 @@ export default {
   "이미 「{slot}」에 넣은 파일이에요":"You already added this file to “{slot}”",
   "{date}로 받아 두고, 기간은 담당자와 정해요.":"We’ll note {date}, and your producer agrees the timing with you.",
   "어떤 제품인지 하나 골라 주세요":"Pick the kind of product",
+  "첫 장을 먼저 보여 드리고 맞춰요":"We show you the first photo and adjust from there",
 };

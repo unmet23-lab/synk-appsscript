@@ -164,7 +164,7 @@ const stageMedia=()=>`<div class="sx-q-media" aria-hidden="true"><div class="sx-
 const MAIL_DOMAINS=['gmail.com','naver.com','daum.net','hanmail.net','kakao.com','nate.com','outlook.com','icloud.com','hotmail.com','yahoo.com']; // i18n-skip
 const MAIL_OK=new Set([...MAIL_DOMAINS,'mail.com','me.com','live.com','msn.com','aol.com','gmx.com','proton.me','protonmail.com','korea.com','hanmir.com','ymail.com','email.com']); // i18n-skip
 const editDistance=(x,y)=>{const row=Array.from({length:y.length+1},(_,j)=>j);for(let i=1;i<=x.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=y.length;j++){const keep=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(x[i-1]===y[j-1]?0:1));prev=keep;}}return row[y.length];};
-export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_OK.has(domain))return '';const base=domain.split('.')[0],same=MAIL_DOMAINS.find(item=>item.split('.')[0]===base);if(same)return `${m[1]}@${same}`;const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]===1||best[1]===2&&domain.length>=9?`${m[1]}@${best[0]}`:'';};
+export const mailSuggest=value=>{const m=/^([^@\s]+)@([^@\s]+)$/.exec(String(value||'').trim());if(!m)return '';const domain=m[2].toLowerCase();if(MAIL_OK.has(domain))return '';const parts=domain.split('.'),same=parts.length===2&&(parts[1].length>2||parts[1]==='co')&&MAIL_DOMAINS.find(item=>item.split('.')[0]===parts[0]);if(same)return `${m[1]}@${same}`;const best=MAIL_DOMAINS.map(item=>[item,editDistance(domain,item)]).sort((x,y)=>x[1]-y[1])[0];return best[1]===1||best[1]===2&&domain.length>=9?`${m[1]}@${best[0]}`:'';};
 // 같은 이름(11-26 중복 확인): 이 기기에서 보낸 의뢰의 이름과 날을 남겨 두고(최근 20개 · 이 브라우저에만), 같은 이름을 다시 쓰면 그 날을 알린다.
 const SENT_KEY='pulse-sent-requests';
 const nameKey=value=>String(value||'').toLowerCase().replace(/[\s·.,'"「」()\-]/g,'');
@@ -211,7 +211,7 @@ const views={
   more(a,step,i,n,ctx={}){
     const photo=!!pkgOf(a)?.photo;
     if(a.finish!=='custom')return ask(step,i,n,t('나머지는 추천대로 할까요?'),t('보내신 뒤에 바꾸셔도 돼요.'),
-      `<dl class="sx-rec" data-in>${[...(photo?[]:[[k('마지막 화면'),k('로고 + 한 줄')],[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]]),[k('느낌'),k('두 가지 안으로 미리 제안해요')],[k('나올 모델'),a.modelChoice==='persona'?k('내 모델에서 고르신 모델'):a.modelChoice==='custom'?k('요청하신 맞춤 인물'):a.models.length?k('고르신 모델'):k('저희가 골라 먼저 보여 드려요')]].map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(t(value))}</dd></div>`).join('')}</dl>`+
+      `<dl class="sx-rec" data-in>${[...(photo?[]:[[k('마지막 화면'),k('로고 + 한 줄')],[k('문구 한 줄'),k('담당자가 써서 미리 보여 드려요')]]),[k('느낌'),photo?k('첫 장을 먼저 보여 드리고 맞춰요'):k('두 가지 안으로 미리 제안해요')],[k('나올 모델'),a.modelChoice==='persona'?k('내 모델에서 고르신 모델'):a.modelChoice==='custom'?k('요청하신 맞춤 인물'):a.models.length?k('고르신 모델'):k('저희가 골라 먼저 보여 드려요')]].map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(t(value))}</dd></div>`).join('')}</dl>`+
       `<button type="button" class="sx-link sx-small" data-do="finish" data-id="custom" data-in>${esc(t('직접 고를게요'))}</button>`+noticeBlock(a));
     const watch=WATCH_WORDS[a.kind]||WATCH_WORDS.brand,ref=a.refs[0]||{url:'',points:[],why:''};
     return ask(step,i,n,t('원하시는 것만 골라 주세요'),t('비워 두신 것은 저희가 골라 보여 드려요.'),

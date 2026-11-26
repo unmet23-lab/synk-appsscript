@@ -66,6 +66,15 @@ test('the brief form never promises a video to a photo order: the lines a photo 
   assert.match(more,/\(photo\?'':`<div class="sx-sub" data-in><span class="sx-small">\$\{esc\(t\('마지막 화면'\)\)\}/);
 });
 
+test('mail typo hints fix only near misses of common addresses, never a real country or company address',async()=>{
+  // 세 막(11-26) 메일 오타: 칸을 떠날 때만 보고, 고칠 것은 흔한 주소와 한두 글자 다른 것 · 뒤 주소만 틀린 두 마디 주소뿐이다(카본 B9 · Fable F5 · FA1).
+  const {mailSuggest}=await import('./public/pulse-app/request-flow.mjs');
+  for(const [mail,fix] of [['a@gmial.com','a@gmail.com'],['a@naver.con','a@naver.com'],['a@hanmail.com','a@hanmail.net'],['a@daum.com','a@daum.net'],['a@naver.co','a@naver.com']])assert.equal(mailSuggest(mail),fix,mail); // 공개허용: 메일 오타 안내 시험의 지어낸 예시 주소(한 글자 a, 실제 사람 아님)
+  for(const mail of ['a@gmail.com','a@mail.com','a@nike.com','a@ymail.com','a@email.com','a@yahoo.co.jp','a@hotmail.co.uk','a@outlook.kr','a@yahoo.fr','a@company.co.kr'])assert.equal(mailSuggest(mail),'',mail); // 공개허용: 메일 오타 안내 시험의 지어낸 예시 주소(한 글자 a, 실제 사람 아님)
+  // 사진 주문의 추천 목록은 두 안이 아니라 첫 장으로 맞춘다(GPT 다시 GA1 · GA2).
+  assert.match(view('more'),/\[k\('느낌'\),photo\?k\('첫 장을 먼저 보여 드리고 맞춰요'\):k\('두 가지 안으로 미리 제안해요'\)\]/);
+});
+
 test('every new customer line has its English',()=>{
   for(const key of ['그 밖에 쓰면 안 되는 말','예) 경쟁사 이름, 이제 쓰지 않는 제품 이름','그 말을 믿게 할 사실 · 선택','예) 홈쇼핑 같은 느낌, 과한 표정','라벨 인쇄 파일이나 브랜드 음악도 있어요','라벨 · 패키지 인쇄 파일도 있어요','브랜드 음악이나 로고 소리도 있어요','내용물 · 먹는 모습','내용물 · 바른 모습',
     '따랐을 때의 색, 거품, 단면처럼 안에 든 모습은 겉 사진으로 알 수 없어요. 찍어 둔 게 없으면 한 줄로 적어 주세요.','예) 따르면 색이 진하고 거품이 올라와요',
