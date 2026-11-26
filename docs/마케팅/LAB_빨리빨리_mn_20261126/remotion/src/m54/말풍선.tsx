@@ -36,7 +36,7 @@ export type 말풍선말 = {
 
 const 폭 = (t: string, f: string, w: string, s: number) => measureText({ text: t, fontFamily: f, fontWeight: w, fontSize: s }).width;
 
-export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
+export const 말풍선: React.FC<{ w: 말풍선말; 이어?: boolean }> = ({ w, 이어 }) => {
   const f = useCurrentFrame();
   const { width } = useVideoConfig();
   if (f < fr(w.at) || f >= fr(w.to)) return null;
@@ -65,7 +65,8 @@ export const 말풍선: React.FC<{ w: 말풍선말 }> = ({ w }) => {
   const tx = Math.min(Math.max(w.꼬리x - left, 12), W - 12); // 꼬리 끝
   const tb = Math.min(Math.max(tx, R + 26), W - R - 26); // 꼬리 밑동
   const d = `M ${R} 0 H ${W - R} Q ${W} 0 ${W} ${R} V ${H - R} Q ${W} ${H} ${W - R} ${H} H ${tb + 24} L ${tx} ${H + 꼬리} L ${tb - 24} ${H} H ${R} Q 0 ${H} 0 ${H - R} V ${R} Q 0 0 ${R} 0 Z`;
-  const p = interpolate(f, [fr(w.at), fr(w.at) + 6], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.6)) });
+  // 이어 = 앞 칸의 같은 말풍선이 칸이 바뀌어 자리만 옮긴 것(M54) — 다시 튀어나오지 않는다
+  const p = 이어 ? 1 : interpolate(f, [fr(w.at), fr(w.at) + 6], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.6)) });
   const 색 = (c?: 'ok' | 'ng' | 'q') => (c === 'ok' ? OK : c === 'ng' ? NG : c === 'q' ? '#7A6352' : INK);
   return (
     <div style={{ position: 'absolute', left, top, width: W, height: H + 꼬리, opacity: Math.min(1, p * 1.5), transform: `scale(${0.85 + 0.15 * p})`, transformOrigin: `${tx}px ${H + 꼬리}px` }}>

@@ -1,5 +1,5 @@
 # LAB 몽골 M54 소리 — 기숙사 로비 바탕 · 엘리베이터 문 · 딩 · 버튼 딸깍 · 전자레인지 웅 · 삑 · 문 박차기 · 휙 · 되감기를 모두 직접 만든다(남의 음원 없음).
-# 음악은 보유곡 「퀴즈120_키즈파티」 0~23초(곡 안 빈 마디 없음 — 지난 몽골 편 놀랐을때 · 드세요 · 추울때와 다른 곡).
+# 음악은 보유곡 「퀴즈120_키즈파티」 0~28.5초(곡 안 빈 마디 없음 — 지난 몽골 편 놀랐을때 · 드세요 · 추울때와 다른 곡).
 # 만들기(저장소 뿌리에서): python -X utf8 docs/마케팅/LAB_빨리빨리_mn_20261126/소리/만들기.py
 import os
 import subprocess
@@ -36,8 +36,8 @@ def 저역(x, hi, order=2):
     return sosfilt(butter(order, hi, 'lp', fs=SR, output='sos'), x)
 
 
-# 로비 바탕 — 낮은 환기 소리(24초)
-u = 판(24.0)
+# 로비 바탕 — 낮은 환기 소리(28.5초)
+u = 판(28.5)
 L = 띠(rng.normal(size=len(u)), 90, 500) * (0.7 + 0.3 * np.sin(2 * np.pi * 0.13 * u)) + 0.15 * np.sin(2 * np.pi * 60 * u)
 R = 띠(rng.normal(size=len(u)), 90, 500) * (0.7 + 0.3 * np.cos(2 * np.pi * 0.1 * u)) + 0.15 * np.sin(2 * np.pi * 60 * u)
 쓰기('room.wav', np.stack([L, R], axis=1), 0.45)
@@ -95,7 +95,7 @@ t = 판(0.9)
 s = sum(np.sin(2 * np.pi * fq * t) * np.exp(-(t - i * 0.08).clip(0) * 7) * (t >= i * 0.08) for i, fq in enumerate([1568, 2093, 2637]))
 쓰기('sparkle.wav', s, 0.45)
 
-# 음악 — 보유곡 퀴즈120_키즈파티 0~23초
+# 음악 — 보유곡 퀴즈120_키즈파티 0~28.5초(편 28.2초)
 곡 = os.path.join(뿌리, 'docs', '홍보물', 'BGM', '퀴즈120_키즈파티_c10ef6f1.wav')
-subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', 곡, '-t', '23.0', '-ar', '48000', '-ac', '2', os.path.join(여기, '..', 'remotion', 'public', 'bgm.wav')], check=True)
+subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', 곡, '-t', '28.5', '-ar', '48000', '-ac', '2', os.path.join(여기, '..', 'remotion', 'public', 'bgm.wav')], check=True)
 print('소리 끝')

@@ -74,16 +74,18 @@
   {
    "id": "n1",
    "text": "천천히~",
-   "dur": 1.262,
+   "dur": 1.158,
    "src": "n1.wav",
-   "voice": "ElevenLabs v4 Taehyung"
+   "voice": "ElevenLabs v4 Taehyung",
+   "_비고": "올리기 전 검사 「목소리 엉킴」(n1 37.7% · n2 15.9% · 348Hz)으로 11-26 다시 받음 — 엉킴 10.3% · 7.7%"
   },
   {
    "id": "n2",
    "text": "빨리빨리!",
-   "dur": 0.815,
+   "dur": 0.899,
    "src": "n2.wav",
-   "voice": "ElevenLabs v4 Taehyung"
+   "voice": "ElevenLabs v4 Taehyung",
+   "_비고": "올리기 전 검사 「목소리 엉킴」(n1 37.7% · n2 15.9% · 348Hz)으로 11-26 다시 받음 — 엉킴 10.3% · 7.7%"
   }
  ]
 }

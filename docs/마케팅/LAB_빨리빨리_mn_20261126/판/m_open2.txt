@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photographed with a macro lens, portrait 9:16, gentle depth of field, cosy handmade felt-and-wool textures everywhere, cute but not babyish (for young adults learning Korean).
+
+WORLD (same in every kitchen panel): the shared kitchen of a Korean university dormitory, made of felt and wool: a light-wood felt counter, a white felt microwave oven with a dark glass-like felt window in its door and, on its right-hand control strip, ONE plain blank dark rectangular display window (no digits, no symbols) plus two plain round felt knobs; a plain mint felt tiled wall behind. Inside the microwave a small white felt bowl of rice. No steam, no smoke, no other appliances, no windows.
+CHARACTERS (keep identical in every panel they appear in):
+- MONGLE: the coral needle-felted wool ghost-shaped mascot in the mascot reference image — use it ONLY for its body shape (a soft round dome about as wide as it is tall), coral wool colour, fine short smooth felted fuzz, scalloped bottom hem with one thin continuous cream running stitch, and glossy black bead eyes with NO whites. At rest Mongle has NO nose and NO mouth. Mongle has NO arms, NO legs, NO hands, NO fingers and NO neck, ever — its sides are always smooth and round; it presses buttons and doors only by leaning the side of its whole dome body against them.
+LAYOUT: keep the TOP 22% of the image calm and plain (soft out-of-focus wall or ceiling) — titles will be added there later.
+
+Attached images in order: (1) the mascot reference (body shape, wool, hem stitch and bead eyes only), (2) the earlier kitchen panel (keep the same camera angle, counter, microwave, open door, bowl of rice, wall and light exactly).
+
+SCENE:
+MEDIUM shot from the FRONT-LEFT at counter level, exactly the same camera as the earlier kitchen panel: the microwave door is FLUNG wide open to the left, the small bowl of rice visible inside; the blank dark display window on the right control strip is clearly visible (no digits). MONGLE stands on the counter right beside the open door, bouncing up with excitement and hurry (not angry): both bead eyes wide and sparkling, a big open happy shouting felt mouth, rosy blush, leaning eagerly toward the rice. Nobody else.
+
+Only the characters named in this panel, nobody else. Everything is needle-felt and wool craft, no glossy realistic surfaces. Absolutely no text, letters, numbers, digits, symbols, arrows, question marks, speech bubbles, emoji or watermarks anywhere (no writing on buttons, display windows, doors or walls). No real brand, no logos. No rings, holes or dense dot patterns anywhere (no polka dots, no speckles, no perforated grilles, no tapioca pearls, no bubbles). Keep open bead eyes plain glossy black with no whites. Mongle never has arms, hands or legs.
