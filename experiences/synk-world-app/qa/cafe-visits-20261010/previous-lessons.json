@@ -57,18 +57,18 @@
   },
   {
     "id": "transit-apply",
-    "sha256": "f7b1bdb1d483bb645a1dfa2bbc967c3d253fb1858b2f7e78871346c2a0cb1d7b"
+    "sha256": "adc5e771cc06e265be23ac5cc1abccc065ac3e25a3448a5339115db352c01b08"
   },
   {
     "id": "plans-expressions",
-    "sha256": "d532066720ca4a748af7f081c73e0b85ce880e767e3cc968d7381c867f562c67"
+    "sha256": "d8e0bf0f246ef087d79b14db3f994fac0148051a6b20769be3726a52c5334246"
   },
   {
     "id": "plans-story",
-    "sha256": "c7f5be9450e519b3859f5e25371731a333a906c82a6296a0fa6a735546d5fb1f"
+    "sha256": "67d11be46afe3c95aaa80df89b1f8fb3e1d24921676bd6eed27fb6ad350a1afb"
   },
   {
     "id": "plans-apply",
-    "sha256": "1d1ebb513f87d3e1592d116ecbbfe7c8b718e8b6e9a4e14c6ecd2b6c01b8169c"
+    "sha256": "5b977e7834c8c9be2f23cc13bb4b41264a6be72efb4af7f4ca466416c0c8c14f"
   }
 ]

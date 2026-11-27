@@ -486,7 +486,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const pack=packById(l.packId),scenes=l.scenes.length,questions=l.questions.length,phase=context.phase;
   const done=phase==='story'?context.sceneIndex+1:phase==='questions'?scenes+Math.min(context.questionIndex+(lastFeedback?1:0),questions):0;
   const count=phase==='questions'?`${Math.min(context.questionIndex+1,questions)} / ${questions}`:phase==='story'?`${Math.min(context.sceneIndex+1,scenes)} / ${scenes}`:'';
-  return `<div class="life-session-meta" data-life-session="${escape(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${scenes?storySteps({scenes,questions,phase,sceneIndex:context.sceneIndex,questionIndex:context.questionIndex,answered:!!lastFeedback}):progressLine(done,scenes+questions)}<span>${escape(packTitle(pack))} · ${phaseName(l.type)}</span><span>${count?`<b class="life-count">${count}</b>`:''}</span></div>`;
+  return `<div class="life-session-meta" data-life-session="${escape(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${scenes?storySteps({scenes,questions,phase,sceneIndex:context.sceneIndex,questionIndex:context.questionIndex,answered:!!lastFeedback}):progressLine(done,scenes+questions)}<span>${escape(packTitle(pack))}&nbsp;· ${phaseName(l.type)}</span><span>${count?`<b class="life-count">${count}</b>`:''}</span></div>`;
  }
  // 배울 말 한 줄의 뜻: 화면 언어가 한국어가 아니면 짧은 내 말 뜻(있을 때) → 쓰임(화면 언어), 한국어 화면이면 쓰임 한 줄.
  const learnKey=korean=>String(korean||'').replace(/[.!?。…]+$/,'').trim();

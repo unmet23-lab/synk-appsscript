@@ -59,7 +59,8 @@ test('계열 불변식: 정답 글이 같으면 한 계열 · 같은 표현의 �
   // 11-26: 버스 이야기의 카드 복습을 「지하철을 탈 때 교통카드를 찍으세요」의 뜻을 고르는 문항으로 바꿔 능력을 낱말 뜻으로 돌렸다. 같은 표현의 낱말 뜻 계열에 들어가 한 계열이 준다 — 66 → 65.
   // 11-27: 버스 표현 레슨의 「다음 정류장」 문항도 「다음」의 뜻을 묻는 문항이라 능력을 낱말 뜻으로 돌렸다(문항 검수 판정). 같은 표현의 낱말 뜻 계열에 들어가 한 계열이 준다 — 65 → 64.
   // 11-27: 버스 적용 레슨의 학교 복습을 「정류장에 버스가 왔어요. 기사님에게 무엇을 물어요?」로 바꿔 능력을 세부 이해로 돌렸다. 낱말 뜻 계열에서 빠져 한 계열이 는다 — 64 → 65.
-  assert.deepEqual([measured.length, new Set(measured.map(row => row.own.familyKey)).size], [117, 65]);
+  // 11-27: 약속 이야기의 시간 문항 보기를 요일로 바꿔(금요일의 「내일」은 토요일) 정답이 「토요일 오후 세 시」가 되었다. 표현 레슨의 「내일 오후 세 시」와 정답 글이 갈라져 한 계열이 는다 — 65 → 66.
+  assert.deepEqual([measured.length, new Set(measured.map(row => row.own.familyKey)).size], [117, 66]);
   // 정답 · 보기가 바뀐 새 상황 복습은 새 계열(재확인 짝이 될 수 있다).
   const order = rows.find(row => row.own.itemKey === 'life.cafe-expressions-order-transfer'), main = rows.find(row => row.own.itemKey === 'life.cafe-expressions-order');
   assert.notEqual(order.own.familyKey, main.own.familyKey);

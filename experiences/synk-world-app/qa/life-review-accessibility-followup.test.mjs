@@ -6,8 +6,9 @@ import {storyLineMarkup,createStoryDetail} from '../life-story.mjs';
 test('delay transfer review explains the expected delay while preserving the ten-minute answer and stored question keys',()=>{
  const q=lessonById('plans-apply').questions.find(q=>q.id==='plans-apply-delay'),r=q.review;
  assert.equal(q.answerId,'b');assert.equal(r.id,'plans-apply-delay-transfer');assert.equal(r.skillId,'plans-delay-message');assert.equal(r.expressionId,'plans-delay');assert.equal(r.answerId,'a');
- assert.equal(r.context,'길이 막혀 약속 시간보다 십 분 늦게 도착할 것 같아요.');assert.deepEqual(r.choices,[{id:'a',text:'십 분 늦을 것 같아요.'},{id:'b',text:'십 분 일찍 왔어요.'},{id:'c',text:'지금 도착했어요.'}]);
- assert.doesNotMatch(r.explanation,/늦을 예상 시간/);assert.match(r.explanation,/늦/);assert.match(r.explanation,/기다리는 데 도움/);
+ // 11-27 문항 검수: 상황 글이 정답을 그대로 담지 않게 약속 시각과 도착 시각으로 쓰고, 보기 셋을 같은 「-(으)ㄹ 것 같아요」 꼴로 맞췄다.
+ assert.equal(r.context,'세 시에 친구를 만나요. 그런데 길이 막혀서 세 시 십 분에 도착할 것 같아요.');assert.deepEqual(r.choices,[{id:'a',text:'십 분 늦을 것 같아요.'},{id:'b',text:'십 분 일찍 도착할 것 같아요.'},{id:'c',text:'약속 시간에 도착할 것 같아요.'}]);
+ assert.doesNotMatch(r.explanation,/늦을 예상 시간/);assert.match(r.explanation,/세 시 십 분/);assert.match(r.explanation,/‘십 분 늦을 것 같아요\.’라고 미리/);
 });
 
 test('interactive story highlights expose button semantics and keep click, Enter and Space activation; plain highlights stay plain',()=>{

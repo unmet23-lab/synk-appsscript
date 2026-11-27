@@ -171,6 +171,8 @@
 .life-session-meta::after,.cafe-session-meta::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(var(--w-panel),transparent);pointer-events:none}
 .life-session-meta>.life-progress,.cafe-session-meta>.life-progress{grid-column:1/-1}
 .life-session-meta>span:not(.life-progress),.cafe-session-meta>span:not(.life-progress){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 팩 이름 · 단계 줄: 팩 이름이 긴 언어(390 몽골어)에서 단계 이름이 말줄임으로 잘리지 않게 줄을 접는다(11-27). */
+.life-session-meta>span:not(.life-progress):not(.life-steps):not(:last-child){white-space:normal;text-wrap:balance}
 /* 위 1px 진행선(채운 부분만 2px로 또렷하게) */
 .life-progress{position:relative;display:block;height:1px;background:var(--w-line-2)}
 .life-progress>i{position:absolute;left:0;top:-.5px;height:2px;border-radius:2px;background:var(--w-ink)}

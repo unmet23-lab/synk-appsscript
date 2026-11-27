@@ -1,9 +1,9 @@
 {
-  "layer_ver": "world-life-1-715111475d7a",
+  "layer_ver": "world-life-1-e82140a32487",
   "sources": {
     "world-life": {
       "path": "strata/world-life.json",
-      "sha256": "715111475d7a5f472602904e179f05d3654c195b40de6498ef42eed71eb6a246"
+      "sha256": "e82140a32487c65a5428e5ef52df66ac03e503eb39d2ae7e3be5470b420d51d2"
     }
   },
   "nodes": [
@@ -607,7 +607,7 @@
     {
       "id": "life.task.transit-route",
       "kind": "task",
-      "label_ko": "목적지 확인하기",
+      "label_ko": "가는 곳 확인하기",
       "level": null,
       "confidence": "ai_draft",
       "reviewed": true,
@@ -755,7 +755,12 @@
         ],
         "difficulty": 1,
         "format": "single-choice",
-        "items": {}
+        "items": {
+          "plans-story-time": {
+            "skill": "ko.reading.detail",
+            "difficulty": 2
+          }
+        }
       }
     },
     {
@@ -797,7 +802,8 @@
             "skill": "ko.reading.vocabulary"
           },
           "plans-story-place": {
-            "skill": "ko.reading.detail"
+            "skill": "ko.reading.detail",
+            "difficulty": 2
           }
         }
       }
@@ -834,10 +840,15 @@
         "format": "single-choice",
         "items": {
           "plans-story-delay": {
-            "skill": "ko.reading.detail"
+            "skill": "ko.reading.detail",
+            "difficulty": 2
           },
           "plans-story-delay-transfer": {
             "skill": "ko.reading.detail"
+          },
+          "plans-apply-delay-transfer": {
+            "skill": "ko.reading.vocabulary",
+            "difficulty": 2
           }
         }
       }

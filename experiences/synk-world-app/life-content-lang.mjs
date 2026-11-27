@@ -1,4 +1,4 @@
-// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24), 편의점 팩(2026-11-25), 길 팩 · 버스 팩(2026-11-26).
+// 첫 레슨들(인사 팩)의 화면 언어 글 · 1판(2026-10-19 「WORLD 화면 언어」), 카페 팩(2026-11-24), 편의점 팩(2026-11-25), 길 팩 · 버스 팩(2026-11-26), 약속 팩(2026-11-27).
 // 학습 내용(보기·표현·이야기 대사·레슨 제목)은 life-content.mjs의 한국어 그대로다. 여기에는 문제 지시(prompt)·상황(context)·해설(explanation),
 // 표현 설명(meaning)과 답한 뒤 누르는 「뜻 보기」의 보기 뜻만 둔다. 문장 속 ‘한국어 인용’은 학습 내용이라 한국어로 남긴다.
 // ko는 원문의 사본이다: 원문을 고치면 qa/life-content-lang.test.mjs가 이 표가 낡았다고 알린다(번역을 같이 고친다).
@@ -450,9 +450,9 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'You want to go to the hospital. Choose the question that asks whether this bus goes to the hospital.',context:'',explanation:'‘이 버스는 병원에 가요?’ asks whether the bus goes to the hospital. The other choices ask when the bus comes or where to get on.'},
   {prompt:'Эмнэлэг рүү явмаар байна. Энэ автобус эмнэлэг рүү явдаг эсэхийг асуух өгүүлбэрийг сонгоно уу.',context:'',explanation:'«이 버스는 병원에 가요?» нь автобус эмнэлэг рүү явдаг эсэхийг асуусан өгүүлбэр. Бусад сонголтууд нь автобус хэзээ ирэхийг эсвэл автобусанд хаанаас суухыг асуусан өгүүлбэрүүд.'}),
  'transit-apply-route-transfer':q(
-  {prompt:'학교에 가고 싶어요. 정류장에 버스가 왔어요. 버스 기사님에게 무엇을 물어요?',context:'',explanation:'학교에 가고 싶으니까 이 버스가 학교에 가는지 알아야 해요. 그래서 ‘이 버스는 학교에 가요?’라고 물어요. 버스는 벌써 왔고 지금 정류장에 있어서 ‘몇 시에 와요?’, ‘정류장이 어디에 있어요?’는 맞지 않아요.'},
-  {prompt:'You want to go to school. A bus has come to the stop. What do you ask the driver?',context:'',explanation:'You want to go to school, so you need to know whether this bus goes there. That is why you ask ‘이 버스는 학교에 가요?’ The bus has already come and you are at the stop, so ‘몇 시에 와요?’ and ‘정류장이 어디에 있어요?’ don’t fit.'},
-  {prompt:'Сургууль руу явмаар байна. Буудал дээр автобус ирлээ. Жолоочоос юу гэж асуух вэ?',context:'',explanation:'Сургууль руу явмаар байгаа учраас энэ автобус сургууль руу явдаг эсэхийг мэдэх хэрэгтэй. Тиймээс «이 버스는 학교에 가요?» гэж асууна. Автобус аль хэдийн ирсэн, та буудал дээр байгаа учраас «몇 시에 와요?» болон «정류장이 어디에 있어요?» гэж асуух нь тохирохгүй.'}),
+  {prompt:'학교에 가고 싶어요. 정류장에 버스가 왔어요. 버스 기사님에게 무엇을 물어요?',context:'',explanation:'학교에 가고 싶으니까 이 버스가 학교에 가는지 알아야 해요. 그래서 ‘이 버스는 학교에 가요?’라고 물어요. 버스는 벌써 왔고 나는 지금 정류장에 있어요. 그래서 ‘이 버스는 몇 시에 와요?’, ‘버스 정류장이 어디에 있어요?’는 맞지 않아요.'},
+  {prompt:'You want to go to school. A bus has come to the stop. What do you ask the driver?',context:'',explanation:'You want to go to school, so you need to know whether this bus goes there. That is why you ask ‘이 버스는 학교에 가요?’ The bus has already come, and you are at the stop now. So ‘이 버스는 몇 시에 와요?’ and ‘버스 정류장이 어디에 있어요?’ don’t fit.'},
+  {prompt:'Сургууль руу явмаар байна. Буудал дээр автобус ирлээ. Жолоочоос юу гэж асуух вэ?',context:'',explanation:'Сургууль руу явмаар байгаа учраас энэ автобус сургууль руу явдаг эсэхийг мэдэх хэрэгтэй. Тиймээс «이 버스는 학교에 가요?» гэж асууна. Автобус аль хэдийн ирсэн, та одоо буудал дээр байна. Тиймээс «이 버스는 몇 시에 와요?» болон «버스 정류장이 어디에 있어요?» гэж асуух нь тохирохгүй.'}),
  'transit-apply-alight':q(
   {prompt:'지금 어떻게 할까요?',context:'버스를 타고 병원에 가요. 안내 방송: “이번 정류장은 병원입니다.”',explanation:'이번 정류장이 병원이라서 지금 내려요. 다음 정류장에서 내리면 병원을 지나가요.'},
   {prompt:'What should you do now?',context:'You are riding the bus to the hospital. Announcement: “이번 정류장은 병원입니다.”',explanation:'This stop is the hospital, so get off now. If you get off at the next stop, you will go past the hospital.'},
@@ -470,6 +470,80 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'This is a notice you see when getting off a bus. Choose the action that fits.',context:'“내리기 전에 교통카드를 찍으세요.”',explanation:'‘내리기 전에 교통카드를 찍으세요’ means to hold your card to the card machine before you get off. It is not about taking a photo or tapping after you get off.'},
   {prompt:'Автобуснаас буух үед харагдах санамж. Тохирох үйлдлийг сонгоно уу.',context:'«내리기 전에 교통카드를 찍으세요.»',explanation:'«내리기 전에 교통카드를 찍으세요» гэдэг нь буухын өмнө картаа уншуулах хэрэгтэй гэсэн үг. Зураг авах ч биш, буусны дараа уншуулах ч биш.'}),
  // 버스 팩 — 끝
+ // 약속 팩(11-27 「남은거 있으면 이어서해」) — 시작
+ 'plans-expressions-time':q(
+  {prompt:'언제 만나는 약속이에요?',context:'“내일 오후 세 시에 만나요.”',explanation:'‘내일’이라는 날짜와 ‘오후 세 시’라는 시간을 함께 읽어요.'},
+  {prompt:'When is the meeting?',context:'“내일 오후 세 시에 만나요.”',explanation:'Read the day ‘내일’ (tomorrow) and the time ‘오후 세 시’ (3 p.m.) together.'},
+  {prompt:'Хэзээ уулзахаар тохирсон бэ?',context:'«내일 오후 세 시에 만나요.»',explanation:'Өдөр нь «내일» (маргааш), цаг нь «오후 세 시» (өдрийн гурван цаг). Хоёуланг нь хамтад нь харна.'}),
+ 'plans-expressions-time-transfer':q(
+  {prompt:'언제 만나는 약속이에요?',context:'“오늘 오전 열 시에 만나요.”',explanation:'새 약속은 오늘이고 시간은 오전 열 시예요.'},
+  {prompt:'When is the meeting?',context:'“오늘 오전 열 시에 만나요.”',explanation:'This meeting is today, and the time is 10 a.m.'},
+  {prompt:'Хэзээ уулзахаар тохирсон бэ?',context:'«오늘 오전 열 시에 만나요.»',explanation:'Энэ уулзалт өнөөдөр өглөөний арван цагт болно.'}),
+ 'plans-expressions-place':q(
+  {prompt:'‘어디에서 만날까요?’는 무엇을 정하려는 말이에요?',context:'',explanation:'‘어디에서’는 장소를 묻는 말이에요. 날짜는 ‘언제’, 사람은 ‘누구’로 물어요.'},
+  {prompt:'What does ‘어디에서 만날까요?’ try to decide?',context:'',explanation:'‘어디에서’ asks about a place. You ask about a day with ‘언제’ and about a person with ‘누구’.'},
+  {prompt:'«어디에서 만날까요?» гэж юуг тохиролцохын тулд асуудаг вэ?',context:'',explanation:'«어디에서» нь хаана гэдгийг асуудаг үг. Өдөр, цаг асуухдаа «언제», хэн болохыг асуухдаа «누구» гэж асууна.'}),
+ 'plans-expressions-place-transfer':q(
+  {prompt:'만날 장소를 물었어요. 알맞은 답을 골라요.',context:'“어디에서 만날까요?”',explanation:'장소를 물었으므로 ‘학교 앞’이라는 장소를 답해요.'},
+  {prompt:'Someone asked where to meet. Choose a good answer.',context:'“어디에서 만날까요?”',explanation:'They asked about a place, so you answer with the place ‘학교 앞’ (in front of the school).'},
+  {prompt:'Хаана уулзахыг асуулаа. Тохирох хариултыг сонгоно уу.',context:'«어디에서 만날까요?»',explanation:'Уулзах газраа асуусан учраас «학교 앞» (сургуулийн урд) гэж хариулна.'}),
+ 'plans-expressions-delay':q(
+  {prompt:'‘조금 늦을 것 같아요’는 어떤 연락이에요?',context:'친구와 만나기로 한 날에 보낸 메시지예요.',explanation:'아직 도착하기 전이며 약속 시간보다 늦을 가능성을 알리는 말이에요.'},
+  {prompt:'What kind of message is ‘조금 늦을 것 같아요’?',context:'A message sent on the day you planned to meet a friend.',explanation:'Before arriving, you let your friend know you may be later than the meeting time.'},
+  {prompt:'«조금 늦을 것 같아요» гэдэг нь ямар мессеж вэ?',context:'Найзтайгаа уулзахаар тохирсон өдөр илгээсэн мессеж.',explanation:'Уулзах газартаа очихоосоо өмнө товлосон цагаасаа хоцорч магадгүй гэдгээ найздаа мэдэгдэж байна.'}),
+ 'plans-expressions-delay-transfer':q(
+  {prompt:'약속 시간보다 늦게 도착할 것 같아요. 어떤 연락을 할까요?',context:'',explanation:'늦을 것 같을 때 상황을 미리 알려 주는 표현이에요.'},
+  {prompt:'You think you will arrive later than the meeting time. What message do you send?',context:'',explanation:'This expression lets your friend know in advance when you think you will be late.'},
+  {prompt:'Товлосон цагаасаа хоцрох юм шиг байна. Ямар мессеж илгээх вэ?',context:'',explanation:'Хоцрох гэж байгаа үед найздаа урьдчилан мэдэгддэг хэллэг.'}),
+ 'plans-story-time':q(
+  {prompt:'처음 정한 약속 시간은 언제예요?',context:'',explanation:'금요일에 서하가 ‘내일 같이 공부해요. 오후 세 시 어때요?’라고 했어요. 금요일의 내일은 토요일이에요. 그래서 약속은 토요일 오후 세 시예요.'},
+  {prompt:'What time did they first agree on?',context:'',explanation:'On Friday, Seoha said ‘내일 같이 공부해요. 오후 세 시 어때요?’ (Let’s study together tomorrow. How about 3 p.m.?) The day after Friday is Saturday. So the meeting is on Saturday at 3 p.m.'},
+  {prompt:'Анх хэдэн цагт уулзахаар тохирсон бэ?',context:'',explanation:'Баасан гарагт Сөха «내일 같이 공부해요. 오후 세 시 어때요?» (Маргааш хамт хичээлээ давтъя. Өдрийн гурван цаг болох уу?) гэж хэлсэн. Баасан гарагт «маргааш» гэвэл бямба гараг. Тиймээс тэд бямба гарагт өдрийн гурван цагт уулзана.'}),
+ 'plans-story-time-transfer':q(
+  {prompt:'새 약속 카드에 적힌 시간을 골라요.',context:'약속 카드: “토요일 오전 11시 · 도서관 앞”',explanation:'카드에 ‘토요일 오전 11시’라고 적혀 있어요. ‘11시’는 ‘열한 시’라고 읽어요. ‘오후’도 아니고 ‘일요일’도 아니에요.'},
+  {prompt:'Choose the time written on the new plan card.',context:'Plan card: “토요일 오전 11시 · 도서관 앞”',explanation:'The card says ‘토요일 오전 11시’ (Saturday, 11 a.m.). You read ‘11시’ as ‘열한 시’ (eleven o’clock). It is not ‘오후’ (p.m.), and it is not ‘일요일’ (Sunday).'},
+  {prompt:'Шинэ уулзалтын карт дээр бичсэн цагийг сонгоно уу.',context:'Уулзалтын карт: «토요일 오전 11시 · 도서관 앞»',explanation:'Карт дээр «토요일 오전 11시» (бямба гараг, өглөөний 11 цаг) гэж бичсэн. «11시» гэдгийг «열한 시» (арван нэгэн цаг) гэж уншина. «오후» (үдээс хойш) ч биш, «일요일» (ням гараг) ч биш.'}),
+ 'plans-story-place':q(
+  {prompt:'친구들은 어디에서 만났어요?',context:'',explanation:'태오가 ‘도서관 앞 벤치에서 만나요!’라고 했어요. 토요일에 모두 도서관 앞 벤치에서 만났어요.'},
+  {prompt:'Where did the friends meet?',context:'',explanation:'Taeo said ‘도서관 앞 벤치에서 만나요!’ (Let’s meet at the bench in front of the library!) On Saturday, everyone met at the bench in front of the library.'},
+  {prompt:'Найзууд хаана уулзсан бэ?',context:'',explanation:'Тэо «도서관 앞 벤치에서 만나요!» (Номын сангийн урдах вандан сандал дээр уулзъя!) гэж хэлсэн. Бямба гарагт бүгд номын сангийн урдах вандан сандал дээр уулзсан.'}),
+ 'plans-story-place-transfer':q(
+  {prompt:'새 메시지를 읽고 만날 장소를 골라요.',context:'“공원 입구에서 만나요. 안의 벤치가 아니라 입구예요.”',explanation:'‘입구’라는 장소와 ‘안의 벤치가 아니라’라는 확인을 함께 읽어요.'},
+  {prompt:'Read the new message and choose where to meet.',context:'“공원 입구에서 만나요. 안의 벤치가 아니라 입구예요.”',explanation:'Read the place ‘입구’ (entrance) together with the check ‘안의 벤치가 아니라’ (not the bench inside).'},
+  {prompt:'Шинэ мессежийг уншаад уулзах газрыг сонгоно уу.',context:'«공원 입구에서 만나요. 안의 벤치가 아니라 입구예요.»',explanation:'«입구» (орох хаалга) гэсэн үг болон «안의 벤치가 아니라» (доторх вандан сандал биш) гэсэн хэсгийг холбож ойлгоно.'}),
+ 'plans-story-delay':q(
+  {prompt:'태오가 ‘조금 늦을 것 같아요.’라고 보냈어요. 친구들은 무엇을 했어요?',context:'',explanation:'서하가 ‘괜찮아요. 우리는 여기서 기다릴게요.’라고 했어요. 그래서 친구들은 도서관 안에 들어가지 않고 도서관 앞에서 기다렸어요. 음료수는 태오가 가지고 왔어요.'},
+  {prompt:'Taeo sent ‘조금 늦을 것 같아요.’ What did the friends do?',context:'',explanation:'Seoha said ‘괜찮아요. 우리는 여기서 기다릴게요.’ (It’s okay. We’ll wait here.) So the friends did not go into the library. They waited in front of it. Taeo brought the drinks.'},
+  {prompt:'Тэо «조금 늦을 것 같아요.» гэж мессеж илгээсэн. Найзууд нь юу хийсэн бэ?',context:'',explanation:'Сөха «괜찮아요. 우리는 여기서 기다릴게요.» (Зүгээр ээ. Бид энд хүлээж байя.) гэж хэлсэн. Тиймээс найзууд номын сан руу ороогүй, урд нь хүлээсэн. Ундааг Тэо авчирсан.'}),
+ 'plans-story-delay-transfer':q(
+  {prompt:'새 메시지를 읽고 도착 상태를 골라요.',context:'“버스를 놓쳤어요. 십 분 늦을 것 같아요.”',explanation:'버스를 놓쳐 약속 시간보다 늦을 것 같다는 연락이에요. 취소라는 말은 없어요.'},
+  {prompt:'Read the new message and choose whether the friend has arrived.',context:'“버스를 놓쳤어요. 십 분 늦을 것 같아요.”',explanation:'The friend missed the bus and will probably be later than the meeting time. The message does not say the plan is cancelled.'},
+  {prompt:'Шинэ мессежийг уншаад найз ирсэн эсэхийг сонгоно уу.',context:'«버스를 놓쳤어요. 십 분 늦을 것 같아요.»',explanation:'Найз автобуснаасаа хоцорсон тул товлосон цагаасаа хоцрох юм шиг байна. Мессежид уулзалтаа цуцалсан гэж бичээгүй.'}),
+ 'plans-apply-time':q(
+  {prompt:'언제 가야 해요?',context:'친구의 메시지: “내일 오후 두 시에 학교 앞에서 만나요.”',explanation:'날짜는 내일, 시간은 오후 두 시예요.'},
+  {prompt:'When should you go?',context:'Friend’s message: “내일 오후 두 시에 학교 앞에서 만나요.”',explanation:'The day is tomorrow, and the time is 2 p.m.'},
+  {prompt:'Хэзээ очих вэ?',context:'Найзын мессеж: «내일 오후 두 시에 학교 앞에서 만나요.»',explanation:'Маргааш өдрийн хоёр цагт уулзана.'}),
+ 'plans-apply-time-transfer':q(
+  {prompt:'언제 가야 해요?',context:'친구의 메시지: “오늘 오후 다섯 시에 카페 앞에서 만나요.”',explanation:'메시지에 ‘오늘 오후 다섯 시’라고 했어요. ‘내일’이 아니고 ‘오전’도 아니에요.'},
+  {prompt:'When should you go?',context:'Friend’s message: “오늘 오후 다섯 시에 카페 앞에서 만나요.”',explanation:'The message says ‘오늘 오후 다섯 시’ (today at 5 p.m.). It is not ‘내일’ (tomorrow), and it is not ‘오전’ (a.m.).'},
+  {prompt:'Хэзээ очих вэ?',context:'Найзын мессеж: «오늘 오후 다섯 시에 카페 앞에서 만나요.»',explanation:'Мессежид «오늘 오후 다섯 시» (өнөөдөр оройн таван цаг) гэж бичсэн. «내일» (маргааш) ч биш, «오전» (үдээс өмнө) ч биш.'}),
+ 'plans-apply-place':q(
+  {prompt:'어디에서 기다릴까요?',context:'“역 안이 아니라 역 앞에서 만나요.”',explanation:'메시지는 ‘역 안’이 아니라 ‘역 앞’이라고 확인해 줘요.'},
+  {prompt:'Where should you wait?',context:'“역 안이 아니라 역 앞에서 만나요.”',explanation:'The message makes it clear: not ‘역 안’ (inside the station) but ‘역 앞’ (in front of the station).'},
+  {prompt:'Хаана хүлээх вэ?',context:'«역 안이 아니라 역 앞에서 만나요.»',explanation:'Мессежид «역 안» (буудал дотор) биш, «역 앞» (буудлын урд) гэж тодруулсан.'}),
+ 'plans-apply-place-transfer':q(
+  {prompt:'어디에서 기다릴까요?',context:'“학교 안이 아니라 학교 앞에서 만나요.”',explanation:'‘학교 안’이 아니라 ‘학교 앞’에서 만나요.'},
+  {prompt:'Where should you wait?',context:'“학교 안이 아니라 학교 앞에서 만나요.”',explanation:'You meet not ‘학교 안’ (inside the school) but ‘학교 앞’ (in front of the school).'},
+  {prompt:'Хаана хүлээх вэ?',context:'«학교 안이 아니라 학교 앞에서 만나요.»',explanation:'Мессежид «학교 안» (сургууль дотор) биш, «학교 앞» (сургуулийн урд) гэж бичсэн. Тиймээс сургуулийн урд уулзана.'}),
+ 'plans-apply-delay':q(
+  {prompt:'친구에게 보낼 연락을 골라요.',context:'약속 장소에 가는 버스를 놓쳤어요. 약속 시간보다 늦게 도착할 것 같아요.',explanation:'아직 도착하지 않았고 늦을 것 같으므로 미리 연락해요.'},
+  {prompt:'Choose the message to send to your friend.',context:'You missed the bus to the meeting place. You think you will arrive later than the meeting time.',explanation:'You haven’t arrived yet and you think you will be late, so you let your friend know in advance.'},
+  {prompt:'Найздаа илгээх мессежийг сонгоно уу.',context:'Уулзах газар луу явах автобуснаасаа хоцорлоо. Товлосон цагаасаа хоцрох юм шиг байна.',explanation:'Та хараахан очоогүй, хоцрох юм шиг байгаа учраас урьдчилан мэдэгдэнэ.'}),
+ 'plans-apply-delay-transfer':q(
+  {prompt:'친구에게 보낼 메시지를 골라요.',context:'세 시에 친구를 만나요. 그런데 길이 막혀서 세 시 십 분에 도착할 것 같아요.',explanation:'세 시 약속인데 세 시 십 분에 도착할 것 같아요. 그래서 ‘십 분 늦을 것 같아요.’라고 미리 메시지를 보내요. 일찍 도착하거나 약속 시간에 맞게 도착하는 것이 아니에요.'},
+  {prompt:'Choose the message to send to your friend.',context:'You are meeting a friend at 3:00. But traffic is heavy, so you think you will arrive at 3:10.',explanation:'The meeting is at 3:00, but you think you will arrive at 3:10. So you send ‘십 분 늦을 것 같아요.’ in advance. You will not arrive early or on time.'},
+  {prompt:'Найздаа илгээх мессежийг сонгоно уу.',context:'Гурван цагт найзтайгаа уулзана. Гэтэл зам түгжрээд гурван цаг арван минутад очих юм шиг байна.',explanation:'Уулзалт гурван цагт болно. Гэтэл та гурван цаг арван минутад очих юм шиг байна. Тиймээс «십 분 늦을 것 같아요.» гэж урьдчилан мессеж илгээнэ. Та эрт ч, цагтаа ч очихгүй.'}),
+ // 약속 팩 — 끝
 });
 
 // 표현 익히기 카드의 설명(표현 자체는 한국어 그대로).
@@ -498,10 +572,15 @@ export const LIFE_EXPRESSION_TEXT=Object.freeze({
  'directions-beside':q('은행 바로 옆에 있는 장소를 설명해요.','Describes a place right next to the bank.','Банкны яг хажууд байдаг газрыг хэлэхэд хэрэглэнэ.'),
  // 길 팩 — 끝
  // 버스 팩(11-26 저녁 「네, 이어가」) — 시작
- 'transit-destination':q('타려는 버스가 가려는 곳으로 가는지 물어요.','Checks whether the bus you want to take goes to your destination.','Суух гэж буй автобус очих газар луу тань явдаг эсэхийг асууна.'),
+ 'transit-destination':q('타려는 버스가 가려는 곳으로 가는지 물어요.','Asks whether the bus you want to take goes to the place you want to go.','Суух гэж буй автобус очих газар луу тань явдаг эсэхийг асууна.'),
  'transit-alight':q('지금 정류장이 아니라 그다음 정류장에서 내려요.','You get off at the stop after this one, not this stop.','Энэ буудал биш, дараагийн буудал дээр бууна.'),
  'transit-card':q('버스의 카드 기계에 교통카드를 대라는 안내예요.','An instruction to hold your transit card to the bus’s card machine.','Автобусанд нийтийн тээврийн картаа уншуулах хэрэгтэй гэсэн санамж.'),
  // 버스 팩 — 끝
+ // 약속 팩(11-27 「남은거 있으면 이어서해」) — 시작
+ 'plans-time':q('만날 날짜와 시간을 정해요.','Sets the day and time to meet.','Уулзах өдөр, цагаа тохирно.'),
+ 'plans-place':q('만날 장소를 함께 정하려고 물어요.','Asks so you can decide together where to meet.','Уулзах газраа тохиролцохын тулд асуудаг асуулт.'),
+ 'plans-delay':q('약속 시간보다 늦게 도착할 것 같다고 알려요.','Lets someone know you think you will arrive later than the meeting time.','Товлосон цагаасаа хоцорч магадгүй гэдгээ мэдэгдэнэ.'),
+ // 약속 팩 — 끝
 });
 
 // 「뜻 보기」: 답한 뒤에만 보이는 보기의 뜻. 키는 보기 글자 그대로다.
@@ -510,12 +589,12 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '감사합니다.':{en:'Thank you.',mn:'Баярлалаа.'},
  '다녀왔어요.':{en:'I’m back. (said when you get home)',mn:'Ирлээ. (гэртээ ирэхдээ хэлдэг)'},
  '다녀왔습니다.':{en:'I’m back. (said politely when you get home)',mn:'Ирлээ. (гэртээ ирэхдээ эелдгээр хэлдэг)'},
- '저는 수진이에요.':{en:'I’m Sujin.',mn:'Би Сүжин.'},
+ '저는 수진이에요.':{en:'I’m Sujin.',mn:'Намайг Сүжин гэдэг.'},
  // 보기에는 없는 배울 표현(표현 판의 뜻 줄로 쓴다, 11-26)
  '저는 서하예요.':{en:'I’m Seoha.',mn:'Намайг Сөха гэдэг.'},
  '따뜻한 차를 마시고 싶어요.':{en:'I’d like to drink hot tea.',mn:'Халуун цай уумаар байна.'},
  '주스는 품절이에요.':{en:'The juice is sold out.',mn:'Шүүс дууссан.'},
- '저는 지훈이에요.':{en:'I’m Jihun.',mn:'Би Жихүн.'},
+ '저는 지훈이에요.':{en:'I’m Jihun.',mn:'Намайг Жихүн гэдэг.'},
  '처음 뵙겠습니다.':{en:'Nice to meet you. (very polite, at a first meeting)',mn:'Танилцсандаа таатай байна. (анх уулзахдаа хэлдэг, маш эелдэг)'},
  '잘 먹겠습니다.':{en:'Thank you for the food. (said before eating)',mn:'Хоол идэхийн өмнө хэлдэг талархлын үг.'},
  '학교에 있어요.':{en:'(I’m) at school.',mn:'(Би) сургууль дээр байна.'},
@@ -535,7 +614,7 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '민지가 볼펜을 줬어요.':{en:'Minji gave a pen.',mn:'Минжи үзэг өгсөн.'},
  '안녕히 계세요.':{en:'Goodbye. (said when you leave and the other person stays)',mn:'Баяртай. (та явж, нөгөө хүн үлдэх үед хэлдэг)'},
  '죄송합니다.':{en:'I’m sorry.',mn:'Уучлаарай.'},
- '저는 준영이에요.':{en:'I’m Junyoung.',mn:'Би Жүнёон.'},
+ '저는 준영이에요.':{en:'I’m Junyoung.',mn:'Намайг Жүнёон гэдэг.'},
  '준영은 어디에 있어요?':{en:'Where is Junyoung?',mn:'Жүнёон хаана байна вэ?'},
  '준영은 학교에 가요.':{en:'Junyoung goes to school.',mn:'Жүнёон сургууль руу явж байна.'},
  // 카페 팩(11-24 「만들어 둬」) — 시작
@@ -749,6 +828,60 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '버스 정류장이 어디에 있어요?':{en:'Where is the bus stop?',mn:'Автобусны буудал хаана байна вэ?'},
  '교통카드를 찍으세요.':{en:'Tap your transit card.',mn:'Нийтийн тээврийн картаа уншуулна уу.'},
  // 버스 팩 — 끝
+ // 약속 팩(11-27 「남은거 있으면 이어서해」) — 시작
+ '오늘 오후 세 시':{en:'today at 3 p.m.',mn:'өнөөдөр өдрийн гурван цаг'},
+ '내일 오후 세 시':{en:'tomorrow at 3 p.m.',mn:'маргааш өдрийн гурван цаг'},
+ '내일 오전 세 시':{en:'tomorrow at 3 a.m.',mn:'маргааш шөнийн гурван цаг'},
+ '토요일 오전 세 시':{en:'Saturday at 3 a.m.',mn:'бямба гарагт шөнийн гурван цагт'},
+ '금요일 오후 세 시':{en:'Friday at 3 p.m.',mn:'баасан гарагт өдрийн гурван цагт'},
+ '토요일 오후 세 시':{en:'Saturday at 3 p.m.',mn:'бямба гарагт өдрийн гурван цагт'},
+ '내일 오전 열 시':{en:'tomorrow at 10 a.m.',mn:'маргааш өглөөний арван цаг'},
+ '오늘 오후 열 시':{en:'today at 10 p.m.',mn:'өнөөдөр оройн арван цаг'},
+ '오늘 오전 열 시':{en:'today at 10 a.m.',mn:'өнөөдөр өглөөний арван цаг'},
+ '만날 장소':{en:'the place to meet',mn:'уулзах газар'},
+ '만날 날짜':{en:'the day to meet',mn:'уулзах өдөр'},
+ '만날 사람':{en:'the person to meet',mn:'уулзах хүн'},
+ '내일 만나요.':{en:'See you tomorrow.',mn:'Маргааш уулзъя.'},
+ '학교 앞에서 만나요.':{en:'Let’s meet in front of the school.',mn:'Сургуулийн урд уулзъя.'},
+ '오후 두 시에 만나요.':{en:'Let’s meet at 2 p.m.',mn:'Өдрийн хоёр цагт уулзъя.'},
+ '약속을 정하지 않겠다는 연락':{en:'a message saying you won’t make plans',mn:'уулзалт товлохгүй гэсэн мессеж'},
+ '일찍 도착했다는 연락':{en:'a message saying you arrived early',mn:'эрт ирсэн гэсэн мессеж'},
+ '약속 시간보다 늦을 것 같다는 연락':{en:'a message saying you may be later than the meeting time',mn:'товлосон цагаас хоцрох юм шиг байна гэсэн мессеж'},
+ '조금 늦을 것 같아요.':{en:'I think I’ll be a little late.',mn:'Жаахан хоцрох юм шиг байна.'},
+ '벌써 도착했어요.':{en:'I’ve already arrived.',mn:'Аль хэдийн ирчихлээ.'},
+ '일찍 왔어요.':{en:'I came early.',mn:'Эрт ирлээ.'},
+ '토요일 오후 열한 시':{en:'Saturday at 11 p.m.',mn:'бямба гарагт шөнийн арван нэгэн цагт'},
+ '토요일 오전 열한 시':{en:'Saturday at 11 a.m.',mn:'бямба гарагт өглөөний арван нэгэн цагт'},
+ '일요일 오전 열한 시':{en:'Sunday at 11 a.m.',mn:'ням гарагт өглөөний арван нэгэн цагт'},
+ '도서관 앞 벤치':{en:'the bench in front of the library',mn:'номын сангийн урдах вандан сандал'},
+ '도서관 안 교실':{en:'a classroom inside the library',mn:'номын сан доторх анги'},
+ '도서관 뒤 벤치':{en:'the bench behind the library',mn:'номын сангийн арын вандан сандал'},
+ '공원 안 벤치':{en:'a bench inside the park',mn:'цэцэрлэгт хүрээлэн доторх вандан сандал'},
+ '도서관 입구':{en:'the library entrance',mn:'номын сангийн орох хаалга'},
+ '공원 입구':{en:'the park entrance',mn:'цэцэрлэгт хүрээлэнгийн орох хаалга'},
+ '음료수를 사러 갔어요.':{en:'They went to buy drinks.',mn:'Ундаа авахаар явсан.'},
+ '도서관 앞에서 기다렸어요.':{en:'They waited in front of the library.',mn:'Номын сангийн урд хүлээсэн.'},
+ '먼저 도서관 안에 들어갔어요.':{en:'They went into the library first.',mn:'Түрүүлээд номын сан руу орсон.'},
+ '아직 도착 전이고 늦을 것 같아요.':{en:'They haven’t arrived yet and will probably be late.',mn:'Хараахан ирээгүй, хоцрох юм шиг байна.'},
+ '벌써 약속 장소에 도착했어요.':{en:'They have already arrived at the meeting place.',mn:'Уулзах газартаа аль хэдийн ирчихсэн.'},
+ '약속이 취소됐어요.':{en:'The plan was cancelled.',mn:'Уулзалт цуцлагдсан.'},
+ '내일 오후 두 시':{en:'tomorrow at 2 p.m.',mn:'маргааш өдрийн хоёр цаг'},
+ '오늘 오후 두 시':{en:'today at 2 p.m.',mn:'өнөөдөр өдрийн хоёр цаг'},
+ '내일 오전 두 시':{en:'tomorrow at 2 a.m.',mn:'маргааш шөнийн хоёр цаг'},
+ '내일 오후 다섯 시':{en:'tomorrow at 5 p.m.',mn:'маргааш оройн таван цаг'},
+ '오늘 오전 다섯 시':{en:'today at 5 a.m.',mn:'өнөөдөр үүрийн таван цаг'},
+ '오늘 오후 다섯 시':{en:'today at 5 p.m.',mn:'өнөөдөр оройн таван цаг'},
+ '역 안':{en:'inside the station',mn:'буудал дотор'},
+ '역 뒤':{en:'behind the station',mn:'буудлын ард'},
+ '역 앞':{en:'in front of the station',mn:'буудлын урд'},
+ '학교 앞':{en:'in front of the school',mn:'сургуулийн урд'},
+ '일찍 도착했어요.':{en:'I arrived early.',mn:'Эрт ирчихлээ.'},
+ '십 분 늦을 것 같아요.':{en:'I think I’ll be ten minutes late.',mn:'Арван минут хоцрох юм шиг байна.'},
+ '십 분 일찍 도착할 것 같아요.':{en:'I think I’ll arrive ten minutes early.',mn:'Арван минут эрт очих юм шиг байна.'},
+ '약속 시간에 도착할 것 같아요.':{en:'I think I’ll arrive on time.',mn:'Товлосон цагтаа очих юм шиг байна.'},
+ '내일 오후 세 시에 만나요.':{en:'Let’s meet tomorrow at 3 p.m.',mn:'Маргааш өдрийн гурван цагт уулзъя.'},
+ '어디에서 만날까요?':{en:'Where shall we meet?',mn:'Хаана уулзах вэ?'},
+ // 약속 팩 — 끝
 });
 
 // 문제 한 개의 화면 언어 글. 이 표에 없는 문제(1판 밖의 팩)는 원문 그대로다.
@@ -917,6 +1050,26 @@ export const LIFE_CHOICE_NOTES=Object.freeze({
  'transit-apply-card':{a:note('카드 사진을 찍고 들어가요.','버스에서 ‘카드를 찍다’는 사진을 찍는 것이 아니에요. 카드 기계에 카드를 대요.','On a bus, ‘카드를 찍다’ does not mean taking a photo. You hold the card to the card machine.','Автобусанд «카드를 찍다» гэдэг нь зураг авахыг хэлэхгүй. Картаа уншуулахыг хэлнэ.'),c:note('카드를 가방에 넣고 들어가요.','카드를 가방에 넣으면 찍지 않은 거예요. 카드 기계에 카드를 대고 들어가요.','If you put the card in your bag, you haven’t tapped it. Hold it to the card machine and go in.','Картаа цүнхэндээ хийвэл уншуулаагүй гэсэн үг. Картаа уншуулаад орно.')},
  'transit-apply-card-transfer':{a:note('내리기 전에 카드 사진을 찍어요.','여기에서 ‘찍다’는 사진을 찍는 것이 아니에요. 카드 기계에 카드를 대요.','Here, ‘찍다’ does not mean taking a photo. You hold the card to the card machine.','Энд «찍다» гэдэг нь зураг авна гэсэн үг биш. Картаа уншуулна гэсэн үг.'),b:note('내린 뒤에 카드를 카드 기계에 대요.','내린 뒤에는 늦어요. 안내는 내리기 전에 카드를 대라고 했어요.','After you get off is too late. The notice says to tap your card before you get off.','Буусны дараа уншуулбал оройтно. Санамжид буухын өмнө картаа уншуулна уу гэж бичсэн байна.')},
  // 버스 팩 — 끝
+ // 약속 팩(11-27 「남은거 있으면 이어서해」) — 시작
+ 'plans-expressions-time':{a:note('오늘 오후 세 시','‘오늘’이 아니라 ‘내일’이에요.','It is not ‘오늘’ (today) but ‘내일’ (tomorrow).','«오늘» (өнөөдөр) биш, «내일» (маргааш).'),c:note('내일 오전 세 시','‘오전’이 아니라 ‘오후’예요.','It is not ‘오전’ (a.m.) but ‘오후’ (p.m.).','«오전» (үдээс өмнө) биш, «오후» (үдээс хойш).')},
+ 'plans-expressions-time-transfer':{a:note('내일 오전 열 시','‘내일’이 아니라 ‘오늘’이에요.','It is not ‘내일’ (tomorrow) but ‘오늘’ (today).','«내일» (маргааш) биш, «오늘» (өнөөдөр).'),b:note('오늘 오후 열 시','‘오후’가 아니라 ‘오전’이에요.','It is not ‘오후’ (p.m.) but ‘오전’ (a.m.).','«오후» (үдээс хойш) биш, «오전» (үдээс өмнө).')},
+ 'plans-expressions-place':{b:note('만날 날짜','날짜는 ‘언제’로 물어요.','You ask about the day with ‘언제’ (when).','Өдөр, цаг асуухдаа «언제» (хэзээ) гэж асууна.'),c:note('만날 사람','사람은 ‘누구’로 물어요.','You ask about a person with ‘누구’ (who).','Хэн болохыг асуухдаа «누구» (хэн) гэж асууна.')},
+ 'plans-expressions-place-transfer':{a:note('내일 만나요.','날짜를 말하는 답이에요. 장소를 묻는 말에는 맞지 않아요.','This answer gives a day. It does not fit a question about a place.','Энэ нь өдөр заасан хариулт. Хаана гэдгийг асуусан асуултад тохирохгүй.'),c:note('오후 두 시에 만나요.','시간을 말하는 답이에요. 장소를 묻는 말에는 맞지 않아요.','This answer gives a time. It does not fit a question about a place.','Энэ нь цаг заасан хариулт. Хаана гэдгийг асуусан асуултад тохирохгүй.')},
+ 'plans-expressions-delay':{a:note('약속을 정하지 않겠다는 연락','약속을 안 하겠다는 말은 없어요. 늦는다고 알리는 말이에요.','It does not say you won’t make plans. It says you will be late.','Уулзалт товлохгүй гэсэн утга байхгүй. Хоцорно гэдгээ мэдэгдэж байна.'),b:note('일찍 도착했다는 연락','일찍 온 것이 아니에요. 늦을 것 같다는 말이에요.','It is not about coming early. It says you will probably be late.','Эрт ирсэн тухай биш. Хоцрох юм шиг байна гэсэн үг.')},
+ 'plans-expressions-delay-transfer':{b:note('벌써 도착했어요.','도착했을 때 하는 말이에요. 아직 도착하지 않았어요.','You say this when you have arrived. You haven’t arrived yet.','Ирсэн үедээ хэлдэг үг. Та хараахан очоогүй байна.'),c:note('일찍 왔어요.','일찍 왔을 때 하는 말이에요. 지금은 늦을 것 같아요.','You say this when you came early. Now you think you will be late.','Эрт ирсэн үедээ хэлдэг үг. Одоо хоцрох юм шиг байна.')},
+ 'plans-story-time':{a:note('토요일 오전 세 시','‘오전’이 아니라 ‘오후 세 시’예요.','It is not ‘오전’ (a.m.) but ‘오후 세 시’ (3 p.m.).','«오전» (үдээс өмнө) биш, «오후 세 시» (өдрийн гурван цаг).'),b:note('금요일 오후 세 시','금요일은 약속을 정한 날이에요. 약속은 다음 날인 토요일이에요.','Friday is the day they made the plan. The meeting is the next day, Saturday.','Баасан гарагт тэд ярилцаж цагаа тохирсон. Харин маргааш нь буюу бямба гарагт уулзана.')},
+ 'plans-story-time-transfer':{a:note('토요일 오후 열한 시','‘오후’가 아니라 ‘오전’이에요.','It is not ‘오후’ (p.m.) but ‘오전’ (a.m.).','«오후» (үдээс хойш) биш, «오전» (үдээс өмнө).'),c:note('일요일 오전 열한 시','‘일요일’이 아니라 ‘토요일’이에요.','It is not ‘일요일’ (Sunday) but ‘토요일’ (Saturday).','«일요일» (ням гараг) биш, «토요일» (бямба гараг).')},
+ 'plans-story-place':{b:note('도서관 안 교실','도서관 안이 아니라 도서관 앞 벤치에서 만났어요.','They met not inside the library but at the bench in front of it.','Номын сан дотор биш, урдах вандан сандал дээр нь уулзсан.'),c:note('도서관 뒤 벤치','뒤가 아니라 앞이에요. 태오가 ‘도서관 앞 벤치’라고 했어요.','Not behind but in front. Taeo said ‘도서관 앞 벤치’ (the bench in front of the library).','Ард биш, урд. Тэо «도서관 앞 벤치» (номын сангийн урдах вандан сандал) гэж хэлсэн.')},
+ 'plans-story-place-transfer':{a:note('공원 안 벤치','메시지에 ‘안의 벤치가 아니라’라고 했어요.','The message says ‘안의 벤치가 아니라’ (not the bench inside).','Мессежид «안의 벤치가 아니라» (доторх вандан сандал биш) гэж бичсэн.'),b:note('도서관 입구','도서관이 아니라 공원 입구예요.','It is not the library but the park entrance.','Номын сан биш, цэцэрлэгт хүрээлэнгийн орох хаалга.')},
+ 'plans-story-delay':{a:note('음료수를 사러 갔어요.','음료수는 태오가 가지고 왔어요. 친구들은 기다렸어요.','Taeo brought the drinks. The friends waited.','Ундааг Тэо авчирсан. Найзууд хүлээсэн.'),c:note('먼저 도서관 안에 들어갔어요.','도서관 안에 들어가지 않았어요. 앞에서 기다렸어요.','They did not go into the library. They waited in front of it.','Тэд номын сан руу ороогүй. Урд нь хүлээсэн.')},
+ 'plans-story-delay-transfer':{b:note('벌써 약속 장소에 도착했어요.','‘늦을 것 같아요’라고 했어요. 아직 도착하지 않았어요.','The message says ‘늦을 것 같아요’ (I think I’ll be late). They haven’t arrived yet.','Мессежид «늦을 것 같아요» (хоцрох юм шиг байна) гэж бичсэн. Найз хараахан ирээгүй байна.'),c:note('약속이 취소됐어요.','취소한다는 말은 없어요. 늦게 온다는 말이에요.','Nothing says the plan is cancelled. It says they will come late.','Цуцалсан гэсэн утга байхгүй. Хоцорч ирнэ гэсэн үг.')},
+ 'plans-apply-time':{b:note('오늘 오후 두 시','‘오늘’이 아니라 ‘내일’이에요.','It is not ‘오늘’ (today) but ‘내일’ (tomorrow).','«오늘» (өнөөдөр) биш, «내일» (маргааш).'),c:note('내일 오전 두 시','‘오전’이 아니라 ‘오후’예요.','It is not ‘오전’ (a.m.) but ‘오후’ (p.m.).','«오전» (үдээс өмнө) биш, «오후» (үдээс хойш).')},
+ 'plans-apply-time-transfer':{a:note('내일 오후 다섯 시','‘내일’이 아니라 ‘오늘’이에요.','It is not ‘내일’ (tomorrow) but ‘오늘’ (today).','«내일» (маргааш) биш, «오늘» (өнөөдөр).'),b:note('오늘 오전 다섯 시','‘오전’이 아니라 ‘오후’예요.','It is not ‘오전’ (a.m.) but ‘오후’ (p.m.).','«오전» (үдээс өмнө) биш, «오후» (үдээс хойш).')},
+ 'plans-apply-place':{a:note('역 안','메시지에 ‘역 안이 아니라’라고 했어요.','The message says ‘역 안이 아니라’ (not inside the station).','Мессежид «역 안이 아니라» (буудал дотор биш) гэж бичсэн.'),b:note('역 뒤','메시지에 ‘역 뒤’는 없어요. ‘역 앞’이에요.','The message does not say ‘역 뒤’ (behind the station). It says ‘역 앞’ (in front of the station).','Мессежид «역 뒤» (буудлын ард) гэж бичээгүй. «역 앞» (буудлын урд) гэж бичсэн.')},
+ 'plans-apply-place-transfer':{a:note('학교 안','메시지에 ‘학교 안이 아니라’라고 했어요.','The message says ‘학교 안이 아니라’ (not inside the school).','Мессежид «학교 안이 아니라» (сургууль дотор биш) гэж бичсэн.'),c:note('학교 뒤','메시지에 ‘학교 뒤’는 없어요. ‘학교 앞’이에요.','The message does not say ‘학교 뒤’ (behind the school). It says ‘학교 앞’ (in front of the school).','Мессежид «학교 뒤» (сургуулийн ард) гэж бичээгүй. «학교 앞» (сургуулийн урд) гэж бичсэн.')},
+ 'plans-apply-delay':{a:note('벌써 도착했어요.','아직 도착하지 않았어요. 버스를 놓쳤어요.','You haven’t arrived yet. You missed the bus.','Та хараахан очоогүй байна. Автобуснаасаа хоцорчихсон.'),c:note('일찍 도착했어요.','일찍 온 것이 아니에요. 늦을 것 같아요.','You didn’t come early. You think you will be late.','Та эрт очоогүй. Хоцрох юм шиг байна.')},
+ 'plans-apply-delay-transfer':{b:note('십 분 일찍 도착할 것 같아요.','일찍 도착하지 않아요. 세 시 십 분에 도착하니까 늦어요.','You will not arrive early. You will arrive at 3:10, so you will be late.','Та эрт очихгүй. Гурван цаг арван минутад очих учраас хоцорно.'),c:note('약속 시간에 도착할 것 같아요.','세 시에 도착하지 못해요. 십 분 늦어요.','You can’t arrive at 3:00. You will be ten minutes late.','Гурван цагт очиж чадахгүй. Арван минут хоцорно.')},
+ // 약속 팩 — 끝
 });
 
 /** 그 문항 보기의 한 줄(화면 언어, 없으면 한국어). 문항이나 보기 글이 바뀌었으면 null. */
