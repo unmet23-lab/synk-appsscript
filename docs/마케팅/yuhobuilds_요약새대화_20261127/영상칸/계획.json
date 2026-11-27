@@ -1,0 +1,48 @@
+{
+  "_예산": 360,
+  "o1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "i_open",
+    "key": "its two bead eyes grow bigger and rounder"
+  },
+  "o1b": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "i_open",
+    "key": "its two bead eyes open wide and round"
+  },
+  "o1c": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "i_open",
+    "key": "its two glossy black bead eyes slowly grow a little rounder"
+  },
+  "e1": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "i_end",
+    "key": "its eyes curve into two happy dark stitched arcs"
+  },
+  "e1b": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "12",
+    "dur": "4초",
+    "proj": "omni",
+    "start": "i_end",
+    "key": "its eyes bend into two cheerful dark stitched arcs"
+  }
+}

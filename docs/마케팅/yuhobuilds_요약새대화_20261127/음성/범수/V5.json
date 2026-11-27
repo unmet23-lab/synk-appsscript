@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "중간에 바꾼 할인 조건도, 표에 그대로 들어갔어요.",
+ "dur": 2.429,
+ "words": [
+  {
+   "text": "중간에",
+   "start": 0.06,
+   "end": 0.352
+  },
+  {
+   "text": "바꾼",
+   "start": 0.391,
+   "end": 0.604
+  },
+  {
+   "text": "할인",
+   "start": 0.644,
+   "end": 0.79
+  },
+  {
+   "text": "조건도,",
+   "start": 0.829,
+   "end": 1.162
+  },
+  {
+   "text": "표에",
+   "start": 1.414,
+   "end": 1.586
+  },
+  {
+   "text": "그대로",
+   "start": 1.64,
+   "end": 1.839
+  },
+  {
+   "text": "들어갔어요.",
+   "start": 1.879,
+   "end": 2.429
+  }
+ ],
+ "source": {
+  "key": "17f062248f176a2478c67432e57cb366",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

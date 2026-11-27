@@ -1,0 +1,29 @@
+{
+  "id": "01-yuhobuilds-instagram",
+  "brand": "yuhobuilds",
+  "language": "ko",
+  "audioLanguage": "ko",
+  "alteredContent": true,
+  "madeForKids": false,
+  "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 영상은 최종.mp4(끝 말 「요약 받는 한 줄은, 댓글에 요약이라고 남기시면 DM으로 보내 드려요」). 키워드 DM은 자료(synk.im/prompts/#long-chat-summary)를 공개한 뒤 node tools/sns-DM준비.js로 dm 칸을 넣는다. 등록은 게시 뒤다.",
+  "platform": "instagram",
+  "account": "@yuhobuilds",
+  "format": "reels",
+  "caption": "대화가 길어지면, 요약 한 장 들고 새 대화로 가 보세요 👇\n\n클로드와 한 대화로 열세 번 주고받으며 연말 기획전을 준비했어요. 열세 번째 말에 표 하나를 시킬 때 클로드가 다시 읽은 대화는 39,283토큰이었어요.\n\n그래서 이 한 줄을 보냈어요.\n「대화가 너무 길어졌어. 지금까지 정한 것과 남은 일만 요약해 줘. 새 대화 첫 말에 붙여 넣을 거야. 바뀐 조건은 마지막 값만 적어 줘.」\n\n받은 요약 한 장을 새 대화 첫 말에 붙이고 같은 표를 시켰더니 1,497토큰이었어요. 다시 읽은 대화가 약 26분의 1이에요. 중간에 바꾼 할인 조건도 표에 그대로 들어갔어요.\n\n먼저 알아 둘 것\n· 2026년 11월 27일, 클로드 데스크톱 앱 「코드」 탭에서 시험용 가상 가게로 해 봤어요. 앱의 사용량 표시로 잰 값은 아니에요\n· 토큰은 AI가 글을 읽는 단위예요. 이 대화에서는 한글 한 글자쯤이었어요\n· 요약에는 다 쓴 글의 본문이 들어가지 않아요. 다시 쓸 글은 따로 복사해 두세요\n\n댓글에 「요약」이라고 남겨 주세요. 요약을 받는 한 줄, 새 대화 첫 말 틀, 저희가 잰 숫자를 DM으로 보내 드려요.\n\n#클로드 #AI활용 #클로드사용량 #일잘하는법 #AI업무",
+  "dm": {
+    "account_id": "17841431575383549",
+    "title": "긴 대화를 요약 한 장 들고 새 대화로 옮기는 자료",
+    "keyword": "요약",
+    "message": "「요약」 남겨 주셔서 고마워요! 긴 대화를 요약 한 장 들고 새 대화로 옮기는 자료예요.\n요약 받는 한 줄, 붙이기 전에 볼 것, 새 대화 첫 말 틀, 저희가 직접 잰 값이 있어요.\nhttps://synk.im/prompts/#long-chat-summary\n자동으로 보낸 메시지예요. 그만 받으려면 '중단'이라고 보내 주세요.",
+    "duration_mode": "evergreen",
+    "ends_at": null,
+    "resource": {
+      "kind": "url",
+      "folder_id": "1a_7-bLI1v0r9kFnMFe8yRUiZJrDvLjfo",
+      "library_root": "1aavZGSCHjV1dOgM_z5NUgq2V_rMQJkph",
+      "url": "https://synk.im/prompts/"
+    },
+    "opening_mode": "resource",
+    "public_reply_text": "DM으로 자료 보내 드렸어요 🙌 안 보이면 메시지 요청함을 확인해 주세요!"
+  }
+}

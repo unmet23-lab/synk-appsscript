@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2",
+ "text": "요약 받는 한 줄은, 댓글에 요약이라고 남기시면 DM으로 보내 드려요.",
+ "dur": 3.391,
+ "words": [
+  {
+   "text": "요약",
+   "start": 0.01,
+   "end": 0.18
+  },
+  {
+   "text": "받는",
+   "start": 0.22,
+   "end": 0.391
+  },
+  {
+   "text": "한",
+   "start": 0.43,
+   "end": 0.496
+  },
+  {
+   "text": "줄은,",
+   "start": 0.536,
+   "end": 0.72
+  },
+  {
+   "text": "댓글에",
+   "start": 1.036,
+   "end": 1.299
+  },
+  {
+   "text": "요약이라고",
+   "start": 1.352,
+   "end": 1.746
+  },
+  {
+   "text": "남기시면",
+   "start": 1.785,
+   "end": 2.285
+  },
+  {
+   "text": "DM으로",
+   "start": 2.416,
+   "end": 2.732
+  },
+  {
+   "text": "보내",
+   "start": 2.772,
+   "end": 2.929
+  },
+  {
+   "text": "드려요.",
+   "start": 2.969,
+   "end": 3.391
+  }
+ ],
+ "source": {
+  "key": "af93cf098337b31a617ac62290b8a65a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P1",
+ "text": "대화가 길어졌을 때 요약 한 장 들고 새 대화로 갔더니, 다시 읽는 대화가 이십육분의 일이 됐어요.",
+ "dur": 4.74,
+ "words": [
+  {
+   "text": "대화가",
+   "start": 0.02,
+   "end": 0.283
+  },
+  {
+   "text": "길어졌을",
+   "start": 0.346,
+   "end": 0.721
+  },
+  {
+   "text": "때",
+   "start": 0.759,
+   "end": 0.859
+  },
+  {
+   "text": "요약",
+   "start": 0.959,
+   "end": 1.147
+  },
+  {
+   "text": "한",
+   "start": 1.185,
+   "end": 1.248
+  },
+  {
+   "text": "장",
+   "start": 1.285,
+   "end": 1.373
+  },
+  {
+   "text": "들고",
+   "start": 1.41,
+   "end": 1.598
+  },
+  {
+   "text": "새",
+   "start": 1.648,
+   "end": 1.711
+  },
+  {
+   "text": "대화로",
+   "start": 1.774,
+   "end": 1.987
+  },
+  {
+   "text": "갔더니,",
+   "start": 2.024,
+   "end": 2.312
+  },
+  {
+   "text": "다시",
+   "start": 2.776,
+   "end": 2.964
+  },
+  {
+   "text": "읽는",
+   "start": 3.001,
+   "end": 3.176
+  },
+  {
+   "text": "대화가",
+   "start": 3.214,
+   "end": 3.477
+  },
+  {
+   "text": "이십육분의",
+   "start": 3.614,
+   "end": 4.04
+  },
+  {
+   "text": "일이",
+   "start": 4.116,
+   "end": 4.203
+  },
+  {
+   "text": "됐어요.",
+   "start": 4.241,
+   "end": 4.74
+  }
+ ],
+ "source": {
+  "key": "519556329d37783ee40a53542ca640a2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

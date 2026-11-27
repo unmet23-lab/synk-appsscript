@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "그 요약을 새 대화 첫 말에 붙이고 같은 표를 시켰더니, 이만큼 줄었어요.",
+ "dur": 3.533,
+ "words": [
+  {
+   "text": "그",
+   "start": 0.06,
+   "end": 0.122
+  },
+  {
+   "text": "요약을",
+   "start": 0.197,
+   "end": 0.486
+  },
+  {
+   "text": "새",
+   "start": 0.548,
+   "end": 0.624
+  },
+  {
+   "text": "대화",
+   "start": 0.674,
+   "end": 0.837
+  },
+  {
+   "text": "첫",
+   "start": 0.874,
+   "end": 1
+  },
+  {
+   "text": "말에",
+   "start": 1.037,
+   "end": 1.175
+  },
+  {
+   "text": "붙이고",
+   "start": 1.225,
+   "end": 1.501
+  },
+  {
+   "text": "같은",
+   "start": 1.626,
+   "end": 1.889
+  },
+  {
+   "text": "표를",
+   "start": 1.927,
+   "end": 2.115
+  },
+  {
+   "text": "시켰더니,",
+   "start": 2.153,
+   "end": 2.491
+  },
+  {
+   "text": "이만큼",
+   "start": 2.729,
+   "end": 2.991
+  },
+  {
+   "text": "줄었어요.",
+   "start": 3.029,
+   "end": 3.533
+  }
+ ],
+ "source": {
+  "key": "bf5253ec73cb55ce6bd08ebab5f62c12",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 139
+ }
+}

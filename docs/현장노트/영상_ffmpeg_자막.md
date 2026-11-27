@@ -187,6 +187,12 @@
 - 고침: `remotion/render-timeout-ms.json`에 `180000` 한 줄(`remotion.config.ts`가 읽는다). 묶음 · 소리 만들기는 시간 한도 없이 뒤에서 돌리고 끝난 것을 확인한 뒤 렌더한다. 묶음 폴더는 새 이름으로 낸다.
 - 다시 확인: 렌더한 판의 정지 컷에 방금 바꾼 글이 있는지 본다(옛 묶음이면 없다).
 
+### CPU 100%인 PC에서 Remotion 렌더가 「Target closed」를 찍고 끝나지 않는다 — `--concurrency=2 --timeout=120000`으로 다시 (2026-11-27 Claude · yuhobuilds Y89)
+- 증상: `npx remotion render … --log=error`가 「Protocol error (Page.bringToFront): Target closed」를 찍은 뒤 4시간 40분 동안 끝나지 않았다(09:33 시작, 14:14에 직접 멈춤). 같은 때 `tools/음악층.js`의 소리 렌더는 「Page crashed!」로, 화면 글 검사의 게시글판 렌더는 「EINVAL: invalid argument, write」로 멈췄다.
+- 원인: 다른 세션들의 렌더 · 시험으로 CPU가 100%였고(node 73개 · git 24개), 기본 동시 탭 수로 띄운 크롬 탭이 닫혔다. 오류를 찍은 뒤에도 npx 프로세스가 남아 셸이 끝나지 않았다.
+- 고침: 멈춘 렌더의 node와 그 편 경로의 `chrome-headless-shell`만 끄고, `--concurrency=2 --timeout=120000`으로 다시 돌렸다(두 판 렌더와 마감까지 약 25분). 편 `scripts/build.sh`는 `RFLAGS` 환경 변수로 이 깃발을 받게 했다.
+- 다시 확인: 렌더 로그를 「Target closed · Page crashed · BUILD_DONE · EXIT」 모두로 지켜본다. 오류 줄이 나왔는데 EXIT가 없으면 매달린 것이다.
+
 ### 일레븐 v4 친구 목소리의 웃음 · 「크」 줄은 올리기 전 검사 「목소리 엉킴」을 못 넘는다 (2026-11-26 Claude)
 - 증상: LAB E52 「ㅋㅋㅋ」의 친구(일레븐 v4 Taehyung) 줄 넷 「크크.」 · 「크크크크크!」 · 「…크.」 · 「크하하하하하!」가 엉킴 평균 41.8~56.9%(기본음 308~340Hz)로 고칠 것에 걸렸다. 말투 꼬리표 · 안정(0.35 → 0.5) · seed를 바꿔 열두 판을 새로 구워도 38~100%였다. M82 「드세요」의 귓속말 줄(`[whispering urgently]`)도 100% · 432Hz였다.
 - 원인: 웃음과 「크」는 숨소리 · 무성음이 대부분이라 배음 엉킴 지표가 높게 나오고, 웃음은 기본음이 300Hz 넘게 올라가 「남자 목소리(가운데 기본음 165Hz 아래)는 따로 본다」는 예외에도 들지 않는다. 귓속말도 같다.

@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 9:16, a cosy late-evening room lit by one warm felt desk lamp on the right, deep navy-blue felt wall, gentle depth of field, handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny felt desk at night, seen from the front at desk height, medium wide.
+- The TOP 30% of the image is a plain, soft, out-of-focus deep navy-blue felt wall with nothing on it — keep it empty for titles.
+- A walnut-brown felt desk top runs across the image from 56% of the image height down to the bottom edge.
+- On the desk, left of centre, stands a small open felt laptop seen from the front-left, its screen a plain softly glowing pale rectangle with NOTHING on it, its keyboard a plain smooth felt panel with no keys drawn.
+- Out of the bottom of the laptop screen pours ONE very long strip of plain cream felt paper, about 12% of the image width wide. It spills over the front edge of the laptop, piles up in big soft loose folds and waves all over the desk, and drapes over the front edge of the desk down to the bottom of the image. The strip is completely blank: no lines, no writing, no marks, no holes.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fine short felted fuzz, scalloped bottom hem with one thin continuous cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the desk RIGHT of centre, centred at 62% of the image width, about 28% of the image width wide, half buried in the folds of the cream felt paper strip: the strip's folds cover its body up to just below its eyes, so we see the top of its coral dome and its two round glossy black bead eyes above the paper, looking toward the camera, face at rest.
+- A small warm felt desk lamp stands at the far right edge, its glow lighting Mongle and the paper folds.
+
+Exactly ONE Mongle, nobody else. Everything is needle-felt and wool craft, no glossy realistic surfaces. Absolutely no text, letters, numbers, symbols, icons, charts or watermarks anywhere, and the laptop screen stays a plain glow. No real brand, no logos. No spirals, no rolled-up scroll ends, no mesh, no grids of dots, no rings or holes patterns, no polka dots, no perforations.

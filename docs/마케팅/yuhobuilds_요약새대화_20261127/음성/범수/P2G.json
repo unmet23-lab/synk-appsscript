@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2G",
+ "text": "요약 받는 한 줄은, 게시글에 그대로 적어 뒀어요.",
+ "dur": 2.271,
+ "words": [
+  {
+   "text": "요약",
+   "start": 0.03,
+   "end": 0.223
+  },
+  {
+   "text": "받는",
+   "start": 0.259,
+   "end": 0.452
+  },
+  {
+   "text": "한",
+   "start": 0.488,
+   "end": 0.549
+  },
+  {
+   "text": "줄은,",
+   "start": 0.585,
+   "end": 0.789
+  },
+  {
+   "text": "게시글에",
+   "start": 0.935,
+   "end": 1.284
+  },
+  {
+   "text": "그대로",
+   "start": 1.344,
+   "end": 1.574
+  },
+  {
+   "text": "적어",
+   "start": 1.622,
+   "end": 1.766
+  },
+  {
+   "text": "뒀어요.",
+   "start": 1.802,
+   "end": 2.271
+  }
+ ],
+ "source": {
+  "key": "8f76bdeaed41214591d6d8531b231675",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 141
+ }
+}

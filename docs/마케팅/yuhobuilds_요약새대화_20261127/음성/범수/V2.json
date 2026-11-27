@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "한 대화로 오래 일하면, 클로드는 말 한 번마다 앞의 대화까지 다 읽어요. 그만큼 한도도 빨리 닿고요.",
+ "dur": 4.827,
+ "words": [
+  {
+   "text": "한",
+   "start": 0.02,
+   "end": 0.136
+  },
+  {
+   "text": "대화로",
+   "start": 0.2,
+   "end": 0.469
+  },
+  {
+   "text": "오래",
+   "start": 0.546,
+   "end": 0.674
+  },
+  {
+   "text": "일하면,",
+   "start": 0.725,
+   "end": 1.045
+  },
+  {
+   "text": "클로드는",
+   "start": 1.225,
+   "end": 1.558
+  },
+  {
+   "text": "말",
+   "start": 1.597,
+   "end": 1.687
+  },
+  {
+   "text": "한",
+   "start": 1.725,
+   "end": 1.764
+  },
+  {
+   "text": "번마다",
+   "start": 1.827,
+   "end": 2.122
+  },
+  {
+   "text": "앞의",
+   "start": 2.187,
+   "end": 2.327
+  },
+  {
+   "text": "대화까지",
+   "start": 2.378,
+   "end": 2.699
+  },
+  {
+   "text": "다",
+   "start": 2.751,
+   "end": 2.814
+  },
+  {
+   "text": "읽어요.",
+   "start": 2.904,
+   "end": 3.109
+  },
+  {
+   "text": "그만큼",
+   "start": 3.571,
+   "end": 3.852
+  },
+  {
+   "text": "한도도",
+   "start": 3.891,
+   "end": 4.147
+  },
+  {
+   "text": "빨리",
+   "start": 4.186,
+   "end": 4.378
+  },
+  {
+   "text": "닿고요.",
+   "start": 4.416,
+   "end": 4.827
+  }
+ ],
+ "source": {
+  "key": "44b7b25dd329561ac113c46a2b894702",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2103,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 164
+ }
+}
