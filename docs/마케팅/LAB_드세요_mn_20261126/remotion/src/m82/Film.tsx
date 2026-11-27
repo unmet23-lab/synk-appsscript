@@ -75,7 +75,7 @@ const End: React.FC<{ END: typeof END }> = ({ END }) => {
 const Sound: React.FC<{ from: number; to: number; music: boolean }> = ({ from, to, music }) => (
   <>
     {music ? <Audio src={staticFile('bgm.wav')} volume={(i) => MASTER * 0.16 * interpolate(i, [fr(to - from) - 15, fr(to - from)], [1, 0], clamp)} endAt={fr(to - from)} /> : null}
-    <Audio src={staticFile('sfx/street.wav')} startFrom={fr(from)} volume={(i) => MASTER * 0.18 * interpolate(i, [fr(to - from) - 10, fr(to - from)], [1, 0], clamp)} endAt={fr(to)} />
+    {/* 11-27: 바탕 거리 소리(sfx/street.wav)는 뺐다 — 고르게 쉬익거리는 합성 잡음이라 화이트노이즈로 들렸다(유호님 11-27 「서비스」 지적 → 「응, 고쳐」, 올리기 전 검사 ㉔) */}
     {VO.filter(([t]) => t >= from - 0.01 && t < to).map(([t, v, vol]) => (
       <Sequence key={v} from={fr(t - from)} layout="none">
         <Audio src={staticFile(`vo/${v}.wav`)} volume={MASTER * (vol ?? 1)} />

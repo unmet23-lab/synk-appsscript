@@ -108,7 +108,7 @@ const Bouncy: React.FC<{ from: number; children: React.ReactNode }> = ({ from, c
 const FilmSound: React.FC = () => (
   <>
     <Audio src={staticFile('bgm.wav')} volume={(i) => 0.18 * MASTER * interpolate(i, [fr(FILM) - 18, fr(FILM)], [1, 0], clamp)} endAt={fr(FILM)} />
-    <Audio src={staticFile('sfx/bunsik.wav')} volume={(i) => MASTER * 0.3 * interpolate(i, [fr(FILM) - 18, fr(FILM)], [1, 0], clamp)} endAt={fr(FILM)} />
+    {/* 11-27: 바탕 분식집 소리(sfx/bunsik.wav)는 뺐다 — 고르게 쉬익거리는 합성 잡음이라 화이트노이즈로 들렸다(유호님 11-27 「서비스」 지적 → 「응, 고쳐」, 올리기 전 검사 ㉔) */}
     {[...VO.map(([t, v]) => [t + SC, v] as [number, string]), ...FILM_VO].map(([t, v]) => (
       <Sequence key={`${t}-${v}`} from={fr(t)} layout="none">
         <Audio src={staticFile(`${v}.wav`)} volume={MASTER} />
