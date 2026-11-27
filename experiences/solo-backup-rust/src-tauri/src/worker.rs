@@ -129,6 +129,9 @@ impl Worker {
     /// Requests the worker has not answered yet, a caller's time limit notwithstanding (`Unanswered`).
     pub fn unanswered(&self)->usize {self.unanswered.count()}
     pub fn terminate(&self){self.job.terminate();}
+    /// Ends the worker on purpose (the host's end past its limits): its output closing then rejects what is pending
+    /// instead of reporting WORKER_EXIT through the failure callback.
+    pub fn cut(&self){self.closing.store(true,Ordering::SeqCst);self.job.terminate();}
     pub fn usage(&self)->Option<crate::platform::JobUsage>{self.job.usage()}
     pub fn pid(&self)->u32 {self.child.lock().unwrap().id()}
 }

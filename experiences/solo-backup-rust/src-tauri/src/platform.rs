@@ -53,10 +53,18 @@ pub const ENGINE_LOCK: &str = "engine.lock";
 pub const NOTIFY_LOCK: &str = "notify.lock";
 
 /// The window app: the checked state folder and the window lock. A second window wakes
-/// the first one and ends.
+/// the first one and ends: `ALREADY_RUNNING`. With no window to wake — SYNK 솔리오's windowless host holds the lock, or a
+/// window that has not made its wake signal yet — it ends `WINDOW_HELD`, so 「백업 창 따로 열기」 tries again rather than
+/// taking it for a woken window (SOLIO_ONE_CLIENT.md 8.1, GPT workbackup-solio-one-be-20261127-r3 GA1).
 pub fn state_root(test: bool) -> Result<(PathBuf, File), String> {
     let root = state_dir(test)?;
-    match try_lock(&root, UI_LOCK)? { Some(lock) => Ok((root, lock)), None => { signal_existing(&root); Err("ALREADY_RUNNING".into()) } }
+    match try_lock(&root, UI_LOCK)? { Some(lock) => Ok((root, lock)), None => Err(held_code(signal_existing(&root)).into()) }
+}
+/// What a window that found the window lock held tells: whether there was a window to wake.
+pub fn held_code(woke: bool) -> &'static str { if woke { "ALREADY_RUNNING" } else { "WINDOW_HELD" } }
+#[cfg(test)] #[test] fn a_window_that_woke_another_is_told_apart_from_one_the_host_kept_out() {
+    assert_eq!(held_code(true), "ALREADY_RUNNING");
+    assert_eq!(held_code(false), "WINDOW_HELD");
 }
 /// The run executable: the checked state folder and the engine lock, without waking the
 /// window. `None` means another process holds the engine; the run records 「바쁨」 and ends
@@ -113,7 +121,8 @@ impl InstanceSignal {
     pub fn wait(&self)->bool{unsafe{WaitForSingleObject(self.0,500)==0}}
 }
 impl Drop for InstanceSignal{fn drop(&mut self){unsafe{CloseHandle(self.0);}}}
-fn signal_existing(root:&Path){let name=signal_name(root);let event=unsafe{OpenEventW(EVENT_MODIFY_STATE,0,name.as_ptr())};if !event.is_null(){unsafe{SetEvent(event);CloseHandle(event);}}}
+/// Wakes the window holding the lock; false when there is none (no wake signal of this state folder).
+fn signal_existing(root:&Path)->bool{let name=signal_name(root);let event=unsafe{OpenEventW(EVENT_MODIFY_STATE,0,name.as_ptr())};if event.is_null(){return false;}unsafe{SetEvent(event);CloseHandle(event);}true}
 
 /// The installer's marker in the install folder (administrators-only writes). While it is there and fresh a
 /// scheduled run ends at once, so no run of the version being replaced starts and holds its files during an

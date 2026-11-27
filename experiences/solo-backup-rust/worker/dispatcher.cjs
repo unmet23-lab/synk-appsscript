@@ -80,6 +80,8 @@ async function message(value){
   }
   if(!application)throw Error('NOT_READY');
   if(value.method==='$shutdown'){stopping=true;await application.stop();send({id:value.id,ok:true,value:null});process.stdin.pause();process.stdout.end(()=>process.exit(0));return;}
+  // The windowless host's end (host.rs, SOLIO_ONE_CLIENT.md 2.1 「끝」): stop taking up new work, end the waits on a person.
+  if(value.method==='$ending'){await application.ending();send({id:value.id,ok:true,value:null});return;}
   if(value.method==='$activity'){send({id:value.id,ok:true,value:{active:application.active(),busy:application.busy()}});return;}
   if(stopping||!Object.hasOwn(contract,value.method))throw Error('INVALID_METHOD');
   const result=await application.call(value.method,value.args);send({id:value.id,ok:true,value:result});

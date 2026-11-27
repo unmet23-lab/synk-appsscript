@@ -15,13 +15,15 @@ pub struct NativeHost {
     root: PathBuf, exe: PathBuf, test: bool, packaged: bool,
     dialogs: Mutex<VecDeque<Value>>, dialog_busy: AtomicBool, engine: Mutex<Option<fs::File>>,
     open: Box<Opener>, owner: Box<Owner>,
+    /// The windowless host's end has begun (close_dialogs): a dialog asked for after it answers canceled at once.
+    ended: AtomicBool,
 }
 impl NativeHost {
     /// `dialogs`: a test's scripted answers (scripted_dialogs). The window opens with the shell and owns no dialog
     /// (`window`); the host asks SYNK 솔리오 to open and gives its window as the owner.
     #[allow(clippy::too_many_arguments)]
     pub fn new(root: PathBuf, exe: PathBuf, test: bool, packaged: bool, dialogs: VecDeque<Value>, open: Box<Opener>, owner: Box<Owner>) -> Self {
-        Self { root, exe, test, packaged, dialogs: Mutex::new(dialogs), dialog_busy: AtomicBool::new(false), engine: Mutex::new(None), open, owner }
+        Self { root, exe, test, packaged, dialogs: Mutex::new(dialogs), dialog_busy: AtomicBool::new(false), engine: Mutex::new(None), open, owner, ended: AtomicBool::new(false) }
     }
     /// The window app's own: opened by the shell here, no owner window.
     pub fn window(root: PathBuf, exe: PathBuf, test: bool, packaged: bool, dialogs: VecDeque<Value>) -> Self {
@@ -70,12 +72,23 @@ impl NativeHost {
             _ => Err("HOST_METHOD".into()),
         }
     }
+    /// The windowless host's end (SOLIO_ONE_CLIENT.md 2.1 「끝」): a dialog open now waits for a person who may have gone with
+    /// SYNK 솔리오, so it is closed — a file dialog ends canceled, the message dialog on its Cancel (Escape · close never
+    /// confirm). How many were told to close; none in a test, where the dialogs are scripted (Fable 설계 검토 호스트끝 F1).
+    /// From the first call on, a dialog asked for later answers canceled without showing; the end calls this on every
+    /// step, so one that was already on its way to the screen is closed too (GPT -r4 GA3: a save asked for just after).
+    pub fn close_dialogs(&self) -> usize {
+        self.ended.store(true, Ordering::SeqCst);
+        if self.test || !self.dialog_busy.load(Ordering::SeqCst) { return 0; }
+        close_own_dialogs()
+    }
     fn dialog(&self, method: &str, options: &Value) -> Result<Value, String> {
         if self.test {
             let next = self.dialogs.lock().unwrap().pop_front().ok_or("TEST_DIALOG_MISSING")?;
             if next["method"] != method { return Err("TEST_DIALOG_ORDER".into()); }
             return Ok(next["value"].clone());
         }
+        if self.ended.load(Ordering::SeqCst) { return canceled_answer(method); }
         // The host's dialogs sit on SYNK 솔리오's window when it gave one that is still its own (host.rs owner_window).
         let owner = (self.owner)().and_then(NonZeroIsize::new).map(OwnerWindow);
         let title = options["title"].as_str().unwrap_or("업무 백업");
@@ -106,6 +119,51 @@ impl NativeHost {
             _ => Err("HOST_METHOD".into()),
         }
     }
+}
+
+/// What a dialog answers when it is not shown because the host is ending: canceled, the message on its Cancel.
+pub fn canceled_answer(method: &str) -> Result<Value, String> {
+    match method {
+        "dialog.open" => Ok(json!({"canceled": true, "filePaths": []})),
+        "dialog.save" => Ok(json!({"canceled": true, "filePath": null})),
+        "dialog.message" => Ok(json!({"response": 0})),
+        _ => Err("HOST_METHOD".into()),
+    }
+}
+#[cfg(test)] #[test] fn a_dialog_asked_for_at_the_end_answers_as_a_canceled_one() {
+    assert_eq!(canceled_answer("dialog.open").unwrap(), json!({"canceled": true, "filePaths": []}));
+    assert_eq!(canceled_answer("dialog.save").unwrap(), json!({"canceled": true, "filePath": null}));
+    assert_eq!(canceled_answer("dialog.message").unwrap()["response"], 0, "never the confirm button");
+    assert!(canceled_answer("dialog.other").is_err());
+}
+
+/// Whether a top-level window is one of this process's own dialogs: the dialog class (`#32770`, which the common file
+/// dialog, the task dialog and the message box all use), shown, and made by this process.
+pub fn own_dialog(window_pid: u32, own_pid: u32, class: &str, visible: bool) -> bool { visible && window_pid == own_pid && class == "#32770" }
+#[cfg(test)] mod tests {
+    use super::own_dialog;
+    #[test] fn only_this_processs_shown_dialogs_are_closed_at_the_end() {
+        assert!(own_dialog(7, 7, "#32770", true));
+        assert!(!own_dialog(8, 7, "#32770", true), "another process's dialog");
+        assert!(!own_dialog(7, 7, "#32770", false), "hidden");
+        assert!(!own_dialog(7, 7, "Chrome_WidgetWin_1", true), "not a dialog");
+    }
+}
+/// Posts WM_CLOSE to every open dialog of this process; how many.
+fn close_own_dialogs() -> usize {
+    use windows_sys::Win32::{Foundation::{BOOL, HWND, LPARAM}, System::Threading::GetCurrentProcessId, UI::WindowsAndMessaging::{EnumWindows, GetClassNameW, GetWindowThreadProcessId, IsWindowVisible, PostMessageW, WM_CLOSE}};
+    unsafe extern "system" fn each(hwnd: HWND, data: LPARAM) -> BOOL {
+        let found = unsafe { &mut *(data as *mut (u32, usize)) };
+        let mut pid = 0u32;
+        unsafe { GetWindowThreadProcessId(hwnd, &mut pid) };
+        let mut class = [0u16; 64];
+        let length = unsafe { GetClassNameW(hwnd, class.as_mut_ptr(), class.len() as i32) }.max(0) as usize;
+        if own_dialog(pid, found.0, &String::from_utf16_lossy(&class[..length]), unsafe { IsWindowVisible(hwnd) } != 0) && unsafe { PostMessageW(hwnd, WM_CLOSE, 0, 0) } != 0 { found.1 += 1; }
+        1
+    }
+    let mut found = (unsafe { GetCurrentProcessId() }, 0usize);
+    unsafe { EnumWindows(Some(each), &mut found as *mut (u32, usize) as LPARAM) };
+    found.1
 }
 
 /// A window handle rfd takes as a dialog's owner (raw-window-handle 0.6, the Win32 kind).

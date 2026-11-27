@@ -13,7 +13,7 @@
 //! on past its parent (SYNK 솔리오 starts it detached), so a write that fails is ignored, never a panic (F2).
 use crate::{bundle, folders, native::{self, NativeHost}, platform, protocol, update, worker::Worker};
 use serde_json::{json, Value};
-use std::{collections::HashMap, fs, io::{BufRead, Write}, path::{Path, PathBuf}, sync::{Arc, Mutex, atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering}}, time::Duration};
+use std::{collections::HashMap, fs, io::{BufRead, Write}, path::{Path, PathBuf}, sync::{Arc, Mutex, atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering}}, time::{Duration, Instant}};
 
 /// A line from SYNK 솔리오, its `\n` not counted.
 pub const MAX_IN: usize = 128 * 1024;
@@ -219,13 +219,39 @@ pub fn failure_code(code: &str) -> String {
 /// being installed (다시 깔기). A scheduled run's progress the worker shows as a profile's job (`scheduled: true`,
 /// handlers.cjs withRun) is the run executable's, not the host's: the host does not wait for it, so it does not keep the
 /// window lock from a host SYNK 솔리오 starts again (GPT workbackup-solio-one-be-20261127 C3).
+/// A recommended backup or restore going (`recommended.busy`) is waited for too (Fable 설계 검토 호스트끝 F4).
 pub fn working(state: &Value) -> bool {
     state["profiles"].as_object().is_some_and(|p| p.values().any(|s| !s["job"].is_null() && s["job"]["scheduled"] != true)) || state["move"]["reinstall"]["running"] == true
+        || state["recommended"]["busy"] == true
 }
 
 /// Whether the end still waits before the worker stops: a call not answered yet — by the host to SYNK 솔리오, or by the
 /// worker to the host even after its caller's time limit (`Worker::unanswered`) — or a job going (`working`).
 pub fn ending_waits(calls_open: usize, state: &Value) -> bool { calls_open > 0 || working(state) }
+
+/// The end's limits (SOLIO_ONE_CLIENT.md 2.1 「끝」 한계 잣대): a job is waited for to its end; a call is waited for to its
+/// method's time limit and this margin past it, or past the end's start when that comes later; a call to a method with no
+/// time limit, and one whose caller already gave up, for the end's own limit below.
+pub const END_MARGIN: Duration = Duration::from_secs(60);
+pub const END_NO_LIMIT: Duration = Duration::from_secs(600);
+/// Until when the end waits for the calls open now (each one's start and its method's limit in ms, 0 for none).
+/// `abandoned`: the worker still owes an answer to a call whose caller gave up at its time limit — the end's own limit.
+/// Counted again on every step, so a long call that answers early no longer holds the end (GPT -r4 GA1).
+pub fn end_deadline(begun: Instant, open: &[(Instant, u64)], abandoned: bool) -> Instant {
+    let base = if abandoned { begun + END_NO_LIMIT } else { begun + END_MARGIN };
+    open.iter().fold(base, |at, (start, limit)| {
+        let own = if *limit == 0 { begun + END_NO_LIMIT } else { (*start + Duration::from_millis(*limit)).max(begun) + END_MARGIN };
+        at.max(own)
+    })
+}
+/// The end's next step: wait, stop the worker (nothing left), or cut it (a call past the deadline, no job going).
+#[derive(Debug, PartialEq, Eq)]
+pub enum EndStep { Wait, Stop, Cut }
+pub fn end_step(calls_open: usize, state: &Value, now: Instant, deadline: Instant) -> EndStep {
+    if working(state) { return EndStep::Wait; }
+    if calls_open == 0 { return EndStep::Stop; }
+    if now < deadline { EndStep::Wait } else { EndStep::Cut }
+}
 
 /// The checks of the window's backup_call before a call goes to the worker: the method list, the host's end, the
 /// restore-only rule. The method's time limit, or the envelope that answers the call at once.
@@ -320,6 +346,7 @@ pub fn serve(test: bool) -> i32 {
     let native = Arc::new(NativeHost::new(root.clone(), exe.clone(), test, !cfg!(debug_assertions), dialogs,
         Box::new(move |method: &str, value: &str| ask_list.ask(&ask_out, method, value, ASK_WAIT)),
         Box::new(move || (*owner_seen.lock().unwrap_or_else(|e| e.into_inner())).filter(|h| owner_window(*h, parent_pid)))));
+    let native_end = native.clone();
     let current = Arc::new(Mutex::new(Value::Null));
     let (published, state_out, failure_out, failure_root) = (current.clone(), out.clone(), out.clone(), root.clone());
     let worker = Worker::start(&resources, &root, lock, test, false, Arc::new(move |name, args| native.call(name, args)), Arc::new(move |value| {
@@ -361,6 +388,9 @@ pub fn serve(test: bool) -> i32 {
     });
     let calls = Arc::new(AtomicUsize::new(0));
     let closing = Arc::new(AtomicBool::new(false));
+    // Each call going to the worker: when it began and its method's time limit, for the end's deadline.
+    let open: Arc<Mutex<HashMap<u64, (Instant, u64)>>> = Arc::default();
+    let mut next_open = 0u64;
     let stopped = runtime.block_on(async {
         // The channel ends with the input (its sender goes with the reader) or at `bye`.
         while let Some(Incoming::Call { id, method, args }) = incoming.recv().await {
@@ -371,33 +401,59 @@ pub fn serve(test: bool) -> i32 {
             }
             // Checked as it arrives, so a call read before `bye` runs even when the end begins before its task does.
             let checked = gate(&method, &args, closing.load(Ordering::SeqCst), &current.lock().unwrap_or_else(|e| e.into_inner()));
-            let (worker, out, calls) = (worker.clone(), out.clone(), calls.clone());
+            let (worker, out, calls, open) = (worker.clone(), out.clone(), calls.clone(), open.clone());
+            next_open += 1;
+            let key = next_open;
+            if let Ok(timeout) = checked { open.lock().unwrap_or_else(|e| e.into_inner()).insert(key, (Instant::now(), timeout)); }
             tokio::spawn(async move {
                 let result = match checked {
                     Err(refused) => refused,
                     Ok(timeout) => match worker.call(&method, args, timeout).await { Ok(value) => value, Err(code) => json!({"ok": false, "error": BUSY_TEXT, "code": code}) },
                 };
+                open.lock().unwrap_or_else(|e| e.into_inner()).remove(&key);
                 if !out.send(&json!({"id": id, "result": result})) {
                     out.send(&json!({"id": id, "result": {"ok": false, "error": "결과가 너무 커서 보내지 못했습니다.", "code": "PAYLOAD_TOO_LARGE"}}));
                 }
                 calls.fetch_sub(1, Ordering::SeqCst);
             });
         }
-        // The end (2.1 「끝」): a job going is finished first — SYNK 솔리오 may be gone meanwhile; a host it starts again
-        // finds the lock held and says `busy`. Every call still unanswered ends first too, so a write like
-        // moveRestoreSettings is never cut half way (GPT workbackup-solio-one-be-20261127 C2); each ends by its own time
-        // limit at the latest. Then the worker stops and the host ends.
+        // The end (2.1 「끝」 and its limits): a job going is finished first — SYNK 솔리오 may be gone meanwhile; a host it
+        // starts again finds the lock held and says `busy`. Every call still unanswered ends first too, so a write like
+        // moveRestoreSettings is never cut half way (GPT workbackup-solio-one-be-20261127 C2), within end_deadline.
         closing.store(true, Ordering::SeqCst);
-        // A Google sign-in waiting for the browser waits for a person who may have gone with SYNK 솔리오: its wait ends here
-        // (cancelGoogle ends only the browser wait; a code already received is still exchanged and saved, and that is
-        // waited for below), so the host never keeps the window lock for it (GPT workbackup-solio-one-be-20261127-r2 GA1).
-        if calls.load(Ordering::SeqCst) > 0 || worker.unanswered() > 0 { let _ = worker.call("cancelGoogle", json!([]), 10_000).await; }
+        let begun = Instant::now();
+        // What waits for a person ends here: the worker stops its own timers (no new setup request, account look or
+        // recovery check is taken up), ends a Google sign-in's browser wait (a code already received is still exchanged and
+        // saved, r2 GA1) and the first range's finding (`$ending`); the host closes its own open dialogs (Fable 설계 검토
+        // 호스트끝 F1 · F2).
+        let _ = worker.call("$ending", json!([]), 10_000).await;
+        native_end.close_dialogs();
         // A call whose caller gave up at its time limit is still counted until the worker answers it: the worker may
-        // still be writing (r2 GA5).
-        while ending_waits(calls.load(Ordering::SeqCst) + worker.unanswered(), &current.lock().unwrap_or_else(|e| e.into_inner())) { tokio::time::sleep(Duration::from_millis(200)).await; }
-        worker.stop().await
+        // still be writing (r2 GA5). It has left `open`, so it shows as more unanswered requests than open calls.
+        loop {
+            // A dialog that was on its way to the screen as the end began is closed on the next step (GPT -r4 GA3).
+            native_end.close_dialogs();
+            let unanswered = worker.unanswered();
+            let open_calls = open.lock().unwrap_or_else(|e| e.into_inner()).values().copied().collect::<Vec<_>>();
+            let deadline = end_deadline(begun, &open_calls, unanswered > open_calls.len());
+            let open_now = calls.load(Ordering::SeqCst) + unanswered;
+            let step = end_step(open_now, &current.lock().unwrap_or_else(|e| e.into_inner()), Instant::now(), deadline);
+            match step {
+                EndStep::Wait => tokio::time::sleep(Duration::from_millis(200)).await,
+                EndStep::Stop => return worker.stop().await.map(|()| true),
+                EndStep::Cut => {
+                    // Past every limit with no job going: the worker is cut, and why is left beside the state (as a worker
+                    // that failed leaves its code).
+                    // Cut as an end the host chose: the worker's output closing is not read as WORKER_EXIT, which would
+                    // write over this line (GPT -r4 GA5).
+                    let _ = fs::write(root.join("native-error.txt"), format!("END_LIMIT:{open_now}"));
+                    worker.cut();
+                    return Ok(false);
+                }
+            }
+        }
     });
-    if stopped.is_ok() { 0 } else { 1 }
+    match stopped { Ok(true) => 0, _ => 1 }
 }
 /// The first line: the table's version and this app's own (its file's product version, as update.rs reads it).
 fn hello(out: &Out, exe: &Path) {
@@ -636,6 +692,34 @@ pub fn open_solio(topic: &str) -> Result<(), String> {
         assert!(ending_waits(0, &json!({"profiles": {"b2": {"job": {"kind": "restore"}}}})));
         assert!(!ending_waits(0, &json!({"profiles": {"b2": {"job": {"kind": "backup", "scheduled": true}}}})));
         assert!(!ending_waits(0, &Value::Null));
+    }
+    #[test] fn the_end_waits_within_its_limits_and_a_job_to_its_end() {
+        // SOLIO_ONE_CLIENT.md 2.1 「끝」 한계 잣대 (Fable 설계 검토 호스트끝): a call to its method's limit and a margin, from
+        // the end's start at the earliest; a method with no limit and an orphaned call, for the end's own limit.
+        // An hour ahead, so an hour before it is never earlier than the clock's start (Windows counts from boot, GPT -r4 GA6).
+        let begun = Instant::now() + Duration::from_secs(3600);
+        assert_eq!(end_deadline(begun, &[], false), begun + END_MARGIN);
+        let long_ago = begun - Duration::from_secs(3600);
+        assert_eq!(end_deadline(begun, &[(long_ago, 30_000)], false), begun + END_MARGIN, "a call past its limit still gets the margin");
+        assert_eq!(end_deadline(begun, &[(begun, 300_000)], false), begun + Duration::from_secs(300) + END_MARGIN);
+        assert_eq!(end_deadline(begun, &[(begun, 300_000), (long_ago, 0)], false), begun + END_NO_LIMIT, "no limit: the end's own");
+        // A call whose caller left at its limit has left the open calls; the worker still owes it: the end's own limit,
+        // also beside a short call open (GPT -r4 GA1, moveRestoreSettings past its five minutes).
+        assert_eq!(end_deadline(begun, &[], true), begun + END_NO_LIMIT);
+        assert_eq!(end_deadline(begun, &[(begun, 30_000)], true), begun + END_NO_LIMIT);
+        // A long call that answered is no longer open: the next step counts without it.
+        assert_eq!(end_deadline(begun, &[(begun, 1_800_000)], false), begun + Duration::from_secs(1800) + END_MARGIN);
+        assert_eq!(end_deadline(begun, &[(long_ago, 0)], false), begun + END_NO_LIMIT, "after it, the unlimited call's ten minutes");
+        let deadline = begun + END_MARGIN;
+        assert_eq!(end_step(0, &Value::Null, begun, deadline), EndStep::Stop);
+        assert_eq!(end_step(2, &Value::Null, begun, deadline), EndStep::Wait);
+        assert_eq!(end_step(2, &Value::Null, deadline, deadline), EndStep::Cut, "past the deadline: cut");
+        let job = json!({"profiles": {"b2": {"job": {"kind": "protect"}}}});
+        assert_eq!(end_step(2, &job, deadline + END_NO_LIMIT, deadline), EndStep::Wait, "a job is waited for to its end");
+        assert_eq!(end_step(0, &job, begun, deadline), EndStep::Wait);
+        // A recommended backup or restore going is a job too (F4).
+        assert!(working(&json!({"recommended": {"busy": true}})));
+        assert!(!working(&json!({"recommended": {"busy": false}})));
     }
     #[test] fn a_call_is_checked_as_the_windows_backup_call() {
         let code = |r: Result<u64, Value>| r.err().map(|e| e["code"].as_str().unwrap().to_owned());

@@ -34,7 +34,9 @@ function writerChoices(choices) {
   return new Proxy(kept, { get: (t, k) => (typeof k === 'string' && /^[A-Za-z]:[\\/]/.test(k) ? (Object.hasOwn(t, k) ? t[k] : { mode: 'newFolder' }) : t[k]) });
 }
 async function createApplication({ host, root, workRoot = null, resticPath, clientPath, publish, testMode = false }) {
-  let closing = false, dialogBusy = false, launchAtLogin = false;
+  // ending: the windowless host's end has begun (host.rs, `$ending`, SOLIO_ONE_CLIENT.md 2.1 「끝」). The window's own timers stop and
+  // nothing new is taken up; what is going finishes.
+  let closing = false, ending = false, dialogBusy = false, launchAtLogin = false;
   // 솔리오(STAGE1_DESIGN.md 4.13): 상태 파일, 솔리오가 남긴 「보호 시작」 이어 하기(`setup`), 쉬는 회선(4.14).
   const solioFiles = new solio.SolioFiles({ root });
   let solioSetup = null, solioBusy = false, solioAgain = false, restNetworks = await solio.readRestNetworks(root), aiTools = await solio.readAiTools(root);
@@ -637,13 +639,20 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   // 요청 작업이 띄운 회차가 이 창의 잠금에 막혀 「바쁨」으로 끝나지 않는다(카본 끝판 CB2).
   const windowWants = c => !c.ok || c.value.kind === 'setup';
   async function solioTick() {
-    if (closing || dialogBusy) return;
+    // An ending host leaves a setup request for the host SYNK 솔리오 starts next: taken here, it would be marked done and
+    // kept in this worker's memory only (Fable 설계 검토 호스트끝 F2)
+    if (closing || ending || dialogBusy) return;
     let held = false;
     try {
       if (!(await solioFiles.pending(windowWants))) return;
-      held = await engineLock(); if (!held) return;
+      held = await engineLock(); if (!held || ending) return;
       await solioFiles.ready(); await solioFiles.sweep();
-      const done = await solioFiles.process({ wants: windowWants, handle: async req => {
+      // The end may begin while the folder is readied and swept: look again, and per request before it is claimed (a
+      // request not wanted stays in the folder). One claimed as the end began is answered 「interrupted」, not kept in
+      // memory as done (GPT -r4 GA2).
+      if (ending) return;
+      const done = await solioFiles.process({ wants: c => !ending && windowWants(c), handle: async req => {
+        if (ending) return { result: 'failed', reason: 'interrupted' };
         const c = profiles.engines.b2.config;
         if (c?.movedTo) return { result: 'rejected', reason: 'moved' };
         // 이미 보호를 시작한 PC는 버린다. 옮겨 오기만 한 PC(복구 전용)는 「보호 시작」만 받는다.
@@ -673,6 +682,10 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       }
       return handlers.get(name)(...args);
     },
+    // The host's end (`$ending`): the timers stop, so no setup request, account look or recovery check is taken up any more;
+    // a Google sign-in waiting for the browser ends (a code already received is still exchanged and saved); the first range's
+    // finding stops. Jobs, a reinstall and calls already going finish; the host waits for them within its limits.
+    async ending() { if(ending||closing)return;ending=true;for(const t of timers)clearInterval(t);clearInterval(recommended.timer);try{account.cancelSignIn();}catch{}try{recovery.auth?.cancel?.();}catch{}await range.stop().catch(()=>{}); },
     async stop() { if(closing)return;closing=true;for(const t of timers)clearInterval(t);await range.stop();await recommended.stop();await Promise.all([recovery.stop(),profiles.stop()]);await lockCall('engine.unlock').catch(()=>{}); },
     active:()=>profiles.active()||!!recommended.engine?.config?.automatic||recommended.busy, busy:()=>profiles.busy()||recommended.busy
   };

@@ -85,6 +85,12 @@ test('WorkBackup.exe --solio: hello first, calls as the window answers them, bus
   assert.equal(typeof booted.state, 'object');
   assert.ok(booted.state && booted.state.profiles, JSON.stringify(booted).slice(0, 200));
 
+  // A window started while the host holds the window lock has no window to wake: it ends 75 (no window opens), so SYNK
+  // 솔리오's 「백업 창 따로 열기」 tries again rather than taking it for a woken window (GPT workbackup-solio-one-be-20261127-r3 GA1).
+  const kept = spawn(exe, ['--window', '--test-mode'], { env, stdio: 'ignore', windowsHide: true });
+  started.push(kept);
+  assert.equal(await within(new Promise((ok) => kept.once('exit', (code) => ok(code))), WAIT, 'the window kept out by the host'), 75);
+
   // A second host while the first holds the window lock: busy, and its end.
   const second = host(['--solio', '--test-mode'], env);
   assert.equal(await within(second.exited, WAIT, 'the busy host'), 0);

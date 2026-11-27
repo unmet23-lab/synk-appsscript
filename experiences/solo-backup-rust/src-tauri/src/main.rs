@@ -393,9 +393,16 @@ fn update_start(args:&[String])->Option<(&'static str,bool)>{
         _=>None,
     }
 }
+/// The exit of a start that found the window lock held with no window to wake: 75 (try later), in test mode too; None for
+/// the rest (a woken window and an install going end 0 as before, test-support/installer-check.ps1).
+const WINDOW_HELD_EXIT:i32=75;
+fn window_exit(code:&str)->Option<i32>{(code=="WINDOW_HELD").then_some(WINDOW_HELD_EXIT)}
 fn main(){
     if let Some((mode,quiet))=update_start(&std::env::args().skip(1).collect::<Vec<_>>()){std::process::exit(update_mode(mode,quiet));}
     if let Err(code)=run(){
+    // No window to wake while the lock is held: 75, 「try again」, never shown (SYNK 솔리오's 「백업 창 따로 열기」 tries again
+    // on it, SOLIO_ONE_CLIENT.md 8.1). A woken window and an install going end 0 as before.
+    if let Some(exit)=window_exit(&code){std::process::exit(exit);}
     if (code=="ALREADY_RUNNING"||code=="INSTALLING")&&!std::env::args().any(|a|a=="--test-mode"||a=="--smoke"){return;}
     if code=="INSTALL_INCOMPLETE"{
         eprintln!("{code}");
@@ -409,6 +416,12 @@ fn main(){
 
 #[cfg(test)] mod tests {
     use super::*;
+    #[test] fn a_window_kept_out_by_the_host_ends_75_and_a_woken_one_0(){
+        // SYNK 솔리오's 「백업 창 따로 열기」 tries again on 75 only (GPT workbackup-solio-one-be-20261127-r3 GA1).
+        assert_eq!(window_exit(platform::held_code(false)),Some(75));
+        assert_eq!(window_exit(platform::held_code(true)),None);
+        assert_eq!(window_exit("INSTALLING"),None,"an install going ends 0 as before (installer-check.ps1)");
+    }
     #[test] fn an_update_start_reaches_the_installer_with_its_own_arguments(){
         // GPT workbackup-solio-one-be-20261127 GD4: the command line to the installer's arguments in one line of travel —
         // update_start's `quiet` is what update_mode hands update::install, which starts the installer with installer_args.
