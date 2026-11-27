@@ -21,7 +21,7 @@ function fixture(t, { env: extraEnv = {}, start = '2026-11-27T01:00:00.000Z', fe
   const directory = mkdtempSync(join(tmpdir(), 'synk-path-cases-'));
   const store = new Store(directory);
   let stamp = Date.parse(start);
-  const env = { PATH_CASES_ENABLED: 'true', PATH_CASE_TICKET_KEY: KEY, ...extraEnv };
+  const env = { PATH_CASES_ENABLED: 'true', PATH_CASE_TICKET_KEY: KEY, PATH_CASES_ALLOW: '*', ...extraEnv };
   const urgentCalls = [], ownerAlerts = [], changes = [];
   const make = (name, role, memberships) => { const row = store.createUser({ name, email: name + '@path.example.test', role }); const next = { ...row, ...(memberships ? { workspaceProfile: { version: 1, memberships, duties: [], revision: 1 } } : {}) }; store.put('users', row.id, next); return next; };
   const users = {
@@ -100,6 +100,8 @@ test('권한: PATH 상담 담당 · 책임자 · 회사 주인만, 담당은 자
   // 담당자가 PATH 소속에서 빠지면 열린 건은 회사 주인에게.
   f.store.put('users', f.users.counselor.id, { ...f.store.get('users', f.users.counselor.id), workspaceProfile: { version: 1, memberships: [{ company: 'PATH', role: 'operations' }], duties: [], revision: 2 } });
   assert.equal(f.cases.list(f.users.owner).items[0].assigneeId, f.users.owner.id);
+  // 목록 읽기는 저장을 바꾸지 않는다. 담당 돌려놓기는 보관 정리가 한다.
+  f.cases.maintain();
   assert.equal(f.store.get(PATH_CASE_KINDS.cases, made.id).assigneeId, f.users.owner.id);
 });
 
@@ -279,7 +281,8 @@ test('계정 정리: 서명한 머리말로 묻고, gone은 지우고 leaving은
   assert.deepEqual(done, { asked: 10, gone: 1, leaving: 1, present: 7 });
   assert.equal(f.store.get(PATH_CASE_KINDS.cases, made[0].id), null); assert.equal(f.store.get(PATH_CASE_KINDS.tombstones, made[0].id).reason, 'account-gone');
   assert.equal(f.store.get(PATH_CASE_KINDS.cases, made[1].id).hidden, true);
-  assert.ok(!f.cases.list(f.users.owner).items.some(row => row.id === made[1].id), 'leaving 건은 직원 목록에서 숨긴다');
+  assert.ok(!f.cases.list(f.users.manager).items.some(row => row.id === made[1].id), 'leaving 건은 직원 목록에서 숨긴다');
+  assert.equal(f.cases.list(f.users.owner).items.find(row => row.id === made[1].id)?.hidden, true, '회사 주인은 숨긴 건을 보고 지울 수 있다');
   assert.ok(f.store.get(PATH_CASE_KINDS.cases, made[9].id), '모르는 계정은 지우지 않는다');
   assert.ok(calls.every(call => call.url === 'https://talk.example.test/functions/v1/synk-account'));
   // 학생이 다시 오면 숨김이 풀린다.
@@ -323,7 +326,12 @@ test('검수 고침(11-27): 허용 목록 · 기한 · 학생이 뺀 할 일 · 
   assert.throws(() => f.cases.studentCreate(s, f.handoff(s)), code('PATH_CASES_NOT_ALLOWED'));
   f.env.PATH_CASES_ALLOW = s.synkUserId + ', typo';
   assert.throws(() => f.cases.studentCreate(s, f.handoff(s)), code('PATH_CASES_NOT_ALLOWED'));
+  // 비우거나 빼면 아무도 받지 않는다. '*'이면 모두에게 연다.
+  f.env.PATH_CASES_ALLOW = '';
+  assert.throws(() => f.cases.studentCreate(s, f.handoff(s)), code('PATH_CASES_NOT_ALLOWED'));
   delete f.env.PATH_CASES_ALLOW;
+  assert.throws(() => f.cases.studentCreate(s, f.handoff(s)), code('PATH_CASES_NOT_ALLOWED'));
+  f.env.PATH_CASES_ALLOW = '*';
   // 증표는 기한까지 묶는다: 기한을 바꿔 보내면 거절한다.
   const moved = f.handoff(s); moved.deadline = '2027-01-14';
   assert.throws(() => f.cases.studentCreate(s, moved), code('CASE_TICKET_BRIEF'));

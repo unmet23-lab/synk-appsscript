@@ -167,6 +167,10 @@ test('고친 줄 옮기기: 요청 꼴과 옮긴 줄의 숫자를 본다', () =>
   assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일과 7월 3일'] }, two.edits).length, 1);
   const en = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'by March 7, 2027' }] });
   assert.throws(() => checkBriefEditOutput({ texts: ['2027년 7월 3일까지'] }, en.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
+  // 영어 달 이름은 맞게 옮기면 받는다(달 숫자가 한쪽에만 있어도).
+  assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일까지'] }, en.edits)[0].text_ko, '2027년 3월 7일까지');
+  const en2 = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'by March 7' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['3월 7일까지'] }, en2.edits).length, 1);
   assert.throws(() => checkBriefEditOutput({ texts: [] }, r.edits), { code: 'BRIEF_BAD_OUTPUT' });
   assert.throws(() => validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [] }), { code: 'BRIEF_BAD_REQUEST' });
   assert.throws(() => validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'x', text_ko: '가짜' }] }), { code: 'BRIEF_BAD_REQUEST' });
@@ -252,6 +256,11 @@ test('글 다듬기는 두 번 해도 같다(빈칸만 있는 줄 사이)', () =
 
 test('위험 낱말: 직접적인 영어 위기 표현', () => {
   for (const t of ['I want to die.', 'I don\'t want to live anymore', 'My partner hit me last night.']) assert.equal(looksUrgent(t), true, t);
+});
+
+test('위험 낱말 관문 잣대: 언어마다 직접 알리는 문장은 잡고, 흔한 일상 말은 잡지 않는다', () => {
+  for (const t of ['남자친구가 저를 때렸어요', '맞아서 병원에 갔어요', '죽고 싶어요', '살려주세요', 'He said he will kill me', 'I was raped', 'Намайг зодлоо', 'намайг ална гэсэн', 'Амиа хорломоор байна']) assert.equal(looksUrgent(t), true, t);
+  for (const t of ['경험을 살려서 지원하고 싶어요', '예방주사 맞았어요', 'I like grape juice', 'Please help me with the form', 'Санхүүгийн дарамт их байна']) assert.equal(looksUrgent(t), false, t);
 });
 
 test('금액: 「82만 500원」은 한 수로 읽어 「82만 원」을 근거로 치지 않는다', () => {

@@ -16,7 +16,7 @@ import { readCases } from '../../../../../experiences/path-app/ask-flow.mjs';
 // 지어낸 계정 · 토큰만 쓴다. 토큰은 서명 없는 합성 꼴이고, 받을지는 가짜 중앙이 정한다(실제 서버는 중앙 확인을 거친다).
 const issuer = 'https://identity.example.test', KEY = 'synthetic-path-case-ticket-key-0123456789abcdef';
 const PATH_CLIENT = 'path-app-fixture', CUSTOMER_CLIENT = 'customer-browser-fixture';
-const baseEnv = { PATH_CASES_ENABLED: 'true', PATH_CASE_TICKET_KEY: KEY, PATH_STUDENT_CLIENT_ID: PATH_CLIENT, SYNK_ID_CUSTOMER_SUPABASE_URL: issuer,
+const baseEnv = { PATH_CASES_ENABLED: 'true', PATH_CASES_ALLOW: '*', PATH_CASE_TICKET_KEY: KEY, PATH_STUDENT_CLIENT_ID: PATH_CLIENT, SYNK_ID_CUSTOMER_SUPABASE_URL: issuer,
   SYNK_ID_CUSTOMER_ACCOUNT_API_URL: issuer + '/functions/v1/synk-account', SYNK_ID_CUSTOMER_PUBLISHABLE_KEY: 'sb_publishable_synthetic_fixture', SYNK_ID_CUSTOMER_CLIENT_ID: CUSTOMER_CLIENT };
 const synthetic = claims => 'synthetic.' + Buffer.from(JSON.stringify(claims)).toString('base64url') + '.fixture';
 const brief = { situation: '몽골 학생이 2027년 3월 학부 입학을 준비해요.', wants: '원서 서류를 함께 준비해 주세요.', ai_done: [{ text: '한국어 조건을 안내했어요.', cites: ['prog-jbnu-ug'] }],

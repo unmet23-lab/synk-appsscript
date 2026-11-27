@@ -17,7 +17,7 @@ export const PATH_CASE_LIMITS = Object.freeze({
   // 갈래별 주간 횟수(한 사람, 지난 7일). stuck은 설계대로 1번. 증표 없는 급함 · 14~17세 양식은 합쳐서 하루 3번 · 주 5번.
   weekly: { stuck: 1, act: 3, synk: 3 }, noTicketDaily: 3, noTicketWeekly: 5,
   closedKeepDays: 90, noticeDays: 14, idleOpenDays: 180, tombstoneDays: 365, viewDays: 365, intakeDays: 8, alertDays: 30,
-  livenessEveryMs: DAY, livenessStaleMs: DAY, livenessBatch: 100, livenessBatches: 5, goneStopCount: 3, goneStopShare: 0.2,
+  livenessEveryMs: DAY, livenessStaleMs: DAY, livenessBatch: 100, livenessBatches: 5, goneStopCount: 3, goneStopShare: 0.2, goneShareMinAsked: 15,
 });
 const L = PATH_CASE_LIMITS;
 const STATUSES = ['new', 'reviewing', 'answered', 'closed'];
@@ -43,9 +43,13 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   const confirmKey = createHmac('sha256', store.key).update('path-case-erase-confirm\0v1').digest();
   const enabled = () => env.PATH_CASES_ENABLED === 'true';
   // 허용 목록을 적었으면 그 계정만 받는다. 적은 값 가운데 하나라도 SYNK ID 꼴이 아니면 아무도 받지 않는다(잘못 붙여 넣어 모두에게 열리지 않게).
-  const allowList = () => { const text = String(env.PATH_CASES_ALLOW ?? ''), raw = text.split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(Boolean); return { set: text !== '', ok: raw.length > 0 && raw.every(value => UUID.test(value)), ids: raw }; };
+  // 허용 목록: 비었거나 없으면 아무도 받지 않는다. 모두에게 열 때는 '*' 하나만 적는다. 적은 값 가운데 하나라도 SYNK ID 꼴이 아니면 아무도 받지 않는다.
+  const allowList = () => { const text = String(env.PATH_CASES_ALLOW ?? '').trim(), raw = text.split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(Boolean); return text === '*' ? { all: true } : { all: false, ok: raw.length > 0 && raw.every(value => UUID.test(value)), ids: raw }; };
   // 접수 줄의 학생은 열쇠 해시로 둔다(상담을 지운 뒤 8일 동안 남는 줄에서 누가 무엇을 보냈는지 바로 읽히지 않게).
   const erasedRequestKey = requestId => 'erased:' + createHmac('sha256', store.key).update('path-case-erased-request\0v1\0' + requestId).digest('hex');
+  // 지운 접수의 횟수: 저장소에는 남기지 않고(지운 건과 다시 잇지 못하게) 이 서버가 켜져 있는 동안 메모리에만 7일 둔다. 지우고 다시 보내 급함 푸시를 끝없이 울리지 못하게 한다.
+  const erasedIntake = new Map();
+  function rememberErased(intake) { const list = (erasedIntake.get(intake.synkUserId) || []).filter(x => Date.parse(x.at) > Date.now() - WEEK); list.push({ mode: intake.mode, kind: intake.kind, at: intake.at }); erasedIntake.set(intake.synkUserId, list); }
   const intakeSubject = synkUserId => createHmac('sha256', store.key).update('path-case-intake\0v1\0' + synkUserId).digest('hex');
   const ticketKey = () => { const value = env.PATH_CASE_TICKET_KEY; return typeof value === 'string' && value.length >= 32 ? value : null; };
   const notify = ids => { const list = [...new Set(ids.filter(Boolean))]; if (list.length) try { onChange(list); } catch { /* 다음 읽기에 보인다 */ } };
@@ -87,7 +91,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   }
   // 담당자의 계정이 꺼지거나 PATH 소속이 빠지면 열린 건은 회사 주인에게 돌아간다.
   const assigneeOf = row => (row.assigneeId && eligible(row.assigneeId) ? row.assigneeId : (open(row) ? workspaceOwner(store)?.id || null : row.assigneeId || null));
-  const visibleTo = (who, row) => !row.hidden && (who.all || assigneeOf(row) === who.user.id);
+  const visibleTo = (who, row) => (!row.hidden || who.role === 'owner') && (who.all || assigneeOf(row) === who.user.id);
   function reassignOrphans() {
     const owner = workspaceOwner(store)?.id || null, moved = [];
     store.transaction(() => {
@@ -148,7 +152,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   /* ── 횟수 ── 지난 하루 · 7일의 접수 줄로 센다(줄은 8일 뒤 지운다). */
   function checkLimits(synkUserId, mode, kind, at) {
-    const rows = store.allWhere(K.intake, 'synkUserId', intakeSubject(synkUserId)).filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
+    const rows = [...store.allWhere(K.intake, 'synkUserId', intakeSubject(synkUserId)), ...(erasedIntake.get(intakeSubject(synkUserId)) || [])].filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
     const tooMany = () => fail(429, 'CASE_LIMIT', '이번 주에 보낼 수 있는 연결을 다 썼어요. 급하면 hello@synk.im으로 연락해 주세요.');
     if (mode === 'urgent' || mode === 'teen') {
       const free = rows.filter(row => row.mode === 'urgent' || row.mode === 'teen');
@@ -202,7 +206,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   function studentCreate(identity, input) {
     if (!enabled()) throw fail(503, 'PATH_CASES_CLOSED', '지금은 사람 연결을 받지 않아요. hello@synk.im으로 연락해 주세요.');
     const allowed = allowList();
-    if (allowed.set && (!allowed.ok || !allowed.ids.includes(identity.synkUserId))) throw fail(403, 'PATH_CASES_NOT_ALLOWED', '아직 사람 연결을 쓸 수 없는 계정이에요. hello@synk.im으로 연락해 주세요.');
+    if (!allowed.all && (!allowed.ok || !allowed.ids.includes(identity.synkUserId))) throw fail(403, 'PATH_CASES_NOT_ALLOWED', '아직 사람 연결을 쓸 수 없는 계정이에요. hello@synk.im으로 연락해 주세요.');
     let req;
     try { req = validateCaseRequest(input, nowMs()); } catch (error) { throw shapeFault(error); }
     if (req.mode === 'handoff') verifyTicket(req.ticket, identity, req.brief_ko, req.deadline);
@@ -306,7 +310,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       store.remove(K.cases, row.id);
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
       // 접수 줄은 지운다(학생 해시 · 때 · 갈래로 지운 건을 다시 잇지 못하게). 같은 요청 번호를 다시 보내면 「지운 상담」으로 답하도록, 학생과 잇지 않는 요청 번호 해시만 8일 남긴다.
-      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); if (intake.requestId) { const gone = erasedRequestKey(intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
+      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); rememberErased(intake); if (intake.requestId) { const gone = erasedRequestKey(intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
@@ -331,7 +335,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     return { id: row.id, kind: row.kind, status: row.status, urgent: row.urgent === true, urgentAt: row.urgentAt || null, assigneeId: assigneeOf(row),
       assigneeName: live(assigneeOf(row))?.name || '', deadline: body.deadline || null, mode: body.mode, lang: body.lang, age: body.age,
       wants: body.brief_ko?.wants || null, openTasks: tasks.filter(t => !t.done).length, tasks: tasks.length,
-      waiting: Boolean(last && last.from === 'student'), createdAt: row.createdAt, updatedAt: row.updatedAt, closedAt: row.closedAt || null, revision: row.revision };
+      waiting: Boolean(last && last.from === 'student'), hidden: row.hidden === true, createdAt: row.createdAt, updatedAt: row.updatedAt, closedAt: row.closedAt || null, revision: row.revision };
   }
   function order(a, b) {
     return Number(a.status === 'closed') - Number(b.status === 'closed')
@@ -344,7 +348,6 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   }
   function list(actor) {
     let who = access(actor);
-    reassignOrphans(); who = access(actor);
     const items = store.all(K.cases).filter(row => visibleTo(who, row)).map(row => summaryOf(row, bodyOf(row))).sort(order);
     return { items, role: who.role, canAssign: who.all, canErase: who.role === 'owner', assignees: who.all ? assignees() : [],
       settings: who.role === 'owner' ? { defaultAssigneeId: store.get('settings', SETTINGS)?.defaultAssigneeId || null } : null,
@@ -604,7 +607,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     }
     const gone = ids.filter(id => results[id] === 'gone');
     // 한 번에 gone이 3건 이상이거나 물은 계정의 20%를 넘으면 아무것도 바꾸지 않고 멈춘 뒤 관리자에게 알린다.
-    if (gone.length >= L.goneStopCount || gone.length > ids.length * L.goneStopShare) {
+    // 한 번에 3건 이상, 또는 15명 넘게 물었을 때 20%를 넘으면 멈춘다(작은 규모에서 한두 명이 탈퇴해도 지운다).
+    if (gone.length >= L.goneStopCount || (ids.length >= L.goneShareMinAsked && gone.length > ids.length * L.goneStopShare)) {
       finish({ livenessStatus: 'stopped', livenessAsked: ids.length, livenessGone: gone.length });
       try { ownerAlert(`PATH 상담 계정 정리를 멈췄어요. 계정을 지운 학생이 한 번에 ${gone.length}명(물은 ${ids.length}명 가운데)으로 보여 상담을 지우지 않았어요. 중앙 계정 상태를 확인해 주세요.`); } catch { /* 상태 줄에 남아 있다 */ }
       return { stopped: true, asked: ids.length, gone: gone.length };

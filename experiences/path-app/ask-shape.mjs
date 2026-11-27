@@ -77,17 +77,19 @@ export const hasIdNumber = (text) => maskAsk(text) !== String(text ?? '');
  * 넓게 잡는 쪽으로 둔다(놓치는 것보다 카드가 한 번 더 뜨는 편이 낫다). 라틴 글자로 쓴 몽골어도 본다. */
 const DANGER = [
   // 한국어
-  '죽고 싶', '죽고싶', '자살', '자해', '목숨', '때려', '때리', '맞았', '맞고 있', '폭행', '폭력', '성폭', '성추행', '강간', '협박', '감금', '납치', '갇혀', '위협', '돈을 뜯', '돈 뜯', '사기를 당', '사기 당', '살려', '위험해',
+  '죽고 싶', '죽고싶', '자살', '자해', '목숨', '때려', '때리', '때렸', '때린', '얻어맞', '두들겨 맞', '맞아서 병원', '맞아서 다쳤', '맞고 있', '폭행', '폭력', '성폭', '성추행', '강간', '협박', '감금', '납치', '갇혀', '위협', '돈을 뜯', '돈 뜯', '사기를 당', '사기 당', '살려줘', '살려 줘', '살려주세요', '살려 주세요', '위험해', '죽인다', '죽이겠', '죽일 거',
   // 영어
-  'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'wanna die', 'don\'t want to live', 'hit me', 'hits me', 'beat me', 'beats me', 'abuse', 'assault', 'raped', 'rape', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
+  'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'wanna die', 'don\'t want to live', 'hit me', 'hits me', 'beat me', 'beats me', 'kill me', 'hurt me', 'abuse', 'assault', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
   // 몽골어(키릴)
-  'амиа хорло', 'амиа егүүт', 'үхмээр', 'өөрийгөө гэмтээ', 'зодсон', 'зодуул', 'зодож', 'хүчир', 'бэлгийн дарамт', 'айлга', 'заналх', 'хулгайлсан', 'луйвар', 'аюулд', 'аврагтун',
+  'амиа хорло', 'амиа егүүт', 'үхмээр', 'өөрийгөө гэмтээ', 'зодсон', 'зодуул', 'зодож', 'зодлоо', 'зодно', 'намайг ална', 'ална гэсэн', 'алчихна', 'алах гэж', 'хүчир', 'бэлгийн дарамт', 'айлга', 'заналх', 'хулгайлсан', 'луйвар', 'аюулд', 'аврагтун',
   // 몽골어(라틴 글자)
   'amia horl', 'amiaa horl', 'uhmeer', 'ukhmeer', 'zodson', 'zoduul', 'huchir', 'khuchir', 'luivar', 'ayuuld'
 ];
+// 라틴 글자 낱말 가운데 다른 낱말 속에 들어가기 쉬운 것(grape의 rape)은 낱말 경계로 본다.
+const DANGER_WORDS = /\b(?:rape|raped|raping)\b/i;
 export function looksUrgent(text) {
   const s = String(text ?? '').toLowerCase().normalize('NFC');
-  return DANGER.some((w) => s.includes(w));
+  return DANGER.some((w) => s.includes(w)) || DANGER_WORDS.test(s);
 }
 
 /* ── 숫자 대조 ── 답 속 숫자가 근거(인용 항목의 글) · 질문 · 학생 조건에 있는지 본다. 0과 1은 보지 않는다(「한 번」 · 「1년」 따위).
@@ -333,16 +335,20 @@ export const BRIEF_EDIT_SCHEMA = Object.freeze({ type: 'object', additionalPrope
  * 2027-03-07 · 2027.3.7, 3월 7일, 3-р сарын 7 · 3 сарын 7, March 7 · 7 March. */
 const MONTHS_EN = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const pad2 = (n) => String(n).padStart(2, '0');
-export function datesIn(text) {
-  const s = String(text ?? ''), out = new Set();
-  const add = (m, d) => { m = Number(m); d = Number(d); if (m >= 1 && m <= 12 && d >= 1 && d <= 31) out.add(`${pad2(m)}-${pad2(d)}`); };
-  for (const x of s.matchAll(/(?<!\d)\d{4}[-./](\d{1,2})[-./](\d{1,2})(?!\d)/g)) add(x[1], x[2]);
-  for (const x of s.matchAll(/(?<!\d)(\d{1,2})\s*월\s*(\d{1,2})\s*일/g)) add(x[1], x[2]);
-  for (const x of s.matchAll(/(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu)) add(x[1], x[2]);
-  const mon = MONTHS_EN.join('|');
-  for (const x of s.matchAll(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)`, 'gi'))) add(MONTHS_EN.indexOf(x[1].toLowerCase()) + 1, x[2]);
-  for (const x of s.matchAll(new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b`, 'gi'))) add(MONTHS_EN.indexOf(x[2].toLowerCase()) + 1, x[1]);
-  return out;
+export function datesIn(text) { return dateParts(text).dates; }
+/** 달 · 날을 읽고, 읽은 달 · 날 숫자를 지운 글을 함께 돌려준다(해는 남긴다 — 숫자 대조가 본다). */
+function dateParts(text) {
+  let s = String(text ?? '');
+  const dates = new Set();
+  const add = (m, d) => { m = Number(m); d = Number(d); if (m >= 1 && m <= 12 && d >= 1 && d <= 31) { dates.add(`${pad2(m)}-${pad2(d)}`); return true; } return false; };
+  const take = (re, pick) => { s = s.replace(re, (...g) => (add(...pick(g)) ? ' ' : g[0])); };
+  const mon = MONTHS_EN.join('|'), monIdx = (w) => MONTHS_EN.indexOf(String(w).toLowerCase()) + 1;
+  take(/(?<=\d{4})[-./](\d{1,2})[-./](\d{1,2})(?!\d)/g, (g) => [g[1], g[2]]);
+  take(/(?<!\d)(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, (g) => [g[1], g[2]]);
+  take(/(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu, (g) => [g[1], g[2]]);
+  take(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)`, 'gi'), (g) => [monIdx(g[1]), g[2]]);
+  take(new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b`, 'gi'), (g) => [monIdx(g[2]), g[1]]);
+  return { dates, rest: s };
 }
 /** 옮긴 줄: 줄 수가 같고, 숫자가 원문과 같아야 한다(바뀌면 거절). 양쪽에서 날짜를 읽을 수 있으면 해 · 달 · 날까지 같아야 한다. */
 export function checkBriefEditOutput(out, edits) {
@@ -350,10 +356,13 @@ export function checkBriefEditOutput(out, edits) {
   return edits.map((e, i) => {
     const ko = typeof out.texts[i] === 'string' ? cleanText(out.texts[i]) : '';
     if (!ko || chars(ko) > MAX_BRIEF_LINE * 2) throw fault('BRIEF_BAD_OUTPUT');
-    const a = [...numbersIn(e.text)].sort().join(','), b = [...numbersIn(ko)].sort().join(',');
+    // 양쪽에서 날짜를 읽었으면 날짜(달 · 날)는 따로 맞대고, 남은 숫자를 맞댄다(「by March 7」 ↔ 「3월 7일까지」는 같은 날). 한쪽만 날짜를 읽었으면 날짜를 빼지 않고 숫자 전체를 맞댄다.
+    const pa = dateParts(e.text), pb = dateParts(ko), both = pa.dates.size > 0 && pb.dates.size > 0;
+    const a = [...numbersIn(both ? pa.rest : e.text)].sort().join(','), b = [...numbersIn(both ? pb.rest : ko)].sort().join(',');
     if (a !== b) throw fault('BRIEF_NUMBERS_CHANGED');
-    const da = datesIn(e.text), db = datesIn(ko);
-    if (da.size && db.size && [...da].sort().join(',') !== [...db].sort().join(',')) throw fault('BRIEF_NUMBERS_CHANGED');
+    // 한쪽이 날짜 하나를 읽지 못했으면(꼴이 달라) 읽은 쪽이 다른 쪽의 부분집합이면 받는다. 서로 다른 날(3월 7일 ↔ 7월 3일)은 거절한다.
+    const sub = (x, y) => [...x].every((v) => y.has(v));
+    if (both && !sub(pa.dates, pb.dates) && !sub(pb.dates, pa.dates)) throw fault('BRIEF_NUMBERS_CHANGED');
     return { ...e, text_ko: maskAsk(ko) };
   });
 }
