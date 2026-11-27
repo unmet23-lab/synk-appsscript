@@ -249,7 +249,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         row = { id, synkUserId: identity.synkUserId, kind: req.kind, status: 'new', assigneeId: defaultAssignee(), revision: 1, lastStudentCheckAt: at,
           urgent: false, urgentAt: null, createdAt: at, updatedAt: at, closedAt: null, retentionNoticeAt: null, hidden: false };
         // 메모의 위험은 번역 때 모델이 뜻으로 본다(judge). 모델을 부를 수 없으면 지금 위험 낱말로 본다.
-        if (req.kind === 'urgent' || (body.note && !modelJudges() && looksUrgent(body.note))) { const raised = raiseUrgent(row, at); row = raised.row; urgent = { target: raised.target }; }
+        const byModel = modelJudges(); // 한 요청 안에서는 한 번만 정한다
+        if (req.kind === 'urgent' || (body.note && !byModel && looksUrgent(body.note))) { const raised = raiseUrgent(row, at); row = raised.row; urgent = { target: raised.target }; }
+        if (body.note && byModel) body.noteJudgePending = true;
         row = save(row, body);
         if (body.note) translate.push({ field: 'note', judge: true });
         if (body.last) translate.push({ field: 'last' });
@@ -285,9 +287,11 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       if (repeated) return current;
       if (!open(current)) throw fail(409, 'CASE_CLOSED', '끝난 상담이에요. 다시 연결하면 새 상담이 열려요.');
       created = addStudentMessage(body, text, requestId, at);
+      const byModel = modelJudges(); // 한 요청 안에서는 한 번만 정한다
+      if (byModel) created.judgePending = true;
       let next = touch({ ...current, status: current.status === 'answered' ? 'reviewing' : current.status, revision: current.revision + 1, updatedAt: at }, at);
       // 열린 건에 쓴 글의 위험은 번역 때 모델이 본다. 모델을 부를 수 없으면 지금 위험 낱말로 보고 급함 표시를 올린다.
-      if (!modelJudges() && looksUrgent(text)) { const raised = raiseUrgent(next, at); next = raised.row; urgentTarget = raised.target; }
+      if (!byModel && looksUrgent(text)) { const raised = raiseUrgent(next, at); next = raised.row; urgentTarget = raised.target; }
       return save(next, body);
     });
     if (created) {
@@ -311,7 +315,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     // 이미 지운 건을 다시 지우면(8일 안) 정리가 끝났는지 알려 준다.
     const key = typeof id === 'string' && UUID.test(id) ? erasedOwnerKey(intakeSubject(identity.synkUserId), id.toLowerCase()) : null;
     const gone = key && !store.get(K.cases, id.toLowerCase()) ? store.get(K.nonces, key) : null;
-    if (gone) return { ok: true, deleted: true, id: id.toLowerCase(), repeated: true, purge: truncatedAt && truncatedAt >= gone.erasedAt ? 'done' : 'pending' };
+    if (gone) return { ok: true, deleted: true, id: id.toLowerCase(), repeated: true, purge: gone.purged ? 'done' : 'pending' };
     const row = studentCase(identity, id);
     erase(row, 'student');
     return { ok: true, deleted: true, id: row.id, purge: 'pending' };
@@ -327,7 +331,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
       // 접수 줄은 지운다(학생 해시 · 때 · 갈래로 지운 건을 다시 잇지 못하게). 같은 요청 번호를 다시 보내면 「지운 상담」으로 답하도록, 학생과 잇지 않는 요청 번호 해시만 8일 남긴다.
       for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); rememberErased(intake); if (intake.requestId) { const gone = erasedRequestKey(intake.synkUserId, intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
-      { const owner = erasedOwnerKey(intakeSubject(row.synkUserId), row.id); store.put(K.nonces, owner, { nonce: owner, exp: Date.parse(at) + L.intakeDays * DAY, erasedAt: at }); }
+      // 학생이 직접 지운 건만 「다시 지우기」 답용 표식을 8일 둔다. 지운 시각은 두지 않고(1년 남는 줄과 시각으로 잇지 않게) 끝나는 날도 하루 단위로 둔다.
+      if (reason === 'student') { const owner = erasedOwnerKey(intakeSubject(row.synkUserId), row.id), day = Math.ceil(Date.parse(at) / DAY) * DAY; store.put(K.nonces, owner, { nonce: owner, exp: day + L.intakeDays * DAY, purged: false }); }
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
@@ -343,7 +348,11 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     const startedAt = now();
     try { store.db.exec('PRAGMA busy_timeout=0'); const r = store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get(); walPending = Boolean(r && r.busy); } catch { walPending = true; }
     finally { try { store.db.exec('PRAGMA busy_timeout=5000'); } catch { /* 저장소가 닫혔다 */ } }
-    if (!walPending) truncatedAt = startedAt;
+    if (!walPending) {
+      truncatedAt = startedAt;
+      // WAL을 다 잘랐으면 그 앞에 지운 건의 표식은 모두 정리 끝이다.
+      try { store.transaction(() => { for (const n of store.all(K.nonces)) if (typeof n.nonce === 'string' && n.nonce.startsWith('erased-owner:') && !n.purged) store.put(K.nonces, n.nonce, { ...n, purged: true }); }); } catch { /* 다음 정리 때 */ }
+    }
     return !walPending;
   }
 
@@ -551,14 +560,39 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     });
     if (row) { try { onUrgent(row, target); } catch { /* 알림 줄은 저장돼 있다 */ } notify([assigneeOf(row)]); }
   }
+  // 판정을 마치면(모델 · 낱말) 저장해 둔 판정 대기 표시를 지운다.
+  function judged(caseId, job) {
+    try { store.transaction(() => {
+      const latest = store.get(K.cases, caseId); if (!latest) return;
+      const body = bodyOf(latest), m = job.messageId ? body.messages.find(x => x.id === job.messageId) : null;
+      if (m) { if (!m.judgePending) return; delete m.judgePending; } else { if (!body.noteJudgePending) return; delete body.noteJudgePending; }
+      save(latest, body, { allowOver: true });
+    }); } catch { /* 보관 정리가 다시 본다 */ }
+  }
+  // 판정 대기로 남은 글(서버가 판정 전에 멈췄거나 줄에서 빠짐)은 보관 정리 때 위험 낱말로 본다.
+  function sweepPendingJudgements() {
+    const queued = new Set(translationQueue.filter(j => j.judge).map(j => j.caseId + '|' + (j.messageId || j.field)));
+    for (const row of store.all(K.cases)) {
+      let body; try { body = bodyOf(row); } catch { continue; }
+      const jobs = [...body.messages.filter(m => m.judgePending).map(m => ({ messageId: m.id, source: m.text })), ...(body.noteJudgePending && body.note ? [{ field: 'note', source: body.note }] : [])];
+      for (const job of jobs) {
+        if (queued.has(row.id + '|' + (job.messageId || job.field)) || inFlight === row.id + '|' + (job.messageId || job.field)) continue;
+        judgeFallback(row.id, job.source); judged(row.id, job);
+      }
+    }
+  }
+  let inFlight = null;
   function queueTranslation(caseId, job) {
     if (stopped || !translator?.configured?.()) return;
-    translationQueue.push({ caseId, ...job });
+    // 판정이 붙은 일은 번역만 하는 일보다 앞에 넣는다(급함 알림이 번역 줄에 밀리지 않게).
+    if (job.judge) { const i = translationQueue.findIndex(j => !j.judge); translationQueue.splice(i < 0 ? translationQueue.length : i, 0, { caseId, ...job }); }
+    else translationQueue.push({ caseId, ...job });
     if (!translating) translating = drainTranslations().finally(() => { translating = null; });
   }
   async function drainTranslations() {
     while (translationQueue.length && !stopped) {
       const job = translationQueue.shift();
+      inFlight = job.judge ? job.caseId + '|' + (job.messageId || job.field) : null;
       try {
         const row = store.get(K.cases, job.caseId); if (!row) continue;
         const body = bodyOf(row);
@@ -573,6 +607,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
           const said = Array.isArray(res?.danger) ? res.danger[0] : null;
           if (said === true) escalate(job.caseId);
           else if (said !== false) judgeFallback(job.caseId, source);
+          judged(job.caseId, job);
         }
         if (!out || body.lang === 'ko') continue;
         store.transaction(() => {
@@ -591,6 +626,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   /* ── 보관 정리 ── */
   function maintain() {
     pruneErased();
+    sweepPendingJudgements();
     const at = now(), atMs = Date.parse(at), done = { closedIdle: 0, erased: 0, noticed: 0, tombstones: 0, reassigned: 0 };
     done.reassigned = reassignOrphans();
     if (walPending) truncateWal();
@@ -692,7 +728,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     stop: async () => {
       stopped = true;
       // 아직 모델이 보지 못한 학생 글은 멈추기 전에 위험 낱말로 본다.
-      for (const job of translationQueue.splice(0)) if (job.judge) { try { const row = store.get(K.cases, job.caseId); const body = row && bodyOf(row); const m = job.messageId ? body?.messages.find(x => x.id === job.messageId) : null; const source = m ? m.text : body?.[job.field]; if (source) judgeFallback(job.caseId, source); } catch { /* 멈추는 중 */ } }
+      for (const job of translationQueue.splice(0)) if (job.judge) { try { const row = store.get(K.cases, job.caseId); const body = row && bodyOf(row); const m = job.messageId ? body?.messages.find(x => x.id === job.messageId) : null; const source = m ? m.text : body?.[job.field]; if (source) { judgeFallback(job.caseId, source); judged(job.caseId, job); } } catch { /* 멈추는 중 */ } }
       livenessAbort.abort(); await translating; await livenessRun;
     },
   };

@@ -351,7 +351,7 @@ function dateParts(text) {
   take(new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b`, 'gi'), (g) => [monIdx(g[2]), g[1]]);
   return { dates: found.sort((p, q) => p.at - q.at).map((x) => x.v), rest: s };
 }
-/** 옮긴 줄: 줄 수가 같고, 숫자가 원문과 같아야 한다(바뀌면 거절). 양쪽에서 날짜를 읽을 수 있으면 해 · 달 · 날까지 같아야 한다. */
+/** 옮긴 줄: 줄 수가 같고, 숫자가 원문과 같아야 한다(바뀌면 거절). 양쪽에서 날짜를 읽을 수 있으면 달 · 날 목록이 같고 해는 남은 숫자로 맞댄다(두 날짜의 해 바꿈은 모델 검사가 본다). */
 export function checkBriefEditOutput(out, edits) {
   if (!exactKeys(out, ['texts']) || !Array.isArray(out.texts) || out.texts.length !== edits.length) throw fault('BRIEF_BAD_OUTPUT');
   return edits.map((e, i) => {

@@ -431,3 +431,27 @@ test('학생이 지운 건을 다시 지우면(8일 안) 정리가 끝났는지 
   assert.equal(f.cases.studentDelete(s, c.id).purge, 'done');
   assert.throws(() => f.cases.studentDelete(f.student(), c.id), error => error.status === 404);
 });
+
+test('지운 건 표식은 학생이 지울 때만 · 지운 시각 없이, 판정 대기 글은 보관 정리 때 위험 낱말로 본다', t => {
+  const f = fixture(t), s = f.student();
+  const c = f.cases.studentCreate(s, f.handoff(s)).body.case;
+  f.cases.studentDelete(s, c.id);
+  const marks = f.store.all(PATH_CASE_KINDS.nonces).filter(n => n.nonce.startsWith('erased-owner:'));
+  assert.equal(marks.length, 1); assert.equal('erasedAt' in marks[0], false); assert.equal(marks[0].exp % DAY, 0);
+  // 주인이 지운 건에는 표식을 두지 않는다.
+  const u = f.student(), d = f.cases.studentCreate(u, f.handoff(u)).body.case;
+  const token = f.cases.eraseCheck(f.users.owner, d.id, { revision: f.store.get(PATH_CASE_KINDS.cases, d.id).revision }).erasure.token;
+  f.cases.erase(f.users.owner, d.id, { revision: f.store.get(PATH_CASE_KINDS.cases, d.id).revision, token });
+  assert.equal(f.store.all(PATH_CASE_KINDS.nonces).filter(n => n.nonce.startsWith('erased-owner:')).length, 1);
+  // 모델 판정을 받기로 한 메모가 줄에 오르지 못하고(판정 대기로 남고) 보관 정리를 만나면 위험 낱말로 본다.
+  let n = 0;
+  const flaky = { configured: () => ++n <= 1, translate: async () => null };
+  const g = fixture(t, { translator: flaky }), v = g.student();
+  const made = g.cases.studentCreate(v, g.teen({ note: '집에서 아빠한테 맞았어요' })).body.case;
+  assert.equal(g.store.get(PATH_CASE_KINDS.cases, made.id).urgent, false);
+  g.cases.maintain();
+  assert.equal(g.store.get(PATH_CASE_KINDS.cases, made.id).urgent, true);
+  assert.equal(g.urgentCalls.length, 1);
+  g.cases.maintain();
+  assert.equal(g.urgentCalls.length, 1, '한 번만 본다');
+});
