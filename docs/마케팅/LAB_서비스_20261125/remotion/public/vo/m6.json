@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m6",
+ "text": "서비스… 아니에요?!",
+ "dur": 1.746,
+ "words": [
+  {
+   "text": "서비스…",
+   "start": 0.02,
+   "end": 0.603
+  },
+  {
+   "text": "아니에요?!",
+   "start": 0.885,
+   "end": 1.746
+  }
+ ],
+ "source": {
+  "key": "88ed0e73cfafc32f9111204115b99a14",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 0.9,
+   "seed": 2291,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "계산서~ 사장님이 내민 계산서를 보니 공짜로 받은 음식은 모두 0원인데, 「더 주세요」라고 조른 한 줄에만 8,000원이 적혀 있다. 작은 손님이 깜짝 놀라 눈이 동그래져서 되묻는다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 478
+ }
+}

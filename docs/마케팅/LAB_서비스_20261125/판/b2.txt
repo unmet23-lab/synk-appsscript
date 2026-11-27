@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+EDIT THE FIRST ATTACHED IMAGE. It is one panel of a vertical comedy short: a needle-felt miniature diorama photo, portrait 2:3, looking straight down at a cream felt restaurant bill on a walnut felt table. Keep the whole image the same — same framing, camera, light, table, bill shape and colour, the three stitched divider lines, rows 1 to 3 (dumplings "₩0", sweet-and-sour pork "₩0", jjamppong "₩0"), the stitched circle with "₩8,000" in row 4, and the owner's felt fingertip at the right edge next to row 4.
+
+CHANGE ONLY ONE THING — the item on the LEFT of row 4:
+- Remove the empty white felt plate.
+- In its place, sew on a small cream-white felt SPEECH BUBBLE (a rounded rectangle with a short pointed tail at its lower-left corner), outlined with a stitched dark-brown thread edge, the same size as the jjamppong bowl above it.
+- Inside the bubble, embroider these Korean words in the same thick chunky dark-brown wool thread as the prices, on ONE line, large enough to fill the bubble: 더 주세요~!
+  Spell it exactly: 더 주세요~! — the syllables 더 · 주 · 세 · 요, then a tilde and an exclamation mark. Hand-stitched, like a child's felt craft, not a printed font.
+- The speech bubble sits fully inside the bill, left of the circled "₩8,000", not touching the circle.
+
+The second attached image is only a felt craft-style reference.
+
+The ONLY writing anywhere in the image is exactly: "₩0", "₩0", "₩0", "더 주세요~!" and "₩8,000". No other letters, words, numbers, totals or logos. No real brand. No dense dotted or ring patterns anywhere. Keep every item and price fully inside the bill and inside the frame. The top 22% of the image stays plain walnut felt table, as in the first image.

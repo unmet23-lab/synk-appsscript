@@ -11,6 +11,7 @@
 //             그 카드에서 심한 줄의 시각마다 까닭이 있어야 내려간다.
 //   확인할 것 — 그 밖의 걸림 전부(읽기 시간은 언어마다 어림이고, 새 글 사이(바뀜)는 심함이 없다), 그 앞에 만든 편과 synkbrief · yuhobuilds(목소리가 이끄는 모국어 자막)의 걸림,
 //             못 잰 영상(원본 없음 · 원본을 다시 그린 그림이 영상과 다름 · 렌더 실패). 올리기 전 검사 전체를 멈추지 않는다.
+// 끝말(11-27): LAB 편(폴더 날짜 END_FROM부터)은 마지막 화면 글이 영상 끝 2초 안까지 남아야 한다 — 아래 끝말줄. 일부러 비운 끝은 「화면글판단」 {"끝말": "까닭"}.
 // 이해 시험 전에도 같은 등급을 쓴다(아래 시험전검사 — tools/낯선이시험.js가 LAB 새 편의 질문을 만들기 전에 부르고, 고칠 것이 있으면 재료를 만들지 않는다).
 // 잰 값은 게시/화면글검사.json에 영상 내용 해시(sha1) · 도구 지문 · 원본 지문 · 판정 조건(브랜드 · 판의 말)과 함께 둔다 — 넷이 같으면 다시 재지 않는다(한 편 1~2분).
 //   해시는 재기 전에 구해 두고, 재는 사이 영상이 바뀌었으면 그 결과를 쓰지도 남기지도 않고 못 잰 것으로 알린다. 기록을 못 쓰면 확인할 것 한 줄로 알린다.
@@ -189,7 +190,7 @@ function screenTextFindingsInner(bundle, videoFiles, { run = runTool, save = tru
   for (const file of files) {
     const r = results.get(file);
     const where = `화면 글 ${path.basename(path.dirname(file))}/${path.basename(file)}`;
-    if (r) findings.push(...결과줄(r, prep, hardOk, where), ...배우는말줄(bundle.dir, bundle.name, r, prep, where));
+    if (r) findings.push(...결과줄(r, prep, hardOk, where), ...배우는말줄(bundle.dir, bundle.name, r, prep, where), ...끝말줄(bundle.name, r, prep, where, 영상길이(file)));
   }
   return findings;
 }
@@ -233,6 +234,31 @@ function 배우는말줄(편dir, name, r, prep, where) {
     if (잰 + 배움.틈 < 필요) out.push({ level: 등급, code: 'screen-text-배우는말', where, message: `배우는 말 「${ko}」이 화면에 ${잰}초만 있다 — ${필요}초 넘게 둔다(제작 절차 「배우는 말 칸은 천천히」 · 11-26 유호님)${꼬리}` });
   }
   return out;
+}
+
+// ── 끝을 말 없이 비우지 않는다(11-27 유호님 「마지막에 이해가 잘 안가」 — 제작 절차 「끝 반전은 그림과 한마디로」 #lab-end-words) ──
+// E64 「서비스」 v7은 「계산서~」 말풍선이 24.8초에 사라진 뒤 계산서 그림 2.6초와 놀란 몽글 2초가 말 없이 4.6초 갔다. 반전을 풀어 줄 말이 없어
+// 몽글이 무엇에 놀라는지 안 읽혔고, 소리도 바탕 잡음만 남았다. 마지막 화면 글이 영상 끝 끝빈틈초 안까지 남아야 한다.
+const END_FROM = '20261127';
+const 끝빈틈 = 2.0;
+
+function 영상길이(file) {
+  try {
+    const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8', windowsHide: true, timeout: 30000 });
+    return Number(String(r.stdout || '').trim()) || 0;
+  } catch { return 0; }
+}
+
+function 끝말줄(name, r, prep, where, 길이) {
+  if (!/^LAB_/.test(String(name)) || (편날짜(name) || '') < END_FROM || !r || r.못잼 || !(길이 > 0)) return [];
+  const 표 = (r.시간표 || []).map(([글, 시작, 머묾]) => ({ 글: 고른글(글), 끝: (Number(시작) || 0) + (Number(머묾) || 0) }));
+  if (!표.length) return [];
+  const 마지막 = 표.reduce((a, b) => (b.끝 > a.끝 ? b : a));
+  const 빈 = Math.round((길이 - 마지막.끝) * 10) / 10;
+  if (빈 <= 끝빈틈) return [];
+  const why = reasonFor(prep || {}, { 항목: '끝말' });
+  const 꼬리 = why ? ` · 「화면글판단」: ${why}` : ' — 일부러 비운 끝이면 준비.json 「화면글판단」 {"끝말": "까닭"}';
+  return [{ level: why ? LOOK : FIX, code: 'screen-text-끝말', where, message: `끝 ${빈}초 동안 화면 글이 없다(마지막 글 「${마지막.글}」이 ${마지막.끝.toFixed(1)}초에 사라짐) — 끝 반전을 본 반응 칸에 배운 말로 된 한마디(목소리와 말풍선)를 끝까지 둔다(제작 절차 「끝 반전은 그림과 한마디로」 · 11-27 유호님 「마지막에 이해가 잘 안가」)${꼬리}` }];
 }
 
 // 영상 하나의 결과 → 걸림 줄. 올리기 전 검사 ㉓과 이해 시험 전 검사가 같은 등급을 쓴다
@@ -294,10 +320,10 @@ function 시험전검사(file, { 언어 = null, run = runTool, 기록폴더 = �
       const 원본같음 = (!out.원본지문 || out.원본지문 === src) && sourceStamp(편) === src;
       if (원본같음 && (!r.못잼 || 남길못잼.test(r.못잼))) remember(cacheFile, key, stat, src, cond, r);
     }
-    return { 대상: true, 편, 줄: [...결과줄(r, prep, true, where), ...배우는말줄(편, name, r, prep, where)] };
+    return { 대상: true, 편, 줄: [...결과줄(r, prep, true, where), ...배우는말줄(편, name, r, prep, where), ...끝말줄(name, r, prep, where, 영상길이(file))] };
   } catch (error) {
     return { 대상: true, 편, 줄: [{ level: LOOK, code: 'screen-text-failed', where, message: `화면 글 검사가 멈췄다(${String(error && error.message).slice(0, 200)}) — 올리기 전 검사 ㉓이 다시 본다` }] };
   }
 }
 
-module.exports = { screenTextFindings, applies, reasonFor, 모으기, 결과줄, 배우는말줄, 편폴더, 시험전검사, FROM, FIX_FROM, PACE_FROM, BRANDS, HARD, 남길못잼 };
+module.exports = { screenTextFindings, applies, reasonFor, 모으기, 결과줄, 배우는말줄, 끝말줄, 편폴더, 시험전검사, FROM, FIX_FROM, PACE_FROM, END_FROM, BRANDS, HARD, 남길못잼 };

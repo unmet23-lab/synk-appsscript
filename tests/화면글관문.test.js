@@ -316,3 +316,23 @@ test('배우는 말 — 긴 글은 초당 13자로 더 두고, 화면에서 못 
   const 옛 = fixture(t, { name: 'LAB_서비스_20261125' });
   assert.deepEqual(codes(screenTextFindings(옛.bundle, [옛.video], { run: fake(옛.bundle, 옛.video, { 걸림: [], 시간표: [] }), save: false })), []);
 });
+
+test('끝말 — 11-27부터 만든 LAB 편은 마지막 화면 글이 끝 2초 안까지 남아야 한다(E64 「서비스」 v7 4.6초 빈 끝)', () => {
+  const { 끝말줄, END_FROM } = require('../tools/lib/화면글관문.js');
+  assert.equal(END_FROM, '20261127');
+  const v7 = { 시간표: [['서비스 더 주세요~!', 20.8, 2.4], ['계산서~', 23.4, 1.4], ['Your bill~ 🧾', 23.4, 1.4]] };
+  const 새 = 'LAB_무엇_20261128';
+  const r = 끝말줄(새, v7, {}, '화면 글', 29.4);
+  assert.equal(r.length, 1);
+  assert.equal(r[0].level, FIX);
+  assert.match(r[0].message, /끝 4\.6초 동안 화면 글이 없다\(마지막 글 「계산서~」이 24\.8초에 사라짐\)/);
+  const v8 = { 시간표: [...v7.시간표, ['서비스… 아니에요?!', 27.8, 2.6], ['It’s not free?! 😳', 27.8, 2.6]] };
+  assert.deepEqual(끝말줄(새, v8, {}, '화면 글', 30.4), []);
+  const 까닭 = 끝말줄(새, v7, { 화면글판단: { 끝말: '끝 화면이 로고 그림' } }, '화면 글', 29.4);
+  assert.equal(까닭[0].level, LOOK);
+  assert.match(까닭[0].message, /로고 그림/);
+  assert.deepEqual(끝말줄('LAB_서비스_20261125', v7, {}, '화면 글', 29.4), []); // 앞에 만든 편은 묻지 않는다
+  assert.deepEqual(끝말줄('synkbrief_무엇_20261128', v7, {}, '화면 글', 29.4), []);
+  assert.deepEqual(끝말줄(새, { 못잼: '원본 없음' }, {}, '화면 글', 29.4), []);
+  assert.deepEqual(끝말줄(새, v7, {}, '화면 글', 0), []); // 길이를 못 읽으면 묻지 않는다
+});

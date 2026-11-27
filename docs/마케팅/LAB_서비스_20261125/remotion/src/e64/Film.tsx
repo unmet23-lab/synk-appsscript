@@ -47,7 +47,8 @@ const Head: React.FC = () => {
   );
 };
 
-// 배경음 — bgm.wav는 19초라 같은 곡을 17.5초부터 한 번 더 깔고 1.5초 겹쳐 잇는다(26.8초를 다 덮음)
+// 배경음 — bgm.wav는 19초라 같은 곡을 17.5초부터 한 번 더 깔고 1.5초 겹쳐 잇는다(30.4초를 다 덮음)
+// v8: 바탕 분식집 소리(sfx/bunsik.wav)는 뺐다 — 고르게 쉬익거리는 잡음이라 말 없는 끝에서 화이트노이즈로 들렸다(유호님 11-27)
 const BGM_V = 0.16;
 const SEAM = 17.5;
 const XF = 1.5;
@@ -57,7 +58,6 @@ const Sound: React.FC = () => (
     <Sequence from={fr(SEAM)} layout="none">
       <Audio src={staticFile('bgm.wav')} volume={(i) => MASTER * BGM_V * interpolate(i, [0, fr(XF)], [0, 1], clamp) * interpolate(i, [fr(FILM - SEAM) - 15, fr(FILM - SEAM)], [1, 0], clamp)} />
     </Sequence>
-    <Audio src={staticFile('sfx/bunsik.wav')} volume={(i) => MASTER * 0.2 * interpolate(i, [fr(FILM) - 10, fr(FILM)], [1, 0], clamp)} endAt={fr(FILM)} />
     {VO.map(([t, v]) => (
       <Sequence key={v} from={fr(t)} layout="none">
         <Audio src={staticFile(`vo/${v}.wav`)} volume={MASTER} />

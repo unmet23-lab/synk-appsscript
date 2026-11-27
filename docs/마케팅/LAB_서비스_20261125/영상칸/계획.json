@@ -144,5 +144,15 @@
     "start": "b1",
     "key": "gives two small light knocks on the table next to the ringed price"
   },
-  "_v7": "b1은 끝 반전 칸(계산서 가까이) — 판 a · b(_v7계획쓰기.py a | b)를 굽고 고른다(11-27 유호님 「고친 뒤 바꿔」)"
+  "_v7": "b1은 끝 반전 칸(계산서 가까이) — 판 a · b(_v7계획쓰기.py a | b)를 굽고 고른다(11-27 유호님 「고친 뒤 바꿔」)",
+  "b2": {
+    "model": "Omni 1.2 Flash",
+    "n": 1,
+    "cost": "9",
+    "dur": "3초",
+    "proj": "omni",
+    "start": "b2",
+    "key": "taps twice on the table right beside the circled price"
+  },
+  "_v8": "b2는 b1의 넷째 줄을 「더 주세요~!」 말풍선으로 바꾼 계산서 칸 — 판 a · b(_v8계획쓰기.py a | b)를 굽고 고른다(11-27 유호님 「응, 고쳐」)"
 }

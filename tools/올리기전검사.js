@@ -73,6 +73,11 @@
  *      (제작 절차 「배우는 말 칸은 천천히」 — 11-26 유호님 「너무 빠르지않은지 그거 잘 반영됬는지 체크해줘」).
  *      일부러 둔 자리는 준비.json 「화면글판단」에 까닭(고칠 것 → 확인할 것). 규칙은 제작 절차 「화면 글은 읽을 만큼」 — 11-15 유호님 「물개 게시물 나쁘지않은데
  *      너무 전환이 빨라서 이해가 어려운데」(물개 v8: 17.8초에 낱말 아홉 · 0.5초마다 바뀌는 글 · 1.1초짜리 답)
+ *      11-27부터 만든 LAB 편은 마지막 화면 글이 영상 끝 2초 안까지 남아야 한다(끝말 — 끝 반전을 본 반응 칸에 배운 말 한마디, 11-27 유호님 「마지막에 이해가 잘 안가」).
+ *   ㉔ 바탕 잡음(11-27, tools/바탕잡음.py · 판정 tools/lib/바탕소리관문.js) — LAB · synkbrief · yuhobuilds 편의 섞인 최종본 소리를 1초 칸으로 재어 잡음처럼
+ *      평탄한 칸(1~12kHz 평탄도 0.30 넘음)이 20% 넘거나 가운데 평탄도가 0.20 넘으면, 11-27부터 만든 LAB 편은 고칠 것 · 그 밖은 확인할 것.
+ *      편의 remotion/public에서 잡음 같은 긴 바탕 파일을 이름으로 짚는다. 일부러 둔 소리는 준비.json 「바탕소리판단」에 까닭(고칠 것 → 확인할 것) —
+ *      11-27 유호님 「화이트노이즈 소리랑 …」: E64 「서비스」의 분식집 바탕(sfx/bunsik.wav)이 합성 잡음이라 말 없는 끝 5초에 쉬익 소리만 남았다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -94,6 +99,7 @@ const 오마주 = require('./오마주.js');
 const 반복 = require('./무대반복.js');
 const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
+const { bedNoiseFindings } = require('./lib/바탕소리관문.js');
 const { finalCutFindings, 까닭관문, 글자까닭올림 } = require('./lib/최종본관문.js');
 const { mnPickFindings } = require('./lib/몽골고르기관문.js');
 const { rightWrongFindings } = require('./lib/맞음틀림관문.js');
@@ -1169,6 +1175,7 @@ async function run(dir, opts = {}) {
   const 판본영상 = Object.values(prep.돌림?.판본 || {}).map((v) => v && v.파일 && 미디어경로(path.resolve(bundle.dir, v.파일))).filter(Boolean);
   findings.push(...aestheticFindings(bundle, [...videos.keys()], { 판본영상 }));
   findings.push(...musicLayerFindings(bundle, [...videos.keys()]));
+  findings.push(...bedNoiseFindings(bundle, [...videos.keys()]));
   // 까닭 관문(11-23): 최종 확인 전 두 브랜드 편의 글자 가림 · 같은 구도 · 되풀이 · 끝소리 확인할 것은 「최종본판단」 까닭이 없으면 고칠 것(tools/lib/최종본관문.js)
   const 까닭 = 까닭관문(bundle);
   findings.push(...finalCutFindings(bundle, [...videos.keys()], { save: !opts.noSave, 관문: 까닭 }));
