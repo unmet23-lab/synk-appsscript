@@ -2,7 +2,8 @@
 
 쓰임: python 짓기.py <공개본 폴더> <시안 폴더> <출력 폴더>
   공개본 폴더: index.html · en.html (지금 공개본. 질문창 · 소식 · PC 앱 받기 조각을 여기서 옮긴다)
-  시안 폴더: a/town-port.webp · a/hall-front-port.webp · a/dodam-port.mp4 · a/dodam-port.webp · f/mono.woff2
+  시안 폴더: a/town-port.webp · a/hall-front-port.webp · a/opalin-port.mp4 · a/opalin-port.webp · f/mono.woff2
+  광고 칸 영상과 포스터는 이 폴더의 광고칸_오팔린.py가 시안 폴더에 만든다(OPALIN 「시스루」 2분 16.67초~2분 24.43초).
   묻기 창 자료는 이 폴더의 묻기_ko.json · 묻기_en.json, 명조는 PULSE 고객 앱의 NotoSerifKR-300과 브랜드 폰트의 Noto Serif Display Light다.
   출력 폴더: index.html · en/index.html · assets/v12/…  (og 그림은 og.mjs가 뒤에 넣고 다시 짓는다)
 """
@@ -29,8 +30,8 @@ def put(src, rel):
 
 TOWN = put(DRAFT / 'a/town-port.webp', 'home/town.webp')
 HALL = put(DRAFT / 'a/hall-front-port.webp', 'home/hall.webp')
-FILM = put(DRAFT / 'a/dodam-port.mp4', 'home/drama.mp4')
-POSTER = put(DRAFT / 'a/dodam-port.webp', 'home/drama.webp')
+FILM = put(DRAFT / 'a/opalin-port.mp4', 'home/opalin.mp4')
+POSTER = put(DRAFT / 'a/opalin-port.webp', 'home/opalin.webp')
 MONO = put(DRAFT / 'f/mono.woff2', 'dm-mono-500.woff2')
 REPO = HERE.parents[3]
 SERIF = put(REPO / 'docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/NotoSerifKR-300.woff2', 'serif-ko.woff2')
@@ -67,10 +68,10 @@ L = {
         h1='SYNK — 끝까지 책임지는 한국 유학, 실전 AI 활용 강의, 브랜드를 드라마로 만드는 광고',
         a=('끝까지 책임지는', '한국 유학'), b=('실전', 'AI 활용 강의'), c=('브랜드를 드라마로 만드는', '광고'),
         town='집, 교실, 대학 정문, 회사, 카페가 한 길로 이어진 마을', hall='강사가 청중을 보며 큰 화면을 가리키는 강의장. 화면 글은 「synk는 지금도 일합니다. 이렇게 30여 가지가 사람 없이 돕니다」',
-        film='도담중공업 홍보영상의 장면', pins='한국 유학의 다섯 가지 일',
+        film='OPALIN 「시스루」 뮤직비디오의 장면', pins='한국 유학의 다섯 가지 일',
         pin=('한국어', '교실', '유학', '취업', '모임'),
         scr=('synk는 지금도 일합니다', '서울 지금', '이렇게 30여 가지가 사람 없이 돕니다'),
-        quick='바로 가기', askgo='무엇이든 물어보세요', reserve='한국 유학 사전예약', solio='솔리오 받기', news='새 소식', me='내 홈',
+        quick='바로 가기', askgo='무엇이든 물어보세요', news='새 소식', me='내 홈',
         foot='바닥 메뉴', founder='회사', atlas='아틀라스', privacy='개인정보처리방침', terms='이용약관', delete='데이터 삭제',
         biz=('사업자등록번호를 알려주세요.', '사업자 정보'), close='닫기',
         pf=('한국어 연습과 솔리오를 계정 하나로 씁니다.', '혼자 일하는 사람의 AI 업무 앱 솔리오와 한국어 연습이 이 앱에 들어 있습니다.'),
@@ -86,10 +87,10 @@ L = {
         h1='SYNK — With you all the way: study in Korea. Hands-on AI training. Advertising that turns brands into drama.',
         a=('With you all the way', 'Study in Korea'), b=('Hands-on', 'AI training'), c=('Turning brands into drama', 'Advertising'),
         town='A town where a home, a classroom, a university gate, an office and a café stand along one road', hall='A lecture hall where the speaker faces the audience and points to a large screen that reads “synk is working right now. 30-plus jobs run like this on their own”',
-        film='A scene from a Dodam Heavy Industries film', pins='Five parts of studying in Korea',
+        film='A scene from the OPALIN “See-Through” music video', pins='Five parts of studying in Korea',
         pin=('Korean', 'Class', 'University', 'Job', 'Community'),
         scr=('synk is working right now', 'Seoul time', '30-plus jobs run like this on their own'),
-        quick='Quick links', askgo='Ask us anything', reserve='Study in Korea pre-registration', solio='Get SOLIO', news='What’s new', me='My home (Korean)',
+        quick='Quick links', askgo='Ask us anything', news='What’s new', me='My home (Korean)',
         foot='Footer menu', founder='Company', atlas='Atlas', privacy='Privacy policy', terms='Terms', delete='Data deletion',
         biz=('What is your business registration number?', 'Business information'), close='Close',
         pf=('Korean practice and SOLIO on one account.', 'SOLIO, the AI work app for people who work alone, and Korean practice are both in this app.'),
@@ -137,12 +138,14 @@ def page(k):
     toast = one(t, r'<div class="toast" id="toast"[^>]*></div>')
     client = one(t, r'<script defer src="/desktop/releases/client\.js\?v=[0-9a-f]+"></script>')
     bottom = one(t, r'<div class="foot-bottom">.*?</div>')
+    # 바닥의 방문 집계 안내 한 줄은 뺀다(유호님 11-27 「이 내용도 삭제해」). 집계 스크립트와 개인정보처리방침의 설명은 그대로다
+    bottom, n = re.subn(r'<span>[^<]*<a href="/privacy/#visitor-stats(?:-en)?">[^<]*</a></span>', '', bottom)
+    assert n == 1, '방문 집계 안내 줄'
     og = V / f'og/home-{k}.jpg'
     ogurl = f'https://synk.im/assets/v12/og/home-{k}.jpg' + (f'?v={sha(og)}' if og.exists() else '')
     x = f'<p class="sheet-x"><button type="button" data-close aria-label="{s["close"]}"></button></p>'
     pins = ''.join(f'<a class="pin" style="left:{l}%;top:{p}%" href="{u}/{d}/">{n}</a>' for (l, p, d), n in zip(PINS, s['pin']))
     title = lambda x2: f'<small>{x2[0]}</small> <b>{x2[1]}</b>'
-    reserve = one(t, r'<a [^>]*href="(/reserve/\?from=synk-(?:en-)?home&amp;lang=(?:ko|en))"')
     nl = '\n'
     return f'''<!doctype html>
 {s['html']}
@@ -188,7 +191,7 @@ def page(k):
 
 <section class="end">
   <p class="ask"><button type="button" data-sheet="ask" aria-haspopup="dialog">{s['askgo']}</button> <a href="mailto:hello@synk.im">hello@synk.im</a></p>
-  <nav aria-label="{s['quick']}"><a href="{reserve}">{s['reserve']}</a><button type="button" data-sheet="platform" aria-haspopup="dialog">{s['solio']}</button><button type="button" data-sheet="now" aria-haspopup="dialog">{s['news']}</button><a href="/account/platform.html#home">{s['me']}</a></nav>
+  <nav aria-label="{s['quick']}"><button type="button" data-sheet="now" aria-haspopup="dialog">{s['news']}</button><a href="/account/platform.html#home">{s['me']}</a></nav>
 </section>
 </main>
 
