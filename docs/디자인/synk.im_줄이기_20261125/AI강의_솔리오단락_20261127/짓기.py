@@ -95,12 +95,14 @@ AI_CSS = '''<style>
 .app-shot figcaption{margin-top:16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;align-items:baseline}
 .app-shot figcaption b{grid-column:1/-1;font:var(--t-h4);letter-spacing:-.01em}
 .app-shot figcaption span{font:var(--t-body);color:var(--ink);max-width:40em}
-.app-shot figcaption small{font:var(--t-cap);color:var(--cap);text-align:right}
+.app-shot figcaption small{font:var(--t-cap);color:var(--cap);text-align:right;max-width:24em}
 .app-go{margin-top:var(--g4);display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
 .app-go small{font:var(--t-cap);color:var(--cap)}
 @media (max-width:820px){.app-shot figcaption{grid-template-columns:1fr}.app-shot figcaption small{text-align:left}}
 @media (max-width:600px){
   .tour-tabs button{font-size:14px;padding:11px 14px}
+  /* 고른 칸으로 옮길 때 흐린 끝에 걸리지 않게 */
+  .tour-tabs{scroll-padding-inline:48px}
   /* 옆으로 더 있는 칸이 있으면 그쪽 끝을 흐리게 지운다 */
   .tour-tabs.more-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent)}
   .tour-tabs.more-l{-webkit-mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent)}
