@@ -331,8 +331,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
       // 접수 줄은 지운다(학생 해시 · 때 · 갈래로 지운 건을 다시 잇지 못하게). 같은 요청 번호를 다시 보내면 「지운 상담」으로 답하도록, 학생과 잇지 않는 요청 번호 해시만 8일 남긴다.
       for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); rememberErased(intake); if (intake.requestId) { const gone = erasedRequestKey(intake.synkUserId, intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
-      // 학생이 직접 지운 건만 「다시 지우기」 답용 표식을 8일 둔다. 지운 시각은 두지 않고(1년 남는 줄과 시각으로 잇지 않게) 끝나는 날도 하루 단위로 둔다.
-      if (reason === 'student') { const owner = erasedOwnerKey(intakeSubject(row.synkUserId), row.id), day = Math.ceil(Date.parse(at) / DAY) * DAY; store.put(K.nonces, owner, { nonce: owner, exp: day + L.intakeDays * DAY, purged: false }); }
+      // 학생이 직접 지운 건만 「다시 지우기」 답용 표식을 8일 둔다. 지운 시각은 두지 않고(1년 남는 줄과 시각으로 잇지 않게) 끝나는 날은 하루 단위로 내려 8일을 넘지 않게 둔다.
+      if (reason === 'student') { const owner = erasedOwnerKey(intakeSubject(row.synkUserId), row.id), day = Math.floor(Date.parse(at) / DAY) * DAY; store.put(K.nonces, owner, { nonce: owner, exp: day + L.intakeDays * DAY, purged: false }); }
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
@@ -620,6 +620,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         });
         notify([assigneeOf(row)]);
       } catch { /* 번역은 덧붙임이다. 실패하면 원문만 보인다 */ }
+      finally { inFlight = null; } // 일이 끝나면(오류로 끝나도) 보관 정리의 안전망이 그 글을 다시 볼 수 있게
     }
   }
 
