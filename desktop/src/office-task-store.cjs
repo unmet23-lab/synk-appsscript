@@ -60,7 +60,8 @@ function baseTask(row) {
   }
   const visibleAnswer=provider==='codex' && row.viaTerminal===true && reason!=='MEMBER_RESULT'?'':answer;
   return { id, provider, departmentId, departmentName, prompt, previousId, status, answer:visibleAnswer, reason, createdAt, updatedAt, viaTerminal:row.viaTerminal===true,...(row.mailSearch===false?{mailSearch:false}:{}),
-    ...(typeof row.feature==='string'?{feature:row.feature,featureRef:typeof row.featureRef==='string'?row.featureRef:null,featureAlert:row.featureAlert===true}:{}) };
+    ...(typeof row.feature==='string'?{feature:row.feature,featureKind:['read','score','compose','revise'].includes(row.featureKind)?row.featureKind:'read',others:row.others===true,
+      featureRef:typeof row.featureRef==='string'?row.featureRef:null,featureAlert:row.featureAlert===true}:{}) };
 }
 
 function publicTask(row){

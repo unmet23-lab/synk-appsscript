@@ -55,7 +55,7 @@ function officeTaskInput(input){
 }
 // 기능(사업계획서_설계.md 9절): 기능 이름, 부서 번호, 정해 둔 동작과 그 동작의 칸만 건너간다. 경로는 건너가지 않는다(파일은 본체가 고르기 창으로 받는다)
 const OFFICE_FEATURE=/^[a-z][a-z0-9-]{1,31}$/;
-const OFFICE_FEATURE_ACTIONS=['pick-plan','pick-data','remove-data','criteria','start','choose','draft','save','reveal','handoff','clear','write-save','write-done'];
+const OFFICE_FEATURE_ACTIONS=['pick-plan','pick-data','remove-data','criteria','start','choose','draft','save','reveal','handoff','clear','write-save','write-done','rescore','setting'];
 const officeText=(v,max)=>typeof v==='string'&&v.length<=max&&!/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(v);
 function officeFeatureArgs(action,a){
   if(a==null)a={};
@@ -66,7 +66,8 @@ function officeFeatureArgs(action,a){
     take('provider',v=>['claude','codex'].includes(v))&&take('key',v=>typeof v==='string'&&/^n\d{1,3}$/.test(v))&&take('kind',v=>['fix','edit','keep','undo'].includes(v))&&
     take('item',v=>officeText(v,40))&&take('answers',v=>Array.isArray(v)&&v.length<=3&&v.every(x=>Number.isInteger(x)&&x>=0&&x<4))&&take('remove',v=>typeof v==='boolean')&&
     take('departmentId',officeId)&&take('extra',v=>officeText(v,2000))&&take('confirm',v=>typeof v==='boolean')&&
-    take('chapter',v=>Number.isInteger(v)&&v>=0&&v<7)&&take('skipped',v=>typeof v==='boolean');
+    take('chapter',v=>Number.isInteger(v)&&v>=0&&v<7)&&take('skipped',v=>typeof v==='boolean')&&
+    take('name',v=>['others'].includes(v))&&take('value',v=>typeof v==='boolean');
   return ok&&Object.keys(a).every(k=>k in out)&&OFFICE_FEATURE_ACTIONS.includes(action)?out:null;
 }
 // 번호가 있는 부서는 이름이나 폴더 가운데 하나만 건너갈 수 있다. 뺀 칸은 본체가 저장된 값으로 채운다(GPT 검수 GA3)

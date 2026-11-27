@@ -61,7 +61,7 @@ async function claudeAccount({file,cwd,env,signal,exec=promisify(execFile)}){
   }
 }
 
-function claudeSchemaTurn({file,env,spawn,cwd,prompt,schema,model=null,signal,timeoutMs=90_000,codes,platform=process.platform}){
+function claudeSchemaTurn({file,env,spawn,cwd,prompt,schema,model=null,signal,timeoutMs=90_000,codes,onInit=null,platform=process.platform}){
   return new Promise((resolve,reject)=>{
     let child,done=false,out='',result=null,inited=false,limited=false;
     const finish=(err,value)=>{
@@ -83,6 +83,8 @@ function claudeSchemaTurn({file,env,spawn,cwd,prompt,schema,model=null,signal,ti
         if(!tools||tools.some(t=>!CLAUDE_ALLOWED_TOOLS.has(t))||!mcp||mcp.length){finish(fail(codes.ai));return;}
         // 손님이 깐 플러그인이 실리면 끝낸다. 내장 플러그인만 받는다(11-23 실측: cc-plugin-*@builtin)
         if(Array.isArray(m.plugins)&&m.plugins.some(x=>x?.path!=='builtin')){finish(fail(codes.ai));return;}
+        // 실제로 도는 모델을 알린다. 심사위원이 고른 모델(opus · sonnet)로 앉았는지 기능이 적는다(설계 검토 2)
+        if(onInit){try{onInit({model:typeof m.model==='string'?m.model.slice(0,80):''});}catch{}}
         return;
       }
       if(!inited){finish(fail(codes.ai));return;}
@@ -155,7 +157,7 @@ function schemaTurn(providerError,codes){
     if(message.method==='turn/completed')state.end=p.turn;
   }
   function check(){if(problem)throw problem;}
-  async function ask(client,{cwd,workspace,signal,verify,timeoutMs=90_000,model=null,effort=null},prompt,outputSchema){
+  async function ask(client,{cwd,workspace,signal,verify,timeoutMs=90_000,model=null,effort=null,allow=null},prompt,outputSchema){
     cur={threadId:null,active:null,turns:new Map()};
     const names=await servers(client,null,codes);
     const mcp=Object.fromEntries([...names].map(name=>[name,{enabled:false}]));
@@ -171,6 +173,8 @@ function schemaTurn(providerError,codes){
     cur.threadId=threadId;
     await servers(client,threadId,codes);
     await verify();check();if(signal.aborted)throw fail('CANCELLED');
+    // 곁 회사 동의는 보내기 바로 앞에 동기로 본다(사업계획서 설계 검토 D1). rpc는 이 차례 안에서 바로 쓴다
+    if(typeof allow==='function'&&!allow())throw fail('OFF');
     const result=await client.rpc('turn/start',{threadId,clientUserMessageId:randomUUID(),approvalPolicy:'never',environments:[],
       sandboxPolicy:{type:'readOnly',networkAccess:false},outputSchema,input:[{type:'text',text:prompt,text_elements:[]}]});
     const active=result?.turn?.id;

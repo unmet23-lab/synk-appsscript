@@ -4,13 +4,16 @@
    글은 모두 textContent로 넣는다. 다시 그릴 때 쓰던 칸의 글과 초점을 지킨다 */
 
 const ART = { desk: '/assets/bizplan/desk.jpg', orb: '/assets/bizplan/orb.webp' };
+/* 심사 무대(14.3): 쓰기 시안의 블렌더 그림. 판 위에 발표자와 심사위원 셋, 점수판 셋을 겹친다(자리.json의 자리는 CSS에) */
+const STAGE = '/assets/bizplan/stage/';
+const STAGE_ART = { plate: STAGE + 'plate.webp', presenter: STAGE + 'presenter.webp', judge: [0, 1, 2].map(k => `${STAGE}judge${k}.webp`), paddle: [0, 1, 2].map(k => `${STAGE}paddle${k}.webp`) };
 /* 쓰는 동안 솔리오의 한마디(쓰기 시안 coach와 같다). 숫자가 필요한 장은 숫자를 묻는다 */
 const HAS_NUM = t => /[0-9]/.test(t) || /(?:한|두|세|네|다섯|여섯|일곱|여덟|아홉|열|스무|서른|마흔|쉰|백|천|만|억)\s?(?:명|개|곳|원|번|달|해|배|가지|살|시간|년|퍼센트)/.test(t);
 const coach = (num, v) => { const t = String(v || '').trim(); if (!t) return ['open', '']; if (t.length < 16) return ['look', '듣고 있어요.']; if (num && !HAS_NUM(t)) return ['curious', '숫자를 하나 넣으면 훨씬 잘 믿어요.']; return ['happy', num ? '숫자가 들어갔어요.' : '좋아요. 이대로 넘어가도 돼요.']; };
 const DEFAULT_ITEMS = ['문제 인식', '실현 가능성', '성장 전략', '팀 구성']; // 본체 office-bizplan-check.cjs와 같다
 const SVG = 'http://www.w3.org/2000/svg';
 /* 구의 눈(팀 고르기 4판 결: 작고 둥근 점 눈). 표정은 눈 모양과 보는 곳만 바꾼다 */
-const MOOD = { open: ['calm', 0, 0], look: ['calm', 3, 5], happy: ['smile', 0, 0], curious: ['calm', 5, -3], side: ['calm', 6, 2], sleepy: ['half', 0, 4], drop: ['calm', 2, 9], read: ['calm', -3, 10] };
+const MOOD = { open: ['calm', 0, 0], look: ['calm', 3, 5], happy: ['smile', 0, 0], curious: ['calm', 5, -3], side: ['calm', 6, 2], sleepy: ['half', 0, 4], drop: ['calm', 2, 9], read: ['calm', -3, 10], nervous: ['half', -2, 2] };
 function eyesPath(shape, k) {
   const R = 50, X = 0.19 * R * (1 + 0.12 * (k - 1) / 0.85), f = n => +n.toFixed(2);
   const pill = (cx, hh) => { const w = 0.062 * R * k, h = hh * k; return `M${f(cx - w)} ${f(-h + Math.min(w, h))}v${f(2 * h - 2 * Math.min(w, h))}a${f(w)} ${f(Math.min(w, h))} 0 0 0 ${f(2 * w)} 0v${f(-(2 * h - 2 * Math.min(w, h)))}a${f(w)} ${f(Math.min(w, h))} 0 0 0 ${f(-2 * w)} 0z`; };
@@ -114,7 +117,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     if (sc.head[1]) w.append(el('p', '', sc.head[1]));
     return w;
   };
-  const menu = (id, label, opts, act, sc) => {
+  const menu = (id, label, opts, act, sc, tail = null) => {
     const wrap = el('span', 'biz-menu-wrap');
     const b = btn(label, 'biz-menu', id, 'chip'); b.setAttribute('aria-haspopup', 'menu'); b.setAttribute('aria-expanded', String(sc.menu === id));
     const chev = el('i', 'chev'); chev.setAttribute('aria-hidden', 'true'); b.append(chev);
@@ -125,9 +128,19 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
         const o = btn('', act, v, 'opt'); o.setAttribute('role', 'menuitemradio'); o.setAttribute('aria-checked', String(!!on));
         o.append(el('b', '', t)); if (small) o.append(el('small', '', small)); m.append(o);
       }
+      if (tail) m.append(...tail());
       wrap.append(m);
     }
     return wrap;
+  };
+  /* 직원 메뉴 아래의 켜고 끄는 줄(설계 14.7 손님 설정). 고른 직원과 따로 저장된다 */
+  const othersSwitch = sc => {
+    // 저장하는 동안 잠그면 다시 그릴 때 초점이 머리글로 날아간다. 잠그지 않아 자판 초점이 스위치에 남는다(Opus 대체 화면 검수 P2)
+    const o = btn('', 'biz-others', '', 'opt switch', false); o.setAttribute('role', 'menuitemcheckbox'); o.setAttribute('aria-checked', String(!!sc.others?.on));
+    const t = el('span', 'tx'); t.append(el('b', '', sc.others.label), el('small', '', sc.others.small));
+    const tg = el('i', 'tg'); tg.setAttribute('aria-hidden', 'true');
+    o.append(t, tg);
+    return [el('hr', 'sep'), o];
   };
 
   /* 처음 · 실패 · 멈춤: 놓는 자리 하나 */
@@ -156,7 +169,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const add = btn('', 'biz-pick-data', '', 'chip round', !!sc.busy); add.setAttribute('aria-label', '회사 자료 더하기'); add.append(el('span', '', '+'));
     bar.append(add,
       menu('crit', sc.criteria.mode === 'pasted' ? '공고문 기준' : '창업 지원사업 기준', [['창업 지원사업 기준', 'default', sc.criteria.mode === 'default', DEFAULT_ITEMS.join(' · ')], ['공고문 기준', 'pasted', sc.criteria.mode === 'pasted', sc.list.criteria?.mode === 'pasted' && sc.list.criteria.text ? `붙여 넣은 평가 항목 ${sc.list.items.length}개` : '공고의 평가 항목을 붙여 넣습니다']], 'biz-criteria', sc),
-      menu('staff', sc.provider === 'codex' ? 'GPT 직원' : 'Claude 직원', [['Claude 직원', 'claude', sc.provider === 'claude', '내 Claude 구독으로 읽습니다'], ['GPT 직원', 'codex', sc.provider === 'codex', '내 ChatGPT 구독으로 읽습니다']], 'biz-provider', sc),
+      menu('staff', sc.provider === 'codex' ? 'GPT 직원' : 'Claude 직원', [['Claude 직원', 'claude', sc.provider === 'claude', '내 Claude 구독으로 읽습니다'], ['GPT 직원', 'codex', sc.provider === 'codex', '내 ChatGPT 구독으로 읽습니다']], 'biz-provider', sc, sc.others ? () => othersSwitch(sc) : null),
       el('span', 'sp'), btn(sc.draftReady ? '고치기 · 채우기' : '읽기', 'biz-start', '', 'go', !plan || !!sc.busy));
     comp.append(bar);
     if (sc.criteria.mode === 'pasted' && (sc.criteria.open || !sc.criteria.text)) {
@@ -266,11 +279,19 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
         if (n.sel) s.setAttribute('aria-current', 'step');
         segs.append(s);
       });
-      steps.append(segs, el('span', 'count', `${sc.at + 1} / ${sc.notes.length}`), btn('전체 보기', 'biz-sheet', '', 'chip'));
+      steps.append(segs, el('span', 'count', `${sc.at + 1} / ${sc.notes.length}`));
+      if (sc.scoreLink) steps.append(btn('점수 보기', 'biz-score-open', '', 'chip'));
+      steps.append(btn('전체 보기', 'biz-sheet', '', 'chip'));
       root.append(steps, card(selCard, sc));
       return;
     }
     root.append(say(sc), hero(sc.saved ? 'happy' : 'happy', true));
+    if (sc.scoreLink) {
+      const line = el('p', 'biz-scoreline');
+      if (sc.scoreLink.avg) line.append(el('span', '', `심사 평균 ${sc.scoreLink.avg}점`));
+      line.append(btn('점수 보기', 'biz-score-open', '', 'link'));
+      root.append(line);
+    }
     const comp = el('div', 'biz-comp done');
     const bar = el('div', 'biz-bar');
     const f = el('div', 'file bare'); f.append(icon('plan'));
@@ -280,6 +301,8 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     if (sc.saved || sc.changes) bar.append(f);
     bar.append(el('span', 'sp'));
     if (sc.notes.length) bar.append(btn('다시 보기', 'biz-go', sc.notes[0].key, 'chip'));
+    // 고른 고침을 넣은 판으로 같은 심사위원에게 다시 묻는다(14.3). 계획서가 바뀌었으면 다시 읽어야 한다
+    if (sc.rescore) bar.append(btn('다시 심사받기', 'biz-rescore', '', 'chip', !!sc.busy));
     bar.append(btn('다시 읽기', 'biz-start', '', 'chip', !!sc.busy));
     if (sc.saved) bar.append(btn('폴더에서 보기', 'biz-reveal', '', 'go', !!sc.busy));
     else bar.append(btn('저장', 'biz-save', '', 'go', !sc.changes || !!sc.busy || sc.planChanged));
@@ -330,6 +353,154 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     s.append(in_); return s;
   }
 
+  /* ── 심사 무대(14.3) ──
+     같은 무대(show.key)는 한 번 짓고 바뀐 곳만 고친다. 사무실이 15초마다 다시 그려도 처음부터 틀지 않고, 옅어짐이 끊기지 않는다.
+     움직임은 옅어짐과 눈만. 생각하는 점 셋은 읽는 심사위원 위에만 */
+  let show = null;
+  const layer = src => { const i = el('img', 'lay'); i.src = src; i.alt = ''; i.decoding = 'async'; return i; };
+  const dots = () => { const s = el('span', 'dots'); s.setAttribute('aria-hidden', 'true'); s.append(el('i'), el('i'), el('i')); return s; };
+  const setText = (node, t) => { if (node.textContent !== t) node.textContent = t; };
+  const replay = (node, cls) => { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); };
+  function buildShow(sc) {
+    const n = { judges: [], cards: [], built: false };
+    const head = el('div', 'biz-say'); head.tabIndex = -1; head.dataset.bizHead = '';
+    n.h = el('h2'); n.p = el('p'); head.append(n.h, n.p);
+    const stage = el('div', 'biz-stage'); stage.setAttribute('role', 'img'); n.stage = stage;
+    const scene = el('div', 'scene'); stage.append(scene);
+    scene.append(layer(STAGE_ART.plate));
+    n.ez = el('div', 'ez'); n.ez.setAttribute('aria-hidden', 'true'); scene.append(n.ez);
+    const pr = el('div', 'actor presenter in'); n.prOrb = el('span', 'orb'); pr.append(layer(STAGE_ART.presenter), n.prOrb); scene.append(pr);
+    for (let k = 0; k < 3; k++) {
+      const a = el('div', `actor judge j${k}`), tag = el('span', 'jtag');
+      a.append(layer(STAGE_ART.judge[k]), tag); scene.append(a);
+      n.judges[k] = { a, tag };
+    }
+    for (let k = 0; k < 3; k++) { const pd = el('div', `pd pd${k}`), num = el('b', 'pd-n'); pd.append(layer(STAGE_ART.paddle[k]), num); scene.append(pd); Object.assign(n.judges[k], { pd, num }); }
+    for (let k = 0; k < 3; k++) { const sb = el('div', `sb sb-j${k}`); sb.setAttribute('aria-hidden', 'true'); scene.append(sb); n.judges[k].sb = sb; }
+    n.stot = el('div', 'stot'); n.stotB = el('b'); n.stotS = el('small'); n.stot.append(n.stotB, n.stotS); scene.append(n.stot);
+    n.cap = el('p', 'cap');
+    const cards = el('div', 'biz-judges');
+    for (let k = 0; k < 3; k++) {
+      const c = el('div', 'jc'), b = el('b'), sm = el('small'), jr = el('div', 'jr'), bar = el('i'), st = el('span', 'st');
+      jr.setAttribute('aria-hidden', 'true'); jr.append(bar); c.append(b, sm, jr, st); cards.append(c);
+      n.cards[k] = { c, b, sm, st };
+    }
+    n.under = el('div', 'under');
+    n.parts = [head, stage, n.cap, cards, n.under];
+    return n;
+  }
+  function patchShow(n, sc) {
+    const v = sc.show;
+    setText(n.h, sc.head[0]); setText(n.p, sc.head[1] || ''); n.p.hidden = !sc.head[1];
+    const sat = v.judges.filter(j => j.seated).map(j => j.name);
+    // 말풍선의 혼잣말도 읽히게 무대 설명에 넣는다(카본 A6)
+    const says = v.judges.filter(j => j.bubble?.say).map(j => `${j.name} 심사위원: ${j.bubble.say}`);
+    n.stage.setAttribute('aria-label', `조명 아래 단상의 발표자 구와, 앞쪽 탁자에 뒷모습으로 앉은 심사위원 구가 있는 심사 무대. 앉은 심사위원: ${sat.join(', ')}${says.length ? '. ' + says.join('. ') : ''}`);
+    if (n.ez.dataset.k !== v.sign.key) {
+      n.ez.dataset.k = v.sign.key;
+      n.ez.replaceChildren(el('span', 'mono', v.sign.top), el('b', '', v.sign.title), el('i'), el('i'), el('i'));
+      if (n.built) replay(n.ez, 'flip');
+    }
+    if (n.prOrb.dataset.mood !== v.presenter) { n.prOrb.dataset.mood = v.presenter; n.prOrb.replaceChildren(eyes(v.presenter, 1.2)); }
+    v.judges.forEach((j, k) => {
+      const J = n.judges[k], C = n.cards[k];
+      J.a.classList.toggle('in', j.seated); J.a.classList.toggle('rest', j.state === 'rest');
+      if (!J.tag.childNodes.length) J.tag.append(doc.createTextNode(j.name), el('small', '', j.tag));
+      const bs = j.bubble ? j.bubble.kind + '|' + j.bubble.say : '';
+      if (J.sb.dataset.s !== bs) {
+        J.sb.dataset.s = bs;
+        if (j.bubble) { J.sb.className = `sb sb-j${k} ${j.bubble.kind}`; J.sb.replaceChildren(j.bubble.kind === 'dots' ? dots() : doc.createTextNode(j.bubble.say)); }
+      }
+      J.sb.classList.toggle('on', !!j.bubble);
+      const ps = j.paddle ? j.paddle.value + '|' + j.paddle.up : '';
+      if (J.num.dataset.s !== ps) {
+        J.num.dataset.s = ps;
+        if (j.paddle) J.num.replaceChildren(doc.createTextNode(j.paddle.value), ...(j.paddle.up ? [el('span', 'gain', j.paddle.up)] : []), el('small', '', j.paddle.name));
+      }
+      J.pd.classList.toggle('on', !!j.paddle);
+      const cls = 'jc s-' + j.state + (j.fin ? ' fin' : '');
+      if (C.c.className !== cls) C.c.className = cls;
+      setText(C.b, j.name); setText(C.sm, `${j.co} · ${j.eye}`); setText(C.st, j.status);
+    });
+    const ts = v.total ? v.total.value + '|' + v.total.small + '|' + v.total.up : '';
+    if (n.stot.dataset.s !== ts) {
+      n.stot.dataset.s = ts;
+      if (v.total) { n.stotB.textContent = v.total.value; n.stotS.replaceChildren(doc.createTextNode(v.total.small), ...(v.total.up ? [el('span', 'gain', ' ' + v.total.up)] : [])); }
+    }
+    n.stot.classList.toggle('on', !!v.total);
+    const cs = JSON.stringify(v.cap);
+    if (n.cap.dataset.s !== cs) {
+      n.cap.dataset.s = cs;
+      n.cap.replaceChildren(...v.cap.map(([t, b]) => (b ? el('b', '', t) : doc.createTextNode(t))));
+      if (n.built) replay(n.cap, 'swap');
+    }
+    const us = v.mode + '|' + (sc.taskId || '') + '|' + !!sc.busy;
+    if (n.under.dataset.s !== us) {
+      n.under.dataset.s = us;
+      n.under.replaceChildren(v.mode === 'judging' ? btn('멈추기', 'biz-cancel', sc.taskId || '', 'chip', !!sc.busy || !sc.taskId) : btn('기다리지 않고 결과 보기', 'biz-score-skip', '', 'chip'));
+    }
+    n.built = true;
+  }
+
+  /* 점수 결과(w06): 큰 평균과 가장 약한 항목, 항목 × 심사위원 점수표(누르면 까닭과 인용), 심사위원의 한 줄, 「고칠 곳 n 보기」 */
+  function scoreStage(sc, root) {
+    const v = sc.score;
+    const top = el('section', 'biz-score');
+    const words = el('div', 'words');
+    if (v.avg) { const big = el('p', 'big'); big.append(doc.createTextNode(v.avg), el('small', '', '/ 5')); if (v.up) big.append(el('em', '', v.up)); words.append(big); }
+    const h = el('h2', '', v.head[0]); h.tabIndex = -1; h.dataset.bizHead = '';
+    words.append(h);
+    if (v.head[1]) words.append(el('p', 'sub', v.head[1]));
+    top.append(sprite(v.raised ? 'happy' : 'look', 'biz-sprite lg'), words);
+    root.append(top);
+    if (v.cols.length && v.rows.length) {
+      const card = el('div', 'biz-scorecard'), t = el('table', 'sc');
+      const thead = el('thead'), hr = el('tr');
+      hr.append(el('th', '', '항목'), ...v.cols.map(c => el('th', '', c)), el('th', '', '평균'));
+      thead.append(hr);
+      const tbody = el('tbody');
+      for (const r of v.rows) {
+        const tr = el('tr', [r.weak ? 'weak' : '', r.open ? 'open' : ''].filter(Boolean).join(' '));
+        const first = el('td'), b = btn('', 'biz-score-row', r.crit, 'crit');
+        b.setAttribute('aria-expanded', String(r.open));
+        const ch = el('span', 'ch', '›'); ch.setAttribute('aria-hidden', 'true');
+        b.append(ch, el('b', '', r.crit));
+        if (r.weak) b.append(el('span', 'tag weak', '가장 약함'));
+        if (r.split) b.append(el('span', 'tag split', '의견이 갈림'));
+        if (r.fixed) b.append(el('span', 'tag fixed', '고친 뒤 오름'));
+        first.append(b); tr.append(first);
+        for (const c of r.cells) { const td = el('td', 'n', c.score); if (c.up) td.append(el('span', 'd', c.up)); tr.append(td); }
+        const at = el('td'), a = el('span', 'avg'), bar = el('i');
+        bar.setAttribute('aria-hidden', 'true'); bar.style.setProperty('--w', r.w + '%');
+        a.append(el('span', '', r.avg), bar); at.append(a); tr.append(at);
+        tbody.append(tr);
+        if (r.open) {
+          const more = el('tr', 'expl'), td = el('td');
+          td.colSpan = v.cols.length + 2;
+          for (const m of r.more) {
+            const w = el('div', 'why'), d = el('div');
+            d.append(el('p', '', m.why));
+            if (m.quote) { const q = el('p', 'qs'); if (m.where) q.append(el('span', 'where', m.where)); q.append(el('span', 'qt', m.quote)); d.append(q); }
+            w.append(el('span', 'who', m.name), el('span', 'pt', m.score), d);
+            td.append(w);
+          }
+          more.append(td); tbody.append(more);
+        }
+      }
+      t.append(thead, tbody); card.append(t); root.append(card);
+    }
+    const ul = el('ul', 'biz-verdicts');
+    for (const j of v.judges) {
+      const li = el('li', 'verdict' + (j.rest ? ' rest' : ''));
+      const name = el('b', '', j.name); if (j.co) name.append(el('small', '', `${j.co} · ${j.eye}`));
+      li.append(sprite(j.rest ? 'sleepy' : 'look', 'biz-sprite'), name, el('span', 'g', j.avg), el('p', '', j.line));
+      ul.append(li);
+    }
+    root.append(ul);
+    const go = el('div', 'res-go'); go.append(btn(v.go, 'biz-score-close', '', 'go'));
+    root.append(go, el('p', 'biz-fine', v.fine));
+  }
+
   // 알림 자리는 한 번 만들어 두고 글만 바꾼다. 그릴 때마다 새로 만들면 화면 읽기 프로그램이 알림을 놓친다(코드 검수 P2-9)
   const body = doc.createElement('div');
   const liveEl = doc.createElement('p'); liveEl.className = 'more-note biz-live'; liveEl.setAttribute('role', 'status'); liveEl.setAttribute('aria-live', 'polite');
@@ -354,9 +525,18 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     if (sc && composing && host.contains(doc.activeElement)) { pending = sc; cur = sc; return; }
     pending = undefined;
     cur = sc || null;
-    if (!sc) { host.hidden = true; host.replaceChildren(); liveEl.textContent = ''; lastKey = ''; return; }
+    if (!sc) { host.hidden = true; host.replaceChildren(); liveEl.textContent = ''; lastKey = ''; show = null; return; }
     host.hidden = false;
     if (body.parentNode !== host || liveEl.parentNode !== host) host.replaceChildren(body, liveEl);
+    // 같은 무대면 고쳐 쓰기만 한다(다시 그려도 무대가 처음부터 돌지 않게)
+    if ((sc.stage === 'judging' || sc.stage === 'reveal') && show && show.key === sc.show.key && body.firstChild === show.root) {
+      patchShow(show, sc);
+      if (liveEl.textContent !== (sc.live || '')) liveEl.textContent = sc.live || '';
+      liveEl.classList.remove('sr');
+      lastKey = sc.stage + ':';
+      return;
+    }
+    show = null;
     const values = fields(), focus = doc.activeElement && host.contains(doc.activeElement) ? doc.activeElement : null;
     // 머리글이나 이름 없는 곳에 있던 초점도 다시 그린 뒤 이 화면 안에 남긴다(열자마자 자판이 듣게)
     // 같은 동작이라도 다른 자리의 단추(단계 막대와 「다음 고칠 곳」)로 초점이 건너가지 않게 첫 class까지 맞춘다
@@ -367,9 +547,15 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     const root = el('div', 'biz');
     const top = el('div', 'biz-top'); top.append(btn(sc.back, 'biz-close', '', 'biz-back'));
     root.append(top);
-    if (sc.planChanged && sc.stage !== 'write') { const w = el('div', 'biz-warn'); w.append(el('p', '', '계획서가 읽은 뒤에 바뀌었습니다. 다시 읽은 뒤 저장할 수 있습니다.'), btn('다시 읽기', 'biz-start', '', 'chip', !!sc.busy)); root.append(w); }
+    if (sc.planChanged && sc.stage !== 'write' && sc.stage !== 'reveal') { const w = el('div', 'biz-warn'); w.append(el('p', '', '계획서가 읽은 뒤에 바뀌었습니다. 다시 읽은 뒤 저장할 수 있습니다.'), btn('다시 읽기', 'biz-start', '', 'chip', !!sc.busy)); root.append(w); }
+    if (sc.notice && sc.stage === 'notes') root.append(el('p', 'biz-notice', sc.notice));
 
     if (sc.stage === 'notes') notesStage(sc, root);
+    else if (sc.stage === 'judging' || sc.stage === 'reveal') {
+      show = buildShow(sc); show.key = sc.show.key; show.root = root;
+      root.append(...show.parts);
+      patchShow(show, sc);
+    } else if (sc.stage === 'score') scoreStage(sc, root);
     else if (sc.stage === 'reading' || sc.stage === 'waiting') {
       root.append(say(sc), hero(sc.stage === 'reading' ? 'read' : 'sleepy'));
       const comp = el('div', 'biz-comp');
@@ -402,7 +588,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     } else {
       root.append(say(sc));
     }
-    if (sc.stage !== 'loading' && sc.stage !== 'reading' && sc.stage !== 'waiting' && sc.stage !== 'write' && (sc.stage !== 'start' || sc.broken) && !(sc.stage === 'notes' && !sc.broken && sc.notes.some(n => n.sel) && sc.notes.some(n => n.state === 'open'))) {
+    if (!['loading', 'reading', 'waiting', 'write', 'judging', 'reveal', 'score'].includes(sc.stage) && (sc.stage !== 'start' || sc.broken) && !(sc.stage === 'notes' && !sc.broken && sc.notes.some(n => n.sel) && sc.notes.some(n => n.state === 'open'))) {
       const c = el('div', 'biz-clear');
       if (sc.clearAsk) c.append(el('p', '', '읽은 결과, 고른 것, 쓰던 초안을 지웁니다. 만든 초안 파일과 계획서 · 회사 자료 파일은 그대로 둡니다.'), btn('지우기', 'biz-clear', '', 'chip', !!sc.busy), btn('그만두기', 'biz-clear-ask', '', 'link'));
       else c.append(btn('기록 지우기', 'biz-clear-ask', '', 'link'));
@@ -433,7 +619,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
       const first = lastKey === '' || lastKey.startsWith('loading:');
       lastKey = k2;
       if (sc.stage === 'write' && globalThis.matchMedia?.('(pointer:fine)').matches) host.querySelector('[data-biz-write]')?.focus({ preventScroll: true });
-      if (!first) host.querySelector('.biz-steps, .biz-say')?.scrollIntoView?.({ block: 'nearest' });
+      if (!first) host.querySelector('.biz-steps, .biz-say, .biz-score')?.scrollIntoView?.({ block: 'nearest' });
     }
   }
   return { render, focusHead: () => (host.querySelector('[data-biz-head]') || host.querySelector('.biz-card .go'))?.focus() };

@@ -91,7 +91,7 @@ function createOfficeFeatures({userData,io=fs,tasks=null,pick=null,reveal=null,d
     try{
       return await f.act({store,member:a.synk_user_id,dept,action,args:args&&typeof args==='object'?args:{},io,current,
         pick,reveal,departments:()=>departments(a),
-        submitFeature:provider=>T()?T().submitFeature(a,{id:randomUUID(),feature,departmentId,provider}):{ok:false,code:'NOT_AVAILABLE'},
+        submitFeature:(provider,{kind='read',others=false}={})=>T()?T().submitFeature(a,{id:randomUUID(),feature,departmentId,provider,kind,others}):{ok:false,code:'NOT_AVAILABLE'},
         submitTask:input=>T()?T().submit(a,{...input,id:randomUUID()}):{ok:false,code:'NOT_AVAILABLE'}});
     }catch(e){return {ok:false,code:e.code||'STORAGE'};}
   }

@@ -47,7 +47,7 @@ test('기능 업무: 폴더 없는 문맥으로 서고, 영수증의 한 문장�
   const job=feature();
   assert.deepEqual(await f.service.submitFeature(member,job),{ok:true,id:job.id});
   const c=await f.call(job.id);
-  assert.deepEqual(c.spec,{id:job.id,provider:'codex',feature:'bizplan',trigger:'manual',departmentId:'plan01',member:member.synk_user_id,cwd:''});
+  assert.deepEqual(c.spec,{id:job.id,provider:'codex',feature:'bizplan',kind:'read',alsoProviders:[],trigger:'manual',departmentId:'plan01',member:member.synk_user_id,cwd:''});
   assert.equal(typeof c.hooks.changed,'function');
   assert.ok(f.contexts.every(x=>x.opts?.folder===false));
   c.resolve({summary:'사업계획서에서 고칠 곳 3곳을 찾았습니다.',ref:REF,alert:true});
@@ -119,4 +119,26 @@ test('Claude 무인 실행 판: 2.1.323부터', () => {
   assert.equal(supportsSchema('2.2.0'),true);
   assert.equal(supportsSchema('2.1.322'),false);
   assert.equal(supportsSchema('nope'),false);
+});
+
+test('기능 업무의 갈래와 「다른 회사 심사위원」: 줄에 남고 사양으로 건너가며, 모르는 갈래는 받지 않는다(사업계획서 설계 14.7)', async t=>{
+  const f=await setup(t);
+  assert.deepEqual(await f.service.submitFeature(member,feature({kind:'judge'})),{ok:false,code:'VALUE'});
+  assert.deepEqual(await f.service.submitFeature(member,feature({others:'yes'})),{ok:false,code:'VALUE'});
+  const job=feature({provider:'claude',kind:'score',others:true});
+  assert.deepEqual(await f.service.submitFeature(member,job),{ok:true,id:job.id});
+  const c=await f.call(job.id);
+  assert.equal(c.spec.kind,'score');
+  assert.deepEqual(c.spec.alsoProviders,['codex'],'Claude 업무 줄의 다른 회사는 Codex');
+  const row=(await f.snap()).find(x=>x.id===job.id);
+  assert.equal(row.featureKind,'score');
+  assert.equal(row.others,true);
+  c.resolve({summary:'심사했습니다.'});
+  await f.row(job.id,'completed');
+  const plain=feature({provider:'codex'});
+  await f.service.submitFeature(member,plain);
+  const c2=await f.call(plain.id);
+  assert.equal(c2.spec.kind,'read','갈래를 주지 않으면 읽기');
+  assert.deepEqual(c2.spec.alsoProviders,[],'켜지 않으면 다른 회사로 보내지 않는다');
+  c2.resolve({});
 });

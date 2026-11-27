@@ -1,5 +1,5 @@
 {
-  "note": "기획부 사업계획서 작업 화면의 그림. 승인된 시안 그림을 바이트 그대로 옮겼다(사업계획서_설계.md 14.1).",
+  "note": "기획부 사업계획서 작업 화면의 그림. 승인된 시안 그림을 바이트 그대로 옮겼다(사업계획서_설계.md 14.1, 심사 무대는 14.3).",
   "assets": [
     {
       "name": "desk.jpg",
@@ -12,6 +12,54 @@
       "source": "docs/디자인/솔리오_사업계획서_검토화면_20261126/그림/orb.webp",
       "bytes": 13674,
       "sha256": "102a29386939ca2d2fa9807c0c72ca7e14f0c8b0b94e6a54c257d19674449102"
+    },
+    {
+      "name": "stage/plate.webp",
+      "source": "docs/디자인/솔리오_사업계획서_첫화면_20261123/그림/무대/plate.webp",
+      "bytes": 16462,
+      "sha256": "8db6da55448ba013f9a8248ef55f2de38e23a8ab1b63491163a3b601b6a8e46d"
+    },
+    {
+      "name": "stage/presenter.webp",
+      "source": "docs/디자인/솔리오_사업계획서_첫화면_20261123/그림/무대/presenter.webp",
+      "bytes": 33084,
+      "sha256": "6e91114ab6e85064413a2fdae0d9d2cebae3a6f12235f1453ddeafb0cb1bd767"
+    },
+    {
+      "name": "stage/judge0.webp",
+      "source": "docs/디자인/솔리오_사업계획서_첫화면_20261123/그림/무대/judge0.webp",
+      "bytes": 33496,
+      "sha256": "2886c514e525d27f9369f75502889e1b14513bc62886c550c146c58bc564624f"
+    },
+    {
+      "name": "stage/judge1.webp",
+      "source": "docs/디자인/솔리오_사업계획서_첫화면_20261123/그림/무대/judge1.webp",
+      "bytes": 32704,
+      "sha256": "fcd97d39fb7e879f97436da9cbd3bd966b72050365a3cd95c03d0b687b565f5b"
+    },
+    {
+      "name": "stage/judge2.webp",
+      "source": "docs/디자인/솔리오_사업계획서_첫화면_20261123/그림/무대/judge2.webp",
+      "bytes": 17902,
+      "sha256": "1f55a616003f17225bdef714267eab1f5a2bb45a9ae96b5a75419214f73c6ecb"
+    },
+    {
+      "name": "stage/paddle0.webp",
+      "source": "docs/디자인/솔리오_사업계획서_첫화면_20261123/그림/무대/paddle0.webp",
+      "bytes": 31368,
+      "sha256": "6db6a6b74636ce5c5ae2fdcf7d3dbdf2b68f5d9a3041ac236b6d57daafe587a7"
+    },
+    {
+      "name": "stage/paddle1.webp",
+      "source": "docs/디자인/솔리오_사업계획서_첫화면_20261123/그림/무대/paddle1.webp",
+      "bytes": 25218,
+      "sha256": "86a0af235005a11e3c0a254e5c621beaa1ff27ad4fb146cfc6c1c0de7d02246e"
+    },
+    {
+      "name": "stage/paddle2.webp",
+      "source": "docs/디자인/솔리오_사업계획서_첫화면_20261123/그림/무대/paddle2.webp",
+      "bytes": 8124,
+      "sha256": "2b72452f60c3292140f4ffae455257526e97d1ac0e8db645683a268bba571b28"
     }
   ]
 }

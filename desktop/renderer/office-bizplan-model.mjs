@@ -64,11 +64,188 @@ export function reasonText(reason, { provider = 'claude', failedChunks = 0, tota
   }
 }
 
-export function privacyLine(provider) {
+export function privacyLine(provider, others = false) {
   // 기술 이름(Claude Code, Anthropic, SYNK)을 빼고 쉬운 말로. 자료가 어디로 가는지는 그대로 말한다(11-23 미학 맹검 2차 「이해」)
+  // 「다른 회사 심사위원도 부르기」를 켜면 심사에 쓰는 계획서가 다른 회사로도 간다(설계 14.7 유호님 답)
+  const also = !others ? '' : provider === 'codex'
+    ? ' 심사에는 Claude를 만든 회사로도 계획서가 가고, 내 Claude 구독 사용량도 씁니다.'
+    : ' 심사에는 GPT를 만든 회사로도 계획서가 가고, 내 ChatGPT 구독 사용량도 씁니다.';
   return provider === 'codex'
-    ? '내 ChatGPT 구독으로 읽습니다. 계획서와 고른 자료는 ChatGPT를 만든 회사로 가고, 사용량은 그 구독에서 나갑니다. 솔리오 서버로는 보내지 않습니다.'
-    : '내 Claude 구독으로 읽습니다. 계획서와 고른 자료는 Claude를 만든 회사로 가고, 사용량은 그 구독에서 나갑니다. 솔리오 서버로는 보내지 않습니다.';
+    ? `내 ChatGPT 구독으로 읽습니다. 계획서와 고른 자료는 ChatGPT를 만든 회사로 가고, 사용량은 그 구독에서 나갑니다.${also} 솔리오 서버로는 보내지 않습니다.`
+    : `내 Claude 구독으로 읽습니다. 계획서와 고른 자료는 Claude를 만든 회사로 가고, 사용량은 그 구독에서 나갑니다.${also} 솔리오 서버로는 보내지 않습니다.`;
+}
+
+/* ── 심사위원 셋의 점수와 무대(사업계획서_설계.md 14.3) ──
+   자리와 차례는 늘 Opus · Sol · Sonnet. 고른 직원 회사의 심사위원만 앉고, 「다른 회사 심사위원도 부르기」를 켜면 셋이 앉는다 */
+export const JUDGES = [
+  { id: 'opus', name: 'Opus', provider: 'claude', co: 'Claude', eye: '투자자의 눈', tag: '투자자의 눈' },
+  { id: 'sol', name: 'Sol', provider: 'codex', co: 'GPT', eye: '실행 심사위원의 눈', tag: '실행의 눈' },
+  { id: 'sonnet', name: 'Sonnet', provider: 'claude', co: 'Claude', eye: '공공기관 심사위원의 눈', tag: '공공기관의 눈' },
+];
+export const seatedFor = (provider, others = false) => JUDGES.filter(j => others || j.provider === (provider === 'codex' ? 'codex' : 'claude')).map(j => j.id);
+const judgeOf = id => JUDGES.find(j => j.id === id);
+const f1 = n => (Math.round(n * 10) / 10).toFixed(1);
+const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+const ADJ = ['', '한', '두', '세'];
+/* 앉은 심사위원을 이르는 말: 「GPT 심사위원」 · 「심사위원 둘」 · 「심사위원 셋」 */
+function panelOf(ids) {
+  if (ids.length === 1) return ids[0] === 'sol' ? 'GPT 심사위원' : `${judgeOf(ids[0])?.name || ''} 심사위원`;
+  return `심사위원 ${countWord(ids.length)}`;
+}
+const SAT_OUT = { LIMIT: '이번 주 사용량을 다 써서 이번에는 쉬었습니다.', LOGIN: '로그인이 풀려 이번에는 쉬었습니다.', OFF: '다른 회사 심사위원 부르기가 꺼져 있어 이번에는 쉬었습니다.' };
+export const satOut = reason => SAT_OUT[reason] || '답을 받지 못해 이번에는 쉬었습니다.';
+const FIXED_WHY = /점수의 까닭을 확인하지 못했습니다\.$/;
+const planTitle = name => String(name || '').replace(/\.[^.]+$/, '').slice(0, 24) || '사업계획서';
+/* 인용이 든 문단(1부터)의 묶음: 번호와 제목 */
+function secOfPara(read, para) {
+  const i = para - 1, secs = read?.sections || [];
+  const k = Number.isInteger(para) && para > 0 ? secs.findIndex(s => s.head === i || (s.paras || []).includes(i)) : -1;
+  return k < 0 ? null : { no: String(k + 1).padStart(2, '0'), title: secs[k].title || '' };
+}
+
+/* 항목 × 앉은 심사위원 점수표. 다시 심사면 앞 점수(prev)와 견준다 */
+export function scoreBoard(scores, read) {
+  const ok = (scores?.judges || []).filter(j => j.status === 'ok' && Array.isArray(j.scores));
+  const prev = scores?.prev || null, crits = Array.isArray(scores?.criteria) ? scores.criteria : [];
+  const rows = crits.map(crit => {
+    const cells = ok.map(j => {
+      const s = j.scores.find(x => x.crit === crit), was = prev?.[j.id]?.[crit];
+      return { judge: j.id, s: s || null, score: Number.isInteger(s?.score) ? s.score : null, up: s && Number.isInteger(was) && s.score > was ? s.score - was : 0 };
+    });
+    const pts = cells.map(c => c.score).filter(Number.isInteger);
+    const was = ok.map(j => prev?.[j.id]?.[crit]).filter(Number.isInteger);
+    return { crit, cells, avg: pts.length ? mean(pts) : null, spread: pts.length > 1 ? Math.max(...pts) - Math.min(...pts) : 0, prevAvg: was.length ? mean(was) : null };
+  });
+  const judgeAvg = j => { const v = crits.map(c => j.scores.find(x => x.crit === c)?.score).filter(Number.isInteger); return v.length ? mean(v) : null; };
+  const prevAvg = id => { const v = crits.map(c => prev?.[id]?.[c]).filter(Number.isInteger); return v.length ? mean(v) : null; };
+  const scored = rows.filter(r => r.avg != null);
+  const weak = scores?.sum?.weakest?.crit || (scored.length ? scored.reduce((m, r) => (r.avg < m.avg - 1e-9 ? r : m), scored[0]).crit : null);
+  return { ok, rows, weak, judgeAvg, prevAvg };
+}
+
+/* 점수가 나온 뒤 짧게 보이는 무대(12초 안). 받은 혼잣말(reacts) 셋까지 · 심사위원마다 점수판 · 평균 */
+export function revealPlan(scores, read) {
+  const ok = (scores?.judges || []).filter(j => j.status === 'ok' && Array.isArray(j.scores));
+  if (!scores?.sum || !ok.length) return null;
+  const secs = read?.sections || [], order = id => secs.findIndex(s => s.id === id);
+  const pools = ok.map(j => (j.reacts || []).filter(r => order(r.sec) >= 0 && r.say).map(r => ({ judge: j.id, sec: r.sec, tone: r.kind === 'oh' ? 'oh' : 'hmm', say: r.say })));
+  const picks = [];
+  for (let round = 0; picks.length < 3 && pools.some(p => p.length > round); round++) for (const p of pools) if (p[round] && picks.length < 3) picks.push(p[round]);
+  picks.sort((a, b) => order(a.sec) - order(b.sec));
+  const beats = [{ kind: 'sit', at: 0 }];
+  let t = 700;
+  for (const r of picks) { beats.push({ kind: 'react', at: t, ...r }); t += 2400; }
+  for (const j of ok) { beats.push({ kind: 'paddle', at: t, judge: j.id }); t += 550; }
+  t += 250;
+  beats.push({ kind: 'total', at: t }); t += 2200;
+  beats.push({ kind: 'end', at: t });
+  return { at: scores.at, beats };
+}
+
+const STATE_TEXT = { wait: '기다리는 중', read: '읽는 중', passed: '차례를 마쳤습니다', done: '점수를 매겼습니다', off: '이번에는 쉽니다', rest: '이번에는 쉬었습니다' };
+const judgeRow = (j, k, state, extra = {}) => ({ id: j.id, name: j.name, co: j.co, eye: j.eye, tag: j.tag, seat: k, seated: state !== 'off', state, status: STATE_TEXT[state], bubble: null, paddle: null, ...extra });
+
+/* 심사하는 동안: 업무 줄의 차례(「심사 · 이름」)만 보인다. 지어낸 반응은 없다 */
+function judgingShow(task, p, planName, panel = null) {
+  const rescore = task.featureKind === 'score';
+  const name = p?.title?.startsWith('심사 · ') ? p.title.slice(5) : null;
+  const reading = name ? JUDGES.find(j => j.name === name)?.id || null : null;
+  // 다시 심사는 첫 심사의 심사단만 앉는다(설계 14.3)
+  const seated = JUDGES.map(j => j.id).filter(id => (!panel || panel.includes(id)) && seatedFor(task.provider, !!task.others).includes(id) || id === reading);
+  const at = reading ? seated.indexOf(reading) : -1;
+  const judges = JUDGES.map((j, k) => {
+    const s = seated.indexOf(j.id);
+    // 앞 차례가 쉬었는지는 끝나야 안다. 심사 중에는 「차례를 마쳤습니다」로 쓴다(Opus 대체 화면 검수 P2)
+    const state = s < 0 ? 'off' : at < 0 ? 'wait' : s < at ? 'passed' : s === at ? 'read' : 'wait';
+    return judgeRow(j, k, state, state === 'read' ? { bubble: { kind: 'dots', say: '' } } : {});
+  });
+  const r = reading && judgeOf(reading);
+  return {
+    head: [rescore ? '고친 계획서로 다시 심사받습니다.' : `${iga(panelOf(seated))} 읽고 있습니다.`, '심사위원마다 1~2분 걸립니다.'],
+    show: {
+      key: 'task:' + task.id, mode: 'judging', presenter: 'nervous', judges, total: null,
+      sign: { key: 'plan', top: '사업계획서', title: planTitle(planName) },
+      cap: r ? [[r.name, true], [' 심사위원이 계획서를 읽고 있습니다.', false]] : [['심사위원이 자리에 앉았습니다.', false]],
+    },
+  };
+}
+
+/* 점수가 나온 뒤의 무대 한 장면. step은 revealPlan의 몇 번째 박자까지 왔는지 */
+function revealShow(scores, read, plan, step, key) {
+  const b = plan.beats, s = Math.max(0, Math.min(step, b.length - 1)), cur = b[s], shown = b.slice(0, s + 1);
+  const board = scoreBoard(scores, read), again = !!scores.prev;
+  const up = (now, was) => (was != null && now - was > 0.04 ? '+' + f1(now - was) : '');
+  const paddles = new Set(shown.filter(x => x.kind === 'paddle').map(x => x.judge));
+  const react = cur.kind === 'react' ? cur : null;
+  const lastReact = shown.filter(x => x.kind === 'react').at(-1);
+  const judges = JUDGES.map((j, k) => {
+    const row = (scores.judges || []).find(x => x.id === j.id);
+    if (!row) return judgeRow(j, k, 'off');
+    if (row.status !== 'ok' || !Array.isArray(row.scores)) return judgeRow(j, k, 'rest');
+    const avg = board.judgeAvg(row), on = paddles.has(j.id);
+    return judgeRow(j, k, 'done', {
+      status: on && avg != null ? `평균 ${f1(avg)}점` : STATE_TEXT.done, fin: on,
+      bubble: react && react.judge === j.id ? { kind: react.tone, say: react.say } : null,
+      paddle: on && avg != null ? { value: f1(avg), up: again ? up(avg, board.prevAvg(j.id)) : '', name: j.name } : null,
+    });
+  });
+  const secs = read?.sections || [], si = lastReact ? secs.findIndex(x => x.id === lastReact.sec) : -1;
+  const sign = si >= 0 ? { key: 'sec:' + secs[si].id, top: `${String(si + 1).padStart(2, '0')} / ${String(secs.length).padStart(2, '0')}`, title: secs[si].title || '' } : { key: 'plan', top: '사업계획서', title: planTitle(read?.plan?.name) };
+  const avg = scores.sum.avg, was = scores.prevSum?.avg ?? null, ok = board.ok.map(j => j.id);
+  const totalOn = shown.some(x => x.kind === 'total');
+  let cap;
+  if (totalOn) cap = again
+    ? (was != null && Math.abs(avg - was) > 0.04 ? [['심사가 끝났습니다. 평균이 ' + f1(was) + '점에서 ', false], [f1(avg) + '점', true], ['으로 바뀌었습니다.', false]] : [['심사가 끝났습니다. 평균은 그대로 ', false], [f1(avg) + '점', true], ['입니다.', false]])
+    : [['심사가 끝났습니다. 평균 ', false], [f1(avg) + '점', true], [board.weak ? `이고, 가장 약한 곳은 ${board.weak}입니다.` : '입니다.', false]];
+  else if (paddles.size) cap = [['심사위원이 점수판을 듭니다.', false]];
+  else if (react) { const t = secs.find(x => x.id === react.sec)?.title || ''; cap = [[t, true], [` · ${judgeOf(react.judge)?.name || ''} 심사위원이 ${react.tone === 'oh' ? '좋게 본 곳입니다.' : '걸린다고 한 곳입니다.'}`, false]]; }
+  else cap = [[shown.some(x => x.kind === 'react') || b.some(x => x.kind === 'react') ? '읽다가 한 말부터 봅니다.' : '점수판을 듭니다.', false]];
+  const mood = totalOn ? (again && was != null && avg - was > 0.04 ? 'happy' : 'look') : react ? (react.tone === 'oh' ? 'happy' : 'nervous') : paddles.size ? 'look' : 'nervous';
+  return {
+    head: [again ? '다시 심사한 점수가 나왔습니다.' : `${panelOf(ok)}의 점수가 나왔습니다.`, ''],
+    show: {
+      key, mode: 'reveal', presenter: mood, judges, sign, cap,
+      total: totalOn ? { value: f1(avg), small: ok.length === 1 ? `${panelOf(ok)} 점수` : `${ADJ[ok.length] || countWord(ok.length)} 심사위원 평균`, up: again ? up(avg, was) : '' } : null,
+    },
+  };
+}
+
+/* 점수 결과(w06): 큰 평균, 가장 약한 항목과 까닭 하나, 항목 × 심사위원 점수표, 심사위원의 한 줄 */
+function scoreView(scores, read, ui, open, total) {
+  const board = scoreBoard(scores, read), again = !!scores.prev;
+  const avg = scores.sum?.avg ?? null, was = scores.prevSum?.avg ?? null, diff = avg != null && was != null ? avg - was : 0;
+  const openRow = ui.scoreRow === undefined ? board.weak : ui.scoreRow;
+  let head, sub;
+  if (avg == null) { head = '이번에는 심사하지 못했습니다.'; sub = '심사위원이 모두 쉬었습니다. 고칠 곳은 그대로 볼 수 있습니다.'; }
+  else if (again) {
+    head = diff > 0.04 ? `${f1(was)}점에서 ${f1(avg)}점으로 올랐습니다.` : diff < -0.04 ? `${f1(was)}점에서 ${f1(avg)}점으로 내려갔습니다.` : '점수가 그대로입니다.';
+    sub = board.weak ? `지금 가장 약한 것은 ${board.weak}입니다.` : '';
+  } else {
+    head = board.weak ? `${iga(board.weak)} 가장 약합니다.` : '심사를 마쳤습니다.';
+    sub = board.ok.map(j => j.scores.find(s => s.crit === board.weak)?.why).find(w => w && !FIXED_WHY.test(w)) || '';
+  }
+  const rows = board.rows.map(r => ({
+    crit: r.crit, avg: r.avg == null ? '' : f1(r.avg), w: r.avg == null ? 0 : Math.round(r.avg / 5 * 100),
+    weak: r.crit === board.weak, split: board.ok.length > 1 && r.spread >= 2, fixed: r.prevAvg != null && r.avg != null && r.avg > r.prevAvg + 0.04,
+    open: openRow === r.crit,
+    cells: r.cells.map(c => ({ score: c.score == null ? '' : String(c.score), up: c.up > 0 ? '+' + c.up : '' })),
+    more: r.cells.filter(c => c.s).map(c => {
+      const sec = c.s.quote ? secOfPara(read, c.s.para) : null;
+      // 묶음 제목이 「2. 지금까지 한 일」처럼 제 번호로 시작하면 앞 번호를 붙이지 않는다(11-27 앱 창 확인)
+      return { name: judgeOf(c.judge)?.name || c.judge, score: String(c.s.score), why: c.s.why || '', held: !!c.s.held, quote: c.s.quote || '', where: sec ? (/^\s*(?:\d|제\s*\d)/.test(sec.title) ? sec.title : `${sec.no} ${sec.title}`) : '' };
+    }),
+  }));
+  const judges = (scores.judges || []).map(row => {
+    const j = judgeOf(row.id) || { name: row.name || row.id, co: '', eye: '' };
+    const ok = row.status === 'ok' && Array.isArray(row.scores), a = ok ? board.judgeAvg(row) : null;
+    return { id: row.id, name: j.name, co: j.co, eye: j.eye, avg: a == null ? '' : f1(a), line: ok ? row.line || '' : satOut(row.reason), rest: !ok };
+  });
+  return {
+    head: [head, sub], avg: avg == null ? '' : f1(avg), up: again && diff > 0.04 ? '+' + f1(diff) : '', raised: again && diff > 0.04,
+    cols: board.ok.map(j => judgeOf(j.id)?.name || j.name || j.id), rows, judges,
+    go: open ? `고칠 곳 ${countWord(open)} 보기` : total ? '고칠 곳 다시 보기' : '읽은 결과 보기',
+    fine: '연습 심사입니다. 실제 지원사업의 결과를 미리 알려 주지 않습니다. 심사는 앉은 심사위원 수만큼 구독 사용량을 씁니다.',
+  };
 }
 
 /* 메모 하나의 글과 단추 */
@@ -176,19 +353,29 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
   const read = snap.read;
   const running = task && ['queued', 'running', 'terminal', 'paused'].includes(task.status);
   const provider = ui.provider || read?.provider || task?.provider || 'claude';
+  const others = snap.list?.settings?.others === true;
   const base = {
-    back: '← 사무실', provider, privacy: privacyLine(provider), live: ui.live || '', busy: ui.busy || null,
+    back: '← 사무실', provider, privacy: privacyLine(provider, others), live: ui.live || '', busy: ui.busy || null,
     list: snap.list, broken: !!snap.broken || !!snap.draft?.broken, planChanged: !!snap.planChanged && !running && snap.read?.status !== 'failed',
     criteria: { mode: ui.criteriaMode || snap.list.criteria.mode, text: ui.criteriaText ?? snap.list.criteria.text, open: !!ui.criteriaOpen },
     clearAsk: !!ui.clearAsk, menu: ui.menu || null,
+    // 손님 설정(설계 14.7): 다른 회사 심사위원도 부르기, 기본 끔
+    others: { on: others, label: '다른 회사 심사위원도 부르기', small: provider === 'codex' ? 'Claude 심사위원 둘도 앉습니다. 켜 두는 동안 이 부서에서 심사하는 계획서는 모두 Claude를 만든 회사로도 갑니다.' : 'GPT 심사위원도 앉습니다. 켜 두는 동안 이 부서에서 심사하는 계획서는 모두 GPT를 만든 회사로도 갑니다.' },
   };
+  const scoreTask = task?.featureKind === 'score';
   if (running) {
     const reading = task.status === 'running';
     const p = snap.progress && snap.progress.taskId === task.id ? snap.progress : null;
+    // 심사 차례(14.3): 다시 심사이거나, 읽기 업무 줄이 「심사 · 이름」 차례에 왔을 때
+    if (reading && (scoreTask || p?.title?.startsWith('심사 · '))) {
+      const panel = scoreTask && Array.isArray(snap.scores?.judges) ? snap.scores.judges.map(j => j.id) : null;
+      return { ...base, stage: 'judging', ...judgingShow(task, p, snap.list.plan?.name || read?.plan?.name, panel), progress: p, taskId: task.id };
+    }
     return {
       ...base, stage: reading ? 'reading' : 'waiting',
-      head: reading ? [`${iga(deptName)} 계획서를 읽고 있습니다.`, p ? `${p.total}번 가운데 ${p.part}번째 · ${p.title}` : '종이에서 어디까지 읽었는지 보입니다.'] : ['자리가 비면 읽습니다.', `앞에 맡긴 일이 끝나면 ${deptName} 직원이 읽기 시작합니다.`],
-      paper: read && read.status !== 'failed' && read.plan?.samePlan ? paperOf({ ...read, notes: [] }, [], {}, p, reading) : null,
+      head: reading ? [`${iga(deptName)} 계획서를 읽고 있습니다.`, p ? `${p.total}번 가운데 ${p.part}번째 · ${p.title}` : '종이에서 어디까지 읽었는지 보입니다.']
+        : scoreTask ? ['자리가 비면 다시 심사합니다.', '앞에 맡긴 일이 끝나면 심사위원이 읽기 시작합니다.'] : ['자리가 비면 읽습니다.', `앞에 맡긴 일이 끝나면 ${deptName} 직원이 읽기 시작합니다.`],
+      paper: read && read.status !== 'failed' && read.plan?.samePlan && !scoreTask ? paperOf({ ...read, notes: [] }, [], {}, p, reading) : null,
       planName: snap.list.plan?.name || '', progress: p, taskId: task.id,
     };
   }
@@ -208,12 +395,20 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
   const resume = Math.max(0, WRITE.findIndex((_, k) => !dr.chapters[k]?.trim() && !skipped(k)));
   base.writing = { written, resume, isPlan: !!dr.isPlan, edited: !!dr.isPlan && !!snap.draft?.edited, name: snap.draft?.name || '', note: editedNote(snap.draft?.name, '쓰기 화면에') };
   const taskNewer = task && read ? task.updatedAt > read.at + 1000 : !!task;
-  if (task && taskNewer && task.status === 'interrupted') {
+  // 읽기 업무는 읽은 기록을 먼저 쓰고 심사위원을 부른다. 심사 중에 멈추거나 못 해도 이 업무가 쓴 읽은 기록은 그대로 보인다(Opus 대체 화면 검수 P1)
+  const ownRead = !!task && !scoreTask && !!read && typeof read.id === 'string' && read.id.endsWith('-' + task.id) && ['ok', 'partial'].includes(read.status);
+  // 다시 심사가 멈추거나 못 해도 읽은 결과와 고른 것은 그대로다. 고칠 곳 화면에 한 줄로 알린다
+  if (task && taskNewer && task.status === 'interrupted' && !scoreTask && !ownRead) {
     return { ...base, stage: 'stopped', head: ['읽기를 멈췄습니다.', '다시 읽기를 누르면 처음부터 읽습니다.'], paper: null };
   }
-  if (task && taskNewer && task.status === 'failed') {
+  if (task && taskNewer && task.status === 'failed' && !scoreTask && !ownRead) {
     return { ...base, stage: 'failed', head: ['이번에는 읽지 못했습니다.', reasonText(task.reason, { provider: task.provider })], paper: null };
   }
+  const scores = snap.scores && Array.isArray(snap.scores.judges) ? snap.scores : null;
+  base.notice = ownRead && taskNewer && task.status === 'interrupted' ? '심사를 멈췄습니다. 찾은 고칠 곳은 그대로 봅니다.'
+    : ownRead && taskNewer && task.status === 'failed' ? '심사는 하지 못했습니다. 찾은 고칠 곳은 그대로 봅니다.'
+    : !scoreTask || !taskNewer ? '' : task.status === 'interrupted' ? '다시 심사를 멈췄습니다.' : task.status === 'failed' ? '이번에는 다시 심사하지 못했습니다.'
+    : task.status === 'completed' && Number.isFinite(task.createdAt) && (!scores || scores.at < task.createdAt - 1000) ? (task.answer || '이번에는 다시 심사하지 못했습니다.') : '';
   if (!read) {
     // 계획서를 고른 뒤에도 「넣어 주세요」가 남던 것(11-23 앱 창 확인). 고른 뒤에는 다음에 누를 것을 말한다
     const dataCount = snap.list.data?.length || 0;
@@ -264,10 +459,22 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
     ...read.notes.filter(n => n.choice?.kind === 'handed').map(n => ({ text: n.quote, tag: `${eseo(depts.find(d => d.id === n.choice.departmentId)?.name || '다른 부서')} 맡김`, hand: true })),
     ...Object.entries(drafts).map(([item, d]) => ({ text: d.text, tag: `「${item}」에 넣음` })),
   ];
+  // 점수가 나오면 먼저 짧은 무대(방이 박자를 센다), 그다음 점수 결과. 「고칠 곳 n 보기」로 고칠 곳에 온다
+  if (scores && ui.reveal && ui.reveal.at === scores.at) {
+    const plan = revealPlan(scores, read);
+    if (plan) return { ...base, stage: 'reveal', ...revealShow(scores, read, plan, ui.reveal.step || 0, 'scores:' + scores.at) };
+  }
+  if (scores && ui.results === scores.at) {
+    const v = scoreView(scores, read, ui, open, all.length);
+    return { ...base, stage: 'score', head: v.head, score: v };
+  }
   return {
     ...base, stage: 'notes', head, notes: all, sel, at: Math.max(0, all.findIndex(n => n.key === sel)), open, changed, sheet: !!ui.sheet, toast: ui.toast || null, items, changes, saved: snap.saved || null,
     planName: read.plan.name, samePlan: read.plan.samePlan, dataNames: read.dataNames,
     paper: paperOf(read, notes, drafts, null, false, sel),
+    // 점수 다시 보기와 다시 심사(14.3): 고른 고침이 있고 계획서가 그대로일 때만 다시 심사한다
+    scoreLink: scores ? { avg: scores.sum ? f1(scores.sum.avg) : '' } : null,
+    rescore: changes > 0 && !base.planChanged && !snap.planChanged,
   };
 }
 
@@ -275,10 +482,12 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
 export function bizplanLine(task, now = Date.now()) {
   const hm = t => { const d = new Date(t); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
   if (!task) return { line: '계획서를 넣으면 회사 자료와 견주어 고칠 곳을 짚어 드립니다', when: '시작' };
-  if (task.status === 'queued') return { line: '자리가 비면 읽습니다', when: '기다림' };
-  if (task.status === 'running') return { line: '계획서를 읽고 있습니다', when: '읽는 중' };
-  if (task.status === 'completed') return { line: task.answer.replace(/\.$/, ''), when: hm(task.updatedAt) + ' 읽음', alert: !!task.featureAlert };
-  if (task.status === 'interrupted') return { line: '읽기를 멈췄습니다', when: '다시 읽기' };
-  return { line: '이번에는 읽지 못했습니다', when: '다시 읽기' };
+  const score = task.featureKind === 'score';
+  if (task.status === 'queued') return { line: score ? '자리가 비면 다시 심사합니다' : '자리가 비면 읽습니다', when: '기다림' };
+  if (task.status === 'running') return score ? { line: '고친 계획서로 다시 심사받고 있습니다', when: '심사 중' } : { line: '계획서를 읽고 있습니다', when: '읽는 중' };
+  if (task.status === 'completed') return { line: task.answer.replace(/\.$/, ''), when: hm(task.updatedAt) + (score ? ' 심사' : ' 읽음'), alert: !!task.featureAlert };
+  // 읽기를 멈춘 업무는 심사 중에 멈췄을 수도 있다. 열어서 보게 하고 다시 읽으라고 하지 않는다(Opus 대체 화면 검수 P1)
+  if (task.status === 'interrupted') return score ? { line: '다시 심사를 멈췄습니다', when: '고칠 곳' } : { line: '읽기를 멈췄습니다', when: '열어 보기' };
+  return score ? { line: '이번에는 다시 심사하지 못했습니다', when: '고칠 곳' } : { line: '이번에는 읽지 못했습니다', when: '다시 읽기' };
 }
 export const attachesBizplan = dept => /기획/.test(String(dept?.name || ''));

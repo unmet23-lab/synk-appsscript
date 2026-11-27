@@ -250,9 +250,11 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
   /* 셋째 조각의 기능 업무(기능줄_경쟁사_설계.md 2.3, 사업계획서_설계.md 4.2).
      부서 폴더를 쓰지 않고(cwd 빈칸, 옛 빌드는 FOLDER로 멈춘다), 한 부서에 같은 기능은 하나씩, 끝난 기능 줄은 여섯만 남긴다 */
   const FEATURE_PROMPT={bizplan:'사업계획서를 회사 자료와 견주어 읽습니다'};
+  // 기능 업무의 갈래(사업계획서 설계 14.7 지적 1). 읽기 · 다시 심사 · 짓기 · 말로 고치기. 실패는 갈래의 기록에만 남는다
+  const FEATURE_KINDS=['read','score','compose','revise'];
   function submitFeature(a,input){
-    const feature=input?.feature,departmentId=input?.departmentId,provider=input?.provider;
-    if(!goodId(input?.id)||!Object.hasOwn(FEATURE_PROMPT,feature)||!['claude','codex'].includes(provider)||typeof departmentId!=='string'||!/^[A-Za-z0-9_-]{4,32}$/.test(departmentId))return Promise.resolve(problem('VALUE'));
+    const feature=input?.feature,departmentId=input?.departmentId,provider=input?.provider,kind=input?.kind??'read',others=input?.others===true;
+    if(!goodId(input?.id)||!Object.hasOwn(FEATURE_PROMPT,feature)||!['claude','codex'].includes(provider)||!FEATURE_KINDS.includes(kind)||(input?.others!=null&&typeof input.others!=='boolean')||typeof departmentId!=='string'||!/^[A-Za-z0-9_-]{4,32}$/.test(departmentId))return Promise.resolve(problem('VALUE'));
     const id=input.id.toLowerCase();
     return safe(async()=>{
       if (!await allowed(a)) return problem('NOT_ALLOWED');
@@ -269,7 +271,8 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
       if(!ctx?.ok)return problem(ctx?.code||'FOLDER');
       if(!await allowed(a))return problem('AUTH_CHANGED');
       const at=now();
-      tasks.push({id,provider,departmentId,prompt:FEATURE_PROMPT[feature],previousId:null,feature,trigger:'manual',requestMode:'ordinary',mailSearch:false,
+      // 손님이 켠 「다른 회사 심사위원」은 업무 줄에 남긴다. 그 회사로 계획서가 간다(설계 14.7 유호님 답)
+      tasks.push({id,provider,departmentId,prompt:FEATURE_PROMPT[feature],previousId:null,feature,featureKind:kind,others,trigger:'manual',requestMode:'ordinary',mailSearch:false,
         departmentName:ctx.name,cwd:'',sessionId:null,providerSalt:id,providerTag:null,createdAt:at,updatedAt:at,status:'queued',reason:null,answer:''});
       permits.set(key(member,id),a);
       try{await store.write(member,tasks,()=>present(a));}
@@ -577,7 +580,8 @@ function createOfficeTasks({userData, current, authorized, context, run, mail=nu
       };
       const sharesHistory=priorTask&&Boolean(priorTask.mailSearch)===Boolean(t.mailSearch);
       // 기능 줄은 세션을 남기지 않고 계정 번호로 기능의 파일을 찾는다(설계 검토 11)
-      const spec = t.feature ? {id:t.id,provider:t.provider,feature:t.feature,trigger:t.trigger||'manual',departmentId:t.departmentId,member,cwd:''} :
+      const spec = t.feature ? {id:t.id,provider:t.provider,feature:t.feature,kind:FEATURE_KINDS.includes(t.featureKind)?t.featureKind:'read',
+        alsoProviders:t.others===true?[t.provider==='claude'?'codex':'claude']:[],trigger:t.trigger||'manual',departmentId:t.departmentId,member,cwd:''} :
         {id:t.id,provider:t.provider,cwd:ctx.cwd,role:ctx.role,prompt:t.prompt,sessionId:t.sessionId,
         previousId:sharesHistory?t.previousId:null,providerTag:t.providerTag,providerSalt:t.providerSalt ?? t.id};
       if(t.feature)hooks.changed=notify;

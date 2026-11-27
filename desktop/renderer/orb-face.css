@@ -1182,6 +1182,9 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .biz-host{--paper:#F3F1EC;--soft:rgba(243,241,236,.74);--dim:rgba(243,241,236,.5);--off:rgba(243,241,236,.42);
   --glass:rgba(30,30,29,.62);--edge:rgba(243,241,236,.11);--fill:rgba(243,241,236,.07);--fill2:rgba(243,241,236,.12);
   --lapis:#C5D6F5;--meadow:#7DB45A;--meadow-soft:#D3E8BE;--serif:"Noto Serif KR","Nanum Myeongjo","Batang",serif;
+  /* 심사(14.3): 버터는 심사위원의 의견이 갈린 곳 하나에만. 숫자는 고정폭(앱에 DM Mono가 없어 Inter Tight의 고른 폭 숫자) */
+  --butter:#F5C445;--hair:rgba(243,241,236,.10);--hair-strong:rgba(243,241,236,.22);--sheet-ink:#151514;
+  --mono:'Inter Tight',SUIT,ui-monospace,monospace;
   width:100%;text-align:left;color:var(--paper)}
 #portal-entry .room-office > .biz-host:not([hidden]){height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 #portal-entry .biz{position:relative;width:min(760px,100%);margin:0 auto;padding-bottom:28px}
@@ -1338,6 +1341,163 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 #portal-entry .biz-toast{position:fixed;left:50%;top:clamp(90px,16vh,150px);z-index:31;display:flex;align-items:center;gap:10px;padding:8px 10px 8px 20px;border-radius:999px;background:rgba(46,46,44,.95);box-shadow:inset 0 0 0 1px var(--edge),0 20px 50px -16px #000;font:500 14px/1 var(--orb-sans);transform:translateX(-50%)}
 #portal-entry .biz-toast .link{padding:6px 10px;border-radius:999px}
 #portal-entry .biz-toast .link:hover{background:var(--fill2)}
+/* 손님 설정(설계 14.7): 직원 메뉴 아래 켜고 끄는 줄. 켜짐은 흰 알약 하나로 보인다(색 역할을 쓰지 않는다) */
+#portal-entry .biz-host .biz-menu .sep{height:1px;margin:6px 10px;border:0;background:var(--edge)}
+#portal-entry .biz-host .opt.switch{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px}
+#portal-entry .biz-host .opt.switch .tx{min-width:0}
+#portal-entry .biz-host .opt.switch[aria-checked=true] b::after{content:none}
+#portal-entry .biz-host .opt.switch .tg{position:relative;width:34px;height:20px;border-radius:999px;background:var(--fill2);transition:background-color .2s}
+#portal-entry .biz-host .opt.switch .tg::after{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--soft);transition:transform .2s,background-color .2s}
+#portal-entry .biz-host .opt.switch[aria-checked=true] .tg{background:var(--paper)}
+#portal-entry .biz-host .opt.switch[aria-checked=true] .tg::after{transform:translateX(14px);background:#000}
+/* 심사 무대(14.3): 쓰기 시안의 블렌더 그림. 발표자 구 하나, 뒷모습의 심사위원 구 셋. 자리는 자리.json의 값.
+   움직임은 옅어짐과 눈만 쓴다. 뛰거나 구르지 않는다 */
+#portal-entry .biz-host .biz-stage{position:relative;width:min(720px,100%);margin:clamp(14px,2.4vh,24px) auto 0;aspect-ratio:16/9.4;overflow:hidden;border-radius:22px;background:#000;container-type:inline-size;container-name:bizstg}
+#portal-entry .biz-host .biz-stage .scene{position:absolute;left:0;top:0;width:100%;aspect-ratio:16/10}
+#portal-entry .biz-host .biz-stage .lay{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+#portal-entry .biz-host .biz-stage .actor{position:absolute;inset:0;opacity:0;transition:opacity .6s ease}
+#portal-entry .biz-host .biz-stage .actor.in{opacity:1}
+#portal-entry .biz-host .biz-stage .actor.in.rest{opacity:.42}
+#portal-entry .biz-host .biz-stage .presenter > .orb{position:absolute;left:30.602%;top:26.575%;width:12.802%;aspect-ratio:1}
+#portal-entry .biz-host .biz-stage .jtag{position:absolute;translate:-50% 0;text-align:center;font:600 clamp(10px,1.2cqw,14px)/1 var(--orb-sans);letter-spacing:.14em;color:rgba(243,241,236,.55);text-transform:uppercase}
+#portal-entry .biz-host .biz-stage .jtag small{display:block;margin-top:.45em;font-weight:400;font-size:1em;letter-spacing:0;text-transform:none;color:rgba(243,241,236,.4);white-space:nowrap}
+@container bizstg (max-width:560px){#portal-entry .biz-host .biz-stage .jtag small{display:none}}
+#portal-entry .biz-host .biz-stage .j0 .jtag{left:13.057%;top:86.4%}
+#portal-entry .biz-host .biz-stage .j1 .jtag{left:48.857%;top:86.8%}
+#portal-entry .biz-host .biz-stage .j2 .jtag{left:85.029%;top:87.2%}
+#portal-entry .biz-host .biz-stage .ez{position:absolute;left:60.9%;top:16.6%;width:9.5%;height:20.8%;padding:.9cqw 1cqw;color:#2a2826;display:flex;flex-direction:column;gap:.4cqw;overflow:hidden;mix-blend-mode:multiply;transform:perspective(40cqw) rotateX(5deg);transform-origin:50% 100%}
+#portal-entry .biz-host .biz-stage .ez .mono{font:400 clamp(7px,.85cqw,11px)/1.2 var(--mono);font-variant-numeric:tabular-nums;color:#5d5a55}
+#portal-entry .biz-host .biz-stage .ez b{font:600 clamp(9px,1.32cqw,16px)/1.3 var(--serif);word-break:keep-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+#portal-entry .biz-host .biz-stage .ez i{display:block;height:max(1px,.16cqw);margin-top:.5cqw;background:rgba(21,21,20,.14)}
+#portal-entry .biz-host .biz-stage .ez i:nth-of-type(2){width:86%}
+#portal-entry .biz-host .biz-stage .ez i:nth-of-type(3){width:64%}
+#portal-entry .biz-host .biz-stage .ez.flip > *{animation:biz-fade .45s ease}
+@keyframes biz-fade{from{opacity:0}to{opacity:1}}
+#portal-entry .biz-host .biz-stage .sb{position:absolute;z-index:3;bottom:38.5%;max-width:34%;padding:.6em .9em;border:1px solid var(--hair-strong);border-radius:14px;background:rgba(12,12,11,.94);font:500 clamp(11px,1.42cqw,16px)/1.4 var(--orb-sans);color:var(--paper);width:max-content;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;opacity:0;transition:opacity .25s ease;pointer-events:none}
+#portal-entry .biz-host .biz-stage .sb.on{opacity:1}
+#portal-entry .biz-host .biz-stage .sb.oh{border-color:rgba(243,241,236,.5)}
+#portal-entry .biz-host .biz-stage .sb.hmm{border-color:rgba(197,214,245,.6)}
+#portal-entry .biz-host .biz-stage .sb::after{content:"";position:absolute;bottom:-.42em;width:.7em;height:.7em;background:inherit;border:inherit;border-top:0;border-left:0;transform:rotate(45deg)}
+#portal-entry .biz-host .biz-stage .sb-j0{left:3%}
+#portal-entry .biz-host .biz-stage .sb-j1{left:48.86%;translate:-50% 0}
+#portal-entry .biz-host .biz-stage .sb-j2{right:3%}
+#portal-entry .biz-host .biz-stage .sb-j0::after{left:2.2em}
+#portal-entry .biz-host .biz-stage .sb-j1::after{left:calc(50% - .35em)}
+#portal-entry .biz-host .biz-stage .sb-j2::after{right:2.2em}
+#portal-entry .biz-host .dots{display:inline-flex;gap:.28em;padding:.15em 0}
+#portal-entry .biz-host .dots i{width:.38em;height:.38em;border-radius:50%;background:var(--paper);opacity:.25;animation:biz-dot 1.1s ease-in-out infinite}
+#portal-entry .biz-host .dots i:nth-child(2){animation-delay:.16s}
+#portal-entry .biz-host .dots i:nth-child(3){animation-delay:.32s}
+@keyframes biz-dot{40%{opacity:1}}
+#portal-entry .biz-host .biz-stage .pd{position:absolute;inset:0;opacity:0;transition:opacity .3s ease}
+#portal-entry .biz-host .biz-stage .pd.on{opacity:1}
+#portal-entry .biz-host .biz-stage .pd-n{position:absolute;aspect-ratio:1;mix-blend-mode:multiply;display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 clamp(13px,3.1cqw,38px)/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--sheet-ink)}
+#portal-entry .biz-host .biz-stage .pd-n small{margin-top:.35em;font:600 clamp(7px,.9cqw,11px)/1 var(--orb-sans);letter-spacing:.12em;color:#6b6a66;text-transform:uppercase}
+#portal-entry .biz-host .biz-stage .pd-n .gain{margin-top:.3em;font:400 clamp(8px,1cqw,13px)/1 var(--mono);color:#4f8a32}
+#portal-entry .biz-host .biz-stage .pd0 .pd-n{left:6.448%;top:33.36%;width:10.884%}
+#portal-entry .biz-host .biz-stage .pd1 .pd-n{left:43.413%;top:33.556%;width:10.942%}
+#portal-entry .biz-host .biz-stage .pd2 .pd-n{left:80.775%;top:33.757%;width:11%}
+#portal-entry .biz-host .biz-stage .stot{position:absolute;left:50%;top:4%;translate:-50% 0;text-align:center;opacity:0;transition:opacity .4s ease}
+#portal-entry .biz-host .biz-stage .stot.on{opacity:1}
+#portal-entry .biz-host .biz-stage .stot b{display:block;font:200 clamp(34px,6.2cqw,76px)/1 var(--orb-sans);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+#portal-entry .biz-host .biz-stage .stot small{display:block;margin-top:.35em;font:400 clamp(10px,1.15cqw,13px)/1.2 var(--orb-sans);color:var(--soft)}
+#portal-entry .biz-host .biz-stage .stot .gain{font-family:var(--mono);color:var(--meadow-soft)}
+#portal-entry .biz-host .cap{width:min(720px,100%);min-height:1.55em;margin:16px auto 0;text-align:center;font:400 15px/1.55 var(--orb-sans);color:var(--soft)}
+#portal-entry .biz-host .cap b{font-weight:600;color:var(--paper)}
+#portal-entry .biz-host .cap.swap{animation:biz-fade .35s ease}
+#portal-entry .biz-host .biz-judges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:min(720px,100%);margin:16px auto 0}
+#portal-entry .biz-host .jc{padding:12px 14px 13px;border-radius:16px;background:var(--fill);transition:opacity .3s}
+#portal-entry .biz-host .jc b{display:block;font:600 15px/1.2 var(--orb-sans)}
+#portal-entry .biz-host .jc small{display:block;margin-top:3px;font:400 12.5px/1.3 var(--orb-sans);color:var(--dim)}
+#portal-entry .biz-host .jc .jr{margin-top:11px}
+#portal-entry .biz-host .jc .jr i{display:block;height:3px;border-radius:2px;background:rgba(243,241,236,.13);transition:background-color .3s}
+#portal-entry .biz-host .jc.s-read .jr i{background:rgba(243,241,236,.6);animation:biz-breathe 1.6s ease-in-out infinite}
+#portal-entry .biz-host .jc.s-done .jr i,#portal-entry .biz-host .jc.s-passed .jr i{background:var(--paper)}
+@keyframes biz-breathe{50%{opacity:.45}}
+#portal-entry .biz-host .jc .st{display:block;margin-top:8px;font:400 12.5px/1.3 var(--orb-sans);color:var(--soft)}
+#portal-entry .biz-host .jc.fin .st{color:var(--paper);font-weight:600}
+#portal-entry .biz-host .jc.s-off{opacity:.32}
+#portal-entry .biz-host .jc.s-rest{opacity:.55}
+#portal-entry .biz-host .under{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+/* 점수 결과(w06): 큰 숫자 하나와 가장 약한 항목 → 항목별 점수표 → 심사위원의 한 줄 → 고칠 곳.
+   청금석은 가장 약한 곳, 메도우는 고친 뒤 오른 곳, 버터는 의견이 갈린 곳 */
+#portal-entry .biz-host .biz-score{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:24px;width:min(720px,100%);margin:clamp(8px,2.4vh,26px) auto 0}
+#portal-entry .biz-host .biz-sprite.lg{width:84px}
+#portal-entry .biz-host .biz-score .big{display:flex;align-items:baseline;gap:10px;margin:0;font:200 clamp(64px,6.6vw,92px)/.9 var(--orb-sans);letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+#portal-entry .biz-host .biz-score .big small{font:400 15px/1 var(--mono);letter-spacing:0;color:var(--dim)}
+#portal-entry .biz-host .biz-score .big em{font:400 16px/1 var(--mono);letter-spacing:0;font-style:normal;color:var(--meadow-soft)}
+#portal-entry .biz-host .biz-score h2{margin:14px 0 0;font:300 clamp(24px,2.5vw,32px)/1.25 var(--orb-sans);letter-spacing:-.02em;text-wrap:balance;outline:none}
+#portal-entry .biz-host .biz-score .sub{margin:8px 0 0;max-width:34em;font:400 clamp(14px,1.2vw,16px)/1.55 var(--orb-sans);color:var(--soft)}
+#portal-entry .biz-host .biz-scorecard{width:min(720px,100%);margin:24px auto 0;padding:6px 20px 8px;border-radius:26px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--edge),0 40px 90px -40px #000}
+#portal-entry .biz-host table.sc{width:100%;border-collapse:collapse}
+#portal-entry .biz-host .sc th{padding:14px 6px 10px;border-bottom:1px solid var(--hair-strong);text-align:center;font:500 12.5px/1.2 var(--orb-sans);color:var(--dim)}
+#portal-entry .biz-host .sc th:first-child{padding-left:0;text-align:left}
+#portal-entry .biz-host .sc td{padding:13px 6px;border-bottom:1px solid var(--hair);text-align:center;vertical-align:middle;font:400 16px/1 var(--mono);font-variant-numeric:tabular-nums}
+#portal-entry .biz-host .sc tr:last-child td,#portal-entry .biz-host .sc tr.open td{border-bottom:0}
+#portal-entry .biz-host .sc td:first-child{padding-left:0;text-align:left}
+#portal-entry .biz-host .sc .crit{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:0;border:0;background:none;text-align:left}
+#portal-entry .biz-host .sc .crit b{font:600 15px/1.3 var(--orb-sans);color:var(--paper)}
+#portal-entry .biz-host .sc .crit .ch{display:inline-block;width:10px;font:400 17px/1 var(--orb-sans);color:var(--soft);transition:transform .25s ease}
+#portal-entry .biz-host .sc tr.open .crit .ch{transform:rotate(90deg)}
+#portal-entry .biz-host .sc .tag{display:inline-flex;align-items:center;gap:6px;font:500 12px/1.2 var(--orb-sans)}
+#portal-entry .biz-host .sc .tag::before{content:"";width:10px;height:2px;background:currentColor}
+#portal-entry .biz-host .sc .tag.weak{color:var(--lapis)}
+#portal-entry .biz-host .sc .tag.split{color:var(--butter)}
+#portal-entry .biz-host .sc .tag.fixed{color:var(--meadow-soft)}
+#portal-entry .biz-host .sc tr.weak .crit b{color:var(--lapis)}
+#portal-entry .biz-host .sc .d{display:inline-block;margin-left:3px;font:400 10.5px/1 var(--mono);color:var(--meadow-soft);vertical-align:super}
+#portal-entry .biz-host .sc .avg{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+#portal-entry .biz-host .sc .avg span{min-width:2.2em;text-align:right}
+#portal-entry .biz-host .sc .avg i{position:relative;display:block;width:64px;height:6px;overflow:hidden;border-radius:3px;background:var(--hair)}
+#portal-entry .biz-host .sc .avg i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);border-radius:3px;background:rgba(243,241,236,.55)}
+#portal-entry .biz-host .sc tr.weak .avg i::after{background:var(--lapis)}
+#portal-entry .biz-host .sc tr.weak .avg span{color:var(--lapis)}
+#portal-entry .biz-host .sc tr.expl td{padding:2px 0 16px;border-bottom:1px solid var(--hair);text-align:left;font-family:var(--orb-sans)}
+#portal-entry .biz-host .sc .why{display:grid;grid-template-columns:64px 22px minmax(0,1fr);gap:6px 10px;align-items:start;padding:9px 0}
+#portal-entry .biz-host .sc .why .who{font:600 13px/1.4 var(--orb-sans)}
+#portal-entry .biz-host .sc .why .pt{font:400 15px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+#portal-entry .biz-host .sc .why p{margin:0;font:400 14px/1.55 var(--orb-sans);color:var(--soft)}
+#portal-entry .biz-host .sc .why .held{margin-top:4px;font-size:12.5px;color:var(--dim)}
+#portal-entry .biz-host .sc .why .qs{display:flex;flex-wrap:wrap;width:fit-content;max-width:100%;align-items:baseline;gap:4px 10px;margin-top:7px;padding:1px 0 1px 12px;border-left:2px solid rgba(243,241,236,.4)}
+#portal-entry .biz-host .sc .why .qs .where{flex:0 1 auto;min-width:0;overflow-wrap:anywhere;font:500 11.5px/1 var(--orb-sans);color:var(--dim)}
+#portal-entry .biz-host .sc .why .qs .qt{font:400 14.5px/1.6 var(--serif);color:var(--paper)}
+#portal-entry .biz-host .biz-verdicts{width:min(720px,100%);margin:14px auto 0;padding:0;list-style:none}
+#portal-entry .biz-host .verdict{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:3px 12px;align-items:center;padding:11px 20px}
+#portal-entry .biz-host .verdict .biz-sprite{width:30px;grid-row:1/span 2;align-self:start;margin-top:1px}
+#portal-entry .biz-host .verdict b{font:600 14.5px/1.3 var(--orb-sans)}
+#portal-entry .biz-host .verdict b small{margin-left:8px;font:400 12.5px/1 var(--orb-sans);color:var(--dim)}
+#portal-entry .biz-host .verdict p{grid-column:2;margin:0;font:400 14.5px/1.55 var(--orb-sans);color:var(--soft)}
+#portal-entry .biz-host .verdict .g{grid-column:3;grid-row:1/span 2;font:400 20px/1 var(--mono);font-variant-numeric:tabular-nums}
+#portal-entry .biz-host .verdict.rest p{color:var(--dim)}
+#portal-entry .biz-host .verdict.rest .biz-sprite{opacity:.55}
+#portal-entry .biz-host .res-go{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:24px auto 0}
+#portal-entry .biz-host .biz-fine{width:min(720px,100%);margin:16px auto 0;text-align:center;font:400 12.5px/1.5 var(--orb-sans);color:var(--dim)}
+#portal-entry .biz-host .biz-scoreline{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:6px 12px;margin:10px auto 0;font:400 14px/1.5 var(--orb-sans);color:var(--soft)}
+#portal-entry .biz-host .biz-scoreline span{font-variant-numeric:tabular-nums}
+#portal-entry .biz-host .biz-notice{margin:0 auto 14px;max-width:40em;text-align:center;font:400 14px/1.5 var(--orb-sans);color:var(--soft)}
+@media (max-width:760px){
+  #portal-entry .biz-host .biz-stage{border-radius:14px}
+  #portal-entry .biz-host .biz-stage .sb{max-width:42%;white-space:normal;font-size:11px}
+  #portal-entry .biz-host .biz-judges{gap:6px}
+  #portal-entry .biz-host .jc{padding:10px 10px 11px}
+  #portal-entry .biz-host .jc small{display:none}
+  #portal-entry .biz-host .jc .st{font-size:11.5px}
+  #portal-entry .biz-host .cap{font-size:14px}
+  #portal-entry .biz-host .biz-score{grid-template-columns:1fr;gap:12px}
+  #portal-entry .biz-host .biz-sprite.lg{width:56px}
+  #portal-entry .biz-host .biz-score h2{font-size:24px}
+  #portal-entry .biz-host .biz-scorecard{padding:2px 14px 6px;border-radius:20px}
+  #portal-entry .biz-host .sc th,#portal-entry .biz-host .sc td{padding-left:3px;padding-right:3px}
+  #portal-entry .biz-host .sc td{font-size:15px}
+  #portal-entry .biz-host .sc .avg i{display:none}
+  #portal-entry .biz-host .sc .why{grid-template-columns:54px 18px minmax(0,1fr);gap:6px 8px}
+  #portal-entry .biz-host .verdict{padding:10px 6px}
+  #portal-entry .biz-host .verdict b small{display:block;margin:3px 0 0}
+}
+@media (prefers-reduced-motion:reduce){
+  #portal-entry .biz-host .biz-stage *,#portal-entry .biz-host .cap,#portal-entry .biz-host .jc,#portal-entry .biz-host .jc .jr i,#portal-entry .biz-host .dots i,#portal-entry .biz-host .opt.switch .tg,#portal-entry .biz-host .opt.switch .tg::after,#portal-entry .biz-host .sc .crit .ch{animation:none !important;transition:none !important}
+}
+html[data-motion="reduced"] #portal-entry .biz-host .biz-stage *,html[data-motion="reduced"] #portal-entry .biz-host .cap,html[data-motion="reduced"] #portal-entry .biz-host .jc,html[data-motion="reduced"] #portal-entry .biz-host .jc .jr i,html[data-motion="reduced"] #portal-entry .biz-host .dots i,html[data-motion="reduced"] #portal-entry .biz-host .opt.switch .tg,html[data-motion="reduced"] #portal-entry .biz-host .opt.switch .tg::after,html[data-motion="reduced"] #portal-entry .biz-host .sc .crit .ch{animation:none !important;transition:none !important}
 @media (max-width:760px){
   #portal-entry .biz-hero{width:100%;margin:-4px auto -30px}
   #portal-entry .biz-bar .go{flex:1 0 100%;height:48px;margin-top:4px}

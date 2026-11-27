@@ -1,7 +1,7 @@
 /* 기획부 「사업계획서」 작업 화면의 상태와 동작(사업계획서_설계.md 2, 6절).
    api: window.synkDesktop.office(featureSnapshot, featureAction). 본체가 파일을 고르고 쓰며, 이 방은 이름과 번호만 보낸다.
    한 번에 한 동작만 보낸다. 방을 닫거나 계정이 바뀌면 늦게 온 답을 버린다 */
-import { bizplanScene, nextWrite } from './office-bizplan-model.mjs';
+import { bizplanScene, nextWrite, revealPlan, scoreBoard } from './office-bizplan-model.mjs';
 
 const FEATURE = 'bizplan';
 const SAY = {
@@ -11,16 +11,66 @@ const SAY = {
   NOTHING: '바꾼 문장이 없어 저장할 것이 없습니다.', SAVE: '저장하지 못했습니다. 원본은 그대로입니다.', CRITERIA: '평가 항목을 한 줄에 하나씩 적어 주세요.',
   BROKEN: '목록 파일을 읽지 못했습니다. 기록 지우기를 누르면 처음부터 할 수 있습니다.', NOT_FOUND: '그 메모를 찾지 못했습니다. 화면을 다시 읽었습니다.',
   WRITE_EMPTY: '한 장 이상 써야 초안을 만들 수 있습니다.',
+  CRITERIA_CHANGED: '평가 기준이 바뀌어 다시 읽은 뒤 심사할 수 있습니다.',
+  RESCORE_OLD: '심사 기록이 예전 판이라 다시 읽은 뒤 심사할 수 있습니다.',
+  PANEL_CLAUDE: '처음 심사한 심사위원은 Claude 직원으로 다시 심사합니다. 직원을 Claude로 바꿔 주세요.',
+  PANEL_CODEX: '처음 심사한 심사위원은 GPT 직원으로 다시 심사합니다. 직원을 GPT로 바꿔 주세요.',
   AUTH_CHANGED: '계정이 바뀌어 멈췄습니다.', NOT_AVAILABLE: '이 판에서는 쓸 수 없습니다.', STORAGE_FULL: '업무 기록이 가득 찼습니다.',
 };
 const say = code => (code in SAY ? SAY[code] : '하지 못했습니다. 잠시 뒤 다시 해 주세요.');
 
+/* 이미 보인 점수(부서마다 scores.at). 같은 점수의 무대를 두 번 틀지 않는다. 앱을 다시 켜도 남게 창의 저장소에도 적는다 */
+const SEEN_KEY = 'solio.bizplan.scoreSeen';
+function sharedSeen() {
+  const mem = new Map();
+  const box = () => { try { return globalThis.window?.localStorage || null; } catch { return null; } };
+  const all = () => { try { const v = JSON.parse(box()?.getItem(SEEN_KEY) || '{}'); return v && typeof v === 'object' ? v : {}; } catch { return {}; } };
+  return {
+    get: id => (mem.has(id) ? mem.get(id) : Number(all()[id]) || 0),
+    set: (id, at) => { mem.set(id, at); try { const v = all(); v[id] = at; box()?.setItem(SEEN_KEY, JSON.stringify(v)); } catch { /* 저장소가 없어도 이번 실행에서는 기억한다 */ } },
+  };
+}
+const SEEN = sharedSeen();
+const reducedDefault = () => {
+  try { return globalThis.document?.documentElement?.dataset?.motion === 'reduced' || globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true; } catch { return false; }
+};
+
 // hidden(): 앱 창이 가려져 있는가. 가려진 동안은 읽는 진행을 다시 묻지 않는다
-export function createBizplanRoom({ api = null, changed = () => {}, hidden = () => false, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout } = {}) {
+export function createBizplanRoom({ api = null, changed = () => {}, hidden = () => false, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout, seen = SEEN, reducedMotion = reducedDefault } = {}) {
   const fresh = () => ({ departmentId: null, snap: null, busy: null, live: '', sel: null, edit: null, editText: null, hand: null, handDept: null, handProvider: null,
     ask: null, answers: {}, provider: null, criteriaOpen: false, criteriaMode: null, criteriaText: null, clearAsk: false, loadedAt: 0, sig: '',
-    menu: null, sheet: false, toast: null, write: null, writeText: {}, writeSeen: [] });
-  let st = fresh(), gen = 0, timer = null, toastTimer = null;
+    menu: null, sheet: false, toast: null, write: null, writeText: {}, writeSeen: [],
+    // 점수(14.3): reveal은 지금 트는 무대({at, step}), results는 열어 둔 점수 결과의 scores.at, scoreRow는 펼친 항목(undefined면 가장 약한 항목)
+    reveal: null, results: null, scoreRow: undefined });
+  let st = fresh(), gen = 0, timer = null, toastTimer = null, revealTimer = null;
+  const stopReveal = () => { if (revealTimer) clearTimer(revealTimer); revealTimer = null; };
+  const showResults = at => { stopReveal(); st.reveal = null; st.results = at; st.scoreRow = undefined; if (st.departmentId) seen.set(st.departmentId, at); };
+  /* 무대의 박자를 센다. 다시 그려도 처음부터 틀지 않는다(박자는 방이 가진다) */
+  function armReveal(plan) {
+    stopReveal();
+    const r = st.reveal, b = plan.beats;
+    if (!r) return;
+    if (r.step >= b.length - 1) { showResults(r.at); return; }
+    revealTimer = setTimer(() => {
+      revealTimer = null;
+      if (st.reveal !== r) return;
+      r.step += 1;
+      if (b[r.step].kind === 'end') showResults(r.at); else armReveal(plan);
+      changed();
+    }, Math.max(0, b[r.step + 1].at - b[r.step].at));
+  }
+  /* 새 점수가 왔으면 무대를 한 번 튼다. 움직임을 줄인 설정이면 바로 결과 */
+  function maybeReveal(task) {
+    const sc = st.snap?.scores;
+    if (!sc || !Number.isFinite(sc.at) || !Array.isArray(sc.judges) || st.write != null) return;
+    if (task && ['queued', 'running', 'terminal', 'paused'].includes(task.status)) return;
+    if (st.reveal && st.reveal.at !== sc.at) { stopReveal(); st.reveal = null; }
+    if (st.reveal || st.results === sc.at || sc.at <= (seen.get(st.departmentId) || 0) || hidden()) return;
+    const plan = revealPlan(sc, st.snap.read);
+    if (!plan || reducedMotion()) { showResults(sc.at); return; }
+    st.reveal = { at: sc.at, step: 0 };
+    armReveal(plan);
+  }
   /* 고른 뒤 잠깐 「되돌리기」를 보인다(14.1). 고른 장은 비워 다음 고칠 곳이 앞에 선다 */
   const toast = (text, key) => { if (toastTimer) clearTimer(toastTimer); st.toast = { text, key }; st.live = text; toastTimer = setTimer(() => { toastTimer = null; st.toast = null; if (st.live === text) st.live = ''; changed(); }, 4200); };
   const call = (name, ...a) => { try { return typeof api?.[name] === 'function' ? Promise.resolve(api[name](...a)) : Promise.resolve({ ok: false, code: 'NOT_AVAILABLE' }); } catch { return Promise.resolve({ ok: false }); } };
@@ -69,10 +119,10 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
     timer = setTimer(() => { timer = null; if (!hidden()) void load(); }, 1500);
   }
   return {
-    open(departmentId) { gen += 1; st = { ...fresh(), departmentId }; void load(); changed(); },
+    open(departmentId) { gen += 1; stopReveal(); st = { ...fresh(), departmentId }; void load(); changed(); },
     close({ fields = null } = {}) {
       sendTexts(fields);
-      gen += 1; if (timer) clearTimer(timer); if (toastTimer) clearTimer(toastTimer); timer = null; toastTimer = null; st = fresh(); },
+      gen += 1; if (timer) clearTimer(timer); if (toastTimer) clearTimer(toastTimer); stopReveal(); timer = null; toastTimer = null; st = fresh(); },
     /* 창이 가려지거나 닫힐 때(계정 생명주기 flushDraft) 쓰던 장을 남긴다. 화면은 그대로 둔다(설계 검토 지적 3) */
     flush() { sendTexts(null); },
     get departmentId() { return st.departmentId; },
@@ -82,8 +132,13 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
       st.depts = departments;
       const sig = task ? task.id + ':' + task.status + ':' + task.updatedAt : '';
       if (sig !== st.sig) { st.sig = sig; if (st.snap) void load(); }
-      schedule(task && ['queued', 'running'].includes(task.status));
-      return { departmentId: st.departmentId, ...bizplanScene(st.snap, task, st, { departments, deptName }) };
+      const live = task && ['queued', 'running'].includes(task.status);
+      schedule(live);
+      if (live) st.lastLive = task;
+      // 업무가 끝난 첫 판은 끝난 뒤의 기록을 읽을 때까지 앞 판(심사 무대)을 그대로 둔다. 옛 기록으로 다른 화면이 잠깐 서지 않게(카본 A2)
+      const view = !live && task && st.lastLive?.id === task.id && !(st.loadedAt >= (Number(task.updatedAt) || 0)) && now() - (Number(task.updatedAt) || 0) < 4000 ? st.lastLive : task;
+      maybeReveal(view);
+      return { departmentId: st.departmentId, ...bizplanScene(st.snap, view, st, { departments, deptName }) };
     },
     async handle(p = {}) {
       const act_ = String(p.act || ''), arg = p.arg == null ? '' : String(p.arg), fields = p.fields && typeof p.fields === 'object' ? p.fields : {};
@@ -107,6 +162,27 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
           return true;
         }
         case 'biz-provider': st.provider = arg === 'codex' ? 'codex' : 'claude'; st.menu = null; changed(); return true;
+        /* 손님 설정(설계 14.7): 다른 회사 심사위원도 부르기. 메뉴는 열어 둔다 */
+        case 'biz-others': await act('setting', { name: 'others', value: st.snap?.list?.settings?.others !== true }); return true;
+        /* 점수(14.3): 무대 건너뛰기, 결과 열고 닫기, 항목 펼치기, 다시 심사 */
+        case 'biz-score-skip': if (st.reveal) showResults(st.reveal.at); changed(); return true;
+        case 'biz-score-open': {
+          const at = st.snap?.scores?.at;
+          // 결과를 본 것으로 적는다. 닫은 뒤 같은 점수의 무대를 다시 틀지 않는다(카본 A1)
+          if (Number.isFinite(at)) { showResults(at); st.menu = null; st.sheet = false; }
+          changed(); return true;
+        }
+        case 'biz-score-close': stopReveal(); st.reveal = null; st.results = null; changed(); return true;
+        case 'biz-score-row': {
+          // 처음 펼친 줄은 화면과 같은 셈(가장 약한 항목, 없으면 평균이 가장 낮은 항목)으로 안다(카본 A5)
+          const openNow = st.scoreRow === undefined ? scoreBoard(st.snap?.scores, st.snap?.read).weak : st.scoreRow;
+          st.scoreRow = openNow === arg ? null : arg; changed(); return true;
+        }
+        case 'biz-rescore': {
+          const s = st.snap;
+          await act('rescore', { provider: st.provider || s?.read?.provider || 'claude' }, '고친 계획서로 다시 심사를 맡겼습니다.');
+          return true;
+        }
         case 'biz-start': {
           st.write = null; st.writeText = {};
           const s = st.snap, unsaved = s?.read?.notes?.some(n => n.choice && n.choice.kind !== 'handed') && !s.saved;
@@ -250,7 +326,7 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
         default: return false;
       }
     },
-    reset() { gen += 1; if (timer) clearTimer(timer); if (toastTimer) clearTimer(toastTimer); timer = null; toastTimer = null; st = fresh(); },
+    reset() { gen += 1; if (timer) clearTimer(timer); if (toastTimer) clearTimer(toastTimer); stopReveal(); timer = null; toastTimer = null; st = fresh(); },
     state: () => st,
   };
 }

@@ -33,7 +33,7 @@ function supportsPromptGuard(version){
 function employeeEnv(source){
   const env={...source};
   // Use the PC's signed-in CLI. A launcher may itself run inside a review profile or have an API key.
-  const override=/^(?:ELECTRON_.*|NODE_OPTIONS|CLAUDECODE|CLAUDE_CONFIG_DIR|CLAUDE_CODE_(?:OAUTH_.*|API_KEY|ENTRYPOINT|CHILD_SESSION|USE_(?:BEDROCK|VERTEX|FOUNDRY))|CODEX_HOME|CODEX_API_KEY|CODEX_API_BASE_URL|OPENAI_(?:API_KEY|BASE_URL)|ANTHROPIC_(?:API_KEY|AUTH_TOKEN|BASE_URL|CUSTOM_HEADERS|PROFILE|CONFIG_DIR|FEDERATION_RULE_ID|ORGANIZATION_ID|IDENTITY_TOKEN(?:_FILE)?|SERVICE_ACCOUNT_ID|WORKSPACE_ID))$/i;
+  const override=/^(?:ELECTRON_.*|NODE_OPTIONS|CLAUDECODE|CLAUDE_CONFIG_DIR|CLAUDE_CODE_(?:OAUTH_.*|API_KEY|ENTRYPOINT|CHILD_SESSION|USE_(?:BEDROCK|VERTEX|FOUNDRY))|CODEX_HOME|CODEX_API_KEY|CODEX_API_BASE_URL|OPENAI_(?:API_KEY|BASE_URL)|ANTHROPIC_(?:API_KEY|AUTH_TOKEN|BASE_URL|CUSTOM_HEADERS|PROFILE|CONFIG_DIR|FEDERATION_RULE_ID|ORGANIZATION_ID|IDENTITY_TOKEN(?:_FILE)?|SERVICE_ACCOUNT_ID|WORKSPACE_ID|MODEL|SMALL_FAST_MODEL|DEFAULT_[A-Z]+_MODEL)|CLAUDE_CODE_SUBAGENT_MODEL)$/i;
   for(const k of Object.keys(env)) if(override.test(k)||/^SOLIO_MAIL_/i.test(k)) delete env[k];
   return env;
 }
@@ -118,6 +118,59 @@ async function ownsWorkers(userData,service,member,localAppData=process.env.LOCA
     return await readOwner(file);
   }catch{return false;}
 }
+/* 기능 업무의 차례 고르기(사업계획서 설계 14.3, 설계 검토 2). 차례마다 {provider, model}을 고를 수 있다.
+   업무 줄의 회사(spec.provider)는 처음에 판 · 계정을 보고, 곁 회사(spec.alsoProviders, 손님이 켠 「다른 회사 심사위원」)는
+   처음 부를 때 연다. 곁 회사가 막히면 그 회사의 차례만 실패한다. 시험은 deps를 바꿔 끼운다 */
+async function featureRun({spec,hooks,file,env,cwd,run},deps={}){
+  const st=require('./office-schema-turn.cjs');
+  const d={native,exec,spawn,claudeAccount:st.claudeAccount,claudeSchemaTurn:st.claudeSchemaTurn,
+    withSchemaAccount:(...a)=>require('./office-task-codex.cjs').withSchemaAccount(...a),...deps};
+  const codes={ai:'PROVIDER',timeout:'PROVIDER'};
+  const also=(Array.isArray(spec.alsoProviders)?spec.alsoProviders:[]).filter(p=>['claude','codex'].includes(p)&&p!==spec.provider);
+  let claudeReady=null;
+  const claudeOpen=()=>claudeReady??=(async()=>{
+    const exe=spec.provider==='claude'?file:await d.native('claude',env);
+    const {stdout}=await d.exec(exe,['--version'],{env,signal:hooks.signal,timeout:10000,maxBuffer:8192,windowsHide:true,shell:false});
+    if(!supportsSchema(stdout))throw fail('NO_CLI');
+    const first=await d.claudeAccount({file:exe,cwd,env,signal:hooks.signal});
+    if(!first)throw fail('LOGIN');
+    return {exe,first};
+  })();
+  const claudeTurn=async(prompt,schema,options)=>{
+    const {exe,first}=await claudeOpen();
+    if(await d.claudeAccount({file:exe,cwd,env,signal:hooks.signal})!==first)throw fail('LOGIN');
+    // 곁 회사 동의는 보내기 바로 앞에 동기로 본다. 이 뒤로 기다림 없이 프롬프트를 쓴다(설계 검토 D1)
+    if(typeof options.allow==='function'&&!options.allow())throw fail('OFF');
+    return d.claudeSchemaTurn({file:exe,env,spawn:d.spawn,cwd,prompt,schema,model:typeof options.model==='string'?options.model:null,signal:hooks.signal,
+      timeoutMs:options.timeoutMs,codes,onInit:typeof options.onInit==='function'?options.onInit:null});
+  };
+  if(spec.provider==='claude')await claudeOpen();
+  let codexDown='LOGIN';
+  const go=ask=>run({providers:[spec.provider,...also].filter(p=>p!=='codex'||ask),asked:[spec.provider,...also],turn:(prompt,schema,options={})=>{
+    const {provider=spec.provider,...rest}=options;
+    if(provider==='claude'&&(spec.provider==='claude'||also.includes('claude')))return claudeTurn(prompt,schema,rest);
+    if(provider==='codex'&&ask){const {onInit,...codex}=rest;return ask(prompt,schema,codex);}
+    return Promise.reject(fail(provider==='codex'?codexDown:'LOGIN'));
+  }});
+  if(spec.provider!=='codex'&&!also.includes('codex'))return go(null);
+  let exe=file;
+  if(spec.provider!=='codex'){try{exe=await d.native('codex',env);}catch(e){codexDown=e.code==='NO_CLI'?'NO_CLI':'LOGIN';return go(null);}}
+  let started=false,finished=false,result;
+  try{
+    return await d.withSchemaAccount({...spec,cwd},hooks,{file:exe,env,spawn:d.spawn},
+      ask=>{started=true;return go(ask).then(r=>{finished=true;result=r;return r;});},codes);
+  }catch(e){
+    // 취소는 업무가 끝난 뒤의 마지막 확인에서 와도 취소다(GPT 검수 2회차 GA1)
+    if(e.code==='CANCELLED')throw e;
+    // 업무가 끝난 뒤 마지막 계정 확인에서 로그인이 바뀌었으면 결과를 돌려준다. 그 차례들은 차례마다 계정을 봤다(GPT 검수 GA10)
+    if(finished)return result;
+    if(spec.provider==='codex')throw e;
+    if(started)throw e;
+    // 곁 회사 연결이 안 되면 Codex 자리만 비우고 돈다
+    codexDown=['LOGIN','NO_CLI','LIMIT'].includes(e.code)?e.code:'LOGIN';
+    return go(null);
+  }
+}
 function createTaskRuntime({userData,current,office,model,changed,mailOptions,featureOptions={}}){
   let tasks=null;
   const features=require('./office-features.cjs').createOfficeFeatures({userData,tasks:()=>tasks,pick:featureOptions.pick,reveal:featureOptions.reveal,
@@ -158,30 +211,18 @@ function createTaskRuntime({userData,current,office,model,changed,mailOptions,fe
     };
     return spec.provider==='claude'?runClaude(spec,hooks,tools):require('./office-task-codex.cjs').runCodex(spec,hooks,tools);
   }
-  /* 기능 업무: 도구 없는 차례를 기능의 run에 건넨다(사업계획서_설계.md 5절). 작업 폴더는 비어 있는 고정 폴더 하나다 */
+  /* 기능 업무: 도구 없는 차례를 기능의 run에 건넨다(사업계획서_설계.md 5절). 작업 폴더는 비어 있는 고정 폴더 하나다.
+     차례마다 {provider, model}을 고를 수 있다(설계 14.3, 설계 검토 2). 업무 줄의 회사(spec.provider)는 처음에 판 · 계정을 보고,
+     곁 회사(spec.alsoProviders, 손님이 켠 「다른 회사 심사위원」)는 처음 부를 때 연다. 곁 회사가 막히면 그 차례만 실패한다 */
   async function runFeature(spec,hooks,{file,env}){
     const cwd=path.join(userData,'OfficeFeatureRun');
     await fs.mkdir(cwd,{recursive:true,mode:0o700});
     if((await fs.readdir(cwd)).length)throw fail('FOLDER');
-    const codes={ai:'PROVIDER',timeout:'PROVIDER'};
-    const {claudeSchemaTurn,claudeAccount}=require('./office-schema-turn.cjs');
-    if(spec.provider==='codex'){
-      return require('./office-task-codex.cjs').withSchemaAccount({...spec,cwd},hooks,{file,env,spawn},
-        ask=>features.run(spec,hooks,{turn:(prompt,schema,options)=>ask(prompt,schema,options)}),codes);
-    }
-    const {stdout}=await exec(file,['--version'],{env,signal:hooks.signal,timeout:10000,maxBuffer:8192,windowsHide:true,shell:false});
-    if(!supportsSchema(stdout))throw fail('NO_CLI');
-    const first=await claudeAccount({file,cwd,env,signal:hooks.signal});
-    if(!first)throw fail('LOGIN');
-    const turn=async(prompt,schema,options={})=>{
-      if(await claudeAccount({file,cwd,env,signal:hooks.signal})!==first)throw fail('LOGIN');
-      return claudeSchemaTurn({file,env,spawn,cwd,prompt,schema,signal:hooks.signal,timeoutMs:options.timeoutMs,codes});
-    };
-    return features.run(spec,hooks,{turn});
+    return featureRun({spec,hooks,file,env,cwd,run:tools=>features.run(spec,hooks,tools)});
   }
   const authorized=async a=>{const service=await office();return await service.allowed(a)&&await ownsWorkers(userData,service,a.synk_user_id);};
   const mail=mailOptions?require('./office-mail.cjs').createOfficeMail({...mailOptions,userData,current,authorized,changed}):null;
   tasks=createOfficeTasks({userData,current,authorized,context,run,mail,changed});
   return Object.assign(tasks,{features});
 }
-module.exports={enabled,createTaskRuntime,employeeEnv,claudeSubscriber,native,taskDirectory,ownsWorkers,supportsPromptGuard,supportsSchema};
+module.exports={enabled,createTaskRuntime,featureRun,employeeEnv,claudeSubscriber,native,taskDirectory,ownsWorkers,supportsPromptGuard,supportsSchema};

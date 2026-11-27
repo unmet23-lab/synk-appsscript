@@ -191,3 +191,14 @@ test('Codex: 지킴 뒤 로그아웃 소식은 LOGIN, account/updated는 차례 
   turn.receive({method:'account/logout/completed',params:{}});
   assert.throws(()=>turn.check(),{code:'LOGIN'});
 });
+
+test('사업계획서 설계 검토 D1: 곁 회사 Codex 차례는 계정 확인 뒤 turn/start 바로 앞에 allow()를 보고, 꺼졌으면 보내지 않는다', async () => {
+  const turn=st.schemaTurn(providerError,codes);
+  const client=fakeCodex(turn);
+  const sent=[];const rpc=client.rpc.bind(client);client.rpc=async(m,p)=>{sent.push(m);return rpc(m,p);};
+  let on=true;
+  await assert.rejects(turn.ask(client,{...opts(),verify:async()=>{on=false;},allow:()=>on},'x',schema),{code:'OFF'});
+  assert.equal(sent.includes('turn/start'),false,'끈 뒤에는 계획서를 보내지 않는다');
+  on=true;
+  assert.deepEqual(await turn.ask(client,{...opts(),allow:()=>on},'y',schema),{notes:[]});
+});
