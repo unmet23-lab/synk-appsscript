@@ -4,6 +4,7 @@
 import {T} from './strings.mjs';
 import {mountClub, mountTutorDay, mountNote, tutorLabel, tutorFace} from './club.mjs';
 import {SAY} from './says.mjs';
+import {makeSayPlayer} from './say-player.mjs';
 
 const SND = '../seoul-arrival/assets/snd/';        // 방 소리 · 초침 · 새벽(서울행과 같은 파일)
 const NOTE = '../seoul-arrival/assets/img/note1.webp';   // 엄마 쪽지(서울행과 같은 파일)
@@ -709,9 +710,9 @@ function pressAns(b, then) {
 let busy = false;
 // 10o: 대사 듣기 — 구운 녹음(assets/say)만 튼다. 녹음이 없는 글은 누르지 않는 말풍선이다(11-25 유호님: 기기 음성은 쓰지 않는다)
 const sayFile = t => Object.hasOwn(SAY, t) ? new URL(`./assets/say/${SAY[t]}.mp3`, import.meta.url).href : '';
-let sayEl = null, sayNow = null, sayDog = 0;   // 소리 하나를 돌려 쓴다 — 누른 뒤 이어 트는 둘째 말도 휴대폰에서 막히지 않게
+const SAYER = makeSayPlayer();   // 소리 하나를 돌려 쓰는 재생기(say-player.mjs) — 언제 끝났는지만 알리고 화면은 여기서 맡는다
 const sayAllOff = () => document.querySelectorAll('.say-all.on').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
-function stopSay() { sayNow = null; clearTimeout(sayDog); if (sayEl) sayEl.pause(); document.querySelectorAll('.say-play.on').forEach(x => x.classList.remove('on')); sayAllOff(); }
+function stopSay() { SAYER.stop(); document.querySelectorAll('.say-play.on').forEach(x => x.classList.remove('on')); sayAllOff(); }
 function speakAll(chip) {   // 10z: 세 말을 차례로 — 다시 누르면 멈춤
   if (chip.classList.contains('on')) { stopSay(); return; }
   const rows = [...chip.closest('.cap').querySelectorAll('.say-play[data-say]')]; let i = 0;
@@ -721,20 +722,14 @@ function speakAll(chip) {   // 10z: 세 말을 차례로 — 다시 누르면 �
 function speakKo(t, b, done) {
   const f = sayFile(t); if (!f) return;
   stopSay();
-  const el = sayEl || (sayEl = new Audio()), now = sayNow = {};
   b.classList.add('on');
-  // 녹음을 못 받으면(망 끊김 · 404) 조용히 꺼지지 않고 한 줄로 알린다. 받다가 망이 멎어 error도 ended도 오지 않으면 8초 뒤 끝맺는다(검수 world-front-voice-20261126 F2)
-  const end = ok => {
-    if (sayNow !== now) return;
-    sayNow = null; clearTimeout(sayDog); b.classList.remove('on');
-    if (done && ok) { done(); return; }
+  // 못 받으면(404 · 망 끊김 · 받다가 멎음) 조용히 꺼지지 않고 한 줄로 알린다. 기기가 멈추면(전화 · 이어폰 뺌) 알림 없이 끈다(검수 world-front-voice-20261126 F2 · front-fix3-20261127 P3)
+  SAYER.play(f, how => {
+    b.classList.remove('on');
+    if (how === 'done' && done) { done(); return; }
     sayAllOff();
-    if (!ok) { el.pause(); toast(ui('소리를 불러오지 못했어요. 다시 눌러 주세요.')); }
-  };
-  const dog = ms => { clearTimeout(sayDog); sayDog = setTimeout(() => end(false), ms); };
-  el.onended = () => end(true); el.onerror = () => end(false);
-  el.onplaying = () => { if (sayNow === now) dog(((Number.isFinite(el.duration) ? el.duration : 6) - el.currentTime) * 1000 + 8000); };
-  el.src = f; dog(8000); el.play().catch(() => end(false));
+    if (how === 'fail') toast(ui('소리를 불러오지 못했어요. 다시 눌러 주세요.'));
+  });
 }
 // 10e: 기록 판 — 닫으면 연 단추로 초점을 돌려준다
 let opener = null;
