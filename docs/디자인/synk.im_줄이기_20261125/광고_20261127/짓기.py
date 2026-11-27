@@ -41,8 +41,8 @@ def once(s, a, b, name):
 
 
 META = {
-    'ko': ('광고 — 브랜드를 드라마로 만드는 광고 · SYNK', '이야기가 끝나면 제품 이름이 남습니다. 카메라 앞에서 10년 일한 배우가 AI 모델을 연출합니다.'),
-    'en': ('Ads — Turning brands into drama · SYNK', 'When the story ends, the product name stays. An actor with ten years on camera directs the AI models.'),
+    'ko': ('광고 — 브랜드를 드라마로 만드는 광고 · SYNK', '이야기가 끝나면 제품 이름이 남습니다. 한국 엔터테인먼트 산업 현장에서 10년 일한 사람이 AI 모델을 연출합니다.'),
+    'en': ('Ads — Turning brands into drama · SYNK', 'When the story ends, the product name stays. Someone with ten years in Korea’s entertainment industry directs the AI models.'),
 }
 
 
@@ -59,6 +59,9 @@ def build(lang):
     b = page.index('</article>', a) + len('</article>')
     page = page[:a] + body.strip() + page[b:]
     page = once(page, '<body data-tone="light">', '<body class="y s" data-tone="light">', 'body')
+    # 바닥의 방문 집계 한 줄은 뺀다(유호님 11-27 밤 「이 내용도 삭제해」). 집계 스크립트와 개인정보처리방침 설명은 그대로다
+    page, n = re.subn(r'<span class="foot-note">[^<]*<a href="/privacy/#visitor-stats(?:-en)?">[^<]*</a></span>', '', page)
+    assert n == 1, f'foot-note {n}번'
     css = re.search(r'<link rel="stylesheet" href="/assets/v11/detail\.css\?v=[0-9a-f]+">', page).group(0)
     page = once(page, css, css + '\n<link rel="stylesheet" href="/assets/v11/pulse-y.css?v=000000000000">'
                 + '\n<link rel="stylesheet" href="/assets/v11/pulse-s.css?v=000000000000">', 'css')
