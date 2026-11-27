@@ -329,7 +329,21 @@ export function validateBriefEditRequest(body) {
 }
 export const BRIEF_EDIT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: false, required: ['texts'],
   properties: { texts: { type: 'array', items: { type: 'string' } } } });
-/** 옮긴 줄: 줄 수가 같고, 숫자가 원문과 같아야 한다(바뀌면 거절). */
+/* 날짜 읽기: 해 · 달 · 날로 읽을 수 있는 날짜(2027-03-07, 2027년 3월 7일, 2027 оны 3-р сарын 7, March 7, 2027 · 7 March 2027). 숫자 집합만 보면 3월 7일과 7월 3일이 같아 보인다. */
+const MONTHS_EN = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+const pad2 = (n) => String(n).padStart(2, '0');
+export function datesIn(text) {
+  const s = String(text ?? ''), out = new Set();
+  const add = (y, m, d) => { y = Number(y); m = Number(m); d = Number(d); if (y >= 1900 && y <= 2200 && m >= 1 && m <= 12 && d >= 1 && d <= 31) out.add(`${y}-${pad2(m)}-${pad2(d)}`); };
+  for (const x of s.matchAll(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/g)) add(x[1], x[2], x[3]);
+  for (const x of s.matchAll(/(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/g)) add(x[1], x[2], x[3]);
+  for (const x of s.matchAll(/(\d{4})\s*оны\s*(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})/giu)) add(x[1], x[2], x[3]);
+  const mon = MONTHS_EN.join('|');
+  for (const x of s.matchAll(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(\\d{4})`, 'gi'))) add(x[3], MONTHS_EN.indexOf(x[1].toLowerCase()) + 1, x[2]);
+  for (const x of s.matchAll(new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon}),?\\s+(\\d{4})`, 'gi'))) add(x[3], MONTHS_EN.indexOf(x[2].toLowerCase()) + 1, x[1]);
+  return out;
+}
+/** 옮긴 줄: 줄 수가 같고, 숫자가 원문과 같아야 한다(바뀌면 거절). 양쪽에서 날짜를 읽을 수 있으면 해 · 달 · 날까지 같아야 한다. */
 export function checkBriefEditOutput(out, edits) {
   if (!exactKeys(out, ['texts']) || !Array.isArray(out.texts) || out.texts.length !== edits.length) throw fault('BRIEF_BAD_OUTPUT');
   return edits.map((e, i) => {
@@ -337,6 +351,8 @@ export function checkBriefEditOutput(out, edits) {
     if (!ko || chars(ko) > MAX_BRIEF_LINE * 2) throw fault('BRIEF_BAD_OUTPUT');
     const a = [...numbersIn(e.text)].sort().join(','), b = [...numbersIn(ko)].sort().join(',');
     if (a !== b) throw fault('BRIEF_NUMBERS_CHANGED');
+    const da = datesIn(e.text), db = datesIn(ko);
+    if (da.size && db.size && [...da].sort().join(',') !== [...db].sort().join(',')) throw fault('BRIEF_NUMBERS_CHANGED');
     return { ...e, text_ko: maskAsk(ko) };
   });
 }

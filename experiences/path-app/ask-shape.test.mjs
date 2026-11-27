@@ -156,6 +156,12 @@ test('고친 줄 옮기기: 요청 꼴과 옮긴 줄의 숫자를 본다', () =>
   assert.equal(r.edits[0].text_ko, null);
   assert.equal(checkBriefEditOutput({ texts: ['2027년 1월 15일까지 준비'] }, r.edits)[0].text_ko, '2027년 1월 15일까지 준비');
   assert.throws(() => checkBriefEditOutput({ texts: ['2027년 2월 15일까지 준비'] }, r.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
+  // 달과 날을 바꾼 번역(3월 7일 → 7월 3일)은 숫자가 같아도 거절한다.
+  const swap = validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: '2027 оны 3-р сарын 7 хүртэл' }] });
+  assert.throws(() => checkBriefEditOutput({ texts: ['2027년 7월 3일까지'] }, swap.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
+  assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일까지'] }, swap.edits)[0].text_ko, '2027년 3월 7일까지');
+  const en = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'by March 7, 2027' }] });
+  assert.throws(() => checkBriefEditOutput({ texts: ['2027년 7월 3일까지'] }, en.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
   assert.throws(() => checkBriefEditOutput({ texts: [] }, r.edits), { code: 'BRIEF_BAD_OUTPUT' });
   assert.throws(() => validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [] }), { code: 'BRIEF_BAD_REQUEST' });
   assert.throws(() => validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'x', text_ko: '가짜' }] }), { code: 'BRIEF_BAD_REQUEST' });

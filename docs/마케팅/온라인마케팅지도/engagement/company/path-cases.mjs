@@ -150,12 +150,12 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     const rows = store.allWhere(K.intake, 'synkUserId', intakeSubject(synkUserId)).filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
     const tooMany = () => fail(429, 'CASE_LIMIT', '이번 주에 보낼 수 있는 연결을 다 썼어요. 급하면 hello@synk.im으로 연락해 주세요.');
     if (mode === 'urgent' || mode === 'teen') {
-      const free = rows.filter(row => row.mode === 'urgent' || row.mode === 'teen');
+      const free = rows.filter(row => row.mode === 'urgent' || row.mode === 'teen' || row.mode === 'erased');
       if (free.filter(row => Date.parse(row.at) > Date.parse(at) - DAY).length >= L.noTicketDaily || free.length >= L.noTicketWeekly) throw tooMany();
     }
     if (mode !== 'urgent') {
       const limit = L.weekly[kind];
-      if (Number.isInteger(limit) && rows.filter(row => row.kind === kind && row.mode !== 'urgent').length >= limit) throw tooMany();
+      if (Number.isInteger(limit) && rows.filter(row => (row.kind === kind || row.kind === 'erased') && row.mode !== 'urgent').length >= limit) throw tooMany();
     }
   }
 
@@ -304,7 +304,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       store.remove(K.cases, row.id);
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
       // 접수 줄(횟수 세기용, 8일)은 남기되 지운 건과 잇지 않는다.
-      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) store.put(K.intake, intake.id, { ...intake, caseId: null });
+      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) store.put(K.intake, intake.id, { ...intake, caseId: null, requestId: null, mode: 'erased', kind: 'erased' });
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
@@ -313,7 +313,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   }
 
   // 지운 뒤 WAL 파일을 비운다(secure_delete는 본 파일만 덮는다). 다른 읽기가 붙잡고 있어 못 비우면 정리(maintain) 때 다시 한다.
-  let walPending = false;
+  let walPending = true; // 시작한 뒤 첫 보관 정리에서 한 번 자른다(앞 실행이 지운 뒤 자르기 전에 멈췄을 수 있다)
   function truncateWal() {
     try { const r = store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get(); walPending = Boolean(r && r.busy); } catch { walPending = true; }
     return !walPending;
