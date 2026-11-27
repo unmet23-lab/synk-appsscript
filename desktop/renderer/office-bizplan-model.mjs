@@ -84,8 +84,6 @@ export const JUDGES = [
 ];
 export const seatedFor = (provider, others = false) => JUDGES.filter(j => others || j.provider === (provider === 'codex' ? 'codex' : 'claude')).map(j => j.id);
 const judgeOf = id => JUDGES.find(j => j.id === id);
-const f1 = n => (Math.round(n * 10) / 10).toFixed(1);
-const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
 const ADJ = ['', '한', '두', '세'];
 /* 앉은 심사위원을 이르는 말: 「GPT 심사위원」 · 「심사위원 둘」 · 「심사위원 셋」 */
 function panelOf(ids) {
@@ -94,7 +92,7 @@ function panelOf(ids) {
 }
 const SAT_OUT = { LIMIT: '이번 주 사용량을 다 써서 이번에는 쉬었습니다.', LOGIN: '로그인이 풀려 이번에는 쉬었습니다.', OFF: '다른 회사 심사위원 부르기가 꺼져 있어 이번에는 쉬었습니다.' };
 export const satOut = reason => SAT_OUT[reason] || '답을 받지 못해 이번에는 쉬었습니다.';
-const FIXED_WHY = /점수의 까닭을 확인하지 못했습니다\.$/;
+const FIXED_WHY = /(?:점수|표시)의 까닭을 확인하지 못했습니다\.$/;
 const planTitle = name => String(name || '').replace(/\.[^.]+$/, '').slice(0, 24) || '사업계획서';
 /* 인용이 든 문단(1부터)의 묶음: 번호와 제목 */
 function secOfPara(read, para) {
@@ -103,27 +101,56 @@ function secOfPara(read, para) {
   return k < 0 ? null : { no: String(k + 1).padStart(2, '0'), title: secs[k].title || '' };
 }
 
-/* 항목 × 앉은 심사위원 점수표. 다시 심사면 앞 점수(prev)와 견준다 */
-export function scoreBoard(scores, read) {
+/* ○ △ ✕ 표시(설계 14.3 「○ △ ✕ 표시」, 유호님 11-27): score 1 ✕ 빠짐 · 2 △ 보완 · 3 ○ 갖춤. 강점(strong)인 ○는 네 단계에서만 ✓.
+   표시 방식은 손님 설정 marks(3 · 4, 기본 3). 보이는 방식만 바꾸고 기록은 그대로다 */
+export const MARKS = { v: { t: '✓', name: '강점' }, o: { t: '○', name: '갖춤' }, t: { t: '△', name: '보완' }, x: { t: '✕', name: '빠짐' } };
+const RANK = { v: 3, o: 2, t: 1, x: 0 };
+export const marksIn = marks => (marks === 4 ? ['v', 'o', 't', 'x'] : ['o', 't', 'x']);
+const markOf = (s, marks) => (!s || !Number.isInteger(s.score) ? null : s.score === 3 ? (marks === 4 && s.strong ? 'v' : 'o') : s.score === 2 ? 't' : s.score === 1 ? 'x' : null);
+const tallyOf = list => { const n = { v: 0, o: 0, t: 0, x: 0 }; for (const m of list) if (m) n[m]++; return n; };
+const good = n => n.o + n.v;
+/* 화면의 표시 수: [[표시, 수], …]와 한 줄 「○ 8 · △ 6 · ✕ 4」 */
+const tallyList = (n, marks) => marksIn(marks).map(m => [m, n[m]]);
+export const tallyText = (n, marks) => marksIn(marks).map(m => `${MARKS[m].t} ${n[m]}`).join(' · ');
+const goodWord = marks => (marks === 4 ? '✓와 ○' : '○');
+/* 다시 심사에서 표시 수가 어떻게 바뀌었나. 차례: ✕ 줄어듦, ○ 늘어남, ✕ 늘어남, ○ 줄어듦, (네 단계) ✓ 바뀜, 그대로(설계 14.3) */
+function markChange(n, was, marks) {
+  const say = (word, a, b, more) => ({ head: `${word}가 ${a}개에서 ${b}개로 ${more ? '늘었습니다' : '줄었습니다'}.`, parts: [[`${word}가 ${a}개에서 `, false], [`${b}개`, true], [`로 ${more ? '늘었습니다' : '줄었습니다'}.`, false]] });
+  if (n.x < was.x) return { dir: 'better', ...say('✕', was.x, n.x, false) };
+  if (good(n) > good(was)) return { dir: 'better', ...say(goodWord(marks), good(was), good(n), true) };
+  if (n.x > was.x) return { dir: 'worse', ...say('✕', was.x, n.x, true) };
+  if (good(n) < good(was)) return { dir: 'worse', ...say(goodWord(marks), good(was), good(n), false) };
+  if (marks === 4 && n.v !== was.v) return { dir: n.v > was.v ? 'better' : 'worse', ...say('✓', was.v, n.v, n.v > was.v) };
+  return { dir: 'same', head: '표시가 그대로입니다.', parts: [['표시가 그대로입니다.', false]] };
+}
+/* 앉은 심사위원을 이르는 말의 「의 표시」: 「Opus 심사위원의 표시」 · 「두 심사위원의 표시」 */
+const panelMarks = ids => (ids.length === 1 ? `${panelOf(ids)}의 표시` : `${ADJ[ids.length] || countWord(ids.length)} 심사위원의 표시`);
+
+/* 항목 × 앉은 심사위원 표시표. 다시 심사면 앞 표시(prev: {심사위원: {항목: {score, strong}}})와 견준다.
+   가장 약한 항목은 본체의 셈(✕ 2 · △ 1의 합이 가장 큰 항목, 합이 0이면 없음)을 따른다 */
+export function scoreBoard(scores, read, marks = 3) {
   const ok = (scores?.judges || []).filter(j => j.status === 'ok' && Array.isArray(j.scores));
   const prev = scores?.prev || null, crits = Array.isArray(scores?.criteria) ? scores.criteria : [];
+  const wasOf = (id, crit) => markOf(prev?.[id]?.[crit], marks);
   const rows = crits.map(crit => {
     const cells = ok.map(j => {
-      const s = j.scores.find(x => x.crit === crit), was = prev?.[j.id]?.[crit];
-      return { judge: j.id, s: s || null, score: Number.isInteger(s?.score) ? s.score : null, up: s && Number.isInteger(was) && s.score > was ? s.score - was : 0 };
+      const s = j.scores.find(x => x.crit === crit) || null, mark = markOf(s, marks), was = wasOf(j.id, crit);
+      return { judge: j.id, s, mark, was, up: !!mark && !!was && RANK[mark] > RANK[was] };
     });
-    const pts = cells.map(c => c.score).filter(Number.isInteger);
-    const was = ok.map(j => prev?.[j.id]?.[crit]).filter(Number.isInteger);
-    return { crit, cells, avg: pts.length ? mean(pts) : null, spread: pts.length > 1 ? Math.max(...pts) - Math.min(...pts) : 0, prevAvg: was.length ? mean(was) : null };
+    const n = tallyOf(cells.map(c => c.mark));
+    const rank = cells.reduce((a, c) => a + (c.mark ? RANK[c.mark] : 0), 0);
+    const prevRank = prev && cells.length && cells.every(c => c.was) ? cells.reduce((a, c) => a + RANK[c.was], 0) : null;
+    return { crit, cells, n, sev: n.x * 2 + n.t, split: good(n) > 0 && n.x > 0, rank, prevRank };
   });
-  const judgeAvg = j => { const v = crits.map(c => j.scores.find(x => x.crit === c)?.score).filter(Number.isInteger); return v.length ? mean(v) : null; };
-  const prevAvg = id => { const v = crits.map(c => prev?.[id]?.[c]).filter(Number.isInteger); return v.length ? mean(v) : null; };
-  const scored = rows.filter(r => r.avg != null);
-  const weak = scores?.sum?.weakest?.crit || (scored.length ? scored.reduce((m, r) => (r.avg < m.avg - 1e-9 ? r : m), scored[0]).crit : null);
-  return { ok, rows, weak, judgeAvg, prevAvg };
+  const n = tallyOf(rows.flatMap(r => r.cells.map(c => c.mark)));
+  const prevN = prev && rows.length && rows.every(r => r.prevRank != null) ? tallyOf(rows.flatMap(r => r.cells.map(c => c.was))) : null;
+  const judgeTally = j => tallyOf(crits.map(c => markOf(j.scores.find(x => x.crit === c), marks)));
+  const top = rows.reduce((m, r) => (r.sev > (m ? m.sev : 0) ? r : m), null);
+  const weak = scores?.sum ? scores.sum.weakest?.crit || null : top?.crit || null;
+  return { ok, rows, n, prevN, weak, judgeTally };
 }
 
-/* 점수가 나온 뒤 짧게 보이는 무대(12초 안). 받은 혼잣말(reacts) 셋까지 · 심사위원마다 점수판 · 평균 */
+/* 점수가 나온 뒤 짧게 보이는 무대(12초 안). 받은 혼잣말(reacts) 셋까지 · 심사위원마다 표시판 · 모두의 표시 수 */
 export function revealPlan(scores, read) {
   const ok = (scores?.judges || []).filter(j => j.status === 'ok' && Array.isArray(j.scores));
   if (!scores?.sum || !ok.length) return null;
@@ -142,7 +169,7 @@ export function revealPlan(scores, read) {
   return { at: scores.at, beats };
 }
 
-const STATE_TEXT = { wait: '기다리는 중', read: '읽는 중', passed: '차례를 마쳤습니다', done: '점수를 매겼습니다', off: '이번에는 쉽니다', rest: '이번에는 쉬었습니다' };
+const STATE_TEXT = { wait: '기다리는 중', read: '읽는 중', passed: '차례를 마쳤습니다', done: '표시를 마쳤습니다', off: '이번에는 쉽니다', rest: '이번에는 쉬었습니다' };
 const judgeRow = (j, k, state, extra = {}) => ({ id: j.id, name: j.name, co: j.co, eye: j.eye, tag: j.tag, seat: k, seated: state !== 'off', state, status: STATE_TEXT[state], bubble: null, paddle: null, ...extra });
 
 /* 심사하는 동안: 업무 줄의 차례(「심사 · 이름」)만 보인다. 지어낸 반응은 없다 */
@@ -171,10 +198,9 @@ function judgingShow(task, p, planName, panel = null) {
 }
 
 /* 점수가 나온 뒤의 무대 한 장면. step은 revealPlan의 몇 번째 박자까지 왔는지 */
-function revealShow(scores, read, plan, step, key) {
+function revealShow(scores, read, plan, step, key, marks = 3) {
   const b = plan.beats, s = Math.max(0, Math.min(step, b.length - 1)), cur = b[s], shown = b.slice(0, s + 1);
-  const board = scoreBoard(scores, read), again = !!scores.prev;
-  const up = (now, was) => (was != null && now - was > 0.04 ? '+' + f1(now - was) : '');
+  const board = scoreBoard(scores, read, marks), again = !!scores.prev;
   const paddles = new Set(shown.filter(x => x.kind === 'paddle').map(x => x.judge));
   const react = cur.kind === 'react' ? cur : null;
   const lastReact = shown.filter(x => x.kind === 'react').at(-1);
@@ -182,67 +208,92 @@ function revealShow(scores, read, plan, step, key) {
     const row = (scores.judges || []).find(x => x.id === j.id);
     if (!row) return judgeRow(j, k, 'off');
     if (row.status !== 'ok' || !Array.isArray(row.scores)) return judgeRow(j, k, 'rest');
-    const avg = board.judgeAvg(row), on = paddles.has(j.id);
+    const n = board.judgeTally(row), on = paddles.has(j.id);
     return judgeRow(j, k, 'done', {
-      status: on && avg != null ? `평균 ${f1(avg)}점` : STATE_TEXT.done, fin: on,
+      status: on ? tallyText(n, marks) : STATE_TEXT.done, fin: on,
       bubble: react && react.judge === j.id ? { kind: react.tone, say: react.say } : null,
-      paddle: on && avg != null ? { value: f1(avg), up: again ? up(avg, board.prevAvg(j.id)) : '', name: j.name } : null,
+      paddle: on ? { tally: tallyList(n, marks), name: j.name } : null,
     });
   });
   const secs = read?.sections || [], si = lastReact ? secs.findIndex(x => x.id === lastReact.sec) : -1;
   const sign = si >= 0 ? { key: 'sec:' + secs[si].id, top: `${String(si + 1).padStart(2, '0')} / ${String(secs.length).padStart(2, '0')}`, title: secs[si].title || '' } : { key: 'plan', top: '사업계획서', title: planTitle(read?.plan?.name) };
-  const avg = scores.sum.avg, was = scores.prevSum?.avg ?? null, ok = board.ok.map(j => j.id);
+  const ok = board.ok.map(j => j.id), n = board.n, was = again ? board.prevN : null, xRows = board.rows.filter(r => r.n.x > 0).length;
+  const ch = was ? markChange(n, was, marks) : null;
   const totalOn = shown.some(x => x.kind === 'total');
+  const END = '심사가 끝났습니다. ';
   let cap;
-  if (totalOn) cap = again
-    ? (was != null && Math.abs(avg - was) > 0.04 ? [['심사가 끝났습니다. 평균이 ' + f1(was) + '점에서 ', false], [f1(avg) + '점', true], ['으로 바뀌었습니다.', false]] : [['심사가 끝났습니다. 평균은 그대로 ', false], [f1(avg) + '점', true], ['입니다.', false]])
-    : [['심사가 끝났습니다. 평균 ', false], [f1(avg) + '점', true], [board.weak ? `이고, 가장 약한 곳은 ${board.weak}입니다.` : '입니다.', false]];
-  else if (paddles.size) cap = [['심사위원이 점수판을 듭니다.', false]];
+  if (totalOn) {
+    if (ch) cap = [[END + ch.parts[0][0], false], ...ch.parts.slice(1)];
+    else if (again) cap = [[END + '지금 ', false], [tallyText(n, marks), true], ['입니다.', false]];
+    // 자막은 ✕가 나온 항목 수를 센다. ✕ 표시 수와 섞이지 않게(Opus 대체 화면 검수 F3)
+    else if (xRows) cap = [[END + '✕가 나온 항목이 ', false], [countWord(xRows), true], [board.weak ? `이고, 가장 약한 곳은 ${board.weak}입니다.` : '입니다.', false]];
+    else if (board.weak) cap = [[END + '✕가 나온 항목은 없고, 가장 약한 곳은 ', false], [board.weak, true], ['입니다.', false]];
+    else cap = [[END, false], ['모든 항목을 갖췄습니다.', true]];
+  } else if (paddles.size) cap = [['심사위원이 채점판을 듭니다.', false]];
   else if (react) { const t = secs.find(x => x.id === react.sec)?.title || ''; cap = [[t, true], [` · ${judgeOf(react.judge)?.name || ''} 심사위원이 ${react.tone === 'oh' ? '좋게 본 곳입니다.' : '걸린다고 한 곳입니다.'}`, false]]; }
-  else cap = [[shown.some(x => x.kind === 'react') || b.some(x => x.kind === 'react') ? '읽다가 한 말부터 봅니다.' : '점수판을 듭니다.', false]];
-  const mood = totalOn ? (again && was != null && avg - was > 0.04 ? 'happy' : 'look') : react ? (react.tone === 'oh' ? 'happy' : 'nervous') : paddles.size ? 'look' : 'nervous';
+  else cap = [[shown.some(x => x.kind === 'react') || b.some(x => x.kind === 'react') ? '읽다가 한 말부터 봅니다.' : '채점판을 듭니다.', false]];
+  const mood = totalOn ? (ch?.dir === 'better' ? 'happy' : 'look') : react ? (react.tone === 'oh' ? 'happy' : 'nervous') : paddles.size ? 'look' : 'nervous';
   return {
-    head: [again ? '다시 심사한 점수가 나왔습니다.' : `${panelOf(ok)}의 점수가 나왔습니다.`, ''],
+    head: [again ? '다시 심사한 표시가 나왔습니다.' : `${panelOf(ok)}의 표시가 나왔습니다.`, ''],
     show: {
-      key, mode: 'reveal', presenter: mood, judges, sign, cap,
-      total: totalOn ? { value: f1(avg), small: ok.length === 1 ? `${panelOf(ok)} 점수` : `${ADJ[ok.length] || countWord(ok.length)} 심사위원 평균`, up: again ? up(avg, was) : '' } : null,
+      key, mode: 'reveal', presenter: mood, judges, sign, cap, marks,
+      total: totalOn ? { tally: tallyList(n, marks), small: panelMarks(ok), was: ch?.dir === 'better' ? `고치기 전 ${tallyText(was, marks)}` : '' } : null,
     },
   };
 }
 
-/* 점수 결과(w06): 큰 평균, 가장 약한 항목과 까닭 하나, 항목 × 심사위원 점수표, 심사위원의 한 줄 */
-function scoreView(scores, read, ui, open, total) {
-  const board = scoreBoard(scores, read), again = !!scores.prev;
-  const avg = scores.sum?.avg ?? null, was = scores.prevSum?.avg ?? null, diff = avg != null && was != null ? avg - was : 0;
+/* 한마디 하나: 가장 낮은 표시를 준 심사위원의 것부터. 정해진 글(확인하지 못한 까닭, 그대로 둔 표시)은 건너뛴다 */
+function worstWhy(row) {
+  if (!row) return '';
+  const cells = row.cells.filter(c => c.s && c.mark && !c.s.held).sort((a, b) => RANK[a.mark] - RANK[b.mark]);
+  return cells.map(c => c.s.why).find(w => w && !FIXED_WHY.test(w)) || '';
+}
+/* 채점 기준 한 항목: [[표시, 뜻], …]. 본체가 기록과 함께 건넨다(scores.rubric) */
+function rubricOf(scores, crit, marks) {
+  const r = Array.isArray(scores?.rubric) ? scores.rubric.find(x => x && x.crit === crit) : null;
+  return r ? marksIn(marks).filter(m => typeof r[m] === 'string' && r[m]).map(m => [m, r[m]]) : [];
+}
+
+/* 점수 결과(w06): 표시 수, 가장 약한 항목과 한마디 하나, 표시 방식 고르기, 항목 × 심사위원 표시표, 심사위원의 한 줄 */
+function scoreView(scores, read, ui, open, total, marks = 3) {
+  const board = scoreBoard(scores, read, marks), again = !!scores.prev, n = board.n;
+  const ch = again && board.prevN ? markChange(n, board.prevN, marks) : null;
   const openRow = ui.scoreRow === undefined ? board.weak : ui.scoreRow;
+  const byCrit = Object.fromEntries(board.rows.map(r => [r.crit, r]));
   let head, sub;
-  if (avg == null) { head = '이번에는 심사하지 못했습니다.'; sub = '심사위원이 모두 쉬었습니다. 고칠 곳은 그대로 볼 수 있습니다.'; }
+  if (!board.ok.length) { head = '이번에는 심사하지 못했습니다.'; sub = '심사위원이 모두 쉬었습니다. 고칠 곳은 그대로 볼 수 있습니다.'; }
   else if (again) {
-    head = diff > 0.04 ? `${f1(was)}점에서 ${f1(avg)}점으로 올랐습니다.` : diff < -0.04 ? `${f1(was)}점에서 ${f1(avg)}점으로 내려갔습니다.` : '점수가 그대로입니다.';
-    sub = board.weak ? `지금 가장 약한 것은 ${board.weak}입니다.` : '';
+    head = ch ? ch.head : `지금 ${tallyText(n, marks)}입니다.`;
+    const gain = board.rows.filter(r => r.prevRank != null && r.rank > r.prevRank).sort((a, b) => (b.rank - b.prevRank) - (a.rank - a.prevRank))[0];
+    sub = [gain ? `가장 많이 나아진 것은 ${gain.crit}입니다.` : '', board.weak ? `지금 가장 약한 것은 ${board.weak}입니다.` : ''].filter(Boolean).join(' ');
   } else {
-    head = board.weak ? `${iga(board.weak)} 가장 약합니다.` : '심사를 마쳤습니다.';
-    sub = board.ok.map(j => j.scores.find(s => s.crit === board.weak)?.why).find(w => w && !FIXED_WHY.test(w)) || '';
+    head = board.weak ? `${iga(board.weak)} 가장 약합니다.` : '모든 항목을 갖췄습니다.';
+    sub = worstWhy(byCrit[board.weak]);
   }
   const rows = board.rows.map(r => ({
-    crit: r.crit, avg: r.avg == null ? '' : f1(r.avg), w: r.avg == null ? 0 : Math.round(r.avg / 5 * 100),
-    weak: r.crit === board.weak, split: board.ok.length > 1 && r.spread >= 2, fixed: r.prevAvg != null && r.avg != null && r.avg > r.prevAvg + 0.04,
+    crit: r.crit, weak: r.crit === board.weak, split: r.split, fixed: r.prevRank != null && r.rank > r.prevRank,
     open: openRow === r.crit,
-    cells: r.cells.map(c => ({ score: c.score == null ? '' : String(c.score), up: c.up > 0 ? '+' + c.up : '' })),
+    cells: r.cells.map(c => ({ mark: c.mark || '', up: c.up })),
     more: r.cells.filter(c => c.s).map(c => {
       const sec = c.s.quote ? secOfPara(read, c.s.para) : null;
       // 묶음 제목이 「2. 지금까지 한 일」처럼 제 번호로 시작하면 앞 번호를 붙이지 않는다(11-27 앱 창 확인)
-      return { name: judgeOf(c.judge)?.name || c.judge, score: String(c.s.score), why: c.s.why || '', held: !!c.s.held, quote: c.s.quote || '', where: sec ? (/^\s*(?:\d|제\s*\d)/.test(sec.title) ? sec.title : `${sec.no} ${sec.title}`) : '' };
+      return { name: judgeOf(c.judge)?.name || c.judge, mark: c.mark || '', why: c.s.why || '', held: !!c.s.held, quote: c.s.quote || '', where: sec ? (/^\s*(?:\d|제\s*\d)/.test(sec.title) ? sec.title : `${sec.no} ${sec.title}`) : '' };
     }),
+    rubric: rubricOf(scores, r.crit, marks),
   }));
   const judges = (scores.judges || []).map(row => {
     const j = judgeOf(row.id) || { name: row.name || row.id, co: '', eye: '' };
-    const ok = row.status === 'ok' && Array.isArray(row.scores), a = ok ? board.judgeAvg(row) : null;
-    return { id: row.id, name: j.name, co: j.co, eye: j.eye, avg: a == null ? '' : f1(a), line: ok ? row.line || '' : satOut(row.reason), rest: !ok };
+    const ok = row.status === 'ok' && Array.isArray(row.scores);
+    return { id: row.id, name: j.name, co: j.co, eye: j.eye, tally: ok ? tallyList(board.judgeTally(row), marks) : [], line: ok ? row.line || '' : satOut(row.reason), rest: !ok };
   });
+  const count = marksIn(marks).reduce((a, m) => a + n[m], 0);
   return {
-    head: [head, sub], avg: avg == null ? '' : f1(avg), up: again && diff > 0.04 ? '+' + f1(diff) : '', raised: again && diff > 0.04,
+    head: [head, sub], marks,
+    tally: board.ok.length ? tallyList(n, marks) : [], lab: board.ok.length ? `${panelMarks(board.ok.map(j => j.id))} ${count}개` : '',
+    was: ch?.dir === 'better' ? `고치기 전 ${tallyText(board.prevN, marks)}` : '', raised: ch?.dir === 'better',
     cols: board.ok.map(j => judgeOf(j.id)?.name || j.name || j.id), rows, judges,
+    title: '항목별 표시 · 항목을 누르면 심사위원의 한마디와 근거 문장',
+    pick: { label: '표시 방식', options: [{ value: 3, label: '세 단계', marks: marksIn(3), on: marks !== 4 }, { value: 4, label: '네 단계', marks: marksIn(4), on: marks === 4 }] },
     go: open ? `고칠 곳 ${countWord(open)} 보기` : total ? '고칠 곳 다시 보기' : '읽은 결과 보기',
     fine: '연습 심사입니다. 실제 지원사업의 결과를 미리 알려 주지 않습니다. 심사는 앉은 심사위원 수만큼 구독 사용량을 씁니다.',
   };
@@ -354,11 +405,13 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
   const running = task && ['queued', 'running', 'terminal', 'paused'].includes(task.status);
   const provider = ui.provider || read?.provider || task?.provider || 'claude';
   const others = snap.list?.settings?.others === true;
+  // 표시 방식(설계 14.3): 고르는 동안은 방이 먼저 든 값(ui.marks), 그 밖에는 손님 설정. 기본 세 단계
+  const marks = ui.marks === 3 || ui.marks === 4 ? ui.marks : snap.list?.settings?.marks === 4 ? 4 : 3;
   const base = {
     back: '← 사무실', provider, privacy: privacyLine(provider, others), live: ui.live || '', busy: ui.busy || null,
     list: snap.list, broken: !!snap.broken || !!snap.draft?.broken, planChanged: !!snap.planChanged && !running && snap.read?.status !== 'failed',
     criteria: { mode: ui.criteriaMode || snap.list.criteria.mode, text: ui.criteriaText ?? snap.list.criteria.text, open: !!ui.criteriaOpen },
-    clearAsk: !!ui.clearAsk, menu: ui.menu || null,
+    clearAsk: !!ui.clearAsk, menu: ui.menu || null, marks,
     // 손님 설정(설계 14.7): 다른 회사 심사위원도 부르기, 기본 끔
     others: { on: others, label: '다른 회사 심사위원도 부르기', small: provider === 'codex' ? 'Claude 심사위원 둘도 앉습니다. 켜 두는 동안 이 부서에서 심사하는 계획서는 모두 Claude를 만든 회사로도 갑니다.' : 'GPT 심사위원도 앉습니다. 켜 두는 동안 이 부서에서 심사하는 계획서는 모두 GPT를 만든 회사로도 갑니다.' },
   };
@@ -462,10 +515,10 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
   // 점수가 나오면 먼저 짧은 무대(방이 박자를 센다), 그다음 점수 결과. 「고칠 곳 n 보기」로 고칠 곳에 온다
   if (scores && ui.reveal && ui.reveal.at === scores.at) {
     const plan = revealPlan(scores, read);
-    if (plan) return { ...base, stage: 'reveal', ...revealShow(scores, read, plan, ui.reveal.step || 0, 'scores:' + scores.at) };
+    if (plan) return { ...base, stage: 'reveal', ...revealShow(scores, read, plan, ui.reveal.step || 0, 'scores:' + scores.at, marks) };
   }
   if (scores && ui.results === scores.at) {
-    const v = scoreView(scores, read, ui, open, all.length);
+    const v = scoreView(scores, read, ui, open, all.length, marks);
     return { ...base, stage: 'score', head: v.head, score: v };
   }
   return {
@@ -473,7 +526,7 @@ export function bizplanScene(snap, task, ui = {}, { departments = [], deptName =
     planName: read.plan.name, samePlan: read.plan.samePlan, dataNames: read.dataNames,
     paper: paperOf(read, notes, drafts, null, false, sel),
     // 점수 다시 보기와 다시 심사(14.3): 고른 고침이 있고 계획서가 그대로일 때만 다시 심사한다
-    scoreLink: scores ? { avg: scores.sum ? f1(scores.sum.avg) : '' } : null,
+    scoreLink: scores ? { tally: scores.sum ? tallyText(scoreBoard(scores, read, marks).n, marks) : '' } : null,
     rescore: changes > 0 && !base.planChanged && !snap.planChanged,
   };
 }

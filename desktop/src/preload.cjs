@@ -67,7 +67,7 @@ function officeFeatureArgs(action,a){
     take('item',v=>officeText(v,40))&&take('answers',v=>Array.isArray(v)&&v.length<=3&&v.every(x=>Number.isInteger(x)&&x>=0&&x<4))&&take('remove',v=>typeof v==='boolean')&&
     take('departmentId',officeId)&&take('extra',v=>officeText(v,2000))&&take('confirm',v=>typeof v==='boolean')&&
     take('chapter',v=>Number.isInteger(v)&&v>=0&&v<7)&&take('skipped',v=>typeof v==='boolean')&&
-    take('name',v=>['others'].includes(v))&&take('value',v=>typeof v==='boolean');
+    take('name',v=>['others','marks'].includes(v))&&take('value',v=>typeof v==='boolean'||v===3||v===4);
   return ok&&Object.keys(a).every(k=>k in out)&&OFFICE_FEATURE_ACTIONS.includes(action)?out:null;
 }
 // 번호가 있는 부서는 이름이나 폴더 가운데 하나만 건너갈 수 있다. 뺀 칸은 본체가 저장된 값으로 채운다(GPT 검수 GA3)

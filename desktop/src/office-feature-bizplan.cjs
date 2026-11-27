@@ -125,9 +125,14 @@ function validList(v){
   return v&&typeof v==='object'&&(v.plan===null||typeof v.plan?.path==='string')&&Array.isArray(v.data)&&v.data.every(x=>typeof x?.path==='string')&&
     v.criteria&&['default','pasted'].includes(v.criteria.mode)&&typeof v.criteria.text==='string'&&(v.settings==null||typeof v.settings==='object');
 }
-/* 손님 설정(설계 14.7 유호님 답). 기본값은 추천안. others: 다른 회사 심사위원도 부르기(기본 끔) */
-const SETTINGS={others:false};
-const settingsOf=list=>({...SETTINGS,...Object.fromEntries(Object.entries(list?.settings||{}).filter(([k,v])=>k in SETTINGS&&typeof v===typeof SETTINGS[k]))});
+/* 손님 설정(설계 14.7 유호님 답). 기본값은 추천안. others: 다른 회사 심사위원도 부르기(기본 끔). marks: 표시 방식, 세 단계 ○ △ ✕(기본) 또는 네 단계 ✓ ○ △ ✕(설계 14.3) */
+const SETTINGS={others:false,marks:3};
+const SETTING_OK={others:v=>typeof v==='boolean',marks:v=>v===3||v===4};
+/* 심사 기록의 꼴: ○ △ ✕ 표시와 그 기록이 쓴 채점표(rubric). 이 꼴이 아닌 기록(1~5점 개발판, 채점표를 남기기 전 후보)은 예전 판이다.
+   두 꼴 모두 커밋 · 배포한 적 없는 작업본에서만 만들어졌다(GPT 검수 3 · 4회차 GA1, 설계 14.3) */
+const SCALE='mark3-rubric';
+// 제 이름의 설정만 받는다. __proto__ · toString 같은 물려받은 이름은 버린다(GPT 검수 GA4)
+const settingsOf=list=>({...SETTINGS,...Object.fromEntries(Object.entries(list?.settings||{}).filter(([k,v])=>Object.hasOwn(SETTING_OK,k)&&SETTING_OK[k](v)))});
 /* 심사 기록: 읽기마다 최근 다섯. 이 읽기의 가장 새 기록을 돌려준다 */
 async function latestScores(store,f,io,readId){return (await scoresFor(store,f,io,readId))[0];}
 /* 이 읽기의 심사 기록 전부(새것부터, 다섯까지) */
@@ -204,22 +209,27 @@ async function snapshot({store,member,dept,io}){
   };
 }
 function scoresView(r,prev=null){
-  if(!r||!Array.isArray(r.judges))return null;
-  // 다시 심사면 앞 기록의 기준(새 점수나 이어 받은 기준)을 함께 건넨다. 화면이 바뀐 칸에 「+1」을 셈한다.
+  // ○ △ ✕ 표시 기록만 보인다. 1~5점 개발판 기록은 보이지 않는다(설계 14.3 「○ △ ✕ 표시」)
+  if(!r||!Array.isArray(r.judges)||r.scale!==SCALE)return null;
+  // 다시 심사면 앞 기록의 기준(새 점수나 이어 받은 기준)을 함께 건넨다. 화면이 나아진 칸을 셈한다.
   // 이번에 점수를 낸 심사위원이 모두 앞 기준을 가질 때만 견준다. 쉬거나 처음 낸 심사위원 때문에 평균이 오르내리지 않는다(설계 14.3)
   let before=null,prevSum=null;
   if(r.kind==='score'&&prev&&Array.isArray(prev.judges)){
     const now=r.judges.filter(j=>j.status==='ok'&&Array.isArray(j.scores));
     const base=now.map(j=>({id:j.id,status:'ok',scores:baselineOf(prev,j.id)}));
     if(now.length&&base.every(b=>b.scores)){
-      before=Object.fromEntries(base.map(b=>[b.id,Object.fromEntries(b.scores.map(s=>[s.crit,s.score]))]));
+      before=Object.fromEntries(base.map(b=>[b.id,Object.fromEntries(b.scores.map(s=>[s.crit,{score:s.score,strong:!!s.strong}]))]));
       prevSum=sc.summary(base,r.criteria);
     }
   }
-  return {at:r.at,kind:r.kind,status:r.status,criteria:r.criteria,sum:sc.summary(r.judges,r.criteria),prev:before,prevSum,
+  return {at:r.at,kind:r.kind,status:r.status,criteria:r.criteria,rubric:Array.isArray(r.rubric)?r.rubric:[],sum:sc.summary(r.judges,r.criteria),prev:before,prevSum,
     judges:r.judges.map(j=>({id:j.id,name:j.name,provider:j.provider,status:j.status,reason:j.reason||null,scores:j.scores||null,line:j.line||'',reacts:j.reacts||[],actualModel:j.actualModel||''}))};
 }
 /* 심사 항목: 공고 기준을 붙여 넣었으면 그 항목(열 개까지), 아니면 여섯(설계 14.3) */
+/* 채점표: 기본 평가 기준이면 시안의 뜻, 붙여 넣은 기준이면 공통 뜻(설계 14.3 「○ △ ✕ 표시」) */
+const rubricOf=list=>sc.rubricFor(criteriaOf(list),list?.criteria?.mode==='pasted');
+/* 평가 기준이 첫 심사 뒤에 바뀌었나: 항목 이름과 채점표(기준 방식)를 함께 본다 */
+const criteriaMoved=(rec,list)=>JSON.stringify(rec.criteria)!==JSON.stringify(criteriaOf(list))||JSON.stringify(rec.rubric)!==JSON.stringify(rubricOf(list));
 const criteriaOf=list=>list?.criteria?.mode==='pasted'?itemsOf(list).slice(0,sc.LIMIT.criteria):sc.CRITERIA.slice();
 
 /* ── 단추 ── */
@@ -286,14 +296,14 @@ async function act(ctx){
       const last=(await scoresHistory(store,f,io,read.id))[0]||null,ids=panelIds(last);
       // 지문 · 심사단이 없는 예전 꼴 기록에서는 다시 심사하지 않는다(3회차 GA7 · GA8)
       if(last&&!freshRec(last))return {ok:false,code:'RESCORE_OLD'};
-      if(last&&JSON.stringify(last.criteria)!==JSON.stringify(criteriaOf(list)))return {ok:false,code:'CRITERIA_CHANGED'};
+      if(last&&criteriaMoved(last,list))return {ok:false,code:'CRITERIA_CHANGED'};
       // 고른 직원의 회사로 다시 심사한다(2회차 GA2). 심사단에 그 회사 심사위원이 없으면 말없이 바꾸지 않고 알린다(설계 검토 D5)
       // 코드는 심사단의 회사를 이른다(PANEL_CLAUDE: Claude 직원으로 다시 심사)
       if(ids&&!sc.JUDGES.some(j=>j.provider===args.provider&&ids.includes(j.id)))return {ok:false,code:args.provider==='claude'?'PANEL_CODEX':'PANEL_CLAUDE'};
       return ctx.submitFeature(args.provider,{kind:'score',others:settingsOf(list).others});
     }
     case 'setting':{
-      if(!(args.name in SETTINGS)||typeof args.value!==typeof SETTINGS[args.name])return {ok:false,code:'VALUE'};
+      if(!Object.hasOwn(SETTING_OK,args.name)||!SETTING_OK[args.name](args.value))return {ok:false,code:'VALUE'};
       return store.line(member,async()=>{
         const list=await loadList(store,f);
         list.settings={...settingsOf(list),[args.name]:args.value};
@@ -659,8 +669,8 @@ async function run(spec,hooks,tools){
   // 심사(설계 14.3): 읽은 기록을 먼저 쓴 뒤 앉은 심사위원마다 한 번 묻는다. 심사의 실패는 scores/에만 남는다(설계 검토 1)
   let judged='';
   if(judges.length){
-    const {record,written}=await scoreRound({spec,hooks,tools,f,readId:id,paragraphs,secs,planNumbers,criteria:criteriaOf(list),judges,step0:parts.length+1,total:steps,kind:'read'});
-    judged=written?scoreLine(record):' 기록을 지워 심사는 남기지 않았습니다.';
+    const {record,written}=await scoreRound({spec,hooks,tools,f,readId:id,paragraphs,secs,planNumbers,criteria:criteriaOf(list),rubric:rubricOf(list),judges,step0:parts.length+1,total:steps,kind:'read'});
+    judged=written?scoreLine(record,await marksNow(store,f)):' 기록을 지워 심사는 남기지 않았습니다.';
   }
   return {summary:(count?`사업계획서에서 고칠 곳 ${count}곳을 찾았습니다.`:'사업계획서에서 고칠 곳을 찾지 못했습니다.')+judged,ref:id,alert:count>0};
 }
@@ -669,7 +679,7 @@ const panel=(tools,spec,list)=>{const s=settingsOf(list);return sc.seated(tools.
 /* 기록의 심사단(설계 14.3). 기록마다 옮긴다 */
 const panelIds=rec=>Array.isArray(rec?.panel)?rec.panel:null;
 /* 지금 꼴 기록: 심사단 · 지문 열쇠가 있고 근거가 모두 인용 글이다. 지문 꼴 근거가 든 앞 판 기록은 예전 판으로 본다(10회차 GA2) */
-const freshRec=rec=>!!rec&&Array.isArray(rec.panel)&&typeof rec.seen==='string'&&!!rec.seens&&typeof rec.seens==='object'&&
+const freshRec=rec=>!!rec&&rec.scale===SCALE&&Array.isArray(rec.rubric)&&Array.isArray(rec.panel)&&typeof rec.seen==='string'&&!!rec.seens&&typeof rec.seens==='object'&&
   (rec.judges||[]).every(j=>(j.scores||j.kept?.scores||[]).every(s=>(s.basis??[]).every(q=>typeof q==='string')));
 /* 문장 지문(설계 14.3 「심사 기록의 약속」, 설계 검토 D2): 문단은 조각(원래 글, 넣은 초안의 줄)으로, 조각은 문장으로 나눈다. 지문은 sha256 앞 16자 */
 const partsOf=paragraphs=>paragraphs.map(p=>Array.isArray(p.parts)&&p.parts.length?p.parts:[p.text]);
@@ -713,7 +723,7 @@ function baselineOf(rec,id){
   if(!x||!rec.seens||typeof rec.seens!=='object')return null;
   const rows=x.status==='ok'&&Array.isArray(x.scores)?x.scores:Array.isArray(x.kept?.scores)?x.kept.scores:null;
   if(!rows)return null;
-  const out=rows.map(s=>({crit:s.crit,score:s.score,key:s.seen,seen:Array.isArray(rec.seens[s.seen])?rec.seens[s.seen]:null,basis:Array.isArray(s.basis)?s.basis:[]}));
+  const out=rows.map(s=>({crit:s.crit,score:s.score,strong:!!s.strong,key:s.seen,seen:Array.isArray(rec.seens[s.seen])?rec.seens[s.seen]:null,basis:Array.isArray(s.basis)?s.basis:[]}));
   return out.every(s=>s.seen)?out:null;
 }
 /* 쉰 까닭을 한 문장으로(다시 심사에서 아무도 점수를 내지 못했을 때) */
@@ -722,11 +732,13 @@ const restLine=rows=>{const r=new Set(rows.map(x=>x.reason));
   if(r.size===1&&r.has('LOGIN'))return '로그인이 풀려 다시 심사하지 못했습니다.';
   if(r.size===1&&r.has('OFF'))return '다른 회사 심사위원 부르기가 꺼져 다시 심사하지 못했습니다.';
   return '이번에는 다시 심사하지 못했습니다.';};
-const scoreLine=rec=>{const s=sc.summary(rec.judges,rec.criteria);return s?` 심사 평균은 ${s.avg}점입니다.`:' 심사는 하지 못했습니다.';};
+/* 업무 답의 표시 방식은 끝날 때 다시 읽는다. 심사하는 동안 손님이 바꿨으면 바꾼 방식으로 쓴다(GPT 검수 GA3) */
+const marksNow=async(store,f)=>settingsOf(await loadList(store,f).catch(()=>null)).marks;
+const scoreLine=(rec,marks)=>{const s=sc.summary(rec.judges,rec.criteria);return s?` 심사 결과는 ${sc.tallyText(s.tally,marks)}입니다.`:' 심사는 하지 못했습니다.';};
 /* 심사단마다 한 번 묻고 scores/에 남긴다. 한 심사위원의 한도 · 로그인은 그 자리만 비운다(설계 검토 2).
    곁 회사 심사위원은 손님 설정이 켜져 있을 때만, 보내기 바로 앞에 동기로 다시 보고 부른다. 쉰 심사위원은 앞 기준을 kept(점수와 지문만)로 이어 간다.
    확정한 기록은 남는다. 읽기 기록이 지워졌거나, 다시 심사에서 아무도 점수를 내지 못했으면 남기지 않는다(설계 14.3) */
-async function scoreRound({spec,hooks,tools,f,readId,paragraphs,secs,planNumbers,criteria,judges,step0,total,previous=null,basedOn=null,kind,writeEmpty=true}){
+async function scoreRound({spec,hooks,tools,f,readId,paragraphs,secs,planNumbers,criteria,rubric,judges,step0,total,previous=null,basedOn=null,kind,writeEmpty=true}){
   const {store,io}=tools;
   const at=Date.now(),id=stamp(at)+'-'+spec.id,out=[];
   const asked=tools.asked||tools.providers||[spec.provider];
@@ -742,12 +754,12 @@ async function scoreRound({spec,hooks,tools,f,readId,paragraphs,secs,planNumbers
     const removed=base?crit=>!!base.removed.get(crit):null,gone=base?[...base.removed].filter(([,v])=>v).map(([c])=>c):[];
     hooks.progress?.({part:step0+i+1,total,title:'심사 · '+j.name});
     const row={id:j.id,name:j.name,provider:j.provider,model:j.model,actualModel:'',status:'failed',reason:null,scores:null,line:'',reacts:[]};
-    if(base){for(const b of base.scores)seens[b.key]=b.seen;row.kept={scores:base.scores.map(b=>({crit:b.crit,score:b.score,seen:b.key,basis:b.basis}))};}
+    if(base){for(const b of base.scores)seens[b.key]=b.seen;row.kept={scores:base.scores.map(b=>({crit:b.crit,score:b.score,strong:!!b.strong,seen:b.key,basis:b.basis}))};}
     const other=j.provider!==spec.provider;
     // 이 업무가 열지 않은 회사이거나 손님 설정이 꺼졌으면 부르지 않는다(2회차 GA6 · 설계 검토 D7)
     if(other&&(!asked.includes(j.provider)||!allow())){out.push({...row,status:'off',reason:'OFF'});continue;}
     try{
-      const answer=await tools.turn(sc.scorePrompt({judge:j,paragraphs,secs,criteria,previous:prev,changed:anyChanged,removed:gone}),sc.schemaFor(criteria),
+      const answer=await tools.turn(sc.scorePrompt({judge:j,paragraphs,secs,criteria,rubric,previous:prev,changed:anyChanged,removed:gone}),sc.schemaFor(criteria),
         {provider:j.provider,model:j.model,timeoutMs:TURN_MS,effort:EFFORT,onInit:x=>{row.actualModel=String(x?.model||'').slice(0,80);},...(other?{allow}:{})});
       const r=sc.checkScore(answer,{criteria,paragraphs,secs,planNumbers,previous:prev,changed,removed});
       if(r){
@@ -772,7 +784,7 @@ async function scoreRound({spec,hooks,tools,f,readId,paragraphs,secs,planNumbers
   const status=out.every(x=>x.status==='ok')?'ok':out.some(x=>x.status==='ok')?'partial':'failed';
   // 기록에는 쓰인 지문 모음만 둔다
   const used=new Set(out.flatMap(x=>(x.scores||x.kept?.scores||[]).map(s=>s.seen)).concat(curKey));
-  const record={id,taskId:spec.id,at,readId,kind,criteria,panel:judges.map(j=>j.id),judges:out,status,basedOn,seen:curKey,seens:Object.fromEntries(Object.entries(seens).filter(([k])=>used.has(k)))};
+  const record={id,taskId:spec.id,at,readId,kind,scale:SCALE,criteria,rubric,panel:judges.map(j=>j.id),judges:out,status,basedOn,seen:curKey,seens:Object.fromEntries(Object.entries(seens).filter(([k])=>used.has(k)))};
   if(!writeEmpty&&status==='failed')return {record,written:false,empty:true};
   if(!await hooks.checkpoint())throw fail('CANCELLED');
   const live=()=>!hooks.signal?.aborted;
@@ -805,7 +817,7 @@ async function rescore(spec,hooks,tools){
   const history=await scoresHistory(store,f,io,read.id);
   const prevRec=history[0]||null,ids=panelIds(prevRec);
   if(prevRec&&!freshRec(prevRec))return no('심사 기록이 예전 판이라 다시 읽은 뒤 심사할 수 있습니다.');
-  if(prevRec&&JSON.stringify(prevRec.criteria)!==JSON.stringify(criteriaOf(list)))return no('평가 기준이 바뀌어 다시 읽은 뒤 심사할 수 있습니다.');
+  if(prevRec&&criteriaMoved(prevRec,list))return no('평가 기준이 바뀌어 다시 읽은 뒤 심사할 수 있습니다.');
   const judges=ids?sc.JUDGES.filter(j=>ids.includes(j.id)):panel(tools,spec,list);
   if(!judges.length)return no('심사위원이 앉지 못했습니다.');
   const state=await loadState(store,f);
@@ -821,7 +833,7 @@ async function rescore(spec,hooks,tools){
   const planNumbers=ck.numbers(paragraphs.map(p=>ck.ordinalFree(p.text,p.level!=null)).join('\n')).set;
   // 기준은 가장 새 기록 하나에 있다. 심사위원마다 새 점수나 이어 받은 기준(kept)이다(GPT 검수 GA4 · 2회차 GA8).
   // 바뀐 문장은 그 기준 때 본 문장 지문(seen)에 없는 문장이다(GPT 검수 GA5 · 2회차 GA9 · 설계 검토 D2)
-  const criteria=prevRec?.criteria||criteriaOf(list);
+  const criteria=prevRec?.criteria||criteriaOf(list),rubric=prevRec?.rubric||rubricOf(list);
   const nowParts=partsOf(paragraphs);
   // 항목마다 그 점수를 정한 회차의 지문과 견준다. 근거를 잘못 짚어 그대로 둔 항목은 다음 회차에도 바뀐 문장을 짚을 수 있다
   const sentences=nowParts.map(ps=>ps.map(t=>sc.sentencesOf(t).map(x=>({from:x.from,to:x.to,h:hashOf(t.slice(x.from,x.to))}))));
@@ -844,12 +856,12 @@ async function rescore(spec,hooks,tools){
   // 모든 심사위원이 기준을 가졌고 어느 항목에도 그 뒤로 바뀌거나 지운 문장이 없으면 부르지 않는다(설계 검토 D10 · 3회차 GA4)
   if(judges.every(j=>{const p=previous.get(j.id);return p&&[...p.changed.values()].every(m=>m.size===0)&&[...p.removed.values()].every(v=>!v);}))return {summary:'고친 곳이 없어 점수가 그대로입니다.',alert:false};
   const basedOn=sha(Buffer.from(JSON.stringify({changes:merged.changes,inserts:planned.inserts}),'utf8'));
-  const {record,written,empty}=await scoreRound({spec,hooks,tools,f,readId:read.id,paragraphs,secs:read.sections,planNumbers,criteria,judges,step0:0,total:judges.length,previous,basedOn,kind:'score',writeEmpty:false});
+  const {record,written,empty}=await scoreRound({spec,hooks,tools,f,readId:read.id,paragraphs,secs:read.sections,planNumbers,criteria,rubric,judges,step0:0,total:judges.length,previous,basedOn,kind:'score',writeEmpty:false});
   // 아무도 점수를 내지 못하면 기록을 남기지 않아 앞 결과가 그대로 보인다(설계 검토 D3)
   if(empty)return no(restLine(record.judges));
   if(!written)return no('기록을 지워 다시 심사를 남기지 않았습니다.');
   const s=sc.summary(record.judges,record.criteria);
-  return {summary:s?`다시 심사했습니다. 평균은 ${s.avg}점입니다.`:'이번에는 다시 심사하지 못했습니다.',alert:!s};
+  return {summary:s?`다시 심사했습니다. 지금 ${sc.tallyText(s.tally,await marksNow(store,f))}입니다.`:'이번에는 다시 심사하지 못했습니다.',alert:!s};
 }
 
 module.exports={id:'bizplan',name:'사업계획서',

@@ -475,21 +475,24 @@ test('Opus 대체 다시 검수 r4: 빈 장 둘에서 건너뛰기만 눌러도 
 
 /* ── 심사위원 셋의 점수와 무대(사업계획서_설계.md 14.3) ── */
 const CRIT = ['문제 인식', '현실성', '신뢰성', '시장성', '수익 구조', '팀 역량'];
-const marks = (pts, o = {}) => CRIT.map((crit, i) => ({ crit, score: pts[i], why: `${crit}의 까닭입니다.`, para: 0, quote: '', ...(o[crit] || {}) }));
-// Opus와 Sonnet이 매기고 Sol은 한도로 쉬었다. 평균 3.2, 가장 약한 곳은 신뢰성, 팀 역량은 2점 차로 갈린다
+const marks = (pts, o = {}) => CRIT.map((crit, i) => ({ crit, score: pts[i], strong: false, why: `${crit}의 까닭입니다.`, para: 0, quote: '', ...(o[crit] || {}) }));
+const RUBRIC = [{ crit: '신뢰성', x: '숫자와 주장에 근거가 없다', t: '근거가 일부에만 있다', o: '모든 숫자에 출처나 셈이 있다', v: '출처가 공공 자료나 직접 잰 기록이다' }];
+// Opus와 Sonnet이 고르고 Sol은 한도로 쉬었다. ○ 5 · △ 4 · ✕ 3(네 단계는 ✓ 1 · ○ 4), 가장 약한 곳은 신뢰성(✕ 둘), 팀 역량은 ○와 ✕로 갈린다
 const scoresOf = (o = {}) => ({
-  at: 5000, kind: 'read', status: 'partial', criteria: CRIT, prev: null, prevSum: null,
-  sum: { avg: 3.2, weakest: { crit: '신뢰성', avg: 2 } },
+  at: 5000, kind: 'read', status: 'partial', criteria: CRIT, rubric: RUBRIC, prev: null, prevSum: null,
+  sum: { tally: { v: 1, o: 4, t: 4, x: 3 }, weakest: { crit: '신뢰성', sev: 4 } },
   judges: [
     { id: 'opus', name: 'Opus', provider: 'claude', status: 'ok', reason: null, line: '숫자를 믿을 수 있어야 투자를 봅니다.', actualModel: '',
-      scores: marks([4, 3, 2, 3, 4, 4], { '신뢰성': { why: '단골 수의 근거가 없습니다.', para: 2, quote: '단골 손님 300명' } }),
+      scores: marks([3, 2, 1, 2, 3, 3], { '문제 인식': { strong: true }, '신뢰성': { why: '단골 수의 근거가 없습니다.', para: 2, quote: '단골 손님 300명' } }),
       reacts: [{ sec: 2, kind: 'hmm', say: '5억 원 근거는요?' }, { sec: 1, kind: 'oh', say: '단골이 있네요.' }] },
     { id: 'sol', name: 'Sol', provider: 'codex', status: 'failed', reason: 'LIMIT', scores: null, line: '', reacts: [], actualModel: '' },
     { id: 'sonnet', name: 'Sonnet', provider: 'claude', status: 'ok', reason: null, line: '근거 없는 숫자가 걸립니다.', actualModel: '',
-      scores: marks([3, 3, 2, 4, 4, 2], { '신뢰성': { why: '「신뢰성」 점수의 까닭을 확인하지 못했습니다.' } }), reacts: [{ sec: 1, kind: 'hmm', say: '몇 명이 다시 사나요?' }] },
+      scores: marks([2, 2, 1, 3, 3, 1], { '신뢰성': { why: '「신뢰성」 표시의 까닭을 확인하지 못했습니다.' } }), reacts: [{ sec: 1, kind: 'hmm', say: '몇 명이 다시 사나요?' }] },
   ],
   ...o,
 });
+// 앞 표시: {심사위원: {항목: {score, strong}}}
+const prevOf = (opus, sonnet) => ({ opus: Object.fromEntries(CRIT.map((c, i) => [c, { score: opus[i], strong: false }])), sonnet: Object.fromEntries(CRIT.map((c, i) => [c, { score: sonnet[i], strong: false }])) });
 const runTask = (o = {}) => ({ id: 't9', status: 'running', featureKind: 'read', provider: 'claude', others: false, updatedAt: 2, createdAt: 1, ...o });
 const prog = title => ({ taskId: 't9', part: 4, total: 6, title });
 
@@ -521,63 +524,103 @@ test('심사 무대(14.3): 업무 줄의 「심사 · 이름」 차례만 보이
   assert.equal(bizplanScene(snap(), runTask({ featureKind: 'score', status: 'queued' }), {}, { departments: depts }).head[0], '자리가 비면 다시 심사합니다.');
 });
 
-test('점수 결과(14.3): 큰 평균, 가장 약한 항목과 까닭 하나, 의견이 갈림, 쉬어 간 심사위원, 인용의 묶음 이름', () => {
+test('점수 결과(14.3): ○ △ ✕의 수, 가장 약한 항목과 한마디 하나, 의견이 갈림, 쉬어 간 심사위원, 인용의 묶음 이름, 채점 기준', () => {
   const sc = bizplanScene(snap({ scores: scoresOf() }), null, { results: 5000 }, { departments: depts });
   assert.equal(sc.stage, 'score');
   const v = sc.score;
-  assert.equal(v.avg, '3.2');
-  assert.deepEqual(v.head, ['신뢰성이 가장 약합니다.', '단골 수의 근거가 없습니다.'], '까닭은 처음 매긴 심사위원의 글');
+  assert.equal(v.marks, 3, '기본은 세 단계');
+  assert.deepEqual(v.tally, [['o', 5], ['t', 4], ['x', 3]], '세 단계는 ✓를 ○에 합친다');
+  assert.equal(v.lab, '두 심사위원의 표시 12개');
+  assert.equal(v.was, '');
+  assert.equal(v.avg, undefined, '숫자 평균은 없다');
+  assert.deepEqual(v.head, ['신뢰성이 가장 약합니다.', '단골 수의 근거가 없습니다.'], '한마디는 가장 낮은 표시를 준 심사위원의 글, 정해진 글은 건너뛴다');
   assert.deepEqual(v.cols, ['Opus', 'Sonnet'], '쉬어 간 심사위원은 표에 없다');
   const row = c => v.rows.find(r => r.crit === c);
-  assert.deepEqual([row('신뢰성').weak, row('신뢰성').avg, row('신뢰성').w, row('신뢰성').open], [true, '2.0', 40, true], '가장 약한 항목이 처음부터 펼쳐진다');
-  assert.equal(row('팀 역량').split, true, '2점 차면 의견이 갈림');
+  assert.deepEqual([row('신뢰성').weak, row('신뢰성').open, row('신뢰성').cells], [true, true, [{ mark: 'x', up: false }, { mark: 'x', up: false }]], '가장 약한 항목이 처음부터 펼쳐진다');
+  assert.equal(row('팀 역량').split, true, '○와 ✕가 함께면 의견이 갈림');
+  assert.equal(row('현실성').split, false, '△끼리는 갈리지 않는다');
   assert.equal(row('문제 인식').split, false);
   assert.equal(row('신뢰성').fixed, false);
-  assert.deepEqual(row('신뢰성').more[0], { name: 'Opus', score: '2', why: '단골 수의 근거가 없습니다.', held: false, quote: '단골 손님 300명', where: '01 지금까지 한 일' });
+  assert.deepEqual(row('신뢰성').more[0], { name: 'Opus', mark: 'x', why: '단골 수의 근거가 없습니다.', held: false, quote: '단골 손님 300명', where: '01 지금까지 한 일' });
   assert.equal(row('신뢰성').more[1].where, '', '인용이 없으면 묶음 이름도 없다');
-  assert.deepEqual(v.judges.map(j => [j.name, j.avg, j.rest]), [['Opus', '3.3', false], ['Sol', '', true], ['Sonnet', '3.0', false]]);
+  assert.deepEqual(row('신뢰성').rubric, [['o', '모든 숫자에 출처나 셈이 있다'], ['t', '근거가 일부에만 있다'], ['x', '숫자와 주장에 근거가 없다']], '채점 기준은 고른 표시 방식대로');
+  assert.deepEqual(row('현실성').rubric, [], '채점표가 없는 항목은 비운다');
+  assert.deepEqual(v.judges.map(j => [j.name, j.tally, j.rest]), [['Opus', [['o', 3], ['t', 2], ['x', 1]], false], ['Sol', [], true], ['Sonnet', [['o', 2], ['t', 2], ['x', 2]], false]]);
   assert.equal(v.judges[1].line, '이번 주 사용량을 다 써서 이번에는 쉬었습니다.');
   assert.deepEqual([satOut('LOGIN'), satOut('PROVIDER'), satOut('ANSWER')], ['로그인이 풀려 이번에는 쉬었습니다.', '답을 받지 못해 이번에는 쉬었습니다.', '답을 받지 못해 이번에는 쉬었습니다.']);
+  assert.deepEqual(v.pick.options.map(o => [o.value, o.label, o.marks.join(''), o.on]), [[3, '세 단계', 'otx', true], [4, '네 단계', 'votx', false]]);
+  assert.equal(v.title, '항목별 표시 · 항목을 누르면 심사위원의 한마디와 근거 문장');
   assert.equal(v.go, '고칠 곳 셋 보기');
   assert.match(v.fine, /^연습 심사입니다\. 실제 지원사업의 결과를 미리 알려 주지 않습니다\. 심사는 앉은 심사위원 수만큼 구독 사용량을 씁니다\.$/);
   assert.equal(bizplanScene(snap({ scores: scoresOf() }), null, { results: 5000, scoreRow: '팀 역량' }, { departments: depts }).score.rows.filter(r => r.open).map(r => r.crit).join(), '팀 역량');
   assert.equal(bizplanScene(snap({ scores: scoresOf() }), null, { results: 5000, scoreRow: null }, { departments: depts }).score.rows.some(r => r.open), false);
-  // 다시 심사: 앞 점수와 견준 「+1」, 오른 평균, 고친 뒤 오른 항목
-  const prev = { opus: Object.fromEntries(CRIT.map((c, i) => [c, [4, 3, 1, 3, 4, 4][i]])), sonnet: Object.fromEntries(CRIT.map((c, i) => [c, [3, 3, 2, 4, 4, 2][i]])) };
-  const re = bizplanScene(snap({ scores: scoresOf({ kind: 'score', prev, prevSum: { avg: 3.0, weakest: { crit: '신뢰성', avg: 1.5 } } }) }), null, { results: 5000 }, { departments: depts }).score;
-  assert.deepEqual(re.head, ['3.0점에서 3.2점으로 올랐습니다.', '지금 가장 약한 것은 신뢰성입니다.']);
-  assert.deepEqual([re.up, re.raised], ['+0.2', true]);
-  assert.deepEqual(re.rows.find(r => r.crit === '신뢰성').cells.map(c => c.up), ['+1', '']);
-  assert.equal(re.rows.find(r => r.crit === '신뢰성').fixed, true);
+  // 네 단계: 강점인 ○는 ✓, 나머지 ○는 그대로. 손님 설정이나 방이 먼저 든 값(ui.marks)을 따른다
+  const four = bizplanScene(snap({ list: list({ settings: { marks: 4 } }), scores: scoresOf() }), null, { results: 5000 }, { departments: depts }).score;
+  assert.deepEqual([four.marks, four.tally], [4, [['v', 1], ['o', 4], ['t', 4], ['x', 3]]]);
+  assert.deepEqual(four.rows.find(r => r.crit === '문제 인식').cells.map(c => c.mark), ['v', 't']);
+  assert.deepEqual(four.rows.find(r => r.crit === '신뢰성').rubric.map(x => x[0]), ['v', 'o', 't', 'x']);
+  assert.equal(four.lab, '두 심사위원의 표시 12개');
+  assert.deepEqual(four.pick.options.map(o => o.on), [false, true]);
+  assert.equal(bizplanScene(snap({ list: list({ settings: { marks: 4 } }), scores: scoresOf() }), null, { results: 5000, marks: 3 }, { departments: depts }).score.marks, 3);
+  assert.equal(bizplanScene(snap({ list: list({ settings: { marks: 7 } }), scores: scoresOf() }), null, { results: 5000 }, { departments: depts }).score.marks, 3, '모르는 값은 세 단계');
+  // 다시 심사: 시장성의 Opus ✕가 △로 나아졌다
+  const re = bizplanScene(snap({ scores: scoresOf({ kind: 'score', prev: prevOf([3, 2, 1, 1, 3, 3], [2, 2, 1, 3, 3, 1]) }) }), null, { results: 5000 }, { departments: depts }).score;
+  assert.deepEqual(re.head, ['✕가 4개에서 3개로 줄었습니다.', '가장 많이 나아진 것은 시장성입니다. 지금 가장 약한 것은 신뢰성입니다.']);
+  assert.deepEqual([re.was, re.raised], ['고치기 전 ○ 5 · △ 3 · ✕ 4', true]);
+  assert.deepEqual(re.rows.find(r => r.crit === '시장성').cells.map(c => c.up), [true, false]);
+  assert.equal(re.rows.find(r => r.crit === '시장성').fixed, true);
   assert.equal(re.rows.find(r => r.crit === '팀 역량').fixed, false);
+  // ○가 늘었다(✕는 그대로) · 그대로 · 나빠졌다
+  assert.equal(bizplanScene(snap({ scores: scoresOf({ kind: 'score', prev: prevOf([3, 2, 1, 2, 2, 3], [2, 2, 1, 3, 3, 1]) }) }), null, { results: 5000 }, { departments: depts }).score.head[0], '○가 4개에서 5개로 늘었습니다.');
+  const same = bizplanScene(snap({ scores: scoresOf({ kind: 'score', prev: prevOf([3, 2, 1, 2, 3, 3], [2, 2, 1, 3, 3, 1]) }) }), null, { results: 5000 }, { departments: depts }).score;
+  assert.deepEqual([same.head[0], same.raised, same.was], ['표시가 그대로입니다.', false, '']);
+  assert.equal(bizplanScene(snap({ scores: scoresOf({ kind: 'score', prev: prevOf([3, 2, 2, 2, 3, 3], [2, 2, 1, 3, 3, 1]) }) }), null, { results: 5000 }, { departments: depts }).score.head[0], '✕가 2개에서 3개로 늘었습니다.');
+  // 네 단계에서는 「✓와 ○」로 센다
+  assert.equal(bizplanScene(snap({ list: list({ settings: { marks: 4 } }), scores: scoresOf({ kind: 'score', prev: prevOf([3, 2, 1, 2, 2, 3], [2, 2, 1, 3, 3, 1]) }) }), null, { results: 5000 }, { departments: depts }).score.head[0], '✓와 ○가 4개에서 5개로 늘었습니다.');
   // 모두 쉬었으면 표 없이 까닭만
   const none = bizplanScene(snap({ scores: scoresOf({ status: 'failed', sum: null, judges: scoresOf().judges.map(j => ({ ...j, status: 'failed', reason: 'LOGIN', scores: null })) }) }), null, { results: 5000 }, { departments: depts }).score;
   assert.equal(none.head[0], '이번에는 심사하지 못했습니다.');
-  assert.deepEqual([none.avg, none.cols.length], ['', 0]);
+  assert.deepEqual([none.tally, none.lab, none.cols.length], [[], '', 0]);
   assert.equal(revealPlan(scoresOf({ sum: null, judges: [] }), read()), null, '점수가 없으면 무대도 없다');
+  // 모두 ○면 가장 약한 항목이 없다
+  const fine = scoresOf({ sum: { tally: { v: 0, o: 12, t: 0, x: 0 }, weakest: null }, judges: scoresOf().judges.map(j => (j.scores ? { ...j, scores: marks([3, 3, 3, 3, 3, 3]) } : j)) });
+  const all = bizplanScene(snap({ scores: fine }), null, { results: 5000 }, { departments: depts }).score;
+  assert.deepEqual([all.head[0], all.rows.some(r => r.open || r.weak)], ['모든 항목을 갖췄습니다.', false]);
 });
 
-test('점수 무대(14.3): 받은 혼잣말 셋까지, 묶음 차례로, 점수판 · 평균 순서이고 12초 안에 끝난다', () => {
+test('점수 무대(14.3): 받은 혼잣말 셋까지, 묶음 차례로, 채점판 · 표시 수 순서이고 12초 안에 끝난다', () => {
   const s = scoresOf(), plan = revealPlan(s, read());
   assert.deepEqual(plan.beats.map(b => b.kind), ['sit', 'react', 'react', 'react', 'paddle', 'paddle', 'total', 'end']);
   assert.deepEqual(plan.beats.filter(b => b.kind === 'react').map(b => [b.judge, b.sec]), [['sonnet', 1], ['opus', 1], ['opus', 2]]);
   assert.ok(plan.beats.at(-1).at <= 12000, 'end ' + plan.beats.at(-1).at);
-  const at = (step, ui = {}) => bizplanScene(snap({ scores: s }), null, { reveal: { at: 5000, step }, ...ui }, { departments: depts });
+  const at = (step, ui = {}, sc = s, settings = {}) => bizplanScene(snap({ list: list({ settings }), scores: sc }), null, { reveal: { at: 5000, step }, ...ui }, { departments: depts });
   const first = at(1);
   assert.equal(first.stage, 'reveal');
   assert.deepEqual(first.show.judges[2].bubble, { kind: 'hmm', say: '몇 명이 다시 사나요?' });
   assert.deepEqual([first.show.sign.top, first.show.sign.title], ['01 / 02', '지금까지 한 일'], '말한 묶음의 이름이 이젤에 선다');
   assert.equal(first.show.judges[1].state, 'rest', '쉬어 간 심사위원');
+  assert.equal(first.show.judges[0].status, '표시를 마쳤습니다');
   assert.equal(first.show.total, null);
   const pad = at(4);
-  assert.deepEqual(pad.show.judges[0].paddle, { value: '3.3', up: '', name: 'Opus' });
+  assert.deepEqual(pad.show.judges[0].paddle, { tally: [['o', 3], ['t', 2], ['x', 1]], name: 'Opus' });
   assert.equal(pad.show.judges[2].paddle, null);
-  assert.equal(pad.show.judges[0].status, '평균 3.3점');
+  assert.equal(pad.show.judges[0].status, '○ 3 · △ 2 · ✕ 1');
+  assert.deepEqual(pad.show.cap, [['심사위원이 채점판을 듭니다.', false]]);
   const end = at(6);
-  assert.deepEqual(end.show.total, { value: '3.2', small: '두 심사위원 평균', up: '' });
-  assert.deepEqual(end.show.cap, [['심사가 끝났습니다. 평균 ', false], ['3.2점', true], ['이고, 가장 약한 곳은 신뢰성입니다.', false]]);
+  assert.deepEqual(end.show.total, { tally: [['o', 5], ['t', 4], ['x', 3]], small: '두 심사위원의 표시', was: '' });
+  assert.deepEqual(end.show.cap, [['심사가 끝났습니다. ✕가 나온 항목이 ', false], ['둘', true], ['이고, 가장 약한 곳은 신뢰성입니다.', false]], '✕ 표시 셋이 아니라 ✕가 나온 항목 둘(F3)');
   assert.equal(end.show.key, first.show.key);
-  assert.equal(end.head[0], '심사위원 둘의 점수가 나왔습니다.', '쉬어 간 심사위원은 세지 않는다');
+  assert.equal(end.head[0], '심사위원 둘의 표시가 나왔습니다.', '쉬어 간 심사위원은 세지 않는다');
+  // 네 단계
+  const four = at(6, {}, s, { marks: 4 });
+  assert.deepEqual([four.show.marks, four.show.total.tally], [4, [['v', 1], ['o', 4], ['t', 4], ['x', 3]]]);
+  // 다시 심사: 줄어든 ✕와 고치기 전
+  const again = at(6, {}, scoresOf({ kind: 'score', prev: prevOf([3, 2, 1, 1, 3, 3], [2, 2, 1, 3, 3, 1]) }));
+  assert.deepEqual(again.show.cap, [['심사가 끝났습니다. ✕가 4개에서 ', false], ['3개', true], ['로 줄었습니다.', false]]);
+  assert.deepEqual([again.show.total.was, again.show.presenter, again.head[0]], ['고치기 전 ○ 5 · △ 3 · ✕ 4', 'happy', '다시 심사한 표시가 나왔습니다.']);
+  // 빠진 곳이 없으면
+  const noX = scoresOf({ sum: { tally: { v: 0, o: 8, t: 4, x: 0 }, weakest: { crit: '현실성', sev: 2 } }, judges: scoresOf().judges.map(j => (j.scores ? { ...j, scores: marks([3, 2, 2, 3, 3, 3]) } : j)) });
+  assert.deepEqual(at(6, {}, noX).show.cap, [['심사가 끝났습니다. ✕가 나온 항목은 없고, 가장 약한 곳은 ', false], ['현실성', true], ['입니다.', false]]);
 });
 
 test('고칠 곳(14.3): 점수 보기와, 고른 고침이 있고 계획서가 그대로일 때만 다시 심사받기', () => {
@@ -585,7 +628,7 @@ test('고칠 곳(14.3): 점수 보기와, 고른 고침이 있고 계획서가 �
   r.notes[0].choice = { kind: 'fix' };
   const withFix = bizplanScene(snap({ read: r, scores: scoresOf() }), null, { sel: '' }, { departments: depts });
   assert.equal(withFix.stage, 'notes');
-  assert.deepEqual(withFix.scoreLink, { avg: '3.2' });
+  assert.deepEqual(withFix.scoreLink, { tally: '○ 5 · △ 4 · ✕ 3' });
   assert.equal(withFix.rescore, true);
   assert.equal(bizplanScene(snap({ read: r, scores: scoresOf(), planChanged: true }), null, {}, { departments: depts }).rescore, false, '계획서가 바뀌었으면 다시 읽어야 한다');
   assert.equal(bizplanScene(snap({ scores: scoresOf() }), null, {}, { departments: depts }).rescore, false, '고른 고침이 없으면 다시 심사하지 않는다');
@@ -702,16 +745,17 @@ test('카본 화면 검수 A1 · A2 · A5 · A7, 설계 검토 D5 · D7 · D8: �
   assert.equal(seen.get('plan01'), 8000);
   await r2.handle({ act: 'biz-score-close' });
   assert.equal(r2.scene(fin, { departments: depts }).stage, 'notes', '본 점수의 무대를 다시 틀지 않는다');
-  // A5: 가장 약한 항목이 없어 평균으로 처음 펼친 줄도 한 번 눌러 접힌다
-  const r3 = createBizplanRoom({ api: { featureSnapshot: async () => snap({ scores: scoresOf({ at: 8000, sum: { avg: 3.2, weakest: null } }) }) }, changed: () => {}, setTimer: () => 0, clearTimer: () => {}, seen: new Map([['plan01', 8000]]) });
+  // A5: 본체가 가장 약한 항목이 없다고 하면 펼친 줄 없이 열고, 누르면 펴고 다시 누르면 접힌다
+  const r3 = createBizplanRoom({ api: { featureSnapshot: async () => snap({ scores: scoresOf({ at: 8000, sum: { tally: { v: 0, o: 12, t: 0, x: 0 }, weakest: null } }) }) }, changed: () => {}, setTimer: () => 0, clearTimer: () => {}, seen: new Map([['plan01', 8000]]) });
   r3.open('plan01'); await tick();
   await r3.handle({ act: 'biz-score-open' });
-  const first = r3.scene(fin, { departments: depts }).score.rows.find(r => r.open);
-  assert.equal(first?.crit, '신뢰성');
+  assert.equal(r3.scene(fin, { departments: depts }).score.rows.some(r => r.open), false);
+  await r3.handle({ act: 'biz-score-row', arg: '신뢰성' });
+  assert.equal(r3.scene(fin, { departments: depts }).score.rows.find(r => r.open)?.crit, '신뢰성');
   await r3.handle({ act: 'biz-score-row', arg: '신뢰성' });
   assert.equal(r3.scene(fin, { departments: depts }).score.rows.some(r => r.open), false);
   // A7: 항목 점수가 없어도 자막에 null을 쓰지 않는다
-  const bare = scoresOf({ criteria: [], sum: { avg: 3, weakest: null } });
+  const bare = scoresOf({ criteria: [], sum: { tally: { v: 0, o: 0, t: 0, x: 0 }, weakest: null } });
   const end = bizplanScene(snap({ scores: bare }), null, { reveal: { at: 5000, step: 99 } }, { departments: depts });
   assert.doesNotMatch(end.show.cap.map(x => x[0]).join(''), /null/);
   // D7: 부르지 않은 자리, D8: 켜는 글의 범위, 다시 심사 무대는 첫 심사단만
@@ -719,6 +763,34 @@ test('카본 화면 검수 A1 · A2 · A5 · A7, 설계 검토 D5 · D7 · D8: �
   assert.match(bizplanScene(snap(), null, { provider: 'claude' }, { departments: depts }).others.small, /켜 두는 동안 이 부서에서 심사하는 계획서는 모두 GPT를 만든 회사로도 갑니다/);
   const judging = bizplanScene(snap({ scores: scoresOf({ judges: scoresOf().judges.filter(j => j.id !== 'sol') }), progress: prog('심사 · Opus') }), runTask({ featureKind: 'score', others: true }), {}, { departments: depts });
   assert.deepEqual(judging.show.judges.filter(j => j.seated).map(j => j.id), ['opus', 'sonnet']);
+});
+
+test('표시 방식(14.3): 결과 화면 표 위에서 세 단계 · 네 단계를 고르면 먼저 바꿔 보이고 손님 설정으로 남긴다. 남기지 못하면 되돌린다', async () => {
+  const tick = () => new Promise(r => setTimeout(r, 0));
+  let settings = { others: false, marks: 3 }, okSave = true;
+  const sent = [];
+  const api = {
+    featureSnapshot: async () => snap({ list: list({ settings }), scores: scoresOf() }),
+    featureAction: async (f, d, action, args) => { sent.push([action, args]); if (!okSave) return { ok: false, code: 'VALUE' }; settings = { ...settings, [args.name]: args.value }; return { ok: true }; },
+  };
+  const room = createBizplanRoom({ api, changed: () => {}, setTimer: () => 0, clearTimer: () => {}, seen: new Map([['plan01', 5000]]), reducedMotion: () => true });
+  room.open('plan01'); await tick();
+  const fin = runTask({ status: 'completed', updatedAt: 1, answer: '' });
+  await room.handle({ act: 'biz-score-open' });
+  assert.equal(room.scene(fin, { departments: depts }).score.marks, 3);
+  const pending = room.handle({ act: 'biz-marks', arg: '4' });
+  assert.equal(room.scene(fin, { departments: depts }).score.marks, 4, '누르자마자 바꿔 보인다');
+  await pending;
+  assert.deepEqual(sent.at(-1), ['setting', { name: 'marks', value: 4 }]);
+  const v = room.scene(fin, { departments: depts }).score;
+  assert.deepEqual([v.marks, v.tally.map(x => x[0])], [4, ['v', 'o', 't', 'x']]);
+  assert.equal(room.state().marks, undefined, '남긴 뒤에는 손님 설정을 따른다');
+  const n = sent.length;
+  await room.handle({ act: 'biz-marks', arg: '4' });
+  assert.equal(sent.length, n, '고른 칸을 다시 누르면 보내지 않는다');
+  okSave = false;
+  await room.handle({ act: 'biz-marks', arg: '3' });
+  assert.equal(room.scene(fin, { departments: depts }).score.marks, 4, '남기지 못하면 손님 설정대로 되돌린다');
 });
 
 test('Opus 대체 화면 검수 P1: 심사 중에 멈추거나 못 해도 이 업무가 쓴 읽은 기록의 고칠 곳은 보이고, 사무실 줄은 다시 읽으라고 하지 않는다', () => {

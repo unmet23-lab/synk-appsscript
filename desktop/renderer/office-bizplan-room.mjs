@@ -164,6 +164,14 @@ export function createBizplanRoom({ api = null, changed = () => {}, hidden = () 
         case 'biz-provider': st.provider = arg === 'codex' ? 'codex' : 'claude'; st.menu = null; changed(); return true;
         /* 손님 설정(설계 14.7): 다른 회사 심사위원도 부르기. 메뉴는 열어 둔다 */
         case 'biz-others': await act('setting', { name: 'others', value: st.snap?.list?.settings?.others !== true }); return true;
+        /* 표시 방식(설계 14.3): 세 단계 ○ △ ✕ 또는 네 단계 ✓ ○ △ ✕. 누르면 먼저 바꿔 보이고, 남기지 못하면 손님 설정대로 되돌린다 */
+        case 'biz-marks': {
+          const value = arg === '4' ? 4 : 3;
+          if ((st.marks ?? (st.snap?.list?.settings?.marks === 4 ? 4 : 3)) === value) return true;
+          st.marks = value; changed();
+          await act('setting', { name: 'marks', value });
+          st.marks = undefined; changed(); return true;
+        }
         /* 점수(14.3): 무대 건너뛰기, 결과 열고 닫기, 항목 펼치기, 다시 심사 */
         case 'biz-score-skip': if (st.reveal) showResults(st.reveal.at); changed(); return true;
         case 'biz-score-open': {

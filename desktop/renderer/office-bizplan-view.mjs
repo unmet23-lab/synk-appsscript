@@ -280,7 +280,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
         segs.append(s);
       });
       steps.append(segs, el('span', 'count', `${sc.at + 1} / ${sc.notes.length}`));
-      if (sc.scoreLink) steps.append(btn('점수 보기', 'biz-score-open', '', 'chip'));
+      if (sc.scoreLink) steps.append(btn('심사 결과 보기', 'biz-score-open', '', 'chip'));
       steps.append(btn('전체 보기', 'biz-sheet', '', 'chip'));
       root.append(steps, card(selCard, sc));
       return;
@@ -288,8 +288,8 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     root.append(say(sc), hero(sc.saved ? 'happy' : 'happy', true));
     if (sc.scoreLink) {
       const line = el('p', 'biz-scoreline');
-      if (sc.scoreLink.avg) line.append(el('span', '', `심사 평균 ${sc.scoreLink.avg}점`));
-      line.append(btn('점수 보기', 'biz-score-open', '', 'link'));
+      if (sc.scoreLink.tally) line.append(el('span', '', `심사 결과 ${sc.scoreLink.tally}`));
+      line.append(btn('심사 결과 보기', 'biz-score-open', '', 'link'));
       root.append(line);
     }
     const comp = el('div', 'biz-comp done');
@@ -357,6 +357,75 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
      같은 무대(show.key)는 한 번 짓고 바뀐 곳만 고친다. 사무실이 15초마다 다시 그려도 처음부터 틀지 않고, 옅어짐이 끊기지 않는다.
      움직임은 옅어짐과 눈만. 생각하는 점 셋은 읽는 심사위원 위에만 */
   let show = null;
+  /* ○ △ ✕ 표시(설계 14.3): 첫 업무 심사 시안의 그림과 같은 선. 색은 CSS가 표시마다 하나씩 준다 */
+  const MARK_D = { v: 'M4.1 10.4 8.2 14.5 15.9 5.3', t: 'M10 3.4 16.9 15.6H3.1Z', x: 'M4.6 4.6 15.4 15.4M15.4 4.6 4.6 15.4' };
+  const MARK_W = { v: '2.5', o: '2.4', t: '2.3', x: '2.5' };
+  const MARK_NAME = { v: '✓ 강점', o: '○ 갖춤', t: '△ 보완', x: '✕ 빠짐' };
+  const markSvg = (m, hidden = false) => {
+    const s = doc.createElementNS(SVG, 'svg');
+    s.setAttribute('class', 'mk mk-' + m); s.setAttribute('viewBox', '0 0 20 20');
+    if (hidden) s.setAttribute('aria-hidden', 'true'); else { s.setAttribute('role', 'img'); s.setAttribute('aria-label', MARK_NAME[m]); }
+    const g = doc.createElementNS(SVG, m === 'o' ? 'circle' : 'path');
+    if (m === 'o') { g.setAttribute('cx', '10'); g.setAttribute('cy', '10'); g.setAttribute('r', '6.3'); } else g.setAttribute('d', MARK_D[m]);
+    g.setAttribute('fill', 'none'); g.setAttribute('stroke-width', MARK_W[m]); g.setAttribute('stroke-linecap', 'round'); g.setAttribute('stroke-linejoin', 'round');
+    s.append(g); return s;
+  };
+  /* 표시 수 한 줄: [[표시, 수], …]. label이면 갖춤 · 보완 · 빠짐도 붙인다 */
+  const tallyEl = (list, label = false) => {
+    const t = el('span', 'tally');
+    for (const [m, n] of list) { const s = el('span', 'tl tl-' + m); s.append(markSvg(m), el('b', '', String(n))); if (label) { const sm = el('small', '', MARK_NAME[m].slice(2)); sm.setAttribute('aria-hidden', 'true'); s.append(sm); } t.append(s); }
+    return t;
+  };
+  /* 표시 방식 고르기(설계 14.3): 회색 홈 안에서 고른 칸만 어두운 젤리 알약이 옮겨 간다.
+     화면은 그릴 때마다 새로 짓지만 이 노드는 한 번 지어 옮겨 단다. 다시 그려도 젤리가 끊기지 않는다 */
+  let pick = null;
+  const still = () => doc.documentElement?.dataset?.motion === 'reduced' || !!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  function marksPick(p) {
+    if (!pick) {
+      const g = el('div', 'biz-marks'); g.setAttribute('role', 'radiogroup'); g.setAttribute('aria-label', p.label);
+      const jelly = el('span', 'jelly'); jelly.setAttribute('aria-hidden', 'true'); g.append(jelly);
+      const bs = p.options.map(o => {
+        const b = btn('', 'biz-marks', String(o.value), 'mpick'); b.setAttribute('role', 'radio');
+        b.setAttribute('aria-label', `${o.label}: ${o.marks.map(m => MARK_NAME[m].slice(0, 1)).join(' ')}`);
+        const ms = el('span', 'seg-m'); for (const m of o.marks) ms.append(markSvg(m, true));
+        b.append(el('span', '', o.label), ms); g.append(b); return b;
+      });
+      // 화살표 · Home · End로 고른다(라디오 묶음)
+      g.addEventListener('keydown', e => {
+        const k = bs.findIndex(b => b.getAttribute('aria-checked') === 'true');
+        const to = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? Math.min(bs.length - 1, k + 1) : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? Math.max(0, k - 1) : e.key === 'Home' ? 0 : e.key === 'End' ? bs.length - 1 : -1;
+        if (to < 0) return;
+        e.preventDefault();
+        if (to !== k) { bs[to].focus(); bs[to].click(); }
+      });
+      pick = { g, jelly, bs, value: null, at: null };
+    }
+    const on = p.options.find(o => o.on)?.value ?? 3;
+    pick.bs.forEach((b, i) => { const c = p.options[i].value === on; b.setAttribute('aria-checked', String(c)); b.tabIndex = c ? 0 : -1; });
+    pick.move = pick.value !== null && pick.value !== on;
+    pick.value = on;
+    return pick.g;
+  }
+  /* 젤리를 고른 칸에 둔다. 옮겨 갈 때만 앞쪽 끝이 먼저 닿고 뒤쪽 끝이 따라오게 늘었다 줄어든다(움직임 줄이기면 바로) */
+  function placePick() {
+    if (!pick || !pick.g.isConnected) return;
+    const on = pick.bs.find(b => b.getAttribute('aria-checked') === 'true'); if (!on) return;
+    const to = { x: on.offsetLeft, w: on.offsetWidth }, from = pick.at, jelly = pick.jelly;
+    if (!to.w) return;
+    jelly.style.transform = `translateX(${to.x}px)`; jelly.style.width = to.w + 'px';
+    if (pick.move && from && from.x !== to.x && !still() && jelly.animate) {
+      const r = to.x > from.x, L = (a, c, t) => a + (c - a) * t;
+      const l = r ? L(from.x, to.x, 0.22) : L(from.x, to.x, 0.78), rr = r ? L(from.x + from.w, to.x + to.w, 0.78) : L(from.x + from.w, to.x + to.w, 0.22);
+      jelly.animate([
+        { transform: `translateX(${from.x}px) scaleY(1)`, width: from.w + 'px' },
+        { transform: `translateX(${l}px) scaleY(.88)`, width: (rr - l) + 'px', offset: 0.45 },
+        { transform: `translateX(${to.x}px) scaleY(1.05)`, width: to.w + 'px', offset: 0.78 },
+        { transform: `translateX(${to.x}px) scaleY(1)`, width: to.w + 'px' },
+      ], { duration: 480, easing: 'cubic-bezier(.3,.7,.25,1)' });
+    }
+    pick.move = false; pick.at = to;
+    pick.g.classList.add('on');
+  }
   const layer = src => { const i = el('img', 'lay'); i.src = src; i.alt = ''; i.decoding = 'async'; return i; };
   const dots = () => { const s = el('span', 'dots'); s.setAttribute('aria-hidden', 'true'); s.append(el('i'), el('i'), el('i')); return s; };
   const setText = (node, t) => { if (node.textContent !== t) node.textContent = t; };
@@ -412,20 +481,22 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
         if (j.bubble) { J.sb.className = `sb sb-j${k} ${j.bubble.kind}`; J.sb.replaceChildren(j.bubble.kind === 'dots' ? dots() : doc.createTextNode(j.bubble.say)); }
       }
       J.sb.classList.toggle('on', !!j.bubble);
-      const ps = j.paddle ? j.paddle.value + '|' + j.paddle.up : '';
+      // 채점판: 그 심사위원의 표시 수를 세로로(○ 3 · △ 2 · ✕ 1)
+      const ps = j.paddle ? JSON.stringify(j.paddle.tally) + '|' + j.paddle.name : '';
       if (J.num.dataset.s !== ps) {
         J.num.dataset.s = ps;
-        if (j.paddle) J.num.replaceChildren(doc.createTextNode(j.paddle.value), ...(j.paddle.up ? [el('span', 'gain', j.paddle.up)] : []), el('small', '', j.paddle.name));
+        if (j.paddle) J.num.replaceChildren(tallyEl(j.paddle.tally), el('small', '', j.paddle.name));
       }
       J.pd.classList.toggle('on', !!j.paddle);
       const cls = 'jc s-' + j.state + (j.fin ? ' fin' : '');
       if (C.c.className !== cls) C.c.className = cls;
       setText(C.b, j.name); setText(C.sm, `${j.co} · ${j.eye}`); setText(C.st, j.status);
     });
-    const ts = v.total ? v.total.value + '|' + v.total.small + '|' + v.total.up : '';
+    n.stage.classList.toggle('m4', v.marks === 4);
+    const ts = v.total ? JSON.stringify(v.total.tally) + '|' + v.total.small + '|' + v.total.was : '';
     if (n.stot.dataset.s !== ts) {
       n.stot.dataset.s = ts;
-      if (v.total) { n.stotB.textContent = v.total.value; n.stotS.replaceChildren(doc.createTextNode(v.total.small), ...(v.total.up ? [el('span', 'gain', ' ' + v.total.up)] : [])); }
+      if (v.total) { n.stotB.replaceChildren(tallyEl(v.total.tally)); n.stotS.replaceChildren(doc.createTextNode(v.total.small), ...(v.total.was ? [el('span', 'gain', ' · ' + v.total.was)] : [])); }
     }
     n.stot.classList.toggle('on', !!v.total);
     const cs = JSON.stringify(v.cap);
@@ -442,21 +513,27 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
     n.built = true;
   }
 
-  /* 점수 결과(w06): 큰 평균과 가장 약한 항목, 항목 × 심사위원 점수표(누르면 까닭과 인용), 심사위원의 한 줄, 「고칠 곳 n 보기」 */
+  /* 점수 결과(w06): 표시 수와 가장 약한 항목, 표시 방식 고르기, 항목 × 심사위원 표시표(누르면 한마디 · 인용 · 채점 기준), 심사위원의 한 줄, 「고칠 곳 n 보기」 */
   function scoreStage(sc, root) {
-    const v = sc.score;
-    const top = el('section', 'biz-score');
+    const v = sc.score, m4 = v.marks === 4 ? ' m4' : '';
+    const top = el('section', 'biz-score' + m4);
     const words = el('div', 'words');
-    if (v.avg) { const big = el('p', 'big'); big.append(doc.createTextNode(v.avg), el('small', '', '/ 5')); if (v.up) big.append(el('em', '', v.up)); words.append(big); }
+    if (v.tally.length) {
+      const tot = el('div', 'total');
+      tot.append(el('span', 'lab', v.lab), tallyEl(v.tally, true));
+      if (v.was) tot.append(el('span', 'was', v.was));
+      words.append(tot);
+    }
     const h = el('h2', '', v.head[0]); h.tabIndex = -1; h.dataset.bizHead = '';
     words.append(h);
     if (v.head[1]) words.append(el('p', 'sub', v.head[1]));
     top.append(sprite(v.raised ? 'happy' : 'look', 'biz-sprite lg'), words);
     root.append(top);
     if (v.cols.length && v.rows.length) {
-      const card = el('div', 'biz-scorecard'), t = el('table', 'sc');
+      const card = el('div', 'biz-scorecard' + m4), t = el('table', 'sc');
+      const set = el('div', 'res-set'); set.append(el('h3', '', v.title), marksPick(v.pick));
       const thead = el('thead'), hr = el('tr');
-      hr.append(el('th', '', '항목'), ...v.cols.map(c => el('th', '', c)), el('th', '', '평균'));
+      hr.append(el('th', '', '항목'), ...v.cols.map(c => el('th', '', c)));
       thead.append(hr);
       const tbody = el('tbody');
       for (const r of v.rows) {
@@ -467,33 +544,42 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
         b.append(ch, el('b', '', r.crit));
         if (r.weak) b.append(el('span', 'tag weak', '가장 약함'));
         if (r.split) b.append(el('span', 'tag split', '의견이 갈림'));
-        if (r.fixed) b.append(el('span', 'tag fixed', '고친 뒤 오름'));
+        if (r.fixed) b.append(el('span', 'tag fixed', '고친 뒤 나아짐'));
         first.append(b); tr.append(first);
-        for (const c of r.cells) { const td = el('td', 'n', c.score); if (c.up) td.append(el('span', 'd', c.up)); tr.append(td); }
-        const at = el('td'), a = el('span', 'avg'), bar = el('i');
-        bar.setAttribute('aria-hidden', 'true'); bar.style.setProperty('--w', r.w + '%');
-        a.append(el('span', '', r.avg), bar); at.append(a); tr.append(at);
+        for (const c of r.cells) {
+          const td = el('td', 'n'), cell = el('span', 'cell' + (c.up ? ' better' : ''));
+          if (c.mark) { const g = markSvg(c.mark); if (c.up) g.setAttribute('aria-label', MARK_NAME[c.mark] + ', 고친 뒤 나아짐'); cell.append(g); }
+          td.append(cell); tr.append(td);
+        }
         tbody.append(tr);
         if (r.open) {
           const more = el('tr', 'expl'), td = el('td');
-          td.colSpan = v.cols.length + 2;
+          td.colSpan = v.cols.length + 1;
           for (const m of r.more) {
-            const w = el('div', 'why'), d = el('div');
+            const w = el('div', 'why'), d = el('div'), pt = el('span', 'pt');
+            if (m.mark) pt.append(markSvg(m.mark));
             d.append(el('p', '', m.why));
             if (m.quote) { const q = el('p', 'qs'); if (m.where) q.append(el('span', 'where', m.where)); q.append(el('span', 'qt', m.quote)); d.append(q); }
-            w.append(el('span', 'who', m.name), el('span', 'pt', m.score), d);
+            w.append(el('span', 'who', m.name), pt, d);
             td.append(w);
+          }
+          // 채점 기준: 이 항목의 표시마다 뜻(시안의 「채점 기준 보기」)
+          if (r.rubric.length) {
+            const rub = el('div', 'rub'), dl = el('dl');
+            for (const [mk, text] of r.rubric) { const row = el('div'); const dt = el('dt'); dt.append(markSvg(mk)); row.append(dt, el('dd', '', text)); dl.append(row); }
+            rub.append(el('p', 'rub-h', '채점 기준'), dl); td.append(rub);
           }
           more.append(td); tbody.append(more);
         }
       }
-      t.append(thead, tbody); card.append(t); root.append(card);
+      t.append(thead, tbody); card.append(set, t); root.append(card);
     }
-    const ul = el('ul', 'biz-verdicts');
+    const ul = el('ul', 'biz-verdicts' + m4);
     for (const j of v.judges) {
       const li = el('li', 'verdict' + (j.rest ? ' rest' : ''));
       const name = el('b', '', j.name); if (j.co) name.append(el('small', '', `${j.co} · ${j.eye}`));
-      li.append(sprite(j.rest ? 'sleepy' : 'look', 'biz-sprite'), name, el('span', 'g', j.avg), el('p', '', j.line));
+      const g = el('span', 'g'); if (j.tally.length) g.append(tallyEl(j.tally));
+      li.append(sprite(j.rest ? 'sleepy' : 'look', 'biz-sprite'), name, g, el('p', '', j.line));
       ul.append(li);
     }
     root.append(ul);
@@ -522,6 +608,8 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
   host.addEventListener('compositionstart', () => { composing = true; });
   host.addEventListener('compositionend', () => { composing = false; if (pending !== undefined) { const p = pending; pending = undefined; render(p); } });
   function render(sc) {
+    // 결과 화면을 떠나면 고르기의 앞 자리를 비운다. 표시 방식은 부서마다 설정이라, 다른 부서를 열 때 젤리가 미끄러지지 않게(Opus 대체 화면 검수 F4)
+    if (pick && sc?.stage !== 'score') { pick.value = null; pick.at = null; pick.move = false; }
     if (sc && composing && host.contains(doc.activeElement)) { pending = sc; cur = sc; return; }
     pending = undefined;
     cur = sc || null;
@@ -600,6 +688,7 @@ export function createBizplanView(host, send, doc = host.ownerDocument) {
       root.append(t);
     }
     body.replaceChildren(root);
+    placePick();
     if (liveEl.textContent !== (sc.live || '')) liveEl.textContent = sc.live || '';
     // 알림(되돌리기)과 같은 글은 화면에 두 번 보이지 않게 낭독기에만 준다
     liveEl.classList.toggle('sr', !!sc.toast && sc.live === sc.toast.text);

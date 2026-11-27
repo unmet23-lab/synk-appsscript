@@ -136,8 +136,8 @@ const answers={
     {item:'문제 인식',secs:[1],thin:false,why:'',asks:[]},
   ]},
 };
-// 심사위원 차례(설계 14.3): 항목마다 3점, 근거 없는 까닭 없이
-const scoreAnswer=schema=>({scores:schema.properties.scores.items.properties.crit.enum.map(crit=>({crit,score:3,why:'근거가 있습니다.',para:0,quote:''})),line:'좋습니다.',reacts:[]});
+// 심사위원 차례(설계 14.3): 항목마다 △(score 2), 근거 없는 까닭 없이
+const scoreAnswer=schema=>({scores:schema.properties.scores.items.properties.crit.enum.map(crit=>({crit,score:2,strong:false,why:'근거가 있습니다.',para:0,quote:''})),line:'좋습니다.',reacts:[]});
 const turnWith=(over={})=>async(prompt,schema)=>{
   if(schema.properties.scores)return over.scores||scoreAnswer(schema);
   if(schema.properties.notes){if(over.notes instanceof Error)throw over.notes;return over.notes||answers.notes;}
@@ -158,7 +158,7 @@ test('흐름: 넣기 → 읽기 → 고르기 → 같이 쓰기 → 새 파일 �
   assert.equal(s.submitted[0].feature,'bizplan');
   const progress=[];
   const receipt=await s.features.run(spec(s),{...hooks(),progress:p=>progress.push(p)},{turn:turnWith()});
-  assert.equal(receipt.summary,'사업계획서에서 고칠 곳 3곳을 찾았습니다. 심사 평균은 3점입니다.');
+  assert.equal(receipt.summary,'사업계획서에서 고칠 곳 3곳을 찾았습니다. 심사 결과는 ○ 0 · △ 6 · ✕ 0입니다.');
   const snap=await s.features.snapshot(s.a,{feature:'bizplan',departmentId:s.dept.id});
   assert.equal(snap.ok,true);
   assert.equal(snap.read.status,'ok');
@@ -734,6 +734,12 @@ test('심사(설계 14.3): 읽은 기록을 먼저 쓰고, 앉은 심사위원�
   assert.equal(s.submitted.at(-1).others,false,'기본은 다른 회사로 보내지 않는다');
   assert.deepEqual(await call('setting',{name:'others',value:'yes'}),{ok:false,code:'VALUE'});
   assert.deepEqual(await call('setting',{name:'others',value:true}),{ok:true});
+  // 손님 설정: 표시 방식(기본 세 단계, 설계 14.3). 3과 4만 받는다
+  assert.equal((await snap()).list.settings.marks,3);
+  for(const value of [5,'4',true,null])assert.deepEqual(await call('setting',{name:'marks',value}),{ok:false,code:'VALUE'});
+  assert.deepEqual(await call('setting',{name:'marks',value:4}),{ok:true});
+  assert.equal((await snap()).list.settings.marks,4);
+  assert.equal((await snap()).list.settings.others,true,'다른 설정은 그대로');
   await call('start',{provider:'claude'});
   assert.equal(s.submitted.at(-1).others,true);
   assert.equal(s.submitted.at(-1).kind,'read');
@@ -749,7 +755,7 @@ test('심사(설계 14.3): 읽은 기록을 먼저 쓰고, 앉은 심사위원�
   };
   const receipt=await s.features.run({...spec(s),provider:'claude'},{...hooks(),progress:p=>progress.push(p)},{turn,providers:['claude','codex']});
   assert.deepEqual(asked,[['claude','opus'],['codex',null],['claude','sonnet']]);
-  assert.match(receipt.summary,/심사 평균은 3점입니다/);
+  assert.match(receipt.summary,/심사 결과는 ✓ 0 · ○ 0 · △ 12 · ✕ 0입니다/,'고른 표시 방식으로 쓴다');
   assert.equal(progress.at(-1).total,progress.at(-1).part,'진행에 심사위원 차례가 든다');
   assert.equal(progress.at(-1).title,'심사 · Sonnet');
   const sn=await snap();
@@ -757,7 +763,9 @@ test('심사(설계 14.3): 읽은 기록을 먼저 쓰고, 앉은 심사위원�
   assert.equal(sn.scores.status,'partial');
   assert.deepEqual(sn.scores.judges.map(j=>[j.id,j.status,j.reason]),[['opus','ok',null],['sol','failed','LIMIT'],['sonnet','ok',null]]);
   assert.equal(sn.scores.judges[0].actualModel,'claude-opus-5-5');
-  assert.equal(sn.scores.sum.avg,3);
+  assert.deepEqual(sn.scores.sum.tally,{v:0,o:0,t:12,x:0});
+  assert.equal(sn.scores.sum.weakest.crit,'문제 인식','합이 같으면 앞선 항목');
+  assert.deepEqual(sn.scores.rubric[2],{crit:'신뢰성',x:'숫자와 주장에 근거가 없다',t:'근거가 일부에만 있다',o:'모든 숫자에 출처나 셈이 있다',v:'출처가 공공 자료나 직접 잰 기록이다'},'채점표를 함께 건넨다');
   assert.deepEqual(sn.scores.criteria,['문제 인식','현실성','신뢰성','시장성','수익 구조','팀 역량']);
   // 다시 심사: 고른 고침을 넣은 판으로, 앞 점수와 바뀐 문단을 건넨다
   const fix=sn.read.notes.find(n=>n.fix);
@@ -768,7 +776,7 @@ test('심사(설계 14.3): 읽은 기록을 먼저 쓰고, 앉은 심사위원�
   const again=await s.features.run({...spec(s),id:'1a2b3c4d-1c5d-4c5e-9d7b-1a2b3c4d5e6f',provider:'claude',kind:'score'},hooks(),{providers:['claude'],turn:async(prompt,schema,options)=>{
     prompts.push(prompt);
     const a=scoreAnswer(schema);
-    a.scores[0].score=5;a.scores[0].why='고친 문단이 근거입니다.';
+    a.scores[0].score=3;a.scores[0].why='고친 문단이 근거입니다.';
     a.scores[1].score=1;
     return a;
   }});
@@ -778,10 +786,10 @@ test('심사(설계 14.3): 읽은 기록을 먼저 쓰고, 앉은 심사위원�
   assert.match(prompts[0],/10월에 다시 산 손님은 112명입니다/,'고친 글이 든 판으로');
   const re=(await snap()).scores;
   assert.equal(re.kind,'score');
-  assert.equal(re.prev.opus['문제 인식'],3,'앞 심사의 점수를 함께 건넨다');
+  assert.deepEqual(re.prev.opus['문제 인식'],{score:2,strong:false},'앞 심사의 표시를 함께 건넨다');
   assert.equal(re.prev.sol,undefined,'앞 심사에서 막힌 자리는 없다');
   assert.deepEqual(re.judges.map(j=>[j.id,j.status,j.reason]),[['opus','ok',null],['sol','off','OFF'],['sonnet','ok',null]],'첫 심사단 그대로, 이 업무가 열지 않은 곁 회사는 쉼');
-  assert.equal(re.judges[0].scores[0].score,3,'근거 없이 바꾼 점수는 앞 점수(설계 검토 7)');
+  assert.equal(re.judges[0].scores[0].score,2,'근거 없이 바꾼 표시는 앞 표시(설계 검토 7)');
   // 기록 지우기는 심사 기록도 지운다
   assert.deepEqual(await call('clear',{confirm:true}),{ok:true});
   await assert.rejects(fs.stat(path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id,'scores')),{code:'ENOENT'});
@@ -923,13 +931,13 @@ test('GPT 검수 GA4 · 2회차 GA8 · 설계 검토 D3 · D10: 쉰 심사위원
   let sn=(await snapOf(s)).scores;
   const last=JSON.parse(await fs.readFile(path.join(dir,(await fs.readdir(dir)).sort().at(-1)),'utf8'));
   const kept=last.judges.find(j=>j.id==='sonnet').kept;
-  assert.deepEqual(Object.keys(kept.scores[0]).sort(),['basis','crit','score','seen'],'이어 받은 기준에는 점수와 지문 열쇠, 근거 지문만 둔다(D3)');
+  assert.deepEqual(Object.keys(kept.scores[0]).sort(),['basis','crit','score','seen','strong'],'이어 받은 기준에는 표시와 지문 열쇠, 근거만 둔다(D3)');
   assert.ok(Array.isArray(last.seens[kept.scores[0].seen]),'열쇠의 지문 모음은 같은 기록에 있다');
-  // 여섯째: Sonnet이 인용 없이 5점을 주면 다섯 번 앞의 3점을 그대로 둔다(2회차 GA8)
-  await s.features.run({...spec(s),id:ID(8),provider:'claude',kind:'score'},hooks(),{providers:['claude'],turn:async(p,schema,o)=>{const a=scoreAnswer(schema);if(o.model==='sonnet')a.scores[0].score=5;return a;}});
+  // 여섯째: Sonnet이 인용 없이 ○를 주면 다섯 번 앞의 △를 그대로 둔다(2회차 GA8)
+  await s.features.run({...spec(s),id:ID(8),provider:'claude',kind:'score'},hooks(),{providers:['claude'],turn:async(p,schema,o)=>{const a=scoreAnswer(schema);if(o.model==='sonnet')a.scores[0].score=3;return a;}});
   sn=(await snapOf(s)).scores;
   const sonnet=sn.judges.find(j=>j.id==='sonnet');
-  assert.equal(sonnet.scores[0].score,3);
+  assert.equal(sonnet.scores[0].score,2);
   assert.equal(sonnet.scores[0].held,true);
   // 아무도 점수를 내지 못하면 기록을 남기지 않는다(D3)
   await call('draft',{item:'성장 전략',answers:[0]});
@@ -946,33 +954,33 @@ test('GPT 검수 GA5 · 2회차 GA9 · GA11 · 설계 검토 D2: 바뀐 문장�
   await s.features.run({...spec(s),id:ID(1)},hooks(),{providers:['codex'],turn:turnWith()});
   const fix=(await snapOf(s)).read.notes.find(n=>n.fix);
   await call('choose',{key:fix.key,kind:'fix'});
-  const ask=(score,quote)=>async(p,schema)=>{const a=scoreAnswer(schema);a.scores[0].score=score;a.scores[0].why='고친 문장이 근거입니다.';a.scores[0].para=fix.para+1;a.scores[0].quote=quote;return a;};
-  // 고친 문단 안의 바뀌지 않은 문장을 인용하면 점수가 그대로다(D2)
-  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:ask(4,'2025년 9월부터 온라인으로 팔아 왔습니다')});
+  const ask=(score,quote,strong=false)=>async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[0],{score,strong,why:'고친 문장이 근거입니다.',para:fix.para+1,quote});return a;};
+  // 고친 문단 안의 바뀌지 않은 문장을 인용하면 표시가 그대로다(D2)
+  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:ask(3,'2025년 9월부터 온라인으로 팔아 왔습니다')});
   let sol=(await snapOf(s)).scores.judges[0];
-  assert.equal(sol.scores[0].score,3);
-  assert.equal(sol.scores[0].why,'고친 곳에서 새 근거를 찾지 못해 앞 점수를 그대로 둡니다.','옛 까닭을 옮기지 않는다(2회차 GA11)');
+  assert.equal(sol.scores[0].score,2);
+  assert.equal(sol.scores[0].why,'고친 곳에서 새 근거를 찾지 못해 앞 표시를 그대로 둡니다.','옛 까닭을 옮기지 않는다(2회차 GA11)');
   assert.equal(sol.scores[0].quote,'');
-  // 같은 판에서 바뀐 문장을 인용하면 점수가 바뀐다. 기준은 앞 회차가 본 글이라 바뀐 문장은 여전히 바뀐 것이다
-  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:ask(4,'10월에 다시 산 손님은 112명입니다')});
+  // 같은 판에서 바뀐 문장을 인용하면 표시가 바뀐다. 기준은 앞 회차가 본 글이라 바뀐 문장은 여전히 바뀐 것이다
+  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:ask(3,'10월에 다시 산 손님은 112명입니다')});
   sol=(await snapOf(s)).scores.judges[0];
-  assert.equal(sol.scores[0].score,4);
-  // 그 뒤로 바뀌지 않은 문장으로는 다시 오르지 않는다
-  await s.features.run({...spec(s),id:ID(4),kind:'score'},hooks(),{providers:['codex'],turn:ask(5,'10월에 다시 산 손님은 112명입니다')});
+  assert.equal(sol.scores[0].score,3);
+  // 그 뒤로 바뀌지 않은 문장으로는 강점이 되지 않는다
+  await s.features.run({...spec(s),id:ID(4),kind:'score'},hooks(),{providers:['codex'],turn:ask(3,'10월에 다시 산 손님은 112명입니다',true)});
   sol=(await snapOf(s)).scores.judges[0];
-  assert.equal(sol.scores[0].score,4);
-  // 초안만 넣으면 넣은 줄만 바뀐 것이다. 원래 문단의 글로는 점수가 오르지 않는다(2회차 GA9)
+  assert.deepEqual([sol.scores[0].score,sol.scores[0].strong],[3,false]);
+  // 초안만 넣으면 넣은 줄만 바뀐 것이다. 원래 문단의 글로는 표시가 오르지 않는다(2회차 GA9)
   await call('draft',{item:'성장 전략',answers:[0]});
   const at=(await snapOf(s)).read.paragraphs.length;
   await s.features.run({...spec(s),id:ID(5),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{
     const a=scoreAnswer(schema);
-    Object.assign(a.scores[0],{score:5,why:'근거입니다.',para:at,quote:'3년 뒤 매출 5억 원을 목표로'});
-    Object.assign(a.scores[1],{score:5,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});
+    Object.assign(a.scores[0],{score:3,strong:true,why:'근거입니다.',para:at,quote:'3년 뒤 매출 5억 원을 목표로'});
+    Object.assign(a.scores[1],{score:3,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});
     return a;
   }});
   sol=(await snapOf(s)).scores.judges[0];
-  assert.equal(sol.scores[0].score,4,'넣은 초안 앞의 원래 글은 바뀌지 않았다');
-  assert.equal(sol.scores[1].score,5,'넣은 줄의 인용은 받는다');
+  assert.equal(sol.scores[0].strong,false,'넣은 초안 앞의 원래 글은 바뀌지 않았다');
+  assert.equal(sol.scores[1].score,3,'넣은 줄의 인용은 받는다');
 });
 
 test('설계 검토 D4: 평가 기준을 바꾼 뒤에는 다시 심사하지 않고 다시 읽게 한다', async () => {
@@ -1011,8 +1019,8 @@ test('3회차 GA4 · GA7 · GA8: 근거였던 초안을 빼면 다시 심사해 
   await call('choose',{key:fix.key,kind:'fix'});
   await call('draft',{item:'성장 전략',answers:[0]});
   const at=(await snapOf(s)).read.paragraphs.length;
-  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:4,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});return a;}});
-  assert.equal((await snapOf(s)).scores.judges[0].scores[3].score,4);
+  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:3,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});return a;}});
+  assert.equal((await snapOf(s)).scores.judges[0].scores[3].score,3);
   // 초안만 뺀다. 고친 곳은 그대로라 단추는 남고, 지운 근거가 있어 부른다
   await call('draft',{item:'성장 전략',answers:[0],remove:true});
   let calls=0;
@@ -1020,7 +1028,7 @@ test('3회차 GA4 · GA7 · GA8: 근거였던 초안을 빼면 다시 심사해 
   assert.equal(calls,1);
   assert.match(r.summary,/다시 심사했습니다/);
   const sol=(await snapOf(s)).scores.judges[0];
-  assert.equal(sol.scores[3].score,3,'지운 근거로 받은 점수는 내려갈 수 있다');
+  assert.equal(sol.scores[3].score,2,'지운 근거로 받은 표시는 내려갈 수 있다');
   assert.equal(sol.scores[3].quote,'');
   // 예전 꼴 기록(심사단 · 지문 없음)
   const last=path.join(dir,(await fs.readdir(dir)).sort().at(-1));
@@ -1056,15 +1064,15 @@ test('5회차 GA2: 근거로 든 글이 빠진 항목만 다시 매기라고 알
   await call('choose',{key:fix.key,kind:'fix'});
   await call('draft',{item:'성장 전략',answers:[0]});
   const at=(await snapOf(s)).read.paragraphs.length;
-  // 시장성은 초안을 근거로 4점, 팀 역량은 인용 없이 3점(앞 그대로)
-  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:4,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});return a;}});
+  // 시장성은 초안을 근거로 ○, 팀 역량은 인용 없이 △(앞 그대로)
+  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:3,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});return a;}});
   await call('draft',{item:'성장 전략',answers:[0],remove:true});
   let prompt='';
-  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{prompt=p;const a=scoreAnswer(schema);a.scores[3].score=3;a.scores[5].score=1;return a;}});
+  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{prompt=p;const a=scoreAnswer(schema);a.scores[3].score=2;a.scores[5].score=1;return a;}});
   assert.match(prompt,/근거로 든 글이 빠진 항목: \["시장성"\]/);
   const sol=(await snapOf(s)).scores.judges[0];
-  assert.equal(sol.scores[3].score,3,'근거가 빠진 시장성은 내려간다');
-  assert.equal(sol.scores[5].score,3,'근거와 무관한 팀 역량은 인용 없이 내려가지 않는다');
+  assert.equal(sol.scores[3].score,2,'근거가 빠진 시장성은 내려간다');
+  assert.equal(sol.scores[5].score,2,'근거와 무관한 팀 역량은 인용 없이 내려가지 않는다');
   assert.equal(sol.scores[5].held,true);
 });
 
@@ -1077,11 +1085,11 @@ test('6회차 GA2 · GA5: 근거가 빠진 항목에 같은 점수를 다시 주
   await call('choose',{key:fix.key,kind:'fix'});
   await call('draft',{item:'성장 전략',answers:[0]});
   const at=(await snapOf(s)).read.paragraphs.length;
-  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:4,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});return a;}});
+  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:3,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});return a;}});
   await call('draft',{item:'성장 전략',answers:[0],remove:true});
-  // 근거가 빠진 시장성에 인용 없이 4점을 다시 준다
-  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);a.scores[3].score=4;return a;}});
-  assert.equal((await snapOf(s)).scores.judges[0].scores[3].score,4);
+  // 근거가 빠진 시장성에 인용 없이 ○를 다시 준다
+  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);a.scores[3].score=3;return a;}});
+  assert.equal((await snapOf(s)).scores.judges[0].scores[3].score,3);
   let calls=0;
   const r=await s.features.run({...spec(s),id:ID(4),kind:'score'},hooks(),{providers:['codex'],turn:async()=>{calls++;return {};}});
   assert.equal(r.summary,'고친 곳이 없어 점수가 그대로입니다.');
@@ -1106,16 +1114,17 @@ test('7회차 GA2: 근거가 빠진 항목에서 오른 점수를 보류했으�
   await call('choose',{key:fix.key,kind:'fix'});
   await call('draft',{item:'성장 전략',answers:[0]});
   const at=(await snapOf(s)).read.paragraphs.length;
-  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:4,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});return a;}});
+  // 시장성은 초안을 근거로 △(앞과 같은 표시, 근거는 초안의 줄)
+  await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:2,why:'근거입니다.',para:at,quote:'첫해에는 인스타그램에서 새 손님을'});return a;}});
   await call('draft',{item:'성장 전략',answers:[0],remove:true});
-  // 남은 문장을 들어 5점을 준다. 바뀐 문장이 아니라 4점으로 보류한다
-  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:5,why:'근거입니다.',para:at,quote:'3년 뒤 매출 5억 원을 목표로'});return a;}});
+  // 남은 문장을 들어 ○를 준다. 바뀐 문장이 아니라 △로 보류한다
+  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[3],{score:3,why:'근거입니다.',para:at,quote:'3년 뒤 매출 5억 원을 목표로'});return a;}});
   const m=(await snapOf(s)).scores.judges[0].scores[3];
-  assert.deepEqual([m.score,m.held],[4,true]);
+  assert.deepEqual([m.score,m.held],[2,true]);
   let calls=0;
-  await s.features.run({...spec(s),id:ID(4),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{calls++;return scoreAnswer(schema);}});
-  assert.equal(calls,1,'보류한 4점은 지운 근거로 다시 매길 수 있다');
-  assert.equal((await snapOf(s)).scores.judges[0].scores[3].score,3);
+  await s.features.run({...spec(s),id:ID(4),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{calls++;const a=scoreAnswer(schema);a.scores[3].score=1;return a;}});
+  assert.equal(calls,1,'보류한 △는 지운 근거로 다시 고를 수 있다');
+  assert.equal((await snapOf(s)).scores.judges[0].scores[3].score,1);
 });
 
 test('8 · 9회차 GA1: 근거는 인용 글이라, 건넨 범위 · 빈칸 · 인용 밖 낱말이 바뀌어도 인용이 그대로면 남은 근거다', () => {
@@ -1141,4 +1150,93 @@ test('10회차 GA1 · GA2: 인용은 숫자 중간에서 끊긴 일치를 같은
   const rec=JSON.parse(await fs.readFile(last,'utf8'));rec.judges[0].scores[0].basis=[['0123456789abcdef']];
   await fs.writeFile(last,JSON.stringify(rec));
   assert.deepEqual(await call('rescore',{provider:'codex'}),{ok:false,code:'RESCORE_OLD'});
+});
+
+test('○ △ ✕ 표시(설계 14.3): 표시 꼴이 없는 1~5점 개발판 기록은 결과를 보이지 않고, 다시 심사하지 않는다', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  const dir=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id,'scores');
+  await call('pick-plan');await call('pick-data');
+  await s.features.run({...spec(s),id:ID(1)},hooks(),{providers:['codex'],turn:turnWith()});
+  const last=path.join(dir,(await fs.readdir(dir)).sort().at(-1));
+  const rec=JSON.parse(await fs.readFile(last,'utf8'));
+  assert.equal(rec.scale,'mark3-rubric');
+  assert.ok((await snapOf(s)).scores);
+  delete rec.scale;
+  await fs.writeFile(last,JSON.stringify(rec));
+  assert.equal((await snapOf(s)).scores,null,'1~5점 기록은 보이지 않는다');
+  const fix=(await snapOf(s)).read.notes.find(n=>n.fix);
+  await call('choose',{key:fix.key,kind:'fix'});
+  assert.deepEqual(await call('rescore',{provider:'codex'}),{ok:false,code:'RESCORE_OLD'});
+});
+
+test('GPT 검수 GA1: 근거 없이 강점만 바꾸려 한 항목은 보류해 기준 지문을 잇고, 다음 다시 심사에서 고친 문장을 다시 본다', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  await call('pick-plan');await call('pick-data');
+  // 첫 심사: 문제 인식은 ○(강점 아님)
+  await s.features.run({...spec(s),id:ID(2)},hooks(),{providers:['codex'],turn:async(p,schema)=>{if(!schema.properties.scores)return turnWith()(p,schema);const a=scoreAnswer(schema);a.scores[0].score=3;return a;}});
+  const fix=(await snapOf(s)).read.notes.find(n=>n.fix);
+  await call('choose',{key:fix.key,kind:'fix'});
+  // 고친 문단의 바뀌지 않은 문장으로 강점을 올린다 → 보류
+  await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{const a=scoreAnswer(schema);Object.assign(a.scores[0],{score:3,strong:true,why:'좋습니다.',para:fix.para+1,quote:'2025년 9월부터 온라인으로 팔아 왔습니다'});return a;}});
+  const m=(await snapOf(s)).scores.judges[0].scores[0];
+  assert.deepEqual([m.score,m.strong,m.held,m.quote],[3,false,true,'']);
+  // 문제 인식은 아직 고친 문장을 본 판단이 없으니 같은 판으로도 다시 묻는다
+  let calls=0;
+  const r=await s.features.run({...spec(s),id:ID(4),kind:'score'},hooks(),{providers:['codex'],turn:async(p,schema)=>{calls++;const a=scoreAnswer(schema);a.scores[0].score=3;return a;}});
+  assert.equal(calls,1,r.summary);
+});
+
+test('GPT 검수 GA3 · GA4: 업무 답의 표시 방식은 끝날 때 다시 읽고, 물려받은 이름의 설정은 버린다', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  await call('pick-plan');await call('pick-data');
+  // 심사하는 동안 네 단계로 바꾸면 업무 답도 네 단계로 쓴다
+  const receipt=await s.features.run({...spec(s),id:ID(1)},hooks(),{providers:['codex'],turn:async(p,schema)=>{
+    if(schema.properties.scores)assert.deepEqual(await call('setting',{name:'marks',value:4}),{ok:true});
+    return turnWith()(p,schema);
+  }});
+  assert.match(receipt.summary,/심사 결과는 ✓ 0 · ○ 0 · △ 6 · ✕ 0입니다/);
+  // 손으로 고친 목록 파일: __proto__ · toString 같은 이름은 버리고 제 이름의 설정은 그대로 읽는다
+  const listFile=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id,'list.json');
+  const raw=JSON.parse(await fs.readFile(listFile,'utf8'));
+  await fs.writeFile(listFile,JSON.stringify(raw).replace(/"settings":\{/,'"settings":{"__proto__":4,"toString":3,"constructor":true,'));
+  assert.match(await fs.readFile(listFile,'utf8'),/"__proto__":4/);
+  assert.deepEqual((await snapOf(s)).list.settings,{others:false,marks:4});
+  for(const name of ['toString','__proto__','constructor'])assert.deepEqual(await call('setting',{name,value:3}),{ok:false,code:'VALUE'},name);
+});
+
+test('GPT 검수 2회차 GA1: 붙여 넣은 공고 기준은 기본 항목과 이름 · 차례가 같아도 공통 채점표를 쓰고 기록에 남기며, 기준 방식을 바꾸면 다시 심사하지 않는다', async () => {
+  const s=await setup();
+  const call=(action,args={})=>s.features.act(s.a,{feature:'bizplan',departmentId:s.dept.id,action,args});
+  const six=['문제 인식','현실성','신뢰성','시장성','수익 구조','팀 역량'];
+  await call('pick-plan');await call('pick-data');
+  assert.equal((await call('criteria',{mode:'pasted',text:six.join('\n')})).ok,true);
+  const prompts=[];
+  const turn=async(p,schema)=>{if(schema.properties.scores){prompts.push(p);return scoreAnswer(schema);}if(schema.properties.notes)return answers.notes;return {items:[]};};
+  await s.features.run({...spec(s),id:ID(1)},hooks(),{providers:['codex'],turn});
+  const sn=await snapOf(s);
+  assert.deepEqual(sn.scores.criteria,six);
+  assert.deepEqual(sn.scores.rubric.map(r=>r.o),six.map(()=>'이 항목은 됐다'),'기록이 쓴 채점표를 화면에 건넨다');
+  assert.match(prompts[0],/"crit":"문제 인식","x":"심사에 꼭 필요한 것이 없다"/);
+  const fix=sn.read.notes.find(n=>n.fix);
+  await call('choose',{key:fix.key,kind:'fix'});
+  // 기본 기준으로 바꾸면 항목 이름은 같아도 채점표가 달라 다시 읽게 한다
+  assert.equal((await call('criteria',{mode:'default'})).ok,true);
+  assert.deepEqual(await call('rescore',{provider:'codex'}),{ok:false,code:'CRITERIA_CHANGED'});
+  const r=await s.features.run({...spec(s),id:ID(2),kind:'score'},hooks(),{providers:['codex'],turn:async()=>{throw new Error('부르지 않는다');}});
+  assert.equal(r.summary,'평가 기준이 바뀌어 다시 읽은 뒤 심사할 수 있습니다.');
+  // 채점표를 남기기 전 후보의 기록(scale mark3, 채점표 없음)은 1~5점 기록과 같이 예전 판이다(3 · 4회차 GA1)
+  const dir=path.join(s.userData,'Office',s.member,'features','bizplan',s.dept.id,'scores');
+  const last=path.join(dir,(await fs.readdir(dir)).sort().at(-1));
+  const rec=JSON.parse(await fs.readFile(last,'utf8'));
+  assert.equal(rec.scale,'mark3-rubric');
+  rec.scale='mark3';delete rec.rubric;
+  await fs.writeFile(last,JSON.stringify(rec));
+  assert.equal((await call('criteria',{mode:'pasted',text:six.join('\n')})).ok,true);
+  assert.equal((await snapOf(s)).scores,null);
+  assert.deepEqual(await call('rescore',{provider:'codex'}),{ok:false,code:'RESCORE_OLD'});
+  const old=await s.features.run({...spec(s),id:ID(3),kind:'score'},hooks(),{providers:['codex'],turn:async()=>{throw new Error('부르지 않는다');}});
+  assert.equal(old.summary,'심사 기록이 예전 판이라 다시 읽은 뒤 심사할 수 있습니다.');
 });
