@@ -1070,7 +1070,7 @@ export default {
  'life.reviewSoon':{ko:'조금 뒤 다시 나와요',en:'Back soon',mn:'Удахгүй дахин гарч ирнэ'},
  // 새 길(4-2 — §19-1 ④ M4): 혼자 맞혔어도 그 표현이 하루 안에 다시 돌아오면(같은 자리에서 놓친 적이 있는 등) 「잘 기억했어요」 대신 이 글.
  'life.reviewAgainSoon':{ko:'하루 안에 한 번 더 만나요',en:'Once more within a day',mn:'Нэг өдрийн дотор дахин давтана'},
- 'life.reviewHeader':{ko:'{pack} · 새 장면 복습',en:'{pack} · review in a new situation',mn:'{pack} · шинэ нөхцөл байдалд давтах'},
+ 'life.reviewHeader':{ko:'{pack}\u00a0· 새 장면 복습',en:'{pack}\u00a0· review in a new situation',mn:'{pack}\u00a0· шинэ нөхцөл байдалд давтах'},
  'life.reviewOrigin':{ko:'{origin} 배운 표현',en:'Learned {origin}',mn:'{origin} сурсан хэллэг'},
  'life.everydayKorean':{ko:'생활 한국어',en:'Everyday Korean',mn:'Өдөр тутмын солонгос хэл'},
  'life.saved':{ko:'하던 자리를 저장했어요.',en:'Your place is saved.',mn:'Зогссон хэсгийг тань хадгаллаа.'},

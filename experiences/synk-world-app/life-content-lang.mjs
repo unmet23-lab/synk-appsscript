@@ -497,8 +497,8 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'Товлосон цагаасаа хоцрох юм шиг байна. Ямар мессеж илгээх вэ?',context:'',explanation:'Хоцрох гэж байгаа үед найздаа урьдчилан мэдэгддэг хэллэг.'}),
  'plans-story-time':q(
   {prompt:'처음 정한 약속 시간은 언제예요?',context:'',explanation:'금요일에 서하가 ‘내일 같이 공부해요. 오후 세 시 어때요?’라고 했어요. 금요일의 내일은 토요일이에요. 그래서 약속은 토요일 오후 세 시예요.'},
-  {prompt:'What time did they first agree on?',context:'',explanation:'On Friday, Seoha said ‘내일 같이 공부해요. 오후 세 시 어때요?’ (Let’s study together tomorrow. How about 3 p.m.?) The day after Friday is Saturday. So the meeting is on Saturday at 3 p.m.'},
-  {prompt:'Анх хэдэн цагт уулзахаар тохирсон бэ?',context:'',explanation:'Баасан гарагт Сөха «내일 같이 공부해요. 오후 세 시 어때요?» (Маргааш хамт хичээлээ давтъя. Өдрийн гурван цаг болох уу?) гэж хэлсэн. Баасан гарагт «маргааш» гэвэл бямба гараг. Тиймээс тэд бямба гарагт өдрийн гурван цагт уулзана.'}),
+  {prompt:'When did they first agree to meet?',context:'',explanation:'On Friday, Seoha said ‘내일 같이 공부해요. 오후 세 시 어때요?’ (Let’s study together tomorrow. How about 3 p.m.?) The day after Friday is Saturday. So the meeting is on Saturday at 3 p.m.'},
+  {prompt:'Анх хэзээ уулзахаар тохирсон бэ?',context:'',explanation:'Баасан гарагт Сөха «내일 같이 공부해요. 오후 세 시 어때요?» (Маргааш хамт хичээлээ давтъя. Өдрийн гурван цаг болох уу?) гэж хэлсэн. Баасан гарагт «маргааш» гэвэл бямба гараг. Тиймээс тэд бямба гарагт өдрийн гурван цагт уулзана.'}),
  'plans-story-time-transfer':q(
   {prompt:'새 약속 카드에 적힌 시간을 골라요.',context:'약속 카드: “토요일 오전 11시 · 도서관 앞”',explanation:'카드에 ‘토요일 오전 11시’라고 적혀 있어요. ‘11시’는 ‘열한 시’라고 읽어요. ‘오후’도 아니고 ‘일요일’도 아니에요.'},
   {prompt:'Choose the time written on the new plan card.',context:'Plan card: “토요일 오전 11시 · 도서관 앞”',explanation:'The card says ‘토요일 오전 11시’ (Saturday, 11 a.m.). You read ‘11시’ as ‘열한 시’ (eleven o’clock). It is not ‘오후’ (p.m.), and it is not ‘일요일’ (Sunday).'},
