@@ -112,7 +112,7 @@ test('스위치가 꺼지면 새 건 · 새 글은 막고 읽기 · 지우기 ·
   assert.equal(f.cases.studentList(s).cases.length, 1);
   assert.equal(f.cases.studentRead(s, made.id).case.id, made.id);
   f.cases.maintain();
-  assert.deepEqual(f.cases.studentDelete(s, made.id), { ok: true, deleted: true, id: made.id });
+  assert.deepEqual(f.cases.studentDelete(s, made.id), { ok: true, deleted: true, id: made.id, purge: 'pending' });
   assert.equal(f.cases.studentList(s).cases.length, 0);
   assert.equal(f.store.get(PATH_CASE_KINDS.tombstones, made.id).reason, 'student');
   f.env.PATH_CASES_ENABLED = 'true';

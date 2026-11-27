@@ -43,8 +43,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   const confirmKey = createHmac('sha256', store.key).update('path-case-erase-confirm\0v1').digest();
   const enabled = () => env.PATH_CASES_ENABLED === 'true';
   // 허용 목록을 적었으면 그 계정만 받는다. 적은 값 가운데 하나라도 SYNK ID 꼴이 아니면 아무도 받지 않는다(잘못 붙여 넣어 모두에게 열리지 않게).
-  const allowList = () => { const text = String(env.PATH_CASES_ALLOW ?? ''), raw = text.split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(Boolean); return { set: text.trim() !== '', ok: raw.length > 0 && raw.every(value => UUID.test(value)), ids: raw }; };
+  const allowList = () => { const text = String(env.PATH_CASES_ALLOW ?? ''), raw = text.split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(Boolean); return { set: text !== '', ok: raw.length > 0 && raw.every(value => UUID.test(value)), ids: raw }; };
   // 접수 줄의 학생은 열쇠 해시로 둔다(상담을 지운 뒤 8일 동안 남는 줄에서 누가 무엇을 보냈는지 바로 읽히지 않게).
+  const erasedRequestKey = requestId => 'erased:' + createHmac('sha256', store.key).update('path-case-erased-request\0v1\0' + requestId).digest('hex');
   const intakeSubject = synkUserId => createHmac('sha256', store.key).update('path-case-intake\0v1\0' + synkUserId).digest('hex');
   const ticketKey = () => { const value = env.PATH_CASE_TICKET_KEY; return typeof value === 'string' && value.length >= 32 ? value : null; };
   const notify = ids => { const list = [...new Set(ids.filter(Boolean))]; if (list.length) try { onChange(list); } catch { /* 다음 읽기에 보인다 */ } };
@@ -150,12 +151,12 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     const rows = store.allWhere(K.intake, 'synkUserId', intakeSubject(synkUserId)).filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
     const tooMany = () => fail(429, 'CASE_LIMIT', '이번 주에 보낼 수 있는 연결을 다 썼어요. 급하면 hello@synk.im으로 연락해 주세요.');
     if (mode === 'urgent' || mode === 'teen') {
-      const free = rows.filter(row => row.mode === 'urgent' || row.mode === 'teen' || row.mode === 'erased');
+      const free = rows.filter(row => row.mode === 'urgent' || row.mode === 'teen');
       if (free.filter(row => Date.parse(row.at) > Date.parse(at) - DAY).length >= L.noTicketDaily || free.length >= L.noTicketWeekly) throw tooMany();
     }
     if (mode !== 'urgent') {
       const limit = L.weekly[kind];
-      if (Number.isInteger(limit) && rows.filter(row => (row.kind === kind || row.kind === 'erased') && row.mode !== 'urgent').length >= limit) throw tooMany();
+      if (Number.isInteger(limit) && rows.filter(row => row.kind === kind && row.mode !== 'urgent').length >= limit) throw tooMany();
     }
   }
 
@@ -214,6 +215,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         if (!row) throw fail(409, 'CASE_GONE', '이미 보낸 상담이 지워졌어요. 다시 연결해 주세요.');
         return { row, status: 200, duplicate: true };
       }
+      if (store.get(K.nonces, erasedRequestKey(req.request_id))) throw fail(409, 'CASE_GONE', '이미 보낸 상담이 지워졌어요. 다시 연결해 주세요.');
       if (req.mode === 'handoff' && store.get(K.nonces, req.ticket.nonce)) throw fail(409, 'CASE_TICKET_USED', '이미 쓴 연결 확인이에요. 「사람에게 연결」을 다시 눌러 주세요.');
       const current = openCaseOf(identity.synkUserId);
       if (current && req.kind !== 'urgent') throw fail(409, 'CASE_OPEN_EXISTS', '이미 열린 상담이 있어요. 그 상담에 이어서 써 주세요.', { caseId: current.id });
@@ -223,7 +225,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         // 열린 건이 있으면 새 건을 만들지 않고 그 건에 급함 표시를 올린다. 학생이 고른 마지막 글은 그 건의 글로 잇는다.
         const body = bodyOf(current);
         // 급함으로 고른 마지막 글은 글 한도에 닿아도 잇는다(그 뒤에는 직원이 답할 수 있다).
-        if (req.last) translate.push({ messageId: addStudentMessage(body, req.last, req.request_id, at, { force: true }).id });
+        if (req.last && body.messages.length < L.messages + 10) translate.push({ messageId: addStudentMessage(body, req.last, req.request_id, at, { force: true }).id });
         const raised = raiseUrgent(touch({ ...current, status: current.status === 'answered' ? 'reviewing' : current.status, revision: current.revision + 1, updatedAt: at }, at), at);
         row = save(raised.row, body, { allowOver: true }); urgent = { target: raised.target };
         status = 200;
@@ -292,7 +294,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   function studentDelete(identity, id) {
     const row = studentCase(identity, id);
     erase(row, 'student');
-    return { ok: true, deleted: true, id: row.id };
+    return { ok: true, deleted: true, id: row.id, purge: 'pending' };
   }
 
   /* ── 지우기와 내용 없는 줄 ── */
@@ -303,8 +305,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     store.transaction(() => {
       store.remove(K.cases, row.id);
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
-      // 접수 줄(횟수 세기용, 8일)은 남기되 지운 건과 잇지 않는다.
-      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) store.put(K.intake, intake.id, { ...intake, caseId: null, requestId: null, mode: 'erased', kind: 'erased' });
+      // 접수 줄은 지운다(학생 해시 · 때 · 갈래로 지운 건을 다시 잇지 못하게). 같은 요청 번호를 다시 보내면 「지운 상담」으로 답하도록, 학생과 잇지 않는 요청 번호 해시만 8일 남긴다.
+      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); if (intake.requestId) { const gone = erasedRequestKey(intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
@@ -315,7 +317,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   // 지운 뒤 WAL 파일을 비운다(secure_delete는 본 파일만 덮는다). 다른 읽기가 붙잡고 있어 못 비우면 정리(maintain) 때 다시 한다.
   let walPending = true; // 시작한 뒤 첫 보관 정리에서 한 번 자른다(앞 실행이 지운 뒤 자르기 전에 멈췄을 수 있다)
   function truncateWal() {
-    try { const r = store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get(); walPending = Boolean(r && r.busy); } catch { walPending = true; }
+    // 다른 읽기가 붙잡고 있으면 기다리지 않고(busy_timeout 0) 다음 보관 정리 때 다시 한다 — 회사 서버를 막지 않는다.
+    try { store.db.exec('PRAGMA busy_timeout=0'); const r = store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get(); walPending = Boolean(r && r.busy); } catch { walPending = true; }
+    finally { try { store.db.exec('PRAGMA busy_timeout=5000'); } catch { /* 저장소가 닫혔다 */ } }
     return !walPending;
   }
 
@@ -357,6 +361,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       conversation: body.conversation, answeredAt: body.answeredAt, studentReadAt: body.studentReadAt,
       canAssign: who.all, canErase: who.role === 'owner', deleteAt: row.closedAt ? new Date(Date.parse(row.closedAt) + L.closedKeepDays * DAY).toISOString() : null };
   }
+  // 읽기만: 상태 · 알림 · 연 기록을 바꾸지 않는다.
+  function peek(actor, id) { const who = access(actor), row = staffCase(who, id); return { case: staffView(row, bodyOf(row), who) }; }
   function detail(actor, id) {
     const who = access(actor), at = now();
     const row = store.transaction(() => {
@@ -389,7 +395,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     if (!onlyKeys(input, ['revision', 'assigneeId']) || typeof input.assigneeId !== 'string' || !eligible(input.assigneeId)) throw fail(400, 'CASE_ASSIGNEE', 'PATH 상담 담당이나 책임자, 회사 주인에게만 맡길 수 있어요.');
     return mutate(actor, id, input, ({ current, at }) => {
       // 열린 급함 건을 넘기면 새 담당에게도 급함 알림을 남긴다.
-      if (open(current) && current.urgent && input.assigneeId !== assigneeOf(current) && !store.all(K.alerts).some(a => a.caseId === current.id && a.userId === input.assigneeId && !a.readAt)) { const alertId = randomUUID(); store.put(K.alerts, alertId, { id: alertId, userId: input.assigneeId, caseId: current.id, createdAt: at, readAt: null }); }
+      const left = open(current) && current.urgent && input.assigneeId !== assigneeOf(current) ? store.all(K.alerts).find(a => a.caseId === current.id && a.userId === input.assigneeId && !a.readAt) : null;
+      if (left) store.put(K.alerts, left.id, { ...left, createdAt: at });
+      if (!left && open(current) && current.urgent && input.assigneeId !== assigneeOf(current)) { const alertId = randomUUID(); store.put(K.alerts, alertId, { id: alertId, userId: input.assigneeId, caseId: current.id, createdAt: at, readAt: null }); }
       return { ...current, assigneeId: input.assigneeId };
     }, { manager: true });
   }
@@ -456,7 +464,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     const match = typeof input.token === 'string' && /^(\d{13})\.[0-9a-f]{64}$/.exec(input.token);
     if (!match || Number(match[1]) <= nowMs() || !same(confirmation(who.user.id, row, Number(match[1])), input.token)) throw fail(409, 'CASE_ERASE_CONFIRM', '지우기 확인 시간이 지났거나 확인한 내용과 달라요. 「지우기 전에 확인」을 다시 눌러 주세요.');
     erase(row, 'staff');
-    return { erased: { id: row.id, erasedAt: now() } };
+    // 본문은 지금 지웠다. 앞 판의 암호문 프레임은 다음 보관 정리(한 시간 안)의 WAL 자르기로 지운다.
+    return { erased: { id: row.id, erasedAt: now(), purge: 'pending' } };
   }
   function configure(actor, input) {
     const who = access(actor);
@@ -489,7 +498,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       const body = bodyOf(row), tasks = body.tasks.filter(t => !t.removed);
       const left = tasks.filter(t => !t.done);
       const base = { caseId: row.id, urgent: row.urgent === true, href: pathCaseHref(row.id) };
-      if (left.length) for (const t of left) rows.push({ ...base, id: row.id + ':' + t.id, title: 'PATH 상담 할 일', date: t.by || body.deadline || '' });
+      if (left.length) for (const t of left) rows.push({ ...base, id: row.id + ':' + t.id, title: 'PATH 상담 할 일', date: t.by || (t.source === 'ai' ? body.deadline : '') || '' });
       else if (tasks.length) rows.push({ ...base, id: row.id + ':close', title: 'PATH 상담 끝내기 확인', date: '' });
       else rows.push({ ...base, id: row.id + ':reply', title: row.urgent ? 'PATH 급함 상담' : 'PATH 상담 답하기', date: body.deadline || '' });
     }
@@ -514,7 +523,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         const message = job.messageId ? body.messages.find(m => m.id === job.messageId) : null;
         const source = message ? message.text : body[job.field];
         if (!source) continue;
-        const out = await translator.translate([source], { to: 'ko', from: body.lang });
+        const out = await translator.translate([source], { to: 'ko', from: body.lang, signal: livenessAbort.signal });
         if (!out) continue;
         store.transaction(() => {
           const latest = store.get(K.cases, job.caseId); if (!latest) return;
@@ -584,6 +593,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         data = await response.json();
       } catch {
         if (stopped) return { stopped: true, asked: ids.length }; // 다음 시작 때 다시 묻는다
+        // 앞 묶음까지 물은 계정은 물은 때를 남겨, 다음 실행이 남은 계정부터 묻게 한다(숨기기 · 지우기는 하지 않는다).
+        const done = new Set(ids.slice(0, i)), at2 = new Date(atMs).toISOString();
+        for (const row of store.all(K.cases)) if (done.has(row.synkUserId)) store.put(K.cases, row.id, { ...row, livenessAskedAt: at2 });
         finish({ livenessStatus: 'failed' });
         return { failed: true, asked: ids.length };
       }
@@ -617,12 +629,12 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   return {
     status, studentList, studentCreate, studentMessage, studentRead, studentDelete,
-    list, detail, assign, reply, task, close, eraseCheck, erase: staffErase, configure, translateDraft,
+    list, detail, peek, assign, reply, task, close, eraseCheck, erase: staffErase, configure, translateDraft,
     today, notifications, readAlert, readAllAlerts, owns: id => typeof id === 'string' && id.startsWith(ALERT_PREFIX),
     maintain, liveness, roleOf: user => roleOf(live(user?.id)),
     waitForIdle: async () => { while (translating) await translating; await livenessRun; },
     // 서버를 멈출 때: 남은 번역은 버리고(원문은 저장돼 있다) 지금 하나와 계정 정리만 기다린다.
-    stop: async () => { stopped = true; translationQueue.length = 0; livenessAbort.abort(); await livenessRun; },
+    stop: async () => { stopped = true; translationQueue.length = 0; livenessAbort.abort(); await translating; await livenessRun; },
   };
 }
 export const PATH_CASE_NOTE_MAX = MAX_NOTE_CHARS;

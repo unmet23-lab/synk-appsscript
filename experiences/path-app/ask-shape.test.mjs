@@ -160,6 +160,11 @@ test('고친 줄 옮기기: 요청 꼴과 옮긴 줄의 숫자를 본다', () =>
   const swap = validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: '2027 оны 3-р сарын 7 хүртэл' }] });
   assert.throws(() => checkBriefEditOutput({ texts: ['2027년 7월 3일까지'] }, swap.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
   assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일까지'] }, swap.edits)[0].text_ko, '2027년 3월 7일까지');
+  // 해가 빠진 날짜도 달 · 날로 맞댄다. 두 날짜 가운데 하나만 해를 적어도 같은 날이면 받는다.
+  const noYear = validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: '3-р сарын 7 хүртэл' }] });
+  assert.throws(() => checkBriefEditOutput({ texts: ['7월 3일까지'] }, noYear.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
+  const two = validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: '2027 оны 3-р сарын 7 болон 2027 оны 7-р сарын 3' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일과 7월 3일'] }, two.edits).length, 1);
   const en = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'by March 7, 2027' }] });
   assert.throws(() => checkBriefEditOutput({ texts: ['2027년 7월 3일까지'] }, en.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
   assert.throws(() => checkBriefEditOutput({ texts: [] }, r.edits), { code: 'BRIEF_BAD_OUTPUT' });
@@ -246,7 +251,7 @@ test('글 다듬기는 두 번 해도 같다(빈칸만 있는 줄 사이)', () =
 });
 
 test('위험 낱말: 직접적인 영어 위기 표현', () => {
-  for (const t of ['I want to die.', 'I don\'t want to live anymore']) assert.equal(looksUrgent(t), true, t);
+  for (const t of ['I want to die.', 'I don\'t want to live anymore', 'My partner hit me last night.']) assert.equal(looksUrgent(t), true, t);
 });
 
 test('금액: 「82만 500원」은 한 수로 읽어 「82만 원」을 근거로 치지 않는다', () => {

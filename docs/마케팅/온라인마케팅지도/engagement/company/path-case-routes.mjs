@@ -1,5 +1,5 @@
 // 직원 경로 /api/path-cases/*(PATH 상담함). 회사 세션 쿠키 + 같은 출처 + CSRF로 쓴다. 권한은 path-cases.mjs가 PATH 소속 역할로 직접 본다.
-const CASE = /^\/api\/path-cases\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/(assign|reply|task|close|erase-check|erase|translate-draft))?$/;
+const CASE = /^\/api\/path-cases\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/(open|assign|reply|task|close|erase-check|erase|translate-draft))?$/;
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
 
 export function createPathCaseStaffRoutes({ pathCases, session, origin, body, send, audit = () => {} }) {
@@ -12,10 +12,10 @@ export function createPathCaseStaffRoutes({ pathCases, session, origin, body, se
     if (method === 'GET') {
       if (path === '/api/path-cases') { send(res, 200, pathCases.list(user)); return true; }
       if (route && !route[2]) {
-        // 상세를 열면 「보는 중」으로 바뀌고 급함 알림을 읽는다. 다른 사이트를 거친 최상위 이동 · 남의 출처 요청으로는 열지 않는다.
+        // GET은 읽기만 한다(상태 · 알림을 바꾸지 않는다). 「보는 중」 · 알림 읽기는 CSRF를 거치는 POST /open이 한다.
         const mode = req.headers['sec-fetch-mode'], site = req.headers['sec-fetch-site'];
         if (mode === 'navigate' || site !== 'same-origin') throw fail('회사 프로그램 화면에서 열어 주세요.', 403);
-        send(res, 200, pathCases.detail(user, route[1])); return true;
+        send(res, 200, pathCases.peek(user, route[1])); return true;
       }
       throw fail('PATH 상담함 주소를 확인해 주세요.', 404);
     }
@@ -29,7 +29,8 @@ export function createPathCaseStaffRoutes({ pathCases, session, origin, body, se
     if (path === '/api/path-cases/settings') { send(res, 200, pathCases.configure(actor, input)); return true; }
     const [, id, action] = route;
     let result;
-    if (action === 'assign') result = pathCases.assign(actor, id, input);
+    if (action === 'open') result = pathCases.detail(actor, id);
+    else if (action === 'assign') result = pathCases.assign(actor, id, input);
     else if (action === 'reply') result = pathCases.reply(actor, id, input);
     else if (action === 'task') result = pathCases.task(actor, id, input);
     else if (action === 'close') result = pathCases.close(actor, id, input);

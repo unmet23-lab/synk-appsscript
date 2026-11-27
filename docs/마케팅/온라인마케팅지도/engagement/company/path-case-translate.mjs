@@ -27,7 +27,7 @@ export function createPathCaseTranslator({ store, env = process.env, fetchImpl =
     });
   }
   /** texts를 to 언어로 옮긴다. 실패하면 null. */
-  async function translate(texts, { to = 'ko', from = null } = {}) {
+  async function translate(texts, { to = 'ko', from = null, signal = null } = {}) {
     const apiKey = key();
     if (!apiKey || typeof fetchImpl !== 'function' || !Array.isArray(texts) || !texts.length || texts.length > MAX_TEXTS || !LANG_NAMES[to]) return null;
     if (texts.some(text => typeof text !== 'string' || !text) || texts.reduce((n, text) => n + text.length, 0) > MAX_CHARS) return null;
@@ -35,7 +35,7 @@ export function createPathCaseTranslator({ store, env = process.env, fetchImpl =
     const schema = { type: 'object', additionalProperties: false, required: ['translations'], properties: { translations: { type: 'array', items: { type: 'string' } } } };
     let response, body;
     try {
-      response = await fetchImpl(ENDPOINT, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(TIMEOUT_MS),
+      response = await fetchImpl(ENDPOINT, { method: 'POST', redirect: 'error', signal: signal ? AbortSignal.any([AbortSignal.timeout(TIMEOUT_MS), signal]) : AbortSignal.timeout(TIMEOUT_MS),
         headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-beta': 'server-side-fallback-2026-07-01' },
         body: JSON.stringify({ model, max_tokens: 8000, system: SYSTEM, output_config: { effort: 'low', format: { type: 'json_schema', schema } }, fallbacks: 'default',
           messages: [{ role: 'user', content: JSON.stringify({ from: from && LANG_NAMES[from] ? LANG_NAMES[from] : '모름', to: LANG_NAMES[to], texts }) }] }) });

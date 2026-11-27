@@ -131,11 +131,14 @@ test('HTTP 왕복: 학생이 보내고 · 담당이 보고 · 오늘 할 일에�
   assert.equal(list.status, 200); assert.equal(list.data.items[0].id, id); assert.equal(list.data.items[0].wants, brief.wants);
   for (const user of ['operations', 'admin']) assert.equal((await f.staff('/api/path-cases', { user })).status, 403, user);
   assert.equal((await f.staff('/api/path-cases', { user: 'counselor' })).data.items.length, 0);
-  for (const headers of [{ 'Sec-Fetch-Site': 'none' }, { 'Sec-Fetch-Site': 'cross-site' }, { 'Sec-Fetch-Mode': 'navigate' }]) {
-    const r = await fetch(f.base + '/api/path-cases/' + id, { headers: { Cookie: 'synk_company_session=' + f.cookies.owner, ...headers } });
-    assert.equal(r.status, 403, JSON.stringify(headers));
-  }
-  const detail = await f.staff('/api/path-cases/' + id);
+  // fetch는 Sec-Fetch-Mode를 스스로 정하므로 node:http로 머리말을 그대로 보낸다(최상위 이동 흉내 포함).
+  const { request } = await import('node:http');
+  const rawGet = headers => new Promise((done, fail) => { const r = request(f.base + '/api/path-cases/' + id, { headers: { Cookie: 'synk_company_session=' + f.cookies.owner, ...headers } }, res => { res.resume(); done(res.statusCode); }); r.on('error', fail); r.end(); });
+  for (const headers of [{}, { 'Sec-Fetch-Site': 'none' }, { 'Sec-Fetch-Site': 'cross-site' }, { 'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'navigate' }]) assert.equal(await rawGet(headers), 403, JSON.stringify(headers));
+  assert.equal(await rawGet({ 'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors' }), 200);
+  // GET은 읽기만 한다(새 상담 그대로). 여는 것은 POST /open(CSRF)이 「보는 중」으로 바꾼다.
+  assert.equal((await f.staff('/api/path-cases/' + id)).data.case.status, 'new');
+  const detail = await f.staff('/api/path-cases/' + id + '/open', { body: {} });
   assert.equal(detail.data.case.status, 'reviewing');
   // CSRF · 출처가 맞아야 쓴다.
   assert.equal((await f.staff('/api/path-cases/' + id + '/close', { body: { revision: detail.data.case.revision }, headers: { 'X-CSRF-Token': 'bad' } })).status, 403);

@@ -261,7 +261,7 @@ export function readCases(data) {
   const str = (v, max) => (typeof v === 'string' && v.length <= max ? v : null);
   return data.cases.slice(0, 20).flatMap((c) => {
     if (!plain(c) || typeof c.id !== 'string' || !UUID_RE.test(c.id) || !CASE_STATUSES.includes(c.status) || !['urgent', ...HANDOFF_KINDS].includes(c.kind)) return [];
-    const messages = (Array.isArray(c.messages) ? c.messages : []).slice(-110).flatMap((m) => (plain(m) && ['student', 'staff'].includes(m.from) && str(m.text, 4000)
+    const messages = (Array.isArray(c.messages) ? c.messages : []).slice(-120).flatMap((m) => (plain(m) && ['student', 'staff'].includes(m.from) && str(m.text, 4000)
       ? [{ id: str(m.id, 80), from: m.from, text: m.text, at: str(m.at, 40) }] : []));
     return [{ id: c.id.toLowerCase(), kind: c.kind, status: c.status, created_at: str(c.created_at, 40), wants: str(c.wants, 600), messages, unread: Number.isInteger(c.unread) && c.unread > 0 ? c.unread : 0,
       delete_at: str(c.delete_at, 40), delete_soon: c.delete_soon === true }];

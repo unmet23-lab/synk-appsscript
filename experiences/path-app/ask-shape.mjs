@@ -79,7 +79,7 @@ const DANGER = [
   // 한국어
   '죽고 싶', '죽고싶', '자살', '자해', '목숨', '때려', '때리', '맞았', '맞고 있', '폭행', '폭력', '성폭', '성추행', '강간', '협박', '감금', '납치', '갇혀', '위협', '돈을 뜯', '돈 뜯', '사기를 당', '사기 당', '살려', '위험해',
   // 영어
-  'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'wanna die', 'don\'t want to live', 'beat me up', 'beats me up', 'abuse', 'assault', 'raped', 'rape', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
+  'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'wanna die', 'don\'t want to live', 'hit me', 'hits me', 'beat me', 'beats me', 'abuse', 'assault', 'raped', 'rape', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
   // 몽골어(키릴)
   'амиа хорло', 'амиа егүүт', 'үхмээр', 'өөрийгөө гэмтээ', 'зодсон', 'зодуул', 'зодож', 'хүчир', 'бэлгийн дарамт', 'айлга', 'заналх', 'хулгайлсан', 'луйвар', 'аюулд', 'аврагтун',
   // 몽골어(라틴 글자)
@@ -329,18 +329,19 @@ export function validateBriefEditRequest(body) {
 }
 export const BRIEF_EDIT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: false, required: ['texts'],
   properties: { texts: { type: 'array', items: { type: 'string' } } } });
-/* 날짜 읽기: 해 · 달 · 날로 읽을 수 있는 날짜(2027-03-07, 2027년 3월 7일, 2027 оны 3-р сарын 7, March 7, 2027 · 7 March 2027). 숫자 집합만 보면 3월 7일과 7월 3일이 같아 보인다. */
+/* 날짜 읽기: 달 · 날(MM-DD)로 읽을 수 있는 날짜. 해는 숫자 대조가 본다. 숫자 집합만 보면 3월 7일과 7월 3일이 같아 보인다.
+ * 2027-03-07 · 2027.3.7, 3월 7일, 3-р сарын 7 · 3 сарын 7, March 7 · 7 March. */
 const MONTHS_EN = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const pad2 = (n) => String(n).padStart(2, '0');
 export function datesIn(text) {
   const s = String(text ?? ''), out = new Set();
-  const add = (y, m, d) => { y = Number(y); m = Number(m); d = Number(d); if (y >= 1900 && y <= 2200 && m >= 1 && m <= 12 && d >= 1 && d <= 31) out.add(`${y}-${pad2(m)}-${pad2(d)}`); };
-  for (const x of s.matchAll(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/g)) add(x[1], x[2], x[3]);
-  for (const x of s.matchAll(/(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/g)) add(x[1], x[2], x[3]);
-  for (const x of s.matchAll(/(\d{4})\s*оны\s*(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})/giu)) add(x[1], x[2], x[3]);
+  const add = (m, d) => { m = Number(m); d = Number(d); if (m >= 1 && m <= 12 && d >= 1 && d <= 31) out.add(`${pad2(m)}-${pad2(d)}`); };
+  for (const x of s.matchAll(/(?<!\d)\d{4}[-./](\d{1,2})[-./](\d{1,2})(?!\d)/g)) add(x[1], x[2]);
+  for (const x of s.matchAll(/(?<!\d)(\d{1,2})\s*월\s*(\d{1,2})\s*일/g)) add(x[1], x[2]);
+  for (const x of s.matchAll(/(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu)) add(x[1], x[2]);
   const mon = MONTHS_EN.join('|');
-  for (const x of s.matchAll(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(\\d{4})`, 'gi'))) add(x[3], MONTHS_EN.indexOf(x[1].toLowerCase()) + 1, x[2]);
-  for (const x of s.matchAll(new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon}),?\\s+(\\d{4})`, 'gi'))) add(x[3], MONTHS_EN.indexOf(x[2].toLowerCase()) + 1, x[1]);
+  for (const x of s.matchAll(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)`, 'gi'))) add(MONTHS_EN.indexOf(x[1].toLowerCase()) + 1, x[2]);
+  for (const x of s.matchAll(new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b`, 'gi'))) add(MONTHS_EN.indexOf(x[2].toLowerCase()) + 1, x[1]);
   return out;
 }
 /** 옮긴 줄: 줄 수가 같고, 숫자가 원문과 같아야 한다(바뀌면 거절). 양쪽에서 날짜를 읽을 수 있으면 해 · 달 · 날까지 같아야 한다. */

@@ -52,7 +52,8 @@ async function pathCaseOpen(id,{quiet=false}={}){
   const s=pathCaseState,identity=pathCaseIdentity();if(!id||!PATH_CASE_UUID.test(id))return;
   if(!quiet){s.loading=true;pathCaseRender();}
   try{
-    const data=await api('/api/path-cases/'+encodeURIComponent(id));
+    // 여는 것은 「보는 중」 · 알림 읽기를 남기므로 POST(CSRF)로 한다.
+    const data=await api('/api/path-cases/'+encodeURIComponent(id)+'/open',{});
     if(identity!==pathCaseIdentity())return;
     if(s.selected!==id&&!quiet)return;
     s.selected=id;s.detail=data.case;pathCaseAccept(data.case);

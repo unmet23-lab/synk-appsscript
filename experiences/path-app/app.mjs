@@ -395,7 +395,7 @@ function shell(main) {
   const bar = TABS.map((p) => `<button type="button" data-action="nav" data-page="${p}"${cur(p)}>${TAB_ICON[p]}<span>${t(p)}</span></button>`).join('');
   const lang = `<div class="lang" role="group" aria-label="${t('langLabel')}"><button type="button" data-action="setLang" data-id="ko" aria-pressed="${state.lang !== 'en'}" lang="ko">한국어</button><span class="lang-sep" aria-hidden="true"></span><button type="button" data-action="setLang" data-id="en" aria-pressed="${state.lang === 'en'}" lang="en">English</button></div>`;
   return `<div class="app-shell${nav ? ' has-nav' : ''}" data-page="${S.page}"><header class="bar">
-<button type="button" class="logo" data-action="${nav ? 'nav' : 'noop'}" data-page="today" aria-label="PATH"><span class="logo-mark" aria-hidden="true"></span>PATH</button>
+<button type="button" class="logo" data-action="${nav || S.page !== 'onboard' ? 'nav' : 'noop'}" data-page="${nav ? 'today' : 'onboard'}" aria-label="PATH"><span class="logo-mark" aria-hidden="true"></span>PATH</button>
 ${nav ? `<nav class="tabs" aria-label="${t('navLabel')}">${tabs}</nav>` : ''}<div class="bar-right"><button type="button" class="ask-open" data-action="askOpen"${S.page === 'ask' || S.page === 'askBrief' ? ' aria-current="page"' : ''}>${t('ask')}</button>${lang}${acct}</div></header>
 ${main}${nav ? `<nav class="tabbar" aria-label="${t('navLabel')}">${bar}</nav>` : ''}</div>`;
 }

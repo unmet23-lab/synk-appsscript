@@ -99,7 +99,7 @@ export function createAskController(d) {
   async function loadCases() {
     const o = owner();
     if (!o) return;
-    const c = cases = { owner: o, phase: 'loading', list: cases?.list || [], note: cases?.note ?? null, text: cases?.text || {} };
+    const c = cases = { owner: o, phase: 'loading', list: cases?.list || [], note: cases?.note ?? null, text: cases?.text || {}, at: d.now() };
     let list = null;
     try { list = readCases(await d.session.workspace('GET', WORKSPACE_CASES_PATH)); } catch { list = null; }
     if (cases !== c || owner() !== o) return;
@@ -383,7 +383,8 @@ export function createAskController(d) {
     cur();
     const page = d.page();
     if (owner() && ['ask', 'askBrief', 'today', 'path'].includes(page)) askStatus();
-    if (owner() && ['today', 'path'].includes(page) && (!cases || cases.owner !== owner())) void loadCases();
+    // 담당자 답을 놓치지 않게 오늘 · 내 길에 들어올 때 1분 넘게 지났으면 다시 불러온다.
+    if (owner() && ['today', 'path'].includes(page) && (!cases || cases.owner !== owner() || (cases.phase !== 'loading' && d.now() - (cases.at || 0) > 60000))) void loadCases();
     if (page === 'askBrief' && !brief) d.S.page = 'ask';
   }
   function view() {
