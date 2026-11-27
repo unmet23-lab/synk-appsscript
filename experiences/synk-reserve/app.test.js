@@ -71,7 +71,7 @@ test('아래 단락(11-26 「다」): 학생증 · 휴대폰 다섯 대 · 꿈 �
   // 원천 그림은 지금 쪽이 부르는 것만 둔다(11-24 판 그림 14장은 11-26 유호님 허락으로 지웠다).
   assert.deepEqual(fs.readdirSync(path.join(__dirname, 'src/img')).sort(), C.DREAMS.flatMap(d => [`card-${d}.webp`, `stage-${d}.webp`]).sort());
   for (const l of C.LANGS) { const dir = path.join(__dirname, 'src/shots', l); assert.deepEqual((fs.existsSync(dir) ? fs.readdirSync(dir) : []).sort(), C.PHONES.filter(p => p.still).map(p => `${p.id}.webp`).sort(), `src/shots/${l}`); }
-  // 아직 앱에 없는 일(soonS)은 「곧 열려요」를 단다 — 학생증 얼굴로 대사하는 내 영상(11-26 유호님). 동아리 퀴즈 자리는 1화 대사 진행(scene)이다.
+  // 아직 앱에 열리지 않은 화면(soonS)에는 「곧 열려요」를 단다.
   // 셋째(대답)와 넷째(장면이 이어짐)는 한 영상(talk)이고, 넷째는 아직 열리지 않은 배우 특별 스토리(special)다(11-27 유호님).
   assert.deepEqual(C.PHONES.filter(p => p.soonS).map(p => p.id), ['special']);
   assert.deepEqual(C.PHONES.map(p => p.id), ['trace', 'card', 'talk', 'special', 'fans']);

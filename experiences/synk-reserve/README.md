@@ -10,7 +10,7 @@
 | 화면 동작(언어 · 들어온 곳 · TOPIK 안내 띠 · 꿈 고르기와 학생증 · 휴대폰 영상 · 보내기 · 친구에게 보내기) | `src/app.js` |
 | 구조와 모양 | `src/index.html`, `src/reserve.css` (synk.im 새 홈 v11의 값과 마을 그림 `/assets/v11/town-road.webp`) |
 | 아래 단락의 그림 | 게임 학생증 `src/img/card-<idol·actor>.webp`(1320×832, 게임 속 학생증은 화면 언어와 상관없이 한국어), 꿈 무대 `src/img/stage-<idol·actor>.webp`(seoul-arrival 「데뷔」 · 「주연」 장면, 폭 900) |
-| 아래 단락의 휴대폰 화면 | 영상 `src/clips/<ko·en·mn>/<trace·card·fans>-<idol·actor>.mp4`와 `talk.mp4` · `scene.mp4`(첫 장면 그림은 같은 이름의 `.webp`) (아래 「화면 캡처」) |
+| 아래 단락의 휴대폰 화면 | 영상 `src/clips/<ko·en·mn>/<trace·card·fans>-<idol·actor>.mp4`와 `talk.mp4` · `special.mp4`(첫 장면 그림은 같은 이름의 `.webp`) (아래 「화면 캡처」) |
 | 1회용 체험 `/reserve/play/` (아래 「해 보기」) | `src/play/index.html` · `play.css` · `play.mjs` |
 | 링크 미리보기 원고 | `src/og.html` → `reserve/og.jpg` |
 | 철수한 `/lab/topik4/` 자리 | `src/lab-topik4.html` → `lab/topik4/index.html` |
