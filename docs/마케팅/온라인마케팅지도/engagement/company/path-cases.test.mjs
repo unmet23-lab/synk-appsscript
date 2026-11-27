@@ -385,3 +385,28 @@ test('검수 고침(11-27 ws-d): 한도 찬 건의 급함 글 · 상태의 허�
   f.cases.peek(f.users.owner, made.id);
   assert.equal(f.store.count(PATH_CASE_KINDS.views), views + 1);
 });
+
+test('급함 판정: 학생 글의 위험은 번역 때 모델이 뜻으로 보고, 모델이 답하지 못하면 위험 낱말로 본다', async t => {
+  // 모델이 위험이라 하면 급함을 올리고, 아니라 하면 위험 낱말이 있어도 올리지 않는다.
+  const said = new Map([['간호사한테 예방주사 맞았어요', false], ['Тусламж хэрэгтэй, намайг айлгаж байна', true]]);
+  const translator = { configured: () => true, translate: async (texts, { judge }) => (judge ? { translations: texts.map(x => '[번역] ' + x), danger: texts.map(x => said.get(x) === true) } : texts) };
+  const f = fixture(t, { translator }), s = f.student();
+  const quiet = f.cases.studentCreate(s, f.teen({ note: '간호사한테 예방주사 맞았어요' })).body.case;
+  await f.cases.waitForIdle();
+  assert.equal(f.store.get(PATH_CASE_KINDS.cases, quiet.id).urgent, false);
+  assert.equal(f.urgentCalls.length, 0);
+  f.cases.studentMessage(s, quiet.id, { request_id: randomUUID(), text: 'Тусламж хэрэгтэй, намайг айлгаж байна' });
+  await f.cases.waitForIdle();
+  assert.equal(f.store.get(PATH_CASE_KINDS.cases, quiet.id).urgent, true);
+  assert.equal(f.urgentCalls.length, 1);
+  // 모델이 답하지 못하면(null) 위험 낱말로 본다.
+  const down = { configured: () => true, translate: async () => null };
+  const g = fixture(t, { translator: down }), u = g.student();
+  const hurt = g.cases.studentCreate(u, g.teen({ note: '집에서 아빠한테 맞았어요' })).body.case;
+  assert.equal(g.store.get(PATH_CASE_KINDS.cases, hurt.id).urgent, false, '모델 판정을 기다린다');
+  await g.cases.waitForIdle();
+  assert.equal(g.store.get(PATH_CASE_KINDS.cases, hurt.id).urgent, true);
+  // 번역기가 없으면 받을 때 바로 위험 낱말로 본다.
+  const h = fixture(t), v = h.student();
+  assert.equal(h.cases.studentCreate(v, h.teen({ note: '집에서 아빠한테 맞았어요' })).body.case.urgent, true);
+});

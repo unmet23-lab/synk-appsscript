@@ -87,10 +87,8 @@ const DANGER = [
 ];
 // 라틴 글자 낱말 가운데 다른 낱말 속에 들어가기 쉬운 것(grape의 rape)은 낱말 경계로 본다.
 const DANGER_WORDS = /\b(?:rape|raped|raping)\b/i;
-// 「hit me with a late fee」처럼 돈 · 소식을 「맞았다」는 영어 관용 표현은 위험 낱말을 보기 전에 뺀다.
-const SAFE_EN = /\bhits?\s+me\s+with\s+(?:a\s+|an\s+|the\s+|this\s+|that\s+)?(?:\w+\s+){0,2}?(?:fees?|bills?|charges?|fines?|tax(?:es)?|costs?|prices?|rent|questions?|news|emails?|messages?|deadlines?|requests?)\b/gi;
 export function looksUrgent(text) {
-  const s = String(text ?? '').toLowerCase().normalize('NFC').replace(SAFE_EN, ' ');
+  const s = String(text ?? '').toLowerCase().normalize('NFC');
   return DANGER.some((w) => s.includes(w)) || DANGER_WORDS.test(s);
 }
 
@@ -333,40 +331,25 @@ export function validateBriefEditRequest(body) {
 }
 export const BRIEF_EDIT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: false, required: ['texts'],
   properties: { texts: { type: 'array', items: { type: 'string' } } } });
-/* 날짜 읽기: 해 · 달 · 날을 한 묶음으로 읽는다. 숫자 집합만 보면 3월 7일과 7월 3일이 같아 보이고, 해를 따로 보면 두 날짜의 해가 바뀌어도 같아 보인다.
- * 2027-03-07 · 2027.3.7, (2027년) 3월 7일, (2027 оны) 3-р сарын 7, March 7(, 2027) · 7 March (2027).
- * 해를 적지 않은 날짜는 같은 글에서 바로 앞 날짜의 해를 잇는다(「2027년 3월 7일과 7월 3일」). 앞에도 없으면 해 없음(?). */
+/* 날짜 읽기: 달 · 날(MM-DD) 목록. 숫자 집합만 보면 3월 7일과 7월 3일이 같아 보인다. 해는 남은 숫자로 맞댄다.
+ * 어느 해가 어느 날짜에 붙는지(두 날짜의 해 바꿈)는 이 검사가 보지 않고 모델 검사(SYNK-talk VET_EDIT)가 본다 — 「여기서 2000 원」 같은 금액을 해로 잘못 읽지 않게.
+ * 2027-03-07 · 2027.3.7, 3월 7일, 3-р сарын 7 · 3 сарын 7, March 7 · 7 March. */
 const MONTHS_EN = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const pad2 = (n) => String(n).padStart(2, '0');
 export function datesIn(text) { return dateParts(text).dates; }
-/** 날짜를 「해-달-날」 목록(글 순서)으로 읽고, 읽은 날짜(해 포함)를 지운 글을 함께 돌려준다. */
+/** 달 · 날을 글 순서 목록으로 읽고, 읽은 달 · 날 숫자를 지운 글을 함께 돌려준다(해는 남긴다). */
 function dateParts(text) {
-  const src = String(text ?? '');
+  let s = String(text ?? '');
+  const found = [];
+  const add = (at, m, d) => { m = Number(m); d = Number(d); if (m >= 1 && m <= 12 && d >= 1 && d <= 31) { found.push({ at, v: `${pad2(m)}-${pad2(d)}` }); return true; } return false; };
+  const take = (re, pick) => { s = s.replace(re, (...g) => { const at = g.at(-2); return add(at, ...pick(g)) ? ' '.repeat(g[0].length) : g[0]; }); };
   const mon = MONTHS_EN.join('|'), monIdx = (w) => MONTHS_EN.indexOf(String(w).toLowerCase()) + 1;
-  // [꼴, (g) => [해, 달, 날]] — 앞 꼴이 잡은 자리는 뒤 꼴이 다시 잡지 않는다.
-  const forms = [
-    [/(?<!\d)(\d{4})[-./](\d{1,2})[-./](\d{1,2})(?!\d)/g, (g) => [g[1], g[2], g[3]]],
-    [/(?:(?<!\d)(\d{4})\s*년\s*)?(?<!\d)(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, (g) => [g[1], g[2], g[3]]],
-    [/(?:(?<!\d)(\d{4})\s*(?:оны|он)\s*)?(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu, (g) => [g[1], g[2], g[3]]],
-    [new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)(?:,?\\s*(\\d{4})(?!\\d))?`, 'gi'), (g) => [g[3], monIdx(g[1]), g[2]]],
-    [new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b(?:,?\\s*(\\d{4})(?!\\d))?`, 'gi'), (g) => [g[3], monIdx(g[2]), g[1]]],
-  ];
-  const found = [], used = [];
-  const free = (a, b) => used.every(([x, y]) => b <= x || a >= y);
-  for (const [re, pick] of forms) {
-    for (const g of src.matchAll(re)) {
-      const a = g.index, b = g.index + g[0].length;
-      const [y, m, d] = pick(g).map((v) => (v === undefined ? null : Number(v)));
-      if (!(m >= 1 && m <= 12 && d >= 1 && d <= 31) || !free(a, b)) continue;
-      used.push([a, b]); found.push({ a, y, m, d });
-    }
-  }
-  found.sort((p, q) => p.a - q.a);
-  let year = null;
-  const dates = found.map(({ y, m, d }) => { if (y) year = y; return `${y || year || '?'}-${pad2(m)}-${pad2(d)}`; });
-  let rest = '', at = 0;
-  for (const [a, b] of [...used].sort((p, q) => p[0] - q[0])) { rest += src.slice(at, a) + ' '; at = b; }
-  return { dates, rest: rest + src.slice(at) };
+  take(/(?<=\d{4})[-./](\d{1,2})[-./](\d{1,2})(?!\d)/g, (g) => [g[1], g[2]]);
+  take(/(?<!\d)(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, (g) => [g[1], g[2]]);
+  take(/(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu, (g) => [g[1], g[2]]);
+  take(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)`, 'gi'), (g) => [monIdx(g[1]), g[2]]);
+  take(new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b`, 'gi'), (g) => [monIdx(g[2]), g[1]]);
+  return { dates: found.sort((p, q) => p.at - q.at).map((x) => x.v), rest: s };
 }
 /** 옮긴 줄: 줄 수가 같고, 숫자가 원문과 같아야 한다(바뀌면 거절). 양쪽에서 날짜를 읽을 수 있으면 해 · 달 · 날까지 같아야 한다. */
 export function checkBriefEditOutput(out, edits) {
@@ -374,7 +357,7 @@ export function checkBriefEditOutput(out, edits) {
   return edits.map((e, i) => {
     const ko = typeof out.texts[i] === 'string' ? cleanText(out.texts[i]) : '';
     if (!ko || chars(ko) > MAX_BRIEF_LINE * 2) throw fault('BRIEF_BAD_OUTPUT');
-    // 양쪽에서 날짜를 읽었으면 날짜 목록(해 · 달 · 날)이 그대로 같아야 하고(빠짐 · 더함 · 해 바뀜 · 달 · 날 바뀜 모두 거절), 남은 숫자를 맞댄다.
+    // 양쪽에서 날짜를 읽었으면 달 · 날 목록이 그대로 같아야 하고(빠짐 · 더함 · 달 · 날 바뀜 거절), 해를 포함한 남은 숫자를 맞댄다.
     // 한쪽만 날짜를 읽었으면(꼴이 달라) 날짜를 빼지 않고 숫자 전체를 맞댄다. 걸리면 학생에게 다시 쓰게 한다(지나치게 막는 쪽).
     const pa = dateParts(e.text), pb = dateParts(ko), both = pa.dates.length > 0 && pb.dates.length > 0;
     if (both && [...pa.dates].sort().join(',') !== [...pb.dates].sort().join(',')) throw fault('BRIEF_NUMBERS_CHANGED');

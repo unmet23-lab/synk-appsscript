@@ -171,14 +171,15 @@ test('고친 줄 옮기기: 요청 꼴과 옮긴 줄의 숫자를 본다', () =>
   assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일까지'] }, en.edits)[0].text_ko, '2027년 3월 7일까지');
   const en2 = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'by March 7' }] });
   assert.equal(checkBriefEditOutput({ texts: ['3월 7일까지'] }, en2.edits).length, 1);
-  // 두 날짜의 해를 서로 바꾸거나, 한 날짜를 빼면 거절한다.
-  const years = validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: '2027 оны 3-р сарын 7 болон 2028 оны 7-р сарын 3' }] });
-  assert.throws(() => checkBriefEditOutput({ texts: ['2028년 3월 7일과 2027년 7월 3일'] }, years.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
-  assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일과 2028년 7월 3일'] }, years.edits).length, 1);
+  // 날짜 하나를 빼면 거절한다. 해는 남은 숫자로 맞대고(어느 날짜의 해인지는 모델 검사), 금액을 해로 읽지 않는다.
   assert.throws(() => checkBriefEditOutput({ texts: ['2027년 7월 3일'] }, two.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
-  const enYear = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'March 7, 2027 and 3 July 2028' }] });
-  assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일과 2028년 7월 3일'] }, enYear.edits).length, 1);
-  assert.throws(() => checkBriefEditOutput({ texts: ['2028년 3월 7일과 2027년 7월 3일'] }, enYear.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
+  const years = validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: '2027 оны 3-р сарын 7 болон 2028 оны 7-р сарын 3' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일과 2028년 7월 3일'] }, years.edits).length, 1);
+  assert.throws(() => checkBriefEditOutput({ texts: ['2027년 3월 7일과 2029년 7월 3일'] }, years.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
+  const range = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'The program runs from March 7 to July 3, 2027.' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['프로그램은 2027년 3월 7일부터 7월 3일까지 진행됩니다.'] }, range.edits).length, 1);
+  const money = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'By March 7, 2000 won must be paid.' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['3월 7일까지 2000원을 내야 합니다.'] }, money.edits).length, 1);
   assert.throws(() => checkBriefEditOutput({ texts: [] }, r.edits), { code: 'BRIEF_BAD_OUTPUT' });
   assert.throws(() => validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [] }), { code: 'BRIEF_BAD_REQUEST' });
   assert.throws(() => validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'x', text_ko: '가짜' }] }), { code: 'BRIEF_BAD_REQUEST' });
@@ -268,8 +269,9 @@ test('위험 낱말: 직접적인 영어 위기 표현', () => {
 
 test('위험 낱말 관문 잣대: 언어마다 직접 알리는 문장은 잡고, 흔한 일상 말은 잡지 않는다', () => {
   for (const t of ['남자친구가 저를 때렸어요', '맞아서 병원에 갔어요', '죽고 싶어요', '살려주세요', 'He said he will kill me', 'I was raped', 'Намайг зодлоо', 'намайг ална гэсэн', 'Амиа хорломоор байна']) assert.equal(looksUrgent(t), true, t);
-  for (const t of ['경험을 살려서 지원하고 싶어요', '예방주사 맞았어요', 'I like grape juice', 'Please help me with the form', 'Санхүүгийн дарамт их байна', 'My landlord hit me with a late fee.', 'The school hit me with a surprise fee', '정답 맞았어요']) assert.equal(looksUrgent(t), false, t);
-  for (const t of ['집에서 아빠한테 맞았어요.', '남자친구에게 맞고 있어요', 'He hit me with a belt', 'My partner hit me last night.']) assert.equal(looksUrgent(t), true, t);
+  for (const t of ['경험을 살려서 지원하고 싶어요', '예방주사 맞았어요', 'I like grape juice', 'Please help me with the form', 'Санхүүгийн дарамт их байна', '정답 맞았어요']) assert.equal(looksUrgent(t), false, t);
+  // 낱말 목록은 모델이 못 볼 때의 넓은 안전망이다: 놓치지 않는 쪽으로 둔다(「hit me with a late fee」는 한 번 더 뜬다 — 받아들인 거짓 양성).
+  for (const t of ['집에서 아빠한테 맞았어요.', '남자친구에게 맞고 있어요', 'He hit me with a belt', 'My partner hit me last night.', 'My dad hit me with a belt because rent was overdue.']) assert.equal(looksUrgent(t), true, t);
 });
 
 test('금액: 「82만 500원」은 한 수로 읽어 「82만 원」을 근거로 치지 않는다', () => {

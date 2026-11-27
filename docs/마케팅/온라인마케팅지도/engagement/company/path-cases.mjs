@@ -241,9 +241,10 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         const id = randomUUID(), body = newBody(req);
         row = { id, synkUserId: identity.synkUserId, kind: req.kind, status: 'new', assigneeId: defaultAssignee(), revision: 1, lastStudentCheckAt: at,
           urgent: false, urgentAt: null, createdAt: at, updatedAt: at, closedAt: null, retentionNoticeAt: null, hidden: false };
-        if (req.kind === 'urgent' || (body.note && looksUrgent(body.note))) { const raised = raiseUrgent(row, at); row = raised.row; urgent = { target: raised.target }; }
+        // 메모의 위험은 번역 때 모델이 뜻으로 본다(judge). 모델을 부를 수 없으면 지금 위험 낱말로 본다.
+        if (req.kind === 'urgent' || (body.note && !modelJudges() && looksUrgent(body.note))) { const raised = raiseUrgent(row, at); row = raised.row; urgent = { target: raised.target }; }
         row = save(row, body);
-        if (body.note) translate.push({ field: 'note' });
+        if (body.note) translate.push({ field: 'note', judge: true });
         if (body.last) translate.push({ field: 'last' });
       }
       if (req.mode === 'handoff') store.put(K.nonces, req.ticket.nonce, { nonce: req.ticket.nonce, exp: req.ticket.exp, usedAt: at });
@@ -278,14 +279,14 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       if (!open(current)) throw fail(409, 'CASE_CLOSED', '끝난 상담이에요. 다시 연결하면 새 상담이 열려요.');
       created = addStudentMessage(body, text, requestId, at);
       let next = touch({ ...current, status: current.status === 'answered' ? 'reviewing' : current.status, revision: current.revision + 1, updatedAt: at }, at);
-      // 열린 건에 쓴 글에 위험 낱말이 보이면 급함 표시를 올리고 바로 알린다.
-      if (looksUrgent(text)) { const raised = raiseUrgent(next, at); next = raised.row; urgentTarget = raised.target; }
+      // 열린 건에 쓴 글의 위험은 번역 때 모델이 본다. 모델을 부를 수 없으면 지금 위험 낱말로 보고 급함 표시를 올린다.
+      if (!modelJudges() && looksUrgent(text)) { const raised = raiseUrgent(next, at); next = raised.row; urgentTarget = raised.target; }
       return save(next, body);
     });
     if (created) {
       if (urgentTarget !== undefined) { try { onUrgent(row, urgentTarget); } catch { /* 알림 줄은 저장돼 있다 */ } }
       notify([assigneeOf(row)]);
-      queueTranslation(row.id, { messageId: created.id });
+      queueTranslation(row.id, { messageId: created.id, judge: true });
     }
     return { ok: true, case: studentView(row) };
   }
@@ -324,10 +325,13 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   // 지운 뒤 WAL 파일을 비운다(secure_delete는 본 파일만 덮는다). 다른 읽기가 붙잡고 있어 못 비우면 정리(maintain) 때 다시 한다.
   let walPending = true; // 시작한 뒤 첫 보관 정리에서 한 번 자른다(앞 실행이 지운 뒤 자르기 전에 멈췄을 수 있다)
+  let truncatedAt = null; // 마지막으로 WAL을 다 자른 때. 그 뒤에 지운 건만 정리 대기다(건별 purge 상태).
   function truncateWal() {
     // 다른 읽기가 붙잡고 있으면 기다리지 않고(busy_timeout 0) 다음 보관 정리 때 다시 한다 — 회사 서버를 막지 않는다.
+    const startedAt = now();
     try { store.db.exec('PRAGMA busy_timeout=0'); const r = store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get(); walPending = Boolean(r && r.busy); } catch { walPending = true; }
     finally { try { store.db.exec('PRAGMA busy_timeout=5000'); } catch { /* 저장소가 닫혔다 */ } }
+    if (!walPending) truncatedAt = startedAt;
     return !walPending;
   }
 
@@ -472,7 +476,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     const who = access(actor);
     if (who.role !== 'owner') throw fail(403, 'CASE_FORBIDDEN', '회사 주인만 지울 수 있어요.');
     // 다시 부르면 WAL 정리가 끝났는지(purge: done) 알려 준다.
-    if (typeof id === 'string' && store.get(K.tombstones, id.toLowerCase()) && !store.get(K.cases, id.toLowerCase())) return { erased: { id: id.toLowerCase(), repeated: true, purge: walPending ? 'pending' : 'done' } };
+    const tomb = typeof id === 'string' ? store.get(K.tombstones, id.toLowerCase()) : null;
+    if (tomb && !store.get(K.cases, id.toLowerCase())) return { erased: { id: id.toLowerCase(), repeated: true, purge: truncatedAt && truncatedAt >= tomb.erasedAt ? 'done' : 'pending' } };
     const row = staffCase(who, id); checkRevision(row, input);
     const match = typeof input.token === 'string' && /^(\d{13})\.[0-9a-f]{64}$/.exec(input.token);
     if (!match || Number(match[1]) <= nowMs() || !same(confirmation(who.user.id, row, Number(match[1])), input.token)) throw fail(409, 'CASE_ERASE_CONFIRM', '지우기 확인 시간이 지났거나 확인한 내용과 달라요. 「지우기 전에 확인」을 다시 눌러 주세요.');
@@ -522,6 +527,18 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   const translationQueue = [];
   let translating = null, stopped = false;
   const livenessAbort = new AbortController();
+  const modelJudges = () => !stopped && Boolean(translator?.configured?.());
+  // 모델 판정을 받지 못한 글(부르기 실패 · 하루 횟수 · 멈춤)은 위험 낱말로 보고 급함을 올린다(넓은 안전망).
+  function judgeFallback(caseId, source) { if (looksUrgent(source)) escalate(caseId); }
+  function escalate(caseId) {
+    let target, row;
+    store.transaction(() => {
+      const latest = store.get(K.cases, caseId); if (!latest || !open(latest)) return;
+      const at = now(), raised = raiseUrgent({ ...latest, revision: latest.revision + 1, updatedAt: at }, at);
+      row = save(raised.row, bodyOf(latest), { allowOver: true }); target = raised.target;
+    });
+    if (row) { try { onUrgent(row, target); } catch { /* 알림 줄은 저장돼 있다 */ } notify([assigneeOf(row)]); }
+  }
   function queueTranslation(caseId, job) {
     if (stopped || !translator?.configured?.()) return;
     translationQueue.push({ caseId, ...job });
@@ -532,12 +549,20 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       const job = translationQueue.shift();
       try {
         const row = store.get(K.cases, job.caseId); if (!row) continue;
-        const body = bodyOf(row); if (body.lang === 'ko') continue;
+        const body = bodyOf(row);
+        if (body.lang === 'ko' && !job.judge) continue;
         const message = job.messageId ? body.messages.find(m => m.id === job.messageId) : null;
         const source = message ? message.text : body[job.field];
         if (!source) continue;
-        const out = await translator.translate([source], { to: 'ko', from: body.lang, signal: livenessAbort.signal });
-        if (!out) continue;
+        let res = null;
+        try { res = await translator.translate([source], { to: 'ko', from: body.lang, signal: livenessAbort.signal, judge: Boolean(job.judge) }); } catch { res = null; }
+        const out = Array.isArray(res) ? res : res?.translations || null;
+        if (job.judge) {
+          const said = Array.isArray(res?.danger) ? res.danger[0] : null;
+          if (said === true) escalate(job.caseId);
+          else if (said !== false) judgeFallback(job.caseId, source);
+        }
+        if (!out || body.lang === 'ko') continue;
         store.transaction(() => {
           const latest = store.get(K.cases, job.caseId); if (!latest) return;
           const next = bodyOf(latest), target = job.messageId ? next.messages.find(m => m.id === job.messageId) : null;
@@ -615,7 +640,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         if (stopped) return { stopped: true, asked: ids.length }; // 다음 시작 때 다시 묻는다
         return failKeep(i);
       }
-      if (!plain(data?.results)) return failKeep(i);
+      if (!plain(data?.results)) return failKeep(i + L.livenessBatch); // 꼴이 틀린 답을 주는 묶음은 다음 바퀴로 미루고 남은 계정부터 묻는다
       for (const id of batch) if (['present', 'leaving', 'gone'].includes(data.results[id])) results[id] = data.results[id];
     }
     const gone = ids.filter(id => results[id] === 'gone');
@@ -651,7 +676,12 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     maintain, liveness, roleOf: user => roleOf(live(user?.id)),
     waitForIdle: async () => { while (translating) await translating; await livenessRun; },
     // 서버를 멈출 때: 남은 번역은 버리고(원문은 저장돼 있다) 지금 하나와 계정 정리만 기다린다.
-    stop: async () => { stopped = true; translationQueue.length = 0; livenessAbort.abort(); await translating; await livenessRun; },
+    stop: async () => {
+      stopped = true;
+      // 아직 모델이 보지 못한 학생 글은 멈추기 전에 위험 낱말로 본다.
+      for (const job of translationQueue.splice(0)) if (job.judge) { try { const row = store.get(K.cases, job.caseId); const body = row && bodyOf(row); const m = job.messageId ? body?.messages.find(x => x.id === job.messageId) : null; const source = m ? m.text : body?.[job.field]; if (source) judgeFallback(job.caseId, source); } catch { /* 멈추는 중 */ } }
+      livenessAbort.abort(); await translating; await livenessRun;
+    },
   };
 }
 export const PATH_CASE_NOTE_MAX = MAX_NOTE_CHARS;
