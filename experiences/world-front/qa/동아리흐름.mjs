@@ -1,10 +1,11 @@
 // 동아리장 알림 → 튜터 고르기 → 실력 파악 → 맞춤(club.mjs · world-front-club.mjs, 11-24) 실제 앱 흐름 시험.
 // 로컬 WORLD 리허설 서버(서울행 qa/서버.mjs)에서 손님이 1화 전 내 길에 있는 기록을 심고, 내 길의 동아리장 알림을 눌러
 // 앞면의 처음 만남을 끝까지 간다. 문항 넷은 실제 엔진(「내 위치」 짧은 진단과 같은 고르기 · 세션 · 끝 기록)이 낸다. 운영 계정 · talk는 건드리지 않는다.
-//   node experiences/world-front/qa/동아리흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--튜터 seoha|taeo|yuna] [--못읽음] [--찍기] [--라이브] [--날] [--나중에]
+//   node experiences/world-front/qa/동아리흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--튜터 seoha|taeo|yuna] [--못읽음] [--찍기] [--라이브] [--날] [--나중에] [--다리실패]
 // --라이브: 로컬 서버 대신 synk.im/world 공개본을 손님으로 연다(공개본은 안 바꾼다. GET이 아닌 요청이 나가면 실패).
 // --나중에: 튜터를 고른 뒤 첫 문항에서 「나중에 할게요」로 나갔다가, 맞춤 화면의 작은 얼굴로 다시 들어와 그 튜터부터 잇는다.
 // --날: 처음 만난 날을 앞으로 옮겨 이튿날 복습 알림과 사흘째 내 위치 알림까지 본다.
+// --다리실패: 「맞춤 연습 시작」에서 앞면 다리(world-front-club.mjs의 clubDone)가 던지게 바꿔, 단추가 잠긴 채 남지 않고 대화가 닫혀 맞춤 화면이 서는지 본다(11-27 검수 front-fix3 P2 후속).
 // --못읽음: 한글 「커피」에서 「아직 못 읽어요」 — 문항 없이 한글 길로 끝나는지 본다.
 // 기록: .tmp/world-front-qa/club-<폭>-<언어>/ (찍기와 결과.json)
 import fs from 'node:fs';
@@ -19,8 +20,8 @@ const MAIN = path.join(os.homedir(), 'Documents', 'SYNK-appsscript');
 const require = createRequire(path.join(fs.existsSync(path.join(ROOT, 'node_modules')) ? ROOT : MAIN, 'x.js'));
 const {chromium} = require('playwright');
 const args = process.argv.slice(2), opt = (n, d = null) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; }, has = n => args.includes(n);
-const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), TUTOR = opt('--튜터', 'taeo'), NOREAD = has('--못읽음'), LIVE = has('--라이브'), DAYS = has('--날'), LATER = has('--나중에');
-const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${LIVE ? '라이브-' : ''}club-${W}x${H}-${LANG}${NOREAD ? '-noread' : ''}${LATER ? '-later' : ''}`); fs.mkdirSync(OUT, {recursive: true});
+const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), TUTOR = opt('--튜터', 'taeo'), NOREAD = has('--못읽음'), LIVE = has('--라이브'), DAYS = has('--날'), LATER = has('--나중에'), BRIDGEFAIL = has('--다리실패');
+const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${LIVE ? '라이브-' : ''}club-${W}x${H}-${LANG}${NOREAD ? '-noread' : ''}${LATER ? '-later' : ''}${BRIDGEFAIL ? '-bridgefail' : ''}`); fs.mkdirSync(OUT, {recursive: true});
 const PORT = Number(opt('--포트', String(5100 + Math.floor(Math.random() * 300))));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = [], fail = [];
@@ -40,6 +41,12 @@ if (LIVE) page.on('request', q => { if (!['GET', 'HEAD', 'OPTIONS'].includes(q.m
 page.on('pageerror', e => errors.push('페이지 ' + String(e).slice(0, 300)));
 page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('콘솔 ' + m.text().slice(0, 300)); });
 page.on('response', r => { const u = r.url(); if (r.status() >= 400 && !/\/api\//.test(u)) bad.push(`${r.status()} ${u.replace(base, '')}`); });
+let patched = 0;
+if (BRIDGEFAIL) await context.route(/\/world-front-club\.mjs(\?|$)/, async route => {
+  const r = await route.fetch(), body = await r.text(), head = 'async clubDone({open=true}={}){';
+  if (body.includes(head)) patched++;
+  await route.fulfill({response: r, body: body.replace(head, head + "if(open)throw new Error('다리 실패 시험');")});
+});
 const shot = async name => { if (SHOTS) await page.screenshot({path: path.join(OUT, name + '.png')}); };
 const F = () => page.frames().find(f => f.url().includes('/world-front/'));
 const S = () => page.frames().find(f => f.url().includes('/seoul-arrival/'));
@@ -164,6 +171,19 @@ if (!NOREAD) check(!('cells' in (mark.club || {})) && Array.isArray(mark.club?.r
 // 결과 칸은 「내 위치」 판과 같은 지도 칸(혼자 해냄 · 연습 중 · 아직) — 붉은 칸 없음, 세 칸 수의 합이 칸 수(설계 검토 11-25)
 const grid = await inClub(() => { const r = document.querySelector('.cl-host').shadowRoot.querySelector('.cl-card.res'); return {cells: r.querySelectorAll('.cells i').length, red: r.querySelectorAll('.cells i.next, .cells i.done').length, sum: [...r.querySelectorAll('.mapkey b')].reduce((n, b) => n + Number(b.textContent), 0)}; });
 if (!NOREAD) check(grid.cells === 16 && grid.red === 0 && grid.sum === 16, '결과 칸은 지도 칸 셋 · 세 칸 수의 합', JSON.stringify(grid));
+if (BRIDGEFAIL) {
+  check(patched > 0, '다리 원천에 던지는 줄을 넣음', String(patched));
+  // 두 번 누른다 — 첫 누름이 단추를 잠그고, 다리가 던져도 대화는 닫힌다
+  const twice = await until('「맞춤 연습 시작」 두 번 누름', () => inClub(() => { const b = document.querySelector('.cl-host')?.shadowRoot?.querySelector('.cl-cta'); if (!b || b.disabled) return null; b.click(); b.click(); return true; }));
+  check(!!twice, '「맞춤 연습 시작」을 두 번 누름');
+  await until('다리가 던져도 대화가 닫히고 맞춤 화면', () => F().evaluate(() => !document.querySelector('.cl-host') && !!document.querySelector('.view.home')), 20000);
+  await sleep(1500); await shot('7-다리실패-맞춤');
+  const after = await F().evaluate(() => ({hosts: document.querySelectorAll('.cl-host').length, home: document.querySelectorAll('.view.home').length, stuck: [...document.querySelectorAll('.view.home button')].filter(b => b.disabled).length}));
+  check(after.hosts === 0 && after.home === 1, '대화 판 0 · 맞춤 화면 하나', JSON.stringify(after));
+  const who2 = await F().evaluate(() => document.querySelector('.view.home .who b')?.textContent || '');
+  log.push(`참고 다리 실패 뒤 말하는 사람 ${who2}`);
+  await finish();
+}
 await waitPress('「맞춤 연습 시작」', '.cl-cta');
 await until('맞춤 화면', () => F().evaluate(() => !document.querySelector('.cl-host') && !!document.querySelector('.view.home')), 20000);
 await sleep(2000); await shot('7-맞춤');
