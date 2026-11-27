@@ -4,7 +4,8 @@
 
 <공개본 사본 폴더>에는 지금 공개본의 ai/index.html과 en/ai/index.html이 있어야 한다(솔리오 단락이 들어간 판).
 첫 화면의 제목 · 이끄는 글, 그 아래 세 칸, 증거 칸의 제목 · 글을 바꾸고, 바닥의 방문 집계 한 줄을 뺀다.
-나머지(솔리오 단락 · 강의 방식 · 강사 · 하는 일 · 스크립트)는 공개본 그대로 둔다.
+50분 수업 예시 칸(강의 방식)은 지운다. 나머지(솔리오 단락 · 강사 · 하는 일 · 스크립트)는 공개본 그대로 둔다.
+공유 그림의 ?v= 값은 짓기가 아니라 tools/공개.js 올리기가 바뀐 그림에 맞춰 고친다.
 """
 import os
 import sys
@@ -36,11 +37,11 @@ SWAP = {
         ('<li><b>30개 넘는 일</b><span>사람 없이 제시간에 돕니다</span></li>',
          '<li><b>5천만 원 · 3,000시간</b><span>그만큼의 시행착오를 저희가 먼저 겪었습니다</span></li>'),
         ('<li><b>결과물 하나</b><span>강의가 끝나면 남습니다</span></li>',
-         '<li><b>컴퓨터가 낯설어도</b><span>시간과 돈을 들이지 않고 바로 씁니다</span></li>'),
+         '<li><b>컴퓨터가 낯설어도</b><span>헤매는 데 시간과 돈을 쓰지 않고 바로 씁니다</span></li>'),
         ('<li><b>솔리오</b><span>배운 것을 잇는 앱</span></li>',
-         '<li><b>수업 뒤 2주</b><span>궁금한 것은 메일로 계속 묻습니다</span></li>'),
+         '<li><b>수업 뒤 2주</b><span>궁금한 것을 메일로 답해 드립니다</span></li>'),
         ('<h2 class="e-claim">강사의 회사가<br><mark>지금도 AI로 돕니다.</mark></h2><p class="e-proof">30개 넘는 일이 사람 없이 제시간에 돌고, 20가지 넘는 검사가 실수를 막습니다.</p>',
-         '<h2 class="e-claim">가르치는 방법으로<br><mark>회사가 돌아갑니다.</mark></h2><p class="e-proof">유학 상담과 광고 영상, 매일의 SNS에 AI를 씁니다. 정해진 때에 사람 손 없이 도는 일이 60가지가 넘습니다.</p>'),
+         '<h2 class="e-claim">가르치는 방법으로<br><mark>회사가 돌아갑니다.</mark></h2><p class="e-proof">유학 서류와 광고 영상, 매일의 SNS에 AI를 씁니다. 정해진 때에 사람 손 없이 도는 일이 60가지가 넘습니다.</p>'),
         ('<span class="foot-note">방문 목적과 경로를 익명으로 집계합니다. <a href="/privacy/#visitor-stats">자세히</a></span>', ''),
     ],
     'en': [
@@ -51,11 +52,11 @@ SWAP = {
         ('<li><b>30+ jobs</b><span>run on time without people</span></li>',
          '<li><b>50 million won · 3,000 hours</b><span>of trial and error we went through first</span></li>'),
         ('<li><b>One finished piece</b><span>stays with you after the lecture</span></li>',
-         '<li><b>New to computers?</b><span>Start using it right away, without spending time or money</span></li>'),
+         '<li><b>New to computers?</b><span>Start using AI right away, without losing time or money to trial and error</span></li>'),
         ('<li><b>SOLIO</b><span>the app that carries on what you learned</span></li>',
-         '<li><b>Two weeks after class</b><span>keep asking questions by email</span></li>'),
+         '<li><b>Two weeks of email</b><span>to ask us anything after class</span></li>'),
         ('<h2 class="e-claim">The instructor’s company<br><mark>runs on AI right now.</mark></h2><p class="e-proof">More than 30 jobs run on time without people, and more than 20 kinds of checks catch mistakes.</p>',
-         '<h2 class="e-claim">What we teach<br><mark>runs our company.</mark></h2><p class="e-proof">We use AI for study-abroad counselling, ad films and daily social posts. More than 60 jobs run on schedule without anyone at the keyboard.</p>'),
+         '<h2 class="e-claim">What we teach<br><mark>runs our company.</mark></h2><p class="e-proof">We use AI for study-abroad paperwork, ad films and daily social posts. More than 60 jobs run on schedule without anyone at the keyboard.</p>'),
         ('<span class="foot-note">We anonymously count why and how people visit. <a href="/privacy/#visitor-stats-en">Details</a></span>', ''),
     ],
 }

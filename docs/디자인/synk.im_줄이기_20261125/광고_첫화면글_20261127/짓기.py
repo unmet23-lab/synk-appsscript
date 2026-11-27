@@ -5,7 +5,7 @@
 유호님 11-27 밤(부모 세션이 전함): 「한국 엔터테인먼트 산업 현장에서 10년이라고 바꿔줘. 그 아래 내용들도 이걸로 바꿔줘」.
 「카메라 앞 10년 · 배우」에 기대던 제목, 세 칸, 연출 칸, 쪽 제목과 공유 글을 그 말에 맞춘다. 바닥의 방문 집계 한 줄도 뺀다.
 하늘 판(광고_20261127)이 공개되면 본문 전체가 바뀌므로, 이것은 그 전까지 지금 공개본 위에 얹는 고침이다.
-공유 그림 og/studio-ko.jpg · studio-en.jpg는 후보 첫 화면을 1200×630으로 다시 찍어 바꾼다.
+공유 그림 og/studio-ko.jpg · studio-en.jpg는 후보 첫 화면을 1200×630으로 다시 찍어 바꾼다. ?v= 값은 tools/공개.js 올리기가 고친다.
 """
 import os
 import re
@@ -46,7 +46,7 @@ def nav(s):
 
 
 TITLE = {
-    'ko': ('광고 — 카메라 앞에서 10년, 배우가 AI 모델을 연출합니다 · SYNK', '광고 — 한국 엔터테인먼트 산업 현장에서 10년, AI 모델을 연출합니다 · SYNK'),
+    'ko': ('광고 — 카메라 앞에서 10년, 배우가 AI 모델을 연출합니다 · SYNK', '광고 — 한국 엔터테인먼트 산업 현장 10년의 눈으로 AI 모델을 연출합니다 · SYNK'),
     'en': ('Ads — Ten years on camera, an actor directs AI models · SYNK', 'Ads — Ten years in Korea’s entertainment industry, now directing AI models · SYNK'),
 }
 
