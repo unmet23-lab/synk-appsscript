@@ -20,6 +20,8 @@ const TEACHING_HOST_BUILDS=new Map([
   // 카본 화면 검수(ws-attendance-topik-20261127) A1~A7, talk a5a48776 응답 맞춤, 재검수 r2 · 전체 검수 r3 · Fable 마지막 검수 r4(F1~F4) 고침을 담은 판이다.
   // 운영에 나간 적 없는 앞 판(eaea920e…, 10715f50…, c491b0ea…, e97f9e05…, 3368b2d3…)은 지웠다. 재검수 전이다.
   ['d0e6116a4c1a9de60edb96c341fbaa05e66cd8f3a81a9ed5bbf1ea97f80c08b3','학원 운영 최소판 attendance-topik Fable r4 고침(재검수 전)'],
+  // 학생 관리(11-27): 위 판(출결 · TOPIK Fable r4 고침)에 교사 다리 허용 목록 stay · classBranch만 더해 지은 판. 화면 검수 ws-students-20261127 사슬.
+  ['802cb1517f3b95fc95046630e73ef43bcf24fa1b0ea1d1daa86913b56b866540','학생 관리 ws-students-20261127 (출결 · TOPIK r4 위)'],
 ]);
 function teachingHostBytes(){
   const raw=readFileSync(new URL('./public/teaching-host.js',import.meta.url)),text=raw.toString('latin1');

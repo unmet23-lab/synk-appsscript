@@ -85,6 +85,8 @@ function waViewAllowed(view,section=''){
   }
   if(view==='marketing'&&['mine','team','all','overview','analysis','history','content','channels'].includes(section))return waViewAllowed(section);
   if(['teaching','lectures','path'].includes(view))return waFeature(view);
+  // 학생 관리는 「내 수업」과 같은 SYNK ID 로그인과 반 배정으로 자료를 읽는다. 메뉴도 LAB 수업을 쓰는 직원에게만 보인다.
+  if(view==='students')return waFeature('teaching');
   if(['content','studio'].includes(view))return waFeature('production');
   if(['social','marketing','mine','team','all','overview','analysis','history','summary','channels','collection'].includes(view))return waFeature('social');
   if(view==='admin'||view==='tips')return isAdmin()&&!(typeof isDemoMode==='function'&&isDemoMode());

@@ -4,8 +4,8 @@
 const workspaceModule={userId:null,host:null,frame:null,ready:false,loadTimer:null,loadGeneration:0,loadDelayed:false,loadRetries:0,loadStartedAt:null,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,messengerView:'list',voice:null,voiceTimer:null,voiceProbe:0};
 const workspaceViewNames={overview:'마케팅 현황',analysis:'성과 분석',history:'전체 추이',content:'콘텐츠 기획'};
 // 허용 화면 목록: 사무실 · 메신저 · 만들기 · SNS · 사람 · LAB 수업 · PATH 상담 · SHIFT 강의.
-const workspacePrimaryTabs=[['home','오늘','sun'],['messenger','메신저','chat'],['workroom','작업실','edit'],['social','SNS','megaphone'],['members','사람·조직','users'],['teaching','LAB 수업','book'],['path','PATH 업무','compass'],['lectures','SHIFT 강의','presentation']];
-const workspaceNavDisplayLabel=(id,label)=>({home:'사무실',workroom:'만들기',members:'사람',teaching:'LAB 한국어 수업',path:'PATH 유학 · 정착 상담',lectures:'SHIFT AI 강의',admin:'관리자'})[id]||label;
+const workspacePrimaryTabs=[['home','오늘','sun'],['messenger','메신저','chat'],['workroom','작업실','edit'],['social','SNS','megaphone'],['members','사람·조직','users'],['teaching','LAB 수업','book'],['path','PATH 업무','compass'],['students','학생 관리','users'],['lectures','SHIFT 강의','presentation']];
+const workspaceNavDisplayLabel=(id,label)=>({home:'사무실',workroom:'만들기',members:'사람',teaching:'LAB 한국어 수업',path:'PATH 유학 · 정착 상담',students:'학생 관리',lectures:'SHIFT AI 강의',admin:'관리자'})[id]||label;
 // 「내 차례」 받은편지함(2026-11-24 시안 F): ?tab=home&section=inbox&room=… — 방은 이 여섯만 받는다.
 const WORKSPACE_ROOM_IDS=['lab','shift','pulse','path','desk','lounge'];
 const workspaceInbox={open:false,room:'',sel:'',detail:false,fromOffice:false,noteFor:'',chatConfirm:'',skipped:[]};
@@ -93,6 +93,7 @@ function workspaceSideNav(demoMode=false){
     has('members')?row('사람','people','tab','data-tab="members"',{href:'/?tab=members',current:view==='members'}):'',
   ].join('');
   const companyRows=[
+    has('students')?row('학생 관리','people','tab','data-tab="students"',{href:'/?tab=students',current:view==='students'}):'',
     has('teaching')?row('LAB 한국어 수업','','tab','data-tab="teaching"',{href:'/?tab=teaching',current:view==='teaching',mark:workspaceCompanyMark('LAB')}):'',
     has('lectures')?row('SHIFT AI 강의','','tab','data-tab="lectures"',{href:'/?tab=lectures',current:view==='lectures',mark:workspaceCompanyMark('SHIFT')}):'',
     has('path')?row('PATH 유학 · 정착 상담','','tab','data-tab="path"',{href:'/?tab=path',current:view==='path',mark:workspaceCompanyMark('PATH')}):'',

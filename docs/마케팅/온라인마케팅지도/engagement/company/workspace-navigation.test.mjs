@@ -300,7 +300,7 @@ test('resize before the app state script loads does not break workspace initiali
 
 test('people remains available within the server member scope for every signed-in role',()=>{
   for(const [role,count] of [['admin',4],['manager',1],['member',1],['viewer',1]]){
-    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching']);
+    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching','students']);
     assert.equal(f.run('workspaceUtilityTabs().length'),count);
     f.run("selectWorkspaceView('members');syncWorkspaceLocation()");
     assert.equal(f.state.tab,'members');assert.equal(f.location.searchParams.get('tab'),'members');
@@ -321,7 +321,7 @@ test('the shared posts screen opens only for admins and keeps its address',()=>{
 
 test('server computed admin access includes all company tabs',()=>{
   const f=fixture('admin');f.state.user.workspaceAccess=workspaceAccess({...f.state.user,active:true});
-  assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching','path','lectures']);
+  assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching','path','students','lectures']);
   assert.deepEqual(Array.from(f.run('workspaceUtilityTabs().map(row=>row[0])')),['handbook','admin','tips','settings']);
 });
 
