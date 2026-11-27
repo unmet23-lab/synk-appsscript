@@ -3,6 +3,7 @@ import { createDocumentSync } from '../synk-account/src/document-sync.mjs';
 import { createPathDocument, validatePathDocument, validateSavedJob, jobSourceId, removeSavedJob } from './document.mjs';
 import { normalizeState, SESSION_KEY as LEGACY_STATE_SESSION_KEY } from './state.mjs';
 import { validateStudyDocument, STUDY_RESOURCE } from './study-shape.mjs';
+import { WORKSPACE_ORIGIN, WORKSPACE_STATUS_PATH } from './ask-flow.mjs';
 
 /**
  * PATH account/session controller. Owner: Claude (frontend). No DOM, no UI HTML.
@@ -48,7 +49,9 @@ import { validateStudyDocument, STUDY_RESOURCE } from './study-shape.mjs';
  *     chooseRecovery(id)-> Promise<boolean>; document-sync.selectLocalDraft
  *     clearGuest()      -> boolean; explicit clear: persists a verified empty document under the new key as a tombstone (legacy raw untouched, never revived)
  *     studyRequest(operation, values) -> Promise<reply>; 같은 로그인으로 유학 준비 문서(path-study)를 요청한다(study-account.mjs가 쓴다)
- *     translate(body)   -> Promise<reply>; 서류 번역 초안(translate · check). 계정 엔진의 requestTranslate(125초 기다림)를 쓴다
+ *     translate(body)   -> Promise<reply>; PATH AI 요청(translate · check · doc_check · ask · handoff_brief · brief_edit). 계정 엔진의 requestTranslate를 쓴다
+ *     workspace(method, path, body?) -> Promise<reply>; Workspace 「PATH 상담」 학생 경로(/api/path-student/cases…). 같은 로그인 토큰을 Bearer로, 계정 엔진의 requestWorkspace를 쓴다
+ *     workspaceStatus() -> Promise<boolean>; Workspace의 사람 연결 스위치(GET /api/path-student/status { open }). 로그인 없이, 못 받으면 false
  *     dispose()
  *   No resolveLocal / forced overwrite / account deletion is exposed.
  */
@@ -361,6 +364,8 @@ export function createPathSession(options = {}) {
         // 같은 로그인 세션으로 여는 유학 준비 문서. 앱 검사기는 동기화 엔진의 빈 상태(동의 없음)도 받는다.
         extraResources: { [STUDY_RESOURCE]: raw => (raw == null ? null : validateStudyDocument(raw, { allowEmpty: true })) },
         onStatus: handleAccountStatus,
+        // Workspace 「PATH 상담」 학생 경로의 출처. 계정 엔진은 이 출처와 정한 경로 꼴만 부른다.
+        workspaceOrigin: WORKSPACE_ORIGIN,
         fetcher, storage, configUrl,
         ...accountOptions,
       });
@@ -636,10 +641,31 @@ export function createPathSession(options = {}) {
     return acc.requestTranslate(body);
   }
 
+  /** Workspace 「PATH 상담」 학생 경로(건 만들기 · 내 건 · 글 더하기 · 읽음 · 지우기). 토큰은 계정 엔진 안에만 있다. */
+  async function workspace(method, path, body) {
+    if (disposed) throw fault('PATH_SESSION_DISPOSED', 'disposed');
+    const acc = account || await startAccount();
+    if (!acc || typeof acc.requestWorkspace !== 'function') throw fault('WORKSPACE_UNSUPPORTED', '사람 연결을 쓸 수 없어요.');
+    return acc.requestWorkspace(method, path, body);
+  }
+  /** Workspace의 사람 연결 스위치. 로그인 없이 { open }만 묻는다. 못 받거나 꼴이 다르면 닫힌 것으로 본다. */
+  async function workspaceStatus() {
+    if (disposed || typeof fetcher !== 'function') return false;
+    const abort = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = abort ? setTimeout(() => abort.abort(), 8000) : null;
+    try {
+      const response = await fetcher(WORKSPACE_ORIGIN + WORKSPACE_STATUS_PATH, { method: 'GET', credentials: 'omit', cache: 'no-store', redirect: 'error', ...(abort ? { signal: abort.signal } : {}) });
+      if (!response?.ok) return false;
+      const data = await response.json();
+      return data !== null && typeof data === 'object' && data.open === true;
+    } catch { return false; }
+    finally { if (timer) clearTimeout(timer); }
+  }
+
   return Object.freeze({
     document: () => clone(currentDoc()),
     status: snapshot,
-    init, signIn, signOut, updateState, saveJob, removeJob, importGuest, studyRequest, translate,
+    init, signIn, signOut, updateState, saveJob, removeJob, importGuest, studyRequest, translate, workspace, workspaceStatus,
     exportGuest, exportCurrent, confirmBackup, exportRemote, exportRecovery,
     retry, useRemote, chooseRecovery, clearGuest, dispose,
   });

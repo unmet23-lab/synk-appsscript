@@ -54,6 +54,7 @@ COPY ["tools/company-messenger/voice-service.mjs","tools/company-messenger/voice
 COPY ["atlas/engine.js","atlas/trail.js","atlas/personalization.js","atlas/domain.js","atlas/temper-outcomes.js","atlas/interpretation.js","atlas/work.js","/workspace/atlas/"]
 COPY ["atlas/ask.js","/workspace/atlas/ask.js"]
 COPY ["experiences/shift-workbench/model.mjs","experiences/shift-workbench/storage-upgrade.mjs","/workspace/experiences/shift-workbench/"]
+COPY ["experiences/path-app/ask-shape.mjs","experiences/path-app/translate-shape.mjs","experiences/path-app/study-shape.mjs","/workspace/experiences/path-app/"]
 COPY ["experiences/ai-market/index.html","experiences/ai-market/app.mjs","experiences/ai-market/style.css","/workspace/experiences/ai-market/"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/ai-market-store.mjs","docs/마케팅/온라인마케팅지도/engagement/company/ai-market-routes.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/"]
 COPY ["experiences/teacher-world/index.html","experiences/teacher-world/app.mjs","experiences/teacher-world/personalization-ui.mjs","experiences/teacher-world/style.css","experiences/teacher-world/personalization.css","/workspace/experiences/teacher-world/"]

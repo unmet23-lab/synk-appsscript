@@ -1,0 +1,36 @@
+/* PATH 상담함 — 문의 접수(website-inquiries.css)와 같은 제작 도구 A 「목록 + 상세」. 공통 틀(mt-*)은 maker-tools.css가 그린다. 색은 공통 변수만 쓴다. */
+.pc-promise{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:var(--mt-surface,#f3f1ec);font-weight:600;line-height:1.5}
+.pc-off{margin:0 0 14px}
+.pc-kinds{flex-wrap:wrap}
+.pc-assign{display:flex;align-items:center;gap:8px;margin-top:8px;max-width:320px}
+.pc-assign select{flex:1;min-width:0}
+.pc-brief h4{margin:14px 0 4px;font-size:.86rem}
+.pc-brief h4:first-child{margin-top:0}
+.pc-text{margin:0 0 6px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+.pc-original{opacity:.78}
+.pc-label{display:block;font-size:.78rem;font-weight:600;opacity:.7;margin-bottom:2px}
+.pc-lines{margin:0;padding-left:18px;line-height:1.55}
+.pc-tasks,.pc-edits,.pc-messages,.pc-conversation{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.pc-task{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-start;justify-content:space-between;padding:10px 12px;border:1px solid var(--mt-line,#e4e1da);border-radius:12px}
+.pc-task.is-done{opacity:.68}
+.pc-task-main{display:grid;gap:2px;min-width:0;flex:1 1 240px}
+.pc-task-main strong{overflow-wrap:anywhere}
+.pc-task-main small{opacity:.75;overflow-wrap:anywhere}
+.pc-task-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pc-task-actions input{min-width:0;width:min(220px,100%)}
+.pc-task-add{display:flex;gap:6px;margin-top:10px}
+.pc-task-add input{flex:1;min-width:0}
+.pc-done-note{margin:10px 0 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pc-edits li{padding:10px 12px;border-radius:12px;background:var(--mt-surface,#f3f1ec)}
+.pc-msg{padding:10px 12px;border-radius:12px;border:1px solid var(--mt-line,#e4e1da)}
+.pc-msg.is-staff{background:var(--mt-surface,#f3f1ec)}
+.pc-who{display:block;font-size:.78rem;opacity:.7;margin-bottom:4px}
+.pc-reply{display:grid;gap:8px;margin-top:12px}
+.pc-reply textarea{width:100%;box-sizing:border-box}
+.pc-conversation li{padding:8px 10px;border-radius:10px}
+.pc-conversation li.is-ai{background:var(--mt-surface,#f3f1ec)}
+.pc-erase{display:grid;gap:6px;margin-top:10px;padding:12px;border-radius:12px;border:1px solid currentColor}
+@media (max-width:640px){
+  .pc-task-actions input{width:100%}
+  .pc-assign{max-width:none}
+}

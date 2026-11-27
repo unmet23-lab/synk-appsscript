@@ -24,6 +24,7 @@ import * as translateShape from './translate-shape.mjs';
 import * as docCheck from './doc-check.mjs';
 import * as docCheckUi from './doc-check-ui.mjs';
 import * as interviewShape from './interview-shape.mjs';
+import { createAskController } from './ask-app.mjs';
 
 // The real app runs unchanged apart from its static ESM imports. This small DOM
 // provides only element parsing, selectors, live input values and event bubbling;
@@ -131,7 +132,7 @@ function fixture() {
   }, '2026-11-09T10:01:00.000Z');
 }
 
-async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null, studyGate = null, emptyAccount = false } = {}) {
+async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null, studyGate = null, emptyAccount = false, workspace = null } = {}) {
   const initial = raw ?? JSON.stringify(legacy ? fixture() : { ...createPathDocument('ko'), state: fixture() });
   const originalKey = legacy ? LEGACY_KEY : GUEST_KEY;
   const records = new Map([[originalKey, initial]]);
@@ -149,6 +150,8 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
     removeItem(key) { records.delete(key); },
   };
   const fetcher = async input => {
+    // Workspace 「사람 연결」 스위치(로그인 없는 GET status). 시험이 workspace를 주지 않으면 닫힌 것으로 답한다.
+    if (String(input).startsWith('https://workspace.synk.im/')) return new Response(JSON.stringify({ open: workspace?.open === true }), { headers: { 'content-type': 'application/json' } });
     assert.equal(new URL(input, 'https://synk.im/path/app/').pathname, '/path/app/config.json', 'unconfigured preview never contacts a remote API');
     return new Response(JSON.stringify({ version: 1 }), { headers: { 'content-type': 'application/json' } });
   };
@@ -191,6 +194,7 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
     },
     signOut: async () => { providerSignOuts++; },
     requestTranslate: async body => { if (!translateServer) throw Object.assign(new Error('off'), { code: 'PATH_TRANSLATE_UNAVAILABLE' }); return translateServer(body, owner); },
+    requestWorkspace: async (method, path, body) => { if (!workspace?.handler) throw Object.assign(new Error('off'), { code: 'WORKSPACE_UNAVAILABLE' }); return workspace.handler(method, path, body, owner); },
     dispose() {},
   }) : undefined;
   const root = new Element('div', { id: 'app' });
@@ -222,6 +226,7 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
     validateTranslateReply: translateShape.validateTranslateReply, validateCheckReply: translateShape.validateCheckReply, draftRows: translateShape.draftRows,
     TRANSLATE_CONSENT_VERSION: translateShape.TRANSLATE_CONSENT_VERSION, crypto: globalThis.crypto,
     docCheckItems: docCheck.docCheckItems, docCheckRows: docCheck.docCheckRows, validateDocCheckRequest: docCheck.validateDocCheckRequest, validateDocCheckReply: docCheck.validateDocCheckReply, DOC_CHECK_CONSENT_VERSION: docCheck.DOC_CHECK_CONSENT_VERSION,
+    createAskController,
     renderDocCheck: docCheckUi.renderDocCheck, dcCanSend: docCheckUi.dcCanSend, dcMarkKey: docCheckUi.dcMarkKey, DC_ERROR_TEXT: docCheckUi.DC_ERROR_TEXT, INTERVIEW_PROGRAMS: interviewShape.INTERVIEW_PROGRAMS,
     location: { assign: to => { visits.push(to); } },
     createPathSession: options => {
@@ -1419,4 +1424,132 @@ test('면접 연습: 요강에 면접이 있는 과정에만 상자가 있고, �
   app.click('nav', '[data-page="path"]');
   assert.match(app.root.querySelector('h1').textContent, /전북대학교/);
   assert.equal(app.root.querySelector('button[data-action="interviewOpen"]'), null);
+});
+
+/* ── 물어보기 · 사람 연결(AI상담_설계.md) ── 모델 · Workspace 없이 가짜 답으로 화면 흐름을 본다. 대화는 지어낸 것이다. */
+const hasMail = (app) => app.root.querySelectorAll('a').some(a => a.getAttribute('href') === 'mailto:hello@synk.im');
+const settleAsk = async () => { for (let i = 0; i < 12; i++) await new Promise(resolve => setImmediate(resolve)); };
+const ASK_SIG = 'C'.repeat(43);
+const askTurn = (o = {}) => ({ role: 'ai', text: '원광대 학부는 한국어 성적 조건을 요강에서 확인할 수 있어요.', sig: ASK_SIG, at: 1764200000000, type: 'fact', found: true, ask_where: null, rechecking: false, kind: 'none', ...o });
+const askDone = (o = {}, extra = {}) => { const turn = askTurn(o); return { ok: true, scope: 'synk-path', action: 'ask', status: 'done', turn, cites: [], kind: turn.kind, remaining: 19, ...extra }; };
+const BRIEF_BODY = { situation: '몽골에서 고등학교를 마쳤고 내년 3월 입학을 준비해요.', wants: '원서를 함께 준비하고 싶어요.', ai_done: [{ text: '한국어 조건을 안내했어요.', cites: [] }], open: ['추천서를 누가 쓰는지'], tasks: [{ do: '원서를 함께 확인하기', why: '학생이 실제로 지원하려 해요.', by: null }] };
+const ASK_TICKET = { sub: '0b8f5c2e-1a3d-4e6f-9b7c-5d4e3f2a1b0c', kind: 'act', exp: Date.now() + 600000, nonce: '6f1c3a52-9d1e-4c4b-8a77-2f0d1b3c4e5f', brief_hash: 'd'.repeat(64), sig: ASK_SIG };
+const askBrief = () => ({ ok: true, scope: 'synk-path', action: 'handoff_brief', status: 'done', brief: { kind: 'act', student: BRIEF_BODY, ko: BRIEF_BODY, deadline: null }, ticket: { ...ASK_TICKET } });
+async function openAsk(t, options = {}) { const app = await boot(t, { signedIn: true, ...options }); app.click('askOpen'); await settleAsk(); return app; }
+function startAsk(app) {
+  const adult = app.root.querySelector('input[data-action="askAge"][value="adult"]');
+  adult.checked = true; app.event('change', adult);
+  const agree = app.root.querySelector('#ask-agree');
+  agree.checked = true; app.event('change', agree);
+  app.click('askStart');
+}
+async function askQuestion(app, text) {
+  const area = app.root.querySelector('#ask-text');
+  area.value = text; app.event('input', area);
+  app.click('askSend'); await settleAsk();
+}
+
+test('물어보기: 손님도 머리 막대에서 열고 「위험해요」 고정 카드를 본다(모델을 부르지 않는다)', async t => {
+  const calls = [];
+  const app = await boot(t, { translateServer: body => { calls.push(body); return {}; } });
+  app.click('askOpen');
+  assert.ok(app.root.querySelector('#ask-title'));
+  assert.equal(app.root.querySelector('#ask-text'), null, '로그인 전에는 대화 칸이 없다');
+  app.click('askUrgent');
+  assert.ok(app.root.querySelector('#ask-urgent'));
+  for (const n of ['102', '103', '112', '119', '1345', '1366', '109']) assert.ok(app.root.querySelector(`a[href="tel:${n}"]`), n);
+  assert.equal(app.root.querySelector('[data-action="urgentSend"]'), null);
+  assert.ok(hasMail(app));
+  assert.equal(calls.length, 0);
+});
+
+test('물어보기: 18세 이상 동의 뒤 묻고, 탭에는 가린 글과 받은 서명 차례만 두며, 다음 요청에 그 차례를 그대로 싣는다', async t => {
+  const bodies = [];
+  const app = await openAsk(t, { translateServer: body => { bodies.push(structuredClone(body)); return askDone({ text: `답 ${bodies.length}` }); } });
+  startAsk(app);
+  await askQuestion(app, '제 여권은 AB1234567 이에요. 원광대 조건이 뭐예요?');
+  assert.equal(bodies[0].action, 'ask'); assert.equal(bodies[0].age, 'adult');
+  assert.doesNotMatch(bodies[0].question, /AB1234567/);
+  const saved = app.record('synk-path-ask-v1');
+  assert.ok(saved); assert.doesNotMatch(saved, /AB1234567/);
+  assert.match(app.root.textContent, /답 1/);
+  assert.match(app.root.textContent, /AI의 안내예요\. 대학이나 KVAC의 확인이 아니에요\./);
+  await askQuestion(app, '기숙사도 있어요?');
+  assert.deepEqual(bodies[1].history[1], askTurn({ text: '답 1' }), '서버가 준 AI 차례를 한 글자도 바꾸지 않는다');
+  app.setConfirmation(true);
+  app.click('askClear');
+  assert.equal(JSON.parse(app.record('synk-path-ask-v1')).turns.length, 0);
+});
+
+test('물어보기: 계정이 바뀌면 이 탭의 대화를 지운다', async t => {
+  const app = await openAsk(t, { translateServer: () => askDone() });
+  startAsk(app);
+  await askQuestion(app, '원광대 조건이 뭐예요?');
+  assert.ok(JSON.parse(app.record('synk-path-ask-v1')).turns.length);
+  app.switchOwner('qa-account-2'); await settleAsk();
+  app.click('askOpen');
+  assert.equal(app.record('synk-path-ask-v1') ?? null, null);
+  assert.match(app.root.textContent, /계정이 바뀌어 이 탭의 대화를 지웠어요/);
+});
+
+test('물어보기: 상태별 안내를 보이고, 급함 답이나 위험 낱말이면 고정 카드를 연다', async t => {
+  let reply = { ok: true, scope: 'synk-path', action: 'ask', status: 'limit', reopens_at: 1764288000000 };
+  let sent = null;
+  const app = await openAsk(t, { translateServer: () => reply, workspace: { open: true, handler: (method, path, body) => { sent = { method, path, body }; return { ok: true, case: { id: 'x' } }; } } });
+  startAsk(app);
+  await askQuestion(app, '오늘 더 물어봐도 돼요?');
+  assert.match(app.root.textContent, /오늘 물어볼 수 있는 만큼 다 물었어요/);
+  assert.equal(app.root.querySelector('#ask-urgent'), null);
+  reply = { ok: true, scope: 'synk-path', action: 'ask', status: 'blocked', reason: 'x' };
+  await askQuestion(app, '죽고 싶어요');
+  assert.ok(app.root.querySelector('#ask-urgent'), '답을 받지 못해도 위험 낱말이면 카드를 연다');
+  assert.match(app.root.textContent, /지금은 답하지 못했어요/);
+  app.click('askUrgent');
+  reply = { ok: true, scope: 'synk-path', action: 'ask', status: 'urgent', turn: askTurn({ type: 'safety', kind: 'urgent', text: '지금 위험하다면 아래 번호로 먼저 연락하세요.' }) };
+  await askQuestion(app, '도와주세요');
+  assert.ok(app.root.querySelector('#ask-urgent'));
+  const agree = app.root.querySelector('#urgent-agree'); agree.checked = true; app.event('change', agree);
+  app.click('urgentSend'); await settleAsk();
+  assert.equal(sent.method, 'POST'); assert.equal(sent.path, '/api/path-student/cases');
+  assert.equal(sent.body.mode, 'urgent'); assert.equal(sent.body.age, 'adult'); assert.equal(sent.body.last, null);
+  assert.match(app.root.textContent, /SYNK 담당자에게 알렸어요/);
+});
+
+test('사람 연결: act 답 아래에서 요약을 받아 고치고 보내며, Workspace가 닫혀 있으면 hello@synk.im을 보인다', async t => {
+  const bodies = []; let sent = null;
+  const server = body => { bodies.push(structuredClone(body)); return body.action === 'handoff_brief' ? askBrief() : askDone({ kind: 'act', type: 'clarify', found: false }); };
+  const app = await openAsk(t, { translateServer: server, workspace: { open: true, handler: (method, path, body) => { sent = { method, path, body }; return { ok: true, case: { id: '6f1c3a52-9d1e-4c4b-8a77-2f0d1b3c4e5f', status: 'new' } }; } } });
+  startAsk(app);
+  await askQuestion(app, '내년 3월에 원광대 학부에 지원하려고 해요. 같이 준비해 주세요.');
+  app.click('askHandoff'); await settleAsk();
+  const brief = bodies.find(b => b.action === 'handoff_brief');
+  assert.equal(brief.kind, 'act'); assert.equal(brief.history.at(-1).sig, ASK_SIG);
+  assert.ok(app.root.querySelector('#brief-title'));
+  const wants = app.root.querySelector('#brief-wants-0');
+  wants.value = '원서와 추천서를 함께 준비하고 싶어요.'; app.event('input', wants);
+  const agree = app.root.querySelector('#brief-agree'); agree.checked = true; app.event('change', agree);
+  app.click('briefSend'); await settleAsk();
+  assert.equal(bodies.filter(b => b.action === 'brief_edit').length, 0, '한국어면 고친 줄을 옮기지 않는다');
+  assert.equal(sent.body.mode, 'handoff'); assert.deepEqual(sent.body.ticket, ASK_TICKET, '증표는 받은 그대로');
+  assert.deepEqual(sent.body.brief_ko, BRIEF_BODY);
+  assert.deepEqual(sent.body.edits, [{ field: 'wants', index: null, text: '원서와 추천서를 함께 준비하고 싶어요.', text_ko: '원서와 추천서를 함께 준비하고 싶어요.' }]);
+  assert.equal(Object.hasOwn(sent.body, 'conversation'), false, '전체 대화는 처음에 꺼져 있다');
+  assert.match(app.root.textContent, /보냈어요/);
+
+  const closed = await openAsk(t, { translateServer: server, workspace: { open: false } });
+  startAsk(closed);
+  await askQuestion(closed, '같이 준비해 주세요');
+  assert.equal(closed.root.querySelector('[data-action="askHandoff"]'), null);
+  assert.ok(hasMail(closed));
+});
+
+test('내 상담: 오늘 화면은 Workspace의 내 건을 보이고, Workspace가 답하지 않으면 카드에 「지금 불러오지 못했어요」', async t => {
+  let down = false;
+  const cases = { ok: true, cases: [{ id: '6f1c3a52-9d1e-4c4b-8a77-2f0d1b3c4e5f', kind: 'act', status: 'answered', created_at: '2026-11-27T01:00:00Z', unread: 1, messages: [{ id: 'm1', from: 'staff', text: '서류를 같이 봐요.', at: '2026-11-27T02:00:00Z' }] }] };
+  const app = await boot(t, { signedIn: true, workspace: { open: true, handler: (method) => { if (down) throw Object.assign(new Error('down'), { code: 'WORKSPACE_UNAVAILABLE' }); return method === 'GET' ? cases : { ok: true }; } } });
+  app.click('nav', '[data-page="today"]'); await settleAsk();
+  assert.match(app.root.textContent, /내 상담/); assert.match(app.root.textContent, /답 왔음/); assert.match(app.root.textContent, /서류를 같이 봐요/);
+  down = true;
+  app.click('caseRead'); await settleAsk();
+  assert.match(app.root.textContent, /지금 불러오지 못했어요/);
 });

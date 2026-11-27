@@ -18,7 +18,7 @@ function wrIdentity(){
     const params=new URLSearchParams(location.search),urlSection=(!params.get('tab')||params.get('tab')==='workroom')?params.get('section'):'';
     const section=nextView&&nextView!=='desk'?nextView:(urlSection||nextView);
     if(state.tab==='workroom'&&['desk','trends','tools','pages','clients'].includes(section))wr.view=section;
-    if(wr.view==='tools'&&typeof makerTools!=='undefined'&&['weekly','publication','publish','subtitles','sources','brand','quality','inquiries','productions','automation'].includes(params.get('tool')))makerTools.view=params.get('tool');
+    if(wr.view==='tools'&&typeof makerTools!=='undefined'&&['weekly','publication','publish','subtitles','sources','brand','quality','inquiries','path-cases','productions','automation'].includes(params.get('tool')))makerTools.view=params.get('tool');
     try{sessionStorage.removeItem(wrReviewKey(wr.userId));}catch{}}
 }
 function wrClearProduction(){

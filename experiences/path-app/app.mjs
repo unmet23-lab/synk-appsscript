@@ -17,6 +17,7 @@ import { splitPasted, maskLines, validateTranslateRequest, validateTranslateRepl
 import { docCheckItems, docCheckRows, validateDocCheckRequest, validateDocCheckReply, DOC_CHECK_CONSENT_VERSION } from './doc-check.mjs';
 import { renderDocCheck, dcCanSend, dcMarkKey, DC_ERROR_TEXT } from './doc-check-ui.mjs';
 import { INTERVIEW_PROGRAMS } from './interview-shape.mjs';
+import { createAskController } from './ask-app.mjs';
 import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, studyCountSay, condHint, STUDY_FILTERS, GRADE_MAX, FUNDS_MAX_MAN } from './study-ui.mjs';
 
 void SCHEMA_VERSION; void STORAGE_KEY;
@@ -27,7 +28,7 @@ const announcer = document.getElementById('announcer');
 const DICT = {
   langLabel: ['언어', 'Language'], navLabel: ['주요 메뉴', 'Main menu'],
   today: ['오늘', 'Today'], channels: ['채널', 'News'], univ: ['대학', 'Schools'], explore: ['찾기', 'Explore'], prepare: ['준비', 'Prepare'], help: ['도움', 'Help'], profile: ['나', 'Me'],
-  signIn: ['가입 · 로그인', 'Sign in'], myAccount: ['내 계정', 'My account'],
+  signIn: ['가입 · 로그인', 'Sign in'], myAccount: ['내 계정', 'My account'], ask: ['물어보기', 'Ask'],
   q1: ['지금, 어떤 준비를 하고 있나요?', 'What are you preparing for right now?'],
   obT1: ['한국에서 쓸', 'Pick the first card'], obT2: ['첫 카드를 고르세요.', 'you’ll carry in Korea.'],
   obLead: ['지금, 어떤 준비를 하고 있나요? 맞는 카드를 고르면 첫 화면이 그 준비에 맞춰져요.', 'What are you preparing for right now? Pick a card and your first screen will match it.'],
@@ -395,7 +396,7 @@ function shell(main) {
   const lang = `<div class="lang" role="group" aria-label="${t('langLabel')}"><button type="button" data-action="setLang" data-id="ko" aria-pressed="${state.lang !== 'en'}" lang="ko">한국어</button><span class="lang-sep" aria-hidden="true"></span><button type="button" data-action="setLang" data-id="en" aria-pressed="${state.lang === 'en'}" lang="en">English</button></div>`;
   return `<div class="app-shell${nav ? ' has-nav' : ''}" data-page="${S.page}"><header class="bar">
 <button type="button" class="logo" data-action="${nav ? 'nav' : 'noop'}" data-page="today" aria-label="PATH"><span class="logo-mark" aria-hidden="true"></span>PATH</button>
-${nav ? `<nav class="tabs" aria-label="${t('navLabel')}">${tabs}</nav>` : ''}<div class="bar-right">${lang}${acct}</div></header>
+${nav ? `<nav class="tabs" aria-label="${t('navLabel')}">${tabs}</nav>` : ''}<div class="bar-right"><button type="button" class="ask-open" data-action="askOpen"${S.page === 'ask' || S.page === 'askBrief' ? ' aria-current="page"' : ''}>${t('ask')}</button>${lang}${acct}</div></header>
 ${main}${nav ? `<nav class="tabbar" aria-label="${t('navLabel')}">${bar}</nav>` : ''}</div>`;
 }
 function navActive(p) { return S.page === p || (p === 'explore' && S.page === 'detail') || (p === 'prepare' && S.page === 'editor') || (p === 'univ' && UNIV_PAGES.includes(S.page)) || (p === 'channels' && S.page === 'post') || (p === 'today' && S.page === 'path'); }
@@ -451,7 +452,7 @@ function today() {
     return `<main class="home" id="main"><aside class="stage home-stage is-three" aria-label="${t('pickCard')}"><div class="rod" aria-hidden="true"></div>${cards}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('pickCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${t('nT1')}</span> <span class="title-2">${t('nT2')}</span></h1>
 <ul class="goal-list">${GOALS.map((x) => `<li><button type="button" class="goal-row" data-action="exploreGoal" data-id="${x.id}"><span class="goal-sym" data-goal="${x.id}">${SYMBOL[x.id]}</span><span class="goal-txt"><b>${esc(pick(x.label))}</b><small>${esc(pick(x.description))}</small></span><span class="row-go" aria-hidden="true">${ICON.arrow}</span></button></li>`).join('')}</ul>
-${pathHtml()}${upcomingHtml()}${newsHtml()}<div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
+${pathHtml()}${askCtl.casesHtml()}${upcomingHtml()}${newsHtml()}<div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
   }
   const mine = state.tasks.filter((x) => x.goal === g.id);
   const nt = getNextTask(state);
@@ -472,7 +473,7 @@ ${pathHtml()}${upcomingHtml()}${newsHtml()}<div class="home-grid">${sec(t('offic
   const off = g.id === 'job' && jobsFeed.snapshot().status === 'disabled' ? `<p class="off"><i aria-hidden="true"></i>${t('jobsOff')}</p>` : '';
   return `<main class="home" id="main"><aside class="stage home-stage" aria-label="${t('myCard')}"><div class="rod" aria-hidden="true"></div>${hang(g.id, { kicker: t('myCard'), mode: 'next' })}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('changeCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${h1a}</span> <span class="title-2">${h1b}</span></h1>
-${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}${pathHtml()}${upcomingHtml()}${newsHtml()}
+${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}${pathHtml()}${askCtl.casesHtml()}${upcomingHtml()}${newsHtml()}
 <div class="home-grid">${sec(t('homeOpps'), t('demoSub'), `<ul class="rows">${opps.map(oppRow).join('')}</ul>`)}${sec(t('official'), t('offSub'), officialList(g.id) + off)}</div></div></main>`;
 }
 
@@ -601,7 +602,7 @@ const newsHtml = () => (CHANNEL_ON ? renderNews(channelView()) : '');
 const univ = () => renderUniv({ ...studyView(), filter: S.univFilter });
 // 「이 과정으로 준비하기」 상자는 path-ui가 짓고 대학 자세히에 끼운다(study-ui ↔ path-ui가 서로 부르지 않게).
 const univDetail = () => { const v = { ...channelView(), programId: S.univId }; return renderUnivDetail({ ...v, pathPick: renderPathPick(v, STUDY_PROGRAMS.find((p) => p.id === S.univId)) }); };
-const path = () => renderPath({ ...channelView(), docFull: S.docFull });
+const path = () => renderPath({ ...channelView(), docFull: S.docFull }) + askCtl.markerHtml();
 const pathHtml = () => (STUDY_ON ? renderPathCard(channelView()) : '');
 const univCompare = () => renderUnivCompare(studyView());
 const cond = () => renderCond(condView());
@@ -768,13 +769,14 @@ async function trRunCheck(tr) {
   const n = tr.rows.filter((r) => r.verdict === 'differs' || r.verdict === 'unsure').length;
   say(reply.compared ? accL(`견주기를 마쳤어요. 뜻이 달라 보이는 줄 ${n}곳.`, `Check finished. ${n} line(s) may differ in meaning.`) : accL('자동 대조를 하지 못했어요. 원문과 다시 옮긴 몽골어를 직접 견줘 보세요.', 'The automatic check did not run. Compare the original and the back-translation yourself.'));
 }
-const PAGES = { today, path, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile, studyConsent, translate, doccheck };
+const PAGES = { today, path, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile, studyConsent, translate, doccheck, ask: () => askCtl.page(), askBrief: () => askCtl.briefPage() };
 const LOCKED_ACTIONS = ['pickGoal', 'step2', 'toggle', 'finish', 'skip', 'prepareThis', 'confirm', 'body', 'loc', 'setLang', 'changeGoal', 'prepareJob', 'saveJob', 'removeJob'];
 function render(focus = true) {
   if (composingEl && root.contains(composingEl) && document.activeElement === composingEl) { deferredRender = true; deferredFocus = deferredFocus || focus; return; }
   composingEl = null;
   syncStudyOwner();
   syncStudyAccount();
+  askCtl.sync();
   if (!STUDY_ON && (S.page === 'univ' || UNIV_PAGES.includes(S.page))) S.page = 'today';
   if (!CHANNEL_ON && (S.page === 'channels' || S.page === 'post')) S.page = 'today';
   // 번역 초안: 계정이 바뀌었거나 로그아웃했으면 메모리의 원문과 초안을 지운다. 고른 서류가 없으면 내 길로.
@@ -845,6 +847,13 @@ function ensureTask(oppId) {
 }
 
 const jobsFeed = createJobsFeed({ configUrl: './config.json', onChange: () => render(false) });
+// 물어보기(AI 상담) · 사람 연결 · 내 상담(AI상담_설계.md). 대화는 이 탭에 가린 글로만 두고, 상태와 그리기는 ask-app.mjs가 맡는다.
+const askCtl = createAskController({
+  S, root, session, render, go, say, page: () => S.page, lang: () => state.lang, confirm: (m) => confirm(m), uuid: () => crypto.randomUUID(), now: () => Date.now(),
+  storage: tabStorage(), rAF: typeof requestAnimationFrame === 'function' ? (f) => requestAnimationFrame(f) : null,
+  studyProfile: () => studyProfile(), programs: STUDY_PROGRAMS, posts: CHANNEL_POSTS, studyOn: STUDY_ON, channelOn: CHANNEL_ON,
+  pathPick: (id) => ACT.pathPick({ dataset: { id } }), officialHtml: () => sec(t('official'), t('offSub'), officialList(state.primaryGoal || 'all'))
+});
 
 const ACT = {
   noop() {},
@@ -1146,6 +1155,7 @@ const ACT = {
   clear() { return ACT.clearGuest(); },
   reset() { return ACT.clearGuest(); }
 };
+for (const [k, f] of Object.entries(askCtl.actions)) { if (Object.hasOwn(ACT, k)) throw new Error('ask action name clash: ' + k); ACT[k] = f; }
 
 function sayStudyCount() {
   say(studyCountSay(studyView()));
@@ -1390,6 +1400,7 @@ root.addEventListener('input', (e) => {
   if (e.isComposing) { if (composingEl !== e.target) { composingEl = e.target; composingOwner = ownerKey(); } }
   if (composingEl === e.target && composingOwner !== ownerKey()) return;
   if (e.target.dataset.action === 'jobQuery') { S.jobQueryText = e.target.value; return; }
+  if (askCtl.input(e.target)) return;
   if (e.target.dataset.action === 'trText') {
     // 다시 그리지 않고 글자 수와 단추만 고친다(한글 · 키릴 입력 중에 칸을 덮지 않게).
     if (!S.tr || S.tr.phase === 'sending') return;
@@ -1425,6 +1436,7 @@ root.addEventListener('input', (e) => {
 });
 root.addEventListener('change', (e) => {
   const a = e.target.dataset.action;
+  if (askCtl.change(e.target)) return;
   if (a === 'loc') { if (session.status().canEdit) S.draft.location = e.target.value; }
   else if (a === 'jobBoard') { S.jobBoard = e.target.value || 'all'; S.jobPage = 0; render(false); root.querySelector('[data-action="jobBoard"]')?.focus(); }
   else if (a === 'savedJobs') { S.onlySaved = !!e.target.checked; S.jobPage = 0; render(false); root.querySelector('[data-action="savedJobs"]')?.focus(); }

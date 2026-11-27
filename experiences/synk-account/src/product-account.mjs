@@ -1,7 +1,16 @@
 import { createPlatformEntry } from './platform-entry.mjs';
 const AUTH_ERRORS = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
 // PATH의 AI 요청과 앱이 기다리는 시간. 서버 마감보다 조금 길다.
-const PATH_AI_WAIT_MS = Object.freeze({ translate: 125000, check: 125000, doc_check: 60000, interview_turn: 30000, interview_review: 30000 });
+const PATH_AI_WAIT_MS = Object.freeze({ translate: 125000, check: 125000, doc_check: 60000, interview_turn: 30000, interview_review: 30000, ask: 60000, handoff_brief: 90000, brief_edit: 45000 });
+// 요청 몸의 바이트 한도. 넘김 요약은 서명된 대화 전체(20,000자)를 실어 ask-shape의 MAX_REQUEST_BYTES(96KB)까지 받는다.
+const PATH_AI_MAX_BYTES = Object.freeze({ handoff_brief: 96 * 1024 });
+// Workspace 「PATH 상담」 학생 경로. 건(/cases), 한 건(/cases/:id), 글 더하기(/messages), 읽음(/read)만 부른다.
+const WORKSPACE_ROUTES = Object.freeze([
+  [/^\/api\/path-student\/cases$/, ['GET', 'POST']],
+  [/^\/api\/path-student\/cases\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, ['DELETE']],
+  [/^\/api\/path-student\/cases\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/(?:messages|read)$/, ['POST']]
+]);
+const WORKSPACE_MAX_BYTES = 192 * 1024;
 const fault = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
 const missingAsset = error => ['ASSET_NOT_FOUND','ASSET_NOT_CONFIRMED'].includes(error?.code) && typeof error?.assetId === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(error.assetId) ? { assetId:error.assetId } : {};
 const publicError = error => ({ code: error.code || 'ACCOUNT_UNAVAILABLE', message: error.message || '계정 연결을 확인하지 못했어요.', retryable: error.retryable === true, ...(error.status ? { status: error.status } : {}), ...missingAsset(error) });
@@ -23,9 +32,12 @@ export function createProductAccount({
   replaceUrl = url => globalThis.history.replaceState(null, '', url),
   navigate = url => globalThis.location.assign(url),
   loadCore = () => import('./core.mjs'), now = Date.now, cryptoAPI,
+  // PATH 앱만: Workspace 「PATH 상담」의 출처(https 출처 하나). 앱이 정한 상수를 넘긴다.
+  workspaceOrigin = null,
 } = {}) {
   const pathApp = clientKey === 'path-app' || endpoint === 'synk-path';
   if (typeof validateState !== 'function' || (pathApp ? clientKey !== 'path-app' || endpoint !== 'synk-path' || scope !== 'synk-path' || resource !== 'path-app' : !['care', 'path', 'path-travel'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint))) throw new TypeError('앱 계정 설정 형식이 맞지 않아요.');
+  if (workspaceOrigin !== null && (!pathApp || typeof workspaceOrigin !== 'string' || !/^https:\/\/[a-z0-9.-]+(?::\d{2,5})?$/.test(workspaceOrigin))) throw new TypeError('Workspace 출처 형식이 맞지 않아요.');
   const EXTRA = extraResources === null ? {} : extraResources;
   if (extraResources !== null && (!pathApp || typeof extraResources !== 'object' || Array.isArray(extraResources)
     || Object.keys(EXTRA).join(',') !== 'path-study' || typeof EXTRA['path-study'] !== 'function')) throw new TypeError('PATH 둘째 자원은 path-study 하나만 받아요.');
@@ -357,7 +369,7 @@ export function createProductAccount({
     if (!pathApp || native) throw fault('TRANSLATE_UNSUPPORTED', '이 기능은 PATH 웹에서만 쓸 수 있어요.');
     if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 다시 눌러 주세요.');
     if (!body || typeof body !== 'object' || Array.isArray(body) || !Object.hasOwn(PATH_AI_WAIT_MS, body.action)) throw fault('INVALID_REQUEST', '요청 형식이 맞지 않아요.');
-    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > 65536) throw fault('INVALID_REQUEST', '보낼 글이 너무 길어요.');
+    if (new TextEncoder().encode(JSON.stringify(body)).byteLength > (PATH_AI_MAX_BYTES[body.action] || 65536)) throw fault('INVALID_REQUEST', '보낼 글이 너무 길어요.');
     const expected = epoch, ownerId = snapshot.accountId, wait = { timeoutMs: PATH_AI_WAIT_MS[body.action] };
     try {
       guard(expected);
@@ -378,6 +390,41 @@ export function createProductAccount({
       return data;
     } catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }
+  // PATH 「사람 연결」: Workspace 회사 서버의 학생 경로. 같은 PATH 로그인 토큰을 Bearer로만 보낸다(apikey · 제품 머리말 없음, 쿠키 없음).
+  // Workspace의 거절(401 · 403)은 중앙 로그인을 끊지 않는다. 다시 보내기는 401 토큰 갱신 한 번뿐이고 같은 몸이다.
+  async function requestWorkspace(method, path, body) {
+    if (!pathApp || native || !workspaceOrigin) throw fault('WORKSPACE_UNSUPPORTED', '이 기능은 PATH 웹에서만 쓸 수 있어요.');
+    if (!snapshot.signedIn || !snapshot.accountId) throw fault('AUTH_REQUIRED', 'SYNK ID로 로그인한 뒤 다시 눌러 주세요.');
+    const route = WORKSPACE_ROUTES.find(([re]) => typeof path === 'string' && re.test(path));
+    if (!route || !route[1].includes(method)) throw fault('INVALID_REQUEST', '요청 형식이 맞지 않아요.');
+    const hasBody = method === 'POST';
+    if (hasBody ? !body || typeof body !== 'object' || Array.isArray(body) : body !== undefined) throw fault('INVALID_REQUEST', '요청 형식이 맞지 않아요.');
+    const text = hasBody ? JSON.stringify(body) : undefined;
+    if (hasBody && new TextEncoder().encode(text).byteLength > WORKSPACE_MAX_BYTES) throw fault('INVALID_REQUEST', '보낼 글이 너무 길어요.');
+    const expected = epoch, url = workspaceOrigin + path;
+    const sendTo = async (token) => {
+      const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 20000); controllers.add(abort);
+      try {
+        const response = await fetcher(url, { method, signal: abort.signal, credentials: 'omit', cache: 'no-store', redirect: 'error',
+          headers: { Authorization: `Bearer ${token}`, ...(hasBody ? { 'Content-Type': 'application/json' } : {}) }, ...(hasBody ? { body: text } : {}) });
+        return { response, data: await responseJson(response) };
+      } catch (error) { if (error.code) throw error; throw fault('NETWORK', 'Workspace에 연결하지 못했어요.', { retryable: true }); }
+      finally { clearTimeout(timer); controllers.delete(abort); }
+    };
+    guard(expected);
+    let token = session?.access_token;
+    if (!token) throw fault('AUTH_REQUIRED', 'SYNK ID로 다시 로그인해 주세요.');
+    if (session.expires_at <= now() + 30000) token = await refresh(expected);
+    guard(expected);
+    let result = await sendTo(token); guard(expected);
+    if (result.response.status === 401 && session?.refresh_token) {
+      token = session.access_token !== token ? session.access_token : await refresh(expected); guard(expected);
+      result = await sendTo(token); guard(expected);
+    }
+    const data = result.data, status = result.response.status;
+    if (!result.response.ok || data?.ok !== true) throw fault(typeof data?.error?.code === 'string' ? data.error.code : status === 401 || status === 403 ? 'WORKSPACE_AUTH' : 'WORKSPACE_UNAVAILABLE', '요청을 처리하지 못했어요.', { status, retryable: status === 429 || status >= 500 });
+    return data;
+  }
   function dispose() { disposed = true; epoch++; loginIntent++; session = null; pendingExchange = null; nativeIdentity = null; unsubscribe?.(); stopRequests(); }
-  return Object.freeze({ start, status, signIn, signOut, request, requestPush, requestTranslate, dispose });
+  return Object.freeze({ start, status, signIn, signOut, request, requestPush, requestTranslate, requestWorkspace, dispose });
 }

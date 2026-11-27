@@ -870,3 +870,118 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
   .sx-tr-row{padding-left:30px}
   .sx-choice{display:flex;margin-right:0}
 }
+
+/* ── 물어보기 · 사람 연결 · 내 상담(AI상담_설계.md, 2026-11-27). 시안 2판 결: 회색 판, 알약 단추, 사물 비유 없음 ── */
+.ask-open{display:inline-flex;align-items:center;height:40px;padding:0 16px;border:0;border-radius:999px;background:var(--soft);font-size:14px;font-weight:650;color:var(--ink);white-space:nowrap}
+.ask-open[aria-current=page]{background:var(--ink);color:#fff}
+@media (max-width:767px){.ask-open{height:36px;padding:0 12px;font-size:13px}}
+@media (max-width:360px){.ask-open{padding:0 10px}}
+
+/* 「위험해요」: 늘 맨 위. 붉은 판 하나, 누르면 번호 카드 */
+.sx-sos-entry{display:flex;align-items:center;gap:14px;width:100%;margin:0 0 6px;padding:14px 18px;border:0;border-radius:20px;background:var(--coral-wash);text-align:left;color:var(--ink)}
+.sx-sos-entry b{display:block;font:700 17px/1.35 var(--kr);color:var(--coral-ink)}
+.sx-sos-entry small{display:block;margin-top:2px;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.sx-sos-entry .sx-mn{color:var(--coral-ink)}
+.sx-sos-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:var(--coral-ink);color:#fff}
+.sx-sos-ic svg{width:20px;height:20px}
+.sx-sos-entry[aria-expanded=true]{border-radius:20px 20px 6px 6px}
+.sx-sos-card{margin:0 0 22px;padding:20px 20px 22px;border-radius:6px 6px 22px 22px;background:var(--coral-wash)}
+.sx-sos-title{margin:0;font:700 21px/1.3 var(--kr);outline:none}
+.sx-sos-text{margin:6px 0 0;font-size:15.5px;line-height:1.6;color:var(--ink)}
+.sx-sos-h{margin:20px 0 8px;font:700 15px/1.4 var(--kr);color:var(--coral-ink)}
+.sx-sos-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.sx-sos{display:flex;align-items:center;gap:14px;min-height:60px;padding:10px 16px;border-radius:16px;background:#fff;color:var(--ink);text-decoration:none}
+.sx-sos b{flex:none;min-width:52px;font:700 24px/1 'Inter Tight',sans-serif;letter-spacing:-.01em;color:var(--coral-ink);font-feature-settings:'tnum'}
+.sx-sos-name{display:block;font-size:15px;font-weight:650;line-height:1.35}
+.sx-sos small{display:block;font-size:13px;line-height:1.45;color:var(--gray)}
+.sx-sos-src{margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7}
+.sx-sos-connect{margin-top:18px;padding-top:6px;border-top:1px solid rgba(174,50,42,.18)}
+.sx-sos-card .sx-note.is-box{background:#fff}
+.sx-sos-card .sx-btn2.line{background:#fff}
+.sx-cta.coral{background:var(--coral-ink)}
+.sx-btn2.danger{color:var(--coral-ink)}
+
+/* 젤리 알약: 회색 홈 안에서 흰 알약 하나가 옮겨 간다 */
+.sx-jelly{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:4px;border-radius:999px;background:var(--stage)}
+.sx-jelly-pill{position:absolute;top:4px;bottom:4px;left:4px;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(11,12,14,.08),0 4px 12px rgba(11,12,14,.07);transition:transform .42s var(--ease-spring)}
+.sx-jelly[data-n="2"] .sx-jelly-pill{width:calc((100% - 8px) / 2)}
+.sx-jelly[data-n="3"] .sx-jelly-pill{width:calc((100% - 8px) / 3)}
+.sx-jelly[data-at="1"] .sx-jelly-pill{transform:translateX(100%)}
+.sx-jelly[data-at="2"] .sx-jelly-pill{transform:translateX(200%)}
+.sx-jelly.is-empty .sx-jelly-pill{opacity:0}
+.sx-jelly button{position:relative;z-index:1;min-height:42px;padding:6px 10px;border:0;border-radius:999px;background:none;font-size:14.5px;font-weight:650;line-height:1.3;color:var(--gray)}
+.sx-jelly button[aria-pressed=true]{color:var(--ink)}
+.sx-jelly.is-tall{border-radius:22px}
+.sx-jelly.is-tall .sx-jelly-pill{border-radius:18px}
+.sx-jelly.is-tall button{min-height:60px;border-radius:18px}
+
+/* 대화 */
+.sx-ask .sx-head{margin-bottom:18px}
+.sx-ask-tools{display:grid;gap:10px;margin:22px 0 0}
+.sx-ask-tools .sx-jelly{max-width:420px}
+.sx-ask-topic{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;margin:0;padding:6px 6px 6px 16px;border-radius:16px;background:var(--lapis-wash);font-size:14.5px}
+.sx-ask-topic b{margin-right:6px;color:var(--lapis-deep)}
+.sx-ask-switch{margin-top:0}
+.sx-ask-switch small{display:block;margin-top:2px;font-size:13px;font-weight:500;line-height:1.5;color:var(--gray)}
+.sx-ask-log{display:grid;gap:12px;margin:24px 0 0;padding:0;list-style:none}
+.sx-ask-me,.sx-ask-ai{padding:14px 18px;border-radius:20px}
+.sx-ask-me{justify-self:end;max-width:min(560px,92%);background:var(--ink);color:#fff;border-bottom-right-radius:6px}
+.sx-ask-me .sx-ask-who{color:rgba(255,255,255,.6)}
+.sx-ask-ai{max-width:100%;background:var(--soft);border-bottom-left-radius:6px}
+.sx-ask-who{margin:0 0 4px;font-size:12.5px;font-weight:700;letter-spacing:.02em;color:var(--gray)}
+.sx-ask-text{font-size:15.5px;line-height:1.65;overflow-wrap:anywhere}
+.sx-ask-where{margin:10px 0 0;font-size:14px;line-height:1.6;color:var(--ink-2)}
+.sx-ask-where b{margin-right:6px;color:var(--ink)}
+.sx-ask-src{margin-top:12px;padding:12px 14px;border-radius:14px;background:#fff}
+.sx-ask-src-h{margin:0 0 6px;font-size:12.5px;font-weight:700;color:var(--gray)}
+.sx-ask-src ul{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.sx-ask-src li b{display:block;font-size:14px;line-height:1.45}
+.sx-ask-src-a{display:flex;flex-wrap:wrap;align-items:center;gap:0 14px;font-size:13px}
+.sx-ask-src-a .sx-link{min-height:36px;font-size:13.5px}
+.sx-ask-src-a a{color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
+.sx-ask-src-d{color:var(--gray)}
+.sx-ask-band{margin:10px 0 0;font-size:12.5px;font-weight:600;line-height:1.5;color:var(--butter-deep)}
+.sx-ask-band .sx-mn{color:var(--butter-deep)}
+.sx-ask-hand{margin-top:12px;padding:14px 16px;border-radius:16px;background:#fff;border:1px solid var(--line-2)}
+.sx-ask-hand-t{margin:0;font-weight:700;font-size:15px}
+.sx-ask-hand .sx-cta{margin-top:10px;min-width:0}
+.sx-ask-compose{margin-top:22px}
+.sx-ask-input{min-height:0}
+.sx-ask-acts{align-items:center}
+.sx-ask-acts>.sx-cta{flex:0 1 auto;margin-top:0}
+.sx-ask-acts>.sx-btn2{flex:0 1 auto}
+
+/* 넘김 요약 */
+.sx-brief-fixed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.sx-brief-fixed div{padding:12px 14px;border-radius:14px;background:var(--soft)}
+.sx-brief-fixed dt{font-size:12.5px;font-weight:700;color:var(--gray)}
+.sx-brief-fixed dd{margin:2px 0 0;font-size:15px;font-weight:650}
+.sx-brief-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.sx-brief-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px}
+.sx-brief-input{min-height:0}
+.sx-brief-line .sx-link{min-height:36px;font-size:13.5px;color:var(--ink-2)}
+.sx-brief-line.is-removed{padding:10px 14px;border-radius:14px;background:var(--soft)}
+.sx-brief-old{margin:0;color:var(--gray);text-decoration:line-through}
+.sx-brief-line .sx-fine{margin-top:4px}
+.sx-brief-done{margin:0;padding-left:20px;font-size:15px;line-height:1.65;color:var(--ink-2)}
+
+/* 내 상담 */
+.sx-cases .sx-card h2{margin-bottom:6px}
+.sx-case{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.sx-case:first-of-type{border-top:0;padding-top:0}
+.sx-case-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px}
+.sx-case-top h3{margin:0;font:700 16px/1.4 var(--kr)}
+.sx-case-wants{margin:6px 0 0!important}
+.sx-case .sx-ask-log{margin-top:12px}
+.sx-case .sx-field{margin-top:14px}
+.sx-case .sx-field .sx-btn2{margin-top:8px}
+.sx-case-marker{margin-top:22px}
+
+@media (max-width:560px){
+  .sx-sos-card{padding:18px 16px 20px}
+  .sx-sos-list{grid-template-columns:minmax(0,1fr)}
+  .sx-brief-fixed{grid-template-columns:minmax(0,1fr)}
+  .sx-ask-me,.sx-ask-ai{padding:12px 14px}
+  .sx-ask-acts>.sx-cta{flex:1 1 100%}
+}
+.sx-check small{display:block;margin-top:2px;font-size:13px;font-weight:500;line-height:1.5;color:var(--gray)}

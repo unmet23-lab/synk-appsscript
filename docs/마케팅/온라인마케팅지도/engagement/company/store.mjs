@@ -41,6 +41,9 @@ const FILTERABLE={
   companyWork:['ownerId','company'],
   staffStories:['ownerId'],
   staffStoryInquiries:['ownerId','storyId'],
+  // PATH 상담함(path-cases.mjs): 학생 한 사람의 건과 접수 줄만 고른다. 새 색인은 만들지 않는다.
+  pathCases:['synkUserId'],
+  pathCaseIntake:['synkUserId'],
 };
 export class Store {
   #statements=new Map();

@@ -370,6 +370,9 @@ function waMineInnerHtml(){
     return `${header}<p class="wa-mine-status" role="status">미완료 일정을 불러오고 있어요…</p>`;
   }
   const errBanner=wa.mineError?`<div class="wa-mine-error" role="alert"><p>${escape(wa.mineError)}</p></div>`:'';
+  const pathRows=(data.pathCases||[]).slice(0,20);
+  const pathList=pathRows.length?`<ul class="wa-mine-list wa-mine-path" aria-label="PATH 상담 할 일">${pathRows.map(row=>`<li class="wa-mine-item"><a class="wa-mine-link" href="${escape(row.href)}">${row.urgent?'<b>급함</b> ':''}${escape(row.title)}${row.date?` · 기한 ${escape(row.date)}`:''}</a></li>`).join('')}</ul>`:'';
+  if(!items.length&&pathList)return `${header}${errBanner}${readonlyNote}${pathList}`;
   if(!items.length){
     const emptyCopy=companies.length===1?(companies[0]==='PATH'?'남은 미완료 상담 일정이 없어요.':'남은 미완료 강의 일정이 없어요.'):'남은 미완료 강의·상담 일정이 없어요.';
     return `${header}${errBanner}${readonlyNote}<p class="wa-mine-empty">${escape(emptyCopy)}</p>`;
@@ -379,7 +382,7 @@ function waMineInnerHtml(){
   const visible=items.slice(0,limit),extra=items.slice(limit);
   const list=`<ul class="wa-mine-list">${visible.map(row=>waMineItemHtml(row,today)).join('')}</ul>`;
   const more=extra.length?`<details class="wa-mine-more" ${wa.mineExpanded?'open':''}><summary>이후·미정 일정 ${escape(String(extra.length))}건 더 보기</summary><ul class="wa-mine-list is-more">${extra.map(row=>waMineItemHtml(row,today)).join('')}</ul></details>`:'';
-  return `${header}${errBanner}${readonlyNote}${list}${more}`;
+  return `${header}${errBanner}${readonlyNote}${pathList}${list}${more}`;
 }
 function waQueueMineLoad(){
   if(state.tab!=='home'||!state.user||!waMineCompanies().length)return;
@@ -454,6 +457,11 @@ async function waLoadMine({force=false,anyTab=false}={}){
         href:typeof row.href==='string'?row.href:'',
       })),
       canAct:result.canAct!==false,
+      // PATH 상담 할 일(path-cases.mjs today): 할 일 글 없이 「PATH 상담 할 일 · 기한 · 건 링크」만 온다.
+      pathCases:(Array.isArray(result.pathCases)?result.pathCases:[]).filter(row=>row&&typeof row==='object'&&/^\/\?tab=workroom&section=tools&tool=path-cases&caseId=[0-9a-f-]{36}$/.test(row.href||'')&&['PATH 상담 할 일','PATH 상담 끝내기 확인','PATH 상담 답하기','PATH 급함 상담'].includes(row.title)).map(row=>({
+        id:String(row.id||''),title:row.title,href:row.href,urgent:row.urgent===true,
+        date:typeof row.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(row.date)?row.date:'',
+      })),
     };
     wa.mineCheckedAt=Date.now();
     return wa.mine;

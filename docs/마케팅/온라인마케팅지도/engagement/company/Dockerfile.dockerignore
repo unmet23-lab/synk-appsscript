@@ -62,6 +62,10 @@
 !experiences/shift-workbench/
 !experiences/shift-workbench/model.mjs
 !experiences/shift-workbench/storage-upgrade.mjs
+!experiences/path-app/
+!experiences/path-app/ask-shape.mjs
+!experiences/path-app/translate-shape.mjs
+!experiences/path-app/study-shape.mjs
 !experiences/teacher-world/
 !experiences/teacher-world/index.html
 !experiences/teacher-world/app.mjs

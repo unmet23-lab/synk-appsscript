@@ -213,6 +213,38 @@ Workspace는 AI를 거친 건만 받는다. PATH 토큰만으로 AI를 건너뛰
 
 결과는 기록에 남기고 Fable이 본다.
 
+## 요청과 답의 꼴 (짓기 계약, 11-27)
+
+세 곳이 같은 꼴을 쓰도록 여기 못 박는다. 요청 몸 · 모델 출력 · 건의 검사는 `experiences/path-app/ask-shape.mjs` 하나가 한다(앱, SYNK-talk 번들, Workspace가 같은 바이트). 근거 묶음은 `ask-sources.mjs`, 긴급 연락처는 `emergency.mjs`다.
+
+### SYNK-talk `synk-path` (학생 SYNK ID 토큰, POST)
+
+| `action` | 몸 | 답 |
+|---|---|---|
+| `ask` | `validateAskRequest`의 칸 | `{ status: 'done', turn, cites, kind, remaining }` · `{ status: 'urgent', turn }`(고정 문안, 서명됨) · `{ status: 'blocked', reason }` · `refused` · `{ status: 'limit', reopens_at }` · `busy` · `unavailable` · `done_before` |
+| `handoff_brief` | `validateBriefRequest`의 칸 | `{ status: 'done', brief: { kind, student, ko, deadline }, ticket }` · 그 밖은 `ask`와 같은 갈래 |
+| `brief_edit` | `{ request_id, lang, edits: [{ field, index, text }] }` | `{ status: 'done', edits: [{ field, index, text, text_ko }] }`(넘김 요약 몫으로 센다) |
+
+- `turn`은 `{ role: 'ai', text, sig, at, type, found, ask_where, rechecking }`이다. `sig` = base64url(HMAC-SHA256(`SYNK_PATH_ASK_SIG_KEY`, `answerSigPayload(sub, turn)`)). 다음 요청의 `history`에서 서명이 맞지 않는 AI 차례는 버린다.
+- `ticket` = `{ sub, kind, exp, nonce, brief_hash, sig }`. `brief_hash` = sha256 hex(`briefHashInput(brief.ko)`), `sig` = base64url(HMAC-SHA256(`PATH_CASE_TICKET_KEY`, `ticketPayload(ticket)`)). 10분 동안 산다.
+- 원장 연산: `path.ask`(한 사람 20 · 전체 400), `path.brief`(한 사람 2 · 전체 40). 하루 토큰 상한 `SYNK_PATH_ASK_DAILY_TOKENS`. 스위치 `SYNK_PATH_ASK_ENABLED`.
+
+### SYNK-talk `synk-account` (서버 사이, POST)
+
+- `{ action: 'account-liveness', ids: [SYNK ID ≤100] }`. 머리말 `X-Synk-Liveness-Time`(밀리초)과 `X-Synk-Liveness-Signature` = base64url(HMAC-SHA256(`ACCOUNT_LIVENESS_KEY`, `path-liveness.v1␟시각␟sha256hex(몸)`)). 시각은 ±5분만 받는다(␟는 U+001F).
+- 답 `{ results: { <id>: 'present' | 'leaving' | 'gone' } }`. 모르는 id는 답에서 빠진다(지우지 않는다).
+
+### Workspace
+
+| 경로 | 누가 | 하는 일 |
+|---|---|---|
+| `GET /api/path-student/status` | 누구나 | `{ open }` |
+| `POST /api/path-student/cases` | 학생 Bearer | `validateCaseRequest`의 세 꼴(`handoff` · `urgent` · `teen`). 증표 확인, `nonce` 한 번, 갈래별 주간 횟수, 열린 건이 있으면 급함은 그 건에 표시 |
+| `GET /api/path-student/cases` | 학생 Bearer | 내 건(상태, 답, 읽음) |
+| `POST /api/path-student/cases/:id/messages` · `/read` | 학생 Bearer | 글 더하기(요청 번호), 읽음 |
+| `DELETE /api/path-student/cases/:id` | 학생 Bearer | 바로 지우기 |
+| `/api/path-cases/*` | PATH counselor · manager · 회사 주인 | 목록, 상세(연 기록), 배정, 답, 할 일 「했어요」 · 더하기 · 빼기, 끝내기, 두 단계 지우기 |
+
 ## 만드는 순서
 
 1. 근거 묶음(`ask-help.mjs`, `ask-sources.mjs`), 긴급 연락처 확인, 가리기 꼴 더하기. 시험 대화 묶음.

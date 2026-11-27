@@ -7,6 +7,7 @@ import { readConfig, isLoopback } from '../experiences/synk-account/src/core.mjs
 import { PROGRAMS, IMAGE_IDS, programsFor } from '../experiences/path-app/study-data.mjs';
 import { CHANNELS, POSTS, allPosts, validateChannelData } from '../experiences/path-app/channel-data.mjs';
 import { PROGRAM_DOCS, VISA_DOCS, validateDocsData } from '../experiences/path-app/docs-data.mjs';
+import { WORKSPACE_ORIGIN } from '../experiences/path-app/ask-flow.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const APP = 'experiences/path-app';
@@ -75,7 +76,8 @@ export function validatePathConfig(raw, { targetUrl = PATH_PUBLIC_URL, local = f
 }
 
 export function pathContentSecurityPolicy(config) {
-  const connections = config ? `'self' ${[...new Set([new URL(config.supabaseUrl).origin, new URL(config.accountApiUrl).origin])].join(' ')}` : "'none'";
+  // Workspace(회사 서버)는 「사람에게 연결」 · 「내 상담」의 학생 경로다(AI상담_설계.md 「구조와 보안」). 계정이 있는 판에만 연다.
+  const connections = config ? `'self' ${[...new Set([new URL(config.supabaseUrl).origin, new URL(config.accountApiUrl).origin, new URL(WORKSPACE_ORIGIN).origin])].join(' ')}` : "'none'";
   return `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src ${connections}; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'`;
 }
 

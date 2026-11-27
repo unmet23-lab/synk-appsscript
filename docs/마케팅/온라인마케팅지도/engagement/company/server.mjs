@@ -112,6 +112,11 @@ import { buildGrowthHistory } from './growth-history.mjs';
 import { buildTeamTrends } from './team-trends.mjs';
 import { buildContentLeaders } from './content-leaders.mjs';
 import {createCompanyWork} from './company-work.mjs';
+import {createPathCases} from './path-cases.mjs';
+import {createPathCaseTranslator} from './path-case-translate.mjs';
+import {createPathStudentIdentity,pathStudentIdentityConfig} from './path-student-identity.mjs';
+import {createPathStudentRoutes} from './path-student-routes.mjs';
+import {createPathCaseStaffRoutes} from './path-case-routes.mjs';
 import {createWorkspaceAccessService} from './workspace-access-service.mjs';
 import {createAdminWorkspace} from './admin-workspace.mjs';
 import {createWorkspaceDirectory,directoryQuery} from './member-directory.mjs';
@@ -241,7 +246,7 @@ export function createCompanyApp(options={}) {
   const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??process.env.MESSENGER_DATA_DIR??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
   // Screen files may come from a host static set (deploy/static/README.md); server-read files never do.
   const staticSet=options.staticSet??createStaticSet({root:options.staticRoot??process.env.SYNK_COMPANY_STATIC_ROOT??'',repository:resolve(here,'../../../../..')});
-  let messenger,clientNotifications,automationNotifications,socialPublishing,socialMarketing,ownerAlerts;
+  let messenger,clientNotifications,automationNotifications,socialPublishing,socialMarketing,ownerAlerts,pathCases;
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
   const customerConfig=options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig;
@@ -250,9 +255,9 @@ export function createCompanyApp(options={}) {
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
-      list:companyUserId=>{const user=store.get('users',companyUserId);return [...(hasWorkspaceFeature(user,'clients')?clientNotifications?.list(user).notifications||[]:[]),...(hasWorkspaceFeature(user,'production')?automationNotifications?.list(user).notifications||[]:[]),...(hasWorkspaceFeature(user,'social')?socialMarketing?.notifications(user,socialPublishing.summary(user))||[]:[]),...(user?.active&&ownerAlerts?ownerAlerts.list(user).notifications:[])];},
-      read:(companyUserId,id)=>{const user=store.get('users',companyUserId);if(ownerAlerts?.owns(id))return ownerAlerts.read(user,id);requireWorkspaceFeature(user,id.startsWith('social:')?'social':id.startsWith('automation:')?'production':'clients');return id.startsWith('social:')?socialMarketing.readNotifications(user,socialPublishing.summary(user),id):id.startsWith('automation:')?automationNotifications.read(user,id):clientNotifications.read(user,id);},
-      readAll:companyUserId=>{const user=store.get('users',companyUserId);if(hasWorkspaceFeature(user,'clients'))clientNotifications.readAll(user);if(hasWorkspaceFeature(user,'production'))automationNotifications?.readAll(user);if(hasWorkspaceFeature(user,'social'))socialMarketing?.readNotifications(user,socialPublishing.summary(user));if(user?.active)ownerAlerts?.readAll(user);},
+      list:companyUserId=>{const user=store.get('users',companyUserId);return [...(hasWorkspaceFeature(user,'clients')?clientNotifications?.list(user).notifications||[]:[]),...(hasWorkspaceFeature(user,'production')?automationNotifications?.list(user).notifications||[]:[]),...(hasWorkspaceFeature(user,'social')?socialMarketing?.notifications(user,socialPublishing.summary(user))||[]:[]),...(user?.active&&ownerAlerts?ownerAlerts.list(user).notifications:[]),...(pathCases?pathCases.notifications(user):[])];},
+      read:(companyUserId,id)=>{const user=store.get('users',companyUserId);if(ownerAlerts?.owns(id))return ownerAlerts.read(user,id);if(pathCases?.owns(id))return pathCases.readAlert(user,id);requireWorkspaceFeature(user,id.startsWith('social:')?'social':id.startsWith('automation:')?'production':'clients');return id.startsWith('social:')?socialMarketing.readNotifications(user,socialPublishing.summary(user),id):id.startsWith('automation:')?automationNotifications.read(user,id):clientNotifications.read(user,id);},
+      readAll:companyUserId=>{const user=store.get('users',companyUserId);if(hasWorkspaceFeature(user,'clients'))clientNotifications.readAll(user);if(hasWorkspaceFeature(user,'production'))automationNotifications?.readAll(user);if(hasWorkspaceFeature(user,'social'))socialMarketing?.readNotifications(user,socialPublishing.summary(user));if(user?.active)ownerAlerts?.readAll(user);if(user?.active)pathCases?.readAllAlerts(user);},
     },
     // 통화 초대는 45초만 산다(10-20). 30초 주기를 기다리지 않고 PULSE 변경과 같은 깨우기로 기기 알림을 바로 한 번 보낸다. 기기 알림이 꺼져 있으면 아무것도 하지 않는다.
     wakeDeviceNotifications:()=>notifyPulseDevices(),
@@ -272,7 +277,7 @@ export function createCompanyApp(options={}) {
     res.writeHead(302,{'Location':origin+'/?tab=messenger','Cache-Control':'no-store'});res.end();
   });
   const collector=options.collector??collectChannel;
-  const inflight=new Set();let queue=Promise.resolve();let timer,pushTimer,researchSyncTimer,publicationTimer,publicationInboxTimer,publicationLinkTimer,weeklySummaryTimer,automationHealthTimer,deliveryCheckTimer,socialTimer;
+  const inflight=new Set();let queue=Promise.resolve();let timer,pushTimer,pathCaseTimer,researchSyncTimer,publicationTimer,publicationInboxTimer,publicationLinkTimer,weeklySummaryTimer,automationHealthTimer,deliveryCheckTimer,socialTimer;
   let ready=false,startTask=null,shutdownTask=null,stopRequested=false;
   const loginNow=options.loginNow??(()=>Date.now()),loginWork=createConcurrencyGuard(4);
   const loginPair=createAttemptLimiter({limit:8,windowMs:15*60000,now:loginNow});
@@ -609,6 +614,23 @@ export function createCompanyApp(options={}) {
   const workspaceProfiles=createWorkspaceAccessService({store,clock});
   const adminRoles=createAdminRoleService({store,clock,recentInteractive:row=>synkIdentity.recentInteractive(row),teamFor,ownerAlerts,onChanged:ids=>messenger.notifyCompanyUsers(ids)});
   const companyWork=createCompanyWork({store,clock});
+  // PATH 상담함(AI상담_설계.md 「사람 연결」): 학생 경로 /api/path-student/*(PATH 앱 Bearer)와 직원 경로 /api/path-cases/*.
+  // 설정값은 요청마다 읽는다(PATH_CASES_ENABLED · PATH_CASES_ALLOW · PATH_CASE_TICKET_KEY · ACCOUNT_LIVENESS_KEY · PATH_ACCOUNT_LIVENESS_URL · PATH_CASES_ANTHROPIC_API_KEY).
+  const pathCasesEnv=options.pathCasesEnv??process.env;
+  pathCases=createPathCases({store,clock,env:pathCasesEnv,fetchImpl:options.pathCasesFetch??globalThis.fetch,
+    translator:createPathCaseTranslator({store,env:pathCasesEnv,fetchImpl:options.pathCasesTranslateFetch??globalThis.fetch,clock}),
+    onChange:ids=>{try{messenger.notifyCompanyUsers(ids);}catch{}},
+    onUrgent:()=>{notifyPulseDevices();},
+    ownerAlert:text=>ownerAlerts.record({actorId:null,action:'path-case-liveness-stopped',text})});
+  const pathStudentIdentity=createPathStudentIdentity({config:options.pathStudentIdentityConfig===undefined?pathStudentIdentityConfig(pathCasesEnv):options.pathStudentIdentityConfig,fetch:options.pathStudentIdentityFetch??globalThis.fetch,now:options.pathStudentIdentityNow});
+  const pathStudentRoutes=createPathStudentRoutes({pathCases,identity:pathStudentIdentity,clientAddress,stopping:()=>stopRequested});
+  const pathCaseRoutes=createPathCaseStaffRoutes({pathCases,session,origin,body,send,audit:(user,action,subject)=>audit(user,action,subject)});
+  let pathCaseTick=null;
+  function scanPathCases(){
+    if(stopRequested||pathCaseTick)return pathCaseTick;
+    pathCaseTick=Promise.resolve().then(()=>{pathCases.maintain();return pathCases.liveness();}).catch(()=>{}).finally(()=>{pathCaseTick=null;});
+    return pathCaseTick;
+  }
   const readAdminWorkspace=createAdminWorkspace({store,clock,report,membersFor:user=>visibleMembers(store,user),channelsFor:user=>visibleChannels(user).map(channel=>safeChannel(channel,user)),workspaceProfiles});
   const readWorkspaceDirectory=createWorkspaceDirectory(store);
   const crewProfiles=createCrewProfileService({store,clock});
@@ -1030,6 +1052,8 @@ export function createCompanyApp(options={}) {
     // Entry reads precede employee session handling and messenger cleanup. They
     // create no company/customer/project session and always use writeResponse.
     if((path==='/api/native/entry/destinations'||path==='/api/customer/entry/destinations')&&await entryDestinations(req,res,url))return;
+    // PATH 앱 학생 경로: Bearer만 받고 쿠키 · 세션을 만들지 않는다. 고객 경로와 직원 세션 확인보다 먼저 끝내고, 오류 답에도 CORS 머리말을 싣는다.
+    if(path.startsWith('/api/path-student/')&&await pathStudentRoutes(req,res,url))return;
     // 공통 초대 조회(2026-11-14 계약 · 회사67 이후 별도 검수): 같은 출처의 작은 JSON {token} 하나만 받는다. 쿼리 · 임의 목적지 · 클라이언트가 주장한 종류는 받지 않는다.
     // 직원 · 고객 초대의 기존 읽기 확인을 서버가 둘 다 돌려 정확히 한쪽만 맞을 때 종류와 고정 상대 목적지만 준다. 둘 다 맞거나 둘 다 틀리면 같은 오류다.
     // 세션 · 기기 복구 · 쿠키 · send(메신저 정리)보다 먼저 끝내고 writeResponse로만 답한다(오류도 마지막 catch의 writeResponse). 아무것도 쓰지 않으며 인증 · 수락이 아니다.
@@ -1298,7 +1322,9 @@ export function createCompanyApp(options={}) {
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,passwordSet:Boolean(user?.passwordHash),needsSetup:store.count('users')===0,platformUrl});
-    if(method==='GET'&&path==='/api/company-work/mine')return send(res,200,companyWork.mine(user));
+    // 오늘 할 일: PATH 상담 할 일은 companyWork에 복사하지 않고 읽을 때마다 path-cases가 같은 권한 검사로 링크 줄만 만든다.
+    if(method==='GET'&&path==='/api/company-work/mine')return send(res,200,{...companyWork.mine(user),pathCases:pathCases.today(user)});
+    if((path==='/api/path-cases'||path.startsWith('/api/path-cases/'))){if(demoRequest)throw httpError('PATH 상담함은 실제 작업실에서 확인해 주세요.');if(await pathCaseRoutes(req,res,url,auth))return;}
     const companyWorkRoute=path.match(/^\/api\/company-work\/(PATH|SHIFT)(?:\/([a-f0-9-]{36}))?$/);
     if(method==='GET'&&companyWorkRoute&&!companyWorkRoute[2])return send(res,200,companyWork.workspace(user,companyWorkRoute[1]));
     if(method==='GET'&&path==='/api/workspace-access'){if(!user)throw httpError('먼저 로그인해 주세요.',401);return send(res,200,workspaceProfiles.catalog(user));}
@@ -2431,7 +2457,7 @@ export function createCompanyApp(options={}) {
       '/workroom-practice/temper-outcomes.js':['../../../../../atlas/temper-outcomes.js','text/javascript; charset=utf-8'],
       '/workroom-practice/personalization.js':['../../../../../atlas/personalization.js','text/javascript; charset=utf-8'],
     });
-    for(const file of ['publish-rules.js','publish-check.js','maker-tools.js','maker-tools.css','subtitle-lab.js','subtitle-lab.css','creator-sources.js','creator-sources.css','website-inquiries.js','website-inquiries.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['publish-rules.js','publish-check.js','maker-tools.js','maker-tools.css','subtitle-lab.js','subtitle-lab.css','creator-sources.js','creator-sources.css','website-inquiries.js','website-inquiries.css','path-cases.js','path-cases.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
     Object.assign(files,{'/creative-research.js':['public/creative-research.js','text/javascript; charset=utf-8'],'/creative-research.css':['public/creative-research.css','text/css; charset=utf-8']});
     Object.assign(files,{'/company-guide.js':['public/company-guide.js','text/javascript; charset=utf-8'],'/company-guide.css':['public/company-guide.css','text/css; charset=utf-8']});
     Object.assign(files,{'/synk-id.js':['public/synk-id.js','text/javascript; charset=utf-8']});
@@ -2468,10 +2494,10 @@ export function createCompanyApp(options={}) {
     });
   }
   function shutdown(){
-    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
+    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(pathCaseTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([dmRegistration.close(),websiteInquiries.close(),websiteInquiryTick,pulseAutoReply.stop(),pulseMail.stop(),pulseMailOpen.stop(),pulseWaitlist.stop(),socialPublishMedia.stop(),socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
+      await Promise.all([dmRegistration.close(),websiteInquiries.close(),websiteInquiryTick,pathCaseTick,pathCases.waitForIdle(),pulseAutoReply.stop(),pulseMail.stop(),pulseMailOpen.stop(),pulseWaitlist.stop(),socialPublishMedia.stop(),socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
       // 정상 종료: 마지막 정리 뒤 흐른 가동 시간을 지우는 중인 파일의 나이에 남긴다(명단 그림 · 늦춘 지우기 — GPT pulse-people-media-routes-20261123-b GA2).
       // 요청을 더 받지 않는 때라 한 번만 센다. 하루가 찬 파일은 다음 프로세스의 정리가 지운다.
@@ -2508,13 +2534,15 @@ export function createCompanyApp(options={}) {
         if(pulseAutoReplySchedule&&!stopRequested){pulseAutoReplyTimer=setInterval(scanPulseAutoReplies,15000);pulseAutoReplyTimer.unref();void scanPulseAutoReplies();pulseRequestTimer=setInterval(retirePulseRequests,6*3600000);pulseRequestTimer.unref();void pulseRequests.retireUnconfirmed({startup:true}).catch(()=>{});}
         ready=!stopRequested;
         if(ready&&webPushEnabled){pushTimer=setInterval(()=>deviceNotifications.tick().catch(()=>{}),30000);pushTimer.unref();void deviceNotifications.tick().catch(()=>{});}
+        // PATH 상담함 보관 정리와 계정 정리: 한 시간마다 정리하고, 계정 정리는 그 안에서 하루 한 번만 묻는다. 스위치와 상관없이 돈다.
+        if(ready&&options.schedule!==false){pathCaseTimer=setInterval(scanPathCases,3600000);pathCaseTimer.unref();void scanPathCases();}
         return server.address();
       }catch(error){await shutdown().catch(()=>{});throw error;}
     })();
     return startTask;
   }
-  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();mediaCloud?.stop();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,mediaCloud,mediaTrash,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,staffStories,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(pathCaseTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();mediaCloud?.stop();if(startTask)await startTask.catch(()=>{});await shutdown();}
+  return {server,store,pathCases,scanPathCases,mediaCloud,mediaTrash,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,staffStories,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;
