@@ -126,17 +126,6 @@
       "지문": "b80906095198efb8de27bdbf4bd6f35c1da656a12adba3b3f92fd40208e955c3"
     },
     {
-      "계정": "lab-in-youtube",
-      "파일": "게시/판본/IN/video.mp4",
-      "시각": "2026-11-26T13:00:00+05:30",
-      "언어": "hi",
-      "돌림": true,
-      "표지": "게시/판본/IN/cover.png",
-      "원고": "게시/판본/IN/원고_youtube.json",
-      "AI표시": false,
-      "지문": "ad691a12f0bdb60fbe66cda8ad7cf6416e917d25c8e44b3e9d5961cce166cf9e"
-    },
-    {
       "계정": "lab-np-facebook",
       "파일": "게시/판본/NP/video.mp4",
       "시각": "2026-11-27T13:00:00+05:45",
@@ -148,28 +137,6 @@
       "지문": "fdd7e2866fa3b26e9b827085e0fb6d26d7c8f1ff46bab40ba96cab7d9cc502c9"
     },
     {
-      "계정": "lab-lk-youtube",
-      "파일": "게시/판본/LK/video.mp4",
-      "시각": "2026-11-27T13:00:00+05:30",
-      "언어": "si",
-      "돌림": true,
-      "표지": "게시/판본/LK/cover.png",
-      "원고": "게시/판본/LK/원고_youtube.json",
-      "AI표시": false,
-      "지문": "d31aef7c520fca2af1bd0f9b2051c741464d02562fd90733eddc1e7c04416e18"
-    },
-    {
-      "계정": "lab-mm-youtube",
-      "파일": "게시/판본/MM/video.mp4",
-      "시각": "2026-11-27T13:00:00+06:30",
-      "언어": "my",
-      "돌림": true,
-      "표지": "게시/판본/MM/cover.png",
-      "원고": "게시/판본/MM/원고_youtube.json",
-      "AI표시": false,
-      "지문": "c646467b1ca94be1c527a08596709b45a1bb507e6441fd03538e9ed1983cbd77"
-    },
-    {
       "계정": "lab-th-tiktok",
       "파일": "게시/판본/TH/video.mp4",
       "시각": "2026-11-29T13:00:00+07:00",
@@ -179,39 +146,6 @@
       "원고": "게시/판본/TH/원고_tiktok.json",
       "AI표시": false,
       "지문": "7df5cbe665c68c31330fecef2928cb54bd2aa0c8b6be283343e2a92655a30952"
-    },
-    {
-      "계정": "lab-th-youtube",
-      "파일": "게시/판본/TH/video.mp4",
-      "시각": "2026-11-26T13:00:00+07:00",
-      "언어": "th",
-      "돌림": true,
-      "표지": "게시/판본/TH/cover.png",
-      "원고": "게시/판본/TH/원고_youtube.json",
-      "AI표시": false,
-      "지문": "7df5cbe665c68c31330fecef2928cb54bd2aa0c8b6be283343e2a92655a30952"
-    },
-    {
-      "계정": "lab-cn-douyin",
-      "파일": "게시/판본/CN/video.mp4",
-      "시각": "2026-11-27T13:00:00+08:00",
-      "언어": "zh-Hans",
-      "돌림": true,
-      "표지": "게시/판본/CN/cover.png",
-      "원고": "게시/판본/CN/원고_douyin.json",
-      "AI표시": false,
-      "지문": "8fcca6fce1ae115ebf3d39b1844d606023a2dc9973eb21d8b035c9cb515f0ac2"
-    },
-    {
-      "계정": "lab-vn-youtube",
-      "파일": "게시/판본/VN/video.mp4",
-      "시각": "2026-11-27T13:00:00+07:00",
-      "언어": "vi",
-      "돌림": true,
-      "표지": "게시/판본/VN/cover.png",
-      "원고": "게시/판본/VN/원고_youtube.json",
-      "AI표시": false,
-      "지문": "0f8fb6542677aa13047d43a198444dd9b5862f8bee558b548818525efe41c9c5"
     },
     {
       "계정": "lab-uz-telegram",
@@ -245,17 +179,6 @@
       "원고": "게시/판본/PH/원고_youtube.json",
       "AI표시": false,
       "지문": "791e02ad5db188a89f60fb77194bbda8a3e0e73b04bde0754284ac97df124ac3"
-    },
-    {
-      "계정": "lab-nz-youtube",
-      "파일": "게시/판본/NZ/video.mp4",
-      "시각": "2026-11-27T13:00:00+13:00",
-      "언어": "en",
-      "돌림": true,
-      "표지": "게시/판본/NZ/cover.png",
-      "원고": "게시/판본/NZ/원고_youtube.json",
-      "AI표시": false,
-      "지문": "b47a0458ae675ff1fba745daa5e139af249b2181bd26a9111db44c06b22c18c0"
     },
     {
       "계정": "lab-jp-instagram",
@@ -322,6 +245,105 @@
       "원고": "게시/판본/AU/원고_youtube.json",
       "AI표시": false,
       "지문": "57b78dfb082d37717a0d366216f5e58009280d5ef53af8fb3fa4e341db61ee61"
+    },
+    {
+      "계정": "lab-th-youtube",
+      "파일": "게시/판본/TH/video.mp4",
+      "시각": "2026-11-28T13:00:00+07:00",
+      "언어": "th",
+      "돌림": true,
+      "표지": "게시/판본/TH/cover.png",
+      "원고": "게시/판본/TH/원고_youtube.json",
+      "AI표시": false,
+      "지문": "7df5cbe665c68c31330fecef2928cb54bd2aa0c8b6be283343e2a92655a30952"
+    },
+    {
+      "계정": "lab-kh-facebook",
+      "파일": "게시/판본/KH/video.mp4",
+      "시각": "2026-11-29T13:00:00+07:00",
+      "언어": "km",
+      "돌림": true,
+      "표지": "게시/판본/KH/cover.png",
+      "원고": "게시/판본/KH/원고_facebook.json",
+      "AI표시": false,
+      "지문": "ef99e2b3884e5c6902208ec7a6fdfe1bf4471908ebefc49e22afbae15bc312e5"
+    },
+    {
+      "계정": "lab-lk-youtube",
+      "파일": "게시/판본/LK/video.mp4",
+      "시각": "2026-11-29T13:00:00+05:30",
+      "언어": "si",
+      "돌림": true,
+      "표지": "게시/판본/LK/cover.png",
+      "원고": "게시/판본/LK/원고_youtube.json",
+      "AI표시": false,
+      "지문": "d31aef7c520fca2af1bd0f9b2051c741464d02562fd90733eddc1e7c04416e18"
+    },
+    {
+      "계정": "lab-vn-youtube",
+      "파일": "게시/판본/VN/video.mp4",
+      "시각": "2026-11-29T13:00:00+07:00",
+      "언어": "vi",
+      "돌림": true,
+      "표지": "게시/판본/VN/cover.png",
+      "원고": "게시/판본/VN/원고_youtube.json",
+      "AI표시": false,
+      "지문": "0f8fb6542677aa13047d43a198444dd9b5862f8bee558b548818525efe41c9c5"
+    },
+    {
+      "계정": "lab-cn-douyin",
+      "파일": "게시/판본/CN/video.mp4",
+      "시각": "2026-11-30T13:00:00+08:00",
+      "언어": "zh-Hans",
+      "돌림": true,
+      "표지": "게시/판본/CN/cover.png",
+      "원고": "게시/판본/CN/원고_douyin.json",
+      "AI표시": false,
+      "지문": "8fcca6fce1ae115ebf3d39b1844d606023a2dc9973eb21d8b035c9cb515f0ac2"
+    },
+    {
+      "계정": "lab-uz-instagram",
+      "파일": "게시/판본/UZ/video.mp4",
+      "시각": "2026-11-30T13:00:00+05:00",
+      "언어": "uz",
+      "돌림": true,
+      "표지": "게시/판본/UZ/cover.png",
+      "원고": "게시/판본/UZ/원고_instagram.json",
+      "AI표시": false,
+      "지문": "c8a0a3985eb5e9610b317384d5575530d320472cb78cec62e987d58368d746b1"
+    },
+    {
+      "계정": "lab-mm-youtube",
+      "파일": "게시/판본/MM/video.mp4",
+      "시각": "2026-11-30T13:00:00+06:30",
+      "언어": "my",
+      "돌림": true,
+      "표지": "게시/판본/MM/cover.png",
+      "원고": "게시/판본/MM/원고_youtube.json",
+      "AI표시": false,
+      "지문": "c646467b1ca94be1c527a08596709b45a1bb507e6441fd03538e9ed1983cbd77"
+    },
+    {
+      "계정": "lab-in-youtube",
+      "파일": "게시/판본/IN/video.mp4",
+      "시각": "2026-12-01T13:00:00+05:30",
+      "언어": "hi",
+      "돌림": true,
+      "표지": "게시/판본/IN/cover.png",
+      "원고": "게시/판본/IN/원고_youtube.json",
+      "AI표시": false,
+      "지문": "ad691a12f0bdb60fbe66cda8ad7cf6416e917d25c8e44b3e9d5961cce166cf9e"
+    },
+    {
+      "계정": "lab-nz-youtube",
+      "파일": "게시/판본/NZ/video.mp4",
+      "시각": "2026-12-02T13:00:00+13:00",
+      "언어": "en",
+      "돌림": true,
+      "표지": "게시/판본/NZ/cover.png",
+      "원고": "게시/판본/NZ/원고_youtube.json",
+      "AI표시": false,
+      "지문": "b47a0458ae675ff1fba745daa5e139af249b2181bd26a9111db44c06b22c18c0"
     }
   ],
   "미룰편": [],

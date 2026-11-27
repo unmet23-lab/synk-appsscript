@@ -38,11 +38,11 @@
     },
     {
       "계정": "synkbrief-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-26T21:00:00+09:00",
       "주소": "https://www.tiktok.com/@synkbrief/video/7710865771446029575",
       "방법": "ego-browser · Profile 10(TikTok synkbrief) · 공간 「게시 1122-1400 tiktok synkbrief」(237) · TikTok Studio 업로드(영상 docs/마케팅/synkbrief_프로필사진_20261121/최종_틱톡.mp4, 판 영상) · 표지 그림 올림(판 표지와 회색 차이 1.7) · 스크립트 C:/Users/q1212/ego/publish-20261122-1400/tiktok/run-sb-1126-21.mjs",
-      "확인": "TikTok Studio 콘텐츠 목록(@synkbrief) 줄 「Nov 26, 9:00 PM (GMT+9) Seoul Everyone」 · 글 첫 줄 「방에서 찍은 셀카 한 장을 ChatGPT에 올리고 명령어를 한 번 보냈더니, 사진관에서 찍은 것 같은 프로필 사진이 왔어요.」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 26, 2026 21:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 켬",
+      "확인": "로그인 없이 영상 쪽 statusCode 0 · createTime 2026-11-26 21:00 KST · 2026-11-27 19:11 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-22 14시 회차 — 띠 · 음량 · 올리기 전 검사)",
       "게시물ID": "7710865771446029575"
     },

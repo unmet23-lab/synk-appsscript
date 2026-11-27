@@ -564,16 +564,16 @@
     },
     {
       "계정": "lab-id-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-26T13:00:00+07:00",
       "지문": "79bf863a460ac22b81d6d01ff9fc5afe33c2e66f1951414beda6ef0921f170cc",
       "게시글지문": "bc5d0d3bd2e7d0f3275c19435c78eebdb25a1c2cdfbbf7c914b8ca391a67a448",
       "방법": "ego",
       "게시물ID": "7710505620209814804",
       "주소": "https://www.tiktok.com/@synklab.id/video/7710505620209814804",
-      "확인": "TikTok Studio 콘텐츠 목록(@synklab.id) 줄 「Nov 26, 3:00 PM (GMT+9) Seoul Everyone」 · 글 첫 줄 「Di Indonesia, kakak cowok dan kakak cewek sama-sama bisa dipanggil “kakak”. Di bahasa Korea, panggilannya tergantung sia」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 26, 2026 15:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 끔",
+      "확인": "로그인 없이 영상 쪽 statusCode 0 · createTime 2026-11-26 15:00 KST · 2026-11-27 19:11 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-21T06:25:28.429Z"
+      "기록시각": "2026-11-27T10:11:38.106Z"
     },
     {
       "계정": "lab-ru-vk",

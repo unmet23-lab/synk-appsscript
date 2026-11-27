@@ -158,16 +158,16 @@
     },
     {
       "계정": "lab-vn-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-27T13:00:00+07:00",
       "지문": "0f8fb6542677aa13047d43a198444dd9b5862f8bee558b548818525efe41c9c5",
       "게시글지문": "04fb6cbee55e1c5ffcccbd509e76b7798c2fa0af7bbb424c65cda8651ab65840",
       "방법": "ego",
       "게시물ID": "7711248869966744839",
       "주소": "https://www.tiktok.com/@synklab.vn/video/7711248869966744839",
-      "확인": "예약 한국 시각 2026-11-27 15:00 · TikTok Studio 콘텐츠 목록(@synklab.vn) 줄 「Nov 27, 3:00 PM (GMT+9) Seoul Everyone」 · 글 첫 줄 「Bạn đến, trời đổ mưa, tuyết rơi, buồn ngủ, có cuộc gọi đến — tiếng Việt cần 4 từ khác nhau. Tiếng Hàn chỉ cần 1: 와요 (wa-」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 27, 2026 15:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 끔",
+      "확인": "로그인 없이 영상 쪽 statusCode 0 · createTime 2026-11-27 15:00 KST · 2026-11-27 19:11 KST 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-23 14시 회차)",
-      "기록시각": "2026-11-23T06:31:24.306Z"
+      "기록시각": "2026-11-27T10:11:32.924Z"
     },
     {
       "계정": "lab-id-tiktok",
