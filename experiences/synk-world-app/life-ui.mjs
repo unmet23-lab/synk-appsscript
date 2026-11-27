@@ -715,7 +715,11 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   begin:()=>{context.phase='story';context.sceneIndex=0;persistStage();renderLesson();},
   'scene-next':()=>turnScene(1),
   choice:el=>context.phase==='review'?chooseReview(el.dataset.lifeChoice):choose(el.dataset.lifeChoice),
-  notes:el=>{content.querySelectorAll('.life-choice:not(.is-correct) .life-choice-note[hidden]').forEach(n=>{n.hidden=false;drawer(n,{delay:0});});el.remove();},
+  // 「다른 보기는 언제 쓰나요?」: 연 쓰임 줄은 막힌 보기 단추 안이라 읽기 프로그램이 지나치기 쉬워 판정 띠(role=status) 안 사본으로도 읽히게 한다.
+  // 단추는 스스로 지워지므로 초점을 「다음」으로 옮긴다(인사 팩 검수 world-life2-20261123 카본 A1 · B1).
+  notes:el=>{const opened=[...content.querySelectorAll('.life-choice:not(.is-correct) .life-choice-note[hidden]')];opened.forEach(n=>{n.hidden=false;drawer(n,{delay:0});});
+   const band=el.closest('.life-feedback');if(band&&opened.length){const copy=document.createElement('span');copy.className='life-sr';opened.forEach((n,i)=>{const word=document.createElement('span');word.lang='ko';word.textContent=n.closest('.life-choice')?.querySelector('.life-choice-copy>[lang="ko"]')?.textContent||'';const note=document.createElement('span');note.lang=n.lang;note.textContent=n.textContent;copy.append(...(i?[' ']:[]),word,/[.?!]$/.test(word.textContent)?' ':': ',note);});band.append(copy);}
+   el.remove();content.querySelector('[data-life-question-next]')?.focus({preventScroll:true});},
   'question-next':()=>{if(context.phase==='review'){lastFeedback=null;helped=false;helpBy=null;renderReview();}else{context.questionIndex++;lastFeedback=null;helped=false;helpBy=null;persistStage();renderLesson();}},
   'review-start':()=>reviewStart(),'review-lesson':el=>reviewStart(el.dataset.lifeReviewLesson,(el.dataset.lifeReviewIds||'').split(',').filter(Boolean),{soon:true}),pause,
   'cafe-choice':el=>cafeChoose(el.dataset.lifeCafeChoice),'cafe-next':cafeNext,

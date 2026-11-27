@@ -19607,12 +19607,31 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     },
     "scene-next": () => turnScene(1),
     choice: (el) => context.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
+    // 「다른 보기는 언제 쓰나요?」: 연 쓰임 줄은 막힌 보기 단추 안이라 읽기 프로그램이 지나치기 쉬워 판정 띠(role=status) 안 사본으로도 읽히게 한다.
+    // 단추는 스스로 지워지므로 초점을 「다음」으로 옮긴다(인사 팩 검수 world-life2-20261123 카본 A1 · B1).
     notes: (el) => {
-      content.querySelectorAll(".life-choice:not(.is-correct) .life-choice-note[hidden]").forEach((n2) => {
+      const opened = [...content.querySelectorAll(".life-choice:not(.is-correct) .life-choice-note[hidden]")];
+      opened.forEach((n2) => {
         n2.hidden = false;
         drawer2(n2, { delay: 0 });
       });
+      const band = el.closest(".life-feedback");
+      if (band && opened.length) {
+        const copy3 = document.createElement("span");
+        copy3.className = "life-sr";
+        opened.forEach((n2, i) => {
+          const word = document.createElement("span");
+          word.lang = "ko";
+          word.textContent = n2.closest(".life-choice")?.querySelector('.life-choice-copy>[lang="ko"]')?.textContent || "";
+          const note2 = document.createElement("span");
+          note2.lang = n2.lang;
+          note2.textContent = n2.textContent;
+          copy3.append(...i ? [" "] : [], word, /[.?!]$/.test(word.textContent) ? " " : ": ", note2);
+        });
+        band.append(copy3);
+      }
       el.remove();
+      content.querySelector("[data-life-question-next]")?.focus({ preventScroll: true });
     },
     "question-next": () => {
       if (context.phase === "review") {
