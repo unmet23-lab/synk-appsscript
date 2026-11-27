@@ -17,8 +17,11 @@ test('no web account words point at the Workspace installer that 0.5.0 removed f
 test('PC 앱 받기, the help page, the 여는 법 window and the PC toast say the same way to open Workspace', () => {
   assert.match(platform, /heading\('PC 앱 받기','SYNK PC 앱을 받아 설치해요\. Workspace는 회사에서 안내받은 Workspace 주소로 브라우저에서 열어요\./);
   assert.match(platform, /<h2>2\. Workspace는 브라우저에서 열어요\.<\/h2><p>Workspace는 회사에서 안내받은 Workspace 주소로 브라우저에서 열어요\./);
-  assert.match(platform, /modal\('Workspace 여는 법','Workspace는 회사에서 안내받은 Workspace 주소로 브라우저에서 열어요\. Workspace 앱을 이미 설치한 PC에서는 SYNK PC 앱에서 열 수 있어요\.'\)/);
+  assert.match(platform, /modal\('Workspace 여는 법','Workspace는 회사에서 안내받은 Workspace 주소로 브라우저에서 열어요\. 회사 초대를 받은 계정이면 SYNK PC 앱 안에서도 열 수 있어요\.'\)/);
   assert.match(platform, /button\('여는 법','install-info',app\.id,'plain'\)/);
+  // PC 0.5.9(11-23)가 따로 설치하던 Workspace 앱을 거뒀다. PC 앱은 배정된 계정에게 Workspace를 창 안에서 연다(4단계 구현설계 14절)
+  assert.ok(!platform.includes('Workspace 앱을 이미 설치한'));
+  assert.equal(platform.split('회사 초대를 받은 계정이면 SYNK PC 앱 안에서도 열').length - 1, 3);
   // 휴대폰에서 열어도 맞게 「이 PC」라고 가리키지 않는다(카본 B2)
   assert.ok(!/이 PC에 Workspace/.test(platform));
   // PC 0.5.9부터 「작업실 열기」는 설치한 앱을 찾지 않고 창 안 Workspace를 연다(4단계 구현설계 14.1). 앱이 없을 때 · 못 띄울 때의 알림도 함께 사라졌다
