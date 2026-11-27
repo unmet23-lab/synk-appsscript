@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N6",
+ "text": "내일 볼 쪽 하나 찍어서, 퇴근길에 풀어 보세요.",
+ "dur": 2.557,
+ "words": [
+  {
+   "text": "내일",
+   "start": 0.02,
+   "end": 0.231
+  },
+  {
+   "text": "볼",
+   "start": 0.276,
+   "end": 0.381
+  },
+  {
+   "text": "쪽",
+   "start": 0.427,
+   "end": 0.532
+  },
+  {
+   "text": "하나",
+   "start": 0.577,
+   "end": 0.713
+  },
+  {
+   "text": "찍어서,",
+   "start": 0.773,
+   "end": 1.089
+  },
+  {
+   "text": "퇴근길에",
+   "start": 1.495,
+   "end": 1.871
+  },
+  {
+   "text": "풀어",
+   "start": 1.916,
+   "end": 2.052
+  },
+  {
+   "text": "보세요.",
+   "start": 2.097,
+   "end": 2.557
+  }
+ ],
+ "source": {
+  "key": "482980d85356c1128ee5f91e0dea9a2f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1127,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 150
+ }
+}

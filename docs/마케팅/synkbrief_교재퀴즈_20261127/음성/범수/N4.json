@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N4",
+ "text": "저는 다섯 개 중에 네 개를 틀렸어요.",
+ "dur": 1.791,
+ "words": [
+  {
+   "text": "저는",
+   "start": 0.02,
+   "end": 0.24
+  },
+  {
+   "text": "다섯",
+   "start": 0.276,
+   "end": 0.497
+  },
+  {
+   "text": "개",
+   "start": 0.533,
+   "end": 0.594
+  },
+  {
+   "text": "중에",
+   "start": 0.643,
+   "end": 0.79
+  },
+  {
+   "text": "네",
+   "start": 0.863,
+   "end": 0.925
+  },
+  {
+   "text": "개를",
+   "start": 0.986,
+   "end": 1.157
+  },
+  {
+   "text": "틀렸어요.",
+   "start": 1.194,
+   "end": 1.791
+  }
+ ],
+ "source": {
+  "key": "0ad780cb35b63dc81fd0acca3ad5cda0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1127,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 127
+ }
+}

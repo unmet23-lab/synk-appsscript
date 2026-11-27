@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1127,
+  "lufs": -17
+ },
+ "made": "2026-11-27T05:10:14.245Z",
+ "lines": [
+  {
+   "id": "N1",
+   "text": "엑셀 교재 사진 한 장에 한 줄을 붙였더니, 퀴즈 다섯 문제가 나왔어요.",
+   "dur": 3.652,
+   "syllablesPerSec": 7.39,
+   "src": "N1.wav",
+   "key": "463e5a26df01ce2f458b09883fc48fa2",
+   "words": 12
+  },
+  {
+   "id": "N2",
+   "text": "붙인 한 줄은 이거예요. 이 쪽으로 퀴즈 다섯 개 내 줘, 답은 맨 끝에.",
+   "dur": 3.527,
+   "syllablesPerSec": 7.09,
+   "src": "N2.wav",
+   "key": "8f6de5fc9e57918f2d72c6fbc3cb0b04",
+   "words": 14
+  },
+  {
+   "id": "N3",
+   "text": "답은 숨겨 뒀다가, 보기를 누르면 그때 채점해 줘요. 틀리면 정답과 까닭까지 나와요.",
+   "dur": 5.142,
+   "syllablesPerSec": 6.42,
+   "src": "N3.wav",
+   "key": "dc6ac85f429fb7c2ac6b0b3dcf45f58c",
+   "words": 12
+  },
+  {
+   "id": "N4",
+   "text": "저는 다섯 개 중에 네 개를 틀렸어요.",
+   "dur": 1.791,
+   "syllablesPerSec": 7.82,
+   "src": "N4.wav",
+   "key": "0ad780cb35b63dc81fd0acca3ad5cda0",
+   "words": 7
+  },
+  {
+   "id": "N5",
+   "text": "그래서 틀린 문제만 다시 내 줘, 했더니 그 네 문제만 다시 나왔어요.",
+   "dur": 3.638,
+   "syllablesPerSec": 7.15,
+   "src": "N5.wav",
+   "key": "d7a8fd10edfc50ded7f259ec59641ae8",
+   "words": 12
+  },
+  {
+   "id": "N6",
+   "text": "내일 볼 쪽 하나 찍어서, 퇴근길에 풀어 보세요.",
+   "dur": 2.557,
+   "syllablesPerSec": 7.04,
+   "src": "N6.wav",
+   "key": "482980d85356c1128ee5f91e0dea9a2f",
+   "words": 8
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+{
+  "모델": "B75 교재 퀴즈 — 첫 칸: 지하철에서 공부 쪽을 찍는 손(제작 절차 daily-omni-20261126). 두 판(o1 · o2)을 굽고 고른다",
+  "공통": "One continuous shot, no cuts. Photorealistic, exactly like the start frame. The camera is locked off exactly as in the start frame: no zoom, no pan, no tilt, no shake. Keep the same light, colours, coat, book, pages and phone as the start frame to the last frame. The book stays open on the lap at the same page; its pages do not turn, do not flip and do not change; the printed page stays the same blurry text layout with blue headings, a small table and a blue box. The phone stays a plain black phone; we never see its screen. Both hands keep five fingers and the same size and shape; no third hand. No face, no head and no other person ever comes into the frame. Nothing new appears that is not in the start frame. No text, no letters, no numbers, no logos, no captions. No flash of light, no speed lines, no cartoon effects, no steam, no smoke. No sound.",
+  "클립": [
+    {
+      "id": "o1",
+      "prompt": "Inside a subway car in the evening, seen from across the aisle: a commuter's lap with an open study book, the left hand holding the book open, the right hand holding a black phone flat above the right-hand page, from the start frame. ACTION: from 0 to 1.0 s the train sways very gently and warm tunnel lights stream from right to left across the dark window behind; from 1.0 s to 2.2 s the phone dips a few centimetres toward the page and holds level and still over the page, like framing a photo; at 2.4 s the right thumb presses once on the top edge of the phone, a small calm tap, and the phone stays still; from 2.6 s to the end the hands stay still and only the tunnel lights keep streaming across the window. The left hand keeps holding the book open the whole time."
+    },
+    {
+      "id": "o2",
+      "prompt": "Evening subway car, view from the opposite seat: a commuter in a navy coat holds an open exam-prep book on the lap with the left hand and a black phone above the page with the right hand, as in the start frame. ACTION: from 0 to 1.2 s the car rocks very slightly and blurred warm lights slide past the dark window; from 1.2 s to 2.4 s the phone lowers slightly over the open page and steadies, held flat and level, as if lining up a picture of the page; at 2.6 s the right thumb gives one short press on the phone's top edge and the phone does not move; until the end the hands rest still while the window lights keep sliding past. The book stays open at the same page in the left hand."
+    }
+  ]
+}

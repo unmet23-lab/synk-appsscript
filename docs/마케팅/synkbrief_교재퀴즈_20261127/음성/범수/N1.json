@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N1",
+ "text": "엑셀 교재 사진 한 장에 한 줄을 붙였더니, 퀴즈 다섯 문제가 나왔어요.",
+ "dur": 3.652,
+ "words": [
+  {
+   "text": "엑셀",
+   "start": 0.02,
+   "end": 0.267
+  },
+  {
+   "text": "교재",
+   "start": 0.308,
+   "end": 0.459
+  },
+  {
+   "text": "사진",
+   "start": 0.5,
+   "end": 0.705
+  },
+  {
+   "text": "한",
+   "start": 0.746,
+   "end": 0.842
+  },
+  {
+   "text": "장에",
+   "start": 0.883,
+   "end": 1.075
+  },
+  {
+   "text": "한",
+   "start": 1.144,
+   "end": 1.253
+  },
+  {
+   "text": "줄을",
+   "start": 1.294,
+   "end": 1.445
+  },
+  {
+   "text": "붙였더니,",
+   "start": 1.486,
+   "end": 1.924
+  },
+  {
+   "text": "퀴즈",
+   "start": 2.253,
+   "end": 2.472
+  },
+  {
+   "text": "다섯",
+   "start": 2.513,
+   "end": 2.746
+  },
+  {
+   "text": "문제가",
+   "start": 2.787,
+   "end": 3.034
+  },
+  {
+   "text": "나왔어요.",
+   "start": 3.075,
+   "end": 3.652
+  }
+ ],
+ "source": {
+  "key": "463e5a26df01ce2f458b09883fc48fa2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1127,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 133
+ }
+}

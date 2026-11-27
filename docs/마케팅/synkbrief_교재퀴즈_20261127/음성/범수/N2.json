@@ -1,0 +1,105 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N2",
+ "text": "붙인 한 줄은 이거예요. 이 쪽으로 퀴즈 다섯 개 내 줘, 답은 맨 끝에.",
+ "dur": 3.527,
+ "words": [
+  {
+   "text": "붙인",
+   "start": 0.02,
+   "end": 0.226
+  },
+  {
+   "text": "한",
+   "start": 0.267,
+   "end": 0.335
+  },
+  {
+   "text": "줄은",
+   "start": 0.377,
+   "end": 0.541
+  },
+  {
+   "text": "이거예요.",
+   "start": 0.596,
+   "end": 0.939
+  },
+  {
+   "text": "이",
+   "start": 1.405,
+   "end": 1.419
+  },
+  {
+   "text": "쪽으로",
+   "start": 1.46,
+   "end": 1.72
+  },
+  {
+   "text": "퀴즈",
+   "start": 1.761,
+   "end": 1.967
+  },
+  {
+   "text": "다섯",
+   "start": 2.008,
+   "end": 2.186
+  },
+  {
+   "text": "개",
+   "start": 2.228,
+   "end": 2.282
+  },
+  {
+   "text": "내",
+   "start": 2.324,
+   "end": 2.392
+  },
+  {
+   "text": "줘,",
+   "start": 2.433,
+   "end": 2.515
+  },
+  {
+   "text": "답은",
+   "start": 2.776,
+   "end": 2.995
+  },
+  {
+   "text": "맨",
+   "start": 3.036,
+   "end": 3.105
+  },
+  {
+   "text": "끝에.",
+   "start": 3.16,
+   "end": 3.527
+  }
+ ],
+ "source": {
+  "key": "8f6de5fc9e57918f2d72c6fbc3cb0b04",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1127,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

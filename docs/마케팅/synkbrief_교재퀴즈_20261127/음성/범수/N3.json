@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N3",
+ "text": "답은 숨겨 뒀다가, 보기를 누르면 그때 채점해 줘요. 틀리면 정답과 까닭까지 나와요.",
+ "dur": 5.142,
+ "words": [
+  {
+   "text": "답은",
+   "start": 0.02,
+   "end": 0.256
+  },
+  {
+   "text": "숨겨",
+   "start": 0.3,
+   "end": 0.52
+  },
+  {
+   "text": "뒀다가,",
+   "start": 0.565,
+   "end": 0.947
+  },
+  {
+   "text": "보기를",
+   "start": 1.359,
+   "end": 1.639
+  },
+  {
+   "text": "누르면",
+   "start": 1.683,
+   "end": 1.992
+  },
+  {
+   "text": "그때",
+   "start": 2.036,
+   "end": 2.198
+  },
+  {
+   "text": "채점해",
+   "start": 2.242,
+   "end": 2.551
+  },
+  {
+   "text": "줘요.",
+   "start": 2.595,
+   "end": 2.787
+  },
+  {
+   "text": "틀리면",
+   "start": 3.405,
+   "end": 3.787
+  },
+  {
+   "text": "정답과",
+   "start": 3.831,
+   "end": 4.199
+  },
+  {
+   "text": "까닭까지",
+   "start": 4.243,
+   "end": 4.655
+  },
+  {
+   "text": "나와요.",
+   "start": 4.699,
+   "end": 5.142
+  }
+ ],
+ "source": {
+  "key": "dc6ac85f429fb7c2ac6b0b3dcf45f58c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1127,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

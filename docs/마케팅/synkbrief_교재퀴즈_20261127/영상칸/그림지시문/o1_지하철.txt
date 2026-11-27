@@ -1,0 +1,15 @@
+Generate ONE photorealistic vertical photograph, exactly 9:16 portrait (1080 x 1920).
+
+Scene: inside a Seoul subway car on an evening commute, around 7 pm. A commuter in a dark navy wool coat sits on the bench seat. We see ONLY their lap, forearms and hands — the frame is cut at the chest, no face, no head, no other passengers' faces.
+
+On their lap lies an open, thick paperback exam-prep study book. The right-hand page faces up toward the ceiling and looks like Image 1: cream paper, a dark blue rule at the top, a bold dark-blue chapter heading, several dark-blue section headings, dense black body text, one small grey-and-white grid table on the left middle, and a dark-blue outlined box near the bottom. The text on the page is too small to read; do not try to write real words.
+
+The commuter's left hand holds the book open, thumb resting on the bottom edge of the left page. The right hand holds a plain black smartphone flat and level about 25 cm above the right-hand page, like taking a photo of the page. We see the phone from the side and slightly below, so we see its thin black edge and dark back with the camera lenses pointing down at the page. We do NOT see the phone screen.
+
+Camera: eye level with the lap, from the opposite side of the aisle, slightly to the left, 35 mm lens, gentle depth of field. The book and both hands are sharp and fill the middle of the frame: the book's top edge at about 40% of the frame height, the bottom of the book at about 78%.
+
+Background: behind and above the commuter, the dark subway window shows warm tunnel lights streaked by motion blur, and the edge of a stainless steel pole and the grey-blue seat. Soft cool fluorescent ceiling light from above, warm reflections on the window.
+
+Upper 30% of the frame: keep it calm and fairly dark (the window and the coat shoulder), with no bright spots, so large text can be placed over it later.
+
+Real photo, natural skin texture on the hands, five fingers on each hand, no extra hands, no rings, no watch, no logos, no brand names, no readable text anywhere, no captions, no watermark.
