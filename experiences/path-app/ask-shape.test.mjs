@@ -180,6 +180,19 @@ test('고친 줄 옮기기: 요청 꼴과 옮긴 줄의 숫자를 본다', () =>
   assert.equal(checkBriefEditOutput({ texts: ['프로그램은 2027년 3월 7일부터 7월 3일까지 진행됩니다.'] }, range.edits).length, 1);
   const money = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'By March 7, 2000 won must be paid.' }] });
   assert.equal(checkBriefEditOutput({ texts: ['3월 7일까지 2000원을 내야 합니다.'] }, money.edits).length, 1);
+  // 해는 1900~2099만 해로 읽는다. 소수점 앞 숫자는 해로 떼지 않는다.
+  const decimal = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'On March 7, 1500.5 thousand won is due.' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['3월 7일에 1500500원을 내야 합니다.'] }, decimal.edits).length, 1);
+  assert.throws(() => checkBriefEditOutput({ texts: ['3월 7일에 1500원과 5000원을 내야 합니다.'] }, decimal.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
+  const decimal2 = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'On March 7, 2000.5 thousand won is due.' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['3월 7일에 2000500원을 내야 합니다.'] }, decimal2.edits).length, 1);
+  // 일 · 월 · 해 순서도 해와 금액을 나눈다.
+  const mdy = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'By March 7, 2027,500 won must be paid.' }] });
+  const dmy = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'By 7 March 2027,500 won must be paid.' }] });
+  for (const e of [mdy, dmy]) assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일까지 500원을 내야 합니다.'] }, e.edits).length, 1);
+  const dmy2 = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'Pay by 7 March 2027.' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일까지 내세요.'] }, dmy2.edits).length, 1);
+  assert.throws(() => checkBriefEditOutput({ texts: ['2027년 7월 3일까지 내세요.'] }, dmy2.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
   assert.throws(() => checkBriefEditOutput({ texts: [] }, r.edits), { code: 'BRIEF_BAD_OUTPUT' });
   assert.throws(() => validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [] }), { code: 'BRIEF_BAD_REQUEST' });
   assert.throws(() => validateBriefEditRequest({ request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'x', text_ko: '가짜' }] }), { code: 'BRIEF_BAD_REQUEST' });
@@ -270,7 +283,9 @@ test('위험 낱말: 직접적인 영어 위기 표현', () => {
 test('위험 낱말 관문 잣대: 언어마다 직접 알리는 문장은 잡고, 흔한 일상 말은 잡지 않는다', () => {
   for (const t of ['남자친구가 저를 때렸어요', '맞아서 병원에 갔어요', '죽고 싶어요', '살려주세요', 'He said he will kill me', 'I was raped', 'Намайг зодлоо', 'намайг ална гэсэн', 'Амиа хорломоор байна']) assert.equal(looksUrgent(t), true, t);
   for (const t of ['경험을 살려서 지원하고 싶어요', '예방주사 맞았어요', 'I like grape juice', 'Please help me with the form', 'Санхүүгийн дарамт их байна', '정답 맞았어요']) assert.equal(looksUrgent(t), false, t);
-  // 낱말 목록은 모델이 못 볼 때의 넓은 안전망이다: 놓치지 않는 쪽으로 둔다(「hit me with a late fee」는 한 번 더 뜬다 — 받아들인 거짓 양성).
+  // 낱말 목록은 모델이 못 볼 때의 넓은 안전망이다: 놓치지 않는 쪽으로 둔다. 돈 · 요금을 「맞았다」는 관용 표현만 뺀다.
+  for (const t of ['My landlord hit me with a late fee.', 'They hit me with a $50 fine', 'The school hits me with a surprise bill every month', 'hit me with the charges']) assert.equal(looksUrgent(t), false, t);
+  for (const t of ['He hit me with a belt and then hit me with a late fee.', 'They hit me with a late fee. Then he hit me.']) assert.equal(looksUrgent(t), true, t);
   for (const t of ['집에서 아빠한테 맞았어요.', '남자친구에게 맞고 있어요', 'He hit me with a belt', 'My partner hit me last night.', 'My dad hit me with a belt because rent was overdue.']) assert.equal(looksUrgent(t), true, t);
 });
 

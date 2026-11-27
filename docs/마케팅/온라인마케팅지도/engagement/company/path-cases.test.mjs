@@ -240,7 +240,7 @@ test('보관 정리: 끝난 건은 76일에 알림 표시, 90일에 지움(내�
   f.advance(14 * DAY); f.cases.maintain();
   assert.equal(f.store.get(PATH_CASE_KINDS.cases, made.id), null);
   const stone = f.store.get(PATH_CASE_KINDS.tombstones, made.id);
-  assert.deepEqual(Object.keys(stone).sort(), ['closedDay', 'createdDay', 'erasedAt', 'id', 'kind', 'reason', 'taskCount']);
+  assert.deepEqual(Object.keys(stone).sort(), ['closedDay', 'createdDay', 'erasedAt', 'id', 'kind', 'purged', 'reason', 'taskCount']);
   assert.equal(stone.taskCount, 2); assert.equal(stone.kind, 'act'); assert.equal(stone.reason, 'retention');
   // 급함 건은 학생이 확인(목록 읽기)해도 직원이 아무도 쓰지 않으면 180일에 끝낸다(updatedAt 기준).
   f.advance(90 * DAY + 1000); f.cases.maintain();
@@ -299,8 +299,16 @@ test('두 단계 지우기: 회사 주인의 확인 번호가 있어야 지우�
   assert.throws(() => f.cases.erase(f.users.owner, made.id, { revision: rev, token: check.token }), code('CASE_ERASE_CONFIRM'));
   const fresh = f.cases.eraseCheck(f.users.owner, made.id, { revision: rev }).erasure;
   assert.equal(f.cases.erase(f.users.owner, made.id, { revision: rev, token: fresh.token }).erased.id, made.id);
-  assert.equal(f.cases.erase(f.users.owner, made.id, { revision: rev, token: fresh.token }).erased.repeated, true);
+  assert.deepEqual(f.cases.erase(f.users.owner, made.id, { revision: rev, token: fresh.token }).erased, { id: made.id, repeated: true, purge: 'pending' });
   assert.equal(f.cases.studentList(s).cases.length, 0);
+  // 정리 상태는 건마다 표식으로 본다: 시계가 멈춰 있어도(같은 밀리초) 자른 뒤에는 done, 그 뒤에 지운 건은 pending.
+  f.cases.maintain();
+  assert.equal(f.cases.erase(f.users.owner, made.id, { revision: rev, token: fresh.token }).erased.purge, 'done');
+  const u = f.student(), other = f.cases.studentCreate(u, f.handoff(u)).body.case, rev2 = f.store.get(PATH_CASE_KINDS.cases, other.id).revision;
+  const token2 = f.cases.eraseCheck(f.users.owner, other.id, { revision: rev2 }).erasure.token;
+  f.cases.erase(f.users.owner, other.id, { revision: rev2, token: token2 });
+  assert.equal(f.cases.erase(f.users.owner, other.id, { revision: rev2, token: token2 }).erased.purge, 'pending');
+  assert.equal(f.cases.erase(f.users.owner, made.id, { revision: rev, token: fresh.token }).erased.purge, 'done');
 });
 
 test('번역: 학생 글은 한국어 번역을 덧붙이고, 번역이 없으면 원문만 둔다', async t => {
@@ -456,7 +464,7 @@ test('지운 건 표식은 학생이 지울 때만 · 지운 시각 없이, 판�
   assert.equal(g.urgentCalls.length, 1, '한 번만 본다');
 });
 
-test('판정 전에 직원이 끝낸 건이어도 위험이면 급함을 올리고, 한국어 글은 모델에 보내지 않고 위험 낱말로 바로 본다', async t => {
+test('판정 전에 직원이 끝낸 건이어도 위험이면 급함을 올리고, 한국어 글도 모델이 뜻으로 본다', async t => {
   let release;
   const gate = new Promise(resolve => { release = resolve; });
   const sent = [];
@@ -467,10 +475,11 @@ test('판정 전에 직원이 끝낸 건이어도 위험이면 급함을 올리�
   release(); await f.cases.waitForIdle();
   assert.equal(f.store.get(PATH_CASE_KINDS.cases, made.id).urgent, true);
   assert.equal(f.urgentCalls.length, 1);
-  // 한국어 메모는 판정 부르기에 실리지 않는다.
+  // 한국어 메모도 판정 부르기에 실린다(동의 문구가 알린 대로). 위험 낱말로 바로 올리지 않고 모델의 답으로 올린다.
   const before = sent.length, u = f.student();
   const ko = f.cases.studentCreate(u, f.teen({ lang: 'ko', note: '집에서 아빠한테 맞았어요' })).body.case;
-  assert.equal(ko.urgent, true);
+  assert.equal(ko.urgent, false);
   await f.cases.waitForIdle();
-  assert.equal(sent.slice(before).filter(x => x.judge).length, 0);
+  assert.equal(sent.slice(before).filter(x => x.judge).length, 1);
+  assert.equal(f.store.get(PATH_CASE_KINDS.cases, ko.id).urgent, true);
 });

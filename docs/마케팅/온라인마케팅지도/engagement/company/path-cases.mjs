@@ -250,8 +250,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         row = { id, synkUserId: identity.synkUserId, kind: req.kind, status: 'new', assigneeId: defaultAssignee(), revision: 1, lastStudentCheckAt: at,
           urgent: false, urgentAt: null, createdAt: at, updatedAt: at, closedAt: null, retentionNoticeAt: null, hidden: false };
         // 메모의 위험은 번역 때 모델이 뜻으로 본다(judge). 모델을 부를 수 없으면 지금 위험 낱말로 본다.
-        // 한 요청 안에서는 한 번만 정한다. 한국어 글은 옮길 일이 없어 모델에 보내지 않고 위험 낱말로 바로 본다(동의는 번역만 안내한다).
-        const byModel = modelJudges() && body.lang !== 'ko';
+        // 한 요청 안에서는 한 번만 정한다. 한국어 글도 모델이 뜻으로 본다(동의 문구 「내 글이 위험을 알리는지도 봐요」).
+        const byModel = modelJudges();
         if (req.kind === 'urgent' || (body.note && !byModel && looksUrgent(body.note))) { const raised = raiseUrgent(row, at); row = raised.row; urgent = { target: raised.target }; }
         if (body.note && byModel) body.noteJudgePending = true;
         row = save(row, body);
@@ -289,7 +289,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       if (repeated) return current;
       if (!open(current)) throw fail(409, 'CASE_CLOSED', '끝난 상담이에요. 다시 연결하면 새 상담이 열려요.');
       created = addStudentMessage(body, text, requestId, at);
-      const byModel = modelJudges() && body.lang !== 'ko'; // 한 요청 안에서 한 번만, 한국어 글은 모델에 보내지 않는다
+      const byModel = modelJudges(); // 한 요청 안에서 한 번만 정한다(한국어 글도 모델이 본다)
       if (byModel) created.judgePending = true;
       let next = touch({ ...current, status: current.status === 'answered' ? 'reviewing' : current.status, revision: current.revision + 1, updatedAt: at }, at);
       // 열린 건에 쓴 글의 위험은 번역 때 모델이 본다. 모델을 부를 수 없으면 지금 위험 낱말로 보고 급함 표시를 올린다.
@@ -336,7 +336,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); erasedIntakes.push(intake); if (intake.requestId) { const gone = erasedRequestKey(intake.synkUserId, intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
       // 학생이 직접 지운 건만 「다시 지우기」 답용 표식을 8일 둔다. 지운 시각은 두지 않고(1년 남는 줄과 시각으로 잇지 않게) 끝나는 날은 하루 단위로 내려 8일을 넘지 않게 둔다.
       if (reason === 'student') { const owner = erasedOwnerKey(intakeSubject(row.synkUserId), row.id), day = Math.floor(Date.parse(at) / DAY) * DAY; store.put(K.nonces, owner, { nonce: owner, exp: day + L.intakeDays * DAY, purged: false }); }
-      store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
+      store.put(K.tombstones, row.id, { purged: false, id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     for (const intake of erasedIntakes) rememberErased(intake); // 지우기가 저장된 뒤에만 센다(되돌려지면 세지 않는다)
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
@@ -346,16 +346,19 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   // 지운 뒤 WAL 파일을 비운다(secure_delete는 본 파일만 덮는다). 다른 읽기가 붙잡고 있어 못 비우면 정리(maintain) 때 다시 한다.
   let walPending = true; // 시작한 뒤 첫 보관 정리에서 한 번 자른다(앞 실행이 지운 뒤 자르기 전에 멈췄을 수 있다)
-  let truncatedAt = null; // 마지막으로 WAL을 다 자른 때. 그 뒤에 지운 건만 정리 대기다(건별 purge 상태).
   function truncateWal() {
     // 다른 읽기가 붙잡고 있으면 기다리지 않고(busy_timeout 0) 다음 보관 정리 때 다시 한다 — 회사 서버를 막지 않는다.
-    const startedAt = now();
     try { store.db.exec('PRAGMA busy_timeout=0'); const r = store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get(); walPending = Boolean(r && r.busy); } catch { walPending = true; }
     finally { try { store.db.exec('PRAGMA busy_timeout=5000'); } catch { /* 저장소가 닫혔다 */ } }
     if (!walPending) {
-      truncatedAt = startedAt;
       // WAL을 다 잘랐으면 그 앞에 지운 건의 표식은 모두 정리 끝이다.
-      try { store.transaction(() => { for (const n of store.all(K.nonces)) if (typeof n.nonce === 'string' && n.nonce.startsWith('erased-owner:') && !n.purged) store.put(K.nonces, n.nonce, { ...n, purged: true }); }); } catch { /* 다음 정리 때 */ }
+      // 표식을 올리지 못했으면 다음 정리 때 다시 자르고 다시 올린다(GA5).
+      try {
+        store.transaction(() => {
+          for (const n of store.all(K.nonces)) if (typeof n.nonce === 'string' && n.nonce.startsWith('erased-owner:') && !n.purged) store.put(K.nonces, n.nonce, { ...n, purged: true });
+          for (const t of store.all(K.tombstones)) if (t.purged === false) store.put(K.tombstones, t.id, { ...t, purged: true });
+        });
+      } catch { walPending = true; }
     }
     return !walPending;
   }
@@ -502,7 +505,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     if (who.role !== 'owner') throw fail(403, 'CASE_FORBIDDEN', '회사 주인만 지울 수 있어요.');
     // 다시 부르면 WAL 정리가 끝났는지(purge: done) 알려 준다.
     const tomb = typeof id === 'string' ? store.get(K.tombstones, id.toLowerCase()) : null;
-    if (tomb && !store.get(K.cases, id.toLowerCase())) return { erased: { id: id.toLowerCase(), repeated: true, purge: truncatedAt && truncatedAt > tomb.erasedAt ? 'done' : 'pending' } };
+    if (tomb && !store.get(K.cases, id.toLowerCase())) return { erased: { id: id.toLowerCase(), repeated: true, purge: tomb.purged === false ? 'pending' : 'done' } };
     const row = staffCase(who, id); checkRevision(row, input);
     const match = typeof input.token === 'string' && /^(\d{13})\.[0-9a-f]{64}$/.exec(input.token);
     if (!match || Number(match[1]) <= nowMs() || !same(confirmation(who.user.id, row, Number(match[1])), input.token)) throw fail(409, 'CASE_ERASE_CONFIRM', '지우기 확인 시간이 지났거나 확인한 내용과 달라요. 「지우기 전에 확인」을 다시 눌러 주세요.');
