@@ -437,7 +437,7 @@ test('지운 건 표식은 학생이 지울 때만 · 지운 시각 없이, 판�
   const c = f.cases.studentCreate(s, f.handoff(s)).body.case;
   f.cases.studentDelete(s, c.id);
   const marks = f.store.all(PATH_CASE_KINDS.nonces).filter(n => n.nonce.startsWith('erased-owner:'));
-  assert.equal(marks.length, 1); assert.equal('erasedAt' in marks[0], false); assert.equal(marks[0].exp % DAY, 0);
+  assert.equal(marks.length, 1); assert.equal('erasedAt' in marks[0], false); assert.equal(marks[0].exp % DAY, 0); assert.ok(marks[0].exp <= f.now() + 8 * DAY, '8일을 넘지 않는다');
   // 주인이 지운 건에는 표식을 두지 않는다.
   const u = f.student(), d = f.cases.studentCreate(u, f.handoff(u)).body.case;
   const token = f.cases.eraseCheck(f.users.owner, d.id, { revision: f.store.get(PATH_CASE_KINDS.cases, d.id).revision }).erasure.token;
