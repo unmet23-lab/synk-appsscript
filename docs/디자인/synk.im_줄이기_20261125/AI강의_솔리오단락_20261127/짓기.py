@@ -8,6 +8,8 @@ import os
 import shutil
 import sys
 
+from PIL import Image
+
 W = sys.argv[1]
 LIVE = os.path.join(W, 'live')
 DAY = '20261127'
@@ -25,36 +27,39 @@ def once(s, a, b, name):
 
 
 REAL = '솔리오의 실제 화면입니다. 이름과 숫자는 예시 값입니다.'
+# 사무실 · 원클릭은 아직 볼 계정(미리보기)에만 열려 있다(Fable 검수 ai-solio-20261127 F1, desktop/src/main.cjs · solio-backup.cjs)
+NOT_OPEN = '솔리오의 실제 화면이며, 아직 모든 회원에게 열지 않았습니다.'
 # (열쇠, 줄 이름, 한 줄, 아래 작은 글, 대체 글)
 TOUR = {'ko': [
     ('todo', '한 번에 처리', '흩어진 할 일을 급한 순서로 줄 세웁니다. 단추 하나로 1순위부터 한 장씩 끝냅니다.', REAL,
      '솔리오의 「한 번에 처리」 화면. 맨 앞 카드는 1순위 「고객이 기다립니다 · 견적부」로, 견적 문의에 보낼 답장 초안이 있다고 알리고 「초안 복사」 단추를 둔다. 뒤에 다음 일 셋이 겹쳐 있다.'),
-    ('office', '사무실', '부서마다 AI 직원이 무엇을 하는지, 누가 내 승인을 기다리는지 한 화면에 보입니다.', REAL,
+    ('office', '사무실', '부서마다 AI 직원이 무엇을 하는지, 누가 내 승인을 기다리는지 한 화면에 보입니다.', NOT_OPEN,
      '솔리오의 사무실 화면. 왼쪽에 마케팅부 · 개발부 같은 부서가 있고, 가운데 개발부 책상의 AI 직원이 3분 전에 승인을 물었다고 알린다.'),
     ('plan', '사업계획서', '계획서를 넣으면 심사위원 셋이 항목마다 점수를 매기고, 가장 약한 곳부터 고치게 돕습니다.', '지금 다듬고 있는 화면입니다. 점수는 예시 값입니다.',
      '솔리오 기획부의 사업계획서 심사 화면. 심사위원 셋이 책상에 앉아 점수를 매겼고, 평균 3.1점과 가장 약한 곳이 신뢰성이라는 한 줄이 보인다.'),
-    ('backup', '원클릭 백업', '단추 한 번에 백업하고, 되살려 맞춰 보고, 공간을 비우고, 업데이트까지 확인합니다.', REAL,
-     '솔리오 원클릭 화면. 「지금 백업하는 중입니다(57%)」 아래 C: 드라이브 남은 자리 118.2GB가 크게 보이고, 오른쪽에 백업 · 되살리기 확인 · 공간 · 업데이트 확인 네 차례가 있다.'),
+    ('backup', '원클릭 백업', '단추 한 번에 백업하고, 되살려 맞춰 보고, 비울 수 있는 공간을 찾고, 업데이트까지 확인합니다.', NOT_OPEN + ' 백업은 Windows에서만 씁니다.',
+     '솔리오 원클릭 화면. 지금 바뀐 파일을 올리는 백업 차례이고, 그 아래로 되살리기 확인 · 공간 · 업데이트 확인 차례가 이어진다.'),
     ('safe', '보안', '로그인이 풀린 계정을 바로 알려 줍니다. API 키는 이 PC에만 암호화해 두고, 로그인 정보와 사용량은 이 PC 밖으로 보내지 않습니다.', REAL,
-     '솔리오의 계정 관리 화면. 연결한 계정마다 남은 한도와 요금이 보이고, 로그인이 풀린 계정 하나에 「다시 로그인해야 합니다」가 떠 있다.'),
+     '솔리오의 계정 관리 화면. 로그인이 풀린 계정 하나에 「다시 로그인해야 합니다」와 다시 로그인하면 이어서 읽는다는 줄이 떠 있다.'),
     ('subs', '구독', '구독마다 남은 양과 다시 차는 때를 모아, 지금 쓸 계정을 골라 줍니다.', REAL,
-     '솔리오의 AI 구독 관리 화면. 서비스마다 지금 쓸 수 있는 계정 수와 남은 양이 막대로 보이고, 오른쪽 「솔리오 보고」는 다 쓴 구독이 언제 다시 열리는지와 그동안 쓸 계정을 알린다.'),
+     '솔리오의 AI 구독 관리 화면. 서비스마다 지금 쓸 수 있는 계정 수와 남은 양이 막대로 보이고, 다 쓴 구독에는 다시 열리는 때가 적혀 있다.'),
 ]}
 
 REAL_EN = 'An actual SOLIO screen (in Korean). Names and numbers are example values.'
+NOT_OPEN_EN = 'An actual SOLIO screen (in Korean), not yet open to all members.'
 TOUR['en'] = [
     ('todo', 'One-click to-dos', 'Scattered tasks are lined up by urgency. One button takes you through them, top priority first, one card at a time.', REAL_EN,
      'SOLIO’s one-click to-do screen. The front card is priority 1, a customer waiting on the quotes department: a reply draft for a quote request is ready, with a button to copy it. Three more tasks are stacked behind it.'),
-    ('office', 'Office', 'See what the AI staff in each department are doing, and who is waiting for your approval, on one screen.', REAL_EN,
+    ('office', 'Office', 'See what the AI staff in each department are doing, and who is waiting for your approval, on one screen.', NOT_OPEN_EN,
      'SOLIO’s office screen. Departments such as marketing and development are listed on the left; in the middle, an AI worker at the development desk asked for approval three minutes ago.'),
     ('plan', 'Business plan', 'Hand in your plan and three judges score every item, then help you fix the weakest part first.', 'A screen we are still refining (in Korean). The scores are example values.',
      'SOLIO’s business plan review screen. Three judges sit at a desk and have scored the plan; a line shows an average of 3.1 and credibility as the weakest point.'),
-    ('backup', 'One-click backup', 'One button backs up your files, test-restores them, frees up space and checks for updates.', REAL_EN,
-     'SOLIO’s one-click screen. Under “Backing up now (57%)”, 118.2 GB left on the C: drive is shown large, with four steps on the right: backup, restore check, space and update check.'),
+    ('backup', 'One-click backup', 'One button backs up your files, test-restores them, finds space you can free and checks for updates.', NOT_OPEN_EN + ' Backup runs on Windows only.',
+     'SOLIO’s one-click screen. The backup step is uploading changed files, followed by the restore check, space and update check steps.'),
     ('safe', 'Security', 'Flags any account that has been logged out. API keys stay encrypted on this PC, and login details and usage never leave it.', REAL_EN,
-     'SOLIO’s account screen. Each connected account shows its remaining limit and price, and one logged-out account says it needs to sign in again.'),
+     'SOLIO’s account screen. One logged-out account says it needs to sign in again and will resume reading once you do.'),
     ('subs', 'Subscriptions', 'Gathers what is left on each subscription and when it refills, then picks the account to use right now.', REAL_EN,
-     'SOLIO’s AI subscription screen. Each service shows how many accounts are usable now and what is left on a bar; on the right, the SOLIO report says when a used-up subscription reopens and which account to use meanwhile.'),
+     'SOLIO’s AI subscription screen. Each service shows how many accounts are usable now and what is left on a bar, and a used-up subscription shows when it reopens.'),
 ]
 HEAD = {
     'ko': ('솔리오 앱', 'AI 1인 기업가에게 필요한 것을<br>솔리오 하나에 준비하고&nbsp;있습니다',
@@ -66,7 +71,7 @@ HEAD = {
 }
 # 쪽마다 걷을 옛 솔리오 칸의 머리와 강사 구역 꼬리표
 PAGE = {'ko': ('ai/index.html', '솔리오 앱', '강사'), 'en': ('en/ai/index.html', 'SOLIO app', 'Teacher')}
-SIZE = {'w': (1440, 820), 'm': (820, 640)}
+SIZE = {'w': (1440, 820)}
 
 AI_CSS = '''<style>
 .app-sec{scroll-margin-top:80px}
@@ -84,7 +89,7 @@ AI_CSS = '''<style>
 .jelly::before{content:"";position:absolute;left:10px;right:10px;top:2px;height:46%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,0))}
 .tour-tabs:not(.on) .jelly{display:none}
 .app-shot{margin:0}
-.app-shot[hidden]{display:none}
+.app-panel[hidden]{display:none}
 .app-shot .frame{background:#0a0a0b;border-radius:var(--r-lg);padding:clamp(6px,.9vw,12px);box-shadow:var(--shadow)}
 .app-shot img{display:block;width:100%;height:auto;border-radius:calc(var(--r-lg) - 8px)}
 .app-shot figcaption{margin-top:16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;align-items:baseline}
@@ -96,6 +101,10 @@ AI_CSS = '''<style>
 @media (max-width:820px){.app-shot figcaption{grid-template-columns:1fr}.app-shot figcaption small{text-align:left}}
 @media (max-width:600px){
   .tour-tabs button{font-size:14px;padding:11px 14px}
+  /* 옆으로 더 있는 칸이 있으면 그쪽 끝을 흐리게 지운다 */
+  .tour-tabs.more-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent)}
+  .tour-tabs.more-l{-webkit-mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent)}
+  .tour-tabs.more-l.more-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent)}
   .app-shot .frame{padding:6px}
 }
 @media (prefers-reduced-motion:reduce){.tour-tabs button{transition:none}}
@@ -118,14 +127,14 @@ tabs.forEach((b,i)=>{b.addEventListener('click',()=>pick(b));b.addEventListener(
 if(e.key==='Home'||e.key==='End'){e.preventDefault();pick(tabs[e.key==='Home'?0:tabs.length-1],true);return;}
 if(k){e.preventDefault();pick(tabs[(i+k+tabs.length)%tabs.length],true);}});});
 const now=()=>tabs.find(t=>t.getAttribute('aria-selected')==='true')||tabs[0];
-bar.classList.add('on');place(now(),false);
-addEventListener('resize',()=>place(now(),false));document.fonts&&document.fonts.ready.then(()=>place(now(),false));})();</script>
+const edge=()=>{const m=bar.scrollWidth-bar.clientWidth;bar.classList.toggle('more-l',m>2&&bar.scrollLeft>2);bar.classList.toggle('more-r',m>2&&bar.scrollLeft<m-2);};
+bar.classList.add('on');place(now(),false);edge();bar.addEventListener('scroll',edge,{passive:true});
+addEventListener('resize',()=>{place(now(),false);edge();});document.fonts&&document.fonts.ready.then(()=>place(now(),false));})();</script>
 '''
 
 
 def ai_section(lang):
     w, h = SIZE['w']
-    mw, mh = SIZE['m']
     tabs = ''.join(
         f'<button type="button" role="tab" id="tour-t-{k}" aria-controls="tour-p-{k}" aria-selected="{str(i == 0).lower()}"{"" if i == 0 else " tabindex=\"-1\""}>{name}</button>'
         for i, (k, name, *_rest) in enumerate(TOUR[lang]))
@@ -134,11 +143,13 @@ def ai_section(lang):
     for i, (k, name, line, small, alt) in enumerate(TOUR[lang]):
         hid = '' if i == 0 else ' hidden'
         load = 'eager' if i == 0 else 'lazy'
+        mw, mh = Image.open(os.path.join(W, 'img', f'solio-tour-{k}-m.webp')).size
+        # figcaption을 가진 figure에는 role을 주지 않는다(Fable F5). 탭 판은 바깥 div다
         panels += f'''
-    <figure class="app-shot" role="tabpanel" id="tour-p-{k}" aria-labelledby="tour-t-{k}"{hid}>
+    <div class="app-panel" role="tabpanel" id="tour-p-{k}" aria-labelledby="tour-t-{k}"{hid}><figure class="app-shot">
       <div class="frame"><picture><source media="(max-width:600px)" srcset="/assets/v11/solio-tour-{k}-m-{DAY}.webp" width="{mw}" height="{mh}"><img src="/assets/v11/solio-tour-{k}-{DAY}.webp" width="{w}" height="{h}" alt="{alt}" loading="{load}"></picture></div>
       <figcaption><b>{name}</b><span>{line}</span><small>{small}</small></figcaption>
-    </figure>'''
+    </figure></div>'''
     return f'''  <section class="sec app-sec" id="solio" aria-labelledby="solio-title">
     <div class="sec-head">
       <p class="tag">{tag}</p>
