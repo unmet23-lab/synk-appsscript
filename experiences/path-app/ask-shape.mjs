@@ -96,8 +96,8 @@ const UNIT = [['억', 1e8], ['만', 1e4], ['сая', 1e6], ['мянга', 1e3], 
 function expandUnits(text) {
   let s = String(text ?? '').replace(/(\d),(?=\d{3}(?!\d))/g, '$1');
   // 한국어 금액을 한 수로 읽는다: 「1억 2000만」, 「82만 500원」(뒤 단위를 따로 세면 「82만 원」이 근거에 있는 것처럼 보인다).
-  s = s.replace(/(\d+)\s*억\s*(\d+)\s*만(?:\s*(\d{1,4})(?=\s*원))?/g, (m, a, b, c) => ` ${Number(a) * 1e8 + Number(b) * 1e4 + (c ? Number(c) : 0)} `);
-  s = s.replace(/(\d+)\s*만\s*(\d{1,4})(?=\s*원)/g, (m, a, b) => ` ${Number(a) * 1e4 + Number(b)} `);
+  s = s.replace(/(?<![\d.])(\d+(?:\.\d+)?)\s*억\s*(\d+)\s*만(?:\s*(\d{1,4})(?=\s*원))?/g, (m, a, b, c) => ` ${Math.round(Number(a) * 1e8) + Number(b) * 1e4 + (c ? Number(c) : 0)} `);
+  s = s.replace(/(?<![\d.])(\d+)\s*만\s*(\d{1,4})(?=\s*원)/g, (m, a, b) => ` ${Number(a) * 1e4 + Number(b)} `);
   for (const [word, mult] of UNIT) {
     s = s.replace(new RegExp(`(\\d+(?:\\.\\d+)?)\\s*${word}`, 'giu'), (m, n) => ` ${Math.round(Number(n) * mult)} `);
   }
