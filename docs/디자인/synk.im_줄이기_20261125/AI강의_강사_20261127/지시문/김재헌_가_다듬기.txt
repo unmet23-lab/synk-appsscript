@@ -1,0 +1,14 @@
+Image 1 is the man to keep. Image 2 is the style to match.
+
+Redraw the man in Image 1 as the same person: same face shape, same short black side-parted hair, same thin black rectangular glasses, same navy crew-neck knit with the white T-shirt collar. Keep his calm, friendly closed-mouth smile and his pose.
+
+Change only the rendering style, so that he sits naturally next to Image 2 on one web page:
+- the same stylized 3D animated-film look as Image 2, a little less realistic than Image 1;
+- slightly larger, rounder dark-brown eyes with one small catchlight each, like Image 2;
+- smoother, softer skin with a gentle warm blush on the cheeks, fewer fine skin details;
+- softly sculpted hair strands with the same soft sheen as Image 2.
+
+Do not give him the face, hair or shirt of Image 2.
+
+Framing: square 1:1, head and shoulders, the same size and position as Image 1. The face is turned about 15 degrees toward the viewer's left and looks at the camera.
+Background: flat soft sky blue (#BFDDF7). No text, no letters, no logos, no props, no frame.
