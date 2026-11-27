@@ -9,8 +9,9 @@ export const SOLIO_BACKUP_NAME = '원클릭';
 // 11-26 한 몸(experiences/solo-backup-rust/SOLIO_ONE_CLIENT.md, 유호님 시안 「가」): 화면 글에서 「엔진」 · 「엔진 창」을 뺐다.
 // 손님 말은 설치 · 업데이트 · 지우기 때만 「백업 부품」이고, 나머지는 솔리오 화면 이름(파일 되살리기 · 새 PC로 옮겨 오기 · 설정)이다.
 // 호스트가 있는 백업 부품(0.8.0 이상)은 그 화면들을 이 방 안에 연다(room). 옛 판은 지금처럼 따로 창을 연다
-// 주의 낱말의 이름은 방 안 화면의 길 이름(DOOR_NAMES)과 같게 쓴다. 문장 · 단추 · 길이 같은 것을 다르게 부르지 않게 한다(Fable workbackup-solio-one-ui-20261127 F4)
-const TOPIC_NAMES = Object.freeze({ status: '백업 상태', folders: '지키는 폴더', changes: '많이 바뀐 파일', devices: '내 기기', restore: '되살리기 증명', space: '공간', signin: 'Google 계정', update: '백업 부품 업데이트' });
+// 주의 낱말의 이름은 방 안 화면의 길 이름(DOOR_NAMES)과 같게 쓴다. 문장 · 단추 · 길이 같은 것을 다르게 부르지 않게 한다(Fable workbackup-solio-one-ui-20261127 F4 · -r2 FA2).
+// restore 낱말은 서버가 부탁한 되살리기(엔진 solio.cjs serverRestore)이고 「파일 되살리기」 화면에서 한다
+const TOPIC_NAMES = Object.freeze({ status: '백업 상태', folders: '지키는 폴더', changes: '많이 바뀐 파일', devices: '내 기기', restore: '파일 되살리기', space: '공간', signin: 'Google 계정', update: '백업 부품 업데이트' });
 const PROOF_WORDS = Object.freeze({ passed: '통과', failed: '실패', incomplete: '덜 끝남', skipped: '건너뜀' });
 const STAGE_WORDS = Object.freeze({ backup: '백업하는', check: '백업을 점검하는', proof: '되살리기를 증명하는', restore: '파일을 되살리는', move: '옮겨 오는', setup: '처음 설정하는', free: '공간을 비우는', other: '일하는' });
 const UNINSTALL = 'Windows 설정의 「설치된 앱」에서 「SYNK 업무 백업」을 지웁니다. 솔리오를 지워도 백업 부품은 남아 백업을 이어 갑니다.';
@@ -226,10 +227,11 @@ function roomScene(snap, base, now) {
       // 지키는 중이어도 주의 낱말이 함께 올 수 있다(되살리기 · 업데이트 · 공간 따위). 있으면 그 일이 할 일의 맨 앞이다
       const topics = topicList(s.attention || []);
       say = Number.isSafeInteger(s.folders) && s.folders > 0 ? `업무 폴더 ${s.folders}개를 지키고 있습니다.` : '이 PC의 업무 파일을 지키고 있습니다.';
-      then = job + (topics ? `다만 확인할 일이 있습니다: ${topics}. ` : proofFailed ? `마지막 되살리기 증명 결과는 「${PROOF_WORDS[s.proof.result] || '알 수 없음'}」입니다. 「증명 확인」을 눌러 봐 주세요. ` : '') + last;
+      then = job + (topics ? `다만 확인할 일이 있습니다: ${topics}. ` : proofFailed ? `마지막 되살리기 증명 결과는 「${PROOF_WORDS[s.proof.result] || '알 수 없음'}」입니다. 「백업 상태 보기」를 눌러 「되살려 본 날」 줄을 봐 주세요. ` : '') + last;
       note = topics || proofFailed ? '확인 필요' : '지키는 중';
       if (topics) first = look(knownTopics(s.attention)[0], { primary: true });
-      else if (proofFailed) first = act('증명 확인', 'backup-open', 'restore', { primary: true });
+      // 증명 결과는 백업 상태 화면의 「되살려 본 날」 줄에 있다(파일 되살리기 화면이 아니다, -r2 FA2)
+      else if (proofFailed) first = look('status', { primary: true });
       break;
     }
     case 'starting': say = '첫 백업을 준비하고 있습니다.'; then = job + '첫 백업이 끝나면 로그인해 있는 동안 매시간 저절로 지킵니다.'; note = '첫 백업 전'; break;
@@ -620,7 +622,7 @@ export function oneClickBoard(snap, now = Date.now()) {
     const freeLost = freeOn && !!f && !f.result && ['gone', 'expired'].includes(f.stage);
     const then = topics ? `다만 확인할 일이 있습니다: ${topics}.`
       : snap.view === 'checking' ? '다만 예정된 백업 소식이 2시간 넘게 없습니다. 「백업 상태 보기」를 눌러 확인해 주세요.'
-        : pr.state === 'fail' ? '다만 마지막 되살리기 확인이 실패했습니다. 「증명 확인」을 눌러 결과를 봐 주세요.'
+        : pr.state === 'fail' ? '다만 마지막 되살리기 확인이 실패했습니다. 「백업 상태 보기」를 눌러 「되살려 본 날」 줄을 봐 주세요.'
           : freeLost ? '다만 비우기 결과를 확인하지 못했습니다. 공간 화면에서 봐 주세요.'
           // 2판 미리 보기: 지금 켜면 비울 수 있는 양과 켜는 곳(공간 화면)을 말한다. 원클릭 판은 켜지 못한다
           : canFree ? `공간 화면에서 「누를 때 비우기」를 켜면 다음 누름부터 ${gb(canFree)}쯤 비웁니다.`

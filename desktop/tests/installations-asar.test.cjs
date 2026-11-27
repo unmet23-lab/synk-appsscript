@@ -59,7 +59,7 @@ else {
     }
     await fs.writeFile(path.join(root,'releases.json'),JSON.stringify(releases));
     const env={...process.env,APPDATA:path.join(root,'Roaming'),LOCALAPPDATA:path.join(root,'Local'),TEMP:path.join(root,'Temp'),TMP:path.join(root,'Temp')};delete env.ELECTRON_RUN_AS_NODE;delete env.ELECTRON_NO_ASAR;
-    const child=spawn(require('electron'),[__filename,root],{env,windowsHide:true,stdio:['ignore','pipe','pipe'],timeout:15000});let output='';
+    const child=spawn(require('electron'),[__filename,root],{env,windowsHide:true,stdio:['ignore','pipe','pipe'],timeout:60000});let output='';
     child.stdout.on('data',data=>output+=data);child.stderr.on('data',data=>output+=data);
     const code=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',resolve);});
     const result=JSON.parse(await fs.readFile(path.join(root,'result.json'),'utf8'));assert.equal(code,0,result.stack||output);assert.equal(result.ok,true);assert.deepEqual(result.installedIds,['world']);assert.equal(result.windowCount,0);

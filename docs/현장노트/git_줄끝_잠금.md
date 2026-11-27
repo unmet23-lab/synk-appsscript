@@ -863,6 +863,7 @@ ode_modules`로 끊고 공용 `node_modules`가 남았는지 본 뒤, 커밋이 
 - 고침: 그 워크트리에서 `npm ci --prefix packages/atlas --no-audit --no-fund`(잠금 파일 그대로, `node_modules`는 Git 밖) 뒤 다시 올린다. 깔 수 없으면 두 시험만 깨진 것을 확인하고 `--시험건너뜀 "<까닭>"`.
 - 다시 확인: 깐 뒤 두 시험 91/91, 다시 올린 `--실행`이 관련 시험을 건너뛰지 않고 통과.
 - 11-19에는 공모 지도 작업본에 루트 의존성 `parse5`가 빠져 공개 도구의 CSP 시험이 시작하자마자 실패했다. 작업본 루트에서 `npm ci`를 실행한 뒤 `node --test tests/공개-importmap-csp.test.cjs` 10건이 모두 통과했다.
+- 11-27 덧붙임(Claude, 솔리오 하나로): `experiences/synk-account`의 `node_modules`는 정션으로 잇지 않는다. 공용 작업본의 것에 정션을 잇자 `tools/synk-id/prepare-world-play-public.test.cjs`가 esbuild의 `PLATFORM_DEPENDENCY_OUTSIDE_SNAPSHOT`(묶음 도구가 작업 사본 밖의 모듈을 거절)으로 깨졌다. 정션을 끊고 `npm ci --prefix experiences/synk-account --no-audit --no-fund`로 깐 뒤 그 시험과 계정 화면 시험 셋이 53/53 통과했다. `desktop` · `packages/atlas`는 정션으로 이어도 시험이 통과했다. 워크트리를 지우기 전에는 정션부터 끊는다(위 「junction이 든 워크트리」).
 - 11-26 덧붙임(Claude, D: 워크트리에서 WORLD 앞면 올리기): 관련 시험 171파일이 세 번 멈췄다. 새 워크트리에 빠진 것이 셋이었다. ① `packages/atlas/node_modules`(위 `npm ci`) ② 뿌리 `node_modules` — `study-build-portability` · `company-release-closed-parent`가 떨어진다. PowerShell `New-Item -ItemType Junction`으로 공용 작업본의 `node_modules`에 잇고, 워크트리를 지우기 전에 링크부터 끊는다. ③ D:의 임시 폴더 — `path-app/server.test.mjs`가 떨어진다([시험 노트](시험_화면확인.md)의 TEMP 덧붙임). 셋을 갖추고 올리니 깨진 시험 없이 올라갔다. D:에서 올릴 때는 `--실행` 전에 셋을 먼저 갖춘다.
 
 ### 맞는 키인데 `git fetch` · `바로올리기`가 「Permission denied (publickey)」를 번갈아 낸다 — GitHub 쪽 성능 저하일 때가 있다 (2026-11-04 Claude)
@@ -1363,3 +1364,12 @@ ode_modules`)에만 있어서 `esbuild`를 못 찾는다. 바쁜 PC에서는 관
 - 원인: 따라가기는 미커밋 변경을 보존한다. HEAD 판으로 되돌린 줄은 그 순간에는 변경이 아니지만, HEAD가 내 커밋으로 움직이면 「옛 판으로 고친 줄」이 된다. 남의 미커밋 변경이 많은 파일이라 통째로 갱신되지도 않는다.
 - 고침: 올린 뒤 그 줄을 origin 판으로 다시 맞춘다. 걷을 때부터 줄을 지우지 말고, 다른 작업본에서 올린 뒤 공용 작업본의 그 줄을 origin 판으로 맞추는 쪽이 안전하다.
 - 다시 확인: `git diff <파일> | grep "^-"`에 내 커밋이 더한 줄이 나오지 않는다.
+
+### 관련 시험이 일꾼 서버에서 `tests/synk-id-provision-guard.test.cjs`로 늘 깨지고, 이 PC에서 다시 돌다 15분을 넘긴다 — `SYNK_일꾼=끔`을 PowerShell로 (2026-11-27 Claude)
+- 증상: 업무 백업 엔진의 `platform.rs` · `native.rs`를 고친 `--실행`이 관련 시험 166~225개를 골랐다. 일꾼 서버에서 `synk-id-provision-guard.test.cjs`가 1번 줄에서 깨졌고, 도구가 고른 시험 전부를 이 PC에서 다시 돌리다 「15분 안에 끝나지 않았다」로 다섯 번 멈췄다. 매번 깨진 시험은 달랐고(0.6초 누름 간격, 영상 프레임, 올리기 도구 시험), 혼자 돌리면 모두 통과했다.
+- 원인: 그 시험은 저장소 옆 폴더 `../../SYNK-talk`(또는 `SYNK_TALK_ROOT`)의 `lib/자격증명.js`를 읽는다. 일꾼 서버에는 그 폴더가 없다. 서버에서 실제 실패가 찍히면 도구는 고른 시험 전부를 이 PC에서 끝까지 통과해야 올린다(`tools/관련시험.js` 돌리기). `platform.rs`처럼 흔한 이름은 「글에 이름」으로 남의 시험을 많이 골라, PC가 바쁘면 그 다시 돌기가 상한을 넘는다.
+- 고침: 일꾼을 끄고 이 PC에서 한 번만 돌린다. Bash의 `export`는 한글 이름의 환경 변수를 받지 않는다(「not a valid identifier」를 내고 다음 줄로 넘어가 일꾼이 그대로 켜진다). PowerShell에서 `$env:SYNK_일꾼 = '끔'` 뒤 `node tools/바로올리기.js … --실행`으로 올렸다. CPU가 100%일 때는 그래도 904초로 멈췄고, 23%로 내려간 때 183개 파일 3,634 통과(435초)로 올라갔다(54224ba74).
+- 다시 확인: 출력의 관련 시험 줄에 「일꾼 못 씀(SYNK_일꾼=끔) — 이 PC에서 돌았다」가 있고 「올린 커밋」이 찍힌다. 올리기 전 부하는 `(Get-CimInstance Win32_Processor).LoadPercentage`로 본다.
+- 그래도 상한을 넘을 때(11-27 저녁 · `tests/공개.test.js`가 `solio-backup.cjs` 이름으로 골려 바쁜 PC에서 100분): 올릴 바이트 그대로인 작업본에서 관련 시험을 시간 제한 없이 끝까지 돌려 통과 · 실패 수를 적는다. 실패는 하나씩 혼자 다시 돌려 통과해야 한다. push 직전에 origin을 다시 받아 올릴 파일이 그사이 바뀌었으면 합친 판으로 그 시험을 다시 돌린다. 그런 뒤 `--시험건너뜀 "<통과 수 · 흔들린 시험과 혼자 통과 · 이름 겹침과 15분 상한과 일꾼 서버의 SYNK-talk 없음>"`으로 올린다(부모 세션 허락, 위 「이름만 같은 남의 시험」 절과 같은 길).
+- 후속(이 작업 범위 밖): 고르기 도구(`tools/관련시험.js`)가 `platform.rs` · `native.rs` · `solio-backup.cjs` 같은 이름으로 남의 시험을 많이 고르는 일, 일꾼 서버에 `SYNK-talk`가 없어 `synk-id-provision-guard.test.cjs`가 늘 깨지는 일.
+- 덧붙임: 새로 쓴 파일의 `mtimeMs`는 밀리초 아래 자리 때문에 곧바로 읽은 `Date.now()`보다 앞서는 일이 많다(이 PC에서 200번 중 181번). 「미래 시각은 버린다」 같은 검사는 몇 초의 여유를 둔다.

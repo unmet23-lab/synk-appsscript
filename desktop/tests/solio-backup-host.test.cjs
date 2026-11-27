@@ -139,20 +139,21 @@ test('busy: the host says busy and ends; while the room shows it is started agai
   const r = host(n => (n < 3 ? 'busy' : 'ok'), { shown: () => shown, busyAgainMs: 60 });
   t.after(() => r.h.bye());
   r.h.start(EXE);
-  assert.ok(await until(() => r.h.state().phase === 'busy'));
-  assert.ok(await until(() => r.h.state().phase === 'ready', 4000), JSON.stringify(r.changes));
+  // 가짜 호스트는 node를 띄우므로 PC가 바쁘면 한 번에 몇 초씩 걸린다. 기다림은 넉넉히 둔다
+  assert.ok(await until(() => r.h.state().phase === 'busy', 30000));
+  assert.ok(await until(() => r.h.state().phase === 'ready', 30000), JSON.stringify(r.changes));
   assert.equal(r.seen.length, 3, 'busy, busy again, then the free host');
   // 숨은 동안은 다시 띄우지 않는다
   const q = host('busy', { shown: () => shown, busyAgainMs: 40 });
   t.after(() => q.h.bye());
   shown = false;
   q.h.start(EXE);
-  assert.ok(await until(() => q.h.state().phase === 'busy'));
+  assert.ok(await until(() => q.h.state().phase === 'busy', 30000));
   await sleep(300);
   assert.equal(q.seen.length, 1, 'no retry while the room is hidden');
   shown = true;
   q.h.visible(true);
-  assert.ok(await until(() => q.seen.length === 2), 'shown again: started again');
+  assert.ok(await until(() => q.seen.length === 2, 30000), 'shown again: started again');
 });
 
 test('refused (exit 77), newer protocol, failed line, a crash and a silent host each get their own state', async t => {
@@ -252,7 +253,7 @@ test('update install: --update-install --quiet (plain for old engines), JSON lin
   assert.deepEqual(await H.runUpdateInstall({ executable: 'C:\\x\\other.exe' }), { outcome: 'error', code: 'HOST_PATH' });
 });
 
-test('「백업 창 따로 열기」 starts --window detached; open when it stays up, held when it ends at once (the lock is taken), failed when it cannot start', async () => {
+test('「백업 창 따로 열기」 starts --window detached; open when it stays up, woke on 0 (an open window was woken), held on 75 (the host keeps the lock), failed otherwise (GPT -r3 GA1)', async () => {
   const { EventEmitter } = require('node:events');
   const seen = [];
   const child = () => { const c = new EventEmitter(); c.unref = () => seen.push('unref'); return c; };
@@ -260,9 +261,16 @@ test('「백업 창 따로 열기」 starts --window detached; open when it stay
   const spawnIt = (file, args, options) => { seen.push({ file, args, options }); proc = child(); return proc; };
   assert.equal(await H.openEmergencyWindow({ executable: EXE, spawn: spawnIt, settleMs: 20 }), 'open');
   assert.deepEqual([seen[0].file, seen[0].args, seen[0].options.detached, seen[0].options.stdio, seen[1]], [EXE, ['--window'], true, 'ignore', 'unref']);
-  const held = H.openEmergencyWindow({ executable: EXE, spawn: spawnIt, settleMs: 5000 });
+  const woke = H.openEmergencyWindow({ executable: EXE, spawn: spawnIt, settleMs: 5000 });
   proc.emit('exit', 0);
+  assert.equal(await woke, 'woke');
+  const held = H.openEmergencyWindow({ executable: EXE, spawn: spawnIt, settleMs: 5000 });
+  proc.emit('exit', H.WINDOW_HELD_EXIT);
+  assert.equal(H.WINDOW_HELD_EXIT, 75);
   assert.equal(await held, 'held');
+  const crashed = H.openEmergencyWindow({ executable: EXE, spawn: spawnIt, settleMs: 5000 });
+  proc.emit('exit', 1);
+  assert.equal(await crashed, 'failed');
   const broken = H.openEmergencyWindow({ executable: EXE, spawn: spawnIt, settleMs: 5000 });
   proc.emit('error', Error('ENOENT'));
   assert.equal(await broken, 'failed');

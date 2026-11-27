@@ -357,8 +357,10 @@ function runUpdateInstall({ spawn = nodeSpawn, executable, quiet = true, env = p
 }
 
 /* 「백업 창 따로 열기」: HOST_MIN 이상 엔진의 비상 창(`--window`, 2.5 표). 기다리지 않는다 */
-/* 「백업 창 따로 열기」. 'open'(settleMs가 지나도 떠 있다) · 'held'(곧바로 끝났다: 창 잠금을 다른 호스트나 창이 쥐었다.
-   쥔 것이 창이면 그 창을 깨웠다, platform.rs state_root) · 'failed'(띄우지 못했다). 기다리지 않고 떼어 놓는다 */
+/* 「백업 창 따로 열기」. 'open'(settleMs가 지나도 떠 있다) · 'woke'(곧바로 0으로 끝났다: 떠 있던 창을 깨웠다) ·
+   'held'(곧바로 75로 끝났다: 깨울 창 없이 호스트가 창 잠금을 쥐었다, platform.rs state_root · main.rs window_exit) ·
+   'failed'(띄우지 못했거나 다른 부호로 끝났다). 기다리지 않고 떼어 놓는다(GPT workbackup-solio-one-be-20261127-r3 GA1) */
+const WINDOW_HELD_EXIT = 75;
 function openEmergencyWindow({ spawn = nodeSpawn, executable, env = process.env, settleMs = 1500, timers = globalThis } = {}) {
   if (typeof executable !== 'string' || !path.win32.isAbsolute(executable) || path.win32.basename(executable).toLowerCase() !== 'workbackup.exe') return Promise.resolve('failed');
   let proc;
@@ -367,11 +369,11 @@ function openEmergencyWindow({ spawn = nodeSpawn, executable, env = process.env,
     let done = false;
     const finish = value => { if (done) return; done = true; timers.clearTimeout(timer); try { proc.unref?.(); } catch {} resolve(value); };
     const timer = timers.setTimeout(() => finish('open'), settleMs);
-    try { proc.once?.('error', () => finish('failed')); proc.once?.('exit', () => finish('held')); } catch { finish('open'); }
+    try { proc.once?.('error', () => finish('failed')); proc.once?.('exit', code => finish(code === 0 ? 'woke' : code === WINDOW_HELD_EXIT ? 'held' : 'failed')); } catch { finish('open'); }
   });
 }
 
 module.exports = {
   createBackupHost, runUpdateInstall, openEmergencyWindow, readLine, externalAllowed, folderAllowed, windowHandleText, compareVersion, hostCapable, hostEnv,
-  HOST_MIN, PROTOCOL, FROM_HOST_MAX, TO_HOST_MAX, CALLS_MAX, BUSY_AGAIN, IDLE_BYE, REFUSED_EXIT,
+  HOST_MIN, PROTOCOL, FROM_HOST_MAX, TO_HOST_MAX, CALLS_MAX, BUSY_AGAIN, IDLE_BYE, REFUSED_EXIT, WINDOW_HELD_EXIT,
 };

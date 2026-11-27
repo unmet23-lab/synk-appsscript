@@ -500,12 +500,12 @@ test('Fable F1 · F2 · F4: an old answer leaves the top after 30 minutes, the d
   assert.equal(changes.acts[0].arg, 'changes');
   const quiet = fresh({ view: 'checking', status: { ...STATUS, nextRunAt: new Date(NOW - 3 * 3600e3).toISOString() } });
   assert.match(quiet.then, /2시간 넘게 없습니다/);
-  // 글이 부르는 단추가 그 판에 있다(Fable workbackup-solio-one-ui-20261127 F4): 소식 없음은 「백업 상태 보기」, 되살리기 실패는 「증명 확인」
+  // 글이 부르는 단추가 그 판에 있다(Fable workbackup-solio-one-ui-20261127 F4): 소식 없음과 되살리기 실패는 「백업 상태 보기」(증명 결과는 그 화면의 「되살려 본 날」 줄, -r2 FA2)
   assert.match(quiet.then, /「백업 상태 보기」/);
   assert.equal(quiet.acts[0].label, '백업 상태 보기');
   const proofFail = fresh({ status: { ...STATUS, proof: { result: 'failed', at: new Date(NOW - 3600e3).toISOString() } } });
-  assert.match(proofFail.then, /「증명 확인」/);
-  assert.equal(proofFail.acts[0].label, '증명 확인');
+  assert.match(proofFail.then, /「백업 상태 보기」를 눌러 「되살려 본 날」 줄을 봐 주세요/);
+  assert.deepEqual([proofFail.acts[0].label, proofFail.acts[0].arg], ['백업 상태 보기', 'status']);
   for (const v of [quiet, proofFail]) {
     const labels = v.acts.map(a => a.label);
     for (const [, named] of `${v.say} ${v.then} ${v.board.steps.map(s => s.mid).join(' ')}`.matchAll(/「([^」]+)」(?:을|를|에서)/g)) {
@@ -513,6 +513,11 @@ test('Fable F1 · F2 · F4: an old answer leaves the top after 30 minutes, the d
       assert.ok(labels.includes(named), `「${named}」 is on the board: ${labels.join(' · ')}`);
     }
   }
+  // -r2 FA2: 서버가 부탁한 되살리기(restore 낱말)는 문장 · 단추 · 화면 길이 모두 「파일 되살리기」 한 이름이다
+  const asked = solioBackupView(SNAP({ status: { ...STATUS, state: 'attention', attention: ['restore'] } }), NOW);
+  const words = `${asked.board?.say || ''} ${asked.board?.then || ''} ${asked.say} ${asked.then}`;
+  assert.doesNotMatch(words, /되살리기 증명|증명 확인/);
+  assert.ok(asked.acts.some(x => x.label === '파일 되살리기' && x.arg === 'restore'), asked.acts.map(x => x.label).join(' · '));
   // F2: 속도를 모르면 「내려가지 않습니다」라고 하지 않는다
   const unknown = solioBackupView(SNAP({ space: { ...SPACE, drive: { ...SPACE.drive, growthPerDay: null, daysToStartLine: null } } }), NOW);
   assert.match(unknown.board.drive.pred, /며칠 더 재어야/);

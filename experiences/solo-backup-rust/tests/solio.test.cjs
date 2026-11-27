@@ -166,6 +166,38 @@ test('requests: claimed by one side only, setup left to the window, leftovers an
   assert.ok(!fs.existsSync(old));
 });
 
+test('requests: a side that stops wanting a request just before the claim leaves it; one claimed as its end began is answered interrupted (솔리오 하나로 Fable 설계 검토 끝의setup요청)', async t => {
+  const root = temp(t);
+  const a = new solio.SolioFiles({ root, now: () => NOW });
+  await a.ready();
+  // The window host's end begins while the engine looks for an earlier answer: asked again just before the claim, the
+  // request stays for the next host, with no answer and no claim (D3).
+  put(a, name(NOW, 'setupend'), { v: 1, kind: 'setup', mode: 'protect' });
+  let asked = 0;
+  const endingAfterFirstLook = c => (++asked === 1) && (!c.ok || c.value.kind === 'setup');
+  assert.deepEqual(await a.process({ wants: endingAfterFirstLook, handle: async () => ({ result: 'done' }) }), []);
+  assert.ok(asked >= 2, 'asked again before the claim');
+  assert.ok(fs.existsSync(path.join(a.requests, name(NOW, 'setupend'))), 'left in the folder');
+  assert.deepEqual(fs.readdirSync(a.claimed), []);
+  assert.equal(fs.existsSync(path.join(a.results, name(NOW, 'setupend'))), false, 'no answer written');
+  // The next host takes it at once.
+  const wants = c => !c.ok || c.value.kind === 'setup';
+  assert.deepEqual(await a.process({ wants, handle: async () => ({ result: 'done' }) }), [{ kind: 'setup', result: 'done' }]);
+  // One already being claimed as the end began: answered 「interrupted」, the claim and its cancel mark gone (the person
+  // presses again, SOLIO_ONE_CLIENT.md 2.1 한계).
+  put(a, name(NOW, 'setupcut'), { v: 1, kind: 'setup', mode: 'move' });
+  const fsp = require('node:fs/promises'), link = fsp.link;
+  fsp.link = async (from, to, ...rest) => { await link(from, to, ...rest); fs.writeFileSync(a.mark(path.basename(to)), ''); };
+  try {
+    assert.deepEqual(await a.process({ wants, handle: async () => ({ result: 'failed', reason: 'interrupted' }) }), [{ kind: 'setup', result: 'rejected', reason: 'cancelled' }], 'a cancel mark still wins over the handle');
+  } finally { fsp.link = link; }
+  put(a, name(NOW, 'setupint'), { v: 1, kind: 'setup', mode: 'move' });
+  assert.deepEqual(await a.process({ wants, handle: async () => ({ result: 'failed', reason: 'interrupted' }) }), [{ kind: 'setup', result: 'failed', reason: 'interrupted' }]);
+  assert.deepEqual([result(a, name(NOW, 'setupint')).result, result(a, name(NOW, 'setupint')).reason], ['failed', 'interrupted']);
+  assert.deepEqual(fs.readdirSync(a.claimed), []);
+  assert.equal(fs.existsSync(a.mark(name(NOW, 'setupint'))), false);
+});
+
 test('requests: a cancel mark, seen after claiming and before handling, refuses it; the engine removes it once answered (4.13)', async t => {
   const root = temp(t);
   const a = new solio.SolioFiles({ root, now: () => NOW });

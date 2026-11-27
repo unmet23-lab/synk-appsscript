@@ -17,7 +17,8 @@ const LIMIT_MS = 90000;
 const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
 async function until(check, ms) { const end = Date.now() + ms; while (Date.now() < end) { if (check()) return true; await sleep(100); } return check(); }
 
-test('an ending worker leaves a setup request for the next host; before the end it takes one at once', { skip: !restic && 'SOLO_BACKUP_RESTIC is not set' }, async () => {
+// A worker with a stand-in host. `holdLock`: the stand-in keeps its answers to `engine.lock` until `release()`.
+function boot({ holdLock = false } = {}) {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-ending-'));
   const dir = (name) => { const p = path.join(base, name); fs.mkdirSync(p, { recursive: true }); return p; };
   const state = dir('state');
@@ -25,26 +26,38 @@ test('an ending worker leaves a setup request for the next host; before the end 
     TEMP: process.env.TEMP, TMP: process.env.TMP, USERDOMAIN: process.env.USERDOMAIN, USERNAME: process.env.USERNAME,
     SWB_ROOT: state, SWB_CACHE_ROOT: dir('cache'), SWB_RESTIC: restic, SWB_ENGINE_ROOT: path.join(pkg, 'engine'), SWB_TEST: '1' };
   const child = spawn(process.execPath, [path.join(pkg, 'worker', 'dispatcher.cjs')], { env, stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
-  const frames = [], replies = new Map();
-  let buf = '', exitCode = null, killed = false;
-  const guard = setTimeout(() => { killed = true; child.kill(); }, LIMIT_MS);
+  const w = { frames: [], replies: new Map(), held: [], hold: holdLock, exitCode: null, killed: false };
+  let buf = '';
+  w.guard = setTimeout(() => { w.killed = true; child.kill(); }, LIMIT_MS);
   const send = (o) => child.stdin.write(JSON.stringify({ v: 1, ...o }) + '\n');
   child.stdout.on('data', (d) => {
     buf += d; let i;
     while ((i = buf.indexOf('\n')) >= 0) {
-      const m = JSON.parse(buf.slice(0, i)); buf = buf.slice(i + 1); frames.push(m);
+      const m = JSON.parse(buf.slice(0, i)); buf = buf.slice(i + 1); w.frames.push(m);
       if (m.call) {
         const a = m.args || [], known = { 'startup.read': false, 'engine.lock': true, 'engine.unlock': true, 'run.progress': null };
-        if (m.method === 'secret.encrypt') send({ callResult: m.call, ok: true, value: Buffer.from(String(a[0])).toString('base64') });
+        if (m.method === 'engine.lock' && w.hold) w.held.push(m.call);
+        else if (m.method === 'secret.encrypt') send({ callResult: m.call, ok: true, value: Buffer.from(String(a[0])).toString('base64') });
         else if (m.method === 'secret.decrypt') send({ callResult: m.call, ok: true, value: Buffer.from(String(a[0]), 'base64').toString() });
         else send(m.method in known ? { callResult: m.call, ok: true, value: known[m.method] } : { callResult: m.call, ok: false, code: 'TEST_HOST' });
-      } else if (m.id && replies.has(m.id)) { replies.get(m.id)(m); replies.delete(m.id); }
+      } else if (m.id && w.replies.has(m.id)) { w.replies.get(m.id)(m); w.replies.delete(m.id); }
     }
   });
-  const closed = new Promise((ok) => child.once('close', (code) => { exitCode = code; ok(); }));
-  const call = (id, method) => Promise.race([new Promise((ok) => { replies.set(id, ok); send({ id, method, args: [] }); }), closed.then(() => ({ ok: false, closed: true }))]);
-  const files = new solio.SolioFiles({ root: state });
-  const request = (tail) => { const n = `${Date.now()}-${tail}.json`; fs.writeFileSync(path.join(files.requests, n), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' })); return path.join(files.requests, n); };
+  w.release = () => { w.hold = false; for (const id of w.held.splice(0)) send({ callResult: id, ok: true, value: true }); };
+  w.closed = new Promise((ok) => child.once('close', (code) => { w.exitCode = code; ok(); }));
+  w.call = (id, method) => Promise.race([new Promise((ok) => { w.replies.set(id, ok); send({ id, method, args: [] }); }), w.closed.then(() => ({ ok: false, closed: true }))]);
+  w.files = new solio.SolioFiles({ root: state });
+  w.request = (tail) => { const n = `${Date.now()}-${tail}.json`; fs.writeFileSync(path.join(w.files.requests, n), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' })); return path.join(w.files.requests, n); };
+  w.end = async () => {
+    if (w.exitCode === null) { if (!w.killed) child.kill(); await w.closed; }
+    clearTimeout(w.guard);
+    fs.rmSync(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+  };
+  return w;
+}
+
+test('an ending worker leaves a setup request for the next host; before the end it takes one at once', { skip: !restic && 'SOLO_BACKUP_RESTIC is not set' }, async () => {
+  const w = boot(), { call, files, request, frames } = w;
   try {
     assert.equal((await call(1, '$boot')).ok, true);
     await files.ready();
@@ -60,13 +73,38 @@ test('an ending worker leaves a setup request for the next host; before the end 
     assert.equal((await call(3, '$ending')).ok, true, 'a second $ending changes nothing');
     const down = await call(4, '$shutdown');
     assert.equal(down.ok, true);
-    await closed;
-    assert.equal(killed, false, 'the worker ended by itself');
-    assert.equal(exitCode, 0);
+    await w.closed;
+    assert.equal(w.killed, false, 'the worker ended by itself');
+    assert.equal(w.exitCode, 0);
     assert.deepEqual(frames.filter((f) => f.fatal), []);
-  } finally {
-    if (exitCode === null) { if (!killed) child.kill(); await closed; }
-    clearTimeout(guard);
-    fs.rmSync(base, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
-  }
+  } finally { await w.end(); }
+});
+
+test('$ending answers only after the setup pass going now ends, and that pass leaves the request (Fable 설계 검토 끝의setup요청 D2)', { skip: !restic && 'SOLO_BACKUP_RESTIC is not set' }, async () => {
+  const w = boot();
+  try {
+    assert.equal((await w.call(1, '$boot')).ok, true);
+    await w.files.ready();
+    // The recovery and account looks at the start take the engine lock once and then wait a minute: let them pass first,
+    // so the next lock asked for is the setup pass's.
+    await sleep(3000);
+    w.hold = true;
+    // The 2-second look finds the request and asks the host for the engine lock; the stand-in holds that answer.
+    const req = w.request('inflight');
+    assert.ok(await until(() => w.held.length > 0, 15000), 'the setup pass asked for the engine lock');
+    let answered = null;
+    const ending = w.call(2, '$ending').then((m) => { answered = Date.now(); return m; });
+    await sleep(2000);
+    assert.equal(answered, null, '$ending waits for the pass going now');
+    const released = Date.now();
+    w.release();
+    const reply = await ending;
+    assert.equal(reply.ok, true, `ending ${JSON.stringify(reply).slice(0, 200)}`);
+    assert.ok(answered >= released, 'answered after the pass ended');
+    assert.ok(fs.existsSync(req), 'the pass that saw the end leaves the request for the next host');
+    assert.deepEqual(fs.readdirSync(w.files.claimed), [], 'nothing left claimed as the answer comes');
+    assert.equal((await w.call(3, '$shutdown')).ok, true);
+    await w.closed;
+    assert.equal(w.exitCode, 0);
+  } finally { await w.end(); }
 });

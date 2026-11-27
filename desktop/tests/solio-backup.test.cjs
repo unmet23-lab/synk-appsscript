@@ -1625,7 +1625,7 @@ test('GPT workbackup-solio-one-be-20261127 A6: with the room host holding the wi
   const { EventEmitter } = require('node:events');
   const door = fakeDoor(), runs = [];
   const outcomes = ['held', 'held', 'open'];
-  const launch = (file, args) => { runs.push(args); const c = new EventEmitter(); c.unref = () => {}; const o = outcomes.shift() || 'held'; setImmediate(() => { if (o === 'held') c.emit('exit', 0); }); return c; };
+  const launch = (file, args) => { runs.push(args); const c = new EventEmitter(); c.unref = () => {}; const o = outcomes.shift() || 'held'; setImmediate(() => { if (o === 'held') c.emit('exit', 75); }); return c; };
   const service = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door, launch, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
   door.open({ account: ME.synk_user_id, location: 'C:\\x', topic: 'restore' });
   assert.deepEqual(await service.openWindow(ME), { ok: true });
@@ -1635,17 +1635,49 @@ test('GPT workbackup-solio-one-be-20261127 A6: with the room host holding the wi
   const busyDoor = fakeDoor(), busyRuns = [];
   busyDoor.open({ account: ME.synk_user_id, location: 'C:\\x', topic: 'restore' });
   busyDoor.reset = () => { busyDoor.calls.push(['reset']); };
-  const held = (file, args) => { busyRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 0)); return c; };
+  const held = (file, args) => { busyRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 75)); return c; };
   const busy = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: busyDoor, launch: held, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
   assert.deepEqual(await busy.openWindow(ME), { ok: false, code: 'BUSY' });
   assert.ok(busyRuns.length > 1);
   // 이 솔리오가 모르는 호스트(앞서 끈 솔리오의 호스트)가 잠금을 쥐어도 다시 띄우다 풀리면 성공, 끝내 안 풀리면 BUSY(GPT -r2 GA2)
   const idleRuns = [], later = ['held', 'held', 'held', 'open'];
-  const idle = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: fakeDoor(), launch: (file, args) => { idleRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; const o = later.shift() || 'held'; setImmediate(() => { if (o === 'held') c.emit('exit', 0); }); return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  const idle = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: fakeDoor(), launch: (file, args) => { idleRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; const o = later.shift() || 'held'; setImmediate(() => { if (o === 'held') c.emit('exit', 75); }); return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
   assert.deepEqual(await idle.openWindow(ME), { ok: true });
   assert.equal(idleRuns.length, 4);
-  const stuck = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: fakeDoor(), launch: () => { const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 0)); return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  const stuck = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: fakeDoor(), launch: () => { const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 75)); return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
   assert.deepEqual(await stuck.openWindow(ME), { ok: false, code: 'BUSY' });
+  // 떠 있던 창을 깨웠으면(0) 곧바로 성공이고 다시 띄우지 않는다(GPT -r3 GA1)
+  const wokeRuns = [];
+  const woke = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: engineDir() }, '0.8.0'), door: fakeDoor(), launch: (file, args) => { wokeRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 0)); return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  assert.deepEqual(await woke.openWindow(ME), { ok: true });
+  assert.equal(wokeRuns.length, 1);
+  // 설치기가 도는 동안(30분 안의 .installing)은 띄우지 않고 BUSY. 30분이 지난 표식은 끊긴 설치의 것이라 띄운다
+  const installDir = engineDir(), markRuns = [], markFile = path.join(temp(), '.installing');
+  fs.writeFileSync(markFile, '');
+  fixtureRunners.set(path.win32.join(installDir, '.installing'), markFile);
+  const marked = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: installDir }, '0.8.0'), door: fakeDoor(), launch: (file, args) => { markRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  assert.deepEqual(await marked.openWindow(ME), { ok: false, code: 'BUSY' });
+  assert.equal(markRuns.length, 0);
+  const old = new Date(Date.now() - 31 * 60000);
+  fs.utimesSync(markFile, old, old);
+  assert.deepEqual(await marked.openWindow(ME), { ok: true });
+  assert.equal(markRuns.length, 1);
+  // 시계가 뒤로 가 미래 시각이 된 표식은 엔진(platform.rs installing)처럼 버린다(GPT -r4 GA7)
+  const ahead = new Date(Date.now() + 60 * 60000);
+  fs.utimesSync(markFile, ahead, ahead);
+  assert.deepEqual(await marked.openWindow(ME), { ok: true });
+  assert.equal(markRuns.length, 2);
+  // 75로 끝난 뒤 기다리는 사이 설치가 시작되면 다시 띄우지 않고 BUSY(GPT -r4 GA4)
+  const midDir = engineDir(), midFile = path.join(temp(), '.installing'), midRuns = [];
+  fixtureRunners.set(path.win32.join(midDir, '.installing'), midFile);
+  const mid = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: midDir }, '0.8.0'), door: fakeDoor(), launch: (file, args) => { midRuns.push(args); const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 75)); return c; }, windowSettleMs: 20, wait: () => { fs.writeFileSync(midFile, ''); return Promise.resolve(); }, previewAccounts: MINE });
+  assert.deepEqual(await mid.openWindow(ME), { ok: false, code: 'BUSY' });
+  assert.equal(midRuns.length, 1);
+  // 띄운 창이 0으로 끝났어도 그때 설치 표식이 있으면 깨운 창이 아니라 설치 중(INSTALLING)일 수 있어 성공으로 치지 않는다(GA4)
+  const lateDir = engineDir(), lateFile = path.join(temp(), '.installing');
+  fixtureRunners.set(path.win32.join(lateDir, '.installing'), lateFile);
+  const late = createBackup({ platform: 'win32', env: appdata(temp()), run: fakeEngineAt({ dir: lateDir }, '0.8.0'), door: fakeDoor(), launch: () => { fs.writeFileSync(lateFile, ''); const c = new EventEmitter(); c.unref = () => {}; setImmediate(() => c.emit('exit', 0)); return c; }, windowSettleMs: 20, wait: () => Promise.resolve(), previewAccounts: MINE });
+  assert.deepEqual(await late.openWindow(ME), { ok: false, code: 'BUSY' });
 });
 
 test('GPT workbackup-solio-one-be-20261127 A3 · A5 · A9: open checks the login after the engine lookup; two update presses start one updater; the newer of record and feed', async () => {

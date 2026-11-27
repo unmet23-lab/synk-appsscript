@@ -344,6 +344,9 @@ class SolioFiles {
       if (await fs.lstat(path.join(this.results, name)).then(() => true, () => false)) { if (await fs.rm(from, { force: true }).then(() => true, () => false)) await this.unmark(name); continue; }
       // 덮지 않는 옮기기: 같은 이름이 claimed에 있으면 실패하는 하드 링크를 만든 쪽만 차지한다. Node의 이름 바꾸기(fs.rename)로
       // 두 쪽이 거의 함께 옮기면 Windows에서 둘 다 성공으로 끝날 수 있었다(11-17 이 PC에서 10번 중 7번 재현).
+      // 맡을지는 차지 바로 앞에서 한 번 더 묻는다. 위의 결과 확인을 기다리는 사이 끝이 시작된 창 호스트는 이 요청을 남긴다
+      // (솔리오 하나로 Fable 설계 검토 끝의setup요청 D3). 요청은 requests → claimed로만 옮긴다(솔리오의 거두기가 기대는 규칙).
+      if (!wants(checked)) continue;
       try { await fs.link(from, to); } catch { continue; } // 다른 쪽이 먼저, 또는 이미 없다
       // 원래 이름을 지우지 못하면(다른 프로그램이 쥠) 이 요청은 처리하지 않고 다음 sweep에 맡긴다. 이번 차례의 다른 요청은 그대로
       // 한다(Opus 대체 설계 검토 F2).

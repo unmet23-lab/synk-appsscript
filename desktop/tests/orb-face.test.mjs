@@ -3370,6 +3370,125 @@ test('한 몸: 「보호 시작」 on the card answers ok at once and the room s
   assert.equal(h.view.last().room.prog, 'subs');
 });
 
+test('한 몸: 「보호 시작」 on the card follows a room screen that was already open, and one that opens after an install from the card (Fable workbackup-solio-one-ui-20261127-r2 FA1)', async t => {
+  // 가: 첫 시작 화면을 연 채 다른 방으로 간 PC — 방은 처음부터 열려 있어 바뀜이 없다
+  const open = { open: true, topic: 'start', host: 'ready', code: null, ui: 'ok', ready: true };
+  const SETUP = { ...SAFE, view: 'needs-setup', status: null };
+  const b = backupBridge(() => ({ ...SETUP, room: open }));
+  const started = [];
+  b.api.start = async mode => { started.push(mode); return { ok: true }; };
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: b.api } });
+  h.view.backupDoorTop = () => 112;
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const todo = () => h.view.last().room?.todo;
+  assert.equal(h.view.last().room.prog, 'subs', 'the open screen alone does not move the person');
+  assert.equal(h.face.handle('todo-start'), true);
+  await settle();
+  h.face.handle('todo-act', todo().card.acts.find(a => a.label === '보호 시작').id);
+  await settle(20);
+  b.changed({ type: 'changed' });
+  await settle(20);
+  assert.deepEqual(started, ['protect']);
+  assert.equal(todo().open, false, 'the card folded');
+  assert.equal(h.view.last().room.prog, 'backup');
+  assert.deepEqual(b.calls.filter(c => c[0] === 'place').at(-1), ['place', { shown: true, top: 112 }]);
+
+  // 나: 백업 부품이 없는 PC — 카드에서 설치를 시작하면 설치 동안 카드는 끝 카드와 관리자 카드를 오가고, 설치가 끝나 첫 시작 화면이 열린다
+  let snap = { ok: true, available: true, view: 'no-engine', status: null, engine: { installed: false }, install: { phase: 'idle' }, feed: {} };
+  const c = backupBridge(() => snap);
+  const begun = [];
+  c.api.start = async mode => { begun.push(mode); return { ok: true }; };
+  const g = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: c.api } });
+  g.view.backupDoorTop = () => 112;
+  await settle();
+  g.face.setState(signedIn());
+  await settle(20);
+  const card = () => g.view.last().room?.todo;
+  assert.equal(g.face.handle('todo-start'), true);
+  await settle();
+  g.face.handle('todo-act', card().card.acts[0].id);
+  await settle(20);
+  for (const phase of ['downloading', 'admin', 'installing']) { snap = { ...snap, install: { phase } }; c.changed({ type: 'changed' }); await settle(20); }
+  assert.equal(g.view.last().room.prog, 'subs', 'nothing to follow while installing');
+  snap = { ...SAFE, view: 'needs-setup', status: null, room: { open: true, topic: 'start', host: 'ready', code: null, ui: 'ok', ready: true } };
+  c.changed({ type: 'changed' });
+  await settle(20);
+  assert.equal(begun.length, 1);
+  assert.equal(card().open, false, 'the card folded even from the end card');
+  assert.equal(g.view.last().room.prog, 'backup');
+  assert.deepEqual(c.calls.filter(x => x[0] === 'place').at(-1), ['place', { shown: true, top: 112 }]);
+});
+
+test('한 몸: without a press on the card, a room screen that opens does not pull the person out of another room; a failed install drops the press (Fable workbackup-solio-one-ui-20261127-r2 FA3)', async t => {
+  let room = null, snap = { ...SAFE, view: 'needs-setup', status: null };
+  const b = backupBridge(() => ({ ...snap, room }));
+  b.api.start = async () => ({ ok: true });
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: b.api } });
+  h.view.backupDoorTop = () => 112;
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  // 누르지 않았다: 다른 방에 있는 동안 방 안 화면이 열려도 그대로
+  room = { open: true, topic: 'start', host: 'ready', code: null, ui: 'ok', ready: true };
+  b.changed({ type: 'changed' });
+  await settle(20);
+  assert.equal(h.view.last().room.prog, 'subs');
+  // 카드에서 눌렀지만 설치가 실패로 끝났다: 그 뒤에 열린 화면으로 끌고 가지 않는다
+  room = null;
+  snap = { ok: true, available: true, view: 'no-engine', status: null, engine: { installed: false }, install: { phase: 'idle' }, feed: {} };
+  b.changed({ type: 'changed' });
+  await settle(20);
+  const todo = () => h.view.last().room?.todo;
+  assert.equal(h.face.handle('todo-start'), true);
+  await settle();
+  h.face.handle('todo-act', todo().card.acts[0].id);
+  await settle(20);
+  snap = { ...snap, install: { phase: 'error', code: 'DECLINED' } };
+  b.changed({ type: 'changed' });
+  await settle(20);
+  h.face.handle('todo-stop');
+  await settle();
+  snap = { ...SAFE, view: 'needs-setup', status: null };
+  room = { open: true, topic: 'start', host: 'ready', code: null, ui: 'ok', ready: true };
+  b.changed({ type: 'changed' });
+  await settle(20);
+  assert.equal(h.view.last().room.prog, 'subs', 'the press ended with the failed install');
+});
+
+test('한 몸: 「다시 받기」 on the failed-install card still follows, though a read before the start answers shows the last failure (Fable workbackup-solio-one-ui-20261127-r3 FA1)', async t => {
+  let snap = { ok: true, available: true, view: 'no-engine', status: null, engine: { installed: false }, install: { phase: 'error', code: 'DECLINED' }, feed: {} };
+  const b = backupBridge(() => snap);
+  let answer;
+  const begun = [];
+  b.api.start = mode => { begun.push(mode); return new Promise(resolve => { answer = resolve; }); };
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: { solioBackup: b.api } });
+  h.view.backupDoorTop = () => 112;
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const todo = () => h.view.last().room?.todo;
+  assert.equal(h.face.handle('todo-start'), true);
+  await settle();
+  const again = todo().card.acts.find(a => a.label === '다시 받기');
+  assert.ok(again, 'the failed-install card offers 「다시 받기」');
+  h.face.handle('todo-act', again.id);
+  await settle(20);
+  assert.equal(begun.length, 1);
+  // 본체가 엔진을 확인하는 동안(답 전) 읽기가 한 번 낀다. 그 답에는 앞 실패가 그대로 있다
+  b.changed({ type: 'changed' });
+  await settle(20);
+  answer({ ok: true });
+  await settle(20);
+  for (const phase of ['downloading', 'admin', 'installing']) { snap = { ...snap, install: { phase } }; b.changed({ type: 'changed' }); await settle(20); }
+  snap = { ...SAFE, view: 'needs-setup', status: null, room: { open: true, topic: 'start', host: 'ready', code: null, ui: 'ok', ready: true } };
+  b.changed({ type: 'changed' });
+  await settle(20);
+  assert.equal(h.view.last().room.prog, 'backup', 'the press still follows into the room');
+  assert.deepEqual(b.calls.filter(c => c[0] === 'place').at(-1), ['place', { shown: true, top: 112 }]);
+});
+
 test('한 몸: a second word 31 minutes after the first puts the signed-out line back (Fable workbackup-solio-one-ui-20261127 F6)', async t => {
   let clock = Date.parse('2026-11-27T01:00:00Z'), act = null;
   const out = backupBridge(() => SAFE);

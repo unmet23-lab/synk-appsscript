@@ -42,6 +42,8 @@ const READ_PROGRAMS = Object.freeze(['visits', 'health', 'backup', 'office']);
 const READ_VIEW = Object.freeze({ visits: siteVisitsView, health: snsHealthView, backup: solioBackupView });
 /* 백업 방이 보이는 동안 다시 읽는 간격(ms). 설치가 도는 동안은 짧게, 아니면 엔진이 상태를 쓰는 주기에 맞춘다 */
 const BACKUP_POLL = Object.freeze({ busy: 2000, idle: 15000 });
+/* 카드에서 누른 시작을 따라가는 시간(ms). 받기 · 관리자 확인 · 설치를 넉넉히 덮고, 그 뒤 열린 화면으로는 끌고 가지 않는다 */
+const BACKUP_START_FOLLOW = 30 * 60000;
 
 /* 움직임의 길이(ms). 시안 검정구.html의 값이다 */
 export const ORB_TIMING = Object.freeze({
@@ -282,6 +284,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
    * 그 방을 열 수 없을 때의 「백업 창 따로 열기」 한 줄은 둘이다. aloneAskAt은 로그아웃 화면 위의 줄을 세운 때이고, aloneApp은 방이 없는 계정의 줄이다({ at, account }).
    * 둘을 따로 두어 앞 로그아웃의 줄이 들어온 계정에, 앞 계정의 줄이 다른 계정에 번지지 않게 한다(카본 workbackup-solio-one-ui-20261127 A2). doorSent는 마지막으로 보낸 자리다 */
   let pendingBackupTopic = null, aloneAskAt = 0, aloneApp = null, doorSent = '', backupDrain = null, drainReadAt = -Infinity;
+  /* 「한 번에 처리」 카드에서 「보호 시작」 · 「이 PC로 옮겨 오기」를 누른 표시 { account, at }. 본체가 방 안 첫 시작 화면을 연 뒤 그 방으로 데려가고 지운다(Fable -r2 FA1 · FA3) */
+  let backupStartAsk = null;
   const BACKUP_ALONE_FOR = 30 * 60000;
   if (typeof options.solioBackup?.onChanged === 'function') {
     try {
@@ -655,11 +659,16 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       return true;
     }
     const run = a.run || {};
-    let call = null;
+    let call = null, startAsk = null;
     // 맡긴 일 동작은 본체를 바로 불러 답을 받는다. 사무실 방을 거치면 거절을 카드가 알 수 없다(Fable F3)
     if (run.task) call = Promise.resolve().then(() => readApi.office?.taskAction ? readApi.office.taskAction(run.task.id, run.task.kind) : { ok: false });
     else if (run.office) call = office.handle(run.office);
-    else if (run.backup) call = backupAction(run.backup[0], run.backup[1], { anywhere: true }) || Promise.resolve({ ok: false });
+    else if (run.backup) {
+      // 카드에서 누른 시작은 표시를 든다. 본체는 곧바로 ok만 답하고, 첫 시작 화면은 설치 · 확인을 마친 뒤 방 안에 따로 연다
+      // seq: 시작이 받아들여졌을 때 원클릭 읽기의 번호. 그 뒤에 부탁한 읽기의 설치 실패만 이 누름의 실패다(Fable -r3 FA1)
+      if (run.backup[0] === 'backup-start') startAsk = backupStartAsk = { account: machine.read().accountKey, at: now(), seq: null };
+      call = backupAction(run.backup[0], run.backup[1], { anywhere: true }) || Promise.resolve({ ok: false });
+    }
     if (call === null) return true;
     if (a.kind === 'open') todo.waiting = key; else todo.busy = key;
     todoCalls.add(key);
@@ -667,6 +676,11 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     void Promise.resolve(call).catch(() => ({ ok: false })).then(res => {
       todoCalls.delete(key);
       if (disposed) return;
+      // 시작이 거절됐으면 따라갈 화면이 없다. 받아들여졌으면 그때까지 부탁한 읽기는 누르기 전 상태다(앞 실패의 'error'가 남아 있을 수 있다)
+      if (startAsk && startAsk === backupStartAsk) {
+        if (!res || res.ok === false) backupStartAsk = null;
+        else startAsk.seq = reads.backup.seq;
+      }
       // 사무실은 카드를 넘겼어도 다시 읽는다. 바뀐 일과 머리 줄의 수가 다음 주기까지 남지 않게(카본 A8)
       if (run.office || run.task) syncRead('office', { again: true });
       if (todo.current !== key) return;
@@ -2148,6 +2162,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     if (result.shouldTriggerEnter && busyAction === null) void triggerEnter();
     // 솔리오에 있는 동안 계정이 돌아왔는데 자료가 그 계정 것이 아니거나, 읽을 수 있게 되었는데 아직 읽지 않았으면 읽는다(다시 검수 -b · -c, 설계 검토 3차)
     const after = machine.read();
+    // 로그아웃하거나 계정이 바뀌면 카드에서 누른 시작의 표시를 버린다(-r2 FA1)
+    if (backupStartAsk && backupStartAsk.account !== after.accountKey) backupStartAsk = null;
     // 조용한 다시 확인은 계정 장애 한 번에 네 번까지다. 새 장애는 signed-in이던 계정이 우리 확인 밖에서 signed-in을 벗어날 때 시작한다.
     // signed-in 알림으로는 되돌리지 않는다. 알림마다 되돌리면 두 번 거절한 기다림에서 네 번 상한이 풀렸다(다시 검수 -e · -f).
     // 그 밖에 되돌리는 곳은 본체가 읽기를 받아 준 답, 구독 알림, 계정 정리뿐이다
@@ -2271,23 +2287,33 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         return;
       }
       r.retried = false;
-      // 처음 받는 답은 바뀜으로 치지 않는다(창을 다시 열었을 때 열려 있던 화면으로 끌고 가지 않게)
-      const doorWas = key === 'backup' && (r.result ? r.result.room?.open === true : true);
       r.result = res;
-      // 본체가 방 안 화면을 새로 열었다(「보호 시작」 · 「이 PC로 옮겨 오기」는 답보다 늦게 첫 시작 화면을 연다): 원클릭 방으로 간다(Fable workbackup-solio-one-ui-20261127 F1)
-      if (key === 'backup' && !doorWas && res.room?.open === true) followBackupDoor();
+      // 카드에서 시작을 누른 뒤 본체가 방 안 화면을 열었으면 원클릭 방으로 간다(Fable workbackup-solio-one-ui-20261127 F1 · -r2 FA1).
+      // 카드에서 누르지 않았으면 열린 화면으로 끌고 가지 않는다(창을 다시 열었을 때, 다른 방에서 글을 쓰는 중, -r2 FA3)
+      if (key === 'backup') followBackupStart(res, my);
       render();
     });
   }
-  /* 방 안 화면이 열렸을 때 그 방으로 데려간다. 백업 카드를 보던 중이면 카드를 접고(「다음 일」로 돌아온다), 다른 일의 카드나 다른 공간은 건드리지 않는다 */
+  /* 카드에서 누른 시작의 표시가 있고 방 안 화면이 열려 있으면(이미 열려 있었어도) 그 방으로 데려간다. 설치가 실패했거나 30분이 지났으면 표시를 버린다.
+     설치 실패는 시작이 받아들여진 뒤에 부탁한 읽기(my > ask.seq)의 것만 친다. 실패 카드에서 「다시 받기」를 누른 직후의 읽기에는 앞 실패가 남아 있다(Fable -r3 FA1) */
+  function followBackupStart(res, my) {
+    const ask = backupStartAsk;
+    if (!ask) return;
+    const failed = res?.install?.phase === 'error' && ask.seq !== null && my > ask.seq;
+    if (ask.account !== machine.read().accountKey || now() - ask.at > BACKUP_START_FOLLOW || failed) { backupStartAsk = null; return; }
+    if (res?.room?.open !== true) return;
+    if (followBackupDoor()) backupStartAsk = null;
+  }
+  /* 그 방으로 데려간다. 카드를 보던 중이면 접는다. 지금 카드가 백업 카드면 「다음 일」에서 그 카드를 넘기고, 끝 카드나 다른 일의 카드면 돌아왔을 때 그대로 보인다.
+     다른 공간이나 펼침이 열려 있으면 데려가지 않고 false(표시는 남아 솔리오로 돌아온 뒤의 답에서 다시 본다) */
   function followBackupDoor() {
-    if (disposed || space !== 'solio' || clientMode() !== 'app' || switchOpen) return;
+    if (disposed || space !== 'solio' || clientMode() !== 'app' || switchOpen) return false;
     if (todo.open) {
       const key = todo.current;
-      if (!key || !String(key).startsWith('backup:')) return;
-      todo.open = false; todo.paused = true; todo.went = key; todo.waiting = null; todo.busy = null;
+      todo.open = false; todo.paused = true; todo.went = key && String(key).startsWith('backup:') ? key : null; todo.waiting = null; todo.busy = null;
     }
     if (prog !== 'backup' || aside) showProgram('backup');
+    return prog === 'backup' && !aside;
   }
   /* 오브제를 눌렀거나 그 위에 머물렀을 때. 솔리오의 첫 화면에서 회원에게 있는 프로그램만 연다 */
   function showProgram(name) {

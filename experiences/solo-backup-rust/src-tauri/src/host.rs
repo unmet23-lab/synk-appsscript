@@ -422,6 +422,9 @@ pub fn serve(test: bool) -> i32 {
         // moveRestoreSettings is never cut half way (GPT workbackup-solio-one-be-20261127 C2), within end_deadline.
         closing.store(true, Ordering::SeqCst);
         let begun = Instant::now();
+        // From here a dialog asked for answers canceled without showing, also one a call already going asks for while
+        // the worker answers `$ending` below (GPT -r5 GA2).
+        native_end.close_dialogs();
         // What waits for a person ends here: the worker stops its own timers (no new setup request, account look or
         // recovery check is taken up), ends a Google sign-in's browser wait (a code already received is still exchanged and
         // saved, r2 GA1) and the first range's finding (`$ending`); the host closes its own open dialogs (Fable 설계 검토

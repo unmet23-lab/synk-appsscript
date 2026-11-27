@@ -761,22 +761,31 @@ function createSolioBackup({
     if (eng.error) return { ok: false, code: 'ENGINE_UNKNOWN' };
     if (!eng.installed || !eng.location) return { ok: false, code: 'NO_ENGINE' };
     if (hostCapable(eng.version)) {
-      // 방 안의 호스트가 창 잠금(ui.lock)을 쥐고 있으면 창은 곧바로 끝난다. 호스트에 bye를 보내고, 잠금이 풀릴 때까지 몇 번 다시 띄운다.
-      // 호스트가 되살리기 같은 일을 마치는 중이면 그 일이 끝날 때까지 잠금이 남아 BUSY다(GPT workbackup-solio-one-be-20261127 A6)
-      // 이 솔리오가 모르는 호스트(앞서 끈 솔리오의 호스트가 일을 마치는 중)도 잠금을 쥘 수 있어, 곧바로 끝나면 언제나 다시 띄운다(GPT -r2 GA2).
-      // 이미 떠 있던 창이 쥔 경우에는 띄울 때마다 그 창이 앞으로 나오므로, 끝내 BUSY로 답해도 손님은 창을 본다
+      // 설치기가 도는 동안(설치 폴더의 30분 안 `.installing`)은 창이 띄우자마자 0으로 끝나 깨운 창과 갈리지 않으므로 띄우지 않는다
+      if (await installMarked(eng.location)) return { ok: false, code: 'BUSY' };
+      // 방 안의 호스트가 창 잠금(ui.lock)을 쥐고 있으면 창은 곧바로 75로 끝난다. 호스트에 bye를 보내고, 잠금이 풀릴 때까지 몇 번 다시 띄운다.
+      // 호스트가 되살리기 같은 일을 마치는 중이면 그 일이 끝날 때까지 잠금이 남아 BUSY다(GPT workbackup-solio-one-be-20261127 A6).
+      // 이 솔리오가 모르는 호스트(앞서 끈 솔리오의 호스트)가 쥔 것도 75라 다시 띄운다(GPT -r2 GA2). 떠 있던 창을 깨웠으면 0이라
+      // 곧바로 성공이다(GPT -r3 GA1)
       const room = roomWords();
       if (room && ['ready', 'starting'].includes(room.host)) { try { door.reset(); } catch { /* 자리가 없다 */ } }
       const executable = path.win32.join(eng.location, 'WorkBackup.exe');
+      // 표식은 띄울 때마다 본다. 기다리는 사이 설치가 시작되면 창도 0(INSTALLING)으로 끝나므로, 0 뒤에 표식이 생겼으면 깨움으로 치지 않는다(GPT -r4 GA4)
       for (let i = 0; i < WINDOW_TRIES; i++) {
-        if (i) await wait(WINDOW_AGAIN);
+        if (i) { await wait(WINDOW_AGAIN); if (await installMarked(eng.location)) return { ok: false, code: 'BUSY' }; }
         const got = await openEmergencyWindow({ spawn: launch, executable, settleMs: windowSettleMs });
         if (got === 'failed') return { ok: false, code: 'OPEN_FAILED' };
-        if (got === 'open') return { ok: true };
+        if (got === 'woke' && await installMarked(eng.location)) return { ok: false, code: 'BUSY' };
+        if (got === 'open' || got === 'woke') return { ok: true };
       }
       return { ok: false, code: 'BUSY' };
     }
     try { await openExternal('synk-workbackup:open?topic=status'); return { ok: true }; } catch { return { ok: false, code: 'OPEN_FAILED' }; }
+  }
+  /* 설치기가 설치 폴더에 둔 표식이 30분 안의 것인가(엔진 platform.rs INSTALLING · INSTALLING_FOR). 시계가 뒤로 가 미래 시각이 된 표식은 엔진처럼 버린다(GPT -r4 GA7).
+     방금 쓴 표식의 시각은 밀리초 아래 자리 때문에 Date.now()보다 조금 앞설 수 있어 2초까지는 지금으로 본다 */
+  async function installMarked(location) {
+    try { const stat = await fsImpl.promises.stat(path.win32.join(location, '.installing')); const age = now() - stat.mtimeMs; return age > -2000 && age < 30 * 60000; } catch { return false; }
   }
   /* 방의 「← 원클릭」과 자리 알림 */
   function closeView(account) { if (!allowed(account) || !door) return { ok: false, code: 'NOT_AVAILABLE' }; return door.close(); }

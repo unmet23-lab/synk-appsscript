@@ -638,7 +638,14 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   // 엔진 창이 맡는 요청은 setup과 확인을 넘지 못한 것(거절만 하면 된다)이다. 회차 실행기 몫만 있으면 잠금을 쥐지 않는다. 그래야
   // 요청 작업이 띄운 회차가 이 창의 잠금에 막혀 「바쁨」으로 끝나지 않는다(카본 끝판 CB2).
   const windowWants = c => !c.ok || c.value.kind === 'setup';
-  async function solioTick() {
+  // The pass going now, one at a time: the end waits for it before it answers, so the worker never stops in the middle of a
+  // claim (Fable 설계 검토 끝의setup요청 D2).
+  let solioPass = null;
+  function solioTick() {
+    if (!solioPass) solioPass = solioOnce().finally(() => { solioPass = null; });
+    return solioPass;
+  }
+  async function solioOnce() {
     // An ending host leaves a setup request for the host SYNK 솔리오 starts next: taken here, it would be marked done and
     // kept in this worker's memory only (Fable 설계 검토 호스트끝 F2)
     if (closing || ending || dialogBusy) return;
@@ -647,9 +654,10 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       if (!(await solioFiles.pending(windowWants))) return;
       held = await engineLock(); if (!held || ending) return;
       await solioFiles.ready(); await solioFiles.sweep();
-      // The end may begin while the folder is readied and swept: look again, and per request before it is claimed (a
-      // request not wanted stays in the folder). One claimed as the end began is answered 「interrupted」, not kept in
-      // memory as done (GPT -r4 GA2).
+      // The end may begin while the folder is readied and swept: look again, and per request before it is claimed and again
+      // just before the claim (a request not wanted stays in the folder for the next host). One already being claimed as
+      // the end began is answered 「interrupted」, never kept in memory as done: the person presses again (SOLIO_ONE_CLIENT.md
+      // 2.1 한계, GPT -r4 GA2 · -r5 GA1, Fable 설계 검토 끝의setup요청 「나」).
       if (ending) return;
       const done = await solioFiles.process({ wants: c => !ending && windowWants(c), handle: async req => {
         if (ending) return { result: 'failed', reason: 'interrupted' };
@@ -684,8 +692,9 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     },
     // The host's end (`$ending`): the timers stop, so no setup request, account look or recovery check is taken up any more;
     // a Google sign-in waiting for the browser ends (a code already received is still exchanged and saved); the first range's
-    // finding stops. Jobs, a reinstall and calls already going finish; the host waits for them within its limits.
-    async ending() { if(ending||closing)return;ending=true;for(const t of timers)clearInterval(t);clearInterval(recommended.timer);try{account.cancelSignIn();}catch{}try{recovery.auth?.cancel?.();}catch{}await range.stop().catch(()=>{}); },
+    // finding stops. A setup pass going is waited for before the answer. Jobs, a reinstall and calls already going finish;
+    // the host waits for them within its limits.
+    async ending() { if(ending||closing)return;ending=true;for(const t of timers)clearInterval(t);clearInterval(recommended.timer);try{account.cancelSignIn();}catch{}try{recovery.auth?.cancel?.();}catch{}await range.stop().catch(()=>{});await solioPass?.catch(()=>{}); },
     async stop() { if(closing)return;closing=true;for(const t of timers)clearInterval(t);await range.stop();await recommended.stop();await Promise.all([recovery.stop(),profiles.stop()]);await lockCall('engine.unlock').catch(()=>{}); },
     active:()=>profiles.active()||!!recommended.engine?.config?.automatic||recommended.busy, busy:()=>profiles.busy()||recommended.busy
   };

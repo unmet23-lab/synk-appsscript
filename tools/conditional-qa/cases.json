@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 243,
+  "expectedCount": 244,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1946,6 +1946,14 @@
       "id": "S243",
       "file": "experiences/solo-backup-rust/tests/worker-ending.test.cjs",
       "name": "an ending worker leaves a setup request for the next host; before the end it takes one at once",
+      "group": "솔리오 하나로 — 끝나는 호스트의 워커(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S244",
+      "file": "experiences/solo-backup-rust/tests/worker-ending.test.cjs",
+      "name": "$ending answers only after the setup pass going now ends, and that pass leaves the request (Fable 설계 검토 끝의setup요청 D2)",
       "group": "솔리오 하나로 — 끝나는 호스트의 워커(실제 restic)",
       "route": "windows",
       "profile": "default"
