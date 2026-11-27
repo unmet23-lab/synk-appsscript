@@ -502,6 +502,17 @@
         }
       },
       {
+        "계정": "lab-ru-vk",
+        "채널": "VK @synklab_ru",
+        "주소": "https://vk.ru/clip-243082040_456239028",
+        "형식": "vk-clip",
+        "게시": "2026-11-27T10:00:32.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-au-youtube",
         "채널": "유튜브 @synklabaustralia",
         "주소": "https://www.youtube.com/watch?v=1Ic__xDkUcA",

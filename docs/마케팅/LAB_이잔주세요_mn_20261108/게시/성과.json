@@ -1171,7 +1171,12 @@
             "지표": {
               "views": 116,
               "likes": 1,
-              "comments": 0
+              "comments": 0,
+              "stayedToWatchPct": 27,
+              "averageWatchSeconds": 16,
+              "averageViewPct": 66.2,
+              "shares": 0,
+              "subscribersGained": 0
             },
             "평소대비": {
               "배수": 29,
@@ -1186,16 +1191,20 @@
             },
             "판정": "자료 부족",
             "다음": null,
-            "까닭": "네 숫자(초반 유지·평균 시청·보내기와 저장·맞춤 도구 유입)가 아직 없다"
+            "까닭": "견줄 이전 편이 모자란다(본 비율 2편 · 평균 시청 2편 · 평균 조회율 2편 · 공유 2편 — 4편부터)"
           }
         },
-        "화면필요": [
-          "본 비율",
-          "평균 시청",
-          "평균 조회율",
-          "공유",
-          "구독 증가"
-        ]
+        "화면필요": [],
+        "화면": {
+          "읽은때": "2026-11-27T13:58:15.323Z",
+          "지표": {
+            "stayedToWatchPct": 27,
+            "averageWatchSeconds": 16,
+            "averageViewPct": 66.2,
+            "shares": 0,
+            "subscribersGained": 0
+          }
+        }
       }
     ]
   }
