@@ -32,12 +32,11 @@ const Pic: React.FC<{ n: string; x: number; y: number; k: number; style?: React.
 const right = (n: string, k: number, edge = 1040) => edge - SZ[n][0] * k; // 내가 보낸 말풍선은 오른쪽에
 const center = (n: string, k: number) => (1080 - SZ[n][0] * k) / 2;
 const fill = (n: string) => 1080 / SZ[n][0]; // 판 너비에 꽉
+const MAP_H = SZ.map_all[1] * fill('map_all'); // 판 좌표의 지도 높이 — 카드 배율을 이 높이에 맞춘다(r9)
+const MAP_TALL_H = SZ.map_all_tall[1] * fill('map_all_tall');
 
-const PanelH = React.createContext(1920 - PT);
-const Composer: React.FC = () => {
-  const h = React.useContext(PanelH);
-  return <Pic n="composer" x={(1080 - SZ.composer[0]) / 2} y={h - SZ.composer[1] - 30} k={1} />;
-};
+const PanelH = React.createContext(1920 - PT); // 판 좌표의 판 높이(Board가 카드 배율로 넣는다)
+// r9: 아래 입력 칸(「ChatGPT에게 물어보세요」)은 카드에 넣으면 답 글과 겹치고 미학 맹검 「시선을 흩뜨린다」여서 뺐다
 
 const inAt = (t: number, a: number, d = 0.2) => interpolate(t, [a - 0.02, a + d], [0, 1], { ...clamp, easing: EASE_OUT });
 const Rise: React.FC<{ n: string; x: number; y: number; k: number; p: number }> = ({ n, x, y, k, p }) =>
@@ -110,14 +109,18 @@ const LegsPanel: React.FC = () => {
   );
 };
 // 끝 — 지도 없이 온 답(E07)에 이어 보낸 「지도로도 보여 줘.」(실제 말풍선) → 「지도로도」에 그 답의 지도 카드가 올라온다(E08, 밝은 화면)
-const EndAsk: React.FC = () => <Pic n="end_ask" x={right('end_ask', 1.3, 1030)} y={40} k={1.3} />;
+// r9: 말풍선은 다가가지 않고 카드에 고정한다 — 대신 보낸 순간처럼 0.2초 동안 올라오며 들어온다(올리기 전 검사 「컷이 굳은 채로 시작」)
+const EndAsk: React.FC = () => {
+  const f = useCurrentFrame();
+  return <Rise n="end_ask" x={right('end_ask', 1.3, 1030)} y={40} k={1.3} p={inAt(f / FPS, 0.02, 0.22)} />;
+};
 const EndPanel: React.FC<{ v: Variant }> = ({ v }) => {
   const f = useCurrentFrame();
   const t = S.end + f / FPS;
   const ka = 1.3;
   const ya = 40;
   const ym = ya + SZ.end_ask[1] * ka + 34;
-  const km = (1920 - PT - ym - 24) / SZ.end_map[1];
+  const km = (React.useContext(PanelH) - ym - 24) / SZ.end_map[1];
   return (
     <>
       <Rise n="end_map" x={center('end_map', km)} y={ym} k={km} p={inAt(t, N7_AT + END[v].cta2At, 0.28)} />
@@ -136,13 +139,12 @@ const ExclPanel: React.FC = () => {
   const f = useCurrentFrame();
   const t = S.excl + f / FPS;
   const k1 = 1.0;
-  const k2 = 1.04; // 이해 시험 1회 s · G 「10초 제외 사유가 작아 못 읽음」 — 판 너비 끝까지 키운다(다가가며 양끝이 잘리지 않게 1.04배)
+  const k2 = 0.98; // 이해 시험 1회 s · G 「10초 제외 사유가 작아 못 읽음」 — 판 너비 끝까지 키운다(r9: 다가감 0.026에도 카드 양끝에 닿지 않게 0.98배)
   const y2 = 40 + SZ.intro1[1] * k1 + 40;
   return (
     <>
       <Pic n="intro1" x={center('intro1', k1)} y={40} k={k1} />
       <Rise n="excluded" x={center('excluded', k2)} y={y2} k={k2} p={inAt(t, 9.3 + 0.558)} />
-      <Composer />
     </>
   );
 };
@@ -188,48 +190,60 @@ const WithoutPanel: React.FC = () => {
 const FADE_TOP: React.CSSProperties = { WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 34%)', maskImage: 'linear-gradient(to bottom, transparent 0%, #000 34%)' };
 // 최종 확인 미흡(11-25 19:20) — 1.06배로 너비를 꽉 채운 답 두 줄과 1.42배 말풍선이 판의 다가감(origin 70%)으로 왼쪽 끝 밖으로 나가 첫 글자가 잘렸다.
 // 답 두 줄은 0.98배, 말풍선은 1.36배(오른쪽 끝 1010)로 줄이고, 이 판의 다가감을 가운데에서 작게(Boards · drift 0.012) 한다 — 마지막 장에서도 좌우 여백이 50px 넘게 남는다
-const LINE_K = 1.36;
-const INTRO2_K = 0.98;
+const LINE_K = 1.2; // r9: 카드 안에서 다가감(0.055 · 4.35초 → 1.24배)에도 좌우 끝에 닿지 않게(1.36 → 1.2, 오른쪽 끝 960)
+const INTRO2_K = 0.9;
 const LinePanel: React.FC = () => {
   const f = useCurrentFrame();
   const t = S.line + f / FPS;
-  const g = interpolate(t, [S.lineIn - 0.05, S.lineIn + 0.3], [1.12, LINE_K], { ...clamp, easing: EASE_OUT });
+  const g = interpolate(t, [S.lineIn - 0.05, S.lineIn + 0.3], [1.0, LINE_K], { ...clamp, easing: EASE_OUT });
   const y2 = 90 + SZ.bubble_line[1] * LINE_K + 70;
   return (
     <>
       {/* 보낸 말풍선의 아래 끝(실제 화면) — 위 가장자리는 말풍선이 위로 이어지게 흐린다(미학 맹검 「오려 붙인 띠」) */}
-      <Pic n="bubble_line" x={right('bubble_line', g, 1010)} y={90} k={g} style={FADE_TOP} />
+      <Pic n="bubble_line" x={right('bubble_line', g, 960)} y={90} k={g} style={FADE_TOP} />
       <Rise n="intro2" x={center('intro2', INTRO2_K)} y={y2} k={INTRO2_K} p={inAt(t, 19.55 + 2.727)} />
-      <Composer />
     </>
   );
 };
 
-// 판 한 장 — 들어올 때 1.03배에서 내려앉고 천천히 다가간다. 위쪽은 같은 판을 뒤집어 흐리게 채우고 그늘을 얹는다
-// front = 판 앞에만 놓고 위쪽 거울에는 비치지 않는 조각(밝은 판 위의 검은 말풍선이 위쪽에 얼룩으로 비치지 않게)
-const Board: React.FC<{ pt?: number; drift?: number; origin?: string; bg?: string; front?: React.ReactNode; children: React.ReactNode }> = ({ pt = PT, drift = 0.012, origin = '50% 30%', bg = DARK, front, children }) => {
+// 판 한 장 — 들어올 때 1.03배에서 내려앉고 천천히 다가간다.
+// 11-27 15시 회차(r9): 최종 확인 미흡 갈래 5(글자 가림) 뒤 올리기 전 검사가 화면 끝까지 꽉 찬 지도 속 지명 · 지도 단추를 「까닭이 있어도 고칠 것」으로 막았다.
+// 실제 화면은 앱 단추 · 캡션 자리 밖의 카드(가로 80~914, 아래 1420 — 안전선 65 · 920 · 1428 안)에 통째로 줄여 넣는다. 판 안 좌표(1080 너비)는 그대로 두고
+// 카드 배율 k만 판마다 준다. 지도는 핀 · 지명이 모두 보이게 높이에 맞춘다. 카드 뒤에는 같은 판을 크게 흐려 번지게 둔다(빈 위 · 아래가 맨 검정이 되지 않게).
+// front = 카드 앞에만 놓고 뒤의 번짐에는 비치지 않는 조각(밝은 판 위의 검은 말풍선이 번짐에 얼룩으로 비치지 않게). 다가가지 않고 카드에 고정한다(r9 — 끝 말풍선이 다가감에 카드 끝에서 잘렸다)
+const CARD_L = 80;
+const CARD_R = 914;
+const CARD_B = 1420;
+const CARD_K = (CARD_R - CARD_L) / 1080;
+// 표지 한 장(구성 cover)만: 카드 속 지도의 작은 지명(12~15px)을 살짝 흐린다 — 핀 · 길은 그대로 보이고, 표지에 못 읽을 작은 글이 남지 않게(올리기 전 검사 표지 작은 글자)
+const Soft = React.createContext(false);
+const Board: React.FC<{ pt?: number; k?: number; drift?: number; origin?: string; bg?: string; front?: React.ReactNode; children: React.ReactNode }> = ({ pt = PT, k = CARD_K, drift = 0.012, origin = '50% 30%', bg = DARK, front, children }) => {
   const f = useCurrentFrame();
   const z = interpolate(f, [0, 8], [1.03, 1], { ...clamp, easing: EASE_OUT }) * (1 + (f / FPS) * drift);
-  const H = 1920 - pt;
-  const wrap = (withFront: boolean) => (
-    <PanelH.Provider value={H}>
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: origin }}>{children}{withFront ? front : null}</div>
-    </PanelH.Provider>
+  const kk = Math.min(k, CARD_K);
+  const W = Math.round(1080 * kk);
+  const left = 540 + W / 2 <= CARD_R ? Math.round(540 - W / 2) : CARD_L; // 가운데에 두되 오른쪽 단추 자리에 닿으면 왼쪽 여백에 맞춘다
+  const Hs = CARD_B - pt;
+  const Hc = Hs / kk;
+  const soft = React.useContext(Soft);
+  const glow = bg === DARK ? 0.42 : 0.2; // 밝은 카드는 번짐이 흰 테로 뜨지 않게 옅게
+  const scaled = (withFront: boolean) => (
+    <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: Hc, transform: `scale(${kk})`, transformOrigin: '0 0', filter: soft ? 'blur(2.4px)' : undefined }}>
+      <PanelH.Provider value={Hc}>
+        <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: Hc, transform: `scale(${z})`, transformOrigin: origin }}>{children}</div>
+        {withFront ? front : null}
+      </PanelH.Provider>
+    </div>
   );
-  const inner = wrap(false);
   return (
     <AbsoluteFill style={{ background: `rgb(${SHADE})` }}>
-      {pt > 0 ? (
-        <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: pt, overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', left: -40, top: pt, width: 1160, height: H, background: bg, transform: 'scaleY(-1)', transformOrigin: '50% 0%', filter: 'blur(26px)' }}>
-            <div style={{ position: 'absolute', left: 40, top: 0, width: 1080, height: H }}>{inner}</div>
-          </div>
-          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, rgba(${SHADE},0.95) 0%, rgba(${SHADE},0.86) 62%, rgba(${SHADE},0.62) 100%)` }} />
-        </div>
-      ) : null}
-      <div style={{ position: 'absolute', left: 0, top: pt, width: 1080, height: H, overflow: 'hidden', background: bg }}>
-        {wrap(true)}
-        {pt > 0 ? <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 46, background: `linear-gradient(to bottom, rgba(${SHADE},0.32), rgba(${SHADE},0))` }} /> : null}
+      <div style={{ position: 'absolute', left: left - 90, top: pt - 90, width: W + 180, height: Hs + 180, filter: 'blur(70px)', opacity: glow }}>
+        <div style={{ position: 'absolute', left: 90, top: 90, width: W, height: Hs, overflow: 'hidden', background: bg }}>{scaled(false)}</div>
+      </div>
+      <div style={{ position: 'absolute', left, top: pt, width: W, height: Hs, overflow: 'hidden', background: bg, borderRadius: 22 }}>{scaled(true)}</div>
+      {/* 카드 아래(캡션 자리)는 같은 판을 뒤집어 흐리게 비춘다 — 글은 읽히지 않고 빈 검정만 남지 않게 */}
+      <div style={{ position: 'absolute', left, top: CARD_B + 12, width: W, height: 1920 - CARD_B - 12, overflow: 'hidden', opacity: 0.5, filter: 'blur(24px)', WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, transparent 80%)', maskImage: 'linear-gradient(to bottom, #000 0%, transparent 80%)' }}>
+        <div style={{ position: 'absolute', left: 0, top: -Hs, width: W, height: Hs, overflow: 'hidden', background: bg, transform: 'scaleY(-1)', transformOrigin: '50% 100%' }}>{scaled(false)}</div>
       </div>
     </AbsoluteFill>
   );
@@ -303,24 +317,27 @@ const Seq: React.FC<{ a: number; b: number; children: React.ReactNode }> = ({ a,
 
 const Boards: React.FC<{ v: Variant }> = ({ v }) => (
   <>
-    <Seq a={S.hook} b={S.list}><Board drift={0.016} origin="45% 50%"><RoutePanel draws={DRAW_FILM} /></Board></Seq>
-    <Seq a={S.list} b={S.d1}><Board drift={0.03} origin="70% 95%"><HookPanel /></Board></Seq>
-    <Seq a={S.d1} b={S.excl}><Board drift={0.03} origin="50% 55%"><DaysPanel /></Board></Seq>
-    <Seq a={S.excl} b={S.kakao}><Board drift={0.012} origin="50% 45%"><ExclPanel /></Board></Seq>
-    <Seq a={S.kakao} b={S.legs}><Board drift={0.016} origin="20% 15%" bg={WHITE}><KakaoPanel /></Board></Seq>
-    <Seq a={S.legs} b={S.without}><Board pt={LEGS_PT} drift={0.03} origin="45% 45%"><LegsPanel /></Board></Seq>
-    <Seq a={S.without} b={S.line}><Board drift={0.012} origin="50% 30%"><WithoutPanel /></Board></Seq>
-    <Seq a={S.line} b={S.end}><Board drift={0.012} origin="50% 15%"><LinePanel /></Board></Seq>
-    <Seq a={S.end} b={totalOf(v)}><Board drift={0.02} origin="50% 40%" bg={LIGHT} front={<EndAsk />}><EndPanel v={v} /></Board></Seq>
+    {/* r9: 카드가 화면의 30~40%라 같은 다가감으로는 올리기 전 검사 ② 「거의 멈춘 시간」이 14% → 44%가 됐다. 글이 카드 끝에 닿지 않는 만큼 다가감을 키운다 */}
+    <Seq a={S.hook} b={S.list}><Board pt={620} k={800 / MAP_H} drift={0.04} origin="45% 50%"><RoutePanel draws={DRAW_FILM} /></Board></Seq>
+    <Seq a={S.list} b={S.d1}><Board pt={620} k={0.69} drift={0.03} origin="70% 95%"><HookPanel /></Board></Seq>
+    <Seq a={S.d1} b={S.excl}><Board k={720 / MAP_H} drift={0.06} origin="50% 55%"><DaysPanel /></Board></Seq>
+    <Seq a={S.excl} b={S.kakao}><Board drift={0.026} origin="50% 45%"><ExclPanel /></Board></Seq>
+    <Seq a={S.kakao} b={S.legs}><Board pt={600} k={0.645} drift={0.04} origin="20% 15%" bg={WHITE}><KakaoPanel /></Board></Seq>
+    <Seq a={S.legs} b={S.without}><Board pt={LEGS_PT} k={1000 / MAP_TALL_H} drift={0.05} origin="45% 45%"><LegsPanel /></Board></Seq>
+    <Seq a={S.without} b={S.line}><Board k={0.737} drift={0.05} origin="50% 30%"><WithoutPanel /></Board></Seq>
+    <Seq a={S.line} b={S.end}><Board drift={0.055} origin="50% 15%"><LinePanel /></Board></Seq>
+    <Seq a={S.end} b={totalOf(v)}><Board k={0.66} drift={0.06} origin="70% 45%" bg={LIGHT} front={<EndAsk />}><EndPanel v={v} /></Board></Seq>
   </>
 );
 
-export const Film: React.FC<{ v: Variant }> = ({ v }) => (
+export const Film: React.FC<{ v: Variant; cover?: boolean }> = ({ v, cover }) => (
   <AbsoluteFill style={{ background: `rgb(${SHADE})` }}>
-    <Boards v={v} />
+    <Soft.Provider value={!!cover}>
+      <Boards v={v} />
+    </Soft.Provider>
     <Big v={v} />
     <Tag />
-    <Sound v={v} />
+    {cover ? null : <Sound v={v} />}
   </AbsoluteFill>
 );
 

@@ -15,6 +15,8 @@ export const RemotionRoot: React.FC = () => (
     {VARIANTS.map(({ id, v }) => (
       <Composition key={id} id={id} component={Film} defaultProps={{ v }} durationInFrames={Math.round(totalOf(v) * FPS)} fps={FPS} width={1080} height={1920} />
     ))}
-    <Composition id="scene" component={Scene} durationInFrames={Math.round(SCENE_DUR * FPS)} fps={FPS} width={1080} height={1920} />
+    {/* 표지 한 장(r9) — 본편 2.0초와 같고 카드 속 지도의 작은 지명만 살짝 흐리다 */}
+    <Composition id="cover" component={Film} defaultProps={{ v: 'ig' as Variant, cover: true }} durationInFrames={Math.round(totalOf('ig') * FPS)} fps={FPS} width={1080} height={1920} />
+    <Composition id="scene"component={Scene} durationInFrames={Math.round(SCENE_DUR * FPS)} fps={FPS} width={1080} height={1920} />
   </>
 );
