@@ -14,7 +14,7 @@ export function createPathCaseStaffRoutes({ pathCases, session, origin, body, se
       if (route && !route[2]) {
         // 상세를 열면 「보는 중」으로 바뀌고 급함 알림을 읽는다. 다른 사이트를 거친 최상위 이동 · 남의 출처 요청으로는 열지 않는다.
         const mode = req.headers['sec-fetch-mode'], site = req.headers['sec-fetch-site'];
-        if (mode === 'navigate' || (site !== undefined && site !== 'same-origin')) throw fail('회사 프로그램 화면에서 열어 주세요.', 403);
+        if (mode === 'navigate' || site !== 'same-origin') throw fail('회사 프로그램 화면에서 열어 주세요.', 403);
         send(res, 200, pathCases.detail(user, route[1])); return true;
       }
       throw fail('PATH 상담함 주소를 확인해 주세요.', 404);
@@ -34,7 +34,11 @@ export function createPathCaseStaffRoutes({ pathCases, session, origin, body, se
     else if (action === 'task') result = pathCases.task(actor, id, input);
     else if (action === 'close') result = pathCases.close(actor, id, input);
     else if (action === 'erase-check') result = pathCases.eraseCheck(actor, id, input);
-    else if (action === 'translate-draft') result = await pathCases.translateDraft(actor, id, input);
+    else if (action === 'translate-draft') {
+      result = await pathCases.translateDraft(actor, id, input);
+      const again = session(req);
+      if (!again || again.hash !== auth.hash || again.user.id !== user.id) throw fail('로그인 상태를 다시 확인해 주세요.', 401);
+    }
     else {
       result = pathCases.erase(actor, id, input);
       // 기록에는 건 번호와 시각만 남긴다. 학생 글 · 요약은 싣지 않는다.

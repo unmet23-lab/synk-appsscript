@@ -43,7 +43,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   const confirmKey = createHmac('sha256', store.key).update('path-case-erase-confirm\0v1').digest();
   const enabled = () => env.PATH_CASES_ENABLED === 'true';
   // 허용 목록을 적었으면 그 계정만 받는다. 적은 값 가운데 하나라도 SYNK ID 꼴이 아니면 아무도 받지 않는다(잘못 붙여 넣어 모두에게 열리지 않게).
-  const allowList = () => { const raw = String(env.PATH_CASES_ALLOW || '').split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(Boolean); return { set: raw.length > 0, ok: raw.every(value => UUID.test(value)), ids: raw }; };
+  const allowList = () => { const text = String(env.PATH_CASES_ALLOW ?? ''), raw = text.split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(Boolean); return { set: text.trim() !== '', ok: raw.length > 0 && raw.every(value => UUID.test(value)), ids: raw }; };
   // 접수 줄의 학생은 열쇠 해시로 둔다(상담을 지운 뒤 8일 동안 남는 줄에서 누가 무엇을 보냈는지 바로 읽히지 않게).
   const intakeSubject = synkUserId => createHmac('sha256', store.key).update('path-case-intake\0v1\0' + synkUserId).digest('hex');
   const ticketKey = () => { const value = env.PATH_CASE_TICKET_KEY; return typeof value === 'string' && value.length >= 32 ? value : null; };
@@ -185,7 +185,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       const text = e.text ? (e.text_ko || e.text) : null;
       if (e.index === null) { if (text && tasks.length < L.tasks) tasks.push({ id: randomUUID(), do: text, why: '', by: null, source: 'student', done: false, note: '', doneAt: null, doneBy: null, removed: false }); continue; }
       const t = tasks[e.index]; if (!t) continue;
-      if (!text) t.removed = true; else Object.assign(t, { do: text, source: 'student' });
+      if (!text) t.removed = true; else Object.assign(t, { do: text, why: '', by: null, source: 'student' });
     }
     return { version: 1, mode: req.mode, lang: req.lang, age: req.age || 'adult', consent: req.consent, guardian: req.guardian === true,
       brief_ko: req.brief_ko || null, brief_student: req.brief_student || null, edits: req.edits || [], deadline: req.deadline || null,
@@ -307,7 +307,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       for (const intake of store.all(K.intake)) if (intake.caseId === row.id) store.put(K.intake, intake.id, { ...intake, caseId: null });
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
-    truncateWal();
+    try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
+    walPending = true; // WAL 자르기(TRUNCATE)는 기다릴 수 있어 요청 길에서 하지 않고 보관 정리(maintain) 때 한다
     notify([row.assigneeId]);
   }
 
@@ -388,7 +389,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     if (!onlyKeys(input, ['revision', 'assigneeId']) || typeof input.assigneeId !== 'string' || !eligible(input.assigneeId)) throw fail(400, 'CASE_ASSIGNEE', 'PATH 상담 담당이나 책임자, 회사 주인에게만 맡길 수 있어요.');
     return mutate(actor, id, input, ({ current, at }) => {
       // 열린 급함 건을 넘기면 새 담당에게도 급함 알림을 남긴다.
-      if (open(current) && current.urgent && input.assigneeId !== assigneeOf(current)) { const alertId = randomUUID(); store.put(K.alerts, alertId, { id: alertId, userId: input.assigneeId, caseId: current.id, createdAt: at, readAt: null }); }
+      if (open(current) && current.urgent && input.assigneeId !== assigneeOf(current) && !store.all(K.alerts).some(a => a.caseId === current.id && a.userId === input.assigneeId && !a.readAt)) { const alertId = randomUUID(); store.put(K.alerts, alertId, { id: alertId, userId: input.assigneeId, caseId: current.id, createdAt: at, readAt: null }); }
       return { ...current, assigneeId: input.assigneeId };
     }, { manager: true });
   }
@@ -564,7 +565,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     if (!force && state.livenessAt && atMs - Date.parse(state.livenessAt) < L.livenessEveryMs) return { skipped: 'not-due' };
     // 가장 오래 확인하지 않은 계정부터 묻는다(한 번에 다 못 물어도 다음 날 남은 계정이 앞에 온다).
     const ids = [...new Set(store.all(K.cases).filter(row => !row.lastStudentCheckAt || Date.parse(row.lastStudentCheckAt) <= atMs - L.livenessStaleMs)
-      .sort((a, b) => (a.lastStudentCheckAt || '').localeCompare(b.lastStudentCheckAt || '')).map(row => row.synkUserId))]
+      .sort((a, b) => (a.livenessAskedAt || a.lastStudentCheckAt || '').localeCompare(b.livenessAskedAt || b.lastStudentCheckAt || '')).map(row => row.synkUserId))]
       .slice(0, L.livenessBatch * L.livenessBatches);
     const finish = patch => store.put('settings', STATE, { ...(store.get('settings', STATE) || {}), livenessAt: new Date(atMs).toISOString(), ...patch });
     if (!ids.length) { finish({ livenessStatus: 'ok', livenessAsked: 0, livenessGone: 0 }); return { asked: 0, gone: 0, leaving: 0, present: 0 }; }
@@ -582,6 +583,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         if (!response.ok) throw new Error('liveness ' + response.status);
         data = await response.json();
       } catch {
+        if (stopped) return { stopped: true, asked: ids.length }; // 다음 시작 때 다시 묻는다
         finish({ livenessStatus: 'failed' });
         return { failed: true, asked: ids.length };
       }
@@ -598,13 +600,15 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     const at = new Date(nowMs()).toISOString();
     let leaving = 0, present = 0;
     // 묻는 사이에 학생이 앱을 열었으면(그 뒤의 확인 시각이 있으면) 늦게 온 답으로 숨기거나 지우지 않는다.
-    const askedAt = new Date(atMs).toISOString();
+    const askedAt = new Date(atMs).toISOString(), asked = new Set(ids);
     for (const row of store.all(K.cases)) {
+      if (!asked.has(row.synkUserId)) continue;
       const answer = results[row.synkUserId];
-      if (!answer) continue;
+      if (!answer) { store.put(K.cases, row.id, { ...row, livenessAskedAt: askedAt }); continue; }
+      row.livenessAskedAt = askedAt;
       const seenSince = Boolean(row.lastStudentCheckAt && row.lastStudentCheckAt > askedAt);
       if (answer === 'gone') { if (!seenSince) erase(row, 'account-gone'); }
-      else if (answer === 'leaving') { if (!row.hidden && !seenSince) { store.put(K.cases, row.id, { ...row, hidden: true }); leaving++; } }
+      else if (answer === 'leaving') { if (!row.hidden && !seenSince) { store.put(K.cases, row.id, { ...row, hidden: true }); leaving++; } else store.put(K.cases, row.id, row); }
       else if (answer === 'present') { store.put(K.cases, row.id, { ...row, hidden: false, lastStudentCheckAt: seenSince ? row.lastStudentCheckAt : at }); present++; }
     }
     finish({ livenessStatus: 'ok', livenessAsked: ids.length, livenessGone: gone.length });
@@ -618,7 +622,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     maintain, liveness, roleOf: user => roleOf(live(user?.id)),
     waitForIdle: async () => { while (translating) await translating; await livenessRun; },
     // 서버를 멈출 때: 남은 번역은 버리고(원문은 저장돼 있다) 지금 하나와 계정 정리만 기다린다.
-    stop: async () => { stopped = true; translationQueue.length = 0; livenessAbort.abort(); await translating; await livenessRun; },
+    stop: async () => { stopped = true; translationQueue.length = 0; livenessAbort.abort(); await livenessRun; },
   };
 }
 export const PATH_CASE_NOTE_MAX = MAX_NOTE_CHARS;

@@ -2,7 +2,7 @@
 // PATH 상담함 — 문의 접수와 같은 「목록 + 상세」(제작 도구 A). 서버 계약은 /api/path-cases(path-cases.mjs)이고, 권한은 서버가 PATH 소속 역할로 본다.
 // 목록: 급함이 맨 위, 그다음 기한이 가까운 순(서버 순서 그대로). 상세: 넘김 요약 → 할 일 → 학생이 고친 줄 → 대화와 답 → 전체 AI 대화(보냈을 때만, 접어서) → 끝내기 · 지우기.
 // 학생 글은 한국어 번역(있을 때)과 원문을 함께 보인다. 할 일 글은 이 화면에만 있고 오늘 할 일에는 링크만 간다.
-const pathCaseState={identity:'',request:0,loading:false,busy:'',attempted:false,data:null,error:'',selected:null,detail:null,forbidden:false,scope:'open',kind:'',reply:'',replyStudent:'',notes:{},newTask:'',erasure:null,folds:{},lastTarget:''};
+const pathCaseState={identity:'',request:0,loading:false,busy:'',attempted:false,data:null,error:'',selected:null,detail:null,forbidden:false,scope:'open',kind:'',reply:'',replyStudent:'',notes:{},newTask:'',erasure:null,folds:{},lastTarget:'',picking:false};
 const pathCaseKinds={urgent:'급함',act:'실제로 할 일',synk:'SYNK 일',stuck:'AI가 못 답함'};
 const pathCaseStatus={new:'새 상담',reviewing:'보는 중',answered:'답 보냄',closed:'끝남'};
 const pathCaseTones={new:'wait',reviewing:'info',answered:'ok',closed:'off'};
@@ -16,7 +16,7 @@ function pathCasesVisible(){
   if(user.role==='admin')return true;
   return (user.workspaceAccess?.memberships||[]).some(row=>row.company==='PATH'&&['counselor','manager'].includes(row.role));
 }
-function pathCasesReset(){Object.assign(pathCaseState,{identity:'',request:pathCaseState.request+1,loading:false,busy:'',attempted:false,data:null,error:'',selected:null,detail:null,forbidden:false,scope:'open',kind:'',reply:'',replyStudent:'',notes:{},newTask:'',erasure:null,folds:{},lastTarget:''});}
+function pathCasesReset(){Object.assign(pathCaseState,{identity:'',request:pathCaseState.request+1,loading:false,busy:'',attempted:false,data:null,error:'',selected:null,detail:null,forbidden:false,scope:'open',kind:'',reply:'',replyStudent:'',notes:{},newTask:'',erasure:null,folds:{},lastTarget:'',picking:false});}
 function pathCaseActive(){return !!state.user&&state.tab==='workroom'&&typeof wr!=='undefined'&&wr.view==='tools'&&typeof makerTools!=='undefined'&&makerTools.view==='path-cases';}
 function pathCaseRender(){if(pathCaseActive())render();}
 function pathCasesEnsure(){
@@ -60,7 +60,7 @@ async function pathCaseOpen(id,{quiet=false}={}){
   finally{if(identity===pathCaseIdentity()&&!quiet){s.loading=false;pathCaseRender();}}
 }
 // 고친 상세를 목록 줄에도 바로 옮긴다.
-function pathCaseAccept(item){const s=pathCaseState;if(!item?.id||!s.data)return;const keys=['status','urgent','assigneeId','assigneeName','openTasks','tasks','revision','updatedAt','closedAt','waiting','deadline','wants'];s.data.items=s.data.items.map(row=>row.id===item.id?{...row,...Object.fromEntries(keys.map(key=>[key,item[key]]))}:row);}
+function pathCaseAccept(item){const s=pathCaseState;if(!item?.id||!s.data)return;const keys=['status','urgent','assigneeId','assigneeName','openTasks','tasks','revision','updatedAt','closedAt','waiting','deadline','wants'];s.data.items=s.data.items.map(row=>row.id===item.id?{...row,...Object.fromEntries(keys.map(key=>[key,key==='tasks'&&Array.isArray(item.tasks)?item.tasks.length:item[key]]))}:row);}
 function pathCaseRows(){const s=pathCaseState,items=s.data?.items||[];return items.filter(row=>(s.scope==='all'||row.status!=='closed')&&(!s.kind||row.kind===s.kind));}
 function pathCasesNavCount(){const s=pathCaseState;if(!s.data||s.identity!==pathCaseIdentity())return null;const urgent=s.data.items.filter(row=>row.urgent&&row.status!=='closed').length;const fresh=s.data.items.filter(row=>row.status==='new').length;return urgent?{value:urgent,tone:'alert',label:'급함 상담'}:{value:fresh,tone:'',label:'새 상담'};}
 function pathCaseDay(value){if(!value)return '';const date=/^\d{4}-\d{2}-\d{2}$/.test(value)?new Date(value+'T00:00:00+09:00'):new Date(value);if(!Number.isFinite(date.getTime()))return '';return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric'}).format(date);}
@@ -74,6 +74,11 @@ function pathCaseHead(){
   return mtHead({tool:'path-cases',title:'PATH 상담함',desc:'AI가 더 도울 수 없을 때 학생이 보낸 상담이에요. 넘김 요약과 할 일을 보고, 사람이 해야 하는 일만 해요.',actions,meter,layout:'desk'});
 }
 function pathCasePromise(){return '<p class="pc-promise" role="note">입학 · 비자 결과를 약속하지 않아요. 학생과의 연락은 이 상담함에서만 해요.</p>';}
+// 휴대폰 폭에서는 목록 대신 고른 상담 한 줄과 「바꾸기」를 보인다(문의 접수와 같은 틀). 고른 상담이 없으면 목록을 펼쳐 둔다.
+function pathCaseBand(){
+  const s=pathCaseState,row=s.data.items.find(item=>item.id===s.selected);
+  return `<div class="mt-list-mobile"><span>${row?`<b>${escape(row.urgent&&row.status!=='closed'?'급함':pathCaseStatus[row.status]||'')}</b> · ${escape(pathCaseWants(row))}`:'고른 상담 없음'}</span>${s.data.items.length&&row?`<button type="button" class="btn small" data-pc-action="pick" aria-expanded="${s.picking}">${s.picking?'닫기':'바꾸기'}</button>`:''}</div>`;
+}
 function pathCaseList(){
   const s=pathCaseState,rows=pathCaseRows(),items=s.data.items;
   const kinds=[['','모두'],...Object.entries(pathCaseKinds)].map(([id,label])=>`<button type="button" data-pc-action="kind" data-kind="${id}" aria-pressed="${s.kind===id}">${escape(label)} <b>${mtNum(items.filter(row=>(!id||row.kind===id)&&(s.scope==='all'||row.status!=='closed')).length)}</b></button>`).join('');
@@ -115,7 +120,7 @@ function pathCaseDetail(){
     :`<li class="pc-msg is-staff"><span class="pc-who">${escape(m.authorName||'담당자')} · ${escape(pathCaseWhen(m.at))}</span><p class="pc-text">${escape(m.text)}</p>${m.textStudent?`<p class="pc-text pc-original"><span class="pc-label">학생에게 보낸 글 · ${escape(pathCaseLangs[c.lang]||'')}</span>${escape(m.textStudent)}</p>`:''}</li>`).join('');
   const translate=c.lang!=='ko'&&s.data.translation?pathCaseButton('translate','학생 말로 옮긴 초안 만들기',!!lock||!s.reply.trim()):'';
   const reply=closed?'<p class="mt-note">끝난 상담이에요. 학생이 다시 연결하면 새 상담으로 와요.</p>':`<div class="pc-reply"><label class="mt-field"><span>답(한국어)</span><textarea rows="5" maxlength="1000" data-pc-reply placeholder="학생에게 보낼 답을 한국어로 써요" ${lock}>${escape(s.reply)}</textarea></label>${c.lang!=='ko'?`<label class="mt-field"><span>학생에게 보낼 글(${escape(pathCaseLangs[c.lang]||'학생 말')}) · 옮긴 초안을 읽고 고쳐요</span><textarea rows="5" maxlength="2000" data-pc-replystudent lang="${escape(c.lang)}" placeholder="비워 두면 한국어 답만 가요" ${lock}>${escape(s.replyStudent)}</textarea></label>`:''}<div class="mt-actions">${translate}${pathCaseButton('reply',s.busy==='reply'?'보내는 중…':'학생에게 보내기',!!lock||!s.reply.trim(),'small primary')}</div></div>`;
-  const conversation=c.conversation?.length?pathCaseSec('conversation','05','전체 AI 대화','학생이 함께 보냈어요',`<ol class="pc-conversation">${c.conversation.map(t=>`<li class="${t.role==='ai'?'is-ai':'is-student'}"><span class="pc-who">${t.role==='ai'?'AI':'학생'}</span><p class="pc-text" lang="${t.role==='student'?escape(c.lang):'ko'}">${escape(t.text)}</p></li>`).join('')}</ol>`,false):'';
+  const conversation=c.conversation?.length?pathCaseSec('conversation','05','전체 AI 대화','학생이 함께 보냈어요',`<ol class="pc-conversation">${c.conversation.map(t=>`<li class="${t.role==='ai'?'is-ai':'is-student'}"><span class="pc-who">${t.role==='ai'?'AI':'학생'}</span><p class="pc-text" lang="${escape(c.lang)}">${escape(t.text)}</p></li>`).join('')}</ol>`,false):'';
   const e=s.erasure&&s.erasure.id===c.id&&s.erasure.revision===c.revision?s.erasure:null;
   const erase=c.canErase?(e?`<div class="pc-erase" role="group" aria-label="상담 지우기 확인"><strong>이 상담을 지울까요? 되돌릴 수 없어요.</strong><p>넘김 요약 · 할 일 · 대화를 이 서버에서 지워요. 갈래 · 받은 날 · 끝난 날 · 할 일 수만 1년 동안 남아요.</p><div class="mt-actions">${pathCaseButton('erase','지우기',!!lock,'small danger')}${pathCaseButton('erase-cancel','그만두기',!!lock)}</div></div>`:`<p class="mt-note">학생이나 보호자가 hello@synk.im으로 지워 달라고 하면 여기서 지워요.</p>${pathCaseButton('erase-check','지우기 전에 확인',!!lock,'small danger')}`):'';
   const end=`${closed?`<p class="mt-note">${c.deleteAt?escape(pathCaseDay(c.deleteAt))+'에 저절로 지워져요.':''}</p>`:`<p class="mt-note">끝낸 상담은 90일 뒤 저절로 지워져요.</p>${pathCaseButton('close','상담 끝내기',!!lock)}`}${erase}`;
@@ -129,7 +134,7 @@ function pathCasesPanel(){
   const head=pathCaseHead();
   if(!s.data)return `<div class="pc-panel" aria-busy="${s.loading}">${head}${pathCasePromise()}${s.error?mtError(s.error,pathCaseButton('reload','다시 읽기',s.loading)):'<p class="mt-loading" role="status">PATH 상담함을 불러오고 있어요.</p>'}</div>`;
   const off=s.data.enabled===false?'<p class="mt-note pc-off">지금은 학생에게서 새 상담과 새 글을 받지 않도록 꺼 두었어요. 이미 받은 상담은 그대로 처리할 수 있어요.</p>':'';
-  return `<div class="pc-panel" aria-busy="${s.loading}">${head}${pathCasePromise()}${off}${s.error?mtError(s.error):''}<div class="mt-desk">${pathCaseList()}${pathCaseDetail()}</div></div>`;
+  return `<div class="pc-panel" aria-busy="${s.loading}">${head}${pathCasePromise()}${off}${s.error?mtError(s.error):''}<div class="mt-desk${s.picking||!s.selected?' is-picking':''}">${pathCaseBand()}${pathCaseList()}${pathCaseDetail()}</div></div>`;
 }
 async function pathCaseMutate(path,body,kind){
   const s=pathCaseState,identity=pathCaseIdentity();s.busy=kind;s.error='';pathCaseRender();
@@ -144,21 +149,22 @@ document.addEventListener('input',event=>{
   if(t.matches?.('[data-pc-reply]')){s.reply=t.value;const send=document.querySelector?.('[data-pc-action="reply"]'),tr=document.querySelector?.('[data-pc-action="translate"]');if(send)send.disabled=!!s.busy||!s.reply.trim();if(tr)tr.disabled=!!s.busy||!s.reply.trim();return;}
   if(t.matches?.('[data-pc-replystudent]')){s.replyStudent=t.value;return;}
   if(t.matches?.('[data-pc-newtask]')){s.newTask=t.value;return;}
-  if(t.matches?.('[data-pc-note]')){s.notes[t.dataset.pathCaseNote]=t.value;}
+  if(t.matches?.('[data-pc-note]')){s.notes[t.dataset.pcNote]=t.value;}
 });
 document.addEventListener('change',async event=>{
   const s=pathCaseState,t=event.target;if(!pathCaseActive()||!t.matches?.('[data-pc-assign]')||!s.detail||s.busy)return;
   const result=await pathCaseMutate('/api/path-cases/'+encodeURIComponent(s.detail.id)+'/assign',{revision:s.detail.revision,assigneeId:t.value},'assign');
   if(result){pathCaseCaseResult(result);notify('담당을 바꿨어요.');await pathCaseLoad();}
 });
-document.addEventListener('toggle',event=>{const node=event.target;if(node?.matches?.('[data-pc-fold]'))pathCaseState.folds[node.dataset.pathCaseFold]=node.open;},true);
+document.addEventListener('toggle',event=>{const node=event.target;if(node?.matches?.('[data-pc-fold]'))pathCaseState.folds[node.dataset.pcFold]=node.open;},true);
 document.addEventListener('click',async event=>{
   const s=pathCaseState,open=event.target.closest?.('[data-pc-open]'),button=event.target.closest?.('[data-pc-action]');
   if((!open&&!button)||!pathCaseActive()||s.identity!==pathCaseIdentity())return;
-  if(open){const id=open.dataset.pathCaseOpen;if(s.selected===id)return;if(s.reply.trim()&&!confirm('쓰던 답을 버릴까요?'))return;Object.assign(s,{selected:id,detail:null,reply:'',replyStudent:'',notes:{},newTask:'',erasure:null,folds:{}});await pathCaseOpen(id);return;}
+  if(open){const id=open.dataset.pcOpen;if(s.selected===id){s.picking=false;pathCaseRender();return;}if(s.reply.trim()&&!confirm('쓰던 답을 버릴까요?'))return;Object.assign(s,{selected:id,detail:null,reply:'',replyStudent:'',notes:{},newTask:'',erasure:null,folds:{},picking:false});await pathCaseOpen(id);return;}
   if(button.disabled||s.busy)return;
-  const action=button.dataset.pathCaseAction,c=s.detail,base=c?'/api/path-cases/'+encodeURIComponent(c.id):'';
+  const action=button.dataset.pcAction,c=s.detail,base=c?'/api/path-cases/'+encodeURIComponent(c.id):'';
   if(action==='reload'){await pathCaseLoad();return;}
+  if(action==='pick'){s.picking=!s.picking;pathCaseRender();return;}
   if(action==='kind'){s.kind=Object.hasOwn(pathCaseKinds,button.dataset.kind)?button.dataset.kind:'';pathCaseRender();return;}
   if(action==='scope'){s.scope=button.dataset.scope==='all'?'all':'open';pathCaseRender();return;}
   if(!c)return;

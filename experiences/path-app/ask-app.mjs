@@ -311,10 +311,17 @@ export function createAskController(d) {
     async caseSend(el) {
       const id = el.dataset.id, path = casePath(id, '/messages');
       if (!path || !cases) return;
+      // 보내는 동안은 다시 누르지 못하고, 같은 글을 다시 보내면 같은 요청 번호를 쓴다(서버가 한 번만 받는다).
+      cases.sending ||= {}; cases.rids ||= {};
+      if (cases.sending[id]) return;
+      const text = cases.text[id] || '';
+      if (!cases.rids[id] || cases.rids[id].text !== text) cases.rids[id] = { text, rid: d.uuid() };
       let body;
-      try { body = caseMessage({ requestId: d.uuid(), text: cases.text[id] || '' }); } catch { return; }
-      try { await d.session.workspace('POST', path, body); cases.text[id] = ''; cases.note = null; }
-      catch { cases.note = 'moreFail'; d.render(false); focus(`#case-text-${id}`); d.say(P(M.moreFail)); return; }
+      try { body = caseMessage({ requestId: cases.rids[id].rid, text }); } catch { return; }
+      const c = cases; c.sending[id] = true; el.disabled = true;
+      try { await d.session.workspace('POST', path, body); c.text[id] = ''; c.note = null; delete c.rids[id]; }
+      catch { c.note = 'moreFail'; c.sending[id] = false; d.render(false); focus(`#case-text-${id}`); d.say(P(M.moreFail)); return; }
+      c.sending[id] = false;
       return loadCases();
     },
     async caseDelete(el) {

@@ -79,7 +79,7 @@ const DANGER = [
   // 한국어
   '죽고 싶', '죽고싶', '자살', '자해', '목숨', '때려', '때리', '맞았', '맞고 있', '폭행', '폭력', '성폭', '성추행', '강간', '협박', '감금', '납치', '갇혀', '위협', '돈을 뜯', '돈 뜯', '사기를 당', '사기 당', '살려', '위험해',
   // 영어
-  'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'wanna die', 'don\'t want to live', 'kill me', 'hurt me', 'hit me', 'beat me', 'abuse', 'assault', 'raped', 'rape', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
+  'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'wanna die', 'don\'t want to live', 'beat me up', 'beats me up', 'abuse', 'assault', 'raped', 'rape', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
   // 몽골어(키릴)
   'амиа хорло', 'амиа егүүт', 'үхмээр', 'өөрийгөө гэмтээ', 'зодсон', 'зодуул', 'зодож', 'хүчир', 'бэлгийн дарамт', 'айлга', 'заналх', 'хулгайлсан', 'луйвар', 'аюулд', 'аврагтун',
   // 몽골어(라틴 글자)

@@ -49,7 +49,7 @@ async function fixture(t, { env = {} } = {}) {
     return { status: response.status, headers: response.headers, data: text ? JSON.parse(text) : null };
   }
   async function staff(path, { user = 'owner', body, headers = {} } = {}) {
-    const response = await fetch(base + path, { method: body === undefined ? 'GET' : 'POST', headers: { Cookie: 'synk_company_session=' + cookies[user], ...(body === undefined ? {} : { Origin: app.origin, 'X-CSRF-Token': 'synthetic-csrf', 'Content-Type': 'application/json' }), ...headers }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    const response = await fetch(base + path, { method: body === undefined ? 'GET' : 'POST', headers: { Cookie: 'synk_company_session=' + cookies[user], 'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors', ...(body === undefined ? {} : { Origin: app.origin, 'X-CSRF-Token': 'synthetic-csrf', 'Content-Type': 'application/json' }), ...headers }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     return { status: response.status, data: await response.json() };
   }
   function handoff(who) {
@@ -131,6 +131,10 @@ test('HTTP 왕복: 학생이 보내고 · 담당이 보고 · 오늘 할 일에�
   assert.equal(list.status, 200); assert.equal(list.data.items[0].id, id); assert.equal(list.data.items[0].wants, brief.wants);
   for (const user of ['operations', 'admin']) assert.equal((await f.staff('/api/path-cases', { user })).status, 403, user);
   assert.equal((await f.staff('/api/path-cases', { user: 'counselor' })).data.items.length, 0);
+  for (const headers of [{ 'Sec-Fetch-Site': 'none' }, { 'Sec-Fetch-Site': 'cross-site' }, { 'Sec-Fetch-Mode': 'navigate' }]) {
+    const r = await fetch(f.base + '/api/path-cases/' + id, { headers: { Cookie: 'synk_company_session=' + f.cookies.owner, ...headers } });
+    assert.equal(r.status, 403, JSON.stringify(headers));
+  }
   const detail = await f.staff('/api/path-cases/' + id);
   assert.equal(detail.data.case.status, 'reviewing');
   // CSRF · 출처가 맞아야 쓴다.
