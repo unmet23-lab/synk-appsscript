@@ -346,6 +346,9 @@ test('the one-line input reads names with spaces, puts learners who can be recor
   assert.deepEqual(read('응우옌 결석'),[['n'],'absent','']);assert.deepEqual(read('응우'),[['n'],null,'']);
   assert.deepEqual(read('가 결'),[['a','g'],'absent',''],'a locked learner is listed after the ones who can be recorded');assert.equal(parseLine('  ',ls),null);
   const roman=[{id:'b',name:'Bat-Erdene',shared:true}];assert.deepEqual(parseLine('bat 지 Late Bus',roman).candidates.map(l=>l.id),['b']);assert.equal(parseLine('bat-erdene 지 Late Bus',roman).note,'Late Bus','the note keeps its own letters');
+  const three=[{id:'n',name:'응우옌 티 민',shared:true},{id:'p',name:'응우옌 공 프엉',shared:true}],part=parseLine('응우옌 티 결석 감기',three);
+  assert.deepEqual([part.candidates.map(l=>l.id),part.status,part.note],[['n'],'absent','감기'],'the first words of a longer name, then the status');
+  assert.deepEqual([parseLine('김 지 감기',[{id:'k',name:'김 지민',shared:true}]).status,parseLine('김 지 감기',[{id:'k',name:'김 지민',shared:true}]).note],['late','감기'],'a word that is not followed by a status stays the status');
   const root=liveRoot(),calls=[];
   const view=createClassRecords({root,request:async(path,body)=>{calls.push(body);return {sessionDate:body.sessionDate,attendance:body.rows.map(r=>({...r,sessionDate:body.sessionDate,revision:5}))};},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
   view.render(workspace([learner('a',{name:'가온'}),learner('n',{name:'응우옌 민'})]),'c');

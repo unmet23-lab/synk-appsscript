@@ -63,8 +63,10 @@ export function parseLine(text,learners){
   if(full.length){const longest=name(full[0]);return readRest(full.filter(l=>name(l)===longest),typed.slice(longest.length).trim().split(' ').filter(Boolean));}
   const begun=all.filter(l=>name(l).startsWith(said)||name(l).replace(/ /g,'').startsWith(said.replace(/ /g,'')));
   if(begun.length)return readRest(begun,[]);
-  const words=typed.split(' '),first=words[0].toLocaleLowerCase();
-  return readRest(all.filter(l=>name(l).startsWith(first)||name(l).replace(/ /g,'').startsWith(first)),words.slice(1));
+  const words=typed.split(' '),starts=head=>all.filter(l=>name(l).startsWith(head)||name(l).replace(/ /g,'').startsWith(head.replace(/ /g,'')));
+  // 이름 앞 몇 어절만 적고 상태를 이었으면(「응우옌 티 결석」) 상태 낱말이 바로 뒤에 오는 가장 긴 이름 첫머리를 고른다.
+  for(let k=words.length-1;k>1;k--){if(!STATUS_WORDS[words[k]])continue;const hit=starts(words.slice(0,k).join(' ').toLocaleLowerCase());if(hit.length)return readRest(hit,words.slice(k));}
+  return readRest(starts(words[0].toLocaleLowerCase()),words.slice(1));
 }
 // TOPIK 띠: 성적 하나의 2년 가운데 기준일까지 지난 몫(0~1). 미달이나 날짜가 없는 성적은 그리지 않는다.
 export function topikElapsed(record,basisDate){
