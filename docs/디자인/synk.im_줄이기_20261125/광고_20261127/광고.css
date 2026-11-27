@@ -3,7 +3,7 @@
    색: 노랑 = 바탕 · 먹 면에 노란 글자 = 지금 누를 단추 하나 · 흰 종이 = 카드 · 작품 색 = 카드 머리의 작은 칩 하나 */
 @font-face{font-family:'SYNK Sans Y';src:url(/assets/v11/pulse-y-sans.woff2) format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'SYNK Serif Y';src:url(/assets/v11/pulse-y-serif.woff2) format('woff2');font-weight:300;font-display:swap}
-body.y{--sans:'SYNK Sans','SYNK Sans Y','SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;--y:#FED027;--ink:#141414;--mute:rgba(20,20,20,.64);--paper:#FFFCF3;--hair-y:rgba(20,20,20,.16);
+body.y{--groove:rgba(20,20,20,.08);--sans:'SYNK Sans','SYNK Sans Y','SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;--y:#FED027;--ink:#141414;--mute:rgba(20,20,20,.64);--paper:#FFFCF3;--hair-y:rgba(20,20,20,.16);
   --serif:'SYNK Serif Y','Noto Serif KR','Nanum Myeongjo',serif;
   --lift:0 0 0 .5px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.05),0 10px 24px -12px rgba(90,64,0,.32),0 36px 64px -36px rgba(90,64,0,.5);
   background:var(--y);color:var(--ink)}
@@ -46,7 +46,7 @@ body.y main{overflow-x:clip}
 .y-stack .y-card[data-k="2"]{transform:translateY(-104px) scale(.91);z-index:1}
 .y-stack .y-card[data-k="0"]{z-index:3}
 .y-stack .y-card:not([data-k="0"]) .y-card-b{visibility:hidden}
-.y-stack{padding-top:104px}
+.y-stack{padding-top:52px}
 
 /* 공통 마디 */
 .y-sec{padding:clamp(88px,10vw,144px) var(--wide) 0}
@@ -54,9 +54,23 @@ body.y main{overflow-x:clip}
 .y-head{max-width:980px}
 
 /* 만드는 방식: 작품 고르기 · 영상 · 세 칸 */
-.y-pick{display:flex;flex-wrap:wrap;gap:8px;margin:36px 0 0}
-.y-pick button{height:42px;padding:0 18px;border-radius:999px;font:600 15px/1 var(--sans);box-shadow:inset 0 0 0 1.5px var(--hair-y);transition:background .2s,color .2s,box-shadow .2s}
-.y-pick button[aria-pressed="true"]{background:var(--ink);color:var(--y);box-shadow:none}
+/* 고르는 줄: 회색 홈 하나 안에 고른 칸만 말랑한 흰 알약(젤리)이 떠 있다. 칸마다 테두리 알약을 늘어놓지 않는다(유호님 11-27).
+   스크립트가 돌면 .on이 붙고 .jelly가 고른 칸으로 옮겨 간다. 스크립트가 없으면 고른 칸만 흰 바탕이다. */
+.jelly-bar{position:relative;isolation:isolate;display:inline-flex;gap:2px;max-width:100%;padding:5px;border-radius:999px;background:var(--groove);box-shadow:inset 0 1px 2px rgba(11,27,48,.1),inset 0 0 0 1px rgba(11,27,48,.04);overflow-x:auto;scrollbar-width:none;scroll-padding-inline:48px}
+.jelly-bar::-webkit-scrollbar{display:none}
+.jelly-bar button{position:relative;z-index:1;flex:none;padding:12px 18px;border-radius:999px;font:600 15px/1 var(--sans);color:var(--mute);background:transparent;-webkit-tap-highlight-color:transparent;transition:color .25s var(--ease)}
+.jelly-bar button:hover,.jelly-bar button[aria-pressed="true"],.jelly-bar button[aria-selected="true"]{color:var(--ink)}
+.jelly-bar button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.jelly-bar:not(.on) button[aria-pressed="true"],.jelly-bar:not(.on) button[aria-selected="true"]{background:#fff;box-shadow:0 6px 14px -8px rgba(11,27,48,.4)}
+.jelly{position:absolute;z-index:0;top:5px;bottom:5px;left:0;width:0;border-radius:999px;pointer-events:none;
+  background:linear-gradient(180deg,#fff 0%,#fdfdfe 48%,#eef2f6 100%);
+  box-shadow:0 1px 1px rgba(11,27,48,.07),0 10px 18px -10px rgba(11,27,48,.45),inset 0 1px 0 #fff,inset 0 -3px 6px rgba(11,27,48,.06)}
+.jelly::before{content:"";position:absolute;left:10px;right:10px;top:2px;height:46%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,0))}
+.jelly-bar:not(.on) .jelly{display:none}
+.jelly-bar.more-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent)}
+.jelly-bar.more-l{-webkit-mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent)}
+.jelly-bar.more-l.more-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent)}
+.y-pick{margin:36px 0 0}
 .y-stage{margin-top:22px;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:clamp(16px,2vw,28px);padding:clamp(14px,1.6vw,22px);background:var(--paper);border-radius:28px;box-shadow:var(--lift);align-items:stretch}
 .y-stage.wide{grid-template-columns:1fr}
 .y-scr{position:relative;border-radius:18px;overflow:hidden;background:#0a0a0b;aspect-ratio:16/9}
@@ -78,10 +92,16 @@ body.y main{overflow-x:clip}
 .y-note{margin:16px 0 0;font:500 14px/1.5 var(--sans);color:var(--mute)}
 
 /* PULSE 앱 */
+.y-tour{margin:36px 0 0}
+.y-panel[hidden]{display:none}
+.y-panel .y-shot{margin-top:22px}
 .y-shot{margin:40px 0 0}
 .y-shot-f{background:var(--paper);border-radius:28px;padding:clamp(8px,1vw,14px);box-shadow:var(--lift)}
 .y-shot img{display:block;width:100%;height:auto;border-radius:20px}
-.y-shot figcaption{margin-top:12px;font:500 14px/1.5 var(--sans);color:var(--mute)}
+.y-shot figcaption{margin-top:16px;display:grid;gap:6px}
+.y-shot figcaption b{font:700 18px/1.35 var(--sans);color:var(--ink)}
+.y-shot figcaption span{font:500 16px/1.6 var(--sans);color:var(--mute);max-width:40em;text-wrap:pretty}
+.y-tour-note{margin:14px 0 0}
 .y-facts{list-style:none;margin:40px 0 0;padding:24px 0 0;border-top:1.5px solid var(--hair-y);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px clamp(24px,3vw,48px)}
 .y-facts b{display:block;font:700 18px/1.35 var(--sans)}
 .y-facts span{display:block;margin-top:8px;font:500 16px/1.6 var(--sans);color:var(--mute)}
@@ -114,6 +134,7 @@ body.y .foot{background:#F5E6A8}
   .y-cast{grid-template-columns:repeat(6,minmax(0,1fr))}
 }
 @media (max-width:640px){
+  .jelly-bar button{font-size:14px;padding:11px 14px}
   .y-card-b{grid-template-columns:1fr}
   .y-card-b img{min-height:0;aspect-ratio:16/9}
   .y-card-t{padding:20px}
@@ -121,7 +142,7 @@ body.y .foot{background:#F5E6A8}
   .y-card-h .len{display:none}
   .y-stack .y-card[data-k="1"]{transform:translateY(-46px) scale(.955)}
   .y-stack .y-card[data-k="2"]{transform:translateY(-92px) scale(.91)}
-  .y-stack{padding-top:92px}
+  .y-stack{padding-top:46px}
   .y-facts{grid-template-columns:1fr}
   .y-cv li{grid-template-columns:1fr;gap:4px}
   .y-cast{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
@@ -131,4 +152,4 @@ body.y .foot{background:#F5E6A8}
   .y-word{font-size:22vw}
   .y-orb{width:150px;right:-6px;bottom:calc(22vw * .78 + 34px)}
 }
-@media (prefers-reduced-motion:reduce){.y-card,.y-btn,.y-btn .arr,.eyes,.eyes i{transition:none}}
+@media (prefers-reduced-motion:reduce){.y-card,.y-btn,.y-btn .arr,.eyes,.eyes i,.jelly-bar button{transition:none}}

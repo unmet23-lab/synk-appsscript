@@ -1,7 +1,7 @@
 /* 광고(/studio/) 하늘 판 — pulse-y.css 위에 얹는다(2026-11-27, 유호님 「너무 쨍한 느낌이 없지않아 있어서」).
    겉은 PULSE 의뢰서 3막 「하늘」: 시스루의 문이 선 낮 하늘, 먹 대신 짙은 남색 글, 고른 칸은 남색으로 채운다.
    첫 화면은 낮 하늘(문이 열리기 전), 끝은 같은 문이 빛나는 밤(시스루 3분 18.5초 장면, 1080p 진열판에서 뽑음)이다. 노랑과 솔리오는 쓰지 않는다. */
-body.s{--y:#EEF3F8;--ink:#0b1b30;--mute:rgba(11,27,48,.64);--paper:#FFFFFF;--hair-y:rgba(11,27,48,.14);
+body.s{--groove:#DCE5EF;--y:#EEF3F8;--ink:#0b1b30;--mute:rgba(11,27,48,.64);--paper:#FFFFFF;--hair-y:rgba(11,27,48,.14);
   --lift:0 0 0 .5px rgba(11,27,48,.06),0 1px 2px rgba(11,27,48,.05),0 12px 28px -14px rgba(20,50,90,.26),0 40px 70px -40px rgba(20,50,90,.38);
   background:linear-gradient(180deg,#E3EDF7 0,#EEF3F8 1200px,#F3F6FA 100%);color:var(--ink)}
 body.s .nav{background:rgba(236,243,250,.72);color:var(--ink);box-shadow:0 1px 0 rgba(11,27,48,.08)}
@@ -20,7 +20,6 @@ body.s .y-card{background:rgba(255,255,255,.94);-webkit-backdrop-filter:saturate
 body.s .y-stack .y-card:not([data-k="0"]){background:rgba(255,255,255,.8)}
 
 /* 만드는 방식 · 앱 · 연출: 옅은 하늘 위 흰 종이 */
-body.s .y-pick button[aria-pressed="true"]{background:var(--ink);color:#fff}
 body.s .y-big i{background:#fff}
 body.s .y-steps button{background:#EFF4FA}
 body.s .y-steps button:hover:not([aria-pressed="true"]){background:#E4ECF5}
