@@ -46,10 +46,10 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   // 허용 목록: 비었거나 없으면 아무도 받지 않는다. 모두에게 열 때는 '*' 하나만 적는다. 적은 값 가운데 하나라도 SYNK ID 꼴이 아니면 아무도 받지 않는다.
   const allowList = () => { const text = String(env.PATH_CASES_ALLOW ?? '').trim(), raw = text.split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(Boolean); return text === '*' ? { all: true } : { all: false, ok: raw.length > 0 && raw.every(value => UUID.test(value)), ids: raw }; };
   // 접수 줄의 학생은 열쇠 해시로 둔다(상담을 지운 뒤 8일 동안 남는 줄에서 누가 무엇을 보냈는지 바로 읽히지 않게).
-  const erasedRequestKey = requestId => 'erased:' + createHmac('sha256', store.key).update('path-case-erased-request\0v1\0' + requestId).digest('hex');
-  // 지운 접수의 횟수: 저장소에는 남기지 않고(지운 건과 다시 잇지 못하게) 이 서버가 켜져 있는 동안 메모리에만 7일 둔다. 지우고 다시 보내 급함 푸시를 끝없이 울리지 못하게 한다.
-  const erasedIntake = new Map();
-  function rememberErased(intake) { const list = (erasedIntake.get(intake.synkUserId) || []).filter(x => Date.parse(x.at) > Date.now() - WEEK); list.push({ mode: intake.mode, kind: intake.kind, at: intake.at }); erasedIntake.set(intake.synkUserId, list); }
+  // 지운 요청 번호 표식: 그 학생(해시)과 요청 번호를 함께 묶는다(다른 학생의 같은 번호를 막지 않게). 요청 번호를 모르면 지운 건을 찾을 수 없다.
+  const erasedRequestKey = (subject, requestId) => 'erased:' + createHmac('sha256', store.key).update('path-case-erased-request\0v2\0' + subject + '\0' + requestId).digest('hex');
+  // 지운 상담의 접수는 횟수에 세지 않는다(설계 관문 11-27의 받아들인 대가: 지우고 다시 보내 주간 횟수를 피할 수 있다). 지운 건과 학생을 다시 잇는 기록을 어디에도 두지 않기 위해서다.
+  // 급함 푸시를 지우고 되풀이하는 것은 하루 · 주 횟수가 아니라 켠 뒤 기록으로 본다.
   const intakeSubject = synkUserId => createHmac('sha256', store.key).update('path-case-intake\0v1\0' + synkUserId).digest('hex');
   const ticketKey = () => { const value = env.PATH_CASE_TICKET_KEY; return typeof value === 'string' && value.length >= 32 ? value : null; };
   const notify = ids => { const list = [...new Set(ids.filter(Boolean))]; if (list.length) try { onChange(list); } catch { /* 다음 읽기에 보인다 */ } };
@@ -152,7 +152,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   /* ── 횟수 ── 지난 하루 · 7일의 접수 줄로 센다(줄은 8일 뒤 지운다). */
   function checkLimits(synkUserId, mode, kind, at) {
-    const rows = [...store.allWhere(K.intake, 'synkUserId', intakeSubject(synkUserId)), ...(erasedIntake.get(intakeSubject(synkUserId)) || [])].filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
+    const rows = store.allWhere(K.intake, 'synkUserId', intakeSubject(synkUserId)).filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
     const tooMany = () => fail(429, 'CASE_LIMIT', '이번 주에 보낼 수 있는 연결을 다 썼어요. 급하면 hello@synk.im으로 연락해 주세요.');
     if (mode === 'urgent' || mode === 'teen') {
       const free = rows.filter(row => row.mode === 'urgent' || row.mode === 'teen');
@@ -176,11 +176,14 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       answered_at: body.answeredAt || null, read_at: body.studentReadAt || null, wants: body.brief_student?.wants || null, unread,
       delete_at: deleteAt, delete_soon: Boolean(row.retentionNoticeAt), messages };
   }
-  function status() { return { open: enabled() }; }
+  // 허용 목록이 비었거나 틀렸으면 아무도 받지 않으므로 닫힘으로 답한다(로그인 없는 상태 요청이라 계정별로는 접수 때 본다).
+  const intakeOpen = () => { if (!enabled()) return false; const allowed = allowList(); return allowed.all || allowed.ok; };
+  function status() { return { open: intakeOpen() }; }
   function studentList(identity) {
     const at = now();
     const rows = store.transaction(() => casesOf(identity.synkUserId).map(row => { const next = touch(row, at); store.put(K.cases, row.id, next); return next; }));
-    return { ok: true, cases: rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(studentView), open: enabled() };
+    const allowed = allowList();
+    return { ok: true, cases: rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(studentView), open: enabled() && (allowed.all || (allowed.ok && allowed.ids.includes(identity.synkUserId))) };
   }
   function newBody(req) {
     const tasks = req.mode === 'handoff' ? req.brief_ko.tasks.map(t => ({ id: randomUUID(), do: t.do, why: t.why, by: t.by, source: 'ai', done: false, note: '', doneAt: null, doneBy: null, removed: false })) : [];
@@ -219,7 +222,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         if (!row) throw fail(409, 'CASE_GONE', '이미 보낸 상담이 지워졌어요. 다시 연결해 주세요.');
         return { row, status: 200, duplicate: true };
       }
-      if (store.get(K.nonces, erasedRequestKey(req.request_id))) throw fail(409, 'CASE_GONE', '이미 보낸 상담이 지워졌어요. 다시 연결해 주세요.');
+      if (store.get(K.nonces, erasedRequestKey(intakeSubject(identity.synkUserId), req.request_id))) throw fail(409, 'CASE_GONE', '이미 보낸 상담이 지워졌어요. 다시 연결해 주세요.');
       if (req.mode === 'handoff' && store.get(K.nonces, req.ticket.nonce)) throw fail(409, 'CASE_TICKET_USED', '이미 쓴 연결 확인이에요. 「사람에게 연결」을 다시 눌러 주세요.');
       const current = openCaseOf(identity.synkUserId);
       if (current && req.kind !== 'urgent') throw fail(409, 'CASE_OPEN_EXISTS', '이미 열린 상담이 있어요. 그 상담에 이어서 써 주세요.', { caseId: current.id });
@@ -228,8 +231,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       if (current) {
         // 열린 건이 있으면 새 건을 만들지 않고 그 건에 급함 표시를 올린다. 학생이 고른 마지막 글은 그 건의 글로 잇는다.
         const body = bodyOf(current);
-        // 급함으로 고른 마지막 글은 글 한도에 닿아도 잇는다(그 뒤에는 직원이 답할 수 있다).
-        if (req.last && body.messages.length < L.messages + 10) translate.push({ messageId: addStudentMessage(body, req.last, req.request_id, at, { force: true }).id });
+        // 급함으로 고른 마지막 글은 글 한도에 닿아도 늘 잇는다(버리지 않는다). 급함 접수는 하루 · 주 횟수(checkLimits)로 묶여 끝없이 늘지 않는다.
+        // 마지막 글이 학생 글이 되므로 직원은 답 하나를 더 쓸 수 있다.
+        if (req.last) translate.push({ messageId: addStudentMessage(body, req.last, req.request_id, at, { force: true }).id });
         const raised = raiseUrgent(touch({ ...current, status: current.status === 'answered' ? 'reviewing' : current.status, revision: current.revision + 1, updatedAt: at }, at), at);
         row = save(raised.row, body, { allowOver: true }); urgent = { target: raised.target };
         status = 200;
@@ -310,7 +314,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       store.remove(K.cases, row.id);
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
       // 접수 줄은 지운다(학생 해시 · 때 · 갈래로 지운 건을 다시 잇지 못하게). 같은 요청 번호를 다시 보내면 「지운 상담」으로 답하도록, 학생과 잇지 않는 요청 번호 해시만 8일 남긴다.
-      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); rememberErased(intake); if (intake.requestId) { const gone = erasedRequestKey(intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
+      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); if (intake.requestId) { const gone = erasedRequestKey(intake.synkUserId, intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
@@ -365,7 +369,12 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       canAssign: who.all, canErase: who.role === 'owner', deleteAt: row.closedAt ? new Date(Date.parse(row.closedAt) + L.closedKeepDays * DAY).toISOString() : null };
   }
   // 읽기만: 상태 · 알림 · 연 기록을 바꾸지 않는다.
-  function peek(actor, id) { const who = access(actor), row = staffCase(who, id); return { case: staffView(row, bodyOf(row), who) }; }
+  // 읽기만 한다(보는 중 · 알림 읽음은 바꾸지 않는다). 다만 본문을 내주므로 누가 언제 열었는지는 남긴다.
+  function peek(actor, id) {
+    const who = access(actor), row = staffCase(who, id);
+    const viewId = randomUUID(); store.put(K.views, viewId, { id: viewId, caseId: row.id, userId: who.user.id, at: now() });
+    return { case: staffView(row, bodyOf(row), who) };
+  }
   function detail(actor, id) {
     const who = access(actor), at = now();
     const row = store.transaction(() => {
@@ -462,7 +471,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   function staffErase(actor, id, input) {
     const who = access(actor);
     if (who.role !== 'owner') throw fail(403, 'CASE_FORBIDDEN', '회사 주인만 지울 수 있어요.');
-    if (typeof id === 'string' && store.get(K.tombstones, id.toLowerCase()) && !store.get(K.cases, id.toLowerCase())) return { erased: { id: id.toLowerCase(), repeated: true } };
+    // 다시 부르면 WAL 정리가 끝났는지(purge: done) 알려 준다.
+    if (typeof id === 'string' && store.get(K.tombstones, id.toLowerCase()) && !store.get(K.cases, id.toLowerCase())) return { erased: { id: id.toLowerCase(), repeated: true, purge: walPending ? 'pending' : 'done' } };
     const row = staffCase(who, id); checkRevision(row, input);
     const match = typeof input.token === 'string' && /^(\d{13})\.[0-9a-f]{64}$/.exec(input.token);
     if (!match || Number(match[1]) <= nowMs() || !same(confirmation(who.user.id, row, Number(match[1])), input.token)) throw fail(409, 'CASE_ERASE_CONFIRM', '지우기 확인 시간이 지났거나 확인한 내용과 달라요. 「지우기 전에 확인」을 다시 눌러 주세요.');
@@ -483,7 +493,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     if (!onlyKeys(input, ['text']) || !text) throw fail(400, 'CASE_BAD_MESSAGE', '답은 1,000자 안으로 써 주세요.');
     const lang = bodyOf(row).lang;
     if (lang === 'ko') return { text: null, lang };
-    const out = translator ? await translator.translate([maskAsk(text)], { to: lang, from: 'ko' }) : null;
+    const out = translator ? await translator.translate([maskAsk(text)], { to: lang, from: 'ko', signal: livenessAbort.signal }) : null;
     // 기다리는 사이 역할이 바뀌었을 수 있다: 새로 확인한 역할로 다시 본다.
     staffCase(access(actor), id);
     const draft = out ? cleanText(out[0]) : null;
@@ -582,6 +592,13 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     const finish = patch => store.put('settings', STATE, { ...(store.get('settings', STATE) || {}), livenessAt: new Date(atMs).toISOString(), ...patch });
     if (!ids.length) { finish({ livenessStatus: 'ok', livenessAsked: 0, livenessGone: 0 }); return { asked: 0, gone: 0, leaving: 0, present: 0 }; }
     const results = {};
+    // 묶음이 실패하거나 결과 꼴이 틀리면, 앞 묶음까지 물은 계정은 물은 때를 남겨 다음 실행이 남은 계정부터 묻게 한다(숨기기 · 지우기는 하지 않는다).
+    const failKeep = (upto) => {
+      const done = new Set(ids.slice(0, upto)), at2 = new Date(atMs).toISOString();
+      for (const row of store.all(K.cases)) if (done.has(row.synkUserId)) store.put(K.cases, row.id, { ...row, livenessAskedAt: at2 });
+      finish({ livenessStatus: 'failed' });
+      return { failed: true, asked: ids.length };
+    };
     for (let i = 0; i < ids.length; i += L.livenessBatch) {
       const batch = ids.slice(i, i + L.livenessBatch), body = JSON.stringify({ action: 'account-liveness', ids: batch }), time = String(nowMs());
       const signature = createHmac('sha256', key).update(['path-liveness.v1', time, sha256hex(body)].join('\u001F')).digest('base64url');
@@ -596,13 +613,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         data = await response.json();
       } catch {
         if (stopped) return { stopped: true, asked: ids.length }; // 다음 시작 때 다시 묻는다
-        // 앞 묶음까지 물은 계정은 물은 때를 남겨, 다음 실행이 남은 계정부터 묻게 한다(숨기기 · 지우기는 하지 않는다).
-        const done = new Set(ids.slice(0, i)), at2 = new Date(atMs).toISOString();
-        for (const row of store.all(K.cases)) if (done.has(row.synkUserId)) store.put(K.cases, row.id, { ...row, livenessAskedAt: at2 });
-        finish({ livenessStatus: 'failed' });
-        return { failed: true, asked: ids.length };
+        return failKeep(i);
       }
-      if (!plain(data?.results)) { finish({ livenessStatus: 'failed' }); return { failed: true, asked: ids.length }; }
+      if (!plain(data?.results)) return failKeep(i);
       for (const id of batch) if (['present', 'leaving', 'gone'].includes(data.results[id])) results[id] = data.results[id];
     }
     const gone = ids.filter(id => results[id] === 'gone');

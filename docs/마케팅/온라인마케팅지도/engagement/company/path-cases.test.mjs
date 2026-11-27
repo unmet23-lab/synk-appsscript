@@ -352,3 +352,36 @@ test('검수 고침(11-27): 허용 목록 · 기한 · 학생이 뺀 할 일 · 
   f.cases.studentDelete(s, id);
   assert.ok(f.store.all(PATH_CASE_KINDS.intake).every(row => row.caseId !== id));
 });
+
+test('검수 고침(11-27 ws-d): 한도 찬 건의 급함 글 · 상태의 허용 목록 · 지운 요청 번호는 학생별 · 상세 GET도 연 기록', t => {
+  const f = fixture(t), s = f.student();
+  // 글이 한도에 닿고 마지막이 직원 답이어도, 급함으로 고른 마지막 글은 버리지 않고 잇고 직원은 다시 답할 수 있다.
+  const made = f.cases.studentCreate(s, f.handoff(s)).body.case;
+  for (let i = 0; i < PATH_CASE_LIMITS.messages; i++) f.cases.studentMessage(s, made.id, { request_id: randomUUID(), text: '글 ' + i });
+  let rev = f.store.get(PATH_CASE_KINDS.cases, made.id).revision;
+  f.cases.reply(f.users.owner, made.id, { revision: rev, request_id: randomUUID(), text: '확인했어요.', textStudent: 'Хүлээн авлаа.' });
+  const raised = f.cases.studentCreate(s, f.urgent({ last: 'Тусламж хэрэгтэй байна' }));
+  assert.equal(raised.body.merged, true);
+  const after = f.cases.studentList(s).cases[0].messages;
+  assert.equal(after.at(-1).text, 'Тусламж хэрэгтэй байна');
+  rev = f.store.get(PATH_CASE_KINDS.cases, made.id).revision;
+  assert.equal(f.cases.reply(f.users.owner, made.id, { revision: rev, request_id: randomUUID(), text: '지금 연락할게요.', textStudent: 'Одоо холбогдоно.' }).case.status, 'answered');
+  // 허용 목록이 비면 상태도 닫힘, 학생 목록의 open은 그 계정이 목록에 있을 때만.
+  f.env.PATH_CASES_ALLOW = '';
+  assert.equal(f.cases.status().open, false);
+  f.env.PATH_CASES_ALLOW = s.synkUserId;
+  assert.equal(f.cases.status().open, true);
+  assert.equal(f.cases.studentList(s).open, true);
+  assert.equal(f.cases.studentList(f.student()).open, false);
+  f.env.PATH_CASES_ALLOW = '*';
+  // 지운 요청 번호는 그 학생에게만 「지운 상담」이다. 다른 학생이 같은 번호를 보내도 막지 않는다.
+  const a = f.student(), b = f.student(), rid = randomUUID();
+  const ca = f.cases.studentCreate(a, f.handoff(a, { request_id: rid })).body.case;
+  f.cases.studentDelete(a, ca.id);
+  assert.throws(() => f.cases.studentCreate(a, f.handoff(a, { request_id: rid })), code('CASE_GONE'));
+  assert.equal(f.cases.studentCreate(b, f.handoff(b, { request_id: rid })).status, 201);
+  // 상세 GET(peek)은 상태를 바꾸지 않지만 누가 열었는지는 남긴다.
+  const views = f.store.count(PATH_CASE_KINDS.views);
+  f.cases.peek(f.users.owner, made.id);
+  assert.equal(f.store.count(PATH_CASE_KINDS.views), views + 1);
+});

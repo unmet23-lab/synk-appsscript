@@ -77,7 +77,7 @@ export const hasIdNumber = (text) => maskAsk(text) !== String(text ?? '');
  * 넓게 잡는 쪽으로 둔다(놓치는 것보다 카드가 한 번 더 뜨는 편이 낫다). 라틴 글자로 쓴 몽골어도 본다. */
 const DANGER = [
   // 한국어
-  '죽고 싶', '죽고싶', '자살', '자해', '목숨', '때려', '때리', '때렸', '때린', '얻어맞', '두들겨 맞', '맞아서 병원', '맞아서 다쳤', '맞고 있', '폭행', '폭력', '성폭', '성추행', '강간', '협박', '감금', '납치', '갇혀', '위협', '돈을 뜯', '돈 뜯', '사기를 당', '사기 당', '살려줘', '살려 줘', '살려주세요', '살려 주세요', '위험해', '죽인다', '죽이겠', '죽일 거',
+  '죽고 싶', '죽고싶', '자살', '자해', '목숨', '때려', '때리', '때렸', '때린', '얻어맞', '두들겨 맞', '맞아서 병원', '맞아서 다쳤', '맞고 있', '한테 맞았', '에게 맞았', '한테 맞고', '에게 맞고', '한테 맞아서', '에게 맞아서', '한테 맞을', '에게 맞을', '폭행', '폭력', '성폭', '성추행', '강간', '협박', '감금', '납치', '갇혀', '위협', '돈을 뜯', '돈 뜯', '사기를 당', '사기 당', '살려줘', '살려 줘', '살려주세요', '살려 주세요', '위험해', '죽인다', '죽이겠', '죽일 거',
   // 영어
   'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'wanna die', 'don\'t want to live', 'hit me', 'hits me', 'beat me', 'beats me', 'kill me', 'hurt me', 'abuse', 'assault', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
   // 몽골어(키릴)
@@ -87,8 +87,10 @@ const DANGER = [
 ];
 // 라틴 글자 낱말 가운데 다른 낱말 속에 들어가기 쉬운 것(grape의 rape)은 낱말 경계로 본다.
 const DANGER_WORDS = /\b(?:rape|raped|raping)\b/i;
+// 「hit me with a late fee」처럼 돈 · 소식을 「맞았다」는 영어 관용 표현은 위험 낱말을 보기 전에 뺀다.
+const SAFE_EN = /\bhits?\s+me\s+with\s+(?:a\s+|an\s+|the\s+|this\s+|that\s+)?(?:\w+\s+){0,2}?(?:fees?|bills?|charges?|fines?|tax(?:es)?|costs?|prices?|rent|questions?|news|emails?|messages?|deadlines?|requests?)\b/gi;
 export function looksUrgent(text) {
-  const s = String(text ?? '').toLowerCase().normalize('NFC');
+  const s = String(text ?? '').toLowerCase().normalize('NFC').replace(SAFE_EN, ' ');
   return DANGER.some((w) => s.includes(w)) || DANGER_WORDS.test(s);
 }
 
@@ -331,24 +333,40 @@ export function validateBriefEditRequest(body) {
 }
 export const BRIEF_EDIT_SCHEMA = Object.freeze({ type: 'object', additionalProperties: false, required: ['texts'],
   properties: { texts: { type: 'array', items: { type: 'string' } } } });
-/* 날짜 읽기: 달 · 날(MM-DD)로 읽을 수 있는 날짜. 해는 숫자 대조가 본다. 숫자 집합만 보면 3월 7일과 7월 3일이 같아 보인다.
- * 2027-03-07 · 2027.3.7, 3월 7일, 3-р сарын 7 · 3 сарын 7, March 7 · 7 March. */
+/* 날짜 읽기: 해 · 달 · 날을 한 묶음으로 읽는다. 숫자 집합만 보면 3월 7일과 7월 3일이 같아 보이고, 해를 따로 보면 두 날짜의 해가 바뀌어도 같아 보인다.
+ * 2027-03-07 · 2027.3.7, (2027년) 3월 7일, (2027 оны) 3-р сарын 7, March 7(, 2027) · 7 March (2027).
+ * 해를 적지 않은 날짜는 같은 글에서 바로 앞 날짜의 해를 잇는다(「2027년 3월 7일과 7월 3일」). 앞에도 없으면 해 없음(?). */
 const MONTHS_EN = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const pad2 = (n) => String(n).padStart(2, '0');
 export function datesIn(text) { return dateParts(text).dates; }
-/** 달 · 날을 읽고, 읽은 달 · 날 숫자를 지운 글을 함께 돌려준다(해는 남긴다 — 숫자 대조가 본다). */
+/** 날짜를 「해-달-날」 목록(글 순서)으로 읽고, 읽은 날짜(해 포함)를 지운 글을 함께 돌려준다. */
 function dateParts(text) {
-  let s = String(text ?? '');
-  const dates = new Set();
-  const add = (m, d) => { m = Number(m); d = Number(d); if (m >= 1 && m <= 12 && d >= 1 && d <= 31) { dates.add(`${pad2(m)}-${pad2(d)}`); return true; } return false; };
-  const take = (re, pick) => { s = s.replace(re, (...g) => (add(...pick(g)) ? ' ' : g[0])); };
+  const src = String(text ?? '');
   const mon = MONTHS_EN.join('|'), monIdx = (w) => MONTHS_EN.indexOf(String(w).toLowerCase()) + 1;
-  take(/(?<=\d{4})[-./](\d{1,2})[-./](\d{1,2})(?!\d)/g, (g) => [g[1], g[2]]);
-  take(/(?<!\d)(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, (g) => [g[1], g[2]]);
-  take(/(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu, (g) => [g[1], g[2]]);
-  take(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)`, 'gi'), (g) => [monIdx(g[1]), g[2]]);
-  take(new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b`, 'gi'), (g) => [monIdx(g[2]), g[1]]);
-  return { dates, rest: s };
+  // [꼴, (g) => [해, 달, 날]] — 앞 꼴이 잡은 자리는 뒤 꼴이 다시 잡지 않는다.
+  const forms = [
+    [/(?<!\d)(\d{4})[-./](\d{1,2})[-./](\d{1,2})(?!\d)/g, (g) => [g[1], g[2], g[3]]],
+    [/(?:(?<!\d)(\d{4})\s*년\s*)?(?<!\d)(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, (g) => [g[1], g[2], g[3]]],
+    [/(?:(?<!\d)(\d{4})\s*(?:оны|он)\s*)?(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu, (g) => [g[1], g[2], g[3]]],
+    [new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)(?:,?\\s*(\\d{4})(?!\\d))?`, 'gi'), (g) => [g[3], monIdx(g[1]), g[2]]],
+    [new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b(?:,?\\s*(\\d{4})(?!\\d))?`, 'gi'), (g) => [g[3], monIdx(g[2]), g[1]]],
+  ];
+  const found = [], used = [];
+  const free = (a, b) => used.every(([x, y]) => b <= x || a >= y);
+  for (const [re, pick] of forms) {
+    for (const g of src.matchAll(re)) {
+      const a = g.index, b = g.index + g[0].length;
+      const [y, m, d] = pick(g).map((v) => (v === undefined ? null : Number(v)));
+      if (!(m >= 1 && m <= 12 && d >= 1 && d <= 31) || !free(a, b)) continue;
+      used.push([a, b]); found.push({ a, y, m, d });
+    }
+  }
+  found.sort((p, q) => p.a - q.a);
+  let year = null;
+  const dates = found.map(({ y, m, d }) => { if (y) year = y; return `${y || year || '?'}-${pad2(m)}-${pad2(d)}`; });
+  let rest = '', at = 0;
+  for (const [a, b] of [...used].sort((p, q) => p[0] - q[0])) { rest += src.slice(at, a) + ' '; at = b; }
+  return { dates, rest: rest + src.slice(at) };
 }
 /** 옮긴 줄: 줄 수가 같고, 숫자가 원문과 같아야 한다(바뀌면 거절). 양쪽에서 날짜를 읽을 수 있으면 해 · 달 · 날까지 같아야 한다. */
 export function checkBriefEditOutput(out, edits) {
@@ -356,13 +374,12 @@ export function checkBriefEditOutput(out, edits) {
   return edits.map((e, i) => {
     const ko = typeof out.texts[i] === 'string' ? cleanText(out.texts[i]) : '';
     if (!ko || chars(ko) > MAX_BRIEF_LINE * 2) throw fault('BRIEF_BAD_OUTPUT');
-    // 양쪽에서 날짜를 읽었으면 날짜(달 · 날)는 따로 맞대고, 남은 숫자를 맞댄다(「by March 7」 ↔ 「3월 7일까지」는 같은 날). 한쪽만 날짜를 읽었으면 날짜를 빼지 않고 숫자 전체를 맞댄다.
-    const pa = dateParts(e.text), pb = dateParts(ko), both = pa.dates.size > 0 && pb.dates.size > 0;
+    // 양쪽에서 날짜를 읽었으면 날짜 목록(해 · 달 · 날)이 그대로 같아야 하고(빠짐 · 더함 · 해 바뀜 · 달 · 날 바뀜 모두 거절), 남은 숫자를 맞댄다.
+    // 한쪽만 날짜를 읽었으면(꼴이 달라) 날짜를 빼지 않고 숫자 전체를 맞댄다. 걸리면 학생에게 다시 쓰게 한다(지나치게 막는 쪽).
+    const pa = dateParts(e.text), pb = dateParts(ko), both = pa.dates.length > 0 && pb.dates.length > 0;
+    if (both && [...pa.dates].sort().join(',') !== [...pb.dates].sort().join(',')) throw fault('BRIEF_NUMBERS_CHANGED');
     const a = [...numbersIn(both ? pa.rest : e.text)].sort().join(','), b = [...numbersIn(both ? pb.rest : ko)].sort().join(',');
     if (a !== b) throw fault('BRIEF_NUMBERS_CHANGED');
-    // 한쪽이 날짜 하나를 읽지 못했으면(꼴이 달라) 읽은 쪽이 다른 쪽의 부분집합이면 받는다. 서로 다른 날(3월 7일 ↔ 7월 3일)은 거절한다.
-    const sub = (x, y) => [...x].every((v) => y.has(v));
-    if (both && !sub(pa.dates, pb.dates) && !sub(pb.dates, pa.dates)) throw fault('BRIEF_NUMBERS_CHANGED');
     return { ...e, text_ko: maskAsk(ko) };
   });
 }
