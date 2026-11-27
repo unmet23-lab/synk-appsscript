@@ -347,6 +347,8 @@ function dateParts(text) {
   take(/(?<=\d{4})[-./](\d{1,2})[-./](\d{1,2})(?!\d)/g, (g) => [g[1], g[2]]);
   take(/(?<!\d)(\d{1,2})\s*월\s*(\d{1,2})\s*일/g, (g) => [g[1], g[2]]);
   take(/(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu, (g) => [g[1], g[2]]);
+  // 영어 날짜 뒤의 「, 2027」은 해로 떼어 따로 둔다(뒤의 「,500」과 한 수로 읽지 않게). 해는 남은 숫자로 맞댄다.
+  s = s.replace(new RegExp(`\\b(${mon})(\\s+\\d{1,2}(?:st|nd|rd|th)?),\\s*(\\d{4})(?=[,.\\s]|$)`, 'gi'), (all, m, d, y) => `${m}${d} ${y} `);
   take(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)`, 'gi'), (g) => [monIdx(g[1]), g[2]]);
   take(new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b`, 'gi'), (g) => [monIdx(g[2]), g[1]]);
   return { dates: found.sort((p, q) => p.at - q.at).map((x) => x.v), rest: s };

@@ -455,3 +455,22 @@ test('지운 건 표식은 학생이 지울 때만 · 지운 시각 없이, 판�
   g.cases.maintain();
   assert.equal(g.urgentCalls.length, 1, '한 번만 본다');
 });
+
+test('판정 전에 직원이 끝낸 건이어도 위험이면 급함을 올리고, 한국어 글은 모델에 보내지 않고 위험 낱말로 바로 본다', async t => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  const sent = [];
+  const translator = { configured: () => true, translate: async (texts, o) => { sent.push({ texts, judge: o.judge }); await gate; return { translations: texts, danger: texts.map(() => true) }; } };
+  const f = fixture(t, { translator }), s = f.student();
+  const made = f.cases.studentCreate(s, f.teen({ note: 'Тусламж хэрэгтэй байна' })).body.case;
+  f.cases.close(f.users.owner, made.id, { revision: f.store.get(PATH_CASE_KINDS.cases, made.id).revision });
+  release(); await f.cases.waitForIdle();
+  assert.equal(f.store.get(PATH_CASE_KINDS.cases, made.id).urgent, true);
+  assert.equal(f.urgentCalls.length, 1);
+  // 한국어 메모는 판정 부르기에 실리지 않는다.
+  const before = sent.length, u = f.student();
+  const ko = f.cases.studentCreate(u, f.teen({ lang: 'ko', note: '집에서 아빠한테 맞았어요' })).body.case;
+  assert.equal(ko.urgent, true);
+  await f.cases.waitForIdle();
+  assert.equal(sent.slice(before).filter(x => x.judge).length, 0);
+});

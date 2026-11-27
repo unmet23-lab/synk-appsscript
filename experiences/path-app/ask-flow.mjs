@@ -262,10 +262,10 @@ export function readCases(data) {
   return data.cases.slice(0, 20).flatMap((c) => {
     if (!plain(c) || typeof c.id !== 'string' || !UUID_RE.test(c.id) || !CASE_STATUSES.includes(c.status) || !['urgent', ...HANDOFF_KINDS].includes(c.kind)) return [];
     const all = Array.isArray(c.messages) ? c.messages : [];
-    const messages = all.slice(-120).flatMap((m) => (plain(m) && ['student', 'staff'].includes(m.from) && str(m.text, 4000)
+    const messages = all.slice(-1000).flatMap((m) => (plain(m) && ['student', 'staff'].includes(m.from) && str(m.text, 4000)
       ? [{ id: str(m.id, 80), from: m.from, text: m.text, at: str(m.at, 40) }] : []));
     return [{ id: c.id.toLowerCase(), kind: c.kind, status: c.status, created_at: str(c.created_at, 40), wants: str(c.wants, 600), messages, unread: Number.isInteger(c.unread) && c.unread > 0 ? c.unread : 0,
-      delete_at: str(c.delete_at, 40), delete_soon: c.delete_soon === true, earlier: Math.max(0, all.length - 120) }];
+      delete_at: str(c.delete_at, 40), delete_soon: c.delete_soon === true, earlier: Math.max(0, all.length - 1000) }];
   });
 }
 export const openCases = (cases) => (cases || []).filter((c) => c.status !== 'closed');
