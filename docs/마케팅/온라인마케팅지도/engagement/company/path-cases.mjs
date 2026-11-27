@@ -53,6 +53,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   const erasedIntake = new Map();
   const freshErased = (subject, atMs) => { const list = (erasedIntake.get(subject) || []).filter(x => Date.parse(x.at) > atMs - WEEK); if (list.length) erasedIntake.set(subject, list); else erasedIntake.delete(subject); return list; };
   function rememberErased(intake) { const list = freshErased(intake.synkUserId, nowMs()); list.push({ mode: intake.mode, kind: intake.kind, at: intake.at }); erasedIntake.set(intake.synkUserId, list); }
+  // 지운 건의 주인 표식: 학생이 같은 건을 다시 지우면 정리 상태를 알려 주려고, 학생 해시와 건 번호를 묶은 HMAC만 8일 둔다(건 번호와 계정을 모두 알아야 찾는다).
+  const erasedOwnerKey = (subject, caseId) => 'erased-owner:' + createHmac('sha256', store.key).update('path-case-erased-owner\0v1\0' + subject + '\0' + caseId).digest('hex');
   function pruneErased() { for (const subject of [...erasedIntake.keys()]) freshErased(subject, nowMs()); }
   const intakeSubject = synkUserId => createHmac('sha256', store.key).update('path-case-intake\0v1\0' + synkUserId).digest('hex');
   const ticketKey = () => { const value = env.PATH_CASE_TICKET_KEY; return typeof value === 'string' && value.length >= 32 ? value : null; };
@@ -306,6 +308,10 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   }
   // 학생의 「이 상담 지우기」는 바로 지운다. 스위치가 꺼져 있어도 된다.
   function studentDelete(identity, id) {
+    // 이미 지운 건을 다시 지우면(8일 안) 정리가 끝났는지 알려 준다.
+    const key = typeof id === 'string' && UUID.test(id) ? erasedOwnerKey(intakeSubject(identity.synkUserId), id.toLowerCase()) : null;
+    const gone = key && !store.get(K.cases, id.toLowerCase()) ? store.get(K.nonces, key) : null;
+    if (gone) return { ok: true, deleted: true, id: id.toLowerCase(), repeated: true, purge: truncatedAt && truncatedAt >= gone.erasedAt ? 'done' : 'pending' };
     const row = studentCase(identity, id);
     erase(row, 'student');
     return { ok: true, deleted: true, id: row.id, purge: 'pending' };
@@ -321,6 +327,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
       // 접수 줄은 지운다(학생 해시 · 때 · 갈래로 지운 건을 다시 잇지 못하게). 같은 요청 번호를 다시 보내면 「지운 상담」으로 답하도록, 학생과 잇지 않는 요청 번호 해시만 8일 남긴다.
       for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); rememberErased(intake); if (intake.requestId) { const gone = erasedRequestKey(intake.synkUserId, intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
+      { const owner = erasedOwnerKey(intakeSubject(row.synkUserId), row.id); store.put(K.nonces, owner, { nonce: owner, exp: Date.parse(at) + L.intakeDays * DAY, erasedAt: at }); }
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }

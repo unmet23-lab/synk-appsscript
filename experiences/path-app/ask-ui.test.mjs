@@ -257,3 +257,13 @@ test('검수 고침(11-27): 넘김 요약 · 고친 줄의 급함 답은 위험�
   assert.equal(list[0].delete_soon, true); assert.equal(list[0].delete_at, '2026-11-30T00:00:00Z');
   assert.match(renderCases({ lang: 'ko', cases: { phase: 'ok', list, text: {} } }), /곧 저절로 지워져요/);
 });
+
+test('내 상담: 글이 120개를 넘으면 뒤 120개만 보이고 앞의 글 수를 알린다', () => {
+  const messages = Array.from({ length: 125 }, (_, i) => ({ id: 'm' + i, from: i % 2 ? 'staff' : 'student', text: '글 ' + i, at: '2026-11-27T01:00:00Z' }));
+  const [c] = readCases({ ok: true, cases: [{ id: UUID, kind: 'act', status: 'answered', created_at: '2026-11-27T01:00:00Z', messages }] });
+  assert.equal(c.messages.length, 120); assert.equal(c.earlier, 5); assert.equal(c.messages[0].text, '글 5');
+  assert.ok(strip(renderCases({ lang: 'ko', cases: { phase: 'ok', list: [c], text: {} }, known: true })).includes('앞의 글 5개는 여기 보이지 않아요. 담당자는 모두 봐요.'));
+  const [few] = readCases({ ok: true, cases: [{ id: UUID, kind: 'act', status: 'answered', messages: messages.slice(0, 3) }] });
+  assert.equal(few.earlier, 0);
+  assert.doesNotMatch(renderCases({ lang: 'ko', cases: { phase: 'ok', list: [few], text: {} }, known: true }), /앞의 글/);
+});

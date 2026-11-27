@@ -421,3 +421,13 @@ test('지운 급함 상담도 하루 · 주 횟수에 든다(서버 메모리에
   f.advance(8 * DAY); f.cases.maintain();
   assert.equal(f.cases.studentCreate(s, f.urgent()).status, 201);
 });
+
+test('학생이 지운 건을 다시 지우면(8일 안) 정리가 끝났는지 알려 준다. 남의 건 번호로는 아무것도 알 수 없다', t => {
+  const f = fixture(t), s = f.student();
+  const c = f.cases.studentCreate(s, f.handoff(s)).body.case;
+  assert.equal(f.cases.studentDelete(s, c.id).purge, 'pending');
+  assert.deepEqual(f.cases.studentDelete(s, c.id), { ok: true, deleted: true, id: c.id, repeated: true, purge: 'pending' });
+  f.advance(60000); f.cases.maintain();
+  assert.equal(f.cases.studentDelete(s, c.id).purge, 'done');
+  assert.throws(() => f.cases.studentDelete(f.student(), c.id), error => error.status === 404);
+});
