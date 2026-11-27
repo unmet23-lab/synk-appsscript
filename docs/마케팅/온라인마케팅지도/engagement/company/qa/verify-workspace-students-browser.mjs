@@ -24,7 +24,7 @@ process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED='0';
 const issuer='https://identity.example.test',clientId='teacher-browser',password='workspace-students-browser-only';
 const report={checkedAt:new Date().toISOString(),synthetic:true,production:false,talk,scope:'real Chromium + disposable company SQLite + memory-only canonical PostgreSQL; operating classroom runtime wrapped by class records and student records with the switch on; invented learners only',checks:[],errors:[],consoleErrors:[],assetErrors:[],httpErrors:[],unexpectedRequests:[],screenshots:[]};
 const check=(name,value=true,detail)=>{report.checks.push({name,ok:!!value,...(detail===undefined?{}:{detail})});assert.ok(value,name+(detail===undefined?'':' '+JSON.stringify(detail)));};
-let fx,company,browser,page,base,handler;
+let fx,company,browser,page,base,handler,studentsOn=true;
 const jwt=()=>['synthetic',Buffer.from(JSON.stringify({iss:issuer+'/auth/v1',client_id:clientId,exp:Math.floor(Date.now()/1000)+3600})).toString('base64url'),'fixture'].join('.');
 const seoulToday=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 const addDays=(value,days)=>{const [y,m,d]=value.split('-').map(Number);return new Date(Date.UTC(y,m-1,d)+days*86400000).toISOString().slice(0,10);};
@@ -56,7 +56,7 @@ try{
   for(const file of ['20261009230000_synk_teaching_care_towns_c16.sql','20261020150000_synk_classroom_homework_c18.sql','20261127100000_synk_class_attendance_topik_c18.sql','20261127200000_synk_branches_stay_c18.sql'])await fx.db.exec(await readFile(join(talk,'supabase/migrations',file),'utf8'));
   const verify=rememberIdentity(async request=>{const role=request.headers.get('authorization')?.replace('Bearer synthetic-','');if(!fx.users[role])throw Object.assign(Error('AUTH_REQUIRED'),{status:401,code:'AUTH_REQUIRED'});return fx.users[role].identity;});
   const inner=withClassRecords({handler:runtime.createClassroomService({store:runtime.createClassroomStore(fx.sql,model),model,enabled:()=>true,verify}),records:createClassroomRecords({sql:fx.sql,enabled:()=>true}),verify,classroomEnabled:()=>true});
-  handler=withStudentRecords({handler:inner,students:createStudentRecords({sql:fx.sql,enabled:()=>true}),verify,classroomEnabled:()=>true});
+  handler=withStudentRecords({handler:inner,students:createStudentRecords({sql:fx.sql,enabled:()=>studentsOn}),verify,classroomEnabled:()=>true});
   await fx.sql`update engine.classes set display_name='합성 평일 TOPIK 4급' where class_id=${fx.cls.class_id}::uuid`;
   const [korea]=await fx.sql`insert into engine.classes(class_key,display_name) values('STUDENTS-KR','합성 한국 기수 2028 봄') returning class_id`;
   const [weekend]=await fx.sql`insert into engine.classes(class_key,display_name) values('STUDENTS-WE','합성 주말 K-드라마 회화') returning class_id`;
@@ -230,6 +230,19 @@ try{
   page.once('dialog',dialog=>dialog.accept());await page.locator('#st-card [data-st-action="stay-delete"]').click();
   await page.locator('#st-card .st-done',{hasText:'재학 기록을 지웠어요'}).waitFor();
   check('deleting a record keeps focus inside the open card',(await fx.sql`select 1 from engine.synk_learner_stay where learner_id=${K.오유나.id}::uuid`).length===0&&await page.evaluate(()=>Boolean(document.activeElement?.closest?.('#st-card'))));
+  // 멘토가 반 담당에서 빠져도 카드는 그 멘토를 고른 채 보이고 다시 고르라고 알린다. 「정하지 않음」으로 보여 저장 때 멘토가 지워지지 않는다(릴리스 카본 A1).
+  const goneCard=await page.evaluate(()=>{const k=students.data.classes.find(c=>c.learners?.some(l=>l.name?.startsWith('간바')));const l=k.learners.find(x=>x.name.startsWith('간바'));const c={...k,staff:(k.staff||[]).filter(s=>s.id!==l.stay.mentorStaffId)};
+    const prev=students.card;students.card={classId:c.id,learnerId:l.id,anchor:'topik'};const vm=studentsCardModel(c,l);students.card=prev;const div=document.createElement('div');div.innerHTML=StudentsView.card(vm);const select=div.querySelector('[name=mentorStaffId]');
+    return {id:l.stay.mentorStaffId,value:select.value,label:select.selectedOptions[0]?.textContent||'',text:div.textContent};});
+  check('a mentor who left the class stays chosen and the card asks to pick again',Boolean(goneCard.id)&&goneCard.value===goneCard.id&&goneCard.label.includes('이 반 담당 아님')&&goneCard.text.includes('멘토를 다시 골라 주세요'),goneCard);
+  // 쓰는 사이 중앙 스위치가 꺼지면 저장은 404 RECORDS_UNAVAILABLE이고, 카드는 오류 없이 닫혀 「아직 열리지 않았어요」 화면으로 바뀐다(릴리스 카본 A3).
+  studentsOn=false;
+  await page.locator('#st-card [name=note]').fill('스위치 시험');await page.locator('#st-card [data-st-action="stay-save"]').click();
+  await page.waitForFunction(()=>!students.card&&!students.loading&&(document.querySelector('#students-root h1')?.textContent||'').includes('아직 열리지 않았어요'));
+  const offHttp=report.httpErrors.filter(r=>r.status===404),offConsole=report.consoleErrors.filter(t=>t.includes('404'));
+  check('a save after the switch went off closes the card quietly and shows the not-open page',await page.evaluate(()=>!document.querySelector('[data-st-form]')&&!document.querySelector('#students-root .st-error'))&&offHttp.length===1&&offConsole.length===1,{offHttp,offConsole});
+  report.httpErrors=report.httpErrors.filter(r=>r.status!==404);report.consoleErrors=report.consoleErrors.filter(t=>!t.includes('404'));
+  studentsOn=true;
   // 수업 서버가 학생 기록을 붙이지 못한 응답은 「아직 열리지 않았어요」가 아니라 「불러오지 못했어요」와 다시 불러오기다(Fable 최종 F3).
   const skipped=await page.evaluate(()=>{const keep=students.data;students.data={...keep,students:undefined,studentsUnavailable:true};const vm=studentsModel();students.data=keep;return vm;});
   check('a response without student records is shown as not loaded, not as closed',skipped.phase==='closed'&&skipped.closed.unavailable===true&&(await page.evaluate(vm=>{const div=document.createElement('div');div.innerHTML=StudentsView.inner(vm);return div.textContent;},skipped)).includes('불러오지 못했어요'),skipped);

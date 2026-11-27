@@ -243,10 +243,16 @@ function studentsCardModel(c,l){
   const v=l.stay||{},draft=students.card?.draft||null,t=l.topikBest,saved=studentsSaved(l);
   if(students.card)students.card.base=saved;
   const fields=draft?{...saved,...draft}:saved,step=ST_STAGES.findIndex(r=>r[0]===(l.stage||'academy')),e=v.expiry;
+  // 멘토가 이 반 담당에서 빠졌어도 저장된 멘토를 고른 채 보인다. 「정하지 않음」으로 보여 다른 칸만 고쳐 저장할 때 멘토가 지워지지 않게 한다.
+  // 중앙은 반 담당이 아닌 멘토 저장을 MENTOR_NOT_IN_CLASS로 거절하므로, 카드가 다시 고르라고 먼저 알린다(릴리스 카본 A1).
+  const staff=(c.staff||[]).map(s=>({id:s.id,label:s.name})),gone=saved.mentorStaffId&&!staff.some(s=>s.id===saved.mentorStaffId);
+  if(gone)staff.push({id:saved.mentorStaffId,label:`${v.mentorName||'이전 멘토'} (이 반 담당 아님)`});
+  const mentorGone=Boolean(fields.mentorStaffId)&&!(c.staff||[]).some(s=>s.id===fields.mentorStaffId);
   return {key:c.id+':'+l.id,name:l.name||'이름 없음',className:c.name||'',branchName:c.branch?.name||'',steps:ST_STAGES.map(([,label],i)=>({label,state:i<step?'done':i===step?'now':''})),
     topik:t?{kind:t.kind==='I'?'I':'II',level:t.level,expiresOn:t.expiresOn,daysLeft:t.daysLeft}:null,attendance:l.attendanceRate?{percent:l.attendanceRate.percent,recorded:l.attendanceRate.recorded}:null,
     stay:e&&v.stayExpiresOn?{expiresOn:v.stayExpiresOn,daysLeft:e.daysLeft,tone:e.state==='expired'||e.state==='within30'?'bad':e.state==='within120'?'warn':''}:null,
-    fields,options:{stages:ST_STAGES.map(([id,label])=>({id,label})),visas:ST_VISAS.map(([id,label])=>({id,label})),staff:(c.staff||[]).map(s=>({id:s.id,label:s.name}))},
+    fields,options:{stages:ST_STAGES.map(([id,label])=>({id,label})),visas:ST_VISAS.map(([id,label])=>({id,label})),staff},
+    mentorGone:mentorGone?(staff.find(s=>s.id===fields.mentorStaffId)?.label||'').replace(/ \(이 반 담당 아님\)$/,''):'',
     error:students.card?.error||'',done:students.card?.done||'',saving:students.saving,hasRecord:Boolean(l.stay),desktopOld:students.desktopOld};
 }
 // 카드는 대화 상자가 아니라 목록 안에 펼쳐지므로 다른 줄 · 지점 · 단계를 누르면 닫힌다. 쓰던 칸이 있으면 먼저 묻는다.
@@ -283,8 +289,16 @@ async function studentsSaveCard(remove=false){
     if(error.status===409){
       // 다른 곳에서 먼저 고쳤거나 공유가 바뀌었다. 새 판을 다시 읽되 쓰던 칸은 그대로 둔다.
       card.key=null;card.error=`${error.message} 새 기록을 다시 불러왔어요. 쓰신 칸은 그대로 두었으니 확인한 뒤 다시 저장해 주세요.`;await studentsLoad({quiet:true});
-    }else card.error=studentsErrorText(error);
+    }else if(error.status===404){if(await studentsGoneCheck())card.error=studentsErrorText(error);}
+    else card.error=studentsErrorText(error);
   }finally{students.saving=false;studentsPaint();}
+}
+// 저장 · 지점 요청의 404는 둘이다. 쓰는 사이 중앙 스위치가 꺼진 RECORDS_UNAVAILABLE과, 그사이 지워진 기록(STAY_NOT_FOUND)이다.
+// 회사 중계는 이 길의 코드를 넘기지 않으므로 다시 읽어 가른다. 학생 기록이 닫혔으면 오류를 남기지 않고 카드를 닫아
+// 「아직 열리지 않았어요」 화면으로 조용히 바꾸고 false를, 아직 열려 있으면 true를 돌려준다(릴리스 카본 A3).
+async function studentsGoneCheck(){
+  await studentsLoad({quiet:true});if(students.data?.students)return true;
+  students.card=null;students.error='';students.notice='';return false;
 }
 // 저장 경로를 모르는 옛 PC 앱은 INVALID_REQUEST로 거절한다. 뜻 모를 글 대신 업데이트를 안내하고, 그 뒤로는 저장 단추를 막는다(Fable 최종 F2).
 function studentsErrorText(error){
@@ -298,7 +312,7 @@ async function studentsSetBranch(classId,branchId,select){
   const name=students.data?.branches?.find(b=>b.id===branchId)?.name||'';
   if(c?.branch&&!confirm(`이 반의 지점을 「${name}」(으)로 바꿀까요? 반의 「오늘」 날짜와 지점별 집계가 그 지점 기준으로 바뀌어요.`)){if(select)select.value=c.branch.id;return;}
   try{await studentsRequest('classBranch',{classId,body:{action:'set',branchId,revision:c?.branch?.revision||0}});students.notice=c?.branch?'반의 지점을 바꿨어요.':'반의 지점을 정했어요.';students.error='';await studentsLoad({quiet:true});}
-  catch(error){students.error=studentsErrorText(error);studentsPaint();}
+  catch(error){if(error.status===404&&!await studentsGoneCheck()){studentsPaint();return;}students.error=studentsErrorText(error);studentsPaint();}
 }
 // 쓰던 칸이 있는 카드를 두고 다른 탭(「반에서 찍기」, 왼쪽 메뉴, 아래 탭)으로 가면 먼저 묻는다. 거절하면 이 화면에 남는다.
 // 로그인이 풀려 지우는 길은 묻지 않는다. 앱의 탭 처리보다 먼저 듣도록 window에서 잡는다(Fable 최종 F2).

@@ -106,6 +106,7 @@ const StudentsView=(()=>{
       ${field('출석률 기준일',`<input type="date" name="universityAttendanceOn" value="${esc(f.universityAttendanceOn)}">`)}
       ${field('메모',`<textarea name="note" maxlength="200" rows="2">${esc(f.note)}</textarea>`,true)}
     </div>
+    ${c.mentorGone?`<p class="st-notice">지금 멘토(${esc(c.mentorGone)})는 이 반 담당이 아니에요. 저장하려면 이 반 선생님 가운데서 멘토를 다시 골라 주세요.</p>`:''}
     ${c.error?`<p class="st-notice st-error" role="alert">${esc(c.error)}</p>`:''}${c.done&&!c.error?`<p class="st-notice st-done" role="status">${esc(c.done)}</p>`:''}${c.desktopOld&&!c.error?`<p class="st-notice st-error" role="alert">이 PC 앱은 아직 학생 기록 저장을 몰라요. PC 앱을 새 판으로 업데이트하거나 브라우저의 워크스페이스에서 저장해 주세요.</p>`:''}
     <footer>${c.hasRecord?`<button type="button" class="st-delete" data-st-action="stay-delete" data-st-focus="card-delete" ${c.saving||c.desktopOld?'disabled':''}>재학 기록 지우기</button>`:'<span></span>'}<button type="submit" class="st-save" data-st-action="stay-save" data-st-focus="card-save" ${c.saving||c.desktopOld?'disabled':''}>${c.saving?'저장하는 중이에요':'재학 기록 저장'}</button></footer>
   </form></div>`;
