@@ -40,6 +40,19 @@ def once(s, a, b, name):
     return s.replace(a, b)
 
 
+# 윗줄 메뉴 「한국어와 유학」이 홈(/#road)으로 가던 것을 유학 쪽으로 고친다(유호님 11-28 「한국어와 유학 누르면 메인화면으로 가지거든? 이거 버그야 고쳐줘야해」)
+NAV = (('<a data-g="road" href="/#road">', '<a data-g="road" href="/study-abroad/">'), ('<a data-g="road" href="/en/#road">', '<a data-g="road" href="/en/study-abroad/">'))
+
+
+def nav(s):
+    n = 0
+    for a, b in NAV:
+        n += s.count(a)
+        s = s.replace(a, b)
+    assert n == 1, f'메뉴 주소 {n}번'
+    return s
+
+
 META = {
     'ko': ('광고 — 브랜드를 드라마로 만드는 광고 · SYNK', '이야기가 끝나면 제품 이름이 남습니다. 한국 엔터테인먼트 산업 현장에서 10년 일한 사람이 AI 모델을 연출합니다.'),
     'en': ('Ads — Turning brands into drama · SYNK', 'When the story ends, the product name stays. Someone with ten years in Korea’s entertainment industry directs the AI models.'),
@@ -62,6 +75,7 @@ def build(lang):
     # 바닥의 방문 집계 한 줄은 뺀다(유호님 11-27 밤 「이 내용도 삭제해」). 집계 스크립트와 개인정보처리방침 설명은 그대로다
     page, n = re.subn(r'<span class="foot-note">[^<]*<a href="/privacy/#visitor-stats(?:-en)?">[^<]*</a></span>', '', page)
     assert n == 1, f'foot-note {n}번'
+    page = nav(page)
     css = re.search(r'<link rel="stylesheet" href="/assets/v11/detail\.css\?v=[0-9a-f]+">', page).group(0)
     page = once(page, css, css + '\n<link rel="stylesheet" href="/assets/v11/pulse-y.css?v=000000000000">'
                 + '\n<link rel="stylesheet" href="/assets/v11/pulse-s.css?v=000000000000">', 'css')
@@ -80,7 +94,7 @@ os.makedirs(V11, exist_ok=True)
 text = build('ko') + build('en')
 for src, dst in (('광고.css', 'pulse-y.css'), ('광고.js', 'pulse-y.js'), ('광고_하늘.css', 'pulse-s.css')):
     shutil.copyfile(os.path.join(HERE, src), os.path.join(V11, dst))
-for n in ('pulse-sky.webp', 'pulse-night.webp', 'pulse-card-dodam-y.webp', 'pulse-card-bridge-y.webp'):
+for n in ('pulse-sky.webp', 'pulse-night.webp', 'pulse-card-dodam-y.webp', 'pulse-card-opalin-y.webp', 'pulse-card-bridge-y.webp'):
     shutil.copyfile(os.path.join(IMG, n), os.path.join(V11, n))
 # 앱 화면은 날짜를 붙여 둔다(바뀌면 이름이 바뀌어 옛 그림이 캐시에 남지 않는다)
 for k in TOUR:

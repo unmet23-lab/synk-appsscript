@@ -60,6 +60,19 @@ SWAP = {
     ],
 }
 
+# 윗줄 메뉴 「한국어와 유학」이 홈(/#road)으로 가던 것을 유학 쪽으로 고친다(유호님 11-28 「한국어와 유학 누르면 메인화면으로 가지거든? 이거 버그야 고쳐줘야해」)
+NAV = (('<a data-g="road" href="/#road">', '<a data-g="road" href="/study-abroad/">'), ('<a data-g="road" href="/en/#road">', '<a data-g="road" href="/en/study-abroad/">'))
+
+
+def nav(s):
+    n = 0
+    for a, b in NAV:
+        n += s.count(a)
+        s = s.replace(a, b)
+    assert n == 1, f'메뉴 주소 {n}번'
+    return s
+
+
 META = {
     'ko': (('AI 강의 — AI로 회사를 돌리는 사람이 직접 강의하러 갑니다 · SYNK', 'AI 강의 — AI를 어렵게 익힌 강사진이 쉽게 가르칩니다 · SYNK'),
            ('가르치는 사람의 회사가, 지금 이 시각에도 AI로 돌고 있습니다.', '2026년 6월, AI가 처음으로 누구나 쓸 만해졌습니다. 저희는 그때부터 먹고 자는 시간 빼고 AI만 썼습니다.')),
@@ -83,6 +96,7 @@ for lang, path in (('ko', 'ai/index.html'), ('en', 'en/ai/index.html')):
     (t0, t1), (d0, d1) = META[lang]
     assert s.count(t0) == 2 and s.count(d0) == 2, (lang, s.count(t0), s.count(d0))
     s = s.replace(t0, t1).replace(d0, d1)
+    s = nav(s)
     out = os.path.join(OUT, path)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, 'w', encoding='utf-8', newline='') as f:

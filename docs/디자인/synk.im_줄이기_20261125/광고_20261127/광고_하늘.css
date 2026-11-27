@@ -47,3 +47,15 @@ body.s .foot{background:#E3EDF7}
   body.s .y-end::before{background-size:auto 100%;background-position:50% 50%}
   body.s .y-end::after{background:linear-gradient(180deg,rgba(4,10,24,.84) 0,rgba(4,10,24,.66) 48%,rgba(4,10,24,.06) 72%,rgba(4,10,24,.32))}
 }
+
+/* 앱 구역을 첫 화면 바로 아래에 크게 둔다(유호님 11-27 밤 「pulse 앱을 통해 작업 현황을 공유하고 실시간으로 피드백 받을수있는 시스템을 메인으로」).
+   세 단계(의뢰 · 작업 현황 공유 · 실시간 피드백)를 흰 종이 셋으로 먼저 보이고, 그 아래 화면 고르기 */
+.y-app-first{padding-top:clamp(48px,6vw,88px)}
+.y-app-first + .y-way{padding-top:clamp(88px,10vw,144px)}
+.y-flow{list-style:none;margin:40px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px clamp(16px,2vw,28px);counter-reset:flow}
+.y-flow li{counter-increment:flow;padding:24px 24px 26px;background:var(--paper);border-radius:22px;box-shadow:var(--lift);display:grid;gap:10px;align-content:start}
+.y-flow li::before{content:counter(flow,decimal-leading-zero);font:600 13px/1 var(--sans);color:var(--mute);font-variant-numeric:tabular-nums}
+.y-flow b{font:300 clamp(24px,2.2vw,32px)/1.25 var(--serif);letter-spacing:-.02em}
+.y-flow span{font:500 16px/1.6 var(--sans);color:var(--mute);text-wrap:pretty}
+.y-app .y-tour{margin-top:44px}
+@media (max-width:1000px){.y-flow{grid-template-columns:1fr}}

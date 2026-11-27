@@ -32,6 +32,19 @@ SWAP = {
          '<h2 class="e-claim">Directed with<br><mark>ten years</mark> of industry sense.</h2><p class="e-proof">Years in Korea’s entertainment industry set the standard for directing.</p>'),
     ],
 }
+# 윗줄 메뉴 「한국어와 유학」이 홈(/#road)으로 가던 것을 유학 쪽으로 고친다(유호님 11-28 「한국어와 유학 누르면 메인화면으로 가지거든? 이거 버그야 고쳐줘야해」)
+NAV = (('<a data-g="road" href="/#road">', '<a data-g="road" href="/study-abroad/">'), ('<a data-g="road" href="/en/#road">', '<a data-g="road" href="/en/study-abroad/">'))
+
+
+def nav(s):
+    n = 0
+    for a, b in NAV:
+        n += s.count(a)
+        s = s.replace(a, b)
+    assert n == 1, f'메뉴 주소 {n}번'
+    return s
+
+
 TITLE = {
     'ko': ('광고 — 카메라 앞에서 10년, 배우가 AI 모델을 연출합니다 · SYNK', '광고 — 한국 엔터테인먼트 산업 현장에서 10년, AI 모델을 연출합니다 · SYNK'),
     'en': ('Ads — Ten years on camera, an actor directs AI models · SYNK', 'Ads — Ten years in Korea’s entertainment industry, now directing AI models · SYNK'),
@@ -46,6 +59,7 @@ for lang, path in (('ko', 'studio/index.html'), ('en', 'en/studio/index.html')):
     t0, t1 = TITLE[lang]
     assert s.count(t0) == 2, (lang, 'title', s.count(t0))
     s = s.replace(t0, t1)
+    s = nav(s)
     # 바닥의 방문 집계 한 줄(유호님 11-27 밤 「이 내용도 삭제해」). 집계 스크립트와 개인정보처리방침 설명은 그대로다
     s, n = re.subn(r'<span class="foot-note">[^<]*<a href="/privacy/#visitor-stats(?:-en)?">[^<]*</a></span>', '', s)
     assert n == 1, (lang, 'foot-note', n)

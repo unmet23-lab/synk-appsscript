@@ -46,7 +46,7 @@ body.y main{overflow-x:clip}
 .y-stack .y-card[data-k="2"]{transform:translateY(-104px) scale(.91);z-index:1}
 .y-stack .y-card[data-k="0"]{z-index:3}
 .y-stack .y-card:not([data-k="0"]) .y-card-b{visibility:hidden}
-.y-stack{padding-top:52px}
+.y-stack{padding-top:104px}
 
 /* 공통 마디 */
 .y-sec{padding:clamp(88px,10vw,144px) var(--wide) 0}
@@ -142,7 +142,7 @@ body.y .foot{background:#F5E6A8}
   .y-card-h .len{display:none}
   .y-stack .y-card[data-k="1"]{transform:translateY(-46px) scale(.955)}
   .y-stack .y-card[data-k="2"]{transform:translateY(-92px) scale(.91)}
-  .y-stack{padding-top:46px}
+  .y-stack{padding-top:92px}
   .y-facts{grid-template-columns:1fr}
   .y-cv li{grid-template-columns:1fr;gap:4px}
   .y-cast{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
