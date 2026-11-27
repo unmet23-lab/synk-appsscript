@@ -29,15 +29,16 @@ def once(s, a, b, name):
 REAL = '솔리오의 실제 화면입니다. 이름과 숫자는 예시 값입니다.'
 # 사무실 · 원클릭은 아직 볼 계정(미리보기)에만 열려 있다(Fable 검수 ai-solio-20261127 F1, desktop/src/main.cjs · solio-backup.cjs)
 NOT_OPEN = '솔리오의 실제 화면이며, 아직 모든 회원에게 열지 않았습니다.'
+BUILDING = '지금 만들고 있는 화면이며, 아직 모든 회원에게 열지 않았습니다. 이름과 숫자는 예시 값입니다.'
 # (열쇠, 줄 이름, 한 줄, 아래 작은 글, 대체 글)
 TOUR = {'ko': [
-    ('todo', '한 번에 처리', '흩어진 할 일을 급한 순서로 줄 세웁니다. 단추 하나로 1순위부터 한 장씩 끝냅니다.', REAL,
+    ('todo', '한 번에 처리', '흩어진 할 일을 급한 순서로 줄 세웁니다. 단추 하나로 1순위부터 한 장씩 끝냅니다.', '솔리오의 실제 화면입니다. 카드 가운데 사무실 일은 아직 모든 회원에게 열지 않았습니다. 이름과 숫자는 예시 값입니다.',
      '솔리오의 「한 번에 처리」 화면. 맨 앞 카드는 1순위 「고객이 기다립니다 · 견적부」로, 견적 문의에 보낼 답장 초안이 있다고 알리고 「초안 복사」 단추를 둔다. 뒤에 다음 일 셋이 겹쳐 있다.'),
-    ('office', '사무실', '부서마다 AI 직원이 무엇을 하는지, 누가 내 승인을 기다리는지 한 화면에 보입니다.', NOT_OPEN,
+    ('office', '사무실', '부서마다 AI 직원이 무엇을 하고 있는지 한 화면에 모아 봅니다.', BUILDING,
      '솔리오의 사무실 화면. 왼쪽에 마케팅부 · 개발부 같은 부서가 있고, 가운데 개발부 책상의 AI 직원이 3분 전에 승인을 물었다고 알린다.'),
-    ('plan', '사업계획서', '계획서를 넣으면 심사위원 셋이 항목마다 점수를 매기고, 가장 약한 곳부터 고치게 돕습니다.', '지금 다듬고 있는 화면입니다. 점수는 예시 값입니다.',
+    ('plan', '사업계획서', '계획서를 넣으면 심사위원 셋이 항목마다 점수를 매기고, 가장 약한 곳부터 고치게 돕습니다.', '지금 만들고 있는 화면이며, 아직 앱에 열지 않았습니다. 점수는 예시 값입니다.',
      '솔리오 기획부의 사업계획서 심사 화면. 심사위원 셋이 책상에 앉아 점수를 매겼고, 평균 3.1점과 가장 약한 곳이 신뢰성이라는 한 줄이 보인다.'),
-    ('backup', '원클릭 백업', '단추 한 번에 백업하고, 되살려 맞춰 보고, 비울 수 있는 공간을 찾고, 업데이트까지 확인합니다.', NOT_OPEN + ' 백업은 Windows에서만 씁니다.',
+    ('backup', '원클릭 백업', '단추 한 번에 백업하고, 되살려 맞춰 보고, 비울 수 있는 공간을 찾고, 업데이트까지 확인합니다.', NOT_OPEN + ' 백업은 Windows에서만 씁니다. 숫자는 예시 값입니다.',
      '솔리오 원클릭 화면. 지금 바뀐 파일을 올리는 백업 차례이고, 그 아래로 되살리기 확인 · 공간 · 업데이트 확인 차례가 이어진다.'),
     ('safe', '보안', '로그인이 풀린 계정을 바로 알려 줍니다. API 키는 이 PC에만 암호화해 두고, 로그인 정보와 사용량은 이 PC 밖으로 보내지 않습니다.', REAL,
      '솔리오의 계정 관리 화면. 로그인이 풀린 계정 하나에 「다시 로그인해야 합니다」와 다시 로그인하면 이어서 읽는다는 줄이 떠 있다.'),
@@ -47,14 +48,15 @@ TOUR = {'ko': [
 
 REAL_EN = 'An actual SOLIO screen (in Korean). Names and numbers are example values.'
 NOT_OPEN_EN = 'An actual SOLIO screen (in Korean), not yet open to all members.'
+BUILDING_EN = 'A screen we are building (in Korean), not yet open to all members. Names and numbers are example values.'
 TOUR['en'] = [
-    ('todo', 'One-click to-dos', 'Scattered tasks are lined up by urgency. One button takes you through them, top priority first, one card at a time.', REAL_EN,
+    ('todo', 'One-click to-dos', 'Scattered tasks are lined up by urgency. One button takes you through them, top priority first, one card at a time.', 'An actual SOLIO screen (in Korean). Office task cards are not yet open to all members. Names and numbers are example values.',
      'SOLIO’s one-click to-do screen. The front card is priority 1, a customer waiting on the quotes department: a reply draft for a quote request is ready, with a button to copy it. Three more tasks are stacked behind it.'),
-    ('office', 'Office', 'See what the AI staff in each department are doing, and who is waiting for your approval, on one screen.', NOT_OPEN_EN,
+    ('office', 'Office', 'See what the AI staff in each department are working on, all on one screen.', BUILDING_EN,
      'SOLIO’s office screen. Departments such as marketing and development are listed on the left; in the middle, an AI worker at the development desk asked for approval three minutes ago.'),
-    ('plan', 'Business plan', 'Hand in your plan and three judges score every item, then help you fix the weakest part first.', 'A screen we are still refining (in Korean). The scores are example values.',
+    ('plan', 'Business plan', 'Hand in your plan and three judges score every item, then help you fix the weakest part first.', 'A screen we are building (in Korean), not yet in the app. The scores are example values.',
      'SOLIO’s business plan review screen. Three judges sit at a desk and have scored the plan; a line shows an average of 3.1 and credibility as the weakest point.'),
-    ('backup', 'One-click backup', 'One button backs up your files, test-restores them, finds space you can free and checks for updates.', NOT_OPEN_EN + ' Backup runs on Windows only.',
+    ('backup', 'One-click backup', 'One button backs up your files, test-restores them, finds space you can free and checks for updates.', NOT_OPEN_EN + ' Backup runs on Windows only. Numbers are example values.',
      'SOLIO’s one-click screen. The backup step is uploading changed files, followed by the restore check, space and update check steps.'),
     ('safe', 'Security', 'Flags any account that has been logged out. API keys stay encrypted on this PC, and login details and usage never leave it.', REAL_EN,
      'SOLIO’s account screen. One logged-out account says it needs to sign in again and will resume reading once you do.'),
@@ -88,6 +90,11 @@ AI_CSS = '''<style>
   box-shadow:0 1px 1px rgba(17,17,19,.07),0 10px 18px -10px rgba(17,17,19,.45),inset 0 1px 0 #fff,inset 0 -3px 6px rgba(17,17,19,.06)}
 .jelly::before{content:"";position:absolute;left:10px;right:10px;top:2px;height:46%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,0))}
 .tour-tabs:not(.on) .jelly{display:none}
+/* 줄이 넘칠 때: 고른 칸으로 옮겨도 흐린 끝에 걸리지 않게, 옆으로 더 있는 쪽 끝은 흐리게 지운다(클래스는 넘칠 때만 붙는다) */
+.tour-tabs{scroll-padding-inline:48px}
+.tour-tabs.more-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent)}
+.tour-tabs.more-l{-webkit-mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent)}
+.tour-tabs.more-l.more-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent)}
 .app-shot{margin:0}
 .app-panel[hidden]{display:none}
 .app-shot .frame{background:#0a0a0b;border-radius:var(--r-lg);padding:clamp(6px,.9vw,12px);box-shadow:var(--shadow)}
@@ -101,12 +108,6 @@ AI_CSS = '''<style>
 @media (max-width:820px){.app-shot figcaption{grid-template-columns:1fr}.app-shot figcaption small{text-align:left}}
 @media (max-width:600px){
   .tour-tabs button{font-size:14px;padding:11px 14px}
-  /* 고른 칸으로 옮길 때 흐린 끝에 걸리지 않게 */
-  .tour-tabs{scroll-padding-inline:48px}
-  /* 옆으로 더 있는 칸이 있으면 그쪽 끝을 흐리게 지운다 */
-  .tour-tabs.more-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent)}
-  .tour-tabs.more-l{-webkit-mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(270deg,#000 calc(100% - 48px),transparent)}
-  .tour-tabs.more-l.more-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent)}
   .app-shot .frame{padding:6px}
 }
 @media (prefers-reduced-motion:reduce){.tour-tabs button{transition:none}}
@@ -131,7 +132,7 @@ if(k){e.preventDefault();pick(tabs[(i+k+tabs.length)%tabs.length],true);}});});
 const now=()=>tabs.find(t=>t.getAttribute('aria-selected')==='true')||tabs[0];
 const edge=()=>{const m=bar.scrollWidth-bar.clientWidth;bar.classList.toggle('more-l',m>2&&bar.scrollLeft>2);bar.classList.toggle('more-r',m>2&&bar.scrollLeft<m-2);};
 bar.classList.add('on');place(now(),false);edge();bar.addEventListener('scroll',edge,{passive:true});
-addEventListener('resize',()=>{place(now(),false);edge();});document.fonts&&document.fonts.ready.then(()=>place(now(),false));})();</script>
+const fit=()=>{place(now(),false);edge();};addEventListener('resize',fit);document.fonts&&document.fonts.ready.then(fit);window.ResizeObserver&&new ResizeObserver(fit).observe(tabs[tabs.length-1]);})();</script>
 '''
 
 
