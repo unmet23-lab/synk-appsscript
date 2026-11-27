@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {classRecordsModel,attendanceRows,attendanceDirty,attendanceMissingStatus,attendanceCounts,reasonText,topikBadge,levelLabel,localDate,addDays,TOPIK_LEVELS,createClassRecords} from './class-records.mjs';
+import {classRecordsModel,attendanceRows,attendanceDirty,attendanceMissingStatus,attendanceCounts,reasonText,topikBadge,levelLabel,localDate,addDays,TOPIK_LEVELS,createClassRecords,parseLine,dayText,topikElapsed} from './class-records.mjs';
 import {classSummaryModel,classSummaryHtml,teacherOverviewModel,createTeacherOverview} from './workspace-overview.mjs';
 
 // 서버(SYNK-talk learnerTopik)와 같은 꼴: level4는 유효한 4급 이상 가운데 가장 늦게 만료되는 성적이다.
@@ -336,4 +336,49 @@ test('known reason codes show their own text even when the PC app path wipes the
   assert.match(await topikSave('SHARING_DISABLED'),/이 학생이 학습 공유를 꺼서 TOPIK 성적을 남길 수 없어요/);
   assert.match(await topikSave('DATE_OUT_OF_RANGE'),/성적 발표일은 2000-01-01부터 내일까지 고를 수 있어요/);
   assert.equal(reasonText('TEACHING_CLASSROOM'),null);
+});
+
+// 시안 3 겉(11-27): 예외 한 줄 입력 · 날짜 글 · TOPIK 2년 띠 · 지우기 문구 · 반에서 빠진 학생
+test('the one-line input reads names with spaces, puts learners who can be recorded first and only changes the draft until saved',async()=>{
+  const ls=[{id:'g',name:'가람',shared:false,sharing:'unshared'},{id:'a',name:'가온',shared:true},{id:'n',name:'응우옌 민',shared:true}];
+  const read=text=>{const p=parseLine(text,ls);return [p.candidates.map(l=>l.id),p.status,p.note];};
+  assert.deepEqual(read('응우옌 민 결석 감기'),[['n'],'absent','감기']);assert.deepEqual(read('응우옌 민'),[['n'],null,'']);
+  assert.deepEqual(read('응우옌 결석'),[['n'],'absent','']);assert.deepEqual(read('응우'),[['n'],null,'']);
+  assert.deepEqual(read('가 결'),[['a','g'],'absent',''],'a locked learner is listed after the ones who can be recorded');assert.equal(parseLine('  ',ls),null);
+  const roman=[{id:'b',name:'Bat-Erdene',shared:true}];assert.deepEqual(parseLine('bat 지 Late Bus',roman).candidates.map(l=>l.id),['b']);assert.equal(parseLine('bat-erdene 지 Late Bus',roman).note,'Late Bus','the note keeps its own letters');
+  const root=liveRoot(),calls=[];
+  const view=createClassRecords({root,request:async(path,body)=>{calls.push(body);return {sessionDate:body.sessionDate,attendance:body.rows.map(r=>({...r,sessionDate:body.sessionDate,revision:5}))};},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a',{name:'가온'}),learner('n',{name:'응우옌 민'})]),'c');
+  const field={dataset:{attLine:'1'},setAttribute(){},removeAttribute(){}};
+  root.listeners.input({target:{...field,value:'응우옌 민 결석 감기'}});root.listeners.keydown({target:field,key:'Enter',preventDefault(){}});
+  assert.equal(calls.length,0,'the line only changes the draft');
+  assert.match(root.innerHTML,/data-att-status="absent" data-learner="n" aria-pressed="true"/);assert.match(root.innerHTML,/「응우옌 민 결석 · 감기」 적었어요/);
+  root.listeners.keydown({target:field,key:'Enter',isComposing:true,preventDefault(){throw Error('composition Enter is not ours');}});
+  // 상태 낱말이 아니면 적은 글을 지우지 않고 알린다.
+  root.listeners.input({target:{...field,value:'가온 감기로 못 옴'}});root.listeners.keydown({target:field,key:'Enter',preventDefault(){}});
+  assert.match(root.innerHTML,/「감기로」는 상태로 읽지 못했어요/);
+  root.listeners.input({target:{...field,value:'가온 결근'}});root.listeners.keydown({target:field,key:'Enter',preventDefault(){}});assert.match(root.innerHTML,/「결근」은 상태로 읽지 못했어요/);assert.doesNotMatch(root.innerHTML,/data-att-status="[a-z]+" data-learner="a" aria-pressed="true"/);
+  root.listeners.input({target:{...field,value:''}});
+  press(root,{attSave:'1'});await later();
+  assert.deepEqual(calls[0].rows,[{learnerId:'n',status:'absent',note:'감기',revision:0}]);assert.doesNotMatch(root.innerHTML,/적었어요/,'the done note goes once the batch is saved');view.stop();
+});
+test('day text, the two-year TOPIK band share and the sentence summary',()=>{
+  assert.equal(dayText('2026-11-27'),'11월 27일 금요일');assert.equal(dayText('2028-02-29'),'2월 29일 화요일');
+  assert.equal(topikElapsed({level:4,announcedOn:'2025-11-27',expiresOn:'2027-11-27'},'2026-11-27'),0.5);
+  assert.equal(topikElapsed({level:4,announcedOn:'2024-01-01',expiresOn:'2026-01-01'},'2026-11-27'),1);assert.equal(topikElapsed({level:0,passed:false,announcedOn:'2025-01-01',expiresOn:'2027-01-01'},'2026-11-27'),null);
+  const root=liveRoot(),view=createClassRecords({root,request:async()=>{throw Error('no call');},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+  view.render(workspace([learner('a',{name:'가온',absentStreak:3}),learner('b',{name:'나래',absentStreak:4})]),'c');
+  assert.match(root.innerHTML,/data-att-counts="0 0 0 0 2"/);assert.match(root.innerHTML,/외 1명이 <b class="is-absent">3<\/b>회 이상 이어서 결석했어요/);assert.match(root.innerHTML,/<h3>오늘 출결<\/h3>/);
+  assert.doesNotMatch(root.innerHTML,/style="/,'no inline style: the company workspace CSP blocks it');view.stop();
+});
+test('a TOPIK delete that fails says the record is still there, and a 403 for a learner who left the class or stopped sharing says so',async()=>{
+  for(const [code,text] of [['NETWORK_ERROR','성적은 지워지지 않았어요. 연결되면 다시 지워 주세요'],['TEACHING_CLASSROOM_RECORDS_BUSY','성적은 지워지지 않았어요. 잠시 뒤 다시 지워 주세요'],['SHARING_DISABLED','지금은 TOPIK 성적을 지울 수 없어요']]){
+    assert.match(reasonText(code.replace(/^TEACHING_CLASSROOM_/,''),'topik-delete'),new RegExp(text));
+  }
+  const record={id:'t1',kind:'II',round:96,level:4,announcedOn:'2025-01-10',expiresOn:'2027-01-10',state:'within90',daysLeft:44,passed:true,revision:1};
+  const run=async after=>{const root=liveRoot();
+    const view=createClassRecords({root,request:async path=>{if(path==='/api/workspace')return after;throw Object.assign(new Error('FORBIDDEN'),{code:'FORBIDDEN',status:403});},documentObject:null,now:()=>new Date(2026,10,27,10,0)});
+    view.render(workspace([learner('a',{name:'가온',topik:topik([record])}),learner('b')]),'c');press(root,{attTopikOpen:'a'});press(root,{attTopikDelete:'t1',learner:'a'});await later();return {root,view};};
+  const left=await run(workspace([learner('b')]));assert.match(left.root.innerHTML,/반 명단에서 빠져서 TOPIK 성적을 지울 수 없어요/);assert.doesNotMatch(left.root.innerHTML,/이미 지워졌어요/);left.view.stop();
+  const off=await run(workspace([learner('a',{name:'가온',sharing:{enabled:false,revision:3},topik:{shared:false,records:[]}}),learner('b')]));assert.match(off.root.innerHTML,/학습 공유를 꺼서 TOPIK 성적을 지울 수 없어요/);off.view.stop();
 });

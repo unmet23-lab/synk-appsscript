@@ -133,6 +133,8 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
     const visible=new Set(overviewData.classes.map(row=>row.id));classes=rows.filter(row=>visible.has(row.id));
     // 띠: 저장 뒤에는 개요로 파생 표시까지, 그 밖의 주기적 다시 받기에서는 명부와 공유 상태만 바꾼다.
     // 저장 뒤에 출발한 개요(순번 staleFrom 이상)만 파생 표시까지 바꾸고 표식을 지운다. 그보다 먼저 출발한 개요는 공유 상태만 본다.
+    // 띠의 저장 전 내용은 다시 받기 전에 잰다. 공유를 끈 학생의 줄과 TOPIK 칸은 refresh가 바로 닫아, 뒤에서 재면 알림이 빠진다.
+    const recordsDraftBefore=records?.hasDraft()===true;
     if(records){const fresh=recordsStale&&version>=staleFrom;records.refresh(overviewData,{sharingOnly:!fresh});if(fresh)recordsStale=false;}
     // 담당이 풀려 고른 반이 지워졌으면 아래 길로 내려가 상태 줄까지 맞춘다(여는 중이던 열기는 epoch가 바뀌어 끝난다).
     if(!reselect&&selected){picker();renderOverview();return;}
@@ -144,7 +146,7 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
       // (명부 기준인 과제 첨삭 초안이 남는다), 답하지 못하면 지금처럼 다시 만든다 — 그때 닫힌 작성 내용이 있으면 알린다.
       if(focused&&permissionChanged(framePermissions.get(focused),permission(knownLearner(focused)))){
         // 다시 열면 띠(출결 · TOPIK)도 닫히니, 띠에 저장 전 내용이 있었어도 알린다(다시 열기 전에 잰다).
-        if(!fenceFrame()){const frameDraft=frameHasDraft(),recordsDraft=records?.hasDraft()===true,reopened=choose(prior,{learnerId:knownLearner(focused)?focused:null,refreshScope:true});
+        if(!fenceFrame()){const frameDraft=frameHasDraft(),recordsDraft=recordsDraftBefore||records?.hasDraft()===true,reopened=choose(prior,{learnerId:knownLearner(focused)?focused:null,refreshScope:true});
           if((frameDraft||recordsDraft)&&!stopped)notice('학생의 공유 상태가 바뀌어 수업 화면을 새로 열었어요. 저장하지 않은 '+(frameDraft&&recordsDraft?'내용과 출결 · TOPIK은':recordsDraft?'출결 · TOPIK은':'내용은')+' 닫혔어요.',true);await reopened;return;}
         if(!knownLearner(focused)){selectedLearnerId=null;windowObject.SYNKClassroomSelection={classId:prior.id,learnerId:null};}
       }

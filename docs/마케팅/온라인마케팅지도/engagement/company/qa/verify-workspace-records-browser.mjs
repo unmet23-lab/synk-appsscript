@@ -100,21 +100,32 @@ try{
   // ── 반 화면의 「오늘 출결」 띠 ──
   await openClass('합성 A반');const band=page.locator('.class-records');
   check('band lists the whole roster with unshared rows muted',await band.locator('.att-row').count()===8&&await band.locator('.att-row.is-off').count()===2);
-  const counts=async()=>(await band.locator('.att-counts b').allTextContents()).join(' ');
+  // 시안 3: 수는 문장 요약 속에 있고, 출석 · 지각 · 결석 · 공결 · 아직의 다섯 수는 그 문장의 data-att-counts에 함께 둔다.
+  const counts=async()=>await band.locator('.att-say').getAttribute('data-att-counts');
   check('band starts from today and has no rows recorded yet',(await band.locator('h3').textContent())==='오늘 출결'&&await counts()==='0 0 0 0 6',await counts());
   check('row badge judges expiry by the valid level 4 even when a newer level 3 is the representative',(await band.locator(`[data-att-row="${A.가온.id}"] .att-topik-name`).textContent())==='TOPIK II 4급');
   check('row shows the four TOPIK badge states',(await band.locator(`[data-att-row="${A.다솜.id}"] .status-badge`).textContent())==='유효'&&(await band.locator(`[data-att-row="${A.나래.id}"] .status-badge`).textContent())==='90일 안 만료'&&(await band.locator(`[data-att-row="${A.가온.id}"] .status-badge`).textContent())==='30일 안 만료'&&(await band.locator(`[data-att-row="${A.라온.id}"] .status-badge`).first().textContent())==='만료');
   check('streak badge shows on the learner with three straight absences',(await band.locator(`[data-att-row="${A.마루.id}"] .att-streak`).textContent()).includes('3회'));
   // 상태 없이 메모만 쓴 줄: 「출결 저장」이 켜지고, 누르면 보내지 않고 상태를 먼저 고르라고 알린다.
-  await band.locator(`[data-att-note="${A.가온.id}"]`).fill('병원 들렀다 옴');
+  // 시안 3: 상태가 없거나 출석인 줄은 「사유 적기」를 눌러야 사유 칸이 열린다.
+  await band.locator(`[data-att-note-open="${A.가온.id}"]`).click();await band.locator(`[data-att-note="${A.가온.id}"]`).fill('병원 들렀다 옴');
   check('a note without a status enables 「출결 저장」',await band.locator('[data-att-save]').isEnabled());
   await band.locator('[data-att-save]').click();await band.locator('.att-message',{hasText:'출결 상태를 먼저 골라 주세요'}).waitFor();
   const [{n:noteOnly}]=await fx.sql`select count(*)::int as n from engine.synk_class_attendance where class_id=${fx.cls.class_id}::uuid and session_date=${d}::date`;
   check('note-only save sends nothing and moves focus to the status of that learner',noteOnly===0&&await page.evaluate(id=>document.activeElement?.dataset?.learner===id&&document.activeElement?.dataset?.attStatus==='present',A.가온.id),noteOnly);
   await band.locator(`[data-att-note="${A.가온.id}"]`).fill('');
   check('clearing that note lifts the row mark and the status-first notice with the save button',await band.locator('[data-att-message]').count()===0&&!(await band.locator(`[data-att-row="${A.가온.id}"] .att-name small`).textContent()).includes('상태를 골라')&&await band.locator('[data-att-save]').isDisabled());
-  await band.locator('[data-att-all]').click();await band.locator(`[data-att-row="${A.마루.id}"] [data-att-status="absent"]`).click();await band.locator(`[data-att-row="${A.다솜.id}"] [data-att-status="late"]`).click();
-  await band.locator(`[data-att-note="${A.다솜.id}"]`).fill('버스 지연 10분');
+  await band.locator('[data-att-all]').click();await band.locator(`[data-att-row="${A.마루.id}"] [data-att-status="absent"]`).click();
+  // 시안 3 한 줄 입력: 공유를 끈 학생은 후보에 보이되 고를 수 없다. 이름 첫머리 Enter로 이름을 채우고(커서는 끝), 이어 상태 · 사유를 적고 Enter. 초안만 바뀐다.
+  const line=band.locator('[data-att-line]');await line.click();await page.keyboard.type('사랑');
+  check('a learner without sharing is listed in the one-line input but cannot be picked',await band.locator('[data-att-line-list] button[disabled]',{hasText:'사랑 · 합성'}).count()===1);
+  await line.fill('');await page.keyboard.type('다솜');await page.keyboard.press('Enter');
+  check('Enter on a name fills the full name and leaves the caret at the end',await line.inputValue()==='다솜 · 합성 '&&await line.evaluate(el=>document.activeElement===el&&el.selectionStart===el.value.length));
+  await page.keyboard.type('지각 버스 지연 10분');await page.keyboard.press('Enter');
+  check('the one-line input marks that learner late with the note and leaves it unsaved',await pressed(A.다솜.id)==='late'&&(await band.locator(`[data-att-note="${A.다솜.id}"]`).inputValue())==='버스 지연 10분'&&await band.locator('[data-att-save]').isEnabled()&&await line.inputValue()==='');
+  // 문장 요약 속 이름을 누르면 그 학생 줄의 상태 단추로 간다.
+  await band.locator(`.att-say [data-att-go="${A.마루.id}"]`).click();
+  check('a name in the summary sentence takes focus to that learner row',await page.evaluate(id=>document.activeElement?.dataset?.learner===id&&!!document.activeElement?.dataset?.attStatus,A.마루.id));
   check('「모두 출석」 fills every shared learner and the exceptions change only those rows',await counts()==='4 1 1 0 0',await counts());
   await band.evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));await page.waitForTimeout(100);await capture('band-before-save-1440.png');
   await band.locator('[data-att-save]').click();await band.locator('.att-message',{hasText:'출결을 저장했어요'}).waitFor();

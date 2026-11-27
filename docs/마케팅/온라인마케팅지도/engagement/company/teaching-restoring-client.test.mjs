@@ -22,6 +22,10 @@ const TEACHING_HOST_BUILDS=new Map([
   ['d0e6116a4c1a9de60edb96c341fbaa05e66cd8f3a81a9ed5bbf1ea97f80c08b3','학원 운영 최소판 attendance-topik Fable r4 고침(재검수 전)'],
   // 학생 관리(11-27): 위 판(출결 · TOPIK Fable r4 고침)에 교사 다리 허용 목록 stay · classBranch만 더해 지은 판. 화면 검수 ws-students-20261127 사슬.
   ['802cb1517f3b95fc95046630e73ef43bcf24fa1b0ea1d1daa86913b56b866540','학생 관리 ws-students-20261127 (출결 · TOPIK r4 위)'],
+  // 반 출결 · TOPIK 시안 3 겉(유호님 11-27 「오케이 시안 3으로 가자」)과 r5에서 미룬 P2 다섯 · r4 F5. 가지 claude/attendance-skin3(cb608e39cb 위)에서 지어 검수한 판이다.
+  ['69d9d6982cfe724a3cf851c7edbb4ebafaf3c1824b5932f806ba7ad1dc13501d','반 출결 · TOPIK 시안 3 겉 ws-attendance-skin3-r3-20261127'],
+  // 위 시안 3 겉을 학생 관리 판(802cb151…) 위에 다시 쌓아 지은 판. 원천은 검수한 판과 같고 묶음만 다시 지었다.
+  ['3be10bc2b004adabd8cb24a9cd4b240a146d766c6beafca6bd79eca650aea4eb','출결 · TOPIK 시안 3 겉 + 학생 관리(합침)'],
 ]);
 function teachingHostBytes(){
   const raw=readFileSync(new URL('./public/teaching-host.js',import.meta.url)),text=raw.toString('latin1');
