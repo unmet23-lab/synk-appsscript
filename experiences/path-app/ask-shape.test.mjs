@@ -190,6 +190,10 @@ test('고친 줄 옮기기: 요청 꼴과 옮긴 줄의 숫자를 본다', () =>
   const mdy = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'By March 7, 2027,500 won must be paid.' }] });
   const dmy = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'By 7 March 2027,500 won must be paid.' }] });
   for (const e of [mdy, dmy]) assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일까지 500원을 내야 합니다.'] }, e.edits).length, 1);
+  // 달 뒤에 쉼표가 오면(「7 March, 2000,500」) 뒤 수는 금액으로 둔다.
+  const dmyComma = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'By 7 March, 2000,500 won must be paid.' }] });
+  assert.equal(checkBriefEditOutput({ texts: ['3월 7일까지 2000500원을 내야 합니다.'] }, dmyComma.edits).length, 1);
+  assert.throws(() => checkBriefEditOutput({ texts: ['3월 7일까지 2000원과 500원을 내야 합니다.'] }, dmyComma.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
   const dmy2 = validateBriefEditRequest({ request_id: UUID, lang: 'en', age: 'adult', consent: ASK_CONSENT_VERSION, edits: [{ field: 'task', index: 0, text: 'Pay by 7 March 2027.' }] });
   assert.equal(checkBriefEditOutput({ texts: ['2027년 3월 7일까지 내세요.'] }, dmy2.edits).length, 1);
   assert.throws(() => checkBriefEditOutput({ texts: ['2027년 7월 3일까지 내세요.'] }, dmy2.edits), { code: 'BRIEF_NUMBERS_CHANGED' });
@@ -285,7 +289,7 @@ test('위험 낱말 관문 잣대: 언어마다 직접 알리는 문장은 잡�
   for (const t of ['경험을 살려서 지원하고 싶어요', '예방주사 맞았어요', 'I like grape juice', 'Please help me with the form', 'Санхүүгийн дарамт их байна', '정답 맞았어요']) assert.equal(looksUrgent(t), false, t);
   // 낱말 목록은 모델이 못 볼 때의 넓은 안전망이다: 놓치지 않는 쪽으로 둔다. 돈 · 요금을 「맞았다」는 관용 표현만 뺀다.
   for (const t of ['My landlord hit me with a late fee.', 'They hit me with a $50 fine', 'The school hits me with a surprise bill every month', 'hit me with the charges']) assert.equal(looksUrgent(t), false, t);
-  for (const t of ['He hit me with a belt and then hit me with a late fee.', 'They hit me with a late fee. Then he hit me.']) assert.equal(looksUrgent(t), true, t);
+  for (const t of ['He hit me with a belt and then hit me with a late fee.', 'They hit me with a late fee. Then he hit me.', 'My dad hit me with a fine-toothed comb.']) assert.equal(looksUrgent(t), true, t);
   for (const t of ['집에서 아빠한테 맞았어요.', '남자친구에게 맞고 있어요', 'He hit me with a belt', 'My partner hit me last night.', 'My dad hit me with a belt because rent was overdue.']) assert.equal(looksUrgent(t), true, t);
 });
 

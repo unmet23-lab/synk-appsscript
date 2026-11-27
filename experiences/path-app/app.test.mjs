@@ -1494,7 +1494,7 @@ test('물어보기: 계정이 바뀌면 이 탭의 대화를 지운다', async t
   assert.match(app.root.textContent, /계정이 바뀌어 이 탭의 대화를 지웠어요/);
 });
 
-test('물어보기: 상태별 안내를 보이고, 급함 답이나 위험 낱말이면 고정 카드를 연다', async t => {
+test('물어보기: 상태별 안내를 보이고, 고정 카드는 급함 답에만 연다(낱말로 짐작하지 않는다)', async t => {
   let reply = { ok: true, scope: 'synk-path', action: 'ask', status: 'limit', reopens_at: 1764288000000 };
   let sent = null;
   const app = await openAsk(t, { translateServer: () => reply, workspace: { open: true, handler: (method, path, body) => { sent = { method, path, body }; return { ok: true, case: { id: 'x' } }; } } });
@@ -1504,9 +1504,10 @@ test('물어보기: 상태별 안내를 보이고, 급함 답이나 위험 낱�
   assert.equal(app.root.querySelector('#ask-urgent'), null);
   reply = { ok: true, scope: 'synk-path', action: 'ask', status: 'blocked', reason: 'x' };
   await askQuestion(app, '죽고 싶어요');
-  assert.ok(app.root.querySelector('#ask-urgent'), '답을 받지 못해도 위험 낱말이면 카드를 연다');
+  assert.equal(app.root.querySelector('#ask-urgent'), null, '낱말로 짐작해 카드를 열지 않는다');
   assert.match(app.root.textContent, /지금은 답하지 못했어요/);
-  app.click('askUrgent');
+  assert.match(app.root.textContent, /급하면 위의 「위험해요」를 눌러 주세요/);
+  assert.ok(app.root.querySelector('[data-action="askUrgent"]'), '「위험해요」 입구는 늘 맨 위에 있다');
   reply = { ok: true, scope: 'synk-path', action: 'ask', status: 'urgent', turn: askTurn({ type: 'safety', kind: 'urgent', text: '지금 위험하다면 아래 번호로 먼저 연락하세요.' }) };
   await askQuestion(app, '도와주세요');
   assert.ok(app.root.querySelector('#ask-urgent'));

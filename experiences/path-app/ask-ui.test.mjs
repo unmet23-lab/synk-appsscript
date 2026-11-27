@@ -118,7 +118,7 @@ test('서명 그대로: 다음 요청의 대화에 서버가 준 AI 차례를 �
   assert.equal(askHistory(many).length, 16);
 });
 
-test('상태별 안내: 여섯 상태와 실패마다 학생 말 안내가 있고, 급함 · 위험 낱말은 고정 카드를 연다', () => {
+test('상태별 안내: 여섯 상태와 실패마다 학생 말 안내가 있고, 고정 카드는 서버의 급함 답만 연다', () => {
   for (const s of ASK_STATUSES.filter((x) => x !== 'done' && x !== 'urgent')) {
     const reply = s === 'limit' || s === 'paused' ? { status: s, reopens_at: 1764288000000 } : { status: s };
     const out = askOutcome(reply, null, '전북대 조건');
@@ -131,8 +131,12 @@ test('상태별 안내: 여섯 상태와 실패마다 학생 말 안내가 있�
   const paused = askOutcome({ status: 'paused', reopens_at: 1764288000000 }, null, 'x');
   assert.equal(paused.off, false); assert.equal(paused.reopensAt, 1764288000000);
   assert.equal(askOutcome(null, Object.assign(new Error('x'), { code: 'NETWORK' }), 'x').notice, 'lost');
-  assert.equal(askOutcome(null, Object.assign(new Error('x'), { code: 'NETWORK' }), '죽고 싶어요').openCard, true);
-  assert.equal(askOutcome({ status: 'blocked', reason: 'x' }, null, 'I want to kill myself').openCard, true);
+  // 앱은 학생 글을 낱말로 짐작하지 않는다: 답을 받지 못하면 카드를 열지 않고, 안내 아래에 「위험해요」로 가는 한 줄을 늘 붙인다.
+  assert.equal(askOutcome(null, Object.assign(new Error('x'), { code: 'NETWORK' })).openCard, false);
+  assert.equal(askOutcome({ status: 'blocked', reason: 'x' }, null).openCard, false);
+  for (const s of ['lost', 'failed', 'limit', 'blocked', 'busy', 'signin']) if (M[s]) assert.ok(renderAsk(base({ ask: { ...base().ask, notice: s } })).includes(M.urgentHint[0]), s);
+  assert.equal(renderAsk(base({ ask: { ...base().ask, notice: 'paused' } })).split(M.urgentHint[0]).length, 2, 'paused 글에는 이미 있어 한 번만');
+  assert.ok(!renderAsk(base({ ask: { ...base().ask, notice: 'cleared' } })).includes(M.urgentHint[0]));
   const urgent = askOutcome({ status: 'urgent', turn: turn({ type: 'safety', kind: 'urgent', text: URGENT_TEXT.ko }) }, null, '도와주세요');
   assert.equal(urgent.openCard, true); assert.equal(urgent.keep, true); assert.equal(urgent.entry.kind, 'urgent');
   assert.equal(askOutcome({ status: 'urgent', turn: { bad: 1 } }, null, 'x').openCard, true, '꼴이 틀린 급함 답도 카드는 연다');

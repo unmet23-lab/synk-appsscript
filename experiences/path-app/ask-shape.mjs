@@ -8,7 +8,8 @@ export const ASK_PROMPT_VERSION = 'path-ask-v1';
 /** 물어보기 동의 문장의 판. 화면 문장을 바꾸면 올린다. 서버는 이 판만 받는다. */
 export const ASK_CONSENT_VERSION = 1;
 /** 사람 연결(Workspace로 보내기) 동의 문장의 판. */
-export const CASE_CONSENT_VERSION = 1;
+// 2: 동의 글에 「Claude가 내 글이 위험을 알리는지 본다」를 더했다(11-28). 1로 동의한 기록은 없다(상담함을 한 번도 켜지 않았다).
+export const CASE_CONSENT_VERSION = 2;
 export const ASK_LANGS = Object.freeze(['ko', 'mn', 'en']);
 /** 답 갈래. 근거는 fact(찾음)와 app_help에만 요구한다. */
 export const ANSWER_TYPES = Object.freeze(['fact', 'clarify', 'refer', 'app_help', 'safety']);
@@ -88,7 +89,7 @@ const DANGER = [
 // 라틴 글자 낱말 가운데 다른 낱말 속에 들어가기 쉬운 것(grape의 rape)은 낱말 경계로 본다.
 const DANGER_WORDS = /\b(?:rape|raped|raping)\b/i;
 // 돈 · 요금을 「맞았다」는 영어 관용 표현만 좁게 뺀다: hit me with (a|an|the)? ($50)? (late|big|huge|surprise)? fee/bill/charge/fine. 물건(belt 따위)은 빼지 않는다.
-const SAFE_EN = /\bhits?\s+me\s+with\s+(?:a\s+|an\s+|the\s+)?(?:[$€₩]?\d[\d,.]*\s+)?(?:(?:late|big|huge|surprise|extra)\s+)?(?:fee|bill|charge|fine)s?\b/gi;
+const SAFE_EN = /\bhits?\s+me\s+with\s+(?:a\s+|an\s+|the\s+)?(?:[$€₩]?\d[\d,.]*\s+)?(?:(?:late|big|huge|surprise|extra)\s+)?(?:fee|bill|charge|fine)s?\b(?!-)/gi;
 export function looksUrgent(text) {
   const s = String(text ?? '').toLowerCase().normalize('NFC').replace(SAFE_EN, ' ');
   return DANGER.some((w) => s.includes(w)) || DANGER_WORDS.test(s);
@@ -351,7 +352,7 @@ function dateParts(text) {
   take(/(?<!\d)(\d{1,2})(?:\s*-?\s*р)?\s*сарын\s*(\d{1,2})(?!\d)/giu, (g) => [g[1], g[2]]);
   // 영어 날짜 뒤의 「, 2027」은 해로 떼어 따로 둔다(뒤의 「,500」과 한 수로 읽지 않게). 해는 남은 숫자로 맞댄다.
   s = s.replace(new RegExp(`\\b(${mon})(\\s+\\d{1,2}(?:st|nd|rd|th)?),\\s*((?:19|20)\\d{2})(?=[,\\s]|\\.(?!\\d)|$)`, 'gi'), (all, m, d, y) => `${m}${d} ${y} `);
-  s = s.replace(new RegExp(`(?<!\\d)(\\d{1,2}(?:st|nd|rd|th)?\\s+${'(?:' + mon + ')'}),?\\s+((?:19|20)\\d{2})(?=[,\\s]|\\.(?!\\d)|$)`, 'gi'), (all, dm, y) => `${dm} ${y} `);
+  s = s.replace(new RegExp(`(?<!\\d)(\\d{1,2}(?:st|nd|rd|th)?\\s+${'(?:' + mon + ')'})\\s+((?:19|20)\\d{2})(?=[,\\s]|\\.(?!\\d)|$)`, 'gi'), (all, dm, y) => `${dm} ${y} `);
   take(new RegExp(`\\b(${mon})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?!\\d)`, 'gi'), (g) => [monIdx(g[1]), g[2]]);
   take(new RegExp(`(?<!\\d)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${mon})\\b`, 'gi'), (g) => [monIdx(g[2]), g[1]]);
   return { dates: found.sort((p, q) => p.at - q.at).map((x) => x.v), rest: s };

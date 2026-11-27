@@ -3,7 +3,7 @@
 // 설계: docs/디자인/PATH_유학앱_20261120/AI상담_설계.md.
 import {
   validateAskRequest, validateBriefRequest, validateBriefEditRequest, validateCaseRequest, validateAskReply, checkBriefOutput, checkTicket, checkEdits,
-  maskAsk, cleanText, looksUrgent, ASK_CONSENT_VERSION, ASK_LANGS, HANDOFF_KINDS, TEEN_KINDS, KINDS, ANSWER_TYPES,
+  maskAsk, cleanText, ASK_CONSENT_VERSION, ASK_LANGS, HANDOFF_KINDS, TEEN_KINDS, KINDS, ANSWER_TYPES,
   HISTORY_TURNS, MAX_HISTORY_CHARS, BRIEF_TURNS, MAX_BRIEF_CHARS, MAX_QUESTION_CHARS, MAX_ANSWER_CHARS, MAX_NOTE_CHARS,
   MAX_BRIEF_LINE, MAX_EDITS, MAX_CITES, TICKET_TTL_MS, CASE_CONSENT_VERSION
 } from './ask-shape.mjs';
@@ -103,27 +103,27 @@ export function askBody({ requestId, lang, question, entries, profile = null, to
 /**
  * 물어보기 답을 화면 상태로 옮긴다.
  * @returns { entry: 대화에 더할 AI 차례 | null, keep: 학생 글을 대화에 남길지, notice: 안내 열쇠 | null, openCard: 고정 카드를 열지, off: 물어보기를 공식 안내 입구로 둘지, remaining }
- * 급함은 모델 답과 상관없이 마지막 안전망으로 본다: 답을 받지 못했고 학생 글에 위험 낱말이 보이면 고정 카드를 연다.
+ * 앱은 학생 글을 낱말로 짐작하지 않는다. 고정 카드는 서버가 급함으로 답했을 때만 연다.
+ * 답을 받지 못하면 안내 아래에 「급하면 위의 「위험해요」를 눌러 주세요」를 늘 붙인다(ask-ui.mjs의 urgentHint). 「위험해요」 입구는 늘 맨 위에 있다.
  */
-export function askOutcome(reply, failed, question) {
-  const danger = looksUrgent(question);
+export function askOutcome(reply, failed) {
   const remaining = reply && Number.isInteger(reply.remaining) && reply.remaining >= 0 ? reply.remaining : null;
   if (failed) {
     const code = failed.code || '';
     const notice = code === 'AUTH_REQUIRED' || code === 'AUTH_SESSION_MISSING' || code === 'SESSION_REVOKED' ? 'signin'
       : code === 'NETWORK' || /^INVALID_/.test(code) || code === 'TIMEOUT' ? 'lost' : 'failed';
-    return { entry: null, keep: false, notice, openCard: danger, off: false, remaining: null };
+    return { entry: null, keep: false, notice, openCard: false, off: false, remaining: null };
   }
   let data;
   // 급함 답은 차례의 꼴이 틀려도 카드는 연다(대화에는 남기지 않는다).
-  try { data = validateAskReply(reply); } catch { return { entry: null, keep: false, notice: reply?.status === 'urgent' ? null : 'lost', openCard: danger || reply?.status === 'urgent', off: false, remaining: null }; }
+  try { data = validateAskReply(reply); } catch { return { entry: null, keep: false, notice: reply?.status === 'urgent' ? null : 'lost', openCard: reply?.status === 'urgent', off: false, remaining: null }; }
   if (data.status === 'done' || data.status === 'urgent') {
     const cites = data.status === 'done' ? data.cites.filter((c) => typeof c === 'string') : [];
     // 서버의 turn(서명 · kind 포함)을 한 글자도 바꾸지 않고 둔다. kind는 그 turn의 kind다.
     return { entry: { role: 'ai', turn: data.turn, cites, kind: data.turn.kind }, keep: true, notice: null, openCard: data.turn.kind === 'urgent', off: false, remaining,
       reopensAt: null };
   }
-  return { entry: null, keep: false, notice: data.status, openCard: danger, off: data.status === 'unavailable', remaining, reopensAt: data.status === 'limit' || data.status === 'paused' ? data.reopens_at : null };
+  return { entry: null, keep: false, notice: data.status, openCard: false, off: data.status === 'unavailable', remaining, reopensAt: data.status === 'limit' || data.status === 'paused' ? data.reopens_at : null };
 }
 
 /* ── 넘김 요약 ── */

@@ -129,7 +129,7 @@ export function createAskController(d) {
     let reply = null, failed = null;
     try { reply = await d.session.translate(body); } catch (err) { failed = err; }
     if (ask !== a || a.seq !== seq) return;
-    const out = askOutcome(reply, failed, body.question);
+    const out = askOutcome(reply, failed);
     a.phase = 'idle';
     if (out.remaining !== null) a.remaining = out.remaining;
     if (out.keep) { a.turns.push({ role: 'student', text: body.question }, out.entry); a.turns = a.turns.slice(-BRIEF_TURNS * 2); a.text = ''; }

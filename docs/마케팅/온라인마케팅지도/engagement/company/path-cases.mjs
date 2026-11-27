@@ -1,5 +1,5 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
-import { validateCaseRequest, ticketPayload, briefHashInput, maskAsk, looksUrgent, cleanText, MAX_NOTE_CHARS } from '../../../../../experiences/path-app/ask-shape.mjs';
+import { validateCaseRequest, ticketPayload, briefHashInput, maskAsk, cleanText, MAX_NOTE_CHARS } from '../../../../../experiences/path-app/ask-shape.mjs';
 import { workspaceAccess } from './workspace-access.mjs';
 import { workspaceOwner, isWorkspaceOwner } from './workspace-owner.mjs';
 
@@ -118,19 +118,23 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   const checkRevision = (row, input) => { if (!plain(input) || input.revision !== row.revision) throw fail(409, 'CASE_REVISION', '그사이 상담이 바뀌었어요. 새로 읽어 주세요.'); };
 
   /* ── 급함과 알림 ── 알림 줄에는 「PATH 급함 상담」과 링크만 싣는다. */
-  function raiseUrgent(row, at) {
+  // why: 'danger'(학생이 급함을 골랐거나 모델이 위험이라고 봤다) · 'unchecked'(모델이 위험 여부를 보지 못했다 — 낱말로 짐작하지 않고 사람이 읽게 한다).
+  // 한 번 danger가 된 건은 unchecked로 내려가지 않는다.
+  function raiseUrgent(row, at, why = 'danger') {
     // 담당이 지금 일할 수 있는 계정이 아니면(끝난 건의 꺼진 담당 포함) 회사 주인에게 알린다.
     const target = (row.assigneeId && eligible(row.assigneeId) ? row.assigneeId : null) || workspaceOwner(store)?.id || null;
     if (target) { const id = randomUUID(); store.put(K.alerts, id, { id, userId: target, caseId: row.id, createdAt: at, readAt: null }); }
-    return { row: { ...row, urgent: true, urgentAt: at }, target };
+    const urgentWhy = why === 'danger' || (row.urgent && row.urgentWhy !== 'unchecked') ? 'danger' : 'unchecked';
+    return { row: { ...row, urgent: true, urgentAt: at, urgentWhy }, target };
   }
+  const urgentTitle = row => (row?.urgentWhy === 'unchecked' ? 'PATH 위험 확인 필요' : 'PATH 급함 상담');
   function notifications(actor) {
     const user = live(actor?.id);
     if (!user || !roleOf(user)) return [];
     // 지금 볼 수 있는 건의 알림만 보인다(담당이 바뀌었거나 숨긴 건은 뺀다).
     const who = { user, role: roleOf(user), all: roleOf(user) !== 'counselor' };
     return store.all(K.alerts).filter(row => { if (row.userId !== user.id) return false; const c = store.get(K.cases, row.caseId); return Boolean(c && visibleTo(who, c)); }).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 50)
-      .map(row => ({ id: ALERT_PREFIX + row.id, kind: 'path_case_urgent', title: 'PATH 급함 상담', text: '', body: '', createdAt: row.createdAt, readAt: row.readAt, unread: !row.readAt, href: pathCaseHref(row.caseId), message: null }));
+      .map(row => ({ id: ALERT_PREFIX + row.id, kind: 'path_case_urgent', title: urgentTitle(store.get(K.cases, row.caseId)), text: '', body: '', createdAt: row.createdAt, readAt: row.readAt, unread: !row.readAt, href: pathCaseHref(row.caseId), message: null }));
   }
   function readAlert(actor, id) {
     const user = live(actor?.id); if (!user) throw fail(401, 'CASE_AUTH', '먼저 로그인해 주세요.');
@@ -180,7 +184,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     const messages = body.messages.map(m => ({ id: m.id, from: m.from, text: m.from === 'staff' ? (m.textStudent || m.text) : m.text, at: m.at }));
     const unread = body.messages.filter(m => m.from === 'staff' && (!body.studentReadAt || m.at > body.studentReadAt)).length;
     const deleteAt = row.closedAt ? new Date(Date.parse(row.closedAt) + L.closedKeepDays * DAY).toISOString() : null;
-    return { id: row.id, kind: row.kind, status: row.status, urgent: row.urgent === true, created_at: row.createdAt, updated_at: row.updatedAt, closed_at: row.closedAt || null,
+    return { id: row.id, kind: row.kind, status: row.status, urgent: row.urgent === true && row.urgentWhy !== 'unchecked', created_at: row.createdAt, updated_at: row.updatedAt, closed_at: row.closedAt || null,
       answered_at: body.answeredAt || null, read_at: body.studentReadAt || null, wants: body.brief_student?.wants || null, unread,
       delete_at: deleteAt, delete_soon: Boolean(row.retentionNoticeAt), messages };
   }
@@ -249,10 +253,11 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         const id = randomUUID(), body = newBody(req);
         row = { id, synkUserId: identity.synkUserId, kind: req.kind, status: 'new', assigneeId: defaultAssignee(), revision: 1, lastStudentCheckAt: at,
           urgent: false, urgentAt: null, createdAt: at, updatedAt: at, closedAt: null, retentionNoticeAt: null, hidden: false };
-        // 메모의 위험은 번역 때 모델이 뜻으로 본다(judge). 모델을 부를 수 없으면 지금 위험 낱말로 본다.
-        // 한 요청 안에서는 한 번만 정한다. 한국어 글도 모델이 뜻으로 본다(동의 문구 「내 글이 위험을 알리는지도 봐요」).
+        // 메모의 위험은 번역 때 모델이 뜻으로 본다(judge). 한국어 글도 같다(동의 문구 「내 글이 위험을 알리는지도 Claude가 봐요」).
+        // 모델을 부를 수 없으면 낱말로 짐작하지 않고 「위험 확인 필요」로 올려 사람이 읽게 한다. 한 요청 안에서는 한 번만 정한다.
         const byModel = modelJudges();
-        if (req.kind === 'urgent' || (body.note && !byModel && looksUrgent(body.note))) { const raised = raiseUrgent(row, at); row = raised.row; urgent = { target: raised.target }; }
+        if (req.kind === 'urgent') { const raised = raiseUrgent(row, at); row = raised.row; urgent = { target: raised.target }; }
+        else if (body.note && !byModel) { const raised = raiseUrgent(row, at, 'unchecked'); row = raised.row; urgent = { target: raised.target }; }
         if (body.note && byModel) body.noteJudgePending = true;
         row = save(row, body);
         if (body.note) translate.push({ field: 'note', judge: byModel });
@@ -292,8 +297,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       const byModel = modelJudges(); // 한 요청 안에서 한 번만 정한다(한국어 글도 모델이 본다)
       if (byModel) created.judgePending = true;
       let next = touch({ ...current, status: current.status === 'answered' ? 'reviewing' : current.status, revision: current.revision + 1, updatedAt: at }, at);
-      // 열린 건에 쓴 글의 위험은 번역 때 모델이 본다. 모델을 부를 수 없으면 지금 위험 낱말로 보고 급함 표시를 올린다.
-      if (!byModel && looksUrgent(text)) { const raised = raiseUrgent(next, at); next = raised.row; urgentTarget = raised.target; }
+      // 열린 건에 쓴 글의 위험은 번역 때 모델이 본다. 모델을 부를 수 없으면 「위험 확인 필요」로 올린다(낱말로 짐작하지 않는다).
+      if (!byModel) { const raised = raiseUrgent(next, at, 'unchecked'); next = raised.row; urgentTarget = raised.target; }
       return save(next, body);
     });
     if (created) {
@@ -356,7 +361,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       try {
         store.transaction(() => {
           for (const n of store.all(K.nonces)) if (typeof n.nonce === 'string' && n.nonce.startsWith('erased-owner:') && !n.purged) store.put(K.nonces, n.nonce, { ...n, purged: true });
-          for (const t of store.all(K.tombstones)) if (t.purged === false) store.put(K.tombstones, t.id, { ...t, purged: true });
+          for (const t of store.all(K.tombstones)) if (t.purged !== true) store.put(K.tombstones, t.id, { ...t, purged: true });
         });
       } catch { walPending = true; }
     }
@@ -368,7 +373,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   function summaryOf(row, body) {
     const tasks = body.tasks.filter(t => !t.removed);
     const last = body.messages.at(-1);
-    return { id: row.id, kind: row.kind, status: row.status, urgent: row.urgent === true, urgentAt: row.urgentAt || null, assigneeId: assigneeOf(row),
+    return { id: row.id, kind: row.kind, status: row.status, urgent: row.urgent === true, urgentAt: row.urgentAt || null, urgentWhy: row.urgent ? (row.urgentWhy === 'unchecked' ? 'unchecked' : 'danger') : null, assigneeId: assigneeOf(row),
       assigneeName: live(assigneeOf(row))?.name || '', deadline: body.deadline || null, mode: body.mode, lang: body.lang, age: body.age,
       wants: body.brief_ko?.wants || null, openTasks: tasks.filter(t => !t.done).length, tasks: tasks.length,
       waiting: Boolean(last && last.from === 'student'), hidden: row.hidden === true, createdAt: row.createdAt, updatedAt: row.updatedAt, closedAt: row.closedAt || null, revision: row.revision };
@@ -505,7 +510,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     if (who.role !== 'owner') throw fail(403, 'CASE_FORBIDDEN', '회사 주인만 지울 수 있어요.');
     // 다시 부르면 WAL 정리가 끝났는지(purge: done) 알려 준다.
     const tomb = typeof id === 'string' ? store.get(K.tombstones, id.toLowerCase()) : null;
-    if (tomb && !store.get(K.cases, id.toLowerCase())) return { erased: { id: id.toLowerCase(), repeated: true, purge: tomb.purged === false ? 'pending' : 'done' } };
+    if (tomb && !store.get(K.cases, id.toLowerCase())) return { erased: { id: id.toLowerCase(), repeated: true, purge: tomb.purged === true ? 'done' : 'pending' } };
     const row = staffCase(who, id); checkRevision(row, input);
     const match = typeof input.token === 'string' && /^(\d{13})\.[0-9a-f]{64}$/.exec(input.token);
     if (!match || Number(match[1]) <= nowMs() || !same(confirmation(who.user.id, row, Number(match[1])), input.token)) throw fail(409, 'CASE_ERASE_CONFIRM', '지우기 확인 시간이 지났거나 확인한 내용과 달라요. 「지우기 전에 확인」을 다시 눌러 주세요.');
@@ -546,7 +551,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       const base = { caseId: row.id, urgent: row.urgent === true, href: pathCaseHref(row.id) };
       if (left.length) for (const t of left) rows.push({ ...base, id: row.id + ':' + t.id, title: 'PATH 상담 할 일', date: t.by || (t.source === 'ai' ? body.deadline : '') || '' });
       else if (tasks.length) rows.push({ ...base, id: row.id + ':close', title: 'PATH 상담 끝내기 확인', date: '' });
-      else rows.push({ ...base, id: row.id + ':reply', title: row.urgent ? 'PATH 급함 상담' : 'PATH 상담 답하기', date: body.deadline || '' });
+      else rows.push({ ...base, id: row.id + ':reply', title: row.urgent ? urgentTitle(row) : 'PATH 상담 답하기', date: body.deadline || '' });
     }
     return rows.sort((a, b) => Number(b.urgent) - Number(a.urgent) || (a.date || '9999-99-99').localeCompare(b.date || '9999-99-99') || a.id.localeCompare(b.id)).slice(0, 50);
   }
@@ -556,19 +561,19 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   let translating = null, stopped = false;
   const livenessAbort = new AbortController();
   const modelJudges = () => !stopped && Boolean(translator?.configured?.());
-  // 모델 판정을 받지 못한 글(부르기 실패 · 하루 횟수 · 멈춤)은 위험 낱말로 보고 급함을 올린다(넓은 안전망).
-  function judgeFallback(caseId, source) { if (looksUrgent(source)) escalate(caseId); }
-  function escalate(caseId) {
+  // 모델 판정을 받지 못한 글(부르기 실패 · 답 없음 · 멈춤)은 낱말로 짐작하지 않는다. 「위험 확인 필요」로 올려 사람이 읽는다.
+  function judgeFallback(caseId) { escalate(caseId, 'unchecked'); }
+  function escalate(caseId, why = 'danger') {
     let target, row;
     store.transaction(() => {
       // 판정을 기다리는 사이 직원이 건을 끝냈어도, 학생이 이미 보낸 위험 신고는 급함으로 올리고 알린다.
       const latest = store.get(K.cases, caseId); if (!latest) return;
-      const at = now(), raised = raiseUrgent({ ...latest, revision: latest.revision + 1, updatedAt: at }, at);
+      const at = now(), raised = raiseUrgent({ ...latest, revision: latest.revision + 1, updatedAt: at }, at, why);
       row = save(raised.row, bodyOf(latest), { allowOver: true }); target = raised.target;
     });
     if (row) { try { onUrgent(row, target); } catch { /* 알림 줄은 저장돼 있다 */ } notify([assigneeOf(row)]); }
   }
-  // 판정을 마치면(모델 · 낱말) 저장해 둔 판정 대기 표시를 지운다.
+  // 판정을 마치면(모델의 답 · 확인 필요로 올림) 저장해 둔 판정 대기 표시를 지운다.
   function judged(caseId, job) {
     try { store.transaction(() => {
       const latest = store.get(K.cases, caseId); if (!latest) return;
@@ -577,7 +582,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       save(latest, body, { allowOver: true });
     }); } catch { /* 보관 정리가 다시 본다 */ }
   }
-  // 판정 대기로 남은 글(서버가 판정 전에 멈췄거나 줄에서 빠짐)은 보관 정리 때 위험 낱말로 본다.
+  // 판정 대기로 남은 글(서버가 판정 전에 멈췄거나 줄에서 빠짐)은 보관 정리 때 「위험 확인 필요」로 올린다.
   function sweepPendingJudgements() {
     const queued = new Set(translationQueue.filter(j => j.judge).map(j => j.caseId + '|' + (j.messageId || j.field)));
     for (const row of store.all(K.cases)) {
@@ -585,7 +590,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       const jobs = [...body.messages.filter(m => m.judgePending).map(m => ({ messageId: m.id, source: m.text })), ...(body.noteJudgePending && body.note ? [{ field: 'note', source: body.note }] : [])];
       for (const job of jobs) {
         if (queued.has(row.id + '|' + (job.messageId || job.field)) || inFlight === row.id + '|' + (job.messageId || job.field)) continue;
-        judgeFallback(row.id, job.source); judged(row.id, job);
+        judgeFallback(row.id); judged(row.id, job);
       }
     }
   }
@@ -614,7 +619,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
         if (job.judge) {
           const said = Array.isArray(res?.danger) ? res.danger[0] : null;
           if (said === true) escalate(job.caseId);
-          else if (said !== false) judgeFallback(job.caseId, source);
+          else if (said !== false) judgeFallback(job.caseId);
           judged(job.caseId, job);
         }
         if (!out || body.lang === 'ko') continue;
@@ -638,7 +643,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     sweepPendingJudgements();
     const at = now(), atMs = Date.parse(at), done = { closedIdle: 0, erased: 0, noticed: 0, tombstones: 0, reassigned: 0 };
     done.reassigned = reassignOrphans();
-    if (walPending) truncateWal();
+    // 정리 끝 표식이 없는 지운 줄이 남아 있으면(앞 판이 남긴 줄 포함) 다시 자른다.
+    if (walPending || store.all(K.tombstones).some(t => t.purged !== true)) truncateWal();
     for (const row of store.all(K.cases)) {
       if (open(row) && Date.parse(row.updatedAt) <= atMs - L.idleOpenDays * DAY) {
         store.transaction(() => { const latest = store.get(K.cases, row.id); if (latest && open(latest) && latest.updatedAt === row.updatedAt) store.put(K.cases, row.id, { ...latest, status: 'closed', closedAt: at, closedBy: 'idle', revision: latest.revision + 1 }); });
@@ -737,7 +743,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     stop: async () => {
       stopped = true;
       // 아직 모델이 보지 못한 학생 글은 멈추기 전에 위험 낱말로 본다.
-      for (const job of translationQueue.splice(0)) if (job.judge) { try { const row = store.get(K.cases, job.caseId); const body = row && bodyOf(row); const m = job.messageId ? body?.messages.find(x => x.id === job.messageId) : null; const source = m ? m.text : body?.[job.field]; if (source) { judgeFallback(job.caseId, source); judged(job.caseId, job); } } catch { /* 멈추는 중 */ } }
+      for (const job of translationQueue.splice(0)) if (job.judge) { try { const row = store.get(K.cases, job.caseId); const body = row && bodyOf(row); const m = job.messageId ? body?.messages.find(x => x.id === job.messageId) : null; const source = m ? m.text : body?.[job.field]; if (source) { judgeFallback(job.caseId); judged(job.caseId, job); } } catch { /* 멈추는 중 */ } }
       livenessAbort.abort(); await translating; await livenessRun;
     },
   };

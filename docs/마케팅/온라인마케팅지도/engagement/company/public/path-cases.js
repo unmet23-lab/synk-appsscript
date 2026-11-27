@@ -4,6 +4,8 @@
 // 학생 글은 한국어 번역(있을 때)과 원문을 함께 보인다. 할 일 글은 이 화면에만 있고 오늘 할 일에는 링크만 간다.
 const pathCaseState={identity:'',request:0,loading:false,busy:'',attempted:false,data:null,error:'',selected:null,detail:null,forbidden:false,scope:'open',kind:'',reply:'',replyStudent:'',notes:{},newTask:'',erasure:null,folds:{},lastTarget:'',picking:false};
 const pathCaseKinds={urgent:'급함',act:'실제로 할 일',synk:'SYNK 일',stuck:'AI가 못 답함'};
+// 급함의 까닭: Claude가 위험 여부를 보지 못한 글은 「위험 확인 필요」로 보인다(낱말로 짐작하지 않는다).
+function pathCaseUrgentLabel(row){return row?.urgentWhy==='unchecked'?'위험 확인 필요':'급함';}
 const pathCaseStatus={new:'새 상담',reviewing:'보는 중',answered:'답 보냄',closed:'끝남'};
 const pathCaseTones={new:'wait',reviewing:'info',answered:'ok',closed:'off'};
 const pathCaseLangs={ko:'한국어',mn:'몽골어',en:'영어'};
@@ -61,7 +63,7 @@ async function pathCaseOpen(id,{quiet=false}={}){
   finally{if(identity===pathCaseIdentity()&&!quiet){s.loading=false;pathCaseRender();}}
 }
 // 고친 상세를 목록 줄에도 바로 옮긴다.
-function pathCaseAccept(item){const s=pathCaseState;if(!item?.id||!s.data)return;const keys=['status','urgent','assigneeId','assigneeName','openTasks','tasks','revision','updatedAt','closedAt','waiting','deadline','wants'];s.data.items=s.data.items.map(row=>row.id===item.id?{...row,...Object.fromEntries(keys.map(key=>[key,key==='tasks'&&Array.isArray(item.tasks)?item.tasks.length:item[key]]))}:row);}
+function pathCaseAccept(item){const s=pathCaseState;if(!item?.id||!s.data)return;const keys=['status','urgent','urgentWhy','assigneeId','assigneeName','openTasks','tasks','revision','updatedAt','closedAt','waiting','deadline','wants'];s.data.items=s.data.items.map(row=>row.id===item.id?{...row,...Object.fromEntries(keys.map(key=>[key,key==='tasks'&&Array.isArray(item.tasks)?item.tasks.length:item[key]]))}:row);}
 function pathCaseRows(){const s=pathCaseState,items=s.data?.items||[];return items.filter(row=>(s.scope==='all'||row.status!=='closed')&&(!s.kind||row.kind===s.kind));}
 function pathCasesNavCount(){const s=pathCaseState;if(!s.data||s.identity!==pathCaseIdentity())return null;const urgent=s.data.items.filter(row=>row.urgent&&row.status!=='closed').length;const fresh=s.data.items.filter(row=>row.status==='new').length;return urgent?{value:urgent,tone:'alert',label:'급함 상담'}:{value:fresh,tone:'',label:'새 상담'};}
 function pathCaseDay(value){if(!value)return '';const date=/^\d{4}-\d{2}-\d{2}$/.test(value)?new Date(value+'T00:00:00+09:00'):new Date(value);if(!Number.isFinite(date.getTime()))return '';return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric'}).format(date);}
@@ -78,14 +80,14 @@ function pathCasePromise(){return '<p class="pc-promise" role="note">입학 · �
 // 휴대폰 폭에서는 목록 대신 고른 상담 한 줄과 「바꾸기」를 보인다(문의 접수와 같은 틀). 고른 상담이 없으면 목록을 펼쳐 둔다.
 function pathCaseBand(){
   const s=pathCaseState,row=s.data.items.find(item=>item.id===s.selected);
-  return `<div class="mt-list-mobile"><span>${row?`<b>${escape(row.urgent&&row.status!=='closed'?'급함':pathCaseStatus[row.status]||'')}</b> · ${escape(pathCaseWants(row))}`:'고른 상담 없음'}</span>${s.data.items.length&&row?`<button type="button" class="btn small" data-pc-action="pick" aria-expanded="${s.picking}">${s.picking?'닫기':'바꾸기'}</button>`:''}</div>`;
+  return `<div class="mt-list-mobile"><span>${row?`<b>${escape(row.urgent&&row.status!=='closed'?pathCaseUrgentLabel(row):pathCaseStatus[row.status]||'')}</b> · ${escape(pathCaseWants(row))}`:'고른 상담 없음'}</span>${s.data.items.length&&row?`<button type="button" class="btn small" data-pc-action="pick" aria-expanded="${s.picking}">${s.picking?'닫기':'바꾸기'}</button>`:''}</div>`;
 }
 function pathCaseList(){
   const s=pathCaseState,rows=pathCaseRows(),items=s.data.items;
   const kinds=[['','모두'],...Object.entries(pathCaseKinds)].map(([id,label])=>`<button type="button" data-pc-action="kind" data-kind="${id}" aria-pressed="${s.kind===id}">${escape(label)} <b>${mtNum(items.filter(row=>(!id||row.kind===id)&&(s.scope==='all'||row.status!=='closed')).length)}</b></button>`).join('');
   const scope=[['open','처리 중'],['all','끝난 상담까지']].map(([id,label])=>`<button type="button" data-pc-action="scope" data-scope="${id}" aria-pressed="${s.scope===id}">${label}</button>`).join('');
   const item=row=>{const tone=row.status!=='closed'&&row.urgent?'alert':pathCaseTones[row.status]||'';const due=row.deadline?` · 기한 ${pathCaseDay(row.deadline)}`:'';const left=row.tasks?` · 남은 할 일 ${row.openTasks}`:'';
-    return `<button type="button" class="mt-item pc-item" data-pc-open="${escape(row.id)}" aria-current="${s.selected===row.id}">${mtLed(tone,row.urgent&&row.status!=='closed'?'급함':pathCaseStatus[row.status]||'')}<span><strong>${escape(pathCaseWants(row))}</strong><small><span class="mt-item-text">${escape(pathCaseKinds[row.kind]||'상담')}${escape(left)}${escape(due)}${row.waiting&&row.status!=='closed'?' · 학생 글 기다림':''}</span></small></span><span class="mt-item-end">${escape(pathCaseStatus[row.status]||'')}</span></button>`;};
+    return `<button type="button" class="mt-item pc-item" data-pc-open="${escape(row.id)}" aria-current="${s.selected===row.id}">${mtLed(tone,row.urgent&&row.status!=='closed'?pathCaseUrgentLabel(row):pathCaseStatus[row.status]||'')}<span><strong>${escape(pathCaseWants(row))}</strong><small><span class="mt-item-text">${escape(pathCaseKinds[row.kind]||'상담')}${escape(left)}${escape(due)}${row.waiting&&row.status!=='closed'?' · 학생 글 기다림':''}</span></small></span><span class="mt-item-end">${escape(pathCaseStatus[row.status]||'')}</span></button>`;};
   const empty=!rows.length?`<p class="mt-list-empty">${items.length?'고른 범위에 상담이 없어요.':'받은 상담이 없어요.'}</p>`:'';
   return `<aside class="mt-list pc-list" aria-label="상담 목록"><div class="mt-list-tools"><div class="mt-seg pc-kinds" role="group" aria-label="갈래">${kinds}</div><div class="mt-seg" role="group" aria-label="목록 범위">${scope}</div></div>${rows.map(item).join('')}${empty}</aside>`;
 }
@@ -99,9 +101,10 @@ function pathCaseDetail(){
   const s=pathCaseState,c=s.detail;
   if(!c||c.id!==s.selected)return `<div class="mt-detail"><div class="mt-detail-empty"><div><strong>${s.data.items.length?'목록에서 상담을 골라요':'받은 상담이 없어요'}</strong><p>급함이 맨 위에 오고, 그다음은 기한이 가까운 순서예요.</p></div></div></div>`;
   const lock=s.busy||s.loading?'disabled':'',closed=c.status==='closed';
-  const chips=`${c.urgent&&!closed?mtBadge('급함','alert'):''}${c.kind==='urgent'&&c.urgent&&!closed?'':mtBadge(pathCaseKinds[c.kind]||'상담',c.kind==='urgent'?'alert':'info')}${mtBadge(pathCaseStatus[c.status]||'',pathCaseTones[c.status])}${mtBadge('학생 말 · '+(pathCaseLangs[c.lang]||'모름'),'off')}${c.mode==='teen'?mtBadge('14~17세 · 보호자 동의','wait'):''}${c.hidden?mtBadge('학생이 계정 지우는 중 · 주인만 봄','off'):''}`;
+  const chips=`${c.urgent&&!closed?mtBadge(pathCaseUrgentLabel(c),'alert'):''}${c.kind==='urgent'&&c.urgent&&!closed?'':mtBadge(pathCaseKinds[c.kind]||'상담',c.kind==='urgent'?'alert':'info')}${mtBadge(pathCaseStatus[c.status]||'',pathCaseTones[c.status])}${mtBadge('학생 말 · '+(pathCaseLangs[c.lang]||'모름'),'off')}${c.mode==='teen'?mtBadge('14~17세 · 보호자 동의','wait'):''}${c.hidden?mtBadge('학생이 계정 지우는 중 · 주인만 봄','off'):''}`;
   const assign=c.canAssign&&!closed?`<label class="mt-field pc-assign"><span>담당</span><select data-pc-assign ${lock}>${(s.data.assignees||[]).map(a=>`<option value="${escape(a.id)}" ${a.id===c.assigneeId?'selected':''}>${escape(a.name)}</option>`).join('')}</select></label>`:`<p class="mt-note">담당 · ${escape(c.assigneeName||'정하지 않음')}</p>`;
-  const head=`<div class="mt-detail-head is-plain"><div><div class="mt-chips">${chips}</div><h2>${escape(pathCaseWants(c))}</h2>${assign}</div></div>`;
+  const unchecked=c.urgent&&!closed&&c.urgentWhy==='unchecked'?`<p class="mt-note" role="status">Claude가 학생 글의 위험 여부를 보지 못했어요. 글을 직접 읽고 위험하면 바로 연락해 주세요.</p>`:'';
+  const head=`<div class="mt-detail-head is-plain"><div><div class="mt-chips">${chips}</div><h2>${escape(pathCaseWants(c))}</h2>${unchecked}${assign}</div></div>`;
   const facts=`<dl class="mt-facts" data-cols="3"><div><dt>받은 때</dt><dd>${escape(pathCaseWhen(c.createdAt))}</dd></div><div><dt>가장 가까운 기한</dt><dd>${escape(c.deadline?pathCaseDay(c.deadline):'없음')}</dd></div><div><dt>고른 과정</dt><dd>${escape(c.program||'보내지 않음')}</dd></div></dl>`;
   const b=c.brief;
   const list=(rows,fn)=>rows?.length?`<ul class="pc-lines">${rows.map(row=>`<li>${fn(row)}</li>`).join('')}</ul>`:'<p class="mt-note">없어요.</p>';

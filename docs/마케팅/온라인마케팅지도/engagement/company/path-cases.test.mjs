@@ -123,7 +123,7 @@ test('스위치가 꺼지면 새 건 · 새 글은 막고 읽기 · 지우기 ·
   assert.equal(f.cases.studentCreate(allowed, f.urgent()).status, 201);
 });
 
-test('열린 건은 하나: 급함은 열린 건에 표시를 올리고 바로 알린다. 위험 낱말 글도 같다', t => {
+test('열린 건은 하나: 급함은 열린 건에 표시를 올리고 바로 알린다. 모델이 못 본 글은 「위험 확인 필요」로 알린다', t => {
   const f = fixture(t), s = f.student(), made = f.cases.studentCreate(s, f.handoff(s)).body.case;
   assert.equal(f.urgentCalls.length, 0);
   assert.throws(() => f.cases.studentCreate(s, f.teen()), code('CASE_OPEN_EXISTS'));
@@ -138,14 +138,20 @@ test('열린 건은 하나: 급함은 열린 건에 표시를 올리고 바로 �
   // 목록 맨 위는 급함.
   const s2 = f.student(); f.cases.studentCreate(s2, f.handoff(s2, { brief_ko: brief({ tasks: [{ do: '서류 보기', why: '사람 판단', by: '2026-12-01' }] }) }));
   assert.equal(f.cases.list(f.users.owner).items[0].id, made.id);
-  // 새 급함 건(열린 건 없음)과, 열린 건에 위험 낱말을 쓴 글.
+  // 새 급함 건(열린 건 없음)과, 번역기가 없을 때(모델이 위험 여부를 못 봄) 열린 건에 쓴 글.
   const s3 = f.student(), fresh = f.cases.studentCreate(s3, f.urgent()).body.case;
   assert.equal(fresh.kind, 'urgent'); assert.equal(fresh.urgent, true);
+  assert.equal(f.store.get(PATH_CASE_KINDS.cases, fresh.id).urgentWhy, 'danger');
   const s4 = f.student(), calm = f.cases.studentCreate(s4, f.teen()).body.case;
+  // 낱말로 짐작하지 않는다: 평범한 메모도 「위험 확인 필요」로 사람이 읽게 한다. 학생 화면에는 급함으로 보이지 않는다.
   assert.equal(calm.urgent, false);
-  f.cases.studentMessage(s4, calm.id, { request_id: randomUUID(), text: 'I am in danger, please help.' });
-  assert.equal(f.store.get(PATH_CASE_KINDS.cases, calm.id).urgent, true);
-  assert.equal(f.urgentCalls.length, 3);
+  assert.equal(f.store.get(PATH_CASE_KINDS.cases, calm.id).urgentWhy, 'unchecked');
+  const calls = f.urgentCalls.length;
+  f.cases.studentMessage(s4, calm.id, { request_id: randomUUID(), text: 'Thank you, see you tomorrow.' });
+  assert.equal(f.urgentCalls.length, calls + 1);
+  assert.equal(f.cases.list(f.users.owner).items.find(row => row.id === calm.id).urgentWhy, 'unchecked');
+  assert.ok(f.cases.notifications(f.users.owner).some(row => row.href.endsWith(calm.id) && row.title === 'PATH 위험 확인 필요'));
+  assert.equal(f.cases.studentList(s4).cases[0].urgent, false);
   // 상세를 열면 그 사람의 급함 알림은 읽음.
   f.cases.detail(f.users.owner, made.id);
   assert.equal(f.cases.notifications(f.users.owner).find(row => row.href.endsWith(made.id)).unread, false);
@@ -309,6 +315,12 @@ test('두 단계 지우기: 회사 주인의 확인 번호가 있어야 지우�
   f.cases.erase(f.users.owner, other.id, { revision: rev2, token: token2 });
   assert.equal(f.cases.erase(f.users.owner, other.id, { revision: rev2, token: token2 }).erased.purge, 'pending');
   assert.equal(f.cases.erase(f.users.owner, made.id, { revision: rev, token: fresh.token }).erased.purge, 'done');
+  // purged 칸이 없는 지운 줄(앞 판이 남긴 줄)은 다음 자르기 전까지 pending이다.
+  const old = { ...f.store.get(PATH_CASE_KINDS.tombstones, made.id) }; delete old.purged;
+  f.store.put(PATH_CASE_KINDS.tombstones, made.id, old);
+  assert.equal(f.cases.erase(f.users.owner, made.id, { revision: rev, token: fresh.token }).erased.purge, 'pending');
+  f.cases.maintain();
+  assert.equal(f.cases.erase(f.users.owner, made.id, { revision: rev, token: fresh.token }).erased.purge, 'done');
 });
 
 test('번역: 학생 글은 한국어 번역을 덧붙이고, 번역이 없으면 원문만 둔다', async t => {
@@ -394,7 +406,7 @@ test('검수 고침(11-27 ws-d): 한도 찬 건의 급함 글 · 상태의 허�
   assert.equal(f.store.count(PATH_CASE_KINDS.views), views + 1);
 });
 
-test('급함 판정: 학생 글의 위험은 번역 때 모델이 뜻으로 보고, 모델이 답하지 못하면 위험 낱말로 본다', async t => {
+test('급함 판정: 학생 글의 위험은 번역 때 모델이 뜻으로 보고, 모델이 답하지 못하면 「위험 확인 필요」로 올린다', async t => {
   // 모델이 위험이라 하면 급함을 올리고, 아니라 하면 위험 낱말이 있어도 올리지 않는다.
   const said = new Map([['간호사한테 예방주사 맞았어요', false], ['Тусламж хэрэгтэй, намайг айлгаж байна', true]]);
   const translator = { configured: () => true, translate: async (texts, { judge }) => (judge ? { translations: texts.map(x => '[번역] ' + x), danger: texts.map(x => said.get(x) === true) } : texts) };
@@ -407,16 +419,27 @@ test('급함 판정: 학생 글의 위험은 번역 때 모델이 뜻으로 보�
   await f.cases.waitForIdle();
   assert.equal(f.store.get(PATH_CASE_KINDS.cases, quiet.id).urgent, true);
   assert.equal(f.urgentCalls.length, 1);
-  // 모델이 답하지 못하면(null) 위험 낱말로 본다.
+  // 모델이 답하지 못하면(null) 낱말로 짐작하지 않고 「위험 확인 필요」로 올린다(평범한 글도).
   const down = { configured: () => true, translate: async () => null };
   const g = fixture(t, { translator: down }), u = g.student();
-  const hurt = g.cases.studentCreate(u, g.teen({ note: '집에서 아빠한테 맞았어요' })).body.case;
-  assert.equal(g.store.get(PATH_CASE_KINDS.cases, hurt.id).urgent, false, '모델 판정을 기다린다');
+  const plainNote = g.cases.studentCreate(u, g.teen({ note: '간호사한테 예방주사 맞았어요' })).body.case;
+  assert.equal(g.store.get(PATH_CASE_KINDS.cases, plainNote.id).urgent, false, '모델 판정을 기다린다');
   await g.cases.waitForIdle();
-  assert.equal(g.store.get(PATH_CASE_KINDS.cases, hurt.id).urgent, true);
-  // 번역기가 없으면 받을 때 바로 위험 낱말로 본다.
+  assert.equal(g.store.get(PATH_CASE_KINDS.cases, plainNote.id).urgent, true);
+  assert.equal(g.store.get(PATH_CASE_KINDS.cases, plainNote.id).urgentWhy, 'unchecked');
+  assert.equal(g.urgentCalls.length, 1);
+  // 번역기가 없으면 받을 때 바로 「위험 확인 필요」로 올린다.
   const h = fixture(t), v = h.student();
-  assert.equal(h.cases.studentCreate(v, h.teen({ note: '집에서 아빠한테 맞았어요' })).body.case.urgent, true);
+  const made = h.cases.studentCreate(v, h.teen({ note: '오늘 서류를 다 냈어요' })).body.case;
+  assert.equal(h.store.get(PATH_CASE_KINDS.cases, made.id).urgentWhy, 'unchecked');
+  assert.equal(h.urgentCalls.length, 1);
+  // 뒤에 모델이 위험이라고 보면 까닭은 danger로 바뀌고, danger는 unchecked로 내려가지 않는다.
+  const flip = { configured: () => true, translate: async (texts, { judge }) => (judge ? { translations: texts, danger: texts.map(() => true) } : texts) };
+  const k = fixture(t, { translator: flip }), w = k.student();
+  const hot = k.cases.studentCreate(w, k.teen({ note: 'Тусламж хэрэгтэй' })).body.case;
+  await k.cases.waitForIdle();
+  assert.equal(k.store.get(PATH_CASE_KINDS.cases, hot.id).urgentWhy, 'danger');
+  assert.equal(k.cases.studentList(w).cases[0].urgent, true);
 });
 
 test('지운 급함 상담도 하루 · 주 횟수에 든다(서버 메모리에만 7일, 지나면 버림)', t => {
