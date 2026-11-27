@@ -331,6 +331,7 @@ HA 쉬기를 유지했다. 감시기 정지 뒤 5분 관측 321건에서 실패�
 - 10-22 [현장 노트](../../../../현장노트/배포_공개.md)에 「원본 디스크는 HA 계획을 같이 고칠 때까지 둔다」(HA 계획 `data.preserveOldDisk`)가 있다.
 - 그래서 umount · fstab · HA 계획을 함께 고치는 다시 켜기 판에서 정리한다.
 - 도구의 옛 디스크 쓰기 길(스냅숏 · 떼기 · 지우기)은 막아 뒀다. 막은 까닭은 GPT P1 셋이다: 낡은 미사용 판정으로 떼기 · 옛 스냅숏 재사용 · 마운트 아래 열린 파일을 못 봄.
+- **11-28 지움(Claude, 유호님 11-27 「안쓰고있는거 다 없애도 돼」 · 「응, 접속해」):** 위 세 걱정을 그 자리에서 다시 봤다. `fuser -vm`에 열린 파일이 없었고, 다른 이름공간 일곱 곳(udev · networkd · haveged · resolved · timesyncd · logind · `synk-ha-node`)은 모두 호스트의 종속(master:76)이라 호스트의 umount가 그대로 퍼졌다. 쓰던 양은 3.9GB였다. 지우기 전에 스냅샷 `synk-company-data-original-20261128`(저장 4.2GB, 월 약 $0.2)을 새로 찍었다(옛 스냅샷은 다시 쓰지 않았다). 그 뒤 fstab 줄을 주석으로 막고(사본 `/etc/fstab.bak-20261128-old-data-disk`) umount → `systemctl daemon-reload` → API로 떼기 → 지우기 차례로 했다. 다 한 뒤에는 그 마운트를 보는 프로세스가 0이었고, `findmnt --verify` 오류 없음, 실패한 systemd 단위 없음, 컨테이너 셋 그대로였다. HA 계획 `deploy/ha/plan.json`의 `data.preserveOldDisk`는 이제 없는 디스크를 가리킨다. 그 칸을 읽는 코드는 없고(저장소 전체에서 찾음), 다시 켜기 판에서 그 칸을 뺀다.
 
 **감시기 외부 IP는 예약 주소가 아니다.**
 - 8.230.26.14였고, 정지하면서 풀렸다. 켜면 새 IP를 받는다.
