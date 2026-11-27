@@ -92,30 +92,39 @@ try{
   await page.locator('#auth-form [type="submit"]').click();await page.locator('#ws-office').waitFor();
   const navRow=page.locator('.ws-side [data-tab="students"]');check('company menu shows 학생 관리 under 회사',await navRow.count()===1&&(await navRow.textContent()).includes('학생 관리'));
   await navRow.click();await page.locator('.st-signin').waitFor();await capture('signin-1440.png');
-  await page.locator('[data-st-action="sign-in"]').click();await page.waitForURL(/tab=students/);await page.locator('.st-stats').waitFor();
+  await page.locator('[data-st-action="sign-in"]').click();await page.waitForURL(/tab=students/);await page.locator('.st-wrap').waitFor();
   check('after SYNK ID sign-in the page returns to 학생 관리, not LAB 수업',new URL(page.url()).searchParams.get('tab')==='students'&&!new URL(page.url()).searchParams.has('teachingConnected'));
-  const root=page.locator('#students-root');
-  check('branch chips show 전체 지점, the two open branches and 지점 미정 only',JSON.stringify(await root.locator('.st-chip').allTextContents())===JSON.stringify(['전체 지점','울란바토르 직영','한국 · 정착','지점 미정']),await root.locator('.st-chip').allTextContents());
+  const root=page.locator('#students-root'),chip=root.locator('[data-st-jelly="branch"]>button'),pressedChip=root.locator('[data-st-jelly="branch"]>button[aria-pressed="true"]');
+  check('branch pills show 전체 지점, the two open branches and 지점 미정 only',JSON.stringify(await chip.allTextContents())===JSON.stringify(['전체 지점','울란바토르 직영','한국 · 정착','지점 미정']),await chip.allTextContents());
   check('basis line names the three assigned classes',(await root.locator('.st-basis').textContent()).includes('배정된 반 3개 기준'));
-  const stat=async label=>(await root.locator('.st-stat',{hasText:label}).locator('.st-stat-v').textContent()).replace(/\s/g,'');
-  check('summary counts: two stay alerts (58 days, expired), one TOPIK alert (40 days), one streak',await stat('체류 만료 알림')==='2명'&&await stat('TOPIK 만료 알림')==='1명'&&await stat('연속 결석')==='1명',[await stat('체류 만료 알림'),await stat('TOPIK 만료 알림'),await stat('연속 결석')]);
-  const person=name=>root.locator('.st-person',{hasText:name});
-  check('오유나 shows the D-4 stay chip, the university attendance chip under 70%',/체류 D-4-1 만료 D-58/.test(await person('오유나').textContent())&&(await person('오유나').textContent()).includes('대학 출석 64%'));
-  check('간바 shows the TOPIK 4급 expiry and the mentor',(await person('간바').textContent()).includes('TOPIK 4급 만료 D-40')&&(await person('간바').textContent()).includes('멘토'));
-  check('바트 shows an expired stay first in the list',(await root.locator('.st-person').first().textContent()).includes('바트')&&(await person('바트').textContent()).includes('만료 2일 지남'));
-  check('오기 shows the five-session streak and low class attendance',(await person('오기').textContent()).includes('5회 연속 결석')&&(await person('오기').textContent()).includes('출석 0%'));
-  check('unshared learner is listed without records',(await root.locator('.st-person-off',{hasText:'사랑'}).textContent()).includes('공유 꺼짐'));
-  const journey=async label=>(await root.locator('.st-step',{hasText:label}).locator('.st-step-n').textContent()).replace(/\s/g,'');
-  check('journey counts: 어학원 6 · 입국 · 정착 2 · 한국 재학 2',await journey('어학원 재원')==='6명'&&await journey('입국 · 정착')==='2명'&&await journey('한국 재학')==='2명'&&await journey('PATH 수속')==='0명',[await journey('어학원 재원'),await journey('입국 · 정착'),await journey('한국 재학')]);
+  // 문장 요약: 찍은 반의 출석, 챙길 학생 수, 가장 급한 한 명만(시안 3).
+  const say=(await root.locator('.st-say').textContent()).replace(/\s+/g,' ');
+  check('the sentence counts 5 present of 7 recorded (71%), 4 students to look after, and names 오기 first',say.includes('찍은 반에서 5명이 왔어요')&&say.includes('71%예요')&&say.includes('챙길 학생은 4명이에요')&&say.includes('가장 급한 일은 오기 · 합성의 5회 연속 결석이에요'),say);
+  const row=(name,anchor)=>root.locator(`.st-ag[data-anchor="${anchor}"]`,{hasText:name});
+  const text=async locator=>(await locator.textContent()).replace(/\s+/g,' ');
+  check('agenda counts: two stay rows (58 days, expired), one TOPIK row (40 days), one streak row',await root.locator('.st-agenda .st-ag[data-anchor="stay"]').count()===2&&await root.locator('.st-agenda .st-ag[data-anchor="topik"]').count()===1&&await root.locator('.st-agenda .st-ag[data-anchor="streak"]').count()===1);
+  check('오유나 has a D-4-1 stay row at D-58 and a university attendance row under 70%',(await text(row('오유나','stay'))).includes('비자 D-4-1')&&(await text(row('오유나','stay'))).includes('D-58')&&(await text(row('오유나','attendance-university'))).includes('대학 출석 64%'));
+  check('간바 has the TOPIK II 4급 row at D-40 with the mentor',/TOPIK 만료.*TOPIK II 4급.*멘토.*D-40/.test(await text(row('간바','topik'))),await text(row('간바','topik')));
+  check('the agenda starts with 지금: 오기 streak first, 바트 expired stay inside 지금',(await root.locator('.st-ag-h').first().textContent())==='지금'&&(await text(root.locator('.st-agenda .st-ag').first())).includes('오기')&&(await root.locator('.st-agenda .st-ag').first().getAttribute('data-anchor'))==='streak'&&(await text(row('바트','stay'))).includes('2일 지남')&&(await text(row('바트','stay'))).includes('만료'));
+  check('오기 shows the five-session streak and low class attendance',(await text(row('오기','streak'))).includes('5회 이어서 결석')&&(await text(row('오기','attendance'))).includes('출석 0%'));
+  check('unshared learner is named as not recorded',(await root.locator('.st-off').textContent()).includes('사랑')&&(await root.locator('.st-off').textContent()).includes('기록하지 않아요'));
+  const stage=async label=>(await root.locator('[data-st-jelly="stage"]>button',{hasText:label}).locator('em').textContent()).trim();
+  check('journey pills: 모두 10 · 어학원 6 · 유학 수속 0 · 입국 · 정착 2 · 한국 재학 2',await stage('모두')==='10'&&await stage('어학원 재원')==='6'&&await stage('유학 수속')==='0'&&await stage('입국 · 정착')==='2'&&await stage('한국 재학')==='2',[await stage('모두'),await stage('어학원 재원'),await stage('입국 · 정착'),await stage('한국 재학')]);
+  check('only the first class still to mark gets the dark button',await root.locator('.st-go').count()===1&&(await root.locator('.st-cl').filter({has:page.locator('.st-go')}).locator('.st-cl-name').textContent())==='합성 한국 기수 2028 봄');
   await capture('overview-1440.png');await fits(1440);
+  // 검수자가 그림 밖에서도 화면 글을 읽게 보이는 글을 남긴다(카본 B1).
+  const saveText=async(name,locator=root)=>{const path=join(out,name);await writeFile(path,await locator.innerText());report.screenshots.push(path);};
+  await saveText('text-overview-1440.txt');
   // ── 지점 거르기 · 지점 정하기 ──
-  await root.locator('.st-chip',{hasText:'한국 · 정착'}).click();
-  check('Korea filter keeps only the Korea cohort class',JSON.stringify(await root.locator('.st-class-t b').allTextContents())===JSON.stringify(['합성 한국 기수 2028 봄']));
-  await root.locator('.st-chip',{hasText:'지점 미정'}).click();
+  await chip.filter({hasText:'한국 · 정착'}).click();
+  check('choosing a branch pill slides a jelly pill to it',await root.locator('[data-st-jelly="branch"]>.st-jelly').count()===1&&(await pressedChip.textContent())==='한국 · 정착');
+  check('Korea filter keeps only the Korea cohort class',JSON.stringify(await root.locator('.st-cl-name').allTextContents())===JSON.stringify(['합성 한국 기수 2028 봄']));
+  const settled=await page.waitForFunction(()=>!document.querySelector('.st-jelly'),null,{timeout:3000}).then(()=>true,()=>false);check('the moving pill is removed when it arrives',settled,await page.evaluate(()=>[...document.querySelectorAll('.st-jelly')].map(el=>[el.getAnimations().map(a=>a.playState+':'+a.currentTime),el.isConnected])));
+  await chip.filter({hasText:'지점 미정'}).click();
   await root.locator(`[data-st-branch-for="${weekend.class_id}"]`).selectOption(String(branches.get('ulaanbaatar')));
   await root.locator('.st-notice',{hasText:'반의 지점을 정했어요'}).waitFor();
   const [mapped]=await fx.sql`select b.branch_key from engine.synk_class_branches c join engine.synk_branches b using(branch_id) where c.class_id=${weekend.class_id}::uuid`;
-  check('choosing a branch stores it and 지점 미정 disappears',mapped?.branch_key==='ulaanbaatar'&&!(await root.locator('.st-chip').allTextContents()).includes('지점 미정'),mapped);
+  check('choosing a branch stores it and 지점 미정 disappears',mapped?.branch_key==='ulaanbaatar'&&!(await chip.allTextContents()).includes('지점 미정'),mapped);
   // 정해진 반에도 지점 고르기가 남고, 바꿀 때는 한 번 묻는다. 물음을 거절하면 그대로다(Fable 최종 F7).
   const weekendPick=root.locator(`[data-st-branch-for="${weekend.class_id}"]`);
   check('an assigned class keeps a branch picker showing its branch',await weekendPick.inputValue()===String(branches.get('ulaanbaatar')));
@@ -128,13 +137,14 @@ try{
   check('a class on a closed branch shows that branch as closed, not another branch',(await root.locator(`[data-st-branch-for="${fx.cls.class_id}"] option:checked`).textContent()).includes('울란바토르 직영 (닫힌 지점)'));
   await fx.sql`update engine.synk_branches set active=true where branch_key='ulaanbaatar'`;
   await root.locator('.st-basis [data-st-action="reload"]').click();await page.waitForFunction(()=>!students.loading);
-  check('with 지점 미정 gone the filter falls back to 전체 지점 and shows every class (카본 A4)',await root.locator('.st-chip[aria-pressed="true"]').textContent()==='전체 지점'&&await root.locator('.st-class').count()===3,await root.locator('.st-chip[aria-pressed="true"]').allTextContents());
-  await root.locator('.st-chip',{hasText:'전체 지점'}).click();
-  // ── 학생 카드: 엥흐(기록 없음)에게 재학 기록을 넣는다 ──
-  await person('엥흐').click();const card=page.locator('#st-card');await card.waitFor();
+  check('with 지점 미정 gone the filter falls back to 전체 지점 and shows every class (카본 A4)',await pressedChip.textContent()==='전체 지점'&&await root.locator('.st-cl').count()===3,await pressedChip.allTextContents());
+  // ── 학생 카드: 엥흐(기록 없음)는 「알림 없는 학생」에서 연다. 카드는 그 줄 아래에 펼쳐진다 ──
+  await root.locator('[data-st-action="others"]').click();
+  await row('엥흐','other').click();const card=root.locator('#st-card');await card.waitFor();
+  check('the card opens under the row that opened it',await row('엥흐','other').getAttribute('aria-expanded')==='true'&&await page.evaluate(()=>document.querySelector('.st-ag[aria-expanded="true"]').nextElementSibling?.id)==='st-card');
   await card.locator('[name=stage]').selectOption('enrolled');await card.locator('[name=visaKind]').selectOption('D-2-2');await card.locator('[name=university]').fill('합성대학교');
   await card.locator('[name=program]').fill('학부 1학년');await card.locator('[name=stayExpiresOn]').fill(addDays(d,100));await card.locator('[name=mentorStaffId]').selectOption(String(fx.users.teacher.id));
-  await capture('card-1440.png');
+  await card.scrollIntoViewIfNeeded();await capture('card-1440.png');await saveText('text-card-1440.txt',root.locator('.st-side'));
   // 출석률 칸이 0~100을 넘으면 브라우저 칸 검사가 저장을 막는다(카본 A1).
   await card.locator('[name=universityAttendance]').fill('150');await card.locator('[data-st-action="stay-save"]').click();await page.waitForTimeout(300);
   check('an out-of-range university attendance is stopped before saving',(await fx.sql`select 1 from engine.synk_learner_stay where learner_id=${K.엥흐.id}::uuid`).length===0&&await card.locator('[name=universityAttendance]').evaluate(el=>!el.validity.valid)&&await card.locator('[name=university]').inputValue()==='합성대학교');
@@ -143,9 +153,10 @@ try{
   await card.locator('[name=program]').press('Enter');await root.locator('.st-notice',{hasText:'재학 기록을 저장했어요'}).waitFor();
   const [saved]=await fx.sql`select stage,visa_kind,university,stay_expires_on::text as e,mentor_staff_id,revision from engine.synk_learner_stay where learner_id=${K.엥흐.id}::uuid`;
   check('card save stores the stay record with the class teacher as mentor',saved?.stage==='enrolled'&&saved.visa_kind==='D-2-2'&&saved.e===addDays(d,100)&&saved.mentor_staff_id===fx.users.teacher.id&&saved.revision===1,saved);
-  check('pressing Enter saved the record and kept the card open',await card.evaluate(el=>el.open));
+  check('pressing Enter saved the record and kept the card open',await card.count()===1&&await card.isVisible());
   check('the open card itself says the record was saved (Fable 최종 F4)',(await card.locator('.st-done').textContent()).includes('재학 기록을 저장했어요'));
-  check('the new 100-day stay alert appears without reload',(await person('엥흐').textContent()).includes('체류 D-2-2 만료 D-100')&&await stat('체류 만료 알림')==='3명');
+  check('the new 100-day stay row appears without reload and the card follows 엥흐 there',(await text(row('엥흐','stay'))).includes('D-100')&&(await text(row('엥흐','stay'))).includes('비자 D-2-2')&&await root.locator('.st-agenda .st-ag[data-anchor="stay"]').count()===3&&await row('엥흐','stay').getAttribute('aria-expanded')==='true');
+  check('focus stays in the field that was being typed in',await page.evaluate(()=>document.activeElement?.name)==='program');
   // 다른 곳에서 먼저 고쳤으면(판 충돌) 안내가 뜨고 쓰던 칸은 그대로 남는다(카본 A1). 다시 저장하면 새 판 위에 저장된다.
   await fx.sql`update engine.synk_learner_stay set revision=revision+1,note='다른 화면' where learner_id=${K.엥흐.id}::uuid`;
   await card.locator('[name=program]').fill('학부 2학년');await card.locator('[data-st-action="stay-save"]').click();
@@ -158,22 +169,67 @@ try{
   await card.locator('[data-st-action="stay-save"]:not([disabled])').click();
   let again;for(let i=0;i<50;i++){[again]=await fx.sql`select program,revision from engine.synk_learner_stay where learner_id=${K.엥흐.id}::uuid`;if(again?.revision===3)break;await page.waitForTimeout(100);}
   await card.locator('[data-st-action="stay-save"]:not([disabled])').waitFor();check('saving again after the conflict lands on the newer revision',again.program==='학부 2학년'&&again.revision===3,again);
+  // 카드가 다른 줄로 옮겨 간 뒤에도 펼친 그 줄을 다시 누르면 접힌다(카본 A1).
+  await row('엥흐','stay').click();
+  check('after the card followed 엥흐 to the stay row, pressing that row folds it',await card.count()===0&&await row('엥흐','stay').getAttribute('aria-expanded')==='false');
+  await row('엥흐','stay').click();await card.waitFor();
   await card.locator('.st-close').click();
-  check('closing the card returns focus to that student',await page.evaluate(()=>document.activeElement?.dataset?.learner)===K.엥흐.id);
+  check('closing the card returns focus to that student row',await page.evaluate(()=>[document.activeElement?.dataset?.learner,document.activeElement?.getAttribute('aria-expanded')])+''===[K.엥흐.id,'false']+'');
+  // 카드를 연 채 다른 곳에서 고치고 「새로 고침」하면 손대지 않은 칸은 새 값으로 바뀌고, 저장해도 남의 고침이 되돌아가지 않는다(Fable 최종 F1).
+  await row('간바','topik').click();await card.waitFor();
+  await fx.sql`update engine.synk_learner_stay set revision=revision+1,note='다른 담당 메모',stay_expires_on=${addDays(d,230)}::date where learner_id=${K.간바.id}::uuid`;
+  await root.locator('.st-basis [data-st-action="reload"]').click();await page.waitForFunction(()=>!students.loading);
+  check('after a reload the untouched card fields show the newer record',await card.locator('[name=note]').inputValue()==='다른 담당 메모'&&await card.locator('[name=stayExpiresOn]').inputValue()===addDays(d,230));
+  const [ganbaBefore]=await fx.sql`select revision from engine.synk_learner_stay where learner_id=${K.간바.id}::uuid`;
+  await card.locator('[name=program]').fill('학부 2학년');await card.locator('[data-st-action="stay-save"]').click();
+  await card.locator('.st-done',{hasText:'재학 기록을 저장했어요'}).waitFor();
+  const [ganba]=await fx.sql`select program,note,stay_expires_on::text as e,revision from engine.synk_learner_stay where learner_id=${K.간바.id}::uuid`;
+  check('saving only the changed field keeps the other person\'s newer note and date',ganba.program==='학부 2학년'&&ganba.note==='다른 담당 메모'&&ganba.e===addDays(d,230)&&ganba.revision===ganbaBefore.revision+1,ganba);
+  await card.locator('.st-close').click();await page.waitForFunction(()=>!students.card);
+  // 카드는 목록 안에 있으므로 다른 줄을 누르면 닫힌다. 쓰던 칸이 있으면 먼저 묻고, 거절하면 쓰던 그대로 남는다.
+  await row('간바','topik').click();await card.waitFor();await card.locator('[name=note]').fill('비자 연장 서류 확인');
+  asked='';page.once('dialog',dialog=>{asked=dialog.message();dialog.dismiss();});await row('바트','stay').click();await page.waitForTimeout(200);
+  check('opening another row with typed fields asks first; declining keeps the card and the typing',asked.includes('저장하지 않고')&&await row('간바','topik').getAttribute('aria-expanded')==='true'&&await card.locator('[name=note]').inputValue()==='비자 연장 서류 확인',asked);
+  // 쓰던 칸을 두고 「반에서 찍기」로 떠나려 해도 먼저 묻고, 거절하면 이 화면과 쓰던 칸이 남는다(Fable 최종 F2).
+  asked='';page.once('dialog',dialog=>{asked=dialog.message();dialog.dismiss();});await root.locator('.st-go, .st-go-quiet').first().click();await page.waitForTimeout(200);
+  check('leaving for a class with typed fields asks first; declining stays here',asked.includes('떠날까요')&&await page.evaluate(()=>state.tab)==='students'&&await card.locator('[name=note]').inputValue()==='비자 연장 서류 확인',asked);
+  asked='';page.once('dialog',dialog=>{asked=dialog.message();dialog.accept();});await card.locator('[name=note]').press('Escape');await page.waitForTimeout(200);
+  check('Esc asks the same, then folds the card and returns focus to its row',asked.includes('저장하지 않고')&&await card.count()===0&&await page.evaluate(()=>document.activeElement?.dataset?.anchor)==='topik');
+  // 문장 속 이름을 누르면 「챙길 차례」의 그 줄이 펼쳐지고 초점이 그리로 간다.
+  await root.locator('.st-say .st-name').click();await card.waitFor();
+  check('the name in the sentence opens that row and moves focus there',await row('오기','streak').getAttribute('aria-expanded')==='true'&&await page.evaluate(()=>document.activeElement?.dataset?.anchor)==='streak');
+  await page.keyboard.press('Escape');
+  check('Esc with focus on the open row folds the card (카본 A3)',await card.count()===0&&await page.evaluate(()=>document.activeElement?.dataset?.anchor)==='streak');
+  await row('오기','streak').click();await card.waitFor();await row('오기','streak').click();check('pressing the open row again folds it',await card.count()===0);
   // 카드를 연 채 다른 탭으로 가면 카드가 닫히고, 돌아오면 화면이 다시 선다(카본 A5).
-  await person('간바').click();await card.waitFor();
+  await row('간바','topik').click();await card.waitFor();
   await page.evaluate(()=>{state.tab='home';render();});await page.waitForTimeout(200);
-  check('leaving the tab closes the open student card',!(await page.evaluate(()=>document.getElementById('st-card')?.open))&&(await page.evaluate(()=>document.getElementById('st-card')?.textContent||'')).trim()==='');
-  await page.evaluate(()=>{state.tab='students';render();});await page.locator('#students-root .st-stats').waitFor();
-  await page.reload();await page.locator('.st-stats').waitFor();
-  check('after reload the saved record and alerts are still there',(await page.locator('#students-root .st-person',{hasText:'엥흐'}).textContent()).includes('학부 2학년'));
+  check('leaving the tab closes the open student card',await page.evaluate(()=>students.card===null&&!document.querySelector('[data-st-form]')));
+  await page.evaluate(()=>{state.tab='students';render();});await page.locator('#students-root .st-wrap').waitFor();
+  await page.reload();await page.locator('.st-wrap').waitFor();
+  check('after reload the saved record and alerts are still there',(await text(page.locator('#students-root .st-ag[data-anchor="stay"]',{hasText:'엥흐'}))).includes('학부 2학년'));
+  // 단계를 거르면 문장의 챙길 학생 수도 그 단계 기준이라고 말한다(카본 A2).
+  await root.locator('[data-st-jelly="stage"]>button',{hasText:'입국 · 정착'}).click();
+  const sayStage=(await root.locator('.st-say').textContent()).replace(/\s+/g,' ');
+  check('with a stage pill the sentence says the count is for that stage',sayStage.includes('입국 · 정착 학생 가운데 챙길 학생은 1명이에요')&&sayStage.includes('가장 급한 일은 바트 · 합성의'),sayStage);
+  await root.locator('[data-st-jelly="stage"]>button',{hasText:'모두'}).click();
+  // 공결만 찍힌 날은 「아직 찍은 반이 없어요」가 아니라 모두 공결이라고 말한다(카본 A5).
+  const excusedOnly=await page.evaluate(()=>{const keep=students.data;students.data={...keep,classes:keep.classes.map(c=>({...c,branchToday:c.branchToday&&{...c.branchToday,counts:{present:0,late:0,absent:0,excused:1,unrecorded:0}}}))};const vm=studentsModel();students.data=keep;const div=document.createElement('div');div.innerHTML=StudentsView.inner(vm);return div.querySelector('.st-say').textContent;});
+  check('a day with only excused marks says so, not that nothing was marked',excusedOnly.includes('모두 공결')&&!excusedOnly.includes('아직'),excusedOnly);
+  const tinyWide=await page.evaluate(()=>[...document.querySelectorAll('#students-root *')].filter(el=>el.getClientRects().length&&el.childElementCount===0&&el.textContent.trim()&&parseFloat(getComputedStyle(el).fontSize)<12).map(el=>el.textContent.trim().slice(0,20)));check('text stays 12px or larger at 1440',tinyWide.length===0,tinyWide);
   // ── 밤 바탕 · 390 폭 ──
   await page.evaluate(()=>document.documentElement.setAttribute('data-lobby-theme','night'));await page.waitForTimeout(150);await capture('overview-night-1440.png');
   await page.evaluate(()=>document.documentElement.removeAttribute('data-lobby-theme'));
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(200);await fits(390);await capture('overview-390.png');
-  await page.locator('#students-root .st-alerts').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));await page.waitForTimeout(100);await capture('alerts-390.png');
+  // 첫 화면만이 아니라 쪽 전체도 찍는다(카본 B3).
+  await capture('overview-390-full.png',{full:true});await saveText('text-overview-390.txt');
+  await page.locator('#students-root .st-side').evaluate(element=>element.scrollIntoView({block:'start',behavior:'instant'}));await page.waitForTimeout(100);await capture('alerts-390.png');
   const tiny=await page.evaluate(()=>[...document.querySelectorAll('#students-root *')].filter(el=>el.getClientRects().length&&el.childElementCount===0&&el.textContent.trim()&&parseFloat(getComputedStyle(el).fontSize)<12).map(el=>el.textContent.trim().slice(0,20)));check('text stays 12px or larger at 390',tiny.length===0,tiny);
-  await page.locator('#students-root .st-person',{hasText:'오유나'}).click();await page.locator('#st-card').waitFor();await fits(390);await capture('card-390.png');
+  await page.locator('#students-root .st-ag[data-anchor="stay"]',{hasText:'오유나'}).click();await page.locator('#st-card').waitFor();await page.locator('#st-card').scrollIntoViewIfNeeded();await fits(390);await capture('card-390.png');
+  // 재학 기록을 지우면 지우기 단추가 사라져도 초점은 열린 카드에 남는다(카본 A4).
+  page.once('dialog',dialog=>dialog.accept());await page.locator('#st-card [data-st-action="stay-delete"]').click();
+  await page.locator('#st-card .st-done',{hasText:'재학 기록을 지웠어요'}).waitFor();
+  check('deleting a record keeps focus inside the open card',(await fx.sql`select 1 from engine.synk_learner_stay where learner_id=${K.오유나.id}::uuid`).length===0&&await page.evaluate(()=>Boolean(document.activeElement?.closest?.('#st-card'))));
   // 수업 서버가 학생 기록을 붙이지 못한 응답은 「아직 열리지 않았어요」가 아니라 「불러오지 못했어요」와 다시 불러오기다(Fable 최종 F3).
   const skipped=await page.evaluate(()=>{const keep=students.data;students.data={...keep,students:undefined,studentsUnavailable:true};const vm=studentsModel();students.data=keep;return vm;});
   check('a response without student records is shown as not loaded, not as closed',skipped.phase==='closed'&&skipped.closed.unavailable===true&&(await page.evaluate(vm=>{const div=document.createElement('div');div.innerHTML=StudentsView.inner(vm);return div.textContent;},skipped)).includes('불러오지 못했어요'),skipped);
@@ -181,7 +237,7 @@ try{
   check('the reload button in that state shows it is working (Fable 다시 검수 FA3)',busy.includes('다시 확인하는 중이에요')&&busy.includes('disabled'),busy);
   // 회사 세션이 끝나면(401 → 로그인 화면) 열린 학생 카드와 학생 자료가 바로 지워진다(Fable 최종 F1).
   await page.evaluate(()=>{state.user=null;state.csrf='';state.data=null;renderAuth();});await page.waitForTimeout(200);
-  check('a company session ending closes and empties the student card and drops student data',await page.evaluate(()=>!document.getElementById('st-card')?.open&&!(document.getElementById('st-card')?.textContent||'').trim()&&students.data===null));
+  check('a company session ending closes and empties the student card and drops student data',await page.evaluate(()=>!document.querySelector('[data-st-form]')&&students.card===null&&students.data===null));
   check('browser has no page errors',report.errors.length===0,report.errors);check('browser has no console errors',report.consoleErrors.length===0,report.consoleErrors);check('all assets load',report.assetErrors.length===0,report.assetErrors);check('no failed API or document responses',report.httpErrors.length===0,report.httpErrors);check('no unexpected external requests',report.unexpectedRequests.length===0,report.unexpectedRequests);
   report.ok=true;
 }catch(error){report.ok=false;report.failure=error.stack;process.exitCode=1;if(page)try{await capture('failure-viewport.png');report.failureText=(await page.locator('body').innerText()).slice(0,8000);}catch{}}
