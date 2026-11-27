@@ -20,7 +20,7 @@
     ['06:00', '검사를 마친 고침을 묶어 회사 서버에 올립니다.', 'Bundles fixes that passed their checks and ships them to the company server.', 1, '#1B1A17'],
     ['07:00', '며칠 뒤 올릴 SNS 편을 기획부터 영상까지 만듭니다.', 'Makes the social posts going out in a few days, from the plan to the finished video.', 1, '#F96859'],
     ['09:10', '몽골어로 만든 편을 다른 나라 말 판본으로 옮깁니다.', 'Turns posts made in Mongolian into versions for other languages.', 1, '#F96859'],
-    ['10:40', '유학 앱에서 접수 마감이 다가온 대학을 찾아 알립니다.', 'Finds universities in the study abroad app whose application deadlines are close, and sends a reminder.', 0, '#526956'],
+    ['10:40', '유학 앱에서 접수 마감이 다가온 대학을 찾아 팀에 알립니다.', 'Finds universities in the study abroad app whose application deadlines are close, and alerts the team.', 0, '#526956'],
     ['14:00', '계정마다 오늘 편을 검사하고 올립니다.', 'Checks today’s post for each account and publishes it.', 0, '#F96859'],
     ['18:30', '지난 하루 메일에서 공모와 심사 결과, 계정 경고를 골라 보고합니다.', 'Goes through the last day’s email and reports contest results, review decisions and account warnings.', 0, '#1B1A17'],
     ['19:30', '잘된 영상과 댓글을 읽고 다음 기획 후보를 고릅니다.', 'Reads the videos and comments that did well and shortlists what to make next.', 0, '#99295D'],
@@ -86,7 +86,9 @@
       el.querySelector('.n').textContent = String(pos + 1).padStart(2, '0');
       el.setAttribute('aria-label', pos === 0 ? T.front(CARDS[idx].title) : T.nth(pos + 1, CARDS[idx].title));
     });
-    cnt.textContent = T.count(CARDS.length, CARDS[order[0]].co);
+    // 보이는 줄은 짧게, 맨 앞 카드 제목은 읽기 프로그램만 읽는다. 크기만 바뀐 때는 다시 넣지 않는다
+    const top = CARDS[order[0]], seen = T.count(CARDS.length, top.co);
+    if (cnt.dataset.top !== String(order[0])) { cnt.dataset.top = String(order[0]); cnt.textContent = seen; const vh = document.createElement('span'); vh.className = 'vh'; vh.textContent = ', ' + top.title; cnt.append(vh); }
   }
   $('#nextCard').addEventListener('click', () => { order = [...order.slice(1), order[0]]; lay(); });
   addEventListener('resize', lay); lay();
