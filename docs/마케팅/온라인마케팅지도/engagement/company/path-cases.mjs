@@ -119,7 +119,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   /* ── 급함과 알림 ── 알림 줄에는 「PATH 급함 상담」과 링크만 싣는다. */
   function raiseUrgent(row, at) {
-    const target = assigneeOf(row) || workspaceOwner(store)?.id || null;
+    // 담당이 지금 일할 수 있는 계정이 아니면(끝난 건의 꺼진 담당 포함) 회사 주인에게 알린다.
+    const target = (row.assigneeId && eligible(row.assigneeId) ? row.assigneeId : null) || workspaceOwner(store)?.id || null;
     if (target) { const id = randomUUID(); store.put(K.alerts, id, { id, userId: target, caseId: row.id, createdAt: at, readAt: null }); }
     return { row: { ...row, urgent: true, urgentAt: at }, target };
   }
