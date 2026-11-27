@@ -194,8 +194,13 @@ test('건 만들기: 넘김 · 급함 · 14~17세 셋만 받고, 다시 다듬�
     brief_ko: brief.ko, brief_student: brief.student, deadline: brief.deadline, edits: [], note: null, conversation: [{ role: 'student', text: '같이 해 주세요' }] };
   const r = validateCaseRequest(req, now);
   assert.equal(r.kind, 'act');
-  assert.equal(briefHashInput(r.brief_ko), briefHashInput(brief.ko));
-  assert.equal(validateCaseRequest({ mode: 'urgent', request_id: UUID, lang: 'ko', consent: CASE_CONSENT_VERSION, age: 'teen', last: '맞고 있어요' }, now).kind, 'urgent');
+  assert.equal(briefHashInput(r.brief_ko, r.deadline), briefHashInput(brief.ko, brief.deadline));
+  // 기한은 증표가 묶는다: 같은 요약이라도 기한이 다르면 해시 입력이 다르다.
+  assert.notEqual(briefHashInput(brief.ko, '2027-01-13'), briefHashInput(brief.ko, '2027-01-14'));
+  assert.equal(validateCaseRequest({ mode: 'urgent', request_id: UUID, lang: 'ko', consent: CASE_CONSENT_VERSION, age: 'teen', guardian: true, last: '맞고 있어요' }, now).kind, 'urgent');
+  // 14~17세 급함은 보호자 확인이 있어야 받는다.
+  assert.throws(() => validateCaseRequest({ mode: 'urgent', request_id: UUID, lang: 'ko', consent: CASE_CONSENT_VERSION, age: 'teen', guardian: false, last: null }, now), { code: 'CASE_BAD_REQUEST' });
+  assert.throws(() => validateCaseRequest({ mode: 'urgent', request_id: UUID, lang: 'ko', consent: CASE_CONSENT_VERSION, age: 'adult', last: null }, now), { code: 'CASE_BAD_REQUEST' });
   assert.equal(validateCaseRequest({ mode: 'teen', request_id: UUID, lang: 'mn', consent: CASE_CONSENT_VERSION, age: 'teen', guardian: true, kind: 'act', note: '전북대 지원' }, now).kind, 'act');
   assert.throws(() => validateCaseRequest({ mode: 'teen', request_id: UUID, lang: 'mn', consent: CASE_CONSENT_VERSION, age: 'teen', guardian: false, kind: 'act', note: 'x' }, now), { code: 'CASE_BAD_REQUEST' });
   assert.throws(() => validateCaseRequest({ mode: 'teen', request_id: UUID, lang: 'mn', consent: CASE_CONSENT_VERSION, age: 'teen', guardian: true, kind: 'urgent', note: 'x' }, now), { code: 'CASE_BAD_REQUEST' });
@@ -222,4 +227,33 @@ test('숫자 대조는 여덟 개 넘는 근거와 못 찾은 답이 단 근거�
   assert.equal(r.answer.cites.length, 8);
   const nf = settleAnswer(checkAskOutput(out({ found: false, cites: ['rule-d2-local'], answer: '생활비 자료는 없지만 재정 증명은 1,600만 원이에요.' })), { index, history: [], question: '생활비?' });
   assert.equal(nf.blocked, null);
+});
+
+test('가리기: 소문자 여권번호와 차세대 한국 여권(M123A4567)도 가린다', () => {
+  for (const t of ['여권은 ab1234567이에요', 'passport m123a4567', '여권 M123A4567']) assert.ok(hasIdNumber(t), t);
+  assert.equal(hasIdNumber('TOPIK 3급, 2027년 3월'), false);
+});
+
+test('글 다듬기는 두 번 해도 같다(빈칸만 있는 줄 사이)', () => {
+  const once = cleanText('첫 줄\n  \n \n\n둘째 줄');
+  assert.equal(cleanText(once), once);
+});
+
+test('위험 낱말: 직접적인 영어 위기 표현', () => {
+  for (const t of ['I want to die.', 'I don\'t want to live anymore']) assert.equal(looksUrgent(t), true, t);
+});
+
+test('금액: 「82만 500원」은 한 수로 읽어 「82만 원」을 근거로 치지 않는다', () => {
+  assert.deepEqual(strayNumbers('장학금은 82만 원이에요.', ['장학금 820,500원(82만 500원)']), ['820000']);
+  assert.deepEqual(strayNumbers('장학금은 820,500원이에요.', ['장학금 820,500원(82만 500원)']), []);
+});
+
+test('넘김 요약 요청: 학생 글에 가리지 않은 번호가 있으면 받지 않는다', () => {
+  const req = { request_id: UUID, lang: 'mn', age: 'adult', consent: ASK_CONSENT_VERSION, kind: 'act', history: [{ role: 'student', text: '여권은 E1234567이에요' }, ai({ kind: 'act' })] };
+  assert.throws(() => validateBriefRequest(req), { code: 'BRIEF_BAD_REQUEST' });
+});
+
+test('서버 답: 전체가 쉬는 paused도 다시 여는 때를 준다', () => {
+  assert.equal(validateAskReply({ status: 'paused', reopens_at: 1764288000000 }).status, 'paused');
+  assert.throws(() => validateAskReply({ status: 'paused' }), { code: 'ASK_BAD_REPLY' });
 });

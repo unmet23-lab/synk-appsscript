@@ -46,17 +46,19 @@ export function createPathStudentRoutes({ pathCases, identity, clientAddress, st
     const caseRoute = CASE.exec(path);
     if (path !== PREFIX + 'cases' && !caseRoute) throw fail(404, 'PATH_STUDENT_PATH', '주소를 확인해 주세요.');
     perAddress.reserve(clientAddress(req));
-    const student = await identity.verify(req);
+    // 몸이 있는 요청은 몸을 다 받은 뒤에 토큰을 확인한다(받는 사이 만료 · 철회된 토큰으로 쓰지 않게).
     if (path === PREFIX + 'cases') {
-      if (method === 'GET') return write(res, 200, pathCases.studentList(student));
+      if (method === 'GET') return write(res, 200, pathCases.studentList(await identity.verify(req)));
       if (method !== 'POST') throw fail(405, 'PATH_STUDENT_METHOD', '요청 방법을 확인해 주세요.');
-      const result = pathCases.studentCreate(student, await readJson(req, MAX_REQUEST_BYTES));
+      const body = await readJson(req, MAX_REQUEST_BYTES);
+      const result = pathCases.studentCreate(await identity.verify(req), body);
       return write(res, result.status, result.body);
     }
     const [, id, action] = caseRoute;
-    if (!action && method === 'DELETE') return write(res, 200, pathCases.studentDelete(student, id));
+    if (!action && method === 'DELETE') return write(res, 200, pathCases.studentDelete(await identity.verify(req), id));
     if (action && method === 'POST') {
       const input = await readJson(req, 8192);
+      const student = await identity.verify(req);
       if (action === 'messages') return write(res, 200, pathCases.studentMessage(student, id, input));
       if (input && typeof input === 'object' && !Array.isArray(input) && Object.keys(input).length === 0) return write(res, 200, pathCases.studentRead(student, id));
       throw fail(400, 'PATH_STUDENT_BODY', '읽음 요청을 확인해 주세요.');

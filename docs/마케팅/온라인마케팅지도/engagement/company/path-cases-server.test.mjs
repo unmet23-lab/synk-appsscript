@@ -53,7 +53,7 @@ async function fixture(t, { env = {} } = {}) {
     return { status: response.status, data: await response.json() };
   }
   function handoff(who) {
-    const ticket = { sub: who.synkUserId, kind: 'act', exp: Date.now() + 9 * 60000, nonce: randomUUID(), brief_hash: createHash('sha256').update(briefHashInput(brief)).digest('hex') };
+    const ticket = { sub: who.synkUserId, kind: 'act', exp: Date.now() + 9 * 60000, nonce: randomUUID(), brief_hash: createHash('sha256').update(briefHashInput(brief, '2027-01-15')).digest('hex') };
     ticket.sig = createHmac('sha256', KEY).update(ticketPayload(ticket)).digest('base64url');
     return { mode: 'handoff', request_id: randomUUID(), lang: 'mn', consent: CASE_CONSENT_VERSION, ticket, brief_ko: brief, brief_student: brief, deadline: '2027-01-15', edits: [], note: null };
   }

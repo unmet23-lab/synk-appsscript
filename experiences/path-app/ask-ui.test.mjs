@@ -53,7 +53,8 @@ test('고정 카드: 로그인 · 동의 · 나이 · 스위치 없이도 입구
 });
 
 test('급함 고정 꼴: 18세 이상 · 14~17세만, 고른 경우 마지막 글 한 개를 가려서', () => {
-  const b = urgentCase({ requestId: UUID, lang: 'ko', age: 'teen', last: '여권 AB1234567 을 뺏겼어요' });
+  assert.throws(() => urgentCase({ requestId: UUID, lang: 'ko', age: 'teen', last: null }), '14~17세는 보호자 확인이 있어야 한다');
+  const b = urgentCase({ requestId: UUID, lang: 'ko', age: 'teen', guardian: true, last: '여권 AB1234567 을 뺏겼어요' });
   assert.equal(b.mode, 'urgent'); assert.equal(b.consent, CASE_CONSENT_VERSION);
   assert.doesNotMatch(b.last, /AB1234567/);
   assert.equal(urgentCase({ requestId: UUID, lang: 'en', age: 'adult' }).last, null);
@@ -119,13 +120,16 @@ test('서명 그대로: 다음 요청의 대화에 서버가 준 AI 차례를 �
 
 test('상태별 안내: 여섯 상태와 실패마다 학생 말 안내가 있고, 급함 · 위험 낱말은 고정 카드를 연다', () => {
   for (const s of ASK_STATUSES.filter((x) => x !== 'done' && x !== 'urgent')) {
-    const reply = s === 'limit' ? { status: s, reopens_at: 1764288000000 } : { status: s };
+    const reply = s === 'limit' || s === 'paused' ? { status: s, reopens_at: 1764288000000 } : { status: s };
     const out = askOutcome(reply, null, '전북대 조건');
     assert.equal(out.notice, s); assert.equal(out.keep, false); assert.ok(M[s], s);
     const html = renderAsk(base({ ask: { ...base().ask, notice: s } }));
     assert.ok(html.includes(M[s][0]), s);
   }
   assert.equal(askOutcome({ status: 'unavailable' }, null, 'x').off, true);
+  // 전체가 쉬는 날(paused)은 물어보기를 끄지 않고 대화 화면에 다시 여는 때를 보인다.
+  const paused = askOutcome({ status: 'paused', reopens_at: 1764288000000 }, null, 'x');
+  assert.equal(paused.off, false); assert.equal(paused.reopensAt, 1764288000000);
   assert.equal(askOutcome(null, Object.assign(new Error('x'), { code: 'NETWORK' }), 'x').notice, 'lost');
   assert.equal(askOutcome(null, Object.assign(new Error('x'), { code: 'NETWORK' }), '죽고 싶어요').openCard, true);
   assert.equal(askOutcome({ status: 'blocked', reason: 'x' }, null, 'I want to kill myself').openCard, true);
@@ -244,4 +248,12 @@ test('몽골어 줄: 검수 전에는 화면에 내지 않고, 모든 글에 세
   assert.doesNotMatch(renderAsk(base({ urgent: { open: true } })), /class="sx-mn"/);
   assert.match(renderAsk({ ...base(), mn: true }), /class="sx-mn" lang="mn"/);
   for (const [k, v] of Object.entries(M)) { assert.equal(v.length, 3, k); for (const x of v) assert.ok(typeof x === 'string' && x.trim(), k); }
+});
+
+test('검수 고침(11-27): 넘김 요약 · 고친 줄의 급함 답은 위험해요 카드로, 내 상담의 지울 날을 읽는다', () => {
+  assert.deepEqual(briefOutcome({ status: 'urgent', turn: turn({ type: 'safety', kind: 'urgent' }) }, null), { urgent: true });
+  assert.throws(() => editsWithKo([{ field: 'task', index: 0, text: 'I am in danger', text_ko: null }], 'en', { status: 'urgent' }), { code: 'BRIEF_URGENT' });
+  const list = readCases({ cases: [{ id: UUID, kind: 'act', status: 'closed', created_at: '2026-08-01T00:00:00Z', wants: 'x', messages: [], unread: 0, delete_at: '2026-11-30T00:00:00Z', delete_soon: true }] });
+  assert.equal(list[0].delete_soon, true); assert.equal(list[0].delete_at, '2026-11-30T00:00:00Z');
+  assert.match(renderCases({ lang: 'ko', cases: { phase: 'ok', list, text: {} } }), /곧 저절로 지워져요/);
 });

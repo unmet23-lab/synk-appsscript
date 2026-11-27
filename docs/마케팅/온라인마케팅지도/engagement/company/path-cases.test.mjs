@@ -35,8 +35,8 @@ function fixture(t, { env: extraEnv = {}, start = '2026-11-27T01:00:00.000Z', fe
     onUrgent: (row, target) => urgentCalls.push({ id: row.id, target }), ownerAlert: text => ownerAlerts.push(text), onChange: ids => changes.push(ids) });
   t.after(() => { store.close(); assert.equal(dirname(resolve(directory)), resolve(tmpdir())); assert.ok(basename(directory).startsWith('synk-path-cases-')); rmSync(directory, { recursive: true, force: true }); });
   const student = (id = randomUUID()) => ({ synkUserId: id, subject: randomUUID(), name: '지어낸 학생' });
-  function ticketFor(who, briefKo, o = {}) {
-    const t = { sub: who.synkUserId, kind: 'act', exp: stamp + 9 * 60000, nonce: randomUUID(), brief_hash: createHash('sha256').update(briefHashInput(briefKo)).digest('hex'), ...o };
+  function ticketFor(who, briefKo, o = {}, deadline = '2027-01-15') {
+    const t = { sub: who.synkUserId, kind: 'act', exp: stamp + 9 * 60000, nonce: randomUUID(), brief_hash: createHash('sha256').update(briefHashInput(briefKo, deadline)).digest('hex'), ...o };
     return { ...t, sig: createHmac('sha256', KEY).update(ticketPayload(t)).digest('base64url') };
   }
   function handoff(who, o = {}) {
@@ -44,7 +44,7 @@ function fixture(t, { env: extraEnv = {}, start = '2026-11-27T01:00:00.000Z', fe
     return { mode: 'handoff', request_id: o.request_id || randomUUID(), lang: o.lang || 'mn', consent: CASE_CONSENT_VERSION, ticket, brief_ko: o.sendBrief || briefKo,
       brief_student: brief({ situation: 'Монголд сургуулиа төгссөн.', wants: 'Бичиг баримтаа хамт бэлдээрэй.' }), deadline: '2027-01-15', edits: o.edits || [], note: null, ...(o.extra || {}) };
   }
-  const urgent = (o = {}) => ({ mode: 'urgent', request_id: randomUUID(), lang: 'mn', consent: CASE_CONSENT_VERSION, age: 'adult', last: null, ...o });
+  const urgent = (o = {}) => ({ mode: 'urgent', request_id: randomUUID(), lang: 'mn', consent: CASE_CONSENT_VERSION, age: 'adult', guardian: false, last: null, ...o });
   const teen = (o = {}) => ({ mode: 'teen', request_id: randomUUID(), lang: 'mn', consent: CASE_CONSENT_VERSION, age: 'teen', guardian: true, kind: 'act', note: 'Сургуульд орох талаар асуумаар байна.', ...o });
   return { store, cases, env, users, student, ticketFor, handoff, urgent, teen, urgentCalls, ownerAlerts, changes, advance: ms => { stamp += ms; }, now: () => stamp };
 }
@@ -315,4 +315,32 @@ test('번역: 학생 글은 한국어 번역을 덧붙이고, 번역이 없으�
   const g = fixture(t), s2 = g.student(), plain = g.cases.studentCreate(s2, g.teen()).body.case;
   await g.cases.waitForIdle();
   assert.equal(g.cases.detail(g.users.owner, plain.id).case.noteKo, null);
+});
+
+test('검수 고침(11-27): 허용 목록 · 기한 · 학생이 뺀 할 일 · 급함 알림 넘기기 · 접수 줄 · 한도 찬 급함 글', t => {
+  // 허용 목록에 SYNK ID 꼴이 아닌 값이 하나라도 있으면 아무도 받지 않는다.
+  const f = fixture(t, { env: { PATH_CASES_ALLOW: 'not-a-uuid' } }), s = f.student();
+  assert.throws(() => f.cases.studentCreate(s, f.handoff(s)), code('PATH_CASES_NOT_ALLOWED'));
+  f.env.PATH_CASES_ALLOW = s.synkUserId + ', typo';
+  assert.throws(() => f.cases.studentCreate(s, f.handoff(s)), code('PATH_CASES_NOT_ALLOWED'));
+  delete f.env.PATH_CASES_ALLOW;
+  // 증표는 기한까지 묶는다: 기한을 바꿔 보내면 거절한다.
+  const moved = f.handoff(s); moved.deadline = '2027-01-14';
+  assert.throws(() => f.cases.studentCreate(s, moved), code('CASE_TICKET_BRIEF'));
+  // 학생이 첫 할 일을 빼면 직원 상세와 남은 할 일에서 빠진다.
+  const made = f.cases.studentCreate(s, f.handoff(s, { edits: [{ field: 'task', index: 0, text: '', text_ko: null }] }));
+  const id = made.body.case.id;
+  const d = f.cases.detail(f.users.owner, id).case;
+  assert.equal(d.tasks.length, brief().tasks.length - 1);
+  // 접수 줄에는 SYNK ID를 그대로 두지 않는다.
+  assert.ok(f.store.all(PATH_CASE_KINDS.intake).every(row => row.synkUserId !== s.synkUserId));
+  // 급함 건을 다른 담당에게 넘기면 새 담당이 급함 알림을 받고, 볼 수 없게 된 사람의 알림은 보이지 않는다.
+  const u = f.student(), urgentCase = f.cases.studentCreate(u, f.urgent()).body.case;
+  const before = f.cases.detail(f.users.owner, urgentCase.id).case;
+  f.cases.assign(f.users.owner, urgentCase.id, { revision: before.revision, assigneeId: f.users.counselor.id });
+  assert.ok(f.cases.notifications(f.users.counselor).some(n => n.href.includes(urgentCase.id)));
+  assert.equal(f.cases.notifications(f.users.counselor2).length, 0);
+  // 지운 건은 접수 줄과 잇지 않는다.
+  f.cases.studentDelete(s, id);
+  assert.ok(f.store.all(PATH_CASE_KINDS.intake).every(row => row.caseId !== id));
 });

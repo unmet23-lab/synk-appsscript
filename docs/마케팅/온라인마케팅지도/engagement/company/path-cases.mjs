@@ -30,6 +30,8 @@ const plain = value => value !== null && typeof value === 'object' && !Array.isA
 const onlyKeys = (value, keys) => plain(value) && Object.keys(value).every(key => keys.includes(key));
 const kstDay = iso => new Date(Date.parse(iso) + 9 * HOUR).toISOString().slice(0, 10);
 const goodText = (value, max) => typeof value === 'string' && value === cleanText(value) && value.length > 0 && [...value].length <= max;
+// 직원이 붙여 넣은 글(들여쓰기 · 겹친 빈칸)은 다듬은 뒤 길이만 본다. 맞지 않으면 null.
+const tidyText = (value, max) => { if (typeof value !== 'string') return null; const text = cleanText(value); return text.length > 0 && [...text].length <= max ? text : null; };
 export const pathCaseHref = id => '/?tab=workroom&section=tools&tool=path-cases&caseId=' + encodeURIComponent(id);
 const shapeFault = error => { if (typeof error?.code === 'string' && /^[A-Z_]{3,60}$/.test(error.code)) return fail(400, error.code, '보낸 상담의 꼴이 맞지 않아요. 앱을 새로 연 뒤 다시 보내 주세요.'); return error; };
 
@@ -40,7 +42,10 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   const nowMs = () => Date.parse(now());
   const confirmKey = createHmac('sha256', store.key).update('path-case-erase-confirm\0v1').digest();
   const enabled = () => env.PATH_CASES_ENABLED === 'true';
-  const allowList = () => String(env.PATH_CASES_ALLOW || '').split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(value => UUID.test(value));
+  // 허용 목록을 적었으면 그 계정만 받는다. 적은 값 가운데 하나라도 SYNK ID 꼴이 아니면 아무도 받지 않는다(잘못 붙여 넣어 모두에게 열리지 않게).
+  const allowList = () => { const raw = String(env.PATH_CASES_ALLOW || '').split(/[\s,]+/).map(value => value.trim().toLowerCase()).filter(Boolean); return { set: raw.length > 0, ok: raw.every(value => UUID.test(value)), ids: raw }; };
+  // 접수 줄의 학생은 열쇠 해시로 둔다(상담을 지운 뒤 8일 동안 남는 줄에서 누가 무엇을 보냈는지 바로 읽히지 않게).
+  const intakeSubject = synkUserId => createHmac('sha256', store.key).update('path-case-intake\0v1\0' + synkUserId).digest('hex');
   const ticketKey = () => { const value = env.PATH_CASE_TICKET_KEY; return typeof value === 'string' && value.length >= 32 ? value : null; };
   const notify = ids => { const list = [...new Set(ids.filter(Boolean))]; if (list.length) try { onChange(list); } catch { /* 다음 읽기에 보인다 */ } };
 
@@ -110,7 +115,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   function notifications(actor) {
     const user = live(actor?.id);
     if (!user || !roleOf(user)) return [];
-    return store.all(K.alerts).filter(row => row.userId === user.id && store.get(K.cases, row.caseId)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 50)
+    // 지금 볼 수 있는 건의 알림만 보인다(담당이 바뀌었거나 숨긴 건은 뺀다).
+    const who = { user, role: roleOf(user), all: roleOf(user) !== 'counselor' };
+    return store.all(K.alerts).filter(row => { if (row.userId !== user.id) return false; const c = store.get(K.cases, row.caseId); return Boolean(c && visibleTo(who, c)); }).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 50)
       .map(row => ({ id: ALERT_PREFIX + row.id, kind: 'path_case_urgent', title: 'PATH 급함 상담', text: '', body: '', createdAt: row.createdAt, readAt: row.readAt, unread: !row.readAt, href: pathCaseHref(row.caseId), message: null }));
   }
   function readAlert(actor, id) {
@@ -128,19 +135,19 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   }
 
   /* ── 증표 ── */
-  function verifyTicket(ticket, identity, briefKo) {
+  function verifyTicket(ticket, identity, briefKo, deadline) {
     const key = ticketKey();
     if (!key) throw fail(503, 'CASE_TICKET_NOT_CONFIGURED', '상담 연결이 아직 준비되지 않았어요. 잠시 뒤 다시 보내 주세요.');
     const expected = createHmac('sha256', key).update(ticketPayload(ticket)).digest('base64url');
     if (!same(expected, ticket.sig)) throw fail(403, 'CASE_TICKET_FORGED', '연결 확인이 맞지 않아요. 「사람에게 연결」을 다시 눌러 주세요.');
     // 증표의 계정은 이 토큰의 계정이어야 한다(SYNK ID 또는 로그인 주체).
     if (ticket.sub !== identity.synkUserId && ticket.sub !== identity.subject) throw fail(403, 'CASE_TICKET_ACCOUNT', '다른 계정의 연결 확인이에요. 다시 로그인한 뒤 보내 주세요.');
-    if (!same(ticket.brief_hash, sha256hex(briefHashInput(briefKo)))) throw fail(403, 'CASE_TICKET_BRIEF', '넘김 요약이 연결 확인과 달라요. 「사람에게 연결」을 다시 눌러 주세요.');
+    if (!same(ticket.brief_hash, sha256hex(briefHashInput(briefKo, deadline)))) throw fail(403, 'CASE_TICKET_BRIEF', '넘김 요약이 연결 확인과 달라요. 「사람에게 연결」을 다시 눌러 주세요.');
   }
 
   /* ── 횟수 ── 지난 하루 · 7일의 접수 줄로 센다(줄은 8일 뒤 지운다). */
   function checkLimits(synkUserId, mode, kind, at) {
-    const rows = store.allWhere(K.intake, 'synkUserId', synkUserId).filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
+    const rows = store.allWhere(K.intake, 'synkUserId', intakeSubject(synkUserId)).filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
     const tooMany = () => fail(429, 'CASE_LIMIT', '이번 주에 보낼 수 있는 연결을 다 썼어요. 급하면 hello@synk.im으로 연락해 주세요.');
     if (mode === 'urgent' || mode === 'teen') {
       const free = rows.filter(row => row.mode === 'urgent' || row.mode === 'teen');
@@ -172,13 +179,21 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   }
   function newBody(req) {
     const tasks = req.mode === 'handoff' ? req.brief_ko.tasks.map(t => ({ id: randomUUID(), do: t.do, why: t.why, by: t.by, source: 'ai', done: false, note: '', doneAt: null, doneBy: null, removed: false })) : [];
+    // 학생이 넘김 요약에서 할 일을 빼거나 고치거나 더했으면 그대로 따른다(원래 AI 글은 「학생이 고친 줄」에 남는다).
+    for (const e of req.mode === 'handoff' ? req.edits || [] : []) {
+      if (e.field !== 'task') continue;
+      const text = e.text ? (e.text_ko || e.text) : null;
+      if (e.index === null) { if (text && tasks.length < L.tasks) tasks.push({ id: randomUUID(), do: text, why: '', by: null, source: 'student', done: false, note: '', doneAt: null, doneBy: null, removed: false }); continue; }
+      const t = tasks[e.index]; if (!t) continue;
+      if (!text) t.removed = true; else Object.assign(t, { do: text, source: 'student' });
+    }
     return { version: 1, mode: req.mode, lang: req.lang, age: req.age || 'adult', consent: req.consent, guardian: req.guardian === true,
       brief_ko: req.brief_ko || null, brief_student: req.brief_student || null, edits: req.edits || [], deadline: req.deadline || null,
       note: req.note ?? null, noteKo: null, last: req.last ?? null, lastKo: null, conversation: req.conversation || null, profile: req.profile || null, program: req.program || null,
       tasks, messages: [], answeredAt: null, studentReadAt: null };
   }
-  function addStudentMessage(body, text, requestId, at) {
-    if (body.messages.length >= L.messages) throw fail(409, 'CASE_FULL', '이 상담에는 더 쓸 수 없어요. 답을 기다리거나 새 상담으로 이어 주세요.');
+  function addStudentMessage(body, text, requestId, at, { force = false } = {}) {
+    if (!force && body.messages.length >= L.messages) throw fail(409, 'CASE_FULL', '이 상담에는 더 쓸 수 없어요. 답을 기다리거나 새 상담으로 이어 주세요.');
     const message = { id: randomUUID(), from: 'student', text, textKo: null, at, requestId };
     body.messages.push(message);
     return message;
@@ -186,14 +201,14 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   function studentCreate(identity, input) {
     if (!enabled()) throw fail(503, 'PATH_CASES_CLOSED', '지금은 사람 연결을 받지 않아요. hello@synk.im으로 연락해 주세요.');
     const allowed = allowList();
-    if (allowed.length && !allowed.includes(identity.synkUserId)) throw fail(403, 'PATH_CASES_NOT_ALLOWED', '아직 사람 연결을 쓸 수 없는 계정이에요. hello@synk.im으로 연락해 주세요.');
+    if (allowed.set && (!allowed.ok || !allowed.ids.includes(identity.synkUserId))) throw fail(403, 'PATH_CASES_NOT_ALLOWED', '아직 사람 연결을 쓸 수 없는 계정이에요. hello@synk.im으로 연락해 주세요.');
     let req;
     try { req = validateCaseRequest(input, nowMs()); } catch (error) { throw shapeFault(error); }
-    if (req.mode === 'handoff') verifyTicket(req.ticket, identity, req.brief_ko);
+    if (req.mode === 'handoff') verifyTicket(req.ticket, identity, req.brief_ko, req.deadline);
     const at = now(), translate = [];
     let urgent = null;
     const result = store.transaction(() => {
-      const prior = store.allWhere(K.intake, 'synkUserId', identity.synkUserId).find(row => row.requestId === req.request_id);
+      const prior = store.allWhere(K.intake, 'synkUserId', intakeSubject(identity.synkUserId)).find(row => row.requestId === req.request_id);
       if (prior) {
         const row = prior.caseId && store.get(K.cases, prior.caseId);
         if (!row) throw fail(409, 'CASE_GONE', '이미 보낸 상담이 지워졌어요. 다시 연결해 주세요.');
@@ -207,7 +222,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       if (current) {
         // 열린 건이 있으면 새 건을 만들지 않고 그 건에 급함 표시를 올린다. 학생이 고른 마지막 글은 그 건의 글로 잇는다.
         const body = bodyOf(current);
-        if (req.last && body.messages.length < L.messages) translate.push({ messageId: addStudentMessage(body, req.last, req.request_id, at).id });
+        // 급함으로 고른 마지막 글은 글 한도에 닿아도 잇는다(그 뒤에는 직원이 답할 수 있다).
+        if (req.last) translate.push({ messageId: addStudentMessage(body, req.last, req.request_id, at, { force: true }).id });
         const raised = raiseUrgent(touch({ ...current, status: current.status === 'answered' ? 'reviewing' : current.status, revision: current.revision + 1, updatedAt: at }, at), at);
         row = save(raised.row, body, { allowOver: true }); urgent = { target: raised.target };
         status = 200;
@@ -222,7 +238,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       }
       if (req.mode === 'handoff') store.put(K.nonces, req.ticket.nonce, { nonce: req.ticket.nonce, exp: req.ticket.exp, usedAt: at });
       const intakeId = randomUUID();
-      store.put(K.intake, intakeId, { id: intakeId, synkUserId: identity.synkUserId, requestId: req.request_id, mode: req.mode, kind: req.kind, caseId: row.id, at });
+      store.put(K.intake, intakeId, { id: intakeId, synkUserId: intakeSubject(identity.synkUserId), requestId: req.request_id, mode: req.mode, kind: req.kind, caseId: row.id, at });
       return { row, status, merged: Boolean(current) };
     });
     const stored = result.row;
@@ -287,10 +303,19 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     store.transaction(() => {
       store.remove(K.cases, row.id);
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
+      // 접수 줄(횟수 세기용, 8일)은 남기되 지운 건과 잇지 않는다.
+      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) store.put(K.intake, intake.id, { ...intake, caseId: null });
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
-    try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 다음 체크포인트가 지운다 */ }
+    truncateWal();
     notify([row.assigneeId]);
+  }
+
+  // 지운 뒤 WAL 파일을 비운다(secure_delete는 본 파일만 덮는다). 다른 읽기가 붙잡고 있어 못 비우면 정리(maintain) 때 다시 한다.
+  let walPending = false;
+  function truncateWal() {
+    try { const r = store.db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get(); walPending = Boolean(r && r.busy); } catch { walPending = true; }
+    return !walPending;
   }
 
   /* ── 직원 쪽 ── */
@@ -361,11 +386,17 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   }
   function assign(actor, id, input) {
     if (!onlyKeys(input, ['revision', 'assigneeId']) || typeof input.assigneeId !== 'string' || !eligible(input.assigneeId)) throw fail(400, 'CASE_ASSIGNEE', 'PATH 상담 담당이나 책임자, 회사 주인에게만 맡길 수 있어요.');
-    return mutate(actor, id, input, ({ current }) => ({ ...current, assigneeId: input.assigneeId }), { manager: true });
+    return mutate(actor, id, input, ({ current, at }) => {
+      // 열린 급함 건을 넘기면 새 담당에게도 급함 알림을 남긴다.
+      if (open(current) && current.urgent && input.assigneeId !== assigneeOf(current)) { const alertId = randomUUID(); store.put(K.alerts, alertId, { id: alertId, userId: input.assigneeId, caseId: current.id, createdAt: at, readAt: null }); }
+      return { ...current, assigneeId: input.assigneeId };
+    }, { manager: true });
   }
   function reply(actor, id, input) {
-    if (!onlyKeys(input, ['revision', 'request_id', 'text', 'textStudent']) || typeof input.request_id !== 'string' || !UUID.test(input.request_id) || !goodText(input.text, L.messageChars)
-      || !(input.textStudent === undefined || input.textStudent === null || goodText(input.textStudent, L.staffDraftChars))) throw fail(400, 'CASE_BAD_MESSAGE', '답은 1,000자 안으로 써 주세요.');
+    const noDraft = input?.textStudent === undefined || input?.textStudent === null || input?.textStudent === '';
+    const replyText = tidyText(input?.text, L.messageChars), studentText = noDraft ? null : tidyText(input.textStudent, L.staffDraftChars);
+    if (!onlyKeys(input, ['revision', 'request_id', 'text', 'textStudent']) || typeof input.request_id !== 'string' || !UUID.test(input.request_id) || !replyText || (!noDraft && !studentText))
+      throw fail(400, 'CASE_BAD_MESSAGE', '답은 1,000자, 학생에게 보낼 글은 2,000자 안으로 써 주세요.');
     const requestId = input.request_id.toLowerCase();
     const who = access(actor), currentRow = staffCase(who, id);
     if (bodyOf(currentRow).messages.some(m => m.requestId === requestId && m.from === 'staff')) return { case: staffView(currentRow, bodyOf(currentRow), who), duplicate: true };
@@ -374,7 +405,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       // 한도에 닿아도 직원의 답 하나는 된다(마지막 글이 직원의 답이면 더는 쓰지 않는다).
       if (body.messages.length >= L.messages && body.messages.at(-1)?.from === 'staff') throw fail(409, 'CASE_FULL', '이 상담의 글 한도에 닿았어요. 끝내기만 할 수 있어요.');
       if (Buffer.byteLength(JSON.stringify(body)) > L.caseBytes && body.messages.at(-1)?.from === 'staff') throw fail(413, 'CASE_TOO_LARGE', '이 상담의 크기 한도에 닿았어요. 끝내기만 할 수 있어요.');
-      body.messages.push({ id: randomUUID(), from: 'staff', text: maskAsk(input.text), textStudent: input.textStudent ? maskAsk(input.textStudent) : null, at, requestId, authorId: me.user.id });
+      body.messages.push({ id: randomUUID(), from: 'staff', text: maskAsk(replyText), textStudent: studentText ? maskAsk(studentText) : null, at, requestId, authorId: me.user.id });
       body.answeredAt = at;
       return { ...current, status: 'answered' };
     });
@@ -435,13 +466,16 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   }
   // 담당자가 한국어로 쓴 답을 학생 말로 옮긴 초안. 저장하지 않는다. 담당자가 보고 고친 뒤 답과 함께 보낸다.
   async function translateDraft(actor, id, input) {
-    const who = access(actor), row = staffCase(who, id);
-    if (!onlyKeys(input, ['text']) || !goodText(input.text, L.messageChars)) throw fail(400, 'CASE_BAD_MESSAGE', '답은 1,000자 안으로 써 주세요.');
+    const who = access(actor), row = staffCase(who, id), text = tidyText(input?.text, L.messageChars);
+    if (!onlyKeys(input, ['text']) || !text) throw fail(400, 'CASE_BAD_MESSAGE', '답은 1,000자 안으로 써 주세요.');
     const lang = bodyOf(row).lang;
     if (lang === 'ko') return { text: null, lang };
-    const out = translator ? await translator.translate([maskAsk(input.text)], { to: lang, from: 'ko' }) : null;
-    access(actor); staffCase(who, id);
-    return { text: out ? out[0] : null, lang };
+    const out = translator ? await translator.translate([maskAsk(text)], { to: lang, from: 'ko' }) : null;
+    // 기다리는 사이 역할이 바뀌었을 수 있다: 새로 확인한 역할로 다시 본다.
+    staffCase(access(actor), id);
+    const draft = out ? cleanText(out[0]) : null;
+    if (draft && [...draft].length > L.staffDraftChars) throw fail(422, 'CASE_DRAFT_LONG', '옮긴 초안이 너무 길어요. 답을 나눠 보내 주세요.');
+    return { text: draft, lang };
   }
 
   /* ── 오늘 할 일 ── 할 일 글은 싣지 않는다. 「PATH 상담 할 일 · 기한 · 건 링크」만. */
@@ -463,14 +497,15 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   /* ── 번역(비동기) ── 학생 글 · 메모 · 급함 글을 한국어로. 실패하면 원문만 둔다. */
   const translationQueue = [];
-  let translating = null;
+  let translating = null, stopped = false;
+  const livenessAbort = new AbortController();
   function queueTranslation(caseId, job) {
-    if (!translator?.configured?.()) return;
+    if (stopped || !translator?.configured?.()) return;
     translationQueue.push({ caseId, ...job });
     if (!translating) translating = drainTranslations().finally(() => { translating = null; });
   }
   async function drainTranslations() {
-    while (translationQueue.length) {
+    while (translationQueue.length && !stopped) {
       const job = translationQueue.shift();
       try {
         const row = store.get(K.cases, job.caseId); if (!row) continue;
@@ -497,6 +532,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   function maintain() {
     const at = now(), atMs = Date.parse(at), done = { closedIdle: 0, erased: 0, noticed: 0, tombstones: 0, reassigned: 0 };
     done.reassigned = reassignOrphans();
+    if (walPending) truncateWal();
     for (const row of store.all(K.cases)) {
       if (open(row) && Date.parse(row.updatedAt) <= atMs - L.idleOpenDays * DAY) {
         store.transaction(() => { const latest = store.get(K.cases, row.id); if (latest && open(latest) && latest.updatedAt === row.updatedAt) store.put(K.cases, row.id, { ...latest, status: 'closed', closedAt: at, closedBy: 'idle', revision: latest.revision + 1 }); });
@@ -526,7 +562,9 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     if (typeof url !== 'string' || !/^https:\/\/[^\s]+$/.test(url) || typeof key !== 'string' || key.length < 32) return { skipped: 'not-configured' };
     const atMs = nowMs();
     if (!force && state.livenessAt && atMs - Date.parse(state.livenessAt) < L.livenessEveryMs) return { skipped: 'not-due' };
-    const ids = [...new Set(store.all(K.cases).filter(row => !row.lastStudentCheckAt || Date.parse(row.lastStudentCheckAt) <= atMs - L.livenessStaleMs).map(row => row.synkUserId))]
+    // 가장 오래 확인하지 않은 계정부터 묻는다(한 번에 다 못 물어도 다음 날 남은 계정이 앞에 온다).
+    const ids = [...new Set(store.all(K.cases).filter(row => !row.lastStudentCheckAt || Date.parse(row.lastStudentCheckAt) <= atMs - L.livenessStaleMs)
+      .sort((a, b) => (a.lastStudentCheckAt || '').localeCompare(b.lastStudentCheckAt || '')).map(row => row.synkUserId))]
       .slice(0, L.livenessBatch * L.livenessBatches);
     const finish = patch => store.put('settings', STATE, { ...(store.get('settings', STATE) || {}), livenessAt: new Date(atMs).toISOString(), ...patch });
     if (!ids.length) { finish({ livenessStatus: 'ok', livenessAsked: 0, livenessGone: 0 }); return { asked: 0, gone: 0, leaving: 0, present: 0 }; }
@@ -536,7 +574,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       const signature = createHmac('sha256', key).update(['path-liveness.v1', time, sha256hex(body)].join('\u001F')).digest('base64url');
       let data;
       try {
-        const response = await fetchImpl(url, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000), body,
+        if (stopped) throw new Error('stopping');
+        const response = await fetchImpl(url, { method: 'POST', redirect: 'error', signal: AbortSignal.any([AbortSignal.timeout(15000), livenessAbort.signal]), body,
           headers: { 'Content-Type': 'application/json', 'X-Synk-Liveness-Time': time, 'X-Synk-Liveness-Signature': signature,
             // Supabase Edge 관문은 authorization이 있는 요청만 넘긴다. 공개(anon · publishable) 키만 싣고 서버 키는 쓰지 않는다.
             ...(anonKey ? { apikey: anonKey, Authorization: 'Bearer ' + anonKey } : {}) } });
@@ -558,11 +597,15 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     }
     const at = new Date(nowMs()).toISOString();
     let leaving = 0, present = 0;
+    // 묻는 사이에 학생이 앱을 열었으면(그 뒤의 확인 시각이 있으면) 늦게 온 답으로 숨기거나 지우지 않는다.
+    const askedAt = new Date(atMs).toISOString();
     for (const row of store.all(K.cases)) {
       const answer = results[row.synkUserId];
-      if (answer === 'gone') erase(row, 'account-gone');
-      else if (answer === 'leaving') { if (!row.hidden) { store.put(K.cases, row.id, { ...row, hidden: true }); leaving++; } }
-      else if (answer === 'present') { store.put(K.cases, row.id, { ...row, hidden: false, lastStudentCheckAt: at }); present++; }
+      if (!answer) continue;
+      const seenSince = Boolean(row.lastStudentCheckAt && row.lastStudentCheckAt > askedAt);
+      if (answer === 'gone') { if (!seenSince) erase(row, 'account-gone'); }
+      else if (answer === 'leaving') { if (!row.hidden && !seenSince) { store.put(K.cases, row.id, { ...row, hidden: true }); leaving++; } }
+      else if (answer === 'present') { store.put(K.cases, row.id, { ...row, hidden: false, lastStudentCheckAt: seenSince ? row.lastStudentCheckAt : at }); present++; }
     }
     finish({ livenessStatus: 'ok', livenessAsked: ids.length, livenessGone: gone.length });
     return { asked: ids.length, gone: gone.length, leaving, present };
@@ -574,6 +617,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
     today, notifications, readAlert, readAllAlerts, owns: id => typeof id === 'string' && id.startsWith(ALERT_PREFIX),
     maintain, liveness, roleOf: user => roleOf(live(user?.id)),
     waitForIdle: async () => { while (translating) await translating; await livenessRun; },
+    // 서버를 멈출 때: 남은 번역은 버리고(원문은 저장돼 있다) 지금 하나와 계정 정리만 기다린다.
+    stop: async () => { stopped = true; translationQueue.length = 0; livenessAbort.abort(); await translating; await livenessRun; },
   };
 }
 export const PATH_CASE_NOTE_MAX = MAX_NOTE_CHARS;

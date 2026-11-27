@@ -34,7 +34,7 @@ export const M = {
   sosSources: ['번호를 확인한 곳', 'Where the numbers come from', 'Дугаарын эх сурвалж'],
   close: ['닫기', 'Close', 'Хаах'],
   connectNow: ['지금 사람에게 연결', 'Connect to a person now', 'Одоо хүнтэй холбогдох'],
-  urgentAgree: ['급하다는 표시와 내 SYNK ID, 로그인한 메일을 SYNK 담당자에게 보내는 데 동의해요. 한국 서울에 있는 SYNK 회사 서버에 남아요.', 'I agree to send an urgent alert with my SYNK ID and sign-in email to a SYNK staff member. It is kept on the SYNK company server in Seoul, Korea.', 'Яаралтай гэсэн тэмдэг, миний SYNK ID болон нэвтэрсэн цахим шуудангийн хаягийг SYNK-ийн ажилтанд илгээхийг зөвшөөрч байна. Энэ мэдээлэл Солонгосын Сөүл хотод байрлах SYNK компанийн серверт хадгалагдана.'],
+  urgentAgree: ['급하다는 표시와 내 SYNK ID를 SYNK 담당자에게 보내는 데 동의해요. 아래에서 고르면 내가 마지막에 쓴 글도 함께 가요. 한국 서울에 있는 SYNK 회사 서버에 남아요. 담당자의 답은 「내 상담」에 와요.', 'I agree to send an urgent alert with my SYNK ID to a SYNK staff member. If I choose below, the last message I wrote goes too. It is kept on the SYNK company server in Seoul, Korea. The staff member’s answer appears in “My cases”.', 'Яаралтай гэсэн тэмдэг болон миний SYNK ID-г SYNK-ийн ажилтанд илгээхийг зөвшөөрч байна. Доор сонговол миний хамгийн сүүлд бичсэн зурвас ч хамт илгээгдэнэ. Энэ мэдээлэл Солонгосын Сөүл хотод байрлах SYNK компанийн серверт хадгалагдана. Ажилтны хариу «Миний зөвлөгөө» хэсэгт ирнэ.'],
   urgentLast: ['내가 마지막에 쓴 글도 함께 보내기', 'Also send the last message I wrote', 'Миний хамгийн сүүлд бичсэн зурвасыг хамт илгээх'],
   urgentSending: ['알리는 중이에요.', 'Sending the alert.', 'Мэдэгдэл илгээж байна.'],
   urgentSent: ['SYNK 담당자에게 알렸어요. 위험하면 위 번호로 먼저 연락하세요.', 'A SYNK staff member has been alerted. If you are in danger, call one of the numbers above first.', 'SYNK-ийн ажилтанд мэдэгдлээ. Аюулд байгаа бол дээрх дугаарын аль нэг рүү эхлээд залгаарай.'],
@@ -135,8 +135,8 @@ export const M = {
   withMine: ['내 조건', 'My conditions', 'Миний нөхцөл'],
   withProgram: ['고른 과정', 'Picked program', 'Сонгосон хөтөлбөр'],
   note: ['담당자에게 한마디(쓰지 않아도 돼요)', 'A note to the staff member (optional)', 'Ажилтанд үлдээх үг (заавал биш)'],
-  cWhatText: ['넘김 요약, 함께 보내기로 고른 것, SYNK ID, 표시 이름, 로그인한 메일이 가요. 답이 오면 그 메일로 알림을 받아요.', 'The summary, what you chose to send, your SYNK ID, display name and sign-in email. You get an email when there is an answer.', 'Хураангуй, хамт илгээхээр сонгосон зүйл, SYNK ID, харагдах нэр, нэвтэрсэн цахим шуудангийн хаяг илгээгдэнэ. Хариу ирэхэд тэр хаягаар мэдэгдэл авна.'],
-  cWhatTeen: ['쓴 글, 고른 갈래, 보호자가 동의했다는 표시, SYNK ID, 표시 이름, 로그인한 메일이 가요. 답이 오면 그 메일로 알림을 받아요.', 'Your message, the type you chose, a note that your guardian agreed, your SYNK ID, display name and sign-in email. You get an email when there is an answer.', 'Таны бичсэн зурвас, сонгосон төрөл, асран хамгаалагч зөвшөөрсөн гэсэн тэмдэг, SYNK ID, харагдах нэр, нэвтэрсэн цахим шуудангийн хаяг илгээгдэнэ. Хариу ирэхэд тэр хаягаар мэдэгдэл авна.'],
+  cWhatText: ['이 요약, 함께 보내기로 고른 것, SYNK ID가 가요. 담당자의 답은 「내 상담」에 와요.', 'This summary, what you chose to send and your SYNK ID. The staff member’s answer appears in “My cases”.', 'Энэ хураангуй, хамт илгээхээр сонгосон зүйл, SYNK ID илгээгдэнэ. Ажилтны хариу «Миний зөвлөгөө» хэсэгт ирнэ.'],
+  cWhatTeen: ['쓴 글, 고른 갈래, 보호자가 동의했다는 표시, SYNK ID가 가요. 담당자의 답은 「내 상담」에 와요.', 'Your message, the type you chose, a note that your guardian agreed and your SYNK ID. The staff member’s answer appears in “My cases”.', 'Таны бичсэн зурвас, сонгосон төрөл, асран хамгаалагч зөвшөөрсөн гэсэн тэмдэг, SYNK ID илгээгдэнэ. Ажилтны хариу «Миний зөвлөгөө» хэсэгт ирнэ.'],
   cWho: ['보는 사람', 'Who sees it', 'Хэн харах вэ'],
   cWhoText: ['SYNK PATH 담당자와 SYNK 대표가 봐요.', 'The SYNK PATH staff member and the head of SYNK.', 'SYNK PATH үйлчилгээний ажилтан болон SYNK-ийн тэргүүн харна.'],
   cWhere: ['두는 곳', 'Where it is kept', 'Хаана хадгалах вэ'],
@@ -162,6 +162,7 @@ export const M = {
   failed: ['지금은 답하지 못했어요. 다시 물어봐 주세요.', 'No answer this time. Please ask again.', 'Одоогоор хариулж чадсангүй. Дахин асуугаарай.'],
   refused: ['이 질문에는 AI가 답하지 않아요. 물어볼 곳은 「도움」 탭에서 정리할 수 있어요.', 'The AI does not answer this question. You can draft a question for official sources in the Help tab.', 'Энэ асуултад хиймэл оюун хариулахгүй. «Тусламж» хэсэгт албан ёсны байгууллагад тавих асуултаа бэлдэж болно.'],
   limit: ['오늘 물어볼 수 있는 만큼 다 물었어요. 내일 다시 물어봐 주세요.', 'You have asked as much as you can today. Please ask again tomorrow.', 'Өнөөдрийн асуух эрхээ бүгдийг ашигласан байна. Маргааш дахин асуугаарай.'],
+  paused: ['오늘은 물어보기가 모두 쉬어요. 한국 시각 오전 9시(몽골 시각 오전 8시)에 다시 열려요. 급하면 위의 「위험해요」를 눌러 주세요.', 'Ask is paused for everyone today. It opens again at 9:00 Korea time (8:00 Mongolia time). If it is urgent, tap “I am in danger” above.', 'Өнөөдөр «Асуух» үйлчилгээ бүх хүнд түр зогссон. Солонгосын цагаар өглөөний 9 цагт (Монголын цагаар 8 цагт) дахин нээгдэнэ. Яаралтай бол дээрх «Би аюулд байна» товчийг дарна уу.'],
   busy: ['같은 질문을 처리하고 있어요. 잠시 뒤에 다시 물어봐 주세요.', 'This question is still being processed. Please ask again in a moment.', 'Ижил асуултыг боловсруулж байна. Хэсэг хүлээгээд дахин асуугаарай.'],
   unavailable: ['물어보기는 잠시 쉬어요. 공식 안내에서 직접 확인해 주세요.', 'Ask is paused for now. Please check official sources yourself.', 'Асуух үйлчилгээ түр зогссон байна. Албан ёсны мэдээллийг өөрөө шалгана уу.'],
   done_before: ['이 질문은 이미 답했어요. 답은 저장하지 않아 다시 보여 드리지 못해요. 다시 물으면 오늘 한 번을 더 써요.', 'This question was already answered. Answers are not stored, so it cannot be shown again. Asking again uses one more of today’s questions.', 'Энэ асуултад аль хэдийн хариулсан. Хариулт хадгалагддаггүй тул дахин харуулах боломжгүй. Дахин асуувал өнөөдрийн эрхээс нэгийг ашиглана.'],
@@ -181,7 +182,7 @@ export const M = {
   closed: ['지금은 사람 연결을 받지 않아요. hello@synk.im으로 물어봐 주세요.', 'Connecting to a person is not available right now. Please email hello@synk.im.', 'Одоогоор хүнтэй холбогдох боломжгүй байна. hello@synk.im хаягаар асуугаарай.'],
   // 내 상담
   cases: ['내 상담', 'My cases', 'Миний зөвлөгөө'],
-  st_new: ['받음', 'Received', 'Хүлээн авсан'],
+  st_new: ['답을 기다려요', 'Waiting for an answer', 'Хариу хүлээж байна'],
   st_reviewing: ['보는 중', 'In review', 'Хянаж байна'],
   st_answered: ['답 왔음', 'Answered', 'Хариу ирсэн'],
   st_closed: ['끝남', 'Closed', 'Дууссан'],
@@ -197,6 +198,7 @@ export const M = {
   moreFail: ['글을 보내지 못했어요. 다시 보내 주세요.', 'The message was not sent. Please try again.', 'Зурвас илгээгдсэнгүй. Дахин илгээнэ үү.'],
   del: ['이 상담 지우기', 'Delete this case', 'Энэ зөвлөгөөг устгах'],
   delNote: ['지우면 담당자에게 보낸 내용과 답이 바로 지워져요. 내 길에 보이던 상담 표시도 사라져요. 되돌릴 수 없어요.', 'Deleting removes what you sent and the answers right away. The case marker on My path disappears too. This cannot be undone.', 'Устгавал ажилтанд илгээсэн зүйл болон хариулт шууд устгагдана. Миний зам дээрх зөвлөгөөний тэмдэглэгээ ч арилна. Буцаах боломжгүй.'],
+  deleteSoon: ['끝난 지 오래된 상담이라 곧 저절로 지워져요. 남겨 둘 내용이 있으면 지금 옮겨 적어 두세요.', 'This finished case will be deleted automatically soon. Copy anything you want to keep now.', 'Энэ дууссан зөвлөгөө удахгүй автоматаар устгагдана. Хадгалах зүйл байвал одоо хуулж аваарай.'],
   deleted: ['상담을 지웠어요.', 'Case deleted.', 'Зөвлөгөөг устгалаа.'],
   delFail: ['지우지 못했어요. 다시 눌러 주세요.', 'Could not delete. Please try again.', 'Устгаж чадсангүй. Дахин дарна уу.'],
   loadFail: ['지금 불러오지 못했어요.', 'Could not load right now.', 'Одоогоор ачаалж чадсангүй.'],
@@ -226,13 +228,15 @@ const lines = (s) => esc(s).replace(/\n/g, '<br>');
 export const cardLang = (askLang) => (askLang === 'mn' ? (MN_REVIEWED ? 'mn' : 'en') : askLang === 'en' ? 'en' : 'ko');
 
 /* ── 「위험해요」 입구와 고정 카드 ── */
-function urgentEntry(view, T) {
+const cardTools = (view) => { const cl = cardLang(view.askLang || view.lang); return { cl, T: tools({ ...view, lang: cl === 'ko' ? 'ko' : 'en', mn: cl === 'mn' }) }; };
+function urgentEntry(view) {
+  const { T } = cardTools(view);
   const open = view.urgent?.open === true;
   return `<button type="button" class="sx-sos-entry" data-action="askUrgent" aria-expanded="${open}" aria-controls="ask-urgent"><span class="sx-sos-ic">${PHONE}</span><span><b>${esc(T.P(M.danger))}</b>${T.mnLine(M.danger)}<small>${esc(T.P(M.dangerSub))}</small></span></button>`;
 }
 /** 고정 카드. 모델을 부르지 않는다. 번호 · 문안은 emergency.mjs 그대로. */
 export function renderUrgentCard(view) {
-  const T = tools(view), cl = cardLang(view.askLang || view.lang), u = view.urgent || {};
+  const { T, cl } = cardTools(view), u = view.urgent || {};
   const label = (c) => c.label[cl] || c.label.en, what = (c) => c.what[cl] || c.what.en;
   const hours = (c) => (c.hours === '24h' ? (cl === 'ko' ? '24시간' : '24 hours') : '');
   const group = (country, title) => {
@@ -286,7 +290,7 @@ ${consentItems(T, [[M.what, M.whatText], [M.who, M.whoText], [M.keep, M.keepText
 <button type="button" class="sx-cta" data-action="askStart"${ask.agree ? '' : ' disabled'}>${esc(T.P(M.start))}</button></section>`;
 }
 function caseConsent(T, idp, on) {
-  return `<section class="sx-tr-consent" aria-labelledby="${idp}-h"><h3 class="sx-h" id="${idp}-h">${esc(T.P(M.beforeSend))}${T.mnLine(M.beforeSend)}</h3>
+  return `<section class="sx-tr-consent" aria-labelledby="${idp}-consent-h"><h3 class="sx-h" id="${idp}-consent-h">${esc(T.P(M.beforeSend))}${T.mnLine(M.beforeSend)}</h3>
 ${consentItems(T, [[M.what, idp === 'teen' ? M.cWhatTeen : M.cWhatText], [M.cWho, M.cWhoText], [M.cWhere, M.cWhereText], [M.keep, M.cKeepText], [M.cTr, M.cTrText], [M.promise, M.cPromiseText]]).replace('</dl>', contactItem(T, CASE_PRIVACY_URL) + '</dl>')}
 <label class="sx-check"><input type="checkbox" id="${idp}-agree" data-action="${idp === 'teen' ? 'teenAgree' : 'briefAgree'}"${on ? ' checked' : ''}><span><span>${esc(T.P(M.cAgree))}</span>${T.mnLine(M.cAgree)}</span></label></section>`;
 }
@@ -363,7 +367,7 @@ export function renderAsk(view) {
   const T = tools(view), ask = view.ask || {};
   const head = `<header class="sx-head"><p class="sx-kicker">${esc(T.P(M.kicker))}</p><h1 class="sx-title page-title" id="ask-title" tabindex="-1">${esc(T.P(M.title))}</h1>${T.both(M.lead, 'p', 'sx-lead')}</header>`;
   const acct = ask.notice === 'account' ? T.both(M.account, 'p', 'sx-store is-warn', ' role="status"') : '';
-  const top = `${urgentEntry(view, T)}${view.urgent?.open ? renderUrgentCard(view) : ''}${acct}`;
+  const top = `${urgentEntry(view)}${view.urgent?.open ? renderUrgentCard(view) : ''}${acct}`;
   let body;
   if (view.off) body = `${T.both(M.offNote, 'p', 'sx-store is-warn', ' role="status"')}${officialEntry(view, T)}`;
   else if (!view.signedIn) body = `${T.both(M.signIn, 'p', 'sx-note is-box')}<button type="button" class="sx-cta" data-action="accountSignIn">${esc(T.P(M.signInBtn))}</button>${officialEntry(view, T)}`;
@@ -426,10 +430,10 @@ export function renderCases(view) {
   const list = c.list || [];
   if (!list.length) return note ? wrap(note) : '';
   const one = (k) => {
-    const msgs = k.messages.map((m) => `<li class="${m.from === 'staff' ? 'sx-ask-ai' : 'sx-ask-me'}"><p class="sx-ask-who">${esc(T.P(m.from === 'staff' ? M.staff : M.me))}${m.at ? ` · ${esc(m.at.slice(0, 10))}` : ''}</p><div class="sx-ask-text">${lines(m.text)}</div></li>`).join('');
+    const msgs = k.messages.map((m) => `<li class="${m.from === 'staff' ? 'sx-ask-ai' : 'sx-ask-me'}"><p class="sx-ask-who">${esc(T.P(m.from === 'staff' ? M.staff : M.me))}${m.at ? ` · ${esc(m.at.slice(0, 10))}` : ''}</p><div class="sx-ask-text">${lines(m.text).replaceAll(MASK_TOKEN, esc(T.L('[가린 번호]', '[hidden number]')))}</div></li>`).join('');
     const id = k.id, done = k.status === 'closed';
     return `<article class="sx-case" aria-labelledby="case-${id}-h"><div class="sx-case-top"><h3 id="case-${id}-h">${esc(T.P(M['k_' + k.kind]))}${k.created_at ? ` · ${esc(k.created_at.slice(0, 10))}` : ''}</h3><span class="sx-tag ${k.status === 'answered' ? 'is-ok' : k.status === 'closed' ? 'wait' : 'is-check'}">${esc(T.P(M['st_' + k.status]))}</span></div>
-${k.wants ? `<p class="sx-case-wants">${esc(k.wants)}</p>` : ''}${msgs ? `<ol class="sx-ask-log">${msgs}</ol>` : ''}
+${k.wants ? `<p class="sx-case-wants">${esc(k.wants)}</p>` : ''}${k.delete_soon ? `<p class="sx-store is-warn" role="status"><span>${esc(T.P(M.deleteSoon))}${k.delete_at ? ` (${esc(k.delete_at.slice(0, 10))})` : ''}</span>${T.mnLine(M.deleteSoon)}</p>` : ''}${msgs ? `<ol class="sx-ask-log">${msgs}</ol>` : ''}
 ${k.unread ? `<div class="sx-row2"><p class="sx-tag is-ok">${esc(T.P(M.unread))}</p><button type="button" class="sx-btn2" data-action="caseRead" data-id="${id}">${esc(T.P(M.readBtn))}</button></div>` : ''}
 ${done ? '' : `<div class="sx-field"><label for="case-text-${id}">${esc(T.P(M.more))}</label><textarea id="case-text-${id}" class="sx-tr-text sx-ask-input" rows="2" maxlength="${MAX_NOTE_CHARS}" data-action="caseText" data-id="${id}">${esc(c.text?.[id] || '')}</textarea><button type="button" class="sx-btn2" data-action="caseSend" data-id="${id}"${String(c.text?.[id] || '').trim() ? '' : ' disabled'}>${esc(T.P(M.moreSend))}</button></div>`}
 <details class="sx-past" data-fold="case-del-${id}"><summary>${esc(T.P(M.del))}</summary>${T.both(M.delNote, 'p', 'sx-fine')}<button type="button" class="sx-btn2 line danger" data-action="caseDelete" data-id="${id}">${esc(T.P(M.del))}</button></details></article>`;

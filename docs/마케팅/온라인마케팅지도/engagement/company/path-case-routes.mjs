@@ -11,7 +11,12 @@ export function createPathCaseStaffRoutes({ pathCases, session, origin, body, se
     const route = CASE.exec(path), user = auth.user;
     if (method === 'GET') {
       if (path === '/api/path-cases') { send(res, 200, pathCases.list(user)); return true; }
-      if (route && !route[2]) { send(res, 200, pathCases.detail(user, route[1])); return true; }
+      if (route && !route[2]) {
+        // 상세를 열면 「보는 중」으로 바뀌고 급함 알림을 읽는다. 다른 사이트를 거친 최상위 이동 · 남의 출처 요청으로는 열지 않는다.
+        const mode = req.headers['sec-fetch-mode'], site = req.headers['sec-fetch-site'];
+        if (mode === 'navigate' || (site !== undefined && site !== 'same-origin')) throw fail('회사 프로그램 화면에서 열어 주세요.', 403);
+        send(res, 200, pathCases.detail(user, route[1])); return true;
+      }
       throw fail('PATH 상담함 주소를 확인해 주세요.', 404);
     }
     if (method !== 'POST') throw fail('요청 방법을 확인해 주세요.', 405);

@@ -139,6 +139,12 @@ export function createAskController(d) {
   }
 
   /* ── 넘김 요약 ── */
+  /** 넘김 요약 · 고친 줄에서 서버가 급함 고정 문안을 내면, 요약 쪽을 닫고 물어보기로 돌아가 위험해요 카드를 연다. */
+  function toUrgent() {
+    brief = null; urgent.open = true;
+    d.go('ask');
+    focus('#ask-urgent-h'); d.say(q('#ask-urgent-h')?.textContent || '');
+  }
   async function fetchBrief() {
     const a = cur(), b = brief;
     if (!b) return;
@@ -152,6 +158,7 @@ export function createAskController(d) {
     try { reply = await d.session.translate(body); } catch (err) { failed = err; }
     if (brief !== b || b.seq !== seq || ask !== a) return;
     const out = briefOutcome(reply, failed, d.now());
+    if (out.urgent) { toUrgent(); return; }
     if (out.notice) { b.phase = 'failed'; b.notice = out.notice; d.render(false); focus('#brief-notice', '#brief-title'); d.say(P(M[out.notice] || M.failed)); return; }
     Object.assign(b, { phase: 'ready', got: out, draft: briefDraft(out.brief.student) });
     d.render(false); focus('#brief-title'); d.say(P(M.bTitle));
@@ -167,13 +174,14 @@ export function createAskController(d) {
     b.phase = 'sending'; b.notice = null;
     d.render(false); focus('#brief-wait'); d.say(P(M.cSending));
     const stale = () => brief !== b || b.seq !== seq || ask !== a;
-    let full;
+    let full, edReply = null;
     try {
       // 학생 말이 한국어면 옮기지 않는다(넘김 요약 몫을 아낀다).
-      const reply = a.lang !== 'ko' && edits.some((e) => e.text) ? await d.session.translate(briefEditBody({ requestId: d.uuid(), lang: a.lang, edits })) : null;
-      full = editsWithKo(edits, a.lang, reply);
+      edReply = a.lang !== 'ko' && edits.some((e) => e.text) ? await d.session.translate(briefEditBody({ requestId: d.uuid(), lang: a.lang, edits })) : null;
+      full = editsWithKo(edits, a.lang, edReply);
     } catch {
       if (stale()) return;
+      if (edReply?.status === 'urgent') { toUrgent(); return; }
       b.phase = 'ready'; b.notice = 'editFail'; d.render(false); focus('#brief-notice'); d.say(P(M.editFail)); return;
     }
     if (stale()) return;
@@ -265,7 +273,7 @@ export function createAskController(d) {
       const a = cur(), u = urgent;
       if (!owner() || wsOpen !== true || !['adult', 'teen'].includes(a.age) || !u.agree || (a.age === 'teen' && !u.guardian) || u.phase === 'sending') return;
       let body;
-      try { body = urgentCase({ requestId: d.uuid(), lang: a.lang, age: a.age, last: u.last ? lastStudent() : null }); }
+      try { body = urgentCase({ requestId: d.uuid(), lang: a.lang, age: a.age, guardian: a.age === 'teen' && u.guardian === true, last: u.last ? lastStudent() : null }); }
       catch { u.phase = 'failed'; d.render(false); return; }
       u.phase = 'sending'; d.render(false); d.say(P(M.urgentSending));
       let failed = null;

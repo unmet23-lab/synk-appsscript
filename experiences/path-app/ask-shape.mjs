@@ -19,7 +19,8 @@ export const HANDOFF_KINDS = Object.freeze(['act', 'synk', 'stuck']);
 export const CASE_KINDS = Object.freeze(['urgent', 'act', 'synk', 'stuck']);
 /** 14~17세가 직접 고르는 짧은 연결 양식의 갈래. */
 export const TEEN_KINDS = Object.freeze(['act', 'synk']);
-export const ASK_STATUSES = Object.freeze(['done', 'blocked', 'refused', 'limit', 'busy', 'unavailable', 'urgent', 'done_before']);
+// paused: 전체 하루 몫이나 하루 사용량 상한에 닿아 오늘은 모두에게 쉰다(다음 UTC 자정에 다시 연다). unavailable은 스위치 · 키가 없을 때다.
+export const ASK_STATUSES = Object.freeze(['done', 'blocked', 'refused', 'limit', 'paused', 'busy', 'unavailable', 'urgent', 'done_before']);
 
 export const MAX_QUESTION_CHARS = 1000;
 export const HISTORY_TURNS = 8;
@@ -53,16 +54,17 @@ const HIDDEN_RE = /[\u0000-\u0009\u000B-\u001F\u007F-\u009F​-‏‪-‮⁠-⁩
 
 /** 글을 다듬는다: NFC, 숨은 글자 지우기, 줄바꿈은 세 줄까지 연달아, 앞뒤 빈칸 지우기. */
 export function cleanText(text) {
+  // 줄마다 앞뒤 빈칸을 먼저 지우고 빈 줄을 줄인다(두 번 다듬어도 같은 글이 되게).
   return String(text ?? '').normalize('NFC').replace(/\r\n?/g, '\n').replace(HIDDEN_RE, '').replace(/[ \t]+/g, ' ')
-    .replace(/\n{3,}/g, '\n\n').split('\n').map((l) => l.trim()).join('\n').trim();
+    .split('\n').map((l) => l.trim()).join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 const goodText = (v, max, min = 1) => typeof v === 'string' && v === cleanText(v) && chars(v) >= min && chars(v) <= max;
 
 /* ── 번호 가리기 ── 앱이 보내기 전에, SYNK-talk과 Workspace가 받은 뒤에 같은 함수로 가린다. 되돌릴 값은 두지 않는다(⟦R0⟧).
  * 몽골 주민등록번호(글자 둘 + 숫자 여덟)는 번역 초안의 검사를 그대로 쓴다.
- * 여권번호: 영문 대문자 한두 자 + 숫자 일곱 · 여덟 자(몽골 · 한국 여권). 앞뒤가 글자나 숫자에 붙어 있으면 보지 않는다.
+ * 여권번호: 영문 한두 자 + 숫자 일곱 · 여덟 자(몽골 · 한국 여권, 소문자로 써도), 한국 차세대 여권(영문 + 숫자 셋 + 영문 + 숫자 넷, 예 M123A4567). 앞뒤가 글자나 숫자에 붙어 있으면 보지 않는다.
  * 한국 주민 · 외국인등록번호: 숫자 여섯 + (줄표) + 1~8로 시작하는 숫자 일곱. */
-const PASSPORT_RE = /(?<![\p{L}\p{N}⟦])[A-Z]{1,2}[\s-]?\d{7,8}(?![\p{N}⟧])/gu;
+const PASSPORT_RE = /(?<![\p{L}\p{N}⟦])(?:[A-Z]{1,2}[\s-]?\d{7,8}|[A-Z]\d{3}[A-Z]\d{4})(?![\p{N}⟧])/giu;
 const KR_ID_RE = /(?<![\p{N}⟦])\d{6}\s?[-–]?\s?[1-8]\d{6}(?![\p{N}⟧])/gu;
 export function maskAsk(text) {
   return serverMask([String(text ?? '')])[0].replace(KR_ID_RE, SERVER_TOKEN).replace(PASSPORT_RE, SERVER_TOKEN);
@@ -77,7 +79,7 @@ const DANGER = [
   // 한국어
   '죽고 싶', '죽고싶', '자살', '자해', '목숨', '때려', '때리', '맞았', '맞고 있', '폭행', '폭력', '성폭', '성추행', '강간', '협박', '감금', '납치', '갇혀', '위협', '돈을 뜯', '돈 뜯', '사기를 당', '사기 당', '살려', '위험해',
   // 영어
-  'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'abuse', 'assault', 'raped', 'rape', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
+  'kill myself', 'suicide', 'suicidal', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'wanna die', 'don\'t want to live', 'kill me', 'hurt me', 'hit me', 'beat me', 'abuse', 'assault', 'raped', 'rape', 'threaten', 'kidnap', 'locked me in', 'beaten', 'scammed', 'in danger',
   // 몽골어(키릴)
   'амиа хорло', 'амиа егүүт', 'үхмээр', 'өөрийгөө гэмтээ', 'зодсон', 'зодуул', 'зодож', 'хүчир', 'бэлгийн дарамт', 'айлга', 'заналх', 'хулгайлсан', 'луйвар', 'аюулд', 'аврагтун',
   // 몽골어(라틴 글자)
@@ -93,6 +95,9 @@ export function looksUrgent(text) {
 const UNIT = [['억', 1e8], ['만', 1e4], ['сая', 1e6], ['мянга', 1e3], ['million', 1e6], ['thousand', 1e3]];
 function expandUnits(text) {
   let s = String(text ?? '').replace(/(\d),(?=\d{3}(?!\d))/g, '$1');
+  // 한국어 금액을 한 수로 읽는다: 「1억 2000만」, 「82만 500원」(뒤 단위를 따로 세면 「82만 원」이 근거에 있는 것처럼 보인다).
+  s = s.replace(/(\d+)\s*억\s*(\d+)\s*만(?:\s*(\d{1,4})(?=\s*원))?/g, (m, a, b, c) => ` ${Number(a) * 1e8 + Number(b) * 1e4 + (c ? Number(c) : 0)} `);
+  s = s.replace(/(\d+)\s*만\s*(\d{1,4})(?=\s*원)/g, (m, a, b) => ` ${Number(a) * 1e4 + Number(b)} `);
   for (const [word, mult] of UNIT) {
     s = s.replace(new RegExp(`(\\d+(?:\\.\\d+)?)\\s*${word}`, 'giu'), (m, n) => ` ${Math.round(Number(n) * mult)} `);
   }
@@ -239,7 +244,7 @@ export function validateAskReply(data) {
     if (data.status === 'done' && (!Array.isArray(data.cites) || data.cites.length > MAX_CITES || data.kind !== t.kind)) throw fault('ASK_BAD_REPLY');
   }
   // limit의 reopens_at은 원장의 하루가 바뀌는 때(다음 UTC 자정)의 밀리초 숫자다.
-  if (data.status === 'limit' && !intIn(data.reopens_at, 0, 8.64e15)) throw fault('ASK_BAD_REPLY');
+  if ((data.status === 'limit' || data.status === 'paused') && !intIn(data.reopens_at, 0, 8.64e15)) throw fault('ASK_BAD_REPLY');
   return data;
 }
 
@@ -292,6 +297,8 @@ export function validateBriefRequest(body) {
   if (typeof body.request_id !== 'string' || !UUID_RE.test(body.request_id) || !ASK_LANGS.includes(body.lang) || body.age !== 'adult'
     || body.consent !== ASK_CONSENT_VERSION || !HANDOFF_KINDS.includes(body.kind)) throw fault('BRIEF_BAD_REQUEST');
   const history = checkHistory(body.history, BRIEF_TURNS, MAX_BRIEF_CHARS);
+  // 물어보기와 같이 학생 글에 가리지 않은 번호가 있으면 받지 않는다(앱은 보내기 전에 가린다).
+  if (history.some((t) => t.role === 'student' && hasIdNumber(t.text))) throw fault('BRIEF_BAD_REQUEST');
   // 넘김은 AI가 그 갈래로 사람 연결을 권한 답이 있을 때만 받는다. 서명 확인(서버)과 함께 쓴다.
   if (!history.some((t) => t.role === 'ai' && t.kind === body.kind)) throw fault('BRIEF_NOT_OFFERED');
   const topic = body.topic ?? null;
@@ -344,9 +351,10 @@ export function checkTicket(t, now = Date.now()) {
   return { sub: t.sub.toLowerCase(), kind: t.kind, exp: t.exp, nonce: t.nonce.toLowerCase(), brief_hash: t.brief_hash, sig: t.sig };
 }
 /** 증표의 brief_hash를 셈할 정해진 문자열(키 차례가 고정된 JSON). 해시는 부르는 쪽이 sha256 hex로. */
-export function briefHashInput(ko) {
+/** 증표가 묶는 글: 한국어 판과 서버가 정한 기한(학생이 고칠 수 없는 값). */
+export function briefHashInput(ko, deadline = null) {
   const b = ko;
-  return JSON.stringify([b.situation, b.wants, b.ai_done.map((d) => [d.text, d.cites]), b.open, b.tasks.map((t) => [t.do, t.why, t.by])]);
+  return JSON.stringify([b.situation, b.wants, b.ai_done.map((d) => [d.text, d.cites]), b.open, b.tasks.map((t) => [t.do, t.why, t.by]), deadline ?? null]);
 }
 
 /* ── Workspace에 건 만들기(앱 → Workspace) ── 셋 가운데 하나다: 증표가 있는 넘김, 급함 고정 꼴, 14~17세 짧은 양식. */
@@ -360,9 +368,11 @@ export function validateCaseRequest(body, now = Date.now()) {
   if (!plain(body) || typeof body.request_id !== 'string' || !UUID_RE.test(body.request_id) || !ASK_LANGS.includes(body.lang) || body.consent !== CASE_CONSENT_VERSION) throw fault('CASE_BAD_REQUEST');
   const base = { request_id: body.request_id.toLowerCase(), lang: body.lang, consent: body.consent };
   if (body.mode === 'urgent') {
-    if (!exactKeys(body, ['mode', 'request_id', 'lang', 'consent', 'age', 'last'])) throw fault('CASE_BAD_REQUEST');
-    if (!['adult', 'teen'].includes(body.age) || !(body.last === null || goodText(body.last, MAX_NOTE_CHARS))) throw fault('CASE_BAD_REQUEST');
-    return { ...base, mode: 'urgent', kind: 'urgent', age: body.age, last: body.last === null ? null : maskAsk(body.last) };
+    // 14~17세는 보호자 확인이 있어야 받는다(guardian: true). 18세 이상은 false.
+    if (!exactKeys(body, ['mode', 'request_id', 'lang', 'consent', 'age', 'guardian', 'last'])) throw fault('CASE_BAD_REQUEST');
+    if (!['adult', 'teen'].includes(body.age) || typeof body.guardian !== 'boolean' || (body.age === 'teen' && body.guardian !== true)
+      || !(body.last === null || goodText(body.last, MAX_NOTE_CHARS))) throw fault('CASE_BAD_REQUEST');
+    return { ...base, mode: 'urgent', kind: 'urgent', age: body.age, guardian: body.guardian, last: body.last === null ? null : maskAsk(body.last) };
   }
   if (body.mode === 'teen') {
     if (!exactKeys(body, ['mode', 'request_id', 'lang', 'consent', 'age', 'guardian', 'kind', 'note'])) throw fault('CASE_BAD_REQUEST');

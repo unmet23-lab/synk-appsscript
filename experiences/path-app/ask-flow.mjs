@@ -123,7 +123,7 @@ export function askOutcome(reply, failed, question) {
     return { entry: { role: 'ai', turn: data.turn, cites, kind: data.turn.kind }, keep: true, notice: null, openCard: data.turn.kind === 'urgent', off: false, remaining,
       reopensAt: null };
   }
-  return { entry: null, keep: false, notice: data.status, openCard: danger, off: data.status === 'unavailable', remaining, reopensAt: data.status === 'limit' ? data.reopens_at : null };
+  return { entry: null, keep: false, notice: data.status, openCard: danger, off: data.status === 'unavailable', remaining, reopensAt: data.status === 'limit' || data.status === 'paused' ? data.reopens_at : null };
 }
 
 /* ── 넘김 요약 ── */
@@ -137,12 +137,13 @@ export function briefBody({ requestId, lang, kind, entries, profile = null, topi
 const briefDates = (b) => [b?.deadline, ...[b?.student, b?.ko].flatMap((x) => (Array.isArray(x?.tasks) ? x.tasks.map((t) => t?.by) : []))].filter((d) => typeof d === 'string');
 /**
  * 넘김 요약 답. 꼴만 확인하고 받은 값은 바꾸지 않는다(Workspace가 brief_ko의 해시를 증표와 대 본다).
- * @returns { brief, ticket, at } | { notice }
+ * @returns { brief, ticket, at } | { notice } | { urgent: true }(서버가 급함 고정 문안을 냈다 — 위험해요 카드를 연다)
  */
 export function briefOutcome(reply, failed, now = Date.now()) {
   if (failed) return { notice: failed.code === 'AUTH_REQUIRED' ? 'signin' : failed.code === 'NETWORK' || /^INVALID_/.test(failed.code || '') ? 'lost' : 'failed' };
   if (!plain(reply) || typeof reply.status !== 'string') return { notice: 'lost' };
-  if (reply.status !== 'done') return { notice: ['blocked', 'refused', 'limit', 'busy', 'unavailable', 'done_before'].includes(reply.status) ? reply.status : 'lost' };
+  if (reply.status === 'urgent') return { urgent: true };
+  if (reply.status !== 'done') return { notice: ['blocked', 'refused', 'limit', 'paused', 'busy', 'unavailable', 'done_before'].includes(reply.status) ? reply.status : 'lost' };
   const b = reply.brief;
   try {
     if (!plain(b) || !HANDOFF_KINDS.includes(b.kind) || !(b.deadline === null || typeof b.deadline === 'string')) throw new Error('brief');
@@ -201,6 +202,8 @@ export function briefEditBody({ requestId, lang, edits }) {
  * reply가 보낸 줄과 칸 · 번호 · 글이 같지 않으면 오류를 던진다.
  */
 export function editsWithKo(edits, lang, reply = null) {
+  // 고친 줄에 위험 낱말이 있어 서버가 급함 고정 문안을 내면 부르는 쪽이 위험해요 카드를 연다.
+  if (reply?.status === 'urgent') throw Object.assign(new Error('BRIEF_URGENT'), { code: 'BRIEF_URGENT' });
   const asked = edits.filter((e) => e.text);
   let ko = asked.map((e) => e.text);
   if (lang !== 'ko' && asked.length) {
@@ -229,9 +232,9 @@ export function handoffCase({ requestId, lang, got, edits, note = '', conversati
   validateCaseRequest(body, Number.isInteger(got.ticket?.exp) ? got.ticket.exp - 1 : Date.now());
   return body;
 }
-export function urgentCase({ requestId, lang, age, last = null }) {
+export function urgentCase({ requestId, lang, age, guardian = false, last = null }) {
   const l = last ? maskedQuestion(last).slice(0, MAX_NOTE_CHARS) : null;
-  const body = { mode: 'urgent', request_id: requestId, lang, consent: CASE_CONSENT_VERSION, age, last: l || null };
+  const body = { mode: 'urgent', request_id: requestId, lang, consent: CASE_CONSENT_VERSION, age, guardian: guardian === true, last: l || null };
   validateCaseRequest(body);
   return body;
 }
@@ -251,7 +254,7 @@ export function caseMessage({ requestId, text }) {
 
 /**
  * Workspace의 GET /api/path-student/cases 답을 화면 꼴로. 모르는 칸은 버리고, 꼴이 틀린 건은 뺀다.
- * 건: { id, kind, status, created_at, wants, messages: [{ id, from: 'student'|'staff', text, at }], unread }
+ * 건: { id, kind, status, created_at, wants, messages: [{ id, from: 'student'|'staff', text, at }], unread, delete_at, delete_soon }
  */
 export function readCases(data) {
   if (!plain(data) || !Array.isArray(data.cases)) throw Object.assign(new Error('CASES_BAD_REPLY'), { code: 'CASES_BAD_REPLY' });
@@ -260,7 +263,8 @@ export function readCases(data) {
     if (!plain(c) || typeof c.id !== 'string' || !UUID_RE.test(c.id) || !CASE_STATUSES.includes(c.status) || !['urgent', ...HANDOFF_KINDS].includes(c.kind)) return [];
     const messages = (Array.isArray(c.messages) ? c.messages : []).slice(-100).flatMap((m) => (plain(m) && ['student', 'staff'].includes(m.from) && str(m.text, 4000)
       ? [{ id: str(m.id, 80), from: m.from, text: m.text, at: str(m.at, 40) }] : []));
-    return [{ id: c.id.toLowerCase(), kind: c.kind, status: c.status, created_at: str(c.created_at, 40), wants: str(c.wants, 600), messages, unread: Number.isInteger(c.unread) && c.unread > 0 ? c.unread : 0 }];
+    return [{ id: c.id.toLowerCase(), kind: c.kind, status: c.status, created_at: str(c.created_at, 40), wants: str(c.wants, 600), messages, unread: Number.isInteger(c.unread) && c.unread > 0 ? c.unread : 0,
+      delete_at: str(c.delete_at, 40), delete_soon: c.delete_soon === true }];
   });
 }
 export const openCases = (cases) => (cases || []).filter((c) => c.status !== 'closed');

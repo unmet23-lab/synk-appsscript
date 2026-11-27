@@ -408,7 +408,7 @@ export function createProductAccount({
         const response = await fetcher(url, { method, signal: abort.signal, credentials: 'omit', cache: 'no-store', redirect: 'error',
           headers: { Authorization: `Bearer ${token}`, ...(hasBody ? { 'Content-Type': 'application/json' } : {}) }, ...(hasBody ? { body: text } : {}) });
         return { response, data: await responseJson(response) };
-      } catch (error) { if (error.code) throw error; throw fault('NETWORK', 'Workspace에 연결하지 못했어요.', { retryable: true }); }
+      } catch (error) { if (typeof error?.code === 'string') throw error; throw fault('NETWORK', 'Workspace에 연결하지 못했어요.', { retryable: true }); }
       finally { clearTimeout(timer); controllers.delete(abort); }
     };
     guard(expected);
