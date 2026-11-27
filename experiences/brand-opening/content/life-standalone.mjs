@@ -18480,6 +18480,32 @@ function reviewListShape(items) {
   const sameOrigin = items.length > 1 && items.every((i) => i.origin === items[0].origin), sameScenes = items.every((i) => i.scenes === items[0].scenes);
   return { origin: sameOrigin ? items[0].origin : "", rows: items.map((i) => ({ ...i, origin: sameOrigin ? "" : i.origin, scenes: sameScenes ? 1 : i.scenes })) };
 }
+function revealOtherNotes(content, button, { doc: doc2 = document, open = (n2) => {
+  n2.hidden = false;
+} } = {}) {
+  const opened = [...content.querySelectorAll(".life-choice:not(.is-correct) .life-choice-note[hidden]")];
+  opened.forEach(open);
+  const next = content.querySelector("[data-life-question-next]");
+  if (next && opened.length) {
+    const copy3 = doc2.createElement("span");
+    copy3.className = "life-sr";
+    copy3.id = "life-other-notes-copy";
+    opened.forEach((n2, i) => {
+      const word = doc2.createElement("span");
+      word.lang = "ko";
+      word.textContent = n2.closest(".life-choice")?.querySelector('.life-choice-copy>[lang="ko"]')?.textContent || "";
+      const note2 = doc2.createElement("span");
+      note2.lang = n2.lang;
+      note2.textContent = n2.textContent;
+      copy3.append(...i ? [" "] : [], word, /[.?!]$/.test(word.textContent) ? " " : ": ", note2);
+    });
+    next.after(copy3);
+    next.setAttribute("aria-describedby", copy3.id);
+  }
+  button.remove();
+  next?.focus({ preventScroll: true });
+  return opened.length;
+}
 var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp", cut: "mongle" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp", cut: "kkamong" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp", cut: "marin" } };
 var phaseName = (type) => t(`life.phase.${type}`);
 var phaseLabels = { expressions: "EXPRESSIONS", story: "STORY", apply: "PRACTICE", visit: "CAFE VISIT", compose: "MY ORDER" };
@@ -19607,32 +19633,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     },
     "scene-next": () => turnScene(1),
     choice: (el) => context.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
-    // 「다른 보기는 언제 쓰나요?」: 연 쓰임 줄은 막힌 보기 단추 안이라 읽기 프로그램이 지나치기 쉬워 판정 띠(role=status) 안 사본으로도 읽히게 한다.
-    // 단추는 스스로 지워지므로 초점을 「다음」으로 옮긴다(인사 팩 검수 world-life2-20261123 카본 A1 · B1).
-    notes: (el) => {
-      const opened = [...content.querySelectorAll(".life-choice:not(.is-correct) .life-choice-note[hidden]")];
-      opened.forEach((n2) => {
-        n2.hidden = false;
-        drawer2(n2, { delay: 0 });
-      });
-      const band = el.closest(".life-feedback");
-      if (band && opened.length) {
-        const copy3 = document.createElement("span");
-        copy3.className = "life-sr";
-        opened.forEach((n2, i) => {
-          const word = document.createElement("span");
-          word.lang = "ko";
-          word.textContent = n2.closest(".life-choice")?.querySelector('.life-choice-copy>[lang="ko"]')?.textContent || "";
-          const note2 = document.createElement("span");
-          note2.lang = n2.lang;
-          note2.textContent = n2.textContent;
-          copy3.append(...i ? [" "] : [], word, /[.?!]$/.test(word.textContent) ? " " : ": ", note2);
-        });
-        band.append(copy3);
-      }
-      el.remove();
-      content.querySelector("[data-life-question-next]")?.focus({ preventScroll: true });
-    },
+    notes: (el) => revealOtherNotes(content, el, { open: (n2) => {
+      n2.hidden = false;
+      drawer2(n2, { delay: 0 });
+    } }),
     "question-next": () => {
       if (context.phase === "review") {
         lastFeedback = null;

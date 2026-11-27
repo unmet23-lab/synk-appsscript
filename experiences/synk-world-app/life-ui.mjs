@@ -39,6 +39,20 @@ export function reviewListShape(items){
  const sameOrigin=items.length>1&&items.every(i=>i.origin===items[0].origin),sameScenes=items.every(i=>i.scenes===items[0].scenes);
  return {origin:sameOrigin?items[0].origin:'',rows:items.map(i=>({...i,origin:sameOrigin?'':i.origin,scenes:sameScenes?1:i.scenes}))};
 }
+// 「다른 보기는 언제 쓰나요?」를 누른 뒤(인사 팩 검수 world-life2-20261123 카본 A1 · B1): 숨긴 쓰임 줄을 열고 단추는 지운다.
+// 연 쓰임 줄은 막힌 보기 단추 안이라 읽기 프로그램이 지나치기 쉽다. 그래서 「보기 글 + 쓰임 줄」 사본을 「다음」 단추의 설명(aria-describedby)으로 잇고
+// 초점을 「다음」으로 옮긴다. 판정 띠(role=status)에 덧붙이면 띠 전체가 다시 읽힐 수 있어 띠 밖에 둔다(world-life2-ui-20261127).
+export function revealOtherNotes(content,button,{doc=document,open=n=>{n.hidden=false;}}={}){
+ const opened=[...content.querySelectorAll('.life-choice:not(.is-correct) .life-choice-note[hidden]')];opened.forEach(open);
+ const next=content.querySelector('[data-life-question-next]');
+ if(next&&opened.length){
+  const copy=doc.createElement('span');copy.className='life-sr';copy.id='life-other-notes-copy';
+  opened.forEach((n,i)=>{const word=doc.createElement('span');word.lang='ko';word.textContent=n.closest('.life-choice')?.querySelector('.life-choice-copy>[lang="ko"]')?.textContent||'';const note=doc.createElement('span');note.lang=n.lang;note.textContent=n.textContent;copy.append(...(i?[' ']:[]),word,/[.?!]$/.test(word.textContent)?' ':': ',note);});
+  next.after(copy);next.setAttribute('aria-describedby',copy.id);
+ }
+ button.remove();next?.focus({preventScroll:true});
+ return opened.length;
+}
 // 세 친구: 카페 장면은 방 사진 속 작은 친구(home/friend-*), 이야기 무대는 정본 컷(assets/tutors).
 const friends={mongle:{name:'몽글',file:'friend-mongle.webp',cut:'mongle'},kkamong:{name:'까몽',file:'friend-kkamong.webp',cut:'kkamong'},marine:{name:'마린',file:'friend-marine.webp',cut:'marin'}};
 const phaseName=type=>t(`life.phase.${type}`);
@@ -715,11 +729,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   begin:()=>{context.phase='story';context.sceneIndex=0;persistStage();renderLesson();},
   'scene-next':()=>turnScene(1),
   choice:el=>context.phase==='review'?chooseReview(el.dataset.lifeChoice):choose(el.dataset.lifeChoice),
-  // 「다른 보기는 언제 쓰나요?」: 연 쓰임 줄은 막힌 보기 단추 안이라 읽기 프로그램이 지나치기 쉬워 판정 띠(role=status) 안 사본으로도 읽히게 한다.
-  // 단추는 스스로 지워지므로 초점을 「다음」으로 옮긴다(인사 팩 검수 world-life2-20261123 카본 A1 · B1).
-  notes:el=>{const opened=[...content.querySelectorAll('.life-choice:not(.is-correct) .life-choice-note[hidden]')];opened.forEach(n=>{n.hidden=false;drawer(n,{delay:0});});
-   const band=el.closest('.life-feedback');if(band&&opened.length){const copy=document.createElement('span');copy.className='life-sr';opened.forEach((n,i)=>{const word=document.createElement('span');word.lang='ko';word.textContent=n.closest('.life-choice')?.querySelector('.life-choice-copy>[lang="ko"]')?.textContent||'';const note=document.createElement('span');note.lang=n.lang;note.textContent=n.textContent;copy.append(...(i?[' ']:[]),word,/[.?!]$/.test(word.textContent)?' ':': ',note);});band.append(copy);}
-   el.remove();content.querySelector('[data-life-question-next]')?.focus({preventScroll:true});},
+  notes:el=>revealOtherNotes(content,el,{open:n=>{n.hidden=false;drawer(n,{delay:0});}}),
   'question-next':()=>{if(context.phase==='review'){lastFeedback=null;helped=false;helpBy=null;renderReview();}else{context.questionIndex++;lastFeedback=null;helped=false;helpBy=null;persistStage();renderLesson();}},
   'review-start':()=>reviewStart(),'review-lesson':el=>reviewStart(el.dataset.lifeReviewLesson,(el.dataset.lifeReviewIds||'').split(',').filter(Boolean),{soon:true}),pause,
   'cafe-choice':el=>cafeChoose(el.dataset.lifeCafeChoice),'cafe-next':cafeNext,

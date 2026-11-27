@@ -1379,3 +1379,47 @@ test('새 길 생활 화면 원문 — 「내일쯤」은 달력의 다음 날, 
   // 허브의 「내 위치」 단추는 data-view만 있다 — 빠지면 초점이 닫기 단추로 가서 엔터가 허브를 닫았다.
   assert.match(source, /find\(a=>a\.name\.startsWith\('data-life-'\)\|\|a\.name==='data-view'\)/);
 });
+
+// 「다른 보기는 언제 쓰나요?」(인사 팩 검수 world-life2-20261123 카본 A1 · B1 → world-life2-ui-20261127): 단추가 스스로 지워져도 초점이 「다음」으로 가고,
+// 막힌 보기 단추 안에 연 쓰임 줄은 「보기 글 + 쓰임 줄」 사본으로 「다음」의 설명이 된다(판정 띠 role=status에는 덧붙이지 않는다).
+test('「다른 보기」를 누르면 쓰임 줄을 열고, 사본을 「다음」의 설명으로 이은 뒤 단추를 지우고 초점을 「다음」으로 옮긴다', async () => {
+  const { revealOtherNotes } = await import('../life-ui.mjs');
+  const element = () => ({ textContent: '', lang: '', id: '', className: '', parts: [], append(...items) { for (const item of items) { this.parts.push(item); this.textContent += typeof item === 'string' ? item : item.textContent; } } });
+  const note = (word, text, lang) => ({ hidden: true, lang, textContent: text, closest: sel => (sel === '.life-choice' ? { querySelector: s => (s === '.life-choice-copy>[lang="ko"]' ? { textContent: word } : null) } : null) });
+  const run = notes => {
+    const log = [];
+    const next = { attrs: {}, after: el => log.push(['after', el]), setAttribute(key, value) { this.attrs[key] = value; }, focus: options => log.push(['focus', options]) };
+    const content = {
+      querySelectorAll: sel => (sel === '.life-choice:not(.is-correct) .life-choice-note[hidden]' ? notes : []),
+      querySelector: sel => (sel === '[data-life-question-next]' ? next : null),
+    };
+    const count = revealOtherNotes(content, { remove: () => log.push(['remove']) }, { doc: { createElement: element } });
+    return { count, log, next, copy: log.find(([kind]) => kind === 'after')?.[1] };
+  };
+  const ko = [note('밖으로 가져갈게요.', '음료를 가지고 밖으로 나가겠다는 말이에요.', 'ko'), note('학교 뒤', '학교의 뒤쪽이에요.', 'ko')];
+  const opened = run(ko);
+  assert.equal(opened.count, 2);
+  assert.ok(ko.every(n => n.hidden === false), '숨긴 쓰임 줄을 연다');
+  assert.equal(opened.copy.className, 'life-sr');
+  assert.equal(opened.next.attrs['aria-describedby'], opened.copy.id, '사본은 「다음」의 설명');
+  assert.equal(opened.copy.textContent, '밖으로 가져갈게요. 음료를 가지고 밖으로 나가겠다는 말이에요. 학교 뒤: 학교의 뒤쪽이에요.', '마침표로 끝난 보기 뒤는 빈칸, 아니면 「: 」');
+  assert.deepEqual(opened.log.map(([kind]) => kind), ['after', 'remove', 'focus'], '단추를 지운 뒤 초점은 「다음」');
+  // 몽골어 화면: 보기 글은 한국어, 쓰임 줄은 화면 언어로 표시한다.
+  const mn = run([note('네', 'Тийм гэсэн үг.', 'mn')]);
+  assert.deepEqual(mn.copy.parts.filter(part => typeof part !== 'string').map(part => part.lang), ['ko', 'mn']);
+  assert.equal(mn.copy.textContent, '네: Тийм гэсэн үг.');
+  // 열 쓰임 줄이 없으면 사본 없이 단추만 지우고 초점을 옮긴다.
+  const none = run([]);
+  assert.deepEqual(none.log.map(([kind]) => kind), ['remove', 'focus']);
+  assert.equal(none.next.attrs['aria-describedby'], undefined);
+});
+
+// 카페 사진 세 장은 사람이 위쪽에 있다. 납작한 장면 칸(440×196 · 가로 휴대폰 150px)에서 아래 기준이면 머리가 잘리거나 이름표가 얼굴을 가렸다
+// (카페 팩 다시 검수 FA1 → world-life2-ui-20261127). 자리마다 맞춘 높이를 못박는다.
+test('카페 사진은 자리마다 얼굴이 이름표 아래에 오는 높이로 맞춘다 — 카운터 30% · 창가 0 · 정원 30%', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../life-ui.css', import.meta.url), 'utf8');
+  assert.ok(css.includes('.cafe-scene[data-cafe-photo=true]{background:var(--cafe-counter) 50% 30% / cover no-repeat,var(--w-s2)}'), '카운터');
+  assert.ok(css.includes('.cafe-scene-table[data-cafe-photo=true]{background:var(--cafe-window) 50% 0 / cover no-repeat,var(--w-s2)}'), '창가');
+  assert.ok(css.includes('.cafe-scene-table[data-cafe-seat=garden][data-cafe-photo=true]{background-image:var(--cafe-garden);background-position:50% 30%}'), '정원');
+});
