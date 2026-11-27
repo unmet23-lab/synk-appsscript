@@ -132,7 +132,7 @@ function fixture() {
   }, '2026-11-09T10:01:00.000Z');
 }
 
-async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null, studyGate = null, emptyAccount = false, workspace = null } = {}) {
+async function boot(t, { translateServer = null, failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null, study = false, studyState = null, studyLoadDown = null, studyGate = null, emptyAccount = false, workspace = null, clock = null } = {}) {
   const initial = raw ?? JSON.stringify(legacy ? fixture() : { ...createPathDocument('ko'), state: fixture() });
   const originalKey = legacy ? LEGACY_KEY : GUEST_KEY;
   const records = new Map([[originalKey, initial]]);
@@ -243,6 +243,8 @@ async function boot(t, { translateServer = null, failRead = false, failWrite = f
     confirm: message => { confirmations.push(message); if (confirmHook) confirmHook(); return confirmation; },
     setTimeout: (callback, delay = 0) => { if (delay === 30) callback(); else timers.push({ callback, delay }); return timers.length; },
     clearTimeout: id => { if (timers[id - 1]) timers[id - 1].cancelled = true; },
+    // clock: 앱이 읽는 Date.now를 시험이 정한다.
+    ...(clock ? { Date: class extends Date { static now() { return clock(); } } } : {}),
   };
   vm.runInNewContext(appSource, context, { filename: 'path-app/app.mjs' });
   t.after(() => { session?.dispose(); jobsFeed?.dispose(); });
@@ -1552,4 +1554,32 @@ test('내 상담: 오늘 화면은 Workspace의 내 건을 보이고, Workspace�
   down = true;
   app.click('caseRead'); await settleAsk();
   assert.match(app.root.textContent, /지금 불러오지 못했어요/);
+});
+
+test('내 상담: 오늘에 1분 넘게 지나 돌아오면 목록을 그대로 둔 채 다시 불러온다', async t => {
+  let gets = 0, reply = 'first';
+  const id = '6f1c3a52-9d1e-4c4b-8a77-2f0d1b3c4e5f';
+  const list = () => ({ ok: true, cases: [{ id, kind: 'act', status: 'answered', created_at: '2026-11-27T01:00:00Z', unread: 1, messages: [{ id: 'm1', from: 'staff', text: reply === 'first' ? '서류를 같이 봐요.' : '여권 사본도 주세요.', at: '2026-11-27T02:00:00Z' }] }] });
+  const base = Date.now();
+  let shift = 0;
+  const app = await boot(t, { signedIn: true, clock: () => base + shift, workspace: { open: true, handler: (method) => { if (method === 'GET') { gets += 1; return list(); } return { ok: true }; } } });
+  app.click('nav', '[data-page="today"]'); await settleAsk();
+  assert.equal(gets, 1); assert.match(app.root.textContent, /서류를 같이 봐요/);
+  app.click('nav', '[data-page="today"]'); await settleAsk();
+  assert.equal(gets, 1, '1분 안에는 다시 부르지 않는다');
+  shift = 61000; reply = 'second';
+  app.click('nav', '[data-page="today"]');
+  assert.doesNotMatch(app.root.textContent, /불러오는 중/, '다시 불러오는 동안 목록을 그대로 보인다');
+  await settleAsk();
+  assert.equal(gets, 2); assert.match(app.root.textContent, /여권 사본도 주세요/);
+});
+
+test('카드를 고르기 전에 물어보기를 열어도 로고로 처음 화면(카드 고르기)에 돌아간다', async t => {
+  const app = await boot(t, { raw: JSON.stringify({ ...createPathDocument('ko'), state: stateModel.createInitialState('ko') }) });
+  const page = () => app.root.querySelector('.app-shell')?.getAttribute('data-page');
+  assert.equal(page(), 'onboard');
+  app.click('askOpen'); await settleAsk();
+  assert.equal(page(), 'ask');
+  app.click('nav', '.logo'); await settleAsk();
+  assert.equal(page(), 'onboard');
 });

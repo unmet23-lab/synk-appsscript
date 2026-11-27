@@ -96,14 +96,19 @@ export function createAskController(d) {
     wsAsking = true;
     Promise.resolve().then(() => d.session.workspaceStatus()).then((v) => v === true, () => false).then((v) => { wsOpen = v; wsAsking = false; d.render(false); });
   }
-  async function loadCases() {
+  // quiet: 목록이 이미 있으면 그대로 보이며 뒤에서 다시 불러온다(글 칸 · 보내는 중인 글을 건드리지 않는다).
+  async function loadCases({ quiet = false } = {}) {
     const o = owner();
     if (!o) return;
-    const c = cases = { owner: o, phase: 'loading', list: cases?.list || [], note: cases?.note ?? null, text: cases?.text || {}, at: d.now() };
+    const keep = cases && cases.owner === o ? cases : null;
+    // 보내는 중 표시와 요청 번호는 같은 것을 잇는다(다시 불러오는 사이에 같은 글이 두 번 가지 않게).
+    const c = cases = { owner: o, phase: quiet && keep?.phase === 'ok' ? 'ok' : 'loading', refreshing: true, list: keep?.list || [], note: keep?.note ?? null,
+      text: keep?.text || {}, sending: keep?.sending || {}, rids: keep?.rids || {}, at: d.now() };
     let list = null;
     try { list = readCases(await d.session.workspace('GET', WORKSPACE_CASES_PATH)); } catch { list = null; }
+    c.refreshing = false;
     if (cases !== c || owner() !== o) return;
-    if (list) { c.list = list; c.phase = 'ok'; if (openCases(list).length) markKnown(); } else c.phase = 'error';
+    if (list) { c.list = list; c.phase = 'ok'; if (openCases(list).length) markKnown(); } else if (!(quiet && c.phase === 'ok')) c.phase = 'error';
     d.render(false);
   }
   const casePath = (id, tail = '') => (UUID_RE.test(id) ? `${WORKSPACE_CASES_PATH}/${id}${tail}` : null);
@@ -384,7 +389,11 @@ export function createAskController(d) {
     const page = d.page();
     if (owner() && ['ask', 'askBrief', 'today', 'path'].includes(page)) askStatus();
     // 담당자 답을 놓치지 않게 오늘 · 내 길에 들어올 때 1분 넘게 지났으면 다시 불러온다.
-    if (owner() && ['today', 'path'].includes(page) && (!cases || cases.owner !== owner() || (cases.phase !== 'loading' && d.now() - (cases.at || 0) > 60000))) void loadCases();
+    if (owner() && ['today', 'path'].includes(page)) {
+      if (!cases || cases.owner !== owner()) void loadCases();
+      // 보내는 중인 글이 있으면 다시 불러오기를 미룬다.
+      else if (cases.phase !== 'loading' && !cases.refreshing && d.now() - (cases.at || 0) > 60000 && !Object.values(cases.sending || {}).some(Boolean)) void loadCases({ quiet: true });
+    }
     if (page === 'askBrief' && !brief) d.S.page = 'ask';
   }
   function view() {
