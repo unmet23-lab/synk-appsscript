@@ -48,8 +48,12 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
   // 접수 줄의 학생은 열쇠 해시로 둔다(상담을 지운 뒤 8일 동안 남는 줄에서 누가 무엇을 보냈는지 바로 읽히지 않게).
   // 지운 요청 번호 표식: 그 학생(해시)과 요청 번호를 함께 묶는다(다른 학생의 같은 번호를 막지 않게). 요청 번호를 모르면 지운 건을 찾을 수 없다.
   const erasedRequestKey = (subject, requestId) => 'erased:' + createHmac('sha256', store.key).update('path-case-erased-request\0v2\0' + subject + '\0' + requestId).digest('hex');
-  // 지운 상담의 접수는 횟수에 세지 않는다(설계 관문 11-27의 받아들인 대가: 지우고 다시 보내 주간 횟수를 피할 수 있다). 지운 건과 학생을 다시 잇는 기록을 어디에도 두지 않기 위해서다.
-  // 급함 푸시를 지우고 되풀이하는 것은 하루 · 주 횟수가 아니라 켠 뒤 기록으로 본다.
+  // 지운 상담의 접수 횟수: 디스크 · 백업에는 남기지 않고 이 서버의 메모리에만 7일 센다(설계 관문 11-27 P2-3). 지우고 다시 보내 급함 푸시를 끝없이 울리지 못하게 한다.
+  // 7일이 지난 것은 셀 때와 매시간 보관 정리 때 버린다. 서버를 다시 시작하면 사라지는 손실은 받아들인다.
+  const erasedIntake = new Map();
+  const freshErased = (subject, atMs) => { const list = (erasedIntake.get(subject) || []).filter(x => Date.parse(x.at) > atMs - WEEK); if (list.length) erasedIntake.set(subject, list); else erasedIntake.delete(subject); return list; };
+  function rememberErased(intake) { const list = freshErased(intake.synkUserId, nowMs()); list.push({ mode: intake.mode, kind: intake.kind, at: intake.at }); erasedIntake.set(intake.synkUserId, list); }
+  function pruneErased() { for (const subject of [...erasedIntake.keys()]) freshErased(subject, nowMs()); }
   const intakeSubject = synkUserId => createHmac('sha256', store.key).update('path-case-intake\0v1\0' + synkUserId).digest('hex');
   const ticketKey = () => { const value = env.PATH_CASE_TICKET_KEY; return typeof value === 'string' && value.length >= 32 ? value : null; };
   const notify = ids => { const list = [...new Set(ids.filter(Boolean))]; if (list.length) try { onChange(list); } catch { /* 다음 읽기에 보인다 */ } };
@@ -152,7 +156,8 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   /* ── 횟수 ── 지난 하루 · 7일의 접수 줄로 센다(줄은 8일 뒤 지운다). */
   function checkLimits(synkUserId, mode, kind, at) {
-    const rows = store.allWhere(K.intake, 'synkUserId', intakeSubject(synkUserId)).filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
+    const subject = intakeSubject(synkUserId);
+    const rows = [...store.allWhere(K.intake, 'synkUserId', subject), ...freshErased(subject, Date.parse(at))].filter(row => Date.parse(row.at) > Date.parse(at) - WEEK);
     const tooMany = () => fail(429, 'CASE_LIMIT', '이번 주에 보낼 수 있는 연결을 다 썼어요. 급하면 hello@synk.im으로 연락해 주세요.');
     if (mode === 'urgent' || mode === 'teen') {
       const free = rows.filter(row => row.mode === 'urgent' || row.mode === 'teen');
@@ -315,7 +320,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
       store.remove(K.cases, row.id);
       for (const alert of store.all(K.alerts)) if (alert.caseId === row.id) store.remove(K.alerts, alert.id);
       // 접수 줄은 지운다(학생 해시 · 때 · 갈래로 지운 건을 다시 잇지 못하게). 같은 요청 번호를 다시 보내면 「지운 상담」으로 답하도록, 학생과 잇지 않는 요청 번호 해시만 8일 남긴다.
-      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); if (intake.requestId) { const gone = erasedRequestKey(intake.synkUserId, intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
+      for (const intake of store.all(K.intake)) if (intake.caseId === row.id) { store.remove(K.intake, intake.id); rememberErased(intake); if (intake.requestId) { const gone = erasedRequestKey(intake.synkUserId, intake.requestId); store.put(K.nonces, gone, { nonce: gone, exp: Date.parse(at) + L.intakeDays * DAY, erased: true }); } }
       store.put(K.tombstones, row.id, { id: row.id, kind: row.kind, createdDay: kstDay(row.createdAt), closedDay: row.closedAt ? kstDay(row.closedAt) : null, taskCount: tasks, erasedAt: at, reason });
     });
     try { store.db.exec('PRAGMA wal_checkpoint(PASSIVE)'); } catch { /* 아래 정리가 다시 한다 */ }
@@ -578,6 +583,7 @@ export function createPathCases({ store, clock = () => new Date().toISOString(),
 
   /* ── 보관 정리 ── */
   function maintain() {
+    pruneErased();
     const at = now(), atMs = Date.parse(at), done = { closedIdle: 0, erased: 0, noticed: 0, tombstones: 0, reassigned: 0 };
     done.reassigned = reassignOrphans();
     if (walPending) truncateWal();

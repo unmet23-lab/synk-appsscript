@@ -410,3 +410,14 @@ test('급함 판정: 학생 글의 위험은 번역 때 모델이 뜻으로 보�
   const h = fixture(t), v = h.student();
   assert.equal(h.cases.studentCreate(v, h.teen({ note: '집에서 아빠한테 맞았어요' })).body.case.urgent, true);
 });
+
+test('지운 급함 상담도 하루 · 주 횟수에 든다(서버 메모리에만 7일, 지나면 버림)', t => {
+  const f = fixture(t), s = f.student();
+  for (let i = 0; i < 3; i++) { const c = f.cases.studentCreate(s, f.urgent()).body.case; f.cases.studentDelete(s, c.id); }
+  assert.throws(() => f.cases.studentCreate(s, f.urgent()), code('CASE_LIMIT'));
+  // 지운 건의 접수 줄은 저장소에 없다.
+  assert.equal(f.store.count(PATH_CASE_KINDS.intake), 0);
+  // 7일이 지나면 다시 보낼 수 있다(보관 정리가 메모리도 비운다).
+  f.advance(8 * DAY); f.cases.maintain();
+  assert.equal(f.cases.studentCreate(s, f.urgent()).status, 201);
+});
